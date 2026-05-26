@@ -511,8 +511,9 @@ Q_STATIC_LOGGING_CATEGORY(lcAccessibilityCore, "qt.accessibility.core");
     \value HyperlinkInterface       For hyperlink nodes (usually embedded as children of text nodes)
     \value [since 6.5] SelectionInterface For non-text objects that support selection of child objects.
     \value [since 6.8] AttributesInterface For objects that support object-specific attributes.
+    \value [since 6.12] ViewportInterface For objects that allow 2-dimensional or indexed scrolling.
 
-    \sa QAccessibleInterface::interface_cast(), QAccessibleTextInterface, QAccessibleValueInterface, QAccessibleActionInterface, QAccessibleTableInterface, QAccessibleTableCellInterface, QAccessibleSelectionInterface, QAccessibleAttributesInterface
+    \sa QAccessibleInterface::interface_cast(), QAccessibleTextInterface, QAccessibleValueInterface, QAccessibleActionInterface, QAccessibleTableInterface, QAccessibleTableCellInterface, QAccessibleSelectionInterface, QAccessibleAttributesInterface, QAccessibleViewportInterface
 */
 
 #if QT_CONFIG(accessibility)
@@ -1127,7 +1128,9 @@ std::pair< int, int > QAccessible::qAccessibleTextBoundaryHelper(const QTextCurs
 
     Lists, tables and trees should implement QAccessibleTableInterface.
 
-    \sa QAccessible, QAccessibleActionInterface, QAccessibleTextInterface, QAccessibleValueInterface, QAccessibleTableInterface
+    Scrollable views should implement QAccessibleViewportInterface.
+
+    \sa QAccessible, QAccessibleActionInterface, QAccessibleTextInterface, QAccessibleValueInterface, QAccessibleTableInterface, QAccessibleViewportInterface
 */
 
 /*!
@@ -1388,6 +1391,11 @@ QColor QAccessibleInterface::backgroundColor() const
 /*!
     \fn QAccessibleSelectionInterface *QAccessibleInterface::selectionInterface()
     \since 6.5
+*/
+
+/*!
+    \fn QAccessibleViewportInterface *QAccessibleInterface::viewportInterface()
+    \since 6.12
 */
 
 /*!
@@ -1965,7 +1973,8 @@ void QAccessibleInterface::virtual_hook(int /*id*/, void * /*data*/)
 
     \sa QAccessible::InterfaceType, QAccessibleTextInterface,
     QAccessibleValueInterface, QAccessibleActionInterface,
-    QAccessibleTableInterface, QAccessibleTableCellInterface
+    QAccessibleTableInterface, QAccessibleTableCellInterface,
+    QAccessibleViewportInterface
 */
 
 /*! \internal */
@@ -3340,6 +3349,59 @@ QAccessibleHyperlinkInterface::~QAccessibleHyperlinkInterface()
 {
 
 }
+
+/*!
+    \since 6.12
+    \class QAccessibleViewportInterface
+    \inmodule QtGui
+    \ingroup accessibility
+    \preliminary
+
+    \brief The QAccessibleViewportInterface class implements support for viewports.
+
+    This interface should be implemented by accessible objects that allow an 2-dimensional
+    or indexed viewports (e.g. by scrolling). For example lists or flickable views.
+*/
+
+/*!
+    Destroys the QAccessibleViewportInterface.
+
+*/
+QAccessibleViewportInterface::~QAccessibleViewportInterface()
+{
+}
+
+/*!
+    \fn QSizeF QAccessibleViewportInterface::contentSize() const
+
+    Returns the total size of the content in absolute values. For non-indexed viewports this will return
+    the absolute size of the underlying content, for indexed viewports the count of rows and columns is
+    returned.
+*/
+
+/*!
+    \fn QPointF QAccessibleViewportInterface::position() const
+
+    Returns the current position within the viewport in normalized values.
+*/
+
+/*!
+    \fn QSizeF QAccessibleViewportInterface::viewportSize() const
+
+    Returns the currently visible portion of the content in normalized values.
+*/
+
+/*!
+    \fn bool QAccessibleViewportInterface::isIndexed() const
+
+    Returns true if the underlying content is indexed (e.g. a list of items).
+*/
+
+/*!
+    \fn void QAccessibleViewportInterface::setPosition(const QPointF &position)
+
+    Sets the viewport's position to the given \a position defined in normalized values.
+*/
 
 #endif // QT_CONFIG(accessibility)
 

@@ -368,6 +368,7 @@ public:
         HyperlinkInterface,
         SelectionInterface,
         AttributesInterface,
+        ViewportInterface,
     };
 
     enum TextBoundaryType {

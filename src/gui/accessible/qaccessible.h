@@ -45,6 +45,7 @@ class QAccessibleHyperlinkInterface;
 class QAccessibleSelectionInterface;
 class QAccessibleAttributesInterface;
 class QAccessibleTableModelChangeEvent;
+class QAccessibleViewportInterface;
 
 class Q_GUI_EXPORT QAccessibleInterface
 {
@@ -109,6 +110,9 @@ public:
 
     inline QAccessibleAttributesInterface *attributesInterface()
     { return reinterpret_cast<QAccessibleAttributesInterface *>(interface_cast(QAccessible::AttributesInterface)); }
+
+    inline QAccessibleViewportInterface *viewportInterface()
+    { return reinterpret_cast<QAccessibleViewportInterface *>(interface_cast(QAccessible::ViewportInterface)); }
 
     virtual void virtual_hook(int id, void *data);
 
@@ -295,6 +299,18 @@ public:
     virtual ~QAccessibleAttributesInterface();
     virtual QList<QAccessible::Attribute> attributeKeys() const = 0;
     virtual QVariant attributeValue(QAccessible::Attribute key) const = 0;
+};
+
+class Q_GUI_EXPORT QAccessibleViewportInterface
+{
+public:
+    virtual ~QAccessibleViewportInterface();
+
+    virtual QSizeF contentSize() const = 0;
+    virtual QPointF position() const = 0;
+    virtual QSizeF viewportSize() const = 0;
+    virtual bool isIndexed() const = 0;
+    virtual void setPosition(const QPointF &position) = 0;
 };
 
 
