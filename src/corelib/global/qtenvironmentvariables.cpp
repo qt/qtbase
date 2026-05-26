@@ -25,6 +25,21 @@ Q_CONSTINIT static QBasicMutex environmentMutex;
     \inmodule QtCore
     \ingroup funclists
     \brief Helper functions for working with environment variables.
+
+    The functions in this header are used to manipulate the environment
+    variables.
+
+    \section2 Thread-safety
+
+    The Qt environment manipulation functions are thread-safe, but this requires
+    that the C library equivalent functions like \c {getenv} and \c {putenv}
+    are not directly called.
+
+    This is also relevant for the third-party libraries that are loaded by the
+    application. If such a library uses unsafe functions to manipulate the
+    environment from a secondary thread, it is recommended to do all the
+    environment setup in the main thread before loading the library and/or
+    creating secondary threads.
 */
 
 /*!
