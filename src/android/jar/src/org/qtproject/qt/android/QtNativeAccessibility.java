@@ -4,6 +4,7 @@
 package org.qtproject.qt.android;
 
 import android.graphics.Rect;
+import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 
 class QtNativeAccessibility
@@ -25,4 +26,5 @@ class QtNativeAccessibility
     static native boolean collapse(int objectId);
 
     static native boolean populateNode(int objectId, AccessibilityNodeInfo node);
+    static native boolean populateScrollEvent(int objectId, AccessibilityEvent event);
 }

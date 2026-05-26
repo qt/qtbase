@@ -47,6 +47,13 @@ namespace QtAndroidAccessibility
     static jmethodID m_setTextSelectionMethodID = 0;
     static jmethodID m_setRangeInfoMethodID = 0;
     static jmethodID m_setVisibleToUserMethodID = 0;
+    static jmethodID m_setMaxScrollXMethodID = 0;
+    static jmethodID m_setScrollXMethodID = 0;
+    static jmethodID m_setMaxScrollYMethodID = 0;
+    static jmethodID m_setScrollYMethodID = 0;
+    static jmethodID m_setItemCount = 0;
+    static jmethodID m_setFromIndex = 0;
+    static jmethodID m_setToIndex = 0;
 
     static int RANGE_TYPE_INT = 0;
     static int RANGE_TYPE_FLOAT = 0;
@@ -818,6 +825,8 @@ namespace QtAndroidAccessibility
                 info.actions.contains(QAccessibleActionInterface::increaseAction());
         const bool hasDecreaseAction =
                 info.actions.contains(QAccessibleActionInterface::decreaseAction());
+        const bool scrollableRole =
+                info.role == QAccessible::ScrollBar || info.role == QAccessible::List;
 
         if (info.hasTextSelection && m_setTextSelectionMethodID) {
             env->CallVoidMethod(node, m_setTextSelectionMethodID, info.selectionStart,
@@ -868,7 +877,8 @@ namespace QtAndroidAccessibility
         if (m_setHeadingMethodID)
             env->CallVoidMethod(node, m_setHeadingMethodID, info.role == QAccessible::Heading);
         env->CallVoidMethod(node, m_setVisibleToUserMethodID, !info.state.invisible);
-        env->CallVoidMethod(node, m_setScrollableMethodID, hasIncreaseAction || hasDecreaseAction);
+        env->CallVoidMethod(node, m_setScrollableMethodID,
+                            hasIncreaseAction || hasDecreaseAction || scrollableRole);
         env->CallVoidMethod(node, m_setClickableMethodID, hasClickableAction || info.role == QAccessible::Link);
 
         // Add ACTION_CLICK
@@ -903,6 +913,68 @@ namespace QtAndroidAccessibility
         return true;
     }
 
+    struct ScrollEventInfo
+    {
+        bool isValid = false;
+        bool isIndexed;
+        QSizeF contentSize;
+        QPointF position;
+        QSizeF viewportSize;
+    };
+
+    static ScrollEventInfo populateScrollEvent_helper(int objectId)
+    {
+        QAccessibleInterface *iface = interfaceFromId(objectId);
+        if (!iface || !iface->isValid())
+            return { };
+
+        auto *viewportIface = iface->viewportInterface();
+        if (!viewportIface)
+            return { };
+
+        ScrollEventInfo info;
+        info.isValid = true;
+        info.isIndexed = viewportIface->isIndexed();
+        info.contentSize = viewportIface->contentSize();
+        info.position = viewportIface->position();
+        info.viewportSize = viewportIface->viewportSize();
+
+        return info;
+    }
+
+    static jboolean populateScrollEvent(JNIEnv *env, jobject /*thiz*/, jint objectId, jobject event)
+    {
+        ScrollEventInfo info;
+        if (m_accessibilityContext) {
+            runInObjectContext(
+                    m_accessibilityContext,
+                    [objectId]() { return populateScrollEvent_helper(objectId); }, &info);
+        }
+
+        if (!info.isValid)
+            return false;
+
+        if (info.isIndexed) {
+            const int itemCount = std::max(info.contentSize.width(), info.contentSize.height());
+            env->CallVoidMethod(event, m_setItemCount, itemCount);
+            const int fromIndex = std::max(info.position.x(), info.position.y()) * itemCount;
+            env->CallVoidMethod(event, m_setFromIndex, fromIndex);
+            const int toIndex = fromIndex
+                    + std::min(info.viewportSize.width(), info.viewportSize.height() * itemCount);
+            env->CallVoidMethod(event, m_setToIndex, toIndex);
+
+        } else {
+            env->CallVoidMethod(event, m_setScrollXMethodID,
+                                (int)(info.position.x() * info.contentSize.width()));
+            env->CallVoidMethod(event, m_setMaxScrollXMethodID, (int)info.contentSize.width());
+            env->CallVoidMethod(event, m_setScrollYMethodID,
+                                (int)(info.position.y() * info.contentSize.height()));
+            env->CallVoidMethod(event, m_setMaxScrollYMethodID, (int)info.contentSize.height());
+        }
+
+        return true;
+    }
+
     static const JNINativeMethod methods[] = {
         {"setActive","(Z)V",(void*)setActive},
         {"childIdListForAccessibleObject", "(I)[I", (jintArray)childIdListForAccessibleObject},
@@ -912,6 +984,7 @@ namespace QtAndroidAccessibility
         {"screenRect", "(I)Landroid/graphics/Rect;", (jobject)screenRect},
         {"hitTest", "(FF)I", (void*)hitTest},
         {"populateNode", "(ILandroid/view/accessibility/AccessibilityNodeInfo;)Z", (void*)populateNode},
+        {"populateScrollEvent", "(ILandroid/view/accessibility/AccessibilityEvent;)Z", (void*)populateScrollEvent},
         {"clickAction", "(I)Z", (void*)clickAction},
         {"focusAction", "(I)Z", (void*)focusAction},
         {"scrollForward", "(I)Z", (void*)scrollForward},
@@ -968,6 +1041,15 @@ namespace QtAndroidAccessibility
         GET_AND_CHECK_STATIC_METHOD(
                 m_setRangeInfoMethodID, nodeInfoClass, "setRangeInfo",
                 "(Landroid/view/accessibility/AccessibilityNodeInfo$RangeInfo;)V");
+
+        jclass eventClass = env->FindClass("android/view/accessibility/AccessibilityEvent");
+        GET_AND_CHECK_STATIC_METHOD(m_setMaxScrollXMethodID, eventClass, "setMaxScrollX", "(I)V");
+        GET_AND_CHECK_STATIC_METHOD(m_setScrollXMethodID, eventClass, "setScrollX", "(I)V");
+        GET_AND_CHECK_STATIC_METHOD(m_setMaxScrollYMethodID, eventClass, "setMaxScrollY", "(I)V");
+        GET_AND_CHECK_STATIC_METHOD(m_setScrollYMethodID, eventClass, "setScrollY", "(I)V");
+        GET_AND_CHECK_STATIC_METHOD(m_setItemCount, eventClass, "setItemCount", "(I)V");
+        GET_AND_CHECK_STATIC_METHOD(m_setFromIndex, eventClass, "setFromIndex", "(I)V");
+        GET_AND_CHECK_STATIC_METHOD(m_setToIndex, eventClass, "setToIndex", "(I)V");
 
         jclass rangeInfoClass =
                 env->FindClass("android/view/accessibility/AccessibilityNodeInfo$RangeInfo");
