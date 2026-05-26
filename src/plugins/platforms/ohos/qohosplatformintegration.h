@@ -111,8 +111,6 @@ private:
 
     QScopedPointer<QOhosPlatformNativeInterface> m_ohosPlatformNativeInterface;
 
-    friend class QOhosPlatformScreen;
-
     QScopedPointer<QPlatformInputContext> m_platformInputContext;
     std::unique_ptr<QOhosInputMethodEventHandler> m_ohosInputMethodEventHandler;
 
