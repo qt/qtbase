@@ -296,6 +296,35 @@ Qt::HANDLE QThread::currentThreadIdImpl() noexcept
 
 int QThread::idealThreadCount() noexcept
 {
+    // Since Windows 11 & Server 2022, the process defaults to affinity to all
+    // processor groups, even though each thread is limited to a specific
+    // processor group. Prior to that, the application starts with affinity to
+    // a specific group but the process becomes multi-group if the application
+    // changes any thread's affinity to another group.
+    //
+    // https://learn.microsoft.com/en-us/windows/win32/procthread/processor-groups#behavior-starting-with-windows-11-and-windows-server-2022
+    auto countArray = [](QSpan<const USHORT> groups) {
+        int total = 0;
+        for (USHORT group : groups)
+            total += GetActiveProcessorCount(group);
+        return total;
+    };
+
+    // Typical case: all but the largest systems will fit this array
+    // Note: this API has been around since Windows 7.
+    USHORT groups[16];
+    USHORT groupCount = std::size(groups);
+    if (Q_LIKELY(GetProcessGroupAffinity(HANDLE(-1), &groupCount, groups))) {
+        return countArray({ groups, groupCount });
+    } else if (groupCount > std::size(groups)) {
+        // use a larger buffer
+        auto buffer = static_cast<USHORT *>(alloca(sizeof(USHORT) * groupCount));
+        if (GetProcessGroupAffinity(HANDLE(-1), &groupCount, buffer))
+            return countArray({ buffer, groupCount });
+    }
+
+    // The new API failed, for some reason (it shouldn't have!). Fall back to
+    // the oldest of APIs. Note this may be limited to 64 logical processors.
     SYSTEM_INFO sysinfo;
     GetSystemInfo(&sysinfo);
     return sysinfo.dwNumberOfProcessors;
