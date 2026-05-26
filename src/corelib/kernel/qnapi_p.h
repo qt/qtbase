@@ -90,7 +90,7 @@ class Promise;
 class ValueWrapper
 {
 public:
-    template<typename T>
+    template<typename T, std::enable_if_t<!std::is_same<std::decay_t<T>, ValueWrapper>::value, int> = 0>
     ValueWrapper(T &&inputValue);
 
     Napi::Value mapToValue(napi_env env) const;
@@ -774,7 +774,7 @@ getOptionalPropOrEmptyImpl(const Napi::Object &optObj, const Napi::Name &propNam
 
 }
 
-template<typename T>
+template<typename T, std::enable_if_t<!std::is_same<std::decay_t<T>, ValueWrapper>::value, int>>
 ValueWrapper::ValueWrapper(T &&inputValue)
     : m_valueFactory(
         [inputValue = std::forward<T>(inputValue)](napi_env env) {
