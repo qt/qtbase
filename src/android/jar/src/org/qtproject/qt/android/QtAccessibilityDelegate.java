@@ -373,6 +373,9 @@ class QtAccessibilityDelegate extends View.AccessibilityDelegate
         String description = QtNativeAccessibility.descriptionForAccessibleObject(virtualViewId);
         event.setContentDescription(addLocaleSpan(virtualViewId, description));
 
+        if (eventType == AccessibilityEvent.TYPE_VIEW_SCROLLED)
+            QtNativeAccessibility.populateScrollEvent(virtualViewId, event);
+
         if (event.getText().isEmpty() && TextUtils.isEmpty(event.getContentDescription()))
             Log.w(TAG, "AccessibilityEvent with empty description");
 
