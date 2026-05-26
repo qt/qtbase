@@ -456,7 +456,7 @@ bool QObjectPrivate::maybeSignalConnected(uint signalIndex) const
     ConnectionData *cd = connections.loadAcquire();
     if (!cd)
         return false;
-    SignalVector *signalVector = cd->signalVector.loadRelaxed();
+    SignalVector *signalVector = cd->signalVector.loadAcquire();
     if (!signalVector)
         return false;
 
@@ -4273,7 +4273,10 @@ void doActivate(QObject *sender, int signal_index, void **argv)
     if (!argv)
         argv = empty_argv;
 
-    if (!sp->maybeSignalConnected(signal_index)) {
+    bool senderDeleted = false;
+    {
+    QObjectPrivate::ConnectionDataPointer connections(sp->connections.loadAcquire());
+    if (!connections || !sp->maybeSignalConnected(signal_index)) {
         // The possible declarative connection is done, and nothing else is connected
         if (callbacks_enabled && signal_spy_set->signal_begin_callback != nullptr)
             signal_spy_set->signal_begin_callback(sender, signal_index, argv);
@@ -4285,10 +4288,6 @@ void doActivate(QObject *sender, int signal_index, void **argv)
     if (callbacks_enabled && signal_spy_set->signal_begin_callback != nullptr)
         signal_spy_set->signal_begin_callback(sender, signal_index, argv);
 
-    bool senderDeleted = false;
-    {
-    Q_ASSERT(sp->connections.loadRelaxed());
-    QObjectPrivate::ConnectionDataPointer connections(sp->connections.loadAcquire());
     // loadAcquire pairs with the storeRelease in resizeSignalVector(), ensuring
     // that all writes to the new SignalVector's contents are visible here.
     QObjectPrivate::SignalVector *signalVector = connections->signalVector.loadAcquire();
@@ -4416,6 +4415,7 @@ void doActivate(QObject *sender, int signal_index, void **argv)
         if (connections->currentConnectionId.loadRelaxed() == 0)
             senderDeleted = true;
     }
+
     if (!senderDeleted) {
         sp->connections.loadAcquire()->cleanOrphanedConnections(sender);
 
