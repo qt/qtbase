@@ -558,7 +558,7 @@ QDateTimePrivate::ZoneState utcToLocal(qint64 utcMillis)
     return { localMillis, int(localSeconds - epochSeconds), dst };
 }
 
-QString localTimeAbbbreviationAt(qint64 local, QDateTimePrivate::TransitionOptions resolve)
+QString localTimeAbbreviationAt(qint64 local, QDateTimePrivate::TransitionOptions resolve)
 {
     auto use = resolveLocalTime(QRoundingDown::qDiv<MSECS_PER_SEC>(local), resolve);
     if (!use.good)
