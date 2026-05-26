@@ -236,6 +236,7 @@ Q_STATIC_LOGGING_CATEGORY(lcAccessibilityCore, "qt.accessibility.core");
     \value ScrollingStart                   A scrollbar scroll operation is about to start; this may
                                             be caused by a mouse press on the slider handle, for
                                             example.
+    \value ScrollingPositionChanged         The position changed during a scroll operation.
     \value SectionChanged
     \value SelectionAdd                     An item has been added to the selection in an item view.
     \value SelectionRemove                  An item has been removed from an item view selection.

@@ -1382,6 +1382,7 @@ void AtSpiAdaptor::notify(QAccessibleEvent *event)
     case QAccessible::DragDropEnd:
     case QAccessible::ScrollingStart:
     case QAccessible::ScrollingEnd:
+    case QAccessible::ScrollingPositionChanged:
     case QAccessible::MenuCommand:
     case QAccessible::ActionChanged:
     case QAccessible::ActiveDescendantChanged:
