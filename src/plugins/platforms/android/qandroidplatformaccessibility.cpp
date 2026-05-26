@@ -33,7 +33,8 @@ void QAndroidPlatformAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *
         QtAndroidAccessibility::notifyObjectFocus(event->uniqueId());
     } else if (event->type() == QAccessible::ValueChanged) {
         QtAndroidAccessibility::notifyValueChanged(event->uniqueId());
-    } else if (event->type() == QAccessible::ScrollingEnd) {
+    } else if (event->type() == QAccessible::ScrollingEnd
+               || event->type() == QAccessible::ScrollingPositionChanged) {
         QtAndroidAccessibility::notifyScrolledEvent(event->uniqueId());
     } else if (event->type() == QAccessible::NameChanged
                || event->type() == QAccessible::DescriptionChanged) {
