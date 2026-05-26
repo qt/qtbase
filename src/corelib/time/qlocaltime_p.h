@@ -35,7 +35,7 @@ Q_CORE_EXPORT int getUtcOffset(qint64 atMSecsSinceEpoch);
 
 // Support for QDateTime
 QDateTimePrivate::ZoneState utcToLocal(qint64 utcMillis);
-QString localTimeAbbbreviationAt(qint64 local, QDateTimePrivate::TransitionOptions resolve);
+QString localTimeAbbreviationAt(qint64 local, QDateTimePrivate::TransitionOptions resolve);
 QDateTimePrivate::ZoneState mapLocalTime(qint64 local, QDateTimePrivate::TransitionOptions resolve);
 
 struct SystemMillisRange { qint64 min, max; bool minClip, maxClip; };

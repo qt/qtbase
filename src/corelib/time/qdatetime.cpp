@@ -3004,7 +3004,7 @@ QString QDateTimePrivate::localNameAtMillis(qint64 millis, DaylightStatus dst)
     const QDateTimePrivate::TransitionOptions resolve = toTransitionOptions(dst);
     QString abbreviation;
     if (millisInSystemRange(millis, MSECS_PER_DAY)) {
-        abbreviation = QLocalTime::localTimeAbbbreviationAt(millis, resolve);
+        abbreviation = QLocalTime::localTimeAbbreviationAt(millis, resolve);
         if (!abbreviation.isEmpty())
             return abbreviation;
     }
@@ -3024,7 +3024,7 @@ QString QDateTimePrivate::localNameAtMillis(qint64 millis, DaylightStatus dst)
     // Use a time in the system range with the same day-of-week pattern to its year:
     auto fake = millisToWithinRange(millis);
     if (Q_LIKELY(fake.good))
-        return QLocalTime::localTimeAbbbreviationAt(fake.shifted, resolve);
+        return QLocalTime::localTimeAbbreviationAt(fake.shifted, resolve);
 
     // Overflow, apparently.
     return {};
