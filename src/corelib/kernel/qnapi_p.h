@@ -18,6 +18,8 @@
 #include <QtCore/private/qohoslogger_p.h>
 #include <algorithm>
 #include <functional>
+#include <initializer_list>
+#include <iterator>
 #include <memory>
 #include <napi.h>
 #include <string>
@@ -314,7 +316,13 @@ getOptionalPropOrEmpty(const Napi::Object &optObj, const Napi::Name &propName, c
 
 Object makeObject(napi_env env, const std::vector<std::pair<std::string, ValueWrapper>> &namedValues = {});
 
-Array makeArray(napi_env env, const std::vector<ValueWrapper> &values = {});
+Array makeArray(napi_env env, std::initializer_list<ValueWrapper> values = {});
+
+template<typename InputContainer, typename TransFunc>
+Array makeArray(napi_env env, InputContainer &&inputContainer, TransFunc &&transFunc);
+
+template<typename InputContainer>
+Array makeArray(napi_env env, InputContainer &&inputContainer);
 
 template<typename Result = Napi::Value, typename F>
 Result runEscapingHandleScope(napi_env env, F &&func);
@@ -770,6 +778,13 @@ getOptionalPropOrEmptyImpl(const Napi::Object &optObj, const Napi::Name &propNam
                     : baseDesc;
             })
         : T();
+}
+
+template<typename Container, typename Element>
+constexpr decltype(auto) forwardContainerElement(Element &element) noexcept
+{
+    using Result = std::conditional_t<std::is_lvalue_reference<Container>::value, Element &, Element &&>;
+    return static_cast<Result>(element);
 }
 
 }
@@ -1383,15 +1398,38 @@ inline Object makeObject(napi_env env, const std::vector<std::pair<std::string, 
     return obj;
 }
 
-inline Array makeArray(napi_env env, const std::vector<ValueWrapper> &values)
+inline Array makeArray(napi_env env, std::initializer_list<ValueWrapper> values)
 {
-    return details_qnapi_p_h::runEscapingHandleScopeImpl<Napi::Array>(
+    return makeArray<std::initializer_list<ValueWrapper> &>(env, values);
+}
+
+template<typename InputContainer, typename TransFunc>
+Array makeArray(napi_env env, InputContainer &&inputContainer, TransFunc &&transFunc)
+{
+    using namespace details_qnapi_p_h;
+
+    return runEscapingHandleScopeImpl<Napi::Array>(
         env,
         [&]() {
-            auto array = Napi::Array::New(env, values.size());
-            for (std::size_t i = 0; i < values.size(); ++i)
-                array.Set(i, values[i].mapToValue(env));
+            auto containerSize = static_cast<std::size_t>(
+                std::distance(std::begin(inputContainer), std::end(inputContainer)));
+            auto array = Napi::Array::New(env, containerSize);
+            std::size_t i = 0;
+            for (auto &element : inputContainer) {
+                array.Set(i, ValueWrapper(transFunc(forwardContainerElement<InputContainer>(element))).mapToValue(env));
+                ++i;
+            }
             return array;
+        });
+}
+
+template<typename InputContainer>
+Array makeArray(napi_env env, InputContainer &&inputContainer)
+{
+    return makeArray(
+        env, std::forward<InputContainer>(inputContainer),
+        [](auto &&element) -> decltype(auto) {
+            return std::forward<decltype(element)>(element);
         });
 }
 
