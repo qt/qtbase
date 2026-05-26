@@ -4285,7 +4285,9 @@ void doActivate(QObject *sender, int signal_index, void **argv)
     {
     Q_ASSERT(sp->connections.loadRelaxed());
     QObjectPrivate::ConnectionDataPointer connections(sp->connections.loadAcquire());
-    QObjectPrivate::SignalVector *signalVector = connections->signalVector.loadRelaxed();
+    // loadAcquire pairs with the storeRelease in resizeSignalVector(), ensuring
+    // that all writes to the new SignalVector's contents are visible here.
+    QObjectPrivate::SignalVector *signalVector = connections->signalVector.loadAcquire();
 
     const QObjectPrivate::ConnectionList *list;
     if (signal_index < signalVector->count())
