@@ -1186,11 +1186,13 @@ void QOhosWindowProxy::setSupportedWindowModes(const std::set<SupportWindowMode>
                 return;
             }
 
-            std::vector<QNapi::ValueWrapper> jsSupportedWindowModes;
-            for (const auto mode : supportedWindowModes)
-                jsSupportedWindowModes.push_back(jsState.mapOhosEnumToJs(mode));
+            auto jsSupportedWindowModes = QNapi::makeArray(
+                jsState.env(), supportedWindowModes,
+                [&](auto mode) {
+                    return jsState.mapOhosEnumToJs(mode);
+                });
 
-            qUiAbilityPeer->windowStage().evalToPromiseOrRejectOnThrow("setSupportedWindowModes(*)", {QNapi::makeArray(jsState.env(), jsSupportedWindowModes)})
+            qUiAbilityPeer->windowStage().evalToPromiseOrRejectOnThrow("setSupportedWindowModes(*)", {jsSupportedWindowModes})
                 .onCatch(QtOhos::makeErrorLoggingJsCallback("setSupportedWindowModes()"))
                 .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
         },
