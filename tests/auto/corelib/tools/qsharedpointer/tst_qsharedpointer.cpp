@@ -776,11 +776,11 @@ void tst_QSharedPointer::downCast()
         // copy construction
         QSharedPointer<DerivedData> ptr = QSharedPointer<DerivedData>(new DerivedData);
         QSharedPointer<DerivedData> copy = ptr;
-        QSharedPointer<Data> baseptr = qSharedPointerCast<Data>(ptr);
+        QSharedPointer<Data> baseptr = qSharedPointerStaticCast<Data>(ptr);
         QSharedPointer<Data> other;
         QWeakPointer<DerivedData> weak = ptr;
-        QWeakPointer<Data> baseweak = qSharedPointerCast<Data>(ptr);
-        QWeakPointer<Data> baseweak2 = qSharedPointerCast<Data>(weak);
+        QWeakPointer<Data> baseweak = qSharedPointerStaticCast<Data>(ptr);
+        QWeakPointer<Data> baseweak2 = qSharedPointerStaticCast<Data>(weak);
 
         QVERIFY(ptr == baseptr);
         QVERIFY(baseptr == ptr);
@@ -793,24 +793,24 @@ void tst_QSharedPointer::downCast()
         QVERIFY(! (other == ptr));
 
         // copy assignments
-        baseptr = qSharedPointerCast<Data>(ptr);
-        baseweak = qSharedPointerCast<Data>(ptr);
+        baseptr = qSharedPointerStaticCast<Data>(ptr);
+        baseweak = qSharedPointerStaticCast<Data>(ptr);
         baseweak2 = baseweak;
 
         // move assignments (these don't actually move)
-        baseptr = qSharedPointerCast<Data>(std::move(ptr));
+        baseptr = qSharedPointerStaticCast<Data>(std::move(ptr));
         ptr = copy;
-        baseweak = qSharedPointerCast<Data>(std::move(ptr));
+        baseweak = qSharedPointerStaticCast<Data>(std::move(ptr));
         ptr = copy;
-        baseweak2 = qSharedPointerCast<Data>(std::move(baseweak));
+        baseweak2 = qSharedPointerStaticCast<Data>(std::move(baseweak));
 
         // move construction (these don't actually move)
         ptr = copy;
-        QSharedPointer<Data> ptr3(qSharedPointerCast<Data>(std::move(ptr)));
+        QSharedPointer<Data> ptr3(qSharedPointerStaticCast<Data>(std::move(ptr)));
         ptr = copy;
-        QWeakPointer<Data> baseweak3(qSharedPointerCast<Data>(std::move(ptr)));
+        QWeakPointer<Data> baseweak3(qSharedPointerStaticCast<Data>(std::move(ptr)));
         ptr = copy;
-        QWeakPointer<Data> baseweak4(qSharedPointerCast<Data>(std::move(weak)));
+        QWeakPointer<Data> baseweak4(qSharedPointerStaticCast<Data>(std::move(weak)));
     }
 
     {
@@ -892,7 +892,7 @@ void tst_QSharedPointer::upCast()
     QSharedPointer<Data> baseptr = QSharedPointer<Data>(new DerivedData);
 
     {
-        QSharedPointer<DerivedData> derivedptr = qSharedPointerCast<DerivedData>(baseptr);
+        QSharedPointer<DerivedData> derivedptr = qSharedPointerStaticCast<DerivedData>(baseptr);
         QVERIFY(baseptr == derivedptr);
         QCOMPARE(static_cast<Data *>(derivedptr.data()), baseptr.data());
     }
@@ -908,7 +908,7 @@ void tst_QSharedPointer::upCast()
 
     {
         QWeakPointer<Data> weakptr = baseptr;
-        QSharedPointer<DerivedData> derivedptr = qSharedPointerCast<DerivedData>(weakptr);
+        QSharedPointer<DerivedData> derivedptr = qSharedPointerStaticCast<DerivedData>(weakptr);
         QVERIFY(baseptr == derivedptr);
         QCOMPARE(static_cast<Data *>(derivedptr.data()), baseptr.data());
     }
@@ -1204,7 +1204,7 @@ void tst_QSharedPointer::differentPointers()
             QSKIP("Broken compiler");
 
         QSharedPointer<DiffPtrDerivedData> ptr = QSharedPointer<DiffPtrDerivedData>(aData);
-        QSharedPointer<Data> baseptr = qSharedPointerCast<Data>(ptr);
+        QSharedPointer<Data> baseptr = qSharedPointerStaticCast<Data>(ptr);
         qDebug("naked: orig: %p; base: %p (%s) -- QSharedPointer: orig: %p; base %p (%s) -- result: %s",
                aData, aBase, aData == aBase ? "equal" : "not equal",
                ptr.data(), baseptr.data(), ptr.data() == baseptr.data() ? "equal" : "not equal",
@@ -1244,7 +1244,7 @@ void tst_QSharedPointer::differentPointers()
         QVERIFY(*reinterpret_cast<quintptr *>(&aData) != *reinterpret_cast<quintptr *>(&aBase));
 
         QSharedPointer<Data> baseptr = QSharedPointer<Data>(aData);
-        QSharedPointer<DiffPtrDerivedData> ptr = qSharedPointerCast<DiffPtrDerivedData>(baseptr);
+        QSharedPointer<DiffPtrDerivedData> ptr = qSharedPointerStaticCast<DiffPtrDerivedData>(baseptr);
         QVERIFY(ptr == baseptr);
         QVERIFY(ptr.data() == baseptr.data());
         QVERIFY(ptr == aBase);
@@ -1279,7 +1279,7 @@ void tst_QSharedPointer::virtualBaseDifferentPointers()
         QVERIFY(*reinterpret_cast<quintptr *>(&aData) != *reinterpret_cast<quintptr *>(&aBase));
 
         QSharedPointer<VirtualDerived> ptr = QSharedPointer<VirtualDerived>(aData);
-        QSharedPointer<Data> baseptr = qSharedPointerCast<Data>(ptr);
+        QSharedPointer<Data> baseptr = qSharedPointerStaticCast<Data>(ptr);
         QVERIFY(ptr == baseptr);
         QVERIFY(ptr.data() == baseptr.data());
         QVERIFY(ptr == aBase);
@@ -1568,7 +1568,7 @@ void tst_QSharedPointer::constCorrectness()
         const QSharedPointer<Data> cptr = ptr;
 
         ptr = cptr;
-        QSharedPointer<Data> other = qSharedPointerCast<Data>(cptr);
+        QSharedPointer<Data> other = qSharedPointerStaticCast<Data>(cptr);
 
 #ifndef QT_NO_DYNAMIC_CAST
         other = qSharedPointerDynamicCast<Data>(cptr);
@@ -2348,7 +2348,7 @@ void tst_QSharedPointer::invalidConstructs_data()
     QTest::newRow("const-dropping-static-cast")
         << &QTest::QExternalTest::tryCompileFail
         << "QSharedPointer<const Data> baseptr = QSharedPointer<const Data>(new Data);\n"
-        "qSharedPointerCast<DerivedData>(baseptr);";
+        "qSharedPointerStaticCast<DerivedData>(baseptr);";
 #ifndef QTEST_NO_RTTI
     QTest::newRow("const-dropping-dynamic-cast")
         << &QTest::QExternalTest::tryCompileFail
@@ -2402,7 +2402,7 @@ void tst_QSharedPointer::invalidConstructs_data()
     QTest::newRow("invalid-cast1")
         << &QTest::QExternalTest::tryCompileFail
         << "QSharedPointer<Data> ptr1;\n"
-           "QSharedPointer<int> ptr2 = qSharedPointerCast<int>(ptr1);";
+           "QSharedPointer<int> ptr2 = qSharedPointerStaticCast<int>(ptr1);";
 #ifndef QTEST_NO_RTTI
     QTest::newRow("invalid-cast2")
         << &QTest::QExternalTest::tryCompileFail

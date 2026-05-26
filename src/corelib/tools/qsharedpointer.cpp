@@ -625,7 +625,7 @@
     qualifiers as the template of this object, or the cast will
     fail. Use constCast() if you need to drop those qualifiers.
 
-    \sa dynamicCast(), constCast(), qSharedPointerCast()
+    \sa dynamicCast(), constCast(), qSharedPointerStaticCast()
 */
 
 /*!
@@ -635,7 +635,7 @@
 
     \include qsharedpointer.cpp {cast-overload-for-this}
 
-    \sa dynamicCast(), constCast(), qSharedPointerCast()
+    \sa dynamicCast(), constCast(), qSharedPointerStaticCast()
 */
 
 /*!
@@ -1224,6 +1224,55 @@
 */
 
 /*!
+    \fn template <class X, class T> QSharedPointer<X> qSharedPointerStaticCast(const QSharedPointer<T> &other)
+    \since 6.12
+    \relates QSharedPointer
+
+    Returns a shared pointer to the pointer held by \a other, cast to
+    type \tt X.  The types \tt T and \tt X must belong to one
+    hierarchy for the \tt static_cast to succeed.
+
+    Note that \tt X must have the same cv-qualifiers (\tt const and
+    \tt volatile) that \tt T has, or the code will fail to
+    compile. Use qSharedPointerConstCast to cast away the constness.
+
+    \sa QSharedPointer::staticCast(), qSharedPointerDynamicCast(), qSharedPointerConstCast()
+*/
+
+/*!
+    \fn template <class X, class T> QSharedPointer<X> qSharedPointerStaticCast(QSharedPointer<T> &&other)
+    \relates QSharedPointer
+    \since 6.12
+    \overload qSharedPointerStaticCast(const QSharedPointer<T> &other)
+
+    \include qsharedpointer.cpp {cast-overload-for-arg} {other}
+
+    \sa QSharedPointer::staticCast(), qSharedPointerDynamicCast(), qSharedPointerConstCast()
+*/
+
+/*!
+    \fn template <class X, class T> QSharedPointer<X> qSharedPointerStaticCast(const QWeakPointer<T> &other)
+    \since 6.12
+    \relates QSharedPointer
+    \relates QWeakPointer
+
+    Returns a shared pointer to the pointer held by \a other, cast to
+    type \tt X.  The types \tt T and \tt X must belong to one
+    hierarchy for the \tt static_cast to succeed.
+
+    The \a other object is converted first to a strong reference. If
+    that conversion fails (because the object it's pointing to has
+    already been deleted), this function returns a null
+    QSharedPointer.
+
+    Note that \tt X must have the same cv-qualifiers (\tt const and
+    \tt volatile) that \tt T has, or the code will fail to
+    compile. Use qSharedPointerConstCast to cast away the constness.
+
+    \sa QWeakPointer::toStrongRef(), qSharedPointerDynamicCast(), qSharedPointerConstCast()
+*/
+
+/*!
     \fn template <class X, class T> QSharedPointer<X> qSharedPointerDynamicCast(const QSharedPointer<T> &src)
     \relates QSharedPointer
 
@@ -1236,7 +1285,7 @@
     \tt volatile) that \tt T has, or the code will fail to
     compile. Use qSharedPointerConstCast to cast away the constness.
 
-    \sa QSharedPointer::dynamicCast(), qSharedPointerCast(), qSharedPointerConstCast()
+    \sa QSharedPointer::dynamicCast(), qSharedPointerStaticCast(), qSharedPointerConstCast()
 */
 
 /*!
@@ -1247,7 +1296,7 @@
 
     \include qsharedpointer.cpp {cast-overload-for-arg} {src}
 
-    \sa QSharedPointer::dynamicCast(), qSharedPointerCast(), qSharedPointerConstCast()
+    \sa QSharedPointer::dynamicCast(), qSharedPointerStaticCast(), qSharedPointerConstCast()
 */
 
 /*!
@@ -1269,7 +1318,7 @@
     \tt volatile) that \tt T has, or the code will fail to
     compile. Use qSharedPointerConstCast to cast away the constness.
 
-    \sa QWeakPointer::toStrongRef(), qSharedPointerCast(), qSharedPointerConstCast()
+    \sa QWeakPointer::toStrongRef(), qSharedPointerStaticCast(), qSharedPointerConstCast()
 */
 
 /*!
@@ -1281,7 +1330,7 @@
     hierarchy for the \tt const_cast to succeed. The \tt const and \tt
     volatile differences between \tt T and \tt X are ignored.
 
-    \sa QSharedPointer::constCast(), qSharedPointerCast(), qSharedPointerDynamicCast()
+    \sa QSharedPointer::constCast(), qSharedPointerStaticCast(), qSharedPointerDynamicCast()
 */
 
 /*!
@@ -1292,7 +1341,7 @@
 
     \include qsharedpointer.cpp {cast-overload-for-arg} {src}
 
-    \sa QSharedPointer::constCast(), qSharedPointerCast(), qSharedPointerDynamicCast()
+    \sa QSharedPointer::constCast(), qSharedPointerStaticCast(), qSharedPointerDynamicCast()
 */
 
 /*!
@@ -1310,7 +1359,7 @@
     already been deleted), this function returns a null
     QSharedPointer.
 
-    \sa QWeakPointer::toStrongRef(), qSharedPointerCast(), qSharedPointerDynamicCast()
+    \sa QWeakPointer::toStrongRef(), qSharedPointerStaticCast(), qSharedPointerDynamicCast()
 */
 
 /*!
@@ -1329,7 +1378,7 @@
     \tt volatile) that \tt T has, or the code will fail to
     compile. Use qSharedPointerConstCast to cast away the constness.
 
-    \sa QSharedPointer::objectCast(), qSharedPointerCast(), qSharedPointerConstCast()
+    \sa QSharedPointer::objectCast(), qSharedPointerStaticCast(), qSharedPointerConstCast()
 */
 
 /*!
@@ -1340,7 +1389,7 @@
 
     \include qsharedpointer.cpp {cast-overload-for-arg} {src}
 
-    \sa QSharedPointer::objectCast(), qSharedPointerCast(), qSharedPointerConstCast()
+    \sa QSharedPointer::objectCast(), qSharedPointerStaticCast(), qSharedPointerConstCast()
 */
 
 /*!
@@ -1418,7 +1467,7 @@
     \tt volatile) that \tt T has, or the code will fail to
     compile. Use qSharedPointerConstCast to cast away the constness.
 
-    \sa QWeakPointer::toStrongRef(), qSharedPointerCast(), qSharedPointerConstCast()
+    \sa QWeakPointer::toStrongRef(), qSharedPointerStaticCast(), qSharedPointerConstCast()
 */
 
 
