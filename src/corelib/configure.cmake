@@ -1161,6 +1161,13 @@ qt_feature("itemmodel" PUBLIC
     PURPOSE "Provides the item model for item views"
 )
 qt_feature_definition("itemmodel" "QT_NO_ITEMMODEL" NEGATE VALUE "1")
+qt_feature("rangemodel" PUBLIC
+    SECTION "ItemViews"
+    LABEL "QRangeModel"
+    PURPOSE "Provides the range model for item views"
+    CONDITION QT_FEATURE_itemmodel
+)
+qt_feature_definition("rangemodel" "QT_NO_RANGEMODEL" NEGATE VALUE "1")
 qt_feature("proxymodel" PUBLIC
     SECTION "ItemViews"
     LABEL "QAbstractProxyModel"

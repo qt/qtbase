@@ -3,9 +3,11 @@
 
 add_subdirectory(qstringlistmodel)
 if(TARGET Qt::Gui)
-    add_subdirectory(qrangemodel)
-    add_subdirectory(qrangemodeladapter)
     add_subdirectory(qabstractitemmodel)
+    if(QT_FEATURE_rangemodel)
+        add_subdirectory(qrangemodel)
+        add_subdirectory(qrangemodeladapter)
+    endif()
     if(QT_FEATURE_proxymodel)
         add_subdirectory(qabstractproxymodel)
         add_subdirectory(qconcatenatetablesproxymodel)
