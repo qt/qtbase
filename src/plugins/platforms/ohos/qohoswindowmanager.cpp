@@ -28,15 +28,6 @@ struct FilePickerResult
     int selectedIndex;
 };
 
-QNapi::Array mapToNapiArray(napi_env env, QStringList qstrings)
-{
-    std::vector<QNapi::ValueWrapper> stringsValueWrappers;
-    std::transform(
-        qstrings.begin(), qstrings.end(),
-        std::back_inserter(stringsValueWrappers), std::mem_fn(&QString::toStdString));
-    return QNapi::makeArray(env, stringsValueWrappers);
-}
-
 std::shared_ptr<QtOhos::QAbilityPeer> getQAbilityPeerForOptInstanceId(
     QtOhos::JsState &jsState, QOhosOptional<std::string> optQAbilityInstanceId)
 {
@@ -144,7 +135,7 @@ void showFileDialogOpen(
                 env,
                 {
                     {"maxSelectNumber", resultMultiplicity == ResultMultiplicity::SINGLE ? 1 : ohosMaxValueForMaxSelectNumber},
-                    {"fileSuffixFilters", mapToNapiArray(env, filters)},
+                    {"fileSuffixFilters", QNapi::makeArray(env, filters, std::mem_fn(&QString::toStdString))},
                     {"defaultFilePathUri", QOhosPlatformServices::mapPathToOhosUriInJsThread(defaultPath.toStdString())},
                     {"selectMode", jsState.mapOhosEnumToJs(documentSelectMode)},
                 });
@@ -183,11 +174,11 @@ void showFileDialogSave(
             auto *env = jsState.env();
             auto documentSaveOptions = QNapi::Object::New(env);
             if (!newFileNames.isEmpty())
-                documentSaveOptions.Set("newFileNames", mapToNapiArray(env, newFileNames));
+                documentSaveOptions.Set("newFileNames", QNapi::makeArray(env, newFileNames, std::mem_fn(&QString::toStdString)));
             if (!defaultFilePath.isEmpty())
                 documentSaveOptions.Set("defaultFilePathUri", QOhosPlatformServices::mapPathToOhosUriInJsThread(defaultFilePath.toStdString()));
             if (!fileSuffixChoices.isEmpty())
-                documentSaveOptions.Set("fileSuffixChoices", mapToNapiArray(env, fileSuffixChoices));
+                documentSaveOptions.Set("fileSuffixChoices", QNapi::makeArray(env, fileSuffixChoices, std::mem_fn(&QString::toStdString)));
 
             constexpr auto minSupportedAutoCreateEmptyFilePropertyOhosSdkApiVersion = 23;
             if (QOhosDeviceInfo::sdkApiVersion() >= minSupportedAutoCreateEmptyFilePropertyOhosSdkApiVersion)

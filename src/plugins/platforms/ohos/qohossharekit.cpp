@@ -134,11 +134,13 @@ QNapi::Object makeShareKitControllerOptionsObject(
     }
 
     if (controllerOptions.excludedAbilities.hasValue()) {
-        std::vector<QNapi::ValueWrapper> jsExcludedAbilities;
-        for (auto excludedAbilityType : controllerOptions.excludedAbilities.value())
-            jsExcludedAbilities.push_back(jsState.mapOhosEnumToJs(excludedAbilityType));
         controllerOptionsObject.set(
-            "excludedAbilities", QNapi::makeArray(jsState.env(), jsExcludedAbilities));
+            "excludedAbilities",
+            QNapi::makeArray(
+                jsState.env(), controllerOptions.excludedAbilities.value(),
+                [&](auto excludedAbilityType) {
+                    return jsState.mapOhosEnumToJs(excludedAbilityType);
+                }));
     }
 
     return controllerOptionsObject;
