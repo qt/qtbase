@@ -543,6 +543,32 @@ emscripten::val QWasmAccessibility::createHtmlElement(QAccessibleInterface *ifac
             setAttribute(element, "tabindex", "0");
             setAttribute(element, "role", "listitem");
         } break;
+        case QAccessible::ProgressBar: {
+            element = document.call<emscripten::val>("createElement", std::string("div"));
+            setAttribute(element, "tabindex", "0");
+            setAttribute(element, "role", "progressbar");
+            setAttribute(element, "aria-live", "polite");
+            if (auto valueInterface = iface->valueInterface()) {
+                const auto name = iface->text(QAccessible::Name).toStdString();
+                const auto min = valueInterface->minimumValue().toInt();
+                const auto max = valueInterface->maximumValue().toInt();
+                const auto cur = valueInterface->currentValue().toInt();
+
+                // from qprogressbar.cpp
+                const auto totalSteps = qint64(max) - min;
+                const auto progress = (totalSteps == 0) ? 0 : static_cast<int>((qint64(cur) - min) * 100.0 / totalSteps);
+
+                if (cur <= min)
+                    setAttribute(element, "aria-valuenow", "0");
+                else if (cur >= max)
+                    setAttribute(element, "aria-valuenow", "100");
+                else
+                    setAttribute(element, "aria-valuenow", std::to_string(progress));
+                setAttribute(element, "aria-valuemin", "0");
+                setAttribute(element, "aria-valuemax", "100");
+                setAttribute(element, "aria-label", name);
+            }
+        } break;
         default:
             qCDebug(lcQpaAccessibility) << "TODO: createHtmlElement() handle" << iface->role();
             element = document.call<emscripten::val>("createElement", std::string("div"));
@@ -1214,6 +1240,41 @@ void QWasmAccessibility::handleAnnouncement(QAccessibleInterface *iface,
     element.call<void>("ariaNotify", message, options);
 }
 
+void QWasmAccessibility::handleProgressBarUpdate(QAccessibleEvent *event)
+{
+    auto iface = event->accessibleInterface();
+    auto valueInterface = iface->valueInterface();
+    auto element = getHtmlElement(iface);
+
+    switch (event->type()) {
+    case QAccessible::Focus:
+    case QAccessible::NameChanged: {
+        const auto name = iface->text(QAccessible::Name).toStdString();
+        setAttribute(element, "aria-label", name);
+    } // fallthrough
+    case QAccessible::ValueChanged: {
+        if (valueInterface) {
+            const auto min = valueInterface->minimumValue().toInt();
+            const auto max = valueInterface->maximumValue().toInt();
+            const auto cur = valueInterface->currentValue().toInt();
+
+            // from qprogressbar.cpp
+            const auto totalSteps = qint64(max) - min;
+            const auto progress = (totalSteps == 0) ? 0 : static_cast<int>((qint64(cur) - min) * 100.0 / totalSteps);
+
+            if (cur <= min)
+                setAttribute(element, "aria-valuenow", "0");
+            else if (cur >= max)
+                setAttribute(element, "aria-valuenow", "100");
+            else
+                setAttribute(element, "aria-valuenow", std::to_string(progress));
+        }
+    } break;
+    default: {
+    } break;
+    } /* end-switch */
+}
+
 void QWasmAccessibility::createObject(QAccessibleInterface *iface)
 {
     if (getHtmlElement(iface).isUndefined())
@@ -1446,6 +1507,9 @@ void QWasmAccessibility::handleUpdateByInterfaceRole(QAccessibleEvent *event)
     break;
     case QAccessible::Grouping:
         handleGroupBoxUpdate(event);
+    break;
+    case QAccessible::ProgressBar:
+        handleProgressBarUpdate(event);
     break;
     default:
         qCDebug(lcQpaAccessibility) << "TODO: implement notifyAccessibilityUpdate for role" << iface->role();

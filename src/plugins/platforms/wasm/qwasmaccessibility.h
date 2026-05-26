@@ -99,6 +99,7 @@ private:
     void handleDescriptionChanged(QAccessibleInterface *iface);
     void handleAnnouncement(QAccessibleInterface *iface,
                             QAccessibleAnnouncementEvent *announcementEvent);
+    void handleProgressBarUpdate(QAccessibleEvent *event);
 
     void handleEventFromHtmlElement(const emscripten::val event);
 
