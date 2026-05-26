@@ -70,8 +70,6 @@ void QWasmClipboard::copy(val event)
 
 void QWasmClipboard::paste(val event)
 {
-    event.call<void>("preventDefault"); // prevent browser from handling drop event
-
     QWasmIntegration::get()->getWasmClipboard()->sendClipboardData(event);
 }
 
