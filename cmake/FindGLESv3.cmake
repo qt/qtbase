@@ -3,7 +3,8 @@
 
 include(CheckCXXSourceCompiles)
 
-find_library(GLESv3_LIBRARY NAMES GLESv3 OpenGLES)
+# Many embedded drivers expose ES 3.x via libGLESv2.
+find_library(GLESv3_LIBRARY NAMES GLESv3 OpenGLES GLESv2)
 find_path(GLESv3_INCLUDE_DIR
     NAMES "GLES3/gl3.h" "OpenGLES/ES3/gl.h"
     DOC "The OpenGLES 3 include path"
