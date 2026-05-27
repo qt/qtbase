@@ -70,6 +70,12 @@ struct Options
     QString harmonyOsAppLabel;
     QString harmonyOsAppIcon;
 
+    // SDK versions from qt_set_harmonyos_app_metadata. Substituted into
+    // entry/build-profile.json5. Empty means "leave template default".
+    QString harmonyOsCompatibleSdkVersion;
+    QString harmonyOsTargetSdkVersion;
+    QString harmonyOsCompileSdkVersion;
+
     // Module-level metadata from qt_set_harmonyos_module_metadata.
     QString harmonyOsModuleDescription;
     QStringList harmonyOsModuleDeviceTypes;
@@ -308,6 +314,14 @@ static bool readInputConfiguration(Options *options)
     options->harmonyOsAppVersionName = obj["harmonyos-app-version-name"_L1].toString();
     options->harmonyOsAppLabel = obj["harmonyos-app-label"_L1].toString();
     options->harmonyOsAppIcon = obj["harmonyos-app-icon"_L1].toString();
+
+    // SDK versions for entry/build-profile.json5.
+    options->harmonyOsCompatibleSdkVersion =
+        obj["harmonyos-compatible-sdk-version"_L1].toString();
+    options->harmonyOsTargetSdkVersion =
+        obj["harmonyos-target-sdk-version"_L1].toString();
+    options->harmonyOsCompileSdkVersion =
+        obj["harmonyos-compile-sdk-version"_L1].toString();
 
     // Module-level metadata injected via qt_set_harmonyos_module_metadata.
     options->harmonyOsModuleDescription = obj["harmonyos-module-description"_L1].toString();
@@ -1054,6 +1068,77 @@ static bool customizeTemplate(const Options &options)
             fprintf(stdout, "  Updated module.json5 description\n");
             fprintf(stdout, "  Injected %lld permissions into module.json5\n",
                     static_cast<long long>(transformedPermissions.size()));
+        }
+    }
+
+    // Customize build-profile.json5 with the SDK version metadata. Only fields
+    // the user explicitly set are substituted; others keep the template default.
+    //
+    //   * compatibleSdkVersion is an existing key with a default value -- we
+    //     replace its value via the same regex pattern used in app.json5.
+    //   * targetSdkVersion / compileSdkVersion don't appear in the template by
+    //     default. They are added via comment-style sentinels that the JSON5
+    //     parser ignores when not substituted.
+    {
+        const bool anySdkVersionSet =
+            !options.harmonyOsCompatibleSdkVersion.isEmpty()
+            || !options.harmonyOsTargetSdkVersion.isEmpty()
+            || !options.harmonyOsCompileSdkVersion.isEmpty();
+
+        const QString buildProfilePath =
+            options.outputDirectory + "/build-profile.json5"_L1;
+        QFile buildProfileFile(buildProfilePath);
+        if (anySdkVersionSet && buildProfileFile.exists()) {
+            if (!buildProfileFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+                fprintf(stderr, "Failed to open build-profile.json5 for reading\n");
+                return false;
+            }
+            QString content = QString::fromUtf8(buildProfileFile.readAll());
+            buildProfileFile.close();
+
+            if (!options.harmonyOsCompatibleSdkVersion.isEmpty()) {
+                content.replace(
+                    QRegularExpression(
+                        "\"compatibleSdkVersion\":\\s*\"[^\"]*\""_L1),
+                    "\"compatibleSdkVersion\": \""_L1
+                        + jsonStringEscape(options.harmonyOsCompatibleSdkVersion)
+                        + "\""_L1);
+            }
+
+            const QString targetSentinel = "/* %%INSERT_TARGET_SDK_VERSION%% */"_L1;
+            const QString targetReplacement =
+                options.harmonyOsTargetSdkVersion.isEmpty()
+                    ? QString()
+                    : "\"targetSdkVersion\": \""_L1
+                          + jsonStringEscape(options.harmonyOsTargetSdkVersion)
+                          + "\","_L1;
+            content.replace(targetSentinel, targetReplacement);
+
+            const QString compileSentinel = "/* %%INSERT_COMPILE_SDK_VERSION%% */"_L1;
+            const QString compileReplacement =
+                options.harmonyOsCompileSdkVersion.isEmpty()
+                    ? QString()
+                    : "\"compileSdkVersion\": \""_L1
+                          + jsonStringEscape(options.harmonyOsCompileSdkVersion)
+                          + "\","_L1;
+            content.replace(compileSentinel, compileReplacement);
+
+            if (!buildProfileFile.open(
+                    QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate)) {
+                fprintf(stderr, "Failed to open build-profile.json5 for writing\n");
+                return false;
+            }
+            buildProfileFile.write(content.toUtf8());
+            buildProfileFile.close();
+
+            if (options.verbose) {
+                fprintf(stdout,
+                        "  Updated build-profile.json5 SDK versions"
+                        " (compatible=%s, target=%s, compile=%s)\n",
+                        qPrintable(options.harmonyOsCompatibleSdkVersion),
+                        qPrintable(options.harmonyOsTargetSdkVersion),
+                        qPrintable(options.harmonyOsCompileSdkVersion));
+            }
         }
     }
 
