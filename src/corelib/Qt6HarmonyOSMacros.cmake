@@ -242,6 +242,24 @@ function(_qt_internal_harmonyos_format_deployment_paths target)
         _qt_harmonyos_package_source_dir
             "$<GENEX_EVAL:$<TARGET_PROPERTY:${target},QT_HARMONYOS_PACKAGE_SOURCE_DIR>>"
     )
+
+    # QT_HARMONYOS_EXTRA_PLUGINS items are either CMake plugin target names or
+    # absolute file paths; target names are resolved to $<TARGET_FILE:> here so
+    # the emission helper sees a flat list of paths/genexes.
+    get_target_property(_extra_plugins ${target} QT_HARMONYOS_EXTRA_PLUGINS)
+    set(_resolved_extra_plugins "")
+    if(_extra_plugins AND NOT _extra_plugins STREQUAL "_extra_plugins-NOTFOUND")
+        foreach(item IN LISTS _extra_plugins)
+            if(TARGET ${item})
+                list(APPEND _resolved_extra_plugins "$<TARGET_FILE:${item}>")
+            else()
+                list(APPEND _resolved_extra_plugins "${item}")
+            endif()
+        endforeach()
+    endif()
+    set_target_properties(${target} PROPERTIES
+        _qt_harmonyos_extra_plugins "${_resolved_extra_plugins}"
+    )
 endfunction()
 
 
@@ -533,6 +551,11 @@ function(_qt_internal_harmonyos_generate_deployment_settings target)
         endforeach()
         string(APPEND JSON_CONTENT ",\n    \"project-libraries\": [${PROJECT_LIBS_JSON}]")
     endif()
+
+    # User-supplied extra plugin paths/targets (resolved to $<TARGET_FILE:>
+    # in _qt_internal_harmonyos_format_deployment_paths).
+    _qt_internal_harmonyos_add_deployment_list_property(JSON_CONTENT
+        "harmonyos-extra-plugins" ${target} _qt_harmonyos_extra_plugins)
 
     string(APPEND JSON_CONTENT "\n}\n")
 
