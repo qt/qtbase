@@ -2452,7 +2452,7 @@ function(_qt_internal_process_resource target resourceName)
         endforeach()
     endif()
 
-    if(ANDROID)
+    if(ANDROID OR OHOS)
         if(COMMAND _qt_internal_collect_qml_root_paths)
             _qt_internal_collect_qml_root_paths(${target} ${resource_files})
         endif()

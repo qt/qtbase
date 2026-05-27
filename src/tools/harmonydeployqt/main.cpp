@@ -39,7 +39,7 @@ struct Options
     QString harmonyOsAppBundleName;
     QString sdkRoot;
     QString ndkRoot;
-    QString qmlRootPath;
+    QStringList qmlRootPaths;
     QStringList qmlImportPaths;
     QStringList targetArchs;
 
@@ -230,7 +230,21 @@ static bool readInputConfiguration(Options *options)
     options->harmonyOsAppBundleName = obj["harmonyos-app-bundle-name"_L1].toString();
     options->sdkRoot = obj["sdk-root"_L1].toString();
     options->ndkRoot = obj["ndk-root"_L1].toString();
-    options->qmlRootPath = obj["qml-root-path"_L1].toString();
+    // qml-root-path may be a string (legacy) or an array (current).
+    {
+        const QJsonValue rootPathValue = obj["qml-root-path"_L1];
+        if (rootPathValue.isArray()) {
+            for (const QJsonValue &v : rootPathValue.toArray()) {
+                const QString s = v.toString();
+                if (!s.isEmpty())
+                    options->qmlRootPaths.append(s);
+            }
+        } else {
+            const QString s = rootPathValue.toString();
+            if (!s.isEmpty())
+                options->qmlRootPaths.append(s);
+        }
+    }
 
     // Qt installation directories
     options->qtLibsDirectory = obj["qtLibsDirectory"_L1].toString();
@@ -2077,7 +2091,7 @@ static QList<QmlImportInfo> scanQmlImports(const Options &options)
 {
     QList<QmlImportInfo> imports;
 
-    if (options.qmlRootPath.isEmpty()) {
+    if (options.qmlRootPaths.isEmpty()) {
         if (options.verbose)
             fprintf(stdout,
                     "No QML root path specified, skipping QML import scanning\n");
@@ -2173,15 +2187,19 @@ static QList<QmlImportInfo> scanQmlImports(const Options &options)
         return imports;
     }
 
-    // Build qmlimportscanner command
+    // Build qmlimportscanner command. qmlimportscanner accepts a -rootPath flag
+    // per root, so emit them in order.
     QStringList arguments;
-    arguments << "-rootPath"_L1 << options.qmlRootPath;
+    for (const QString &rootPath : options.qmlRootPaths)
+        arguments << "-rootPath"_L1 << rootPath;
 
     for (const QString &importPath : importPaths)
         arguments << "-importPath"_L1 << importPath;
 
     if (options.verbose) {
-        fprintf(stdout, "  Root path: %s\n", qPrintable(options.qmlRootPath));
+        fprintf(stdout, "  Root paths:\n");
+        for (const QString &rootPath : options.qmlRootPaths)
+            fprintf(stdout, "    %s\n", qPrintable(rootPath));
         fprintf(stdout, "  Import paths:\n");
         for (const QString &path : importPaths)
             fprintf(stdout, "    %s\n", qPrintable(path));
@@ -2270,21 +2288,34 @@ static QList<QmlImportInfo> scanQmlImports(const Options &options)
 
 static bool copyQmlFiles(const Options &options)
 {
-    if (options.qmlRootPath.isEmpty())
+    if (options.qmlRootPaths.isEmpty())
         return true; // Not an error, just no QML files to copy
 
-    if (options.verbose)
-        fprintf(stdout, "Copying QML files from %s\n",
-                qPrintable(options.qmlRootPath));
-
-    // Target directory: entry/src/main/resources/rawfile/qml/
-    QString destDir = options.outputDirectory + "/entry/src/main/resources/rawfile/qml"_L1;
-
-    QDir().mkpath(destDir);
-
-    if (!copyRecursively(options.qmlRootPath, destDir, options.verbose)) {
-        fprintf(stderr, "Failed to copy QML files\n");
+    // Target directory: entry/src/main/resources/rawfile/qml/.
+    //
+    // Multiple roots are merged into the same destination. copyFileIfNewer
+    // only overwrites when the source mtime is newer than the destination,
+    // so in practice the *first* root to land a given file wins. User-set
+    // QT_QML_ROOT_PATH values are emitted before auto-collected roots (see
+    // _qt_internal_harmonyos_format_deployment_paths in Qt6HarmonyOSMacros.cmake),
+    // giving explicit user settings precedence over auto-collected ones on
+    // collision.
+    const QString destDir =
+        options.outputDirectory + "/entry/src/main/resources/rawfile/qml"_L1;
+    if (!QDir().mkpath(destDir)) {
+        fprintf(stderr, "Failed to create QML destination directory: %s\n",
+                qPrintable(destDir));
         return false;
+    }
+
+    for (const QString &rootPath : options.qmlRootPaths) {
+        if (options.verbose)
+            fprintf(stdout, "Copying QML files from %s\n", qPrintable(rootPath));
+
+        if (!copyRecursively(rootPath, destDir, options.verbose)) {
+            fprintf(stderr, "Failed to copy QML files from %s\n", qPrintable(rootPath));
+            return false;
+        }
     }
 
     if (options.verbose)
