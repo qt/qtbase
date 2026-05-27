@@ -170,6 +170,79 @@ function(_qt_internal_harmonyos_collect_extra_libs target output_var)
     set(${output_var} "${result}" PARENT_SCOPE)
 endfunction()
 
+# Append a JSON `"key": "value"` entry (with leading comma + newline) to
+# `${out_var}` for the target's property, evaluated at generate-time via
+# GENEX_EVAL so transitively-set values reach the JSON. Emits nothing if the
+# property is unset or empty.
+function(_qt_internal_harmonyos_add_deployment_property out_var json_key target property)
+    set(property_genex "$<GENEX_EVAL:$<TARGET_PROPERTY:${target},${property}>>")
+    string(APPEND ${out_var}
+        "$<$<BOOL:${property_genex}>:"
+            ",\n    \"${json_key}\": \"${property_genex}\""
+        ">"
+    )
+    set(${out_var} "${${out_var}}" PARENT_SCOPE)
+endfunction()
+
+# Integer variant: emits the value without surrounding quotes. An integer 0
+# is treated as unset (matches the historical semantics of the metadata loop).
+function(_qt_internal_harmonyos_add_deployment_int_property out_var json_key target property)
+    set(property_genex "$<GENEX_EVAL:$<TARGET_PROPERTY:${target},${property}>>")
+    string(APPEND ${out_var}
+        "$<$<BOOL:${property_genex}>:"
+            ",\n    \"${json_key}\": ${property_genex}"
+        ">"
+    )
+    set(${out_var} "${${out_var}}" PARENT_SCOPE)
+endfunction()
+
+# Append a JSON `"key": [ "v1", "v2" ]` entry. The semicolon-delimited list
+# value is joined with $<COMMA> at generate-time. Emits nothing if the
+# property is unset or empty.
+function(_qt_internal_harmonyos_add_deployment_list_property out_var json_key target property)
+    set(property_genex "$<GENEX_EVAL:$<TARGET_PROPERTY:${target},${property}>>")
+    string(APPEND ${out_var}
+        "$<$<BOOL:${property_genex}>:"
+            ",\n    \"${json_key}\": [\"$<JOIN:${property_genex},\"$<COMMA>\">\"]"
+        ">"
+    )
+    set(${out_var} "${${out_var}}" PARENT_SCOPE)
+endfunction()
+
+# Stash CMake-format copies of path-bearing target properties on internal
+# `_qt_harmonyos_native_*` properties so the emission helpers can read them
+# via genex without further escaping. Pre-release contract: users supply
+# CMake-format paths (forward slashes), mirroring the Qt 6.6+ NEW behavior of
+# the Android equivalent (`_qt_internal_android_format_deployment_paths`).
+#
+# qml-root-path concatenates two sources with a `;` glue when both are
+# non-empty:
+#   * QT_QML_ROOT_PATH             -- user-set roots
+#   * _qt_internal_qml_root_path   -- roots auto-collected by
+#       _qt_internal_collect_qml_root_paths when .qml files are added as
+#       resources (populated for OHOS via the corresponding hook in
+#       Qt6CoreMacros.cmake).
+function(_qt_internal_harmonyos_format_deployment_paths target)
+    string(JOIN "" qml_root_path_genex
+        "$<GENEX_EVAL:$<TARGET_PROPERTY:${target},QT_QML_ROOT_PATH>>"
+        "$<"
+            "$<AND:"
+                "$<BOOL:$<GENEX_EVAL:$<TARGET_PROPERTY:${target},QT_QML_ROOT_PATH>>>,"
+                "$<BOOL:$<GENEX_EVAL:$<TARGET_PROPERTY:${target},_qt_internal_qml_root_path>>>"
+            ">:;"
+        ">"
+        "$<GENEX_EVAL:$<TARGET_PROPERTY:${target},_qt_internal_qml_root_path>>"
+    )
+
+    set_target_properties(${target} PROPERTIES
+        _qt_harmonyos_native_qml_import_paths
+            "$<GENEX_EVAL:$<TARGET_PROPERTY:${target},QT_QML_IMPORT_PATH>>"
+        _qt_harmonyos_native_qml_root_paths
+            "${qml_root_path_genex}"
+    )
+endfunction()
+
+
 # Sets default values for HarmonyOS deployment properties if not already set
 function(_qt_internal_set_harmonyos_deployment_defaults target)
     # Set default bundle name: org.qtproject.example.${target_sanitized}
@@ -229,21 +302,33 @@ function(_qt_internal_harmonyos_generate_deployment_settings target)
     # Detect SDK and NDK paths
     _qt_internal_harmonyos_get_sdk_ndk_paths(sdk_root ndk_root)
 
-    # Query QML-related properties from target
-    set(qml_root_path "")
-    set(qml_import_paths "")
-
-    # Check if this target is a QML module
-    get_target_property(qml_module_uri ${target} QT_QML_MODULE_URI)
-    if(qml_module_uri AND NOT qml_module_uri STREQUAL "qml_module_uri-NOTFOUND")
-        # This target is a QML module, query its properties
-        get_target_property(qml_module_target_path ${target} QT_QML_MODULE_TARGET_PATH)
-        if(qml_module_target_path AND
-           NOT qml_module_target_path STREQUAL "qml_module_target_path-NOTFOUND")
-            # Use the QML module's target path
-            set(qml_root_path "${qml_module_target_path}")
+    # Stash JSON-escaped copies of string-typed user-supplied properties on
+    # internal `_qt_harmonyos_native_*` properties. The emission helpers below
+    # substitute property values verbatim into the JSON; an unescaped `"` or
+    # `\` (e.g. in an app LABEL containing quoted text, or a Windows-style
+    # ICON path with backslashes) would otherwise corrupt the JSON.
+    foreach(prop_kv IN ITEMS
+            "QT_HARMONYOS_APP_VENDOR;_qt_harmonyos_native_app_vendor;string"
+            "QT_HARMONYOS_APP_VERSION_NAME;_qt_harmonyos_native_app_version_name;string"
+            "QT_HARMONYOS_APP_LABEL;_qt_harmonyos_native_app_label;string"
+            "QT_HARMONYOS_APP_ICON;_qt_harmonyos_native_app_icon;path"
+            "QT_HARMONYOS_MODULE_DESCRIPTION;_qt_harmonyos_native_module_description;string")
+        list(GET prop_kv 0 _prop)
+        list(GET prop_kv 1 _mirror)
+        list(GET prop_kv 2 _type)
+        get_target_property(_value ${target} ${_prop})
+        if(_value)
+            if(_type STREQUAL "path")
+                file(TO_CMAKE_PATH "${_value}" _value)
+            endif()
+            _qt_internal_json_escape_content("${_value}" _value)
+            set_target_properties(${target} PROPERTIES ${_mirror} "${_value}")
         endif()
-    endif()
+    endforeach()
+
+    # Cache path-bearing properties on internal `_qt_harmonyos_native_*`
+    # properties for the genex-driven emission helpers below.
+    _qt_internal_harmonyos_format_deployment_paths(${target})
 
     # Get binary path (will be a generator expression for multi-config)
     set(BINARY_PATH "$<TARGET_FILE:${target}>")
@@ -378,23 +463,12 @@ function(_qt_internal_harmonyos_generate_deployment_settings target)
         string(APPEND JSON_CONTENT ",\n    \"extra-libs-dirs\": [${_extra_libs_dirs_json}]")
     endif()
 
-    if(qml_root_path)
-        file(TO_CMAKE_PATH "${qml_root_path}" qml_root_path)
-        string(APPEND JSON_CONTENT ",\n    \"qml-root-path\": \"${qml_root_path}\"")
-    endif()
-
-    if(qml_import_paths)
-        # Convert list to JSON array
-        set(QML_IMPORT_PATHS_JSON "")
-        foreach(path ${qml_import_paths})
-            file(TO_CMAKE_PATH "${path}" path)
-            if(QML_IMPORT_PATHS_JSON)
-                string(APPEND QML_IMPORT_PATHS_JSON ", ")
-            endif()
-            string(APPEND QML_IMPORT_PATHS_JSON "\"${path}\"")
-        endforeach()
-        string(APPEND JSON_CONTENT ",\n    \"qml-import-paths\": [${QML_IMPORT_PATHS_JSON}]")
-    endif()
+    # QML root + import paths. Both emitted as JSON arrays so multiple roots /
+    # import paths can be forwarded to qmlimportscanner.
+    _qt_internal_harmonyos_add_deployment_list_property(JSON_CONTENT
+        "qml-root-path" ${target} _qt_harmonyos_native_qml_root_paths)
+    _qt_internal_harmonyos_add_deployment_list_property(JSON_CONTENT
+        "qml-import-paths" ${target} _qt_harmonyos_native_qml_import_paths)
 
     # Collect permissions: the executable's own first (so its entries win
     # for duplicate names), then transitive permissions contributed by Qt

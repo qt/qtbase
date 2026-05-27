@@ -621,13 +621,13 @@ function(qt_internal_add_test name)
         )
 
         qt_internal_extend_target("${name}"
-            CONDITION arg_QMLTEST AND NOT ANDROID AND NOT QT_FORCE_BUILTIN_TESTDATA
+            CONDITION arg_QMLTEST AND NOT ANDROID AND NOT OHOS AND NOT QT_FORCE_BUILTIN_TESTDATA
             DEFINES
                 QUICK_TEST_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
         )
 
         qt_internal_extend_target("${name}"
-            CONDITION arg_QMLTEST AND (ANDROID OR QT_FORCE_BUILTIN_TESTDATA)
+            CONDITION arg_QMLTEST AND (ANDROID OR OHOS OR QT_FORCE_BUILTIN_TESTDATA)
             DEFINES
                 QUICK_TEST_SOURCE_DIR=":/"
         )
