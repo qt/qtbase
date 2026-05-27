@@ -5,6 +5,7 @@
 #include <QApplication>
 #include <QMessageBox>
 #include <QTest>
+#include <QWindow>
 #include <QSplashScreen>
 #include <QScrollBar>
 #include <QProgressDialog>
@@ -15,6 +16,8 @@
 
 #include <QtGui/qpa/qplatformintegration.h>
 #include <QtGui/private/qguiapplication_p.h>
+
+#include <AppKit/AppKit.h>
 
 #include <guitest.h>
 
@@ -29,6 +32,7 @@ private slots:
     void nonModalOrder();
 
     void spinBoxArrowButtons();
+    void adoptedView();
 };
 
 
@@ -202,6 +206,48 @@ void tst_MacGui::spinBoxArrowButtons()
     const QRect lessLocalRect(colorWidget.mapFromGlobal(lessRect.topLeft()), colorWidget.mapFromGlobal(lessRect.bottomRight()));
     const QRect compareRect = lessLocalRect.adjusted(5, 3, -5, -7);
     QCOMPARE(noFocus.copy(compareRect), focus.copy(compareRect));
+}
+
+/*
+    Test that destroying the underlying NSView from outside Qt causes the
+    QWindow platform handle to be cleaned up, and delivers a
+    SurfaceAboutToBeDestroyed event to the QWindow.
+*/
+void tst_MacGui::adoptedView()
+{
+    class SurfaceEventFilter : public QObject
+    {
+    public:
+        bool received = false;
+        bool eventFilter(QObject *, QEvent *event) override
+        {
+            if (event->type() == QEvent::PlatformSurface) {
+                auto *se = static_cast<QPlatformSurfaceEvent *>(event);
+                if (se->surfaceEventType() == QPlatformSurfaceEvent::SurfaceAboutToBeDestroyed)
+                    received = true;
+            }
+            return false;
+        }
+    } filter;
+
+    QWindow window;
+    window.installEventFilter(&filter);
+    {
+        // Make sure no lingering references are around
+        QMacAutoReleasePool pool;
+        window.create();
+        QVERIFY(window.handle());
+    }
+
+    NSView *view = reinterpret_cast<NSView *>(window.winId());
+    QVERIFY(view);
+
+    // Simulate an external owner disposing of the view
+    [view removeFromSuperview];
+    CFRelease(view);
+
+    QTRY_VERIFY(!window.handle());
+    QVERIFY(filter.received);
 }
 
 QTEST_MAIN(tst_MacGui)

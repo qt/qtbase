@@ -21,7 +21,7 @@ endif()
 qt_internal_add_test(tst_macgui
     SOURCES
         guitest.cpp guitest.h
-        tst_macgui.cpp
+        tst_macgui.mm
     NO_PCH_SOURCES
         guitest.cpp # undef QT_NO_FOREACH
     LIBRARIES

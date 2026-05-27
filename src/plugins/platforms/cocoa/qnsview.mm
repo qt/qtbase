@@ -169,6 +169,19 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSViewMenuHelper);
 {
     qCDebug(lcQpaWindow) << "Deallocating" << self;
 
+    if (m_platformWindow && m_platformWindow->window()->handle()) {
+        // If the view is deallocated while the platform window is still alive,
+        // and the corresponding QWindow still knows about the platform window,
+        // it means that someone took ownership of the QNSView and are now
+        // disposing of it, which we want to reflect to the Qt side.
+        qCDebug(lcQpaWindow) << "Platform window is still alive. Assuming"
+            << "external view ownership. Tearing down platform window in response.";
+        // Releasing of the view in ~QCocoaWindow is a noop while being,
+        // deallocated (see objc4/test/bigrc.m), so we avoid clearing the
+        // view here so that destruction still knows about the view
+        m_platformWindow->window()->destroy();
+    }
+
     self.menuHelper = nil;
 
     [[NSNotificationCenter defaultCenter] removeObserver:self];
