@@ -35,21 +35,6 @@ using namespace std::chrono;
 
 #define WAITTIME 1000
 
-// Will try to wait for the condition while allowing event processing
-// for a maximum of 5 seconds.
-#define TRY_WAIT(expr, timedOut) \
-    do { \
-        *timedOut = true; \
-        const int step = 50; \
-        for (int __i = 0; __i < 5000; __i += step) { \
-            if (expr) { \
-                *timedOut = false; \
-                break; \
-            } \
-            QTest::qWait(step); \
-        } \
-    } while(0)
-
 Q_DECLARE_METATYPE(QDir::Filters)
 Q_DECLARE_METATYPE(QFileDevice::Permissions)
 
@@ -346,8 +331,7 @@ bool tst_QFileSystemModel::createFiles(QFileSystemModel *model, const QString &t
 {
     qCDebug(lcFileSystemModel) << (model->rowCount(model->index(test_path))) << existingFileCount << initial_files;
     bool timedOut = false;
-    TRY_WAIT((model->rowCount(model->index(test_path)) == existingFileCount), &timedOut);
-    if (timedOut)
+    if (!QTest::qWaitFor([&]() { return model->rowCount(model->index(test_path)) == existingFileCount; }))
         return false;
 
     QDir dir(test_path);
@@ -413,8 +397,7 @@ QModelIndex tst_QFileSystemModel::prepareTestModelRoot(QFileSystemModel *model,
         return QModelIndex();
 
     bool timedOut = false;
-    TRY_WAIT(model->rowCount(root) == 5, &timedOut);
-    if (timedOut)
+    if (!QTest::qWaitFor([&]() { return model->rowCount(root) == 5; }))
         return QModelIndex();
 
     return root;
