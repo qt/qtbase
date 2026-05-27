@@ -314,7 +314,9 @@ function(_qt_internal_harmonyos_generate_deployment_settings target)
             "QT_HARMONYOS_APP_VERSION_NAME;_qt_harmonyos_native_app_version_name;string"
             "QT_HARMONYOS_APP_LABEL;_qt_harmonyos_native_app_label;string"
             "QT_HARMONYOS_APP_ICON;_qt_harmonyos_native_app_icon;path"
-            "QT_HARMONYOS_MODULE_DESCRIPTION;_qt_harmonyos_native_module_description;string")
+            "QT_HARMONYOS_MODULE_DESCRIPTION;_qt_harmonyos_native_module_description;string"
+            "QT_HARMONYOS_ABILITY_ORIENTATION;_qt_harmonyos_ability_orientation;string"
+        )
         list(GET prop_kv 0 _prop)
         list(GET prop_kv 1 _mirror)
         list(GET prop_kv 2 _type)
@@ -360,47 +362,28 @@ function(_qt_internal_harmonyos_generate_deployment_settings target)
     string(APPEND JSON_CONTENT "    \"harmonyos-app-bundle-name\": \"${bundle_name}\",\n")
     string(APPEND JSON_CONTENT "    \"harmonyos-target-arch\": [${TARGET_ARCHS_JSON}]")
 
-    # App-level metadata set via qt_set_harmonyos_app_metadata; emit only what the
-    # user explicitly set so harmonydeployqt knows to leave the others as the
-    # template default.
-    foreach(prop_kv IN ITEMS
-            "QT_HARMONYOS_APP_VENDOR;harmonyos-app-vendor;string"
-            "QT_HARMONYOS_APP_VERSION_CODE;harmonyos-app-version-code;integer"
-            "QT_HARMONYOS_APP_VERSION_NAME;harmonyos-app-version-name;string"
-            "QT_HARMONYOS_APP_LABEL;harmonyos-app-label;string"
-            "QT_HARMONYOS_APP_ICON;harmonyos-app-icon;path"
-            "QT_HARMONYOS_MODULE_DESCRIPTION;harmonyos-module-description;string"
-            "QT_HARMONYOS_ABILITY_ORIENTATION;harmonyos-ability-orientation;string")
-        list(GET prop_kv 0 prop_name)
-        list(GET prop_kv 1 json_key)
-        list(GET prop_kv 2 json_type)
-        get_target_property(prop_value ${target} ${prop_name})
-        if(prop_value)
-            if(json_type STREQUAL "integer")
-                string(APPEND JSON_CONTENT ",\n    \"${json_key}\": ${prop_value}")
-            else()
-                if(json_type STREQUAL "path")
-                    file(TO_CMAKE_PATH "${prop_value}" prop_value)
-                endif()
-                _qt_internal_json_escape_content("${prop_value}" prop_value)
-                string(APPEND JSON_CONTENT ",\n    \"${json_key}\": \"${prop_value}\"")
-            endif()
-        endif()
-    endforeach()
+    # App-level metadata set via qt_set_harmonyos_app_metadata. Properties are
+    # read via $<TARGET_PROPERTY:> genex so transitively-set values (e.g. from
+    # linked targets) reach the JSON; absent entries leave the template
+    # default in place.
+    _qt_internal_harmonyos_add_deployment_property(JSON_CONTENT
+        "harmonyos-app-vendor" ${target} _qt_harmonyos_native_app_vendor)
+    _qt_internal_harmonyos_add_deployment_int_property(JSON_CONTENT
+        "harmonyos-app-version-code" ${target} QT_HARMONYOS_APP_VERSION_CODE)
+    _qt_internal_harmonyos_add_deployment_property(JSON_CONTENT
+        "harmonyos-app-version-name" ${target} _qt_harmonyos_native_app_version_name)
+    _qt_internal_harmonyos_add_deployment_property(JSON_CONTENT
+        "harmonyos-app-label" ${target} _qt_harmonyos_native_app_label)
+    _qt_internal_harmonyos_add_deployment_property(JSON_CONTENT
+        "harmonyos-app-icon" ${target} _qt_harmonyos_native_app_icon)
 
-    # Module-level deviceTypes is a list; emit as a JSON array of quoted strings.
-    get_target_property(module_device_types ${target} QT_HARMONYOS_MODULE_DEVICE_TYPES)
-    if(module_device_types AND NOT module_device_types STREQUAL "module_device_types-NOTFOUND")
-        set(device_types_json "")
-        foreach(dt IN LISTS module_device_types)
-            if(device_types_json)
-                string(APPEND device_types_json ", ")
-            endif()
-            string(APPEND device_types_json "\"${dt}\"")
-        endforeach()
-        string(APPEND JSON_CONTENT
-            ",\n    \"harmonyos-module-device-types\": [${device_types_json}]")
-    endif()
+    # Module-level metadata.
+    _qt_internal_harmonyos_add_deployment_property(JSON_CONTENT
+        "harmonyos-module-description" ${target} _qt_harmonyos_native_module_description)
+    _qt_internal_harmonyos_add_deployment_list_property(JSON_CONTENT
+        "harmonyos-module-device-types" ${target} QT_HARMONYOS_MODULE_DEVICE_TYPES)
+    _qt_internal_harmonyos_add_deployment_property(JSON_CONTENT
+        "harmonyos-ability-orientation" ${target} _qt_harmonyos_ability_orientation)
 
     if(sdk_root)
         file(TO_CMAKE_PATH "${sdk_root}" sdk_root)
