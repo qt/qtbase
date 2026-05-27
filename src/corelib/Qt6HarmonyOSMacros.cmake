@@ -239,6 +239,8 @@ function(_qt_internal_harmonyos_format_deployment_paths target)
             "$<GENEX_EVAL:$<TARGET_PROPERTY:${target},QT_QML_IMPORT_PATH>>"
         _qt_harmonyos_native_qml_root_paths
             "${qml_root_path_genex}"
+        _qt_harmonyos_native_package_source_dir
+            "$<GENEX_EVAL:$<TARGET_PROPERTY:${target},QT_HARMONYOS_PACKAGE_SOURCE_DIR>>"
     )
 endfunction()
 
@@ -430,15 +432,24 @@ function(_qt_internal_harmonyos_generate_deployment_settings target)
         string(APPEND JSON_CONTENT ",\n    \"qtHostDirectory\": \"${QT_HOST_PATH}\"")
     endif()
 
-    # Templates are only built for OHOS, so they live under the target Qt
-    # prefix, not QT_HOST_PATH.
-    set(TEMPLATE_DIR
+    # Package source directory. User-set QT_HARMONYOS_PACKAGE_SOURCE_DIR wins
+    # over the bundled template (templates are only built for OHOS, so they
+    # live under the target Qt prefix, not QT_HOST_PATH). $<IF:> picks the
+    # right value at generate time; if both are empty (Qt install lacks the
+    # template AND the user didn't set the property), harmonydeployqt's own
+    # template search kicks in on the empty value.
+    set(_template_default "")
+    set(_template_dir
         "${_qt_install_root}/${_qt_install_data_dir}/src/harmonyos/templates")
-    if(EXISTS "${TEMPLATE_DIR}")
-        file(REAL_PATH "${TEMPLATE_DIR}" TEMPLATE_DIR)
-        string(APPEND JSON_CONTENT
-            ",\n    \"harmonyos-package-source-directory\": \"${TEMPLATE_DIR}\"")
+    if(EXISTS "${_template_dir}")
+        file(REAL_PATH "${_template_dir}" _template_default)
     endif()
+    set(_user_pkg_src_genex
+        "$<GENEX_EVAL:$<TARGET_PROPERTY:${target},_qt_harmonyos_native_package_source_dir>>")
+    string(APPEND JSON_CONTENT
+        ",\n    \"harmonyos-package-source-directory\": "
+        "\"$<IF:$<BOOL:${_user_pkg_src_genex}>,${_user_pkg_src_genex},${_template_default}>\""
+    )
 
     # Extra library search directories for third-party deps (e.g. HARMONYOS_DEPS_ROOT/lib for ICU).
     # CMAKE_FIND_ROOT_PATH has the Qt install prefix prepended by qt.toolchain.cmake; skip it so
