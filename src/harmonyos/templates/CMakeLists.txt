@@ -21,18 +21,17 @@ add_custom_target(Qt${QtBase_VERSION_MAJOR}HarmonyOSTemplates
         ${template_files}
 )
 
+qt_path_join(build_dir_destination
+    ${QtBase_BINARY_DIR} ${INSTALL_DATADIR} "src/harmonyos/templates")
+
+file(COPY ${template_files} ${template_directories}
+    DESTINATION "${build_dir_destination}")
+
+qt_internal_copy_at_build_time(TARGET Qt${QtBase_VERSION_MAJOR}HarmonyOSTemplates
+    FILES ${template_files}
+    DIRECTORIES ${template_directories}
+    DESTINATION ${build_dir_destination}
+)
+
 qt_path_join(destination ${QT_INSTALL_DIR} ${INSTALL_DATADIR} "src/harmonyos/templates")
-
-qt_copy_or_install(FILES ${template_files}
-                   DESTINATION "${destination}")
-
-qt_copy_or_install(DIRECTORY ${template_directories}
-                   DESTINATION "${destination}")
-
-if(NOT QT_WILL_INSTALL)
-    qt_internal_copy_at_build_time(TARGET Qt${QtBase_VERSION_MAJOR}HarmonyOSTemplates
-        FILES ${template_files}
-        DIRECTORIES ${template_directories}
-        DESTINATION ${destination}
-    )
-endif()
+qt_install(DIRECTORY "${build_dir_destination}/" DESTINATION "${destination}")
