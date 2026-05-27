@@ -76,6 +76,9 @@ struct Options
     QString harmonyOsTargetSdkVersion;
     QString harmonyOsCompileSdkVersion;
 
+    // Additional plugin .so files from QT_HARMONYOS_EXTRA_PLUGINS.
+    QStringList extraPlugins;
+
     // Module-level metadata from qt_set_harmonyos_module_metadata.
     QString harmonyOsModuleDescription;
     QStringList harmonyOsModuleDeviceTypes;
@@ -322,6 +325,18 @@ static bool readInputConfiguration(Options *options)
         obj["harmonyos-target-sdk-version"_L1].toString();
     options->harmonyOsCompileSdkVersion =
         obj["harmonyos-compile-sdk-version"_L1].toString();
+
+    // Extra plugins (resolved file paths). Categories are derived from the
+    // parent directory name of each path.
+    {
+        const QJsonArray extraPluginsArray =
+            obj["harmonyos-extra-plugins"_L1].toArray();
+        for (const QJsonValue &v : extraPluginsArray) {
+            const QString s = v.toString();
+            if (!s.isEmpty())
+                options->extraPlugins.append(s);
+        }
+    }
 
     // Module-level metadata injected via qt_set_harmonyos_module_metadata.
     options->harmonyOsModuleDescription = obj["harmonyos-module-description"_L1].toString();
@@ -1590,6 +1605,45 @@ static bool copyAllQtPlugins(const Options &options)
             if (!options.depFilePath.isEmpty())
                 dependenciesForDepfile << pluginPath;
         }
+    }
+
+    return true;
+}
+
+// Copy user-supplied extra plugins listed in QT_HARMONYOS_EXTRA_PLUGINS into
+// entry/libs/<arch>/<category>/. The category is derived from the parent
+// directory of each plugin source path (e.g. .../imageformats/libfoo.so ->
+// "imageformats/libfoo.so"); plugins without a usable parent directory name
+// are deployed flat under entry/libs/<arch>/.
+static bool copyExtraPlugins(const Options &options)
+{
+    if (options.extraPlugins.isEmpty())
+        return true;
+
+    if (options.verbose)
+        fprintf(stdout, "Copying extra plugins\n");
+
+    for (const QString &pluginPath : options.extraPlugins) {
+        const QFileInfo pluginInfo(pluginPath);
+        if (!pluginInfo.exists() || !pluginInfo.isFile()) {
+            fprintf(stderr, "Extra plugin does not exist: %s\n", qPrintable(pluginPath));
+            return false;
+        }
+
+        const QString category = pluginInfo.absoluteDir().dirName();
+        QString relativeDestPath;
+        if (category.isEmpty() || category == "plugins"_L1)
+            relativeDestPath = pluginInfo.fileName();
+        else
+            relativeDestPath = category + "/"_L1 + pluginInfo.fileName();
+
+        if (options.verbose) {
+            fprintf(stdout, "  Extra plugin: %s -> entry/libs/<arch>/%s\n",
+                    qPrintable(pluginInfo.fileName()), qPrintable(relativeDestPath));
+        }
+
+        if (!copyFileToArchitectures(options, pluginInfo.filePath(), relativeDestPath))
+            return false;
     }
 
     return true;
@@ -3105,6 +3159,11 @@ int main(int argc, char *argv[])
             fprintf(stderr, "Failed to copy plugins\n");
             return 1;
         }
+    }
+
+    if (!copyExtraPlugins(options)) {
+        fprintf(stderr, "Failed to copy extra plugins\n");
+        return 1;
     }
 
     if (!injectSigningConfig(options)) {
