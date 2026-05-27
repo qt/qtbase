@@ -162,8 +162,8 @@ void QCocoaWindow::initialize()
         // positionPolicy includes the frame or not. It's up to us to
         // account for that below.
 
-        if (QPlatformWindow::parent()) {
-            // If we have a parent window we need to establish the superview
+        if (QPlatformWindow::parent() || isSubWindow(window())) {
+            // If we're not a top level we need to establish the superview
             // relationship first, before we can set the geometry, so that we
             // know whether the superview is flipped or not when setting the
             // geometry.
