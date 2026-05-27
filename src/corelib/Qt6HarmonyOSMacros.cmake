@@ -57,7 +57,7 @@ endfunction()
 
 # Resolve the Qt installation root and subdirectory variables.
 # QT6_INSTALL_PREFIX is set by QtInstallPaths.cmake (via find_package), but not during
-# an internal qtbase build; in that case fall back to CMAKE_INSTALL_PREFIX.
+# an internal qtbase build; in that case fall back to QtBase_BINARY_DIR.
 function(_qt_internal_harmonyos_get_qt_install_dirs
          install_root_var libs_dir_var plugins_dir_var qml_dir_var data_dir_var)
     if(QT6_INSTALL_PREFIX)
@@ -67,7 +67,7 @@ function(_qt_internal_harmonyos_get_qt_install_dirs
         set(${qml_dir_var}     "${QT6_INSTALL_QML}"     PARENT_SCOPE)
         set(${data_dir_var}    "${QT6_INSTALL_DATA}"    PARENT_SCOPE)
     else()
-        set(${install_root_var} "${CMAKE_INSTALL_PREFIX}" PARENT_SCOPE)
+        set(${install_root_var} "${QtBase_BINARY_DIR}"    PARENT_SCOPE)
         set(${libs_dir_var}    "${INSTALL_LIBDIR}"        PARENT_SCOPE)
         set(${plugins_dir_var} "${INSTALL_PLUGINSDIR}"    PARENT_SCOPE)
         set(${qml_dir_var}     "${INSTALL_QMLDIR}"        PARENT_SCOPE)
