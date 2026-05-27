@@ -358,44 +358,25 @@ void QOhosFloatingWindow::handleWindowStatusChange(QOhosWindowProxy::WindowStatu
     }
 
     Qt::WindowStates windowStatesToSet = windowStates();
-    Qt::WindowState flagToSet;
     m_lastWindowStatusType = evt.type;
 
     switch (evt.type) {
-    case QOhosWindowProxy::WindowStatusType::FULL_SCREEN:
-        flagToSet = Qt::WindowState::WindowFullScreen;
-        break;
-    case QOhosWindowProxy::WindowStatusType::MAXIMIZE:
-        flagToSet = Qt::WindowState::WindowMaximized;
-        break;
-    case QOhosWindowProxy::WindowStatusType::MINIMIZE:
-        flagToSet = Qt::WindowState::WindowMinimized;
-        break;
-    case QOhosWindowProxy::WindowStatusType::UNDEFINED:
-    case QOhosWindowProxy::WindowStatusType::FLOATING:
-        Q_FALLTHROUGH();
-    case QOhosWindowProxy::WindowStatusType::SPLIT_SCREEN:
-        flagToSet = Qt::WindowState::WindowNoState;
-        break;
-    }
-
     // NOTE - Qt::WindowFullScreen and Qt::WindowMaximized represent the exact same
     // OHOS Window state.
-    if (flagToSet == Qt::WindowState::WindowFullScreen
-        || flagToSet == Qt::WindowState::WindowMaximized) {
+    case QOhosWindowProxy::WindowStatusType::FULL_SCREEN:
+    case QOhosWindowProxy::WindowStatusType::MAXIMIZE:
         windowStatesToSet = m_view->isFullscreenImmersiveModeEnabled()
             ? Qt::WindowState::WindowFullScreen
             : Qt::WindowState::WindowMaximized;
-    } else {
-        static constexpr Qt::WindowState mutuallyExclusiveFlags[] = {
-            Qt::WindowState::WindowFullScreen,
-            Qt::WindowState::WindowMaximized,
-            Qt::WindowState::WindowMinimized,
-            Qt::WindowState::WindowNoState,
-        };
-
-        for (const auto exclusiveState : mutuallyExclusiveFlags)
-            windowStatesToSet.setFlag(exclusiveState, flagToSet == exclusiveState);
+        break;
+    case QOhosWindowProxy::WindowStatusType::MINIMIZE:
+        windowStatesToSet.setFlag(Qt::WindowState::WindowMinimized);
+        break;
+    case QOhosWindowProxy::WindowStatusType::UNDEFINED:
+    case QOhosWindowProxy::WindowStatusType::FLOATING:
+    case QOhosWindowProxy::WindowStatusType::SPLIT_SCREEN:
+        windowStatesToSet = Qt::WindowState::WindowNoState;
+        break;
     }
 
     setWindowStateFromOhos(windowStatesToSet);
