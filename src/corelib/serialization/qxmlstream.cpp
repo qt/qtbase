@@ -15,7 +15,7 @@
 #include <qbuffer.h>
 #include <qscopeguard.h>
 #include <qcoreapplication.h>
-
+#include <QtCore/private/qduplicatetracker_p.h>
 #include <private/qoffsetstringarray_p.h>
 #include <private/qtools_p.h>
 
@@ -1781,6 +1781,35 @@ XmlStringRef QXmlStreamReaderPrivate::namespaceForPrefix(QStringView prefix)
      return XmlStringRef();
 }
 
+struct AttributeName
+{
+    QStringView name;
+    QStringView qualifiedName;
+    QStringView namespaceUri;
+
+    static AttributeName fromXmlAttribute(const QXmlStreamAttribute &a, bool nsProcessing)
+    {
+        if (nsProcessing)
+            return {a.name(), {}, a.namespaceUri()};
+        else
+            return {a.name(), a.qualifiedName(), a.namespaceUri()};
+    }
+
+    friend bool operator==(const AttributeName &lhs, const AttributeName &rhs) noexcept
+    {
+        return lhs.name == rhs.name
+            && lhs.qualifiedName == rhs.qualifiedName
+            && lhs.namespaceUri == rhs.namespaceUri;
+    }
+    friend size_t qHash(const AttributeName &key, size_t seed = 0) noexcept
+    {
+        return qHashMulti(seed,
+                          key.name,
+                          key.qualifiedName,
+                          key.namespaceUri);
+    }
+};
+
 /*
   uses namespaceForPrefix and builds the attribute vector
  */
@@ -1832,6 +1861,9 @@ void QXmlStreamReaderPrivate::resolveTag()
 
     attributes.resize(n);
 
+    Q_DECL_UNINITIALIZED
+    QDuplicateTracker<AttributeName, 13> names(n);
+
     for (qsizetype i = 0; i < n; ++i) {
         QXmlStreamAttribute &attribute = attributes[i];
         Attribute &attrib = attributeStack[i];
@@ -1849,14 +1881,9 @@ void QXmlStreamReaderPrivate::resolveTag()
             attribute.m_namespaceUri = XmlStringRef(attributeNamespaceUri);
         }
 
-        for (qsizetype j = 0; j < i; ++j) {
-            if (attributes[j].name() == attribute.name()
-                && attributes[j].namespaceUri() == attribute.namespaceUri()
-                && (namespaceProcessing || attributes[j].qualifiedName() == attribute.qualifiedName()))
-            {
-                raiseWellFormedError(QXmlStream::tr("Attribute '%1' redefined.").arg(attribute.qualifiedName()));
-                return;
-            }
+        if (names.hasSeen(AttributeName::fromXmlAttribute(attribute, namespaceProcessing))) {
+            raiseWellFormedError(QXmlStream::tr("Attribute '%1' redefined.").arg(attribute.qualifiedName()));
+            return;
         }
     }
 
