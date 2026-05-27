@@ -583,19 +583,22 @@ void QAndroidPlatformWindow::windowFocusChanged(JNIEnv *env, jobject object,
 {
     Q_UNUSED(env)
     Q_UNUSED(object)
-    QWindow* window = QtAndroid::windowFromId(windowId);
-    if (!window) {
-        qCWarning(lcQpaWindow,
-            "windowFocusChanged event received for non-existing window %d", windowId);
+    if (!qGuiApp)
         return;
-    }
-
-    if (focus) {
-        QWindowSystemInterface::handleFocusWindowChanged(window);
-    } else if (!focus && window == qGuiApp->focusWindow()) {
-        // Clear focus if current window has lost focus
-        QWindowSystemInterface::handleFocusWindowChanged(nullptr);
-    }
+    // Queued like the surface handlers, so focus never arrives before the
+    // surface state it depends on. Handling it inline broke QQuickWidget focus.
+    QMetaObject::invokeMethod(qApp, [windowId, focus]() {
+        QWindow *window = QtAndroid::windowFromId(windowId);
+        if (!window) {
+            qCWarning(lcQpaWindow,
+                "windowFocusChanged event received for non-existing window %d", windowId);
+            return;
+        }
+        if (focus)
+            QWindowSystemInterface::handleFocusWindowChanged(window);
+        else if (window == qGuiApp->focusWindow())
+            QWindowSystemInterface::handleFocusWindowChanged(nullptr);
+    }, Qt::QueuedConnection);
 }
 
 void QAndroidPlatformWindow::safeAreaMarginsChanged(JNIEnv *env, jobject object,
