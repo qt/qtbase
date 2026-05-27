@@ -501,22 +501,6 @@ function(_qt_internal_harmonyos_add_hap_target target)
         set(_hvigor_args "")
     endif()
 
-    # Check for sign script: target property takes precedence over global variable
-    get_target_property(_sign_script ${target} QT_HARMONYOS_SIGN_SCRIPT)
-    if(NOT _sign_script OR _sign_script STREQUAL "_sign_script-NOTFOUND")
-        if(DEFINED QT_HARMONYOS_SIGN_SCRIPT)
-            set(_sign_script "${QT_HARMONYOS_SIGN_SCRIPT}")
-        else()
-            set(_sign_script "")
-        endif()
-    endif()
-
-    if(_sign_script)
-        set(_sign_args --sign-script "${_sign_script}")
-    else()
-        set(_sign_args "")
-    endif()
-
     # Create deployment target with DEPFILE support when available
     if(has_depfile_support)
         # Use add_custom_command with DEPFILE for dependency tracking
@@ -533,7 +517,6 @@ function(_qt_internal_harmonyos_add_hap_target target)
                 --input "${CONFIG_FILE}"
                 --output "${OUTPUT_DIR}"
                 ${_hvigor_args}
-                ${_sign_args}
                 --depfile "${DEP_FILE_PATH}"
                 --depfile-base "${relative_to_dir}"
             DEPENDS ${target} "${CONFIG_FILE}"
@@ -552,7 +535,6 @@ function(_qt_internal_harmonyos_add_hap_target target)
                 --input "${CONFIG_FILE}"
                 --output "${OUTPUT_DIR}"
                 ${_hvigor_args}
-                ${_sign_args}
             DEPENDS ${target}
             COMMENT "Generating HarmonyOS HAP for ${target}"
             VERBATIM

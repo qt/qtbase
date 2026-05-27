@@ -42,8 +42,6 @@ struct Options
     QString qmlRootPath;
     QStringList qmlImportPaths;
     QStringList targetArchs;
-    QString signScriptPath;  // Explicit path to hap-sign.py (from --sign-script)
-    bool signEnabled = false; // Whether --sign flag was passed
 
     // Qt installation directories (following androiddeployqt pattern)
     QString qtLibsDirectory;     // Target Qt libs
@@ -81,6 +79,15 @@ struct Options
     QString testBinariesDirectory;   // Directory to scan for libtst_*.so
     QStringList testExcludeList;     // Filenames to exclude from test bundle
 
+    // HAP signing material from --signing-* CLI flags (empty = use env vars).
+    QString signingCertPath;
+    QString signingProfile;
+    QString signingStoreFile;
+    QString signingKeyAlias;
+    QString signingKeyPassword;
+    QString signingStorePassword;
+    QString signingAlg;
+
     QElapsedTimer timer;
 };
 
@@ -93,14 +100,23 @@ static void printHelp()
                     "  --hvigor <path>             Path to hvigorw for building HAP (or set QT_HARMONYOS_HVIGOR)\n"
                     "  --install                   Install HAP to connected device via hdc\n"
                     "  --release                   Build release configuration (default: debug)\n"
-                    "  --sign                      Enable automatic signing using hap-sign.py\n"
-                    "  --sign-script <path>        Path to hap-sign.py script (auto-detected if omitted)\n"
                     "  --verbose                   Enable verbose output\n"
                     "  --no-build                  Skip building the HAP\n"
                     "  --test-bundle               Enable test bundle mode (bundles all test binaries into one HAP)\n"
                     "  --depfile <path>            Write dependency file for build system\n"
                     "  --depfile-base <dir>        Base directory for relative paths in depfile\n"
-                    "  --help                      Show this help\n");
+                    "  --signing-cert-path <p>     .cer file (or QT_HARMONYOS_SIGNING_CERT_PATH)\n"
+                    "  --signing-profile <p>       .p7b profile (or QT_HARMONYOS_SIGNING_PROFILE)\n"
+                    "  --signing-store-file <p>    .p12 keystore (or QT_HARMONYOS_SIGNING_STORE_FILE)\n"
+                    "  --signing-key-alias <a>     Key alias (or QT_HARMONYOS_SIGNING_KEY_ALIAS)\n"
+                    "  --signing-key-password <s>  Encrypted key pwd (or QT_HARMONYOS_SIGNING_KEY_PASSWORD)\n"
+                    "  --signing-store-password <s> Encrypted store pwd (or QT_HARMONYOS_SIGNING_STORE_PASSWORD)\n"
+                    "  --signing-alg <alg>         Signature algorithm, default SHA256withECDSA\n"
+                    "                              (or QT_HARMONYOS_SIGNING_ALG)\n"
+                    "  --help                      Show this help\n\n"
+                    "Signing: CLI flags above win per field over the matching env vars.\n"
+                    "Passwords must be hvigor-encrypted blobs. If any signing input is set,\n"
+                    "all six required values must be present, or the HAP is left unsigned.\n");
 }
 
 static bool parseCommandLine(const QStringList &arguments, Options *options)
@@ -113,13 +129,25 @@ static bool parseCommandLine(const QStringList &arguments, Options *options)
     QCommandLineOption hvigorOption("hvigor"_L1, "Path to hvigorw"_L1, "path"_L1);
     QCommandLineOption installOption("install"_L1, "Install to device"_L1);
     QCommandLineOption releaseOption("release"_L1, "Build release configuration"_L1);
-    QCommandLineOption signOption("sign"_L1, "Enable automatic signing using hap-sign.py"_L1);
-    QCommandLineOption signScriptOption("sign-script"_L1, "Path to hap-sign.py script"_L1, "path"_L1);
     QCommandLineOption verboseOption("verbose"_L1, "Verbose output"_L1);
     QCommandLineOption noBuildOption("no-build"_L1, "Skip building"_L1);
     QCommandLineOption testBundleOption("test-bundle"_L1, "Enable test bundle mode"_L1);
     QCommandLineOption depfileOption("depfile"_L1, "Dependency file output"_L1, "path"_L1);
     QCommandLineOption depfileBaseOption("depfile-base"_L1, "Base directory for depfile paths"_L1, "dir"_L1);
+    QCommandLineOption signingCertPathOption("signing-cert-path"_L1,
+        "Path to the .cer file"_L1, "path"_L1);
+    QCommandLineOption signingProfileOption("signing-profile"_L1,
+        "Path to the .p7b profile"_L1, "path"_L1);
+    QCommandLineOption signingStoreFileOption("signing-store-file"_L1,
+        "Path to the .p12 keystore"_L1, "path"_L1);
+    QCommandLineOption signingKeyAliasOption("signing-key-alias"_L1,
+        "Key alias inside the keystore"_L1, "alias"_L1);
+    QCommandLineOption signingKeyPasswordOption("signing-key-password"_L1,
+        "Encrypted key password"_L1, "pwd"_L1);
+    QCommandLineOption signingStorePasswordOption("signing-store-password"_L1,
+        "Encrypted keystore password"_L1, "pwd"_L1);
+    QCommandLineOption signingAlgOption("signing-alg"_L1,
+        "Signature algorithm (default SHA256withECDSA)"_L1, "alg"_L1);
     QCommandLineOption helpOption("help"_L1, "Show help"_L1);
 
     parser.addOption(inputOption);
@@ -127,13 +155,18 @@ static bool parseCommandLine(const QStringList &arguments, Options *options)
     parser.addOption(hvigorOption);
     parser.addOption(installOption);
     parser.addOption(releaseOption);
-    parser.addOption(signOption);
-    parser.addOption(signScriptOption);
     parser.addOption(verboseOption);
     parser.addOption(noBuildOption);
     parser.addOption(testBundleOption);
     parser.addOption(depfileOption);
     parser.addOption(depfileBaseOption);
+    parser.addOption(signingCertPathOption);
+    parser.addOption(signingProfileOption);
+    parser.addOption(signingStoreFileOption);
+    parser.addOption(signingKeyAliasOption);
+    parser.addOption(signingKeyPasswordOption);
+    parser.addOption(signingStorePasswordOption);
+    parser.addOption(signingAlgOption);
     parser.addOption(helpOption);
 
     if (!parser.parse(arguments)) {
@@ -157,13 +190,18 @@ static bool parseCommandLine(const QStringList &arguments, Options *options)
     options->hvigorPath = parser.value(hvigorOption);
     options->installApk = parser.isSet(installOption);
     options->releaseMode = parser.isSet(releaseOption);
-    options->signEnabled = parser.isSet(signOption);
-    options->signScriptPath = parser.value(signScriptOption);
     options->verbose = parser.isSet(verboseOption);
     options->buildPackage = !parser.isSet(noBuildOption);
     options->testBundleMode = parser.isSet(testBundleOption);
     options->depFilePath = parser.value(depfileOption);
     options->depFileBase = parser.value(depfileBaseOption);
+    options->signingCertPath = parser.value(signingCertPathOption);
+    options->signingProfile = parser.value(signingProfileOption);
+    options->signingStoreFile = parser.value(signingStoreFileOption);
+    options->signingKeyAlias = parser.value(signingKeyAliasOption);
+    options->signingKeyPassword = parser.value(signingKeyPasswordOption);
+    options->signingStorePassword = parser.value(signingStorePasswordOption);
+    options->signingAlg = parser.value(signingAlgOption);
 
     return true;
 }
@@ -512,8 +550,11 @@ static bool copyTemplate(const Options &options)
     // Force-overwrite the manifest files. customizeTemplate() does one-shot
     // sentinel/regex substitutions on these; if the destination is left over
     // from a previous deploy the sentinels are already gone and any change to
-    // the CMake-supplied metadata would be silently ignored.
-    for (const char *relPath : { "AppScope/app.json5", "entry/src/main/module.json5" }) {
+    // the CMake-supplied metadata would be silently ignored. The same applies
+    // to build-profile.json5: injectSigningConfig() looks for the empty
+    // template array and refuses to touch anything else.
+    for (const char *relPath : { "AppScope/app.json5", "entry/src/main/module.json5",
+                                 "build-profile.json5" }) {
         const QString src = options.harmonyOsPackageSourceDirectory
             + QLatin1Char('/') + QLatin1String(relPath);
         const QString dst = options.outputDirectory + QLatin1Char('/') + QLatin1String(relPath);
@@ -2427,137 +2468,162 @@ static bool copyQmlImports(const Options &options,
     return true;
 }
 
-static bool updateSigningConfig(const Options &options)
+// build-profile.json5 ships with `"signingConfigs": []`; replace that literal
+// with a populated block when the user supplies signing material. JSON5 input
+// (trailing commas, // comments) precludes QJsonDocument, hence string surgery.
+static bool injectSigningConfig(const Options &options)
 {
-    // Determine whether signing was requested at all
-    bool explicitlyRequested = options.signEnabled || !options.signScriptPath.isEmpty();
-    QByteArray envScript = qgetenv("QT_HARMONYOS_SIGN_SCRIPT");
-    bool hasEnvVar = !envScript.isEmpty();
+    struct Field
+    {
+        const char *envName;
+        const char *cliFlag;
+        QString cliValue;
+        QByteArray envValue;
 
-    if (!explicitlyRequested && !hasEnvVar) {
-        // No signing requested — skip silently
+        QByteArray resolved() const
+        {
+            if (!cliValue.isEmpty())
+                return cliValue.toUtf8();
+            return envValue;
+        }
+        QString sourceLabel() const
+        {
+            return cliValue.isEmpty()
+                ? QString::fromLatin1(envName)
+                : QString::fromLatin1(cliFlag);
+        }
+    };
+
+    Field required[] = {
+        { "QT_HARMONYOS_SIGNING_CERT_PATH",      "--signing-cert-path",
+          options.signingCertPath,      qgetenv("QT_HARMONYOS_SIGNING_CERT_PATH")      },
+        { "QT_HARMONYOS_SIGNING_PROFILE",        "--signing-profile",
+          options.signingProfile,       qgetenv("QT_HARMONYOS_SIGNING_PROFILE")        },
+        { "QT_HARMONYOS_SIGNING_STORE_FILE",     "--signing-store-file",
+          options.signingStoreFile,     qgetenv("QT_HARMONYOS_SIGNING_STORE_FILE")     },
+        { "QT_HARMONYOS_SIGNING_KEY_ALIAS",      "--signing-key-alias",
+          options.signingKeyAlias,      qgetenv("QT_HARMONYOS_SIGNING_KEY_ALIAS")      },
+        { "QT_HARMONYOS_SIGNING_KEY_PASSWORD",   "--signing-key-password",
+          options.signingKeyPassword,   qgetenv("QT_HARMONYOS_SIGNING_KEY_PASSWORD")   },
+        { "QT_HARMONYOS_SIGNING_STORE_PASSWORD", "--signing-store-password",
+          options.signingStorePassword, qgetenv("QT_HARMONYOS_SIGNING_STORE_PASSWORD") },
+    };
+
+    QByteArray signAlg = options.signingAlg.isEmpty()
+        ? qgetenv("QT_HARMONYOS_SIGNING_ALG")
+        : options.signingAlg.toUtf8();
+
+    bool anySet = !signAlg.isEmpty();
+    for (const Field &f : required)
+        anySet = anySet || !f.resolved().isEmpty();
+    if (!anySet)
         return true;
+
+    QStringList missing;
+    for (const Field &f : required) {
+        if (f.resolved().isEmpty())
+            missing << QString::fromLatin1(f.cliFlag) + " / "_L1
+                       + QString::fromLatin1(f.envName);
     }
-
-    // Resolve script path in priority order:
-    // 1. --sign-script CLI option
-    // 2. QT_HARMONYOS_SIGN_SCRIPT environment variable
-    // 3. Auto-discovery candidates
-    QString scriptPath = options.signScriptPath;
-
-    if (scriptPath.isEmpty() && hasEnvVar)
-        scriptPath = QString::fromLocal8Bit(envScript);
-
-    if (scriptPath.isEmpty()) {
-        // Auto-discovery
-        QStringList candidates;
-        candidates << QCoreApplication::applicationDirPath() + "/hap-sign.py"_L1;
-        candidates << QDir::homePath() + "/.local/bin/hap-sign.py"_L1;
-
-        QString found = QStandardPaths::findExecutable("hap-sign"_L1);
-        if (!found.isEmpty())
-            candidates << found;
-
-        for (const QString &candidate : candidates) {
-            if (QFile::exists(candidate)) {
-                scriptPath = candidate;
-                break;
-            }
-        }
-    }
-
-    if (scriptPath.isEmpty()) {
-        if (explicitlyRequested) {
-            fprintf(stderr, "Error: hap-sign.py not found. "
-                            "Use --sign-script <path> or set QT_HARMONYOS_SIGN_SCRIPT.\n");
-            return false;
-        } else {
-            // Only env var was set but resolved to nothing — warn and continue
-            fprintf(stderr, "Warning: hap-sign.py not found (QT_HARMONYOS_SIGN_SCRIPT is set "
-                            "but script does not exist), skipping signing.\n");
-            return true;
-        }
-    }
-
-    // Skip signing if the project's build-profile.json5 already has signing material
-    // written into it. The template ships with "signingConfigs": [] (empty); after
-    // hap-sign.py --write-config runs it gains a "storeFile" key inside the
-    // "material" block.  Checking for that key is sufficient to detect a prior run.
-    const QString buildProfilePath = options.outputDirectory + "/build-profile.json5"_L1;
-    if (QFile::exists(buildProfilePath)) {
-        QFile profileFile(buildProfilePath);
-        if (profileFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
-            const QByteArray content = profileFile.readAll();
-            profileFile.close();
-            if (content.contains("\"storeFile\"")) {
-                if (options.verbose)
-                    fprintf(stdout, "Signing config already present in build-profile.json5, "
-                                    "skipping signing.\n");
-                return true;
-            }
-        }
-    }
-
-    // Find python3
-    QString python3 = QStandardPaths::findExecutable("python3"_L1);
-    if (python3.isEmpty()) {
-        fprintf(stderr, "Error: python3 not found in PATH, cannot run hap-sign.py\n");
+    if (!missing.isEmpty()) {
+        fprintf(stderr, "Error: HAP signing requested, but the following required input(s)\n"
+                        "       are missing (neither CLI flag nor env var was supplied):\n");
+        for (const QString &name : missing)
+            fprintf(stderr, "         %s\n", qPrintable(name));
         return false;
     }
+
+    if (signAlg.isEmpty())
+        signAlg = "SHA256withECDSA";
+
+    const QString buildProfilePath = options.outputDirectory + "/build-profile.json5"_L1;
+    QFile profileFile(buildProfilePath);
+    if (!profileFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        fprintf(stderr, "Error: cannot open %s for reading: %s\n",
+                qPrintable(buildProfilePath), qPrintable(profileFile.errorString()));
+        return false;
+    }
+    QByteArray content = profileFile.readAll();
+    profileFile.close();
+
+    // Anything other than the literal empty array means the user already edited
+    // the file; refuse rather than risk corrupting it.
+    static const QByteArray needle = "\"signingConfigs\": []";
+    const int idx = content.indexOf(needle);
+    if (idx < 0) {
+        fprintf(stderr, "Error: '%s' not found in %s. The template may have been modified;\n"
+                        "       cannot inject signing configuration safely.\n",
+                needle.constData(), qPrintable(buildProfilePath));
+        return false;
+    }
+
+    // Only backslash and double-quote need escaping; inputs are paths, aliases,
+    // and hex blobs — no control characters.
+    auto escapeJsonString = [](const QByteArray &in) {
+        QByteArray out;
+        out.reserve(in.size());
+        for (char c : in) {
+            if (c == '\\' || c == '"')
+                out.append('\\');
+            out.append(c);
+        }
+        return out;
+    };
+
+    QByteArray replacement;
+    replacement.append("\"signingConfigs\": [\n");
+    replacement.append("      {\n");
+    replacement.append("        \"name\": \"default\",\n");
+    replacement.append("        \"type\": \"HarmonyOS\",\n");
+    replacement.append("        \"material\": {\n");
+    auto appendField = [&](const char *key, const QByteArray &value, bool last) {
+        replacement.append("          \"");
+        replacement.append(key);
+        replacement.append("\": \"");
+        replacement.append(escapeJsonString(value));
+        replacement.append('"');
+        if (!last)
+            replacement.append(',');
+        replacement.append('\n');
+    };
+    appendField("certpath",      required[0].resolved(), false);
+    appendField("keyAlias",      required[3].resolved(), false);
+    appendField("keyPassword",   required[4].resolved(), false);
+    appendField("profile",       required[1].resolved(), false);
+    appendField("signAlg",       signAlg,                false);
+    appendField("storeFile",     required[2].resolved(), false);
+    appendField("storePassword", required[5].resolved(), true);
+    replacement.append("        }\n");
+    replacement.append("      }\n");
+    replacement.append("    ]");
+
+    content.replace(idx, needle.size(), replacement);
+
+    if (!profileFile.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate)) {
+        fprintf(stderr, "Error: cannot open %s for writing: %s\n",
+                qPrintable(buildProfilePath), qPrintable(profileFile.errorString()));
+        return false;
+    }
+    if (profileFile.write(content) != content.size()) {
+        fprintf(stderr, "Error: failed to write full content to %s\n",
+                qPrintable(buildProfilePath));
+        profileFile.close();
+        return false;
+    }
+    profileFile.close();
 
     if (options.verbose) {
-        fprintf(stdout, "Updating signing config via: %s\n", qPrintable(scriptPath));
-        fprintf(stdout, "  Bundle name: %s\n", qPrintable(options.harmonyOsAppBundleName));
-        fprintf(stdout, "  Project path: %s\n", qPrintable(options.outputDirectory));
+        fprintf(stdout, "Injected HAP signingConfig into %s\n", qPrintable(buildProfilePath));
+        fprintf(stdout, "  certpath:  %s  (from %s)\n",
+                required[0].resolved().constData(), qPrintable(required[0].sourceLabel()));
+        fprintf(stdout, "  profile:   %s  (from %s)\n",
+                required[1].resolved().constData(), qPrintable(required[1].sourceLabel()));
+        fprintf(stdout, "  storeFile: %s  (from %s)\n",
+                required[2].resolved().constData(), qPrintable(required[2].sourceLabel()));
+        fprintf(stdout, "  keyAlias:  %s  (from %s)\n",
+                required[3].resolved().constData(), qPrintable(required[3].sourceLabel()));
+        fprintf(stdout, "  signAlg:   %s\n", signAlg.constData());
     }
-
-    QStringList arguments;
-    arguments << scriptPath
-              << "sign"_L1
-              << "--bundle-name"_L1 << options.harmonyOsAppBundleName
-              << "--config-name"_L1 << "default"_L1
-              << "--project-path"_L1 << options.outputDirectory
-              << "--write-config"_L1;
-
-    if (options.verbose)
-        arguments << "--verbose"_L1;
-
-    QProcess process;
-    process.setProcessChannelMode(QProcess::MergedChannels);
-    process.start(python3, arguments);
-
-    if (!process.waitForStarted()) {
-        fprintf(stderr, "Error: Failed to start hap-sign.py\n");
-        return false;
-    }
-
-    // Stream output in real-time (signing output is always informative)
-    while (process.state() != QProcess::NotRunning) {
-        if (!process.waitForReadyRead(1000)) {
-            if (process.state() == QProcess::NotRunning)
-                break;
-            continue;
-        }
-        QByteArray output = process.readAll();
-        fprintf(stdout, "%s", output.constData());
-        fflush(stdout);
-    }
-
-    // Flush any remaining output
-    QByteArray remaining = process.readAll();
-    if (!remaining.isEmpty()) {
-        fprintf(stdout, "%s", remaining.constData());
-        fflush(stdout);
-    }
-
-    if (process.exitCode() != 0) {
-        fprintf(stderr, "Error: hap-sign.py failed with exit code %d\n", process.exitCode());
-        return false;
-    }
-
-    if (options.verbose)
-        fprintf(stdout, "Signing config updated successfully\n");
-
     return true;
 }
 
@@ -2858,9 +2924,8 @@ int main(int argc, char *argv[])
         }
     }
 
-    // Update signing config (if requested via --sign / --sign-script / env)
-    if (!updateSigningConfig(options)) {
-        fprintf(stderr, "Failed to update signing config\n");
+    if (!injectSigningConfig(options)) {
+        fprintf(stderr, "Failed to inject signing configuration\n");
         return 1;
     }
 
