@@ -1784,28 +1784,25 @@ XmlStringRef QXmlStreamReaderPrivate::namespaceForPrefix(QStringView prefix)
 struct AttributeName
 {
     QStringView name;
-    QStringView qualifiedName;
     QStringView namespaceUri;
 
     static AttributeName fromXmlAttribute(const QXmlStreamAttribute &a, bool nsProcessing)
     {
         if (nsProcessing)
-            return {a.name(), {}, a.namespaceUri()};
+            return {a.name(), a.namespaceUri()};
         else
-            return {a.name(), a.qualifiedName(), a.namespaceUri()};
+            return {a.qualifiedName(), a.namespaceUri()};
     }
 
     friend bool operator==(const AttributeName &lhs, const AttributeName &rhs) noexcept
     {
         return lhs.name == rhs.name
-            && lhs.qualifiedName == rhs.qualifiedName
             && lhs.namespaceUri == rhs.namespaceUri;
     }
     friend size_t qHash(const AttributeName &key, size_t seed = 0) noexcept
     {
         return qHashMulti(seed,
                           key.name,
-                          key.qualifiedName,
                           key.namespaceUri);
     }
 };
