@@ -1809,8 +1809,7 @@ void QCocoaWindow::recreateWindowIfNeeded()
     auto *parentWindow = static_cast<QCocoaWindow *>(QPlatformWindow::parent());
 
     const bool shouldManageTopLevelWindow = !parentWindow
-        && !((window()->type() & Qt::SubWindow) == Qt::SubWindow)
-        && !isForeignWindow();
+        && !isSubWindow(window()) && !isForeignWindow();
 
     if (shouldManageTopLevelWindow) {
         auto *windowController = qt_objc_cast<QNSWindowController*>(m_view.window.windowController);

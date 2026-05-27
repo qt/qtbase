@@ -81,6 +81,7 @@ private slots:
     void visibility();
     void mask();
     void initialSize();
+    void initialPosition();
     void modalDialog();
     void modalDialogClosingOneOfTwoModal();
     void modalWithChildWindow();
@@ -2449,6 +2450,90 @@ void tst_QWindow::initialSize()
     if (isPlatformEglFS())
         QEXPECT_FAIL("", "eglfs windows are fullscreen by default.", Continue);
     QTRY_COMPARE(w.size(), expectedSize);
+    }
+
+    {
+        QWindow parent;
+        parent.setTitle(QLatin1String(QTest::currentTestFunction()));
+        parent.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&parent));
+
+        // Child window without explicit size should still get a default non-zero size
+        QWindow child(&parent);
+        child.show();
+        QTRY_COMPARE_GT(child.width(), 0);
+        QTRY_COMPARE_GT(child.height(), 0);
+    }
+    {
+        // Qt::SubWindow without explicit size should still get a default non-zero size
+        Window w;
+        w.setTitle(QLatin1String(QTest::currentTestFunction()));
+        w.setFlags(Qt::SubWindow);
+        w.create();
+#if defined(Q_OS_WIN)
+        QEXPECT_FAIL("", "Windows doesnt treat Qt::SubWindow as child window yet.", Abort);
+#endif
+        QTRY_COMPARE_GT(w.width(), 0);
+        QTRY_COMPARE_GT(w.height(), 0);
+    }
+}
+
+void tst_QWindow::initialPosition()
+{
+    if (isPlatformWayland())
+        QSKIP("Window position not queryable on Wayland");
+
+    const auto *platformIntegration = QGuiApplicationPrivate::platformIntegration();
+    if (!platformIntegration->hasCapability(QPlatformIntegration::NonFullScreenWindows))
+        QSKIP("This platform does not support non-fullscreen windows");
+
+    // Child and Qt::SubWindow windows should default to position (0,0) when shown
+    // without an explicit position, and should honor an explicitly set position.
+    // Qt::SubWindow in particular should not be auto-centered like a top-level window.
+
+    {
+        QWindow parent;
+        parent.setTitle(QLatin1String(QTest::currentTestFunction()));
+        parent.resize(m_testWindowSize);
+        parent.create();
+
+        // Child window without explicit position defaults to (0,0) within parent
+        QWindow child(&parent);
+        child.create();
+        QCOMPARE(child.position(), QPoint(0, 0));
+    }
+    {
+        QWindow parent;
+        parent.resize(m_testWindowSize);
+        parent.create();
+
+        // Child window with explicit position honors that position
+        QWindow child(&parent);
+        child.setPosition(QPoint(30, 20));
+        child.create();
+        QCOMPARE(child.position(), QPoint(30, 20));
+    }
+
+#if !defined(Q_OS_APPLE)
+    QSKIP("Qt::SubWindow positioning has not been implemented on this platform yet");
+#endif
+
+    {
+        // Qt::SubWindow without explicit position defaults to (0,0), not auto-centered
+        QWindow w;
+        w.setTitle(QLatin1String(QTest::currentTestFunction()));
+        w.setFlags(Qt::SubWindow);
+        w.create();
+        QCOMPARE(w.position(), QPoint(0, 0));
+    }
+    {
+        // Qt::SubWindow with explicit position honors that position
+        QWindow w;
+        w.setTitle(QLatin1String(QTest::currentTestFunction()));
+        w.setFlags(Qt::SubWindow);
+        w.setPosition(m_availableTopLeft + QPoint(100, 50));
+        w.create();
+        QCOMPARE(w.position(), m_availableTopLeft + QPoint(100, 50));
     }
 }
 
