@@ -316,6 +316,9 @@ function(_qt_internal_harmonyos_generate_deployment_settings target)
             "QT_HARMONYOS_APP_ICON;_qt_harmonyos_app_icon;path"
             "QT_HARMONYOS_MODULE_DESCRIPTION;_qt_harmonyos_module_description;string"
             "QT_HARMONYOS_ABILITY_ORIENTATION;_qt_harmonyos_ability_orientation;string"
+            "QT_HARMONYOS_COMPATIBLE_SDK_VERSION;_qt_harmonyos_compatible_sdk_version;string"
+            "QT_HARMONYOS_TARGET_SDK_VERSION;_qt_harmonyos_target_sdk_version;string"
+            "QT_HARMONYOS_COMPILE_SDK_VERSION;_qt_harmonyos_compile_sdk_version;string"
         )
         list(GET prop_kv 0 _prop)
         list(GET prop_kv 1 _mirror)
@@ -376,6 +379,15 @@ function(_qt_internal_harmonyos_generate_deployment_settings target)
         "harmonyos-app-label" ${target} _qt_harmonyos_app_label)
     _qt_internal_harmonyos_add_deployment_property(JSON_CONTENT
         "harmonyos-app-icon" ${target} _qt_harmonyos_app_icon)
+
+    # SDK versions land in entry/build-profile.json5 via harmonydeployqt
+    # template substitution.
+    _qt_internal_harmonyos_add_deployment_property(JSON_CONTENT
+        "harmonyos-compatible-sdk-version" ${target} _qt_harmonyos_compatible_sdk_version)
+    _qt_internal_harmonyos_add_deployment_property(JSON_CONTENT
+        "harmonyos-target-sdk-version" ${target} _qt_harmonyos_target_sdk_version)
+    _qt_internal_harmonyos_add_deployment_property(JSON_CONTENT
+        "harmonyos-compile-sdk-version" ${target} _qt_harmonyos_compile_sdk_version)
 
     # Module-level metadata.
     _qt_internal_harmonyos_add_deployment_property(JSON_CONTENT
@@ -678,12 +690,20 @@ endif()
 #       [VERSION_NAME <string>]
 #       [LABEL <string-or-$string:ref>]
 #       [ICON <path-or-$media:ref>]
+#       [COMPATIBLE_SDK_VERSION <string>]
+#       [TARGET_SDK_VERSION <string>]
+#       [COMPILE_SDK_VERSION <string>]
 #   )
 #
 # ICON accepts either a host filesystem path (deploy tool copies the image into
 # AppScope/resources/base/media/ and emits a $media: reference) or a $media:
 # reference (passed through verbatim). Relative paths resolve against the
 # call site's CMAKE_CURRENT_SOURCE_DIR.
+#
+# The *_SDK_VERSION options land in entry/build-profile.json5. Values are
+# substituted verbatim, so the user is responsible for the format expected by
+# the HarmonyOS toolchain (e.g. COMPATIBLE_SDK_VERSION "5.0.0(12)",
+# TARGET_SDK_VERSION "14"). Absent options leave the template default in place.
 function(_qt_internal_set_harmonyos_app_metadata target)
     if(NOT TARGET ${target})
         message(FATAL_ERROR
@@ -697,6 +717,9 @@ function(_qt_internal_set_harmonyos_app_metadata target)
         VERSION_NAME
         LABEL
         ICON
+        COMPATIBLE_SDK_VERSION
+        TARGET_SDK_VERSION
+        COMPILE_SDK_VERSION
     )
     set(multi_value_options "")
     cmake_parse_arguments(PARSE_ARGV 1 arg
@@ -716,6 +739,18 @@ function(_qt_internal_set_harmonyos_app_metadata target)
     endif()
     if(DEFINED arg_LABEL)
         set_target_properties(${target} PROPERTIES QT_HARMONYOS_APP_LABEL "${arg_LABEL}")
+    endif()
+    if(DEFINED arg_COMPATIBLE_SDK_VERSION)
+        set_target_properties(${target} PROPERTIES
+            QT_HARMONYOS_COMPATIBLE_SDK_VERSION "${arg_COMPATIBLE_SDK_VERSION}")
+    endif()
+    if(DEFINED arg_TARGET_SDK_VERSION)
+        set_target_properties(${target} PROPERTIES
+            QT_HARMONYOS_TARGET_SDK_VERSION "${arg_TARGET_SDK_VERSION}")
+    endif()
+    if(DEFINED arg_COMPILE_SDK_VERSION)
+        set_target_properties(${target} PROPERTIES
+            QT_HARMONYOS_COMPILE_SDK_VERSION "${arg_COMPILE_SDK_VERSION}")
     endif()
     if(DEFINED arg_ICON)
         set(icon_value "${arg_ICON}")
