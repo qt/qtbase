@@ -195,7 +195,7 @@ void QNetworkAccessCache::timerEvent(QTimerEvent *)
     updateTimer();
 }
 
-void QNetworkAccessCache::addEntry(const QByteArray &key, CacheableObject *entry, qint64 connectionCacheExpiryTimeoutSeconds)
+void QNetworkAccessCache::addEntry(const QByteArray &key, CacheableObject *entry, std::optional<qint64> connectionCacheExpiryTimeoutSeconds)
 {
     Q_ASSERT(!key.isEmpty());
 
@@ -214,11 +214,7 @@ void QNetworkAccessCache::addEntry(const QByteArray &key, CacheableObject *entry
         node->object->dispose();
     node->object = entry;
     node->object->key = key;
-    if (connectionCacheExpiryTimeoutSeconds > -1) {
-        node->object->expiryTimeoutSeconds = connectionCacheExpiryTimeoutSeconds; // via ConnectionCacheExpiryTimeoutSecondsAttribute
-    } else {
-        node->object->expiryTimeoutSeconds = ExpiryTime;
-    }
+    node->object->expiryTimeoutSeconds = connectionCacheExpiryTimeoutSeconds.value_or(ExpiryTime);
     node->key = key;
     node->useCount = 1;
 

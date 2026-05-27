@@ -179,7 +179,9 @@ QHttpThreadDelegate::~QHttpThreadDelegate()
 
     // Get the object cache that stores our QHttpNetworkConnection objects
     // and release the entry for this QHttpNetworkConnection
-    if (connections.hasLocalData() && !cacheKey.isEmpty()) {
+    if (connectionCacheExpiryTimeoutSeconds.value_or(0) < 0) {
+        delete httpConnection;
+    } else if (connections.hasLocalData() && !cacheKey.isEmpty()) {
         connections.localData()->releaseEntry(cacheKey);
     }
 }
@@ -194,7 +196,6 @@ QHttpThreadDelegate::QHttpThreadDelegate(QObject *parent) :
     , pendingDownloadData()
     , pendingDownloadProgress()
     , synchronous(false)
-    , connectionCacheExpiryTimeoutSeconds(-1)
     , incomingStatusCode(0)
     , isPipeliningUsed(false)
     , isHttp2Used(false)
@@ -308,7 +309,10 @@ void QHttpThreadDelegate::startRequest()
         cacheKey = makeCacheKey(urlCopy, nullptr, httpRequest.peerVerifyName());
 
     // the http object is actually a QHttpNetworkConnection
-    httpConnection = static_cast<QNetworkAccessCachedHttpConnection *>(connections.localData()->requestEntryNow(cacheKey));
+    if (connectionCacheExpiryTimeoutSeconds.value_or(0) >= 0)
+        httpConnection = static_cast<QNetworkAccessCachedHttpConnection *>(
+                connections.localData()->requestEntryNow(cacheKey));
+
     if (!httpConnection) {
 
         QString host = urlCopy.host();
@@ -341,7 +345,9 @@ void QHttpThreadDelegate::startRequest()
 #endif
         httpConnection->setPeerVerifyName(httpRequest.peerVerifyName());
         // cache the QHttpNetworkConnection corresponding to this cache key
-        connections.localData()->addEntry(cacheKey, httpConnection, connectionCacheExpiryTimeoutSeconds);
+        if (connectionCacheExpiryTimeoutSeconds.value_or(0) >= 0)
+            connections.localData()->addEntry(cacheKey, httpConnection,
+                                              connectionCacheExpiryTimeoutSeconds);
     } else {
         if (httpRequest.withCredentials()) {
             QNetworkAuthenticationCredential credential = authenticationManager->fetchCachedCredentials(httpRequest.url(), nullptr);

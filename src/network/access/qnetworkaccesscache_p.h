@@ -24,6 +24,8 @@
 #include "QtCore/qhash.h"
 #include "QtCore/qmetatype.h"
 
+#include <optional>
+
 QT_BEGIN_NAMESPACE
 
 class QNetworkRequest;
@@ -63,7 +65,7 @@ public:
 
     void clear();
 
-    void addEntry(const QByteArray &key, CacheableObject *entry, qint64 connectionCacheExpiryTimeoutSeconds = -1);
+    void addEntry(const QByteArray &key, CacheableObject *entry, std::optional<qint64> connectionCacheExpiryTimeoutSeconds = std::nullopt);
     bool hasEntry(const QByteArray &key) const;
     CacheableObject *requestEntryNow(const QByteArray &key);
     void releaseEntry(const QByteArray &key);

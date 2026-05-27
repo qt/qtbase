@@ -36,6 +36,7 @@
 #include <QtNetwork/qhttpheaders.h>
 #include "qtcpkeepaliveconfiguration_p.h"
 
+#include <optional>
 #ifndef QT_NO_SSL
 #include <memory>
 #endif
@@ -76,7 +77,7 @@ public:
 #endif
     std::shared_ptr<QNetworkAccessAuthenticationManager> authenticationManager;
     bool synchronous;
-    qint64 connectionCacheExpiryTimeoutSeconds;
+    std::optional<qint64> connectionCacheExpiryTimeoutSeconds;
 
     // outgoing, Retrieved in the synchronous HTTP case
     QByteArray synchronousDownloadData;
