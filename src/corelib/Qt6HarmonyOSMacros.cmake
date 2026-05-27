@@ -11,6 +11,19 @@
 # 3. Create the ${target}_make_hap build target
 #
 
+# Promote QT_HARMONYOS_HDC / QT_HARMONYOS_HVIGOR from the environment to the
+# matching cache var when the latter is not already set on the command line.
+if(NOT DEFINED HARMONYOS_HDC
+        AND DEFINED ENV{QT_HARMONYOS_HDC}
+        AND NOT "$ENV{QT_HARMONYOS_HDC}" STREQUAL "")
+    set(HARMONYOS_HDC "$ENV{QT_HARMONYOS_HDC}")
+endif()
+if(NOT DEFINED HARMONYOS_HVIGOR
+        AND DEFINED ENV{QT_HARMONYOS_HVIGOR}
+        AND NOT "$ENV{QT_HARMONYOS_HVIGOR}" STREQUAL "")
+    set(HARMONYOS_HVIGOR "$ENV{QT_HARMONYOS_HVIGOR}")
+endif()
+
 # Detect the HarmonyOS SDK and NDK root directories from environment, CMake variables,
 # or the compiler path, and set the output variables in the caller's scope.
 function(_qt_internal_harmonyos_get_sdk_ndk_paths sdk_root_var ndk_root_var)
@@ -705,3 +718,239 @@ if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
         qt6_set_harmonyos_module_metadata(${ARGV})
     endfunction()
 endif()
+
+# Test bundle: deployment-settings JSON for an "uber" HAP containing every
+# libtst_*.so under CMAKE_BINARY_DIR.
+function(_qt_internal_harmonyos_generate_test_bundle_deployment_settings)
+    _qt_internal_harmonyos_get_sdk_ndk_paths(sdk_root ndk_root)
+
+    set(CONFIG_FILE "${CMAKE_BINARY_DIR}/all_tests-harmony-deployment-settings.json")
+
+    set(JSON_CONTENT "{\n")
+    string(APPEND JSON_CONTENT "    \"test-bundle\": true,\n")
+    string(APPEND JSON_CONTENT "    \"test-binaries-directory\": \"${CMAKE_BINARY_DIR}\",\n")
+    string(APPEND JSON_CONTENT "    \"harmonyos-app-name\": \"QtAutoTests\",\n")
+    string(APPEND JSON_CONTENT "    \"harmonyos-app-bundle-name\": \"org.qtproject.autotests\",\n")
+    string(APPEND JSON_CONTENT "    \"harmonyos-target-arch\": [\"arm64-v8a\"]")
+
+    if(sdk_root)
+        string(APPEND JSON_CONTENT ",\n    \"sdk-root\": \"${sdk_root}\"")
+    endif()
+
+    if(ndk_root)
+        string(APPEND JSON_CONTENT ",\n    \"ndk-root\": \"${ndk_root}\"")
+    endif()
+
+    _qt_internal_harmonyos_get_qt_install_dirs(
+        _qt_install_root _qt_install_libs_dir _qt_install_plugins_dir _qt_install_qml_dir
+        _qt_install_data_dir)
+    string(APPEND JSON_CONTENT
+        ",\n    \"qtLibsDirectory\": \"${_qt_install_root}/${_qt_install_libs_dir}\"")
+    string(APPEND JSON_CONTENT
+        ",\n    \"qtPluginsDirectory\": \"${_qt_install_root}/${_qt_install_plugins_dir}\"")
+    string(APPEND JSON_CONTENT
+        ",\n    \"qtQmlDirectory\": \"${_qt_install_root}/${_qt_install_qml_dir}\"")
+
+    if(QT_HOST_PATH)
+        string(APPEND JSON_CONTENT
+            ",\n    \"qtLibExecsDirectory\": \"${QT_HOST_PATH}/${QT6_HOST_INFO_LIBEXECDIR}\"")
+        string(APPEND JSON_CONTENT ",\n    \"qtHostDirectory\": \"${QT_HOST_PATH}\"")
+    endif()
+
+    # Templates are built only for OHOS, so they live under the target prefix.
+    set(TEMPLATE_DIR
+        "${_qt_install_root}/${_qt_install_data_dir}/src/harmonyos/templates")
+    if(EXISTS "${TEMPLATE_DIR}")
+        file(REAL_PATH "${TEMPLATE_DIR}" TEMPLATE_DIR)
+        string(APPEND JSON_CONTENT
+            ",\n    \"harmonyos-package-source-directory\": \"${TEMPLATE_DIR}\"")
+    endif()
+
+    # Strip the Qt install prefix that qt.toolchain.cmake prepends — we only
+    # want user-supplied third-party prefixes (e.g. HARMONYOS_DEPS_ROOT/lib).
+    set(_extra_root_paths "${CMAKE_FIND_ROOT_PATH}")
+    list(REMOVE_DUPLICATES _extra_root_paths)
+    if(QT6_INSTALL_PREFIX)
+        list(REMOVE_ITEM _extra_root_paths "${QT6_INSTALL_PREFIX}")
+    endif()
+    set(_extra_libs_dirs_json "")
+    foreach(_root_path IN LISTS _extra_root_paths)
+        set(_lib_dir "${_root_path}/lib")
+        if(EXISTS "${_lib_dir}")
+            file(TO_CMAKE_PATH "${_lib_dir}" _lib_dir)
+            if(_extra_libs_dirs_json)
+                string(APPEND _extra_libs_dirs_json ", ")
+            endif()
+            string(APPEND _extra_libs_dirs_json "\"${_lib_dir}\"")
+        endif()
+    endforeach()
+    if(_extra_libs_dirs_json)
+        string(APPEND JSON_CONTENT ",\n    \"extra-libs-dirs\": [${_extra_libs_dirs_json}]")
+    endif()
+
+    string(APPEND JSON_CONTENT "\n}\n")
+
+    file(GENERATE OUTPUT "${CONFIG_FILE}" CONTENT "${JSON_CONTENT}")
+
+    set(QT_INTERNAL_HARMONYOS_TEST_BUNDLE_SETTINGS_FILE "${CONFIG_FILE}" PARENT_SCOPE)
+endfunction()
+
+# Create all_tests_make_hap: invoke harmonydeployqt in test-bundle mode.
+# When HARMONYOS_HVIGOR is set, the helper also runs hvigor to build the
+# signed HAP; otherwise only the project is generated.
+# hvigor writes entry-default-signed.hap when signing is configured and
+# entry-default-unsigned.hap otherwise. Pick the matching name so the build
+# edge's OUTPUT and the install fixture target what hvigor actually produces.
+function(_qt_internal_harmonyos_test_bundle_hap_basename out_var)
+    if(DEFINED ENV{QT_HARMONYOS_SIGNING_CERT_PATH}
+            OR DEFINED ENV{QT_HARMONYOS_SIGNING_PROFILE}
+            OR DEFINED ENV{QT_HARMONYOS_SIGNING_STORE_FILE}
+            OR DEFINED ENV{QT_HARMONYOS_SIGNING_KEY_ALIAS}
+            OR DEFINED ENV{QT_HARMONYOS_SIGNING_KEY_PASSWORD}
+            OR DEFINED ENV{QT_HARMONYOS_SIGNING_STORE_PASSWORD})
+        set(${out_var} "entry-default-signed.hap" PARENT_SCOPE)
+    else()
+        set(${out_var} "entry-default-unsigned.hap" PARENT_SCOPE)
+    endif()
+endfunction()
+
+function(_qt_internal_harmonyos_add_all_tests_hap_target)
+    _qt_internal_harmonyos_generate_test_bundle_deployment_settings()
+
+    set(CONFIG_FILE "${QT_INTERNAL_HARMONYOS_TEST_BUNDLE_SETTINGS_FILE}")
+    set(OUTPUT_DIR "${CMAKE_BINARY_DIR}/harmonyos-tests-bundle")
+
+    _qt_internal_check_depfile_support(has_depfile_support)
+
+    _qt_internal_harmonyos_test_bundle_hap_basename(_hap_basename)
+    set(HAP_OUTPUT_FILE "${OUTPUT_DIR}/entry/build/default/outputs/default/${_hap_basename}")
+    set(BINARIES_TXT_FILE "${OUTPUT_DIR}/binaries.txt")
+    set(DEP_FILE_PATH "${CMAKE_BINARY_DIR}/all_tests_hap.d")
+
+    if(QT_HOST_PATH)
+        set(HARMONYDEPLOYQT_EXECUTABLE
+            "${QT_HOST_PATH}/${QT6_HOST_INFO_BINDIR}/harmonydeployqt")
+    else()
+        set(HARMONYDEPLOYQT_EXECUTABLE
+            "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}/${QT6_HOST_INFO_BINDIR}/harmonydeployqt")
+    endif()
+
+    set(extra_deploy_args "")
+    if(HARMONYOS_HVIGOR)
+        list(APPEND extra_deploy_args --hvigor "${HARMONYOS_HVIGOR}")
+    endif()
+
+    # Without hvigor the signed HAP is never produced and the install fixture
+    # would later fail with a confusing "file not found".
+    if(NOT HARMONYOS_HVIGOR
+            AND (DEFINED ENV{QT_HARMONYOS_SIGNING_CERT_PATH}
+                OR DEFINED ENV{QT_HARMONYOS_SIGNING_PROFILE}
+                OR DEFINED ENV{QT_HARMONYOS_SIGNING_STORE_FILE}
+                OR DEFINED ENV{QT_HARMONYOS_SIGNING_KEY_ALIAS}
+                OR DEFINED ENV{QT_HARMONYOS_SIGNING_KEY_PASSWORD}
+                OR DEFINED ENV{QT_HARMONYOS_SIGNING_STORE_PASSWORD}))
+        message(WARNING "QT_HARMONYOS_SIGNING_* environment variables are set, but "
+            "HARMONYOS_HVIGOR is not. The signed test HAP will not be produced; the "
+            "HAP install fixture will fail. Pass -DHARMONYOS_HVIGOR=<path-to-hvigorw> "
+            "or export QT_HARMONYOS_HVIGOR before configuring.")
+    endif()
+
+    # Match the EXCLUDE_FROM_ALL policy that qt_build_tests() applies to the
+    # individual test binaries: build the HAP as part of the default target
+    # only when QT_BUILD_TESTS_BY_DEFAULT is on.
+    if(QT_INTERNAL_TEST_TARGETS_EXCLUDE_FROM_ALL)
+        set(_all_keyword "")
+    else()
+        set(_all_keyword "ALL")
+    endif()
+
+    if(has_depfile_support)
+        cmake_policy(PUSH)
+        if(POLICY CMP0116)
+            cmake_policy(SET CMP0116 NEW)
+        endif()
+        set(relative_to_dir ${CMAKE_BINARY_DIR})
+
+        add_custom_command(OUTPUT "${HAP_OUTPUT_FILE}" "${BINARIES_TXT_FILE}"
+            COMMAND ${HARMONYDEPLOYQT_EXECUTABLE}
+                --test-bundle
+                --input "${CONFIG_FILE}"
+                --output "${OUTPUT_DIR}"
+                --depfile "${DEP_FILE_PATH}"
+                --depfile-base "${relative_to_dir}"
+                ${extra_deploy_args}
+            DEPENDS "${CONFIG_FILE}"
+            DEPFILE "${DEP_FILE_PATH}"
+            COMMENT "Generating HarmonyOS test bundle HAP"
+            VERBATIM
+        )
+        cmake_policy(POP)
+
+        add_custom_target(all_tests_make_hap ${_all_keyword}
+            DEPENDS "${HAP_OUTPUT_FILE}" "${BINARIES_TXT_FILE}")
+    else()
+        add_custom_target(all_tests_make_hap ${_all_keyword}
+            COMMAND ${HARMONYDEPLOYQT_EXECUTABLE}
+                --test-bundle
+                --input "${CONFIG_FILE}"
+                --output "${OUTPUT_DIR}"
+                ${extra_deploy_args}
+            DEPENDS "${CONFIG_FILE}"
+            COMMENT "Generating HarmonyOS test bundle HAP"
+            VERBATIM
+        )
+    endif()
+endfunction()
+
+# FIXTURES_SETUP test that pushes the signed HAP to the device before any
+# autotest runs. Requires HARMONYOS_HDC.
+function(_qt_internal_harmonyos_add_hap_install_fixture hap_signed_file)
+    if(NOT HARMONYOS_HDC)
+        return()
+    endif()
+
+    set(install_script "${CMAKE_BINARY_DIR}/HarmonyOSInstallHapFixture.cmake")
+    file(GENERATE OUTPUT "${install_script}" CONTENT
+"set(hdc \"${HARMONYOS_HDC}\")
+set(hap \"${hap_signed_file}\")
+message(STATUS \"Installing HarmonyOS test HAP: \${hap}\")
+execute_process(
+    COMMAND \"\${hdc}\" app install -r \"\${hap}\"
+    RESULT_VARIABLE result
+    OUTPUT_VARIABLE output
+    ERROR_VARIABLE output
+)
+message(STATUS \"\${output}\")
+if(NOT result EQUAL 0)
+    message(FATAL_ERROR \"HAP install failed with exit code \${result}\")
+endif()
+"
+    )
+
+    add_test(NAME HarmonyOSTestBundleInstall
+        COMMAND "${CMAKE_COMMAND}" -P "${install_script}"
+    )
+    set_tests_properties(HarmonyOSTestBundleInstall PROPERTIES
+        FIXTURES_SETUP HarmonyOSTestBundle
+        RUN_SERIAL TRUE
+        TIMEOUT 120
+    )
+endfunction()
+
+# Entry point. Idempotent; safe to call from qt_build_tests() for every module.
+function(qt_internal_add_harmonyos_test_bundle)
+    if(NOT CMAKE_SYSTEM_NAME STREQUAL "OHOS")
+        message(WARNING "qt_internal_add_harmonyos_test_bundle() called on non-OHOS platform")
+        return()
+    endif()
+    if(TARGET all_tests_make_hap)
+        return()
+    endif()
+    _qt_internal_harmonyos_add_all_tests_hap_target()
+
+    set(OUTPUT_DIR "${CMAKE_BINARY_DIR}/harmonyos-tests-bundle")
+    _qt_internal_harmonyos_test_bundle_hap_basename(_hap_basename)
+    set(HAP_INSTALL_FILE
+        "${OUTPUT_DIR}/entry/build/default/outputs/default/${_hap_basename}")
+    _qt_internal_harmonyos_add_hap_install_fixture("${HAP_INSTALL_FILE}")
+endfunction()

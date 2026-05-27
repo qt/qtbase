@@ -869,6 +869,12 @@ macro(qt_build_tests)
         endif()
     endif()
 
+    # Create the HAP bundle target before any tests register, so each test can
+    # attach itself as a dependency via add_dependencies in qt_internal_add_test.
+    if(OHOS AND COMMAND qt_internal_add_harmonyos_test_bundle)
+        qt_internal_add_harmonyos_test_bundle()
+    endif()
+
     if(QT_FEATURE_test_auto AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/auto/CMakeLists.txt")
         add_subdirectory(auto)
     endif()

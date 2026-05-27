@@ -1,6 +1,30 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
+# Resolve the harmonyostestrunner binary and the args baked into
+# CROSSCOMPILING_EMULATOR. CTest will invoke:
+#   harmonyostestrunner [out_runner_args] /path/to/libtst_foo.so
+function(_qt_internal_harmonyos_test_runner_arguments out_test_runner out_runner_args)
+    if(QT_HOST_PATH)
+        qt_internal_get_host_info_var_prefix(host_info_var_prefix)
+        set(host_bin_dir "${QT_HOST_PATH}/${${host_info_var_prefix}_BINDIR}")
+    elseif(QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX)
+        set(host_bin_dir "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}/${QT6_HOST_INFO_BINDIR}")
+    else()
+        set(host_bin_dir "${QT6_INSTALL_PREFIX}/${QT6_INSTALL_BINS}")
+    endif()
+
+    set(runner "${host_bin_dir}/harmonyostestrunner")
+    set(runner_args "--bundle-name" "org.qtproject.autotests")
+
+    if(DEFINED HARMONYOS_HDC)
+        list(APPEND runner_args "--hdc" "${HARMONYOS_HDC}")
+    endif()
+
+    set(${out_test_runner} "${runner}" PARENT_SCOPE)
+    set(${out_runner_args} "${runner_args}" PARENT_SCOPE)
+endfunction()
+
 # Simple wrapper around qt_internal_add_executable for benchmarks which insure that
 # the binary is built under ${CMAKE_CURRENT_BINARY_DIR} and never installed.
 # See qt_internal_add_executable() for more details.
@@ -770,6 +794,15 @@ function(qt_internal_add_test name)
         else()
             set_property(TARGET "${name}" PROPERTY CROSSCOMPILING_EMULATOR "emrun")
         endif()
+    elseif(OHOS)
+        _qt_internal_harmonyos_test_runner_arguments(harmonyos_test_runner harmonyos_runner_args)
+        set_property(TARGET "${name}" PROPERTY CROSSCOMPILING_EMULATOR
+            "${harmonyos_test_runner};${harmonyos_runner_args}")
+        set(test_working_dir "${CMAKE_CURRENT_BINARY_DIR}")
+        set(test_executable "${name}")
+        if(TARGET all_tests_make_hap)
+            add_dependencies(all_tests_make_hap "${name}")
+        endif()
     else()
         if(arg_QMLTEST AND NOT arg_SOURCES)
             set(qt_additional_libexec_paths "")
@@ -876,6 +909,12 @@ function(qt_internal_add_test name)
             set_tests_properties(${testname} PROPERTIES
                 TIMEOUT_SIGNAL_NAME "SIGINT"
                 TIMEOUT_SIGNAL_GRACE_PERIOD 10.0
+            )
+        endif()
+
+        if(HARMONYOS_HDC)
+            set_tests_properties(${testname} PROPERTIES
+                FIXTURES_REQUIRED HarmonyOSTestBundle
             )
         endif()
 

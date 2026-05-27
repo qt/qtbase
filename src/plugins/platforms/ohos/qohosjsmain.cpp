@@ -85,6 +85,7 @@ static std::string s_appSharedLibName;
 static std::unique_ptr<std::vector<std::string>> s_appArgs;
 static std::vector<QNapi::Reference<QNapi::Object>> foregroundAbilities;
 static int s_appExitCode = 0;
+static std::string s_exitCodeFilePath;
 
 static bool s_hotStartEnabled = false;
 
@@ -360,18 +361,18 @@ void redirectStandardDescriptorsToFile(const std::string &redirectedStdoutPath)
     int openResult = qt_safe_open(redirectedStdoutPath.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
     auto openErrno = errno;
     if (openResult < 0) {
-        qOhosReportFatalErrorAndAbort(
-            "%s: error opening file '%s' for redirected stdout: %s",
-            Q_FUNC_INFO, redirectedStdoutPath.c_str(), std::strerror(openErrno));
+        // Non-fatal: the test still needs to write its exit code.
+        qOhosPrintfWarning("%s: error opening file '%s' for redirected stdout: %s",
+                           Q_FUNC_INFO, redirectedStdoutPath.c_str(), std::strerror(openErrno));
+        return;
     }
 
     ::fflush(stdout);
 
     if (qt_safe_dup2(openResult, STDOUT_FILENO) < 0) {
         auto dup2Errno = errno;
-        qOhosReportFatalErrorAndAbort(
-            "%s: dup2() failed on redirecting stdout to '%s': %s",
-            Q_FUNC_INFO, redirectedStdoutPath.c_str(), std::strerror(dup2Errno));
+        qOhosPrintfWarning("%s: dup2() failed on redirecting stdout to '%s': %s",
+                           Q_FUNC_INFO, redirectedStdoutPath.c_str(), std::strerror(dup2Errno));
     }
 
     qt_safe_close(openResult);
@@ -512,6 +513,7 @@ struct AppProcessLaunchOptions
     QNapi::Boolean enableVsyncOnSoftwareBackingStore;
     QNapi::Boolean watchdogEnabled;
     QNapi::String redirectStdoutToFile;
+    QNapi::String exitCodeFile;
     QNapi::String autoRequestPermissions;
     QNapi::Boolean enableNativeNodeApiKeyEvents;
     QNapi::Boolean enableNativeNodeApiMouseEvents;
@@ -550,6 +552,9 @@ AppProcessLaunchOptions getProcessLaunchOptionsFromWant(QNapi::Object launchWant
     assignWantParamIfPresent(
         launchOpts.redirectStdoutToFile,
         "io.qt.debug.redirectedStdoutPath");
+    assignWantParamIfPresent(
+        launchOpts.exitCodeFile,
+        "io.qt.debug.exitCodePath");
     assignWantParamIfPresent(
         launchOpts.autoRequestPermissions,
         "io.qt.debug.autoRequestPermissions");
@@ -739,6 +744,9 @@ void handleDefaultQAbilityInstanceStartup(JsState &jsState, std::shared_ptr<QAbi
 
         if (!launchOpts.redirectStdoutToFile.IsEmpty())
             redirectStandardDescriptorsToFile(launchOpts.redirectStdoutToFile.Utf8Value());
+
+        if (!launchOpts.exitCodeFile.IsEmpty())
+            s_exitCodeFilePath = launchOpts.exitCodeFile.Utf8Value();
 
         if (!launchOpts.autoRequestPermissions.IsEmpty())
             requestAppPermissionsInBackground(jsState, splitString(launchOpts.autoRequestPermissions, ','));
@@ -1239,6 +1247,13 @@ void handleAbilityStageOnDestroy(const CallbackInfo &)
 
     qOhosPrintfInfo("AbilityStage::onDestroy: destroying the Qt thread object");
     s_qtAppThreadMainFuncLauncher = nullptr;
+
+    if (!s_exitCodeFilePath.empty()) {
+        if (FILE *f = fopen(s_exitCodeFilePath.c_str(), "w")) {
+            fprintf(f, "%d\n", s_appExitCode);
+            fclose(f);
+        }
+    }
 
     qOhosPrintfInfo("AbilityStage::onDestroy: calling _Exit(%d)", s_appExitCode);
     std::_Exit(s_appExitCode);
