@@ -118,7 +118,7 @@ endfunction()
 
 # Collect directly-linked SHARED_LIBRARY CMake targets into a list of their
 # output file paths (using generator expressions so paths are resolved at
-# generation time).  Also respects an explicit QT_OHOS_EXTRA_LIBS property.
+# generation time).  Also respects an explicit QT_HARMONYOS_EXTRA_LIBS property.
 # Analogous to Qt Android's QT_ANDROID_EXTRA_LIBS mechanism.
 function(_qt_internal_harmonyos_collect_extra_libs target output_var)
     set(result "")
@@ -141,7 +141,13 @@ function(_qt_internal_harmonyos_collect_extra_libs target output_var)
         endforeach()
     endif()
 
-    # Honour explicit QT_OHOS_EXTRA_LIBS target property (file paths or genexes)
+    # Honour explicit QT_HARMONYOS_EXTRA_LIBS target property (file paths or genexes)
+    get_target_property(extra_libs "${target}" QT_HARMONYOS_EXTRA_LIBS)
+    if(extra_libs AND NOT extra_libs STREQUAL "extra_libs-NOTFOUND")
+        list(APPEND result ${extra_libs})
+    endif()
+
+    # TODO Remove QT_OHOS_EXTRA_LIBS after a grace period but latest after 6.12.0.
     get_target_property(extra_libs "${target}" QT_OHOS_EXTRA_LIBS)
     if(extra_libs AND NOT extra_libs STREQUAL "extra_libs-NOTFOUND")
         list(APPEND result ${extra_libs})
