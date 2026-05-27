@@ -137,6 +137,8 @@ protected:
     QPlatformScreen *screenForGeometry(const QRect &newGeometry) const;
     static QSize constrainWindowSize(const QSize &size);
 
+    static bool isSubWindow(const QWindow *window);
+
     QScopedPointer<QPlatformWindowPrivate> d_ptr;
 };
 

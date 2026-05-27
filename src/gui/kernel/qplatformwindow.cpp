@@ -700,7 +700,10 @@ QRect QPlatformWindow::initialGeometry(const QWindow *w, const QRect &initialGeo
 {
     if (resultingScreenReturn)
         *resultingScreenReturn = w->screen();
-    if (!w->isTopLevel()) {
+
+    // FIXME: Should QWindow::isTopLevel() reflect Qt::SubWindow directly?
+    const bool isTopLevel = w->isTopLevel() && !isSubWindow(w);
+    if (!isTopLevel) {
         const qreal factor = QHighDpiScaling::factor(w);
         const QSize deviceIndependentSize =
                 fixInitialSize(QHighDpi::fromNative(initialGeometry.size(), factor), w,
@@ -741,6 +744,22 @@ QRect QPlatformWindow::initialGeometry(const QWindow *w, const QRect &initialGeo
         }
     }
     return QHighDpi::toNativePixels(deviceIndependentRect, screen);
+}
+
+
+/*!
+    Checks whether the window has the Qt::SubWindow flag.
+
+    A sub-window is a window without a QWindow::parent(),
+    that should still not be treated as a top level.
+*/
+bool QPlatformWindow::isSubWindow(const QWindow *window)
+{
+    // Explicitly check for the SubWindow bits rather than an exact type match,
+    // because Qt::SubWindow (unlike other Qt::WindowTypes) does not include
+    // the Qt::Window flag, so exact type match will fail when clients call
+    // QWindow::setFlag(Qt::SubWindow) on an existing window.
+    return window->flags().testFlag(Qt::SubWindow);
 }
 
 /*!
