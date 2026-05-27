@@ -434,12 +434,16 @@ function(qt_internal_install_qt_apple_runner_script)
     qt_path_join(apple_runner "${CMAKE_CURRENT_SOURCE_DIR}" "libexec" "qt-apple-runner.sh")
     qt_copy_or_install(PROGRAMS "${apple_runner}" DESTINATION "${apple_runner_destination}")
     if(NOT QT_WILL_INSTALL)
-        add_custom_target(Qt${QtBase_VERSION_MAJOR}AppleRunnerScript
+        add_custom_target(Qt${QtBase_VERSION_MAJOR}AppleRunnerScript ALL
             SOURCES ${apple_runner}
         )
         qt_internal_copy_at_build_time(TARGET Qt${QtBase_VERSION_MAJOR}AppleRunnerScript
             FILES ${apple_runner}
             DESTINATION ${apple_runner_destination}
+        )
+        cmake_language(DEFER CALL add_dependencies
+            Core
+            Qt${QtBase_VERSION_MAJOR}AppleRunnerScript
         )
     endif()
 endfunction()
