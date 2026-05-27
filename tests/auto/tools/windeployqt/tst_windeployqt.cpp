@@ -10,6 +10,7 @@
 #include <QtCore/QProcessEnvironment>
 #include <QtCore/QStandardPaths>
 #include <QtCore/QTextStream>
+#include <QtCore/QRegularExpression>
 #include <QtTest/QTest>
 
 static const QString msgProcessError(const QProcess &process, const QString &what,
@@ -78,6 +79,7 @@ class tst_windeployqt : public QObject
 private slots:
     void initTestCase();
     void help();
+    void list();
     void deploy();
 
 private:
@@ -106,6 +108,40 @@ void tst_windeployqt::help()
                         QString(),  QProcessEnvironment(), 5000, &stdOut, &stdErr),
              qPrintable(errorMessage));
     QVERIFY2(!stdOut.isEmpty(), stdErr);
+}
+
+// list(): Verifies that 'windeployqt --list <item>' produces only paths and does not
+// contain messages. This is critical to ensure the Qt VS Tools extension runs
+// windeployqt properly.
+//
+// See https://qt-project.atlassian.net/browse/QTBUG-146919
+//
+// NOTE: The Qt VS Tools extension uses "--list target" but this test uses
+// "--list source". In the real world error scenario these both output the problematic
+// message, but, that's probably not a guarantee. The trouble is that verifying the
+// target paths is not fully possible since they don't exist (unless the test app has
+// already been deployed at least once), the best that can be done is verifying the
+// output _looks like_ a path.
+
+void tst_windeployqt::list()
+{
+    QString errorMessage;
+    QByteArray stdOut;
+    QByteArray stdErr;
+    QStringList deployArguments;
+    deployArguments << QLatin1String("--list") << QLatin1String("source") << QDir::toNativeSeparators(m_testAppBinary);
+    QVERIFY2(runProcess(m_windeployqtBinary, deployArguments, &errorMessage, QString(),
+                        QProcessEnvironment(), 5000, &stdOut, &stdErr),
+             qPrintable(errorMessage));
+    QVERIFY2(!stdOut.isEmpty(), stdErr);
+
+    // Parse stdOut as a list of newline-terminated file paths and verify each exists
+    const QStringList files = QString::fromLocal8Bit(stdOut)
+                                  .split(QRegularExpression(QStringLiteral("[\r\n]+")), Qt::SkipEmptyParts);
+    for (const QString &file : files) {
+        QVERIFY2(QFileInfo(file).isFile(),
+                 qPrintable(QStringLiteral("File does not exist: ") + file));
+    }
 }
 
 // deploy(): Deploys the test application and launches it with Qt removed from the environment
