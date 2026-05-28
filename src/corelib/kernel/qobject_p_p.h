@@ -95,7 +95,10 @@ struct QObjectPrivate::Connection : public ConnectionOrSignalVector
     ushort isSlotObject : 1;
     ushort ownArgumentTypes : 1;
     ushort isSingleShot : 1;
-    Connection() : ownArgumentTypes(true) { }
+    Connection() : ownArgumentTypes(true) {
+        receiver.storeRelaxed(nullptr);
+        receiverThreadData.storeRelaxed(nullptr);
+    }
     ~Connection();
     int method() const
     {
@@ -193,11 +196,10 @@ struct QObjectPrivate::ConnectionData
 
         int start = -1;
         if (vector) {
-            // not (yet) existing trait:
-            // static_assert(std::is_relocatable_v<SignalVector>);
-            // static_assert(std::is_relocatable_v<ConnectionList>);
-            memcpy(newVector, vector,
-                   sizeof(SignalVector) + (vector->allocated + 1) * sizeof(ConnectionList));
+            for (int i = -1; i < vector->count(); ++i) {
+                new (&newVector->at(i)) ConnectionList{vector->at(i).first.loadRelaxed(),
+                                                       vector->at(i).last.loadRelaxed()};
+            }
             start = vector->count();
         }
         for (int i = start; i < int(size); ++i)
