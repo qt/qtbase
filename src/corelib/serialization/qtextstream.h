@@ -76,8 +76,15 @@ public:
     explicit QTextStream(QString *string, OpenMode openMode = ReadWrite);
     explicit QTextStream(QByteArray *array, OpenMode openMode = ReadWrite);
     explicit QTextStream(const QByteArray &array, OpenMode openMode = ReadOnly);
+    QT_WARNING_PUSH
+    #if defined(__has_warning)
+    #  if __has_warning("-Wunnecessary-virtual-specifier")
+         QT_WARNING_DISABLE_CLANG("-Wunnecessary-virtual-specifier")
+    #  endif
+    #endif
     QT6_ONLY(virtual)
     ~QTextStream();
+    QT_WARNING_POP
 
     void setEncoding(QStringConverter::Encoding encoding);
     QStringConverter::Encoding encoding() const;
