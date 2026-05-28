@@ -6,14 +6,14 @@ include("${CMAKE_CURRENT_LIST_DIR}/@package_name@ConfigVersionImpl.cmake")
 
 set(__qt_disable_package_version_check FALSE)
 
-# Allow to opt out of the version check.
-if(QT_NO_PACKAGE_VERSION_CHECK)
-    set(__qt_disable_package_version_check TRUE)
-endif()
-
 # Extra CMake code begin
 @extra_code@
 # Extra CMake code end
+
+# Allow to opt out of the version check.
+if(DEFINED QT_NO_PACKAGE_VERSION_CHECK)
+   set(__qt_disable_package_version_check ${QT_NO_PACKAGE_VERSION_CHECK})
+endif()
 
 if((NOT PACKAGE_VERSION_COMPATIBLE) OR PACKAGE_VERSION_UNSUITABLE)
     set(__qt_package_version_incompatible TRUE)

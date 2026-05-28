@@ -32,6 +32,14 @@ using namespace Qt::StringLiterals;
 
 Q_DECLARE_METATYPE(QLocale::FormatType)
 
+// These platforms implement a locale-dependent case conversion
+// (the others fall back to QString::toUpper/toLower()):
+#if QT_CONFIG(icu)
+#  define QT_HAS_LOCALE_CASE_CONVERSION 1
+#else
+#  define QT_HAS_LOCALE_CASE_CONVERSION 0
+#endif
+
 class tst_QLocale : public QObject
 {
     Q_OBJECT
@@ -160,6 +168,17 @@ private slots:
 
     void lcsToCode();
     void codeToLcs();
+    void codeToLang_data();
+    void codeToLang();
+
+#if QT_HAS_LOCALE_CASE_CONVERSION
+    void toLowerUpper_data();
+    void toLowerUpper();
+
+    void toLowerUpperEszett();
+#endif
+    void toLowerUpperFinalSigma_data();
+    void toLowerUpperFinalSigma();
 
     // *** ORDER-DEPENDENCY *** (This Is Bad.)
     // Test order is determined by order of declaration here: *all* tests that
@@ -170,6 +189,8 @@ private slots:
     void unixLocaleName();
     void testNames_data();
     void testNames();
+    void signsNeverCompareEqualToNullCharacter_data() { testNames_data(); }
+    void signsNeverCompareEqualToNullCharacter();
     // DO NOT add tests here unless they QLocale::setDefault(); see above.
 private:
     QString m_decimal, m_thousand, m_sdate, m_ldate, m_time;
@@ -430,14 +451,16 @@ void tst_QLocale::defaulted_ctor()
     TEST_CTOR(English, UnitedStates, QLocale::English, QLocale::UnitedStates);
     TEST_CTOR(English, France, QLocale::English, QLocale::France);
     TEST_CTOR(English, UnitedKingdom, QLocale::English, QLocale::UnitedKingdom);
+    // Used in tests below to check we pick the likely-best substitute consistently:
+    TEST_CTOR(Arabic, UnitedStates, QLocale::Arabic, QLocale::Egypt);
 
     TEST_CTOR(French, France, QLocale::French, QLocale::France);
     TEST_CTOR(C, France, QLocale::C, QLocale::AnyTerritory);
     TEST_CTOR(Spanish, LatinAmerica, QLocale::Spanish,
               QLocale::LatinAmerica);
 
-    QLocale::setDefault(QLocale(QLocale::English, QLocale::France));
-    CHECK_DEFAULT(QLocale::English, QLocale::France);
+    QLocale::setDefault(QLocale(QLocale::Arabic, QLocale::UnitedStates));
+    CHECK_DEFAULT(QLocale::Arabic, QLocale::Egypt);
 
     TEST_CTOR(French, France, QLocale::French, QLocale::France);
     TEST_CTOR(English, UnitedKingdom, QLocale::English, QLocale::UnitedKingdom);
@@ -445,7 +468,7 @@ void tst_QLocale::defaulted_ctor()
     TEST_CTOR(French, France, QLocale::French, QLocale::France);
     TEST_CTOR(C, AnyTerritory, QLocale::C, QLocale::AnyTerritory);
     TEST_CTOR(C, France, QLocale::C, QLocale::AnyTerritory);
-    TEST_CTOR(Aymara, AnyTerritory, QLocale::English, QLocale::France);
+    TEST_CTOR(Aymara, AnyTerritory, QLocale::Arabic, QLocale::Egypt);
 
     QLocale::setDefault(QLocale(QLocale::English, QLocale::UnitedKingdom));
     CHECK_DEFAULT(QLocale::English, QLocale::UnitedKingdom);
@@ -466,6 +489,7 @@ void tst_QLocale::defaulted_ctor()
     TEST_CTOR(English, UnitedStates, QLocale::English, QLocale::UnitedStates);
     TEST_CTOR(English, France, QLocale::English, QLocale::France);
     TEST_CTOR(English, UnitedKingdom, QLocale::English, QLocale::UnitedKingdom);
+    TEST_CTOR(Arabic, UnitedStates, QLocale::Arabic, QLocale::Egypt);
 
     TEST_CTOR(French, France, QLocale::French, QLocale::France);
     TEST_CTOR(C, AnyTerritory, QLocale::C, QLocale::AnyTerritory);
@@ -481,6 +505,7 @@ void tst_QLocale::defaulted_ctor()
     TEST_CTOR(English, UnitedStates, QLocale::English, QLocale::UnitedStates);
     TEST_CTOR(English, France, QLocale::English, QLocale::France);
     TEST_CTOR(English, UnitedKingdom, QLocale::English, QLocale::UnitedKingdom);
+    TEST_CTOR(Arabic, UnitedStates, QLocale::Arabic, QLocale::Egypt);
 
     TEST_CTOR(French, France, QLocale::French, QLocale::France);
     TEST_CTOR(C, AnyTerritory, QLocale::C, QLocale::AnyTerritory);
@@ -1583,6 +1608,8 @@ void tst_QLocale::long_long_conversion_data()
 
     QTest::newRow("C null")                   << QString("C")     << QString()       << false << (qlonglong) 0;
     QTest::newRow("C empty")                  << QString("C")     << QString("")     << false << (qlonglong) 0;
+    QTest::newRow("C 0")                      << QString("C")     << "0"             << true  << (qlonglong) 0;
+    QTest::newRow("C 0,")                     << QString("C")     << "0,"            << false << (qlonglong) 0;
     QTest::newRow("C 1")                      << QString("C")     << "1"             << true  << (qlonglong) 1;
     QTest::newRow("C 1,")                     << QString("C")     << "1,"            << false << (qlonglong) 0;
     QTest::newRow("C 1,2")                    << QString("C")     << "1,2"           << false << (qlonglong) 0;
@@ -1653,6 +1680,20 @@ void tst_QLocale::long_long_conversion()
 
     if (ok)
         QCOMPARE(l, num);
+
+    if (num >= 0) {
+        qulonglong ull = locale.toULongLong(num_str, &ok);
+        QCOMPARE(ok, good);
+
+        if (ok)
+            QCOMPARE(ull, num);
+
+        ull = locale.toULongLong(num_strRef, &ok);
+        QCOMPARE(ok, good);
+
+        if (ok)
+            QCOMPARE(ull, num);
+    }
 }
 
 void tst_QLocale::long_long_conversion_extra()
@@ -1822,6 +1863,19 @@ void tst_QLocale::negativeZero()
     QFETCH(QStringView, expect);
     QLocale locale(language, script, territory);
     QCOMPARE(locale.toString(std::copysign(0.0, -1.0)), expect);
+}
+
+void tst_QLocale::signsNeverCompareEqualToNullCharacter() // otherwise QTextStream has a problem
+{
+    QFETCH(QLocale::Language, language);
+    QFETCH(const QLocale::Territory, country);
+
+    if (language == QLocale::AnyLanguage && country == QLocale::AnyTerritory)
+        language = QLocale::C;
+
+    const QLocale loc(language, country);
+    QCOMPARE_NE(loc.negativeSign(), QChar());
+    QCOMPARE_NE(loc.positiveSign(), QChar());
 }
 
 void tst_QLocale::dayOfWeek_data()
@@ -4878,37 +4932,138 @@ void tst_QLocale::lcsToCode()
     QCOMPARE(QLocale::scriptToCode(QLocale::SimplifiedHanScript), QString("Hans"));
 }
 
-void tst_QLocale::codeToLcs()
-{
-    QCOMPARE(QLocale::codeToLanguage(QString()), QLocale::AnyLanguage);
-    QCOMPARE(QLocale::codeToLanguage(QString(" ")), QLocale::AnyLanguage);
-    QCOMPARE(QLocale::codeToLanguage(QString("und")), QLocale::AnyLanguage);
-    QCOMPARE(QLocale::codeToLanguage(QString("e")), QLocale::AnyLanguage);
-    QCOMPARE(QLocale::codeToLanguage(QString("en")), QLocale::English);
-    QCOMPARE(QLocale::codeToLanguage(QString("EN")), QLocale::English);
-    QCOMPARE(QLocale::codeToLanguage(QString("eng")), QLocale::English);
-    QCOMPARE(QLocale::codeToLanguage(QString("ha")), QLocale::Hausa);
-    QCOMPARE(QLocale::codeToLanguage(QString("ha"), QLocale::ISO639Alpha3), QLocale::AnyLanguage);
-    QCOMPARE(QLocale::codeToLanguage(QString("haw")), QLocale::Hawaiian);
-    QCOMPARE(QLocale::codeToLanguage(QString("haw"), QLocale::ISO639Alpha2), QLocale::AnyLanguage);
+static constexpr auto AnyLanguageCode = QLocale::LanguageCodeType::AnyLanguageCode;
 
-    QCOMPARE(QLocale::codeToLanguage(u"sq"), QLocale::Albanian);
-    QCOMPARE(QLocale::codeToLanguage(u"alb"), QLocale::Albanian);
-    QCOMPARE(QLocale::codeToLanguage(u"sqi"), QLocale::Albanian);
-    QCOMPARE(QLocale::codeToLanguage(u"sq", QLocale::ISO639Part1), QLocale::Albanian);
-    QCOMPARE(QLocale::codeToLanguage(u"sq", QLocale::ISO639Part3), QLocale::AnyLanguage);
-    QCOMPARE(QLocale::codeToLanguage(u"alb", QLocale::ISO639Part2B), QLocale::Albanian);
-    QCOMPARE(QLocale::codeToLanguage(u"alb", QLocale::ISO639Part2T | QLocale::ISO639Part3),
-             QLocale::AnyLanguage);
-    QCOMPARE(QLocale::codeToLanguage(u"sqi", QLocale::ISO639Part2T), QLocale::Albanian);
-    QCOMPARE(QLocale::codeToLanguage(u"sqi", QLocale::ISO639Part3), QLocale::Albanian);
-    QCOMPARE(QLocale::codeToLanguage(u"sqi", QLocale::ISO639Part1 | QLocale::ISO639Part2B),
-             QLocale::AnyLanguage);
+void tst_QLocale::codeToLang_data()
+{
+    QTest::addColumn<QStringView>("input");
+    QTest::addColumn<QLocale::LanguageCodeTypes>("options");
+    QTest::addColumn<QLocale::Language>("expected");
+
+    auto row = [](const char *tag, QStringView in, QLocale::Language expected,
+                  QLocale::LanguageCodeTypes options = AnyLanguageCode)
+    {
+        QTest::addRow("%s", tag) << in << options << expected;
+    };
+    auto invalid = [](const char *tag, QStringView in,
+                      QLocale::LanguageCodeTypes options = AnyLanguageCode)
+    {
+        constexpr auto InvalidScript = QLocale::Language::AnyLanguage;
+        QTest::addRow("invalid:%s", tag) << in << options << InvalidScript;
+    };
+
+    constexpr bool QTBUG_138562 = QT_VERSION >= QT_VERSION_CHECK(6,6,0);
+    // (introduced by 3dcd6b7ec98b2edf9654bcefdb83134c4c3d2a38, to be precise)
+
+    invalid("null", nullptr);
+    invalid("empty", u"");
+    invalid("1*SP", u" ");
+    if constexpr (!QTBUG_138562) {
+    invalid("2*SP", u"  ");
+    invalid("3*SP", u"   ");
+    }
+    invalid("4*SP", u"    ");
+    invalid("und", u"und"); // does not exist
+    invalid("e", u"e");     // too short
+    row("en", u"en", QLocale::English);
+    row("eN", u"eN", QLocale::English);
+    row("EN", u"EN", QLocale::English);
+    row("En", u"En", QLocale::English);
+    row("eng", u"eng", QLocale::English);
+    row("Eng", u"Eng", QLocale::English);
+    row("eNg", u"eNg", QLocale::English);
+    row("enG", u"enG", QLocale::English);
+    row("ha", u"ha", QLocale::Hausa);
+    invalid("ha/alpha3", u"ha", QLocale::ISO639Alpha3);
+    row("haw", u"haw", QLocale::Hawaiian);
+    invalid("haw/alpha2", u"haw", QLocale::ISO639Alpha2);
+
+    row("sq", u"sq", QLocale::Albanian);
+    row("alb", u"alb", QLocale::Albanian);
+    row("sqi", u"sqi", QLocale::Albanian);
+    row("sq/part1", u"sq", QLocale::Albanian, QLocale::ISO639Part1);
+    invalid("sq/part3", u"sq", QLocale::ISO639Part3);
+    row("alb/part2b", u"alb", QLocale::Albanian, QLocale::ISO639Part2B);
+    invalid("alb/part2t/part3", u"alb", QLocale::ISO639Part2T | QLocale::ISO639Part3);
+    row("sqi/part2t", u"sqi", QLocale::Albanian, QLocale::ISO639Part2T);
+    row("sqi/part3", u"sqi", QLocale::Albanian, QLocale::ISO639Part3);
+    invalid("sqi/part1/part2b", u"sqi", QLocale::ISO639Part1 | QLocale::ISO639Part2B);
 
     // Legacy code
-    QCOMPARE(QLocale::codeToLanguage(u"no"), QLocale::NorwegianBokmal);
-    QCOMPARE(QLocale::codeToLanguage(u"no", QLocale::ISO639Part1), QLocale::AnyLanguage);
+    row("no", u"no", QLocale::NorwegianBokmal);
+    invalid("no (part 1)", u"no", QLocale::ISO639Part1);
 
+    invalid("aaaa", u"aaaa"); // too long
+    invalid("2*NUL", QStringView(u"\0\0", 2));
+    invalid("3*NUL", QStringView(u"\0\0\0", 3));
+
+    // Codes with invalid characters:
+
+    invalid("1", u"1"); // numeric
+    if constexpr (!QTBUG_138562) {
+    invalid("11", u"11");
+    invalid("111", u"111");
+    }
+    invalid("1111", u"1111");
+    if constexpr (!QTBUG_138562) {
+    invalid("a1", u"a1");
+    invalid("aa1", u"aa1");
+    }
+    invalid("aaa1", u"aaa1");
+
+    invalid("1*AUML", u"ä"); // non-ASCII
+    if constexpr (!QTBUG_138562) {
+    invalid("2*AUML", u"ää");
+    invalid("3*AUML", u"äää");
+    }
+    invalid("4*AUML", u"ääää");
+    if constexpr (!QTBUG_138562) {
+    invalid("1*a+AUML", u"aä");
+    invalid("2*a+AUML", u"aaä");
+    }
+    invalid("3*a+AUML", u"aaaä");
+
+    invalid("ar_1", u"١"); // Arabic 1...1234 (non-L1)
+    if constexpr (!QTBUG_138562) {
+    invalid("ar_12", u"١٢");
+    invalid("ar_123", u"١٢٣");
+    }
+    invalid("ar_1234", u"١٢٣٤");
+    if constexpr (!QTBUG_138562) {
+    invalid("ar_a1", u"a١"); // a...aaa + Arabic 1
+    invalid("ar_aa1", u"aa١");
+    }
+    invalid("ar_aaa1", u"aaa١");
+
+    if constexpr (!QTBUG_138562) {
+    invalid("hier-A042", u"𓀰"); // EGYPTIAN HIEROGLYPH A042 U13030 (non-BMP)
+    invalid("a+hier-A042", u"a𓀰");
+    }
+
+    // valid codes with invalid characters at the end should not match valid codes:
+
+    invalid("de+null", QStringView(u"de\0", 3));
+    invalid("de+space", u"de ");     // character below [A-z]
+    invalid("de1", u"de1");          // numeric character
+    invalid("de^", u"de^");          // character between [A-Z] and [a-z]
+    invalid("de~", u"de~");          // character above [A-z]
+    invalid("de+0x80", u"de\u0080"); // negative character (if char is signed)
+    invalid("de+0xff", u"de\u00ff"); // UCHAR_MAX (if char is signed)
+    invalid("de+non-L1", u"de١");      // Arabic 1
+}
+
+void tst_QLocale::codeToLang()
+{
+    QFETCH(const QStringView, input);
+    QFETCH(const QLocale::LanguageCodeTypes, options);
+    QFETCH(const QLocale::Language, expected);
+
+    QEXPECT_FAIL("invalid:de+null", "This should probably be rejected, too", Abort);
+    QCOMPARE(QLocale::codeToLanguage(input, options), expected);
+}
+
+void tst_QLocale::codeToLcs()
+{
     QCOMPARE(QLocale::codeToTerritory(QString()), QLocale::AnyTerritory);
     QCOMPARE(QLocale::codeToTerritory(QString("ZZ")), QLocale::AnyTerritory);
     QCOMPARE(QLocale::codeToTerritory(QString("US")), QLocale::UnitedStates);
@@ -4921,6 +5076,158 @@ void tst_QLocale::codeToLcs()
     QCOMPARE(QLocale::codeToScript(QString()), QLocale::AnyScript);
     QCOMPARE(QLocale::codeToScript(QString("Zzzz")), QLocale::AnyScript);
     QCOMPARE(QLocale::codeToScript(QString("Hans")), QLocale::SimplifiedHanScript);
+    // ensure we can find the last script, too:
+    QCOMPARE(QLocale::codeToScript(QLocale::scriptToCode(QLocale::LastScript)),
+             QLocale::LastScript);
+}
+
+#if QT_HAS_LOCALE_CASE_CONVERSION
+void tst_QLocale::toLowerUpper_data()
+{
+    QTest::addColumn<QLocale>("locale");
+    QTest::addColumn<QString>("lower");
+    QTest::addColumn<QString>("upper");
+
+    const QLocale germanLocale = QLocale(u"de_DE"_s);
+    const QLocale turkishLocale = QLocale(u"tr_TR"_s);
+
+    QTest::newRow("null string default locale") << QLocale() << QString() << QString();
+    QTest::newRow("null string Turkish") << turkishLocale << QString() << QString();
+    QTest::newRow("null string German") << germanLocale << QString() << QString();
+
+    QTest::newRow("empty string default locale") << QLocale() << u""_s << u""_s;
+    QTest::newRow("empty string Turkish") << turkishLocale << u""_s << u""_s;
+    QTest::newRow("empty string German") << germanLocale << u""_s << u""_s;
+
+    QTest::newRow("ASCII i Turkish") << turkishLocale << u"i"_s << u"İ"_s;
+    QTest::newRow("ASCII i German") << germanLocale << u"i"_s << u"I"_s;
+    QTest::newRow("ASCII ı Turkish") << turkishLocale << u"ı"_s << u"I"_s;
+
+    QTest::newRow("Latin1 default locale") << QLocale() << u"é"_s << u"É"_s;
+    QTest::newRow("Latin1 Turkish") << turkishLocale << u"é"_s << u"É"_s;
+    QTest::newRow("Latin1 German") << germanLocale << u"é"_s << u"É"_s;
+
+    QTest::newRow("Replacement default locale") << QLocale() << u"\uFFFD"_s << u"\uFFFD"_s;
+    QTest::newRow("Replacement Turkish") << turkishLocale << u"\uFFFD"_s << u"\uFFFD"_s;
+    QTest::newRow("Replacement German") << germanLocale << u"\uFFFD"_s << u"\uFFFD"_s;
+
+    QTest::newRow("non-Latin1 default locale") << QLocale() << u"δ"_s << u"Δ"_s;
+    QTest::newRow("non-Latin1 Turkish") << turkishLocale << u"δ"_s << u"Δ"_s;
+    QTest::newRow("non-Latin1 German") << germanLocale << u"δ"_s << u"Δ"_s;
+    // Vithkuqi a/A:
+    QTest::newRow("non-BMP default locale") << QLocale() << u"\u10597"_s << u"\u10570"_s;
+    QTest::newRow("non-BMP Turkish") << turkishLocale << u"\u10597"_s << u"\u10570"_s;
+    QTest::newRow("non-BMP German") << germanLocale << u"\u10597"_s << u"\u10570"_s;
+
+    const QString pLowerString = QString(16, QChar('p'));
+    const QString pUpperString = QString(16, QChar('P'));
+    QTest::newRow("16 letters default locale") << QLocale() << pLowerString << pUpperString;
+    QTest::newRow("16 letters Turkish") << turkishLocale << pLowerString << pUpperString;
+    QTest::newRow("16 letters German") << germanLocale << pLowerString << pUpperString;
+
+    const QString zLowerString = QString(4096, QChar('z'));
+    const QString zUpperString = QString(4096, QChar('Z'));
+    QTest::newRow("4096 letters default locale") << QLocale() << zLowerString << zUpperString;
+    QTest::newRow("4096 letters Turkish") << turkishLocale << zLowerString << zUpperString;
+    QTest::newRow("4096 letters German") << germanLocale << zLowerString << zUpperString;
+
+    const QString iLowerString = QString(4096, u'i');
+    const QString iUpperString = QString(4096, u'İ');
+    QTest::newRow("4096 Turkiye dotted i") << turkishLocale << iLowerString << iUpperString;
+
+    const QString ILowerString = QString(4096, u'ı');
+    const QString IUpperString = QString(4096, u'I');
+    QTest::newRow("4096 Turkiye undotted I") << turkishLocale << ILowerString << IUpperString;
+}
+
+void tst_QLocale::toLowerUpper()
+{
+    QFETCH(QLocale, locale);
+    QFETCH(QString, lower);
+    QFETCH(QString, upper);
+
+    QEXPECT_FAIL("non-BMP default locale",
+                 "QTBUG-131489: Handling of code points outside BMP is broken",
+                 Abort);
+    QEXPECT_FAIL("non-BMP Turkish",
+                 "QTBUG-131489: Handling of code points outside BMP is broken",
+                 Abort);
+    QEXPECT_FAIL("non-BMP German",
+                 "QTBUG-131489: Handling of code points outside BMP is broken",
+                 Abort);
+
+    QCOMPARE(locale.toLower(upper), lower);
+    QCOMPARE(locale.toUpper(lower), upper);
+}
+
+void tst_QLocale::toLowerUpperEszett()
+{
+    const QString eszettLowerString = u"\u00DF"_s;
+    const QString eszettUpperString = u"SS"_s;
+
+    QCOMPARE(QLocale().toUpper(eszettLowerString), eszettUpperString);
+    QCOMPARE(QLocale(u"de_DE"_s).toUpper(eszettLowerString), eszettUpperString);
+    QCOMPARE(QLocale(u"tr_TR"_s).toUpper(eszettLowerString), eszettUpperString);
+}
+#endif // QT_HAS_LOCALE_CASE_CONVERSION
+
+void tst_QLocale::toLowerUpperFinalSigma_data()
+{
+    QTest::addColumn<QString>("lower");
+    QTest::addColumn<QString>("upper");
+
+    QTest::addRow("logos") << u"λογος"_s
+    //                  final sigma ↕
+                           << u"ΛΟΓΟΣ"_s;
+    QTest::addRow("music") << u"μουσικη"_s
+    //              "medial" sigma ↕
+                           << u"ΜΟΥΣΙΚΗ"_s;
+
+    //
+    // Now the same with "tonos" (stess marker):
+    //
+    //  Modern Greek uses them on lower-case, but not on upper-case words, but
+    //  Unicode/CLDR doesn't/can't have rules for adding or removing them when
+    //  case-converting.
+
+    QTest::addRow("logos+tonos") << u"λόγος"_s
+    //                        final sigma ↕
+                                 << u"ΛΌΓΟΣ"_s;
+    QTest::addRow("music+tonos") << u"μουσική"_s
+    //                    "medial" sigma ↕
+                                 << u"ΜΟΥΣΙΚΉ"_s;
+}
+
+void tst_QLocale::toLowerUpperFinalSigma()
+{
+    QFETCH(const QString, lower);
+    QFETCH(const QString, upper);
+
+    static const QLocale gr("gr_GR"_L1);
+    if constexpr (!QT_HAS_LOCALE_CASE_CONVERSION) {
+        // these fall back to QString::toLower/Upper(), so inherit QTBUG-2163
+        QEXPECT_FAIL("logos", "QTBUG-2163", Continue);
+        QEXPECT_FAIL("logos+tonos", "QTBUG-2163", Continue);
+    }
+    QCOMPARE(gr.toLower(upper), lower);
+    QCOMPARE(gr.toUpper(lower), upper);
+
+    // This ought to be a property of the script, so locale-independent:
+    static const QLocale c("C"_L1);
+    if constexpr (!QT_HAS_LOCALE_CASE_CONVERSION) {
+        // these fall back to QString::toLower/Upper(), so inherit QTBUG-2163
+        QEXPECT_FAIL("logos", "QTBUG-2163", Continue);
+        QEXPECT_FAIL("logos+tonos", "QTBUG-2163", Continue);
+    }
+    QCOMPARE(c.toLower(upper), lower);
+    QCOMPARE(c.toUpper(lower), upper);
+
+    // For comparison: locale-independent QString::toUpper/Lower():
+    // Qt's own implementation does it wrong:
+    QEXPECT_FAIL("logos", "QTBUG-2163", Continue);
+    QEXPECT_FAIL("logos+tonos", "QTBUG-2163", Continue);
+    QCOMPARE(upper.toLower(), lower);
+    QCOMPARE(lower.toUpper(), upper);
 }
 
 QTEST_MAIN(tst_QLocale)

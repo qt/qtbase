@@ -1,6 +1,13 @@
 // Copyright (C) 2022 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
 
+/*!
+    \headerfile <QtMinMax>
+    \inmodule QtCore
+    \ingroup funclists
+    \brief Functions for limiting a value to lower and/or upper bounds.
+*/
+
 /*! \fn template <typename T> const T &qMin(const T &a, const T &b)
     \relates <QtMinMax>
 

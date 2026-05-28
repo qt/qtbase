@@ -1,6 +1,6 @@
 // Copyright (C) 2024 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
-// Qt-Security score:critical reason:executing-external-code
+// Qt-Security score:critical reason:execute-external-code
 
 package org.qtproject.qt.android;
 
@@ -210,6 +210,7 @@ abstract class QtView extends ViewGroup {
         if (m_parentWindowReference != 0L)
             deleteWindow(m_parentWindowReference);
         m_parentWindowReference = 0L;
+        setWindowReference(0L);
     }
 
     QtWindow getQtWindow() {

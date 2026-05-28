@@ -2,6 +2,13 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
 
 /*!
+    \headerfile <QTypeInfo>
+    \inmodule QtCore
+    \ingroup funclists
+    \brief Macros for specifying information about custom types.
+*/
+
+/*!
     \macro Q_DECLARE_TYPEINFO(Type, Flags)
     \relates <QTypeInfo>
 

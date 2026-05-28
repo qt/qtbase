@@ -159,7 +159,8 @@ function(qt_internal_add_plugin target)
 
     qt_set_common_target_properties("${target}")
     qt_internal_add_target_aliases("${target}")
-    qt_skip_warnings_are_errors_when_repo_unclean("${target}")
+
+    qt_internal_default_warnings_are_errors("${target}")
 
     set_target_properties("${target}" PROPERTIES
         LIBRARY_OUTPUT_DIRECTORY "${output_directory}"
@@ -422,7 +423,7 @@ function(qt_internal_add_plugin target)
 
     if(QT_GENERATE_SBOM)
         set(sbom_args "")
-        list(APPEND sbom_args TYPE QT_PLUGIN)
+        list(APPEND sbom_args DEFAULT_SBOM_ENTITY_TYPE QT_PLUGIN)
 
         qt_get_cmake_configurations(configs)
         foreach(config IN LISTS configs)
@@ -524,6 +525,7 @@ function(qt_internal_add_darwin_permission_plugin permission)
         DEFAULT_IF FALSE
         SOURCES
             ${permission_source_file}
+            platform/darwin/qdarwinpermissionplugin_p_p.h
         DEFINES
             QT_DARWIN_PERMISSION_PLUGIN=${permission}
         LIBRARIES

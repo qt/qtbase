@@ -151,7 +151,8 @@ public:
                                  const QRegion &region,
                                  const QPoint &offset,
                                  QPlatformTextureList *textures,
-                                 bool translucentBackground);
+                                 bool translucentBackground,
+                                 qreal sourceTransformFactor = 0);
 
     virtual QImage toImage() const;
 

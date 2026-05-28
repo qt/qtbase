@@ -1,3 +1,109 @@
+CHANGES BETWEEN 2.14.0 and 2.14.1 (2025-Sep-11)
+
+  I. IMPORTANT BUG FIXES
+
+  - This is  an emergency release that  fixes a couple of  severe bugs
+    introduced  in  version  2.14.0  and discovered  right  after  the
+    release; see issues  #1349, #1353, #1354, #1355, and  #1356 in our
+    bug tracker at
+
+      https://gitlab.freedesktop.org/freetype/freetype/-/issues
+
+
+======================================================================
+
+CHANGES BETWEEN 2.13.3 and 2.14.0 (2025-Sep-06)
+
+  I. IMPORTANT CHANGES
+
+  - A new  configuration macro `FT_CONFIG_OPTION_USE_HARFBUZZ_DYNAMIC`
+    is available to load the HarfBuzz library dynamically (in addition
+    to the standard static and  dynamic linking modes);  cmake, meson,
+    and autotools support have  been updated  accordingly.  Using this
+    new feature  makes  it possible  to avoid  the circular dependency
+    between HarfBuzz and FreeType.
+
+    A  side effect  of this  change is  that FreeType  no longer  uses
+    HarfBuzz header files (if HarfBuzz support is activated).
+
+    This code was contributed by Behdad Esfahbod.
+
+  - The auto-hinter got new abilities.
+
+    . It can now better separate  diacritic glyphs from base glyphs at
+      small sizes  by artificially moving  diacritics up (or  down) if
+      necessary.
+
+    . Tilde accent  glyphs get vertically stretched at  small sizes so
+      that they don't degenerate to horizontal lines.
+
+    . Diacritics directly attached to a base glyph (like the ogonek in
+      character 'ę') no longer distort the shape of the base glyph.
+
+    These features  use a  database (which  currently has  entries for
+    Unicode characters up to U+FFFF,  based on Unicode 17.0), handling
+    scripts like  Latin, Cyrillic, or  Greek, but not Arabic  or Indic
+    scripts.  FreeType needs to access  a proper Unicode character map
+    (or must be able to construct such a cmap) of a given font to make
+    this work.
+
+    The central algorithm and the foundation of this feature was Craig
+    White's GSoC 2023 project.
+
+  - Bitmap-only TrueType fonts now ignore the `FT_LOAD_NO_BITMAP` flag
+    and  proceed loading  bitmaps instead  of giving  an error.   This
+    behavior  is  documented  and implemented  for  other  bitmap-only
+    fonts.  The flag  was always meant to suppress  the bitmap strikes
+    in favor of outlines, not to ban them completely.
+
+
+  II. IMPORTANT BUG FIXES
+
+  - Users of the `TT_CONFIG_OPTION_GPOS_KERNING`  configuration option
+    should update;  the 'GPOS' table wasn't correctly validated before
+    access, which could lead to crashes with malformed font files.
+
+
+  III. MISCELLANEOUS
+
+  - `FT_Set_Var_Design_Coordinates`  and `FT_Set_MM_Blend_Coordinates`
+    now set the `FT_FACE_FLAG_VARIATION`  bit in the `face_flag` field
+    of `FT_Face` (i.e., the macro `FT_IS_VARIATION` returns true) also
+    if any  of the provided  coordinates is different from  the face's
+    default value for the corresponding axis, that is, the set up face
+    is not at its default position.
+
+  - `FT_Load_Sfnt_Table` can now also load a font's table directory.
+
+  - The TrueType  instruction interpreter  was optimized to  produce a
+    15% gain in the glyph loading speed.
+
+  - Handling of Variation Fonts is now considerably faster,  thanks to
+    contributions by Behdad Esfahbod.
+
+  - TrueType and CFF glyph loading speed has been improved by 5-10% on
+    modern 64-bit platforms  as  a result of better handling of fixed-
+    point multiplication.
+
+  - The BDF driver now loads fonts 75% faster.
+
+  - 'GPOS' kern table handling (if the `TT_CONFIG_OPTION_GPOS_KERNING`
+    configuration option is active) is now about 3.5 times faster than
+    before.
+
+  - Support for  the (currently  undocumented) 'flip' graphic  type in
+    the 'sbix' SFNT table as used  in the `Apple Color Emoji.ttc` font
+    (code provided by Andrew Murray).
+
+  - `ftmulti` can now scroll  through named instances  and  gracefully
+    show static fonts.
+
+  - The build file on OpenVMS now also creates a 32-bit version of the
+    library.
+
+
+======================================================================
+
 CHANGES BETWEEN 2.13.2 and 2.13.3 (2024-Aug-11)
 
   I. IMPORTANT CHANGES
@@ -103,7 +209,7 @@ CHANGES BETWEEN 2.12.1 and 2.13.0 (2023-Feb-09)
 
   - The 'COLR' v1 API is now considered as stable.
 
-      https://learn.microsoft.com/en-us/typography/opentype/spec/colr
+      https://learn.microsoft.com/typography/opentype/spec/colr
 
 
   II. MISCELLANEOUS
@@ -332,6 +438,10 @@ CHANGES BETWEEN 2.10.4 and 2.11.0 (2021-Jul-18)
         Dereference  an  `FT_OpaquePaint`   object  and  retrieve  the
         corresponding `FT_COLR_Paint`  object, which  contains details
         on how to draw the respective 'COLR' v1 `Paint` table.
+
+    Please note that FreeType does *not* provide rendering support for
+    'COLR' v1 but  only parsing of  this table.  You need  a dedicated
+    graphics library like Skia or Cairo for rendering.
 
 
   II. MISCELLANEOUS
@@ -579,7 +689,7 @@ CHANGES BETWEEN 2.9.1 and 2.10.0 (2019-Mar-15)
           Set text foreground color for palette index 0xFFFF.
 
         FT_Get_Color_Glyph_Layer
-          Get color layers for a given glyph (using an interator
+          Get color layers for a given glyph (using an iterator
           object).
 
         FT_Bitmap_Blend
@@ -2012,7 +2122,7 @@ CHANGES BETWEEN 2.4.10 and 2.4.11 (2012-Dec-20)
     - Subpixel  hinting support  has been  contributed by  Infinality,
       based on Greg Hitchcock's whitepaper at
 
-        https://www.microsoft.com/typography/cleartype/truetypecleartype.aspx
+        https://learn.microsoft.com/typography/cleartype/truetypecleartype
 
       Originally, it was a separate patch available from
 
@@ -2985,7 +3095,7 @@ CHANGES BETWEEN 2.2 and 2.1.10
       We provide  patches for  most of those  rogue clients.   See the
       following page for more information:
 
-        https://www.freetype.org/freetype2/patches/rogue-patches.html
+        https://freetype.org/freetype2/patches/rogue-patches.html
 
       Note that, as  a convenience to our Unix  desktop users, version
       2.2 is *binary* compatible with FreeType 2.1.7, which means that
@@ -3774,7 +3884,7 @@ CHANGES BETWEEN 2.1.3 and 2.1.2
       quality since  many nasty defaults have been suppressed.  Please
       visit the web page:
 
-        https://www.freetype.org/hinting/smooth-hinting.html
+        https://freetype.org/hinting/smooth-hinting.html
 
       for additional details on this topic.
 
@@ -4022,7 +4132,7 @@ CHANGES BETWEEN 2.1.0 and 2.0.9
 
       """
         Portions of this software are copyright © 1996-2002 The
-        FreeType Project (www.freetype.org).  All rights reserved.
+        FreeType Project (https://freetype.org).  All rights reserved.
       """
 
     - The default size of the render pool has been reduced to 16kByte.
@@ -4033,7 +4143,7 @@ CHANGES BETWEEN 2.1.0 and 2.0.9
     - The  FreeType 2  redesign has  begun.  More  information  can be
       found at this URL:
 
-        https://www.freetype.org/freetype2/redesign.html
+        https://freetype.org/freetype2/redesign.html
 
       The following  internal changes  have been performed  within the
       sources of this release:
@@ -4624,7 +4734,7 @@ CHANGES BETWEEN 2.0.2 and 2.0.1
 
       For more information, see section I of the following document:
 
-        https://www.freetype.org/freetype2/docs/tutorial/step1.html
+        https://freetype.org/freetype2/docs/tutorial/step1.html
 
     - Many, many comments have been added to the public source file in
       order to  automatically generate  the API Reference  through the
@@ -4633,7 +4743,7 @@ CHANGES BETWEEN 2.0.2 and 2.0.1
       The latter has been updated  to support the grouping of sections
       in chapters and better index sort.  See:
 
-        https://www.freetype.org/freetype2/docs/reference/ft2-toc.html
+        https://freetype.org/freetype2/docs/reference/ft2-toc.html
 
 
   III. CHANGES TO THE BUILD PROCESS
@@ -5708,7 +5818,7 @@ Extensions support:
 
 ------------------------------------------------------------------------
 
-Copyright (C) 2000-2024 by
+Copyright (C) 2000-2025 by
 David Turner, Robert Wilhelm, and Werner Lemberg.
 
 This  file  is  part  of the  FreeType  project, and may  only be  used,

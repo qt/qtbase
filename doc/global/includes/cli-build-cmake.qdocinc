@@ -28,7 +28,7 @@
     \badcode \QtVersion
     md notepad-build
     cd notepad-build
-    C:\Qt\\1\msvc2019_64\bin\qt-cmake -GNinja C:\Examples\notepad
+    C:\Qt\\1\msvc2022_64\bin\qt-cmake -GNinja C:\Examples\notepad
     ninja
     \endcode
 

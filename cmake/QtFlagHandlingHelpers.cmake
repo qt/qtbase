@@ -326,17 +326,23 @@ function(qt_internal_set_exceptions_flags target exceptions_on)
     target_compile_options("${target}" PRIVATE ${_flag})
 endfunction()
 
+# Deprecated. Replaced by qt_internal_set_skip_warnings_are_errors.
 function(qt_skip_warnings_are_errors target)
-    get_target_property(target_type "${target}" TYPE)
-    if(target_type STREQUAL "INTERFACE_LIBRARY")
-        return()
-    endif()
-    set_target_properties("${target}" PROPERTIES QT_SKIP_WARNINGS_ARE_ERRORS ON)
+    qt_internal_set_skip_warnings_are_errors(${target} TRUE)
 endfunction()
 
-function(qt_skip_warnings_are_errors_when_repo_unclean target)
-    if(QT_REPO_NOT_WARNINGS_CLEAN)
-        qt_skip_warnings_are_errors("${target}")
+# Controls the QT_SKIP_WARNINGS_ARE_ERRORS property for the given target.
+function(qt_internal_set_skip_warnings_are_errors target value)
+    _qt_internal_set_skip_warnings_are_errors("${target}" "${value}")
+endfunction()
+
+# Sets the default warnings behavior according to the WARNINGS_ARE_ERRORS and
+# QT_REPO_NOT_WARNINGS_CLEAN flags.
+function(qt_internal_default_warnings_are_errors target)
+    if(WARNINGS_ARE_ERRORS AND NOT QT_REPO_NOT_WARNINGS_CLEAN)
+        qt_internal_set_skip_warnings_are_errors("${target}" FALSE)
+    else()
+        qt_internal_set_skip_warnings_are_errors("${target}" TRUE)
     endif()
 endfunction()
 
@@ -366,7 +372,9 @@ endfunction()
 
 function(qt_set_language_standards)
     ## Use the latest standard the compiler supports (same as qt_common.prf)
-    if (QT_FEATURE_cxx2b)
+    if (QT_FEATURE_cxx2c)
+        set(CMAKE_CXX_STANDARD 26 PARENT_SCOPE)
+    elseif (QT_FEATURE_cxx2b)
         set(CMAKE_CXX_STANDARD 23 PARENT_SCOPE)
     elseif (QT_FEATURE_cxx20)
         set(CMAKE_CXX_STANDARD 20 PARENT_SCOPE)

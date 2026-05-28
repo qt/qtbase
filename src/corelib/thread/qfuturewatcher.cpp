@@ -1,5 +1,6 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+// Qt-Security score:significant reason:default
 
 #include "qfuturewatcher.h"
 #include "qfuturewatcher_p.h"
@@ -662,7 +663,7 @@ QT_WARNING_POP
     \fn template <typename T> void QFutureWatcher<T>::progressRangeChanged(int minimum, int maximum)
 
     The progress range for the watched future has changed to \a minimum and
-    \a maximum
+    \a maximum.
 */
 
 /*!

@@ -1,6 +1,7 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // Copyright (C) 2016 Intel Corporation.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+// Qt-Security score:significant reason:default
 
 #include "qthread.h"
 #include "qthreadstorage.h"
@@ -273,7 +274,7 @@ QThreadPrivate::~QThreadPrivate()
     \l{Mandelbrot} example, as that is the name of the QThread subclass).
     Note that this is currently not available with release builds on Windows.
 
-    \sa {Thread Support in Qt}, QThreadStorage, {Synchronizing Threads},
+    \sa {Multi-threading in Qt}, QThreadStorage, {Synchronizing Threads},
         Mandelbrot, {Producer and Consumer using Semaphores},
         {Producer and Consumer using Wait Conditions}
 */

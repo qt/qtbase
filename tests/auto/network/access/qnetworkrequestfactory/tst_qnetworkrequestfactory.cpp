@@ -65,6 +65,15 @@ void tst_QNetworkRequestFactory::urlAndPath_data()
     QTest::newRow("baseUrl_withpath_withslash_2") << base << u"/path/to"_s << result;
     QTest::newRow("baseUrl_withpath_withslash_3") << base << u"path/to"_s << result;
 
+    base.setUrl("http://xyz.io/v1/");
+    // if '!' isn't encoded, it stays not encoded.
+    result.setUrl("http://xyz.io/v1/path/to/Hello%20World!.xml");
+    QTest::newRow("baseUrl_withpath_not_encoded_1") << base << u"/path/to/Hello%20World!.xml"_s << result;
+
+    // if '!' is encoded, then createRequest() should NOT decode it, see QTBUG-138878
+    result.setUrl("http://xyz.io/v1/path/to/Hello%20World%21.xml");
+    QTest::newRow("baseUrl_withpath_encoded_2") << base << u"/path/to/Hello%20World%21.xml"_s << result;
+
     // Currently we keep any double '//', but not sure if there is a use case for it, or could
     // it be corrected to a single '/'
     base.setUrl("http://xyz.io/v1//");
@@ -93,7 +102,10 @@ void tst_QNetworkRequestFactory::urlAndPath()
     QNetworkRequest request = factory1.createRequest();
     QCOMPARE(request.url(), baseUrl); // No path was provided for createRequest(), expect baseUrl
     request = factory1.createRequest(requestPath);
+
     QCOMPARE(request.url(), expectedRequestUrl);
+    QCOMPARE(request.url().toEncoded(), expectedRequestUrl.toEncoded());
+    QCOMPARE(request.url().toString(), expectedRequestUrl.toString());
 
     // Check the request path didn't change base url
     QCOMPARE(factory1.baseUrl(), baseUrl);

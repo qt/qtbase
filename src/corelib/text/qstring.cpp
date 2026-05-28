@@ -1239,23 +1239,12 @@ Q_NEVER_INLINE static int ucstricmp(qsizetype alen, const char16_t *a, qsizetype
 // Case-insensitive comparison between a Unicode string and a UTF-8 string
 Q_NEVER_INLINE static int ucstricmp8(const char *utf8, const char *utf8end, const QChar *utf16, const QChar *utf16end)
 {
-    auto src1 = reinterpret_cast<const uchar *>(utf8);
-    auto end1 = reinterpret_cast<const uchar *>(utf8end);
+    auto src1 = reinterpret_cast<const qchar8_t *>(utf8);
+    auto end1 = reinterpret_cast<const qchar8_t *>(utf8end);
     QStringIterator src2(utf16, utf16end);
 
     while (src1 < end1 && src2.hasNext()) {
-        char32_t decoded[1];
-        char32_t *output = decoded;
-        char32_t &uc1 = decoded[0];
-        uchar b = *src1++;
-        const qsizetype res = QUtf8Functions::fromUtf8<QUtf8BaseTraits>(b, output, src1, end1);
-        if (res < 0) {
-            // decoding error
-            uc1 = QChar::ReplacementCharacter;
-        } else {
-            uc1 = QChar::toCaseFolded(uc1);
-        }
-
+        char32_t uc1 = QChar::toCaseFolded(QUtf8Functions::nextUcs4FromUtf8(src1, end1));
         char32_t uc2 = QChar::toCaseFolded(src2.next());
         int diff = uc1 - uc2;   // can't underflow
         if (diff)
@@ -1645,7 +1634,11 @@ static int qArgDigitValue(QChar ch) noexcept
 
 #if QT_CONFIG(regularexpression)
 Q_DECL_COLD_FUNCTION
-void qtWarnAboutInvalidRegularExpression(const QString &pattern, const char *where);
+static void qtWarnAboutInvalidRegularExpression(const QRegularExpression &re, const char *cls, const char *method)
+{
+    extern void qtWarnAboutInvalidRegularExpression(const QString &pattern, const char *cls, const char *method);
+    qtWarnAboutInvalidRegularExpression(re.pattern(), cls, method);
+}
 #endif
 
 /*!
@@ -2815,7 +2808,7 @@ void QString::reallocData(qsizetype alloc, QArrayData::AllocationOption option)
         if (dd.size > 0)
             ::memcpy(dd.data(), d.data(), dd.size * sizeof(QChar));
         dd.data()[dd.size] = 0;
-        d = dd;
+        d.swap(dd);
     } else {
         d->reallocate(alloc, option);
     }
@@ -2831,7 +2824,7 @@ void QString::reallocGrowData(qsizetype n)
         Q_CHECK_PTR(dd.data());
         dd->copyAppend(d.data(), d.data() + d.size);
         dd.data()[dd.size] = 0;
-        d = dd;
+        d.swap(dd);
     } else {
         d->reallocate(d.constAllocatedCapacity() + n, QArrayData::Grow);
     }
@@ -4729,7 +4722,7 @@ Q_DECLARE_TYPEINFO(QStringCapture, Q_PRIMITIVE_TYPE);
 QString &QString::replace(const QRegularExpression &re, const QString &after)
 {
     if (!re.isValid()) {
-        qtWarnAboutInvalidRegularExpression(re.pattern(), "QString::replace");
+        qtWarnAboutInvalidRegularExpression(re, "QString", "replace");
         return *this;
     }
 
@@ -5166,10 +5159,8 @@ QString QString::section(const QString &sep, qsizetype start, qsizetype end, Sec
 }
 
 #if QT_CONFIG(regularexpression)
-class qt_section_chunk {
-public:
-    qt_section_chunk() {}
-    qt_section_chunk(qsizetype l, QStringView s) : length(l), string(std::move(s)) {}
+struct qt_section_chunk
+{
     qsizetype length;
     QStringView string;
 };
@@ -5251,7 +5242,7 @@ static QString extractSections(QSpan<qt_section_chunk> sections, qsizetype start
 QString QString::section(const QRegularExpression &re, qsizetype start, qsizetype end, SectionFlags flags) const
 {
     if (!re.isValid()) {
-        qtWarnAboutInvalidRegularExpression(re.pattern(), "QString::section");
+        qtWarnAboutInvalidRegularExpression(re, "QString", "section");
         return QString();
     }
 
@@ -5269,11 +5260,11 @@ QString QString::section(const QRegularExpression &re, qsizetype start, qsizetyp
     while (iterator.hasNext()) {
         QRegularExpressionMatch match = iterator.next();
         m = match.capturedStart();
-        sections.append(qt_section_chunk(last_len, QStringView{ *this }.sliced(last_m, m - last_m)));
+        sections.append(qt_section_chunk{last_len, QStringView{*this}.sliced(last_m, m - last_m)});
         last_m = m;
         last_len = match.capturedLength();
     }
-    sections.append(qt_section_chunk(last_len, QStringView{ *this }.sliced(last_m, n - last_m)));
+    sections.append(qt_section_chunk{last_len, QStringView{*this}.sliced(last_m, n - last_m)});
 
     return extractSections(sections, start, end, flags);
 }
@@ -5580,7 +5571,7 @@ static bool checkCase(QStringView s, QUnicodeTables::Case c) noexcept
     QStringIterator it(s);
     while (it.hasNext()) {
         const char32_t uc = it.next();
-        if (qGetProp(uc)->cases[c].diff)
+        if (caseConversion(uc)[c].diff)
             return false;
     }
     return true;
@@ -7200,7 +7191,7 @@ static QString convertCase(T &str, QUnicodeTables::Case which)
     QStringIterator it(p, e);
     while (it.hasNext()) {
         const char32_t uc = it.next();
-        if (qGetProp(uc)->cases[which].diff) {
+        if (caseConversion(uc)[which].diff) {
             it.recede();
             return detachAndConvertCase(str, it, which);
         }
@@ -7300,7 +7291,7 @@ QString QString::asprintf(const char *cformat, ...)
 {
     va_list ap;
     va_start(ap, cformat);
-    const QString s = vasprintf(cformat, ap);
+    QString s = vasprintf(cformat, ap);
     va_end(ap);
     return s;
 }
@@ -8301,7 +8292,7 @@ static ResultList splitString(const String &source, const QRegularExpression &re
 {
     ResultList list;
     if (!re.isValid()) {
-        qtWarnAboutInvalidRegularExpression(re.pattern(), "QString::split");
+        qtWarnAboutInvalidRegularExpression(re, "QString", "split");
         return list;
     }
 
@@ -10096,7 +10087,7 @@ qsizetype QtPrivate::lastIndexOf(QLatin1StringView haystack, qsizetype from, QLa
 qsizetype QtPrivate::indexOf(QStringView viewHaystack, const QString *stringHaystack, const QRegularExpression &re, qsizetype from, QRegularExpressionMatch *rmatch)
 {
     if (!re.isValid()) {
-        qtWarnAboutInvalidRegularExpression(re.pattern(), "QString(View)::indexOf");
+        qtWarnAboutInvalidRegularExpression(re, "QString(View)", "indexOf");
         return -1;
     }
 
@@ -10121,7 +10112,7 @@ qsizetype QtPrivate::indexOf(QStringView haystack, const QRegularExpression &re,
 qsizetype QtPrivate::lastIndexOf(QStringView viewHaystack, const QString *stringHaystack, const QRegularExpression &re, qsizetype from, QRegularExpressionMatch *rmatch)
 {
     if (!re.isValid()) {
-        qtWarnAboutInvalidRegularExpression(re.pattern(), "QString(View)::lastIndexOf");
+        qtWarnAboutInvalidRegularExpression(re, "QString(View)", "lastIndexOf");
         return -1;
     }
 
@@ -10153,7 +10144,7 @@ qsizetype QtPrivate::lastIndexOf(QStringView haystack, const QRegularExpression 
 bool QtPrivate::contains(QStringView viewHaystack, const QString *stringHaystack, const QRegularExpression &re, QRegularExpressionMatch *rmatch)
 {
     if (!re.isValid()) {
-        qtWarnAboutInvalidRegularExpression(re.pattern(), "QString(View)::contains");
+        qtWarnAboutInvalidRegularExpression(re, "QString(View)", "contains");
         return false;
     }
     QRegularExpressionMatch m = stringHaystack
@@ -10173,7 +10164,7 @@ bool QtPrivate::contains(QStringView haystack, const QRegularExpression &re, QRe
 qsizetype QtPrivate::count(QStringView haystack, const QRegularExpression &re)
 {
     if (!re.isValid()) {
-        qtWarnAboutInvalidRegularExpression(re.pattern(), "QString(View)::count");
+        qtWarnAboutInvalidRegularExpression(re, "QString(View)", "count");
         return 0;
     }
     qsizetype count = 0;

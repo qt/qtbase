@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qrhibackingstore_p.h"
+#include "qpa/qplatformwindow.h"
 #include <private/qimage_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -43,10 +44,22 @@ void QRhiBackingStore::flush(QWindow *flushedWindow, const QRegion &region, cons
         createRhi(flushedWindow, rhiConfig);
     }
 
+    // The backing store operates on behalf of its window(), even if we're
+    // flushing a child window, so pull the source DPR from the window().
+    const qreal sourceDevicePixelRatio = window()->devicePixelRatio();
+
+    // QBackingStore::flush will convert the region and offset from device independent
+    // pixels to native pixels before calling QPlatformBackingStore::flush, which means
+    // we can't pass on the window's DPR as the sourceTransformFactor, as that will include
+    // the Qt scale factor, which has already been applied. Instead we ask the platform
+    // window, which only reflect the remaining scale factor from the OS.
+    const qreal sourceTransformFactor = flushedWindow->handle()->devicePixelRatio();
+
     static QPlatformTextureList emptyTextureList;
     bool translucentBackground = m_image.hasAlphaChannel();
-    rhiFlush(flushedWindow, flushedWindow->devicePixelRatio(),
-        region, offset, &emptyTextureList, translucentBackground);
+    rhiFlush(flushedWindow, sourceDevicePixelRatio,
+        region, offset, &emptyTextureList, translucentBackground,
+        sourceTransformFactor);
 }
 
 QImage::Format QRhiBackingStore::format() const

@@ -160,9 +160,9 @@ void QWindowsUiaMainProvider::notifyValueChange(QAccessibleValueChangeEvent *eve
 void QWindowsUiaMainProvider::notifyNameChange(QAccessibleEvent *event)
 {
     if (QAccessibleInterface *accessible = event->accessibleInterface()) {
-        // Restrict notification to combo boxes, which need it for accessibility,
-        // in order to avoid slowdowns with unnecessary notifications.
-        if (accessible->role() == QAccessible::ComboBox) {
+        // Restrict notification to combo boxes and the currently focused element, which
+        // need it for accessibility, in order to avoid slowdowns with unnecessary notifications.
+        if (accessible->role() == QAccessible::ComboBox || accessible->state().focused) {
             if (auto provider = providerForAccessible(accessible)) {
                 QComVariant oldVal;
                 QComVariant newVal{ accessible->text(QAccessible::Name) };
@@ -502,6 +502,10 @@ HRESULT QWindowsUiaMainProvider::GetPropertyValue(PROPERTYID idProp, VARIANT *pR
     case UIA_AccessKeyPropertyId:
         // Accelerator key.
         *pRetVal = QComVariant{ accessible->text(QAccessible::Accelerator) }.release();
+        break;
+    case UIA_AriaRolePropertyId:
+        if (accessible->role() == QAccessible::Heading)
+            *pRetVal = QComVariant{ QStringLiteral("heading") }.release();
         break;
     case UIA_AriaPropertiesPropertyId:
         setAriaProperties(accessible, pRetVal);

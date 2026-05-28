@@ -4,7 +4,7 @@
 #ifndef QWINEVENTNOTIFIER_H
 #define QWINEVENTNOTIFIER_H
 
-#include "QtCore/qobject.h"
+#include <QtCore/qobject.h>
 
 #if defined(Q_OS_WIN) || defined(Q_QDOC)
 

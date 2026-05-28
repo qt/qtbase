@@ -211,7 +211,7 @@ function(qt_internal_add_tool target_name)
 
     if(QT_GENERATE_SBOM)
         set(sbom_args "")
-        list(APPEND sbom_args TYPE QT_TOOL)
+        list(APPEND sbom_args DEFAULT_SBOM_ENTITY_TYPE QT_TOOL)
     endif()
 
     if(NOT arg_NO_INSTALL AND arg_TOOLS_TARGET)

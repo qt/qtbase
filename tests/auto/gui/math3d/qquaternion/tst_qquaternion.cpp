@@ -1055,11 +1055,20 @@ void tst_QQuaternion::fromEulerAngles_data()
     QTest::newRow("xonly")
         << 90.0f << 0.0f << 0.0f << QQuaternion(0.707107f, 0.707107f, 0.0f, 0.0f);
 
+    QTest::newRow("xonly-opposite")
+        << -90.0f << 0.0f << 0.0f << QQuaternion{M_SQRT1_2, -M_SQRT1_2, 0, 0};
+
     QTest::newRow("yonly")
         << 0.0f << 180.0f << 0.0f << QQuaternion(0.0f, 0.0f, 1.0f, 0.0f);
 
+    QTest::newRow("yonly-opposite")
+        << 0.0f << -180.0f << 0.0f << QQuaternion(0.0f, 0.0f, -1.0f, 0.0f);
+
     QTest::newRow("zonly")
         << 0.0f << 0.0f << 270.0f << QQuaternion(-0.707107f, 0.0f, 0.0f, 0.707107f);
+
+    QTest::newRow("zonly-opposite")
+        << 0.0f << 0.0f << -270.0f << QQuaternion(-M_SQRT1_2, 0.0f, 0.0f, M_SQRT1_2);
 
     QTest::newRow("x+z")
         << 30.0f << 0.0f << 45.0f << QQuaternion(0.892399f, 0.239118f, -0.099046f, 0.369644f);

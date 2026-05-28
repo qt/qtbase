@@ -59,9 +59,23 @@ instructions:
         userMessageOnFailure: >
           Failed to run cmake -P ensure_pro_file.cmake
 
+      - type: EnvironmentVariable
+        variableName: QMAKE_ARGS
+        variableValue: ""
+      - type: Group
+        instructions:
+          - type: AppendToEnvironmentVariable
+            variableName: QMAKE_ARGS
+            variableValue: "CONFIG+=ccache QMAKE_CACHE_LAUNCHER_PREFIX=sccache"
+        enable_if:
+          condition: property
+          property: features
+          contains_value: Sccache
+
       # Run qmake to configure the examples. The env prefix is important for qemu.
       - type: ExecuteCommand
-        command: "{{.Env.CALL_MAKE_ENV_PREFIX}} {{.Env.COIN_QMAKE_LOCATION}} {{.Env.COIN_EXAMPLES_SOURCE_LOCATION}}"
+        command: "{{.Env.CALL_MAKE_ENV_PREFIX}} {{.Env.COIN_QMAKE_LOCATION}} {{.Env.COIN_EXAMPLES_SOURCE_LOCATION}} {{.Env.QMAKE_ARGS}}"
+        executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
         maxTimeInSeconds: 6000
         maxTimeBetweenOutput: 1200
         userMessageOnFailure: >

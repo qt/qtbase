@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestCase name="tst_ThrowOnFailAndSkip">
+  <Environment>
+    <QtVersion>@INSERT_QT_VERSION_HERE@</QtVersion>
+    <QtBuild/>
+    <QTestVersion>@INSERT_QT_VERSION_HERE@</QTestVersion>
+  </Environment>
+  <TestFunction name="initTestCase">
+    <Incident type="pass" file="" line="0" />
+    <Duration msecs="0"/>
+  </TestFunction>
+  <TestFunction name="throwOnFail">
+    <Incident type="fail" file="qtbase&#x002D;submit/tests/auto/testlib/selftests/throwonfailandskip/tst_throwonfailandskip.cpp" line="0">
+      <Description><![CDATA[Compared values are not the same
+   Actual   (i) : 17
+   Expected (42): 42]]></Description>
+    </Incident>
+    <Duration msecs="0"/>
+  </TestFunction>
+  <TestFunction name="throwOnSkip">
+    <Incident type="skip" file="qtbase&#x002D;submit/tests/auto/testlib/selftests/throwonfailandskip/tst_throwonfailandskip.cpp" line="0">
+      <Description><![CDATA[skipped]]></Description>
+    </Incident>
+    <Duration msecs="0"/>
+  </TestFunction>
+  <TestFunction name="throwOnFailWorksFromConcurrent">
+    <Incident type="fail" file="qtbase&#x002D;submit/tests/auto/testlib/selftests/throwonfailandskip/tst_throwonfailandskip.cpp" line="0">
+      <Description><![CDATA[The computed value is expected to be different from the baseline, but is not
+   Computed (i) : 42
+   Baseline (42): 42]]></Description>
+    </Incident>
+    <Duration msecs="0"/>
+  </TestFunction>
+  <TestFunction name="throwOnSkipWorksFromConcurrent">
+    <Incident type="skip" file="qtbase&#x002D;submit/tests/auto/testlib/selftests/throwonfailandskip/tst_throwonfailandskip.cpp" line="0">
+      <Description><![CDATA[skipped from QtConcurrent::run()]]></Description>
+    </Incident>
+    <Duration msecs="0"/>
+  </TestFunction>
+  <TestFunction name="cleanupTestCase">
+    <Incident type="pass" file="" line="0" />
+    <Duration msecs="0"/>
+  </TestFunction>
+  <Duration msecs="0"/>
+</TestCase>

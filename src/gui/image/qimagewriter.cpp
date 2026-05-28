@@ -176,12 +176,11 @@ static QImageIOHandler *createWriteHandlerHelper(QIODevice *device,
     }
 
 #ifndef QT_NO_IMAGEFORMATPLUGIN
-    if (!testFormat.isEmpty()) {
+    if (!handler && !testFormat.isEmpty()) {
         const int keyCount = keyMap.size();
         for (int i = 0; i < keyCount; ++i) {
             QImageIOPlugin *plugin = qobject_cast<QImageIOPlugin *>(l->instance(i));
             if (plugin && (plugin->capabilities(device, testFormat) & QImageIOPlugin::CanWrite)) {
-                delete handler;
                 handler = plugin->create(device, testFormat);
                 break;
             }

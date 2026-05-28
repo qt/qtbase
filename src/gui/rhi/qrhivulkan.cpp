@@ -2014,6 +2014,10 @@ bool QRhiVulkan::recreateSwapChain(QRhiSwapChain *swapChain)
         }
 
         image.lastUse = QVkSwapChain::ImageResources::ScImageUseNone;
+
+        VkSemaphoreCreateInfo semInfo = {};
+        semInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+        df->vkCreateSemaphore(dev, &semInfo, nullptr, &image.drawSem);
     }
     if (stereo) {
         for (int i = 0; i < swapChainD->bufferCount; ++i) {
@@ -2042,6 +2046,10 @@ bool QRhiVulkan::recreateSwapChain(QRhiSwapChain *swapChain)
                 return false;
             }
 
+            VkSemaphoreCreateInfo semInfo = {};
+            semInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+            df->vkCreateSemaphore(dev, &semInfo, nullptr, &image.drawSem);
+
             image.lastUse = QVkSwapChain::ImageResources::ScImageUseNone;
         }
     }
@@ -2058,7 +2066,6 @@ bool QRhiVulkan::recreateSwapChain(QRhiSwapChain *swapChain)
         frame.imageSemWaitable = false;
 
         df->vkCreateSemaphore(dev, &semInfo, nullptr, &frame.imageSem);
-        df->vkCreateSemaphore(dev, &semInfo, nullptr, &frame.drawSem);
 
         err = df->vkCreateFence(dev, &fenceInfo, nullptr, &frame.cmdFence);
         if (err != VK_SUCCESS) {
@@ -2096,10 +2103,6 @@ void QRhiVulkan::releaseSwapChainResources(QRhiSwapChain *swapChain)
             df->vkDestroySemaphore(dev, frame.imageSem, nullptr);
             frame.imageSem = VK_NULL_HANDLE;
         }
-        if (frame.drawSem) {
-            df->vkDestroySemaphore(dev, frame.drawSem, nullptr);
-            frame.drawSem = VK_NULL_HANDLE;
-        }
     }
 
     for (int i = 0; i < swapChainD->bufferCount * (swapChainD->stereo ? 2 : 1); ++i) {
@@ -2119,6 +2122,10 @@ void QRhiVulkan::releaseSwapChainResources(QRhiSwapChain *swapChain)
         if (image.msaaImage) {
             df->vkDestroyImage(dev, image.msaaImage, nullptr);
             image.msaaImage = VK_NULL_HANDLE;
+        }
+        if (image.drawSem) {
+            df->vkDestroySemaphore(dev, image.drawSem, nullptr);
+            image.drawSem = VK_NULL_HANDLE;
         }
     }
 
@@ -2328,7 +2335,7 @@ QRhi::FrameOpResult QRhiVulkan::endFrame(QRhiSwapChain *swapChain, QRhi::EndFram
     QRhi::FrameOpResult submitres = endAndSubmitPrimaryCommandBuffer(frame.cmdBuf,
                                                                      frame.cmdFence,
                                                                      frame.imageSemWaitable ? &frame.imageSem : nullptr,
-                                                                     needsPresent ? &frame.drawSem : nullptr);
+                                                                     needsPresent ? &image.drawSem : nullptr);
     if (submitres != QRhi::FrameOpSuccess)
         return submitres;
 
@@ -2343,7 +2350,7 @@ QRhi::FrameOpResult QRhiVulkan::endFrame(QRhiSwapChain *swapChain, QRhi::EndFram
         presInfo.pSwapchains = &swapChainD->sc;
         presInfo.pImageIndices = &swapChainD->currentImageIndex;
         presInfo.waitSemaphoreCount = 1;
-        presInfo.pWaitSemaphores = &frame.drawSem; // gfxQueueFamilyIdx == presQueueFamilyIdx ? &frame.drawSem : &frame.presTransSem;
+        presInfo.pWaitSemaphores = &image.drawSem;
 
         // Do platform-specific WM notification. F.ex. essential on Wayland in
         // order to circumvent driver frame callbacks
@@ -5471,7 +5478,9 @@ void QRhiVulkan::setScissor(QRhiCommandBuffer *cb, const QRhiScissor &scissor)
 {
     QVkCommandBuffer *cbD = QRHI_RES(QVkCommandBuffer, cb);
     Q_ASSERT(cbD->recordingPass == QVkCommandBuffer::RenderPass);
-    Q_ASSERT(QRHI_RES(QVkGraphicsPipeline, cbD->currentGraphicsPipeline)->m_flags.testFlag(QRhiGraphicsPipeline::UsesScissor));
+    Q_ASSERT(!cbD->currentGraphicsPipeline
+             || QRHI_RES(QVkGraphicsPipeline, cbD->currentGraphicsPipeline)
+                        ->m_flags.testFlag(QRhiGraphicsPipeline::UsesScissor));
     const QSize outputSize = cbD->currentTarget->pixelSize();
 
     // x,y is top-left in VkRect2D but bottom-left in QRhiScissor

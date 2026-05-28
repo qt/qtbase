@@ -551,7 +551,7 @@ QVariant::QVariant(const QVariant &p)
 
     \since 6.6
     Constructs a new variant containing a value of type \c T. The contained
-    value is is initialized with the arguments
+    value is initialized with the arguments
     \c{std::forward<Args>(args)...}.
 
     This overload only participates in overload resolution if \c T can be
@@ -931,9 +931,8 @@ void *QVariant::prepareForEmplace(QMetaType type)
     \sa QVariant::fromMetaType, QVariant::fromValue(), QMetaType::Type
 */
 QVariant::QVariant(QMetaType type, const void *copy)
-    : d()
+    : QVariant(fromMetaType(type, copy))
 {
-    *this = fromMetaType(type, copy);
 }
 
 QVariant::QVariant(int val) noexcept : d(std::piecewise_construct_t{}, val) {}

@@ -5,6 +5,8 @@
 #include "qabstracteventdispatcher.h"
 #include "qabstracteventdispatcher_p.h"
 
+#include <private/qthread_p.h>
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -186,7 +188,12 @@ void QBasicTimer::start(std::chrono::milliseconds duration, Qt::TimerType timerT
 void QBasicTimer::stop()
 {
     if (isActive()) {
-        QAbstractEventDispatcher *eventDispatcher = QAbstractEventDispatcher::instance();
+        QAbstractEventDispatcher *eventDispatcher = nullptr;
+
+        // don't create the current thread data if it's already been destroyed
+        if (QThreadData *data = QThreadData::current(false))
+            eventDispatcher = data->eventDispatcher.loadRelaxed();
+
         if (eventDispatcher && !eventDispatcher->unregisterTimer(m_id)) {
             qWarning("QBasicTimer::stop: Failed. Possibly trying to stop from a different thread");
             return;

@@ -9,7 +9,7 @@
 # libraries.
 qt_add_library(Bootstrap STATIC)
 qt_internal_add_sbom(Bootstrap
-    TYPE QT_MODULE
+    SBOM_ENTITY_TYPE QT_MODULE
     NO_INSTALL
 )
 

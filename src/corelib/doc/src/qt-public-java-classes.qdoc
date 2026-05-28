@@ -1,0 +1,27 @@
+// Copyright (C) 2025 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \externalpage https://doc.qt.io/qt-6/android/org/qtproject/qt/android/QtAbstractItemModel.html
+    \title QtAbstractItemModel
+*/
+
+/*!
+    \externalpage https://doc.qt.io/qt-6/android/org/qtproject/qt/android/QtAbstractItemModel.OnDataChangedListener.html
+    \title QtAbstractItemModel.OnDataChangedListener
+*/
+
+/*!
+    \externalpage https://doc.qt.io/qt-6/android/org/qtproject/qt/android/QtModelIndex.html
+    \title QtModelIndex
+*/
+
+/*!
+    \externalpage https://doc.qt.io/qt-6/android/org/qtproject/qt/android/QtAbstractListModel.html
+    \title QtAbstractListModel
+*/
+
+/*!
+    \externalpage https://doc.qt.io/qt-6/android/org/qtproject/qt/android/QtSignalListener.html
+    \title QtSignalListener<T>
+*/

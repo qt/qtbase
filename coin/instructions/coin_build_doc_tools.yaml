@@ -1,7 +1,8 @@
 type: Group
 instructions:
+  # Build outside of qtbase source dir, to avoid REUSE missing license warnings for the built files.
   - type: SetBuildDirectory
-    directory: "{{.SourceDir}}"
+    directory: "{{.AgentWorkingDir}}"
   - type: ChangeDirectory
     directory: "{{.BuildDir}}"
 

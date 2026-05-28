@@ -68,11 +68,17 @@ set(images_resource_files
     "images/zebra.png"
 )
 
-qt_internal_add_resource(tst_baseline_painting "images"
+set(fonts_resource_files
+    "fonts/QtUnderlineTest-Regular.ttf"
+    "fonts/QtUnderlineTest2-Regular.ttf"
+)
+
+qt_internal_add_resource(tst_baseline_painting "resources"
     PREFIX
         "/"
     FILES
         ${images_resource_files}
+        ${fonts_resource_files}
 )
 
 

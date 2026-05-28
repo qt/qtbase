@@ -1,5 +1,6 @@
 // Copyright (C) 2020 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+// Qt-Security score:significant reason:default
 
 #include <QtNetwork/private/qtnetworkglobal_p.h>
 
@@ -1252,7 +1253,7 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
     auto h = request.headers();
 #ifndef Q_OS_WASM // Content-length header is not allowed to be set by user in wasm
     if (!h.contains(QHttpHeaders::WellKnownHeader::ContentLength) &&
-        outgoingData && !outgoingData->isSequential()) {
+        outgoingData && !outgoingData->isSequential() && outgoingData->size()) {
         // request has no Content-Length
         // but the data that is outgoing is random-access
         h.append(QHttpHeaders::WellKnownHeader::ContentLength,

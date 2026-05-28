@@ -2,6 +2,13 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
 
 /*!
+    \headerfile <QtDarwinHelpers>
+    \inmodule QtCore
+    \ingroup funclists
+    \brief Helper macros specific to Darwin-based operating systems.
+*/
+
+/*!
     \macro Q_FORWARD_DECLARE_OBJC_CLASS(classname)
     \since 5.2
     \relates <QtDarwinHelpers>

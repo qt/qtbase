@@ -15,6 +15,7 @@
  * pre-defined list of header files.
  */
 
+#include <algorithm>
 #include <iostream>
 #include <fstream>
 #include <string>

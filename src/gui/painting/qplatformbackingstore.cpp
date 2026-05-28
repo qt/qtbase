@@ -213,14 +213,15 @@ QPlatformBackingStore::FlushResult QPlatformBackingStore::rhiFlush(QWindow *wind
                                                                    const QRegion &region,
                                                                    const QPoint &offset,
                                                                    QPlatformTextureList *textures,
-                                                                   bool translucentBackground)
+                                                                   bool translucentBackground,
+                                                                   qreal sourceTransformFactor)
 {
     auto &surfaceSupport = d_ptr->surfaceSupport[window->surfaceType()];
     return surfaceSupport.compositor.flush(this,
         surfaceSupport.rhiSupport.rhi(),
         surfaceSupport.rhiSupport.swapChainForWindow(window),
         window, sourceDevicePixelRatio, region, offset, textures,
-        translucentBackground);
+        translucentBackground, sourceTransformFactor);
 }
 
 /*!

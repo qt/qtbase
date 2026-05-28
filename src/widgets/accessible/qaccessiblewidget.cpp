@@ -397,6 +397,8 @@ QStringList QAccessibleWidget::actionNames() const
     if (widget()->isEnabled()) {
         if (widget()->focusPolicy() != Qt::NoFocus)
             names << setFocusAction();
+        if (widget()->contextMenuPolicy() == Qt::ActionsContextMenu && widget()->actions().size() > 0)
+            names << showMenuAction();
     }
     return names;
 }
@@ -411,6 +413,11 @@ void QAccessibleWidget::doAction(const QString &actionName)
         if (widget()->isWindow())
             widget()->activateWindow();
         widget()->setFocus();
+    } else if (actionName == showMenuAction()) {
+        QContextMenuEvent e(QContextMenuEvent::Other,
+            QPoint(), widget()->mapToGlobal(QPoint()),
+            QGuiApplication::keyboardModifiers());
+        QCoreApplication::sendEvent(widget(), &e);
     }
 }
 

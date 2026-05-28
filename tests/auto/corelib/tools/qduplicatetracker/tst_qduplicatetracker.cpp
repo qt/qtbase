@@ -120,6 +120,11 @@ void tst_QDuplicateTracker::appendTo()
 
     QList<int> b;
     tracker.appendTo(b);
+    // iteration order is append order:
+    QVERIFY(std::equal(b.cbegin(), b.cend(),
+                       tracker.cbegin(), tracker.cend()));
+    QVERIFY(std::equal(b.cbegin(), b.cend(),
+                       tracker.begin(), tracker.end()));
     std::sort(b.begin(), b.end());
     QCOMPARE(b, QList<int>({ 0, 1 }));
 

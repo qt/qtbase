@@ -37,7 +37,13 @@ namespace {
 class ImageReader
 {
 public:
-    ImageReader(const QString &fileName) : m_reader(fileName), m_atEnd(false) { }
+    ImageReader(const QString &fileName, QSize size)
+        : m_reader(fileName)
+        , m_atEnd(false)
+    {
+        if (m_reader.supportsOption(QImageIOHandler::ScaledSize))
+            m_reader.setScaledSize(size);
+    }
 
     QByteArray format() const { return m_reader.format(); }
     bool supportsReadSize() const { return m_reader.supportsOption(QImageIOHandler::Size); }
@@ -289,9 +295,9 @@ QPixmapIconEngineEntry *QPixmapIconEngine::bestMatch(const QSize &size, qreal sc
 
     if (pe->pixmap.isNull()) {
         // delay-load the image
-        ImageReader imageReader(pe->fileName);
         QImage image, prevImage;
         const QSize realSize = size * scale;
+        ImageReader imageReader(pe->fileName, realSize);
         bool fittingImageFound = false;
         if (imageReader.supportsReadSize()) {
             // find the image with the best size without loading the entire image
@@ -450,7 +456,7 @@ void QPixmapIconEngine::addFile(const QString &fileName, const QSize &size, QIco
         return;
     const QString abs = fileName.startsWith(u':') ? fileName : QFileInfo(fileName).absoluteFilePath();
     const bool ignoreSize = !size.isValid();
-    ImageReader imageReader(abs);
+    ImageReader imageReader(abs, size);
     const QByteArray format = imageReader.format();
     if (format.isEmpty()) // Device failed to open or unsupported format.
         return;

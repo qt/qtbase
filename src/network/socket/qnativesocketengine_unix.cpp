@@ -1,6 +1,7 @@
 // Copyright (C) 2021 The Qt Company Ltd.
 // Copyright (C) 2016 Intel Corporation.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+// Qt-Security score:significant reason:default
 
 //#define QNATIVESOCKETENGINE_DEBUG
 #include "qnativesocketengine_p_p.h"
@@ -821,6 +822,12 @@ qint64 QNativeSocketEnginePrivate::nativePendingDatagramSize() const
     recvResult = getsockopt(socketDescriptor, SOL_SOCKET, SO_NREAD, &value, &valuelen);
     if (recvResult != -1)
         recvResult = value;
+#elif defined(Q_OS_VXWORKS)
+    // VxWorks: use ioctl(FIONREAD) to query the number of bytes available
+    int available = 0;
+    int ioctlResult = ::ioctl(socketDescriptor, FIONREAD, &available);
+    if (ioctlResult != -1)
+        recvResult = available;
 #else
     // We need to grow the buffer to fit the entire datagram.
     // We start at 1500 bytes (the MTU for Ethernet V2), which should catch

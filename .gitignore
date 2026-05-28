@@ -329,6 +329,7 @@ wrapper.bat
 
 # cmake related artifacts
 /build*
+build/
 CMakeFiles
 CTestTestfile.cmake
 cmake_install.cmake

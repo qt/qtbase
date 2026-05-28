@@ -1,8 +1,8 @@
 # Add RunCMake tests using `add_RunCMake_test()`
 
-add_RunCMake_test(QtFlagHandlingHelpers "-DQt6_DIR=${Qt6_DIR}")
+qt_internal_add_RunCMake_test(QtFlagHandlingHelpers)
 
-set(extra_run_cmake_args "-DQt6_DIR=${Qt6_DIR}")
+set(extra_run_cmake_args "")
 if(TARGET Qt::Gui)
     list(APPEND extra_run_cmake_args "-DHAS_GUI=TRUE")
 endif()
@@ -15,8 +15,16 @@ endif()
 if(TARGET Qt::OpenGL)
     list(APPEND extra_run_cmake_args "-DHAS_OPENGL=TRUE")
 endif()
-add_RunCMake_test(Qt6DirConfiguration ${extra_run_cmake_args})
+qt_internal_add_RunCMake_test(Qt6DirConfiguration ${extra_run_cmake_args})
 
 if(APPLE AND TARGET Qt::Gui)
-    add_RunCMake_test(AppleFrameworkDeduplication "-DQt6_DIR=${Qt6_DIR}")
+    qt_internal_add_RunCMake_test(AppleFrameworkDeduplication)
+endif()
+
+if(TARGET Qt6::Platform)
+    get_target_property(sbom_spdx_id Qt6::Platform _qt_sbom_spdx_id)
+    # If the id is present and non-empty, that means we built Qt with sbom support.
+    if(sbom_spdx_id)
+        qt_internal_add_RunCMake_test(Sbom ${extra_run_cmake_args})
+    endif()
 endif()

@@ -23,10 +23,7 @@ QT_BEGIN_NAMESPACE
 
 QAndroidPlatformOpenGLWindow::QAndroidPlatformOpenGLWindow(QWindow *window, EGLDisplay display)
     :QAndroidPlatformWindow(window), m_eglDisplay(display)
-{
-    if (window->surfaceType() == QSurface::RasterSurface)
-        window->setSurfaceType(QSurface::OpenGLSurface);
-}
+{ }
 
 QAndroidPlatformOpenGLWindow::~QAndroidPlatformOpenGLWindow()
 {
@@ -106,8 +103,8 @@ void QAndroidPlatformOpenGLWindow::applicationStateChanged(Qt::ApplicationState 
 void QAndroidPlatformOpenGLWindow::createEgl(EGLConfig config)
 {
     clearSurface();
-    QJniEnvironment env;
-    m_nativeWindow = ANativeWindow_fromSurface(env.jniEnv(), m_androidSurfaceObject.object());
+    m_nativeWindow = ANativeWindow_fromSurface(
+        QJniEnvironment::getJniEnv(), m_androidSurfaceObject.object());
     m_androidSurfaceObject = QJniObject();
     m_eglSurface = eglCreateWindowSurface(m_eglDisplay, config, m_nativeWindow, NULL);
     m_format = q_glFormatFromConfig(m_eglDisplay, config, window()->requestedFormat());

@@ -24,7 +24,7 @@ std::unique_ptr<QEvdevMouseHandler> QEvdevMouseHandler::create(const QString &de
 {
     qCDebug(qLcEvdevMouse) << "create mouse handler for" << device << specification;
 
-    bool compression = false;
+    bool compression = true;
     int jitterLimit = 0;
     bool abs = false;
 
@@ -73,7 +73,10 @@ void QEvdevMouseHandler::sendMouseEvent()
         m_prevInvalid = false;
     }
 
-    emit handleMouseEvent(x, y, m_abs, m_buttons, m_button, m_eventType);
+    if (m_eventType == QEvent::MouseMove)
+        emit handleMouseEvent(x, y, m_abs, m_buttons, Qt::NoButton, m_eventType);
+    else
+        emit handleMouseEvent(x, y, m_abs, m_buttons, m_button, m_eventType);
 
     m_prevx = m_x;
     m_prevy = m_y;
@@ -81,77 +84,93 @@ void QEvdevMouseHandler::sendMouseEvent()
 
 void QEvdevMouseHandler::readMouseData()
 {
-    bool posChanged = false;
-    bool btnChanged = false;
+    EV_DEV_EVENT buffer[32];
+    int n = 0;
+    bool posChanged = false, btnChanged = false;
+    bool pendingMouseEvent = false;
+    forever {
+        int result = read(m_fd, reinterpret_cast<char *>(buffer) + n, sizeof(buffer) - n);
 
-    Q_FOREVER {
-        EV_DEV_EVENT ev;
-        size_t n = read(m_fd, (char *)(&ev), sizeof(EV_DEV_EVENT));
-        if (n < sizeof(EV_DEV_EVENT)) {
-            sendMouseEvent();
+        if (result == 0) {
+            qCWarning(qLcEvdevMouse)<<"evdevmouse: Got EOF from the input device";
             return;
+        } else if (result < 0) {
+            if (errno != EINTR && errno != EAGAIN) {
+                qCWarning(qLcEvdevMouse)<<"evdevmouse: Could not read from input device"<<errno;
+                // If the device got disconnected, stop reading, otherwise we get flooded
+                // by the above error over and over again.
+                if (errno == ENODEV) {
+                    delete m_notify;
+                    m_notify = nullptr;
+                    qt_safe_close(m_fd);
+                    m_fd = -1;
+                }
+                return;
+            }
+        } else {
+            n += result;
+            if (n % sizeof(buffer[0]) == 0)
+                break;
         }
-        switch (ev.type) {
-        case EV_DEV_KEY: {
-            Qt::MouseButton buttons = Qt::NoButton;
-            switch (ev.code) {
-            case EV_DEV_PTR_BTN_LEFT:
-                buttons = Qt::LeftButton;
-                break;
-            case EV_DEV_PTR_BTN_RIGHT:
-                buttons = Qt::RightButton;
-                break;
-            case EV_DEV_PTR_BTN_MIDDLE:
-                buttons = Qt::MiddleButton;
-                break;
-            }
-            if (ev.value)
-                m_buttons |= buttons;
-            else
-                m_buttons &= ~buttons;
-            m_button = buttons;
-            m_eventType = ev.value != 0 ? QEvent::MouseButtonPress : QEvent::MouseButtonRelease;
-            btnChanged = true;
-            break;
-            }
-        case EV_DEV_REL:
-            switch (ev.code) {
-            case EV_DEV_PTR_REL_X:
-                m_x += ev.value;
-                m_eventType = QEvent::MouseMove;
-                posChanged = true;
-                break;
-            case EV_DEV_PTR_REL_Y:
-                m_y += ev.value;
-                m_eventType = QEvent::MouseMove;
-                posChanged = true;
-                break;
-            }
-            break;
-        case EV_DEV_ABS:
-            switch (ev.code) {
-            case EV_DEV_PTR_ABS_X:
-                m_x = ev.value;
-                m_eventType = QEvent::MouseMove;
-                posChanged = true;
-                break;
-            case EV_DEV_PTR_ABS_Y:
-                m_y = ev.value;
-                m_eventType = QEvent::MouseMove;
-                posChanged = true;
-                break;
-            }
-            break;
-        }
+    }
 
-        if (btnChanged) {
-            btnChanged = false;
-            posChanged = false;
-            sendMouseEvent();
-        } else if (posChanged) {
-            posChanged = false;
-            sendMouseEvent();
+    n /= sizeof(buffer[0]);
+    for (int i = 0; i < n; ++i) {
+        EV_DEV_EVENT *data = &buffer[i];
+        if (data->type == EV_DEV_REL) {
+            if (data->code == EV_DEV_PTR_REL_X) {
+                m_x += data->value;
+                posChanged = true;
+            } else if (data->code == EV_DEV_PTR_REL_Y) {
+                m_y += data->value;
+                posChanged = true;
+            }
+        } else if (data->type == EV_DEV_KEY && data->code >= EV_DEV_PTR_BTN_LEFT) {
+            Qt::MouseButton button = Qt::NoButton;
+            // BTN_LEFT == 0x110 in kernel's input.h
+            // The range of possible mouse buttons ends just before BTN_JOYSTICK, value 0x120.
+            switch (data->code) {
+            case 0x110: button = Qt::LeftButton; break;    // BTN_LEFT
+            case 0x111: button = Qt::RightButton; break;
+            case 0x112: button = Qt::MiddleButton; break;
+            case 0x113: button = Qt::ExtraButton1; break;  // AKA Qt::BackButton
+            case 0x114: button = Qt::ExtraButton2; break;  // AKA Qt::ForwardButton
+            case 0x115: button = Qt::ExtraButton3; break;  // AKA Qt::TaskButton
+            case 0x116: button = Qt::ExtraButton4; break;
+            case 0x117: button = Qt::ExtraButton5; break;
+            case 0x118: button = Qt::ExtraButton6; break;
+            case 0x119: button = Qt::ExtraButton7; break;
+            case 0x11a: button = Qt::ExtraButton8; break;
+            case 0x11b: button = Qt::ExtraButton9; break;
+            case 0x11c: button = Qt::ExtraButton10; break;
+            case 0x11d: button = Qt::ExtraButton11; break;
+            case 0x11e: button = Qt::ExtraButton12; break;
+            case 0x11f: button = Qt::ExtraButton13; break;
+            }
+            m_buttons.setFlag(button, data->value);
+            m_button = button;
+            m_eventType = data->value == 0 ? QEvent::MouseButtonRelease : QEvent::MouseButtonPress;
+            btnChanged = true;
+        } else if (data->type == EV_DEV_SYN) {
+            if (btnChanged) {
+                btnChanged = posChanged = false;
+                sendMouseEvent();
+                pendingMouseEvent = false;
+            } else if (posChanged) {
+                m_eventType = QEvent::MouseMove;
+                posChanged = false;
+                if (m_compression) {
+                    pendingMouseEvent = true;
+                } else {
+                    sendMouseEvent();
+                }
+            }
         }
+    }
+    if (m_compression && pendingMouseEvent) {
+        int distanceSquared = (m_x - m_prevx)*(m_x - m_prevx) + (m_y - m_prevy)*(m_y - m_prevy);
+        if (distanceSquared > m_jitterLimitSquared)
+            sendMouseEvent();
     }
 }
 

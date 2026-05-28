@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QTest>
+#include <QtTest/private/qtesthelpers_p.h>
 #include <QtGui/QWindow>
 #include <QtGui/QCursor>
 #include <QtGui/private/qguiapplication_p.h>
@@ -256,8 +257,9 @@ void tst_Mouse::doubleClick()
 {
     MouseWindow w;
     w.show();
-    w.setGeometry(100, 100, 200, 200);
+    w.resize(200, 200);
     QVERIFY(QTest::qWaitForWindowActive(&w));
+    QVERIFY(QTestPrivate::ensurePositionTopLeft(&w));
 
     // click
     QPoint point(10, 10);

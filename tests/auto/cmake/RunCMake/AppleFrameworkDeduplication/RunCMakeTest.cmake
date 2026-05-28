@@ -1,4 +1,4 @@
-include(RunCMake)
+include(QtRunCMake)
 
 set(cmake_opts "-DQt6_DIR=${Qt6_DIR}")
 

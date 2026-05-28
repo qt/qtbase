@@ -1462,10 +1462,10 @@ void setDefault(QPalette *palette, QPalette::ColorGroup group, QPalette::ColorRo
                 const QBrush &defaultBrush, const QWidget *widget)
 {
     const QPalette &widgetPalette = widget->palette();
-    if (widgetPalette.isBrushSet(group, role))
-        palette->setBrush(group, role, widgetPalette.brush(group, role));
-    else
+    if (defaultBrush != Qt::NoBrush)
         palette->setBrush(group, role, defaultBrush);
+    else
+        palette->setBrush(group, role, widgetPalette.brush(group, role));
 }
 
 void QRenderRule::configurePalette(QPalette *p, QPalette::ColorGroup cg, const QWidget *w, bool embedded)
@@ -5303,7 +5303,11 @@ QSize QStyleSheetStyle::sizeFromContents(ContentsType ct, const QStyleOption *op
         if (const QStyleOptionSpinBox *spinbox = qstyleoption_cast<const QStyleOptionSpinBox *>(opt)) {
             if (rule.baseStyleCanDraw()) {
                 sz = baseStyle()->sizeFromContents(ct, opt, sz, w);
-            } else if (spinbox->buttonSymbols != QAbstractSpinBox::NoButtons) {
+                if (rule.hasBox() || !rule.hasNativeBorder())
+                    sz = rule.boxSize(sz);
+                return sz;
+            }
+            if (spinbox->buttonSymbols != QAbstractSpinBox::NoButtons) {
                 // Add some space for the up/down buttons
                 QRenderRule subRule = renderRule(w, opt, PseudoElement_SpinBoxUpButton);
                 if (subRule.hasDrawable()) {

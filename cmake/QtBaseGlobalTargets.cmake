@@ -144,6 +144,7 @@ target_include_directories(GlobalConfigPrivate INTERFACE
 qt_internal_setup_public_platform_target()
 
 # defines PlatformCommonInternal PlatformModuleInternal PlatformPluginInternal PlatformToolInternal
+# PlatformExampleInternal
 include(QtInternalTargets)
 qt_internal_run_common_config_tests()
 
@@ -158,7 +159,9 @@ set(__export_targets Platform
                      PlatformModuleInternal
                      PlatformPluginInternal
                      PlatformAppInternal
-                     PlatformToolInternal)
+                     PlatformToolInternal
+                     PlatformExampleInternal
+                 )
 set(__export_name "${INSTALL_CMAKE_NAMESPACE}Targets")
 qt_install(TARGETS ${__export_targets} EXPORT "${__export_name}")
 qt_install(EXPORT ${__export_name}
@@ -184,6 +187,14 @@ qt_internal_get_max_new_policy_cmake_version(max_new_policy_version)
 qt_internal_get_qt_build_public_helpers(__qt_cmake_public_helpers)
 list(JOIN __qt_cmake_public_helpers "\n    " QT_PUBLIC_FILES_TO_INCLUDE)
 
+set(__qt_cmake_extra_code_before_dependencies "")
+if(ANDROID)
+    list(APPEND __qt_cmake_extra_code_before_dependencies
+        "__qt_internal_workaround_android_cmp0155_issue()")
+endif()
+list(JOIN __qt_cmake_extra_code_before_dependencies
+    "\n    " QT_CONFIG_EXTRA_CODE_BEFORE_DEPENDENCIES)
+
 # Generate and install Qt6 config file. Make sure it happens after the global feature evaluation so
 # they can be accessed in the Config file if needed.
 configure_package_config_file(
@@ -192,7 +203,18 @@ configure_package_config_file(
     INSTALL_DESTINATION "${__GlobalConfig_install_dir}"
 )
 
-_qt_internal_export_apple_sdk_and_xcode_version_requirements(QT_CONFIG_EXTRAS_CODE)
+set(QT_CONFIG_EXTRAS_CODE "")
+
+_qt_internal_export_apple_sdk_and_xcode_version_requirements(apple_requirements)
+if(apple_requirements)
+    string(APPEND QT_CONFIG_EXTRAS_CODE "${apple_requirements}")
+endif()
+
+if(EMSCRIPTEN)
+    string(APPEND QT_CONFIG_EXTRAS_CODE "\n
+_qt_internal_handle_target_supports_shared_libs()
+")
+endif()
 
 configure_file(
     "${PROJECT_SOURCE_DIR}/cmake/QtConfigExtras.cmake.in"

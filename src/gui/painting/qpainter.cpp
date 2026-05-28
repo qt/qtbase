@@ -2032,8 +2032,9 @@ qreal QPainter::opacity() const
     be in the range 0.0 to 1.0, where 0.0 is fully transparent and
     1.0 is fully opaque.
 
-    Opacity set on the painter will apply to all drawing operations
-    individually.
+    The opacity set on the painter applies to each drawing operation
+    separately. Filling a shape and drawing its outline are treated
+    as separate drawing operations.
 */
 
 void QPainter::setOpacity(qreal opacity)

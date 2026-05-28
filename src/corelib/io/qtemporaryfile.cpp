@@ -1,6 +1,7 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // Copyright (C) 2017 Intel Corporation.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+// Qt-Security score:critical reason:data-parser
 
 #include "qtemporaryfile.h"
 
@@ -880,6 +881,11 @@ void QTemporaryFile::setFileTemplate(const QString &name)
     incomplete file in the process of being written. The \l QSaveFile class can
     be used for a similar purpose too, particularly if the destination file is
     not temporary.
+
+    \note Calling rename() does not disable autoRemove. If you want the renamed
+    file to persist, you must call setAutoRemove and set it to \c false after
+    calling rename(). Otherwise, the file will be deleted when the QTemporaryFile
+    object is destroyed.
 
     \sa QSaveFile, QSaveFile::commit(), QFile::rename()
 */

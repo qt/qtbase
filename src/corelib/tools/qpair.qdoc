@@ -2,16 +2,22 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
 
 /*!
+    \headerfile <QPair>
+    \inmodule QtCore
+    \brief Compatibility alias for constructing pair objects.
+*/
+
+/*!
     \typealias QPair
-    \relates QPair
+    \relates <QPair>
     \since 6.0
-    Typedef for std::pair\<T1, T2\>.
+    Alias for std::pair\<T1, T2\>.
 */
 
 /*!
     \fn template <class T1, class T2> QPair<T1, T2> qMakePair(T1 &&value1, T2 &&value2)
     \deprecated
-    \relates QPair
+    \relates <QPair>
 
     qMakePair forwards its arguments to std::make_pair, and returns
     the resulting std::pair. It is provided for backwards compatibility.

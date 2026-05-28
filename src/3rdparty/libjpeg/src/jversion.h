@@ -53,4 +53,4 @@
   "Copyright (C) 1991-2020 Thomas G. Lane, Guido Vollbeding\n"
 
 #define JCOPYRIGHT_SHORT \
-  "Copyright (C) 1991-2024 The libjpeg-turbo Project and many others"
+  "Copyright (C) 1991-2025 The libjpeg-turbo Project and many others"

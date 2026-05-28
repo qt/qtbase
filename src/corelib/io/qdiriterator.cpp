@@ -1,5 +1,6 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+// Qt-Security score:significant reason:default
 
 /*!
     \since 4.3
@@ -36,7 +37,7 @@
     access.
 
     \note This class is deprecated and may be removed in a Qt release. Use
-    QDirListing instead.
+    QDirListing instead, see \l {Porting QDirIterator to QDirListing}.
 
     \sa QDir, QDir::entryList()
 */

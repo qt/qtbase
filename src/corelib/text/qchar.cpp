@@ -1,5 +1,6 @@
 // Copyright (C) 2022 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+// Qt-Security score:critical reason:data-parser
 
 #include "qchar.h"
 
@@ -1538,7 +1539,7 @@ static auto fullConvertCase(char32_t uc, QUnicodeTables::Case which) noexcept
 
     auto pp = result.chars;
 
-    const auto fold = qGetProp(uc)->cases[which];
+    const auto fold = caseConversion(uc)[which];
     const auto caseDiff = fold.diff;
 
     if (Q_UNLIKELY(fold.special)) {
@@ -1558,7 +1559,7 @@ static auto fullConvertCase(char32_t uc, QUnicodeTables::Case which) noexcept
 template <typename T>
 Q_DECL_CONST_FUNCTION static inline T convertCase_helper(T uc, QUnicodeTables::Case which) noexcept
 {
-    const auto fold = qGetProp(uc)->cases[which];
+    const auto fold = caseConversion(uc)[which];
 
     if (Q_UNLIKELY(fold.special)) {
         const ushort *specialCase = specialCaseMap + fold.diff;

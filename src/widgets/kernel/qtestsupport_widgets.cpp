@@ -22,8 +22,10 @@ static bool qWaitForWidgetWindow(QWidget *w, Predicate predicate, QDeadlineTimer
     if (!w->window()->windowHandle())
         return false;
 
-    return QTest::qWaitFor([&]() {
-        if (QWindow *window = w->window()->windowHandle())
+    return QTest::qWaitFor([&, wp = QPointer(w)]() {
+        if (QWidget *widget = wp.data(); !widget)
+            return false;
+        else if (QWindow *window = widget->window()->windowHandle())
             return predicate(window);
         return false;
     }, timeout);

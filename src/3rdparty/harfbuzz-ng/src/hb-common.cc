@@ -545,8 +545,11 @@ hb_script_to_iso15924_tag (hb_script_t script)
  * Fetches the #hb_direction_t of a script when it is
  * set horizontally. All right-to-left scripts will return
  * #HB_DIRECTION_RTL. All left-to-right scripts will return
- * #HB_DIRECTION_LTR.  Scripts that can be written either
- * horizontally or vertically will return #HB_DIRECTION_INVALID.
+ * #HB_DIRECTION_LTR.
+ *
+ * Scripts that can be written either right-to-left or
+ * left-to-right will return #HB_DIRECTION_INVALID.
+ *
  * Unknown scripts will return #HB_DIRECTION_LTR.
  *
  * Return value: The horizontal #hb_direction_t of @script
@@ -627,6 +630,9 @@ hb_script_get_horizontal_direction (hb_script_t script)
 
     /* Unicode-16.0 additions */
     case HB_SCRIPT_GARAY:
+
+    /* Unicode-17.0 additions */
+    case HB_SCRIPT_SIDETIC:
 
       return HB_DIRECTION_RTL;
 

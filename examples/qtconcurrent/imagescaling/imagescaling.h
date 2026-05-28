@@ -4,7 +4,7 @@
 #define IMAGESCALING_H
 
 #include <QtWidgets>
-#include <QtConcurrent>
+#include <QtConcurrentRun>
 #include <QNetworkAccessManager>
 #include <optional>
 

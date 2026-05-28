@@ -6,6 +6,8 @@
 #include <QtCore/qjnitypes.h>
 #include <QtCore/qjniarray.h>
 
+QT_BEGIN_NAMESPACE
+
 using namespace Qt::StringLiterals;
 
 class tst_QJniTypes : public QObject
@@ -279,6 +281,8 @@ void tst_QJniTypes::stringTypeCantBeArgument()
     static_assert(callStaticMethod<QtJniTypes::JavaType, jint>("method name", 42)
                   == Overload::OnlyMethod);
 }
+
+QT_END_NAMESPACE
 
 QTEST_MAIN(tst_QJniTypes)
 

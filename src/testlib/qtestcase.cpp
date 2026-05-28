@@ -11,6 +11,9 @@
 #include <QtCore/qdebug.h>
 #include <QtCore/qdir.h>
 #include <QtCore/qdirlisting.h>
+#if QT_CONFIG(future)
+#include <QtCore/qexception.h>
+#endif
 #include <QtCore/qfile.h>
 #include <QtCore/qfileinfo.h>
 #include <QtCore/qfloat16.h>
@@ -163,22 +166,36 @@ namespace QTestPrivate
 
 namespace {
 
-class TestFailedException : public std::exception // clazy:exclude=copyable-polymorphic
+#if !QT_CONFIG(future)
+using QException = std::exception;
+#endif
+
+class TestFailedException : public QException // clazy:exclude=copyable-polymorphic
 {
 public:
     TestFailedException() = default;
     ~TestFailedException() override = default;
 
     const char *what() const noexcept override { return "QtTest: test failed"; }
+
+#if QT_CONFIG(future)
+    TestFailedException *clone() const override { return new TestFailedException(); }
+    void raise() const override { throw TestFailedException(); }
+#endif
 };
 
-class TestSkippedException : public std::exception // clazy:exclude=copyable-polymorphic
+class TestSkippedException : public QException // clazy:exclude=copyable-polymorphic
 {
 public:
     TestSkippedException() = default;
     ~TestSkippedException() override = default;
 
     const char *what() const noexcept override { return "QtTest: test was skipped"; }
+
+#if QT_CONFIG(future)
+    TestSkippedException *clone() const override { return new TestSkippedException(); }
+    void raise() const override { throw TestSkippedException(); }
+#endif
 };
 
 } // unnamed namespace
@@ -204,22 +221,38 @@ void Internal::maybeThrowOnSkip()
         Internal::throwOnSkip();
 }
 
+/*
+//! [return-void]
+    Defining this macro is useful if you wish to use \1 in functions that have
+    a non-\c{void} return type. Without this macro defined, \2, for example,
+    expands to a statement including \c{return;}, so it cannot be used in
+    functions (or lambdas) that return something else than \c{void}, e.g.
+    \l{QString}. This includes the case where throwing exceptions is enabled
+    only at runtime (using \3). With this macro defined, \2 instead expands to
+    a statement without a \c{return;}, which is usable from any function.
+//! [return-void]
+*/
+
 /*!
     \since 6.8
     \macro QTEST_THROW_ON_FAIL
-    \relates <QTest>
+    \relates QTest
 
     When defined, QCOMPARE()/QVERIFY() etc always throw on failure.
-    QTest::throwOnFail() then no longer has any effect.
+    QTest::setThrowOnFail() then no longer has any effect.
+
+    \include qtestcase.cpp {return-void} {QCOMPARE() or QVERIFY()} {QCOMPARE()} {QTest::setThrowOnFail(true)}
 */
 
 /*!
     \since 6.8
     \macro QTEST_THROW_ON_SKIP
-    \relates <QTest>
+    \relates QTest
 
-    When defined, QSKIP() always throws. QTest::throwOnSkip() then no longer
+    When defined, QSKIP() always throws. QTest::setThrowOnSkip() then no longer
     has any effect.
+
+    \include qtestcase.cpp {return-void} {QSKIP()} {QSKIP()} {QTest::setThrowOnSkip(true)}
 */
 
 /*!
@@ -2796,7 +2829,7 @@ void QTest::setMainSourcePath(const char *file, const char *builddir)
 
     If the caller creates a custom failure message showing the compared values,
     or if those values cannot be stringified, use the overload of the function
-    that takes no \a actualVal and \a expecetedVal parameters.
+    that takes no \a actualVal and \a expectedVal parameters.
 */
 bool QTest::compare_helper(bool success, const char *failureMsg,
                            char *actualVal, char *expectedVal,

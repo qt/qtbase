@@ -173,6 +173,14 @@ bool QDeviceDiscoveryStatic::checkDeviceType(const QString &device)
                 return true;
             }
         }
+
+        if ((m_types & (Device_Touchpad | Device_Touchscreen))) {
+            if ((m_types & Device_Touchscreen) && (devCap & EV_DEV_ABS && (devCap & EV_DEV_KEY))) {
+                qCDebug(lcDD) << "DeviceDiscovery found touchscreen at" << device;
+                QT_CLOSE(fd);
+                return true;
+            }
+        }
     }
     QT_CLOSE(fd);
 #else

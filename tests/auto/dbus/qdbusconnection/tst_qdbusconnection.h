@@ -126,6 +126,8 @@ private slots:
 
     void parentClassSignal();
 
+    void delayedDeliveryReenabledAfterUsedInMainThread();
+
 public:
     QString serviceName() const { return "org.qtproject.Qt.Autotests.QDBusConnection"; }
     bool callMethod(const QDBusConnection &conn, const QString &path);

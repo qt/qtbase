@@ -52,6 +52,7 @@ qt_internal_add_module(XcbQpaPrivate
         Qt::GuiPrivate
         XCB::CURSOR
         XCB::ICCCM
+        XCB::UTIL
         XCB::IMAGE
         XCB::KEYSYMS
         XCB::RANDR

@@ -26,6 +26,20 @@
     Note that the result types above are not QFuture objects, but real result
     types (in this case, QStringList and QSet<QString>).
 
+    \section1 Optimize includes
+
+    If you include the \c <QtConcurrent> header, the entire Qt Concurrent
+    module with the entire Qt Core module will be included, which may increase
+    compilation times and binary sizes. To use the
+    \l {QtConcurrent::filter}{QtConcurrent::filter()},
+    \l {QtConcurrent::filtered}{QtConcurrent::filtered()}, and
+    \l {QtConcurrent::filteredReduced}{QtConcurrent::filteredReduced()}
+    functions, you can include a more specific header:
+
+    \code
+    #include <QtConcurrentFilter>
+    \endcode
+
     \section1 Concurrent Filter
 
     QtConcurrent::filtered() takes an input sequence and a filter function.

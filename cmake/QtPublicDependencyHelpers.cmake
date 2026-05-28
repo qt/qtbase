@@ -64,7 +64,7 @@ macro(_qt_internal_find_third_party_dependencies target target_dep_list)
 
                 _qt_internal_sbom_record_system_library_usage(
                     "${__qt_${target}_provided_target}"
-                    TYPE SYSTEM_LIBRARY
+                    SBOM_ENTITY_TYPE SYSTEM_LIBRARY
                     FRIENDLY_PACKAGE_NAME "${__qt_${target}_pkg}"
                     ${__qt_${target}_sbom_args}
                 )

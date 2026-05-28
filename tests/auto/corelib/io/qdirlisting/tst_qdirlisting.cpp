@@ -82,6 +82,8 @@ private slots:
     void longPath();
     void dirorder();
     void relativePaths();
+    void dotNameFilters_data();
+    void dotNameFilters();
 #if defined(Q_OS_WIN)
     void uncPaths_data();
     void uncPaths();
@@ -155,15 +157,11 @@ void tst_QDirListing::initTestCase()
 #  if defined(Q_OS_WIN)
     // ### Sadly, this is a platform difference right now.
     createLink("entrylist/file", "entrylist/linktofile.lnk");
-#    ifndef Q_NO_SYMLINKS_TO_DIRS
     createLink("entrylist/directory", "entrylist/linktodirectory.lnk");
-#    endif
     createLink("entrylist/nothing", "entrylist/brokenlink.lnk");
 #  else
     createLink("file", "entrylist/linktofile.lnk");
-#    ifndef Q_NO_SYMLINKS_TO_DIRS
     createLink("directory", "entrylist/linktodirectory.lnk");
-#    endif
     createLink("nothing", "entrylist/brokenlink.lnk");
 #  endif
 #endif
@@ -227,22 +225,22 @@ void tst_QDirListing::iterateRelativeDirectory_data()
     QTest::addColumn<QStringList>("nameFilters");
     QTest::addColumn<QStringList>("entries");
 
+    const auto linkToFile = u"entrylist/linktofile.lnk"_s;
+    const auto linkToDir = u"entrylist/linktodirectory.lnk"_s;
+    const auto brokenLink = u"entrylist/brokenlink.lnk"_s;
+
     const QStringList allSymlinks = {
-#if !defined(Q_NO_SYMLINKS)
-        "entrylist/linktofile.lnk"_L1,
-        "entrylist/brokenlink.lnk"_L1,
-#  if !defined(Q_NO_SYMLINKS_TO_DIRS)
-        "entrylist/linktodirectory.lnk"_L1,
-#  endif
+#ifndef Q_NO_SYMLINKS
+        linkToFile,
+        brokenLink,
+        linkToDir,
 #endif
     };
 
     const QStringList nonBrokenSymlinks = {
-#if !defined(Q_NO_SYMLINKS)
-        "entrylist/linktofile.lnk"_L1,
-#  if !defined(Q_NO_SYMLINKS_TO_DIRS)
-        "entrylist/linktodirectory.lnk"_L1,
-#  endif
+#ifndef Q_NO_SYMLINKS
+        linkToFile,
+        linkToDir,
 #endif
     };
 
@@ -333,8 +331,8 @@ void tst_QDirListing::iterateRelativeDirectory_data()
             "entrylist/file"_L1,
             "entrylist/directory/dummy"_L1,
             "entrylist/writable"_L1,
-#if !defined(Q_NO_SYMLINKS)
-            "entrylist/linktofile.lnk"_L1,
+#ifndef Q_NO_SYMLINKS
+            linkToFile,
 #endif
         };
 
@@ -350,8 +348,8 @@ void tst_QDirListing::iterateRelativeDirectory_data()
         << QStringList("*")
         << QStringList{
             "entrylist/directory"_L1,
-#if !defined(Q_NO_SYMLINKS)
-            "entrylist/linktodirectory.lnk"_L1,
+#ifndef Q_NO_SYMLINKS
+            linkToDir,
 #endif
         };
 
@@ -669,6 +667,77 @@ void tst_QDirListing::relativePaths()
 {
     for (const auto &dirEntry : QDirListing(u"*"_s, ItFlag::Recursive))
         QCOMPARE(dirEntry.filePath(), QDir::cleanPath(dirEntry.filePath()));
+}
+
+void tst_QDirListing::dotNameFilters_data()
+{
+    QTest::addColumn<QStringList>("nameFilters");
+    QTest::addColumn<QDirListing::IteratorFlags>("flags");
+    QTest::addColumn<QDir::Filters>("dirFilters");
+    QTest::addColumn<QStringList>("expected");
+
+    using F = QDirListing::IteratorFlag;
+
+    QTest::newRow("dirLister-default-flags")
+        << QStringList{u"."_s}
+        << QDirListing::IteratorFlags{}
+        << QDir::Filters(QDir::NoFilter)
+        << QStringList{};
+
+    QTest::newRow("dirLister-IncludeDotAndDotDot")
+        << QStringList{u"."_s}
+        << QDirListing::IteratorFlags(F::IncludeDotAndDotDot)
+        << QDir::Filters(QDir::NoFilter)
+        << QStringList{u"."_s};
+
+    QTest::newRow("dirLister-IncludeDotAndDotDot-glob-everything")
+        << QStringList{u".*"_s}
+        << QDirListing::IteratorFlags(F::IncludeDotAndDotDot)
+        << QDir::Filters(QDir::NoFilter)
+        << QStringList{u"."_s, u".."_s};
+
+    // Test legacy filters code path
+    QTest::newRow("legacy-NoDotAndDotDot")
+        << QStringList{u"."_s}
+        << QDirListing::IteratorFlags{}
+        << QDir::Filters(QDir::AllEntries | QDir::NoDotAndDotDot)
+        << QStringList{};
+
+    QTest::newRow("legacy-default-dirfilters")
+        << QStringList{u"."_s}
+        << QDirListing::IteratorFlags{}
+        << QDir::Filters(QDir::AllEntries)
+        << QStringList{u"."_s};
+
+    QTest::newRow("legacy-glob-everything")
+        << QStringList{u".*"_s}
+        << QDirListing::IteratorFlags{}
+        << QDir::Filters(QDir::AllEntries)
+        << QStringList{u"."_s, u".."_s};
+}
+
+void tst_QDirListing::dotNameFilters()
+{
+    QFETCH(QStringList, nameFilters);
+    QFETCH(QDirListing::IteratorFlags, flags);
+    QFETCH(QDir::Filters, dirFilters);
+    QFETCH(QStringList, expected);
+
+    const auto dirPath = u"empty"_s;
+    QVERIFY(QFileInfo(dirPath).isDir());
+
+    if (dirFilters == QDir::NoFilter) {
+        QStringList entries;
+        for (const auto &dirEntry : QDirListing(dirPath, nameFilters, flags))
+            entries.append(dirEntry.fileName());
+        entries.sort();
+        QCOMPARE_EQ(entries, expected);
+    } else {
+        // legacy filters code path
+        QStringList entries = QDir(dirPath).entryList(nameFilters, dirFilters);
+        entries.sort();
+        QCOMPARE_EQ(entries, expected);
+    }
 }
 
 #if defined(Q_OS_WIN)

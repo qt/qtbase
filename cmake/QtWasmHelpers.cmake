@@ -77,10 +77,10 @@ function (qt_internal_setup_wasm_target_properties wasmTarget)
     #  Set ASYNCIFY_IMPORTS unconditionally in order to support enabling asyncify at link time.
     target_link_options("${wasmTarget}" INTERFACE "SHELL:-sASYNCIFY_IMPORTS=qt_asyncify_suspend_js,qt_asyncify_resume_js")
 
+    _qt_internal_handle_target_supports_shared_libs()
+
+
     if(QT_FEATURE_shared)
-
-        set_property(GLOBAL PROPERTY TARGET_SUPPORTS_SHARED_LIBS TRUE)
-
         set(side_modules
             MODULE_LIBRARY SHARED_LIBRARY)
         set(enable_side_module_if_needed

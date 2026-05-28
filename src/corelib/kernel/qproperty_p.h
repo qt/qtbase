@@ -662,8 +662,12 @@ public:
                         PendingBindingObserverList bindingObservers;
                         if (bd->notifyObserver_helper(this, storage, observer, bindingObservers)
                                 == QtPrivate::QPropertyBindingData::Evaluated) {
-                            // evaluateBindings() can trash the observers. We need to re-fetch here.
-                            if (QPropertyObserverPointer obs = d.firstObserver())
+                            // evaluateBindings() can trash the observers.
+                            // It can also reallocate binding data pointer.
+                            // So, we need to re-fetch here.
+                            bd = storage->bindingData(this, false);
+                            QPropertyBindingDataPointer dd{bd};
+                            if (QPropertyObserverPointer obs = dd.firstObserver())
                                 obs.notify(this);
                             for (auto&& bindingPtr: bindingObservers) {
                                 auto *binding = static_cast<QPropertyBindingPrivate *>(bindingPtr.get());

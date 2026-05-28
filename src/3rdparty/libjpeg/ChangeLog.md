@@ -1,3 +1,31 @@
+3.1.2
+=====
+
+### Significant changes relative to 3.1.1:
+
+1. Fixed a regression introduced by 3.1 beta1[5] that caused a segfault in
+TJBench if `-copy` or `-c` was passed as the last command-line argument.
+
+2. The build system now uses wrappers rather than CMake object libraries to
+compile source files for multiple data precisions.  This improves code
+readability and facilitates adapting the libjpeg-turbo source code to non-CMake
+build systems.
+
+3. Fixed an issue whereby decompressing a 4:2:0 or 4:2:2 JPEG image with merged
+upsampling disabled/one-pass color quantization enabled, then reusing the same
+API instance to decompress a 4:2:0 or 4:2:2 JPEG image with merged upsampling
+enabled/color quantization disabled, caused `jpeg_skip_scanlines()` to use
+freed memory.  In practice, the freed memory was not reclaimed before it was
+used.  Thus, this issue did not cause a segfault or other user-visible errant
+behavior (it was only detectable with ASan), and it did not likely pose a
+security risk.
+
+4. The AArch64 (Arm 64-bit) Neon SIMD extensions and accelerated Huffman codec
+now support the Arm64EC ABI on Windows, which allows Windows/x64 applications
+to call native Arm64 functions when running under the Windows/x64 emulator on
+Windows/Arm.
+
+
 3.1.1
 =====
 

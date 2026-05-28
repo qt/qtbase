@@ -489,8 +489,9 @@
     \c isNull() is rarely the property one is interested in (compare \c QString::isEmpty() / \c isNull()
     and \c QTime::isValid / \c isNull).
 
-    \li \c QVariant::operator== uses \c QMetaType::equals in Qt 6. Therefore, some graphical
-    types like \c QPixmap, \c QImage and \c QIcon will never compare equal. Moreover, floating
+    \li \c QVariant::operator== uses \c QMetaType::equals in Qt 6. Therefore, some types
+    that lack a suitable equality operator (like \c QPixmap or \c QIcon) will
+    never compare equal. Moreover, floating
     point numbers stored in \c QVariant are no longer compared with \c qFuzzyCompare, but instead
     use exact comparisons.
 

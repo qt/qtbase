@@ -47,6 +47,11 @@ using namespace Qt::StringLiterals;
 #define IBASE_INT128_SUPPORTED
 #endif
 
+// needed for Firebird 2.x
+#ifndef SQL_BOOLEAN
+#define SQL_BOOLEAN 32764
+#endif
+
 constexpr qsizetype QIBaseChunkSize = SHRT_MAX / 2;
 
 #if (FB_API_VER >= 40)

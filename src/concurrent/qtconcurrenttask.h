@@ -5,6 +5,10 @@
 #ifndef QTCONCURRENTTASK_H
 #define QTCONCURRENTTASK_H
 
+#if 0
+#pragma qt_class(QtConcurrentTask)
+#endif
+
 #if !defined(QT_NO_CONCURRENT)
 
 #include <QtConcurrent/qtaskbuilder.h>

@@ -179,14 +179,6 @@ public:
 Q_DECLARE_TYPEINFO(QSystemLocale::QueryType, Q_PRIMITIVE_TYPE);
 Q_DECLARE_TYPEINFO(QSystemLocale::CurrencyToStringArgument, Q_RELOCATABLE_TYPE);
 
-#if QT_CONFIG(icu)
-namespace QIcu {
-    QString toUpper(const QByteArray &localeId, const QString &str, bool *ok);
-    QString toLower(const QByteArray &localeId, const QString &str, bool *ok);
-}
-#endif
-
-
 struct QLocaleId
 {
     [[nodiscard]] Q_AUTOTEST_EXPORT static QLocaleId fromName(QStringView name);
@@ -225,21 +217,6 @@ struct QLocaleId
 };
 Q_DECLARE_TYPEINFO(QLocaleId, Q_PRIMITIVE_TYPE);
 
-
-using CharBuff = QVarLengthArray<char, 256>;
-
-struct ParsingResult
-{
-    enum State { // A duplicate of QValidator::State
-        Invalid,
-        Intermediate,
-        Acceptable
-    };
-
-    State state = Invalid;
-    CharBuff buff;
-};
-
 struct QLocaleData
 {
 public:
@@ -274,6 +251,20 @@ public:
     };
 
     enum NumberMode { IntegerMode, DoubleStandardMode, DoubleScientificMode };
+
+    using CharBuff = QVarLengthArray<char, 256>;
+
+    struct ParsingResult
+    {
+        enum State { // A duplicate of QValidator::State
+            Invalid,
+            Intermediate,
+            Acceptable,
+        };
+
+        State state = Invalid;
+        CharBuff buff;
+    };
 
 private:
     enum PrecisionMode {
@@ -357,6 +348,7 @@ public:
                 break;
             case 2:
                 Q_ASSERT(zero.at(0).isHighSurrogate());
+                Q_ASSERT(zero.at(1).isLowSurrogate());
                 zeroUcs = QChar::surrogateToUcs4(zero.at(0), zero.at(1));
                 zeroLen = 2;
                 break;
@@ -527,6 +519,11 @@ public:
     [[nodiscard]] static QLocale::Territory codeToTerritory(QStringView code) noexcept;
 
     [[nodiscard]] QLocale::MeasurementSystem measurementSystem() const;
+
+#if QT_CONFIG(icu)
+    [[nodiscard]] QString toUpper(const QString &str, bool *ok) const;
+    [[nodiscard]] QString toLower(const QString &str, bool *ok) const;
+#endif
 
     // System locale has an m_data all its own; all others have m_data = locale_data + m_index
     const QLocaleData *const m_data;

@@ -11,7 +11,8 @@ function(_qt_internal_sbom_record_system_library_usage target)
 
     set(opt_args "")
     set(single_args
-        TYPE
+        TYPE # deprecated
+        SBOM_ENTITY_TYPE
         PACKAGE_VERSION
         FRIENDLY_PACKAGE_NAME
     )
@@ -19,8 +20,10 @@ function(_qt_internal_sbom_record_system_library_usage target)
     cmake_parse_arguments(PARSE_ARGV 1 arg "${opt_args}" "${single_args}" "${multi_args}")
     _qt_internal_validate_all_args_are_parsed(arg)
 
-    if(NOT arg_TYPE)
-        message(FATAL_ERROR "TYPE must be set")
+    _qt_internal_map_sbom_entity_type(sbom_entity_type ${ARGN})
+
+    if(NOT sbom_entity_type)
+        message(FATAL_ERROR "SBOM_ENTITY_TYPE is empty for target '${target}', but it must be set")
     endif()
 
     # A package might be looked up more than once, make sure to record it once.
@@ -40,7 +43,7 @@ function(_qt_internal_sbom_record_system_library_usage target)
     # has started, e.g. during _qt_internal_find_third_party_dependencies.
     set(spdx_options
         ${target}
-        TYPE "${arg_TYPE}"
+        SBOM_ENTITY_TYPE "${sbom_entity_type}"
         PACKAGE_NAME "${arg_FRIENDLY_PACKAGE_NAME}"
     )
 
