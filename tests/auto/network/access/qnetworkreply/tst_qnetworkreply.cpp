@@ -571,6 +571,7 @@ private Q_SLOTS:
 #if QT_CONFIG(http) || defined (Q_OS_WASM)
     void requestWithTimeout_data();
     void requestWithTimeout();
+    void requestWithTimeoutAfterRedirect();
 #endif
 
     void moreActivitySignals_data();
@@ -10290,6 +10291,36 @@ void tst_QNetworkReply::requestWithTimeout()
         reply.reset(manager.post(request, data));
     QVERIFY(reply);
 
+    QSignalSpy spy(reply.data(), &QNetworkReply::errorOccurred);
+    QCOMPARE(waitForFinish(reply), int(Failure));
+    QCOMPARE(spy.size(), 1);
+    QCOMPARE(reply->error(), QNetworkReply::TimeoutError);
+}
+
+void tst_QNetworkReply::requestWithTimeoutAfterRedirect()
+{
+    // QTBUG-147039: transfer timeout must survive redirects
+    MiniHttpServer target(QByteArray(), false);
+    target.stopTransfer = true;
+
+    QUrl targetUrl("http://localhost/");
+    targetUrl.setPort(target.serverPort());
+
+    QString redirectReply = QStringLiteral("HTTP/1.1 302 Found\r\n"
+                                           "location: %1\r\n"
+                                           "content-length: 0\r\n"
+                                           "\r\n")
+                                    .arg(targetUrl.toString());
+    MiniHttpServer redirectServer(redirectReply.toLatin1(), false);
+    QUrl url("http://localhost/");
+    url.setPort(redirectServer.serverPort());
+
+    QNetworkRequest request(url);
+    request.setAttribute(QNetworkRequest::RedirectPolicyAttribute,
+                         QNetworkRequest::NoLessSafeRedirectPolicy);
+    request.setTransferTimeout(1000);
+
+    QNetworkReplyPtr reply(manager.get(request));
     QSignalSpy spy(reply.data(), &QNetworkReply::errorOccurred);
     QCOMPARE(waitForFinish(reply), int(Failure));
     QCOMPARE(spy.size(), 1);

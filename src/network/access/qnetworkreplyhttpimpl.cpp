@@ -1399,7 +1399,12 @@ void QNetworkReplyHttpImplPrivate::followRedirect()
         managerPrivate->thread->disconnect();
 
     QMetaObject::invokeMethod(
-            q, [this]() { postRequest(redirectRequest); }, Qt::QueuedConnection);
+            q,
+            [this] {
+                postRequest(redirectRequest);
+                setupTransferTimeout();
+            },
+            Qt::QueuedConnection);
 }
 
 static constexpr QLatin1StringView locationHeader() noexcept { return "location"_L1; }
