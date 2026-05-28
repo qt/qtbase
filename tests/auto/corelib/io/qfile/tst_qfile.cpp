@@ -1733,6 +1733,9 @@ void tst_QFile::absolutePathLinkToRelativePath()
 #ifdef Q_OS_OHOS
     QSKIP("OHOS does not support symlink creation");
 #endif
+#if defined(Q_OS_VXWORKS)
+    QSKIP("This test crashes on VxWorks 26.03. See QTBUG-147014.");
+#endif
     QFile::remove("myDir/test.txt");
     QFile::remove("myDir/myLink.lnk");
     QDir dir;
