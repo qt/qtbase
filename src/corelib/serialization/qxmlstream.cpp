@@ -965,11 +965,10 @@ static constexpr QLatin1StringView contextString(QXmlStreamReaderPrivate::XmlCon
 QXmlStreamPrivateTagStack::QXmlStreamPrivateTagStack()
 {
     tagStack.reserve(16);
-    tagStackStringStorage.reserve(32);
     tagStackStringStorageSize = 0;
     NamespaceDeclaration &namespaceDeclaration = namespaceDeclarations.push();
-    namespaceDeclaration.prefix = addToStringStorage(u"xml");
     namespaceDeclaration.namespaceUri = addToStringStorage(u"http://www.w3.org/XML/1998/namespace");
+    namespaceDeclaration.prefix = addToStringStorage(u"xml");
     initialTagStackStringStorageSize = tagStackStringStorageSize;
     tagsDone = false;
 }
