@@ -173,6 +173,7 @@ class QXmlStream
 };
 
 class QXmlStreamPrivateTagStack {
+    Q_DISABLE_COPY_MOVE(QXmlStreamPrivateTagStack)
 public:
     struct NamespaceDeclaration
     {
