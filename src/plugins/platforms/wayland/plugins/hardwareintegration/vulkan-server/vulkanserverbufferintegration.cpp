@@ -125,7 +125,7 @@ void VulkanServerBuffer::import()
     if (sbiExtraDebug) qDebug() << "bound texture" << Qt::hex << glGetError();
     funcs->glTexStorageMem2DEXT(GL_TEXTURE_2D, 1, m_internalFormat, m_size.width(), m_size.height(), m_memoryObject, 0 );
     if (sbiExtraDebug) qDebug() << "glTexStorageMem2DEXT" << Qt::hex << glGetError();
-    if (sbiExtraDebug) qDebug() << "format" << Qt::hex  << m_internalFormat << GL_RGBA8;
+    if (sbiExtraDebug) qDebug() << "format" << Qt::hex  << m_internalFormat;
 }
 
 QOpenGLTexture *VulkanServerBuffer::toOpenGlTexture()
