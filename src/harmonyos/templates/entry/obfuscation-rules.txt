@@ -2,7 +2,7 @@
 # You can include the obfuscation configuration files in the current module's build-profile.json5.
 #
 # For more details, see
-#   https://gitee.com/openharmony/arkcompiler_ets_frontend/blob/master/arkguard/README.md
+#   https://gitcode.com/openharmony/arkcompiler_ets_frontend/blob/master/arkguard/README.md
 
 # Obfuscation options:
 # -disable-obfuscation: disable all obfuscations
