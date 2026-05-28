@@ -81,7 +81,7 @@ public:
 
     explicit QOhosPlatformWindow(QWindow *window);
 
-    bool isWindowBeingClosedOrDestroyed(QWindow *window) const;
+    static bool isWindowBeingClosedOrDestroyed(QWindow *window);
     void setVisible(bool visible) override;
 
     void setCursor(const QCursor &cursor);

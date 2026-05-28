@@ -724,7 +724,7 @@ bool QOhosPlatformWindow::windowEvent(QEvent *event)
     return QPlatformWindow::windowEvent(event);
 }
 
-bool QOhosPlatformWindow::isWindowBeingClosedOrDestroyed(QWindow *window) const
+bool QOhosPlatformWindow::isWindowBeingClosedOrDestroyed(QWindow *window)
 {
     QWindowPrivate *windowPriv = qt_window_private(window);
     return windowPriv && (windowPriv->inClose || windowPriv->visibilityOnDestroy);
