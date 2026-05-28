@@ -711,13 +711,6 @@ bool QOhosPlatformWindow::windowEvent(QEvent *event)
         m_propertiesStore.notifyPropertyWrite(propertyName);
         break;
     }
-    case QEvent::Hide:
-        if (isWindowBeingClosedOrDestroyed(window())) {
-            auto *ohosView = ownedViewOrNull();
-            if (ohosView && ohosView->viewType() == QOhosView::ViewType::MainWindow)
-                ohosView->setNativeNodeVisibility(false);
-        }
-        break;
     default: break;
     }
 

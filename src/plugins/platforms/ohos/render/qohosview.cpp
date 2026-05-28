@@ -1220,6 +1220,11 @@ void QOhosView::hideMainWindow()
         return;
     }
 
+    if (QOhosPlatformWindow::isWindowBeingClosedOrDestroyed(m_ownerWindow)) {
+        setNativeNodeVisibility(false);
+        return;
+    }
+
     m_ohosWindowProxy->minimize();
     m_lastMainWindowHideMethod = WindowHideMethod::Minimize;
 }
