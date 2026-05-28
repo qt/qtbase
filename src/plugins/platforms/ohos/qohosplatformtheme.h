@@ -7,6 +7,7 @@
 #include <QtCore/qfileinfo.h>
 #include <QtCore/qhash.h>
 #include <QtCore/qmap.h>
+#include <QtGui/qcolor.h>
 #include <QtGui/qicon.h>
 #include <QtGui/qpalette.h>
 #include <functional>
@@ -44,10 +45,13 @@ public:
     QIconEngine *createIconEngine(const QString &iconName) const override;
 
 private:
-    QMap<Qt::ColorScheme, QHash<Palette, QPalette>> m_themesPalettes;
+    void refreshPalettes();
+
+    QHash<Palette, QPalette> m_themePalette;
     QHash<Font, QFont> m_fonts;
     int m_wheelScrollLines;
     QOhosSupplier<std::optional<bool>> m_ohosConfigDarkModeFlagSupplier;
+    QOhosSupplier<QColor> m_ohosAccentColorSupplier;
 };
 
 QT_END_NAMESPACE
