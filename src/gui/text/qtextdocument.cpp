@@ -107,20 +107,21 @@ static bool mightBeRichTextImpl(T text)
     if (open < text.size() && text.at(open) == u'<') {
         const qsizetype close = text.indexOf(u'>', open);
         if (close > -1) {
-            QVarLengthArray<char16_t> tag;
-            for (qsizetype i = open + 1; i < close; ++i) {
+            const qsizetype first = open + 1;
+            qsizetype tagLength = 0;
+            for (qsizetype i = first; i < close; ++i) {
                 const auto current = QChar(text[i]);
                 if (current.isDigit() || current.isLetter())
-                    tag.append(current.toLower().unicode());
-                else if (!tag.isEmpty() && current.isSpace())
+                    ++tagLength;
+                else if (tagLength && current.isSpace())
                     break;
-                else if (!tag.isEmpty() && current == u'/' && i + 1 == close)
+                else if (tagLength && current == u'/' && i + 1 == close)
                     break;
-                else if (!current.isSpace() && (!tag.isEmpty() || current != u'!'))
+                else if (!current.isSpace() && (tagLength || current != u'!'))
                     return false; // that's not a tag
             }
 #ifndef QT_NO_TEXTHTMLPARSER
-            return QTextHtmlParser::lookupElement(tag) != -1;
+            return QTextHtmlParser::lookupElement(QAnyStringView(text).mid(first, tagLength)) != -1;
 #else
             return false;
 #endif // QT_NO_TEXTHTMLPARSER

@@ -405,26 +405,30 @@ static constexpr QTextHtmlElement elements[]= {
     { "var",        Html_var,        QTextHtmlElement::DisplayInline },
 };
 
-static bool operator<(QStringView str, const QTextHtmlElement &e)
+template <typename T>
+static bool operator<(T str, QTextHtmlElement e)
 {
     return str.compare(QLatin1StringView(e.name), Qt::CaseInsensitive) < 0;
 }
 
-static bool operator<(const QTextHtmlElement &e, QStringView str)
+template <typename T>
+static bool operator<(QTextHtmlElement e, T str)
 {
     return QLatin1StringView(e.name).compare(str, Qt::CaseInsensitive) < 0;
 }
 
-static const QTextHtmlElement *lookupElementHelper(QStringView element)
+static const QTextHtmlElement *lookupElementHelper(QAnyStringView element)
 {
-    const auto end = std::end(elements);
-    const QTextHtmlElement *e = std::lower_bound(std::begin(elements), end, element);
-    if ((e == end) || (element < *e))
-        return nullptr;
-    return e;
+    return element.visit([begin = std::begin(elements), end = std::end(elements)]
+                         (auto element) -> const QTextHtmlElement * {
+        const auto e = std::lower_bound(begin, end, element);
+        if ((e == end) || (element < *e))
+            return nullptr;
+        return e;
+    });
 }
 
-int QTextHtmlParser::lookupElement(QStringView element)
+int QTextHtmlParser::lookupElement(QAnyStringView element)
 {
     const QTextHtmlElement *e = lookupElementHelper(element);
     if (!e)
