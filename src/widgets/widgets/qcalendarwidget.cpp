@@ -910,7 +910,7 @@ public:
 signals:
     void showDate(QDate date);
     void changeDate(QDate date, bool changeMonth);
-    void clicked(QDate date);
+    void dateClicked(QDate date);
     void editingFinished();
 protected:
     QModelIndex moveCursor(CursorAction cursorAction, Qt::KeyboardModifiers modifiers) override;
@@ -1510,7 +1510,7 @@ void QCalendarView::mouseReleaseEvent(QMouseEvent *event)
         QDate date = handleMouseEvent(event);
         if (date.isValid()) {
             emit changeDate(date, true);
-            emit clicked(date);
+            emit dateClicked(date);
             if (style()->styleHint(QStyle::SH_ItemView_ActivateItemOnSingleClick, nullptr, this))
                 emit editingFinished();
         }
@@ -2109,7 +2109,7 @@ QCalendarWidget::QCalendarWidget(QWidget *parent)
             this, SLOT(_q_slotShowDate(QDate)));
     connect(d->m_view, SIGNAL(changeDate(QDate,bool)),
             this, SLOT(_q_slotChangeDate(QDate,bool)));
-    connect(d->m_view, SIGNAL(clicked(QDate)),
+    connect(d->m_view, SIGNAL(dateClicked(QDate)),
             this, SIGNAL(clicked(QDate)));
     connect(d->m_view, SIGNAL(editingFinished()),
             this, SLOT(_q_editingFinished()));
