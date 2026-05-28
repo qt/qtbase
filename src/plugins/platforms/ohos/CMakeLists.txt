@@ -108,7 +108,6 @@ qt_internal_add_plugin(QOhosPlatformIntegrationPlugin
         render/qxcomponent.cpp render/qxcomponent.h
     INCLUDE_DIRECTORIES
         ${CMAKE_CURRENT_SOURCE_DIR}
-        ${QtBase_SOURCE_DIR}/src/3rdparty/fontconfig
     DEFINES
         NODE_ADDON_API_ENABLE_TYPE_CHECK_ON_AS
         NAPI_CPP_EXCEPTIONS
