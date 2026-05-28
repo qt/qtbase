@@ -2934,18 +2934,6 @@ bool QHeaderView::viewportEvent(QEvent *e)
         }
         break; }
 #endif // QT_CONFIG(whatsthis)
-#if QT_CONFIG(statustip)
-    case QEvent::StatusTip: {
-        QHelpEvent *he = static_cast<QHelpEvent*>(e);
-        int logical = logicalIndexAt(he->pos());
-        if (logical != -1) {
-            QString statustip = d->model->headerData(logical, d->orientation,
-                                                    Qt::StatusTipRole).toString();
-            if (!statustip.isEmpty())
-                setStatusTip(statustip);
-        }
-        return true; }
-#endif // QT_CONFIG(statustip)
     case QEvent::Resize:
     case QEvent::FontChange:
     case QEvent::StyleChange:
