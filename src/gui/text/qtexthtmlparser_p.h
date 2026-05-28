@@ -108,8 +108,6 @@ enum QTextHTMLElements {
     Html_meta,
     Html_link,
     Html_script,
-
-    Html_NumElements
 };
 
 struct QTextHtmlElement

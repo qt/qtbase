@@ -342,7 +342,7 @@ static const ushort windowsLatin1ExtendedCharacters[0xA0 - 0x80] = {
 
 // the displayMode value is according to the what are blocks in the piecetable, not
 // what the w3c defines.
-static const QTextHtmlElement elements[Html_NumElements]= {
+static constexpr QTextHtmlElement elements[]= {
     { "a",          Html_a,          QTextHtmlElement::DisplayInline },
     { "address",    Html_address,    QTextHtmlElement::DisplayInline },
     { "b",          Html_b,          QTextHtmlElement::DisplayInline },
@@ -407,19 +407,18 @@ static const QTextHtmlElement elements[Html_NumElements]= {
 
 static bool operator<(QStringView str, const QTextHtmlElement &e)
 {
-    return str < QLatin1StringView(e.name);
+    return str.compare(QLatin1StringView(e.name), Qt::CaseInsensitive) < 0;
 }
 
 static bool operator<(const QTextHtmlElement &e, QStringView str)
 {
-    return QLatin1StringView(e.name) < str;
+    return QLatin1StringView(e.name).compare(str, Qt::CaseInsensitive) < 0;
 }
 
 static const QTextHtmlElement *lookupElementHelper(QStringView element)
 {
-    const QTextHtmlElement *start = &elements[0];
-    const QTextHtmlElement *end = &elements[Html_NumElements];
-    const QTextHtmlElement *e = std::lower_bound(start, end, element);
+    const auto end = std::end(elements);
+    const QTextHtmlElement *e = std::lower_bound(std::begin(elements), end, element);
     if ((e == end) || (element < *e))
         return nullptr;
     return e;
