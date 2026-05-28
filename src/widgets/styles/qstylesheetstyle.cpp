@@ -4017,7 +4017,8 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
 
             if (subRule.hasDrawable()) {
                 subRule.drawRule(p, opt->rect);
-                QCommonStyle::drawControl(ce, &mi, p, w); // deliberate bypass of the base
+                // AXIVION Next Line Qt-SkippedBaseMethod: deliberate bypass of the base
+                QCommonStyle::drawControl(ce, &mi, p, w);
             } else {
                 if (rule.hasDrawable() && !(opt->state & QStyle::State_Selected)) {
                     // So that the menu bar background is not hidden by the items
