@@ -71,13 +71,10 @@ void QOhosFloatingWindow::setGeometry(const QRect &rect)
 
 void QOhosFloatingWindow::setVisible(bool visible)
 {
-    if (!visible) {
-        // Avoid ´minimize´ animation when the window is being closed or destroyed
-        if (!QOhosPlatformWindow::isWindowBeingClosedOrDestroyed(window()))
-            m_view->hide();
-    } else {
+    if (!visible)
+        m_view->hide();
+    else
         m_view->showImmediate();
-    }
     startAsyncWaitForNodeResizeIfNeeded();
 }
 
