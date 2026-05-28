@@ -324,6 +324,24 @@ public:
         return res;
     }
 
+    static Tree fromJsonArray(const QJsonArray &array)
+    {
+        Tree tree;
+        for (const auto &value : array) {
+            if (!value.isObject())
+                continue;
+            QJsonObject object = value.toObject();
+            TreeRow treeRow{
+                object["name"].toString(),
+                object["title"].toString()
+            };
+            if (QJsonValue maybeChildren = object["children"]; maybeChildren.isArray())
+                treeRow.m_children = fromJsonArray(maybeChildren.toArray());
+            tree.emplace_back(std::move(treeRow));
+        }
+        return tree;
+    }
+
     // tree traversal protocol implementation
     TreeRow *parentRow() const { return m_parent; }
     void setParentRow(TreeRow *parent) { m_parent = parent; }
@@ -331,7 +349,6 @@ public:
     std::optional<Tree> &childRows() { return m_children; }
 
 private:
-    friend struct QRangeModel::RowOptions<TreeRow>;
     QString m_name;
     QString m_title;
 
@@ -441,24 +458,6 @@ struct QRangeModel::RowOptions<TreeRow>
         return mimeData;
     }
 
-    static Tree generateTree(const QJsonArray &array)
-    {
-        Tree tree;
-        for (const auto &value : array) {
-            if (!value.isObject())
-                continue;
-            QJsonObject object = value.toObject();
-            TreeRow treeRow{
-                object["name"].toString(),
-                object["title"].toString()
-            };
-            if (QJsonValue maybeChildren = object["children"]; maybeChildren.isArray())
-                treeRow.m_children = generateTree(maybeChildren.toArray());
-            tree.emplace_back(std::move(treeRow));
-        }
-        return tree;
-    }
-
     static bool dropMimeData(const QMimeData *data, auto inserter)
     {
         QByteArray json = data->data(mimeTypes().first());
@@ -471,7 +470,7 @@ struct QRangeModel::RowOptions<TreeRow>
             return false;
         }
         QJsonArray topObjects = document.array();
-        Tree newTree = generateTree(topObjects);
+        Tree newTree = TreeRow::fromJsonArray(topObjects);
         for (auto &newRow : newTree)
             inserter = std::move(newRow);
         return true;
