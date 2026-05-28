@@ -62,12 +62,10 @@ struct PalettesColors
     QColor window;
 };
 
-PalettesColors makePalettesColorsLight()
+PalettesColors makePalettesColorsLight(const QColor &accentColor)
 {
     const auto activeWindow = QColor("#FFFFFFFF");
     const auto activeButtonText = QColor("#0A59F7");
-    const auto activeHighlight = QColor("#FF007DFF");
-    const auto highlighted = QColor("#FF0A59F7");
     const auto textPrimary = QColor("#FF182431");
 
     return {
@@ -75,13 +73,13 @@ PalettesColors makePalettesColorsLight()
         .inactiveWindow = makeInactiveOrDisabledFromColor(activeWindow),
         .activeButtonText = activeButtonText,
         .inactiveButtonText = makeInactiveOrDisabledFromColor(activeButtonText),
-        .activeHighlight = activeHighlight,
-        .inactiveHighlight = makeInactiveOrDisabledFromColor(activeHighlight),
+        .activeHighlight = accentColor,
+        .inactiveHighlight = makeInactiveOrDisabledFromColor(accentColor),
         .clickEffect = QColor("#1A000000"),
         .hover = QColor("#0D000000"),
         .foregroundContrary = QColor("#FFFFFF"),
-        .highlighted = highlighted,
-        .inactiveHighlighted = makeInactiveOrDisabledFromColor(highlighted),
+        .highlighted = accentColor,
+        .inactiveHighlighted = makeInactiveOrDisabledFromColor(accentColor),
         .textPrimary = textPrimary,
         .inactiveTextPrimary = textPrimary,
         .disabledTextPrimary = makeInactiveOrDisabledFromColor(textPrimary),
@@ -96,12 +94,10 @@ PalettesColors makePalettesColorsLight()
     };
 };
 
-PalettesColors makePalettesColorsDark()
+PalettesColors makePalettesColorsDark(const QColor &accentColor)
 {
     const auto activeWindow = QColor("#18181A");
     const auto activeButtonText = QColor("#3F97E9");
-    const auto activeHighlight = QColor("#006CDE");
-    const auto highlighted = QColor("#3F97E9");
     const auto textPrimary = QColor("#DBFFFFFF");
 
     return {
@@ -109,13 +105,13 @@ PalettesColors makePalettesColorsDark()
         .inactiveWindow = makeInactiveOrDisabledFromColor(activeWindow),
         .activeButtonText = activeButtonText,
         .inactiveButtonText = makeInactiveOrDisabledFromColor(activeButtonText),
-        .activeHighlight = activeHighlight,
-        .inactiveHighlight = makeInactiveOrDisabledFromColor(activeHighlight),
+        .activeHighlight = accentColor,
+        .inactiveHighlight = makeInactiveOrDisabledFromColor(accentColor),
         .clickEffect = QColor("#26FFFFFF"),
         .hover = QColor("#19FFFFFF"),
         .foregroundContrary = QColor("#E5E5E5"),
-        .highlighted = highlighted,
-        .inactiveHighlighted = makeInactiveOrDisabledFromColor(highlighted),
+        .highlighted = accentColor,
+        .inactiveHighlighted = makeInactiveOrDisabledFromColor(accentColor),
         .textPrimary = textPrimary,
         .inactiveTextPrimary = textPrimary,
         .disabledTextPrimary = makeInactiveOrDisabledFromColor(textPrimary),
@@ -138,26 +134,26 @@ struct ButtonPaletteColors
     QColor enabledDefaultButtonText;
 };
 
-ButtonPaletteColors makeButtonPaletteColorsLight()
+ButtonPaletteColors makeButtonPaletteColorsLight(const QColor &accentColor)
 {
     const auto activeButton = QColor("#0C182431");
 
     return {
         .activeButton = activeButton,
         .inactiveButton = makeInactiveOrDisabledFromColor(activeButton),
-        .focusedOutline = QColor("#007DFF"),
+        .focusedOutline = accentColor,
         .enabledDefaultButtonText = QColor("#FFFFFFFF"),
     };
 };
 
-ButtonPaletteColors makeButtonPaletteColorsDark()
+ButtonPaletteColors makeButtonPaletteColorsDark(const QColor &accentColor)
 {
     const auto activeButton = QColor("#19FFFFFF");
 
     return {
         .activeButton = activeButton,
         .inactiveButton = makeInactiveOrDisabledFromColor(activeButton),
-        .focusedOutline = QColor("#3F97E9"),
+        .focusedOutline = accentColor,
         .enabledDefaultButtonText = QColor("#E5E5E5"),
     };
 }
@@ -238,23 +234,23 @@ struct TabBarPaletteColors
     QColor disabledWindowText;
 };
 
-TabBarPaletteColors makeTabBarPaletteColorsLight()
+TabBarPaletteColors makeTabBarPaletteColorsLight(const QColor &accentColor)
 {
     const auto inactiveWindowText = QColor("#99182431");
 
     return {
-        .activeWindowText = QColor("#FF007DFF"),
+        .activeWindowText = accentColor,
         .inactiveWindowText = inactiveWindowText,
         .disabledWindowText = makeInactiveOrDisabledFromColor(inactiveWindowText),
     };
 };
 
-TabBarPaletteColors makeTabBarPaletteColorsDark()
+TabBarPaletteColors makeTabBarPaletteColorsDark(const QColor &accentColor)
 {
     const auto inactiveWindowText = QColor("#99FFFFFF");
 
     return {
-        .activeWindowText = QColor("#FF3F97E9"),
+        .activeWindowText = accentColor,
         .inactiveWindowText = inactiveWindowText,
         .disabledWindowText = makeInactiveOrDisabledFromColor(inactiveWindowText),
     };
@@ -364,17 +360,17 @@ struct AllPalletesColors
     TooltipPaletteColors toolTip;
 };
 
-AllPalletesColors makeAllPalettesColorsLight()
+AllPalletesColors makeAllPalettesColorsLight(const QColor &accentColor)
 {
-    const auto palettes = makePalettesColorsLight();
+    const auto palettes = makePalettesColorsLight(accentColor);
 
     return {
         .palettes = palettes,
-        .button = makeButtonPaletteColorsLight(),
+        .button = makeButtonPaletteColorsLight(accentColor),
         .toolButton = makeToolButtonPaletteColorsLight(),
         .system = makeSystemButtonPaletteColorsLight(),
         .menu = makeMenuPaletteColorsLight(palettes),
-        .tabBar = makeTabBarPaletteColorsLight(),
+        .tabBar = makeTabBarPaletteColorsLight(accentColor),
         .textLineEdit = makeTextLineEditPaletteColorsLight(),
         .groupBox = makeGroupboxPaletteColorsLight(),
         .header = makeHeaderPaletteColorsLight(),
@@ -382,17 +378,17 @@ AllPalletesColors makeAllPalettesColorsLight()
     };
 }
 
-AllPalletesColors makeAllPalettesColorsDark()
+AllPalletesColors makeAllPalettesColorsDark(const QColor &accentColor)
 {
-    const auto palettes = makePalettesColorsDark();
+    const auto palettes = makePalettesColorsDark(accentColor);
 
     return {
         .palettes = palettes,
-        .button = makeButtonPaletteColorsDark(),
+        .button = makeButtonPaletteColorsDark(accentColor),
         .toolButton = makeToolButtonPaletteColorsDark(),
         .system = makeSystemButtonPaletteColorsDark(),
         .menu = makeMenuPaletteColorsDark(palettes),
-        .tabBar = makeTabBarPaletteColorsDark(),
+        .tabBar = makeTabBarPaletteColorsDark(accentColor),
         .textLineEdit = makeTextLineEditPaletteColorsDark(),
         .groupBox = makeGroupboxPaletteColorsDark(),
         .header = makeHeaderPaletteColorsDark(),
@@ -400,11 +396,11 @@ AllPalletesColors makeAllPalettesColorsDark()
     };
 }
 
-AllPalletesColors makeAllPalettesColors(Qt::ColorScheme scheme)
+AllPalletesColors makeAllPalettesColors(Qt::ColorScheme scheme, const QColor &accentColor)
 {
     switch (scheme) {
-    case Qt::ColorScheme::Light: return makeAllPalettesColorsLight();
-    case Qt::ColorScheme::Dark: return makeAllPalettesColorsDark();
+    case Qt::ColorScheme::Light: return makeAllPalettesColorsLight(accentColor);
+    case Qt::ColorScheme::Dark: return makeAllPalettesColorsDark(accentColor);
     default:
         break;
     }
@@ -758,9 +754,9 @@ QFont makeTipLabelFont()
     return font;
 }
 
-QHash<QPlatformTheme::Palette, QPalette> makePalettesMap(Qt::ColorScheme scheme)
+QHash<QPlatformTheme::Palette, QPalette> makePalettesMap(Qt::ColorScheme scheme, const QColor &accentColor)
 {
-    const AllPalletesColors palettesColors = makeAllPalettesColors(scheme);
+    const AllPalletesColors palettesColors = makeAllPalettesColors(scheme, accentColor);
     return {
         {QPlatformTheme::ButtonPalette, makeButtonPalette(palettesColors)},
         {QPlatformTheme::CheckBoxPalette, makeCheckBoxOrRadioButtonPalette(palettesColors)},
@@ -869,6 +865,25 @@ std::optional<bool> mapOhosConfigurationColorModeToDarkModeFlag(OhosConfiguratio
     return {};
 }
 
+QColor readAccentColor(QtOhos::JsState &jsState)
+{
+    const auto argb = static_cast<uint32_t>(
+        jsState.defaultQAbilityPeer()->qAbility().eval<QNapi::Number>(
+            "context.resourceManager.getColorByNameSync(*)",
+            {"ohos_id_color_emphasize"}));
+    return QColor::fromRgba(argb);
+}
+
+QOhosSupplier<QColor> makeOhosAccentColorDataSource(QOhosConsumer<QColor> accentColorChangedHandler)
+{
+    return QtOhos::makeOhosConfigValueDataSource<QColor>(
+        readAccentColor,
+        [](QtOhos::JsState &jsState, const QNapi::Object &) {
+            return readAccentColor(jsState);
+        },
+        std::move(accentColorChangedHandler));
+}
+
 std::optional<QPixmap> tryGetFilePixmapByResourceObject(QtOhos::JsState &jsState, QNapi::Object resource)
 {
     std::string undocumentedParamsPropertyName("params");
@@ -969,12 +984,7 @@ QPixmap QOhosFileIconEngine::filePixmap(const QSize &size, QIcon::Mode, QIcon::S
 }
 
 QOhosPlatformTheme::QOhosPlatformTheme()
-    : m_themesPalettes(
-        {
-            {Qt::ColorScheme::Light, makePalettesMap(Qt::ColorScheme::Light)},
-            {Qt::ColorScheme::Dark, makePalettesMap(Qt::ColorScheme::Dark)},
-        })
-    , m_fonts(
+    : m_fonts(
         {
             {DockWidgetTitleFont, makeTitleFont()},
             {GroupBoxTitleFont, makeTitleFont()},
@@ -988,12 +998,21 @@ QOhosPlatformTheme::QOhosPlatformTheme()
     , m_wheelScrollLines(defaultWheelScrollLines)
 {
     auto colorModeDataSource = makeOhosConfigColorModeDataSource(
-        [](auto) {
+        [this](auto) {
+            refreshPalettes();
             QWindowSystemInterface::handleThemeChange<QWindowSystemInterface::SynchronousDelivery>();
         });
     m_ohosConfigDarkModeFlagSupplier = [colorModeDataSource = std::move(colorModeDataSource)]() {
         return mapOhosConfigurationColorModeToDarkModeFlag(colorModeDataSource());
     };
+
+    m_ohosAccentColorSupplier = makeOhosAccentColorDataSource(
+        [this](const auto &) {
+            refreshPalettes();
+            QWindowSystemInterface::handleThemeChange<QWindowSystemInterface::SynchronousDelivery>();
+        });
+
+    refreshPalettes();
 }
 
 void QOhosPlatformTheme::requestColorScheme(Qt::ColorScheme scheme)
@@ -1010,6 +1029,12 @@ void QOhosPlatformTheme::requestColorScheme(Qt::ColorScheme scheme)
 Qt::ColorScheme QOhosPlatformTheme::colorScheme() const
 {
     return mapOhosThemeToColorScheme(m_ohosConfigDarkModeFlagSupplier());
+}
+
+void QOhosPlatformTheme::refreshPalettes()
+{
+    if (const auto currentColorScheme = colorScheme(); currentColorScheme != Qt::ColorScheme::Unknown)
+        m_themePalette = makePalettesMap(currentColorScheme, m_ohosAccentColorSupplier());
 }
 
 QPlatformDialogHelper *QOhosPlatformTheme::createPlatformDialogHelper(DialogType type) const
@@ -1058,12 +1083,9 @@ QVariant QOhosPlatformTheme::themeHint(ThemeHint hint) const
 
 const QPalette *QOhosPlatformTheme::palette(Palette type) const
 {
-    const auto &palettes = m_themesPalettes[colorScheme()];
-    const auto it = palettes.find(type);
-    if (it != palettes.end())
+    if (const auto it = m_themePalette.find(type); it != m_themePalette.end())
         return &it.value();
-    else
-        return QPlatformTheme::palette(type);
+    return QPlatformTheme::palette(type);
 }
 
 const QFont *QOhosPlatformTheme::font(Font type) const
