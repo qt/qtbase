@@ -7,7 +7,9 @@ if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)
     find_package(Qt6BuildInternals REQUIRED COMPONENTS STANDALONE_TEST)
 endif()
 
-add_subdirectory(socketprocess)
+if(QT_FEATURE_process)
+    add_subdirectory(socketprocess)
+endif()
 
 qt_internal_add_test(tst_qlocalsocket
     SOURCES
@@ -19,4 +21,6 @@ qt_internal_add_test(tst_qlocalsocket
         Qt::Network
         Qt::TestPrivate
 )
-add_dependencies(tst_qlocalsocket socketprocess)
+if(QT_FEATURE_process)
+    add_dependencies(tst_qlocalsocket socketprocess)
+endif()

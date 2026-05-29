@@ -47,30 +47,32 @@ qt_internal_add_test(tst_static_qcoreapplication
         Qt::CorePrivate
 )
 
-qt_internal_add_executable(apphelper_core
-    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/"
-    SOURCES
-        apphelper.cpp
-        maybeshow.h
-    LIBRARIES
-        Qt::CorePrivate
-)
-set_target_properties(apphelper_core PROPERTIES OUTPUT_NAME apphelper)
-
-add_dependencies(tst_qcoreapplication
-    apphelper_core
-)
-
-if(QT_FEATURE_library)
-    qt_internal_add_cmake_library(apphelper_core_plugin
-        MODULE
+if(QT_FEATURE_process)
+    qt_internal_add_executable(apphelper_core
+        OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/"
         SOURCES
-            apphelper_plugin.cpp
-        NO_PCH_SOURCES
-            apphelper_plugin.cpp
+            apphelper.cpp
+            maybeshow.h
         LIBRARIES
-            Qt::Core
+            Qt::CorePrivate
     )
-    qt_autogen_tools_initial_setup(apphelper_core_plugin)
-    add_dependencies(apphelper_core apphelper_core_plugin)
+    set_target_properties(apphelper_core PROPERTIES OUTPUT_NAME apphelper)
+
+    add_dependencies(tst_qcoreapplication
+        apphelper_core
+    )
+
+    if(QT_FEATURE_library)
+        qt_internal_add_cmake_library(apphelper_core_plugin
+            MODULE
+            SOURCES
+                apphelper_plugin.cpp
+            NO_PCH_SOURCES
+                apphelper_plugin.cpp
+            LIBRARIES
+                Qt::Core
+        )
+        qt_autogen_tools_initial_setup(apphelper_core_plugin)
+        add_dependencies(apphelper_core apphelper_core_plugin)
+    endif()
 endif()

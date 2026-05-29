@@ -7,5 +7,7 @@ if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)
     find_package(Qt6BuildInternals REQUIRED COMPONENTS STANDALONE_TEST)
 endif()
 
-add_subdirectory(clientserver)
+if(QT_FEATURE_process)
+    add_subdirectory(clientserver)
+endif()
 add_subdirectory(test)

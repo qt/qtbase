@@ -32,7 +32,9 @@ qt_internal_add_test(tst_qnetworkreply
     QT_TEST_SERVER_LIST "vsftpd" "apache2" "ftp-proxy" "danted" "squid"
     BUNDLE_ANDROID_OPENSSL_LIBS
 )
-add_dependencies(tst_qnetworkreply echo)
+if(QT_FEATURE_process)
+    add_dependencies(tst_qnetworkreply echo)
+endif()
 
 # Resources:
 set(qnetworkreply_resource_files
