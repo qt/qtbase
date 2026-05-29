@@ -233,9 +233,9 @@ namespace qstdweb {
 
     struct PromiseCallbacks
     {
-        std::function<void(emscripten::val)> thenFunc;
-        std::function<void(emscripten::val)> catchFunc;
-        std::function<void()> finallyFunc;
+        std::function<void(emscripten::val)> thenFunc = [](emscripten::val) {};
+        std::function<void(emscripten::val)> catchFunc = [](emscripten::val) {};
+        std::function<void()> finallyFunc = []() {};
     };
 
     // Note: it is ok for the Promise object to go out of scope,
@@ -247,6 +247,17 @@ namespace qstdweb {
             m_state = std::make_shared<State>();
             m_state->m_promise = target.call<emscripten::val>(
                 methodName.toStdString().c_str(), std::forward<Args>(args)...);
+            if (m_state->m_promise.isUndefined() || m_state->m_promise["constructor"]["name"].as<std::string>() != "Promise") {
+                 qFatal("This function did not return a promise");
+            }
+            addFinallyFunction([](){});
+        }
+
+        template<typename... Args>
+        Promise(emscripten::val target, const char *methodName, Args... args) {
+            m_state = std::make_shared<State>();
+            m_state->m_promise = target.call<emscripten::val>(
+                methodName, std::forward<Args>(args)...);
             if (m_state->m_promise.isUndefined() || m_state->m_promise["constructor"]["name"].as<std::string>() != "Promise") {
                  qFatal("This function did not return a promise");
             }
