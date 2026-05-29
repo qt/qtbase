@@ -92,10 +92,12 @@ void QWaylandClientExtension::initialize()
 }
 
 /*!
-   Constructs the client extension and sets its version to \a ver.
+   \since 6.12
+   Constructs the client extension and sets its version to \a ver and makes the extension a
+   child of \a parent.
 */
-QWaylandClientExtension::QWaylandClientExtension(const int ver)
-    : QObject(*new QWaylandClientExtensionPrivate())
+QWaylandClientExtension::QWaylandClientExtension(const int ver, QObject *parent)
+    : QObject(*new QWaylandClientExtensionPrivate(), parent)
 {
     Q_D(QWaylandClientExtension);
     d->version = ver;
@@ -106,6 +108,15 @@ QWaylandClientExtension::QWaylandClientExtension(const int ver)
                             &QWaylandClientExtensionPrivate::globalRemoved);
     // This function uses virtual functions and we don't want it to be called from the constructor.
     QMetaObject::invokeMethod(this, "initialize", Qt::QueuedConnection);
+}
+
+/*!
+   Constructs the client extension and sets its version to \a ver. Equivalent to
+   QWaylandClientExtension(ver, nullptr).
+*/
+QWaylandClientExtension::QWaylandClientExtension(const int ver)
+    : QWaylandClientExtension(ver, nullptr)
+{
 }
 
 /*!

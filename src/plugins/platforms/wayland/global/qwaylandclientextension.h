@@ -27,6 +27,7 @@ class Q_WAYLANDCLIENT_EXPORT QWaylandClientExtension : public QObject
     Q_PROPERTY(int protocolVersion READ version NOTIFY versionChanged)
     Q_PROPERTY(bool active READ isActive NOTIFY activeChanged)
 public:
+    QWaylandClientExtension(const int version, QObject *parent);
     QWaylandClientExtension(const int version);
     ~QWaylandClientExtension();
 
@@ -53,7 +54,8 @@ class Q_WAYLANDCLIENT_EXPORT QWaylandClientExtensionTemplate : public QWaylandCl
     Q_DECLARE_PRIVATE(QWaylandClientExtensionTemplate)
 
 public:
-    QWaylandClientExtensionTemplate(const int ver) : QWaylandClientExtension(ver)
+    QWaylandClientExtensionTemplate(const int ver, QObject *parent)
+        : QWaylandClientExtension(ver, parent)
     {
         if constexpr (destruct != nullptr) {
             connect(this, &QWaylandClientExtensionTemplate::activeChanged, this, [this] {
@@ -62,6 +64,11 @@ public:
                 }
             });
         }
+    }
+
+    QWaylandClientExtensionTemplate(const int ver)
+        : QWaylandClientExtensionTemplate(ver, nullptr)
+    {
     }
 
     ~QWaylandClientExtensionTemplate()
