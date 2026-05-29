@@ -1932,7 +1932,7 @@ uint QXmlStreamReaderPrivate::resolveCharRef(int symbolIndex)
     uint s;
     // ### add toXShort to XmlString?
     if (sym(symbolIndex).c == 'x')
-        s = symString(symbolIndex, 1).view().toUInt(&ok, 16);
+        s = symString(symbolIndex).view().sliced(1).toUInt(&ok, 16);
     else
         s = symString(symbolIndex).view().toUInt(&ok, 10);
 
