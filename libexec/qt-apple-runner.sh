@@ -54,6 +54,16 @@ forward_env() {
     done < <(env)
 }
 
+# Uninstalls the app from the target, clearing its data container.
+# Relies on the globals set up by the run logic below.
+uninstall_app() {
+    if [ "$target_type" = "simulator" ]; then
+        xcrun simctl uninstall "$udid" "$bundle_id" 2>/dev/null || true
+    else
+        xcrun devicectl device uninstall app --device "$udid" "$bundle_id" 2>/dev/null || true
+    fi
+}
+
 # Let the platform integration know it should set a custom cwd
 # and write the exit code to a file.
 export QT_RUNNING_VIA_TEST_RUNNER=1
@@ -72,7 +82,7 @@ if [ "$target_type" = "simulator" ]; then
     fi
 
     # Uninstall first so each run starts with a clean data container
-    xcrun simctl uninstall "$udid" "$bundle_id" 2>/dev/null || true
+    uninstall_app
 
     xcrun simctl install "$udid" "$bundle" \
         || die "⚠️ Failed to install $bundle on simulator $udid"
@@ -99,7 +109,7 @@ else
     fi
 
     # Uninstall first so each run starts with a clean data container
-    xcrun devicectl device uninstall app --device "$udid" "$bundle_id" 2>/dev/null || true
+    uninstall_app
 
     xcrun devicectl device install app --device "$udid" "$bundle" \
         || die "⚠️ Failed to install $bundle on device $udid"
@@ -126,9 +136,13 @@ else
 fi
 
 exit_code=$(cat "$tmp_dir/qt_exit_code.txt" 2>/dev/null)
+exit_code="${exit_code:-253}"
 
 if [ -d "$tmp_dir/testrunner" ]; then
     cp -r "$tmp_dir/testrunner/." .
 fi
 
-exit "${exit_code:-253}"
+# Clean up after a successful run, leaving failed runs installed for debugging
+[ "$exit_code" = "0" ] && uninstall_app
+
+exit "$exit_code"
