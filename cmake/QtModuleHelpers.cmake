@@ -73,6 +73,24 @@ function(qt_internal_append_include_directories_with_headers_check target list_t
     set(${list_to_append} "${${list_to_append}}" PARENT_SCOPE)
 endfunction()
 
+# Returns in out_var the list of directories (relative to the top-level source directory) that the
+# configure script's qt_cmdline.cmake traversal visited. The list is read once from the manifest
+# written by QtProcessConfigureArgs.cmake and cached in a global property.
+function(qt_internal_get_configure_cmdline_visited_dirs out_var)
+    get_property(already_loaded GLOBAL PROPERTY _qt_configure_cmdline_visited_dirs SET)
+    if(NOT already_loaded)
+        set(manifest "${CMAKE_BINARY_DIR}/.qt/cmdline_visited_dirs")
+        if(EXISTS "${manifest}")
+            file(STRINGS "${manifest}" visited_dirs)
+        else()
+            set(visited_dirs "")
+        endif()
+        set_property(GLOBAL PROPERTY _qt_configure_cmdline_visited_dirs "${visited_dirs}")
+    endif()
+    get_property(visited_dirs GLOBAL PROPERTY _qt_configure_cmdline_visited_dirs)
+    set(${out_var} "${visited_dirs}" PARENT_SCOPE)
+endfunction()
+
 # This is the main entry function for creating a Qt module, that typically
 # consists of a library, public header files, private header files and configurable
 # features.
@@ -762,18 +780,16 @@ function(qt_internal_add_module target)
                 OR __QtFeature_internal_features))
             get_filename_component(configure_file_dir "${configureFile}" DIRECTORY)
             file(RELATIVE_PATH configure_file_rel "${CMAKE_SOURCE_DIR}" "${configure_file_dir}")
-            set(cmdline_marker_dir "${CMAKE_BINARY_DIR}")
-            if(configure_file_rel)
-                string(APPEND cmdline_marker_dir "/${configure_file_rel}")
+            if(NOT configure_file_rel)
+                set(configure_file_rel ".")
             endif()
-            string(APPEND cmdline_marker_dir "/.qt")
-            set(cmdline_marker_file "${cmdline_marker_dir}/cmdline_visited")
-            if(NOT EXISTS "${cmdline_marker_file}")
+            qt_internal_get_configure_cmdline_visited_dirs(cmdline_visited_dirs)
+            if(NOT configure_file_rel IN_LIST cmdline_visited_dirs)
                 message(FATAL_ERROR
                     "${configureFile} defines qt_feature() calls but its directory was not "
                     "visited during configure's qt_cmdline.cmake traversal.\n"
                     "Add a qt_commandline_subconfig() entry pointing to "
-                    "'${configure_file_dir}', or set QT_NO_CONFIGURE_CHAIN_CHECK=ON to "
+                    "'${configure_file_dir}', or set QT_NO_CONFIGURE_CMDLINE_CHAIN_CHECK=ON to "
                     "suppress this check.")
             endif()
         endif()
