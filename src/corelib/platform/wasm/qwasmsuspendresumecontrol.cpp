@@ -199,11 +199,20 @@ emscripten::val QWasmSuspendResumeControl::suspendResumeControlJs()
 // Suspends the calling thread.
 void QWasmSuspendResumeControl::suspend()
 {
+    if (!qstdweb::canBlockCallingThread()) {
+        qFatal("Suspending the main thread requires asyncify or JSPI; "
+               "see the Qt for WebAssembly documentation for how to enable.");
+    }
     qtSuspendJs();
 }
 
 void QWasmSuspendResumeControl::suspendExclusive(QList<uint32_t> eventHandlerIndices)
 {
+    if (!qstdweb::canBlockCallingThread()) {
+        qFatal("Suspending the main thread requires asyncify or JSPI; "
+               "see the Qt for WebAssembly documentation for how to enable.");
+    }
+
     m_eventFilter = [eventHandlerIndices](int handler) {
         return eventHandlerIndices.contains(handler);
     };
