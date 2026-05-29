@@ -40,14 +40,6 @@ if(UIKIT)
         add_subdirectory(cmake)
         return()
     endif()
-
-    # Build only corelib and gui tests when targeting uikit (iOS),
-    # because the script can't handle the SUBDIRS assignment well.
-    add_subdirectory(corelib)
-    if (TARGET Qt::Gui)
-        add_subdirectory(gui)
-    endif()
-    return()
 endif()
 
 # Limit set of tests to run for Android multi-ABI Qt builds.
