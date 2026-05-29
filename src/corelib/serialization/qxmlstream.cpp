@@ -1789,7 +1789,7 @@ void QXmlStreamReaderPrivate::resolveTag()
     const qsizetype n = attributeStack.size();
 
     if (namespaceProcessing) {
-        for (DtdAttribute &dtdAttribute : dtdAttributes) {
+        for (const DtdAttribute &dtdAttribute : dtdAttributes) {
             if (!dtdAttribute.isNamespaceAttribute
                 || dtdAttribute.defaultValue.isNull()
                 || dtdAttribute.tagName != qualifiedName
@@ -1859,7 +1859,7 @@ void QXmlStreamReaderPrivate::resolveTag()
         }
     }
 
-    for (DtdAttribute &dtdAttribute : dtdAttributes) {
+    for (const DtdAttribute &dtdAttribute : dtdAttributes) {
         if (dtdAttribute.isNamespaceAttribute
             || dtdAttribute.defaultValue.isNull()
             || dtdAttribute.tagName != qualifiedName
