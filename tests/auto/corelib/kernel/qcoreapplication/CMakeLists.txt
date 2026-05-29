@@ -31,8 +31,11 @@ qt_internal_add_test(tst_qcoreapplication
 )
 
 if (APPLE)
-    set_property(TARGET tst_qcoreapplication PROPERTY MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/Info.plist")
-    set_property(TARGET tst_qcoreapplication PROPERTY PROPERTY MACOSX_BUNDLE TRUE)
+    set_target_properties(tst_qcoreapplication PROPERTIES
+        MACOSX_BUNDLE TRUE
+        MACOSX_BUNDLE_BUNDLE_VERSION "${target_version}"
+        MACOSX_BUNDLE_SHORT_VERSION_STRING "1.2"
+    )
 endif()
 
 if (ANDROID)
