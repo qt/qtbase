@@ -7,6 +7,7 @@ qt_internal_add_manual_test(localfiles
         main.cpp
     LIBRARIES
         Qt::Core
+        Qt::CorePrivate
         Qt::Gui
         Qt::Widgets
 )
