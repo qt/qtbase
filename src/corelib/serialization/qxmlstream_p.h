@@ -456,8 +456,7 @@ public:
     QXmlStreamSimpleStack<Attribute> attributeStack;
 
     inline XmlStringRef symString(int index) {
-        const Value &symbol = sym(index);
-        return XmlStringRef(&textBuffer, symbol.pos + symbol.prefix, symbol.len - symbol.prefix);
+        return symString(sym(index));
     }
     QStringView symView(int index) const
     {
@@ -465,14 +464,10 @@ public:
         return QStringView(textBuffer.data() + symbol.pos, symbol.len).mid(symbol.prefix);
     }
     inline XmlStringRef symName(int index) {
-        const Value &symbol = sym(index);
-        return XmlStringRef(&textBuffer, symbol.pos, symbol.len);
+        return symName(sym(index));
     }
     inline XmlStringRef symPrefix(int index) {
-        const Value &symbol = sym(index);
-        if (symbol.prefix)
-            return XmlStringRef(&textBuffer, symbol.pos, symbol.prefix - 1);
-        return XmlStringRef();
+        return symPrefix(sym(index));
     }
     inline XmlStringRef symString(const Value &symbol) {
         return XmlStringRef(&textBuffer, symbol.pos + symbol.prefix, symbol.len - symbol.prefix);
