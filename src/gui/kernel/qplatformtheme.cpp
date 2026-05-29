@@ -726,6 +726,8 @@ QVariant QPlatformTheme::defaultThemeHint(ThemeHint hint)
         return 20;
     case MnemonicsEnabled:
         return true;
+    case MenuActivationButtons:
+        return Qt::AllButtons;
     }
 
     return QVariant();

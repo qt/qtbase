@@ -102,7 +102,8 @@ public:
         PreferFileIconFromTheme,
         MenuSelectionWraps,
         ScrollSingleStepDistance,
-        MnemonicsEnabled
+        MnemonicsEnabled,
+        MenuActivationButtons,
     };
     Q_ENUM(ThemeHint)
 

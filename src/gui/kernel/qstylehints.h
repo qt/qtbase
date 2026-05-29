@@ -65,6 +65,8 @@ class Q_GUI_EXPORT QStyleHints : public QObject
                WRITE setToolTipWakeUpDelay NOTIFY toolTipWakeUpDelayChanged FINAL REVISION(6, 12))
     Q_PROPERTY(int toolTipWakeUpDelayAsMSec READ toolTipWakeUpDelayAsMSec NOTIFY toolTipWakeUpDelayAsMSecChanged
                FINAL REVISION(6, 12))
+    Q_PROPERTY(Qt::MouseButtons menuActivationButtons READ menuActivationButtons
+                       STORED false CONSTANT FINAL REVISION(6, 13))
 
 public:
     void setMouseDoubleClickInterval(int mouseDoubleClickInterval);
@@ -115,6 +117,7 @@ public:
     std::chrono::milliseconds toolTipWakeUpDelay() const;
     void setToolTipWakeUpDelay(std::chrono::milliseconds toolTipWakeUpDelay);
     int toolTipWakeUpDelayAsMSec() const;
+    Qt::MouseButtons menuActivationButtons() const;
 
 Q_SIGNALS:
     void cursorFlashTimeChanged(int cursorFlashTime);

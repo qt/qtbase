@@ -13,6 +13,7 @@
 #include "qevent.h"
 #include "qtimer.h"
 #include "qlayout.h"
+#include "qstylehints.h"
 #include "qstylepainter.h"
 #include <qpa/qplatformtheme.h>
 #include "qapplication.h"
@@ -2985,8 +2986,11 @@ void QMenu::mouseReleaseEvent(QMouseEvent *e)
 
         if (!action->menu()) {
 #if defined(Q_OS_WIN)
-            //On Windows only context menus can be activated with the right button
-            if (e->button() == Qt::LeftButton || d->topCausedWidget() == 0)
+            // On Windows, context menus can be activated with any button.
+            if (QGuiApplication::styleHints()->menuActivationButtons().testAnyFlag(e->button())
+                || d->isContextMenu())
+#else
+            if (QGuiApplication::styleHints()->menuActivationButtons().testAnyFlag(e->button()))
 #endif
                 d->activateAction(action, QAction::Trigger);
         }

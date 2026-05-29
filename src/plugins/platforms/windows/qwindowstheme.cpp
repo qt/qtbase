@@ -643,6 +643,8 @@ QVariant QWindowsTheme::themeHint(ThemeHint hint) const
         return GetSystemMetrics(SM_CXDOUBLECLK);
     case MenuBarFocusOnAltPressRelease:
         return true;
+    case MenuActivationButtons:
+        return Qt::LeftButton;
     default:
         break;
     }

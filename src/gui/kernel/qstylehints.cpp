@@ -236,6 +236,11 @@ int QStyleHints::toolTipWakeUpDelayAsMSec() const
     return q26::saturating_cast<int>(d->m_toolTipWakeUpDelay.count());
 }
 
+Qt::MouseButtons QStyleHints::menuActivationButtons() const
+{
+    return themeableHint(QPlatformTheme::MenuActivationButtons).value<Qt::MouseButtons>();
+}
+
 /*!
     Sets the \a mousePressAndHoldInterval.
     \internal
