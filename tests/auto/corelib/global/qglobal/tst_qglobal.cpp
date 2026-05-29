@@ -118,6 +118,7 @@ private slots:
     void nodiscard();
     void tagStructDefinitions();
     void CXX20_constexpr_dtor();
+    void declFunctionMacros();
 };
 
 extern "C" {        // functions in qglobal.c
@@ -1169,6 +1170,21 @@ void tst_QGlobal::CXX20_constexpr_dtor()
 #if __cpp_constexpr >= 201907L
     [[maybe_unused]] constexpr DestructorTest tmp(nullptr);
 #endif
+}
+
+static Q_DECL_PURE_FUNCTION int pureFunc() { return 42; }
+static Q_DECL_CONST_FUNCTION int constFunc() { return 42; }
+static Q_DECL_COLD_FUNCTION int coldFunc() { return 42; }
+static int nonblockingFunc() Q_DECL_NONBLOCKING_FUNCTION { return 42; }
+static int nonallocatingFunc() Q_DECL_NONALLOCATING_FUNCTION { return 42; }
+
+void tst_QGlobal::declFunctionMacros()
+{
+    std::ignore = pureFunc();
+    std::ignore = constFunc();
+    std::ignore = coldFunc();
+    std::ignore = nonblockingFunc();
+    std::ignore = nonallocatingFunc();
 }
 
 QT_BEGIN_NAMESPACE
