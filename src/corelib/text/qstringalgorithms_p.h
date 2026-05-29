@@ -310,6 +310,26 @@ template <typename StringType> struct QStringAlgorithms
         else // bsize < after.size()
             replace_grow(src, bsize, after, indices, newlen);
     }
+
+    static inline void remove_helper(StringType &src, qsizetype pos, qsizetype len)
+    {
+        auto &d = src.data_ptr();
+        const auto begin = d.begin();
+        const auto toRemove_start = begin + pos;
+        if (!d.isShared()) {
+            d->erase(toRemove_start, len);
+            d.data()[d.size] = '\0';
+        } else {
+            // TODO: either reserve "size()", which is bigger than needed, or
+            // modify the shrinking-erase docs of this method (since the size
+            // of "copy" won't have any extra capacity any more)
+            const qsizetype sz = d.size - len;
+            StringType copy{sz, Qt::Uninitialized};
+            copy.data_ptr()->copyRanges({{begin, toRemove_start},
+                                         {toRemove_start + len, d.end()}});
+            src.swap(copy);
+        }
+    }
 };
 
 QT_END_NAMESPACE

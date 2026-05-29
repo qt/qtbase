@@ -2423,16 +2423,7 @@ QByteArray &QByteArray::remove(qsizetype pos, qsizetype len)
     if (pos + len > d.size)
         len = d.size - pos;
 
-    const auto toRemove_start = d.begin() + pos;
-    if (!d.isShared()) {
-        d->erase(toRemove_start, len);
-        d.data()[d.size] = '\0';
-    } else {
-        QByteArray copy{size() - len, Qt::Uninitialized};
-        copy.d->copyRanges({{d.begin(), toRemove_start},
-                           {toRemove_start + len, d.end()}});
-        swap(copy);
-    }
+    QStringAlgorithms<QByteArray>::remove_helper(*this, pos, len);
     return *this;
 }
 

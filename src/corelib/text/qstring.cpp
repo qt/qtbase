@@ -3449,21 +3449,7 @@ QString &QString::remove(qsizetype pos, qsizetype len)
 
     len = std::min(len, size() - pos);
 
-    if (!d.isShared()) {
-        d->erase(d.begin() + pos, len);
-        d.data()[d.size] = u'\0';
-    } else {
-        // TODO: either reserve "size()", which is bigger than needed, or
-        // modify the shrinking-erase docs of this method (since the size
-        // of "copy" won't have any extra capacity any more)
-        const qsizetype sz = size() - len;
-        QString copy{sz, Qt::Uninitialized};
-        auto begin = d.begin();
-        auto toRemove_start = d.begin() + pos;
-        copy.d->copyRanges({{begin, toRemove_start},
-                           {toRemove_start + len, d.end()}});
-        swap(copy);
-    }
+    QStringAlgorithms<QString>::remove_helper(*this, pos, len);
     return *this;
 }
 
