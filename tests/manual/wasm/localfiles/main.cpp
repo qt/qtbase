@@ -1,6 +1,7 @@
 // Copyright (C) 2019 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 #include <QtWidgets/QtWidgets>
+#include <QtCore/private/qstdweb_p.h>
 
 #include <emscripten/val.h>
 #include <emscripten.h>
@@ -100,12 +101,21 @@ public:
         connect(m_useLocalFileApisCheckbox, &QCheckBox::toggled,
             std::bind(&AppWindow::onUseLocalFileApisCheckboxToggled, this));
 
-        m_useStandardFileDialogCheckbox = addWidget<QCheckBox>("Use standard QFileDialog API");
+        // Calling exec() or using QFile for local file access requires asycify/JSPI;
+        // disable UI for those options if asyncify is missing.
+        m_canBlock = qstdweb::haveAsyncify();
+
+        const QString needsAsyncify = QStringLiteral(" [needs asyncify/jspi]");
+        m_useStandardFileDialogCheckbox = addWidget<QCheckBox>(
+            QStringLiteral("Use standard QFileDialog API") + (m_canBlock ? QString() : needsAsyncify));
+        m_useStandardFileDialogCheckbox->setEnabled(m_canBlock);
         connect(m_useStandardFileDialogCheckbox, &QCheckBox::toggled,
             std::bind(&AppWindow::onUseStandardFileDialogCheckboxToggled, this));
-        m_useStandardFileDialogCheckbox->setChecked(true);
+        m_useStandardFileDialogCheckbox->setChecked(m_canBlock);
 
-        m_useExecModeCheckbox = addWidget<QCheckBox>("Use exec() instead of open()");
+        m_useExecModeCheckbox = addWidget<QCheckBox>(
+            QStringLiteral("Use exec() instead of open()") + (m_canBlock ? QString() : needsAsyncify));
+        m_useExecModeCheckbox->setEnabled(m_canBlock);
         m_useExecModeCheckbox->setChecked(false);
 
         addWidget<QLabel>("Filename filter");
@@ -118,6 +128,11 @@ public:
         auto* loadFile = addWidget<QPushButton>("Load File");
 
         m_dropZone = addWidget<DropZone>();
+        m_dropZone->setEnabled(m_canBlock);
+        if (!m_canBlock) {
+            m_dropZone->setAcceptDrops(false);
+            m_dropZone->setText("Drop disabled [needs asyncify/jspi]");
+        }
         connect(m_dropZone, &DropZone::filesDropped, this, &AppWindow::onFilesDropped);
 
         m_fileInfo = addWidget<QLabel>("Opened file:");
@@ -287,6 +302,11 @@ private Q_SLOTS:
     {
         qDebug() << "loadFileWithQFile" << fileName;
 
+        if (!m_canBlock) {
+            m_fileInfo->setText("QFile load requires asyncify/JSPI (not enabled in this build)");
+            return;
+        }
+
         QFile file(fileName);
         if (file.open(QIODevice::ReadOnly)) {
             qDebug() << "loadFileWithQFile" << fileName;
@@ -300,6 +320,11 @@ private Q_SLOTS:
 
     void saveFileWithQFile(const QString &fileName)
     {
+        if (!m_canBlock) {
+            m_fileInfo->setText("QFile save requires asyncify/JSPI (not enabled in this build)");
+            return;
+        }
+
         QFile file(fileName);
         if (file.open(QIODevice::WriteOnly)) {
             qint64 bytesWritten = file.write(m_fileContent);
@@ -339,6 +364,7 @@ private:
 
     QFileDialog* m_fileDialog;
     bool m_isLoadOperation;
+    bool m_canBlock = false;
 
     QByteArray m_fileContent;
 };
