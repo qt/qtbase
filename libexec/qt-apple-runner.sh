@@ -71,6 +71,9 @@ if [ "$target_type" = "simulator" ]; then
         [ -n "$udid" ] || die "⚠️ No booted $runtime simulator found; boot one or set APPLE_SIMULATOR_UDID"
     fi
 
+    # Uninstall first so each run starts with a clean data container
+    xcrun simctl uninstall "$udid" "$bundle_id" 2>/dev/null || true
+
     xcrun simctl install "$udid" "$bundle" \
         || die "⚠️ Failed to install $bundle on simulator $udid"
 
@@ -94,6 +97,9 @@ else
             | head -1)
         [ -n "$udid" ] || die "⚠️ No connected $runtime device found; connect one or set APPLE_DEVICE_UDID"
     fi
+
+    # Uninstall first so each run starts with a clean data container
+    xcrun devicectl device uninstall app --device "$udid" "$bundle_id" 2>/dev/null || true
 
     xcrun devicectl device install app --device "$udid" "$bundle" \
         || die "⚠️ Failed to install $bundle on device $udid"
