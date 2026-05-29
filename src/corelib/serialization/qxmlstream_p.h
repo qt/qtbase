@@ -468,10 +468,6 @@ public:
         const Value &symbol = sym(index);
         return XmlStringRef(&textBuffer, symbol.pos, symbol.len);
     }
-    inline XmlStringRef symString(int index, int offset) {
-        const Value &symbol = sym(index);
-        return XmlStringRef(&textBuffer, symbol.pos + symbol.prefix + offset, symbol.len - symbol.prefix -  offset);
-    }
     inline XmlStringRef symPrefix(int index) {
         const Value &symbol = sym(index);
         if (symbol.prefix)
