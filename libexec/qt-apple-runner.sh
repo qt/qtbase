@@ -55,9 +55,8 @@ forward_env() {
 }
 
 # Let the platform integration know it should set a custom cwd
-# and write the exit code to a file for simctl.
+# and write the exit code to a file.
 export QT_RUNNING_VIA_TEST_RUNNER=1
-tesrunner_pwd="tmp/testrunner"
 
 if [ "$target_type" = "simulator" ]; then
     if [ -n "$APPLE_SIMULATOR_UDID" ]; then
@@ -80,16 +79,8 @@ if [ "$target_type" = "simulator" ]; then
     xcrun simctl launch --console-pty "$udid" "$bundle_id" "$@" \
         || die "⚠️ Failed to launch $bundle on simulator $udid"
 
-    data_dir=$(xcrun simctl get_app_container "$udid" "$bundle_id" data) \
+    tmp_dir="$(xcrun simctl get_app_container "$udid" "$bundle_id" data)/tmp" \
         || die "⚠️ Failed to locate data container for $bundle_id on simulator $udid"
-
-    exit_code=$(cat "$data_dir/tmp/qt_exit_code.txt" 2>/dev/null)
-
-    if [ -d "$data_dir/$tesrunner_pwd" ]; then
-        cp -r "$data_dir/$tesrunner_pwd/." .
-    fi
-
-    exit "${exit_code:-1}"
 else
     if [ -n "$APPLE_DEVICE_UDID" ]; then
         udid="$APPLE_DEVICE_UDID"
@@ -109,17 +100,29 @@ else
 
     forward_env "DEVICECTL_CHILD_"
 
+    # Note: devicectl doesn't reliably propagate the app's exit code (e.g. it reports
+    # 0 even when dyld fails to load a library), so we don't trust the launch exit code
+    # and rely on the one Qt writes to a file in the data container.
     xcrun devicectl device process launch --console \
-        --device "$udid" -- "$bundle_id" "$@"
-    exit_code=$?
+        --device "$udid" -- "$bundle_id" "$@" || true
 
+    # Stage a local copy of the data container's tmp/ so the post-processing
+    # below can treat device and simulator the same way.
+    tmp_dir=$(mktemp -d) || die "⚠️ Failed to resolve tmp dir"
+    trap 'rm -rf "$tmp_dir"' EXIT
     xcrun devicectl device copy from \
         --quiet \
         --device "$udid" \
         --domain-type appDataContainer \
         --domain-identifier "$bundle_id" \
-        --source "$tesrunner_pwd" \
-        --destination . 2>/dev/null || true
-
-    exit "$exit_code"
+        --source "tmp" \
+        --destination "$tmp_dir" 2>/dev/null || true
 fi
+
+exit_code=$(cat "$tmp_dir/qt_exit_code.txt" 2>/dev/null)
+
+if [ -d "$tmp_dir/testrunner" ]; then
+    cp -r "$tmp_dir/testrunner/." .
+fi
+
+exit "${exit_code:-253}"
