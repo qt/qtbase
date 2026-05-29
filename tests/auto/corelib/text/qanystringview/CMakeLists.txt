@@ -8,6 +8,8 @@
 qt_internal_add_test(tst_qanystringview
     SOURCES
         tst_qanystringview.cpp
+        ../qstringview/arrays_of_unknown_bounds.cpp
+        ../qstringview/arrays_of_unknown_bounds.h
     LIBRARIES
         Qt::CorePrivate
 )

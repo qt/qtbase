@@ -3273,7 +3273,8 @@ bool QAbstractItemView::isPersistentEditorOpen(const QModelIndex &index) const
     to true, otherwise the widget's background will be transparent, showing
     both the model data and the item at the given \a index.
 
-    If index widget A is replaced with index widget B, index widget A will be
+    \note The view takes ownership of the \a widget.
+    This means if index widget A is replaced with index widget B, index widget A will be
     deleted. For example, in the code snippet below, the QLineEdit object will
     be deleted.
 
@@ -3518,10 +3519,21 @@ void QAbstractItemView::rowsAboutToBeRemoved(const QModelIndex &parent, int star
     }
 
     // Remove all affected editors; this is more efficient than waiting for updateGeometries() to clean out editors for invalid indexes
+    const auto findDirectChildOf = [](const QModelIndex &parent, QModelIndex child)
+    {
+        while (child.isValid()) {
+            const auto parentIndex = child.parent();
+            if (parentIndex == parent)
+                return child;
+            child = parentIndex;
+        }
+        return QModelIndex();
+    };
     QEditorIndexHash::iterator i = d->editorIndexHash.begin();
     while (i != d->editorIndexHash.end()) {
         const QModelIndex index = i.value();
-        if (index.row() >= start && index.row() <= end && d->model->parent(index) == parent) {
+        const QModelIndex directChild = findDirectChildOf(parent, index);
+        if (directChild.isValid() && directChild.row() >= start && directChild.row() <= end) {
             QWidget *editor = i.key();
             QEditorInfo info = d->indexEditorHash.take(index);
             i = d->editorIndexHash.erase(i);
@@ -4384,7 +4396,7 @@ bool QAbstractItemViewPrivate::shouldAutoScroll(const QPoint &pos) const
 {
     if (!autoScroll)
         return false;
-    QRect area = static_cast<QAbstractItemView*>(viewport)->d_func()->clipRect(); // access QWidget private by bending C++ rules
+    const QRect area = QWidgetPrivate::get(viewport)->clipRect();
     return (pos.y() - area.top() < autoScrollMargin)
         || (area.bottom() - pos.y() < autoScrollMargin)
         || (pos.x() - area.left() < autoScrollMargin)

@@ -9,5 +9,6 @@
     "LicenseId": "BSD-3-Clause",
     "License": "BSD 3-clause \"New\" or \"Revised\" License",
     "LicenseFile": "COCOA_LICENSE.txt",
-    "Copyright": "Copyright (c) 2007-2008, Apple, Inc."
+    "Copyright": "Copyright (c) 2007-2008, Apple, Inc.",
+    "Comment": "no relevant CPE or PURL found"
 }

@@ -677,7 +677,7 @@ void QQnxScreenEventHandler::handlePropertyEvent(screen_event_t event)
     errno = 0;
     int property;
     if (Q_UNLIKELY(screen_get_event_property_iv(event, SCREEN_PROPERTY_NAME, &property) != 0))
-        qFatal("QQnx: failed to query window property, errno=%d", errno);
+        qWarning("QQnx: failed to query window property, errno=%d", errno);
 
     switch (property) {
     case SCREEN_PROPERTY_FOCUS:
@@ -698,7 +698,7 @@ void QQnxScreenEventHandler::handleKeyboardFocusPropertyEvent(screen_window_t wi
     errno = 0;
     int focus = 0;
     if (Q_UNLIKELY(window && screen_get_window_property_iv(window, SCREEN_PROPERTY_FOCUS, &focus) != 0))
-        qFatal("QQnx: failed to query keyboard focus property, errno=%d", errno);
+        qWarning("QQnx: failed to query keyboard focus property, errno=%d", errno);
 
     QWindow *focusWindow = QQnxIntegration::instance()->window(window);
 
@@ -717,12 +717,14 @@ void QQnxScreenEventHandler::handleGeometryPropertyEvent(screen_window_t window)
 {
     int pos[2];
     if (screen_get_window_property_iv(window, SCREEN_PROPERTY_POSITION, pos) != 0) {
-        qFatal("QQnx: failed to query window property, errno=%d", errno);
+        qWarning("QQnx: failed to query window property, errno=%d", errno);
+        return;
     }
 
     int size[2];
     if (screen_get_window_property_iv(window, SCREEN_PROPERTY_SIZE, size) != 0) {
-        qFatal("QQnx: failed to query window property, errno=%d", errno);
+        qWarning("QQnx: failed to query window property, errno=%d", errno);
+        return;
     }
 
     QRect rect(pos[0], pos[1], size[0], size[1]);

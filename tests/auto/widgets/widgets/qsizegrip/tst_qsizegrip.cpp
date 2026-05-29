@@ -85,6 +85,7 @@ void tst_QSizeGrip::hideAndShowOnWindowStateChange()
     else
         widget->show();
     QTRY_VERIFY(sizeGrip->isVisible());
+    QVERIFY(QTest::qWaitForWindowExposed(widget.data()));
 
     widget->showFullScreen();
     QTRY_VERIFY(!sizeGrip->isVisible());

@@ -338,6 +338,15 @@ public:
         Script_Kawi,
         Script_NagMundari,
 
+        // Unicode 16.0 additions
+        Script_Garay,
+        Script_GurungKhema,
+        Script_KiratRai,
+        Script_OlOnal,
+        Script_Sunuwar,
+        Script_Todhri,
+        Script_TuluTigalari,
+
         ScriptCount
     };
 
@@ -431,6 +440,8 @@ public:
         Unicode_13_0,
         Unicode_14_0,
         Unicode_15_0,
+        Unicode_15_1,
+        Unicode_16_0,
     };
 
     inline Category category() const noexcept { return QChar::category(ucs); }

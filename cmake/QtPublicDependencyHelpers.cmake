@@ -34,6 +34,9 @@ macro(_qt_internal_find_third_party_dependencies target target_dep_list)
             find_package(${__qt_${target}_find_package_args})
         else()
             find_dependency(${__qt_${target}_find_package_args})
+            if(NOT ${__qt_${target}_pkg}_FOUND)
+                list(APPEND __qt_${target}_missing_deps "${__qt_${target}_pkg}")
+            endif()
         endif()
     endforeach()
 endmacro()
@@ -51,14 +54,14 @@ macro(_qt_internal_find_tool_dependencies target target_dep_list)
              "${_qt_additional_host_packages_root_paths}")
     endif()
 
+    unset(__qt_${target}_find_package_args)
+    if(${CMAKE_FIND_PACKAGE_NAME}_FIND_QUIETLY)
+        list(APPEND __qt_${target}_find_package_args QUIET)
+    endif()
+
     foreach(__qt_${target}_target_dep IN LISTS ${target_dep_list})
         list(GET __qt_${target}_target_dep 0 __qt_${target}_pkg)
         list(GET __qt_${target}_target_dep 1 __qt_${target}_version)
-
-        unset(__qt_${target}_find_package_args)
-        if(${CMAKE_FIND_PACKAGE_NAME}_FIND_QUIETLY)
-            list(APPEND __qt_${target}_find_package_args QUIET)
-        endif()
 
         _qt_internal_save_find_package_context_for_debugging(${target})
 
@@ -97,7 +100,6 @@ macro(_qt_internal_find_qt_dependencies target target_dep_list find_dependency_p
         list(GET __qt_${target}_target_dep 1 __qt_${target}_version)
 
         if (NOT ${__qt_${target}_pkg}_FOUND)
-
             # TODO: Remove Private handling once sufficient time has passed, aka all developers
             # updated their builds not to contain stale FooDependencies.cmake files without the
             # _qt_package_name property.
@@ -117,6 +119,9 @@ macro(_qt_internal_find_qt_dependencies target target_dep_list find_dependency_p
                     ${_qt_additional_packages_prefix_paths}
                 ${__qt_use_no_default_path_for_qt_packages}
             )
+            if(NOT ${__qt_${target}_pkg}_FOUND)
+                list(APPEND __qt_${target}_missing_deps "${__qt_${target}_pkg}")
+            endif()
         endif()
     endforeach()
 endmacro()
@@ -211,9 +216,9 @@ function(_qt_internal_determine_if_host_info_package_needed out_var)
     set(${out_var} "${needed}" PARENT_SCOPE)
 endfunction()
 
-macro(_qt_internal_find_host_info_package platform_requires_host_info)
+macro(_qt_internal_find_host_info_package platform_requires_host_info install_namespace)
     if(${platform_requires_host_info})
-        find_package(Qt6HostInfo
+        find_package(${install_namespace}HostInfo
                      CONFIG
                      REQUIRED
                      PATHS "${QT_HOST_PATH}"

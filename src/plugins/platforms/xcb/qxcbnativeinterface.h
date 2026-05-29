@@ -1,8 +1,7 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#ifndef QXCBNATIVEINTERFACE_H
-#define QXCBNATIVEINTERFACE_H
+#pragma once
 
 #include <qpa/qplatformnativeinterface.h>
 #include <xcb/xcb.h>
@@ -119,5 +118,3 @@ private:
 };
 
 QT_END_NAMESPACE
-
-#endif // QXCBNATIVEINTERFACE_H

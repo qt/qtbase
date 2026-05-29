@@ -480,11 +480,20 @@
     \snippet code/doc_src_stylesheet.cpp 96
 
     When the widget-style font and palette propagation is enabled, font and
-    palette changes made through Qt Style Sheets will behave as though the
-    user had manually called the corresponding QWidget::setPalette() and
+    palette changes made through Qt Style Sheets will behave as if the user
+    had manually called the corresponding QWidget::setPalette() and
     QWidget::setFont() methods on all of the QWidgets targeted by the style
-    sheet.  If this would have caused propagation in C++, it will cause
-    propagation in style sheets and vice versa.
+    sheet.
+
+    \list
+    \li Changes made by a style sheet are propagated.
+    They are pushed to all widgets matching the style sheet once, at the time
+    the change is made.
+    \li Changes made by calling QWidget::setPalette() or QWidget::setFont() are
+    inherited.
+    They are inherited by all existing and future children, where the respective
+    brush or font hasn't been explicitly set.
+    \endlist
 
     \section1 Widgets Inside C++ Namespaces
 

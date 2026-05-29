@@ -985,9 +985,10 @@ static void writeAdaptor(const QString &filename, const QDBusIntrospection::Inte
 
             if (usingInvokeMethod) {
                 // we are using QMetaObject::invokeMethod
-                if (!returnType.isEmpty())
+                if (!returnType.isEmpty()) {
                     cs << "    " << returnType << " " << argNames.at(method.inputArgs.size())
-                       << ";" << Qt::endl;
+                       << "{};" << Qt::endl;
+                }
 
                 static const char invoke[] = "    QMetaObject::invokeMethod(parent(), \"";
                 cs << invoke << name << "\"";

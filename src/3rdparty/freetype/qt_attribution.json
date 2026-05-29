@@ -10,6 +10,12 @@
         "Homepage": "http://www.freetype.org",
         "Version": "2.13.3",
         "DownloadLocation": "https://download.savannah.gnu.org/releases/freetype/freetype-2.13.3.tar.gz",
+        "PURL": [
+            "pkg:github/freetype/freetype@VER-$<VERSION_DASHED>"
+        ],
+        "CPE": [
+            "cpe:2.3:a:freetype:freetype:$<VERSION>:*:*:*:*:*:*:*"
+        ],
 
         "License": "Freetype Project License or GNU General Public License v2.0 only",
         "LicenseId": "FTL OR GPL-2.0-only",

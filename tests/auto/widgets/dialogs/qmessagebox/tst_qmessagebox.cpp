@@ -481,14 +481,7 @@ QT_WARNING_DISABLE_DEPRECATED
     ExecCloseHelper closeHelper;
     closeHelper.start(Qt::Key_Enter);
     ret = QMessageBox::information(nullptr, "title", "text", QMessageBox::Yes, QMessageBox::No);
-    int expectedButton = int(QMessageBox::Yes);
-    if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme()) {
-        const int dialogButtonBoxLayout = theme->themeHint(QPlatformTheme::DialogButtonBoxLayout).toInt();
-        if (dialogButtonBoxLayout == QDialogButtonBox::MacLayout
-            || dialogButtonBoxLayout == QDialogButtonBox::GnomeLayout)
-            expectedButton = int(QMessageBox::No);
-    }
-    COMPARE(ret, expectedButton);
+    COMPARE(ret, QMessageBox::No);
     QVERIFY(closeHelper.done());
 
     closeHelper.start(Qt::Key_Enter);
@@ -518,18 +511,6 @@ QT_WARNING_DISABLE_DEPRECATED
     ret = QMessageBox::information(nullptr, "title", "text", "Yes", "No", QString(), 1);
     COMPARE(ret, 3); // Custom button opaque result
     QVERIFY(closeHelper.done());
-
-    if (0) { // don't run these tests since the dialog won't close!
-        closeHelper.start(Qt::Key_Escape);
-        ret = QMessageBox::information(nullptr, "title", "text", "Yes", "No", QString(), 1);
-        QCOMPARE(ret, -1);
-        QVERIFY(closeHelper.done());
-
-        closeHelper.start(Qt::Key_Escape);
-        ret = QMessageBox::information(nullptr, "title", "text", "Yes", "No", QString(), 0, 1);
-        QCOMPARE(ret, 1);
-        QVERIFY(closeHelper.done());
-    }
 #endif // QT_DEPRECATED_SINCE(6, 2)
 #undef COMPARE
 QT_WARNING_POP

@@ -45,8 +45,8 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
 - (NSDragOperation)draggingSession:(NSDraggingSession *)session sourceOperationMaskForDraggingContext:(NSDraggingContext)context
 {
     Q_UNUSED(session);
+    Q_UNUSED(context);
 
-    m_lastSeenContext = context;
     QCocoaDrag* nativeDrag = QCocoaIntegration::instance()->drag();
     return qt_mac_mapDropActions(nativeDrag->currentDrag()->supportedActions());
 }
@@ -61,11 +61,8 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
     //
     // Since Qt already takes care of tracking the keyboard modifiers, we
     // don't need (or want) Cocoa to filter anything. Instead, we'll let
-    // the application do the actual filtering. But only while dragging
-    // within application, otherwise ignored modifiers may end up in a
-    // wrong drop operation executed.
-
-    return m_lastSeenContext == NSDraggingContextWithinApplication;
+    // the application do the actual filtering.
+    return YES;
 }
 
 - (BOOL)wantsPeriodicDraggingUpdates
@@ -252,8 +249,6 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
     Q_UNUSED(session);
     Q_UNUSED(screenPoint);
     Q_UNUSED(operation);
-
-    m_lastSeenContext = NSDraggingContextWithinApplication;
 
     if (!m_platformWindow)
         return;

@@ -19,6 +19,7 @@
 
 #include <QtTest/private/qabstracttestlogger_p.h>
 #include <QtTest/private/qtestelementattribute_p.h>
+#include <QtCore/qmutex.h>
 
 #include <vector>
 
@@ -61,6 +62,9 @@ class QJUnitTestLogger : public QAbstractTestLogger
         QTestElement *systemOutputElement = nullptr;
         QTestElement *systemErrorElement = nullptr;
         QTestJUnitStreamer *logFormatter = nullptr;
+        // protects currentTestCase, systemOutputElement and systemErrorElement
+        // in case of qDebug()/qWarning() etc. from threads
+        QMutex mutex;
 
         int testCounter = 0;
         int failureCounter = 0;

@@ -418,6 +418,7 @@ static inline int primeForNumBits(int numBits)
 
 static inline int primeForCount(int count)
 {
+    Q_ASSERT(count >= 0); // Q_PRE
     int low = 0;
     int high = 32;
     for (int i = 0; i < 5; ++i) {
@@ -434,6 +435,7 @@ static inline int primeForCount(int count)
 // entire set. A value of -1 is used to mark unused entries.
 class QInt64Set
 {
+    Q_DISABLE_COPY_MOVE(QInt64Set)
 public:
     inline QInt64Set(int capacity = 64);
     inline ~QInt64Set() {delete[] m_array;}

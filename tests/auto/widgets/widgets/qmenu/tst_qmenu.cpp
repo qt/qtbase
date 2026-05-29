@@ -1589,12 +1589,12 @@ void tst_QMenu::transientParent()
     window.menuBar()->setNativeMenuBar(false);
     centerOnScreen(&window);
 
-    QMenu *fileMenu = new QMenu("&File");
-    QAction *exitAct = new QAction("Exit");
+    QMenu *fileMenu = new QMenu("&File", &window);
+    QAction *exitAct = new QAction("Exit", &window);
     fileMenu->addAction(exitAct);
 
-    QMenu *editMenu = new QMenu("&Edit");
-    QAction *undoAct = new QAction("Undo");
+    QMenu *editMenu = new QMenu("&Edit", &window);
+    QAction *undoAct = new QAction("Undo", &window);
     editMenu->addAction(undoAct);
 
     QMenuBar *menuBar = new QMenuBar;
@@ -1975,11 +1975,13 @@ void tst_QMenu::QTBUG_61039_menu_shortcuts()
     if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
         QSKIP("Window activation is not supported");
 
-    QAction *actionKamen = new QAction("Action Kamen");
+    QObject reaper;
+
+    QAction *actionKamen = new QAction("Action Kamen", &reaper);
 #if QT_CONFIG(shortcut)
     actionKamen->setShortcut(QKeySequence(QLatin1String("K")));
 #endif
-    QAction *actionJoe = new QAction("Action Joe");
+    QAction *actionJoe = new QAction("Action Joe", &reaper);
 #if QT_CONFIG(shortcut)
     actionJoe->setShortcut(QKeySequence(QLatin1String("Ctrl+J")));
 #endif

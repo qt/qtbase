@@ -9,9 +9,11 @@
 
         "Homepage": "https://github.com/adobe-type-tools/agl-aglfn",
         "Version": "1.7",
+        "PURL": "pkg:github/adobe-type-tools/agl-aglfn@$<VERSION>",
         "License": "BSD 3-Clause \"New\" or \"Revised\" License",
         "LicenseId": "BSD-3-Clause",
         "LicenseFile": "AGLFN_LICENSE.txt",
-        "Copyright": "Copyright 2002, 2003, 2005, 2006, 2008, 2010, 2015 Adobe Systems"
+        "Copyright": "Copyright 2002, 2003, 2005, 2006, 2008, 2010, 2015 Adobe Systems",
+        "Comment": "no relevant CPE found"
     }
 ]

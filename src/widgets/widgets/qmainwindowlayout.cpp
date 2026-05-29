@@ -277,8 +277,7 @@ public:
 #if QT_CONFIG(toolbar)
     QToolBarAreaLayout *toolBarAreaLayout()
     {
-        auto *mainWindow = static_cast<QMainWindow*>(parentWidget());
-        return qt_mainwindow_layout(mainWindow)->toolBarAreaLayout();
+        return nullptr; // QDockWidgetGroupWindow doesn't have toolbars
     }
 #endif
 
@@ -681,7 +680,7 @@ bool QDockWidgetGroupWindow::eventFilter(QObject *obj, QEvent *event)
     case QEvent::Close:
         // We don't want closed dock widgets in a floating tab
         // => dock it to the main dock, before closing;
-        reparent(dockWidget);
+        reparentToMainWindow(dockWidget);
         dockWidget->setFloating(false);
         break;
 
@@ -726,9 +725,10 @@ void QDockWidgetGroupWindow::destroyIfSingleItemLeft()
     QDockAreaLayoutInfo &parentInfo = mwLayout->layoutState.dockAreaLayout.docks[layoutInfo()->dockPos];
 
     // Re-parent last dock widget
-    reparent(lastDockWidget);
+    reparentToMainWindow(lastDockWidget);
 
     // the group window could still have placeholder items => clear everything
+    layoutInfo()->deleteAllLayoutItems();
     layoutInfo()->item_list.clear();
 
     // remove the group window and the dock's item_list pointing to it.
@@ -736,7 +736,7 @@ void QDockWidgetGroupWindow::destroyIfSingleItemLeft()
     destroyOrHideIfEmpty();
 }
 
-void QDockWidgetGroupWindow::reparent(QDockWidget *dockWidget)
+void QDockWidgetGroupWindow::reparentToMainWindow(QDockWidget *dockWidget)
 {
     // reparent a dockWidget to the main window
     // - remove it from the floating dock's layout info
@@ -2031,7 +2031,9 @@ void QMainWindowTabBar::mouseMoveEvent(QMouseEvent *e)
 
 QMainWindowTabBar::~QMainWindowTabBar()
 {
-    if (!mainWindow || mainWindow == parentWidget())
+    // Use qobject_cast to verify that we are not already in the (QWidget)
+    // destructor of mainWindow
+    if (!qobject_cast<QMainWindow *>(mainWindow) || mainWindow == parentWidget())
         return;
 
     // tab bar is not parented to the main window
@@ -2720,6 +2722,13 @@ QMainWindowLayout::~QMainWindowLayout()
     layoutState.deleteCentralWidgetItem();
 
     delete statusbar;
+
+#if QT_CONFIG(dockwidget) && QT_CONFIG(tabwidget)
+    // unusedTabBars contains unparented tab bars, which need to be removed manually.
+    // ~QMainWindowTabBar() removes the bar from unusedTabBars => call qDeleteAll() on a copy.
+    const auto bars = unusedTabBars;
+    qDeleteAll(bars);
+#endif // QT_CONFIG(dockwidget) && QT_CONFIG(tabwidget)
 }
 
 void QMainWindowLayout::setDockOptions(QMainWindow::DockOptions opts)

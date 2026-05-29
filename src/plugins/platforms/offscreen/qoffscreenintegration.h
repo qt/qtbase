@@ -55,7 +55,7 @@ protected:
     QScopedPointer<QPlatformDrag> m_drag;
 #endif
     QScopedPointer<QPlatformInputContext> m_inputContext;
-    QScopedPointer<QPlatformServices> m_services;
+    mutable QScopedPointer<QPlatformServices> m_services;
     mutable QScopedPointer<QPlatformNativeInterface> m_nativeInterface;
     QList<QOffscreenScreen *> m_screens;
     bool m_windowFrameMarginsEnabled = true;

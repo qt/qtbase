@@ -62,6 +62,14 @@ function(qt_internal_set_warnings_are_errors_flags target target_scope)
             list(APPEND flags -no-integrated-cpp -Wno-implicit-fallthrough)
         endif()
 
+        if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "15.1" AND QT_FEATURE_sanitize_thread
+            AND BUILD_WITH_PCH)
+            # GCC < 15 raises a TSAN warning from Qt's own PCHs, despite the warning
+            # being suppressed (QTBUG-134415)
+            # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=64117
+            list(APPEND flags -Wno-error=tsan)
+        endif()
+
         # Work-around for bug https://code.google.com/p/android/issues/detail?id=58135
         if (ANDROID)
             list(APPEND flags -Wno-error=literal-suffix)
@@ -99,7 +107,7 @@ endfunction()
 #            APP - set the definition for all Qt applications
 #        TODO: Add a tests specific platform target and the definition scope for it.
 function(qt_internal_add_global_definition definition)
-    set(optional_args)
+    set(optional_args "")
     set(single_value_args VALUE)
     set(multi_value_args SCOPE)
     cmake_parse_arguments(arg

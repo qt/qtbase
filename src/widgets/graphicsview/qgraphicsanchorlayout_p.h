@@ -75,6 +75,8 @@ struct AnchorVertex
   Represents an edge (anchor) in the internal graph.
 */
 struct AnchorData : public QSimplexVariable {
+    Q_DISABLE_COPY_MOVE(AnchorData)
+
     enum Type {
         Normal = 0,
         Sequential,

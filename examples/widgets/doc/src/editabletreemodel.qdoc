@@ -251,7 +251,7 @@
 
     \snippet itemviews/editabletreemodel/treeitem.cpp 3
 
-    The \c childNumber() function is used to determine the index of the child
+    The \c row() function is used to determine the index of the child
     in its parent's list of children. It accesses the parent's \c childItems
     member directly to obtain this information:
 

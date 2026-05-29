@@ -127,6 +127,13 @@ private:
     HPack::Decoder decoder;
     HPack::Encoder encoder;
 
+    // If we receive SETTINGS_HEADER_TABLE_SIZE in a SETTINGS frame we have to perform a dynamic
+    // table size update on the _next_ HEADER block we send.
+    // Because this only happens on the next block we may have multiple pending updates, so we must
+    // notify of the _smallest_ one followed by the _final_ one. We keep them sorted in that order.
+    // @future: keep in mind if we add support for sending PUSH_PROMISE because it is a HEADER block
+    std::array<std::optional<quint32>, 2> pendingTableSizeUpdates;
+
     QHash<QObject *, int> streamIDs;
     QHash<quint32, Stream> activeStreams;
     std::deque<quint32> suspendedStreams[3]; // 3 for priorities: High, Normal, Low.

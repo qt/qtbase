@@ -7,6 +7,7 @@
 #include <QDBusServiceWatcher>
 #include <QDBusConnectionInterface>
 #include <QDBusInterface>
+#include <QElapsedTimer>
 
 #include "./serverobject.h"
 

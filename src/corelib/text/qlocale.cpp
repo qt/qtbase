@@ -1126,10 +1126,7 @@ bool QLocale::equals(const QLocale &other) const
 
 /*!
     \since 5.6
-    \relates QLocale
-
-    Returns the hash value for \a key, using
-    \a seed to seed the calculation.
+    \qhashold{QLocale}
 */
 size_t qHash(const QLocale &key, size_t seed) noexcept
 {
@@ -3702,7 +3699,9 @@ QString QLocaleData::doubleToString(double d, int precision, DoubleForm form,
         }
     }
 
-    return prefix + (flags & CapitalEorX ? std::move(numStr).toUpper() : numStr);
+    return prefix + (flags & CapitalEorX
+                     ? std::move(numStr).toUpper()
+                     : std::move(numStr).toLower());
 }
 
 QString QLocaleData::decimalForm(QString &&digits, int decpt, int precision,
@@ -3906,22 +3905,112 @@ bool QLocaleData::numberToCLocale(QStringView s, QLocale::NumberOptions number_o
     auto length = s.size();
     decltype(length) idx = 0;
 
-    // Digit-grouping details (all modes):
-    qsizetype digitsInGroup = 0;
-    qsizetype last_separator_idx = -1;
-    qsizetype start_of_digits_idx = -1;
+    // Reflects order constraints on possible parts of a number:
+    enum { Whole, Grouped, Fraction, Exponent, Name } stage = Whole;
+    // Grouped is just Whole with some digit-grouping separators in it.
+    // Name is Inf or NaN; excludes all others (so none can be after it).
 
-    // Floating-point details (non-integer modes):
-    qsizetype decpt_idx = -1;
-    qsizetype exponent_idx = -1;
+    // Fractional part *or* whole-number part can be empty, but not both, unless
+    // we have Name. Exponent must have some digits in it.
+    bool wantDigits = true;
+
+    // Digit-grouping details (all modes):
+    bool needHigherGroup = false; // Set when first group is too short to be the only one
+    qsizetype digitsInGroup = 0;
+    const auto badLeastGroup = [&, least=m_grouping_least]() {
+        // In principle we could object to a complete absence of grouping, when
+        // digitsInGroup >= qMax(m_grouping_top, m_grouping_least), unless the
+        // locale itself would omit them. However, when merely not rejecting
+        // grouping separators, we have historically accepted ungrouped digits,
+        // so objecting now would break existing code.
+        if (stage == Grouped) {
+            Q_ASSERT(!number_options.testFlag(QLocale::RejectGroupSeparator));
+            // First group was invalid if it was short and we've not seen a separator since:
+            if (needHigherGroup)
+                return true;
+            // Were there enough digits since the last group separator?
+            if (digitsInGroup != least)
+                return true;
+        }
+        return false;
+    };
 
     char last = '\0';
     while (idx < length) {
         const QStringView in = QStringView(uc + idx, uc[idx].isHighSurrogate() ? 2 : 1);
-
         char out = numericToCLocale(in);
-        if (out == 0) {
-            // Allow ASCII letters of inf, nan:
+
+        if (out == '.') {
+            if (stage > Grouped) // Too late to start a fractional part.
+                return false;
+            // That's the end of the integral part - check size of last group:
+            if (badLeastGroup())
+                return false;
+            stage = Fraction;
+        } else if (out == 'e') {
+            if (wantDigits || stage == Name || stage > Fraction)
+                return false;
+
+            if (stage < Fraction) {
+                // The 'e' ends the whole-number part, so check its last group:
+                if (badLeastGroup())
+                    return false;
+            } else if (number_options.testFlag(QLocale::RejectTrailingZeroesAfterDot)) {
+                // In a fractional part, a 0 just before the exponent is trailing:
+                if (last == '0')
+                    return false;
+            }
+            stage = Exponent;
+            wantDigits = true; // We need some in the exponent
+        } else if (out == ',') {
+            if (number_options.testFlag(QLocale::RejectGroupSeparator))
+                return false;
+
+            switch (stage) {
+            case Whole:
+                // Check size of most significant group
+                if (digitsInGroup == 0 || digitsInGroup > qMax(m_grouping_top, m_grouping_higher))
+                    return false;
+                Q_ASSERT(!needHigherGroup);
+                // First group is only allowed fewer than m_grouping_top digits
+                // if it's followed by an m_grouping_higher group, i.e. there's
+                // a later group separator:
+                if (m_grouping_top > digitsInGroup)
+                    needHigherGroup = true;
+                stage = Grouped;
+                break;
+            case Grouped:
+                // Check size of group between two separators:
+                if (digitsInGroup != m_grouping_higher)
+                    return false;
+                needHigherGroup = false; // We just found it, if needed.
+                break;
+            // Only allow group chars within the whole-number part:
+            case Fraction:
+            case Exponent:
+            case Name:
+                return false;
+            }
+            digitsInGroup = 0;
+        } else if (out >= '0' && out <= '9') {
+            if (stage == Name)
+                return false;
+            if (out == '0' && number_options.testFlag(QLocale::RejectLeadingZeroInExponent)
+                && stage > Fraction && idx < length - 1 && (last < '0' || last > '9')) {
+                // After the exponent there can only be '+', '-' or digits.  If
+                // we find a '0' directly after some non-digit, then that is a
+                // leading zero, acceptable only if it is the whole exponent.
+                return false;
+            }
+            wantDigits = false;
+            ++digitsInGroup;
+        } else if (out == 0) {
+            // If we've seen nothing else yet, allow ASCII letters of inf, nan:
+            if (stage == Whole && wantDigits) {
+                wantDigits = false;
+                stage = Name;
+            } else if (stage != Name)
+                return false;
             if (in.size() != 1)
                 return false;
             char16_t ch = in.front().unicode();
@@ -3930,90 +4019,26 @@ bool QLocaleData::numberToCLocale(QStringView s, QLocale::NumberOptions number_o
             out = int(ch | 0x20); // tolower(), when ch is a letter
             if (out != 'a' && out != 'f' && out != 'i' && out != 'n')
                 return false;
-        } else if (out == '.') {
-            // Fail if more than one decimal point or point after e
-            if (decpt_idx != -1 || exponent_idx != -1)
-                return false;
-            decpt_idx = idx;
-        } else if (out == 'e') {
-            exponent_idx = idx;
         }
-
-        if (number_options.testFlag(QLocale::RejectLeadingZeroInExponent)) {
-            if (exponent_idx != -1 && out == '0' && idx < length - 1) {
-                // After the exponent there can only be '+', '-' or digits.
-                // If we find a '0' directly after some non-digit, then that is a leading zero.
-                if (last < '0' || last > '9')
-                    return false;
-            }
-        }
-
-        if (number_options.testFlag(QLocale::RejectTrailingZeroesAfterDot)) {
-            // If we've seen a decimal point and the last character after the exponent is 0, then
-            // that is a trailing zero.
-            if (decpt_idx >= 0 && idx == exponent_idx && last == '0')
-                    return false;
-        }
-
-        if (!number_options.testFlag(QLocale::RejectGroupSeparator)) {
-            if (out >= '0' && out <= '9') {
-                if (start_of_digits_idx == -1)
-                    start_of_digits_idx = idx;
-                ++digitsInGroup;
-            } else if (out == ',') {
-                // Don't allow group chars after the decimal point or exponent
-                if (decpt_idx != -1 || exponent_idx != -1)
-                    return false;
-
-                if (last_separator_idx == -1) {
-                    // Check distance from the beginning of the digits:
-                    if (start_of_digits_idx == -1 || m_grouping_top > digitsInGroup
-                        || digitsInGroup >= m_grouping_least + m_grouping_top) {
-                        return false;
-                    }
-                } else {
-                    // Check distance from the last separator:
-                    if (digitsInGroup != m_grouping_higher)
-                        return false;
-                }
-
-                last_separator_idx = idx;
-                digitsInGroup = 0;
-            } else if (out == '.' || idx == exponent_idx) {
-                // Were there enough digits since the last separator?
-                if (last_separator_idx != -1 && digitsInGroup != m_grouping_least)
-                    return false;
-                // If we saw no separator, should we fail if
-                // digitsInGroup > m_grouping_top + m_grouping_least ?
-
-                // stop processing separators
-                last_separator_idx = -1;
-            }
-        } else if (out == ',') {
-            return false;
-        }
+        // else: nothing special to do.
 
         last = out;
         if (out != ',') // Leave group separators out of the result.
             result->append(out);
         idx += in.size();
     }
+    if (wantDigits)
+        return false;
 
     if (!number_options.testFlag(QLocale::RejectGroupSeparator)) {
-        // group separator post-processing
-        // did we end in a separator?
-        if (last_separator_idx + 1 == idx)
+        // If this is the end of the whole-part, check least significant group:
+        if (stage < Fraction && badLeastGroup())
             return false;
-        // Were there enough digits since the last separator?
-        if (last_separator_idx != -1 && digitsInGroup != m_grouping_least)
-            return false;
-        // If we saw no separator, and no decimal point, should we fail if
-        // digitsInGroup > m_grouping_top + m_grouping_least ?
     }
 
-    if (number_options.testFlag(QLocale::RejectTrailingZeroesAfterDot)) {
-        // In decimal form, the last character can be a trailing zero if we've seen a decpt.
-        if (decpt_idx != -1 && exponent_idx == -1 && last == '0')
+    if (number_options.testFlag(QLocale::RejectTrailingZeroesAfterDot) && stage == Fraction) {
+        // In the fractional part, a final zero is trailing:
+        if (last == '0')
             return false;
     }
 
@@ -4373,9 +4398,11 @@ QString QLocale::formattedDataSize(qint64 bytes, int precision, DataSizeFormats 
     if (!bytes) {
         power = 0;
     } else if (format & DataSizeBase1000) {
-        power = int(std::log10(qAbs(bytes)) / 3);
-    } else { // Compute log2(bytes) / 10:
-        power = int((63 - qCountLeadingZeroBits(quint64(qAbs(bytes)))) / 10);
+        constexpr auto log10_1000 = 3; // std::log10(1000U)
+        power = int(std::log10(QtPrivate::qUnsignedAbs(bytes))) / log10_1000;
+    } else {
+        constexpr auto log2_1024 = 10; // QtPrivate::log2i(1024U);
+        power = QtPrivate::log2i(QtPrivate::qUnsignedAbs(bytes)) / log2_1024;
         base = 1024;
     }
     // Only go to doubles if we'll be using a quantifier:

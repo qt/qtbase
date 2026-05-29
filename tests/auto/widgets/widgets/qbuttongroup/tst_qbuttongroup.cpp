@@ -198,7 +198,7 @@ void tst_QButtonGroup::keyNavigationPushButtons()
     layout->addWidget(pb3);
     layout->addWidget(le2);
 
-    QButtonGroup *buttonGroup = new QButtonGroup;
+    QButtonGroup *buttonGroup = new QButtonGroup(&dlg);
     buttonGroup->addButton(pb1);
     buttonGroup->addButton(pb2);
     buttonGroup->addButton(pb3);
@@ -477,31 +477,6 @@ void tst_QButtonGroup::checkedButton()
     QCOMPARE(buttons.checkedButton(), &pb2);
 }
 
-class task209485_ButtonDeleter : public QObject
-{
-    Q_OBJECT
-
-public:
-    task209485_ButtonDeleter(QButtonGroup *group, bool deleteButton)
-        : group(group)
-        , deleteButton(deleteButton)
-    {
-        connect(group, &QButtonGroup::buttonClicked,
-                this, &task209485_ButtonDeleter::buttonClicked);
-    }
-
-private slots:
-    void buttonClicked()
-    {
-        if (deleteButton)
-            group->removeButton(group->buttons().first());
-    }
-
-private:
-    QButtonGroup *group;
-    bool deleteButton;
-};
-
 void tst_QButtonGroup::task209485_removeFromGroupInEventHandler_data()
 {
     QTest::addColumn<bool>("deleteButton");
@@ -516,16 +491,19 @@ void tst_QButtonGroup::task209485_removeFromGroupInEventHandler()
     QFETCH(int, signalCount);
     qRegisterMetaType<QAbstractButton *>("QAbstractButton *");
 
-    TestPushButton *button = new TestPushButton;
+    TestPushButton button;
     QButtonGroup group;
-    group.addButton(button);
+    group.addButton(&button);
 
-    task209485_ButtonDeleter buttonDeleter(&group, deleteButton);
+    if (deleteButton) {
+        QObject::connect(&group, &QButtonGroup::buttonClicked,
+                         &button, [&] { group.removeButton(&button); });
+    }
 
     QSignalSpy spy1(&group, SIGNAL(buttonClicked(QAbstractButton*)));
 
     // NOTE: Reintroducing the bug of this task will cause the following line to crash:
-    QTest::mouseClick(button, Qt::LeftButton);
+    QTest::mouseClick(&button, Qt::LeftButton);
 
     QCOMPARE(spy1.size(), signalCount);
 }

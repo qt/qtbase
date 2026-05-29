@@ -150,18 +150,6 @@ qDebug() << "UTC time is:" << UTC;
 qDebug() << "There are" << local.secsTo(UTC) << "seconds difference between the datetimes.";
 //! [19]
 
-//! [20]
-QString string = "Monday, 23 April 12 22:51:41";
-QString format = "dddd, d MMMM yy hh:mm:ss";
-QDateTime invalid = QDateTime::fromString(string, format);
-//! [20]
-
-//! [21]
-QString string = "Tuesday, 23 April 12 22:51:41";
-QString format = "dddd, d MMMM yy hh:mm:ss";
-QDateTime valid = QDateTime::fromString(string, format);
-//! [21]
-
 //! [22]
 // 23 April 2012:
 QDate date = std::chrono::year_month_day(std::chrono::year(2012),

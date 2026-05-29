@@ -13,6 +13,8 @@
 #include <stdlib.h>
 #include "qendian.h"
 
+#include <QtCore/q20memory.h>
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -1065,7 +1067,7 @@ QDataStream &QDataStream::readBytes(char *&s, uint &l)
         const quint32 sz = qMin(step, len - allocated);
         int blockSize = qMin(sz, MaxBlockSize);
         const quint32 n = allocated + blockSize + 1;
-        if (const auto prevBuf = std::exchange(curBuf, std::make_unique<char[]>(n)))
+        if (const auto prevBuf = std::exchange(curBuf, q20::make_unique_for_overwrite<char[]>(n)))
             memcpy(curBuf.get(), prevBuf.get(), allocated);
         if (readBlock(curBuf.get() + allocated, blockSize) != blockSize)
             return *this;

@@ -195,7 +195,8 @@ void QBasicDrag::startDrag()
     QPoint pos;
 #ifndef QT_NO_CURSOR
     pos = QCursor::pos();
-    if (pos.x() == int(qInf())) {
+    static constexpr QGuiApplicationPrivate::QLastCursorPosition uninitializedCursorPosition;
+    if (pos == uninitializedCursorPosition) {
         // ### fixme: no mouse pos registered. Get pos from touch...
         pos = QPoint();
     }

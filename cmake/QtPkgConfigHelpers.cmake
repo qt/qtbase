@@ -74,7 +74,7 @@ function(qt_internal_generate_pkg_config_file module)
     foreach(dep IN LISTS loose_target_requires)
         if(dep MATCHES "^Qt::")
             string(REGEX REPLACE "Qt" "${QT_CMAKE_EXPORT_NAMESPACE}" dep ${dep})
-        else()
+        elseif(NOT dep MATCHES "^${QT_CMAKE_EXPORT_NAMESPACE}::")
             # TODO: Figure out a way to get non-Qt requirements PkgConfig files.
             continue()
         endif()

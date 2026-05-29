@@ -14,11 +14,24 @@ Q_DECLARE_TYPEINFO(QLatin1StringViewContainer, Q_RELOCATABLE_TYPE);
 QT_END_NAMESPACE
 Q_DECLARE_METATYPE(QLatin1StringViewContainer)
 
+// QTBUG-112746
+namespace {
+extern const char string_array[];
+static void from_array_of_unknown_size()
+{
+    auto sv = QLatin1StringView{string_array};
+    QCOMPARE(sv.size(), 3);
+}
+const char string_array[] = "abc\0def";
+
+} // unnamed namespace
+
 class tst_QLatin1StringView : public QObject
 {
     Q_OBJECT
 
 private Q_SLOTS:
+    void fromArraysOfUnknownSize() { from_array_of_unknown_size(); }
     void constExpr();
     void construction();
     void userDefinedLiterals();

@@ -636,65 +636,60 @@ public:
 
     struct Inserter
     {
-        QArrayDataPointer<T> *data;
+        QArrayDataPointer<T> * const data;
         T *displaceFrom;
-        T *displaceTo;
-        qsizetype nInserts = 0;
-        qsizetype bytes;
+        T * const displaceTo;
+        const qsizetype nInserts = 0;
+        const size_t bytes;
 
-        Inserter(QArrayDataPointer<T> *d) : data(d) { }
+        void verifyPost()
+        { Q_ASSERT(displaceFrom == displaceTo); }
+
+        explicit Inserter(QArrayDataPointer<T> *d, qsizetype pos, qsizetype n)
+            : data{d},
+              displaceFrom{d->ptr + pos},
+              displaceTo{displaceFrom + n},
+              nInserts{n},
+              bytes{(data->size - pos) * sizeof(T)}
+        {
+            ::memmove(static_cast<void *>(displaceTo), static_cast<void *>(displaceFrom), bytes);
+        }
         ~Inserter() {
+            auto inserts = nInserts;
             if constexpr (!std::is_nothrow_copy_constructible_v<T>) {
                 if (displaceFrom != displaceTo) {
                     ::memmove(static_cast<void *>(displaceFrom), static_cast<void *>(displaceTo), bytes);
-                    nInserts -= qAbs(displaceFrom - displaceTo);
+                    inserts -= qAbs(displaceFrom - displaceTo);
                 }
             }
-            data->size += nInserts;
+            data->size += inserts;
         }
         Q_DISABLE_COPY(Inserter)
 
-        T *displace(qsizetype pos, qsizetype n)
+        void insertRange(const T *source, qsizetype n)
         {
-            nInserts = n;
-            T *insertionPoint = data->ptr + pos;
-            displaceFrom = data->ptr + pos;
-            displaceTo = displaceFrom + n;
-            bytes = data->size - pos;
-            bytes *= sizeof(T);
-            ::memmove(static_cast<void *>(displaceTo), static_cast<void *>(displaceFrom), bytes);
-            return insertionPoint;
-        }
-
-        void insert(qsizetype pos, const T *source, qsizetype n)
-        {
-            T *where = displace(pos, n);
-
             while (n--) {
-                new (where) T(*source);
-                ++where;
+                new (displaceFrom) T(*source);
                 ++source;
                 ++displaceFrom;
             }
+            verifyPost();
         }
 
-        void insert(qsizetype pos, const T &t, qsizetype n)
+        void insertFill(const T &t, qsizetype n)
         {
-            T *where = displace(pos, n);
-
             while (n--) {
-                new (where) T(t);
-                ++where;
+                new (displaceFrom) T(t);
                 ++displaceFrom;
             }
+            verifyPost();
         }
 
-        void insertOne(qsizetype pos, T &&t)
+        void insertOne(T &&t)
         {
-            T *where = displace(pos, 1);
-            new (where) T(std::move(t));
+            new (displaceFrom) T(std::move(t));
             ++displaceFrom;
-            Q_ASSERT(displaceFrom == displaceTo);
+            verifyPost();
         }
 
     };
@@ -720,7 +715,7 @@ public:
                 ++this->size;
             }
         } else {
-            Inserter(this).insert(i, data, n);
+            Inserter(this, i, n).insertRange(data, n);
         }
     }
 
@@ -744,7 +739,7 @@ public:
                 ++this->size;
             }
         } else {
-            Inserter(this).insert(i, copy, n);
+            Inserter(this, i, n).insertFill(copy, n);
         }
     }
 
@@ -776,7 +771,7 @@ public:
             --this->ptr;
             ++this->size;
         } else {
-            Inserter(this).insertOne(i, std::move(tmp));
+            Inserter(this, i, 1).insertOne(std::move(tmp));
         }
     }
 

@@ -20,8 +20,7 @@
 QT_BEGIN_NAMESPACE
 
 QIntegrityFbIntegration::QIntegrityFbIntegration(const QStringList &paramList)
-    : m_fontDb(new QGenericUnixFontDatabase),
-      m_services(new QGenericUnixServices)
+    : m_fontDb(new QGenericUnixFontDatabase)
 {
     m_primaryScreen = new QIntegrityFbScreen(paramList);
 }
@@ -84,6 +83,9 @@ QPlatformFontDatabase *QIntegrityFbIntegration::fontDatabase() const
 
 QPlatformServices *QIntegrityFbIntegration::services() const
 {
+    if (m_services.isNull())
+        m_services.reset(new QGenericUnixServices);
+
     return m_services.data();
 }
 

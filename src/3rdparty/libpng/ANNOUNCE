@@ -1,5 +1,5 @@
-libpng 1.6.44 - September 12, 2024
-==================================
+libpng 1.6.48 - April 30, 2025
+==============================
 
 This is a public release of libpng, intended for use in production code.
 
@@ -9,13 +9,13 @@ Files available for download
 
 Source files with LF line endings (for Unix/Linux):
 
- * libpng-1.6.44.tar.xz (LZMA-compressed, recommended)
- * libpng-1.6.44.tar.gz (deflate-compressed)
+ * libpng-1.6.48.tar.xz (LZMA-compressed, recommended)
+ * libpng-1.6.48.tar.gz (deflate-compressed)
 
 Source files with CRLF line endings (for Windows):
 
- * lpng1644.7z (LZMA-compressed, recommended)
- * lpng1644.zip (deflate-compressed)
+ * lpng1648.7z (LZMA-compressed, recommended)
+ * lpng1648.zip (deflate-compressed)
 
 Other information:
 
@@ -25,29 +25,17 @@ Other information:
  * TRADEMARK.md
 
 
-Changes from version 1.6.43 to version 1.6.44
+Changes from version 1.6.47 to version 1.6.48
 ---------------------------------------------
 
- * Hardened calculations in chroma handling to prevent overflows, and
-   relaxed a constraint in cHRM validation to accomodate the standard
-   ACES AP1 set of color primaries.
-   (Contributed by John Bowler)
- * Removed the ASM implementation of ARM Neon optimizations and updated
-   the build accordingly. Only the remaining C implementation shall be
-   used from now on, thus ensuring the support of the PAC/BTI security
-   features on ARM64.
-   (Contributed by Ross Burton and John Bowler)
- * Fixed the pickup of the PNG_HARDWARE_OPTIMIZATIONS option in the
-   CMake build on FreeBSD/amd64. This is an important performance fix
-   on this platform.
- * Applied various fixes and improvements to the CMake build.
-   (Contributed by Eric Riff, Benjamin Buch and Erik Scholz)
- * Added fuzzing targets for the simplified read API.
-   (Contributed by Mikhail Khachayants)
- * Fixed a build error involving pngtest.c under a custom config.
-   This was a regression introduced in a code cleanup in libpng-1.6.43.
-   (Contributed by Ben Wagner)
- * Fixed and improved the config files for AppVeyor CI and Travis CI.
+ * Fixed the floating-point version of the mDCv setter `png_set_mDCv`.
+   (Reported by Mohit Bakshi; fixed by John Bowler)
+ * Added #error directives to discourage the inclusion of private
+   libpng implementation header files in PNG-supporting applications.
+ * Added the CMake build option `PNG_LIBCONF_HEADER`, to be used as an
+   alternative to `DFA_XTRA`.
+ * Removed the Travis CI configuration files, with heartfelt thanks for
+   their generous support of our project over the past five years!
 
 
 Send comments/corrections/commendations to png-mng-implement at lists.sf.net.

@@ -34,7 +34,7 @@ void tst_QTemporaryFile::openclose()
     QBENCHMARK {
         for (qint64 i = 0; i < amount; ++i) {
             QTemporaryFile file;
-            file.open();
+            Q_UNUSED(file.open());
             file.close();
         }
     }
@@ -50,7 +50,7 @@ void tst_QTemporaryFile::readwrite()
     QBENCHMARK {
         for (qint64 i = 0; i < amount; ++i) {
             QTemporaryFile file;
-            file.open();
+            Q_UNUSED(file.open());
             file.write(data);
             file.seek(0);
             file.read(dataSize);

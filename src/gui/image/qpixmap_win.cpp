@@ -48,7 +48,8 @@ static inline void initBitMapInfoHeader(int width, int height, bool topToBottom,
     bih->biBitCount    = WORD(bitCount);
     bih->biCompression = compression;
      // scan lines are word-aligned (unless RLE)
-    const DWORD bytesPerLine = pad4(DWORD(width) * bitCount / 8);
+    const DWORD bytesPerLine = bitCount == 1 ? pad4(DWORD(qCeil(width / 8.0)))
+                                             : pad4(DWORD(width) * bitCount / 8);
     bih->biSizeImage   = bytesPerLine * DWORD(height);
 }
 

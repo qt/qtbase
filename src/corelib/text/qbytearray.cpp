@@ -33,6 +33,7 @@
 #include <stdlib.h>
 
 #include <algorithm>
+#include <string>
 
 #define IS_RAW_DATA(d) ((d)->flags() & QArrayData::RawDataType)
 
@@ -2264,13 +2265,12 @@ QByteArray &QByteArray::remove(qsizetype pos, qsizetype len)
     if (pos + len > d->size)
         len = d->size - pos;
 
-    auto begin = d.begin();
+    const auto toRemove_start = d.begin() + pos;
     if (!d->isShared()) {
-        d->erase(begin + pos, len);
+        d->erase(toRemove_start, len);
         d.data()[d.size] = '\0';
     } else {
         QByteArray copy{size() - len, Qt::Uninitialized};
-        const auto toRemove_start = d.begin() + pos;
         copy.d->copyRanges({{d.begin(), toRemove_start},
                            {toRemove_start + len, d.end()}});
         swap(copy);
@@ -2392,13 +2392,14 @@ QByteArray &QByteArray::replace(QByteArrayView before, QByteArrayView after)
         return *this;
 
     // protect against before or after being part of this
+    std::string pinnedNeedle, pinnedReplacement;
     if (QtPrivate::q_points_into_range(a, d)) {
-        QVarLengthArray copy(a, a + asize);
-        return replace(before, QByteArrayView{copy});
+        pinnedReplacement.append(a, asize);
+        a = pinnedReplacement.data();
     }
     if (QtPrivate::q_points_into_range(b, d)) {
-        QVarLengthArray copy(b, b + bsize);
-        return replace(QByteArrayView{copy}, after);
+        pinnedNeedle.append(b, bsize);
+        b = pinnedNeedle.data();
     }
 
     QByteArrayMatcher matcher(b, bsize);
@@ -2427,7 +2428,7 @@ QByteArray &QByteArray::replace(QByteArrayView before, QByteArrayView after)
             } else {
                 to = index;
             }
-            if (asize) {
+            if (asize > 0) {
                 memcpy(d + to, a, asize);
                 to += asize;
             }
@@ -2654,12 +2655,12 @@ static qsizetype lastIndexOfHelper(const char *haystack, qsizetype l, const char
                                    qsizetype ol, qsizetype from)
 {
     auto delta = l - ol;
-    if (from < 0)
-        from = delta;
-    if (from < 0 || from > l)
+    if (from > l)
         return -1;
-    if (from > delta)
+    if (from < 0 || from > delta)
         from = delta;
+    if (from < 0)
+        return -1;
 
     const char *end = haystack;
     haystack += from;
@@ -5120,10 +5121,7 @@ emscripten::val QByteArray::toEcmaUint8Array()
 */
 
 /*!
-    \relates QByteArray::FromBase64Result
-
-    Returns the hash value for \a key, using
-    \a seed to seed the calculation.
+    \qhashold{QByteArray::FromBase64Result}
 */
 size_t qHash(const QByteArray::FromBase64Result &key, size_t seed) noexcept
 {

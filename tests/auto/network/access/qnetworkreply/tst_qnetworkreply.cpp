@@ -529,6 +529,9 @@ private Q_SLOTS:
     void qtbug68821proxyError_data();
     void qtbug68821proxyError();
 
+    void resendRequest_data();
+    void resendRequest();
+
     // NOTE: This test must be last!
     void parentingRepliesToTheApp();
 private:
@@ -607,6 +610,7 @@ public:
     QByteArray receivedData;
     QSemaphore ready;
     bool doClose;
+    bool earlyClose = false; // close connection after request has been received
     bool doSsl;
     bool ipv6;
     bool multiple;
@@ -727,6 +731,9 @@ private slots:
         qDebug() << "slotError" << err << currentClient->errorString();
     }
 
+signals:
+    void requestReceived() const;
+
 public slots:
 
     void readyReadSlot()
@@ -750,10 +757,16 @@ public slots:
             if (hasContent && contentRead < contentLength)
                 return;
 
+            emit requestReceived();
+
             // multiple requests incoming. remove the bytes of the current one
             if (multiple)
                 receivedData.remove(0, endOfHeader);
 
+            if (earlyClose) {
+                client->disconnectFromHost();
+                return;
+            }
             reply();
         }
     }
@@ -2569,7 +2582,7 @@ void tst_QNetworkReply::postToHttpMultipart_data()
     imagePart11.setRawHeader("Content-Location", "http://my.test.location.tld");
     imagePart11.setRawHeader("Content-ID", "my@id.tld");
     QFile *file11 = new QFile(testDataDir + "/image1.jpg");
-    file11->open(QIODevice::ReadOnly);
+    QVERIFY2(file11->open(QIODevice::ReadOnly), qPrintable(file11->fileName()));
     imagePart11.setBodyDevice(file11);
     QHttpMultiPart *imageMultiPart1 = new QHttpMultiPart(QHttpMultiPart::FormDataType);
     imageMultiPart1->append(imagePart11);
@@ -2583,7 +2596,7 @@ void tst_QNetworkReply::postToHttpMultipart_data()
     imagePart21.setRawHeader("Content-Location", "http://my.test.location.tld");
     imagePart21.setRawHeader("Content-ID", "my@id.tld");
     QFile *file21 = new QFile(testDataDir + "/image1.jpg");
-    file21->open(QIODevice::ReadOnly);
+    QVERIFY2(file21->open(QIODevice::ReadOnly), qPrintable(file21->fileName()));
     imagePart21.setBodyDevice(file21);
     QHttpMultiPart *imageMultiPart2 = new QHttpMultiPart();
     imageMultiPart2->setContentType(QHttpMultiPart::FormDataType);
@@ -2594,7 +2607,7 @@ void tst_QNetworkReply::postToHttpMultipart_data()
     imagePart22.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("image/jpeg"));
     imagePart22.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"testImage2\""));
     QFile *file22 = new QFile(testDataDir + "/image2.jpg");
-    file22->open(QIODevice::ReadOnly);
+    QVERIFY2(file22->open(QIODevice::ReadOnly), qPrintable(file22->fileName()));
     imagePart22.setBodyDevice(file22);
     imageMultiPart2->append(imagePart22);
     file22->setParent(imageMultiPart2);
@@ -2616,7 +2629,7 @@ void tst_QNetworkReply::postToHttpMultipart_data()
     imagePart31.setRawHeader("Content-Location", "http://my.test.location.tld");
     imagePart31.setRawHeader("Content-ID", "my@id.tld");
     QFile *file31 = new QFile(testDataDir + "/image1.jpg");
-    file31->open(QIODevice::ReadOnly);
+    QVERIFY2(file31->open(QIODevice::ReadOnly), qPrintable(file31->fileName()));
     imagePart31.setBodyDevice(file31);
     QHttpMultiPart *imageMultiPart3 = new QHttpMultiPart(QHttpMultiPart::FormDataType);
     imageMultiPart3->append(imagePart31);
@@ -2625,7 +2638,7 @@ void tst_QNetworkReply::postToHttpMultipart_data()
     imagePart32.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("image/jpeg"));
     imagePart32.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"testImage2\""));
     QFile *file32 = new QFile(testDataDir + "/image2.jpg");
-    file32->open(QIODevice::ReadOnly);
+    QVERIFY2(file32->open(QIODevice::ReadOnly), qPrintable(file32->fileName()));
     imagePart32.setBodyDevice(file31); // check that resetting works
     imagePart32.setBodyDevice(file32);
     imageMultiPart3->append(imagePart32);
@@ -2634,7 +2647,7 @@ void tst_QNetworkReply::postToHttpMultipart_data()
     imagePart33.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("image/jpeg"));
     imagePart33.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"testImage3\""));
     QFile *file33 = new QFile(testDataDir + "/image3.jpg");
-    file33->open(QIODevice::ReadOnly);
+    QVERIFY2(file33->open(QIODevice::ReadOnly), qPrintable(file33->fileName()));
     imagePart33.setBodyDevice(file33);
     imageMultiPart3->append(imagePart33);
     file33->setParent(imageMultiPart3);
@@ -2683,7 +2696,7 @@ void tst_QNetworkReply::postToHttpMultipart_data()
     imagePart51.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("image/jpeg"));
     imagePart51.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"testImage\""));
     QFile *file51 = new QFile(testDataDir + "/image1.jpg");
-    file51->open(QIODevice::ReadOnly);
+    QVERIFY2(file51->open(QIODevice::ReadOnly), qPrintable(file51->fileName()));
     QByteArray imageData = file51->readAll();
     file51->close();
     delete file51;
@@ -10135,6 +10148,56 @@ void tst_QNetworkReply::qtbug68821proxyError()
     QFETCH(QNetworkReply::NetworkError, error);
     QCOMPARE(spy.count(), 1);
     QCOMPARE(spy.at(0).at(0), error);
+}
+
+void tst_QNetworkReply::resendRequest_data(){
+    QTest::addColumn<QString>("method");
+    QTest::addColumn<bool>("shouldResend");
+
+    for (auto &method : { "get", "head", "put" })
+        QTest::addRow("%s", method) << method << true;
+    QTest::addRow("post") << "post" << false;
+    QTest::addRow("mycustom") << "mycustom" << false;
+
+}
+
+void tst_QNetworkReply::resendRequest()
+{
+    QFETCH(const QString, method);
+    QFETCH(const bool, shouldResend);
+
+    MiniHttpServer server("");
+    server.earlyClose = true;
+
+    QSignalSpy requestReceived(&server, &MiniHttpServer::requestReceived);
+
+    QUrl url("http://127.0.0.1");
+    url.setPort(server.serverPort());
+    const QByteArray data(4096, 'a');
+    QNetworkReplyPtr reply([&]() {
+        QNetworkRequest req(url);
+        if (method == "get")
+            return manager.get(req);
+        else if (method == "head")
+            return manager.head(req);
+        else if (method == "put")
+            return manager.put(req, data);
+        else
+            return manager.sendCustomRequest(req, method.toUtf8(), data);
+    }());
+
+    // We send one request and will get no response from the server:
+    QVERIFY(requestReceived.wait());
+    requestReceived.clear();
+    // Then, for idempotent requests, we send the request again. For
+    // non-idempotent requests we error out and don't try to resend.
+    QCOMPARE(requestReceived.wait(2000), shouldResend);
+    if (!shouldResend) {
+        QCOMPARE(reply->error(), QNetworkReply::RemoteHostClosedError);
+    } else {
+        // No error yet, still can resend another
+        QCOMPARE(reply->error(), QNetworkReply::NoError);
+    }
 }
 
 // NOTE: This test must be last testcase in tst_qnetworkreply!

@@ -197,9 +197,10 @@ bool QSqlQueryModel::canFetchMore(const QModelIndex &parent) const
 */
 QHash<int, QByteArray> QSqlQueryModel::roleNames() const
 {
-    return QHash<int, QByteArray> {
+    static const QHash<int, QByteArray> names = {
         { Qt::DisplayRole, QByteArrayLiteral("display") }
     };
+    return names;
 }
 
 /*! \internal
@@ -334,19 +335,18 @@ QVariant QSqlQueryModel::data(const QModelIndex &item, int role) const
     if (!item.isValid())
         return QVariant();
 
-    QVariant v;
     if (role & ~(Qt::DisplayRole | Qt::EditRole))
-        return v;
+        return QVariant();
 
     if (!d->rec.isGenerated(item.column()))
-        return v;
+        return QVariant();
     QModelIndex dItem = indexInQuery(item);
     if (dItem.row() > d->bottom.row())
         const_cast<QSqlQueryModelPrivate *>(d)->prefetch(dItem.row());
 
     if (!d->query.seek(dItem.row())) {
         d->error = d->query.lastError();
-        return v;
+        return QVariant();
     }
 
     return d->query.value(dItem.column());

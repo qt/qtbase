@@ -5,10 +5,13 @@
         "QDocModule": "qttestlib",
         "QtUsage": "Used for testing of the Qt Test module.",
         "Files": "catch_p_p.h",
-
+        "Comment": {
+            "General": "no relevant CPE found"
+        },
         "Description": "Catch2 is a multi-paradigm test framework for C++.",
         "Homepage": "https://github.com/catchorg/Catch2",
         "Version": "2.13.10",
+        "PURL": "pkg:github/catchorg/Catch2@v$<VERSION>",
         "License": "Boost Software License 1.0",
         "LicenseId": "BSL-1.0",
         "LicenseFile": "CATCH_LICENSE.txt",

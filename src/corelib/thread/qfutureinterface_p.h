@@ -162,6 +162,7 @@ public:
 
     enum ContinuationState : quint8 { Default, Canceled, Cleaned };
     std::atomic<ContinuationState> continuationState { Default };
+    bool continuationExecuted = false;
 
     inline QThreadPool *pool() const
     { return m_pool ? m_pool : QThreadPool::globalInstance(); }

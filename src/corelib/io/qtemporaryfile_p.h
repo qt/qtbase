@@ -56,6 +56,8 @@ public:
     explicit QTemporaryFilePrivate(const QString &templateNameIn);
     ~QTemporaryFilePrivate();
 
+    bool rename(const QString &newName, bool overwrite);
+
     QAbstractFileEngine *engine() const override;
     void resetFileEngine() const;
     void materializeUnnamedFile();

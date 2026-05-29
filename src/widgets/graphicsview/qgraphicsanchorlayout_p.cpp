@@ -2769,10 +2769,14 @@ bool QGraphicsAnchorLayoutPrivate::solveMinMax(const QList<QSimplexConstraint *>
 }
 
 enum slackType { Grower = -1, Shrinker = 1 };
-static QPair<QSimplexVariable *, QSimplexConstraint *> createSlack(QSimplexConstraint *sizeConstraint,
-                                                                   qreal interval, slackType type)
+static auto createSlack(QSimplexConstraint *sizeConstraint, qreal interval, slackType type)
 {
-    QSimplexVariable *slack = new QSimplexVariable;
+    struct R {
+        QConcreteSimplexVariable *slack;
+        QSimplexConstraint *limit;
+    };
+
+    auto slack = new QConcreteSimplexVariable;
     sizeConstraint->variables.insert(slack, type);
 
     QSimplexConstraint *limit = new QSimplexConstraint;
@@ -2780,14 +2784,14 @@ static QPair<QSimplexVariable *, QSimplexConstraint *> createSlack(QSimplexConst
     limit->ratio = QSimplexConstraint::LessOrEqual;
     limit->constant = interval;
 
-    return qMakePair(slack, limit);
+    return R{slack, limit};
 }
 
 bool QGraphicsAnchorLayoutPrivate::solvePreferred(const QList<QSimplexConstraint *> &constraints,
                                                   const QList<AnchorData *> &variables)
 {
     QList<QSimplexConstraint *> preferredConstraints;
-    QList<QSimplexVariable *> preferredVariables;
+    QList<QConcreteSimplexVariable *> preferredVariables;
     QSimplexConstraint objective;
 
     // Fill the objective coefficients for this variable. In the
@@ -2823,48 +2827,47 @@ bool QGraphicsAnchorLayoutPrivate::solvePreferred(const QList<QSimplexConstraint
         sizeConstraint->constant = ad->prefSize + g_offset;
 
         // Can easily shrink
-        QPair<QSimplexVariable *, QSimplexConstraint *> slack;
         const qreal softShrinkInterval = ad->prefSize - ad->minPrefSize;
         if (softShrinkInterval) {
-            slack = createSlack(sizeConstraint, softShrinkInterval, Shrinker);
-            preferredVariables += slack.first;
-            preferredConstraints += slack.second;
+            auto r = createSlack(sizeConstraint, softShrinkInterval, Shrinker);
+            preferredVariables += r.slack;
+            preferredConstraints += r.limit;
 
             // Add to objective with ratio == 1 (soft)
-            objective.variables.insert(slack.first, 1.0);
+            objective.variables.insert(r.slack, 1.0);
         }
 
         // Can easily grow
         const qreal softGrowInterval = ad->maxPrefSize - ad->prefSize;
         if (softGrowInterval) {
-            slack = createSlack(sizeConstraint, softGrowInterval, Grower);
-            preferredVariables += slack.first;
-            preferredConstraints += slack.second;
+            auto r = createSlack(sizeConstraint, softGrowInterval, Grower);
+            preferredVariables += r.slack;
+            preferredConstraints += r.limit;
 
             // Add to objective with ratio == 1 (soft)
-            objective.variables.insert(slack.first, 1.0);
+            objective.variables.insert(r.slack, 1.0);
         }
 
         // Can shrink if really necessary
         const qreal hardShrinkInterval = ad->minPrefSize - ad->minSize;
         if (hardShrinkInterval) {
-            slack = createSlack(sizeConstraint, hardShrinkInterval, Shrinker);
-            preferredVariables += slack.first;
-            preferredConstraints += slack.second;
+            auto r = createSlack(sizeConstraint, hardShrinkInterval, Shrinker);
+            preferredVariables += r.slack;
+            preferredConstraints += r.limit;
 
             // Add to objective with ratio == N (hard)
-            objective.variables.insert(slack.first, variables.size());
+            objective.variables.insert(r.slack, variables.size());
         }
 
         // Can grow if really necessary
         const qreal hardGrowInterval = ad->maxSize - ad->maxPrefSize;
         if (hardGrowInterval) {
-            slack = createSlack(sizeConstraint, hardGrowInterval, Grower);
-            preferredVariables += slack.first;
-            preferredConstraints += slack.second;
+            auto r = createSlack(sizeConstraint, hardGrowInterval, Grower);
+            preferredVariables += r.slack;
+            preferredConstraints += r.limit;
 
             // Add to objective with ratio == N (hard)
-            objective.variables.insert(slack.first, variables.size());
+            objective.variables.insert(r.slack, variables.size());
         }
     }
 

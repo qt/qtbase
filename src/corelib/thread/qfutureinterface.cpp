@@ -14,6 +14,8 @@
 #  undef interface
 #endif
 
+#include <climits> // For INT_MAX
+
 // GCC 12 gets confused about QFutureInterfaceBase::state, for some non-obvious
 // reason
 //  warning: ‘unsigned int __atomic_or_fetch_4(volatile void*, unsigned int, int)’ writing 4 bytes into a region of size 0 overflows the destination [-Wstringop-overflow=]
@@ -825,6 +827,7 @@ void QFutureInterfaceBase::setContinuation(std::function<void(const QFutureInter
     // If the state is ready, run continuation immediately,
     // otherwise save it for later.
     if (isFinished()) {
+        d->continuationExecuted = true;
         lock.unlock();
         func(*this);
         lock.relock();
@@ -856,10 +859,11 @@ void QFutureInterfaceBase::cleanContinuation()
 void QFutureInterfaceBase::runContinuation() const
 {
     QMutexLocker lock(&d->continuationMutex);
-    if (d->continuation) {
+    if (d->continuation && !d->continuationExecuted) {
         // Save the continuation in a local function, to avoid calling
         // a null std::function below, in case cleanContinuation() is
         // called from some other thread right after unlock() below.
+        d->continuationExecuted = true;
         auto fn = std::move(d->continuation);
         lock.unlock();
         fn(*this);

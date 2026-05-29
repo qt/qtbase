@@ -37,8 +37,8 @@ Q_CORE_EXPORT QString qtTrId(const char *id, int n = -1);
 #define QT_TRID_NOOP(id) id
 #define QT_TRID_N_NOOP(id) id
 
-QT_END_NAMESPACE
-
 #endif // QT_NO_TRANSLATION
+
+QT_END_NAMESPACE
 
 #endif /* QTTRANSLATION_H */

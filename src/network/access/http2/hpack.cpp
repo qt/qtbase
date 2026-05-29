@@ -110,6 +110,16 @@ quint32 Encoder::dynamicTableSize() const
     return lookupTable.dynamicDataSize();
 }
 
+quint32 Encoder::dynamicTableCapacity() const
+{
+    return lookupTable.dynamicDataCapacity();
+}
+
+quint32 Encoder::maxDynamicTableCapacity() const
+{
+    return lookupTable.maxDynamicDataCapacity();
+}
+
 bool Encoder::encodeRequest(BitOStream &outputStream, const HttpHeader &header)
 {
     if (!header.size()) {
@@ -407,6 +417,16 @@ quint32 Decoder::dynamicTableSize() const
     return lookupTable.dynamicDataSize();
 }
 
+quint32 Decoder::dynamicTableCapacity() const
+{
+    return lookupTable.dynamicDataCapacity();
+}
+
+quint32 Decoder::maxDynamicTableCapacity() const
+{
+    return lookupTable.maxDynamicDataCapacity();
+}
+
 void Decoder::setMaxDynamicTableSize(quint32 size)
 {
     // Up to a caller (HTTP2 protocol handler)
@@ -488,6 +508,11 @@ bool Decoder::processDecodedField(BitPattern fieldType,
     if (fieldType == LiteralIncrementalIndexing) {
         if (!lookupTable.prependField(name, value))
             return false;
+    }
+
+    if (lookupTable.maxDynamicDataCapacity() < lookupTable.dynamicDataCapacity()) {
+        qDebug("about to add a new field, but expected a Dynamic Table Size Update");
+        return false; // We expected a dynamic table size update.
     }
 
     header.push_back(HeaderField(name, value));

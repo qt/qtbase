@@ -12,5 +12,7 @@
     "LicenseFile": "LICENSE.md",
     "Version": "0.5.2",
     "DownloadLocation": "https://github.com/mity/md4c/releases/tag/release-0.5.2",
+    "PURL": "pkg:github/mity/md4c@release-$<VERSION>",
+    "CPE": "cpe:2.3:a:md4c_project:md4c:$<VERSION>:*:*:*:*:*:*:*",
     "Copyright": "Copyright © 2016-2024 Martin Mitáš"
 }

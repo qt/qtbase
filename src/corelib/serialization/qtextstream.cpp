@@ -920,7 +920,7 @@ QTextStream::QTextStream(QString *string, OpenMode openMode)
 {
 #if defined (QTEXTSTREAM_DEBUG)
     qDebug("QTextStream::QTextStream(QString *string == *%p, openMode = %d)",
-           string, int(openMode));
+           string, int(openMode.toInt()));
 #endif
     Q_D(QTextStream);
     d->string = string;
@@ -938,7 +938,7 @@ QTextStream::QTextStream(QByteArray *array, OpenMode openMode)
 {
 #if defined (QTEXTSTREAM_DEBUG)
     qDebug("QTextStream::QTextStream(QByteArray *array == *%p, openMode = %d)",
-           array, int(openMode));
+           array, int(openMode.toInt()));
 #endif
     Q_D(QTextStream);
     d->device = new QBuffer(array);
@@ -965,7 +965,7 @@ QTextStream::QTextStream(const QByteArray &array, OpenMode openMode)
 {
 #if defined (QTEXTSTREAM_DEBUG)
     qDebug("QTextStream::QTextStream(const QByteArray &array == *(%p), openMode = %d)",
-           &array, int(openMode));
+           &array, int(openMode.toInt()));
 #endif
     QBuffer *buffer = new QBuffer;
     buffer->setData(array);
@@ -996,7 +996,7 @@ QTextStream::QTextStream(FILE *fileHandle, OpenMode openMode)
 {
 #if defined (QTEXTSTREAM_DEBUG)
     qDebug("QTextStream::QTextStream(FILE *fileHandle = %p, openMode = %d)",
-           fileHandle, int(openMode));
+           fileHandle, int(openMode.toInt()));
 #endif
     QFile *file = new QFile;
     file->open(fileHandle, openMode);
@@ -2196,44 +2196,34 @@ QTextStream &QTextStream::operator>>(char *c)
  */
 void QTextStreamPrivate::putNumber(qulonglong number, bool negative)
 {
-    QString result;
-
     unsigned flags = 0;
     const QTextStream::NumberFlags numberFlags = params.numberFlags;
     if (numberFlags & QTextStream::ShowBase)
         flags |= QLocaleData::ShowBase;
-    if (numberFlags & QTextStream::ForceSign)
+    // ForceSign is irrelevant when we'll be including a sign in any case:
+    if ((numberFlags & QTextStream::ForceSign) && !negative)
         flags |= QLocaleData::AlwaysShowSign;
     if (numberFlags & QTextStream::UppercaseBase)
         flags |= QLocaleData::UppercaseBase;
     if (numberFlags & QTextStream::UppercaseDigits)
         flags |= QLocaleData::CapitalEorX;
 
-    // add thousands group separators. For backward compatibility we
-    // don't add a group separator for C locale.
+    // Group digits. For backward compatibility, we skip this for the C locale.
     if (locale != QLocale::c() && !locale.numberOptions().testFlag(QLocale::OmitGroupSeparator))
         flags |= QLocaleData::GroupDigits;
 
     const QLocaleData *dd = locale.d->m_data;
     int base = params.integerBase ? params.integerBase : 10;
-    if (negative && base == 10) {
-        result = dd->longLongToString(-static_cast<qlonglong>(number), -1,
-                                      base, -1, flags);
-    } else if (negative) {
-        // Workaround for backward compatibility for writing negative
-        // numbers in octal and hex:
-        // QTextStream(result) << Qt::showbase << Qt::hex << -1 << oct << -1
-        // should output: -0x1 -0b1
-        result = dd->unsLongLongToString(number, -1, base, -1, flags);
+    QString result = dd->unsLongLongToString(number, -1, base, -1, flags);
+    if (negative) {
         result.prepend(locale.negativeSign());
-    } else {
-        result = dd->unsLongLongToString(number, -1, base, -1, flags);
-        // workaround for backward compatibility - in octal form with
-        // ShowBase flag set zero should be written as '00'
-        if (number == 0 && base == 8 && params.numberFlags & QTextStream::ShowBase
-            && result == "0"_L1) {
-            result.prepend(u'0');
-        }
+    } else if (number == 0 && base == 8 && params.numberFlags & QTextStream::ShowBase
+               && result == "0"_L1) {
+        // Workaround for backward compatibility - in octal form with ShowBase
+        // flag set, zero should get its 0 prefix before its 0 value, but
+        // QLocalePrivate only adds the prefix if the number doesn't start with
+        // a zero.
+        result.prepend(u'0');
     }
     putString(result, true);
 }

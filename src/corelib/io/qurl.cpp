@@ -2938,7 +2938,7 @@ QUrl QUrl::fromEncoded(const QByteArray &input, ParsingMode mode)
 QString QUrl::fromPercentEncoding(const QByteArray &input)
 {
     QByteArray ba = QByteArray::fromPercentEncoding(input);
-    return QString::fromUtf8(ba, ba.size());
+    return QString::fromUtf8(ba);
 }
 
 /*!
@@ -3097,7 +3097,7 @@ bool QUrl::operator ==(const QUrl &url) const
     Returns \c true if this URL and the given \a url are equal after
     applying \a options to both; otherwise returns \c false.
 
-    This is equivalent to calling adjusted(options) on both URLs
+    This is equivalent to calling \l{adjusted()}{adjusted}(options) on both URLs
     and comparing the resulting urls, but faster.
 
 */
@@ -3601,10 +3601,8 @@ QList<QUrl> QUrl::fromStringList(const QStringList &urls, ParsingMode mode)
 */
 
 /*!
-    Returns the hash value for the \a url. If specified, \a seed is used to
-    initialize the hash.
-
-    \relates QHash
+    \fn size_t qHash(const QUrl &key, size_t seed)
+    \qhashold{QHash}
     \since 5.0
 */
 size_t qHash(const QUrl &url, size_t seed) noexcept

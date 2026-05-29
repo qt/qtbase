@@ -7,6 +7,7 @@
 
 #include <QtCore/qpointer.h>
 #include <QtCore/QLocale>
+#include <QtCore/QLoggingCategory>
 #include <QtDBus/qdbuspendingreply.h>
 #if QT_CONFIG(filesystemwatcher)
 #include <QFileSystemWatcher>
@@ -17,6 +18,8 @@
 #include "qibustypes.h"
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(lcQpaInputMethods);
 
 class QIBusPlatformInputContextPrivate;
 class QDBusVariant;

@@ -317,6 +317,7 @@ function(qt_export_tools module_name)
 
     # List of package dependencies that need be find_package'd when using the Tools package.
     set(package_deps "")
+    set(third_party_deps "")
 
     # Additional cmake files to install
     set(extra_cmake_files "")
@@ -329,7 +330,15 @@ function(qt_export_tools module_name)
         # e.g. qtwaylandscanner depends on WaylandScanner (non-qt package).
         get_target_property(extra_packages "${tool_name}" QT_EXTRA_PACKAGE_DEPENDENCIES)
         if(extra_packages)
-            list(APPEND package_deps "${extra_packages}")
+            foreach(third_party_dep IN LISTS extra_packages)
+                list(GET third_party_dep 0 third_party_dep_name)
+                list(GET third_party_dep 1 third_party_dep_version)
+
+                # Assume that all tool thirdparty deps are mandatory.
+                # TODO: Components are not supported
+                list(APPEND third_party_deps
+                    "${third_party_dep_name}\\\;FALSE\\\;${third_party_dep_version}\\\;\\\;")
+            endforeach()
         endif()
 
         get_target_property(_extra_cmake_files "${tool_name}" EXTRA_CMAKE_FILES)
@@ -614,14 +623,14 @@ function(qt_internal_find_tool out_var target_name tools_target)
         set(${tools_package_name}_BACKUP_CMAKE_FIND_ROOT_PATH "${CMAKE_FIND_ROOT_PATH}")
         if(QT_HOST_PATH_CMAKE_DIR)
             set(qt_host_path_cmake_dir_absolute "${QT_HOST_PATH_CMAKE_DIR}")
-        elseif(Qt${PROJECT_VERSION_MAJOR}HostInfo_DIR)
+        elseif(${INSTALL_CMAKE_NAMESPACE}HostInfo_DIR)
             get_filename_component(qt_host_path_cmake_dir_absolute
-                "${Qt${PROJECT_VERSION_MAJOR}HostInfo_DIR}/.." ABSOLUTE)
+                "${${INSTALL_CMAKE_NAMESPACE}HostInfo_DIR}/.." ABSOLUTE)
         else()
             # This should never happen, serves as an assert.
             message(FATAL_ERROR
                 "Neither QT_HOST_PATH_CMAKE_DIR nor "
-                "Qt${PROJECT_VERSION_MAJOR}HostInfo_DIR available.")
+                "${INSTALL_CMAKE_NAMESPACE}HostInfo_DIR available.")
         endif()
         set(CMAKE_PREFIX_PATH "${qt_host_path_cmake_dir_absolute}")
 

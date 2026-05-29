@@ -4794,7 +4794,7 @@ QDateTime QDateTime::currentDateTimeUtc()
     \since 6.4
 
     Constructs a datetime representing the same point in time as \a time,
-    using Qt::UTC as its specification.
+    using Qt::UTC as its time representation.
 
     The clock of \a time must be compatible with \c{std::chrono::system_clock},
     and the duration type must be convertible to \c{std::chrono::milliseconds}.
@@ -4803,6 +4803,22 @@ QDateTime QDateTime::currentDateTimeUtc()
 
     \sa toStdSysMilliseconds(), fromMSecsSinceEpoch()
 */
+
+/*!
+    \since 6.4
+    \overload
+
+    Constructs a datetime representing the same point in time as \a time,
+    using Qt::UTC as its time representation.
+*/
+QDateTime QDateTime::fromStdTimePoint(
+    std::chrono::time_point<
+        std::chrono::system_clock,
+        std::chrono::milliseconds
+    > time)
+{
+    return fromMSecsSinceEpoch(time.time_since_epoch().count(), QTimeZone::UTC);
+}
 
 /*!
     \fn QDateTime QDateTime::fromStdTimePoint(const std::chrono::local_time<std::chrono::milliseconds> &time)
@@ -5301,16 +5317,11 @@ QDateTime QDateTime::fromString(QStringView string, Qt::DateFormat format)
     two digits.
 
     Incorrectly specified fields of the \a string will cause an invalid
-    QDateTime to be returned. For example, consider the following code,
-    where the two digit year 12 is read as 1912 (see the table below for all
-    field defaults); the resulting datetime is invalid because 23 April 1912
-    was a Tuesday, not a Monday:
-
-    \snippet code/src_corelib_time_qdatetime.cpp 20
-
-    The correct code is:
-
-    \snippet code/src_corelib_time_qdatetime.cpp 21
+    QDateTime to be returned. Only datetimes between the local time start of
+    year 100 and end of year 9999 are supported. Note that datetimes near the
+    ends of this range in other time-zones, notably including UTC, may fall
+    outside the range (and thust be treated as invalid) depending on local time
+    zone.
 
     \note Day and month names as well as AM/PM indicators must be given in
     English (C locale).  If localized month and day names or localized forms of
@@ -5637,10 +5648,8 @@ QDebug operator<<(QDebug dbg, const QDateTime &date)
 #endif // debug_stream && datestring
 
 /*! \fn size_t qHash(const QDateTime &key, size_t seed = 0)
-    \relates QHash
+    \qhashold{QHash}
     \since 5.0
-
-    Returns the hash value for the \a key, using \a seed to seed the calculation.
 */
 size_t qHash(const QDateTime &key, size_t seed)
 {
@@ -5652,10 +5661,8 @@ size_t qHash(const QDateTime &key, size_t seed)
 }
 
 /*! \fn size_t qHash(QDate key, size_t seed = 0)
-    \relates QHash
+    \qhashold{QHash}
     \since 5.0
-
-    Returns the hash value for the \a key, using \a seed to seed the calculation.
 */
 size_t qHash(QDate key, size_t seed) noexcept
 {
@@ -5663,10 +5670,8 @@ size_t qHash(QDate key, size_t seed) noexcept
 }
 
 /*! \fn size_t qHash(QTime key, size_t seed = 0)
-    \relates QHash
+    \qhashold{QHash}
     \since 5.0
-
-    Returns the hash value for the \a key, using \a seed to seed the calculation.
 */
 size_t qHash(QTime key, size_t seed) noexcept
 {

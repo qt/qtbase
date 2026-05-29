@@ -45,7 +45,8 @@ class QDuplicateTracker {
 
     char buffer[bufferSize(Prealloc)];
     std::pmr::monotonic_buffer_resource res{buffer, sizeof buffer};
-    std::pmr::unordered_set<T, QHasher<T>> set{Prealloc, &res};
+    using Set = std::pmr::unordered_set<T, QHasher<T>>;
+    Set set{Prealloc, &res};
 #else
     class Set : public QSet<T> {
         qsizetype setSize = 0;
@@ -76,7 +77,7 @@ public:
             false
         #endif
             ;
-    QDuplicateTracker() = default;
+    QDuplicateTracker() {} // don't `= default`, lest we value-initialize `buffer`
     explicit QDuplicateTracker(qsizetype n)
 #ifdef __cpp_lib_memory_resource
         : set{size_t(n), &res}
@@ -93,6 +94,11 @@ public:
     [[nodiscard]] bool hasSeen(T &&s)
     {
         return !set.insert(std::move(s)).second;
+    }
+    // For when you want to know, but aren't *yet* sure you'll add it:
+    [[nodiscard]] bool contains(const T &s) const
+    {
+        return set.find(s) != set.end(); // TODO C++20: can use set.contains()
     }
 
     template <typename C>
@@ -115,7 +121,20 @@ public:
 
     void clear()
     {
+#ifdef __cpp_lib_memory_resource
+        // The birth defect of std::unordered_set is that both the nodes as
+        // well as the bucket array are allocated from the same allocator, so
+        // if we want to reclaim memory from the freed nodes, we also need to
+        // reclaim the memory for the bucket array.
+
+        set = Set();    // release all memory in `res` (clear() doesn't, and swap() is UB!)
+        res.release();  // restore to initial state (buffer, sizeof buffer)
+                        // m_b_r can't reuse buffers, anyway
+        // now that `res` is reset to the initial state, also reset `set`:
+        set = Set{Prealloc, &res};
+#else
         set.clear();
+#endif // __cpp_lib_memory_resource
     }
 };
 

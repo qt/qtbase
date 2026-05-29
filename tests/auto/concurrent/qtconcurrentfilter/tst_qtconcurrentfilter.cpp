@@ -19,9 +19,11 @@ private slots:
     void filtered();
     void filteredThreadPool();
     void filteredWithMoveOnlyCallable();
+    void filteredWithGenericCallable();
     void filteredReduced();
     void filteredReducedThreadPool();
     void filteredReducedWithMoveOnlyCallables();
+    void filteredReducedWithGenericCallable();
     void filteredReducedDifferentType();
     void filteredReducedInitialValue();
     void filteredReducedInitialValueThreadPool();
@@ -428,6 +430,53 @@ void tst_QtConcurrentFilter::filteredWithMoveOnlyCallable()
     }
 }
 
+void tst_QtConcurrentFilter::filteredWithGenericCallable()
+{
+    const QList<int> intList { 1, 2, 3, 4 };
+    const QList<int> intListEven { 2, 4 };
+
+    auto keepEven = [](auto val) { return (val & 1) == 0; };
+    {
+        const auto result = QtConcurrent::filtered(intList, keepEven).results();
+        QCOMPARE(result, intListEven);
+    }
+    {
+        const auto result = QtConcurrent::filtered(intList.begin(), intList.end(),
+                                                   keepEven).results();
+        QCOMPARE(result, intListEven);
+    }
+    {
+        const auto result = QtConcurrent::blockingFiltered(intList, keepEven);
+        QCOMPARE(result, intListEven);
+    }
+    {
+        const auto result = QtConcurrent::blockingFiltered<QList<int>>(intList.begin(),
+                                                                       intList.end(),
+                                                                       keepEven);
+        QCOMPARE(result, intListEven);
+    }
+
+    QThreadPool pool;
+    {
+        const auto result = QtConcurrent::filtered(&pool, intList, keepEven).results();
+        QCOMPARE(result, intListEven);
+    }
+    {
+        const auto result = QtConcurrent::filtered(&pool, intList.begin(), intList.end(),
+                                                   keepEven).results();
+        QCOMPARE(result, intListEven);
+    }
+    {
+        const auto result = QtConcurrent::blockingFiltered(&pool, intList, keepEven);
+        QCOMPARE(result, intListEven);
+    }
+    {
+        const auto result = QtConcurrent::blockingFiltered<QList<int>>(&pool, intList.begin(),
+                                                                       intList.end(), keepEven);
+        QCOMPARE(result, intListEven);
+    }
+}
+
 template <typename SourceObject,
           typename ResultObject,
           typename FilterObject,
@@ -815,6 +864,60 @@ void tst_QtConcurrentFilter::filteredReducedWithMoveOnlyCallables()
         const auto result = QtConcurrent::blockingFilteredReduced(
                     &pool, intList.begin(), intList.end(), KeepEvenIntegersMoveOnly(),
                     IntSumReduceMoveOnly());
+        QCOMPARE(result, sum);
+    }
+}
+
+void tst_QtConcurrentFilter::filteredReducedWithGenericCallable()
+{
+    const QList<int> intList { 1, 2, 3, 4 };
+    const auto sum = 6;
+
+    auto keepEven = [](auto val) { return (val & 1) == 0; };
+    auto sumValues = [](auto &sum, auto val) { sum += val; };
+
+    {
+        const auto result = QtConcurrent::filteredReduced<int>(intList, keepEven,
+                                                               sumValues).result();
+        QCOMPARE(result, sum);
+    }
+    {
+        const auto result = QtConcurrent::filteredReduced<int>(intList.begin(), intList.end(),
+                                                               keepEven, sumValues).result();
+        QCOMPARE(result, sum);
+    }
+    {
+        const auto result = QtConcurrent::blockingFilteredReduced<int>(intList, keepEven, sumValues);
+        QCOMPARE(result, sum);
+    }
+    {
+        const auto result = QtConcurrent::blockingFilteredReduced<int>(intList.begin(),
+                                                                       intList.end(),
+                                                                       keepEven, sumValues);
+        QCOMPARE(result, sum);
+    }
+
+    QThreadPool pool;
+    {
+        const auto result = QtConcurrent::filteredReduced<int>(&pool, intList, keepEven,
+                                                               sumValues).result();
+        QCOMPARE(result, sum);
+    }
+    {
+        const auto result = QtConcurrent::filteredReduced<int>(&pool, intList.begin(),
+                                                               intList.end(), keepEven,
+                                                               sumValues).result();
+        QCOMPARE(result, sum);
+    }
+    {
+        const auto result = QtConcurrent::blockingFilteredReduced<int>(&pool, intList,
+                                                                       keepEven, sumValues);
+        QCOMPARE(result, sum);
+    }
+    {
+        const auto result = QtConcurrent::blockingFilteredReduced<int>(&pool, intList.begin(),
+                                                                       intList.end(), keepEven,
+                                                                       sumValues);
         QCOMPARE(result, sum);
     }
 }

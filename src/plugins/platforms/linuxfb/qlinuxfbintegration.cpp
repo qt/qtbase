@@ -41,7 +41,6 @@ using namespace Qt::StringLiterals;
 QLinuxFbIntegration::QLinuxFbIntegration(const QStringList &paramList)
     : m_primaryScreen(nullptr),
       m_fontDb(new QGenericUnixFontDatabase),
-      m_services(new QGenericUnixServices),
       m_kbdMgr(nullptr)
 {
 #if QT_CONFIG(kms)
@@ -111,6 +110,9 @@ QPlatformFontDatabase *QLinuxFbIntegration::fontDatabase() const
 
 QPlatformServices *QLinuxFbIntegration::services() const
 {
+    if (m_services.isNull())
+        m_services.reset(new QGenericUnixServices);
+
     return m_services.data();
 }
 

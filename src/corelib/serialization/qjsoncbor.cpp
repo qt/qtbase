@@ -55,7 +55,7 @@ static QString encodeByteArray(const QCborContainerPrivate *d, qsizetype idx, QC
     else
         data = data.toBase64(QByteArray::Base64UrlEncoding | QByteArray::OmitTrailingEquals);
 
-    return QString::fromLatin1(data, data.size());
+    return QString::fromLatin1(data);
 }
 
 static QString makeString(const QCborContainerPrivate *d, qsizetype idx,

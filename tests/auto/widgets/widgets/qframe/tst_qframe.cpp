@@ -19,6 +19,15 @@ private slots:
     void testInitStyleOption();
     void testPainting_data();
     void testPainting();
+
+private:
+    mutable std::unique_ptr<QStyle> m_style;
+    QStyle *fusionStyle() const
+    {
+        if (!m_style)
+            m_style.reset(QStyleFactory::create(QStringLiteral("fusion")));
+        return m_style.get();
+    }
 };
 
 Q_DECLARE_METATYPE(QFrame::Shape)
@@ -141,7 +150,7 @@ void tst_QFrame::testPainting()
     QFETCH(QFrame::Shadow, shadow);
 
     QFrame frame;
-    frame.setStyle(QStyleFactory::create(QStringLiteral("fusion")));
+    frame.setStyle(fusionStyle());
     frame.setPalette(qt_fusionPalette());
     frame.setFrameStyle(shape | shadow);
     frame.setLineWidth(lineWidth);

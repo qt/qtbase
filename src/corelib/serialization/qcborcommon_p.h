@@ -32,6 +32,7 @@ QT_WARNING_DISABLE_GCC("-Wunused-function")
 QT_WARNING_DISABLE_CLANG("-Wunused-function")
 QT_WARNING_DISABLE_CLANG("-Wundefined-internal")
 
+#define CBOR_NO_HALF_FLOAT_TYPE 1
 #define CBOR_NO_VALIDATION_API  1
 #define CBOR_NO_PRETTY_API      1
 #define CBOR_API static inline

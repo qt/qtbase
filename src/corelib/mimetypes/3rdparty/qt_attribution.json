@@ -19,6 +19,8 @@
         "Version": "5101bc7fb090ed7deffe56837d7633c9485a1e5d",
         "DownloadLocation":
                 "https://github.com/apache/tika/blob/5101bc7fb090ed7deffe56837d7633c9485a1e5d/tika-core/src/main/resources/org/apache/tika/mime/tika-mimetypes.xml",
+        "PURL": "pkg:github/apache/tika@$<VERSION>#tika-core/src/main/resources/org/apache/tika/mime/tika-mimetypes.xml",
+        "CPE": "cpe:2.3:a:apache:tika:*:*:*:*:*:*:*:*",
         "License": "Apache License 2.0",
         "LicenseId": "Apache-2.0",
         "Copyright": "Copyright 2024 The Apache Software Foundation"

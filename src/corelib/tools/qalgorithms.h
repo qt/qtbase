@@ -13,6 +13,7 @@
 #if __has_include(<bit>) && __cplusplus > 201703L
 #include <bit>
 #endif
+#include <type_traits>
 
 #ifdef Q_CC_MSVC
 #include <intrin.h>
@@ -434,6 +435,21 @@ QT_POPCOUNT_RELAXED_CONSTEXPR inline uint qCountLeadingZeroBits(unsigned long v)
 }
 
 #undef QT_POPCOUNT_RELAXED_CONSTEXPR
+
+namespace QtPrivate {
+
+template <typename T>
+constexpr
+std::enable_if_t<std::conjunction_v<std::is_integral<T>, std::is_unsigned<T>>, int>
+log2i(T x)
+{
+    // Integral -> int version of std::log2():
+    Q_ASSERT(x > 0); // Q_PRE
+    // C++20: return std::bit_width(x) - 1
+    return int(sizeof(T) * 8 - 1 - qCountLeadingZeroBits(x));
+}
+
+} // namespace QtPrivate
 
 QT_END_NAMESPACE
 

@@ -3,11 +3,14 @@
 
 
 #include <QTest>
+
 #include <QAbstractSlider>
+#include <QtWidgets/qdial.h>
 #include <QScrollBar>
 #include <QSlider>
 #include <QStyle>
 #include <QStyleOption>
+
 #include <QElapsedTimer>
 #include <QDebug>
 #include <QSignalSpy>
@@ -66,7 +69,13 @@ private slots:
     void setRepeatAction();
     void connectedSliders();
 
+    void sliderChange_QDial() { sliderChange_impl<QDial>(); }
+    void sliderChange_QScrollBar() { sliderChange_impl<QScrollBar>(); }
+    void sliderChange_QSlider() { sliderChange_impl<QSlider>(); }
+
 private:
+    template <typename Slider>
+    void sliderChange_impl();
     void waitUntilTimeElapsed(const QElapsedTimer &t, int ms);
 
     QWidget *topLevel;
@@ -2099,6 +2108,59 @@ void tst_QAbstractSlider::connectedSliders()
     QCOMPARE(slider2->minimum(), sliderlow);
     QCOMPARE(slider2->maximum(), sliderhigh);
     delete slider2;
+}
+
+
+
+template<typename Slider>
+void tst_QAbstractSlider::sliderChange_impl()
+{
+    struct Tracker : Slider {
+        using Slider::Slider;
+        using QAbstractSlider::SliderChange; // make it public
+
+        std::vector<QAbstractSlider::SliderChange> changes;
+
+        void sliderChange(QAbstractSlider::SliderChange c) override
+        {
+            Slider::sliderChange(c);
+            changes.push_back(c);
+        }
+    };
+    using SliderChange = typename Tracker::SliderChange;
+
+    Tracker sl;
+    QCOMPARE(sl.changes.size(), 0U);
+
+    sl.setRange(0, 100'000);
+    QCOMPARE(sl.changes.size(), 1U);
+    QCOMPARE(sl.changes.back(), SliderChange::SliderRangeChange);
+    sl.changes.clear();
+
+    sl.setOrientation(sl.orientation() == Qt::Horizontal ? Qt::Vertical
+                      /* else */                         : Qt::Horizontal);
+    QEXPECT_FAIL("", "QTBUG-135597", Continue);
+    QCOMPARE(sl.changes.size(), 1U);
+    if (!sl.changes.empty()) {
+    QEXPECT_FAIL("", "QTBUG-135597", Continue);
+    QCOMPARE(sl.changes.back(), SliderChange::SliderOrientationChange);
+    }
+    sl.changes.clear();
+
+    sl.setPageStep(1025); // unlikely to be the default ;)
+    QCOMPARE(sl.changes.size(), 1U);
+    QCOMPARE(sl.changes.back(), SliderChange::SliderStepsChange);
+    sl.changes.clear();
+
+    sl.setSingleStep(42); // unlikely to be the default ;)
+    QCOMPARE(sl.changes.size(), 1U);
+    QCOMPARE(sl.changes.back(), SliderChange::SliderStepsChange);
+    sl.changes.clear();
+
+    sl.setValue(131); // unlikely to be the default ;)
+    QCOMPARE(sl.changes.size(), 1U);
+    QCOMPARE(sl.changes.back(), SliderChange::SliderValueChange);
+    sl.changes.clear();
 }
 
 QTEST_MAIN(tst_QAbstractSlider)

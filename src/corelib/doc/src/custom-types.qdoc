@@ -6,7 +6,7 @@
     \title Creating Custom Qt Types
     \brief How to create and register new types with Qt.
 
-    \ingroup best-practices
+    \ingroup how-to
 
     \tableofcontents
 

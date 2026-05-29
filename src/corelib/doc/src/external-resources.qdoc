@@ -166,3 +166,13 @@
     \externalpage https://cmake.org/cmake/help/latest/command/cmake_policy.html
     \title cmake_policy
 */
+
+/*!
+    \externalpage https://developer.android.com/reference/android/util/Log
+    \title Android: Log
+*/
+
+/*!
+    \externalpage https://developer.android.com/ndk/reference/group/logging#__android_log_print
+    \title Android: log_print
+*/

@@ -1,8 +1,7 @@
 // Copyright (C) 2018 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#ifndef QX11PLATFORMPIXMAP_H
-#define QX11PLATFORMPIXMAP_H
+#pragma once
 
 #include <QBitmap>
 #include <QPixmap>
@@ -129,5 +128,3 @@ int qt_x11SetDefaultScreen(int screen);
 void qt_x11SetScreen(QPixmap &pixmap, int screen);
 
 QT_END_NAMESPACE
-
-#endif // QX11PLATFORMPIXMAP_H

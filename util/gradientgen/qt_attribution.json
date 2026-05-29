@@ -8,6 +8,7 @@
 
         "Description": "WebGradients is a free collection of 180 linear gradients.",
         "Homepage": "https://webgradients.com/",
+        "PURL": "pkg:generic/webgradients?download_url=https://webgradients.com/",
         "License": "MIT License",
         "LicenseId": "MIT",
         "LicenseFile": "WEBGRADIENTS_LICENSE.txt",

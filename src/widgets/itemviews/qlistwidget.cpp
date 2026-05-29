@@ -1699,6 +1699,8 @@ QWidget *QListWidget::itemWidget(QListWidgetItem *item) const
     implement a custom editor widget, use QListView and subclass QStyledItemDelegate
     instead.
 
+    \note The list takes ownership of the \a widget.
+
     \sa itemWidget(), removeItemWidget(), {Delegate Classes}
 */
 void QListWidget::setItemWidget(QListWidgetItem *item, QWidget *widget)

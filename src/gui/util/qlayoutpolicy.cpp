@@ -22,15 +22,7 @@ void QLayoutPolicy::setControlType(ControlType type)
             0x00000008 maps to 3
             etc.
     */
-
-    int i = 0;
-    while (true) {
-        if (type & (0x1 << i)) {
-            bits.ctype = i;
-            return;
-        }
-        ++i;
-    }
+    bits.ctype = qCountTrailingZeroBits(quint32(type));
 }
 
 QLayoutPolicy::ControlType QLayoutPolicy::controlType() const

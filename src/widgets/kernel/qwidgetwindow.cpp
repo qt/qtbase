@@ -902,7 +902,17 @@ static QWidget *findDnDTarget(QWidget *parent, const QPoint &pos)
     return widget;
 }
 
-void QWidgetWindow::handleDragEnterEvent(QDragEnterEvent *event, QWidget *widget)
+/*!
+    \internal
+
+    Sends \a event to \a widget.
+
+    Also called from dragMoveEvent(), in which case \a event is-a
+    QDragMoveEvent only, not a full QDragEnterEvent, which is why this function
+    takes \a event as a QDragMoveEvent and not, as one would expect,
+    QDragEnterEvent (downcast would be UB).
+*/
+void QWidgetWindow::handleDragEnterEvent(QDragMoveEvent *event, QWidget *widget)
 {
     Q_ASSERT(m_dragTarget == nullptr);
     if (!widget)
@@ -951,7 +961,7 @@ void QWidgetWindow::handleDragMoveEvent(QDragMoveEvent *event)
             // widget might have been deleted when handling the leaveEvent
             if (widget) {
                 // Send DragEnter to new widget.
-                handleDragEnterEvent(static_cast<QDragEnterEvent*>(event), widget);
+                handleDragEnterEvent(event, widget);
                 // Handling 'DragEnter' should suffice for the application.
                 translated.setDropAction(event->dropAction());
                 translated.setAccepted(event->isAccepted());
@@ -1000,6 +1010,13 @@ void QWidgetWindow::handleExposeEvent(QExposeEvent *event)
 
     QWidgetPrivate *wPriv = m_widget->d_func();
     const bool exposed = isExposed();
+
+    // We might get an expose event from the platform as part of
+    // closing the window from ~QWidget, to support animated close
+    // transitions. But at that point we no longer have a widget
+    // subclass to draw a new frame, so skip the expose event.
+    if (exposed && wPriv->data.in_destructor)
+        return;
 
     if (wPriv->childrenHiddenByWState) {
         // If widgets has been previously hidden by window state change event

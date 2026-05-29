@@ -1225,8 +1225,7 @@ QDebug operator<<(QDebug d, const QHostAddress &address)
 
 /*!
     \since 5.0
-    \relates QHostAddress
-    Returns a hash of the host address \a key, using \a seed to seed the calculation.
+    \qhashold{QHostAddress}
 */
 size_t qHash(const QHostAddress &key, size_t seed) noexcept
 {

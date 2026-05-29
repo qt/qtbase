@@ -872,7 +872,7 @@ void QDockWidgetPrivate::endDrag(EndDragMode mode)
                     // Reparent, if the drag was out of a dock widget group window
                     if (mode == EndDragMode::LocationChange) {
                         if (auto *groupWindow = qobject_cast<QDockWidgetGroupWindow *>(q->parentWidget()))
-                            groupWindow->reparent(q);
+                            groupWindow->reparentToMainWindow(q);
                     }
                 }
                 q->activateWindow();
@@ -901,15 +901,15 @@ Qt::DockWidgetArea QDockWidgetPrivate::toDockWidgetArea(QInternal::DockPosition 
 
 void QDockWidgetPrivate::setResizerActive(bool active)
 {
-#ifdef Q_OS_WINDOWS
-    Q_UNUSED(active);
-#else
     Q_Q(QDockWidget);
+    const auto *dwLayout = qobject_cast<QDockWidgetLayout *>(layout);
+    if (dwLayout->nativeWindowDeco(q->isFloating()))
+        return;
+
     if (active && !resizer)
         resizer = new QWidgetResizeHandler(q);
     if (resizer)
         resizer->setEnabled(active);
-#endif
 }
 
 bool QDockWidgetPrivate::isAnimating() const
@@ -1371,7 +1371,13 @@ QDockWidget::QDockWidget(const QString &title, QWidget *parent, Qt::WindowFlags 
     Destroys the dock widget.
 */
 QDockWidget::~QDockWidget()
-{ }
+{
+    // Do all the unregistering while we're still a QDockWidget. Otherwise, it
+    // would be ~QObject() which does that and then QDockAreaLayout::takeAt(),
+    // acting on QEvent::ChildRemoved, will try to access our QWidget-ness when
+    // replacing us with a QPlaceHolderItem, causing UB:
+    setParent(nullptr);
+}
 
 /*!
     Returns the widget for the dock widget. This function returns zero

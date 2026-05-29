@@ -26,7 +26,6 @@ QT_BEGIN_NAMESPACE
 
 QDirectFbIntegration::QDirectFbIntegration()
     : m_fontDb(new QGenericUnixFontDatabase())
-    , m_services(new QGenericUnixServices)
 {
 }
 
@@ -125,6 +124,9 @@ QPlatformFontDatabase *QDirectFbIntegration::fontDatabase() const
 
 QPlatformServices *QDirectFbIntegration::services() const
 {
+    if (m_services.isNull())
+        m_services.reset(new QGenericUnixServices);
+
     return m_services.data();
 }
 

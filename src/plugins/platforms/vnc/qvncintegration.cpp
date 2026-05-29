@@ -25,8 +25,7 @@ QT_BEGIN_NAMESPACE
 using namespace Qt::StringLiterals;
 
 QVncIntegration::QVncIntegration(const QStringList &paramList)
-    : m_fontDb(new QGenericUnixFontDatabase),
-      m_services(new QGenericUnixServices)
+    : m_fontDb(new QGenericUnixFontDatabase)
 {
     QRegularExpression portRx("port=(\\d+)"_L1);
     quint16 port = 5900;
@@ -105,6 +104,9 @@ QPlatformFontDatabase *QVncIntegration::fontDatabase() const
 
 QPlatformServices *QVncIntegration::services() const
 {
+    if (m_services.isNull())
+        m_services.reset(new QGenericUnixServices);
+
     return m_services.data();
 }
 

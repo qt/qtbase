@@ -80,7 +80,7 @@ private:
 #endif
     QPlatformInputContext *m_inputContext;
     QPointingDevice *m_touchDevice;
-    QIOSServices *m_platformServices;
+    mutable QIOSServices *m_platformServices = nullptr;
     mutable QPlatformAccessibility *m_accessibility;
     QFactoryLoader *m_optionalPlugins;
 #ifndef Q_OS_TVOS

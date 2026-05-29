@@ -433,11 +433,12 @@ template<typename T>
 struct MetaTypeQFutureHelper<QFuture<T>>
 {
     static bool registerConverter() {
-        if constexpr (std::is_same_v<T, void>)
+        if constexpr (std::is_same_v<T, void>) {
             return false;
-
-        return QMetaType::registerConverter<QFuture<T>, QFuture<void>>(
-                [](const QFuture<T> &future) { return QFuture<void>(future); });
+        } else {
+            return QMetaType::registerConverter<QFuture<T>, QFuture<void>>(
+                    [](const QFuture<T> &future) { return QFuture<void>(future); });
+        }
     }
 };
 

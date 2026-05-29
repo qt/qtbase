@@ -1657,8 +1657,8 @@ struct AddDockWidget
     QString name;
     Mode mode;
 
-    Qt::Orientation o;
-    Qt::DockWidgetArea a;
+    Qt::Orientation o = {};
+    Qt::DockWidgetArea a = {};
     QString other;
 
     void apply(QMainWindow *mw) const;

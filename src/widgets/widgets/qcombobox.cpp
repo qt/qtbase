@@ -376,8 +376,19 @@ QSize QComboBoxPrivate::recomputeSizeHint(QSize &sh) const
             for (int i = 0; i < count && !hasIcon; ++i)
                 hasIcon = !q->itemIcon(i).isNull();
         }
-        if (minimumContentsLength > 0)
-            sh.setWidth(qMax(sh.width(), minimumContentsLength * fm.horizontalAdvance(u'X') + (hasIcon ? iconSize.width() + 4 : 0)));
+        if (minimumContentsLength > 0) {
+            auto r = qint64{minimumContentsLength} * fm.horizontalAdvance(u'X');
+            if (hasIcon)
+                r += iconSize.width() + 4;
+            if (r <= QWIDGETSIZE_MAX) {
+                sh.setWidth(qMax(sh.width(), int(r)));
+            } else {
+                qWarning("QComboBox: cannot take minimumContentsLength %d into account for sizeHint(), "
+                         "since it causes the widget to be wider than QWIDGETSIZE_MAX. "
+                         "Consider setting it to a less extreme value.",
+                         minimumContentsLength);
+            }
+        }
         if (!placeholderText.isEmpty())
             sh.setWidth(qMax(sh.width(), fm.boundingRect(placeholderText).width()));
 
@@ -1451,8 +1462,14 @@ QComboBox::~QComboBox()
         ; // objects can't throw in destructor
     }
 
-    // Dispose of container before QComboBox goes away
-    delete d->container;
+    // Dispose of container before QComboBox goes away. Close explicitly so that
+    // update cycles back into the combobox (e.g. from accessibility when the
+    // active window changes) are completed first.
+    if (d->container) {
+        d->container->close();
+        delete d->container;
+        d->container = nullptr;
+    }
 }
 
 /*!
@@ -2644,6 +2661,7 @@ void QComboBox::showPopup()
     QPoint above = mapToGlobal(listRect.topLeft());
     int aboveHeight = above.y() - screen.y();
     bool boundToScreen = !window()->testAttribute(Qt::WA_DontShowOnScreen);
+    const auto listView = qobject_cast<QListView *>(d->viewContainer()->itemView());
 
     {
         int listHeight = 0;
@@ -2658,6 +2676,8 @@ void QComboBox::showPopup()
         while (!toCheck.isEmpty()) {
             QModelIndex parent = toCheck.pop();
             for (int i = 0, end = d->model->rowCount(parent); i < end; ++i) {
+                if (listView && listView->isRowHidden(i))
+                    continue;
                 QModelIndex idx = d->model->index(i, d->modelColumn, parent);
                 if (!idx.isValid())
                     continue;

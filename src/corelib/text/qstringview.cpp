@@ -163,6 +163,12 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn size_t qHash(QStringView key, size_t seed)
+    \since 5.10
+    \qhashold{QStringView}
+*/
+
+/*!
     \fn QStringView::QStringView()
 
     Constructs a null string view.
