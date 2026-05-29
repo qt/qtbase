@@ -1,0 +1,11 @@
+// Copyright (C) 2026 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \externalpage https://doc.qt.io/vscodeext/index.html
+    \title \QVSC Documentation
+*/
+/*!
+    \externalpage https://doc.qt.io/vscodeext/vscodeext-tutorials-build-run-qt-example.html
+    \title \QVSC: Tutorial: Build and run
+*/
