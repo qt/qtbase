@@ -606,12 +606,41 @@ void QGtk3FontDialogHelper::onFontChanged(QGtk3FontDialogHelper *dialog)
     emit dialog->currentFontChanged(dialog->currentFont());
 }
 
+static gboolean
+qt_fontdialogoptions_filter(const PangoFontFamily *family, const PangoFontFace *face, gpointer data)
+{
+    const QFontDialogOptions *opts = static_cast<QFontDialogOptions*>(data);
+
+    constexpr QFontDialogOptions::FontDialogOptions scalableMask = QFontDialogOptions::ScalableFonts
+                                                                 | QFontDialogOptions::NonScalableFonts;
+    constexpr QFontDialogOptions::FontDialogOptions spacingMask = QFontDialogOptions::ProportionalFonts
+                                                                | QFontDialogOptions::MonospacedFonts;
+    const QFontDialogOptions::FontDialogOptions options = opts->options();
+
+    // The Pango functions are const-safe but the signatures are not const-correct.
+    if ((options & spacingMask) && (options & spacingMask) != spacingMask) {
+        if (bool(options & QFontDialogOptions::MonospacedFonts) != pango_font_family_is_monospace(const_cast<PangoFontFamily *>(family)))
+            return false;
+    }
+
+    if ((options & scalableMask) && (options & scalableMask) != scalableMask) {
+        int n_sizes;
+        pango_font_face_list_sizes(const_cast<PangoFontFace *>(face), NULL, &n_sizes);
+        if (bool(options & QFontDialogOptions::ScalableFonts) != (n_sizes == 0))
+            return false;
+    }
+
+    return true;
+}
+
 void QGtk3FontDialogHelper::applyOptions()
 {
     GtkDialog *gtkDialog = d->gtkDialog();
     const QSharedPointer<QFontDialogOptions> &opts = options();
 
     gtk_window_set_title(GTK_WINDOW(gtkDialog), qUtf8Printable(opts->windowTitle()));
+
+    gtk_font_chooser_set_filter_func(GTK_FONT_CHOOSER(gtkDialog), qt_fontdialogoptions_filter, opts.data(), NULL);
 }
 
 QT_END_NAMESPACE
