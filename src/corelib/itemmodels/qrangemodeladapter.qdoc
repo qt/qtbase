@@ -427,11 +427,29 @@
 */
 
 /*!
-    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_tree<I>> int QRangeModelAdapter<Range, Protocol, Model>::hasChildren(int row) const
-    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_tree<I>> int QRangeModelAdapter<Range, Protocol, Model>::hasChildren(QSpan<const int> row) const
+    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_tree<I>> int QRangeModelAdapter<Range, Protocol, Model>::rowCount(const QModelIndex &index) const
+    \overload
+    \since 6.12
+
+    \return the number of rows under \a index.
+    \constraints \c Range is a tree.
+*/
+
+/*!
+    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_tree<I>> bool QRangeModelAdapter<Range, Protocol, Model>::hasChildren(int row) const
+    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_tree<I>> bool QRangeModelAdapter<Range, Protocol, Model>::hasChildren(QSpan<const int> row) const
     \overload
 
     \return whether there are any rows under \a row.
+    \constraints \c Range is a tree.
+*/
+
+/*!
+    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_tree<I>>  bool QRangeModelAdapter<Range, Protocol, Model>::hasChildren(const QModelIndex &index) const
+    \overload
+    \since 6.12
+
+    \return whether there are any rows under \a index.
     \constraints \c Range is a tree.
 */
 
@@ -502,6 +520,20 @@
 */
 
 /*!
+    \fn template <typename Range, typename Protocol, typename Model> QVariant QRangeModelAdapter<Range, Protocol, Model>::data(const QModelIndex &index) const
+    \fn template <typename Range, typename Protocol, typename Model> QVariant QRangeModelAdapter<Range, Protocol, Model>::data(const QModelIndex &index, int role) const
+    \overload
+    \since 6.12
+
+    \return a QVariant holding the data stored under the given \a role for the
+    item at \a index, or an invalid QVariant if there is no data stored for
+    that position or role. If \a role is not specified, then returns a QVariant
+    holding the complete item.
+
+    \sa setData(), at()
+*/
+
+/*!
     \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_tree<I>, QRangeModelAdapter<Range, Protocol, Model>::if_writable<I>> bool QRangeModelAdapter<Range, Protocol, Model>::setData(QSpan<const int> path, int column, const QVariant &value, int role)
 
     Sets the \a role data for the item referred to by \a path and \a column to
@@ -510,6 +542,20 @@
     Returns \c{true} if successful; otherwise returns \c{false}.
 
     \constraints \c Range is a mutable tree.
+
+    \sa data(), at()
+*/
+
+/*!
+    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_writable<I>> bool QRangeModelAdapter<Range, Protocol, Model>::setData(const QModelIndex &index, const QVariant &value, int role)
+    \overload
+    \since 6.12
+
+    Sets the \a role data for the item at \a index to \a value.
+
+    Returns \c{true} if successful; otherwise returns \c{false}.
+
+    \constraints \c Range is not read-only.
 
     \sa data(), at()
 */
@@ -659,6 +705,32 @@
     \include qrangemodeladapter.qdoc data-ref
 
     \constraints \c Range is a mutable tree.
+*/
+
+/*!
+    \fn template <typename Range, typename Protocol, typename Model> auto QRangeModelAdapter<Range, Protocol, Model>::at(const QModelIndex &index) const
+    \overload
+    \since 6.12
+
+    \return a copy of the value stored as the item at \a index. If the item is
+    a multi-role item, then this returns a copy of the entire item. If the rows
+    in the \c Range store different types at different columns, then the return
+    type will be a QVariant.
+*/
+
+/*!
+    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_writable<I>> auto QRangeModelAdapter<Range, Protocol, Model>::at(const QModelIndex &index)
+    \overload
+    \since 6.12
+
+    \return a \l{DataReference}{mutable reference} to the value stored as the
+    item at \a index. If the item is a multi-role item, then this will be a
+    reference to the entire item. If the rows in the \c Range store different
+    types at different columns, then the return type will be a QVariant.
+
+    \include qrangemodeladapter.qdoc data-ref
+
+    \constraints \c Range is not read-only.
 */
 
 /*!
