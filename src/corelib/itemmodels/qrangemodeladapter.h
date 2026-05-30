@@ -1178,79 +1178,107 @@ public:
     template <typename I = Impl, if_tree<I> = true>
     int rowCount(int row) const
     {
-        return storage->rowCount(index(row, 0));
+        return rowCount(index(row, 0));
     }
 
     template <typename I = Impl, if_tree<I> = true>
     int rowCount(QSpan<const int> path) const
     {
-        return storage->rowCount(index(path, 0));
+        return rowCount(index(path, 0));
+    }
+
+    template <typename I = Impl, if_tree<I> = true>
+    int rowCount(const QModelIndex &index) const
+    {
+        return storage->rowCount(index);
     }
 
     template <typename I = Impl, if_tree<I> = true>
     constexpr bool hasChildren(int row) const
     {
-        return storage.m_model->hasChildren(index(row, 0));
+        return hasChildren(index(row, 0));
     }
 
     template <typename I = Impl, if_tree<I> = true>
     constexpr bool hasChildren(QSpan<const int> path) const
     {
-        return storage.m_model->hasChildren(index(path, 0));
+        return hasChildren(index(path, 0));
+    }
+
+    template <typename I = Impl, if_tree<I> = true>
+    constexpr bool hasChildren(const QModelIndex &index) const
+    {
+        return storage.m_model->hasChildren(index);
     }
 
     template <typename I = Impl, if_list<I> = true>
     QVariant data(int row) const
     {
-        return QRangeModelDetails::dataAtIndex<QVariant>(index(row));
+        return data(index(row));
     }
 
     template <typename I = Impl, if_list<I> = true>
     QVariant data(int row, int role) const
     {
-        return QRangeModelDetails::dataAtIndex<QVariant>(index(row), role);
+        return data(index(row), role);
     }
 
     template <typename I = Impl, if_list<I> = true, if_writable<I> = true>
     bool setData(int row, const QVariant &value, int role = Qt::EditRole)
     {
-        return storage->setData(index(row), value, role);
+        return setData(index(row), value, role);
     }
 
     template <typename I = Impl, unless_list<I> = true>
     QVariant data(int row, int column) const
     {
-        return QRangeModelDetails::dataAtIndex<QVariant>(index(row, column));
+        return data(index(row, column));
     }
 
     template <typename I = Impl, unless_list<I> = true>
     QVariant data(int row, int column, int role) const
     {
-        return QRangeModelDetails::dataAtIndex<QVariant>(index(row, column), role);
+        return data(index(row, column), role);
     }
 
     template <typename I = Impl, unless_list<I> = true, if_writable<I> = true>
     bool setData(int row, int column, const QVariant &value, int role = Qt::EditRole)
     {
-        return storage->setData(index(row, column), value, role);
+        return setData(index(row, column), value, role);
     }
 
     template <typename I = Impl, if_tree<I> = true>
     QVariant data(QSpan<const int> path, int column) const
     {
-        return QRangeModelDetails::dataAtIndex<QVariant>(index(path, column));
+        return data(index(path, column));
     }
 
     template <typename I = Impl, if_tree<I> = true>
     QVariant data(QSpan<const int> path, int column, int role) const
     {
-        return QRangeModelDetails::dataAtIndex<QVariant>(index(path, column), role);
+        return data(index(path, column), role);
     }
 
     template <typename I = Impl, if_tree<I> = true, if_writable<I> = true>
     bool setData(QSpan<const int> path, int column, const QVariant &value, int role = Qt::EditRole)
     {
-        return storage->setData(index(path, column), value, role);
+        return setData(index(path, column), value, role);
+    }
+
+    QVariant data(const QModelIndex &index) const
+    {
+        return QRangeModelDetails::dataAtIndex<QVariant>(index);
+    }
+
+    QVariant data(const QModelIndex &index, int role) const
+    {
+        return QRangeModelDetails::dataAtIndex<QVariant>(index, role);
+    }
+
+    template <typename I = Impl, if_writable<I> = true>
+    bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole)
+    {
+        return storage->setData(index, value, role);
     }
 
     // at/operator[int] for list: returns value at row
@@ -1379,6 +1407,19 @@ public:
         return DataReference{idx};
     }
 #endif
+
+    const_data_type at(const QModelIndex &index) const
+    {
+        Q_ASSERT_X(index.isValid(), "QRangeModelAdapter::at", "Index is invalid");
+        return QRangeModelDetails::dataAtIndex<data_type>(index);
+    }
+
+    template <typename I = Impl, if_writable<I> = true>
+    auto at(const QModelIndex &index)
+    {
+        Q_ASSERT_X(index.isValid(), "QRangeModelAdapter::at", "Index is invalid");
+        return DataReference{index};
+    }
 
     template <typename I = Impl, if_canInsertRows<I> = true>
     bool insertRow(int before)
