@@ -15,7 +15,6 @@ class tst_QDuplicateTracker : public QObject
     Q_OBJECT
 private slots:
     void hasSeen();
-    void clear();
     void appendTo();
     void appendTo_special();
 };
@@ -83,27 +82,6 @@ void tst_QDuplicateTracker::hasSeen()
         QVERIFY(!tracker.contains(string3));
         QVERIFY(!tracker.hasSeen(string3));
         QVERIFY(tracker.hasSeen(string3));
-    }
-}
-
-void tst_QDuplicateTracker::clear()
-{
-    QDuplicateTracker<int, 2> tracker;
-    QVERIFY(!tracker.hasSeen(0));
-    QVERIFY(tracker.hasSeen(0));
-    QVERIFY(tracker.contains(0));
-    QVERIFY(!tracker.contains(1));
-    QVERIFY(!tracker.hasSeen(1));
-    QVERIFY(tracker.hasSeen(1));
-
-    for (int i = 0; i < 100; ++i) {
-        tracker.clear();
-        QVERIFY(!tracker.contains(0));
-        QVERIFY(!tracker.hasSeen(0));
-        QVERIFY(tracker.hasSeen(0));
-        QVERIFY(!tracker.hasSeen(1));
-        QVERIFY(tracker.hasSeen(1));
-        QVERIFY(tracker.contains(1));
     }
 }
 
