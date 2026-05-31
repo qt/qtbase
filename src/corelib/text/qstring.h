@@ -685,7 +685,7 @@ public:
     template <typename Predicate>
     QString &removeIf(Predicate pred)
     {
-        removeIf_helper(pred);
+        QtPrivate::q_string_like_container_erase_if(*this, pred);
         return *this;
     }
 
@@ -1193,14 +1193,6 @@ private:
     static qsizetype toUcs4_helper(const char16_t *uc, qsizetype length, char32_t *out);
     static qlonglong toIntegral_helper(QStringView string, bool *ok, int base);
     static qulonglong toIntegral_helper(QStringView string, bool *ok, uint base);
-    template <typename Predicate>
-    qsizetype removeIf_helper(Predicate pred)
-    {
-        const qsizetype result = d->eraseIf(pred);
-        if (result > 0)
-            d.data()[d.size] = u'\0';
-        return result;
-    }
 
     friend class QStringView;
     friend class QByteArray;
@@ -1797,13 +1789,13 @@ QString QAnyStringView::arg(Args &&...args) const
 template <typename T>
 qsizetype erase(QString &s, const T &t)
 {
-    return s.removeIf_helper([&t](const auto &e) { return t == e; });
+    return QtPrivate::q_string_like_container_erase_if(s, [&t](const auto &e) { return t == e; });
 }
 
 template <typename Predicate>
 qsizetype erase_if(QString &s, Predicate pred)
 {
-    return s.removeIf_helper(pred);
+    return QtPrivate::q_string_like_container_erase_if(s, pred);
 }
 
 namespace Qt {
