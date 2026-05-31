@@ -1166,8 +1166,8 @@ void QFileSystemModel::sort(int column, Qt::SortOrder order)
         return;
 
     emit layoutAboutToBeChanged();
-    QModelIndexList oldList = persistentIndexList();
-    QList<std::pair<QFileSystemModelPrivate::QFileSystemNode *, int>> oldNodes;
+    const QModelIndexList oldList = persistentIndexList();
+    std::vector<std::pair<QFileSystemModelPrivate::QFileSystemNode *, int>> oldNodes;
     oldNodes.reserve(oldList.size());
     for (const QModelIndex &oldNode : oldList)
         oldNodes.emplace_back(d->node(oldNode), oldNode.column());
