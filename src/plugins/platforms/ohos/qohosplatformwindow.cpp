@@ -579,7 +579,7 @@ std::shared_ptr<void> QOhosPlatformWindow::setSurfaceConsumer(
                     : makeEmptyQOhosOptional());
         }, Qt::QueuedConnection);
 
-    if (surfaceStatusChangedConnectionHandle == nullptr) {
+    if (!surfaceStatusChangedConnectionHandle) {
         qCCritical(
             QtForOhos,
             "%s: Connection between ohos view and surface consumer context failed",
@@ -594,7 +594,7 @@ std::shared_ptr<void> QOhosPlatformWindow::setSurfaceConsumer(
         },
         Qt::QueuedConnection);
 
-    if (viewDestroyedConnectionHandle == nullptr) {
+    if (!viewDestroyedConnectionHandle) {
         qCCritical(
             QtForOhos,
             "%s: Connecting view destroyed signal to surface consumer context failed",
