@@ -1,0 +1,51 @@
+type: Group
+enable_if:
+  condition: property
+  property: target.osVersion
+  equals_value: IOS_ANY
+instructions:
+  # Create and boot simulator if requested
+  - type: Group
+    enable_if:
+      condition: runtime
+      env_var: APPLE_SIMULATOR_DEVICE_TYPE
+      not_equals_value: null
+    instructions:
+      - type: WriteFile
+        filename: "{{.AgentWorkingDir}}/ios_test_env_setup.sh"
+        hiddenContent: true
+        fileContents: |
+          #!/bin/bash
+          set -e
+
+          echo "Creating $APPLE_SIMULATOR_DEVICE_TYPE simulator"
+          UDID=$(xcrun simctl create "Coin managed iOS simulator" "$APPLE_SIMULATOR_DEVICE_TYPE")
+          echo "Created simulator $UDID"
+
+          xcrun simctl boot "$UDID"
+          echo "Waiting for simulator $UDID to finish booting"
+          xcrun simctl bootstatus "$UDID"
+          echo "Simulator $UDID is booted and available"
+      - type: ExecuteCommand
+        command: "{{.AgentWorkingDir}}/ios_test_env_setup.sh"
+        maxTimeInSeconds: 600
+        maxTimeBetweenOutput: 600
+        userMessageOnFailure: "Failed to set up iOS simulator"
+
+      # Our simulator builds are x86_64, so we need Rosetta to run them
+      - type: ExecuteCommand
+        command: "softwareupdate --install-rosetta --agree-to-license"
+        maxTimeInSeconds: 600
+        maxTimeBetweenOutput: 600
+        userMessageOnFailure: "Failed to install Rosetta"
+
+  # CTest requires explicit config for debug-and-release
+  - type: AppendToEnvironmentVariable
+    variableName: CTEST_ARGS
+    variableValue: " -C Debug"
+
+  # We have CTest fixtures in place to ensure only a single test
+  # can run at a time, while allowing upcoming tests to install
+  - type: AppendToEnvironmentVariable
+    variableName: CTEST_ARGS
+    variableValue: " --parallel"

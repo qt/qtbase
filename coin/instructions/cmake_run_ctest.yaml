@@ -68,6 +68,7 @@ instructions:
 
   - !include "{{qt/qtbase}}/vxworks_test_env_setup.yaml"
   - !include "{{qt/qtbase}}/imx8_test_env_setup.yaml"
+  - !include "{{qt/qtbase}}/ios_test_env_setup.yaml"
 
   # Only output verbose test output for failures, unless
   # the VerboseCTestOutput feature is enabled. The full
