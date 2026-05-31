@@ -243,6 +243,8 @@ private:
     QFontDialogOptionsPrivate *d;
 };
 
+Q_DECLARE_OPERATORS_FOR_FLAGS(QFontDialogOptions::FontDialogOptions)
+
 class Q_GUI_EXPORT QPlatformFontDialogHelper : public QPlatformDialogHelper
 {
     Q_OBJECT
