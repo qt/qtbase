@@ -210,40 +210,6 @@ public:
         --that()->size;
     }
 
-    template <typename Predicate>
-    qsizetype eraseIf(Predicate pred)
-    {
-        qsizetype result = 0;
-        if (that()->size == 0)
-            return result;
-
-        if (!that()->needsDetach()) {
-            auto end = that()->end();
-            auto it = std::remove_if(that()->begin(), end, pred);
-            if (it != end) {
-                result = std::distance(it, end);
-                erase(it, result);
-            }
-        } else {
-            const auto begin = that()->begin();
-            const auto end = that()->end();
-            auto it = std::find_if(begin, end, pred);
-            if (it == end)
-                return result;
-
-            QArrayDataPointer<T> other(that()->size);
-            Q_CHECK_PTR(other.data());
-            auto dest = other.begin();
-            // std::uninitialized_copy will fallback to ::memcpy/memmove()
-            dest = std::uninitialized_copy(begin, it, dest);
-            dest = q_uninitialized_remove_copy_if(std::next(it), end, dest, pred);
-            other.size = std::distance(other.data(), dest);
-            result = that()->size - other.size;
-            that()->swap(other);
-        }
-        return result;
-    }
-
     void assign(T *b, T *e, parameter_type t) noexcept
     {
         Q_ASSERT(b <= e);

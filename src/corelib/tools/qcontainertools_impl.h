@@ -13,6 +13,7 @@
 #define QCONTAINERTOOLS_IMPL_H
 
 #include <QtCore/qglobal.h>
+#include <QtCore/qnamespace.h>
 #include <QtCore/qtypeinfo.h>
 
 #include <QtCore/q20type_traits.h>
@@ -406,6 +407,45 @@ auto sequential_erase_one(Container &c, const T &t)
         return false;
     c.erase(it);
     return true;
+}
+
+template <typename String, typename Predicate>
+qsizetype q_string_like_container_erase_if(String &str, Predicate pred)
+{
+    auto &d = str.data_ptr();
+    qsizetype result = 0;
+    if (d.size == 0)
+        return result;
+
+    if (!d.needsDetach()) {
+        auto end = d.end();
+        auto it = std::remove_if(d.begin(), end, pred);
+        if (it != end) {
+            result = std::distance(it, end);
+            d->erase(it, result);
+            d.data()[d.size] = '\0';
+        }
+    } else {
+        const auto begin = d.begin();
+        const auto end = d.end();
+        auto it = std::find_if(begin, end, pred);
+        if (it == end)
+            return result;
+
+        String copy{d.size, Qt::Uninitialized};
+        auto &other_d = copy.data_ptr();
+        Q_CHECK_PTR(other_d.data());
+        auto dest = other_d.begin();
+        // std::uninitialized_copy will fallback to ::memcpy/memmove()
+        dest = std::uninitialized_copy(begin, it, dest);
+        dest = q_uninitialized_remove_copy_if(std::next(it), end, dest, pred);
+        other_d.size = std::distance(other_d.data(), dest);
+        other_d.data()[other_d.size] = '\0';
+        result = d.size - other_d.size;
+        str.swap(copy);
+    }
+
+    return result;
 }
 
 template <typename T, typename Predicate>
