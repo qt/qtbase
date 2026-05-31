@@ -22,7 +22,8 @@
 #include "QtGui/qtextdocument.h"
 #include "QtGui/qtextcursor.h"
 
-#include "QtCore/qlist.h"
+#include <QtCore/qbytearrayview.h>
+#include <QtCore/qlist.h>
 
 #include "private/qtextformat_p.h"
 #include "private/qtextdocument_p.h"
@@ -112,7 +113,7 @@ enum QTextHTMLElements {
 
 struct QTextHtmlElement
 {
-    const char name[11];
+    QByteArrayView name; // QLatin1StringView here breaks INTEGRITY
     QTextHTMLElements id;
     enum DisplayMode { DisplayBlock, DisplayInline, DisplayTable, DisplayNone } displayMode;
 };
