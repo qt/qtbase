@@ -1638,8 +1638,8 @@ function(_qt_internal_android_append_to_libs_xml_section target section_name lib
     endif()
 
     set(normalized_lib_name "${lib_name}")
-    # Skip normalization for generator expressions
-    if(NOT lib_name MATCHES "^[$]<" AND NOT section_name STREQUAL "local_libs")
+    # qt_libs are loaded by base name; other sections keep the full file name.
+    if(section_name STREQUAL "qt_libs" AND NOT lib_name MATCHES "^[$]<")
         get_filename_component(file_name "${normalized_lib_name}" NAME)
         if(file_name MATCHES "^lib(.+)\\.so$")
             set(normalized_lib_name "${CMAKE_MATCH_1}")
