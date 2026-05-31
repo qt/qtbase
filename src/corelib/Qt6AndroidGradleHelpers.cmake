@@ -1503,7 +1503,10 @@ function(_qt_internal_android_process_lib_deps)
         endif()
 
         if(NOT lib_absolute MATCHES "${abi_so_suffix}$")
-            string(REGEX REPLACE "\\.so$" "${abi_so_suffix}" lib_absolute "${lib_absolute}")
+            string(REGEX REPLACE "\\.so$" "${abi_so_suffix}" lib_abi "${lib_absolute}")
+            if(EXISTS "${lib_abi}")
+                set(lib_absolute "${lib_abi}")
+            endif()
         endif()
 
         if(NOT EXISTS "${lib_absolute}")
