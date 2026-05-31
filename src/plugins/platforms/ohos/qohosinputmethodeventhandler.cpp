@@ -50,7 +50,7 @@ std::shared_ptr<void> registerObjectDestroyedSignalHandler(
 {
     auto objDestroyedConnection = QObject::connect(object, &QObject::destroyed, context, std::move(signalHandler));
     return QtOhos::makeDestroyNotifier(
-        [objDestroyedConnection]() {
+        [objDestroyedConnection = std::move(objDestroyedConnection)] () mutable {
             QObject::disconnect(objDestroyedConnection);
         });
 }

@@ -603,7 +603,8 @@ std::shared_ptr<void> QOhosPlatformWindow::setSurfaceConsumer(
     }
 
     return QtOhos::makeDestroyNotifier(
-        [surfaceStatusChangedConnectionHandle, viewDestroyedConnectionHandle]() {
+        [surfaceStatusChangedConnectionHandle = std::move(surfaceStatusChangedConnectionHandle),
+         viewDestroyedConnectionHandle = std::move(viewDestroyedConnectionHandle)] () mutable {
             QObject::disconnect(surfaceStatusChangedConnectionHandle);
             QObject::disconnect(viewDestroyedConnectionHandle);
         });
