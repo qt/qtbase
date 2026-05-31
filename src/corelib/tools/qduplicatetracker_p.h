@@ -121,23 +121,7 @@ public:
         }
     }
 
-    void clear()
-    {
-#ifdef __cpp_lib_memory_resource
-        // The birth defect of std::unordered_set is that both the nodes as
-        // well as the bucket array are allocated from the same allocator, so
-        // if we want to reclaim memory from the freed nodes, we also need to
-        // reclaim the memory for the bucket array.
-
-        set = Set();    // release all memory in `res` (clear() doesn't, and swap() is UB!)
-        res.release();  // restore to initial state (buffer, sizeof buffer)
-                        // m_b_r can't reuse buffers, anyway
-        // now that `res` is reset to the initial state, also reset `set`:
-        set = Set{Prealloc, &res};
-#else
-        set.clear();
-#endif // __cpp_lib_memory_resource
-    }
+    void clear() = delete; // use QSet or std::optional<QDT> if you want to reuse it
 
     using const_iterator = typename Set::const_iterator;
     const_iterator begin() const { return set.cbegin(); }
