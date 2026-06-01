@@ -837,6 +837,7 @@ public:
     bool deviceLost = false;
     QRhiD3D11NativeHandles nativeHandlesStruct;
     QRhiDriverInfo driverInfoStruct;
+    QD3D11RenderTargetData emptyRt = QD3D11RenderTargetData(nullptr);
 
     struct {
         int vsHighestActiveVertexBufferBinding = -1;

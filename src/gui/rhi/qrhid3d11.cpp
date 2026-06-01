@@ -2327,6 +2327,13 @@ void QRhiD3D11::beginComputePass(QRhiCommandBuffer *cb,
     if (resourceUpdates)
         enqueueResourceUpdates(cb, resourceUpdates);
 
+    // If the compute shader uses any texture as shader resource, and the texture
+    // was render target of previous beginPass, the render target needs to be cleared
+    // before shader resources can be reset
+    QD3D11CommandBuffer::Command &fbCmd(cbD->commands.get());
+    fbCmd.cmd = QD3D11CommandBuffer::Command::SetRenderTarget;
+    fbCmd.args.setRenderTarget.rt = nullptr;
+
     QD3D11CommandBuffer::Command &cmd(cbD->commands.get());
     cmd.cmd = QD3D11CommandBuffer::Command::ResetShaderResources;
 
@@ -2961,7 +2968,7 @@ void QRhiD3D11::executeCommandBuffer(QD3D11CommandBuffer *cbD)
             break;
         case QD3D11CommandBuffer::Command::SetRenderTarget:
         {
-            QD3D11RenderTargetData *rtD = rtData(cmd.args.setRenderTarget.rt);
+            QD3D11RenderTargetData *rtD = cmd.args.setRenderTarget.rt ? rtData(cmd.args.setRenderTarget.rt) : &emptyRt;
             if (rtUavState.update(rtD))
                 context->OMSetRenderTargets(UINT(rtD->colorAttCount), rtD->colorAttCount ? rtD->rtv : nullptr, rtD->dsv);
             cbD->prevRtD = rtD;
