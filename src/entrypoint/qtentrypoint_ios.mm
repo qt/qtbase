@@ -317,6 +317,20 @@ static void __attribute__((noinline, noreturn)) user_main_trampoline()
 
     updateStackLimit();
 
+    static const bool isRunningViaTestRunner =
+        qEnvironmentVariableIsSet("QT_RUNNING_VIA_TEST_RUNNER");
+
+    if (isRunningViaTestRunner) {
+        qCDebug(lcEventDispatcher) << "Overriding working directory for test runner";
+        QDir::temp().mkdir("testrunner");
+        QDir::setCurrent(QDir::temp().filePath("testrunner"));
+    } else {
+        // Set current directory to app bundle folder for the convenience of
+        // examples that load resources relative to the deployment path.
+        // FIXME: This is akward, we should use the home dir or container
+        QDir::setCurrent(QString::fromNSString(NSBundle.mainBundle.bundlePath));
+    }
+
     int main(int argc, char *argv[]);
 
     int exitCode = main(argc, argv);
@@ -325,7 +339,7 @@ static void __attribute__((noinline, noreturn)) user_main_trampoline()
     logActivity.applicationDidFinishLaunching.enter();
     qCDebug(lcEventDispatcher) << "Returned from main with exit code " << exitCode;
 
-    if (qEnvironmentVariableIntegerValue("QT_RUNNING_VIA_TEST_RUNNER")) {
+    if (isRunningViaTestRunner) {
         // When running via `simctl launch` or `devicectl device process launch`
         // the exit code is not always propagated, so we manually save it to disk.
         QFile exitCodeFile(QDir::tempPath() + "/qt_exit_code.txt");

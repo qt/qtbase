@@ -70,16 +70,6 @@ QIOSIntegration::QIOSIntegration()
                "parts of the application, a good place to create QApplication is from within\n" \
                "'applicationDidFinishLaunching' inside your UIApplication delegate.\n");
     }
-
-    if (qEnvironmentVariableIsSet("QT_RUNNING_VIA_TEST_RUNNER")) {
-        QDir::temp().mkdir("testrunner");
-        QDir::setCurrent(QDir::temp().filePath("testrunner"));
-    } else {
-        // Set current directory to app bundle folder for the convenience of
-        // examples that load resources relative to the deployment path.
-        // FIXME: This is akward, we should use the home dir or container
-        QDir::setCurrent(QString::fromNSString(NSBundle.mainBundle.bundlePath));
-    }
 }
 
 void QIOSIntegration::initialize()
