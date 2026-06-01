@@ -32,7 +32,7 @@ public:
         uchar max = n > uchar_max ? uchar_max : uchar(n);
         q20::fill(std::begin(m_skiptable), std::end(m_skiptable), max);
         Hash hf;
-        RandomIt1 pattern = std::next(pat_first, n - max);
+        RandomIt1 pattern = pat_first + (n - max);
         while (max--)
             m_skiptable[hf(*pattern++)] = max;
     }
