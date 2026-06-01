@@ -263,6 +263,8 @@ public:
     void close(Http2::Http2Error errorCode = Http2::HTTP2_NO_ERROR);
 
     bool isGoingAway() const noexcept { return m_goingAway; }
+    // Set once a GOAWAY has been received; the peer did not process streams above this ID.
+    std::optional<quint32> lastGoAwayStreamID() const noexcept { return m_lastGoAwayLastStreamID; }
 
     quint32 maxConcurrentStreams() const noexcept { return m_maxConcurrentStreams; }
     quint32 peerMaxConcurrentStreams() const noexcept { return m_peerMaxConcurrentStreams; }

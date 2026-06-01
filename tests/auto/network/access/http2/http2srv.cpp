@@ -138,12 +138,13 @@ void Http2Server::setSendRedundantEndStreamDATA(bool enable)
     sendRedundantEndStreamDATA = enable;
 }
 
-void Http2Server::emulateGOAWAY(int code, int timeout)
+void Http2Server::emulateGOAWAY(int code, int timeout, bool disconnectAfter)
 {
     Q_ASSERT(timeout >= 0);
     testingGOAWAY = true;
     goawayTimeout = timeout;
     goawayCode = code;
+    goawayDisconnect = disconnectAfter;
 }
 
 void Http2Server::redirectOpenStream(quint16 port)
@@ -434,6 +435,8 @@ void Http2Server::triggerGOAWAYEmulation()
     timer->setSingleShot(true);
     connect(timer, &QTimer::timeout, [this]() {
         sendGOAWAY(quint32(connectionStreamID), quint32(goawayCode), 0);
+        if (goawayDisconnect)
+            socket->disconnectFromHost();
     });
     timer->start(goawayTimeout);
 }

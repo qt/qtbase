@@ -62,6 +62,7 @@ public:
     QHttp2ProtocolHandler &operator=(QHttp2ProtocolHandler &&rhs) = delete;
 
     Q_INVOKABLE void handleConnectionClosure();
+    bool isGoingAway() const noexcept;
 
 private slots:
     void _q_uploadDataDestroyed(QObject *uploadData);
