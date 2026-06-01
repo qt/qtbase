@@ -22,6 +22,8 @@
 
 using namespace Qt::StringLiterals;
 
+namespace {
+
 class QSmSocketReceiver : public QObject
 {
     Q_OBJECT
@@ -299,6 +301,7 @@ void QSmSocketReceiver::socketActivated()
     IceProcessMessages(SmcGetIceConnection(smcConnection), nullptr, nullptr);
 }
 
+} // namespace
 
 // QXcbSessionManager starts here
 
