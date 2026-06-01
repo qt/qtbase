@@ -57,7 +57,7 @@ for MODULE in qtconcurrent qtcore qtdbus qtgui qtnetwork qtopengl qtopenglwidget
     elif [ "$MODULE" == "qtnetwork" ]
     then
         export TARGET_NAME="build/lib/libQt6Network.so.*.ir"
-        export PLUGINS="build/plugins/networkinformation/*.so.ir:build/plugins/tracing/*.so.ir:build/plugins/tls/*.so.ir"
+        export PLUGINS="build/plugins/networkinformation/*.so.ir:build/plugins/tls/*.so.ir"
         export EXCLUDE_FILES="build/*:src/3rdparty/*:src/testlib/*:src/corelib/*:src/dbus/*"
         export PACKAGE="Essentials"
     elif [ "$MODULE" == "qtopengl" ]
