@@ -1176,7 +1176,9 @@ for this function. Will be ignored")
                                            ${command_args}
                                       OUTPUT_FILE "${arg_OUTPUT_FILE}"
                                       ${add_test_working_dir}
-                                      ENVIRONMENT ${arg_ENVIRONMENT}
+                                      ENVIRONMENT CMAKE_CROSSCOMPILING_EMULATOR
+                                                    "${crosscompiling_emulator}"
+                                                  ${arg_ENVIRONMENT}
                                       PRE_RUN "separate_arguments(env_test_args NATIVE_COMMAND \
 \"\$ENV{TESTARGS}\")"
                                               "separate_arguments(env_test_runner NATIVE_COMMAND \
