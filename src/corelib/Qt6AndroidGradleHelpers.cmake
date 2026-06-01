@@ -989,7 +989,7 @@ function(_qt_internal_android_copy_extra_libs target deployment_dir)
                 "QT_ANDROID_EXTRA_LIBS entry '${lib}' for ${target} must be a shared library.")
         endif()
 
-        _qt_internal_android_append_to_libs_xml_section(${target} extra_libs "${lib_path}")
+        _qt_internal_android_append_to_libs_xml_section(${target} extra_libs "${lib_name}")
         set(dst "${extra_libs_dst_dir}/${lib_name}")
         list(APPEND copy_outputs "${dst}")
         list(APPEND copy_depends "${lib_path}")
