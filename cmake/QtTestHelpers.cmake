@@ -1169,8 +1169,8 @@ for this function. Will be ignored")
     endif()
 
     _qt_internal_create_command_script(COMMAND
-                                           ${crosscompiling_emulator}
                                            "\${env_test_runner}"
+                                           ${crosscompiling_emulator}
                                            "${executable_file}"
                                            "\${env_test_args}"
                                            ${command_args}
