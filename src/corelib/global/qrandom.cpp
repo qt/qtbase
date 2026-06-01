@@ -11,6 +11,7 @@
 #include <qendian.h>
 #include <qmutex.h>
 #include <qobjectdefs.h>
+#include <QtCore/qtcoreglobal.h> // for FEATURE macros
 
 #include <errno.h>
 
@@ -23,6 +24,9 @@
 #elif !QT_CONFIG(getentropy) && (!defined(Q_OS_BSD4) || defined(__GLIBC__)) && !defined(Q_OS_WIN)
 #  include "qdeadlinetimer.h"
 #  include "qhashfunctions.h"
+#  include <cstdio>
+#  include <cstdlib>
+#  include <mutex>
 #endif // !QT_CONFIG(getentropy)
 
 #ifdef Q_OS_UNIX
@@ -213,6 +217,10 @@ static void fallback_update_seed(unsigned value)
     seed.fetchAndXorRelaxed(value);
 }
 
+#if !QT_CONFIG(randomgenerator_disable_fallback)
+Q_CONSTINIT static std::once_flag fallbackFillWarningFlag;
+#endif
+
 // this function is pretty big, so optimize for size
 Q_NEVER_INLINE
 #if __has_attribute(optimize)  // GCC
@@ -222,6 +230,17 @@ __attribute__((minsize))
 #endif
 static void fallback_fill(quint32 *ptr, qsizetype left) noexcept
 {
+#if QT_CONFIG(randomgenerator_disable_fallback)
+    Q_UNUSED(ptr);
+    Q_UNUSED(left);
+    fprintf(stderr, "QRandomGenerator: falling back to unsafe PRNG is explicitly "
+                    "disabled in the configuration. Terminating the application.\n"
+                    "Check why /dev/urandom is not available on your system or "
+                    "configure Qt with FEATURE_randomgenerator_disable_fallback=OFF "
+                    "to enable the fallback.\n");
+    fflush(stderr);
+    abort();
+#else
     quint32 scratch[12];    // see element count below
     quint32 *end = scratch;
 
@@ -239,6 +258,14 @@ static void fallback_fill(quint32 *ptr, qsizetype left) noexcept
     };
 
     Q_ASSERT(left);
+
+    std::call_once(fallbackFillWarningFlag, [left] {
+        fprintf(stderr,
+                "QRandomGenerator: falling back to unsafe PRNG to initialize %lld element(s).\n"
+                "Configure Qt with FEATURE_randomgenerator_disable_fallback=ON to forbid the "
+                "fallback and terminate the application.\n", qlonglong(left));
+        fflush(stderr);
+    });
 
     *end++ = foldPointer(quintptr(&seed));          // 1: variable in this library/executable's .data
     *end++ = foldPointer(quintptr(&scratch));       // 2: variable in the stack
@@ -290,6 +317,7 @@ static void fallback_fill(quint32 *ptr, qsizetype left) noexcept
     std::generate(ptr, ptr + left, generator);
 
     fallback_update_seed(*ptr);
+#endif // QT_CONFIG(randomgenerator_disable_fallback)
 }
 #endif
 
@@ -506,7 +534,7 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
     cryptographic quality but not of true randomness,
     QRandomGenerator::system() may still be used (see section below).
 
-    If neither a true RNG nor a cryptographically secure PRNG are required,
+    If neither a true RNG nor a cryptographically secure PRNG (CSPRNG) are required,
     applications should instead use PRNG engines like QRandomGenerator's
     deterministic mode and those from the C++ Standard Library.
     QRandomGenerator::system() can be used to seed those.
@@ -534,6 +562,12 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
     Applications that require QRandomGenerator not to fall back to
     non-cryptographic quality generators are advised to check their operating
     system documentation or restrict their deployment to one of the above.
+
+    Starting from Qt 6.12, QRandomGenerator prints a warning to \c stderr the
+    first time it falls back to insecure PRNG. The opt-in feature
+    \c {randomgenerator_disable_fallback} can be set during Qt build to disable
+    the insecure fallback and instead terminate the application if it tried to
+    use QRandomGenerator and CSPRNG is not available.
 
     \section1 Reentrancy and thread-safety
 
