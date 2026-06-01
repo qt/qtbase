@@ -1097,8 +1097,6 @@ QDomNodePrivate::~QDomNodePrivate()
             p->setNoParent();
         p = n;
     }
-    first = nullptr;
-    last = nullptr;
 }
 
 void QDomNodePrivate::clear()
