@@ -28,10 +28,14 @@ using qt_xcb_input_pinch_event_t = xcb_input_gesture_pinch_begin_event_t;
 using qt_xcb_input_swipe_event_t = xcb_input_gesture_swipe_begin_event_t;
 #endif
 
+namespace {
+
 struct qt_xcb_input_event_mask_t {
     xcb_input_event_mask_t header;
     alignas(4) uint8_t     mask[8] = {}; // up to 2 units of 4 bytes
 };
+
+} // namespace
 
 static inline void setXcbMask(uint8_t* mask, int bit)
 {
