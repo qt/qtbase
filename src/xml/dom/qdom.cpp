@@ -1087,16 +1087,21 @@ QDomNodePrivate::QDomNodePrivate(QDomNodePrivate *n, bool deep) : ref(1)
 
 QDomNodePrivate::~QDomNodePrivate()
 {
-    QDomNodePrivate* p = first;
-    QDomNodePrivate* n;
+    QDomNodePrivate *p = this;
 
-    while (p) {
-        n = p->next;
-        if (!p->ref.deref())
-            delete p;
-        else
-            p->setNoParent();
-        p = n;
+    // post-order depth-first-search; visitation is deletion (avoids recursion)
+    while (true) {
+        if (QDomNodePrivate *c = p->first) {
+            p->first = c->next;          // peel firstChild off p
+            if (c->ref.deref())
+                c->setNoParent();        // survivor: detach, don't descend
+            else
+                p = c;                   // descend; c's parent() remembers p
+        } else {                         // p ran out of children (= is a leaf now)
+            if (p == this)
+                break;                   // we're done, don't `delete this`
+            delete std::exchange(p, p->parent());  // deletes and ascends
+        }
     }
 }
 
