@@ -6,4 +6,9 @@
 
 #include <X11/Xlib.h>
 
-void qt_XFlush(Display *dpy) { XFlush(dpy); }
+QT_BEGIN_NAMESPACE
+void qt_XFlush(Display *dpy)
+{
+    XFlush(dpy);
+}
+QT_END_NAMESPACE

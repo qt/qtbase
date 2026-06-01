@@ -4,13 +4,10 @@
 
 #pragma once
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <QtCore/qglobal.h>
 
-    typedef struct _XDisplay Display;
-    void qt_XFlush(Display *dpy);
+typedef struct _XDisplay Display;
 
-#ifdef __cplusplus
-}
-#endif
+QT_BEGIN_NAMESPACE
+void qt_XFlush(Display *dpy);
+QT_END_NAMESPACE
