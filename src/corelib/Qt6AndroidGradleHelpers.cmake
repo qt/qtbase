@@ -1259,6 +1259,22 @@ function(_qt_internal_android_get_deploy_command out_cmd src dst)
     endif()
 endfunction()
 
+# Warns once that ${missing} is not an imported target and so cannot be deployed.
+function(_qt_internal_android_warn_unresolved_dependency dependent missing)
+    get_property(warned GLOBAL PROPERTY _qt_internal_android_warned_undeployable_deps)
+    if(missing IN_LIST warned)
+        return()
+    endif()
+    set_property(GLOBAL APPEND PROPERTY _qt_internal_android_warned_undeployable_deps "${missing}")
+
+    string(REGEX REPLACE "^${QT_CMAKE_EXPORT_NAMESPACE}::" "" component "${missing}")
+    message(WARNING
+        "The target \"${dependent}\" depends on \"${missing}\", but it is not "
+        "an imported target, so its backing library cannot be deployed and "
+        "will be missing from the Android bundle. Import it using:\n"
+        "  find_package(${QT_CMAKE_EXPORT_NAMESPACE} COMPONENTS ${component})")
+endfunction()
+
 # Returns the list of valid CMake targets from the link library properties of the given target.
 function(_qt_internal_android_extract_link_libraries_targets target out_targets)
     string(TOUPPER "${CMAKE_BUILD_TYPE}" build_type_upper)
@@ -1285,6 +1301,8 @@ function(_qt_internal_android_extract_link_libraries_targets target out_targets)
                     set(entry "${entry_alias}")
                 endif()
                 list(APPEND result "${entry}")
+            elseif(entry MATCHES "^${QT_CMAKE_EXPORT_NAMESPACE}::")
+                _qt_internal_android_warn_unresolved_dependency("${target}" "${entry}")
             endif()
         endforeach()
     endforeach()
@@ -1300,15 +1318,13 @@ function(_qt_internal_android_resolve_backing_target target out_var)
         return()
     endif()
 
+    set (qt_ns "${QT_CMAKE_EXPORT_NAMESPACE}")
     if(TARGET "${qml_backing}")
         set(${out_var} "${qml_backing}" PARENT_SCOPE)
-    elseif(TARGET "${QT_CMAKE_EXPORT_NAMESPACE}::${qml_backing}")
-        set(${out_var} "${QT_CMAKE_EXPORT_NAMESPACE}::${qml_backing}" PARENT_SCOPE)
+    elseif(TARGET "${qt_ns}::${qml_backing}")
+        set(${out_var} "${qt_ns}::${qml_backing}" PARENT_SCOPE)
     else()
-        message(WARNING
-            "The plugin ${target} depends on ${QT_CMAKE_EXPORT_NAMESPACE}::${qml_backing}, "
-            "but it wasn't found. Add it using:\n"
-            "find_package(${QT_CMAKE_EXPORT_NAMESPACE} OPTIONAL_COMPONENTS ${qml_backing})")
+        _qt_internal_android_warn_unresolved_dependency("${target}" "${qt_ns}::${qml_backing}")
     endif()
 endfunction()
 
@@ -1569,11 +1585,16 @@ endfunction()
 # Returns the shared Qt module targets declared as dependencies of a plugin via
 # _qt_plugin_qt_module_dependencies, filtered to shared libraries only.
 function(_qt_internal_android_list_plugin_modules plugin_target out_module_deps)
+    get_target_property(plugin_module_deps "${plugin_target}" _qt_plugin_qt_module_dependencies)
+    if(NOT plugin_module_deps)
+        set(${out_module_deps} "" PARENT_SCOPE)
+        return()
+    endif()
+
     set(result "")
-    get_target_property(plugin_module_deps "${plugin_target}"
-        _qt_plugin_qt_module_dependencies)
     foreach(dep_target IN LISTS plugin_module_deps)
         if(NOT TARGET "${dep_target}")
+            _qt_internal_android_warn_unresolved_dependency("${plugin_target}" "${dep_target}")
             continue()
         endif()
         get_target_property(type "${dep_target}" TYPE)
