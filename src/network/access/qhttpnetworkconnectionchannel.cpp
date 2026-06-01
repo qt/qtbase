@@ -231,11 +231,13 @@ void QHttpNetworkConnectionChannel::abort()
 
 void QHttpNetworkConnectionChannel::sendRequest()
 {
-    Q_ASSERT(protocolHandler);
     if (waitingForPotentialAbort) {
         needInvokeSendRequest = true;
         return;
     }
+    if (isPendingReconnect())
+        return;
+    Q_ASSERT(protocolHandler);
     protocolHandler->sendRequest();
 }
 
@@ -850,6 +852,44 @@ QHttp2ProtocolHandler *QHttpNetworkConnectionChannel::h2ProtocolHandler() const 
     return nullptr;
 }
 
+/*!
+    \internal
+    Returns \c true if the channel has no session to send on: it is closing, its HTTP/2
+    session is going away, or that session has been dropped and not yet re-established.
+    Every site that resolves this restarts the request queue, so callers can bail out.
+*/
+bool QHttpNetworkConnectionChannel::isPendingReconnect() const noexcept
+{
+    // A closing socket will emit disconnected(), which restarts the request queue.
+    if (QSocketAbstraction::socketState(socket) == QAbstractSocket::ClosingState)
+        return true;
+    if (auto *h2 = h2ProtocolHandler())
+        return h2->isGoingAway();
+    // HTTP1 protocol handler is created early and never un-set so we can do this short test to see
+    // if HTTP2 is currently un-set and needs to be re-created:
+    return !protocolHandler;
+}
+
+/*!
+    \internal
+    Drops a going-away HTTP/2 session so the channel can connect again. Returns \c true
+    if one was dropped, meaning the request queue should be restarted.
+*/
+bool QHttpNetworkConnectionChannel::clearPendingReconnect()
+{
+    // Only an HTTP/2 session is dropped here. The HTTP/1 handler is created once and never
+    // recreated, so dropping it would leave protocolHandler null for the next sendRequest().
+    if (auto *h2 = h2ProtocolHandler(); !h2 || !h2->isGoingAway())
+        return false;
+    // We can be called from within the handler's own call chain, so destroy it in a queued
+    // call rather than under its own stack frame. Moving from the unique_ptr already
+    // clears the pending-reconnect state.
+    QMetaObject::invokeMethod(this, [oldHandler = std::move(protocolHandler)]() mutable {
+        oldHandler.reset();
+    }, Qt::QueuedConnection);
+    return true;
+}
+
 void QHttpNetworkConnectionChannel::_q_bytesWritten(qint64 bytes)
 {
     Q_UNUSED(bytes);
@@ -869,6 +909,7 @@ void QHttpNetworkConnectionChannel::_q_disconnected()
 {
     if (state == QHttpNetworkConnectionChannel::ClosingState) {
         state = QHttpNetworkConnectionChannel::IdleState;
+        clearPendingReconnect();
         QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
         return;
     }
@@ -893,6 +934,11 @@ void QHttpNetworkConnectionChannel::_q_disconnected()
         // _q_startNextRequest (which it does):
         requeueCurrentlyPipelinedRequests();
     }
+
+    // A going-away connection closed without us calling close(), so it was not handled by
+    // the ClosingState branch above. Done last, so the reads above still have the handler.
+    if (clearPendingReconnect())
+        QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
 
     pendingEncrypt = false;
 }
