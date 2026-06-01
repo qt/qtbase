@@ -582,3 +582,63 @@ function(qt_internal_android_add_interface_features target)
     qt_internal_set_module_transitive_properties(${target} TYPE LINK PROPERTIES
         INTERFACE_QT_ANDROID_FEATURES "${features}")
 endfunction()
+
+# Warns when a plugin depends on a shared internal module that is not exported
+# and therefore cannot be deployed to the Android bundle.
+function(_qt_internal_android_warn_undeployable_plugin_modules target)
+    get_target_property(link_libs "${target}" LINK_LIBRARIES)
+    if(NOT link_libs)
+        return()
+    endif()
+
+    # Split deps into exported and build-local ($<BUILD_LOCAL_INTERFACE:>).
+    set(exported "")
+    set(local_only_deps "")
+    foreach(entry IN LISTS link_libs)
+        if(entry MATCHES "^\\$<BUILD_LOCAL_INTERFACE:(.+)>$")
+            list(APPEND local_only_deps "${CMAKE_MATCH_1}")
+        elseif(NOT entry MATCHES "^\\$<" AND TARGET "${entry}")
+            get_target_property(aliased "${entry}" ALIASED_TARGET)
+            if(aliased)
+                list(APPEND exported "${aliased}")
+            else()
+                list(APPEND exported "${entry}")
+            endif()
+        endif()
+    endforeach()
+
+    set(undeployable "")
+    foreach(dep IN LISTS local_only_deps)
+        if(NOT TARGET "${dep}")
+            continue()
+        endif()
+        set(actual "${dep}")
+        get_target_property(aliased "${dep}" ALIASED_TARGET)
+        if(aliased)
+            set(actual "${aliased}")
+        endif()
+
+        # Undeployable: a shared, internal-only module that is not also exported.
+        get_target_property(is_internal "${actual}" _qt_is_internal_module)
+        get_target_property(dep_type "${actual}" TYPE)
+        if(NOT actual IN_LIST exported AND is_internal AND dep_type STREQUAL "SHARED_LIBRARY")
+            list(APPEND undeployable "${dep}")
+        endif()
+    endforeach()
+    list(REMOVE_DUPLICATES undeployable)
+
+    if(NOT undeployable)
+        return()
+    endif()
+
+    list(JOIN undeployable "\n  - " undeployable_list)
+    string(PREPEND undeployable_list "  - ")
+
+    message(WARNING
+        "The plugin \"${target}\" depends on internal shared Qt module(s) "
+        "pulled in only via BUILD_LOCAL_INTERFACE. They are not exported, so "
+        "they are not imported at a consumer's configure time and will be "
+        "missing from the Android bundle:\n"
+        "${undeployable_list}\n"
+    )
+endfunction()
