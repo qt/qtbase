@@ -571,6 +571,10 @@ function(qt_finalize_plugin target)
     endif()
 
     _qt_internal_finalize_sbom(${target})
+
+    if(ANDROID AND (FEATURE_developer_build OR QT_FEATURE_developer_build))
+        _qt_internal_android_warn_undeployable_plugin_modules(${target})
+    endif()
 endfunction()
 
 function(qt_get_sanitized_plugin_type plugin_type out_var)
