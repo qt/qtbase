@@ -16,6 +16,10 @@ class tst_QCollator : public QObject
 {
     Q_OBJECT
 
+private:
+    using Opt = QCollator::CollationOption;
+    using Opts = QCollator::CollationOptions;
+
 private Q_SLOTS:
     void basics();
     void moveSemantics();
@@ -110,11 +114,8 @@ void tst_QCollator::compare_data()
     QTest::addColumn<QString>("locale");
     QTest::addColumn<QString>("s1");
     QTest::addColumn<QString>("s2");
+    QTest::addColumn<Opts>("options");
     QTest::addColumn<int>("result");
-    QTest::addColumn<int>("caseInsensitiveResult");
-    QTest::addColumn<bool>("numericMode");
-    QTest::addColumn<bool>("ignorePunctuation");
-    QTest::addColumn<int>("punctuationResult"); // Test ignores punctuation *and case*
 
     /*
         It's hard to test English, because it's treated differently
@@ -124,124 +125,429 @@ void tst_QCollator::compare_data()
         comparison of Latin-1 values, although I'm not sure. So I
         just test digits to make sure that it's not totally broken.
     */
-    QTest::newRow("english1") << QString("en_US") << QString("5") << QString("4") << 1 << 1 << false << false << 1;
-    QTest::newRow("english2") << QString("en_US") << QString("4") << QString("6") << -1 << -1 << false << false << -1;
-    QTest::newRow("english3") << QString("en_US") << QString("5") << QString("6") << -1 << -1 << false << false << -1;
-    QTest::newRow("english4") << QString("en_US") << QString("a") << QString("b") << -1 << -1 << false << false << -1;
-    QTest::newRow("english5") << QString("en_US") << QString("test 9") << QString("test 19") << -1 << -1 << true << false << -1;
-    QTest::newRow("english6") << QString("en_US") << QString("test 9") << QString("test_19") << -1 << -1 << true << true << -1;
-    QTest::newRow("english7") << QString("en_US") << QString("test_19") << QString("test 19") << 1 << 1 << true << false << 1;
-    QTest::newRow("english8") << QString("en_US") << QString("test.19") << QString("test,19") << 1 << 1 << true << true << 0;
-    QTest::newRow("en-empty-word") << QString("en_US") << QString() << QString("non-empty") << -1 << -1 << false << true << -1;
-    QTest::newRow("en-empty-number") << QString("en_US") << QString() << QString("42") << -1 << -1 << true << true << -1;
-    QTest::newRow("en-word-empty") << QString("en_US") << QString("non-empty") << QString() << 1
-                                   << 1 << false << true << 1;
-    QTest::newRow("en-number-empty")
-            << QString("en_US") << QString("42") << QString() << 1 << 1 << true << true << 1;
-    QTest::newRow("en-empty-empty")
-            << QString("en_US") << QString() << QString() << 0 << 0 << false << true << 0;
+    QTest::newRow("en-5:4") << u"en_US"_s << u"5"_s << u"4"_s << Opts{} << 1;
+    QTest::newRow("en-5:4-nocase")
+            << u"en_US"_s << u"5"_s << u"4"_s << Opts{Opt::CaseInsensitive} << 1;
+    QTest::newRow("en-4:6") << u"en_US"_s << u"4"_s << u"6"_s << Opts{} << -1;
+    QTest::newRow("en-4:6-nocase")
+            << u"en_US"_s << u"4"_s << u"6"_s << Opts{Opt::CaseInsensitive} << -1;
+    QTest::newRow("en-5:6") << u"en_US"_s << u"5"_s << u"6"_s << Opts{} << -1;
+    QTest::newRow("en-5:6-nocase")
+            << u"en_US"_s << u"5"_s << u"6"_s << Opts{Opt::CaseInsensitive} << -1;
+    QTest::newRow("en-a:b") << u"en_US"_s << u"a"_s << u"b"_s << Opts{} << -1;
+    QTest::newRow("en-a:b-nocase")
+            << u"en_US"_s << u"a"_s << u"b"_s << Opts{Opt::CaseInsensitive} << -1;
+    QTest::newRow("en-9:19-numsort")
+            << u"en_US"_s << u"test 9"_s << u"test 19"_s << Opts{Opt::NumericSort} << -1;
+    QTest::newRow("en-9:19-nocase")
+            << u"en_US"_s << u"test 9"_s << u"test 19"_s
+            << (Opt::CaseInsensitive | Opt::NumericSort) << -1;
+    QTest::newRow("en-9:_19-numsort")
+            << u"en_US"_s << u"test 9"_s << u"test_19"_s << Opts{Opt::NumericSort} << -1;
+    QTest::newRow("en-9:_19-nocase")
+            << u"en_US"_s << u"test 9"_s << u"test_19"_s
+            << (Opt::CaseInsensitive | Opt::NumericSort) << -1;
+    QTest::newRow("en-9:_19-nopun")
+            << u"en_US"_s << u"test 9"_s << u"test_19"_s
+            << (Opt::CaseInsensitive | Opt::NumericSort | Opt::IgnorePunctuation) << -1;
+    QTest::newRow("en-_19:19-numsort")
+            << u"en_US"_s << u"test_19"_s << u"test 19"_s << Opts{Opt::NumericSort} << 1;
+    QTest::newRow("en-_19:19-nocase")
+            << u"en_US"_s << u"test_19"_s << u"test 19"_s
+            << (Opt::CaseInsensitive | Opt::NumericSort) << 1;
+    QTest::newRow("en-.19:,19-numsort")
+            << u"en_US"_s << u"test.19"_s << u"test,19"_s << Opts{Opt::NumericSort} << 1;
+    QTest::newRow("en-.19:,19-nocase")
+            << u"en_US"_s << u"test.19"_s << u"test,19"_s
+            << (Opt::CaseInsensitive | Opt::NumericSort) << 1;
+    QTest::newRow("en-.19:,19-nopun")
+            << u"en_US"_s << u"test.19"_s << u"test,19"_s
+            << (Opt::CaseInsensitive | Opt::NumericSort | Opt::IgnorePunctuation) << 0;
+    QTest::newRow("en-empty-word") << u"en_US"_s << QString() << u"non-empty"_s << Opts{} << -1;
+    QTest::newRow("en-empty-word-nocase")
+            << u"en_US"_s << QString() << u"non-empty"_s << Opts{Opt::CaseInsensitive} << -1;
+    QTest::newRow("en-empty-word-nopun")
+            << u"en_US"_s << QString() << u"non-empty"_s
+            << (Opt::CaseInsensitive | Opt::IgnorePunctuation) << -1;
+    QTest::newRow("en-empty-number-numsort")
+            << u"en_US"_s << QString() << u"42"_s << Opts{Opt::NumericSort} << -1;
+    QTest::newRow("en-empty-number-nocase")
+            << u"en_US"_s << QString() << u"42"_s
+            << (Opt::CaseInsensitive | Opt::NumericSort) << -1;
+    QTest::newRow("en-empty-number-nopun")
+            << u"en_US"_s << QString() << u"42"_s
+            << (Opt::CaseInsensitive | Opt::NumericSort | Opt::IgnorePunctuation) << -1;
+    QTest::newRow("en-word-empty") << u"en_US"_s << u"non-empty"_s << QString() << Opts{} << 1;
+    QTest::newRow("en-word-empty-nocase")
+            << u"en_US"_s << u"non-empty"_s << QString() << Opts{Opt::CaseInsensitive} << 1;
+    QTest::newRow("en-word-empty-nopun")
+            << u"en_US"_s << u"non-empty"_s << QString()
+            << (Opt::CaseInsensitive | Opt::IgnorePunctuation) << 1;
+    QTest::newRow("en-number-empty-numsort")
+            << u"en_US"_s << u"42"_s << QString() << Opts{Opt::NumericSort} << 1;
+    QTest::newRow("en-number-empty-nocase")
+            << u"en_US"_s << u"42"_s << QString() << (Opt::CaseInsensitive | Opt::NumericSort) << 1;
+    QTest::newRow("en-number-empty-nopun")
+            << u"en_US"_s << u"42"_s << QString()
+            << (Opt::CaseInsensitive | Opt::NumericSort | Opt::IgnorePunctuation) << 1;
+    QTest::newRow("en-empty-empty") << u"en_US"_s << QString() << QString() << Opts{} << 0;
+    QTest::newRow("en-empty-empty-nocase")
+            << u"en_US"_s << QString() << QString() << Opts{Opt::CaseInsensitive} << 0;
+    QTest::newRow("en-empty-empty-nopun")
+            << u"en_US"_s << QString() << QString()
+            << (Opt::CaseInsensitive | Opt::IgnorePunctuation) << 0;
 
     /*
         In Swedish, a with ring above (å) comes before a with
         diaresis (ä), which comes before o diaresis (ö), which
         all come after z.
     */
-    QTest::newRow("swedish1") << QString("sv_SE") << u"å"_s << u"ä"_s << -1 << -1 << false << false << -1;
-    QTest::newRow("swedish2") << QString("sv_SE") << u"ä"_s << u"ö"_s << -1 << -1 << false << false << -1;
-    QTest::newRow("swedish3") << QString("sv_SE") << u"å"_s << u"ö"_s << -1 << -1 << false << false << -1;
-    QTest::newRow("swedish4") << QString("sv_SE") << QString::fromLatin1("z") << u"å"_s << -1 << -1 << false << false << -1;
-    QTest::newRow("swedish5") << QString("sv_SE") << QString("9") << QString("19") << -1 << -1 << true << false << -1;
-    QTest::newRow("swedish6") << QString("sv_SE") << QString("Test 9") << QString("Test_19") << -1 << -1 << true << true << -1;
-    QTest::newRow("swedish7") << QString("sv_SE") << QString("test_19") << QString("test 19") << 1 << 1 << true << false << 1;
-    QTest::newRow("swedish8") << QString("sv_SE") << QString("test.19") << QString("test,19") << 1 << 1 << true << true << 0;
-    QTest::newRow("sv-empty-word") << QString("sv_SE") << QString() << QString("mett") << -1 << -1 << false << true << -1;
-    QTest::newRow("sv-empty-number") << QString("sv_SE") << QString() << QString("42") << -1 << -1 << true << true << -1;
-    QTest::newRow("sv-word-empty")
-            << QString("sv_SE") << QString("mett") << QString() << 1 << 1 << false << true << 1;
-    QTest::newRow("sv-number-empty")
-            << QString("sv_SE") << QString("42") << QString() << 1 << 1 << true << true << 1;
-    QTest::newRow("sv-empty-empty")
-            << QString("sv_SE") << QString() << QString() << 0 << 0 << false << true << 0;
+    QTest::newRow("sv-å:ä") << u"sv_SE"_s << u"å"_s << u"ä"_s << Opts{} << -1;
+    QTest::newRow("sv-å:ä-nocase")
+            << u"sv_SE"_s << u"å"_s << u"ä"_s << Opts{Opt::CaseInsensitive} << -1;
+    QTest::newRow("sv-ä:ö") << u"sv_SE"_s << u"ä"_s << u"ö"_s << Opts{} << -1;
+    QTest::newRow("sv-ä:ö-nocase")
+            << u"sv_SE"_s << u"ä"_s << u"ö"_s << Opts{Opt::CaseInsensitive} << -1;
+    QTest::newRow("sv-å:ö") << u"sv_SE"_s << u"å"_s << u"ö"_s << Opts{} << -1;
+    QTest::newRow("sv-å:ö-nocase")
+            << u"sv_SE"_s << u"å"_s << u"ö"_s << Opts{Opt::CaseInsensitive} << -1;
+    QTest::newRow("sv-z:å") << u"sv_SE"_s << u"z"_s << u"å"_s << Opts{} << -1;
+    QTest::newRow("sv-z:å-nocase")
+            << u"sv_SE"_s << u"z"_s << u"å"_s << Opts{Opt::CaseInsensitive} << -1;
+    QTest::newRow("sv-9:19-numsort")
+            << u"sv_SE"_s << u"9"_s << u"19"_s << Opts{Opt::NumericSort} << -1;
+    QTest::newRow("sv-9:19-nocase")
+            << u"sv_SE"_s << u"9"_s << u"19"_s << (Opt::CaseInsensitive | Opt::NumericSort) << -1;
+    QTest::newRow("sv-9:_19-numsort")
+            << u"sv_SE"_s << u"Test 9"_s << u"Test_19"_s << Opts{Opt::NumericSort} << -1;
+    QTest::newRow("sv-9:_19-nocase")
+            << u"sv_SE"_s << u"Test 9"_s << u"Test_19"_s
+            << (Opt::CaseInsensitive | Opt::NumericSort) << -1;
+    QTest::newRow("sv-9:_19-nopun")
+            << u"sv_SE"_s << u"Test 9"_s << u"Test_19"_s
+            << (Opt::CaseInsensitive | Opt::NumericSort | Opt::IgnorePunctuation) << -1;
+    QTest::newRow("sv-_19:19-numsort")
+            << u"sv_SE"_s << u"test_19"_s << u"test 19"_s << Opts{Opt::NumericSort} << 1;
+    QTest::newRow("sv-_19:19-nocase")
+            << u"sv_SE"_s << u"test_19"_s << u"test 19"_s
+            << (Opt::CaseInsensitive | Opt::NumericSort) << 1;
+    QTest::newRow("sv-.19:,19-numsort")
+            << u"sv_SE"_s << u"test.19"_s << u"test,19"_s << Opts{Opt::NumericSort} << 1;
+    QTest::newRow("sv-.19:,19-nocase")
+            << u"sv_SE"_s << u"test.19"_s << u"test,19"_s
+            << (Opt::CaseInsensitive | Opt::NumericSort) << 1;
+    QTest::newRow("sv-.19:,19-nopun")
+            << u"sv_SE"_s << u"test.19"_s << u"test,19"_s
+            << (Opt::CaseInsensitive | Opt::NumericSort | Opt::IgnorePunctuation) << 0;
+    QTest::newRow("sv-empty-word") << u"sv_SE"_s << QString() << u"mett"_s << Opts{} << -1;
+    QTest::newRow("sv-empty-word-nocase")
+            << u"sv_SE"_s << QString() << u"mett"_s << Opts{Opt::CaseInsensitive} << -1;
+    QTest::newRow("sv-empty-word-nopun")
+            << u"sv_SE"_s << QString() << u"mett"_s
+            << (Opt::CaseInsensitive | Opt::IgnorePunctuation) << -1;
+    QTest::newRow("sv-empty-number-numsort")
+            << u"sv_SE"_s << QString() << u"42"_s << Opts{Opt::NumericSort} << -1;
+    QTest::newRow("sv-empty-number-nocase")
+            << u"sv_SE"_s << QString() << u"42"_s
+            << (Opt::CaseInsensitive | Opt::NumericSort) << -1;
+    QTest::newRow("sv-empty-number-nopun")
+            << u"sv_SE"_s << QString() << u"42"_s
+            << (Opt::CaseInsensitive | Opt::NumericSort | Opt::IgnorePunctuation) << -1;
+    QTest::newRow("sv-word-empty") << u"sv_SE"_s << u"mett"_s << QString() << Opts{} << 1;
+    QTest::newRow("sv-word-empty-nocase")
+            << u"sv_SE"_s << u"mett"_s << QString() << Opts{Opt::CaseInsensitive} << 1;
+    QTest::newRow("sv-word-empty-nopun")
+            << u"sv_SE"_s << u"mett"_s << QString()
+            << (Opt::CaseInsensitive | Opt::IgnorePunctuation) << 1;
+    QTest::newRow("sv-number-empty-numsort")
+            << u"sv_SE"_s << u"42"_s << QString() << Opts{Opt::NumericSort} << 1;
+    QTest::newRow("sv-number-empty-nocase")
+            << u"sv_SE"_s << u"42"_s << QString() << (Opt::CaseInsensitive | Opt::NumericSort) << 1;
+    QTest::newRow("sv-number-empty-nopun")
+            << u"sv_SE"_s << u"42"_s << QString()
+            << (Opt::CaseInsensitive | Opt::NumericSort | Opt::IgnorePunctuation) << 1;
+    QTest::newRow("sv-empty-empty") << u"sv_SE"_s << QString() << QString() << Opts{} << 0;
+    QTest::newRow("sv-empty-empty-nocase")
+            << u"sv_SE"_s << QString() << QString() << Opts{Opt::CaseInsensitive} << 0;
+    QTest::newRow("sv-empty-empty-nopun")
+            << u"sv_SE"_s << QString() << QString()
+            << (Opt::CaseInsensitive | Opt::IgnorePunctuation) << 0;
 
     /*
         In Norwegian, ae (æ) comes before o with stroke (ø), which
         comes before a with ring above (å).
     */
-    QTest::newRow("norwegian1") << QString("no_NO") << u"æ"_s << u"Ø"_s << -1 << -1 << false << false << -1;
-    QTest::newRow("norwegian2") << QString("no_NO") << u"Ø"_s << u"å"_s << -1 << -1 << false << false << -1;
-    QTest::newRow("norwegian3") << QString("no_NO") << u"æ"_s << u"å"_s << -1 << -1 << false << false << -1;
-    QTest::newRow("norwegian4") << QString("no_NO") << QString("9") << QString("19") << -1 << -1 << true << false << -1;
-    QTest::newRow("norwegian5") << QString("no_NO") << QString("Test 9") << QString("Test_19") << -1 << -1 << true << true << -1;
-    QTest::newRow("norwegian6") << QString("no_NO") << QString("Test 9") << QString("Test_19") << -1 << -1 << true << true << -1;
-    QTest::newRow("norwegian7") << QString("no_NO") << QString("test_19") << QString("test 19") << 1 << 1 << true << false << 1;
-    QTest::newRow("norwegian8") << QString("no_NO") << QString("test.19") << QString("test,19") << 1 << 1 << true << true << 0;
-    QTest::newRow("nb-empty-word") << QString("nb_NO") << QString() << QString("mett") << -1 << -1 << false << true << -1;
-    QTest::newRow("nb-empty-number") << QString("nb_NO") << QString() << QString("42") << -1 << -1 << true << true << -1;
-    QTest::newRow("nb-word-empty")
-            << QString("nb_NO") << QString("mett") << QString() << 1 << 1 << false << true << 1;
-    QTest::newRow("nb-number-empty")
-            << QString("nb_NO") << QString("42") << QString() << 1 << 1 << true << true << 1;
-    QTest::newRow("nb-empty-empty")
-            << QString("nb_NO") << QString() << QString() << 0 << 0 << false << true << 0;
+    QTest::newRow("no-æ:Ø") << u"no_NO"_s << u"æ"_s << u"Ø"_s << Opts{} << -1;
+    QTest::newRow("no-æ:Ø-nocase")
+            << u"no_NO"_s << u"æ"_s << u"Ø"_s << Opts{Opt::CaseInsensitive} << -1;
+    QTest::newRow("no-Ø:å") << u"no_NO"_s << u"Ø"_s << u"å"_s << Opts{} << -1;
+    QTest::newRow("no-Ø:å-nocase")
+            << u"no_NO"_s << u"Ø"_s << u"å"_s << Opts{Opt::CaseInsensitive} << -1;
+    QTest::newRow("no-æ:å") << u"no_NO"_s << u"æ"_s << u"å"_s << Opts{} << -1;
+    QTest::newRow("no-æ:å-nocase")
+            << u"no_NO"_s << u"æ"_s << u"å"_s << Opts{Opt::CaseInsensitive} << -1;
+    QTest::newRow("no-9:19-numsort")
+            << u"no_NO"_s << u"9"_s << u"19"_s << Opts{Opt::NumericSort} << -1;
+    QTest::newRow("no-9:19-nocase")
+            << u"no_NO"_s << u"9"_s << u"19"_s << (Opt::CaseInsensitive | Opt::NumericSort) << -1;
+    QTest::newRow("no-9:_19-numsort")
+            << u"no_NO"_s << u"Test 9"_s << u"Test_19"_s << Opts{Opt::NumericSort} << -1;
+    QTest::newRow("no-9:_19-nocase")
+            << u"no_NO"_s << u"Test 9"_s << u"Test_19"_s
+            << (Opt::CaseInsensitive | Opt::NumericSort) << -1;
+    QTest::newRow("no-9:_19-nopun")
+            << u"no_NO"_s << u"Test 9"_s << u"Test_19"_s
+            << (Opt::CaseInsensitive | Opt::NumericSort | Opt::IgnorePunctuation) << -1;
+    QTest::newRow("no-_19:19-numsort")
+            << u"no_NO"_s << u"test_19"_s << u"test 19"_s << Opts{Opt::NumericSort} << 1;
+    QTest::newRow("no-_19:19-nocase")
+            << u"no_NO"_s << u"test_19"_s << u"test 19"_s
+            << (Opt::CaseInsensitive | Opt::NumericSort) << 1;
+    QTest::newRow("no-.19:,19-numsort")
+            << u"no_NO"_s << u"test.19"_s << u"test,19"_s << Opts{Opt::NumericSort} << 1;
+    QTest::newRow("no-.19:,19-nocase")
+            << u"no_NO"_s << u"test.19"_s << u"test,19"_s
+            << (Opt::CaseInsensitive | Opt::NumericSort) << 1;
+    QTest::newRow("no-.19:,19-nopun")
+            << u"no_NO"_s << u"test.19"_s << u"test,19"_s
+            << (Opt::CaseInsensitive | Opt::NumericSort | Opt::IgnorePunctuation) << 0;
+    QTest::newRow("nb-empty-word") << u"nb_NO"_s << QString() << u"mett"_s << Opts{} << -1;
+    QTest::newRow("nb-empty-word-nocase")
+            << u"nb_NO"_s << QString() << u"mett"_s << Opts{Opt::CaseInsensitive} << -1;
+    QTest::newRow("nb-empty-word-nopun")
+            << u"nb_NO"_s << QString() << u"mett"_s
+            << (Opt::CaseInsensitive | Opt::IgnorePunctuation) << -1;
+    QTest::newRow("nb-empty-number-numsort")
+            << u"nb_NO"_s << QString() << u"42"_s << Opts{Opt::NumericSort} << -1;
+    QTest::newRow("nb-empty-number-nocase")
+            << u"nb_NO"_s << QString() << u"42"_s
+            << (Opt::CaseInsensitive | Opt::NumericSort) << -1;
+    QTest::newRow("nb-empty-number-nopun")
+            << u"nb_NO"_s << QString() << u"42"_s
+            << (Opt::CaseInsensitive | Opt::NumericSort | Opt::IgnorePunctuation) << -1;
+    QTest::newRow("nb-word-empty") << u"nb_NO"_s << u"mett"_s << QString() << Opts{} << 1;
+    QTest::newRow("nb-word-empty-nocase")
+            << u"nb_NO"_s << u"mett"_s << QString() << Opts{Opt::CaseInsensitive} << 1;
+    QTest::newRow("nb-word-empty-nopun")
+            << u"nb_NO"_s << u"mett"_s << QString()
+            << (Opt::CaseInsensitive | Opt::IgnorePunctuation) << 1;
+    QTest::newRow("nb-number-empty-numsort")
+            << u"nb_NO"_s << u"42"_s << QString() << Opts{Opt::NumericSort} << 1;
+    QTest::newRow("nb-number-empty-nocase")
+            << u"nb_NO"_s << u"42"_s << QString() << (Opt::CaseInsensitive | Opt::NumericSort) << 1;
+    QTest::newRow("nb-number-empty-nopun")
+            << u"nb_NO"_s << u"42"_s << QString()
+            << (Opt::CaseInsensitive | Opt::NumericSort | Opt::IgnorePunctuation) << 1;
+    QTest::newRow("nb-empty-empty") << u"nb_NO"_s << QString() << QString() << Opts{} << 0;
+    QTest::newRow("nb-empty-empty-nocase")
+            << u"nb_NO"_s << QString() << QString() << Opts{Opt::CaseInsensitive} << 0;
+    QTest::newRow("nb-empty-empty-nopun")
+            << u"nb_NO"_s << QString() << QString()
+            << (Opt::CaseInsensitive | Opt::IgnorePunctuation) << 0;
 
     /*
         In German, z comes *after* a with diaresis (ä),
         which comes before o diaresis (ö).
     */
-    QTest::newRow("german1") << QString("de_DE") << QString::fromLatin1("a") << u"ä"_s << -1 << -1 << false << false << -1;
-    QTest::newRow("german2") << QString("de_DE") << QString::fromLatin1("b") << u"ä"_s << 1 << 1 << false << false << 1;
-    QTest::newRow("german3") << QString("de_DE") << QString::fromLatin1("z") << u"ä"_s << 1 << 1 << false << false << 1;
-    QTest::newRow("german4") << QString("de_DE") << u"ä"_s << u"ö"_s << -1 << -1 << false << false << -1;
-    QTest::newRow("german5") << QString("de_DE") << QString::fromLatin1("z") << u"ö"_s << 1 << 1 << false << false << 1;
-    QTest::newRow("german6") << QString("de_DE") << u"À"_s << u"à"_s << 1 << 0 << false << false << 0;
-    QTest::newRow("german7") << QString("de_DE") << u"Ö"_s << u"ö"_s << 1 << 0 << false << false << 0;
-    QTest::newRow("german8") << QString("de_DE") << QString::fromLatin1("oe") << u"ö"_s << 1 << 1 << false << false << 1;
-    QTest::newRow("german9") << QString("de_DE") << QString("A") << QString("a") << 1 << 0 << false << false << 0;
-    QTest::newRow("german10") << QString("de_DE") << QString("9") << QString("19") << -1 << -1 << true << false << -1;
-    QTest::newRow("german11") << QString("de_DE") << QString("Test 9") << QString("Test_19") << -1 << -1 << true << true << -1;
-    QTest::newRow("german12") << QString("de_DE") << QString("test_19") << QString("test 19") << 1 << 1 << true << false << 1;
-    QTest::newRow("german13") << QString("de_DE") << QString("test.19") << QString("test,19") << 1 << 1 << true << true << 0;
-    QTest::newRow("de-empty-word") << QString("de_DE") << QString() << QString("satt") << -1 << -1 << false << true << -1;
-    QTest::newRow("de-empty-number") << QString("de_DE") << QString() << QString("42") << -1 << -1 << true << true << -1;
-    QTest::newRow("de-word-empty")
-            << QString("de_DE") << QString("satt") << QString() << 1 << 1 << false << true << 1;
-    QTest::newRow("de-number-empty")
-            << QString("de_DE") << QString("42") << QString() << 1 << 1 << true << true << 1;
-    QTest::newRow("de-empty-empty")
-            << QString("de_DE") << QString() << QString() << 0 << 0 << false << true << 0;
+    QTest::newRow("de-a:ä") << u"de_DE"_s << u"a"_s << u"ä"_s << Opts{} << -1;
+    QTest::newRow("de-a:ä-nocase")
+            << u"de_DE"_s << u"a"_s << u"ä"_s << Opts{Opt::CaseInsensitive} << -1;
+    QTest::newRow("de-b:ä") << u"de_DE"_s << u"b"_s << u"ä"_s << Opts{} << 1;
+    QTest::newRow("de-b:ä-nocase")
+            << u"de_DE"_s << u"b"_s << u"ä"_s << Opts{Opt::CaseInsensitive} << 1;
+    QTest::newRow("de-z:ä") << u"de_DE"_s << u"z"_s << u"ä"_s << Opts{} << 1;
+    QTest::newRow("de-z:ä-nocase")
+            << u"de_DE"_s << u"z"_s << u"ä"_s << Opts{Opt::CaseInsensitive} << 1;
+    QTest::newRow("de-ä:ö") << u"de_DE"_s << u"ä"_s << u"ö"_s << Opts{} << -1;
+    QTest::newRow("de-ä:ö-nocase")
+            << u"de_DE"_s << u"ä"_s << u"ö"_s << Opts{Opt::CaseInsensitive} << -1;
+    QTest::newRow("de-z:ö") << u"de_DE"_s << u"z"_s << u"ö"_s << Opts{} << 1;
+    QTest::newRow("de-z:ö-nocase")
+            << u"de_DE"_s << u"z"_s << u"ö"_s << Opts{Opt::CaseInsensitive} << 1;
+    QTest::newRow("de-À:à") << u"de_DE"_s << u"À"_s << u"à"_s << Opts{} << 1;
+    QTest::newRow("de-À:à-nocase")
+            << u"de_DE"_s << u"À"_s << u"à"_s << Opts{Opt::CaseInsensitive} << 0;
+    QTest::newRow("de-Ö:ö") << u"de_DE"_s << u"Ö"_s << u"ö"_s << Opts{} << 1;
+    QTest::newRow("de-Ö:ö-nocase")
+            << u"de_DE"_s << u"Ö"_s << u"ö"_s << Opts{Opt::CaseInsensitive} << 0;
+    QTest::newRow("de-oe:ö") << u"de_DE"_s << u"oe"_s << u"ö"_s << Opts{} << 1;
+    QTest::newRow("de-oe:ö-nocase")
+            << u"de_DE"_s << u"oe"_s << u"ö"_s << Opts{Opt::CaseInsensitive} << 1;
+    QTest::newRow("de-A:a") << u"de_DE"_s << u"A"_s << u"a"_s << Opts{} << 1;
+    QTest::newRow("de-A:a-nocase")
+            << u"de_DE"_s << u"A"_s << u"a"_s << Opts{Opt::CaseInsensitive} << 0;
+    QTest::newRow("de-9:19-numsort")
+            << u"de_DE"_s << u"9"_s << u"19"_s << Opts{Opt::NumericSort} << -1;
+    QTest::newRow("de-9:19-nocase")
+            << u"de_DE"_s << u"9"_s << u"19"_s << (Opt::CaseInsensitive | Opt::NumericSort) << -1;
+    QTest::newRow("de-9:_19-numsort")
+            << u"de_DE"_s << u"Test 9"_s << u"Test_19"_s << Opts{Opt::NumericSort} << -1;
+    QTest::newRow("de-9:_19-nocase")
+            << u"de_DE"_s << u"Test 9"_s << u"Test_19"_s
+            << (Opt::CaseInsensitive | Opt::NumericSort) << -1;
+    QTest::newRow("de-9:_19-nopun")
+            << u"de_DE"_s << u"Test 9"_s << u"Test_19"_s
+            << (Opt::CaseInsensitive | Opt::NumericSort | Opt::IgnorePunctuation) << -1;
+    QTest::newRow("de-_19:19-numsort")
+            << u"de_DE"_s << u"test_19"_s << u"test 19"_s << Opts{Opt::NumericSort} << 1;
+    QTest::newRow("de-_19:19-nocase")
+            << u"de_DE"_s << u"test_19"_s << u"test 19"_s
+            << (Opt::CaseInsensitive | Opt::NumericSort) << 1;
+    QTest::newRow("de-.19:,19-numsort")
+            << u"de_DE"_s << u"test.19"_s << u"test,19"_s << Opts{Opt::NumericSort} << 1;
+    QTest::newRow("de-.19:,19-nocase")
+            << u"de_DE"_s << u"test.19"_s << u"test,19"_s
+            << (Opt::CaseInsensitive | Opt::NumericSort) << 1;
+    QTest::newRow("de-.19:,19-nopun")
+            << u"de_DE"_s << u"test.19"_s << u"test,19"_s
+            << (Opt::CaseInsensitive | Opt::NumericSort | Opt::IgnorePunctuation) << 0;
+    QTest::newRow("de-empty-word") << u"de_DE"_s << QString() << u"satt"_s << Opts{} << -1;
+    QTest::newRow("de-empty-word-nocase")
+            << u"de_DE"_s << QString() << u"satt"_s << Opts{Opt::CaseInsensitive} << -1;
+    QTest::newRow("de-empty-word-nopun")
+            << u"de_DE"_s << QString() << u"satt"_s
+            << (Opt::CaseInsensitive | Opt::IgnorePunctuation) << -1;
+    QTest::newRow("de-empty-number-numsort")
+            << u"de_DE"_s << QString() << u"42"_s << Opts{Opt::NumericSort} << -1;
+    QTest::newRow("de-empty-number-nocase")
+            << u"de_DE"_s << QString() << u"42"_s
+            << (Opt::CaseInsensitive | Opt::NumericSort) << -1;
+    QTest::newRow("de-empty-number-nopun")
+            << u"de_DE"_s << QString() << u"42"_s
+            << (Opt::CaseInsensitive | Opt::NumericSort | Opt::IgnorePunctuation) << -1;
+    QTest::newRow("de-word-empty") << u"de_DE"_s << u"satt"_s << QString() << Opts{} << 1;
+    QTest::newRow("de-word-empty-nocase")
+            << u"de_DE"_s << u"satt"_s << QString() << Opts{Opt::CaseInsensitive} << 1;
+    QTest::newRow("de-word-empty-nopun")
+            << u"de_DE"_s << u"satt"_s << QString()
+            << (Opt::CaseInsensitive | Opt::IgnorePunctuation) << 1;
+    QTest::newRow("de-number-empty-numsort")
+            << u"de_DE"_s << u"42"_s << QString() << Opts{Opt::NumericSort} << 1;
+    QTest::newRow("de-number-empty-nocase")
+            << u"de_DE"_s << u"42"_s << QString() << (Opt::CaseInsensitive | Opt::NumericSort) << 1;
+    QTest::newRow("de-number-empty-nopun")
+            << u"de_DE"_s << u"42"_s << QString()
+            << (Opt::CaseInsensitive | Opt::NumericSort | Opt::IgnorePunctuation) << 1;
+    QTest::newRow("de-empty-empty") << u"de_DE"_s << QString() << QString() << Opts{} << 0;
+    QTest::newRow("de-empty-empty-nocase")
+            << u"de_DE"_s << QString() << QString() << Opts{Opt::CaseInsensitive} << 0;
+    QTest::newRow("de-empty-empty-nopun")
+            << u"de_DE"_s << QString() << QString()
+            << (Opt::CaseInsensitive | Opt::IgnorePunctuation) << 0;
 
     /*
         French sorting of e and e with acute accent (é)
     */
-    QTest::newRow("french1") << QString("fr_FR") << u"é"_s << QString::fromLatin1("e") << 1 << 1 << false << false << 1;
-    QTest::newRow("french2") << QString("fr_FR") << u"ét"_s << QString::fromLatin1("et") << 1 << 1 << false << false << 1;
-    QTest::newRow("french3") << QString("fr_FR") << u"é"_s << QString::fromLatin1("d") << 1 << 1 << false << false << 1;
-    QTest::newRow("french4") << QString("fr_FR") << u"é"_s << QString::fromLatin1("f") << -1 << -1 << false << false << -1;
-    QTest::newRow("french5") << QString("fr_FR") << QString("9") << QString("19") << -1 << -1 << true << false << -1;
-    QTest::newRow("french6") << QString("fr_FR") << QString("Test 9") << QString("Test_19") << -1 << -1 << true << true << -1;
-    QTest::newRow("french7") << QString("fr_FR") << QString("test_19") << QString("test 19") << 1 << 1 << true << false << 1;
-    QTest::newRow("french8") << QString("fr_FR") << QString("test.19") << QString("test,19") << 1 << 1 << true << true << 0;
-    QTest::newRow("fr-empty-word") << QString("fr_FR") << QString() << QString("plein") << -1 << -1 << false << true << -1;
-    QTest::newRow("fr-empty-number") << QString("fr_FR") << QString() << QString("42") << -1 << -1 << true << true << -1;
-    QTest::newRow("fr-word-empty")
-            << QString("fr_FR") << QString("plein") << QString() << 1 << 1 << false << true << 1;
-    QTest::newRow("fr-number-empty")
-            << QString("fr_FR") << QString("42") << QString() << 1 << 1 << true << true << 1;
-    QTest::newRow("fr-empty-empty")
-            << QString("fr_FR") << QString() << QString() << 0 << 0 << false << true << 0;
+    QTest::newRow("fr-é:e") << u"fr_FR"_s << u"é"_s << u"e"_s << Opts{} << 1;
+    QTest::newRow("fr-é:e-nocase")
+            << u"fr_FR"_s << u"é"_s << u"e"_s << Opts{Opt::CaseInsensitive} << 1;
+    QTest::newRow("fr-ét:et") << u"fr_FR"_s << u"ét"_s << u"et"_s << Opts{} << 1;
+    QTest::newRow("fr-ét:et-nocase")
+            << u"fr_FR"_s << u"ét"_s << u"et"_s << Opts{Opt::CaseInsensitive} << 1;
+    QTest::newRow("fr-é:d") << u"fr_FR"_s << u"é"_s << u"d"_s << Opts{} << 1;
+    QTest::newRow("fr-é:d-nocase")
+            << u"fr_FR"_s << u"é"_s << u"d"_s << Opts{Opt::CaseInsensitive} << 1;
+    QTest::newRow("fr-é:f") << u"fr_FR"_s << u"é"_s << u"f"_s << Opts{} << -1;
+    QTest::newRow("fr-é:f-nocase")
+            << u"fr_FR"_s << u"é"_s << u"f"_s << Opts{Opt::CaseInsensitive} << -1;
+    QTest::newRow("fr-9:19-numsort")
+            << u"fr_FR"_s << u"9"_s << u"19"_s << Opts{Opt::NumericSort} << -1;
+    QTest::newRow("fr-9:19-nocase")
+            << u"fr_FR"_s << u"9"_s << u"19"_s << (Opt::CaseInsensitive | Opt::NumericSort) << -1;
+    QTest::newRow("fr-9:_19-numsort")
+            << u"fr_FR"_s << u"Test 9"_s << u"Test_19"_s << Opts{Opt::NumericSort} << -1;
+    QTest::newRow("fr-9:_19-nocase")
+            << u"fr_FR"_s << u"Test 9"_s << u"Test_19"_s
+            << (Opt::CaseInsensitive | Opt::NumericSort) << -1;
+    QTest::newRow("fr-9:_19-nopun")
+            << u"fr_FR"_s << u"Test 9"_s << u"Test_19"_s
+            << (Opt::CaseInsensitive | Opt::NumericSort | Opt::IgnorePunctuation) << -1;
+    QTest::newRow("fr-_19:19-numsort")
+            << u"fr_FR"_s << u"test_19"_s << u"test 19"_s << Opts{Opt::NumericSort} << 1;
+    QTest::newRow("fr-_19:19-nocase")
+            << u"fr_FR"_s << u"test_19"_s << u"test 19"_s
+            << (Opt::CaseInsensitive | Opt::NumericSort) << 1;
+    QTest::newRow("fr-.19:,19-numsort")
+            << u"fr_FR"_s << u"test.19"_s << u"test,19"_s << Opts{Opt::NumericSort} << 1;
+    QTest::newRow("fr-.19:,19-nocase")
+            << u"fr_FR"_s << u"test.19"_s << u"test,19"_s
+            << (Opt::CaseInsensitive | Opt::NumericSort) << 1;
+    QTest::newRow("fr-.19:,19-nopun")
+            << u"fr_FR"_s << u"test.19"_s << u"test,19"_s
+            << (Opt::CaseInsensitive | Opt::NumericSort | Opt::IgnorePunctuation) << 0;
+    QTest::newRow("fr-empty-word") << u"fr_FR"_s << QString() << u"plein"_s << Opts{} << -1;
+    QTest::newRow("fr-empty-word-nocase")
+            << u"fr_FR"_s << QString() << u"plein"_s << Opts{Opt::CaseInsensitive} << -1;
+    QTest::newRow("fr-empty-word-nopun")
+            << u"fr_FR"_s << QString() << u"plein"_s
+            << (Opt::CaseInsensitive | Opt::IgnorePunctuation) << -1;
+    QTest::newRow("fr-empty-number-numsort")
+            << u"fr_FR"_s << QString() << u"42"_s << Opts{Opt::NumericSort} << -1;
+    QTest::newRow("fr-empty-number-nocase")
+            << u"fr_FR"_s << QString() << u"42"_s
+            << (Opt::CaseInsensitive | Opt::NumericSort) << -1;
+    QTest::newRow("fr-empty-number-nopun")
+            << u"fr_FR"_s << QString() << u"42"_s
+            << (Opt::CaseInsensitive | Opt::NumericSort | Opt::IgnorePunctuation) << -1;
+    QTest::newRow("fr-word-empty") << u"fr_FR"_s << u"plein"_s << QString() << Opts{} << 1;
+    QTest::newRow("fr-word-empty-nocase")
+            << u"fr_FR"_s << u"plein"_s << QString() << Opts{Opt::CaseInsensitive} << 1;
+    QTest::newRow("fr-word-empty-nopun")
+            << u"fr_FR"_s << u"plein"_s << QString()
+            << (Opt::CaseInsensitive | Opt::IgnorePunctuation) << 1;
+    QTest::newRow("fr-number-empty-numsort")
+            << u"fr_FR"_s << u"42"_s << QString() << Opts{Opt::NumericSort} << 1;
+    QTest::newRow("fr-number-empty-nocase")
+            << u"fr_FR"_s << u"42"_s << QString() << (Opt::CaseInsensitive | Opt::NumericSort) << 1;
+    QTest::newRow("fr-number-empty-nopun")
+            << u"fr_FR"_s << u"42"_s << QString()
+            << (Opt::CaseInsensitive | Opt::NumericSort | Opt::IgnorePunctuation) << 1;
+    QTest::newRow("fr-empty-empty") << u"fr_FR"_s << QString() << QString() << Opts{} << 0;
+    QTest::newRow("fr-empty-empty-nocase")
+            << u"fr_FR"_s << QString() << QString() << Opts{Opt::CaseInsensitive} << 0;
+    QTest::newRow("fr-empty-empty-nopun")
+            << u"fr_FR"_s << QString() << QString()
+            << (Opt::CaseInsensitive | Opt::IgnorePunctuation) << 0;
 
     // C locale: case sensitive [A-Z] < [a-z] but case insensitive [Aa] < [Bb] <...< [Zz]
-    const QString C = QStringLiteral("C");
-    QTest::newRow("C:ABBA:AaaA") << C << QStringLiteral("ABBA") << QStringLiteral("AaaA") << -1 << 1 << false << false << 1;
-    QTest::newRow("C:AZa:aAZ") << C << QStringLiteral("AZa") << QStringLiteral("aAZ") << -1 << 1 << false << false << 1;
-    QTest::newRow("C-empty-word") << QString(C) << QString() << QString("non-empty") << -1 << -1 << false << true << -1;
-    QTest::newRow("C-empty-number") << QString(C) << QString() << QString("42") << -1 << -1 << true << true << -1;
-    QTest::newRow("C-word-empty") << QString(C) << QString("non-empty") << QString() << 1 << 1
-                                  << false << true << 1;
-    QTest::newRow("C-number-empty")
-            << QString(C) << QString("42") << QString() << 1 << 1 << true << true << 1;
-    QTest::newRow("C-empty-empty")
-            << QString(C) << QString() << QString() << 0 << 0 << false << true << 0;
+    const QString C = u"C"_s;
+    QTest::newRow("C:ABBA:AaaA") << C << u"ABBA"_s << u"AaaA"_s << Opts{} << -1;
+    QTest::newRow("C:ABBA:AaaA-nocase")
+            << C << u"ABBA"_s << u"AaaA"_s << Opts{Opt::CaseInsensitive} << 1;
+    QTest::newRow("C:AZa:aAZ") << C << u"AZa"_s << u"aAZ"_s << Opts{} << -1;
+    QTest::newRow("C:AZa:aAZ-nocase")
+            << C << u"AZa"_s << u"aAZ"_s << Opts{Opt::CaseInsensitive} << 1;
+    QTest::newRow("C-empty-word") << C << QString() << u"non-empty"_s << Opts{} << -1;
+    QTest::newRow("C-empty-word-nocase")
+            << C << QString() << u"non-empty"_s << Opts{Opt::CaseInsensitive} << -1;
+    QTest::newRow("C-empty-word-nopun")
+            << C << QString() << u"non-empty"_s
+            << (Opt::CaseInsensitive | Opt::IgnorePunctuation) << -1;
+    QTest::newRow("C-empty-number-numsort")
+            << C << QString() << u"42"_s << Opts{Opt::NumericSort} << -1;
+    QTest::newRow("C-empty-number-nocase")
+            << C << QString() << u"42"_s << (Opt::CaseInsensitive | Opt::NumericSort) << -1;
+    QTest::newRow("C-empty-number-nopun")
+            << C << QString() << u"42"_s
+            << (Opt::CaseInsensitive | Opt::NumericSort | Opt::IgnorePunctuation) << -1;
+    QTest::newRow("C-word-empty") << C << u"non-empty"_s << QString() << Opts{} << 1;
+    QTest::newRow("C-word-empty-nocase")
+            << C << u"non-empty"_s << QString() << Opts{Opt::CaseInsensitive} << 1;
+    QTest::newRow("C-word-empty-nopun")
+            << C << u"non-empty"_s << QString()
+            << (Opt::CaseInsensitive | Opt::IgnorePunctuation) << 1;
+    QTest::newRow("C-number-empty-numsort")
+            << C << u"42"_s << QString() << Opts{Opt::NumericSort} << 1;
+    QTest::newRow("C-number-empty-nocase")
+            << C << u"42"_s << QString() << (Opt::CaseInsensitive | Opt::NumericSort) << 1;
+    QTest::newRow("C-number-empty-nopun")
+            << C << u"42"_s << QString()
+            << (Opt::CaseInsensitive | Opt::NumericSort | Opt::IgnorePunctuation) << 1;
+    QTest::newRow("C-empty-empty") << C << QString() << QString() << Opts{} << 0;
+    QTest::newRow("C-empty-empty-nocase")
+            << C << QString() << QString() << Opts{Opt::CaseInsensitive} << 0;
+    QTest::newRow("C-empty-empty-nopun")
+            << C << QString() << QString() << (Opt::CaseInsensitive | Opt::IgnorePunctuation) << 0;
 }
 
 void tst_QCollator::compare()
@@ -249,13 +555,11 @@ void tst_QCollator::compare()
     QFETCH(QString, locale);
     QFETCH(QString, s1);
     QFETCH(QString, s2);
+    QFETCH(Opts, options);
     QFETCH(int, result);
-    QFETCH(int, caseInsensitiveResult);
-    QFETCH(bool, numericMode);
-    QFETCH(bool, ignorePunctuation);
-    QFETCH(int, punctuationResult);
 
     QCollator collator((QLocale(locale)));
+    collator.setOptions(options);
 
     // AFTER the QCollator initialization
     auto localechanger = qScopeGuard([original = QLocale()] {
@@ -268,8 +572,8 @@ void tst_QCollator::compare()
         return compared < 0 ? -1 : compared > 0 ? 1 : 0;
     };
 #if defined(Q_OS_WASM)
-    if (strcmp(QTest::currentDataTag(), "english5") == 0
-        || strcmp(QTest::currentDataTag(), "english8") == 0)
+    const QByteArrayView tag = QTest::currentDataTag();
+    if (tag.startsWith("en-9:19") || tag.startsWith("en-.19:,19"))
         QSKIP("Some en-us locale tests have issues on WASM");
 #endif // Q_OS_WASM
 #if !QT_CONFIG(icu) && !defined(Q_OS_WIN) && !defined(Q_OS_MACOS)
@@ -279,56 +583,38 @@ void tst_QCollator::compare()
 #  define SORTKEY_WORKS
 #endif
 
-    if (numericMode)
-        collator.setNumericMode(true);
-
     [[maybe_unused]] int keyCompareResult = result;
-    [[maybe_unused]] int keyCompareCaseInsensitiveResult = caseInsensitiveResult;
-    [[maybe_unused]] int keyComparePunctuationResultResult = punctuationResult;
 
     // trying to deal with special behavior of different OS-dependent collators
     if (collator.locale() == QLocale("C")) {
 #if !QT_CONFIG(icu) && defined(Q_OS_MACOS)
         // for MACOS C-locale is not supported, always providing empty string for sortKey()
         keyCompareResult = 0;
-        keyCompareCaseInsensitiveResult = 0;
-        keyComparePunctuationResultResult = 0;
 #else
-        // for other platforms C-locale strings are not modified by sortKey() anyhow
-        keyCompareCaseInsensitiveResult = keyCompareResult;
-        keyComparePunctuationResultResult = keyCompareResult;
+        if (options.testFlag(Opt::CaseInsensitive)) {
+            // C locale sort keys ignore CaseInsensitive
+            collator.setOptions(options & ~Opts(Opt::CaseInsensitive));
+            keyCompareResult = asSign(collator.compare(s1, s2));
+            collator.setOptions(options);
+        }
 #endif
     }
 
     QCOMPARE(asSign(collator.compare(s1, s2)), result);
-    if (!numericMode)
+    if (!options)
         QCOMPARE(asSign(QCollator::defaultCompare(s1, s2)), result);
 #ifdef SORTKEY_WORKS
     auto key1 = collator.sortKey(s1);
     auto key2 = collator.sortKey(s2);
     QCOMPARE(asSign(key1.compare(key2)), keyCompareResult);
 
-    key1 = QCollator::defaultSortKey(s1);
-    key2 = QCollator::defaultSortKey(s2);
-    if (!numericMode)
+    if (!options) {
+        key1 = QCollator::defaultSortKey(s1);
+        key2 = QCollator::defaultSortKey(s2);
         QCOMPARE(asSign(key1.compare(key2)), keyCompareResult);
-#endif
-    collator.setCaseSensitivity(Qt::CaseInsensitive);
-    QCOMPARE(asSign(collator.compare(s1, s2)), caseInsensitiveResult);
-#ifdef SORTKEY_WORKS
-    key1 = collator.sortKey(s1);
-    key2 = collator.sortKey(s2);
-    QCOMPARE(asSign(key1.compare(key2)), keyCompareCaseInsensitiveResult);
-#endif
-    collator.setIgnorePunctuation(ignorePunctuation);
-    QCOMPARE(asSign(collator.compare(s1, s2)), punctuationResult);
-#ifdef SORTKEY_WORKS
-    key1 = collator.sortKey(s1);
-    key2 = collator.sortKey(s2);
-    QCOMPARE(asSign(key1.compare(key2)), keyComparePunctuationResultResult);
+    }
 #endif
 }
-
 
 void tst_QCollator::state()
 {
