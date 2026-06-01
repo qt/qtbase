@@ -39,33 +39,33 @@ public Q_SLOTS:
 };
 
 
-static SmcConn smcConnection = nullptr;
-static bool sm_interactionActive;
-static bool sm_smActive;
-static int sm_interactStyle;
-static int sm_saveType;
-static bool sm_cancel;
-static bool sm_waitingForInteraction;
-static bool sm_isshutdown;
-static bool sm_phase2;
-static bool sm_in_phase2;
+SmcConn smcConnection = nullptr;
+bool sm_interactionActive;
+bool sm_smActive;
+int sm_interactStyle;
+int sm_saveType;
+bool sm_cancel;
+bool sm_waitingForInteraction;
+bool sm_isshutdown;
+bool sm_phase2;
+bool sm_in_phase2;
 bool qt_sm_blockUserInput = false;
 
-static QSmSocketReceiver* sm_receiver = nullptr;
+QSmSocketReceiver* sm_receiver = nullptr;
 
-static void resetSmState();
-static void sm_setProperty(const char *name, const char *type,
+void resetSmState();
+void sm_setProperty(const char *name, const char *type,
                             int num_vals, SmPropValue *vals);
-static void sm_saveYourselfCallback(SmcConn smcConn, SmPointer clientData,
+void sm_saveYourselfCallback(SmcConn smcConn, SmPointer clientData,
                                   int saveType, Bool shutdown , int interactStyle, Bool fast);
-static void sm_saveYourselfPhase2Callback(SmcConn smcConn, SmPointer clientData) ;
-static void sm_dieCallback(SmcConn smcConn, SmPointer clientData) ;
-static void sm_shutdownCancelledCallback(SmcConn smcConn, SmPointer clientData);
-static void sm_saveCompleteCallback(SmcConn smcConn, SmPointer clientData);
-static void sm_interactCallback(SmcConn smcConn, SmPointer clientData);
-static void sm_performSaveYourself(QXcbSessionManager*);
+void sm_saveYourselfPhase2Callback(SmcConn smcConn, SmPointer clientData) ;
+void sm_dieCallback(SmcConn smcConn, SmPointer clientData) ;
+void sm_shutdownCancelledCallback(SmcConn smcConn, SmPointer clientData);
+void sm_saveCompleteCallback(SmcConn smcConn, SmPointer clientData);
+void sm_interactCallback(SmcConn smcConn, SmPointer clientData);
+void sm_performSaveYourself(QXcbSessionManager*);
 
-static void resetSmState()
+void resetSmState()
 {
     sm_waitingForInteraction = false;
     sm_interactionActive = false;
@@ -80,7 +80,7 @@ static void resetSmState()
 
 // theoretically it's possible to set several properties at once. For
 // simplicity, however, we do just one property at a time
-static void sm_setProperty(const char *name, const char *type,
+void sm_setProperty(const char *name, const char *type,
                             int num_vals, SmPropValue *vals)
 {
     if (num_vals) {
@@ -100,7 +100,7 @@ static void sm_setProperty(const char *name, const char *type,
     }
 }
 
-static void sm_setProperty(const QString &name, const QString &value)
+void sm_setProperty(const QString &name, const QString &value)
 {
     QByteArray v = value.toUtf8();
     SmPropValue prop;
@@ -109,7 +109,7 @@ static void sm_setProperty(const QString &name, const QString &value)
     sm_setProperty(name.toLatin1().data(), SmARRAY8, 1, &prop);
 }
 
-static void sm_setProperty(const QString &name, const QStringList &value)
+void sm_setProperty(const QString &name, const QStringList &value)
 {
     SmPropValue *prop = new SmPropValue[value.size()];
     int count = 0;
@@ -132,7 +132,7 @@ struct QT_smcConn {
     unsigned int shutdown_in_progress : 1;
 };
 
-static void sm_saveYourselfCallback(SmcConn smcConn, SmPointer clientData,
+void sm_saveYourselfCallback(SmcConn smcConn, SmPointer clientData,
                                   int saveType, Bool shutdown , int interactStyle, Bool /*fast*/)
 {
     if (smcConn != smcConnection)
@@ -154,7 +154,7 @@ static void sm_saveYourselfCallback(SmcConn smcConn, SmPointer clientData,
         resetSmState();
 }
 
-static void sm_performSaveYourself(QXcbSessionManager *sm)
+void sm_performSaveYourself(QXcbSessionManager *sm)
 {
     if (sm_isshutdown)
         qt_sm_blockUserInput = true;
@@ -255,7 +255,7 @@ static void sm_performSaveYourself(QXcbSessionManager *sm)
     }
 }
 
-static void sm_dieCallback(SmcConn smcConn, SmPointer /* clientData */)
+void sm_dieCallback(SmcConn smcConn, SmPointer /* clientData */)
 {
     if (smcConn != smcConnection)
         return;
@@ -263,7 +263,7 @@ static void sm_dieCallback(SmcConn smcConn, SmPointer /* clientData */)
     QWindowSystemInterface::handleApplicationTermination<QWindowSystemInterface::SynchronousDelivery>();
 }
 
-static void sm_shutdownCancelledCallback(SmcConn smcConn, SmPointer clientData)
+void sm_shutdownCancelledCallback(SmcConn smcConn, SmPointer clientData)
 {
     if (smcConn != smcConnection)
         return;
@@ -272,14 +272,14 @@ static void sm_shutdownCancelledCallback(SmcConn smcConn, SmPointer clientData)
     resetSmState();
 }
 
-static void sm_saveCompleteCallback(SmcConn smcConn, SmPointer /*clientData */)
+void sm_saveCompleteCallback(SmcConn smcConn, SmPointer /*clientData */)
 {
     if (smcConn != smcConnection)
         return;
     resetSmState();
 }
 
-static void sm_interactCallback(SmcConn smcConn, SmPointer clientData)
+void sm_interactCallback(SmcConn smcConn, SmPointer clientData)
 {
     if (smcConn != smcConnection)
         return;
@@ -287,14 +287,13 @@ static void sm_interactCallback(SmcConn smcConn, SmPointer clientData)
         ((QXcbSessionManager *) clientData)->exitEventLoop();
 }
 
-static void sm_saveYourselfPhase2Callback(SmcConn smcConn, SmPointer clientData)
+void sm_saveYourselfPhase2Callback(SmcConn smcConn, SmPointer clientData)
 {
     if (smcConn != smcConnection)
         return;
     sm_in_phase2 = true;
     sm_performSaveYourself((QXcbSessionManager *) clientData);
 }
-
 
 void QSmSocketReceiver::socketActivated()
 {
