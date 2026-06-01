@@ -6,6 +6,10 @@
 
 #include <xcb/xcb.h>
 
+#include <QtCore/qglobal.h>
+
+QT_BEGIN_NAMESPACE
+
 class QXcbAtom
 {
 public:
@@ -231,3 +235,5 @@ protected:
 private:
     xcb_atom_t m_allAtoms[QXcbAtom::NAtoms];
 };
+
+QT_END_NAMESPACE

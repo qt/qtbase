@@ -11,6 +11,8 @@
 #include <algorithm>
 #include <cstdlib>
 
+QT_BEGIN_NAMESPACE
+
 static const char *xcb_atomnames = {
     // window-manager <-> client protocols
     "WM_PROTOCOLS\0"
@@ -248,3 +250,5 @@ QXcbAtom::Atom QXcbAtom::qatom(xcb_atom_t xatom) const
 {
     return static_cast<QXcbAtom::Atom>(std::find(m_allAtoms, m_allAtoms + QXcbAtom::NAtoms, xatom) - m_allAtoms);
 }
+
+QT_END_NAMESPACE
