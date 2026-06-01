@@ -24,6 +24,8 @@
 
 #include "qibustypes.h"
 
+QT_BEGIN_NAMESPACE
+
 /*
  * Proxy class for interface org.freedesktop.IBus
  */
@@ -117,5 +119,7 @@ private Q_SLOTS:
 Q_SIGNALS: // SIGNALS
     void GlobalEngineChanged(const QString &engine_name);
 };
+
+QT_END_NAMESPACE
 
 #endif

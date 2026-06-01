@@ -12,6 +12,8 @@
 
 #include "qibusproxyportal.h"
 
+QT_BEGIN_NAMESPACE
+
 /*
  * Implementation of interface class QIBusProxyPortal
  */
@@ -25,3 +27,4 @@ QIBusProxyPortal::~QIBusProxyPortal()
 {
 }
 
+QT_END_NAMESPACE

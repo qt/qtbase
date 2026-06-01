@@ -12,6 +12,8 @@
 
 #include "qibusinputcontextproxy.h"
 
+QT_BEGIN_NAMESPACE
+
 /*
  * Implementation of interface class QIBusInputContextProxy
  */
@@ -25,3 +27,4 @@ QIBusInputContextProxy::~QIBusInputContextProxy()
 {
 }
 
+QT_END_NAMESPACE

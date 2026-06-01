@@ -21,6 +21,8 @@
 #include <QtCore/QVariant>
 #include <QtDBus/QtDBus>
 
+QT_BEGIN_NAMESPACE
+
 /*
  * Proxy class for interface org.freedesktop.IBus.Portal
  */
@@ -46,5 +48,7 @@ public Q_SLOTS: // METHODS
 
 Q_SIGNALS: // SIGNALS
 };
+
+QT_END_NAMESPACE
 
 #endif

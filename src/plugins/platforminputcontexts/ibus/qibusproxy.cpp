@@ -16,6 +16,8 @@
 
 #include <QDBusReply>
 
+QT_BEGIN_NAMESPACE
+
 /*
  * Implementation of interface class QIBusProxy
  */
@@ -98,5 +100,7 @@ void QIBusProxy::globalEngineChanged(const QString &engine_name)
 {
     emit GlobalEngineChanged(engine_name);
 }
+
+QT_END_NAMESPACE
 
 #include "moc_qibusproxy.cpp"

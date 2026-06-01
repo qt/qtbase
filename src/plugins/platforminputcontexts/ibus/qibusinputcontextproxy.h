@@ -24,6 +24,8 @@
 // Added for QIBusPropTypeClientCommitPreedit and QIBusPropTypeContentType
 #include "qibustypes.h"
 
+QT_BEGIN_NAMESPACE
+
 /*
  * Proxy class for interface org.freedesktop.IBus.InputContext
  */
@@ -173,5 +175,7 @@ Q_SIGNALS: // SIGNALS
     void UpdatePreeditTextWithMode(const QDBusVariant &text, uint cursor_pos, bool visible, uint mode);
     void UpdateProperty(const QDBusVariant &prop);
 };
+
+QT_END_NAMESPACE
 
 #endif
