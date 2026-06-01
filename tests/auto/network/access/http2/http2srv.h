@@ -78,7 +78,7 @@ public:
     // Emulate a non-conformant server that sends a stray, empty DATA frame with END_STREAM set
     // after the stream was already closed by a previous END_STREAM.
     void setSendRedundantEndStreamDATA(bool enable);
-    void emulateGOAWAY(int goawayCode, int timeout);
+    void emulateGOAWAY(int goawayCode, int timeout, bool disconnectAfter = false);
     void redirectOpenStream(quint16 targetPort);
 
     bool isClearText() const;
@@ -190,6 +190,7 @@ private:
     bool testingGOAWAY = false;
     int goawayTimeout = 0;
     int goawayCode = 0;
+    bool goawayDisconnect = false; // set via emulateGOAWAY disconnectAfter parameter
 
     // Clear text HTTP/2, we have to deal with the protocol upgrade request
     // from the initial HTTP/1.1 request.

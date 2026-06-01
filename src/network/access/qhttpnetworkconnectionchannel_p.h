@@ -102,6 +102,9 @@ public:
     QMultiMap<int, HttpMessagePair> h2RequestsToSend;
     bool switchedToHttp2 = false;
     QHttp2ProtocolHandler *h2ProtocolHandler() const noexcept;
+    bool isPendingReconnect() const noexcept;
+    bool clearPendingReconnect();
+    void requeueHttp2Requests(); // when we wanted HTTP/2 but got HTTP/1.1, or are reconnecting
 #ifndef QT_NO_SSL
     bool ignoreAllSslErrors;
     QList<QSslError> ignoreSslErrorsList;
@@ -109,7 +112,6 @@ public:
     void ignoreSslErrors();
     void ignoreSslErrors(const QList<QSslError> &errors);
     void setSslConfiguration(const QSslConfiguration &config);
-    void requeueHttp2Requests(); // when we wanted HTTP/2 but got HTTP/1.1
 #endif
     // to emit the signal for all in-flight replies:
     void emitFinishedWithError(QNetworkReply::NetworkError error, const char *message);

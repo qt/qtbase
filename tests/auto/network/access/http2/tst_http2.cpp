@@ -45,6 +45,7 @@ Q_DECLARE_METATYPE(QNetworkRequest::Attribute)
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
+using namespace std::chrono_literals;
 
 QHttp2Configuration qt_defaultH2Configuration()
 {
@@ -92,6 +93,8 @@ private slots:
     void pushPromise();
     void goaway_data();
     void goaway();
+    void goawayNoErrorContentReSend();
+    void goawayDisconnectQueuedRequest();
     void earlyResponse();
     void earlyError();
     void abortReply();
@@ -618,7 +621,7 @@ void tst_Http2::goaway_data()
     QTest::addColumn<QNetworkReply::NetworkError>("expectedError");
     QTest::newRow("ImmediateGOAWAY") << 0 << int(Http2::INTERNAL_ERROR) << QNetworkReply::InternalServerError;
     QTest::newRow("DelayedGOAWAY") << 1000 << int(Http2::INTERNAL_ERROR) << QNetworkReply::InternalServerError;
-    QTest::newRow("Graceful") << 0 << int(Http2::HTTP2_NO_ERROR) << QNetworkReply::RemoteHostClosedError;
+    QTest::newRow("Graceful") << 0 << int(Http2::HTTP2_NO_ERROR) << QNetworkReply::ContentReSendError;
     QTest::newRow("Unknown") << 0 << 500000 << QNetworkReply::ProtocolFailure;
 }
 
@@ -667,6 +670,106 @@ void tst_Http2::goaway()
     // Our server did not bother to send anything except a single GOAWAY frame:
     QVERIFY(!prefaceOK);
     QVERIFY(!serverGotSettingsACK);
+}
+
+void tst_Http2::goawayNoErrorContentReSend()
+{
+    // QTBUG-147237: when a server sends a graceful GOAWAY (NO_ERROR) with lastStreamID
+    // that is less than a stream we already started, the stream was not processed by the
+    // server and is safe to resend. The reply should carry ContentReSendError, not
+    // RemoteHostClosedError.
+
+    clearHTTP2State();
+    serverPort = 0;
+    nRequests = 1;
+
+    ServerPtr srv(newServer(defaultServerSettings, defaultConnectionType()));
+    // The 500ms delay gives the client time to open stream 1 before the GOAWAY arrives.
+    srv->emulateGOAWAY(int(Http2::HTTP2_NO_ERROR), 500);
+    QMetaObject::invokeMethod(srv.get(), "startServer", Qt::QueuedConnection);
+    runEventLoop();
+
+    QVERIFY(serverPort != 0);
+
+    auto url = requestUrl(defaultConnectionType());
+    url.setPath("/0"_L1);
+    QNetworkRequest request(url);
+    request.setAttribute(QNetworkRequest::Http2CleartextAllowedAttribute, true);
+    request.setAttribute(QNetworkRequest::Http2AllowedAttribute, true);
+
+    std::unique_ptr<QNetworkReply> reply(manager->get(request));
+    reply->ignoreSslErrors();
+    connect(reply.get(), &QNetworkReply::errorOccurred, this, &tst_Http2::replyFinishedWithError);
+
+    runEventLoop(5000);
+    STOP_ON_FAILURE
+
+    QCOMPARE(reply->error(), QNetworkReply::ContentReSendError);
+}
+
+void tst_Http2::goawayDisconnectQueuedRequest()
+{
+    // QTBUG-147237: a request queued while the channel is reconnecting after a graceful
+    // GOAWAY + TCP disconnect should receive ContentReSendError rather than hanging until
+    // a transferTimeout fires.
+
+    clearHTTP2State();
+    serverPort = 0;
+    nRequests = 1;
+
+    ServerPtr srv(newServer(defaultServerSettings, defaultConnectionType()));
+    // The 500ms delay gives the client time to open stream 1 before the GOAWAY arrives.
+    srv->emulateGOAWAY(int(Http2::HTTP2_NO_ERROR), 500, true);
+    QMetaObject::invokeMethod(srv.get(), "startServer", Qt::QueuedConnection);
+    runEventLoop();
+    QCOMPARE_NE(serverPort, quint16(0));
+
+    auto makeRequest = [this](int index) {
+        auto url = requestUrl(defaultConnectionType());
+        url.setPath(u"/%1"_s.arg(index));
+        QNetworkRequest req(url);
+        req.setAttribute(QNetworkRequest::Http2CleartextAllowedAttribute, true);
+        req.setAttribute(QNetworkRequest::Http2AllowedAttribute, true);
+        // A request queued on a going-away channel that never reconnects is never sent at
+        // all, so bound the wait instead of letting the test block until it is killed.
+        req.setTransferTimeout(3s);
+        return req;
+    };
+
+    // First request: establishes the H2 session and receives ContentReSendError because
+    // the server sends GOAWAY with lastStreamID 0, so stream 1 was never processed.
+    std::unique_ptr<QNetworkReply> initial(manager->get(makeRequest(0)));
+    initial->ignoreSslErrors();
+
+    // Queue a second request once the first one has errored.
+    std::unique_ptr<QNetworkReply> retry;
+    connect(initial.get(), &QNetworkReply::errorOccurred, this,
+            [&](QNetworkReply::NetworkError) {
+                retry.reset(manager->get(makeRequest(1)));
+                retry->ignoreSslErrors();
+                connect(retry.get(), &QNetworkReply::errorOccurred, this,
+                        [this](QNetworkReply::NetworkError) {
+                            --nRequests;
+                            if (!nRequests)
+                                stopEventLoop();
+                        });
+            });
+
+    runEventLoop(10000);
+    STOP_ON_FAILURE
+
+    // Stream 1 had ID > lastStreamID 0, so the server never processed it.
+    QCOMPARE(initial->error(), QNetworkReply::ContentReSendError);
+
+    // The retry was held while the going-away connection closed, then retried on a new
+    // connection. The server stopped accepting new connections, so the reconnect fails.
+    QList<QNetworkReply::NetworkError> expectedErrors = { QNetworkReply::ConnectionRefusedError };
+#ifdef Q_OS_WIN
+    // Windows does not promptly refuse a connection to a just-closed port, so instead of
+    // failing fast the reconnect stalls until the transfer timeout set above fires.
+    expectedErrors += QNetworkReply::TimeoutError;
+#endif
+    QVERIFY2(expectedErrors.contains(retry->error()), qPrintable(retry->errorString()));
 }
 
 void tst_Http2::earlyResponse()

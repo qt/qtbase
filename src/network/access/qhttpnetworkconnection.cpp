@@ -5,6 +5,7 @@
 #include "qhttpnetworkconnection_p.h"
 #include <private/qabstractsocket_p.h>
 #include "qhttpnetworkconnectionchannel_p.h"
+#include <private/qhttp2protocolhandler_p.h>
 #include "private/qnoncontiguousbytedevice_p.h"
 #include <private/qnetworkrequest_p.h>
 #include <private/qobject_p.h>
@@ -1113,6 +1114,11 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
         else if (networkLayerState == IPv6)
             channel.networkLayerPreference = QAbstractSocket::IPv6Protocol;
         channel.ensureConnection();
+
+        // Connection is going away: hold new requests until the channel reconnects.
+        if (channel.isPendingReconnect())
+            return;
+
         if (auto *s = channel.socket; s
             && QSocketAbstraction::socketState(s) == QAbstractSocket::ConnectedState
             && !channel.pendingEncrypt) {
