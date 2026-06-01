@@ -21,9 +21,11 @@
 #include <qpa/qplatformaccessibility.h>
 #include <QtCore/qhash.h>
 
+QT_BEGIN_NAMESPACE
 namespace QtGuiPrivate {
 class DeviceEventControllerAdaptor;
 } // namespace QtGuiPrivate
+QT_END_NAMESPACE
 
 QT_REQUIRE_CONFIG(accessibility);
 
