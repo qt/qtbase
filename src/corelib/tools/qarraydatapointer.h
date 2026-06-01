@@ -19,8 +19,11 @@ private:
 
 public:
     enum {
-        pass_parameter_by_value =
-                std::is_arithmetic<T>::value || std::is_pointer<T>::value || std::is_enum<T>::value
+        pass_parameter_by_value = std::disjunction_v<
+                                    std::is_arithmetic<T>,
+                                    std::is_pointer<T>,
+                                    std::is_enum<T>
+                                  >,
     };
 
     typedef typename std::conditional<pass_parameter_by_value, T, const T &>::type parameter_type;
