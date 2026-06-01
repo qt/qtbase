@@ -183,6 +183,12 @@ Default flags: --max-repeats 5 --passes-needed 1
     if args.test_basename.endswith(".exe"):
         args.test_basename = args.test_basename[:-4]
 
+    # When tests are cross-compiled. such as on WASM or iOS, CMake runs them
+    # through a CROSSCOMPILING_EMULATOR, prepended to the real test executable.
+    emulator = os.environ.get("CMAKE_CROSSCOMPILING_EMULATOR", "").split(";")
+    if emulator[0] and args.test_basename == os.path.basename(emulator[0]):
+        args.test_basename = os.path.basename(args.testargs[len(emulator)])
+
     # On Android emulated platforms, "androidtestrunner" is invoked by CMake
     # to wrap the tests.  We have to invoke it with all its arguments, and
     # then append "--" and append our QTest-specific arguments.
@@ -190,7 +196,7 @@ Default flags: --max-repeats 5 --passes-needed 1
     # Besides that we have to detect the basename to avoid saving the XML log
     # as "androidtestrunner.xml" for all tests. To do that we look for the
     # "--apk" or "--aab" option and read its argument.
-    if args.test_basename == "androidtestrunner":
+    elif args.test_basename == "androidtestrunner":
         if "--" in args.testargs:
             L.critical("qt-testrunner can't handle pre-existing '--' argument to androidtestrunner")
             sys.exit(1)
