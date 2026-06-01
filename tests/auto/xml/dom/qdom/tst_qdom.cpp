@@ -10,6 +10,7 @@
 #include <QtCore/qbytearray.h>
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qdebug.h>
+#include <QtCore/qelapsedtimer.h>
 #include <QtCore/qfile.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qregularexpression.h>
@@ -126,6 +127,8 @@ private slots:
     void testDomListComparison_data();
     void testDomListComparison();
     void noCrashOnDeepNesting() const;
+    void noCrashOnDeepNestingDtor() const { noCrashOnDeepNesting_impl(DeepNestingOp::Dtor); }
+    void noCrashOnDeepNestingClear() const { noCrashOnDeepNesting_impl(DeepNestingOp::Clear); }
 
     void cleanupTestCase() const;
 
@@ -138,6 +141,12 @@ private:
     static QString onNullWarning(const char *const functionName);
     static bool isDeepEqual(const QDomNode &n1, const QDomNode &n2);
     static bool isFakeXMLDeclaration(const QDomNode &node);
+    enum class DeepNestingOp {
+        Dtor,
+        Clear,
+    };
+    static constexpr size_t DeepNestingDepth = 250'000;
+    static void noCrashOnDeepNesting_impl(DeepNestingOp op);
 
     QList<QByteArray> m_testCodecs;
 };
@@ -2716,6 +2725,25 @@ void tst_QDom::testDomListComparison()
     QT_TEST_EQUALITY_OPS(lhs, rhs, result);
 }
 
+static QDomDocument makeNested(size_t depth)
+{
+    QDomDocument doc;
+    if (!depth)
+        return doc;
+
+    // Need to build it bottom-up (QTBUG-147190)...
+
+    QDomElement a = doc.createElement("a");
+    for (size_t i = 1; i < depth; ++i) {
+        QDomElement parent = doc.createElement("a");
+        parent.appendChild(std::exchange(a, parent));
+    }
+
+    doc.appendChild(a); // only now associate it with the doc (QTBUG-147190)
+
+    return doc;
+}
+
 // The fix of QTBUG-131151 crash
 void tst_QDom::noCrashOnDeepNesting() const
 {
@@ -2730,6 +2758,36 @@ void tst_QDom::noCrashOnDeepNesting() const
     QByteArray array = doc.toByteArray();
     QVERIFY(array.size());
     file.close();
+}
+
+// QTBUG-146936: dtor
+void tst_QDom::noCrashOnDeepNesting_impl(DeepNestingOp op)
+{
+    const auto print = [](const QElapsedTimer &timer, const char *operation) {
+        std::chrono::duration<double> secs = timer.durationElapsed();
+        qDebug("%s %llu-deep document in %fs", operation,
+               qulonglong(DeepNestingDepth), secs.count());
+    };
+
+    QElapsedTimer timer;
+    timer.start();
+    std::optional doc = makeNested(DeepNestingDepth);
+    print(timer, "created");
+
+    timer.restart();
+    const char *operation;
+    // the actual test is that it doesn't run off the stack and crashes (QTBUG-146936):
+    switch (op) {
+    case DeepNestingOp::Dtor:
+        operation = "destroyed";
+        doc.reset();
+        break;
+    case DeepNestingOp::Clear:
+        operation = "cleared";
+        doc->clear();
+        break;
+    }
+    print(timer, operation);
 }
 
 QTEST_MAIN(tst_QDom)
