@@ -1580,7 +1580,7 @@ bool QXcbConnection::xi2HandleTabletEvent(const void *event, TabletData *tabletD
     return handled;
 }
 
-inline qreal scaleOneValuator(qreal normValue, qreal screenMin, qreal screenSize)
+static inline qreal scaleOneValuator(qreal normValue, qreal screenMin, qreal screenSize)
 {
     return screenMin + normValue * screenSize;
 }
