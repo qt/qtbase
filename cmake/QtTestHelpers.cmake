@@ -734,8 +734,31 @@ function(qt_internal_add_test name)
     elseif(APPLE AND NOT MACOS)
         set(test_executable "${name}")
         set(test_working_dir "${CMAKE_CURRENT_BINARY_DIR}")
-        set_property(TARGET "${name}" PROPERTY CROSSCOMPILING_EMULATOR
+        set(qt_apple_runner
             "${QT6_INSTALL_PREFIX}/${QT6_INSTALL_LIBEXECS}/qt-apple-runner.sh")
+        set(app_fixture "${testname}-app")
+
+        # Install the app before, and uninstall it after the test runs. The
+        # install takes a lock that is distinct from the run lock, so that one
+        # test can install while another is still running, while keeping installs
+        # serialized among themselves. Uninstalls are tied to the run sequencing.
+        add_test(NAME "${testname}-install_app"
+            COMMAND "${qt_apple_runner}" install "$<TARGET_FILE:${name}>")
+        set_tests_properties("${testname}-install_app" PROPERTIES
+            FIXTURES_SETUP "${app_fixture}"
+            RESOURCE_LOCK "install_app")
+
+        # Only the run is handled by the emulator
+        set_property(TARGET "${name}" PROPERTY CROSSCOMPILING_EMULATOR
+            "${qt_apple_runner};run")
+
+        add_test(NAME "${testname}-uninstall_app"
+            COMMAND "${qt_apple_runner}" uninstall "$<TARGET_FILE:${name}>")
+        set_tests_properties("${testname}-uninstall_app" PROPERTIES
+            FIXTURES_CLEANUP "${app_fixture}")
+
+        # The test requires these fixtures, and takes the run lock; both are
+        # set on the test itself further below, once it has been created.
     elseif(QNX)
         set(test_working_dir "")
         set(test_executable "${name}")
@@ -917,6 +940,17 @@ function(qt_internal_add_test name)
         if(HARMONYOS_HDC)
             set_tests_properties(${testname} PROPERTIES
                 FIXTURES_REQUIRED HarmonyOSTestBundle
+            )
+        endif()
+
+        if(APPLE AND NOT MACOS)
+            # Require the install/uninstall fixtures set up in the Apple branch
+            # above, and take the run lock so no two test apps run at the same
+            # time, even under `ctest --parallel`. The run lock is distinct from
+            # the install lock, so the next test can install while this one runs.
+            set_tests_properties("${testname}" PROPERTIES
+                FIXTURES_REQUIRED "${testname}-app"
+                RESOURCE_LOCK "run_app"
             )
         endif()
 
