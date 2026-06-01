@@ -227,15 +227,14 @@ QFreetypeFace *QFreetypeFace::getFace(const QFontEngine::FaceId &face_id,
     QtFreetypeData *freetypeData = qt_getFreetypeData();
 
     // Purge any stale face that is now ready to be deleted
-    for (auto it = freetypeData->staleFaces.constBegin(); it != freetypeData->staleFaces.constEnd(); ) {
-        if ((*it)->ref.loadRelaxed() == 1) {
-            (*it)->cleanup();
-            delete *it;
-            it = freetypeData->staleFaces.erase(it);
-        } else {
-            ++it;
+    freetypeData->staleFaces.removeIf([](QFreetypeFace *face) {
+        if (face->ref.loadRelaxed() == 1) {
+            face->cleanup();
+            delete face;
+            return true;
         }
-    }
+        return false;
+    });
 
     QFreetypeFace *freetype = nullptr;
     auto it = freetypeData->faces.find(face_id);
@@ -464,18 +463,17 @@ void QFreetypeFace::release(const QFontEngine::FaceId &face_id)
     if (face && ref.loadRelaxed() == 1) {
         QtFreetypeData *freetypeData = qt_getFreetypeData();
 
-        for (auto it = freetypeData->staleFaces.constBegin(); it != freetypeData->staleFaces.constEnd(); ) {
-            if ((*it)->ref.loadRelaxed() == 1) {
-                (*it)->cleanup();
-                if ((*it) == this)
-                    deleteThis = true; // This face, delete at end of function for safety
+        freetypeData->staleFaces.removeIf([&deleteThis, this](QFreetypeFace *face){
+            if (face->ref.loadRelaxed() == 1) {
+                face->cleanup();
+                if (face == this)
+                    deleteThis = true;
                 else
-                    delete *it;
-                it = freetypeData->staleFaces.erase(it);
-            } else {
-                ++it;
+                    delete face;
+                return true;
             }
-        }
+            return false;
+        });
 
         for (auto it = freetypeData->faces.constBegin();
              it != freetypeData->faces.constEnd();
