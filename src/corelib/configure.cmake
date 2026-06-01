@@ -1326,6 +1326,12 @@ qt_feature("async-io" PRIVATE
     PURPOSE "Provides support for asynchronous file I/O."
     CONDITION QT_FEATURE_thread AND QT_FEATURE_future
 )
+qt_feature("randomgenerator_disable_fallback" PUBLIC
+    LABEL "Disable insecure PRNG fallback for QRandomGenerator (Unix-only)."
+    PURPOSE "Disable insecure PRNG fallback for QRandomGenerator (Unix-only)."
+    AUTODETECT OFF
+    EMIT_IF UNIX
+)
 
 qt_configure_add_summary_section(NAME "Qt Core")
 qt_configure_add_summary_entry(ARGS "backtrace")
