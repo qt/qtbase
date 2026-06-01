@@ -1429,10 +1429,8 @@ void tst_Http2::authenticationRequired()
     if (success) {
         connect(reply.get(), &QNetworkReply::finished, this, &tst_Http2::replyFinished);
     } else {
-        // Use queued connection so that the finished signal can be emitted and the isFinished
-        // property can be set.
-        connect(reply.get(), &QNetworkReply::errorOccurred, this,
-                &tst_Http2::replyFinishedWithError, Qt::QueuedConnection);
+        // finished() guarantees errorOccurred() was already delivered.
+        connect(reply.get(), &QNetworkReply::finished, this, &tst_Http2::replyFinishedWithError);
     }
     // Since we're using self-signed certificates,
     // ignore SSL errors:
@@ -1521,10 +1519,8 @@ void tst_Http2::unsupportedAuthenticateChallenge()
                 receivedDataOnStreams.insert(streamID);
             });
 
-    // Use queued connection so that the finished signal can be emitted and the
-    // isFinished property can be set.
-    connect(reply.get(), &QNetworkReply::errorOccurred, this,
-            &tst_Http2::replyFinishedWithError, Qt::QueuedConnection);
+    // finished() guarantees errorOccurred() was already delivered.
+    connect(reply.get(), &QNetworkReply::finished, this, &tst_Http2::replyFinishedWithError);
 
     // Since we're using self-signed certificates, ignore SSL errors:
     reply->ignoreSslErrors();
@@ -1584,8 +1580,8 @@ void tst_Http2::ntlmAuthenticateChallengeEmitsFinished()
     connect(reply.get(), &QNetworkReply::finished, reply.get(),
             [&]() { finishedReceived = true; });
 
-    connect(reply.get(), &QNetworkReply::errorOccurred, this,
-            &tst_Http2::replyFinishedWithError, Qt::QueuedConnection);
+    // finished() guarantees errorOccurred() was already delivered.
+    connect(reply.get(), &QNetworkReply::finished, this, &tst_Http2::replyFinishedWithError);
 
     reply->ignoreSslErrors();
 
