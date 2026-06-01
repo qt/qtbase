@@ -2371,6 +2371,13 @@ void QRhiD3D11::beginComputePass(QRhiCommandBuffer *cb,
     if (resourceUpdates)
         enqueueResourceUpdates(cb, resourceUpdates);
 
+    // If the compute shader uses any texture as shader resource, and the texture
+    // was render target of previous beginPass, the render target needs to be cleared
+    // before shader resources can be reset
+    QD3D11CommandBuffer::Command &fbCmd(cbD->commands.get());
+    fbCmd.cmd = QD3D11CommandBuffer::Command::SetRenderTarget;
+    fbCmd.args.setRenderTarget.rtViews.reset();
+
     QD3D11CommandBuffer::Command &cmd(cbD->commands.get());
     cmd.cmd = QD3D11CommandBuffer::Command::ResetShaderResources;
 
