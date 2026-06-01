@@ -1242,7 +1242,7 @@ void QOhosView::hide()
         break;
     }
     case ViewType::EmbeddedWindow:
-        setNativeNodeVisibility(false);
+        m_nativeNode->setVisibility(false);
         Q_EMIT windowVisibilityChange(false);
         break;
     }
