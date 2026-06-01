@@ -758,7 +758,7 @@ bool QOhosPlatformWindow::windowEvent(QEvent *event)
     case QEvent::Hide:
         if (isWindowBeingClosedOrDestroyed(window())) {
             auto *ohosView = ownedViewOrNull();
-            if (ohosView)
+            if (ohosView && ohosView->viewType() == QOhosView::ViewType::MainWindow)
                 ohosView->setNativeNodeVisibility(false);
         }
         break;
