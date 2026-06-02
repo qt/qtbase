@@ -59,6 +59,9 @@ private slots:
 
 void tst_QClipboard::initTestCase()
 {
+#if defined(Q_OS_OHOS)
+    QSKIP("Skipping qclipboard tests on OHOS due to pasteboard permission requirements");
+#endif
 #if !QT_CONFIG(clipboard)
     QSKIP("This test requires clipboard support");
 #endif
