@@ -405,7 +405,7 @@ struct cff2
 
       this->blob = sc.reference_table<cff2> (face);
 
-      /* setup for run-time sanitization */
+      /* setup for run-time santization */
       sc.init (this->blob);
       sc.start_processing ();
 

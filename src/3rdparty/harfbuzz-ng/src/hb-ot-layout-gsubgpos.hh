@@ -737,8 +737,7 @@ struct hb_ot_apply_context_t :
   hb_ot_apply_context_t (unsigned int table_index_,
 			 hb_font_t *font_,
 			 hb_buffer_t *buffer_,
-			 hb_blob_t *table_blob_,
-			 ItemVariationStore::cache_t *var_store_cache_ = nullptr) :
+			 hb_blob_t *table_blob_) :
 			table_index (table_index_),
 			font (font_), face (font->face), buffer (buffer_),
 			sanitizer (table_blob_),
@@ -757,12 +756,25 @@ struct hb_ot_apply_context_t :
 #endif
 			     ),
 			var_store (gdef.get_var_store ()),
-			var_store_cache (var_store_cache_),
+			var_store_cache (
+#ifndef HB_NO_VAR
+					 table_index == 1 && font->num_coords ? var_store.create_cache () : nullptr
+#else
+					 nullptr
+#endif
+					),
 			direction (buffer_->props.direction),
 			has_glyph_classes (gdef.has_glyph_classes ())
   {
     init_iters ();
     buffer->collect_codepoints (digest);
+  }
+
+  ~hb_ot_apply_context_t ()
+  {
+#ifndef HB_NO_VAR
+    ItemVariationStore::destroy_cache (var_store_cache);
+#endif
   }
 
   void init_iters ()

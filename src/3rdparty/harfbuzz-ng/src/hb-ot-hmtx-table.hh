@@ -359,13 +359,7 @@ struct hmtxvmtx
 	return true;
       }
 
-      // If there's no vmtx data, the phantom points from glyf table are not accurate,
-      // so we cannot take the next path.
-      bool is_vertical = T::tableTag == HB_OT_TAG_vmtx;
-      if (is_vertical && !has_data ())
-        return false;
-
-      return _glyf_get_leading_bearing_with_var_unscaled (font, glyph, is_vertical, lsb);
+      return _glyf_get_leading_bearing_with_var_unscaled (font, glyph, T::tableTag == HB_OT_TAG_vmtx, lsb);
 #else
       return false;
 #endif
