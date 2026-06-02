@@ -87,7 +87,7 @@ call "%script_dir_path%\qt-cmake-private.bat" -DOPTFILE="%OPT_FILE_PATH%" %FRESH
     -DMODULE_ROOT="%module_root%" ^
     -DCMAKE_COMMAND="%script_dir_path%\qt-cmake-private.bat" ^
     -P "%cmake_scripts_dir%\QtProcessConfigureArgs.cmake"
-goto :eof
+exit /b %errorlevel%
 
 :print_usage
 echo Usage: qt-configure-module ^<module-source-dir^> [options]
