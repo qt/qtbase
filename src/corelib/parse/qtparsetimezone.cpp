@@ -86,12 +86,14 @@ auto matchIanaId(QStringView text)
     // Collect up plausibly-valid characters; let QTimeZone work out what's
     // truly valid.
     const auto invalidZoneNameCharacter = [] (const QChar &c) {
-        constexpr auto matcher = QtPrivate::makeCharacterSetMatch<zoneNamePunctuation>();
+        static constexpr auto matcher = QtPrivate::makeCharacterSetMatch<zoneNamePunctuation>();
         const auto cu = c.unicode();
         return cu >= 127u || !(matcher.matches(uchar(cu)) || c.isLetterOrNumber());
     };
     int index = std::distance(text.cbegin(),
                               std::find_if(text.cbegin(), text.cend(), invalidZoneNameCharacter));
+    if (!index)
+        return R{};
     Q_ASSERT(index <= text.size());
     text.truncate(index);
 
