@@ -1105,7 +1105,6 @@ bool TlsCryptographSchannel::acquireCredentialsHandle()
         return false;
     }
 
-    DWORD certsCount = 0;
     // Set up our certificate stores before trying to use one...
     initializeCertificateStores();
 
@@ -1115,12 +1114,8 @@ bool TlsCryptographSchannel::acquireCredentialsHandle()
     if (!configuration.localCertificateChain().isEmpty() && !localCertificateStore)
         return true; // 'true' because "tst_QSslSocket::setEmptyKey" expects us to not disconnect
 
-    PCCERT_CONTEXT localCertificate = nullptr;
-    if (localCertificateStore != nullptr) {
-        certsCount = 1;
-        localCertificate = static_cast<PCCERT_CONTEXT>(configuration.localCertificate().handle());
-        Q_ASSERT(localCertificate);
-    }
+    PCCERT_CONTEXT localCertificate = localCertificateCtxt.get();
+    const DWORD certsCount = localCertificate ? 1 : 0;
 
     const QList<QSslCipher> ciphers = configuration.ciphers();
     if (!ciphers.isEmpty() && !containsTls13Cipher(ciphers))
@@ -1230,6 +1225,7 @@ void TlsCryptographSchannel::freeCredentialsHandle()
 
 void TlsCryptographSchannel::closeCertificateStores()
 {
+    localCertificateCtxt.reset();
     localCertificateStore.reset();
     peerCertificateStore.reset();
     caCertificateStore.reset();
@@ -2291,8 +2287,9 @@ bool TlsCryptographSchannel::checkSslErrors()
     return true;
 }
 
-static void attachPrivateKeyToCertificate(const QSslCertificate &certificate,
-                                          const QSslKey &privateKey)
+static void attachPrivateKeyToCertificate(PCCERT_CONTEXT context,
+                                          const QSslKey &privateKey,
+                                          QStringView certName)
 {
     QAsn1Element elem = _q_PKCS12_key(privateKey);
     QByteArray buffer;
@@ -2307,11 +2304,6 @@ static void attachPrivateKeyToCertificate(const QSslCertificate &certificate,
     }
     const auto freeProvider = qScopeGuard([provider]() { NCryptFreeObject(provider); });
 
-    const QString certName = [certificate]() {
-        if (auto cn = certificate.subjectInfo(QSslCertificate::CommonName); !cn.isEmpty())
-            return cn.front();
-        return QString();
-    }();
     QSpan<const QChar> nameSpan(certName);
     NCryptBuffer nbuffer{ ULONG(nameSpan.size_bytes() + sizeof(char16_t)),
                           NCRYPTBUFFER_PKCS_KEY_NAME,
@@ -2328,7 +2320,6 @@ static void attachPrivateKeyToCertificate(const QSslCertificate &certificate,
     }
     const auto freeKey = qScopeGuard([ncryptKey]() { NCryptFreeObject(ncryptKey); });
 
-    CERT_CONTEXT *context = PCERT_CONTEXT(certificate.handle());
     Q_ASSERT(context);
 
     CRYPT_DATA_BLOB keyBlob = { sizeof(ncryptKey), PBYTE(&ncryptKey) };
@@ -2396,11 +2387,8 @@ void TlsCryptographSchannel::initializeCertificateStores()
                         localCertificateStore.get(), X509_ASN_ENCODING | PKCS_7_ASN_ENCODING, 0,
                         CERT_FIND_ANY, nullptr, nullptr);
                 if (certificateContext) {
-                    auto *backend = QTlsBackend::backend<X509CertificateSchannel>(
-                            configuration.localCertificate());
-                    backend->certificateContext.reset(
-                            CertDuplicateCertificateContext(certificateContext));
-
+                    // Store the certificate context so we can easily refer back to it later:
+                    localCertificateCtxt.reset(certificateContext);
                     DWORD keySpec = 0;
                     BOOL mustFree = FALSE;
                     NCRYPT_KEY_HANDLE testKey = 0;
@@ -2410,8 +2398,11 @@ void TlsCryptographSchannel::initializeCertificateStores()
                     if (mustFree)
                         NCryptFreeObject(testKey);
                     if (!ok) {
-                        attachPrivateKeyToCertificate(configuration.localCertificate(),
-                                                      configuration.privateKey());
+                        const auto cn = configuration.localCertificate()
+                                                .subjectInfo(QSslCertificate::CommonName);
+                        attachPrivateKeyToCertificate(certificateContext,
+                                                      configuration.privateKey(),
+                                                      cn.isEmpty() ? QStringView{} : cn.front());
                     }
                 }
             } else {
