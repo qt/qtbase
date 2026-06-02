@@ -1,6 +1,6 @@
-/* pngstruct.h - internal structures for libpng
+/* pngstruct.h - header file for PNG reference library
  *
- * Copyright (c) 2018-2025 Cosmin Truta
+ * Copyright (c) 2018-2022 Cosmin Truta
  * Copyright (c) 1998-2002,2004,2006-2018 Glenn Randers-Pehrson
  * Copyright (c) 1996-1997 Andreas Dilger
  * Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc.
@@ -10,9 +10,11 @@
  * and license in png.h
  */
 
-#ifndef PNGPRIV_H
-#  error This file must not be included by applications; please include <png.h>
-#endif
+/* The structure that holds the information to read and write PNG files.
+ * The only people who need to care about what is inside of this are the
+ * people who will be modifying the library for their own special needs.
+ * It should NOT be accessed directly by an application.
+ */
 
 #ifndef PNGSTRUCT_H
 #define PNGSTRUCT_H
