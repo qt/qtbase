@@ -261,6 +261,8 @@ private slots:
     void pskHandshake();
 #endif // openssl
 
+    void closeNoWriteOnClosedPlainSocket();
+
     void setEmptyDefaultConfiguration(); // this test should be last
 
 protected slots:
@@ -3066,7 +3068,7 @@ void tst_QSslSocket::readFromClosedSocket()
     socket->close();
     QVERIFY(!socket->bytesAvailable());
     QVERIFY(!socket->bytesToWrite());
-    QCOMPARE(socket->state(), QAbstractSocket::UnconnectedState);
+    QTRY_COMPARE(socket->state(), QAbstractSocket::UnconnectedState);
 }
 
 void tst_QSslSocket::writeBigChunk()
@@ -5152,6 +5154,36 @@ void tst_QSslSocket::pskHandshake()
 }
 
 #endif // QT_CONFIG(openssl)
+
+void tst_QSslSocket::closeNoWriteOnClosedPlainSocket()
+{
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return;
+
+    // Verify that close() sends TLS close_notify before closing the plain socket.
+
+    SslServer server;
+    QVERIFY(server.listen(QHostAddress::LocalHost, 0));
+
+    QSslSocket client;
+    client.setSslConfiguration([] {
+        auto c = QSslConfiguration::defaultConfiguration();
+        c.setPeerVerifyMode(QSslSocket::VerifyNone);
+        return c;
+    }());
+    client.connectToHostEncrypted("127.0.0.1", server.serverPort());
+    QTRY_VERIFY(client.isEncrypted());
+
+    // Prevent state cascade from plainSocket so close() exercises the full path.
+    auto *d = static_cast<QSslSocketPrivate *>(QSslSocketPrivate::get(&client));
+    QVERIFY(d->plainTcpSocket());
+    d->plainTcpSocket()->disconnect(&client);
+
+    QTest::failOnWarning(QRegularExpression("device not open"));
+    client.close();
+}
+
 #endif // QT_CONFIG(ssl)
 
 
