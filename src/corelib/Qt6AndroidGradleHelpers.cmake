@@ -327,11 +327,13 @@ function(_qt_internal_android_prepare_gradle_build target)
 
     _qt_internal_android_copy_app_binary(${target} "${deployment_dir}")
     _qt_internal_android_copy_stdlib(${target} "${deployment_dir}")
-    _qt_internal_android_copy_extra_libs(${target} "${deployment_dir}")
     _qt_internal_android_copy_extra_plugins(${target} "${deployment_dir}")
     # TODO: don't call qmlimportscanner again at all for multi-ABI external builds.
     _qt_internal_android_parse_qmlimportscanner_output(${target})
     _qt_internal_android_collect_qt_modules_and_plugins(${target})
+    # Needs to run after all dependencies are collected
+    _qt_internal_android_include_openssl_if_needed(${target})
+    _qt_internal_android_copy_extra_libs(${target} "${deployment_dir}")
     _qt_internal_android_copy_non_qt_linked_libs(${target} "${deployment_dir}")
     _qt_internal_android_copy_qt_dependencies(${target} "${deployment_dir}")
     _qt_internal_android_copy_qml_plugins(${target} "${deployment_dir}")

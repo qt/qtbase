@@ -127,12 +127,95 @@ function(qt6_add_android_dynamic_feature_java_source_dirs target)
     endif()
 endfunction()
 
+# Appends the dynamic OpenSSL libraries (found via OPENSSL_ROOT_DIR or vcpkg)
+# to the QT_ANDROID_EXTRA_LIBS of ${target}.
+function(_qt_internal_android_include_openssl target out_found)
+    set(${out_found} FALSE PARENT_SCOPE)
+
+    set(openssl_abi_dir "${OPENSSL_ROOT_DIR}/${CMAKE_ANDROID_ARCH_ABI}")
+    if(NOT EXISTS "${openssl_abi_dir}/libcrypto_3.so")
+        set(openssl_abi_dir "${OPENSSL_ROOT_DIR}")
+    endif()
+    if(OPENSSL_ROOT_DIR)
+        message(STATUS "Looking for OpenSSL in ${openssl_abi_dir}")
+    endif()
+
+    set(openssl_libs "")
+    if(EXISTS "${openssl_abi_dir}/libcrypto_3.so")
+        set(openssl_libs
+            "${openssl_abi_dir}/libcrypto_3.so"
+            "${openssl_abi_dir}/libssl_3.so")
+    elseif(QT_USE_VCPKG AND DEFINED ENV{VCPKG_ROOT} AND EXISTS "$ENV{VCPKG_ROOT}")
+        message(STATUS "Looking for OpenSSL in $ENV{VCPKG_ROOT}")
+        if (CMAKE_ANDROID_ARCH_ABI MATCHES "arm64-v8a")
+            set(vcpkg_target_triplet "arm64-android-dynamic")
+        elseif(CMAKE_ANDROID_ARCH_ABI MATCHES "armeabi-v7a")
+            set(vcpkg_target_triplet "arm-neon-android-dynamic")
+        elseif(CMAKE_ANDROID_ARCH_ABI MATCHES "x86_64")
+            set(vcpkg_target_triplet "x64-android-dynamic")
+        elseif(CMAKE_ANDROID_ARCH_ABI MATCHES "x86")
+            set(vcpkg_target_triplet "x86-android-dynamic")
+        endif()
+        set(vcpkg_lib_dir "$ENV{VCPKG_ROOT}/installed/${vcpkg_target_triplet}/lib")
+        if(EXISTS "${vcpkg_lib_dir}/libcrypto.so")
+            set(openssl_libs
+                "${vcpkg_lib_dir}/libcrypto.so"
+                "${vcpkg_lib_dir}/libssl.so")
+        endif()
+    endif()
+
+    if(NOT openssl_libs)
+        message(STATUS "No dynamic OpenSSL libraries found to bundle into ${target}. "
+                       "This is expected when OpenSSL is linked statically.")
+        return()
+    endif()
+    set(${out_found} TRUE PARENT_SCOPE)
+
+    get_target_property(extra_libs ${target} QT_ANDROID_EXTRA_LIBS)
+    if(extra_libs)
+        foreach(lib IN LISTS openssl_libs)
+            if(lib IN_LIST extra_libs)
+                return()
+            endif()
+        endforeach()
+    endif()
+
+    list(JOIN openssl_libs ", " openssl_libs_pretty)
+    message(STATUS "Bundling OpenSSL into ${target}: ${openssl_libs_pretty}")
+    set_property(TARGET ${target} APPEND PROPERTY QT_ANDROID_EXTRA_LIBS ${openssl_libs})
+endfunction()
+
+# Include found OpenSSL libraries into ${target} if any plugin declares QT_ANDROID_OPENSSL_NEEDED.
+function(_qt_internal_android_include_openssl_if_needed target)
+    # Prefer the fully resolved plugin set _qt_android_qt_plugins after qmlimportscanner run.
+    get_target_property(plugin_targets ${target} _qt_android_qt_plugins)
+    if(NOT plugin_targets)
+        __qt_internal_collect_plugin_targets_from_dependencies("${target}" plugin_targets)
+    endif()
+    foreach(plugin IN LISTS plugin_targets)
+        if(NOT TARGET "${plugin}")
+            set(plugin "${QT_CMAKE_EXPORT_NAMESPACE}::${plugin}")
+        endif()
+        if(NOT TARGET "${plugin}")
+            continue()
+        endif()
+        get_target_property(needs_openssl ${plugin} QT_ANDROID_OPENSSL_NEEDED)
+        if(needs_openssl)
+            _qt_internal_android_include_openssl(${target} openssl_found)
+            return()
+        endif()
+    endforeach()
+endfunction()
+
 # Generate the deployment settings json file for a cmake target.
 function(qt6_android_generate_deployment_settings target)
     # Information extracted from mkspecs/features/android/android_deployment_settings.prf
     if (NOT TARGET ${target})
         message(FATAL_ERROR "${target} is not a cmake target")
     endif()
+
+    # Bundle OpenSSL before formatting paths so it lands in QT_ANDROID_EXTRA_LIBS.
+    _qt_internal_android_include_openssl_if_needed("${target}")
 
     # When parsing JSON file format backslashes and follow up symbols are regarded as special
     # characters. This puts Windows path format into a trouble.
