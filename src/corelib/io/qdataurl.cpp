@@ -42,11 +42,10 @@ Q_CORE_EXPORT bool qDecodeDataUrl(const QUrl &uri, QString &mimeType, QByteArray
         }
 
         if (QLatin1StringView{data}.startsWith("charset"_L1, Qt::CaseInsensitive)) {
-            qsizetype prefixSize = 7; // strlen("charset")
-            QByteArrayView copy(data.constData() + prefixSize, data.size() - prefixSize);
-            while (copy.startsWith(' '))
-                copy = copy.sliced(1);
-            if (copy.startsWith('='))
+            qsizetype i = 7;      // strlen("charset")
+            while (data.at(i) == ' ')
+                ++i;
+            if (data.at(i) == '=')
                 data.prepend("text/plain;");
         }
 
