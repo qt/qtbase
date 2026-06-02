@@ -925,9 +925,6 @@ void tst_QXmlStream::testReader() const
         QVERIFY(file.open(QIODevice::ReadOnly | QIODevice::Text));
         QString reference = QString::fromUtf8(file.readAll());
         QString qxmlstream = QString::fromUtf8(readFile(xml));
-        QEXPECT_FAIL("data/dtdDefaultDuplicatesSpecified.xml", "QTBUG-147219", Continue);
-        QEXPECT_FAIL("data/dtdDefaultsDuplicateEachOther.xml", "QTBUG-147219", Continue);
-        QEXPECT_FAIL("data/dtdInjectedNamespaceClash.xml", "QTBUG-147219", Continue);
         QCOMPARE(qxmlstream, reference);
     }
 }
