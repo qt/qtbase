@@ -45,6 +45,11 @@ The following environment variables are used in Coin instructions when building 
 `COMMON_TEST_CMAKE_ARGS`       - platform-independent ``CMake-style`` args set in
                                  `prepare_building_env.yaml` that apply to configuration of
                                  all standalone tests
+`COMMON_EXAMPLES_CMAKE_ARGS`   - module-independent ``CMake-style`` args set when configuring
+                                 standalone examples
+`<MODULE>_EXAMPLES_CMAKE_ARGS` - module-specific ``CMake-style`` args set when configuring
+                                 standalone examples
+
 
 All of the above apply to host builds only.
 
@@ -61,6 +66,8 @@ mirror the ones above. They are:
 `COMMON_TARGET_CMAKE_ARGS`
 `COMMON_NON_QTBASE_TARGET_CMAKE_ARGS`
 `COMMON_TARGET_TEST_CMAKE_ARGS`
+`COMMON_TARGET_EXAMPLE_CMAKE_ARGS`
+`<MODULE>_TARGET_EXAMPLE_CMAKE_ARGS`
 
 Currently, there are no common ``configure-style`` variables for configuring
 repos or tests, only ``CMake-style` ones.
