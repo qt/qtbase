@@ -45,6 +45,9 @@ instructions:
         - condition: property
           property: target.osVersion
           equals_value: "HarmonyOS_ANY"
+        - condition: runtime
+          env_var: AXIVION_ANALYSIS
+          equals_value: "1"
   - type: Group
     instructions:
     - !include "{{qt/qtbase}}/run_harmonyos_test.yaml"
@@ -52,3 +55,10 @@ instructions:
       condition: property
       property: target.osVersion
       equals_value: "HarmonyOS_ANY"
+  - type: Group
+    instructions:
+      - !include "{{qt/qtbase}}/coin_module_axivion_template_v2.yaml"
+    enable_if:
+      condition: runtime
+      env_var: AXIVION_ANALYSIS
+      equals_value: "1"

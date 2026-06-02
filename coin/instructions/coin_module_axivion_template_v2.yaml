@@ -89,20 +89,6 @@ build_environment_axivion: &build_environment_axivion
       maxTimeInSeconds: 1800
       maxTimeBetweenOutput: 900
       userMessageOnFailure: "Failed to initialize git submodules"
-    - type: Group
-      instructions:
-      - !include "{{qt/qtbase}}/cmake_module_build_instructions.yaml"
-      enable_if:
-        condition: runtime
-        env_var: TESTED_MODULE_COIN
-        not_equals_value: "qtbase"
-    - type: Group
-      instructions:
-      - !include "{{qt/qtbase}}/cmake_qtbase_build_instructions.yaml"
-      enable_if:
-        condition: runtime
-        env_var: TESTED_MODULE_COIN
-        equals_value: "qtbase"
 
 type: Group
 instructions:
