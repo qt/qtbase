@@ -1906,6 +1906,18 @@ void QXmlStreamReaderPrivate::resolveTag()
             XmlStringRef attributeNamespaceUri = namespaceForPrefix(dtdAttribute.attributePrefix);
             attribute.m_namespaceUri = XmlStringRef(attributeNamespaceUri);
         }
+
+        // Check that the DTD doesn't complement the element's ns1:a with a
+        // ns2:a where the ns1 and ns2 prefixes resolve to the same
+        // namespace-URI. This can only happen when namespaceProcessing is on,
+        // otherwise the prefixes would have matched, and the DTD attribute skipped,
+        // in the loop over `i` above.
+
+        if (namespaceProcessing && names.hasSeen(AttributeName::fromXmlAttribute(attribute, true))) {
+            raiseWellFormedError(QXmlStream::tr("Attribute '%1' redefined.").arg(attribute.qualifiedName()));
+            return;
+        }
+
         attribute.m_isDefault = true;
         attributes.append(std::move(attribute));
     }
