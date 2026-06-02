@@ -406,6 +406,7 @@ function(qt_internal_wrap_private_modules target)
         if(TARGET "${lib}")
             get_target_property(lib_is_private_module ${lib} _qt_is_private_module)
             get_target_property(lib_is_internal_module ${lib} _qt_is_internal_module)
+            get_target_property(lib_force_export ${lib} _qt_internal_force_export_module_dependency)
 
             if(lib_is_private_module)
                 # Add the public module as non-wrapped link dependency. This is necessary for
@@ -415,10 +416,14 @@ function(qt_internal_wrap_private_modules target)
                 list(APPEND result "${INSTALL_CMAKE_NAMESPACE}::${lib_public_module_target}")
             endif()
 
-            if(lib_is_private_module
+            # A dependency marked for forced export stays unwrapped so it remains in the
+            # exported interface and the deployment can find its library. The platform
+            # restriction is applied at the call site.
+            if((lib_is_private_module
                     OR
                     (lib_is_internal_module
-                        AND NOT target_type STREQUAL "STATIC_LIBRARY")
+                        AND NOT target_type STREQUAL "STATIC_LIBRARY"))
+                    AND NOT lib_force_export
                 )
                 # Wrap the private or internal module in BUILD_LOCAL_INTERFACE.
                 set(lib "$<${wrapper_genex}:${lib}>")
@@ -428,6 +433,13 @@ function(qt_internal_wrap_private_modules target)
     endforeach()
 
     set("${arg_OUT_VAR}" "${result}" PARENT_SCOPE)
+endfunction()
+
+# Marks ${target} to be exported by consumers instead of wrapped in BUILD_LOCAL_INTERFACE.
+function(qt_internal_force_export_module_dependency target)
+    set_property(TARGET ${target} PROPERTY _qt_internal_force_export_module_dependency TRUE)
+    set_property(TARGET ${target} APPEND PROPERTY
+        EXPORT_PROPERTIES _qt_internal_force_export_module_dependency)
 endfunction()
 
 # Given CMAKE_CONFIG and ALL_CMAKE_CONFIGS, determines if a directory suffix needs to be appended
