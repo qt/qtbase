@@ -937,7 +937,9 @@ void tst_QXmlStream::testReader_data() const
     const auto fileNames = dir.entryList(QStringList() << "*.xml");
     for (const QString &filename : fileNames) {
         QString reference =  QFileInfo(filename).baseName() + ".ref";
-        QTest::newRow(dir.filePath(filename).toLatin1().data()) << dir.filePath(filename) << dir.filePath(reference);
+        QTest::addRow("data/%s", filename.toLatin1().constData())
+                << dir.filePath(filename)
+                << dir.filePath(reference);
     }
 }
 
