@@ -235,7 +235,7 @@ struct VARC
 
     private:
     hb_blob_ptr_t<VARC> table;
-    mutable hb_atomic_t<hb_varc_scratch_t *> cached_scratch;
+    hb_atomic_t<hb_varc_scratch_t *> cached_scratch;
   };
 
   bool has_data () const { return version.major != 0; }

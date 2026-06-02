@@ -33,7 +33,6 @@
 #include "../../../hb-open-type.hh"
 #include "../../../hb-ot-var-common.hh"
 #include "../../../hb-paint.hh"
-#include "../../../hb-paint-bounded.hh"
 #include "../../../hb-paint-extents.hh"
 
 #include "../CPAL/CPAL.hh"
@@ -50,7 +49,6 @@ struct hb_paint_context_t;
 
 struct hb_colr_scratch_t
 {
-  hb_paint_bounded_context_t paint_bounded;
   hb_paint_extents_context_t paint_extents;
 };
 
@@ -103,21 +101,7 @@ public:
     ),
     foreground (foreground_),
     instancer (instancer_)
-  {
-    if (font->is_synthetic ())
-    {
-      font = hb_font_create_sub_font (font);
-      hb_font_set_synthetic_bold (font, 0, 0, true);
-      hb_font_set_synthetic_slant (font, 0);
-    }
-    else
-      hb_font_reference (font);
-  }
-
-  ~hb_paint_context_t ()
-  {
-    hb_font_destroy (font);
-  }
+  { }
 
   hb_color_t get_color (unsigned int color_index, float alpha, hb_bool_t *is_foreground)
   {
@@ -1636,7 +1620,7 @@ struct ClipBox
   void closurev1 (hb_colrv1_closure_context_t* c) const
   {
     switch (u.format) {
-    case 2: u.format2.closurev1 (c); return;
+    case 2: u.format2.closurev1 (c);
     default:return;
     }
   }
@@ -2246,7 +2230,7 @@ struct COLR
     public:
     hb_blob_ptr_t<COLR> colr;
     private:
-    mutable hb_atomic_t<hb_colr_scratch_t *> cached_scratch;
+    hb_atomic_t<hb_colr_scratch_t *> cached_scratch;
   };
 
   void closure_glyphs (hb_codepoint_t glyph,
@@ -2648,6 +2632,7 @@ struct COLR
     }
     else
     {
+      // Ugh. We need to undo the synthetic slant here. Leave it for now. :-(.
       extents->x_bearing = e.xmin;
       extents->y_bearing = e.ymax;
       extents->width = e.xmax - e.xmin;
@@ -2715,6 +2700,7 @@ struct COLR
 	  if (get_clip (glyph, &extents, instancer))
 	  {
 	    font->scale_glyph_extents (&extents);
+	    font->synthetic_glyph_extents (&extents);
 	    c.funcs->push_clip_rectangle (c.data,
 					  extents.x_bearing,
 					  extents.y_bearing + extents.height,
@@ -2723,22 +2709,23 @@ struct COLR
 	  }
 	  else
 	  {
-	    clip = false;
-	    is_bounded = false;
-	  }
-
-	  if (!is_bounded)
-	  {
-	    auto *bounded_funcs = hb_paint_bounded_get_funcs ();
-	    scratch.paint_bounded.clear ();
+	    auto *extents_funcs = hb_paint_extents_get_funcs ();
+	    scratch.paint_extents.clear ();
 
 	    paint_glyph (font, glyph,
-			 bounded_funcs, &scratch.paint_bounded,
+			 extents_funcs, &scratch.paint_extents,
 			 palette_index, foreground,
 			 false,
 			 scratch);
 
-	    is_bounded = scratch.paint_bounded.is_bounded ();
+	    auto extents = scratch.paint_extents.get_extents ();
+	    is_bounded = scratch.paint_extents.is_bounded ();
+
+	    c.funcs->push_clip_rectangle (c.data,
+					  extents.xmin,
+					  extents.ymin,
+					  extents.xmax,
+					  extents.ymax);
 	  }
 	}
 

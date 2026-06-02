@@ -365,12 +365,12 @@ ct_apply_func (void *info, const CGPathElement *element)
   }
 }
 
-static hb_bool_t
-hb_coretext_draw_glyph_or_fail (hb_font_t *font,
-				void *font_data HB_UNUSED,
-				hb_codepoint_t glyph,
-				hb_draw_funcs_t *draw_funcs, void *draw_data,
-				void *user_data)
+static void
+hb_coretext_draw_glyph (hb_font_t *font,
+			void *font_data HB_UNUSED,
+			hb_codepoint_t glyph,
+			hb_draw_funcs_t *draw_funcs, void *draw_data,
+			void *user_data)
 {
   CTFontRef ct_font = (CTFontRef) (const void *) font->data.coretext;
 
@@ -383,15 +383,13 @@ hb_coretext_draw_glyph_or_fail (hb_font_t *font,
 
   CGPathRef path = CTFontCreatePathForGlyph (ct_font, glyph, &transform);
   if (!path)
-    return false;
+    return;
 
-  hb_draw_session_t drawing {draw_funcs, draw_data};
+  hb_draw_session_t drawing = {draw_funcs, draw_data, font->slant};
 
   CGPathApply (path, &drawing, ct_apply_func);
 
   CFRelease (path);
-
-  return true;
 }
 #endif
 
@@ -471,7 +469,7 @@ static struct hb_coretext_font_funcs_lazy_loader_t : hb_font_funcs_lazy_loader_t
 #endif
 
 #ifndef HB_NO_DRAW
-    hb_font_funcs_set_draw_glyph_or_fail_func (funcs, hb_coretext_draw_glyph_or_fail, nullptr, nullptr);
+    hb_font_funcs_set_draw_glyph_func (funcs, hb_coretext_draw_glyph, nullptr, nullptr);
 #endif
 
     hb_font_funcs_set_glyph_extents_func (funcs, hb_coretext_get_glyph_extents, nullptr, nullptr);

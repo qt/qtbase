@@ -237,28 +237,27 @@ struct sbix
 
       int x_offset = 0, y_offset = 0;
       unsigned int strike_ppem = 0;
+      hb_blob_t *blob = reference_png (font, glyph, &x_offset, &y_offset, &strike_ppem);
       hb_glyph_extents_t extents;
       hb_glyph_extents_t pixel_extents;
 
-      if (!font->get_glyph_extents (glyph, &extents, false))
+      if (blob == hb_blob_get_empty ())
+        return false;
+
+      if (!hb_font_get_glyph_extents (font, glyph, &extents))
         return false;
 
       if (unlikely (!get_extents (font, glyph, &pixel_extents, false)))
-        return false;
-
-      hb_blob_t *blob = reference_png (font, glyph, &x_offset, &y_offset, &strike_ppem);
-      if (hb_blob_is_immutable (blob))
         return false;
 
       bool ret = funcs->image (data,
 			       blob,
 			       pixel_extents.width, -pixel_extents.height,
 			       HB_PAINT_IMAGE_FORMAT_PNG,
-			       0.f,
+			       font->slant_xy,
 			       &extents);
 
       hb_blob_destroy (blob);
-
       return ret;
     }
 

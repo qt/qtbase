@@ -273,7 +273,7 @@ struct hb_lazy_loader_t : hb_data_wrapper_t<Data, WheresData>
 
   private:
   /* Must only have one pointer. */
-  mutable hb_atomic_t<Stored *> instance;
+  hb_atomic_t<Stored *> instance;
 };
 
 /* Specializations. */

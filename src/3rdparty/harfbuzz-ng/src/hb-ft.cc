@@ -626,41 +626,6 @@ hb_ft_get_glyph_h_kerning (hb_font_t *font,
 }
 #endif
 
-static bool
-hb_ft_is_colr_glyph (hb_font_t *font,
-		     void *font_data,
-		     hb_codepoint_t gid)
-{
-#ifndef HB_NO_PAINT
-#if (FREETYPE_MAJOR*10000 + FREETYPE_MINOR*100 + FREETYPE_PATCH) >= 21300
-  const hb_ft_font_t *ft_font = (const hb_ft_font_t *) font_data;
-  FT_Face ft_face = ft_font->ft_face;
-
-
-  /* COLRv1 */
-  FT_OpaquePaint paint = {0};
-  if (FT_Get_Color_Glyph_Paint (ft_face, gid,
-			        FT_COLOR_NO_ROOT_TRANSFORM,
-			        &paint))
-    return true;
-
-  /* COLRv0 */
-  FT_LayerIterator  iterator;
-  FT_UInt  layer_glyph_index;
-  FT_UInt  layer_color_index;
-  iterator.p  = NULL;
-  if (FT_Get_Color_Glyph_Layer (ft_face,
-				gid,
-				&layer_glyph_index,
-				&layer_color_index,
-				&iterator))
-    return true;
-#endif
-#endif
-
-  return false;
-}
-
 static hb_bool_t
 hb_ft_get_glyph_extents (hb_font_t *font,
 			 void *font_data,
@@ -668,10 +633,6 @@ hb_ft_get_glyph_extents (hb_font_t *font,
 			 hb_glyph_extents_t *extents,
 			 void *user_data HB_UNUSED)
 {
-  // FreeType doesn't return COLR glyph extents.
-  if (hb_ft_is_colr_glyph (font, font_data, glyph))
-    return false;
-
   const hb_ft_font_t *ft_font = (const hb_ft_font_t *) font_data;
   _hb_ft_hb_font_check_changed (font, ft_font);
 
@@ -836,7 +797,7 @@ hb_ft_get_font_h_extents (hb_font_t *font HB_UNUSED,
     metrics->line_gap = ft_face->size->metrics.height - (metrics->ascender - metrics->descender);
   }
 
-  metrics->ascender  = (hb_position_t) (y_mult * metrics->ascender);
+  metrics->ascender  = (hb_position_t) (y_mult * (metrics->ascender + font->y_strength));
   metrics->descender = (hb_position_t) (y_mult * metrics->descender);
   metrics->line_gap  = (hb_position_t) (y_mult * metrics->line_gap);
 
@@ -887,12 +848,12 @@ _hb_ft_cubic_to (const FT_Vector *control1,
   return FT_Err_Ok;
 }
 
-static hb_bool_t
-hb_ft_draw_glyph_or_fail (hb_font_t *font,
-			  void *font_data,
-			  hb_codepoint_t glyph,
-			  hb_draw_funcs_t *draw_funcs, void *draw_data,
-			  void *user_data HB_UNUSED)
+static void
+hb_ft_draw_glyph (hb_font_t *font,
+		  void *font_data,
+		  hb_codepoint_t glyph,
+		  hb_draw_funcs_t *draw_funcs, void *draw_data,
+		  void *user_data HB_UNUSED)
 {
   const hb_ft_font_t *ft_font = (const hb_ft_font_t *) font_data;
   _hb_ft_hb_font_check_changed (font, ft_font);
@@ -902,10 +863,10 @@ hb_ft_draw_glyph_or_fail (hb_font_t *font,
 
   if (unlikely (FT_Load_Glyph (ft_face, glyph,
 			       FT_LOAD_NO_BITMAP | ft_font->load_flags)))
-    return false;
+    return;
 
   if (ft_face->glyph->format != FT_GLYPH_FORMAT_OUTLINE)
-    return false;
+    return;
 
   const FT_Outline_Funcs outline_funcs = {
     _hb_ft_move_to,
@@ -916,13 +877,11 @@ hb_ft_draw_glyph_or_fail (hb_font_t *font,
     0, /* delta */
   };
 
-  hb_draw_session_t draw_session {draw_funcs, draw_data};
+  hb_draw_session_t draw_session (draw_funcs, draw_data, font->slant_xy);
 
   FT_Outline_Decompose (&ft_face->glyph->outline,
 			&outline_funcs,
 			&draw_session);
-
-  return true;
 }
 #endif
 
@@ -931,14 +890,14 @@ hb_ft_draw_glyph_or_fail (hb_font_t *font,
 
 #include "hb-ft-colr.hh"
 
-static hb_bool_t
-hb_ft_paint_glyph_or_fail (hb_font_t *font,
-			   void *font_data,
-			   hb_codepoint_t gid,
-			   hb_paint_funcs_t *paint_funcs, void *paint_data,
-			   unsigned int palette_index,
-			   hb_color_t foreground,
-			   void *user_data)
+static void
+hb_ft_paint_glyph (hb_font_t *font,
+                   void *font_data,
+                   hb_codepoint_t gid,
+                   hb_paint_funcs_t *paint_funcs, void *paint_data,
+                   unsigned int palette_index,
+                   hb_color_t foreground,
+                   void *user_data)
 {
   const hb_ft_font_t *ft_font = (const hb_ft_font_t *) font_data;
   _hb_ft_hb_font_check_changed (font, ft_font);
@@ -946,7 +905,7 @@ hb_ft_paint_glyph_or_fail (hb_font_t *font,
   hb_lock_t lock (ft_font->lock);
   FT_Face ft_face = ft_font->ft_face;
 
-  FT_Long load_flags = ft_font->load_flags | FT_LOAD_COLOR;
+  FT_Long load_flags = ft_font->load_flags | FT_LOAD_NO_BITMAP | FT_LOAD_COLOR;
 #if (FREETYPE_MAJOR*10000 + FREETYPE_MINOR*100 + FREETYPE_PATCH) >= 21301
   load_flags |= FT_LOAD_NO_SVG;
 #endif
@@ -955,7 +914,7 @@ hb_ft_paint_glyph_or_fail (hb_font_t *font,
    * eg. draw API can call back into the face.*/
 
   if (unlikely (FT_Load_Glyph (ft_face, gid, load_flags)))
-    return false;
+    return;
 
   if (ft_face->glyph->format == FT_GLYPH_FORMAT_OUTLINE)
   {
@@ -963,21 +922,26 @@ hb_ft_paint_glyph_or_fail (hb_font_t *font,
 				paint_funcs, paint_data,
 				palette_index, foreground,
 				user_data))
-      return true;
+      return;
 
-    // Outline glyph
-    return false;
+    /* Simple outline. */
+    ft_font->lock.unlock ();
+    paint_funcs->push_clip_glyph (paint_data, gid, font);
+    ft_font->lock.lock ();
+    paint_funcs->color (paint_data, true, foreground);
+    paint_funcs->pop_clip (paint_data);
+
+    return;
   }
 
   auto *glyph = ft_face->glyph;
   if (glyph->format == FT_GLYPH_FORMAT_BITMAP)
   {
-    bool ret = false;
     auto &bitmap = glyph->bitmap;
     if (bitmap.pixel_mode == FT_PIXEL_MODE_BGRA)
     {
       if (bitmap.pitch != (signed) bitmap.width * 4)
-        return ret;
+        return;
 
       ft_font->lock.unlock ();
 
@@ -987,26 +951,27 @@ hb_ft_paint_glyph_or_fail (hb_font_t *font,
 					nullptr, nullptr);
 
       hb_glyph_extents_t extents;
-      if (!font->get_glyph_extents (gid, &extents, false))
+      if (!hb_font_get_glyph_extents (font, gid, &extents))
 	goto out;
 
-      if (paint_funcs->image (paint_data,
-			      blob,
-			      bitmap.width,
-			      bitmap.rows,
-			      HB_PAINT_IMAGE_FORMAT_BGRA,
-			      0.f,
-			      &extents))
-        ret = true;
+      if (!paint_funcs->image (paint_data,
+			       blob,
+			       bitmap.width,
+			       bitmap.rows,
+			       HB_PAINT_IMAGE_FORMAT_BGRA,
+			       font->slant_xy,
+			       &extents))
+      {
+        /* TODO Try a forced outline load and paint? */
+      }
 
     out:
       hb_blob_destroy (blob);
       ft_font->lock.lock ();
     }
 
-    return ret;
+    return;
   }
-  return false;
 }
 #endif
 #endif
@@ -1041,12 +1006,12 @@ static struct hb_ft_font_funcs_lazy_loader_t : hb_font_funcs_lazy_loader_t<hb_ft
     hb_font_funcs_set_glyph_from_name_func (funcs, hb_ft_get_glyph_from_name, nullptr, nullptr);
 
 #ifndef HB_NO_DRAW
-    hb_font_funcs_set_draw_glyph_or_fail_func (funcs, hb_ft_draw_glyph_or_fail, nullptr, nullptr);
+    hb_font_funcs_set_draw_glyph_func (funcs, hb_ft_draw_glyph, nullptr, nullptr);
 #endif
 
 #ifndef HB_NO_PAINT
 #if (FREETYPE_MAJOR*10000 + FREETYPE_MINOR*100 + FREETYPE_PATCH) >= 21300
-    hb_font_funcs_set_paint_glyph_or_fail_func (funcs, hb_ft_paint_glyph_or_fail, nullptr, nullptr);
+    hb_font_funcs_set_paint_glyph_func (funcs, hb_ft_paint_glyph, nullptr, nullptr);
 #endif
 #endif
 
