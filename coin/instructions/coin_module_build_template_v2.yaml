@@ -33,33 +33,6 @@ instructions:
         - condition: property
           property: features
           not_contains_value: "DebianPackaging"
-        - condition: runtime
-          env_var: AXIVION_ANALYSIS
-          not_equals_value: "1"
-  - type: Group
-    instructions:
-       - !include "{{qt/qtbase}}/coin_module_axivion_template_v2.yaml"
-    enable_if:
-      condition: and
-      conditions:
-        - condition: runtime
-          env_var: AXIVION_ANALYSIS
-          equals_value: "1"
-        - condition: runtime
-          env_var: TESTED_MODULE_COIN
-          not_equals_value: "qtdoc"
-        - condition: runtime
-          env_var: TESTED_MODULE_COIN
-          not_equals_value: "qtquickeffectmaker"
-        - condition: runtime
-          env_var: TESTED_MODULE_COIN
-          not_equals_value: "qttranslations"
-        - condition: runtime
-          env_var: TESTED_MODULE_COIN
-          not_equals_value: "qtwebengine"
-        - condition: runtime
-          env_var: TESTED_MODULE_COIN
-          not_equals_value: "qtactiveqt"
   - type: Group
     instructions:
       - !include "{{qt/qtbase}}/cmake_cross_compilation_module_build_instructions.yaml"
