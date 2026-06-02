@@ -553,6 +553,7 @@ void QDataStream::setByteOrder(ByteOrder bo)
     \value Qt_6_10
     \value Qt_6_11
     \value Qt_6_12
+    \value Qt_6_13
     \omitvalue Qt_DefaultCompiledVersion
 
     \sa setVersion(), version()
