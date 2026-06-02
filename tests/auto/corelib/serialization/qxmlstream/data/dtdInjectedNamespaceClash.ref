@@ -1,0 +1,15 @@
+StartDocument( documentVersion="1.0" )
+Comment( text=" Clash between a root-declared namespace and a DTD-injected one (same URI) " )
+DTD( text="
+<!DOCTYPE root [
+<!ATTLIST el xmlns:p CDATA "http://example.org/shared" p:attr CDATA "from-dtd">
+]>" dtdName="root" )
+StartElement( name="root" qualifiedName="root"
+    NamespaceDeclaration( prefix="a" namespaceUri="http://example.org/shared" )
+ )
+Characters( whitespace text="
+" )
+Invalid( name="el" qualifiedName="el"
+    Attribute( name="attr" namespaceUri="http://example.org/shared" qualifiedName="a:attr" prefix="a" value="specified" )
+ )
+ERROR: Attribute 'p:attr' redefined.

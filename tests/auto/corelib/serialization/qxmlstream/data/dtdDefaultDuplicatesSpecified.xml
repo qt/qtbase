@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<!-- DTD-defaulted attribute duplicates a specified attribute (same expanded name) -->
+<!DOCTYPE root [
+<!ATTLIST el b:attr CDATA "2">
+]>
+<root xmlns:a="http://example.org/~wilbur"
+      xmlns:b="http://example.org/~wilbur">
+
+<el a:attr="1"/>
+
+</root>

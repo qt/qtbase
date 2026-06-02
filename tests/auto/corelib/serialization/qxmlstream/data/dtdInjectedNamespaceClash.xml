@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<!-- Clash between a root-declared namespace and a DTD-injected one (same URI) -->
+<!DOCTYPE root [
+<!ATTLIST el xmlns:p CDATA "http://example.org/shared" p:attr CDATA "from-dtd">
+]>
+<root xmlns:a="http://example.org/shared">
+<el a:attr="specified"/>
+</root>
