@@ -872,13 +872,17 @@ void QSslSocket::close()
 
     if (!d->abortCalled && (encryptedBytesToWrite() || !d->writeBuffer.isEmpty()))
         flush();
+
+    // Close the SSL layer first (sends TLS close_notify via the plain socket),
+    // then close the plain socket.
+    QTcpSocket::close();
+
     if (d->plainSocket) {
         if (d->abortCalled)
             d->plainSocket->abort();
         else
             d->plainSocket->close();
     }
-    QTcpSocket::close();
 
     // must be cleared, reading/writing not possible on closed socket:
     d->buffer.clear();
