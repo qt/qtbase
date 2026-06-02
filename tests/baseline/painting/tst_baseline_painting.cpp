@@ -411,6 +411,7 @@ void tst_Lancelot::runTestSuite(GraphicsEngine engine, QImage::Format format, co
 
     if (engine == Raster) {
         QImage img(800, 800, format);
+        img.fill(Qt::transparent);
         paint(&img, engine, format, script, QFileInfo(filePath).absoluteFilePath());
         rendered = img;
 #ifndef QT_NO_OPENGL
