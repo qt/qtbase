@@ -45,6 +45,7 @@
 #include "private/qsslconfiguration_p.h"
 
 #include <memory>
+#include <array>
 
 using namespace std::chrono_literals;
 using namespace Qt::StringLiterals;
@@ -260,6 +261,7 @@ private slots:
     void pskHandshake_data();
     void pskHandshake();
 #endif // openssl
+    void concurrentServerSideHandshakes();
 
     void closeNoWriteOnClosedPlainSocket();
 
@@ -5186,6 +5188,84 @@ void tst_QSslSocket::closeNoWriteOnClosedPlainSocket()
 
 #endif // QT_CONFIG(ssl)
 
+
+class MultiThreadedSslServer : public QTcpServer
+{
+    Q_OBJECT
+public:
+    explicit MultiThreadedSslServer(const QSslConfiguration &config, QSemaphore &semaphore,
+                                    QObject *parent = nullptr)
+        : QTcpServer(parent), m_config(config), m_semaphore(semaphore) {}
+
+protected:
+    void incomingConnection(qintptr handle) override
+    {
+        auto *sslSocket = new QSslSocket;
+        sslSocket->setSslConfiguration(m_config);
+        auto *thread = new QThread(this);
+        sslSocket->moveToThread(thread);
+
+        QObject::connect(thread, &QThread::started, sslSocket, [sslSocket, handle]() {
+            sslSocket->setSocketDescriptor(handle, QAbstractSocket::ConnectedState);
+            sslSocket->startServerEncryption();
+        });
+        QObject::connect(sslSocket, &QSslSocket::encrypted, sslSocket, [this, thread]() {
+            m_semaphore.release();
+            thread->quit();
+        });
+        QObject::connect(sslSocket, &QSslSocket::errorOccurred, sslSocket,
+                         [sslSocket, thread](QAbstractSocket::SocketError) {
+                             qWarning() << "Server-side handshake error:" << sslSocket->errorString();
+                             thread->quit();
+                         });
+        QObject::connect(thread, &QThread::finished, sslSocket, &QObject::deleteLater);
+        QObject::connect(thread, &QThread::finished, thread, &QObject::deleteLater);
+        thread->start();
+    }
+
+private:
+    QSslConfiguration m_config;
+    QSemaphore &m_semaphore;
+};
+
+void tst_QSslSocket::concurrentServerSideHandshakes()
+{
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return;
+
+    // QTBUG-147161: concurrent server-side handshakes in separate threads must succeed.
+    QSslConfiguration serverConfig;
+    {
+        QFile keyFile(testDataDir + "certs/selfsigned-server.key"_L1);
+        QVERIFY(keyFile.open(QIODevice::ReadOnly));
+        QSslKey key(keyFile.readAll(), QSsl::Rsa, QSsl::Pem, QSsl::PrivateKey);
+        QVERIFY(!key.isNull());
+        serverConfig.setPrivateKey(key);
+        const auto certs = QSslCertificate::fromPath(testDataDir + "certs/selfsigned-server.crt"_L1);
+        QVERIFY(!certs.isEmpty());
+        serverConfig.setLocalCertificate(certs.first());
+    }
+
+    constexpr int NumClients = 8;
+    QSemaphore semaphore;
+    MultiThreadedSslServer server(serverConfig, semaphore);
+    QVERIFY(server.listen());
+
+    std::array<QSslSocket, NumClients> clients;
+    for (auto &client : clients) {
+        QObject::connect(&client, &QSslSocket::sslErrors, &client,
+                         qOverload<const QList<QSslError> &>(&QSslSocket::ignoreSslErrors));
+        client.connectToHostEncrypted("127.0.0.1"_L1, server.serverPort());
+    }
+
+    QDeadlineTimer dt(5s);
+    while (!semaphore.tryAcquire(NumClients)) {
+        QVERIFY2(!dt.hasExpired(), "Handshakes did not finish in time.");
+        QCoreApplication::processEvents();
+        QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
+    }
+}
 
 QTEST_MAIN(tst_QSslSocket)
 
