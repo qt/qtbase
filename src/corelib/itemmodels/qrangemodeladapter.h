@@ -1431,7 +1431,13 @@ public:
     bool insertRow(QSpan<const int> before)
     {
         Q_PRE(before.size());
-        return storage.m_model->insertRow(before.back(), this->index(before.first(before.size() - 1), 0));
+        return insertRow(before.back(), this->index(before.first(before.size() - 1), 0));
+    }
+
+    template <typename I = Impl, if_canInsertRows<I> = true, if_tree<I> = true>
+    bool insertRow(int before, const QModelIndex &parent)
+    {
+        return storage.m_model->insertRow(before, parent);
     }
 
     template <typename D = row_type, typename I = Impl,
@@ -1445,8 +1451,15 @@ public:
               if_canInsertRows<I> = true, if_compatible_row<D> = true, if_tree<I> = true>
     bool insertRow(QSpan<const int> before, D &&data)
     {
-        return insertRowImpl(before.back(), this->index(before.sliced(0, before.size() - 1), 0),
-                             std::forward<D>(data));
+        return insertRow(before.back(), this->index(before.sliced(0, before.size() - 1), 0),
+                         std::forward<D>(data));
+    }
+
+    template <typename D = row_type, typename I = Impl,
+              if_canInsertRows<I> = true, if_compatible_row<D> = true, if_tree<I> = true>
+    bool insertRow(int before, const QModelIndex &parent, D &&data)
+    {
+        return insertRowImpl(before, parent, std::forward<D>(data));
     }
 
     template <typename C, typename I = Impl,
@@ -1460,8 +1473,15 @@ public:
               if_canInsertRows<I> = true, if_compatible_row_range<C> = true, if_tree<I> = true>
     bool insertRows(QSpan<const int> before, C &&data)
     {
-        return insertRowsImpl(before.back(), this->index(before.sliced(0, before.size() - 1), 0),
-                              std::forward<C>(data));
+        return insertRows(before.back(), this->index(before.sliced(0, before.size() - 1), 0),
+                          std::forward<C>(data));
+    }
+
+    template <typename C, typename I = Impl,
+              if_canInsertRows<I> = true, if_compatible_row_range<C> = true, if_tree<I> = true>
+    bool insertRows(int before, const QModelIndex &parent, C &&data)
+    {
+        return insertRowsImpl(before, parent, std::forward<C>(data));
     }
 
     template <typename I = Impl, if_canRemoveRows<I> = true>
@@ -1476,6 +1496,12 @@ public:
         return removeRows(path, 1);
     }
 
+    template <typename I = Impl, if_canRemoveRows<I> = true, if_tree<I> = true>
+    bool removeRow(int row, const QModelIndex &parent)
+    {
+        return removeRows(row, 1, parent);
+    }
+
     template <typename I = Impl, if_canRemoveRows<I> = true>
     bool removeRows(int row, int count)
     {
@@ -1485,8 +1511,13 @@ public:
     template <typename I = Impl, if_canRemoveRows<I> = true, if_tree<I> = true>
     bool removeRows(QSpan<const int> path, int count)
     {
-        return storage->removeRows(path.back(), count,
-                                   this->index(path.first(path.size() - 1), 0));
+        return removeRows(path.back(), count, this->index(path.first(path.size() - 1), 0));
+    }
+
+    template <typename I = Impl, if_canRemoveRows<I> = true, if_tree<I> = true>
+    bool removeRows(int row, int count, const QModelIndex &parent)
+    {
+        return storage->removeRows(row, count, parent);
     }
 
     template <typename F = range_features, if_canMoveItems<F> = true>
@@ -1510,13 +1541,30 @@ public:
 
     template <typename I = Impl, typename F = range_features,
               if_canMoveItems<F> = true, if_tree<I> = true>
+    bool moveRow(const QModelIndex &sourceParent, int sourceRow,
+                 const QModelIndex &destinationParent, int destinationChild)
+    {
+        return moveRows(sourceParent, sourceRow, 1, destinationParent, destinationChild);
+    }
+
+    template <typename I = Impl, typename F = range_features,
+              if_canMoveItems<F> = true, if_tree<I> = true>
     bool moveRows(QSpan<const int> source, int count, QSpan<const int> destination)
     {
-        return storage->moveRows(this->index(source.first(source.size() - 1), 0),
-                                 source.back(),
-                                 count,
-                                 this->index(destination.first(destination.size() - 1), 0),
-                                 destination.back());
+        return moveRows(this->index(source.first(source.size() - 1), 0),
+                        source.back(),
+                        count,
+                        this->index(destination.first(destination.size() - 1), 0),
+                        destination.back());
+    }
+
+    template <typename I = Impl, typename F = range_features,
+              if_canMoveItems<F> = true, if_tree<I> = true>
+    bool moveRows(const QModelIndex &sourceParent, int sourceRow, int count,
+                  const QModelIndex &destinationParent, int destinationChild)
+    {
+        return storage->moveRows(sourceParent, sourceRow, count,
+                                 destinationParent, destinationChild);
     }
 
     template <typename I = Impl, if_canInsertColumns<I> = true>
