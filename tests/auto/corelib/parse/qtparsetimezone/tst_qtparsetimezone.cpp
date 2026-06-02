@@ -4,7 +4,7 @@
 #include <QTest>
 #include <private/qtparsetimezone_p.h>
 
-#include <QtCore/qdatetime.h>
+#include <QtCore/private/qdatetime_p.h>
 #include <QtCore/qlocale.h>
 #include <QtCore/private/qlocale_p.h>
 #include <QtCore/private/qlocaltime_p.h>
@@ -12,18 +12,30 @@
 
 using namespace Qt::StringLiterals;
 
-// We can't make TimeType a Q_ENUM because QTimeZone is not a QObject, so:
-const char *toString(QTimeZone::TimeType arg)
+// We can't make TimeType a Q_ENUM because QDateTimePrivate is not a QObject, so:
+const char *toString(QDateTimePrivate::DaylightStatus arg)
 {
     return qstrdup([arg]() {
         switch (arg) {
-        case QTimeZone::StandardTime: return "Standard Time";
-        case QTimeZone::DaylightTime: return "Daylight-Saving Time";
-        case QTimeZone::GenericTime: return "Generic Time";
+        case QDateTimePrivate::StandardTime: return "Standard Time";
+        case QDateTimePrivate::DaylightTime: return "Daylight-Saving Time";
+        case QDateTimePrivate::UnknownDaylightTime: return "Generic Time";
         }
         Q_UNREACHABLE_RETURN("<unknown time type>");
     }());
 }
+
+#if QT_CONFIG(timezone)
+QDateTimePrivate::DaylightStatus timeTypeToStatus(QTimeZone::TimeType type) {
+    using QDTP = QDateTimePrivate;
+    switch (type) {
+    case QTimeZone::GenericTime: return QDTP::UnknownDaylightTime;
+    case QTimeZone::StandardTime: return QDTP::StandardTime;
+    case QTimeZone::DaylightTime: return QDTP::DaylightTime;
+    }
+    Q_UNREACHABLE_RETURN(QDTP::UnknownDaylightTime);
+}
+#endif
 
 class tst_QtParseTimeZone : public QObject
 {
@@ -36,6 +48,7 @@ private Q_SLOTS:
 
 void tst_QtParseTimeZone::prefix_data()
 {
+    using QDTP = QDateTimePrivate;
     using QTZ = QTimeZone;
     using Flag = QtTemporalPattern::TemporalFieldFlag;
     using Flags = QtTemporalPattern::TemporalFieldFlags;
@@ -44,7 +57,7 @@ void tst_QtParseTimeZone::prefix_data()
     QTest::addColumn<Flags>("flags");
     QTest::addColumn<int>("from");
     QTest::addColumn<int>("until"); // 0 => fail to parse
-    QTest::addColumn<QTZ::TimeType>("type");
+    QTest::addColumn<QDTP::DaylightStatus>("type");
     QTest::addColumn<QTZ>("zone");
 
     const QTZ lt(QTZ::LocalTime);
@@ -52,17 +65,17 @@ void tst_QtParseTimeZone::prefix_data()
 
     // Mainly to check we don't crash or trigger assertions:
     QTest::addRow("null/C/none/0")
-        << QString() << QLocale::c() << Flags{} << 0 << 0 << QTZ::GenericTime << lt;
+        << QString() << QLocale::c() << Flags{} << 0 << 0 << QDTP::UnknownDaylightTime << lt;
     QTest::addRow("null/C/any/0")
-        << QString() << QLocale::c() << AnyZoneForm << 0 << 0 << QTZ::GenericTime << lt;
+        << QString() << QLocale::c() << AnyZoneForm << 0 << 0 << QDTP::UnknownDaylightTime << lt;
     QTest::addRow("null/C/any/7")
-        << QString() << QLocale::c() << AnyZoneForm << 7 << 0 << QTZ::GenericTime << lt;
+        << QString() << QLocale::c() << AnyZoneForm << 7 << 0 << QDTP::UnknownDaylightTime << lt;
     QTest::addRow("empty/C/none/0")
-        << u""_s << QLocale::c() << Flags{} << 0 << 0 << QTZ::GenericTime << lt;
+        << u""_s << QLocale::c() << Flags{} << 0 << 0 << QDTP::UnknownDaylightTime << lt;
     QTest::addRow("empty/C/any/0")
-        << u""_s << QLocale::c() << AnyZoneForm << 0 << 0 << QTZ::GenericTime << lt;
+        << u""_s << QLocale::c() << AnyZoneForm << 0 << 0 << QDTP::UnknownDaylightTime << lt;
     QTest::addRow("empty/C/any/7")
-        << u""_s << QLocale::c() << AnyZoneForm << 7 << 0 << QTZ::GenericTime << lt;
+        << u""_s << QLocale::c() << AnyZoneForm << 7 << 0 << QDTP::UnknownDaylightTime << lt;
 
     // Local time's name as reported by (maybe QTZ::system() and) the native system:
     {
@@ -72,13 +85,14 @@ void tst_QtParseTimeZone::prefix_data()
                                         QTimeZone::LocalTime);
         const QDateTime jul = QDateTime(QDate(now.date().year(), 7, 12), QTime(12, 0),
                                         QTimeZone::LocalTime);
-        QTZ::TimeType janType = QTZ::GenericTime, julType = QTZ::GenericTime;
+        QDTP::DaylightStatus janType = QDTP::UnknownDaylightTime;
+        QDTP::DaylightStatus julType = QDTP::UnknownDaylightTime;
         if (jan.isDaylightTime()) {
-            janType = QTZ::DaylightTime;
-            julType = jul.isDaylightTime() ? QTZ::DaylightTime : QTZ::StandardTime;
+            janType = QDTP::DaylightTime;
+            julType = jul.isDaylightTime() ? QDTP::DaylightTime : QDTP::StandardTime;
         } else if (jul.isDaylightTime()) {
-            janType = QTZ::StandardTime;
-            julType = QTZ::DaylightTime;
+            janType = QDTP::StandardTime;
+            julType = QDTP::DaylightTime;
         } // If neither is DST, both are generic
 #ifdef QT_BUILD_INTERNAL
         constexpr QDateTimePrivate::TransitionOptions
@@ -117,824 +131,824 @@ void tst_QtParseTimeZone::prefix_data()
     QTest::addRow("+0100/C/ISO-pfx+num+wide/0")
         << u"+0100"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Numeric | Flag::Wide }
-        << 0 << 5 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 5 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("+0100/C/ISO-pfx+num+wide+0pad/0")
         << u"+0100"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix
                 | Flag::Numeric | Flag::Wide | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("+0100/C/ISO-pfx+num+shrt/0")
         << u"+0100"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Numeric | Flag::Short }
-        << 0 << 5 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 5 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("+0100/C/ISO-pfx+num+shrt+0pad/0")
         << u"+0100"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix
                 | Flag::Numeric | Flag::Short | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("+0100/C/ISO-pfx+num+abbr/0")
         << u"+0100"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Numeric | Flag::Abbreviated }
-        << 0 << 5 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 5 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("+0100/C/ISO-pfx+num+narr/0")
         << u"+0100"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Numeric | Flag::Narrow }
-        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 3 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("+0100/C/ISO+num+wide/0")
         << u"+0100"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::Numeric | Flag::Wide }
-        << 0 << 5 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 5 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("+0100/C/ISO+num+wide+0pad/0")
         << u"+0100"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::Numeric | Flag::Wide | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("+0100/C/ISO+num+shrt/0")
         << u"+0100"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::Numeric | Flag::Short }
-        << 0 << 5 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 5 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("+0100/C/ISO+num+shrt+0pad/0")
         << u"+0100"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::Numeric | Flag::Short | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("+0100/C/ISO+num+abbr/0")
         << u"+0100"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::Numeric | Flag::Abbreviated }
-        << 0 << 5 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 5 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("+0100/C/ISO+num+narr/0")
         << u"+0100"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::Numeric | Flag::Narrow }
-        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 3 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("+0100/C/ISO+pfx+num+abbr/0")
         << u"+0100"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Numeric | Flag::Abbreviated }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("+0100/C/ISO+pfx+num+narr/0")
         << u"+0100"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Numeric | Flag::Narrow }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone(3600);
 
     QTest::addRow("UTC+0100/C/ISO-pfx+num+abbr/0")
         << u"UTC+0100"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Numeric | Flag::Abbreviated }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("UTC+0100/C/ISO+num+wide+0pad/0")
         << u"UTC+0100"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::Numeric | Flag::Wide | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("UTC+0100/C/ISO+num+wide/0")
         << u"UTC+0100"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::Numeric | Flag::Wide }
-        << 0 << 8 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 8 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("UTC+0100/C/ISO+num+shrt+0pad/0")
         << u"UTC+0100"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::Numeric | Flag::Short | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("UTC+0100/C/ISO+num+shrt/0")
         << u"UTC+0100"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::Numeric | Flag::Short }
-        << 0 << 8 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 8 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("UTC+0100/C/ISO+num+abbr/0")
         << u"UTC+0100"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::Numeric | Flag::Abbreviated }
-        << 0 << 8 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 8 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("UTC+0100/C/ISO+num+narr/0")
         << u"UTC+0100"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::Numeric | Flag::Narrow }
-        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 6 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("UTC+0100/C/ISO+pfx+num+wide/0")
         << u"UTC+0100"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Numeric | Flag::Wide }
-        << 0 << 8 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 8 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("UTC+0100/C/ISO+pfx+num+wide+0pad/0")
         << u"UTC+0100"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix
                 | Flag::Numeric | Flag::Wide | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("UTC+0100/C/ISO+pfx+num+shrt/0")
         << u"UTC+0100"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Numeric | Flag::Short }
-        << 0 << 8 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 8 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("UTC+0100/C/ISO+pfx+num+shrt+0pad/0")
         << u"UTC+0100"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix
                 | Flag::Numeric | Flag::Short | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("UTC+0100/C/ISO+pfx+num+abbr/0")
         << u"UTC+0100"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Numeric | Flag::Abbreviated }
-        << 0 << 8 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 8 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("UTC+0100/C/ISO+pfx+num+narr/0")
         << u"UTC+0100"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Numeric | Flag::Narrow }
-        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 6 << QDTP::UnknownDaylightTime << QTimeZone(3600);
 
     QTest::addRow("+01:00/C/ISO-pfx+num+wide/0")
         << u"+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Numeric | Flag::Wide }
-        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 3 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("+01:00/C/ISO-pfx+num+wide+0pad/0")
         << u"+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix
                 | Flag::Numeric | Flag::Wide | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("+01:00/C/ISO-pfx+num+shrt/0")
         << u"+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Numeric | Flag::Short }
-        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 3 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("+01:00/C/ISO-pfx+num+shrt+0pad/0")
         << u"+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix
                 | Flag::Numeric | Flag::Short | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("+01:00/C/ISO-pfx+num+abbr/0")
         << u"+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Numeric | Flag::Abbreviated }
-        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 3 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("+01:00/C/ISO-pfx+num+abbr+0pad/0")
         << u"+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix
                 | Flag::Numeric | Flag::Abbreviated | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("+01:00/C/ISO-pfx+num+narr/0")
         << u"+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Numeric | Flag::Narrow }
-        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 3 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("+01:00/C/ISO+num+wide/0")
         << u"+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::Numeric | Flag::Wide }
-        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 3 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("+01:00/C/ISO+num+wide+0pad/0")
         << u"+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::Numeric | Flag::Wide | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("+01:00/C/ISO+num+shrt/0")
         << u"+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::Numeric | Flag::Short }
-        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 3 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("+01:00/C/ISO+num+shrt+0pad/0")
         << u"+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::Numeric | Flag::Short | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("+01:00/C/ISO+num+abbr/0")
         << u"+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::Numeric | Flag::Abbreviated }
-        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 3 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("+01:00/C/ISO+num+abbr+0pad/0")
         << u"+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::Numeric | Flag::Abbreviated | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("+01:00/C/ISO+num+narr/0")
         << u"+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::Numeric | Flag::Narrow }
-        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 3 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("+01:00/C/ISO+pfx+num+narr/0")
         << u"+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Numeric | Flag::Narrow }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
 
     QTest::addRow("UTC+01:00/C/ISO-pfx+num+narr/0")
         << u"UTC+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Numeric | Flag::Narrow }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("UTC+01:00/C/ISO+num+wide/0")
         << u"UTC+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::Numeric | Flag::Wide }
-        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 6 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("UTC+01:00/C/ISO+num+wide+0pad/0")
         << u"UTC+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::Numeric | Flag::Wide | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("UTC+01:00/C/ISO+num+shrt/0")
         << u"UTC+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::Numeric | Flag::Short }
-        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 6 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("UTC+01:00/C/ISO+num+shrt+0pad/0")
         << u"UTC+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::Numeric | Flag::Short | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("UTC+01:00/C/ISO+num+abbr/0")
         << u"UTC+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::Numeric | Flag::Abbreviated }
-        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 6 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("UTC+01:00/C/ISO+num+abbr+0pad/0")
         << u"UTC+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::Numeric | Flag::Abbreviated | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("UTC+01:00/C/ISO+num+narr/0")
         << u"UTC+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::Numeric | Flag::Narrow }
-        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 6 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("UTC+01:00/C/ISO+pfx+num+wide/0")
         << u"UTC+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Numeric | Flag::Wide }
-        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 6 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("UTC+01:00/C/ISO+pfx+num+wide+0pad/0")
         << u"UTC+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix
                 | Flag::Numeric | Flag::Wide | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("UTC+01:00/C/ISO+pfx+num+shrt/0")
         << u"UTC+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Numeric | Flag::Short }
-        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 6 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("UTC+01:00/C/ISO+pfx+num+shrt+0pad/0")
         << u"UTC+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix
                 | Flag::Numeric | Flag::Short | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("UTC+01:00/C/ISO+pfx+num+abbr/0")
         << u"UTC+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Numeric | Flag::Abbreviated }
-        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 6 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("UTC+01:00/C/ISO+pfx+num+abbr+0pad/0")
         << u"UTC+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix
                 | Flag::Numeric | Flag::Abbreviated | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("UTC+01:00/C/ISO+pfx+num+narr/0")
         << u"UTC+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Numeric | Flag::Narrow }
-        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 6 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("UTC+0100/C/ISO-pfx+num+narr/0")
         << u"UTC+0100"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Numeric | Flag::Narrow }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
 
     // Seconds field present:
     QTest::addRow("+010000/C/ISO-pfx+num+wide/0")
         << u"+010000"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Numeric | Flag::Wide }
-        << 0 << 7 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 7 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("+010000/C/ISO-pfx+num+shrt/0")
         << u"+010000"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Numeric | Flag::Short }
-        << 0 << 7 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 7 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("+010000/C/ISO-pfx+num+abbr/0")
         << u"+010000"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Numeric | Flag::Abbreviated }
-        << 0 << 5 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 5 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("+010000/C/ISO-pfx+num+narr/0")
         << u"+010000"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Numeric | Flag::Narrow }
-        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 3 << QDTP::UnknownDaylightTime << QTimeZone(3600);
 
     QTest::addRow("UTC+010000/C/ISO+pfx+num+wide/0")
         << u"UTC+010000"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Numeric | Flag::Wide }
-        << 0 << 10 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 10 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("UTC+010000/C/ISO+pfx+num+shrt/0")
         << u"UTC+010000"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Numeric | Flag::Short }
-        << 0 << 10 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 10 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("UTC+010000/C/ISO+pfx+num+abbr/0")
         << u"UTC+010000"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Numeric | Flag::Abbreviated }
-        << 0 << 8 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 8 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("UTC+010000/C/ISO+pfx+num+narr/0")
         << u"UTC+010000"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Numeric | Flag::Narrow }
-        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 6 << QDTP::UnknownDaylightTime << QTimeZone(3600);
 
     // Partial-width minutes should be ignored (when allowed) as cruft:
     QTest::addRow("+017/C/ISO-pfx+num+wide/0")
         << u"+017"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Numeric | Flag::Wide }
-        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 3 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("+017/C/ISO-pfx+num+wide+0pad/0")
         << u"+017"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix
                 | Flag::Numeric | Flag::Wide | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("+017/C/ISO-pfx+num+shrt/0")
         << u"+017"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Numeric | Flag::Short }
-        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 3 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("+017/C/ISO-pfx+num+shrt+0pad/0")
         << u"+017"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix
                 | Flag::Numeric | Flag::Short | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("+017/C/ISO-pfx+num+abbr/0")
         << u"+017"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Numeric | Flag::Abbreviated }
-        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 3 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("+017/C/ISO-pfx+num+abbr+0pad/0")
         << u"+017"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix
                 | Flag::Numeric | Flag::Abbreviated | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("+017/C/ISO-pfx+num+narr/0")
         << u"+017"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Numeric | Flag::Narrow }
-        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 3 << QDTP::UnknownDaylightTime << QTimeZone(3600);
 
     QTest::addRow("UTC+017/C/ISO+pfx+num+wide/0")
         << u"UTC+017"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Numeric | Flag::Wide }
-        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 6 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("UTC+017/C/ISO+pfx+num+wide+0pad/0")
         << u"UTC+017"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix
                 | Flag::Numeric | Flag::Wide | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("UTC+017/C/ISO+pfx+num+short/0")
         << u"UTC+017"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Numeric | Flag::Short }
-        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 6 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("UTC+017/C/ISO+pfx+num+shrt+0pad/0")
         << u"UTC+017"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix
                 | Flag::Numeric | Flag::Short | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("UTC+017/C/ISO+pfx+num+abbr/0")
         << u"UTC+017"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Numeric | Flag::Abbreviated }
-        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 6 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("UTC+017/C/ISO+pfx+num+abbr+0pad/0")
         << u"UTC+017"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix
                 | Flag::Numeric | Flag::Abbreviated | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("UTC+017/C/ISO+pfx+num+narr/0")
         << u"UTC+017"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Numeric | Flag::Narrow }
-        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 6 << QDTP::UnknownDaylightTime << QTimeZone(3600);
 
     // And now all the same, but expecting colons (Verbal in place of Numeric):
     QTest::addRow("+0100/C/ISO-pfx+verb+wide/0")
         << u"+0100"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Verbal | Flag::Wide }
-        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 3 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("+0100/C/ISO-pfx+verb+wide+0pad/0")
         << u"+0100"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix
                 | Flag::Verbal | Flag::Wide | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("+0100/C/ISO-pfx+verb+shrt/0")
         << u"+0100"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Verbal | Flag::Short }
-        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 3 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("+0100/C/ISO-pfx+verb+shrt+0pad/0")
         << u"+0100"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix
                 | Flag::Verbal | Flag::Short | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("+0100/C/ISO-pfx+verb+abbr/0")
         << u"+0100"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Verbal | Flag::Abbreviated }
-        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 3 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("+0100/C/ISO-pfx+verb+abbr+0pad/0")
         << u"+0100"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix
                 | Flag::Verbal | Flag::Abbreviated | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("+0100/C/ISO-pfx+verb+narr/0")
         << u"+0100"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Verbal | Flag::Narrow }
-        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 3 << QDTP::UnknownDaylightTime << QTimeZone(3600);
 
     QTest::addRow("+0100/C/ISO+verb+wide/0")
         << u"+0100"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::Verbal | Flag::Wide }
-        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 3 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("+0100/C/ISO+verb+wide+0pad/0")
         << u"+0100"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::Verbal | Flag::Wide | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("+0100/C/ISO+verb+shrt/0")
         << u"+0100"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::Verbal | Flag::Short }
-        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 3 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("+0100/C/ISO+verb+shrt+0pad/0")
         << u"+0100"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::Verbal | Flag::Short | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("+0100/C/ISO+verb+abbr/0")
         << u"+0100"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::Verbal | Flag::Abbreviated }
-        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 3 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("+0100/C/ISO+verb+abbr+0pad/0")
         << u"+0100"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::Verbal | Flag::Abbreviated | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("+0100/C/ISO+verb+narr/0")
         << u"+0100"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::Verbal | Flag::Narrow }
-        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 3 << QDTP::UnknownDaylightTime << QTimeZone(3600);
 
     QTest::addRow("+0100/C/ISO+pfx+verb+narr/0")
         << u"+0100"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Verbal | Flag::Narrow }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("UTC+0100/C/ISO-pfx+verb+narr/0")
         << u"UTC+0100"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Verbal | Flag::Narrow }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
 
     QTest::addRow("UTC+0100/C/ISO+verb+wide/0")
         << u"UTC+0100"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::Verbal | Flag::Wide }
-        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 6 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("UTC+0100/C/ISO+verb+wide+0pad/0")
         << u"UTC+0100"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::Verbal | Flag::Wide | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("UTC+0100/C/ISO+verb+shrt/0")
         << u"UTC+0100"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::Verbal | Flag::Short }
-        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 6 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("UTC+0100/C/ISO+verb+shrt+0pad/0")
         << u"UTC+0100"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::Verbal | Flag::Short | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("UTC+0100/C/ISO+verb+abbr/0")
         << u"UTC+0100"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::Verbal | Flag::Abbreviated }
-        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 6 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("UTC+0100/C/ISO+verb+abbr+0pad/0")
         << u"UTC+0100"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::Verbal | Flag::Abbreviated | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("UTC+0100/C/ISO+verb+narr/0")
         << u"UTC+0100"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::Verbal | Flag::Narrow }
-        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 6 << QDTP::UnknownDaylightTime << QTimeZone(3600);
 
     QTest::addRow("UTC+0100/C/ISO+pfx+verb+wide/0")
         << u"UTC+0100"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Verbal | Flag::Wide }
-        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 6 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("UTC+0100/C/ISO+pfx+verb+wide+0pad/0")
         << u"UTC+0100"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix
                 | Flag::Verbal | Flag::Wide | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("UTC+0100/C/ISO+pfx+verb+shrt/0")
         << u"UTC+0100"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Verbal | Flag::Short }
-        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 6 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("UTC+0100/C/ISO+pfx+verb+shrt+0pad/0")
         << u"UTC+0100"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix
                 | Flag::Verbal | Flag::Short | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("UTC+0100/C/ISO+pfx+verb+abbr/0")
         << u"UTC+0100"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Verbal | Flag::Abbreviated }
-        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 6 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("UTC+0100/C/ISO+pfx+verb+abbr+0pad/0")
         << u"UTC+0100"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix
                 | Flag::Verbal | Flag::Abbreviated | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("UTC+0100/C/ISO+pfx+verb+narr/0")
         << u"UTC+0100"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Verbal | Flag::Narrow }
-        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 6 << QDTP::UnknownDaylightTime << QTimeZone(3600);
 
     QTest::addRow("+01:00/C/ISO-pfx+verb+wide/0")
         << u"+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Verbal | Flag::Wide }
-        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 6 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("+01:00/C/ISO-pfx+verb+wide+0pad/0")
         << u"+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix
                 | Flag::Verbal | Flag::Wide | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("+01:00/C/ISO-pfx+verb+shrt/0")
         << u"+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Verbal | Flag::Short }
-        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 6 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("+01:00/C/ISO-pfx+verb+shrt+0pad/0")
         << u"+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix
                 | Flag::Verbal | Flag::Short | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("+01:00/C/ISO-pfx+verb+abbr/0")
         << u"+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Verbal | Flag::Abbreviated }
-        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 6 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("+01:00/C/ISO-pfx+verb+abbr+0pad/0")
         << u"+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix
                 | Flag::Verbal | Flag::Abbreviated | Flag::ZeroPad }
-        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 6 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("+01:00/C/ISO-pfx+verb+narr/0")
         << u"+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Verbal | Flag::Narrow }
-        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 3 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("+01:00/C/ISO-pfx+verb+narr+0pad/0")
         << u"+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix
                 | Flag::Verbal | Flag::Narrow | Flag::ZeroPad }
-        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 3 << QDTP::UnknownDaylightTime << QTimeZone(3600);
 
     QTest::addRow("+1:00/C/ISO-pfx+verb+wide/0")
         << u"+1:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Verbal | Flag::Wide }
-        << 0 << 5 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 5 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("+1:00/C/ISO-pfx+verb+wide+0pad/0")
         << u"+1:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix
                 | Flag::Verbal | Flag::Wide | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("+1:00/C/ISO-pfx+verb+shrt/0")
         << u"+1:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Verbal | Flag::Short }
-        << 0 << 5 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 5 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("+1:00/C/ISO-pfx+verb+shrt+0pad/0")
         << u"+1:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix
                 | Flag::Verbal | Flag::Short | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("+1:00/C/ISO-pfx+verb+abbr/0")
         << u"+1:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Verbal | Flag::Abbreviated }
-        << 0 << 5 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 5 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("+1:00/C/ISO-pfx+verb+abbr+0pad/0")
         << u"+1:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix
                 | Flag::Verbal | Flag::Abbreviated | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("+1:00/C/ISO-pfx+verb+narr/0")
         << u"+1:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Verbal | Flag::Narrow }
-        << 0 << 2 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 2 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("+1:00/C/ISO-pfx+verb+narr+0pad/0")
         << u"+1:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix
                 | Flag::Verbal | Flag::Narrow | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
 
     QTest::addRow("+01:00/C/ISO+verb+wide/0")
         << u"+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::Verbal | Flag::Wide }
-        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 6 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("+01:00/C/ISO+verb+wide+0pad/0")
         << u"+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::Verbal | Flag::Wide | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("+01:00/C/ISO+verb+shrt/0")
         << u"+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::Verbal | Flag::Short }
-        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 6 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("+01:00/C/ISO+verb+shrt+0pad/0")
         << u"+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::Verbal | Flag::Short | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("+01:00/C/ISO+verb+abbr/0")
         << u"+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::Verbal | Flag::Abbreviated }
-        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 6 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("+01:00/C/ISO+verb+abbr+0pad/0")
         << u"+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::Verbal | Flag::Abbreviated | Flag::ZeroPad }
-        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 6 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("+01:00/C/ISO+verb+narr/0")
         << u"+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::Verbal | Flag::Narrow }
-        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 3 << QDTP::UnknownDaylightTime << QTimeZone(3600);
 
     QTest::addRow("+01:00/C/ISO+pfx+verb+narr/0")
         << u"+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Verbal | Flag::Narrow }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("UTC+01:00/C/ISO-pfx+verb+narr/0")
         << u"UTC+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Verbal | Flag::Narrow }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
 
     QTest::addRow("UTC+01:00/C/ISO+verb+wide/0")
         << u"UTC+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::Verbal | Flag::Wide }
-        << 0 << 9 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 9 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("UTC+01:00/C/ISO+verb+wide+0pad/0")
         << u"UTC+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::Verbal | Flag::Wide | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("UTC+01:00/C/ISO+verb+shrt/0")
         << u"UTC+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::Verbal | Flag::Short }
-        << 0 << 9 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 9 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("UTC+01:00/C/ISO+verb+shrt+0pad/0")
         << u"UTC+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::Verbal | Flag::Short | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("UTC+01:00/C/ISO+verb+abbr/0")
         << u"UTC+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::Verbal | Flag::Abbreviated }
-        << 0 << 9 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 9 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("UTC+01:00/C/ISO+verb+abbr+0pad/0")
         << u"UTC+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::Verbal | Flag::Abbreviated | Flag::ZeroPad }
-        << 0 << 9 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 9 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("UTC+01:00/C/ISO+verb+narr/0")
         << u"UTC+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::Verbal | Flag::Narrow }
-        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 6 << QDTP::UnknownDaylightTime << QTimeZone(3600);
 
     QTest::addRow("UTC+01:00/C/ISO+pfx+verb+wide/0")
         << u"UTC+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Verbal | Flag::Wide }
-        << 0 << 9 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 9 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("UTC+01:00/C/ISO+pfx+verb+wide+0pad/0")
         << u"UTC+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix
                 | Flag::Verbal | Flag::Wide | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("UTC+01:00/C/ISO+pfx+verb+shrt/0")
         << u"UTC+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Verbal | Flag::Short }
-        << 0 << 9 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 9 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("UTC+01:00/C/ISO+pfx+verb+shrt+0pad/0")
         << u"UTC+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix
                 | Flag::Verbal | Flag::Short | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("UTC+01:00/C/ISO+pfx+verb+abbr/0")
         << u"UTC+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Verbal | Flag::Abbreviated }
-        << 0 << 9 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 9 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("UTC+01:00/C/ISO+pfx+verb+abbr+0pad/0")
         << u"UTC+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix
                 | Flag::Verbal | Flag::Abbreviated | Flag::ZeroPad }
-        << 0 << 9 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 9 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("UTC+01:00/C/ISO+pfx+verb+narr/0")
         << u"UTC+01:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Verbal | Flag::Narrow }
-        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 6 << QDTP::UnknownDaylightTime << QTimeZone(3600);
 
     // Seconds field present:
     QTest::addRow("+01:00:00/C/ISO-pfx+verb+wide/0")
         << u"+01:00:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Verbal | Flag::Wide }
-        << 0 << 9 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 9 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("+01:00:00/C/ISO-pfx+verb+short/0")
         << u"+01:00:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Verbal | Flag::Short }
-        << 0 << 9 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 9 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("+01:00:00/C/ISO-pfx+verb+abbr/0")
         << u"+01:00:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Verbal | Flag::Abbreviated }
-        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 6 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("+01:00:00/C/ISO-pfx+verb+narr/0")
         << u"+01:00:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Verbal | Flag::Narrow }
-        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 3 << QDTP::UnknownDaylightTime << QTimeZone(3600);
 
     QTest::addRow("+1:00:00/C/ISO-pfx+verb+wide/0")
         << u"+1:00:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Verbal | Flag::Wide }
-        << 0 << 8 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 8 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("+1:00:00/C/ISO-pfx+verb+wide+0pad/0")
         << u"+1:00:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix
                 | Flag::Verbal | Flag::Wide | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("+1:00:00/C/ISO-pfx+verb+short/0")
         << u"+1:00:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Verbal | Flag::Short }
-        << 0 << 8 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 8 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("+1:00:00/C/ISO-pfx+verb+short+0pad/0")
         << u"+1:00:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix
             | Flag::Verbal | Flag::Short | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("+1:00:00/C/ISO-pfx+verb+abbr/0")
         << u"+1:00:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Verbal | Flag::Abbreviated }
-        << 0 << 5 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 5 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("+1:00:00/C/ISO-pfx+verb+abbr+0pad/0")
         << u"+1:00:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix
                 | Flag::Verbal | Flag::Abbreviated | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("+1:00:00/C/ISO-pfx+verb+narr/0")
         << u"+1:00:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Verbal | Flag::Narrow }
-        << 0 << 2 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 2 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("+1:00:00/C/ISO-pfx+verb+narr+0pad/0")
         << u"+1:00:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix
                 | Flag::Verbal | Flag::Narrow | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
 
     QTest::addRow("UTC+01:00:00/C/ISO+pfx+verb+wide/0")
         << u"UTC+01:00:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Verbal | Flag::Wide }
-        << 0 << 12 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 12 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("UTC+01:00:00/C/ISO+pfx+verb+shrt/0")
         << u"UTC+01:00:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Verbal | Flag::Short }
-        << 0 << 12 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 12 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("UTC+01:00:00/C/ISO+pfx+verb+abbr/0")
         << u"UTC+01:00:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Verbal | Flag::Abbreviated }
-        << 0 << 9 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 9 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("UTC+01:00:00/C/ISO+pfx+verb+narr/0")
         << u"UTC+01:00:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Verbal | Flag::Narrow }
-        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 6 << QDTP::UnknownDaylightTime << QTimeZone(3600);
 
     QTest::addRow("UTC+1:00:00/C/ISO+pfx+verb+wide/0")
         << u"UTC+1:00:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Verbal | Flag::Wide }
-        << 0 << 11 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 11 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("UTC+1:00:00/C/ISO+pfx+verb+wide+0pad/0")
         << u"UTC+1:00:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix
                  | Flag::Verbal | Flag::Wide | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("UTC+1:00:00/C/ISO+pfx+verb+shrt/0")
         << u"UTC+1:00:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Verbal | Flag::Short }
-        << 0 << 11 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 11 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("UTC+1:00:00/C/ISO+pfx+verb+shrt+0pad/0")
         << u"UTC+1:00:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix
                  | Flag::Verbal | Flag::Short | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("UTC+1:00:00/C/ISO+pfx+verb+abbr/0")
         << u"UTC+1:00:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Verbal | Flag::Abbreviated }
-        << 0 << 8 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 8 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("UTC+1:00:00/C/ISO+pfx+verb+abbr+0pad/0")
         << u"UTC+1:00:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix
                  | Flag::Verbal | Flag::Abbreviated | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("UTC+1:00:00/C/ISO+pfx+verb+narr/0")
         << u"UTC+1:00:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Verbal | Flag::Narrow }
-        << 0 << 5 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 5 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("UTC+1:00:00/C/ISO+pfx+verb+narr+0pad/0")
         << u"UTC+1:00:00"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix
                 | Flag::Verbal | Flag::Narrow | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
 
     // Partial-width minutes should be ignored (when allowed) as cruft:
     QTest::addRow("+01:7/C/ISO-pfx+verb+wide/0")
         << u"+01:7"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Verbal | Flag::Wide }
-        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 3 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("+01:7/C/ISO-pfx+verb+wide+0pad/0")
         << u"+01:7"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix
                 | Flag::Verbal | Flag::Wide | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("+01:7/C/ISO-pfx+verb+shrt/0")
         << u"+01:7"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Verbal | Flag::Short }
-        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 3 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("+01:7/C/ISO-pfx+verb+shrt+0pad/0")
         << u"+01:7"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix
                 | Flag::Verbal | Flag::Short | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("+01:7/C/ISO-pfx+verb+abbr/0")
         << u"+01:7"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Verbal | Flag::Abbreviated }
-        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 3 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("+01:7/C/ISO-pfx+verb+abbr+0pad/0")
         << u"+01:7"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix
                 | Flag::Verbal | Flag::Abbreviated | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("+01:7/C/ISO-pfx+verb+narr/0")
         << u"+01:7"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::NeedNoUtcPrefix | Flag::Verbal | Flag::Narrow }
-        << 0 << 3 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 3 << QDTP::UnknownDaylightTime << QTimeZone(3600);
 
     QTest::addRow("UTC+01:7/C/ISO+pfx+verb+shrt/0")
         << u"UTC+01:7"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Verbal | Flag::Short }
-        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 6 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("UTC+01:7/C/ISO+pfx+verb+shrt+0pad/0")
         << u"UTC+01:7"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix
                 | Flag::Verbal | Flag::Short | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("UTC+01:7/C/ISO+pfx+verb+abbr/0")
         << u"UTC+01:7"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Verbal | Flag::Abbreviated }
-        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 6 << QDTP::UnknownDaylightTime << QTimeZone(3600);
     QTest::addRow("UTC+01:7/C/ISO+pfx+verb+abbr+0pad/0")
         << u"UTC+01:7"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix
                 | Flag::Verbal | Flag::Abbreviated | Flag::ZeroPad }
-        << 0 << 0 << QTZ::GenericTime << QTimeZone();
+        << 0 << 0 << QDTP::UnknownDaylightTime << QTimeZone();
     QTest::addRow("UTC+01:7/C/ISO+pfx+verb+narr/0")
         << u"UTC+01:7"_s << QLocale::c()
         << Flags{ Flag::Iso8601 | Flag::AcceptUtcPrefix | Flag::Verbal | Flag::Narrow }
-        << 0 << 6 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 6 << QDTP::UnknownDaylightTime << QTimeZone(3600);
 
     // Some UTC tests, with offsets.
     QTest::addRow("UTC+01:00/C/num+wide/0")
         << u"UTC+01:00"_s << QLocale::c()
         << Flags{ Flag::Numeric | Flag::Wide }
-        << 0 << 9 << QTZ::GenericTime << QTimeZone(3600);
+        << 0 << 9 << QDTP::UnknownDaylightTime << QTimeZone(3600);
 
     // The only locale (in CLDR v48) that doesn't use a separator:
     const QLocale am_ET(QLocale::Amharic, QLocale::Ethiopia);
@@ -944,7 +958,7 @@ void tst_QtParseTimeZone::prefix_data()
 #if QT_CONFIG(icu) || defined(Q_OS_DARWIN)
         // We haven't found an ICU C API to localize offset locale names properly :-(
         const QString formatted = QTimeZone(3600 * 3).displayName(QTimeZone::GenericTime,
-                                                            QTimeZone::LongName, am_ET);
+                                                                  QTimeZone::LongName, am_ET);
         // UTC+03:00; this is wrong.
         if (formatted == correct) // Notify if that ever gets fixed:
             qInfo("We can now remove the special case for ICU on am_ET prefix tests");
@@ -953,10 +967,10 @@ void tst_QtParseTimeZone::prefix_data()
 #endif
         QTest::addRow("UTC+0300/am_ET/num+wide/0")
             << formatted << am_ET << Flags{ Flag::Numeric | Flag::Wide }
-            << 0 << formatted.size() << QTZ::GenericTime << QTimeZone(3600 * 3);
+            << 0 << formatted.size() << QDTP::UnknownDaylightTime << QTimeZone(3600 * 3);
         QTest::addRow("UTC+0300/am_ET/num+wide/11") // Date of Haile Selassie's murder:
             << u"1975-08-27 " + formatted << am_ET << Flags{ Flag::Numeric | Flag::Wide }
-            << 11 << 11 + formatted.size() << QTZ::GenericTime << QTimeZone(3600 * 3);
+            << 11 << 11 + formatted.size() << QDTP::UnknownDaylightTime << QTimeZone(3600 * 3);
     }
 
 #if QT_CONFIG(timezone) // Basic well-known zones in relevant locales:
@@ -965,10 +979,10 @@ void tst_QtParseTimeZone::prefix_data()
         const QLocale enGB(QLocale::English, QLocale::UnitedKingdom);
         QTest::addRow("GMT/en/any/0")
             << u"GMT"_s << enGB
-            << AnyGlobalZoneForm << 0 << 3 << QTZ::GenericTime << gmt;
+            << AnyGlobalZoneForm << 0 << 3 << QDTP::UnknownDaylightTime << gmt;
         QTest::addRow("16:47 GMT/en/any/6")
             << u"16:47 GMT in the UK"_s << enGB
-            << AnyGlobalZoneForm << 6 << 9 << QTZ::GenericTime << gmt;
+            << AnyGlobalZoneForm << 6 << 9 << QDTP::UnknownDaylightTime << gmt;
     } else {
         qDebug("Skipping GMT tests, not recognised by system backend");
     }
@@ -1066,8 +1080,9 @@ void tst_QtParseTimeZone::prefix_data()
                     generic = name;
                 else if (name == generic)
                     continue;
-                QTZ::TimeType expectType = zone.id() == expect.id() && nameType != QTZ::OffsetName
-                    ? timeType : QTZ::GenericTime;
+                QDTP::DaylightStatus expectType =
+                    zone.id() == expect.id() && nameType != QTZ::OffsetName
+                    ? timeTypeToStatus(timeType) : QDTP::UnknownDaylightTime;
 
                 QTest::addRow("%s/%s/%s/%s/any/0", zid.data(), loc.data(),
                               nameTypeName(nameType), timeTypeName(timeType))
@@ -1087,20 +1102,20 @@ void tst_QtParseTimeZone::prefix_data()
         const QString ianaStr = QLatin1String(zoneId);
         QTest::addRow("%s/%s/any/0", zoneId.data(), loc.data())
             << ianaStr << locale << AnyGlobalZoneForm << 0
-            << int(zoneId.size()) << QTZ::GenericTime << zone;
+            << int(zoneId.size()) << QDTP::UnknownDaylightTime << zone;
         QTest::addRow("%s%s/iana/0", zoneId.data(), loc.data())
             << ianaStr << locale << IanaForm << 0
-            << int(zoneId.size()) << QTZ::GenericTime << zone;
+            << int(zoneId.size()) << QDTP::UnknownDaylightTime << zone;
         if (!prefix.isEmpty()) {
             const int inset = int(prefix.size());
             const int until = inset + int(zoneId.size());
             const QString padded = prefix + ianaStr + suffix;
             QTest::addRow("%s/%s/any/%d", zoneId.data(), loc.data(), inset)
                 << padded << locale << AnyGlobalZoneForm << inset
-                << until << QTZ::GenericTime << zone;
+                << until << QDTP::UnknownDaylightTime << zone;
             QTest::addRow("%s%s/iana/%d", zoneId.data(), loc.data(), inset)
                 << padded << locale << IanaForm << inset
-                << until << QTZ::GenericTime << zone;
+                << until << QDTP::UnknownDaylightTime << zone;
         }
     };
 
@@ -1363,14 +1378,14 @@ void tst_QtParseTimeZone::prefix_data()
         // (This probably means QTZLocale is missing (at least) this translation.)
         QTest::addRow("EasterIslandT/es-CL/any/0")
             << u"hora de Isla de Pascua"_s
-            << esCL << AnyGlobalZoneForm << 0 << 22 << QTZ::GenericTime << ahu;
+            << esCL << AnyGlobalZoneForm << 0 << 22 << QDTP::UnknownDaylightTime << ahu;
         QTest::addRow("EasterIslandST/es-CL/any/0")
             << u"hora estándar de Isla de Pascua"_s
-            << esCL << AnyGlobalZoneForm << 0 << 31 << QTZ::StandardTime << ahu;
+            << esCL << AnyGlobalZoneForm << 0 << 31 << QDTP::StandardTime << ahu;
         // Zone has no actual DST, so hits a fall-back.
         QTest::addRow("EasterIslandDST/es-CL/any/0")
             << u"hora de verano de Easter"_s
-            << esCL << AnyGlobalZoneForm << 0 << 24 << QTZ::DaylightTime << ahu;
+            << esCL << AnyGlobalZoneForm << 0 << 24 << QDTP::DaylightTime << ahu;
 #endif
     } else {
         qDebug("Skipping Chile/EasterIsland tests, not recognised by system backend");
@@ -1490,9 +1505,11 @@ void tst_QtParseTimeZone::prefix_data()
     if (const QTZ west("UTC-02:00"); west.isValid()) {
         const QLocale nuuk(QLocale::Kalaallisut, QLocale::Greenland);
         QTest::addRow("UTC-02:00/kl-GL/any/0")
-            << u"UTC-02:00"_s << nuuk << AnyGlobalZoneForm << 0 << 9 << QTZ::GenericTime << west;
+            << u"UTC-02:00"_s << nuuk << AnyGlobalZoneForm << 0
+            << 9 << QDTP::UnknownDaylightTime << west;
         QTest::addRow("GMT-02:00/kl-GL/any/0")
-            << u"GMT-02:00"_s << nuuk << AnyGlobalZoneForm << 0 << 9 << QTZ::GenericTime << west;
+            << u"GMT-02:00"_s << nuuk << AnyGlobalZoneForm << 0
+            << 9 << QDTP::UnknownDaylightTime << west;
     } else {
         qDebug("Skipping UTC-02:00 tests, not recognised by UTC-offset backend :-(");
     }
@@ -1501,14 +1518,14 @@ void tst_QtParseTimeZone::prefix_data()
         // ICU uses this offset form also for ar-SD long and offset forms:
         QTest::addRow("[short]/ar-SD/any/all")
             << u"UTC+02:00"_s << sudan
-            << AnyGlobalZoneForm << 0 << 9 << QTZ::GenericTime << east;
+            << AnyGlobalZoneForm << 0 << 9 << QDTP::UnknownDaylightTime << east;
 #if !QT_CONFIG(icu) && !defined(Q_OS_DARWIN) // Darwin uses ICU
         QTest::addRow("[long]/ar-SD/any/all")
             << u"\u063a\u0631\u064a\u0646\u062a\u0634+\u0662"_s << sudan
-            << AnyGlobalZoneForm << 0 << 8 << QTZ::GenericTime << east;
+            << AnyGlobalZoneForm << 0 << 8 << QDTP::UnknownDaylightTime << east;
         QTest::addRow("[offset]/ar-SD/any/all")
             << u"\u063a\u0631\u064a\u0646\u062a\u0634+\u0660\u0662:\u0660\u0660"_s << sudan
-            << AnyGlobalZoneForm << 0 << 12 << QTZ::GenericTime << east;
+            << AnyGlobalZoneForm << 0 << 12 << QDTP::UnknownDaylightTime << east;
 #endif
     } else {
         qDebug("Skipping UTC+02:00 tests, not recognised by UTC-offset backend :-(");
@@ -1522,7 +1539,7 @@ void tst_QtParseTimeZone::prefix()
     QFETCH(const QtTemporalPattern::TemporalFieldFlags, flags);
     QFETCH(const int, from);
     QFETCH(const int, until);
-    QFETCH(const QTimeZone::TimeType, type);
+    QFETCH(const QDateTimePrivate::DaylightStatus, type);
     QFETCH(const QTimeZone, zone);
 
     const auto parsed = QtParseTimeZone::prefix(text, locale, from, flags);
@@ -1545,8 +1562,10 @@ void tst_QtParseTimeZone::prefix()
         const QtParseTimeZone::ParsedZone &parse = parsed.front();
         QCOMPARE(parse.startIndex, from);
         QCOMPARE(parse.endIndex, until);
-        if ((parse.timeType == QTimeZone::GenericTime && type == QTimeZone::StandardTime)
-            || (parse.timeType == QTimeZone::StandardTime && type == QTimeZone::GenericTime)) {
+        if ((parse.timeType == QDateTimePrivate::UnknownDaylightTime
+             && type == QDateTimePrivate::StandardTime)
+            || (parse.timeType == QDateTimePrivate::StandardTime
+                && type == QDateTimePrivate::UnknownDaylightTime)) {
             // Generic and standard names commonly coincide, which can lead to
             // either being recognized as the other. Sources also vary, so some
             // may use as generic name what others use as standard name.

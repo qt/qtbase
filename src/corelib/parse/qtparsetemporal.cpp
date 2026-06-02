@@ -427,9 +427,9 @@ bool TemporalFieldMatcher::resolve(PartialParse &parse) const
             const auto res = [type = parse.results.timeType]() {
                 using Res = QDateTime::TransitionResolution;
                 switch (type) {
-                case QTimeZone::StandardTime: return Res::PreferStandard;
-                case QTimeZone::DaylightTime: return Res::PreferDaylightSaving;
-                case QTimeZone::GenericTime: return Res::LegacyBehavior;
+                case QDateTimePrivate::StandardTime: return Res::PreferStandard;
+                case QDateTimePrivate::DaylightTime: return Res::PreferDaylightSaving;
+                case QDateTimePrivate::UnknownDaylightTime: return Res::LegacyBehavior;
                 }
                 Q_UNREACHABLE_RETURN(Res::LegacyBehavior);
             }();

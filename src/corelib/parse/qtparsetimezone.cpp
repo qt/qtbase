@@ -22,7 +22,7 @@ namespace {
 
 QList<QtParseTimeZone::ParsedZone>
 addMatch(QList<QtParseTimeZone::ParsedZone> &&matches,
-         QtParseTimeZone::ParsedZone &&match, bool gmtStart)
+         QtParseTimeZone::ParsedZone &&match, [[maybe_unused]] bool gmtStart)
 {
     // Input matches is sorted with x before y when isBetter(x, y); add our new
     // entry just after the last that isBetter(than, it).
@@ -65,6 +65,16 @@ addMatch(QList<QtParseTimeZone::ParsedZone> &&matches,
 
 #if QT_CONFIG(timezone)
 constexpr char zoneNamePunctuation[] = "+-./:_";
+
+QDateTimePrivate::DaylightStatus timeTypeToStatus(QTimeZone::TimeType type) {
+    using QDTP = QDateTimePrivate;
+    switch (type) {
+    case QTimeZone::GenericTime: return QDTP::UnknownDaylightTime;
+    case QTimeZone::StandardTime: return QDTP::StandardTime;
+    case QTimeZone::DaylightTime: return QDTP::DaylightTime;
+    }
+    Q_UNREACHABLE_RETURN(QDTP::UnknownDaylightTime);
+}
 
 auto matchIanaId(QStringView text)
 {
@@ -128,9 +138,10 @@ auto matchIanaId(QStringView text)
 
 auto matchSystemName(QStringView text, const QLocale &locale)
 {
+    using QDTP = QDateTimePrivate;
     struct R {
         qsizetype length = 0;
-        QTimeZone::TimeType season = QTimeZone::GenericTime;
+        QDTP::DaylightStatus season = QDTP::UnknownDaylightTime;
         operator bool() const noexcept { return length > 0; }
     } best;
     qTzSet();
@@ -138,18 +149,18 @@ auto matchSystemName(QStringView text, const QLocale &locale)
     for (int i = 0; i < 2; ++i) {
         const QString zone(qTzName(i));
         if (zone.size() > best.length && text.startsWith(zone))
-            best = { zone.size(), i ? QTimeZone::DaylightTime : QTimeZone::StandardTime };
+            best = { zone.size(), i ? QDTP::DaylightTime : QDTP::StandardTime };
     }
 #if QT_CONFIG(timezone)
     // Mimic each candidate QLocale::toString() could have used, to ensure round-trips work:
-    const auto consider = [text, &best](QStringView zone, QTimeZone::TimeType season) {
+    const auto consider = [text, &best](QStringView zone, QDTP::DaylightStatus season) {
         if (text.startsWith(zone)) {
             // UTC-based zone's displayName() only includes minutes if non-zero:
             constexpr qsizetype utcSignHourWidth = 6, withMinutesWidth = 9;
             if (withMinutesWidth > best.length && zone.size() == utcSignHourWidth
                     && zone.startsWith("UTC"_L1)
                     && text.sliced(utcSignHourWidth).startsWith(":00"_L1)) {
-                best = { withMinutesWidth, QTimeZone::GenericTime };
+                best = { withMinutesWidth, QDTP::UnknownDaylightTime };
             } else if (zone.size() > best.length) {
                 best = { zone.size(), season };
             }
@@ -161,11 +172,13 @@ auto matchSystemName(QStringView text, const QLocale &locale)
     if (const QTimeZone sys = QTimeZone::systemTimeZone(); sys.hasDaylightTime()) {
         constexpr QTimeZone::TimeType types[] = {
             QTimeZone::GenericTime, QTimeZone::StandardTime, QTimeZone::DaylightTime };
-        for (const auto timeType : types)
-            consider(sys.displayName(timeType, QTimeZone::ShortName, locale), timeType);
+        for (const auto timeType : types) {
+            consider(sys.displayName(timeType, QTimeZone::ShortName, locale),
+                     timeTypeToStatus(timeType));
+        }
     } else {
         consider(sys.displayName(QTimeZone::GenericTime, QTimeZone::ShortName, locale),
-                 QTimeZone::GenericTime);
+                 QDTP::UnknownDaylightTime);
     }
 #else
     Q_UNUSED(locale);
@@ -365,8 +378,8 @@ namespace QtParseTimeZone {
     \list
 
       \li zone A timezone representing the result of parsing
-      \li timeType A \l QTimeZone::TimeType indicating the form in which the
-                   zone is described by its representation
+      \li timeType A \l QDateTimePrivate::DaylightStatus indicating the form in
+                   which the zone is described by its representation
       \li startIndex Parsed text offset of the start of the text matched
       \li endIndex Parsed text offset of the end of the text matched
 
@@ -399,13 +412,14 @@ namespace QtParseTimeZone {
 QList<ParsedZone> prefix(QStringView text, const QLocale &locale, qsizetype from,
                          QtTemporalPattern::TemporalFieldFlags flags)
 {
+    using QDTP = QDateTimePrivate;
     QList<ParsedZone> matches;
     if (from < 0 || from >= text.size())
         return matches;
 
     QStringView tail = text.sliced(from);
     const auto includeMatch = [&matches, from, gmtStart = tail.startsWith(u"GMT")]
-        (qsizetype used, QTimeZone &&zone, QTimeZone::TimeType type) {
+        (qsizetype used, QTimeZone &&zone, QDTP::DaylightStatus type) {
         Q_ASSERT(zone.isValid());
         matches = addMatch(std::move(matches), {{from, from + used}, zone, type}, gmtStart);
     };
@@ -420,7 +434,7 @@ QList<ParsedZone> prefix(QStringView text, const QLocale &locale, qsizetype from
         for (const auto &match : matches) {
             includeMatch(match.length,
                          QTimeZone::fromSecondsAheadOfUtc(match.secondsEast),
-                         QTimeZone::GenericTime);
+                         QDTP::UnknownDaylightTime);
         }
     }
 
@@ -428,8 +442,10 @@ QList<ParsedZone> prefix(QStringView text, const QLocale &locale, qsizetype from
 #if QT_CONFIG(timezone)
     if (matchesFlagWithin(flags, Flag::LocalizedZone, FieldGroup::LocalizationMask)) {
         const auto addPrefixIfMatch = [includeMatch] (QTimeZonePrivate::NamePrefixMatch &&prefix) {
-            if (prefix)
-                includeMatch(prefix.nameLength, QTimeZone(prefix.ianaId), prefix.timeType);
+            if (prefix) {
+                includeMatch(prefix.nameLength, QTimeZone(prefix.ianaId),
+                             timeTypeToStatus(prefix.timeType));
+            }
         };
         bool checkOffsetFallbacks = false;
 
@@ -445,7 +461,7 @@ QList<ParsedZone> prefix(QStringView text, const QLocale &locale, qsizetype from
         if (matchesFlagWithin(flags, Flag::Standalone, FormMask)
             && matchesFlagWithin(flags, Flag::Short, WidthMask)) {
             if (auto match = matchIanaId(tail))
-                includeMatch(match.length, std::move(match.zone), QTimeZone::GenericTime);
+                includeMatch(match.length, std::move(match.zone), QDTP::UnknownDaylightTime);
         }
         // ... but before long name, even though that may match some offset forms,
         // but it only does that as a fall-back, so the IANA choice is better in
