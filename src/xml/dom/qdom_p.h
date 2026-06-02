@@ -46,6 +46,7 @@ public:
 
 class QDomNodePrivate
 {
+    Q_DISABLE_COPY_MOVE(QDomNodePrivate)
 public:
     QDomNodePrivate(QDomDocumentPrivate *, QDomNodePrivate *parent = nullptr);
     QDomNodePrivate(QDomNodePrivate *n, bool deep);
