@@ -9,6 +9,13 @@ instructions:
   - type: EnvironmentVariable
     variableName: COIN_CMAKE_ARGS
     variableValue: "{{.Env.COMMON_EXAMPLES_CMAKE_ARGS}}"
+  - type: AppendToEnvironmentVariable
+    variableName: COIN_CMAKE_ARGS
+    variableValue: " ${{ToUpper .Env.TESTED_MODULE_COIN}}_EXAMPLES_CMAKE_ARGS"
+    enable_if:
+      condition: runtime
+      env_var: "{{ToUpper .Env.TESTED_MODULE_COIN}}_EXAMPLES_CMAKE_ARGS"
+      not_equals_value: null
   - !include "{{qt/qtbase}}/cmake_build_standalone_examples.yaml"
 enable_if:
   condition: property
