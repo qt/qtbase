@@ -424,17 +424,8 @@ bool TemporalFieldMatcher::resolve(PartialParse &parse) const
         if (!Q_LIKELY(QDateTime(date, time, parse.results.zone,
                                 QDateTime::TransitionResolution::Reject).isValid())) {
             // Ambiguity, gap or outright borkage.
-            const auto res = [type = parse.results.timeType]() {
-                using Res = QDateTime::TransitionResolution;
-                switch (type) {
-                case QDateTimePrivate::StandardTime: return Res::PreferStandard;
-                case QDateTimePrivate::DaylightTime: return Res::PreferDaylightSaving;
-                case QDateTimePrivate::UnknownDaylightTime: return Res::LegacyBehavior;
-                }
-                Q_UNREACHABLE_RETURN(Res::LegacyBehavior);
-            }();
             using Flaw = PartialParse::Flaw;
-            QDateTime dt(date, time, parse.results.zone, res);
+            QDateTime dt(date, time, parse.results.zone, parse.results.resolveType());
             if (!dt.isValid()) {
                 // Fall back to default resolution (same as LegacyBehavior):
                 dt = QDateTime(date, time, parse.results.zone);
