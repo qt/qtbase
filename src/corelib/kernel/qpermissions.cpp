@@ -637,7 +637,7 @@ QContactsPermission::AccessMode QContactsPermission::accessMode() const
 
     \value ReadOnly Read-only access to the calendar data (the default).
     \value ReadWrite Read and write access to the calendar data.
-    \value WriteOnly Write-only access to the calendar data.
+    \value [since 6.12] WriteOnly Write-only access to the calendar data.
 
     \sa setAccessMode, accessMode
 */
