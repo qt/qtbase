@@ -762,6 +762,19 @@
 */
 
 /*!
+    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_canInsertRows<I>, QRangeModelAdapter<Range, Protocol, Model>::if_tree<I>> bool QRangeModelAdapter<Range, Protocol, Model>::insertRow(int before, const QModelIndex &parent)
+    \overload
+
+    Inserts a single empty row before the row at \a before in the specified
+    \a parent, and returns whether the insertion was successful.
+    \include qrangemodeladapter.qdoc insert-row-appends
+
+    \constraints \c Range is a tree that supports insertion of elements.
+
+    \sa insertRows(), removeRow(), insertColumn()
+*/
+
+/*!
     \fn template <typename Range, typename Protocol, typename Model> template <typename D, typename I, QRangeModelAdapter<Range, Protocol, Model>::if_canInsertRows<I>, QRangeModelAdapter<Range, Protocol, Model>::if_compatible_row<D>> bool QRangeModelAdapter<Range, Protocol, Model>::insertRow(int before, D &&data)
     \overload
 
@@ -781,6 +794,20 @@
 
     Inserts a single row constructed from \a data before the row at \a before,
     and returns whether the insertion was successful.
+    \include qrangemodeladapter.qdoc insert-row-appends
+
+    \constraints \c Range is a tree that supports insertion of elements, and if
+                 a row can be constructed from \a data.
+
+    \sa insertRows(), removeRow(), insertColumn()
+*/
+
+/*!
+    \fn template <typename Range, typename Protocol, typename Model> template <typename D, typename I, QRangeModelAdapter<Range, Protocol, Model>::if_canInsertRows<I>, QRangeModelAdapter<Range, Protocol, Model>::if_compatible_row<D>, QRangeModelAdapter<Range, Protocol, Model>::if_tree<I>> bool QRangeModelAdapter<Range, Protocol, Model>::insertRow(int before, const QModelIndex &parent, D &&data)
+    \overload
+
+    Inserts a single row constructed from \a data before the row at \a before
+    in the specified \a parent, and returns whether the insertion was successful.
     \include qrangemodeladapter.qdoc insert-row-appends
 
     \constraints \c Range is a tree that supports insertion of elements, and if
@@ -818,6 +845,21 @@
 */
 
 /*!
+    \fn template <typename Range, typename Protocol, typename Model> template <typename C, typename I, QRangeModelAdapter<Range, Protocol, Model>::if_canInsertRows<I>, QRangeModelAdapter<Range, Protocol, Model>::if_compatible_row_range<C>, QRangeModelAdapter<Range, Protocol, Model>::if_tree<I>> bool QRangeModelAdapter<Range, Protocol, Model>::insertRows(int before, const QModelIndex &parent, C &&data)
+    \overload
+
+    Inserts rows constructed from the elements in \a data before the row at
+    \a before in the specified \a parent, and returns whether the insertion was
+    successful.
+    \include qrangemodeladapter.qdoc insert-row-appends
+
+    \constraints \c Range is a tree that supports insertion of elements, and if
+                 rows can be constructed from the elements in \a data.
+
+    \sa insertRow(), removeRows(), insertColumns()
+*/
+
+/*!
     \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_canRemoveRows<I>> bool QRangeModelAdapter<Range, Protocol, Model>::removeRow(int row)
     \overload
 
@@ -834,6 +876,18 @@
 
     Removes the row at the given \a path, including all children of that row,
     and returns whether the removal was successful.
+
+    \constraints \c Range is a tree that supports the removal of elements.
+
+    \sa removeRows(), removeColumn(), insertRow()
+*/
+
+/*!
+    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_canRemoveRows<I>, QRangeModelAdapter<Range, Protocol, Model>::if_tree<I>> bool QRangeModelAdapter<Range, Protocol, Model>::removeRow(int row, const QModelIndex &parent)
+    \overload
+
+    Removes the specified \a row from the \a parent, including all children of
+    that row, and returns whether the removal was successful.
 
     \constraints \c Range is a tree that supports the removal of elements.
 
@@ -865,6 +919,18 @@
 */
 
 /*!
+    \fn template <typename Range, typename Protocol, typename Model> template <typename I, QRangeModelAdapter<Range, Protocol, Model>::if_canRemoveRows<I>, QRangeModelAdapter<Range, Protocol, Model>::if_tree<I>> bool QRangeModelAdapter<Range, Protocol, Model>::removeRows(int row, int count, const QModelIndex &parent)
+    \overload
+
+    Removes \a count rows from the \a parent starting at the specified \a row,
+    and returns whether the removal was successful.
+
+    \constraints \c Range is a tree that supports the removal of elements.
+
+    \sa removeRow(), removeColumns(), insertRows()
+*/
+
+/*!
     \fn template <typename Range, typename Protocol, typename Model> template <typename F, QRangeModelAdapter<Range, Protocol, Model>::if_canMoveItems<F>> bool QRangeModelAdapter<Range, Protocol, Model>::moveRow(int source, int destination)
     \overload
 
@@ -889,6 +955,19 @@
 */
 
 /*!
+    \fn template <typename Range, typename Protocol, typename Model> template <typename I, typename F, QRangeModelAdapter<Range, Protocol, Model>::if_canMoveItems<F>, QRangeModelAdapter<Range, Protocol, Model>::if_tree<I>> bool QRangeModelAdapter<Range, Protocol, Model>::moveRow(const QModelIndex &sourceParent, int sourceRow, const QModelIndex &destinationParent, int destinationChild)
+    \overload
+
+    Moves the branch at \a sourceRow from the \a sourceParent to the position
+    at \a destinationChild in the \a destinationParent, and returns whether the
+    branch was successfully moved.
+
+    \constraints \c Range is a tree that supports moving of elements.
+
+    \sa insertRow(), removeRow(), moveColumn()
+*/
+
+/*!
     \fn template <typename Range, typename Protocol, typename Model> template <typename F, QRangeModelAdapter<Range, Protocol, Model>::if_canMoveItems<F>> bool QRangeModelAdapter<Range, Protocol, Model>::moveRows(int source, int count, int destination)
     \overload
 
@@ -906,6 +985,19 @@
 
     Moves \a count tree branches starting at \a source to the position at
     \a destination, and returns whether the rows were successfully moved.
+
+    \constraints \c Range is a tree that supports moving of elements.
+
+    \sa insertRows(), removeRows(), moveColumns()
+*/
+
+/*!
+    \fn template <typename Range, typename Protocol, typename Model> template <typename I, typename F, QRangeModelAdapter<Range, Protocol, Model>::if_canMoveItems<F>, QRangeModelAdapter<Range, Protocol, Model>::if_tree<I>> bool QRangeModelAdapter<Range, Protocol, Model>::moveRows(const QModelIndex &sourceParent, int sourceRow, int count, const QModelIndex &destinationParent, int destinationChild)
+    \overload
+
+    Moves \a count branches starting at \a sourceRow from the \a sourceParent
+    to the position at \a destinationChild in the \a destinationParent, and
+    returns whether the branch was successfully moved.
 
     \constraints \c Range is a tree that supports moving of elements.
 
