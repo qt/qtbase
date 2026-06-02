@@ -39,3 +39,13 @@ instructions:
         - condition: property
           property: features
           contains_value: DoNotRunTestsButCreateTestWorkItem
+        - condition: runtime
+          env_var: AXIVION_ANALYSIS
+          equals_value: "1"
+  - type: Group
+    instructions:
+      - !include "{{qt/qtbase}}/coin_module_axivion_template_v2.yaml"
+    enable_if:
+      condition: runtime
+      env_var: AXIVION_ANALYSIS
+      equals_value: "1"
