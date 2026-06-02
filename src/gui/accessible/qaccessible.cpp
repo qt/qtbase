@@ -2998,7 +2998,7 @@ struct QAccessibleActionStrings
         else if (actionName == setFocusAction)
             return QAccessibleActionInterface::tr("Sets the focus");
         else if (actionName == showOnScreenAction)
-            return QAccessibleActionInterface::tr("Moves the accessible into viewport");
+            return QAccessibleActionInterface::tr("Moves the element into the visible area");
         else if (actionName == toggleAction)
             return QAccessibleActionInterface::tr("Toggles the state");
         else if (actionName == scrollLeftAction)
