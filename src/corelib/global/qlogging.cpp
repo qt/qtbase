@@ -1246,7 +1246,7 @@ void QMessagePattern::setPattern(const QString &pattern)
     QList<QString> lexemes;
     QString lexeme;
     bool inPlaceholder = false;
-    for (int i = 0; i < pattern.size(); ++i) {
+    for (qsizetype i = 0; i < pattern.size(); ++i) {
         const QChar c = pattern.at(i);
         if (c == u'%' && !inPlaceholder) {
             if ((i + 1 < pattern.size())
@@ -1281,7 +1281,7 @@ void QMessagePattern::setPattern(const QString &pattern)
     bool inIf = false;
     QString error;
 
-    for (int i = 0; i < lexemes.size(); ++i) {
+    for (qsizetype i = 0; i < lexemes.size(); ++i) {
         const QString lexeme = lexemes.at(i);
         if (lexeme.startsWith("%{"_L1) && lexeme.endsWith(u'}')) {
             // placeholder
@@ -1661,13 +1661,13 @@ static QString formatLogMessage(QtMsgType type, const QMessageLogContext &contex
 
     bool skip = false;
 
-    int timeArgsIdx = 0;
+    qsizetype timeArgsIdx = 0;
 #ifdef QLOGGING_HAVE_BACKTRACE
-    int backtraceArgsIdx = 0;
+    qsizetype backtraceArgsIdx = 0;
 #endif
 
     // we do not convert file, function, line literals to local encoding due to overhead
-    for (int i = 0; pattern->tokens[i]; ++i) {
+    for (qsizetype i = 0; pattern->tokens[i]; ++i) {
         const char *token = pattern->tokens[i];
         if (token == endifTokenC) {
             skip = false;
