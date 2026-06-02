@@ -31,6 +31,18 @@ struct ParsedZone : public QtParseCommon::ParsedText
 {
     QTimeZone zone{QTimeZone::LocalTime};
     QDateTimePrivate::DaylightStatus timeType = QDateTimePrivate::UnknownDaylightTime;
+
+    constexpr QDateTime::TransitionResolution resolveType() const noexcept
+    {
+        // How to resolve QDateTime construction to favour the timeType parsed:
+        using Res = QDateTime::TransitionResolution;
+        switch (timeType) {
+        case QDateTimePrivate::StandardTime: return Res::PreferStandard;
+        case QDateTimePrivate::DaylightTime: return Res::PreferDaylightSaving;
+        case QDateTimePrivate::UnknownDaylightTime: return Res::LegacyBehavior;
+        }
+        Q_UNREACHABLE_RETURN(Res::LegacyBehavior);
+    }
 };
 
 constexpr QtTemporalPattern::TemporalFieldFlags AnyOffsetForm{

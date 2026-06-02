@@ -897,17 +897,7 @@ QDateTimePattern::parse(QStringView text, const QDateTime &defaults) const
     const QDate date = seen.date(m_calendar, defaults.date());
     const QTime time = seen.time(defaults.time());
 
-    const QDateTime::TransitionResolution res = [type = seen.timeType]() {
-        using Res = QDateTime::TransitionResolution;
-        switch (type) {
-        case QDateTimePrivate::StandardTime: return Res::PreferStandard;
-        case QDateTimePrivate::DaylightTime: return Res::PreferDaylightSaving;
-        case QDateTimePrivate::UnknownDaylightTime: return Res::LegacyBehavior;
-        }
-        Q_UNREACHABLE_RETURN(Res::LegacyBehavior);
-    }();
-
-    if (QDateTime result(date, time, seen.zone, res); result.isValid())
+    if (QDateTime result(date, time, seen.zone, seen.resolveType()); result.isValid())
         return {result, seen.size()};
     // Fall back to default transition resolution:
     return {QDateTime(date, time, seen.zone), seen.size()};
