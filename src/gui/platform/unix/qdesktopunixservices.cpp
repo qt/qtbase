@@ -12,6 +12,7 @@
 
 #include <QtCore/QDebug>
 #include <QtCore/QFile>
+#include <QtCore/QFileInfo>
 #if QT_CONFIG(process)
 # include <QtCore/QProcess>
 #endif
@@ -149,6 +150,8 @@ static inline bool launch(const QString &launcher, const QUrl &url,
     if (!args.isEmpty()) {
         QString program = args.takeFirst();
         QProcess process;
+        Q_ASSERT(QFileInfo(program).isAbsolute());
+        // AXIVION Next Line Qt-Security-QProcessStart: executable is absolute from PATH
         process.setProgram(program);
         process.setArguments(args);
 
@@ -157,6 +160,7 @@ static inline bool launch(const QString &launcher, const QUrl &url,
             env.insert(u"XDG_ACTIVATION_TOKEN"_s, xdgActivationToken);
             process.setEnvironment(env.toStringList());
         }
+        // AXIVION Next Line Qt-Security-QProcessStart: executable is absolute from PATH
         ok = process.startDetached(nullptr);
     }
 #  endif
