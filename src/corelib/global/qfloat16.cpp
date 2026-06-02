@@ -397,6 +397,36 @@ Q_CORE_EXPORT void qFloatFromFloat16(float *out, const qfloat16 *in, qsizetype l
 }
 
 /*!
+    \fn qfloat16 qfloat16::operator++(int) noexcept
+    \since 6.12
+    Post-increments this value by 1 and returns the old value.
+*/
+
+/*!
+    \fn qfloat16 &qfloat16::operator++() noexcept
+    \since 6.12
+    Pre-increments this value by 1 and returns a reference to this value.
+*/
+
+/*!
+    \fn qfloat16 qfloat16::operator--(int) noexcept
+    \since 6.12
+    Post-decrements this value by 1 and returns the old value.
+*/
+
+/*!
+    \fn qfloat16 &qfloat16::operator--() noexcept
+    \since 6.12
+    Pre-decrements this value by 1 and returns a reference to this value.
+*/
+
+/*!
+    \fn qfloat16 qfloat16::operator+(qfloat16 a) noexcept
+    \since 6.12
+    Returns \a a unchanged.
+*/
+
+/*!
     \fn size_t qfloat16::qHash(qfloat16 key, size_t seed)
     \since 6.5.3
     \qhash{qfloat16}
