@@ -92,14 +92,14 @@ void tst_QtParseTemporal::prefix_data()
         << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
     // Case-insensitive:
     QTest::newRow("The quIck brOWN fox JUMped over the LAZY Dogs./literal-case/C/greg/0")
-        << u"the quick brown fox jumped over the lazy dogs."_s
+        << u"The quIck brOWN fox JUMped over the LAZY Dogs."_s
         << Fields{ Field{ u"The quick brown fox jumped over the lazy dogs."_s,
                           0, Flags{ Flag::IgnoreCase }, Cat::Literal } }
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
         << 46 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
     // Case-insensitive takes precedence over upper and lower:
     QTest::newRow("The quIck brOWN fox JUMped over the LAZY Dogs./literal-allcase/C/greg/0")
-        << u"the quick brown fox jumped over the lazy dogs."_s
+        << u"The quIck brOWN fox JUMped over the LAZY Dogs."_s
         << Fields{ Field{ u"The quick brown fox jumped over the lazy dogs."_s,
                           0, Flags{ Flag::IgnoreCase | Flag::UpperCase | Flag::LowerCase },
                           Cat::Literal } }

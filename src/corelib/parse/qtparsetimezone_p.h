@@ -15,10 +15,11 @@
 //
 
 #include <QtCore/private/qtparsecommon_p.h>
+#include <QtCore/private/qdatetime_p.h>
 #include <QtCore/qflags.h>
 #include <QtCore/qlocale.h>
 #include <QtCore/qtimezone.h>
-#include "QtCore/private/qttemporalpattern_p.h"
+#include <QtCore/private/qttemporalpattern_p.h>
 
 QT_REQUIRE_CONFIG(datetimeparser);
 
@@ -29,7 +30,7 @@ namespace QtParseTimeZone {
 struct ParsedZone : public QtParseCommon::ParsedText
 {
     QTimeZone zone{QTimeZone::LocalTime};
-    QTimeZone::TimeType timeType = QTimeZone::GenericTime;
+    QDateTimePrivate::DaylightStatus timeType = QDateTimePrivate::UnknownDaylightTime;
 };
 
 constexpr QtTemporalPattern::TemporalFieldFlags AnyOffsetForm{
