@@ -50,6 +50,7 @@ struct QLibrarySettings
     void load();
     bool havePaths();
     QSettings *configuration();
+    QVariant value(QLibraryInfo::LibraryPath path);
 
     std::unique_ptr<QSettings> settings;
     bool paths;
@@ -89,6 +90,33 @@ void QLibrarySettings::load()
         paths = !children.contains("Platforms"_L1)
                 || children.contains("Paths"_L1);
     }
+}
+
+/*!
+    Returns the value for a given \a path from \c qt.conf
+
+    If no \c qt.conf is found, or the configuration doesn't
+    specify a value for the given \a path a null-variant is
+    returned.
+
+    \internal
+*/
+QVariant QLibrarySettings::value(QLibraryInfo::LibraryPath path)
+{
+    const auto locationInfo = QLibraryInfoPrivate::locationInfo(path);
+    if (locationInfo.key.isNull())
+        return {};
+
+    QSettings *config = configuration();
+    if (!settings || !paths)
+        return {};
+
+    config->beginGroup("Paths"_L1);
+    auto cleanup = qScopeGuard([&]() { config->endGroup(); });
+    QVariant value = config->value(locationInfo.key);
+    if (!value.isValid() && !locationInfo.fallbackKey.isNull())
+        value = config->value(locationInfo.fallbackKey);
+    return value;
 }
 
 namespace {
@@ -578,28 +606,19 @@ static QString normalizePath(QString ret)
     return QDir::fromNativeSeparators(ret);
 };
 
-static QVariant libraryPathToValue(QLibraryInfo::LibraryPath loc)
+static QVariant libraryPathToValue(QLibraryInfo::LibraryPath path)
 {
-    QVariant value;
-    auto li = QLibraryInfoPrivate::locationInfo(loc);
-    if (li.key.isNull())
-        return value;
-    QSettings *config = QLibraryInfoPrivate::configuration();
-    Q_ASSERT(config != nullptr);
-    // if keepQtBuildDefaults returns true,
-    // we only consider explicit values listed in qt.conf
-    QVariant defaultValue = keepQtBuildDefaults()
-            ? QVariant()
-            : QVariant(li.defaultValue);
-    config->beginGroup("Paths"_L1);
-    auto cleanup = qScopeGuard([&]() { config->endGroup(); });
-    if (li.fallbackKey.isNull()) {
-        value = config->value(li.key, defaultValue);
-    } else {
-        value = config->value(li.key);
-        if (!value.isValid())
-            value = config->value(li.fallbackKey, defaultValue);
+    QVariant value = qt_library_settings()->value(path);
+
+    // Fall back to a stable default for missing qt.conf values,
+    // unless we've been instructed to fall back to the Qt
+    // configure defaults instead via the MergeQtConf setting.
+    if (!value.isValid() && !keepQtBuildDefaults()) {
+        const auto locationInfo = QLibraryInfoPrivate::locationInfo(path);
+        if (!locationInfo.defaultValue.isNull())
+            value = locationInfo.defaultValue;
     }
+
     return value;
 }
 #endif // settings
