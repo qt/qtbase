@@ -303,7 +303,7 @@ QVersionNumber QLibraryInfo::version() noexcept
     don't have a standalone QtCore library, or for relative paths
     coming from qt.conf, which are rooted in the app's location.
 */
-static QString prefixFromAppDirHelper()
+static QString prefixFromAppDir()
 {
 #if defined(Q_OS_DARWIN)
     // Resolve the app prefix from the app bundle instead of the
@@ -367,7 +367,7 @@ static HMODULE getWindowsModuleHandle()
 }
 #endif // Q_OS_WIN
 
-static QString getRelocatablePrefix(QLibraryInfoPrivate::UsageMode usageMode)
+static QString relocatablePrefixFromQt(QLibraryInfoPrivate::UsageMode usageMode)
 {
     QString prefixPath;
 
@@ -386,7 +386,7 @@ static QString getRelocatablePrefix(QLibraryInfoPrivate::UsageMode usageMode)
     if (!qt_apple_isSandboxed())
         return QString::fromLocal8Bit(QT_CONFIGURE_PREFIX_PATH);
 # endif
-    prefixPath = prefixFromAppDirHelper();
+    prefixPath = prefixFromAppDir();
     if (usageMode == QLibraryInfoPrivate::UsedFromQtBinDir) {
         // For Qt tools in a static build, we must chop off the bin directory.
         constexpr QByteArrayView binDir = qt_configure_strs.viewAt(QLibraryInfo::BinariesPath - 1);
@@ -465,16 +465,16 @@ static QString getRelocatablePrefix(QLibraryInfoPrivate::UsageMode usageMode)
     }
 #endif
 
-    Q_ASSERT_X(!prefixPath.isEmpty(), "getRelocatablePrefix",
+    Q_ASSERT_X(!prefixPath.isEmpty(), "relocatablePrefixFromQt",
                                       "Failed to find the Qt prefix path.");
     return prefixPath;
 }
 #endif
 
-static QString getPrefix(QLibraryInfoPrivate::UsageMode usageMode)
+static QString prefixFromQt(QLibraryInfoPrivate::UsageMode usageMode)
 {
 #if QT_CONFIG(relocatable)
-    return getRelocatablePrefix(usageMode);
+    return relocatablePrefixFromQt(usageMode);
 #else
     Q_UNUSED(usageMode);
     return QString::fromLocal8Bit(QT_CONFIGURE_PREFIX_PATH);
@@ -671,7 +671,7 @@ QStringList QLibraryInfoPrivate::paths(QLibraryInfo::LibraryPath p,
     if (ret.isEmpty() || keepQtBuildDefaults()) {
         QString qtConfigureDefault;
         if (loc == QLibraryInfo::PrefixPath) {
-            qtConfigureDefault = getPrefix(usageMode);
+            qtConfigureDefault = prefixFromQt(usageMode);
         } else if (int(loc) <= qt_configure_strs.count()) {
             qtConfigureDefault = QString::fromLocal8Bit(qt_configure_strs.viewAt(loc - 1));
 #if !defined(Q_OS_WIN) // On Windows we use the registry
@@ -694,7 +694,7 @@ QStringList QLibraryInfoPrivate::paths(QLibraryInfo::LibraryPath p,
 
     QString baseDir;
     if (loc == QLibraryInfo::PrefixPath) {
-        baseDir = prefixFromAppDirHelper();
+        baseDir = prefixFromAppDir();
     } else {
         // we make any other path absolute to the prefix directory
         baseDir = QLibraryInfoPrivate::path(QLibraryInfo::PrefixPath, usageMode);
