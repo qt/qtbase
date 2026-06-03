@@ -120,6 +120,23 @@ static void printHelp()
                     "all six required values must be present, or the HAP is left unsigned.\n");
 }
 
+class QProcessExt : public QProcess
+{
+public:
+    QProcessExt() {
+        connect(this, &QProcess::readyReadStandardOutput, [this]() {
+            QByteArray output = readAllStandardOutput();
+            QString text = QString::fromUtf8(output);
+            fprintf(stderr, "harmonydeployqt: external application output: %s\n", qPrintable(text));
+        });
+        connect(this, &QProcess::readyReadStandardError, [this]() {
+            QByteArray error = readAllStandardError();
+            QString text = QString::fromUtf8(error);
+            fprintf(stderr, "harmonydeployqt: external application error: %s\n", qPrintable(text));
+        });
+    }
+};
+
 static bool parseCommandLine(const QStringList &arguments, Options *options)
 {
     QCommandLineParser parser;
@@ -2756,7 +2773,7 @@ static bool buildHap(const Options &options, QString *hapOutputPath = nullptr)
     }
 
     // Execute hvigorw
-    QProcess process;
+    QProcessExt process;
     process.setWorkingDirectory(options.outputDirectory);
     process.setProcessChannelMode(QProcess::MergedChannels);
 
@@ -2847,7 +2864,7 @@ static bool installToDevice(const Options &options, const QString &hapPath)
     }
 
     // Check for connected devices
-    QProcess checkDevices;
+    QProcessExt checkDevices;
     checkDevices.start(hdcPath, QStringList() << "list"_L1 << "targets"_L1);
     if (!checkDevices.waitForFinished(5000)) {
         fprintf(stderr, "Error: Failed to check for connected devices\n");
@@ -2868,7 +2885,7 @@ static bool installToDevice(const Options &options, const QString &hapPath)
     if (options.verbose)
         fprintf(stdout, "  Uninstalling old version (if exists)\n");
 
-    QProcess uninstall;
+    QProcessExt uninstall;
     uninstall.start(hdcPath, QStringList() << "uninstall"_L1 << options.harmonyOsAppBundleName);
     uninstall.waitForFinished(10000);
     // Don't check result - it's OK if app wasn't installed
@@ -2877,7 +2894,7 @@ static bool installToDevice(const Options &options, const QString &hapPath)
     if (options.verbose)
         fprintf(stdout, "  Installing: %s\n", qPrintable(hapPath));
 
-    QProcess install;
+    QProcessExt install;
     install.setProcessChannelMode(QProcess::MergedChannels);
     install.start(hdcPath, QStringList() << "install"_L1 << hapPath);
 
@@ -2901,7 +2918,7 @@ static bool installToDevice(const Options &options, const QString &hapPath)
     if (options.verbose)
         fprintf(stdout, "  Launching application\n");
 
-    QProcess launch;
+    QProcessExt launch;
     QStringList launchArgs;
     launchArgs << "shell"_L1 << "aa"_L1 << "start"_L1
                << "-a"_L1 << "EntryAbility"_L1
