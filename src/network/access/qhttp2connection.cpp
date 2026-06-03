@@ -64,6 +64,25 @@ using namespace Http2;
         QHttp2Configuration::serverPushEnabled(), QHttp2Stream::dataReceived()
 */
 
+/*!
+    \variable QHttp2Stream::Configuration::useHeaderBuffer
+
+    Controls whether received headers, from QHttp2Stream::headersReceived(),
+    are accumulated for later retrieval via QHttp2Stream::receivedHeaders().
+    The default is \c true.
+
+    You may disable accumulation for client-initiated streams when the
+    application consumes the headersReceived() signal directly. When disabled,
+    the \l{headersUpdated()} signal is not emitted.
+
+    Buffering must remain enabled for pushed streams. A pushed stream can
+    receive headers before the application becomes aware of it and the buffered
+    headers are required to deliver the pushed response.
+
+    \sa QHttp2Stream::receivedHeaders(), QHttp2Stream::headersReceived(),
+        QHttp2Configuration::serverPushEnabled()
+*/
+
 QHttp2Stream::QHttp2Stream(QHttp2Connection *connection, quint32 streamID,
                            Configuration configuration) noexcept
     : QObject(connection), m_streamID(streamID), m_configuration(configuration)
@@ -762,7 +781,7 @@ void QHttp2Stream::handleHEADERS(Http2::FrameFlags frameFlags, const HPack::Http
     const bool endStream = frameFlags.testFlag(FrameFlag::END_STREAM);
     if (endStream)
         transitionState(StateTransition::CloseRemote);
-    if (!headers.empty()) {
+    if (!headers.empty() && m_configuration.useHeaderBuffer) {
         m_headers.insert(m_headers.end(), headers.begin(), headers.end());
         emit headersUpdated();
     }
