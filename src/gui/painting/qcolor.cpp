@@ -403,7 +403,7 @@ Q_DECL_COLD_FUNCTION void qColorWarnParametersOutOfRange(const char *name, const
 
 static auto qColorClampToIntRange(int value, const char *fn)
 {
-    const auto v = q26::saturate_cast<quint8>(value);
+    const auto v = q26::saturating_cast<quint8>(value);
     if (!q20::cmp_equal(v, value))
         qColorWarnInvalidInt(value, fn);
     return int{v};
