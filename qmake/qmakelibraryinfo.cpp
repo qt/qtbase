@@ -212,31 +212,8 @@ QString QMakeLibraryInfo::rawLocation(int loc, QMakeLibraryInfo::PathGroup group
                 // All other keys have non-empty fallbacks to start with.
             }
 
-            // TODO: Might be replaced by common for qmake and qtcore function
-            int startIndex = 0;
-            forever {
-                startIndex = ret.indexOf(QLatin1Char('$'), startIndex);
-                if (startIndex < 0)
-                    break;
-                if (ret.size() < startIndex + 3)
-                    break;
-                if (ret.at(startIndex + 1) != QLatin1Char('(')) {
-                    startIndex++;
-                    continue;
-                }
-                int endIndex = ret.indexOf(QLatin1Char(')'), startIndex + 2);
-                if (endIndex < 0)
-                    break;
-                auto envVarName =
-                        QStringView { ret }.mid(startIndex + 2, endIndex - startIndex - 2);
-                QString value =
-                        QString::fromLocal8Bit(qgetenv(envVarName.toLocal8Bit().constData()));
-                ret.replace(startIndex, endIndex - startIndex + 1, value);
-                startIndex += value.size();
-            }
+            ret = QLibraryInfoPrivate::expandEnvVariables(ret);
             config->endGroup();
-
-            ret = QDir::fromNativeSeparators(ret);
         }
     }
 
