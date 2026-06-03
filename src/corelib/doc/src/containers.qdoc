@@ -404,6 +404,14 @@
 
     \snippet code/doc_src_containers.cpp 26
 
+    \section1 Qt container algorithms
+
+    Qt also provides additional generic algorithms in \l {<QtAlgorithms>} that
+    work with any container supporting STL-style iterators, such as \l {qJoin()}
+    for joining container elements into a single value, and \l {qDeleteAll()}
+    for invoking \c{operator delete} on all items in a container or in a given
+    range.
+
     \section1 Other Container-Like Classes
 
     Qt includes other template classes that resemble containers in
