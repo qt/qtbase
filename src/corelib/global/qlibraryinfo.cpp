@@ -581,7 +581,7 @@ static bool keepQtBuildDefaults()
 }
 
 #if QT_CONFIG(settings)
-static QString normalizePath(QString ret)
+QString QLibraryInfoPrivate::expandEnvVariables(QString ret)
 {
     qsizetype startIndex = 0;
     /* We support placeholders of the form $(<ENV_VAR>) in qt.conf.
@@ -607,7 +607,7 @@ static QString normalizePath(QString ret)
         startIndex += value.size();
     }
     return QDir::fromNativeSeparators(ret);
-};
+}
 
 #endif // settings
 
@@ -652,7 +652,7 @@ QStringList QLibraryInfoPrivate::paths(QLibraryInfo::LibraryPath p)
             else
                 ret = QList<QString>({ std::move(value).toString()});
             for (qsizetype i = 0, end = ret.size(); i < end; ++i) {
-                ret[i] = normalizePath(ret[i]);
+                ret[i] = expandEnvVariables(ret[i]);
                 pathsAreAbsolute = pathsAreAbsolute && pathIsAbsolute(ret[i]);
             }
         }
