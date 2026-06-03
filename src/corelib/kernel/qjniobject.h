@@ -1048,6 +1048,24 @@ struct Traits<QString>
     }
 };
 
+template<>
+struct Traits<QStringView>
+{
+    static constexpr auto className()
+    {
+        return CTString("java/lang/String");
+    }
+    static constexpr auto signature()
+    {
+        return CTString("Ljava/lang/String;");
+    }
+
+    static auto convertToJni(JNIEnv *env, QStringView value)
+    {
+        return QtJniTypes::Detail::fromQString(value, env);
+    }
+};
+
 template <typename T>
 struct Traits<T, std::enable_if_t<QtJniTypes::Detail::callerHandlesException<T>>>
 {

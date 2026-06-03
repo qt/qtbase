@@ -23,7 +23,7 @@ namespace QtJniTypes
 
 namespace Detail
 {
-static inline jstring fromQString(const QString &string, JNIEnv *env)
+static inline jstring fromQString(QStringView string, JNIEnv *env)
 {
     if (!q20::in_range<jsize>(string.size()))
         qWarning("String is too large for a Java string and will be truncated");
