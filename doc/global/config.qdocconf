@@ -21,6 +21,7 @@ navigation.trademarkspage = Trademarks
 #Words to ignore for auto-linking
 ignorewords += \
     macOS \
+    WebAssembly \
     WebChannel \
     WebSocket \
     WebSockets \
