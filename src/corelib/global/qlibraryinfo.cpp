@@ -174,12 +174,6 @@ void QLibraryInfoPrivate::reload()
     if (qt_library_settings.exists())
         qt_library_settings->load();
 }
-
-static bool havePaths() {
-    QLibrarySettings *ls = qt_library_settings();
-    return ls && ls->havePaths();
-}
-
 #endif // settings
 
 /*!
@@ -643,11 +637,13 @@ QStringList QLibraryInfoPrivate::paths(QLibraryInfo::LibraryPath p,
     QList<QString> ret;
     bool fromConf = false;
     bool pathsAreAbsolute = true;
+
 #if QT_CONFIG(settings)
-    if (havePaths()) {
+    QLibrarySettings *qtConfSettings = qt_library_settings();
+    if (qtConfSettings && qtConfSettings->havePaths()) {
         fromConf = true;
 
-        QVariant value = qt_library_settings()->value(p);
+        QVariant value = qtConfSettings->value(p);
 
         // Fall back to a stable default for missing qt.conf values,
         // unless we've been instructed to fall back to the Qt
