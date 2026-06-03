@@ -1,0 +1,95 @@
+# Write a cross-platform script that copies the ctest result logs to <destination>.
+# The COIN_CTEST_RESULTS_COPY_CMD env var holds the command to execute the script
+# as a Coin agent instruction.
+type: Group
+instructions:
+  - type: WriteFile
+    fileContents: |
+        #!/usr/bin/env sh
+        # Usage: copy_ctest_log.sh <source-file> <destination-dir>
+        # Copies <source-file> into <destination-dir>.
+        # If the destination is not given or the source file does not exist, prints an error
+        # message and exits with a non-zero exit code.
+        src="$1"
+        dest="$2"
+
+        if [ -z "$dest" ]; then
+            echo "No destination path given, not copying '$src'." >&2
+            exit 1
+        fi
+
+        if [ ! -f "$src" ]; then
+            echo "Source file '$src' does not exist, not copying." >&2
+            exit 1
+        fi
+
+        if cp "$src" "$dest"; then
+            size=$(wc -c < "$src" | tr -d '[:space:]')
+            echo "Copied '$src' to '$dest' ($size bytes)."
+        else
+            echo "Failed to copy '$src' to '$dest'." >&2
+            exit 1
+        fi
+    filename: "{{.AgentWorkingDir}}/copy_ctest_log.sh"
+    fileMode: 493
+    maxTimeInSeconds: 20
+    maxTimeBetweenOutput: 20
+    disable_if:
+      condition: property
+      property: host.os
+      equals_value: Windows
+    executeOn: always
+  - type: EnvironmentVariable
+    variableName: COIN_CTEST_RESULTS_COPY_CMD
+    variableValue: "/bin/sh {{.AgentWorkingDir}}/copy_ctest_log.sh"
+    disable_if:
+      condition: property
+      property: host.os
+      equals_value: Windows
+    executeOn: always
+  - type: WriteFile
+    fileContents: |
+        param(
+            [string]$Source,
+            [string]$Destination
+        )
+
+        # Copies $Source into $Destination.
+        # If the destination is not given or the source file does not exist, prints an error
+        # message and exits with a non-zero exit code.
+        if ([string]::IsNullOrEmpty($Destination)) {
+            Write-Error "No destination path given, not copying '$Source'."
+            exit 1
+        }
+
+        if (-not (Test-Path -LiteralPath $Source -PathType Leaf)) {
+            Write-Error "Source file '$Source' does not exist, not copying."
+            exit 1
+        }
+
+        try {
+            Copy-Item -LiteralPath $Source -Destination $Destination -Force -ErrorAction Stop
+        } catch {
+            Write-Error "Failed to copy '$Source' to '$Destination': $_"
+            exit 1
+        }
+        $size = (Get-Item -LiteralPath $Source).Length
+        Write-Host "Copied '$Source' to '$Destination' ($size bytes)."
+        exit 0
+    filename: "{{.AgentWorkingDir}}\\copy_ctest_log.ps1"
+    fileMode: 420
+    maxTimeInSeconds: 20
+    maxTimeBetweenOutput: 20
+    enable_if:
+      condition: property
+      property: host.os
+      equals_value: Windows
+    executeOn: always
+  - type: EnvironmentVariable
+    variableName: COIN_CTEST_RESULTS_COPY_CMD
+    variableValue: "powershell -ExecutionPolicy Bypass -File {{.AgentWorkingDir}}\\copy_ctest_log.ps1"
+    enable_if:
+      condition: property
+      property: host.os
+      equals_value: Windows
+    executeOn: always
