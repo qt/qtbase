@@ -669,11 +669,11 @@ QStringList QLibraryInfoPrivate::paths(QLibraryInfo::LibraryPath p,
     // append the Qt configure default to the list, even if we found a value
     // in qt.conf, as that's the intent behind MergeQtConf.
     if (ret.isEmpty() || keepQtBuildDefaults()) {
-        QString noConfResult;
+        QString qtConfigureDefault;
         if (loc == QLibraryInfo::PrefixPath) {
-            noConfResult = getPrefix(usageMode);
+            qtConfigureDefault = getPrefix(usageMode);
         } else if (int(loc) <= qt_configure_strs.count()) {
-            noConfResult = QString::fromLocal8Bit(qt_configure_strs.viewAt(loc - 1));
+            qtConfigureDefault = QString::fromLocal8Bit(qt_configure_strs.viewAt(loc - 1));
 #ifndef Q_OS_WIN // On Windows we use the registry
         } else if (loc == QLibraryInfo::SettingsPath) {
             // Use of volatile is a hack to discourage compilers from calling
@@ -681,12 +681,12 @@ QStringList QLibraryInfoPrivate::paths(QLibraryInfo::LibraryPath p,
             // compile-time, as Qt installers binary-patch the path, replacing
             // the dummy path seen at compile-time, typically changing length.
             const char *volatile path = QT_CONFIGURE_SETTINGS_PATH;
-            noConfResult = QString::fromLocal8Bit(path);
+            qtConfigureDefault = QString::fromLocal8Bit(path);
 #endif
         }
-        if (!noConfResult.isEmpty()) {
-            pathsAreAbsolute = pathsAreAbsolute && pathIsAbsolute(noConfResult);
-            ret.push_back(std::move(noConfResult));
+        if (!qtConfigureDefault.isEmpty()) {
+            pathsAreAbsolute = pathsAreAbsolute && pathIsAbsolute(qtConfigureDefault);
+            ret.push_back(std::move(qtConfigureDefault));
         }
     }
     if (ret.isEmpty() || pathsAreAbsolute)
