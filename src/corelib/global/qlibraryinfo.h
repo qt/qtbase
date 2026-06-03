@@ -13,6 +13,8 @@ QT_BEGIN_NAMESPACE
 
 class Q_CORE_EXPORT QLibraryInfo
 {
+    Q_GADGET
+
 public:
     static const char *build() noexcept;
 
@@ -42,6 +44,8 @@ public:
         // Please read the comments in qconfig.cpp.in before adding
         SettingsPath = 100
     };
+    Q_ENUM(LibraryPath)
+
     static QString path(LibraryPath p);
     static QStringList paths(LibraryPath p);
 #if QT_DEPRECATED_SINCE(6, 0)
