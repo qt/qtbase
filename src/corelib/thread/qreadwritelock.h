@@ -179,14 +179,16 @@ public:
 #endif
 
 private:
-    QT7_ONLY(Q_CORE_EXPORT)
+#if QT_CORE_REMOVED_SINCE(6, 12)
     static QReadWriteLockPrivate *initRecursive();
-    QT7_ONLY(Q_CORE_EXPORT)
     static void destroyRecursive(QReadWriteLockPrivate *);
+#endif
 
+    QT7_ONLY(Q_CORE_EXPORT) static void *initRecursiveHelper();
+    QT7_ONLY(Q_CORE_EXPORT) static void destroyRecursiveHelper(void *) noexcept;
     static QReadWriteLockPrivate *initRecursive2()
     {
-        QReadWriteLockPrivate * d = initRecursive();
+        auto d = static_cast<QReadWriteLockPrivate *>(initRecursiveHelper());
         Q_PRESUME(quintptr(d) > StateMask);
 #ifdef QT_BUILDING_UNDER_TSAN
         unsigned flags = __tsan_mutex_write_reentrant | __tsan_mutex_read_reentrant;
@@ -203,7 +205,7 @@ private:
         unsigned flags = 0;
         __tsan_mutex_destroy(d, flags);
 #endif
-        destroyRecursive(d);
+        destroyRecursiveHelper(d);
     }
 };
 

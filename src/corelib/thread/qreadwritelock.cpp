@@ -109,7 +109,7 @@ static inline bool isUncontendedLocked(const QReadWriteLockPrivate *d)
 
     \sa lockForRead(), lockForWrite(), RecursionMode
 */
-QReadWriteLockPrivate *QReadWriteLock::initRecursive()
+void *QReadWriteLock::initRecursiveHelper()
 {
     auto d = new QReadWriteLockPrivate(true);
     Q_ASSERT_X(!(quintptr(d) & StateMask), "QReadWriteLock::QReadWriteLock", "bad d_ptr alignment");
@@ -123,8 +123,9 @@ QReadWriteLockPrivate *QReadWriteLock::initRecursive()
     \warning Destroying a read-write lock that is in use may result
     in undefined behavior.
 */
-void QReadWriteLock::destroyRecursive(QReadWriteLockPrivate *d)
+void QReadWriteLock::destroyRecursiveHelper(void *dd) noexcept
 {
+    auto d = static_cast<QReadWriteLockPrivate *>(dd);
     if (isUncontendedLocked(d)) {
         qWarning("QReadWriteLock: destroying locked QReadWriteLock");
         return;

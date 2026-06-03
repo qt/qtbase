@@ -1563,6 +1563,20 @@ bool QFile::copy(const QString &fileName, const QString &newName)
 
 #include "qobjectdefs.h"    // uses QT_CORE_INLINE_SINCE
 
+#if QT_CONFIG(thread)
+#include "qreadwritelock.h"
+
+QReadWriteLockPrivate *QReadWriteLock::initRecursive()
+{
+    return initRecursive2();
+}
+
+void QReadWriteLock::destroyRecursive(QReadWriteLockPrivate *d)
+{
+    destroyRecursive2(d);
+}
+#endif
+
 #if QT_CONFIG(timezone)
 #include "qtimezone.h"
 

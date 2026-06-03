@@ -1731,6 +1731,7 @@ qt_internal_extend_target(Core
     EXTRA_ELF_LINKER_SCRIPT_CONTENT "${elf_linker_script_contents}"
 
     # Workaround for QTBUG-117514:
+    # ### Qt7: remove (fixed in code)
     # Function called by inline methods taking a pointer to a private class as a parameter
     EXTRA_ELF_LINKER_SCRIPT_EXPORTS
         # QFutureInterfaceBase::setContinuation(std::function<void (QFutureInterfaceBase const&)>, QFutureInterfaceBasePrivate*)
