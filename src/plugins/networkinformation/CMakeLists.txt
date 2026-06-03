@@ -18,6 +18,10 @@ if(ANDROID)
     add_subdirectory(android)
 endif()
 
+if(OHOS)
+    add_subdirectory(ohos)
+endif()
+
 if(QT_FEATURE_glib AND TARGET GLIB2::GOBJECT AND TARGET GLIB2::GIO)
     add_subdirectory(glib)
 endif()
