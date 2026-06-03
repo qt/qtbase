@@ -48,16 +48,10 @@ public:
 
     void unlock()
     {
-        unsigned flags = 0;
         QReadWriteLockPrivate *d = d_ptr.loadRelaxed();
+        unsigned flags = describeLockForTSan(d);
         quintptr u = quintptr(d);
         Q_ASSERT_X(u, "QReadWriteLock::unlock()", "Cannot unlock an unlocked lock");
-        if (u & StateLockedForRead)
-            flags |= QtTsan::ReadLock;
-#ifdef QT_BUILDING_UNDER_TSAN
-        else if (u > StateMask && isContendedLockForRead(d))
-            flags |= QtTsan::ReadLock;
-#endif
 
         QtTsan::mutexPreUnlock(this, flags);
         if (u > StateMask || !d_ptr.testAndSetRelease(d, nullptr, d))
@@ -131,7 +125,22 @@ protected:
     Q_CORE_EXPORT bool contendedTryLockForRead(QDeadlineTimer timeout, void *dd);
     Q_CORE_EXPORT bool contendedTryLockForWrite(QDeadlineTimer timeout, void *dd);
     Q_CORE_EXPORT void contendedUnlock(void *dd);
+#if QT_CORE_REMOVED_SINCE(6, 12)
     Q_CORE_EXPORT bool isContendedLockForRead(const void *dd) Q_DECL_PURE_FUNCTION;
+#endif
+    static Q_CORE_EXPORT quintptr describeLockInternal(void *dd) noexcept Q_DECL_PURE_FUNCTION;
+    static uint describeLockForTSan(const QReadWriteLockPrivate *d, uint flags = 0) noexcept
+    {
+        quintptr u = 0;
+#ifdef QT_BUILDING_UNDER_TSAN
+        u = describeLockInternal(d);
+#else
+        Q_UNUSED(d);
+#endif
+        if (u & StateLockedForRead)
+            flags |= QtTsan::ReadLock;
+        return flags;
+    }
 
     constexpr QBasicReadWriteLock(QReadWriteLockPrivate *d) noexcept : d_ptr(d)
     {}
