@@ -619,21 +619,6 @@ static QString normalizePath(QString ret)
     return QDir::fromNativeSeparators(ret);
 };
 
-static QVariant libraryPathToValue(QLibraryInfo::LibraryPath path)
-{
-    QVariant value = qt_library_settings()->value(path);
-
-    // Fall back to a stable default for missing qt.conf values,
-    // unless we've been instructed to fall back to the Qt
-    // configure defaults instead via the MergeQtConf setting.
-    if (!value.isValid() && !keepQtBuildDefaults()) {
-        const auto locationInfo = QLibraryInfoPrivate::locationInfo(path);
-        if (!locationInfo.defaultValue.isNull())
-            value = locationInfo.defaultValue;
-    }
-
-    return value;
-}
 #endif // settings
 
 // TODO: There apparently are paths that are both absolute and relative for QFileSystemEntry.
@@ -662,7 +647,17 @@ QStringList QLibraryInfoPrivate::paths(QLibraryInfo::LibraryPath p,
     if (havePaths()) {
         fromConf = true;
 
-        QVariant value = libraryPathToValue(loc);
+        QVariant value = qt_library_settings()->value(p);
+
+        // Fall back to a stable default for missing qt.conf values,
+        // unless we've been instructed to fall back to the Qt
+        // configure defaults instead via the MergeQtConf setting.
+        if (!value.isValid() && !keepQtBuildDefaults()) {
+            const auto locationInfo = QLibraryInfoPrivate::locationInfo(p);
+            if (!locationInfo.defaultValue.isNull())
+                value = locationInfo.defaultValue;
+        }
+
         if (value.isValid()) {
             if (auto *asList = get_if<QList<QString>>(&value))
                 ret = std::move(*asList);
