@@ -1597,29 +1597,48 @@ backtraceFramesForLogMessage(int frameCount,
 #error "Internal error: backtrace enabled, but no way to gather backtraces available"
 #endif // QLOGGING_USE_..._BACKTRACE
 
-static QString formatBacktraceForLogMessage(const QMessagePattern::BacktraceParams backtraceParams,
-                                            const QMessageLogContext &ctx)
+/*
+    Always call with QMessagePattern::maxBacktraceDepth to populate the maximum
+    possible backtrace
+*/
+static QStringList generateBacktraceFrames(int frameCount, const QMessageLogContext &ctx)
 {
     // do we have a backtrace stored?
     if (ctx.version <= QMessageLogContext::CurrentVersion)
-        return QString();
+        return {};
 
     auto &fullctx = static_cast<const QInternalMessageLogContext &>(ctx);
     if (!fullctx.backtrace.has_value())
-        return QString();
+        return {};
 
-    QString backtraceSeparator = backtraceParams.backtraceSeparator;
-    int backtraceDepth = backtraceParams.backtraceDepth;
-
-    QStringList frames = backtraceFramesForLogMessage(backtraceDepth, *fullctx.backtrace);
+    QStringList frames = backtraceFramesForLogMessage(frameCount, *fullctx.backtrace);
     if (frames.isEmpty())
-        return QString();
+        return {};
 
     // if the first frame is unknown, replace it with the context function
     if (ctx.function && frames.at(0).startsWith(u'?'))
         frames[0] = QString::fromUtf8(qCleanupFuncinfo(ctx.function));
 
-    return frames.join(backtraceSeparator);
+    return frames;
+}
+
+static QString formatBacktraceForLogMessage(const QMessagePattern::BacktraceParams backtraceParams,
+                                            const QStringList &backtrace)
+{
+    if (backtrace.isEmpty() || backtraceParams.backtraceDepth <= 0)
+        return {};
+
+    const qsizetype backtraceDepth = (std::min)(qsizetype(backtraceParams.backtraceDepth),
+                                                backtrace.size());
+
+    // hand-rolled qJoin(), because we want it in 6.8
+    QString result;
+    for (auto it = backtrace.cbegin(); it != backtrace.cbegin() + backtraceDepth; ++it) {
+        if (it != backtrace.cbegin())
+            result += backtraceParams.backtraceSeparator;
+        result += *it;
+    }
+    return result;
 }
 #else
 void QInternalMessageLogContext::populateBacktrace(int)
@@ -1671,6 +1690,7 @@ static QString formatLogMessage(QtMsgType type, const QMessageLogContext &contex
     qsizetype timeArgsIdx = 0;
 #ifdef QLOGGING_HAVE_BACKTRACE
     qsizetype backtraceArgsIdx = 0;
+    QStringList fullBacktrace;
 #endif
 
     // we do not convert file, function, line literals to local encoding due to overhead
@@ -1726,9 +1746,11 @@ static QString formatLogMessage(QtMsgType type, const QMessageLogContext &contex
             message.append(QString::number(qlonglong(QThread::currentThread()->currentThread()), 16));
 #ifdef QLOGGING_HAVE_BACKTRACE
         } else if (token == backtraceTokenC) {
+            if (fullBacktrace.isEmpty())
+                fullBacktrace = generateBacktraceFrames(pattern->maxBacktraceDepth, context);
             QMessagePattern::BacktraceParams backtraceParams = pattern->backtraceArgs.at(backtraceArgsIdx);
             backtraceArgsIdx++;
-            message.append(formatBacktraceForLogMessage(backtraceParams, context));
+            message.append(formatBacktraceForLogMessage(backtraceParams, fullBacktrace));
 #endif
         } else if (token == timeTokenC) {
             using namespace std::chrono;
