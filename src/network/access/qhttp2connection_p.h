@@ -104,6 +104,7 @@ public:
     struct Configuration
     {
         bool useDownloadBuffer = true;
+        bool useHeaderBuffer = true;
     };
 
     ~QHttp2Stream() noexcept;

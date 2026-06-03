@@ -213,14 +213,18 @@ void tst_QHttp2Connection::constructStream()
 void tst_QHttp2Connection::streamConfiguration_data()
 {
     QTest::addColumn<bool>("useDownloadBuffer");
+    QTest::addColumn<bool>("useHeaderBuffer");
 
-    QTest::addRow("useDownloadBuffer=true") << true;
-    QTest::addRow("useDownloadBuffer=false") << false;
+    QTest::addRow("buffers=on") << true << true;
+    QTest::addRow("downloadBuffer=off") << false << true;
+    QTest::addRow("headerBuffer=off") << true << false;
+    QTest::addRow("buffers=off") << false << false;
 }
 
 void tst_QHttp2Connection::streamConfiguration()
 {
     QFETCH(const bool, useDownloadBuffer);
+    QFETCH(const bool, useHeaderBuffer);
 
     auto [client, server] = makeFakeConnectedSockets();
     auto *clientConnection = makeHttp2Connection(client.get(), {}, Client);
@@ -228,14 +232,17 @@ void tst_QHttp2Connection::streamConfiguration()
 
     QHttp2Stream::Configuration config;
     config.useDownloadBuffer = useDownloadBuffer;
+    config.useHeaderBuffer = useHeaderBuffer;
 
     QHttp2Stream *clientStream = clientConnection->createStream(config).unwrap();
     QVERIFY(clientStream);
     QCOMPARE(clientStream->configuration().useDownloadBuffer, useDownloadBuffer);
+    QCOMPARE(clientStream->configuration().useHeaderBuffer, useHeaderBuffer);
     QVERIFY(waitForSettingsExchange(clientConnection, serverConnection));
 
     QSignalSpy newIncomingStreamSpy{ serverConnection, &QHttp2Connection::newIncomingStream };
     QSignalSpy clientDataReceivedSpy{ clientStream, &QHttp2Stream::dataReceived };
+    QSignalSpy clientHeadersReceivedSpy{ clientStream, &QHttp2Stream::headersReceived };
 
     HPack::HttpHeader headers = getRequiredHeaders();
     clientStream->sendHEADERS(headers, false);
@@ -261,6 +268,14 @@ void tst_QHttp2Connection::streamConfiguration()
     } else {
         QVERIFY(clientStream->downloadBuffer().isEmpty());
     }
+
+    // headersReceived() always fires; receivedHeaders() only accumulates when
+    // the header buffer is enabled.
+    QCOMPARE_GE(clientHeadersReceivedSpy.count(), 1);
+    if (useHeaderBuffer)
+        QCOMPARE(clientStream->receivedHeaders(), responseHeaders);
+    else
+        QVERIFY(clientStream->receivedHeaders().empty());
 }
 
 void tst_QHttp2Connection::testSETTINGSFrame()
