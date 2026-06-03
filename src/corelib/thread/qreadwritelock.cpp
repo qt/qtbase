@@ -31,8 +31,6 @@ QT_BEGIN_NAMESPACE
 using namespace QReadWriteLockStates;
 namespace {
 
-using steady_clock = std::chrono::steady_clock;
-
 const auto dummyLockedForRead = reinterpret_cast<QReadWriteLockPrivate *>(quintptr(StateLockedForRead));
 const auto dummyLockedForWrite = reinterpret_cast<QReadWriteLockPrivate *>(quintptr(StateLockedForWrite));
 inline bool isUncontendedLocked(const QReadWriteLockPrivate *d)
@@ -440,6 +438,7 @@ void QBasicReadWriteLock::contendedUnlock(void *dd)
 
 bool QReadWriteLockPrivate::lockForRead(std::unique_lock<std::mutex> &lock, QDeadlineTimer timeout)
 {
+    using std::chrono::steady_clock;
     Q_ASSERT(!mutex.try_lock()); // mutex must be locked when entering this function
 
     while (waitingWriters || writerCount) {
@@ -461,6 +460,7 @@ bool QReadWriteLockPrivate::lockForRead(std::unique_lock<std::mutex> &lock, QDea
 
 bool QReadWriteLockPrivate::lockForWrite(std::unique_lock<std::mutex> &lock, QDeadlineTimer timeout)
 {
+    using std::chrono::steady_clock;
     Q_ASSERT(!mutex.try_lock()); // mutex must be locked when entering this function
 
     while (readerCount || writerCount) {
