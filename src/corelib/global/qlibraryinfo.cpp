@@ -566,6 +566,19 @@ QStringList QLibraryInfo::paths(LibraryPath p)
     return QLibraryInfoPrivate::paths(p);
 }
 
+/*!
+    Returns whether the existence of a \c qt.conf with explicit
+    paths should not trigger the stable fallback-values from
+    QLibraryInfoPrivate::locationInfo() as usual, but instead
+    fall back to the Qt configure defaults (which may differ
+    from Qt installation to Qt installtion).
+
+    This mechanism is used by QtQml's internal build machinery
+    for making QML modules across different paths available
+    during development.
+
+    \internal
+*/
 static bool keepQtBuildDefaults()
 {
 #if QT_CONFIG(settings)
