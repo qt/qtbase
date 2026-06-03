@@ -4098,7 +4098,7 @@ int QTreeViewPrivate::accessibleChildIndex(const QModelIndex &index) const
     const int columnCount = index.model()->columnCount();
 
     const qulonglong childIndex = qulonglong(rowForIndex) * columnCount + index.column();
-    const int result = q26::saturate_cast<int>(childIndex);
+    const int result = q26::saturating_cast<int>(childIndex);
     if (!q20::cmp_equal(result, childIndex)) {
         qWarning("QTreeView: model is too large to be made accessible (%d < %llu)",
                  result, childIndex);
