@@ -27,6 +27,102 @@ using namespace Qt::StringLiterals;
 Q_STATIC_LOGGING_CATEGORY(lcQHttpHeaders, "qt.network.http.headers");
 
 /*!
+    \class QHttpHeaderRange
+    \since 6.12
+    \inmodule QtNetwork
+    \compares equality
+
+    \brief QHttpHeaderRange represents a single byte range as used in
+    the HTTP \c{Range} and \c{Content-Range} headers.
+
+    A range has an optional start and an optional end, both expressed
+    as byte offsets. A missing start or end is represented as
+    \c{std::nullopt}.
+
+    Use \l isValid() to check whether a range is well-formed before
+    passing it to \l QHttpHeaders::setRangeValues().
+
+    \sa QHttpHeaders::rangeValues(), QHttpHeaders::setRangeValues()
+*/
+
+/*!
+    \fn QHttpHeaderRange::QHttpHeaderRange() noexcept
+
+    Constructs a default-initialized range. Both \l start() and \l end()
+    will be \c{std::nullopt}. The resulting range is not valid
+    according to \l isValid().
+*/
+
+/*!
+    \fn QHttpHeaderRange::QHttpHeaderRange(std::optional<qint64> start,
+                                           std::optional<qint64> end) noexcept
+
+    Constructs a range with \a start and \a end byte offsets.
+    Either or both may be \c{std::nullopt} to represent an open-ended
+    range; see \l isValid() for the constraints.
+*/
+
+/*!
+    \fn std::optional<qint64> QHttpHeaderRange::start() const noexcept
+
+    Returns the start byte offset of the range, or \c{std::nullopt}
+    if no start was set. A range without a start but with an end
+    (e.g., \c{bytes=-500}) represents the last \e N bytes of the
+    resource.
+
+    \sa setStart(), end()
+*/
+
+/*!
+    \fn std::optional<qint64> QHttpHeaderRange::end() const noexcept
+
+    Returns the end byte offset of the range, or \c{std::nullopt}
+    if no end was set. A range with a start but without an end
+    (e.g., \c{bytes=500-}) requests all bytes from the given offset
+    to the end of the resource.
+
+    \sa setEnd(), start()
+*/
+
+/*!
+    \fn void QHttpHeaderRange::setStart(std::optional<qint64> start) noexcept
+
+    Sets the start byte offset to \a start. Pass \c{std::nullopt}
+    to clear the start.
+
+    \sa start(), setEnd()
+*/
+
+/*!
+    \fn void QHttpHeaderRange::setEnd(std::optional<qint64> end) noexcept
+
+    Sets the end byte offset to \a end. Pass \c{std::nullopt}
+    to clear the end.
+
+    \sa end(), setStart()
+*/
+
+/*!
+    \fn bool QHttpHeaderRange::isValid() const noexcept
+
+    Returns \c true if the range is well-formed, \c false otherwise.
+
+    A range is considered invalid if:
+    \list
+        \li Both start and end are \c{std::nullopt}.
+        \li The start value is negative.
+        \li The end value is negative.
+        \li Both start and end are set, and start is greater than end.
+    \endlist
+*/
+
+/*!
+    \fn size_t qHash(QHttpHeaderRange key, size_t seed) noexcept
+    \qhashold{QHttpHeaderRange}
+    \since 6.12
+*/
+
+/*!
     \class QHttpHeaders
     \since 6.7
     \ingroup
@@ -1933,6 +2029,13 @@ void QHttpHeaders::clear()
 }
 
 #ifndef QT_NO_DEBUG_STREAM
+/*!
+    \fn QDebug operator<<(QDebug debug, const QHttpHeaderRange &range)
+    \since 6.12
+    \relates QHttpHeaderRange
+
+    Writes \a range to the \a debug stream.
+*/
 QDebug operator<<(QDebug debug, const QHttpHeaderRange &range)
 {
     QDebugStateSaver saver(debug);
