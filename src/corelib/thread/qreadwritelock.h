@@ -183,18 +183,40 @@ private:
     static QReadWriteLockPrivate *initRecursive();
     QT7_ONLY(Q_CORE_EXPORT)
     static void destroyRecursive(QReadWriteLockPrivate *);
+
+    static QReadWriteLockPrivate *initRecursive2()
+    {
+        QReadWriteLockPrivate * d = initRecursive();
+        Q_PRESUME(quintptr(d) > StateMask);
+#ifdef QT_BUILDING_UNDER_TSAN
+        unsigned flags = __tsan_mutex_write_reentrant | __tsan_mutex_read_reentrant;
+#  if (defined(Q_CC_GNU_ONLY) && Q_CC_GNU >= 1200) || (defined(Q_CC_CLANG) && Q_CC_CLANG >= 1200)
+        flags |= __tsan_mutex_not_static;
+#  endif
+        __tsan_mutex_create(d, flags);
+#endif
+        return d;
+    }
+    static void destroyRecursive2(QReadWriteLockPrivate *d)
+    {
+#ifdef QT_BUILDING_UNDER_TSAN
+        unsigned flags = 0;
+        __tsan_mutex_destroy(d, flags);
+#endif
+        destroyRecursive(d);
+    }
 };
 
 #if QT_CORE_INLINE_IMPL_SINCE(6, 6)
 QReadWriteLock::QReadWriteLock(RecursionMode recursionMode)
-    : QBasicReadWriteLock(recursionMode == Recursive ? initRecursive() : nullptr)
+    : QBasicReadWriteLock(recursionMode == Recursive ? initRecursive2() : nullptr)
 {
 }
 
 QReadWriteLock::~QReadWriteLock()
 {
     if (auto d = d_ptr.loadAcquire())
-        destroyRecursive(d);
+        destroyRecursive2(d);
 }
 
 bool QReadWriteLock::tryLockForRead(int timeout)
