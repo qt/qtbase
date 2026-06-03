@@ -26,10 +26,6 @@ QT_REQUIRE_CONFIG(thread);
 
 QT_BEGIN_NAMESPACE
 
-namespace QReadWriteLockStates {
-enum StateForWaitCondition : quint32;
-}
-
 class QReadWriteLockPrivate
 {
 public:
@@ -37,6 +33,10 @@ public:
     static constexpr quintptr StateLockedForRead = QReadWriteLock::StateLockedForRead;
     static constexpr quintptr StateLockedForWrite = QReadWriteLock::StateLockedForWrite;
     static constexpr quintptr StateMask = QReadWriteLock::StateMask;
+    static constexpr quintptr MultiplyLocked = QReadWriteLock::Counter;
+    static constexpr quintptr IsRecursiveLock = MultiplyLocked << 1;
+    static constexpr quintptr RecursivelyLockedForWrite =
+            StateLockedForWrite | MultiplyLocked | IsRecursiveLock;
 
     explicit QReadWriteLockPrivate(bool isRecursive = false)
         : recursive(isRecursive) {}
@@ -76,8 +76,48 @@ public:
     bool recursiveLockForRead(QDeadlineTimer timeout);
     void recursiveUnlock();
 
-    static QReadWriteLockStates::StateForWaitCondition
-    stateForWaitCondition(const QReadWriteLock *lock);
+    /*!
+     * \internal
+     * Describes the state of the QReadWriteLock whose private is \a dd.
+     *
+     * Returns one of:
+     * \list
+     *   \li 0 (unlocked)
+     *   \li \c IsRecursiveLock (still unlocked)
+     *   \li \c StateLockedForRead
+     *   \li \c{StateLockedForRead | IsRecursiveLock}
+     *   \li \c StateLockedForWrite
+     *   \li \c{StateLockedForWrite | IsRecursiveLock}
+     *   \li \c{StateLockedForWrite | IsRecursiveLock | MultiplyLocked} = \c RecursivelyLockedForWrite
+     * \endlist
+     */
+    static quintptr describeState(void *dd) noexcept
+    {
+        quintptr u = quintptr(dd);
+        if (u < StateMask) {
+            // non-recursive; unlocked or uncontended
+            return u;
+        }
+
+        auto d = static_cast<QReadWriteLockPrivate *>(dd);
+        const auto lock = qt_scoped_lock(d->mutex);
+        u = 0;
+        if (d->writerCount)
+            u |= StateLockedForWrite;
+        else if (d->readerCount)
+            u |= StateLockedForRead;
+        if (d->recursive) {
+            u |= IsRecursiveLock;
+            if (d->writerCount > 1) {
+                u |= MultiplyLocked;
+                Q_ASSERT(u == RecursivelyLockedForWrite);
+            }
+        } else {
+            // non-recursive, quick check of the state
+            Q_ASSERT(d->writerCount <= 1);
+        }
+        return u;
+    }
 
     // used by QWaitCondition::wait
     template <typename Prep, typename DoWait>
@@ -85,46 +125,15 @@ public:
 };
 Q_DECLARE_TYPEINFO(QReadWriteLockPrivate::Reader, Q_PRIMITIVE_TYPE);
 
-namespace QReadWriteLockStates {
-enum StateForWaitCondition : quint32 {
-    Unlocked = 0,
-    LockedForRead = QReadWriteLockPrivate::StateLockedForRead,
-    LockedForWrite = QReadWriteLockPrivate::StateLockedForWrite,
-    RecursivelyLocked,
-};
-}
-
-/*! \internal  Helper for QWaitCondition::wait */
-inline QReadWriteLockStates::StateForWaitCondition
-QReadWriteLockPrivate::stateForWaitCondition(const QReadWriteLock *q)
-{
-    using namespace QReadWriteLockStates;
-    QReadWriteLockPrivate *d = q->d_ptr.loadAcquire();
-    switch (quintptr(d) & StateMask) {
-    case StateLockedForRead: return LockedForRead;
-    case StateLockedForWrite: return LockedForWrite;
-    }
-
-    if (!d)
-        return Unlocked;
-    const auto lock = qt_scoped_lock(d->mutex);
-    if (d->writerCount > 1)
-        return RecursivelyLocked;
-    else if (d->writerCount == 1)
-        return LockedForWrite;
-    return LockedForRead;
-
-}
-
 template <typename Prep, typename DoWait>
 inline bool QReadWriteLockPrivate::waitConditionWait(QReadWriteLock *readWriteLock, Prep &&prep, DoWait &&doWait)
 {
     if (!readWriteLock)
         return false;
-    auto previousState = stateForWaitCondition(readWriteLock);
-    if (previousState == QReadWriteLockStates::Unlocked)
+    auto previousState = describeState(readWriteLock->d_ptr.loadAcquire());
+    if (previousState == 0)     // unlocked
         return false;
-    if (previousState == QReadWriteLockStates::RecursivelyLocked) {
+    if (previousState == RecursivelyLockedForWrite) {
         qWarning("QWaitCondition: cannot wait on QReadWriteLocks with recursive lockForWrite()");
         return false;
     }
@@ -134,7 +143,7 @@ inline bool QReadWriteLockPrivate::waitConditionWait(QReadWriteLock *readWriteLo
     bool returnValue = doWait();
 
     // relock
-    if (previousState == LockedForWrite)
+    if (previousState & StateLockedForWrite)
         readWriteLock->lockForWrite();
     else
         readWriteLock->lockForRead();
