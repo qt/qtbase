@@ -1566,6 +1566,11 @@ bool QFile::copy(const QString &fileName, const QString &newName)
 #if QT_CONFIG(thread)
 #include "qreadwritelock.h"
 
+bool QBasicReadWriteLock::isContendedLockForRead(const void *dd)
+{
+    return describeLockInternal(const_cast<void *>(dd)) & StateLockedForRead;
+}
+
 QReadWriteLockPrivate *QReadWriteLock::initRecursive()
 {
     return initRecursive2();
