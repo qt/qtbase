@@ -4,16 +4,13 @@ defines                += QT_GUI_LIB \
                           QT_WIDGETS_LIB
 
 excludefiles += \
+                "*Plugin_in.cpp" \
                 "*_posix.cpp" \
                 "*_android.cpp" \
-                "*_win.cpp" \
                 "*_icu.cpp" \
-                "*_msvc.cpp" \
-                "*_wince.cpp" \
                 "*_winrt.cpp" \
                 "*_mac.cpp" \
                 "*_macx.cpp" \
-                "*_unix.cpp" \
                 "*_udev.cpp" \
                 "*_vxworks.cpp" \
                 "*_darwin.cpp"
