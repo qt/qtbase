@@ -635,14 +635,11 @@ QStringList QLibraryInfoPrivate::paths(QLibraryInfo::LibraryPath p,
 {
     const QLibraryInfo::LibraryPath loc = p;
     QList<QString> ret;
-    bool fromConf = false;
     bool pathsAreAbsolute = true;
 
 #if QT_CONFIG(settings)
     QLibrarySettings *qtConfSettings = qt_library_settings();
     if (qtConfSettings && qtConfSettings->havePaths()) {
-        fromConf = true;
-
         QVariant value = qtConfSettings->value(p);
 
         // Fall back to a stable default for missing qt.conf values,
@@ -667,7 +664,11 @@ QStringList QLibraryInfoPrivate::paths(QLibraryInfo::LibraryPath p,
     }
 #endif // settings
 
-    if (!fromConf || keepQtBuildDefaults()) {
+    // Fall back to the Qt configure defaults if we didn't have a qt.conf,
+    // or was asked to respect Qt configure defaults. The latter case will
+    // append the Qt configure default to the list, even if we found a value
+    // in qt.conf, as that's the intent behind MergeQtConf.
+    if (ret.isEmpty() || keepQtBuildDefaults()) {
         QString noConfResult;
         if (loc == QLibraryInfo::PrefixPath) {
             noConfResult = getPrefix(usageMode);
