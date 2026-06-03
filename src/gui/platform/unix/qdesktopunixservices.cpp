@@ -137,16 +137,10 @@ static inline bool launch(const QString &launcher, const QUrl &url,
 {
 
     const QString command = launcher + u' ' + QLatin1StringView(url.toEncoded());
+    QString errorString;
+#if QT_CONFIG(process)
     qCDebug(lcQpaServices, "Launching %s", qPrintable(command));
-#if !QT_CONFIG(process)
-    if (!xdgActivationToken.isEmpty())
-        qputenv("XDG_ACTIVATION_TOKEN", xdgActivationToken.toUtf8());
-    const bool ok = ::system(qPrintable(command + " &"_L1));
-    if (!xdgActivationToken.isEmpty())
-        qunsetenv("XDG_ACTIVATION_TOKEN");
-#  else
     QStringList args = QProcess::splitCommand(command);
-    bool ok = false;
     if (!args.isEmpty()) {
         QString program = args.takeFirst();
         QProcess process;
@@ -161,13 +155,21 @@ static inline bool launch(const QString &launcher, const QUrl &url,
             process.setEnvironment(env.toStringList());
         }
         // AXIVION Next Line Qt-Security-QProcessStart: executable is absolute from PATH
-        ok = process.startDetached(nullptr);
+        if (!process.startDetached(nullptr))
+            errorString = process.errorString();
+    } else {
+        errorString = u"Unexpected empty list of argument"_s;
     }
-#  endif
-    if (!ok)
-        qCWarning(lcQpaServices, "Launch failed (%s)", qPrintable(command));
+#else
+    errorString = u"QProcess not available"_s;
+#endif // QT_CONFIG(process)
+    if (!errorString.isEmpty()) {
+        qCWarning(lcQpaServices, "Launch of '%s' failed: %s",
+                  qPrintable(command), qPrintable(errorString));
+        return false;
+    }
 
-    return ok;
+    return true;
 }
 
 #if QT_CONFIG(dbus)
