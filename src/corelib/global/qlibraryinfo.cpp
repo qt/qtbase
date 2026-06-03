@@ -520,7 +520,7 @@ QLibraryInfoPrivate::LocationInfo QLibraryInfoPrivate::locationInfo(QLibraryInfo
         result.defaultValue = QLatin1StringView(qtConfEntries.viewAt(loc * 2 + 1));
         if (result.key == u"QmlImports")
             result.fallbackKey = u"Qml2Imports"_s;
-#ifndef Q_OS_WIN // On Windows we use the registry
+#if !defined(Q_OS_WIN) // On Windows we use the registry
     } else if (loc == QLibraryInfo::SettingsPath) {
         result.key = "Settings"_L1;
         result.defaultValue = QLatin1StringView(dot);
@@ -674,7 +674,7 @@ QStringList QLibraryInfoPrivate::paths(QLibraryInfo::LibraryPath p,
             qtConfigureDefault = getPrefix(usageMode);
         } else if (int(loc) <= qt_configure_strs.count()) {
             qtConfigureDefault = QString::fromLocal8Bit(qt_configure_strs.viewAt(loc - 1));
-#ifndef Q_OS_WIN // On Windows we use the registry
+#if !defined(Q_OS_WIN) // On Windows we use the registry
         } else if (loc == QLibraryInfo::SettingsPath) {
             // Use of volatile is a hack to discourage compilers from calling
             // strlen(), in the inlined fromLocal8Bit(const char *)'s body, at
