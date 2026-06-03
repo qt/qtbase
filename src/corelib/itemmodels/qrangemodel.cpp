@@ -1433,7 +1433,12 @@ int QRangeModel::columnCount(const QModelIndex &parent) const
     hierarchical models set that flag for all items in columns above 0.
 
     To customize the flags for your own data types, provide a specialization
-    of RowOptions and/or ItemAccess for your row or item types.
+    of RowOptions and/or ItemAccess for your row or item types and implement a
+    \l{ItemAccess::}{flags()} static member function:
+
+    \snippet qrangemodel/specialize.cpp color_gadget_item_access_decl
+    \snippet qrangemodel/specialize.cpp color_gadget_item_access_flags
+    \snippet qrangemodel/specialize.cpp color_gadget_item_access_end_decl
 
     \sa Qt::ItemFlags, RowOptions, ItemAccess
 */
@@ -1459,10 +1464,18 @@ Qt::ItemFlags QRangeModel::flags(const QModelIndex &index) const
     type at \a section. For rows that are a gadget or QObject type, this
     function returns the name of the property at the index of \a section.
 
+    To customize the horizontal header data for your own range, provide a
+    specialization of RowOptions for your row types and implement a
+    \l{RowOptions::}{headerData()} class member function:
+
+    \snippet qrangemodel/specialize.cpp color_gadget_row_options_decl
+    \snippet qrangemodel/specialize.cpp color_gadget_row_options_headerData
+    \snippet qrangemodel/specialize.cpp color_gadget_row_options_end_decl
+
     For the vertical header, this function always returns the result of the
     default implementation in QAbstractItemModel.
 
-    \sa Qt::ItemDataRole, setHeaderData(), QHeaderView
+    \sa Qt::ItemDataRole, setHeaderData(), QHeaderView, RowOptions
 */
 QVariant QRangeModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
@@ -1783,10 +1796,39 @@ QModelIndex QRangeModel::buddy(const QModelIndex &index) const
     \sa canDropMimeData(), dropMimeData()
 */
 
+/*
+//! [override-calls-specialization]
+    If a customization of ItemAccess is available for the item type stored in
+    the range, and if that customization implements a suitable
+    \l{ItemAccess::}{\1()} class member function, then this implementation
+    calls that function and returns the result.
+
+    \snippet qrangemodel/specialize.cpp color_gadget_item_access_decl
+    \snippet qrangemodel/specialize.cpp color_gadget_item_access_\1
+    \snippet qrangemodel/specialize.cpp color_gadget_item_access_end_decl
+
+    Otherwise, if a customization of RowOptions is available for the row type
+    in the range with a suitable \l{RowOptions::}{\1()} class member function,
+    then this implementation returns the result of calling that function.
+
+    \snippet qrangemodel/specialize.cpp color_gadget_row_options_decl
+    \snippet qrangemodel/specialize.cpp color_gadget_row_options_\1
+    \snippet qrangemodel/specialize.cpp color_gadget_row_options_end_decl
+
+    If neither customization is available, then this returns the result of the
+    default QAbstractItemModel implementation.
+
+    \sa {QRangeModel#Drag'n'drop handling}{Drag'n'drop handling},
+        RowOptions::\1(), ItemAccess::\1()
+//! [override-calls-specialization]
+*/
+
 /*!
     \reimp
 
-    \sa RowOptions::canDropMimeData() ItemAccess::canDropMimeData()
+    \include qrangemodel.cpp {override-calls-specialization} {canDropMimeData}
+
+    \sa dropMimeData(), mimeTypes(), mimeData()
 */
 bool QRangeModel::canDropMimeData(const QMimeData *data, Qt::DropAction action,
                                   int row, int column, const QModelIndex &parent) const
@@ -1800,7 +1842,9 @@ bool QRangeModel::canDropMimeData(const QMimeData *data, Qt::DropAction action,
 /*!
     \reimp
 
-    \sa RowOptions::dropMimeData() ItemAccess::dropMimeData()
+    \include qrangemodel.cpp {override-calls-specialization} {dropMimeData}
+
+    \sa canDropMimeData(), mimeTypes(), mimeData()
 */
 bool QRangeModel::dropMimeData(const QMimeData *data, Qt::DropAction action,
                                int row, int column, const QModelIndex &parent)
@@ -1889,7 +1933,9 @@ bool QRangeModelPrivate::compareModelIndex(const QModelIndex &left, const QModel
 /*!
     \reimp
 
-    \sa RowOptions::mimeData() ItemAccess::mimeData()
+    \include qrangemodel.cpp {override-calls-specialization} {mimeData}
+
+    \sa canDropMimeData(), dropMimeData(), mimeTypes()
 */
 QMimeData *QRangeModel::mimeData(const QModelIndexList &indexes) const
 {
@@ -1925,7 +1971,9 @@ QMimeData *QRangeModel::mimeData(const QModelIndexList &indexes) const
 /*!
     \reimp
 
-    \sa RowOptions::mimeTypes() ItemAccess::mimeTypes()
+    \include qrangemodel.cpp {override-calls-specialization} {mimeTypes}
+
+    \sa canDropMimeData(), dropMimeData(), mimeData()
 */
 QStringList QRangeModel::mimeTypes() const
 {

@@ -105,6 +105,13 @@ struct QRangeModel::RowOptions<ColorEntry>
         return mimeData;
     }
 //! [color_gadget_row_options_mimeData]
+//! [color_gadget_row_options_canDropMimeData]
+    static bool canDropMimeData(const QMimeData *mimeData)
+    {
+        // ...
+        return true;
+    }
+//! [color_gadget_row_options_canDropMimeData]
 //! [color_gadget_row_options_dropMimeData]
     static bool dropMimeData(const QMimeData *mimeData, auto inserter)
     {
@@ -179,6 +186,13 @@ struct QRangeModel::ItemAccess<ColorEntry>
         return result;
     }
 //! [color_gadget_item_access_mimeData]
+//! [color_gadget_item_access_canDropMimeData]
+    static bool canDropMimeData(const QMimeData *mimeData)
+    {
+        // ...
+        return true;
+    }
+//! [color_gadget_item_access_canDropMimeData]
 //! [color_gadget_item_access_dropMimeData]
     static bool dropMimeData(const QMimeData *mimeData, auto inserter)
     {
