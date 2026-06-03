@@ -135,6 +135,8 @@
     For using QList with functions from \c {<algorithm>} header, such as
     \c {std::sort()}, \c {std::reverse()}, and \c {std::count_if()},
     see \l {Qt containers and std algorithms}.
+    For using QList with Qt's own generic algorithms such as \l{qJoin()} and
+    \l{qDeleteAll()}, see \l{<QtAlgorithms>}.
 
     In addition to QList, Qt also provides QVarLengthArray, a very
     low-level class with little functionality that is optimized for
