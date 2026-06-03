@@ -78,6 +78,10 @@ public:
 
     static QReadWriteLockStates::StateForWaitCondition
     stateForWaitCondition(const QReadWriteLock *lock);
+
+    // used by QWaitCondition::wait
+    template <typename Prep, typename DoWait>
+    static bool waitConditionWait(QReadWriteLock *readWriteLock, Prep &&prep, DoWait &&doWait);
 };
 Q_DECLARE_TYPEINFO(QReadWriteLockPrivate::Reader, Q_PRIMITIVE_TYPE);
 
@@ -110,6 +114,32 @@ QReadWriteLockPrivate::stateForWaitCondition(const QReadWriteLock *q)
         return LockedForWrite;
     return LockedForRead;
 
+}
+
+template <typename Prep, typename DoWait>
+inline bool QReadWriteLockPrivate::waitConditionWait(QReadWriteLock *readWriteLock, Prep &&prep, DoWait &&doWait)
+{
+    if (!readWriteLock)
+        return false;
+    auto previousState = stateForWaitCondition(readWriteLock);
+    if (previousState == QReadWriteLockStates::Unlocked)
+        return false;
+    if (previousState == QReadWriteLockStates::RecursivelyLocked) {
+        qWarning("QWaitCondition: cannot wait on QReadWriteLocks with recursive lockForWrite()");
+        return false;
+    }
+
+    prep();
+    readWriteLock->unlock();
+    bool returnValue = doWait();
+
+    // relock
+    if (previousState == LockedForWrite)
+        readWriteLock->lockForWrite();
+    else
+        readWriteLock->lockForRead();
+
+    return returnValue;
 }
 
 QT_END_NAMESPACE

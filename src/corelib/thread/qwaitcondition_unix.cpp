@@ -159,31 +159,13 @@ bool QWaitCondition::wait(QReadWriteLock *readWriteLock, unsigned long time)
 
 bool QWaitCondition::wait(QReadWriteLock *readWriteLock, QDeadlineTimer deadline)
 {
-    using namespace QReadWriteLockStates;
-
-    if (!readWriteLock)
-        return false;
-    auto previousState = QReadWriteLockPrivate::stateForWaitCondition(readWriteLock);
-    if (previousState == Unlocked)
-        return false;
-    if (previousState == RecursivelyLocked) {
-        qWarning("QWaitCondition: cannot wait on QReadWriteLocks with recursive lockForWrite()");
-        return false;
-    }
-
-    qt_report_pthread_error(pthread_mutex_lock(&d->mutex), "QWaitCondition::wait()", "mutex lock");
-    ++d->waiters;
-
-    readWriteLock->unlock();
-
-    bool returnValue = d->wait(deadline);
-
-    if (previousState == LockedForWrite)
-        readWriteLock->lockForWrite();
-    else
-        readWriteLock->lockForRead();
-
-    return returnValue;
+    auto prep = [&] {
+        // unlocked by d->wait() below
+        qt_report_pthread_error(pthread_mutex_lock(&d->mutex), "QWaitCondition::wait()", "mutex lock");
+        ++d->waiters;
+    };
+    auto wait = [&] { return d->wait(deadline); };
+    return QReadWriteLockPrivate::waitConditionWait(readWriteLock, prep, wait);
 }
 
 QT_END_NAMESPACE
