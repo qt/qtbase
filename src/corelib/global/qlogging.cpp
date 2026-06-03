@@ -2444,6 +2444,15 @@ void qErrnoWarning(int code, const char *msg, ...)
 
     Custom message handlers can use qFormatLogMessage() to take \a pattern into account.
 
+    \section2 Security Considerations
+
+    Qt does not strip or escape control characters from \a pattern -
+    including \c {LF}, \c {CR}, \c {NUL} bytes, and terminal control sequences.
+    Accepting a pattern from an untrusted source therefore enables log forging
+    or sending control sequences to the consumer of the log stream. In addition,
+    on some logging backends, messages may be truncated at the \c {NUL} byte, if any.
+
+
     \sa qInstallMessageHandler(), {Debugging Techniques}, {QLoggingCategory}, QMessageLogContext
  */
 
