@@ -376,8 +376,7 @@ bool QBasicReadWriteLock::isContendedLockForRead(const void *dd)
     Q_ASSERT(d);
     Q_ASSERT_X(!isUncontendedLocked(d), "QReadWriteLock::unlock", "Not in a contended or recursive lock");
 
-    // if there's a writer, then we're locked for writing
-    return d->writerCount == 0;
+    return QReadWriteLockPrivate::describeState(const_cast<void *>(dd)) & StateLockedForRead;
 }
 
 /*!
