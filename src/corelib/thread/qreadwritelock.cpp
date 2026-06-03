@@ -28,13 +28,18 @@ QT_BEGIN_NAMESPACE
  *  - In any other case, d_ptr points to an actual QReadWriteLockPrivate.
  */
 
-using namespace QReadWriteLockStates;
-namespace {
+static auto dummyLockedForRead()
+{
+    return reinterpret_cast<QReadWriteLockPrivate *>(QReadWriteLockPrivate::StateLockedForRead);
+}
+static auto dummyLockedForWrite()
+{
+    return reinterpret_cast<QReadWriteLockPrivate *>(QReadWriteLockPrivate::StateLockedForWrite);
+}
 
-const auto dummyLockedForRead = reinterpret_cast<QReadWriteLockPrivate *>(quintptr(StateLockedForRead));
-const auto dummyLockedForWrite = reinterpret_cast<QReadWriteLockPrivate *>(quintptr(StateLockedForWrite));
-inline bool isUncontendedLocked(const QReadWriteLockPrivate *d)
-{ return quintptr(d) & StateMask; }
+static inline bool isUncontendedLocked(const QReadWriteLockPrivate *d)
+{
+    return quintptr(d) & QReadWriteLockPrivate::StateMask;
 }
 
 /*! \class QReadWriteLock
@@ -193,7 +198,7 @@ QBasicReadWriteLock::contendedTryLockForRead(QDeadlineTimer timeout, void *dd)
     while (true) {
         qYieldCpu();
         if (d == nullptr) {
-            if (fastTryLock(d_ptr, dummyLockedForRead, d))
+            if (fastTryLock(d_ptr, dummyLockedForRead(), d))
                 return true;
             continue;
         }
@@ -208,7 +213,7 @@ QBasicReadWriteLock::contendedTryLockForRead(QDeadlineTimer timeout, void *dd)
             return true;
         }
 
-        if (d == dummyLockedForWrite) {
+        if (d == dummyLockedForWrite()) {
             if (timeout.hasExpired())
                 return false;
 
@@ -306,7 +311,7 @@ QBasicReadWriteLock::contendedTryLockForWrite(QDeadlineTimer timeout, void *dd)
     while (true) {
         qYieldCpu();
         if (d == nullptr) {
-            if (fastTryLock(d_ptr, dummyLockedForWrite, d))
+            if (fastTryLock(d_ptr, dummyLockedForWrite(), d))
                 return true;
             continue;
         }
@@ -317,7 +322,7 @@ QBasicReadWriteLock::contendedTryLockForWrite(QDeadlineTimer timeout, void *dd)
 
             // locked for either read or write, assign a d_ptr and wait.
             auto val = QReadWriteLockPrivate::allocate();
-            if (d == dummyLockedForWrite)
+            if (d == dummyLockedForWrite())
                 val->writerCount = 1;
             else
                 val->readerCount = (quintptr(d) >> 4) + 1;

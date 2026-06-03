@@ -82,11 +82,6 @@ public:
 Q_DECLARE_TYPEINFO(QReadWriteLockPrivate::Reader, Q_PRIMITIVE_TYPE);
 
 namespace QReadWriteLockStates {
-enum {
-    StateLockedForRead = QReadWriteLockPrivate::StateLockedForRead,
-    StateLockedForWrite = QReadWriteLockPrivate::StateLockedForWrite,
-    StateMask = QReadWriteLockPrivate::StateMask,
-};
 enum StateForWaitCondition : quint32 {
     Unlocked = 0,
     LockedForRead = QReadWriteLockPrivate::StateLockedForRead,
