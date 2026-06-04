@@ -2982,8 +2982,8 @@ static QStringList libraryPathsLocked();
     until a QCoreApplication is created. If it is not found when calling
     this function, the default library paths will be used.
 
-    The list will include the installation directory for plugins if
-    it exists (the default installation directory for plugins is \c
+    The list will include the installation directories for plugins if
+    they exist (the default installation directory for plugins is \c
     INSTALL/plugins, where \c INSTALL is the directory where Qt was
     installed). The colon separated entries of the \c QT_PLUGIN_PATH
     environment variable are always added. The plugin installation
@@ -3044,12 +3044,14 @@ static QStringList libraryPathsLocked()
         }
 #endif // Q_OS_DARWIN
 
-        QString installPathPlugins =  QLibraryInfo::path(QLibraryInfo::PluginsPath);
-        if (QFile::exists(installPathPlugins)) {
-            // Make sure we convert from backslashes to slashes.
-            installPathPlugins = QDir(installPathPlugins).canonicalPath();
-            if (!app_libpaths->contains(installPathPlugins))
-                app_libpaths->append(installPathPlugins);
+        const auto pluginPaths = QLibraryInfo::paths(QLibraryInfo::PluginsPath);
+        for (auto path : pluginPaths) {
+            if (QFile::exists(path)) {
+                // Make sure we convert from backslashes to slashes.
+                path = QDir(path).canonicalPath();
+                if (!app_libpaths->contains(path))
+                    app_libpaths->append(path);
+            }
         }
 
         // If QCoreApplication is not yet instantiated,

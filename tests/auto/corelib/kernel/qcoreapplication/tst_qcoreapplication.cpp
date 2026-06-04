@@ -278,7 +278,7 @@ void tst_QCoreApplication::libraryPaths()
         QStringList expected;
 #ifndef Q_OS_ANDROID
         //Android doesn't use plugins dir at runtime, see QTBUG-141732
-        expected << QLibraryInfo::path(QLibraryInfo::PluginsPath);
+        expected << QLibraryInfo::paths(QLibraryInfo::PluginsPath);
 #endif
         expected << QDir(QCoreApplication::applicationDirPath()).canonicalPath();
         expected = QSet<QString>(expected.constBegin(), expected.constEnd()).values();
@@ -304,8 +304,9 @@ void tst_QCoreApplication::libraryPaths()
 #if 0
         QCOMPARE(count, 1); // before creating QCoreApplication, only the PluginsPath is in the libraryPaths()
 #endif
-        QString installPathPlugins =  QLibraryInfo::path(QLibraryInfo::PluginsPath);
-        QCoreApplication::addLibraryPath(installPathPlugins);
+        const auto installPathPlugins = QLibraryInfo::paths(QLibraryInfo::PluginsPath);
+        for (QString pluginsPath : installPathPlugins)
+            QCoreApplication::addLibraryPath(pluginsPath);
         qCDebug(lcTests) << "installPathPlugins" << installPathPlugins;
         qCDebug(lcTests) << "After adding plugins path:" << QCoreApplication::libraryPaths();
         QCOMPARE(QCoreApplication::libraryPaths().size(), count);
@@ -319,7 +320,7 @@ void tst_QCoreApplication::libraryPaths()
         qCDebug(lcTests) << QCoreApplication::libraryPaths();
         // On Windows CE these are identical and might also be the case for other
         // systems too
-        if (appDirPath != installPathPlugins)
+        if (!installPathPlugins.contains(appDirPath))
             QCOMPARE(QCoreApplication::libraryPaths().size(), count + 2);
     }
 #if !defined(Q_OS_OHOS)
@@ -329,8 +330,9 @@ void tst_QCoreApplication::libraryPaths()
 
         qCDebug(lcTests) << "Initial library path:" << QCoreApplication::libraryPaths();
         int count = QCoreApplication::libraryPaths().size();
-        QString installPathPlugins =  QLibraryInfo::path(QLibraryInfo::PluginsPath);
-        QCoreApplication::addLibraryPath(installPathPlugins);
+        const auto installPathPlugins = QLibraryInfo::paths(QLibraryInfo::PluginsPath);
+        for (QString pluginsPath : installPathPlugins)
+            QCoreApplication::addLibraryPath(pluginsPath);
         qCDebug(lcTests) << "installPathPlugins" << installPathPlugins;
         qCDebug(lcTests) << "After adding plugins path:" << QCoreApplication::libraryPaths();
         QCOMPARE(QCoreApplication::libraryPaths().size(), count);
@@ -395,7 +397,7 @@ void tst_QCoreApplication::libraryPaths_qt_plugin_path_2()
             QStringList()
 #ifndef Q_OS_ANDROID
             //Android doesn't use plugins dir at runtime, see QTBUG-141732
-            << QLibraryInfo::path(QLibraryInfo::PluginsPath)
+            << QLibraryInfo::paths(QLibraryInfo::PluginsPath)
 #endif
 #if defined(Q_OS_OHOS)
             << QDir(QCoreApplication::applicationDirPath()).canonicalPath();
@@ -426,7 +428,7 @@ void tst_QCoreApplication::libraryPaths_qt_plugin_path_2()
             QStringList()
 #ifndef Q_OS_ANDROID
             //Android doesn't use plugins dir at runtime, see QTBUG-141732
-            << QLibraryInfo::path(QLibraryInfo::PluginsPath)
+            << QLibraryInfo::paths(QLibraryInfo::PluginsPath)
 #endif
             << QDir(QCoreApplication::applicationDirPath()).canonicalPath();
 
