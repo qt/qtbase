@@ -110,7 +110,7 @@ The following table describes the mapping of configure options to CMake argument
 | -ohos-sdk <path>                      | -DOHOS_SDK_ROOT=<path>                            |                                                                 |
 | -ohos-ndk <path>                      | -DCMAKE_TOOLCHAIN_FILE=<toolchain file in NDK>    |                                                                 |
 | -ohos-ndk-platform 20                 | -DOHOS_PLATFORM=20                                |                                                                 |
-| -ohos-abis <abi_1>,...,<abi_n>        | -DOHOS_ABI=<abi_1>                                | only one ABI can be specified                                   |
+| -ohos-arch <arch>                     | -DOHOS_ARCH=<arch>                                | e.g. arm64-v8a or x86_64                                        |
 | -skip <repo>,...,<repo_n>             | -DBUILD_<repo>=OFF                                |                                                                 |
 | -skip-tests <repo>,...,<repo_n>       | -DQT_BUILD_TESTS_PROJECT_<repo>=OFF               |                                                                 |
 | -skip-examples <repo>,...,<repo_n>    | -DQT_BUILD_EXAMPLES_PROJECT_<repo>=OFF            |                                                                 |

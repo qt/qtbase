@@ -198,7 +198,7 @@ endfunction()
 function(qt_auto_detect_ohos)
     if(DEFINED OHOS_SDK_ROOT
             OR DEFINED OHOS_NDK_ROOT
-            OR DEFINED OHOS_ABI
+            OR DEFINED OHOS_ARCH
             OR DEFINED OHOS_NATIVE_ABI_LEVEL)
         set(ohos_detected TRUE)
     else()
@@ -249,9 +249,6 @@ function(qt_auto_detect_ohos)
             message(STATUS "OHOS build detected, checking configuration defaults...")
             if(NOT DEFINED OHOS_PLATFORM)
                 set(OHOS_PLATFORM "OHOS" CACHE STRING "")
-            endif()
-            if(NOT DEFINED OHOS_ABI)
-                set(OHOS_ABI "arm64-v8a" CACHE STRING "")
             endif()
             if(NOT DEFINED OHOS_STL)
                 set(OHOS_STL "c++_shared" CACHE STRING "")
