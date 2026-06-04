@@ -1878,7 +1878,15 @@ void tst_QObject::thread()
         // thread in which the object was created
         QCOMPARE(object->thread(), (QThread *)&thr);
         // children inherit their parent's thread
+        QCOMPARE(child->parent(), object);
         QCOMPARE(child->thread(), object->thread());
+
+        // thread affinity for a parent in a different thread should
+        // cause orphaning the object and printing a warning
+        QTest::ignoreMessage(QtWarningMsg, QRegularExpression("QObject: Cannot create children for a parent that is in a different thread.*"));
+        QObject localObject(object);
+        QCOMPARE(localObject.parent(), nullptr);
+        QCOMPARE(localObject.thread(), QThread::currentThread());
 
         thr.cond.wakeOne();
         thr.mutex.unlock();
@@ -1894,6 +1902,14 @@ void tst_QObject::thread()
     // automatically reset to no thread
     QCOMPARE(object->thread(), (QThread *)0);
     QCOMPARE(child->thread(), object->thread());
+
+    {
+        // and we *can* create a child for a threadless parent, which will
+        // also be threadless
+        QObject localObject(object);
+        QCOMPARE(localObject.parent(), object);
+        QCOMPARE(localObject.thread(), nullptr);
+    }
 
     delete object;
 }

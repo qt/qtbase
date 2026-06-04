@@ -999,18 +999,16 @@ QObject::QObject(QObjectPrivate &dd, QObject *parent)
         threadData = parentThreadData;
     } else {
         threadData = QThreadData::current();
+        if (!check_parent_thread(parent, parentThreadData, threadData))
+            parent = nullptr;
     }
     threadData->ref();
     d->threadData.storeRelaxed(threadData);
     if (parent) {
         QT_TRY {
-            if (!check_parent_thread(parent, parentThreadData, threadData))
-                parent = nullptr;
             if (d->willBeWidget) {
-                if (parent) {
-                    d->parent = parent;
-                    d->parent->d_func()->children.append(this);
-                }
+                d->parent = parent;
+                d->parent->d_func()->children.append(this);
                 // no events sent here, this is done at the end of the QWidget constructor
             } else {
                 setParent(parent);
