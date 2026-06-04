@@ -489,6 +489,14 @@ void tst_Android::orientationChange()
         }
     };
 
+    struct OrientationValues {
+        const QSize screenSize;
+        const qreal physicalDPI;
+        const qreal physicalXDPI;
+        const qreal physicalYDPI;
+        const QSizeF physicalSize;
+    };
+
     auto requestOrientation = [nativeOrientation, context](Qt::ScreenOrientation expected) {
         context.callMethod("setRequestedOrientation", nativeOrientation(expected));
     };
@@ -499,7 +507,7 @@ void tst_Android::orientationChange()
         QTRY_COMPARE(screen->orientation(), Qt::PortraitOrientation);
     });
 
-    auto testOrientation = [&](Qt::ScreenOrientation expected, const QSize &screenSize) {
+    auto testOrientation = [&](Qt::ScreenOrientation expected, const OrientationValues &orientationValues) {
         requestOrientation(expected);
         orientationSpy.wait();
         QTRY_COMPARE(screen->orientation(), expected);
@@ -507,30 +515,52 @@ void tst_Android::orientationChange()
         // For QTBUG-94459 to verify widget size consistency after orientation changes.
         // In general we can't guarantee the order though, since Android might send the
         // orientation and size change at any order, so we need to use QTRY_COMPARE().
-        QTRY_COMPARE(screen->size(), screenSize);
+        QTRY_COMPARE(screen->size(), orientationValues.screenSize);
         QTRY_COMPARE(widget.size(), screen->availableSize());
+        QTRY_COMPARE(screen->physicalDotsPerInch(), orientationValues.physicalDPI);
+        QTRY_COMPARE(screen->physicalDotsPerInchX(), orientationValues.physicalXDPI);
+        QTRY_COMPARE(screen->physicalDotsPerInchY(), orientationValues.physicalYDPI);
+        QTRY_COMPARE(screen->physicalSize(), orientationValues.physicalSize);
+
         orientationSpy.clear();
     };
 
     const QSize portraitSize = screen->size();
     const QSize landscapeSize = QSize(portraitSize.height(), portraitSize.width());
+    // QTBUG-142560 - test that the screen's physical DPI remains consistent across orientation changes
+    // Failure was caused by uncertain order of events during orientation change, where the screen
+    // geometry change event could be processed before the orientation change event, which caused
+    // the physical DPI to be recalculated based on the wrong screen orientation.
+    const qreal initialPixelDensity = screen->physicalDotsPerInch();
+    QCOMPARE_GT(initialPixelDensity, 0.0);
+    const qreal initialDPIX = screen->physicalDotsPerInchX();
+    QCOMPARE_GT(initialDPIX, 0.0);
+    const qreal initialDPIY = screen->physicalDotsPerInchY();
+    QCOMPARE_GT(initialDPIY, 0.0);
+    const QSizeF initialPhysicalSizePort = screen->physicalSize();
+    const QSizeF initialPhysicalSizeLand = initialPhysicalSizePort.transposed();
+
+    const OrientationValues landscapeValues {landscapeSize, initialPixelDensity, initialDPIY,
+        initialDPIX, initialPhysicalSizeLand};
+    const OrientationValues portraitValues { portraitSize, initialPixelDensity, initialDPIX,
+        initialDPIY, initialPhysicalSizePort};
 
     // Sequential 90 degrees clock-wise rotations
-    testOrientation(Qt::InvertedLandscapeOrientation, landscapeSize);
-    testOrientation(Qt::InvertedPortraitOrientation, portraitSize);
-    testOrientation(Qt::LandscapeOrientation, landscapeSize);
-    testOrientation(Qt::PortraitOrientation, portraitSize);
+    testOrientation(Qt::InvertedLandscapeOrientation, landscapeValues);
+    testOrientation(Qt::InvertedPortraitOrientation, portraitValues);
+    testOrientation(Qt::LandscapeOrientation, landscapeValues);
+    testOrientation(Qt::PortraitOrientation, portraitValues);
 
     // Sequential 90 degrees counter-clockwise rotations
-    testOrientation(Qt::LandscapeOrientation, landscapeSize);
-    testOrientation(Qt::InvertedPortraitOrientation, portraitSize);
-    testOrientation(Qt::InvertedLandscapeOrientation, landscapeSize);
+    testOrientation(Qt::LandscapeOrientation, landscapeValues);
+    testOrientation(Qt::InvertedPortraitOrientation, portraitValues);
+    testOrientation(Qt::InvertedLandscapeOrientation, landscapeValues);
 
     // 180 degree rotations
-    testOrientation(Qt::InvertedPortraitOrientation, portraitSize);
-    testOrientation(Qt::PortraitOrientation, portraitSize);
-    testOrientation(Qt::InvertedLandscapeOrientation, landscapeSize);
-    testOrientation(Qt::LandscapeOrientation, landscapeSize);
+    testOrientation(Qt::InvertedPortraitOrientation, portraitValues);
+    testOrientation(Qt::PortraitOrientation, portraitValues);
+    testOrientation(Qt::InvertedLandscapeOrientation, landscapeValues);
+    testOrientation(Qt::LandscapeOrientation, landscapeValues);
 }
 #endif // QT_CONFIG(widgets)
 
