@@ -46,6 +46,7 @@ class QInternalMessageLogContext : public QMessageLogContext
 {
 public:
     static constexpr int DefaultBacktraceDepth = 32;
+    static constexpr int MaxBacktraceDepth = 16384;
 
 #if defined(QLOGGING_USE_EXECINFO_BACKTRACE)
     using BacktraceStorage = QVarLengthArray<void *, DefaultBacktraceDepth>;
