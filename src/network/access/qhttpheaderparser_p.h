@@ -75,13 +75,22 @@ public:
     void removeHeaderField(QByteArrayView name);
     void clearHeaders();
 
-    void setMaxHeaderFieldSize(qsizetype size) { maxFieldSize = size; }
+    void setMaxHeaderFieldSize(qsizetype size) {
+        Q_ASSERT(size > 0);
+        maxFieldSize = size;
+    }
     qsizetype maxHeaderFieldSize() const { return maxFieldSize; }
 
-    void setMaxTotalHeaderSize(qsizetype size) { maxTotalSize = size; }
+    void setMaxTotalHeaderSize(qsizetype size) {
+        Q_ASSERT(size > 0);
+        maxTotalSize = size;
+    }
     qsizetype maxTotalHeaderSize() const { return maxTotalSize; }
 
-    void setMaxHeaderFields(qsizetype count) { maxFieldCount = count; }
+    void setMaxHeaderFields(qsizetype size) {
+        Q_ASSERT(size > 0);
+        maxFieldCount = size;
+    }
     qsizetype maxHeaderFields() const { return maxFieldCount; }
 
 private:
