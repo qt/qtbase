@@ -23,6 +23,7 @@
     \li \l {CMake Target Properties in Qt6 Test}{CMake Target Properties}
     \li \l {CMake Variables in Qt6 Test}{CMake Variables}
     \li \l {Changes to Qt Test}{Upgrading from Qt 5}
+    \li \l {Qt Test Security Considerations}{Security Considerations}
     \endlist
 
 */

@@ -32,6 +32,9 @@
         \li \l {Setting up Test Machines}
     \endlist
 
+    The advice on \l {Qt Test Security Considerations}{Security Considerations}
+    should be borne in mind alongside those best practices.
+
     \section1 General Principles
 
     The following sections provide general guidelines for writing unit tests:
@@ -40,6 +43,7 @@
         \li \l {Verify Tests}
         \li \l {Give Test Functions Descriptive Names}
         \li \l {Write Self-contained Test Functions}
+        \li \l {Avoid external dependencies}
         \li \l {Test the Full Stack}
         \li \l {Make Tests Complete Quickly}
         \li \l {Use Data-driven Testing}
@@ -138,6 +142,24 @@
 
     before the first call to \l QLocale::setDefault() in a test that needs to
     control the locale used by the code under test.
+
+    \section2 Avoid external dependencies
+
+    Test functions should likewise avoid any reliance on external resources.
+    Such a dependency is apt to make the test fail if that resource is
+    transiently unavailable. Even when it is available, the resource may block
+    access by the test system - for example, when tests are run frequently, the
+    resource may interpret the test as an unwelcome burden on its service.
+
+    Skipping the test when inaccessible could hide a problem that would have
+    been revealed had the test been run, making it a poor remedy for these
+    issues. It is better to construct a local mimic of the resource, with enough
+    of its characteristics for the purposes of the test.
+
+    External dependencies also present problems for developers working offline,
+    as well as for testing within a sandbox, such as an isolated virtual
+    machine, when evaluating code changes from untrusted sources. See \l {Qt
+    Test Security Considerations} for related concerns.
 
     \section2 Test the Full Stack
 
