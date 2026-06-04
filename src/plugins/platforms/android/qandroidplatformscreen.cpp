@@ -23,6 +23,7 @@
 #include <QtGui/QGuiApplication>
 #include <QtGui/QWindow>
 #include <QtGui/private/qwindow_p.h>
+#include <QtGui/private/qmath_p.h>
 #include <vector>
 
 QT_BEGIN_NAMESPACE
@@ -223,14 +224,18 @@ void QAndroidPlatformScreen::setPhysicalSize(const QSize &size)
 
 void QAndroidPlatformScreen::setPhysicalSizeFromPixels(const QSize &size)
 {
-    m_physicalSize = QSize(
-        qRound(double(size.width()) / m_xdpi * 25.4),
-        qRound(double(size.height()) / m_ydpi * 25.4));
+    const bool isPortrait = size.height() > size.width();
+    const bool swapped = isPortrait != (nativeOrientation() == Qt::PortraitOrientation);
+    const qreal widthDPI = swapped ? m_ydpi : m_xdpi;
+    const qreal heightDPI = swapped ? m_xdpi : m_ydpi;
+    m_physicalSize = QSizeF(size.width() / widthDPI * Q_MM_PER_INCH,
+                            size.height() / heightDPI * Q_MM_PER_INCH);
 }
 
 void QAndroidPlatformScreen::setSize(const QSize &size)
 {
     m_size = size;
+    setPhysicalSizeFromPixels(size);
     QWindowSystemInterface::handleScreenGeometryChange(
         QPlatformScreen::screen(), geometry(), availableGeometry());
 }
@@ -261,8 +266,7 @@ void QAndroidPlatformScreen::setAvailableGeometry(const QRect &rect)
     QRect oldGeometry = m_availableGeometry;
 
     m_availableGeometry = rect;
-    m_size = sizeForDisplayId(m_displayId);
-    QWindowSystemInterface::handleScreenGeometryChange(QPlatformScreen::screen(), geometry(), availableGeometry());
+    setSize(sizeForDisplayId(m_displayId));
     resizeMaximizedWindows();
 
     if (oldGeometry.width() == 0 && oldGeometry.height() == 0 && rect.width() > 0 && rect.height() > 0) {
