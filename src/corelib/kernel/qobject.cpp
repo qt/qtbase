@@ -993,16 +993,18 @@ QObject::QObject(QObjectPrivate &dd, QObject *parent)
 
     Q_D(QObject);
     d_ptr->q_ptr = this;
+    QThreadData *parentThreadData = parent ? parent->d_func()->threadData.loadRelaxed() : nullptr;
     QThreadData *threadData;
-    if (parent && !parent->d_func()->threadData.loadRelaxed()->thread.loadRelaxed())
-        threadData = parent->d_func()->threadData.loadRelaxed();
-    else
+    if (parent && !parentThreadData->thread.loadRelaxed()) {
+        threadData = parentThreadData;
+    } else {
         threadData = QThreadData::current();
+    }
     threadData->ref();
     d->threadData.storeRelaxed(threadData);
     if (parent) {
         QT_TRY {
-            if (!check_parent_thread(parent, parent ? parent->d_func()->threadData.loadRelaxed() : nullptr, threadData))
+            if (!check_parent_thread(parent, parentThreadData, threadData))
                 parent = nullptr;
             if (d->willBeWidget) {
                 if (parent) {
