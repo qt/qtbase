@@ -1253,7 +1253,8 @@ function(_qt_internal_xcode_embed_frameworks target)
         return()
     endif()
 
-    __qt_internal_collect_all_target_dependencies("${target}" walked_libs)
+    __qt_internal_collect_all_target_dependencies("${target}" walked_libs
+        INCLUDE_LINK_DEPENDENT_LIBRARIES)
 
     set(embed_paths "")
     foreach(dep IN LISTS walked_libs)
