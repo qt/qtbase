@@ -34,13 +34,13 @@ namespace HeaderConstants {
 // total size of all the headers (as well as extra limits on some of the
 // individual fields). We'll use 100K as our default limit, which would be a ridiculously large
 // header, with the possibility to override it where we need to.
-static constexpr int MAX_HEADER_FIELD_SIZE = 100 * 1024;
+static constexpr qsizetype DEFAULT_MAX_HEADER_FIELD_SIZE = 100 * 1024;
 // Taken from http://httpd.apache.org/docs/2.2/mod/core.html#limitrequestfields
-static constexpr int MAX_HEADER_FIELDS = 100;
+static constexpr qsizetype DEFAULT_MAX_HEADER_FIELDS = 100;
 // Chromium has a limit on the total size of the header set to 256KB,
 // which is a reasonable default for QNetworkAccessManager.
 // https://stackoverflow.com/a/3436155
-static constexpr int MAX_TOTAL_HEADER_SIZE = 256 * 1024;
+static constexpr qsizetype DEFAULT_MAX_TOTAL_HEADER_SIZE = 256 * 1024;
 
 }
 
@@ -91,9 +91,9 @@ private:
     int majorVersion;
     int minorVersion;
 
-    qsizetype maxFieldSize = HeaderConstants::MAX_HEADER_FIELD_SIZE;
-    qsizetype maxTotalSize = HeaderConstants::MAX_TOTAL_HEADER_SIZE;
-    qsizetype maxFieldCount = HeaderConstants::MAX_HEADER_FIELDS;
+    qsizetype maxFieldSize = HeaderConstants::DEFAULT_MAX_HEADER_FIELD_SIZE;
+    qsizetype maxTotalSize = HeaderConstants::DEFAULT_MAX_TOTAL_HEADER_SIZE;
+    qsizetype maxFieldCount = HeaderConstants::DEFAULT_MAX_HEADER_FIELDS;
 };
 
 
