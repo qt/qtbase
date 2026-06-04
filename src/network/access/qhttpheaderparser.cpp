@@ -123,8 +123,22 @@ bool QHttpHeaderParser::parseStatus(QByteArrayView status)
     bool ok = false;
     statusCode = code.toInt(&ok);
 
-    reasonPhrase = j > i ? QString::fromLatin1(status.sliced(j + 1))
-                         : QString();
+    if (j > i) {
+        const auto phrase = status.sliced(j + 1);
+
+        if (phrase.size() > HeaderConstants::MAX_REASON_PHRASE_SIZE)
+            return false;
+        for (char c : phrase) {
+            // most of the classic control characters are below 0x20
+            // except DEL, which is 0x7f
+            // tab is 0x09, but it is permitted in the reason phrase
+            if (c != '\t' && (uchar(c) < 0x20 || c == 0x7f))
+                return false;
+        }
+        reasonPhrase = QString::fromLatin1(phrase);
+    } else {
+        reasonPhrase = QString();
+    }
 
     return ok && uint(majorVersion) <= 9 && uint(minorVersion) <= 9;
 }

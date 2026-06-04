@@ -15,6 +15,9 @@ private Q_SLOTS:
     void adjustableLimits_data();
     void adjustableLimits();
 
+    void parseStatus_data();
+    void parseStatus();
+
     // general parsing tests can be found in tst_QHttpNetworkReply
 };
 
@@ -88,6 +91,80 @@ void tst_QHttpHeaderParser::adjustableLimits()
         parser.setMaxTotalHeaderSize(maxTotalSize);
 
     QCOMPARE(parser.parseHeaders(headers), success);
+}
+
+void tst_QHttpHeaderParser::parseStatus_data()
+{
+    QTest::addColumn<QByteArray>("status");
+    QTest::addColumn<bool>("success");
+    QTest::addColumn<int>("statusCode");
+    QTest::addColumn<QString>("reasonPhrase");
+
+    // --- Valid cases ---
+    QTest::newRow("standard-200")
+        << QByteArray("HTTP/1.1 200 OK")
+        << true << 200 << QString("OK");
+
+    QTest::newRow("standard-404")
+        << QByteArray("HTTP/1.1 404 Not Found")
+        << true << 404 << QString("Not Found");
+
+    QTest::newRow("http-1.0")
+        << QByteArray("HTTP/1.0 200 OK")
+        << true << 200 << QString("OK");
+
+    QTest::newRow("empty-reason-phrase")
+        << QByteArray("HTTP/1.1 200")
+        << true << 200 << QString("");
+
+    QTest::newRow("reason-phrase-with-tab")
+        << QByteArray("HTTP/1.1 200 OK\there")
+        << true << 200 << QString("OK\there");
+
+    QTest::newRow("reason-phrase-with-obsolete-text")
+        << QByteArray("HTTP/1.1 200 OK\x80")
+        << true << 200 << QString::fromLatin1("OK\x80");
+
+    QTest::newRow("reason-phrase-at-length-limit")
+        << (QByteArray("HTTP/1.1 200 ") + QByteArray(1024, 'a'))
+        << true << 200 << QString(1024, 'a');
+
+    // --- Control character injection ---
+    QTest::newRow("reason-phrase-with-crlf-injection")
+        << QByteArray("HTTP/1.1 200 OK\r\nX-Injected: evil")
+        << false << 0 << QString();
+
+    QTest::newRow("reason-phrase-with-lf")
+        << QByteArray("HTTP/1.1 200 OK\nevil")
+        << false << 0 << QString();
+
+    QTest::newRow("reason-phrase-with-nul")
+        << QByteArray("HTTP/1.1 200 OK\x00" "evil", 20)
+        << false << 0 << QString();
+
+    QTest::newRow("reason-phrase-with-del")
+        << QByteArray("HTTP/1.1 200 OK\x7f")
+        << false << 0 << QString();
+
+    // --- Length limit ---
+    QTest::newRow("reason-phrase-exceeds-limit")
+        << (QByteArray("HTTP/1.1 200 ") + QByteArray(1025, 'a'))
+        << false << 0 << QString();
+}
+
+void tst_QHttpHeaderParser::parseStatus()
+{
+    QFETCH(QByteArray, status);
+    QFETCH(bool, success);
+    QFETCH(int, statusCode);
+    QFETCH(QString, reasonPhrase);
+
+    QHttpHeaderParser parser;
+    QCOMPARE(parser.parseStatus(status), success);
+    if (success) {
+        QCOMPARE(parser.getStatusCode(), statusCode);
+        QCOMPARE(parser.getReasonPhrase(), reasonPhrase);
+    }
 }
 
 QTEST_MAIN(tst_QHttpHeaderParser)
