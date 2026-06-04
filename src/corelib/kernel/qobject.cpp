@@ -993,7 +993,11 @@ QObject::QObject(QObjectPrivate &dd, QObject *parent)
 
     Q_D(QObject);
     d_ptr->q_ptr = this;
-    auto threadData = (parent && !parent->thread()) ? parent->d_func()->threadData.loadRelaxed() : QThreadData::current();
+    QThreadData *threadData;
+    if (parent && !parent->d_func()->threadData.loadRelaxed()->thread.loadRelaxed())
+        threadData = parent->d_func()->threadData.loadRelaxed();
+    else
+        threadData = QThreadData::current();
     threadData->ref();
     d->threadData.storeRelaxed(threadData);
     if (parent) {
