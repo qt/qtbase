@@ -36,12 +36,17 @@ void QCollatorPrivate::init()
         qWarning("Couldn't initialize the locale (%d)", int(status));
 
     UInt32 collationOptions = 0;
+    // enable normalization by default
+    collationOptions |= kUCCollateComposeInsensitiveMask;
+
     if (options.testFlag(Opt::CaseInsensitive))
         collationOptions |= kUCCollateCaseInsensitiveMask;
     if (options.testFlag(Opt::NumericSort))
         collationOptions |= kUCCollateDigitsAsNumberMask | kUCCollateDigitsOverrideMask;
     if (!options.testFlag(Opt::IgnorePunctuation))
         collationOptions |= kUCCollatePunctuationSignificantMask;
+    if (options.testFlag(Opt::DiacriticInsensitive))
+        collationOptions |= kUCCollateDiacritInsensitiveMask;
 
     status = UCCreateCollator(localeRef, 0, collationOptions, &collator);
     if (status != 0)

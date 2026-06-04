@@ -36,6 +36,9 @@ void QCollatorPrivate::init()
     if (options.testFlag(Opt::IgnorePunctuation))
         collator |= NORM_IGNORESYMBOLS;
 
+    if (options.testFlag(Opt::DiacriticInsensitive))
+        collator |= LINGUISTIC_IGNOREDIACRITIC;
+
     dirty = false;
 }
 

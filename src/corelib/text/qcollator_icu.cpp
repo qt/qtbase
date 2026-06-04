@@ -43,13 +43,31 @@ void QCollatorPrivate::init()
     // and does case sensitive comparison.
     // UCOL_QUATERNARY is used as default in a few languages such as Japanese to take care of some
     // additional differences in those languages.
-    UColAttributeValue val = options.testFlag(Opt::CaseInsensitive) ? UCOL_SECONDARY
-                                                                    : UCOL_DEFAULT_STRENGTH;
+    if (options.testFlag(Opt::DiacriticInsensitive)) {
+        // UCOL_PRIMARY ignores both diacritics and case
+        status = U_ZERO_ERROR;
+        ucol_setAttribute(collator, UCOL_STRENGTH, UCOL_PRIMARY, &status);
+        if (U_FAILURE(status))
+            qWarning("ucol_setAttribute: Diacritic and case insensitivity failed: %d", status);
 
-    status = U_ZERO_ERROR;
-    ucol_setAttribute(collator, UCOL_STRENGTH, val, &status);
-    if (U_FAILURE(status))
-        qWarning("ucol_setAttribute: Case First failed: %d", status);
+        if (!options.testFlag(Opt::CaseInsensitive)) {
+            // Re-add case distinction if CaseInsensitive hasn't been set
+            status = U_ZERO_ERROR;
+            ucol_setAttribute(collator, UCOL_CASE_LEVEL, UCOL_ON, &status);
+            if (U_FAILURE(status)) {
+                qWarning("ucol_setAttribute: Diacritic insensitivity with case distinction failed:"
+                         " %d", status);
+            }
+        }
+    } else {
+        const UColAttributeValue strength
+                = options.testFlag(Opt::CaseInsensitive) ? UCOL_SECONDARY : UCOL_DEFAULT_STRENGTH;
+        // Case sensitivity setting only
+        status = U_ZERO_ERROR;
+        ucol_setAttribute(collator, UCOL_STRENGTH, strength, &status);
+        if (U_FAILURE(status))
+            qWarning("ucol_setAttribute: Case sensitivity failed: %d", status);
+    }
 
     status = U_ZERO_ERROR;
     ucol_setAttribute(collator, UCOL_NUMERIC_COLLATION,

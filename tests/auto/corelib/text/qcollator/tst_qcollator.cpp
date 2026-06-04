@@ -137,6 +137,22 @@ void tst_QCollator::compare_data()
     QTest::newRow("en-a:b") << u"en_US"_s << u"a"_s << u"b"_s << Opts{} << -1;
     QTest::newRow("en-a:b-nocase")
             << u"en_US"_s << u"a"_s << u"b"_s << Opts{Opt::CaseInsensitive} << -1;
+    QTest::newRow("en-é:e") << u"en_US"_s << u"é"_s << u"e"_s << Opts{} << 1;
+    QTest::newRow("en-é:e-nodiacr")
+            << u"en_US"_s << u"é"_s << u"e"_s << Opts{Opt::DiacriticInsensitive} << 0;
+#if QT_CONFIG(icu) || !defined(Q_OS_WIN)
+    // Windows applies ligature folding implicitly, so these compare as
+    // equal even without the flag
+    QTest::newRow("en-æ:ae") << u"en_US"_s << u"æ"_s << u"ae"_s << Opts{} << 1;
+    QTest::newRow("en-ẞ:SS") << u"en_US"_s << u"ẞ"_s << u"SS"_s << Opts{} << 1;
+#endif
+#if QT_CONFIG(icu) || defined(Q_OS_WIN)
+    // Ligature folding: ICU and Windows only, not supported on macOS backend
+    QTest::newRow("en-ẞ:SS-nodiacr")
+            << u"en_US"_s << u"ẞ"_s << u"SS"_s << Opts{Opt::DiacriticInsensitive} << 0;
+    QTest::newRow("en-æ:ae-nodiacr")
+            << u"en_US"_s << u"æ"_s << u"ae"_s << Opts{Opt::DiacriticInsensitive} << 0;
+#endif
     QTest::newRow("en-9:19-numsort")
             << u"en_US"_s << u"test 9"_s << u"test 19"_s << Opts{Opt::NumericSort} << -1;
     QTest::newRow("en-9:19-nocase")
@@ -214,6 +230,18 @@ void tst_QCollator::compare_data()
     QTest::newRow("sv-z:å") << u"sv_SE"_s << u"z"_s << u"å"_s << Opts{} << -1;
     QTest::newRow("sv-z:å-nocase")
             << u"sv_SE"_s << u"z"_s << u"å"_s << Opts{Opt::CaseInsensitive} << -1;
+    QTest::newRow("sv-å:a")
+            << u"sv_SE"_s << u"å"_s << u"a"_s << Opts{} << 1;
+    QTest::newRow("sv-å:a-nodiacr")
+            << u"sv_SE"_s << u"å"_s << u"a"_s << Opts{Opt::DiacriticInsensitive} << 1;
+    QTest::newRow("sv-ä:a")
+            << u"sv_SE"_s << u"ä"_s << u"a"_s << Opts{} << 1;
+    QTest::newRow("sv-ä:a-nodiacr")
+            << u"sv_SE"_s << u"ä"_s << u"a"_s << Opts{Opt::DiacriticInsensitive} << 1;
+    QTest::newRow("sv-ö:o")
+            << u"sv_SE"_s << u"ö"_s << u"o"_s << Opts{} << 1;
+    QTest::newRow("sv-ö:o-nodiacr")
+            << u"sv_SE"_s << u"ö"_s << u"o"_s << Opts{Opt::DiacriticInsensitive} << 1;
     QTest::newRow("sv-9:19-numsort")
             << u"sv_SE"_s << u"9"_s << u"19"_s << Opts{Opt::NumericSort} << -1;
     QTest::newRow("sv-9:19-nocase")
@@ -286,6 +314,51 @@ void tst_QCollator::compare_data()
     QTest::newRow("no-æ:å") << u"no_NO"_s << u"æ"_s << u"å"_s << Opts{} << -1;
     QTest::newRow("no-æ:å-nocase")
             << u"no_NO"_s << u"æ"_s << u"å"_s << Opts{Opt::CaseInsensitive} << -1;
+    QTest::newRow("no-å:aa")
+            << u"no_NO"_s << u"å"_s << u"aa"_s << Opts{} << -1;
+    QTest::newRow("no-å:aa-nodiacr")
+            << u"no_NO"_s << u"å"_s << u"aa"_s << Opts{Opt::DiacriticInsensitive} << 0;
+    QTest::newRow("no-å:AA-nocase")
+            << u"no_NO"_s << u"å"_s << u"AA"_s << Opts{Opt::CaseInsensitive} << -1;
+    QTest::newRow("no-å:AA-nodiacr")
+            << u"no_NO"_s << u"å"_s << u"AA"_s << Opts{Opt::DiacriticInsensitive}
+            << -1;
+    QTest::newRow("no-å:AA-nocase-nodiacr")
+            << u"no_NO"_s << u"å"_s << u"AA"_s << (Opt::CaseInsensitive | Opt::DiacriticInsensitive)
+            << 0;
+    QTest::newRow("no-å:a")
+            << u"no_NO"_s << u"å"_s << u"a"_s << Opts{} << 1;
+    QTest::newRow("no-å:a-nodiacr")
+            << u"no_NO"_s << u"å"_s << u"a"_s << Opts{Opt::DiacriticInsensitive} << 1;
+    QTest::newRow("no-å:a-nocase-nodiacr")
+            << u"no_NO"_s << u"å"_s << u"a"_s << (Opt::CaseInsensitive | Opt::DiacriticInsensitive)
+            << 1;
+    QTest::newRow("no-ø:o") << u"no_NO"_s << u"ø"_s << u"o"_s << Opts{} << 1;
+    QTest::newRow("no-ø:o-nodiacr")
+            << u"no_NO"_s << u"ø"_s << u"o"_s << Opts{Opt::DiacriticInsensitive} << 1;
+    QTest::newRow("no-ø:o-nocase-nodiacr")
+            << u"no_NO"_s << u"ø"_s << u"o"_s << (Opt::CaseInsensitive | Opt::DiacriticInsensitive)
+            << 1;
+    QTest::newRow("no-Ø:O")
+            << u"no_NO"_s << u"Ø"_s << u"O"_s << Opts{} << 1;
+    QTest::newRow("no-Ø:O-nocase")
+            << u"no_NO"_s << u"Ø"_s << u"O"_s << Opts{Opt::DiacriticInsensitive} << 1;
+    QTest::newRow("no-Ø:O-nocase-nodiacr")
+            << u"no_NO"_s << u"Ø"_s << u"O"_s << (Opt::CaseInsensitive | Opt::DiacriticInsensitive)
+            << 1;
+    QTest::newRow("no-æ:ae")
+            << u"no_NO"_s << u"æ"_s << u"ae"_s << Opts{} << 1;
+    QTest::newRow("no-æ:ae-nodiacr")
+            << u"no_NO"_s << u"æ"_s << u"ae"_s << Opts{Opt::DiacriticInsensitive} << 1;
+    QTest::newRow("no-Æ:AE") << u"no_NO"_s << u"Æ"_s << u"AE"_s << Opts{} << 1;
+    QTest::newRow("no-Æ:AE-nodiacr")
+            << u"no_NO"_s << u"Æ"_s << u"AE"_s << Opts{Opt::DiacriticInsensitive} << 1;
+    QTest::newRow("no-ü:u") << u"no_NO"_s << u"ü"_s << u"u"_s << Opts{} << 1;
+    QTest::newRow("no-ü:u-nodiacr")
+            << u"no_NO"_s << u"ü"_s << u"u"_s << Opts{Opt::DiacriticInsensitive} << 1;
+    QTest::newRow("no-ü:y") << u"no_NO"_s << u"ü"_s << u"y"_s << Opts{} << 1;
+    QTest::newRow("no-ü:y-nodiacr")
+            << u"no_NO"_s << u"ü"_s << u"y"_s << Opts{Opt::DiacriticInsensitive} << 0;
     QTest::newRow("no-9:19-numsort")
             << u"no_NO"_s << u"9"_s << u"19"_s << Opts{Opt::NumericSort} << -1;
     QTest::newRow("no-9:19-nocase")
@@ -376,6 +449,28 @@ void tst_QCollator::compare_data()
     QTest::newRow("de-A:a") << u"de_DE"_s << u"A"_s << u"a"_s << Opts{} << 1;
     QTest::newRow("de-A:a-nocase")
             << u"de_DE"_s << u"A"_s << u"a"_s << Opts{Opt::CaseInsensitive} << 0;
+    QTest::newRow("de-ö:o")
+            << u"de_DE"_s << u"ö"_s << u"o"_s << Opts{} << 1;
+    QTest::newRow("de-ö:o-nodiacr")
+            << u"de_DE"_s << u"ö"_s << u"o"_s << Opts{Opt::DiacriticInsensitive} << 0;
+    QTest::newRow("de-ö:O-nocase")
+            << u"de_DE"_s << u"ö"_s << u"O"_s << Opts{Opt::CaseInsensitive} << 1;
+    QTest::newRow("de-ö:O-nodiacr")
+            << u"de_DE"_s << u"ö"_s << u"O"_s << Opts{Opt::DiacriticInsensitive} << -1;
+    QTest::newRow("de-ö:O-nocase-nodiacr")
+            << u"de_DE"_s << u"ö"_s << u"O"_s << (Opt::CaseInsensitive | Opt::DiacriticInsensitive)
+            << 0;
+    QTest::newRow("de-ä:a")
+            << u"de_DE"_s << u"ä"_s << u"a"_s << Opts{} << 1;
+    QTest::newRow("de-ä:a-nodiacr")
+            << u"de_DE"_s << u"ä"_s << u"a"_s << Opts{Opt::DiacriticInsensitive} << 0;
+    QTest::newRow("de-ä:A-nocase")
+            << u"de_DE"_s << u"ä"_s << u"A"_s << Opts{Opt::CaseInsensitive} << 1;
+    QTest::newRow("de-ä:A-nodiacr")
+            << u"de_DE"_s << u"ä"_s << u"A"_s << Opts{Opt::DiacriticInsensitive} << -1;
+    QTest::newRow("de-ä:a-nocase-nodiacr")
+            << u"de_DE"_s << u"ä"_s << u"A"_s << (Opt::CaseInsensitive | Opt::DiacriticInsensitive)
+            << 0;
     QTest::newRow("de-9:19-numsort")
             << u"de_DE"_s << u"9"_s << u"19"_s << Opts{Opt::NumericSort} << -1;
     QTest::newRow("de-9:19-nocase")
@@ -441,6 +536,14 @@ void tst_QCollator::compare_data()
     QTest::newRow("fr-é:e") << u"fr_FR"_s << u"é"_s << u"e"_s << Opts{} << 1;
     QTest::newRow("fr-é:e-nocase")
             << u"fr_FR"_s << u"é"_s << u"e"_s << Opts{Opt::CaseInsensitive} << 1;
+    QTest::newRow("fr-é:E-nodiacr")
+            << u"fr_FR"_s << u"é"_s << u"E"_s << Opts{Opt::DiacriticInsensitive}
+            << -1;
+    QTest::newRow("fr-é:e-nodiacr")
+            << u"fr_FR"_s << u"é"_s << u"e"_s << Opts{Opt::DiacriticInsensitive} << 0;
+    QTest::newRow("fr-é:E-nocase-nodiacr")
+            << u"fr_FR"_s << u"é"_s << u"E"_s << (Opt::CaseInsensitive | Opt::DiacriticInsensitive)
+            << 0;
     QTest::newRow("fr-ét:et") << u"fr_FR"_s << u"ét"_s << u"et"_s << Opts{} << 1;
     QTest::newRow("fr-ét:et-nocase")
             << u"fr_FR"_s << u"ét"_s << u"et"_s << Opts{Opt::CaseInsensitive} << 1;
@@ -517,6 +620,16 @@ void tst_QCollator::compare_data()
     QTest::newRow("C:AZa:aAZ") << C << u"AZa"_s << u"aAZ"_s << Opts{} << -1;
     QTest::newRow("C:AZa:aAZ-nocase")
             << C << u"AZa"_s << u"aAZ"_s << Opts{Opt::CaseInsensitive} << 1;
+    QTest::newRow("C-é:e") << C << u"é"_s << u"e"_s << Opts{} << 1;
+    QTest::newRow("C-é:e-nodiacr") << C << u"é"_s << u"e"_s << Opts{Opt::DiacriticInsensitive} << 1;
+    QTest::newRow("C-9:10")
+            << C << u"file9"_s << u"file10"_s << Opts{} << 1;
+    QTest::newRow("C-9:10-numsort")
+            << C << u"file9"_s << u"file10"_s << Opts{Opt::NumericSort} << 1;
+    QTest::newRow("C-a_b:ab")
+            << C << u"a_b"_s << u"ab"_s << Opts{} << -1;
+    QTest::newRow("C-a_b:ab-nopun")
+            << C << u"a_b"_s << u"ab"_s << Opts{Opt::IgnorePunctuation} << -1;
     QTest::newRow("C-empty-word") << C << QString() << u"non-empty"_s << Opts{} << -1;
     QTest::newRow("C-empty-word-nocase")
             << C << QString() << u"non-empty"_s << Opts{Opt::CaseInsensitive} << -1;

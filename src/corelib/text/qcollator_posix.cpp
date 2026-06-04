@@ -27,6 +27,9 @@ void QCollatorPrivate::init()
         qWarning("Numeric mode unsupported in the posix collation implementation");
     if (options.testFlag(Opt::IgnorePunctuation))
         qWarning("Ignoring punctuation unsupported in the posix collation implementation");
+    if (options.testFlag(Opt::DiacriticInsensitive))
+        qWarning("Ignoring diacritic marks unsupported in the POSIX collation implementation.");
+
     dirty = false;
 }
 

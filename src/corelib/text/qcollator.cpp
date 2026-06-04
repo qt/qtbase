@@ -101,6 +101,43 @@ Q_GLOBAL_STATIC(QThreadStorage<GenerationalCollator>, defaultCollator)
                                 so that for example "file10" sorts after "file9"
                                 instead of between "file1" and "file2".
 
+    \value DiacriticInsensitive Ignore diacritical marks when comparing strings,
+                                so that for example "e" and "é" compare as equal.
+                                Depending on the locale, this may also include
+                                ligature folding such as æ == ae.
+                                See \l {DiacriticInsensitive behavior details}
+                                below.
+
+    \section2 DiacriticInsensitive behavior details
+
+    This option is primarily intended for search and matching, where the user
+    may not type diacritics. For example, typing "resume" in a search field and
+    expecting to find "résumé".
+
+    The exact behavior depends on the locale and platform backend:
+
+    \list
+      \li Characters that are independent letters in a given alphabet are
+          not treated as diacritic variants. For example, in Swedish "å",
+          "ä" and "ö" are separate letters that sort after "z", so they
+          do not compare equal to "a" or "o", even with this option set.
+          Their position in the alphabet is also preserved. The same
+          characters may behave differently in another locale: in German,
+          "ö" and "ä" are treated as variants of "o" and "a" and do compare
+          equal to them with this option set.
+      \li Collation folding for locale-specific equivalences
+          (such as å == aa in Norwegian) is locale-dependent and works
+          consistently across backends. Note that this maps "å" to the
+          digraph "aa", not to a single "a"; "å" is an independent letter
+          and never folds to "a".
+      \li Ligature folding (such as ß == ss and æ == ae) is applied on
+          Windows and ICU, where the locale defines it; for example
+          "æ" folds to "ae" in English but is an independent letter in
+          Norwegian and does not fold. This folding is not supported by
+          the \macos backend. On Windows, some ligature folding is applied
+          implicitly, even without this option set.
+    \endlist
+
     \sa setOptions(), options()
 */
 
@@ -352,6 +389,9 @@ bool QCollator::ignorePunctuation() const
     \since 6.13
     Sets the collation options to \a options.
     This allows configuring multiple collation settings at once.
+
+    \note In the C locale, the collation options have no effect.
+    Use a specific locale to enable locale-aware collation.
 
     \sa options(), CollationOption
 */
