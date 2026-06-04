@@ -26,9 +26,9 @@ void tst_QHttpHeaderParser::constructor()
     QCOMPARE(parser.getMinorVersion(), 0);
     QCOMPARE(parser.getReasonPhrase(), QByteArray());
     QCOMPARE(parser.combinedHeaderValue("Location"), QByteArray());
-    QCOMPARE(parser.maxHeaderFields(), HeaderConstants::MAX_HEADER_FIELDS);
-    QCOMPARE(parser.maxHeaderFieldSize(), HeaderConstants::MAX_HEADER_FIELD_SIZE);
-    QCOMPARE(parser.maxTotalHeaderSize(), HeaderConstants::MAX_TOTAL_HEADER_SIZE);
+    QCOMPARE(parser.maxHeaderFields(), HeaderConstants::DEFAULT_MAX_HEADER_FIELDS);
+    QCOMPARE(parser.maxHeaderFieldSize(), HeaderConstants::DEFAULT_MAX_HEADER_FIELD_SIZE);
+    QCOMPARE(parser.maxTotalHeaderSize(), HeaderConstants::DEFAULT_MAX_TOTAL_HEADER_SIZE);
 }
 
 void tst_QHttpHeaderParser::limitsSetters()
