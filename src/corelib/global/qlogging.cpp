@@ -1334,7 +1334,7 @@ void QMessagePattern::setPattern(const QString &pattern)
                     if (depth <= 0)
                         error += "QT_MESSAGE_PATTERN: %{backtrace} depth must be a number greater than 0\n"_L1;
                     else
-                        backtraceDepth = depth;
+                        backtraceDepth = std::min(depth, QInternalMessageLogContext::MaxBacktraceDepth);
                 }
                 m = separatorRx.match(lexeme);
                 if (m.hasMatch())
@@ -2389,7 +2389,8 @@ void qErrnoWarning(int code, const char *msg, ...)
         not specified, the format of Qt::ISODate is used.
     \row \li \c{%{backtrace [depth=N] [separator="..."]}} \li A backtrace with the number of frames
         specified by the optional \c depth parameter (defaults to 5), and separated by the optional
-        \c separator parameter (defaults to "|").
+        \c separator parameter (defaults to "|"). Starting from Qt 6.12, the maximum \c depth is
+        limited to 16384 frames.
 
         This expansion is available only on some platforms:
 
