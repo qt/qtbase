@@ -191,6 +191,7 @@ MainWindow::MainWindow()
 void tst_QShortcut::cleanup()
 {
     QVERIFY(QApplication::topLevelWidgets().size() <= 1);  // The data driven tests keep a widget around
+    QTest::qWait(50); // Allow asynchronous window system updates to settle between tests
 }
 
 void tst_QShortcut::pmf_connect()
