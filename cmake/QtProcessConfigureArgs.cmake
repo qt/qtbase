@@ -1331,14 +1331,6 @@ if(DEFINED INPUT_android-abis)
     translate_string_input(android-abis ANDROID_ABI)
 endif()
 
-if(DEFINED INPUT_ohos-abis)
-    if(INPUT_ohos-abis MATCHES ",")
-        qtConfAddError("The -ohos-abis option cannot handle more than one ABI "
-            "when building with CMake.")
-    endif()
-    translate_string_input(ohos-abis OHOS_ABI)
-endif()
-
 drop_input(make)
 drop_input(nomake)
 

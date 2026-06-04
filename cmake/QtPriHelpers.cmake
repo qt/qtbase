@@ -905,7 +905,7 @@ function(qt_generate_global_device_pri_file)
     if(OHOS)
         file(TO_CMAKE_PATH ${OHOS_NDK_ROOT} ndk_root)
         string(APPEND content "DEFAULT_OHOS_NDK_ROOT = ${ndk_root}\n")
-        string(APPEND content "DEFAULT_OHOS_TARGET_ARCH = ${OHOS_ABI}\n")
+        string(APPEND content "DEFAULT_OHOS_TARGET_ARCH = ${OHOS_ARCH}\n")
     endif()
 
     if(QT_APPLE_SDK)

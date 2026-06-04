@@ -338,8 +338,11 @@ endif()")
 
     elseif(OHOS)
         set(additional_used_variables
-            OHOS_PLATFORM OHOS_STL OHOS_ABI OHOS_SDK_ROOT
+            OHOS_ARCH OHOS_PLATFORM OHOS_STL OHOS_SDK_ROOT
         )
+
+        list(APPEND init_platform
+            "set(OHOS_ARCH \"${OHOS_ARCH}\" CACHE STRING \"\")")
 
         qt_internal_get_cmake_policy_version_minimum_assignment(OHOS
             ohos_cmake_policy_version_minimum TYPE TOOLCHAIN_FILE_ASSIGNMENT)
