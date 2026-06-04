@@ -290,14 +290,15 @@ inline void QObjectPrivate::addConnection(int signal, Connection *c)
     cd->resizeSignalVector(signal + 1);
 
     ConnectionList &connectionList = cd->connectionsForSignal(signal);
-    if (connectionList.last.loadRelaxed()) {
-        Q_ASSERT(connectionList.last.loadRelaxed()->receiver.loadRelaxed());
-        connectionList.last.loadRelaxed()->nextConnectionList.storeRelease(c);
+    Connection *lastConnection = connectionList.last.loadRelaxed();
+    if (lastConnection) {
+        Q_ASSERT(lastConnection->receiver.loadRelaxed());
+        lastConnection->nextConnectionList.storeRelease(c);
     } else {
         connectionList.first.storeRelease(c);
     }
     c->id.storeRelease(++cd->currentConnectionId);
-    c->prevConnectionList = connectionList.last.loadRelaxed();
+    c->prevConnectionList = lastConnection;
     connectionList.last.storeRelaxed(c);
 
     QObjectPrivate *rd = QObjectPrivate::get(c->receiver.loadRelaxed());
@@ -337,15 +338,15 @@ void QObjectPrivate::ConnectionData::removeConnection(QObjectPrivate::Connection
         c->next->prev = c->prev;
     c->prev = nullptr;
 
+    Connection *n = c->nextConnectionList.loadRelaxed();
     if (connections.first.loadRelaxed() == c)
-        connections.first.storeRelaxed(c->nextConnectionList.loadRelaxed());
+        connections.first.storeRelaxed(n);
     if (connections.last.loadRelaxed() == c)
         connections.last.storeRelaxed(c->prevConnectionList);
     Q_ASSERT(signalVector.loadRelaxed()->at(c->signal_index).first.loadRelaxed() != c);
     Q_ASSERT(signalVector.loadRelaxed()->at(c->signal_index).last.loadRelaxed() != c);
 
     // keep c->nextConnectionList intact, as it might still get accessed by activate
-    Connection *n = c->nextConnectionList.loadRelaxed();
     if (n)
         n->prevConnectionList = c->prevConnectionList;
     if (c->prevConnectionList)
