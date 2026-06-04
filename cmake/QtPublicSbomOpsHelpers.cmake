@@ -1338,6 +1338,24 @@ include(\"${verify_script}\")
     add_dependencies(sbom_source_verify ${repo_sbom_target}_source_verify)
 endfunction()
 
+# Creates or removes a file in the build dir depending on whether the sbom_source_verify target
+# was created. This is used as a marker file for the CI to decide whether to run the source SBOM
+# verification step.
+function(_qt_internal_update_sbom_source_verify_file_marker_for_ci)
+    if(NOT DEFINED ENV{COIN_UNIQUE_JOB_ID} AND NOT QT_FORCE_UPDATE_SBOM_SOURCE_VERIFY_MARKER_FILE)
+        return()
+    endif()
+
+    set(marker_path "${CMAKE_BINARY_DIR}/sbom_source_verify_should_run_in_ci.txt")
+    if(TARGET sbom_source_verify)
+        if(NOT EXISTS "${marker_path}")
+            file(TOUCH "${marker_path}")
+        endif()
+    elseif(EXISTS "${marker_path}")
+        file(REMOVE "${marker_path}")
+    endif()
+endfunction()
+
 # Helper to run 'reuse lint' on the project source dir.
 function(_qt_internal_sbom_run_reuse_lint)
     set(opt_args
