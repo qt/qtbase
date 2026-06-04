@@ -1,0 +1,129 @@
+// Copyright (C) 2026 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page qttest-security.html
+    \ingroup security-considerations
+    \title Qt Test Security Considerations
+    \brief How to keep tests from causing security problems.
+
+    The Qt Test framework manages the execution of tests and generates reports
+    on their results.
+    When using it, many of the considerations related to \l {Using
+    Qt's Developer Tools Securely} should be borne in mind.
+    As explained in the \l{Qt Shared Security Model} for Qt generally, those
+    using Qt Test need to take care about how they use Qt Test and the data it
+    will produce.
+
+    A good suite of tests will, in places, stress the code under test and thus
+    be in danger of failure, including by crashing or exercising undefined
+    behavior.
+    As the code under test evolves, from time to time it shall thereby catch
+    mistakes before they reach end-users.
+    Such failure may have surprising side-effects, including corrupting other
+    resources accessible to the test process, such as source code or build
+    artifacts.
+
+    Test failure may be accompanied by extra information describing the nature
+    of the failure.
+    Even when tests pass, they or the code they test may generate output, either
+    due to triggering warning or debug messages or in response to command-line
+    options.
+    The form of this data may render it difficult to report in some cases, or
+    may interfere with formatting of any report in which it is included, either
+    directly by Qt Test or by some other process consuming output produced by Qt
+    Test.
+
+    Users of Qt Test are advised to bear these points in mind:
+    \list
+      \li Test output may contain sensitive data, thereby making it accessible
+          to anyone in a position to read the output.
+      \li Particularly when the test code or code under test is not robustly
+          trusted, tests should be run by an unprivileged process wherever
+          possible and in a sandbox (such as a virtual machine) from which only
+          the report of test results shall be retained after testing.
+      \li Artifacts present on the test system should not be trusted to remain
+          as they were before tests were run.
+      \li Although Qt Test takes such care as it can to escape or otherwise
+          adapt data it embeds in its test output, so that the output adheres to
+          the format asked for, ensure tools that consume that output are robust
+          against the kinds of output your tests could produce.
+    \endlist
+
+    \section1 Build-time artifacts
+
+    Even before the test code is compiled, the build-time configuration of a
+    test may adapt the build environment, for example by adding to the build
+    configuration a requirement for software implicated in tests.
+
+    It is therefore important to understand what impacts such adaptations may
+    have on the build itself.
+    This may include changes to where build-time tools find source code to
+    incorporate or libraries to link against.
+    Where possible, adaptations needed for a test should not be applied to the
+    building of end-user-facing deliverables, but only to the building of each
+    test that needs them.
+
+    This is particularly important when changes to the build-time configuration
+    come from untrusted sources.
+    Such changes have been implicated in security compromises of software
+    packages.
+
+    \section1 General considerations
+
+    Automated testing is not a silver bullet.
+    Existing tests may fail to catch accidental errors or malicious changes and
+    the very fact of running tests may give such a change an opportunity to
+    cause harm.
+    New tests added with a change to the code under test may fail to
+    catch significant issues in the change, or issues in existing code
+    that come to light as a result of the change.
+
+    Following \l {Qt Test Best Practices} may help to make test behavior more
+    predictable and make it easier to avoid risks, including those to security.
+    As noted there, external dependencies may lead to problems, as described in
+    \l {Avoid external dependencies}.
+
+    As for \l{Using Qt's Developer Tools Securely}, you are responsible for the
+    integrity of the test environment, test code and code under test.
+    Qt Test is not designed to cope with malicious test code or code under test,
+    only to provide a convenient framework for writing tests that can give
+    informative reports when those tests fail.
+
+    \section2 Separate test and production builds
+
+    It is generally prudent to build deliverable software artifacts separately
+    from test artifacts and to save the deliverable artifacts where neither the
+    building of test artifacts nor the effects of running tests can interfere
+    with them.
+
+    Keeping these separate avoids potential problems that may arise due to some
+    malfunction in the building of the test, the test itself or the code under
+    test. All potentially have the ability to modify files on disk.
+    This can be a particular concern if any of these steps uses a network
+    connection to a remote server that might be compromised.
+
+    Test artifacts should not normally be needed in production systems.
+    Where there is a need to test on production systems, it is prudent to
+    package the tests separately from the code they test, to facilitate
+    uninstalling them once the tests have been run on the system to verify that
+    all is well.
+    This also makes it possible to install only the primary deliverables on
+    copies of the production system, once enough copies have been tested to
+    establish confidence that all systems shall work as intended.
+
+    \section2 Check output file names
+
+    As with any software which writes to files, Qt Test programs have options to
+    control where the output will be saved and in what format.
+
+    Where the output file names passed to such options are generated
+    automatically, for example by the build system or a quality management
+    system running the tests, care must be taken to ensure that the generated
+    names are as intended.
+    The system automatically generating such names should check that the names
+    it does generate meet expectations and do not place the output in places
+    where it may be misinterpreted by other systems, might overwrite or replace
+    data from other sources or is itself apt to be overwritten or replaced by
+    such data.
+*/
