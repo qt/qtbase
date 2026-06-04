@@ -426,6 +426,7 @@ macro(qt_build_repo_end)
     endif()
 
     _qt_internal_sbom_auto_end_qt_repo_project()
+    _qt_internal_update_sbom_source_verify_file_marker_for_ci()
 
     if(NOT QT_SUPERBUILD)
         qt_internal_qt_configure_end()
