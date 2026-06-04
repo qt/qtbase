@@ -297,11 +297,10 @@ endif()")
 "endif()"
         )
 
-        foreach(var ANDROID_PLATFORM ANDROID_NATIVE_API_LEVEL ANDROID_STL
-                ANDROID_ABI ANDROID_SDK_ROOT ANDROID_NDK_ROOT)
-            list(APPEND init_additional_used_variables
-                "list(APPEND __qt_toolchain_used_variables ${var})")
-        endforeach()
+        set(additional_used_variables
+            ANDROID_PLATFORM ANDROID_NATIVE_API_LEVEL ANDROID_STL
+            ANDROID_ABI ANDROID_SDK_ROOT ANDROID_NDK_ROOT
+        )
 
         list(APPEND init_platform
             "if(NOT DEFINED ANDROID_PLATFORM AND NOT DEFINED ANDROID_NATIVE_API_LEVEL)")
@@ -338,10 +337,9 @@ endif()")
         endif()
 
     elseif(OHOS)
-        foreach(var OHOS_PLATFORM OHOS_STL OHOS_ABI OHOS_SDK_ROOT)
-            list(APPEND init_additional_used_variables
-                "list(APPEND __qt_toolchain_used_variables ${var})")
-        endforeach()
+        set(additional_used_variables
+            OHOS_PLATFORM OHOS_STL OHOS_ABI OHOS_SDK_ROOT
+        )
 
         qt_internal_get_cmake_policy_version_minimum_assignment(OHOS
             ohos_cmake_policy_version_minimum TYPE TOOLCHAIN_FILE_ASSIGNMENT)
@@ -398,8 +396,12 @@ endif()
 ")
     endif()
 
-    string(REPLACE ";" "\n" init_additional_used_variables
-        "${init_additional_used_variables}")
+    if(NOT "${additional_used_variables}" STREQUAL "")
+        string(REPLACE ";" "\n    " additional_used_variables "${additional_used_variables}")
+        string(PREPEND additional_used_variables "    ")
+        string(APPEND additional_used_variables "\n")
+    endif()
+
     string(REPLACE ";" "\n" init_vcpkg "${init_vcpkg}")
 
     string(REPLACE ";" "\n" init_platform "${init_platform}")

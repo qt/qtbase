@@ -4,8 +4,7 @@ set(__qt_toolchain_used_variables
     QT_TOOLCHAIN_RELOCATABLE_CMAKE_DIR
     QT_TOOLCHAIN_RELOCATABLE_PREFIX
     QT_ADDITIONAL_PACKAGES_PREFIX_PATH
-)
-@init_additional_used_variables@
+@additional_used_variables@)
 
 # Make cache variables used by this toolchain file available to the
 # try_compile command that operates on sources files.
