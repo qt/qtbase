@@ -55,6 +55,7 @@ set(java_sources
     src/org/qtproject/qt/android/QtApkFileEngine.java
     src/org/qtproject/qt/android/QtContentFileEngine.java
     src/org/qtproject/qt/android/QtWindowInsetsController.java
+    src/org/qtproject/qt/android/QtCollator.java
 )
 
 qt_internal_add_jar(Qt${QtBase_VERSION_MAJOR}Android

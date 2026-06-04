@@ -990,9 +990,13 @@ qt_internal_extend_target(Core CONDITION MSVC AND CLANG
         clang_rt.builtins-$<IF:$<STREQUAL:${TEST_architecture_arch},arm64>,aarch64,x86_64>
 )
 
-qt_internal_extend_target(Core CONDITION QT_FEATURE_icu
+qt_internal_extend_target(Core CONDITION QT_FEATURE_icu OR ANDROID
     SOURCES
         text/qcollator_icu.cpp
+)
+
+qt_internal_extend_target(Core CONDITION QT_FEATURE_icu
+    SOURCES
         text/qlocale_icu.cpp
     LIBRARIES
         ICU::i18n ICU::uc ICU::data
@@ -1008,7 +1012,7 @@ qt_internal_extend_target(Core CONDITION MACOS AND NOT QT_FEATURE_icu
         text/qcollator_macx.cpp
 )
 
-qt_internal_extend_target(Core CONDITION UNIX AND NOT MACOS AND NOT QT_FEATURE_icu
+qt_internal_extend_target(Core CONDITION UNIX AND NOT ANDROID AND NOT MACOS AND NOT QT_FEATURE_icu
     SOURCES
         text/qcollator_posix.cpp
 )

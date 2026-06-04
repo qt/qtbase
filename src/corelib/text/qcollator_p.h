@@ -19,18 +19,23 @@
 
 #include <QtCore/private/qglobal_p.h>
 #include "qcollator.h"
+#include "qlocale_p.h"
 #include <QList>
-#if QT_CONFIG(icu)
+#if QT_CONFIG(icu) || defined(Q_OS_ANDROID)
 #include <unicode/ucol.h>
 #elif defined(Q_OS_MACOS)
 #include <CoreServices/CoreServices.h>
 #elif defined(Q_OS_WIN)
 #include <qt_windows.h>
 #endif
+#ifdef Q_OS_ANDROID
+#include "qjniobject.h"
+#include "qjnitypes.h"
+#endif
 
 QT_BEGIN_NAMESPACE
 
-#if QT_CONFIG(icu)
+#if QT_CONFIG(icu) || defined(Q_OS_ANDROID)
 typedef UCollator *CollatorType;
 typedef QByteArray CollatorKeyType;
 const CollatorType NoCollator = nullptr;
@@ -51,6 +56,12 @@ typedef bool CollatorType;
 const CollatorType NoCollator = false;
 #endif
 
+#ifdef Q_OS_ANDROID
+Q_DECLARE_JNI_CLASS(QtCollator, "org/qtproject/qt/android/QtCollator")
+Q_DECLARE_JNI_CLASS(Collator, "android/icu/text/Collator")
+#endif
+
+
 class QCollatorPrivate
 {
 public:
@@ -62,6 +73,9 @@ public:
     bool dirty = true;
 
     CollatorType collator = NoCollator;
+#ifdef Q_OS_ANDROID
+    QtJniTypes::Collator fallbackCollator = QJniObject(); // needs to be null rather than default-constructed
+#endif
 
     QCollatorPrivate(const QLocale &locale) : locale(locale) {}
     ~QCollatorPrivate() { cleanup(); }

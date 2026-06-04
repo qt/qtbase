@@ -78,6 +78,17 @@ Q_GLOBAL_STATIC(QThreadStorage<GenerationalCollator>, defaultCollator)
           options() are not supported.
     \endlist
 
+    On Android systems, when not compiled to use an own copy of ICU Qt uses
+    the platform-provided ICU on Android 33 and newer. On older Android versions
+    it falls back to the Java Collator API, which has a few limitations:
+
+    \list
+      \li The IgnorePunctuation and NumericSort options are not supported.
+      \li The DiacriticInsensitive option only has an effect in combination
+          with CaseInsensitive also being set, using DiacriticInsensitive
+          without CaseInsensitive is not supported.
+    \endlist
+
     The use of any of the unsupported options will cause a warning to be
     printed to the application's output.
 */

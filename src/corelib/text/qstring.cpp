@@ -6918,7 +6918,7 @@ int QString::localeAwareCompare_helper(const QChar *data1, qsizetype length1,
         return QtPrivate::compareStrings(QStringView(data1, length1), QStringView(data2, length2),
                                Qt::CaseSensitive);
 
-#if QT_CONFIG(icu)
+#if QT_CONFIG(icu) || defined(Q_OS_ANDROID)
     return QCollator::defaultCompare(QStringView(data1, length1), QStringView(data2, length2));
 #else
     const QString lhs = QString::fromRawData(data1, length1).normalized(QString::NormalizationForm_C);

@@ -11,17 +11,80 @@
 #include <unicode/utypes.h>
 #include <unicode/ucol.h>
 #include <unicode/ustring.h>
+#if QT_CONFIG(icu)
 #include <unicode/ures.h>
+#endif
+
 
 #include "qdebug.h"
+#include "qlibrary.h"
 
 QT_BEGIN_NAMESPACE
+
+// There are two cases in here, using the "real" ICU (ie. QT_CONFIG(icu)) and
+// using Android's flavor of ICU provided on the system (slightly confusingly !QT_CONFIG(icu)).
+// The Android case itself consists of two variants as well, new enough versions
+// where we can dlopen the native ICU, and a JNI fallback.
+
+#if !QT_CONFIG(icu) && defined(Q_OS_ANDROID)
+using ucol_open_t = UCollator* (*)(const char*, UErrorCode*);
+using ucol_setAttribute_t = void (*)(UCollator *, UColAttribute, UColAttributeValue, UErrorCode*);
+using ucol_close_t = void (*)(UCollator*);
+using ucol_strcoll_t = UCollationResult (*)(const UCollator*, const UChar*, int32_t, const UChar*, int32_t);
+using ucol_getSortKey_t = int32_t (*)(const UCollator*, const UChar*, int32_t, uint8_t*, int32_t);
+
+struct {
+    ucol_open_t open = nullptr;
+    ucol_setAttribute_t setAttribute = nullptr;
+    ucol_close_t close = nullptr;
+    ucol_strcoll_t strcoll = nullptr;
+    ucol_getSortKey_t getSortKey = nullptr;
+} static s_ucol;
+
+#define ucol_open s_ucol.open
+#define ucol_setAttribute s_ucol.setAttribute
+#define ucol_close s_ucol.close
+#define ucol_strcoll s_ucol.strcoll
+#define ucol_getSortKey s_ucol.getSortKey
+#endif
 
 void QCollatorPrivate::init()
 {
     cleanup();
     if (isC())
         return;
+
+#if !QT_CONFIG(icu) && defined(Q_OS_ANDROID)
+    static bool icuLoaded = []() {
+        // available on Android API 33 or higher only
+        QLibrary icuLib(QStringLiteral("libicu"));
+        if (!icuLib.load()) {
+            qWarning().nospace() << "ICU loading failed: " << icuLib.errorString()
+                << ". Fallback collator will be used instead, not all features will be available.";
+            return false;
+        }
+
+        s_ucol.open = reinterpret_cast<ucol_open_t>(icuLib.resolve("ucol_open"));
+        s_ucol.setAttribute = reinterpret_cast<ucol_setAttribute_t>(icuLib.resolve("ucol_setAttribute"));
+        s_ucol.close = reinterpret_cast<ucol_close_t>(icuLib.resolve("ucol_close"));
+        s_ucol.strcoll = reinterpret_cast<ucol_strcoll_t>(icuLib.resolve("ucol_strcoll"));
+        s_ucol.getSortKey = reinterpret_cast<ucol_getSortKey_t>(icuLib.resolve("ucol_getSortKey"));
+        return s_ucol.open && s_ucol.setAttribute && s_ucol.close && s_ucol.strcoll && s_ucol.getSortKey;
+    }();
+
+    if (!icuLoaded) {
+        // on older Android versions, fall back to ICU Java API
+        // that works but has more overhead and offers less control
+        int strength = -1;
+        if (options.testFlag(Opt::DiacriticInsensitive) && options.testFlag(Opt::CaseInsensitive))
+            strength = UCOL_PRIMARY;
+        else if (options.testFlag(Opt::CaseInsensitive))
+            strength = UCOL_SECONDARY;
+        fallbackCollator = QtJniTypes::QtCollator::callStaticMethod<QtJniTypes::Collator>("getCollator", locale.bcp47Name(), strength);
+        dirty = false;
+        return;
+    }
+#endif
 
     UErrorCode status = U_ZERO_ERROR;
     QByteArray name = QLocalePrivate::get(locale)->bcp47Name('_');
@@ -110,6 +173,11 @@ int QCollator::compare(QStringView s1, QStringView s2) const
                             reinterpret_cast<const UChar *>(s1.data()), s1.size(),
                             reinterpret_cast<const UChar *>(s2.data()), s2.size());
     }
+#if !QT_CONFIG(icu) && defined(Q_OS_ANDROID)
+    else if (d->fallbackCollator.isValid()) {
+        return d->fallbackCollator.callMethod<int>("compare", s1, s2);
+    }
+#endif
 
     return QtPrivate::compareStrings(s1, s2, caseSensitivity());
 }
@@ -137,6 +205,11 @@ QCollatorSortKey QCollator::sortKey(const QString &string) const
         result.truncate(size);
         return QCollatorPrivate::sortKeyFromData(std::move(result));
     }
+#if !QT_CONFIG(icu) && defined(Q_OS_ANDROID)
+    else if (d->fallbackCollator.isValid()) {
+        return QCollatorPrivate::sortKeyFromData(QtJniTypes::QtCollator::callStaticMethod<QByteArray>("getCollationKey", d->fallbackCollator, string));
+    }
+#endif
 
     return QCollatorPrivate::sortKeyFromData(QByteArray());
 }

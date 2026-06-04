@@ -8,6 +8,10 @@
 #include <private/qglobal_p.h>
 #include <QScopeGuard>
 
+#ifdef Q_OS_ANDROID
+#include <QtCore/private/qandroidextras_p.h>
+#endif
+
 #include <string.h>
 
 using namespace Qt::StringLiterals;
@@ -672,6 +676,13 @@ void tst_QCollator::compare()
     QFETCH(Opts, options);
     QFETCH(int, result);
 
+#ifdef Q_OS_ANDROID
+    // below Android 33 we only have the Java collator API which doesn't support some of the options
+    if (QtAndroidPrivate::androidSdkVersion() < 33 && (options & (Opt::IgnorePunctuation | Opt::NumericSort | Opt::DiacriticInsensitive))) {
+        QSKIP("sort option not supported on Android <= 33");
+    }
+#endif
+
     QCollator collator((QLocale(locale)));
     collator.setOptions(options);
 
@@ -690,10 +701,10 @@ void tst_QCollator::compare()
     if (tag.startsWith("en-9:19") || tag.startsWith("en-.19:,19"))
         QSKIP("Some en-us locale tests have issues on WASM");
 #endif // Q_OS_WASM
-#if !QT_CONFIG(icu) && !defined(Q_OS_WIN) && !defined(Q_OS_MACOS)
+#if !QT_CONFIG(icu) && !defined(Q_OS_WIN) && !defined(Q_OS_MACOS) && !defined(Q_OS_ANDROID)
     if (collator.locale() != QLocale::c() && collator.locale() != QLocale::system().collation())
         QSKIP("POSIX implementation of collation only supports C and system collation locales");
-#elif QT_CONFIG(icu) || defined(Q_OS_WIN)
+#elif QT_CONFIG(icu) || defined(Q_OS_WIN) || defined(Q_OS_ANDROID)
 #  define SORTKEY_WORKS
 #endif
 
