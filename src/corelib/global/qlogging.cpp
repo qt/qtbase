@@ -1229,9 +1229,9 @@ QMessagePattern::~QMessagePattern() = default;
 void QMessagePattern::setPattern(const QString &pattern)
 {
     // scanner
-    QList<QString> lexemes;
+    QVarLengthArray<QStringView, 16> lexemes;
     qsizetype literalLexemeCount = 0; // those not matching any token
-    QString lexeme;
+    qsizetype lexemeStart = 0;
     bool inPlaceholder = false;
     for (qsizetype i = 0; i < pattern.size(); ++i) {
         const QChar c = pattern.at(i);
@@ -1239,26 +1239,28 @@ void QMessagePattern::setPattern(const QString &pattern)
             if ((i + 1 < pattern.size())
                     && pattern.at(i + 1) == u'{') {
                 // beginning of placeholder
-                if (!lexeme.isEmpty()) {
-                    lexemes.append(lexeme);
+                if (lexemeStart != i) {
+                    lexemes.append(QStringView(pattern.cbegin() + lexemeStart,
+                                               pattern.cbegin() + i));
                     ++literalLexemeCount;
-                    lexeme.clear();
+                    lexemeStart = i;
                 }
                 inPlaceholder = true;
             }
         }
 
-        lexeme.append(c);
-
         if (c == u'}' && inPlaceholder) {
             // end of placeholder
-            lexemes.append(lexeme);
-            lexeme.clear();
+            // +1 because we need to include '}'
+            lexemes.append(QStringView(pattern.cbegin() + lexemeStart,
+                                       pattern.cbegin() + i + 1));
+            lexemeStart = i + 1;
             inPlaceholder = false;
         }
     }
-    if (!lexeme.isEmpty()) {
-        lexemes.append(lexeme);
+    if (lexemeStart < pattern.size()) {
+        lexemes.append(QStringView(pattern.cbegin() + lexemeStart,
+                                   pattern.cend()));
         ++literalLexemeCount;
     }
 
@@ -1281,7 +1283,7 @@ void QMessagePattern::setPattern(const QString &pattern)
     qsizetype literalLexemeIndex = 0;
 
     for (qsizetype i = 0; i < lexemes.size(); ++i) {
-        const QString lexeme = lexemes.at(i);
+        const QStringView lexeme = lexemes.at(i);
         if (lexeme.startsWith("%{"_L1) && lexeme.endsWith(u'}')) {
             // placeholder
             if (lexeme == QLatin1StringView(typeTokenC)) {
@@ -1310,7 +1312,7 @@ void QMessagePattern::setPattern(const QString &pattern)
                 newTokens[i] = timeTokenC;
                 qsizetype spaceIdx = lexeme.indexOf(QChar::fromLatin1(' '));
                 if (spaceIdx > 0)
-                    newTimeArgs.append(lexeme.mid(spaceIdx + 1, lexeme.size() - spaceIdx - 2));
+                    newTimeArgs.append(QString(lexeme.mid(spaceIdx + 1, lexeme.size() - spaceIdx - 2)));
                 else
                     newTimeArgs.append(QString());
             } else if (lexeme.startsWith(QLatin1StringView(backtraceTokenC))) {
@@ -1320,7 +1322,7 @@ void QMessagePattern::setPattern(const QString &pattern)
                 int backtraceDepth = 5;
                 static const QRegularExpression depthRx(QStringLiteral(" depth=(?|\"([^\"]*)\"|([^ }]*))"));
                 static const QRegularExpression separatorRx(QStringLiteral(" separator=(?|\"([^\"]*)\"|([^ }]*))"));
-                QRegularExpressionMatch m = depthRx.match(lexeme);
+                QRegularExpressionMatch m = depthRx.matchView(lexeme);
                 if (m.hasMatch()) {
                     int depth = m.capturedView(1).toInt();
                     if (depth <= 0)
@@ -1328,7 +1330,7 @@ void QMessagePattern::setPattern(const QString &pattern)
                     else
                         backtraceDepth = depth;
                 }
-                m = separatorRx.match(lexeme);
+                m = separatorRx.matchView(lexeme);
                 if (m.hasMatch())
                     backtraceSeparator = m.captured(1);
                 BacktraceParams backtraceParams;
