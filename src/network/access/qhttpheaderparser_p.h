@@ -41,7 +41,9 @@ static constexpr qsizetype DEFAULT_MAX_HEADER_FIELDS = 100;
 // which is a reasonable default for QNetworkAccessManager.
 // https://stackoverflow.com/a/3436155
 static constexpr qsizetype DEFAULT_MAX_TOTAL_HEADER_SIZE = 256 * 1024;
-
+// There is no strict upper limit on the phrase, but in practice it is
+// rarely longer than 28. 1024 is quite generous, allows custom messages
+static constexpr qsizetype MAX_REASON_PHRASE_SIZE = 1024;
 }
 
 class Q_NETWORK_EXPORT QHttpHeaderParser
