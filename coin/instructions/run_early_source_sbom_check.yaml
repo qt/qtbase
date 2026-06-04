@@ -1,0 +1,78 @@
+type: Group
+instructions:
+  - type: WriteFile
+    fileContents: |
+        #!/usr/bin/env sh
+        # Builds the sbom_source_verify target, but only if the marker file created by the build
+        # system exists in the current build directory. Otherwise the step is skipped.
+        marker="sbom_source_verify_should_run_in_ci.txt"
+
+        if [ ! -f "$marker" ]; then
+            echo "Marker file '$marker' does not exist, skipping source SBOM verification."
+            exit 0
+        fi
+
+        echo "Marker file '$marker' exists, running source SBOM verification."
+        cmake --build . --target sbom_source_verify -v
+    filename: "{{.AgentWorkingDir}}/run_source_sbom_verify.sh"
+    fileMode: 493
+    maxTimeInSeconds: 20
+    maxTimeBetweenOutput: 20
+    disable_if:
+      condition: property
+      property: host.os
+      equals_value: Windows
+  - type: EnvironmentVariable
+    variableName: COIN_SOURCE_SBOM_VERIFY_CMD
+    variableValue: "/bin/sh {{.AgentWorkingDir}}/run_source_sbom_verify.sh"
+    disable_if:
+      condition: property
+      property: host.os
+      equals_value: Windows
+
+  - type: WriteFile
+    fileContents: |
+        # Builds the sbom_source_verify target, but only if the marker file created by the build
+        # system exists in the current build directory. Otherwise the step is skipped.
+        $MarkerFile = "sbom_source_verify_should_run_in_ci.txt"
+
+        if (-not (Test-Path -LiteralPath $MarkerFile -PathType Leaf)) {
+            Write-Host "Marker file '$MarkerFile' does not exist, skipping source SBOM verification."
+            exit 0
+        }
+
+        Write-Host "Marker file '$MarkerFile' exists, running source SBOM verification."
+        cmake --build . --target sbom_source_verify -v
+        exit $LASTEXITCODE
+    filename: "{{.AgentWorkingDir}}\\run_source_sbom_verify.ps1"
+    fileMode: 420
+    maxTimeInSeconds: 20
+    maxTimeBetweenOutput: 20
+    enable_if:
+      condition: property
+      property: host.os
+      equals_value: Windows
+  - type: EnvironmentVariable
+    variableName: COIN_SOURCE_SBOM_VERIFY_CMD
+    variableValue: "powershell -ExecutionPolicy Bypass -File {{.AgentWorkingDir}}\\run_source_sbom_verify.ps1"
+    enable_if:
+      condition: property
+      property: host.os
+      equals_value: Windows
+
+  - type: ExecuteCommand
+    command: "{{.Env.CONFIGURE_ENV_PREFIX}} {{.Env.COIN_SOURCE_SBOM_VERIFY_CMD}}"
+    executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
+    maxTimeInSeconds: 1800
+    maxTimeBetweenOutput: 1800
+    userMessageOnFailure: >
+      Source SBOM verification failed, see the log for details.
+enable_if:
+  condition: and
+  conditions:
+  - condition: runtime
+    env_var: VERIFY_SOURCE_SBOM
+    equals_value: "ON"
+  - condition: property
+    property: features
+    contains_value: GenerateSBOM
