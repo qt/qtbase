@@ -1376,7 +1376,7 @@ void QMessagePattern::setPattern(const QString &pattern)
         } else {
             Q_ASSERT(literalLexemeIndex < literalLexemeCount);
             using UP = std::unique_ptr<char[]>;
-            newLiterals[literalLexemeIndex] = UP(qstrdup(lexeme.toLatin1().constData()));
+            newLiterals[literalLexemeIndex] = UP(qstrdup(lexeme.toUtf8().constData()));
             newTokens[i] = newLiterals[literalLexemeIndex].get();
             ++literalLexemeIndex;
         }
@@ -1718,7 +1718,7 @@ static QString formatLogMessage(QtMsgType type, const QMessageLogContext &contex
         } else if (token == messageTokenC) {
             message.append(str);
         } else if (token == categoryTokenC) {
-            message.append(QLatin1StringView(context.category));
+            message.append(QUtf8StringView(context.category));
         } else if (token == typeTokenC) {
             switch (type) {
             case QtDebugMsg:   message.append("debug"_L1); break;
@@ -1729,7 +1729,7 @@ static QString formatLogMessage(QtMsgType type, const QMessageLogContext &contex
             }
         } else if (token == fileTokenC) {
             if (context.file)
-                message.append(QLatin1StringView(context.file));
+                message.append(QUtf8StringView(context.file));
             else
                 message.append("unknown"_L1);
         } else if (token == lineTokenC) {
@@ -1797,7 +1797,7 @@ static QString formatLogMessage(QtMsgType type, const QMessageLogContext &contex
         HANDLE_IF_TOKEN(Fatal)
 #undef HANDLE_IF_TOKEN
         } else {
-            message.append(QLatin1StringView(token));
+            message.append(QUtf8StringView(token));
         }
     }
     return message;
