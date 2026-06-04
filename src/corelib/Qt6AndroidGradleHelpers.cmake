@@ -1846,7 +1846,7 @@ function(_qt_internal_android_generate_libs_xml target deployment_dir)
     file(GENERATE OUTPUT "${libs_xml_staged}" CONTENT "${content}")
 
     add_custom_target(${target}_update_libs_xml
-        COMMAND ${CMAKE_COMMAND} -E copy "${libs_xml_staged}" "${libs_xml_dst}"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${libs_xml_staged}" "${libs_xml_dst}"
         DEPENDS ${target}_copy_android_res_files
         COMMENT "Updating libs.xml for ${target}"
         VERBATIM
