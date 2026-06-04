@@ -4,6 +4,12 @@ instructions:
     variableName: HDC
     variableValue: "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc"
   - type: EnvironmentVariable
+    variableName: REMOTE_NODE
+    variableValue: "/Applications/DevEco-Studio.app/Contents/tools/node/bin/node"
+  - type: EnvironmentVariable
+    variableName: REMOTE_HVIGOR
+    variableValue: "/Applications/DevEco-Studio.app/Contents/tools/hvigor/bin/hvigorw.js"
+  - type: EnvironmentVariable
     variableName: HARMONY_BROKER
     variableValue: "10.204.0.152"
   - type: EnvironmentVariable
@@ -23,7 +29,6 @@ instructions:
     variableName: REMOTE_RESULT_FILE
     variableValue: "{{.Env.TESTED_MODULE_COIN}}_{{.Env.TESTED_MODULE_BRANCH_COIN}}_RESULT.TXT"
 
-
   - type: ChangeDirectory
     directory: "{{.InstallDir}}/"
   - type: MakeDirectory
@@ -36,80 +41,64 @@ instructions:
     userMessageOnFailure: >
       Failed to install tests archive.
   - type: ChangeDirectory
-    directory: "{{.InstallDir}}/target"
-  - type: MakeDirectory
-    directory: "qml"
-  - type: ExecuteCommand
-    command: "mv {{.InstallDir}}/tests/tests ."
-    maxTimeInSeconds: 14400
-    maxTimeBetweenOutput: 14400
-    userMessageOnFailure: >
-      Failed to run tests.
-  - type: ChangeDirectory
-    directory: "{{.InstallDir}}"
-  - type: ExecuteCommand
-    command: "tar czf target.tar.gz {{.InstallDir}}/target"
-    maxTimeInSeconds: 14400
-    maxTimeBetweenOutput: 14400
-    userMessageOnFailure: >
-      Failed to run tests.
+    directory: "{{.InstallDir}}/tests"
 
+  - type: ExecuteCommand
+    command: "tar czf bundle.tar.gz harmonyos-tests-bundle"
+    maxTimeInSeconds: 14400
+    maxTimeBetweenOutput: 14400
+    userMessageOnFailure: >
+      Failed to pack tests.
   - type: ExecuteCommand
     command: ["ssh", "qt@{{.Env.HARMONY_BROKER}}", "rm -rf {{.Env.REMOTE_WORKING_DIR}}"]
     maxTimeInSeconds: 60
     maxTimeBetweenOutput: 60
-    userMessageOnFailure: "Creating work dir failed!"
+    userMessageOnFailure: "Removing work dir failed!"
   - type: ExecuteCommand
     command: ["ssh", "qt@{{.Env.HARMONY_BROKER}}", "mkdir -p {{.Env.REMOTE_WORKING_DIR}}"]
     maxTimeInSeconds: 60
     maxTimeBetweenOutput: 60
     userMessageOnFailure: "Creating work dir failed!"
   - type: ExecuteCommand
-    command: ["scp", "target.tar.gz", "qt@10.204.0.152:{{.Env.REMOTE_WORKING_DIR}}"]
+    command: ["scp", "bundle.tar.gz", "qt@{{.Env.HARMONY_BROKER}}:{{.Env.REMOTE_WORKING_DIR}}"]
     maxTimeInSeconds: 14400
     maxTimeBetweenOutput: 14400
     userMessageOnFailure: >
       Failed to copy tests.
   - type: ExecuteCommand
-    command: ["ssh", "qt@{{.Env.HARMONY_BROKER}}", "tar xzf {{.Env.REMOTE_WORKING_DIR}}/target.tar.gz --strip-components=4 -C {{.Env.REMOTE_WORKING_DIR}}"]
+    command: ["scp", "{{.InstallDir}}/tests/all_tests_hap.d", "qt@{{.Env.HARMONY_BROKER}}:{{.Env.REMOTE_WORKING_DIR}}"]
+    maxTimeInSeconds: 14400
+    maxTimeBetweenOutput: 14400
+    userMessageOnFailure: >
+      Failed to copy testlib list.
+  - type: ExecuteCommand
+    command: ["ssh", "qt@{{.Env.HARMONY_BROKER}}", "utils/list_tests.sh {{.Env.REMOTE_WORKING_DIR}}/all_tests_hap.d {{.Env.REMOTE_WORKING_DIR}}/all_tests.txt"]
+    maxTimeInSeconds: 14400
+    maxTimeBetweenOutput: 14400
+    userMessageOnFailure: >
+      Failed to fix testlib list.
+  - type: ExecuteCommand
+    command: ["ssh", "qt@{{.Env.HARMONY_BROKER}}", "tar xzf {{.Env.REMOTE_WORKING_DIR}}/bundle.tar.gz -C {{.Env.REMOTE_WORKING_DIR}}"]
     maxTimeInSeconds: 600
     maxTimeBetweenOutput: 600
     userMessageOnFailure: "Extracting test failed!"
   - type: ExecuteCommand
-    command: ["ssh", "qt@{{.Env.HARMONY_BROKER}}", "rm -rf {{.Env.REMOTE_RESULTS_DIR}}"]
+    command: ["ssh", "qt@{{.Env.HARMONY_BROKER}}", "cp /Users/qt/signing/build-profile.json5 {{.Env.REMOTE_WORKING_DIR}}/harmonyos-tests-bundle/build-profile.json5"]
     maxTimeInSeconds: 60
     maxTimeBetweenOutput: 60
-    userMessageOnFailure: "Cleaning testresults failed!"
+    userMessageOnFailure: "Copying build-profile failed!"
   - type: ExecuteCommand
-    command: ["ssh", "qt@{{.Env.HARMONY_BROKER}}", "rm -rf {{.Env.REMOTE_TOOLS_DIR}}/results"]
+    command: ["ssh", "qt@{{.Env.HARMONY_BROKER}}", "cd {{.Env.REMOTE_WORKING_DIR}}/harmonyos-tests-bundle && {{.Env.REMOTE_NODE}} {{.Env.REMOTE_HVIGOR}} --mode module -p product=default assembleHap --analyze=normal --parallel --incremental --no-daemon"]
     maxTimeInSeconds: 600
     maxTimeBetweenOutput: 600
-    userMessageOnFailure: "Cleaning testresults failed!"
-
+    userMessageOnFailure: "Re-assembling hap failed!"
   - type: ExecuteCommand
-    command: ["ssh", "qt@{{.Env.HARMONY_BROKER}}", "{{.Env.REMOTE_TOOLS_DIR}}/build_hap.sh {{.Env.REMOTE_WORKING_DIR}}/target {{.Env.REMOTE_WORKING_DIR}}/target /Users/qt/depot/ohostemplateforqtapplication/ /Applications/DevEco-Studio.app /Users/qt/.local/opt/ohos/additional-packages/  {{.Env.REMOTE_OUTPUT_DIR}}/"]
-    maxTimeInSeconds: 600
-    maxTimeBetweenOutput: 600
-    userMessageOnFailure: "Building hap failed!"
-  - type: ExecuteCommand
-    command: ["ssh", "qt@{{.Env.HARMONY_BROKER}}", "{{.Env.REMOTE_TOOLS_DIR}}/install_hap.sh {{.Env.REMOTE_OUTPUT_DIR}}/entry-default-signed.hap {{.Env.HDC}}"]
+    command: ["ssh", "qt@{{.Env.HARMONY_BROKER}}", "{{.Env.REMOTE_TOOLS_DIR}}/install_hap.sh {{.Env.REMOTE_WORKING_DIR}}/harmonyos-tests-bundle/entry/build/default/outputs/default/entry-default-signed.hap {{.Env.HDC}}"]
     maxTimeInSeconds: 600
     maxTimeBetweenOutput: 600
     userMessageOnFailure: "Installing hap failed!"
   - type: ExecuteCommand
-    command: ["ssh", "qt@{{.Env.HARMONY_BROKER}}", "{{.Env.REMOTE_TOOLS_DIR}}/run_tests.sh {{.Env.REMOTE_OUTPUT_DIR}}/binaries.txt  {{.Env.HDC}} {{.Env.REMOTE_RESULTS_DIR}}"]
+    command: ["ssh", "qt@{{.Env.HARMONY_BROKER}}", "cd {{.Env.REMOTE_WORKING_DIR}} && cat all_tests.txt | while IFS= read -r line; do ~/utils/harmonyostestrunner $line; done"]
     maxTimeInSeconds: 21600
     maxTimeBetweenOutput: 1800
     userMessageOnFailure: "Running hap failed!"
-
-  - type: ExecuteCommand
-    command: ["ssh", "qt@{{.Env.HARMONY_BROKER}}", "python3 {{.Env.REMOTE_TOOLS_DIR}}/generate_tests_report.py --binaries {{.Env.REMOTE_TOOLS_DIR}}/output/binaries.txt --output work/{{.Env.TESTED_MODULE_COIN}}_{{.Env.TESTED_MODULE_BRANCH_COIN}}/{{.Env.REMOTE_RESULT_FILE}} work/{{.Env.TESTED_MODULE_COIN}}_{{.Env.TESTED_MODULE_BRANCH_COIN}}/testresults"]
-    maxTimeInSeconds: 600
-    maxTimeBetweenOutput: 600
-    userMessageOnFailure: "Parsing test results failed!"
-  - type: ExecuteCommand
-    command: ["ssh", "qt@{{.Env.HARMONY_BROKER}}", "cat work/{{.Env.TESTED_MODULE_COIN}}_{{.Env.TESTED_MODULE_BRANCH_COIN}}/{{.Env.REMOTE_RESULT_FILE}}"]
-    maxTimeInSeconds: 600
-    maxTimeBetweenOutput: 600
-    userMessageOnFailure: "Printing results failed!"
-
