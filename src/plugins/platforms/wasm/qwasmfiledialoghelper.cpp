@@ -127,10 +127,6 @@ void QWasmFileDialogHelper::onOpenDialogClosed(bool accepted, std::vector<qstdwe
     }
 
     // Emit signals
-    if (m_selectedFiles.size() > 0) {
-        emit fileSelected(m_selectedFiles.first());
-        emit filesSelected(m_selectedFiles);
-    }
     emit accept();
 
     // exit exec() if in exec()
@@ -154,7 +150,6 @@ void QWasmFileDialogHelper::onSaveDialogClosed(bool accepted, qstdweb::FileSyste
     m_selectedFiles.append(fileUrl);
 
     // Emit signals
-    emit fileSelected(m_selectedFiles.first());
     emit accept();
 
     if (m_eventLoop)
