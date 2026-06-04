@@ -624,7 +624,6 @@ void QAndroidPlatformIntegration::handleScreenChanged(int displayId)
     if (QAndroidPlatformScreen *screen = it->second) {
         QSize size = QAndroidPlatformScreen::sizeForDisplayId(displayId);
         if (screen->geometry().size() != size) {
-            screen->setPhysicalSizeFromPixels(size);
             screen->setSize(size);
         }
     }

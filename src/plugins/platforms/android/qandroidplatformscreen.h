@@ -71,8 +71,8 @@ protected:
     QList<Mode> m_modes;
     int m_currentMode = 0;
     int m_displayId = -1;
-    int m_xdpi;
-    int m_ydpi;
+    qreal m_xdpi;
+    qreal m_ydpi;
 
 private:
     QDpi logicalDpi() const override;
