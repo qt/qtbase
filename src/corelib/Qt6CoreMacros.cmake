@@ -763,6 +763,11 @@ function(_qt_internal_create_executable target)
                 _qt_android_target_type APPLICATION
             )
 
+            _qt_internal_android_get_target_android_build_dir(android_build_dir "${target}")
+            set_target_properties("${target}" PROPERTIES
+                QT_ANDROID_BUILD_DIR "${android_build_dir}"
+            )
+
             qt6_android_apply_arch_suffix("${target}")
             if(QT_USE_ANDROID_MODERN_BUNDLE)
                 _qt_internal_set_android_application_gradle_defaults(${target})
