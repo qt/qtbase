@@ -1736,7 +1736,7 @@ void QFileSystemModel::setNameFilters(const QStringList &filters)
         // update the bypass filter to only bypass the stuff that must be kept around
         d->bypassFilters.clear();
         // AXIVION Next Line Qt-UnusedNonTrivialVariable: We guarantee that rootPath will stick around
-        [[maybe_unused]] QPersistentModelIndex root(index(rootPath()));
+        QPersistentModelIndex root(index(rootPath()));
         const QModelIndexList persistentList = persistentIndexList();
         for (const auto &persistentIndex : persistentList) {
             QFileSystemModelPrivate::QFileSystemNode *node = d->node(persistentIndex);
