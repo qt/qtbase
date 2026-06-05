@@ -1266,16 +1266,8 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
             }
         }
         break;
-    case QStyle::PE_Widget: {
-        if (widget && widget->palette().isBrushSet(QPalette::Active, widget->backgroundRole())) {
-            const QBrush bg = widget->palette().brush(widget->backgroundRole());
-            auto wp = QWidgetPrivate::get(widget);
-            QPainterStateGuard psg(painter);
-            wp->updateBrushOrigin(painter, bg);
-            painter->fillRect(option->rect, bg);
-        }
+    case PE_Widget:
         break;
-    }
     case QStyle::PE_FrameWindow:
         if (const auto *frm = qstyleoption_cast<const QStyleOptionFrame *>(option)) {
 
@@ -2773,25 +2765,19 @@ void QWindows11Style::polish(QWidget* widget)
             QLineEdit *le = cb->lineEdit();
             le->setFrame(false);
         }
-    } else if (const auto *scrollarea = qobject_cast<QAbstractScrollArea *>(widget);
-               scrollarea
-               && !qobject_cast<QGraphicsView *>(widget)
-#if QT_CONFIG(mdiarea)
-               && !qobject_cast<QMdiArea *>(widget)
-#endif
-        ) {
+    } else if (qobject_cast<QTextEdit *>(widget)
+               || qobject_cast<QPlainTextEdit *>(widget)) {
+        const auto *scrollarea = static_cast<QAbstractScrollArea *>(widget);
+        // These two widgets have rounded inner borders
         if (scrollarea->frameShape() == QFrame::StyledPanel) {
             const auto vp = scrollarea->viewport();
             const bool isAutoFillBackground = vp->autoFillBackground();
-            const bool isStyledBackground = vp->testAttribute(Qt::WA_StyledBackground);
             vp->setProperty("_q_original_autofill_background", isAutoFillBackground);
-            vp->setProperty("_q_original_styled_background", isStyledBackground);
             vp->setAutoFillBackground(false);
-            vp->setAttribute(Qt::WA_StyledBackground, true);
         }
+    } else if (auto table = qobject_cast<QTableView *>(widget)) {
         // QTreeView & QListView are already set in the base windowsvista style
-        if (auto table = qobject_cast<QTableView *>(widget))
-            table->viewport()->setAttribute(Qt::WA_Hover, true);
+        table->viewport()->setAttribute(Qt::WA_Hover, true);
     }
 }
 
@@ -2837,9 +2823,6 @@ void QWindows11Style::unpolish(QWidget *widget)
         const auto wasAutoFillBackground = vp->property("_q_original_autofill_background").toBool();
         vp->setAutoFillBackground(wasAutoFillBackground);
         vp->setProperty("_q_original_autofill_background", QVariant());
-        const auto origStyledBackground = vp->property("_q_original_styled_background").toBool();
-        vp->setAttribute(Qt::WA_StyledBackground, origStyledBackground);
-        vp->setProperty("_q_original_styled_background", QVariant());
     }
     dwmSetWindowCornerPreference(widget, false);
 }
