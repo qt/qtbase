@@ -155,7 +155,7 @@ static inline bool launch(const QString &launcher, const QUrl &url,
         if (!xdgActivationToken.isEmpty()) {
             auto env = QProcessEnvironment::systemEnvironment();
             env.insert(u"XDG_ACTIVATION_TOKEN"_s, xdgActivationToken);
-            process.setEnvironment(env.toStringList());
+            process.setProcessEnvironment(env);
         }
         ok = process.startDetached(nullptr);
     }
