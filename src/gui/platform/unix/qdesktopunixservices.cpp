@@ -140,17 +140,16 @@ bool QDesktopUnixServices::launchProcess(LaunchType type, const QUrl &url,
     if (program.isEmpty())
         detectWebBrowser(type, desktopEnvironment(), &program);
 
-    const QString command = program + u' ' + QLatin1StringView(url.toEncoded());
     QString errorString;
-    qCDebug(lcQpaServices, "Launching %s", qPrintable(command));
-    QStringList args = QProcess::splitCommand(command);
-    if (!args.isEmpty()) {
-        QString program = args.takeFirst();
+    QString urlString = url.toString(QUrl::FullyEncoded);
+    if (!program.isEmpty()) {
         QProcess process;
         Q_ASSERT(QFileInfo(program).isAbsolute());
         // AXIVION Next Line Qt-Security-QProcessStart: executable is absolute from PATH
         process.setProgram(program);
-        process.setArguments(args);
+        process.setArguments({ urlString });
+        qCDebug(lcQpaServices, "Launching %ls %ls", qUtf16Printable(program),
+                qUtf16Printable(urlString));
 
         if (!xdgActivationToken.isEmpty()) {
             auto env = QProcessEnvironment::systemEnvironment();
@@ -162,11 +161,12 @@ bool QDesktopUnixServices::launchProcess(LaunchType type, const QUrl &url,
             return true;
         errorString = process.errorString();
     } else {
-        errorString = u"Unexpected empty list of argument"_s;
+        errorString = u"Unable to detect a launcher"_s;
     }
 
-    qCWarning(lcQpaServices, "Launch of '%s' failed: %s",
-              qPrintable(command), qPrintable(errorString));
+    qCWarning(lcQpaServices, "Launch of '%ls %ls' failed: %ls",
+              qUtf16Printable(program), qUtf16Printable(urlString),
+              qUtf16Printable(errorString));
 #else
     Q_UNUSED(type);
     Q_UNUSED(xdgActivationToken);
