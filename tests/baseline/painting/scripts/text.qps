@@ -244,3 +244,9 @@ save
     setFont "Arial Black" 12 normal
     drawText 0 20 "Foobar"
 restore
+
+translate 0 35.5
+save
+    setPen black
+    drawText 0 20 "ᠪᠠᠷᠠᠳᠢ ꡏꡡꡃ ꡢ"
+restore

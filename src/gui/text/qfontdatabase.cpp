@@ -644,6 +644,7 @@ QStringList QPlatformFontDatabase::fallbacksForFamily(const QString &family,
 
     QStringList preferredFallbacks;
     QStringList otherFallbacks;
+    QStringList lastResort;
 
     auto writingSystem = qt_writing_system_for_script(script);
     if (writingSystem >= QFontDatabase::WritingSystemsCount)
@@ -661,19 +662,46 @@ QStringList QPlatformFontDatabase::fallbacksForFamily(const QString &family,
         for (int j = 0; j < f->count; ++j) {
             QtFontFoundry *foundry = f->foundries[j];
 
+            QString name = foundry->name.isEmpty()
+                               ? f->name
+                               : f->name + " ["_L1 + foundry->name + u']';
+
+            enum class Score {
+                LastResort,
+                FirstLastResort,
+                Other,
+                Preferred
+            };
+            int score = int(Score::LastResort);
             for (int k = 0; k < foundry->count; ++k) {
-                QString name = foundry->name.isEmpty()
-                        ? f->name
-                        : f->name + " ["_L1 + foundry->name + u']';
-                if (style == foundry->styles[k]->key.style)
-                    preferredFallbacks.append(name);
-                else
-                    otherFallbacks.append(name);
+                const bool styleMatch = style == foundry->styles[k]->key.style;
+                if (foundry->styles[k]->smoothScalable) {
+                    if (styleMatch) {
+                        score = int(Score::Preferred);
+                        break;
+                    } else {
+                        score = std::max(score, int(Score::Other));
+                    }
+                } else if (styleMatch) {
+                    score = std::max(score, int(Score::FirstLastResort));
+                }
+            }
+
+            switch (Score(score)) {
+            case Score::LastResort:
+                lastResort.append(name); break;
+            case Score::FirstLastResort:
+                lastResort.prepend(name); break;
+            case Score::Other:
+                otherFallbacks.append(name); break;
+            case Score::Preferred:
+                preferredFallbacks.append(name); break;
+
             }
         }
     }
 
-    return preferredFallbacks + otherFallbacks;
+    return preferredFallbacks + otherFallbacks + lastResort;
 }
 
 static QStringList fallbacksForFamily(const QString &family,
