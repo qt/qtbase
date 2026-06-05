@@ -4,13 +4,15 @@ project(subproj2)
 set(SBOM_VERSION "1.0.2")
 set(SBOM_PROJECT_NAME "${PROJECT_NAME}")
 
-_qt_internal_sbom_begin_project(
-    SBOM_PROJECT_NAME "${SBOM_PROJECT_NAME}"
-    INSTALL_SBOM_DIR "${SBOM_INSTALL_DIR}"
-    SUPPLIER "QtProjectTest"
-    SUPPLIER_URL "https://qt-project.org/SbomTest"
-    VERSION "${SBOM_VERSION}"
-)
+if(NOT CREATE_SINGLE_SBOM)
+    _qt_internal_sbom_begin_project(
+        SBOM_PROJECT_NAME "${SBOM_PROJECT_NAME}"
+        INSTALL_SBOM_DIR "${SBOM_INSTALL_DIR}"
+        SUPPLIER "QtProjectTest"
+        SUPPLIER_URL "https://qt-project.org/SbomTest"
+        VERSION "${SBOM_VERSION}"
+    )
+endif()
 
 add_library(subproj2_helper STATIC)
 target_sources(subproj2_helper PRIVATE subproj2_helper.cpp)
@@ -35,12 +37,17 @@ if(TARGET Threads::Threads)
     target_link_libraries(subproj2_helper PRIVATE Threads::Threads)
 endif()
 
-add_library(FancySystemLib IMPORTED INTERFACE)
-_qt_internal_add_sbom(FancySystemLib
-    TYPE SYSTEM_LIBRARY
-)
+if(NOT CREATE_SINGLE_SBOM)
+    add_library(FancySystemLib IMPORTED INTERFACE)
+    set_target_properties(FancySystemLib PROPERTIES IMPORTED_GLOBAL TRUE)
+    _qt_internal_add_sbom(FancySystemLib
+        TYPE SYSTEM_LIBRARY
+    )
+endif()
 target_link_libraries(subproj2_helper PRIVATE FancySystemLib)
 
-_qt_internal_sbom_end_project()
+if(NOT CREATE_SINGLE_SBOM)
+    _qt_internal_sbom_end_project()
 
-include(CommonResultGen)
+    include(CommonResultGen)
+endif()
