@@ -155,21 +155,18 @@ static inline bool launch(const QString &launcher, const QUrl &url,
             process.setProcessEnvironment(env);
         }
         // AXIVION Next Line Qt-Security-QProcessStart: executable is absolute from PATH
-        if (!process.startDetached(nullptr))
-            errorString = process.errorString();
+        if (process.startDetached(nullptr))
+            return true;
+        errorString = process.errorString();
     } else {
         errorString = u"Unexpected empty list of argument"_s;
     }
 #else
     errorString = u"QProcess not available"_s;
 #endif // QT_CONFIG(process)
-    if (!errorString.isEmpty()) {
-        qCWarning(lcQpaServices, "Launch of '%s' failed: %s",
-                  qPrintable(command), qPrintable(errorString));
-        return false;
-    }
-
-    return true;
+    qCWarning(lcQpaServices, "Launch of '%s' failed: %s",
+              qPrintable(command), qPrintable(errorString));
+    return false;
 }
 
 #if QT_CONFIG(dbus)
