@@ -438,8 +438,12 @@ QDesktopUnixServices::QDesktopUnixServices()
                      [this](QDBusPendingCallWatcher *watcher) {
                          watcher->deleteLater();
                          QDBusPendingReply<QVariant> reply = *watcher;
-                         if (!reply.isError() && reply.value().toUInt() >= 2)
-                             m_hasScreenshotPortalWithColorPicking = true;
+                         if (reply.isError()) {
+                             m_hasNoPortal = (reply.error().type() == QDBusError::ServiceUnknown);
+                         } else {
+                             if (reply.value().toUInt() >= 2)
+                                 m_hasScreenshotPortalWithColorPicking = true;
+                         }
                      });
 
     if (checkNeedPortalSupport()) {
@@ -539,6 +543,8 @@ bool QDesktopUnixServices::openUrl(const QUrl &url)
                 QDBusError error = xdgDesktopPortalSendEmail(url, parentWindow, xdgActivationToken);
                 if (!error.isValid())
                     return true;
+                if (error.type() == QDBusError::ServiceUnknown)
+                    m_hasNoPortal = true;
 
                 // service not running, fall back
             }
@@ -554,6 +560,8 @@ bool QDesktopUnixServices::openUrl(const QUrl &url)
             QDBusError error = xdgDesktopPortalOpenUrl(url, parentWindow, xdgActivationToken);
             if (!error.isValid())
                 return true;
+            if (error.type() == QDBusError::ServiceUnknown)
+                m_hasNoPortal = true;
         }
 #  endif
 
@@ -577,6 +585,8 @@ bool QDesktopUnixServices::openDocument(const QUrl &url)
             QDBusError error = xdgDesktopPortalOpenFile(url, parentWindow, xdgActivationToken);
             if (!error.isValid())
                 return true;
+            if (error.type() == QDBusError::ServiceUnknown)
+                m_hasNoPortal = true;
         }
 #  endif
 
