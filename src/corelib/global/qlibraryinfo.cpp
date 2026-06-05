@@ -873,10 +873,15 @@ void qt_core_boilerplate()
             qt_configure_strs.viewAt(QLibraryInfo::LibrariesPath - 1).toUtf8();
     QByteArray pluginPath =
             qt_configure_strs.viewAt(QLibraryInfo::PluginsPath - 1).toUtf8();
+#if QT_CONFIG(relocatable)
+    QByteArray prefix = prefixFromQt().toUtf8();
+#else
+    QByteArrayView prefix = QT_CONFIGURE_PREFIX_PATH;
+#endif
     printf("Installation prefix: %s\n"
            "Library path:        %s\n"
            "Plugin path:         %s\n",
-           QT_CONFIGURE_PREFIX_PATH,
+           prefix.data(),
            libPath.data(),
            pluginPath.data());
 
