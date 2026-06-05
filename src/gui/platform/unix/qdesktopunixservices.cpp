@@ -501,32 +501,29 @@ QByteArray QDesktopUnixServices::desktopEnvironment() const
 }
 
 template<typename F>
-void runWithXdgActivationToken(F &&functionToCall)
+bool runWithXdgActivationToken(F &&functionToCall)
 {
 #if QT_CONFIG(wayland)
     QWindow *window = qGuiApp->focusWindow();
 
-    if (!window) {
-        functionToCall({});
-        return;
-    }
+    if (!window)
+        return functionToCall({});
 
     auto waylandApp = dynamic_cast<QNativeInterface::QWaylandApplication *>(
             qGuiApp->platformNativeInterface());
     auto waylandWindow =
             dynamic_cast<QNativeInterface::Private::QWaylandWindow *>(window->handle());
 
-    if (!waylandWindow || !waylandApp) {
-        functionToCall({});
-        return;
-    }
+    if (!waylandWindow || !waylandApp)
+        return functionToCall({});
 
     QObject::connect(waylandWindow,
                      &QNativeInterface::Private::QWaylandWindow::xdgActivationTokenCreated,
                      waylandWindow, functionToCall, Qt::SingleShotConnection);
     waylandWindow->requestXdgActivationToken(waylandApp->lastInputSerial());
+    return true;
 #else
-    functionToCall({});
+    return functionToCall({});
 #endif
 }
 
@@ -564,8 +561,9 @@ bool QDesktopUnixServices::openUrl(const QUrl &url)
     };
 
     if (QGuiApplication::platformName().startsWith("wayland"_L1)) {
-        runWithXdgActivationToken(
-                [openUrlInternal, url](const QString &token) { openUrlInternal(url, token); });
+        runWithXdgActivationToken([openUrlInternal, url](const QString &token) {
+            return openUrlInternal(url, token);
+        });
 
         return true;
 
@@ -594,7 +592,7 @@ bool QDesktopUnixServices::openDocument(const QUrl &url)
 
     if (QGuiApplication::platformName().startsWith("wayland"_L1)) {
         runWithXdgActivationToken([openDocumentInternal, url](const QString &token) {
-            openDocumentInternal(url, token);
+            return openDocumentInternal(url, token);
         });
 
         return true;
