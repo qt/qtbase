@@ -560,16 +560,9 @@ bool QDesktopUnixServices::openUrl(const QUrl &url)
         return launchProcess(LaunchType::Browser, url, xdgActivationToken);
     };
 
-    if (QGuiApplication::platformName().startsWith("wayland"_L1)) {
-        runWithXdgActivationToken([openUrlInternal, url](const QString &token) {
-            return openUrlInternal(url, token);
-        });
-
-        return true;
-
-    } else {
-        return openUrlInternal(url, QString());
-    }
+    return runWithXdgActivationToken([openUrlInternal, url](const QString &token) {
+        return openUrlInternal(url, token);
+    });
 }
 
 bool QDesktopUnixServices::openDocument(const QUrl &url)
@@ -590,15 +583,9 @@ bool QDesktopUnixServices::openDocument(const QUrl &url)
         return launchProcess(LaunchType::Document, url, xdgActivationToken);
     };
 
-    if (QGuiApplication::platformName().startsWith("wayland"_L1)) {
-        runWithXdgActivationToken([openDocumentInternal, url](const QString &token) {
-            return openDocumentInternal(url, token);
-        });
-
-        return true;
-    } else {
-        return openDocumentInternal(url, QString());
-    }
+    return runWithXdgActivationToken([openDocumentInternal, url](const QString &token) {
+        return openDocumentInternal(url, token);
+    });
 }
 
 #else
