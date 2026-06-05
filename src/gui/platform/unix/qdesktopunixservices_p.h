@@ -31,6 +31,8 @@ class QDBusServiceWatcher;
 class Q_GUI_EXPORT QDesktopUnixServices : public QPlatformServices
 {
 public:
+    enum class LaunchType { Browser, Document };
+
     QDesktopUnixServices();
     ~QDesktopUnixServices();
 
@@ -55,6 +57,8 @@ private:
     std::unique_ptr<QDBusServiceWatcher> m_portalWatcher;
 #endif
     bool m_hasScreenshotPortalWithColorPicking = false;
+
+    inline bool launchProcess(LaunchType type, const QUrl &url, const QString &xdgActivationToken);
 };
 
 QT_END_NAMESPACE
