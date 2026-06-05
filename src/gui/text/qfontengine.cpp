@@ -34,6 +34,7 @@
 QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcColrv1, "qt.text.font.colrv1")
+Q_LOGGING_CATEGORY(lcTextFontCmap, "qt.text.font.cmap")
 
 using namespace Qt::StringLiterals;
 
@@ -2044,8 +2045,18 @@ int QFontEngineMulti::stringToCMap(const QChar *str, int len,
                                    QGlyphLayout *glyphs, int *nglyphs,
                                    QFontEngine::ShaperFlags flags) const
 {
+    qCDebug(lcTextFontCmap) << "Mapping characters in"
+                            << QString(str, len)
+                            << "; Shaper flags:" << flags;
+
     const int originalNumGlyphs = glyphs->numGlyphs;
     int mappedGlyphCount = engine(0)->stringToCMap(str, len, glyphs, nglyphs, flags);
+    qCDebug(lcTextFontCmap) << "    Main font mapped"
+                            << mappedGlyphCount
+                            << "of"
+                            << (nglyphs != nullptr ? *nglyphs : 0)
+                            << "characters";
+
     if (mappedGlyphCount < 0)
         return -1;
 
@@ -2053,6 +2064,8 @@ int QFontEngineMulti::stringToCMap(const QChar *str, int len,
     // fallbacks on the full string until we find the best match.
     bool contextFontMerging = mappedGlyphCount < *nglyphs && (fontDef.styleStrategy & QFont::ContextFontMerging);
     if (contextFontMerging) {
+        qCDebug(lcTextFontCmap) << "    Context font merging, first pass";
+
         QVarLengthGlyphLayoutArray tempLayout(len);
         if (!m_fallbackFamiliesQueried)
             const_cast<QFontEngineMulti *>(this)->ensureFallbackFamiliesQueried();
@@ -2063,15 +2076,19 @@ int QFontEngineMulti::stringToCMap(const QChar *str, int len,
             int numGlyphs = len;
             const_cast<QFontEngineMulti *>(this)->ensureEngineAt(x);
             maxGlyphCount = engine(x)->stringToCMap(str, len, &tempLayout, &numGlyphs, flags);
+            qCDebug(lcTextFontCmap) << "    Fallback" << x << "mapped" << maxGlyphCount;
 
             // If we found a better match, we copy data into the main QGlyphLayout
             if (maxGlyphCount > mappedGlyphCount) {
+                qCDebug(lcTextFontCmap) << "        Better match!";
                 *nglyphs = numGlyphs;
                 glyphs->numGlyphs = originalNumGlyphs;
                 glyphs->copy(&tempLayout);
                 engineIndex = x;
                 if (maxGlyphCount == numGlyphs)
                     break;
+            } else {
+                qCDebug(lcTextFontCmap) << "        No improvement";
             }
         }
 
@@ -2106,6 +2123,10 @@ int QFontEngineMulti::stringToCMap(const QChar *str, int len,
             QFontEngine *engine = m_engines.at(lastFallback);
             glyph_t glyph = engine->glyphIndex(ucs4);
             if (glyph != 0) {
+                qCDebug(lcTextFontCmap) << "    Applying ZWJ/ZWNJ special case for"
+                                        << QString::number(ucs4, 16)
+                                        << ", lastFallback:" << lastFallback;
+
                 glyphs->glyphs[glyph_pos] = glyph;
                 if (!(flags & GlyphIndicesOnly)) {
                     QGlyphLayout g = glyphs->mid(glyph_pos, 1);
@@ -2122,13 +2143,18 @@ int QFontEngineMulti::stringToCMap(const QChar *str, int len,
         }
 
         if (glyphs->glyphs[glyph_pos] == 0 && !isIgnorableChar(ucs4)) {
+            qCDebug(lcTextFontCmap) << "    Unmapped character"
+                                    << QString::number(ucs4, 16);
+
             if (!m_fallbackFamiliesQueried)
                 const_cast<QFontEngineMulti *>(this)->ensureFallbackFamiliesQueried();
             for (int x = contextFontMerging ? 0 : 1, n = qMin(m_engines.size(), 256); x < n; ++x) {
                 QFontEngine *engine = m_engines.at(x);
                 if (!engine) {
-                    if (!shouldLoadFontEngineForCharacter(x, ucs4))
+                    if (!shouldLoadFontEngineForCharacter(x, ucs4)) {
+                        qCDebug(lcTextFontCmap) << "        Skipping fallback #" << x;
                         continue;
+                    }
                     const_cast<QFontEngineMulti *>(this)->ensureEngineAt(x);
                     engine = m_engines.at(x);
                     if (!engine)
@@ -2139,6 +2165,12 @@ int QFontEngineMulti::stringToCMap(const QChar *str, int len,
                     continue;
 
                 glyph_t glyph = engine->glyphIndex(ucs4);
+                qCDebug(lcTextFontCmap) << "        Fallback #" << x
+                                        << ", family:" << engine->fontDef.families
+                                        << ", styleName:" << engine->fontDef.styleName
+                                        << ", style:" << engine->fontDef.style
+                                        << ", weight:" << engine->fontDef.weight
+                                        << ", glyph mapping:" << glyph;
                 if (glyph != 0) {
                     glyphs->glyphs[glyph_pos] = glyph;
                     if (!(flags & GlyphIndicesOnly)) {
