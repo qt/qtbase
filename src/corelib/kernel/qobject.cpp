@@ -1004,20 +1004,22 @@ QObject::QObject(QObjectPrivate &dd, QObject *parent)
     }
     threadData->ref();
     d->threadData.storeRelaxed(threadData);
+
     if (parent) {
-        QT_TRY {
-            if (d->willBeWidget) {
-                d->parent = parent;
-                d->parent->d_func()->children.append(this);
-                // no events sent here, this is done at the end of the QWidget constructor
-            } else {
-                setParent(parent);
-            }
-        } QT_CATCH(...) {
-            threadData->deref();
-            QT_RETHROW;
+        // Protect against setParent() throwing (we send an event to the parent).
+        auto scopeDeref = qScopeGuard([threadData] { threadData->deref(); });
+        if (d->willBeWidget) {
+            d->parent = parent;
+            d->parent->d_func()->children.append(this);
+            // no events sent here, this is done at the end of the QWidget constructor
+        } else {
+            setParent(parent);
         }
+        scopeDeref.dismiss();
     }
+
+    // Neither the hook nor the trace should throw or otherwise halt this
+    // object's creation. It's a bug in them if they do.
     if (Q_UNLIKELY(qtHookData[QHooks::AddQObject]))
         reinterpret_cast<QHooks::AddQObjectCallback>(qtHookData[QHooks::AddQObject])(this);
     Q_TRACE(QObject_ctor, this);
