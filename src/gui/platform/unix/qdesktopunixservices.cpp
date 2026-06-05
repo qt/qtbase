@@ -95,17 +95,17 @@ static inline bool checkExecutable(const QString &candidate, QString *result)
     return !result->isEmpty();
 }
 
-static inline bool detectWebBrowser(const QByteArray &desktop,
-                                    bool checkBrowserVariable,
-                                    QString *browser)
+[[maybe_unused]]
+static inline bool detectWebBrowser(QDesktopUnixServices::LaunchType type,
+                                    const QByteArray &desktop, QString *browser)
 {
     const char *browsers[] = {"google-chrome", "firefox", "mozilla", "opera"};
 
-    browser->clear();
+    Q_PRE(browser->isEmpty());
     if (checkExecutable(QStringLiteral("xdg-open"), browser))
         return true;
 
-    if (checkBrowserVariable) {
+    if (type == QDesktopUnixServices::LaunchType::Browser) {
         QString browserVariable = qEnvironmentVariable("DEFAULT_BROWSER");
         if (browserVariable.isEmpty())
             browserVariable = qEnvironmentVariable("BROWSER");
@@ -132,13 +132,16 @@ static inline bool detectWebBrowser(const QByteArray &desktop,
     return false;
 }
 
-static inline bool launch(const QString &launcher, const QUrl &url,
-                          const QString &xdgActivationToken)
+bool QDesktopUnixServices::launchProcess(LaunchType type, const QUrl &url,
+                                         const QString &xdgActivationToken)
 {
-
-    const QString command = launcher + u' ' + QLatin1StringView(url.toEncoded());
-    QString errorString;
 #if QT_CONFIG(process)
+    QString &program = type == LaunchType::Browser ? m_webBrowser : m_documentLauncher;
+    if (program.isEmpty())
+        detectWebBrowser(type, desktopEnvironment(), &program);
+
+    const QString command = program + u' ' + QLatin1StringView(url.toEncoded());
+    QString errorString;
     qCDebug(lcQpaServices, "Launching %s", qPrintable(command));
     QStringList args = QProcess::splitCommand(command);
     if (!args.isEmpty()) {
@@ -161,11 +164,15 @@ static inline bool launch(const QString &launcher, const QUrl &url,
     } else {
         errorString = u"Unexpected empty list of argument"_s;
     }
-#else
-    errorString = u"QProcess not available"_s;
-#endif // QT_CONFIG(process)
+
     qCWarning(lcQpaServices, "Launch of '%s' failed: %s",
               qPrintable(command), qPrintable(errorString));
+#else
+    Q_UNUSED(type);
+    Q_UNUSED(xdgActivationToken);
+    qCWarning(lcQpaServices, "Launch for '%ls' failed: QProcess not available",
+              qUtf16Printable(url.toEncoded()));
+#endif // QT_CONFIG(process)
     return false;
 }
 
@@ -553,12 +560,7 @@ bool QDesktopUnixServices::openUrl(const QUrl &url)
         }
 #  endif
 
-        if (m_webBrowser.isEmpty()
-            && !detectWebBrowser(desktopEnvironment(), true, &m_webBrowser)) {
-            qCWarning(lcQpaServices, "Unable to detect a web browser to launch '%s'", qPrintable(url.toString()));
-            return false;
-        }
-        return launch(m_webBrowser, url, xdgActivationToken);
+        return launchProcess(LaunchType::Browser, url, xdgActivationToken);
     };
 
     if (QGuiApplication::platformName().startsWith("wayland"_L1)) {
@@ -587,12 +589,7 @@ bool QDesktopUnixServices::openDocument(const QUrl &url)
         }
 #  endif
 
-        if (m_documentLauncher.isEmpty()
-            && !detectWebBrowser(desktopEnvironment(), false, &m_documentLauncher)) {
-            qCWarning(lcQpaServices, "Unable to detect a launcher for '%s'", qPrintable(url.toString()));
-            return false;
-        }
-        return launch(m_documentLauncher, url, xdgActivationToken);
+        return launchProcess(LaunchType::Document, url, xdgActivationToken);
     };
 
     if (QGuiApplication::platformName().startsWith("wayland"_L1)) {
