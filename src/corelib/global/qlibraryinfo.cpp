@@ -40,6 +40,11 @@ using namespace Qt::StringLiterals;
 
 extern void qDumpCPUFeatures(); // in qsimd.cpp
 
+static QString fromRawStringView(QStringView string)
+{
+    return QString::fromRawData(string.data(), string.size());
+}
+
 #if QT_CONFIG(settings)
 
 static std::unique_ptr<QSettings> findConfiguration();
@@ -414,8 +419,7 @@ static QString relocatablePrefixFromQt()
         // QtCore DLL is next to the executable. This is either a windeployqt'ed executable or an
         // executable within the QT_HOST_BIN directory. We're detecting the latter case by checking
         // whether there's an import library corresponding to our QtCore DLL in PREFIX/lib.
-        const QString libdir = QString::fromLocal8Bit(
-            qt_configure_strs.viewAt(QLibraryInfo::LibrariesPath - 1));
+        QStringView libdir = qt_configure_strs.viewAt(QLibraryInfo::LibrariesPath - 1);
         const QLatin1Char slash('/');
 #if defined(Q_CC_MINGW)
         const QString implibPrefix = QStringLiteral("lib");
@@ -446,8 +450,7 @@ static QString relocatablePrefixFromQt()
     // QTBUG-78948: libQt5Core.so may be located in subdirectories below libdir.
     // See "Hardware capabilities" in the ld.so documentation and the Qt 5.3.0
     // changelog regarding SSE2 support.
-    const QString libdir = QString::fromLocal8Bit(
-        qt_configure_strs.viewAt(QLibraryInfo::LibrariesPath - 1));
+    QString libdir = fromRawStringView(qt_configure_strs.viewAt(QLibraryInfo::LibrariesPath - 1));
     QDir prefixDir(prefixPath);
     while (!prefixDir.exists(libdir)) {
         prefixDir.cdUp();
@@ -665,7 +668,7 @@ QStringList QLibraryInfoPrivate::paths(QLibraryInfo::LibraryPath p)
         if (loc == QLibraryInfo::PrefixPath) {
             qtConfigureDefault = prefixFromQt();
         } else if (int(loc) <= qt_configure_strs.count()) {
-            qtConfigureDefault = QString::fromLocal8Bit(qt_configure_strs.viewAt(loc - 1));
+            qtConfigureDefault = fromRawStringView(qt_configure_strs.viewAt(loc - 1));
 #if !defined(Q_OS_WIN) // On Windows we use the registry
         } else if (loc == QLibraryInfo::SettingsPath) {
             // Use of volatile is a hack to discourage compilers from calling
@@ -857,18 +860,25 @@ extern const char qt_core_interpreter[] __attribute__((section(".interp")))
 extern "C" void qt_core_boilerplate() __attribute__((force_align_arg_pointer));
 void qt_core_boilerplate()
 {
+    QT_USE_NAMESPACE
+
     printf("This is the QtCore library version %s\n"
            "%s\n"
            "Contact: https://www.qt.io/licensing/\n"
-           "\n"
-           "Installation prefix: %s\n"
+           "\n",
+           QT_PREPEND_NAMESPACE(qt_build_string)(),
+           QT_COPYRIGHT);
+
+    QByteArray libPath =
+            qt_configure_strs.viewAt(QLibraryInfo::LibrariesPath - 1).toUtf8();
+    QByteArray pluginPath =
+            qt_configure_strs.viewAt(QLibraryInfo::PluginsPath - 1).toUtf8();
+    printf("Installation prefix: %s\n"
            "Library path:        %s\n"
            "Plugin path:         %s\n",
-           QT_PREPEND_NAMESPACE(qt_build_string)(),
-           QT_COPYRIGHT,
            QT_CONFIGURE_PREFIX_PATH,
-           qt_configure_strs[QT_PREPEND_NAMESPACE(QLibraryInfo)::LibrariesPath - 1],
-           qt_configure_strs[QT_PREPEND_NAMESPACE(QLibraryInfo)::PluginsPath - 1]);
+           libPath.data(),
+           pluginPath.data());
 
     QT_PREPEND_NAMESPACE(qDumpCPUFeatures)();
 
