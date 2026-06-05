@@ -1812,10 +1812,6 @@ endfunction()
 
 # Helper to add the android executable finalizer.
 function(_qt_internal_add_android_executable_finalizer target)
-    _qt_internal_android_get_target_android_build_dir(android_build_dir ${target})
-    set_target_properties(${target} PROPERTIES
-        QT_ANDROID_BUILD_DIR "${android_build_dir}"
-    )
     set_property(TARGET ${target} APPEND PROPERTY
         INTERFACE_QT_EXECUTABLE_FINALIZERS
         _qt_internal_android_executable_finalizer
