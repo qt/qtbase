@@ -116,11 +116,6 @@ static inline bool detectWebBrowser(QDesktopUnixServices::LaunchType type,
     if (desktop == QByteArray("KDE")) {
         if (checkExecutable(QStringLiteral("kde-open5"), browser))
             return true;
-        // Konqueror launcher
-        if (checkExecutable(QStringLiteral("kfmclient"), browser)) {
-            browser->append(" exec"_L1);
-            return true;
-        }
     } else if (desktop == QByteArray("GNOME")) {
         if (checkExecutable(QStringLiteral("gnome-open"), browser))
             return true;
