@@ -504,6 +504,13 @@ QByteArray QDesktopUnixServices::desktopEnvironment() const
     return result;
 }
 
+QString QDesktopUnixServices::portalFocusWindowIdentifier()
+{
+    if (QWindow *focusWindow = QGuiApplication::focusWindow())
+        return portalWindowIdentifier(focusWindow);
+    return QString();
+}
+
 template<typename F>
 bool runWithXdgActivationToken(F &&functionToCall)
 {
@@ -533,69 +540,57 @@ bool runWithXdgActivationToken(F &&functionToCall)
 
 bool QDesktopUnixServices::openUrl(const QUrl &url)
 {
-    auto openUrlInternal = [this](const QUrl &url, const QString &xdgActivationToken) {
-        if (url.scheme() == "mailto"_L1) {
-#  if QT_CONFIG(dbus)
-            if (checkNeedPortalSupport()) {
-                const QString parentWindow = QGuiApplication::focusWindow()
-                        ? portalWindowIdentifier(QGuiApplication::focusWindow())
-                        : QString();
-                QDBusError error = xdgDesktopPortalSendEmail(url, parentWindow, xdgActivationToken);
-                if (!error.isValid())
-                    return true;
-                if (error.type() == QDBusError::ServiceUnknown)
-                    m_hasNoPortal = true;
-
-                // service not running, fall back
-            }
-#  endif
+    auto openUrlWithoutPortal = [&](const QString &xdgActivationToken) {
+        if (url.scheme() == "mailto"_L1)
             return openDocument(url);
-        }
-
-#  if QT_CONFIG(dbus)
-        if (checkNeedPortalSupport()) {
-            const QString parentWindow = QGuiApplication::focusWindow()
-                    ? portalWindowIdentifier(QGuiApplication::focusWindow())
-                    : QString();
-            QDBusError error = xdgDesktopPortalOpenUrl(url, parentWindow, xdgActivationToken);
-            if (!error.isValid())
-                return true;
-            if (error.type() == QDBusError::ServiceUnknown)
-                m_hasNoPortal = true;
-        }
-#  endif
 
         return launchProcess(LaunchType::Browser, url, xdgActivationToken);
     };
 
-    return runWithXdgActivationToken([openUrlInternal, url](const QString &token) {
-        return openUrlInternal(url, token);
-    });
+#  if QT_CONFIG(dbus)
+    if (!m_hasNoPortal) {
+        auto openUrlWithPortal = [&](const QString &xdgActivationToken) {
+            const QString parentWindow = portalFocusWindowIdentifier();
+            QDBusError error = url.scheme() == "mailto"_L1
+                    ? xdgDesktopPortalSendEmail(url, parentWindow, xdgActivationToken)
+                    : xdgDesktopPortalOpenUrl(url, parentWindow, xdgActivationToken);
+            if (!error.isValid())
+                return true;
+            if (error.type() == QDBusError::ServiceUnknown)
+                m_hasNoPortal = true;
+            // portal activation failed, fall back to executing
+            return openUrlWithoutPortal(xdgActivationToken);
+        };
+        return runWithXdgActivationToken(openUrlWithPortal);
+    }
+#  endif
+
+    return runWithXdgActivationToken(openUrlWithoutPortal);
 }
 
 bool QDesktopUnixServices::openDocument(const QUrl &url)
 {
-    auto openDocumentInternal = [this](const QUrl &url, const QString &xdgActivationToken) {
+    auto openDocumentWithoutPortal = [&](const QString &xdgActivationToken) {
+        return launchProcess(LaunchType::Document, url, xdgActivationToken);
+    };
 
 #  if QT_CONFIG(dbus)
-        if (checkNeedPortalSupport()) {
-            const QString parentWindow = QGuiApplication::focusWindow()
-                    ? portalWindowIdentifier(QGuiApplication::focusWindow())
-                    : QString();
+    if (!m_hasNoPortal) {
+        auto openDocumentWithPortal = [&](const QString &xdgActivationToken) {
+            const QString parentWindow = portalFocusWindowIdentifier();
             QDBusError error = xdgDesktopPortalOpenFile(url, parentWindow, xdgActivationToken);
             if (!error.isValid())
                 return true;
             if (error.type() == QDBusError::ServiceUnknown)
                 m_hasNoPortal = true;
-        }
+            // portal activation failed, fall back to executing
+            return openDocumentWithoutPortal(xdgActivationToken);
+        };
+        return runWithXdgActivationToken(openDocumentWithPortal);
+    }
 #  endif
 
-        return launchProcess(LaunchType::Document, url, xdgActivationToken);
-    };
-
-    return runWithXdgActivationToken([openDocumentInternal, url](const QString &token) {
-        return openDocumentInternal(url, token);
-    });
+    return runWithXdgActivationToken(openDocumentWithoutPortal);
 }
 
 #else
