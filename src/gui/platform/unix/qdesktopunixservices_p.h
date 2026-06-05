@@ -60,6 +60,7 @@ private:
     bool m_hasScreenshotPortalWithColorPicking = false;
 
     inline bool launchProcess(LaunchType type, const QUrl &url, const QString &xdgActivationToken);
+    inline QString portalFocusWindowIdentifier();
 };
 
 QT_END_NAMESPACE
