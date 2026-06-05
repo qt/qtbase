@@ -55,6 +55,7 @@ private:
 #if QT_CONFIG(dbus)
     QPointer<QDBusPendingCallWatcher> m_watcher = nullptr;
     std::unique_ptr<QDBusServiceWatcher> m_portalWatcher;
+    bool m_hasNoPortal = false;
 #endif
     bool m_hasScreenshotPortalWithColorPicking = false;
 
