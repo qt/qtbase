@@ -2233,7 +2233,7 @@ bool QRhiVulkan::createOffscreenRenderPass(QVkRenderPassDescriptor *rpD,
 #endif
 
     // Add self-dependency to be able to add memory barriers for writes in graphics stages.
-    VkSubpassDependency selfDependency;
+    VkSubpassDependency selfDependency = {};
     VkPipelineStageFlags stageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT
                                    | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT
                                    | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT
@@ -3437,29 +3437,29 @@ void QRhiVulkan::beginPass(QRhiCommandBuffer *cb,
     QVarLengthArray<VkClearValue, (QVkRenderTargetData::MAX_COLOR_ATTACHMENTS + 1) * 2 + 1> cvs;
     if (rpHasAnyClearOp) {
         for (int i = 0; i < rtD->colorAttCount; ++i) {
-            VkClearValue cv;
+            VkClearValue cv = {};
             cv.color = { { colorClearValue.redF(), colorClearValue.greenF(), colorClearValue.blueF(),
                            colorClearValue.alphaF() } };
             cvs.append(cv);
         }
         for (int i = 0; i < rtD->dsAttCount; ++i) {
-            VkClearValue cv;
+            VkClearValue cv = {};
             cv.depthStencil = { depthStencilClearValue.depthClearValue(), depthStencilClearValue.stencilClearValue() };
             cvs.append(cv);
         }
         for (int i = 0; i < rtD->resolveAttCount; ++i) {
-            VkClearValue cv;
+            VkClearValue cv = {};
             cv.color = { { colorClearValue.redF(), colorClearValue.greenF(), colorClearValue.blueF(),
                            colorClearValue.alphaF() } };
             cvs.append(cv);
         }
         for (int i = 0; i < rtD->dsResolveAttCount; ++i) {
-            VkClearValue cv;
+            VkClearValue cv = {};
             cv.depthStencil = { depthStencilClearValue.depthClearValue(), depthStencilClearValue.stencilClearValue() };
             cvs.append(cv);
         }
         for (int i = 0; i < rtD->shadingRateAttCount; ++i) {
-            VkClearValue cv;
+            VkClearValue cv = {};
             cv.color = { { 0.0f, 0.0f, 0.0f, 0.0f } };
             cvs.append(cv);
         }
@@ -3775,7 +3775,7 @@ void QRhiVulkan::updateShaderResourceBindings(QRhiShaderResourceBindings *srb)
             QVkBuffer *bufD = QRHI_RES(QVkBuffer, buf);
             bd.ubuf.id = bufD->m_id;
             bd.ubuf.generation = bufD->generation;
-            VkDescriptorBufferInfo bufInfo;
+            VkDescriptorBufferInfo bufInfo = {};
             bufInfo.buffer = bufD->m_type == QRhiBuffer::Dynamic ? bufD->buffers[currentFrameSlot] : bufD->buffers[0];
             bufInfo.offset = b->u.ubuf.offset;
             bufInfo.range = b->u.ubuf.maybeSize ? b->u.ubuf.maybeSize : VK_WHOLE_SIZE;
@@ -3871,7 +3871,7 @@ void QRhiVulkan::updateShaderResourceBindings(QRhiShaderResourceBindings *srb)
             writeInfo.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
             bd.sbuf.id = bufD->m_id;
             bd.sbuf.generation = bufD->generation;
-            VkDescriptorBufferInfo bufInfo;
+            VkDescriptorBufferInfo bufInfo = {};
             bufInfo.buffer = bufD->m_type == QRhiBuffer::Dynamic ? bufD->buffers[currentFrameSlot] : bufD->buffers[0];
             bufInfo.offset = b->u.sbuf.offset;
             bufInfo.range = b->u.sbuf.maybeSize ? b->u.sbuf.maybeSize : VK_WHOLE_SIZE;
@@ -5059,7 +5059,7 @@ void QRhiVulkan::recordPrimaryCommandBuffer(QVkCommandBuffer *cbD)
                                                                              : VK_SUBPASS_CONTENTS_INLINE);
             break;
         case QVkCommandBuffer::Command::MemoryBarrier: {
-            VkMemoryBarrier barrier;
+            VkMemoryBarrier barrier = {};
             barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
             barrier.pNext = nullptr;
             barrier.dstAccessMask = cmd.args.memoryBarrier.dstAccessMask;
@@ -6102,7 +6102,7 @@ void QRhiVulkan::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBin
 
     if (addWriteBarrier) {
         if (cbD->passUsesSecondaryCb) {
-            VkMemoryBarrier barrier;
+            VkMemoryBarrier barrier = {};
             barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
             barrier.pNext = nullptr;
             barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
