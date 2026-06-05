@@ -35,10 +35,24 @@ function(_qt_internal_get_current_project_sbom_relative_dir out_var)
     set(${out_var} "${sbom_dir}" PARENT_SCOPE)
 endfunction()
 
+# Helper that retuns the project binary dir of the current SBOM project which is recorded during
+# a _qt_internal_sbom_begin_project() call.
+# We don't just query PROJECT_BINARY_DIR, because subdirectories might have multiple
+# project() calls, but all of them should go to the same sbom document.
+function(_qt_internal_get_sbom_current_project_binary_dir out_var)
+    get_cmake_property(sbom_project_binary_dir _qt_internal_sbom_project_binary_dir)
+    if(NOT sbom_project_binary_dir)
+        message(FATAL_ERROR
+            "The SBOM project binary dir is empty. Call _qt_internal_sbom_begin_project() first")
+    endif()
+    set(${out_var} "${sbom_project_binary_dir}" PARENT_SCOPE)
+endfunction()
+
 # Helper that returns the directory where the intermediate sbom files will be generated.
 function(_qt_internal_get_current_project_sbom_dir out_var)
     _qt_internal_get_current_project_sbom_relative_dir(relative_dir)
-    set(sbom_dir "${PROJECT_BINARY_DIR}/${relative_dir}")
+    _qt_internal_get_sbom_current_project_binary_dir(project_binary_dir)
+    set(sbom_dir "${project_binary_dir}/${relative_dir}")
     set(${out_var} "${sbom_dir}" PARENT_SCOPE)
 endfunction()
 

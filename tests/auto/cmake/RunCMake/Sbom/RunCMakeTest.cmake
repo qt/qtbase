@@ -207,5 +207,6 @@ foreach(format_case IN LISTS format_cases)
 
     run_cmake_and_build(build_tools "${format_case}")
     run_cmake_and_build(recursive_file_inclusion "${format_case}")
+    run_cmake_and_build(multiple_project_calls_same_doc "${format_case}")
 endforeach()
 

@@ -78,6 +78,12 @@ function(_qt_internal_sbom_begin_project)
         endif()
     endif()
 
+    # Save the project binary dir right now. It will be used to place intermediate sbom files.
+    # The project binary dir might change if there are nested project() calls, but we want to
+    # continue writing intermediate sbom files to the same location until the end function is
+    # called.
+    set_property(GLOBAL PROPERTY _qt_internal_sbom_project_binary_dir "${PROJECT_BINARY_DIR}")
+
     # The ntia-conformance-checker insists that a SPDX document contain at least one
     # relationship that DESCRIBES a package, and that the package contains the string
     # "Package-" in the spdx id. boot2qt spdx seems to contain the same.
@@ -860,6 +866,7 @@ function(_qt_internal_sbom_end_project)
     set_property(GLOBAL PROPERTY _qt_internal_sbom_external_document_search_paths "")
     set_property(GLOBAL PROPERTY _qt_internal_sbom_auto_search_external_documents_in_paths "")
     set_property(GLOBAL PROPERTY _qt_sbom_verify_source_sbom_script "")
+    set_property(GLOBAL PROPERTY _qt_internal_sbom_project_binary_dir "")
 
     # Add configure-time dependency on project attribution files.
     get_property(attribution_files GLOBAL PROPERTY _qt_internal_project_attribution_files)
