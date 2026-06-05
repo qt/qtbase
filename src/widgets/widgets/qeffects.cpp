@@ -83,6 +83,7 @@ QAlphaWidget::QAlphaWidget(QWidget* w, Qt::WindowFlags f)
     setAttribute(Qt::WA_NoSystemBackground, true);
     widget = w;
     alpha = 0;
+    connect(w, &QWidget::destroyed, this, []() { q_blend.reset(); });
 }
 
 QAlphaWidget::~QAlphaWidget()
@@ -384,6 +385,7 @@ QRollEffect::QRollEffect(QWidget* w, Qt::WindowFlags f, DirFlags orient)
         currentHeight = 0;
 
     pm = widget->grab();
+    connect(w, &QWidget::destroyed, this, []() { q_roll.reset(); });
 }
 
 /*
