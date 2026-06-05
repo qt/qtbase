@@ -114,6 +114,8 @@ static inline bool detectWebBrowser(QDesktopUnixServices::LaunchType type,
     }
 
     if (desktop == QByteArray("KDE")) {
+        if (checkExecutable(QStringLiteral("kde-open"), browser))
+            return true;
         if (checkExecutable(QStringLiteral("kde-open5"), browser))
             return true;
     } else if (desktop == QByteArray("GNOME")) {
