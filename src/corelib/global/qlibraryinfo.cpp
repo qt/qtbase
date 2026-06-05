@@ -671,12 +671,8 @@ QStringList QLibraryInfoPrivate::paths(QLibraryInfo::LibraryPath p)
             qtConfigureDefault = fromRawStringView(qt_configure_strs.viewAt(loc - 1));
 #if !defined(Q_OS_WIN) // On Windows we use the registry
         } else if (loc == QLibraryInfo::SettingsPath) {
-            // Use of volatile is a hack to discourage compilers from calling
-            // strlen(), in the inlined fromLocal8Bit(const char *)'s body, at
-            // compile-time, as Qt installers binary-patch the path, replacing
-            // the dummy path seen at compile-time, typically changing length.
-            const char *volatile path = QT_CONFIGURE_SETTINGS_PATH;
-            qtConfigureDefault = QString::fromLocal8Bit(path);
+            constexpr QStringView path = u"" QT_CONFIGURE_SETTINGS_PATH;
+            qtConfigureDefault = fromRawStringView(path);
 #endif
         }
         if (!qtConfigureDefault.isEmpty()) {
