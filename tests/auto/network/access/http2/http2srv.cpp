@@ -133,6 +133,11 @@ void Http2Server::setSendTrailingHEADERS(bool enable)
     sendTrailingHEADERS = enable;
 }
 
+void Http2Server::setSendRedundantEndStreamDATA(bool enable)
+{
+    sendRedundantEndStreamDATA = enable;
+}
+
 void Http2Server::emulateGOAWAY(int code, int timeout)
 {
     Q_ASSERT(timeout >= 0);
@@ -287,6 +292,14 @@ void Http2Server::sendDATA(quint32 streamID, quint32 windowSize)
             writer.start(FrameType::DATA, FrameFlag::END_STREAM, streamID);
             writer.setPayloadSize(0);
             writer.write(*socket);
+
+            if (sendRedundantEndStreamDATA) {
+                // Emulate a non-conformant server: send a stray empty DATA
+                // frame with END_STREAM on the now-closed stream.
+                writer.start(FrameType::DATA, FrameFlag::END_STREAM, streamID);
+                writer.setPayloadSize(0);
+                writer.write(*socket);
+            }
         }
         suspendedStreams.erase(it);
         activeRequests.erase(streamID);

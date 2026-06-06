@@ -114,6 +114,8 @@ private slots:
 
     void trailingHEADERS();
 
+    void dataFrameAfterEndStream();
+
     void duplicateRequestsWithAborts();
 
     void abortOnEncrypted();
@@ -1691,6 +1693,51 @@ void tst_Http2::trailingHEADERS()
     QCOMPARE(nRequests, 0);
 
     QCOMPARE(reply->error(), QNetworkReply::NoError);
+    QTRY_VERIFY(serverGotSettingsACK);
+}
+
+void tst_Http2::dataFrameAfterEndStream()
+{
+    // A non-conformant server (observed with VK's "kittenx") may send a stray,
+    // empty DATA frame with END_STREAM after the stream was already closed by
+    // a previous END_STREAM. Per RFC 9113 6.1 we answer with RST_STREAM, but an
+    // already fully-received reply must not be turned into an error, and no data
+    // that was received must be dropped.
+    // See QHttp2ProtocolHandler::finishStream().
+    clearHTTP2State();
+    serverPort = 0;
+
+    const QByteArray responseBody = "The complete and correct response body.";
+
+    ServerPtr targetServer(newServer(defaultServerSettings, defaultConnectionType()));
+    targetServer->setResponseBody(responseBody);
+    targetServer->setSendRedundantEndStreamDATA(true);
+
+    QMetaObject::invokeMethod(targetServer.get(), "startServer", Qt::QueuedConnection);
+    runEventLoop();
+
+    QVERIFY(serverPort != 0);
+
+    nRequests = 1;
+
+    const auto url = requestUrl(defaultConnectionType());
+    QNetworkRequest request(url);
+    // H2C might be used on macOS where SecureTransport doesn't support server-side ALPN:
+    request.setAttribute(QNetworkRequest::Http2CleartextAllowedAttribute, true);
+
+    std::unique_ptr<QNetworkReply> reply{ manager->get(request) };
+    connect(reply.get(), &QNetworkReply::finished, this, &tst_Http2::replyFinished);
+
+    // Since we're using self-signed certificates, ignore SSL errors:
+    reply->ignoreSslErrors();
+
+    runEventLoop();
+    STOP_ON_FAILURE
+
+    QCOMPARE(nRequests, 0);
+
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+    QCOMPARE(reply->readAll(), responseBody);
     QTRY_VERIFY(serverGotSettingsACK);
 }
 
