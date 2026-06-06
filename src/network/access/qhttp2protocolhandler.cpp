@@ -543,7 +543,15 @@ void QHttp2ProtocolHandler::finishStream(QHttp2Stream *stream, Qt::ConnectionTyp
     }
 
     qCDebug(QT_HTTP2) << "stream" << stream->streamID() << "closed";
-    stream->deleteLater();
+
+    // Detach the reply and tear down the stream via canonical path, so a
+    // later stray frame cannot fail an already-finished reply. tryRemoveReply()
+    // also clears the reply->stream map, its sendRST_STREAM() does nothing on a
+    // gracefully closed stream.
+    if (!httpReply || !tryRemoveReply(httpReply)) {
+        requestReplyPairs.remove(stream);
+        stream->deleteLater();
+    }
 }
 
 void QHttp2ProtocolHandler::handleGOAWAY(Http2Error errorCode, quint32 lastStreamID)
