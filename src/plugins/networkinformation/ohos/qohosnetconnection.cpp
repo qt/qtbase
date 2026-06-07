@@ -46,6 +46,8 @@ NetState parseNetCapabilities(QOhosJsState &jsState, const QNapi::Object &netCap
                 validated = true;
             else if (capability == NetCap::NET_CAPABILITY_CHECKING_CONNECTIVITY)
                 checkingConnectivity = true;
+            else if (capability == NetCap::NET_CAPABILITY_PORTAL)
+                state.behindCaptivePortal = true;
         }
         if (checkingConnectivity)
             state.reachability = NetworkReachability::Local;

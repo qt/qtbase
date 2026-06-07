@@ -102,7 +102,8 @@ QNetworkInformation::Features QOhosNetworkInformationBackend::featuresSupported(
 QNetworkInformation::Features QOhosNetworkInformationBackend::featuresSupportedStatic()
 {
     return QNetworkInformation::Feature::Reachability
-        | QNetworkInformation::Feature::TransportMedium;
+        | QNetworkInformation::Feature::TransportMedium
+        | QNetworkInformation::Feature::CaptivePortal;
 }
 
 QOhosNetworkInformationBackend::QOhosNetworkInformationBackend()
@@ -124,9 +125,11 @@ void QOhosNetworkInformationBackend::updateConnectivity()
         ? mapTransportMedium(*state.transport)
         : QNetworkInformation::TransportMedium::Unknown;
     setTransportMedium(transport);
+    setBehindCaptivePortal(state.behindCaptivePortal);
 
     qCDebug(lcNetInfoOhos) << "updated reachability:" << reachability()
-        << "transport:" << transportMedium();
+        << "transport:" << transportMedium()
+        << "captive portal:" << behindCaptivePortal();
 }
 
 QString QOhosNetworkInformationBackendFactory::name() const
