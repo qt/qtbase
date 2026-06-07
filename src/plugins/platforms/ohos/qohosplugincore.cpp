@@ -55,6 +55,7 @@ constexpr const char *napiLoadableModules[] = {
     "@ohos.multimedia.media",
     "@ohos.multimodalInput.inputDevice",
     "@ohos.multimodalInput.pointer",
+    "@ohos.net.connection",
     "@ohos.notificationManager",
     "@ohos.pasteboard",
     "@ohos.settings",
