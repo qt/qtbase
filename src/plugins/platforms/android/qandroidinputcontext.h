@@ -67,6 +67,8 @@ public:
     static QAndroidInputContext * androidInputContext();
     bool isValid() const override { return true; }
 
+    void setAccessibilityFocusInProgress(bool inProgress) { m_accessibilityFocusInProgress = inProgress; }
+
     void reset() override;
     void commit() override;
     void update(Qt::InputMethodQueries queries) override;
@@ -138,6 +140,7 @@ private:
     QPointer<QObject> m_focusObject;
     QTimer m_hideCursorHandleTimer;
     bool m_fullScreenMode;
+    bool m_accessibilityFocusInProgress = false;
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(QAndroidInputContext::HandleModes)
 QT_END_NAMESPACE

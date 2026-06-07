@@ -6,6 +6,7 @@
 #include "androidjnimain.h"
 #include "qandroidplatformintegration.h"
 #include "qandroidplatformwindow.h"
+#include "qandroidinputcontext.h"
 #include "qpa/qplatformaccessibility.h"
 #include <QtGui/private/qaccessiblebridgeutils_p.h>
 #include "qguiapplication.h"
@@ -19,6 +20,7 @@
 
 #include <QtCore/QObject>
 #include <QtCore/qpointer.h>
+#include <QtCore/qscopeguard.h>
 #include <QtCore/qvarlengtharray.h>
 
 static const char m_qtTag[] = "Qt A11Y";
@@ -334,8 +336,18 @@ namespace QtAndroidAccessibility
         const auto& actionNames = iface->actionInterface()->actionNames();
 
         if (actionNames.contains(QAccessibleActionInterface::setFocusAction())) {
-            invokeActionOnInterfaceInMainThread(iface->actionInterface(),
-                                                QAccessibleActionInterface::setFocusAction());
+            QAccessibleActionInterface *actionInterface = iface->actionInterface();
+            // Suppress keyboard activation during accessibility focus navigation.
+            QMetaObject::invokeMethod(qApp, [actionInterface]() {
+                auto *inputContext = QAndroidInputContext::androidInputContext();
+                if (inputContext)
+                    inputContext->setAccessibilityFocusInProgress(true);
+                const auto resetGuard = qScopeGuard([inputContext] {
+                    if (inputContext)
+                        inputContext->setAccessibilityFocusInProgress(false);
+                });
+                actionInterface->doAction(QAccessibleActionInterface::setFocusAction());
+            }, Qt::QueuedConnection);
             return true;
         }
         return false;
