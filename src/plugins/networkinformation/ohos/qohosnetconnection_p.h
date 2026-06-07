@@ -27,6 +27,7 @@ enum class NetworkReachability
 struct NetState
 {
     NetworkReachability reachability = NetworkReachability::Disconnected;
+    bool behindCaptivePortal = false;
     std::optional<NetBearType> transport;
 };
 
