@@ -304,7 +304,7 @@ if(OHOS)
         NAME ohos.permission.INTERNET
     )
     qt_internal_add_harmonyos_permission(Network
-        NAME ohos.permission.GET_WIFI_INFO
+        NAME ohos.permission.GET_NETWORK_INFO
     )
 endif()
 
