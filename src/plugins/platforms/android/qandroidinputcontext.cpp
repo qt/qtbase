@@ -535,7 +535,13 @@ void QAndroidInputContext::reset()
     if (qGuiApp->focusObject()) {
         QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery(Qt::ImEnabled);
         if (!query.isNull() && query->value(Qt::ImEnabled).toBool()) {
-            QtAndroidInput::resetSoftwareKeyboard();
+            // reset() runs on the focus change that an accessibility
+            // setFocusAction triggers; resetSoftwareKeyboard()'s restartInput()
+            // re-prompts the IME on some keyboards, which would re-open the
+            // panel we are suppressing in showInputPanel(). Skip it for the
+            // accessibility-focus path so the two stay consistent.
+            if (!m_accessibilityFocusInProgress)
+                QtAndroidInput::resetSoftwareKeyboard();
             return;
         }
     }
@@ -955,6 +961,13 @@ void QAndroidInputContext::showInputPanel()
         connect(qGuiApp, SIGNAL(applicationStateChanged(Qt::ApplicationState)), this, SLOT(showInputPanelLater(Qt::ApplicationState)));
         return;
     }
+
+    // Don't open the keyboard for the input focus that an accessibility
+    // setFocusAction grants while a screen reader navigates fields; a
+    // deliberate activation (double-tap) still opens it normally.
+    if (m_accessibilityFocusInProgress)
+        return;
+
     QSharedPointer<QInputMethodQueryEvent> query = focusObjectInputMethodQuery();
     if (query.isNull())
         return;
