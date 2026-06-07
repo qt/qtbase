@@ -39,6 +39,7 @@ NetState parseNetCapabilities(QOhosJsState &jsState, const QNapi::Object &netCap
         bool internetCapable = false;
         bool validated = false;
         bool checkingConnectivity = false;
+        state.metered = true;
         for (const auto capability : networkCap) {
             if (capability == NetCap::NET_CAPABILITY_INTERNET)
                 internetCapable = true;
@@ -48,6 +49,8 @@ NetState parseNetCapabilities(QOhosJsState &jsState, const QNapi::Object &netCap
                 checkingConnectivity = true;
             else if (capability == NetCap::NET_CAPABILITY_PORTAL)
                 state.behindCaptivePortal = true;
+            else if (capability == NetCap::NET_CAPABILITY_NOT_METERED)
+                state.metered = false;
         }
         if (checkingConnectivity)
             state.reachability = NetworkReachability::Local;

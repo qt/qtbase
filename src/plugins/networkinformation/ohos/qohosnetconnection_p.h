@@ -28,6 +28,7 @@ struct NetState
 {
     NetworkReachability reachability = NetworkReachability::Disconnected;
     bool behindCaptivePortal = false;
+    bool metered = false;
     std::optional<NetBearType> transport;
 };
 
