@@ -2889,8 +2889,10 @@ void tst_QXmlStream::externalEntityResolverRecursion() const
     do {
         reader.readNext();
     } while (!reader.atEnd());
-    QEXPECT_FAIL("", "QTBUG-147324", Continue);
-    QCOMPARE(reader.error(), QXmlStreamReader::NotWellFormedError);
+    // QTBUG-147324: Won't Fix.
+    // Recursion is not detected at the QXmlStreamReader level on purpose.
+    QCOMPARE(reader.error(), QXmlStreamReader::NoError);
+    QCOMPARE(r.count, 10);
 }
 
 void tst_QXmlStream::entityExpansionLimitImpl(const QString &xml,
