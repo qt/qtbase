@@ -228,11 +228,13 @@ QString QXmlStreamEntityResolver::resolveEntity(const QString& /*publicId*/, con
 
 
 /*!
-  Resolves the undeclared entity \a name and returns its replacement
-  text. If the entity is also unknown to the entity resolver, it
-  returns an empty string.
+    Reimplement this function to resolve the undeclared entity \a name and
+    return its replacement text. If the entity is unknown to the entity
+    resolver, return a \l{QString::isNull()}{null string}: \c{QString()}. This
+    will raise an error in QXmlStreamreader. An empty, but non-null string is
+    considered a valid expansion of the entity, and will not cause an error.
 
-  The default implementation always returns an empty string.
+    The default implementation always returns \c{QString()}.
 */
 
 QString QXmlStreamEntityResolver::resolveUndeclaredEntity(const QString &/*name*/)
