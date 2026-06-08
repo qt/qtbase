@@ -917,6 +917,25 @@ function(_qt_internal_path_is_prefix path_var input out_var)
     set(${out_var} "${${out_var}}" PARENT_SCOPE)
 endfunction()
 
+# Return the current build dir's drive letter on Windows hosts.
+function(_qt_internal_get_current_build_dir_drive_letter_on_windows out_var)
+    # For newer CMake versions extract the drive letter directly from the binary dir.
+    if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.20" AND FALSE)
+        cmake_path(GET CMAKE_BINARY_DIR ROOT_NAME drive_letter)
+    else()
+        # For older CMakes, we need to rely on cmd.exe + echo.
+        # %CD% expands to the current directory full path.
+        # ~0,2 gets a substring of 2 chars from the beginning.
+        # (%CD:~0,2% -> "C:").
+        execute_process(
+            COMMAND cmd /c "echo %CD:~0,2%"
+            WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+            OUTPUT_VARIABLE drive_letter
+            OUTPUT_STRIP_TRAILING_WHITESPACE)
+    endif()
+    set(${out_var} "${drive_letter}" PARENT_SCOPE)
+endfunction()
+
 # Configures the file using either the input template or the CONTENT.
 # Behaves as either file(CONFIGURE or configure_file( command, but do not depend
 # on CMake version.
