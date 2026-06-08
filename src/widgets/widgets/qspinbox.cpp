@@ -461,9 +461,10 @@ void QSpinBox::setDisplayIntegerBase(int base)
     This virtual function is used by the spin box whenever it needs to
     display the given \a value. The default implementation returns a
     string containing \a value printed in the standard way using
-    QWidget::locale().toString(), but with the thousand separator
-    removed unless setGroupSeparatorShown() is set. Reimplementations may
-    return anything. (See the example in the detailed description.)
+    QWidget::locale().\l{QLocale::}{toString()}, but with the thousand
+    separator removed unless setGroupSeparatorShown() is set.
+    Reimplementations may return anything. (See the example in the
+    detailed description.)
 
     Note: QSpinBox does not call this function for specialValueText()
     and that neither prefix() nor suffix() should be included in the
@@ -943,7 +944,7 @@ void QDoubleSpinBox::setDecimals(int decimals)
 /*!
     This virtual function is used by the spin box whenever it needs to
     display the given \a value. The default implementation returns a string
-    containing \a value printed using QWidget::locale().toString(\a value,
+    containing \a value printed using QWidget::locale().\l{QLocale::}{toString}(\a value,
     \c u'f', decimals()) and will remove the thousand separator unless
     setGroupSeparatorShown() is set. Reimplementations may return anything.
 
