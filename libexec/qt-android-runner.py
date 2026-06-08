@@ -202,8 +202,16 @@ if not activity_name:
 
 start_cmd = [*adb_argv, "shell", "am", "start", "-n", f"{package_name}/{activity_name}"]
 
-# Get environment variables; skip the flag entirely when there is nothing to forward.
-env_vars = "\t".join(f"{key}={value}" for key, value in os.environ.items())
+# On Windows the am-start cmdline length is limited, so forward only Qt/test env vars there.
+# TODO: allow explicit filtering of which env vars to forward (e.g. a regex flag).
+if sys.platform == "win32":
+    env_items = [(key, value) for key, value in os.environ.items()
+                 if key.startswith("QT_") or key.startswith("QTEST_")]
+else:
+    env_items = list(os.environ.items())
+
+# Skip the flag entirely when there is nothing to forward.
+env_vars = "\t".join(f"{key}={value}" for key, value in env_items)
 if env_vars:
     encoded_env_vars = base64.b64encode(env_vars.encode()).decode()
     start_cmd += ["-e", "extraenvvars", encoded_env_vars]
