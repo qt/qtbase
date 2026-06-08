@@ -206,6 +206,47 @@ WRAP(indexOf, QLatin1StringView)
     \l{QXmlStreamReader::entityDeclarations()}{declared in the internal-set of
     the DTD}.
 
+    \target sec-con-QXmlStreamEntityResolver
+    \section1 Security Considerations
+
+    \target sec-con-QXmlStreamEntityResolver-cycles
+    \section2 Entity Cycles
+
+    You must take care to avoid resolving entities in cycles, because
+    QXmlStreamReader only detects and rejects cycles in
+    \l{QXmlStreamReader::entityDeclarations()}{entities defined in the DTD},
+    not in entities expanded from an implementation of the
+    QXmlStreamEntityResolver interface.
+
+    This is by design: QXmlStreamReader puts the work on the implementation of
+    a concrete QXmlStreamEntityResolver. For static mappings, like
+    \l{https://www.w3.org/TR/xml-entity-names/}{XML Entity Definitions for
+    Characters}, this is trivially guaranteed, so running some tracking in the
+    background would just slow things down for everyone.
+
+    Things get interesting when you read entity definitions from external
+    input, including untrusted sources. In this case, \e{your implementation}
+    must ensure the expansions it uses as input are cycle-free. This is a
+    \l{https://en.wikipedia.org/wiki/Cycle_(graph_theory)#Cycle_detection}{simple
+    graph operation} that can be implemented in linear time and space and can
+    be performed up front at load time, so it doesn't affect
+    resolveUndeclaredEntity() performance.
+
+    \target sec-con-QXmlStreamEntityResolver-expansion-limit
+    \section2 Entity Expansion Limit
+
+    At the moment, entities resolved by this class do not count against
+    QXmlStreamReader::entityExpansionLimit(). This may change in future
+    versions of Qt.
+
+    For the time being, you need to enforce some upper expansion limit
+    yourself, if you read entity definitions from external input. After cycle
+    detection,
+    \l{https://en.wikipedia.org/wiki/Longest_path_problem#Acyclic_graphs}{longest-path
+    calculation} is a simple graph operation that can be implemented in linear
+    time and space and can be performed up front at load time, so it, too,
+    doesn't affect resolveUndeclaredEntity() performance.
+
     \sa QXmlStreamReader::setEntityResolver()
  */
 
