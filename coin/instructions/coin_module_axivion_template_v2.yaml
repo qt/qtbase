@@ -8,7 +8,7 @@ analysis_instructions_axivion: &analysis_instructions_axivion
         variableValue: "{{.AgentWorkingDir}}/install/lib/cmake/Qt6/qt.toolchain.cmake"
       - type: EnvironmentVariable
         variableName: AXIVION_DIVIDED_MODULES
-        variableValue: "qtbase_qtdeclarative_qtconnectivity_qtgrpc_qttools_qtwayland"
+        variableValue: "qtbase_qtdeclarative_qtconnectivity_qtgrpc_qttools_qtwayland_qtcanvaspainter"
       - type: EnvironmentVariable
         variableName: CMAKE_PREFIX_PATH
         variableValue: "{{.AgentWorkingDir}}/install/lib/cmake"
@@ -89,6 +89,19 @@ build_environment_axivion: &build_environment_axivion
       maxTimeInSeconds: 1800
       maxTimeBetweenOutput: 900
       userMessageOnFailure: "Failed to initialize git submodules"
+    - type: Group
+      instructions:
+      - type: EnvironmentVariable
+        variableName: AXIVION_ANALYSIS
+        variableValue: null
+      - !include "{{qt/qtbase}}/cmake_module_build_instructions.yaml"
+      - type: EnvironmentVariable
+        variableName: AXIVION_ANALYSIS
+        variableValue: "1"
+      enable_if:
+        condition: runtime
+        env_var: PREBUILD_MODULE_FOR_AXIVION
+        not_equals_value: null
 
 type: Group
 instructions:
