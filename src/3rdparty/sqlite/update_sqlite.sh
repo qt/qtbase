@@ -8,7 +8,7 @@
 
 version_maj=3
 version_min=53
-version_patch=1
+version_patch=2
 year=2026
 
 version=${version_maj}.${version_min}.${version_patch}
