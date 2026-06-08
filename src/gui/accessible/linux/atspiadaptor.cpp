@@ -1297,6 +1297,21 @@ void AtSpiAdaptor::notify(QAccessibleEvent *event)
                 QAccessible::State state = iface->state();
                 bool focused = state.focused;
                 notifyStateChange(iface, "focused"_L1, focused);
+            } else if (stateChange.expanded) {
+                QAccessibleInterface *iface = event->accessibleInterface();
+                QAccessible::State state = iface->state();
+                bool expanded = state.expanded;
+                notifyStateChange(iface, "expanded"_L1, expanded);
+            } else if (stateChange.collapsed) {
+                QAccessibleInterface *iface = event->accessibleInterface();
+                QAccessible::State state = iface->state();
+                bool collapsed = state.collapsed;
+                notifyStateChange(iface, "collapsed"_L1, collapsed);
+            } else if (stateChange.expandable) {
+                QAccessibleInterface *iface = event->accessibleInterface();
+                QAccessible::State state = iface->state();
+                bool expandable = state.expandable;
+                notifyStateChange(iface, "expandable"_L1, expandable);
             }
         }
         break;
