@@ -101,6 +101,13 @@ class QtActivityLoader extends QtLoader {
                 setEnvironmentVariables(getDecodedUtfString(extraEnvVars));
             }
 
+            for (String key : extras.keySet()) {
+                if (key.startsWith("extraenvvars_")) {
+                    String varName = key.substring("extraenvvars_".length());
+                    setEnvironmentVariable(varName, extras.getString(key));
+                }
+            }
+
             if (extras.containsKey("extraappparams")) {
                 String extraAppParams = extras.getString("extraappparams");
                 appendApplicationParameters(getDecodedUtfString(extraAppParams));
