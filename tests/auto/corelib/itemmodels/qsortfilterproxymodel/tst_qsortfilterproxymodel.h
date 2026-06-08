@@ -156,7 +156,7 @@ private slots:
 
     void filterChangeEmitsModelChangedSignals();
 
-    void dataChangeRelevances();
+    void dataChangeRelevanceFlags();
 
 protected:
     void buildHierarchy(const QStringList &data, QAbstractItemModel *model);
