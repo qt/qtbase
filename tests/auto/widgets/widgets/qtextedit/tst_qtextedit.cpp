@@ -34,6 +34,7 @@
 #include <private/qinputmethod_p.h>
 
 #include <QtWidgets/private/qapplication_p.h>
+#include <QtTest/private/qtesthelpers_p.h>
 
 Q_LOGGING_CATEGORY(lcTests, "qt.widgets.tests")
 
@@ -3101,7 +3102,8 @@ void tst_QTextEdit::linkSelectionArtifact()
 
     e.setFont(QFont(e.font().family(), 30));
     e.show();
-    QVERIFY(QTest::qWaitForWindowExposed(&e));
+    QVERIFY(QTestPrivate::ensurePositionTopLeft(e.windowHandle()));
+    QTRY_COMPARE(QApplication::topLevelAt(e.geometry().center()), &e);
 
     // Find the link boundaries
     QTextCursor startCur(e.document());

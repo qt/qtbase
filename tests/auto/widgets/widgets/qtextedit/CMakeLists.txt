@@ -23,6 +23,7 @@ qt_internal_add_test(tst_qtextedit
         Qt::GuiPrivate
         Qt::Widgets
         Qt::WidgetsPrivate
+        Qt::TestPrivate
     TESTDATA ${test_data}
 )
 
