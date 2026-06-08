@@ -649,6 +649,8 @@ private slots:
     void test_fastScanName() const;
 
     void entityExpansionLimit() const;
+    void entityExpansionLimitExternalResolver() const;
+    void externalEntityResolverRecursion() const;
     void manyAttributes() const;
 
     void tokenErrorHandling_data() const;
@@ -658,6 +660,7 @@ private slots:
 
 private:
     static QByteArray readFile(const QString &filename);
+    void entityExpansionLimitImpl(const QString &xml, QXmlStreamEntityResolver *resolver = nullptr) const;
 
     QTemporaryDir m_tempDir;
     TestSuiteHandler m_handler;
@@ -2839,12 +2842,70 @@ void tst_QXmlStream::entityExpansionLimit() const
                                  "<!ENTITY d \"&c;&c;&c;&c;&c;&c;&c;&c;&c;&c;\" >"
                                  "]>"
                                  "<foo>&d;&d;&d;</foo>");
+    entityExpansionLimitImpl(xml);
+}
+
+void tst_QXmlStream::entityExpansionLimitExternalResolver() const
+{
+    const auto xml = u"<?xml version='1.0'?>"
+                      "<foo>&d;&d;&d;</foo>"_s;
+    struct Resolver : QXmlStreamEntityResolver {
+        QString resolveUndeclaredEntity(const QString &name) override {
+            if (name.size() == 1) {
+                switch (name[0].unicode()) {
+                case u'a': return u"0123456789"_s;
+                case u'b': return u"&a;"_s.repeated(10);
+                case u'c': return u"&b;"_s.repeated(10);
+                case u'd': return u"&c;"_s.repeated(10);
+                }
+            }
+            return QString();
+        }
+    };
+
+    Resolver r;
+    entityExpansionLimitImpl(xml, &r);
+}
+
+void tst_QXmlStream::externalEntityResolverRecursion() const
+{
+    const auto xml = u"<?xml version='1.0'?>"
+                      "<foo>&a;</foo>"_s;
+    struct Resolver : QXmlStreamEntityResolver {
+        QString resolveUndeclaredEntity(const QString &name) override {
+            if (name == "a"_L1) {
+                if (++count == 10) // limit recursion in case it's unbounded
+                    return ""_L1;  // QString() would raise an error
+                return u"&a;"_s;
+            }
+            return QString();
+        }
+        int count = 0;
+    };
+
+    Resolver r;
+    QXmlStreamReader reader(xml);
+    reader.setEntityResolver(&r);
+    do {
+        reader.readNext();
+    } while (!reader.atEnd());
+    QEXPECT_FAIL("", "QTBUG-147324", Continue);
+    QCOMPARE(reader.error(), QXmlStreamReader::NotWellFormedError);
+}
+
+void tst_QXmlStream::entityExpansionLimitImpl(const QString &xml,
+                                              QXmlStreamEntityResolver *resolver) const
+{
     {
         QXmlStreamReader reader(xml);
+        if (resolver)
+            reader.setEntityResolver(resolver);
         QCOMPARE(reader.entityExpansionLimit(), 4096);
         do {
             reader.readNext();
         } while (!reader.atEnd());
+        if (resolver)
+            QEXPECT_FAIL("", "QTBUG-147323", Continue);
         QCOMPARE(reader.error(), QXmlStreamReader::NotWellFormedError);
     }
 
@@ -2852,15 +2913,21 @@ void tst_QXmlStream::entityExpansionLimit() const
     // with a limit of 9996 chars and pass with 9997
     {
         QXmlStreamReader reader(xml);
+        if (resolver)
+            reader.setEntityResolver(resolver);
         reader.setEntityExpansionLimit(9996);
         do {
             reader.readNext();
         } while (!reader.atEnd());
 
+        if (resolver)
+            QEXPECT_FAIL("", "QTBUG-147323", Continue);
         QCOMPARE(reader.error(), QXmlStreamReader::NotWellFormedError);
     }
     {
         QXmlStreamReader reader(xml);
+        if (resolver)
+            reader.setEntityResolver(resolver);
         reader.setEntityExpansionLimit(9997);
         do {
             reader.readNext();
