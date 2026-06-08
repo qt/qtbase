@@ -29,6 +29,8 @@ void QCollatorPrivate::init()
         qWarning("Ignoring punctuation unsupported in the posix collation implementation");
     if (options.testFlag(Opt::DiacriticInsensitive))
         qWarning("Ignoring diacritic marks unsupported in the POSIX collation implementation.");
+    if (options.testFlag(Opt::WidthInsensitive))
+        qWarning("Width insensitive option unsupported in the POSIX collation implementation");
 
     dirty = false;
 }

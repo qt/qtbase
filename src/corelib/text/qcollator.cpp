@@ -119,6 +119,12 @@ Q_GLOBAL_STATIC(QThreadStorage<GenerationalCollator>, defaultCollator)
                                 See \l {DiacriticInsensitive behavior details}
                                 below.
 
+    \value WidthInsensitive     Treat CJK fullwidth and halfwidth forms of a
+                                character as equivalent; for example, fullwidth
+                                "Ａ１２３" and halfwidth "A123", or fullwidth
+                                Katakana "カ" and halfwidth "ｶ".
+                                See \l {WidthInsensitive behavior details} below.
+
     \section2 DiacriticInsensitive behavior details
 
     This option is primarily intended for search and matching, where the user
@@ -147,6 +153,41 @@ Q_GLOBAL_STATIC(QThreadStorage<GenerationalCollator>, defaultCollator)
           Norwegian and does not fold. This folding is not supported by
           the \macos backend. On Windows, some ligature folding is applied
           implicitly, even without this option set.
+    \endlist
+
+    \section2 WidthInsensitive behavior details
+
+    Chinese, Japanese and Korean (CJK) characters are wider than those of
+    Latin-derived scripts. For compatibility, Unicode includes "fullwidth"
+    forms of European characters that have the same width as CJK characters,
+    as well as "halfwidth" forms of some CJK characters (for example,
+    Katakana) that have the narrower European width. These width variants are
+    formally separate characters in Unicode, but represent the same letter
+    or symbol. Users may enter text using input methods that produce either
+    form, and expect them to match when searching or comparing. This option
+    makes the fullwidth and halfwidth forms of the same character compare
+    as equal.
+
+    The exact behavior depends on the platform backend:
+
+    \list
+      \li On ICU, width sensitivity and case sensitivity are controlled
+          by the same collation strength level. As a result, in non-CJK
+          locales, this option has no effect unless CaseInsensitive option
+          is set. On the \macos and Windows backends, this option works
+          independently of case sensitivity.
+      \li In CJK locales, fullwidth and halfwidth forms may already
+          compare as equal on \macos and ICU backends due to
+          locale-specific collation rules, even without this option set.
+          On Windows, this option must be set explicitly.
+      \li The native Windows backend (without ICU) uses NLS
+          (\l {https://learn.microsoft.com/en-us/windows/win32/intl/national-language-support}
+          {National Language Support}) to handle language-specific sorting,
+          which gives a different default ordering of fullwidth and halfwidth
+          characters than
+          \l {https://en.wikipedia.org/wiki/Unicode_collation_algorithm}
+          {Unicode Collation Algorithm} based backends (\macos, ICU).
+          Setting this option makes them compare as equal on both.
     \endlist
 
     \sa setOptions(), options()

@@ -184,6 +184,22 @@ void tst_QCollator::compare_data()
     QTest::newRow("en-.19:,19-nopun")
             << u"en_US"_s << u"test.19"_s << u"test,19"_s
             << (Opt::CaseInsensitive | Opt::NumericSort | Opt::IgnorePunctuation) << 0;
+    QTest::newRow("en-A:Ａ") << u"en_US"_s << u"A"_s << u"Ａ"_s << Opts{} << -1;
+    QTest::newRow("en-A:Ａ-nocase-nowidth")
+            << u"en_US"_s << u"a"_s << u"Ａ"_s << (Opt::WidthInsensitive | Opt::CaseInsensitive)
+            << 0;
+    QTest::newRow("en-fullwidth-digits") << u"en_US"_s << u"123"_s << u"１２３"_s << Opts{} << -1;
+    QTest::newRow("en-fullwidth-digits-nowidth")
+            << u"en_US"_s << u"123"_s << u"１２３"_s << (Opt::WidthInsensitive | Opt::CaseInsensitive)
+            << 0;
+#if QT_CONFIG(icu) || !defined(Q_OS_WIN)
+    QTest::newRow("en-カ:ｶ") << u"en_US"_s << u"カ"_s << u"ｶ"_s << Opts{} << -1;
+#else // MS uses NLS not UCA
+    QTest::newRow("en-カ:ｶ") << u"en_US"_s << u"カ"_s << u"ｶ"_s << Opts{} << 1;
+#endif
+    QTest::newRow("en-カ:ｶ-nowidth")
+            << u"en_US"_s << u"カ"_s << u"ｶ"_s
+            << (Opt::WidthInsensitive | Opt::CaseInsensitive) << 0;
     QTest::newRow("en-empty-word") << u"en_US"_s << QString() << u"non-empty"_s << Opts{} << -1;
     QTest::newRow("en-empty-word-nocase")
             << u"en_US"_s << QString() << u"non-empty"_s << Opts{Opt::CaseInsensitive} << -1;
@@ -617,6 +633,25 @@ void tst_QCollator::compare_data()
             << u"fr_FR"_s << QString() << QString()
             << (Opt::CaseInsensitive | Opt::IgnorePunctuation) << 0;
 
+    /*
+        Halfwidth and fullwidth forms
+    */
+#if QT_CONFIG(icu) || !defined(Q_OS_WIN)
+    QTest::newRow("ja-A:Ａ") << u"ja_JP"_s << u"A"_s << u"Ａ"_s << Opts{} << 0;
+    QTest::newRow("ja-a:Ａ-nocase")
+            << u"ja_JP"_s << u"a"_s << u"Ａ"_s << Opts{Opt::CaseInsensitive} << 0;
+    QTest::newRow("ja-カ:ｶ") << u"ja_JP"_s << u"カ"_s << u"ｶ"_s << Opts{} << 0;
+    QTest::newRow("ja-digits") << u"ja_JP"_s << u"123"_s << u"１２３"_s << Opts{} << 0;
+#else // MS uses NLS not UCA
+    QTest::newRow("ja-A:Ａ") << u"ja_JP"_s << u"A"_s << u"Ａ"_s << Opts{} << -1;
+    QTest::newRow("ja-カ:ｶ") << u"ja_JP"_s << u"カ"_s << u"ｶ"_s << Opts{} << 1;
+    QTest::newRow("ja-digits") << u"ja_JP"_s << u"123"_s << u"１２３"_s << Opts{} << -1;
+#endif
+    QTest::newRow("ja-カ:ｶ-nowidth")
+            << u"ja_JP"_s << u"カ"_s << u"ｶ"_s << Opts{Opt::WidthInsensitive} << 0;
+    QTest::newRow("ja-digits-nowidth")
+            << u"ja_JP"_s << u"123"_s << u"１２３"_s << Opts{Opt::WidthInsensitive} << 0;
+
     // C locale: case sensitive [A-Z] < [a-z] but case insensitive [Aa] < [Bb] <...< [Zz]
     const QString C = u"C"_s;
     QTest::newRow("C:ABBA:AaaA") << C << u"ABBA"_s << u"AaaA"_s << Opts{} << -1;
@@ -635,6 +670,10 @@ void tst_QCollator::compare_data()
             << C << u"a_b"_s << u"ab"_s << Opts{} << -1;
     QTest::newRow("C-a_b:ab-nopun")
             << C << u"a_b"_s << u"ab"_s << Opts{Opt::IgnorePunctuation} << -1;
+    QTest::newRow("C-A:Ａ")
+            << C << u"A"_s << u"Ａ"_s << Opts{} << -1;
+    QTest::newRow("C-A:Ａ-nowidth")
+            << C << u"A"_s << u"Ａ"_s << Opts{Opt::WidthInsensitive} << -1;
     QTest::newRow("C-empty-word") << C << QString() << u"non-empty"_s << Opts{} << -1;
     QTest::newRow("C-empty-word-nocase")
             << C << QString() << u"non-empty"_s << Opts{Opt::CaseInsensitive} << -1;

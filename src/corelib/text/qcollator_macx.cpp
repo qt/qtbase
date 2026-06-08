@@ -47,6 +47,8 @@ void QCollatorPrivate::init()
         collationOptions |= kUCCollatePunctuationSignificantMask;
     if (options.testFlag(Opt::DiacriticInsensitive))
         collationOptions |= kUCCollateDiacritInsensitiveMask;
+    if (options.testFlag(Opt::WidthInsensitive))
+        collationOptions |= kUCCollateWidthInsensitiveMask;
 
     status = UCCreateCollator(localeRef, 0, collationOptions, &collator);
     if (status != 0)

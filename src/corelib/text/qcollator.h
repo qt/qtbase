@@ -53,6 +53,7 @@ public:
         IgnorePunctuation = 0x2,
         NumericSort = 0x4,
         DiacriticInsensitive = 0x8,
+        WidthInsensitive = 0x10,
     };
     Q_DECLARE_FLAGS(CollationOptions, CollationOption)
 

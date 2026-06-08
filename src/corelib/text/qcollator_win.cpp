@@ -39,6 +39,9 @@ void QCollatorPrivate::init()
     if (options.testFlag(Opt::DiacriticInsensitive))
         collator |= LINGUISTIC_IGNOREDIACRITIC;
 
+    if (options.testFlag(Opt::WidthInsensitive))
+        collator |= NORM_IGNOREWIDTH;
+
     dirty = false;
 }
 
