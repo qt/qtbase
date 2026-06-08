@@ -7,7 +7,6 @@ import os
 import shlex
 import subprocess
 import sys
-import base64
 import time
 import signal
 import argparse
@@ -210,11 +209,9 @@ if sys.platform == "win32":
 else:
     env_items = list(os.environ.items())
 
-# Skip the flag entirely when there is nothing to forward.
-env_vars = "\t".join(f"{key}={value}" for key, value in env_items)
-if env_vars:
-    encoded_env_vars = base64.b64encode(env_vars.encode()).decode()
-    start_cmd += ["-e", "extraenvvars", encoded_env_vars]
+# Send each var as its own extra so values with spaces survive intact.
+for key, value in env_items:
+    start_cmd += ["-e", f"extraenvvars_{key}", shlex.quote(value)]
 
 # Get app arguments
 if remaining_args:
