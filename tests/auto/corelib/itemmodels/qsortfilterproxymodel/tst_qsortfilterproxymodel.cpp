@@ -5590,11 +5590,11 @@ public:
 
 protected:
 #if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
-    Q_INVOKABLE QSortFilterProxyModel::DataChangeRelevances dataChangeRelevances(const QModelIndex &sourceTopLeft,
+    Q_INVOKABLE QSortFilterProxyModel::DataChangeRelevanceFlags dataChangeRelevanceFlags(const QModelIndex &sourceTopLeft,
                                                                                  const QModelIndex &sourceBottomRight,
                                                                                  const QList<int> &roles) const
 #else
-   QSortFilterProxyModel::DataChangeRelevances dataChangeRelevances(const QModelIndex &sourceTopLeft,
+   QSortFilterProxyModel::DataChangeRelevanceFlags dataChangeRelevanceFlags(const QModelIndex &sourceTopLeft,
                                                                     const QModelIndex &sourceBottomRight,
                                                                     const QList<int> &roles) const override
 #endif
@@ -5603,17 +5603,17 @@ protected:
         Q_UNUSED(sourceBottomRight);
 
         if (roles.isEmpty())
-            return QSortFilterProxyModel::DataChangeRelevance::RelevantForFilteringAndSorting;
+            return QSortFilterProxyModel::DataChangeRelevanceFlag::RelevantForFilteringAndSorting;
 
-        QSortFilterProxyModel::DataChangeRelevances ignoreFlags = QSortFilterProxyModel::DataChangeRelevance::NotRelevant;
+        QSortFilterProxyModel::DataChangeRelevanceFlags ignoreFlags = QSortFilterProxyModel::DataChangeRelevanceFlag::NotRelevant;
         if (roles.contains(filterRole()))
-            ignoreFlags.setFlag(QSortFilterProxyModel::DataChangeRelevance::RelevantForFiltering);
+            ignoreFlags.setFlag(QSortFilterProxyModel::DataChangeRelevanceFlag::RelevantForFiltering);
         if (roles.contains(sortRole()))
-            ignoreFlags.setFlag(QSortFilterProxyModel::DataChangeRelevance::RelevantForSorting);
+            ignoreFlags.setFlag(QSortFilterProxyModel::DataChangeRelevanceFlag::RelevantForSorting);
         return ignoreFlags;
     }
 };
-void tst_QSortFilterProxyModel::dataChangeRelevances()
+void tst_QSortFilterProxyModel::dataChangeRelevanceFlags()
 {
     ChangeIgnoringFilterModel filterModel;
     filterModel.setDynamicSortFilter(true);

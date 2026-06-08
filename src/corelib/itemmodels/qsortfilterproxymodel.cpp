@@ -237,11 +237,11 @@ public:
     std::array<QMetaObject::Connection, 18> sourceConnections;
 
 #if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
-    void resolveSubclassDataChangeRelevancesMetaMethod();
-    QSortFilterProxyModel::DataChangeRelevances dataChangeRelevances(const QModelIndex &sourceTopLeft,
+    void resolveSubclassDataChangeRelevanceFlagsMetaMethod();
+    QSortFilterProxyModel::DataChangeRelevanceFlags dataChangeRelevanceFlags(const QModelIndex &sourceTopLeft,
                                                                      const QModelIndex &sourceBottomRight,
                                                                      const QList<int> &roles);
-    QMetaMethod dataChangeRelevancesMetaMethod;
+    QMetaMethod dataChangeRelevanceFlagsMetaMethod;
 #endif
 
     QHash<QtPrivate::QModelIndexWrapper, Mapping *>::const_iterator create_mapping(
@@ -1414,55 +1414,55 @@ bool QSortFilterProxyModelPrivate::needsReorder(const QList<int> &source_rows, c
 }
 
 #if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
-void QSortFilterProxyModelPrivate::resolveSubclassDataChangeRelevancesMetaMethod()
+void QSortFilterProxyModelPrivate::resolveSubclassDataChangeRelevanceFlagsMetaMethod()
 {
     Q_Q(QSortFilterProxyModel);
 
     const QMetaObject *mo = q->metaObject();
 
-    int metaMethodIndex = mo->indexOfMethod("dataChangeRelevances(QModelIndex,QModelIndex,QList<int>)");
+    int metaMethodIndex = mo->indexOfMethod("dataChangeRelevanceFlags(QModelIndex,QModelIndex,QList<int>)");
 
-    // dataChangeRelevances has not be "overriden" through the metaobject system,
+    // dataChangeRelevanceFlags has not be "overriden" through the metaobject system,
     // i.e. redeclared as a slot/Q_INVOKABLE in a subclass, we'll call our own directly.
     if (metaMethodIndex < QSortFilterProxyModel::staticMetaObject.methodCount())
         return;
 
     QMetaMethod metaMethod = mo->method(metaMethodIndex);
-    static const QMetaType expectedReturnMetaType = QMetaType::fromType<QSortFilterProxyModel::DataChangeRelevances>();
+    static const QMetaType expectedReturnMetaType = QMetaType::fromType<QSortFilterProxyModel::DataChangeRelevanceFlags>();
     QMetaType returnMetaType = metaMethod.returnMetaType();
     if (returnMetaType != expectedReturnMetaType) {
-        qWarning("%s::dataChangeRelevances should return QSortFilterProxyModel::DataChangeRelevances, not %s",
+        qWarning("%s::dataChangeRelevanceFlags should return QSortFilterProxyModel::DataChangeRelevanceFlags, not %s",
                   mo->className(), returnMetaType.name());
         return;
     }
     if (!metaMethod.isConst()) {
-        qWarning("%s::dataChangeRelevances should be const.", mo->className());
+        qWarning("%s::dataChangeRelevanceFlags should be const.", mo->className());
         return;
     }
-    dataChangeRelevancesMetaMethod = std::move(metaMethod);
+    dataChangeRelevanceFlagsMetaMethod = std::move(metaMethod);
 }
 
-QSortFilterProxyModel::DataChangeRelevances QSortFilterProxyModelPrivate::dataChangeRelevances(
+QSortFilterProxyModel::DataChangeRelevanceFlags QSortFilterProxyModelPrivate::dataChangeRelevanceFlags(
                                                     const QModelIndex &sourceTopLeft,
                                                     const QModelIndex &sourceBottomRight,
                                                     const QList<int> &roles)
 {
     Q_Q(QSortFilterProxyModel);
 
-    // If the dataChangeRelevances slot has not been "overriden" in a descendant meta-object,
+    // If the dataChangeRelevanceFlags slot has not been "overriden" in a descendant meta-object,
     // call QSFPM's base implementation directly.
-    if (!dataChangeRelevancesMetaMethod.isValid())
-        return q->dataChangeRelevances(sourceTopLeft, sourceBottomRight, roles);
+    if (!dataChangeRelevanceFlagsMetaMethod.isValid())
+        return q->dataChangeRelevanceFlags(sourceTopLeft, sourceBottomRight, roles);
 
-    QSortFilterProxyModel::DataChangeRelevances relevanceFlags;
-    bool didInvoke = dataChangeRelevancesMetaMethod.invoke(q, Qt::DirectConnection,
+    QSortFilterProxyModel::DataChangeRelevanceFlags relevanceFlags;
+    bool didInvoke = dataChangeRelevanceFlagsMetaMethod.invoke(q, Qt::DirectConnection,
                                                              qReturnArg(relevanceFlags),
                                                              sourceTopLeft, sourceBottomRight, roles);
 
     if (!didInvoke) {
-        qWarning("Failed to invoke %s::dataChangeRelevances(QModelIndex,QModelIndex,QList<int>).",
+        qWarning("Failed to invoke %s::dataChangeRelevanceFlags(QModelIndex,QModelIndex,QList<int>).",
                  q->metaObject()->className());
-        return QSortFilterProxyModel::DataChangeRelevance::RelevantForFilteringAndSorting;
+        return QSortFilterProxyModel::DataChangeRelevanceFlag::RelevantForFilteringAndSorting;
     }
     return relevanceFlags;
 }
@@ -1481,22 +1481,22 @@ void QSortFilterProxyModelPrivate::_q_sourceDataChanged(const QModelIndex &sourc
 
     if (dynamic_sortfilter) {
 #if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
-        // Also remove note in dataChangeRelevances documentation when removing
+        // Also remove note in dataChangeRelevanceFlags documentation when removing
         // those #if's.
-        // We can't make dataChangeRelevances a virtual function in Qt 6 due to BC,
+        // We can't make dataChangeRelevanceFlags a virtual function in Qt 6 due to BC,
         // we call it through the meta-object system in QSortFilterProxyModelPrivate
         // instead.
-        auto relevanceFlags = dataChangeRelevances(source_top_left, source_bottom_right, roles);
+        auto relevanceFlags = dataChangeRelevanceFlags(source_top_left, source_bottom_right, roles);
 #else
-        auto relevanceFlags = q->dataChangeRelevances(source_top_left, source_bottom_right, roles);
+        auto relevanceFlags = q->dataChangeRelevanceFlags(source_top_left, source_bottom_right, roles);
 #endif
 
-        relevantForFiltering = relevanceFlags.testFlag(QSortFilterProxyModel::DataChangeRelevance::RelevantForFiltering);
+        relevantForFiltering = relevanceFlags.testFlag(QSortFilterProxyModel::DataChangeRelevanceFlag::RelevantForFiltering);
 
         // Even though subclasses might not rely on the sort column for their sorting implementation
         // source_sort_column being set is a prerequisite for sorting in order to construct indexes wherever lessThan() is called.
         relevantForSorting = source_sort_column != -1
-                          && relevanceFlags.testFlag(QSortFilterProxyModel::DataChangeRelevance::RelevantForSorting);
+                          && relevanceFlags.testFlag(QSortFilterProxyModel::DataChangeRelevanceFlag::RelevantForSorting);
     }
 
     std::vector<QSortFilterProxyModelDataChanged> data_changed_list;
@@ -2142,7 +2142,7 @@ void QSortFilterProxyModel::setSourceModel(QAbstractItemModel *sourceModel)
 #if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
     // We can't resolve potential subclass meta-methods in the constructor because
     // the meta-object of the subclass is not available at that time yet, so we do it here instead.
-    d->resolveSubclassDataChangeRelevancesMetaMethod();
+    d->resolveSubclassDataChangeRelevanceFlagsMetaMethod();
 #endif
 
     if (sourceModel == d->model)
@@ -3409,7 +3409,7 @@ bool QSortFilterProxyModel::filterAcceptsColumn(int source_column, const QModelI
 }
 
 /*!
-    \enum QSortFilterProxyModel::DataChangeRelevance
+    \enum QSortFilterProxyModel::DataChangeRelevanceFlag
     \since 6.12
 
     This enum is used to specify the operation for which a source change is relevant.
@@ -3419,7 +3419,7 @@ bool QSortFilterProxyModel::filterAcceptsColumn(int source_column, const QModelI
     \value RelevantForSorting The change is relevant for sorting
     \value RelevantForFilteringAndSorting The change is relevant for both filtering and sorting
 
-    \sa dataChangeRelevances()
+    \sa dataChangeRelevanceFlags()
 */
 
 /*!
@@ -3436,9 +3436,9 @@ bool QSortFilterProxyModel::filterAcceptsColumn(int source_column, const QModelI
     \note The default implementation assumes that any change is relevant for filtering,
     and only changes in the source sort column are relevant for sorting.
 
-    \sa DataChangeRelevances, filterAcceptsRow(), lessThan()
+    \sa DataChangeRelevanceFlags, filterAcceptsRow(), lessThan()
 */
-QSortFilterProxyModel::DataChangeRelevances QSortFilterProxyModel::dataChangeRelevances(
+QSortFilterProxyModel::DataChangeRelevanceFlags QSortFilterProxyModel::dataChangeRelevanceFlags(
     const QModelIndex &sourceTopLeft,
     const QModelIndex &sourceBottomRight,
     const QList<int> &roles) const
@@ -3448,10 +3448,10 @@ QSortFilterProxyModel::DataChangeRelevances QSortFilterProxyModel::dataChangeRel
 
     // By default, we assume that the change is relevant for filtering,
     // subclasses can re-declare this slot to return a more fine-grained relevance.
-    DataChangeRelevances relevanceFlags = DataChangeRelevance::RelevantForFiltering;
+    DataChangeRelevanceFlags relevanceFlags = DataChangeRelevanceFlag::RelevantForFiltering;
 
     if (d->source_sort_column >= sourceTopLeft.column() || d->source_sort_column <= sourceBottomRight.column())
-        relevanceFlags |= DataChangeRelevance::RelevantForSorting;
+        relevanceFlags |= DataChangeRelevanceFlag::RelevantForSorting;
 
     return relevanceFlags;
 }
