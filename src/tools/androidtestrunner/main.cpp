@@ -524,23 +524,25 @@ static bool parseTestArgs()
     const QString activityName = "%1/%2"_L1.arg(g_options.package).arg(g_options.activity);
 
     // Pass over any qt or testlib env vars if set
-    QString testEnvVars;
+    QStringList testEnvVarArgs;
     const QStringList envVarsList = QProcessEnvironment::systemEnvironment().toStringList();
     for (const QString &var : envVarsList) {
-        if (var.startsWith("QTEST_"_L1) || var.startsWith("QT_"_L1))
-            testEnvVars += "%1\t"_L1.arg(var);
-    }
-
-    if (!testEnvVars.isEmpty()) {
-        testEnvVars = QString::fromUtf8(testEnvVars.trimmed().toUtf8().toBase64());
-        testEnvVars = "-e extraenvvars \"%4\""_L1.arg(testEnvVars);
+        if (!var.startsWith("QTEST_"_L1) && !var.startsWith("QT_"_L1))
+            continue;
+        const qsizetype index = var.indexOf(u'=');
+        if (index < 0)
+            continue;
+        const QString key = var.left(index);
+        QString escapedValue = var.mid(index + 1);
+        escapedValue.replace("'"_L1, "'\\''"_L1);
+        const QString value = "'%1'"_L1.arg(escapedValue);
+        testEnvVarArgs << "-e"_L1 << ("extraenvvars_"_L1 + key) << value;
     }
 
     g_options.amStarttestArgs = { "shell"_L1, "am"_L1, "start"_L1,
                                   "-n"_L1, activityName,
-                                  "-e"_L1, "applicationArguments"_L1, testAppArgs,
-                                  testEnvVars
-                                   };
+                                  "-e"_L1, "applicationArguments"_L1, testAppArgs };
+    g_options.amStarttestArgs.append(testEnvVarArgs);
 
     return true;
 }
