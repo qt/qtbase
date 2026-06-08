@@ -28,8 +28,10 @@ qt_add_executable(rangemodel
     main.cpp
 )
 
-target_compile_options(rangemodel PRIVATE -fsanitize=address)
-target_link_options(rangemodel PRIVATE -fsanitize=address)
+if(NOT OHOS)
+    target_compile_options(rangemodel PRIVATE -fsanitize=address)
+    target_link_options(rangemodel PRIVATE -fsanitize=address)
+endif()
 
 target_link_libraries(rangemodel PRIVATE
     Qt6::Widgets
