@@ -48,16 +48,6 @@ function(qt_generate_qconfig_cpp in_file out_file)
          "${lib_location_absolute_path}" "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}")
     set(QT_CONFIGURE_LIBLOCATION_TO_PREFIX_PATH "${from_lib_location_to_prefix}")
 
-    # Ensure Windows drive letter is prepended to the install prefix hardcoded
-    # into qconfig.cpp, otherwise qmake can't find Qt modules in a static Qt
-    # build if there's no qt.conf. Mostly relevant for CI.
-    # Given input like
-    #    \work/qt/install
-    # or
-    #    \work\qt\install
-    # Expected output is something like
-    #   C:/work/qt/install
-    # so it includes a drive letter and forward slashes.
     if(QT_FEATURE_relocatable)
         # A relocatable Qt does not need a hardcoded prefix path.
         # This makes reproducible builds a closer reality, because we don't embed a CI path
@@ -65,10 +55,24 @@ function(qt_generate_qconfig_cpp in_file out_file)
         set(QT_CONFIGURE_PREFIX_PATH_STR "")
     else()
         set(QT_CONFIGURE_PREFIX_PATH_STR "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}")
+
+        # Ensure a Windows drive letter is prepended to the install prefix hardcoded
+        # in qconfig.cpp, otherwise qmake can't find Qt modules in a static Qt
+        # build if there's no qt.conf. Mostly relevant for Qt's CI.
+        # Given input like
+        #    \work/qt/install
+        # or
+        #    \work\qt\install
+        # Expected output is something like
+        #   C:/work/qt/install
+        # so it includes a drive letter and forward slashes.
         if(CMAKE_HOST_WIN32)
-            get_filename_component(
-                QT_CONFIGURE_PREFIX_PATH_STR
-                "${QT_CONFIGURE_PREFIX_PATH_STR}" REALPATH)
+            file(TO_CMAKE_PATH "${QT_CONFIGURE_PREFIX_PATH_STR}" QT_CONFIGURE_PREFIX_PATH_STR)
+            # Only prepend the drive letter if not present.
+            if(QT_CONFIGURE_PREFIX_PATH_STR MATCHES "^/")
+                _qt_internal_get_current_build_dir_drive_letter_on_windows(drive_letter)
+                string(PREPEND QT_CONFIGURE_PREFIX_PATH_STR "${drive_letter}")
+            endif()
         endif()
     endif()
 
