@@ -201,6 +201,12 @@ WRAP(indexOf, QLatin1StringView)
   resolver for a QXmlStreamReader.
 
   \ingroup xml-tools
+
+    Use to inform QXmlStreamReader how to expand entities not
+    \l{QXmlStreamReader::entityDeclarations()}{declared in the internal-set of
+    the DTD}.
+
+    \sa QXmlStreamReader::setEntityResolver()
  */
 
 /*!
