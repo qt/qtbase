@@ -606,22 +606,36 @@ public slots:
 
     QRangeModel *makeBoundedIota()
     {
+#ifdef __cpp_lib_ranges
         return new QRangeModel(std::views::iota(1, 10000));
+#else
+        return new QRangeModel(QList{u"Not available: std::views requires C++20 ranges support"
+                                     " (platform libc++ has disabled incomplete ranges)"_s});
+#endif
     }
 
     QRangeModel *makeUnboundedIota()
     {
+#ifdef __cpp_lib_ranges
         auto view = std::views::iota(1);
         return new QRangeModel(view);
+#else
+        return new QRangeModel(QList{u"Not available: std::views requires C++20 ranges support"
+                                     " (platform libc++ has disabled incomplete ranges)"_s});
+#endif
     }
 
     QRangeModel *makeZipView()
     {
+#ifdef __cpp_lib_ranges_zip
         static auto x = QList<int>{1, 2, 3, 4, 5};
         static auto y = std::list<QString>{"α", "β", "γ", "δ", "ε"};
         static auto z = std::array<QChar, 6>{u'A', u'B', u'C', u'D', u'E', u'F'};
 
         return new QRangeModel(std::views::zip(x, y, z));
+#else
+        return new QRangeModel(QList{u"Not available: std::views::zip requires C++23 ranges support"_s});
+#endif
     }
 
     QRangeModel *makeGadgetList()
@@ -699,6 +713,7 @@ public slots:
 
     QRangeModel *makeFilterView()
     {
+#ifdef __cpp_lib_ranges
         const QDate today = QDate::currentDate();
         auto view = std::views::iota(today.addYears(-100), today.addYears(100))
                   | std::views::filter([](QDate date){
@@ -706,6 +721,10 @@ public slots:
                     });
 
         return new QRangeModel(view);
+#else
+        return new QRangeModel(QList{u"Not available: std::views requires C++20 ranges support"
+                                     " (platform libc++ has disabled incomplete ranges)"_s});
+#endif
     }
 
     QRangeModel *makeMultiRoleMap()
