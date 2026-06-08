@@ -264,6 +264,7 @@ This function is a stub for later functionality.
 */
 QString QXmlStreamEntityResolver::resolveEntity(const QString& /*publicId*/, const QString& /*systemId*/)
 {
+    Q_UNIMPLEMENTED();
     return QString();
 }
 

@@ -224,7 +224,17 @@ class Q_CORE_EXPORT QXmlStreamEntityResolver
 public:
     QXmlStreamEntityResolver() = default;
     virtual ~QXmlStreamEntityResolver();
-    virtual QString resolveEntity(const QString& publicId, const QString& systemId);
+    QT_WARNING_PUSH
+    #if defined(__has_warning)
+    #  if __has_warning("-Wunnecessary-virtual-specifier")
+    QT_WARNING_DISABLE_CLANG("-Wunnecessary-virtual-specifier")
+    #  endif
+    #endif
+    // This isn't called anywhere, and marked as \internal. It merely reserves a slot in
+    // the vtable. In particular, we reserve the right to change the signature before
+    // taking the API into use, so mark final to prevent users from overriding before that:
+    virtual QString resolveEntity(const QString& publicId, const QString& systemId) final;
+    QT_WARNING_POP
     virtual QString resolveUndeclaredEntity(const QString &name);
 };
 
