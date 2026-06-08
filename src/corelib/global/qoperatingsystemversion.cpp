@@ -591,6 +591,12 @@ const QOperatingSystemVersionBase QOperatingSystemVersion::MacOSVentura;
 */
 
 /*!
+    \variable QOperatingSystemVersion::MacOSGoldenGate
+    \brief a version corresponding to macOS Golden Gate (version 27).
+    \since 6.12
+*/
+
+/*!
     \variable QOperatingSystemVersion::AndroidJellyBean
     \brief a version corresponding to Android Jelly Bean (version 4.1, API level 16).
     \since 5.9
