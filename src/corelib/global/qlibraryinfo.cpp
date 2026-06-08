@@ -89,6 +89,8 @@ void QLibrarySettings::load()
         QStringList children = settings->childGroups();
         paths = !children.contains("Platforms"_L1)
                 || children.contains("Paths"_L1);
+    } else {
+        paths = false;
     }
 }
 
