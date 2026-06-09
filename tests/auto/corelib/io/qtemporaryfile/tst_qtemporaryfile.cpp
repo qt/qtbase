@@ -552,6 +552,10 @@ void tst_QTemporaryFile::openOnRootDrives()
 #endif
 }
 
+QT_WARNING_PUSH
+// checked stack use and deemed it acceptable
+QT_WARNING_DISABLE_LARGE_STACK_FRAME
+
 void tst_QTemporaryFile::stressTest()
 {
     constexpr int iterations = 1000;
@@ -570,6 +574,8 @@ void tst_QTemporaryFile::stressTest()
         QVERIFY(!names.hasSeen(file.fileName()));
     }
 }
+
+QT_WARNING_POP
 
 void tst_QTemporaryFile::rename_data()
 {
