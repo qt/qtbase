@@ -6,6 +6,7 @@
 #include <QtCore/qscopeguard.h>
 #include <cstdint>
 #include <qarkui/qxcomponentregistry.h>
+#include <qohosdeviceinfo_p.h>
 #include <qohosutils.h>
 #include <render/qohoswindowproxy.h>
 #include <render/qxcomponent.h>
@@ -117,6 +118,15 @@ QNapi::Promise createSubWindowWithOptions(
     return windowStageOrWindowObject.evalToPromiseOrRejectOnThrow(
         "createSubWindowWithOptions(*)",
         {windowName, subWindowOptionsObject});
+}
+
+// Optionless sub window creation, used on phones where the SessionManager-only
+// createSubWindowWithOptions() is unavailable. WindowStage.createSubWindow() is @crossplatform.
+QNapi::Promise createSubWindow(
+    QNapi::Object windowStageOrWindowObject, const std::string &windowName)
+{
+    return windowStageOrWindowObject.evalToPromiseOrRejectOnThrow(
+        "createSubWindow(*)", {windowName});
 }
 
 std::function<void(const QtOhos::CallbackInfo &)>
@@ -311,15 +321,36 @@ void makeWindowProxyDataForSubWindowInJsThread(
 
     auto qAbilityPeer = getQAbilityPeerByInstanceIdOrFail(jsState, createInfo.qAbilityInstanceId);
 
-    createSubWindowWithOptions(
-        windowStageOrWindowObject,
-        makeOhosUniqueSystemWindowName(createInfo.windowId),
-        SubWindowOptions {
-            .windowTitle = createInfo.windowTitle,
-            .decorEnabled = createInfo.decorEnabled,
-            .isModal = createInfo.modal,
-            .windowRect = createInfo.windowRect,
-        })
+    const auto windowName = makeOhosUniqueSystemWindowName(createInfo.windowId);
+
+    // createSubWindowWithOptions() needs SystemCapability.Window.SessionManager, which is absent
+    // on phones (it is present on 2-in-1 and tablet). On phones fall back to the optionless
+    // createSubWindow(); its dropped options (title/decor/modality/rect) are applied separately
+    // after creation anyway.
+    auto subWindowCreationPromise = [&]() -> QNapi::Promise {
+        if (!QOhosDeviceInfo::isPhone()) {
+            return createSubWindowWithOptions(
+                windowStageOrWindowObject,
+                windowName,
+                SubWindowOptions {
+                    .windowTitle = createInfo.windowTitle,
+                    .decorEnabled = createInfo.decorEnabled,
+                    .isModal = createInfo.modal,
+                    .windowRect = createInfo.windowRect,
+                });
+        }
+
+        // createSubWindow() exists only on the WindowStage, not on a Window.
+        auto optQUiAbilityPeer = QtOhos::QUiAbilityPeer::tryCastFromQAbilityPeerOrNull(qAbilityPeer);
+        if (!optQUiAbilityPeer) {
+            qOhosReportFatalErrorAndAbort(
+                "%s sub window creation requires an ability with a windowStage. Aborting...",
+                Q_FUNC_INFO);
+        }
+        return createSubWindow(optQUiAbilityPeer->windowStage(), windowName);
+    }();
+
+    subWindowCreationPromise
         .withContext(Context {
             .disableWindowFocusableBeforeLoadContentHack = createInfo.disableWindowFocusableBeforeLoadContentHack,
             .xComponentId = xComponentId,
@@ -347,7 +378,7 @@ void makeWindowProxyDataForSubWindowInJsThread(
                 });
         })
         .onCatch([windowId = createInfo.windowId](const QtOhos::CallbackInfo &cbInfo) {
-            QtOhos::logJsCallbackError(cbInfo, "createSubWindowWithOptions() failed");
+            QtOhos::logJsCallbackError(cbInfo, "sub window creation failed");
             qOhosReportFatalErrorAndAbort(
                 "Failed to create subwindow for windowId='%s'",
                 windowId.toStdString().c_str());
