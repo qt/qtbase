@@ -1791,9 +1791,16 @@ function(qt_get_platform_try_compile_vars out_var)
     if(UIKIT)
         # Specify the sysroot, but only if not doing a simulator_and_device build.
         # So keep the sysroot empty for simulator_and_device builds.
+        # FIXME: Untangle the QT_APPLE_SDK and CMAKE_OSX_SYSROOT variables
         if(QT_APPLE_SDK)
             list(APPEND flags_cmd_line "-DCMAKE_OSX_SYSROOT:STRING=${QT_APPLE_SDK}")
         endif()
+    elseif(CMAKE_OSX_SYSROOT) # macOS
+        # Pin the SDK for project-based try_compile() too. Otherwise it resolves the SDK from
+        # the ambient developer dir (xcode-select / DEVELOPER_DIR) at compile time, rather than
+        # the SDK Qt is configured with. CMAKE_OSX_SYSROOT has been resolved to an absolute path
+        # by this point, so forwarding it pins the exact SDK.
+        list(APPEND flags_cmd_line "-DCMAKE_OSX_SYSROOT:STRING=${CMAKE_OSX_SYSROOT}")
     endif()
     if(QT_NO_USE_FIND_PACKAGE_SYSTEM_ENVIRONMENT_PATH)
         list(APPEND flags_cmd_line "-DCMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH:BOOL=OFF")
