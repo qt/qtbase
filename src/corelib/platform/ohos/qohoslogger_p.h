@@ -23,7 +23,7 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_CORE_EXPORT const QLoggingCategory &QtForOhos();
+QT_DECLARE_EXPORTED_QT_LOGGING_CATEGORY(QtForOhos, Q_CORE_EXPORT)
 
 #define qOhosDebug(category) \
     _Pragma("GCC diagnostic push") \
