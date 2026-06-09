@@ -30,6 +30,7 @@
 #include <QScreen>
 
 #include <QtWidgets/private/qapplication_p.h>
+#include <QtTest/private/qtesthelpers_p.h>
 
 #if QT_CONFIG(shortcut)
 #  include <QKeySequence>
@@ -355,13 +356,9 @@ tst_QSpinBox::tst_QSpinBox()
 
 void tst_QSpinBox::init()
 {
-#if QT_CONFIG(cursor)
     // Ensure mouse cursor was not left by previous tests where widgets
     // will appear, as it could cause events and interfere with the tests.
-    const QScreen *screen = QGuiApplication::primaryScreen();
-    const QRect availableGeometry = screen->availableGeometry();
-    QCursor::setPos(availableGeometry.topLeft());
-#endif
+    QVERIFY(QTestPrivate::moveCursorAway());
 }
 
 void tst_QSpinBox::setValue_data()
