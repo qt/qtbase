@@ -1099,7 +1099,7 @@ int main(int argc, char *argv[])
     waitForStarted();
 
     if (waitForLoggingStarted() && !setupStdoutLogger())
-        return EXIT_ERROR;
+        qWarning("Continuing without live stdout streaming; result files are still pulled.");
 
     waitForFinished();
 
