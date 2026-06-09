@@ -1780,6 +1780,14 @@ function(qt_get_platform_try_compile_vars out_var)
         # device architecture, aka some variation of "arm" (armv7, arm64).
         list(APPEND flags_cmd_line "-DCMAKE_OSX_ARCHITECTURES:STRING=${osx_first_arch}")
     endif()
+    if(CMAKE_OSX_DEPLOYMENT_TARGET)
+        # Project-based try_compile() doesn't inherit the deployment target the way the
+        # source-file signature does (that path is gated by CMP0137, and Qt's policy cap is
+        # below 3.24), so forward it explicitly. Otherwise the test builds against the SDK's
+        # default minimum instead of Qt's.
+        list(APPEND flags_cmd_line
+            "-DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=${CMAKE_OSX_DEPLOYMENT_TARGET}")
+    endif()
     if(UIKIT)
         # Specify the sysroot, but only if not doing a simulator_and_device build.
         # So keep the sysroot empty for simulator_and_device builds.
