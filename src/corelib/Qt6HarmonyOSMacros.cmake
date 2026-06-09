@@ -210,7 +210,7 @@ function(_qt_internal_harmonyos_add_deployment_list_property out_var json_key ta
 endfunction()
 
 # Stash CMake-format copies of path-bearing target properties on internal
-# `_qt_harmonyos_native_*` properties so the emission helpers can read them
+# `_qt_harmonyos_*` properties so the emission helpers can read them
 # via genex without further escaping. Pre-release contract: users supply
 # CMake-format paths (forward slashes), mirroring the Qt 6.6+ NEW behavior of
 # the Android equivalent (`_qt_internal_android_format_deployment_paths`).
@@ -235,11 +235,11 @@ function(_qt_internal_harmonyos_format_deployment_paths target)
     )
 
     set_target_properties(${target} PROPERTIES
-        _qt_harmonyos_native_qml_import_paths
+        _qt_harmonyos_qml_import_paths
             "$<GENEX_EVAL:$<TARGET_PROPERTY:${target},QT_QML_IMPORT_PATH>>"
-        _qt_harmonyos_native_qml_root_paths
+        _qt_harmonyos_qml_root_paths
             "${qml_root_path_genex}"
-        _qt_harmonyos_native_package_source_dir
+        _qt_harmonyos_package_source_dir
             "$<GENEX_EVAL:$<TARGET_PROPERTY:${target},QT_HARMONYOS_PACKAGE_SOURCE_DIR>>"
     )
 endfunction()
@@ -305,16 +305,16 @@ function(_qt_internal_harmonyos_generate_deployment_settings target)
     _qt_internal_harmonyos_get_sdk_ndk_paths(sdk_root ndk_root)
 
     # Stash JSON-escaped copies of string-typed user-supplied properties on
-    # internal `_qt_harmonyos_native_*` properties. The emission helpers below
+    # internal `_qt_harmonyos_*` properties. The emission helpers below
     # substitute property values verbatim into the JSON; an unescaped `"` or
     # `\` (e.g. in an app LABEL containing quoted text, or a Windows-style
     # ICON path with backslashes) would otherwise corrupt the JSON.
     foreach(prop_kv IN ITEMS
-            "QT_HARMONYOS_APP_VENDOR;_qt_harmonyos_native_app_vendor;string"
-            "QT_HARMONYOS_APP_VERSION_NAME;_qt_harmonyos_native_app_version_name;string"
-            "QT_HARMONYOS_APP_LABEL;_qt_harmonyos_native_app_label;string"
-            "QT_HARMONYOS_APP_ICON;_qt_harmonyos_native_app_icon;path"
-            "QT_HARMONYOS_MODULE_DESCRIPTION;_qt_harmonyos_native_module_description;string"
+            "QT_HARMONYOS_APP_VENDOR;_qt_harmonyos_app_vendor;string"
+            "QT_HARMONYOS_APP_VERSION_NAME;_qt_harmonyos_app_version_name;string"
+            "QT_HARMONYOS_APP_LABEL;_qt_harmonyos_app_label;string"
+            "QT_HARMONYOS_APP_ICON;_qt_harmonyos_app_icon;path"
+            "QT_HARMONYOS_MODULE_DESCRIPTION;_qt_harmonyos_module_description;string"
             "QT_HARMONYOS_ABILITY_ORIENTATION;_qt_harmonyos_ability_orientation;string"
         )
         list(GET prop_kv 0 _prop)
@@ -330,7 +330,7 @@ function(_qt_internal_harmonyos_generate_deployment_settings target)
         endif()
     endforeach()
 
-    # Cache path-bearing properties on internal `_qt_harmonyos_native_*`
+    # Cache path-bearing properties on internal `_qt_harmonyos_*`
     # properties for the genex-driven emission helpers below.
     _qt_internal_harmonyos_format_deployment_paths(${target})
 
@@ -367,19 +367,19 @@ function(_qt_internal_harmonyos_generate_deployment_settings target)
     # linked targets) reach the JSON; absent entries leave the template
     # default in place.
     _qt_internal_harmonyos_add_deployment_property(JSON_CONTENT
-        "harmonyos-app-vendor" ${target} _qt_harmonyos_native_app_vendor)
+        "harmonyos-app-vendor" ${target} _qt_harmonyos_app_vendor)
     _qt_internal_harmonyos_add_deployment_int_property(JSON_CONTENT
         "harmonyos-app-version-code" ${target} QT_HARMONYOS_APP_VERSION_CODE)
     _qt_internal_harmonyos_add_deployment_property(JSON_CONTENT
-        "harmonyos-app-version-name" ${target} _qt_harmonyos_native_app_version_name)
+        "harmonyos-app-version-name" ${target} _qt_harmonyos_app_version_name)
     _qt_internal_harmonyos_add_deployment_property(JSON_CONTENT
-        "harmonyos-app-label" ${target} _qt_harmonyos_native_app_label)
+        "harmonyos-app-label" ${target} _qt_harmonyos_app_label)
     _qt_internal_harmonyos_add_deployment_property(JSON_CONTENT
-        "harmonyos-app-icon" ${target} _qt_harmonyos_native_app_icon)
+        "harmonyos-app-icon" ${target} _qt_harmonyos_app_icon)
 
     # Module-level metadata.
     _qt_internal_harmonyos_add_deployment_property(JSON_CONTENT
-        "harmonyos-module-description" ${target} _qt_harmonyos_native_module_description)
+        "harmonyos-module-description" ${target} _qt_harmonyos_module_description)
     _qt_internal_harmonyos_add_deployment_list_property(JSON_CONTENT
         "harmonyos-module-device-types" ${target} QT_HARMONYOS_MODULE_DEVICE_TYPES)
     _qt_internal_harmonyos_add_deployment_property(JSON_CONTENT
@@ -428,7 +428,7 @@ function(_qt_internal_harmonyos_generate_deployment_settings target)
         file(REAL_PATH "${_template_dir}" _template_default)
     endif()
     set(_user_pkg_src_genex
-        "$<GENEX_EVAL:$<TARGET_PROPERTY:${target},_qt_harmonyos_native_package_source_dir>>")
+        "$<GENEX_EVAL:$<TARGET_PROPERTY:${target},_qt_harmonyos_package_source_dir>>")
     string(APPEND JSON_CONTENT
         ",\n    \"harmonyos-package-source-directory\": "
         "\"$<IF:$<BOOL:${_user_pkg_src_genex}>,${_user_pkg_src_genex},${_template_default}>\""
@@ -460,9 +460,9 @@ function(_qt_internal_harmonyos_generate_deployment_settings target)
     # QML root + import paths. Both emitted as JSON arrays so multiple roots /
     # import paths can be forwarded to qmlimportscanner.
     _qt_internal_harmonyos_add_deployment_list_property(JSON_CONTENT
-        "qml-root-path" ${target} _qt_harmonyos_native_qml_root_paths)
+        "qml-root-path" ${target} _qt_harmonyos_qml_root_paths)
     _qt_internal_harmonyos_add_deployment_list_property(JSON_CONTENT
-        "qml-import-paths" ${target} _qt_harmonyos_native_qml_import_paths)
+        "qml-import-paths" ${target} _qt_harmonyos_qml_import_paths)
 
     # Collect permissions: the executable's own first (so its entries win
     # for duplicate names), then transitive permissions contributed by Qt
