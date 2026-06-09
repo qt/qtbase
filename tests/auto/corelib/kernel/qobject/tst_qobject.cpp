@@ -321,6 +321,10 @@ Q_SIGNALS:
 
 int ReceiverObject::sequence = 0;
 
+QT_WARNING_PUSH
+// checked stack use and deemed it acceptable
+QT_WARNING_DISABLE_LARGE_STACK_FRAME
+
 static void playWithObjects()
 {
     // Do operations that will lock the internal signalSlotLock mutex on many QObjects.
@@ -335,6 +339,8 @@ static void playWithObjects()
                          &lotsOfObjects[i], &SenderObject::aPublicSlot);
     }
 }
+
+QT_WARNING_POP
 
 void tst_QObject::disconnect()
 {
