@@ -3731,9 +3731,6 @@ void tst_QFile::openDirectory()
     f1.close();
     QVERIFY(!f1.open(QIODevice::ReadOnly|QIODevice::Unbuffered));
     f1.close();
-#if defined(Q_OS_VXWORKS)
-    QEXPECT_FAIL("", "QTBUG-130074: On VxWorks directories are always openable in a write mode", Abort);
-#endif
     QVERIFY(!f1.open(QIODevice::ReadWrite));
     f1.close();
     QVERIFY(!f1.open(QIODevice::WriteOnly));
