@@ -17,20 +17,31 @@ void QCollatorPrivate::init()
 {
     if (!isC()) {
         if (locale != QLocale::system().collation()) {
-            qWarning("Only the C and system collation locales are supported "
-                     "with the POSIX collation implementation");
+            qCWarning(lcQCollator,
+                      "Only the C and system collation locales are supported with the POSIX"
+                      " collation implementation");
         }
-        if (options.testFlag(Opt::CaseInsensitive))
-            qWarning("Case insensitive sorting unsupported in the posix collation implementation");
+        if (options.testFlag(Opt::CaseInsensitive)) {
+            qCWarning(lcQCollator,
+                      "Case insensitive sorting unsupported in the POSIX collation implementation");
+        }
     }
-    if (options.testFlag(Opt::NumericSort))
-        qWarning("Numeric mode unsupported in the posix collation implementation");
-    if (options.testFlag(Opt::IgnorePunctuation))
-        qWarning("Ignoring punctuation unsupported in the posix collation implementation");
-    if (options.testFlag(Opt::DiacriticInsensitive))
-        qWarning("Ignoring diacritic marks unsupported in the POSIX collation implementation.");
-    if (options.testFlag(Opt::WidthInsensitive))
-        qWarning("Width insensitive option unsupported in the POSIX collation implementation");
+    if (options.testFlag(Opt::NumericSort)) {
+        qCWarning(lcQCollator,
+                  "Numeric mode unsupported in the POSIX collation implementation");
+    }
+    if (options.testFlag(Opt::IgnorePunctuation)) {
+        qCWarning(lcQCollator,
+                  "Ignoring punctuation unsupported in the POSIX collation implementation");
+    }
+    if (options.testFlag(Opt::DiacriticInsensitive)) {
+        qCWarning(lcQCollator,
+                  "Ignoring diacritic marks unsupported in the POSIX collation implementation.");
+    }
+    if (options.testFlag(Opt::WidthInsensitive)) {
+        qCWarning(lcQCollator,
+                  "Width insensitive option unsupported in the POSIX collation implementation");
+    }
 
     dirty = false;
 }

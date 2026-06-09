@@ -33,7 +33,7 @@ void QCollatorPrivate::init()
     OSStatus status =
         LocaleRefFromLocaleString(QLocalePrivate::get(locale)->bcp47Name().constData(), &localeRef);
     if (status != 0)
-        qWarning("Couldn't initialize the locale (%d)", int(status));
+        qCWarning(lcQCollator, "Couldn't initialize the locale (%d)", int(status));
 
     UInt32 collationOptions = 0;
     // enable normalization by default
@@ -52,7 +52,7 @@ void QCollatorPrivate::init()
 
     status = UCCreateCollator(localeRef, 0, collationOptions, &collator);
     if (status != 0)
-        qWarning("Couldn't initialize the collator (%d)", int(status));
+        qCWarning(lcQCollator, "Couldn't initialize the collator (%d)", int(status));
 
     dirty = false;
 }
@@ -101,7 +101,7 @@ QCollatorSortKey QCollator::sortKey(const QString &string) const
     QList<UCCollationValue> ret;
     if (!d->collator) {
         // What should (or even *can*) we do here ? (See init()'s comment.)
-        qWarning("QCollator doesn't support sort keys for the C locale on Darwin");
+        qCWarning(lcQCollator, "QCollator doesn't support sort keys for the C locale on Darwin");
         return QCollatorPrivate::sortKeyFromData(std::move(ret));
     }
 

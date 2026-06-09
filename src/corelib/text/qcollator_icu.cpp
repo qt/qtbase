@@ -90,7 +90,7 @@ void QCollatorPrivate::init()
     QByteArray name = QLocalePrivate::get(locale)->bcp47Name('_');
     collator = ucol_open(name.constData(), &status);
     if (U_FAILURE(status)) {
-        qWarning("Could not create collator: %d", status);
+        qCWarning(lcQCollator, "Could not create collator: %d", status);
         collator = nullptr;
         dirty = false;
         return;
@@ -110,16 +110,19 @@ void QCollatorPrivate::init()
         // UCOL_PRIMARY ignores both diacritics and case
         status = U_ZERO_ERROR;
         ucol_setAttribute(collator, UCOL_STRENGTH, UCOL_PRIMARY, &status);
-        if (U_FAILURE(status))
-            qWarning("ucol_setAttribute: Diacritic and case insensitivity failed: %d", status);
+        if (U_FAILURE(status)) {
+            qCWarning(lcQCollator,
+                      "ucol_setAttribute: Diacritic and case insensitivity failed: %d", status);
+        }
 
         if (!options.testFlag(Opt::CaseInsensitive)) {
             // Re-add case distinction if CaseInsensitive hasn't been set
             status = U_ZERO_ERROR;
             ucol_setAttribute(collator, UCOL_CASE_LEVEL, UCOL_ON, &status);
             if (U_FAILURE(status)) {
-                qWarning("ucol_setAttribute: Diacritic insensitivity with case distinction failed:"
-                         " %d", status);
+                qCWarning(lcQCollator,
+                          "ucol_setAttribute: Diacritic insensitivity with case distinction failed:"
+                          " %d", status);
             }
         }
     } else {
@@ -129,21 +132,21 @@ void QCollatorPrivate::init()
         status = U_ZERO_ERROR;
         ucol_setAttribute(collator, UCOL_STRENGTH, strength, &status);
         if (U_FAILURE(status))
-            qWarning("ucol_setAttribute: Case sensitivity failed: %d", status);
+            qCWarning(lcQCollator, "ucol_setAttribute: Case sensitivity failed: %d", status);
     }
 
     status = U_ZERO_ERROR;
     ucol_setAttribute(collator, UCOL_NUMERIC_COLLATION,
                       options.testFlag(Opt::NumericSort) ? UCOL_ON : UCOL_OFF, &status);
     if (U_FAILURE(status))
-        qWarning("ucol_setAttribute: numeric collation failed: %d", status);
+        qCWarning(lcQCollator, "ucol_setAttribute: numeric collation failed: %d", status);
 
     status = U_ZERO_ERROR;
     ucol_setAttribute(collator, UCOL_ALTERNATE_HANDLING,
                       options.testFlag(Opt::IgnorePunctuation) ? UCOL_SHIFTED
                                                                : UCOL_NON_IGNORABLE, &status);
     if (U_FAILURE(status))
-        qWarning("ucol_setAttribute: Alternate handling failed: %d", status);
+        qCWarning(lcQCollator, "ucol_setAttribute: Alternate handling failed: %d", status);
 
     dirty = false;
 }

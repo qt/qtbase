@@ -13,6 +13,7 @@
 
 QT_BEGIN_NAMESPACE
 QT_DEFINE_QESDP_SPECIALIZATION_DTOR(QCollatorSortKeyPrivate)
+Q_LOGGING_CATEGORY(lcQCollator, "qt.core.qcollator")
 
 namespace {
 struct GenerationalCollator

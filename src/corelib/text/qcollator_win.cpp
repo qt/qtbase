@@ -83,10 +83,10 @@ int QCollator::compare(QStringView s1, QStringView s2) const
 
     switch (DWORD error = GetLastError()) {
     case ERROR_INVALID_FLAGS:
-        qWarning("Unsupported flags (%d) used in QCollator", int(d->collator));
+        qCWarning(lcQCollator, "Unsupported flags (%d) used in QCollator", int(d->collator));
         break;
     case ERROR_INVALID_PARAMETER:
-        qWarning("Invalid parameter for QCollator::compare()");
+        qCWarning(lcQCollator, "Invalid parameter for QCollator::compare()");
         break;
     default:
         qErrnoWarning(error, "Failed comparison in QCollator::compare()");

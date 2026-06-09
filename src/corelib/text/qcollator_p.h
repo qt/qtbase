@@ -21,6 +21,7 @@
 #include "qcollator.h"
 #include "qlocale_p.h"
 #include <QList>
+#include <QtCore/qloggingcategory.h>
 #if QT_CONFIG(icu) || defined(Q_OS_ANDROID)
 #include <unicode/ucol.h>
 #elif defined(Q_OS_MACOS)
@@ -34,6 +35,8 @@
 #endif
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(lcQCollator)
 
 #if QT_CONFIG(icu) || defined(Q_OS_ANDROID)
 typedef UCollator *CollatorType;
