@@ -119,6 +119,7 @@ function(qt_internal_add_headersclean_target module_target module_headers)
         # Compile header in strict C++20 (or later) mode for C++17 build. Enable further warnings.
         set(hcleanFLAGS -std=${QT_HEADERS_CLEAN_CXX_STANDARD}
             -Wall -Wextra -Werror -pedantic-errors
+            -Wframe-larger-than=1024 # anything larger than 1KiB should be out-of-line!
             -Woverloaded-virtual -Wshadow -Wundef -Wfloat-equal
             -Wnon-virtual-dtor -Wpointer-arith -Wformat-security
             -Wchar-subscripts -Wold-style-cast
