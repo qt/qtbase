@@ -1507,6 +1507,12 @@ function(qt_run_config_compile_test name)
         message(STATUS "Performing Test ${arg_LABEL}")
 
         set(flags "")
+        # Treat use of an API newer than the deployment target as an error rather than a
+        # warning, so the test fails instead of succeeding for an API that won't be available
+        # at runtime on the minimum supported OS version.
+        if(APPLE)
+            string(APPEND CMAKE_CXX_FLAGS " -Werror=unguarded-availability-new")
+        endif()
         qt_get_platform_try_compile_vars(platform_try_compile_vars)
         list(APPEND flags ${platform_try_compile_vars})
 
@@ -1679,6 +1685,13 @@ function(qt_run_config_compile_test name)
             # https://gitlab.kitware.com/cmake/cmake/issues/18837
             if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" AND MSVC_VERSION GREATER_EQUAL 1913)
                 list(APPEND CMAKE_REQUIRED_FLAGS "-Zc:__cplusplus")
+            endif()
+
+            # Treat use of an API newer than the deployment target as an error rather than a
+            # warning, so the test fails instead of succeeding for an API that won't be available
+            # at runtime on the minimum supported OS version.
+            if(APPLE)
+                list(APPEND CMAKE_REQUIRED_FLAGS "-Werror=unguarded-availability-new")
             endif()
 
             # Let CMake load our custom platform modules.
