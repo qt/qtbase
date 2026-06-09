@@ -97,9 +97,8 @@ static bool isTestExitCodeNormal(const int ec)
     return (ec >= 0  &&  ec <= HIGHEST_QTEST_EXITCODE);
 }
 
-static bool execCommand(const QString &program, const QStringList &args,
-                        QByteArray *output = nullptr, bool verbose = false,
-                        std::chrono::milliseconds timeout = std::chrono::milliseconds(-1))
+static QByteArray execCommand(const QString &program, const QStringList &args, bool verbose = false,
+                              std::chrono::milliseconds timeout = std::chrono::milliseconds(-1))
 {
     const auto command = program + " "_L1 + args.join(u' ');
 
@@ -110,7 +109,7 @@ static bool execCommand(const QString &program, const QStringList &args,
     process.start(program, args);
     if (!process.waitForStarted()) {
         qCritical("Cannot execute command %s.", qPrintable(command));
-        return false;
+        return QByteArray();
     }
 
     const bool finished = timeout.count() < 0
@@ -120,21 +119,30 @@ static bool execCommand(const QString &program, const QStringList &args,
         qCritical("Execution of command %s timed out.", qPrintable(command));
         process.kill();
         process.waitForFinished();
-        return false;
+        // Beyond the kill's own "killed by signal", stderr may hint at the hang.
+        const QByteArray stdErr = process.readAllStandardError();
+        if (!stdErr.isEmpty())
+            qWarning().noquote() << stdErr.trimmed();
+        return QByteArray();
     }
 
     const auto stdOut = process.readAllStandardOutput();
     const auto stdErr = process.readAllStandardError();
-    if (output)
-        output->append(stdOut);
+
+    if (process.exitCode() != 0) {
+        // Surface why a notable (verbose) command failed; quiet polls stay quiet.
+        if (verbose && !stdOut.isEmpty())
+            qWarning().noquote() << stdOut.trimmed();
+        if (!stdErr.isEmpty())
+            qWarning().noquote() << stdErr.trimmed();
+        return QByteArray();
+    }
 
     if (verbose && g_options.verbose)
         fprintf(stdout, "%s\n", stdOut.constData());
 
-    const bool ok = process.exitCode() == 0;
-    if (!ok && !stdErr.isEmpty())
-        qWarning().noquote() << stdErr.trimmed();
-    return ok;
+    // Non-null even when empty so a silent success is distinct from failure.
+    return stdOut.isNull() ? QByteArray("") : stdOut;
 }
 
 static QStringList adbArgsWithSerial(const QStringList &args)
@@ -144,18 +152,16 @@ static QStringList adbArgsWithSerial(const QStringList &args)
     return QStringList{ "-s"_L1, g_options.serial } + args;
 }
 
-static bool execAdbCommand(const QStringList &args, QByteArray *output = nullptr,
-                           bool verbose = true)
+static QByteArray execAdbCommand(const QStringList &args, bool verbose = true)
 {
-    return execCommand(g_options.adbCommand, adbArgsWithSerial(args), output, verbose);
+    return execCommand(g_options.adbCommand, adbArgsWithSerial(args), verbose);
 }
 
-static bool execBundletoolCommand(const QStringList &args, QByteArray *output = nullptr,
-                                  bool verbose = true)
+static QByteArray execBundletoolCommand(const QStringList &args, bool verbose = true)
 {
     QString java("java"_L1);
     QStringList argsFull = QStringList() << "-jar"_L1 << g_options.bundletoolPath << args;
-    return execCommand(java, argsFull, output, verbose);
+    return execCommand(java, argsFull, verbose);
 }
 
 static bool setPackagePath(const QString &path)
@@ -168,13 +174,12 @@ static bool setPackagePath(const QString &path)
     return true;
 }
 
-static bool execCommand(const QString &command, QByteArray *output = nullptr,
-                        bool verbose = true,
-                        std::chrono::milliseconds timeout = std::chrono::milliseconds(-1))
+static QByteArray execCommand(const QString &command, bool verbose = true,
+                              std::chrono::milliseconds timeout = std::chrono::milliseconds(-1))
 {
     auto args = QProcess::splitCommand(command);
     const auto program = args.takeFirst();
-    return execCommand(program, args, output, verbose, timeout);
+    return execCommand(program, args, verbose, timeout);
 }
 
 static bool parseOptions()
@@ -460,9 +465,9 @@ static bool processAndroidManifest()
 
 static QStringList queryDangerousPermissions()
 {
-    QByteArray output;
     const QStringList args({ "shell"_L1, "dumpsys"_L1, "package"_L1, "permissions"_L1 });
-    if (!execAdbCommand(args, &output, false)) {
+    const QByteArray output = execAdbCommand(args, false);
+    if (output.isNull()) {
         qWarning("Failed to query permissions via dumpsys");
         return {};
     }
@@ -599,8 +604,8 @@ static bool parseTestArgs()
 
 static int getPid(const QString &package)
 {
-    QByteArray output;
-    if (!execAdbCommand({ "shell"_L1, "pidof"_L1, "-s"_L1, package }, &output, false))
+    const QByteArray output = execAdbCommand({ "shell"_L1, "pidof"_L1, "-s"_L1, package }, false);
+    if (output.isNull())
         return -1;
 
     bool ok = false;
@@ -617,8 +622,8 @@ static QString runCommandAsUserArgs(const QString &cmd)
 // a transient daemon hiccup with "device disconnected".
 static std::optional<QStringList> runningDevices()
 {
-    QByteArray output;
-    if (!execAdbCommand({ "devices"_L1 }, &output, false))
+    const QByteArray output = execAdbCommand({ "devices"_L1 }, false);
+    if (output.isNull())
         return std::nullopt;
 
     QStringList devices;
@@ -640,14 +645,13 @@ static bool isRunning() {
     if (g_testInfo.deviceGone.load())
         return false;
 
-    QByteArray output;
     const QStringList pidofArgs = { "shell"_L1, "pidof"_L1, "-s"_L1, g_options.package };
-    const bool adbSuccess = execAdbCommand(pidofArgs, &output, false);
+    const QByteArray output = execAdbCommand(pidofArgs, false);
 
     // pidof exits 1 (with empty stdout) when the process is gone, but adb
     // itself failing also looks like that; check the device list to tell
     // them apart and flag a disconnect when warranted.
-    if (!adbSuccess) {
+    if (output.isNull()) {
         if (!g_options.serial.isEmpty() && deviceDisconnected())
             g_testInfo.deviceGone.store(true);
         return false;
@@ -692,7 +696,7 @@ static bool waitForLoggingStarted()
         return false;
     const QString lsCmd = "ls files/%1 2>/dev/null"_L1.arg(g_options.stdoutFileName);
     const QStringList adbLsCmd = { "shell"_L1, runCommandAsUserArgs(lsCmd) };
-    auto fileExists = [&]() { return execAdbCommand(adbLsCmd, nullptr, false); };
+    auto fileExists = [&]() { return !execAdbCommand(adbLsCmd, false).isNull(); };
     // Wait for the output file, but stop early if the test exits first
     pollUntil([&]() { return fileExists() || !isRunning(); }, QDeadlineTimer(5s), 25ms);
     return fileExists();
@@ -762,9 +766,9 @@ static void obtainSdkVersion()
 {
     // Best-effort: SDK version gates userId() for multi-user, legacyDate formatting,
     // and ApplicationExitInfo queries. Falling back to defaults is safe.
-    QByteArray output;
     const QStringList versionArgs = { "shell"_L1, "getprop"_L1, "ro.build.version.sdk"_L1 };
-    if (!execAdbCommand(versionArgs, &output, false)) {
+    const QByteArray output = execAdbCommand(versionArgs, false);
+    if (output.isNull()) {
         qWarning() << "Unable to query the SDK version: adb getprop ro.build.version.sdk failed.";
         return;
     }
@@ -782,10 +786,9 @@ static QString userId()
     QByteArray userId;
     if (g_testInfo.sdkVersion >= 26) {
         const QStringList userIdArgs = {"shell"_L1, "cmd"_L1, "activity"_L1, "get-current-user"_L1};
-        if (!execAdbCommand(userIdArgs, &userId, false)) {
+        userId = execAdbCommand(userIdArgs, false);
+        if (userId.isNull())
             qCritical() << "Error: failed to retrieve the user ID";
-            userId.clear();
-        }
     }
 
     if (userId.isEmpty())
@@ -794,19 +797,19 @@ static QString userId()
     return QString::fromUtf8(userId.simplified());
 }
 
-static bool adbReadAppFile(const QString &fileName, QByteArray *output,
-                           int retries, std::chrono::milliseconds backoff)
+static QByteArray adbReadAppFile(const QString &fileName, int retries,
+                                 std::chrono::milliseconds backoff)
 {
     const QString catCmd = "cat files/%1 2> /dev/null"_L1.arg(fileName);
     const QStringList args = { "shell"_L1, runCommandAsUserArgs(catCmd) };
     while (retries > 0) {
-        output->clear();
-        if (execAdbCommand(args, output, false) && !output->isEmpty())
-            return true;
+        const QByteArray output = execAdbCommand(args, false);
+        if (!output.isEmpty())
+            return output;
         if (--retries)
             QThread::msleep(backoff.count());
     }
-    return false;
+    return QByteArray();
 }
 
 static bool pullResults()
@@ -817,9 +820,9 @@ static bool pullResults()
         if (filePath.isEmpty())
             continue;  // stdout-streamed format so nothing to pull
         const QString fileName = QFileInfo(filePath).fileName();
-        QByteArray output;
 
-        if (!adbReadAppFile(fileName, &output, g_options.resultsPullRetries, 200ms)) {
+        const QByteArray output = adbReadAppFile(fileName, g_options.resultsPullRetries, 200ms);
+        if (output.isNull()) {
             if (deviceDisconnected())
                 g_testInfo.deviceGone.store(true);
             qCritical() << "Error: failed to retrieve test result file %1 (missing or empty)."_L1
@@ -848,9 +851,7 @@ static QString getAbiLibsPath()
     if (!QDir(libsPath).exists())
         libsPath = "%1/app/libs/"_L1.arg(g_options.buildPath);
     const QStringList abiArgs = { "shell"_L1, "getprop"_L1, "ro.product.cpu.abi"_L1 };
-    QByteArray abi;
-    if (execAdbCommand(abiArgs, &abi, false))
-        abi = abi.trimmed();
+    QByteArray abi = execAdbCommand(abiArgs, false).trimmed();
     if (abi.isEmpty()) {
         const QStringList subDirs = QDir(libsPath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
         if (!subDirs.isEmpty())
@@ -930,8 +931,8 @@ static QByteArray fetchLogcat(const QString &timeStamp, bool waitForDiagnostics)
     if (useColor)
         logcatArgs << "-v"_L1 << "color"_L1;
 
-    QByteArray logcat;
-    if (!execAdbCommand(logcatArgs, &logcat, false))
+    QByteArray logcat = execAdbCommand(logcatArgs, false);
+    if (logcat.isNull())
         qCritical() << "Error: failed to fetch logcat of the test";
 
     if (!waitForDiagnostics)
@@ -945,8 +946,8 @@ static QByteArray fetchLogcat(const QString &timeStamp, bool waitForDiagnostics)
     QByteArray polled;
     constexpr auto timeout = 15s;
     const bool found = pollUntil([&]() {
-        polled.clear();
-        return execAdbCommand(logcatArgs, &polled, false)
+        polled = execAdbCommand(logcatArgs, false);
+        return !polled.isNull()
             && (polled.contains(crashBannerMarker) || polled.contains(anrMarker));
     }, QDeadlineTimer(timeout), 250ms);
     if (!polled.isEmpty())
@@ -1053,8 +1054,8 @@ static QString getCurrentTimeString()
             "%m-%d %H:%M:%S.000"_L1 : "%Y-%m-%d %H:%M:%S.%3N"_L1;
 
     QStringList dateArgs = { "shell"_L1, "date"_L1, "+'%1'"_L1.arg(timeFormat) };
-    QByteArray output;
-    if (!execAdbCommand(dateArgs, &output, false)) {
+    const QByteArray output = execAdbCommand(dateArgs, false);
+    if (output.isNull()) {
         qWarning() << "[androidtestrunner] ERROR in command: adb shell date";
         return {};
     }
@@ -1065,9 +1066,9 @@ static QString getCurrentTimeString()
 static int testExitCode()
 {
     using namespace std::chrono_literals;
-    QByteArray exitCodeOutput;
-    if (!adbReadAppFile(u"qtest_last_exit_code"_s, &exitCodeOutput,
-                        g_options.resultsPullRetries, 200ms)) {
+    const QByteArray exitCodeOutput =
+            adbReadAppFile(u"qtest_last_exit_code"_s, g_options.resultsPullRetries, 200ms);
+    if (exitCodeOutput.isNull()) {
         if (deviceDisconnected())
             g_testInfo.deviceGone.store(true);
         qCritical() << "[androidtestrunner] ERROR in command: adb shell cat"
@@ -1084,7 +1085,7 @@ static int testExitCode()
 
 static bool uninstallTestPackage()
 {
-    return execAdbCommand({ "uninstall"_L1, g_options.package }, nullptr);
+    return !execAdbCommand({ "uninstall"_L1, g_options.package }).isNull();
 }
 
 
@@ -1120,10 +1121,8 @@ int main(int argc, char *argv[])
         return EXIT_ERROR;
     }
 
-    QByteArray buildOutput;
-    if (!execCommand(g_options.makeCommand, &buildOutput, true, g_options.timeoutSecs * 1s)) {
-        qCritical("The APK build command \"%s\" failed\n\n%s",
-            qPrintable(g_options.makeCommand), buildOutput.constData());
+    if (execCommand(g_options.makeCommand, true, g_options.timeoutSecs * 1s).isNull()) {
+        qCritical("The APK build command \"%s\" failed.", qPrintable(g_options.makeCommand));
         return EXIT_ERROR;
     }
 
@@ -1186,7 +1185,7 @@ int main(int argc, char *argv[])
 
     if (g_options.packagePath.endsWith(".apk"_L1)) {
         const QStringList installArgs = { "install"_L1, "-r"_L1, g_options.packagePath };
-        if (!execAdbCommand(installArgs, nullptr))
+        if (execAdbCommand(installArgs).isNull())
             return EXIT_ERROR;
     } else if (g_options.packagePath.endsWith(".aab"_L1)) {
         QFileInfo aab(g_options.packagePath);
@@ -1194,10 +1193,10 @@ int main(int argc, char *argv[])
         QStringList installApksArgs = { "install-apks"_L1, "--apks"_L1, apksFilePath };
         if (!g_options.serial.isEmpty())
             installApksArgs << "--device-id"_L1 << g_options.serial;
-        if (!execBundletoolCommand({ "build-apks"_L1, "--bundle"_L1, g_options.packagePath,
-                                     "--output"_L1, apksFilePath, "--local-testing"_L1,
-                                     "--overwrite"_L1 })
-            || !execBundletoolCommand(installApksArgs))
+        if (execBundletoolCommand({ "build-apks"_L1, "--bundle"_L1, g_options.packagePath,
+                                    "--output"_L1, apksFilePath, "--local-testing"_L1,
+                                    "--overwrite"_L1 }).isNull()
+            || execBundletoolCommand(installApksArgs).isNull())
             return EXIT_ERROR;
     }
     g_testInfo.isPackageInstalled.store(true);
@@ -1207,8 +1206,8 @@ int main(int argc, char *argv[])
         if (!dangerousPermissions.contains(permission))
             continue;
 
-        if (!execAdbCommand({ "shell"_L1, "pm"_L1, "grant"_L1, "--user"_L1, g_testInfo.userId,
-                              g_options.package, permission }, nullptr)) {
+        if (execAdbCommand({ "shell"_L1, "pm"_L1, "grant"_L1, "--user"_L1, g_testInfo.userId,
+                             g_options.package, permission }).isNull()) {
             qWarning("Unable to grant '%s' to '%s'. Probably the Android version mismatch.",
                         qPrintable(permission), qPrintable(g_options.package));
         }
@@ -1216,10 +1215,9 @@ int main(int argc, char *argv[])
 
     // Call additional adb command if set after installation and before starting the test
     for (const auto &command : g_options.preTestRunAdbCommands) {
-        QByteArray output;
-        if (!execAdbCommand(command, &output)) {
-            qCritical("The pre test ADB command \"%s\" failed with output:\n%s",
-                  qUtf8Printable(command.join(u' ')), output.constData());
+        if (execAdbCommand(command).isNull()) {
+            qCritical("The pre test ADB command \"%s\" failed.",
+                      qUtf8Printable(command.join(u' ')));
             return EXIT_ERROR;
         }
     }
@@ -1228,7 +1226,7 @@ int main(int argc, char *argv[])
     const QString formattedStartTime = getCurrentTimeString();
 
     // Start the test
-    if (!execAdbCommand(g_options.amStarttestArgs, nullptr))
+    if (execAdbCommand(g_options.amStarttestArgs).isNull())
         return EXIT_ERROR;
 
     waitForStarted();
