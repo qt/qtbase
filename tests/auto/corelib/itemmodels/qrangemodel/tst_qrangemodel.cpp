@@ -1553,6 +1553,10 @@ void tst_QRangeModel::inconsistentColumnCount()
     }
 }
 
+QT_WARNING_PUSH
+// checked stack use and deemed it acceptable
+QT_WARNING_DISABLE_LARGE_STACK_FRAME
+
 void tst_QRangeModel::largeArrays()
 {
     {
@@ -1586,6 +1590,8 @@ void tst_QRangeModel::largeArrays()
         QCOMPARE(index.data(), 0);
     }
 }
+
+QT_WARNING_POP // -Wframe-larger-than
 
 void tst_QRangeModel::mapsAsRange()
 {

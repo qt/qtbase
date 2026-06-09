@@ -659,6 +659,10 @@ void tst_qfloat16::floatFromFloat16Full()
 }
 #endif
 
+QT_WARNING_PUSH
+// checked stack use and deemed it acceptable
+QT_WARNING_DISABLE_LARGE_STACK_FRAME
+
 void tst_qfloat16::floatToFloat16()
 {
     constexpr int count = 10000;
@@ -677,6 +681,8 @@ void tst_qfloat16::floatToFloat16()
     for (int i = 0; i < count; ++i)
         QVERIFY(out[i] == expected[i]);
 }
+
+QT_WARNING_POP
 
 void tst_qfloat16::floatFromFloat16()
 {

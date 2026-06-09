@@ -1238,6 +1238,11 @@
 #  define QT_WARNING_DISABLE_FLOAT_COMPARE
 #  define QT_WARNING_DISABLE_INVALID_OFFSETOF
 #endif
+/* GCC and (older) Clang differ in the name of frame-larger-than: */
+#define QT_WARNING_DISABLE_LARGE_STACK_FRAME \
+    QT_WARNING_DISABLE_CLANG("-Wframe-larger-than") \
+    QT_WARNING_DISABLE_GCC("-Wframe-larger-than=") \
+    /* end */
 
 #ifndef QT_IGNORE_DEPRECATIONS
 #define QT_IGNORE_DEPRECATIONS(statement) \

@@ -8216,6 +8216,10 @@ void tst_QGraphicsItem::sorting_data()
     QTest::newRow("BspTreeIndex") << QGraphicsScene::BspTreeIndex;
 }
 
+QT_WARNING_PUSH
+// checked stack use and deemed it acceptable
+QT_WARNING_DISABLE_LARGE_STACK_FRAME
+
 void tst_QGraphicsItem::sorting()
 {
     if (qGuiApp->styleHints()->showIsFullScreen())
@@ -8272,6 +8276,8 @@ void tst_QGraphicsItem::sorting()
                                  item1, item2};
     QTRY_COMPARE(_paintedItems, expected);
 }
+
+QT_WARNING_POP // -Wframe-larger-than
 
 void tst_QGraphicsItem::itemHasNoContents()
 {

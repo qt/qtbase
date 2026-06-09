@@ -718,6 +718,10 @@ void tst_QRandomGenerator::generateReal()
         QVERIFY_3TIMES(rng.generateDouble() != rng.generateDouble());
 }
 
+QT_WARNING_PUSH
+// checked stack use and deemed it acceptable
+QT_WARNING_DISABLE_LARGE_STACK_FRAME
+
 void tst_QRandomGenerator::qualityReal()
 {
     QFETCH(uint, control);
@@ -763,6 +767,8 @@ void tst_QRandomGenerator::qualityReal()
     QVERIFY(belowOneEighth < PerfectOctile + RangeOctile);
     QVERIFY(belowOneEighth > PerfectOctile - RangeOctile);
 }
+
+QT_WARNING_POP // -Wframe-larger-than
 
 template <typename Engine> void seedStdRandomEngine()
 {
