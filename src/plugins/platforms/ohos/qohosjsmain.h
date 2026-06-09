@@ -8,8 +8,6 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_DECLARE_LOGGING_CATEGORY(QtForOhos)
-
 namespace QtOhos {
 
 bool isOhosNoUiChildMode();

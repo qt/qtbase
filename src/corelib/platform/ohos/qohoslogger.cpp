@@ -8,11 +8,7 @@
 
 QT_BEGIN_NAMESPACE
 
-const QLoggingCategory &QtForOhos()
-{
-    static const QLoggingCategory category("[QtForOhos]");
-    return category;
-}
+Q_LOGGING_CATEGORY(QtForOhos, "qt.ohos", QtDebugMsg)
 
 void qOhosLogMessage(LogLevel logLevel, const char *tag, const char *message)
 {
