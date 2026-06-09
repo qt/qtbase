@@ -19,6 +19,7 @@
 #include <private/qthreadpool_p.h>
 #endif
 
+#include <QtCore/q20iterator.h>
 #include <QtCore/q20utility.h>
 
 QT_BEGIN_NAMESPACE
@@ -296,7 +297,7 @@ void convert_generic_over_rgba32f(QImageData *dest, const QImageData *src, Qt::I
     const ConvertAndStorePixelsFuncFP store = qStoreFromRGBA32F[dest->format];
 
     auto convertSegment = [=](int yStart, int yEnd) {
-        Q_DECL_UNINITIALIZED QRgbaFloat32 buf[BufferSize];
+        Q_DECL_UNINITIALIZED QRgbaFloat32 buf[BufferSize / 2];
         QRgbaFloat32 *buffer = buf;
         const uchar *srcData = src->data + yStart * src->bytes_per_line;
         uchar *destData = dest->data + yStart * dest->bytes_per_line;
@@ -307,7 +308,7 @@ void convert_generic_over_rgba32f(QImageData *dest, const QImageData *src, Qt::I
                 if (dest->depth == 128)
                     buffer = reinterpret_cast<QRgbaFloat32 *>(destData) + x;
                 else
-                    l = qMin(l, BufferSize);
+                    l = (std::min)(l, int{q20::ssize(buf)});
                 const QRgbaFloat32 *ptr = fetch(buffer, srcData, x, l, nullptr, nullptr);
                 store(destData, ptr, x, l, nullptr, nullptr);
                 x += l;
@@ -599,7 +600,7 @@ bool convert_generic_inplace_over_rgba32f(QImageData *data, QImage::Format dst_f
     }
 
     auto convertSegment = [=](int yStart, int yEnd) {
-        Q_DECL_UNINITIALIZED QRgbaFloat32 buf[BufferSize];
+        Q_DECL_UNINITIALIZED QRgbaFloat32 buf[BufferSize / 2];
         QRgbaFloat32 *buffer = buf;
         uchar *srcData = data->data + yStart * data->bytes_per_line;
         uchar *destData = srcData;
@@ -610,7 +611,7 @@ bool convert_generic_inplace_over_rgba32f(QImageData *data, QImage::Format dst_f
                 if (srcLayout->bpp == QPixelLayout::BPP32FPx4)
                     buffer = reinterpret_cast<QRgbaFloat32 *>(srcData) + x;
                 else
-                    l = qMin(l, BufferSize);
+                    l = (std::min)(l, int{q20::ssize(buf)});
                 const QRgbaFloat32 *ptr = fetch(buffer, srcData, x, l, nullptr, nullptr);
                 store(destData, ptr, x, l, nullptr, nullptr);
                 x += l;
