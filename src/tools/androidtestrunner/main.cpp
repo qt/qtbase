@@ -1226,8 +1226,13 @@ int main(int argc, char *argv[])
     const QString formattedStartTime = getCurrentTimeString();
 
     // Start the test
-    if (execAdbCommand(g_options.amStarttestArgs).isNull())
-        return EXIT_ERROR;
+    if (execAdbCommand(g_options.amStarttestArgs).isNull()) {
+        // am start -W never returns when the app crashes before main; treat the
+        // failure as a launch-time crash and surface it from logcat.
+        int exitCode = EXIT_NOEXITCODE;
+        analyseLogcat(formattedStartTime, &exitCode);
+        return exitCode;
+    }
 
     waitForStarted();
 
