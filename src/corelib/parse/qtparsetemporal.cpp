@@ -391,13 +391,48 @@ bool TemporalFieldMatcher::resolve(PartialParse &parse) const
             if (parse.yearWithinCentury < baseSplit.remainder)
                 year += 100;
 
-            if (parse.results.dayOfWeek && parse.results.month && parse.results.dayOfMonth) {
-                QCalendar::YearMonthDay ymd
-                    = { year, parse.results.month, parse.results.dayOfMonth };
-                QDate resolved = calendar.matchCenturyToWeekday(ymd, parse.results.dayOfWeek);
-                if (!resolved.isValid())
-                    return false;
-                year = resolved.year(calendar);
+            if (parse.results.month) {
+                // Check the year has this month and, if given, enough days in
+                // it for dayOfMonth:
+                const auto enough = [dom = parse.results.dayOfMonth](int dim) {
+                    return dim > 0  && (!dom || dom <= dim);
+                };
+                if (!enough(calendar.daysInMonth(parse.results.month, year))) {
+                    // Search outwards for a better century:
+                    bool fixed = false;
+                    for (int off = 1; off < 10; ++off) {
+                        int offset = off * 100;
+                        if (enough(calendar.daysInMonth(parse.results.month, year + offset))) {
+                            year += offset;
+                            fixed = true;
+                            break;
+                        }
+                        if (enough(calendar.daysInMonth(parse.results.month, year - offset))) {
+                            year -= offset;
+                            fixed = true;
+                            break;
+                        }
+                    }
+                    // No century within a millennium each way will do:
+                    if (!fixed)
+                        return false;
+                }
+
+                if (parse.results.dayOfMonth) {
+                    if (parse.results.dayOfWeek) {
+                        QCalendar::YearMonthDay ymd
+                            = { year, parse.results.month, parse.results.dayOfMonth };
+                        const QDate resolved
+                            = calendar.matchCenturyToWeekday(ymd, parse.results.dayOfWeek);
+                        if (!resolved.isValid())
+                            return false;
+                        year = resolved.year(calendar);
+                    } else {
+                        const QDate resolved(year, parse.results.month, parse.results.dayOfMonth);
+                        if (!resolved.isValid())
+                            return false;
+                    }
+                }
             }
 
             parse.results.year = year;

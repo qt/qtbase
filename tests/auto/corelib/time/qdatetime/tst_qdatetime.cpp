@@ -3488,6 +3488,10 @@ void tst_QDateTime::fromStringStringFormat_data()
     QTest::newRow("year-zero")
             << u"0000-01-01T00:00:00.000"_s << u"yyyy-MM-ddThh:mm:ss.zzz"_s << 1900 << greg
             << QDateTime();
+    // The new parser can fix a two-digit year's century, if need be:
+    QTest::newRow("leap-next-century")
+            << u"29/02/00 00:00:00"_s << u"dd/MM/yy HH:mm:ss"_s << 1900 << greg
+            << QDateTime(QDate(2000, 2, 29), QTime(0, 0));
 
     // fuzzer test
     QTest::newRow("integer overflow found by fuzzer")
