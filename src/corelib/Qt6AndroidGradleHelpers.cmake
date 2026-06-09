@@ -285,6 +285,22 @@ function(_qt_internal_android_generate_target_build_gradle target)
             OUTPUT_NAME "${target}")
         set(APP_ARGUMENTS "${QT_ANDROID_APPLICATION_ARGUMENTS}")
 
+        # Legacy packaging
+        if(QT_FEATURE_sanitize_address)
+            message(STATUS "QT_FEATURE_sanitize_address is set, using legacy packaging by default.")
+            set(legacy_packaging_value "true")
+        else()
+            set(legacy_packaging_value
+                "$<IF:$<BOOL:$<TARGET_PROPERTY:${target},QT_ANDROID_LEGACY_PACKAGING>>,true,false>")
+        endif()
+        string(APPEND ANDROID_DEPLOYMENT_EXTRAS
+            "\n    packaging {"
+            "\n        jniLibs {"
+            "\n            useLegacyPackaging = ${legacy_packaging_value}"
+            "\n        }"
+            "\n    }"
+        )
+
         set(template_subdir "app")
     elseif(android_target_type STREQUAL "DYNAMIC_FEATURE")
         set(template_subdir "dynamic_feature")
