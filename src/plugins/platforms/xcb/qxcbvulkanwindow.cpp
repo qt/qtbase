@@ -50,4 +50,10 @@ VkSurfaceKHR *QXcbVulkanWindow::surface()
     return &m_surface;
 }
 
+void QXcbVulkanWindow::destroy()
+{
+    QXcbWindow::destroy();
+    m_surface = {};
+}
+
 QT_END_NAMESPACE
