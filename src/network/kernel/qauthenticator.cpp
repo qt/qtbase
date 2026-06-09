@@ -1016,12 +1016,6 @@ const quint8 hirespversion = 1;
    // send response (b64 encoded??)
 */
 
-/*
-   TODO:
-    - Fix unicode handling
-    - add v2 handling
-*/
-
 class QNtlmBuffer {
 public:
     QNtlmBuffer() : len(0), maxLen(0), offset(0) {}
