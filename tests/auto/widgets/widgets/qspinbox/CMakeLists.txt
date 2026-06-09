@@ -18,4 +18,5 @@ qt_internal_add_test(tst_qspinbox
         Qt::Gui
         Qt::Widgets
         Qt::WidgetsPrivate
+        Qt::TestPrivate
 )
