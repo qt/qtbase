@@ -20,12 +20,14 @@ function (qt_internal_setup_wasm_target_properties wasmTarget)
         target_link_options("${wasmTarget}" INTERFACE "SHELL:--pre-js ${WASM_BUILD_DIR}/plugins/platforms/asan.js" )
         target_link_options("${wasmTarget}" INTERFACE "SHELL:-g")
         target_link_options("${wasmTarget}" INTERFACE "SHELL:-sALLOW_MEMORY_GROWTH=1")
+        target_link_options("${wasmTarget}" INTERFACE "SHELL:-fsanitize-recover")
 
         # The default is changed to 1, when asan is in use, force to 0
         target_link_options("${wasmTarget}" INTERFACE "SHELL:-sEXIT_RUNTIME=0")
 
         target_compile_options("${wasmTarget}" INTERFACE "SHELL:-fno-inline")
         target_compile_options("${wasmTarget}" INTERFACE "SHELL:-O1")
+        target_compile_options("${wasmTarget}" INTERFACE "SHELL:-fsanitize-recover")
     endif()
 
     set(executable_link_flags "-sFETCH")
