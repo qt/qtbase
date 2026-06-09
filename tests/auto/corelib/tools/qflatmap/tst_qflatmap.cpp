@@ -718,7 +718,7 @@ void tst_QFlatMap::viewIterators()
 
 void tst_QFlatMap::varLengthArray()
 {
-    using Map = QVarLengthFlatMap<int, QByteArray, 1024>;
+    using Map = QVarLengthFlatMap<int, QByteArray, 32>;
     Map m(Qt::OrderedUniqueRange, { { 2, "twee" } });
     m.insert_or_assign(1, "een");
     m.remove(1);
