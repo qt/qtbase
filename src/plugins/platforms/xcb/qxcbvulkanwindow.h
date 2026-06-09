@@ -16,6 +16,7 @@ public:
     ~QXcbVulkanWindow();
 
     VkSurfaceKHR *surface();
+    void destroy() override;
 
 protected:
     void resolveFormat(const QSurfaceFormat &format) override;
