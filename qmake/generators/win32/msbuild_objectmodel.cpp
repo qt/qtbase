@@ -1795,7 +1795,7 @@ void VCXProjectWriter::outputFileConfigs(VCProject &project, XmlOutput &xml, Xml
     // We need to check if the file has any custom build step.
     // If there is one then it has to be included with "CustomBuild Include"
     bool hasCustomBuildStep = false;
-    QVarLengthArray<OutputFilterData> data(project.SingleProjects.size());
+    QVarLengthArray<OutputFilterData, 8> data(project.SingleProjects.size());
     for (int i = 0; i < project.SingleProjects.size(); ++i) {
         data[i].filter = project.SingleProjects.at(i).filterByName(cleanFilterName);
         if (!data[i].filter.Config) // only if the filter is not empty
