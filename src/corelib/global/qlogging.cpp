@@ -2064,7 +2064,8 @@ static void stderr_message_handler(QtMsgType type, const QMessageLogContext &con
     // (still print empty lines, e.g. because message itself was empty)
     if (formattedMessage.isNull())
         return;
-    fprintf(stderr, "%s\n", formattedMessage.toLocal8Bit().constData());
+    const QByteArray msg = formattedMessage.toLocal8Bit() + '\n';
+    fwrite(msg.constData(), 1, msg.size(), stderr);
     fflush(stderr);
 }
 
