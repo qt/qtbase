@@ -1858,7 +1858,7 @@ static bool systemd_default_message_handler(QtMsgType type,
     }
 
     // Explicit QByteArray instead of auto, to resolve the QStringBuilder proxy
-    const QByteArray messageField = "MESSAGE="_ba + message.toUtf8().constData();
+    const QByteArray messageField = "MESSAGE="_ba + message.toUtf8();
     const QByteArray priorityField = "PRIORITY="_ba + QByteArray::number(priority);
     const QByteArray tidField = "TID="_ba + QByteArray::number(qlonglong(qt_gettid()));
     const QByteArray fileField = context.file
