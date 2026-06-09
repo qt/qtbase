@@ -31,3 +31,5 @@ if(WIN32 AND TARGET ${target_name})
         WIN32_EXECUTABLE FALSE
     )
 endif()
+
+qt_internal_embed_relocatable_qt_conf(${target_name})

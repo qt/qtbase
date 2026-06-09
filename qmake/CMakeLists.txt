@@ -154,3 +154,4 @@ set_target_properties(${target_name} PROPERTIES
 qt_internal_apply_gc_binaries(${target_name} PRIVATE)
 qt_internal_set_skip_warnings_are_errors(${target_name} TRUE)
 
+qt_internal_embed_relocatable_qt_conf(${target_name})

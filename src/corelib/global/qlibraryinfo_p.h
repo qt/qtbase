@@ -44,14 +44,8 @@ public:
     };
 
     static LocationInfo locationInfo(QLibraryInfo::LibraryPath loc);
-
-    enum UsageMode {
-        RegularUsage,
-        UsedFromQtBinDir
-    };
-
-    static QString path(QLibraryInfo::LibraryPath p, UsageMode usageMode = RegularUsage);
-    static QList<QString> paths(QLibraryInfo::LibraryPath p, UsageMode usageMode = RegularUsage);
+    static QString path(QLibraryInfo::LibraryPath p);
+    static QList<QString> paths(QLibraryInfo::LibraryPath p);
 };
 
 QT_END_NAMESPACE

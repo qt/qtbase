@@ -264,3 +264,32 @@ macro(qt_add_qmake_lib_dependency lib dep)
     string(TOUPPER "${dep}" ucdep)
     list(APPEND QT_QMAKE_LIB_DEPS_${lib} ${ucdep})
 endmacro()
+
+# Embeds a relocatable qt.conf into the given host tool target (e.g. qmake, qtpaths)
+# as a Qt resource at ":/qt/etc/qt.conf", so the tool climbs from its bin directory
+# to the prefix instead of reporting the application binary dir as prefix.
+#
+# This is only relevant for static, relocatable builds: there the tool determines its
+# prefix from the executable's location (prefixFromAppDir()), which yields the bin
+# directory. In shared builds the prefix is derived from the QtCore library location
+# instead, so no embedded qt.conf is needed.
+function(qt_internal_embed_relocatable_qt_conf target)
+    if(NOT QT_FEATURE_static OR NOT QT_FEATURE_relocatable OR NOT TARGET "${target}")
+        return()
+    endif()
+
+    file(RELATIVE_PATH prefix "/foo/${INSTALL_BINDIR}" "/foo")
+
+    set(out_file "${CMAKE_CURRENT_BINARY_DIR}/${target}_qt.conf")
+    qt_configure_file(
+        OUTPUT "${out_file}"
+        CONTENT "[Paths]
+Prefix=${prefix}
+"
+    )
+    set_source_files_properties("${out_file}" PROPERTIES QT_RESOURCE_ALIAS "qt.conf")
+    qt_internal_add_resource(${target} "${target}_qtconf"
+        PREFIX "/qt/etc"
+        FILES "${out_file}"
+    )
+endfunction()

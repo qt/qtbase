@@ -369,7 +369,7 @@ static HMODULE getWindowsModuleHandle()
 }
 #endif // Q_OS_WIN
 
-static QString relocatablePrefixFromQt(QLibraryInfoPrivate::UsageMode usageMode)
+static QString relocatablePrefixFromQt()
 {
     QString prefixPath;
 
@@ -389,25 +389,17 @@ static QString relocatablePrefixFromQt(QLibraryInfoPrivate::UsageMode usageMode)
         return QString::fromLocal8Bit(QT_CONFIGURE_PREFIX_PATH);
 # endif
     prefixPath = prefixFromAppDir();
-    if (usageMode == QLibraryInfoPrivate::UsedFromQtBinDir) {
-        // For Qt tools in a static build, we must chop off the bin directory.
-        constexpr QByteArrayView binDir = qt_configure_strs.viewAt(QLibraryInfo::BinariesPath - 1);
-        constexpr size_t binDirLength = binDir.size() + 1;
-        prefixPath.chop(binDirLength);
-    }
 #elif defined(Q_OS_WASM)
     // Emscripten expects to find shared libraries at the root of the in-memory
     // file system when resolving dependencies for for dlopen() calls. So that's
     // where libqt6core.so would be.
     prefixPath = QStringLiteral("/");
 #elif QT_CONFIG(dlopen)
-    Q_UNUSED(usageMode);
     Dl_info info;
     int result = dladdr(reinterpret_cast<void *>(&QLibraryInfo::isDebugBuild), &info);
     if (result > 0 && info.dli_fname)
         prefixPath = prefixFromQtCoreLibraryHelper(QString::fromLocal8Bit(info.dli_fname));
 #elif defined(Q_OS_WIN)
-    Q_UNUSED(usageMode);
     HMODULE hModule = getWindowsModuleHandle();
     const int kBufferSize = 4096;
     wchar_t buffer[kBufferSize];
@@ -473,12 +465,11 @@ static QString relocatablePrefixFromQt(QLibraryInfoPrivate::UsageMode usageMode)
 }
 #endif
 
-static QString prefixFromQt(QLibraryInfoPrivate::UsageMode usageMode)
+static QString prefixFromQt()
 {
 #if QT_CONFIG(relocatable)
-    return relocatablePrefixFromQt(usageMode);
+    return relocatablePrefixFromQt();
 #else
-    Q_UNUSED(usageMode);
     return QString::fromLocal8Bit(QT_CONFIGURE_PREFIX_PATH);
 #endif
 }
@@ -632,8 +623,7 @@ static bool pathIsAbsolute(const QString &path)
     return path.startsWith(':'_L1) || QFileSystemEntry(path, FromInternalPath{}).isAbsolute();
 }
 
-QStringList QLibraryInfoPrivate::paths(QLibraryInfo::LibraryPath p,
-                                       UsageMode usageMode)
+QStringList QLibraryInfoPrivate::paths(QLibraryInfo::LibraryPath p)
 {
     const QLibraryInfo::LibraryPath loc = p;
     QList<QString> ret;
@@ -673,7 +663,7 @@ QStringList QLibraryInfoPrivate::paths(QLibraryInfo::LibraryPath p,
     if (ret.isEmpty() || keepQtBuildDefaults()) {
         QString qtConfigureDefault;
         if (loc == QLibraryInfo::PrefixPath) {
-            qtConfigureDefault = prefixFromQt(usageMode);
+            qtConfigureDefault = prefixFromQt();
         } else if (int(loc) <= qt_configure_strs.count()) {
             qtConfigureDefault = QString::fromLocal8Bit(qt_configure_strs.viewAt(loc - 1));
 #if !defined(Q_OS_WIN) // On Windows we use the registry
@@ -699,7 +689,7 @@ QStringList QLibraryInfoPrivate::paths(QLibraryInfo::LibraryPath p,
         baseDir = prefixFromAppDir();
     } else {
         // we make any other path absolute to the prefix directory
-        baseDir = QLibraryInfoPrivate::path(QLibraryInfo::PrefixPath, usageMode);
+        baseDir = QLibraryInfoPrivate::path(QLibraryInfo::PrefixPath);
     }
     for (qsizetype i = 0, end = ret.size(); i < end; ++i)
         if (pathIsRelative(ret[i]))
@@ -709,13 +699,10 @@ QStringList QLibraryInfoPrivate::paths(QLibraryInfo::LibraryPath p,
 
 /*
     Returns the path specified by \a p.
-
-    The usage mode can be set to UsedFromQtBinDir to enable special handling for executables that
-    live in <install-prefix>/bin.
  */
-QString QLibraryInfoPrivate::path(QLibraryInfo::LibraryPath p, UsageMode usageMode)
+QString QLibraryInfoPrivate::path(QLibraryInfo::LibraryPath p)
 {
-    return paths(p, usageMode).value(0, QString());
+    return paths(p).value(0, QString());
 }
 
 /*!
