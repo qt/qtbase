@@ -1790,8 +1790,6 @@ static bool slog2_default_handler(QtMsgType type, const QMessageLogContext &,
 
         if (slog2_register(&buffer_config, &buffer_handle, 0) == -1) {
             fprintf(stderr, "Error registering slogger2 buffer!\n");
-            fprintf(stderr, "%s", formattedMessage.toLocal8Bit().constData());
-            fflush(stderr);
             return false;
         }
 
