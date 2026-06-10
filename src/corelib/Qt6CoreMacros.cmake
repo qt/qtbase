@@ -594,12 +594,14 @@ function(_qt_internal_create_executable target)
         # visibility=hidden. Not having this flag set will cause the
         # executable to have main() hidden and can then no longer be loaded
         # through dlopen()
-        set_property(TARGET "${target}" PROPERTY C_VISIBILITY_PRESET default)
-        set_property(TARGET "${target}" PROPERTY CXX_VISIBILITY_PRESET default)
-        set_property(TARGET "${target}" PROPERTY OBJC_VISIBILITY_PRESET default)
-        set_property(TARGET "${target}" PROPERTY OBJCXX_VISIBILITY_PRESET default)
-        set_property(TARGET "${target}"
-                     PROPERTY _qt_android_apply_arch_suffix_called_from_qt_impl TRUE)
+        set_target_properties("${target}" PROPERTIES
+            C_VISIBILITY_PRESET default
+            CXX_VISIBILITY_PRESET default
+            OBJC_VISIBILITY_PRESET default
+            OBJCXX_VISIBILITY_PRESET default
+            _qt_android_apply_arch_suffix_called_from_qt_impl TRUE
+        )
+
         qt6_android_apply_arch_suffix("${target}")
         set_property(TARGET "${target}" PROPERTY _qt_is_android_executable TRUE)
     else()
@@ -764,6 +766,8 @@ function(qt6_finalize_target target)
             set_property(TARGET "${target}" PROPERTY XCODE_GENERATE_SCHEME TRUE)
         endif()
     endif()
+
+    _qt_internal_work_around_autogen_discarded_dependencies_from_target_libs("${target}")
 
     set_target_properties(${target} PROPERTIES _qt_is_finalized TRUE)
 endfunction()
@@ -1301,10 +1305,11 @@ function(_qt_internal_generate_win32_rc_file target)
         # Generate RC File
         set(rc_file_output "${target_binary_dir}/")
         if(QT_GENERATOR_IS_MULTI_CONFIG)
-            string(APPEND rc_file_output "$<CONFIG>/")
+            set(rc_file_suffix "-$<CONFIG>")
+        else()
+            set(rc_file_suffix "")
         endif()
-        string(APPEND rc_file_output "${target}_resource.rc")
-        set(target_rc_file "${rc_file_output}")
+        string(APPEND rc_file_output "${target}_resource${rc_file_suffix}.rc")
 
         set(company_name "")
         get_target_property(target_company_name ${target} QT_TARGET_COMPANY_NAME)
@@ -3166,7 +3171,7 @@ function(qt6_generate_deploy_app_script)
         qt6_generate_deploy_script(${generate_args}
             CONTENT "
 qt6_deploy_runtime_dependencies(
-    EXECUTABLE $<TARGET_FILE_NAME:${arg_TARGET}>.app
+    EXECUTABLE \"$<TARGET_FILE_NAME:${arg_TARGET}>.app\"
 ${common_deploy_args})
 ")
 
@@ -3174,7 +3179,7 @@ ${common_deploy_args})
         qt6_generate_deploy_script(${generate_args}
             CONTENT "
 qt6_deploy_runtime_dependencies(
-    EXECUTABLE $<TARGET_FILE:${arg_TARGET}>
+    EXECUTABLE \"$<TARGET_FILE:${arg_TARGET}>\"
     GENERATE_QT_CONF
 ${common_deploy_args})
 ")
@@ -3184,7 +3189,7 @@ ${common_deploy_args})
         qt6_generate_deploy_script(${generate_args}
             CONTENT "
 qt6_deploy_runtime_dependencies(
-    EXECUTABLE $<TARGET_FILE:${arg_TARGET}>
+    EXECUTABLE \"$<TARGET_FILE:${arg_TARGET}>\"
     GENERATE_QT_CONF
 ${common_deploy_args})
 ")

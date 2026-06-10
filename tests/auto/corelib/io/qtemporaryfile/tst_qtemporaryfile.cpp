@@ -7,13 +7,17 @@
 #include <qfile.h>
 #include <qdatetime.h>
 #include <qdir.h>
-#include <qset.h>
 #include <qstandardpaths.h>
 #include <qstring.h>
 #include <qtemporarydir.h>
 #include <qtemporaryfile.h>
 
 #include <QtTest/private/qtesthelpers_p.h>
+
+#include <QtCore/private/qduplicatetracker_p.h>
+#include <QtCore/qscopeguard.h>
+
+#include <optional>
 
 #if defined(Q_OS_WIN)
 # include <shlwapi.h>
@@ -62,6 +66,7 @@ private slots:
     void resize();
     void openOnRootDrives();
     void stressTest();
+    void rename_data();
     void rename();
     void renameFdLeak();
     void moveToTrash();
@@ -547,25 +552,45 @@ void tst_QTemporaryFile::openOnRootDrives()
 
 void tst_QTemporaryFile::stressTest()
 {
-    const int iterations = 1000;
+    constexpr int iterations = 1000;
 
-    QSet<QString> names;
+    QDuplicateTracker<QString, iterations> names;
+
+    const auto remover = qScopeGuard([&] {
+            for (const QString &s : std::as_const(names))
+                QFile::remove(s);
+        });
+
     for (int i = 0; i < iterations; ++i) {
         QTemporaryFile file;
         file.setAutoRemove(false);
         QVERIFY2(file.open(), qPrintable(file.errorString()));
-        QVERIFY(!names.contains(file.fileName()));
-        names.insert(file.fileName());
+        QVERIFY(!names.hasSeen(file.fileName()));
     }
-    for (QSet<QString>::const_iterator it = names.constBegin(); it != names.constEnd(); ++it) {
-        QFile::remove(*it);
-    }
+}
+
+void tst_QTemporaryFile::rename_data()
+{
+    QTest::addColumn<bool>("targetExists");
+    QTest::addColumn<bool>("expectedRenameResult");
+
+    QTest::addRow("success") << false << true;
+    QTest::addRow("failure") << true  << false;
+}
+
+static QByteArray read_all(const QString &fileName)
+{
+    QFile file(fileName);
+    if (file.open(QFile::ReadOnly))
+        return file.readAll();
+    else
+        return QByteArray();
 }
 
 void tst_QTemporaryFile::rename()
 {
-    // This test checks that the temporary file is deleted, even after a
-    // rename.
+    QFETCH(const bool, targetExists);
+    QFETCH(const bool, expectedRenameResult);
 
     QDir dir;
     QVERIFY(!dir.exists("temporary-file.txt"));
@@ -575,13 +600,35 @@ void tst_QTemporaryFile::rename()
         QTemporaryFile file(dir.filePath("temporary-file.XXXXXX"));
 
         QVERIFY(file.open());
+        QCOMPARE(file.write("I am the tmpfile"), 16);
         tempname = file.fileName();
         QVERIFY(dir.exists(tempname));
 
-        QVERIFY(file.rename("temporary-file.txt"));
-        QVERIFY(!dir.exists(tempname));
+        std::optional<QFile> renameBlocker;
+        const auto cleanup = qScopeGuard([&] {
+                if (renameBlocker)
+                    renameBlocker->remove();
+            });
+
+        if (targetExists) {
+            renameBlocker.emplace(dir.filePath("temporary-file.txt"_L1));
+            QVERIFY2(renameBlocker->open(QFile::ReadWrite),
+                     qPrintable(renameBlocker->errorString()));
+            QCOMPARE(renameBlocker->write("I am the blocker"), 16);
+            renameBlocker->close();
+            QVERIFY(QFile::exists(dir.filePath("temporary-file.txt"_L1)));
+        }
+
+#ifdef Q_OS_ANDROID
+        QEXPECT_FAIL("failure", "QTBUG-138610", Abort);
+#endif
+        QCOMPARE(file.rename("temporary-file.txt"_L1), expectedRenameResult);
+        QCOMPARE(dir.exists(tempname), !expectedRenameResult);
         QVERIFY(dir.exists("temporary-file.txt"));
-        QCOMPARE(file.fileName(), QString("temporary-file.txt"));
+        QCOMPARE(read_all(dir.filePath("temporary-file.txt"_L1)),
+                 expectedRenameResult ? "I am the tmpfile" : "I am the blocker");
+        QCOMPARE(file.fileName(),
+                 expectedRenameResult ? QString("temporary-file.txt") : tempname);
     }
 
     QVERIFY(!dir.exists(tempname));
@@ -804,37 +851,25 @@ void tst_QTemporaryFile::setTemplateAfterOpen()
 
 void tst_QTemporaryFile::autoRemoveAfterFailedRename()
 {
-    struct CleanOnReturn
-    {
-        ~CleanOnReturn()
-        {
+    QString tempName;
+    auto cleaner = qScopeGuard([&] {
             if (!tempName.isEmpty())
                 QFile::remove(tempName);
-        }
-
-        void reset()
-        {
-            tempName.clear();
-        }
-
-        QString tempName;
-    };
-
-    CleanOnReturn cleaner;
+        });
 
     {
         QTemporaryFile file;
         QVERIFY( file.open() );
-        cleaner.tempName = file.fileName();
+        tempName = file.fileName();
 
-        QVERIFY( QFile::exists(cleaner.tempName) );
+        QVERIFY(QFile::exists(tempName));
         QVERIFY( !QFileInfo("i-do-not-exist").isDir() );
         QVERIFY( !file.rename("i-do-not-exist/file.txt") );
-        QVERIFY( QFile::exists(cleaner.tempName) );
+        QVERIFY(QFile::exists(tempName));
     }
 
-    QVERIFY( !QFile::exists(cleaner.tempName) );
-    cleaner.reset();
+    QVERIFY(!QFile::exists(tempName));
+    cleaner.dismiss(); // would fail: file is known to no longer exist
 }
 
 void tst_QTemporaryFile::createNativeFile_data()

@@ -1,6 +1,6 @@
 /* pngrtran.c - transforms the data in a row for PNG readers
  *
- * Copyright (c) 2018-2024 Cosmin Truta
+ * Copyright (c) 2018-2025 Cosmin Truta
  * Copyright (c) 1998-2002,2004,2006-2018 Glenn Randers-Pehrson
  * Copyright (c) 1996-1997 Andreas Dilger
  * Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc.
@@ -25,6 +25,12 @@
 #    else
 #      include <arm_neon.h>
 #    endif
+#  endif
+#endif
+
+#ifdef PNG_RISCV_RVV_IMPLEMENTATION
+#  if PNG_RISCV_RVV_IMPLEMENTATION == 1
+#    define PNG_RISCV_RVV_INTRINSICS_AVAILABLE
 #  endif
 #endif
 

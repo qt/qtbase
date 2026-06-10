@@ -42,9 +42,11 @@ qt_internal_add_3rdparty_library(BundledHarfbuzz
         src/hb-open-type.hh
         src/hb-outline.cc src/hb-outline.hh
         src/hb-paint.cc src/hb-paint.h src/hb-paint.hh
+        src/hb-paint-bounded.cc src/hb-paint-bounded.hh
         src/hb-paint-extents.cc src/hb-paint-extents.hh
         src/hb-priority-queue.hh
         src/hb-repacker.hh
+        src/hb-script-list.h
         src/hb-set.cc src/hb-set.h src/hb-set.hh
         src/hb-set-digest.hh
         src/hb-shape.cc src/hb-shape.h
@@ -62,8 +64,15 @@ qt_internal_add_3rdparty_library(BundledHarfbuzz
         src/hb-subset-instancer-iup.cc src/hb-subset-instancer-iup.hh
         src/hb-subset-instancer-solver.cc
         src/hb-subset-plan.cc
+        src/hb-subset-plan-layout.cc
         src/hb-subset-plan-member-list.hh
         src/hb-subset-serialize.cc src/hb-subset-serialize.h
+        src/hb-subset-table-cff.cc
+        src/hb-subset-table-color.cc
+        src/hb-subset-table-layout.cc
+        src/hb-subset-table-other.cc
+        src/hb-subset-table-var.cc src/hb-subset-table.hh
+        src/hb-subset-plan-var.cc
         src/hb-unicode.cc src/hb-unicode.h src/hb-unicode.hh
         src/hb-utf.hh
         src/hb-version.h

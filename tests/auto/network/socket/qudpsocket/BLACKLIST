@@ -2,8 +2,6 @@
 windows
 # QTBUG-85364
 windows-10 gcc cmake
-[readyReadForEmptyDatagram]
-opensuse-leap
 [echo]
 opensuse-42.3
 [multicast]

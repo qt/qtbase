@@ -114,6 +114,8 @@ hb_directwrite_get_glyph_h_advances (hb_font_t* font,
   dw_face->QueryInterface (__uuidof(IDWriteFontFace1), (void**)&dw_face1);
   assert (dw_face1);
 
+  unsigned int num_glyphs = font->face->get_num_glyphs ();
+
   for (unsigned i = 0; i < count;)
   {
     UINT16 gids[MAX_GLYPHS];
@@ -130,7 +132,9 @@ hb_directwrite_get_glyph_h_advances (hb_font_t* font,
     dw_face1->GetDesignGlyphAdvances (n, gids, advances, false);
     for (unsigned j = 0; j < n; j++)
     {
-      *first_advance = font->em_scale_x (advances[j]);
+      // https://github.com/harfbuzz/harfbuzz/issues/5319
+      auto advance = gids[j] < num_glyphs ? advances[j] : 0;
+      *first_advance = font->em_scale_x (advance);
       first_advance = &StructAtOffset<hb_position_t> (first_advance, advance_stride);
     }
 
@@ -238,7 +242,7 @@ public:
   GeometrySink(hb_font_t *font,
 	       hb_draw_funcs_t *draw_funcs,
 	       void *draw_data)
-    : font (font), drawing ({draw_funcs, draw_data, font->slant}) {}
+    : font (font), drawing ({draw_funcs, draw_data}) {}
 
   virtual ~GeometrySink() {}
 
@@ -275,12 +279,12 @@ public:
   }
 };
 
-static void
-hb_directwrite_draw_glyph (hb_font_t *font,
-			   void *font_data HB_UNUSED,
-			   hb_codepoint_t glyph,
-			   hb_draw_funcs_t *draw_funcs, void *draw_data,
-			   void *user_data)
+static hb_bool_t
+hb_directwrite_draw_glyph_or_fail (hb_font_t *font,
+				   void *font_data HB_UNUSED,
+				   hb_codepoint_t glyph,
+				   hb_draw_funcs_t *draw_funcs, void *draw_data,
+				   void *user_data)
 {
   IDWriteFontFace *dw_face = (IDWriteFontFace *) (const void *) font->data.directwrite;
 
@@ -288,11 +292,11 @@ hb_directwrite_draw_glyph (hb_font_t *font,
   UINT16 gid = static_cast<UINT16>(glyph);
   unsigned upem = font->face->get_upem();
 
-  (void) dw_face->GetGlyphRunOutline (upem,
-				      &gid, nullptr, nullptr,
-				      1,
-				      false, false,
-				      &sink);
+  return S_OK == dw_face->GetGlyphRunOutline (upem,
+					      &gid, nullptr, nullptr,
+					      1,
+					      false, false,
+					      &sink);
 }
 
 #endif
@@ -317,7 +321,7 @@ static struct hb_directwrite_font_funcs_lazy_loader_t : hb_font_funcs_lazy_loade
 #endif
 
 #ifndef HB_NO_DRAW
-    hb_font_funcs_set_draw_glyph_func (funcs, hb_directwrite_draw_glyph, nullptr, nullptr);
+    hb_font_funcs_set_draw_glyph_or_fail_func (funcs, hb_directwrite_draw_glyph_or_fail, nullptr, nullptr);
 #endif
 
     hb_font_funcs_set_glyph_extents_func (funcs, hb_directwrite_get_glyph_extents, nullptr, nullptr);

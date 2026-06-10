@@ -355,7 +355,8 @@ inline bool TimeReference::toNanoseconds(qint64 *result) const
     QDeadlineTimer is compatible with the \c{std::chrono} API from C++11 and
     can be constructed from or compared to both \c{std::chrono::duration} and
     \c{std::chrono::time_point} objects. In addition, it is fully compatible
-    with the time literals from C++14, which allow one to write code as:
+    with the \l{std::literals::chrono_literals Symbol Index}{time literals
+    from C++14}, which allow one to write code such as:
 
     \snippet code/src_corelib_kernel_qdeadlinetimer.cpp 1
 
@@ -461,7 +462,8 @@ QDeadlineTimer::QDeadlineTimer(qint64 msecs, Qt::TimerType type) noexcept
 
     The QDeadlineTimer object will be constructed with the specified timer \a type.
 
-    This constructor can be used with C++14's user-defined literals for time, such as in:
+    This constructor can be used with \l{std::literals::chrono_literals Symbol Index}
+    {C++14's user-defined literals for time}, such as in:
 
     \snippet code/src_corelib_kernel_qdeadlinetimer.cpp 3
 
@@ -552,14 +554,10 @@ void QDeadlineTimer::setPreciseRemainingTime(qint64 secs, qint64 nsecs, Qt::Time
 
     The timer type for this QDeadlineTimer object will be set to the specified \a type.
 
-    This function can be used with C++14's user-defined literals for time, such as in:
+    This function can be used with \l{std::literals::chrono_literals Symbol Index}
+    {C++14's user-defined literals for time}, such as in:
 
     \snippet code/src_corelib_kernel_qdeadlinetimer.cpp 4
-
-    \note Qt detects the necessary C++14 compiler support by way of the feature
-    test recommendations from
-    \l{https://isocpp.org/std/standing-documents/sd-6-sg10-feature-test-recommendations}
-    {C++ Committee's Standing Document 6}.
 
     \sa setDeadline(), remainingTime(), hasExpired(), isForever()
 */

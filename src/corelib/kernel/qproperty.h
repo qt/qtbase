@@ -281,7 +281,7 @@ public:
               auto This = static_cast<QPropertyChangeHandler<Functor>*>(self);
               This->m_handler();
           })
-        , m_handler(handler)
+        , m_handler(std::move(handler))
     {
     }
 
@@ -291,7 +291,7 @@ public:
               auto This = static_cast<QPropertyChangeHandler<Functor>*>(self);
               This->m_handler();
           })
-        , m_handler(handler)
+        , m_handler(std::move(handler))
     {
         setSource(property);
     }
@@ -308,7 +308,7 @@ public:
             auto This = static_cast<QPropertyNotifier *>(self);
             This->m_handler();
         })
-        , m_handler(handler)
+        , m_handler(std::move(handler))
     {
     }
 
@@ -318,7 +318,7 @@ public:
             auto This = static_cast<QPropertyNotifier *>(self);
             This->m_handler();
         })
-        , m_handler(handler)
+        , m_handler(std::move(handler))
     {
         setSource(property);
     }
@@ -461,7 +461,7 @@ public:
     QPropertyChangeHandler<Functor> onValueChanged(Functor f)
     {
         static_assert(std::is_invocable_v<Functor>, "Functor callback must be callable without any parameters");
-        return QPropertyChangeHandler<Functor>(*this, f);
+        return QPropertyChangeHandler<Functor>(*this, std::move(f));
     }
 
     template<typename Functor>
@@ -469,14 +469,14 @@ public:
     {
         static_assert(std::is_invocable_v<Functor>, "Functor callback must be callable without any parameters");
         f();
-        return onValueChanged(f);
+        return onValueChanged(std::move(f));
     }
 
     template<typename Functor>
     QPropertyNotifier addNotifier(Functor f)
     {
         static_assert(std::is_invocable_v<Functor>, "Functor callback must be callable without any parameters");
-        return QPropertyNotifier(*this, f);
+        return QPropertyNotifier(*this, std::move(f));
     }
 
     const QtPrivate::QPropertyBindingData &bindingData() const { return d; }
@@ -712,7 +712,7 @@ public:
     template<typename Functor>
     QPropertyChangeHandler<Functor> onValueChanged(Functor f) const
     {
-        QPropertyChangeHandler<Functor> handler(f);
+        QPropertyChangeHandler<Functor> handler(std::move(f));
         observe(&handler);
         return handler;
     }
@@ -721,13 +721,13 @@ public:
     QPropertyChangeHandler<Functor> subscribe(Functor f) const
     {
         f();
-        return onValueChanged(f);
+        return onValueChanged(std::move(f));
     }
 
     template<typename Functor>
     QPropertyNotifier addNotifier(Functor f)
     {
-        QPropertyNotifier handler(f);
+        QPropertyNotifier handler(std::move(f));
         observe(&handler);
         return handler;
     }
@@ -970,19 +970,19 @@ public:
     template<typename Functor>
     QPropertyChangeHandler<Functor> onValueChanged(Functor f)
     {
-        return QBindable<T>(aliasedProperty(), iface).onValueChanged(f);
+        return QBindable<T>(aliasedProperty(), iface).onValueChanged(std::move(f));
     }
 
     template<typename Functor>
     QPropertyChangeHandler<Functor> subscribe(Functor f)
     {
-        return QBindable<T>(aliasedProperty(), iface).subscribe(f);
+        return QBindable<T>(aliasedProperty(), iface).subscribe(std::move(f));
     }
 
     template<typename Functor>
     QPropertyNotifier addNotifier(Functor f)
     {
-        return QBindable<T>(aliasedProperty(), iface).addNotifier(f);
+        return QBindable<T>(aliasedProperty(), iface).addNotifier(std::move(f));
     }
 
     bool isValid() const
@@ -1156,7 +1156,7 @@ public:
     QPropertyChangeHandler<Functor> onValueChanged(Functor f)
     {
         static_assert(std::is_invocable_v<Functor>, "Functor callback must be callable without any parameters");
-        return QPropertyChangeHandler<Functor>(*this, f);
+        return QPropertyChangeHandler<Functor>(*this, std::move(f));
     }
 
     template<typename Functor>
@@ -1164,14 +1164,14 @@ public:
     {
         static_assert(std::is_invocable_v<Functor>, "Functor callback must be callable without any parameters");
         f();
-        return onValueChanged(f);
+        return onValueChanged(std::move(f));
     }
 
     template<typename Functor>
     QPropertyNotifier addNotifier(Functor f)
     {
         static_assert(std::is_invocable_v<Functor>, "Functor callback must be callable without any parameters");
-        return QPropertyNotifier(*this, f);
+        return QPropertyNotifier(*this, std::move(f));
     }
 
     const QtPrivate::QPropertyBindingData &bindingData() const
@@ -1292,7 +1292,7 @@ public:
     QPropertyChangeHandler<Functor> onValueChanged(Functor f)
     {
         static_assert(std::is_invocable_v<Functor>, "Functor callback must be callable without any parameters");
-        return QPropertyChangeHandler<Functor>(*this, f);
+        return QPropertyChangeHandler<Functor>(*this, std::move(f));
     }
 
     template<typename Functor>
@@ -1300,14 +1300,14 @@ public:
     {
         static_assert(std::is_invocable_v<Functor>, "Functor callback must be callable without any parameters");
         f();
-        return onValueChanged(f);
+        return onValueChanged(std::move(f));
     }
 
     template<typename Functor>
     QPropertyNotifier addNotifier(Functor f)
     {
         static_assert(std::is_invocable_v<Functor>, "Functor callback must be callable without any parameters");
-        return QPropertyNotifier(*this, f);
+        return QPropertyNotifier(*this, std::move(f));
     }
 
     QtPrivate::QPropertyBindingData &bindingData() const

@@ -1,5 +1,5 @@
-libpng 1.6.47 - February 18, 2025
-=================================
+libpng 1.6.50 - July 1, 2025
+============================
 
 This is a public release of libpng, intended for use in production code.
 
@@ -9,13 +9,13 @@ Files available for download
 
 Source files with LF line endings (for Unix/Linux):
 
- * libpng-1.6.47.tar.xz (LZMA-compressed, recommended)
- * libpng-1.6.47.tar.gz (deflate-compressed)
+ * libpng-1.6.50.tar.xz (LZMA-compressed, recommended)
+ * libpng-1.6.50.tar.gz (deflate-compressed)
 
 Source files with CRLF line endings (for Windows):
 
- * lpng1647.7z (LZMA-compressed, recommended)
- * lpng1647.zip (deflate-compressed)
+ * lpng1650.7z (LZMA-compressed, recommended)
+ * lpng1650.zip (deflate-compressed)
 
 Other information:
 
@@ -25,19 +25,18 @@ Other information:
  * TRADEMARK.md
 
 
-Changes from version 1.6.46 to version 1.6.47
+Changes from version 1.6.49 to version 1.6.50
 ---------------------------------------------
 
- * Modified the behaviour of colorspace chunks in order to adhere
-   to the new precedence rules formulated in the latest draft of
-   the PNG Specification.
+ * Improved the detection of the RVV Extension on the RISC-V platform.
+   (Contributed by Filip Wasil)
+ * Replaced inline ASM with C intrinsics in the RVV code.
+   (Contributed by Filip Wasil)
+ * Fixed a decoder defect in which unknown chunks trailing IDAT, set
+   to go through the unknown chunk handler, incorrectly triggered
+   out-of-place IEND errors.
    (Contributed by John Bowler)
- * Fixed a latent bug in `png_write_iCCP`.
-   This would have been a read-beyond-end-of-malloc vulnerability,
-   introduced early in the libpng-1.6.0 development, yet (fortunately!)
-   it was inaccessible before the above-mentioned modification of the
-   colorspace precedence rules, due to pre-existing colorspace checks.
-   (Reported by Bob Friesenhahn; fixed by John Bowler)
+ * Fixed the CMake file for cross-platform builds that require `libm`.
 
 
 Send comments/corrections/commendations to png-mng-implement at lists.sf.net.

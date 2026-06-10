@@ -259,7 +259,7 @@ void tst_Android::testFullScreenDimensions()
         const int targetSdkVersion = appInfo.getField<jint>("targetSdkVersion");
         const int sdkVersion = QNativeInterface::QAndroidApplication::sdkVersion();
 
-        if (sdkVersion >= __ANDROID_API_V__  && targetSdkVersion >= __ANDROID_API_V__) {
+        if (sdkVersion > __ANDROID_API_V__  && targetSdkVersion > __ANDROID_API_V__) {
             expectedWidth = appSize.width();
             expectedHeight = appSize.height();
         } else {

@@ -76,8 +76,12 @@ project(QtBase
     VERSION "${QT_REPO_MODULE_VERSION}"
     DESCRIPTION "Qt Base Libraries"
     HOMEPAGE_URL "https://qt.io/"
-    LANGUAGES CXX C ASM
+    LANGUAGES CXX C
 )
+
+if(UNIX AND NOT ANDROID)
+  enable_language(ASM)
+endif()
 
 # Should this Qt be static or dynamically linked?
 option(BUILD_SHARED_LIBS "Build Qt statically or dynamically" ON)

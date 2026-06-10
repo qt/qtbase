@@ -289,6 +289,7 @@ bool QWindowsDialogHelperBase<BaseClass>::show(Qt::WindowFlags,
     // timer is stopped and dialog->exec() is called directly.
     cleanupThread();
     if (modal) {
+        stopTimer();
         m_timerId = this->startTimer(0);
     } else {
         startDialogThread();

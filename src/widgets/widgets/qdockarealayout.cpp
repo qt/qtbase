@@ -1487,6 +1487,14 @@ QList<int> QDockAreaLayoutInfo::indexOf(QWidget *widget) const
     return QList<int>();
 }
 
+std::unique_ptr<QLayoutItem> QDockAreaLayoutInfo::takeWidgetItem(QWidget *widget)
+{
+    std::unique_ptr<QLayoutItem> widgetItem;
+    if (const auto path = indexOf(widget); !path.isEmpty())
+        widgetItem.reset(item(path).widgetItem);
+    return widgetItem;
+}
+
 QMainWindowLayout *QDockAreaLayoutInfo::mainWindowLayout() const
 {
     QMainWindowLayout *result = qt_mainwindow_layout(mainWindow);
@@ -3298,41 +3306,50 @@ int QDockAreaLayout::separatorMove(const QList<int> &separator, const QPoint &or
                                                 const QPoint &dest)
 {
     int delta = 0;
-    int index = separator.last();
+    const auto dockPosition = static_cast<QInternal::DockPosition>(separator.last());
+    const bool isHorizontal = dockPosition == QInternal::LeftDock || dockPosition == QInternal::TopDock;
+    const bool isLeftOrTop = dockPosition == QInternal::LeftDock || dockPosition == QInternal::TopDock;
+    const bool separatorIsWithinDock = separator.size() > 1;
 
-    if (separator.size() > 1) {
+    if (separatorIsWithinDock) {
+        // The dock area contains more than one dock widget and therefore an internal separator,
+        // which is being moved. The move changes the sizes of the dock widgets docked in the dock area.
+        // The dock area's geometry remains unchanged.
         QDockAreaLayoutInfo *info = this->info(separator);
         delta = pick(info->o, dest - origin);
         if (delta != 0)
-            delta = info->separatorMove(index, delta);
-        info->apply(false);
+            delta = info->separatorMove(dockPosition, delta);
+        info->apply(/* animate = */ false);
         return delta;
     }
 
+    // The dock area's external separator is moved. The move changes the size of the contained
+    // dock widgets, as well as the size of neighbouring dock areas and their docked dock widgets.
+    // If the move shrinks the contained dock widgets to their minimum size,
+    // the entire dock area will attempted to be moved, retaining the minumum size.
+    // If the contained dock widgets have to be shrunk below minimum size, they will be collapsed.
+
     QList<QLayoutStruct> list;
 
-    if (index == QInternal::LeftDock || index == QInternal::RightDock)
+    if (isHorizontal)
         getGrid(nullptr, &list);
     else
         getGrid(&list, nullptr);
 
-    int sep_index = index == QInternal::LeftDock || index == QInternal::TopDock
-                        ? 0 : 1;
-    Qt::Orientation o = index == QInternal::LeftDock || index == QInternal::RightDock
-                        ? Qt::Horizontal
-                        : Qt::Vertical;
+    const int sep_index = isLeftOrTop ? 0 : 1;
+    const Qt::Orientation o = isHorizontal ? Qt::Horizontal : Qt::Vertical;
 
     delta = pick(o, dest - origin);
     delta = separatorMoveHelper(list, sep_index, delta, sep);
 
     fallbackToSizeHints = false;
 
-    if (index == QInternal::LeftDock || index == QInternal::RightDock)
+    if (isHorizontal)
         setGrid(nullptr, &list);
     else
         setGrid(&list, nullptr);
 
-    apply(false);
+    apply(/* animate = */ false);
 
     return delta;
 }
@@ -3346,7 +3363,7 @@ int QDockAreaLayoutInfo::separatorMove(const QList<int> &separator, const QPoint
     delta = pick(info->o, dest - origin);
     if (delta != 0)
         delta = info->separatorMove(index, delta);
-    info->apply(false);
+    info->apply(/* animate = */ false);
     return delta;
 }
 

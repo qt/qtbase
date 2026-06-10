@@ -122,7 +122,6 @@ void tst_QMovie::playMovie_data()
 void tst_QMovie::playMovie()
 {
     QFETCH(QString, fileName);
-    QFETCH(int, frameCount);
 
     QMovie movie(QFINDTESTDATA(fileName));
 
@@ -144,6 +143,8 @@ void tst_QMovie::playMovie()
     connect(&movie, SIGNAL(finished()), this, SLOT(exitLoopSlot()));
 
 #ifndef QT_NO_WIDGETS
+    QFETCH(int, frameCount);
+
     QLabel label;
     label.setMovie(&movie);
     label.show();

@@ -154,7 +154,7 @@ public:
 
     bool isColorFont() const { return glyphFormat == Format_ARGB; }
 
-    virtual QFixed emSquareSize() const { return ascent(); }
+    virtual QFixed emSquareSize() const;
 
     /* returns 0 as glyph index for non existent glyphs */
     virtual glyph_t glyphIndex(uint ucs4) const = 0;
@@ -403,6 +403,7 @@ public:
     virtual glyph_metrics_t boundingBox(glyph_t glyph) override;
     virtual QFontEngine *cloneWithSize(qreal pixelSize) const override;
 
+    virtual QFixed emSquareSize() const override { return _size; }
     virtual QFixed ascent() const override;
     virtual QFixed capHeight() const override;
     virtual QFixed descent() const override;
@@ -441,6 +442,7 @@ public:
     virtual void addOutlineToPath(qreal, qreal, const QGlyphLayout &, QPainterPath *, QTextItem::RenderFlags flags) override;
     virtual void getGlyphBearings(glyph_t glyph, qreal *leftBearing = nullptr, qreal *rightBearing = nullptr) override;
 
+    virtual QFixed emSquareSize() const override;
     virtual QFixed ascent() const override;
     virtual QFixed capHeight() const override;
     virtual QFixed descent() const override;

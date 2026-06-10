@@ -44,6 +44,16 @@ QCocoaMenu::~QCocoaMenu()
 
     if (isOpen())
         dismiss();
+
+    if (NSMenu *superMenu = m_nativeMenu.supermenu) {
+        for (NSMenuItem *item in superMenu.itemArray) {
+            if (item.submenu == m_nativeMenu) {
+                [superMenu removeItem:item];
+                break;
+            }
+        }
+    }
+
     [m_nativeMenu release];
 }
 

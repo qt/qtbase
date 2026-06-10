@@ -1,4 +1,4 @@
 <?xml version='1.0' encoding='utf-8'?>
-<resources>
-    <string name="fatal_error_msg">您的應用程序遇到一個致命錯誤導致它無法繼續。</string>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="fatal_error_msg" tools:ignore="UnusedResources">您的應用程序遇到一個致命錯誤導致它無法繼續。</string>
 </resources>

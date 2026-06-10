@@ -60,4 +60,4 @@ int main(int argc, char **argv)
     return 0;
 }
 
-#include "main.moc"
+#include "qlogging_helper.moc"

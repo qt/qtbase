@@ -524,7 +524,10 @@ class QWeakPointer
 {
     typedef QtSharedPointer::ExternalRefCountData Data;
     template <typename X>
-    using IfCompatible = typename std::enable_if<std::is_convertible<X*, T*>::value, bool>::type;
+    using IfCompatible = std::enable_if_t<std::conjunction_v<
+            std::negation<std::is_same<T, X>>, // don't make accidental copy/move SMFs
+            std::is_convertible<X*, T*>
+        >, bool>;
 
 public:
     typedef T element_type;
@@ -662,6 +665,10 @@ private:
     { return *this = QWeakPointer<T>(ptr, true); }
 
 #ifndef QT_NO_QOBJECT
+    QWeakPointer(T *ptr, bool)
+        : d{ptr ? Data::getAndRef(ptr) : nullptr}, value{ptr}
+    { }
+
     template <class X, IfCompatible<X> = true>
     inline QWeakPointer(X *ptr, bool) : d(ptr ? Data::getAndRef(ptr) : nullptr), value(ptr)
     { }

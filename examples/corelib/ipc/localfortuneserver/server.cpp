@@ -103,10 +103,9 @@ void Server::sendFortune()
 {
     QByteArray block;
     QDataStream out(&block, QIODevice::WriteOnly);
-    out.setVersion(QDataStream::Qt_6_0);
+    out.setVersion(QDataStream::Qt_6_5);
     const int fortuneIndex = QRandomGenerator::global()->bounded(0, fortunes.size());
     const QString &message = fortunes.at(fortuneIndex);
-    out << quint32(message.size());
     out << message;
 
     QLocalSocket *clientConnection = server->nextPendingConnection();

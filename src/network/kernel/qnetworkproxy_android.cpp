@@ -3,6 +3,7 @@
 
 #include "qnetworkproxy.h"
 
+#include <QtCore/qapplicationstatic.h>
 #include <QtCore/qcoreapplication_platform.h>
 #include <QtCore/qjnienvironment.h>
 #include <QtCore/qjniobject.h>
@@ -20,7 +21,7 @@ public:
 
 using namespace QNativeInterface;
 
-Q_GLOBAL_STATIC(ProxyInfoObject, proxyInfoInstance)
+Q_APPLICATION_STATIC(ProxyInfoObject, proxyInfoInstance)
 
 static const char networkClass[] = "org/qtproject/qt/android/network/QtNetwork";
 

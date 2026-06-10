@@ -19,6 +19,7 @@
 #include <QtDBus/private/qtdbusglobal_p.h>
 #include <qdbusabstractadaptor.h>
 
+#include <QtCore/qbytearrayview.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qmap.h>
 #include <QtCore/qobject.h>
@@ -64,10 +65,10 @@ public: // typedefs
         QDBusAbstractAdaptor *adaptor;
 
         inline bool operator<(const AdaptorData &other) const
-        { return QByteArray(interface) < other.interface; }
+        { return QByteArrayView(interface) < other.interface; }
         inline bool operator<(const QString &other) const
         { return QLatin1StringView(interface) < other; }
-        inline bool operator<(const QByteArray &other) const
+        inline bool operator<(QByteArrayView other) const
         { return interface < other; }
     };
     typedef QList<AdaptorData> AdaptorMap;

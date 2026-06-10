@@ -804,7 +804,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
 
                 QString icon = fileFixify(var("ICON"));
                 t << "@$(DEL_FILE) " << info_plist_out << "\n\t"
-                  << "@plutil -convert xml1 -o - " << info_plist << " | "
+                  << "@set -o pipefail && plutil -convert xml1 -o - " << info_plist << " | "
                   << "sed ";
                 for (const ProString &arg : std::as_const(commonSedArgs))
                     t << arg;
@@ -837,7 +837,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                 if (!isShallowBundle)
                     symlinks[bundle_dir + "Resources"] = "Versions/Current/Resources";
                 t << "@$(DEL_FILE) " << info_plist_out << "\n\t"
-                  << "@plutil -convert xml1 -o - " << info_plist << " | "
+                  << "@set -o pipefail && plutil -convert xml1 -o - " << info_plist << " | "
                   << "sed ";
                 for (const ProString &arg : std::as_const(commonSedArgs))
                     t << arg;

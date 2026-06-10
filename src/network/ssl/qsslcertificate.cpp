@@ -616,6 +616,9 @@ QList<QSslCertificate> QSslCertificate::fromPath(const QString &path,
                                                  QSsl::EncodingFormat format,
                                                  PatternSyntax syntax)
 {
+    if (path.isEmpty())
+        return {};
+
     // $, (,), *, +, ., ?, [, ,], ^, {, | and }.
 
     // make sure to use the same path separators on Windows and Unix like systems.
@@ -633,7 +636,7 @@ QList<QSslCertificate> QSslCertificate::fromPath(const QString &path,
     else if (syntax == PatternSyntax::RegularExpression)
         pos = sourcePath.indexOf(QRegularExpression("[\\$\\(\\)\\*\\+\\.\\?\\[\\]\\^\\{\\}\\|]"_L1));
 #else
-    if (syntax == PatternSyntax::Wildcard || syntax == PatternSyntax::RegExp)
+    if (syntax == PatternSyntax::Wildcard || syntax == PatternSyntax::RegularExpression)
         qWarning("Regular expression support is disabled in this build. Only fixed string can be searched");
         return QList<QSslCertificate>();
 #endif

@@ -29,6 +29,7 @@
 #ifdef HAVE_CORETEXT
 
 #include "hb-coretext.hh"
+#include "hb-aat-layout-trak-table.hh"
 
 #include "hb-draw.hh"
 #include "hb-font.hh"
@@ -209,6 +210,7 @@ hb_coretext_get_glyph_h_advances (hb_font_t* font,
 
   CGFloat ct_font_size = CTFontGetSize (ct_font);
   CGFloat x_mult = (CGFloat) font->x_scale / ct_font_size;
+  hb_position_t tracking = font->face->table.trak->get_tracking (font, HB_DIRECTION_LTR, 0.f);
 
   CGGlyph cg_glyph[MAX_GLYPHS];
   CGSize advances[MAX_GLYPHS];
@@ -223,7 +225,7 @@ hb_coretext_get_glyph_h_advances (hb_font_t* font,
     CTFontGetAdvancesForGlyphs (ct_font, kCTFontOrientationHorizontal, cg_glyph, advances, c);
     for (unsigned j = 0; j < c; j++)
     {
-      *first_advance = round (advances[j].width * x_mult);
+      *first_advance = round (advances[j].width * x_mult) - tracking;
       first_advance = &StructAtOffset<hb_position_t> (first_advance, advance_stride);
     }
   }
@@ -244,6 +246,7 @@ hb_coretext_get_glyph_v_advances (hb_font_t* font,
 
   CGFloat ct_font_size = CTFontGetSize (ct_font);
   CGFloat y_mult = (CGFloat) -font->y_scale / ct_font_size;
+  hb_position_t tracking = font->face->table.trak->get_tracking (font, HB_DIRECTION_TTB, 0.f);
 
   CGGlyph cg_glyph[MAX_GLYPHS];
   CGSize advances[MAX_GLYPHS];
@@ -258,7 +261,7 @@ hb_coretext_get_glyph_v_advances (hb_font_t* font,
     CTFontGetAdvancesForGlyphs (ct_font, kCTFontOrientationVertical, cg_glyph, advances, c);
     for (unsigned j = 0; j < c; j++)
     {
-      *first_advance = round (advances[j].width * y_mult);
+      *first_advance = round (advances[j].width * y_mult) - tracking;
       first_advance = &StructAtOffset<hb_position_t> (first_advance, advance_stride);
     }
   }
@@ -362,12 +365,12 @@ ct_apply_func (void *info, const CGPathElement *element)
   }
 }
 
-static void
-hb_coretext_draw_glyph (hb_font_t *font,
-			void *font_data HB_UNUSED,
-			hb_codepoint_t glyph,
-			hb_draw_funcs_t *draw_funcs, void *draw_data,
-			void *user_data)
+static hb_bool_t
+hb_coretext_draw_glyph_or_fail (hb_font_t *font,
+				void *font_data HB_UNUSED,
+				hb_codepoint_t glyph,
+				hb_draw_funcs_t *draw_funcs, void *draw_data,
+				void *user_data)
 {
   CTFontRef ct_font = (CTFontRef) (const void *) font->data.coretext;
 
@@ -380,13 +383,15 @@ hb_coretext_draw_glyph (hb_font_t *font,
 
   CGPathRef path = CTFontCreatePathForGlyph (ct_font, glyph, &transform);
   if (!path)
-    return;
+    return false;
 
-  hb_draw_session_t drawing = {draw_funcs, draw_data, font->slant};
+  hb_draw_session_t drawing {draw_funcs, draw_data};
 
   CGPathApply (path, &drawing, ct_apply_func);
 
   CFRelease (path);
+
+  return true;
 }
 #endif
 
@@ -466,7 +471,7 @@ static struct hb_coretext_font_funcs_lazy_loader_t : hb_font_funcs_lazy_loader_t
 #endif
 
 #ifndef HB_NO_DRAW
-    hb_font_funcs_set_draw_glyph_func (funcs, hb_coretext_draw_glyph, nullptr, nullptr);
+    hb_font_funcs_set_draw_glyph_or_fail_func (funcs, hb_coretext_draw_glyph_or_fail, nullptr, nullptr);
 #endif
 
     hb_font_funcs_set_glyph_extents_func (funcs, hb_coretext_get_glyph_extents, nullptr, nullptr);

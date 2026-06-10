@@ -80,15 +80,14 @@ _hb_atomic_ptr_impl_cmplexch (const void **P, const void *O_, const void *N)
 
 #include <atomic>
 
-#define _hb_memory_barrier()			std::atomic_thread_fence(std::memory_order_ack_rel)
 #define _hb_memory_r_barrier()			std::atomic_thread_fence(std::memory_order_acquire)
 #define _hb_memory_w_barrier()			std::atomic_thread_fence(std::memory_order_release)
 
-#define hb_atomic_int_impl_add(AI, V)		(reinterpret_cast<std::atomic<std::decay<decltype (*(AI))>::type> *> (AI)->fetch_add ((V), std::memory_order_acq_rel))
-#define hb_atomic_int_impl_set_relaxed(AI, V)	(reinterpret_cast<std::atomic<std::decay<decltype (*(AI))>::type> *> (AI)->store ((V), std::memory_order_relaxed))
-#define hb_atomic_int_impl_set(AI, V)		(reinterpret_cast<std::atomic<std::decay<decltype (*(AI))>::type> *> (AI)->store ((V), std::memory_order_release))
-#define hb_atomic_int_impl_get_relaxed(AI)	(reinterpret_cast<std::atomic<std::decay<decltype (*(AI))>::type> const *> (AI)->load (std::memory_order_relaxed))
-#define hb_atomic_int_impl_get(AI)		(reinterpret_cast<std::atomic<std::decay<decltype (*(AI))>::type> const *> (AI)->load (std::memory_order_acquire))
+#define hb_atomic_int_impl_add(AI, V)		(reinterpret_cast<std::atomic<typename std::decay<decltype (*(AI))>::type> *> (AI)->fetch_add ((V), std::memory_order_acq_rel))
+#define hb_atomic_int_impl_set_relaxed(AI, V)	(reinterpret_cast<std::atomic<typename std::decay<decltype (*(AI))>::type> *> (AI)->store ((V), std::memory_order_relaxed))
+#define hb_atomic_int_impl_set(AI, V)		(reinterpret_cast<std::atomic<typename std::decay<decltype (*(AI))>::type> *> (AI)->store ((V), std::memory_order_release))
+#define hb_atomic_int_impl_get_relaxed(AI)	(reinterpret_cast<std::atomic<typename std::decay<decltype (*(AI))>::type> const *> (AI)->load (std::memory_order_relaxed))
+#define hb_atomic_int_impl_get(AI)		(reinterpret_cast<std::atomic<typename std::decay<decltype (*(AI))>::type> const *> (AI)->load (std::memory_order_acquire))
 
 #define hb_atomic_ptr_impl_set_relaxed(P, V)	(reinterpret_cast<std::atomic<void*> *> (P)->store ((V), std::memory_order_relaxed))
 #define hb_atomic_ptr_impl_get_relaxed(P)	(reinterpret_cast<std::atomic<void*> const *> (P)->load (std::memory_order_relaxed))
@@ -195,7 +194,7 @@ struct hb_atomic_t<T*>
   void set_relaxed (T* v_) { hb_atomic_ptr_impl_set_relaxed (&v, v_); }
   T *get_relaxed () const { return (T *) hb_atomic_ptr_impl_get_relaxed (&v); }
   T *get_acquire () const { return (T *) hb_atomic_ptr_impl_get ((void **) &v); }
-  bool cmpexch (const T *old, T *new_) const { return hb_atomic_ptr_impl_cmpexch ((void **) &v, (void *) old, (void *) new_); }
+  bool cmpexch (const T *old, T *new_) { return hb_atomic_ptr_impl_cmpexch ((void **) &v, (void *) old, (void *) new_); }
 
   operator bool () const { return get_acquire () != nullptr; }
   T * operator -> () const                    { return get_acquire (); }

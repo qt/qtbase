@@ -222,6 +222,16 @@ const char *QtMetaTypePrivate::typedefNameForType(const QtPrivate::QMetaTypeInte
     to be registered with QMetaType using either Q_DECLARE_METATYPE()
     or qRegisterMetaType().
 
+    Do not use this macro to avoid complaints or errors from \l moc about
+    incomplete property types when the pointee type is used as a complete type in
+    other contexts in the program. Use \l{Q_MOC_INCLUDE} instead when
+    the full definition of the type is available, but you prefer a forward
+    declaration in the header to reduce compilation times.
+
+    \warning Don't use Q_DECLARE_OPAQUE_POINTER with pointers to a Q_OBJECT or
+    a gadget class, as that risks introducing inconsistent information in the
+    meta-type system.
+
     \sa Q_DECLARE_METATYPE(), qRegisterMetaType()
 */
 
@@ -439,7 +449,7 @@ const char *QtMetaTypePrivate::typedefNameForType(const QtPrivate::QMetaTypeInte
     Additional types can be registered using qRegisterMetaType() or by calling
     registerType().
 
-    \sa type(), typeName()
+    \sa type()
 */
 
 /*!
@@ -2747,7 +2757,7 @@ static const QtPrivate::QMetaTypeInterface *interfaceForTypeNoWarning(int typeId
     Returns \c true if the datatype with ID \a type is registered;
     otherwise returns \c false.
 
-    \sa type(), typeName(), Type
+    \sa type(), Type
 */
 bool QMetaType::isRegistered(int type)
 {

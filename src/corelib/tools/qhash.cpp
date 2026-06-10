@@ -1441,7 +1441,7 @@ size_t qHash(long double key, size_t seed) noexcept
     \qhashold{QHash}
 */
 
-/*! \fn size_t qHash(const QByteArrayView &key, size_t seed = 0)
+/*! \fn size_t qHash(QByteArrayView key, size_t seed = 0)
     \since 6.0
     \qhashold{QHash}
 */

@@ -743,37 +743,6 @@
 */
 
 /*!
-    \fn template <class T> QWeakPointer<T>::QWeakPointer(const QObject *other)
-    \since 4.6
-    \deprecated
-
-    Creates a QWeakPointer that holds a weak reference directly to the
-    QObject \a other. This constructor is only available if the template type
-    \tt T is QObject or derives from it (otherwise a compilation error will
-    result).
-
-    You can use this constructor with any QObject, even if they were not
-    created with \l QSharedPointer.
-
-    Note that QWeakPointers created this way on arbitrary QObjects usually
-    cannot be promoted to QSharedPointer.
-
-    \sa QSharedPointer, QPointer
-*/
-
-/*!
-    \fn template <class T> QWeakPointer &QWeakPointer<T>::operator=(const QObject *other)
-    \since 4.6
-    \deprecated
-
-    Makes this QWeakPointer hold a weak reference directly to the QObject
-    \a other. This function is only available if the template type \tt T is
-    QObject or derives from it.
-
-    \sa QPointer
-*/
-
-/*!
     \fn template <class T> QWeakPointer &QWeakPointer<T>::operator=(const QWeakPointer<T> &other)
 
     Makes this object share \a other's pointer. The current pointer
@@ -842,36 +811,6 @@
     true from one call to the next.
 
     \sa isNull()
-*/
-
-/*!
-    \fn template <class T> T *QWeakPointer<T>::data() const
-    \since 4.6
-    \deprecated Use toStrongRef() instead, and data() on the returned QSharedPointer.
-
-    Returns the value of the pointer being tracked by this QWeakPointer,
-    \b without ensuring that it cannot get deleted. To have that guarantee,
-    use toStrongRef(), which returns a QSharedPointer object. If this
-    function can determine that the pointer has already been deleted, it
-    returns \nullptr.
-
-    It is ok to obtain the value of the pointer and using that value itself,
-    like for example in debugging statements:
-
-    \snippet code/src_corelib_tools_qsharedpointer.cpp 10
-
-    However, dereferencing the pointer is only allowed if you can guarantee
-    by external means that the pointer does not get deleted. For example,
-    if you can be certain that no other thread can delete it, nor the
-    functions that you may call.
-
-    If that is the case, then the following code is valid:
-
-    \snippet code/src_corelib_tools_qsharedpointer.cpp 11
-
-    Use this function with care.
-
-    \sa isNull(), toStrongRef()
 */
 
 /*!
@@ -1398,7 +1337,7 @@ QtSharedPointer::ExternalRefCountData *QtSharedPointer::ExternalRefCountData::ge
     QObjectPrivate *d = QObjectPrivate::get(const_cast<QObject *>(obj));
     Q_ASSERT_X(!d->wasDeleted, "QWeakPointer", "Detected QWeakPointer creation in a QObject being deleted");
 
-    ExternalRefCountData *that = d->sharedRefcount.loadRelaxed();
+    ExternalRefCountData *that = d->sharedRefcount.loadAcquire();
     if (that) {
         that->weakref.ref();
         return that;
@@ -1408,6 +1347,7 @@ QtSharedPointer::ExternalRefCountData *QtSharedPointer::ExternalRefCountData::ge
     ExternalRefCountData *x = ::new ExternalRefCountData(Qt::Uninitialized);
     x->strongref.storeRelaxed(-1);
     x->weakref.storeRelaxed(2);  // the QWeakPointer that called us plus the QObject itself
+    x->destroyer = nullptr;
 
     ExternalRefCountData *ret;
     if (d->sharedRefcount.testAndSetOrdered(nullptr, x, ret)) {     // ought to be release+acquire; this is acq_rel+acquire

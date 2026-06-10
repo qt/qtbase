@@ -1260,10 +1260,10 @@ class WatchDog : public QThread
 
 public:
     WatchDog()
+        : expecting{ThreadStart}
     {
         setObjectName("QtTest Watchdog"_L1);
         auto locker = qt_unique_lock(mutex);
-        expecting.store(ThreadStart, std::memory_order_relaxed);
         start();
         waitFor(locker, ThreadStart);
     }
@@ -2041,10 +2041,10 @@ public:
 
         for (size_t i = 0; i < fatalSignals.size(); ++i) {
             struct sigaction &act = oldActions()[i];
-            if (act.sa_flags == 0 && act.sa_handler == SIG_DFL)
-                continue; // Already the default
             if (sigaction(fatalSignals[i], nullptr, &action))
                 continue; // Failed to query present handler
+            if (action.sa_flags == 0 && action.sa_handler == SIG_DFL)
+                continue; // Already the default
             if (isOurs(action))
                 sigaction(fatalSignals[i], &act, nullptr);
         }
