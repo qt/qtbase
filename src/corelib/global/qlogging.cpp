@@ -2109,16 +2109,14 @@ static void stderr_message_handler(QtMsgType type, const QMessageLogContext &con
     fflush(stderr);
 }
 
-namespace {
-struct SystemMessageSink
+static constexpr auto systemMessageSink()
 {
-    using Fn = bool(QtMsgType, const QMessageLogContext &, const QString &);
-    Fn *sink;
-    bool messageIsUnformatted = false;
-};
-}
-
-static constexpr SystemMessageSink systemMessageSink = {
+    struct R {
+        using Fn = bool(QtMsgType, const QMessageLogContext &, const QString &);
+        Fn *sink;
+        bool messageIsUnformatted = false;
+    };
+    return R{
 #if defined(Q_OS_WIN)
         win_message_handler
 #elif QT_CONFIG(slog2)
@@ -2138,15 +2136,16 @@ static constexpr SystemMessageSink systemMessageSink = {
 #else
         nullptr
 #endif
-};
+    };
+}
 
 static void preformattedMessageHandler(QtMsgType type, const QMessageLogContext &context,
                                        const QString &formattedMessage)
 {
-    if (!systemMessageSink.messageIsUnformatted) {
+    if (!systemMessageSink().messageIsUnformatted) {
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_GCC("-Waddress") // "the address of ~~ will never be NULL
-        if (systemMessageSink.sink && systemMessageSink.sink(type, context, formattedMessage))
+        if (systemMessageSink().sink && systemMessageSink().sink(type, context, formattedMessage))
             return;
 QT_WARNING_POP
     }
@@ -2164,8 +2163,8 @@ static void qDefaultMessageHandler(QtMsgType type, const QMessageLogContext &con
     // optionally formatting the message if the latter, and returns true if the sink
     // handled stderr output as well, which will shortcut our default stderr output.
 
-    if (systemMessageSink.messageIsUnformatted) {
-        if (systemMessageSink.sink(type, context, message))
+    if (systemMessageSink().messageIsUnformatted) {
+        if (systemMessageSink().sink(type, context, message))
             return;
     }
 
