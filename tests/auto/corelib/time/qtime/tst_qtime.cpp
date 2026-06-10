@@ -420,6 +420,8 @@ void tst_QTime::fromStringFormat_data()
         << u"10:12:34:45"_s << u"hh:m:ss:z"_s << QTime(10, 12, 34, 450);
     QTest::newRow("late")
         << u"23:59:59.999"_s << u"hh:mm:ss.z"_s << QTime(23, 59, 59, 999);
+    QTest::newRow("ms-0pad") // QTBUG-147354
+        << u"090924.000"_s << u"hhmmss.z"_s << QTime(9, 9, 24, 0);
 
     // Test unicode handling.
     QTest::newRow("emoji in format string 1")

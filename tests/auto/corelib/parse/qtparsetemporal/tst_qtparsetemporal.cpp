@@ -248,11 +248,12 @@ void tst_QtParseTemporal::prefix_data()
         << u"059"_s << Fields{ Field{ empty, 3, Flag::ZeroPad, Cat::Minute } }
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
         << 3 << wall << -1 << -1 << 59 << -1 << 0 << 0 << 0 << 0;
-    // ... and, if we don't, a leading zero counts against an over-width field:
+    // ... and, if we don't, a leading zero counts against an over-width field,
+    // but not enough to overcome the preference for longer up to two digits:
     QTest::newRow("059/minute:1/C/greg/0")
         << u"059"_s << Fields{ Field{ empty, 1, Flags{}, Cat::Minute } }
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
-        << 1 << wall << -1 << -1 << 0 << -1 << 0 << 0 << 0 << 0;
+        << 2 << wall << -1 << -1 << 5 << -1 << 0 << 0 << 0 << 0;
     // ... unless ZeroPad was asked for, when it's tolerated:
     QTest::newRow("059/minute+0pad:1/C/greg/0")
         << u"059"_s << Fields{ Field{ empty, 1, Flag::ZeroPad, Cat::Minute } }

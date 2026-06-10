@@ -84,8 +84,6 @@ struct PartialParse
             return res;
         if (auto res = order(Flaw::ResolutionChanges); res != 0)
             return res;
-        if (auto res = order(Flaw::ZeroPad); res != 0)
-            return res;
         if (auto res = order(Flaw::Narrow); res != 0)
             return res;
 
@@ -99,6 +97,8 @@ struct PartialParse
         // The following remains as a preference only among matches of the same
         // length: it's nice to avoid, but a longer parse is still better.
 
+        if (auto res = order(Flaw::ZeroPad); res != 0)
+            return res;
         if (auto res = order(Flaw::SelfResolved); res != 0)
             return res;
 
