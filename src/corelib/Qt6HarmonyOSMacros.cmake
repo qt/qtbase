@@ -860,12 +860,16 @@ if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
     endfunction()
 endif()
 
+function(_qt_internal_harmonyos_test_bundle_settings_file out_var)
+    set(${out_var} "${CMAKE_BINARY_DIR}/all_tests-harmony-deployment-settings.json" PARENT_SCOPE)
+endfunction()
+
 # Test bundle: deployment-settings JSON for an "uber" HAP containing every
 # libtst_*.so under CMAKE_BINARY_DIR.
 function(_qt_internal_harmonyos_generate_test_bundle_deployment_settings)
     _qt_internal_harmonyos_get_sdk_ndk_paths(sdk_root ndk_root)
 
-    set(CONFIG_FILE "${CMAKE_BINARY_DIR}/all_tests-harmony-deployment-settings.json")
+    _qt_internal_harmonyos_test_bundle_settings_file(CONFIG_FILE)
 
     set(JSON_CONTENT "{\n")
     string(APPEND JSON_CONTENT "    \"test-bundle\": true,\n")
@@ -929,11 +933,56 @@ function(_qt_internal_harmonyos_generate_test_bundle_deployment_settings)
         string(APPEND JSON_CONTENT ",\n    \"extra-libs-dirs\": [${_extra_libs_dirs_json}]")
     endif()
 
+    # Collect permissions mirroring _qt_internal_harmonyos_generate_deployment_settings():
+    # each test target's own permissions first (so explicit overrides win), then the
+    # union of all transitive Qt module dependencies. Walk each unique dep only once.
+    # De-duplicate by JSON "name" field; first occurrence wins.
+    set(_all_permissions "")
+    set(_seen_names "")
+    set(_all_deps "")
+    get_property(_test_targets GLOBAL PROPERTY QT_INTERNAL_HARMONYOS_TEST_TARGETS)
+    set_property(GLOBAL PROPERTY QT_INTERNAL_HARMONYOS_TEST_TARGETS "")
+    foreach(_test IN LISTS _test_targets)
+        if(NOT TARGET "${_test}")
+            continue()
+        endif()
+        get_target_property(_own_perms "${_test}" QT_HARMONYOS_PERMISSIONS)
+        if(_own_perms AND NOT _own_perms STREQUAL "_own_perms-NOTFOUND")
+            foreach(_entry IN LISTS _own_perms)
+                string(JSON _name GET "${_entry}" name)
+                if(NOT _name IN_LIST _seen_names)
+                    list(APPEND _seen_names "${_name}")
+                    list(APPEND _all_permissions "${_entry}")
+                endif()
+            endforeach()
+        endif()
+        __qt_internal_collect_all_target_dependencies("${_test}" _deps)
+        list(APPEND _all_deps ${_deps})
+    endforeach()
+    list(REMOVE_DUPLICATES _all_deps)
+    foreach(_dep IN LISTS _all_deps)
+        get_target_property(_perms "${_dep}" QT_HARMONYOS_PERMISSIONS)
+        if(NOT _perms OR _perms STREQUAL "_perms-NOTFOUND")
+            continue()
+        endif()
+        foreach(_entry IN LISTS _perms)
+            string(JSON _name GET "${_entry}" name)
+            if(NOT _name IN_LIST _seen_names)
+                list(APPEND _seen_names "${_name}")
+                list(APPEND _all_permissions "${_entry}")
+            endif()
+        endforeach()
+    endforeach()
+
+    if(_all_permissions)
+        list(JOIN _all_permissions ",\n        " _permissions_joined)
+        string(APPEND JSON_CONTENT
+            ",\n    \"permissions\": [\n        ${_permissions_joined}\n    ]")
+    endif()
+
     string(APPEND JSON_CONTENT "\n}\n")
 
     file(GENERATE OUTPUT "${CONFIG_FILE}" CONTENT "${JSON_CONTENT}")
-
-    set(QT_INTERNAL_HARMONYOS_TEST_BUNDLE_SETTINGS_FILE "${CONFIG_FILE}" PARENT_SCOPE)
 endfunction()
 
 # Create all_tests_make_hap: invoke harmonydeployqt in test-bundle mode.
@@ -956,9 +1005,8 @@ function(_qt_internal_harmonyos_test_bundle_hap_basename out_var)
 endfunction()
 
 function(_qt_internal_harmonyos_add_all_tests_hap_target)
-    _qt_internal_harmonyos_generate_test_bundle_deployment_settings()
-
-    set(CONFIG_FILE "${QT_INTERNAL_HARMONYOS_TEST_BUNDLE_SETTINGS_FILE}")
+    _qt_internal_harmonyos_test_bundle_settings_file(CONFIG_FILE)
+    cmake_language(DEFER CALL _qt_internal_harmonyos_generate_test_bundle_deployment_settings)
     set(OUTPUT_DIR "${CMAKE_BINARY_DIR}/harmonyos-tests-bundle")
 
     _qt_internal_check_depfile_support(has_depfile_support)
