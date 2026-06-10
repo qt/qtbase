@@ -1,0 +1,52 @@
+// Copyright (C) 2026 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+\page qt-for-harmonyos-cmake-api.html
+\title Qt for HarmonyOS CMake API
+\brief Overview of the CMake commands, properties, and variables for HarmonyOS
+deployment.
+
+\note The HarmonyOS CMake API is in technology preview and may change in
+future releases.
+
+This page lists the CMake commands, target properties, and variables that
+configure how a Qt application is packaged into a HarmonyOS Ability Package
+(HAP).
+
+When you create a Qt executable with
+\l{qt6_add_executable}{qt_add_executable()} while targeting HarmonyOS, Qt
+automatically generates a \c {<target>_make_hap} build target that produces the
+HAP. The commands, properties, and variables below control the contents of that
+HAP and the metadata written into the HarmonyOS manifest files.
+
+A HarmonyOS application bundle is described by two kinds of manifest: the
+application-level \c {app.json5}, which holds metadata that applies to the whole
+bundle, and the module-level \c {module.json5}, which describes a single HAP
+module within that bundle. The metadata commands below mirror this split, so
+there is one command for each scope.
+
+\section1 Commands
+
+\list
+\li \l{qt6_set_harmonyos_app_metadata}{qt_set_harmonyos_app_metadata()} sets
+    application-level metadata, such as the vendor, version, label, and icon.
+\li \l{qt6_set_harmonyos_module_metadata}{qt_set_harmonyos_module_metadata()}
+    sets module-level metadata, such as the description, device types, and
+    orientation.
+\li \l{qt6_add_harmonyos_permission}{qt_add_harmonyos_permission()} adds a
+    HarmonyOS permission to the application.
+\endlist
+
+\section1 Target Properties
+
+The following target properties affect how the HAP is built:
+
+\annotatedlist cmake-harmonyos-build-properties
+
+\section1 Variables
+
+The following variables affect how the HAP is built:
+
+\annotatedlist cmake-harmonyos-build-variables
+*/

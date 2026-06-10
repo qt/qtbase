@@ -1,0 +1,66 @@
+// Copyright (C) 2026 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+\page qt-set-harmonyos-module-metadata.html
+\ingroup cmake-commands-qtcore
+
+\title qt_set_harmonyos_module_metadata
+\keyword qt6_set_harmonyos_module_metadata
+
+\summary {Sets HarmonyOS module-level metadata on the target.}
+
+\include cmake-find-package-core.qdocinc
+
+\cmakecommandsince 6.12
+\preliminarycmakecommand
+\cmakecommandharmonyosonly
+
+\section1 Synopsis
+
+\badcode
+qt_set_harmonyos_module_metadata(target
+    [DESCRIPTION <description>]
+    [DEVICE_TYPES <type> [<type>...]]
+    [ORIENTATION <orientation>]
+)
+\endcode
+
+\versionlessCMakeCommandsNote qt6_set_harmonyos_module_metadata()
+
+\section1 Description
+
+The command sets module-level metadata for the HarmonyOS \c {target}
+executable. The values are conceptually module-scoped (they describe a single
+HAP module) and are written into \c {entry/src/main/module.json5} when the HAP
+package is built. Application-scoped metadata, such as the vendor or version, is
+set with \l{qt6_set_harmonyos_app_metadata}{qt_set_harmonyos_app_metadata()}
+instead. Options that are not specified leave the corresponding manifest field
+at its default.
+
+\section1 Arguments
+
+\c DESCRIPTION is the module description. It accepts either a literal string
+(which appears verbatim in the manifest and is not localizable) or a
+\c {$string:<name>} resource reference that resolves to a localized string from
+the application's resource files.
+
+\c DEVICE_TYPES is the list of HarmonyOS device-type identifiers that the
+module supports, for example \c tablet, \c {2in1}, or \c phone. When unset, a
+Qt-provided default is used.
+
+\c ORIENTATION sets the screen-orientation policy of the application's ability.
+When unset, the field is omitted from the manifest and the system default
+applies. The accepted values are the orientation strings defined by the
+HarmonyOS \c {module.json5} schema, including \c auto_rotation,
+\c auto_rotation_restricted, \c landscape, \c portrait,
+\c auto_rotation_landscape, \c auto_rotation_portrait, and \c locked. An
+unrecognized value is ignored with a warning at HAP build time.
+
+\section1 Example
+
+\snippet cmake-macros/examples.cmake qt_set_harmonyos_module_metadata
+
+\sa {qt6_set_harmonyos_app_metadata}{qt_set_harmonyos_app_metadata()},
+    {Qt for HarmonyOS CMake API}
+*/

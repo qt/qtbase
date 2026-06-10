@@ -716,6 +716,240 @@ resource prefix.
 */
 
 /*!
+\page cmake-target-property-qt-harmonyos-app-bundle-name.html
+\ingroup cmake-properties-qtcore
+\ingroup cmake-target-properties-qtcore
+\ingroup cmake-harmonyos-build-properties
+
+\title QT_HARMONYOS_APP_BUNDLE_NAME
+\target cmake-target-property-QT_HARMONYOS_APP_BUNDLE_NAME
+
+\summary {The HarmonyOS application's bundle name.}
+
+\cmakepropertysince 6.12
+\preliminarycmakeproperty
+\cmakepropertyharmonyosonly
+
+Specifies the bundle name of the application, which is the reverse-domain
+identifier that uniquely identifies the application on a device, for example
+\c {com.example.myapp}. It is different from the
+\l{cmake-target-property-QT_HARMONYOS_APP_NAME}{application name} shown to the
+user.
+
+If this property is not set, it defaults to
+\c {org.qtproject.example.<target>}, where \c{<target>} is the sanitized
+target name.
+
+\badcode
+set_target_properties(myapp PROPERTIES
+    QT_HARMONYOS_APP_BUNDLE_NAME "com.example.myapp"
+)
+\endcode
+
+\sa{cmake-target-property-QT_HARMONYOS_APP_NAME}{QT_HARMONYOS_APP_NAME}
+*/
+
+/*!
+\page cmake-target-property-qt-harmonyos-app-name.html
+\ingroup cmake-properties-qtcore
+\ingroup cmake-target-properties-qtcore
+\ingroup cmake-harmonyos-build-properties
+
+\title QT_HARMONYOS_APP_NAME
+\target cmake-target-property-QT_HARMONYOS_APP_NAME
+
+\summary {The HarmonyOS application's name.}
+
+\cmakepropertysince 6.12
+\preliminarycmakeproperty
+\cmakepropertyharmonyosonly
+
+Specifies the name of the application. It is different from the
+\l{cmake-target-property-QT_HARMONYOS_APP_BUNDLE_NAME}{bundle name} that
+uniquely identifies the application on a device.
+
+If this property is not set, it defaults to the target name.
+
+\badcode
+set_target_properties(myapp PROPERTIES
+    QT_HARMONYOS_APP_NAME "My Application"
+)
+\endcode
+
+\sa{cmake-target-property-QT_HARMONYOS_APP_BUNDLE_NAME}{QT_HARMONYOS_APP_BUNDLE_NAME}
+*/
+
+/*!
+\page cmake-target-property-qt-harmonyos-target-archs.html
+\ingroup cmake-properties-qtcore
+\ingroup cmake-target-properties-qtcore
+\ingroup cmake-harmonyos-build-properties
+
+\title QT_HARMONYOS_TARGET_ARCHS
+\target cmake-target-property-QT_HARMONYOS_TARGET_ARCHS
+
+\summary {The target architectures of the HarmonyOS application.}
+
+\cmakepropertysince 6.12
+\preliminarycmakeproperty
+\cmakepropertyharmonyosonly
+
+Specifies the list of target architectures that the HAP package is built for,
+for example \c {arm64-v8a}.
+
+If this property is not set, it defaults to the architecture of the current
+build, \c OHOS_ARCH.
+
+\note Building a HAP for multiple architectures is not yet supported. If more
+than one architecture is specified, only the first one is used and a warning
+is issued.
+
+\badcode
+set_target_properties(myapp PROPERTIES
+    QT_HARMONYOS_TARGET_ARCHS "arm64-v8a"
+)
+\endcode
+*/
+
+/*!
+\page cmake-target-property-qt-harmonyos-extra-libs.html
+\ingroup cmake-properties-qtcore
+\ingroup cmake-target-properties-qtcore
+\ingroup cmake-harmonyos-build-properties
+
+\title QT_HARMONYOS_EXTRA_LIBS
+\target cmake-target-property-QT_HARMONYOS_EXTRA_LIBS
+
+\summary {Extra libraries to deploy with the HarmonyOS target.}
+
+\cmakepropertysince 6.12
+\preliminarycmakeproperty
+\cmakepropertyharmonyosonly
+
+A list of external shared libraries that are packaged into the HAP so that the
+dynamic linker can find them at run time. Use it for libraries that are not
+detected automatically as dependencies of the application.
+
+Each list entry is either the name of a CMake target (which is resolved to the
+target's output file) or a file path or generator expression that evaluates to
+such a path.
+
+\badcode
+set_target_properties(myapp PROPERTIES
+    QT_HARMONYOS_EXTRA_LIBS
+        "MyService;${CMAKE_CURRENT_BINARY_DIR}/libOther.so"
+)
+\endcode
+
+Shared libraries that the target links against directly are collected
+automatically and do not need to be listed here.
+
+When adding a library that is built as part of your project, also add a build
+dependency so that the library is available before the target is deployed:
+
+\badcode
+add_dependencies(myapp MyService)
+\endcode
+*/
+
+/*!
+\page cmake-target-property-qt-harmonyos-extra-plugins.html
+\ingroup cmake-properties-qtcore
+\ingroup cmake-target-properties-qtcore
+\ingroup cmake-harmonyos-build-properties
+
+\title QT_HARMONYOS_EXTRA_PLUGINS
+\target cmake-target-property-QT_HARMONYOS_EXTRA_PLUGINS
+
+\summary {Extra Qt plugins to deploy with the HarmonyOS target.}
+
+\cmakepropertysince 6.12
+\preliminarycmakeproperty
+\cmakepropertyharmonyosonly
+
+A list of additional Qt plugins to package into the HAP. This is for plugins
+that cannot be detected automatically, such as plugins that are loaded only at
+run-time.
+
+Each list entry is either the name of a CMake plugin target (which is resolved
+to the plugin's library file) or an absolute path to a plugin library. The
+plugin's category in the HAP is derived from the name of the plugin library's
+parent directory, for example \c {imageformats}.
+
+\badcode
+set_target_properties(myapp PROPERTIES
+    QT_HARMONYOS_EXTRA_PLUGINS
+        "${CMAKE_CURRENT_BINARY_DIR}/imageformats/libqcustomimg.so"
+)
+\endcode
+*/
+
+/*!
+\page cmake-target-property-qt-harmonyos-package-source-dir.html
+\ingroup cmake-properties-qtcore
+\ingroup cmake-target-properties-qtcore
+\ingroup cmake-harmonyos-build-properties
+
+\title QT_HARMONYOS_PACKAGE_SOURCE_DIR
+\target cmake-target-property-QT_HARMONYOS_PACKAGE_SOURCE_DIR
+
+\summary {Path to a custom HarmonyOS package template.}
+
+\cmakepropertysince 6.12
+\preliminarycmakeproperty
+\cmakepropertyharmonyosonly
+
+Specifies the path to a custom HarmonyOS package template. The template is the
+HarmonyOS project skeleton that holds the manifest files (\c {app.json5},
+\c {module.json5}), the build profiles, and the application resources.
+
+If this property is not set, a default template bundled with the Qt
+installation is used. When the property is set, the given directory is used
+instead. This lets you customize the manifest, resources, or signing
+configuration of the generated HAP.
+
+\badcode
+set_target_properties(myapp PROPERTIES
+    QT_HARMONYOS_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/harmonyos"
+)
+\endcode
+*/
+
+/*!
+\page cmake-target-property-qt-harmonyos-hvigor.html
+\ingroup cmake-properties-qtcore
+\ingroup cmake-target-properties-qtcore
+\ingroup cmake-harmonyos-build-properties
+
+\title QT_HARMONYOS_HVIGOR
+\target cmake-target-property-QT_HARMONYOS_HVIGOR
+
+\summary {Path to the hvigor wrapper used to build the HAP.}
+
+\cmakepropertysince 6.12
+\preliminarycmakeproperty
+\cmakepropertyharmonyosonly
+
+Specifies the path to the \c hvigor wrapper script (\c hvigorw) that is invoked
+to build the HAP package for the target.
+
+This property takes precedence over the
+\l{cmake-variable-QT_HARMONYOS_HVIGOR}{QT_HARMONYOS_HVIGOR CMake variable},
+which in turn falls back to the \c QT_HARMONYOS_HVIGOR environment variable. If
+none of them is set, the \c hvigorw script that is part of the generated
+package is used. Set the property to use a different \c hvigor for a specific
+target.
+
+\badcode
+set_target_properties(myapp PROPERTIES
+    QT_HARMONYOS_HVIGOR "/path/to/command-line-tools/bin/hvigorw"
+)
+\endcode
+
+\sa{cmake-variable-QT_HARMONYOS_HVIGOR}{QT_HARMONYOS_HVIGOR}
+*/
+
+/*!
 \group cmake-source-file-properties-qtcore
 \title CMake Source File Properties in Qt6 Core
 \brief Lists CMake file properties used in Qt6::Core.
