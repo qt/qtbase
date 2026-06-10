@@ -2990,6 +2990,10 @@ static QStringList libraryPathsLocked();
     directory (and its existence) may change when the directory of
     the application executable becomes known.
 
+    \warning This function does not currently include QLibraryInfo::LibrariesPath
+    in its default paths, and QLibrary does not currently use this function to look
+    up non-absolute library paths.
+
     \sa setLibraryPaths(), addLibraryPath(), removeLibraryPath(), QLibrary,
         {How to Create Qt Plugins}
 */
@@ -3082,6 +3086,9 @@ static QStringList libraryPathsLocked()
     The library paths are reset to the default when an instance of
     QCoreApplication is destructed.
 
+    \warning QLibrary does not currently use the given paths to look
+    up non-absolute library paths.
+
     \sa libraryPaths(), addLibraryPath(), removeLibraryPath(), QLibrary
  */
 void QCoreApplication::setLibraryPaths(const QStringList &paths)
@@ -3117,6 +3124,9 @@ void QCoreApplication::setLibraryPaths(const QStringList &paths)
 
   The library paths are reset to the default when an instance of
   QCoreApplication is destructed.
+
+  \warning QLibrary does not currently use the given path to look
+  up non-absolute library paths.
 
   \sa removeLibraryPath(), libraryPaths(), setLibraryPaths()
  */
@@ -3158,6 +3168,9 @@ void QCoreApplication::addLibraryPath(const QString &path)
 
     The library paths are reset to the default when an instance of
     QCoreApplication is destructed.
+
+    \warning QLibrary does not currently use libraryPaths()
+    to look up non-absolute library paths.
 
     \sa addLibraryPath(), libraryPaths(), setLibraryPaths()
 */
