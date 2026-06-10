@@ -2007,7 +2007,6 @@ static void win_outputDebugString_helper(const QString &message)
     if (message.length() <= maxOutputStringLength) {
         OutputDebugString(reinterpret_cast<const wchar_t *>(message.utf16()));
     } else {
-        Q_DECL_UNINITIALIZED
         wchar_t messagePart[maxOutputStringLength + 1];
         for (qsizetype i = 0; i < message.length(); i += maxOutputStringLength) {
             const qsizetype length = qMin(message.length() - i, maxOutputStringLength);
