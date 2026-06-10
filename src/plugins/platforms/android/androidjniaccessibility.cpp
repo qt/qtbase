@@ -37,6 +37,9 @@ namespace QtAndroidAccessibility
     static jmethodID m_setCheckedMethodID = 0;
     static jmethodID m_setClickableMethodID = 0;
     static jmethodID m_setContentDescriptionMethodID = 0;
+    static jmethodID m_setTextMethodID = 0;
+    static jmethodID m_setInputTypeMethodID = 0;
+    static jmethodID m_setHintTextMethodID = 0;
     static jmethodID m_setEditableMethodID = 0;
     static jmethodID m_setEnabledMethodID = 0;
     static jmethodID m_setFocusableMethodID = 0;
@@ -690,6 +693,8 @@ namespace QtAndroidAccessibility
         QAccessible::Role role;
         QStringList actions;
         QString description;
+        QString text;
+        QString hint;
         QString identifier;
         bool hasTextSelection = false;
         int selectionStart = 0;
@@ -716,6 +721,15 @@ namespace QtAndroidAccessibility
             if (textIface && (textIface->selectionCount() > 0)) {
                 info.hasTextSelection = true;
                 textIface->selection(0, &info.selectionStart, &info.selectionEnd);
+            }
+            // For editable nodes, capture the text (exposed via setText(), which
+            // a screen reader reads to track the caret and echo edits) and the
+            // accessible name (exposed via setHintText(), the label channel a
+            // screen reader reads for a text input).
+            if (info.state.editable) {
+                if (textIface)
+                    info.text = textIface->text(0, textIface->characterCount());
+                info.hint = iface->text(QAccessible::Name);
             }
             QAccessibleValueInterface *valueInterface = iface->valueInterface();
             if (valueInterface) {
@@ -821,6 +835,28 @@ namespace QtAndroidAccessibility
         //CALL_METHOD(node, "setText", "(Ljava/lang/CharSequence;)V", jdesc)
         env->CallVoidMethod(node, m_setContentDescriptionMethodID, jdesc);
 
+        // An editable node exposes its content via setText() (read to track the
+        // caret and echo edits), its label via setHintText() (the label channel
+        // for a text input), and an inputType so it is treated as a real text
+        // field. contentDescription is kept above for readers that use it instead.
+        if (info.state.editable) {
+            if (m_setTextMethodID) {
+                jstring jtext = env->NewString((jchar*)info.text.constData(),
+                                               (jsize)info.text.size());
+                env->CallVoidMethod(node, m_setTextMethodID, jtext);
+                env->DeleteLocalRef(jtext);
+            }
+            // 0x1 == android.text.InputType.TYPE_CLASS_TEXT.
+            if (m_setInputTypeMethodID)
+                env->CallVoidMethod(node, m_setInputTypeMethodID, (jint)0x00000001);
+            if (m_setHintTextMethodID) {
+                jstring jhint = env->NewString((jchar*)info.hint.constData(),
+                                               (jsize)info.hint.size());
+                env->CallVoidMethod(node, m_setHintTextMethodID, jhint);
+                env->DeleteLocalRef(jhint);
+            }
+        }
+
         QJniObject(node).callMethod<void>("setViewIdResourceName", info.identifier);
 
         return true;
@@ -871,6 +907,10 @@ namespace QtAndroidAccessibility
         GET_AND_CHECK_STATIC_METHOD(m_setCheckedMethodID, nodeInfoClass, "setChecked", "(Z)V");
         GET_AND_CHECK_STATIC_METHOD(m_setClickableMethodID, nodeInfoClass, "setClickable", "(Z)V");
         GET_AND_CHECK_STATIC_METHOD(m_setContentDescriptionMethodID, nodeInfoClass, "setContentDescription", "(Ljava/lang/CharSequence;)V");
+        GET_AND_CHECK_STATIC_METHOD(m_setTextMethodID, nodeInfoClass, "setText", "(Ljava/lang/CharSequence;)V");
+        GET_AND_CHECK_STATIC_METHOD(m_setInputTypeMethodID, nodeInfoClass, "setInputType", "(I)V");
+        // setHintText is API 26+, below Qt's API-28 floor, so no SDK guard needed.
+        GET_AND_CHECK_STATIC_METHOD(m_setHintTextMethodID, nodeInfoClass, "setHintText", "(Ljava/lang/CharSequence;)V");
         GET_AND_CHECK_STATIC_METHOD(m_setEditableMethodID, nodeInfoClass, "setEditable", "(Z)V");
         GET_AND_CHECK_STATIC_METHOD(m_setEnabledMethodID, nodeInfoClass, "setEnabled", "(Z)V");
         GET_AND_CHECK_STATIC_METHOD(m_setFocusableMethodID, nodeInfoClass, "setFocusable", "(Z)V");
