@@ -115,6 +115,22 @@ static inline bool ensurePositionTopLeft(QWindow *window)
 
     return positionCorrect;
 }
+
+inline static bool moveCursorAway()
+{
+#if !QT_CONFIG(cursor)
+    // QCursor disabled, skipping cursor move
+    return true;
+#endif
+    QPoint safePos = QGuiApplication::primaryScreen()->availableGeometry().bottomRight();
+    safePos -= QPoint(50, 50);
+    QCursor::setPos(safePos);
+
+    if (QTest::qWaitFor([&]{ return QCursor::pos() == safePos;}))
+        return true;
+
+    return false;
+}
 #endif
 
 #ifdef QT_NETWORK_LIB
