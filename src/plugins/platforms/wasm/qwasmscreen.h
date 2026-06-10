@@ -54,7 +54,6 @@ public:
     QPlatformCursor *cursor() const override;
 
     void resizeMaximizedWindows();
-    QWindow *topWindow() const;
     QWindow *topLevelAt(const QPoint &p) const override;
 
     // QWasmWindowTreeNode:

@@ -44,7 +44,6 @@ protected:
 
     const QWasmWindowStack<Window> &childStack() const { return m_childStack; }
     QWasmWindowStack<Window> &childStack() { return m_childStack; }
-    Window *activeChild() const { return m_activeChild; }
 
     uint64_t getActiveIndex() const {
         return m_activeIndex;
@@ -57,7 +56,6 @@ private:
     uint64_t m_activeIndex = 0;
 
     QWasmWindowStack<Window> m_childStack;
-    Window *m_activeChild = nullptr;
 };
 #endif
 

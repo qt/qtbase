@@ -200,11 +200,6 @@ void QWasmScreen::resizeMaximizedWindows()
     QPlatformScreen::resizeMaximizedWindows();
 }
 
-QWindow *QWasmScreen::topWindow() const
-{
-    return activeChild() ? activeChild()->window() : nullptr;
-}
-
 QWindow *QWasmScreen::topLevelAt(const QPoint &p) const
 {
     const auto found =

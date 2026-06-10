@@ -87,13 +87,8 @@ void QWasmWindowTreeNode<Window>::onTopWindowChanged()
 template<class Window>
 void QWasmWindowTreeNode<Window>::setActiveChildNode(Window *activeChild)
 {
-    m_activeChild = activeChild;
-
-    auto it = m_childStack.begin();
-    if (it == m_childStack.end())
-        return;
-    for (; it != m_childStack.end(); ++it)
-        (*it)->onActivationChanged(*it == m_activeChild);
+    for (auto *child : m_childStack)
+        child->onActivationChanged(child == activeChild);
 
     setAsActiveNode();
 }
