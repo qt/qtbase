@@ -309,6 +309,60 @@ class QtAccessibilityDelegate extends View.AccessibilityDelegate
         });
     }
 
+    void notifyTextChanged(int viewId, String text, String beforeText,
+                           int fromIndex, int addedCount, int removedCount)
+    {
+        QtNative.runAction(() -> {
+            if (m_view == null || m_manager == null || !m_manager.isEnabled())
+                return;
+
+            // Source the event from the node that has accessibility focus, not
+            // the input-method focus object id (the two may differ).
+            final int targetId =
+                    (m_focusedVirtualViewId != INVALID_ID) ? m_focusedVirtualViewId : viewId;
+            if (targetId == INVALID_ID) {
+                Log.w(TAG, "notifyTextChanged() with no focused view");
+                return;
+            }
+
+            // An editable view fires two events on each keystroke and a screen
+            // reader uses both to echo typing: TYPE_VIEW_TEXT_CHANGED (what
+            // changed) and TYPE_VIEW_TEXT_SELECTION_CHANGED (where the caret moved
+            // to). Both are sourced from the input-focused editable, which is what
+            // lets the screen reader speak typed/deleted characters even while
+            // accessibility focus is on the soft keyboard rather than the field.
+            final CharSequence className = getNodeForVirtualViewId(targetId).getClassName();
+            final String packageName = m_view.getContext().getPackageName();
+
+            final AccessibilityEvent event =
+                    obtainAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED);
+            event.setSource(m_view, targetId);
+            event.setClassName(className);
+            event.setPackageName(packageName);
+            event.getText().add(text);
+            event.setBeforeText(beforeText);
+            event.setFromIndex(fromIndex);
+            event.setAddedCount(addedCount);
+            event.setRemovedCount(removedCount);
+            sendAccessibilityEvent(event);
+
+            // Companion caret/selection event (collapsed selection at the new
+            // caret = fromIndex + addedCount).
+            final int caret = fromIndex + addedCount;
+            final AccessibilityEvent selEvent =
+                    obtainAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_TEXT_SELECTION_CHANGED);
+            selEvent.setSource(m_view, targetId);
+            selEvent.setClassName(className);
+            selEvent.setPackageName(packageName);
+            selEvent.getText().add(text);
+            selEvent.setFromIndex(caret);
+            selEvent.setToIndex(caret);
+            selEvent.setItemCount(text != null ? text.length() : 0);
+            selEvent.setCurrentItemIndex(caret);
+            sendAccessibilityEvent(selEvent);
+        });
+    }
+
     void sendEventForVirtualViewId(int virtualViewId, int eventType)
     {
         final AccessibilityEvent event = getEventForVirtualViewId(virtualViewId, eventType);

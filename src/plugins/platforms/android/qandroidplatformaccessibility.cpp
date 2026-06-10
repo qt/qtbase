@@ -44,6 +44,11 @@ void QAndroidPlatformAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *
         QtAndroidAccessibility::notifyAnnouncementEvent(announcementEvent->uniqueId(),
                                                         announcementEvent->message());
     }
+    // Text-change events are intentionally not forwarded from here: typed and
+    // programmatic edits are announced from the IME chokepoints in
+    // QAndroidInputContext, which also cover the input-method and key-event
+    // paths that emit no QAccessible event. Forwarding TextInserted/Removed/
+    // Updated here too would double-announce programmatic changes.
 }
 
 void QAndroidPlatformAccessibility::setRootObject(QObject *obj)
