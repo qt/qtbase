@@ -1071,12 +1071,15 @@ void TlsCryptographOpenSSL::transmit()
 #ifdef QSSLSOCKET_DEBUG
                 qCDebug(lcTlsBackend) << "TlsCryptographOpenSSL::transmit: remote disconnect";
 #endif
-                shutdown = true; // the other side shut down, make sure we do not send shutdown ourselves
-                {
+                if (!shutdown) {
+                    // We haven't sent our close_notify yet: the remote closed first.
+                    shutdown = true; // make sure we do not send shutdown ourselves
                     const ScopedBool bg(inSetAndEmitError, true);
                     setErrorAndEmit(d, QAbstractSocket::RemoteHostClosedError,
                                     QSslSocket::tr("The TLS/SSL connection has been closed"));
                 }
+                // else: we sent close_notify first and are receiving the expected response;
+                // not an error.
                 return;
             case SSL_ERROR_SYSCALL: // some IO error
             case SSL_ERROR_SSL: // error in the SSL library
