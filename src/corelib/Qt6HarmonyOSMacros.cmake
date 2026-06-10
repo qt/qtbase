@@ -1062,8 +1062,8 @@ execute_process(
     ERROR_VARIABLE output
 )
 message(STATUS \"\${output}\")
-if(NOT result EQUAL 0)
-    message(FATAL_ERROR \"HAP install failed with exit code \${result}\")
+if(NOT result EQUAL 0 OR output MATCHES \"error: failed to install bundle\")
+    message(FATAL_ERROR \"HAP install failed (exit code: \${result}):\\n\${output}\")
 endif()
 "
     )
