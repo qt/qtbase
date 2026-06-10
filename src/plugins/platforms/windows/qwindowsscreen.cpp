@@ -36,6 +36,7 @@
 #include <icm.h>
 
 #if QT_CONFIG(cpp_winrt)
+#  include <QtCore/qoperatingsystemversion.h>
 #  include <QtCore/private/qt_winrtbase_p.h>
 #  include <winrt/Windows.Foundation.h>
 #  include <winrt/Windows.Graphics.Display.h>
