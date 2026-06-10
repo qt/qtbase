@@ -299,12 +299,6 @@ static bool stderrHasConsoleAttached()
         if (!systemHasStderr())
             return false;
 
-        if (qEnvironmentVariableIntValue("QT_LOGGING_TO_CONSOLE")) {
-            fprintf(stderr, "warning: Environment variable QT_LOGGING_TO_CONSOLE is deprecated, use\n"
-                            "QT_ASSUME_STDERR_HAS_CONSOLE and/or QT_FORCE_STDERR_LOGGING instead.\n");
-            return true;
-        }
-
         if (qEnvironmentVariableIntValue("QT_ASSUME_STDERR_HAS_CONSOLE"))
             return true;
 
