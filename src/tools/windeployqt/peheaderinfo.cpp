@@ -46,19 +46,48 @@ PeHeaderInfo::PeHeaderInfo(const QString fileName)
     if (!mNtHeaders)
         return;
 
+    // Extract all the information immediately, and then release the handles to avoid file
+    // locking.
+    mWordSize = ntHeaderWordSize(mNtHeaders);
+    mMachineArch = mNtHeaders->FileHeader.Machine;
+    if (mWordSize == 32) {
+        mDependentLibs =
+            determineDependentLibs(reinterpret_cast<const IMAGE_NT_HEADERS32 *>(mNtHeaders));
+        mIsDebug = determineDebug(reinterpret_cast<const IMAGE_NT_HEADERS32 *>(mNtHeaders));
+    } else {
+        mDependentLibs =
+            determineDependentLibs(reinterpret_cast<const IMAGE_NT_HEADERS64 *>(mNtHeaders));
+        mIsDebug = determineDebug(reinterpret_cast<const IMAGE_NT_HEADERS64 *>(mNtHeaders));
+    }
+
     mValid = true;
+
+    releaseFileResources();
 }
 
 PeHeaderInfo::~PeHeaderInfo()
 {
-    if (mFileMemory)
+    releaseFileResources();
+}
+
+void PeHeaderInfo::releaseFileResources()
+{
+    if (mFileMemory) {
         UnmapViewOfFile(mFileMemory);
+        mFileMemory = nullptr;
+    }
 
-    if (mFileMapHandle != NULL)
+    if (mFileMapHandle != NULL) {
         CloseHandle(mFileMapHandle);
+        mFileMapHandle = NULL;
+    }
 
-    if (mFileHandle != NULL && mFileHandle != INVALID_HANDLE_VALUE)
+    if (mFileHandle != NULL && mFileHandle != INVALID_HANDLE_VALUE) {
         CloseHandle(mFileHandle);
+        mFileHandle = NULL;
+    }
+
+    mNtHeaders = nullptr;
 }
 
 bool PeHeaderInfo::isValid()
@@ -73,50 +102,22 @@ QString PeHeaderInfo::errorMessage()
 
 unsigned int PeHeaderInfo::wordSize()
 {
-    if (!isValid())
-        return 0;
-
-    return ntHeaderWordSize(mNtHeaders);
+    return mWordSize;
 }
 
 unsigned int PeHeaderInfo::machineArch()
 {
-    if (!isValid())
-        return 0;
-
-    return mNtHeaders->FileHeader.Machine;
+    return mMachineArch;
 }
 
 QStringList PeHeaderInfo::dependentLibs()
 {
-    if (!isValid())
-        return QStringList();
-
-    if (!mDependentLibs.isEmpty())
-        return mDependentLibs;
-
-    if (wordSize() == 32) {
-        mDependentLibs
-                = determineDependentLibs(reinterpret_cast<const IMAGE_NT_HEADERS32 *>(mNtHeaders));
-    } else {
-        mDependentLibs
-                = determineDependentLibs(reinterpret_cast<const IMAGE_NT_HEADERS64 *>(mNtHeaders));
-    }
     return mDependentLibs;
 }
 
 bool PeHeaderInfo::isDebug()
 {
-    if (!mIsDebug.has_value()) {
-        QStringList dependents = dependentLibs();
-        if (wordSize() == 32) {
-            mIsDebug = determineDebug(reinterpret_cast<const IMAGE_NT_HEADERS32 *>(mNtHeaders));
-        } else {
-            mIsDebug = determineDebug(reinterpret_cast<const IMAGE_NT_HEADERS64 *>(mNtHeaders));
-        }
-    }
-
-    return mIsDebug.value();
+    return mIsDebug.value_or(false);
 }
 
 IMAGE_NT_HEADERS *PeHeaderInfo::getNtHeader()
