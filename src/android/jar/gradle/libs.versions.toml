@@ -1,5 +1,5 @@
 [versions]
-agp = "9.0.0"
+agp = "9.2.1"
 
 [plugins]
 android-library = { id = "com.android.library", version.ref = "agp" }
