@@ -804,6 +804,8 @@ function(qt_internal_add_test name)
             if(TARGET all_tests_make_hap)
                 add_dependencies(all_tests_make_hap "${name}")
             endif()
+            set_property(GLOBAL APPEND PROPERTY
+                QT_INTERNAL_HARMONYOS_TEST_TARGETS "${name}")
         endif()
     else()
         if(arg_QMLTEST AND NOT arg_SOURCES)
