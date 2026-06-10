@@ -2001,7 +2001,8 @@ static void win_outputDebugString_helper(const QString &message)
 {
     const qsizetype maxOutputStringLength = 32766;
     Q_CONSTINIT static QBasicMutex m;
-    auto locker = qt_unique_lock(m);
+    const auto locker = qt_scoped_lock(m);
+
     // fast path: Avoid string copies if one output is enough
     if (message.length() <= maxOutputStringLength) {
         OutputDebugString(reinterpret_cast<const wchar_t *>(message.utf16()));
