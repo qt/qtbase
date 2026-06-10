@@ -724,10 +724,8 @@ QStringList QLibraryInfoPrivate::paths(QLibraryInfo::LibraryPath location)
     if (qtConfSettings && qtConfSettings->havePaths()) {
         QList<QString> appPaths = qtConfSettings->paths(location);
 
-        // Fall back to a stable default for missing qt.conf values,
-        // unless we've been instructed to fall back to the Qt
-        // configure defaults instead via the MergeQtConf setting.
-        if (appPaths.isEmpty() && !keepQtBuildDefaults()) {
+        // Fall back to a stable default for missing qt.conf values
+        if (appPaths.isEmpty()) {
             const auto locationInfo = QLibraryInfoPrivate::locationInfo(location);
             if (!locationInfo.defaultValue.isNull())
                 appPaths << locationInfo.defaultValue;
@@ -748,8 +746,7 @@ QStringList QLibraryInfoPrivate::paths(QLibraryInfo::LibraryPath location)
 
     // Fall back to the Qt configure defaults if we didn't have a qt.conf,
     // or was asked to respect Qt configure defaults. The latter case will
-    // append the Qt configure default to the list, even if we found a value
-    // in qt.conf, as that's the intent behind MergeQtConf.
+    // append the Qt configure default to the list.
     if (ret.isEmpty() || keepQtBuildDefaults()) {
         if (location == QLibraryInfo::PrefixPath) {
             ret << QLibraryPrefixes::qtPrefix();
