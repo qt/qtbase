@@ -129,6 +129,16 @@ private:
     bool focusObjectIsComposing() const;
     void focusObjectStartComposing();
     bool focusObjectStopComposing();
+#if QT_CONFIG(accessibility)
+    // Synthesize the Android text-change events QML text items don't emit on the
+    // input path, so a screen reader echoes typed/deleted characters. Generated
+    // at the platform chokepoints: endBatchEdit() for IME edits, update() for the
+    // rest (key events, programmatic changes).
+    void notifyTextChangedForAccessibility();
+    // Flag a pending edit (and lazily capture the pre-edit baseline) from the IME
+    // mutators, so focus-time batch edits don't fire a spurious announcement.
+    void markTextEditForAccessibility();
+#endif
 
 private:
     ExtractedText m_extractedText;
@@ -138,6 +148,12 @@ private:
     QMetaObject::Connection m_updateCursorPosConnection;
     HandleModes m_handleMode;
     int m_batchEditNestingLevel;
+#if QT_CONFIG(accessibility)
+    // Per-focus text baseline used to diff edits for the screen-reader echo.
+    QString m_a11yLastText;
+    bool m_a11yTextEditPending = false;
+    bool m_a11yBaselineValid = false;
+#endif
     QPointer<QObject> m_focusObject;
     QTimer m_hideCursorHandleTimer;
     bool m_fullScreenMode;

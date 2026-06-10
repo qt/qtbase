@@ -273,6 +273,14 @@ class QtActivityDelegate extends QtActivityDelegateBase
         m_accessibilityDelegate.notifyAnnouncementEvent(viewId, message);
     }
 
+    @Override
+    public void notifyTextChanged(int viewId, String text, String beforeText,
+                                  int fromIndex, int addedCount, int removedCount)
+    {
+        m_accessibilityDelegate.notifyTextChanged(viewId, text, beforeText,
+                                                  fromIndex, addedCount, removedCount);
+    }
+
     // QtMenuInterface implementation begin
     @Override
     public void resetOptionsMenu()

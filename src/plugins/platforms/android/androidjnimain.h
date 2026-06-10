@@ -62,6 +62,9 @@ namespace QtAndroid
     void notifyDescriptionOrNameChanged(uint accessibilityObjectId, const QString &value);
     void notifyScrolledEvent(uint accessibilityObjectId);
     void notifyAnnouncementEvent(uint accessibilityObjectId, const QString &message);
+    void notifyTextChanged(uint accessibilityObjectId, const QString &text,
+                           const QString &beforeText, int fromIndex,
+                           int addedCount, int removedCount);
 #endif
     void notifyNativePluginIntegrationReady(bool ready);
 
