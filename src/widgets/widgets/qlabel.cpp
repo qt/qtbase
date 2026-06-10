@@ -208,7 +208,7 @@ void QLabelPrivate::init()
 
 /*!
     \property QLabel::text
-    \brief the label's text
+    \brief the label's text.
 
     If no text has been set this will return an empty string. Setting
     the text clears any previous content.
@@ -402,7 +402,7 @@ void QLabel::setNum(double num)
 
 /*!
     \property QLabel::alignment
-    \brief the alignment of the label's contents
+    \brief the alignment of the label's contents.
 
     By default, the contents of the label are left-aligned and vertically-centered.
 
@@ -430,7 +430,7 @@ Qt::Alignment QLabel::alignment() const
 
 /*!
     \property QLabel::wordWrap
-    \brief the label's word-wrapping policy
+    \brief the label's word-wrapping policy.
 
     If this property is \c true then label text is wrapped where
     necessary at word-breaks; otherwise it is not wrapped at all.
@@ -458,7 +458,7 @@ bool QLabel::wordWrap() const
 
 /*!
     \property QLabel::indent
-    \brief the label's text indent in pixels
+    \brief the label's text indent in pixels.
 
     If a label displays text, the indent applies to the left edge if
     alignment() is Qt::AlignLeft, to the right edge if alignment() is
@@ -493,7 +493,7 @@ int QLabel::indent() const
 
 /*!
     \property QLabel::margin
-    \brief the width of the margin
+    \brief the width of the margin.
 
     The margin is the distance between the innermost pixel of the
     frame and the outermost pixel of contents.
@@ -749,7 +749,7 @@ bool QLabel::hasSelectedText() const
 
 /*!
     \property QLabel::selectedText
-    \brief the selected text
+    \brief the selected text.
 
     If there is no selected text this property's value is
     an empty string.
@@ -1350,7 +1350,7 @@ QMovie *QLabel::movie() const
 
 /*!
     \property QLabel::textFormat
-    \brief the label's text format
+    \brief the label's text format.
 
     See the Qt::TextFormat enum for an explanation of the possible
     options.
