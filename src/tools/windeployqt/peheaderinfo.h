@@ -33,6 +33,8 @@ private:
     bool mValid = false;
     QString mErrorMessage;
 
+    unsigned int mWordSize = 0;
+    unsigned int mMachineArch = 0;
     QStringList mDependentLibs;
     std::optional<bool> mIsDebug;
 
@@ -40,6 +42,8 @@ private:
     HANDLE mFileMapHandle = NULL;
     void *mFileMemory = nullptr;
     IMAGE_NT_HEADERS *mNtHeaders = nullptr;
+
+    void releaseFileResources();
 
     IMAGE_NT_HEADERS *getNtHeader();
     template <class ImageNtHeader>
