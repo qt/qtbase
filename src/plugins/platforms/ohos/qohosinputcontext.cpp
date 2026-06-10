@@ -272,6 +272,11 @@ void QOhosInputContext::commit()
 
 void QOhosInputContext::update(Qt::InputMethodQueries queries)
 {
+    if (!focusObjectOrNull()) {
+        hideInputPanel();
+        return;
+    }
+
     m_qtImEnabled = queryImEnabled();
     const auto qtInputMethodHintsValue = queryInputMethodHints();
     const auto qtEnterKeyTypeValue = queryEnterKeyType();
