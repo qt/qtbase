@@ -511,7 +511,7 @@ void QOhosInputContext::setLastInputTypeToTriggerSoftKeyboard(RequestKeyboardRea
 void QOhosInputContext::onCursorRectangleChanged()
 {
     if (m_imConnectionState == ImConnectionState::Detached) {
-        qOhosWarning(QtForOhos) << "Attempting to update cursor position when detached from controller";
+        qOhosDebug(QtForOhos) << "Cursor rectangle changed while detached; deferring update until attach";
         m_updateCursorRectangleAfterAttaching = true;
         return;
     }
