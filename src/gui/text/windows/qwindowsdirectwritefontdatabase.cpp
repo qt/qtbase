@@ -182,18 +182,8 @@ void QWindowsDirectWriteFontDatabase::populateFamily(const QString &familyName)
                 if (SUCCEEDED(font->CreateFontFace(&face))) {
                     QSupportedWritingSystems writingSystems = supportedWritingSystems(*face);
 
-                    auto registerFontName = [&face,
-                                             &weight,
-                                             &style,
-                                             &stretch,
-                                             &antialias,
-                                             &scalable,
-                                             &size,
-                                             &fixed,
-                                             &color,
-                                             &writingSystems,
-                                             &familyName]
-                        (const QString &rFamilyName, const QString &rStyleName) {
+                    auto registerFontName = [&](const QString &rFamilyName,
+                                                const QString &rStyleName) {
                         qCDebug(lcQpaFonts) << "Family" << familyName << "has variant"
                                             << rFamilyName << ", "
                                             << rStyleName << ", "
