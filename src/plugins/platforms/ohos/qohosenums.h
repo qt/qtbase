@@ -111,6 +111,20 @@ enum class SupportWindowMode
 
 }
 
+namespace file {
+
+namespace picker {
+
+enum class DocumentSelectMode {
+    FILE,
+    FOLDER,
+    MIXED,
+};
+
+}
+
+}
+
 namespace multimodalInput {
 
 namespace pointer {
@@ -309,6 +323,18 @@ struct OhosEnumMeta<enums::ohos::bundle::bundleManager::SupportWindowMode>
         {Enum::FULL_SCREEN, "FULL_SCREEN"},
         {Enum::SPLIT, "SPLIT"},
         {Enum::FLOATING, "FLOATING"},
+    }};
+};
+
+template<>
+struct OhosEnumMeta<enums::ohos::file::picker::DocumentSelectMode>
+{
+    using Enum = enums::ohos::file::picker::DocumentSelectMode;
+    static constexpr const char *fullTypeName = "@ohos.file.picker.DocumentSelectMode";
+    static constexpr std::array<std::pair<Enum, const char *>, 3> enumeratorsNames = {{
+        {Enum::FILE, "FILE"},
+        {Enum::FOLDER, "FOLDER"},
+        {Enum::MIXED, "MIXED"},
     }};
 };
 

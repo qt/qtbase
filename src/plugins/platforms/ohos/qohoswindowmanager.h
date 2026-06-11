@@ -9,10 +9,9 @@
 #include <QtCore/qrect.h>
 #include <QtCore/qstringlist.h>
 #include <QtCore/qstring.h>
-#include <array>
+#include <qohosenums.h>
 #include <qohosinternalwindowid_p.h>
 #include <qohosplugincore.h>
-#include <utility>
 #include <functional>
 
 QT_BEGIN_NAMESPACE
@@ -20,11 +19,7 @@ QT_BEGIN_NAMESPACE
 namespace QOhosWindowManager
 {
 
-enum class DocumentSelectMode {
-    FILE,
-    FOLDER,
-    MIXED,
-};
+using DocumentSelectMode = QtOhos::enums::ohos::file::picker::DocumentSelectMode;
 
 enum class ResultMultiplicity {
     SINGLE,
@@ -55,22 +50,6 @@ void showFileDialogSave(
 void showFileDialogAuthorization(
     QtOhos::InternalWindowId contextWinId, QString filePath,
     QOhosConsumer<bool> resultCallback);
-
-}
-
-namespace QtOhos
-{
-
-template<>
-struct OhosEnumMeta<QOhosWindowManager::DocumentSelectMode>
-{
-    static constexpr const char *fullTypeName = "@ohos.file.picker.DocumentSelectMode";
-    static constexpr std::array<std::pair<QOhosWindowManager::DocumentSelectMode, const char *>, 3> enumeratorsNames = {{
-        {QOhosWindowManager::DocumentSelectMode::FILE, "FILE"},
-        {QOhosWindowManager::DocumentSelectMode::FOLDER, "FOLDER"},
-        {QOhosWindowManager::DocumentSelectMode::MIXED, "MIXED"},
-    }};
-};
 
 }
 
