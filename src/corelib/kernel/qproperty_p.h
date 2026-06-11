@@ -420,6 +420,8 @@ public:
 
     static QPropertyBindingPrivate *get(const QUntypedPropertyBinding &binding)
     { return static_cast<QPropertyBindingPrivate *>(binding.d.data()); }
+    static QUntypedPropertyBinding makeUntyped(QPropertyBindingPrivate *d)
+    { return QUntypedPropertyBinding(static_cast<void *>(d)); }
 
     void setError(QPropertyBindingError &&e)
     { m_error = std::move(e); }
@@ -738,7 +740,8 @@ public:
     QPropertyBinding<T> binding() const
     {
         auto *bd = qGetBindingStorage(owner())->bindingData(this);
-        return static_cast<QPropertyBinding<T> &&>(QUntypedPropertyBinding(bd ? bd->binding() : nullptr));
+        QUntypedPropertyBinding binding = QPropertyBindingPrivate::makeUntyped(bd ? bd->binding() : nullptr);
+        return static_cast<QPropertyBinding<T> &&>(binding);
     }
 
     QPropertyBinding<T> takeBinding()

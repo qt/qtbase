@@ -182,7 +182,15 @@ public:
 
     QMetaType valueMetaType() const;
 
+#if QT_CORE_REMOVED_SINCE(6, 12)
     explicit QUntypedPropertyBinding(QPropertyBindingPrivate *priv);
+#endif
+//private:
+    // the following public classes access this constructor from inline code
+    template<typename Class, typename T, auto Offset, auto Signal> friend class QObjectBindableProperty;
+    template<typename T> friend class QBindable;
+    template<typename T> friend class QProperty;
+    explicit QUntypedPropertyBinding(void *priv);
 private:
     friend class QtPrivate::QPropertyBindingData;
     friend class QPropertyBindingPrivate;
