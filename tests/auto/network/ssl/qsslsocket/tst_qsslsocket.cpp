@@ -47,6 +47,10 @@
 #include <memory>
 #include <array>
 
+#ifdef Q_OS_UNIX
+#  include <sys/socket.h>
+#endif
+
 using namespace std::chrono_literals;
 using namespace Qt::StringLiterals;
 
@@ -264,6 +268,8 @@ private slots:
     void concurrentServerSideHandshakes();
 
     void closeNoWriteOnClosedPlainSocket();
+
+    void disconnectFromHostNoWriteOnInvalidSocket();
 
     void setEmptyDefaultConfiguration(); // this test should be last
 
@@ -3906,6 +3912,54 @@ void tst_QSslSocket::readBufferMaxSize()
     loop.exec();
 
     QCOMPARE(client->bytesAvailable() + readSoFar, message.size());
+}
+
+void tst_QSslSocket::disconnectFromHostNoWriteOnInvalidSocket()
+{
+#  ifndef Q_OS_UNIX
+    QSKIP("This test uses POSIX socket options to force TCP RST");
+#  else
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return;
+
+    // Verify that disconnectFromHost() does not trigger
+    // "QSocketNotifier: Invalid socket specified" when the peer has
+    // already reset the connection.
+
+    SslServer server;
+    QVERIFY(server.listen(QHostAddress::LocalHost, 0));
+
+    QSslSocket client;
+    client.setSslConfiguration([] {
+        auto c = QSslConfiguration::defaultConfiguration();
+        c.setPeerVerifyMode(QSslSocket::VerifyNone);
+        return c;
+    }());
+    client.connectToHostEncrypted("127.0.0.1", server.serverPort());
+    QTRY_VERIFY(client.isEncrypted());
+    QTRY_VERIFY(server.socket);
+    QTRY_VERIFY(server.socket->isEncrypted());
+
+    // Call disconnectFromHost() as soon as the error arrives (before
+    // the socket transitions to UnconnectedState).
+    bool errorSeen = false;
+    connect(&client, &QSslSocket::errorOccurred, &client, [&](QAbstractSocket::SocketError) {
+        errorSeen = true;
+        client.disconnectFromHost();
+    });
+
+    QTest::failOnWarning(QRegularExpression("Invalid socket"));
+
+    // Force a TCP RST from the server side
+    qintptr fd = server.socket->socketDescriptor();
+    struct linger sl = { 1, 0 };
+    ::setsockopt(static_cast<int>(fd), SOL_SOCKET, SO_LINGER, &sl, sizeof(sl));
+    server.socket->abort();
+
+    QTRY_VERIFY(errorSeen);
+    QTRY_COMPARE(client.state(), QAbstractSocket::UnconnectedState);
+#  endif
 }
 
 void tst_QSslSocket::setEmptyDefaultConfiguration() // this test should be last, as it has some side effects

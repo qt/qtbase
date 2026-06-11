@@ -373,7 +373,9 @@ void TlsCryptographSecureTransport::disconnectFromHost()
     Q_ASSERT(d && d->plainTcpSocket());
     if (context) {
         if (!shutdown) {
-            SSLClose(context);
+            // Don't write close_notify to an already-invalid socket.
+            if (d->plainTcpSocket()->isValid())
+                SSLClose(context);
             context.reset(nullptr);
             shutdown = true;
         }
