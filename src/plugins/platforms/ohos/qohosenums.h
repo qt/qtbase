@@ -82,6 +82,16 @@ enum class StartupVisibility
 
 }
 
+namespace wantConstant {
+
+enum class Flags
+{
+    FLAG_AUTH_READ_URI_PERMISSION,
+    FLAG_AUTH_WRITE_URI_PERMISSION,
+};
+
+}
+
 }
 
 }
@@ -221,6 +231,17 @@ struct OhosEnumMeta<enums::ohos::app::ability::contextConstant::StartupVisibilit
     static constexpr std::array<std::pair<Enum, const char *>, 2> enumeratorsNames = {{
         {Enum::STARTUP_HIDE, "STARTUP_HIDE"},
         {Enum::STARTUP_SHOW, "STARTUP_SHOW"},
+    }};
+};
+
+template<>
+struct OhosEnumMeta<enums::ohos::app::ability::wantConstant::Flags>
+{
+    using Enum = enums::ohos::app::ability::wantConstant::Flags;
+    static constexpr const char *fullTypeName = "@ohos.app.ability.wantConstant.Flags";
+    static constexpr std::array<std::pair<Enum, const char *>, 2> enumeratorsNames = {{
+        {Enum::FLAG_AUTH_READ_URI_PERMISSION, "FLAG_AUTH_READ_URI_PERMISSION"},
+        {Enum::FLAG_AUTH_WRITE_URI_PERMISSION, "FLAG_AUTH_WRITE_URI_PERMISSION"},
     }};
 };
 

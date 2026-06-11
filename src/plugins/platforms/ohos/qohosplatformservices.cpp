@@ -10,29 +10,13 @@
 #include <QtGui/QColor>
 #include <cstdlib>
 #include <filemanagement/file_uri/oh_file_uri.h>
+#include <qohosenums.h>
 #include <qohosplugincore.h>
 #include <qohosqpafunctions_p.h>
 
 QT_BEGIN_NAMESPACE
 
-enum class QOhosWantConstantFlags {
-    FLAG_AUTH_READ_URI_PERMISSION,
-    FLAG_AUTH_WRITE_URI_PERMISSION,
-};
-
-namespace QtOhos {
-
-template<>
-struct OhosEnumMeta<QOhosWantConstantFlags>
-{
-    static constexpr const char *fullTypeName = "@ohos.app.ability.wantConstant.Flags";
-    static constexpr std::array<std::pair<QOhosWantConstantFlags, const char *>, 2> enumeratorsNames = {{
-        {QOhosWantConstantFlags::FLAG_AUTH_READ_URI_PERMISSION, "FLAG_AUTH_READ_URI_PERMISSION"},
-        {QOhosWantConstantFlags::FLAG_AUTH_WRITE_URI_PERMISSION, "FLAG_AUTH_WRITE_URI_PERMISSION"},
-    }};
-};
-
-}
+using QOhosWantConstantFlags = QtOhos::enums::ohos::app::ability::wantConstant::Flags;
 
 namespace {
 
