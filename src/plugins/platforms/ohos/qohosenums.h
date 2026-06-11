@@ -15,6 +15,39 @@ namespace QtOhos {
 
 namespace enums {
 
+namespace kit {
+
+namespace ShareKit {
+
+namespace systemShare {
+
+enum class SelectionMode
+{
+    SINGLE,
+    BATCH,
+};
+
+enum class ShareAbilityType
+{
+    COPY_TO_PASTEBOARD,
+    SAVE_TO_MEDIA_ASSET,
+    SAVE_AS_FILE,
+    PRINT,
+    SAVE_TO_SUPERHUB,
+};
+
+enum class SharePreviewMode
+{
+    DEFAULT,
+    DETAIL,
+};
+
+}
+
+}
+
+}
+
 namespace ohos {
 
 namespace app {
@@ -330,6 +363,42 @@ enum class WindowStatusType
 
 template<typename Enum>
 struct OhosEnumMeta;
+
+template<>
+struct OhosEnumMeta<enums::kit::ShareKit::systemShare::SelectionMode>
+{
+    using Enum = enums::kit::ShareKit::systemShare::SelectionMode;
+    static constexpr const char *fullTypeName = "@kit.ShareKit.systemShare.SelectionMode";
+    static constexpr std::array<std::pair<Enum, const char *>, 2> enumeratorsNames = {{
+        {Enum::SINGLE, "SINGLE"},
+        {Enum::BATCH, "BATCH"},
+    }};
+};
+
+template<>
+struct OhosEnumMeta<enums::kit::ShareKit::systemShare::ShareAbilityType>
+{
+    using Enum = enums::kit::ShareKit::systemShare::ShareAbilityType;
+    static constexpr const char *fullTypeName = "@kit.ShareKit.systemShare.ShareAbilityType";
+    static constexpr std::array<std::pair<Enum, const char *>, 5> enumeratorsNames = {{
+        {Enum::COPY_TO_PASTEBOARD, "COPY_TO_PASTEBOARD"},
+        {Enum::SAVE_TO_MEDIA_ASSET, "SAVE_TO_MEDIA_ASSET"},
+        {Enum::SAVE_AS_FILE, "SAVE_AS_FILE"},
+        {Enum::PRINT, "PRINT"},
+        {Enum::SAVE_TO_SUPERHUB, "SAVE_TO_SUPERHUB"},
+    }};
+};
+
+template<>
+struct OhosEnumMeta<enums::kit::ShareKit::systemShare::SharePreviewMode>
+{
+    using Enum = enums::kit::ShareKit::systemShare::SharePreviewMode;
+    static constexpr const char *fullTypeName = "@kit.ShareKit.systemShare.SharePreviewMode";
+    static constexpr std::array<std::pair<Enum, const char *>, 2> enumeratorsNames = {{
+        {Enum::DEFAULT, "DEFAULT"},
+        {Enum::DETAIL, "DETAIL"},
+    }};
+};
 
 template<>
 struct OhosEnumMeta<enums::ohos::app::ability::AbilityConstant::LaunchReason>
