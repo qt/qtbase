@@ -36,6 +36,7 @@ constexpr const char *mimeTextUriList = "text/uri-list";
 constexpr const char *mimeAppXQtImage = "application/x-qt-image";
 
 const auto qtAppInfoDataPseudoMimeType = "io.qt.ohos.appInfoData";
+const auto qtDummyEntryPseudoMimeType = "io.qt.ohos.dummyEntry";
 
 constexpr auto processQMimeDataInQtThreadTimeout = ch::seconds(2);
 
@@ -283,8 +284,16 @@ void addMimeDataSuppliersForGeneralEntriesFromRecords(
     std::shared_ptr<void> context, QSpan<const QOhosUdmfRecord> inputRecords,
     std::map<QString, QOhosSupplier<QVariant>> &outMimeDataSuppliers)
 {
+    auto qtDummyEntryUtdTypeId = tryMapMimeTypeToUtdTypeId(qtDummyEntryPseudoMimeType);
+    if (!qtDummyEntryUtdTypeId.has_value()) {
+        qOhosPrintfWarning("%s: Can't map %s to UTD type id, ignoring", Q_FUNC_INFO, qtDummyEntryPseudoMimeType);
+    }
+
     for (auto &record : inputRecords) {
         for (auto &typeId : record.getTypes()) {
+            if (typeId == qtDummyEntryUtdTypeId)
+                continue;
+
             if (!hasQMimeDataPeerType(typeId.c_str()) && !isUdmfMetaFileType(typeId)) {
                 // FIXME: the `utdGetMimeTypes()` result interpretation is not quite
                 // clear. Documentaion does not mention why there is a list of possible mime types.
@@ -461,6 +470,13 @@ void addGeneralEntryToRecord(std::string mimeType, QSpan<const std::uint8_t> dat
             "%s: cannot convert mime type '%s' to type id. Skip this entry.",
             Q_FUNC_INFO, mimeType.c_str());
     }
+}
+
+void addDummyEntryToRecord(QOhosUdmfRecord &record)
+{
+    const std::uint8_t dummyEntryDataByte = 0;
+    addGeneralEntryToRecord(
+        qtDummyEntryPseudoMimeType, QSpan(&dummyEntryDataByte, 1), record);
 }
 
 template<typename RawUdsObject>
@@ -644,6 +660,9 @@ std::function<QOhosUdmfRecord()> tryMakeDefaultUdmfRecordFactoryFromQMimeDataOrN
         }
 
         if (!entryMetaFactoryFuncsForProvider->empty()) {
+            if (record.isEmpty())
+                addDummyEntryToRecord(record);
+
             auto lazyProcessingMimeData = optLazyProcessingMimeData;
             record.setProviderForDataFetchFunc(
                 getMapKeys(*entryMetaFactoryFuncsForProvider),
