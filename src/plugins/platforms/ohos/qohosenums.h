@@ -111,6 +111,61 @@ enum class SupportWindowMode
 
 }
 
+namespace multimodalInput {
+
+namespace pointer {
+
+enum class PointerStyle {
+    DEFAULT,
+    EAST,
+    WEST,
+    SOUTH,
+    NORTH,
+    WEST_EAST,
+    NORTH_SOUTH,
+    NORTH_EAST,
+    NORTH_WEST,
+    SOUTH_EAST,
+    SOUTH_WEST,
+    NORTH_EAST_SOUTH_WEST,
+    NORTH_WEST_SOUTH_EAST,
+    CROSS,
+    CURSOR_COPY,
+    CURSOR_FORBID,
+    COLOR_SUCKER,
+    HAND_GRABBING,
+    HAND_OPEN,
+    HAND_POINTING,
+    HELP,
+    MOVE,
+    RESIZE_LEFT_RIGHT,
+    RESIZE_UP_DOWN,
+    SCREENSHOT_CHOOSE,
+    SCREENSHOT_CURSOR,
+    TEXT_CURSOR,
+    ZOOM_IN,
+    ZOOM_OUT,
+    MIDDLE_BTN_EAST,
+    MIDDLE_BTN_WEST,
+    MIDDLE_BTN_SOUTH,
+    MIDDLE_BTN_NORTH,
+    MIDDLE_BTN_NORTH_SOUTH,
+    MIDDLE_BTN_NORTH_EAST,
+    MIDDLE_BTN_NORTH_WEST,
+    MIDDLE_BTN_SOUTH_EAST,
+    MIDDLE_BTN_SOUTH_WEST,
+    MIDDLE_BTN_NORTH_SOUTH_WEST_EAST,
+    HORIZONTAL_TEXT_CURSOR,
+    CURSOR_CROSS,
+    CURSOR_CIRCLE,
+    LOADING,
+    RUNNING,
+};
+
+}
+
+}
+
 namespace notificationManager {
 
 enum class ContentType {
@@ -254,6 +309,59 @@ struct OhosEnumMeta<enums::ohos::bundle::bundleManager::SupportWindowMode>
         {Enum::FULL_SCREEN, "FULL_SCREEN"},
         {Enum::SPLIT, "SPLIT"},
         {Enum::FLOATING, "FLOATING"},
+    }};
+};
+
+template<>
+struct OhosEnumMeta<enums::ohos::multimodalInput::pointer::PointerStyle>
+{
+    using Enum = enums::ohos::multimodalInput::pointer::PointerStyle;
+    static constexpr const char *fullTypeName = "@ohos.multimodalInput.pointer.PointerStyle";
+    static constexpr std::array<std::pair<Enum, const char *>, 44> enumeratorsNames = {{
+        {Enum::DEFAULT, "DEFAULT"},
+        {Enum::EAST, "EAST"},
+        {Enum::WEST, "WEST"},
+        {Enum::SOUTH, "SOUTH"},
+        {Enum::NORTH, "NORTH"},
+        {Enum::WEST_EAST, "WEST_EAST"},
+        {Enum::NORTH_SOUTH, "NORTH_SOUTH"},
+        {Enum::NORTH_EAST, "NORTH_EAST"},
+        {Enum::NORTH_WEST, "NORTH_WEST"},
+        {Enum::SOUTH_EAST, "SOUTH_EAST"},
+        {Enum::SOUTH_WEST, "SOUTH_WEST"},
+        {Enum::NORTH_EAST_SOUTH_WEST, "NORTH_EAST_SOUTH_WEST"},
+        {Enum::NORTH_WEST_SOUTH_EAST, "NORTH_WEST_SOUTH_EAST"},
+        {Enum::CROSS, "CROSS"},
+        {Enum::CURSOR_COPY, "CURSOR_COPY"},
+        {Enum::CURSOR_FORBID, "CURSOR_FORBID"},
+        {Enum::COLOR_SUCKER, "COLOR_SUCKER"},
+        {Enum::HAND_GRABBING, "HAND_GRABBING"},
+        {Enum::HAND_OPEN, "HAND_OPEN"},
+        {Enum::HAND_POINTING, "HAND_POINTING"},
+        {Enum::HELP, "HELP"},
+        {Enum::MOVE, "MOVE"},
+        {Enum::RESIZE_LEFT_RIGHT, "RESIZE_LEFT_RIGHT"},
+        {Enum::RESIZE_UP_DOWN, "RESIZE_UP_DOWN"},
+        {Enum::SCREENSHOT_CHOOSE, "SCREENSHOT_CHOOSE"},
+        {Enum::SCREENSHOT_CURSOR, "SCREENSHOT_CURSOR"},
+        {Enum::TEXT_CURSOR, "TEXT_CURSOR"},
+        {Enum::ZOOM_IN, "ZOOM_IN"},
+        {Enum::ZOOM_OUT, "ZOOM_OUT"},
+        {Enum::MIDDLE_BTN_EAST, "MIDDLE_BTN_EAST"},
+        {Enum::MIDDLE_BTN_WEST, "MIDDLE_BTN_WEST"},
+        {Enum::MIDDLE_BTN_SOUTH, "MIDDLE_BTN_SOUTH"},
+        {Enum::MIDDLE_BTN_NORTH, "MIDDLE_BTN_NORTH"},
+        {Enum::MIDDLE_BTN_NORTH_SOUTH, "MIDDLE_BTN_NORTH_SOUTH"},
+        {Enum::MIDDLE_BTN_NORTH_EAST, "MIDDLE_BTN_NORTH_EAST"},
+        {Enum::MIDDLE_BTN_NORTH_WEST, "MIDDLE_BTN_NORTH_WEST"},
+        {Enum::MIDDLE_BTN_SOUTH_EAST, "MIDDLE_BTN_SOUTH_EAST"},
+        {Enum::MIDDLE_BTN_SOUTH_WEST, "MIDDLE_BTN_SOUTH_WEST"},
+        {Enum::MIDDLE_BTN_NORTH_SOUTH_WEST_EAST, "MIDDLE_BTN_NORTH_SOUTH_WEST_EAST"},
+        {Enum::HORIZONTAL_TEXT_CURSOR, "HORIZONTAL_TEXT_CURSOR"},
+        {Enum::CURSOR_CROSS, "CURSOR_CROSS"},
+        {Enum::CURSOR_CIRCLE, "CURSOR_CIRCLE"},
+        {Enum::LOADING, "LOADING"},
+        {Enum::RUNNING, "RUNNING"},
     }};
 };
 
