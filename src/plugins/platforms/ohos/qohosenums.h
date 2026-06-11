@@ -129,22 +129,6 @@ template<typename Enum>
 struct OhosEnumMeta;
 
 template<>
-struct OhosEnumMeta<enums::ohos::notificationManager::ContentType>
-{
-    using Enum = enums::ohos::notificationManager::ContentType;
-    static constexpr const char *fullTypeName = "@ohos.notificationManager.ContentType";
-    static constexpr std::array<std::pair<Enum, const char *>, 7> enumeratorsNames = {{
-        {Enum::NOTIFICATION_CONTENT_BASIC_TEXT, "NOTIFICATION_CONTENT_BASIC_TEXT"},
-        {Enum::NOTIFICATION_CONTENT_LONG_TEXT, "NOTIFICATION_CONTENT_LONG_TEXT"},
-        {Enum::NOTIFICATION_CONTENT_PICTURE, "NOTIFICATION_CONTENT_PICTURE"},
-        {Enum::NOTIFICATION_CONTENT_CONVERSATION, "NOTIFICATION_CONTENT_CONVERSATION"},
-        {Enum::NOTIFICATION_CONTENT_MULTILINE, "NOTIFICATION_CONTENT_MULTILINE"},
-        {Enum::NOTIFICATION_CONTENT_SYSTEM_LIVE_VIEW, "NOTIFICATION_CONTENT_SYSTEM_LIVE_VIEW"},
-        {Enum::NOTIFICATION_CONTENT_LIVE_VIEW, "NOTIFICATION_CONTENT_LIVE_VIEW"},
-    }};
-};
-
-template<>
 struct OhosEnumMeta<enums::ohos::app::ability::AbilityConstant::LaunchReason>
 {
     using Enum = enums::ohos::app::ability::AbilityConstant::LaunchReason;
@@ -230,6 +214,22 @@ struct OhosEnumMeta<enums::ohos::bundle::bundleManager::SupportWindowMode>
         {Enum::FULL_SCREEN, "FULL_SCREEN"},
         {Enum::SPLIT, "SPLIT"},
         {Enum::FLOATING, "FLOATING"},
+    }};
+};
+
+template<>
+struct OhosEnumMeta<enums::ohos::notificationManager::ContentType>
+{
+    using Enum = enums::ohos::notificationManager::ContentType;
+    static constexpr const char *fullTypeName = "@ohos.notificationManager.ContentType";
+    static constexpr std::array<std::pair<Enum, const char *>, 7> enumeratorsNames = {{
+        {Enum::NOTIFICATION_CONTENT_BASIC_TEXT, "NOTIFICATION_CONTENT_BASIC_TEXT"},
+        {Enum::NOTIFICATION_CONTENT_LONG_TEXT, "NOTIFICATION_CONTENT_LONG_TEXT"},
+        {Enum::NOTIFICATION_CONTENT_PICTURE, "NOTIFICATION_CONTENT_PICTURE"},
+        {Enum::NOTIFICATION_CONTENT_CONVERSATION, "NOTIFICATION_CONTENT_CONVERSATION"},
+        {Enum::NOTIFICATION_CONTENT_MULTILINE, "NOTIFICATION_CONTENT_MULTILINE"},
+        {Enum::NOTIFICATION_CONTENT_SYSTEM_LIVE_VIEW, "NOTIFICATION_CONTENT_SYSTEM_LIVE_VIEW"},
+        {Enum::NOTIFICATION_CONTENT_LIVE_VIEW, "NOTIFICATION_CONTENT_LIVE_VIEW"},
     }};
 };
 
