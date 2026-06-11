@@ -25,7 +25,6 @@
 #include <qohosdisplayinfo.h>
 #include <qohosenums.h>
 #include <qohosplugincore.h>
-#include <qohospointerstyle.h>
 #include <qohosutils.h>
 #include <render/qohoswindowproxydatafactory.h>
 #include <render/qxcomponent.h>
