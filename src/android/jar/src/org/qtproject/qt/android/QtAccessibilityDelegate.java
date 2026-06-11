@@ -232,6 +232,26 @@ class QtAccessibilityDelegate extends View.AccessibilityDelegate
         });
     }
 
+    void notifyObjectDestroyed(int viewId, int parentId)
+    {
+        QtNative.runAction(() -> {
+            if (m_view != null && m_focusedVirtualViewId == viewId) {
+                m_focusedVirtualViewId = INVALID_ID;
+                m_view.invalidate();
+                sendEventForVirtualViewId(viewId,
+                        AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUS_CLEARED);
+            }
+            invalidateVirtualViewId(parentId);
+        });
+    }
+
+    void notifyObjectCreated(int parentId)
+    {
+        QtNative.runAction(() -> {
+            invalidateVirtualViewId(parentId);
+        });
+    }
+
     void notifyValueChanged(int viewId)
     {
         notifyContentChanged(viewId, AccessibilityEvent.CONTENT_CHANGE_TYPE_UNDEFINED);

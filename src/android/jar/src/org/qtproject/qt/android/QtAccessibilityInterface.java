@@ -7,6 +7,8 @@ interface QtAccessibilityInterface {
     default void notifyLocationChange(int viewId) { }
     default void notifyObjectHide(int viewId, int parentId) { }
     default void notifyObjectFocus(int viewId) { }
+    default void notifyObjectDestroyed(int viewId, int parentId) { }
+    default void notifyObjectCreated(int parentId) { }
     default void notifyScrolledEvent(int viewId) { }
     default void notifyValueChanged(int viewId) { }
     default void notifyDescriptionOrNameChanged(int viewId) { }

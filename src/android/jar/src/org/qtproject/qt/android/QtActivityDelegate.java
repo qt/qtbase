@@ -251,6 +251,18 @@ class QtActivityDelegate extends QtActivityDelegateBase
     }
 
     @Override
+    public void notifyObjectDestroyed(int viewId, int parentId)
+    {
+        m_accessibilityDelegate.notifyObjectDestroyed(viewId, parentId);
+    }
+
+    @Override
+    public void notifyObjectCreated(int parentId)
+    {
+        m_accessibilityDelegate.notifyObjectCreated(parentId);
+    }
+
+    @Override
     public void notifyValueChanged(int viewId)
     {
         m_accessibilityDelegate.notifyValueChanged(viewId);
