@@ -8,7 +8,6 @@
 #include <QtCore/private/qnapi_p.h>
 #include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/qobject.h>
-#include <array>
 #include <atomic>
 #include <chrono>
 #include <cstdlib>
@@ -16,6 +15,7 @@
 #include <map>
 #include <memory>
 #include <optional>
+#include <qohosenums.h>
 #ifndef QT_NO_EXCEPTIONS
 #include <stdexcept>
 #endif
@@ -299,12 +299,7 @@ private:
     virtual QNapi::Symbol getJsSymbolForType(const std::type_info &typeInfo) = 0;
 };
 
-enum class QOhosAbilityOnContinueResult
-{
-    AGREE,
-    REJECT,
-    MISMATCH,
-};
+using QOhosAbilityOnContinueResult = enums::ohos::app::ability::AbilityConstant::OnContinueResult;
 
 class QUiAbilityPeer : public virtual QAbilityPeer, public std::enable_shared_from_this<QUiAbilityPeer>
 {
@@ -446,17 +441,6 @@ T evalInJsThreadWithPromise(
             evalFunc(jsState, QOhosTaskPromise<T>(std::move(consumer), {}, callerContextName));
         });
 }
-
-template<>
-struct OhosEnumMeta<QOhosAbilityOnContinueResult>
-{
-    static constexpr const char *fullTypeName = "@ohos.app.ability.AbilityConstant.OnContinueResult";
-    static constexpr std::array<std::pair<QOhosAbilityOnContinueResult, const char *>, 3> enumeratorsNames = {{
-        {QOhosAbilityOnContinueResult::AGREE, "AGREE"},
-        {QOhosAbilityOnContinueResult::REJECT, "REJECT"},
-        {QOhosAbilityOnContinueResult::MISMATCH, "MISMATCH"},
-    }};
-};
 
 }
 
