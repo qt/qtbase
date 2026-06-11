@@ -12,6 +12,7 @@
 #include <QtCore/qvariant.h>
 #include <QtGui/qwindow.h>
 #include <memory>
+#include <qohosenums.h>
 #include <qohosplugincore.h>
 #include <string>
 #include <vector>
@@ -43,26 +44,11 @@ struct ShareControllerAnchor
     QOhosOptional<QSize> size;
 };
 
-enum class SelectionMode
-{
-    SINGLE,
-    BATCH,
-};
+using SelectionMode = QtOhos::enums::kit::ShareKit::systemShare::SelectionMode;
 
-enum class SharePreviewMode
-{
-    DEFAULT,
-    DETAIL,
-};
+using SharePreviewMode = QtOhos::enums::kit::ShareKit::systemShare::SharePreviewMode;
 
-enum class ShareAbilityType
-{
-    COPY_TO_PASTEBOARD,
-    SAVE_TO_MEDIA_ASSET,
-    SAVE_AS_FILE,
-    PRINT,
-    SAVE_TO_SUPERHUB,
-};
+using ShareAbilityType = QtOhos::enums::kit::ShareKit::systemShare::ShareAbilityType;
 
 struct ControllerOptions
 {
@@ -81,43 +67,6 @@ std::shared_ptr<void> shareData(
     QWindow *optInstanceMainWindow, const std::vector<SharedRecord> &recordsToShare,
     ControllerOptions controllerOptions, std::function<void()> panelClosedCallback,
     QOhosConsumer<ShareOperationResult> shareCompletedCallback);
-
-}
-
-namespace QtOhos {
-
-template<>
-struct OhosEnumMeta<QOhosShareKit::SelectionMode>
-{
-    static constexpr const char *fullTypeName = "@kit.ShareKit.systemShare.SelectionMode";
-    static constexpr std::array<std::pair<QOhosShareKit::SelectionMode, const char *>, 2> enumeratorsNames = {{
-        {QOhosShareKit::SelectionMode::SINGLE, "SINGLE"},
-        {QOhosShareKit::SelectionMode::BATCH, "BATCH"},
-    }};
-};
-
-template<>
-struct OhosEnumMeta<QOhosShareKit::SharePreviewMode>
-{
-    static constexpr const char *fullTypeName = "@kit.ShareKit.systemShare.SharePreviewMode";
-    static constexpr std::array<std::pair<QOhosShareKit::SharePreviewMode, const char *>, 2> enumeratorsNames = {{
-        {QOhosShareKit::SharePreviewMode::DEFAULT, "DEFAULT"},
-        {QOhosShareKit::SharePreviewMode::DETAIL, "DETAIL"},
-    }};
-};
-
-template<>
-struct OhosEnumMeta<QOhosShareKit::ShareAbilityType>
-{
-    static constexpr const char *fullTypeName = "@kit.ShareKit.systemShare.ShareAbilityType";
-    static constexpr std::array<std::pair<QOhosShareKit::ShareAbilityType, const char *>, 5> enumeratorsNames = {{
-        {QOhosShareKit::ShareAbilityType::COPY_TO_PASTEBOARD, "COPY_TO_PASTEBOARD"},
-        {QOhosShareKit::ShareAbilityType::SAVE_TO_MEDIA_ASSET, "SAVE_TO_MEDIA_ASSET"},
-        {QOhosShareKit::ShareAbilityType::SAVE_AS_FILE, "SAVE_AS_FILE"},
-        {QOhosShareKit::ShareAbilityType::PRINT, "PRINT"},
-        {QOhosShareKit::ShareAbilityType::SAVE_TO_SUPERHUB, "SAVE_TO_SUPERHUB"},
-    }};
-};
 
 }
 
