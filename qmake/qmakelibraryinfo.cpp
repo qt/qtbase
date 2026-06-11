@@ -259,7 +259,7 @@ QString QMakeLibraryInfo::rawLocation(int loc, QMakeLibraryInfo::PathGroup group
             // loc == SysrootPath only makes sense if qmake lives inside the sysroot itself.
             if (QSettings *config = QLibraryInfoPrivate::configuration()) {
                 const QString configFileName = config->fileName();
-                if (configFileName.startsWith(QLatin1String(":/qt/etc/"))) {
+                if (configFileName.startsWith(u':')) {
                     // qt.conf is embedded as resource. We can't resolve against a resource path.
                     baseDir = QCoreApplication::applicationDirPath();
                 } else {
