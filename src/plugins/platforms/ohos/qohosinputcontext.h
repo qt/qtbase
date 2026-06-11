@@ -4,6 +4,7 @@
 #ifndef QOHOSINPUTCONTEXT_H
 #define QOHOSINPUTCONTEXT_H
 
+#include <qohosenums.h>
 #include <qohosinputmethodproxy.h>
 #include <qohosplugincore.h>
 #include <qpa/qplatforminputcontext.h>
@@ -20,44 +21,13 @@ class QOhosInputContext: public QPlatformInputContext
     Q_OBJECT
 
 public:
-    enum class RequestKeyboardReason {
-        NONE,
-        MOUSE,
-        TOUCH,
-        OTHER,
-    };
+    using RequestKeyboardReason = QtOhos::enums::ohos::inputMethod::RequestKeyboardReason;
 
-    enum class TextInputType {
-        NONE,
-        TEXT,
-        MULTILINE,
-        NUMBER,
-        PHONE,
-        DATETIME,
-        EMAIL_ADDRESS,
-        URL,
-        VISIBLE_PASSWORD,
-        NUMBER_PASSWORD,
-    };
+    using TextInputType = QtOhos::enums::ohos::inputMethod::TextInputType;
 
-    enum class EnterKeyType {
-        UNSPECIFIED,
-        NONE,
-        GO,
-        SEARCH,
-        SEND,
-        NEXT,
-        DONE,
-        PREVIOUS,
-        NEWLINE,
-    };
+    using EnterKeyType = QtOhos::enums::ohos::inputMethod::EnterKeyType;
 
-    enum class Direction {
-        CURSOR_UP,
-        CURSOR_DOWN,
-        CURSOR_LEFT,
-        CURSOR_RIGHT,
-    };
+    using Direction = QtOhos::enums::ohos::inputMethod::Direction;
 
     QOhosInputContext();
     ~QOhosInputContext();
@@ -138,69 +108,6 @@ private:
     QPointer<QObject> m_focusObject;
     QString m_pendingPreeditText;
 };
-
-namespace QtOhos {
-
-template<>
-struct OhosEnumMeta<QOhosInputContext::RequestKeyboardReason>
-{
-    static constexpr const char *fullTypeName = "@ohos.inputMethod.RequestKeyboardReason";
-    static constexpr std::array<std::pair<QOhosInputContext::RequestKeyboardReason, const char *>, 4> enumeratorsNames = {{
-        {QOhosInputContext::RequestKeyboardReason::NONE, "NONE"},
-        {QOhosInputContext::RequestKeyboardReason::MOUSE, "MOUSE"},
-        {QOhosInputContext::RequestKeyboardReason::TOUCH, "TOUCH"},
-        {QOhosInputContext::RequestKeyboardReason::OTHER, "OTHER"},
-    }};
-};
-
-template<>
-struct QtOhos::OhosEnumMeta<QOhosInputContext::TextInputType>
-{
-    static constexpr const char *fullTypeName = "@ohos.inputMethod.TextInputType";
-    static constexpr std::array<std::pair<QOhosInputContext::TextInputType, const char *>, 10> enumeratorsNames = {{
-        {QOhosInputContext::TextInputType::NONE, "NONE"},
-        {QOhosInputContext::TextInputType::TEXT, "TEXT"},
-        {QOhosInputContext::TextInputType::MULTILINE, "MULTILINE"},
-        {QOhosInputContext::TextInputType::NUMBER, "NUMBER"},
-        {QOhosInputContext::TextInputType::PHONE, "PHONE"},
-        {QOhosInputContext::TextInputType::DATETIME, "DATETIME"},
-        {QOhosInputContext::TextInputType::EMAIL_ADDRESS, "EMAIL_ADDRESS"},
-        {QOhosInputContext::TextInputType::URL, "URL"},
-        {QOhosInputContext::TextInputType::VISIBLE_PASSWORD, "VISIBLE_PASSWORD"},
-        {QOhosInputContext::TextInputType::NUMBER_PASSWORD, "NUMBER_PASSWORD"},
-    }};
-};
-
-template<>
-struct OhosEnumMeta<QOhosInputContext::EnterKeyType>
-{
-    static constexpr const char *fullTypeName = "@ohos.inputMethod.EnterKeyType";
-    static constexpr std::array<std::pair<QOhosInputContext::EnterKeyType, const char *>, 9> enumeratorsNames = {{
-        {QOhosInputContext::EnterKeyType::UNSPECIFIED, "UNSPECIFIED"},
-        {QOhosInputContext::EnterKeyType::NONE, "NONE"},
-        {QOhosInputContext::EnterKeyType::GO, "GO"},
-        {QOhosInputContext::EnterKeyType::SEARCH, "SEARCH"},
-        {QOhosInputContext::EnterKeyType::SEND, "SEND"},
-        {QOhosInputContext::EnterKeyType::NEXT, "NEXT"},
-        {QOhosInputContext::EnterKeyType::DONE, "DONE"},
-        {QOhosInputContext::EnterKeyType::PREVIOUS, "PREVIOUS"},
-        {QOhosInputContext::EnterKeyType::NEWLINE, "NEWLINE"},
-    }};
-};
-
-template<>
-struct OhosEnumMeta<QOhosInputContext::Direction>
-{
-    static constexpr const char *fullTypeName = "@ohos.inputMethod.Direction";
-    static constexpr std::array<std::pair<QOhosInputContext::Direction, const char *>, 4> enumeratorsNames = {{
-        {QOhosInputContext::Direction::CURSOR_UP, "CURSOR_UP"},
-        {QOhosInputContext::Direction::CURSOR_DOWN, "CURSOR_DOWN"},
-        {QOhosInputContext::Direction::CURSOR_LEFT, "CURSOR_LEFT"},
-        {QOhosInputContext::Direction::CURSOR_RIGHT, "CURSOR_RIGHT"},
-    }};
-};
-
-}
 
 QT_END_NAMESPACE
 

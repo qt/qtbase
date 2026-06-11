@@ -147,6 +147,49 @@ enum class DocumentSelectMode {
 
 }
 
+namespace inputMethod {
+
+enum class Direction {
+    CURSOR_UP,
+    CURSOR_DOWN,
+    CURSOR_LEFT,
+    CURSOR_RIGHT,
+};
+
+enum class EnterKeyType {
+    UNSPECIFIED,
+    NONE,
+    GO,
+    SEARCH,
+    SEND,
+    NEXT,
+    DONE,
+    PREVIOUS,
+    NEWLINE,
+};
+
+enum class RequestKeyboardReason {
+    NONE,
+    MOUSE,
+    TOUCH,
+    OTHER,
+};
+
+enum class TextInputType {
+    NONE,
+    TEXT,
+    MULTILINE,
+    NUMBER,
+    PHONE,
+    DATETIME,
+    EMAIL_ADDRESS,
+    URL,
+    VISIBLE_PASSWORD,
+    NUMBER_PASSWORD,
+};
+
+}
+
 namespace multimodalInput {
 
 namespace pointer {
@@ -384,6 +427,69 @@ struct OhosEnumMeta<enums::ohos::file::picker::DocumentSelectMode>
         {Enum::FILE, "FILE"},
         {Enum::FOLDER, "FOLDER"},
         {Enum::MIXED, "MIXED"},
+    }};
+};
+
+template<>
+struct OhosEnumMeta<enums::ohos::inputMethod::Direction>
+{
+    using Enum = enums::ohos::inputMethod::Direction;
+    static constexpr const char *fullTypeName = "@ohos.inputMethod.Direction";
+    static constexpr std::array<std::pair<Enum, const char *>, 4> enumeratorsNames = {{
+        {Enum::CURSOR_UP, "CURSOR_UP"},
+        {Enum::CURSOR_DOWN, "CURSOR_DOWN"},
+        {Enum::CURSOR_LEFT, "CURSOR_LEFT"},
+        {Enum::CURSOR_RIGHT, "CURSOR_RIGHT"},
+    }};
+};
+
+template<>
+struct OhosEnumMeta<enums::ohos::inputMethod::EnterKeyType>
+{
+    using Enum = enums::ohos::inputMethod::EnterKeyType;
+    static constexpr const char *fullTypeName = "@ohos.inputMethod.EnterKeyType";
+    static constexpr std::array<std::pair<Enum, const char *>, 9> enumeratorsNames = {{
+        {Enum::UNSPECIFIED, "UNSPECIFIED"},
+        {Enum::NONE, "NONE"},
+        {Enum::GO, "GO"},
+        {Enum::SEARCH, "SEARCH"},
+        {Enum::SEND, "SEND"},
+        {Enum::NEXT, "NEXT"},
+        {Enum::DONE, "DONE"},
+        {Enum::PREVIOUS, "PREVIOUS"},
+        {Enum::NEWLINE, "NEWLINE"},
+    }};
+};
+
+template<>
+struct OhosEnumMeta<enums::ohos::inputMethod::RequestKeyboardReason>
+{
+    using Enum = enums::ohos::inputMethod::RequestKeyboardReason;
+    static constexpr const char *fullTypeName = "@ohos.inputMethod.RequestKeyboardReason";
+    static constexpr std::array<std::pair<Enum, const char *>, 4> enumeratorsNames = {{
+        {Enum::NONE, "NONE"},
+        {Enum::MOUSE, "MOUSE"},
+        {Enum::TOUCH, "TOUCH"},
+        {Enum::OTHER, "OTHER"},
+    }};
+};
+
+template<>
+struct OhosEnumMeta<enums::ohos::inputMethod::TextInputType>
+{
+    using Enum = enums::ohos::inputMethod::TextInputType;
+    static constexpr const char *fullTypeName = "@ohos.inputMethod.TextInputType";
+    static constexpr std::array<std::pair<Enum, const char *>, 10> enumeratorsNames = {{
+        {Enum::NONE, "NONE"},
+        {Enum::TEXT, "TEXT"},
+        {Enum::MULTILINE, "MULTILINE"},
+        {Enum::NUMBER, "NUMBER"},
+        {Enum::PHONE, "PHONE"},
+        {Enum::DATETIME, "DATETIME"},
+        {Enum::EMAIL_ADDRESS, "EMAIL_ADDRESS"},
+        {Enum::URL, "URL"},
+        {Enum::VISIBLE_PASSWORD, "VISIBLE_PASSWORD"},
+        {Enum::NUMBER_PASSWORD, "NUMBER_PASSWORD"},
     }};
 };
 
