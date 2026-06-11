@@ -301,6 +301,12 @@ protected:
        for QQmlPropertyBinding (which stores further binding information there).
        Anything stored in the union must be trivially destructible.
        (checked in qproperty.cpp)
+
+       The discriminator for this union is the isQQmlPropertyBinding flag above. It has nothing to
+       do with custom vtables per se. Depending on what is stored in declarativeExtraData, you may
+       want vtable support for it, but since declarativeExtraData is well inside
+       QPropertyBindingPrivate it can be a regular vtable. In practice, QML bindings have custom
+       vtables because they store additional data _outside_ QPropertyBindingPrivate.
     */
     using DeclarativeErrorCallback = void(*)(QPropertyBindingPrivate *);
     union {
@@ -390,7 +396,7 @@ public:
 
     QPropertyBindingSourceLocation sourceLocation() const
     {
-        if (!hasCustomVTable())
+        if (!isQQmlPropertyBinding)
             return location;
         return []() {
             constexpr auto msg = "Custom location";
@@ -428,9 +434,24 @@ public:
 
     static QPropertyBindingPrivate *currentlyEvaluatingBinding();
 
+    /* In some cases we want to run the vtable's dtor _in place_ of ~QPropertBindingPrivate() rather
+       than in addition, in order to cater to special memory layouts with extra trailing fields. The
+       vtable's size member acts as flag for this. We call this a "custom" vtable. Note that you
+       could have a QML binding with a regular vtable, as well as a non-QML binding with custom
+       vtable. In practice, QML bindings have custom vtables because they store additional data
+       after QPropertyBindingPrivate.
+     */
     bool hasCustomVTable() const
     {
         return vtable->size == 0;
+    }
+
+    /* Determines whether we have a regular source location or declarativeExtraData + errorCallback.
+     * This has nothing to do with custom vtables per se.
+     */
+    bool isQmlBinding() const
+    {
+        return isQQmlPropertyBinding;
     }
 
     static void destroyAndFreeMemory(QPropertyBindingPrivate *priv) {
