@@ -16,6 +16,7 @@
 //
 
 #include <QtGui/private/qtguiglobal_p.h>
+#include <QtCore/qloggingcategory.h>
 
 QT_REQUIRE_CONFIG(xdg_desktop_portal_file_transfer);
 
