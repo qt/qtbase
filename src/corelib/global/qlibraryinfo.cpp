@@ -720,7 +720,7 @@ QString QLibraryInfoPrivate::path(QLibraryInfo::LibraryPath p)
 QStringList QLibraryInfo::platformPluginArguments(const QString &platformName)
 {
 #if QT_CONFIG(settings)
-    if (const auto settings = findConfiguration()) {
+    if (const QSettings *settings = QLibraryInfoPrivate::configuration()) {
         const QString key = "Platforms/"_L1
                 + platformName
                 + "Arguments"_L1;
