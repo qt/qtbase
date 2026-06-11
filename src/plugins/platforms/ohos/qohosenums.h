@@ -40,6 +40,13 @@ enum class ContinueState {
     INACTIVE,
 };
 
+enum class OnContinueResult
+{
+    AGREE,
+    REJECT,
+    MISMATCH,
+};
+
 enum class WindowMode
 {
     WINDOW_MODE_SPLIT_PRIMARY,
@@ -156,6 +163,18 @@ struct OhosEnumMeta<enums::ohos::app::ability::AbilityConstant::ContinueState>
     static constexpr std::array<std::pair<Enum, const char *>, 2> enumeratorsNames = {{
         {Enum::ACTIVE, "ACTIVE"},
         {Enum::INACTIVE, "INACTIVE"},
+    }};
+};
+
+template<>
+struct OhosEnumMeta<enums::ohos::app::ability::AbilityConstant::OnContinueResult>
+{
+    using Enum = enums::ohos::app::ability::AbilityConstant::OnContinueResult;
+    static constexpr const char *fullTypeName = "@ohos.app.ability.AbilityConstant.OnContinueResult";
+    static constexpr std::array<std::pair<Enum, const char *>, 3> enumeratorsNames = {{
+        {Enum::AGREE, "AGREE"},
+        {Enum::REJECT, "REJECT"},
+        {Enum::MISMATCH, "MISMATCH"},
     }};
 };
 
