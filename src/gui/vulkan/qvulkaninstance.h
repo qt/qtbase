@@ -41,6 +41,7 @@ typedef int VkFormat;
 typedef int VkImageLayout;
 typedef int VkDebugReportFlagsEXT;
 typedef int VkDebugReportObjectTypeEXT;
+typedef int VkDeviceQueueCreateFlags;
 #endif
 
 // QVulkanInstance itself is only applicable if vulkan.h is available, or if

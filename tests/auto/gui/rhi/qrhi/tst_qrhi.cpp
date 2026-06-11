@@ -848,6 +848,7 @@ void tst_QRhi::nativeHandlesImportVulkan()
         QCOMPARE(newNativeHandles->dev, nativeHandles->dev);
         QCOMPARE(newNativeHandles->gfxQueueFamilyIdx, nativeHandles->gfxQueueFamilyIdx);
         QCOMPARE(newNativeHandles->gfxQueueIdx, nativeHandles->gfxQueueIdx);
+        QCOMPARE(newNativeHandles->gfxQueueFlags, nativeHandles->gfxQueueFlags);
         QVERIFY(newNativeHandles->vmemAllocator != nativeHandles->vmemAllocator);
     }
 

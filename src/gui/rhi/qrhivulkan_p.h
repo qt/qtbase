@@ -938,6 +938,7 @@ public:
     VkCommandPool cmdPool[QVK_FRAMES_IN_FLIGHT] = {};
     quint32 gfxQueueFamilyIdx = 0;
     quint32 gfxQueueIdx = 0;
+    VkDeviceQueueCreateFlags gfxQueueFlags = 0;
     VkQueue gfxQueue = VK_NULL_HANDLE;
     quint32 timestampValidBits = 0;
     bool importedAllocator = false;

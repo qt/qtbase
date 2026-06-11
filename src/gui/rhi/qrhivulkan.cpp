@@ -251,6 +251,18 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \variable QRhiVulkanNativeHandles::gfxQueueFlags
+    \since 6.13
+
+    Graphics queue flags (VkDeviceQueueCreateFlags) or 0. Setting this to a
+    non-zero value will imply using vkGetDeviceQueue2 instead of
+    vkGetDeviceQueue.
+
+    \note This value is ignored when running with Vulkan 1.0. Non-zero queue
+    flags are introduced in Vulkan 1.1.
+*/
+
+/*!
     \variable QRhiVulkanNativeHandles::vmemAllocator
 
     Relevant only when importing an existing memory allocator object,
@@ -452,6 +464,7 @@ QRhiVulkan::QRhiVulkan(QRhiVulkanInitParams *params, QRhiVulkanNativeHandles *im
             importedDevice = true;
             gfxQueueFamilyIdx = importParams->gfxQueueFamilyIdx;
             gfxQueueIdx = importParams->gfxQueueIdx;
+            gfxQueueFlags = importParams->gfxQueueFlags;
             // gfxQueue is output only, no point in accepting it as input
             if (importParams->vmemAllocator) {
                 importedAllocator = true;
@@ -969,6 +982,16 @@ bool QRhiVulkan::create(QRhi::Flags flags)
     qCDebug(QRHI_LOG_INFO, "Using queue family index %u and queue index %u",
             gfxQueueFamilyIdx, gfxQueueIdx);
 
+#if VK_VERSION_1_1
+    if (gfxQueueFlags && caps.apiVersion >= QVersionNumber(1, 1)) {
+        VkDeviceQueueInfo2 queueInfo = {};
+        queueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_INFO_2;
+        queueInfo.flags = gfxQueueFlags;
+        queueInfo.queueFamilyIndex = gfxQueueFamilyIdx;
+        queueInfo.queueIndex = gfxQueueIdx;
+        df->vkGetDeviceQueue2(dev, &queueInfo, &gfxQueue);
+    } else
+#endif
     df->vkGetDeviceQueue(dev, gfxQueueFamilyIdx, gfxQueueIdx, &gfxQueue);
 
     if (queueFamilyProps.isEmpty())
@@ -1175,6 +1198,7 @@ bool QRhiVulkan::create(QRhi::Flags flags)
     nativeHandlesStruct.dev = dev;
     nativeHandlesStruct.gfxQueueFamilyIdx = gfxQueueFamilyIdx;
     nativeHandlesStruct.gfxQueueIdx = gfxQueueIdx;
+    nativeHandlesStruct.gfxQueueFlags = gfxQueueFlags;
     nativeHandlesStruct.gfxQueue = gfxQueue;
     nativeHandlesStruct.vmemAllocator = allocator;
     nativeHandlesStruct.inst = inst;
