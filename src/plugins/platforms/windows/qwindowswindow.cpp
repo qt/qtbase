@@ -2169,6 +2169,12 @@ void QWindowsWindow::handleDpiChanged(HWND hwnd, WPARAM wParam, LPARAM lParam)
         // after a DPI change.
         if (shouldOmitFrameAdjustment(m_data.flags, m_data.hwnd))
             handleGeometryChange();
+        // Layered windows (e.g. with Qt::WA_TranslucentBackground set) do not
+        // receive WM_PAINT and rely on explicit expose events to trigger
+        // repaints via the backing store. After a DPI change, fire a full
+        // expose to ensure the backing store is updated at the new resolution.
+        if (isLayered())
+            fireFullExpose();
     }
 
     // Re-apply mask now that we have a new DPI, which have resulted in
