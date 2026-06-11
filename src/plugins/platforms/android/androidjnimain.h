@@ -58,6 +58,8 @@ namespace QtAndroid
     void notifyObjectHide(uint accessibilityObjectId, uint parentObjectId);
     void notifyObjectShow(uint parentObjectId);
     void notifyObjectFocus(uint accessibilityObjectId);
+    void notifyObjectDestroyed(uint accessibilityObjectId, uint parentObjectId);
+    void notifyObjectCreated(uint parentObjectId);
     void notifyValueChanged(uint accessibilityObjectId);
     void notifyDescriptionOrNameChanged(uint accessibilityObjectId);
     void notifyScrolledEvent(uint accessibilityObjectId);

@@ -43,6 +43,10 @@ void QAndroidPlatformAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *
         auto *announcementEvent = static_cast<QAccessibleAnnouncementEvent *>(event);
         QtAndroidAccessibility::notifyAnnouncementEvent(announcementEvent->uniqueId(),
                                                         announcementEvent->message());
+    } else if (event->type() == QAccessible::ObjectDestroyed) {
+        QtAndroidAccessibility::notifyObjectDestroyed(event->uniqueId());
+    } else if (event->type() == QAccessible::ObjectCreated) {
+        QtAndroidAccessibility::notifyObjectCreated(event->uniqueId());
     }
     // Text-change events are intentionally not forwarded from here: typed and
     // programmatic edits are announced from the IME chokepoints in

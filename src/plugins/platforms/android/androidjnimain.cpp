@@ -209,6 +209,18 @@ namespace QtAndroid
                 "notifyObjectFocus", accessibilityObjectId);
     }
 
+    void notifyObjectDestroyed(uint accessibilityObjectId, uint parentObjectId)
+    {
+        m_backendRegister->callInterface<QtJniTypes::QtAccessibilityInterface, void>(
+                "notifyObjectDestroyed", accessibilityObjectId, parentObjectId);
+    }
+
+    void notifyObjectCreated(uint parentObjectId)
+    {
+        m_backendRegister->callInterface<QtJniTypes::QtAccessibilityInterface, void>(
+                "notifyObjectCreated", parentObjectId);
+    }
+
     void notifyValueChanged(uint accessibilityObjectId)
     {
         m_backendRegister->callInterface<QtJniTypes::QtAccessibilityInterface, void>(

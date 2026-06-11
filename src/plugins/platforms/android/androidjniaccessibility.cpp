@@ -181,6 +181,17 @@ namespace QtAndroidAccessibility
         QtAndroid::notifyObjectFocus(accessibilityObjectId);
     }
 
+    void notifyObjectDestroyed(uint accessibilityObjectId)
+    {
+        QtAndroid::notifyObjectDestroyed(accessibilityObjectId,
+                                         parentId_helper(accessibilityObjectId));
+    }
+
+    void notifyObjectCreated(uint accessibilityObjectId)
+    {
+        QtAndroid::notifyObjectCreated(parentId_helper(accessibilityObjectId));
+    }
+
     void notifyValueChanged(uint accessibilityObjectId)
     {
         QtAndroid::notifyValueChanged(accessibilityObjectId);
