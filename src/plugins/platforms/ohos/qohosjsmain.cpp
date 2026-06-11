@@ -97,6 +97,8 @@ constexpr const char *enableHotStartEnvVariableName = "IO__QT__OHOS__ENABLE_HOT_
 
 constexpr const char *qtMainThreadStackSizeEnvVariableName = "IO__QT__OHOS__QT_MAIN_THREAD_STACK_SIZE";
 
+constexpr std::size_t defaultQtThreadStackSize = 8 * 1024 * 1024;
+
 constexpr auto minSupportedOhosSdkApiVersion = 20;
 constexpr auto defaultColorMode = enums::ohos::app::ability::ConfigurationConstant::ColorMode::COLOR_MODE_NOT_SET;
 
@@ -616,42 +618,50 @@ QOhosOptional<std::size_t> tryGetMaxStackSizeHardLimit()
         : makeEmptyQOhosOptional();
 }
 
-QOhosOptional<std::size_t> tryGetPreferredStackSizeForQtThread()
+QOhosOptional<std::size_t> tryGetQtThreadStackSizeFromEnv()
 {
     int stackSizeFromEnv = qEnvironmentVariableIntValue(qtMainThreadStackSizeEnvVariableName);
-    if (stackSizeFromEnv <= 0)
-        return {};
+    return stackSizeFromEnv > 0
+        ? makeQOhosOptional(static_cast<std::size_t>(stackSizeFromEnv))
+        : makeEmptyQOhosOptional();
+}
 
-    std::size_t requestedStackSize = stackSizeFromEnv;
-
+std::size_t getPreferredStackSizeForQtThread()
+{
     constexpr std::size_t qtRequiredMinStackSize = 40960;
     std::size_t pthreadStackMin = PTHREAD_STACK_MIN;
     auto minStackSize = std::max({qtRequiredMinStackSize, pthreadStackMin});
-    if (requestedStackSize < minStackSize) {
-        qOhosPrintfWarning(
-            "%s: requested stack size (%zu) is below minimum (pthread min: %zu, Qt min: %zu), increasing",
-            Q_FUNC_INFO, requestedStackSize, pthreadStackMin, qtRequiredMinStackSize);
-    }
-
     auto maxStackSize = tryGetMaxStackSizeHardLimit().valueOr(std::numeric_limits<std::size_t>::max());
-    if (requestedStackSize > maxStackSize) {
-        qOhosPrintfWarning(
-            "%s: requested stack size (%zu) is above maximum (hard limit: %zu), decreasing",
-            Q_FUNC_INFO, requestedStackSize, maxStackSize);
+
+    auto optRequestedStackSize = tryGetQtThreadStackSizeFromEnv();
+
+    if (optRequestedStackSize.hasValue()) {
+        auto requestedStackSize = optRequestedStackSize.value();
+        if (requestedStackSize < minStackSize) {
+            qOhosPrintfWarning(
+                "%s: requested stack size (%zu) is below minimum (pthread min: %zu, Qt min: %zu), increasing",
+                Q_FUNC_INFO, requestedStackSize, pthreadStackMin, qtRequiredMinStackSize);
+        }
+        if (requestedStackSize > maxStackSize) {
+            qOhosPrintfWarning(
+                "%s: requested stack size (%zu) is above maximum (hard limit: %zu), decreasing",
+                Q_FUNC_INFO, requestedStackSize, maxStackSize);
+        }
     }
 
-    auto preferredStackSize = qBound(minStackSize, requestedStackSize, maxStackSize);
+    auto preferredStackSize = qBound(
+        minStackSize, optRequestedStackSize.valueOr(defaultQtThreadStackSize), maxStackSize);
 
     qOhosPrintfInfo("%s: preferred stack size for Qt Thread: %zu", Q_FUNC_INFO, preferredStackSize);
 
-    return makeQOhosOptional(preferredStackSize);
+    return preferredStackSize;
 }
 
 QOhosConsumer<std::vector<std::string>> makeQtThreadWithMainFuncLauncher(
     QOhosConsumer<std::vector<std::string>> baseMainFuncLauncher)
 {
     SingleThreadExecutorConfig qtThreadExecutorConfig = {
-        .threadPreferredStackSize = tryGetPreferredStackSizeForQtThread(),
+        .threadPreferredStackSize = makeQOhosOptional(getPreferredStackSizeForQtThread()),
     };
     auto qtThreadExecutor = makeSingleThreadExecutor(qtThreadExecutorConfig);
 
