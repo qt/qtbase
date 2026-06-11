@@ -3,10 +3,14 @@
 
 #include "qxdgdesktopportalfiletransfer_p.h"
 
+#include <QtCore/QFile>
 #include <QtCore/QMap>
+#include <QtCore/QUrl>
 #include <QtCore/QVariant>
+#include <QtDBus/QDBusConnection>
 #include <QtDBus/QDBusMessage>
 #include <QtDBus/QDBusReply>
+#include <QtDBus/QDBusUnixFileDescriptor>
 
 #include <unistd.h>
 #include <fcntl.h>
