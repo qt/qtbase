@@ -1563,6 +1563,13 @@ bool QFile::copy(const QString &fileName, const QString &newName)
 
 #include "qobjectdefs.h"    // uses QT_CORE_INLINE_SINCE
 
+#include "qproperty.h"
+
+QUntypedPropertyBinding::QUntypedPropertyBinding(QPropertyBindingPrivate *priv)
+    : QUntypedPropertyBinding(static_cast<void *>(priv))
+{
+}
+
 #if QT_CONFIG(thread)
 #include "qreadwritelock.h"
 

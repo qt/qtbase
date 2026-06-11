@@ -483,8 +483,8 @@ QUntypedPropertyBinding &QUntypedPropertyBinding::operator=(QUntypedPropertyBind
 /*!
    \internal
 */
-QUntypedPropertyBinding::QUntypedPropertyBinding(QPropertyBindingPrivate *priv)
-    : d(priv)
+QUntypedPropertyBinding::QUntypedPropertyBinding(void *priv)
+    : d(static_cast<QPropertyBindingPrivate *>(priv))
 {
 }
 
@@ -557,10 +557,10 @@ QUntypedPropertyBinding QPropertyBindingData::setBinding(const QUntypedPropertyB
     auto &data = d_ref();
     if (auto *existingBinding = d.binding()) {
         if (existingBinding == newBinding.data())
-            return QUntypedPropertyBinding(static_cast<QPropertyBindingPrivate *>(oldBinding.data()));
+            return QUntypedPropertyBinding(oldBinding.data());
         if (existingBinding->isUpdating()) {
             existingBinding->setError({QPropertyBindingError::BindingLoop, QStringLiteral("Binding set during binding evaluation!")});
-            return QUntypedPropertyBinding(static_cast<QPropertyBindingPrivate *>(oldBinding.data()));
+            return QUntypedPropertyBinding(oldBinding.data());
         }
         oldBinding = QPropertyBindingPrivatePtr(existingBinding);
         observer = static_cast<QPropertyBindingPrivate *>(oldBinding.data())->takeObservers();
@@ -592,7 +592,7 @@ QUntypedPropertyBinding QPropertyBindingData::setBinding(const QUntypedPropertyB
     if (oldBinding)
         static_cast<QPropertyBindingPrivate *>(oldBinding.data())->detachFromProperty();
 
-    return QUntypedPropertyBinding(static_cast<QPropertyBindingPrivate *>(oldBinding.data()));
+    return QUntypedPropertyBinding(oldBinding.data());
 }
 
 QPropertyBindingData::QPropertyBindingData(QPropertyBindingData &&other) : d_ptr(std::exchange(other.d_ptr, 0))
@@ -2568,7 +2568,7 @@ void setter(QUntypedPropertyData *d, const void *value)
 QUntypedPropertyBinding getBinding(const QUntypedPropertyData *d)
 {
     auto adaptor = static_cast<const QtPrivate::QPropertyAdaptorSlotObject *>(d);
-    return QUntypedPropertyBinding(adaptor->bindingData().binding());
+    return QPropertyBindingPrivate::makeUntyped(adaptor->bindingData().binding());
 }
 
 bool bindingWrapper(QMetaType type, QUntypedPropertyData *d,
