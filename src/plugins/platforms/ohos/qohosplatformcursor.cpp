@@ -4,7 +4,6 @@
 
 #include "qohosplatformcursor.h"
 #include "qohosplatformintegration.h"
-#include "qohospointerstyle.h"
 #include "qohosfloatingwindow.h"
 #include "qohosinputmethodeventhandler.h"
 #include <QtGui/private/qhighdpiscaling_p.h>

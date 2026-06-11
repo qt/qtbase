@@ -70,7 +70,6 @@ qt_internal_add_plugin(QOhosPlatformIntegrationPlugin
         qohosplatformtheme.cpp qohosplatformtheme.h
         qohosplatformwindow.cpp qohosplatformwindow.h
         qohosplugincore.cpp qohosplugincore.h
-        qohospointerstyle.h
         qohosqabilityinstancesmanager.cpp qohosqabilityinstancesmanager.h
         qohosqpafunctionsimpl.cpp qohosqpafunctions_p.h
         qohossharekit.cpp qohossharekit.h
