@@ -1662,6 +1662,8 @@ qt_internal_extend_target(Core
         "_ZN*20QFutureInterfaceBase15setContinuationE*27QFutureInterfaceBasePrivate*"
         # QReadWriteLock::destroyRecursive(QReadWriteLockPrivate*)
         "_ZN*14QReadWriteLock16destroyRecursiveEP*21QReadWriteLockPrivate*"
+        # QUntypedPropertyBinding::QUntypedPropertyBinding(QPropertyBindingPrivate*)
+        "_ZN*23QUntypedPropertyBindingC1EP*23QPropertyBindingPrivate"
 )
 
 function(qt_internal_library_deprecation_level)
