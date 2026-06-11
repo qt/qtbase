@@ -1548,7 +1548,7 @@ qt_feature_definition("undogroup" "QT_NO_UNDOGROUP" NEGATE VALUE "1")
 qt_feature("wayland" PUBLIC
     SECTION "Platform plugins"
     LABEL "Wayland"
-    CONDITION TARGET Wayland::Client
+    CONDITION TARGET Wayland::Client AND NOT QNX
 )
 qt_feature("waylandscanner" PUBLIC
     SECTION "Wayland Scanner tool"
