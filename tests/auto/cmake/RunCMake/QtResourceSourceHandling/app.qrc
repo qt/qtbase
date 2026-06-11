@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/test">
+        <file>app.qrc</file>
+    </qresource>
+</RCC>

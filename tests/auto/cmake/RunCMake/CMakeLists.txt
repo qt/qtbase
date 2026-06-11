@@ -2,6 +2,7 @@
 
 qt_internal_add_RunCMake_test(QtFlagHandlingHelpers)
 qt_internal_add_RunCMake_test(QtPrlHelpers)
+qt_internal_add_RunCMake_test(QtResourceSourceHandling)
 
 qt_internal_add_RunCMake_test(AutomocParser)
 

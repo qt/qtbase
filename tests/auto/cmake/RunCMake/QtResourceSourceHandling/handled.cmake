@@ -1,0 +1,5 @@
+include(setup.cmake)
+qt_add_library(qrc_diag_lib STATIC)
+qt_add_resources(qrc_diag_lib_resources app.qrc)
+target_sources(qrc_diag_lib PRIVATE app.qrc ${qrc_diag_lib_resources})
+target_link_libraries(qrc_diag_lib PRIVATE Qt6::Core)

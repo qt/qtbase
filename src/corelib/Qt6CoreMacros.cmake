@@ -373,7 +373,10 @@ function(qt6_add_binary_resources target )
         get_filename_component(infile ${it} ABSOLUTE)
 
         _qt6_parse_qrc_file(${infile} _out_depends _rc_depends)
-        set_source_files_properties(${infile} PROPERTIES SKIP_AUTORCC ON)
+        set_source_files_properties(${infile} PROPERTIES
+            SKIP_AUTORCC ON
+            _qt_resource_file_handled ON
+        )
         set(infiles ${infiles} ${infile})
         set(out_depends ${out_depends} ${_out_depends})
         set(rc_depends ${rc_depends} ${_rc_depends})
@@ -472,7 +475,10 @@ function(qt6_add_resources outfiles )
             set(outfile ${CMAKE_CURRENT_BINARY_DIR}/qrc_${outfilename}.cpp)
 
             _qt6_parse_qrc_file(${infile} _out_depends _rc_depends)
-            set_source_files_properties(${infile} PROPERTIES SKIP_AUTORCC ON)
+            set_source_files_properties(${infile} PROPERTIES
+                SKIP_AUTORCC ON
+                _qt_resource_file_handled ON
+            )
 
             add_custom_command(OUTPUT ${outfile}
                                COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::rcc
@@ -566,7 +572,10 @@ function(qt6_add_big_resources outfiles )
         set(outfile ${CMAKE_CURRENT_BINARY_DIR}/qrc_${outfilename}.o)
 
         _qt6_parse_qrc_file(${infile} _out_depends _rc_depends)
-        set_source_files_properties(${infile} PROPERTIES SKIP_AUTOGEN ON)
+        set_source_files_properties(${infile} PROPERTIES
+            SKIP_AUTOGEN ON
+            _qt_resource_file_handled ON
+        )
         add_custom_command(OUTPUT ${tmpoutfile}
                            COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::rcc ${rcc_options} --name ${outfilename} --pass 1 --output ${tmpoutfile} ${infile}
                            DEPENDS ${infile} ${_rc_depends} "${out_depends}" ${QT_CMAKE_EXPORT_NAMESPACE}::rcc
@@ -944,6 +953,8 @@ function(qt6_finalize_target target)
             qt6_extract_metatypes(${target})
         endif()
     endif()
+
+    _qt_internal_warn_unhandled_qrc_sources(${target})
 
     set_target_properties(${target} PROPERTIES _qt_is_finalized TRUE)
 endfunction()
@@ -2216,6 +2227,82 @@ function(__qt_propagate_generated_resource target resource_name generated_source
     endif()
 
     target_sources(${target} PRIVATE ${generated_source_code})
+endfunction()
+
+# At finalization, find .qrc files that are listed as target sources but on
+# which rcc will not run, and warn that their resources will be missing at
+# runtime. This catches the common trap of adding a .qrc as a target source,
+# e.g. qt_add_executable(app main.cpp app.qrc), without enabling AUTORCC or
+# passing the file through qt_add_resources().
+#
+# A .qrc in SOURCES does NOT warn when:
+#  - it was consumed by a Qt resource function (_qt_resource_file_handled),
+#  - it is marked HEADER_FILE_ONLY, i.e. listed only for IDE visibility. This
+#    also covers the .qrc that qt_add_resources(FILES ...) generates and exposes
+#    to IDEs, which is added to SOURCES as HEADER_FILE_ONLY,
+#  - AUTORCC is enabled for the target and the file is not SKIP_AUTORCC, so rcc
+#    runs on it via AUTORCC.
+#
+# The warning can be silenced per file by marking the .qrc HEADER_FILE_ONLY, or
+# for a whole scope via the QT_NO_UNHANDLED_QRC_SOURCE_WARNING variable.
+function(_qt_internal_warn_unhandled_qrc_sources target)
+    if(QT_NO_UNHANDLED_QRC_SOURCE_WARNING)
+        return()
+    endif()
+
+    get_target_property(sources ${target} SOURCES)
+    if(NOT sources)
+        return()
+    endif()
+
+    get_target_property(target_autorcc ${target} AUTORCC)
+    set(scope_args TARGET_DIRECTORY ${target})
+    set(unhandled_qrc_files "")
+
+    foreach(source IN LISTS sources)
+        string(GENEX_STRIP "${source}" source)
+        if(NOT source MATCHES "\\.qrc$")
+            continue()
+        endif()
+
+        get_source_file_property(handled "${source}" ${scope_args} _qt_resource_file_handled)
+        if(handled)
+            continue()
+        endif()
+
+        # Listed only for IDE visibility (this includes the .qrc that
+        # qt_add_resources(FILES ...) generates). rcc is not expected to run.
+        get_source_file_property(header_only "${source}" ${scope_args} HEADER_FILE_ONLY)
+        if(header_only)
+            continue()
+        endif()
+
+        # With AUTORCC enabled, rcc runs on the .qrc unless it opts out via
+        # SKIP_AUTORCC.
+        if(target_autorcc)
+            get_source_file_property(skip_autorcc "${source}" ${scope_args} SKIP_AUTORCC)
+            if(NOT skip_autorcc)
+                continue()
+            endif()
+        endif()
+
+        list(APPEND unhandled_qrc_files "${source}")
+    endforeach()
+
+    if(NOT unhandled_qrc_files)
+        return()
+    endif()
+
+    list(JOIN unhandled_qrc_files "\n  " qrc_file_list)
+    message(WARNING
+        "Target '${target}' lists the following .qrc file(s) as sources, but rcc "
+        "will not run on them, so their resources will be missing at runtime:\n"
+        "  ${qrc_file_list}\n"
+        "Pass them to qt_add_resources(), enable CMAKE_AUTORCC, or - if a file is "
+        "listed only for IDE visibility - mark it with the HEADER_FILE_ONLY "
+        "source file property. Set QT_NO_UNHANDLED_QRC_SOURCE_WARNING to silence "
+        "this warning."
+    )
 endfunction()
 
 function(__qt_internal_sanitize_resource_name out_var name)
