@@ -8,6 +8,7 @@
 #include <QtCore/private/qnapi_p.h>
 #include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/qstring.h>
+#include <qohosenums.h>
 #include <qohosplugincore.h>
 #include <qohosutils.h>
 #include <qpa/qplatformscreen.h>
@@ -16,22 +17,9 @@ QT_BEGIN_NAMESPACE
 
 struct QOhosDisplayInfo
 {
-    enum class JsDisplayOrientation
-    {
-        PORTRAIT,
-        LANDSCAPE,
-        PORTRAIT_INVERTED,
-        LANDSCAPE_INVERTED,
-    };
+    using JsDisplayOrientation = QtOhos::enums::ohos::display::Orientation;
 
-    enum class DisplaySourceMode
-    {
-        NONE,
-        MAIN,
-        MIRROR,
-        EXTEND,
-        ALONE,
-    };
+    using DisplaySourceMode = QtOhos::enums::ohos::display::DisplaySourceMode;
 
     using JsDisplayId = QtOhos::TypedId<double, struct JsDisplayIdTag>;
 
@@ -55,41 +43,9 @@ struct QOhosDisplayInfo
     bool isDisplayMainOrExtended() const;
 };
 
-namespace QtOhos
-{
-
-template<>
-struct OhosEnumMeta<QOhosDisplayInfo::JsDisplayOrientation>
-{
-    static constexpr const char *fullTypeName = "@ohos.display.Orientation";
-    static constexpr std::array<std::pair<QOhosDisplayInfo::JsDisplayOrientation, const char*>, 4> enumeratorsNames = {{
-        {QOhosDisplayInfo::JsDisplayOrientation::PORTRAIT, "PORTRAIT"},
-        {QOhosDisplayInfo::JsDisplayOrientation::LANDSCAPE, "LANDSCAPE"},
-        {QOhosDisplayInfo::JsDisplayOrientation::PORTRAIT_INVERTED, "PORTRAIT_INVERTED"},
-        {QOhosDisplayInfo::JsDisplayOrientation::LANDSCAPE_INVERTED, "LANDSCAPE_INVERTED"},
-    }};
-};
-
-template<>
-struct OhosEnumMeta<QOhosDisplayInfo::DisplaySourceMode>
-{
-    static constexpr const char *fullTypeName = "@ohos.display.DisplaySourceMode";
-    static constexpr std::array<std::pair<QOhosDisplayInfo::DisplaySourceMode, const char*>, 5> enumeratorsNames = {{
-        {QOhosDisplayInfo::DisplaySourceMode::NONE, "NONE"},
-        {QOhosDisplayInfo::DisplaySourceMode::MAIN, "MAIN"},
-        {QOhosDisplayInfo::DisplaySourceMode::MIRROR, "MIRROR"},
-        {QOhosDisplayInfo::DisplaySourceMode::EXTEND, "EXTEND"},
-        {QOhosDisplayInfo::DisplaySourceMode::ALONE, "ALONE"},
-    }};
-};
-
-}
-
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QOhosDisplayInfo))
 Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QOhosDisplayInfo::JsDisplayId));
-Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QOhosDisplayInfo::JsDisplayOrientation));
-Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QOhosDisplayInfo::DisplaySourceMode));
 
 #endif

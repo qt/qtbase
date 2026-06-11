@@ -5,6 +5,7 @@
 #define QOHOSENUMS_H
 
 #include <QtCore/qglobal.h>
+#include <QtCore/qmetatype.h>
 #include <array>
 #include <info/application_target_sdk_version.h>
 
@@ -108,6 +109,27 @@ enum class SupportWindowMode
 };
 
 }
+
+}
+
+namespace display {
+
+enum class DisplaySourceMode
+{
+    NONE,
+    MAIN,
+    MIRROR,
+    EXTEND,
+    ALONE,
+};
+
+enum class Orientation
+{
+    PORTRAIT,
+    LANDSCAPE,
+    PORTRAIT_INVERTED,
+    LANDSCAPE_INVERTED,
+};
 
 }
 
@@ -327,6 +349,33 @@ struct OhosEnumMeta<enums::ohos::bundle::bundleManager::SupportWindowMode>
 };
 
 template<>
+struct OhosEnumMeta<enums::ohos::display::DisplaySourceMode>
+{
+    using Enum = enums::ohos::display::DisplaySourceMode;
+    static constexpr const char *fullTypeName = "@ohos.display.DisplaySourceMode";
+    static constexpr std::array<std::pair<Enum, const char*>, 5> enumeratorsNames = {{
+        {Enum::NONE, "NONE"},
+        {Enum::MAIN, "MAIN"},
+        {Enum::MIRROR, "MIRROR"},
+        {Enum::EXTEND, "EXTEND"},
+        {Enum::ALONE, "ALONE"},
+    }};
+};
+
+template<>
+struct OhosEnumMeta<enums::ohos::display::Orientation>
+{
+    using Enum = enums::ohos::display::Orientation;
+    static constexpr const char *fullTypeName = "@ohos.display.Orientation";
+    static constexpr std::array<std::pair<Enum, const char*>, 4> enumeratorsNames = {{
+        {Enum::PORTRAIT, "PORTRAIT"},
+        {Enum::LANDSCAPE, "LANDSCAPE"},
+        {Enum::PORTRAIT_INVERTED, "PORTRAIT_INVERTED"},
+        {Enum::LANDSCAPE_INVERTED, "LANDSCAPE_INVERTED"},
+    }};
+};
+
+template<>
 struct OhosEnumMeta<enums::ohos::file::picker::DocumentSelectMode>
 {
     using Enum = enums::ohos::file::picker::DocumentSelectMode;
@@ -420,5 +469,8 @@ struct OhosEnumMeta<enums::ohos::window::WindowCreateParams::AnimationType>
 }
 
 QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::display::DisplaySourceMode));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::display::Orientation));
 
 #endif
