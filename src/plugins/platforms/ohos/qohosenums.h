@@ -261,6 +261,39 @@ enum class ContentType {
 
 namespace window {
 
+enum class AvoidAreaType
+{
+    TYPE_SYSTEM,
+    TYPE_CUTOUT,
+    TYPE_SYSTEM_GESTURE,
+    TYPE_KEYBOARD,
+    TYPE_NAVIGATION_INDICATOR,
+};
+
+enum class MaximizePresentation
+{
+    FOLLOW_APP_IMMERSIVE_SETTING,
+    EXIT_IMMERSIVE,
+    ENTER_IMMERSIVE,
+};
+
+enum class ModalityType
+{
+    WINDOW_MODALITY,
+    APPLICATION_MODALITY,
+};
+
+enum class RectChangeReason
+{
+    UNDEFINED,
+    MAXIMIZE,
+    RECOVER,
+    MOVE,
+    DRAG,
+    DRAG_START,
+    DRAG_END,
+};
+
 namespace WindowCreateParams {
 
 enum class AnimationType
@@ -269,6 +302,25 @@ enum class AnimationType
 };
 
 }
+
+enum class WindowEventType
+{
+    WINDOW_SHOWN,
+    WINDOW_ACTIVE,
+    WINDOW_INACTIVE,
+    WINDOW_HIDDEN,
+    WINDOW_DESTROYED,
+};
+
+enum class WindowStatusType
+{
+    UNDEFINED,
+    FULL_SCREEN,
+    MAXIMIZE,
+    MINIMIZE,
+    FLOATING,
+    SPLIT_SCREEN,
+};
 
 }
 
@@ -563,6 +615,59 @@ struct OhosEnumMeta<enums::ohos::notificationManager::ContentType>
 };
 
 template<>
+struct OhosEnumMeta<enums::ohos::window::AvoidAreaType>
+{
+    using Enum = enums::ohos::window::AvoidAreaType;
+    static constexpr const char *fullTypeName = "@ohos.window.AvoidAreaType";
+    static constexpr std::array<std::pair<Enum, const char *>, 5> enumeratorsNames = {{
+        {Enum::TYPE_SYSTEM, "TYPE_SYSTEM"},
+        {Enum::TYPE_CUTOUT, "TYPE_CUTOUT"},
+        {Enum::TYPE_SYSTEM_GESTURE, "TYPE_SYSTEM_GESTURE"},
+        {Enum::TYPE_KEYBOARD, "TYPE_KEYBOARD"},
+        {Enum::TYPE_NAVIGATION_INDICATOR, "TYPE_NAVIGATION_INDICATOR"},
+    }};
+};
+
+template<>
+struct OhosEnumMeta<enums::ohos::window::MaximizePresentation>
+{
+    using Enum = enums::ohos::window::MaximizePresentation;
+    static constexpr const char *fullTypeName = "@ohos.window.MaximizePresentation";
+    static constexpr std::array<std::pair<Enum, const char *>, 3> enumeratorsNames = {{
+        {Enum::FOLLOW_APP_IMMERSIVE_SETTING, "FOLLOW_APP_IMMERSIVE_SETTING"},
+        {Enum::EXIT_IMMERSIVE, "EXIT_IMMERSIVE"},
+        {Enum::ENTER_IMMERSIVE, "ENTER_IMMERSIVE"},
+    }};
+};
+
+template<>
+struct OhosEnumMeta<enums::ohos::window::ModalityType>
+{
+    using Enum = enums::ohos::window::ModalityType;
+    static constexpr const char *fullTypeName = "@ohos.window.ModalityType";
+    static constexpr std::array<std::pair<Enum, const char *>, 2> enumeratorsNames = {{
+        {Enum::WINDOW_MODALITY, "WINDOW_MODALITY"},
+        {Enum::APPLICATION_MODALITY, "APPLICATION_MODALITY"},
+    }};
+};
+
+template<>
+struct OhosEnumMeta<enums::ohos::window::RectChangeReason>
+{
+    using Enum = enums::ohos::window::RectChangeReason;
+    static constexpr const char *fullTypeName = "@ohos.window.RectChangeReason";
+    static constexpr std::array<std::pair<Enum, const char *>, 7> enumeratorsNames = {{
+        {Enum::UNDEFINED, "UNDEFINED"},
+        {Enum::MAXIMIZE, "MAXIMIZE"},
+        {Enum::RECOVER, "RECOVER"},
+        {Enum::MOVE, "MOVE"},
+        {Enum::DRAG, "DRAG"},
+        {Enum::DRAG_START, "DRAG_START"},
+        {Enum::DRAG_END, "DRAG_END"},
+    }};
+};
+
+template<>
 struct OhosEnumMeta<enums::ohos::window::WindowCreateParams::AnimationType>
 {
     using Enum = enums::ohos::window::WindowCreateParams::AnimationType;
@@ -572,11 +677,41 @@ struct OhosEnumMeta<enums::ohos::window::WindowCreateParams::AnimationType>
     }};
 };
 
+template<>
+struct OhosEnumMeta<enums::ohos::window::WindowEventType>
+{
+    using Enum = enums::ohos::window::WindowEventType;
+    static constexpr const char *fullTypeName = "@ohos.window.WindowEventType";
+    static constexpr std::array<std::pair<Enum, const char *>, 5> enumeratorsNames = {{
+        {Enum::WINDOW_SHOWN, "WINDOW_SHOWN"},
+        {Enum::WINDOW_ACTIVE, "WINDOW_ACTIVE"},
+        {Enum::WINDOW_INACTIVE, "WINDOW_INACTIVE"},
+        {Enum::WINDOW_HIDDEN, "WINDOW_HIDDEN"},
+        {Enum::WINDOW_DESTROYED, "WINDOW_DESTROYED"},
+    }};
+};
+
+template<>
+struct OhosEnumMeta<enums::ohos::window::WindowStatusType>
+{
+    using Enum = enums::ohos::window::WindowStatusType;
+    static constexpr const char *fullTypeName = "@ohos.window.WindowStatusType";
+    static constexpr std::array<std::pair<Enum, const char *>, 6> enumeratorsNames = {{
+        {Enum::UNDEFINED, "UNDEFINED"},
+        {Enum::FULL_SCREEN, "FULL_SCREEN"},
+        {Enum::MAXIMIZE, "MAXIMIZE"},
+        {Enum::MINIMIZE, "MINIMIZE"},
+        {Enum::FLOATING, "FLOATING"},
+        {Enum::SPLIT_SCREEN, "SPLIT_SCREEN"},
+    }};
+};
+
 }
 
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::display::DisplaySourceMode));
 Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::display::Orientation));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::window::AvoidAreaType));
 
 #endif

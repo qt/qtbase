@@ -16,7 +16,6 @@
 #include <QtGui/qcolor.h>
 #include <QtGui/qeventpoint.h>
 #include <QtGui/qwindow.h>
-#include <array>
 #include <functional>
 #include <cstdint>
 #include <memory>
@@ -35,57 +34,17 @@ QT_BEGIN_NAMESPACE
 class QOhosWindowProxy final
 {
 public:
-    enum class WindowEventType
-    {
-        WINDOW_SHOWN,
-        WINDOW_ACTIVE,
-        WINDOW_INACTIVE,
-        WINDOW_HIDDEN,
-        WINDOW_DESTROYED,
-    };
+    using WindowEventType = QtOhos::enums::ohos::window::WindowEventType;
 
-    enum class WindowStatusType
-    {
-        UNDEFINED,
-        FULL_SCREEN,
-        MAXIMIZE,
-        MINIMIZE,
-        FLOATING,
-        SPLIT_SCREEN,
-    };
+    using WindowStatusType = QtOhos::enums::ohos::window::WindowStatusType;
 
-    enum class AvoidAreaType
-    {
-        TYPE_SYSTEM,
-        TYPE_CUTOUT,
-        TYPE_SYSTEM_GESTURE,
-        TYPE_KEYBOARD,
-        TYPE_NAVIGATION_INDICATOR,
-    };
+    using AvoidAreaType = QtOhos::enums::ohos::window::AvoidAreaType;
 
-    enum class RectChangeReason
-    {
-        UNDEFINED,
-        MAXIMIZE,
-        RECOVER,
-        MOVE,
-        DRAG,
-        DRAG_START,
-        DRAG_END,
-    };
+    using RectChangeReason = QtOhos::enums::ohos::window::RectChangeReason;
 
-    enum class MaximizePresentation
-    {
-        FOLLOW_APP_IMMERSIVE_SETTING,
-        EXIT_IMMERSIVE,
-        ENTER_IMMERSIVE,
-    };
+    using MaximizePresentation = QtOhos::enums::ohos::window::MaximizePresentation;
 
-    enum class ModalityType
-    {
-        WINDOW_MODALITY,
-        APPLICATION_MODALITY,
-    };
+    using ModalityType = QtOhos::enums::ohos::window::ModalityType;
 
     struct WindowEvent
     {
@@ -335,93 +294,11 @@ private:
     std::shared_ptr<void> m_qtNonClientAreaTouchWindowCallbackReceiverHandle;
 };
 
-namespace QtOhos
-{
-
-template<>
-struct OhosEnumMeta<QOhosWindowProxy::WindowEventType>
-{
-    static constexpr const char *fullTypeName = "@ohos.window.WindowEventType";
-    static constexpr std::array<std::pair<QOhosWindowProxy::WindowEventType, const char *>, 5> enumeratorsNames = {{
-        {QOhosWindowProxy::WindowEventType::WINDOW_SHOWN, "WINDOW_SHOWN"},
-        {QOhosWindowProxy::WindowEventType::WINDOW_ACTIVE, "WINDOW_ACTIVE"},
-        {QOhosWindowProxy::WindowEventType::WINDOW_INACTIVE, "WINDOW_INACTIVE"},
-        {QOhosWindowProxy::WindowEventType::WINDOW_HIDDEN, "WINDOW_HIDDEN"},
-        {QOhosWindowProxy::WindowEventType::WINDOW_DESTROYED, "WINDOW_DESTROYED"},
-    }};
-};
-
-template<>
-struct OhosEnumMeta<QOhosWindowProxy::AvoidAreaType>
-{
-    static constexpr const char *fullTypeName = "@ohos.window.AvoidAreaType";
-    static constexpr std::array<std::pair<QOhosWindowProxy::AvoidAreaType, const char *>, 5> enumeratorsNames = {{
-        {QOhosWindowProxy::AvoidAreaType::TYPE_SYSTEM, "TYPE_SYSTEM"},
-        {QOhosWindowProxy::AvoidAreaType::TYPE_CUTOUT, "TYPE_CUTOUT"},
-        {QOhosWindowProxy::AvoidAreaType::TYPE_SYSTEM_GESTURE, "TYPE_SYSTEM_GESTURE"},
-        {QOhosWindowProxy::AvoidAreaType::TYPE_KEYBOARD, "TYPE_KEYBOARD"},
-        {QOhosWindowProxy::AvoidAreaType::TYPE_NAVIGATION_INDICATOR, "TYPE_NAVIGATION_INDICATOR"},
-    }};
-};
-
-template <>
-struct OhosEnumMeta<QOhosWindowProxy::RectChangeReason>
-{
-    static constexpr const char *fullTypeName = "@ohos.window.RectChangeReason";
-    static constexpr std::array<std::pair<QOhosWindowProxy::RectChangeReason, const char*>, 7> enumeratorsNames = {{
-        {QOhosWindowProxy::RectChangeReason::UNDEFINED, "UNDEFINED"},
-        {QOhosWindowProxy::RectChangeReason::MAXIMIZE, "MAXIMIZE"},
-        {QOhosWindowProxy::RectChangeReason::RECOVER, "RECOVER"},
-        {QOhosWindowProxy::RectChangeReason::MOVE, "MOVE"},
-        {QOhosWindowProxy::RectChangeReason::DRAG, "DRAG"},
-        {QOhosWindowProxy::RectChangeReason::DRAG_START, "DRAG_START"},
-        {QOhosWindowProxy::RectChangeReason::DRAG_END, "DRAG_END"},
-    }};
-};
-
-template<>
-struct OhosEnumMeta<QOhosWindowProxy::WindowStatusType>
-{
-    static constexpr const char *fullTypeName = "@ohos.window.WindowStatusType";
-    static constexpr std::array<std::pair<QOhosWindowProxy::WindowStatusType, const char*>, 6> enumeratorsNames = {{
-        {QOhosWindowProxy::WindowStatusType::UNDEFINED, "UNDEFINED"},
-        {QOhosWindowProxy::WindowStatusType::FULL_SCREEN, "FULL_SCREEN"},
-        {QOhosWindowProxy::WindowStatusType::MAXIMIZE, "MAXIMIZE"},
-        {QOhosWindowProxy::WindowStatusType::MINIMIZE, "MINIMIZE"},
-        {QOhosWindowProxy::WindowStatusType::FLOATING, "FLOATING"},
-        {QOhosWindowProxy::WindowStatusType::SPLIT_SCREEN, "SPLIT_SCREEN"},
-    }};
-};
-
-template<>
-struct OhosEnumMeta<QOhosWindowProxy::MaximizePresentation>
-{
-    static constexpr const char *fullTypeName = "@ohos.window.MaximizePresentation";
-    static constexpr std::array<std::pair<QOhosWindowProxy::MaximizePresentation, const char *>, 3> enumeratorsNames = {{
-        {QOhosWindowProxy::MaximizePresentation::FOLLOW_APP_IMMERSIVE_SETTING, "FOLLOW_APP_IMMERSIVE_SETTING"},
-        {QOhosWindowProxy::MaximizePresentation::EXIT_IMMERSIVE, "EXIT_IMMERSIVE"},
-        {QOhosWindowProxy::MaximizePresentation::ENTER_IMMERSIVE, "ENTER_IMMERSIVE"},
-    }};
-};
-
-template<>
-struct OhosEnumMeta<QOhosWindowProxy::ModalityType>
-{
-    static constexpr const char *fullTypeName = "@ohos.window.ModalityType";
-    static constexpr std::array<std::pair<QOhosWindowProxy::ModalityType, const char *>, 2> enumeratorsNames = {{
-        {QOhosWindowProxy::ModalityType::WINDOW_MODALITY, "WINDOW_MODALITY"},
-        {QOhosWindowProxy::ModalityType::APPLICATION_MODALITY, "APPLICATION_MODALITY"},
-    }};
-};
-
-}
-
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QOhosWindowProxy::WindowEvent);
 Q_DECLARE_METATYPE(QOhosWindowProxy::WindowStatus);
 Q_DECLARE_METATYPE(QOhosWindowProxy::AvoidArea);
-Q_DECLARE_METATYPE(QOhosWindowProxy::AvoidAreaType);
 Q_DECLARE_METATYPE(QOhosWindowProxy::RectChangeOptions);
 
 #endif
