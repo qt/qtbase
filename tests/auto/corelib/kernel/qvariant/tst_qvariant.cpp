@@ -7192,8 +7192,9 @@ void tst_QVariant::getIf_impl(T t) const
         QCOMPARE_EQ(get_if<T>(&std::as_const(null)), nullptr);
         QCOMPARE_EQ(get_if<T>(&null), nullptr);
         if constexpr (std::is_default_constructible_v<T>) {
-            // const access return nullptr
-            QCOMPARE_EQ(get_if<T>(&std::as_const(nulT)), nullptr);
+            // const access to a typed null returns a pointer to the default-constructed value
+            QCOMPARE_NE(get_if<T>(&std::as_const(nulT)), nullptr);
+            QCOMPARE_EQ(*get_if<T>(&std::as_const(nulT)), T{});
             // but mutable access makes typed null QVariants non-null (like data())
             QCOMPARE_NE(get_if<T>(&nulT), nullptr);
             if constexpr (!std::is_pointer_v<T>)
@@ -7345,6 +7346,21 @@ void tst_QVariant::get_impl(T t) const
         rv = t2;
         auto &&rv2 = get<T>(v);
         QCOMPARE_EQ(rv2, t2);
+    }
+
+    // const-null access: a typed-null QVariant has valid default-constructed
+    // storage, so get<T>() / get_if<T>() on it must return the default value.
+    if constexpr (std::is_default_constructible_v<T>) {
+        const QVariant nulV(QMetaType::fromType<T>());
+        QVERIFY(nulV.isNull());
+        const T *p = get_if<T>(&nulV);
+        QCOMPARE_NE(p, nullptr);
+        QCOMPARE(*p, T{});
+        QCOMPARE(get<T>(nulV), T{});
+        // Creating a copy must not invalidate the pointer into the original:
+        const QVariant copy = nulV;
+        QCOMPARE_EQ(get_if<T>(&nulV), p);
+        Q_UNUSED(copy);
     }
 }
 
