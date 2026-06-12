@@ -312,13 +312,9 @@ enum class RectChangeReason {
     DRAG_END,
 };
 
-namespace WindowCreateParams {
-
 enum class AnimationType {
     FADE_IN_OUT,
 };
-
-}
 
 enum class WindowEventType {
     WINDOW_SHOWN,
@@ -718,9 +714,9 @@ struct OhosEnumMeta<enums::ohos::window::RectChangeReason>
 };
 
 template<>
-struct OhosEnumMeta<enums::ohos::window::WindowCreateParams::AnimationType>
+struct OhosEnumMeta<enums::ohos::window::AnimationType>
 {
-    using Enum = enums::ohos::window::WindowCreateParams::AnimationType;
+    using Enum = enums::ohos::window::AnimationType;
     static constexpr const char *fullTypeName = "@ohos.window.AnimationType";
     static constexpr std::array<std::pair<Enum, const char *>, 1> enumeratorsNames = {{
         {Enum::FADE_IN_OUT, "FADE_IN_OUT"},

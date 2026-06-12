@@ -320,7 +320,7 @@ QNapi::Object convertStartOptionsToNapiObject(
                             {
                                 "type",
                                 jsState.mapOhosEnumToJs(
-                                    enums::ohos::window::WindowCreateParams::AnimationType::FADE_IN_OUT),
+                                    enums::ohos::window::AnimationType::FADE_IN_OUT),
                             }
                         }));
             }
