@@ -98,6 +98,7 @@ enum class ColorMode {
 namespace contextConstant {
 
 enum class ProcessMode {
+    ATTACH_TO_STATUS_BAR_ITEM,
     NEW_PROCESS_ATTACH_TO_PARENT,
     NEW_PROCESS_ATTACH_TO_STATUS_BAR_ITEM,
 };
@@ -112,8 +113,12 @@ enum class StartupVisibility {
 namespace wantConstant {
 
 enum class Flags {
+    FLAG_ABILITY_ON_COLLABORATE,
+    FLAG_AUTH_PERSISTABLE_URI_PERMISSION,
     FLAG_AUTH_READ_URI_PERMISSION,
     FLAG_AUTH_WRITE_URI_PERMISSION,
+    FLAG_INSTALL_ON_DEMAND,
+    FLAG_START_WITHOUT_TIPS,
 };
 
 }
@@ -201,12 +206,17 @@ enum class TextInputType {
     DATETIME,
     EMAIL_ADDRESS,
     MULTILINE,
+    NEW_PASSWORD,
     NONE,
     NUMBER,
+    NUMBER_DECIMAL,
     NUMBER_PASSWORD,
+    ONE_TIME_CODE,
     PHONE,
+    SCREEN_LOCK_PASSWORD,
     TEXT,
     URL,
+    USER_NAME,
     VISIBLE_PASSWORD,
 };
 
@@ -232,6 +242,7 @@ enum class PointerStyle {
     HORIZONTAL_TEXT_CURSOR,
     LOADING,
     MIDDLE_BTN_EAST,
+    MIDDLE_BTN_EAST_WEST,
     MIDDLE_BTN_NORTH,
     MIDDLE_BTN_NORTH_EAST,
     MIDDLE_BTN_NORTH_SOUTH,
@@ -251,6 +262,7 @@ enum class PointerStyle {
     RESIZE_LEFT_RIGHT,
     RESIZE_UP_DOWN,
     RUNNING,
+    SCREENRECORDER_CURSOR,
     SCREENSHOT_CHOOSE,
     SCREENSHOT_CURSOR,
     SOUTH,
@@ -297,6 +309,7 @@ enum class AvoidAreaType {
 
 enum class MaximizePresentation {
     ENTER_IMMERSIVE,
+    ENTER_IMMERSIVE_DISABLE_TITLE_AND_DOCK_HOVER,
     EXIT_IMMERSIVE,
     FOLLOW_APP_IMMERSIVE_SETTING,
 };
@@ -449,7 +462,8 @@ struct OhosEnumMeta<enums::ohos::app::ability::contextConstant::ProcessMode>
 {
     using Enum = enums::ohos::app::ability::contextConstant::ProcessMode;
     static constexpr const char *fullTypeName = "@ohos.app.ability.contextConstant.ProcessMode";
-    static constexpr std::array<std::pair<Enum, const char *>, 2> enumeratorsNames = {{
+    static constexpr std::array<std::pair<Enum, const char *>, 3> enumeratorsNames = {{
+        {Enum::ATTACH_TO_STATUS_BAR_ITEM, "ATTACH_TO_STATUS_BAR_ITEM"},
         {Enum::NEW_PROCESS_ATTACH_TO_PARENT, "NEW_PROCESS_ATTACH_TO_PARENT"},
         {Enum::NEW_PROCESS_ATTACH_TO_STATUS_BAR_ITEM, "NEW_PROCESS_ATTACH_TO_STATUS_BAR_ITEM"},
     }};
@@ -471,9 +485,13 @@ struct OhosEnumMeta<enums::ohos::app::ability::wantConstant::Flags>
 {
     using Enum = enums::ohos::app::ability::wantConstant::Flags;
     static constexpr const char *fullTypeName = "@ohos.app.ability.wantConstant.Flags";
-    static constexpr std::array<std::pair<Enum, const char *>, 2> enumeratorsNames = {{
+    static constexpr std::array<std::pair<Enum, const char *>, 6> enumeratorsNames = {{
+        {Enum::FLAG_ABILITY_ON_COLLABORATE, "FLAG_ABILITY_ON_COLLABORATE"},
+        {Enum::FLAG_AUTH_PERSISTABLE_URI_PERMISSION, "FLAG_AUTH_PERSISTABLE_URI_PERMISSION"},
         {Enum::FLAG_AUTH_READ_URI_PERMISSION, "FLAG_AUTH_READ_URI_PERMISSION"},
         {Enum::FLAG_AUTH_WRITE_URI_PERMISSION, "FLAG_AUTH_WRITE_URI_PERMISSION"},
+        {Enum::FLAG_INSTALL_ON_DEMAND, "FLAG_INSTALL_ON_DEMAND"},
+        {Enum::FLAG_START_WITHOUT_TIPS, "FLAG_START_WITHOUT_TIPS"},
     }};
 };
 
@@ -577,16 +595,21 @@ struct OhosEnumMeta<enums::ohos::inputMethod::TextInputType>
 {
     using Enum = enums::ohos::inputMethod::TextInputType;
     static constexpr const char *fullTypeName = "@ohos.inputMethod.TextInputType";
-    static constexpr std::array<std::pair<Enum, const char *>, 10> enumeratorsNames = {{
+    static constexpr std::array<std::pair<Enum, const char *>, 15> enumeratorsNames = {{
         {Enum::DATETIME, "DATETIME"},
         {Enum::EMAIL_ADDRESS, "EMAIL_ADDRESS"},
         {Enum::MULTILINE, "MULTILINE"},
+        {Enum::NEW_PASSWORD, "NEW_PASSWORD"},
         {Enum::NONE, "NONE"},
         {Enum::NUMBER, "NUMBER"},
+        {Enum::NUMBER_DECIMAL, "NUMBER_DECIMAL"},
         {Enum::NUMBER_PASSWORD, "NUMBER_PASSWORD"},
+        {Enum::ONE_TIME_CODE, "ONE_TIME_CODE"},
         {Enum::PHONE, "PHONE"},
+        {Enum::SCREEN_LOCK_PASSWORD, "SCREEN_LOCK_PASSWORD"},
         {Enum::TEXT, "TEXT"},
         {Enum::URL, "URL"},
+        {Enum::USER_NAME, "USER_NAME"},
         {Enum::VISIBLE_PASSWORD, "VISIBLE_PASSWORD"},
     }};
 };
@@ -596,7 +619,7 @@ struct OhosEnumMeta<enums::ohos::multimodalInput::pointer::PointerStyle>
 {
     using Enum = enums::ohos::multimodalInput::pointer::PointerStyle;
     static constexpr const char *fullTypeName = "@ohos.multimodalInput.pointer.PointerStyle";
-    static constexpr std::array<std::pair<Enum, const char *>, 44> enumeratorsNames = {{
+    static constexpr std::array<std::pair<Enum, const char *>, 46> enumeratorsNames = {{
         {Enum::COLOR_SUCKER, "COLOR_SUCKER"},
         {Enum::CROSS, "CROSS"},
         {Enum::CURSOR_CIRCLE, "CURSOR_CIRCLE"},
@@ -612,6 +635,7 @@ struct OhosEnumMeta<enums::ohos::multimodalInput::pointer::PointerStyle>
         {Enum::HORIZONTAL_TEXT_CURSOR, "HORIZONTAL_TEXT_CURSOR"},
         {Enum::LOADING, "LOADING"},
         {Enum::MIDDLE_BTN_EAST, "MIDDLE_BTN_EAST"},
+        {Enum::MIDDLE_BTN_EAST_WEST, "MIDDLE_BTN_EAST_WEST"},
         {Enum::MIDDLE_BTN_NORTH, "MIDDLE_BTN_NORTH"},
         {Enum::MIDDLE_BTN_NORTH_EAST, "MIDDLE_BTN_NORTH_EAST"},
         {Enum::MIDDLE_BTN_NORTH_SOUTH, "MIDDLE_BTN_NORTH_SOUTH"},
@@ -631,6 +655,7 @@ struct OhosEnumMeta<enums::ohos::multimodalInput::pointer::PointerStyle>
         {Enum::RESIZE_LEFT_RIGHT, "RESIZE_LEFT_RIGHT"},
         {Enum::RESIZE_UP_DOWN, "RESIZE_UP_DOWN"},
         {Enum::RUNNING, "RUNNING"},
+        {Enum::SCREENRECORDER_CURSOR, "SCREENRECORDER_CURSOR"},
         {Enum::SCREENSHOT_CHOOSE, "SCREENSHOT_CHOOSE"},
         {Enum::SCREENSHOT_CURSOR, "SCREENSHOT_CURSOR"},
         {Enum::SOUTH, "SOUTH"},
@@ -689,8 +714,9 @@ struct OhosEnumMeta<enums::ohos::window::MaximizePresentation>
 {
     using Enum = enums::ohos::window::MaximizePresentation;
     static constexpr const char *fullTypeName = "@ohos.window.MaximizePresentation";
-    static constexpr std::array<std::pair<Enum, const char *>, 3> enumeratorsNames = {{
+    static constexpr std::array<std::pair<Enum, const char *>, 4> enumeratorsNames = {{
         {Enum::ENTER_IMMERSIVE, "ENTER_IMMERSIVE"},
+        {Enum::ENTER_IMMERSIVE_DISABLE_TITLE_AND_DOCK_HOVER, "ENTER_IMMERSIVE_DISABLE_TITLE_AND_DOCK_HOVER"},
         {Enum::EXIT_IMMERSIVE, "EXIT_IMMERSIVE"},
         {Enum::FOLLOW_APP_IMMERSIVE_SETTING, "FOLLOW_APP_IMMERSIVE_SETTING"},
     }};
