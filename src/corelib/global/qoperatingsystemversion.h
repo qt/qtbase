@@ -173,6 +173,7 @@ public:
         WatchOS,
         Android,
         VisionOS,
+        OHOS,
     };
 #endif
 
