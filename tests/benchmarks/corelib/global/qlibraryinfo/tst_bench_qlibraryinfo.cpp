@@ -60,6 +60,7 @@ void tst_QLibraryInfo::paths_data()
 {
     QTest::addColumn<QString>("qtConfPath");
     QTest::addColumn<QLibraryInfo::LibraryPath>("libraryPath");
+    QTest::addColumn<bool>("cold");
 
     // Three resolution modes, to separate the cost of resolving the prefix
     // from the cost of reading values out of a qt.conf:
@@ -77,11 +78,23 @@ void tst_QLibraryInfo::paths_data()
         { "absolute", u":/absolute.qt.conf"_s },
     };
 
+    // Each mode is measured both cold and cached:
+    //  - cold:   the caches are dropped before each call (see paths()), so we
+    //            measure the cost of an uncached first call.
+    //  - cached: the configuration and resolved prefix are reused across
+    //            calls, the typical steady-state cost.
+    const std::pair<const char *, bool> caching[] = {
+        { "cold", true },
+        { "cached", false },
+    };
+
     const QMetaEnum me = QMetaEnum::fromType<QLibraryInfo::LibraryPath>();
     for (const auto &[confTag, qtConfPath] : configs) {
-        for (int i = 0; i < me.keyCount(); ++i) {
-            QTest::addRow("%s:%s", confTag, me.key(i))
-                << qtConfPath << QLibraryInfo::LibraryPath(me.value(i));
+        for (const auto &[cacheTag, cold] : caching) {
+            for (int i = 0; i < me.keyCount(); ++i) {
+                QTest::addRow("%s:%s:%s", confTag, cacheTag, me.key(i))
+                    << qtConfPath << QLibraryInfo::LibraryPath(me.value(i)) << cold;
+            }
         }
     }
 }
@@ -90,6 +103,7 @@ void tst_QLibraryInfo::paths()
 {
     QFETCH(QString, qtConfPath);
     QFETCH(const QLibraryInfo::LibraryPath, libraryPath);
+    QFETCH(const bool, cold);
 
 #if QT_CONFIG(settings)
     if (!qtConfPath.isEmpty())
@@ -103,6 +117,8 @@ void tst_QLibraryInfo::paths()
 #endif
 
     QBENCHMARK {
+        if (cold)
+            QLibraryInfoPrivate::reload();
         [[maybe_unused]] const auto r = QLibraryInfo::paths(libraryPath);
     }
 }
