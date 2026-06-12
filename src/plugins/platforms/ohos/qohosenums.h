@@ -21,14 +21,12 @@ namespace ShareKit {
 
 namespace systemShare {
 
-enum class SelectionMode
-{
+enum class SelectionMode {
     SINGLE,
     BATCH,
 };
 
-enum class ShareAbilityType
-{
+enum class ShareAbilityType {
     COPY_TO_PASTEBOARD,
     SAVE_TO_MEDIA_ASSET,
     SAVE_AS_FILE,
@@ -36,8 +34,7 @@ enum class ShareAbilityType
     SAVE_TO_SUPERHUB,
 };
 
-enum class SharePreviewMode
-{
+enum class SharePreviewMode {
     DEFAULT,
     DETAIL,
 };
@@ -74,15 +71,13 @@ enum class ContinueState {
     INACTIVE,
 };
 
-enum class OnContinueResult
-{
+enum class OnContinueResult {
     AGREE,
     REJECT,
     MISMATCH,
 };
 
-enum class WindowMode
-{
+enum class WindowMode {
     WINDOW_MODE_SPLIT_PRIMARY,
     WINDOW_MODE_SPLIT_SECONDARY,
     WINDOW_MODE_FULLSCREEN,
@@ -102,14 +97,12 @@ enum class ColorMode {
 
 namespace contextConstant {
 
-enum class ProcessMode
-{
+enum class ProcessMode {
     NEW_PROCESS_ATTACH_TO_PARENT,
     NEW_PROCESS_ATTACH_TO_STATUS_BAR_ITEM,
 };
 
-enum class StartupVisibility
-{
+enum class StartupVisibility {
     STARTUP_HIDE,
     STARTUP_SHOW,
 };
@@ -118,8 +111,7 @@ enum class StartupVisibility
 
 namespace wantConstant {
 
-enum class Flags
-{
+enum class Flags {
     FLAG_AUTH_READ_URI_PERMISSION,
     FLAG_AUTH_WRITE_URI_PERMISSION,
 };
@@ -134,8 +126,7 @@ namespace bundle {
 
 namespace bundleManager {
 
-enum class SupportWindowMode
-{
+enum class SupportWindowMode {
     FULL_SCREEN,
     SPLIT,
     FLOATING,
@@ -147,8 +138,7 @@ enum class SupportWindowMode
 
 namespace display {
 
-enum class DisplaySourceMode
-{
+enum class DisplaySourceMode {
     NONE,
     MAIN,
     MIRROR,
@@ -156,8 +146,7 @@ enum class DisplaySourceMode
     ALONE,
 };
 
-enum class Orientation
-{
+enum class Orientation {
     PORTRAIT,
     LANDSCAPE,
     PORTRAIT_INVERTED,
@@ -294,8 +283,7 @@ enum class ContentType {
 
 namespace window {
 
-enum class AvoidAreaType
-{
+enum class AvoidAreaType {
     TYPE_SYSTEM,
     TYPE_CUTOUT,
     TYPE_SYSTEM_GESTURE,
@@ -303,21 +291,18 @@ enum class AvoidAreaType
     TYPE_NAVIGATION_INDICATOR,
 };
 
-enum class MaximizePresentation
-{
+enum class MaximizePresentation {
     FOLLOW_APP_IMMERSIVE_SETTING,
     EXIT_IMMERSIVE,
     ENTER_IMMERSIVE,
 };
 
-enum class ModalityType
-{
+enum class ModalityType {
     WINDOW_MODALITY,
     APPLICATION_MODALITY,
 };
 
-enum class RectChangeReason
-{
+enum class RectChangeReason {
     UNDEFINED,
     MAXIMIZE,
     RECOVER,
@@ -329,15 +314,13 @@ enum class RectChangeReason
 
 namespace WindowCreateParams {
 
-enum class AnimationType
-{
+enum class AnimationType {
     FADE_IN_OUT,
 };
 
 }
 
-enum class WindowEventType
-{
+enum class WindowEventType {
     WINDOW_SHOWN,
     WINDOW_ACTIVE,
     WINDOW_INACTIVE,
@@ -345,8 +328,7 @@ enum class WindowEventType
     WINDOW_DESTROYED,
 };
 
-enum class WindowStatusType
-{
+enum class WindowStatusType {
     UNDEFINED,
     FULL_SCREEN,
     MAXIMIZE,
@@ -517,7 +499,7 @@ struct OhosEnumMeta<enums::ohos::display::DisplaySourceMode>
 {
     using Enum = enums::ohos::display::DisplaySourceMode;
     static constexpr const char *fullTypeName = "@ohos.display.DisplaySourceMode";
-    static constexpr std::array<std::pair<Enum, const char*>, 5> enumeratorsNames = {{
+    static constexpr std::array<std::pair<Enum, const char *>, 5> enumeratorsNames = {{
         {Enum::NONE, "NONE"},
         {Enum::MAIN, "MAIN"},
         {Enum::MIRROR, "MIRROR"},
@@ -531,7 +513,7 @@ struct OhosEnumMeta<enums::ohos::display::Orientation>
 {
     using Enum = enums::ohos::display::Orientation;
     static constexpr const char *fullTypeName = "@ohos.display.Orientation";
-    static constexpr std::array<std::pair<Enum, const char*>, 4> enumeratorsNames = {{
+    static constexpr std::array<std::pair<Enum, const char *>, 4> enumeratorsNames = {{
         {Enum::PORTRAIT, "PORTRAIT"},
         {Enum::LANDSCAPE, "LANDSCAPE"},
         {Enum::PORTRAIT_INVERTED, "PORTRAIT_INVERTED"},
