@@ -53,6 +53,11 @@ namespace ability {
 
 namespace AbilityConstant {
 
+enum class ContinueState {
+    ACTIVE,
+    INACTIVE,
+};
+
 enum class LaunchReason {
     UNKNOWN,
     START_ABILITY,
@@ -64,11 +69,6 @@ enum class LaunchReason {
     INSIGHT_INTENT,
     PREPARE_CONTINUATION,
     PRELOAD,
-};
-
-enum class ContinueState {
-    ACTIVE,
-    INACTIVE,
 };
 
 enum class OnContinueResult {
@@ -283,6 +283,10 @@ enum class ContentType {
 
 namespace window {
 
+enum class AnimationType {
+    FADE_IN_OUT,
+};
+
 enum class AvoidAreaType {
     TYPE_SYSTEM,
     TYPE_CUTOUT,
@@ -310,10 +314,6 @@ enum class RectChangeReason {
     DRAG,
     DRAG_START,
     DRAG_END,
-};
-
-enum class AnimationType {
-    FADE_IN_OUT,
 };
 
 enum class WindowEventType {
@@ -379,6 +379,17 @@ struct OhosEnumMeta<enums::kit::ShareKit::systemShare::SharePreviewMode>
 };
 
 template<>
+struct OhosEnumMeta<enums::ohos::app::ability::AbilityConstant::ContinueState>
+{
+    using Enum = enums::ohos::app::ability::AbilityConstant::ContinueState;
+    static constexpr const char *fullTypeName = "@ohos.app.ability.AbilityConstant.ContinueState";
+    static constexpr std::array<std::pair<Enum, const char *>, 2> enumeratorsNames = {{
+        {Enum::ACTIVE, "ACTIVE"},
+        {Enum::INACTIVE, "INACTIVE"},
+    }};
+};
+
+template<>
 struct OhosEnumMeta<enums::ohos::app::ability::AbilityConstant::LaunchReason>
 {
     using Enum = enums::ohos::app::ability::AbilityConstant::LaunchReason;
@@ -394,17 +405,6 @@ struct OhosEnumMeta<enums::ohos::app::ability::AbilityConstant::LaunchReason>
         {Enum::INSIGHT_INTENT, "INSIGHT_INTENT"},
         {Enum::PREPARE_CONTINUATION, "PREPARE_CONTINUATION"},
         {Enum::PRELOAD, "PRELOAD"},
-    }};
-};
-
-template<>
-struct OhosEnumMeta<enums::ohos::app::ability::AbilityConstant::ContinueState>
-{
-    using Enum = enums::ohos::app::ability::AbilityConstant::ContinueState;
-    static constexpr const char *fullTypeName = "@ohos.app.ability.AbilityConstant.ContinueState";
-    static constexpr std::array<std::pair<Enum, const char *>, 2> enumeratorsNames = {{
-        {Enum::ACTIVE, "ACTIVE"},
-        {Enum::INACTIVE, "INACTIVE"},
     }};
 };
 
@@ -661,6 +661,16 @@ struct OhosEnumMeta<enums::ohos::notificationManager::ContentType>
 };
 
 template<>
+struct OhosEnumMeta<enums::ohos::window::AnimationType>
+{
+    using Enum = enums::ohos::window::AnimationType;
+    static constexpr const char *fullTypeName = "@ohos.window.AnimationType";
+    static constexpr std::array<std::pair<Enum, const char *>, 1> enumeratorsNames = {{
+        {Enum::FADE_IN_OUT, "FADE_IN_OUT"},
+    }};
+};
+
+template<>
 struct OhosEnumMeta<enums::ohos::window::AvoidAreaType>
 {
     using Enum = enums::ohos::window::AvoidAreaType;
@@ -710,16 +720,6 @@ struct OhosEnumMeta<enums::ohos::window::RectChangeReason>
         {Enum::DRAG, "DRAG"},
         {Enum::DRAG_START, "DRAG_START"},
         {Enum::DRAG_END, "DRAG_END"},
-    }};
-};
-
-template<>
-struct OhosEnumMeta<enums::ohos::window::AnimationType>
-{
-    using Enum = enums::ohos::window::AnimationType;
-    static constexpr const char *fullTypeName = "@ohos.window.AnimationType";
-    static constexpr std::array<std::pair<Enum, const char *>, 1> enumeratorsNames = {{
-        {Enum::FADE_IN_OUT, "FADE_IN_OUT"},
     }};
 };
 
