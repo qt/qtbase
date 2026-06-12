@@ -387,8 +387,7 @@ struct OhosEnumMeta<enums::ohos::app::ability::AbilityConstant::LaunchReason>
 {
     using Enum = enums::ohos::app::ability::AbilityConstant::LaunchReason;
     static constexpr const char *fullTypeName = "@ohos.app.ability.AbilityConstant.LaunchReason";
-    static constexpr size_t enumeratorsSize = 10;
-    static constexpr std::array<std::pair<Enum, const char *>, enumeratorsSize> enumeratorsNames = {{
+    static constexpr std::array<std::pair<Enum, const char *>, 10> enumeratorsNames = {{
         {Enum::UNKNOWN, "UNKNOWN"},
         {Enum::START_ABILITY, "START_ABILITY"},
         {Enum::CALL, "CALL"},
