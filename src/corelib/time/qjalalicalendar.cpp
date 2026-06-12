@@ -99,6 +99,8 @@ bool QJalaliCalendar::isLeapYear(int year) const
         return false;
     if (year < 0)
         ++year;
+
+    year = qMod<2820>(year); // Avoids overflow in:
     return qMod<2820>((year + 2346) * 683) < 683;
 }
 

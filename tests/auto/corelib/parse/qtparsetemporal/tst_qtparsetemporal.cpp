@@ -1886,6 +1886,17 @@ void tst_QtParseTemporal::prefix_data()
             Field{ empty, 0, Flag::Verbal | Flag::Wide, Cat::DayOfWeek } }
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
         << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+
+    // Found by fuzzer:
+    QTest::newRow("Huge negative year/date/C/jalali/0") // QTBUG-147418
+        << u"12/3/-9223372036854775809"_s
+        << Fields{ Field{empty, 1, Flag::Numeric, Cat::Month},
+            Field{ u"/"_s, 0, Flags{}, Cat::Literal },
+            Field{ empty, 1, Flag::Numeric, Cat::DayOfMonth },
+            Field{ u"/"_s, 0, Flags{}, Cat::Literal },
+            Field{ empty, 4, Flag::Numeric | Flag::ZeroPad, Cat::Year } }
+        << QLocale::c() << QCalendar::System::Jalali << 0 << 0
+        << 15 << wall << -1 << -1 << -1 << -1 << 0 << 3 << 12 << -922337203;
 }
 
 void tst_QtParseTemporal::prefix()
