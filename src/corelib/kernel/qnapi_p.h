@@ -1032,6 +1032,7 @@ inline Promise Promise::onThenAndFinally(
 template<typename Context>
 PromiseWithContext<Context> Promise::withContext(Context &&context)
 {
+    static_assert(!std::is_lvalue_reference<Context>::value, "withContext() supports only rvalue contexts");
     return PromiseWithContext<Context>(*this, std::make_shared<Context>(std::forward<Context>(context)));
 }
 
