@@ -2168,7 +2168,7 @@ bool QGuiApplicationPrivate::processNativeEvent(QWindow *window, const QByteArra
 
 bool QGuiApplicationPrivate::isUsingVirtualKeyboard()
 {
-    static const bool usingVirtualKeyboard = getenv("QT_IM_MODULE") == QByteArray("qtvirtualkeyboard");
+    static const bool usingVirtualKeyboard = getenv("QT_IM_MODULE") == QByteArrayView("qtvirtualkeyboard");
     return usingVirtualKeyboard;
 }
 
