@@ -593,10 +593,10 @@ std::enable_if_t<!std::is_same<T, Napi::Value>::value, T> checkedCastImpl(
         constexpr const char *expectedTypeName = ValueTypeTraits<T>::typeName;
         auto valueTypeStr = getValueTypeStringImpl(value);
         std::string valueDesc = valueDescSupplier();
-        auto baseEerrorMsg =
+        auto baseErrorMsg =
             "wrong type (expected '"s + expectedTypeName + "', got '"s + valueTypeStr + "') of Napi value"s;
         throw makeLoggedExceptionImpl(
-            value.Env(), valueDesc.empty() ? baseEerrorMsg : baseEerrorMsg + ": "s + valueDesc);
+            value.Env(), valueDesc.empty() ? baseErrorMsg : baseErrorMsg + ": "s + valueDesc);
     }
 
     return T(value.Env(), value);
