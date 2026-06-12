@@ -1061,6 +1061,8 @@ void QTreeView::keyboardSearch(const QString &search)
 /*!
   Returns the rectangle on the viewport occupied by the item at \a index.
   If the index is not visible or explicitly hidden, the returned rectangle is invalid.
+
+  \sa itemDecorationRect()
 */
 QRect QTreeView::visualRect(const QModelIndex &index) const
 {
@@ -1070,11 +1072,14 @@ QRect QTreeView::visualRect(const QModelIndex &index) const
 
 
 /*!
-    Returns the rect occupied by the decoration of the given item at \a index.
-    If the index has no decoration, the returned rect is empty.
+    Returns the rectangle occupied by the expand/collapse indicator
+    of the item at \a index. If the item has no such
+    indicator, for example because it has no children or because root
+    decoration is disabled, the returned rectangle is invalid. An invalid
+    \a index also returns an invalid rectangle.
 
     \since 6.12
-    \sa QStyle::SE_TreeViewDisclosureItem
+    \sa visualRect(), QStyle::SE_TreeViewDisclosureItem
  */
 QRect QTreeView::itemDecorationRect(const QModelIndex &index) const
 {
