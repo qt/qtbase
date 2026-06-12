@@ -1689,23 +1689,43 @@ static bool copyQmlDir(const QString &srcDir, const QString &relPath,
 
 static bool copyAllQmlModules(const Options &options)
 {
-    if (options.qtQmlDirectory.isEmpty())
-        return true;
+    const QString qmlDestBase =
+        options.outputDirectory + "/entry/src/main/resources/resfile/qml"_L1;
 
-    if (!QDir(options.qtQmlDirectory).exists()) {
-        if (options.verbose) {
-            fprintf(stdout, "QML directory not found, skipping: %s\n",
-                    qPrintable(options.qtQmlDirectory));
+    // Process qml-import-paths first (typically CMAKE_BINARY_DIR/qml, i.e. the
+    // module's own build-tree QML output).  Files written here receive dest
+    // mtime = now, so the subsequent qtQmlDirectory pass skips any file that
+    // was already copied — this gives build-dir contents unconditional priority
+    // over the installed Qt prefix without requiring a force-overwrite flag.
+    for (const QString &importPath : options.qmlImportPaths) {
+        if (!QDir(importPath).exists()) {
+            if (options.verbose)
+                fprintf(stdout, "QML import path not found, skipping: %s\n",
+                        qPrintable(importPath));
+            continue;
         }
-        return true;
+        if (options.verbose)
+            fprintf(stdout, "Copying QML modules from import path: %s\n",
+                    qPrintable(importPath));
+        if (!copyQmlDir(importPath, QString(), qmlDestBase, options))
+            return false;
     }
 
+    // Process qtQmlDirectory second (the installed Qt prefix).  Files that are
+    // already present in dest (copied from qml-import-paths above) are skipped
+    // by copyFileIfNewer; files that exist only here — e.g. QtQml/QtQuick when
+    // building qtlottie against an installed qtdeclarative — are copied normally.
+    if (options.qtQmlDirectory.isEmpty())
+        return true;
+    if (!QDir(options.qtQmlDirectory).exists()) {
+        if (options.verbose)
+            fprintf(stdout, "QML directory not found, skipping: %s\n",
+                    qPrintable(options.qtQmlDirectory));
+        return true;
+    }
     if (options.verbose)
-        fprintf(stdout, "Copying all QML modules from %s\n", qPrintable(options.qtQmlDirectory));
-
-    QString qmlDestBase = options.outputDirectory + "/entry/src/main/resources/resfile/qml"_L1;
-    QDir().mkpath(qmlDestBase);
-
+        fprintf(stdout, "Copying all QML modules from %s\n",
+                qPrintable(options.qtQmlDirectory));
     return copyQmlDir(options.qtQmlDirectory, QString(), qmlDestBase, options);
 }
 
