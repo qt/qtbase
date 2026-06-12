@@ -868,13 +868,13 @@ static bool read_xpm_body(
         index = buf.left(cpp);
         buf = buf.mid(cpp).simplified().trimmed().toLower();
         QList<QByteArray> tokens = buf.split(' ');
-        i = tokens.indexOf("c");
+        i = tokens.indexOf('c');
         if (i < 0)
-            i = tokens.indexOf("g");
+            i = tokens.indexOf('g');
         if (i < 0)
             i = tokens.indexOf("g4");
         if (i < 0)
-            i = tokens.indexOf("m");
+            i = tokens.indexOf('m');
         if (i < 0) {
             qCWarning(lcImageIo, "XPM color specification is missing: %s", buf.constData());
             return false;        // no c/g/g4/m specification at all
