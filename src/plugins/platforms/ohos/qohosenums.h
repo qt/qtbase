@@ -756,8 +756,33 @@ struct OhosEnumMeta<enums::ohos::window::WindowStatusType>
 
 QT_END_NAMESPACE
 
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::kit::ShareKit::systemShare::SelectionMode));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::kit::ShareKit::systemShare::ShareAbilityType));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::kit::ShareKit::systemShare::SharePreviewMode));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::app::ability::AbilityConstant::ContinueState));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::app::ability::AbilityConstant::LaunchReason));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::app::ability::AbilityConstant::OnContinueResult));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::app::ability::AbilityConstant::WindowMode));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::app::ability::ConfigurationConstant::ColorMode));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::app::ability::contextConstant::ProcessMode));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::app::ability::contextConstant::StartupVisibility));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::app::ability::wantConstant::Flags));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::bundle::bundleManager::SupportWindowMode));
 Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::display::DisplaySourceMode));
 Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::display::Orientation));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::file::picker::DocumentSelectMode));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::inputMethod::Direction));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::inputMethod::EnterKeyType));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::inputMethod::RequestKeyboardReason));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::inputMethod::TextInputType));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::multimodalInput::pointer::PointerStyle));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::notificationManager::ContentType));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::window::AnimationType));
 Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::window::AvoidAreaType));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::window::MaximizePresentation));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::window::ModalityType));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::window::RectChangeReason));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::window::WindowEventType));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::window::WindowStatusType));
 
 #endif
