@@ -818,6 +818,7 @@ ExtendedCallbackFuncWrapper<ExtraArgs...>::ExtendedCallbackFuncWrapper(
             return Napi::Value();
         })
 {
+    static_assert(!std::is_lvalue_reference<Func>::value, "callback functor must be passed as an rvalue");
 }
 
 template<typename... ExtraArgs>
@@ -829,6 +830,7 @@ ExtendedCallbackFuncWrapper<ExtraArgs...>::ExtendedCallbackFuncWrapper(
             return (*callbackFunc)(cbInfo, extraArgs...);
         })
 {
+    static_assert(!std::is_lvalue_reference<Func>::value, "callback functor must be passed as an rvalue");
 }
 
 template<typename... ExtraArgs>
@@ -840,6 +842,7 @@ ExtendedCallbackFuncWrapper<ExtraArgs...>::ExtendedCallbackFuncWrapper(Func &&ca
             return Napi::Value();
         })
 {
+    static_assert(!std::is_lvalue_reference<Func>::value, "callback functor must be passed as an rvalue");
 }
 
 template<typename... ExtraArgs>
@@ -851,6 +854,7 @@ ExtendedCallbackFuncWrapper<ExtraArgs...>::ExtendedCallbackFuncWrapper(
             return (*callbackFunc)(extraArgs...);
         })
 {
+    static_assert(!std::is_lvalue_reference<Func>::value, "callback functor must be passed as an rvalue");
 }
 
 template<typename... ExtraArgs>
