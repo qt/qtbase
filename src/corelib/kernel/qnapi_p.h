@@ -1375,6 +1375,9 @@ inline Object makeNewInstance(const Napi::Object &baseObj, const std::string &ty
 
 inline Napi::Value getPropOrUndefined(const Napi::Value &obj, const std::string &propName)
 {
+    if (obj.IsEmpty())
+        return Napi::Value();
+
     if (!obj.IsObject())
         return obj.Env().Undefined();
 
@@ -1388,6 +1391,9 @@ inline Napi::Value getPropOrUndefined(const Napi::Value &obj, const std::string 
 template<typename T>
 Napi::Value getPropOrUndefined(const Napi::Reference<T> &objRef, const std::string &propName)
 {
+    if (objRef.IsEmpty())
+        return Napi::Value();
+
     return details_qnapi_p_h::runEscapingHandleScopeImpl<Napi::Value>(
         objRef.Env(),
         [&]() {
