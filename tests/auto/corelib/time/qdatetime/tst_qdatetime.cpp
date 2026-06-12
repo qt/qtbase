@@ -3575,6 +3575,9 @@ void tst_QDateTime::fromStringStringFormat_data()
             << 1900 << farsi << QDate(-922337203, 12, 3).startOfDay();
     QTest::newRow("12/3/-9223372036854775809/Jalali") // Year too long - rejected.
             << u"12/3/-9223372036854775809"_s << u"M/d/yyyy"_s << 1900 << farsi << QDateTime();
+    QTest::newRow("2/2/-2147483296/Jalali") // QTBUG-147419
+            << u"2/2/-2147483296"_s << u"M/d/yyyy"_s
+            << 1900 << farsi << QDate(-2147483296, 2, 2).startOfDay();
 #endif
 }
 

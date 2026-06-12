@@ -125,13 +125,18 @@ bool QJalaliCalendar::dateToJulianDay(int year, int month, int day, qint64 *jd) 
     if (!isDateValid(year, month, day))
         return false;
 
-    const int y = year - (year < 0 ? 474 : 475);
-    const int c = qDiv<cycleYears>(y);
-    const int yearInCycle = y - c * cycleYears;
+    const int yearOffset = year < 0 ? 474 : 475;
+    auto yModCycle = qDivMod<cycleYears>(year);
+    if (yModCycle.remainder < yearOffset) {
+        yModCycle.quotient -= 1;
+        yModCycle.remainder += cycleYears;
+    }
+    yModCycle.remainder -= yearOffset;
+
     int dayInYear = day;
     for (int i = 1; i < month; ++i)
         dayInYear += daysInMonth(i, year);
-    *jd = firstDayOfYear(yearInCycle, c) + dayInYear - 1;
+    *jd = firstDayOfYear(yModCycle.remainder, yModCycle.quotient) + dayInYear - 1;
     return true;
 }
 
