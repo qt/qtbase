@@ -15,7 +15,7 @@ int main(int argc, char **argv)
     if (argc > 1)
         appBundlePath = QString::fromLocal8Bit(argv[1]);
 
-    if (argc < 2 || appBundlePath.startsWith("-")) {
+    if (argc < 2 || appBundlePath.startsWith('-')) {
         qDebug() << "Usage: macdeployqt app-bundle [options]";
         qDebug() << "";
         qDebug() << "Options:";
@@ -101,7 +101,7 @@ int main(int argc, char **argv)
             runStripEnabled = false;
         } else if (argument.startsWith(QByteArrayView("-verbose"))) {
             LogDebug() << "Argument found:" << argument;
-            int index = argument.indexOf("=");
+            int index = argument.indexOf('=');
             bool ok = false;
             int number = argument.mid(index+1).toInt(&ok);
             if (!ok) {
@@ -160,7 +160,7 @@ int main(int argc, char **argv)
                 LogError() << "Error: -no-codesign cannot be combined with -codesign\n";
                 return 1;
             }
-            int index = argument.indexOf("=");
+            int index = argument.indexOf('=');
             if (index < 0 || index >= argument.size()) {
                 LogError() << "Missing code signing identity";
                 return 1;
@@ -174,7 +174,7 @@ int main(int argc, char **argv)
                 LogError() << "Error: -no-codesign cannot be combined with -sign-for-notarization\n";
                 return 1;
             }
-            int index = argument.indexOf("=");
+            int index = argument.indexOf('=');
             if (index < 0 || index >= argument.size()) {
                 LogError() << "Missing code signing identity";
                 return 1;
@@ -208,7 +208,7 @@ int main(int argc, char **argv)
             } else {
                 filesystem = argument.mid(index+1);
             }
-        } else if (argument.startsWith("-")) {
+        } else if (argument.startsWith('-')) {
             LogError() << "Unknown argument" << argument << "\n";
             return 1;
         }

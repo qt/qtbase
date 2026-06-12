@@ -290,7 +290,7 @@ FrameworkInfo parseOtoolLibraryLine(const QString &line, const QString &appBundl
                 info.frameworkDirectory += "/" + QString(qtPath + "lib/").simplified();
                 state = FrameworkName;
                 continue;
-            } else if (trimmed.startsWith("/") == false) {      // If the line does not contain a full path, the app is using a binary Qt package.
+            } else if (trimmed.startsWith('/') == false) {      // If the line does not contain a full path, the app is using a binary Qt package.
                 QStringList partsCopy = parts;
                 partsCopy.removeLast();
                 for (QString &path : librarySearchPath) {
@@ -503,7 +503,7 @@ QList<FrameworkInfo> getQtFrameworks(const QList<DylibInfo> &dependencies, const
 
 QString resolveDyldPrefix(const QString &path, const QString &loaderPath, const QString &executablePath)
 {
-    if (path.startsWith("@")) {
+    if (path.startsWith('@')) {
         if (path.startsWith(QStringLiteral("@executable_path/"))) {
             // path relative to bundle executable dir
             if (QDir::isAbsolutePath(executablePath)) {
