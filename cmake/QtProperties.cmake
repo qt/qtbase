@@ -126,7 +126,7 @@ define_property(TARGET
         "Specifies target architecture for HarmonyOS deployment."
     FULL_DOCS
         "Target architecture for HarmonyOS deployment (e.g., arm64-v8a, x86_64).
-        If not set, defaults to arm64-v8a.
+        If not set, defaults to the architecture of the current build.
         Note: Multi-architecture HAP generation is not yet supported."
 )
 

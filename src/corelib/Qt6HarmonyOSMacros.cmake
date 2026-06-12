@@ -283,11 +283,11 @@ function(_qt_internal_set_harmonyos_deployment_defaults target)
         )
     endif()
 
-    # Set default target architectures: arm64-v8a
+    # Set default target architecture to the architecture used with the toolchain file.
     get_target_property(target_archs ${target} QT_HARMONYOS_TARGET_ARCHS)
     if(NOT target_archs OR target_archs STREQUAL "target_archs-NOTFOUND")
         set_target_properties(${target} PROPERTIES
-            QT_HARMONYOS_TARGET_ARCHS "arm64-v8a"
+            QT_HARMONYOS_TARGET_ARCHS "${OHOS_ARCH}"
         )
     endif()
 endfunction()
@@ -306,7 +306,7 @@ function(_qt_internal_harmonyos_generate_deployment_settings target)
     # Query target architectures from property
     get_target_property(target_archs ${target} QT_HARMONYOS_TARGET_ARCHS)
     if(NOT target_archs OR target_archs STREQUAL "target_archs-NOTFOUND")
-        set(target_archs "arm64-v8a")
+        set(target_archs "${OHOS_ARCH}")
     endif()
 
     # Check for multi-arch support (not yet implemented)
