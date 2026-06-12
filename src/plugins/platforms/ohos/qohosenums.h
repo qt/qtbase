@@ -22,15 +22,15 @@ namespace ShareKit {
 namespace systemShare {
 
 enum class SelectionMode {
-    SINGLE,
     BATCH,
+    SINGLE,
 };
 
 enum class ShareAbilityType {
     COPY_TO_PASTEBOARD,
-    SAVE_TO_MEDIA_ASSET,
-    SAVE_AS_FILE,
     PRINT,
+    SAVE_AS_FILE,
+    SAVE_TO_MEDIA_ASSET,
     SAVE_TO_SUPERHUB,
 };
 
@@ -59,28 +59,28 @@ enum class ContinueState {
 };
 
 enum class LaunchReason {
-    UNKNOWN,
-    START_ABILITY,
+    APP_RECOVERY,
+    AUTO_STARTUP,
     CALL,
     CONTINUATION,
-    APP_RECOVERY,
-    SHARE,
-    AUTO_STARTUP,
     INSIGHT_INTENT,
-    PREPARE_CONTINUATION,
     PRELOAD,
+    PREPARE_CONTINUATION,
+    SHARE,
+    START_ABILITY,
+    UNKNOWN,
 };
 
 enum class OnContinueResult {
     AGREE,
-    REJECT,
     MISMATCH,
+    REJECT,
 };
 
 enum class WindowMode {
+    WINDOW_MODE_FULLSCREEN,
     WINDOW_MODE_SPLIT_PRIMARY,
     WINDOW_MODE_SPLIT_SECONDARY,
-    WINDOW_MODE_FULLSCREEN,
 };
 
 }
@@ -88,9 +88,9 @@ enum class WindowMode {
 namespace ConfigurationConstant {
 
 enum class ColorMode {
-    COLOR_MODE_NOT_SET,
     COLOR_MODE_DARK,
     COLOR_MODE_LIGHT,
+    COLOR_MODE_NOT_SET,
 };
 
 }
@@ -127,9 +127,9 @@ namespace bundle {
 namespace bundleManager {
 
 enum class SupportWindowMode {
+    FLOATING,
     FULL_SCREEN,
     SPLIT,
-    FLOATING,
 };
 
 }
@@ -139,18 +139,18 @@ enum class SupportWindowMode {
 namespace display {
 
 enum class DisplaySourceMode {
-    NONE,
+    ALONE,
+    EXTEND,
     MAIN,
     MIRROR,
-    EXTEND,
-    ALONE,
+    NONE,
 };
 
 enum class Orientation {
-    PORTRAIT,
     LANDSCAPE,
-    PORTRAIT_INVERTED,
     LANDSCAPE_INVERTED,
+    PORTRAIT,
+    PORTRAIT_INVERTED,
 };
 
 }
@@ -172,42 +172,42 @@ enum class DocumentSelectMode {
 namespace inputMethod {
 
 enum class Direction {
-    CURSOR_UP,
     CURSOR_DOWN,
     CURSOR_LEFT,
     CURSOR_RIGHT,
+    CURSOR_UP,
 };
 
 enum class EnterKeyType {
-    UNSPECIFIED,
-    NONE,
+    DONE,
     GO,
+    NEWLINE,
+    NEXT,
+    NONE,
+    PREVIOUS,
     SEARCH,
     SEND,
-    NEXT,
-    DONE,
-    PREVIOUS,
-    NEWLINE,
+    UNSPECIFIED,
 };
 
 enum class RequestKeyboardReason {
-    NONE,
     MOUSE,
-    TOUCH,
+    NONE,
     OTHER,
+    TOUCH,
 };
 
 enum class TextInputType {
-    NONE,
-    TEXT,
-    MULTILINE,
-    NUMBER,
-    PHONE,
     DATETIME,
     EMAIL_ADDRESS,
+    MULTILINE,
+    NONE,
+    NUMBER,
+    NUMBER_PASSWORD,
+    PHONE,
+    TEXT,
     URL,
     VISIBLE_PASSWORD,
-    NUMBER_PASSWORD,
 };
 
 }
@@ -217,50 +217,50 @@ namespace multimodalInput {
 namespace pointer {
 
 enum class PointerStyle {
+    COLOR_SUCKER,
+    CROSS,
+    CURSOR_CIRCLE,
+    CURSOR_COPY,
+    CURSOR_CROSS,
+    CURSOR_FORBID,
     DEFAULT,
     EAST,
-    WEST,
-    SOUTH,
-    NORTH,
-    WEST_EAST,
-    NORTH_SOUTH,
-    NORTH_EAST,
-    NORTH_WEST,
-    SOUTH_EAST,
-    SOUTH_WEST,
-    NORTH_EAST_SOUTH_WEST,
-    NORTH_WEST_SOUTH_EAST,
-    CROSS,
-    CURSOR_COPY,
-    CURSOR_FORBID,
-    COLOR_SUCKER,
     HAND_GRABBING,
     HAND_OPEN,
     HAND_POINTING,
     HELP,
-    MOVE,
-    RESIZE_LEFT_RIGHT,
-    RESIZE_UP_DOWN,
-    SCREENSHOT_CHOOSE,
-    SCREENSHOT_CURSOR,
-    TEXT_CURSOR,
-    ZOOM_IN,
-    ZOOM_OUT,
+    HORIZONTAL_TEXT_CURSOR,
+    LOADING,
     MIDDLE_BTN_EAST,
-    MIDDLE_BTN_WEST,
-    MIDDLE_BTN_SOUTH,
     MIDDLE_BTN_NORTH,
-    MIDDLE_BTN_NORTH_SOUTH,
     MIDDLE_BTN_NORTH_EAST,
+    MIDDLE_BTN_NORTH_SOUTH,
+    MIDDLE_BTN_NORTH_SOUTH_WEST_EAST,
     MIDDLE_BTN_NORTH_WEST,
+    MIDDLE_BTN_SOUTH,
     MIDDLE_BTN_SOUTH_EAST,
     MIDDLE_BTN_SOUTH_WEST,
-    MIDDLE_BTN_NORTH_SOUTH_WEST_EAST,
-    HORIZONTAL_TEXT_CURSOR,
-    CURSOR_CROSS,
-    CURSOR_CIRCLE,
-    LOADING,
+    MIDDLE_BTN_WEST,
+    MOVE,
+    NORTH,
+    NORTH_EAST,
+    NORTH_EAST_SOUTH_WEST,
+    NORTH_SOUTH,
+    NORTH_WEST,
+    NORTH_WEST_SOUTH_EAST,
+    RESIZE_LEFT_RIGHT,
+    RESIZE_UP_DOWN,
     RUNNING,
+    SCREENSHOT_CHOOSE,
+    SCREENSHOT_CURSOR,
+    SOUTH,
+    SOUTH_EAST,
+    SOUTH_WEST,
+    TEXT_CURSOR,
+    WEST,
+    WEST_EAST,
+    ZOOM_IN,
+    ZOOM_OUT,
 };
 
 }
@@ -271,12 +271,12 @@ namespace notificationManager {
 
 enum class ContentType {
     NOTIFICATION_CONTENT_BASIC_TEXT,
-    NOTIFICATION_CONTENT_LONG_TEXT,
-    NOTIFICATION_CONTENT_PICTURE,
     NOTIFICATION_CONTENT_CONVERSATION,
-    NOTIFICATION_CONTENT_MULTILINE,
-    NOTIFICATION_CONTENT_SYSTEM_LIVE_VIEW,
     NOTIFICATION_CONTENT_LIVE_VIEW,
+    NOTIFICATION_CONTENT_LONG_TEXT,
+    NOTIFICATION_CONTENT_MULTILINE,
+    NOTIFICATION_CONTENT_PICTURE,
+    NOTIFICATION_CONTENT_SYSTEM_LIVE_VIEW,
 };
 
 }
@@ -288,49 +288,49 @@ enum class AnimationType {
 };
 
 enum class AvoidAreaType {
-    TYPE_SYSTEM,
     TYPE_CUTOUT,
-    TYPE_SYSTEM_GESTURE,
     TYPE_KEYBOARD,
     TYPE_NAVIGATION_INDICATOR,
+    TYPE_SYSTEM,
+    TYPE_SYSTEM_GESTURE,
 };
 
 enum class MaximizePresentation {
-    FOLLOW_APP_IMMERSIVE_SETTING,
-    EXIT_IMMERSIVE,
     ENTER_IMMERSIVE,
+    EXIT_IMMERSIVE,
+    FOLLOW_APP_IMMERSIVE_SETTING,
 };
 
 enum class ModalityType {
-    WINDOW_MODALITY,
     APPLICATION_MODALITY,
+    WINDOW_MODALITY,
 };
 
 enum class RectChangeReason {
-    UNDEFINED,
-    MAXIMIZE,
-    RECOVER,
-    MOVE,
     DRAG,
-    DRAG_START,
     DRAG_END,
+    DRAG_START,
+    MAXIMIZE,
+    MOVE,
+    RECOVER,
+    UNDEFINED,
 };
 
 enum class WindowEventType {
-    WINDOW_SHOWN,
     WINDOW_ACTIVE,
-    WINDOW_INACTIVE,
-    WINDOW_HIDDEN,
     WINDOW_DESTROYED,
+    WINDOW_HIDDEN,
+    WINDOW_INACTIVE,
+    WINDOW_SHOWN,
 };
 
 enum class WindowStatusType {
-    UNDEFINED,
+    FLOATING,
     FULL_SCREEN,
     MAXIMIZE,
     MINIMIZE,
-    FLOATING,
     SPLIT_SCREEN,
+    UNDEFINED,
 };
 
 }
@@ -348,8 +348,8 @@ struct OhosEnumMeta<enums::kit::ShareKit::systemShare::SelectionMode>
     using Enum = enums::kit::ShareKit::systemShare::SelectionMode;
     static constexpr const char *fullTypeName = "@kit.ShareKit.systemShare.SelectionMode";
     static constexpr std::array<std::pair<Enum, const char *>, 2> enumeratorsNames = {{
-        {Enum::SINGLE, "SINGLE"},
         {Enum::BATCH, "BATCH"},
+        {Enum::SINGLE, "SINGLE"},
     }};
 };
 
@@ -360,9 +360,9 @@ struct OhosEnumMeta<enums::kit::ShareKit::systemShare::ShareAbilityType>
     static constexpr const char *fullTypeName = "@kit.ShareKit.systemShare.ShareAbilityType";
     static constexpr std::array<std::pair<Enum, const char *>, 5> enumeratorsNames = {{
         {Enum::COPY_TO_PASTEBOARD, "COPY_TO_PASTEBOARD"},
-        {Enum::SAVE_TO_MEDIA_ASSET, "SAVE_TO_MEDIA_ASSET"},
-        {Enum::SAVE_AS_FILE, "SAVE_AS_FILE"},
         {Enum::PRINT, "PRINT"},
+        {Enum::SAVE_AS_FILE, "SAVE_AS_FILE"},
+        {Enum::SAVE_TO_MEDIA_ASSET, "SAVE_TO_MEDIA_ASSET"},
         {Enum::SAVE_TO_SUPERHUB, "SAVE_TO_SUPERHUB"},
     }};
 };
@@ -395,16 +395,16 @@ struct OhosEnumMeta<enums::ohos::app::ability::AbilityConstant::LaunchReason>
     using Enum = enums::ohos::app::ability::AbilityConstant::LaunchReason;
     static constexpr const char *fullTypeName = "@ohos.app.ability.AbilityConstant.LaunchReason";
     static constexpr std::array<std::pair<Enum, const char *>, 10> enumeratorsNames = {{
-        {Enum::UNKNOWN, "UNKNOWN"},
-        {Enum::START_ABILITY, "START_ABILITY"},
+        {Enum::APP_RECOVERY, "APP_RECOVERY"},
+        {Enum::AUTO_STARTUP, "AUTO_STARTUP"},
         {Enum::CALL, "CALL"},
         {Enum::CONTINUATION, "CONTINUATION"},
-        {Enum::APP_RECOVERY, "APP_RECOVERY"},
-        {Enum::SHARE, "SHARE"},
-        {Enum::AUTO_STARTUP, "AUTO_STARTUP"},
         {Enum::INSIGHT_INTENT, "INSIGHT_INTENT"},
-        {Enum::PREPARE_CONTINUATION, "PREPARE_CONTINUATION"},
         {Enum::PRELOAD, "PRELOAD"},
+        {Enum::PREPARE_CONTINUATION, "PREPARE_CONTINUATION"},
+        {Enum::SHARE, "SHARE"},
+        {Enum::START_ABILITY, "START_ABILITY"},
+        {Enum::UNKNOWN, "UNKNOWN"},
     }};
 };
 
@@ -415,8 +415,8 @@ struct OhosEnumMeta<enums::ohos::app::ability::AbilityConstant::OnContinueResult
     static constexpr const char *fullTypeName = "@ohos.app.ability.AbilityConstant.OnContinueResult";
     static constexpr std::array<std::pair<Enum, const char *>, 3> enumeratorsNames = {{
         {Enum::AGREE, "AGREE"},
-        {Enum::REJECT, "REJECT"},
         {Enum::MISMATCH, "MISMATCH"},
+        {Enum::REJECT, "REJECT"},
     }};
 };
 
@@ -438,9 +438,9 @@ struct OhosEnumMeta<enums::ohos::app::ability::ConfigurationConstant::ColorMode>
     using Enum = enums::ohos::app::ability::ConfigurationConstant::ColorMode;
     static constexpr const char *fullTypeName = "@ohos.app.ability.ConfigurationConstant.ColorMode";
     static constexpr std::array<std::pair<Enum, const char *>, 3> enumeratorsNames = {{
-        {Enum::COLOR_MODE_NOT_SET, "COLOR_MODE_NOT_SET"},
         {Enum::COLOR_MODE_DARK, "COLOR_MODE_DARK"},
         {Enum::COLOR_MODE_LIGHT, "COLOR_MODE_LIGHT"},
+        {Enum::COLOR_MODE_NOT_SET, "COLOR_MODE_NOT_SET"},
     }};
 };
 
@@ -483,9 +483,9 @@ struct OhosEnumMeta<enums::ohos::bundle::bundleManager::SupportWindowMode>
     using Enum = enums::ohos::bundle::bundleManager::SupportWindowMode;
     static constexpr const char *fullTypeName = "@ohos.bundle.bundleManager.SupportWindowMode";
     static constexpr std::array<std::pair<Enum, const char *>, 3> enumeratorsNames = {{
+        {Enum::FLOATING, "FLOATING"},
         {Enum::FULL_SCREEN, "FULL_SCREEN"},
         {Enum::SPLIT, "SPLIT"},
-        {Enum::FLOATING, "FLOATING"},
     }};
 };
 
@@ -495,11 +495,11 @@ struct OhosEnumMeta<enums::ohos::display::DisplaySourceMode>
     using Enum = enums::ohos::display::DisplaySourceMode;
     static constexpr const char *fullTypeName = "@ohos.display.DisplaySourceMode";
     static constexpr std::array<std::pair<Enum, const char *>, 5> enumeratorsNames = {{
-        {Enum::NONE, "NONE"},
+        {Enum::ALONE, "ALONE"},
+        {Enum::EXTEND, "EXTEND"},
         {Enum::MAIN, "MAIN"},
         {Enum::MIRROR, "MIRROR"},
-        {Enum::EXTEND, "EXTEND"},
-        {Enum::ALONE, "ALONE"},
+        {Enum::NONE, "NONE"},
     }};
 };
 
@@ -509,10 +509,10 @@ struct OhosEnumMeta<enums::ohos::display::Orientation>
     using Enum = enums::ohos::display::Orientation;
     static constexpr const char *fullTypeName = "@ohos.display.Orientation";
     static constexpr std::array<std::pair<Enum, const char *>, 4> enumeratorsNames = {{
-        {Enum::PORTRAIT, "PORTRAIT"},
         {Enum::LANDSCAPE, "LANDSCAPE"},
-        {Enum::PORTRAIT_INVERTED, "PORTRAIT_INVERTED"},
         {Enum::LANDSCAPE_INVERTED, "LANDSCAPE_INVERTED"},
+        {Enum::PORTRAIT, "PORTRAIT"},
+        {Enum::PORTRAIT_INVERTED, "PORTRAIT_INVERTED"},
     }};
 };
 
@@ -534,10 +534,10 @@ struct OhosEnumMeta<enums::ohos::inputMethod::Direction>
     using Enum = enums::ohos::inputMethod::Direction;
     static constexpr const char *fullTypeName = "@ohos.inputMethod.Direction";
     static constexpr std::array<std::pair<Enum, const char *>, 4> enumeratorsNames = {{
-        {Enum::CURSOR_UP, "CURSOR_UP"},
         {Enum::CURSOR_DOWN, "CURSOR_DOWN"},
         {Enum::CURSOR_LEFT, "CURSOR_LEFT"},
         {Enum::CURSOR_RIGHT, "CURSOR_RIGHT"},
+        {Enum::CURSOR_UP, "CURSOR_UP"},
     }};
 };
 
@@ -547,15 +547,15 @@ struct OhosEnumMeta<enums::ohos::inputMethod::EnterKeyType>
     using Enum = enums::ohos::inputMethod::EnterKeyType;
     static constexpr const char *fullTypeName = "@ohos.inputMethod.EnterKeyType";
     static constexpr std::array<std::pair<Enum, const char *>, 9> enumeratorsNames = {{
-        {Enum::UNSPECIFIED, "UNSPECIFIED"},
-        {Enum::NONE, "NONE"},
+        {Enum::DONE, "DONE"},
         {Enum::GO, "GO"},
+        {Enum::NEWLINE, "NEWLINE"},
+        {Enum::NEXT, "NEXT"},
+        {Enum::NONE, "NONE"},
+        {Enum::PREVIOUS, "PREVIOUS"},
         {Enum::SEARCH, "SEARCH"},
         {Enum::SEND, "SEND"},
-        {Enum::NEXT, "NEXT"},
-        {Enum::DONE, "DONE"},
-        {Enum::PREVIOUS, "PREVIOUS"},
-        {Enum::NEWLINE, "NEWLINE"},
+        {Enum::UNSPECIFIED, "UNSPECIFIED"},
     }};
 };
 
@@ -565,10 +565,10 @@ struct OhosEnumMeta<enums::ohos::inputMethod::RequestKeyboardReason>
     using Enum = enums::ohos::inputMethod::RequestKeyboardReason;
     static constexpr const char *fullTypeName = "@ohos.inputMethod.RequestKeyboardReason";
     static constexpr std::array<std::pair<Enum, const char *>, 4> enumeratorsNames = {{
-        {Enum::NONE, "NONE"},
         {Enum::MOUSE, "MOUSE"},
-        {Enum::TOUCH, "TOUCH"},
+        {Enum::NONE, "NONE"},
         {Enum::OTHER, "OTHER"},
+        {Enum::TOUCH, "TOUCH"},
     }};
 };
 
@@ -578,16 +578,16 @@ struct OhosEnumMeta<enums::ohos::inputMethod::TextInputType>
     using Enum = enums::ohos::inputMethod::TextInputType;
     static constexpr const char *fullTypeName = "@ohos.inputMethod.TextInputType";
     static constexpr std::array<std::pair<Enum, const char *>, 10> enumeratorsNames = {{
-        {Enum::NONE, "NONE"},
-        {Enum::TEXT, "TEXT"},
-        {Enum::MULTILINE, "MULTILINE"},
-        {Enum::NUMBER, "NUMBER"},
-        {Enum::PHONE, "PHONE"},
         {Enum::DATETIME, "DATETIME"},
         {Enum::EMAIL_ADDRESS, "EMAIL_ADDRESS"},
+        {Enum::MULTILINE, "MULTILINE"},
+        {Enum::NONE, "NONE"},
+        {Enum::NUMBER, "NUMBER"},
+        {Enum::NUMBER_PASSWORD, "NUMBER_PASSWORD"},
+        {Enum::PHONE, "PHONE"},
+        {Enum::TEXT, "TEXT"},
         {Enum::URL, "URL"},
         {Enum::VISIBLE_PASSWORD, "VISIBLE_PASSWORD"},
-        {Enum::NUMBER_PASSWORD, "NUMBER_PASSWORD"},
     }};
 };
 
@@ -597,50 +597,50 @@ struct OhosEnumMeta<enums::ohos::multimodalInput::pointer::PointerStyle>
     using Enum = enums::ohos::multimodalInput::pointer::PointerStyle;
     static constexpr const char *fullTypeName = "@ohos.multimodalInput.pointer.PointerStyle";
     static constexpr std::array<std::pair<Enum, const char *>, 44> enumeratorsNames = {{
+        {Enum::COLOR_SUCKER, "COLOR_SUCKER"},
+        {Enum::CROSS, "CROSS"},
+        {Enum::CURSOR_CIRCLE, "CURSOR_CIRCLE"},
+        {Enum::CURSOR_COPY, "CURSOR_COPY"},
+        {Enum::CURSOR_CROSS, "CURSOR_CROSS"},
+        {Enum::CURSOR_FORBID, "CURSOR_FORBID"},
         {Enum::DEFAULT, "DEFAULT"},
         {Enum::EAST, "EAST"},
-        {Enum::WEST, "WEST"},
-        {Enum::SOUTH, "SOUTH"},
-        {Enum::NORTH, "NORTH"},
-        {Enum::WEST_EAST, "WEST_EAST"},
-        {Enum::NORTH_SOUTH, "NORTH_SOUTH"},
-        {Enum::NORTH_EAST, "NORTH_EAST"},
-        {Enum::NORTH_WEST, "NORTH_WEST"},
-        {Enum::SOUTH_EAST, "SOUTH_EAST"},
-        {Enum::SOUTH_WEST, "SOUTH_WEST"},
-        {Enum::NORTH_EAST_SOUTH_WEST, "NORTH_EAST_SOUTH_WEST"},
-        {Enum::NORTH_WEST_SOUTH_EAST, "NORTH_WEST_SOUTH_EAST"},
-        {Enum::CROSS, "CROSS"},
-        {Enum::CURSOR_COPY, "CURSOR_COPY"},
-        {Enum::CURSOR_FORBID, "CURSOR_FORBID"},
-        {Enum::COLOR_SUCKER, "COLOR_SUCKER"},
         {Enum::HAND_GRABBING, "HAND_GRABBING"},
         {Enum::HAND_OPEN, "HAND_OPEN"},
         {Enum::HAND_POINTING, "HAND_POINTING"},
         {Enum::HELP, "HELP"},
-        {Enum::MOVE, "MOVE"},
-        {Enum::RESIZE_LEFT_RIGHT, "RESIZE_LEFT_RIGHT"},
-        {Enum::RESIZE_UP_DOWN, "RESIZE_UP_DOWN"},
-        {Enum::SCREENSHOT_CHOOSE, "SCREENSHOT_CHOOSE"},
-        {Enum::SCREENSHOT_CURSOR, "SCREENSHOT_CURSOR"},
-        {Enum::TEXT_CURSOR, "TEXT_CURSOR"},
-        {Enum::ZOOM_IN, "ZOOM_IN"},
-        {Enum::ZOOM_OUT, "ZOOM_OUT"},
+        {Enum::HORIZONTAL_TEXT_CURSOR, "HORIZONTAL_TEXT_CURSOR"},
+        {Enum::LOADING, "LOADING"},
         {Enum::MIDDLE_BTN_EAST, "MIDDLE_BTN_EAST"},
-        {Enum::MIDDLE_BTN_WEST, "MIDDLE_BTN_WEST"},
-        {Enum::MIDDLE_BTN_SOUTH, "MIDDLE_BTN_SOUTH"},
         {Enum::MIDDLE_BTN_NORTH, "MIDDLE_BTN_NORTH"},
-        {Enum::MIDDLE_BTN_NORTH_SOUTH, "MIDDLE_BTN_NORTH_SOUTH"},
         {Enum::MIDDLE_BTN_NORTH_EAST, "MIDDLE_BTN_NORTH_EAST"},
+        {Enum::MIDDLE_BTN_NORTH_SOUTH, "MIDDLE_BTN_NORTH_SOUTH"},
+        {Enum::MIDDLE_BTN_NORTH_SOUTH_WEST_EAST, "MIDDLE_BTN_NORTH_SOUTH_WEST_EAST"},
         {Enum::MIDDLE_BTN_NORTH_WEST, "MIDDLE_BTN_NORTH_WEST"},
+        {Enum::MIDDLE_BTN_SOUTH, "MIDDLE_BTN_SOUTH"},
         {Enum::MIDDLE_BTN_SOUTH_EAST, "MIDDLE_BTN_SOUTH_EAST"},
         {Enum::MIDDLE_BTN_SOUTH_WEST, "MIDDLE_BTN_SOUTH_WEST"},
-        {Enum::MIDDLE_BTN_NORTH_SOUTH_WEST_EAST, "MIDDLE_BTN_NORTH_SOUTH_WEST_EAST"},
-        {Enum::HORIZONTAL_TEXT_CURSOR, "HORIZONTAL_TEXT_CURSOR"},
-        {Enum::CURSOR_CROSS, "CURSOR_CROSS"},
-        {Enum::CURSOR_CIRCLE, "CURSOR_CIRCLE"},
-        {Enum::LOADING, "LOADING"},
+        {Enum::MIDDLE_BTN_WEST, "MIDDLE_BTN_WEST"},
+        {Enum::MOVE, "MOVE"},
+        {Enum::NORTH, "NORTH"},
+        {Enum::NORTH_EAST, "NORTH_EAST"},
+        {Enum::NORTH_EAST_SOUTH_WEST, "NORTH_EAST_SOUTH_WEST"},
+        {Enum::NORTH_SOUTH, "NORTH_SOUTH"},
+        {Enum::NORTH_WEST, "NORTH_WEST"},
+        {Enum::NORTH_WEST_SOUTH_EAST, "NORTH_WEST_SOUTH_EAST"},
+        {Enum::RESIZE_LEFT_RIGHT, "RESIZE_LEFT_RIGHT"},
+        {Enum::RESIZE_UP_DOWN, "RESIZE_UP_DOWN"},
         {Enum::RUNNING, "RUNNING"},
+        {Enum::SCREENSHOT_CHOOSE, "SCREENSHOT_CHOOSE"},
+        {Enum::SCREENSHOT_CURSOR, "SCREENSHOT_CURSOR"},
+        {Enum::SOUTH, "SOUTH"},
+        {Enum::SOUTH_EAST, "SOUTH_EAST"},
+        {Enum::SOUTH_WEST, "SOUTH_WEST"},
+        {Enum::TEXT_CURSOR, "TEXT_CURSOR"},
+        {Enum::WEST, "WEST"},
+        {Enum::WEST_EAST, "WEST_EAST"},
+        {Enum::ZOOM_IN, "ZOOM_IN"},
+        {Enum::ZOOM_OUT, "ZOOM_OUT"},
     }};
 };
 
@@ -651,12 +651,12 @@ struct OhosEnumMeta<enums::ohos::notificationManager::ContentType>
     static constexpr const char *fullTypeName = "@ohos.notificationManager.ContentType";
     static constexpr std::array<std::pair<Enum, const char *>, 7> enumeratorsNames = {{
         {Enum::NOTIFICATION_CONTENT_BASIC_TEXT, "NOTIFICATION_CONTENT_BASIC_TEXT"},
-        {Enum::NOTIFICATION_CONTENT_LONG_TEXT, "NOTIFICATION_CONTENT_LONG_TEXT"},
-        {Enum::NOTIFICATION_CONTENT_PICTURE, "NOTIFICATION_CONTENT_PICTURE"},
         {Enum::NOTIFICATION_CONTENT_CONVERSATION, "NOTIFICATION_CONTENT_CONVERSATION"},
-        {Enum::NOTIFICATION_CONTENT_MULTILINE, "NOTIFICATION_CONTENT_MULTILINE"},
-        {Enum::NOTIFICATION_CONTENT_SYSTEM_LIVE_VIEW, "NOTIFICATION_CONTENT_SYSTEM_LIVE_VIEW"},
         {Enum::NOTIFICATION_CONTENT_LIVE_VIEW, "NOTIFICATION_CONTENT_LIVE_VIEW"},
+        {Enum::NOTIFICATION_CONTENT_LONG_TEXT, "NOTIFICATION_CONTENT_LONG_TEXT"},
+        {Enum::NOTIFICATION_CONTENT_MULTILINE, "NOTIFICATION_CONTENT_MULTILINE"},
+        {Enum::NOTIFICATION_CONTENT_PICTURE, "NOTIFICATION_CONTENT_PICTURE"},
+        {Enum::NOTIFICATION_CONTENT_SYSTEM_LIVE_VIEW, "NOTIFICATION_CONTENT_SYSTEM_LIVE_VIEW"},
     }};
 };
 
@@ -676,11 +676,11 @@ struct OhosEnumMeta<enums::ohos::window::AvoidAreaType>
     using Enum = enums::ohos::window::AvoidAreaType;
     static constexpr const char *fullTypeName = "@ohos.window.AvoidAreaType";
     static constexpr std::array<std::pair<Enum, const char *>, 5> enumeratorsNames = {{
-        {Enum::TYPE_SYSTEM, "TYPE_SYSTEM"},
         {Enum::TYPE_CUTOUT, "TYPE_CUTOUT"},
-        {Enum::TYPE_SYSTEM_GESTURE, "TYPE_SYSTEM_GESTURE"},
         {Enum::TYPE_KEYBOARD, "TYPE_KEYBOARD"},
         {Enum::TYPE_NAVIGATION_INDICATOR, "TYPE_NAVIGATION_INDICATOR"},
+        {Enum::TYPE_SYSTEM, "TYPE_SYSTEM"},
+        {Enum::TYPE_SYSTEM_GESTURE, "TYPE_SYSTEM_GESTURE"},
     }};
 };
 
@@ -690,9 +690,9 @@ struct OhosEnumMeta<enums::ohos::window::MaximizePresentation>
     using Enum = enums::ohos::window::MaximizePresentation;
     static constexpr const char *fullTypeName = "@ohos.window.MaximizePresentation";
     static constexpr std::array<std::pair<Enum, const char *>, 3> enumeratorsNames = {{
-        {Enum::FOLLOW_APP_IMMERSIVE_SETTING, "FOLLOW_APP_IMMERSIVE_SETTING"},
-        {Enum::EXIT_IMMERSIVE, "EXIT_IMMERSIVE"},
         {Enum::ENTER_IMMERSIVE, "ENTER_IMMERSIVE"},
+        {Enum::EXIT_IMMERSIVE, "EXIT_IMMERSIVE"},
+        {Enum::FOLLOW_APP_IMMERSIVE_SETTING, "FOLLOW_APP_IMMERSIVE_SETTING"},
     }};
 };
 
@@ -702,8 +702,8 @@ struct OhosEnumMeta<enums::ohos::window::ModalityType>
     using Enum = enums::ohos::window::ModalityType;
     static constexpr const char *fullTypeName = "@ohos.window.ModalityType";
     static constexpr std::array<std::pair<Enum, const char *>, 2> enumeratorsNames = {{
-        {Enum::WINDOW_MODALITY, "WINDOW_MODALITY"},
         {Enum::APPLICATION_MODALITY, "APPLICATION_MODALITY"},
+        {Enum::WINDOW_MODALITY, "WINDOW_MODALITY"},
     }};
 };
 
@@ -713,13 +713,13 @@ struct OhosEnumMeta<enums::ohos::window::RectChangeReason>
     using Enum = enums::ohos::window::RectChangeReason;
     static constexpr const char *fullTypeName = "@ohos.window.RectChangeReason";
     static constexpr std::array<std::pair<Enum, const char *>, 7> enumeratorsNames = {{
-        {Enum::UNDEFINED, "UNDEFINED"},
-        {Enum::MAXIMIZE, "MAXIMIZE"},
-        {Enum::RECOVER, "RECOVER"},
-        {Enum::MOVE, "MOVE"},
         {Enum::DRAG, "DRAG"},
-        {Enum::DRAG_START, "DRAG_START"},
         {Enum::DRAG_END, "DRAG_END"},
+        {Enum::DRAG_START, "DRAG_START"},
+        {Enum::MAXIMIZE, "MAXIMIZE"},
+        {Enum::MOVE, "MOVE"},
+        {Enum::RECOVER, "RECOVER"},
+        {Enum::UNDEFINED, "UNDEFINED"},
     }};
 };
 
@@ -729,11 +729,11 @@ struct OhosEnumMeta<enums::ohos::window::WindowEventType>
     using Enum = enums::ohos::window::WindowEventType;
     static constexpr const char *fullTypeName = "@ohos.window.WindowEventType";
     static constexpr std::array<std::pair<Enum, const char *>, 5> enumeratorsNames = {{
-        {Enum::WINDOW_SHOWN, "WINDOW_SHOWN"},
         {Enum::WINDOW_ACTIVE, "WINDOW_ACTIVE"},
-        {Enum::WINDOW_INACTIVE, "WINDOW_INACTIVE"},
-        {Enum::WINDOW_HIDDEN, "WINDOW_HIDDEN"},
         {Enum::WINDOW_DESTROYED, "WINDOW_DESTROYED"},
+        {Enum::WINDOW_HIDDEN, "WINDOW_HIDDEN"},
+        {Enum::WINDOW_INACTIVE, "WINDOW_INACTIVE"},
+        {Enum::WINDOW_SHOWN, "WINDOW_SHOWN"},
     }};
 };
 
@@ -743,12 +743,12 @@ struct OhosEnumMeta<enums::ohos::window::WindowStatusType>
     using Enum = enums::ohos::window::WindowStatusType;
     static constexpr const char *fullTypeName = "@ohos.window.WindowStatusType";
     static constexpr std::array<std::pair<Enum, const char *>, 6> enumeratorsNames = {{
-        {Enum::UNDEFINED, "UNDEFINED"},
+        {Enum::FLOATING, "FLOATING"},
         {Enum::FULL_SCREEN, "FULL_SCREEN"},
         {Enum::MAXIMIZE, "MAXIMIZE"},
         {Enum::MINIMIZE, "MINIMIZE"},
-        {Enum::FLOATING, "FLOATING"},
         {Enum::SPLIT_SCREEN, "SPLIT_SCREEN"},
+        {Enum::UNDEFINED, "UNDEFINED"},
     }};
 };
 
