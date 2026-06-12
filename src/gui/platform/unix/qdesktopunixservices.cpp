@@ -113,12 +113,12 @@ static inline bool detectWebBrowser(QDesktopUnixServices::LaunchType type,
             return true;
     }
 
-    if (desktop == QByteArray("KDE")) {
+    if (desktop == QByteArrayView("KDE")) {
         if (checkExecutable(QStringLiteral("kde-open"), browser))
             return true;
         if (checkExecutable(QStringLiteral("kde-open5"), browser))
             return true;
-    } else if (desktop == QByteArray("GNOME")) {
+    } else if (desktop == QByteArrayView("GNOME")) {
         if (checkExecutable(QStringLiteral("gnome-open"), browser))
             return true;
     }
