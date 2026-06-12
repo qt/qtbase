@@ -34,6 +34,8 @@ private Q_SLOTS:
 
     void ntlmV2KnownVectors_data();
     void ntlmV2KnownVectors();
+    void ntlmMalformedTargetInfo_data();
+    void ntlmMalformedTargetInfo();
 };
 
 tst_QAuthenticator::tst_QAuthenticator()
@@ -378,6 +380,102 @@ void tst_QAuthenticator::ntlmV2KnownVectors()
         QVERIFY(ntResponse.size() >= 16); // NTProofStr is always the first 16 bytes
         QCOMPARE(ntResponse.left(16), expectedNtProofStr);
     }
+}
+
+void tst_QAuthenticator::ntlmMalformedTargetInfo_data()
+{
+    QTest::addColumn<QByteArray>("targetInfo");
+
+    // Reusable well-formed AV_PAIR components
+    QByteArray avDomain = QByteArray::fromHex(
+        "02000c0044006f006d00610069006e00");   // AvId=2, len=12, "Domain" UCS-2LE
+    QByteArray avServer = QByteArray::fromHex(
+        "01000c00530065007200760065007200");   // AvId=1, len=12, "Server" UCS-2LE
+    QByteArray avEol = QByteArray::fromHex("00000000");
+
+    // AVTIMESTAMP with wrong avLen (4 instead of 8)
+    QTest::newRow("timestamp-wrong-avlen")
+        << avDomain + avServer
+           + QByteArray::fromHex("07000400" "00000000")
+           + avEol;
+
+    // Buffer truncated mid-AV_PAIR: timestamp header present but data cut short
+    {
+        QByteArray full = avDomain + avServer
+            + QByteArray::fromHex("070008000000000000000000") + avEol;
+        QTest::newRow("truncated-mid-avpair")
+            << full.left(full.size() - 6);
+    }
+
+    // Too short for even one AV_PAIR header (only 2 bytes)
+    QTest::newRow("too-short-for-header")
+        << QByteArray::fromHex("0700");
+
+    // avLen exceeds remaining buffer
+    QTest::newRow("avlen-exceeds-buffer")
+        << QByteArray::fromHex("0200FF00")
+           + QByteArray::fromHex("44006f006d00610069006e00")
+           + avEol;
+
+    // Empty targetInfo
+    QTest::newRow("empty-targetinfo")
+        << QByteArray();
+}
+
+void tst_QAuthenticator::ntlmMalformedTargetInfo()
+{
+    QFETCH(QByteArray, targetInfo);
+
+    // Build a Phase 2 challenge blob wrapping the test targetInfo
+    QByteArray targetName = QByteArray::fromHex(
+        "530065007200760065007200");            // "Server" UCS-2LE
+    quint16 targetNameLen = targetName.size();
+    quint16 targetInfoLen = targetInfo.size();
+    quint32 targetNameOffset = 56;              // 48 (min header) + 8 (version)
+    quint32 targetInfoOffset = targetNameOffset + targetNameLen;
+
+    QByteArray phase2;
+    QDataStream ds(&phase2, QIODevice::WriteOnly);
+    ds.setByteOrder(QDataStream::LittleEndian);
+
+    ds.writeRawData("NTLMSSP\0", 8);                              // signature
+    ds << quint32(2);                                              // type
+    ds << targetNameLen << targetNameLen << targetNameOffset;       // targetName descriptor
+    ds << quint32(0xe28a8233);                                     // flags
+    ds.writeRawData("\x01\x23\x45\x67\x89\xab\xcd\xef", 8);      // server challenge
+    ds << quint32(0) << quint32(0);                                // context
+    ds << targetInfoLen << targetInfoLen << targetInfoOffset;       // targetInfo descriptor
+    ds.writeRawData("\x06\x00\x70\x17\x00\x00\x00\x0f", 8);      // version
+    ds.writeRawData(targetName.constData(), targetName.size());
+    if (!targetInfo.isEmpty())
+        ds.writeRawData(targetInfo.constData(), targetInfo.size());
+
+    // Run the full NTLM auth flow
+    QAuthenticator auth;
+    auth.setUser("Domain\\User");
+    auth.setPassword("Password");
+    auth.detach();
+
+    QAuthenticatorPrivate *priv = QAuthenticatorPrivate::getPrivate(auth);
+
+    // Phase 1: negotiate
+    QHttpHeaders headers;
+    headers.append(QByteArrayLiteral("WWW-Authenticate"), QByteArrayLiteral("NTLM"));
+    priv->parseHttpResponse(headers, false, {});
+    priv->calculateResponse("GET", "/", u"");
+
+    // Phase 2: challenge with malformed targetInfo
+    headers.clear();
+    headers.append(QByteArray("WWW-Authenticate"), "NTLM " + phase2.toBase64());
+    priv->parseHttpResponse(headers, false, {});
+
+    // Phase 3: authenticate — must not crash, must produce a response
+    QByteArray response = priv->calculateResponse("GET", "/", u"");
+
+    QVERIFY2(response.startsWith("NTLM "),
+             "Auth flow should complete despite malformed targetInfo");
+    QByteArray phase3 = QByteArray::fromBase64(response.mid(5));
+    QVERIFY(phase3.size() >= 64); // minimum AUTHENTICATE_MESSAGE header size
 }
 
 QTEST_MAIN(tst_QAuthenticator);
