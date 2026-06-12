@@ -474,15 +474,19 @@ constexpr bool isCallbackFuncType()
 }
 
 template<typename T>
-inline std::enable_if_t<isCallbackFuncType<T>(), Napi::Value> makeValue(napi_env env, T &&inputValue)
+inline std::enable_if_t<isCallbackFuncType<T>(), std::function<Napi::Value(napi_env)>> makeValueFactory(T &&inputValue)
 {
-    return Napi::Function::New(env, std::move(CallbackFuncWrapper(std::forward<T>(inputValue)).callbackFunc()));
+    return [callbackFunc = std::move(CallbackFuncWrapper(std::forward<T>(inputValue)).callbackFunc())](napi_env env) {
+        return Napi::Function::New(env, callbackFunc);
+    };
 }
 
 template<typename T>
-inline std::enable_if_t<!isCallbackFuncType<T>(), Napi::Value> makeValue(napi_env env, T &&inputValue)
+inline std::enable_if_t<!isCallbackFuncType<T>(), std::function<Napi::Value(napi_env)>> makeValueFactory(T &&inputValue)
 {
-    return Napi::Value::From(env, std::forward<T>(inputValue));
+    return [inputValue = std::forward<T>(inputValue)](napi_env env) {
+        return Napi::Value::From(env, inputValue);
+    };
 }
 
 inline Napi::Error makeLoggedExceptionImpl(napi_env env, const std::string &msg)
@@ -795,10 +799,7 @@ constexpr decltype(auto) forwardContainerElement(Element &element) noexcept
 
 template<typename T, std::enable_if_t<!std::is_same<std::decay_t<T>, ValueWrapper>::value, int>>
 ValueWrapper::ValueWrapper(T &&inputValue)
-    : m_valueFactory(
-        [inputValue = std::forward<T>(inputValue)](napi_env env) {
-            return details_qnapi_p_h::makeValue(env, inputValue);
-        })
+    : m_valueFactory(details_qnapi_p_h::makeValueFactory(std::forward<T>(inputValue)))
 {
 }
 
