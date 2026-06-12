@@ -286,6 +286,32 @@ enum class PointerStyle {
 
 }
 
+namespace net {
+
+namespace connection {
+
+enum class NetBearType {
+    BEARER_BLUETOOTH,
+    BEARER_CELLULAR,
+    BEARER_ETHERNET,
+    BEARER_VPN,
+    BEARER_WIFI,
+};
+
+enum class NetCap {
+    NET_CAPABILITY_CHECKING_CONNECTIVITY,
+    NET_CAPABILITY_INTERNET,
+    NET_CAPABILITY_MMS,
+    NET_CAPABILITY_NOT_METERED,
+    NET_CAPABILITY_NOT_VPN,
+    NET_CAPABILITY_PORTAL,
+    NET_CAPABILITY_VALIDATED,
+};
+
+}
+
+}
+
 namespace notificationManager {
 
 enum class ContentType {
@@ -696,6 +722,36 @@ struct OhosEnumMeta<enums::ohos::notificationManager::ContentType>
         {Enum::NOTIFICATION_CONTENT_MULTILINE, "NOTIFICATION_CONTENT_MULTILINE"},
         {Enum::NOTIFICATION_CONTENT_PICTURE, "NOTIFICATION_CONTENT_PICTURE"},
         {Enum::NOTIFICATION_CONTENT_SYSTEM_LIVE_VIEW, "NOTIFICATION_CONTENT_SYSTEM_LIVE_VIEW"},
+    }};
+};
+
+template<>
+struct OhosEnumMeta<enums::ohos::net::connection::NetBearType>
+{
+    using Enum = enums::ohos::net::connection::NetBearType;
+    static constexpr const char *fullTypeName = "@ohos.net.connection.NetBearType";
+    static constexpr std::array<std::pair<Enum, const char *>, 5> enumeratorsNames = {{
+        {Enum::BEARER_BLUETOOTH, "BEARER_BLUETOOTH"},
+        {Enum::BEARER_CELLULAR, "BEARER_CELLULAR"},
+        {Enum::BEARER_ETHERNET, "BEARER_ETHERNET"},
+        {Enum::BEARER_VPN, "BEARER_VPN"},
+        {Enum::BEARER_WIFI, "BEARER_WIFI"},
+    }};
+};
+
+template<>
+struct OhosEnumMeta<enums::ohos::net::connection::NetCap>
+{
+    using Enum = enums::ohos::net::connection::NetCap;
+    static constexpr const char *fullTypeName = "@ohos.net.connection.NetCap";
+    static constexpr std::array<std::pair<Enum, const char *>, 7> enumeratorsNames = {{
+        {Enum::NET_CAPABILITY_CHECKING_CONNECTIVITY, "NET_CAPABILITY_CHECKING_CONNECTIVITY"},
+        {Enum::NET_CAPABILITY_INTERNET, "NET_CAPABILITY_INTERNET"},
+        {Enum::NET_CAPABILITY_MMS, "NET_CAPABILITY_MMS"},
+        {Enum::NET_CAPABILITY_NOT_METERED, "NET_CAPABILITY_NOT_METERED"},
+        {Enum::NET_CAPABILITY_NOT_VPN, "NET_CAPABILITY_NOT_VPN"},
+        {Enum::NET_CAPABILITY_PORTAL, "NET_CAPABILITY_PORTAL"},
+        {Enum::NET_CAPABILITY_VALIDATED, "NET_CAPABILITY_VALIDATED"},
     }};
 };
 
