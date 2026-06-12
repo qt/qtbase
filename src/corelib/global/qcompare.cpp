@@ -1673,4 +1673,37 @@ CHECK(strong, equivalent);
     operators for the \c {PointerWrapperGood} class, like it's shown above.
 */
 
+/*!
+    \struct Qt::has_qt_compare_three_way
+    \inmodule QtCore
+    \inheaderfile QtCompare
+    \brief A type trait for checking if a type supports
+    \c {compareThreeWay()}.
+    \since 6.12
+
+    This struct is a
+    \l {https://en.cppreference.com/w/cpp/named_req/UnaryTypeTrait}
+    {UnaryTypeTrait} that inherits \c {std::true_type} if \c T supports
+    three-way comparison via \c {compareThreeWay()}, and \c {std::false_type}
+    otherwise.
+
+    Use Qt::if_has_qt_compare_three_way to constrain function templates
+    on this property.
+
+    \sa Qt::if_has_qt_compare_three_way, Qt::compareThreeWay()
+*/
+
+/*!
+    \typealias Qt::if_has_qt_compare_three_way
+    \inmodule QtCore
+    \relates <QtCompare>
+    \since 6.12
+
+    A convenience alias for \c {std::enable_if_t} that can be used to
+    constrain function templates to types that support three-way comparison
+    via \c {compareThreeWay()}.
+
+    \sa Qt::has_qt_compare_three_way
+*/
+
 QT_END_NAMESPACE
