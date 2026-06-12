@@ -807,13 +807,14 @@ bool QWaylandWindow::allowsIndependentThreadedRendering() const
 void QWaylandWindow::commit(QWaylandBuffer *buffer, const QRegion &damage)
 {
     Q_ASSERT(isExposed());
+
+    QReadLocker locker(&mSurfaceLock);
     if (buffer->committed()) {
         mSurface->commit();
         qCDebug(lcWaylandBackingstore) << "Buffer already committed, not attaching.";
         return;
     }
 
-    QReadLocker locker(&mSurfaceLock);
     if (!mSurface)
         return;
 
