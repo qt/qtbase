@@ -637,6 +637,11 @@ function(qt_internal_add_test name)
             LIBRARIES ${QT_CMAKE_EXPORT_NAMESPACE}::Gui
         )
 
+        # Wasm requires Qt::Gui so add it by default for tests
+        qt_internal_extend_target("${name}" CONDITION EMSCRIPTEN
+            LIBRARIES ${QT_CMAKE_EXPORT_NAMESPACE}::Gui
+        )
+
         set(blacklist_file "${CMAKE_CURRENT_SOURCE_DIR}/BLACKLIST")
         if(EXISTS ${blacklist_file})
             _qt_internal_expose_source_file_to_ide("${name}" ${blacklist_file})
@@ -752,7 +757,6 @@ function(qt_internal_add_test name)
         list(APPEND extra_test_args "quseemrun")
         list(APPEND extra_test_args "qtestname=${testname}")
         list(APPEND extra_test_args "--silence_timeout=60")
-
 
         # TODO: Add functionality to specify browser
         set(browser "")
