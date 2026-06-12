@@ -1079,30 +1079,31 @@ void tst_QtParseTemporal::prefix_data()
         << u"1942"_s << Fields{ Field{ empty, 4, Flag::Numeric, Cat::Year } }
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
         << 4 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 1942;
+    using Bound = std::numeric_limits<qint32>;
     QTest::newRow("2147483647/year:10/C/greg/0")
         << u"2147483647"_s << Fields{ Field{ empty, 10, Flags{}, Cat::Year } }
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
-        << 10 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 2147483647;
-    QTest::newRow("-2147483647/year:10/C/greg/0") // sign doesn't count towards width
-        << u"-2147483647"_s << Fields{ Field{ empty, 10, Flags{}, Cat::Year } }
+        << 10 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << Bound::max();
+    QTest::newRow("-2147483648/year:10/C/greg/0") // sign doesn't count towards width
+        << u"-2147483648"_s << Fields{ Field{ empty, 10, Flags{}, Cat::Year } }
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
-        << 11 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << -2147483647;
+        << 11 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << Bound::min();
     QTest::newRow("+2147483647/year:10/C/greg/0")
         << u"+2147483647"_s << Fields{ Field{ empty, 10, Flags{}, Cat::Year } }
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
-        << 11 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 2147483647;
+        << 11 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << Bound::max();
     QTest::newRow("2147483647/year:4/C/greg/0")
         << u"2147483647"_s << Fields{ Field{ empty, 4, Flags{}, Cat::Year } }
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
-        << 10 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 2147483647;
+        << 10 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << Bound::max();
     QTest::newRow("+2147483647/year:4/C/greg/0")
         << u"+2147483647"_s << Fields{ Field{ empty, 4, Flags{}, Cat::Year } }
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
-        << 11 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 2147483647;
-    QTest::newRow("-2147483647/year:4/C/greg/0")
-        << u"-2147483647"_s << Fields{ Field{ empty, 4, Flags{}, Cat::Year } }
+        << 11 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << Bound::max();
+    QTest::newRow("-2147483648/year:4/C/greg/0")
+        << u"-2147483648"_s << Fields{ Field{ empty, 4, Flags{}, Cat::Year } }
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
-        << 11 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << -2147483647;
+        << 11 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << Bound::min();
 
     // Century (when we get round to implementing it)
     // Era (when we get round to implementing it)

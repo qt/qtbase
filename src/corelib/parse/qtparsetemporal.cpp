@@ -516,6 +516,13 @@ TemporalFieldMatcher::numericExtend(const PartialParse &base, QStringView text,
     // This is necessarily positive: the use of chop(1) below depends on that.
 
     QByteArrayView digits{parsed.digits};
+    // Parsed field must be representable in an int, so don't try to read more
+    // digits than an int can hold (digits10 is how many 9s in a row an int can
+    // hold; but int can hold some sequences one digit longer than that):
+    constexpr int intMaxDigits = std::numeric_limits<int>::digits10 + 1;
+    if (digits.size() > intMaxDigits)
+        digits = digits.first(intMaxDigits);
+    // Take config and flags into account, too:
     if (config.maxDigits > 0) {
         // Allow config.width to override config.maxDigits:
         const int maxWidth = qMax(config.maxDigits, config.width);
@@ -541,11 +548,20 @@ TemporalFieldMatcher::numericExtend(const PartialParse &base, QStringView text,
         if (config.maxValue > 0 && config.roundAfter < 0 && whole > unsigned(config.maxValue))
             continue;
 
-        int value = whole;
-        if (value < 0 || value <= config.unset) // Overflow or too low
+        // If calendar has a year zero, we need to allow 0 in (full) year fields (width >= 4).
+        bool forbidZero = config.unset == 0 && (config.width < 4 || !calendar.hasYearZero());
+        auto optvalue = [whole, forbidZero,
+                         negate = parsed.sign == '-']() -> std::optional<int> {
+            constexpr unsigned maxInt = std::numeric_limits<int>::max();
+            if (negate && whole == 1 + maxInt)
+                return std::numeric_limits<int>::min();
+            if (whole > maxInt || (forbidZero && !whole))
+                return {};
+            return negate ? -int(whole) : int(whole);
+        }();
+        if (!optvalue) // Overflow or too low
             continue;
-        if (parsed.sign == '-')
-            value = -value;
+        int value = *optvalue;
 
         if (config.roundAfter >= 0) {
             // Fractional part
@@ -871,7 +887,7 @@ TemporalFieldMatcher::continuations(const PartialParse &base, QStringView text,
         break;
     case Cat::Year:
         matches = numericExtend(base, text, field.options,
-                                {yearTarget, 0, 0, field.width, -4, -1, true});
+                                {yearTarget, 0, 0, field.width, -4, -1, calendar.isProleptic()});
         break;
         // case Cat::RelatedGregorianYear: break;
         // case Cat::Century: break;
