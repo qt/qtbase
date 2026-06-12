@@ -45,6 +45,46 @@ static QString fromRawStringView(QStringView string)
     return QString::fromRawData(string.data(), string.size());
 }
 
+// Resolves and caches the Qt and application prefix roots. Resolution
+// may be costly and is queried repeatedly during startup, so results
+// are memoized. Wrapped in a Q_GLOBAL_STATIC (prefixCache) so lookups
+// during static destruction fall back to resolving from scratch.
+struct QLibraryPrefixes
+{
+    static QString qtPrefix();
+    static QString appPrefix();
+
+private:
+    // Pure resolvers, without caching, so they're usable even without a
+    // cache instance during static destruction. resolveAppPrefix() returns an
+    // empty string when no stable source is available yet; appPrefix()
+    // then falls back to the (uncached) working directory.
+    static QString resolveQtPrefix();
+    static QString resolveAppPrefix();
+
+    // Memoizes resolve() in the given member. A resolver may return an
+    // empty string to signal that the result is not yet stable and should
+    // not be cached, in which case it is resolved anew on each call. During
+    // static destruction prefixCache() returns nullptr and resolve() is
+    // used directly.
+    static QString cached(QString QLibraryPrefixes::*member, QString (*resolve)());
+
+    QString m_qt;
+    QString m_app;
+};
+Q_GLOBAL_STATIC(QLibraryPrefixes, prefixCache)
+
+QString QLibraryPrefixes::cached(QString QLibraryPrefixes::*member, QString (*resolve)())
+{
+    QLibraryPrefixes *cache = prefixCache();
+    if (cache && !(cache->*member).isEmpty())
+        return cache->*member;
+    QString prefix = resolve();
+    if (cache && !prefix.isEmpty())
+        cache->*member = prefix;
+    return prefix;
+}
+
 #if QT_CONFIG(settings)
 
 static std::unique_ptr<QSettings> findConfiguration();
@@ -175,13 +215,17 @@ QSettings *QLibraryInfoPrivate::configuration()
     QLibrarySettings *ls = qt_library_settings();
     return ls ? ls->configuration() : nullptr;
 }
+#endif // settings
 
 void QLibraryInfoPrivate::reload()
 {
+#if QT_CONFIG(settings)
     if (qt_library_settings.exists())
         qt_library_settings->load();
+#endif
+    if (prefixCache.exists())
+        *prefixCache = {};
 }
-#endif // settings
 
 /*!
     \class QLibraryInfo
@@ -310,7 +354,7 @@ QVersionNumber QLibraryInfo::version() noexcept
     don't have a standalone QtCore library, or for relative paths
     coming from qt.conf, which are rooted in the app's location.
 */
-static QString prefixFromAppDir()
+QString QLibraryPrefixes::resolveAppPrefix()
 {
 #if defined(Q_OS_DARWIN)
     // Resolve the app prefix from the app bundle instead of the
@@ -337,9 +381,18 @@ static QString prefixFromAppDir()
     if (QCoreApplication::instanceExists()) {
         // We make the prefix path absolute to the executable's directory.
         return QCoreApplication::applicationDirPath();
-    } else {
-        return QDir::currentPath();
     }
+
+    // Without an application instance there's no stable source; return an
+    // empty string so the result isn't cached, and let app() fall back to
+    // the (volatile) working directory until a stable source is available.
+    return {};
+}
+
+QString QLibraryPrefixes::appPrefix()
+{
+    QString prefix = cached(&QLibraryPrefixes::m_app, &QLibraryPrefixes::resolveAppPrefix);
+    return prefix.isNull() ? QDir::currentPath() : prefix;
 }
 
 #if QT_CONFIG(relocatable)
@@ -393,7 +446,7 @@ static QString relocatablePrefixFromQt()
     if (!qt_apple_isSandboxed())
         return QString::fromLocal8Bit(QT_CONFIGURE_PREFIX_PATH);
 # endif
-    prefixPath = prefixFromAppDir();
+    prefixPath = QLibraryPrefixes::appPrefix();
 #elif defined(Q_OS_WASM)
     // Emscripten expects to find shared libraries at the root of the in-memory
     // file system when resolving dependencies for for dlopen() calls. So that's
@@ -468,12 +521,26 @@ static QString relocatablePrefixFromQt()
 }
 #endif
 
-static QString prefixFromQt()
+QString QLibraryPrefixes::resolveQtPrefix()
 {
 #if QT_CONFIG(relocatable)
     return relocatablePrefixFromQt();
 #else
     return QString::fromLocal8Bit(QT_CONFIGURE_PREFIX_PATH);
+#endif
+}
+
+QString QLibraryPrefixes::qtPrefix()
+{
+#if defined(QT_STATIC)
+    // In static builds the Qt prefix resolves via the app directory (see
+    // relocatablePrefixFromQt), which is not stable until an application
+    // instance exists, and is cached and invalidated by appPrefix().
+    // Don't cache it a second time here, to avoid freezing a transient
+    // working-directory value.
+    return resolveQtPrefix();
+#else
+    return cached(&QLibraryPrefixes::m_qt, &QLibraryPrefixes::resolveQtPrefix);
 #endif
 }
 
@@ -666,7 +733,7 @@ QStringList QLibraryInfoPrivate::paths(QLibraryInfo::LibraryPath p)
     if (ret.isEmpty() || keepQtBuildDefaults()) {
         QString qtConfigureDefault;
         if (loc == QLibraryInfo::PrefixPath) {
-            qtConfigureDefault = prefixFromQt();
+            qtConfigureDefault = QLibraryPrefixes::qtPrefix();
         } else if (int(loc) <= qt_configure_strs.count()) {
             qtConfigureDefault = fromRawStringView(qt_configure_strs.viewAt(loc - 1));
 #if !defined(Q_OS_WIN) // On Windows we use the registry
@@ -685,7 +752,7 @@ QStringList QLibraryInfoPrivate::paths(QLibraryInfo::LibraryPath p)
 
     QString baseDir;
     if (loc == QLibraryInfo::PrefixPath) {
-        baseDir = prefixFromAppDir();
+        baseDir = QLibraryPrefixes::appPrefix();
     } else {
         // we make any other path absolute to the prefix directory
         baseDir = QLibraryInfoPrivate::path(QLibraryInfo::PrefixPath);
@@ -870,7 +937,7 @@ void qt_core_boilerplate()
     QByteArray pluginPath =
             qt_configure_strs.viewAt(QLibraryInfo::PluginsPath - 1).toUtf8();
 #if QT_CONFIG(relocatable)
-    QByteArray prefix = prefixFromQt().toUtf8();
+    QByteArray prefix = QLibraryPrefixes::qtPrefix().toUtf8();
 #else
     QByteArrayView prefix = QT_CONFIGURE_PREFIX_PATH;
 #endif

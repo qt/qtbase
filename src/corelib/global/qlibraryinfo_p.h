@@ -32,12 +32,13 @@ class Q_CORE_EXPORT QLibraryInfoPrivate final
 public:
 #if QT_CONFIG(settings)
     static QSettings *configuration();
-    static void reload();
     static void setQtconfManualPath(const QString *qtconfManualPath);
     // Expands $(VAR) placeholders with the value of the VAR environment
     // variable, and converts native separators to '/'.
     static QString expandEnvVariables(QString path);
 #endif
+
+    static void reload();
 
     struct LocationInfo
     {
