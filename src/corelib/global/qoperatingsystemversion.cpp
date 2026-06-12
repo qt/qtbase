@@ -41,7 +41,7 @@ QT_BEGIN_NAMESPACE
     marketing version).
 
     Presently, Android, Apple Platforms (iOS, macOS, tvOS, watchOS, and visionOS),
-    and Windows are supported.
+    OpenHarmony (HarmonyOS), and Windows are supported.
 
     The \a majorVersion(), \a minorVersion(), and \a microVersion() functions
     return the parts of the operating system version number based on:
@@ -106,6 +106,7 @@ QT_BEGIN_NAMESPACE
     \value WatchOS      The Apple watchOS operating system.
     \value VisionOS     The Apple visionOS operating system.
     \value Windows      The Microsoft Windows operating system.
+    \value [since 6.12] OHOS The OpenHarmony (HarmonyOS) operating system.
 
     \value Unknown      An unknown or unsupported operating system.
 */
