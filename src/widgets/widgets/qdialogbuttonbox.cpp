@@ -891,10 +891,13 @@ QDialogButtonBox::StandardButton QDialogButtonBox::standardButton(QAbstractButto
 }
 
 /*!
-    Returns the display text for the standard \a button.
+    Returns the display text for the standard \a button, as shown
+    on the button label. The text is platform- and locale-dependent.
+
+    Returns an empty string if \a button is not a recognized standard button.
 
     \since 6.12
-    \sa StandardButton
+    \sa standardButtonShortcut(), StandardButton
 */
 QString QDialogButtonBox::standardButtonText(StandardButton button)
 {
@@ -902,10 +905,12 @@ QString QDialogButtonBox::standardButtonText(StandardButton button)
 }
 
 /*!
-    Returns the shortcut for the standard \a button.
+    Returns the keyboard shortcut for the standard \a button. The shortcut
+    is platform-dependent. Returns an empty \l QKeySequence if \a button has
+    no associated shortcut or is not a recognized standard button.
 
     \since 6.12
-    \sa StandardButton
+    \sa standardButtonText(), StandardButton
 */
 QKeySequence QDialogButtonBox::standardButtonShortcut(StandardButton button)
 {
