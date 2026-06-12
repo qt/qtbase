@@ -898,17 +898,15 @@ void tst_QHighDpi::moveWindowBetweenScreens()
 
     const auto screens = app->screens();
     QCOMPARE(screens.size(), 3);
-    const auto primaryScreen = screens[0];
     QRect r(screens[0]->geometry().center(), QSize(10, 10));
     QWindow w;
     w.create();
     w.show();
-    QTest::qWaitForWindowExposed(&w);
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
     w.setGeometry(r);
     QCOMPARE(w.geometry(), r);
     QCOMPARE(w.screen(), screens[0]);
 
-    QTransform tf(QTransform::fromScale(2, 2));
     r = QRect(screens[1]->geometry().center(), QSize(10, 10));
     w.setGeometry(r);
     QCOMPARE(w.geometry(), r);
