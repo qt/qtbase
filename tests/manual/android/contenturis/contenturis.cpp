@@ -382,6 +382,7 @@ void ContentUris::canAccessOwnedProviderUri_data()
     QTest::addColumn<QByteArray>("contextDirGetter");
     // The directory each relevant qtprovider_paths.xml entry exposes.
     QTest::newRow("files-path") << QByteArray("getFilesDir");
+    QTest::newRow("cache-path") << QByteArray("getCacheDir");
 }
 
 void ContentUris::canAccessOwnedProviderUri()

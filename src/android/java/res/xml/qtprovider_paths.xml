@@ -2,6 +2,8 @@
 <paths xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- For getFilesDirectory() -->
     <files-path name="files_path" path="/"/>
+    <!-- For getCacheDir() -->
+    <cache-path name="cache_path" path="/"/>
     <!-- For getExternalStorageDirectory() -->
     <external-path name="external_path" path="/"/>
     <!-- For getExternalFilesDir() -->
