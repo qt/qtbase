@@ -21,6 +21,9 @@
 #if QT_CONFIG(clipboard)
 #include "qandroidplatformclipboard.h"
 #endif
+#if QT_CONFIG(draganddrop)
+#include "qandroidplatformdrag.h"
+#endif
 #if QT_CONFIG(accessibility)
 #include "androidjniaccessibility.h"
 #endif
@@ -812,6 +815,9 @@ static bool registerNatives(QJniEnvironment &env)
         && QtAndroidDialogHelpers::registerNatives(env)
 #if QT_CONFIG(clipboard)
         && QAndroidPlatformClipboard::registerNatives(env)
+#endif
+#if QT_CONFIG(draganddrop)
+        && QAndroidPlatformDrag::registerNatives(env)
 #endif
         && QAndroidPlatformWindow::registerNatives(env)
         && QtAndroidWindowEmbedding::registerNatives(env)
