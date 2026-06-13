@@ -7,7 +7,12 @@
 #include <QMessageBox>
 #include <QSharedPointer>
 
+#include <QtCore/QJniObject>
+#include <QtCore/qcoreapplication_platform.h>
+
 using namespace Qt::StringLiterals;
+
+Q_DECLARE_JNI_CLASS(FileProvider, "androidx/core/content/FileProvider")
 
 class ContentUris: public QObject
 {
@@ -28,6 +33,9 @@ private slots:
     void specialFileNames();
 
     void accessNonExistentFile();
+
+    void canAccessOwnedProviderUri_data();
+    void canAccessOwnedProviderUri();
 
     void filePickerSave();
     void filePickerOpen();
@@ -367,6 +375,52 @@ void ContentUris::accessNonExistentFile()
     QVERIFY(!file.isOpen());
     QVERIFY(!file.isReadable());
     file.close();
+}
+
+void ContentUris::canAccessOwnedProviderUri_data()
+{
+    QTest::addColumn<QByteArray>("contextDirGetter");
+    // The directory each relevant qtprovider_paths.xml entry exposes.
+    QTest::newRow("files-path") << QByteArray("getFilesDir");
+}
+
+void ContentUris::canAccessOwnedProviderUri()
+{
+    QFETCH(QByteArray, contextDirGetter);
+
+    using namespace QtJniTypes;
+    const auto *iface = qApp->nativeInterface<QNativeInterface::QAndroidApplication>();
+    QVERIFY(iface);
+    const Context context = iface->context();
+    QVERIFY(context.isValid());
+    const File dir = context.callMethod<File>(contextDirGetter.constData());
+    QVERIFY(dir.isValid());
+    const auto localPath = dir.callMethod<QString>("getAbsolutePath") + "/provider-file.txt"_L1;
+
+    QFile local(localPath);
+    QVERIFY(local.open(QFile::WriteOnly));
+    QCOMPARE(local.write(content), content.size());
+    local.close();
+
+    auto uriFromFileProvider = [&context](const QString &localFilePath) {
+        QString authority = context.callMethod<QString>("getPackageName") + ".qtprovider"_L1;
+        File file(localFilePath);
+        auto uri = FileProvider::callStaticMethod<Uri>("getUriForFile", context, authority, file);
+        if (!uri.isValid())
+            return QString{};
+        return uri.callMethod<QString>("toString");
+    };
+
+    const QString uri = uriFromFileProvider(localPath);
+    QVERIFY2(!uri.isEmpty(), "getUriForFile() found no matching path in qtprovider_paths.xml");
+    QVERIFY(uri.startsWith("content://"_L1));
+
+    QFile viaProvider(uri);
+    QVERIFY2(viaProvider.open(QFile::ReadOnly), "Could not read the app's own content:// URI");
+    QCOMPARE(viaProvider.readAll(), content);
+    viaProvider.close();
+
+    QVERIFY(local.remove());
 }
 
 void ContentUris::dirOperations()
