@@ -15,6 +15,9 @@
 #include "qandroidplatformaccessibility.h"
 #endif
 #include "qandroidplatformclipboard.h"
+#if QT_CONFIG(draganddrop)
+#include "qandroidplatformdrag.h"
+#endif
 #include "qandroidplatformfontdatabase.h"
 #include "qandroidplatformforeignwindow.h"
 #include "qandroidplatformoffscreensurface.h"
@@ -234,6 +237,10 @@ QAndroidPlatformIntegration::QAndroidPlatformIntegration(const QStringList &para
     m_androidPlatformClipboard = new QAndroidPlatformClipboard();
 #endif
 
+#if QT_CONFIG(draganddrop)
+    m_androidPlatformDrag = new QAndroidPlatformDrag();
+#endif
+
     m_androidSystemLocale = new QAndroidSystemLocale;
 
 #if QT_CONFIG(accessibility)
@@ -446,6 +453,10 @@ QAndroidPlatformIntegration::~QAndroidPlatformIntegration()
     delete m_androidPlatformClipboard;
 #endif
 
+#if QT_CONFIG(draganddrop)
+    delete m_androidPlatformDrag;
+#endif
+
     QtAndroid::setAndroidPlatformIntegration(NULL);
 }
 
@@ -458,6 +469,13 @@ QPlatformFontDatabase *QAndroidPlatformIntegration::fontDatabase() const
 QPlatformClipboard *QAndroidPlatformIntegration::clipboard() const
 {
     return m_androidPlatformClipboard;
+}
+#endif
+
+#if QT_CONFIG(draganddrop)
+QPlatformDrag *QAndroidPlatformIntegration::drag() const
+{
+    return m_androidPlatformDrag;
 }
 #endif
 
