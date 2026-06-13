@@ -937,6 +937,11 @@ namespace QRangeModelDetails
     struct MimeDataEntry
     {
         using wrapped_entry = QRangeModelDetails::wrapped_t<q20::remove_cvref_t<Entry>>;
+        template<typename T, typename = void>
+        struct is_constexpr_default_constructible : std::false_type {};
+
+        template<typename T>
+        struct is_constexpr_default_constructible<T, std::void_t<int(*)[(T(), 1)]>> : std::true_type {};
 
         bool isValid() const { return QRangeModelDetails::isValid(m_entry); }
         const wrapped_entry &entry() const
@@ -945,12 +950,20 @@ namespace QRangeModelDetails
                 // While we mark null-items or indexes in null-rows as not draggable,
                 // client code might override that, or explicitly call QRM::mimeData()
                 // with indexes that point at null-rows or -items.
-                if (!QRangeModelDetails::isValid(m_entry)) {
+                if (Q_UNLIKELY(!QRangeModelDetails::isValid(m_entry))) {
 #ifndef QT_NO_DEBUG
                     qDebug("QRangeModel::mimeData: null-entry, test with isValid before accessing");
 #endif
-                    static const wrapped_entry emptyDefault;
-                    return QRangeModelDetails::refTo(emptyDefault);
+                    constexpr bool is_constexpr_default_constructible_v =
+                                        is_constexpr_default_constructible<wrapped_entry>::value;
+                    if constexpr (is_constexpr_default_constructible_v) {
+                        Q_CONSTINIT static const wrapped_entry emptyDefault;
+                        return QRangeModelDetails::refTo(emptyDefault);
+                    } else {
+                        // known to cause runtime initialization
+                        static const wrapped_entry emptyDefault;
+                        return QRangeModelDetails::refTo(emptyDefault);
+                    }
                 }
             }
             return std::as_const(QRangeModelDetails::refTo(m_entry));
