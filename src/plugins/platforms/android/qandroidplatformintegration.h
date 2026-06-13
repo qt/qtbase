@@ -86,6 +86,10 @@ public:
     QPlatformClipboard *clipboard() const override;
 #endif
 
+#if QT_CONFIG(draganddrop)
+    QPlatformDrag *drag() const override;
+#endif
+
     QPlatformInputContext *inputContext() const override;
     QPlatformNativeInterface *nativeInterface() const override;
     QPlatformServices *services() const override;
@@ -145,6 +149,10 @@ private:
 
 #ifndef QT_NO_CLIPBOARD
     QPlatformClipboard *m_androidPlatformClipboard;
+#endif
+
+#if QT_CONFIG(draganddrop)
+    QPlatformDrag *m_androidPlatformDrag = nullptr;
 #endif
 
     QAndroidSystemLocale *m_androidSystemLocale;

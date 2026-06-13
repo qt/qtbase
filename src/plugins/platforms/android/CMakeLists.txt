@@ -83,6 +83,13 @@ qt_internal_extend_target(QAndroidIntegrationPlugin CONDITION QT_FEATURE_clipboa
         qandroidplatformclipboard.cpp qandroidplatformclipboard.h
 )
 
+qt_internal_extend_target(QAndroidIntegrationPlugin CONDITION QT_FEATURE_draganddrop
+    SOURCES
+        qandroidplatformdrag.cpp qandroidplatformdrag.h
+    NO_UNITY_BUILD_SOURCES
+        qandroidplatformdrag.cpp
+)
+
 qt_internal_extend_target(QAndroidIntegrationPlugin CONDITION QT_FEATURE_accessibility
     SOURCES
         androidjniaccessibility.cpp androidjniaccessibility.h

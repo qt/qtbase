@@ -275,6 +275,21 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
         return QtInputDelegate.sendGenericMotionEvent(event, getId());
     }
 
+    @Override
+    protected void onAttachedToWindow()
+    {
+        super.onAttachedToWindow();
+        setOnDragListener(QtDragManager.getInstance());
+    }
+
+    @Override
+    protected void onDetachedFromWindow()
+    {
+        QtDragManager.getInstance().onSourceWindowDetached(this);
+        setOnDragListener(null);
+        super.onDetachedFromWindow();
+    }
+
     @UsedFromNativeCode
     void removeWindow()
     {
