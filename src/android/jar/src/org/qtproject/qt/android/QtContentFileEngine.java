@@ -7,6 +7,7 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.pm.ProviderInfo;
 
 import android.database.Cursor;
 
@@ -69,7 +70,17 @@ class QtContentFileEngine
     {
         Context context = QtNative.getContext();
         int status = context.checkUriPermission(uri, Process.myPid(), Process.myUid(), permission);
+        if (status == PackageManager.PERMISSION_GRANTED)
+            return true;
 
-        return status == PackageManager.PERMISSION_GRANTED;
+        // No permission is needed to access an app's own content provider.
+        final String authority = uri.getAuthority();
+        if (authority != null) {
+            final PackageManager pm = context.getPackageManager();
+            final ProviderInfo provider = pm.resolveContentProvider(authority, 0);
+            if (provider != null && context.getPackageName().equals(provider.packageName))
+                return true;
+        }
+        return false;
     }
 }
