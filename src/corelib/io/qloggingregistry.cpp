@@ -364,7 +364,11 @@ void QLoggingRegistry::initializeRules()
     Q_ASSERT(baseConfigFileName.startsWith(u'/'));
 
     // get rules from Qt data configuration path
-    qr = loadRulesFromFile(QLibraryInfo::path(QLibraryInfo::DataPath) + baseConfigFileName);
+    {
+        const QStringList dataPaths = QLibraryInfo::paths(QLibraryInfo::DataPath);
+        for (const QString &dataPath : dataPaths)
+            qr += loadRulesFromFile(dataPath + baseConfigFileName);
+    }
 
     // get rules from user's/system configuration
     // locateAll() returns the user's file (most overriding) first
