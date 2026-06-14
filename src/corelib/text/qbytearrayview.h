@@ -195,7 +195,18 @@ public:
     { return QByteArrayView(data, Size); }
     [[nodiscard]] inline QByteArray toByteArray() const; // defined in qbytearray.h
 
-    [[nodiscard]] constexpr qsizetype size() const noexcept { return m_size; }
+    [[nodiscard]] static constexpr qsizetype maxSize() noexcept
+    {
+        // -1 to deal with the pointer one-past-the-end;
+        return QtPrivate::MaxAllocSize - 1;
+    }
+
+    [[nodiscard]] constexpr qsizetype size() const noexcept
+    {
+        constexpr size_t MaxSize = maxSize();
+        Q_PRESUME(size_t(m_size) <= MaxSize);
+        return m_size;
+    }
     [[nodiscard]] constexpr const_pointer data() const noexcept { return m_data; }
     [[nodiscard]] constexpr const_pointer constData() const noexcept { return data(); }
 
@@ -372,12 +383,6 @@ public:
     { return size(); }
     [[nodiscard]] constexpr char first() const { return front(); }
     [[nodiscard]] constexpr char last()  const { return back(); }
-
-    [[nodiscard]] static constexpr qsizetype maxSize() noexcept
-    {
-        // -1 to deal with the pointer one-past-the-end;
-        return QtPrivate::MaxAllocSize - 1;
-    }
 
 private:
     Q_ALWAYS_INLINE constexpr void verify([[maybe_unused]] qsizetype pos = 0,
