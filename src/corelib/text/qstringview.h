@@ -544,8 +544,11 @@ qsizetype QtPrivate::findString(QStringView str, qsizetype from, QChar ch, Qt::C
             n = qustrchr(QStringView(n, e), c);
         else
             n = qustrcasechr(QStringView(n, e), c);
-        if (n != e)
-            return n - s;
+        if (n != e) {
+            qsizetype ret = n - s;
+            Q_PRESUME(ret >= 0);
+            return ret;
+        }
     }
     return -1;
 }

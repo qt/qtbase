@@ -7,6 +7,11 @@ if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)
     find_package(Qt6BuildInternals REQUIRED COMPONENTS STANDALONE_TEST)
 endif()
 
+if(MSVC_VERSION LESS_EQUAL 1950)
+    # MSVC 2022 is ICE'ing in this test
+    return()
+endif()
+
 qt_internal_add_test(tst_tostring
     SOURCES
         tst_tostring.cpp

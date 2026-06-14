@@ -491,7 +491,9 @@ qsizetype QtPrivate::findByteArray(QByteArrayView haystack, qsizetype from, char
         const char *const b = haystack.data();
         const auto n = static_cast<const char *>(memchr(b + from, needle, size_t(size - from)));
         if (n) {
-            return n - b;
+            qsizetype ret = n - b;
+            Q_PRESUME(ret >= 0);
+            return ret;
         }
     }
     return -1;
@@ -506,7 +508,12 @@ qsizetype QtPrivate::lastIndexOf(QByteArrayView haystack, qsizetype from, uchar 
 
     const char *const b = haystack.data();
     const void *n = b ? qmemrchr(b, needle, from + 1) : nullptr;
-    return n ? static_cast<const char *>(n) - b : -1;
+    if (auto ptr = static_cast<const char *>(n)) {
+        qsizetype ret = ptr - b;
+        Q_PRESUME(ret >= 0);
+        return ret;
+    }
+    return -1;
 }
 
 QT_END_NAMESPACE
