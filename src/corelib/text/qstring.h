@@ -408,7 +408,7 @@ public:
     [[nodiscard]] qsizetype indexOf(QLatin1StringView s, qsizetype from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     [[nodiscard]] qsizetype indexOf(const QString &s, qsizetype from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     [[nodiscard]] qsizetype indexOf(QStringView s, qsizetype from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
-    { return QtPrivate::findString(*this, from, s, cs); }
+    { return QStringView(begin(), size()).indexOf(s, from, cs); }
     [[nodiscard]] qsizetype lastIndexOf(QChar c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return lastIndexOf(c, -1, cs); }
     [[nodiscard]] QT_CORE_INLINE_SINCE(6, 8)
@@ -423,7 +423,7 @@ public:
     [[nodiscard]] qsizetype lastIndexOf(QStringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return lastIndexOf(s, size(), cs); }
     [[nodiscard]] qsizetype lastIndexOf(QStringView s, qsizetype from, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
-    { return QtPrivate::lastIndexOf(*this, from, s, cs); }
+    { return QStringView(begin(), size()).lastIndexOf(s, from, cs); }
 
     [[nodiscard]] inline bool contains(QChar c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     [[nodiscard]] inline bool contains(const QString &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
@@ -531,13 +531,13 @@ public:
 #endif
     bool startsWith(const QString &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     [[nodiscard]] bool startsWith(QStringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
-    { return QtPrivate::startsWith(*this, s, cs); }
+    { return QStringView(begin(), size()).startsWith(s, cs); }
     bool startsWith(QLatin1StringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     bool startsWith(QChar c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
 
     bool endsWith(const QString &s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     [[nodiscard]] bool endsWith(QStringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
-    { return QtPrivate::endsWith(*this, s, cs); }
+    { return QStringView(begin(), size()).endsWith(s, cs); }
     bool endsWith(QLatin1StringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     bool endsWith(QChar c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
 

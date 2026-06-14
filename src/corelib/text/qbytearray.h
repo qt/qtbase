@@ -151,20 +151,20 @@ public:
     QT_CORE_INLINE_SINCE(6, 8)
     qsizetype indexOf(char c, qsizetype from = 0) const;
     qsizetype indexOf(QByteArrayView bv, qsizetype from = 0) const
-    { return QtPrivate::findByteArray(qToByteArrayViewIgnoringNull(*this), from, bv); }
+    { return QByteArrayView(begin(), size()).indexOf(bv, from); }
 
     QT_CORE_INLINE_SINCE(6, 8)
     qsizetype lastIndexOf(char c, qsizetype from = -1) const;
     qsizetype lastIndexOf(QByteArrayView bv) const
     { return lastIndexOf(bv, size()); }
     qsizetype lastIndexOf(QByteArrayView bv, qsizetype from) const
-    { return QtPrivate::lastIndexOf(qToByteArrayViewIgnoringNull(*this), from, bv); }
+    { return QByteArrayView(begin(), size()).lastIndexOf(bv, from); }
 
     inline bool contains(char c) const;
     inline bool contains(QByteArrayView bv) const;
     qsizetype count(char c) const;
     qsizetype count(QByteArrayView bv) const
-    { return QtPrivate::count(qToByteArrayViewIgnoringNull(*this), bv); }
+    { return QByteArrayView(begin(), size()).count(bv); }
 
     inline int compare(QByteArrayView a, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept;
 
@@ -233,12 +233,12 @@ public:
 #endif
 
     bool startsWith(QByteArrayView bv) const
-    { return QtPrivate::startsWith(qToByteArrayViewIgnoringNull(*this), bv); }
+    { return QByteArrayView(begin(), size()).startsWith(bv); }
     bool startsWith(char c) const { return size() > 0 && front() == c; }
 
     bool endsWith(char c) const { return size() > 0 && back() == c; }
     bool endsWith(QByteArrayView bv) const
-    { return QtPrivate::endsWith(qToByteArrayViewIgnoringNull(*this), bv); }
+    { return QByteArrayView(begin(), size()).endsWith(bv); }
 
     bool isUpper() const;
     bool isLower() const;
