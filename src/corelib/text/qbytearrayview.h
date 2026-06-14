@@ -276,17 +276,35 @@ public:
     }
 
     [[nodiscard]] bool startsWith(QByteArrayView other) const noexcept
-    { return QtPrivate::startsWith(*this, other); }
+    {
+#if defined(Q_CC_GNU) || __has_builtin(__builtin_constant_p)
+        if (__builtin_constant_p(other.m_size) && other.m_size == 1)
+            return startsWith(other.front());
+#endif
+        return QtPrivate::startsWith(*this, other);
+    }
     [[nodiscard]] constexpr bool startsWith(char c) const noexcept
     { return !empty() && front() == c; }
 
     [[nodiscard]] bool endsWith(QByteArrayView other) const noexcept
-    { return QtPrivate::endsWith(*this, other); }
+    {
+#if defined(Q_CC_GNU) || __has_builtin(__builtin_constant_p)
+        if (__builtin_constant_p(other.m_size) && other.m_size == 1)
+            return endsWith(other.front());
+#endif
+        return QtPrivate::endsWith(*this, other);
+    }
     [[nodiscard]] constexpr bool endsWith(char c) const noexcept
     { return !empty() && back() == c; }
 
     [[nodiscard]] qsizetype indexOf(QByteArrayView a, qsizetype from = 0) const noexcept
-    { return QtPrivate::findByteArray(*this, from, a); }
+    {
+#if defined(Q_CC_GNU) || __has_builtin(__builtin_constant_p)
+        if (__builtin_constant_p(a.m_size) && a.m_size == 1)
+            return indexOf(a.front(), from);
+#endif
+        return QtPrivate::findByteArray(*this, from, a);
+    }
     [[nodiscard]] qsizetype indexOf(char ch, qsizetype from = 0) const noexcept
     { return QtPrivate::findByteArray(*this, from, ch); }
 
@@ -298,12 +316,24 @@ public:
     [[nodiscard]] qsizetype lastIndexOf(QByteArrayView a) const noexcept
     { return lastIndexOf(a, size()); }
     [[nodiscard]] qsizetype lastIndexOf(QByteArrayView a, qsizetype from) const noexcept
-    { return QtPrivate::lastIndexOf(*this, from, a); }
+    {
+#if defined(Q_CC_GNU) || __has_builtin(__builtin_constant_p)
+        if (__builtin_constant_p(a.m_size) && a.m_size == 1)
+            return lastIndexOf(a.front(), from);
+#endif
+        return QtPrivate::lastIndexOf(*this, from, a);
+    }
     [[nodiscard]] qsizetype lastIndexOf(char ch, qsizetype from = -1) const noexcept
     { return QtPrivate::lastIndexOf(*this, from, ch); }
 
     [[nodiscard]] qsizetype count(QByteArrayView a) const noexcept
-    { return QtPrivate::count(*this, a); }
+    {
+#if defined(Q_CC_GNU) || __has_builtin(__builtin_constant_p)
+        if (__builtin_constant_p(a.m_size) && a.m_size == 1)
+            return count(a.front());
+#endif
+        return QtPrivate::count(*this, a);
+    }
     [[nodiscard]] qsizetype count(char ch) const noexcept
     { return QtPrivate::count(*this, QByteArrayView(&ch, 1)); }
 
@@ -404,6 +434,15 @@ template<typename QByteArrayLike,
 
 inline int QByteArrayView::compare(QByteArrayView a) const noexcept
 {
+#if defined(Q_CC_GNU) || __has_builtin(__builtin_constant_p)
+    if (__builtin_constant_p(a.m_size) && a.m_size == 1) {
+        if (isEmpty())
+            return -1;
+        if (int diff = uchar(front()) - uchar(a.front()))
+            return diff;
+        return size() > 1 ? 1 : 0;
+    }
+#endif
     return QtPrivate::compareMemory(*this, a);
 }
 
