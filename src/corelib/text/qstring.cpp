@@ -4423,6 +4423,7 @@ QString &QString::replace(QChar c, QLatin1StringView after, Qt::CaseSensitivity 
 */
 
 /*!
+  \fn qsizetype QString::indexOf(const QString &str, qsizetype from, Qt::CaseSensitivity cs) const
   \include qstring.qdocinc {qstring-first-index-of} {string} {str}
 
   \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
@@ -4435,10 +4436,6 @@ QString &QString::replace(QChar c, QLatin1StringView after, Qt::CaseSensitivity 
 
   \sa lastIndexOf(), contains(), count()
 */
-qsizetype QString::indexOf(const QString &str, qsizetype from, Qt::CaseSensitivity cs) const
-{
-    return QtPrivate::findString(QStringView(unicode(), size()), from, QStringView(str.unicode(), str.size()), cs);
-}
 
 /*!
     \fn qsizetype QString::indexOf(QStringView str, qsizetype from, Qt::CaseSensitivity cs) const
@@ -4455,6 +4452,7 @@ qsizetype QString::indexOf(const QString &str, qsizetype from, Qt::CaseSensitivi
 */
 
 /*!
+  \fn qsizetype QString::indexOf(QLatin1StringView str, qsizetype from, Qt::CaseSensitivity cs) const
   \since 4.5
 
   \include {qstring.qdocinc} {qstring-first-index-of} {Latin-1 string viewed by} {str}
@@ -4470,11 +4468,6 @@ qsizetype QString::indexOf(const QString &str, qsizetype from, Qt::CaseSensitivi
   \sa lastIndexOf(), contains(), count()
 */
 
-qsizetype QString::indexOf(QLatin1StringView str, qsizetype from, Qt::CaseSensitivity cs) const
-{
-    return QtPrivate::findString(QStringView(unicode(), size()), from, str, cs);
-}
-
 /*!
     \fn qsizetype QString::indexOf(QChar ch, qsizetype from, Qt::CaseSensitivity cs) const
     \overload indexOf()
@@ -4483,6 +4476,7 @@ qsizetype QString::indexOf(QLatin1StringView str, qsizetype from, Qt::CaseSensit
 */
 
 /*!
+  \fn qsizetype QString::lastIndexOf(const QString &str, qsizetype from, Qt::CaseSensitivity cs) const
   \include qstring.qdocinc {qstring-last-index-of} {string} {str}
 
   \include qstring.qdocinc negative-index-start-search-from-end
@@ -4504,10 +4498,6 @@ qsizetype QString::indexOf(QLatin1StringView str, qsizetype from, Qt::CaseSensit
 
   \sa indexOf(), contains(), count()
 */
-qsizetype QString::lastIndexOf(const QString &str, qsizetype from, Qt::CaseSensitivity cs) const
-{
-    return QtPrivate::lastIndexOf(QStringView(*this), from, str, cs);
-}
 
 /*!
   \fn qsizetype QString::lastIndexOf(const QString &str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
@@ -4528,6 +4518,7 @@ qsizetype QString::lastIndexOf(const QString &str, qsizetype from, Qt::CaseSensi
 
 
 /*!
+  \fn qsizetype QString::lastIndexOf(QLatin1StringView str, qsizetype from, Qt::CaseSensitivity cs) const
   \since 4.5
   \overload lastIndexOf()
 
@@ -4552,10 +4543,6 @@ qsizetype QString::lastIndexOf(const QString &str, qsizetype from, Qt::CaseSensi
 
   \sa indexOf(), contains(), count()
 */
-qsizetype QString::lastIndexOf(QLatin1StringView str, qsizetype from, Qt::CaseSensitivity cs) const
-{
-    return QtPrivate::lastIndexOf(*this, from, str, cs);
-}
 
 /*!
   \fn qsizetype QString::lastIndexOf(QLatin1StringView str, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
