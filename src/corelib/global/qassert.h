@@ -116,10 +116,10 @@ inline bool qt_assume_is_deprecated(bool cond) noexcept { return cond; }
 #endif
 
 #define Q_PRESUME(assumption)       \
-    [&] {                            \
+    do {                            \
         Q_ASSERT(assumption);       \
         Q_PRESUME_IMPL(assumption); \
-    }()
+    } while (false)
 
 // Don't use these in C++ mode, use static_assert directly.
 // These are here only to keep old code compiling.
