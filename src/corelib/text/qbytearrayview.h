@@ -307,7 +307,8 @@ public:
     [[nodiscard]] qsizetype count(char ch) const noexcept
     { return QtPrivate::count(*this, QByteArrayView(&ch, 1)); }
 
-    inline int compare(QByteArrayView a, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept;
+    inline int compare(QByteArrayView a) const noexcept;
+    inline int compare(QByteArrayView a, Qt::CaseSensitivity) const noexcept;
 
     [[nodiscard]] inline bool isValidUtf8() const noexcept { return QtPrivate::isValidUtf8(*this); }
 
@@ -401,9 +402,14 @@ template<typename QByteArrayLike,
 [[nodiscard]] inline QByteArrayView qToByteArrayViewIgnoringNull(const QByteArrayLike &b) noexcept
 { return QByteArrayView(b.begin(), b.size()); }
 
+inline int QByteArrayView::compare(QByteArrayView a) const noexcept
+{
+    return QtPrivate::compareMemory(*this, a);
+}
+
 inline int QByteArrayView::compare(QByteArrayView a, Qt::CaseSensitivity cs) const noexcept
 {
-    return cs == Qt::CaseSensitive ? QtPrivate::compareMemory(*this, a) :
+    return cs == Qt::CaseSensitive ? compare(a) :
                                      qstrnicmp(data(), size(), a.data(), a.size());
 }
 
