@@ -998,8 +998,9 @@ static std::unique_lock<QBasicMutex> initDefaultPaths(std::unique_lock<QBasicMut
        QLibraryInfo::path() uses QSettings, so in order to
        avoid a dead-lock, we can't hold the global mutex while
        calling it.
+       ### We only support the a single path out of QLibraryInfo.
     */
-    QString systemPath = QLibraryInfo::path(QLibraryInfo::SettingsPath) + u'/';
+    QString systemPath = QLibraryInfo::paths(QLibraryInfo::SettingsPath).value(0, QString()) + u'/';
 
     locker.lock();
     if (pathHash->isEmpty()) {
