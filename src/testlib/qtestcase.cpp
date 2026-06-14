@@ -2456,16 +2456,18 @@ QString QTest::qFindTestData(const QString& base, const char *file, int line, co
     if (found.isEmpty()) {
         const char *testObjectName = QTestResult::currentTestObjectName();
         if (testObjectName) {
-            const QString testsPath = QLibraryInfo::path(QLibraryInfo::TestsPath);
-            const QString candidate = "%1/%2/%3"_L1
-                .arg(testsPath, QFile::decodeName(testObjectName).toLower(), base);
-            if (QFileInfo::exists(candidate)) {
-                found = candidate;
-            } else if (QTestLog::verboseLevel() >= 2) {
-                QTestLog::info(qPrintable("testdata %1 not found in tests install path [%2]; "
-                                          "checking next location"_L1
-                                          .arg(base, QDir::toNativeSeparators(candidate))),
-                               file, line);
+            const QStringList testsPaths = QLibraryInfo::paths(QLibraryInfo::TestsPath);
+            for (const QString &testsPath : testsPaths) {
+                const QString candidate = "%1/%2/%3"_L1
+                        .arg(testsPath, QFile::decodeName(testObjectName).toLower(), base);
+                if (QFileInfo::exists(candidate)) {
+                    found = candidate;
+                } else if (QTestLog::verboseLevel() >= 2) {
+                    QTestLog::info(qPrintable("testdata %1 not found in tests install path [%2]; "
+                                              "checking next location"_L1
+                                              .arg(base, QDir::toNativeSeparators(candidate))),
+                                   file, line);
+                }
             }
         }
     }
