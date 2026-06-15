@@ -319,6 +319,7 @@ void QSaveFile::close()
 
 /*!
     \reimp
+    \since 6.12
     Sets the \a permissions the file shall be given on successful commit().
 
     While being written via QSaveFile the file may have more restrictive
@@ -333,6 +334,7 @@ bool QSaveFile::setPermissions(Permissions permissions)
 
 /*!
     \reimp
+    \since 6.12
     Reports the permissions the file shall be given on successful commit().
 */
 QFileDevice::Permissions QSaveFile::permissions() const
