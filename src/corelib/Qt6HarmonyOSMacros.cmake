@@ -905,15 +905,18 @@ function(_qt_internal_harmonyos_generate_test_bundle_deployment_settings)
     string(APPEND JSON_CONTENT
         ",\n    \"qtQmlDirectory\": \"${_qt_install_root}/${_qt_install_qml_dir}\"")
 
-    # Add the build-tree QML directory as a higher-priority import path.
-    # harmonydeployqt only scans qtQmlDirectory (the installed Qt prefix),
-    # which fails in two cases: a prefix build where install has not been run
-    # yet, and a non-prefix build where nothing is ever installed.
-    # harmonydeployqt processes qml-import-paths before qtQmlDirectory, so
-    # build-tree files shadow installed copies via copyFileIfNewer's
-    # mtime-based priority.  In a superbuild the two paths resolve to the
-    # same absolute location; the normalised-path comparison below suppresses
-    # the duplicate entry.
+    # Add the build-tree QML and plugins directories as higher-priority import
+    # paths.  harmonydeployqt only scans the installed Qt prefix
+    # (qtQmlDirectory / qtPluginsDirectory), which fails in two cases: a
+    # prefix build where install has not been run yet, and a non-prefix build
+    # where nothing is ever installed.  harmonydeployqt processes
+    # qml-import-paths and plugins-import-paths before their respective
+    # install-prefix counterparts, so build-tree files shadow installed copies
+    # via copyFileIfNewer's mtime-based priority.  In a superbuild the two
+    # paths resolve to the same absolute location; the normalised-path
+    # comparisons below suppress duplicate entries.  Both fields are arrays
+    # for consistency with QT_QML_IMPORT_PATH and to allow multiple paths in
+    # the future; currently each holds at most one entry.
     set(_build_qml_dir "${QT_BUILD_DIR}/${INSTALL_QMLDIR}")
     get_filename_component(_norm_build_qml   "${_build_qml_dir}"                          ABSOLUTE)
     get_filename_component(_norm_install_qml "${_qt_install_root}/${_qt_install_qml_dir}" ABSOLUTE)
@@ -924,6 +927,17 @@ function(_qt_internal_harmonyos_generate_test_bundle_deployment_settings)
     unset(_build_qml_dir)
     unset(_norm_build_qml)
     unset(_norm_install_qml)
+
+    set(_build_plugins_dir "${QT_BUILD_DIR}/${INSTALL_PLUGINSDIR}")
+    get_filename_component(_norm_build_plugins   "${_build_plugins_dir}"                          ABSOLUTE)
+    get_filename_component(_norm_install_plugins "${_qt_install_root}/${_qt_install_plugins_dir}" ABSOLUTE)
+    if(NOT "${_norm_build_plugins}" STREQUAL "${_norm_install_plugins}")
+        string(APPEND JSON_CONTENT
+            ",\n    \"plugins-import-paths\": [\"${_norm_build_plugins}\"]")
+    endif()
+    unset(_build_plugins_dir)
+    unset(_norm_build_plugins)
+    unset(_norm_install_plugins)
 
     if(QT_HOST_PATH)
         string(APPEND JSON_CONTENT

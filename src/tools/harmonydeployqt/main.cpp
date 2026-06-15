@@ -41,6 +41,7 @@ struct Options
     QString ndkRoot;
     QStringList qmlRootPaths;
     QStringList qmlImportPaths;
+    QStringList pluginsImportPaths; // Build-tree plugin search paths (processed before qtPluginsDirectory)
     QStringList targetArchs;
 
     // Qt installation directories (following androiddeployqt pattern)
@@ -300,6 +301,11 @@ static bool readInputConfiguration(Options *options)
     QJsonArray importPathsArray = obj["qml-import-paths"_L1].toArray();
     for (const QJsonValue &value : importPathsArray)
         options->qmlImportPaths.append(value.toString());
+
+    // Parse plugins import paths
+    QJsonArray pluginsImportPathsArray = obj["plugins-import-paths"_L1].toArray();
+    for (const QJsonValue &value : pluginsImportPathsArray)
+        options->pluginsImportPaths.append(value.toString());
 
     // Parse target architectures
     QJsonArray archArray = obj["harmonyos-target-arch"_L1].toArray();
@@ -1562,6 +1568,65 @@ static bool copyAllQtLibs(const Options &options)
 
 static bool copyAllQtPlugins(const Options &options)
 {
+    // Copy all plugins from one plugins root directory.
+    auto copyPluginsFromDir = [&options](const QString &pluginsRootPath) -> bool {
+        QDir pluginsDir(pluginsRootPath);
+        const QStringList categories = pluginsDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+
+        for (const QString &category : categories) {
+            QDir categoryDir(pluginsDir.filePath(category));
+            const QFileInfoList plugins = categoryDir.entryInfoList({"*.so"_L1}, QDir::Files);
+
+            for (const QFileInfo &pluginInfo : plugins) {
+                const QString &plugin = pluginInfo.fileName();
+                const QString &pluginPath = pluginInfo.filePath();
+
+                if (category == "platforms"_L1 && plugin == "libqohos.so"_L1) {
+                    // Platform plugin goes flat to root libs directory
+                    for (const QString &arch : options.targetArchs) {
+                        QString destPath = options.outputDirectory + "/entry/libs/"_L1 + arch + "/libqohos.so"_L1;
+                        QDir().mkpath(QFileInfo(destPath).absolutePath());
+                        if (!copyFileIfNewer(pluginPath, destPath, options.verbose))
+                            return false;
+                    }
+                } else {
+                    // All other plugins go into their category subdirectory
+                    QString relativeDestPath = category + "/"_L1 + plugin;
+                    if (!copyFileToArchitectures(options, pluginPath, relativeDestPath, false))
+                        return false;
+                }
+
+                if (!options.depFilePath.isEmpty())
+                    dependenciesForDepfile << pluginPath;
+            }
+        }
+        return true;
+    };
+
+    // Process plugins-import-paths first (typically CMAKE_BINARY_DIR/plugins,
+    // i.e. the module's own build-tree plugin output).  Files written here
+    // receive dest mtime = now, so the subsequent qtPluginsDirectory pass
+    // skips any file that was already copied — this gives build-dir contents
+    // unconditional priority over the installed Qt prefix without requiring a
+    // force-overwrite flag.
+    for (const QString &importPath : options.pluginsImportPaths) {
+        if (!QDir(importPath).exists()) {
+            if (options.verbose)
+                fprintf(stdout, "Plugins import path not found, skipping: %s\n",
+                        qPrintable(importPath));
+            continue;
+        }
+        if (options.verbose)
+            fprintf(stdout, "Copying Qt plugins from import path: %s\n",
+                    qPrintable(importPath));
+        if (!copyPluginsFromDir(importPath))
+            return false;
+    }
+
+    // Process qtPluginsDirectory second (the installed Qt prefix).  Files
+    // already present in dest (copied from plugins-import-paths above) are
+    // skipped by copyFileIfNewer; plugins that exist only in the installed
+    // prefix are copied normally.
     if (options.qtPluginsDirectory.isEmpty())
         return true;
 
@@ -1576,38 +1641,7 @@ static bool copyAllQtPlugins(const Options &options)
     if (options.verbose)
         fprintf(stdout, "Copying all Qt plugins from %s\n", qPrintable(options.qtPluginsDirectory));
 
-    QDir pluginsDir(options.qtPluginsDirectory);
-    QStringList categories = pluginsDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
-
-    for (const QString &category : categories) {
-        QDir categoryDir(pluginsDir.filePath(category));
-        const QFileInfoList plugins = categoryDir.entryInfoList({"*.so"_L1}, QDir::Files);
-
-        for (const QFileInfo &pluginInfo : plugins) {
-            const QString &plugin = pluginInfo.fileName();
-            const QString &pluginPath = pluginInfo.filePath();
-
-            if (category == "platforms"_L1 && plugin == "libqohos.so"_L1) {
-                // Platform plugin goes flat to root libs directory
-                for (const QString &arch : options.targetArchs) {
-                    QString destPath = options.outputDirectory + "/entry/libs/"_L1 + arch + "/libqohos.so"_L1;
-                    QDir().mkpath(QFileInfo(destPath).absolutePath());
-                    if (!copyFileIfNewer(pluginPath, destPath, options.verbose))
-                        return false;
-                }
-            } else {
-                // All other plugins go into their category subdirectory
-                QString relativeDestPath = category + "/"_L1 + plugin;
-                if (!copyFileToArchitectures(options, pluginPath, relativeDestPath, false))
-                    return false;
-            }
-
-            if (!options.depFilePath.isEmpty())
-                dependenciesForDepfile << pluginPath;
-        }
-    }
-
-    return true;
+    return copyPluginsFromDir(options.qtPluginsDirectory);
 }
 
 // Copy user-supplied extra plugins listed in QT_HARMONYOS_EXTRA_PLUGINS into
