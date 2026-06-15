@@ -2823,7 +2823,7 @@ void QRhiD3D11::bindShaderResources(const QD3D11ShaderResourceBindings::Resource
                 if (count) {
                     if (rtUavState.update(rtD, batch.resources.constData(), count)) {
                         context->OMSetRenderTargetsAndUnorderedAccessViews(UINT(rtD->colorAttCount), rtD->colorAttCount ? rtD->rtv : nullptr, rtD->dsv,
-                                                                           UINT(rtD->colorAttCount), count, batch.resources.constData(), nullptr);
+                                                                           UINT(batch.startBinding), count, batch.resources.constData(), nullptr);
                     }
                     contextState.fsHighestActiveUavBinding = qMax(contextState.fsHighestActiveUavBinding,
                                                                   int(batch.startBinding + count) - 1);
