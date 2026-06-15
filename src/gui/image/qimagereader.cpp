@@ -821,6 +821,7 @@ QSize QImageReader::size() const
 }
 
 /*!
+ *  \since 6.12
  *  Returns the effective size of the image accounting for transformation,
  *  without actually reading the image contents.
  *
