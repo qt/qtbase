@@ -27,6 +27,28 @@ static inline bool myFuzzyCompare(const QQuaternion &q1, const QQuaternion &q2)
     return myFuzzyCompare(d * d, 1.0f);
 }
 
+static inline double angularDistance(const QQuaternion &q1, const QQuaternion &q2)
+{
+    // For normalized quaternions, the scalar component of the relative rotation
+    // q2 * conjugate(q1) is dot(q1, q2). Since a rotation of angle theta has
+    // scalar component cos(theta / 2), the orientation distance is
+    // 2 * acos(abs(dot)). The absolute value accounts for q and -q representing
+    // the same orientation.
+    const QQuaternion n1 = q1.normalized();
+    const QQuaternion n2 = q2.normalized();
+    // Measure the distance in double precision. For nearly equal quaternions,
+    // acos(dot) is very sensitive to dot being rounded just below 1.0f; with a
+    // float dot product, a one-ulp error can exceed the test tolerance by itself.
+    const double dotProduct =
+          double(n1.scalar()) * double(n2.scalar())
+        + double(n1.x())      * double(n2.x())
+        + double(n1.y())      * double(n2.y())
+        + double(n1.z())      * double(n2.z());
+    const double absoluteDot = qAbs(dotProduct);
+    const double clampedDot = qMin(absoluteDot, 1.0);
+    return 2.0 * std::acos(clampedDot);
+}
+
 static inline bool myFuzzyCompare(QQuaternion::Axis lhs, QVector3D rhs)
 {
     return myFuzzyCompare(lhs.toVector3D(), rhs);
@@ -124,6 +146,9 @@ private slots:
 
     void slerp_data();
     void slerp();
+
+    void fastSlerp_data();
+    void fastSlerp();
 
     void nlerp_data();
     void nlerp();
@@ -1276,6 +1301,74 @@ void tst_QQuaternion::slerp()
     QCOMPARE(result.y(), q3.y());
     QCOMPARE(result.z(), q3.z());
     QCOMPARE(result.scalar(), q3.scalar());
+}
+
+// Test fast spherical interpolation of quaternions.
+void tst_QQuaternion::fastSlerp_data()
+{
+    slerp_data();
+
+    const auto addFastSlerpRow =
+        [](const char *tag, float x1, float y1, float z1, float angle1,
+           float x2, float y2, float z2, float angle2, float t) {
+            const QQuaternion q1 = QQuaternion::fromAxisAndAngle(x1, y1, z1, angle1);
+            const QQuaternion q2 = QQuaternion::fromAxisAndAngle(x2, y2, z2, angle2);
+            QVector3D axis;
+            float angle = 0.0f;
+            QQuaternion::slerp(q1, q2, t).getAxisAndAngle(&axis, &angle);
+
+            QTest::newRow(tag)
+                << x1 << y1 << z1 << angle1
+                << x2 << y2 << z2 << angle2
+                << t
+                << axis.x() << axis.y() << axis.z() << angle;
+        };
+
+    addFastSlerpRow("different axes",
+                    1.0f, 0.0f, 0.0f, 35.0f,
+                    0.0f, 1.0f, 1.0f, 170.0f,
+                    0.35f);
+    addFastSlerpRow("different axes low t",
+                    1.0f, 0.0f, 0.0f, 35.0f,
+                    0.0f, 1.0f, 1.0f, 170.0f,
+                    0.2f);
+    addFastSlerpRow("different axes high t",
+                    1.0f, 0.0f, 0.0f, 35.0f,
+                    0.0f, 1.0f, 1.0f, 170.0f,
+                    0.73f);
+    addFastSlerpRow("half turn",
+                    1.0f, 0.0f, 0.0f, 0.0f,
+                    1.0f, 0.0f, 0.0f, 180.0f,
+                    0.42f);
+    addFastSlerpRow("small angle",
+                    0.0f, 1.0f, 0.0f, 10.0f,
+                    0.0f, 1.0f, 0.0f, 11.0f,
+                    0.61f);
+}
+
+void tst_QQuaternion::fastSlerp()
+{
+    QFETCH(float, x1);
+    QFETCH(float, y1);
+    QFETCH(float, z1);
+    QFETCH(float, angle1);
+    QFETCH(float, x2);
+    QFETCH(float, y2);
+    QFETCH(float, z2);
+    QFETCH(float, angle2);
+    QFETCH(float, t);
+
+    const QQuaternion q1 = QQuaternion::fromAxisAndAngle(x1, y1, z1, angle1);
+    const QQuaternion q2 = QQuaternion::fromAxisAndAngle(x2, y2, z2, angle2);
+    const QQuaternion expected = QQuaternion::slerp(q1, q2, t);
+    const QQuaternion result = QQuaternion::fastSlerp(q1, q2, t);
+
+    if (t <= 0.0f || t >= 1.0f) {
+        QCOMPARE(result, expected);
+    } else {
+        QCOMPARE_LE(angularDistance(result, expected), qDegreesToRadians(0.05));
+        QCOMPARE_LE(qAbs(result.length() - expected.length()), 0.0002f);
+    }
 }
 
 // Test normalized linear interpolation of quaternions.

@@ -1059,7 +1059,7 @@ QQuaternion QQuaternion::rotationTo(const QVector3D &from, const QVector3D &to)
     If \a t is less than or equal to 0, then \a q1 will be returned.
     If \a t is greater than or equal to 1, then \a q2 will be returned.
 
-    \sa nlerp()
+    \sa fastSlerp(), nlerp()
 */
 QQuaternion QQuaternion::slerp
     (const QQuaternion &q1, const QQuaternion &q2, float t)
@@ -1101,6 +1101,96 @@ QQuaternion QQuaternion::slerp
     return q1 * factor1 + q2b * factor2;
 }
 
+// fastSlerp() passes the post-flip dot product, so x is in [0, 1]. This is
+// the polynomial part of the fast acos approximation, i.e. acos(x) / sqrt(1 - x).
+static constexpr float qt_quaternionFastAcosScale(float x) noexcept
+{
+    Q_PRESUME(x >= 0.0f);
+    Q_PRESUME(x <= 1.0f);
+
+    // Handbook of Mathematical Functions
+    // M. Abramowitz and I.A. Stegun, Ed.
+    float result = -0.0187293f;
+    result = result * x + 0.0742610f;
+    result = result * x - 0.2121144f;
+    result = result * x + 1.5707288f;
+    return result;
+}
+
+// fastSlerp() approximates sin(x) on [0, pi / 2] as x * Q(x^2). Return
+// Q(x^2), with Q(0) fixed to 1 so that sin(0) and sin'(0) are exact. The
+// coefficients were generated with Sollya 8.0, which reports a maximum
+// absolute approximation error below 8.3e-9 for x * Q(x^2).
+static constexpr float qt_quaternionFastSinScale(float xSquared) noexcept
+{
+    Q_PRESUME(xSquared >= 0.0f);
+
+    float result = 0x1.5e6d1ep-19f;
+    result = result * xSquared - 0x1.9f7d66p-13f;
+    result = result * xSquared + 0x1.110f24p-7f;
+    result = result * xSquared - 0x1.55554ep-3f;
+    return 1.0f + xSquared * result;
+}
+
+/*!
+    \since 6.13
+
+    Interpolates along the shortest spherical path between the
+    rotational positions \a q1 and \a q2. \a q1 and \a q2 are
+    expected to be normalized. The value \a t should be between 0 and 1,
+    indicating the spherical distance to travel between \a q1 and \a q2.
+
+    This function uses approximations for the trigonometric functions, so it
+    can be more than 3x faster than slerp(). The result is suitable for graphics
+    and animation code where small angular errors are acceptable.
+    Prefer slerp() when maximum precision is required.
+
+    For very small angles, this function uses normalized linear interpolation.
+    For normalized input quaternions, this applies to rotation differences below
+    about 3.6 degrees.
+
+    If \a t is less than or equal to 0, then \a q1 will be returned.
+    If \a t is greater than or equal to 1, then \a q2 will be returned.
+
+    \sa slerp(), nlerp()
+*/
+QQuaternion QQuaternion::fastSlerp
+    (const QQuaternion &q1, const QQuaternion &q2, float t)
+{
+    // Handle the easy cases first.
+    if (t <= 0.0f)
+        return q1;
+    else if (t >= 1.0f)
+        return q2;
+
+    // Determine the angle between the two quaternions.
+    QQuaternion q2b(q2);
+    float dot = QQuaternion::dotProduct(q1, q2);
+    if (dot < 0.0f) {
+        q2b = -q2b;
+        dot = -dot;
+    }
+
+    float factor1 = 1.0f - t;
+    float factor2 = t;
+    if (dot > 0.9995f && dot <= 1.0f)
+        return (q1 * factor1 + q2b * factor2).normalized();
+
+    const float oneMinusDot = 1.0f - dot;
+    if (oneMinusDot > 0.0000001f) {
+        const float acosScale = qt_quaternionFastAcosScale(dot);
+        const float angleSquared = oneMinusDot * acosScale * acosScale;
+
+        // Since fastAcos(dot) is sqrt(1 - dot) * acosScale and fastSin(x) is
+        // x * Q(x^2), the division by sin(acos(dot)) cancels sqrt(1 - dot).
+        const float commonFactor = acosScale / std::sqrt(1.0f + dot);
+        factor1 *= commonFactor * qt_quaternionFastSinScale(factor1 * factor1 * angleSquared);
+        factor2 *= commonFactor * qt_quaternionFastSinScale(factor2 * factor2 * angleSquared);
+    }
+
+    return q1 * factor1 + q2b * factor2;
+}
+
 /*!
     Interpolates along the shortest linear path between the rotational
     positions \a q1 and \a q2.  The value \a t should be between 0 and 1,
@@ -1114,7 +1204,7 @@ QQuaternion QQuaternion::slerp
     give approximate results to spherical interpolation that are
     good enough for some applications.
 
-    \sa slerp()
+    \sa slerp(), fastSlerp()
 */
 QQuaternion QQuaternion::nlerp
     (const QQuaternion &q1, const QQuaternion &q2, float t)

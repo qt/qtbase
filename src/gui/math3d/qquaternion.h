@@ -182,6 +182,8 @@ QT_WARNING_POP
 
     QT7_ONLY(Q_GUI_EXPORT) static QQuaternion slerp(const QQuaternion &q1, const QQuaternion &q2,
                                                     float t);
+    QT7_ONLY(Q_GUI_EXPORT) static QQuaternion fastSlerp(const QQuaternion &q1,
+                                                        const QQuaternion &q2, float t);
     QT7_ONLY(Q_GUI_EXPORT) static QQuaternion nlerp(const QQuaternion &q1, const QQuaternion &q2,
                                                     float t);
 
