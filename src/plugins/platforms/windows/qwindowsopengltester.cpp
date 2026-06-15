@@ -225,8 +225,8 @@ static inline QString resolveBugListFile(const QString &fileName)
         return fileName;
     // Try QLibraryInfo::SettingsPath which is typically empty unless specified in qt.conf,
     // then resolve via QStandardPaths::ConfigLocation.
-    const QString settingsPath = QLibraryInfo::path(QLibraryInfo::SettingsPath);
-    if (!settingsPath.isEmpty()) { // SettingsPath is empty unless specified in qt.conf.
+    const QStringList settingsPaths = QLibraryInfo::paths(QLibraryInfo::SettingsPath);
+    for (const QString &settingsPath : settingsPaths) {
         const QFileInfo fi(settingsPath + u'/' + fileName);
         if (fi.isFile())
             return fi.absoluteFilePath();
