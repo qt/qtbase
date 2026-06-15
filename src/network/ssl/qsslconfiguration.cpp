@@ -1288,10 +1288,17 @@ QList<QSslKeyingMaterial> QSslConfiguration::keyingMaterial() const
 /*!
     \since 6.12
 
-    Returns the keying material configuration for this SSL connection
-    of given object.
+    Returns the derived keying material for the given \a material request.
 
-    \sa keyingMaterial()
+    Returns the entry from the keying material list that matches
+    \a material by label, context, and requested size, or
+    \c{std::nullopt} if no matching entry was found.
+
+    If a matching entry is found and the TLS handshake has completed
+    successfully, the returned object's \l{QSslKeyingMaterial::value()}
+    contains the derived keying material.
+
+    \sa keyingMaterial(), setKeyingMaterial()
 */
 std::optional<QSslKeyingMaterial>
 QSslConfiguration::keyingMaterial(const QSslKeyingMaterial &material) const
