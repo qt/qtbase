@@ -339,6 +339,7 @@ bool QCollator::ignorePunctuation() const
 }
 
 /*!
+    \since 6.13
     Sets the collation options to \a options.
     This allows configuring multiple collation settings at once.
 
@@ -353,6 +354,7 @@ void QCollator::setOptions(CollationOptions options)
 }
 
 /*!
+    \since 6.13
     Returns the collation options currently set on the collator.
 
     \sa setOptions(), CollationOption
