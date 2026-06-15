@@ -171,6 +171,7 @@ struct QD3D11RenderTargetUavUpdateState
 {
     QD3D11RenderTargetData::Views rtViews;
     std::array<ID3D11UnorderedAccessView *, QD3D11RenderTargetData::MAX_COLOR_ATTACHMENTS> uav;
+    QD3D11RenderTargetUavUpdateState() { rtViews.reset(); uav.fill(nullptr); }
     bool update(const QD3D11RenderTargetData::Views &currentRtViews, ID3D11UnorderedAccessView * const *uavs = nullptr, int count = 0);
 };
 

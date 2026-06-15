@@ -5692,6 +5692,7 @@ bool QD3D11RenderTargetUavUpdateState::update(const QD3D11RenderTargetData::View
         ret |= rtViews.rtv[i] != currentRtViews.rtv[i];
         rtViews.rtv[i] = currentRtViews.rtv[i];
     }
+    rtViews.colorAttCount = currentRtViews.colorAttCount;
     for (int i = currentRtViews.colorAttCount; i < QD3D11RenderTargetData::MAX_COLOR_ATTACHMENTS; i++) {
         ret |= rtViews.rtv[i] != nullptr;
         rtViews.rtv[i] = nullptr;
