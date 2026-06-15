@@ -131,7 +131,9 @@ endfunction()
 
 # Collect directly-linked SHARED_LIBRARY CMake targets into a list of their
 # output file paths (using generator expressions so paths are resolved at
-# generation time).  Also respects an explicit QT_HARMONYOS_EXTRA_LIBS property.
+# generation time).  Also respects an explicit QT_HARMONYOS_EXTRA_LIBS property,
+# whose entries may be CMake target names (resolved to the target's output file)
+# or file paths / generator expressions.
 # Analogous to Qt Android's QT_ANDROID_EXTRA_LIBS mechanism.
 function(_qt_internal_harmonyos_collect_extra_libs target output_var)
     set(result "")
@@ -154,17 +156,24 @@ function(_qt_internal_harmonyos_collect_extra_libs target output_var)
         endforeach()
     endif()
 
-    # Honour explicit QT_HARMONYOS_EXTRA_LIBS target property (file paths or genexes)
-    get_target_property(extra_libs "${target}" QT_HARMONYOS_EXTRA_LIBS)
-    if(extra_libs AND NOT extra_libs STREQUAL "extra_libs-NOTFOUND")
-        list(APPEND result ${extra_libs})
-    endif()
-
+    # Honour explicit QT_HARMONYOS_EXTRA_LIBS target property. Each entry is
+    # either the name of a CMake target (resolved to the target's output file)
+    # or a file path / generator expression that evaluates to such a path.
+    set(extra_libs_props QT_HARMONYOS_EXTRA_LIBS)
     # TODO Remove QT_OHOS_EXTRA_LIBS after a grace period but latest after 6.12.0.
-    get_target_property(extra_libs "${target}" QT_OHOS_EXTRA_LIBS)
-    if(extra_libs AND NOT extra_libs STREQUAL "extra_libs-NOTFOUND")
-        list(APPEND result ${extra_libs})
-    endif()
+    list(APPEND extra_libs_props QT_OHOS_EXTRA_LIBS)
+    foreach(prop IN LISTS extra_libs_props)
+        get_target_property(extra_libs "${target}" ${prop})
+        if(extra_libs AND NOT extra_libs STREQUAL "extra_libs-NOTFOUND")
+            foreach(item IN LISTS extra_libs)
+                if(TARGET "${item}")
+                    list(APPEND result "$<TARGET_FILE:${item}>")
+                else()
+                    list(APPEND result "${item}")
+                endif()
+            endforeach()
+        endif()
+    endforeach()
 
     list(REMOVE_DUPLICATES result)
     set(${output_var} "${result}" PARENT_SCOPE)
