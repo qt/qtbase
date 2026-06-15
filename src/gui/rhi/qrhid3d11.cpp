@@ -2870,7 +2870,7 @@ void QRhiD3D11::bindShaderResources(QD3D11CommandBuffer *cbD,
                             UINT(rtUavState->rtViews.colorAttCount),
                             rtUavState->rtViews.colorAttCount ? rtUavState->rtViews.rtv : nullptr,
                             rtUavState->rtViews.dsv,
-                            UINT(rtUavState->rtViews.colorAttCount),
+                            UINT(batch.startBinding),
                             count,
                             batch.resources.constData(),
                             nullptr);
