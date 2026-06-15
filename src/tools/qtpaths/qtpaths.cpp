@@ -232,18 +232,15 @@ int main(int argc, char **argv)
     }
 
     if (parser.isSet(installprefix)) {
-        QString path = QLibraryInfo::path(QLibraryInfo::PrefixPath);
-        results << path;
+        results << QLibraryInfo::paths(QLibraryInfo::PrefixPath);
     }
 
     if (parser.isSet(bindir)) {
-        QString path = QLibraryInfo::path(QLibraryInfo::BinariesPath);
-        results << path;
+        results << QLibraryInfo::paths(QLibraryInfo::BinariesPath);
     }
 
     if (parser.isSet(plugindir)) {
-        QString path = QLibraryInfo::path(QLibraryInfo::PluginsPath);
-        results << path;
+        results << QLibraryInfo::paths(QLibraryInfo::PluginsPath);
     }
 
     if (parser.isSet(types)) {

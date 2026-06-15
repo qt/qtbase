@@ -1089,7 +1089,7 @@ DeploymentInfo deployQtFrameworks(const QString &appBundlePath, const QStringLis
                                                  << additionalExecutables;
 
    QList<QString> allLibraryPaths = getBinaryRPaths(applicationBundle.binaryPath, true);
-   allLibraryPaths.append(QLibraryInfo::path(QLibraryInfo::LibrariesPath));
+   allLibraryPaths.append(QLibraryInfo::paths(QLibraryInfo::LibrariesPath));
    allLibraryPaths.removeDuplicates();
 
    QList<FrameworkInfo> frameworks = getQtFrameworksForPaths(allBinaryPaths, appBundlePath, allLibraryPaths, useDebugLibs);
@@ -1317,12 +1317,18 @@ bool deployQmlImports(const QString &appBundlePath, DeploymentInfo deploymentInf
     LogNormal() << "QML module search path(s) is" << qmlImportPaths;
 
     // Use qmlimportscanner from QLibraryInfo::LibraryExecutablesPath
-    QString qmlImportScannerPath =
-        QDir::cleanPath(QLibraryInfo::path(QLibraryInfo::LibraryExecutablesPath)
-                + "/qmlimportscanner");
+    QString qmlImportScannerPath = [] {
+        const QStringList libexecs = QLibraryInfo::paths(QLibraryInfo::LibraryExecutablesPath);
+        for (const QString &dir : libexecs) {
+            const QString p = QDir::cleanPath(dir + "/qmlimportscanner");
+            if (QFile::exists(p))
+                return p;
+        }
+        return QString();
+    }();
 
     // Fallback: Look relative to the macdeployqt binary
-    if (!QFile::exists(qmlImportScannerPath))
+    if (qmlImportScannerPath.isEmpty())
         qmlImportScannerPath = QCoreApplication::applicationDirPath() + "/qmlimportscanner";
 
     // Verify that we found a qmlimportscanner binary
@@ -1341,9 +1347,8 @@ bool deployQmlImports(const QString &appBundlePath, DeploymentInfo deploymentInf
     }
     for (const QString &importPath : qmlImportPaths)
         argumentList << "-importPath" << importPath;
-    QString qmlImportsPath = QLibraryInfo::path(QLibraryInfo::QmlImportsPath);
-    argumentList.append( "-importPath");
-    argumentList.append(qmlImportsPath);
+    for (const QString &importPath : QLibraryInfo::paths(QLibraryInfo::QmlImportsPath))
+        argumentList << "-importPath" << importPath;
 
     // run qmlimportscanner
     QProcess qmlImportScanner;
