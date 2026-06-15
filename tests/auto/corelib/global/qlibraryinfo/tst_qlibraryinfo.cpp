@@ -17,6 +17,7 @@ private slots:
     void path();
     void paths();
     void merge();
+    void mergeRelativePrefix();
 };
 
 void tst_QLibraryInfo::initTestCase()
@@ -102,6 +103,22 @@ void tst_QLibraryInfo::merge()
     QList<QString> values = QLibraryInfo::paths(QLibraryInfo::QmlImportsPath);
     QCOMPARE(values.size(), 2); // custom entry + Qt default entry
     QCOMPARE(values[0], "/path/to/myqml");
+}
+
+void tst_QLibraryInfo::mergeRelativePrefix()
+{
+    QString qtConfPath(u":/merge-relative-prefix.qt.conf");
+    QLibraryInfoPrivate::setQtconfManualPath(&qtConfPath);
+    QLibraryInfoPrivate::reload();
+
+    // A relative Prefix in qt.conf is resolved against the application prefix,
+    // so the first PrefixPath ends up pointing at the application directory.
+    const QString prefixPath = QLibraryInfo::paths(QLibraryInfo::PrefixPath).first();
+
+    // The Qt configure fallback path suffixes (e.g. "qml") must still be
+    // rooted at the Qt prefix, not at the application prefix.
+    const QString qmlImportsPath = QLibraryInfo::paths(QLibraryInfo::QmlImportsPath).last();
+    QCOMPARE_NE(qmlImportsPath, prefixPath + "/qml");
 }
 
 QTEST_GUILESS_MAIN(tst_QLibraryInfo)

@@ -21,4 +21,5 @@ qt_add_resources(tst_qlibraryinfo "qtconffiles"
         partial.qt.conf
         list.qt.conf
         merge.qt.conf
+        merge-relative-prefix.qt.conf
 )
