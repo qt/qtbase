@@ -759,62 +759,89 @@ QString QLibraryInfoPrivate::expandEnvVariables(QString ret)
 
 #endif // settings
 
+/*!
+    \internal
+
+    Roots any relative entries in \a paths at the directory returned by
+    \a resolveBaseDir, which is resolved lazily (only when there's actually a
+    relative path to root, and at most once).
+*/
+static QList<QString> makeAbsolute(QList<QString> paths, QString (*resolveBaseDir)())
+{
+    QString baseDir;
+    for (QString &path : paths) {
+        if (pathIsRelative(path)) {
+            if (baseDir.isNull())
+                baseDir = resolveBaseDir();
+            path = QDir::cleanPath(baseDir + u'/' + std::move(path));
+        }
+    }
+    return paths;
+}
+
 QStringList QLibraryInfoPrivate::paths(QLibraryInfo::LibraryPath location)
 {
-    QList<QString> ret;
+    QList<QString> ret = appPaths(location);
 
-    const auto makeAbsolute = [](QList<QString> paths, QString (*resolveBaseDir)()) {
-        QString baseDir;
-        for (QString &path : paths) {
-            if (pathIsRelative(path)) {
-                if (baseDir.isNull())
-                    baseDir = resolveBaseDir();
-                path = QDir::cleanPath(baseDir + u'/' + std::move(path));
-            }
-        }
-        return paths;
-    };
+    if (ret.isEmpty() || keepQtBuildDefaults())
+        ret += qtPaths(location);
 
+    return ret;
+}
+
+/*!
+    \internal
+
+    The application-prefixed paths for \a location, rooted at the app prefix,
+    sourced from a qt.conf with explicit paths. Returns empty when there's no
+    such qt.conf, signaling the caller to fall through to the Qt-prefixed paths.
+*/
+QList<QString> QLibraryInfoPrivate::appPaths(QLibraryInfo::LibraryPath location)
+{
 #if QT_CONFIG(settings)
     QLibrarySettings *qtConfSettings = qt_library_settings();
     if (qtConfSettings && qtConfSettings->havePaths()) {
-        QList<QString> appPaths = qtConfSettings->paths(location);
+        if (location == QLibraryInfo::PrefixPath)
+            return { QLibraryPrefixes::appPrefix() };
+
+        QList<QString> paths = qtConfSettings->paths(location);
 
         // Fall back to a stable default for missing qt.conf values
-        if (appPaths.isEmpty()) {
+        if (paths.isEmpty()) {
             const auto locationInfo = QLibraryInfoPrivate::locationInfo(location);
             if (!locationInfo.defaultValue.isNull())
-                appPaths << locationInfo.defaultValue;
+                paths << locationInfo.defaultValue;
         }
 
-        if (location == QLibraryInfo::PrefixPath)
-            ret << QLibraryPrefixes::appPrefix();
-        else
-            ret << makeAbsolute(std::move(appPaths), &QLibraryPrefixes::appPrefix);
+        return makeAbsolute(std::move(paths), &QLibraryPrefixes::appPrefix);
     }
-#endif // settings
-
-    // Fall back to the Qt configure defaults if we didn't have a qt.conf,
-    // or was asked to respect Qt configure defaults. The latter case will
-    // append the Qt configure default to the list.
-    if (ret.isEmpty() || keepQtBuildDefaults()) {
-        if (location == QLibraryInfo::PrefixPath) {
-            ret << QLibraryPrefixes::qtPrefix();
-        } else {
-            QList<QString> qtConfigurePaths;
-            if (int(location) <= qt_configure_strs.count()) {
-                qtConfigurePaths << fromRawStringView(qt_configure_strs.viewAt(location - 1));
-#if !defined(Q_OS_WIN) // On Windows we use the registry
-            } else if (location == QLibraryInfo::SettingsPath) {
-                constexpr QStringView path = u"" QT_CONFIGURE_SETTINGS_PATH;
-                qtConfigurePaths << fromRawStringView(path);
 #endif
-            }
-            ret << makeAbsolute(std::move(qtConfigurePaths), &QLibraryPrefixes::qtPrefix);
-        }
+    return {};
+}
+
+/*!
+    \internal
+
+    The Qt-prefixed paths for \a location, rooted at the Qt prefix, from the
+    paths baked in at configure time.
+*/
+QList<QString> QLibraryInfoPrivate::qtPaths(QLibraryInfo::LibraryPath location)
+{
+    if (location == QLibraryInfo::PrefixPath)
+        return { QLibraryPrefixes::qtPrefix() };
+
+    QList<QString> paths;
+
+    if (int(location) <= qt_configure_strs.count()) {
+        paths << fromRawStringView(qt_configure_strs.viewAt(location - 1));
+#if !defined(Q_OS_WIN) // On Windows we use the registry
+    } else if (location == QLibraryInfo::SettingsPath) {
+        constexpr QStringView path = u"" QT_CONFIGURE_SETTINGS_PATH;
+        paths << fromRawStringView(path);
+#endif
     }
 
-    return ret;
+    return makeAbsolute(std::move(paths), &QLibraryPrefixes::qtPrefix);
 }
 
 /*

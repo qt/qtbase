@@ -50,6 +50,10 @@ public:
     static LocationInfo locationInfo(QLibraryInfo::LibraryPath loc);
     static QString path(QLibraryInfo::LibraryPath p);
     static QList<QString> paths(QLibraryInfo::LibraryPath p);
+
+private:
+    static QList<QString> appPaths(QLibraryInfo::LibraryPath location);
+    static QList<QString> qtPaths(QLibraryInfo::LibraryPath location);
 };
 
 QT_END_NAMESPACE
