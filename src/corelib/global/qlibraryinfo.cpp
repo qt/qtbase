@@ -421,9 +421,9 @@ QString QLibraryPrefixes::resolveAppDir()
 #if defined(Q_OS_MACOS)
             QString bundleContentsDir = QString(path) + "/Contents/"_L1;
             if (QFileInfo::exists(bundleContentsDir))
-                return QDir::cleanPath(bundleContentsDir);
+                return QFileInfo(bundleContentsDir).canonicalFilePath();
 #else
-            return QDir::cleanPath(QString(path)); // iOS
+            return QFileInfo(QString(path)).canonicalFilePath(); // iOS
 #endif // Q_OS_MACOS
         }
     }
