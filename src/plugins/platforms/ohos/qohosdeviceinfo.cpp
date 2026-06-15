@@ -15,9 +15,8 @@ bool isSupportedDeviceType(RecognizedDeviceType recognizedDeviceType)
     switch (recognizedDeviceType) {
     case RecognizedDeviceType::_2in1:
     case RecognizedDeviceType::tablet:
-        return true;
     case RecognizedDeviceType::phone:
-        return false;
+        return true;
     }
     return false;
 }
