@@ -40,6 +40,7 @@ Q_GLOBAL_STATIC(QThreadStorage<GenerationalCollator>, defaultCollator)
     \class QCollator
     \inmodule QtCore
     \brief The QCollator class compares strings according to a localized collation algorithm.
+    \compares equality
 
     \since 5.2
 
@@ -192,6 +193,15 @@ QCollator &QCollator::operator=(const QCollator &other)
 /*!
     \fn void QCollator::swap(QCollator &other)
     \memberswap{collator}
+*/
+
+/*!
+    \fn bool QCollator::operator==(const QCollator &lhs, const QCollator &rhs) noexcept
+    \fn bool QCollator::operator!=(const QCollator &lhs, const QCollator &rhs) noexcept
+    \since 6.12
+
+    Returns \c true if \a lhs and \a rhs use the same locale and collation
+    options, otherwise returns \c false.
 */
 
 bool comparesEqual(const QCollator &lhs, const QCollator &rhs) noexcept
@@ -456,7 +466,7 @@ QCollatorSortKey QCollator::defaultSortKey(QStringView key)
     \class QCollatorSortKey
     \inmodule QtCore
     \brief The QCollatorSortKey class can be used to speed up string collation.
-    \compares equality
+    \compares weak
 
     \since 5.2
 
@@ -523,10 +533,15 @@ QCollatorSortKey& QCollatorSortKey::operator=(const QCollatorSortKey &other)
 
 /*!
     \fn bool QCollatorSortKey::operator<(const QCollatorSortKey &lhs, const QCollatorSortKey &rhs)
+    \fn bool QCollatorSortKey::operator<=(const QCollatorSortKey &lhs, const QCollatorSortKey &rhs)
+    \fn bool QCollatorSortKey::operator>(const QCollatorSortKey &lhs, const QCollatorSortKey &rhs)
+    \fn bool QCollatorSortKey::operator>=(const QCollatorSortKey &lhs, const QCollatorSortKey &rhs)
+    \fn bool QCollatorSortKey::operator==(const QCollatorSortKey &lhs, const QCollatorSortKey &rhs)
+    \fn bool QCollatorSortKey::operator!=(const QCollatorSortKey &lhs, const QCollatorSortKey &rhs)
+    \since 6.12
 
-    Both keys must have been created by the same QCollator's sortKey(). Returns
-    \c true if \a lhs should be sorted before \a rhs, according to the QCollator
-    that created them; otherwise returns \c false.
+    Both keys must have been created by the same QCollator's sortKey(). Compares
+    \a lhs and \a rhs according to the QCollator that created them.
 
     \sa QCollatorSortKey::compare()
 */
@@ -537,16 +552,17 @@ QCollatorSortKey& QCollatorSortKey::operator=(const QCollatorSortKey &other)
 */
 
 /*!
-    \fn int QCollatorSortKey::compare(const QCollatorSortKey &otherKey) const
+    \fn int QCollatorSortKey::compare(const QCollatorSortKey &otherKey) const noexcept
 
     Compares this key to \a otherKey, which must have been created by the same
     QCollator's sortKey() as this key. The comparison is performed in accordance
     with that QCollator's sort order.
 
-    Returns a negative value if this key sorts before \a otherKey, 0 if the two
-    keys are equal or a positive value if this key sorts after \a otherKey.
+    Returns a negative value if this key sorts before \a otherKey, 0 if the
+    two keys are equal, or a positive value if this key sorts after \a otherKey.
 
-    \sa operator<()
+    \sa operator==(), operator!=(), operator<(), operator<=(),
+        operator>(), operator>=()
 */
 
 QT_END_NAMESPACE
