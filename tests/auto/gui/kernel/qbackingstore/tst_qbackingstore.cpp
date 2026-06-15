@@ -114,12 +114,13 @@ void tst_QBackingStore::paint()
         if (image.isNull())
             QSKIP("Platform backingstore does not implement toImage");
 
-        QCOMPARE(image.pixelColor(50 * dpr, 50 * dpr), fgColor);
-        QCOMPARE(image.pixelColor(49 * dpr, 50 * dpr), bgColor);
-        QCOMPARE(image.pixelColor(50 * dpr, 49 * dpr), bgColor);
-        QCOMPARE(image.pixelColor(59 * dpr, 59 * dpr), fgColor);
-        QCOMPARE(image.pixelColor(60 * dpr, 59 * dpr), bgColor);
-        QCOMPARE(image.pixelColor(59 * dpr, 60 * dpr), bgColor);
+        // qRound() to the nearest device pixel: matches the rasterizer's edges at fractional dpr
+        QCOMPARE(image.pixelColor(qRound(50 * dpr), qRound(50 * dpr)), fgColor);
+        QCOMPARE(image.pixelColor(qRound(49 * dpr), qRound(50 * dpr)), bgColor);
+        QCOMPARE(image.pixelColor(qRound(50 * dpr), qRound(49 * dpr)), bgColor);
+        QCOMPARE(image.pixelColor(qRound(59 * dpr), qRound(59 * dpr)), fgColor);
+        QCOMPARE(image.pixelColor(qRound(60 * dpr), qRound(59 * dpr)), bgColor);
+        QCOMPARE(image.pixelColor(qRound(59 * dpr), qRound(60 * dpr)), bgColor);
 
         backingStore.flush(rect);
     }
@@ -199,12 +200,13 @@ void tst_QBackingStore::scroll()
         if (image.isNull())
             QSKIP("Platform backingstore does not implement toImage");
 
-        QCOMPARE(image.pixelColor(50 * dpr, 50 * dpr), fgColor);
-        QCOMPARE(image.pixelColor(49 * dpr, 50 * dpr), bgColor);
-        QCOMPARE(image.pixelColor(50 * dpr, 49 * dpr), bgColor);
-        QCOMPARE(image.pixelColor(59 * dpr, 59 * dpr), fgColor);
-        QCOMPARE(image.pixelColor(60 * dpr, 59 * dpr), bgColor);
-        QCOMPARE(image.pixelColor(59 * dpr, 60 * dpr), bgColor);
+        // qRound() to the nearest device pixel: matches the rasterizer's edges at fractional dpr
+        QCOMPARE(image.pixelColor(qRound(50 * dpr), qRound(50 * dpr)), fgColor);
+        QCOMPARE(image.pixelColor(qRound(49 * dpr), qRound(50 * dpr)), bgColor);
+        QCOMPARE(image.pixelColor(qRound(50 * dpr), qRound(49 * dpr)), bgColor);
+        QCOMPARE(image.pixelColor(qRound(59 * dpr), qRound(59 * dpr)), fgColor);
+        QCOMPARE(image.pixelColor(qRound(60 * dpr), qRound(59 * dpr)), bgColor);
+        QCOMPARE(image.pixelColor(qRound(59 * dpr), qRound(60 * dpr)), bgColor);
         image = {};
 
         bool supportsScroll = backingStore.scroll(QRect(52, 52, 6, 6), -12, -12);
@@ -212,12 +214,12 @@ void tst_QBackingStore::scroll()
             QSKIP("Platform backingstore does not support scrolling");
 
         image = backingStore.handle()->toImage();
-        QCOMPARE(image.pixelColor(40 * dpr, 40 * dpr), fgColor);
-        QCOMPARE(image.pixelColor(39 * dpr, 40 * dpr), bgColor);
-        QCOMPARE(image.pixelColor(40 * dpr, 39 * dpr), bgColor);
-        QCOMPARE(image.pixelColor(45 * dpr, 45 * dpr), fgColor);
-        QCOMPARE(image.pixelColor(46 * dpr, 45 * dpr), bgColor);
-        QCOMPARE(image.pixelColor(45 * dpr, 46 * dpr), bgColor);
+        QCOMPARE(image.pixelColor(qRound(40 * dpr), qRound(40 * dpr)), fgColor);
+        QCOMPARE(image.pixelColor(qRound(39 * dpr), qRound(40 * dpr)), bgColor);
+        QCOMPARE(image.pixelColor(qRound(40 * dpr), qRound(39 * dpr)), bgColor);
+        QCOMPARE(image.pixelColor(qRound(45 * dpr), qRound(45 * dpr)), fgColor);
+        QCOMPARE(image.pixelColor(qRound(46 * dpr), qRound(45 * dpr)), bgColor);
+        QCOMPARE(image.pixelColor(qRound(45 * dpr), qRound(46 * dpr)), bgColor);
         image = {};
 
         backingStore.flush(rect);
@@ -226,12 +228,12 @@ void tst_QBackingStore::scroll()
         backingStore.scroll(QRect(52, 52, 6, 6), 12, 12);
 
         image = backingStore.handle()->toImage();
-        QCOMPARE(image.pixelColor(64 * dpr, 64 * dpr), fgColor);
-        QCOMPARE(image.pixelColor(63 * dpr, 64 * dpr), bgColor);
-        QCOMPARE(image.pixelColor(64 * dpr, 63 * dpr), bgColor);
-        QCOMPARE(image.pixelColor(69 * dpr, 69 * dpr), fgColor);
-        QCOMPARE(image.pixelColor(70 * dpr, 69 * dpr), bgColor);
-        QCOMPARE(image.pixelColor(69 * dpr, 70 * dpr), bgColor);
+        QCOMPARE(image.pixelColor(qRound(64 * dpr), qRound(64 * dpr)), fgColor);
+        QCOMPARE(image.pixelColor(qRound(63 * dpr), qRound(64 * dpr)), bgColor);
+        QCOMPARE(image.pixelColor(qRound(64 * dpr), qRound(63 * dpr)), bgColor);
+        QCOMPARE(image.pixelColor(qRound(69 * dpr), qRound(69 * dpr)), fgColor);
+        QCOMPARE(image.pixelColor(qRound(70 * dpr), qRound(69 * dpr)), bgColor);
+        QCOMPARE(image.pixelColor(qRound(69 * dpr), qRound(70 * dpr)), bgColor);
         image = {};
     }
 }
