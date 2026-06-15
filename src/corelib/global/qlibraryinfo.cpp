@@ -703,23 +703,45 @@ static bool pathIsRelative(const QString &path)
     return !path.startsWith(':'_L1) && QFileSystemEntry(path, FromInternalPath{}).isRelative();
 }
 
-QStringList QLibraryInfoPrivate::paths(QLibraryInfo::LibraryPath p)
+QStringList QLibraryInfoPrivate::paths(QLibraryInfo::LibraryPath location)
 {
-    const QLibraryInfo::LibraryPath loc = p;
     QList<QString> ret;
+
+    const auto makeAbsolute = [](QList<QString> paths, QString (*resolveBaseDir)()) {
+        QString baseDir;
+        for (QString &path : paths) {
+            if (pathIsRelative(path)) {
+                if (baseDir.isNull())
+                    baseDir = resolveBaseDir();
+                path = QDir::cleanPath(baseDir + u'/' + std::move(path));
+            }
+        }
+        return paths;
+    };
 
 #if QT_CONFIG(settings)
     QLibrarySettings *qtConfSettings = qt_library_settings();
     if (qtConfSettings && qtConfSettings->havePaths()) {
-        ret << qtConfSettings->paths(p);
+        QList<QString> appPaths = qtConfSettings->paths(location);
 
         // Fall back to a stable default for missing qt.conf values,
         // unless we've been instructed to fall back to the Qt
         // configure defaults instead via the MergeQtConf setting.
-        if (ret.isEmpty() && !keepQtBuildDefaults()) {
-            const auto locationInfo = QLibraryInfoPrivate::locationInfo(p);
+        if (appPaths.isEmpty() && !keepQtBuildDefaults()) {
+            const auto locationInfo = QLibraryInfoPrivate::locationInfo(location);
             if (!locationInfo.defaultValue.isNull())
-                ret << locationInfo.defaultValue;
+                appPaths << locationInfo.defaultValue;
+        }
+
+        if (location == QLibraryInfo::PrefixPath) {
+            // The prefix from qt.conf is relative to the application.
+            ret << makeAbsolute(std::move(appPaths), &QLibraryPrefixes::appPrefix);
+        } else {
+            // Other qt.conf paths are relative to the resolved prefix, which
+            // in turn roots its qt.conf Prefix at the application prefix.
+            ret << makeAbsolute(std::move(appPaths), []{
+                return QLibraryInfoPrivate::path(QLibraryInfo::PrefixPath);
+            });
         }
     }
 #endif // settings
@@ -729,34 +751,22 @@ QStringList QLibraryInfoPrivate::paths(QLibraryInfo::LibraryPath p)
     // append the Qt configure default to the list, even if we found a value
     // in qt.conf, as that's the intent behind MergeQtConf.
     if (ret.isEmpty() || keepQtBuildDefaults()) {
-        QString qtConfigureDefault;
-        if (loc == QLibraryInfo::PrefixPath) {
-            qtConfigureDefault = QLibraryPrefixes::qtPrefix();
-        } else if (int(loc) <= qt_configure_strs.count()) {
-            qtConfigureDefault = fromRawStringView(qt_configure_strs.viewAt(loc - 1));
+        if (location == QLibraryInfo::PrefixPath) {
+            ret << QLibraryPrefixes::qtPrefix();
+        } else {
+            QList<QString> qtConfigurePaths;
+            if (int(location) <= qt_configure_strs.count()) {
+                qtConfigurePaths << fromRawStringView(qt_configure_strs.viewAt(location - 1));
 #if !defined(Q_OS_WIN) // On Windows we use the registry
-        } else if (loc == QLibraryInfo::SettingsPath) {
-            constexpr QStringView path = u"" QT_CONFIGURE_SETTINGS_PATH;
-            qtConfigureDefault = fromRawStringView(path);
+            } else if (location == QLibraryInfo::SettingsPath) {
+                constexpr QStringView path = u"" QT_CONFIGURE_SETTINGS_PATH;
+                qtConfigurePaths << fromRawStringView(path);
 #endif
-        }
-        if (!qtConfigureDefault.isEmpty()) {
-            ret.push_back(std::move(qtConfigureDefault));
+            }
+            ret << makeAbsolute(std::move(qtConfigurePaths), &QLibraryPrefixes::qtPrefix);
         }
     }
-    if (ret.isEmpty())
-        return ret;
 
-    QString baseDir;
-    if (loc == QLibraryInfo::PrefixPath) {
-        baseDir = QLibraryPrefixes::appPrefix();
-    } else {
-        // we make any other path absolute to the prefix directory
-        baseDir = QLibraryInfoPrivate::path(QLibraryInfo::PrefixPath);
-    }
-    for (qsizetype i = 0, end = ret.size(); i < end; ++i)
-        if (pathIsRelative(ret[i]))
-            ret[i] = QDir::cleanPath(baseDir + u'/' +  std::move(ret[i]));
     return ret;
 }
 
