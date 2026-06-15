@@ -935,14 +935,6 @@ if(IOS)
         "${CMAKE_CURRENT_SOURCE_DIR}/platform/ios/PrivacyInfo.xcprivacy")
 endif()
 
-if(OHOS)
-    qt_internal_add_harmonyos_permission(Widgets
-        NAME ohos.permission.SYSTEM_FLOAT_WINDOW
-        REASON "Used to display windows on top of other applications."
-        USED_SCENE_WHEN always
-    )
-endif()
-
 if(QT_FEATURE_doc_snippets)
     add_subdirectory(doc/snippets)
 endif()
