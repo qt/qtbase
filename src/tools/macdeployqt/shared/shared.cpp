@@ -1002,7 +1002,7 @@ DeploymentInfo deployQtFrameworks(QList<FrameworkInfo> frameworks,
             deploymentInfo.isDebug = true;
 
         if (deploymentInfo.qtPath.isNull())
-            deploymentInfo.qtPath = QLibraryInfo::path(QLibraryInfo::PrefixPath);
+            deploymentInfo.qtPath = QLibraryInfo::paths(QLibraryInfo::PrefixPath).value(0);
 
         if (framework.frameworkDirectory.startsWith(bundlePath)) {
             LogError()  << framework.frameworkName << "already deployed, skipping.";

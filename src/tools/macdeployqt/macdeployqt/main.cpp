@@ -247,14 +247,15 @@ int main(int argc, char **argv)
     // Handle plugins
     if (plugins) {
         // Set the plugins search directory
-        deploymentInfo.pluginPath = QLibraryInfo::path(QLibraryInfo::PluginsPath);
+        QStringList pluginPaths = QLibraryInfo::paths(QLibraryInfo::PluginsPath);
 
         // Sanity checks
-        if (deploymentInfo.pluginPath.isEmpty()) {
+        if (pluginPaths.isEmpty()) {
             LogError() << "Missing Qt plugins path\n";
             return 1;
         }
 
+        deploymentInfo.pluginPath = pluginPaths.takeFirst();
         if (!QDir(deploymentInfo.pluginPath).exists()) {
             LogError() << "Plugins path does not exist" << deploymentInfo.pluginPath << "\n";
             return 1;

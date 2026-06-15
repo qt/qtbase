@@ -168,13 +168,13 @@ bool verifyPaths(Parameters &params)
         return false;
     }
     if (!params.qtHostDir) {
-        auto qtHostPath = QLibraryInfo::path(QLibraryInfo::BinariesPath);
-        if (qtHostPath.length() == 0) {
+        QStringList qtHostPaths = QLibraryInfo::paths(QLibraryInfo::BinariesPath);
+        if (qtHostPaths.isEmpty()) {
             std::cout << "ERROR: Cannot read Qt host path or detect it from environment. Please "
                          "pass it explicitly with --qt-host-dir=<path>. "
                       << std::endl;
         } else {
-            auto qtHostDir = QDir(qtHostPath);
+            auto qtHostDir = QDir(qtHostPaths.at(0));
             if (!qtHostDir.cdUp()) {
                 std::cout << "ERROR: Invalid Qt host path: "
                           << qtHostDir.absolutePath().toStdString() << std::endl;
