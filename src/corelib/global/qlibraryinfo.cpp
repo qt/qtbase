@@ -687,17 +687,10 @@ static bool pathIsRelative(const QString &path)
     return !path.startsWith(':'_L1) && QFileSystemEntry(path, FromInternalPath{}).isRelative();
 }
 
-static bool pathIsAbsolute(const QString &path)
-{
-    using FromInternalPath = QFileSystemEntry::FromInternalPath;
-    return path.startsWith(':'_L1) || QFileSystemEntry(path, FromInternalPath{}).isAbsolute();
-}
-
 QStringList QLibraryInfoPrivate::paths(QLibraryInfo::LibraryPath p)
 {
     const QLibraryInfo::LibraryPath loc = p;
     QList<QString> ret;
-    bool pathsAreAbsolute = true;
 
 #if QT_CONFIG(settings)
     QLibrarySettings *qtConfSettings = qt_library_settings();
@@ -720,7 +713,6 @@ QStringList QLibraryInfoPrivate::paths(QLibraryInfo::LibraryPath p)
                 ret = QList<QString>({ std::move(value).toString()});
             for (qsizetype i = 0, end = ret.size(); i < end; ++i) {
                 ret[i] = expandEnvVariables(ret[i]);
-                pathsAreAbsolute = pathsAreAbsolute && pathIsAbsolute(ret[i]);
             }
         }
     }
@@ -743,11 +735,10 @@ QStringList QLibraryInfoPrivate::paths(QLibraryInfo::LibraryPath p)
 #endif
         }
         if (!qtConfigureDefault.isEmpty()) {
-            pathsAreAbsolute = pathsAreAbsolute && pathIsAbsolute(qtConfigureDefault);
             ret.push_back(std::move(qtConfigureDefault));
         }
     }
-    if (ret.isEmpty() || pathsAreAbsolute)
+    if (ret.isEmpty())
         return ret;
 
     QString baseDir;
