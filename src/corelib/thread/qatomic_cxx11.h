@@ -458,8 +458,6 @@ template <typename X> struct QAtomicOps
     }
 };
 
-#  define Q_BASIC_ATOMIC_INITIALIZER(a)     { a }
-
 QT_END_NAMESPACE
 
 #endif // QATOMIC_CXX0X_H
