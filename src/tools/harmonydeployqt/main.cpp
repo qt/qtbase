@@ -1000,13 +1000,11 @@ static bool customizeTemplate(const Options &options)
             : jsonStringEscape(options.harmonyOsModuleDescription);
         content.replace(descriptionSentinel, descriptionValue);
 
-        // Substitute the deviceTypes sentinel. Default excludes 'phone' because
-        // of QTFOROH-1076 (main window does not restore properly after being
-        // minimized on phone); revisit when that is fixed.
+        // Substitute the deviceTypes sentinel.
         const QString deviceTypesSentinel = "/* %%INSERT_DEVICE_TYPES%% */"_L1;
         QStringList deviceTypes = options.harmonyOsModuleDeviceTypes;
         if (deviceTypes.isEmpty())
-            deviceTypes = QStringList{ "tablet"_L1, "2in1"_L1 };
+            deviceTypes = QStringList{ "phone"_L1, "tablet"_L1, "2in1"_L1 };
         QStringList quotedDeviceTypes;
         quotedDeviceTypes.reserve(deviceTypes.size());
         for (const QString &dt : std::as_const(deviceTypes))
