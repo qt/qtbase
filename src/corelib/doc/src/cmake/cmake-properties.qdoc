@@ -1160,6 +1160,85 @@ For more information, see the \l{https://github.com/emscripten-core/emscripten/b
 
 
 /*!
+\page cmake-target-property-qt-windows-app-project-identifier.html
+\ingroup cmake-properties-qtcore
+\ingroup cmake-target-properties-qtcore
+
+\title QT_WINDOWS_APP_PROJECT_IDENTIFIER
+\target cmake-target-property-QT_WINDOWS_APP_PROJECT_IDENTIFIER
+
+\summary {Assembly identity name in the generated Windows application manifest.}
+
+\cmakepropertysince 6.12
+\cmakepropertywindowsonly
+
+Sets the \c name attribute of the \c assemblyIdentity element in the
+application manifest that Qt automatically generates for Windows
+executables built with \l{qt_add_executable}{qt_add_executable()}.
+
+The value must be a dot-separated string, for example
+\c{org.example.myapp}.
+
+If this property is not set, the default value is
+\c{com.yourcompany.<target_name>}.
+
+If the target already provides a \c{.manifest} file in its sources,
+Qt skips automatic manifest generation and this property has no
+effect.
+
+\badcode
+set_target_properties(myapp PROPERTIES
+    QT_WINDOWS_APP_PROJECT_IDENTIFIER "org.example.myapp"
+)
+\endcode
+
+\sa{Qt for Windows - Deployment}, QT_WINDOWS_APP_PROJECT_EXECUTION_LEVEL
+*/
+
+/*!
+\page cmake-target-property-qt-windows-app-project-execution-level.html
+\ingroup cmake-properties-qtcore
+\ingroup cmake-target-properties-qtcore
+
+\title QT_WINDOWS_APP_PROJECT_EXECUTION_LEVEL
+\target cmake-target-property-QT_WINDOWS_APP_PROJECT_EXECUTION_LEVEL
+
+\summary {UAC execution level in the generated Windows application manifest.}
+
+\cmakepropertysince 6.12
+\cmakepropertywindowsonly
+
+Sets the \c level attribute of the \c requestedExecutionLevel element in
+the application manifest that Qt automatically generates for Windows
+executables built with \l{qt_add_executable}{qt_add_executable()}.
+
+Valid values are:
+\list
+    \li \c asInvoker — run with the same privileges as the process
+        that launched the application (default).
+    \li \c highestAvailable — run with the highest privileges available
+        to the current user.
+    \li \c requireAdministrator — run only with administrator
+        privileges; Windows will prompt for elevation if necessary.
+\endlist
+
+If an invalid value is provided, a CMake warning is emitted and
+\c asInvoker is used.
+
+If the target already provides a \c{.manifest} file in its sources,
+Qt skips automatic manifest generation and this property has no
+effect.
+
+\badcode
+set_target_properties(myapp PROPERTIES
+    QT_WINDOWS_APP_PROJECT_EXECUTION_LEVEL "requireAdministrator"
+)
+\endcode
+
+\sa{Qt for Windows - Deployment}, QT_WINDOWS_APP_PROJECT_IDENTIFIER
+*/
+
+/*!
 \page cmake-target-property-qt-ios-launch-screen.html
 \ingroup cmake-properties-qtcore
 \ingroup cmake-target-properties-qtcore

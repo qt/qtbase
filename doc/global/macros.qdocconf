@@ -189,6 +189,8 @@ macro.versionlessCMakeCommandsNote = "If \\l{Versionless commands}{versionless c
 
 macro.cmakepropertywebassemblyonly = "\\note This property is used only if targeting the WebAssembly platform."
 
+macro.cmakepropertywindowsonly = "\\note This property is used only if targeting Windows."
+
 macro.cmakepropertyiosonly = "\\note This property is used only if targeting iOS."
 macro.cmakevariableiosonly = "\\note This variable is used only if targeting iOS."
 
