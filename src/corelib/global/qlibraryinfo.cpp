@@ -45,6 +45,12 @@ static QString fromRawStringView(QStringView string)
     return QString::fromRawData(string.data(), string.size());
 }
 
+static bool pathIsRelative(const QString &path)
+{
+    using FromInternalPath = QFileSystemEntry::FromInternalPath;
+    return !path.startsWith(':'_L1) && QFileSystemEntry(path, FromInternalPath{}).isRelative();
+}
+
 // Resolves and caches the Qt and application prefix roots. Resolution
 // may be costly and is queried repeatedly during startup, so results
 // are memoized. Wrapped in a Q_GLOBAL_STATIC (prefixCache) so lookups
@@ -61,6 +67,15 @@ private:
     // then falls back to the (uncached) working directory.
     static QString resolveQtPrefix();
     static QString resolveAppPrefix();
+
+    // The directory the application prefix is rooted at: the app bundle on
+    // Apple platforms, or the application directory once a QCoreApplication
+    // exists. Empty when no stable source is available yet.
+    static QString resolveAppDir();
+
+    // The qt.conf "Prefix" entry the application prefix is rooted at,
+    // or its "." default when there's no qt.conf (or settings) to read.
+    static QString qtConfPrefix();
 
     // Memoizes resolve() in the given member. A resolver may return an
     // empty string to signal that the result is not yet stable and should
@@ -366,11 +381,31 @@ QVersionNumber QLibraryInfo::version() noexcept
 /*!
     \internal
 
-    Used to look up the prefix path for static builds, where we
-    don't have a standalone QtCore library, or for relative paths
-    coming from qt.conf, which are rooted in the app's location.
+    Returns the qt.conf "Prefix" entry the application prefix is rooted at,
+    falling back to its "." default when there's no qt.conf with paths (or
+    settings support), so the prefix then resolves to the application directory.
 */
-QString QLibraryPrefixes::resolveAppPrefix()
+QString QLibraryPrefixes::qtConfPrefix()
+{
+#if QT_CONFIG(settings)
+    QLibrarySettings *settings = qt_library_settings();
+    if (settings && settings->havePaths()) {
+        const QString prefix = settings->paths(QLibraryInfo::PrefixPath).value(0);
+        if (!prefix.isEmpty())
+            return prefix;
+    }
+#endif
+    return u"."_s;
+}
+
+/*!
+    \internal
+
+    The directory the application prefix is rooted at: the app bundle on
+    Apple platforms, or the application directory once a QCoreApplication
+    exists. Returns an empty string when no stable source is available yet.
+*/
+QString QLibraryPrefixes::resolveAppDir()
 {
 #if defined(Q_OS_DARWIN)
     // Resolve the app prefix from the app bundle instead of the
@@ -400,15 +435,45 @@ QString QLibraryPrefixes::resolveAppPrefix()
     }
 
     // Without an application instance there's no stable source; return an
-    // empty string so the result isn't cached, and let app() fall back to
-    // the (volatile) working directory until a stable source is available.
+    // empty string so the result isn't cached, and let appPrefix() fall back
+    // to the (volatile) working directory until a stable source is available.
     return {};
+}
+
+/*!
+    \internal
+
+    The fully resolved application prefix: the qt.conf "Prefix" entry
+    (explicit, or the "." default) rooted at the application directory.
+    An absolute Prefix is used as-is, independent of the application
+    directory. Without a qt.conf the prefix is the application directory
+    itself, which is also what static builds use as their Qt prefix.
+
+    Returns an empty string when the result would depend on a not-yet-stable
+    application directory, so it isn't cached; appPrefix() then roots the
+    prefix at the (volatile) working directory until a stable source exists.
+*/
+QString QLibraryPrefixes::resolveAppPrefix()
+{
+    const QString prefix = qtConfPrefix();
+    // An absolute qt.conf Prefix is stable on its own, regardless of appDir.
+    if (!pathIsRelative(prefix))
+        return prefix;
+    const QString appDir = resolveAppDir();
+    if (appDir.isEmpty())
+        return {};
+    return QDir::cleanPath(appDir + u'/' + prefix);
 }
 
 QString QLibraryPrefixes::appPrefix()
 {
     QString prefix = cached(&QLibraryPrefixes::m_app, &QLibraryPrefixes::resolveAppPrefix);
-    return prefix.isNull() ? QDir::currentPath() : prefix;
+    if (!prefix.isNull())
+        return prefix;
+
+    // No stable source yet; root the possible qt.conf Prefix at the volatile
+    // working directory, without caching, until one is available.
+    return QDir::cleanPath(QDir::currentPath() + u'/' + qtConfPrefix());
 }
 
 #if QT_CONFIG(relocatable)
@@ -694,15 +759,6 @@ QString QLibraryInfoPrivate::expandEnvVariables(QString ret)
 
 #endif // settings
 
-// TODO: There apparently are paths that are both absolute and relative for QFileSystemEntry.
-//       In particular on windows.
-
-static bool pathIsRelative(const QString &path)
-{
-    using FromInternalPath = QFileSystemEntry::FromInternalPath;
-    return !path.startsWith(':'_L1) && QFileSystemEntry(path, FromInternalPath{}).isRelative();
-}
-
 QStringList QLibraryInfoPrivate::paths(QLibraryInfo::LibraryPath location)
 {
     QList<QString> ret;
@@ -731,16 +787,10 @@ QStringList QLibraryInfoPrivate::paths(QLibraryInfo::LibraryPath location)
                 appPaths << locationInfo.defaultValue;
         }
 
-        if (location == QLibraryInfo::PrefixPath) {
-            // The prefix from qt.conf is relative to the application.
+        if (location == QLibraryInfo::PrefixPath)
+            ret << QLibraryPrefixes::appPrefix();
+        else
             ret << makeAbsolute(std::move(appPaths), &QLibraryPrefixes::appPrefix);
-        } else {
-            // Other qt.conf paths are relative to the resolved prefix, which
-            // in turn roots its qt.conf Prefix at the application prefix.
-            ret << makeAbsolute(std::move(appPaths), []{
-                return QLibraryInfoPrivate::path(QLibraryInfo::PrefixPath);
-            });
-        }
     }
 #endif // settings
 
