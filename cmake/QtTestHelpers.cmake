@@ -899,7 +899,7 @@ function(qt_internal_add_test name)
             )
         endif()
 
-        if(arg_QT_TEST_SERVER_LIST AND NOT ANDROID)
+        if(arg_QT_TEST_SERVER_LIST AND NOT ANDROID AND NOT OHOS)
             qt_internal_setup_docker_test_fixture(${testname} ${arg_QT_TEST_SERVER_LIST})
         endif()
 
