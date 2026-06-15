@@ -1702,6 +1702,13 @@ function(qt_run_config_compile_test name)
             set(_save_CMAKE_REQUIRED_LIBRARIES "${CMAKE_REQUIRED_LIBRARIES}")
             set(CMAKE_REQUIRED_LIBRARIES "${arg_LIBRARIES}")
 
+            # Join the CMAKE_REQUIRED_FLAGS list into a space-separated string as mentioned in
+            # newer versions of the CMake documentation, otherwise the arguments after the first
+            # semicolon get passed to the CMake try_compile invocation as CMake CLI arguments.
+            if(CMAKE_REQUIRED_FLAGS)
+                list(JOIN CMAKE_REQUIRED_FLAGS " " CMAKE_REQUIRED_FLAGS)
+            endif()
+
             _qt_internal_get_check_cxx_source_compiles_out_var(try_compile_output extra_args)
             check_cxx_source_compiles(
                 "${arg_UNPARSED_ARGUMENTS} ${arg_CODE}" HAVE_${name} ${extra_args}
