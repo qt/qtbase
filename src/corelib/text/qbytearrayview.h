@@ -395,10 +395,27 @@ private:
     }
 
     friend bool
+    comparesEqual(const QByteArrayView &lhs, char rhs) noexcept
+    {
+        return lhs.size() == 1 && lhs[0] == rhs;
+    }
+    friend bool
     comparesEqual(const QByteArrayView &lhs, const QByteArrayView &rhs) noexcept
     {
         return lhs.size() == rhs.size()
                 && (!lhs.size() || memcmp(lhs.data(), rhs.data(), lhs.size()) == 0);
+    }
+    friend Qt::strong_ordering
+    compareThreeWay(const QByteArrayView &lhs, char rhs) noexcept
+    {
+        if (lhs.size() >= 1) {
+            if (int diff = uchar(lhs[0]) - uchar(rhs))
+                return Qt::compareThreeWay(diff, 0);
+        }
+        // the first char matched
+        // so the longer one is lexically after the shorter one
+        const int res = lhs.size() == 1 ? 0 : lhs.size() > 1 ? 1 : -1;
+        return Qt::compareThreeWay(res, 0);
     }
     friend Qt::strong_ordering
     compareThreeWay(const QByteArrayView &lhs, const QByteArrayView &rhs) noexcept
@@ -407,6 +424,7 @@ private:
         return Qt::compareThreeWay(res, 0);
     }
     Q_DECLARE_STRONGLY_ORDERED(QByteArrayView)
+    Q_DECLARE_STRONGLY_ORDERED(QByteArrayView, char)
 
     // defined in qstring.cpp
     friend Q_CORE_EXPORT bool
