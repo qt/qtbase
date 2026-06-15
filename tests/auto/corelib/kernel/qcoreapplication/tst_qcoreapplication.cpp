@@ -278,7 +278,10 @@ void tst_QCoreApplication::libraryPaths()
         QStringList expected;
 #ifndef Q_OS_ANDROID
         //Android doesn't use plugins dir at runtime, see QTBUG-141732
-        expected << QLibraryInfo::paths(QLibraryInfo::PluginsPath);
+        for (const QString &path : QLibraryInfo::paths(QLibraryInfo::PluginsPath)) {
+            if (QFile::exists(path))
+                expected << QDir(path).canonicalPath();
+        }
 #endif
         expected << QDir(QCoreApplication::applicationDirPath()).canonicalPath();
         expected = QSet<QString>(expected.constBegin(), expected.constEnd()).values();
@@ -393,17 +396,17 @@ void tst_QCoreApplication::libraryPaths_qt_plugin_path_2()
         QCoreApplication app(argc, &argv0);
 
         // library path list should contain the default plus the one valid path
-        QStringList expected =
-            QStringList()
+        QStringList expected;
 #ifndef Q_OS_ANDROID
-            //Android doesn't use plugins dir at runtime, see QTBUG-141732
-            << QLibraryInfo::paths(QLibraryInfo::PluginsPath)
+        //Android doesn't use plugins dir at runtime, see QTBUG-141732
+        for (const QString &path : QLibraryInfo::paths(QLibraryInfo::PluginsPath)) {
+            if (QFile::exists(path))
+                expected << QDir(path).canonicalPath();
+        }
 #endif
-#if defined(Q_OS_OHOS)
-            << QDir(QCoreApplication::applicationDirPath()).canonicalPath();
-#else
-            << QDir(QCoreApplication::applicationDirPath()).canonicalPath()
-            << QDir(QDir::fromNativeSeparators(QString::fromLatin1(validPath))).canonicalPath();
+        expected << QDir(QCoreApplication::applicationDirPath()).canonicalPath();
+#ifndef Q_OS_OHOS
+        expected << QDir(QDir::fromNativeSeparators(QString::fromLatin1(validPath))).canonicalPath();
 #endif
 
 #if defined(Q_OS_VXWORKS)
@@ -424,13 +427,15 @@ void tst_QCoreApplication::libraryPaths_qt_plugin_path_2()
         qputenv("QT_PLUGIN_PATH", pluginPath);
 
         // library path list should contain the default
-        QStringList expected =
-            QStringList()
+        QStringList expected;
 #ifndef Q_OS_ANDROID
-            //Android doesn't use plugins dir at runtime, see QTBUG-141732
-            << QLibraryInfo::paths(QLibraryInfo::PluginsPath)
+        //Android doesn't use plugins dir at runtime, see QTBUG-141732
+        for (const QString &path : QLibraryInfo::paths(QLibraryInfo::PluginsPath)) {
+            if (QFile::exists(path))
+                expected << QDir(path).canonicalPath();
+        }
 #endif
-            << QDir(QCoreApplication::applicationDirPath()).canonicalPath();
+        expected << QDir(QCoreApplication::applicationDirPath()).canonicalPath();
 
         QVERIFY2(isPathListIncluded(QCoreApplication::libraryPaths(), expected),
                 qPrintable("actual:\n - "
