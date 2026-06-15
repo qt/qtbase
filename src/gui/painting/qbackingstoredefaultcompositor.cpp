@@ -389,12 +389,24 @@ void QBackingStoreDefaultCompositor::updatePerQuadData(PerQuadData *d, QRhiTextu
     d->lastUsedFilter = filter;
 
     if (textureExtra) {
+        // The PerQuadData slot may be reused for a stereo (two-texture) widget
+        // after having been created for a non-stereo (single-texture) one, in
+        // which case srbExtra was never allocated.
+        const bool needsCreate = !d->srbExtra;
+        if (needsCreate)
+            d->srbExtra = m_rhi->newShaderResourceBindings();
+
         d->srbExtra->setBindings({
             QRhiShaderResourceBinding::uniformBuffer(0, QRhiShaderResourceBinding::VertexStage | QRhiShaderResourceBinding::FragmentStage, d->ubuf, 0, UBUF_SIZE),
             QRhiShaderResourceBinding::sampledTexture(1, QRhiShaderResourceBinding::FragmentStage, textureExtra, sampler)
         });
 
-        d->srbExtra->updateResources(QRhiShaderResourceBindings::BindingsAreSorted);
+        if (needsCreate) {
+            if (!d->srbExtra->create())
+                qWarning("QBackingStoreDefaultCompositor: Failed to create srb");
+        } else {
+            d->srbExtra->updateResources(QRhiShaderResourceBindings::BindingsAreSorted);
+        }
         d->lastUsedTextureExtra = textureExtra;
     }
 }
