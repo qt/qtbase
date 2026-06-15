@@ -96,14 +96,15 @@ struct QLibrarySettings
     bool havePaths();
     QSettings *configuration();
     QVariant value(QLibraryInfo::LibraryPath path);
+    QList<QString> paths(QLibraryInfo::LibraryPath location);
 
     std::unique_ptr<QSettings> settings;
-    bool paths;
+    bool configHasPaths;
     bool reloadOnQAppAvailable;
 };
 Q_GLOBAL_STATIC(QLibrarySettings, qt_library_settings)
 
-QLibrarySettings::QLibrarySettings() : paths(false), reloadOnQAppAvailable(false)
+QLibrarySettings::QLibrarySettings() : configHasPaths(false), reloadOnQAppAvailable(false)
 {
     load();
 }
@@ -119,7 +120,7 @@ bool QLibrarySettings::havePaths()
 {
     if (reloadOnQAppAvailable && QCoreApplication::instanceExists())
         load();
-    return paths;
+    return configHasPaths;
 }
 
 void QLibrarySettings::load()
@@ -132,10 +133,10 @@ void QLibrarySettings::load()
         // This code needs to be in the regular library, as otherwise a qt.conf that
         // works for qmake would break things for dynamically built Qt tools.
         QStringList children = settings->childGroups();
-        paths = !children.contains("Platforms"_L1)
-                || children.contains("Paths"_L1);
+        configHasPaths = !children.contains("Platforms"_L1)
+                         || children.contains("Paths"_L1);
     } else {
-        paths = false;
+        configHasPaths = false;
     }
 }
 
@@ -155,7 +156,7 @@ QVariant QLibrarySettings::value(QLibraryInfo::LibraryPath path)
         return {};
 
     QSettings *config = configuration();
-    if (!settings || !paths)
+    if (!settings || !configHasPaths)
         return {};
 
     config->beginGroup("Paths"_L1);
@@ -164,6 +165,21 @@ QVariant QLibrarySettings::value(QLibraryInfo::LibraryPath path)
     if (!value.isValid() && !locationInfo.fallbackKey.isNull())
         value = config->value(locationInfo.fallbackKey);
     return value;
+}
+
+QList<QString> QLibrarySettings::paths(QLibraryInfo::LibraryPath location)
+{
+    QList<QString> ret;
+    if (QVariant v = value(location); v.isValid()) {
+        if (auto *asList = get_if<QList<QString>>(&v))
+            ret = std::move(*asList);
+        else
+            ret << v.toString();
+
+        for (qsizetype i = 0, end = ret.size(); i < end; ++i)
+            ret[i] = QLibraryInfoPrivate::expandEnvVariables(ret[i]);
+    }
+    return ret;
 }
 
 namespace {
@@ -695,25 +711,15 @@ QStringList QLibraryInfoPrivate::paths(QLibraryInfo::LibraryPath p)
 #if QT_CONFIG(settings)
     QLibrarySettings *qtConfSettings = qt_library_settings();
     if (qtConfSettings && qtConfSettings->havePaths()) {
-        QVariant value = qtConfSettings->value(p);
+        ret << qtConfSettings->paths(p);
 
         // Fall back to a stable default for missing qt.conf values,
         // unless we've been instructed to fall back to the Qt
         // configure defaults instead via the MergeQtConf setting.
-        if (!value.isValid() && !keepQtBuildDefaults()) {
+        if (ret.isEmpty() && !keepQtBuildDefaults()) {
             const auto locationInfo = QLibraryInfoPrivate::locationInfo(p);
             if (!locationInfo.defaultValue.isNull())
-                value = locationInfo.defaultValue;
-        }
-
-        if (value.isValid()) {
-            if (auto *asList = get_if<QList<QString>>(&value))
-                ret = std::move(*asList);
-            else
-                ret = QList<QString>({ std::move(value).toString()});
-            for (qsizetype i = 0, end = ret.size(); i < end; ++i) {
-                ret[i] = expandEnvVariables(ret[i]);
-            }
+                ret << locationInfo.defaultValue;
         }
     }
 #endif // settings
