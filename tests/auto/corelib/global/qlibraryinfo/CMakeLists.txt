@@ -23,3 +23,26 @@ qt_add_resources(tst_qlibraryinfo "qtconffiles"
         merge.qt.conf
         merge-relative-prefix.qt.conf
 )
+
+if(MACOS)
+    qt_internal_add_executable(bundlehelper
+        OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/"
+        SOURCES
+            bundlehelper.cpp
+        LIBRARIES
+            Qt::Core
+    )
+
+    if(QT_FEATURE_framework)
+        set(qtcore_library_name "$<TARGET_FILE_NAME:Qt::Core>.framework")
+    elseif(QT_FEATURE_shared)
+        set(qtcore_library_name "$<TARGET_SONAME_FILE_NAME:Qt::Core>")
+    endif()
+
+    if(qtcore_library_name)
+        qt_internal_extend_target(tst_qlibraryinfo
+            DEFINES
+                QTCORE_LIBRARY_NAME="${qtcore_library_name}"
+        )
+    endif()
+endif()
