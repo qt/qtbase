@@ -4,7 +4,7 @@
 #include <QGuiApplication>
 #include <QVulkanInstance>
 #include <QLoggingCategory>
-#include "../shared/trianglerenderer.h"
+#include "trianglerenderer.h"
 
 Q_LOGGING_CATEGORY(lcVk, "qt.vulkan")
 

@@ -2,12 +2,12 @@ QT += widgets
 
 HEADERS += \
     hellovulkanwidget.h \
-    ../shared/trianglerenderer.h
+    trianglerenderer.h
 
 SOURCES += \
     hellovulkanwidget.cpp \
     main.cpp \
-    ../shared/trianglerenderer.cpp
+    trianglerenderer.cpp
 
 RESOURCES += hellovulkanwidget.qrc
 
