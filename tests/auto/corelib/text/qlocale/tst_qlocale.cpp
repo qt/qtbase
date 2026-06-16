@@ -2812,6 +2812,22 @@ void tst_QLocale::toDate_data()
         << C << date << u8"🇬🇧d MMM yyyy🇬🇧"
         << u8"🇬🇧25 Feb 2017🇬🇧" << true;
 
+    // QDateTime can handle the end but not the start of May 16th:
+    const QDate early(int(QDateTime::YearRange::First), 5, 17);
+    // ... and likewise the start but not the end of Aug 17th:
+    const QDate late(int(QDateTime::YearRange::Last), 8, 17);
+    // (Albeit QDate can, of course, handle a much wider range.)
+    QTest::newRow("C:early:long")
+        << C << early << u"dddd, d MMMM yyyy"_s
+        << C.toString(early, u"dddd, d MMMM yyyy"_s) << true;
+    QTest::newRow("C:late:long")
+        << C << late << u"dddd, d MMMM yyyy"_s
+        << C.toString(late, u"dddd, d MMMM yyyy"_s) << true;
+    QTest::newRow("C:early:short")
+        << C << early << u"d MM yyyy"_s << C.toString(early, u"d MM yyyy"_s) << true;
+    QTest::newRow("C:late:short")
+        << C << late << u"d MM yyyy"_s << C.toString(late, u"d MM yyyy"_s) << true;
+
     const QLocale fr{QLocale::French};
     QTest::newRow("fr:long")
         << fr << date << "dddd d MMMM yyyy" << u"Samedi 25 février 2017"_s << true;
