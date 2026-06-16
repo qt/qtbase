@@ -632,7 +632,13 @@ static inline void fixTopLevelWindowFlags(Qt::WindowFlags &flags)
 {
     // Not supported on Windows, also do correction when it is set.
     flags &= ~Qt::WindowFullscreenButtonHint;
-    switch (flags) {
+    // Qt::ExpandedClientAreaHint / Qt::NoTitleBarBackgroundHint customize the client
+    // area, not the decoration set, so ignore them when matching a bare window type.
+    // NOTE: keep exact equality otherwise - a loose testFlag(Qt::Window) check
+    // regressed Qt::CustomizeWindowHint (QTBUG-133940) and was reverted.
+    constexpr Qt::WindowFlags clientAreaHints =
+        Qt::ExpandedClientAreaHint | Qt::NoTitleBarBackgroundHint;
+    switch (flags & ~clientAreaHints) {
     case Qt::Window:
         flags |= Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowMinimizeButtonHint
               |Qt::WindowMaximizeButtonHint|Qt::WindowCloseButtonHint;
