@@ -2220,10 +2220,13 @@
            subcontrol.
 
            The image property accepts a list of \l{#Url}{Url}s or
-           an \c{svg}. The actual image that is drawn is determined
+           a \c{svg}. The actual image that is drawn is determined
            using the same algorithm as QIcon (i.e) the image is never scaled
            up but always scaled down if necessary. If a \c{svg} is specified,
            the image is scaled to the size of the contents rectangle.
+           Setting the size of a \c{svg} can be done with the
+           \l{#width-prop}{width} and \l{#height-prop}{height} property
+           (supported since Qt 6.13)
 
            Setting the image property on sub controls implicitly sets the
            width and height of the sub-control (unless the image in a SVG).

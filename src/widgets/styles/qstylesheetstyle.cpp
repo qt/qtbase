@@ -1380,7 +1380,15 @@ void QRenderRule::drawImage(QPainter *p, const QRect &rect)
 {
     if (!hasImage())
         return;
-    img->icon.paint(p, rect, img->alignment);
+    QRect r = rect;
+    // if an explicit width and height is set it must be honored
+    // QIcon needs an overload taking two rects, one for the painting
+    // area and one for the desired image size
+    if (geo && geo->width != -1 && geo->height != -1) {
+        const QSize sz = QSize(geo->width, geo->height).expandedTo(minimumContentsSize());
+        r = QStyle::alignedRect(p->layoutDirection(), img->alignment, sz, r);
+    }
+    img->icon.paint(p, r, img->alignment);
 }
 
 void QRenderRule::drawRule(QPainter *p, const QRect& rect)
