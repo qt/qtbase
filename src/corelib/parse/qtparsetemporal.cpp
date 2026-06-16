@@ -531,7 +531,7 @@ TemporalFieldMatcher::numericExtend(const PartialParse &base, QStringView text,
             digits = digits.first(maxWidth);
     } else if (flags.testFlag(Flag::YearSignIso8601) && !parsed.sign) {
         // Limit width because a field longer than width would need a sign.
-        const int maxWidth = config.width > 0 ? config.width : qMax(-config.maxDigits, 1);
+        const int maxWidth = qMax(-config.maxDigits, config.width > 0 ? config.width : 1);
         if (digits.size() > maxWidth)
             digits = digits.first(maxWidth);
     }
