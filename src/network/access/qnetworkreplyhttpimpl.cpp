@@ -1343,9 +1343,13 @@ void QNetworkReplyHttpImplPrivate::onRedirected(const QUrl &redirectUrl, int htt
     }
 
     // If the original operation was a GET with a body and the status code is
-    // 308 then keep the message body
+    // 308 then keep the message body. The body must still be present though:
+    // a previous redirect (e.g. 301/302/303) has already dropped it, and once
+    // dropped it cannot be restored, so the headers must be dropped too to keep
+    // them in sync (QTBUG-133976).
     const bool getOperationKeepsBody = (operation == QNetworkAccessManager::GetOperation)
-                                    && httpStatus == 308;
+                                    && httpStatus == 308
+                                    && (outgoingData || outgoingDataBuffer);
 
     redirectRequest = createRedirectRequest(originalRequest, url, maxRedirectsRemaining);
     operation = getRedirectOperation(operation, httpStatus);
