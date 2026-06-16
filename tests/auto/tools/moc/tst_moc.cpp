@@ -99,6 +99,16 @@ namespace Qt_ {
 }
 #endif
 
+namespace TokenSeparationInMacroExpansion
+{
+#define TOKEN_SEPARATION_IN_MACRO_EXPANSION(A) Q_CLASSINFO("TOKEN_SEPARATION", #A)
+
+struct C : public QObject
+{
+    Q_OBJECT
+    TOKEN_SEPARATION_IN_MACRO_EXPANSION(unsigned char)
+};
+}
 
 namespace TokenStartingWithNumber
 {
@@ -906,6 +916,7 @@ private slots:
     void invokableCtors();
     void virtualInlineTaggedSlot();
     void tokenStartingWithNumber();
+    void tokenSeparationInMacroExpansion();
 
 signals:
     void sigWithUnsignedArg(unsigned foo);
@@ -1244,7 +1255,7 @@ void tst_Moc::classinfoFromVaArgs()
 
     QCOMPARE(mobj->classInfoCount(), 1);
     QCOMPARE(mobj->classInfo(0).name(), "classinfo_va_args");
-    QCOMPARE(mobj->classInfo(0).value(), "a,b,c,d");
+    QCOMPARE(mobj->classInfo(0).value(), "a , b , c , d");
 }
 
 void tst_Moc::trNoopInClassInfo()
@@ -4987,6 +4998,14 @@ void tst_Moc::tokenStartingWithNumber()
     QMetaEnum metaEnum = mo->enumerator(index);
     QVERIFY(metaEnum.isValid());
     QCOMPARE(metaEnum.keyCount(), 3);
+}
+
+void tst_Moc::tokenSeparationInMacroExpansion()
+{
+    const auto *mo = &TokenSeparationInMacroExpansion::C::staticMetaObject;
+    const auto idx = mo->indexOfClassInfo("TOKEN_SEPARATION");
+    QVERIFY(idx != -1);
+    QCOMPARE(mo->classInfo(idx).value(), "unsigned char");
 }
 
 QTEST_MAIN(tst_Moc)

@@ -648,9 +648,8 @@ Symbols Preprocessor::macroExpandIdentifier(Preprocessor *that, SymbolStack &sym
                 }
 
                 const Symbols &arg = arguments.at(index);
-                QByteArray stringified;
-                for (const Symbol &sym : arg)
-                    stringified += sym.lexemView();
+                QByteArray stringified = qJoin(arg.cbegin(), arg.cend(), QByteArray(), ' ',
+                                               [](const auto &s) { return s.lexemView(); });
 
                 stringified.replace('"', "\\\"");
                 stringified.prepend('"');
