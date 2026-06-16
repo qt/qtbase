@@ -1,4 +1,4 @@
-HEADERS       = ../connection.h \
+HEADERS       = connection.h \
                 customsqlmodel.h \
                 editablesqlmodel.h
 SOURCES       = customsqlmodel.cpp \

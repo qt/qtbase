@@ -17,5 +17,3 @@ qtHaveModule(xml): SUBDIRS += masterdetail
         SUBDIRS += sqlbrowser
     }
 }
-
-EXAMPLE_FILES = connection.h
