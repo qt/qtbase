@@ -173,6 +173,8 @@ Q_SIGNALS:
     void nodeAreaChanged(QArkUi::QQtEmbeddedWindowNode::NodeAreaInfo areaChangeEvt);
 
 private:
+    void applyPhoneWindowChrome();
+
     static constexpr QOhosRuntimeDeviceTypeAndMode allModes =
         QOhosRuntimeDeviceTypeAndMode::_2in1
         | QOhosRuntimeDeviceTypeAndMode::HandheldDeviceFullScreen

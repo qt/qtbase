@@ -704,6 +704,41 @@ void QOhosWindowProxy::maximize(MaximizePresentation maximizePresentation)
     Q_FUNC_INFO);
 }
 
+void QOhosWindowProxy::setWindowLayoutFullScreen(bool isLayoutFullScreen)
+{
+    qCDebug(QtForOhos, "%s: %s", Q_FUNC_INFO, isLayoutFullScreen ? "true" : "false");
+    QtOhos::invokeInJsThreadAndWaitForContinue(
+        [&](QtOhos::JsState &, QOhosTaskPromise<> taskPromise) {
+            if (m_jsScopeData->isWindowClosing()) {
+                taskPromise();
+                return;
+            }
+            m_jsScopeData->jsWindowRef->evalToPromiseOrRejectOnThrow(
+                "setWindowLayoutFullScreen(*)", {isLayoutFullScreen})
+                .onCatch(QtOhos::makeErrorLoggingJsCallback("setWindowLayoutFullScreen()"))
+                .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
+        },
+        Q_FUNC_INFO);
+}
+
+void QOhosWindowProxy::setWindowSystemBarEnable(const QStringList &names)
+{
+    qCDebug(QtForOhos) << Q_FUNC_INFO << names;
+    QtOhos::invokeInJsThreadAndWaitForContinue(
+        [&](QtOhos::JsState &jsState, QOhosTaskPromise<> taskPromise) {
+            if (m_jsScopeData->isWindowClosing()) {
+                taskPromise();
+                return;
+            }
+            m_jsScopeData->jsWindowRef->evalToPromiseOrRejectOnThrow(
+                "setWindowSystemBarEnable(*)",
+                {QNapi::makeArray(jsState.env(), names, std::mem_fn(&QString::toStdString))})
+                .onCatch(QtOhos::makeErrorLoggingJsCallback("setWindowSystemBarEnable()"))
+                .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
+        },
+        Q_FUNC_INFO);
+}
+
 void QOhosWindowProxy::showAbility()
 {
     qCDebug(QtForOhos, "%s", Q_FUNC_INFO);

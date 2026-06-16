@@ -16,6 +16,7 @@
 #include <functional>
 #include <memory>
 #include <qarkui/window.h>
+#include <qohosdeviceinfo_p.h>
 #include <qohosinputmethodeventhandler.h>
 #include <qohosjsmain.h>
 #include <qohosplatformbackingstore.h>
@@ -976,12 +977,16 @@ void QOhosView::showImmediate()
     if (viewType() == ViewType::MainWindow) {
         const auto windowStates = m_ownerWindow->windowStates();
         if (windowStates.testFlag(Qt::WindowState::WindowFullScreen)) {
-            // NOTE: Fullscreen flag is set during main window creation
-            if (!viewTypeChanged) {
+            // A phone window created fullscreen still shows the system bars, so
+            // hide them explicitly. On 2-in-1/tablet the window is already
+            // immersive at creation; re-applying would only make it twitch.
+            if (!viewTypeChanged || QOhosDeviceInfo::isPhone())
                 setFullScreen();
-            }
         } else if (windowStates.testFlag(Qt::WindowState::WindowMaximized)) {
             maximize();
+        } else if (QOhosDeviceInfo::isPhone()
+                   && m_ownerWindow->flags().testFlag(Qt::ExpandedClientAreaHint)) {
+            applyPhoneWindowChrome();
         }
     } else if (viewType() == ViewType::SubWindow && m_ohosWindowProxy != nullptr) {
         m_ohosWindowProxy->setFollowParentMultiScreenPolicy(true);
@@ -999,16 +1004,41 @@ void QOhosView::showImmediate()
     m_nativeNode->setVisibility(true);
 }
 
+void QOhosView::applyPhoneWindowChrome()
+{
+    if (m_ohosWindowProxy == nullptr)
+        return;
+
+    // Lay the window out under the system bars when fullscreen or when the
+    // client area is expanded; only fullscreen also hides the bars.
+    const bool fullScreen = m_ownerWindow->windowStates().testFlag(Qt::WindowFullScreen);
+    const bool expanded = m_ownerWindow->flags().testFlag(Qt::ExpandedClientAreaHint);
+    m_ohosWindowProxy->setWindowLayoutFullScreen(fullScreen || expanded);
+    m_ohosWindowProxy->setWindowSystemBarEnable(
+        fullScreen ? QStringList{}
+                   : QStringList{ QStringLiteral("status"), QStringLiteral("navigation") });
+}
+
 void QOhosView::setFullScreen()
 {
-    if (m_ohosWindowProxy != nullptr)
+    if (m_ohosWindowProxy == nullptr)
+        return;
+
+    if (!QOhosDeviceInfo::isPhone())
         m_ohosWindowProxy->maximize(QOhosWindowProxy::MaximizePresentation::ENTER_IMMERSIVE);
+    else
+        applyPhoneWindowChrome();
 }
 
 void QOhosView::recover()
 {
-    if (m_ohosWindowProxy != nullptr)
+    if (m_ohosWindowProxy == nullptr)
+        return;
+
+    if (!QOhosDeviceInfo::isPhone())
         m_ohosWindowProxy->recover();
+    else
+        applyPhoneWindowChrome();
 }
 
 void QOhosView::minimize()
@@ -1615,6 +1645,10 @@ void QOhosView::handleWindowFlagsChange(
     bool disableWindowShadowChanged = (flagsChange & Qt::NoDropShadowWindowHint) != 0;
     if (disableWindowShadowChanged && currentWindowFlags.testFlag(Qt::NoDropShadowWindowHint))
         setWindowShadowDisabled();
+
+    bool expandedClientAreaChanged = (flagsChange & Qt::ExpandedClientAreaHint) != 0;
+    if (expandedClientAreaChanged && QOhosDeviceInfo::isPhone())
+        applyPhoneWindowChrome();
 }
 
 QArkUi::QQtEmbeddedWindowNode::NodeAreaInfo QOhosView::nodeAreaInfo() const
