@@ -3,7 +3,7 @@
 
 #include <QApplication>
 
-#include "../connection.h"
+#include "connection.h"
 #include "tableeditor.h"
 
 //! [0]

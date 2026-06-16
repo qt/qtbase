@@ -1,4 +1,4 @@
-HEADERS       = ../connection.h
+HEADERS       = connection.h
 SOURCES       = tablemodel.cpp
 QT           += sql widgets
 requires(qtConfig(tableview))
