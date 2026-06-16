@@ -20,9 +20,9 @@
 #include "archdetect.cpp"
 #include "qconfig.cpp"
 
-#ifdef Q_OS_DARWIN
+#if defined(Q_OS_APPLE)
 #  include "private/qcore_mac_p.h"
-#endif // Q_OS_DARWIN
+#endif
 
 #if QT_CONFIG(relocatable) && QT_CONFIG(dlopen)
 #    include <dlfcn.h>
@@ -214,7 +214,7 @@ static std::unique_ptr<QSettings> findConfiguration()
     QString qtconfig = QStringLiteral(":/qt/etc/qt.conf");
     if (QResource(qtconfig, QLocale::c()).isValid())
         return std::make_unique<QSettings>(qtconfig, QSettings::IniFormat);
-#ifdef Q_OS_DARWIN
+#if defined(Q_OS_APPLE)
     CFBundleRef bundleRef = CFBundleGetMainBundle();
     if (bundleRef) {
         QCFType<CFURLRef> urlRef = CFBundleCopyResourceURL(bundleRef,
@@ -407,7 +407,7 @@ QString QLibraryPrefixes::qtConfPrefix()
 */
 QString QLibraryPrefixes::resolveAppDir()
 {
-#if defined(Q_OS_DARWIN)
+#if defined(Q_OS_APPLE)
     // Resolve the app prefix from the app bundle instead of the
     // executable, as that correctly handles both the main executable
     // as well as possibly deeply nested helper tools, and lets us
@@ -427,7 +427,7 @@ QString QLibraryPrefixes::resolveAppDir()
             }
         }
     }
-#endif // Q_OS_DARWIN
+#endif // Q_OS_APPLE
 
     if (QCoreApplication::instanceExists()) {
         // We make the prefix path absolute to the executable's directory.
