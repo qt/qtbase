@@ -95,6 +95,9 @@ public:
 #endif
     QVariant styleHint(StyleHint hint) const override;
 
+    QStringList themeNames() const override;
+    QPlatformTheme *createPlatformTheme(const QString &name) const override;
+
     QPlatformServices *services() const override;
 
     QWindow *window(screen_window_t qnxWindow) const;
