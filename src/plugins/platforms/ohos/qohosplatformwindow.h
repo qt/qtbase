@@ -101,6 +101,7 @@ public:
 
     DecorationPreset decorationPreset() const;
     QMargins frameMargins() const override;
+    QMargins safeAreaMargins() const override;
 
     QWindow *validSubWindowOfTagValueOrNull() const;
     bool mainWindowTagValueOrFalse() const;
@@ -124,6 +125,7 @@ protected:
 
     void setWindowStateFromOhos(Qt::WindowStates state);
     void setWindowMarginsFromOhos(const QMargins &margins);
+    void setSafeAreaMarginsFromOhos(const QMargins &margins);
     void setExposedFromOhos(bool exposed);
     void setDisplayIdFromOhos(std::optional<QOhosDisplayInfo::JsDisplayId> displayId);
     void setWindowGeometryFromOhos(const QRect &nativeWindowDrawGeometry);
@@ -150,6 +152,7 @@ protected:
     QRect m_oldGeometry;
     std::unique_ptr<QMargins> m_optFrameMargins;
     std::optional<QCursor> m_cursor;
+    QMargins m_safeAreaMargins;
 
 private:
     void sendExposeUpdate();

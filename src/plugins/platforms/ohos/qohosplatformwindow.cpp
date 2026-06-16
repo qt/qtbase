@@ -450,6 +450,21 @@ void QOhosPlatformWindow::setWindowMarginsFromOhos(const QMargins &margins)
     qCDebug(QtForOhos) << "Window margins changed: " << *m_optFrameMargins;
 }
 
+QMargins QOhosPlatformWindow::safeAreaMargins() const
+{
+    return m_safeAreaMargins;
+}
+
+void QOhosPlatformWindow::setSafeAreaMarginsFromOhos(const QMargins &margins)
+{
+    if (m_safeAreaMargins == margins)
+        return;
+
+    m_safeAreaMargins = margins;
+    qCDebug(QtForOhos) << "Safe area margins changed: " << m_safeAreaMargins;
+    QWindowSystemInterface::handleSafeAreaMarginsChanged(window());
+}
+
 void QOhosPlatformWindow::setExposedFromOhos(bool exposed)
 {
     m_exposed = exposed;

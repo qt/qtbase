@@ -526,6 +526,74 @@ void QOhosFloatingWindow::handleNodeResizeEvent(const QArkUi::QQtEmbeddedWindowN
     if (m_view->viewType() != QOhosView::ViewType::EmbeddedWindow)
         setWindowGeometryFromOhos(
             QRect(areaChangeEvent.globalRelativeOffsetPixels, areaChangeEvent.screenGeometryPixels.size()));
+
+    updateSafeAreaMargins();
+}
+
+// Map display-space cutout rects to window-relative margins, each attributed to
+// the nearest window edge.
+static QMargins cutoutMarginsForWindow(const QList<QRect> &cutoutRects, const QRect &windowRect)
+{
+    QMargins margins;
+    for (const QRect &cutout : cutoutRects) {
+        if (cutout.isEmpty() || !cutout.intersects(windowRect))
+            continue;
+        const int distTop = cutout.top() - windowRect.top();
+        const int distBottom = windowRect.bottom() - cutout.bottom();
+        const int distLeft = cutout.left() - windowRect.left();
+        const int distRight = windowRect.right() - cutout.right();
+        int nearest = qMin(qMin(distTop, distBottom), qMin(distLeft, distRight));
+        if (nearest == distTop)
+            margins.setTop(qMax(margins.top(), cutout.bottom() + 1 - windowRect.top()));
+        else if (nearest == distBottom)
+            margins.setBottom(qMax(margins.bottom(), windowRect.bottom() + 1 - cutout.top()));
+        else if (nearest == distLeft)
+            margins.setLeft(qMax(margins.left(), cutout.right() + 1 - windowRect.left()));
+        else
+            margins.setRight(qMax(margins.right(), windowRect.right() + 1 - cutout.left()));
+    }
+    return margins;
+}
+
+void QOhosFloatingWindow::updateSafeAreaMargins()
+{
+    // The system bar and navigation indicator avoid areas are window-relative
+    // and visibility-aware: they report zero when hidden (e.g. in fullscreen).
+    static constexpr QOhosWindowProxy::AvoidAreaType kSafeAreaContributors[] = {
+        QOhosWindowProxy::AvoidAreaType::TYPE_SYSTEM,
+        QOhosWindowProxy::AvoidAreaType::TYPE_NAVIGATION_INDICATOR,
+    };
+
+    // Avoid-area sizes are relative to the full window; subtract the inset the
+    // compositor already applies (frame vs. true on-screen content) so a normal
+    // window reports no safe area, matching Android's max(0, inset - offset).
+    // nodeScreenGeometryPixels() is the real content rect; drawableRect lies.
+    const QRect frame = m_view->viewGeometry().frameGeometry;
+    const QRect content = m_view->nodeScreenGeometryPixels();
+    const int alreadyTop = content.top() - frame.top();
+    const int alreadyLeft = content.left() - frame.left();
+    const int alreadyRight = frame.right() - content.right();
+    const int alreadyBottom = frame.bottom() - content.bottom();
+
+    QMargins combined;
+    for (auto type : kSafeAreaContributors) {
+        const QMargins m = m_view->avoidAreaMargins(type);
+        combined.setTop(qMax(combined.top(), qMax(0, m.top() - alreadyTop)));
+        combined.setLeft(qMax(combined.left(), qMax(0, m.left() - alreadyLeft)));
+        combined.setRight(qMax(combined.right(), qMax(0, m.right() - alreadyRight)));
+        combined.setBottom(qMax(combined.bottom(), qMax(0, m.bottom() - alreadyBottom)));
+    }
+
+    // The display cutout is not in the avoid areas; fold it in from
+    // getCutoutInfo() (fetched fresh as it rotates with the display) and report
+    // it even in fullscreen, mapped against the content area.
+    const QMargins cutout = cutoutMarginsForWindow(m_view->displayCutoutRects(), content);
+    combined.setTop(qMax(combined.top(), cutout.top()));
+    combined.setLeft(qMax(combined.left(), cutout.left()));
+    combined.setRight(qMax(combined.right(), cutout.right()));
+    combined.setBottom(qMax(combined.bottom(), cutout.bottom()));
+
+    setSafeAreaMarginsFromOhos(combined);
 }
 
 QT_END_NAMESPACE

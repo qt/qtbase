@@ -1149,6 +1149,12 @@ QMargins QOhosView::avoidAreaMargins(QOhosWindowProxy::AvoidAreaType type) const
     return margins;
 }
 
+QList<QRect> QOhosView::displayCutoutRects() const
+{
+    return m_ohosWindowProxy != nullptr ? m_ohosWindowProxy->getDisplayCutoutRects()
+                                        : QList<QRect>();
+}
+
 QOhosView::ViewType QOhosView::viewType() const
 {
     return m_viewType.value_or(ViewType::EmbeddedWindow);

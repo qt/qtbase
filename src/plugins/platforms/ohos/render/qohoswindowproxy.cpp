@@ -1703,6 +1703,51 @@ QPixmap QOhosWindowProxy::snapshot() const
         Q_FUNC_INFO);
 }
 
+QList<QRect> QOhosWindowProxy::getDisplayCutoutRects() const
+{
+    // The display cutout (e.g. camera hole) is not in getWindowAvoidArea(); read
+    // it from the display. Returns the bounding rects in display coordinates.
+    return QtOhos::evalInJsThreadWithPromise<QList<QRect>>(
+        [&](QtOhos::JsState &jsState, QOhosTaskPromise<QList<QRect>> evalPromise) {
+            if (m_jsScopeData->isWindowClosing()) {
+                evalPromise(QList<QRect>());
+                return;
+            }
+
+            auto optWindowDisplay = qAndThen(
+                getWindowPropertiesFromJsWindow(
+                    m_jsScopeData->jsWindowRef->jsObject()).displayId,
+                [&](QOhosDisplayInfo::JsDisplayId id) {
+                    return QOhosDisplayInfo::tryGetDisplayById(jsState, id);
+                });
+            auto display = optWindowDisplay.has_value()
+                ? optWindowDisplay.value()
+                : jsState.eval<QNapi::Object>("@ohos.display.getDefaultDisplaySync()");
+
+            auto branches = std::move(evalPromise).makeThenCatchBranches(Q_FUNC_INFO);
+            display
+                .evalToPromiseOrRejectOnThrow("getCutoutInfo()")
+                .onThen(
+                    [thenPromise = std::move(branches.first)](const QtOhos::CallbackInfo &cbInfo) {
+                        auto cutoutInfo = cbInfo.getFirstArg<QNapi::Object>(Q_FUNC_INFO);
+                        auto cutoutRects = QNapi::getArrayElements<QList<QRect>, QNapi::Object>(
+                            cutoutInfo.get<QNapi::Array>("boundingRects"), [](QNapi::Object r) {
+                                return QRect(r.get<QNapi::Number>("left"),
+                                             r.get<QNapi::Number>("top"),
+                                             r.get<QNapi::Number>("width"),
+                                             r.get<QNapi::Number>("height"));
+                            });
+                        thenPromise(cutoutRects);
+                    })
+                .onCatch(
+                    [catchPromise = std::move(branches.second)](const QtOhos::CallbackInfo &cbInfo) {
+                        QtOhos::logJsCallbackError(cbInfo, "getCutoutInfo() failed");
+                        catchPromise(QList<QRect>());
+                    });
+        },
+        Q_FUNC_INFO);
+}
+
 bool QOhosWindowProxy::startMoving()
 {
     QtOhos::invokeInJsThreadAndWaitForContinue(
