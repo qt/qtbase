@@ -144,6 +144,19 @@ static QByteArray qGssapiContinue(QAuthenticatorPrivate *ctx, QByteArrayView cha
   KDC is set up, and the credentials can be fetched from it. The backend always
   uses \c {HTTPS@<hostname>} as an SPN.
 
+  \section1 Security Considerations
+
+  QAuthenticator stores credentials such as usernames and passwords
+  internally using general-purpose data types (QString, QByteArray)
+  that do not guarantee secure erasure of their contents from memory
+  on destruction. Credential material may persist in freed heap pages,
+  core dumps, swap files, or process memory after a QAuthenticator
+  object is destroyed or cleared.
+
+  Applications with strict requirements for credential hygiene should
+  take this into account when deciding how and where to use
+  QAuthenticator.
+
   \sa QSslSocket
 */
 
