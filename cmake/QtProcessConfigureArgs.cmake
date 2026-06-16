@@ -661,12 +661,13 @@ while(commandline_files)
     set_property(GLOBAL PROPERTY COMMANDLINE_CURRENT_CONFIGURE_MODULE "${current_configure_module}")
 
     # Record this directory as visited by the qt_cmdline.cmake traversal.
-    if(IS_ABSOLUTE "${commandline_file_directory}")
-        get_filename_component(abs_module_root "${MODULE_ROOT}" ABSOLUTE)
-        file(RELATIVE_PATH cmdline_marker_rel "${abs_module_root}" "${commandline_file_directory}")
-    else()
-        set(cmdline_marker_rel "${commandline_file_directory}")
-    endif()
+    # Normalize both paths to absolute before computing the relative path, so the
+    # result matches the chain-coverage check in qt_internal_add_module regardless
+    # of whether MODULE_ROOT was passed as a relative path (e.g. when configuring a
+    # module in-source with '.').
+    get_filename_component(abs_module_root "${MODULE_ROOT}" ABSOLUTE)
+    get_filename_component(abs_commandline_file_directory "${commandline_file_directory}" ABSOLUTE)
+    file(RELATIVE_PATH cmdline_marker_rel "${abs_module_root}" "${abs_commandline_file_directory}")
     if(NOT cmdline_marker_rel)
         set(cmdline_marker_rel ".")
     endif()
