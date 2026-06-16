@@ -697,6 +697,8 @@ QAuthenticatorPrivate::parseDigestAuthenticationChallenge(QByteArrayView challen
         const char *start = d;
         while (d < end && *d != '=')
             ++d;
+        if (d >= end)
+            break;
         QByteArrayView key = QByteArrayView(start, d - start);
         ++d;
         if (d >= end)
@@ -727,7 +729,8 @@ QAuthenticatorPrivate::parseDigestAuthenticationChallenge(QByteArrayView challen
         }
         while (d < end && *d != ',')
             ++d;
-        ++d;
+        if (d < end)
+            ++d;
         options[key.toByteArray()] = std::move(value);
     }
 
