@@ -289,7 +289,7 @@ void QOhosFloatingWindow::handleWindowEvent(QOhosWindowProxy::WindowEvent evt)
         // activated again). This bahaviour is Ohos platform issue.
         restoreWindowCurrentCursorIfNeeded();
         if (windowAcceptsFocusAndInput) {
-            QWindowSystemInterface::handleFocusWindowChanged(qWindow);
+            QWindowSystemInterface::handleFocusWindowChanged(qWindow, Qt::ActiveWindowFocusReason);
             notifyInputSystemsWindowActiveStatusChanged(true);
         }
         break;
