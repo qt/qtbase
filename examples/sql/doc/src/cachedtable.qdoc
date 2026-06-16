@@ -58,7 +58,7 @@
     is located in the \c sql example directory (all the examples in
     the \c sql directory use this function to connect to a database).
 
-    \snippet connection.h 0
+    \snippet cachedtable/connection.h 0
 
     The \c createConnection function opens a connection to an
     in-memory SQLITE database and creates a test table.  If you want

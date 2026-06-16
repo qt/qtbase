@@ -9,7 +9,7 @@ find_package(Qt6 REQUIRED COMPONENTS Core Gui Sql Widgets)
 qt_standard_project_setup()
 
 qt_add_executable(querymodel
-    ../connection.h
+    connection.h
     customsqlmodel.cpp customsqlmodel.h
     editablesqlmodel.cpp editablesqlmodel.h
     main.cpp

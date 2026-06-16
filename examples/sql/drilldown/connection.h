@@ -14,10 +14,8 @@
     in-memory SQLITE database and to create a test table.
 
     If you want to use another database, simply modify the code
-    below. All the examples in this directory use this function to
-    connect to a database.
+    below.
 */
-//! [0]
 static bool createConnection()
 {
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
@@ -76,6 +74,5 @@ static bool createConnection()
 
     return true;
 }
-//! [0]
 
 #endif

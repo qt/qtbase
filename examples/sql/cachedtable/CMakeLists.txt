@@ -9,7 +9,7 @@ find_package(Qt6 REQUIRED COMPONENTS Core Gui Sql Widgets)
 qt_standard_project_setup()
 
 qt_add_executable(cachedtable
-    ../connection.h
+    connection.h
     main.cpp
     tableeditor.cpp tableeditor.h
 )

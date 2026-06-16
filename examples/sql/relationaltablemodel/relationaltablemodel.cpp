@@ -4,7 +4,7 @@
 #include <QtWidgets>
 #include <QtSql>
 
-#include "../connection.h"
+#include "connection.h"
 
 #include <memory>
 

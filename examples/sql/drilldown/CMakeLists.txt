@@ -9,7 +9,7 @@ find_package(Qt6 REQUIRED COMPONENTS Core Gui Sql Widgets)
 qt_standard_project_setup()
 
 qt_add_executable(drilldown
-    ../connection.h
+    connection.h
     imageitem.cpp imageitem.h
     informationwindow.cpp informationwindow.h
     main.cpp

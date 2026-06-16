@@ -1,4 +1,4 @@
-HEADERS       = ../connection.h \
+HEADERS       = connection.h \
                 tableeditor.h
 SOURCES       = main.cpp \
                 tableeditor.cpp
