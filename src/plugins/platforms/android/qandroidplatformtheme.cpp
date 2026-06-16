@@ -471,8 +471,21 @@ extern "C" JNIEXPORT void JNICALL
 Java_org_qtproject_qt_android_QtActivityDelegateBase_updateUiContrast(JNIEnv *, jobject,
                                                                       jfloat newUiContrast)
 {
-    s_contrastPreference = newUiContrast > 0.5f ? Qt::ContrastPreference::HighContrast
+    const Qt::ContrastPreference contrastPreference = newUiContrast > 0.5f
+                                                ? Qt::ContrastPreference::HighContrast
                                                 : Qt::ContrastPreference::NoPreference;
+
+    if (!qGuiApp) {
+        s_contrastPreference = contrastPreference;
+        return;
+    }
+
+    QMetaObject::invokeMethod(qGuiApp, [contrastPreference] {
+        if (s_contrastPreference == contrastPreference)
+            return;
+        s_contrastPreference = contrastPreference;
+        QWindowSystemInterface::handleThemeChange();
+    });
 }
 
 static Qt::MotionPreference s_motionPreference = Qt::MotionPreference::NoPreference;
@@ -489,12 +502,16 @@ Java_org_qtproject_qt_android_QtActivityDelegateBase_updateUiMotionScale(JNIEnv 
     const Qt::MotionPreference preference = qFuzzyIsNull(newUiMotion)
                                                 ? Qt::MotionPreference::ReducedMotion
                                                 : Qt::MotionPreference::NoPreference;
-    if (s_motionPreference == preference)
+
+    if (!qGuiApp) {
+        s_motionPreference = preference;
         return;
-    s_motionPreference = preference;
-    if (!qGuiApp)
-        return;
-    QMetaObject::invokeMethod(qGuiApp, [] {
+    }
+
+    QMetaObject::invokeMethod(qGuiApp, [preference] {
+        if (s_motionPreference == preference)
+            return;
+        s_motionPreference = preference;
         QWindowSystemInterface::handleThemeChange();
     });
 }
