@@ -471,8 +471,21 @@ extern "C" JNIEXPORT void JNICALL
 Java_org_qtproject_qt_android_QtActivityDelegateBase_updateUiContrast(JNIEnv *, jobject,
                                                                       jfloat newUiContrast)
 {
-    s_contrastPreference = newUiContrast > 0.5f ? Qt::ContrastPreference::HighContrast
+    const Qt::ContrastPreference contrastPreference = newUiContrast > 0.5f
+                                                ? Qt::ContrastPreference::HighContrast
                                                 : Qt::ContrastPreference::NoPreference;
+
+    if (!qGuiApp) {
+        s_contrastPreference = contrastPreference;
+        return;
+    }
+
+    QMetaObject::invokeMethod(qGuiApp, [contrastPreference] {
+        if (s_contrastPreference == contrastPreference)
+            return;
+        s_contrastPreference = contrastPreference;
+        QWindowSystemInterface::handleThemeChange();
+    });
 }
 
 static inline int paletteType(QPlatformTheme::Palette type)
