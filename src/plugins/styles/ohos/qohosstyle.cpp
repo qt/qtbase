@@ -447,8 +447,20 @@ QRect getProgressBarGrooveRect(const QStyleOptionProgressBar &option)
 void drawProgressBarContent(QPainter &painter, const QStyleOptionProgressBar &option)
 {
     auto rect = getProgressBarGrooveRect(option);
-    const double fraction = static_cast<double>(option.progress - option.minimum) / (option.maximum - option.minimum);
     const bool horizontal = option.state & QStyle::State_Horizontal;
+
+    const bool isIndeterminate = option.maximum == 0 && option.minimum == 0;
+    if (isIndeterminate) {
+        // TODO: proper busy indicator pending UI spec. Fill groove as a placeholder.
+        drawRoundedRect(painter, Qt::NoPen, option.palette.brush(QPalette::Highlight),
+                rect, progressBarCornerRadius, progressBarCornerRadius);
+        return;
+    }
+
+    const qint64 totalSteps = std::max(qint64(1), qint64(option.maximum) - option.minimum);
+    const double fraction = static_cast<double>(qint64(option.progress) - option.minimum)
+                          / static_cast<double>(totalSteps);
+
     if (horizontal) {
         rect.setWidth(fraction * rect.width());
         rect.moveLeft(option.invertedAppearance ? option.rect.width() - rect.width() : 0);
