@@ -533,26 +533,12 @@ void QEmbeddedWindowNode::setMouseEventsHandler(QOhosConsumer<NativeNodeMouseEve
         });
 }
 
-#if OH_CURRENT_API_VERSION >= 22
-
 void QEmbeddedWindowNode::setCoastingAxisEventsHandler(
     QOhosConsumer<::ArkUI_UIInputEvent *> coastingAxisEventsHandler)
 {
     setContentNodeEventHandler(
         ::NODE_ON_COASTING_AXIS_EVENT, "coasting axis", std::move(coastingAxisEventsHandler));
 }
-
-#else
-
-void QEmbeddedWindowNode::setCoastingAxisEventsHandler(
-    QOhosConsumer<::ArkUI_UIInputEvent *> coastingAxisEventsHandler)
-{
-    Q_UNUSED(coastingAxisEventsHandler)
-    qOhosPrintfDebug(
-        "%s: setting handler on ::NODE_ON_COASTING_AXIS_EVENT not supported on this API, ignore", Q_FUNC_INFO);
-}
-
-#endif
 
 std::shared_ptr<void> QEmbeddedWindowNode::startDrag(
     std::vector<std::shared_ptr<::OH_PixelmapNative>> pixelMaps, const QPointF &hotspot,

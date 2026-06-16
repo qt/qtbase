@@ -639,17 +639,9 @@ void QOhosWindowProxy::showWindow(const ShowWindowOptions &options)
             jsOptionsProps.emplace_back("focusOnShow", options.focusOnShow.value());
 
         std::vector<QNapi::ValueWrapper> showWindowArgs;
-        constexpr auto minSupportedSdkVersionForOptions = 20;
-        if (QOhosDeviceInfo::sdkApiVersion() >= minSupportedSdkVersionForOptions) {
-            constexpr bool brokenHandlingOfEmptyOptionsParamInOhos = true;
-            if (!(jsOptionsProps.empty() && brokenHandlingOfEmptyOptionsParamInOhos)) {
-                showWindowArgs.push_back(QNapi::makeObject(jsState.env(), jsOptionsProps));
-            }
-        } else if (!jsOptionsProps.empty()) {
-            qOhosPrintfWarning(
-                "%s: showWindow() doesn't accept options in SDK version < %d, ignored %zu options",
-                Q_FUNC_INFO, minSupportedSdkVersionForOptions, jsOptionsProps.size());
-        }
+        constexpr bool brokenHandlingOfEmptyOptionsParamInOhos = true;
+        if (!(jsOptionsProps.empty() && brokenHandlingOfEmptyOptionsParamInOhos))
+            showWindowArgs.push_back(QNapi::makeObject(jsState.env(), jsOptionsProps));
 
         auto promise = m_jsScopeData->jsWindowRef->evalToPromiseOrRejectOnThrow("showWindow(*)", showWindowArgs);
         promise.onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));

@@ -19,7 +19,6 @@
 #include <info/application_target_sdk_version.h>
 #include <memory>
 #include <qohosapppermissions_p.h>
-#include <qohosdeviceinfo_p.h>
 #include <qohosenums.h>
 #include <qohosjsmain.h>
 #include <qohosjsutils.h>
@@ -281,56 +280,27 @@ QNapi::Object convertStartOptionsToNapiObject(
         napiOptions.set("maxWindowWidth", opts.maxWindowWidth.value());
     if (opts.maxWindowHeight.has_value())
         napiOptions.set("maxWindowHeight", opts.maxWindowHeight.value());
-    if (opts.optCompletionHandler) {
-        constexpr auto minSupportedSdkVersion = 20;
-        const auto ohosSdkVersion = QOhosDeviceInfo::sdkApiVersion();
-        if (ohosSdkVersion >= minSupportedSdkVersion) {
-            napiOptions.set("completionHandler", makeJsCompletionHandler(jsState, opts.optCompletionHandler));
-        } else {
-            qCWarning(
-                QtForOhos,
-                "%s: completionHandler ignored because sdkApi %d < required %d",
-                Q_FUNC_INFO, ohosSdkVersion, minSupportedSdkVersion);
-        }
-    }
-    if (opts.hideStartWindow.has_value()) {
-        constexpr auto minSupportedSdkVersion = 20;
-        const auto ohosSdkVersion = QOhosDeviceInfo::sdkApiVersion();
-        if (ohosSdkVersion >= minSupportedSdkVersion) {
-            napiOptions.set("hideStartWindow", opts.hideStartWindow.value());
-        } else {
-            qCWarning(
-                QtForOhos,
-                "%s: hideStartWindow ignored because sdkApi %d < required %d",
-                Q_FUNC_INFO, ohosSdkVersion, minSupportedSdkVersion);
-        }
-    }
+    if (opts.optCompletionHandler)
+        napiOptions.set("completionHandler", makeJsCompletionHandler(jsState, opts.optCompletionHandler));
+    if (opts.hideStartWindow.has_value())
+        napiOptions.set("hideStartWindow", opts.hideStartWindow.value());
     if (opts.windowCreateParams.has_value()) {
-        constexpr auto minSupportedSdkVersion = 20;
-        const auto ohosSdkVersion = QOhosDeviceInfo::sdkApiVersion();
-        if (ohosSdkVersion >= minSupportedSdkVersion) {
-            const auto &windowCreateParams = opts.windowCreateParams.value();
-            std::vector<std::pair<std::string, QNapi::ValueWrapper>> windowCreateParamsProps;
-            if (windowCreateParams.setWindowFadeInOutAnimation) {
-                windowCreateParamsProps.emplace_back(
-                    "animationParams",
-                    QNapi::makeObject(
-                        env,
+        const auto &windowCreateParams = opts.windowCreateParams.value();
+        std::vector<std::pair<std::string, QNapi::ValueWrapper>> windowCreateParamsProps;
+        if (windowCreateParams.setWindowFadeInOutAnimation) {
+            windowCreateParamsProps.emplace_back(
+                "animationParams",
+                QNapi::makeObject(
+                    env,
+                    {
                         {
-                            {
-                                "type",
-                                jsState.mapOhosEnumToJs(
-                                    enums::ohos::window::AnimationType::FADE_IN_OUT),
-                            }
-                        }));
-            }
-            napiOptions.set("windowCreateParams", QNapi::makeObject(env, windowCreateParamsProps));
-        } else {
-            qCWarning(
-                QtForOhos,
-                "%s: windowCreateParams ignored because sdkApi %d < required %d",
-                Q_FUNC_INFO, ohosSdkVersion, minSupportedSdkVersion);
+                            "type",
+                            jsState.mapOhosEnumToJs(
+                                enums::ohos::window::AnimationType::FADE_IN_OUT),
+                        }
+                    }));
         }
+        napiOptions.set("windowCreateParams", QNapi::makeObject(env, windowCreateParamsProps));
     }
 
     return napiOptions;

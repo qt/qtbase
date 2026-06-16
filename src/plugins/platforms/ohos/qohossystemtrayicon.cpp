@@ -8,7 +8,6 @@
 #include "qohosjsutils.h"
 #include "qohospixelmapconversions.h"
 #include "qohosstatusbarmenu.h"
-#include <qohosdeviceinfo_p.h>
 #include <QtCore/qdatetime.h>
 #include <QtCore/qobject.h>
 #include <QtGui/private/qhighdpiscaling_p.h>
@@ -31,12 +30,6 @@ const std::string ohosSystemTrayItemTitle = "Qt Application";
 const auto trayIconGeometry = QRect(0, 0, 24, 24);
 
 const auto notificationIconSize = QSize(128,128);
-
-bool ohosStatusBarHoverTipsSupported()
-{
-    constexpr auto minSupportedSdkVersionForSettingHoverTips = 22;
-    return QOhosDeviceInfo::sdkApiVersion() >= minSupportedSdkVersionForSettingHoverTips;
-}
 
 std::string applyWorkaroundForEmptyHoverTips(const std::string &hoverTips)
 {
@@ -148,15 +141,8 @@ QNapi::Object makeJsStatusBarItem(
             {"statusBarGroupMenu", statusBarGroupMenus},
         });
 
-    if (hoverTips.has_value()) {
-        if (ohosStatusBarHoverTipsSupported()) {
-            statusBarItem.set("hoverTips", applyWorkaroundForEmptyHoverTips(hoverTips.value()));
-        } else {
-            qOhosPrintfDebug(
-                "%s: status bar hover tips not supported on this API version, ignoring",
-                Q_FUNC_INFO);
-        }
-    }
+    if (hoverTips.has_value())
+        statusBarItem.set("hoverTips", applyWorkaroundForEmptyHoverTips(hoverTips.value()));
 
     return statusBarItem;
 }
@@ -434,13 +420,6 @@ void QOhosSystemTrayIcon::updateToolTip(const QString &tooltip)
     m_optToolTip = tooltip;
 
     if (m_initialized) {
-        if (!ohosStatusBarHoverTipsSupported()) {
-            qOhosPrintfDebug(
-                "%s: status bar hover tips not supported on this API version, ignoring",
-                Q_FUNC_INFO);
-            return;
-        }
-
         QtOhos::invokeInJsThreadAndWaitForContinue(
             [&](QtOhos::JsState &jsState, QOhosTaskPromise<> taskPromise) {
                 jsState.evalToPromiseOrRejectOnThrow(

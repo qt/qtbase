@@ -65,8 +65,6 @@ Qt::ScrollPhase convertArkUiAxisEventActionToQtScrollPhase(std::int32_t arkUiAxi
         "Received unsupported UI_AXIS_EVENT_ACTION: %d", arkUiAxisEventAction);
 }
 
-#if OH_CURRENT_API_VERSION >= 22
-
 Qt::ScrollPhase convertArkUiCoastingAxisEventActionToQtScrollPhase(::ArkUI_CoastingAxisEventPhase phase)
 {
     switch (phase) {
@@ -82,8 +80,6 @@ Qt::ScrollPhase convertArkUiCoastingAxisEventActionToQtScrollPhase(::ArkUI_Coast
 
     qOhosReportFatalErrorAndAbort("Received unsupported ArkUI_CoastingAxisEventPhase: %d", phase);
 };
-
-#endif
 
 QOhosAxisEventHandler::QOhosAxisEventHandler(
     QtOhos::QThreadSafeRef<QWindow> qWindowRef,
@@ -169,8 +165,6 @@ void QOhosAxisEventHandler::handleUiAxisEvent(ArkUI_UIInputEvent *event)
     }
 }
 
-#if OH_CURRENT_API_VERSION >= 22
-
 void QOhosAxisEventHandler::handleUiCoastingAxisEvent(::ArkUI_UIInputEvent *event)
 {
     if (!m_localPosition.has_value() || !m_globalPosition.has_value() || !m_wheelScrollLines.has_value()) {
@@ -214,14 +208,6 @@ void QOhosAxisEventHandler::handleUiCoastingAxisEvent(::ArkUI_UIInputEvent *even
             eventHandler.onMouseWheelEvent(ohosWheelEvent, qWindow);
         });
 }
-
-#else
-
-void QOhosAxisEventHandler::handleUiCoastingAxisEvent(::ArkUI_UIInputEvent *)
-{
-}
-
-#endif
 
 }
 
