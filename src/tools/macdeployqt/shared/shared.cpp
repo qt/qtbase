@@ -1248,35 +1248,6 @@ void deployPlugins(const ApplicationBundleInfo &appBundleInfo, const QString &pl
     }
 }
 
-void createQtConf(const QString &appBundlePath)
-{
-    // Set Plugins and imports paths. These are relative to App.app/Contents.
-    QByteArray contents = "[Paths]\n"
-                          "Plugins = PlugIns\n"
-                          "QmlImports = Resources/qml\n";
-
-    QString filePath = appBundlePath + "/Contents/Resources/";
-    QString fileName = filePath + "qt.conf";
-
-    QDir().mkpath(filePath);
-
-    if (QFile::exists(fileName) && !alwaysOwerwriteEnabled) {
-        LogWarning();
-        LogWarning() << fileName << "already exists, will not overwrite.";
-        LogWarning() << "To make sure the plugins are loaded from the correct location,";
-        LogWarning() << "please make sure qt.conf contains the following lines:";
-        LogWarning() << "[Paths]";
-        LogWarning() << "  Plugins = PlugIns";
-        return;
-    }
-
-    if (QSaveFile qtconf(fileName); qtconf.open(QIODevice::WriteOnly)
-        && qtconf.write(contents) != -1 && qtconf.commit()) {
-        LogNormal() << "Created configuration file:" << fileName;
-        LogNormal() << "This file sets the plugin search path to" << appBundlePath + "/Contents/PlugIns";
-    }
-}
-
 void deployPlugins(const QString &appBundlePath, DeploymentInfo deploymentInfo, bool useDebugLibs)
 {
     ApplicationBundleInfo applicationBundle;
