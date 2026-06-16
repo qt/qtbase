@@ -110,7 +110,7 @@ struct QLibrarySettings
     void load();
     bool havePaths();
     QSettings *configuration();
-    QVariant value(QLibraryInfo::LibraryPath path);
+    QVariant value(QLibraryInfo::LibraryPath location);
     QList<QString> paths(QLibraryInfo::LibraryPath location);
 
     std::unique_ptr<QSettings> settings;
@@ -156,7 +156,7 @@ void QLibrarySettings::load()
 }
 
 /*!
-    Returns the value for a given \a path from \c qt.conf
+    Returns the value for a given \a location from \c qt.conf
 
     If no \c qt.conf is found, or the configuration doesn't
     specify a value for the given \a path a null-variant is
@@ -164,9 +164,9 @@ void QLibrarySettings::load()
 
     \internal
 */
-QVariant QLibrarySettings::value(QLibraryInfo::LibraryPath path)
+QVariant QLibrarySettings::value(QLibraryInfo::LibraryPath location)
 {
-    const auto locationInfo = QLibraryInfoPrivate::locationInfo(path);
+    const auto locationInfo = QLibraryInfoPrivate::locationInfo(location);
     if (locationInfo.key.isNull())
         return {};
 
@@ -625,7 +625,7 @@ QString QLibraryPrefixes::qtPrefix()
 #endif
 }
 
-QLibraryInfoPrivate::LocationInfo QLibraryInfoPrivate::locationInfo(QLibraryInfo::LibraryPath loc)
+QLibraryInfoPrivate::LocationInfo QLibraryInfoPrivate::locationInfo(QLibraryInfo::LibraryPath location)
 {
     /*
      * To add a new entry in QLibraryInfo::LibraryPath, add it to the enum
@@ -659,13 +659,13 @@ QLibraryInfoPrivate::LocationInfo QLibraryInfoPrivate::locationInfo(QLibraryInfo
 
     LocationInfo result;
 
-    if (int(loc) < qtConfEntries.count()) {
-        result.key = QLatin1StringView(qtConfEntries.viewAt(loc * 2));
-        result.defaultValue = QLatin1StringView(qtConfEntries.viewAt(loc * 2 + 1));
+    if (int(location) < qtConfEntries.count()) {
+        result.key = QLatin1StringView(qtConfEntries.viewAt(location * 2));
+        result.defaultValue = QLatin1StringView(qtConfEntries.viewAt(location * 2 + 1));
         if (result.key == u"QmlImports")
             result.fallbackKey = u"Qml2Imports"_s;
 #if !defined(Q_OS_WIN) // On Windows we use the registry
-    } else if (loc == QLibraryInfo::SettingsPath) {
+    } else if (location == QLibraryInfo::SettingsPath) {
         result.key = "Settings"_L1;
         result.defaultValue = QLatin1StringView(dot);
 #endif
@@ -961,9 +961,9 @@ QList<QString> QLibraryInfoPrivate::qtPaths(QLibraryInfo::LibraryPath location)
 /*
     Returns the path specified by \a p.
  */
-QString QLibraryInfoPrivate::path(QLibraryInfo::LibraryPath p)
+QString QLibraryInfoPrivate::path(QLibraryInfo::LibraryPath location)
 {
-    return paths(p).value(0, QString());
+    return paths(location).value(0, QString());
 }
 
 /*!
