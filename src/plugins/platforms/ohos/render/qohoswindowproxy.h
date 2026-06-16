@@ -183,6 +183,8 @@ public:
     void restore();
     void maximize(MaximizePresentation maximizePresentation);
     void minimize();
+    void setWindowLayoutFullScreen(bool isLayoutFullScreen);
+    void setWindowSystemBarEnable(const QStringList &names);
     void showAbility();
     bool tryHideAbility();
     void removeStartingWindow();
