@@ -187,6 +187,7 @@ public:
     void minimize();
     void setWindowLayoutFullScreen(bool isLayoutFullScreen);
     void setWindowSystemBarEnable(const QStringList &names);
+    QList<QRect> getDisplayCutoutRects() const;
     void showAbility();
     bool tryHideAbility();
     void removeStartingWindow();

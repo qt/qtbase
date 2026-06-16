@@ -150,6 +150,7 @@ public:
 
     ViewGeometry viewGeometry() const;
     QMargins avoidAreaMargins(QOhosWindowProxy::AvoidAreaType type) const;
+    QList<QRect> displayCutoutRects() const;
     ViewType viewType() const;
     std::optional<QSize> surfaceResolution() const;
     const QOhosView *viewParentOrNull() const;
