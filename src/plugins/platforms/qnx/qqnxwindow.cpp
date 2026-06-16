@@ -974,14 +974,8 @@ void QQnxWindow::windowPosted()
 
 bool QQnxWindow::shouldMakeFullScreen() const
 {
-    if (!(QQnxIntegration::instance()->options() & QQnxIntegration::FullScreenApplication))
-        return false;
-
-    // In fullscreen application mode, all top-level windows are fullscreen,
-    // similar to how eglfs forces all native windows to screen geometry.
-    // Exclude cover windows — they are top-level but managed by the
-    // navigator and should retain their own geometry.
-    return m_isTopLevel && window()->type() != Qt::CoverWindow;
+    return ((static_cast<QQnxScreen *>(screen())->rootWindow() == this)
+            && (QQnxIntegration::instance()->options() & QQnxIntegration::FullScreenApplication));
 }
 
 
