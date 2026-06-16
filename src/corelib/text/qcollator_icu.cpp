@@ -104,6 +104,8 @@ void QCollatorPrivate::init()
     QByteArray name = QLocalePrivate::get(locale)->bcp47Name('_');
     collator = ucol_open(name.constData(), &status);
     if (U_FAILURE(status)) {
+        if (status == U_FILE_ACCESS_ERROR)
+            qFatal("QCollator: ICU data file is not accessible: %s", errorName(status));
         qCWarning(lcQCollator, "Could not create collator: %s", errorName(status));
         collator = nullptr;
         dirty = false;
