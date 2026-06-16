@@ -5,7 +5,7 @@
       {
         "name": "default",
         "signingConfig": "default",
-        "compatibleSdkVersion": "6.0.0(20)",
+        "compatibleSdkVersion": "6.1.0(23)",
         "runtimeOS": "HarmonyOS",
         /* %%INSERT_TARGET_SDK_VERSION%% */
         /* %%INSERT_COMPILE_SDK_VERSION%% */

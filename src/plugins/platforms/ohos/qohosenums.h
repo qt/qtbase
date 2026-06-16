@@ -227,6 +227,7 @@ namespace multimodalInput {
 namespace pointer {
 
 enum class PointerStyle {
+    AECH_DEVELOPER_DEFINED_ICON,
     COLOR_SUCKER,
     CROSS,
     CURSOR_CIRCLE,
@@ -234,12 +235,16 @@ enum class PointerStyle {
     CURSOR_CROSS,
     CURSOR_FORBID,
     DEFAULT,
+    DEVELOPER_DEFINED_ICON,
     EAST,
     HAND_GRABBING,
     HAND_OPEN,
     HAND_POINTING,
     HELP,
     HORIZONTAL_TEXT_CURSOR,
+    LASER_CURSOR,
+    LASER_CURSOR_DOT,
+    LASER_CURSOR_DOT_RED,
     LOADING,
     MIDDLE_BTN_EAST,
     MIDDLE_BTN_EAST_WEST,
@@ -262,6 +267,8 @@ enum class PointerStyle {
     RESIZE_LEFT_RIGHT,
     RESIZE_UP_DOWN,
     RUNNING,
+    RUNNING_LEFT,
+    RUNNING_RIGHT,
     SCREENRECORDER_CURSOR,
     SCREENSHOT_CHOOSE,
     SCREENSHOT_CURSOR,
@@ -619,7 +626,8 @@ struct OhosEnumMeta<enums::ohos::multimodalInput::pointer::PointerStyle>
 {
     using Enum = enums::ohos::multimodalInput::pointer::PointerStyle;
     static constexpr const char *fullTypeName = "@ohos.multimodalInput.pointer.PointerStyle";
-    static constexpr std::array<std::pair<Enum, const char *>, 46> enumeratorsNames = {{
+    static constexpr std::array<std::pair<Enum, const char *>, 53> enumeratorsNames = {{
+        {Enum::AECH_DEVELOPER_DEFINED_ICON, "AECH_DEVELOPER_DEFINED_ICON"},
         {Enum::COLOR_SUCKER, "COLOR_SUCKER"},
         {Enum::CROSS, "CROSS"},
         {Enum::CURSOR_CIRCLE, "CURSOR_CIRCLE"},
@@ -627,12 +635,16 @@ struct OhosEnumMeta<enums::ohos::multimodalInput::pointer::PointerStyle>
         {Enum::CURSOR_CROSS, "CURSOR_CROSS"},
         {Enum::CURSOR_FORBID, "CURSOR_FORBID"},
         {Enum::DEFAULT, "DEFAULT"},
+        {Enum::DEVELOPER_DEFINED_ICON, "DEVELOPER_DEFINED_ICON"},
         {Enum::EAST, "EAST"},
         {Enum::HAND_GRABBING, "HAND_GRABBING"},
         {Enum::HAND_OPEN, "HAND_OPEN"},
         {Enum::HAND_POINTING, "HAND_POINTING"},
         {Enum::HELP, "HELP"},
         {Enum::HORIZONTAL_TEXT_CURSOR, "HORIZONTAL_TEXT_CURSOR"},
+        {Enum::LASER_CURSOR, "LASER_CURSOR"},
+        {Enum::LASER_CURSOR_DOT, "LASER_CURSOR_DOT"},
+        {Enum::LASER_CURSOR_DOT_RED, "LASER_CURSOR_DOT_RED"},
         {Enum::LOADING, "LOADING"},
         {Enum::MIDDLE_BTN_EAST, "MIDDLE_BTN_EAST"},
         {Enum::MIDDLE_BTN_EAST_WEST, "MIDDLE_BTN_EAST_WEST"},
@@ -655,6 +667,8 @@ struct OhosEnumMeta<enums::ohos::multimodalInput::pointer::PointerStyle>
         {Enum::RESIZE_LEFT_RIGHT, "RESIZE_LEFT_RIGHT"},
         {Enum::RESIZE_UP_DOWN, "RESIZE_UP_DOWN"},
         {Enum::RUNNING, "RUNNING"},
+        {Enum::RUNNING_LEFT, "RUNNING_LEFT"},
+        {Enum::RUNNING_RIGHT, "RUNNING_RIGHT"},
         {Enum::SCREENRECORDER_CURSOR, "SCREENRECORDER_CURSOR"},
         {Enum::SCREENSHOT_CHOOSE, "SCREENSHOT_CHOOSE"},
         {Enum::SCREENSHOT_CURSOR, "SCREENSHOT_CURSOR"},

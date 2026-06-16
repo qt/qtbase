@@ -3,7 +3,6 @@
 
 #include <qohosdisplayinfo.h>
 #include <QtCore/private/qnapi_p.h>
-#include <qohosdeviceinfo_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -21,13 +20,10 @@ constexpr double mapPixelsToMillimeters(double pixels, double dpi)
 QOhosDisplayInfo QOhosDisplayInfo::makeFromOhosDisplayObject(QtOhos::JsState &jsState, QNapi::Object displayObject)
 {
     constexpr auto forceEmptyTopLevelOffsetPixels  = false;
-    constexpr auto minSupportedSdkVersionForSourceMode = 19;
 
-    auto sourceMode = QOhosDeviceInfo::sdkApiVersion() >= minSupportedSdkVersionForSourceMode
-        ? makeQOhosOptional(
-            jsState.mapOhosEnumFromJs<DisplaySourceMode>(
-                displayObject.get<QNapi::Number>("sourceMode")))
-        : makeEmptyQOhosOptional();
+    auto sourceMode = makeQOhosOptional(
+        jsState.mapOhosEnumFromJs<DisplaySourceMode>(
+            displayObject.get<QNapi::Number>("sourceMode")));
 
     QOhosDisplayInfo result = {
         .id = JsDisplayId(displayObject.get<QNapi::Number>("id")),
