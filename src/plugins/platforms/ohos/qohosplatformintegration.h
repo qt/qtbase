@@ -15,6 +15,7 @@
 #include <qpa/qplatformoffscreensurface.h>
 #include <qpa/qplatforminputcontext.h>
 #include <qpa/qplatformtheme.h>
+#include <qpa/qplatformwindow_p.h>
 #if QT_CONFIG(vulkan)
 #include <qpa/qplatformvulkaninstance.h>
 #endif
@@ -39,6 +40,7 @@ class QOhosPlatformServices;
 
 class QOhosPlatformIntegration : public QPlatformIntegration
                                , QNativeInterface::Private::QEGLIntegration
+                               , public QNativeInterface::Private::QOhosIntegration
 {
 
 public:
@@ -90,6 +92,8 @@ public:
 
     QPlatformTheme *createPlatformTheme(const QString &name) const override;
     QStringList themeNames() const override;
+
+    WId windowHandle(ArkUI_NodeHandle content) override;
 
     static QOhosSystemLocale *systemLocale();
     static void setSystemLocale(QOhosSystemLocale *systemLocale);

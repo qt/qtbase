@@ -357,6 +357,11 @@ QStringList QOhosPlatformIntegration::themeNames() const
     return {QString::fromUtf8(ohosThemeName)};
 }
 
+WId QOhosPlatformIntegration::windowHandle(ArkUI_NodeHandle content)
+{
+    return reinterpret_cast<WId>(new QtOhos::WindowIdStruct{.content = content});
+}
+
 QOhosSystemLocale *QOhosPlatformIntegration::systemLocale()
 {
     return m_systemLocale.data();

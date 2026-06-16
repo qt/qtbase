@@ -37,6 +37,10 @@ enum NSVisualEffectBlendingMode : NSInteger;
 enum NSVisualEffectState: NSInteger;
 #endif
 
+#if defined(Q_OS_OHOS)
+typedef struct ArkUI_Node *ArkUI_NodeHandle;
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QMargins;
@@ -160,6 +164,20 @@ protected:
     virtual std::any _surfaceRole() const = 0;
 };
 #endif
+
+#if defined(Q_OS_OHOS)
+struct Q_GUI_EXPORT QOhosWindow
+{
+    QT_DECLARE_NATIVE_INTERFACE(QOhosWindow, 1, QWindow)
+    static QWindow *fromNative(ArkUI_NodeHandle content);
+};
+
+struct Q_GUI_EXPORT QOhosIntegration
+{
+    QT_DECLARE_NATIVE_INTERFACE(QOhosIntegration)
+    virtual WId windowHandle(ArkUI_NodeHandle content) = 0;
+};
+#endif // defined(Q_OS_OHOS)
 
 } // QNativeInterface::Private
 
