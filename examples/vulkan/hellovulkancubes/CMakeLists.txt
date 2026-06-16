@@ -31,17 +31,9 @@ target_link_libraries(hellovulkancubes PRIVATE
 )
 
 # Resources:
-set_source_files_properties("../shared/block.buf"
-    PROPERTIES QT_RESOURCE_ALIAS "block.buf"
-)
-
-set_source_files_properties("../shared/qt_logo.buf"
-    PROPERTIES QT_RESOURCE_ALIAS "qt_logo.buf"
-)
-
 set(hellovulkancubes_resource_files
-    "../shared/block.buf"
-    "../shared/qt_logo.buf"
+    "block.buf"
+    "qt_logo.buf"
     "color_frag.spv"
     "color_phong_frag.spv"
     "color_phong_vert.spv"

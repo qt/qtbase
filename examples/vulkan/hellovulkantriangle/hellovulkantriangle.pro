@@ -1,9 +1,9 @@
 HEADERS += \
-    ../shared/trianglerenderer.h
+    trianglerenderer.h
 
 SOURCES += \
     main.cpp \
-    ../shared/trianglerenderer.cpp
+    trianglerenderer.cpp
 
 RESOURCES += hellovulkantriangle.qrc
 

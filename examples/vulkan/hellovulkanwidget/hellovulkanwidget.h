@@ -4,7 +4,7 @@
 #ifndef HELLOVULKANWIDGET_H
 #define HELLOVULKANWIDGET_H
 
-#include "../shared/trianglerenderer.h"
+#include "trianglerenderer.h"
 #include <QWidget>
 
 QT_FORWARD_DECLARE_CLASS(QTabWidget)
