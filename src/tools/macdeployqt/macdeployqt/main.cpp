@@ -266,7 +266,6 @@ int main(int argc, char **argv)
         if (!deploymentInfo.pluginPath.isEmpty()) {
             LogNormal();
             deployPlugins(appBundlePath, deploymentInfo, useDebugLibs);
-            createQtConf(appBundlePath);
         }
     }
 
