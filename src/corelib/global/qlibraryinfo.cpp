@@ -111,7 +111,7 @@ struct QLibrarySettings
     bool havePaths();
     QSettings *configuration();
     QVariant value(QLibraryInfo::LibraryPath location);
-    QList<QString> paths(QLibraryInfo::LibraryPath location);
+    QStringList paths(QLibraryInfo::LibraryPath location);
 
     std::unique_ptr<QSettings> settings;
     bool configHasPaths;
@@ -182,11 +182,11 @@ QVariant QLibrarySettings::value(QLibraryInfo::LibraryPath location)
     return value;
 }
 
-QList<QString> QLibrarySettings::paths(QLibraryInfo::LibraryPath location)
+QStringList QLibrarySettings::paths(QLibraryInfo::LibraryPath location)
 {
-    QList<QString> ret;
+    QStringList ret;
     if (QVariant v = value(location); v.isValid()) {
-        if (auto *asList = get_if<QList<QString>>(&v))
+        if (auto *asList = get_if<QStringList>(&v))
             ret = std::move(*asList);
         else
             ret << v.toString();
@@ -684,7 +684,7 @@ QLibraryInfoPrivate::LocationInfo QLibraryInfoPrivate::locationInfo(QLibraryInfo
     macdeployqt and the CMake deployment machinery follow. Returns empty for
     locations with no modern equivalent (only the unixy suffix is then reported).
 */
-static QList<QString> appleBundleSuffixes(QLibraryInfo::LibraryPath location)
+static QStringList appleBundleSuffixes(QLibraryInfo::LibraryPath location)
 {
     constexpr bool isMacOS =
         QOperatingSystemVersion::currentType() == QOperatingSystemVersion::MacOS;
@@ -816,7 +816,7 @@ QString QLibraryInfoPrivate::expandEnvVariables(QString ret)
     \a resolveBaseDir, which is resolved lazily (only when there's actually a
     relative path to root, and at most once).
 */
-static QList<QString> makeAbsolute(QList<QString> paths, QString (*resolveBaseDir)())
+static QStringList makeAbsolute(QStringList paths, QString (*resolveBaseDir)())
 {
     QString baseDir;
     for (QString &path : paths) {
@@ -852,7 +852,7 @@ static bool prefixIsBundle(const QString &prefix)
 
 QStringList QLibraryInfoPrivate::paths(QLibraryInfo::LibraryPath location)
 {
-    QList<QString> ret = appPaths(location);
+    QStringList ret = appPaths(location);
 
     bool includeQtPaths = ret.isEmpty() || keepQtBuildDefaults();
 
@@ -884,7 +884,7 @@ QStringList QLibraryInfoPrivate::paths(QLibraryInfo::LibraryPath location)
     empty when neither source applies, signaling the caller to fall through to
     the Qt-prefixed paths.
 */
-QList<QString> QLibraryInfoPrivate::appPaths(QLibraryInfo::LibraryPath location)
+QStringList QLibraryInfoPrivate::appPaths(QLibraryInfo::LibraryPath location)
 {
     bool reportAppPaths = false;
 
@@ -906,7 +906,7 @@ QList<QString> QLibraryInfoPrivate::appPaths(QLibraryInfo::LibraryPath location)
     if (location == QLibraryInfo::PrefixPath)
         return { QLibraryPrefixes::appPrefix() };
 
-    QList<QString> paths;
+    QStringList paths;
 
 #if QT_CONFIG(settings)
     if (qtConfSettings && qtConfSettings->havePaths())
@@ -934,12 +934,12 @@ QList<QString> QLibraryInfoPrivate::appPaths(QLibraryInfo::LibraryPath location)
     configure-time suffix are preceded by the modern Apple suffixes when the Qt
     prefix is itself a bundle.
 */
-QList<QString> QLibraryInfoPrivate::qtPaths(QLibraryInfo::LibraryPath location)
+QStringList QLibraryInfoPrivate::qtPaths(QLibraryInfo::LibraryPath location)
 {
     if (location == QLibraryInfo::PrefixPath)
         return { QLibraryPrefixes::qtPrefix() };
 
-    QList<QString> paths;
+    QStringList paths;
 
 #if defined(Q_OS_APPLE)
     if (prefixIsBundle(QLibraryPrefixes::qtPrefix()))
