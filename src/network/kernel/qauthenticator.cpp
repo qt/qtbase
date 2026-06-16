@@ -1475,14 +1475,20 @@ static bool qNtlmDecodePhase2(const QByteArray& data, QNtlmPhase2Block& ch)
     ds >> ch.targetInfo;
 
     if (ch.targetName.len > 0) {
-        if (qsizetype(ch.targetName.len + ch.targetName.offset) > data.size())
+        qsizetype total;
+        if (qAddOverflow(qsizetype(ch.targetName.offset), qsizetype(ch.targetName.len), &total))
+            return false;
+        if (total > data.size())
             return false;
 
         ch.targetNameStr = qStringFromUcs2Le(data.mid(ch.targetName.offset, ch.targetName.len));
     }
 
     if (ch.targetInfo.len > 0) {
-        if (ch.targetInfo.len + ch.targetInfo.offset > (unsigned)data.size())
+        qsizetype total;
+        if (qAddOverflow(qsizetype(ch.targetInfo.offset), qsizetype(ch.targetInfo.len), &total))
+            return false;
+        if (total > data.size())
             return false;
 
         ch.targetInfoBuff = data.mid(ch.targetInfo.offset, ch.targetInfo.len);
