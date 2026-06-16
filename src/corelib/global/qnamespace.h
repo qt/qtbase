@@ -1700,6 +1700,7 @@ namespace Qt {
 
 #endif // QT_NO_GESTURES
 
+#if QT_DEPRECATED_SINCE(6, 12)
     enum NavigationMode
     {
         NavigationModeNone,
@@ -1708,6 +1709,7 @@ namespace Qt {
         NavigationModeCursorAuto,
         NavigationModeCursorForceVisible
     };
+#endif
 
     enum CursorMoveStyle {
         LogicalMoveStyle,
