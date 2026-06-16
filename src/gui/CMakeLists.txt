@@ -509,6 +509,11 @@ qt_internal_extend_target(Gui CONDITION WIN32
         ../3rdparty/D3D12MemoryAllocator
 )
 
+qt_internal_extend_target(Gui CONDITION OHOS
+    SOURCES
+        platform/ohos/qohosnativeinterface.cpp
+)
+
 if(QT_FEATURE_graphicsframecapture)
     qt_internal_extend_target(Gui
         SOURCES
