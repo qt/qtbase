@@ -4,10 +4,10 @@
 #ifndef GLWIDGET_H
 #define GLWIDGET_H
 
+#include "logo.h"
 #include <QOpenGLWindow>
 #include <QMatrix4x4>
 #include <QVector3D>
-#include "../hellogl2/logo.h"
 
 QT_FORWARD_DECLARE_CLASS(QOpenGLTexture)
 QT_FORWARD_DECLARE_CLASS(QOpenGLShaderProgram)

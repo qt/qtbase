@@ -1,11 +1,11 @@
 QT += opengl
 
 HEADERS = $$PWD/glwindow.h \
-          $$PWD/../hellogl2/logo.h
+          $$PWD/logo.h
 
 SOURCES = $$PWD/glwindow.cpp \
           $$PWD/main.cpp \
-          $$PWD/../hellogl2/logo.cpp
+          $$PWD/logo.cpp
 
 RESOURCES += hellogles3.qrc
 
