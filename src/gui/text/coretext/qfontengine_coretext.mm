@@ -207,15 +207,14 @@ void QCoreTextFontEngine::init()
     synthesisFlags = 0;
     CTFontSymbolicTraits traits = CTFontGetSymbolicTraits(ctfont);
 
+    const auto requestedStyle = fontDef.style;
+
     if (traits & kCTFontColorGlyphsTrait)
         glyphFormat = QFontEngine::Format_ARGB;
     else if (shouldSmoothFont() && fontSmoothing() == FontSmoothing::Subpixel)
         glyphFormat = QFontEngine::Format_A32;
     else
         glyphFormat = QFontEngine::Format_A8;
-
-    if (traits & kCTFontItalicTrait)
-        fontDef.style = QFont::StyleItalic;
 
     static const auto getTraitValue = [](CFDictionaryRef allTraits, CFStringRef trait) -> float {
         if (CFDictionaryContainsKey(allTraits, trait)) {
@@ -229,15 +228,19 @@ void QCoreTextFontEngine::init()
 
     QCFType<CFDictionaryRef> allTraits = CTFontCopyTraits(ctfont);
     int slant = static_cast<int>(getTraitValue(allTraits, kCTFontSlantTrait) * 500 + 500);
-    if (slant > 500 && !(traits & kCTFontItalicTrait))
+    if (traits & kCTFontItalicTrait)
+        fontDef.style = QFont::StyleItalic;
+    else if (slant > 500)
         fontDef.style = QFont::StyleOblique;
+    else
+        fontDef.style = QFont::StyleNormal;
 
     if (fontDef.weight >= QFont::Bold && !(traits & kCTFontBoldTrait) && !qEnvironmentVariableIsSet("QT_NO_SYNTHESIZED_BOLD"))
         synthesisFlags |= SynthesizedBold;
     else
         fontDef.weight = QCoreTextFontEngine::qtWeightFromCFWeight(getTraitValue(allTraits, kCTFontWeightTrait));
 
-    if (fontDef.style != QFont::StyleNormal && !(traits & kCTFontItalicTrait) && !qEnvironmentVariableIsSet("QT_NO_SYNTHESIZED_ITALIC"))
+    if (requestedStyle != QFont::StyleNormal && fontDef.style == QFont::StyleNormal && !qEnvironmentVariableIsSet("QT_NO_SYNTHESIZED_ITALIC"))
         synthesisFlags |= SynthesizedItalic;
 
     avgCharWidth = 0;
