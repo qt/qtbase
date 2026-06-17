@@ -53,6 +53,7 @@ private slots:
     void settingsInitialWindowSizeOverflow();
     void windowUpdateOverflow_data();
     void windowUpdateOverflow();
+    void totalBytesReceivedDATACounts();
 
 private:
     enum PeerType { Client, Server };
@@ -1755,6 +1756,38 @@ void tst_QHttp2Connection::windowUpdateOverflow()
                  Http2::FLOW_CONTROL_ERROR);
         QVERIFY(!clientConn->m_connectionAborted); // stream-level error leaves the connection up
     }
+}
+
+void tst_QHttp2Connection::totalBytesReceivedDATACounts()
+{
+    auto [client, server] = makeFakeConnectedSockets();
+    QHttp2Configuration config;
+    config.setStreamReceiveWindowSize(4 * 1024 * 1024);
+    auto clientConn = makeHttp2Connection(client.get(), { }, Client);
+    auto serverConn = makeHttp2Connection(server.get(), config, Server);
+
+    QHttp2Stream *clientStream = clientConn->createStream().unwrap();
+    QVERIFY(clientStream);
+    QVERIFY(waitForSettingsExchange(clientConn, serverConn));
+
+    QSignalSpy newIncomingStreamSpy{ serverConn, &QHttp2Connection::newIncomingStream };
+    clientStream->sendHEADERS(getRequiredHeaders(), false);
+    QVERIFY(newIncomingStreamSpy.wait());
+    auto *serverStream = newIncomingStreamSpy.front().front().value<QHttp2Stream *>();
+    QVERIFY(serverStream);
+
+    QCOMPARE(serverConn->totalBytesReceivedDATA(), 0u);
+
+    const QByteArray payload = "x"_ba.repeated(50000);
+    QSignalSpy serverDataReceivedSpy{ serverStream, &QHttp2Stream::dataReceived };
+    clientStream->sendDATA(payload, true);
+
+    bool streamEnd = false;
+    while (!streamEnd) {
+        QVERIFY(serverDataReceivedSpy.wait());
+        streamEnd = serverDataReceivedSpy.back().back().value<bool>();
+    }
+    QCOMPARE(serverConn->totalBytesReceivedDATA(), quint64(payload.size()));
 }
 
 QTEST_MAIN(tst_QHttp2Connection)

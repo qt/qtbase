@@ -272,6 +272,8 @@ public:
 
     bool isUpgradedConnection() const noexcept { return m_upgradedConnection; }
 
+    quint64 totalBytesReceivedDATA() const noexcept { return m_totalBytesReceivedDATA; }
+
 Q_SIGNALS:
     void newIncomingStream(QHttp2Stream *stream);
     void newPromisedStream(QHttp2Stream *stream);
@@ -409,6 +411,8 @@ private:
     // Our per-stream receive window size, default is 64 Kb, will be updated
     // from QHttp2Configuration. Again, signed - can become negative.
     qint32 streamInitialReceiveWindowSize = Http2::defaultSessionWindowSize;
+
+    quint64 m_totalBytesReceivedDATA = 0;
 
     // These are our peer's receive window sizes, they will be updated by the
     // peer's SETTINGS and WINDOW_UPDATE frames, defaults presumed to be 64Kb.

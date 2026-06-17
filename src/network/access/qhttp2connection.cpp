@@ -1480,6 +1480,14 @@ bool QHttp2Connection::sendWINDOW_UPDATE(quint32 streamID, quint32 delta)
     return frameWriter.write(*getSocket());
 }
 
+/*!
+    \fn quint64 QHttp2Connection::totalBytesReceivedDATA() const
+
+    Returns the running total of flow-controlled DATA payload octets received on
+    this connection. This is the sampling signal for bandwidth-delay-product
+    based receive-window auto-tuning.
+*/
+
 void QHttp2Connection::sendClientGracefulShutdownGoaway()
 {
     // Clients send a single GOAWAY. No race condition since they control stream creation
@@ -1627,6 +1635,7 @@ void QHttp2Connection::handleDATA()
     }
 
     sessionReceiveWindowSize -= inboundFrame.payloadSize();
+    m_totalBytesReceivedDATA += inboundFrame.payloadSize();
 
     if (stream)
         stream->handleDATA(inboundFrame);
