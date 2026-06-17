@@ -196,7 +196,6 @@ bool isPointInNonClientArea(const QPoint &point, const QArkUi::WindowProperties 
 
 QOhosOptional<QEvent::Type> tryMapMouseEventActionToNonClientAreaEventType(::Input_MouseEventAction action)
 {
-    QOhosOptional<QEvent::Type> eventType;
     switch (action) {
     case ::MOUSE_ACTION_MOVE:
         return makeQOhosOptional(QEvent::NonClientAreaMouseMove);
