@@ -126,7 +126,7 @@ void tst_cursor::overrideCursor()
         pointer()->sendFrame(client());
         return enterSerial;
     });
-    QVERIFY(setCursorShapeSpy.wait());
+    QTRY_COMPARE(setCursorShapeSpy.size(), 2);
     // verify we got given a cursor on enter
     QCOMPOSITOR_COMPARE(cursorShape()->m_currentShape, CursorShapeDevice::shape_grab);
     QVERIFY(setCursorSpy.isEmpty());
@@ -138,6 +138,7 @@ void tst_cursor::overrideCursor()
         pointer()->sendFrame(client());
     });
     setCursorShapeSpy.clear();
+    QTRY_COMPARE(setCursorShapeSpy.size(), 0);
 
     // second window should be shape_pointer
     enterSerial = exec([&] {
@@ -145,17 +146,18 @@ void tst_cursor::overrideCursor()
         pointer()->sendFrame(client());
         return enterSerial;
     });
-    QVERIFY(setCursorShapeSpy.wait());
+    QTRY_COMPARE(setCursorShapeSpy.size(), 2);
     // verify we got given a cursor on enter
     QCOMPOSITOR_COMPARE(cursorShape()->m_currentShape, CursorShapeDevice::shape_pointer);
     QVERIFY(setCursorSpy.isEmpty());
     QCOMPARE(setCursorShapeSpy.takeFirst().at(0).toUInt(), enterSerial);
+    QTRY_COMPARE(setCursorShapeSpy.size(), 1);
 
     // set the override cursor
     QGuiApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 
     // verify it's set to shape_wait
-    QVERIFY(setCursorShapeSpy.wait());
+    QTRY_COMPARE(setCursorShapeSpy.size(), 2);
     QCOMPOSITOR_COMPARE(cursorShape()->m_currentShape, CursorShapeDevice::shape_wait);
     QVERIFY(setCursorSpy.isEmpty());
 
@@ -163,7 +165,7 @@ void tst_cursor::overrideCursor()
     QGuiApplication::restoreOverrideCursor();
 
     // it should be shape_pointer because we never left the second surface
-    QVERIFY(setCursorShapeSpy.wait());
+    QTRY_COMPARE(setCursorShapeSpy.size(), 3);
     QCOMPOSITOR_COMPARE(cursorShape()->m_currentShape, CursorShapeDevice::shape_pointer);
     QVERIFY(setCursorSpy.isEmpty());
 }
