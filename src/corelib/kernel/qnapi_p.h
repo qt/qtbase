@@ -22,6 +22,7 @@
 #include <iterator>
 #include <memory>
 #include <napi.h>
+#include <optional>
 #include <string>
 #include <tuple>
 #include <type_traits>
@@ -296,6 +297,9 @@ OutputContainer getArrayElements(const Napi::Array &inputArray, TransFunc &&tran
 
 template<typename OutputContainer, typename Element>
 OutputContainer getArrayElements(const Napi::Array &inputArray);
+
+template<typename OutputContainer, typename Element, typename TransFilterFunc>
+OutputContainer getFilteredArrayElements(const Napi::Array &inputArray, TransFilterFunc &&transFilterFunc);
 
 Object makeNewInstance(const Napi::Function &type, const std::vector<ValueWrapper> &args = {});
 
@@ -1312,6 +1316,26 @@ T checkedCast(const Napi::Value &value)
 template<typename OutputContainer, typename Element, typename TransFunc>
 OutputContainer getArrayElements(const Napi::Array &inputArray, TransFunc &&transFunc)
 {
+    return getFilteredArrayElements<OutputContainer, Element>(
+        inputArray,
+        [&](Element &&elem) {
+            return std::optional(transFunc(std::forward<Element>(elem)));
+        });
+}
+
+template<typename OutputContainer, typename Element>
+OutputContainer getArrayElements(const Napi::Array &inputArray)
+{
+    return getArrayElements<OutputContainer, Element>(
+        inputArray,
+        [](Element &&elem) {
+            return std::forward<Element>(elem);
+        });
+}
+
+template<typename OutputContainer, typename Element, typename TransFilterFunc>
+OutputContainer getFilteredArrayElements(const Napi::Array &inputArray, TransFilterFunc &&transFilterFunc)
+{
     using namespace std::string_literals;
 
     OutputContainer result;
@@ -1326,20 +1350,11 @@ OutputContainer getArrayElements(const Napi::Array &inputArray, TransFunc &&tran
                 "wrong type of Napi array element #"s + std::to_string(i)
                 + ", expected '"s + expectedTypeName + "', got '"s + argTypeStr + "'"s);
         }
-        result.insert(result.end(), transFunc(checkedCast<Element>(arg)));
+        if (auto optTransformed = transFilterFunc(checkedCast<Element>(arg)))
+            result.insert(result.end(), std::move(*optTransformed));
     }
 
     return result;
-}
-
-template<typename OutputContainer, typename Element>
-OutputContainer getArrayElements(const Napi::Array &inputArray)
-{
-    return getArrayElements<OutputContainer, Element>(
-        inputArray,
-        [](Element &&elem) {
-            return std::forward<Element>(elem);
-        });
 }
 
 inline Object makeNewInstance(const Napi::Function &type, const std::vector<ValueWrapper> &args)
