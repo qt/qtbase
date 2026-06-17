@@ -211,14 +211,14 @@ inline int qstrncmp(const char *str1, const char *str2, size_t len)
 Q_CORE_EXPORT int qstricmp(const char *, const char *);
 
 
-#if !QT_CORE_INLINE_IMPL_SINCE(6, 12)
+#ifdef QT_CORE_BUILD_REMOVED_API
 QT6_ONLY(Q_CORE_EXPORT)
 #endif
 // These are unfortunately NOT constexpr in static builds (e.g. iOS)
 QT_CORE_CONSTEXPR_INLINE_SINCE(6, 12)
 int qstrnicmp(const char *s1, const char *s2, size_t len);
 
-#if !QT_CORE_INLINE_IMPL_SINCE(6, 12)
+#ifdef QT_CORE_BUILD_REMOVED_API
 QT6_ONLY(Q_CORE_EXPORT)
 #endif
 QT_CORE_CONSTEXPR_INLINE_SINCE(6, 12)
