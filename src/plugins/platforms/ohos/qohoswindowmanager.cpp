@@ -144,7 +144,8 @@ void showFileDialogOpen(
                 jsState, getQAbilityPeerForOptInstanceId(jsState, qAbilityInstanceId), optContextJsWinId,
                 "select", documentSelectOptions,
                 [sharedResultCallback](auto optResult) {
-                    auto optQtOpenResult = optResult.transform(
+                    auto optQtOpenResult = qTransform(
+                        optResult,
                         [](const auto &result) {
                             return OpenResult{
                                 .selectedUrls = mapFilePathsToQtUrls(result.resultPaths),
@@ -188,7 +189,8 @@ void showFileDialogSave(
                 jsState, getQAbilityPeerForOptInstanceId(jsState, qAbilityInstanceId), optContextJsWinId,
                 "save", documentSaveOptions,
                 [sharedResultCallback](auto optResult) {
-                    auto optQtSaveResult = optResult.transform(
+                    auto optQtSaveResult = qTransform(
+                        optResult,
                         [](const auto &result) {
                             return SaveResult{
                                 .savedUrls = mapFilePathsToQtUrls(result.resultPaths),
@@ -226,7 +228,8 @@ void showFileDialogAuthorization(
                 jsState, getQAbilityPeerForOptInstanceId(jsState, qAbilityInstanceId), optContextJsWinId,
                 "select", documentSelectOptions,
                 [sharedResultCallback](auto optResult) {
-                    auto optSelectedUrls = optResult.transform(
+                    auto optSelectedUrls = qTransform(
+                        optResult,
                         [](const auto &result) {
                             return mapFilePathsToQtUrls(result.resultPaths);
                         });

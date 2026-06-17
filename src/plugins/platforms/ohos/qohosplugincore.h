@@ -87,16 +87,6 @@ public:
     template<typename... Args>
     T &emplace(Args &&...args);
 
-
-    template<typename Func>
-    std::enable_if_t<
-        qohosplugincore_h_detail::isQOhosOptional<QOhosInvokeResult<Func, T>>,
-        QOhosInvokeResult<Func, T>>
-    andThen(Func &&func) const;
-
-    template<typename Func>
-    QOhosOptional<QOhosInvokeResult<Func, T>> transform(Func &&func) const;
-
 private:
     T &storedValueRef();
     const T &storedValueRef() const;
@@ -130,6 +120,15 @@ operator==(const T &lhs, const QOhosOptional<U> &rhs);
 template<typename T, typename U>
 std::enable_if_t<qohosplugincore_h_detail::hasEqualityComparator<T, U>, bool>
 operator!=(const T &lhs, const QOhosOptional<U> &rhs);
+
+template<typename T, typename Func>
+std::enable_if_t<
+    qohosplugincore_h_detail::isQOhosOptional<QOhosInvokeResult<Func, T>>,
+    QOhosInvokeResult<Func, T>>
+qAndThen(const QOhosOptional<T> &opt, Func &&func);
+
+template<typename T, typename Func>
+QOhosOptional<QOhosInvokeResult<Func, T>> qTransform(const QOhosOptional<T> &opt, Func &&func);
 
 template<>
 class QOhosOptional<void>
@@ -626,23 +625,21 @@ operator!=(const T &lhs, const QOhosOptional<U> &rhs)
     return !(lhs == rhs);
 }
 
-template<typename T>
-template<typename Func>
+template<typename T, typename Func>
 std::enable_if_t<
     qohosplugincore_h_detail::isQOhosOptional<QOhosInvokeResult<Func, T>>,
     QOhosInvokeResult<Func, T>>
-QOhosOptional<T>::andThen(Func &&func) const
+qAndThen(const QOhosOptional<T> &opt, Func &&func)
 {
-    return hasValue() ? func(value()) : QOhosInvokeResult<Func, T>();
+    return opt.hasValue() ? func(opt.value()) : QOhosInvokeResult<Func, T>();
 }
 
-template<typename T>
-template<typename Func>
-QOhosOptional<QOhosInvokeResult<Func, T>> QOhosOptional<T>::transform(Func &&func) const
+template<typename T, typename Func>
+QOhosOptional<QOhosInvokeResult<Func, T>> qTransform(const QOhosOptional<T> &opt, Func &&func)
 {
     using TransformedT = QOhosInvokeResult<Func, T>;
-    return hasValue()
-        ? QOhosOptional<TransformedT>(func(value()))
+    return opt.hasValue()
+        ? QOhosOptional<TransformedT>(func(opt.value()))
         : QOhosOptional<TransformedT>();
 }
 

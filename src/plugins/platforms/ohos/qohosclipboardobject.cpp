@@ -174,7 +174,8 @@ QOhosClipboardObject::QOhosClipboardObject(
 
                     qOhosPrintfDebug(
                         "%s: Pasteboard data source: %s",
-                        Q_FUNC_INFO, pasteboardDataSource.transform(&getPasteboardDataSourceAsString).valueOr("<empty>"));
+                        Q_FUNC_INFO,
+                        qTransform(pasteboardDataSource, &getPasteboardDataSourceAsString).valueOr("<empty>"));
 
                     QtOhos::invokeInQtThread(
                         [weakPasteboardUpdatesNotifier, pasteboardDataSource]() {

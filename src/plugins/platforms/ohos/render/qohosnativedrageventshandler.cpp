@@ -389,7 +389,7 @@ QOhosConsumer<::ArkUI_NodeEvent *> makeQOhosNativeDragEventsHandler(
                         ? Q_DROP_ENABLED
                         : Q_DROP_DISABLED);
                 setDragEventSuggestedDropOperationIfAvailable(
-                    dragEvent, qtDropAction.andThen(&tryMapQOhosArkUiDropOperationFromQt));
+                    dragEvent, qAndThen(qtDropAction, &tryMapQOhosArkUiDropOperationFromQt));
             }
             break;
         case ::NODE_ON_DRAG_LEAVE:
@@ -428,7 +428,7 @@ QOhosConsumer<::ArkUI_NodeEvent *> makeQOhosNativeDragEventsHandler(
                             ? ::ARKUI_DRAG_RESULT_SUCCESSFUL
                             : ::ARKUI_DRAG_RESULT_FAILED);
                     setDragEventSuggestedDropOperationIfAvailable(
-                        dragEvent, qtDropAction.andThen(&tryMapQOhosArkUiDropOperationFromQt));
+                        dragEvent, qAndThen(qtDropAction, &tryMapQOhosArkUiDropOperationFromQt));
                 }
             }
             break;

@@ -135,8 +135,9 @@ QNativeNode::QNativeNode(const CreateInfo &nativeNodeCreateInfo)
     auto platformWindowFlags = QOhosPlatformWindow::platformWindowFlagsForQWindow(qWindow);
     bool focusable = !platformWindowFlags.testFlag(Qt::WindowDoesNotAcceptFocus);
 
-    auto renderFit = nativeNodeCreateInfo.renderFitPolicyHint
-        .andThen(tryMapRenderFitPolicyToArkUi).valueOr(::ARKUI_RENDER_FIT_TOP_LEFT);
+    auto renderFit = qAndThen(
+        nativeNodeCreateInfo.renderFitPolicyHint, tryMapRenderFitPolicyToArkUi)
+        .valueOr(::ARKUI_RENDER_FIT_TOP_LEFT);
 
     connect(
         qGuiApp, &QGuiApplication::focusWindowChanged,

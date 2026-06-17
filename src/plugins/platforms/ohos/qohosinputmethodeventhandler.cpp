@@ -536,11 +536,11 @@ QPoint QOhosInputMethodEventHandler::cursorPosition() const
     if (m_lastWsiMouseEvent.hasValue())
         return m_lastWsiMouseEvent.value().globalPosition.toPoint();
 
-    auto optLastTouchPosition = m_lastWsiTouchEvent
-        .andThen(
-            [](const QWindowSystemInterfaceTouchEvent &touchEvent) {
-                return touchEvent.singleTouchPointEventGlobalPosition;
-            });
+    auto optLastTouchPosition = qAndThen(
+        m_lastWsiTouchEvent,
+        [](const QWindowSystemInterfaceTouchEvent &touchEvent) {
+            return touchEvent.singleTouchPointEventGlobalPosition;
+        });
     if (optLastTouchPosition.hasValue())
         return optLastTouchPosition.value();
 
