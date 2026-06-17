@@ -238,7 +238,7 @@ QNapi::Object convertStartOptionsToNapiObject(
     auto *env = jsState.env();
     auto napiOptions = QNapi::Object::New(env);
 
-    auto optOhosWindowMode = opts.windowMode.andThen(&tryMapWindowModeToOhosOrLogWarning);
+    auto optOhosWindowMode = qAndThen(opts.windowMode, &tryMapWindowModeToOhosOrLogWarning);
     if (optOhosWindowMode.hasValue())
         napiOptions.set("windowMode", jsState.mapOhosEnumToJs(optOhosWindowMode.value()));
     if (opts.displayId.hasValue())
@@ -253,10 +253,10 @@ QNapi::Object convertStartOptionsToNapiObject(
         napiOptions.set("windowWidth", opts.windowWidth.value());
     if (opts.windowHeight.hasValue())
         napiOptions.set("windowHeight", opts.windowHeight.value());
-    auto optOhosProcessMode = opts.processMode.andThen(&tryMapProcessModeToOhosOrLogWarning);
+    auto optOhosProcessMode = qAndThen(opts.processMode, &tryMapProcessModeToOhosOrLogWarning);
     if (optOhosProcessMode.hasValue())
         napiOptions.set("processMode", jsState.mapOhosEnumToJs(optOhosProcessMode.value()));
-    auto optOhosStartupVisibility = opts.startupVisibility.andThen(&tryMapStartupVisibilityToOhosOrLogWarning);
+    auto optOhosStartupVisibility = qAndThen(opts.startupVisibility, &tryMapStartupVisibilityToOhosOrLogWarning);
     if (optOhosStartupVisibility.hasValue())
         napiOptions.set("startupVisibility", jsState.mapOhosEnumToJs(optOhosStartupVisibility.value()));
     if (opts.windowIcon.hasValue()) {
@@ -708,11 +708,12 @@ bool isSuccessErrorCode(::FileManagement_ErrCode errorCode)
 QOhosOptional<QOhosQpaFunctions::ShareKit::SharedRecord> tryConvertNapiObjectToSharedRecord(QNapi::Object record)
 {
     auto tryGetOptionalStringProp = [](const QNapi::Object &object, const std::string &propName) {
-        return getOptionalProperty<QNapi::String>(object, propName).transform(&QString::fromStdString);
+        return qTransform(getOptionalProperty<QNapi::String>(object, propName), &QString::fromStdString);
     };
 
     auto tryGetOptionalByteArrayProp = [](const QNapi::Object &object, const std::string &propName) {
-        return getOptionalProperty<QNapi::TypedArrayOf<std::uint8_t>>(object, propName).transform(
+        return qTransform(
+            getOptionalProperty<QNapi::TypedArrayOf<std::uint8_t>>(object, propName),
             [](const auto &napiArray) {
                 return QByteArray(
                     reinterpret_cast<const char *>(napiArray.Data()),
@@ -721,7 +722,8 @@ QOhosOptional<QOhosQpaFunctions::ShareKit::SharedRecord> tryConvertNapiObjectToS
     };
 
     auto tryGetOptionalJsonObjectProp = [](const QNapi::Object &object, const std::string &propName) {
-        return getOptionalProperty<QNapi::Object>(object, propName).transform(
+        return qTransform(
+            getOptionalProperty<QNapi::Object>(object, propName),
             [](const auto &napiObject) {
                 return QOhosJsEnv::fromNapiValue<QJsonObject>(napiObject);
             });
@@ -756,7 +758,7 @@ QOhosOptional<QOhosQpaFunctions::ShareKit::SharedRecord> tryConvertNapiObjectToS
             .description = tryGetOptionalStringProp(record, "description"),
             .thumbnail = tryGetOptionalByteArrayProp(record, "thumbnail"),
             .thumbnailFilePath = tryGetOptionalStringProp(record, "thumbnailUri"),
-            .extraData = tryGetOptionalJsonObjectProp(record, "extraData").transform(std::mem_fn(&QJsonObject::toVariantMap)),
+            .extraData = qTransform(tryGetOptionalJsonObjectProp(record, "extraData"), std::mem_fn(&QJsonObject::toVariantMap)),
         });
 }
 
@@ -1424,7 +1426,8 @@ QSharedPointer<QOhosQpaFunctions::WantInfo> QOhosQpaFunctionsImpl::getAppLaunchW
 {
     return QtOhos::evalInJsThread(
         [](auto &jsState) {
-            auto optAppLaunchReason = jsState.optAppLaunchParam().transform(
+            auto optAppLaunchReason = qTransform(
+                jsState.optAppLaunchParam(),
                 [&](QNapi::Object appLaunchParam) {
                     return mapJsLaunchReasonToWantInfoEnumWithFallback(
                         jsState, appLaunchParam.get<QNapi::Number>("launchReason"));
@@ -1940,38 +1943,42 @@ std::shared_ptr<void> QOhosQpaFunctionsImpl::shareDataUsingShareKit(
         shareKitRecords.push_back(
             QOhosShareKit::SharedRecord{
                 .mimeType = record.mimeType.toStdString(),
-                .content = record.content.transform(std::mem_fn(&QString::toStdString)),
-                .filePath = record.filePath.transform(std::mem_fn(&QString::toStdString)),
-                .title = record.title.transform(std::mem_fn(&QString::toStdString)),
-                .label = record.label.transform(std::mem_fn(&QString::toStdString)),
-                .description = record.description.transform(std::mem_fn(&QString::toStdString)),
+                .content = qTransform(record.content, std::mem_fn(&QString::toStdString)),
+                .filePath = qTransform(record.filePath, std::mem_fn(&QString::toStdString)),
+                .title = qTransform(record.title, std::mem_fn(&QString::toStdString)),
+                .label = qTransform(record.label, std::mem_fn(&QString::toStdString)),
+                .description = qTransform(record.description, std::mem_fn(&QString::toStdString)),
                 .thumbnail = record.thumbnail,
-                .thumbnailFilePath = record.thumbnailFilePath.transform(std::mem_fn(&QString::toStdString)),
+                .thumbnailFilePath = qTransform(record.thumbnailFilePath, std::mem_fn(&QString::toStdString)),
                 .extraData = record.extraData,
             });
     }
 
     auto shareKitControllerOptions = QOhosShareKit::ControllerOptions{
-        .anchor = controllerOptions.anchorOffset.transform(
+        .anchor = qTransform(
+            controllerOptions.anchorOffset,
             [&](auto anchorOffset) {
                 return QOhosShareKit::ShareControllerAnchor{
                     .windowOffset = anchorOffset,
                     .size = controllerOptions.anchorSize,
                 };
             }),
-        .selectionMode = controllerOptions.useSingleSelectionMode.transform(
+        .selectionMode = qTransform(
+            controllerOptions.useSingleSelectionMode,
             [](auto singleSelectionMode) {
                 return singleSelectionMode
                     ? QOhosShareKit::SelectionMode::SINGLE
                     : QOhosShareKit::SelectionMode::BATCH;
             }),
-        .previewMode = controllerOptions.useDefaultPreviewMode.transform(
+        .previewMode = qTransform(
+            controllerOptions.useDefaultPreviewMode,
             [](auto defaultPreviewMode) {
                 return defaultPreviewMode
                     ? QOhosShareKit::SharePreviewMode::DEFAULT
                     : QOhosShareKit::SharePreviewMode::DETAIL;
             }),
-        .excludedAbilities = controllerOptions.excludedAbilities.transform(
+        .excludedAbilities = qTransform(
+            controllerOptions.excludedAbilities,
             [](const auto &excludedAbilities) {
                 std::vector<QOhosShareKit::ShareAbilityType> outExcludedAbilities;
                 for (auto excludedAbilityType : excludedAbilities) {

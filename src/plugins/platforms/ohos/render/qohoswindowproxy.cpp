@@ -385,16 +385,17 @@ void QOhosWindowProxy::moveWindowToGlobalOrGlobalDisplay(
                 ? optMoveToTargetDisplay.value()
                 : getWindowProperties().displayId.valueOr(primaryJsDisplayId);
 
-            auto optDisplayInfo = QOhosDisplayInfo::tryGetDisplayById(jsState, targetDisplayId)
-                .transform([&](auto displayObject) {
+            auto optDisplayInfo = qTransform(
+                QOhosDisplayInfo::tryGetDisplayById(jsState, targetDisplayId),
+                [&](auto displayObject) {
                     return QOhosDisplayInfo::makeFromOhosDisplayObject(jsState, displayObject);
                 });
 
-            auto optIsDisplayMainOrExtended = optDisplayInfo
-                .transform(
-                    [](const QOhosDisplayInfo &displayInfo) {
-                        return displayInfo.isDisplayMainOrExtended();
-                    });
+            auto optIsDisplayMainOrExtended = qTransform(
+                optDisplayInfo,
+                [](const QOhosDisplayInfo &displayInfo) {
+                    return displayInfo.isDisplayMainOrExtended();
+                });
 
             bool isDisplayMainOrExtended;
             if (optIsDisplayMainOrExtended.hasValue()) {
@@ -407,7 +408,8 @@ void QOhosWindowProxy::moveWindowToGlobalOrGlobalDisplay(
 
             QNapi::Promise promise;
             if (!isDisplayMainOrExtended) {
-                auto optDisplayOffset = optDisplayInfo.andThen(
+                auto optDisplayOffset = qAndThen(
+                    optDisplayInfo,
                     [](const QOhosDisplayInfo &displayInfo) {
                         return displayInfo.topLeftOffsetPixels;
                     });

@@ -260,7 +260,8 @@ bool QOhosPlatformFileDialogHelperImpl::show(
                 auto filesPaths = optSaveResult.hasValue()
                     ? optSaveResult.value().savedUrls
                     : QStringList();
-                auto optSelectedFilterIndex = optSaveResult.transform(
+                auto optSelectedFilterIndex = qTransform(
+                    optSaveResult,
                     [](const auto &saveResult) {
                         return saveResult.selectedFileSuffixChoiceIndex;
                     });

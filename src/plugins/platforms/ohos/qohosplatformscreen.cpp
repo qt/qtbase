@@ -272,8 +272,7 @@ QDpi QOhosPlatformScreen::logicalBaseDpi() const
 Qt::ScreenOrientation QOhosPlatformScreen::orientation() const
 {
     return
-        m_displayInfo.orientation
-        .andThen(tryMapJsDisplayOrientationToQt)
+        qAndThen(m_displayInfo.orientation, tryMapJsDisplayOrientationToQt)
         .valueOr(Qt::ScreenOrientation::PrimaryOrientation);
 }
 

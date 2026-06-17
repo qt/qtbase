@@ -61,7 +61,8 @@ QOhosOptional<QOhosDisplayInfo> QOhosScreenManager::QOhosPlatformScreenHolder::d
 
 QOhosOptional<QOhosDisplayInfo::JsDisplayId> QOhosScreenManager::QOhosPlatformScreenHolder::displayIdOrEmpty() const
 {
-    return displayInfoOrEmpty().transform(
+    return qTransform(
+        displayInfoOrEmpty(),
         [](const QOhosDisplayInfo &displayInfo) {
             return displayInfo.id;
         });

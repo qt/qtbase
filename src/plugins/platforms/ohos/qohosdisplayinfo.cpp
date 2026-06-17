@@ -43,7 +43,7 @@ QOhosDisplayInfo QOhosDisplayInfo::makeFromOhosDisplayObject(QtOhos::JsState &js
             displayObject.get<QNapi::Number>("orientation")),
         .sourceMode = sourceMode,
         .topLeftOffsetPixels = !forceEmptyTopLevelOffsetPixels
-            ? sourceMode.andThen([&](DisplaySourceMode mode) {
+            ? qAndThen(sourceMode, [&](DisplaySourceMode mode) {
                 return mode == DisplaySourceMode::MAIN || mode == DisplaySourceMode::EXTEND
                     ? makeQOhosOptional(
                         QPoint(

@@ -379,7 +379,8 @@ void QOhosSystemTrayIcon::init()
         [&](QtOhos::JsState &jsState) {
             auto jsStatusBarIcon = makeJsStatusBarIcon(jsState, m_icon);
             auto jsStatusBarGroupMenus = jsStatusBarGroupMenusFactory(jsState);
-            auto optHoverTipsString = m_optToolTip.transform(
+            auto optHoverTipsString = qTransform(
+                m_optToolTip,
                 [](const auto &toolTip) {
                     return toolTip.toStdString();
                 });
