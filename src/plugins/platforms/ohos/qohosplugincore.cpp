@@ -75,6 +75,7 @@ public:
     QNapi::Object launchWant() override;
     QObjectThreadSafeRef qWindowRef() override;
     QOhosOptional<QNapi::Promise> qWindowDestroyPromise() override;
+    void forceResolveQWindowDestroyPromiseIfPresent(Napi::Env env) override;
     std::shared_ptr<std::atomic_bool> destroyAllowedFlag() override;
     bool isTerminating() override;
 
@@ -111,6 +112,10 @@ QObjectThreadSafeRef DummyQAbilityPeer::qWindowRef()
 QOhosOptional<QNapi::Promise> DummyQAbilityPeer::qWindowDestroyPromise()
 {
     return {};
+}
+
+void DummyQAbilityPeer::forceResolveQWindowDestroyPromiseIfPresent(Napi::Env)
+{
 }
 
 std::shared_ptr<std::atomic_bool> DummyQAbilityPeer::destroyAllowedFlag()

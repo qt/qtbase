@@ -766,6 +766,15 @@ void handleDefaultQAbilityInstanceStartup(JsState &jsState, std::shared_ptr<QAbi
                     [](QtOhos::JsState &jsState) {
                         if (s_hotStartEnabled)
                             getQAbilityInstancesManager().registerPendingAutoStartedInstance();
+
+                        qOhosPrintfInfo(
+                            "Qt: force-resolving pending QWindow destroy Promises before termination if needed");
+                        jsState.visitEachQAbilityPeer(
+                            [&](std::shared_ptr<QtOhos::QAbilityPeer> peer) {
+                                peer->forceResolveQWindowDestroyPromiseIfPresent(
+                                    Napi::Env(jsState.env()));
+                            });
+
                         terminateAllAbilityInstances(jsState, "Qt main() exit");
                     });
 
