@@ -11,6 +11,7 @@
 #include <cstdint>
 #include <cstring>
 #include <map>
+#include <optional>
 #include <qohosdeviceinfo_p.h>
 #include <qohosjsutils.h>
 #include <qohosplatformwindow.h>
@@ -121,6 +122,7 @@ public:
     QNapi::Object qAbility() final;
     QObjectThreadSafeRef qWindowRef() final;
     QOhosOptional<QNapi::Promise> qWindowDestroyPromise() final;
+    void forceResolveQWindowDestroyPromiseIfPresent(Napi::Env env) final;
     std::shared_ptr<std::atomic_bool> destroyAllowedFlag() final;
 
     void setQWindow(Napi::Env env, QObjectThreadSafeRef qwindow) final;
@@ -128,7 +130,7 @@ public:
 private:
     struct QWindowDestroyPromiseData
     {
-        QNapi::Promise::Deferred deferred;
+        std::optional<QNapi::Promise::Deferred> deferred;
         QNapi::Reference<QNapi::Promise> promise;
     };
 
@@ -178,6 +180,17 @@ QOhosOptional<QNapi::Promise> QAbilityPeerImpl::qWindowDestroyPromise()
     return makeQOhosOptional(promiseValue);
 }
 
+void QAbilityPeerImpl::forceResolveQWindowDestroyPromiseIfPresent(Napi::Env env)
+{
+    if (!m_optQWindowDestroyPromiseData || !m_optQWindowDestroyPromiseData->deferred)
+        return;
+
+    qOhosPrintfInfo(
+        "%s: force-resolving QWindow destroy Promise for id='%s'",
+        Q_FUNC_INFO, m_instanceId.c_str());
+    std::exchange(m_optQWindowDestroyPromiseData->deferred, std::nullopt)->Resolve(env.Undefined());
+}
+
 std::shared_ptr<std::atomic_bool> QAbilityPeerImpl::destroyAllowedFlag()
 {
     return m_destroyAllowedFlag;
@@ -216,12 +229,12 @@ void QAbilityPeerImpl::setQWindow(Napi::Env env, QObjectThreadSafeRef qwindow)
             QtOhos::invokeInJsThread(
                 [qWindowRef, weakPromiseData](JsState &jsState) {
                     auto promiseData = weakPromiseData.lock();
-                    if (promiseData) {
+                    if (promiseData && promiseData->deferred) {
                         qOhosPrintfDebug(
                             "%s: resolving QWindow destroy notify Promise: %s",
                             Q_FUNC_INFO, qWindowRef.refName().c_str());
                         auto napiUndefined = Napi::Env(jsState.env()).Undefined();
-                        promiseData->deferred.Resolve(napiUndefined);
+                        std::exchange(promiseData->deferred, std::nullopt)->Resolve(napiUndefined);
                     } else {
                         qOhosPrintfDebug(
                             "%s: QAbilityPeer already removed on QWindow's destroy notification: %s",
