@@ -85,6 +85,9 @@ public:
 
     ~QOhosOptional();
 
+    bool has_value() const;
+    T value_or(const T &fallback) const;
+
     bool hasValue() const;
     T valueOr(const T &fallback) const;
 
@@ -549,15 +552,27 @@ void QOhosOptional<T>::initializeStoredValue(InitArgs &&...initArgs)
 }
 
 template<typename T>
-bool QOhosOptional<T>::hasValue() const
+bool QOhosOptional<T>::has_value() const
 {
     return m_hasValue;
 }
 
 template<typename T>
+T QOhosOptional<T>::value_or(const T &fallback) const
+{
+    return has_value() ? storedValueRef() : fallback;
+}
+
+template<typename T>
+bool QOhosOptional<T>::hasValue() const
+{
+    return has_value();
+}
+
+template<typename T>
 T QOhosOptional<T>::valueOr(const T &fallback) const
 {
-    return hasValue() ? storedValueRef() : fallback;
+    return value_or(fallback);
 }
 
 template<typename T>
@@ -603,9 +618,9 @@ template<typename T, typename U>
 std::enable_if_t<qohosplugincore_h_detail::hasEqualityComparator<T, U>, bool>
 operator==(const QOhosOptional<T> &lhs, const QOhosOptional<U> &rhs)
 {
-    return (lhs.hasValue() && rhs.hasValue())
+    return (lhs.has_value() && rhs.has_value())
         ? lhs.value() == rhs.value()
-        : (!lhs.hasValue() && !rhs.hasValue());
+        : (!lhs.has_value() && !rhs.has_value());
 }
 
 template<typename T, typename U>
@@ -619,7 +634,7 @@ template<typename T, typename U>
 std::enable_if_t<qohosplugincore_h_detail::hasEqualityComparator<T, U>, bool>
 operator==(const QOhosOptional<T> &lhs, const U &rhs)
 {
-    return lhs.hasValue() && lhs.value() == rhs;
+    return lhs.has_value() && lhs.value() == rhs;
 }
 
 template<typename T, typename U>
@@ -633,7 +648,7 @@ template<typename T, typename U>
 std::enable_if_t<qohosplugincore_h_detail::hasEqualityComparator<T, U>, bool>
 operator==(const T &lhs, const QOhosOptional<U> &rhs)
 {
-    return rhs.hasValue() && lhs == rhs.value();
+    return rhs.has_value() && lhs == rhs.value();
 }
 
 template<typename T, typename U>
@@ -649,14 +664,14 @@ std::enable_if_t<
     QOhosInvokeResult<Func, T>>
 qAndThen(const QOhosOptional<T> &opt, Func &&func)
 {
-    return opt.hasValue() ? func(opt.value()) : QOhosInvokeResult<Func, T>();
+    return opt.has_value() ? func(opt.value()) : QOhosInvokeResult<Func, T>();
 }
 
 template<typename T, typename Func>
 QOhosOptional<QOhosInvokeResult<Func, T>> qTransform(const QOhosOptional<T> &opt, Func &&func)
 {
     using TransformedT = QOhosInvokeResult<Func, T>;
-    return opt.hasValue()
+    return opt.has_value()
         ? QOhosOptional<TransformedT>(func(opt.value()))
         : QOhosOptional<TransformedT>();
 }
