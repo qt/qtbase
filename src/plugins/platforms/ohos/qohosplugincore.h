@@ -51,6 +51,15 @@ struct IsQOhosOptional<QOhosOptional<T>> : std::true_type {};
 template<typename T>
 constexpr bool isQOhosOptional = IsQOhosOptional<T>::value;
 
+template<typename>
+struct IsStdOptional : std::false_type {};
+
+template<typename T>
+struct IsStdOptional<std::optional<T>> : std::true_type {};
+
+template<typename T>
+constexpr bool isStdOptional = IsStdOptional<T>::value;
+
 }
 
 template<typename T>
@@ -129,6 +138,15 @@ qAndThen(const QOhosOptional<T> &opt, Func &&func);
 
 template<typename T, typename Func>
 QOhosOptional<QOhosInvokeResult<Func, T>> qTransform(const QOhosOptional<T> &opt, Func &&func);
+
+template<typename T, typename Func>
+std::enable_if_t<
+    qohosplugincore_h_detail::isStdOptional<QOhosInvokeResult<Func, T>>,
+    QOhosInvokeResult<Func, T>>
+qAndThen(const std::optional<T> &opt, Func &&func);
+
+template<typename T, typename Func>
+std::optional<std::remove_cv_t<QOhosInvokeResult<Func, T>>> qTransform(const std::optional<T> &opt, Func &&func);
 
 template<>
 class QOhosOptional<void>
@@ -641,6 +659,24 @@ QOhosOptional<QOhosInvokeResult<Func, T>> qTransform(const QOhosOptional<T> &opt
     return opt.hasValue()
         ? QOhosOptional<TransformedT>(func(opt.value()))
         : QOhosOptional<TransformedT>();
+}
+
+template<typename T, typename Func>
+std::enable_if_t<
+    qohosplugincore_h_detail::isStdOptional<QOhosInvokeResult<Func, T>>,
+    QOhosInvokeResult<Func, T>>
+qAndThen(const std::optional<T> &opt, Func &&func)
+{
+    return opt.has_value() ? func(*opt) : QOhosInvokeResult<Func, T>();
+}
+
+template<typename T, typename Func>
+std::optional<std::remove_cv_t<QOhosInvokeResult<Func, T>>> qTransform(const std::optional<T> &opt, Func &&func)
+{
+    using TransformedT = std::remove_cv_t<QOhosInvokeResult<Func, T>>;
+    return opt.has_value()
+        ? std::optional<TransformedT>(func(*opt))
+        : std::optional<TransformedT>();
 }
 
 template<typename T>
