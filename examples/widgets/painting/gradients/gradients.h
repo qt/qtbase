@@ -7,6 +7,7 @@
 #include "arthurwidgets.h"
 
 QT_BEGIN_NAMESPACE
+class QLabel;
 class QRadioButton;
 QT_END_NAMESPACE
 
@@ -83,7 +84,6 @@ public:
     QSize sizeHint() const override { return QSize(400, 400); }
 
     HoverPoints *hoverPoints() const { return m_hoverPoints; }
-    void mousePressEvent(QMouseEvent *e) override;
 
 public slots:
     void setGradientStops(const QGradientStops &stops);
@@ -117,7 +117,6 @@ public slots:
     void setDefault2() { setDefault(2); }
     void setDefault3() { setDefault(3); }
     void setDefault4() { setDefault(4); }
-    void setPreset()     { changePresetBy(0); }
     void setPrevPreset() { changePresetBy(-1); }
     void setNextPreset() { changePresetBy(1); }
 
@@ -135,7 +134,7 @@ private:
     QRadioButton *m_padSpreadButton;
     QRadioButton *m_reflectSpreadButton;
     QRadioButton *m_repeatSpreadButton;
-    QPushButton *m_presetButton;
+    QLabel *m_presetLabel;
 
     int m_presetIndex = 0;
 };

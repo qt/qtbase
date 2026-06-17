@@ -1,6 +1,0 @@
-<!DOCTYPE RCC><RCC version="1.0">
-<qresource prefix="/res/gradients">
-   <file>gradients.cpp</file>
-   <file>gradients.html</file>
-</qresource>
-</RCC>

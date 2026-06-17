@@ -1,9 +1,5 @@
-SOURCES += main.cpp composition.cpp
-HEADERS += composition.h
-
-SHARED_FOLDER = ../shared
-
-include($$SHARED_FOLDER/shared.pri)
+SOURCES += main.cpp composition.cpp arthurwidgets.cpp
+HEADERS += composition.h arthurwidgets.h
 
 RESOURCES += composition.qrc
 QT += widgets

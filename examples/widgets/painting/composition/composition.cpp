@@ -89,12 +89,6 @@ CompositionWidget::CompositionWidget(QWidget *parent)
     circleAlphaSlider->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
     connect(circleAlphaSlider, &QAbstractSlider::valueChanged, view, &CompositionRenderer::setCircleAlpha);
 
-    QPushButton *showSourceButton = new QPushButton(mainGroup);
-    showSourceButton->setText(tr("Show Source"));
-    QPushButton *whatsThisButton = new QPushButton(mainGroup);
-    whatsThisButton->setText(tr("What's This?"));
-    whatsThisButton->setCheckable(true);
-
     QPushButton *animateButton = new QPushButton(mainGroup);
     animateButton->setText(tr("Animated"));
     animateButton->setCheckable(true);
@@ -110,8 +104,6 @@ CompositionWidget::CompositionWidget(QWidget *parent)
     mainGroupLayout->addWidget(modesGroup);
     mainGroupLayout->addStretch();
     mainGroupLayout->addWidget(animateButton);
-    mainGroupLayout->addWidget(whatsThisButton);
-    mainGroupLayout->addWidget(showSourceButton);
 
     QGridLayout *modesLayout = new QGridLayout(modesGroup);
     modesLayout->addWidget(rbClear, 0, 0);
@@ -147,12 +139,6 @@ CompositionWidget::CompositionWidget(QWidget *parent)
     QVBoxLayout *circleAlphaLayout = new QVBoxLayout(circleAlphaGroup);
     circleAlphaLayout->addWidget(circleAlphaSlider);
 
-    view->loadDescription(":res/composition/composition.html");
-    view->loadSourceFile(":res/composition/composition.cpp");
-
-    connect(whatsThisButton, &QAbstractButton::clicked, view, &ArthurFrame::setDescriptionEnabled);
-    connect(view, &ArthurFrame::descriptionEnabledChanged, whatsThisButton, &QAbstractButton::setChecked);
-    connect(showSourceButton, &QAbstractButton::clicked, view, &ArthurFrame::showSource);
     connect(animateButton, &QAbstractButton::toggled, view, &CompositionRenderer::setAnimationEnabled);
 
     circleColorSlider->setValue(270);
@@ -316,8 +302,6 @@ void CompositionRenderer::paint(QPainter *painter)
 
 void CompositionRenderer::mousePressEvent(QMouseEvent *e)
 {
-    setDescriptionEnabled(false);
-
     QRectF circle = rectangle_around(m_circle_pos);
 
     if (circle.contains(e->pos())) {
