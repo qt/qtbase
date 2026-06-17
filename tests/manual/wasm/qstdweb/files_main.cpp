@@ -463,6 +463,9 @@ void FilesTest::saveFileWithFileDialog()
 
 int main(int argc, char **argv)
 {
+    if (qstdweb::haveAsyncify())
+        qFatal("This test does not work with asyncify");
+
     auto testObject = std::make_shared<FilesTest>();
     QtWasmTest::initTestCase<QCoreApplication>(argc, argv, testObject);
     return 0;
