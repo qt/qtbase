@@ -250,3 +250,17 @@ save
     setPen black
     drawText 0 20 "ᠪᠠᠷᠠᠳᠢ ꡏꡡꡃ ꡢ"
 restore
+
+translate 0 35.5
+save
+    setPen black
+    setFont "Annai MN" 12 normal
+    drawText 0 20 "Foobar"
+restore
+
+translate 0 35.5
+save
+    setPen black
+    setFont "Annai MN" 12 italic
+    drawText 0 20 "Foobar"
+restore
