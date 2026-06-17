@@ -9,6 +9,7 @@
 #include <QtGui/qpa/qwindowsysteminterface.h>
 #include <QtGui/rhi/qrhi.h>
 
+#include <private/qstdweb_p.h>
 #include <qtwasmtestlib.h>
 
 #include <emscripten.h>
@@ -156,14 +157,18 @@ void QWasmCompositorTest::testReceivingKeyboardEventsAfterOpenGLContextReset()
                      []() { QWASMFAIL("Cannot initialize test window"); });
     QObject::connect(window, &Window::exposed, []() {
         EM_ASM({
-            testSupport.screenElement.shadowRoot.querySelector('.qt-window')
-                    .dispatchEvent(new KeyboardEvent('keydown', { key : 'a' }));
+            var root = document.querySelector("#qt-shadow-container");
+            var window = root.shadowRoot.querySelector('.qt-window');
+            window.dispatchEvent(new KeyboardEvent('keydown', { key : 'a' }));
         });
     });
 }
 
 int main(int argc, char **argv)
 {
+    if (qstdweb::haveAsyncify())
+        qFatal("This test does not work with asyncify");
+
     auto testObject = std::make_shared<QWasmCompositorTest>();
     QtWasmTest::initTestCase<QGuiApplication>(argc, argv, testObject);
     return 0;
