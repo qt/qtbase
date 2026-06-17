@@ -22,5 +22,3 @@ qtHaveModule(widgets) {
     qtConfig(dtls): SUBDIRS += secureudpserver secureudpclient
     qtConfig(sctp): SUBDIRS += multistreamserver multistreamclient
 }
-
-EXAMPLE_FILES = shared

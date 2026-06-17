@@ -14,6 +14,7 @@ qt_add_executable(multistreamclient
     consumer.h
     main.cpp
     movieconsumer.cpp movieconsumer.h
+    sctpchannels.h
     timeconsumer.cpp timeconsumer.h
 )
 

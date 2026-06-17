@@ -13,6 +13,7 @@ qt_add_executable(multistreamserver
     main.cpp
     movieprovider.cpp movieprovider.h
     provider.h
+    sctpchannels.h
     server.cpp server.h
     timeprovider.cpp timeprovider.h
 )

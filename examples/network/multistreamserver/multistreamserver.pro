@@ -4,7 +4,8 @@ HEADERS       = server.h \
                 provider.h \
                 movieprovider.h \
                 timeprovider.h \
-                chatprovider.h
+                chatprovider.h \
+                sctpchannels.h
 SOURCES       = server.cpp \
                 movieprovider.cpp \
                 timeprovider.cpp \
