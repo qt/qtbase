@@ -1,11 +1,5 @@
-SOURCES += main.cpp pathstroke.cpp
-HEADERS += pathstroke.h
-
-SHARED_FOLDER = ../shared
-
-include($$SHARED_FOLDER/shared.pri)
-
-RESOURCES += pathstroke.qrc
+SOURCES += main.cpp pathstroke.cpp arthurwidgets.cpp
+HEADERS += pathstroke.h arthurwidgets.h
 
 QT += widgets
 

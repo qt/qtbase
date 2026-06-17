@@ -64,15 +64,10 @@ void XFormView::setType(XFormType t)
     update();
 }
 
-void XFormView::mousePressEvent(QMouseEvent *)
-{
-    setDescriptionEnabled(false);
-}
-
 void XFormView::resizeEvent(QResizeEvent *e)
 {
     m_hoverPoints->setBoundingRect(rect());
-    ArthurFrame::resizeEvent(e);
+    QWidget::resizeEvent(e);
 }
 
 void XFormView::paint(QPainter *p)
@@ -775,12 +770,6 @@ XFormWidget::XFormWidget(QWidget *parent)
     animateButton->setText(tr("Animate"));
     animateButton->setCheckable(true);
 
-    QPushButton *showSourceButton = new QPushButton(mainGroup);
-    showSourceButton->setText(tr("Show Source"));
-    QPushButton *whatsThisButton = new QPushButton(mainGroup);
-    whatsThisButton->setText(tr("What's This?"));
-    whatsThisButton->setCheckable(true);
-
     QVBoxLayout *rotateGroupLayout = new QVBoxLayout(rotateGroup);
     rotateGroupLayout->addWidget(rotateSlider);
 
@@ -805,8 +794,6 @@ XFormWidget::XFormWidget(QWidget *parent)
     mainGroupLayout->addStretch(1);
     mainGroupLayout->addWidget(resetButton);
     mainGroupLayout->addWidget(animateButton);
-    mainGroupLayout->addWidget(showSourceButton);
-    mainGroupLayout->addWidget(whatsThisButton);
 
     mainGroup->setLayout(mainGroupLayout);
 
@@ -838,18 +825,11 @@ XFormWidget::XFormWidget(QWidget *parent)
 
     connect(resetButton, &QPushButton::clicked, view, &XFormView::reset);
     connect(animateButton, &QPushButton::clicked, view, &XFormView::setAnimation);
-    connect(whatsThisButton, &QPushButton::clicked, view, &ArthurFrame::setDescriptionEnabled);
-    connect(whatsThisButton, &QPushButton::clicked, view->hoverPoints(), &HoverPoints::setDisabled);
-    connect(view, &XFormView::descriptionEnabledChanged, view->hoverPoints(), &HoverPoints::setDisabled);
-    connect(view, &XFormView::descriptionEnabledChanged, whatsThisButton, &QPushButton::setChecked);
-    connect(showSourceButton, &QPushButton::clicked, view, &XFormView::showSource);
-    view->loadSourceFile(":res/affine/xform.cpp");
-    view->loadDescription(":res/affine/xform.html");
 
     // defaults
     view->reset();
     vectorType->setChecked(true);
-    textEditor->setText("Qt Affine Transformation Example");
+    textEditor->setText("Qt");
     textEditor->setEnabled(false);
 
     animateButton->animateClick();

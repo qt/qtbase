@@ -10,13 +10,9 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
 
     GradientWidget gradientWidget;
-    QStyle *arthurStyle = new ArthurStyle;
-    gradientWidget.setStyle(arthurStyle);
     const QList<QWidget *> widgets = gradientWidget.findChildren<QWidget *>();
-    for (QWidget *w : widgets) {
-        w->setStyle(arthurStyle);
+    for (QWidget *w : widgets)
         w->setAttribute(Qt::WA_AcceptTouchEvents);
-    }
     gradientWidget.show();
 
     return app.exec();

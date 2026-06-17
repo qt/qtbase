@@ -1,11 +1,7 @@
-SOURCES += main.cpp xform.cpp
-HEADERS += xform.h
+SOURCES += main.cpp xform.cpp arthurwidgets.cpp hoverpoints.cpp
+HEADERS += xform.h arthurwidgets.h hoverpoints.h
 
 QT += widgets
-
-SHARED_FOLDER = ../shared
-
-include($$SHARED_FOLDER/shared.pri)
 
 RESOURCES += affine.qrc
 

@@ -39,7 +39,6 @@ public:
     void drawTextType(QPainter *painter);
     QSize sizeHint() const override { return QSize(500, 500); }
 
-    void mousePressEvent(QMouseEvent *e) override;
     void resizeEvent(QResizeEvent *e) override;
     HoverPoints *hoverPoints() { return m_hoverPoints; }
 

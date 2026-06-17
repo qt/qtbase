@@ -13,12 +13,6 @@ int main(int argc, char **argv)
 
     PathDeformWidget deformWidget(nullptr, smallScreen);
 
-    QStyle *arthurStyle = new ArthurStyle;
-    deformWidget.setStyle(arthurStyle);
-    const QList<QWidget *> widgets = deformWidget.findChildren<QWidget *>();
-    for (QWidget *w : widgets)
-        w->setStyle(arthurStyle);
-
     if (smallScreen)
         deformWidget.showFullScreen();
     else

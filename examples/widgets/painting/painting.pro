@@ -8,6 +8,3 @@ SUBDIRS       = basicdrawing \
                 imagecomposition \
                 painterpaths \
                 transformations
-
-EXAMPLE_FILES = \
-    shared

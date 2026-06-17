@@ -58,14 +58,6 @@ void PathDeformControls::layoutForDesktop()
     animateButton->setText(tr("Animated"));
     animateButton->setCheckable(true);
 
-    QPushButton *showSourceButton = new QPushButton(mainGroup);
-    showSourceButton->setText(tr("Show Source"));
-
-    QPushButton *whatsThisButton = new QPushButton(mainGroup);
-    whatsThisButton->setText(tr("What's This?"));
-    whatsThisButton->setCheckable(true);
-
-
     mainGroup->setFixedWidth(180);
 
     QVBoxLayout *mainGroupLayout = new QVBoxLayout(mainGroup);
@@ -75,8 +67,6 @@ void PathDeformControls::layoutForDesktop()
     mainGroupLayout->addWidget(textGroup);
     mainGroupLayout->addWidget(animateButton);
     mainGroupLayout->addStretch(1);
-    mainGroupLayout->addWidget(showSourceButton);
-    mainGroupLayout->addWidget(whatsThisButton);
 
     QVBoxLayout *radiusGroupLayout = new QVBoxLayout(radiusGroup);
     radiusGroupLayout->addWidget(radiusSlider);
@@ -100,10 +90,6 @@ void PathDeformControls::layoutForDesktop()
     connect(animateButton, &QAbstractButton::clicked, m_renderer, &PathDeformRenderer::setAnimated);
 
     connect(textInput, &QLineEdit::textChanged, m_renderer, &PathDeformRenderer::setText);
-    connect(m_renderer, &ArthurFrame::descriptionEnabledChanged,
-            whatsThisButton, &QAbstractButton::setChecked);
-    connect(whatsThisButton, &QAbstractButton::clicked, m_renderer, &ArthurFrame::setDescriptionEnabled);
-    connect(showSourceButton, &QAbstractButton::clicked, m_renderer, &ArthurFrame::showSource);
 
     animateButton->animateClick();
     deformSlider->setValue(80);
@@ -192,10 +178,6 @@ PathDeformWidget::PathDeformWidget(QWidget *parent, bool smallScreen)
 
     if (!smallScreen)
         mainLayout->addWidget(m_controls);
-
-    m_renderer->loadSourceFile(":res/deform/pathdeform.cpp");
-    m_renderer->loadDescription(":res/deform/pathdeform.html");
-    m_renderer->setDescriptionEnabled(false);
 
     connect(m_renderer, &PathDeformRenderer::clicked,
             this, &PathDeformWidget::showControls);
@@ -393,12 +375,6 @@ void PathDeformRenderer::timerEvent(QTimerEvent *e)
 
 void PathDeformRenderer::mousePressEvent(QMouseEvent *e)
 {
-    if (m_showDoc) {
-        setDescriptionEnabled(false);
-        return;
-    }
-    setDescriptionEnabled(false);
-
     m_repaintTimer.stop();
     m_offset = QPointF();
     if (QLineF(m_pos, e->position().toPoint()).length() <= m_radius)
