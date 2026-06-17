@@ -151,6 +151,7 @@ private slots:
     void inputMethodOpensEditor();
     void selectionAutoScrolling_data();
     void selectionAutoScrolling();
+    void autoScrollStopsOnMouseRelease();
     void testSpinBoxAsEditor_data();
     void testSpinBoxAsEditor();
     void removeIndexWhileEditing();
@@ -3433,6 +3434,44 @@ void tst_QAbstractItemView::selectionAutoScrolling()
     QVERIFY(listview.selectionModel()->selectedIndexes().size() > 0);
 
     QTest::mouseRelease(listview.viewport(), Qt::LeftButton, Qt::NoModifier, dragPoint);
+}
+
+void tst_QAbstractItemView::autoScrollStopsOnMouseRelease()
+{
+    // QTBUG-147278: autoscroll triggered during a drag must stop on mouse release.
+    QTableView table;
+    table.setAutoScroll(true);
+    table.setGeometry(0, 0, 200, 200);
+
+    QStandardItemModel model(1000, 1);
+    for (int i = 0; i < 1000; ++i)
+        model.setItem(i, 0, new QStandardItem(QString::number(i)));
+    table.setModel(&model);
+    table.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&table));
+
+    // Put the view into DragSelectingState with the mouse pressed, so that
+    // mouseReleaseEvent() runs its full cleanup path including the fix.
+    const QPoint pressPos(100, 100);
+    QTest::mousePress(table.viewport(), Qt::LeftButton, Qt::NoModifier, pressPos);
+    {
+        QMouseEvent mm(QEvent::MouseMove, pressPos + QPoint(0, 20),
+                       table.viewport()->mapToGlobal(pressPos + QPoint(0, 20)),
+                       Qt::NoButton, Qt::LeftButton, Qt::NoModifier);
+        QApplication::sendEvent(table.viewport(), &mm);
+    }
+
+    // Start the autoscroll timer directly. Reproducing the full mouse-move
+    // chain that triggers startAutoScroll() is fragile across platforms
+    // (depends on item geometry at the viewport edge); the fix under test is
+    // only that mouseReleaseEvent stops the timer, which is what we assert.
+    auto *d = static_cast<QAbstractItemViewPrivate *>(QAbstractItemViewPrivate::get(&table));
+    d->startAutoScroll();
+    QVERIFY(d->autoScrollTimer.isActive());
+
+    // Release mouse button — autoscroll must stop synchronously here.
+    QTest::mouseRelease(table.viewport(), Qt::LeftButton, Qt::NoModifier, pressPos);
+    QVERIFY(!d->autoScrollTimer.isActive());
 }
 class SpinBoxDelegate : public QStyledItemDelegate
 {

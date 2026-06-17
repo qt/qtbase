@@ -2008,6 +2008,7 @@ void QAbstractItemView::mouseReleaseEvent(QMouseEvent *event)
     }
 
     d->pressClosedEditor = false;
+    stopAutoScroll();
     setState(NoState);
 
     if (click) {
