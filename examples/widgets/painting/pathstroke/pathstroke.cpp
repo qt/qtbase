@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
 #include "pathstroke.h"
-#include "arthurstyle.h"
 #include "arthurwidgets.h"
 
 extern void draw_round_rect(QPainter *p, const QRect &bounds, int radius);
@@ -56,21 +55,27 @@ void PathStrokeControls::createCommonControls(QWidget* parent)
     QRadioButton *customDashLine = new QRadioButton(m_styleGroup);
     m_styleGroup->setTitle(tr("Pen Style"));
 
-    QPixmap line_solid(":res/images/line_solid.png");
-    solidLine->setIcon(line_solid);
-    solidLine->setIconSize(line_solid.size());
-    QPixmap line_dashed(":res/images/line_dashed.png");
-    dashLine->setIcon(line_dashed);
-    dashLine->setIconSize(line_dashed.size());
-    QPixmap line_dotted(":res/images/line_dotted.png");
-    dotLine->setIcon(line_dotted);
-    dotLine->setIconSize(line_dotted.size());
-    QPixmap line_dash_dot(":res/images/line_dash_dot.png");
-    dashDotLine->setIcon(line_dash_dot);
-    dashDotLine->setIconSize(line_dash_dot.size());
-    QPixmap line_dash_dot_dot(":res/images/line_dash_dot_dot.png");
-    dashDotDotLine->setIcon(line_dash_dot_dot);
-    dashDotDotLine->setIconSize(line_dash_dot_dot.size());
+    // Draw an icon previewing each pen style, instead of shipping image files.
+    const QSize lineIconSize(64, 16);
+    auto lineStyleIcon = [&](Qt::PenStyle style) {
+        QPixmap pixmap(lineIconSize);
+        pixmap.fill(Qt::transparent);
+        QPainter painter(&pixmap);
+        painter.setRenderHint(QPainter::Antialiasing);
+        QPen pen(palette().color(QPalette::WindowText), 2, style, Qt::FlatCap);
+        painter.setPen(pen);
+        const int y = lineIconSize.height() / 2;
+        painter.drawLine(2, y, lineIconSize.width() - 2, y);
+        return pixmap;
+    };
+
+    for (auto *button : {solidLine, dashLine, dotLine, dashDotLine, dashDotDotLine})
+        button->setIconSize(lineIconSize);
+    solidLine->setIcon(lineStyleIcon(Qt::SolidLine));
+    dashLine->setIcon(lineStyleIcon(Qt::DashLine));
+    dotLine->setIcon(lineStyleIcon(Qt::DotLine));
+    dashDotLine->setIcon(lineStyleIcon(Qt::DashDotLine));
+    dashDotDotLine->setIcon(lineStyleIcon(Qt::DashDotDotLine));
     customDashLine->setText(tr("Custom"));
 
     int fixedHeight = bevelJoin->sizeHint().height();
@@ -175,13 +180,6 @@ void PathStrokeControls::layoutForDesktop()
     animated->setText(tr("Animate"));
     animated->setCheckable(true);
 
-    QPushButton *showSourceButton = new QPushButton(mainGroup);
-    showSourceButton->setText(tr("Show Source"));
-    QPushButton *whatsThisButton = new QPushButton(mainGroup);
-    whatsThisButton->setText(tr("What's This?"));
-    whatsThisButton->setCheckable(true);
-
-
     // Layouts:
     QVBoxLayout *penWidthLayout = new QVBoxLayout(penWidthGroup);
     penWidthLayout->addWidget(penWidth);
@@ -199,8 +197,6 @@ void PathStrokeControls::layoutForDesktop()
     mainGroupLayout->addWidget(m_pathModeGroup);
     mainGroupLayout->addWidget(animated);
     mainGroupLayout->addStretch(1);
-    mainGroupLayout->addWidget(showSourceButton);
-    mainGroupLayout->addWidget(whatsThisButton);
 
 
     // Set up connections
@@ -209,13 +205,6 @@ void PathStrokeControls::layoutForDesktop()
 
     connect(penWidth, &QAbstractSlider::valueChanged,
             m_renderer, &PathStrokeRenderer::setPenWidth);
-
-    connect(showSourceButton, &QAbstractButton::clicked,
-            m_renderer, &ArthurFrame::showSource);
-    connect(whatsThisButton, &QAbstractButton::clicked,
-            m_renderer, &ArthurFrame::setDescriptionEnabled);
-    connect(m_renderer, &ArthurFrame::descriptionEnabledChanged,
-            whatsThisButton, &QAbstractButton::setChecked);
 
 
     // Set the defaults
@@ -308,9 +297,6 @@ PathStrokeWidget::PathStrokeWidget(bool smallScreen)
 
     if (!smallScreen)
         viewLayout->addWidget(m_controls);
-
-    m_renderer->loadSourceFile(":res/pathstroke/pathstroke.cpp");
-    m_renderer->loadDescription(":res/pathstroke/pathstroke.html");
 
     connect(m_renderer, &PathStrokeRenderer::clicked, this, &PathStrokeWidget::showControls);
     connect(m_controls, &PathStrokeControls::okPressed, this, &PathStrokeWidget::hideControls);
@@ -481,7 +467,6 @@ void PathStrokeRenderer::mousePressEvent(QMouseEvent *e)
 {
     if (!m_fingerPointMapping.isEmpty())
         return;
-    setDescriptionEnabled(false);
     m_activePoint = -1;
     qreal distance = -1;
     for (int i = 0; i < m_points.size(); ++i) {

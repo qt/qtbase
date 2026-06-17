@@ -4,6 +4,8 @@
 #include "gradients.h"
 #include "hoverpoints.h"
 
+#include <QLabel>
+
 #include <algorithm>
 
 ShadeWidget::ShadeWidget(ShadeType type, QWidget *parent)
@@ -259,8 +261,9 @@ GradientWidget::GradientWidget(QWidget *parent)
 
     QGroupBox *presetsGroup = new QGroupBox(mainGroup);
     presetsGroup->setTitle(tr("Presets"));
+    m_presetLabel = new QLabel(presetsGroup);
+    m_presetLabel->setAlignment(Qt::AlignCenter);
     QPushButton *prevPresetButton = new QPushButton(tr("<"), presetsGroup);
-    m_presetButton = new QPushButton(tr("(unset)"), presetsGroup);
     QPushButton *nextPresetButton = new QPushButton(tr(">"), presetsGroup);
     updatePresetName();
 
@@ -271,12 +274,6 @@ GradientWidget::GradientWidget(QWidget *parent)
     QPushButton *default3Button = new QPushButton(tr("3"), defaultsGroup);
     QPushButton *default4Button = new QPushButton(tr("Reset"), editorGroup);
 
-    QPushButton *showSourceButton = new QPushButton(mainGroup);
-    showSourceButton->setText(tr("Show Source"));
-    QPushButton *whatsThisButton = new QPushButton(mainGroup);
-    whatsThisButton->setText(tr("What's This?"));
-    whatsThisButton->setCheckable(true);
-
     mainGroup->setFixedWidth(200);
     QVBoxLayout *mainGroupLayout = new QVBoxLayout(mainGroup);
     mainGroupLayout->addWidget(editorGroup);
@@ -285,8 +282,6 @@ GradientWidget::GradientWidget(QWidget *parent)
     mainGroupLayout->addWidget(presetsGroup);
     mainGroupLayout->addWidget(defaultsGroup);
     mainGroupLayout->addStretch(1);
-    mainGroupLayout->addWidget(showSourceButton);
-    mainGroupLayout->addWidget(whatsThisButton);
 
     QVBoxLayout *editorGroupLayout = new QVBoxLayout(editorGroup);
     editorGroupLayout->addWidget(m_editor);
@@ -301,10 +296,12 @@ GradientWidget::GradientWidget(QWidget *parent)
     spreadGroupLayout->addWidget(m_repeatSpreadButton);
     spreadGroupLayout->addWidget(m_reflectSpreadButton);
 
-    QHBoxLayout *presetsGroupLayout = new QHBoxLayout(presetsGroup);
-    presetsGroupLayout->addWidget(prevPresetButton);
-    presetsGroupLayout->addWidget(m_presetButton, 1);
-    presetsGroupLayout->addWidget(nextPresetButton);
+    QVBoxLayout *presetsGroupLayout = new QVBoxLayout(presetsGroup);
+    presetsGroupLayout->addWidget(m_presetLabel);
+    QHBoxLayout *presetButtonsLayout = new QHBoxLayout;
+    presetButtonsLayout->addWidget(prevPresetButton);
+    presetButtonsLayout->addWidget(nextPresetButton);
+    presetsGroupLayout->addLayout(presetButtonsLayout);
 
     QHBoxLayout *defaultsGroupLayout = new QHBoxLayout(defaultsGroup);
     defaultsGroupLayout->addWidget(default1Button);
@@ -327,6 +324,14 @@ GradientWidget::GradientWidget(QWidget *parent)
     mainLayout->addWidget(m_renderer);
     mainLayout->addWidget(mainScrollArea);
 
+    // Open large enough to show the controls without scrolling.
+    const QSize contentHint = mainContentWidget->sizeHint();
+    const QMargins margins = mainLayout->contentsMargins();
+    const int frameV = 2 * mainScrollArea->frameWidth() + margins.top() + margins.bottom();
+    const int scrollBarExtent = style()->pixelMetric(QStyle::PM_ScrollBarExtent);
+    resize(m_renderer->sizeHint().width() + contentHint.width() + frameV + scrollBarExtent,
+           qMax(m_renderer->sizeHint().height(), contentHint.height() + frameV));
+
     connect(m_editor, &GradientEditor::gradientStopsChanged,
             m_renderer, &GradientRenderer::setGradientStops);
     connect(m_linearButton, &QRadioButton::clicked,
@@ -345,8 +350,6 @@ GradientWidget::GradientWidget(QWidget *parent)
 
     connect(prevPresetButton, &QPushButton::clicked,
             this, &GradientWidget::setPrevPreset);
-    connect(m_presetButton, &QPushButton::clicked,
-            this, &GradientWidget::setPreset);
     connect(nextPresetButton, &QPushButton::clicked,
             this, &GradientWidget::setNextPreset);
 
@@ -358,20 +361,6 @@ GradientWidget::GradientWidget(QWidget *parent)
             this, &GradientWidget::setDefault3);
     connect(default4Button, &QPushButton::clicked,
             this, &GradientWidget::setDefault4);
-
-    connect(showSourceButton, &QPushButton::clicked,
-            m_renderer, &GradientRenderer::showSource);
-    connect(whatsThisButton, QOverload<bool>::of(&QPushButton::clicked),
-            m_renderer, &ArthurFrame::setDescriptionEnabled);
-    connect(whatsThisButton, QOverload<bool>::of(&QPushButton::clicked),
-            m_renderer->hoverPoints(), &HoverPoints::setDisabled);
-    connect(m_renderer, QOverload<bool>::of(&ArthurFrame::descriptionEnabledChanged),
-            whatsThisButton, &QPushButton::setChecked);
-    connect(m_renderer, QOverload<bool>::of(&ArthurFrame::descriptionEnabledChanged),
-            m_renderer->hoverPoints(), &HoverPoints::setDisabled);
-
-    m_renderer->loadSourceFile(":res/gradients/gradients.cpp");
-    m_renderer->loadDescription(":res/gradients/gradients.html");
 
     QTimer::singleShot(50, this, &GradientWidget::setDefault1);
 }
@@ -444,13 +433,16 @@ void GradientWidget::setDefault(int config)
 void GradientWidget::updatePresetName()
 {
     QMetaEnum presetEnum = QMetaEnum::fromType<QGradient::Preset>();
-    m_presetButton->setText(QLatin1String(presetEnum.key(m_presetIndex)));
+    m_presetLabel->setText(QLatin1String(presetEnum.key(m_presetIndex)));
 }
 
 void GradientWidget::changePresetBy(int indexOffset)
 {
     QMetaEnum presetEnum = QMetaEnum::fromType<QGradient::Preset>();
-    m_presetIndex = qBound(0, m_presetIndex + indexOffset, presetEnum.keyCount() - 1);
+    int maxIndex = presetEnum.keyCount() - 1;
+    if (qstrcmp(presetEnum.key(maxIndex), "NumPresets") == 0)
+        --maxIndex;
+    m_presetIndex = qBound(0, m_presetIndex + indexOffset, maxIndex);
 
     QGradient::Preset preset = static_cast<QGradient::Preset>(presetEnum.value(m_presetIndex));
     QGradient gradient(preset);
@@ -495,11 +487,6 @@ void GradientRenderer::setGradientStops(const QGradientStops &stops)
 {
     m_stops = stops;
     update();
-}
-
-void GradientRenderer::mousePressEvent(QMouseEvent *)
-{
-    setDescriptionEnabled(false);
 }
 
 void GradientRenderer::paint(QPainter *p)
