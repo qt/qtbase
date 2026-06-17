@@ -3,7 +3,7 @@ Config: Using QtTest library
 PASS   : tst_BenchlibOptions::initTestCase()
 PASS   : tst_BenchlibOptions::threeEvents()
 RESULT : tst_BenchlibOptions::threeEvents():
-     3 events per iteration (total: 3, iterations: 1)
+     3.0e+00 events per iteration (total: 3.0e+00 events, iterations: 1)
 PASS   : tst_BenchlibOptions::cleanupTestCase()
 Totals: 3 passed, 0 failed, 0 skipped, 0 blacklisted, 0ms
 ********* Finished testing of tst_BenchlibOptions *********
@@ -12,7 +12,7 @@ Config: Using QtTest library
 PASS   : tst_BenchlibFifteenIterations::initTestCase()
 PASS   : tst_BenchlibFifteenIterations::threeEvents()
 RESULT : tst_BenchlibFifteenIterations::threeEvents():
-     3.0 events per iteration (total: 45, iterations: 15)
+     3.0e+00 events per iteration (total: 4.5e+01 events, iterations: 15)
 PASS   : tst_BenchlibFifteenIterations::cleanupTestCase()
 Totals: 3 passed, 0 failed, 0 skipped, 0 blacklisted, 0ms
 ********* Finished testing of tst_BenchlibFifteenIterations *********
@@ -21,7 +21,7 @@ Config: Using QtTest library
 PASS   : tst_BenchlibOneHundredMinimum::initTestCase()
 PASS   : tst_BenchlibOneHundredMinimum::threeEvents()
 RESULT : tst_BenchlibOneHundredMinimum::threeEvents():
-     3.00 events per iteration (total: 192, iterations: 64)
+     3.00e+00 events per iteration (total: 1.92e+02 events, iterations: 64)
 PASS   : tst_BenchlibOneHundredMinimum::cleanupTestCase()
 Totals: 3 passed, 0 failed, 0 skipped, 0 blacklisted, 0ms
 ********* Finished testing of tst_BenchlibOneHundredMinimum *********

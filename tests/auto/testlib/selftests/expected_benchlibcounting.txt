@@ -3,7 +3,7 @@ Config: Using QtTest library
 PASS   : tst_BenchlibCounting::initTestCase()
 PASS   : tst_BenchlibCounting::passingBenchmark()
 RESULT : tst_BenchlibCounting::passingBenchmark():
-     0 events per iteration (total: 0, iterations: 1)
+     0 events per iteration (total: 0 events, iterations: 1)
 SKIP   : tst_BenchlibCounting::skippingBenchmark() This is a skipping benchmark
    Loc: [qtbase/tests/auto/testlib/selftests/benchlibcounting/tst_benchlibcounting.cpp(0)]
 FAIL!  : tst_BenchlibCounting::failingBenchmark() This is a failing benchmark

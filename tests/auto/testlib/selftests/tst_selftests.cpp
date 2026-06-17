@@ -539,6 +539,13 @@ BenchmarkResult BenchmarkResult::parse(QString const& line, QString* error)
     // 4,000 -> 4000
     sTotal.remove(',');
 
+    // The total value may now be followed by the unit text
+    // e.g. "(total: 4000 msecs, iterations: 1)" instead of "(total: 4000, iterations: 1)"
+    // Strip the unit part before converting to number.
+    const int spaceIdx = sTotal.indexOf(QLatin1Char(' '));
+    if (spaceIdx != -1)
+        sTotal.truncate(spaceIdx);
+
     double total = sTotal.toDouble(&ok);
     if (!ok) {
         if (error) *error = sTotal + " (total) is not a valid number";
