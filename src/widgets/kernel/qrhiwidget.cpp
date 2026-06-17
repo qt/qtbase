@@ -74,7 +74,7 @@ QT_BEGIN_NAMESPACE
     The vertex and fragment shaders are provided as Vulkan-style GLSL and must
     be processed first by the Qt shader infrastructure first. This is achieved
     either by running the \c qsb command-line tool manually, or by using the
-    \l{Qt Shader Tools Build System Integration}{qt_add_shaders()} function in
+    \l{qt_add_shaders}{qt_add_shaders()} function in
     CMake. The QRhiWidget implementation loads these pre-processed \c{.qsb}
     files that are shipped with the application. See \l{Qt Shader Tools} for
     more information about Qt's shader translation infrastructure.
