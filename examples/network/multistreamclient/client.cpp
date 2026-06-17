@@ -9,7 +9,7 @@
 #include "timeconsumer.h"
 #include "chatconsumer.h"
 
-#include "../shared/sctpchannels.h"
+#include "sctpchannels.h"
 
 Client::Client(QWidget *parent)
     : QDialog(parent)

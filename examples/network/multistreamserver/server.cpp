@@ -10,7 +10,7 @@
 #include "timeprovider.h"
 #include "chatprovider.h"
 
-#include "../shared/sctpchannels.h"
+#include "sctpchannels.h"
 
 Server::Server(QWidget *parent)
     : QDialog(parent)

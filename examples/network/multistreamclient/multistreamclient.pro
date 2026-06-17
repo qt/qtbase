@@ -4,7 +4,8 @@ HEADERS       = client.h \
                 consumer.h \
                 movieconsumer.h \
                 timeconsumer.h \
-                chatconsumer.h
+                chatconsumer.h \
+                sctpchannels.h
 SOURCES       = client.cpp \
                 movieconsumer.cpp \
                 timeconsumer.cpp \
