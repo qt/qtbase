@@ -648,12 +648,22 @@ Symbols Preprocessor::macroExpandIdentifier(Preprocessor *that, SymbolStack &sym
                 }
 
                 const Symbols &arg = arguments.at(index);
-                QByteArray stringified = qJoin(arg.cbegin(), arg.cend(), QByteArray(), ' ',
-                                               [](const auto &s) { return s.lexemView(); });
+                QByteArray stringified;
+                if (!arg.empty()) {
+                    stringified = arg.front().lexem();
+                    for (auto it = arg.cbegin(); std::next(it) != arg.cend(); ++it) {
+                        const auto next = std::next(it);
+                        if (next->from - (it->from + it->len) > 0)
+                            stringified += ' ' + next->lexem();
+                        else
+                            stringified += next->lexem();
+                    }
 
-                stringified.replace('"', "\\\"");
-                stringified.prepend('"');
-                stringified.append('"');
+                    stringified.replace('"', "\\\"");
+                    stringified.prepend('"');
+                    stringified.append('"');
+                }
+
                 expansion += Symbol(lineNum, STRING_LITERAL, stringified);
             } else if (mode == HashHash){
                 if (s.token == WHITESPACE)

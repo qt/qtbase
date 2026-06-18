@@ -101,12 +101,18 @@ namespace Qt_ {
 
 namespace TokenSeparationInMacroExpansion
 {
-#define TOKEN_SEPARATION_IN_MACRO_EXPANSION(A) Q_CLASSINFO("TOKEN_SEPARATION", #A)
+#define TOKEN_SEPARATION_IN_MACRO_EXPANSION(N, A) Q_CLASSINFO(#N, #A)
 
 struct C : public QObject
 {
     Q_OBJECT
-    TOKEN_SEPARATION_IN_MACRO_EXPANSION(unsigned char)
+    TOKEN_SEPARATION_IN_MACRO_EXPANSION(INFO1, unsigned char)
+    TOKEN_SEPARATION_IN_MACRO_EXPANSION(INFO2, a < b)
+    TOKEN_SEPARATION_IN_MACRO_EXPANSION(INFO3, a<b)
+    TOKEN_SEPARATION_IN_MACRO_EXPANSION(INFO4, a<  b)
+    TOKEN_SEPARATION_IN_MACRO_EXPANSION(INFO5, a.  b)
+    TOKEN_SEPARATION_IN_MACRO_EXPANSION(INFO6, a. b)
+    TOKEN_SEPARATION_IN_MACRO_EXPANSION(INFO7, a.b)
 };
 }
 
@@ -916,6 +922,7 @@ private slots:
     void invokableCtors();
     void virtualInlineTaggedSlot();
     void tokenStartingWithNumber();
+    void tokenSeparationInMacroExpansion_data();
     void tokenSeparationInMacroExpansion();
 
 signals:
@@ -1255,7 +1262,7 @@ void tst_Moc::classinfoFromVaArgs()
 
     QCOMPARE(mobj->classInfoCount(), 1);
     QCOMPARE(mobj->classInfo(0).name(), "classinfo_va_args");
-    QCOMPARE(mobj->classInfo(0).value(), "a , b , c , d");
+    QCOMPARE(mobj->classInfo(0).value(), "a, b, c, d");
 }
 
 void tst_Moc::trNoopInClassInfo()
@@ -5000,12 +5007,29 @@ void tst_Moc::tokenStartingWithNumber()
     QCOMPARE(metaEnum.keyCount(), 3);
 }
 
+void tst_Moc::tokenSeparationInMacroExpansion_data()
+{
+    QTest::addColumn<QByteArray>("name");
+    QTest::addColumn<QByteArray>("expected");
+
+    QTest::addRow("INFO1") << QByteArray("INFO1") << QByteArray("unsigned char");
+    QTest::addRow("INFO2") << QByteArray("INFO2") << QByteArray("a < b");
+    QTest::addRow("INFO3") << QByteArray("INFO3") << QByteArray("a<b");
+    QTest::addRow("INFO4") << QByteArray("INFO4") << QByteArray("a< b");
+    QTest::addRow("INFO5") << QByteArray("INFO5") << QByteArray("a. b");
+    QTest::addRow("INFO6") << QByteArray("INFO6") << QByteArray("a. b");
+    QTest::addRow("INFO7") << QByteArray("INFO7") << QByteArray("a.b");
+}
+
 void tst_Moc::tokenSeparationInMacroExpansion()
 {
+    QFETCH(QByteArray, name);
+    QFETCH(QByteArray, expected);
+
     const auto *mo = &TokenSeparationInMacroExpansion::C::staticMetaObject;
-    const auto idx = mo->indexOfClassInfo("TOKEN_SEPARATION");
+    const auto idx = mo->indexOfClassInfo(name);
     QVERIFY(idx != -1);
-    QCOMPARE(mo->classInfo(idx).value(), "unsigned char");
+    QCOMPARE(mo->classInfo(idx).value(), expected);
 }
 
 QTEST_MAIN(tst_Moc)
