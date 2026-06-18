@@ -963,6 +963,29 @@ class QMultiMap
     using MapData = QMapData<Map>;
     QtPrivate::QExplicitlySharedDataPointerV2<MapData> d;
 
+    // Note: methods that look up a single element by key use lower_bound() rather
+    // than find(). The C++ standard permits std::multimap::find() to return any
+    // element with the matching key; libc++ 22 changed which one it returns.
+    // lower_bound() is where insert() places new elements, so it consistently
+    // identifies the most-recently-inserted one.
+
+    auto findIteratorByKey(const Key &key) const
+    {
+        auto i = d->m.lower_bound(key);
+        const auto &cmp = d->m.key_comp();
+        if (i != d->m.end() && !cmp(key, i->first))
+            return i;
+        return d->m.end();
+    }
+    auto findIteratorByKey(const Key &key)
+    {
+        auto i = d->m.lower_bound(key);
+        const auto &cmp = d->m.key_comp();
+        if (i != d->m.end() && !cmp(key, i->first))
+            return i;
+        return d->m.end();
+    }
+
 public:
     using key_type = Key;
     using mapped_type = T;
@@ -1209,8 +1232,8 @@ public:
         if (!d)
             return T();
 
+        auto i = findIteratorByKey(key);
         if (d.isShared()) {
-            auto i = d->m.find(key);
             if (i == d->m.end()) {
                 // NB: take always detaches, even if the key isn't found. This is for historic reasons.
                 detach();
@@ -1220,19 +1243,17 @@ public:
             return i->second;
         }
 
+        if (i == d->m.end())
+            return T();
+
 #ifdef __cpp_lib_node_extract
-        if (const auto node = d->m.extract(key))
-            return std::move(node.mapped());
+        return d->m.extract(i).mapped();
 #else
-        auto i = d->m.find(key);
-        if (i != d->m.end()) {
-            // ### breaks RVO on most compilers (but only on old-fashioned ones, so who cares?)
-            T result(std::move(i->second));
-            d->m.erase(i);
-            return result;
-        }
+        // ### breaks RVO on most compilers (but only on old-fashioned ones, so who cares?)
+        T result(std::move(i->second));
+        d->m.erase(i);
+        return result;
 #endif
-        return T();
     }
 
     bool contains(const Key &key) const
@@ -1260,7 +1281,7 @@ public:
     {
         if (!d)
             return defaultValue;
-        const auto i = d->m.find(key);
+        auto i = findIteratorByKey(key);
         if (i != d->m.cend())
             return i->second;
         return defaultValue;
@@ -1564,14 +1585,14 @@ public:
     iterator find(const Key &key)
     {
         const auto hold = referenceHoldingDetach();
-        return iterator(d->m.find(key));
+        return iterator(findIteratorByKey(key));
     }
 
     const_iterator find(const Key &key) const
     {
         if (!d)
             return const_iterator();
-        return const_iterator(d->m.find(key));
+        return const_iterator(findIteratorByKey(key));
     }
 
     const_iterator constFind(const Key &key) const
@@ -1692,7 +1713,7 @@ public:
             d.reset(new MapData);
             return iterator(d->m.insert({ key, value }));
         }
-        auto i = d->m.find(key);
+        auto i = findIteratorByKey(key);
         if (d.isShared()) {
             const auto hold = referenceHoldingDetachExceptFor(i);
             return iterator(d->m.insert({ key, value }));
