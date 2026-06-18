@@ -220,7 +220,7 @@ public:
     Reference(Napi::Reference<Object> &&other);
     Reference<Object> &operator=(Napi::Reference<Object> &&other);
 
-    template<typename T>
+    template<typename T = ::QNapi::Value>
     T eval(const std::string &expr, const std::vector<ValueWrapper> &exprArgs = {}) const;
 
     QNapi::Promise evalToPromiseOrRejectOnThrow(const std::string &expr, const std::vector<ValueWrapper> &exprArgs = {}) const;
