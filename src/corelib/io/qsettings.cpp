@@ -2370,6 +2370,13 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
 
     \endlist
 
+    \section1 Security Considerations
+
+    The class uses \l QDataStream to deserialize data into \l QVariant.
+    Therefore, it has the same \l {QDataStream#Corruption and Security}
+    {security consideration as QDataStream}, and should be used for trusted
+    input only.
+
     \sa QVariant, QSessionManager
 */
 
