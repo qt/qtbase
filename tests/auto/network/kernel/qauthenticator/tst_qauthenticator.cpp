@@ -7,6 +7,7 @@
 #include <QtCore/QCoreApplication>
 #include <QtNetwork/QAuthenticator>
 #include <QtNetwork/QHttpHeaders>
+#include <QRegularExpression>
 
 #include <private/qauthenticator_p.h>
 
@@ -36,6 +37,9 @@ private Q_SLOTS:
     void ntlmV2KnownVectors();
     void ntlmMalformedTargetInfo_data();
     void ntlmMalformedTargetInfo();
+
+    void methodPinningRefusesDowngrade();
+    void methodPinningAllowsNormalReauth();
 };
 
 tst_QAuthenticator::tst_QAuthenticator()
@@ -476,6 +480,79 @@ void tst_QAuthenticator::ntlmMalformedTargetInfo()
              "Auth flow should complete despite malformed targetInfo");
     QByteArray phase3 = QByteArray::fromBase64(response.mid(5));
     QVERIFY(phase3.size() >= 64); // minimum AUTHENTICATE_MESSAGE header size
+}
+
+void tst_QAuthenticator::methodPinningRefusesDowngrade()
+{
+    // Simulate a man-in-the-middle that replaces an NTLM Phase 2 challenge
+    // with a Basic-only response, attempting to force a credential downgrade.
+    QAuthenticator auth;
+    auth.setUser("user");
+    auth.setPassword("pass");
+    auth.detach();
+
+    QAuthenticatorPrivate *priv = QAuthenticatorPrivate::getPrivate(auth);
+
+    // Phase 1: server offers NTLM, we select it
+    QHttpHeaders headers;
+    headers.append(QByteArrayLiteral("WWW-Authenticate"), QByteArrayLiteral("NTLM"));
+    priv->parseHttpResponse(headers, /*isProxy=*/false, {});
+    QCOMPARE(priv->method, QAuthenticatorPrivate::Ntlm);
+
+    // calculateResponse sends the negotiate token and advances to Phase2
+    QByteArray response = priv->calculateResponse("GET", "/", u"");
+    QVERIFY(response.startsWith("NTLM "));
+    QCOMPARE(priv->phase, QAuthenticatorPrivate::Phase2);
+
+    // MitM replaces the Phase 2 response with Basic only
+    headers.clear();
+    headers.append(QByteArrayLiteral("WWW-Authenticate"),
+                   QByteArrayLiteral("Basic realm=\"evil\""));
+
+    QTest::ignoreMessage(QtWarningMsg,
+        QRegularExpression(".*downgrade from NTLM to Basic refused.*"));
+
+    priv->parseHttpResponse(headers, /*isProxy=*/false, {});
+
+    // Authentication must be aborted, not downgraded
+    QCOMPARE(priv->method, QAuthenticatorPrivate::None);
+    QCOMPARE(priv->phase, QAuthenticatorPrivate::Done);
+    QVERIFY(priv->hasFailed);
+    QVERIFY(priv->challenge.isEmpty());
+}
+
+void tst_QAuthenticator::methodPinningAllowsNormalReauth()
+{
+    // After a completed (Done) Digest-MD5 exchange, the server may
+    // legitimately re-challenge with a different method set.  This must
+    // not be blocked by method pinning.
+    QAuthenticator auth;
+    auth.setUser("user");
+    auth.setPassword("pass");
+    auth.detach();
+
+    QAuthenticatorPrivate *priv = QAuthenticatorPrivate::getPrivate(auth);
+
+    // Server offers Digest-MD5, we complete the exchange
+    QHttpHeaders headers;
+    headers.append(QByteArrayLiteral("WWW-Authenticate"),
+        QByteArrayLiteral("Digest realm=\"test\", nonce=\"abc123\", "
+                          "algorithm=MD5, qop=\"auth\""));
+    priv->parseHttpResponse(headers, /*isProxy=*/false, {});
+    QCOMPARE(priv->method, QAuthenticatorPrivate::DigestMd5);
+
+    priv->calculateResponse("GET", "/", u"");
+    QCOMPARE(priv->phase, QAuthenticatorPrivate::Done);
+
+    // Server rejects credentials and re-challenges with Basic only.
+    // Phase is Done (not Phase2), so pinning must not interfere.
+    headers.clear();
+    headers.append(QByteArrayLiteral("WWW-Authenticate"),
+                   QByteArrayLiteral("Basic realm=\"test\""));
+    priv->parseHttpResponse(headers, /*isProxy=*/false, {});
+
+    QCOMPARE(priv->method, QAuthenticatorPrivate::Basic);
+    QVERIFY(!priv->hasFailed);
 }
 
 QTEST_MAIN(tst_QAuthenticator);

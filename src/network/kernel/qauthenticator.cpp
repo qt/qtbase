@@ -493,6 +493,43 @@ static bool verifyDigestMD5(QByteArrayView value)
     return true; // assume it's ok if algorithm is not specified
 }
 
+/*
+   Security strength ordering of authentication methods:
+
+   Basic (1)       - password in reversible encoding
+   Digest-MD5 (2)  - challenge-response, but MD5 is "broken"
+   NTLM (3)        - HMAC-MD5 challenge-response with server + client nonce
+   Negotiate (4)   - ticket-based (Kerberos), no password material on wire,
+                     mutual authentication, modern ciphers
+*/
+
+static int methodStrength(QAuthenticatorPrivate::Method method)
+{
+    switch (method) {
+        case QAuthenticatorPrivate::None:      return 0;
+        case QAuthenticatorPrivate::Basic:     return 1;
+        case QAuthenticatorPrivate::DigestMd5: return 2;
+        case QAuthenticatorPrivate::Ntlm:      return 3;
+        case QAuthenticatorPrivate::Negotiate: return 4;
+    }
+
+    Q_UNREACHABLE_RETURN(0);
+}
+
+static const char *methodName(QAuthenticatorPrivate::Method method)
+{
+    switch (method) {
+        case QAuthenticatorPrivate::None:      return "None";
+        case QAuthenticatorPrivate::Basic:     return "Basic";
+        case QAuthenticatorPrivate::DigestMd5: return "Digest-MD5";
+        case QAuthenticatorPrivate::Ntlm:      return "NTLM";
+        case QAuthenticatorPrivate::Negotiate: return "Negotiate";
+    }
+
+    Q_UNREACHABLE_RETURN("Unknown");
+}
+
+
 void QAuthenticatorPrivate::parseHttpResponse(const QHttpHeaders &headers,
                                               bool isProxy, QStringView host)
 {
@@ -502,6 +539,8 @@ void QAuthenticatorPrivate::parseHttpResponse(const QHttpHeaders &headers,
     const auto search = isProxy ? QHttpHeaders::WellKnownHeader::ProxyAuthenticate
                                 : QHttpHeaders::WellKnownHeader::WWWAuthenticate;
 
+    const Method previousMethod = method;
+    const Phase previousPhase = phase;
     method = None;
     /*
       Fun from the HTTP 1.1 specs, that we currently ignore:
@@ -542,6 +581,22 @@ void QAuthenticatorPrivate::parseHttpResponse(const QHttpHeaders &headers,
             headerVal = QByteArrayView(current).mid(10);
 #endif
         }
+    }
+
+    // Method pinning: in the middle of a multi-round exchange (phase2)
+    // refuse to downgrade to a weaker method.
+    if (previousPhase == Phase2
+        && methodStrength(method) < methodStrength(previousMethod)) {
+        qCWarning(lcAuthenticator,
+                  "Authentication method downgrade from %s to %s refused "
+                  "during multi-round exchange (possible man-in-the-middle). "
+                  "Aborting authentication.",
+                  methodName(previousMethod), methodName(method));
+        method = None;
+        phase = Done;
+        hasFailed = true;
+        challenge = QByteArray();
+        return;
     }
 
     // Reparse credentials since we know the method now
