@@ -542,10 +542,8 @@ bool QDesktopUnixServices::runWithXdgActivationToken(F callback, const QUrl &url
 
 bool QDesktopUnixServices::openUrlWithoutPortal(const QUrl &url, const QString &xdgActivationToken)
 {
-    if (url.scheme() == "mailto"_L1)
-        return openDocument(url);
-
-    return launchProcess(LaunchType::Browser, url, xdgActivationToken);
+    LaunchType launchType = url.scheme() == "mailto"_L1 ? LaunchType::Document : LaunchType::Browser;
+    return launchProcess(launchType, url, xdgActivationToken);
 };
 
 bool QDesktopUnixServices::openUrlWithPortal(const QUrl &url, const QString &xdgActivationToken)
