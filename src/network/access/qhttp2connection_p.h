@@ -272,6 +272,7 @@ public:
 
     bool isUpgradedConnection() const noexcept { return m_upgradedConnection; }
 
+    bool setSessionReceiveWindowSize(qint32 size);
     quint64 totalBytesReceivedDATA() const noexcept { return m_totalBytesReceivedDATA; }
 
 Q_SIGNALS:

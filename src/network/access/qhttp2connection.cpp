@@ -1488,6 +1488,32 @@ bool QHttp2Connection::sendWINDOW_UPDATE(quint32 streamID, quint32 delta)
     based receive-window auto-tuning.
 */
 
+/*!
+    Sets the connection-level (session) receive window to \a size on a live
+    connection. \a size must be between 1 and 2^31-1 inclusive; returns \c false
+    otherwise.
+
+    Growing the window sends a WINDOW_UPDATE on the connection stream. Shrinking
+    only lowers the ceiling and lets the window drain, since HTTP/2 has no
+    negative WINDOW_UPDATE.
+*/
+bool QHttp2Connection::setSessionReceiveWindowSize(qint32 size)
+{
+    if (size <= 0) {
+        qCWarning(qHttp2ConnectionLog, "[%p] Invalid session receive window size: %d", this, size);
+        return false;
+    }
+    if (size <= maxSessionReceiveWindowSize) {
+        // No negative WINDOW_UPDATE exists, so just lower the ceiling and let the window drain.
+        maxSessionReceiveWindowSize = size;
+        return true;
+    }
+    const qint32 delta = size - maxSessionReceiveWindowSize;
+    maxSessionReceiveWindowSize = size;
+    sessionReceiveWindowSize += delta;
+    return sendWINDOW_UPDATE(connectionStreamID, quint32(delta));
+}
+
 void QHttp2Connection::sendClientGracefulShutdownGoaway()
 {
     // Clients send a single GOAWAY. No race condition since they control stream creation

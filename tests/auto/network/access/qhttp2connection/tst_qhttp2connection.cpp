@@ -50,6 +50,7 @@ private slots:
     void serverInitiatedGoaways_data();
     void serverInitiatedGoaways();
     void clientInitiatedGoaway();
+    void runtimeSessionWindowResize();
     void settingsInitialWindowSizeOverflow();
     void windowUpdateOverflow_data();
     void windowUpdateOverflow();
@@ -1651,6 +1652,39 @@ void tst_QHttp2Connection::clientInitiatedGoaway()
 
     QCOMPARE(serverGoawaySpy.count(), 1);
     QTRY_COMPARE(serverClosedSpy.count(), 1);
+}
+
+void tst_QHttp2Connection::runtimeSessionWindowResize()
+{
+    // Growing the connection window emits WINDOW_UPDATE(stream 0, delta); a
+    // zero-delta resize must be a no-op (a WINDOW_UPDATE with increment 0 is a
+    // PROTOCOL_ERROR). Shrinking sends nothing and only lowers the ceiling.
+    auto [client, server] = makeFakeConnectedSockets();
+    QHttp2Configuration config;
+    config.setSessionReceiveWindowSize(128 * 1024);
+    auto clientConn = makeHttp2Connection(client.get(), config, Client);
+    auto serverConn = makeHttp2Connection(server.get(), { }, Server);
+    QVERIFY(clientConn->createStream().unwrap()); // flush the client preface
+    QVERIFY(waitForSettingsExchange(clientConn, serverConn));
+
+    const qint32 serverSendWindowBefore = serverConn->sessionSendWindowSize;
+    QCOMPARE(serverSendWindowBefore, 128 * 1024);
+
+    QVERIFY(!clientConn->setSessionReceiveWindowSize(0));
+    QVERIFY(!clientConn->setSessionReceiveWindowSize(-1));
+
+    QVERIFY(clientConn->setSessionReceiveWindowSize(128 * 1024)); // no-op: writes nothing
+    QCOMPARE(serverConn->sessionSendWindowSize, serverSendWindowBefore);
+
+    const qint32 newMax = 1 * 1024 * 1024;
+    QVERIFY(clientConn->setSessionReceiveWindowSize(newMax));
+    QVERIFY(QTest::qWaitFor([&]() { return serverConn->sessionSendWindowSize == newMax; }));
+
+    // Shrinking writes nothing; the window drains against the lower ceiling.
+    QVERIFY(clientConn->setSessionReceiveWindowSize(64 * 1024));
+    QCOMPARE(clientConn->maxSessionReceiveWindowSize, 64 * 1024);
+    QCOMPARE(serverConn->sessionSendWindowSize, newMax);
+    QVERIFY(!serverConn->m_connectionAborted);
 }
 
 void tst_QHttp2Connection::settingsInitialWindowSizeOverflow()
