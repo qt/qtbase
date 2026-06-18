@@ -8,7 +8,7 @@ analysis_instructions_axivion: &analysis_instructions_axivion
         variableValue: "{{.AgentWorkingDir}}/install/lib/cmake/Qt6/qt.toolchain.cmake"
       - type: EnvironmentVariable
         variableName: AXIVION_DIVIDED_MODULES
-        variableValue: "qtbase_qtdeclarative_qtconnectivity_qtgrpc_qttools_qtwayland_qtcanvaspainter"
+        variableValue: "qtbase_qtdeclarative_qtconnectivity_qtgrpc_qtopenapi_qttools_qtwayland_qtcanvaspainter"
       - type: EnvironmentVariable
         variableName: CMAKE_PREFIX_PATH
         variableValue: "{{.AgentWorkingDir}}/install/lib/cmake"
