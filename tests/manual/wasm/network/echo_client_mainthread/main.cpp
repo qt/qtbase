@@ -9,7 +9,7 @@ int main(int argc, char **argv) {
     QCoreApplication app(argc, argv);
 
     // This example connects to localhost, but note that the host can
-    // be any host reachable from the client using webscokets, at any port.
+    // be any host reachable from the client using websockets, at any port.
     QString hostName = "localhost";
     int port = 1515;
     qDebug() << "This example connects to a server at" << hostName << "port" << port << ","
@@ -20,7 +20,7 @@ int main(int argc, char **argv) {
 
         QObject::connect(socket, &QAbstractSocket::connected, [socket]() {
             qDebug() << "Connected";
-            socket->write("Hello, echo server!");
+            socket->write("Hello, fortune server!");
             socket->flush();
         });
 

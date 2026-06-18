@@ -4,6 +4,10 @@
 #include <QtCore>
 #include <QtNetwork>
 
+#ifdef Q_OS_WASM
+# error "The server requires a native build"
+#endif
+
 const int timeout = 60 * 1000;
 
 int main(int argc, char **argv)
@@ -73,7 +77,9 @@ int main(int argc, char **argv)
              << "\nthe client examples."
              << "\n  websockify 1515 localhost:1516";
 
-    server.listen(QHostAddress::Any, 1516);
+    if (!server.listen(QHostAddress::Any, 1516)) {
+        qWarning() << " Failed to listen" << server.serverError();
+    }
 
     return app.exec();
 }
