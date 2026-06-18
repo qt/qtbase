@@ -309,7 +309,9 @@ bool QOhosPlatformIntegration::hasCapability(Capability cap) const
             return (QOhosDeviceInfo::getProperty(QOhosDeviceInfo::Type::productModel).toString() == QString::fromUtf8("emulator"));
         }
         case MultipleWindows: return true;
-        case WindowManagement: return true;
+        case WindowManagement:
+        case NonFullScreenWindows:
+            return settings()->isWindowPcModeEnabled();
         case TopStackedNativeChildWindows: return false;
         default:
             return QPlatformIntegration::hasCapability(cap);
