@@ -219,6 +219,8 @@ bool QSqlDriver::isOpenError() const
     \value Interbase
     \value DB2
     \value [since 6.6] MimerSQL
+    \value [since 6.13] FirebirdSQL The dedicated Firebird driver (QFIREBIRD),
+           uses Firebird's modern object-oriented C++ API
 */
 
 /*!

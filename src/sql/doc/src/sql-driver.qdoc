@@ -21,7 +21,8 @@
     \table
     \header \li Driver name \li DBMS
     \row \li \l{#QDB2}{QDB2} \li IBM DB2 (version 7.1 and above)
-    \row \li \l{#QIBASE}{QIBASE} \li Borland InterBase / Firebird
+    \row \li \l{#QIBASE}{QIBASE} \li Borland InterBase / Firebird (legacy InterBase client API)
+    \row \li \l{#QFIREBIRD}{QFIREBIRD} \li Firebird (version 4.0 and above, modern client API)
     \row \li \l{#QMYSQL}{QMYSQL / MARIADB} \li MySQL or MariaDB (version 5.6 and above)
     \row \li \l{#QOCI}{QOCI} \li Oracle Call Interface Driver (version 12.1 and above)
     \row \li \l{#QODBC}{QODBC}
@@ -993,6 +994,89 @@
     \c{Interbase_LIBRARY} to specify the include path and library directly.
 
     Note that \c{C:\interbase\bin} must be in the \c PATH.
+
+    \target QFIREBIRD
+    \section2 QFIREBIRD for Firebird
+
+    The Qt Firebird plugin (driver key \c QFIREBIRD) accesses the
+    \l{https://firebirdsql.org/}{Firebird} database through Firebird's modern
+    object-oriented client API and requires Firebird 4.0 or later. It is
+    separate from the \l{#QIBASE}{QIBASE} driver, which uses the legacy
+    InterBase C API, and the two can be used side by side; QFIREBIRD reports
+    QSqlDriver::FirebirdSQL as its QSqlDriver::dbmsType().
+
+    The client API reports errors as C++ exceptions, so the driver is only
+    available when Qt is configured with exception support (\c{-exceptions};
+    Qt itself is built without exceptions by default).
+
+    Firebird is a client/server database: the server opens the database file, so
+    specify the database as \c{host:/path/to/database.fdb}, or set the host name
+    separately from the database name.
+
+    \section3 Supported Data Types
+
+    In addition to the standard SQL types, the driver maps the Firebird 4 types:
+
+    \table
+    \header \li Firebird type \li Qt type \li Notes
+    \row \li \c INT128 \li QString
+         \li Surfaced as an exact decimal string (Qt has no 128-bit integer type).
+    \row \li \c{DECFLOAT(16)} / \c{DECFLOAT(34)} \li QString
+         \li IEEE 754 decimal floating point, surfaced as an exact decimal string.
+    \row \li \c NUMERIC / \c DECIMAL \li policy-dependent
+         \li Honors \l{QSqlQuery::setNumericalPrecisionPolicy()}; values wider
+            than 64 bits are INT128-backed and surfaced as strings.
+    \row \li \c{TIMESTAMP WITH TIME ZONE} \li QDateTime \li The time zone is preserved.
+    \row \li \c{TIME WITH TIME ZONE} \li QDateTime
+         \li Surfaced as a QDateTime carrying the stored time and zone.
+    \row \li \c ARRAY \li QVariantList \li Read and write of array columns.
+    \endtable
+
+    \section3 Timestamp Support
+
+    A plain \c TIMESTAMP column carries no time zone; QDateTime values are stored
+    and retrieved without time-zone conversion. Since Firebird 4.0 the
+    \c{TIMESTAMP WITH TIME ZONE} and \c{TIME WITH TIME ZONE} types preserve the
+    time zone across a round trip.
+
+    \section3 Connection Options
+
+    The plugin honors the following options via QSqlDatabase::setConnectOptions():
+    \table
+    \header \li Option \li Value
+    \row \li ISC_DPB_SESSION_TIME_ZONE \li Session time zone, for example \c{Asia/Tokyo}.
+    \row \li ISC_DPB_SQL_ROLE_NAME \li Login role name.
+    \row \li ISC_DPB_CONNECT_TIMEOUT \li Connection timeout in seconds.
+    \row \li FB_SCROLLABLE_CACHE
+         \li Set to \c 1 to enable a client-side row cache for non-forward-only
+            queries. This makes QSqlQuery::size() available and gives
+            QSqlQuery::last() and QSqlQuery::seek() a true absolute row index, at
+            the cost of buffering the result set.
+    \endtable
+
+    \section3 Other Features
+
+    QFIREBIRD supports prepared queries, BLOBs, transactions, batch operations
+    (QSqlQuery::execBatch()), asynchronous event notifications
+    (QSqlDriver::subscribeToNotification()), and cross-thread cancellation of a
+    running statement (QSqlDriver::cancelQuery()).
+
+    \section3 How to Build the QFIREBIRD Plugin on Unix and \macos
+
+    The following assumes Firebird is installed in \c{/opt/firebird}:
+
+    \snippet code/doc_src_sql-driver.qdoc 45
+
+    \section3 How to Build the QFIREBIRD Plugin on Windows
+
+    The following assumes Firebird is installed in
+    \c{C:\Program Files\Firebird\Firebird_5_0}:
+
+    \snippet code/doc_src_sql-driver.qdoc 46
+
+    Optionally, use the CMake variables \c{Firebird_INCLUDE_DIR} and
+    \c{Firebird_LIBRARY} to specify the include path and library directly. The
+    Firebird client library (\c fbclient) must be in the \c PATH at run time.
 
     \target troubleshooting
     \section1 Troubleshooting
