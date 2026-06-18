@@ -1261,6 +1261,11 @@ public:
 
         if (d.isShared()) {
             auto i = d->m.find(key);
+            if (i == d->m.end()) {
+                // NB: take always detaches, even if the key isn't found. This is for historic reasons.
+                detach();
+                return T();
+            }
             const auto hold = referenceHoldingDetachExceptFor(i);
             return i->second;
         }
