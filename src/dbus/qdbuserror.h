@@ -93,9 +93,11 @@ private:
     ErrorType code;
     QString msg;
     QString nm;
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
     // ### This class has an implicit (therefore inline) destructor
     // so the following field cannot be used:
     void *unused;
+#endif
 };
 Q_DECLARE_SHARED(QDBusError)
 

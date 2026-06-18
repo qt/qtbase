@@ -161,9 +161,11 @@ static inline QDBusError::ErrorType get(const char *name)
 QDBusError::QDBusError()
     : code(NoError)
 {
+#if QT_VERSION <= QT_VERSION_CHECK(7, 0, 0)
     // ### This class has an implicit (therefore inline) destructor
     // so the following field cannot be used.
     Q_UNUSED(unused);
+#endif
 }
 
 #ifndef QT_BOOTSTRAPPED
