@@ -104,11 +104,15 @@ void QIOSIntegration::initialize()
     for (qsizetype i = 0; i < size; ++i)
         qobject_cast<QIosOptionalPluginInterface *>(m_optionalPlugins->instance(i))->initPlugin();
 
+    // On visionOS the Swift entry point is used, which sets up the application
+    // delegate itself, so we don't want to install the QIOSApplicationDelegate
+#if !defined(Q_OS_VISIONOS)
     if (QIOSEventDispatcher::isQtApplication()) {
         qCDebug(lcQpaWindowScene) << "Replacing application delegate"
             << UIApplication.sharedApplication.delegate << "with QIOSApplicationDelegate";
         UIApplication.sharedApplication.delegate = [QIOSApplicationDelegate new];
     }
+#endif
 }
 
 QIOSIntegration::~QIOSIntegration()
