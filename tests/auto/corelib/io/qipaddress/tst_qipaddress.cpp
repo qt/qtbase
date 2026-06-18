@@ -374,6 +374,7 @@ void tst_QIpAddress::invalidParseIp6_data()
     QTest::newRow("0:0") << "0:0";
     QTest::newRow("0:") << "0:";
     QTest::newRow("0") << "0";
+    QTest::newRow(":") << ":";
     QTest::newRow(":0") << ":0";
     QTest::newRow(":0:0") << ":0:0";
     QTest::newRow(":0:0:0") << ":0:0:0";

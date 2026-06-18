@@ -115,6 +115,10 @@ void toString(QString &appendTo, IPv4Address address)
 const QChar *parseIp6(IPv6Address &address, const QChar *begin, const QChar *end)
 {
     Q_ASSERT(begin != end);
+
+    if (end - begin < 2)
+        return end;
+
     Buffer buffer;
     const QChar *ret = checkedToAscii(buffer, begin, end);
     if (ret)
