@@ -216,6 +216,26 @@ void tst_QRangeModel::mimeData_data()
     }) << QList<QPoint>{{0, 0}, {1, 0}}
        << MimeDataList{std::pair{u"application/vnd.text.list"_s, QByteArray("one,1\n")}};
 
+    QTest::addRow("QList<DragDropRow *>/valid-rows") << Factory([]() -> std::unique_ptr<QAbstractItemModel> {
+        QList<DragDropRow *> rows{
+            new DragDropRow{u"one"_s, 1},
+            nullptr,
+            new DragDropRow{u"three"_s, 3}
+        };
+        return std::make_unique<QRangeModel>(std::move(rows));
+    }) << QList<QPoint>{{0, 0}, {1, 0}, {0, 2}, {1, 2}}
+       << MimeDataList{std::pair{u"application/vnd.text.list"_s, QByteArray("one,1\nthree,3\n")}};
+
+    QTest::addRow("QList<DragDropRow *>/null-row") << Factory([]() -> std::unique_ptr<QAbstractItemModel> {
+        QList<DragDropRow *> rows{
+            new DragDropRow{u"one"_s, 1},
+            nullptr,
+            new DragDropRow{u"three"_s, 3}
+        };
+        return std::make_unique<QRangeModel>(std::move(rows));
+    }) << QList<QPoint>{{0, 1}, {1, 1}}
+       << MimeDataList{std::pair{u"application/vnd.text.list"_s, QByteArray(",0\n")}};
+
     QTest::addRow("QList<DragDropItem>") << Factory([]() -> std::unique_ptr<QAbstractItemModel> {
         return std::make_unique<QRangeModel>(QList<DragDropItem>{
             {"one", 1},
@@ -225,6 +245,27 @@ void tst_QRangeModel::mimeData_data()
     }) << QList<QPoint>{{0, 0}, {0, 2}}
        << MimeDataList{std::pair{u"text/html"_s,
                                  QByteArray("<ul><li>one</li><li>three</li></ul>")}};
+
+    QTest::addRow("QList<DragDropItem *>/valid-items") << Factory([]() -> std::unique_ptr<QAbstractItemModel> {
+        QList<DragDropItem*> items{
+            new DragDropItem{u"one"_s, 1},
+            nullptr,
+            new DragDropItem{u"three"_s, 3}
+        };
+        return std::make_unique<QRangeModel>(std::move(items));
+    }) << QList<QPoint>{{0, 0}, {0, 2}}
+       << MimeDataList{std::pair{u"text/html"_s,
+                                 QByteArray("<ul><li>one</li><li>three</li></ul>")}};
+
+    QTest::addRow("QList<DragDropItem *>/null-item") << Factory([]() -> std::unique_ptr<QAbstractItemModel> {
+        QList<DragDropItem*> items{
+            new DragDropItem{u"one"_s, 1},
+            nullptr,
+            new DragDropItem{u"three"_s, 3}
+        };
+        return std::make_unique<QRangeModel>(std::move(items));
+    }) << QList<QPoint>{{0, 1}}
+       << MimeDataList{std::pair{u"text/html"_s, QByteArray("<ul><li></li></ul>")}};
 }
 
 
@@ -263,6 +304,12 @@ void tst_QRangeModel::dropMimeData_data()
         return std::make_unique<QRangeModel>(QList<DragDropRow>{});
     }) << MimeDataList{std::pair{u"application/vnd.text.list"_s, QByteArray("one,1\n")}}
        << 1;
+
+    // Dropping into a pointer-row model allocates the new row and sets its data
+    QTest::addRow("QList<DragDropRow*>") << Factory([]() -> std::unique_ptr<QAbstractItemModel> {
+        return std::make_unique<QRangeModel>(QList<DragDropRow*>{});
+    }) << MimeDataList{std::pair{u"application/vnd.text.list"_s, QByteArray("one,1\n")}}
+       << 1;
 }
 
 void tst_QRangeModel::dropMimeData()
@@ -279,6 +326,70 @@ void tst_QRangeModel::dropMimeData()
 
     QVERIFY(model->dropMimeData(mime.get(), Qt::CopyAction, -1, -1, {}));
     QCOMPARE(model->rowCount(), expectedRowCount);
+}
+
+// Flags for null pointer rows and items
+void tst_QRangeModel::dragDropFlagsNullPointer()
+{
+    // Rows as raw pointers: null rows must not be flagged as draggable
+    {
+        QList<DragDropRow *> rows{new DragDropRow{u"one"_s, 1}, nullptr};
+        QRangeModel model(std::move(rows));
+        const QModelIndex validRow = model.index(0, 0);
+        const QModelIndex nullRow = model.index(1, 0);
+        QVERIFY(validRow.flags().testFlag(Qt::ItemIsDragEnabled));
+        QVERIFY(!nullRow.flags().testFlag(Qt::ItemIsDragEnabled));
+        QVERIFY(nullRow.flags().testFlag(Qt::ItemIsDropEnabled));
+    }
+
+    // Items as raw pointers: null items must not be flagged as draggable
+    {
+        QList<DragDropItem *> items{new DragDropItem{u"one"_s, 1}, nullptr};
+        QRangeModel model(std::move(items));
+        const QModelIndex validItem = model.index(0, 0);
+        const QModelIndex nullItem = model.index(1, 0);
+        QVERIFY(validItem.flags().testFlag(Qt::ItemIsDragEnabled));
+        QVERIFY(!nullItem.flags().testFlag(Qt::ItemIsDragEnabled));
+        QVERIFY(nullItem.flags().testFlag(Qt::ItemIsDropEnabled));
+    }
+}
+
+// Dropping onto a model with pre-existing null pointer rows:
+// Uses a fixed-size array (can't insert rows) so the drop overwrites
+// existing entries. The model allocates a new row object to replace
+// each null pointer that data is dropped onto.
+void tst_QRangeModel::dropMimeDataNullRow()
+{
+    std::array<DragDropRow*, 3> rows = {};  // all null pointers
+    {
+        QRangeModel model(std::ref(rows));
+        QCOMPARE(model.rowCount(), 3);
+
+        // All rows are null pointers: not draggable, data reads return invalid
+        for (int r = 0; r < 3; ++r) {
+            QVERIFY(!model.index(r, 0).flags().testFlag(Qt::ItemIsDragEnabled));
+            QVERIFY(!model.data(model.index(r, 0), Qt::DisplayRole).isValid());
+        }
+
+        // Drop "one,1" at row 0. The fixed-size array cannot grow so the model
+        // overwrites existing rows. Row 0 is a null pointer, so the model
+        // allocates a new DragDropRow before writing the dropped data into it.
+        auto mime = std::make_unique<QMimeData>();
+        mime->setData(u"application/vnd.text.list"_s, QByteArray("one,1\n"));
+        QVERIFY(model.dropMimeData(mime.get(), Qt::CopyAction, 0, 0, {}));
+
+        // Row 0 is now populated with the dropped data
+        QCOMPARE(model.data(model.index(0, 0), Qt::DisplayRole).toString(), u"one");
+        QCOMPARE(model.data(model.index(0, 1), Qt::DisplayRole).toInt(), 1);
+
+        // Rows 1 and 2 were not targeted by the drop and remain null
+        QVERIFY(!model.data(model.index(1, 0), Qt::DisplayRole).isValid());
+        QVERIFY(!model.data(model.index(2, 0), Qt::DisplayRole).isValid());
+    }
+    // The model used std::ref and did not take ownership, so clean up manually.
+    // Rows 1 and 2 are still null; deleting null is safe.
+    delete rows[0];
+    rows[0] = nullptr;
 }
 
 #include "tst_qrangemodel_dragdrop.moc"

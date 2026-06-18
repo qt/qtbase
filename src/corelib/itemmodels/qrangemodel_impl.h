@@ -936,17 +936,20 @@ namespace QRangeModelDetails
     template <typename Entry>
     struct MimeDataEntry
     {
-        using wrapped_entry = QRangeModelDetails::wrapped_t<q20::remove_cvref_t<Entry>>;
+        using entry_type = q20::remove_cvref_t<Entry>;
+        using wrapped_entry = QRangeModelDetails::wrapped_t<entry_type>;
         template<typename T, typename = void>
         struct is_constexpr_default_constructible : std::false_type {};
 
+#ifndef Q_CC_MSVC // MSVC selects this even for non-constexpr types
         template<typename T>
         struct is_constexpr_default_constructible<T, std::void_t<int(*)[(T(), 1)]>> : std::true_type {};
+#endif
 
         bool isValid() const { return QRangeModelDetails::isValid(m_entry); }
         const wrapped_entry &entry() const
         {
-            if constexpr (QRangeModelDetails::is_owning_or_raw_pointer<Entry>()) {
+            if constexpr (QRangeModelDetails::is_owning_or_raw_pointer<entry_type>()) {
                 // While we mark null-items or indexes in null-rows as not draggable,
                 // client code might override that, or explicitly call QRM::mimeData()
                 // with indexes that point at null-rows or -items.
@@ -3169,9 +3172,22 @@ public:
                     return true;
                 });
             }
-            if constexpr (QRangeModelDetails::is_owning_or_raw_pointer<item_type>()) {
-                if (!QRangeModelDetails::isValid(pitem))
-                    return {{}, index};
+            if constexpr (std::disjunction_v<QRangeModelDetails::is_owning_or_raw_pointer<row_type>,
+                                             QRangeModelDetails::is_owning_or_raw_pointer<item_type>>) {
+                if (Q_UNLIKELY(!QRangeModelDetails::isValid(pitem))) {
+                    // no use in warning about invalid item here, as the user
+                    // can't check for validity without dereferencing the iterator.
+                    constexpr bool is_constexpr_default_constructible_v =
+                        value_type::template is_constexpr_default_constructible<item_type>::value;
+                    if constexpr (is_constexpr_default_constructible_v) {
+                        Q_CONSTINIT static const item_type emptyDefault;
+                        return {emptyDefault, index};
+                    } else {
+                        // known to cause runtime initialization
+                        static const item_type emptyDefault;
+                        return {emptyDefault, index};
+                    }
+                }
             }
             // this will decompose to a [wrapped_item_type, QModelIndex]
             return {*pitem, index};
