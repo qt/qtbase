@@ -130,7 +130,7 @@ public:
     template<typename T = Value>
     T get(const Napi::Name &name) const;
 
-    template<typename T>
+    template<typename T = Value>
     T eval(const std::string &expr, const std::vector<ValueWrapper> &exprArgs = {}) const;
 
     QNapi::Promise evalToPromiseOrRejectOnThrow(const std::string &expr, const std::vector<ValueWrapper> &exprArgs = {}) const;
