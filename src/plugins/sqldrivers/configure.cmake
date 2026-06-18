@@ -34,6 +34,9 @@ qt_find_package(WrapSystemSQLite3
 )
 qt_find_package(Interbase MODULE
     PROVIDED_TARGETS Interbase::Interbase MODULE_NAME sqldrivers QMAKE_LIB ibase) # special case
+set(Firebird_MINIMUM_API_VERSION 40) # Firebird 4.0: the driver uses the modern OO API
+qt_find_package(Firebird MODULE
+    PROVIDED_TARGETS Firebird::Client MODULE_NAME sqldrivers QMAKE_LIB firebird)
 qt_find_package(Mimer MODULE PROVIDED_TARGETS MimerSQL::MimerSQL MODULE_NAME sqldrivers QMAKE_LIB mimer)
 if(NOT WIN32 AND QT_FEATURE_system_zlib)
     qt_add_qmake_lib_dependency(sqlite3 zlib)
@@ -53,6 +56,10 @@ qt_feature("sql-db2" PRIVATE
 qt_feature("sql-ibase" PRIVATE
     LABEL "InterBase"
     CONDITION Interbase_FOUND # special case
+)
+qt_feature("sql-firebird" PRIVATE
+    LABEL "Firebird"
+    CONDITION Firebird_FOUND AND QT_FEATURE_exceptions
 )
 qt_feature("sql-mysql" PRIVATE
     LABEL "MySql"
@@ -88,6 +95,7 @@ qt_feature("sql-mimer" PRIVATE
 qt_configure_add_summary_section(NAME "Qt Sql Drivers")
 qt_configure_add_summary_entry(ARGS "sql-db2")
 qt_configure_add_summary_entry(ARGS "sql-ibase")
+qt_configure_add_summary_entry(ARGS "sql-firebird")
 qt_configure_add_summary_entry(ARGS "sql-mysql")
 qt_configure_add_summary_entry(ARGS "sql-oci")
 qt_configure_add_summary_entry(ARGS "sql-odbc")

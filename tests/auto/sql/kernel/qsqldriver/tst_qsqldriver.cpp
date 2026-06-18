@@ -69,7 +69,7 @@ void tst_QSqlDriver::recreateTestTables(QSqlDatabase db)
         doubleField = "more_data number(8,7)";
     else if (dbType == QSqlDriver::PostgreSQL || dbType == QSqlDriver::MimerSQL)
         doubleField = "more_data double precision";
-    else if (dbType == QSqlDriver::Interbase)
+    else if (dbType == QSqlDriver::Interbase || dbType == QSqlDriver::FirebirdSQL)
         doubleField = "more_data numeric(8,7)";
     else
         doubleField = "more_data double(8,7)";
@@ -134,7 +134,8 @@ void tst_QSqlDriver::record()
     if (dbType == QSqlDriver::MSSqlServer && db.driverName().startsWith("QODBC"))
         QCOMPARE(rec.field(1).length(), 20);
 
-    if (dbType == QSqlDriver::Interbase || dbType == QSqlDriver::Oracle || dbType == QSqlDriver::DB2)
+    if (dbType == QSqlDriver::Interbase || dbType == QSqlDriver::FirebirdSQL
+        || dbType == QSqlDriver::Oracle || dbType == QSqlDriver::DB2)
         for(int i = 0; i < fields.size(); ++i)
             fields[i] = fields[i].toUpper();
 
@@ -164,7 +165,8 @@ void tst_QSqlDriver::record()
     for (int i = 0; i < fields.size(); ++i)
         QCOMPARE(rec.fieldName(i), fields[i]);
 
-    if (dbType == QSqlDriver::Interbase || dbType == QSqlDriver::Oracle || dbType == QSqlDriver::DB2)
+    if (dbType == QSqlDriver::Interbase || dbType == QSqlDriver::FirebirdSQL
+        || dbType == QSqlDriver::Oracle || dbType == QSqlDriver::DB2)
         tablename = tablename.toLower();
     else if (dbType == QSqlDriver::PostgreSQL)
         tablename = tablename.toUpper();
@@ -192,7 +194,8 @@ void tst_QSqlDriver::primaryIndex()
     QCOMPARE(index.count(), 1);
 
     QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
-    if (dbType == QSqlDriver::Interbase || dbType == QSqlDriver::Oracle || dbType == QSqlDriver::DB2)
+    if (dbType == QSqlDriver::Interbase || dbType == QSqlDriver::FirebirdSQL
+        || dbType == QSqlDriver::Oracle || dbType == QSqlDriver::DB2)
         QCOMPARE(index.fieldName(0), QString::fromLatin1("ID"));
     else
         QCOMPARE(index.fieldName(0), QString::fromLatin1("id"));
@@ -208,7 +211,8 @@ void tst_QSqlDriver::primaryIndex()
         index = db.driver()->primaryIndex(db.driver()->escapeIdentifier(tablename, QSqlDriver::TableName));
         QCOMPARE(index.count(), 1);
     }
-    if (dbType == QSqlDriver::Interbase || dbType == QSqlDriver::Oracle || dbType == QSqlDriver::DB2)
+    if (dbType == QSqlDriver::Interbase || dbType == QSqlDriver::FirebirdSQL
+        || dbType == QSqlDriver::Oracle || dbType == QSqlDriver::DB2)
         QCOMPARE(index.fieldName(0), QString::fromLatin1("ID"));
     else
         QCOMPARE(index.fieldName(0), QString::fromLatin1("id"));
@@ -216,7 +220,8 @@ void tst_QSqlDriver::primaryIndex()
 
 
     //check that we can not get the primary index using a quoted but incorrect table name casing
-    if (dbType == QSqlDriver::Interbase || dbType == QSqlDriver::Oracle || dbType == QSqlDriver::DB2)
+    if (dbType == QSqlDriver::Interbase || dbType == QSqlDriver::FirebirdSQL
+        || dbType == QSqlDriver::Oracle || dbType == QSqlDriver::DB2)
         tablename = tablename.toLower();
     else if (dbType == QSqlDriver::PostgreSQL)
         tablename = tablename.toUpper();

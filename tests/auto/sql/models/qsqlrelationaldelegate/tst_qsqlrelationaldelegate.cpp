@@ -81,7 +81,7 @@ void tst_QSqlRelationalDelegate::initTestCase()
         QSqlDatabase db = QSqlDatabase::database(dbName);
         QSqlQuery q(db);
         QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
-        if (dbType == QSqlDriver::Interbase) {
+        if (dbType == QSqlDriver::Interbase || dbType == QSqlDriver::FirebirdSQL) {
             q.exec("SET DIALECT 3");
         } else if (dbType == QSqlDriver::MSSqlServer) {
             q.exec("SET ANSI_DEFAULTS ON");

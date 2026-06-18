@@ -79,6 +79,10 @@ if(QT_FEATURE_sql_ibase)
     add_subdirectory(ibase)
 endif()
 
+if(QT_FEATURE_sql_firebird)
+    add_subdirectory(firebird)
+endif()
+
 if(QT_FEATURE_sql_mimer)
     add_subdirectory(mimer)
 endif()

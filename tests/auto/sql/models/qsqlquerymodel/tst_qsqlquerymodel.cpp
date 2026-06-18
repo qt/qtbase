@@ -284,7 +284,7 @@ void tst_QSqlQueryModel::insertColumn()
     model.setQuery(QSqlQuery("select * from " + qTableName("test", __FILE__, db), db));
     model.fetchMore(); // necessary???
 
-    bool isToUpper = (dbType == QSqlDriver::Interbase) || (dbType == QSqlDriver::Oracle) || (dbType == QSqlDriver::DB2);
+    bool isToUpper = (dbType == QSqlDriver::Interbase) || (dbType == QSqlDriver::FirebirdSQL) || (dbType == QSqlDriver::Oracle) || (dbType == QSqlDriver::DB2);
     const QString idColumn(isToUpper ? "ID" : "id");
     const QString nameColumn(isToUpper ? "NAME" : "name");
     const QString titleColumn(isToUpper ? "TITLE" : "title");
@@ -389,7 +389,7 @@ void tst_QSqlQueryModel::record()
 
     QSqlRecord rec = model.record();
 
-    bool isToUpper = (dbType == QSqlDriver::Interbase) || (dbType == QSqlDriver::Oracle) || (dbType == QSqlDriver::DB2);
+    bool isToUpper = (dbType == QSqlDriver::Interbase) || (dbType == QSqlDriver::FirebirdSQL) || (dbType == QSqlDriver::Oracle) || (dbType == QSqlDriver::DB2);
 
     QCOMPARE(rec.count(), 3);
     QCOMPARE(rec.fieldName(0), isToUpper ? QString("ID") : QString("id"));
@@ -434,7 +434,7 @@ void tst_QSqlQueryModel::setHeaderData()
     QVERIFY(!model.setHeaderData(7, Qt::Horizontal, "foo", Qt::ToolTipRole));
     QVERIFY(!model.headerData(7, Qt::Horizontal, Qt::ToolTipRole).isValid());
 
-    bool isToUpper = (dbType == QSqlDriver::Interbase) || (dbType == QSqlDriver::Oracle) || (dbType == QSqlDriver::DB2);
+    bool isToUpper = (dbType == QSqlDriver::Interbase) || (dbType == QSqlDriver::FirebirdSQL) || (dbType == QSqlDriver::Oracle) || (dbType == QSqlDriver::DB2);
     QCOMPARE(model.headerData(0, Qt::Horizontal).toString(), isToUpper ? QString("ID") : QString("id"));
     QCOMPARE(model.headerData(1, Qt::Horizontal).toString(), isToUpper ? QString("NAME") : QString("name"));
     QCOMPARE(model.headerData(2, Qt::Horizontal).toString(), QString("bar"));

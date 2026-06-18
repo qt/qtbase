@@ -77,6 +77,25 @@ public:
         return count;
     }
 
+    // Like fillTestTable(), but selects the Firebird/InterBase family - the
+    // QIBASE and QFIREBIRD drivers - which share the same SQL dialect.
+    int fillTestTableFirebird() const
+    {
+        QTest::addColumn<QString>("dbName");
+        int count = 0;
+        for (const auto &dbName : std::as_const(dbNames)) {
+            QSqlDatabase db = QSqlDatabase::database(dbName);
+            if (!db.isValid())
+                continue;
+            const QSqlDriver::DbmsType t = getDatabaseType(db);
+            if (t == QSqlDriver::Interbase || t == QSqlDriver::FirebirdSQL) {
+                QTest::newRow(dbName.toLatin1()) << dbName;
+                ++count;
+            }
+        }
+        return count;
+    }
+
     int fillTestTableWithStrategies(const QString &driverPrefix = QString()) const
     {
         QTest::addColumn<QString>("dbName");
@@ -335,7 +354,7 @@ public:
         if (dbType == QSqlDriver::DB2)
             return QString( "blob(%1)" ).arg( blobSize );
 
-        if (dbType == QSqlDriver::Interbase)
+        if (dbType == QSqlDriver::Interbase || dbType == QSqlDriver::FirebirdSQL)
             return QString( "blob sub_type 0 segment size 4096" );
 
         if (dbType == QSqlDriver::Oracle
@@ -354,6 +373,8 @@ public:
             return QLatin1String("timestamptz");
         if (dbType == QSqlDriver::Oracle && getOraVersion(db) >= 9)
             return QLatin1String("timestamp(0)");
+        if (dbType == QSqlDriver::FirebirdSQL)
+            return QLatin1String("timestamp with time zone");
         if (dbType == QSqlDriver::Interbase || dbType == QSqlDriver::MimerSQL)
             return QLatin1String("timestamp");
         if (dbType == QSqlDriver::MSSqlServer)
@@ -517,7 +538,10 @@ protected:
     void cleanup()
     {
         QSqlQuery q(m_db);
-        if (m_db.driverName() == "QIBASE")
+        // Firebird (QIBASE and QFIREBIRD) has no DROP ... IF EXISTS, so issue a
+        // plain DROP and ignore the "not found" error on first use.
+        const QSqlDriver::DbmsType t = tst_Databases::getDatabaseType(m_db);
+        if (t == QSqlDriver::Interbase || t == QSqlDriver::FirebirdSQL)
             q.exec("DROP PROCEDURE " + m_procName);
         else
             q.exec("DROP PROCEDURE IF EXISTS " + m_procName);

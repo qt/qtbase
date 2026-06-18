@@ -65,6 +65,7 @@ private:
         QString _name = name;
         const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
         if (dbType == QSqlDriver::Interbase ||
+            dbType == QSqlDriver::FirebirdSQL ||
             dbType == QSqlDriver::Oracle ||
             dbType == QSqlDriver::DB2)
             _name = name.toUpper();
@@ -147,7 +148,7 @@ void tst_QSqlRelationalTableModel::initTestCase()
         QSqlDatabase db = QSqlDatabase::database(dbName);
         QSqlQuery q(db);
         QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
-        if (dbType == QSqlDriver::Interbase) {
+        if (dbType == QSqlDriver::Interbase || dbType == QSqlDriver::FirebirdSQL) {
             q.exec("SET DIALECT 3");
         } else if (dbType == QSqlDriver::MSSqlServer) {
             q.exec("SET ANSI_DEFAULTS ON");
@@ -1026,7 +1027,8 @@ void tst_QSqlRelationalTableModel::insertRecordDuplicateFieldNames()
     rec.setValue(1, "Berge");
     rec.setValue(2, 1); // Must insert the key value
 
-    if (dbType == QSqlDriver::Interbase || dbType == QSqlDriver::Oracle || dbType == QSqlDriver::DB2) {
+    if (dbType == QSqlDriver::Interbase || dbType == QSqlDriver::FirebirdSQL
+        || dbType == QSqlDriver::Oracle || dbType == QSqlDriver::DB2) {
         QCOMPARE(rec.fieldName(0), QLatin1String("ID"));
         QCOMPARE(rec.fieldName(1), QLatin1String("NAME")); // This comes from main table
     } else {

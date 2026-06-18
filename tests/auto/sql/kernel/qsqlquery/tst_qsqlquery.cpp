@@ -8,6 +8,10 @@
 #include <QtCore/QTimeZone>
 
 #include <numeric>
+#include <atomic>
+
+#include <QtCore/QThread>
+#include <QtCore/QElapsedTimer>
 
 #include "../qsqldatabase/tst_databases.h"
 
@@ -115,7 +119,7 @@ private slots:
     void oraOCINumber();
     void outValuesDB2_data() { generic_data("QDB2"); }
     void outValuesDB2();
-    void storedProceduresIBase_data() {generic_data("QIBASE"); }
+    void storedProceduresIBase_data() { firebirdFamily_data(); }
     void storedProceduresIBase();
     void oraRowId_data() { generic_data("QOCI"); }
     void oraRowId();
@@ -163,7 +167,7 @@ private slots:
     void sqliteVirtualTable();
     void mysql_timeType_data() { generic_data("QMYSQL"); }
     void mysql_timeType();
-    void ibase_executeBlock_data() { generic_data("QIBASE"); }
+    void ibase_executeBlock_data() { firebirdFamily_data(); }
     void ibase_executeBlock();
 
     void task_217003_data() { generic_data(); }
@@ -252,15 +256,24 @@ private slots:
     void dateTime_data();
     void dateTime();
 
-    void ibaseArray_data() { generic_data("QIBASE"); }
+    void ibaseArray_data() { firebirdFamily_data(); }
     void ibaseArray();
 
     void ibaseDateTimeWithTZ_data();
     void ibaseDateTimeWithTZ();
-    void ibaseTimeStampTzArray_data() { generic_data("QIBASE"); }
+    void ibaseTimeStampTzArray_data() { firebirdFamily_data(); }
     void ibaseTimeStampTzArray();
-    void ibaseInt128_data() { generic_data("QIBASE"); }
+    void ibaseInt128_data() { firebirdFamily_data(); }
     void ibaseInt128();
+
+    void firebirdTimeWithTimeZone_data() { generic_data("QFIREBIRD"); }
+    void firebirdTimeWithTimeZone();
+    void firebirdScrollableCache_data() { generic_data("QFIREBIRD"); }
+    void firebirdScrollableCache();
+    void firebirdCancelQuery_data() { generic_data("QFIREBIRD"); }
+    void firebirdCancelQuery();
+    void firebirdNaiveTimestamp_data() { generic_data("QFIREBIRD"); }
+    void firebirdNaiveTimestamp();
 
     void QTBUG_128493_data() { generic_data("QIBASE"); }
     void QTBUG_128493();
@@ -286,6 +299,7 @@ private slots:
 private:
     // returns all database connections
     void generic_data(const QString &engine=QString());
+    void firebirdFamily_data();
     void dropTestTables(QSqlDatabase db);
     void createTestTables(QSqlDatabase db);
     void populateTestTables(QSqlDatabase db);
@@ -356,6 +370,13 @@ void tst_QSqlQuery::generic_data(const QString &engine)
 
     QSKIP(qPrintable(QLatin1String("No database drivers of type %1 "
                                    "are available in this Qt configuration").arg(engine)));
+}
+
+void tst_QSqlQuery::firebirdFamily_data()
+{
+    if (dbs.fillTestTableFirebird())
+        return;
+    QSKIP("No Firebird/InterBase (QIBASE or QFIREBIRD) driver is available");
 }
 
 void tst_QSqlQuery::dropTestTables(QSqlDatabase db)
@@ -439,7 +460,8 @@ void tst_QSqlQuery::char1Select()
         QVERIFY_SQL(q, exec(QLatin1String("insert into %1 values ('a')").arg(ts.tableName())));
         QVERIFY_SQL(q, exec("select * from " + ts.tableName()));
         QVERIFY(q.next());
-        if (tst_Databases::getDatabaseType(db) == QSqlDriver::Interbase)
+        if (tst_Databases::getDatabaseType(db) == QSqlDriver::Interbase
+            || tst_Databases::getDatabaseType(db) == QSqlDriver::FirebirdSQL)
             QCOMPARE(q.value(0).toString().left(1), u"a");
         else
             QCOMPARE(q.value(0).toString(), u"a");
@@ -476,6 +498,7 @@ void tst_QSqlQuery::char1SelectUnicode()
         createQuery = QLatin1String("create table %1 (id char(3))");
         break;
     case QSqlDriver::Interbase:
+    case QSqlDriver::FirebirdSQL:
         createQuery = QLatin1String("create table %1 (id char(1) character set unicode_fss)");
         break;
     case QSqlDriver::MySqlServer:
@@ -600,7 +623,8 @@ void tst_QSqlQuery::bindBool()
     const QString tableName(qTableName("bindBool", __FILE__, db));
 
     q.exec("DROP TABLE " + tableName);
-    const bool useBooleanType = (dbType == QSqlDriver::PostgreSQL || dbType == QSqlDriver::Interbase);
+    const bool useBooleanType = (dbType == QSqlDriver::PostgreSQL || dbType == QSqlDriver::Interbase
+                                 || dbType == QSqlDriver::FirebirdSQL);
     QVERIFY_SQL(q, exec(QLatin1String("CREATE TABLE %2 (id INT, flag %1 NOT NULL, PRIMARY KEY(id))")
                         .arg(QLatin1String(useBooleanType ? "BOOLEAN" : "INT"), tableName)));
 
@@ -1021,14 +1045,14 @@ void tst_QSqlQuery::value()
         QCOMPARE(q.value("id").toInt(), i);
         auto istring = QString::number(i);
 
-        if (dbType == QSqlDriver::Interbase)
+        if (dbType == QSqlDriver::Interbase || dbType == QSqlDriver::FirebirdSQL)
             QVERIFY(q.value(1).toString().startsWith("VarChar" + istring));
         else if (q.value(1).toString().endsWith(QLatin1Char(' ')))
             QCOMPARE(q.value(1).toString(), QLatin1String("VarChar%1            ").arg(istring));
         else
             QCOMPARE(q.value(1).toString(), "VarChar" + istring);
 
-        if (dbType == QSqlDriver::Interbase)
+        if (dbType == QSqlDriver::Interbase || dbType == QSqlDriver::FirebirdSQL)
             QVERIFY(q.value(2).toString().startsWith("Char" + istring));
         else if (q.value(2).toString().endsWith(QLatin1Char(' ')))
             QCOMPARE(q.value(2).toString(), QLatin1String("Char%1               ").arg(istring));
@@ -1308,6 +1332,13 @@ void tst_QSqlQuery::last()
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
 
+    if (tst_Databases::getDatabaseType(db) == QSqlDriver::FirebirdSQL
+        && !db.driver()->hasFeature(QSqlDriver::QuerySize)) {
+        QSKIP("QFIREBIRD's server-side scrollable cursor cannot report an absolute "
+              "row index after last() without a row count; enable the "
+              "FB_SCROLLABLE_CACHE=1 connection option for client-side caching that does.");
+    }
+
     QSqlQuery q(db);
     QCOMPARE(q.at(), QSql::BeforeFirstRow);
     QVERIFY_SQL(q, exec("select * from " + qtest));
@@ -1369,14 +1400,19 @@ void tst_QSqlQuery::seek()
 
     QCOMPARE(q.at(), QSql::AfterLastRow);
 
-    if (!q.isForwardOnly()) {
+    const bool fbNoScrollCache = tst_Databases::getDatabaseType(db) == QSqlDriver::FirebirdSQL
+                                 && !db.driver()->hasFeature(QSqlDriver::QuerySize);
+    if (!q.isForwardOnly() && !fbNoScrollCache) {
         QVERIFY(q.seek(-1, true));
         QCOMPARE(q.at(), count - 1);
         QCOMPARE(q.value(0).toInt(), count);
-    } else {
+    } else if (q.isForwardOnly()) {
         QVERIFY(!q.seek(-1, true));
         QCOMPARE(q.at(), QSql::AfterLastRow);
     }
+    // QFIREBIRD without FB_SCROLLABLE_CACHE=1 uses a server-side scrollable cursor
+    // that cannot resolve an end-relative seek to an absolute index; that path is
+    // exercised when the client-side row cache is enabled.
 }
 
 void tst_QSqlQuery::seekForwardOnlyQuery()
@@ -1971,7 +2007,8 @@ void tst_QSqlQuery::joins()
     const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
 
     if (dbType == QSqlDriver::Oracle || dbType == QSqlDriver::Sybase
-            || dbType == QSqlDriver::Interbase || db.driverName().startsWith("QODBC")) {
+            || dbType == QSqlDriver::Interbase || dbType == QSqlDriver::FirebirdSQL
+            || db.driverName().startsWith("QODBC")) {
         // Oracle broken beyond recognition - cannot outer join on more than one table:
         QSKIP("DBMS cannot understand standard SQL");
     }
@@ -2468,7 +2505,8 @@ void tst_QSqlQuery::batchExec()
     TableScope ts(db, "qtest_batch", __FILE__);
     const auto &tableName = ts.tableName();
     const auto dbType = tst_Databases::getDatabaseType(db);
-    QLatin1String timeStampString(dbType == QSqlDriver::Interbase ? "TIMESTAMP" : "TIMESTAMP (3)");
+    QLatin1String timeStampString((dbType == QSqlDriver::Interbase
+                                    || dbType == QSqlDriver::FirebirdSQL) ? "TIMESTAMP" : "TIMESTAMP (3)");
 
     QVERIFY_SQL(q, exec(QLatin1String(
                             "create table %2 (id int, name varchar(20), dt date, "
@@ -2552,7 +2590,13 @@ void tst_QSqlQuery::batchExec()
     // Only test the prepared stored procedure approach where the driver has support
     // for batch operations as this will not work without it.
     // Currently Mimer SQL cannot use output parameters with procedures in batch operations.
-    if (dbType != QSqlDriver::MimerSQL && db.driver()->hasFeature(QSqlDriver::BatchOperations)) {
+    // The procedure DDL and CALL syntax below is Oracle/PSQL-specific; the Firebird
+    // family (Interbase and FirebirdSQL) uses a different procedure/EXECUTE PROCEDURE
+    // dialect and its batch support targets DML rather than per-row OUT parameters,
+    // so skip this sub-block for it.
+    if (dbType != QSqlDriver::MimerSQL && dbType != QSqlDriver::Interbase
+        && dbType != QSqlDriver::FirebirdSQL
+        && db.driver()->hasFeature(QSqlDriver::BatchOperations)) {
         const QString procName = qTableName("qtest_batch_proc", __FILE__, db);
         QVERIFY_SQL(q, exec(QLatin1String(
                                 "create or replace procedure %1 (x in timestamp, y out timestamp) "
@@ -3402,6 +3446,7 @@ void tst_QSqlQuery::timeStampParsing()
                                 "datefield timestamp, primary key(id));");
         break;
     case QSqlDriver::Interbase:
+    case QSqlDriver::FirebirdSQL:
         // Since there is no auto-increment feature in Interbase we allow it to be null
         creator = QLatin1String("CREATE TABLE %1(id integer, datefield timestamp);");
         break;
@@ -4351,7 +4396,7 @@ void tst_QSqlQuery::aggregateFunctionTypes()
     // QPSQL uses LongLong for manipulation of integers
     const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
     if (dbType == QSqlDriver::PostgreSQL || dbType == QSqlDriver::Interbase
-        || dbType == QSqlDriver::MimerSQL) {
+        || dbType == QSqlDriver::FirebirdSQL || dbType == QSqlDriver::MimerSQL) {
         sumType = countType = QMetaType::LongLong;
     } else if (dbType == QSqlDriver::Oracle) {
         intType = sumType = countType = QMetaType::Double;
@@ -4391,7 +4436,8 @@ void tst_QSqlQuery::aggregateFunctionTypes()
         } else {
             QCOMPARE(q.value(0).toInt(), 1);
             QCOMPARE(q.record().field(0).metaType().id(),
-                     dbType == QSqlDriver::Interbase ? QMetaType::LongLong : QMetaType::Int);
+                     (dbType == QSqlDriver::Interbase
+                      || dbType == QSqlDriver::FirebirdSQL) ? QMetaType::LongLong : QMetaType::Int);
         }
 
         QVERIFY_SQL(q, exec("SELECT COUNT(id) FROM " + tableName));
@@ -4886,8 +4932,9 @@ void tst_QSqlQuery::ibaseDateTimeWithTZ()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    if (tst_Databases::getDatabaseType(db) != QSqlDriver::Interbase)
-        QSKIP("Implemented only for Interbase");
+    if (tst_Databases::getDatabaseType(db) != QSqlDriver::Interbase
+        && tst_Databases::getDatabaseType(db) != QSqlDriver::FirebirdSQL)
+        QSKIP("Implemented only for the Firebird/Interbase family");
 
     if (tst_Databases::getIbaseEngineVersion(db).majorVersion() < 4)
         QSKIP("Time zone support only implemented for firebird engine version 4 and greater");
@@ -4918,8 +4965,9 @@ void tst_QSqlQuery::QTBUG_128493()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    if (tst_Databases::getDatabaseType(db) != QSqlDriver::Interbase)
-        QSKIP("Implemented only for Interbase");
+    if (tst_Databases::getDatabaseType(db) != QSqlDriver::Interbase
+        && tst_Databases::getDatabaseType(db) != QSqlDriver::FirebirdSQL)
+        QSKIP("Implemented only for the Firebird/Interbase family");
 
     if (tst_Databases::getIbaseEngineVersion(db).majorVersion() < 4)
         QSKIP("Time zone support only implemented for firebird engine version 4 and greater");
@@ -4946,7 +4994,8 @@ void tst_QSqlQuery::QTBUG_128493()
 
     QCOMPARE(currentDateTime.time().hour(), currentDateTimeDB.time().hour());
 
-    const QString tableName(qTableName(u"dateTimeTS"_s, __FILE__, db));
+    TableScope ts(db, "dateTimeTS", __FILE__);
+    const QString tableName = ts.tableName();
     QVERIFY_SQL(q, exec(u"CREATE TABLE "_s + tableName + u"(dt timestamp with time zone)"_s));
 
     QVERIFY_SQL(q, prepare(u"INSERT INTO %1 values(:dt)"_s.arg(tableName)));
@@ -5180,6 +5229,158 @@ void tst_QSqlQuery::ibaseInt128()
         QCOMPARE(q2.value(0).metaType().id(), QMetaType::QString);
         QCOMPARE(q2.value(0).toString(), "52346.8023");
     }
+}
+
+// TIME WITH TIME ZONE round-trip. Unlike QIBASE, QFIREBIRD supports this type,
+// so this is a QFIREBIRD-only test.
+void tst_QSqlQuery::firebirdTimeWithTimeZone()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    if (tst_Databases::getIbaseEngineVersion(db).majorVersion() < 4)
+        QSKIP("TIME WITH TIME ZONE requires Firebird 4 or later");
+
+    TableScope ts(db, "fbtimetz", __FILE__);
+    QSqlQuery q(db);
+    QVERIFY_SQL(q, exec("CREATE TABLE " + ts.tableName() + " (t TIME WITH TIME ZONE)"));
+
+    // Firebird stores TIME WITH TIME ZONE as a UTC offset, so round-trip via UTC.
+    const QTime utcTime(14, 30, 45, 0);
+    const QDateTime dt(QDate::currentDate(), utcTime, QTimeZone::utc());
+    QVERIFY_SQL(q, prepare(QLatin1String("INSERT INTO %1 VALUES(?)").arg(ts.tableName())));
+    q.bindValue(0, dt);
+    QVERIFY_SQL(q, exec());
+
+    QVERIFY_SQL(q, exec("SELECT t FROM " + ts.tableName()));
+    QVERIFY(q.next());
+    QCOMPARE(q.value(0).toDateTime().toUTC().time(), utcTime);
+}
+
+// A plain (no-zone) TIMESTAMP is naive: the driver stores the QDateTime's own
+// wall-clock date/time verbatim and returns the same components back, with no
+// zone conversion or relabeling. Any zone tag on the input is ignored. Using an
+// input with an unusual fixed offset makes any accidental conversion (to UTC or
+// to the session/local zone) show up as a shifted wall clock. QFIREBIRD-specific.
+void tst_QSqlQuery::firebirdNaiveTimestamp()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    TableScope ts(db, "fbnaivets", __FILE__);
+    QSqlQuery q(db);
+    QVERIFY_SQL(q, exec("CREATE TABLE " + ts.tableName() + " (id int, dt TIMESTAMP)"));
+
+    const QDateTime dt(QDate(2025, 6, 6), QTime(6, 56, 0),
+                       QTimeZone::fromSecondsAheadOfUtc(4 * 3600 + 1800));
+
+    // Bound-parameter path (encodeQDateTime).
+    QVERIFY_SQL(q, prepare(QLatin1String("INSERT INTO %1 (id, dt) VALUES (1, ?)")
+                               .arg(ts.tableName())));
+    q.bindValue(0, dt);
+    QVERIFY_SQL(q, exec());
+    // formatValue() literal path.
+    QSqlField f("dt", QMetaType(QMetaType::QDateTime));
+    f.setValue(dt);
+    QVERIFY_SQL(q, exec(QLatin1String("INSERT INTO %1 (id, dt) VALUES (2, %2)")
+                            .arg(ts.tableName(), db.driver()->formatValue(f))));
+
+    QVERIFY_SQL(q, exec("SELECT dt FROM " + ts.tableName() + " ORDER BY id"));
+    for (int i = 0; i < 2; ++i) {
+        QVERIFY(q.next());
+        const QDateTime got = q.value(0).toDateTime();
+        QCOMPARE(got.date(), dt.date()); // wall clock preserved verbatim ...
+        QCOMPARE(got.time(), dt.time()); // ... guards against any zone conversion
+    }
+}
+
+// Opt-in client-side row cache (FB_SCROLLABLE_CACHE connection option): enables
+// QuerySize and a true absolute index after last(). QFIREBIRD-specific.
+void tst_QSqlQuery::firebirdScrollableCache()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase base = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(base);
+
+    const QString cachedName = dbName + "_fbcache";
+    {
+        QSqlDatabase db = QSqlDatabase::cloneDatabase(base, cachedName);
+        db.setConnectOptions("FB_SCROLLABLE_CACHE=1");
+        QVERIFY2(db.open(), qPrintable(db.lastError().text()));
+
+        TableScope ts(db, "fbcache", __FILE__);
+        QSqlQuery q(db);
+        QVERIFY_SQL(q, exec(QString("CREATE TABLE %1 (id INTEGER NOT NULL)").arg(ts.tableName())));
+        for (int i = 1; i <= 5; ++i)
+            QVERIFY_SQL(q, exec(QString("INSERT INTO %1 VALUES (%2)").arg(ts.tableName()).arg(i)));
+
+        q.setForwardOnly(false);
+        QVERIFY_SQL(q, exec(QString("SELECT id FROM %1 ORDER BY id").arg(ts.tableName())));
+
+        // Cache mode advertises QuerySize; size() completes the cache.
+        QVERIFY(db.driver()->hasFeature(QSqlDriver::QuerySize));
+        QCOMPARE(q.size(), 5);
+
+        // Navigation served from the client-side cache, including a true
+        // absolute index after last().
+        QVERIFY(q.first());
+        QCOMPARE(q.value(0).toInt(), 1);
+        QVERIFY(q.last());
+        QCOMPARE(q.value(0).toInt(), 5);
+        QCOMPARE(q.at(), 4);
+        QVERIFY(q.previous());
+        QCOMPARE(q.value(0).toInt(), 4);
+        QVERIFY(q.seek(2));
+        QCOMPARE(q.value(0).toInt(), 3);
+        QVERIFY(q.seek(0));
+        QCOMPARE(q.value(0).toInt(), 1);
+        QVERIFY(!q.seek(5));
+        QVERIFY(q.seek(4));
+        QCOMPARE(q.value(0).toInt(), 5);
+
+        db.close();
+    }
+    QSqlDatabase::removeDatabase(cachedName);
+}
+
+// Cross-thread cancellation of a running statement (QSqlDriver::CancelQuery).
+// QFIREBIRD-specific (QIBASE does not advertise the feature).
+void tst_QSqlQuery::firebirdCancelQuery()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    QVERIFY(db.driver()->hasFeature(QSqlDriver::CancelQuery));
+
+    QSqlDriver *drv = db.driver();
+    std::atomic<bool> cancelOk{false};
+    QScopedPointer<QThread> watchdog(QThread::create([drv, &cancelOk]() {
+        QThread::msleep(300);
+        cancelOk.store(drv->cancelQuery());
+    }));
+    watchdog->start();
+
+    QElapsedTimer timer;
+    timer.start();
+    QSqlQuery q(db);
+    const bool ok = q.exec("EXECUTE BLOCK AS DECLARE I BIGINT; "
+                           "BEGIN I = 0; WHILE (I < 100000000) DO I = I + 1; END");
+    const qint64 elapsed = timer.elapsed();
+    watchdog->wait();
+
+    QVERIFY(cancelOk.load());
+    QVERIFY(!ok);
+    QVERIFY2(q.lastError().text().contains("cancel", Qt::CaseInsensitive),
+             qPrintable(q.lastError().text()));
+    QVERIFY2(elapsed < 10000, qPrintable(QString("statement ran %1 ms despite cancel").arg(elapsed)));
+
+    // The connection stays usable after a raised cancel.
+    QVERIFY_SQL(q, exec("SELECT 1 FROM RDB$DATABASE"));
+    QVERIFY(q.next());
+    QCOMPARE(q.value(0).toInt(), 1);
 }
 
 void tst_QSqlQuery::ibase_executeBlock()

@@ -56,6 +56,7 @@ public:
         Interbase,
         DB2,
         MimerSQL,
+        FirebirdSQL,
     };
 
     explicit QSqlDriver(QObject *parent = nullptr);

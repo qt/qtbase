@@ -72,12 +72,15 @@ private slots:
     void recordODBC_data() { generic_data("QODBC"); }
     void recordODBC();
 
-    void eventNotificationIBase_data() { generic_data("QIBASE"); }
+    void eventNotificationIBase_data() { firebirdFamily_data(); }
     void eventNotificationIBase();
     void eventNotificationPSQL_data() { generic_data("QPSQL"); }
     void eventNotificationPSQL();
     void eventNotificationSQLite_data() { generic_data("QSQLITE"); }
     void eventNotificationSQLite();
+
+    void firebirdSessionTimeZone_data() { generic_data("QFIREBIRD"); }
+    void firebirdSessionTimeZone();
 
     //database specific 64 bit integer test
     void bigIntField_data() { generic_data(); }
@@ -181,6 +184,7 @@ private:
     void dropTestTables(const QSqlDatabase &db);
     void populateTestTables(const QSqlDatabase &db);
     void generic_data(const QString &engine=QString());
+    void firebirdFamily_data();
 
     void testRecord(const FieldDef fieldDefs[], const QSqlRecord& inf, const QSqlDatabase &db);
     void commonFieldTest(const FieldDef fieldDefs[], const QSqlDatabase &db, const int fieldCount);
@@ -379,6 +383,45 @@ void tst_QSqlDatabase::generic_data(const QString& engine)
         else
            QSKIP( (QString("No database drivers of type %1 are available in this Qt configuration").arg(engine)).toLocal8Bit());
     }
+}
+
+void tst_QSqlDatabase::firebirdFamily_data()
+{
+    if (dbs.fillTestTableFirebird() == 0)
+        QSKIP("No Firebird/InterBase (QIBASE or QFIREBIRD) driver is available");
+}
+
+// ISC_DPB_SESSION_TIME_ZONE connection option is applied per connection.
+// QFIREBIRD-specific (exercises the driver's connect-option parser).
+void tst_QSqlDatabase::firebirdSessionTimeZone()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase base = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(base);
+
+    const QString connName = "fbtz_session";
+    if (QSqlDatabase::contains(connName))
+        QSqlDatabase::removeDatabase(connName);
+    {
+        QSqlDatabase db = QSqlDatabase::addDatabase("QFIREBIRD", connName);
+        db.setHostName(base.hostName());
+        db.setPort(base.port());
+        db.setDatabaseName(base.databaseName());
+        db.setUserName(base.userName());
+        db.setPassword(base.password());
+        // A string option plus an integer option, to exercise the parser.
+        db.setConnectOptions("ISC_DPB_SESSION_TIME_ZONE=Asia/Tokyo;ISC_DPB_CONNECT_TIMEOUT=15");
+        QVERIFY2(db.open(), qPrintable(db.lastError().text()));
+        {
+            QSqlQuery q(db);
+            QVERIFY_SQL(q, exec("SELECT RDB$GET_CONTEXT('SYSTEM', 'SESSION_TIMEZONE') "
+                                "FROM RDB$DATABASE"));
+            QVERIFY(q.next());
+            QCOMPARE(q.value(0).toString().trimmed(), QString("Asia/Tokyo"));
+        }
+        db.close();
+    }
+    QSqlDatabase::removeDatabase(connName);
 }
 
 void tst_QSqlDatabase::addDatabase()
@@ -1032,6 +1075,7 @@ void tst_QSqlDatabase::bigIntField()
         break;
     case QSqlDriver::DB2:
     case QSqlDriver::Interbase:
+    case QSqlDriver::FirebirdSQL:
     case QSqlDriver::MimerSQL:
     case QSqlDriver::MSSqlServer:
     case QSqlDriver::PostgreSQL:
@@ -1103,7 +1147,7 @@ void tst_QSqlDatabase::caseSensivity()
     if (dbType == QSqlDriver::MySqlServer || dbType == QSqlDriver::SQLite
         || dbType == QSqlDriver::Sybase || dbType == QSqlDriver::PostgreSQL
         || dbType == QSqlDriver::MSSqlServer || db.driverName().startsWith("QODBC")
-        || dbType == QSqlDriver::Interbase) {
+        || dbType == QSqlDriver::Interbase || dbType == QSqlDriver::FirebirdSQL) {
         cs = true;
     }
 
@@ -1140,7 +1184,7 @@ void tst_QSqlDatabase::caseSensivity()
         QVERIFY_SQL(qry, next());
         cs = qry.value(1).toInt() != 0;
     }
-    if (dbType == QSqlDriver::Interbase) {
+    if (dbType == QSqlDriver::Interbase || dbType == QSqlDriver::FirebirdSQL) {
         rec = db.record(ts.tableName().toUpper());
     } else {
         rec = db.record(cs ? ts.tableName().toLower() : ts.tableName());
@@ -1156,7 +1200,8 @@ void tst_QSqlDatabase::noEscapedFieldNamesInRecord()
 
     QString fieldname("t_varchar");
     QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
-    if (dbType == QSqlDriver::Oracle || dbType == QSqlDriver::Interbase || dbType == QSqlDriver::DB2)
+    if (dbType == QSqlDriver::Oracle || dbType == QSqlDriver::Interbase
+        || dbType == QSqlDriver::FirebirdSQL || dbType == QSqlDriver::DB2)
         fieldname = fieldname.toUpper();
 
     QSqlQuery q(db);

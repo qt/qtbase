@@ -84,7 +84,8 @@ QString QSqlResultPrivate::namedToPositionalBinding(const QString &query)
     // In the Interbase case if it is an EXECUTE BLOCK then it is up to the
     // caller to make sure that it is not using named bindings for the wrong
     // parts of the query since Interbase uses them literally
-    if (sqldriver->dbmsType() == QSqlDriver::Interbase &&
+    const QSqlDriver::DbmsType dbmsType = sqldriver->dbmsType();
+    if ((dbmsType == QSqlDriver::Interbase || dbmsType == QSqlDriver::FirebirdSQL) &&
         query.trimmed().startsWith("EXECUTE BLOCK"_L1, Qt::CaseInsensitive))
         return query;
 
