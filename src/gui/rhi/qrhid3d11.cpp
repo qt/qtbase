@@ -2637,6 +2637,7 @@ void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD,
             QD3D11Texture *texD = QRHI_RES(QD3D11Texture, b->u.simage.tex);
             bd.simage.id = texD->m_id;
             bd.simage.generation = texD->generation;
+            bool validStage = false;
             if (b->stage.testFlag(QRhiShaderResourceBinding::ComputeStage)) {
                 std::pair<int, int> nativeBinding = mapBinding(b->binding, RBM_COMPUTE, nativeResourceBindingMaps);
                 if (nativeBinding.first >= 0) {
@@ -2644,16 +2645,19 @@ void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD,
                     if (uav)
                         res[RBM_COMPUTE].uavs.append({ nativeBinding.first, uav });
                 }
-            } else if (b->stage.testFlag(QRhiShaderResourceBinding::FragmentStage)) {
+                validStage = true;
+            }
+            if (b->stage.testFlag(QRhiShaderResourceBinding::FragmentStage)) {
                 QPair<int, int> nativeBinding = mapBinding(b->binding, RBM_FRAGMENT, nativeResourceBindingMaps);
                 if (nativeBinding.first >= 0) {
                     ID3D11UnorderedAccessView *uav = texD->unorderedAccessViewForLevel(b->u.simage.level);
                     if (uav)
                         res[RBM_FRAGMENT].uavs.append({ nativeBinding.first, uav });
                 }
-            } else {
-                qWarning("Unordered access only supported at fragment/compute stage");
+                validStage = true;
             }
+            if (!validStage)
+                qWarning("Unordered access only supported at fragment/compute stage");
         }
             break;
         case QRhiShaderResourceBinding::BufferLoad:
@@ -2663,6 +2667,7 @@ void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD,
             QD3D11Buffer *bufD = QRHI_RES(QD3D11Buffer, b->u.sbuf.buf);
             bd.sbuf.id = bufD->m_id;
             bd.sbuf.generation = bufD->generation;
+            bool validStage = false;
             if (b->stage.testFlag(QRhiShaderResourceBinding::ComputeStage)) {
                 std::pair<int, int> nativeBinding = mapBinding(b->binding, RBM_COMPUTE, nativeResourceBindingMaps);
                 if (nativeBinding.first >= 0) {
@@ -2670,9 +2675,19 @@ void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD,
                     if (uav)
                         res[RBM_COMPUTE].uavs.append({ nativeBinding.first, uav });
                 }
-            } else {
-                qWarning("Unordered access only supported at compute stage");
+                validStage = true;
             }
+            if (b->stage.testFlag(QRhiShaderResourceBinding::FragmentStage)) {
+                std::pair<int, int> nativeBinding = mapBinding(b->binding, RBM_FRAGMENT, nativeResourceBindingMaps);
+                if (nativeBinding.first >= 0) {
+                    ID3D11UnorderedAccessView *uav = bufD->unorderedAccessView(b->u.sbuf.offset);
+                    if (uav)
+                        res[RBM_FRAGMENT].uavs.append({ nativeBinding.first, uav });
+                }
+                validStage = true;
+            }
+            if (!validStage)
+                qWarning("Unordered access only supported at fragment/compute stage");
         }
             break;
         default:
