@@ -19,6 +19,7 @@ QActionGroupPrivate::QActionGroupPrivate() :
 
 QActionGroupPrivate::~QActionGroupPrivate() = default;
 
+/*! \internal */
 void QActionGroup::_q_actionChanged()
 {
     Q_D(QActionGroup);
@@ -37,6 +38,7 @@ void QActionGroup::_q_actionChanged()
     }
 }
 
+/*! \internal */
 void QActionGroup::_q_actionTriggered()
 {
     auto action = qobject_cast<QAction*>(sender());
@@ -44,6 +46,7 @@ void QActionGroup::_q_actionTriggered()
     emit triggered(action);
 }
 
+/*! \internal */
 void QActionGroup::_q_actionHovered()
 {
     auto action = qobject_cast<QAction*>(sender());
