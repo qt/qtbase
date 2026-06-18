@@ -601,7 +601,7 @@ void QOhosPlatformWindow::setDisplayIdFromOhos(QOhosOptional<QOhosDisplayInfo::J
     if (m_displayId != displayId) {
         m_displayId = displayId;
 
-        qCWarning(QtForOhos)
+        qCDebug(QtForOhos)
             << "Screen changed - window:" << window()
             << "displayId:" << (displayId.hasValue()
                 ? QString::number(displayId.value().value())
