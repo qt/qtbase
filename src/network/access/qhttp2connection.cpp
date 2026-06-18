@@ -808,13 +808,24 @@ void QHttp2Stream::handleWINDOW_UPDATE(const Frame &inboundFrame)
 {
     const quint32 delta = qFromBigEndian<quint32>(inboundFrame.dataBegin());
     const bool valid = delta && delta <= quint32(std::numeric_limits<qint32>::max());
-    qint32 sum = 0;
-    if (!valid || qAddOverflow(m_sendWindow, qint32(delta), &sum)) {
+    if (!valid) {
+        // RFC 9113, 6.9.1: a flow-control window increment of 0 is a stream error of
+        // type PROTOCOL_ERROR.
         qCDebug(qHttp2ConnectionLog,
                 "[%p] stream %u, received WINDOW_UPDATE frame with invalid delta %u, sending "
                 "PROTOCOL_ERROR",
                 getConnection(), m_streamID, delta);
         return streamError(PROTOCOL_ERROR, "invalid WINDOW_UPDATE delta"_L1);
+    }
+    qint32 sum = 0;
+    if (qAddOverflow(m_sendWindow, qint32(delta), &sum)) {
+        // RFC 9113, 6.9.1: a WINDOW_UPDATE that pushes the window past 2^31-1 is a stream
+        // error of type FLOW_CONTROL_ERROR (the sender sends RST_STREAM).
+        qCDebug(qHttp2ConnectionLog,
+                "[%p] stream %u, WINDOW_UPDATE delta %u overflows the flow-control window, "
+                "sending FLOW_CONTROL_ERROR",
+                getConnection(), m_streamID, delta);
+        return streamError(FLOW_CONTROL_ERROR, "WINDOW_UPDATE exceeds maximum window"_L1);
     }
     m_sendWindow = sum;
     // Stream may have been unblocked, so maybe try to write again
@@ -2097,9 +2108,13 @@ void QHttp2Connection::handleWINDOW_UPDATE()
     qCDebug(qHttp2ConnectionLog(), "[%p] Received WINDOW_UPDATE, stream %d, delta %d", this,
             streamID, delta);
     if (streamID == connectionStreamID) {
-        qint32 sum = 0;
-        if (!valid || qAddOverflow(sessionSendWindowSize, qint32(delta), &sum))
+        if (!valid)
             return connectionError(PROTOCOL_ERROR, "WINDOW_UPDATE invalid delta");
+        qint32 sum = 0;
+        // RFC 9113, 6.9.1: a WINDOW_UPDATE that pushes the connection window past 2^31-1 is a
+        // connection error of type FLOW_CONTROL_ERROR (the sender sends GOAWAY).
+        if (qAddOverflow(sessionSendWindowSize, qint32(delta), &sum))
+            return connectionError(FLOW_CONTROL_ERROR, "WINDOW_UPDATE exceeds maximum window");
         sessionSendWindowSize = sum;
 
         // Stream may have been unblocked, so maybe try to write again:
@@ -2334,9 +2349,12 @@ bool QHttp2Connection::acceptSetting(Http2::Settings identifier, quint32 newValu
             if (!stream)
                 continue;
             qint32 sum = 0;
+            // RFC 9113, 6.9.2: a SETTINGS_INITIAL_WINDOW_SIZE change that pushes any
+            // flow-control window past 2^31-1 is a connection error of type FLOW_CONTROL_ERROR.
             if (qAddOverflow(stream->m_sendWindow, delta, &sum)) {
-                stream->streamError(PROTOCOL_ERROR, "SETTINGS window overflow"_L1);
-                continue;
+                connectionError(FLOW_CONTROL_ERROR,
+                                "SETTINGS_INITIAL_WINDOW_SIZE overflowed a flow-control window");
+                return false;
             }
             stream->m_sendWindow = sum;
             if (delta > 0 && stream->isUploadingDATA() && !stream->isUploadBlocked()) {
