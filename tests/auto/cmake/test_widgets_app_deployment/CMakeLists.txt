@@ -68,6 +68,29 @@ function(create_test_executable target)
              # missing in the app dir.
              WORKING_DIRECTORY "${CMAKE_INSTALL_PREFIX}")
     set_tests_properties(run_deployed_${target} PROPERTIES FIXTURES_REQUIRED deploy_step)
+
+    # Also test deployment with a relative install prefix given at install time
+    # (QTBUG-147578). The prefix is resolved relative to the working directory
+    # of the cmake --install invocation, so install into a subdirectory of the
+    # build directory, which is also the test's working directory.
+    set(rel_prefix "relative_install_prefix")
+    set(rel_prefix_abs "${CMAKE_CURRENT_BINARY_DIR}/${rel_prefix}")
+    if(APPLE AND NOT IOS)
+        set(rel_installed_app_location "${rel_prefix_abs}/${target}.app/Contents/MacOS/${target}")
+    elseif(WIN32)
+        set(rel_installed_app_location "${rel_prefix_abs}/${CMAKE_INSTALL_BINDIR}/${target}.exe")
+    elseif(UNIX AND NOT APPLE AND NOT ANDROID AND NOT CMAKE_CROSSCOMPILING)
+        set(rel_installed_app_location "${rel_prefix_abs}/${CMAKE_INSTALL_BINDIR}/${target}")
+    endif()
+
+    add_test(NAME install_rel_${target}
+             COMMAND "${CMAKE_COMMAND}" --install . --prefix "${rel_prefix}"
+             WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
+    set_tests_properties(install_rel_${target} PROPERTIES FIXTURES_SETUP deploy_rel_step)
+    add_test(NAME run_deployed_rel_${target}
+             COMMAND "${rel_installed_app_location}"
+             WORKING_DIRECTORY "${rel_prefix_abs}")
+    set_tests_properties(run_deployed_rel_${target} PROPERTIES FIXTURES_REQUIRED deploy_rel_step)
 endfunction()
 
 create_test_executable(App)
