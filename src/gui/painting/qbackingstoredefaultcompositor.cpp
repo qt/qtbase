@@ -3,6 +3,8 @@
 // Qt-Security score:significant reason:default
 
 #include "qbackingstoredefaultcompositor_p.h"
+#include <QtGui/qtransform.h>
+#include <QtGui/private/qmath_p.h>
 #include <QtGui/private/qwindow_p.h>
 #include <qpa/qplatformgraphicsbuffer.h>
 #include <QtCore/qfile.h>
@@ -126,7 +128,7 @@ QRhiTexture *QBackingStoreDefaultCompositor::toTexture(const QImage &sourceImage
 
 static inline QRect scaledRect(const QRect &rect, qreal factor)
 {
-    return QRect(rect.topLeft() * factor, rect.size() * factor);
+    return qt_mapFillRect(rect, QTransform::fromScale(factor, factor));
 }
 
 static inline QPoint scaledOffset(const QPoint &pt, qreal factor)
@@ -139,18 +141,9 @@ static QRegion scaledDirtyRegion(const QRegion &region, qreal factor, const QPoi
     if (offset.isNull() && factor <= 1)
         return region;
 
-    QVarLengthArray<QRect, 4> rects;
-    rects.reserve(region.rectCount());
-    // Add 1x1 to the size since this is specifically for dirty regions for
-    // toTexture(), so a slightly bigger size is not an issue in any case. This
-    // fixes not uploading the last line/column in with non-integer high dpi
-    // scale factors such as 1.25.
-    for (const QRect &rect : region)
-        rects.append(scaledRect(rect.translated(offset), factor).adjusted(0, 0, 1, 1));
-
-    QRegion deviceRegion;
-    deviceRegion.setRects(rects.constData(), rects.size());
-    return deviceRegion;
+    QTransform xf = QTransform::fromScale(factor, factor);
+    xf.translate(offset.x(), offset.y());
+    return xf.map(region);
 }
 
 static QMatrix4x4 targetTransform(const QRectF &target, const QRect &viewport, bool invertY)
