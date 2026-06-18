@@ -49,6 +49,9 @@ private slots:
     void serverInitiatedGoaways_data();
     void serverInitiatedGoaways();
     void clientInitiatedGoaway();
+    void settingsInitialWindowSizeOverflow();
+    void windowUpdateOverflow_data();
+    void windowUpdateOverflow();
 
 private:
     enum PeerType { Client, Server };
@@ -1629,6 +1632,111 @@ void tst_QHttp2Connection::clientInitiatedGoaway()
 
     QCOMPARE(serverGoawaySpy.count(), 1);
     QTRY_COMPARE(serverClosedSpy.count(), 1);
+}
+
+void tst_QHttp2Connection::settingsInitialWindowSizeOverflow()
+{
+    // RFC 9113, 6.9.2: raising SETTINGS_INITIAL_WINDOW_SIZE so a send window
+    // exceeds 2^31-1 is a connection FLOW_CONTROL_ERROR. Reached by maxing a
+    // stream's send window, then raising it.
+    constexpr qint32 MaxWindow = std::numeric_limits<qint32>::max(); // 2^31 - 1
+
+    auto [client, server] = makeFakeConnectedSockets();
+    auto clientConn = makeHttp2Connection(client.get(), { }, Client);
+    auto serverConn = makeHttp2Connection(server.get(), { }, Server);
+
+    QHttp2Stream *clientStream = clientConn->createStream().unwrap();
+    QVERIFY(clientStream);
+    QVERIFY(waitForSettingsExchange(clientConn, serverConn));
+
+    QSignalSpy newIncomingStreamSpy{ serverConn, &QHttp2Connection::newIncomingStream };
+    clientStream->sendHEADERS(getRequiredHeaders(), false);
+    QVERIFY(newIncomingStreamSpy.wait());
+    QCOMPARE(clientStream->m_sendWindow, qint32(Http2::defaultSessionWindowSize));
+
+    // Raw peer: WINDOW_UPDATE the stream up to exactly the maximum window (QBuffer delivers
+    // readyRead deferred, so wait for the client to apply it).
+    {
+        Http2::FrameWriter wu(Http2::FrameType::WINDOW_UPDATE, Http2::FrameFlag::EMPTY,
+                              clientStream->streamID());
+        wu.append(quint32(MaxWindow - Http2::defaultSessionWindowSize));
+        QVERIFY(wu.write(*server));
+    }
+    QVERIFY(QTest::qWaitFor([&]() { return clientStream->m_sendWindow == MaxWindow; }));
+
+    QSignalSpy serverGoawaySpy{ serverConn, &QHttp2Connection::receivedGOAWAY };
+
+    // Raw peer: raise SETTINGS_INITIAL_WINDOW_SIZE by 1, overflowing the maxed-out send window.
+    QTest::ignoreMessage(QtCriticalMsg,
+                         QRegularExpression(u".*SETTINGS_INITIAL_WINDOW_SIZE overflowed.*"_s));
+    {
+        Http2::FrameWriter s(Http2::FrameType::SETTINGS, Http2::FrameFlag::EMPTY,
+                             Http2::connectionStreamID);
+        s.append(Http2::Settings::INITIAL_WINDOW_SIZE_ID);
+        s.append(quint32(Http2::defaultSessionWindowSize + 1));
+        QVERIFY(s.write(*server));
+    }
+
+    QVERIFY(QTest::qWaitFor([&]() { return serverGoawaySpy.count() == 1; }));
+    QCOMPARE(serverGoawaySpy.first().first().value<Http2::Http2Error>(), Http2::FLOW_CONTROL_ERROR);
+    QVERIFY(clientConn->m_connectionAborted);
+}
+
+void tst_QHttp2Connection::windowUpdateOverflow_data()
+{
+    QTest::addColumn<bool>("connectionLevel");
+    QTest::newRow("stream") << false;
+    QTest::newRow("connection") << true;
+}
+
+void tst_QHttp2Connection::windowUpdateOverflow()
+{
+    // RFC 9113, 6.9.1: a WINDOW_UPDATE growing a window past 2^31-1 is a
+    // FLOW_CONTROL_ERROR (RST_STREAM for a stream, GOAWAY for the connection).
+    QFETCH(const bool, connectionLevel);
+    constexpr quint32 MaxDelta = std::numeric_limits<qint32>::max(); // 2^31 - 1
+
+    auto [client, server] = makeFakeConnectedSockets();
+    auto clientConn = makeHttp2Connection(client.get(), { }, Client);
+    auto serverConn = makeHttp2Connection(server.get(), { }, Server);
+
+    QHttp2Stream *clientStream = clientConn->createStream().unwrap();
+    QVERIFY(clientStream);
+    QVERIFY(waitForSettingsExchange(clientConn, serverConn));
+
+    QSignalSpy newIncomingStreamSpy{ serverConn, &QHttp2Connection::newIncomingStream };
+    clientStream->sendHEADERS(getRequiredHeaders(), false);
+    QVERIFY(newIncomingStreamSpy.wait());
+
+    // Default window is 65535; a single maximum-sized increment overflows it.
+    const quint32 targetStreamID =
+            connectionLevel ? quint32(Http2::connectionStreamID) : clientStream->streamID();
+
+    QSignalSpy streamErrorSpy{ clientStream, &QHttp2Stream::errorOccurred };
+    QSignalSpy serverGoawaySpy{ serverConn, &QHttp2Connection::receivedGOAWAY };
+
+    if (connectionLevel) {
+        QTest::ignoreMessage(QtCriticalMsg,
+                             QRegularExpression(u".*WINDOW_UPDATE exceeds maximum window.*"_s));
+    }
+    {
+        Http2::FrameWriter wu(Http2::FrameType::WINDOW_UPDATE, Http2::FrameFlag::EMPTY,
+                              targetStreamID);
+        wu.append(MaxDelta);
+        QVERIFY(wu.write(*server));
+    }
+
+    if (connectionLevel) {
+        QVERIFY(QTest::qWaitFor([&]() { return serverGoawaySpy.count() == 1; }));
+        QCOMPARE(serverGoawaySpy.first().first().value<Http2::Http2Error>(),
+                 Http2::FLOW_CONTROL_ERROR);
+        QVERIFY(clientConn->m_connectionAborted);
+    } else {
+        QVERIFY(QTest::qWaitFor([&]() { return streamErrorSpy.count() == 1; }));
+        QCOMPARE(streamErrorSpy.first().first().value<Http2::Http2Error>(),
+                 Http2::FLOW_CONTROL_ERROR);
+        QVERIFY(!clientConn->m_connectionAborted); // stream-level error leaves the connection up
+    }
 }
 
 QTEST_MAIN(tst_QHttp2Connection)
