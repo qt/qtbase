@@ -138,6 +138,32 @@
     \li When creating a QString to contain a URL from a QByteArray or a
        char*, always use QString::fromUtf8().
     \endlist
+
+    \section1 Security Considerations
+
+    Treat URLs from an untrusted source (the network, a file or document,
+    another application, or the user) as hostile input.
+
+    \list
+        \li Validate the parsed URL, never the raw string. Run any allow/deny
+            list, origin, or redirect check on the components QUrl extracted -
+            for a host check use \c{url.host(QUrl::FullyEncoded)} - not on the
+            original text. QUrl normalizes forms a string check misses:
+            \c{http://0x7f.0.0.1} and \c{http://2130706433} both yield host
+            \c{127.0.0.1}, and \c{http://good.com\\@evil.com/} yields host
+            \c{evil.com}. Use \c FullyEncoded rather than the default decoded
+            form so internationalized (IDN) hosts are compared in their ASCII
+            form and cannot be spoofed with look-alike Unicode characters.
+        \li Use the same parsed URL for the check and for the request. Passing
+            the original string to a different parser afterwards reintroduces
+            the mismatch the check closed.
+        \li Take extra care when using \l{QUrl::}{FullyDecoded} for obtaining
+            components. The result may be lossy, or even have a different
+            meaning, depending on the obtained component. It can also contain
+            control characters, including \c{NUL}.
+            See \l{QUrl::ComponentFormattingOption#Full decoding}{Full decoding}
+            for more details.
+    \endlist
 */
 
 /*!
