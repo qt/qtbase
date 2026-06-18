@@ -119,6 +119,9 @@ private slots:
     void dropMimeData_data();
     void dropMimeData();
 
+    void dragDropFlagsNullPointer();
+    void dropMimeDataNullRow();
+
 private:
     void createTestData();
     void createTree();
