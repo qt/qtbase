@@ -43,6 +43,7 @@ private slots:
     void mergeCompare();
     void take();
     void takeAlwaysDetaches();
+    void multiMapTakeSharedData();
 
     void iterators();
     void multimapIterators();
@@ -1258,6 +1259,55 @@ void tst_QMap::takeAlwaysDetaches()
         QVERIFY(copy.isSharedWith(empty));
         [[maybe_unused]] const auto r2 = empty.take(42);
         QVERIFY(!copy.isSharedWith(empty));
+    }
+}
+
+void tst_QMap::multiMapTakeSharedData()
+{
+    // Scenario 1: take() on shared QMultiMap with non-existent key
+    {
+        const QMultiMap<int, QString> ref = {{0, "zero"}, {0, "zero_1"}};
+        QMultiMap<int, QString> map = {{0, "zero"}, {0, "zero_1"}};
+        const auto copy = map;
+        QVERIFY(copy.isSharedWith(map));
+
+        // Take non-existent key - should detach safely without crash
+        const auto result = map.take(999);
+        QVERIFY(result.isNull());
+        QVERIFY(map.isDetached());
+        QVERIFY(!copy.isSharedWith(map));
+        QCOMPARE_EQ(map, ref); // Map content unchanged
+        QCOMPARE_EQ(copy, ref);
+    }
+
+    // Scenario 2: take() on shared QMultiMap with existent key
+    {
+        const QMultiMap<int, QString> ref = {{0, "zero"}};
+        QMultiMap<int, QString> map;
+        map.insert(0, "zero");
+        map.insert(0, "zero_1");
+        map.insert(0, "zero_2");
+
+        const auto copy = map;
+        QVERIFY(copy.isSharedWith(map));
+
+        // Take existing key with multiple values
+        // Should return most recently inserted value (zero_2)
+        const auto result = map.take(0);
+        QCOMPARE_EQ(result, u"zero_2");
+        QVERIFY(map.isDetached());
+        QVERIFY(!copy.isSharedWith(map));
+        QCOMPARE(map.size(), 2);
+        QCOMPARE(map.count(0), 2);
+    }
+
+    // Scenario 3: Multiple sequential take() calls preserve LIFO order
+    {
+        QMultiMap<int, QString> map = {{5, "first"}, {5, "second"}, {5, "third"}};
+        QCOMPARE(map.take(5), u"third");   // Most recently inserted first
+        QCOMPARE(map.take(5), u"second");  // Then the next most recent
+        QCOMPARE(map.take(5), u"first");   // Then the oldest
+        QCOMPARE(map.take(5), QString());  // Empty after all removed
     }
 }
 
