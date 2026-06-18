@@ -9,16 +9,6 @@ class QtLoaderTests
 
     async afterEach() { sinon.restore(); }
 
-    async sampleTestCase()
-    {
-        await new Promise(resolve =>
-        {
-            window.alert();
-            sinon.assert.calledOnce(window.alert);
-            window.setTimeout(resolve, 4000);
-        });
-    }
-
     async sampleTestCase2()
     {
         await new Promise(resolve =>
