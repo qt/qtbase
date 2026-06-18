@@ -2330,6 +2330,10 @@ void tst_QUrl::moreIpv6()
     QUrl waba1("http://www.kde.org/cgi/test.cgi");
     waba1.setHost("::ffff:129.144.52.38");
     QCOMPARE(QString::fromLatin1(waba1.toEncoded()), QString::fromLatin1("http://[::ffff:129.144.52.38]/cgi/test.cgi"));
+
+    QUrl withInvalidHost;
+    withInvalidHost.setHost("[:]"); // This had an UB (ptr[-1] read)
+    QCOMPARE(withInvalidHost.host(), QString());
 }
 
 void tst_QUrl::isRelative_data()
