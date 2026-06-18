@@ -3399,18 +3399,10 @@ QMetaType QMetaType::fromName(QByteArrayView typeName)
 
     Registers the meta type \a meta and returns its type Id.
 
-    This function requires that \c{T} is a fully defined type at the point
-    where the function is called. For pointer types, it also requires that the
-    pointed to type is fully defined. Use Q_DECLARE_OPAQUE_POINTER() to be able
-    to register pointers to forward declared types.
-
-    To use the type \c T in QMetaType, QVariant, or with the
-    QObject::property() API, registration is not necessary.
-
-    To use the type \c T in queued signal and slot connections,
-    \c{qRegisterMetaType<T>()} must be called before the first connection is
+    To use a type with meta type \a meta in queued signal and slot connections,
+    \c{qRegisterMetaType(meta)} must be called before the first connection is
     established. That is typically done in the constructor of the class that
-    uses \c T, or in the \c{main()} function.
+    uses the meta type, or in the \c{main()} function.
 
     After a type has been registered, it can be found by its name using
     QMetaType::fromName().
