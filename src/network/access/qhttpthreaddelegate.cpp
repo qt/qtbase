@@ -172,6 +172,11 @@ QThreadStorage<QNetworkAccessCache *> QHttpThreadDelegate::connections;
 
 QHttpThreadDelegate::~QHttpThreadDelegate()
 {
+    if (!notifiedFinished) {
+        emit error(QNetworkReply::OperationCanceledError, QStringLiteral("Operation canceled"));
+        emit downloadFinished();
+    }
+
     // It could be that the main thread has asked us to shut down, so we need to delete the HTTP reply
     if (httpReply) {
         delete httpReply;
@@ -542,6 +547,7 @@ void QHttpThreadDelegate::finishedSlot()
         emit redirected(httpReply->redirectUrl(), httpReply->statusCode(), httpReply->request().redirectCount() - 1);
 
     emit downloadFinished();
+    notifiedFinished = true;
 
     QMetaObject::invokeMethod(httpReply, "deleteLater", Qt::QueuedConnection);
     QMetaObject::invokeMethod(this, "deleteLater", Qt::QueuedConnection);
@@ -566,6 +572,7 @@ void QHttpThreadDelegate::synchronousFinishedSlot()
     isCompressed = httpReply->isCompressed();
     synchronousDownloadData = httpReply->readAll();
 
+    notifiedFinished = true;
     QMetaObject::invokeMethod(httpReply, "deleteLater", Qt::QueuedConnection);
     QMetaObject::invokeMethod(synchronousRequestLoop, "quit", Qt::QueuedConnection);
     httpReply = nullptr;
@@ -586,7 +593,7 @@ void QHttpThreadDelegate::finishedWithErrorSlot(QNetworkReply::NetworkError erro
 #endif
     emit error(errorCode,detail);
     emit downloadFinished();
-
+    notifiedFinished = true;
 
     QMetaObject::invokeMethod(httpReply, "deleteLater", Qt::QueuedConnection);
     QMetaObject::invokeMethod(this, "deleteLater", Qt::QueuedConnection);
@@ -607,6 +614,7 @@ void QHttpThreadDelegate::synchronousFinishedWithErrorSlot(QNetworkReply::Networ
 
     synchronousDownloadData = httpReply->readAll();
 
+    notifiedFinished = true;
     QMetaObject::invokeMethod(httpReply, "deleteLater", Qt::QueuedConnection);
     QMetaObject::invokeMethod(synchronousRequestLoop, "quit", Qt::QueuedConnection);
     httpReply = nullptr;
