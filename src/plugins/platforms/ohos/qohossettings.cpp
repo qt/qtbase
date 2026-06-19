@@ -7,10 +7,12 @@
 #include <cstring>
 #include <functional>
 #include <qohosdeviceinfo_p.h>
+#include <qohosjsutils.h>
 #include <qohosplugincore.h>
 #include <qohosutils.h>
 #include <stdexcept>
 #include <string>
+#include <utility>
 
 QT_BEGIN_NAMESPACE
 
@@ -75,11 +77,104 @@ std::string getOhosSettingsUserPropertyDomainName()
     Q_FUNC_INFO);
 }
 
+std::string settingsUserPropertyDomainName(QtOhos::JsState &jsState)
+{
+    return jsState.eval<QNapi::String>("@ohos.settings.domainName.USER_PROPERTY");
 }
 
-namespace QOhosSettings {
+QNapi::Object settingsContext(QtOhos::JsState &jsState)
+{
+    return jsState.defaultQAbilityPeer()->qAbility().eval<QNapi::Object>("context");
+}
 
-double fontSizeScale()
+std::string readSettingValue(
+    QtOhos::JsState &jsState, const QNapi::Object &context, const std::string &name)
+{
+    return jsState.eval<QNapi::String>(
+        "@ohos.settings.getValueSync(*)",
+        {context, name, "", settingsUserPropertyDomainName(jsState)});
+}
+
+std::shared_ptr<void> registerSettingsKeyObserver(
+    QtOhos::JsState &jsState, QNapi::Object context, const std::string &name,
+    std::function<void(QtOhos::JsState &)> onChanged)
+{
+    const std::string domainName = settingsUserPropertyDomainName(jsState);
+
+    const bool registered = jsState.eval<QNapi::Boolean>(
+        "@ohos.settings.registerKeyObserver(*)",
+        {
+            context, name, domainName,
+            [onChanged = std::move(onChanged)](const QtOhos::CallbackInfo &cbInfo) {
+                onChanged(cbInfo.jsState());
+            }
+        });
+    if (!registered) {
+        qOhosPrintfWarning(
+            "Failed to register observer for settings key '%s' in domain '%s'.",
+            name.c_str(), domainName.c_str());
+        return nullptr;
+    }
+
+    auto contextRefPtr = QtOhos::moveToSharedPtr(QNapi::Reference<>::makePersistentFrom(context));
+    return std::shared_ptr<void>(
+        nullptr,
+        [contextRefPtr, name, domainName](auto) {
+            QtOhos::runInJsThreadAndWait(
+                [&](QtOhos::JsState &jsState) {
+                    auto contextRef = std::move(*contextRefPtr);
+                    jsState.eval<QNapi::Value>(
+                        "@ohos.settings.unregisterKeyObserver(*)",
+                        {contextRef.Value(), name, domainName});
+                },
+                Q_FUNC_INFO);
+        });
+}
+
+bool readWindowPcModeEnabled(QtOhos::JsState &jsState)
+{
+    if (jsState.defaultQAbilityPeer()->qAbility().IsEmpty())
+        return false;
+
+    return readSettingValue(jsState, settingsContext(jsState), windowPcModeSwitchStatusPropertyName) == "true";
+}
+
+QOhosSupplier<bool> makeWindowPcModeEnabledSupplier()
+{
+    if (QOhosDeviceInfo::is2in1())
+        return [] { return true; };
+
+    return QtOhos::makeDataSource<bool>(
+        readWindowPcModeEnabled,
+        [](QtOhos::JsState &jsState, QOhosConsumer<bool> valueChangedConsumer) -> std::shared_ptr<void> {
+            // FIXME: the observer must use the launching UIAbility's context. By
+            // API definition @ohos.settings does not accept the application
+            // context, and free-window state is not part of the app Configuration.
+            // That context can be destroyed while the process lives, orphaning the
+            // observer. The orphaned observer keeps firing (verified on device), so
+            // the cached value stays correct. Revisit when the platform exposes
+            // settings observation on the application context.
+            if (jsState.defaultQAbilityPeer()->qAbility().IsEmpty())
+                return nullptr;
+
+            return registerSettingsKeyObserver(
+                jsState, settingsContext(jsState), windowPcModeSwitchStatusPropertyName,
+                [valueChangedConsumer = std::move(valueChangedConsumer)](QtOhos::JsState &jsState) {
+                    valueChangedConsumer(readWindowPcModeEnabled(jsState));
+                });
+        },
+        makeQOhosNoOpConsumer(),
+        Q_FUNC_INFO);
+}
+
+}
+
+QOhosSettings::QOhosSettings()
+    : m_windowPcModeEnabled(makeWindowPcModeEnabledSupplier())
+{
+}
+
+double QOhosSettings::fontSizeScale() const
 {
     constexpr double defaultFontSizeScale = 1.0;
     const auto maybeFontSizeScaleSetting = tryGetDataItemTypedValue<double>(
@@ -95,35 +190,9 @@ double fontSizeScale()
     return maybeFontSizeScaleSetting.value();
 }
 
-bool isWindowPcModeEnabled()
+bool QOhosSettings::isWindowPcModeEnabled() const
 {
-    if (QOhosDeviceInfo::is2in1())
-        return true;
-
-    constexpr auto statusTrueStr = "true";
-    constexpr auto statusFalseStr = "false";
-
-    auto maybeWindowPcModeSwitchStatus = tryGetDataItemValue(
-        windowPcModeSwitchStatusPropertyName, getOhosSettingsUserPropertyDomainName());
-
-    if (!maybeWindowPcModeSwitchStatus.has_value()) {
-        qOhosPrintfWarning(
-            "Cannot obtain '%s' property. Assuming it is NOT enabled.",
-            windowPcModeSwitchStatusPropertyName);
-        return false;
-    }
-
-    auto windowPcModeSwitchStatus = maybeWindowPcModeSwitchStatus.value();
-    if (windowPcModeSwitchStatus != statusTrueStr && windowPcModeSwitchStatus != statusFalseStr) {
-        qOhosPrintfError(
-            "Unexpected value of '%s': %s (expected: '%s' or '%s').",
-            windowPcModeSwitchStatusPropertyName, windowPcModeSwitchStatus.c_str(),
-            statusTrueStr, statusFalseStr);
-    }
-
-    return windowPcModeSwitchStatus == statusTrueStr;
-}
-
+    return m_windowPcModeEnabled();
 }
 
 QT_END_NAMESPACE

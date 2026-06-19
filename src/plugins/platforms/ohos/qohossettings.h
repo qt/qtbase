@@ -5,15 +5,21 @@
 #define QOHOSSETTINGS_H
 
 #include <QtCore/QtGlobal>
+#include <QtCore/private/qohoscommon_p.h>
 
 QT_BEGIN_NAMESPACE
 
-namespace QOhosSettings {
+class QOhosSettings
+{
+public:
+    QOhosSettings();
 
-double fontSizeScale();
-bool isWindowPcModeEnabled();
+    double fontSizeScale() const;
+    bool isWindowPcModeEnabled() const;
 
-}
+private:
+    QOhosSupplier<bool> m_windowPcModeEnabled;
+};
 
 QT_END_NAMESPACE
 
