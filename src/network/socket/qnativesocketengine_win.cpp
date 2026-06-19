@@ -1544,53 +1544,17 @@ inline timeval durationToTimeval(std::chrono::nanoseconds dur) noexcept
 
 int QNativeSocketEnginePrivate::nativeSelect(QDeadlineTimer deadline, bool selectForRead) const
 {
-    bool readEnabled = selectForRead && readNotifier && readNotifier->isEnabled();
-    if (readEnabled)
-        readNotifier->setEnabled(false);
-
-    fd_set fds;
-
-    int ret = 0;
-
-    memset(&fds, 0, sizeof(fd_set));
-    fds.fd_count = 1;
-    fds.fd_array[0] = (SOCKET)socketDescriptor;
-
-    struct timeval tv = durationToTimeval(deadline.remainingTimeAsDuration());
-
-    if (selectForRead) {
-        ret = select(0, &fds, 0, 0, &tv);
-    } else {
-        // select for write
-
-        // Windows needs this to report errors when connecting a socket ...
-        fd_set fdexception;
-        FD_ZERO(&fdexception);
-        FD_SET((SOCKET)socketDescriptor, &fdexception);
-
-        ret = select(0, 0, &fds, &fdexception, &tv);
-
-        // ... but if it is actually set, pretend it did not happen - unless we are
-        // still connecting, in which case the exception is how Windows reports a
-        // failed connect. Keeping it in the count lets the caller tell a resolved
-        // (failed) connect apart from a timeout and read the error via
-        // nativeCheckConnection().
-        if (ret > 0 && FD_ISSET((SOCKET)socketDescriptor, &fdexception)
-                && socketState != QAbstractSocket::ConnectingState) {
-            ret--;
-        }
-    }
-
-    if (readEnabled)
-        readNotifier->setEnabled(true);
-
-    return ret;
+    bool dummy = false;
+    return nativeSelect(deadline, selectForRead, !selectForRead, &dummy, &dummy);
 }
 
 int QNativeSocketEnginePrivate::nativeSelect(QDeadlineTimer deadline,
                                       bool checkRead, bool checkWrite,
                                       bool *selectForRead, bool *selectForWrite) const
 {
+    Q_ASSERT(selectForRead);
+    Q_ASSERT(selectForWrite);
+
     bool readEnabled = checkRead && readNotifier && readNotifier->isEnabled();
     if (readEnabled)
         readNotifier->setEnabled(false);
@@ -1618,7 +1582,7 @@ int QNativeSocketEnginePrivate::nativeSelect(QDeadlineTimer deadline,
 
     struct timeval tv = durationToTimeval(deadline.remainingTimeAsDuration());
 
-    ret = select(socketDescriptor + 1, &fdread, &fdwrite, &fdexception, &tv);
+    ret = select(0, &fdread, &fdwrite, &fdexception, &tv);
 
      //... but if it is actually set, pretend it did not happen - unless we are still
      // connecting, in which case the exception is how Windows reports a failed
