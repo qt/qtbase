@@ -67,6 +67,18 @@ bool runIgnoringJsBusinessError(
     JsState &, std::uint32_t suppressedErrorCode, const char *callerContextName,
     const std::function<void()> &action);
 
+// Creates a Data Source: a Qt-thread object tracking a value owned by a JS object.
+// The returned supplier keeps it alive and yields the current value, valueChangedHandler
+// is called on each change (everything in the Qt thread).
+// The two std::function parameters provide JS-thread side implementation of the necessary
+// building blocks.
+template<typename T>
+QOhosSupplier<T> makeDataSource(
+    std::function<T(JsState &)> initialValueReader,
+    std::function<std::shared_ptr<void>(JsState &, QOhosConsumer<T>)> changeListenerFactory,
+    QOhosConsumer<T> valueChangedHandler,
+    std::string callerContextName = {});
+
 template<typename T>
 QNapi::Promise adaptAsyncCallResultToJsPromise(
     JsState &jsState, std::function<QNapi::Value(JsState &, T)> promiseValueFactory,
@@ -91,6 +103,46 @@ QOhosOptional<T> getOptionalProperty(const QNapi::Object &object, const std::str
     return !optPropValue.IsEmpty()
         ? makeQOhosOptional(optPropValue)
         : makeEmptyQOhosOptional();
+}
+
+template<typename T>
+QOhosSupplier<T> makeDataSource(
+    std::function<T(JsState &)> initialValueReader,
+    std::function<std::shared_ptr<void>(JsState &, QOhosConsumer<T>)> changeListenerFactory,
+    QOhosConsumer<T> valueChangedHandler,
+    std::string callerContextName)
+{
+    struct Context {
+        QOhosConsumer<T> valueChangedHandler;
+        T currentValue;
+        std::shared_ptr<void> changeListenerHandle;
+    };
+
+    auto context = evalInJsThread(
+        [&](JsState &jsState) {
+            auto context = std::make_shared<Context>();
+            context->valueChangedHandler = std::move(valueChangedHandler);
+            context->currentValue = initialValueReader(jsState);
+            context->changeListenerHandle = makeProxyWithJsThreadDeleter(
+                changeListenerFactory(
+                    jsState,
+                    [weakContext = makeWeakPtr(context)](T newValue) {
+                        invokeInQtThread(
+                            [weakContext, newValue = std::move(newValue)]() mutable {
+                                auto context = weakContext.lock();
+                                if (context && newValue != context->currentValue) {
+                                    context->currentValue = std::move(newValue);
+                                    context->valueChangedHandler(context->currentValue);
+                                }
+                            });
+                    }));
+            return context;
+        },
+        std::move(callerContextName));
+
+    return [context]() {
+        return context->currentValue;
+    };
 }
 
 }
