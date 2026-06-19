@@ -101,6 +101,7 @@ protected:
     QNetworkAccessCachedHttpConnection *httpConnection;
     QByteArray cacheKey;
     QHttpNetworkReply *httpReply;
+    bool notifiedFinished = false;
 
     // Used for implementing the synchronous HTTP, see startRequestSynchronously()
     QEventLoop *synchronousRequestLoop;
