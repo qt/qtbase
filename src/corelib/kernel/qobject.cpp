@@ -39,6 +39,7 @@
 #include <new>
 #include <mutex>
 #include <memory>
+#include <optional>
 
 #include <ctype.h>
 #include <limits.h>
@@ -3887,6 +3888,16 @@ bool QMetaObjectPrivate::disconnect(const QObject *sender,
     if (!scd)
         return false;
 
+    // Capture the message arguments now and emit the warning after unlocking:
+    // qWarning() may re-enter connect/disconnect from the message handler and
+    // deadlock on the lock held here (QTBUG-145216).
+    struct WildcardDestroyedWarning
+    {
+        QByteArray className;
+        QByteArray objectName;
+    };
+    std::optional<WildcardDestroyedWarning> wildcardDestroyedWarning;
+
     bool success = false;
     {
         // prevent incoming connections changing the connections->receivers while unlocked
@@ -3895,11 +3906,10 @@ bool QMetaObjectPrivate::disconnect(const QObject *sender,
         if (signal_index < 0) {
             // wildcard disconnect - warn if this disconnects destroyed()
             if (!receiver && method_index < 0 && sender->d_func()->isSignalConnected(0)) {
-                qWarning("QObject::disconnect: wildcard call disconnects from destroyed signal of"
-                         " %s::%s", sender->metaObject()->className(),
-                                    sender->objectName().isEmpty()
-                                        ? "unnamed"
-                                        : sender->objectName().toLocal8Bit().data());
+                wildcardDestroyedWarning = WildcardDestroyedWarning{
+                    sender->metaObject()->className(),
+                    sender->objectName().toLocal8Bit()
+                };
             }
             // remove from all connection lists
             for (int sig_index = -1; sig_index < scd->signalVectorCount(); ++sig_index) {
@@ -3913,6 +3923,15 @@ bool QMetaObjectPrivate::disconnect(const QObject *sender,
     }
 
     locker.unlock();
+
+    if (wildcardDestroyedWarning) {
+        qWarning("QObject::disconnect: wildcard call disconnects from destroyed signal of %s::%s",
+                 wildcardDestroyedWarning->className.constData(),
+                 wildcardDestroyedWarning->objectName.isEmpty()
+                         ? "unnamed"
+                         : wildcardDestroyedWarning->objectName.constData());
+    }
+
     if (success) {
         scd->cleanOrphanedConnections(s);
 
