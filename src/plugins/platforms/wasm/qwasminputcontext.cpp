@@ -74,12 +74,10 @@ void QWasmInputContext::inputCallback(emscripten::val event)
         rangesPair.second = 0;
 
         event.call<void>("stopImmediatePropagation");
-        return;
     } else if (!inputTypeString.compare("deleteContentForward")) {
         QWindowSystemInterface::handleKeyEvent(0, QEvent::KeyPress, Qt::Key_Delete, Qt::NoModifier);
         QWindowSystemInterface::handleKeyEvent(0, QEvent::KeyRelease, Qt::Key_Delete, Qt::NoModifier);
         event.call<void>("stopImmediatePropagation");
-        return;
     } else if (!inputTypeString.compare("insertCompositionText")) {
 
         qCDebug(qLcQpaWasmInputContext) << "insertCompositionText : " << inputStr;
@@ -94,7 +92,6 @@ void QWasmInputContext::inputCallback(emscripten::val event)
             rangesPair.second = 0;
             event.call<void>("stopImmediatePropagation");
         }
-        return;
     } else if (!inputTypeString.compare("insertReplacementText")) {
 
         qCDebug(qLcQpaWasmInputContext) << "insertReplacementText >>>>" << "inputString : " << inputStr;
@@ -120,18 +117,14 @@ void QWasmInputContext::inputCallback(emscripten::val event)
         }
 
         event.call<void>("stopImmediatePropagation");
-
-        return;
     } else if (!inputTypeString.compare("deleteCompositionText")) {
         setPreeditString("", 0);
         insertPreedit();
         event.call<void>("stopImmediatePropagation");
-        return;
     } else if (!inputTypeString.compare("insertFromComposition")) {
         setPreeditString(inputStr, 0);
         insertPreedit();
         event.call<void>("stopImmediatePropagation");
-        return;
     } else if (!inputTypeString.compare("insertText")) {
         if ((rangesPair.first != 0 || rangesPair.second != 0)
             && rangesPair.first != rangesPair.second) {
