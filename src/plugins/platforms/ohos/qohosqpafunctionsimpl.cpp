@@ -1559,7 +1559,7 @@ QOhosSupplier<QOhosOptional<bool>> QOhosQpaFunctionsImpl::makeOhosConfigDarkMode
 QOhosSupplier<double> QOhosQpaFunctionsImpl::makeOhosConfigFontSizeScaleDataSource(
     QOhosConsumer<double> valueChangedHandler)
 {
-    auto initFontSizeScale = QOhosSettings::fontSizeScale();
+    auto initFontSizeScale = QOhosPlatformIntegration::instance()->settings()->fontSizeScale();
     return makeOhosConfigValueDataSource<double>(
         [initFontSizeScale](QtOhos::JsState &) {
             return initFontSizeScale;

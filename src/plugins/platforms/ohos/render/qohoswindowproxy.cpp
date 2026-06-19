@@ -25,6 +25,7 @@
 #include <qohosimageformat.h>
 #include <qohosjsutils.h>
 #include <qohospixelmapconversions.h>
+#include <qohosplatformintegration.h>
 #include <qohosplugincore.h>
 #include <qohossettings.h>
 #include <qohosutils.h>
@@ -942,7 +943,7 @@ void QOhosWindowProxy::setSubWindowModalEnabled(ModalityType modalityType)
     if (qtIsMainWindow())
         return;
 
-    if (modalityType == ModalityType::APPLICATION_MODALITY && !QOhosSettings::isWindowPcModeEnabled()) {
+    if (modalityType == ModalityType::APPLICATION_MODALITY && !QOhosPlatformIntegration::instance()->settings()->isWindowPcModeEnabled()) {
         qOhosPrintfWarning(
             "%s: APPLICATION_MODALITY option can be used only on devices in the freeform window state - skipping",
             Q_FUNC_INFO);
@@ -1010,7 +1011,7 @@ void QOhosWindowProxy::setWindowTopmost(bool topmost)
     if (!qtIsMainWindow())
         return;
 
-    if (!QOhosSettings::isWindowPcModeEnabled()) {
+    if (!QOhosPlatformIntegration::instance()->settings()->isWindowPcModeEnabled()) {
         qOhosPrintfWarning("%s: can be used only on 2-in-1 devices or tablets in PC mode - skipping", Q_FUNC_INFO);
         return;
     }
@@ -1043,7 +1044,7 @@ void QOhosWindowProxy::setWindowDecorVisible(bool visible)
 
 void QOhosWindowProxy::setWindowTitleMoveEnabled(bool enabled)
 {
-    if (!QOhosSettings::isWindowPcModeEnabled()) {
+    if (!QOhosPlatformIntegration::instance()->settings()->isWindowPcModeEnabled()) {
         qOhosPrintfWarning("%s: can be used only on 2-in-1 devices or tablets in PC mode - skipping", Q_FUNC_INFO);
         return;
     }

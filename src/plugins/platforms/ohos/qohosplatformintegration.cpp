@@ -32,6 +32,7 @@
 #include <QtCore/qcoreapplication.h>
 #include <qohosdeviceinfo_p.h>
 #include <qohosplugincore.h>
+#include <qohossettings.h>
 
 #include "qohosplatformfontdatabase_p.h"
 
@@ -340,6 +341,13 @@ void QOhosPlatformIntegration::initialize()
         [tracker = std::move(tracker)]() {
             QWindowSystemInterfacePrivate::removeWindowSystemEventhandler(tracker.get());
         });
+
+    m_settings = std::make_unique<QOhosSettings>();
+}
+
+QOhosSettings *QOhosPlatformIntegration::settings() const
+{
+    return m_settings.get();
 }
 
 QPlatformTheme *QOhosPlatformIntegration::createPlatformTheme(const QString &name) const

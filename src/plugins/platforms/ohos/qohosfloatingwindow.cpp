@@ -27,7 +27,7 @@ namespace {
 bool isWindowRotatedByTabletScreenRotation(
     QWindow *window, QOhosWindowProxy::RectChangeOptions rectChangeOptions)
 {
-    return !QOhosSettings::isWindowPcModeEnabled()
+    return !QOhosPlatformIntegration::instance()->settings()->isWindowPcModeEnabled()
         && window->geometry() != rectChangeOptions.rect
         && rectChangeOptions.reason == QOhosWindowProxy::RectChangeReason::UNDEFINED;
 }
@@ -45,7 +45,7 @@ void QOhosFloatingWindow::setGeometry(const QRect &rect)
 {
     auto *view = ownedViewOrNull();
     bool geometryControlledBySystem =
-        !QOhosSettings::isWindowPcModeEnabled()
+        !QOhosPlatformIntegration::instance()->settings()->isWindowPcModeEnabled()
         && view != nullptr
         && view->viewType() == QOhosView::ViewType::MainWindow;
 
@@ -131,7 +131,7 @@ void QOhosFloatingWindow::initialize()
     // We can only listen for the changes - we need to assume sane default for tablets
     // so assign the default most-likely status of the tablet here.
     if (m_view->viewType() == QOhosView::ViewType::MainWindow
-        && !QOhosSettings::isWindowPcModeEnabled()
+        && !QOhosPlatformIntegration::instance()->settings()->isWindowPcModeEnabled()
         && !m_lastWindowStatusType.has_value()) {
         m_lastWindowStatusType = QOhosWindowProxy::WindowStatusType::FULL_SCREEN;
     }
