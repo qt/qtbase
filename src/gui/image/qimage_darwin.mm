@@ -8,7 +8,6 @@
 
 #import <Foundation/Foundation.h>
 #import <CoreGraphics/CoreGraphics.h>
-#include <Accelerate/Accelerate.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -49,13 +48,14 @@ CGImageRef QImage::toCGImage() const
     QCFType<CGDataProviderRef> dataProvider =
         CGDataProviderCreateWithData(new QImage(*this), bits(), sizeInBytes(), deleter);
 
-    const bool shouldInterpolate = false;
+    static constexpr bool shouldInterpolate = false;
+    static constexpr CGFloat *decodeArray = nullptr;
 
     return CGImageCreate(width(), height(),
         cgImageFormat->bitsPerComponent, cgImageFormat->bitsPerPixel,
         this->bytesPerLine(), cgImageFormat->colorSpace,
-        cgImageFormat->bitmapInfo, dataProvider, cgImageFormat->decode,
-        shouldInterpolate, cgImageFormat->renderingIntent
+        cgImageFormat->bitmapInfo, dataProvider, decodeArray,
+        shouldInterpolate, kCGRenderingIntentDefault
     );
 }
 
