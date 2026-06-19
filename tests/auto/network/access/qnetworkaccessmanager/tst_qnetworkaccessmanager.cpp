@@ -2,9 +2,13 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QTest>
+#include <QSignalSpy>
 
 #include <QtNetwork/QNetworkAccessManager>
 #include <QtNetwork/QNetworkReply>
+#include <QtNetwork/QNetworkProxy>
+#include <QtNetwork/QTcpServer>
+#include <QtNetwork/QTcpSocket>
 
 #include <QtCore/QDebug>
 
@@ -17,6 +21,7 @@ public:
 
 private slots:
     void alwaysCacheRequest();
+    void clearConnectionCacheNotifiesReply();
 };
 
 tst_QNetworkAccessManager::tst_QNetworkAccessManager()
@@ -31,6 +36,33 @@ void tst_QNetworkAccessManager::alwaysCacheRequest()
     req.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::AlwaysCache);
     QNetworkReply *reply = manager.get(req);
     reply->close();
+    delete reply;
+}
+
+void tst_QNetworkAccessManager::clearConnectionCacheNotifiesReply()
+{
+    QTcpServer server;
+    QVERIFY(server.listen(QHostAddress::LocalHost, 0));
+    connect(&server, &QTcpServer::newConnection, [&server]() {
+        QTcpSocket *socket = server.nextPendingConnection();
+        connect(socket, &QTcpSocket::readyRead, socket, [socket]() { socket->readAll(); });
+    });
+
+    QNetworkAccessManager manager;
+    manager.setProxy(QNetworkProxy(QNetworkProxy::HttpProxy, QStringLiteral("127.0.0.1"),
+                                   server.serverPort()));
+
+    QNetworkReply *reply = manager.get(QNetworkRequest(QUrl("https://example.com/")));
+    QSignalSpy finishedSpy(reply, &QNetworkReply::finished);
+
+    QTRY_VERIFY(server.hasPendingConnections() || !server.children().isEmpty());
+
+    manager.clearConnectionCache();
+
+    QTRY_VERIFY(finishedSpy.size() > 0);
+    QCOMPARE(reply->error(), QNetworkReply::OperationCanceledError);
+    QVERIFY(reply->isFinished());
+
     delete reply;
 }
 
