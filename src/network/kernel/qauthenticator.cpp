@@ -153,6 +153,12 @@ static QByteArray qGssapiContinue(QAuthenticatorPrivate *ctx, QByteArrayView cha
   core dumps, swap files, or process memory after a QAuthenticator
   object is destroyed or cleared.
 
+  When Basic authentication is negotiated, credentials are transmitted
+  using Base64 encoding, which is trivially reversible. Basic authentication
+  should only be used over TLS-encrypted connections. QAuthenticator does not
+  enforce this requirement; applications are responsible for ensuring
+  transport security when Basic authentication is in use.
+
   Applications with strict requirements for credential hygiene should
   take this into account when deciding how and where to use
   QAuthenticator.
