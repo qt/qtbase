@@ -19,15 +19,13 @@
 # include <UIKit/UIKit.h>
 #endif
 
-#include <Accelerate/Accelerate.h>
-
 QT_USE_NAMESPACE
 
 QT_BEGIN_NAMESPACE
 
 // ---------------------- Images ----------------------
 
-std::optional<vImage_CGImageFormat> qt_mac_cgImageFormatForImage(const QImage &image)
+std::optional<QCGImageFormat> qt_mac_cgImageFormatForImage(const QImage &image)
 {
     const QPixelFormat format = image.pixelFormat();
 
@@ -131,10 +129,9 @@ std::optional<vImage_CGImageFormat> qt_mac_cgImageFormatForImage(const QImage &i
         }
     }();
 
-    return vImage_CGImageFormat{
+    return QCGImageFormat{
         bitsPerComponent, format.bitsPerPixel(),
-        colorSpace, bitmapInfo, 0, nullptr,
-        kCGRenderingIntentDefault
+        colorSpace, bitmapInfo
     };
 }
 
