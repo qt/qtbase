@@ -27,8 +27,6 @@
 #import <UIKit/UIKit.h>
 #endif
 
-#include <Accelerate/Accelerate.h>
-
 // These are available cross platform, exported as kCTFontWeightXXX from CoreText.framework,
 // but they are not documented and are not in public headers so are private API and exposed
 // only through the NSFontWeightXXX and UIFontWeightXXX aliases in AppKit and UIKit (rdar://26109857)
