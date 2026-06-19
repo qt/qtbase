@@ -26,6 +26,8 @@
 #include <QThread>
 #include <QMutex>
 #include <QWaitCondition>
+#include <QSemaphore>
+#include <QScopeGuard>
 #include <QScopedPointer>
 #if QT_CONFIG(process)
 # include <QProcess>
@@ -36,6 +38,7 @@
 #endif
 
 #include <functional>
+#include <thread>
 
 #include <math.h>
 
@@ -161,6 +164,11 @@ private slots:
     void disconnectQueuedConnection_pendingEventsAreDelivered();
     void timerWithNegativeInterval();
     void emptyQueuedMetaCallEvent();
+
+    // Must stay last: on failure it detaches a deadlocked thread that keeps a
+    // signal/slot pool mutex held for the rest of the process, which could hang
+    // any later test whose QObject hashes to the same mutex slot.
+    void disconnectWarningDoesNotDeadlock();
 };
 
 struct QObjectCreatedOnShutdown
@@ -9140,6 +9148,56 @@ void tst_QObject::emptyQueuedMetaCallEvent()
 #else
     QSKIP("Needs QT_BUILD_INTERNAL");
 #endif
+}
+
+void tst_QObject::disconnectWarningDoesNotDeadlock()
+{
+    // QTBUG-145216: a wildcard disconnect of an object connected to destroyed()
+    // warns; if qWarning() emits that while holding the signal/slot lock, a
+    // message handler that re-enters connect() can deadlock on the same lock.
+    // Run it on a worker thread and fail (rather than hang) if it does not
+    // finish in time.
+
+    // s_target is a function-local static, so the message handler below stays
+    // captureless and converts to a plain QtMessageHandler function pointer.
+    static QObject *s_target = nullptr;
+    const auto reentrantHandler = +[](QtMsgType, const QMessageLogContext &,
+                                      const QString &msg) {
+        if (s_target && msg.contains("wildcard call disconnects"_L1)) {
+            // Re-enter the connect machinery on the object currently being
+            // disconnected: this needs the same signal/slot mutex disconnect()
+            // is holding in the buggy code, deadlocking the thread.
+            QObject::connect(s_target, &QObject::destroyed, []{});
+        }
+    };
+
+    using namespace std::chrono_literals;
+
+    QtMessageHandler oldHandler = qInstallMessageHandler(reentrantHandler);
+    const auto handlerGuard = qScopeGuard([oldHandler] { qInstallMessageHandler(oldHandler); });
+
+    QSemaphore finished;
+    std::thread worker([&finished] {
+        QObject sender;
+        s_target = &sender;
+        // Connect destroyed() so the wildcard disconnect takes the warning path.
+        QObject::connect(&sender, &QObject::destroyed, []{});
+        sender.disconnect();
+        s_target = nullptr;
+        finished.release();
+    });
+
+    const bool completed = finished.tryAcquire(1, 30s);
+    if (completed) {
+        worker.join();
+    } else {
+        // The worker is wedged inside the deadlock; abandon it so this test can
+        // report a failure instead of hanging the process.
+        worker.detach();
+    }
+
+    QVERIFY2(completed, "QObject::disconnect() deadlocked while emitting the "
+                        "destroyed() wildcard-disconnect warning (QTBUG-145216)");
 }
 
 QTEST_MAIN(tst_QObject)
