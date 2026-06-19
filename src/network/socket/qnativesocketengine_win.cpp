@@ -1570,9 +1570,15 @@ int QNativeSocketEnginePrivate::nativeSelect(QDeadlineTimer deadline, bool selec
 
         ret = select(0, 0, &fds, &fdexception, &tv);
 
-        // ... but if it is actually set, pretend it did not happen
-        if (ret > 0 && FD_ISSET((SOCKET)socketDescriptor, &fdexception))
+        // ... but if it is actually set, pretend it did not happen - unless we are
+        // still connecting, in which case the exception is how Windows reports a
+        // failed connect. Keeping it in the count lets the caller tell a resolved
+        // (failed) connect apart from a timeout and read the error via
+        // nativeCheckConnection().
+        if (ret > 0 && FD_ISSET((SOCKET)socketDescriptor, &fdexception)
+                && socketState != QAbstractSocket::ConnectingState) {
             ret--;
+        }
     }
 
     if (readEnabled)
@@ -1614,9 +1620,14 @@ int QNativeSocketEnginePrivate::nativeSelect(QDeadlineTimer deadline,
 
     ret = select(socketDescriptor + 1, &fdread, &fdwrite, &fdexception, &tv);
 
-     //... but if it is actually set, pretend it did not happen
-    if (ret > 0 && FD_ISSET((SOCKET)socketDescriptor, &fdexception))
+     //... but if it is actually set, pretend it did not happen - unless we are still
+     // connecting, in which case the exception is how Windows reports a failed
+     // connect. Keeping it in the count lets the caller tell a resolved (failed)
+     // connect apart from a timeout and read the error via nativeCheckConnection().
+    if (ret > 0 && FD_ISSET((SOCKET)socketDescriptor, &fdexception)
+            && socketState != QAbstractSocket::ConnectingState) {
         ret--;
+    }
 
     if (readEnabled)
         readNotifier->setEnabled(true);

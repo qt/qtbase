@@ -989,7 +989,7 @@ void QNativeSocketEngine::close()
 */
 bool QNativeSocketEngine::waitForRead(QDeadlineTimer deadline, bool *timedOut)
 {
-    Q_D(const QNativeSocketEngine);
+    Q_D(QNativeSocketEngine);
     Q_CHECK_VALID_SOCKETLAYER(QNativeSocketEngine::waitForRead(), false);
     Q_CHECK_NOT_STATE(QNativeSocketEngine::waitForRead(),
                       QAbstractSocket::UnconnectedState, false);
@@ -1005,8 +1005,10 @@ bool QNativeSocketEngine::waitForRead(QDeadlineTimer deadline, bool *timedOut)
             QNativeSocketEnginePrivate::TimeOutErrorString);
         d->hasSetSocketError = false; // A timeout error is temporary in waitFor functions
         return false;
-    } else if (state() == QAbstractSocket::ConnectingState) {
-        connectToHost(d->peerAddress, d->peerPort);
+    }
+    if (state() == QAbstractSocket::ConnectingState) {
+        if (d->nativeCheckConnection() && state() == QAbstractSocket::ConnectedState)
+            d->fetchConnectionParameters();
     }
 
     return ret > 0;
@@ -1038,37 +1040,6 @@ bool QNativeSocketEngine::waitForWrite(QDeadlineTimer deadline, bool *timedOut)
         *timedOut = false;
 
     int ret = d->nativeSelect(deadline, false);
-    // On Windows, the socket is in connected state if a call to
-    // select(writable) is successful. In this case we should not
-    // issue a second call to WSAConnect()
-#if defined (Q_OS_WIN)
-    if (state() == QAbstractSocket::ConnectingState) {
-        if (ret > 0) {
-            setState(QAbstractSocket::ConnectedState);
-            d_func()->fetchConnectionParameters();
-            return true;
-        } else {
-            int value = 0;
-            int valueSize = sizeof(value);
-            if (::getsockopt(d->socketDescriptor, SOL_SOCKET, SO_ERROR, (char *) &value, &valueSize) == 0) {
-                if (value == WSAECONNREFUSED) {
-                    d->setError(QAbstractSocket::ConnectionRefusedError, QNativeSocketEnginePrivate::ConnectionRefusedErrorString);
-                    d->socketState = QAbstractSocket::UnconnectedState;
-                    return false;
-                } else if (value == WSAETIMEDOUT) {
-                    d->setError(QAbstractSocket::NetworkError, QNativeSocketEnginePrivate::ConnectionTimeOutErrorString);
-                    d->socketState = QAbstractSocket::UnconnectedState;
-                    return false;
-                } else if (value == WSAEHOSTUNREACH) {
-                    d->setError(QAbstractSocket::NetworkError, QNativeSocketEnginePrivate::HostUnreachableErrorString);
-                    d->socketState = QAbstractSocket::UnconnectedState;
-                    return false;
-                }
-            }
-        }
-    }
-#endif
-
     if (ret == 0) {
         if (timedOut)
             *timedOut = true;
@@ -1076,8 +1047,10 @@ bool QNativeSocketEngine::waitForWrite(QDeadlineTimer deadline, bool *timedOut)
                     QNativeSocketEnginePrivate::TimeOutErrorString);
         d->hasSetSocketError = false; // A timeout error is temporary in waitFor functions
         return false;
-    } else if (state() == QAbstractSocket::ConnectingState || (state() == QAbstractSocket::BoundState && d->socketDescriptor != -1)) {
-        connectToHost(d->peerAddress, d->peerPort);
+    }
+    if (state() == QAbstractSocket::ConnectingState || (state() == QAbstractSocket::BoundState && d->socketDescriptor != -1)) {
+        if (d->nativeCheckConnection() && state() == QAbstractSocket::ConnectedState)
+            d->fetchConnectionParameters();
     }
 
     return ret > 0;
@@ -1093,36 +1066,6 @@ bool QNativeSocketEngine::waitForReadOrWrite(bool *readyToRead, bool *readyToWri
                       QAbstractSocket::UnconnectedState, false);
 
     int ret = d->nativeSelect(deadline, checkRead, checkWrite, readyToRead, readyToWrite);
-    // On Windows, the socket is in connected state if a call to
-    // select(writable) is successful. In this case we should not
-    // issue a second call to WSAConnect()
-#if defined (Q_OS_WIN)
-    if (state() == QAbstractSocket::ConnectingState) {
-        if (checkWrite && ((readyToWrite && *readyToWrite) || !readyToWrite) && ret > 0) {
-            setState(QAbstractSocket::ConnectedState);
-            d_func()->fetchConnectionParameters();
-            return true;
-        } else {
-            int value = 0;
-            int valueSize = sizeof(value);
-            if (::getsockopt(d->socketDescriptor, SOL_SOCKET, SO_ERROR, (char *) &value, &valueSize) == 0) {
-                if (value == WSAECONNREFUSED) {
-                    d->setError(QAbstractSocket::ConnectionRefusedError, QNativeSocketEnginePrivate::ConnectionRefusedErrorString);
-                    d->socketState = QAbstractSocket::UnconnectedState;
-                    return false;
-                } else if (value == WSAETIMEDOUT) {
-                    d->setError(QAbstractSocket::NetworkError, QNativeSocketEnginePrivate::ConnectionTimeOutErrorString);
-                    d->socketState = QAbstractSocket::UnconnectedState;
-                    return false;
-                } else if (value == WSAEHOSTUNREACH) {
-                    d->setError(QAbstractSocket::NetworkError, QNativeSocketEnginePrivate::HostUnreachableErrorString);
-                    d->socketState = QAbstractSocket::UnconnectedState;
-                    return false;
-                }
-            }
-        }
-    }
-#endif
     if (ret == 0) {
         if (timedOut)
             *timedOut = true;
@@ -1130,8 +1073,10 @@ bool QNativeSocketEngine::waitForReadOrWrite(bool *readyToRead, bool *readyToWri
                     QNativeSocketEnginePrivate::TimeOutErrorString);
         d->hasSetSocketError = false; // A timeout error is temporary in waitFor functions
         return false;
-    } else if (state() == QAbstractSocket::ConnectingState) {
-        connectToHost(d->peerAddress, d->peerPort);
+    }
+    if (state() == QAbstractSocket::ConnectingState) {
+        if (d->nativeCheckConnection() && state() == QAbstractSocket::ConnectedState)
+            d->fetchConnectionParameters();
     }
 
     return ret > 0;
