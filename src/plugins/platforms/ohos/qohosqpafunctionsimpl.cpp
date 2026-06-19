@@ -379,37 +379,17 @@ QOhosSupplier<ConfigValue> makeOhosConfigValueDataSource(
     std::function<ConfigValue(QtOhos::JsState &, const QNapi::Object &)> valueFetcher,
     QOhosConsumer<ConfigValue> valueChangedHandler)
 {
-    struct Context {
-        QOhosConsumer<ConfigValue> valueChangedHandler;
-        ConfigValue receivedValue;
-        std::shared_ptr<void> updateListenerHandle;
-    };
-
-    auto context = QtOhos::evalInJsThread(
-        [&](QtOhos::JsState &jsState) {
-            auto context = std::make_shared<Context>();
-            context->valueChangedHandler = std::move(valueChangedHandler);
-            context->receivedValue = initValueSupplier(jsState);
-            context->updateListenerHandle = registerAppConfigurationUpdateListener(
+    return QtOhos::makeDataSource<ConfigValue>(
+        std::move(initValueSupplier),
+        [valueFetcher = std::move(valueFetcher)](QtOhos::JsState &jsState, QOhosConsumer<ConfigValue> valueUpdatesConsumer) mutable {
+            return registerAppConfigurationUpdateListener(
                 jsState,
-                [weakContext = QtOhos::makeWeakPtr(context), valueFetcher = std::move(valueFetcher)](QtOhos::JsState &jsState, QNapi::Object config) {
-                    auto configValue = valueFetcher(jsState, config);
-                    QtOhos::invokeInQtThread(
-                        [weakContext, configValue]() {
-                            auto context = weakContext.lock();
-                            if (context && configValue != context->receivedValue) {
-                                context->receivedValue = configValue;
-                                context->valueChangedHandler(context->receivedValue);
-                            }
-                        });
+                [valueFetcher = std::move(valueFetcher), valueUpdatesConsumer = std::move(valueUpdatesConsumer)](QtOhos::JsState &jsState, QNapi::Object config) {
+                    valueUpdatesConsumer(valueFetcher(jsState, config));
                 });
-            return context;
         },
+        std::move(valueChangedHandler),
         Q_FUNC_INFO);
-
-    return [context]() {
-        return context->receivedValue;
-    };
 }
 
 QOhosSupplier<OhosConfigurationColorMode> makeOhosConfigColorModeDataSource(
