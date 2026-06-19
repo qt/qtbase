@@ -1542,12 +1542,6 @@ inline timeval durationToTimeval(std::chrono::nanoseconds dur) noexcept
     return tval;
 }
 
-int QNativeSocketEnginePrivate::nativeSelect(QDeadlineTimer deadline, bool selectForRead) const
-{
-    bool dummy = false;
-    return nativeSelect(deadline, selectForRead, !selectForRead, &dummy, &dummy);
-}
-
 int QNativeSocketEnginePrivate::nativeSelect(QDeadlineTimer deadline,
                                       bool checkRead, bool checkWrite,
                                       bool *selectForRead, bool *selectForWrite) const

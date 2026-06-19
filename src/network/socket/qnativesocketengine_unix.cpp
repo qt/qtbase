@@ -1457,12 +1457,6 @@ qint64 QNativeSocketEnginePrivate::nativeRead(char *data, qint64 maxSize)
     return qint64(r);
 }
 
-int QNativeSocketEnginePrivate::nativeSelect(QDeadlineTimer deadline, bool selectForRead) const
-{
-    bool dummy;
-    return nativeSelect(deadline, selectForRead, !selectForRead, &dummy, &dummy);
-}
-
 #ifndef Q_OS_WASM
 
 int QNativeSocketEnginePrivate::nativeSelect(QDeadlineTimer deadline, bool checkRead,

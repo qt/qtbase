@@ -1082,6 +1082,12 @@ bool QNativeSocketEngine::waitForReadOrWrite(bool *readyToRead, bool *readyToWri
     return ret > 0;
 }
 
+int QNativeSocketEnginePrivate::nativeSelect(QDeadlineTimer deadline, bool selectForRead) const
+{
+    bool dummy = false;
+    return nativeSelect(deadline, selectForRead, !selectForRead, &dummy, &dummy);
+}
+
 #if 0   // currently unused
 /*
     Returns the size of the operating system's socket receive
