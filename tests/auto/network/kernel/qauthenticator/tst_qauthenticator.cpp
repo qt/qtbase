@@ -40,6 +40,9 @@ private Q_SLOTS:
 
     void methodPinningRefusesDowngrade();
     void methodPinningAllowsNormalReauth();
+
+    void methodSelectionPriority_data();
+    void methodSelectionPriority();
 };
 
 tst_QAuthenticator::tst_QAuthenticator()
@@ -554,6 +557,72 @@ void tst_QAuthenticator::methodPinningAllowsNormalReauth()
     QCOMPARE(priv->method, QAuthenticatorPrivate::Basic);
     QVERIFY(!priv->hasFailed);
 }
+
+void tst_QAuthenticator::methodSelectionPriority_data()
+{
+    QTest::addColumn<QList<QByteArray>>("headers");
+    QTest::addColumn<int>("expectedMethod");
+
+    const QByteArray basic = "Basic realm=\"test\"";
+    const QByteArray digest =
+        "Digest realm=\"test\", nonce=\"abc\", algorithm=MD5, qop=\"auth\"";
+    const QByteArray ntlm = "NTLM";
+
+    // NTLM must beat Digest-MD5 regardless of header order
+    QTest::newRow("digest-then-ntlm")
+        << QList<QByteArray>{digest, ntlm}
+        << int(QAuthenticatorPrivate::Ntlm);
+
+    QTest::newRow("ntlm-then-digest")
+        << QList<QByteArray>{ntlm, digest}
+        << int(QAuthenticatorPrivate::Ntlm);
+
+    // NTLM must beat Basic
+    QTest::newRow("basic-then-ntlm")
+        << QList<QByteArray>{basic, ntlm}
+        << int(QAuthenticatorPrivate::Ntlm);
+
+    // Digest-MD5 must beat Basic
+    QTest::newRow("basic-then-digest")
+        << QList<QByteArray>{basic, digest}
+        << int(QAuthenticatorPrivate::DigestMd5);
+
+    // All three offered — NTLM must win
+    QTest::newRow("all-three")
+        << QList<QByteArray>{basic, digest, ntlm}
+        << int(QAuthenticatorPrivate::Ntlm);
+
+    // All three offered, reverse order — NTLM must still win
+    QTest::newRow("all-three-reversed")
+        << QList<QByteArray>{ntlm, digest, basic}
+        << int(QAuthenticatorPrivate::Ntlm);
+
+    // Only Basic offered — must accept it
+    QTest::newRow("basic-only")
+        << QList<QByteArray>{basic}
+        << int(QAuthenticatorPrivate::Basic);
+}
+
+void tst_QAuthenticator::methodSelectionPriority()
+{
+    QFETCH(QList<QByteArray>, headers);
+    QFETCH(int, expectedMethod);
+
+    QAuthenticator auth;
+    auth.setUser("user");
+    auth.setPassword("pass");
+    auth.detach();
+
+    QAuthenticatorPrivate *priv = QAuthenticatorPrivate::getPrivate(auth);
+
+    QHttpHeaders httpHeaders;
+    for (const QByteArray &header : headers)
+        httpHeaders.append(QByteArrayLiteral("WWW-Authenticate"), header);
+
+    priv->parseHttpResponse(httpHeaders, /*isProxy=*/false, {});
+    QCOMPARE(int(priv->method), expectedMethod);
+}
+
 
 QTEST_MAIN(tst_QAuthenticator);
 

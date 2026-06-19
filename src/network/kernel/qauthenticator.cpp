@@ -159,6 +159,13 @@ static QByteArray qGssapiContinue(QAuthenticatorPrivate *ctx, QByteArrayView cha
   enforce this requirement; applications are responsible for ensuring
   transport security when Basic authentication is in use.
 
+  QAuthenticator selects the strongest authentication method offered
+  by the server, using a fixed internal priority order: Negotiate
+  (Kerberos/SPNEGO), NTLM, Digest-MD5, and Basic. The application
+  cannot currently influence this selection or restrict which methods
+  are acceptable. If a server or proxy offers only a weak method, it
+  will be used without notification.
+
   Applications with strict requirements for credential hygiene should
   take this into account when deciding how and where to use
   QAuthenticator.
@@ -553,20 +560,24 @@ void QAuthenticatorPrivate::parseHttpResponse(const QHttpHeaders &headers,
     const QByteArrayList values = headers.values(search); // pinned for headerVal
     for (const auto &current : values) {
         const QLatin1StringView str(current);
-        if (method < Basic && str.startsWith("basic"_L1, Qt::CaseInsensitive)) {
+        if (methodStrength(method) < methodStrength(Basic)
+                && str.startsWith("basic"_L1, Qt::CaseInsensitive)) {
             method = Basic;
             headerVal = QByteArrayView(current).mid(6);
-        } else if (method < Ntlm && str.startsWith("ntlm"_L1, Qt::CaseInsensitive)) {
+        } else if (methodStrength(method) < methodStrength(Ntlm)
+                && str.startsWith("ntlm"_L1, Qt::CaseInsensitive)) {
             method = Ntlm;
             headerVal = QByteArrayView(current).mid(5);
-        } else if (method < DigestMd5 && str.startsWith("digest"_L1, Qt::CaseInsensitive)) {
+        } else if (methodStrength(method) < methodStrength(DigestMd5)
+                && str.startsWith("digest"_L1, Qt::CaseInsensitive)) {
             // Make sure the algorithm is actually MD5 before committing to it:
             if (!verifyDigestMD5(QByteArrayView(current).sliced(7)))
                 continue;
 
             method = DigestMd5;
             headerVal = QByteArrayView(current).mid(7);
-        } else if (method < Negotiate && str.startsWith("negotiate"_L1, Qt::CaseInsensitive)) {
+        } else if (methodStrength(method) < methodStrength(Negotiate)
+                && str.startsWith("negotiate"_L1, Qt::CaseInsensitive)) {
 #if QT_CONFIG(sspi) || QT_CONFIG(gssapi) // if it's not supported then we shouldn't try to use it
             method = Negotiate;
             headerVal = QByteArrayView(current).mid(10);
