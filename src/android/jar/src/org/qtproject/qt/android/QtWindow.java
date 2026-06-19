@@ -295,6 +295,14 @@ class QtWindow extends QtLayout implements QtSurfaceInterface
     {
         m_surface = surface;
         surfaceCreated(getId(), surface);
+
+        // Initialize input when the surface exists, before the first touch.
+        if (surface != null && !m_editTextFocusInitialized && m_editText != null) {
+            enableEditTextFocus();
+            if (m_inputConnectionListener != null)
+                m_inputConnectionListener.onEditTextChanged(m_editText);
+            m_editText.requestFocus();
+        }
     }
 
     @Override
@@ -329,15 +337,7 @@ class QtWindow extends QtLayout implements QtSurfaceInterface
     @Override
     public boolean onTouchEvent(MotionEvent event)
     {
-        // Enable focus for the edit text on first touch event to avoid
-        // early QtInputConnection callbacks from blocking the UI thread.
-        if (!m_editTextFocusInitialized) {
-            m_editTextFocusInitialized = true;
-            if (m_editText != null) {
-                m_editText.setFocusable(true);
-                m_editText.setFocusableInTouchMode(true);
-            }
-        }
+        enableEditTextFocus();
 
         windowFocusChanged(true, getId());
         if (m_editText != null && m_inputConnectionListener != null)
@@ -347,6 +347,15 @@ class QtWindow extends QtLayout implements QtSurfaceInterface
         if (m_gestureDetector != null)
             m_gestureDetector.onTouchEvent(event);
         return true;
+    }
+
+    private void enableEditTextFocus()
+    {
+        if (m_editTextFocusInitialized || m_editText == null)
+            return;
+        m_editTextFocusInitialized = true;
+        m_editText.setFocusable(true);
+        m_editText.setFocusableInTouchMode(true);
     }
 
     @Override
