@@ -56,6 +56,13 @@ QT_BEGIN_NAMESPACE
     On Windows, the variable names are case-insensitive, but case-preserving.
     QProcessEnvironment behaves accordingly.
 
+    \section1 Security Considerations
+
+    Extending a process environment with new environment variables or adjusting
+    \c{PATH} may expose the system to security vulnerabilities, for example via
+    executing an untrusted binary. Therefore it is recommended to validate
+    all user input before passing it to the process environment.
+
     \sa QProcess, QProcess::systemEnvironment(), QProcess::setProcessEnvironment()
 */
 
@@ -625,6 +632,65 @@ void QProcessPrivate::Channel::clear()
     rocks!", without an event loop:
 
     \snippet process/process.cpp 0
+
+    \section1 Security Considerations
+
+    Treat the program name, arguments, environment, and working directory as
+    hostile input whenever any of them comes from an untrusted source (the
+    network, an untrusted file, an application controlled by other users).
+    A process that QProcess starts runs with the full privileges of the calling
+    application.
+
+    \section2 Resolving the Program Name
+
+    When possible, pass an absolute path as the program name. A plain file
+    name is resolved through the \c{PATH} environment variable on Unix, or by
+    the operating system's search order on Windows (which historically
+    includes the current directory, as well as \c{PATH}), so an attacker who
+    can poison \c{PATH} or drop a file into a searched directory chooses which
+    binary runs. See \l{Finding the Executable} for more details on the binary
+    lookup process.
+
+    \section2 Handling Arguments
+
+    Pass arguments as separate list elements through start() or setArguments();
+    never assemble a single command string from untrusted parts. On Unix the
+    arguments are delivered to the child verbatim as individual \c argv entries
+    with no shell involved, so characters such as \c &, \c |, \c ; or \c $
+    carry no special meaning. On Windows, QProcess will appropriately quote and
+    escape the arguments according to the rules set forth by the
+    \c CommandLineToArgvW() Win32 function. In neither OS will QProcess
+    automatically use the shell.
+
+    When using splitCommand() and startCommand(), pay attention on the fact
+    that their tokenization and escaping rules are different from those for
+    Windows and POSIX shells. Incorrectly escaped input opens a possibility
+    for argument injection.
+
+    \section2 Launching Shells and Batch Files
+
+    On Windows, do not pass untrusted arguments to a batch file (\c{.bat} or
+    \c{.cmd}) or to \c{cmd.exe}. Prefer using setNativeArguments() and quoting
+    and escaping them on your own instead. QProcess quotes arguments for the
+    \c CommandLineToArgvW() rules, but \c{cmd.exe} parses its command line
+    differently and receives the shell metacharacters \c %, \c ^, \c &, \c |,
+    \c <, \c >, \c {(}, and \c {)} unescaped. An argument such as
+    \c{args&calc.exe} passed to a \c{.cmd} script therefore runs \c{calc.exe}
+    as a second command. Note that on Windows all arguments are internally
+    combined into a single commandline string, so even passing the arguments
+    separately as \c{process.start("file.cmd", {"args", "&calc.exe"})} does
+    not solve the problem. Many tools install batch scripts (for example
+    \c npm, \c yarn, or \c gradle wrappers), so the target being a batch file
+    is easy to overlook.
+
+    On Unix, similar problems may exist if you launch the shell
+    explicitly - for example
+    \c{process.start("/bin/sh", {"-c", "args&&malicious_binary"})} - then the
+    shell, not QProcess, parses the \c{-c} string and gives \c &&, \c ;, \c |,
+    backticks, and \c{$()} their usual meaning, just as \c{cmd.exe} does on
+    Windows. Here the trailing \c{&&malicious_binary} runs a second program
+    after \c args, so assembling that \c{-c} string from untrusted input is
+    command injection.
 
     \sa QBuffer, QFile, QTcpSocket
 */
