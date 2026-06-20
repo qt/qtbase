@@ -1425,6 +1425,10 @@ struct QMetaTypeIdQObject<T*, QMetaType::PointerToGadget>
 
     static int qt_metatype_id()
     {
+        // register the actual gadget type too
+        QMetaType::fromType<std::remove_cv_t<T>>().registerType();
+        if constexpr (std::is_const_v<T>)
+            QMetaType::fromType<T>().registerType();
         return QMetaType::fromType<T *>().id();
     }
 };
