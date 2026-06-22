@@ -200,9 +200,9 @@ QOhosMtBlockingCallsGateway<SlaveContext>::tryInvokeInMasterThreadAndTryWaitForC
         taskState->resultSetCondVar.wait_for(
             waitStateLock, timeout,
             [&]() {
-                return taskState->result.hasValue();
+                return taskState->result.has_value();
             });
-        result = taskState->result.valueOr(
+        result = taskState->result.value_or(
             taskState->started
                 ? MasterThreadTaskResult::TimeoutedAfterStart
                 : MasterThreadTaskResult::TimeoutedBeforeStart);

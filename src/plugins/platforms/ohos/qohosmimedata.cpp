@@ -15,7 +15,7 @@ template<typename T>
 QOhosSupplier<T> makeMemoizingSupplier(QOhosSupplier<T> baseSupplier)
 {
     return [baseSupplier = std::move(baseSupplier), value = QOhosOptional<T>()]() mutable {
-        if (!value.hasValue()) {
+        if (!value.has_value()) {
             value.emplace(baseSupplier());
             baseSupplier = nullptr;
         }

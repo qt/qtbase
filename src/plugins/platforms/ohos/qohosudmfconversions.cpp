@@ -299,7 +299,7 @@ void addMimeDataSuppliersForGeneralEntriesFromRecords(
                         QString::fromStdString(mimeTypes.front()),
                         [context, recordPtr = &record, typeId]() {
                             auto generalEntry = recordPtr->tryGetGeneralEntry(typeId);
-                            if (!generalEntry.hasValue())
+                            if (!generalEntry.has_value())
                                 return QVariant();
 
                             return QVariant(
@@ -454,7 +454,7 @@ void addGeneralEntryToRecord(std::string mimeType, QSpan<const std::uint8_t> dat
     }
 
     auto optUtdTypeId = tryMapMimeTypeToUtdTypeId(mimeType);
-    if (optUtdTypeId.hasValue()) {
+    if (optUtdTypeId.has_value()) {
         record.addGeneralEntry(optUtdTypeId.value(), dataBytes);
     } else {
         qOhosPrintfWarning(
@@ -637,7 +637,7 @@ std::function<QOhosUdmfRecord()> tryMakeDefaultUdmfRecordFactoryFromQMimeDataOrN
             std::make_shared<std::map<std::string, std::function<UdmfRecordEntryFactory(const QMimeData &)>>>();
         for (const auto &providerEntry : context->providerEntries) {
             auto optUdmfMetaId = providerEntry.optUdmfMetaIdFactory();
-            if (optUdmfMetaId.hasValue()) {
+            if (optUdmfMetaId.has_value()) {
                 entryMetaFactoryFuncsForProvider->emplace(
                     optUdmfMetaId.value(), providerEntry.metaFactoryFunc);
             }
@@ -664,9 +664,9 @@ std::function<QOhosUdmfRecord()> tryMakeDefaultUdmfRecordFactoryFromQMimeDataOrN
                         processQMimeDataInQtThreadTimeout);
                     qOhosPrintfDebug(
                         "%s: got result from Qt thread: %s",
-                        Q_FUNC_INFO, QtOhos::mapBoolToTrueFalseStr(optUdmfRecordEntryFactory.hasValue()));
+                        Q_FUNC_INFO, QtOhos::mapBoolToTrueFalseStr(optUdmfRecordEntryFactory.has_value()));
 
-                    void *providerResult = optUdmfRecordEntryFactory.hasValue()
+                    void *providerResult = optUdmfRecordEntryFactory.has_value()
                         ? optUdmfRecordEntryFactory.value().makeRecordProviderDataForEntry()
                         : nullptr;
                     qOhosPrintfDebug("%s: provider result: %p", Q_FUNC_INFO, providerResult);
@@ -714,7 +714,7 @@ std::function<QOhosUdmfData()> makeUdmfDataFactoryFromQMimeDataImpl(
     return [shareInAppOnly, recordFactories = std::move(recordFactories)]() {
         QOhosUdmfData udmfData;
 
-        if (shareInAppOnly.hasValue()) {
+        if (shareInAppOnly.has_value()) {
             auto udmfShareProperty = createUdmfPropertyForUdmfData(udmfData.nativePtr());
             QArkUi::callArkUiOrFailOnErrorResult(
                 Q_OHOS_NAMED_FUNC(::OH_UdmfProperty_SetShareOption),
@@ -804,7 +804,7 @@ QOhosSupplier<std::unique_ptr<QMimeData>> makeDummyQMimeDataFactoryFromUdmfDataT
 bool isQOhosUdmfDataConvertedFromThisProcessMimeData(QOhosUdmfData &udmfData)
 {
     auto qtAppInfoDataUtdTypeId = tryMapMimeTypeToUtdTypeId(qtAppInfoDataPseudoMimeType);
-    if (!qtAppInfoDataUtdTypeId.hasValue()) {
+    if (!qtAppInfoDataUtdTypeId.has_value()) {
         qOhosPrintfError("%s: Can't map %s to UTD type id", Q_FUNC_INFO, qtAppInfoDataPseudoMimeType);
         return false;
     }
@@ -816,7 +816,7 @@ bool isQOhosUdmfDataConvertedFromThisProcessMimeData(QOhosUdmfData &udmfData)
         udmfRecords.begin(), udmfRecords.end(),
         [&](auto &udmfRecord) {
             auto optAppInfoData = udmfRecord.tryGetGeneralEntry(qtAppInfoDataUtdTypeId.value());
-            if (!optAppInfoData.hasValue())
+            if (!optAppInfoData.has_value())
                 return false;
 
             auto appInfoData = optAppInfoData.value();

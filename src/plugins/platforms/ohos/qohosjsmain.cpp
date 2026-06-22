@@ -631,11 +631,11 @@ std::size_t getPreferredStackSizeForQtThread()
     constexpr std::size_t qtRequiredMinStackSize = 40960;
     std::size_t pthreadStackMin = PTHREAD_STACK_MIN;
     auto minStackSize = std::max({qtRequiredMinStackSize, pthreadStackMin});
-    auto maxStackSize = tryGetMaxStackSizeHardLimit().valueOr(std::numeric_limits<std::size_t>::max());
+    auto maxStackSize = tryGetMaxStackSizeHardLimit().value_or(std::numeric_limits<std::size_t>::max());
 
     auto optRequestedStackSize = tryGetQtThreadStackSizeFromEnv();
 
-    if (optRequestedStackSize.hasValue()) {
+    if (optRequestedStackSize.has_value()) {
         auto requestedStackSize = optRequestedStackSize.value();
         if (requestedStackSize < minStackSize) {
             qOhosPrintfWarning(
@@ -650,7 +650,7 @@ std::size_t getPreferredStackSizeForQtThread()
     }
 
     auto preferredStackSize = qBound(
-        minStackSize, optRequestedStackSize.valueOr(defaultQtThreadStackSize), maxStackSize);
+        minStackSize, optRequestedStackSize.value_or(defaultQtThreadStackSize), maxStackSize);
 
     qOhosPrintfInfo("%s: preferred stack size for Qt Thread: %zu", Q_FUNC_INFO, preferredStackSize);
 
@@ -795,13 +795,13 @@ void handleDefaultQAbilityInstanceStartup(JsState &jsState, std::shared_ptr<QAbi
             makeQtThreadWithMainFuncLauncher(std::move(appMainFuncLauncher)));
         s_qtAppThreadMainFuncLauncher = [mainFuncLauncher, qtAppThreadIdleSetFunc](std::vector<std::string> appArgs) {
             (*qtAppThreadIdleSetFunc)(false);
-            s_hotStartIteration.activeInQtThread = s_hotStartIteration.activeInQtThread.valueOr(0) + 1;
+            s_hotStartIteration.activeInQtThread = s_hotStartIteration.activeInQtThread.value_or(0) + 1;
             (*mainFuncLauncher)(std::move(appArgs));
         };
         s_qtAppThreadIdleStateWaitFunc = std::move(qtAppThreadIdleStateWaitFunc);
     }
 
-    s_hotStartIteration.lastRequestedInJsThread = s_hotStartIteration.lastRequestedInJsThread.valueOr(0) + 1;
+    s_hotStartIteration.lastRequestedInJsThread = s_hotStartIteration.lastRequestedInJsThread.value_or(0) + 1;
     s_qtAppThreadMainFuncLauncher(
         s_appArgs
             ? *s_appArgs
@@ -1202,9 +1202,9 @@ QNapi::Value handleAbilityStageOnAcceptWant(const CallbackInfo &cbInfo)
             : makeEmptyQOhosOptional();
 
     auto qAbilityInstanceId =
-        receivedQAbilityInstanceId.hasValue()
+        receivedQAbilityInstanceId.has_value()
             ? receivedQAbilityInstanceId.value()
-            : getQAbilityInstancesManager().pendingAutoStartedInstanceId().valueOr(
+            : getQAbilityInstancesManager().pendingAutoStartedInstanceId().value_or(
                 defaultQAbilityPeer->instanceId());
 
     qOhosPrintfInfo("AbilityStage::onAcceptWant: returning instanceId='%s'", qAbilityInstanceId.c_str());
@@ -1470,7 +1470,7 @@ QNapi::Value handleAbilityOnDestroy(const CallbackInfo &cbInfo)
 
     auto optQWindowDestroyPromise = qAbilityPeer->qWindowDestroyPromise();
 
-    auto initialPromise = optQWindowDestroyPromise.hasValue()
+    auto initialPromise = optQWindowDestroyPromise.has_value()
         ? optQWindowDestroyPromise.value()
         : makeResolvedPromise(cbInfo.Env().Undefined());
 
@@ -1641,7 +1641,7 @@ void setupQtApplicationImpl(JsState &jsState, QNapi::Object appStartupObj, QtRun
     }
 
     const auto recognizedDeviceType = QOhosDeviceInfo::tryGetRecognizedDeviceType();
-    if (!recognizedDeviceType.hasValue()) {
+    if (!recognizedDeviceType.has_value()) {
         qOhosReportFatalErrorAndAbort(
             "%s: Unrecognized device type: %s. Qt does not support unrecognized devices. Aborting.",
             Q_FUNC_INFO, qPrintable(QOhosDeviceInfo::getProperty(QOhosDeviceInfo::Type::deviceType).toString()));

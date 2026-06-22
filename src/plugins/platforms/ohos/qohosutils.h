@@ -205,7 +205,7 @@ QOhosConsumer<T> makeCompressingAsyncConsumer(
 
     return [context](T value) {
         std::lock_guard<std::mutex> pendingValueLock(context->pendingValueMutex);
-        if (!context->pendingValue.hasValue()) {
+        if (!context->pendingValue.has_value()) {
             context->asyncExecutor(
                 [context]() {
                     QOhosOptional<T> pendingValue;
@@ -239,7 +239,7 @@ std::enable_if_t<std::is_integral<T>::value && std::is_unsigned<T>::value, QOhos
 tryParseStringAsUnsignedInteger(const std::string &inputString)
 {
     auto parsedValue = qohosutils_details::tryParseStringAsUIntMax(inputString);
-    bool valueValidForType = parsedValue.hasValue()
+    bool valueValidForType = parsedValue.has_value()
         && parsedValue.value() <= std::numeric_limits<T>::max();
     return valueValidForType
         ? makeQOhosOptional(static_cast<T>(parsedValue.value()))

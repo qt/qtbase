@@ -54,11 +54,11 @@ template<>
 QOhosOptional<double> tryGetDataItemTypedValue(const std::string &name, const std::string &domainName)
 {
     auto optStringValue = tryGetDataItemValue(name, domainName);
-    auto optDoubleValue = optStringValue.hasValue()
+    auto optDoubleValue = optStringValue.has_value()
         ? QtOhos::tryParseStringAsFiniteDouble(optStringValue.value())
         : makeEmptyQOhosOptional();
 
-    if (optStringValue.hasValue() && !optDoubleValue.hasValue()) {
+    if (optStringValue.has_value() && !optDoubleValue.has_value()) {
         qOhosPrintfError(
             "OHOS settings value %s/%s ('%s') is not correct double value, assuming empty setting",
             name.c_str(), domainName.c_str(), optStringValue.value().c_str());
@@ -85,7 +85,7 @@ double fontSizeScale()
     const auto maybeFontSizeScaleSetting = tryGetDataItemTypedValue<double>(
         fontSizeScalePropertyName, getOhosSettingsUserPropertyDomainName());
 
-    if (!maybeFontSizeScaleSetting.hasValue()) {
+    if (!maybeFontSizeScaleSetting.has_value()) {
         qOhosPrintfWarning(
             "Cannot obtain '%s' property. Assuming its default fallback mode value %f",
             fontSizeScalePropertyName, defaultFontSizeScale);
@@ -106,7 +106,7 @@ bool isWindowPcModeEnabled()
     auto maybeWindowPcModeSwitchStatus = tryGetDataItemValue(
         windowPcModeSwitchStatusPropertyName, getOhosSettingsUserPropertyDomainName());
 
-    if (!maybeWindowPcModeSwitchStatus.hasValue()) {
+    if (!maybeWindowPcModeSwitchStatus.has_value()) {
         qOhosPrintfWarning(
             "Cannot obtain '%s' property. Assuming it is NOT enabled.",
             windowPcModeSwitchStatusPropertyName);

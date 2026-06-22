@@ -63,7 +63,7 @@ void checkAppPermissionGrantedWithConsumer(
         jsState,
         [permissionName, resultConsumer = std::move(resultConsumer)](
             QtOhos::JsState &jsState, QOhosOptional<int> bundleAccessTokenId) mutable {
-            if (bundleAccessTokenId.hasValue()) {
+            if (bundleAccessTokenId.has_value()) {
                 checkAppPermissionStatusGrantedWithConsumer(
                     jsState, bundleAccessTokenId.value(), permissionName,
                     std::move(resultConsumer));
