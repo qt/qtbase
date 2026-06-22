@@ -116,7 +116,7 @@ std::shared_ptr<QOhosUdmfData> tryGetDragEventUdmfDataOrNull(::ArkUI_DragEvent *
 void setDragEventSuggestedDropOperationIfAvailable(
     ::ArkUI_DragEvent *dragEvent, QOhosOptional<::ArkUI_DropOperation> optDropOperation)
 {
-    if (optDropOperation.hasValue()) {
+    if (optDropOperation.has_value()) {
         QArkUi::callArkUiOrFailOnErrorResult(
             Q_OHOS_NAMED_FUNC(::OH_ArkUI_DragEvent_SetSuggestedDropOperation),
             dragEvent, optDropOperation.value());
@@ -385,7 +385,7 @@ QOhosConsumer<::ArkUI_NodeEvent *> makeQOhosNativeDragEventsHandler(
                 QArkUi::callArkUiOrFailOnErrorResult(
                     Q_OHOS_NAMED_FUNC(::OH_ArkUI_DragEvent_SetDragResult),
                     dragEvent,
-                    qtDropAction.valueOr(Qt::IgnoreAction) != Qt::IgnoreAction
+                    qtDropAction.value_or(Qt::IgnoreAction) != Qt::IgnoreAction
                         ? Q_DROP_ENABLED
                         : Q_DROP_DISABLED);
                 setDragEventSuggestedDropOperationIfAvailable(
@@ -424,7 +424,7 @@ QOhosConsumer<::ArkUI_NodeEvent *> makeQOhosNativeDragEventsHandler(
                     QArkUi::callArkUiOrFailOnErrorResult(
                         Q_OHOS_NAMED_FUNC(::OH_ArkUI_DragEvent_SetDragResult),
                         dragEvent,
-                        qtDropAction.valueOr(Qt::IgnoreAction) != Qt::IgnoreAction
+                        qtDropAction.value_or(Qt::IgnoreAction) != Qt::IgnoreAction
                             ? ::ARKUI_DRAG_RESULT_SUCCESSFUL
                             : ::ARKUI_DRAG_RESULT_FAILED);
                     setDragEventSuggestedDropOperationIfAvailable(

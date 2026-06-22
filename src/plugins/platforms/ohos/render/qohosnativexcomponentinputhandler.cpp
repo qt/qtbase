@@ -75,7 +75,7 @@ QOhosOptional<QOhosTouchEventTouchPointData> tryMakeTouchEventPointData(
     std::uint32_t pointIndex)
 {
     auto touchDisplayPosition = tryGetTouchPointDisplayPosition(xComponent, pointIndex);
-    if (!touchDisplayPosition.hasValue())
+    if (!touchDisplayPosition.has_value())
         return makeEmptyQOhosOptional();
 
     ::OH_NativeXComponent_TouchPointToolType toolType = ::OH_NATIVEXCOMPONENT_TOOL_TYPE_UNKNOWN;
@@ -231,7 +231,7 @@ void QOhosNativeXComponentInputHandler::handleTouchEvent(void *window)
 
     for (std::uint32_t pointIndex = 0; pointIndex < touchEvent.numPoints; ++pointIndex) {
         auto pointData = tryMakeTouchEventPointData(m_xComponent, touchEvent, pointIndex);
-        if (pointData.hasValue())
+        if (pointData.has_value())
             validTouchPoints.push_back(pointData.value());
     }
 
@@ -327,7 +327,7 @@ void QOhosNativeXComponentInputHandler::processMouseEventsInQtThread(std::vector
         auto event = batch[i].event;
 
         auto eventType = tryMapXComponentMouseEventActionToQEventType(event.action);
-        if (!eventType.hasValue()) {
+        if (!eventType.has_value()) {
             qOhosPrintfDebug(
                 "%s: got unsupported action in mouse event (%d), ignoring",
                 Q_FUNC_INFO, event.action);
@@ -335,7 +335,7 @@ void QOhosNativeXComponentInputHandler::processMouseEventsInQtThread(std::vector
         }
 
         auto optButton = tryMapXComponentMouseButtonToQt(event.button);
-        if (!optButton.hasValue())
+        if (!optButton.has_value())
            qOhosWarning(QtForOhos) << "Unexpected mouse button!";
 
         // HACK / FIXME
@@ -351,7 +351,7 @@ void QOhosNativeXComponentInputHandler::processMouseEventsInQtThread(std::vector
                     std::chrono::nanoseconds(event.timestamp)),
                 .localPosition = localPos,
                 .globalPosition = globalPos,
-                .button = optButton.valueOr(Qt::NoButton),
+                .button = optButton.value_or(Qt::NoButton),
                 .eventType = eventType.value(),
                 .modifiers = readKeyModifiersFromKeyState(
                     QSpan(keysToModifiers.data(), keysToModifiers.size())),

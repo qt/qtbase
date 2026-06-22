@@ -73,7 +73,7 @@ QXComponentNode takeNodeXComponentFromRegistryOrFail(const QXComponentId &xCompo
 {
     auto &registry = QArkUi::QXComponentRegistry::instance();
     auto nativeNodeXComponentOpt = registry.tryTakeNodeByXComponentId(xComponentId);
-    if (!nativeNodeXComponentOpt.hasValue()) {
+    if (!nativeNodeXComponentOpt.has_value()) {
         qOhosReportFatalErrorAndAbort(
             "Failed to fetch native node xcomponent with id: %s",
             xComponentId.stringId().c_str());

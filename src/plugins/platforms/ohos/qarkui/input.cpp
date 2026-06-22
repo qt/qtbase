@@ -73,7 +73,7 @@ QOhosOptional<MouseEvent> MouseEvent::createFromNativeEvent(const ::Input_MouseE
 
     auto actionValue = ::OH_Input_GetMouseEventAction(event);
     auto optMappedAction = tryMapMouseEventAction(actionValue);
-    if (!optMappedAction.hasValue()) {
+    if (!optMappedAction.has_value()) {
         qOhosPrintfError(
             "%s: Filter for jsWindowId: %f, received unrecognized mouse event action: %d, event will be ignored",
             Q_FUNC_INFO, jsWindowId.value(), actionValue);
@@ -82,7 +82,7 @@ QOhosOptional<MouseEvent> MouseEvent::createFromNativeEvent(const ::Input_MouseE
 
     auto buttonValue = ::OH_Input_GetMouseEventButton(event);
     auto optMappedButton = tryMapMouseEventButton(buttonValue);
-    if (!optMappedButton.hasValue()) {
+    if (!optMappedButton.has_value()) {
         qOhosPrintfError(
             "%s: Filter for jsWindowId: %f, received unrecognized mouse event action: %d, event will be ignored",
             Q_FUNC_INFO, jsWindowId.value(), actionValue);
@@ -114,7 +114,7 @@ QOhosOptional<TouchEvent> TouchEvent::createFromNativeEvent(const ::Input_TouchE
 
     auto actionValue = ::OH_Input_GetTouchEventAction(event);
     auto optMappedAction = tryMapTouchEventAction(actionValue);
-    if (!optMappedAction.hasValue()) {
+    if (!optMappedAction.has_value()) {
         qOhosPrintfError(
             "%s: Filter for jsWindowId: %f, received unrecognized touch event action: %d, event will be ignored",
             Q_FUNC_INFO, jsWindowId.value(), actionValue);
@@ -145,7 +145,7 @@ QOhosOptional<KeyEvent> KeyEvent::createFromNativeEvent(const ::Input_KeyEvent *
 
     auto actionValue = ::OH_Input_GetKeyEventAction(event);
     auto optMappedAction = tryMapKeyEventAction(actionValue);
-    if (!optMappedAction.hasValue()) {
+    if (!optMappedAction.has_value()) {
         qOhosPrintfError(
             "%s: Filter for jsWindowId: %f, received unrecognized key event action: %d, event will be ignored",
             Q_FUNC_INFO, jsWindowId.value(), actionValue);

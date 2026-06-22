@@ -153,7 +153,7 @@ void QOhosAxisEventHandler::handleUiAxisEvent(ArkUI_UIInputEvent *event)
     if (qFuzzyIsNull(horizontalAxisValue) && qFuzzyIsNull(verticalAxisValue) && !qFuzzyIsNull(totalScale)) {
         const auto deviceType = QArkUi::getTouchDeviceType(event);
         const auto gestureType = getQtGestureType(
-            static_cast<InputEvent_AxisAction>(eventAxisAction)).valueOr(Qt::ZoomNativeGesture);
+            static_cast<InputEvent_AxisAction>(eventAxisAction)).value_or(Qt::ZoomNativeGesture);
 
         QOhosNativeGestureEvent newEvent {
             .timestamp = now,
@@ -173,7 +173,7 @@ void QOhosAxisEventHandler::handleUiAxisEvent(ArkUI_UIInputEvent *event)
 
 void QOhosAxisEventHandler::handleUiCoastingAxisEvent(::ArkUI_UIInputEvent *event)
 {
-    if (!m_localPosition.hasValue() || !m_globalPosition.hasValue() || !m_wheelScrollLines.hasValue()) {
+    if (!m_localPosition.has_value() || !m_globalPosition.has_value() || !m_wheelScrollLines.has_value()) {
         qOhosPrintfWarning(
             "%s: Cannot create wheel event - incomplete data, ignoring coasting event.", Q_FUNC_INFO);
         return;

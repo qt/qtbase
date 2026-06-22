@@ -307,7 +307,7 @@ void QEmbeddedWindowNode::setParentOrReparent(ParentDescriptor parentDescriptor)
 
 bool QEmbeddedWindowNode::detachFromParentIfPresent()
 {
-    if (!m_parentDescriptor.hasValue())
+    if (!m_parentDescriptor.has_value())
         return false;
 
     qOhosPrintfDebug("%s", Q_FUNC_INFO);
@@ -376,10 +376,10 @@ bool QEmbeddedWindowNode::ParentDescriptor::operator==(const ParentDescriptor &o
     return m_type == other.m_type && [&]() {
         switch (m_type) {
         case Type::EmbeddedWindowNode:
-            return (m_embeddedWindowNode.hasValue() && other.m_embeddedWindowNode.hasValue())
+            return (m_embeddedWindowNode.has_value() && other.m_embeddedWindowNode.has_value())
                 && m_embeddedWindowNode.value().lock() == other.m_embeddedWindowNode.value().lock();
         case Type::XComponentNode:
-            return (m_xComponentNode.hasValue() && other.m_xComponentNode.hasValue())
+            return (m_xComponentNode.has_value() && other.m_xComponentNode.has_value())
                 && m_xComponentNode.value().lock() == other.m_xComponentNode.value().lock();
         }
     }();

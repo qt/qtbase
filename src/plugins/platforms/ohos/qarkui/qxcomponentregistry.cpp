@@ -48,7 +48,7 @@ bool QXComponentRegistry::Init(napi_env env, napi_value exports)
     }
 
     auto optXComponentId = QXComponentId::tryCreateFromXComponent(xComponent);
-    if (!optXComponentId.hasValue()) {
+    if (!optXComponentId.has_value()) {
         qOhosPrintfError("Failed to retrieve id from xcomponent. Ignoring the component");
         return false;
     }
@@ -56,7 +56,7 @@ bool QXComponentRegistry::Init(napi_env env, napi_value exports)
     auto xComponentId = optXComponentId.value();
 
     auto optXComponentIdType = xComponentId.recognizedType();
-    if (!optXComponentIdType.hasValue()) {
+    if (!optXComponentIdType.has_value()) {
         qOhosPrintfError(
             "Ignoring xComponent due to unrecognized id value: %s",
             xComponentId.stringId().c_str());

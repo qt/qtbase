@@ -102,7 +102,7 @@ void CallbackReceiver::onInputEvent(InputEventType inputEventType, ::OHNativeWin
 
 void CallbackReceiver::onHoverEvent(bool isHover)
 {
-    if (!m_lastWindowArgReceivedViaAnyCallback.hasValue()) {
+    if (!m_lastWindowArgReceivedViaAnyCallback.has_value()) {
         qOhosPrintfWarning("Received hover event before without existing surface");
         return;
     }
@@ -137,7 +137,7 @@ QNativeNode::QNativeNode(const CreateInfo &nativeNodeCreateInfo)
 
     auto renderFit = qAndThen(
         nativeNodeCreateInfo.renderFitPolicyHint, tryMapRenderFitPolicyToArkUi)
-        .valueOr(::ARKUI_RENDER_FIT_TOP_LEFT);
+        .value_or(::ARKUI_RENDER_FIT_TOP_LEFT);
 
     connect(
         qGuiApp, &QGuiApplication::focusWindowChanged,
@@ -160,7 +160,7 @@ QNativeNode::QNativeNode(const CreateInfo &nativeNodeCreateInfo)
         using ParentDescriptor = QArkUi::QEmbeddedWindowNode::ParentDescriptor;
 
         QOhosOptional<ParentDescriptor> optParentDescriptor;
-        if (nativeNodeCreateInfo.optParent.hasValue()) {
+        if (nativeNodeCreateInfo.optParent.has_value()) {
             auto *parentNode = nativeNodeCreateInfo.optParent.value()->m_jsStateData->embeddedWindow.get();
             optParentDescriptor = ParentDescriptor(*parentNode);
         }

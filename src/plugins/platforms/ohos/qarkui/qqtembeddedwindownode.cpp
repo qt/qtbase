@@ -239,7 +239,7 @@ std::shared_ptr<QQtEmbeddedWindowNode> QQtEmbeddedWindowNode::createOrFail(const
     xComponentNode->setAttributeOrFail(::NODE_FOCUS_ON_TOUCH, createInfo.focusOnTouch);
     xComponentNode->setAttributeOrFail(
         ::NODE_BACKGROUND_COLOR,
-        createInfo.backgroundColor.hasValue()
+        createInfo.backgroundColor.has_value()
             ? createInfo.backgroundColor.value().rgba()
             : transparentArgb8888);
     xComponentNode->setAttributeOrFail(
@@ -265,7 +265,7 @@ std::shared_ptr<QQtEmbeddedWindowNode> QQtEmbeddedWindowNode::createOrFail(const
 
     auto node = std::shared_ptr<QQtEmbeddedWindowNode>(
         new QQtEmbeddedWindowNode(std::move(stackNode), std::move(xComponentNode), std::move(windowId)));
-    if (createInfo.optParent.hasValue())
+    if (createInfo.optParent.has_value())
         node->setParentOrReparent(createInfo.optParent.value());
 
     node->setNodeVisibility(false);
@@ -415,7 +415,7 @@ bool QQtEmbeddedWindowNode::hasNonQtManagedChildren() const
         stackNode().handle(),
         [&](::ArkUI_NodeHandle nodeHandle) {
             return !QArkUi::Node::isQtManagedNode(nodeHandle);
-        }).hasValue();
+        }).has_value();
 }
 
 QQtEmbeddedWindowNode::NodeAreaInfo QQtEmbeddedWindowNode::nodeAreaInfo() const

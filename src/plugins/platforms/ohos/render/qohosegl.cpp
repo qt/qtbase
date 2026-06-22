@@ -95,7 +95,7 @@ EGLSurface QOhosEGLSurface::tryGetOrCreateEGLWindowSurface(
         || m_refCurrentDisplay != display
         || m_refCurrentConfig != config
         || m_currentSurfaceFlags != surfaceFlags
-        || (m_targetSurfaceSize.hasValue() && m_targetSurfaceSize != currentSurfaceSize());
+        || (m_targetSurfaceSize.has_value() && m_targetSurfaceSize != currentSurfaceSize());
 
     if (!needsRebuild)
         return m_ownEglSurface;
