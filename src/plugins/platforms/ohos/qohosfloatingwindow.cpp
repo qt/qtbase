@@ -28,6 +28,7 @@ bool isWindowRotatedByTabletScreenRotation(
     QWindow *window, QOhosWindowProxy::RectChangeOptions rectChangeOptions)
 {
     return !QOhosPlatformIntegration::instance()->settings()->isWindowPcModeEnabled()
+        && rectChangeOptions.rect.isValid()
         && window->geometry() != rectChangeOptions.rect
         && rectChangeOptions.reason == QOhosWindowProxy::RectChangeReason::UNDEFINED;
 }
