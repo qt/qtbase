@@ -87,7 +87,7 @@ bool QOhosDisplayManager::tryRegisterDisplay(
     QtOhos::JsState &jsState, JsDisplayId displayId)
 {
     auto optDisplay = QOhosDisplayInfo::tryGetDisplayById(jsState, displayId);
-    if (!optDisplay.hasValue()) {
+    if (!optDisplay.has_value()) {
         qOhosPrintfError(
             "%s: Display with id: %f went missing during its registration.",
             Q_FUNC_INFO, displayId.value());

@@ -530,7 +530,7 @@ std::shared_ptr<QOhosWindowProxy> QOhosView::tryCreateWindowProxyIfNeeded(ViewTy
                 }
             });
 
-        if (result->qtIsMainWindow() && result->isFocused().valueOr(false)) {
+        if (result->qtIsMainWindow() && result->isFocused().value_or(false)) {
             // HACK
             // WINDOW_ACTIVE event should be handled by QOhosFloatingWindow after OHOS system event received.
             // Until we cannot register this event properly, keep sending it manually here.
@@ -831,7 +831,7 @@ void QOhosView::updateWindowBackgroundTransparency(bool transparent)
         m_ohosWindowProxy->setWindowBackgroundColor(
             transparent
                 ? QColor(Qt::transparent)
-                : tryGetBackgroundColorFromWindow(m_ownerWindow).valueOr(
+                : tryGetBackgroundColorFromWindow(m_ownerWindow).value_or(
                     QColor(opaqueSystemBackgroundRgb)));
     }
 }
@@ -916,7 +916,7 @@ void QOhosView::updateWindowModality(Qt::WindowModality modality)
         }
 
         auto ohosModalityType = mapQtWindowModalityToOhosOrDefault(modality);
-        if (ohosModalityType.hasValue())
+        if (ohosModalityType.has_value())
             m_ohosWindowProxy->setSubWindowModalEnabled(ohosModalityType.value());
         else
             m_ohosWindowProxy->setSubWindowModalDisabled();
@@ -1369,27 +1369,27 @@ void QOhosView::syncWindowStateImmediate(WindowStateSyncReason reason)
     }
     const auto privacyModeSetting = m_windowPropertiesProvider
         .tryGetProperty<bool, &QOhosPlatformWindow::windowPrivacyModeSettingProperty>();
-    if (privacyModeSetting.hasValue())
+    if (privacyModeSetting.has_value())
         setPrivacyMode(privacyModeSetting.value());
 
     const auto windowCornerRadius = m_windowPropertiesProvider
         .tryGetProperty<double, &QOhosPlatformWindow::windowCornerRadiusProperty>();
-    if (windowCornerRadius.hasValue())
+    if (windowCornerRadius.has_value())
         setWindowCornerRadius(windowCornerRadius.value());
 
     const auto keepScreenOn = m_windowPropertiesProvider
         .tryGetProperty<bool, &QOhosPlatformWindow::windowKeepScreenOnProperty>();
-    if (keepScreenOn.hasValue())
+    if (keepScreenOn.has_value())
         setWindowKeepScreenOn(keepScreenOn.value());
 
     auto fixedSizeStateEnabled = m_windowPropertiesProvider
         .tryGetProperty<bool, &QOhosPlatformWindow::windowFixedSizeStateProperty>();
-    if (fixedSizeStateEnabled.hasValue())
+    if (fixedSizeStateEnabled.has_value())
         setFixedSizeStateEnabled(fixedSizeStateEnabled.value());
 
     auto windowDragResizable = m_windowPropertiesProvider
         .tryGetProperty<bool, &QOhosPlatformWindow::windowDragResizableProperty>();
-    if (windowDragResizable.hasValue())
+    if (windowDragResizable.has_value())
         setWindowDragResizable(windowDragResizable.value());
 
     // NOTE - when position automatic is set we do not control window position
@@ -1402,7 +1402,7 @@ void QOhosView::syncWindowStateImmediate(WindowStateSyncReason reason)
 
     if (shouldSynchronizeTargetDisplayIdWithQpa) {
         auto optTargetDisplayId = m_ohosWindowProxy->getWindowProperties().displayId;
-        if (optTargetDisplayId.hasValue()) {
+        if (optTargetDisplayId.has_value()) {
             QOhosDisplayInfo::JsDisplayId syntheticDisplayIdChangeEvent = optTargetDisplayId.value();
             Q_EMIT windowDisplayIdChanged(syntheticDisplayIdChangeEvent);
         }
@@ -1420,7 +1420,7 @@ void QOhosView::flushSystemPropertyUpdatesImmediate()
             auto updateFuncPtr = updateDataMemberPtrUpdateFuncPair.second;
             auto &property = m_updateData.*memberPtr;
             auto optUpdateRequest = std::exchange(property.optPendingUpdateRequest, {});
-            if (optUpdateRequest.hasValue())
+            if (optUpdateRequest.has_value())
                 (this->*updateFuncPtr)(optUpdateRequest.value());
     });
     m_updatePending = false;
@@ -1545,7 +1545,7 @@ void QOhosView::restoreMainWindow()
     if (m_ohosWindowProxy == nullptr || !m_ohosWindowProxy->qtIsMainWindow())
         return;
 
-    if (!lastMainWindowHideMethod.hasValue()) {
+    if (!lastMainWindowHideMethod.has_value()) {
         m_ohosWindowProxy->restore();
         return;
     }

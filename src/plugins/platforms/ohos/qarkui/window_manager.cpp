@@ -165,7 +165,7 @@ bool EventConsumersMap<Traits>::filterEvent(typename Traits::RawEventType *event
 {
     auto jsWindowId = Traits::extractWindowIdFromEvent(event);
     auto optMappedEvent = MappedEventType::createFromNativeEvent(event);
-    if (optMappedEvent.hasValue())
+    if (optMappedEvent.has_value())
         instance().m_mtSafeEventsConsumerProxy(std::make_tuple(jsWindowId, optMappedEvent.value()));
     else
         qOhosPrintfWarning("%s: jsWindowId: %f, Failed to map native event type", Q_FUNC_INFO, jsWindowId.value());

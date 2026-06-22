@@ -54,8 +54,8 @@ void QOhosHoverEventsGeneratorImpl::handleQOhosMouseEvent(const QOhosMouseEvent 
 
 void QOhosHoverEventsGeneratorImpl::sendQtHoverEvent(bool isHover)
 {
-    const auto localPosition = m_optCurrentLocalPosition.valueOr(fallbackLocalPositionWhenUnknown);
-    const auto globalPosition = m_optCurrentGlobalPosition.valueOr(fallbackGlobalPositionWhenUnknown);
+    const auto localPosition = m_optCurrentLocalPosition.value_or(fallbackLocalPositionWhenUnknown);
+    const auto globalPosition = m_optCurrentGlobalPosition.value_or(fallbackGlobalPositionWhenUnknown);
 
     m_imEventHandlerRef.visitInQtThreadIfAlive(
         [isHover, localPosition, globalPosition, qWindowRef = m_qWindowRef](QOhosInputMethodEventHandler &imEventHandler) {

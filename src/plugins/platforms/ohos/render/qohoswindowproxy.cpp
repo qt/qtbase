@@ -148,7 +148,7 @@ QArkUi::WindowProperties getWindowPropertiesFromJsWindow(QNapi::Object jsWindow)
 QNapi::Object toNapiObject(napi_env env, const QOhosWindowProxy::MoveConfiguration &moveConfiguration)
 {
     auto moveConfigurationObject = QNapi::makeObject(env);
-    if (moveConfiguration.displayId.hasValue()) {
+    if (moveConfiguration.displayId.has_value()) {
         moveConfigurationObject.set(
             "displayId", moveConfiguration.displayId.value().value());
     }
@@ -370,7 +370,7 @@ void QOhosWindowProxy::removeStartingWindow()
 void QOhosWindowProxy::moveWindowToGlobalOrGlobalDisplay(
     const QPoint &point, QOhosOptional<QOhosDisplayInfo::JsDisplayId> optMoveToTargetDisplay)
 {
-    auto displayIdValue = optMoveToTargetDisplay.valueOr(QOhosDisplayInfo::JsDisplayId(-1)).value();
+    auto displayIdValue = optMoveToTargetDisplay.value_or(QOhosDisplayInfo::JsDisplayId(-1)).value();
     qOhosPrintfDebug("%s: %d,%d,%f", Q_FUNC_INFO, point.x(), point.y(), displayIdValue);
 
     QtOhos::invokeInJsThreadAndWaitForContinue(
@@ -382,9 +382,9 @@ void QOhosWindowProxy::moveWindowToGlobalOrGlobalDisplay(
 
             const auto primaryJsDisplayId = QOhosDisplayInfo::JsDisplayId(0);
 
-            auto targetDisplayId = optMoveToTargetDisplay.hasValue()
+            auto targetDisplayId = optMoveToTargetDisplay.has_value()
                 ? optMoveToTargetDisplay.value()
-                : getWindowProperties().displayId.valueOr(primaryJsDisplayId);
+                : getWindowProperties().displayId.value_or(primaryJsDisplayId);
 
             auto optDisplayInfo = qTransform(
                 QOhosDisplayInfo::tryGetDisplayById(jsState, targetDisplayId),
@@ -399,7 +399,7 @@ void QOhosWindowProxy::moveWindowToGlobalOrGlobalDisplay(
                 });
 
             bool isDisplayMainOrExtended;
-            if (optIsDisplayMainOrExtended.hasValue()) {
+            if (optIsDisplayMainOrExtended.has_value()) {
                 isDisplayMainOrExtended = optIsDisplayMainOrExtended.value();
             } else {
                 qOhosPrintfWarning(
@@ -416,9 +416,9 @@ void QOhosWindowProxy::moveWindowToGlobalOrGlobalDisplay(
                     });
 
                 const QPoint defaultDisplayOffset(0, 0);
-                auto targetCoordinates = point - optDisplayOffset.valueOr(defaultDisplayOffset);
+                auto targetCoordinates = point - optDisplayOffset.value_or(defaultDisplayOffset);
 
-                if (!optMoveToTargetDisplay.hasValue())
+                if (!optMoveToTargetDisplay.has_value())
                     qOhosPrintfWarning("%s: trying to move window to not valid target display", Q_FUNC_INFO);
 
                 auto moveConfigurationObject = toNapiObject(
@@ -635,7 +635,7 @@ void QOhosWindowProxy::showWindow(const ShowWindowOptions &options)
 
         std::vector<std::pair<std::string, QNapi::ValueWrapper>> jsOptionsProps;
 
-        if (options.focusOnShow.hasValue())
+        if (options.focusOnShow.has_value())
             jsOptionsProps.emplace_back("focusOnShow", options.focusOnShow.value());
 
         std::vector<QNapi::ValueWrapper> showWindowArgs;
@@ -874,15 +874,15 @@ void QOhosWindowProxy::setWindowMask(
     if (qtIsMainWindow())
         return;
 
-    auto ohosMaskSize = ohosMaskSizeOverride.hasValue()
+    auto ohosMaskSize = ohosMaskSizeOverride.has_value()
         ? ohosMaskSizeOverride.value()
         : getWindowProperties().windowRect.size();
 
     if (ohosMaskSize.isEmpty()) {
-        const auto *maskSrcSizeMsg = ohosMaskSizeOverride.hasValue()
+        const auto *maskSrcSizeMsg = ohosMaskSizeOverride.has_value()
             ? "overridden mask source"
             : "window";
-        if (ohosMaskSizeOverride.hasValue()) {
+        if (ohosMaskSizeOverride.has_value()) {
             qOhosPrintfError(
                 "%s failed - %s size is 0x0", maskSrcSizeMsg,
                 "QOhosWindowProxy::setWindowMask");
@@ -1436,7 +1436,7 @@ std::shared_ptr<void> QOhosWindowProxy::JsScopeData::registerEventListener(
 
                 auto ignorableError =
                     eventHandlerFlags.testFlag(EventHandlerFlagBits::allowEventHandlerRegistrationFailure)
-                    && errorCode.hasValue()
+                    && errorCode.has_value()
                     && ignorableErrorCodes.contains(errorCode.value());
 
                 if (!ignorableError)
@@ -1577,11 +1577,11 @@ void QOhosWindowProxy::JsScopeData::onMouseEventFromArkUi(const QArkUi::MouseEve
         return;
 
     auto optAction = tryMapMouseEventActionToNonClientAreaEventType(event.action);
-    if (!optAction.hasValue())
+    if (!optAction.has_value())
         return;
 
     auto optWindowProperties = QArkUi::tryGetWindowProperties(event.jsWindowId);
-    if (!optWindowProperties.hasValue()) {
+    if (!optWindowProperties.has_value()) {
         qOhosPrintfError(
             "%s: Failed to retrieve window properties for js window: %f. Ignoring event.",
             Q_FUNC_INFO, event.jsWindowId.value());
@@ -1596,7 +1596,7 @@ void QOhosWindowProxy::JsScopeData::onMouseEventFromArkUi(const QArkUi::MouseEve
     NonClientAreaMouseEvent nonClientAreaMouseEvent = {
         .timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(event.actionTime),
         .action = optAction.value(),
-        .button = tryMapMouseEventButtonToQt(event.button).valueOr(Qt::NoButton),
+        .button = tryMapMouseEventButtonToQt(event.button).value_or(Qt::NoButton),
         .displayPosition = event.displayPosition,
         .localPosition = event.displayPosition - windowOrigin,
         .globalPosition = event.globalPosition,
@@ -1611,11 +1611,11 @@ void QOhosWindowProxy::JsScopeData::onTouchEventFromArkUi(const QArkUi::TouchEve
         return;
 
     auto optState = tryMapTouchEventActionToNonClientAreaEventState(event.action);
-    if (!optState.hasValue())
+    if (!optState.has_value())
         return;
 
     auto optWindowProperties = QArkUi::tryGetWindowProperties(event.jsWindowId);
-    if (!optWindowProperties.hasValue()) {
+    if (!optWindowProperties.has_value()) {
         qOhosPrintfError(
             "%s: Failed to retrieve window properties for js window: %f. Ignoring event.",
             Q_FUNC_INFO, event.jsWindowId.value());
