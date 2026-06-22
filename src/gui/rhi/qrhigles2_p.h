@@ -1098,6 +1098,7 @@ public:
         uint unpackRowLength : 1;
         uint perRenderTargetBlending : 1;
         uint sampleVariables : 1;
+        uint imageLoadStore : 1;
     } caps;
     QGles2SwapChain *currentSwapChain = nullptr;
     QSet<GLint> supportedCompressedFormats;
