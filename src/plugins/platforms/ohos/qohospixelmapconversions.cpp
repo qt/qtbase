@@ -143,11 +143,11 @@ std::shared_ptr<::OH_PixelmapNative> createNativePixelMapFromQImage(QImage qImag
     ::OH_PixelmapNative *pixelMap {};
 
     QImage effectiveImage =
-        tryMapQtPixelFormatToOhosPixelFormat(qImage.format()).hasValue()
+        tryMapQtPixelFormatToOhosPixelFormat(qImage.format()).has_value()
             ? qImage
             : qImage.convertToFormat(QImage::Format_RGBA8888);
     auto optOhosPixelFormat = tryMapQtPixelFormatToOhosPixelFormat(effectiveImage.format());
-    Q_ASSERT(optOhosPixelFormat.hasValue());
+    Q_ASSERT(optOhosPixelFormat.has_value());
     auto ohosPixelFormat = optOhosPixelFormat.value();
 
     auto initOptions = makeNativePixelMapInitializationOptions(
@@ -299,11 +299,11 @@ std::shared_ptr<::OH_PixelmapNative> makeEmptyNativePixelMap()
 QNapi::Object createNapiPixelMapFromQImage(QtOhos::JsState &jsState, const QImage &image)
 {
     QImage effectiveImage =
-        tryMapQtPixelFormatToOhosPixelFormat(image.format()).hasValue()
+        tryMapQtPixelFormatToOhosPixelFormat(image.format()).has_value()
             ? image
             : image.convertToFormat(QImage::Format_RGBA8888);
     auto optOhosPixelFormat = tryMapQtPixelFormatToOhosPixelFormat(effectiveImage.format());
-    Q_ASSERT(optOhosPixelFormat.hasValue());
+    Q_ASSERT(optOhosPixelFormat.has_value());
     auto ohosPixelFormat = optOhosPixelFormat.value();
 
     auto *env = jsState.env();

@@ -24,7 +24,7 @@ QOhosOptional<QNapi::Object> tryMakeShareKitSharedDataRecordObject(
         ? tryMapMimeTypeToUtdTypeId(record.mimeType)
         : QOhosOptional<std::string>(QOhosUdsMeta<::OH_UdsHyperlink>::udmfMetaId);
 
-    if (!optUtdType.hasValue()) {
+    if (!optUtdType.has_value()) {
         qOhosPrintfWarning(
             "%s: Cannot convert mime type: %s to utd type.", Q_FUNC_INFO, record.mimeType.c_str());
         return makeEmptyQOhosOptional();
@@ -34,9 +34,9 @@ QOhosOptional<QNapi::Object> tryMakeShareKitSharedDataRecordObject(
         {"utd", optUtdType.value()},
     };
 
-    if (record.content.hasValue()) {
+    if (record.content.has_value()) {
         objectProperties.emplace_back("content", record.content.value());
-    } else if (record.filePath.hasValue()) {
+    } else if (record.filePath.has_value()) {
         objectProperties.emplace_back(
             "uri",
             QOhosPlatformServices::mapPathToOhosUriInJsThread(record.filePath.value()));
@@ -45,16 +45,16 @@ QOhosOptional<QNapi::Object> tryMakeShareKitSharedDataRecordObject(
         return makeEmptyQOhosOptional();
     }
 
-    if (record.title.hasValue())
+    if (record.title.has_value())
         objectProperties.emplace_back("title", record.title.value());
 
-    if (record.label.hasValue())
+    if (record.label.has_value())
         objectProperties.emplace_back("label", record.label.value());
 
-    if (record.description.hasValue())
+    if (record.description.has_value())
         objectProperties.emplace_back("description", record.description.value());
 
-    if (record.thumbnail.hasValue()) {
+    if (record.thumbnail.has_value()) {
         auto thumbnail = record.thumbnail.value();
         auto napiThumbnail = QNapi::TypedArrayOf<std::uint8_t>::New(jsState.env(), thumbnail.length());
         std::memcpy(napiThumbnail.Data(), thumbnail.data(), thumbnail.length());
@@ -62,13 +62,13 @@ QOhosOptional<QNapi::Object> tryMakeShareKitSharedDataRecordObject(
         objectProperties.emplace_back("thumbnail", napiThumbnail);
     }
 
-    if (record.thumbnailFilePath.hasValue()) {
+    if (record.thumbnailFilePath.has_value()) {
         objectProperties.emplace_back(
             "thumbnailUri",
             QOhosPlatformServices::mapPathToOhosUriInJsThread(record.thumbnailFilePath.value()));
     }
 
-    if (record.extraData.hasValue()) {
+    if (record.extraData.has_value()) {
         objectProperties.emplace_back(
             "extraData",
             QOhosJsEnv::toNapiValue(jsState.env(), QJsonObject::fromVariantMap(record.extraData.value())));
@@ -97,7 +97,7 @@ QOhosOptional<QNapi::Object> tryMakeShareKitShareControllerAnchorObject(
             },
         });
 
-    if (anchor.size.hasValue() && anchor.size.value().isValid()) {
+    if (anchor.size.has_value() && anchor.size.value().isValid()) {
         shareControllerAnchorObject.set(
             "size",
             QNapi::makeObject(
@@ -116,24 +116,24 @@ QNapi::Object makeShareKitControllerOptionsObject(
 {
     auto controllerOptionsObject = QNapi::makeObject(jsState.env());
 
-    if (controllerOptions.selectionMode.hasValue()) {
+    if (controllerOptions.selectionMode.has_value()) {
         controllerOptionsObject.set(
             "selectionMode", jsState.mapOhosEnumToJs(controllerOptions.selectionMode.value()));
     }
 
-    if (controllerOptions.anchor.hasValue()) {
+    if (controllerOptions.anchor.has_value()) {
         auto controllerAnchorObject = tryMakeShareKitShareControllerAnchorObject(
             jsState, controllerOptions.anchor.value());
-        if (controllerAnchorObject.hasValue())
+        if (controllerAnchorObject.has_value())
             controllerOptionsObject.set("anchor", controllerAnchorObject.value());
     }
 
-    if (controllerOptions.previewMode.hasValue()) {
+    if (controllerOptions.previewMode.has_value()) {
         controllerOptionsObject.set(
             "previewMode", jsState.mapOhosEnumToJs(controllerOptions.previewMode.value()));
     }
 
-    if (controllerOptions.excludedAbilities.hasValue()) {
+    if (controllerOptions.excludedAbilities.has_value()) {
         controllerOptionsObject.set(
             "excludedAbilities",
             QNapi::makeArray(
@@ -177,7 +177,7 @@ void shareDataImpl(
     }
 
     auto firstRecord = tryMakeShareKitSharedDataRecordObject(jsState, recordsToShare.front());
-    if (!firstRecord.hasValue()) {
+    if (!firstRecord.has_value()) {
         qOhosPrintfWarning("%s: Failed to create the very first record, skip sharing", Q_FUNC_INFO);
         resultConsumer(nullptr);
         return;
@@ -191,7 +191,7 @@ void shareDataImpl(
 
     for (std::size_t i = 1; i < recordsToShare.size(); i++) {
         auto record = tryMakeShareKitSharedDataRecordObject(jsState, recordsToShare.at(i));
-        if (record.hasValue()) {
+        if (record.has_value()) {
             qOhosPrintfDebug(
                 "%s: record #%zu to be shared: %s",
                 Q_FUNC_INFO, i, QNapi::toJsonString(record.value()).c_str());
@@ -262,7 +262,7 @@ std::shared_ptr<void> shareData(
     return QtOhos::evalInJsThreadWithPromise<std::shared_ptr<void>>(
         [&](QtOhos::JsState &jsState, QOhosTaskPromise<std::shared_ptr<void>> evalPromise) {
             auto uiAbilityPeer = QtOhos::QUiAbilityPeer::tryCastFromQAbilityPeerOrNull(
-                optMainWindowInstanceObjectRef.hasValue()
+                optMainWindowInstanceObjectRef.has_value()
                     ? jsState.tryGetQAbilityPeerByQWindow(optMainWindowInstanceObjectRef.value())
                     : jsState.defaultQAbilityPeer());
             if (!uiAbilityPeer) {

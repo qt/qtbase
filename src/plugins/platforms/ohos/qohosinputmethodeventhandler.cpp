@@ -150,7 +150,7 @@ void QOhosInputMethodEventHandler::onTouchEventFromXComponent(
         case ::OH_NATIVEXCOMPONENT_TOOL_TYPE_FINGER: {
             QEventPoint::State state =
                 tryMapXComponentTouchEventTypeToQt(touchPoint.type)
-                    .valueOr(QEventPoint::State::Stationary);
+                    .value_or(QEventPoint::State::Stationary);
 
             if (state != QEventPoint::State::Released)
                 activeTouchPointDisplayPositions.push_back(touchPointData.displayPosition.toPoint());
@@ -250,7 +250,7 @@ void QOhosInputMethodEventHandler::onGestureEventFromNativeNode(const QOhosGestu
 void QOhosInputMethodEventHandler::onKeyEvent(const QOhosKeyEvent &keyEvent, QWindow *targetWindow)
 {
     const auto optQOhosQtKeyEvent = keyEvent.tryConvertToQOhosQtKeyEvent();
-    if (!optQOhosQtKeyEvent.hasValue())
+    if (!optQOhosQtKeyEvent.has_value())
         return;
     const auto qOhosQtKeyEvent = optQOhosQtKeyEvent.value();
 
@@ -467,7 +467,7 @@ void QOhosInputMethodEventHandler::onNonClientAreaTouchEvents(
 QWindow *QOhosInputMethodEventHandler::lastTouchedWindowOrNull() const
 {
     auto lastTouchedPair = getLastTouchedWindowWithSeqNoIfPresent();
-    return lastTouchedPair.hasValue()
+    return lastTouchedPair.has_value()
         ? lastTouchedPair.value().first
         : nullptr;
 }
@@ -511,7 +511,7 @@ void QOhosInputMethodEventHandler::grabKeyboard(QWindow *window)
 
 void QOhosInputMethodEventHandler::stopAnyMouseGrab()
 {
-    if (!m_currentMouseGrabbingWindow.isNull() && m_lastWsiMouseEvent.hasValue()) {
+    if (!m_currentMouseGrabbingWindow.isNull() && m_lastWsiMouseEvent.has_value()) {
         auto lastWsiMouseEventValue = m_lastWsiMouseEvent.value();
         auto *previousCaptureWindow = m_currentMouseGrabbingWindow.data();
         auto *optLastWindowUnderCursor = lastWsiMouseEventValue.targetWindow.data();
@@ -533,7 +533,7 @@ void QOhosInputMethodEventHandler::stopAnyMouseGrab()
 
 QPoint QOhosInputMethodEventHandler::cursorPosition() const
 {
-    if (m_lastWsiMouseEvent.hasValue())
+    if (m_lastWsiMouseEvent.has_value())
         return m_lastWsiMouseEvent.value().globalPosition.toPoint();
 
     auto optLastTouchPosition = qAndThen(
@@ -541,7 +541,7 @@ QPoint QOhosInputMethodEventHandler::cursorPosition() const
         [](const QWindowSystemInterfaceTouchEvent &touchEvent) {
             return touchEvent.singleTouchPointEventGlobalPosition;
         });
-    if (optLastTouchPosition.hasValue())
+    if (optLastTouchPosition.has_value())
         return optLastTouchPosition.value();
 
     auto lastScaledPositionFromApp = QGuiApplicationPrivate::lastCursorPosition.toPoint();
@@ -675,7 +675,7 @@ void QOhosInputMethodEventHandler::updateWindowsUnderTouchPoints(const QWindowSy
         std::ignore = m_windowsUnderTouchPoints.erase(targetWindow);
     } else if (anyTouchPointDown) {
         auto lastTouchedPair = getLastTouchedWindowWithSeqNoIfPresent();
-        auto nextSeqNo = lastTouchedPair.hasValue()
+        auto nextSeqNo = lastTouchedPair.has_value()
             ? lastTouchedPair.value().second + 1
             : 0;
         m_windowsUnderTouchPoints[targetWindow] = std::make_pair(

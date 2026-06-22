@@ -87,7 +87,7 @@ QOhosOptional<InsertedTextId> JsInputMethodInsertedTextComposer::lastId() const
 
 void JsInputMethodInsertedTextComposer::initOrIncrementId()
 {
-    if (!m_id.hasValue()) {
+    if (!m_id.has_value()) {
         m_id = InsertedTextId(0);
     } else {
         auto oldValue = m_id.value().value();
@@ -197,7 +197,7 @@ QOhosOptional<int> tryGetIntPropertyFromQuery(Qt::InputMethodQuery property, QSh
 void notifyOhosInputMethodAboutPossibleAutocorrection(const QOhosInsertedText &insertedText, int cursorPosition)
 {
     auto lastInsertedTextId = JsInputMethodInsertedTextComposer::instance().lastId();
-    if (!lastInsertedTextId.hasValue()) {
+    if (!lastInsertedTextId.has_value()) {
         qOhosPrintfError("%s: JsInputMethodInsertedTextComposer has no last inserted text ID", Q_FUNC_INFO);
         return;
     }
@@ -433,7 +433,7 @@ bool QOhosInputContext::attachToInputMethodController()
         void onMoveCursor(::InputMethod_Direction direction) override
         {
             auto qtDirection = tryMapInputMethodDirectionToQt(direction);
-            if (!qtDirection.hasValue()) {
+            if (!qtDirection.has_value()) {
                 qOhosPrintfWarning(
                     "got unsupported InputMethod_Direction value (%d), cursor won't be moved!",
                     static_cast<int>(direction));
@@ -452,7 +452,7 @@ bool QOhosInputContext::attachToInputMethodController()
     m_imProxy = std::make_shared<QOhosInputMethodProxy>(
         std::make_shared<ImCallbacks>(*this),
         mapQtToOhosImeRequestReason(
-            m_lastInputTypeToTriggerSoftKeyboard.valueOr(RequestKeyboardReason::OTHER)));
+            m_lastInputTypeToTriggerSoftKeyboard.value_or(RequestKeyboardReason::OTHER)));
 
     if (m_imProxy->hasAttachedSuccessfully()) {
         m_imProxy->notifyConfigurationChange(
@@ -500,7 +500,7 @@ void QOhosInputContext::showTextInput()
     }
 
     m_imProxy->showTextInput(mapQtToOhosImeRequestReason(
-        m_lastInputTypeToTriggerSoftKeyboard.valueOr(RequestKeyboardReason::OTHER)));
+        m_lastInputTypeToTriggerSoftKeyboard.value_or(RequestKeyboardReason::OTHER)));
 }
 
 void QOhosInputContext::setSoftwareKeyboardVisibilityStatus(bool visible)
@@ -617,7 +617,7 @@ void QOhosInputContext::sendInsertedTextToQt(const std::string &textToInsert)
     sendFocusObjectInputMethodEvent(&event);
 
     auto cursorPosition = tryQueryCursorPosition();
-    if (cursorPosition.hasValue())
+    if (cursorPosition.has_value())
         notifyOhosInputMethodAboutPossibleAutocorrection(insertedText, cursorPosition.value());
     else
         qOhosWarning(QtForOhos) << "Couldn't obtain IM cursorPosition";
@@ -705,11 +705,11 @@ Qt::InputMethodHints QOhosInputContext::queryInputMethodHints() const
     auto query = tryQueryFocusObjectInputMethod(Qt::ImHints);
     if (!query.isNull()) {
         auto imHintsInt = tryGetIntPropertyFromQuery(Qt::ImHints, query);
-        if (imHintsInt.hasValue())
+        if (imHintsInt.has_value())
             hints = static_cast<Qt::InputMethodHints>(imHintsInt.value());
     }
 
-    return hints.valueOr(defaultInputMethodHints);
+    return hints.value_or(defaultInputMethodHints);
 }
 
 Qt::EnterKeyType QOhosInputContext::queryEnterKeyType() const
@@ -718,11 +718,11 @@ Qt::EnterKeyType QOhosInputContext::queryEnterKeyType() const
     auto query = tryQueryFocusObjectInputMethod(Qt::ImEnterKeyType);
     if (!query.isNull()) {
         auto imEnterKeyTypeInt = tryGetIntPropertyFromQuery(Qt::ImEnterKeyType, query);
-        if (imEnterKeyTypeInt.hasValue())
+        if (imEnterKeyTypeInt.has_value())
             enterKeyType = static_cast<Qt::EnterKeyType>(imEnterKeyTypeInt.value());
     }
 
-    return enterKeyType.valueOr(defaultEnterKeyType);
+    return enterKeyType.value_or(defaultEnterKeyType);
 }
 
 QOhosOptional<int> QOhosInputContext::tryQueryCursorPosition() const

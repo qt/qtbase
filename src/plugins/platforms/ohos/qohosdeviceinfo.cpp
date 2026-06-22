@@ -81,7 +81,7 @@ int sdkApiVersion()
 bool isCurrentDeviceSupported()
 {
     auto deviceType = tryGetRecognizedDeviceType();
-    return deviceType.hasValue() && isSupportedDeviceType(deviceType.value());
+    return deviceType.has_value() && isSupportedDeviceType(deviceType.value());
 }
 
 }

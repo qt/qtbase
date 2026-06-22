@@ -605,13 +605,13 @@ std::string QAbilityInstancesManagerImpl::getQAbilityInstanceIdOrPendingAutoStar
     auto optInstanceId = tryGetQAbilityInstanceIdFromWant(
         qAbility, qAbility.get<QNapi::Object>("launchWant"));
 
-    if (!optInstanceId.hasValue() && !m_pendingAutoStartedInstanceId.hasValue()) {
+    if (!optInstanceId.has_value() && !m_pendingAutoStartedInstanceId.has_value()) {
         qOhosReportFatalErrorAndAbort(
             "Got Ability without '%s' param and no pending auto-started instance",
             qAbilityInstanceIdWantParamKey);
     }
 
-    return optInstanceId.hasValue()
+    return optInstanceId.has_value()
         ? optInstanceId.value()
         : m_pendingAutoStartedInstanceId.value();
 }
@@ -646,7 +646,7 @@ QOhosOptional<std::string> QAbilityInstancesManagerImpl::pendingAutoStartedInsta
 
 void QAbilityInstancesManagerImpl::registerPendingAutoStartedInstance()
 {
-    if (m_pendingAutoStartedInstanceId.hasValue()) {
+    if (m_pendingAutoStartedInstanceId.has_value()) {
         qOhosReportFatalErrorAndAbort(
             "%s: pending auto-started instance already registered (id='%s')",
             Q_FUNC_INFO, m_pendingAutoStartedInstanceId.value().c_str());

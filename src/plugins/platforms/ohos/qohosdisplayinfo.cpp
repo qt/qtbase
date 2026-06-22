@@ -80,7 +80,7 @@ QOhosOptional<QNapi::Object> QOhosDisplayInfo::tryGetDisplayById(QtOhos::JsState
 
 QRect QOhosDisplayInfo::displayGeometryPixels() const
 {
-    return QRect(topLeftOffsetPixels.valueOr(QPoint()), sizePixels.toSize());
+    return QRect(topLeftOffsetPixels.value_or(QPoint()), sizePixels.toSize());
 }
 
 QSizeF QOhosDisplayInfo::physicalSize() const
@@ -104,7 +104,7 @@ bool QOhosDisplayInfo::shouldIgnoreDisplay() const
         sourceMode);
     bool ignoreBySoureMode = sourceModeToIgnoreIter != std::end(sourceModesToIgnore);
 
-    return sourceMode.hasValue()
+    return sourceMode.has_value()
         ? ignoreBySoureMode
         : id.value() >= virtualDisplayBaseId;
 }

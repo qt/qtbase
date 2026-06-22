@@ -67,7 +67,7 @@ QFlags<OhosKeyboardModifier> readKeyStandardModifiersFromKeyState()
 QFlags<OhosKeyboardModifier> readKeyStandardModifiers(::ArkUI_UIInputEvent *uiInputEvent)
 {
     const auto uiInputEventModifierKeyStats = tryGetUiInputEventModifierKeyStates(uiInputEvent);
-    return uiInputEventModifierKeyStats.hasValue()
+    return uiInputEventModifierKeyStats.has_value()
         ? mapArkUiModifierKeyStatesToOhosKeyboardModifiers(uiInputEventModifierKeyStats.value())
         : readKeyStandardModifiersFromKeyState();
 }

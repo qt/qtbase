@@ -34,11 +34,11 @@ std::shared_ptr<void> registerOnOffMethodsBasedEventHandler(
                 : [](QNapi::Object) {
                     return true;
                 },
-            .optExtraOnArg = options.extraOnArg.hasValue()
+            .optExtraOnArg = options.extraOnArg.has_value()
                 ? QNapi::Reference<>::makePersistentFrom(
                     options.extraOnArg.value().mapToValue(env))
                 : QNapi::Reference<>::makeEmpty(),
-            .optExtraOffArg = options.extraOffArg.hasValue()
+            .optExtraOffArg = options.extraOffArg.has_value()
                 ? QNapi::Reference<>::makePersistentFrom(
                     options.extraOffArg.value().mapToValue(env))
                 : QNapi::Reference<>::makeEmpty(),
@@ -144,7 +144,7 @@ std::shared_ptr<void> startDelayedJsThreadTask(
 
     return QtOhos::makeDestroyNotifier(
         [context]() {
-            if (context->timerId.hasValue()) {
+            if (context->timerId.has_value()) {
                 runInJsThreadAndWait(
                     [&](JsState &jsState) {
                         jsState.eval("Global.clearTimeout(*)", {context->timerId.value()});

@@ -95,7 +95,7 @@ void QtWatchdog::handleAppMainThreadAliveNotification()
     qCDebug(QtForOhos, "QtWatchdog::handleAppMainThreadAliveNotification");
     m_appMainThreadIsAlive = true;
     m_isSixSecondEvent = false;
-    if (m_sixSecondEventDetectionTime.hasValue()) {
+    if (m_sixSecondEventDetectionTime.has_value()) {
         const auto now = ch::system_clock::now();
         const auto elapsedTime = now - m_sixSecondEventDetectionTime.value();
         logRecoveredFromFreezeStateBigDataEvent(now, elapsedTime);
@@ -153,7 +153,7 @@ void QtWatchdog::reportStuckEvent()
     HiCollie_ErrorCode reportRes = OH_HiCollie_Report(&m_isSixSecondEvent);
     if (reportRes == HICOLLIE_SUCCESS) {
         qCDebug(QtForOhos, "QtWatchdog: after OH_HiCollie_Report(), m_isSixSecondEvent = %d", m_isSixSecondEvent);
-        if (m_isSixSecondEvent && !m_sixSecondEventDetectionTime.hasValue()) {
+        if (m_isSixSecondEvent && !m_sixSecondEventDetectionTime.has_value()) {
             m_sixSecondEventDetectionTime = ch::system_clock::now();
             logEnterFreezeStateBigDataEvent(m_sixSecondEventDetectionTime.value());
         }

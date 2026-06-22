@@ -47,7 +47,7 @@ std::shared_ptr<void> startNewThread(
 
     auto threadHandle = makeDestroyNotifier(
         [context]() {
-            if (context->optThreadId.hasValue())
+            if (context->optThreadId.has_value())
                 ::pthread_join(context->optThreadId.value(), nullptr);
         });
 
@@ -74,7 +74,7 @@ std::shared_ptr<::pthread_attr_t> createSingleThreadExecutorThreadAttributes(
 {
     auto threadAttributes = makePthreadAttr();
 
-    if (config.threadPreferredStackSize.hasValue()) {
+    if (config.threadPreferredStackSize.has_value()) {
         int setStackSizeResult = ::pthread_attr_setstacksize(
             threadAttributes.get(), config.threadPreferredStackSize.value());
         if (setStackSizeResult != 0) {

@@ -76,7 +76,7 @@ const char *mapBoolToTrueFalseStr(bool value)
 std::shared_ptr<QtOhos::QAbilityPeer> tryMapOptMainWindowToAbilityPeer(
     QtOhos::JsState &jsState, QOhosOptional<QtOhos::QObjectThreadSafeRef> optInstanceMainWindowRef)
 {
-    if (!optInstanceMainWindowRef.hasValue())
+    if (!optInstanceMainWindowRef.has_value())
         return jsState.defaultQAbilityPeer();
 
     auto optAbilityPeer = jsState.tryGetQAbilityPeerByQWindow(optInstanceMainWindowRef.value());
