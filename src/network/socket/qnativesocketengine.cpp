@@ -994,24 +994,8 @@ bool QNativeSocketEngine::waitForRead(QDeadlineTimer deadline, bool *timedOut)
     Q_CHECK_NOT_STATE(QNativeSocketEngine::waitForRead(),
                       QAbstractSocket::UnconnectedState, false);
 
-    if (timedOut)
-        *timedOut = false;
-
-    int ret = d->nativeSelect(deadline, true);
-    if (ret == 0) {
-        if (timedOut)
-            *timedOut = true;
-        d->setError(QAbstractSocket::SocketTimeoutError,
-            QNativeSocketEnginePrivate::TimeOutErrorString);
-        d->hasSetSocketError = false; // A timeout error is temporary in waitFor functions
-        return false;
-    }
-    if (state() == QAbstractSocket::ConnectingState) {
-        if (d->nativeCheckConnection() && state() == QAbstractSocket::ConnectedState)
-            d->fetchConnectionParameters();
-    }
-
-    return ret > 0;
+    bool dummy = false;
+    return waitForReadOrWrite(&dummy, &dummy, true, false, deadline, timedOut);
 }
 
 /*!
@@ -1036,24 +1020,8 @@ bool QNativeSocketEngine::waitForWrite(QDeadlineTimer deadline, bool *timedOut)
     Q_CHECK_NOT_STATE(QNativeSocketEngine::waitForWrite(),
                       QAbstractSocket::UnconnectedState, false);
 
-    if (timedOut)
-        *timedOut = false;
-
-    int ret = d->nativeSelect(deadline, false);
-    if (ret == 0) {
-        if (timedOut)
-            *timedOut = true;
-        d->setError(QAbstractSocket::SocketTimeoutError,
-                    QNativeSocketEnginePrivate::TimeOutErrorString);
-        d->hasSetSocketError = false; // A timeout error is temporary in waitFor functions
-        return false;
-    }
-    if (state() == QAbstractSocket::ConnectingState || (state() == QAbstractSocket::BoundState && d->socketDescriptor != -1)) {
-        if (d->nativeCheckConnection() && state() == QAbstractSocket::ConnectedState)
-            d->fetchConnectionParameters();
-    }
-
-    return ret > 0;
+    bool dummy = false;
+    return waitForReadOrWrite(&dummy, &dummy, false, true, deadline, timedOut);
 }
 
 bool QNativeSocketEngine::waitForReadOrWrite(bool *readyToRead, bool *readyToWrite,
@@ -1065,6 +1033,9 @@ bool QNativeSocketEngine::waitForReadOrWrite(bool *readyToRead, bool *readyToWri
     Q_CHECK_NOT_STATE(QNativeSocketEngine::waitForReadOrWrite(),
                       QAbstractSocket::UnconnectedState, false);
 
+    if (timedOut)
+        *timedOut = false;
+
     int ret = d->nativeSelect(deadline, checkRead, checkWrite, readyToRead, readyToWrite);
     if (ret == 0) {
         if (timedOut)
@@ -1074,7 +1045,12 @@ bool QNativeSocketEngine::waitForReadOrWrite(bool *readyToRead, bool *readyToWri
         d->hasSetSocketError = false; // A timeout error is temporary in waitFor functions
         return false;
     }
-    if (state() == QAbstractSocket::ConnectingState) {
+    // A write-only wait is the connect-completion path (a finished connect
+    // signals writability); only there do we also finalize a socket still
+    // sitting in BoundState from a bind()+connect().
+    const bool writeOnly = checkWrite && !checkRead;
+    if (state() == QAbstractSocket::ConnectingState
+        || (writeOnly && state() == QAbstractSocket::BoundState && d->socketDescriptor != -1)) {
         if (d->nativeCheckConnection() && state() == QAbstractSocket::ConnectedState)
             d->fetchConnectionParameters();
     }
