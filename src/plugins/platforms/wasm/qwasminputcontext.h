@@ -33,7 +33,7 @@ public:
     bool isValid() const override { return true; }
 
     const QString preeditString() { return m_preeditString; }
-    void setPreeditString(QString preeditStr, int replaceSize);
+    void setPreeditString(QString preeditStr);
     void insertPreedit(int repalcementLength = 0);
     void commitPreeditAndClear();
 
@@ -59,7 +59,6 @@ public:
 private:
     void updateInputElement();
     QString m_preeditString;
-    int m_replaceIndex = 0;
 
     bool m_inputMethodAccepted = false;
     QObject *m_focusObject = nullptr;

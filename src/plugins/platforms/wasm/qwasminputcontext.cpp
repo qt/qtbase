@@ -85,7 +85,7 @@ void QWasmInputContext::inputCallback(emscripten::val event)
         if (event["isComposing"].as<bool>()) {
             int replaceLength = rangesPair.second  - rangesPair.first;
 
-            setPreeditString(inputStr, 0);
+            setPreeditString(inputStr);
             insertPreedit(replaceLength);
 
             rangesPair.first = 0;
@@ -118,11 +118,11 @@ void QWasmInputContext::inputCallback(emscripten::val event)
 
         event.call<void>("stopImmediatePropagation");
     } else if (!inputTypeString.compare("deleteCompositionText")) {
-        setPreeditString("", 0);
+        setPreeditString("");
         insertPreedit();
         event.call<void>("stopImmediatePropagation");
     } else if (!inputTypeString.compare("insertFromComposition")) {
-        setPreeditString(inputStr, 0);
+        setPreeditString(inputStr);
         insertPreedit();
         event.call<void>("stopImmediatePropagation");
     } else if (!inputTypeString.compare("insertText")) {
@@ -186,7 +186,7 @@ void QWasmInputContext::compositionUpdateCallback(emscripten::val event)
     const auto compositionStr = QString::fromEcmaString(event["data"]);
     qCDebug(qLcQpaWasmInputContext) << Q_FUNC_INFO << compositionStr;
 
-    setPreeditString(compositionStr, 0);
+    setPreeditString(compositionStr);
 }
 
 void QWasmInputContext::beforeInputCallback(emscripten::val event)
@@ -364,11 +364,10 @@ void QWasmInputContext::hideInputPanel()
         updateInputElement();
 }
 
-void QWasmInputContext::setPreeditString(QString preeditStr, int replaceSize)
+void QWasmInputContext::setPreeditString(QString preeditStr)
 {
-    qCDebug(qLcQpaWasmInputContext) << Q_FUNC_INFO  << preeditStr << replaceSize;
+    qCDebug(qLcQpaWasmInputContext) << Q_FUNC_INFO << preeditStr;
     m_preeditString = preeditStr;
-    m_replaceIndex = replaceSize;
 }
 
 void QWasmInputContext::insertPreedit(int replaceLength)
@@ -394,8 +393,6 @@ void QWasmInputContext::insertPreedit(int replaceLength)
     }
 
     QInputMethodEvent e(m_preeditString, attributes);
-    if (m_replaceIndex > 0)
-        e.setCommitString("", -m_replaceIndex, replaceLength);
     QCoreApplication::sendEvent(m_focusObject, &e);
 }
 
