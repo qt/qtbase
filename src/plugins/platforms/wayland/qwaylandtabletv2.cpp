@@ -178,8 +178,9 @@ QWaylandTabletManagerV2::~QWaylandTabletManagerV2()
     destroy();
 }
 
-QWaylandTabletSeatV2::QWaylandTabletSeatV2(QWaylandTabletManagerV2 *manager, QWaylandInputDevice *seat)
-    : QtWayland::zwp_tablet_seat_v2(manager->get_tablet_seat(seat->wl_seat()))
+QWaylandTabletSeatV2::QWaylandTabletSeatV2(QWaylandTabletManagerV2 *manager, QWaylandInputDevice *seat, QObject *parent)
+    : QObject(parent)
+    , QtWayland::zwp_tablet_seat_v2(manager->get_tablet_seat(seat->wl_seat()))
     , m_seat(seat)
 {
     qCDebug(lcQpaInputDevices) << "new tablet seat" << seat->seatname() << "id" << seat->id();
@@ -237,10 +238,12 @@ void QWaylandTabletSeatV2::zwp_tablet_seat_v2_pad_added(zwp_tablet_pad_v2 *id)
     connect(pad, &QWaylandTabletPadV2::destroyed, this, [this, pad] { m_pads.removeOne(pad); });
 }
 
-QWaylandTabletV2::QWaylandTabletV2(::zwp_tablet_v2 *tablet, const QString &seatName)
+QWaylandTabletV2::QWaylandTabletV2(::zwp_tablet_v2 *tablet, const QString &seatName, QObject *parent)
     : QPointingDevice(u"unknown"_s, -1, DeviceType::Stylus, PointerType::Pen,
                       Capability::Position | Capability::Hover,
-                      1, 1, seatName)
+                      1, 1, seatName,
+                      QPointingDeviceUniqueId{},
+                      parent)
     , QtWayland::zwp_tablet_v2(tablet)
 {
     qCDebug(lcQpaInputDevices) << "new tablet on seat" << seatName;
@@ -294,10 +297,12 @@ void QWaylandTabletV2::zwp_tablet_v2_removed()
     deleteLater();
 }
 
-QWaylandTabletToolV2::QWaylandTabletToolV2(QWaylandTabletSeatV2 *tabletSeat, ::zwp_tablet_tool_v2 *tool)
+QWaylandTabletToolV2::QWaylandTabletToolV2(QWaylandTabletSeatV2 *tabletSeat, ::zwp_tablet_tool_v2 *tool, QObject *parent)
     : QPointingDevice(u"tool"_s, -1, DeviceType::Stylus, PointerType::Pen,
                       Capability::Position | Capability::Hover,
-                      1, 1, tabletSeat->seat()->seatname())
+                      1, 1, tabletSeat->seat()->seatname(),
+                      QPointingDeviceUniqueId{},
+                      parent)
     , QtWayland::zwp_tablet_tool_v2(tool)
     , m_tabletSeat(tabletSeat)
 {
@@ -595,10 +600,12 @@ bool QWaylandTabletToolV2::State::operator==(const QWaylandTabletToolV2::State &
             buttons == o.buttons;
 }
 
-QWaylandTabletPadV2::QWaylandTabletPadV2(::zwp_tablet_pad_v2 *pad)
+QWaylandTabletPadV2::QWaylandTabletPadV2(::zwp_tablet_pad_v2 *pad, QObject *parent)
     : QPointingDevice(u"tablet touchpad"_s, -1, DeviceType::TouchPad, PointerType::Finger,
                       Capability::Position,
-                      1, 1)
+                      1, 1, QString{},
+                      QPointingDeviceUniqueId{},
+                      parent)
     , QtWayland::zwp_tablet_pad_v2(pad)
 {
 }

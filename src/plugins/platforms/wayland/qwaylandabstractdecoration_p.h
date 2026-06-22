@@ -55,7 +55,7 @@ public:
         ShadowsOnly
     };
 
-    QWaylandAbstractDecoration();
+    QWaylandAbstractDecoration(QObject *parent = nullptr);
     ~QWaylandAbstractDecoration() override;
 
     void setWaylandWindow(QWaylandWindow *window);

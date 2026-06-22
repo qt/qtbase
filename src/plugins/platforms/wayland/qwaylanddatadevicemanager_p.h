@@ -41,6 +41,8 @@ public:
     QWaylandDisplay *display() const;
 
 private:
+    Q_DISABLE_COPY(QWaylandDataDeviceManager)
+
     QWaylandDisplay *m_display = nullptr;
 };
 

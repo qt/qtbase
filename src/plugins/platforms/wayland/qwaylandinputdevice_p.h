@@ -435,6 +435,9 @@ public:
     QWaylandInputDevice *mParent = nullptr;
     QPointer<QWaylandSurface> mFocus;
     QList<QWindowSystemInterface::TouchPoint> mPendingTouchPoints;
+
+private:
+    Q_DISABLE_COPY(Touch)
 };
 
 class QWaylandPointerEvent

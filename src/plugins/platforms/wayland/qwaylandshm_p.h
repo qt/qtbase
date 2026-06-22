@@ -47,6 +47,8 @@ protected:
     void shm_format(uint32_t format) override;
 
 private:
+    Q_DISABLE_COPY(QWaylandShm)
+
     QList<uint32_t> m_formats;
 
 };

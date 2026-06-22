@@ -108,7 +108,7 @@ class Q_WAYLANDCLIENT_EXPORT QWaylandDisplay : public QObject, public QtWayland:
     Q_OBJECT
 
 public:
-    QWaylandDisplay(QWaylandIntegration *waylandIntegration);
+    QWaylandDisplay(QWaylandIntegration *waylandIntegration, QObject *parent = nullptr);
     ~QWaylandDisplay(void) override;
 
     bool initialize();
@@ -330,14 +330,14 @@ private:
 #if QT_CONFIG(cursor)
     struct WaylandCursorTheme {
         QString name;
-        int pixelSize;
+        int pixelSize = 0;
         std::unique_ptr<QWaylandCursorTheme> theme;
     };
     std::vector<WaylandCursorTheme> mCursorThemes;
 
     struct FindExistingCursorThemeResult {
         std::vector<WaylandCursorTheme>::const_iterator position;
-        bool found;
+        bool found = false;
 
         QWaylandCursorTheme *theme() const noexcept
         { return found ? position->theme.get() : nullptr; }

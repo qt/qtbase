@@ -8,8 +8,9 @@ QT_BEGIN_NAMESPACE
 
 namespace QtWaylandClient {
 
-QWaylandFractionalScale::QWaylandFractionalScale(struct ::wp_fractional_scale_v1 *object)
-    : QtWayland::wp_fractional_scale_v1(object)
+QWaylandFractionalScale::QWaylandFractionalScale(struct ::wp_fractional_scale_v1 *object, QObject *parent)
+    : QObject(parent)
+    , QtWayland::wp_fractional_scale_v1(object)
 {}
 
 

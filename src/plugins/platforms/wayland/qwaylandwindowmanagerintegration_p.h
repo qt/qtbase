@@ -42,6 +42,8 @@ public:
     bool showIsFullScreen() const;
 
 private:
+    Q_DISABLE_COPY(QWaylandWindowManagerIntegration)
+
     void windowmanager_hints(int32_t showIsFullScreen) override;
     void windowmanager_quit() override;
 

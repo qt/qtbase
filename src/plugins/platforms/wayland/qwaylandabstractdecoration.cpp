@@ -43,8 +43,8 @@ QWaylandAbstractDecorationPrivate::~QWaylandAbstractDecorationPrivate()
 {
 }
 
-QWaylandAbstractDecoration::QWaylandAbstractDecoration()
-    : QObject(*new QWaylandAbstractDecorationPrivate)
+QWaylandAbstractDecoration::QWaylandAbstractDecoration(QObject *parent)
+    : QObject(*new QWaylandAbstractDecorationPrivate, parent)
 {
 }
 

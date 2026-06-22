@@ -22,6 +22,8 @@ public:
     void callback_done(uint32_t callback_data) override { m_fn(callback_data); }
 
 private:
+    Q_DISABLE_COPY(WlCallback)
+
     std::function<void(uint32_t)> m_fn;
 };
 

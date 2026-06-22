@@ -45,6 +45,8 @@ public:
     QWaylandDisplay *display() const { return m_display; }
 
 private:
+    Q_DISABLE_COPY(QWaylandPrimarySelectionDeviceManagerV1)
+
     QWaylandDisplay *m_display = nullptr;
 };
 
@@ -60,6 +62,8 @@ protected:
     void zwp_primary_selection_offer_v1_offer(const QString &mime_type) override;
 
 private:
+    Q_DISABLE_COPY(QWaylandPrimarySelectionOfferV1)
+
     QWaylandDisplay *m_display = nullptr;
     std::unique_ptr<QWaylandMimeData> m_mimeData;
 };
@@ -81,6 +85,8 @@ protected:
     void zwp_primary_selection_source_v1_cancelled() override { emit cancelled(); }
 
 private:
+    Q_DISABLE_COPY(QWaylandPrimarySelectionSourceV1)
+
     QMimeData *m_mimeData = nullptr;
 };
 
@@ -101,6 +107,8 @@ protected:
     void zwp_primary_selection_device_v1_selection(struct ::zwp_primary_selection_offer_v1 *id) override;
 
 private:
+    Q_DISABLE_COPY(QWaylandPrimarySelectionDeviceV1)
+
     QWaylandDisplay *m_display = nullptr;
     QWaylandInputDevice *m_seat = nullptr;
     std::unique_ptr<QWaylandPrimarySelectionOfferV1> m_selectionOffer;

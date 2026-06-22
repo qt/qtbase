@@ -54,13 +54,16 @@ class Q_WAYLANDCLIENT_EXPORT QWaylandTabletManagerV2 : public QtWayland::zwp_tab
 public:
     explicit QWaylandTabletManagerV2(QWaylandDisplay *display, uint id, uint version);
     ~QWaylandTabletManagerV2() override;
+
+private:
+    Q_DISABLE_COPY(QWaylandTabletManagerV2)
 };
 
 class Q_WAYLANDCLIENT_EXPORT QWaylandTabletSeatV2 : public QObject, public QtWayland::zwp_tablet_seat_v2
 {
     Q_OBJECT
 public:
-    explicit QWaylandTabletSeatV2(QWaylandTabletManagerV2 *manager, QWaylandInputDevice *seat);
+    explicit QWaylandTabletSeatV2(QWaylandTabletManagerV2 *manager, QWaylandInputDevice *seat, QObject *parent = nullptr);
     ~QWaylandTabletSeatV2() override;
 
     QWaylandInputDevice *seat() const { return m_seat; }
@@ -74,6 +77,8 @@ protected:
     void zwp_tablet_seat_v2_pad_added(struct ::zwp_tablet_pad_v2 *id) override;
 
 private:
+    Q_DISABLE_COPY(QWaylandTabletSeatV2)
+
     QWaylandInputDevice *m_seat;
     QList<QWaylandTabletV2 *> m_tablets;
     QList<QWaylandTabletToolV2 *> m_tools;
@@ -85,7 +90,7 @@ class Q_WAYLANDCLIENT_EXPORT QWaylandTabletV2 : public QPointingDevice, public Q
 {
     Q_OBJECT
 public:
-    explicit QWaylandTabletV2(::zwp_tablet_v2 *tablet, const QString &seatName);
+    explicit QWaylandTabletV2(::zwp_tablet_v2 *tablet, const QString &seatName, QObject *parent = nullptr);
     ~QWaylandTabletV2();
 
 protected:
@@ -95,13 +100,16 @@ protected:
     void zwp_tablet_v2_path(const QString &path) override;
     void zwp_tablet_v2_done() override;
     void zwp_tablet_v2_removed() override;
+
+private:
+    Q_DISABLE_COPY(QWaylandTabletV2)
 };
 
 class Q_WAYLANDCLIENT_EXPORT QWaylandTabletToolV2 : public QPointingDevice, public QtWayland::zwp_tablet_tool_v2
 {
     Q_OBJECT
 public:
-    QWaylandTabletToolV2(QWaylandTabletSeatV2 *tabletSeat, ::zwp_tablet_tool_v2 *tool);
+    QWaylandTabletToolV2(QWaylandTabletSeatV2 *tabletSeat, ::zwp_tablet_tool_v2 *tool, QObject *parent = nullptr);
     ~QWaylandTabletToolV2();
 
     void updateCursor();
@@ -128,6 +136,8 @@ protected:
     void zwp_tablet_tool_v2_frame(uint32_t time) override;
 
 private:
+    Q_DISABLE_COPY(QWaylandTabletToolV2)
+
 #if QT_CONFIG(cursor)
     int idealCursorScale() const;
     void updateCursorTheme();
@@ -184,7 +194,7 @@ class Q_WAYLANDCLIENT_EXPORT QWaylandTabletPadV2 : public QPointingDevice, publi
 {
     Q_OBJECT
 public:
-    explicit QWaylandTabletPadV2(::zwp_tablet_pad_v2 *pad);
+    explicit QWaylandTabletPadV2(::zwp_tablet_pad_v2 *pad, QObject *parent = nullptr);
     ~QWaylandTabletPadV2();
 
 protected:
@@ -196,6 +206,9 @@ protected:
 //    void zwp_tablet_pad_v2_enter(uint32_t serial, struct ::zwp_tablet_v2 *tablet, struct ::wl_surface *surface) override;
 //    void zwp_tablet_pad_v2_leave(uint32_t serial, struct ::wl_surface *surface) override;
     void zwp_tablet_pad_v2_removed() override;
+
+private:
+    Q_DISABLE_COPY(QWaylandTabletPadV2)
 };
 
 } // namespace QtWaylandClient

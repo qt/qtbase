@@ -10,7 +10,7 @@ QT_BEGIN_NAMESPACE
 
 namespace QtWaylandClient {
 
-QWaylandAppMenu::QWaylandAppMenu() : org_kde_kwin_appmenu() { }
+QWaylandAppMenu::QWaylandAppMenu(QObject *parent) : QObject(parent), org_kde_kwin_appmenu() { }
 
 QWaylandAppMenu::~QWaylandAppMenu()
 {

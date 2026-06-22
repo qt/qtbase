@@ -61,8 +61,8 @@ class Q_WAYLANDCLIENT_EXPORT QWaylandShellIntegrationTemplate
       public QWaylandShellIntegration
 {
 public:
-    QWaylandShellIntegrationTemplate(const int ver) :
-        QWaylandClientExtension(ver)
+    QWaylandShellIntegrationTemplate(const int ver, QObject *parent = nullptr) :
+        QWaylandClientExtension(ver, parent)
     {
     }
 

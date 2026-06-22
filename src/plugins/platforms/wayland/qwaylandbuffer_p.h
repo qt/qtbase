@@ -50,6 +50,8 @@ protected:
     struct wl_buffer *mBuffer = nullptr;
 
 private:
+    Q_DISABLE_COPY(QWaylandBuffer)
+
     bool mBusy = false;
     bool mCommitted = false;
     bool mDeleteOnRelease = false;
