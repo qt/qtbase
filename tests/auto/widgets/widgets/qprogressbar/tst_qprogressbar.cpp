@@ -220,7 +220,13 @@ void tst_QProgressBar::setMinMaxRepaint()
         QSKIP("Wayland: This fails. Figure out why.");
 
     ProgressBar pbar;
-    const QSize size(200, 25);
+    QSize size(200, 25);
+
+    // On OHOS, the minimum window height is 72 virtual pixels (vp) by default, or 40vp when the
+    // platform sets forcible window limits (on 2-in-1 devices).
+    if (QGuiApplication::platformName().startsWith(QLatin1String("ohos"), Qt::CaseInsensitive))
+        size.setHeight(80);
+
     pbar.setWindowFlag(Qt::FramelessWindowHint);
     pbar.setMinimum(0);
     pbar.setMaximum(10);
