@@ -2110,11 +2110,13 @@ static constexpr SystemMessageSink systemMessageSink = {
 static void preformattedMessageHandler(QtMsgType type, const QMessageLogContext &context,
                                        const QString &formattedMessage)
 {
+    if (!systemMessageSink.messageIsUnformatted) {
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_GCC("-Waddress") // "the address of ~~ will never be NULL
-    if (systemMessageSink.sink && systemMessageSink.sink(type, context, formattedMessage))
-        return;
+        if (systemMessageSink.sink && systemMessageSink.sink(type, context, formattedMessage))
+            return;
 QT_WARNING_POP
+    }
 
     stderr_message_handler(type, context, formattedMessage);
 }
