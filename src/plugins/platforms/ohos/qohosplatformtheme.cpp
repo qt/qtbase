@@ -795,8 +795,8 @@ QOhosOptional<bool> mapOhosThemeFromColorScheme(
 Qt::ColorScheme mapOhosThemeToColorScheme(
     QOhosOptional<bool> darkModeFlag)
 {
-    if (darkModeFlag.hasValue()) {
-        if (!darkModeFlag.valueOr(false))
+    if (darkModeFlag.has_value()) {
+        if (!darkModeFlag.value_or(false))
             return Qt::ColorScheme::Light;
         else
             return Qt::ColorScheme::Dark;
@@ -897,7 +897,7 @@ QPixmap QOhosFileIconEngine::filePixmap(const QSize &size, QIcon::Mode, QIcon::S
         },
         Q_FUNC_INFO);
 
-    return optPixmap.hasValue()
+    return optPixmap.has_value()
         ? optPixmap.value().scaled(size, Qt::KeepAspectRatio, Qt::SmoothTransformation)
         : QPixmap();
 }

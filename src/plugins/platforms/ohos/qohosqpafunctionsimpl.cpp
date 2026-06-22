@@ -89,7 +89,7 @@ QOhosQpaFunctions::WantInfo::LaunchReason mapJsLaunchReasonToWantInfoEnumWithFal
         optLaunchReasonJsEnum.has_value()
             ? tryMapOhosLaunchReasonToWantInfoEnum(optLaunchReasonJsEnum.value())
             : makeEmptyQOhosOptional();
-    return optLaunchReason.valueOr(QOhosQpaFunctions::WantInfo::LaunchReason::UNKNOWN);
+    return optLaunchReason.value_or(QOhosQpaFunctions::WantInfo::LaunchReason::UNKNOWN);
 }
 
 Q_NORETURN void killCurrentProcess()
@@ -196,7 +196,7 @@ QNapi::Array mapSupportWindowModesToJsEnumsArray(
     std::vector<QNapi::ValueWrapper> jsSupportWindowModes;
     for (auto supportWindowMode : supportWindowModes) {
         auto optOhosSupportWindowMode = tryMapSupportWindowModeToOhosOrLogWarning(supportWindowMode);
-        if (optOhosSupportWindowMode.hasValue())
+        if (optOhosSupportWindowMode.has_value())
             jsSupportWindowModes.push_back(jsState.mapOhosEnumToJs(optOhosSupportWindowMode.value()));
     }
 
@@ -239,47 +239,47 @@ QNapi::Object convertStartOptionsToNapiObject(
     auto napiOptions = QNapi::Object::New(env);
 
     auto optOhosWindowMode = qAndThen(opts.windowMode, &tryMapWindowModeToOhosOrLogWarning);
-    if (optOhosWindowMode.hasValue())
+    if (optOhosWindowMode.has_value())
         napiOptions.set("windowMode", jsState.mapOhosEnumToJs(optOhosWindowMode.value()));
-    if (opts.displayId.hasValue())
+    if (opts.displayId.has_value())
         napiOptions.set("displayId", opts.displayId.value());
-    if (opts.withAnimation.hasValue())
+    if (opts.withAnimation.has_value())
         napiOptions.set("withAnimation", opts.withAnimation.value());
-    if (opts.windowLeft.hasValue())
+    if (opts.windowLeft.has_value())
         napiOptions.set("windowLeft", opts.windowLeft.value());
-    if (opts.windowTop.hasValue())
+    if (opts.windowTop.has_value())
         napiOptions.set("windowTop", opts.windowTop.value());
-    if (opts.windowWidth.hasValue())
+    if (opts.windowWidth.has_value())
         napiOptions.set("windowWidth", opts.windowWidth.value());
-    if (opts.windowHeight.hasValue())
+    if (opts.windowHeight.has_value())
         napiOptions.set("windowHeight", opts.windowHeight.value());
     auto optOhosProcessMode = qAndThen(opts.processMode, &tryMapProcessModeToOhosOrLogWarning);
-    if (optOhosProcessMode.hasValue())
+    if (optOhosProcessMode.has_value())
         napiOptions.set("processMode", jsState.mapOhosEnumToJs(optOhosProcessMode.value()));
     auto optOhosStartupVisibility = qAndThen(opts.startupVisibility, &tryMapStartupVisibilityToOhosOrLogWarning);
-    if (optOhosStartupVisibility.hasValue())
+    if (optOhosStartupVisibility.has_value())
         napiOptions.set("startupVisibility", jsState.mapOhosEnumToJs(optOhosStartupVisibility.value()));
-    if (opts.windowIcon.hasValue()) {
+    if (opts.windowIcon.has_value()) {
         auto windowIcon = opts.windowIcon.value().value<QImage>();
         if (!windowIcon.isNull())
             napiOptions.set("startWindowIcon", createNapiPixelMapFromQImage(jsState, windowIcon));
     }
-    if (opts.windowBackgroundColorHex.hasValue())
+    if (opts.windowBackgroundColorHex.has_value())
         napiOptions.set("startWindowBackgroundColor", opts.windowBackgroundColorHex.value().toStdString());
-    if (opts.supportWindowModes.hasValue()) {
+    if (opts.supportWindowModes.has_value()) {
         auto jsSupportWindowModes = mapSupportWindowModesToJsEnumsArray(jsState, opts.supportWindowModes.value());
         if (jsSupportWindowModes.Length() != 0)
             napiOptions.set("supportWindowModes", jsSupportWindowModes);
         else
             qCWarning(QtForOhos, "%s: OHOS doesn't support empty supportWindowModes, skipping", Q_FUNC_INFO);
     }
-    if (opts.minWindowWidth.hasValue())
+    if (opts.minWindowWidth.has_value())
         napiOptions.set("minWindowWidth", opts.minWindowWidth.value());
-    if (opts.minWindowHeight.hasValue())
+    if (opts.minWindowHeight.has_value())
         napiOptions.set("minWindowHeight", opts.minWindowHeight.value());
-    if (opts.maxWindowWidth.hasValue())
+    if (opts.maxWindowWidth.has_value())
         napiOptions.set("maxWindowWidth", opts.maxWindowWidth.value());
-    if (opts.maxWindowHeight.hasValue())
+    if (opts.maxWindowHeight.has_value())
         napiOptions.set("maxWindowHeight", opts.maxWindowHeight.value());
     if (opts.optCompletionHandler) {
         constexpr auto minSupportedSdkVersion = 20;
@@ -293,7 +293,7 @@ QNapi::Object convertStartOptionsToNapiObject(
                 Q_FUNC_INFO, ohosSdkVersion, minSupportedSdkVersion);
         }
     }
-    if (opts.hideStartWindow.hasValue()) {
+    if (opts.hideStartWindow.has_value()) {
         constexpr auto minSupportedSdkVersion = 20;
         const auto ohosSdkVersion = QOhosDeviceInfo::sdkApiVersion();
         if (ohosSdkVersion >= minSupportedSdkVersion) {
@@ -305,7 +305,7 @@ QNapi::Object convertStartOptionsToNapiObject(
                 Q_FUNC_INFO, ohosSdkVersion, minSupportedSdkVersion);
         }
     }
-    if (opts.windowCreateParams.hasValue()) {
+    if (opts.windowCreateParams.has_value()) {
         constexpr auto minSupportedSdkVersion = 20;
         const auto ohosSdkVersion = QOhosDeviceInfo::sdkApiVersion();
         if (ohosSdkVersion >= minSupportedSdkVersion) {
@@ -733,7 +733,7 @@ QOhosOptional<QOhosQpaFunctions::ShareKit::SharedRecord> tryConvertNapiObjectToS
     auto optMimeType = utd != QOhosUdsMeta<::OH_UdsHyperlink>::udmfMetaId
         ? tryMapUtdTypeIdToMimeType(utd)
         : QOhosOptional<std::string>(QOhosShareKit::mimeTextUriList);
-    if (!optMimeType.hasValue()) {
+    if (!optMimeType.has_value()) {
         qOhosPrintfWarning(
             "%s: can't map utd '%s' to mimetype, not mapping the record",
             Q_FUNC_INFO, utd.c_str());
@@ -742,7 +742,7 @@ QOhosOptional<QOhosQpaFunctions::ShareKit::SharedRecord> tryConvertNapiObjectToS
 
     auto content = tryGetOptionalStringProp(record, "content");
     auto uri = tryGetOptionalStringProp(record, "uri");
-    if (!content.hasValue() && !uri.hasValue()) {
+    if (!content.has_value() && !uri.has_value()) {
         qOhosPrintfWarning(
             "%s: cannot create Shared Record, content and uri properties are empty", Q_FUNC_INFO);
         return makeEmptyQOhosOptional();
@@ -899,7 +899,7 @@ QOhosOptional<QList<QOhosQpaFunctions::ShareKit::SharedRecord>> WantInfoImpl::tr
 
                     QList<SharedRecord> records;
                     for (const auto &optRecord : optRecords) {
-                        if (optRecord.hasValue())
+                        if (optRecord.has_value())
                             records.append(optRecord.value());
                     }
 
@@ -1177,7 +1177,7 @@ void QOhosQpaFunctionsImpl::setWindowOrWidgetNativeNodeRenderFitPolicyHint(
         break;
     }
 
-    if (policy.hasValue()) {
+    if (policy.has_value()) {
         QOhosPlatformWindow::setWindowOrWidgetNativeNodeRenderFitPolicyHint(windowOrWidget, policy.value());
     } else {
         qOhosReportFatalErrorAndAbort(
@@ -1207,7 +1207,7 @@ void QOhosQpaFunctionsImpl::setMainWindowGeometryPersistencePolicy(
         break;
     }
 
-    if (policy.hasValue()) {
+    if (policy.has_value()) {
         QOhosPlatformIntegration::setMainWindowGeometryPersistencePolicy(policy.value());
     } else {
         qOhosReportFatalErrorAndAbort(
@@ -1238,7 +1238,7 @@ QOhosOptional<double> QOhosQpaFunctionsImpl::tryGetNativeWindowId(QObject *windo
 
     auto internalId = platformWindow->internalWindowId();
     auto jsWinId = QWindowProxyRegistry::instance().tryMapInternalWindowIdToJsWindowId(internalId);
-    if (!jsWinId.hasValue())
+    if (!jsWinId.has_value())
         return makeEmptyQOhosOptional();
 
     qOhosPrintfInfo(
@@ -1313,7 +1313,7 @@ void QOhosQpaFunctionsImpl::setOnContinueRequestsHandlerForAbilityInstanceWindow
                                                         newWantParamsIter->second.toStdString());
                                                     ++newWantParamsIter;
                                                 }
-                                                if (qtResponse.exitAppOnSourceDeviceAfterMigration.hasValue()) {
+                                                if (qtResponse.exitAppOnSourceDeviceAfterMigration.has_value()) {
                                                     wantParamsObj.set(
                                                         jsState.eval<QNapi::String>(
                                                             "@ohos.app.ability.wantConstant.Params.SUPPORT_CONTINUE_SOURCE_EXIT_KEY"),
@@ -1321,13 +1321,13 @@ void QOhosQpaFunctionsImpl::setOnContinueRequestsHandlerForAbilityInstanceWindow
                                                 }
                                             }
                                             auto ohosResult = tryMapAbilityOnContinueResponseStatusToOhos(qtResponse.status);
-                                            if (!ohosResult.hasValue()) {
+                                            if (!ohosResult.has_value()) {
                                                 qOhosPrintfWarning(
                                                     "%s: got illegal status (%d) from request handler, rejecting",
                                                     Q_FUNC_INFO, static_cast<int>(qtResponse.status));
                                             }
                                             jsResultContext->resultConsumer(
-                                                jsState, ohosResult.valueOr(QOhosAbilityOnContinueResult::REJECT));
+                                                jsState, ohosResult.value_or(QOhosAbilityOnContinueResult::REJECT));
                                         });
                                 });
                         });
@@ -1367,7 +1367,7 @@ Q_NORETURN void QOhosQpaFunctionsImpl::restartApp(QOhosOptional<QJsonObject> wan
 {
     QtOhos::runInJsThreadAndWait(
         [&](JsState &jsState) {
-            auto napiWant = want.hasValue()
+            auto napiWant = want.has_value()
                 ? QNapi::checkedCast<QNapi::Object>(QOhosJsEnv::toNapiValue(jsState.env(), want.value()))
                 : jsState.appLaunchWant();
 
@@ -1400,7 +1400,7 @@ Q_NORETURN void QOhosQpaFunctionsImpl::restartApp(QOhosOptional<QJsonObject> wan
 
                         std::this_thread::sleep_for(sleepTimeBeforeRetry);
                     } else {
-                        auto errorCodeStr = errorCode.hasValue()
+                        auto errorCodeStr = errorCode.has_value()
                             ? std::to_string(errorCode.value())
                             : "?";
                         qOhosPrintfWarning(
@@ -1432,7 +1432,7 @@ QSharedPointer<QOhosQpaFunctions::WantInfo> QOhosQpaFunctionsImpl::getAppLaunchW
                     return mapJsLaunchReasonToWantInfoEnumWithFallback(
                         jsState, appLaunchParam.get<QNapi::Number>("launchReason"));
                 });
-            auto appLaunchReason = optAppLaunchReason.valueOr(QOhosQpaFunctions::WantInfo::LaunchReason::UNKNOWN);
+            auto appLaunchReason = optAppLaunchReason.value_or(QOhosQpaFunctions::WantInfo::LaunchReason::UNKNOWN);
             return QSharedPointer<WantInfoImpl>::create(jsState.appLaunchWant(), appLaunchReason);
         },
         Q_FUNC_INFO);
@@ -1475,7 +1475,7 @@ void QOhosQpaFunctionsImpl::startAppProcess(
 {
     QtOhos::invokeInJsThreadAndWaitForContinue(
         [&](auto &jsState, QOhosTaskPromise<> taskPromise) {
-            auto startOptions = optStartOptions.hasValue()
+            auto startOptions = optStartOptions.has_value()
                 ? convertStartOptionsToNapiObject(jsState, optStartOptions.value())
                 : QNapi::Object();
 
@@ -1501,7 +1501,7 @@ bool QOhosQpaFunctionsImpl::startAbility(const QJsonObject &want, const QOhosOpt
                 return false;
 
             auto arguments = std::vector<QNapi::ValueWrapper>{QOhosJsEnv::toNapiValue(jsState.env(), want)};
-            if (options.hasValue())
+            if (options.has_value())
                 arguments.push_back(convertStartOptionsToNapiObject(jsState, options.value()));
 
             mainUiAbility.call("context.startAbility", arguments);
@@ -1596,7 +1596,7 @@ void QOhosQpaFunctionsImpl::startAbilityForResult(
             }
 
             auto arguments = std::vector<QNapi::ValueWrapper>{QOhosJsEnv::toNapiValue(jsState.env(), want)};
-            if (options.hasValue())
+            if (options.has_value())
                 arguments.push_back(convertStartOptionsToNapiObject(jsState, options.value()));
 
             optAbilityPeer->qAbility().evalToPromiseOrRejectOnThrow("context.startAbilityForResult(*)", arguments)
@@ -1651,7 +1651,7 @@ void QOhosQpaFunctionsImpl::setDestroyAllowedFlagForAbilityInstances(
 void QOhosQpaFunctionsImpl::setOhosConfigDarkModeFlag(QOhosOptional<bool> darkModeFlag)
 {
     setOhosConfigColorMode(
-        darkModeFlag.hasValue()
+        darkModeFlag.has_value()
             ? darkModeFlag.value()
                 ? OhosConfigurationColorMode::COLOR_MODE_DARK
                 : OhosConfigurationColorMode::COLOR_MODE_LIGHT
@@ -1725,7 +1725,7 @@ void QOhosQpaFunctionsImpl::startNoUiChildProcess(QString libraryName, QStringLi
 bool QOhosQpaFunctionsImpl::hasSerialPortAccessRight(const QString &portName)
 {
     const auto optSerialPortId = tryConvertPortNameToSystemPortId(portName);
-    if (!optSerialPortId.hasValue()) {
+    if (!optSerialPortId.has_value()) {
         qOhosPrintfError(
             "%s: cannot convert serial port name '%s' to port id.",
             Q_FUNC_INFO, portName.toStdString().c_str());
@@ -1757,7 +1757,7 @@ void QOhosQpaFunctionsImpl::requestSerialPortAccessRight(
     };
 
     const auto optSerialPortId = tryConvertPortNameToSystemPortId(portName);
-    if (!optSerialPortId.hasValue()) {
+    if (!optSerialPortId.has_value()) {
         qOhosPrintfError(
             "%s: cannot convert serial port name '%s' to port id.",
             Q_FUNC_INFO, portName.toStdString().c_str());
@@ -2021,7 +2021,7 @@ bool QOhosQpaFunctionsImpl::tryOpenLink(QObject *optInstanceMainWindow, const QS
             }
 
             std::vector<std::pair<std::string, QNapi::ValueWrapper>> openLinkOptions;
-            if (appLinkingOnly.hasValue())
+            if (appLinkingOnly.has_value())
                 openLinkOptions.emplace_back("appLinkingOnly", appLinkingOnly.value());
 
             auto thenCatchPromises = std::move(evalPromise).makeThenCatchBranches(Q_FUNC_INFO);

@@ -31,7 +31,7 @@ struct FilePickerResult
 std::shared_ptr<QtOhos::QAbilityPeer> getQAbilityPeerForOptInstanceId(
     QtOhos::JsState &jsState, QOhosOptional<std::string> optQAbilityInstanceId)
 {
-    auto optQAbilityPeer = optQAbilityInstanceId.hasValue()
+    auto optQAbilityPeer = optQAbilityInstanceId.has_value()
         ? jsState.tryGetQAbilityPeerByInstanceId(optQAbilityInstanceId.value())
         : std::shared_ptr<QtOhos::QAbilityPeer>();
 
@@ -44,7 +44,7 @@ QNapi::Object makeDocumentViewPicker(
 {
     auto &jsWindowRegistry = jsState.getAttachedObjectWithLazyCreate<QOhosJsWindowRegistry>();
     auto optJsWindowRef =
-        optContextJsWinId.hasValue()
+        optContextJsWinId.has_value()
             ? jsWindowRegistry.tryFindJsWindowById(optContextJsWinId.value())
             : nullptr;
 
@@ -235,7 +235,7 @@ void showFileDialogAuthorization(
                         });
                     QtOhos::invokeInQtThread(
                         [sharedResultCallback, optSelectedUrls]() {
-                            bool authorized = optSelectedUrls.hasValue() && !optSelectedUrls.value().isEmpty();
+                            bool authorized = optSelectedUrls.has_value() && !optSelectedUrls.value().isEmpty();
                             (*sharedResultCallback)(authorized);
                         });
                 });

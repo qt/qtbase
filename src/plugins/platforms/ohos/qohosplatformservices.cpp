@@ -74,7 +74,7 @@ public:
         m_ohosColorPickingHandler =
                 QtOhos::getQOhosQpaFunctions().startPickingColorFromScreenWithConsumer(
                         [this](QOhosOptional<quint32> rgbaColor) {
-                            if (rgbaColor.hasValue())
+                            if (rgbaColor.has_value())
                                 emit this->colorPicked(QColor::fromRgba(rgbaColor.value()));
                         });
     }

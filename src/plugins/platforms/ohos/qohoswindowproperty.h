@@ -123,7 +123,7 @@ QOhosOptional<T> tryGetQOhosPropertyFromQObject(QObject *qObject)
         return makeEmptyQOhosOptional();
 
     auto optValue = qohoswindowproperty_h_detail::tryMapFromQVariant<T>(value);
-    if (!optValue.hasValue()) {
+    if (!optValue.has_value()) {
         qOhosPrintfError(
             "Property \"%s\" type mismatch, expected: %d, got: %d",
             propertyName, propertyTypeId, value.userType());
@@ -196,7 +196,7 @@ void QOhosPropertiesStore::notifyPropertyWriteInternal()
         return;
 
     auto propertyValue = tryGetProperty<T, propertyPtr>();
-    if (propertyValue.hasValue())
+    if (propertyValue.has_value())
         propertyWriteConsumersStore->notify(propertyValue.value());
 }
 

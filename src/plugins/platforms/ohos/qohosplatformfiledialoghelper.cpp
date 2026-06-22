@@ -167,7 +167,7 @@ void QOhosPlatformFileDialogHelperImpl::setDialogResult(
     hide();
     m_selectedFiles.clear();
     if (accepted) {
-        if (optSelectedFilterIndex.hasValue()) {
+        if (optSelectedFilterIndex.has_value()) {
             auto nameFilters = options()->nameFilters();
             auto selectedFilterIndex = optSelectedFilterIndex.value();
             if (selectedFilterIndex >= 0 && selectedFilterIndex < nameFilters.count())
@@ -239,7 +239,7 @@ bool QOhosPlatformFileDialogHelperImpl::show(
             mapQFileDialogOptionsToOhosDocumentSelectMode(*opt),
             mapQFileDialogOptionsToOhosResultMultiplicity(*opt),
             [this](QOhosOptional<QOhosWindowManager::OpenResult> optOpenResult) {
-                auto filesPaths = optOpenResult.hasValue()
+                auto filesPaths = optOpenResult.has_value()
                     ? optOpenResult.value().selectedUrls
                     : QStringList();
                 setDialogResult(!filesPaths.isEmpty(), filesPaths, {});
@@ -257,7 +257,7 @@ bool QOhosPlatformFileDialogHelperImpl::show(
                     : QString(),
             ohosNameFilters,
             [this](QOhosOptional<QOhosWindowManager::SaveResult> optSaveResult) {
-                auto filesPaths = optSaveResult.hasValue()
+                auto filesPaths = optSaveResult.has_value()
                     ? optSaveResult.value().savedUrls
                     : QStringList();
                 auto optSelectedFilterIndex = qTransform(

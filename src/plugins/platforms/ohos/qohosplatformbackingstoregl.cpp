@@ -105,7 +105,7 @@ QOhosOptional<RenderContextData> RenderContextData::tryCreateForQWindow(QWindow 
         return {};
 
     auto optSurfaceResolution = view->surfaceResolution();
-    return optSurfaceResolution.hasValue()
+    return optSurfaceResolution.has_value()
         ? makeQOhosOptional(
             RenderContextData{
                 .qWindow = window,
@@ -165,7 +165,7 @@ void QOhosPlatformBackingStoreGL::flush(
     auto optSrcWindowCtxData = RenderContextData::tryCreateForQWindow(window());
     auto optDstWidnowCtxData = RenderContextData::tryCreateForQWindow(targetWindow);
 
-    if (!optSrcWindowCtxData.hasValue() || !optDstWidnowCtxData.hasValue())
+    if (!optSrcWindowCtxData.has_value() || !optDstWidnowCtxData.has_value())
         return;
 
     if (!m_glContext)
@@ -201,7 +201,7 @@ void QOhosPlatformBackingStoreGL::resize(const QSize &targetSize, const QRegion 
 void QOhosPlatformBackingStoreGL::tryRecreatePaintDeviceIfNeeded()
 {
     auto optRootWindowCtxData = RenderContextData::tryCreateForQWindow(window());
-    if (!optRootWindowCtxData.hasValue())
+    if (!optRootWindowCtxData.has_value())
         return;
 
     auto rootWindowCtxData = optRootWindowCtxData.value();
@@ -214,7 +214,7 @@ void QOhosPlatformBackingStoreGL::tryRecreatePaintDeviceIfNeeded()
 
     m_glContext->makeCurrent(rootWindowCtxData.qWindow);
 
-    auto targetFramebufferResolution = m_pendingResizeRequest.valueOr(
+    auto targetFramebufferResolution = m_pendingResizeRequest.value_or(
         rootWindowCtxData.platformWindow->windowGeometry().size());
     if (!m_framebuffer || m_framebuffer->size() != targetFramebufferResolution) {
         m_framebuffer = std::make_unique<QOpenGLFramebufferObject>(targetFramebufferResolution);
@@ -231,7 +231,7 @@ void QOhosPlatformBackingStoreGL::tryRecreatePaintDeviceIfNeeded()
 
 void QOhosPlatformBackingStoreGL::beginPaint(const QRegion &)
 {
-    if (!m_framebuffer || m_pendingResizeRequest.hasValue())
+    if (!m_framebuffer || m_pendingResizeRequest.has_value())
         tryRecreatePaintDeviceIfNeeded();
 
     if (!m_framebuffer)

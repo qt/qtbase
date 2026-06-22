@@ -429,7 +429,7 @@ void QOhosPlatformBackingStore::flushImmediate(QWindow *window)
             const auto& mergedRegionOpt = bufferRegionHandler.mergeRegionForBufferHandle(bufferHandle, rootWindowRegionToFlush);
             const auto dstImageOffset = extractNegativeOffset(rootWindowOffset);
             const auto windowVisibleRegion = QRegion(QRect(dstImageOffset, srcImage.size()));
-            const auto requestedRegion = mergedRegionOpt.valueOr(windowVisibleRegion);
+            const auto requestedRegion = mergedRegionOpt.value_or(windowVisibleRegion);
             const auto sourceRegionToFlush = requestedRegion.translated(-dstImageOffset);
             copyImage(srcImage, dstImage, sourceRegionToFlush, dstImageOffset);
 
@@ -437,7 +437,7 @@ void QOhosPlatformBackingStore::flushImmediate(QWindow *window)
                 debugDrawFlushedQRegion(dstImage, rootWindowRegionToFlush);
 
             return makeOhosRegionRectsForFlush(
-                mergedRegionOpt.valueOr(QRegion()), isRootWindow ? QPoint{} : rootWindowOffset, dstImage.size());
+                mergedRegionOpt.value_or(QRegion()), isRootWindow ? QPoint{} : rootWindowOffset, dstImage.size());
         },
         [&](::BufferHandle *bufferHandle) {
             bufferRegionHandler.storeRegionForBufferHandle(bufferHandle, rootWindowRegionToFlush);

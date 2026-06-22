@@ -146,7 +146,7 @@ void QOhosPlatformWindow::setParent(const QPlatformWindow *newParent)
 
 QPlatformScreen *QOhosPlatformWindow::screen() const
 {
-    if (!m_displayId.hasValue())
+    if (!m_displayId.has_value())
         return QPlatformWindow::screen();
 
     const auto &screenManager = *QOhosPlatformIntegration::instance()->screenManager();
@@ -353,7 +353,7 @@ QWindow *QOhosPlatformWindow::validSubWindowOfTagValueOrNull() const
 
 bool QOhosPlatformWindow::mainWindowTagValueOrFalse() const
 {
-    return m_propertiesStore.tryGetProperty<bool, &mainWindowTagProperty>().valueOr(false);
+    return m_propertiesStore.tryGetProperty<bool, &mainWindowTagProperty>().value_or(false);
 }
 
 bool QOhosPlatformWindow::shouldShowWindowWithoutActivating() const
@@ -364,7 +364,7 @@ bool QOhosPlatformWindow::shouldShowWindowWithoutActivating() const
 
 QWindow *QOhosPlatformWindow::getWindowOrWidgetAsSubWindowOfTagValue(QObject *windowOrWidget)
 {
-    return tryGetWindowOrWidgetProperty<QWindow *, &subWindowOfTagProperty>(windowOrWidget).valueOr(nullptr);
+    return tryGetWindowOrWidgetProperty<QWindow *, &subWindowOfTagProperty>(windowOrWidget).value_or(nullptr);
 }
 
 void QOhosPlatformWindow::setWindowOrWidgetNativeNodeRenderFitPolicyHint(
@@ -588,7 +588,7 @@ std::shared_ptr<void> QOhosPlatformWindow::setSurfaceConsumer(
 
 bool QOhosPlatformWindow::floatWindowTagValueOrFalse() const
 {
-    return m_propertiesStore.tryGetProperty<bool, &floatWindowTagProperty>().valueOr(false);
+    return m_propertiesStore.tryGetProperty<bool, &floatWindowTagProperty>().value_or(false);
 }
 
 QPixmap QOhosPlatformWindow::makeSnapshot() const
@@ -603,11 +603,11 @@ void QOhosPlatformWindow::setDisplayIdFromOhos(QOhosOptional<QOhosDisplayInfo::J
 
         qCDebug(QtForOhos)
             << "Screen changed - window:" << window()
-            << "displayId:" << (displayId.hasValue()
+            << "displayId:" << (displayId.has_value()
                 ? QString::number(displayId.value().value())
                 : QString::fromUtf8("<NO DISPLAY>"));
 
-        QOhosPlatformScreen *screen = m_displayId.hasValue()
+        QOhosPlatformScreen *screen = m_displayId.has_value()
             ? QOhosPlatformIntegration::instance()
                 ->screenManager()->platformScreenForDisplayIdOrNull(m_displayId.value())
             : nullptr;

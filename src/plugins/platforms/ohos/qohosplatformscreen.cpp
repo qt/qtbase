@@ -244,7 +244,7 @@ void QOhosPlatformScreen::setDisplayInfo(const QOhosDisplayInfo &displayInfo)
         for (const auto &windowRectPair : windowRectPairs) {
             auto *qWindow = windowRectPair.first;
             auto *platformWindow = QOhosPlatformWindow::fromQWindow(qWindow);
-            if (windowRectPair.second.hasValue())
+            if (windowRectPair.second.has_value())
                 qWindow->setGeometry(windowRectPair.second.value());
             platformWindow->handleDpiChange();
         }
@@ -273,7 +273,7 @@ Qt::ScreenOrientation QOhosPlatformScreen::orientation() const
 {
     return
         qAndThen(m_displayInfo.orientation, tryMapJsDisplayOrientationToQt)
-        .valueOr(Qt::ScreenOrientation::PrimaryOrientation);
+        .value_or(Qt::ScreenOrientation::PrimaryOrientation);
 }
 
 Qt::ScreenOrientation QOhosPlatformScreen::nativeOrientation() const
