@@ -3399,7 +3399,7 @@ QAccessibleViewportInterface::~QAccessibleViewportInterface()
 */
 
 /*!
-    \fn void QAccessibleViewportInterface::setPosition(const QPointF &position)
+    \fn void QAccessibleViewportInterface::setPosition(QPointF position)
 
     Sets the viewport's position to the given \a position defined in normalized values.
 */

@@ -310,7 +310,7 @@ public:
     virtual QPointF position() const = 0;
     virtual QSizeF viewportSize() const = 0;
     virtual bool isIndexed() const = 0;
-    virtual void setPosition(const QPointF &position) = 0;
+    virtual void setPosition(QPointF position) = 0;
 };
 
 
