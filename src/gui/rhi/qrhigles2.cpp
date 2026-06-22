@@ -967,6 +967,11 @@ bool QRhiGles2::create(QRhi::Flags flags)
     else
         caps.r32uiFormat = true;
 
+    if (caps.gles)
+        caps.imageLoadStore = caps.r32uiFormat;
+    else
+        caps.imageLoadStore = (caps.ctxMajor > 4 || (caps.ctxMajor == 4 && caps.ctxMinor >= 2));
+
     caps.r16Format = f->hasOpenGLExtension(QOpenGLExtensions::Sized16Formats);
     caps.floatFormats = caps.ctxMajor >= 3; // 3.0 or ES 3.0
     caps.rgb10Formats = caps.ctxMajor >= 3; // 3.0 or ES 3.0
@@ -1542,6 +1547,9 @@ bool QRhiGles2::isTextureFormatSupported(QRhiTexture::Format format, QRhiTexture
 {
     if (isCompressedFormat(format))
         return supportedCompressedFormats.contains(GLint(toGlCompressedTextureFormat(format, flags)));
+
+    if ((flags & QRhiTexture::UsedWithLoadStore) && !caps.imageLoadStore)
+        return false;
 
     switch (format) {
     case QRhiTexture::D16:
