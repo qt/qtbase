@@ -27,9 +27,6 @@
 
 QT_BEGIN_NAMESPACE
 
-template<typename T>
-class QOhosOptional;
-
 namespace qohosplugincore_h_detail {
 
 template<typename A, typename B, typename = void>
@@ -43,15 +40,6 @@ template<typename A, typename B>
 constexpr bool hasEqualityComparator = HasEqualityComparatorT<A, B>::value;
 
 template<typename>
-struct IsQOhosOptional : std::false_type {};
-
-template<typename T>
-struct IsQOhosOptional<QOhosOptional<T>> : std::true_type {};
-
-template<typename T>
-constexpr bool isQOhosOptional = IsQOhosOptional<T>::value;
-
-template<typename>
 struct IsStdOptional : std::false_type {};
 
 template<typename T>
@@ -63,84 +51,7 @@ constexpr bool isStdOptional = IsStdOptional<T>::value;
 }
 
 template<typename T>
-class QOhosOptional
-{
-    static_assert(
-        std::is_copy_constructible<T>::value && std::is_copy_assignable<T>::value,
-        "Only copyable types are supported");
-
-public:
-    explicit QOhosOptional(const T &value);
-    QOhosOptional(const QOhosOptional<void> &empty);
-    template<typename U, std::enable_if_t<std::is_same_v<U, T>, int> = 0>
-    QOhosOptional(const std::optional<U> &other);
-
-    QOhosOptional() = default;
-    QOhosOptional(const QOhosOptional<T> &other);
-    QOhosOptional<T> &operator=(const QOhosOptional<T> &other);
-    QOhosOptional<T> &operator=(const T &value);
-    QOhosOptional<T> &operator=(const QOhosOptional<void> &empty);
-    template<typename U, std::enable_if_t<std::is_same_v<U, T>, int> = 0>
-    QOhosOptional<T> &operator=(const std::optional<U> &other);
-
-    ~QOhosOptional();
-
-    bool has_value() const;
-    T value_or(const T &fallback) const;
-
-    bool hasValue() const;
-    T valueOr(const T &fallback) const;
-
-    const T &value() const;
-    T &value();
-
-    void reset();
-
-    template<typename... Args>
-    T &emplace(Args &&...args);
-
-private:
-    T &storedValueRef();
-    const T &storedValueRef() const;
-    template<typename... InitArgs>
-    void initializeStoredValue(InitArgs &&...initArgs);
-
-    std::aligned_storage_t<sizeof(T), alignof(T)> m_rawStoredValue;
-    bool m_hasValue = false;
-};
-
-template<typename T, typename U>
-std::enable_if_t<qohosplugincore_h_detail::hasEqualityComparator<T, U>, bool>
-operator==(const QOhosOptional<T> &lhs, const QOhosOptional<U> &rhs);
-
-template<typename T, typename U>
-std::enable_if_t<qohosplugincore_h_detail::hasEqualityComparator<T, U>, bool>
-operator!=(const QOhosOptional<T> &lhs, const QOhosOptional<U> &rhs);
-
-template<typename T, typename U>
-std::enable_if_t<qohosplugincore_h_detail::hasEqualityComparator<T, U>, bool>
-operator==(const QOhosOptional<T> &lhs, const U &rhs);
-
-template<typename T, typename U>
-std::enable_if_t<qohosplugincore_h_detail::hasEqualityComparator<T, U>, bool>
-operator!=(const QOhosOptional<T> &lhs, const U &rhs);
-
-template<typename T, typename U>
-std::enable_if_t<qohosplugincore_h_detail::hasEqualityComparator<T, U>, bool>
-operator==(const T &lhs, const QOhosOptional<U> &rhs);
-
-template<typename T, typename U>
-std::enable_if_t<qohosplugincore_h_detail::hasEqualityComparator<T, U>, bool>
-operator!=(const T &lhs, const QOhosOptional<U> &rhs);
-
-template<typename T, typename Func>
-std::enable_if_t<
-    qohosplugincore_h_detail::isQOhosOptional<QOhosInvokeResult<Func, T>>,
-    QOhosInvokeResult<Func, T>>
-qAndThen(const QOhosOptional<T> &opt, Func &&func);
-
-template<typename T, typename Func>
-QOhosOptional<QOhosInvokeResult<Func, T>> qTransform(const QOhosOptional<T> &opt, Func &&func);
+using QOhosOptional = std::optional<T>;
 
 template<typename T, typename Func>
 std::enable_if_t<
@@ -151,15 +62,10 @@ qAndThen(const std::optional<T> &opt, Func &&func);
 template<typename T, typename Func>
 std::optional<std::remove_cv_t<QOhosInvokeResult<Func, T>>> qTransform(const std::optional<T> &opt, Func &&func);
 
-template<>
-class QOhosOptional<void>
-{
-};
-
 template<typename T>
-QOhosOptional<T> makeQOhosOptional(const T &value);
+std::optional<T> makeQOhosOptional(const T &value);
 
-QOhosOptional<void> makeEmptyQOhosOptional();
+std::nullopt_t makeEmptyQOhosOptional();
 
 namespace QtOhos {
 
@@ -444,239 +350,6 @@ T evalInJsThreadWithPromise(
 
 }
 
-template<typename T>
-QOhosOptional<T>::QOhosOptional(const T &value)
-{
-    initializeStoredValue(value);
-}
-
-template<typename T>
-QOhosOptional<T>::QOhosOptional(const QOhosOptional<void> &)
-{
-}
-
-template<typename T>
-QOhosOptional<T>::QOhosOptional(const QOhosOptional<T> &other)
-{
-    if (other.m_hasValue)
-        initializeStoredValue(other.storedValueRef());
-}
-
-template<typename T>
-template<typename U, std::enable_if_t<std::is_same_v<U, T>, int>>
-QOhosOptional<T>::QOhosOptional(const std::optional<U> &other)
-{
-    if (other.has_value())
-        initializeStoredValue(*other);
-}
-
-template<typename T>
-QOhosOptional<T> &QOhosOptional<T>::operator=(const QOhosOptional<T> &other)
-{
-    if (&other == this)
-        return *this;
-
-    if (other.m_hasValue) {
-        if (m_hasValue)
-            storedValueRef() = other.storedValueRef();
-        else
-            initializeStoredValue(other.storedValueRef());
-    } else {
-        reset();
-    }
-
-    return *this;
-}
-
-template<typename T>
-QOhosOptional<T> &QOhosOptional<T>::operator=(const T &value)
-{
-    *this = QOhosOptional<T>(value);
-    return *this;
-}
-
-template<typename T>
-QOhosOptional<T> &QOhosOptional<T>::operator=(const QOhosOptional<void> &)
-{
-    reset();
-    return *this;
-}
-
-template<typename T>
-template<typename U, std::enable_if_t<std::is_same_v<U, T>, int>>
-QOhosOptional<T> &QOhosOptional<T>::operator=(const std::optional<U> &other)
-{
-    if (other.has_value()) {
-        if (m_hasValue)
-            storedValueRef() = *other;
-        else
-            initializeStoredValue(*other);
-    } else {
-        reset();
-    }
-    return *this;
-}
-
-template<typename T>
-QOhosOptional<T>::~QOhosOptional()
-{
-    reset();
-}
-
-template<typename T>
-void QOhosOptional<T>::reset()
-{
-    if (m_hasValue) {
-        m_hasValue = false;
-        storedValueRef().~T();
-    }
-}
-
-template<typename T>
-T &QOhosOptional<T>::storedValueRef()
-{
-    return *reinterpret_cast<T *>(&m_rawStoredValue);
-}
-
-template<typename T>
-const T &QOhosOptional<T>::storedValueRef() const
-{
-    return *reinterpret_cast<const T *>(&m_rawStoredValue);
-}
-
-template<typename T>
-template<typename... InitArgs>
-void QOhosOptional<T>::initializeStoredValue(InitArgs &&...initArgs)
-{
-    new (&m_rawStoredValue) T(std::forward<InitArgs...>(initArgs...));
-    m_hasValue = true;
-}
-
-template<typename T>
-bool QOhosOptional<T>::has_value() const
-{
-    return m_hasValue;
-}
-
-template<typename T>
-T QOhosOptional<T>::value_or(const T &fallback) const
-{
-    return has_value() ? storedValueRef() : fallback;
-}
-
-template<typename T>
-bool QOhosOptional<T>::hasValue() const
-{
-    return has_value();
-}
-
-template<typename T>
-T QOhosOptional<T>::valueOr(const T &fallback) const
-{
-    return value_or(fallback);
-}
-
-template<typename T>
-const T &QOhosOptional<T>::value() const
-{
-    if (!m_hasValue) {
-#ifndef QT_NO_EXCEPTIONS
-        throw std::runtime_error("Can't access value inside empty QOhosOptional<>");
-#else
-        qFatal("Can't access value inside empty QOhosOptional<>");
-        std::abort();
-#endif
-    }
-
-    return storedValueRef();
-}
-
-template<typename T>
-T &QOhosOptional<T>::value()
-{
-    if (!m_hasValue) {
-#ifndef QT_NO_EXCEPTIONS
-        throw std::runtime_error("Can't access value inside empty QOhosOptional<>");
-#else
-        qFatal("Can't access value inside empty QOhosOptional<>");
-        std::abort();
-#endif
-    }
-
-    return storedValueRef();
-}
-
-template<typename T>
-template<typename... Args>
-T &QOhosOptional<T>::emplace(Args &&...args)
-{
-    reset();
-    initializeStoredValue(std::forward<Args...>(args)...);
-    return storedValueRef();
-}
-
-template<typename T, typename U>
-std::enable_if_t<qohosplugincore_h_detail::hasEqualityComparator<T, U>, bool>
-operator==(const QOhosOptional<T> &lhs, const QOhosOptional<U> &rhs)
-{
-    return (lhs.has_value() && rhs.has_value())
-        ? lhs.value() == rhs.value()
-        : (!lhs.has_value() && !rhs.has_value());
-}
-
-template<typename T, typename U>
-std::enable_if_t<qohosplugincore_h_detail::hasEqualityComparator<T, U>, bool>
-operator!=(const QOhosOptional<T> &lhs, const QOhosOptional<U> &rhs)
-{
-    return !(lhs == rhs);
-}
-
-template<typename T, typename U>
-std::enable_if_t<qohosplugincore_h_detail::hasEqualityComparator<T, U>, bool>
-operator==(const QOhosOptional<T> &lhs, const U &rhs)
-{
-    return lhs.has_value() && lhs.value() == rhs;
-}
-
-template<typename T, typename U>
-std::enable_if_t<qohosplugincore_h_detail::hasEqualityComparator<T, U>, bool>
-operator!=(const QOhosOptional<T> &lhs, const U &rhs)
-{
-    return !(lhs == rhs);
-}
-
-template<typename T, typename U>
-std::enable_if_t<qohosplugincore_h_detail::hasEqualityComparator<T, U>, bool>
-operator==(const T &lhs, const QOhosOptional<U> &rhs)
-{
-    return rhs.has_value() && lhs == rhs.value();
-}
-
-template<typename T, typename U>
-std::enable_if_t<qohosplugincore_h_detail::hasEqualityComparator<T, U>, bool>
-operator!=(const T &lhs, const QOhosOptional<U> &rhs)
-{
-    return !(lhs == rhs);
-}
-
-template<typename T, typename Func>
-std::enable_if_t<
-    qohosplugincore_h_detail::isQOhosOptional<QOhosInvokeResult<Func, T>>,
-    QOhosInvokeResult<Func, T>>
-qAndThen(const QOhosOptional<T> &opt, Func &&func)
-{
-    return opt.has_value() ? func(opt.value()) : QOhosInvokeResult<Func, T>();
-}
-
-template<typename T, typename Func>
-QOhosOptional<QOhosInvokeResult<Func, T>> qTransform(const QOhosOptional<T> &opt, Func &&func)
-{
-    using TransformedT = QOhosInvokeResult<Func, T>;
-    return opt.has_value()
-        ? QOhosOptional<TransformedT>(func(opt.value()))
-        : QOhosOptional<TransformedT>();
-}
-
 template<typename T, typename Func>
 std::enable_if_t<
     qohosplugincore_h_detail::isStdOptional<QOhosInvokeResult<Func, T>>,
@@ -696,14 +369,14 @@ std::optional<std::remove_cv_t<QOhosInvokeResult<Func, T>>> qTransform(const std
 }
 
 template<typename T>
-QOhosOptional<T> makeQOhosOptional(const T &value)
+std::optional<T> makeQOhosOptional(const T &value)
 {
-    return QOhosOptional<T>(value);
+    return std::optional<T>(value);
 }
 
-inline QOhosOptional<void> makeEmptyQOhosOptional()
+inline std::nullopt_t makeEmptyQOhosOptional()
 {
-    return {};
+    return std::nullopt;
 }
 
 QT_END_NAMESPACE

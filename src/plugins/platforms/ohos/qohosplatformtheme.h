@@ -19,9 +19,6 @@ QT_BEGIN_NAMESPACE
 template<typename T>
 using QOhosSupplier = std::function<T()>;
 
-template <typename T>
-class QOhosOptional;
-
 class QOhosPlatformTheme : public QPlatformTheme
 {
 public:
