@@ -33,7 +33,8 @@ public:
 
     void setSource(const QRectF &source);
     void setDestination(const QSize &destination);
-
+private:
+    Q_DISABLE_COPY(QWaylandViewport)
 };
 
 }

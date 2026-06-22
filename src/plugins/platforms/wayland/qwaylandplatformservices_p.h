@@ -16,7 +16,7 @@
 // We mean it.
 //
 
-#include <QtCore/QMap>
+#include <QtCore/QHash>
 #include <QtGui/private/qdesktopunixservices_p.h>
 
 #include <QtWaylandClient/private/qwayland-qt-windowmanager.h>
@@ -45,7 +45,7 @@ public:
 
 private:
     QWaylandDisplay *m_display;
-    QMap<QWindow *, QWaylandAppMenu *> m_appMenus;
+    QHash<QWindow *, QWaylandAppMenu *> m_appMenus;
 };
 
 QT_END_NAMESPACE

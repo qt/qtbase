@@ -85,9 +85,12 @@ public:
         SelfDispatch, // Dispatch the events inside this thread.
     };
 
-    EventThread(struct wl_display * wl, struct wl_event_queue * ev_queue,
-                OperatingMode mode)
-        : m_fd(wl_display_get_fd(wl))
+    EventThread(struct wl_display * wl,
+                struct wl_event_queue * ev_queue,
+                OperatingMode mode,
+                QObject *parent = nullptr)
+        : QThread(parent)
+        , m_fd(wl_display_get_fd(wl))
         , m_pipefd{ -1, -1 }
         , m_wldisplay(wl)
         , m_wlevqueue(ev_queue)
@@ -174,6 +177,8 @@ protected:
             }
 
             int *fds;
+        private:
+            Q_DISABLE_COPY(Pipe)
         } pipe(m_pipefd);
 
         // Make the main thread call wl_prepare_read(), dispatch the pending messages and flush the
@@ -319,8 +324,9 @@ QWaylandWindowManagerIntegration *QWaylandDisplay::windowManagerIntegration() co
     return mGlobals.windowManagerIntegration.get();
 }
 
-QWaylandDisplay::QWaylandDisplay(QWaylandIntegration *waylandIntegration)
-    : mWaylandIntegration(waylandIntegration)
+QWaylandDisplay::QWaylandDisplay(QWaylandIntegration *waylandIntegration, QObject *parent)
+    : QObject(parent)
+    , mWaylandIntegration(waylandIntegration)
 {
     qRegisterMetaType<uint32_t>("uint32_t");
 
@@ -497,18 +503,19 @@ void QWaylandDisplay::reconnect()
     if (!mDisplay)
         _exit(1);
 
-    connect(
-            this, &QWaylandDisplay::connected, this,
-            [this, &allPlatformWindows] {
-                for (auto &window : std::as_const(allPlatformWindows)) {
-                    window->initializeWlSurface(false);
-                }
-                forceRoundTrip(); // we need a roundtrip to receive the color space features the compositor supports
-                for (auto &window : std::as_const(allPlatformWindows)) {
-                    window->initializeColorSpace();
-                }
-            },
-            Qt::SingleShotConnection);
+    QMetaObject::Connection connection =
+            connect(
+                this, &QWaylandDisplay::connected, this,
+                [this, &allPlatformWindows] {
+                    for (auto &window : std::as_const(allPlatformWindows)) {
+                        window->initializeWlSurface(false);
+                    }
+                    forceRoundTrip(); // we need a roundtrip to receive the color space features the compositor supports
+                    for (auto &window : std::as_const(allPlatformWindows)) {
+                        window->initializeColorSpace();
+                    }
+                },
+                Qt::SingleShotConnection);
 
     setupConnection();
 
@@ -535,6 +542,10 @@ void QWaylandDisplay::reconnect()
     }
 
     mWaylandIntegration->reconfigureInputContext();
+
+    // Failsafe: Make sure we don't have a lingering connection referencing local variables
+    // (This will have been executed and disconnected in initialize())
+    disconnect(connection);
 }
 
 void QWaylandDisplay::flushRequests()
@@ -643,6 +654,9 @@ struct WithDestructor : public T
     {
         f(this->object());
     }
+
+private:
+    Q_DISABLE_COPY(WithDestructor)
 };
 
 void QWaylandDisplay::registry_global(uint32_t id, const QString &interface, uint32_t version)

@@ -71,6 +71,8 @@ protected:
     void zwp_text_input_v3_preedit_hint(uint32_t begin, uint32_t end, uint32_t hint) override;
 
 private:
+    Q_DISABLE_COPY(QWaylandTextInputv3)
+
     ::wl_surface *m_surface = nullptr; // ### Here for debugging purposes
 
     struct StyleHint {

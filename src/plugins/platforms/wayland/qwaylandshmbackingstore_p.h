@@ -48,6 +48,8 @@ public:
     void setAge(uint age) { mAge = age; }
 
 private:
+    Q_DISABLE_COPY(QWaylandShmBuffer)
+
     QImage mImage;
     struct wl_shm_pool *mShmPool = nullptr;
     QMargins mMargins;
@@ -85,6 +87,8 @@ public:
 #endif
 
 private:
+    Q_DISABLE_COPY(QWaylandShmBackingStore)
+
     void updateDirtyStates(const QRegion &region);
     void updateDecorations();
     QWaylandShmBuffer *getBuffer(const QSize &size, bool &bufferWasRecreated);

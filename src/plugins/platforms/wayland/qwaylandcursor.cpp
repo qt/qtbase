@@ -171,7 +171,7 @@ wl_cursor *QWaylandCursorTheme::requestCursor(WaylandCursor shape)
         {ResizeSouthWestCursor, "bottom_left_corner"},
     };
 
-    const auto byShape = [](ShapeAndName lhs, ShapeAndName rhs) {
+    const auto byShape = [](const ShapeAndName &lhs, const ShapeAndName &rhs) {
         return lhs.shape < rhs.shape;
     };
     Q_ASSERT(std::is_sorted(std::begin(cursorNamesMap), std::end(cursorNamesMap), byShape));

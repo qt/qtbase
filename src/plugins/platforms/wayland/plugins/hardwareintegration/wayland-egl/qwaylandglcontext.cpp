@@ -227,6 +227,9 @@ public:
     int m_inverseSquareVerticesOffset;
     int m_textureVerticesOffset;
     int m_textureWrap;
+
+private:
+    Q_DISABLE_COPY(DecorationsBlitter)
 };
 
 QWaylandGLContext::QWaylandGLContext()

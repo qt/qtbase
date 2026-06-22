@@ -28,7 +28,7 @@ namespace QtWaylandClient {
 class QWaylandAppMenu : public QObject, public QtWayland::org_kde_kwin_appmenu
 {
 public:
-    QWaylandAppMenu();
+    QWaylandAppMenu(QObject *parent = nullptr);
     ~QWaylandAppMenu();
 };
 
@@ -37,6 +37,9 @@ class QWaylandAppMenuManager : public QtWayland::org_kde_kwin_appmenu_manager
 public:
     QWaylandAppMenuManager(wl_registry *registry, quint32 id, int version);
     ~QWaylandAppMenuManager();
+
+private:
+    Q_DISABLE_COPY(QWaylandAppMenuManager)
 };
 
 } // namespace QtWaylandClient

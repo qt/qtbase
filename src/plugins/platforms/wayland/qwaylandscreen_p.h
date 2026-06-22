@@ -35,6 +35,9 @@ class Q_WAYLANDCLIENT_EXPORT QWaylandXdgOutputManagerV1 : public QtWayland::zxdg
 public:
     QWaylandXdgOutputManagerV1(QWaylandDisplay *display, uint id, uint version);
     ~QWaylandXdgOutputManagerV1();
+
+private:
+    Q_DISABLE_COPY(QWaylandXdgOutputManagerV1)
 };
 
 class Q_WAYLANDCLIENT_EXPORT QWaylandScreen : public QPlatformScreen,
@@ -134,6 +137,9 @@ protected:
     Qt::ScreenOrientation m_orientation = Qt::PrimaryOrientation;
     uint mProcessedEvents = 0;
     bool mInitialized = false;
+
+private:
+    Q_DISABLE_COPY(QWaylandScreen)
 };
 
 }

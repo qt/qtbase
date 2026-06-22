@@ -29,12 +29,13 @@ class Q_WAYLANDCLIENT_EXPORT QWaylandWlShellIntegration
       public QtWayland::wl_shell
 {
 public:
-    QWaylandWlShellIntegration();
+    QWaylandWlShellIntegration(QObject *parent = nullptr);
     ~QWaylandWlShellIntegration();
     QWaylandShellSurface *createShellSurface(QWaylandWindow *window) override;
     void *nativeResourceForWindow(const QByteArray &resource, QWindow *window) override;
 
 private:
+    Q_DISABLE_COPY(QWaylandWlShellIntegration)
 };
 
 }

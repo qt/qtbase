@@ -87,6 +87,9 @@ protected:
     struct ::wl_cursor *requestCursor(WaylandCursor shape);
     struct ::wl_cursor_theme *m_theme = nullptr;
     wl_cursor *m_cursors[NumWaylandCursors] = {};
+
+private:
+    Q_DISABLE_COPY(QWaylandCursorTheme)
 };
 
 class Q_WAYLANDCLIENT_EXPORT QWaylandCursorShape : public QtWayland::wp_cursor_shape_device_v1
@@ -95,6 +98,9 @@ public:
     QWaylandCursorShape(struct ::wp_cursor_shape_device_v1 *object);
     ~QWaylandCursorShape();
     void setShape(uint32_t serial, Qt::CursorShape shape);
+
+private:
+    Q_DISABLE_COPY(QWaylandCursorShape)
 };
 
 class Q_WAYLANDCLIENT_EXPORT QWaylandCursor : public QPlatformCursor

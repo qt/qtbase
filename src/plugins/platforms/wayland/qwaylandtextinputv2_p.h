@@ -70,6 +70,8 @@ protected:
     void zwp_text_input_v2_input_method_changed(uint32_t serial, uint32_t flags) override;
 
 private:
+    Q_DISABLE_COPY(QWaylandTextInputv2)
+
     Qt::KeyboardModifiers modifiersToQtModifiers(uint32_t modifiers);
 
     QWaylandDisplay *m_display = nullptr;

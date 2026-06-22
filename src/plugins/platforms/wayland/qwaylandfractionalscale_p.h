@@ -31,7 +31,7 @@ class QWaylandFractionalScale : public QObject, public QtWayland::wp_fractional_
 {
     Q_OBJECT
 public:
-    explicit QWaylandFractionalScale(struct ::wp_fractional_scale_v1 *object);
+    explicit QWaylandFractionalScale(struct ::wp_fractional_scale_v1 *object, QObject *parent = nullptr);
     ~QWaylandFractionalScale();
 
     std::optional<qreal> preferredScale() const { return mPreferredScale; }

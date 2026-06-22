@@ -12,7 +12,7 @@ QT_BEGIN_NAMESPACE
 
 namespace QtWaylandClient {
 
-QWaylandWlShellIntegration::QWaylandWlShellIntegration() : QWaylandShellIntegrationTemplate(1)
+QWaylandWlShellIntegration::QWaylandWlShellIntegration(QObject *parent) : QWaylandShellIntegrationTemplate(1, parent)
 {
     qCWarning(lcQpaWayland) << "\"wl-shell\" is a deprecated shell extension, prefer using"
                             << "\"xdg-shell\" if supported by the compositor"

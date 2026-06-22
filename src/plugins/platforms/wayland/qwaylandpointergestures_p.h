@@ -41,6 +41,9 @@ public:
 
     QWaylandPointerGestureSwipe *createPointerGestureSwipe(QWaylandInputDevice *device);
     QWaylandPointerGesturePinch *createPointerGesturePinch(QWaylandInputDevice *device);
+
+private:
+    Q_DISABLE_COPY(QWaylandPointerGestures)
 };
 
 class Q_WAYLANDCLIENT_EXPORT QWaylandPointerGestureSwipe :
@@ -71,6 +74,9 @@ public:
     QWaylandInputDevice *mParent = nullptr;
     QPointer<QWaylandSurface> mFocus;
     uint mFingers = 0;
+
+private:
+    Q_DISABLE_COPY(QWaylandPointerGestureSwipe)
 };
 
 class Q_WAYLANDCLIENT_EXPORT QWaylandPointerGesturePinch :
@@ -107,6 +113,8 @@ public:
     // We need to convert between absolute scale provided by wayland/libinput and zoom deltas
     // that Qt expects. This stores the scale of the last pinch event or 1.0 if there was none.
     qreal mLastScale = 1;
+private:
+    Q_DISABLE_COPY(QWaylandPointerGesturePinch)
 };
 
 } // namespace QtWaylandClient

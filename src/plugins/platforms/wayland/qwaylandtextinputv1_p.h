@@ -84,6 +84,8 @@ protected:
     void zwp_text_input_v1_text_direction(uint32_t serial, uint32_t direction) override;
 
 private:
+    Q_DISABLE_COPY(QWaylandTextInputv1)
+
     Qt::KeyboardModifiers modifiersToQtModifiers(uint32_t modifiers);
 
     QWaylandInputMethodEventBuilder m_builder;

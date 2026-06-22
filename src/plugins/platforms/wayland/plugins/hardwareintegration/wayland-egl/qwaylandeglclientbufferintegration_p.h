@@ -39,6 +39,8 @@ public:
     EGLDisplay eglDisplay() const;
 
 private:
+    Q_DISABLE_COPY(QWaylandEglClientBufferIntegration)
+
     QWaylandDisplay *m_display = nullptr;
 
     EGLDisplay m_eglDisplay = EGL_NO_DISPLAY;

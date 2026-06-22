@@ -214,8 +214,8 @@ void QWaylandIntegration::initialize()
 
     // Call this after initializing event thread for QWaylandDisplay::flushRequests()
     QAbstractEventDispatcher *dispatcher = QGuiApplicationPrivate::eventDispatcher;
-    QObject::connect(dispatcher, SIGNAL(aboutToBlock()), mDisplay.get(), SLOT(flushRequests()));
-    QObject::connect(dispatcher, SIGNAL(awake()), mDisplay.get(), SLOT(flushRequests()));
+    QObject::connect(dispatcher, &QAbstractEventDispatcher::aboutToBlock, mDisplay.get(), &QWaylandDisplay::flushRequests);
+    QObject::connect(dispatcher, &QAbstractEventDispatcher::awake, mDisplay.get(), &QWaylandDisplay::flushRequests);
 
     // Qt does not support running with no screens
     mDisplay->ensureScreen();

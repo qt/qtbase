@@ -71,16 +71,18 @@ public:
     void sendInputState(QInputMethodQueryEvent *state, Qt::InputMethodQueries queries = Qt::ImQueryInput);
 
 private:
+    Q_DISABLE_COPY(QWaylandTextInputMethod)
+
     QHash<int, QList<QInputMethodEvent::Attribute> > m_pendingInputMethodEvents;
     QHash<int,int> m_offsetFromCompositor;
 
-    struct ::wl_surface *m_surface;
+    struct ::wl_surface *m_surface = nullptr;
 
     // Cached state
     bool m_isVisible = false;
     QRectF m_keyboardRect;
     QLocale m_locale;
-    Qt::LayoutDirection m_layoutDirection;
+    Qt::LayoutDirection m_layoutDirection = Qt::LayoutDirectionAuto;
 };
 
 class QWaylandInputMethodContext : public QPlatformInputContext
