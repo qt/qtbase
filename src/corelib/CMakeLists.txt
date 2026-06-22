@@ -1459,14 +1459,20 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_permissions
         kernel/qpermissions.cpp kernel/qpermissions.h kernel/qpermissions_p.h
 )
 
+if(QT_FEATURE_permissions AND (APPLE OR UNIX) AND NOT (ANDROID OR WASM OR OHOS))
+    qt_internal_extend_target(Core
+        SOURCES
+            kernel/qpermissions_plugin.cpp
+        PLUGIN_TYPES
+            permissions
+    )
+endif()
+
 if(QT_FEATURE_permissions AND APPLE)
     qt_internal_extend_target(Core
         SOURCES
-            kernel/qpermissions_darwin.mm
             platform/darwin/qdarwinpermissionplugin.mm
             platform/darwin/qdarwinpermissionplugin_p.h
-        PLUGIN_TYPES
-            permissions
     )
 
     foreach(permission Camera Microphone Bluetooth Contacts Calendar Location)
