@@ -3628,7 +3628,10 @@ void QWindowsWindow::updateCustomTitlebar()
             p.drawRect(rect);
         }
         p.setPen(textPen);
-        p.drawText(rect,QStringLiteral("\uE922"), QTextOption(Qt::AlignVCenter | Qt::AlignHCenter));
+        // Show the restore glyph while maximized, the maximize glyph otherwise.
+        const QString maximizeGlyph = IsZoomed(m_data.hwnd) ? QStringLiteral("\uE923")   // ChromeRestore
+                                                            : QStringLiteral("\uE922");  // ChromeMaximize
+        p.drawText(rect, maximizeGlyph, QTextOption(Qt::AlignVCenter | Qt::AlignHCenter));
         buttons++;
     }
 
