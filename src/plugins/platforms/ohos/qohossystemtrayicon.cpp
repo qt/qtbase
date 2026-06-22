@@ -148,7 +148,7 @@ QNapi::Object makeJsStatusBarItem(
             {"statusBarGroupMenu", statusBarGroupMenus},
         });
 
-    if (hoverTips.hasValue()) {
+    if (hoverTips.has_value()) {
         if (ohosStatusBarHoverTipsSupported()) {
             statusBarItem.set("hoverTips", applyWorkaroundForEmptyHoverTips(hoverTips.value()));
         } else {
@@ -311,7 +311,7 @@ QNapi::Object makeJsNotificationRequest(
             {"content", makeJsNotificationContent(jsState, title, content)},
             {"smallIcon", iconPixelMap},
         });
-    if (optAutoDeletedDelayMs.hasValue()) {
+    if (optAutoDeletedDelayMs.has_value()) {
         notificationRequest.set(
             "autoDeletedTime",
             QDateTime::currentMSecsSinceEpoch() + optAutoDeletedDelayMs.value());

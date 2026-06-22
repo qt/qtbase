@@ -36,7 +36,7 @@ QOhosPlatformClipboard::QOhosPlatformClipboard()
     m_clipboardObject = makeClipboardObjectInstance(
         [this](QOhosOptional<QOhosClipboardObject::PasteboardDataSource> dataSource) {
             if (dataSource == QOhosClipboardObject::PasteboardDataSource::OtherProcess
-                || (!dataSource.hasValue() && m_mimeData)) {
+                || (!dataSource.has_value() && m_mimeData)) {
                 m_mimeData = nullptr;
                 m_mimeDataIsOurs = false;
             }
@@ -100,7 +100,7 @@ std::shared_ptr<QMimeData> QOhosPlatformClipboard::getPasteboardDataWithLazyFetc
 {
     auto pasteboardData = m_clipboardObject->getPasteboardDataWithLazyFetch();
 
-    if (!pasteboardData.dataSource.hasValue())
+    if (!pasteboardData.dataSource.has_value())
         return std::make_shared<QMimeData>();
 
     return pasteboardData.dataSource == QOhosClipboardObject::PasteboardDataSource::OtherProcess

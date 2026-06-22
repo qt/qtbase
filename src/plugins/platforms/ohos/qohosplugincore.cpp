@@ -981,7 +981,7 @@ void invokeInJsThreadAndWaitForContinue(
         taskReadyFuture.wait();
     }
 
-    if (completionState->jsThreadExceptionMsg.hasValue()) {
+    if (completionState->jsThreadExceptionMsg.has_value()) {
         throw std::runtime_error(
             "Got exception from task invoked in JS thread"s
             + " (caller: \""s + callerContextName + "\"): "

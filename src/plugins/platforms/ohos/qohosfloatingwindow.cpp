@@ -132,7 +132,7 @@ void QOhosFloatingWindow::initialize()
     // so assign the default most-likely status of the tablet here.
     if (m_view->viewType() == QOhosView::ViewType::MainWindow
         && !QOhosSettings::isWindowPcModeEnabled()
-        && !m_lastWindowStatusType.hasValue()) {
+        && !m_lastWindowStatusType.has_value()) {
         m_lastWindowStatusType = QOhosWindowProxy::WindowStatusType::FULL_SCREEN;
     }
 
@@ -199,7 +199,7 @@ void QOhosFloatingWindow::initialize()
 void QOhosFloatingWindow::restoreWindowCurrentCursorIfNeeded()
 {
     auto *view = ownedViewOrNull();
-    if (view != nullptr && m_cursor.hasValue())
+    if (view != nullptr && m_cursor.has_value())
         view->setCursor(m_cursor.value());
 }
 
@@ -402,7 +402,7 @@ void QOhosFloatingWindow::handleWindowVisibilityChange(bool visible)
         qWindow,
         qPrintable(qWindow->objectName()),
         visible ? "true" : "false");
-    if (visible && m_windowMask.hasValue())
+    if (visible && m_windowMask.has_value())
         m_view->setWindowMask(QOhosWindowProxy::WindowMask{m_windowMask.value()});
 
     setExposedFromOhos(visible);

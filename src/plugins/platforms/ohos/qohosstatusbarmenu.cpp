@@ -437,7 +437,7 @@ std::function<QNapi::Array(QtOhos::JsState &)> QOhosStatusBarMenuImpl::makeJsSta
 
         for (const auto &jsMenuItemFactory : jsMenuItemsFactories) {
             QOhosOptional<QNapi::Object> optJsMenuItem = jsMenuItemFactory(jsState);
-            if (optJsMenuItem.hasValue()) {
+            if (optJsMenuItem.has_value()) {
                 currentJsMenuItemsArray.push_back(optJsMenuItem.value());
             } else {
                 jsGroupMenusArray.push_back(QNapi::makeArray(jsState.env(), currentJsMenuItemsArray));
@@ -465,7 +465,7 @@ std::function<QNapi::Array(QtOhos::JsState &)> QOhosStatusBarMenuImpl::makeJsSta
         std::vector<QNapi::ValueWrapper> jsSubMenuItems;
         for (const auto &jsSubMenuItemsFactory : jsSubMenuItemsFactories) {
             QOhosOptional<QNapi::Object> optJsSubMenuItem = jsSubMenuItemsFactory(jsState);
-            if (optJsSubMenuItem.hasValue())
+            if (optJsSubMenuItem.has_value())
                 jsSubMenuItems.push_back(optJsSubMenuItem.value());
         }
         return QNapi::makeArray(jsState.env(), jsSubMenuItems);
