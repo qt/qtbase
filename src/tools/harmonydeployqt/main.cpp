@@ -1718,10 +1718,14 @@ static bool copyQmlDir(const QString &srcDir, const QString &relPath,
     return true;
 }
 
+static QString hapQmlDir(const Options &options)
+{
+    return options.outputDirectory + "/entry/src/main/resources/resfile/qml"_L1;
+}
+
 static bool copyAllQmlModules(const Options &options)
 {
-    const QString qmlDestBase =
-        options.outputDirectory + "/entry/src/main/resources/resfile/qml"_L1;
+    const QString qmlDestBase = hapQmlDir(options);
 
     // Process qml-import-paths first (typically CMAKE_BINARY_DIR/qml, i.e. the
     // module's own build-tree QML output).  Files written here receive dest
@@ -2543,7 +2547,7 @@ static bool copyQmlImports(const Options &options,
 
     // QML non-.so files go to resfile/qml/ (maintaining directory structure)
     // QML plugin .so files go to libs/arm64-v8a/ (flat, no subdirectory)
-    QString qmlDestBase = options.outputDirectory + "/entry/src/main/resources/resfile/qml"_L1;
+    QString qmlDestBase = hapQmlDir(options);
     QDir().mkpath(qmlDestBase);
 
     // Track QML plugins to scan for dependencies
