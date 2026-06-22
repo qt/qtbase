@@ -240,7 +240,7 @@ QT_WARNING_DISABLE_FLOAT_COMPARE
 QT_WARNING_POP
     constexpr friend size_t qHash(QVector3D key, size_t seed = 0) noexcept
     {
-         return qHashMulti(seed, key.x(), key.y(), key.z());
+        return qHashMulti(seed, key.x(), key.y(), key.z());
     }
     float distanceToPoint(QVector3D point) const noexcept;
     constexpr float distanceToPlane(QVector3D plane, QVector3D normal) const noexcept;
