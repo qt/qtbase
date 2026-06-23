@@ -78,6 +78,7 @@ kern_return_t IOObjectRelease(io_object_t object);
 
 Q_FORWARD_DECLARE_OBJC_CLASS(NSObject);
 Q_FORWARD_DECLARE_OBJC_CLASS(NSString);
+Q_FORWARD_DECLARE_OBJC_CLASS(UTType);
 
 struct CGPoint;
 struct CGSize;
@@ -247,6 +248,7 @@ Q_CORE_EXPORT QDebug operator<<(QDebug, UIEdgeInsets);
 
 Q_CORE_EXPORT bool qt_apple_isApplicationExtension();
 Q_CORE_EXPORT bool qt_apple_runningWithLiquidGlass();
+Q_CORE_EXPORT std::optional<UTType *> qt_apple_bundleType(const QString &path);
 
 #if !defined(QT_BOOTSTRAPPED)
 Q_CORE_EXPORT bool qt_apple_isSandboxed();

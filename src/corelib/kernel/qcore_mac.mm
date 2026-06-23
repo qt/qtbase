@@ -12,6 +12,8 @@
 #include <UIKit/UIKit.h>
 #endif
 
+#include <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
+
 #include <new>
 #include <execinfo.h>
 #include <dlfcn.h>
@@ -507,6 +509,34 @@ bool qt_apple_isApplicationExtension()
 {
     static bool isExtension = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"NSExtension"];
     return isExtension;
+}
+
+/*!
+    \internal
+
+    Returns the bundle type of the item at \a path, or \c std::nullopt if it is
+    not a bundle.
+
+    Whether an item is a bundle is determined by its uniform type conforming to
+    com.apple.bundle, covering applications (.app), app extensions (.appex),
+    frameworks, and generic bundles. It is not determined by the mere presence
+    of a \c Contents directory or similar structure.
+
+    Directories whose extension is not a recognized bundle type, such as audio
+    unit components (.component), are still resolved as bundles when they carry
+    bundle metadata (a \c PkgInfo or \c Info.plist declaring the package type),
+    as the system then classifies them as a generic bundle. A bare directory
+    without such metadata is not considered a bundle.
+*/
+std::optional<UTType *> qt_apple_bundleType(const QString &path)
+{
+    NSURL *url = [NSURL fileURLWithPath:path.toNSString() isDirectory:YES];
+    UTType *type = nil;
+    if (![url getResourceValue:&type forKey:NSURLContentTypeKey error:nil] || !type)
+        return std::nullopt;
+    if (![type conformsToType:UTTypeBundle])
+        return std::nullopt;
+    return type;
 }
 
 #if !defined(QT_BOOTSTRAPPED) && !defined(Q_OS_WATCHOS)

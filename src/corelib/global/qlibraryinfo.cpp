@@ -413,18 +413,18 @@ QString QLibraryPrefixes::resolveAppDir()
     // as well as possibly deeply nested helper tools, and lets us
     // root the app prefix at the base of the bundle. Note that
     // CFBundleGetMainBundle returns a bundle representation even
-    // for unbundled apps, which is why we can't assume there's a
-    // `Contents` subdirectory in the macOS case.
+    // for unbundled apps, so we verify the URL is actually a bundle.
     if (CFBundleRef bundleRef = CFBundleGetMainBundle()) {
         if (QCFType<CFURLRef> urlRef = CFBundleCopyBundleURL(bundleRef)) {
-            QCFString path = CFURLCopyFileSystemPath(urlRef, kCFURLPOSIXPathStyle);
+            const QString bundlePath = QCFString(CFURLCopyFileSystemPath(urlRef, kCFURLPOSIXPathStyle));
+            if (qt_apple_bundleType(bundlePath)) {
 #if defined(Q_OS_MACOS)
-            QString bundleContentsDir = QString(path) + "/Contents/"_L1;
-            if (QFileInfo::exists(bundleContentsDir))
-                return QFileInfo(bundleContentsDir).canonicalFilePath();
+                // On macOS the prefix is rooted at the bundle's Contents directory.
+                return QFileInfo(bundlePath + "/Contents"_L1).canonicalFilePath();
 #else
-            return QFileInfo(QString(path)).canonicalFilePath(); // iOS
+                return QFileInfo(bundlePath).canonicalFilePath(); // iOS
 #endif // Q_OS_MACOS
+            }
         }
     }
 #endif // Q_OS_DARWIN
