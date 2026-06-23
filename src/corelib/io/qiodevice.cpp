@@ -265,6 +265,20 @@ QIODevicePrivate::~QIODevicePrivate()
     QIODevice also provides additional signals to handle asynchronous
     communication on a per-channel basis.
 
+    \section1 Security Considerations
+
+    QIODevice has a set of methods that enable unbound reading. At the time of
+    writing these methods include \c{readAll()}, \c{readLine(0)}, and
+    \c{readLineInto(buffer, 0)} - the latter two have a special meaning for the
+    value \c{0}, treating it as \e{unlimited}.
+
+    For sequential devices, or for devices that report their size() equal to
+    zero (e.g. \c{/dev/urandom}), these methods will read the data in chunks
+    and append it to an internal or user-provided buffer as long as new data is
+    available. This can potentially lead to out-of-memory conditions. Therefore,
+    it is recommended to avoid these methods with untrusted input or input with
+    unknown size, and always provide reasonable upper bounds for reading.
+
     \sa QBuffer, QFile, QTcpSocket
 */
 
