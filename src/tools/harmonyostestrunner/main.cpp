@@ -10,6 +10,7 @@
 #include <QtCore/qelapsedtimer.h>
 #if QT_CONFIG(systemsemaphore)
 #  include <QtCore/qsystemsemaphore.h>
+#  include <QtCore/qtipccommon.h>
 #endif
 
 #include <atomic>
@@ -61,7 +62,10 @@ static QString runHdc(const QString &hdcPath, const QStringList &args,
 #if QT_CONFIG(systemsemaphore)
 struct TestRunnerSystemSemaphore
 {
-    TestRunnerSystemSemaphore() {}
+    explicit TestRunnerSystemSemaphore(const QString &key)
+        : nativeKey(QSystemSemaphore::platformSafeKey(key)),
+          semaphore(nativeKey, 1, QSystemSemaphore::Open)
+    {}
     ~TestRunnerSystemSemaphore() { release(); }
 
     // Acquire with a 30 s deadline: if a previous runner died -9 without
@@ -77,10 +81,7 @@ struct TestRunnerSystemSemaphore
             fprintf(stderr, "harmonyostestrunner: semaphore stuck (previous runner "
                     "may have crashed) — resetting\n");
             {
-                QSystemSemaphore reset{
-                    QSystemSemaphore::platformSafeKey(u"harmonyostestrunner"_s),
-                    1, QSystemSemaphore::Create
-                };
+                QSystemSemaphore reset{ nativeKey, 1, QSystemSemaphore::Create };
             } // destructor unblocks the worker
             worker->wait(5000);
         }
@@ -96,13 +97,17 @@ struct TestRunnerSystemSemaphore
     }
 
     std::atomic<bool> isAcquired { false };
-    QSystemSemaphore semaphore {
-        QSystemSemaphore::platformSafeKey(u"harmonyostestrunner"_s),
-        1, QSystemSemaphore::Open
-    };
+    QNativeIpcKey nativeKey;
+    QSystemSemaphore semaphore;
 };
 
-static TestRunnerSystemSemaphore g_runnerLock;
+static TestRunnerSystemSemaphore *g_runnerLock = nullptr;
+
+static QString runnerLockKey(const QString &deviceKey, const QString &bundleName)
+{
+    const QString device = deviceKey.isEmpty() ? u"local"_s : deviceKey;
+    return u"harmonyostestrunner_"_s + device + u'_' + bundleName;
+}
 #endif // QT_CONFIG(systemsemaphore)
 
 static std::atomic<bool> g_interrupted { false };
@@ -113,7 +118,8 @@ static void sigHandler(int sig)
     // Not async-signal-safe; best effort so Ctrl-C doesn't strand the semaphore.
     // The next runner's 30 s deadline resets it anyway.
 #if QT_CONFIG(systemsemaphore)
-    g_runnerLock.release();
+    if (g_runnerLock)
+        g_runnerLock->release();
 #endif
     g_interrupted.store(true);
 }
@@ -310,7 +316,9 @@ int main(int argc, char *argv[])
     }
 
 #if QT_CONFIG(systemsemaphore)
-    g_runnerLock.acquire();
+    TestRunnerSystemSemaphore runnerLock(runnerLockKey(g_hdcConnectKey, bundleName));
+    g_runnerLock = &runnerLock;
+    runnerLock.acquire();
 #endif
 
     runHdc(hdc, {u"shell"_s, u"aa"_s, u"force-stop"_s, bundleName});
@@ -361,7 +369,7 @@ int main(int argc, char *argv[])
         fprintf(stderr, "harmonyostestrunner: %s: timed out waiting for process to start\n",
                 qPrintable(testLibName));
 #if QT_CONFIG(systemsemaphore)
-        g_runnerLock.release();
+        runnerLock.release();
 #endif
         return EXIT_ERROR;
     }
@@ -489,7 +497,7 @@ int main(int argc, char *argv[])
         if (g_interrupted.load()) {
             runHdc(hdc, {u"shell"_s, u"aa"_s, u"force-stop"_s, bundleName});
 #if QT_CONFIG(systemsemaphore)
-            g_runnerLock.release();
+            runnerLock.release();
 #endif
             return EXIT_ERROR;
         }
@@ -498,13 +506,13 @@ int main(int argc, char *argv[])
                 qPrintable(testLibName), timeoutSecs);
         runHdc(hdc, {u"shell"_s, u"aa"_s, u"force-stop"_s, bundleName});
 #if QT_CONFIG(systemsemaphore)
-        g_runnerLock.release();
+        runnerLock.release();
 #endif
         return EXIT_TIMEOUT;
     }
 
 #if QT_CONFIG(systemsemaphore)
-    g_runnerLock.release();
+    runnerLock.release();
 #endif
     return testExitCode;
 }
