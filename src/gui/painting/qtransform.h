@@ -307,15 +307,15 @@ QT_WARNING_POP
 
 inline bool qFuzzyCompare(const QTransform& t1, const QTransform& t2) noexcept
 {
-    return qFuzzyCompare(t1.m11(), t2.m11())
-        && qFuzzyCompare(t1.m12(), t2.m12())
-        && qFuzzyCompare(t1.m13(), t2.m13())
-        && qFuzzyCompare(t1.m21(), t2.m21())
-        && qFuzzyCompare(t1.m22(), t2.m22())
-        && qFuzzyCompare(t1.m23(), t2.m23())
-        && qFuzzyCompare(t1.m31(), t2.m31())
-        && qFuzzyCompare(t1.m32(), t2.m32())
-        && qFuzzyCompare(t1.m33(), t2.m33());
+    return QtPrivate::fuzzyCompare(t1.m11(), t2.m11())
+        && QtPrivate::fuzzyCompare(t1.m12(), t2.m12())
+        && QtPrivate::fuzzyCompare(t1.m13(), t2.m13())
+        && QtPrivate::fuzzyCompare(t1.m21(), t2.m21())
+        && QtPrivate::fuzzyCompare(t1.m22(), t2.m22())
+        && QtPrivate::fuzzyCompare(t1.m23(), t2.m23())
+        && QtPrivate::fuzzyCompare(t1.m31(), t2.m31())
+        && QtPrivate::fuzzyCompare(t1.m32(), t2.m32())
+        && QtPrivate::fuzzyCompare(t1.m33(), t2.m33());
 }
 
 
