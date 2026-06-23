@@ -455,7 +455,9 @@ public:
         }
     };
 
-    template <typename Reference, typename const_row_type, typename = void>
+    template <typename Reference, typename const_row_type,
+              bool = std::is_reference_v<const_row_type>,
+              bool = std::is_pointer_v<const_row_type>>
     struct RowGetter
     {
         const_row_type get() const
@@ -485,8 +487,7 @@ public:
     };
 
     template <typename Reference, typename const_row_type>
-    struct RowGetter<Reference, const_row_type,
-                     std::enable_if_t<std::is_reference_v<const_row_type>>>
+    struct RowGetter<Reference, const_row_type, true, false>
     {
         const_row_type get() const
         {
@@ -509,8 +510,7 @@ public:
     };
 
     template <typename Reference, typename const_row_type>
-    struct RowGetter<Reference, const_row_type,
-                     std::enable_if_t<std::is_pointer_v<const_row_type>>>
+    struct RowGetter<Reference, const_row_type, false, true>
     {
         const_row_type get() const
         {
