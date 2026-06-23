@@ -642,8 +642,12 @@ static bool isDecoderForEncoding(const QStringDecoder &dec, QStringDecoder::Enco
     if (!dec.isValid())
         return false;
 
-    const QAnyStringView nameView{dec.name()};
-    return !nameView.empty() && nameView == QStringDecoder::nameForEncoding(enc);
+    const auto decName = dec.name();
+    if (!decName || !*decName) // only match when non-empty
+        return false;
+
+    const auto encName = QStringConverter::nameForEncoding(enc);
+    return encName && strcmp(decName, encName) == 0;
 }
 
 /*!
