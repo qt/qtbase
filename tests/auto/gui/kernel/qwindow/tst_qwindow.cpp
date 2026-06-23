@@ -84,7 +84,7 @@ private slots:
     void modalDialog();
     void modalDialogClosingOneOfTwoModal();
     void modalWithChildWindow();
-    void modalWindowModallity();
+    void modalWindowModality();
     void modalWindowPosition();
     void modalCloseWhileBlocked();
 #ifndef QT_NO_CURSOR
@@ -2561,7 +2561,7 @@ void tst_QWindow::modalWithChildWindow()
     QTRY_COMPARE(QGuiApplication::focusWindow(), &sub_window);
 }
 
-void tst_QWindow::modalWindowModallity()
+void tst_QWindow::modalWindowModality()
 {
     if (isPlatformWayland() && qgetenv("XDG_CURRENT_DESKTOP").toLower().contains("ubuntu:gnome"))
         QSKIP("Wayland: This will trigger a 'X is ready' system notification in GNOME.");
