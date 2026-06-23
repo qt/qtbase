@@ -1221,7 +1221,8 @@ namespace QtPrivate
 } // namespace QtPrivate
 
 template <typename T, int =
-    QtPrivate::IsPointerToGadgetHelper<T>::IsRealGadget    ? QMetaType::PointerToGadget : 0>
+    QtPrivate::IsPointerToGadgetHelper<T>::IsRealGadget    ? QMetaType::PointerToGadget :
+    QtPrivate::IsQEnumHelper<T>::Value                     ? QMetaType::IsEnumeration : 0>
 struct QMetaTypeIdQObject
 {
     enum {
@@ -1420,6 +1421,34 @@ struct QMetaTypeIdQObject<T*, QMetaType::PointerToGadget>
     static int qt_metatype_id()
     {
         return QMetaType::fromType<T *>().id();
+    }
+};
+
+template <typename T>
+struct QMetaTypeIdQObject<T, QMetaType::IsEnumeration>
+{
+    enum {
+        Defined = 1
+    };
+
+    static int qt_metatype_id()
+    {
+        Q_CONSTINIT static QBasicAtomicInt metatype_id = Q_BASIC_ATOMIC_INITIALIZER(0);
+        if (const int id = metatype_id.loadAcquire())
+            return id;
+        // qt_getEnumName returns what was passed to Q_ENUM/Q_FLAG
+        // which might be different from the actual name
+        const char *eName = qt_getEnumName(T());
+        const char *cName = qt_getEnumMetaObject(T())->className();
+        QByteArray typeName;
+        constexpr bool isConst = std::is_const_v<T>;
+        typeName.reserve(strlen(cName) + 2 + strlen(eName) + (isConst ? strlen("const ") : 0));
+        if constexpr (isConst)
+            typeName.append("const ");
+        typeName.append(cName).append("::").append(eName);
+        const int newId = qRegisterNormalizedMetaType<T>(typeName);
+        metatype_id.storeRelease(newId);
+        return newId;
     }
 };
 #endif

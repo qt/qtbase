@@ -1921,6 +1921,48 @@ void tst_QMetaType::underlyingType()
     QCOMPARE(source.underlyingType(), underlying);
 }
 
+struct EnumWithDifferentNameHolder {
+    Q_GADGET
+public:
+    enum E {};
+    using F = E;
+    Q_ENUM(F)
+};
+
+void tst_QMetaType::enumAndFlagNamesAreRegisteredLookupByName()
+{
+    // register const enum first (to check that we don't reintroduce QTBUG-147588 for enums)
+    // compare QTBUG-147588
+    {
+        QMetaType mt = QMetaType::fromType<const EnumWithDifferentNameHolder::E>();
+        mt.registerType();
+        QVERIFY(mt.isValid());
+        const QMetaType byName = QMetaType::fromName("const EnumWithDifferentNameHolder::F");
+        QVERIFY(byName.isValid());
+        QCOMPARE(byName, mt);
+    }
+
+    // Q_ENUM inside a QGadget, name != enum name
+    {
+        QMetaType mt = QMetaType::fromType<EnumWithDifferentNameHolder::E>();
+        mt.registerType();
+        QVERIFY(mt.isValid());
+        const QMetaType byName = QMetaType::fromName("EnumWithDifferentNameHolder::F");
+        QVERIFY(byName.isValid());
+        QCOMPARE(byName, mt);
+    }
+
+    // Q_FLAG_NS inside a Q_NAMESPACE
+    {
+        QMetaType mt = QMetaType::fromType<myflags::Flags1>();
+        QVERIFY(mt.isValid());
+        mt.registerType();
+        const QMetaType byName = QMetaType::fromName("myflags::Flags1");
+        QVERIFY(byName.isValid());
+        QCOMPARE(byName, mt);
+    }
+}
+
 void tst_QMetaType::isRegisteredStaticLess_data()
 {
     isRegistered_data();
