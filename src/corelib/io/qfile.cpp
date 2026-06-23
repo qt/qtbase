@@ -194,6 +194,34 @@ QAbstractFileEngine *QFilePrivate::engine() const
 
     \include android-content-uri-limitations.qdocinc
 
+    \section1 Security Considerations
+
+    \section2 Windows path normalization
+
+    Qt APIs that handle file and directory paths perform the normalization and
+    canonicalization differently from the native Windows APIs:
+
+    \list
+        \li The trailing dots and/or whitespaces are not stripped.
+        \li The \l{https://learn.microsoft.com/en-us/windows/win32/fileio/naming-a-file#short-vs-long-names}
+            {8.3 short names} are not expanded.
+        \li The \c{\\?\} and \c{\\?\UNC\} prefixes are always discarded.
+    \endlist
+
+    These differences open a possibility for bypassing security checks based
+    on string comparison or pattern matching. For example, the code below will
+    yield \c{false} for both comparisons, but passing this path into QFile will
+    successfully open \c {myapp.exe} in \c{Program Files}.
+
+    \code
+    const QString path = u"C:\\PROGRA~1\\MyApp\\myapp.exe."_s; // note the trailing dot
+    QFileInfo fi(path);
+    qDebug() << fi.canonicalFilePath().contains("Program Files"_L1); // false
+    qDebug() << (fi.suffix() == "exe"_L1); // false
+    QFile f(path);
+    f.open(QIODevice::WriteOnly); // true
+    \endcode
+
     \sa QTextStream, QDataStream, QFileInfo, QDir, {The Qt Resource System}
 */
 
