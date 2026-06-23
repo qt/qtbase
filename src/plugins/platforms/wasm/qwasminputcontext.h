@@ -37,8 +37,7 @@ public:
     void insertPreedit(int repalcementLength = 0);
     void commitPreeditAndClear();
 
-    void insertText(QString inputStr, bool replace = false);
-    void replaceText(QString inputString, int replaceFrom, int replaceSize);
+    void commitText(const QString &text, int replaceFrom = 0, int replaceLength = 0);
 
     bool usingTextInput() const { return m_inputMethodAccepted; }
     void setFocusObject(QObject *object) override;

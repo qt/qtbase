@@ -59,9 +59,7 @@ void QWasmInputContext::inputCallback(emscripten::val event)
         const ResolvedRange resolved = resolveRange(getFirstRange());
 
         const int deleteFrom = resolved.replaceFrom <= 0 ? resolved.replaceFrom : -1;
-        QInputMethodEvent e;
-        e.setCommitString(QString(), deleteFrom, resolved.replaceLength);
-        QCoreApplication::sendEvent(m_focusObject, &e);
+        commitText(QString(), deleteFrom, resolved.replaceLength);
     } else if (!inputTypeString.compare("deleteContentForward")) {
         QWindowSystemInterface::handleKeyEvent(0, QEvent::KeyPress, Qt::Key_Delete, Qt::NoModifier);
         QWindowSystemInterface::handleKeyEvent(0, QEvent::KeyRelease, Qt::Key_Delete, Qt::NoModifier);
@@ -80,7 +78,7 @@ void QWasmInputContext::inputCallback(emscripten::val event)
 
         if (range.isValid) {
             const ResolvedRange resolved = resolveRange(range);
-            replaceText(inputStr, resolved.replaceFrom, resolved.replaceLength);
+            commitText(inputStr, resolved.replaceFrom, resolved.replaceLength);
         } else {
             QInputMethodQueryEvent queryEvent(Qt::ImQueryAll);
             QCoreApplication::sendEvent(m_focusObject, &queryEvent);
@@ -89,7 +87,7 @@ void QWasmInputContext::inputCallback(emscripten::val event)
 
             int spaceIndex = textFieldString.lastIndexOf(' ') + 1;
             int replaceIndex = (qCursorPosition - spaceIndex);
-            replaceText(inputStr, -replaceIndex, replaceIndex);
+            commitText(inputStr, -replaceIndex, replaceIndex);
         }
     } else if (!inputTypeString.compare("deleteCompositionText")) {
         setPreeditString("");
@@ -102,12 +100,12 @@ void QWasmInputContext::inputCallback(emscripten::val event)
 
         if (range.isValid && range.start != range.end) {
             const ResolvedRange resolved = resolveRange(range);
-            replaceText(inputStr, resolved.replaceFrom, resolved.replaceLength);
+            commitText(inputStr, resolved.replaceFrom, resolved.replaceLength);
         } else {
-            insertText(inputStr);
+            commitText(inputStr);
         }
     } else if (!inputTypeString.compare("insertFromPaste")) {
-        insertText(inputStr);
+        commitText(inputStr);
     // These can be supported here,
     // But now, keyCallback in QWasmWindow
     // will take them as exceptions.
@@ -395,47 +393,15 @@ void QWasmInputContext::commitPreeditAndClear()
     QCoreApplication::sendEvent(m_focusObject, &e);
 }
 
-void QWasmInputContext::insertText(QString inputStr, bool replace)
-{ // commitString
-    qCDebug(qLcQpaWasmInputContext) << Q_FUNC_INFO << inputStr << replace;
-    Q_UNUSED(replace);
-    if (!inputStr.isEmpty()) {
-        const int replaceLen = 0;
-        QInputMethodEvent e;
-        e.setCommitString(inputStr, -replaceLen, replaceLen);
-        QCoreApplication::sendEvent(m_focusObject, &e);
-    }
-}
-
-/* This will replace the text in the focusobject at replaceFrom position, and replaceSize length
- with the text in inputStr. */
-
- void QWasmInputContext::replaceText(QString inputStr, int replaceFrom, int replaceSize)
- {
-    qCDebug(qLcQpaWasmInputContext) << Q_FUNC_INFO << inputStr << replaceFrom << replaceSize;
-
-    QList<QInputMethodEvent::Attribute> attributes;
-    {
-        QInputMethodEvent::Attribute attr_cursor(QInputMethodEvent::Cursor,
-                                                0, // start
-                                                1); // length
-        attributes.append(attr_cursor);
-
-        QTextCharFormat format;
-        format.setFontUnderline(true);
-        format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
-        QInputMethodEvent::Attribute attr_format(QInputMethodEvent::TextFormat,
-                                                0,
-                                                replaceSize,
-                                                format);
-        attributes.append(attr_format);
-    }
-
-    QInputMethodEvent e1(QString(), attributes);
-    e1.setCommitString(inputStr, replaceFrom, replaceSize);
-    QCoreApplication::sendEvent(m_focusObject, &e1);
-
+// Commits text to the focus object, optionally replacing replaceLength
+// characters starting replaceFrom positions relative to the cursor.
+void QWasmInputContext::commitText(const QString &text, int replaceFrom, int replaceLength)
+{
+    qCDebug(qLcQpaWasmInputContext) << Q_FUNC_INFO << text << replaceFrom << replaceLength;
+    QInputMethodEvent e;
+    e.setCommitString(text, replaceFrom, replaceLength);
+    QCoreApplication::sendEvent(m_focusObject, &e);
     m_preeditString.clear();
- }
+}
 
 QT_END_NAMESPACE
