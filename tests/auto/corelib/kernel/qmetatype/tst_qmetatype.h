@@ -83,6 +83,7 @@ private slots:
     void isRegisteredStaticLess();
     void isNotRegistered();
     void isEnum();
+    void enumAndFlagNamesAreRegisteredLookupByName();
     void underlyingType_data();
     void underlyingType();
     void automaticTemplateRegistration_1();
