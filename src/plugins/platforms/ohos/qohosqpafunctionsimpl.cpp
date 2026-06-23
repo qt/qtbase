@@ -958,9 +958,6 @@ QOhosQpaFunctions::WantInfo::LaunchReason WantInfoImpl::launchReason() const
 class QOhosQpaFunctionsImpl : public QOhosQpaFunctions, public std::enable_shared_from_this<QOhosQpaFunctionsImpl>
 {
 public:
-    std::shared_ptr<void> startPickingColorFromScreenWithConsumer(
-        QOhosConsumer<QOhosOptional<quint32>> colorConsumer) override;
-
     void setWindowPrivacyMode(QObject *window, bool privacyModeEnabled) override;
     void setWindowCornerRadius(QObject *window, double radius) override;
     void tagWindowOrWidgetAsFloatWindow(QObject *windowOrWidget, bool floatWindow) override;
@@ -1070,60 +1067,6 @@ private:
     std::unordered_map<std::uint32_t, std::vector<QOhosConsumer<std::shared_ptr<void>>>> m_pendingSerialPortsPermissionRequestsConsumers;
     std::unordered_map<std::uint32_t, std::weak_ptr<void>> m_grantedSerialPortsPermissionContexts;
 };
-
-std::shared_ptr<void> QOhosQpaFunctionsImpl::startPickingColorFromScreenWithConsumer(
-    QOhosConsumer<QOhosOptional<quint32>> colorConsumer)
-{
-    struct Context
-    {
-        std::unique_ptr<QObject> colorConsumerQtContext;
-        QOhosConsumer<QOhosOptional<quint32>> colorConsumer;
-    };
-
-    auto sharedContext = QtOhos::moveToSharedPtr(
-        Context{
-            .colorConsumerQtContext = std::make_unique<QObject>(),
-            .colorConsumer = std::move(colorConsumer),
-        });
-
-    auto colorConsumerProxy = QtOhos::moveToSharedPtr(
-        [weakContext = QtOhos::makeWeakPtr(sharedContext)](QOhosOptional<quint32> rgbaColor) {
-            auto sharedContext = weakContext.lock();
-            if (sharedContext) {
-                QMetaObject::invokeMethod(
-                    sharedContext->colorConsumerQtContext.get(),
-                    [weakContext, rgbaColor]() {
-                        auto sharedContext = weakContext.lock();
-                        if (sharedContext)
-                            sharedContext->colorConsumer(rgbaColor);
-                    },
-                    Qt::QueuedConnection);
-            }
-      });
-
-    QtOhos::invokeInJsThread(
-        [colorConsumerProxy](QtOhos::JsState &jsState) {
-            jsState.evalToPromiseOrRejectOnThrow("@kit.Penkit.imageFeaturePicker.pickForResult()")
-            .onThen(
-                [colorConsumerProxy](const QtOhos::CallbackInfo &cbInfo) {
-                    auto pickedColorInfo = cbInfo.getFirstArg<QNapi::Object>(Q_FUNC_INFO);
-                    auto color = pickedColorInfo.get<QNapi::Object>("color");
-                    QColor qColor(
-                        color.get<QNapi::Number>("red"),
-                        color.get<QNapi::Number>("green"),
-                        color.get<QNapi::Number>("blue"),
-                        color.get<QNapi::Number>("alpha"));
-                    (*colorConsumerProxy)(makeQOhosOptional(qColor.rgba()));
-                })
-            .onCatch(
-                [colorConsumerProxy](const QtOhos::CallbackInfo &cbInfo) {
-                    QtOhos::logJsCallbackError(cbInfo, "@kit.Penkit.imageFeaturePicker.pickForResult() failed");
-                    (*colorConsumerProxy)(makeEmptyQOhosOptional());
-                });
-        });
-
-    return sharedContext;
-}
 
 void QOhosQpaFunctionsImpl::setWindowPrivacyMode(QObject *window, bool privacyModeEnabled)
 {
