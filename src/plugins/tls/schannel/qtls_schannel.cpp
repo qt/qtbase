@@ -2347,8 +2347,11 @@ void TlsCryptographSchannel::initializeCertificateStores()
                         localCertificateStore.get(), X509_ASN_ENCODING | PKCS_7_ASN_ENCODING, 0,
                         CERT_FIND_ANY, nullptr, nullptr);
                 if (certificateContext) {
-                    // Store the certificate context so we can easily refer back to it later:
-                    localCertificateCtxt.reset(certificateContext);
+                    // Keep an independent reference to the certificate (and thus its private
+                    // key) that outlives the certificate store: Schannel may still use the key
+                    // after the store is closed during teardown. The find reference is
+                    // intentionally left unfreed so the duplicate is the surviving reference.
+                    localCertificateCtxt.reset(CertDuplicateCertificateContext(certificateContext));
                     DWORD keySpec = 0;
                     BOOL mustFree = FALSE;
                     NCRYPT_KEY_HANDLE testKey = 0;
