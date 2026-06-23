@@ -1298,20 +1298,26 @@ qt_feature("lttng" PRIVATE
     AUTODETECT OFF
     CONDITION LINUX AND LTTNGUST_FOUND
     ENABLE INPUT_trace STREQUAL 'lttng' OR ( INPUT_trace STREQUAL 'yes' AND LINUX )
-    DISABLE INPUT_trace STREQUAL 'etw' OR INPUT_trace STREQUAL 'no'
+    DISABLE INPUT_trace STREQUAL 'etw' OR INPUT_trace STREQUAL 'no' OR INPUT_trace STREQUAL 'ctf' OR INPUT_trace STREQUAL 'tracecallback'
 )
 qt_feature("etw" PRIVATE
     LABEL "ETW"
     AUTODETECT OFF
     CONDITION WIN32
     ENABLE INPUT_trace STREQUAL 'etw' OR ( INPUT_trace STREQUAL 'yes' AND WIN32 )
-    DISABLE INPUT_trace STREQUAL 'lttng' OR INPUT_trace STREQUAL 'no'
+    DISABLE INPUT_trace STREQUAL 'lttng' OR INPUT_trace STREQUAL 'no' OR INPUT_trace STREQUAL 'ctf' OR INPUT_trace STREQUAL 'tracecallback'
 )
 qt_feature("ctf" PRIVATE
     LABEL "CTF"
     AUTODETECT OFF
     ENABLE INPUT_trace STREQUAL 'ctf'
-    DISABLE INPUT_trace STREQUAL 'etw' OR INPUT_trace STREQUAL 'no' OR INPUT_trace STREQUAL 'lttng'
+    DISABLE INPUT_trace STREQUAL 'etw' OR INPUT_trace STREQUAL 'no' OR INPUT_trace STREQUAL 'lttng'  OR INPUT_trace STREQUAL 'tracecallback'
+)
+qt_feature("tracecallback" PRIVATE
+    LABEL "Trace callback hook"
+    AUTODETECT OFF
+    ENABLE INPUT_trace STREQUAL 'callback'
+    DISABLE INPUT_trace STREQUAL 'etw' OR INPUT_trace STREQUAL 'no' OR INPUT_trace STREQUAL 'lttng' OR INPUT_trace STREQUAL 'ctf'
 )
 qt_feature("forkfd_pidfd" PRIVATE
     LABEL "CLONE_PIDFD support in forkfd"
@@ -1369,7 +1375,7 @@ qt_configure_add_summary_entry(ARGS "permissions")
 qt_configure_add_summary_entry(ARGS "ipc_posix" CONDITION UNIX)
 qt_configure_add_summary_entry(
     TYPE "firstAvailableFeature"
-    ARGS "etw lttng ctf"
+    ARGS "etw lttng ctf tracecallback"
     MESSAGE "Tracing backend"
 )
 qt_configure_add_summary_entry(ARGS "openssl-hash")

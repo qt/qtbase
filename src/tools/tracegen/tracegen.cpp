@@ -5,6 +5,7 @@
 #include "ctf.h"
 #include "lttng.h"
 #include "etw.h"
+#include "callback.h"
 #include "panic.h"
 
 #include <qstring.h>
@@ -15,11 +16,12 @@ enum class Target
     LTTNG,
     ETW,
     CTF,
+    CALLBACK,
 };
 
 static inline void usage(int status)
 {
-    printf("Usage: tracegen <lttng|etw|ctf> <input file> <output file>\n");
+    printf("Usage: tracegen <lttng|etw|ctf|callback> <input file> <output file>\n");
     exit(status);
 }
 
@@ -38,6 +40,8 @@ static void parseArgs(int argc, char *argv[], Target *target, QString *inFile, Q
         *target = Target::ETW;
     } else if (qstrcmp(targetString, "ctf") == 0) {
         *target = Target::CTF;
+    } else if (qstrcmp(targetString, "callback") == 0) {
+        *target = Target::CALLBACK;
     } else {
         fprintf(stderr, "Invalid target: %s\n", targetString);
         usage(EXIT_FAILURE);
@@ -73,6 +77,9 @@ int main(int argc, char *argv[])
         break;
     case Target::ETW:
         writeEtw(out, p);
+        break;
+    case Target::CALLBACK:
+        writeCallback(out, p);
         break;
     }
 

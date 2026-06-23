@@ -1620,6 +1620,11 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_ctf
         tracing
 )
 
+qt_internal_extend_target(Core CONDITION QT_FEATURE_tracecallback
+    SOURCES
+        tracing/qtracecallback.cpp tracing/qtracecallback_p.h
+)
+
 # These files are included by qmutex.cpp
 set_source_files_properties(
     thread/qmutex_mac.cpp

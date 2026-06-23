@@ -1275,7 +1275,7 @@ function(qt_internal_create_tracepoints name tracepoints_file)
     set(header_filename "${provider_name}_tracepoints_p.h")
     set(header_path "${CMAKE_CURRENT_BINARY_DIR}/${header_filename}")
 
-    if(QT_FEATURE_lttng OR QT_FEATURE_etw OR QT_FEATURE_ctf)
+    if(QT_FEATURE_lttng OR QT_FEATURE_etw OR QT_FEATURE_ctf OR QT_FEATURE_tracecallback)
         set(source_path "${CMAKE_CURRENT_BINARY_DIR}/${provider_name}_tracepoints.cpp")
         qt_configure_file(OUTPUT "${source_path}"
             CONTENT "#define TRACEPOINT_CREATE_PROBES
@@ -1291,6 +1291,8 @@ function(qt_internal_create_tracepoints name tracepoints_file)
             set(tracegen_arg "etw")
         elseif(QT_FEATURE_ctf)
             set(tracegen_arg "ctf")
+        elseif(QT_FEATURE_tracecallback)
+            set(tracegen_arg "callback")
         endif()
 
         if(NOT "${QT_HOST_PATH}" STREQUAL "")
@@ -1323,7 +1325,7 @@ function(qt_internal_generate_tracepoints name provider)
     set(header_filename "${provider_name}_tracepoints_p.h")
     set(header_path "${CMAKE_CURRENT_BINARY_DIR}/${header_filename}")
 
-    if(QT_FEATURE_lttng OR QT_FEATURE_etw OR QT_FEATURE_ctf)
+    if(QT_FEATURE_lttng OR QT_FEATURE_etw OR QT_FEATURE_ctf OR QT_FEATURE_tracecallback)
 
         set(absolute_file_paths "")
         foreach(file IN LISTS arg_SOURCES)
@@ -1366,6 +1368,10 @@ function(qt_internal_generate_tracepoints name provider)
             set(tracegen_arg "etw")
         elseif(QT_FEATURE_ctf)
             set(tracegen_arg "ctf")
+        elseif(QT_FEATURE_tracecallback)
+            set(tracegen_arg "callback")
+        else()
+            message(FATAL_ERROR "Unknown trace backend")
         endif()
 
         if(NOT "${QT_HOST_PATH}" STREQUAL "")
