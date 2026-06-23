@@ -366,8 +366,6 @@ public:
 
     virtual bool tryOpenLink(QObject *optInstanceMainWindow, const QString &link, QOhosOptional<bool> appLinkingOnly) = 0;
 
-    virtual QObject *getActiveWindowOrNull() const = 0;
-
     virtual void setAudioStreamUsageHintProperty(QObject *qObject, AudioStreamUsage usage) = 0;
     virtual QOhosOptional<AudioStreamUsage> tryGetAudioStreamUsageHintProperty(QObject *qObject) = 0;
 
