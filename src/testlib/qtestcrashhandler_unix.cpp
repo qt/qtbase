@@ -372,7 +372,7 @@ static quintptr getProgramCounter(void *ucontext)
 #if 0 // keep the list below alphabetical
 
 #elif defined(Q_OS_DARWIN) && defined(Q_PROCESSOR_ARM_64)
-        pc = ctx->uc_mcontext->__ss.__pc;
+        pc = arm_thread_state64_get_pc(ctx->uc_mcontext->__ss);
 #elif defined(Q_OS_DARWIN) && defined(Q_PROCESSOR_X86_64)
         pc = ctx->uc_mcontext->__ss.__rip;
 
