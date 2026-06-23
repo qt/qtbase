@@ -178,20 +178,6 @@ QAbstractFileEngine *QFilePrivate::engine() const
 
     \snippet file/file.cpp 3
 
-    File permissions are handled differently on Unix-like systems and
-    Windows.  In a non \l{QIODevice::isWritable()}{writable}
-    directory on Unix-like systems, files cannot be created. This is not always
-    the case on Windows, where, for instance, the 'My Documents'
-    directory usually is not writable, but it is still possible to
-    create files in it.
-
-    Qt's understanding of file permissions is limited, which affects especially
-    the \l QFile::setPermissions() function. On Windows, Qt will set only the
-    legacy read-only flag, and that only when none of the Write* flags are
-    passed. Qt does not manipulate access control lists (ACLs), which makes this
-    function mostly useless for NTFS volumes. It may still be of use for USB
-    sticks that use VFAT file systems. POSIX ACLs are not manipulated, either.
-
     \include android-content-uri-limitations.qdocinc
 
     \section1 Security Considerations
@@ -221,6 +207,22 @@ QAbstractFileEngine *QFilePrivate::engine() const
     QFile f(path);
     f.open(QIODevice::WriteOnly); // true
     \endcode
+
+    \section2 File permissions
+
+    File permissions are handled differently on Unix-like systems and
+    Windows.  In a non \l{QIODevice::isWritable()}{writable}
+    directory on Unix-like systems, files cannot be created. This is not always
+    the case on Windows, where, for instance, the 'My Documents'
+    directory usually is not writable, but it is still possible to
+    create files in it.
+
+    Qt's understanding of file permissions is limited, which affects especially
+    the \l QFile::setPermissions() function. On Windows, Qt will set only the
+    legacy read-only flag, and that only when none of the Write* flags are
+    passed. Qt does not manipulate access control lists (ACLs), which makes this
+    function mostly useless for NTFS volumes. It may still be of use for USB
+    sticks that use VFAT file systems. POSIX ACLs are not manipulated, either.
 
     \sa QTextStream, QDataStream, QFileInfo, QDir, {The Qt Resource System}
 */
