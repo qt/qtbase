@@ -10,7 +10,6 @@
 #include <QtGui/QColor>
 #include <cstdlib>
 #include <filemanagement/file_uri/oh_file_uri.h>
-#include <memory>
 #include <qohosenums.h>
 #include <qohosplugincore.h>
 #include <utility>
@@ -66,51 +65,18 @@ public:
     QOhosColorPicker();
 
     void pickColor() override;
-
-private:
-    std::shared_ptr<void> m_ohosColorPickingHandle;
 };
 
 QOhosColorPicker::QOhosColorPicker() = default;
 
 void QOhosColorPicker::pickColor()
 {
-    struct Context
-    {
-        std::unique_ptr<QObject> colorConsumerQtContext;
-        QOhosConsumer<QOhosOptional<quint32>> colorConsumer;
-    };
-
-    auto sharedContext = QtOhos::moveToSharedPtr(
-        Context{
-            .colorConsumerQtContext = std::make_unique<QObject>(),
-            .colorConsumer =
-                [this](QOhosOptional<quint32> rgbaColor) {
-                    if (rgbaColor.has_value())
-                        Q_EMIT colorPicked(QColor::fromRgba(rgbaColor.value()));
-                },
-        });
-
-    auto colorConsumerProxy = QtOhos::moveToSharedPtr(
-        [weakContext = QtOhos::makeWeakPtr(sharedContext)](QOhosOptional<quint32> rgbaColor) {
-            auto sharedContext = weakContext.lock();
-            if (sharedContext) {
-                QMetaObject::invokeMethod(
-                    sharedContext->colorConsumerQtContext.get(),
-                    [weakContext, rgbaColor]() {
-                        auto sharedContext = weakContext.lock();
-                        if (sharedContext)
-                            sharedContext->colorConsumer(rgbaColor);
-                    },
-                    Qt::QueuedConnection);
-            }
-        });
-
+    auto selfRef = QtOhos::makeQThreadSafeRef(this);
     QtOhos::invokeInJsThread(
-        [colorConsumerProxy](QtOhos::JsState &jsState) {
+        [selfRef](QtOhos::JsState &jsState) {
             jsState.evalToPromiseOrRejectOnThrow("@kit.Penkit.imageFeaturePicker.pickForResult()")
             .onThen(
-                [colorConsumerProxy](const QtOhos::CallbackInfo &cbInfo) {
+                [selfRef](const QtOhos::CallbackInfo &cbInfo) {
                     auto pickedColorInfo = cbInfo.getFirstArg<QNapi::Object>(Q_FUNC_INFO);
                     auto color = pickedColorInfo.get<QNapi::Object>("color");
                     QColor qColor(
@@ -118,16 +84,16 @@ void QOhosColorPicker::pickColor()
                         color.get<QNapi::Number>("green"),
                         color.get<QNapi::Number>("blue"),
                         color.get<QNapi::Number>("alpha"));
-                    (*colorConsumerProxy)(makeQOhosOptional(qColor.rgba()));
+                    selfRef.visitInQtThreadIfAlive(
+                        [qColor](QOhosColorPicker &self) {
+                            Q_EMIT self.colorPicked(qColor);
+                        });
                 })
             .onCatch(
-                [colorConsumerProxy](const QtOhos::CallbackInfo &cbInfo) {
+                [](const QtOhos::CallbackInfo &cbInfo) {
                     QtOhos::logJsCallbackError(cbInfo, "@kit.Penkit.imageFeaturePicker.pickForResult() failed");
-                    (*colorConsumerProxy)(makeEmptyQOhosOptional());
                 });
         });
-
-    m_ohosColorPickingHandle = std::move(sharedContext);
 }
 } // namespace
 
