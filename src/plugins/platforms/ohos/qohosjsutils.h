@@ -11,6 +11,7 @@
 #include <cstdint>
 #include <functional>
 #include <memory>
+#include <optional>
 #include <qohosplugincore.h>
 #include <qohosutils.h>
 #include <string>
@@ -25,8 +26,8 @@ namespace QtOhos {
 struct OnOffMethodsBasedEventHandlerOptions
 {
     std::function<bool(QNapi::Object)> optEventSourceAliveCheckFunc;
-    QOhosOptional<QNapi::ValueWrapper> extraOnArg;
-    QOhosOptional<QNapi::ValueWrapper> extraOffArg;
+    std::optional<QNapi::ValueWrapper> extraOnArg;
+    std::optional<QNapi::ValueWrapper> extraOffArg;
     std::function<void(const Napi::Error &)> optOnCallExceptionHandler;
 };
 
