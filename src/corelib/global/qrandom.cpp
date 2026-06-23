@@ -131,8 +131,18 @@ struct QRandomGenerator::SystemGenerator
         if (Q_UNLIKELY(fd < 0))
             return 0;
 
-        qint64 n = qt_safe_read(fd, buffer, count);
-        return qMax<qsizetype>(n, 0);        // ignore any errors
+        qsizetype total = 0;
+        while (total != count) {
+            const ssize_t n = ::read(fd, reinterpret_cast<uchar *>(buffer) + total, count - total);
+            if (n > 0)
+                total += n;
+            else if (n < 0 && errno == EINTR)
+                continue;
+            else
+                break; // EOF and other errors
+        }
+
+        return total;
     }
 
 #elif defined(Q_OS_WIN)
