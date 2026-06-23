@@ -59,28 +59,29 @@ std::string callOhFileUriConversionFunc(
     return outputString;
 }
 
-} // namespace
-
 class QOhosColorPicker : public QPlatformServiceColorPicker
 {
 public:
-    QOhosColorPicker() {}
-    ~QOhosColorPicker() {
-        m_ohosColorPickingHandler.reset();
-    }
+    QOhosColorPicker();
 
-    void pickColor() override
-    {
-        m_ohosColorPickingHandler =
-                QtOhos::getQOhosQpaFunctions().startPickingColorFromScreenWithConsumer(
-                        [this](QOhosOptional<quint32> rgbaColor) {
-                            if (rgbaColor.has_value())
-                                emit this->colorPicked(QColor::fromRgba(rgbaColor.value()));
-                        });
-    }
+    void pickColor() override;
+
 private:
-    std::shared_ptr<void> m_ohosColorPickingHandler;
+    std::shared_ptr<void> m_ohosColorPickingHandle;
 };
+
+QOhosColorPicker::QOhosColorPicker() = default;
+
+void QOhosColorPicker::pickColor()
+{
+    m_ohosColorPickingHandle =
+            QtOhos::getQOhosQpaFunctions().startPickingColorFromScreenWithConsumer(
+                    [this](QOhosOptional<quint32> rgbaColor) {
+                        if (rgbaColor.has_value())
+                            Q_EMIT colorPicked(QColor::fromRgba(rgbaColor.value()));
+                    });
+}
+} // namespace
 
 QOhosPlatformServices::QOhosPlatformServices() = default;
 
