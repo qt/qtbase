@@ -144,8 +144,10 @@ public:
     QChar quoteChar();
     SQLRETURN sqlFetchNext(const SqlStmtHandle &hStmt) const;
     SQLRETURN sqlFetchNext(SQLHANDLE hStmt) const;
+    QString escapePassword(const QString &arg);
 private:
     bool isQuoteInitialized = false;
+    bool percentEncodePassword = false;
     QChar quote = u'"';
     DefaultCase m_defaultCase = DefaultCase::Mixed;
 };
@@ -697,6 +699,40 @@ SQLRETURN QODBCDriverPrivate::sqlFetchNext(SQLHANDLE hStmt) const
     return SQLFetch(hStmt);
 }
 
+QString QODBCDriverPrivate::escapePassword(const QString &arg)
+{
+    if (!percentEncodePassword) {
+        bool mustBeEscaped = false;
+        for (const auto &c : arg) {
+            mustBeEscaped = (c == QLatin1Char('{') ||
+                             c == QLatin1Char('}') ||
+                             c == QLatin1Char(';'));
+            if (mustBeEscaped)
+                break;
+        }
+        if (mustBeEscaped) {
+            QString s(arg);
+            return u'{' + s.replace(u'}', "}}"_L1) + u'}';
+        }
+        return arg;
+    }
+    QString ret;
+    ret.reserve(arg.size() + 8);
+    for (const auto c : arg) {
+        // we percent-encode ascii chars which are not a letter
+        // or digit. For everything >= 0x80 we can't do much as
+        // we don't know how the odbc layer and odbc driver encodes
+        // and handles the string internally
+        if (c.isLetterOrNumber())
+            ret += c;
+        else if (c.unicode() < 128)
+            ret += QString::asprintf("%%%02x", c.unicode());
+        else
+            ret += c;   // good luck
+    }
+    return ret;
+}
+
 static SQLRETURN qt_string_SQLSetConnectAttr(SQLHDBC handle, SQLINTEGER attr, QStringView val)
 {
     auto encoded = toSQLTCHAR(val);
@@ -710,6 +746,7 @@ bool QODBCDriverPrivate::setConnectionOptions(const QString &connOpts)
 {
     // Set any connection attributes
     SQLRETURN r = SQL_SUCCESS;
+    percentEncodePassword = false;
     for (const auto connOpt : QStringTokenizer{connOpts, u';', Qt::SkipEmptyParts}) {
         int idx;
         if ((idx = connOpt.indexOf(u'=')) == -1) {
@@ -798,6 +835,9 @@ bool QODBCDriverPrivate::setConnectionOptions(const QString &connOpts)
             r = SQLSetConnectAttr(hDbc, SQL_ATTR_CP_MATCH, (SQLPOINTER) size_t(v), 0);
         } else if (opt == "SQL_ATTR_ODBC_VERSION"_L1) {
             // Already handled in QODBCDriver::open()
+            continue;
+        } else if (opt == "SQL_PERCENT_ENCODE_PASSWORD"_L1) {
+            percentEncodePassword = true;
             continue;
         } else {
             qSqlWarning(("QODBCDriver::open: Unknown connection attribute '%1'"_L1)
@@ -1946,27 +1986,10 @@ bool QODBCDriver::open(const QString & db,
     else
         connQStr = "DSN="_L1 + db;
 
-    const auto escapePassword = [](const QString &arg) -> QString {
-        QString ret;
-        ret.reserve(arg.size() + 8);
-        for (const auto c : arg) {
-            // we percent-encode ascii chars which are not a letter
-            // or digit. For everything >= 0x80 we can't do much as
-            // we don't know how the odbc layer and odbc driver encodes
-            // and handles the string internally
-            if (c.isLetterOrNumber())
-                ret += c;
-            else if (c.unicode() < 128)
-                ret += QString::asprintf("%%%02x", c.unicode());
-            else
-                ret += c;   // good luck
-        }
-        return ret;
-    };
     if (!user.isEmpty())
         connQStr += ";UID="_L1 + user;
     if (!password.isEmpty())
-        connQStr += ";PWD="_L1 + escapePassword(password);
+        connQStr += ";PWD="_L1 + d->escapePassword(password);
 
     SQLSMALLINT cb;
     QVarLengthArray<SQLTCHAR, 1024> connOut(1024);
