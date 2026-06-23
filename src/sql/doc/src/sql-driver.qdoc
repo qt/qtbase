@@ -534,6 +534,16 @@
       \li SQL_ATTR_ODBC_VERSION
       \li SQL_OV_ODBC3: The driver should act as a ODBC 3.x driver\br
           SQL_OV_ODBC2: The driver should act as a ODBC 2.x driver (default)
+    \row
+      \li SQL_ATTR_CP_MATCH
+      \li Can be either SQL_CP_STRICT_MATCH, SQL_CP_RELAXED_MATCH or
+          SQL_CP_MATCH_DEFAULT. See \l {https://learn.microsoft.com/en-us/sql/odbc/reference/syntax/sqlconnect-function}
+          {SQLConnect()} ODBC documentation for more information
+    \row
+      \li SQL_PERCENT_ENCODE_PASSWORD
+      \li This is a custom Qt ODBC driver option to support drivers (Oracle, PostgreSQL) which need special
+          characters encoded with percent encoding instead in curly braces like ODBC standard defines.
+
     \endtable
     For more detailed information about the connect options please refer
     to the \l {https://learn.microsoft.com/en-us/sql/odbc/reference/syntax/sqlsetconnectattr-function}
