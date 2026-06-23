@@ -27,6 +27,17 @@ _qt_internal_add_sbom(gui_helper
     LIBRARY_PATH lib
 )
 
+add_library(module_helper MODULE)
+target_sources(module_helper PRIVATE sources/module_helper.cpp)
+target_link_libraries(module_helper PRIVATE core_helper Qt6::Core)
+install(TARGETS module_helper
+    LIBRARY DESTINATION lib
+)
+_qt_internal_add_sbom(module_helper
+    TYPE "LIBRARY"
+    LIBRARY_PATH lib
+)
+
 add_executable(app)
 target_sources(app PRIVATE sources/main.cpp)
 target_link_libraries(app PRIVATE gui_helper utils_helper)
