@@ -975,6 +975,8 @@ QVariant QOhosPlatformTheme::themeHint(ThemeHint hint) const
         return mouseDoubleClickInterval;
     case WheelScrollLines:
         return m_wheelScrollLines;
+    case MenuBarFocusOnAltPressRelease:
+        return true;
     default:
         return QPlatformTheme::themeHint(hint);
     }
