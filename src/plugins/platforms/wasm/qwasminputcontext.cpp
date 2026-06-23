@@ -62,21 +62,16 @@ void QWasmInputContext::inputCallback(emscripten::val event)
         QInputMethodEvent e;
         e.setCommitString(QString(), deleteFrom, resolved.replaceLength);
         QCoreApplication::sendEvent(m_focusObject, &e);
-
-        event.call<void>("stopImmediatePropagation");
     } else if (!inputTypeString.compare("deleteContentForward")) {
         QWindowSystemInterface::handleKeyEvent(0, QEvent::KeyPress, Qt::Key_Delete, Qt::NoModifier);
         QWindowSystemInterface::handleKeyEvent(0, QEvent::KeyRelease, Qt::Key_Delete, Qt::NoModifier);
-        event.call<void>("stopImmediatePropagation");
     } else if (!inputTypeString.compare("insertCompositionText")) {
 
         qCDebug(qLcQpaWasmInputContext) << "insertCompositionText : " << inputStr;
-        event.call<void>("stopImmediatePropagation");
         if (event["isComposing"].as<bool>()) {
             const CompositionRange range = getFirstRange();
             setPreeditString(inputStr);
             insertPreedit(range.end - range.start);
-            event.call<void>("stopImmediatePropagation");
         }
     } else if (!inputTypeString.compare("insertReplacementText")) {
 
@@ -96,16 +91,12 @@ void QWasmInputContext::inputCallback(emscripten::val event)
             int replaceIndex = (qCursorPosition - spaceIndex);
             replaceText(inputStr, -replaceIndex, replaceIndex);
         }
-
-        event.call<void>("stopImmediatePropagation");
     } else if (!inputTypeString.compare("deleteCompositionText")) {
         setPreeditString("");
         insertPreedit();
-        event.call<void>("stopImmediatePropagation");
     } else if (!inputTypeString.compare("insertFromComposition")) {
         setPreeditString(inputStr);
         insertPreedit();
-        event.call<void>("stopImmediatePropagation");
     } else if (!inputTypeString.compare("insertText")) {
         const CompositionRange range = getFirstRange();
 
@@ -115,11 +106,8 @@ void QWasmInputContext::inputCallback(emscripten::val event)
         } else {
             insertText(inputStr);
         }
-
-        event.call<void>("stopImmediatePropagation");
     } else if (!inputTypeString.compare("insertFromPaste")) {
         insertText(inputStr);
-        event.call<void>("stopImmediatePropagation");
     // These can be supported here,
     // But now, keyCallback in QWasmWindow
     // will take them as exceptions.
@@ -128,6 +116,9 @@ void QWasmInputContext::inputCallback(emscripten::val event)
         qCWarning(qLcQpaWasmInputContext) << Q_FUNC_INFO << "inputType \"" <<
             inputType.as<std::string>() << "\" is not supported in Qt yet";
     }
+
+    // Prevent the event from propagting to any listeners outside of the Qt window
+    event.call<void>("stopPropagation");
 
     // The composition target range set by the preceding "beforeinput" event has
     // been consumed by this input event; clear it so a later input event without
