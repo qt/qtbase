@@ -962,7 +962,6 @@ public:
         QOhosConsumer<QOhosOptional<quint32>> colorConsumer) override;
 
     void setWindowPrivacyMode(QObject *window, bool privacyModeEnabled) override;
-    double getFontSizeScale() override;
     void setWindowCornerRadius(QObject *window, double radius) override;
     void tagWindowOrWidgetAsFloatWindow(QObject *windowOrWidget, bool floatWindow) override;
 
@@ -1129,11 +1128,6 @@ std::shared_ptr<void> QOhosQpaFunctionsImpl::startPickingColorFromScreenWithCons
 void QOhosQpaFunctionsImpl::setWindowPrivacyMode(QObject *window, bool privacyModeEnabled)
 {
     QOhosPlatformWindow::setWindowPrivacyMode(window, privacyModeEnabled);
-}
-
-double QOhosQpaFunctionsImpl::getFontSizeScale()
-{
-    return QOhosSettings::fontSizeScale();
 }
 
 void QOhosQpaFunctionsImpl::setInAppOnlyPasteboardShareOption(bool shareInAppOnly)
@@ -1672,7 +1666,7 @@ QOhosSupplier<QOhosOptional<bool>> QOhosQpaFunctionsImpl::makeOhosConfigDarkMode
 QOhosSupplier<double> QOhosQpaFunctionsImpl::makeOhosConfigFontSizeScaleDataSource(
     QOhosConsumer<double> valueChangedHandler)
 {
-    auto initFontSizeScale = QtOhos::getQOhosQpaFunctions().getFontSizeScale();
+    auto initFontSizeScale = QOhosSettings::fontSizeScale();
     return makeOhosConfigValueDataSource<double>(
         [initFontSizeScale](QtOhos::JsState &) {
             return initFontSizeScale;

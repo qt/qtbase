@@ -266,7 +266,6 @@ public:
         QOhosConsumer<QOhosOptional<quint32>> colorConsumer) = 0;
 
     virtual void setWindowPrivacyMode(QObject *window, bool privacyModeEnabled) = 0;
-    virtual double getFontSizeScale() = 0;
     virtual void setWindowCornerRadius(QObject *windowOrWidget, double radius) = 0;
     virtual void tagWindowOrWidgetAsFloatWindow(QObject *windowOrWidget, bool floatWindow) = 0;
 
