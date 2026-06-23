@@ -1062,8 +1062,6 @@ public:
 
     bool tryOpenLink(QObject *optInstanceMainWindow, const QString &link, QOhosOptional<bool> appLinkingOnly) override;
 
-    QObject *getActiveWindowOrNull() const override;
-
     void setAudioStreamUsageHintProperty(QObject *qObject, AudioStreamUsage usage) override;
     QOhosOptional<AudioStreamUsage> tryGetAudioStreamUsageHintProperty(QObject *qObject) override;
 
@@ -2042,12 +2040,6 @@ bool QOhosQpaFunctionsImpl::tryOpenLink(QObject *optInstanceMainWindow, const QS
                 });
         },
         Q_FUNC_INFO);
-}
-
-QObject *QOhosQpaFunctionsImpl::getActiveWindowOrNull() const
-{
-    const auto focusedWindows = QWindowProxyRegistry::instance().queryWindowsWithSystemWindowAndFocus();
-    return !focusedWindows.empty() ? focusedWindows.front() : nullptr;
 }
 
 void QOhosQpaFunctionsImpl::setAudioStreamUsageHintProperty(QObject *qObject, AudioStreamUsage usage)
