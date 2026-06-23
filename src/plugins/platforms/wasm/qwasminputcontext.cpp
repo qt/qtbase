@@ -56,22 +56,12 @@ void QWasmInputContext::inputCallback(emscripten::val event)
     qCDebug(qLcQpaWasmInputContext) << Q_FUNC_INFO << "inputType : " << inputTypeString;
 
     if (!inputTypeString.compare("deleteContentBackward")) {
+        const ResolvedRange resolved = resolveRange(getFirstRange());
 
-        QInputMethodQueryEvent queryEvent(Qt::ImQueryAll);
-        QCoreApplication::sendEvent(m_focusObject, &queryEvent);
-        int cursorPosition = queryEvent.value(Qt::ImCursorPosition).toInt();
-        int deleteLength = rangesPair.second - rangesPair.first;
-        int deleteFrom = -1;
-
-        if (cursorPosition >= rangesPair.first) {
-            deleteFrom = -(cursorPosition - rangesPair.first);
-        }
+        const int deleteFrom = resolved.replaceFrom <= 0 ? resolved.replaceFrom : -1;
         QInputMethodEvent e;
-        e.setCommitString(QString(), deleteFrom, deleteLength);
+        e.setCommitString(QString(), deleteFrom, resolved.replaceLength);
         QCoreApplication::sendEvent(m_focusObject, &e);
-
-        rangesPair.first = 0;
-        rangesPair.second = 0;
 
         event.call<void>("stopImmediatePropagation");
     } else if (!inputTypeString.compare("deleteContentForward")) {
@@ -83,36 +73,27 @@ void QWasmInputContext::inputCallback(emscripten::val event)
         qCDebug(qLcQpaWasmInputContext) << "insertCompositionText : " << inputStr;
         event.call<void>("stopImmediatePropagation");
         if (event["isComposing"].as<bool>()) {
-            int replaceLength = rangesPair.second  - rangesPair.first;
-
+            const CompositionRange range = getFirstRange();
             setPreeditString(inputStr);
-            insertPreedit(replaceLength);
-
-            rangesPair.first = 0;
-            rangesPair.second = 0;
+            insertPreedit(range.end - range.start);
             event.call<void>("stopImmediatePropagation");
         }
     } else if (!inputTypeString.compare("insertReplacementText")) {
 
         qCDebug(qLcQpaWasmInputContext) << "insertReplacementText >>>>" << "inputString : " << inputStr;
+        const CompositionRange range = getFirstRange();
 
-        QInputMethodQueryEvent queryEvent(Qt::ImQueryAll);
-        QCoreApplication::sendEvent(m_focusObject, &queryEvent);
-        int qCursorPosition = queryEvent.value(Qt::ImCursorPosition).toInt();
-
-        if (rangesPair.first != 0 || rangesPair.second != 0) {
-            int replaceLength = rangesPair.second  - rangesPair.first;
-
-            replaceText(inputStr, -replaceLength, replaceLength);
-
-            rangesPair.first = 0;
-            rangesPair.second = 0;
-
+        if (range.isValid) {
+            const ResolvedRange resolved = resolveRange(range);
+            replaceText(inputStr, resolved.replaceFrom, resolved.replaceLength);
         } else {
+            QInputMethodQueryEvent queryEvent(Qt::ImQueryAll);
+            QCoreApplication::sendEvent(m_focusObject, &queryEvent);
+            int qCursorPosition = queryEvent.value(Qt::ImCursorPosition).toInt();
             QString textFieldString = queryEvent.value(Qt::ImTextBeforeCursor).toString();
+
             int spaceIndex = textFieldString.lastIndexOf(' ') + 1;
             int replaceIndex = (qCursorPosition - spaceIndex);
-
             replaceText(inputStr, -replaceIndex, replaceIndex);
         }
 
@@ -126,24 +107,14 @@ void QWasmInputContext::inputCallback(emscripten::val event)
         insertPreedit();
         event.call<void>("stopImmediatePropagation");
     } else if (!inputTypeString.compare("insertText")) {
-        if ((rangesPair.first != 0 || rangesPair.second != 0)
-            && rangesPair.first != rangesPair.second) {
+        const CompositionRange range = getFirstRange();
 
-            QInputMethodQueryEvent queryEvent(Qt::ImQueryAll);
-            QCoreApplication::sendEvent(m_focusObject, &queryEvent);
-
-            int qCursorPosition = queryEvent.value(Qt::ImCursorPosition).toInt();
-            int replaceIndex = (qCursorPosition - rangesPair.first);
-            int replaceLength = rangesPair.second  - rangesPair.first;
-
-            replaceText(inputStr, replaceIndex, replaceLength);
-
-            rangesPair.first = 0;
-            rangesPair.second = 0;
-
+        if (range.isValid && range.start != range.end) {
+            const ResolvedRange resolved = resolveRange(range);
+            replaceText(inputStr, resolved.replaceFrom, resolved.replaceLength);
         } else {
             insertText(inputStr);
-         }
+        }
 
         event.call<void>("stopImmediatePropagation");
     } else if (!inputTypeString.compare("insertFromPaste")) {
@@ -157,6 +128,11 @@ void QWasmInputContext::inputCallback(emscripten::val event)
         qCWarning(qLcQpaWasmInputContext) << Q_FUNC_INFO << "inputType \"" <<
             inputType.as<std::string>() << "\" is not supported in Qt yet";
     }
+
+    // The composition target range set by the preceding "beforeinput" event has
+    // been consumed by this input event; clear it so a later input event without
+    // a fresh beforeinput cannot reuse a stale range.
+    m_compositionRange = emscripten::val::null();
 }
 
 void QWasmInputContext::compositionEndCallback(emscripten::val event)
@@ -191,16 +167,38 @@ void QWasmInputContext::compositionUpdateCallback(emscripten::val event)
 
 void QWasmInputContext::beforeInputCallback(emscripten::val event)
 {
-    emscripten::val ranges = event.call<emscripten::val>("getTargetRanges");
+    m_compositionRange = event.call<emscripten::val>("getTargetRanges");
 
-    auto length = ranges["length"].as<int>();
-    for (auto i = 0; i < length; i++) {
-        emscripten::val range = ranges[i];
-        qCDebug(qLcQpaWasmInputContext) << "startOffset" << range["startOffset"].as<int>();
-        qCDebug(qLcQpaWasmInputContext) << "endOffset" << range["endOffset"].as<int>();
-        rangesPair.first = range["startOffset"].as<int>();
-        rangesPair.second = range["endOffset"].as<int>();
+    if (const CompositionRange range = getFirstRange(); range.isValid) {
+        qCDebug(qLcQpaWasmInputContext) << "startOffset" << range.start;
+        qCDebug(qLcQpaWasmInputContext) << "endOffset" << range.end;
     }
+}
+
+// Returns the first of the target ranges from the most recent "beforeinput"
+// event (InputEvent.getTargetRanges(), a possibly empty list of StaticRanges).
+QWasmInputContext::CompositionRange QWasmInputContext::getFirstRange() const
+{
+    CompositionRange range;
+    if (!m_compositionRange.isNull() && !m_compositionRange.isUndefined()
+        && m_compositionRange["length"].as<int>() > 0) {
+        emscripten::val first = m_compositionRange[0];
+        range.start = first["startOffset"].as<int>();
+        range.end = first["endOffset"].as<int>();
+        range.isValid = true;
+    }
+    return range;
+}
+
+// Resolves a composition range against the current input cursor position for 
+// the focus object. Returns (replaceFrom, replaceLength) which can be passed
+// to QInputMethodEvent, where replaceFrom is an offset from the cursor position.
+QWasmInputContext::ResolvedRange QWasmInputContext::resolveRange(const CompositionRange &range) const
+{
+    QInputMethodQueryEvent queryEvent(Qt::ImQueryAll);
+    QCoreApplication::sendEvent(m_focusObject, &queryEvent);
+    const int cursorPosition = queryEvent.value(Qt::ImCursorPosition).toInt();
+    return { range.start - cursorPosition, range.end - range.start };
 }
 
 QWasmInputContext::QWasmInputContext()

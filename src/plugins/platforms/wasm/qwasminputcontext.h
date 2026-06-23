@@ -58,12 +58,30 @@ public:
 
 private:
     void updateInputElement();
+
+    struct CompositionRange
+    {
+        int start = 0;
+        int end = 0;
+        bool isValid = false;
+    };
+
+    CompositionRange getFirstRange() const;
+
+    struct ResolvedRange
+    {
+        int replaceFrom = 0;
+        int replaceLength = 0;
+    };
+
+    ResolvedRange resolveRange(const CompositionRange &range) const;
+
     QString m_preeditString;
 
     bool m_inputMethodAccepted = false;
     QObject *m_focusObject = nullptr;
     emscripten::val m_inputElement = emscripten::val::null();
-    QPair<int, int> rangesPair;
+    emscripten::val m_compositionRange = emscripten::val::null();
 };
 
 QT_END_NAMESPACE
