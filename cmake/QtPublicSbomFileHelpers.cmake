@@ -197,7 +197,10 @@ function(_qt_internal_sbom_handle_target_binary_files target)
                     # because no symbols are exported.
                     OPTIONAL
             )
-        elseif(target_type STREQUAL "SHARED_LIBRARY" OR target_type STREQUAL "STATIC_LIBRARY")
+        elseif(target_type STREQUAL "SHARED_LIBRARY"
+                OR target_type STREQUAL "STATIC_LIBRARY"
+                OR target_type STREQUAL "MODULE_LIBRARY"
+            )
             _qt_internal_sbom_handle_multi_config_target_binary_file(${target}
                 PATH_KIND "${library_path_kind}"
                 PATH_SUFFIX "${path_suffix}"
