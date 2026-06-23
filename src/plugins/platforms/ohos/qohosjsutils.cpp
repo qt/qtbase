@@ -83,8 +83,7 @@ std::shared_ptr<void> registerOnOffMethodsBasedEventHandler(
 
     auto eventSourceWeakRef = moveToSharedPtr(Napi::Weak(eventSourceObject));
 
-    return makeProxyWithJsThreadDeleter(
-        QtOhos::makeDestroyNotifier(
+    return QtOhos::makeDestroyNotifier(
         [eventSourceWeakRef, eventTypeName, sharedContext, jsEventHandlerRef]() {
             auto eventSourceValue = eventSourceWeakRef->Value();
             if (eventSourceValue.IsObject()) {
@@ -112,7 +111,7 @@ std::shared_ptr<void> registerOnOffMethodsBasedEventHandler(
                     "%s: not calling off(%s, ...), event source not alive",
                     Q_FUNC_INFO, eventTypeName.c_str());
             }
-        }));
+        });
 }
 
 std::shared_ptr<void> startDelayedJsThreadTask(

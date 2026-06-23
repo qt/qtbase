@@ -273,7 +273,13 @@ std::shared_ptr<void> shareData(
 
             shareDataImpl(
                 jsState, uiAbilityPeer, recordsToShare, controllerOptions, std::move(panelClosedJsCallback),
-                std::move(shareCompletedJsCallback), std::move(evalPromise));
+                std::move(shareCompletedJsCallback),
+                [evalPromise = QtOhos::moveToSharedPtr(std::move(evalPromise))](std::shared_ptr<void> shareCallbacksHandle) {
+                    (*evalPromise)(
+                        shareCallbacksHandle
+                            ? QtOhos::makeProxyWithJsThreadDeleter(std::move(shareCallbacksHandle))
+                            : nullptr);
+                });
         },
         Q_FUNC_INFO);
 }
