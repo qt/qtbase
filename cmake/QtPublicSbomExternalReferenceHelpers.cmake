@@ -235,18 +235,25 @@ function(_qt_internal_sbom_add_external_reference_document_spdx_v2 target)
 
     set(should_add_new_ref_id TRUE)
     if(known_external_document_target)
+        if(NOT known_external_document_target STREQUAL target)
+            message(FATAL_ERROR
+                "SPDX v2 external document reference '${arg_SPDX_V2_DOCUMENT_REF_ID}' was already "
+                "recorded for target '${known_external_document_target}', but is now being "
+                "referenced by a different target '${target}'. An SPDX document reference ID can "
+                "only be associated with a single external document target in the current project "
+                "SPDX document.")
+        endif()
+
         get_target_property(document_relative_path "${target}" "${document_path_property_name}")
 
         # If the property is already set, treat it as a duplication error.
         if(document_relative_path)
             message(FATAL_ERROR
                 "SPDX v2 external document reference '${arg_SPDX_V2_DOCUMENT_REF_ID}' was already "
-                "recorded when processing target '${known_external_document_target}', but is now "
-                "being added again to target '${target}', format '${arg_SBOM_FORMAT}'. "
-                "A SPDX document reference ID can only be recorded once for the current project "
-                "SPDX document.")
+                "recorded for target '${target}', format '${arg_SBOM_FORMAT}', but is now being "
+                "added again. A given SBOM format can only be recorded once per target.")
         else()
-            # We are just updating a new format's relative file path.
+            # We are just updating a new format's relative file path for the same target.
             set(should_add_new_ref_id FALSE)
         endif()
     endif()
@@ -430,7 +437,7 @@ function(_qt_internal_sbom_add_external_reference_document_cydx_v1 target)
 
         string(JSON urn_bom_version ERROR_VARIABLE bom_version_error GET "${ext_content}"
             "version")
-        if(serial_number_error)
+        if(bom_version_error)
             message(FATAL_ERROR
                 "Failed to extract CycloneDX bom version from external document: "
                 "'${arg_EXTERNAL_DOCUMENT_FILE_PATH}'")
@@ -440,9 +447,8 @@ function(_qt_internal_sbom_add_external_reference_document_cydx_v1 target)
             message(FATAL_ERROR "CYDX_URN_SERIAL_NUMBER must be specified for target '${target}' "
                 "if EXTERNAL_DOCUMENT_FILE_PATH is not given or NO_SCAN_FILE_AT_CONFIGURE_TIME is "
                 "set.")
-        else()
-            set(serial_number "${arg_CYDX_URN_SERIAL_NUMBER}")
         endif()
+        set(serial_number "${arg_CYDX_URN_SERIAL_NUMBER}")
 
         if(arg_CYDX_URN_BOM_VERSION)
             set(urn_bom_version "${arg_CYDX_URN_BOM_VERSION}")
@@ -462,6 +468,50 @@ function(_qt_internal_sbom_add_external_reference_document_cydx_v1 target)
             "value for the same SBOM format.")
     endif()
 
+    # Check that the bom serial number (uuid) is unique for the current project. Error out if it is
+    # not unique, otherwise add it to the known list.
+    get_cmake_property(known_external_document_target
+        _qt_known_external_documents_${serial_number}_cydx_target)
+
+    set(should_add_new_uuid TRUE)
+    if(known_external_document_target)
+        if(NOT known_external_document_target STREQUAL target)
+            message(FATAL_ERROR
+                "CycloneDX external document serial number '${serial_number}' was already recorded "
+                "for target '${known_external_document_target}', but is now being referenced by a "
+                "different target '${target}'. A CycloneDX bom serial number can only be "
+                "associated with a single external document target in the current project "
+                "CycloneDX document.")
+        endif()
+
+        get_target_property(document_relative_path "${target}"
+            _qt_sbom_cydx_v1_6_document_json_relative_path)
+
+        # If the property is already set, treat it as an error.
+        if(document_relative_path)
+            message(FATAL_ERROR
+                "CycloneDX external document serial number '${serial_number}' was already recorded "
+                "for target '${target}', but is now being added again. The CycloneDX external "
+                "reference can only be recorded once per target.")
+        else()
+            # The serial number was already recorded for this target, nothing new to add.
+            set(should_add_new_uuid FALSE)
+        endif()
+    endif()
+
+    if(should_add_new_uuid)
+        set_property(GLOBAL PROPERTY
+            _qt_known_external_documents_${serial_number}_cydx TRUE)
+
+        set_property(GLOBAL PROPERTY
+            _qt_known_external_documents_${serial_number}_cydx_target "${target}")
+
+        set_property(GLOBAL APPEND PROPERTY
+            _qt_known_external_documents_cydx "${serial_number}")
+    endif()
+
+    # Always refresh the target's cydx properties, even when re-registering the same serial
+    # so a changed bom version isn't silently dropped.
     set_target_properties("${target}" PROPERTIES
         _qt_sbom_cydx_bom_serial_number_uuid "${serial_number}"
         _qt_sbom_cydx_urn_bom_version "${urn_bom_version}"

@@ -5,6 +5,11 @@ find_package(Qt6 REQUIRED Core)
 # their SPDX ids to manually create external SBOM targets and relationships on them.
 find_package(Main REQUIRED)
 
+# Find a few more packages, each with separate SBOM docs. They are used for the external
+# reference targets that need a unique bom serial number
+find_package(TargetRels2 REQUIRED)
+find_package(TargetRels3 REQUIRED)
+
 sbom_test_begin()
 
 _qt_internal_setup_sbom(
@@ -55,29 +60,42 @@ endfunction()
 
 # Query the external document id and other info from one of the Main package targets, so we can
 # manually add external reference documents.
-set(first_main_target "Main::t1")
+set(main_first_target "Main::t1")
+set(target_rels2_first_target "TargetRels2::tr2_t1")
+set(target_rels3_first_target "TargetRels3::tr3_t1")
 
 if(QT_GENERATE_SBOM)
-    get_target_prop_or_error(spdx_external_document_ref_id "${first_main_target}"
+    get_target_prop_or_error(spdx_external_document_ref_id "${main_first_target}"
         _qt_sbom_spdx_v2_external_document_ref)
 
-    get_target_prop_or_error(spdx_document_namespace "${first_main_target}"
+    get_target_prop_or_error(spdx_document_namespace "${main_first_target}"
         _qt_sbom_spdx_repo_document_namespace)
 
-    get_target_prop_or_error(cydx_bom_serial_number "${first_main_target}"
+    get_target_prop_or_error(cydx_bom_serial_number "${main_first_target}"
         _qt_sbom_cydx_bom_serial_number_uuid)
 
-    get_target_prop_or_error(cydx_urn_bom_version "${first_main_target}"
+    get_target_prop_or_error(cydx_urn_bom_version "${main_first_target}"
         _qt_sbom_cydx_external_urn_bom_version)
 
-    get_target_prop_or_error(spdx_v2_tag_value_path "${first_main_target}"
+    get_target_prop_or_error(spdx_v2_tag_value_path "${main_first_target}"
         _qt_sbom_spdx_v2_document_tag_value_relative_path)
 
-    get_target_prop_or_error(spdx_v2_json_path "${first_main_target}"
+    get_target_prop_or_error(spdx_v2_json_path "${main_first_target}"
         _qt_sbom_spdx_v2_document_json_relative_path)
 
-    get_target_prop_or_error(cydx_v1_6_json_path "${first_main_target}"
+    get_target_prop_or_error(cydx_v1_6_json_path "${main_first_target}"
         _qt_sbom_cydx_v1_6_document_json_relative_path)
+
+    # The CycloneDX documents of the other packages, used for the CycloneDX-only external
+    # reference targets, so they reference a different serial number than the one from the
+    # first package.
+    get_target_prop_or_error(cydx_v1_6_json_path_target_rels2 "${target_rels2_first_target}"
+        _qt_sbom_cydx_v1_6_document_json_relative_path)
+
+    get_target_prop_or_error(cydx_bom_serial_number_target_rels3 "${target_rels3_first_target}"
+        _qt_sbom_cydx_bom_serial_number_uuid)
+    get_target_prop_or_error(cydx_urn_bom_version_target_rels3 "${target_rels3_first_target}"
+        _qt_sbom_cydx_external_urn_bom_version)
 endif()
 
 # Case 1
@@ -114,13 +132,15 @@ _qt_internal_sbom_add_external_reference_document(ExtDoc2Spdx
 _qt_internal_sbom_add_external_reference_document(ExtDoc3Cydx
     SBOM_FORMAT "CYDX_V1_JSON"
     EXTERNAL_DOCUMENT_FILE_PATH
-        "${cydx_v1_6_json_path}"
+        "${cydx_v1_6_json_path_target_rels2}"
 )
 
 # Case 3
 # Add the same docs, but instead of parsing the documents to extract the spdx namespace, sha1,
 # and cydx serial numbers, specify them explicitly.
 # For SPDX, we need to provide the SHA1, so we have to compute it first from the file path.
+# For CYDX, we can't use the same docs due to one external document target per doc uuid, so we
+# use another package's CYDX doc, which has a different serial number and bom version.
 set(spdx_v2_sha1 "EMPTY_SHA")
 if(QT_SBOM_GENERATE_SPDX_V2)
     _qt_internal_sbom_get_external_reference_search_paths(document_search_paths)
@@ -142,8 +162,8 @@ _qt_internal_sbom_add_external_reference_document(ExtDoc4
 
 _qt_internal_sbom_add_external_reference_document(ExtDoc4
     SBOM_FORMAT "CYDX_V1_JSON"
-    CYDX_URN_SERIAL_NUMBER "${cydx_bom_serial_number}"
-    CYDX_URN_BOM_VERSION "${cydx_urn_bom_version}"
+    CYDX_URN_SERIAL_NUMBER "${cydx_bom_serial_number_target_rels3}"
+    CYDX_URN_BOM_VERSION "${cydx_urn_bom_version_target_rels3}"
 )
 
 # Case 4
@@ -237,6 +257,10 @@ foreach(idx RANGE 1 3)
     _qt_internal_sbom_get_spdx_id_for_target(${main_target} ${main_prefix}_spdx_id)
 endforeach()
 
+# The CycloneDX-only external target is associated with the second package's document, so use a
+# target from that package for its spdx id.
+_qt_internal_sbom_get_spdx_id_for_target("TargetRels2::tr2_t1" tr2_t1_spdx_id)
+
 # Case 1
 # Create an target representing an external SBOM package / component.
 # An external SBOM target is always associated with an external reference document.
@@ -277,7 +301,7 @@ _qt_internal_add_sbom(t2_ext
     SBOM_ENTITY_TYPE LIBRARY
 )
 _qt_internal_add_sbom(t3_ext
-    SPDX_ID "${mt3_spdx_id}"
+    SPDX_ID "${tr2_t1_spdx_id}"
     IS_EXTERNAL_SBOM_ENTITY
     EXTERNAL_SBOM_DOCUMENT_TARGET ExtDoc3Cydx
     SBOM_ENTITY_TYPE LIBRARY
@@ -315,7 +339,22 @@ _qt_internal_extend_sbom(c3
                 "c3 depends on t3_ext"
             SBOM_FORMATS CYDX_V1_6
 )
-add_cydx_v1_6_deps_to_result_file(c3 DEPS "${mt3_spdx_id}")
+add_cydx_v1_6_deps_to_result_file(c3 DEPS "${tr2_t1_spdx_id}")
+
+# Case 4
+# Add a link dependency on an external target that is only defined in one format.
+if(QT_GENERATE_SBOM AND QT_SBOM_GENERATE_SPDX_V2)
+    create_sbom_lib_target(consumer_of_t2_ext)
+    target_link_libraries(consumer_of_t2_ext PRIVATE t2_ext)
+    add_assert_str_exists_in_spdx_v2_3_doc(
+        "Relationship: ${consumer_of_t2_ext_spdx_id} DEPENDS_ON ${extdoc2_spdx_v2_document_ref_id}:${mt2_spdx_id}")
+endif()
+
+if(QT_GENERATE_SBOM AND QT_SBOM_GENERATE_CYDX_V1_6)
+    create_sbom_lib_target(consumer_of_t3_ext)
+    target_link_libraries(consumer_of_t3_ext PRIVATE t3_ext)
+    add_cydx_v1_6_deps_to_result_file(consumer_of_t3_ext DEPS "${tr2_t1_spdx_id}")
+endif()
 
 _qt_internal_sbom_end_project()
 
