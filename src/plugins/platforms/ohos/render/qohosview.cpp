@@ -661,16 +661,6 @@ void QOhosView::setPositionOnScreenImmediate(
 
 void QOhosView::setSize(const QSize &size)
 {
-    if (size.isEmpty()) {
-        qCCritical(QtForOhos) << "Attempting to resize the system window to invalid size window:"
-            << m_ownerWindow << "requestedSize:" << size;
-        qOhosReportFatalErrorAndAbort(
-            "Invalid window size specification window id: %s size: %d,%d",
-            qPrintable(
-                QOhosPlatformWindow::fromQWindow(m_ownerWindow)->internalWindowId().toString()),
-            size.width(), size.height());
-    }
-
     setSystemUpdateProperty(&SystemUpdateData::size, size);
 }
 
