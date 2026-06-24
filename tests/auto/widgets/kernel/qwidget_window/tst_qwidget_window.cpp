@@ -1591,8 +1591,9 @@ void tst_QWidget_window::mouseMoveWithPopup()
         if (!window)
             return QEvent::None;
 
-        bool result = QWindowSystemInterface::handleMouseEvent(window, window->mapFromGlobal(mousePos),
-                                                               mousePos, buttons, button, type);
+        bool result = QWindowSystemInterface::handleMouseEvent(
+                window, QHighDpi::toNativeLocalPosition(window->mapFromGlobal(mousePos), window),
+                QHighDpi::toNativeGlobalPosition(mousePos, window), buttons, button, type);
         QCoreApplication::processEvents();
         if (type == QEvent::MouseButtonRelease && buttons == Qt::NoButton)
             window = nullptr;
