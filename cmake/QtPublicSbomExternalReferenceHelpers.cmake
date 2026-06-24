@@ -454,10 +454,6 @@ function(_qt_internal_sbom_add_external_reference_document_cydx_v1 target)
     get_target_property(existing_bom_serial_number "${target}"
         _qt_sbom_cydx_bom_serial_number_uuid)
 
-    if(existing_bom_serial_number)
-        message(FATAL_ERROR "existing")
-    endif()
-
     if(existing_bom_serial_number AND NOT existing_bom_serial_number STREQUAL serial_number)
         message(FATAL_ERROR
             "Target '${target}' already has an associated CycloneDX external document serial "
