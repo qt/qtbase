@@ -2472,6 +2472,9 @@ void tst_QWindow::initialSize()
         w.create();
 #if defined(Q_OS_WIN)
         QEXPECT_FAIL("", "Windows doesnt treat Qt::SubWindow as child window yet.", Abort);
+#else
+        if (isPlatformWayland())
+            QEXPECT_FAIL("", "Wayland: window's width and height that has not been shown is 0", Abort);
 #endif
         QTRY_COMPARE_GT(w.width(), 0);
         QTRY_COMPARE_GT(w.height(), 0);
