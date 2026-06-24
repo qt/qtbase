@@ -865,6 +865,15 @@ function(_qt_internal_sbom_end_project)
         set_property(GLOBAL PROPERTY _qt_known_external_documents_${external_document}_target "")
     endforeach()
 
+    # Clean up the CycloneDX external document serial number properties as well.
+    get_cmake_property(known_external_documents_cydx _qt_known_external_documents_cydx)
+    set_property(GLOBAL PROPERTY _qt_known_external_documents_cydx "")
+    foreach(external_document IN LISTS known_external_documents_cydx)
+        set_property(GLOBAL PROPERTY _qt_known_external_documents_${external_document}_cydx "")
+        set_property(GLOBAL PROPERTY
+            _qt_known_external_documents_${external_document}_cydx_target "")
+    endforeach()
+
     set_property(GLOBAL PROPERTY _qt_internal_sbom_repo_begin_called FALSE)
     set_property(GLOBAL PROPERTY _qt_internal_sbom_repo_spdx_id_unique_suffix "")
     set_property(GLOBAL PROPERTY _qt_internal_sbom_external_document_search_paths "")
