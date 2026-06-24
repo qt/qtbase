@@ -293,6 +293,17 @@ function(_qt_internal_sbom_record_external_target_dependecies)
     endif()
 
     foreach(target IN LISTS arg_TARGETS)
+        # A CycloneDX external component can only be recorded if its external document has a
+        # bom serial number. Skip targets whose external document don't have it (e.g. a
+        # SPDX-only external document).
+        get_target_property(bom_serial_number "${target}" _qt_sbom_cydx_bom_serial_number_uuid)
+        if(NOT bom_serial_number)
+            message(DEBUG
+                "Not recording CycloneDX external component for target '${target}', because its "
+                "external document has no CycloneDX bom serial number.")
+            continue()
+        endif()
+
         # Use the full spdx id (one prefixed with the containing DocumentRef-) because that's what
         # our spdx dependency relationships use at the moment.
         # Both Foo and FooPrivate map to the same spdx_id, so we need to avoid duplicates on spdx id

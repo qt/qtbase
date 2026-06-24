@@ -282,31 +282,44 @@ function(_qt_internal_sbom_add_external_target_dependency)
     get_property(bom_serial_number_uuid TARGET "${arg_DEPENDENCY_TARGET}"
         PROPERTY _qt_sbom_cydx_bom_serial_number_uuid)
 
-    if(relative_installed_repo_document_path AND project_name_lowercase)
-        _qt_internal_sbom_get_external_document_ref_spdx_id_from_sbom_target(
-            TARGET "${arg_DEPENDENCY_TARGET}"
-            OUT_VAR external_document_ref
-            CREATE_TEMPORARY_REF_WHEN_MISSING
-        )
+    _qt_internal_sbom_get_external_document_ref_spdx_id_from_sbom_target(
+        TARGET "${arg_DEPENDENCY_TARGET}"
+        OUT_VAR external_document_ref
+        CREATE_TEMPORARY_REF_WHEN_MISSING
+    )
 
-        get_cmake_property(known_external_document
+    # Determine per format whether we have the necessary info to create a relationship.
+    set(spdx_info_available FALSE)
+    if(relative_installed_repo_document_path AND spdx_document_namespace AND external_document_ref)
+        set(spdx_info_available TRUE)
+    endif()
+
+    set(cydx_info_available FALSE)
+    if(bom_serial_number_uuid)
+        set(cydx_info_available TRUE)
+    endif()
+
+    if(project_name_lowercase AND (spdx_info_available OR cydx_info_available))
+        # We need to make the external document target name unique to the currently active
+        # project, otherwise we risk trying to override the document details of an existing
+        # external document target when processing multiple SBOM projects within a single
+        # cmake invocation.
+        _qt_internal_sbom_get_root_project_name_lower_case(current_project_name)
+        set(external_document_target
+            "ExternalDocumentProject-${project_name_lowercase}-for-${current_project_name}")
+
+        get_cmake_property(known_external_document_spdx
             _qt_known_external_documents_${external_document_ref})
 
-        set(relationship_entry
-            SBOM_RELATIONSHIP_ENTRY
-                SBOM_RELATIONSHIP_FROM
-                    "${arg_TARGET}"
-                SBOM_RELATIONSHIP_TYPE
-                    DEPENDS_ON
-                SBOM_RELATIONSHIP_TO
-                    "${arg_DEPENDENCY_TARGET}"
-        )
+        set(known_external_document_cydx FALSE)
+        if(bom_serial_number_uuid)
+            get_cmake_property(known_external_document_cydx
+                _qt_known_external_documents_${bom_serial_number_uuid}_cydx)
+        endif()
 
-        list(APPEND relationship_entries "${relationship_entry}")
-        list(APPEND target_depdendencies "${arg_DEPENDENCY_TARGET}")
-
-        # Only add a reference to the external document package, if we haven't done so already.
-        if(NOT known_external_document)
+        # Only add a reference to the external document package per format, if we haven't done so
+        # already.
+        if(QT_SBOM_GENERATE_SPDX_V2 AND spdx_info_available AND NOT known_external_document_spdx)
             set(install_prefixes "")
 
             get_cmake_property(install_prefix _qt_internal_sbom_install_prefix)
@@ -314,36 +327,57 @@ function(_qt_internal_sbom_add_external_target_dependency)
 
             set(external_document "${relative_installed_repo_document_path}")
 
-            # We need to make the external document target name unique to the currently active
-            # project, otherwise we risk trying to override the document details of an existing
-            # external document target when processing multiple SBOM projects within a single
-            # cmake invocation.
-            _qt_internal_sbom_get_root_project_name_lower_case(current_project_name)
-            set(external_document_target
-                "ExternalDocumentProject-${project_name_lowercase}-for-${current_project_name}")
+            _qt_internal_sbom_add_external_reference_document("${external_document_target}"
+                NO_SCAN_FILE_AT_CONFIGURE_TIME
+                SBOM_FORMAT SPDX_V2_TAG_VALUE
+                SPDX_V2_DOCUMENT_REF_ID "${external_document_ref}"
+                SPDX_V2_DOCUMENT_NAMESPACE "${spdx_document_namespace}"
+                EXTERNAL_DOCUMENT_FILE_PATH "${external_document}"
+                EXTERNAL_DOCUMENT_SEARCH_PATHS ${install_prefixes}
+            )
+        endif()
 
-            if(QT_SBOM_GENERATE_SPDX_V2)
-                _qt_internal_sbom_add_external_reference_document("${external_document_target}"
-                    NO_SCAN_FILE_AT_CONFIGURE_TIME
-                    SBOM_FORMAT SPDX_V2_TAG_VALUE
-                    SPDX_V2_DOCUMENT_REF_ID "${external_document_ref}"
-                    SPDX_V2_DOCUMENT_NAMESPACE "${spdx_document_namespace}"
-                    EXTERNAL_DOCUMENT_FILE_PATH "${external_document}"
-                    EXTERNAL_DOCUMENT_SEARCH_PATHS ${install_prefixes}
-                )
-            endif()
+        if(QT_SBOM_GENERATE_CYDX_V1_6 AND cydx_info_available AND NOT known_external_document_cydx)
+            _qt_internal_sbom_add_external_reference_document("${external_document_target}"
+                NO_SCAN_FILE_AT_CONFIGURE_TIME
+                SBOM_FORMAT CYDX_V1_JSON
+                CYDX_URN_SERIAL_NUMBER "${bom_serial_number_uuid}"
+            )
+        endif()
 
-            if(QT_SBOM_GENERATE_CYDX_V1_6)
-                _qt_internal_sbom_add_external_reference_document("${external_document_target}"
-                    NO_SCAN_FILE_AT_CONFIGURE_TIME
-                    SBOM_FORMAT CYDX_V1_JSON
-                    CYDX_URN_SERIAL_NUMBER "${bom_serial_number_uuid}"
-                )
-            endif()
+        set(relationship_formats "")
+        if(QT_SBOM_GENERATE_SPDX_V2 AND spdx_info_available)
+            list(APPEND relationship_formats SPDX_V2)
+        endif()
+        if(QT_SBOM_GENERATE_CYDX_V1_6 AND cydx_info_available)
+            list(APPEND relationship_formats CYDX_V1_6)
+        endif()
+
+        if(relationship_formats)
+            set(relationship_entry
+                SBOM_RELATIONSHIP_ENTRY
+                    SBOM_RELATIONSHIP_FROM
+                        "${arg_TARGET}"
+                    SBOM_RELATIONSHIP_TYPE
+                        DEPENDS_ON
+                    SBOM_RELATIONSHIP_TO
+                        "${arg_DEPENDENCY_TARGET}"
+                    SBOM_FORMATS
+                        ${relationship_formats}
+            )
+
+            list(APPEND relationship_entries "${relationship_entry}")
+            list(APPEND target_depdendencies "${arg_DEPENDENCY_TARGET}")
+        else()
+            message(AUTHOR_WARNING
+                "No enabled SBOM format has an external reference available for external target "
+                "dependency '${arg_DEPENDENCY_TARGET}' of target '${arg_TARGET}', so no "
+                "relationship was added.")
         endif()
     else()
         message(AUTHOR_WARNING
-            "Missing spdx document path for external target dependency: ${arg_DEPENDENCY_TARGET}")
+            "Missing external document info for external target dependency: "
+            "${arg_DEPENDENCY_TARGET}")
     endif()
 
     set(${arg_OUT_SBOM_RELATIONSHIP_ENTRIES} "${relationship_entries}" PARENT_SCOPE)
