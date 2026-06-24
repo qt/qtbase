@@ -35,7 +35,6 @@
 #include <emscripten/val.h>
 
 #include <QtCore/private/qstdweb_p.h>
-#include <QKeySequence>
 
 QT_BEGIN_NAMESPACE
 
@@ -673,7 +672,17 @@ void QWasmWindow::handleKeyEvent(const KeyEvent &event)
     qCDebug(qLcQpaWasmInputContext) << "handleKeyEvent";
 
     if (QWasmInputContext *inputContext = activeWasmInputContext()) {
-        handleKeyForInputContextEvent(event);
+        // Don't send Qt key events that are part of input composition; let the
+        // input event handler deal with those (keyCode 229 / isComposing).
+        if (event.isComposing || event.keyCode == 229)
+            return;
+        if (processKey(event)) {
+            // The key is already handled in Qt; flag the following input event
+            // so it is ignored by inputCallback (it still reaches it, to keep
+            // word suggestions working) instead of inserting the text twice.
+            inputContext->m_ignoreNextInput = true;
+        }
+        event.webEvent.call<void>("stopImmediatePropagation");
     } else {
         if (processKey(event)) {
             event.webEvent.call<void>("preventDefault");
@@ -687,6 +696,9 @@ bool QWasmWindow::processKey(const KeyEvent &event)
     constexpr bool ProceedToNativeEvent = false;
     Q_ASSERT(event.type == EventType::KeyDown || event.type == EventType::KeyUp);
 
+    // Copy/cut/paste shortcuts are partly serviced by the browser's native
+    // clipboard, which decides whether the event should be handed to the
+    // browser instead of (or in addition to) sending the Qt key event.
 #if QT_CONFIG(clipboard)
     const auto clipboardResult =
             QWasmIntegration::get()->getWasmClipboard()->processKeyboard(event);
@@ -701,61 +713,8 @@ bool QWasmWindow::processKey(const KeyEvent &event)
             event.modifiers, event.text, event.autoRepeat);
 
 #if QT_CONFIG(clipboard)
-    return clipboardResult == ProcessKeyboardResult::NativeClipboardEventAndCopiedDataNeeded
-            ? ProceedToNativeEvent
-            : result;
-#else
-    return result;
-#endif
-}
-
-void QWasmWindow::handleKeyForInputContextEvent(const KeyEvent &keyEvent)
-{
-    // Don't send Qt key events if the key event is a part of input composition,
-    // let those be handled by by the input event key handler. Check for the
-    // keyCode 229 as well as isComposing in order catch all cases (see mdn
-    // docs for the keyDown event)
-
-    if (keyEvent.isComposing || keyEvent.keyCode == 229)
-        return;
-
-    qCDebug(qLcQpaWasmInputContext) << "processKey as KeyEvent";
-    emscripten::val event = keyEvent.webEvent;
-
-    processKeyForInputContext(keyEvent);
-
-    // Set/clear m_ignoreNextInput to prevent duplicate key handling. When QtGui
-    // has processed the key event any following "input" event must not insert
-    // the key/character again. This also applies if processKeyForInputContext()
-    // rejects the event. Clear m_ignoreNextInput on key up to prevent it from
-    // ignoring an unrelated input event, e.g. when navigating with the arrow
-    // keys (which produce no input event) while editing text.
-    QWasmIntegration::get()->wasmInputContext()->m_ignoreNextInput =
-            (keyEvent.type == EventType::KeyDown);
-
-    event.call<void>("stopImmediatePropagation");
-}
-
-bool QWasmWindow::processKeyForInputContext(const KeyEvent &event)
-{
-    qCDebug(qLcQpaWasmInputContext) << Q_FUNC_INFO;
-    Q_ASSERT(event.type == EventType::KeyDown || event.type == EventType::KeyUp);
-
-    QKeySequence keySeq(event.modifiers | event.key);
-
-    if (keySeq == QKeySequence::Paste) {
-        // Process it in pasteCallback and inputCallback
-        return false;
-    }
-
-    const auto result = QWindowSystemInterface::handleKeyEvent(
-            0, event.type == EventType::KeyDown ? QEvent::KeyPress : QEvent::KeyRelease, event.key,
-            event.modifiers, event.text);
-
-#if QT_CONFIG(clipboard)
-    // Copy/Cut callback required to copy qtClipboard to system clipboard
-    if (keySeq == QKeySequence::Copy || keySeq == QKeySequence::Cut)
-        return false;
+    if (clipboardResult == ProcessKeyboardResult::NativeClipboardEventAndCopiedDataNeeded)
+        return ProceedToNativeEvent;
 #endif
 
     return result;

@@ -141,8 +141,6 @@ private:
 
     void handleKeyEvent(const KeyEvent &event);
     bool processKey(const KeyEvent &event);
-    void handleKeyForInputContextEvent(const KeyEvent &event);
-    bool processKeyForInputContext(const KeyEvent &event);
     void handleInputEvent(emscripten::val event);
     void handleCompositionStartEvent(emscripten::val event);
     void handleCompositionUpdateEvent(emscripten::val event);
