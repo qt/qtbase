@@ -1665,8 +1665,8 @@ QRect QOhosStyle::subControlRect(
             case SC_ComboBoxArrow: {
                 auto arrowIconRect = comboBoxStyleOption->rect;
                 arrowIconRect.setWidth(arrowSize);
-                arrowIconRect.moveRight(comboBoxStyleOption->rect.width());
-                return arrowIconRect;
+                arrowIconRect.moveRight(comboBoxStyleOption->rect.right());
+                return visualRect(comboBoxStyleOption->direction, comboBoxStyleOption->rect, arrowIconRect);
             }
             default:
                 return QCommonStyle::subControlRect(control, option, subControl, widget);
