@@ -39,8 +39,14 @@ protected:
     QOhosClipboardObject(std::function<void(QOhosOptional<PasteboardDataSource>)> &&pasteboardUpdatesNotifier);
 
 private:
-    std::shared_ptr<::OH_Pasteboard> m_pasteboard;
-    std::shared_ptr<void> m_pasteboardDataChangedListenerHandle;
+    struct JsScopeData
+    {
+        std::shared_ptr<::OH_Pasteboard> pasteboard;
+        std::shared_ptr<void> pasteboardDataChangedListenerHandle;
+    };
+
+    std::shared_ptr<QOhosConsumer<QOhosOptional<PasteboardDataSource>>> m_pasteboardUpdatesNotifier;
+    std::shared_ptr<JsScopeData> m_jsScopeData;
 };
 
 QT_END_NAMESPACE
