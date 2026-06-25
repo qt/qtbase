@@ -262,6 +262,7 @@ void QCollator::detach()
         d->init();
     } else if (d->ref.loadRelaxed() != 1) {
         QCollatorPrivate *x = new QCollatorPrivate(d->locale);
+        x->options = d->options;
         if (!d->ref.deref())
             delete d;
         d = x;

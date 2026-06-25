@@ -28,6 +28,7 @@ private Q_SLOTS:
     void compare();
 
     void state();
+    void detach();
 };
 
 static bool dpointer_is_null(QCollator &c)
@@ -749,6 +750,45 @@ void tst_QCollator::state()
     QCOMPARE(c.numericMode(), true);
     QCOMPARE(c.ignorePunctuation(), true);
     QCOMPARE(c.locale(), QLocale(QLocale::NorwegianBokmal));
+}
+
+void tst_QCollator::detach()
+{
+    {
+        QCollator c1(QLocale::Polish);
+        c1.setNumericMode(true);
+        c1.setIgnorePunctuation(true);
+        c1.setCaseSensitivity(Qt::CaseInsensitive);
+
+        QCollator c2(c1);
+        // force detach
+        c2.setLocale(QLocale::French);
+        QCOMPARE(c2.locale(), QLocale(QLocale::French));
+        QVERIFY(c2.numericMode());
+        QVERIFY(c2.ignorePunctuation());
+        QCOMPARE(c2.caseSensitivity(), Qt::CaseInsensitive);
+
+        // c1 unaffected
+        QCOMPARE(c1.locale(), QLocale(QLocale::Polish));
+        QVERIFY(c1.numericMode());
+        QVERIFY(c1.ignorePunctuation());
+        QCOMPARE(c1.caseSensitivity(), Qt::CaseInsensitive);
+    }
+
+    {
+        const Opts options = Opt::NumericSort | Opt::IgnorePunctuation | Opt::DiacriticInsensitive;
+        QCollator c1(QLocale::Polish);
+        c1.setOptions(options);
+
+        QCollator c2(c1);
+        // force detach
+        c2.setLocale(QLocale::NorwegianBokmal);
+        QCOMPARE(c2.options(), options);
+        QCOMPARE(c2.locale(), QLocale(QLocale::NorwegianBokmal));
+        // c1 unaffected
+        QCOMPARE(c1.locale(), QLocale(QLocale::Polish));
+        QCOMPARE(c1.options(), options);
+    }
 }
 
 QTEST_APPLESS_MAIN(tst_QCollator)
