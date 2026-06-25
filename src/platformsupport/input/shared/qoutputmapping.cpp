@@ -8,6 +8,8 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QMutex>
+#include <mutex> // std::call_once
 
 QT_BEGIN_NAMESPACE
 
@@ -17,6 +19,8 @@ static QOutputMapping *s_outputMapping = nullptr;
 
 QOutputMapping *QOutputMapping::get()
 {
+    static QBasicMutex mutex;
+    QMutexLocker locker(&mutex);
     if (!s_outputMapping)
         s_outputMapping = new QDefaultOutputMapping;
 
@@ -52,47 +56,54 @@ void QOutputMapping::set(QOutputMapping *mapping)
 
 bool QDefaultOutputMapping::load()
 {
-    static QString configFile = qEnvironmentVariable("QT_QPA_EGLFS_KMS_CONFIG");
-    if (configFile.isEmpty())
-        return false;
+    static std::once_flag s_loadFlag;
+    static bool s_result = false;
 
-    QFile file(configFile);
-    if (!file.open(QFile::ReadOnly)) {
-        qWarning("touch input support: Failed to open %ls", qUtf16Printable(configFile));
-        return false;
-    }
+    std::call_once(s_loadFlag, [this]() {
+        static QString configFile = qEnvironmentVariable("QT_QPA_EGLFS_KMS_CONFIG");
+        if (configFile.isEmpty())
+            return;
 
-    const QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
-    if (!doc.isObject()) {
-        qWarning("touch input support: Failed to parse %ls", qUtf16Printable(configFile));
-        return false;
-    }
-
-    // What we are interested is the virtualIndex and touchDevice properties for
-    // each element in the outputs array.
-    const QJsonArray outputs = doc.object().value("outputs"_L1).toArray();
-    for (int i = 0; i < outputs.size(); ++i) {
-        const QVariantMap output = outputs.at(i).toObject().toVariantMap();
-        if (!output.contains(QStringLiteral("touchDevice")))
-            continue;
-        if (!output.contains(QStringLiteral("name"))) {
-            qWarning("evdevtouch: Output %d specifies touchDevice but not name, this is wrong", i);
-            continue;
+        QFile file(configFile);
+        if (!file.open(QFile::ReadOnly)) {
+            qWarning("touch input support: Failed to open %ls", qUtf16Printable(configFile));
+            return;
         }
-        QFileInfo deviceNode(output.value(QStringLiteral("touchDevice")).toString());
-        const QString &screenName = output.value(QStringLiteral("name")).toString();
-        // Key on the canonical path so that a symlinked node, e.g. one under
-        // /dev/input/by-id, matches the node the input handler was given.
-        QString key = deviceNode.canonicalFilePath();
-        if (key.isEmpty()) {
-            qWarning("touch input support: Cannot resolve touchDevice %ls of output %ls",
-                     qUtf16Printable(deviceNode.filePath()), qUtf16Printable(screenName));
-            key = deviceNode.filePath();
-        }
-        m_screenTable.insert(key, screenName);
-    }
 
-    return true;
+        const QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
+        if (!doc.isObject()) {
+            qWarning("touch input support: Failed to parse %ls", qUtf16Printable(configFile));
+            return;
+        }
+
+        // What we are interested is the virtualIndex and touchDevice properties for
+        // each element in the outputs array.
+        const QJsonArray outputs = doc.object().value("outputs"_L1).toArray();
+        for (int i = 0; i < outputs.size(); ++i) {
+            const QVariantMap output = outputs.at(i).toObject().toVariantMap();
+            if (!output.contains(QStringLiteral("touchDevice")))
+                continue;
+            if (!output.contains(QStringLiteral("name"))) {
+                qWarning("evdevtouch: Output %d specifies touchDevice but not name, this is wrong", i);
+                continue;
+            }
+            QFileInfo deviceNode(output.value(QStringLiteral("touchDevice")).toString());
+            const QString &screenName = output.value(QStringLiteral("name")).toString();
+            // Key on the canonical path so that a symlinked node, e.g. one under
+            // /dev/input/by-id, matches the node the input handler was given.
+            QString key = deviceNode.canonicalFilePath();
+            if (key.isEmpty()) {
+                qWarning("touch input support: Cannot resolve touchDevice %ls of output %ls",
+                         qUtf16Printable(deviceNode.filePath()), qUtf16Printable(screenName));
+                key = deviceNode.filePath();
+            }
+            m_screenTable.insert(key, screenName);
+        }
+
+        s_result = true;
+    });
+
+    return s_result;
 }
 
 QString QDefaultOutputMapping::screenNameForDeviceNode(const QString &deviceNode)
