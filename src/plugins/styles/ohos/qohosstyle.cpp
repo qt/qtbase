@@ -1947,9 +1947,6 @@ void QOhosStyle::polish(QWidget *widget)
         font.setPointSize(groupBoxTitleTextFontSize);
         font.setBold(true);
         widget->setFont(font);
-
-        auto groupBox = qobject_cast<QGroupBox *>(widget);
-        groupBox->setAlignment(Qt::AlignHCenter);
     } else if (qobjectIsInstanceOf<QListView>(widget)) {
         qobject_cast<QListView *>(widget)->viewport()->setAttribute(Qt::WA_Hover);
     } else if (qobjectIsInstanceOf<QComboBox>(widget)) {
