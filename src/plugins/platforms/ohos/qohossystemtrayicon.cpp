@@ -315,7 +315,6 @@ class QOhosSystemTrayIcon final : public QPlatformSystemTrayIcon
 {
 public:
     QOhosSystemTrayIcon();
-    ~QOhosSystemTrayIcon() override;
 
     void init() override;
     void cleanup() override;
@@ -333,7 +332,6 @@ public:
     QPlatformMenu *createMenu() const override;
 
 private:
-    bool m_initialized = false;
     QIcon m_icon;
     QOhosOptional<QString> m_optToolTip;
     QPlatformMenu *m_menu = nullptr;
@@ -349,14 +347,9 @@ private:
 
 QOhosSystemTrayIcon::QOhosSystemTrayIcon() = default;
 
-QOhosSystemTrayIcon::~QOhosSystemTrayIcon()
-{
-    cleanup();
-}
-
 void QOhosSystemTrayIcon::init()
 {
-    if (m_initialized)
+    if (m_jsScopeData)
         return;
 
     auto jsStatusBarGroupMenusFactory =
@@ -392,24 +385,17 @@ void QOhosSystemTrayIcon::init()
         },
         Q_FUNC_INFO);
 
-    m_initialized = true;
-
     qOhosPrintfDebug("%s: System tray icon initialized", Q_FUNC_INFO);
 }
 
 void QOhosSystemTrayIcon::cleanup()
 {
-    if (!m_initialized)
-        return;
-
     m_jsScopeData.reset();
-
-    m_initialized = false;
 }
 
 void QOhosSystemTrayIcon::updateIcon(const QIcon &icon)
 {
-    if (!m_initialized)
+    if (!m_jsScopeData)
         return;
 
     m_icon = icon;
@@ -425,7 +411,7 @@ void QOhosSystemTrayIcon::updateToolTip(const QString &tooltip)
 {
     m_optToolTip = tooltip;
 
-    if (m_initialized) {
+    if (m_jsScopeData) {
         QtOhos::invokeInJsThreadAndWaitForContinue(
             [&](QtOhos::JsState &jsState, QOhosTaskPromise<> taskPromise) {
                 jsState.evalToPromiseOrRejectOnThrow(
@@ -482,7 +468,7 @@ void QOhosSystemTrayIcon::updateMenu(QPlatformMenu *menu)
 
     m_menu = menu;
 
-    if (!m_initialized) {
+    if (!m_jsScopeData) {
         qOhosPrintfDebug("%s: System tray not initialized yet", Q_FUNC_INFO);
         return;
     }
