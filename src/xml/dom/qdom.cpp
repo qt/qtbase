@@ -4099,7 +4099,7 @@ void QDomElementPrivate::setAttributeNS(const QString& nsURI, const QString& qNa
         m_attr->setNamedItem(n);
     } else {
         n->setNodeValue(newValue);
-        n->prefix = prefix;
+        n->prefix = std::move(prefix);
     }
 }
 
