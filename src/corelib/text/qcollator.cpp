@@ -204,6 +204,9 @@ void QCollator::detach()
         d->init();
     } else if (d->ref.loadRelaxed() != 1) {
         QCollatorPrivate *x = new QCollatorPrivate(d->locale);
+        x->caseSensitivity = d->caseSensitivity;
+        x->numericMode = d->numericMode;
+        x->ignorePunctuation = d->ignorePunctuation;
         if (!d->ref.deref())
             delete d;
         d = x;
