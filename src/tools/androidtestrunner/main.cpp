@@ -694,9 +694,9 @@ static bool waitForLoggingStarted()
     using namespace std::chrono_literals;
     if (g_options.stdoutFileName.isEmpty())
         return false;
-    const QString lsCmd = "ls files/%1 2>/dev/null"_L1.arg(g_options.stdoutFileName);
-    const QStringList adbLsCmd = { "shell"_L1, runCommandAsUserArgs(lsCmd) };
-    auto fileExists = [&]() { return !execAdbCommand(adbLsCmd, false).isNull(); };
+    const QString existsCmd = "head -c 0 files/%1 2>/dev/null"_L1.arg(g_options.stdoutFileName);
+    const QStringList adbExistsCmd = { "shell"_L1, runCommandAsUserArgs(existsCmd) };
+    auto fileExists = [&]() { return !execAdbCommand(adbExistsCmd, false).isNull(); };
     // Wait for the output file, but stop early if the test exits first
     pollUntil([&]() { return fileExists() || !isRunning(); }, QDeadlineTimer(5s), 25ms);
     return fileExists();
