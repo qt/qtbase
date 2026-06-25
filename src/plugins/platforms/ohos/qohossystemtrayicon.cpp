@@ -76,15 +76,6 @@ std::shared_ptr<void> registerOhosIconLeftClickListener(
         });
 }
 
-void addItemToOhosStatusBar(QtOhos::JsState &jsState, QNapi::Object statusBarItem)
-{
-    jsState.eval(
-        "@kit.StatusBarExtensionKit.statusBarManager.addToStatusBar(*)",
-        {getContextForStatusBarManager(jsState), statusBarItem});
-
-    qOhosPrintfDebug("%s: Successfully added icon to status bar [Statusbar] ", Q_FUNC_INFO);
-}
-
 void removeIconFromOhosStatusBar(QtOhos::JsState &jsState)
 {
     jsState.eval(
@@ -92,6 +83,20 @@ void removeIconFromOhosStatusBar(QtOhos::JsState &jsState)
         {getContextForStatusBarManager(jsState)});
 
     qOhosPrintfDebug("%s: Successfully removed icon from status bar", Q_FUNC_INFO);
+}
+
+std::shared_ptr<void> addItemToOhosStatusBar(QtOhos::JsState &jsState, QNapi::Object statusBarItem)
+{
+    jsState.eval(
+        "@kit.StatusBarExtensionKit.statusBarManager.addToStatusBar(*)",
+        {getContextForStatusBarManager(jsState), statusBarItem});
+
+    qOhosPrintfDebug("%s: Successfully added icon to status bar [Statusbar] ", Q_FUNC_INFO);
+
+    return QtOhos::makeDestroyNotifier(
+        []() {
+            QtOhos::runInJsThreadAndWait(&removeIconFromOhosStatusBar, Q_FUNC_INFO);
+        });
 }
 
 void updateOhosStatusBarIcon(QtOhos::JsState &jsState, QNapi::Object iconData)
@@ -335,6 +340,7 @@ private:
 
     struct JsScopeData
     {
+        std::shared_ptr<void> m_statusBarItemHandle;
         std::shared_ptr<void> m_iconLeftClickListenerHandle;
     };
 
@@ -370,10 +376,10 @@ void QOhosSystemTrayIcon::init()
                 });
             auto jsStatusBarItem = makeJsStatusBarItem(
                 jsState, jsStatusBarIcon, ohosSystemTrayItemTitle, jsStatusBarGroupMenus, optHoverTipsString);
-            addItemToOhosStatusBar(jsState, jsStatusBarItem);
             return QtOhos::makeProxyWithJsThreadDeleter(
                 QtOhos::moveToSharedPtr(
                     JsScopeData {
+                        .m_statusBarItemHandle = addItemToOhosStatusBar(jsState, jsStatusBarItem),
                         .m_iconLeftClickListenerHandle = registerOhosIconLeftClickListener(
                             jsState,
                             [selfRef]() {
@@ -395,8 +401,6 @@ void QOhosSystemTrayIcon::cleanup()
 {
     if (!m_initialized)
         return;
-
-    QtOhos::runInJsThreadAndWait(&removeIconFromOhosStatusBar, Q_FUNC_INFO);
 
     m_jsScopeData.reset();
 
