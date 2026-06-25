@@ -1453,6 +1453,14 @@ QString QDir::operator[](qsizetype pos) const
     return d->fileCache.files[pos];
 }
 
+/*
+//! [entrylist_memory_spike]
+    For large directories this function may cause a memory spike because it
+    creates an instance of a \1 per each entry in the directory. Consider
+    using QDirListing if the goal is to iterate over the items one-by-one.
+//! [entrylist_memory_spike]
+*/
+
 /*!
     \overload
 
@@ -1469,6 +1477,8 @@ QString QDir::operator[](qsizetype pos) const
 
     \note To list symlinks that point to non existing files, \l System must be
      passed to the filter.
+
+    \include qdir.cpp {entrylist_memory_spike} {QString}
 
     \sa entryInfoList(), setNameFilters(), setSorting(), setFilter()
 */
@@ -1493,6 +1503,8 @@ QStringList QDir::entryList(Filters filters, SortFlags sort) const
     Returns an empty list if the directory is unreadable, does not
     exist, or if nothing matches the specification.
 
+    \include qdir.cpp {entrylist_memory_spike} {QFileInfo}
+
     \sa entryList(), setNameFilters(), setSorting(), setFilter(), isReadable(), exists()
 */
 QFileInfoList QDir::entryInfoList(Filters filters, SortFlags sort) const
@@ -1514,6 +1526,8 @@ QFileInfoList QDir::entryInfoList(Filters filters, SortFlags sort) const
 
     Returns an empty list if the directory is unreadable, does not
     exist, or if nothing matches the specification.
+
+    \include qdir.cpp {entrylist_memory_spike} {QString}
 
     \sa entryInfoList(), setNameFilters(), setSorting(), setFilter()
 */
@@ -1565,6 +1579,8 @@ QStringList QDir::entryList(const QStringList &nameFilters, Filters filters,
 
     Returns an empty list if the directory is unreadable, does not
     exist, or if nothing matches the specification.
+
+    \include qdir.cpp {entrylist_memory_spike} {QFileInfo}
 
     \sa entryList(), setNameFilters(), setSorting(), setFilter(), isReadable(), exists()
 */
