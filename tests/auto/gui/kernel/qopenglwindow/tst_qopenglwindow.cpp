@@ -81,8 +81,16 @@ public:
     QImage img;
 };
 
+static bool isPlatformWayland()
+{
+    return QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive);
+}
+
 void tst_QOpenGLWindow::basic()
 {
+    if (isPlatformWayland())
+        QSKIP("Wayland: fails has no empty window is shown on wayland.");
+
     Window w;
     w.reset();
     w.resize(640, 480);
@@ -107,11 +115,6 @@ void tst_QOpenGLWindow::basic()
     QCOMPARE(v[2], GLint(w.width() * w.devicePixelRatio()));
     QCOMPARE(v[3], GLint(w.height() * w.devicePixelRatio()));
     w.doneCurrent();
-}
-
-static bool isPlatformWayland()
-{
-    return QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive);
 }
 
 void tst_QOpenGLWindow::resize()
@@ -163,6 +166,9 @@ public:
 
 void tst_QOpenGLWindow::painter()
 {
+    if (isPlatformWayland())
+        QSKIP("Wayland: fails has no empty window is shown on wayland.");
+
     PainterWindow w;
     w.resize(400, 400);
     w.show();
