@@ -174,8 +174,7 @@ void tst_QApplication::sendEventsOnProcessEvents()
     QCoreApplication::processEvents();
 
 #ifdef Q_OS_LINUX
-    if ((QSysInfo::productType() == "rhel" && QSysInfo::productVersion().startsWith(u'9'))
-        || (QSysInfo::productType() == "ubuntu" && QSysInfo::productVersion().startsWith(u'2')))
+    if ((QSysInfo::productType() == "rhel") || (QSysInfo::productType() == "ubuntu"))
     {
         QFile f("/proc/self/maps");
         QVERIFY(f.open(QIODevice::ReadOnly));
