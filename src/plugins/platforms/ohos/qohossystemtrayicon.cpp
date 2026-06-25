@@ -358,10 +358,8 @@ void QOhosSystemTrayIcon::init()
             ? static_cast<QOhosStatusBarMenu *>(m_menu)->makeJsStatusBarGroupMenusFactory()
             : makeEmptyJsArrayFactory();
 
-    m_jsScopeData = QtOhos::makeProxyWithJsThreadDeleter(std::make_shared<JsScopeData>());
-
     auto selfRef = QtOhos::makeQThreadSafeRef(this);
-    QtOhos::runInJsThreadAndWait(
+    m_jsScopeData = QtOhos::evalInJsThread(
         [&](QtOhos::JsState &jsState) {
             auto jsStatusBarIcon = makeJsStatusBarIcon(jsState, m_icon);
             auto jsStatusBarGroupMenus = jsStatusBarGroupMenusFactory(jsState);
@@ -373,14 +371,18 @@ void QOhosSystemTrayIcon::init()
             auto jsStatusBarItem = makeJsStatusBarItem(
                 jsState, jsStatusBarIcon, ohosSystemTrayItemTitle, jsStatusBarGroupMenus, optHoverTipsString);
             addItemToOhosStatusBar(jsState, jsStatusBarItem);
-            m_jsScopeData->m_iconLeftClickListenerHandle = registerOhosIconLeftClickListener(
-                jsState,
-                [selfRef]() {
-                    selfRef.visitInQtThreadIfAlive(
-                        [](auto &self) {
-                            Q_EMIT self.activated(QPlatformSystemTrayIcon::Trigger);
-                        });
-                });
+            return QtOhos::makeProxyWithJsThreadDeleter(
+                QtOhos::moveToSharedPtr(
+                    JsScopeData {
+                        .m_iconLeftClickListenerHandle = registerOhosIconLeftClickListener(
+                            jsState,
+                            [selfRef]() {
+                                selfRef.visitInQtThreadIfAlive(
+                                    [](auto &self) {
+                                        Q_EMIT self.activated(QPlatformSystemTrayIcon::Trigger);
+                                    });
+                            }),
+                    }));
         },
         Q_FUNC_INFO);
 
