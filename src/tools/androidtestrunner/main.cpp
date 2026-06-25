@@ -933,7 +933,7 @@ static QByteArray fetchLogcat(const QString &timeStamp, bool waitForDiagnostics)
 
     QByteArray logcat = execAdbCommand(logcatArgs, false);
     if (logcat.isNull())
-        qCritical() << "Error: failed to fetch logcat of the test";
+        qWarning() << "Warning: failed to fetch logcat of the test";
 
     if (!waitForDiagnostics)
         return logcat;
