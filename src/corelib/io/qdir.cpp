@@ -32,6 +32,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <stack>
 #include <stdlib.h>
 
 QT_BEGIN_NAMESPACE
@@ -1776,29 +1777,43 @@ bool QDir::removeRecursively()
     if (!d_ptr->exists())
         return true;
 
-    bool success = true;
-    const QString dirPath = path();
-    // not empty -- we must empty it first
-    for (const auto &dirEntry : QDirListing(dirPath, QDirListing::IteratorFlag::IncludeHidden)) {
-        const QString &filePath = dirEntry.filePath();
-        bool ok;
-        if (dirEntry.isDir() && !dirEntry.isSymLink()) {
-            ok = QDir(filePath).removeRecursively(); // recursive
-        } else {
-            ok = QFile::remove(filePath);
-            if (!ok) { // Read-only files prevent directory deletion on Windows, retry with Write permission.
-                const QFile::Permissions permissions = QFile::permissions(filePath);
-                if (!(permissions & QFile::WriteUser))
-                    ok = QFile::setPermissions(filePath, permissions | QFile::WriteUser)
-                        && QFile::remove(filePath);
-            }
-        }
-        if (!ok)
-            success = false;
-    }
+    struct DirInfo
+    {
+        QString path;
+        bool seen;
+    };
 
-    if (success)
-        success = rmdir(absolutePath());
+    bool success = true;
+
+    std::stack<DirInfo, std::vector<DirInfo>> dirsToRemove;
+    dirsToRemove.push({absolutePath(), false});
+
+    while (!dirsToRemove.empty()) {
+        auto &info = dirsToRemove.top();
+        if (!info.seen) {
+            info.seen = true;
+            for (const auto &dirEntry : QDirListing(info.path, QDirListing::IteratorFlag::IncludeHidden)) {
+                const QString &filePath = dirEntry.filePath();
+                if (dirEntry.isDir() && !dirEntry.isSymLink()) {
+                    dirsToRemove.push({filePath, false});
+                } else {
+                    bool ok = QFile::remove(filePath);
+                    if (!ok) { // Read-only files prevent directory deletion on Windows, retry with Write permission.
+                        const QFile::Permissions permissions = QFile::permissions(filePath);
+                        if (!(permissions & QFile::WriteUser))
+                            ok = QFile::setPermissions(filePath, permissions | QFile::WriteUser)
+                                    && QFile::remove(filePath);
+                    }
+                    if (!ok)
+                        success = false;
+                }
+            }
+        } else {
+            if (!rmdir(info.path))
+                success = false;
+            dirsToRemove.pop();
+        }
+    }
 
     return success;
 }
