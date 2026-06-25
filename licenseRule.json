@@ -235,6 +235,11 @@
                 "file type": "documentation",
                 "spdx": ["LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only"]
             },
+            "src/plugins/platforms/ohos/doc/": {
+                "comment": "Design documentation",
+                "file type": "documentation",
+                "spdx": ["LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only"]
+            },
             "plugins/": {
                 "comment": "Default",
                 "file type": "module and plugin",
