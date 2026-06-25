@@ -145,7 +145,10 @@ function(_qt_internal_get_cmake_test_configure_options out_var)
     # Forward whatever hints were used in find_package(Qt6) to the ctest configure
     foreach(hint IN ITEMS Qt6_ROOT QT6_ROOT)
         if(DEFINED ${hint})
-            list(APPEND option_list "-D${hint}=${${hint}}")
+            # Avoid backslashes in paths on Windows, because they are interpreted as escape
+            # sequences in CMake.
+            file(TO_CMAKE_PATH "${${hint}}" hint_path)
+            list(APPEND option_list "-D${hint}=${hint_path}")
         endif()
     endforeach()
 
