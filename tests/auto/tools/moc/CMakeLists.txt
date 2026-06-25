@@ -59,27 +59,12 @@ set(JSON_HEADERS
         virtualAndOverride.h
 )
 
-qt_wrap_cpp(comparison_relevant_moc_list ${JSON_HEADERS}
-    TARGET tst_moc
-    OPTIONS
-        "-Muri=com.company.app"
-        "-Muri=com.company.app.private"
-        "-DDEFINE_CMDLINE_EMPTY="
-        "-DDEFINE_CMDLINE_SIGNAL=void cmdlineSignal(const QMap<int, int> &i)"
-        "--output-json"
-    DEPENDS
-        ${QT_CMAKE_EXPORT_NAMESPACE}::moc
-)
-
-list(TRANSFORM comparison_relevant_moc_list  APPEND ".json" OUTPUT_VARIABLE moc_json_files)
-
 qt_internal_add_test(tst_moc
     SOURCES
         cxx-attributes.h
         single_function_keyword.h
         name_collision.h
         tst_moc.cpp
-        ${comparison_relevant_moc_list}
     INCLUDE_DIRECTORIES
         testproject
         testproject/include
@@ -91,6 +76,21 @@ qt_internal_add_test(tst_moc
         "--output-json"
     EXCEPTIONS
 )
+
+qt_manual_moc(comparison_relevant_moc_list ${JSON_HEADERS}
+    TARGETS
+        tst_moc
+        # This pulls in the framework location for Apple builds.
+        Qt::Core
+    FLAGS
+        "-Muri=com.company.app"
+        "-Muri=com.company.app.private"
+        "-DDEFINE_CMDLINE_EMPTY="
+        "-DDEFINE_CMDLINE_SIGNAL=void cmdlineSignal(const QMap<int, int> &i)"
+        "--output-json"
+    OUTPUT_MOC_JSON_FILES moc_json_files
+)
+target_sources(tst_moc PRIVATE ${comparison_relevant_moc_list})
 
 qt_internal_extend_target(tst_moc LIBRARIES Qt::CorePrivate)
 
