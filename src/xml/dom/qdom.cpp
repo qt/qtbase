@@ -505,8 +505,8 @@ QDomDocumentType QDomImplementation::createDocumentType(const QString& qName, co
         dt->publicId.clear();
         dt->systemId.clear();
     } else {
-        dt->publicId = fixedPublicId;
-        dt->systemId = fixedSystemId;
+        dt->publicId = std::move(fixedPublicId);
+        dt->systemId = std::move(fixedSystemId);
     }
     dt->ref.deref();
     return QDomDocumentType(dt);
