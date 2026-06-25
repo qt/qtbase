@@ -1,1 +1,4 @@
 # Qt fuzz test skip list — macOS (Darwin)
+
+[All]
+QSslConfiguration skip # DTLS methods (dtlsCookieVerificationEnabled etc.) not built on macOS

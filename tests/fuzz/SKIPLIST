@@ -7,3 +7,49 @@ QEasingCurve skip # cubicBezier() no longer exists in installed headers
 QFile skip # copy() overloads with std::optional parameters cause codegen errors
 QJsonObject skip # cbegin()/cend() removed in Qt 6
 QMetaType skip # rawId() not available in installed Qt headers
+# QPA classes — Q_GUI_EXPORT but no installed <ClassName> header; require platform backend
+QPlatformAccessibility skip
+QPlatformClipboard skip
+QPlatformFontDatabase skip
+QPlatformInputContext skip
+QPlatformIntegrationPlugin skip
+QPlatformKeyMapper skip
+QPlatformNativeInterface skip
+QPlatformPrintDevice skip
+QPlatformPrinterSupport skip
+QPlatformServices skip
+QPlatformTheme skip
+# QRhi classes — internal RHI types with no installed <ClassName> header
+QRhiColorAttachment skip
+QRhiDepthStencilClearValue skip
+QRhiReadbackDescription skip
+QRhiScissor skip
+QRhiShaderResourceBinding skip
+QRhiShaderStage skip
+QRhiTextureCopyDescription skip
+QRhiTextureRenderTargetDescription skip
+QRhiTextureSubresourceUploadDescription skip
+QRhiTextureUploadDescription skip
+QRhiTextureUploadEntry skip
+QRhiVertexInputAttribute skip
+QRhiVertexInputBinding skip
+QRhiVertexInputLayout skip
+QRhiViewport skip
+QRhiWidget skip
+# No installed public header — internal/private or module not in standard Qt build
+QBenchmarkIterationController skip # QtTest internal
+QDtlsClientVerifier skip         # QtNetwork DTLS internal
+QOpenGLFunctions_ES2 skip        # ES2 not available on desktop platforms
+QSctpServer skip                 # SCTP not built in standard Qt
+QSctpSocket skip
+QShader skip                     # QtShaderTools — separate submodule
+QShaderCode skip
+QShaderDescription skip
+QShaderKey skip
+QShaderVersion skip
+QVulkanInstance skip             # Vulkan not universally available
+QWindowSystemInterface skip      # QPA internal interface
+# API present in source tree but not in Qt 6.11 installed headers
+QAccessibilityHints skip         # Qt::MotionPreference not available in Qt 6.11
+QHostInfo::clearCache skip       # not available in Qt 6.11 installed headers
+QImageReader::effectiveSize skip # not available in Qt 6.11 installed headers
