@@ -1,0 +1,9 @@
+# Qt fuzz test skip list — classes skipped on all platforms
+# Format: [Platform] sections followed by "ClassName skip" or "Class::method skip/expectCrash"
+# Valid platform tags: All, Windows, Linux, macOS, Android, WASM
+
+[All]
+QEasingCurve skip # cubicBezier() no longer exists in installed headers
+QFile skip # copy() overloads with std::optional parameters cause codegen errors
+QJsonObject skip # cbegin()/cend() removed in Qt 6
+QMetaType skip # rawId() not available in installed Qt headers

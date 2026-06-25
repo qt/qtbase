@@ -1652,6 +1652,21 @@ qt_configure_add_report_entry(
     CONDITION QT_FEATURE_test_squish AND QT_BUILD_TESTS
 )
 
+# Fuzz tests — generate and run fuzz targets with qt_fuzzgen
+find_program(QT_FUZZGEN_EXECUTABLE qt_fuzzgen
+    HINTS "${QT_HOST_PATH}/libexec" "${QT_HOST_PATH}/bin"
+)
+qt_feature("test_fuzz" PUBLIC
+    LABEL "Generate and run fuzz tests"
+    AUTODETECT OFF
+    CONDITION QT_FUZZGEN_EXECUTABLE AND QT_BUILD_TESTS
+)
+qt_configure_add_report_entry(
+    TYPE NOTE
+    MESSAGE "Generating fuzz tests with qt_fuzzgen"
+    CONDITION QT_FEATURE_test_fuzz
+)
+
 # Compile autotests
 qt_feature("test_auto" PUBLIC
     LABEL "Compile auto tests"

@@ -24,3 +24,7 @@ qt_build_tests()
 if(QT_FEATURE_test_squish)
     add_subdirectory(squish)
 endif()
+
+if(QT_FEATURE_test_fuzz)
+    add_subdirectory(fuzz)
+endif()
