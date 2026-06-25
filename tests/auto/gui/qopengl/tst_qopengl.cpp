@@ -1793,6 +1793,9 @@ void tst_QOpenGL::dontCrashOnInvalidContextThreadTeardown()
 // that the user's FBO is still bound.
 void tst_QOpenGL::makeCurrentAfterResizeWithNonDefaultFBOBound()
 {
+    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QSKIP("Wayland: fails has no empty window is shown on Wayland.");
+
     class FBOWindow : public QWindow
     {
     public:
