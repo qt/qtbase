@@ -2592,6 +2592,9 @@ void tst_QWindow::modalWindowModallity()
     QVERIFY(QTest::qWaitForWindowExposed(&modal_dialog));
     QTRY_COMPARE(QGuiApplication::focusWindow(), &modal_dialog);
 
+    if (isPlatformWayland())
+        QEXPECT_FAIL("", "Wayland: A modal dialog cannot pass focus to the parent while active", Abort);
+
     normal_window.requestActivate();
     QTRY_COMPARE(QGuiApplication::focusWindow(), &normal_window);
 
