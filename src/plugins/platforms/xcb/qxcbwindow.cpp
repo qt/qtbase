@@ -229,10 +229,6 @@ enum : quint32 {
 void QXcbWindow::create()
 {
     xcb_window_t old_m_window = m_window;
-    if (old_m_window) {
-        QPlatformSurfaceEvent e(QPlatformSurfaceEvent::SurfaceAboutToBeDestroyed);
-        QGuiApplication::sendEvent(window(), &e);
-    }
     destroy();
 
     m_windowState = Qt::WindowNoState;
