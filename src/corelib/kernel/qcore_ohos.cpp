@@ -41,14 +41,18 @@ void QOhosJsThreadGateway::invoke(std::function<void(QOhosJsState &)> task)
 }
 
 void QOhosJsThreadGateway::invokeAndWaitForContinue(
-    std::function<void(QOhosJsState &, std::function<void()>)> &&task)
+    std::function<void(QOhosJsState &, QOhosTaskPromise<>)> &&task,
+    std::string callerContextName)
 {
-    QOhosJsThreadOps::instance().invokeAndWaitForContinue(std::move(task));
+    QOhosJsThreadOps::instance().invokeAndWaitForContinue(
+        std::move(task), std::move(callerContextName));
 }
 
-void QOhosJsThreadGateway::runAndWait(const std::function<void(QOhosJsState &)> &task)
+void QOhosJsThreadGateway::runAndWait(
+    const std::function<void(QOhosJsState &)> &task,
+    std::string callerContextName)
 {
-    QOhosJsThreadOps::instance().runAndWait(task);
+    QOhosJsThreadOps::instance().runAndWait(task, std::move(callerContextName));
 }
 
 namespace QtOhos {

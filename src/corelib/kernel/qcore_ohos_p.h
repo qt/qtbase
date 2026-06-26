@@ -124,13 +124,24 @@ namespace QOhosJsThreadGateway {
 Q_CORE_EXPORT void invoke(std::function<void(QOhosJsState &)> task);
 
 Q_CORE_EXPORT void invokeAndWaitForContinue(
-    std::function<void(QOhosJsState &, std::function<void()>)> &&task);
+    std::function<void(QOhosJsState &, QOhosTaskPromise<>)> &&task,
+    std::string callerContextName = {});
 
-Q_CORE_EXPORT void runAndWait(const std::function<void(QOhosJsState &)> &task);
+Q_CORE_EXPORT void runAndWait(
+    const std::function<void(QOhosJsState &)> &task,
+    std::string callerContextName = {});
 
 template<typename Func>
-auto eval(Func &&func) -> decltype(func(std::declval<QOhosJsState &>()));
+auto eval(Func &&func, std::string callerContextName = {})
+    -> decltype(func(std::declval<QOhosJsState &>()));
 
+template<typename T>
+T evalWithPromise(
+    std::function<void(QOhosJsState &, QOhosTaskPromise<T>)> evalFunc,
+    std::string callerContextName = {});
+
+// Backward-compatible alias for evalWithPromise(); kept so existing callers
+// passing a result consumer keep compiling.
 template<typename T>
 T evalWithConsumer(std::function<void(QOhosJsState &, std::function<void(T)>)> evalFunc);
 
@@ -145,8 +156,11 @@ public:
 
     virtual void invoke(std::function<void(QOhosJsState &)> task) = 0;
     virtual void invokeAndWaitForContinue(
-        std::function<void(QOhosJsState &, std::function<void()>)> &&task) = 0;
-    virtual void runAndWait(const std::function<void(QOhosJsState &)> &task) = 0;
+        std::function<void(QOhosJsState &, QOhosTaskPromise<>)> &&task,
+        std::string callerContextName) = 0;
+    virtual void runAndWait(
+        const std::function<void(QOhosJsState &)> &task,
+        std::string callerContextName) = 0;
 
     static void registerInstance(QOhosJsThreadOps *ops);
     static QOhosJsThreadOps &instance();
@@ -325,7 +339,8 @@ std::shared_ptr<T> makeProxyWithJsThreadDeleter(std::shared_ptr<T> &&baseSharedP
             QOhosJsThreadGateway::runAndWait(
                 [&](QOhosJsState &) {
                     baseSharedPtr.reset();
-                });
+                },
+                Q_FUNC_INFO);
         });
 }
 
@@ -400,7 +415,8 @@ QOhosJsState::OhosEnumInfo QOhosJsState::makeOhosEnumInfo()
 }
 
 template<typename Func>
-auto QOhosJsThreadGateway::eval(Func &&func) -> decltype(func(std::declval<QOhosJsState &>()))
+auto QOhosJsThreadGateway::eval(Func &&func, std::string callerContextName)
+    -> decltype(func(std::declval<QOhosJsState &>()))
 {
     using Result = decltype(func(std::declval<QOhosJsState &>()));
     static_assert(
@@ -414,12 +430,15 @@ auto QOhosJsThreadGateway::eval(Func &&func) -> decltype(func(std::declval<QOhos
     runAndWait(
         [&](QOhosJsState &jsState) {
             result = std::make_unique<Result>(func(jsState));
-        });
+        },
+        std::move(callerContextName));
     return std::move(*result);
 }
 
 template<typename T>
-T QOhosJsThreadGateway::evalWithConsumer(std::function<void(QOhosJsState &, std::function<void(T)>)> evalFunc)
+T QOhosJsThreadGateway::evalWithPromise(
+    std::function<void(QOhosJsState &, QOhosTaskPromise<T>)> evalFunc,
+    std::string callerContextName)
 {
     static_assert(
         !(std::is_class<T>::value
@@ -430,16 +449,29 @@ T QOhosJsThreadGateway::evalWithConsumer(std::function<void(QOhosJsState &, std:
 
     std::unique_ptr<T> result;
     invokeAndWaitForContinue(
-        [&](QOhosJsState &jsState, std::function<void()> continueFunc) {
+        [&](QOhosJsState &jsState, QOhosTaskPromise<> taskPromise) {
             evalFunc(
                 jsState,
-                [&result, continueFunc = std::move(continueFunc)](T value) {
-                    result = std::make_unique<T>(std::move(value));
-                    continueFunc();
-                });
-        });
+                QOhosTaskPromise<T>(
+                    [&result, taskPromise = std::move(taskPromise)](T value) {
+                        result = std::make_unique<T>(std::move(value));
+                        taskPromise();
+                    },
+                    {},
+                    std::move(callerContextName)));
+        },
+        callerContextName);
 
     return std::move(*result);
+}
+
+template<typename T>
+T QOhosJsThreadGateway::evalWithConsumer(std::function<void(QOhosJsState &, std::function<void(T)>)> evalFunc)
+{
+    return evalWithPromise<T>(
+        [evalFunc = std::move(evalFunc)](QOhosJsState &jsState, QOhosTaskPromise<T> resultPromise) {
+            evalFunc(jsState, std::move(resultPromise));
+        });
 }
 
 QT_END_NAMESPACE
