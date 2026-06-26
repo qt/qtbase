@@ -7,23 +7,46 @@ _qt_internal_setup_sbom(
     GENERATE_SBOM_DEFAULT "TRUE"
 )
 
-set(SBOM_VERSION "1.0.0")
-set(SBOM_PROJECT_NAME "TargetRels")
+macro(set_common_sbom_begin_args out_var)
+    set(${out_var}
+        SBOM_PROJECT_NAME "${SBOM_PROJECT_NAME}"
+        SUPPLIER "${SBOM_SUPPLIER}"
+        SUPPLIER_URL "${SBOM_SUPPLIER_URL}"
+        VERSION "${SBOM_VERSION}"
+    )
+endmacro()
 
+set(SBOM_PROJECT_NAME "TargetRels")
+set(SBOM_SUPPLIER "QtProjectTest")
+set(SBOM_SUPPLIER_URL "https://qt-project.org/SbomTest")
+set(SBOM_VERSION "1.0.0")
+
+set_common_sbom_begin_args(sbom_begin_args)
 _qt_internal_sbom_begin_project(
-    SBOM_PROJECT_NAME "${SBOM_PROJECT_NAME}"
-    SUPPLIER "QtProjectTest"
-    SUPPLIER_URL "https://qt-project.org/SbomTest"
-    VERSION "${SBOM_VERSION}"
+    ${sbom_begin_args}
 )
 sbom_test_record_project()
 
 include(CMakePackageConfigHelpers)
 function(create_sbom_lib_target target)
+    set(opt_args "")
+    set(single_args
+        PACKAGE_NAME
+    )
+    set(multi_args "")
+    cmake_parse_arguments(PARSE_ARGV 1 arg "${opt_args}" "${single_args}" "${multi_args}")
+
     add_library(${target} STATIC)
     target_sources(${target} PRIVATE sources/utils_helper.cpp)
+
+    if(arg_PACKAGE_NAME)
+        set(package_name "${arg_PACKAGE_NAME}")
+    else()
+        set(package_name "Main")
+    endif()
+
     install(TARGETS ${target}
-        EXPORT MainTargets
+        EXPORT ${package_name}Targets
         ARCHIVE DESTINATION lib
     )
     _qt_internal_add_sbom(${target}
@@ -35,18 +58,18 @@ function(create_sbom_lib_target target)
 
     # The installation bits are needed for the follow-up test which creates relationships on
     # targets from external documents.
-    install(EXPORT MainTargets
-        NAMESPACE Main::
-        DESTINATION lib/cmake/Main
+    install(EXPORT ${package_name}Targets
+        NAMESPACE ${package_name}::
+        DESTINATION lib/cmake/${package_name}
     )
     configure_package_config_file(
-        "${CMAKE_CURRENT_SOURCE_DIR}/MainConfig.cmake.in"
-        "${CMAKE_CURRENT_BINARY_DIR}/MainConfig.cmake"
-        INSTALL_DESTINATION lib/cmake/Main
+        "${CMAKE_CURRENT_SOURCE_DIR}/${package_name}Config.cmake.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/${package_name}Config.cmake"
+        INSTALL_DESTINATION lib/cmake/${package_name}
     )
 
-    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/MainConfig.cmake
-            DESTINATION lib/cmake/Main )
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${package_name}Config.cmake
+            DESTINATION lib/cmake/${package_name} )
 
     # This is used the by spdx and cydx deps checking code.
     _qt_internal_sbom_get_spdx_id_for_target(${target} ${target}_spdx_id)
@@ -216,6 +239,35 @@ _qt_internal_extend_sbom(t10
 add_assert_str_exists_in_spdx_v2_3_doc("Relationship: ${t10_spdx_id} DEPENDS_ON ${t8_spdx_id}")
 add_assert_str_exists_in_spdx_v2_3_doc("Relationship: ${t10_spdx_id} DEPENDS_ON ${t9_spdx_id}")
 add_cydx_v1_6_deps_to_result_file(t10 DEPS ${t8_spdx_id} ${t9_spdx_id})
+
+_qt_internal_sbom_end_project()
+
+
+# Case 8
+# Install a few more projects with different spdx and cdx serial numbers, so they can be
+# referenced in the target_relationships_external test.
+
+set(SBOM_PROJECT_NAME "TargetRels2")
+set_common_sbom_begin_args(sbom_begin_args)
+_qt_internal_sbom_begin_project(
+    ${sbom_begin_args}
+)
+sbom_test_record_project()
+
+set(target "tr2_t1")
+create_sbom_lib_target(${target} PACKAGE_NAME "TargetRels2")
+
+_qt_internal_sbom_end_project()
+
+set(SBOM_PROJECT_NAME "TargetRels3")
+set_common_sbom_begin_args(sbom_begin_args)
+_qt_internal_sbom_begin_project(
+    ${sbom_begin_args}
+)
+sbom_test_record_project()
+
+set(target "tr3_t1")
+create_sbom_lib_target(${target} PACKAGE_NAME "TargetRels3")
 
 _qt_internal_sbom_end_project()
 
