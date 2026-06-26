@@ -780,8 +780,11 @@ public:
 
     void invoke(std::function<void(QOhosJsState &)> task) override;
     void invokeAndWaitForContinue(
-        std::function<void(QOhosJsState &, std::function<void()>)> &&task) override;
-    void runAndWait(const std::function<void(QOhosJsState &)> &task) override;
+        std::function<void(QOhosJsState &, QOhosTaskPromise<>)> &&task,
+        std::string callerContextName) override;
+    void runAndWait(
+        const std::function<void(QOhosJsState &)> &task,
+        std::string callerContextName) override;
 };
 
 QOhosJsState &JsThreadOpsImpl::jsState()
@@ -795,14 +798,17 @@ void JsThreadOpsImpl::invoke(std::function<void(QOhosJsState &)> task)
 }
 
 void JsThreadOpsImpl::invokeAndWaitForContinue(
-    std::function<void(QOhosJsState &, std::function<void()>)> &&task)
+    std::function<void(QOhosJsState &, QOhosTaskPromise<>)> &&task,
+    std::string callerContextName)
 {
-    QtOhos::invokeInJsThreadAndWaitForContinue(std::move(task));
+    QtOhos::invokeInJsThreadAndWaitForContinue(std::move(task), std::move(callerContextName));
 }
 
-void JsThreadOpsImpl::runAndWait(const std::function<void(QOhosJsState &)> &task)
+void JsThreadOpsImpl::runAndWait(
+    const std::function<void(QOhosJsState &)> &task,
+    std::string callerContextName)
 {
-    QtOhos::runInJsThreadAndWait(task);
+    QtOhos::runInJsThreadAndWait(task, std::move(callerContextName));
 }
 
 }
