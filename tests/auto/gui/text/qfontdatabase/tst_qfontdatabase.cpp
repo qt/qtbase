@@ -176,6 +176,9 @@ void tst_QFontDatabase::systemFixedFont() // QTBUG-54623
 #elif defined(Q_OS_OHOS)
     QSKIP("QT6HAROS-190: OHOS doesn't support fixed system font out of the box");
 #endif
+    if (QSysInfo::productType() == "rhel" && QSysInfo::productVersion().startsWith(u'1'))
+       QEXPECT_FAIL("", "Known failure on RHEL 10", Abort); // QTBUG-147798
+
     QFont font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
     QFontInfo fontInfo(font);
     bool fdbSaysFixed = QFontDatabase::isFixedPitch(fontInfo.family(), fontInfo.styleName());
