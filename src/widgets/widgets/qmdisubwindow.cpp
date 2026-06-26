@@ -1653,7 +1653,7 @@ QStyleOptionTitleBar QMdiSubWindowPrivate::titleBarOptions() const
         // Set the text here before asking for the width of the title bar label
         // in case people uses the actual text to calculate the width.
         titleBarOptions.text = windowTitle;
-        titleBarOptions.fontMetrics = QFontMetrics(font);
+        titleBarOptions.fontMetrics = QFontMetrics(font, q);
         int width = q->style()->subControlRect(QStyle::CC_TitleBar, &titleBarOptions,
                                                QStyle::SC_TitleBarLabel, q).width();
         // Set elided text if we don't have enough space for the entire title.
