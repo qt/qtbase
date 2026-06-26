@@ -54,11 +54,20 @@ function(_qt_internal_sbom_handle_target_binary_files target)
         THIRD_PARTY_LIBRARY
         THIRD_PARTY_LIBRARY_WITH_FILES
         THIRD_PARTY_SOURCES
+        # Some of the values have an _ENTITY_TYPE suffix so they don't clash with other
+        # cmake_parse_arguments keywords (e.g. FRAMEWORK, FILES, SOURCES) when the value is
+        # forwarded through the sbom helpers.
+        SOURCES_ENTITY_TYPE
         SBOM_PROJECT
         EXECUTABLE
         LIBRARY
+        OBJECT_LIBRARY_ENTITY_TYPE
+        FRAMEWORK_ENTITY_TYPE
         TRANSLATIONS
+        FILES_ENTITY_TYPE
         RESOURCES
+        ARCHIVES
+        INSTALLERS
         BUILD_TOOL
         CUSTOM
         CUSTOM_NO_INFIX
@@ -79,9 +88,17 @@ function(_qt_internal_sbom_handle_target_binary_files target)
         SYSTEM_LIBRARY
         THIRD_PARTY_LIBRARY
         THIRD_PARTY_SOURCES
+        SOURCES_ENTITY_TYPE
         SBOM_PROJECT
+        # this might be temporary. but for now we don't have auto installing for this type
+        OBJECT_LIBRARY_ENTITY_TYPE
+        # this might be temporary. but for now we don't have auto installing for this type
+        FRAMEWORK_ENTITY_TYPE
         TRANSLATIONS
         RESOURCES
+        FILES_ENTITY_TYPE
+        ARCHIVES
+        INSTALLERS
         BUILD_TOOL
         CUSTOM
         CUSTOM_NO_INFIX
