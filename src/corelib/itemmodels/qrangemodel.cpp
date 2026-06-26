@@ -42,6 +42,7 @@ public:
     int m_interfaceVersion = -1;
     int m_sortRole = Qt::DisplayRole;
     std::optional<QCollator> m_sortCollator;
+    std::optional<QCollator> m_matchCollator;
     mutable std::optional<QStringList> m_mimeTypes;
     Qt::DropActions m_supportedDragActions = Qt::CopyAction;
     Qt::DropActions m_supportedDropActions = Qt::CopyAction;
@@ -158,6 +159,11 @@ const QCollator *QRangeModelImplBase::sortCollator() const
     return d->m_sortCollator ? &d->m_sortCollator.value() : nullptr;
 }
 
+QCollator QRangeModelImplBase::matchCollator() const
+{
+    return m_rangeModel->matchCollator();
+}
+
 QVariant QRangeModelImplBase::convertMatchValue(const QVariant &value, Qt::MatchFlags flags)
 {
     QVariant matchValue = value;
@@ -193,8 +199,8 @@ QVariant QRangeModelImplBase::convertMatchValue(const QVariant &value, Qt::Match
     return matchValue;
 }
 
-bool QRangeModelImplBase::matchValue(const QString &itemData, const QVariant &value,
-                                     Qt::MatchFlags flags)
+static bool matchValueImpl(const QString &itemData, const QVariant &value,
+                           Qt::MatchFlags flags, const QCollator *collator)
 {
     // QString or regular expression based matching
     const uint matchType = (flags & Qt::MatchTypeMask).toInt();
@@ -211,12 +217,26 @@ bool QRangeModelImplBase::matchValue(const QString &itemData, const QVariant &va
     case Qt::MatchEndsWith:
         return itemData.endsWith(value.toString(), cs);
     case Qt::MatchFixedString:
+        if (collator)
+            return collator->compare(itemData, value.toString()) == 0;
         return itemData.compare(value.toString(), cs) == 0;
     case Qt::MatchContains:
         return itemData.contains(value.toString(), cs);
     default:
         return false;
     }
+}
+
+bool QRangeModelImplBase::matchValue(const QString &itemData, const QVariant &value,
+                                     Qt::MatchFlags flags)
+{
+    return matchValueImpl(itemData, value, flags, nullptr);
+}
+
+bool QRangeModelImplBase::matchValue(const QString &itemData, const QVariant &value,
+                                     Qt::MatchFlags flags, const QCollator &collator)
+{
+    return matchValueImpl(itemData, value, flags, &collator);
 }
 
 /*!
@@ -2259,6 +2279,48 @@ void QRangeModel::resetSortCollator()
         return;
     d->m_sortCollator = std::nullopt;
     Q_EMIT sortCollatorChanged(sortCollator());
+}
+
+/*!
+    \property QRangeModel::matchCollator
+    \since 6.13
+    \brief the collator used when matching data
+
+    The default value of this property is a QCollator for the C-locale, and
+    match() compares strings using QString's comparison, honoring only the
+    Qt::MatchCaseSensitive flag. Setting a collator makes string matching
+    locale-aware and enables QCollator's \l{QCollator::CollationOption}.
+
+    \note The QCollator's \l{QCollator::CollationOption}{CaseInsensitive}
+    option is ignored. Case sensitivity is controlled by the
+    Qt::MatchCaseSensitive flag passed to match(), so that the documented
+    behavior of match() is preserved whether or not a collator is set. All
+    other collation options of the collator are honored.
+
+    \sa match(), sortCollator, QCollator
+*/
+QCollator QRangeModel::matchCollator() const
+{
+    Q_D(const QRangeModel);
+    return d->m_matchCollator.value_or(QCollator(QLocale::C));
+}
+
+void QRangeModel::setMatchCollator(const QCollator &collator)
+{
+    Q_D(QRangeModel);
+    if (matchCollator() == collator)
+        return;
+    d->m_matchCollator = collator;
+    Q_EMIT matchCollatorChanged(*d->m_matchCollator);
+}
+
+void QRangeModel::resetMatchCollator()
+{
+    Q_D(QRangeModel);
+    if (!d->m_matchCollator)
+        return;
+    d->m_matchCollator = std::nullopt;
+    Q_EMIT matchCollatorChanged(matchCollator());
 }
 
 /*!

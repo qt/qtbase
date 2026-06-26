@@ -1371,15 +1371,19 @@ protected:
                                                      const QHash<int, QMetaProperty> &properties);
     Q_CORE_EXPORT int sortRole() const;
     Q_CORE_EXPORT const QCollator *sortCollator() const;
+    Q_CORE_EXPORT QCollator matchCollator() const;
 
     Q_CORE_EXPORT static QVariant convertMatchValue(const QVariant &value, Qt::MatchFlags flags);
     Q_CORE_EXPORT static bool matchValue(const QString &itemData, const QVariant &value,
                                          Qt::MatchFlags flags);
-    static bool matchValue(const QVariant &itemData, const QVariant &value, Qt::MatchFlags flags)
+    Q_CORE_EXPORT static bool matchValue(const QString &itemData, const QVariant &value,
+                                         Qt::MatchFlags flags, const QCollator &collator);
+    static bool matchValue(const QVariant &itemData, const QVariant &value, Qt::MatchFlags flags,
+                           const QCollator &collator)
     {
         if ((flags & Qt::MatchTypeMask) == Qt::MatchExactly)
             return itemData == value;
-        return matchValue(itemData.toString(), value, flags);
+        return matchValue(itemData.toString(), value, flags, collator);
     }
 
     Q_CORE_EXPORT bool dropDataOnItem(const QMimeData *data, const QModelIndex &index);
@@ -2484,12 +2488,16 @@ public:
     QModelIndexList match(const QModelIndex &start, int role, const QVariant &value, int hits,
                           Qt::MatchFlags flags) const
     {
+        QCollator collator = this->matchCollator();
+        collator.setCaseSensitivity(flags.testFlag(Qt::MatchCaseSensitive) ? Qt::CaseSensitive
+                                                                           : Qt::CaseInsensitive);
         return that().matchImpl(start, role,
-                                QRangeModelImplBase::convertMatchValue(value, flags), hits, flags);
+                                QRangeModelImplBase::convertMatchValue(value, flags), hits,
+                                flags, collator);
     }
 
     bool matchRow(const_row_reference row, const QModelIndex &index, int role, const QVariant &value,
-                  Qt::MatchFlags flags) const
+                  Qt::MatchFlags flags, const QCollator &collator) const
     {
         const uint matchType = (flags & Qt::MatchTypeMask).toInt();
 
@@ -2503,19 +2511,19 @@ public:
                 QModelRoleData roleData(role);
                 ItemReader reader{index, roleData, this};
                 reader(element);
-                return QRangeModelImplBase::matchValue(roleData.data(), value, flags);
+                return QRangeModelImplBase::matchValue(roleData.data(), value, flags, collator);
             } else if constexpr (std::is_same_v<wrapped_value_type, QVariant>) {
-                return QRangeModelImplBase::matchValue(element, value, flags);
+                return QRangeModelImplBase::matchValue(element, value, flags, collator);
             } else {
                 constexpr QMetaType mt = QMetaType::fromType<wrapped_value_type>();
                 if (mt == value.metaType()) {
                     if (matchType == Qt::MatchExactly)
                         return mt.equals(QRangeModelDetails::pointerTo(element), value.constData());
                     else if constexpr (std::is_same_v<wrapped_value_type, QString>)
-                        return QRangeModelImplBase::matchValue(element, value, flags);
+                        return QRangeModelImplBase::matchValue(element, value, flags, collator);
                 } else {
                     return QRangeModelImplBase::matchValue(QVariant::fromValue(QRangeModelDetails::refTo(element)),
-                                                           value, flags);
+                                                           value, flags, collator);
                 }
             }
             return false;
@@ -4013,7 +4021,7 @@ protected:
 
     void matchImplRecursive(const range_type &range, const_row_ptr parentPtr, int from, int to,
                             int role, const QVariant &value, int hits, Qt::MatchFlags flags, int column,
-                            QModelIndexList &result) const
+                            QModelIndexList &result, const QCollator &collator) const
     {
         auto it = QRangeModelDetails::pos(range, from);
         auto end = QRangeModelDetails::adl_end(range);
@@ -4023,7 +4031,7 @@ protected:
 
         for (int r = from; it != end && r < to && (allHits || result.size() < hits); ++it, ++r) {
             const QModelIndex index = this->createIndex(r, column, parentPtr);
-            if (this->matchRow(*it, index, role, value, flags))
+            if (this->matchRow(*it, index, role, value, flags, collator))
                 result.append(index);
 
             if (recurse) {
@@ -4033,14 +4041,14 @@ protected:
                     matchImplRecursive(QRangeModelDetails::refTo(children),
                                        QRangeModelDetails::pointerTo(*it), 0,
                                        int(QRangeModelDetails::size(QRangeModelDetails::refTo(children))),
-                                       role, value, hits, flags, column, result);
+                                       role, value, hits, flags, column, result, collator);
                 }
             }
         }
     }
 
     QModelIndexList matchImpl(const QModelIndex &start, int role, const QVariant &value, int hits,
-                   Qt::MatchFlags flags) const
+                   Qt::MatchFlags flags, const QCollator &collator) const
     {
         QModelIndexList result;
         const bool wrap = flags.testAnyFlag(Qt::MatchWrap);
@@ -4052,7 +4060,7 @@ protected:
             const int fromRow = (i == 0) ? from : 0;
             const int toRow = (i == 0) ? to : from;
             matchImplRecursive(*this->m_data.model(), nullptr, fromRow, toRow,
-                               role, value, hits, flags, column, result);
+                               role, value, hits, flags, column, result, collator);
         }
         return result;
     }
@@ -4243,7 +4251,7 @@ protected:
     void prunePersistentIndexList(QModelIndexList &, typename Base::row_ptr) {}
 
     QModelIndexList matchImpl(const QModelIndex &start, int role, const QVariant &value,
-                              int hits, Qt::MatchFlags flags) const
+                              int hits, Qt::MatchFlags flags, const QCollator &collator) const
     {
         QModelIndexList result;
         const bool wrap = flags.testAnyFlag(Qt::MatchWrap);
@@ -4261,7 +4269,7 @@ protected:
                 if (!QRangeModelDetails::isValid(*it))
                     continue;
                 const QModelIndex index = this->createIndex(r, column, nullptr);
-                if (this->matchRow(*it, index, role, value, flags))
+                if (this->matchRow(*it, index, role, value, flags, collator))
                     result.append(index);
             }
             from = 0;

@@ -527,3 +527,30 @@ void tst_QRangeModel::matchRecursive()
     QVERIFY(results.size() > 0);
     QVERIFY(results.size() > resultsFlat.size());
 }
+
+void tst_QRangeModel::matchCollatorRecursive()
+{
+    auto model = makeTreeModel();
+    auto *rangeModel = static_cast<QRangeModel *>(model.get());
+
+    QCollator collator(QLocale::English);
+    collator.setIgnorePunctuation(true);
+    if (collator.compare(u"2.1", u"21") != 0)
+        QSKIP("Ignoring diacritic marks unsupported on this platform.");
+
+    const QModelIndex start = model->index(0, 0);
+    const auto plain = model->match(start, Qt::DisplayRole, "21", -1,
+                                    Qt::MatchFixedString | Qt::MatchRecursive);
+    QCOMPARE(plain.size(), 0);
+
+    rangeModel->setMatchCollator(collator);
+    // Flat search - only root level rows
+    const auto flat = model->match(start, Qt::DisplayRole, "21", -1,
+                                   Qt::MatchFixedString);
+    QCOMPARE(flat.size(), 0);
+    // Descends into children - match found
+    const auto recursive = model->match(start, Qt::DisplayRole, "21", -1,
+                                        Qt::MatchFixedString | Qt::MatchRecursive);
+    QCOMPARE(recursive.size(), 1);
+    QCOMPARE(model->data(recursive.first()).toString(), "2.1");
+}

@@ -23,6 +23,8 @@ class Q_CORE_EXPORT QRangeModel : public QAbstractItemModel
                             NOTIFY sortRoleChanged REVISION(6, 12))
     Q_PROPERTY(QCollator sortCollator READ sortCollator WRITE setSortCollator
                                       RESET resetSortCollator NOTIFY sortCollatorChanged REVISION(6, 12))
+    Q_PROPERTY(QCollator matchCollator READ matchCollator WRITE setMatchCollator
+                                       RESET resetMatchCollator NOTIFY matchCollatorChanged REVISION(6, 13))
     Q_PROPERTY(Qt::DropActions supportedDropActions READ supportedDropActions
                                                     WRITE setSupportedDropActions
                                                     RESET resetSupportedDropActions
@@ -168,6 +170,10 @@ public:
     void setSortCollator(const QCollator &collator);
     void resetSortCollator();
 
+    QCollator matchCollator() const;
+    void setMatchCollator(const QCollator &collator);
+    void resetMatchCollator();
+
     int sortRole() const;
     void setSortRole(int role);
     void resetSortRole();
@@ -189,6 +195,7 @@ Q_SIGNALS:
     Q_REVISION(6, 11) void autoConnectPolicyChanged(AutoConnectPolicy policy);
     Q_REVISION(6, 12) void sortRoleChanged(int role);
     Q_REVISION(6, 12) void sortCollatorChanged(const QCollator &collator);
+    Q_REVISION(6, 13) void matchCollatorChanged(const QCollator &collator);
     Q_REVISION(6, 12) void supportedDragActionsChanged(Qt::DropActions actions);
     Q_REVISION(6, 12) void supportedDropActionsChanged(Qt::DropActions actions);
 

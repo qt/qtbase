@@ -1933,5 +1933,113 @@ void tst_QRangeModel::match()
     }
 }
 
+void tst_QRangeModel::matchCollator_data()
+{
+    using Opt = QCollator::CollationOption;
+
+    QTest::addColumn<QVariantList>("data");
+    QTest::addColumn<QCollator>("collator");
+    QTest::addColumn<QString>("needle");
+    QTest::addColumn<Qt::MatchFlags>("flags");
+    QTest::addColumn<QVariantList>("expected");
+
+    const QVariantList names = {u"Alice"_s, u"ALICE"_s, u"alice"_s};
+    QCollator localeAware = QCollator(QLocale::English);
+    localeAware.setOptions(Opt::CaseInsensitive);
+    QCollator localeUnaware = QCollator(QLocale::C);
+
+    QTest::newRow("NoCollationOptions")
+        << QVariantList{u"foo"_s, u"bar"_s, u"foo"_s} << localeAware
+        << u"foo"_s << Qt::MatchFlags(Qt::MatchFixedString) << QVariantList{u"foo"_s, u"foo"_s};
+
+    // Qt::MatchCaseSensitive overides QCollator's CaseInsensitive
+    // collation option
+    QTest::newRow("MatchCaseSensitive")
+            << names << localeAware << u"Alice"_s << (Qt::MatchFixedString | Qt::MatchCaseSensitive)
+            << QVariantList{u"Alice"_s};
+
+    // Default case insensitive setting overrides QCollator's
+    // CaseSensitive collation option
+    localeAware.setCaseSensitivity(Qt::CaseSensitive);
+    QCollator probe(QLocale::English);
+    probe.setCaseSensitivity(Qt::CaseInsensitive);
+    if (probe.compare(u"a", u"A") == 0) {
+        QTest::newRow("DefaultOverride")
+                << names << localeAware << u"alice"_s
+                << Qt::MatchFlags(Qt::MatchFixedString) << names;
+    } else {
+        qInfo("Case-insensitive collation unsupported on this platform.");
+    }
+
+    localeAware.setOptions(Opt::CaseInsensitive | Opt::DiacriticInsensitive);
+    if (localeAware.compare(u"resume", u"résumé") == 0) {
+        QTest::newRow("DiacriticInsensitive")
+            << QVariantList{u"résumé"_s, u"RÉSUMÉ"_s, u"other"_s} << localeAware
+            << u"resume"_s << Qt::MatchFlags(Qt::MatchFixedString)
+            << QVariantList{u"résumé"_s, u"RÉSUMÉ"_s};
+    } else {
+        qInfo("Ignoring diacritic marks unsupported on this platform.");
+    }
+
+    // The collator only affects Qt::MatchFixedString; substring matches keep
+    // their plain QString behavior, so the accented value is not matched.
+    QTest::newRow("CollatorIgnoredForMatchContains")
+            << QVariantList{u"résumé"_s, u"xyz"_s} << localeAware
+            << u"resume"_s << Qt::MatchFlags(Qt::MatchContains) << QVariantList{};
+
+    // Locale unaware - collation options unavailable
+    localeUnaware.setOptions(Opt::DiacriticInsensitive);
+    QTest::newRow("LocaleUnaware")
+        << QVariantList{u"résumé"_s, u"resume"_s, u"other"_s} << localeUnaware
+        << u"resume"_s << Qt::MatchFlags(Qt::MatchFixedString)
+        << QVariantList{u"resume"_s};
+
+    localeAware.setOptions(Opt::IgnorePunctuation);
+    if (localeAware.compare(u"abc", u"a.b.c") == 0) {
+        QTest::newRow("IgnorePunctuation")
+            << QVariantList{u"a.b.c"_s, u"abc"_s, u"xyz"_s} << localeAware
+            << u"abc"_s << Qt::MatchFlags(Qt::MatchFixedString)
+            << QVariantList{u"a.b.c"_s, u"abc"_s};
+    } else {
+        qInfo("Ignoring punctuation unsupported on this platform.");
+    }
+}
+
+void tst_QRangeModel::matchCollator()
+{
+    QFETCH(QVariantList, data);
+    QFETCH(const QCollator, collator);
+    QFETCH(const QString, needle);
+    QFETCH(const Qt::MatchFlags, flags);
+    QFETCH(const QVariantList, expected);
+
+    { // QVariant comparison
+        QRangeModel model(std::ref(data));
+        model.setMatchCollator(collator);
+
+        QVariantList matched;
+        for (const QModelIndex &index : model.match(model.index(0, 0), Qt::DisplayRole,
+                                                    needle, -1, flags)) {
+            matched << model.data(index);
+        }
+        QCOMPARE(matched, expected);
+    }
+
+    { // test shortcut for compile-time typed values
+        QStringList stringData;
+        for (const QVariant &value : std::as_const(data))
+            stringData << value.toString();
+        QRangeModel model(std::ref(stringData));
+        model.setMatchCollator(collator);
+
+        QVariantList matched;
+        for (const QModelIndex &index : model.match(model.index(0, 0), Qt::DisplayRole,
+                                                    needle, -1, flags)) {
+            matched << model.data(index);
+        }
+        QCOMPARE(matched, expected);
+    }
+}
+
 QTEST_MAIN(tst_QRangeModel)
 #include "tst_qrangemodel.moc"

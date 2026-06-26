@@ -88,6 +88,8 @@ private slots:
 
     void matchRecursive_data() { tree_data(); }
     void matchRecursive();
+    void matchCollatorRecursive_data() { tree_data(); }
+    void matchCollatorRecursive();
 
     void adlTest();
 
@@ -106,6 +108,8 @@ private slots:
     void matchBasic();
     void match_data() { createTestData(); }
     void match();
+    void matchCollator_data();
+    void matchCollator();
 
     void dragDropActions_data();
     void dragDropActions();
