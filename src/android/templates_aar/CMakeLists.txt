@@ -4,7 +4,6 @@
 # Android aar specific template files
 
 set(templates_aar_files
-    "${CMAKE_CURRENT_SOURCE_DIR}/.gitignore"
     "${CMAKE_CURRENT_SOURCE_DIR}/AndroidManifest.xml")
 
 add_custom_target(Qt${QtBase_VERSION_MAJOR}AndroidAarTemplates
