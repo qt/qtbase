@@ -92,7 +92,7 @@ static void qt_split_namespace(QString& prefix, QString& name, const QString& qN
  *
  **************************************************************/
 QDomImplementation::InvalidDataPolicy QDomImplementationPrivate::invalidDataPolicy
-    = QDomImplementation::AcceptInvalidChars;
+    = QDomImplementation::ReturnNullNode;
 
 // [5] Name ::= (Letter | '_' | ':') (NameChar)*
 
@@ -542,11 +542,12 @@ bool QDomImplementation::isNull()
     This enum specifies what should be done when a factory function
     in QDomDocument is called with invalid data.
     \value AcceptInvalidChars The data should be stored in the DOM object
-        anyway. In this case the resulting XML document might not be well-formed.
-        This is the default value and QDom's behavior in Qt < 4.1.
+           anyway. In this case the resulting XML document might not be well-formed.
+           This was the default value and QDom's behavior prior to Qt 6.12.
     \value DropInvalidChars The invalid characters should be removed from
-        the data.
+           the data.
     \value ReturnNullNode The factory function should return a null node.
+           This is the default value since Qt 6.12.
 
     \sa setInvalidDataPolicy(), invalidDataPolicy()
 */
