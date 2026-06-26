@@ -28,6 +28,8 @@
 #include <errno.h>
 
 #include <chrono>
+#include <string>
+#include <utility>
 
 #if __has_include(<paths.h>)
 # include <paths.h>
@@ -85,6 +87,13 @@
 
 #ifndef STATX_ALL
 struct statx { mode_t stx_mode; };      // dummy
+#endif
+
+#ifndef O_DIRECTORY
+#  define O_DIRECTORY 0
+#endif
+#ifndef O_NOFOLLOW
+#  define O_NOFOLLOW 0
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -1741,6 +1750,135 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
     return true;
 }
 #endif // !Q_OS_DARWIN && (!QT_BOOTSTRAPPED && AT_FDCWD && !Q_OS_ANDROID && QT_CONFIG(datestring))
+
+//static
+#if !defined(AT_FDCWD) || defined(Q_OS_QNX) || defined(Q_OS_VXWORKS)
+// The implementation below requires the POSIX at-file functions. Without them,
+// it's no better than the full path name solution in
+// QDir::removeRecursively().
+//
+// The code below causes some unrelated files to disappear on QNX (we run our
+// unit tests as root). On VxWorks, something doesn't go right and we fail to
+// delete everything.
+bool QFileSystemEngine::supportsRmdirRecursively() noexcept
+{
+    return false;
+}
+
+//static
+bool QFileSystemEngine::rmdirRecursively(const QFileSystemEntry &, QSystemError &error)
+{
+    error = QSystemError(ENOSYS, QSystemError::StandardLibraryError);
+    return false;
+}
+#else
+
+//static
+bool QFileSystemEngine::supportsRmdirRecursively() noexcept
+{
+    return true;
+}
+
+//static
+bool QFileSystemEngine::rmdirRecursively(const QFileSystemEntry &entry, QSystemError &error)
+{
+    Q_CHECK_FILE_NAME(entry, false);
+
+#  if defined(Q_OS_ANDROID) || defined(Q_OS_BSD4) || defined(Q_OS_LINUX)
+    // POSIX.1 says:
+    // "if any attempt is made to [...] modify the state of the associated
+    // description, other than by means of closedir(), readdir(), readdir_r(),
+    // rewinddir(), or seekdir(), the behavior is undefined".
+    // However, on these OSes we can openat() subdirectories using an iterated
+    // file descriptor.
+    constexpr bool NeedsSecondFileDescriptor = false;
+#  else
+    constexpr bool NeedsSecondFileDescriptor = true;
+#  endif
+    struct DirInfo {
+        DIR *dir;
+        int dirfd;
+        int parentFd;     // parent's fd for unlinkat(parentFd, name.c_str(), AT_REMOVEDIR)
+        std::string name; // our entry name within parent
+    };
+    auto openDirectory = [](int parentFd, std::string name) {
+        constexpr int OpenMode = QT_OPEN_RDONLY | O_DIRECTORY | O_NOFOLLOW;
+        DirInfo di = { nullptr, -1, parentFd, std::move(name) };
+        di.dirfd = qt_safe_openat(parentFd, di.name.c_str(), OpenMode);
+        if (di.dirfd < 0)
+            return di;
+
+        // fdopendir takes ownership of dirfd if it succeeds
+        di.dir = fdopendir(di.dirfd);
+        if (!di.dir) {
+            QT_CLOSE(di.dirfd);
+            return di;
+        }
+
+        if constexpr (NeedsSecondFileDescriptor) {
+            di.dirfd = qt_safe_openat(parentFd, di.name.c_str(), OpenMode);
+            if (Q_UNLIKELY(di.dirfd < 0))
+                closedir(std::exchange(di.dir, nullptr));
+        }
+
+        return di;
+    };
+
+    QVarLengthArray<DirInfo, 16> stack;
+    if (DirInfo di = openDirectory(AT_FDCWD, entry.nativeFilePath().toStdString()); di.dir) {
+        stack.emplace_back(std::move(di));
+    } else {
+        if (errno == ENOENT)
+            return true;
+        error = QSystemError(errno, QSystemError::StandardLibraryError);
+        return false;
+    }
+
+    while (!stack.isEmpty()) {
+        DirInfo &top = stack.last();
+        if (QT_DIRENT *de = QT_READDIR(top.dir)) {
+            if (de->d_name[0] == '.') {
+                if (de->d_name[1] == '\0' || (de->d_name[1] == '.' && de->d_name[2] == '\0'))
+                    continue;
+            }
+
+            QFileSystemMetaData meta;
+            meta.fillFromDirEnt(*de);
+
+            // If the entry is not known to be a directory, attempt to unlink it.
+            if (!meta.hasFlags(QFileSystemMetaData::DirectoryType) || !meta.isDirectory()) {
+                if (unlinkat(top.dirfd, de->d_name, 0) == 0)
+                    continue;   // removed a non-directory
+                // Couldn't unlink: it might be a directory
+            }
+
+            // Entry is a directory - open it and push onto the stack.
+            if (DirInfo di = openDirectory(top.dirfd, de->d_name); di.dir) {
+                // Parent entry stays on the stack below the child.
+                stack.emplace_back(std::move(di));
+            }
+
+            // If we can't open child, it will remain, causing the parent
+            // unlinkat() to fail with ENOTEMPTY.
+        } else {
+            // End of this directory - all children have been processed.
+            closedir(top.dir);
+            if constexpr (NeedsSecondFileDescriptor)
+                QT_CLOSE(top.dirfd);
+
+            // Now erase this entry in the parent
+            int r = unlinkat(top.parentFd, top.name.c_str(), AT_REMOVEDIR);
+            if (r < 0 && top.parentFd == AT_FDCWD && errno != ENOENT)
+                error = QSystemError(errno, QSystemError::StandardLibraryError);
+            stack.removeLast();
+        }
+    }
+
+    // True iff the root unlinkat() succeeded. Any upstream failure surfaces as
+    // ENOTEMPTY there.
+    return error.ok();
+}
+#endif // AT_FDCWD
 
 //static
 bool QFileSystemEngine::copyFile(const QFileSystemEntry &source, const QFileSystemEntry &target, QSystemError &error)

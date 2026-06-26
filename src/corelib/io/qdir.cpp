@@ -1774,6 +1774,11 @@ bool QDir::rmpath(const QString &dirPath) const
 */
 bool QDir::removeRecursively()
 {
+    if (!d_ptr->fileEngine && QFileSystemEngine::supportsRmdirRecursively()) {
+        QSystemError error;
+        return QFileSystemEngine::rmdirRecursively(QFileSystemEntry(absolutePath()), error);
+    }
+
     if (!d_ptr->exists())
         return true;
 

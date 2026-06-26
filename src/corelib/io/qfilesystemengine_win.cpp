@@ -1803,6 +1803,19 @@ bool QFileSystemEngine::supportsMoveFileToTrash()
     return true;
 }
 
+//static
+bool QFileSystemEngine::supportsRmdirRecursively() noexcept
+{
+    return false;
+}
+
+//static
+bool QFileSystemEngine::rmdirRecursively(const QFileSystemEntry &, QSystemError &error)
+{
+    error = QSystemError(ENOSYS, QSystemError::StandardLibraryError);
+    return false;
+}
+
 /*
     If possible, we use the IFileOperation implementation, which allows us to determine
     the location of the object in the trash.

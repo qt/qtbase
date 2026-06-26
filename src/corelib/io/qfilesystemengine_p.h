@@ -139,6 +139,8 @@ public:
 
     static bool rmdir(const QFileSystemEntry &entry);
     static bool rmpath(const QFileSystemEntry &entry);
+    static bool supportsRmdirRecursively() noexcept;
+    static bool rmdirRecursively(const QFileSystemEntry &entry, QSystemError &error);
 
     static bool createLink(const QFileSystemEntry &source, const QFileSystemEntry &target, QSystemError &error);
 

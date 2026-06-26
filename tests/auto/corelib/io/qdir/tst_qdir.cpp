@@ -2,21 +2,22 @@
 // Copyright (C) 2017 Intel Corporation.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
+#include <qdir.h>
 #include <QTest>
 #include <QtTest/qsignalspy.h>
 #include <QtTest/private/qcomparisontesthelper_p.h>
-#include <QTemporaryFile>
+
+#include <QDirIterator>
+#include <qcoreapplication.h>
+#include <qdebug.h>
+#include <qfileinfo.h>
 #if QT_CONFIG(process)
 #include <QProcess>
 #endif
-
-#include <qcoreapplication.h>
-#include <qdebug.h>
-#include <qdir.h>
-#include <qfileinfo.h>
 #include <qstringlist.h>
-#include <QtCore/qthread.h>
-#include <QDirIterator>
+#include <qthread.h>
+#include <QTemporaryFile>
+#include <private/qfilesystemengine_p.h>
 
 #if defined(Q_OS_WIN)
 #include <QtCore/private/qfsfileengine_p.h>
@@ -29,8 +30,9 @@
 #include "../../../../shared/filesystem.h"
 
 #if defined(Q_OS_UNIX)
-# include <unistd.h>
+# include <fcntl.h>
 # include <sys/stat.h>
+# include <unistd.h>
 #endif
 
 #ifdef Q_OS_INTEGRITY
@@ -49,6 +51,10 @@
 
 #ifdef QT_BUILD_INTERNAL
 #include "private/qdir_p.h"
+#endif
+
+#ifndef O_DIRECTORY
+#define O_DIRECTORY 0
 #endif
 
 using namespace Qt::StringLiterals;
@@ -105,6 +111,7 @@ private slots:
     void removeRecursivelyFailure();
     void removeRecursivelySymlink();
     void removeRecursivelyNoStackExhaustion();
+    void removeRecursivelyLongPath();
 
     void exists_data();
     void exists();
@@ -687,6 +694,8 @@ void tst_QDir::removeRecursivelyFailure()
     QDir dir(path);
     QVERIFY(!dir.removeRecursively()); // didn't work
     QVERIFY2(dir.exists(), msgDoesNotExist(dir.absolutePath()).constData()); // still exists
+    QVERIFY(!QDir(tmpdir).removeRecursively()); // didn't work
+    QVERIFY2(QFile::exists(tmpdir), msgDoesNotExist(tmpdir).constData()); // still exists
 
     QVERIFY(dirAsFile.setPermissions(QFile::Permissions(QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner)));
     QVERIFY(dir.removeRecursively());
@@ -753,6 +762,52 @@ void tst_QDir::removeRecursivelyNoStackExhaustion()
 #else
     // The stack size and nesting depth were checked on Linux only.
     QSKIP("This test is Linux-only");
+#endif
+}
+
+void tst_QDir::removeRecursivelyLongPath()
+{
+#ifndef AT_FDCWD
+    QSKIP("This test requires at-file functions (AT_FDCWD)");
+#elif !defined(QT_BUILD_INTERNAL)
+    QSKIP("Unsafe to run this test without knowing the implementation");
+#else
+    if (!QFileSystemEngine::supportsRmdirRecursively())
+        QSKIP("QDir can't remove the tree this test would create");
+
+    const QString tmpdir = QDir::currentPath() + "/tmpdir"_L1;
+    QVERIFY(QDir().mkdir(tmpdir));
+    auto cleanup = qScopeGuard([&] { QDir(tmpdir).removeRecursively(); });
+
+    const QByteArray component(255, 'a'); // NAME_MAX on common Unix filesystems
+
+    // Build a chain deep enough that the leaf's absolute path exceeds PATH_MAX.
+    // We can't use QDir().mkpath() because it calls mkdir() with the full path
+    // string and would fail, as it is limited by PATH_MAX. Using mkdirat() we
+    // only ever pass the short component name relative to an open fd.
+    const int levels = (PATH_MAX / (component.size() + 1)) + 2;
+
+    int parentFd = ::open(tmpdir.toLocal8Bit().constData(), O_RDONLY | O_DIRECTORY);
+    QVERIFY2(parentFd != -1, "Could not open tmpdir");
+
+    for (int i = 0; i < levels; ++i) {
+        if (::mkdirat(parentFd, component.constData(), 0755) != 0) {
+            int code = errno;
+            ::close(parentFd);
+            QSKIP("Could not create subdirectory with mkdirat: " + qt_error_string(code).toLocal8Bit());
+        }
+        int childFd = ::openat(parentFd, component.constData(), O_RDONLY | O_DIRECTORY);
+        int code = errno;
+        ::close(parentFd);
+        QVERIFY2(childFd != -1, "Could not open subdirectory: " + qt_error_string(code).toLocal8Bit());
+        parentFd = childFd;
+    }
+    ::close(parentFd);
+
+    cleanup.dismiss();  // the cleanup is our operation...
+    QDir dir(tmpdir);
+    QVERIFY(dir.removeRecursively());
+    QVERIFY(!dir.exists());
 #endif
 }
 
