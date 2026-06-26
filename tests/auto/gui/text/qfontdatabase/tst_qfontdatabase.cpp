@@ -174,6 +174,9 @@ void tst_QFontDatabase::systemFixedFont() // QTBUG-54623
 #if defined(Q_OS_VXWORKS)
     QSKIP("QTBUG-130071: VxWorks doesn't support fixed system font out of the box");
 #endif
+    if (QSysInfo::productType() == "rhel" && QSysInfo::productVersion().startsWith(u'1'))
+       QEXPECT_FAIL("", "Known failure on RHEL 10", Abort); // QTBUG-147798
+
     QFont font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
     QFontInfo fontInfo(font);
     bool fdbSaysFixed = QFontDatabase::isFixedPitch(fontInfo.family(), fontInfo.styleName());
