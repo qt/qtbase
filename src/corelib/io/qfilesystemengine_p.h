@@ -26,34 +26,28 @@
 
 QT_BEGIN_NAMESPACE
 
-#define Q_RETURN_ON_INVALID_FILENAME(message, result) \
-    { \
-        qWarning(message); \
-        errno = EINVAL; \
-        return (result); \
+Q_DECL_COLD_FUNCTION
+bool qCheckFileNameFail(const char *msg, const char *file, int line, const char *function);
+
+template <typename E>
+bool qCheckFileName(const E &entry, const char *file, int line, const char *function)
+{
+    if constexpr (std::is_same_v<QFileSystemEntry, E>) {
+        return qCheckFileName(entry.nativeFilePath(), file, line, function);
+    } else {
+        typename E::value_type null = {};
+        if (Q_UNLIKELY(entry.isEmpty()))
+            return qCheckFileNameFail("Empty filename passed to function", file, line, function);
+        if (Q_UNLIKELY(entry.contains(null)))
+            return qCheckFileNameFail("Broken filename passed to function", file, line, function);
+        return true;
     }
-
-inline bool qIsFilenameBroken(const QByteArray &name)
-{
-    return name.contains('\0');
-}
-
-inline bool qIsFilenameBroken(const QString &name)
-{
-    return name.contains(QLatin1Char('\0'));
-}
-
-inline bool qIsFilenameBroken(const QFileSystemEntry &entry)
-{
-    return qIsFilenameBroken(entry.nativeFilePath());
 }
 
 #define Q_CHECK_FILE_NAME(name, result) \
     do { \
-        if (Q_UNLIKELY((name).isEmpty())) \
-            Q_RETURN_ON_INVALID_FILENAME("Empty filename passed to function", (result)); \
-        if (Q_UNLIKELY(qIsFilenameBroken(name))) \
-            Q_RETURN_ON_INVALID_FILENAME("Broken filename passed to function", (result)); \
+        if (!qCheckFileName(name, QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE, QT_MESSAGELOG_FUNC)) \
+            return (result); \
     } while (false)
 
 Q_CORE_EXPORT bool qt_isCaseSensitive(const QFileSystemEntry &entry, QFileSystemMetaData &data);

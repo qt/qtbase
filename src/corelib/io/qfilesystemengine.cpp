@@ -14,6 +14,17 @@
 
 QT_BEGIN_NAMESPACE
 
+bool qCheckFileNameFail(const char *msg, const char *file, int line, const char *function)
+{
+#ifdef QT_NO_WARNING_OUTPUT
+    Q_UNUSED(msg); Q_UNUSED(file); Q_UNUSED(line); Q_UNUSED(function);
+#else
+    QMessageLogger(file, line, function).warning("%s", msg);
+#endif
+    errno = EINVAL;
+    return false;
+}
+
 /*! \class QFileSystemEngine
     \internal
 
