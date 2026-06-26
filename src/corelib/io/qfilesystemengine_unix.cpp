@@ -43,6 +43,10 @@
 # include <sys/disk.h>
 #endif
 
+#if defined(F_KINFO)
+# include <sys/user.h>      // struct kinfo_file, for fcntl(F_KINFO) (FreeBSD)
+#endif
+
 #if defined(Q_OS_DARWIN)
 # include <QtCore/private/qcore_mac_p.h>
 # include <CoreFoundation/CFBundle.h>
@@ -94,6 +98,9 @@ struct statx { mode_t stx_mode; };      // dummy
 #endif
 #ifndef O_NOFOLLOW
 #  define O_NOFOLLOW 0
+#endif
+#ifndef O_PATH
+#  define O_PATH 0
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -715,6 +722,52 @@ QFileSystemEntry QFileSystemEngine::canonicalName(const QFileSystemEntry &entry,
 {
     Q_CHECK_FILE_NAME(entry, entry);
     char *resolved_name = nullptr;
+
+    // If we have OS support to getting the canonical path, let's use it,
+    // because the OS can resolve symlinks on its own without transitions
+    // between user mode and kernel mode, and it's atomic, not subject to
+    // symlinks changing while resolving.
+#if defined(Q_OS_LINUX) || defined(Q_OS_ANDROID) || defined(F_KINFO) || defined(F_GETPATH)
+    auto pathForFd = [](int fd) -> QByteArray {
+#  if defined(Q_OS_LINUX) || defined(Q_OS_ANDROID)
+        return qt_readlink(QByteArray::number(fd).prepend("/proc/self/fd/"));
+#  elif defined(F_KINFO)      // FreeBSD
+        struct kinfo_file kif;
+        kif.kf_structsize = sizeof(kif);        // required before the call
+        if (fcntl(fd, F_KINFO, &kif) == 0)
+            return kif.kf_path;
+#  elif defined(F_GETPATH)    // Darwin and NetBSD (>= 10)
+        char buf[PATH_MAX];
+        if (fcntl(fd, F_GETPATH, buf) == 0)
+            return buf;
+#  endif
+        return {};
+    };
+    if (int fd = QT_OPEN(entry.nativeFilePath(), O_RDONLY | O_PATH | O_NONBLOCK); fd >= 0) {
+        // if we opened it, then it exists
+        data.knownFlagsMask |= QFileSystemMetaData::ExistsAttribute;
+        data.entryFlags |= QFileSystemMetaData::ExistsAttribute;
+        QByteArray ret = pathForFd(fd);
+        QT_CLOSE(fd);
+
+        // Check we've got an absolute path. Ancient Linux replied with device
+        // ID and inode number instead of a path, while BSD name-cache lookups
+        // can yield an empty path on success.
+        if (ret.startsWith('/'))    // absolute path
+            return QFileSystemEntry(ret, QFileSystemEntry::FromNativePath{});
+        errno = 0;
+    } else if (errno == ENOENT || errno == ENOTDIR) { // file doesn't exist
+        data.knownFlagsMask |= QFileSystemMetaData::ExistsAttribute;
+        data.entryFlags &= ~(QFileSystemMetaData::ExistsAttribute);
+        return {};
+    } else if constexpr (O_PATH != 0) {
+        // If we have O_PATH, realpath() below can't succeed; if we don't,
+        // we may have tried to open an unreadable file for reading and got
+        // an EACCES error.
+        return {};
+    }
+#endif
+
 
 #ifdef PATH_MAX
     // use the stack to avoid the overhead of memory allocation
