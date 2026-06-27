@@ -1,13 +1,13 @@
 # Needed to make the sbom functions available.
 find_package(Qt6 REQUIRED Core)
 
-include(CommonResultGenIntro)
+sbom_test_begin()
 
 _qt_internal_setup_sbom(
     GENERATE_SBOM_DEFAULT "TRUE"
 )
 
-# This is used by common_result_gen.cmake.
+# These variables are used by sbom_test_end().
 set(SBOM_VERSION "1.0.0")
 
 _qt_internal_sbom_begin_project(
@@ -84,4 +84,4 @@ add_cydx_v1_6_deps_to_result_file(t2 DEPS ${project_spdx_id} ${t1_spdx_id})
 
 _qt_internal_sbom_end_project()
 
-include(CommonResultGen)
+sbom_test_end()
