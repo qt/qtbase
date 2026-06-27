@@ -30,13 +30,13 @@ function(create_sbom_lib_target target)
     bubble_up_extra_result_code()
 endfunction()
 
-include(CommonResultGenIntro)
+sbom_test_begin()
 
 _qt_internal_setup_sbom(
     GENERATE_SBOM_DEFAULT "TRUE"
 )
 
-# This is used by CommonResultGen.cmake.
+# These variables are used by sbom_test_end().
 set(SBOM_VERSION "1.0.0")
 set(SBOM_PROJECT_NAME "ExtSpdxSuffixes")
 
@@ -81,5 +81,5 @@ add_assert_str_exists_in_spdx_v2_3_doc(
     "Relationship: ${c1_spdx_id} DEPENDS_ON ${external_doc_ref_id}:${lib_003_spdx_id}")
 add_cydx_v1_6_deps_to_result_file(c1 DEPS "${lib_003_spdx_id}")
 
-include(CommonResultGen)
+sbom_test_end()
 

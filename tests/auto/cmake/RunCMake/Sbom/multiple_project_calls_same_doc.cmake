@@ -1,13 +1,13 @@
 # Needed to make the sbom functions available.
 find_package(Qt6 REQUIRED Core)
 
-include(CommonResultGenIntro)
+sbom_test_begin()
 
 _qt_internal_setup_sbom(
     GENERATE_SBOM_DEFAULT "TRUE"
 )
 
-# This is used by common_result_gen.cmake.
+# These variables are used by sbom_test_end().
 set(SBOM_VERSION "1.0.0")
 set(SBOM_INSTALL_DIR "sbom")
 
@@ -28,4 +28,4 @@ add_assert_str_exists_in_spdx_v2_3_doc("PackageName: Threads")
 
 _qt_internal_sbom_end_project()
 
-include(CommonResultGen)
+sbom_test_end()

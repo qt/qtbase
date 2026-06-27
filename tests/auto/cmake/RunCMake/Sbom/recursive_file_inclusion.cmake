@@ -1,7 +1,7 @@
 # Needed to make the sbom functions available.
 find_package(Qt6 REQUIRED Core)
 
-include(CommonResultGenIntro)
+sbom_test_begin()
 
 _qt_internal_setup_sbom(
     GENERATE_SBOM_DEFAULT "TRUE"
@@ -22,7 +22,7 @@ function(create_sbom_lib_target target)
     )
 endfunction()
 
-# This is used by common_result_gen.cmake.
+# These variables are used by sbom_test_end().
 set(SBOM_VERSION "1.0.0")
 set(SBOM_PROJECT_NAME "recursive-file-inclusion")
 
@@ -46,4 +46,4 @@ create_sbom_lib_target(Plankton)
 
 _qt_internal_sbom_end_project()
 
-include(CommonResultGen)
+sbom_test_end()

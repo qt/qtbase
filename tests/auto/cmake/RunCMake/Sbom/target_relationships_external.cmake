@@ -5,13 +5,13 @@ find_package(Qt6 REQUIRED Core)
 # their SPDX ids to manually create external SBOM targets and relationships on them.
 find_package(Main REQUIRED)
 
-include(CommonResultGenIntro)
+sbom_test_begin()
 
 _qt_internal_setup_sbom(
     GENERATE_SBOM_DEFAULT "TRUE"
 )
 
-# This is used by common_result_gen.cmake.
+# These variables are used by sbom_test_end().
 set(SBOM_VERSION "1.0.0")
 set(SBOM_PROJECT_NAME "ExtTargetRels")
 
@@ -321,4 +321,4 @@ add_cydx_v1_6_deps_to_result_file(c3 DEPS "${mt3_spdx_id}")
 
 _qt_internal_sbom_end_project()
 
-include(CommonResultGen)
+sbom_test_end()

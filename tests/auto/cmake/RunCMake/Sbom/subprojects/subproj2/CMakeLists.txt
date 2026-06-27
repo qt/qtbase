@@ -1,6 +1,6 @@
 project(subproj2)
 
-# This is used by common_result_gen.cmake.
+# These variables are used by sbom_test_end().
 set(SBOM_VERSION "1.0.2")
 set(SBOM_PROJECT_NAME "${PROJECT_NAME}")
 
@@ -49,5 +49,5 @@ target_link_libraries(subproj2_helper PRIVATE FancySystemLib)
 if(NOT CREATE_SINGLE_SBOM)
     _qt_internal_sbom_end_project()
 
-    include(CommonResultGen)
+    sbom_test_end()
 endif()
