@@ -29,8 +29,6 @@ function(create_sbom_lib_target target)
         CATEGORY "RELATIONSHIP"
         SPDX_ID "${${target}_spdx_id}"
     )
-
-    bubble_up_extra_result_code()
 endfunction()
 
 macro(set_common_sbom_begin_args out_var)
@@ -42,7 +40,6 @@ macro(set_common_sbom_begin_args out_var)
     )
 endmacro()
 
-# These variables are used by sbom_test_end().
 set(SBOM_SUPPLIER "QtProjectTest")
 set(SBOM_SUPPLIER_URL "https://qt-project.org/SbomTest")
 set(SBOM_VERSION "1.0.0")
@@ -53,6 +50,7 @@ set_common_sbom_begin_args(sbom_begin_args)
 _qt_internal_sbom_begin_project(
     ${sbom_begin_args}
 )
+sbom_test_record_project()
 
 _qt_internal_sbom_get_project_default_build_tool_types(default_build_tools_types)
 if(QT_GENERATE_SBOM)
@@ -77,6 +75,7 @@ _qt_internal_sbom_begin_project(
     ${sbom_begin_args}
     NO_AUTO_ADD_BUILD_TOOLS
 )
+sbom_test_record_project()
 
 if(QT_GENERATE_SBOM)
     foreach(build_tool_type IN LISTS default_build_tools_types)
@@ -100,6 +99,7 @@ _qt_internal_sbom_begin_project(
     ${sbom_begin_args}
     NO_AUTO_ADD_BUILD_TOOLS
 )
+sbom_test_record_project()
 
 if(QT_GENERATE_SBOM)
     foreach(build_tool_type IN LISTS default_build_tools_types)
@@ -126,6 +126,7 @@ _qt_internal_sbom_begin_project(
     ${sbom_begin_args}
     NO_AUTO_ADD_BUILD_TOOLS
 )
+sbom_test_record_project()
 
 set(build_tool_target "BuildToolHammer")
 _qt_internal_sbom_get_current_project_target(project_target)

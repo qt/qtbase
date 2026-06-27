@@ -9,7 +9,6 @@ _qt_internal_setup_sbom(
 
 set(IS_FULL_BUILD "TRUE")
 
-# These variables are used by sbom_test_end().
 set(SBOM_VERSION "2.0.0")
 set(SBOM_INSTALL_DIR "sbom_full")
 set(SBOM_PROJECT_NAME "${PROJECT_NAME}ProjectFull")
@@ -28,12 +27,13 @@ _qt_internal_sbom_begin_project(
     DOCUMENT_CREATOR_TOOL "Test Build System Tool"
     LICENSE_DIR_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/custom_licenses"
 )
+sbom_test_record_project()
 
 include(common_targets.cmake)
 
 _qt_internal_sbom_end_project()
 
-sbom_test_end()
-
 # Also create separate sboms for some sibling projects under this subdir.
 add_subdirectory(subprojects)
+
+sbom_test_end()
