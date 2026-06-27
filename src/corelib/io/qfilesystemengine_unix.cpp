@@ -28,7 +28,6 @@
 #include <errno.h>
 
 #include <chrono>
-#include <memory> // for std::unique_ptr
 
 #if __has_include(<paths.h>)
 # include <paths.h>
