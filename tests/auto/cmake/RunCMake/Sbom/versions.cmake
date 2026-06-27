@@ -1,6 +1,8 @@
 # Needed to make the sbom functions available.
 find_package(Qt6 REQUIRED Core)
 
+sbom_test_begin()
+
 _qt_internal_setup_sbom(
     GENERATE_SBOM_DEFAULT "TRUE"
 )
@@ -63,3 +65,5 @@ set(CORE_HELPER "core_helper_version_with_qt_repo_override")
 include(core_helper.cmake)
 _qt_internal_sbom_end_project()
 unset(QT_REPO_MODULE_VERSION)
+
+sbom_test_end()

@@ -1,7 +1,7 @@
 # Needed to make the sbom functions available.
 find_package(Qt6 REQUIRED Core)
 
-include(CommonResultGenIntro)
+sbom_test_begin()
 
 _qt_internal_setup_sbom(
     GENERATE_SBOM_DEFAULT "TRUE"
@@ -73,7 +73,7 @@ macro(check_spdx_id_for_target_ends_with target expected_ending)
     endif()
 endmacro()
 
-# Some of these variables are used by CommonResultGen.cmake.
+# These variables are used by sbom_test_end().
 set(SBOM_PROJECT_NAME "001-auto-suffix")
 set(SBOM_SUPPLIER "QtProjectTest")
 set(SBOM_SUPPLIER_URL "https://qt-project.org/SbomTest")
@@ -177,4 +177,4 @@ if(QT_GENERATE_SBOM AND NOT unique_suffix_length EQUAL 5)
 endif()
 _qt_internal_sbom_end_project()
 
-include(CommonResultGen)
+sbom_test_end()
