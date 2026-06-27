@@ -11,7 +11,6 @@ _qt_internal_setup_sbom(
     GENERATE_SBOM_DEFAULT "TRUE"
 )
 
-# These variables are used by sbom_test_end().
 set(SBOM_VERSION "1.0.0")
 set(SBOM_PROJECT_NAME "ExtTargetRels")
 
@@ -21,6 +20,7 @@ _qt_internal_sbom_begin_project(
     SUPPLIER_URL "https://qt-project.org/SbomTest"
     VERSION "${SBOM_VERSION}"
 )
+sbom_test_record_project()
 
 function(create_sbom_lib_target target)
     add_library(${target} STATIC)
@@ -43,8 +43,6 @@ function(create_sbom_lib_target target)
         CATEGORY "RELATIONSHIP"
         SPDX_ID "${${target}_spdx_id}"
     )
-
-    bubble_up_extra_result_code()
 endfunction()
 
 function(get_target_prop_or_error out_var target prop)

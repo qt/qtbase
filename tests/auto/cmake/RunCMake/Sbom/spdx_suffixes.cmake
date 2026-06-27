@@ -73,7 +73,6 @@ macro(check_spdx_id_for_target_ends_with target expected_ending)
     endif()
 endmacro()
 
-# These variables are used by sbom_test_end().
 set(SBOM_PROJECT_NAME "001-auto-suffix")
 set(SBOM_SUPPLIER "QtProjectTest")
 set(SBOM_SUPPLIER_URL "https://qt-project.org/SbomTest")
@@ -84,6 +83,7 @@ set_common_sbom_begin_args(sbom_begin_args)
 _qt_internal_sbom_begin_project(
     ${sbom_begin_args}
 )
+sbom_test_record_project()
 _qt_internal_sbom_get_spdx_id_unique_suffix(unique_suffix)
 create_sbom_lib_target(lib_001)
 check_unique_suffix_in_spdx_id(lib_001 "${unique_suffix}")
@@ -96,6 +96,7 @@ _qt_internal_sbom_begin_project(
     ${sbom_begin_args}
     NO_AUTO_SPDX_ID_SUFFIX
 )
+sbom_test_record_project()
 _qt_internal_sbom_get_spdx_id_unique_suffix(unique_suffix)
 if(QT_GENERATE_SBOM AND NOT "${unique_suffix}" STREQUAL "")
     message(FATAL_ERROR
@@ -113,6 +114,7 @@ _qt_internal_sbom_begin_project(
     ${sbom_begin_args}
     SPDX_ID_SUFFIX "my-custom-suffix"
 )
+sbom_test_record_project()
 _qt_internal_sbom_get_spdx_id_unique_suffix(unique_suffix)
 if(QT_GENERATE_SBOM AND NOT "${unique_suffix}" STREQUAL "-my-custom-suffix")
     message(FATAL_ERROR
@@ -132,6 +134,7 @@ set(QT_SBOM_NO_AUTO_SPDX_SUFFIX ON)
 _qt_internal_sbom_begin_project(
     ${sbom_begin_args}
 )
+sbom_test_record_project()
 _qt_internal_sbom_get_spdx_id_unique_suffix(unique_suffix)
 if(QT_GENERATE_SBOM AND NOT "${unique_suffix}" STREQUAL "")
     message(FATAL_ERROR
@@ -150,6 +153,7 @@ set(QT_SBOM_FAKE_DETERMINISTIC_BUILD ON)
 _qt_internal_sbom_begin_project(
     ${sbom_begin_args}
 )
+sbom_test_record_project()
 _qt_internal_sbom_get_spdx_id_unique_suffix(unique_suffix)
 if(QT_GENERATE_SBOM AND NOT "${unique_suffix}" STREQUAL "-fake-id-suffix")
     message(FATAL_ERROR
@@ -167,6 +171,7 @@ _qt_internal_sbom_begin_project(
     ${sbom_begin_args}
     SPDX_ID_SUFFIX_HASH_LENGTH 4
 )
+sbom_test_record_project()
 _qt_internal_sbom_get_spdx_id_unique_suffix(unique_suffix)
 string(LENGTH "${unique_suffix}" unique_suffix_length)
 if(QT_GENERATE_SBOM AND NOT unique_suffix_length EQUAL 5)

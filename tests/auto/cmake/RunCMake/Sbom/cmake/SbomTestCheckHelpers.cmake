@@ -18,120 +18,45 @@ function(check_not_exists file)
     set(RunCMake_TEST_FAILED "${RunCMake_TEST_FAILED}" PARENT_SCOPE)
 endfunction()
 
-# Asserts that the given needle string exists in the SPDX v2.3 document.
-function(assert_str_exists_in_spdx_v2_3_doc needle)
-    if(NOT SPDX_V2_3_DOCUMENTS)
+# Asserts needle exists in the SPDX v2.3 document at path doc_path.
+function(sbom_assert_needle_in_spdx doc_path needle)
+    if(NOT EXISTS "${doc_path}")
+        string(APPEND RunCMake_TEST_FAILED
+            "Cannot check needle; SPDX document '${doc_path}' does not exist.\n")
+        set(RunCMake_TEST_FAILED "${RunCMake_TEST_FAILED}" PARENT_SCOPE)
         return()
     endif()
-    list(GET SPDX_V2_3_DOCUMENTS 0 doc_name)
-    file(READ "${doc_name}" doc_contents)
+
+    file(READ "${doc_path}" doc_contents)
     if(NOT doc_contents MATCHES "${needle}")
         string(APPEND RunCMake_TEST_FAILED
-            "Expected to find '${needle}' in SPDX v2.3 document '${doc_name}',"
-            " but it was not found.\n\n doc contents \n${doc_contents}}.\n")
+            "Expected to find '${needle}' in SPDX v2.3 document '${doc_path}', "
+            "but it was not found.\n")
     endif()
     set(RunCMake_TEST_FAILED "${RunCMake_TEST_FAILED}" PARENT_SCOPE)
 endfunction()
 
-# Asserts that all needles in SPDX_V2_3_STR_ASSERT_NEEDLES exist in the SPDX v2.3 document.
-function(check_assert_str_exists_in_spdx_v2_3_doc_needles)
-    foreach(needle IN LISTS SPDX_V2_3_STR_ASSERT_NEEDLES)
-        assert_str_exists_in_spdx_v2_3_doc("${needle}")
-    endforeach()
-    set(RunCMake_TEST_FAILED "${RunCMake_TEST_FAILED}" PARENT_SCOPE)
-endfunction()
-
-# Asserts that the given needle string exists in the CycloneDX v1.6 document.
-# Currently unused.
-function(assert_str_exists_in_cydx_v1_6_doc needle)
-    if(NOT CYDX_V1_6_DOCUMENTS)
+# Verifies the recorded CycloneDX dependencies of one document's known targets.
+function(sbom_check_cydx_deps_for_document doc_path doc_id)
+    if(NOT doc_path OR NOT EXISTS "${doc_path}")
         return()
     endif()
 
-    list(GET CYDX_V1_6_DOCUMENTS 0 doc_name)
-    file(READ "${doc_name}" doc_contents)
-    if(NOT doc_contents MATCHES "${needle}")
+    # Check that the targets category var is defined in the parent scope, even if it's empty.
+    set(known_targets_var "SBOM_DOC_${doc_id}_KNOWN_TARGETS")
+    if(NOT DEFINED "${known_targets_var}")
         string(APPEND RunCMake_TEST_FAILED
-            "Expected to find '${needle}' in CyDX v1.6 document '${doc_name}',"
-            " but it was not found.\n")
-    endif()
-    set(RunCMake_TEST_FAILED "${RunCMake_TEST_FAILED}" PARENT_SCOPE)
-endfunction()
-
-# Asserts that all needles in CYDX_V1_6_STR_ASSERT_NEEDLES exist in the CycloneDX v1.6 document.
-# Currently unused.
-function(check_assert_str_exists_in_cydx_v1_6_doc_needles)
-    foreach(needle IN LISTS CYDX_V1_6_STR_ASSERT_NEEDLES)
-        assert_str_exists_in_cydx_v1_6_doc("${needle}")
-    endforeach()
-    set(RunCMake_TEST_FAILED "${RunCMake_TEST_FAILED}" PARENT_SCOPE)
-endfunction()
-
-# Gets the first CycloneDX v1.6 document path from the parent scope.
-function(get_cydx_v1_6_doc_path out_var)
-    if(NOT CYDX_V1_6_DOCUMENTS)
-        set(${out_var} "" PARENT_SCOPE)
-        return()
-    endif()
-
-    list(GET CYDX_V1_6_DOCUMENTS 0 doc_path)
-    set(${out_var} "${doc_path}" PARENT_SCOPE)
-endfunction()
-
-# Gets the contents of the first CycloneDX v1.6 document from the parent scope.
-function(get_cydx_v1_6_doc_contents out_var)
-    if(NOT CYDX_V1_6_DOCUMENTS)
-        set(${out_var} "" PARENT_SCOPE)
-        return()
-    endif()
-
-    list(GET CYDX_V1_6_DOCUMENTS 0 doc_name)
-
-    if(NOT EXISTS "${doc_name}")
-        string(APPEND RunCMake_TEST_FAILED "CycloneDX document '${doc_name}' does not exist.\n")
-        set(RunCMake_TEST_FAILED "${RunCMake_TEST_FAILED}" PARENT_SCOPE)
-        set(${out_var} "" PARENT_SCOPE)
-        return()
-    endif()
-
-    file(READ "${doc_name}" doc_contents)
-    set(${out_var} "${doc_contents}" PARENT_SCOPE)
-endfunction()
-
-# Verifies that the given targets have their dependencies correctly represented in
-# the CycloneDX v1.6 document.
-# The expected dependencies for each target must be set in the parent scope using
-# add_extra_code_to_result_file.
-function(check_cydx_v1_6_dependencies)
-    set(opt_args "")
-    set(single_args
-        TARGETS_CATEGORY
-    )
-    set(multi_args "")
-    cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
-
-    # Var is set in parent scope.
-    if(NOT CYDX_V1_6_DOCUMENTS)
-        return()
-    endif()
-
-    if(NOT arg_TARGETS_CATEGORY)
-        string(APPEND RunCMake_TEST_FAILED
-            "Expected argument 'TARGETS_CATEGORY' to be passed.\n")
+            "Expected variable '${known_targets_var}' to be defined in 'result.cmake' file.\n")
         set(RunCMake_TEST_FAILED "${RunCMake_TEST_FAILED}" PARENT_SCOPE)
         return()
     endif()
 
-    # Taken from parent scope.
-    get_cydx_v1_6_doc_contents(cydx_contents)
-    if(NOT cydx_contents)
-        string(APPEND RunCMake_TEST_FAILED
-            "Failed to get contents of CycloneDX document for dependency checks.\n")
-        set(RunCMake_TEST_FAILED "${RunCMake_TEST_FAILED}" PARENT_SCOPE)
+    set(known_targets "${${known_targets_var}}")
+    if(NOT known_targets)
         return()
     endif()
-    get_cydx_v1_6_doc_path(cydx_path)
 
+    file(READ "${doc_path}" cydx_contents)
     string(JSON dependencies GET "${cydx_contents}" "dependencies")
     string(JSON dependencies_length LENGTH "${dependencies}")
 
@@ -166,37 +91,22 @@ function(check_cydx_v1_6_dependencies)
         list(SORT doc_spdx_ids_${spdx_id}_deps)
     endforeach()
 
-    # Check that the targets category var is defined in the parent scope, even if it's empty.
-    set(targets_var "KNOWN_TARGETS_${arg_TARGETS_CATEGORY}")
-    if(NOT DEFINED "${targets_var}")
-        string(APPEND RunCMake_TEST_FAILED
-            "Expected variable '${targets_var}' to be defined in 'result.cmake' file.\n")
-        set(RunCMake_TEST_FAILED "${RunCMake_TEST_FAILED}" PARENT_SCOPE)
-        return()
-    endif()
-
-    # Go through the recorded targets, and confirm that the spdx ids and dependencies specified
-    # in the parent scope match those in the CycloneDX document.
-    set(targets "${${targets_var}}")
-    foreach(target IN LISTS targets)
-        # This var is set in the parent scope.
-        set(target_spdx_id "${${target}_SPDX_ID}")
-
+    # Go through the recorded targets, and confirm that the recorded spdx ids and dependencies
+    # match those in the CycloneDX document.
+    foreach(target IN LISTS known_targets)
+        set(target_spdx_id "${SBOM_DOC_${doc_id}_TARGET_${target}_SPDX_ID}")
         if(NOT "${target_spdx_id}" IN_LIST doc_spdx_ids)
             string(APPEND RunCMake_TEST_FAILED
-                "Component ID '${target_spdx_id}' not found in CycloneDX document"
-                " '${cydx_path}'.\n")
+                "Component ID '${target_spdx_id}' (target ${target}) not found in CycloneDX "
+                "document '${doc_path}'.\n")
         endif()
-        # This var is set in parent scope.
-        set(expected_target_deps "${${target}_DEPS}")
 
-        set(current_docs_target_deps "${doc_spdx_ids_${target_spdx_id}_deps}")
-        if(NOT expected_target_deps STREQUAL current_docs_target_deps)
+        set(expected_deps "${SBOM_DOC_${doc_id}_TARGET_${target}_DEPS}")
+        set(found_deps "${doc_spdx_ids_${target_spdx_id}_deps}")
+        if(NOT expected_deps STREQUAL found_deps)
             string(APPEND RunCMake_TEST_FAILED
-                "Component ID '${target_spdx_id}' dependencies do not match expected "
-                "dependencies.\n"
-                "  Expected: '${expected_target_deps}'\n"
-                "  Found:    '${current_docs_target_deps}'\n")
+                "Component ID '${target_spdx_id}' (target ${target}) dependencies do not match.\n"
+                "  Expected: '${expected_deps}'\n  Found:    '${found_deps}'\n")
         endif()
     endforeach()
     set(RunCMake_TEST_FAILED "${RunCMake_TEST_FAILED}" PARENT_SCOPE)
@@ -208,14 +118,19 @@ macro(include_root_result_file_and_run_checks)
     if(EXISTS "${root_result_file}")
         include("${root_result_file}")
         assert_expected_sbom_option_values()
+        sbom_check_documents()
+        sbom_check_none_case_absence()
     endif()
 endmacro()
 
+# Checks that the various QT_GENERATE_SBOM options have expected values depending on how the
+# project was configured.
 macro(assert_expected_sbom_option_values)
     if(NOT EXPECTED_QT_GENERATE_SBOM STREQUAL "" AND
             NOT "${EXPECTED_QT_GENERATE_SBOM}" STREQUAL "${RESULT_QT_GENERATE_SBOM}")
         string(APPEND RunCMake_TEST_FAILED
-            "QT_GENERATE_SBOM is ${RESULT_QT_GENERATE_SBOM}, expected ${EXPECTED_QT_GENERATE_SBOM} \n")
+            "QT_GENERATE_SBOM is ${RESULT_QT_GENERATE_SBOM}, "
+            "expected ${EXPECTED_QT_GENERATE_SBOM} \n")
     endif()
 
     if(NOT EXPECTED_QT_SBOM_GENERATE_SPDX_V2 STREQUAL "" AND
@@ -235,29 +150,42 @@ macro(assert_expected_sbom_option_values)
     endif()
 endmacro()
 
-macro(include_all_result_files_and_run_checks)
-    # Glob for all result.cmake files recursively in the root of the test binary dir, and run checks
-    # for each of them.
-    file(GLOB_RECURSE result_files
-        "${RunCMake_TEST_BINARY_DIR}/**/result.cmake"
-    )
+# Runs all per-document checks.
+function(sbom_check_documents)
+    foreach(doc_id IN LISTS SBOM_DOCUMENT_IDS)
+        foreach(f IN LISTS SBOM_DOC_${doc_id}_PRESENT)
+            check_exists("${f}")
+        endforeach()
 
-    # Confirm that the all subproject sbom files are installed, including the root one.
-    foreach(result_file IN LISTS result_files)
-        include("${result_file}")
-        assert_sbom_doc_existence()
+        foreach(f IN LISTS SBOM_DOC_${doc_id}_ABSENT)
+            check_not_exists("${f}")
+        endforeach()
+
+        foreach(needle IN LISTS SBOM_DOC_${doc_id}_SPDX_NEEDLES)
+            sbom_assert_needle_in_spdx("${SBOM_DOC_${doc_id}_SPDX}" "${needle}")
+        endforeach()
+
+        sbom_check_cydx_deps_for_document("${SBOM_DOC_${doc_id}_CYDX}" "${doc_id}")
     endforeach()
 
-    check_assert_str_exists_in_spdx_v2_3_doc_needles()
-    check_assert_str_exists_in_cydx_v1_6_doc_needles()
-endmacro()
+    set(RunCMake_TEST_FAILED "${RunCMake_TEST_FAILED}" PARENT_SCOPE)
+endfunction()
 
-macro(assert_sbom_doc_existence)
-    foreach(sbom_doc IN LISTS SBOM_DOCUMENTS)
-        check_exists("${sbom_doc}")
-    endforeach()
+# Check that no documents exist in the install tree when SBOM generation is disabled.
+# sbom_test_record_project cannot provide document paths in that case (begin_project returns early)
+# so we just glob and assert there are no sbom docs at all.
+function(sbom_check_none_case_absence)
+    if(NOT RESULT_QT_GENERATE_SBOM)
+        file(GLOB_RECURSE stray_docs
+            "${RunCMake_TEST_BINARY_DIR}/installed/*.spdx"
+            "${RunCMake_TEST_BINARY_DIR}/installed/*.spdx.json"
+            "${RunCMake_TEST_BINARY_DIR}/installed/*.cdx.json")
+        if(stray_docs)
+            string(APPEND RunCMake_TEST_FAILED
+                "Expected no SBOM documents when QT_GENERATE_SBOM is OFF, but found: "
+                "${stray_docs}\n")
+        endif()
+    endif()
 
-    foreach(sbom_doc IN LISTS NO_SBOM_DOCUMENTS)
-        check_not_exists("${sbom_doc}")
-    endforeach()
-endmacro()
+    set(RunCMake_TEST_FAILED "${RunCMake_TEST_FAILED}" PARENT_SCOPE)
+endfunction()

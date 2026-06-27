@@ -22,7 +22,6 @@ function(create_sbom_lib_target target)
     )
 endfunction()
 
-# These variables are used by sbom_test_end().
 set(SBOM_VERSION "1.0.0")
 set(SBOM_PROJECT_NAME "recursive-file-inclusion")
 
@@ -32,6 +31,7 @@ _qt_internal_sbom_begin_project(
     VERSION "${SBOM_VERSION}"
     SBOM_PROJECT_NAME "${SBOM_PROJECT_NAME}"
 )
+sbom_test_record_project()
 
 # Find BuildInternals which will include QtSbomHelpers for the first time, followed by
 # QtPublicSbomHelpers.cmake.
