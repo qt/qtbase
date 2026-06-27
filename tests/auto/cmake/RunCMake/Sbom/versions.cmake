@@ -14,6 +14,7 @@ _qt_internal_sbom_begin_project(
     SUPPLIER_URL "https://qt-project.org/SbomTest"
     VERSION "1.0.0"
 )
+sbom_test_record_project()
 set(CORE_HELPER "core_helper_explicit_version")
 include(core_helper.cmake)
 _qt_internal_sbom_end_project()
@@ -25,6 +26,7 @@ _qt_internal_sbom_begin_project(
     SUPPLIER_URL "https://qt-project.org/SbomTest"
     USE_GIT_VERSION
 )
+sbom_test_record_project()
 set(CORE_HELPER "core_helper_version_from_git")
 include(core_helper.cmake)
 _qt_internal_sbom_end_project()
@@ -37,6 +39,7 @@ _qt_internal_sbom_begin_project(
     USE_GIT_VERSION
     VERSION "2.0.0"
 )
+sbom_test_record_project()
 set(CORE_HELPER "core_helper_version_from_git_with_explicit")
 include(core_helper.cmake)
 _qt_internal_sbom_end_project()
@@ -49,6 +52,7 @@ _qt_internal_sbom_begin_project(
     SUPPLIER_URL "https://qt-project.org/SbomTest"
     VERSION "3.0.0"
 )
+sbom_test_record_project()
 set(CORE_HELPER "core_helper_version_with_override")
 include(core_helper.cmake)
 _qt_internal_sbom_end_project()
@@ -61,6 +65,7 @@ _qt_internal_sbom_begin_project(
     SUPPLIER "QtProjectTest"
     SUPPLIER_URL "https://qt-project.org/SbomTest"
 )
+sbom_test_record_project()
 set(CORE_HELPER "core_helper_version_with_qt_repo_override")
 include(core_helper.cmake)
 _qt_internal_sbom_end_project()

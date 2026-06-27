@@ -1,10 +1,14 @@
 project(subproj2)
 
-# These variables are used by sbom_test_end().
 set(SBOM_VERSION "1.0.2")
 set(SBOM_PROJECT_NAME "${PROJECT_NAME}")
 
 if(NOT CREATE_SINGLE_SBOM)
+    # Default the install dir so we never pass an empty INSTALL_SBOM_DIR (CMP0174) when the
+    # including test does not set SBOM_INSTALL_DIR.
+    if(NOT SBOM_INSTALL_DIR)
+        set(SBOM_INSTALL_DIR "sbom")
+    endif()
     _qt_internal_sbom_begin_project(
         SBOM_PROJECT_NAME "${SBOM_PROJECT_NAME}"
         INSTALL_SBOM_DIR "${SBOM_INSTALL_DIR}"
@@ -12,6 +16,7 @@ if(NOT CREATE_SINGLE_SBOM)
         SUPPLIER_URL "https://qt-project.org/SbomTest"
         VERSION "${SBOM_VERSION}"
     )
+    sbom_test_record_project()
 endif()
 
 add_library(subproj2_helper STATIC)
@@ -48,6 +53,4 @@ target_link_libraries(subproj2_helper PRIVATE FancySystemLib)
 
 if(NOT CREATE_SINGLE_SBOM)
     _qt_internal_sbom_end_project()
-
-    sbom_test_end()
 endif()
