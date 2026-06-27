@@ -2638,6 +2638,45 @@ function(_qt_internal_sbom_get_current_project_spdx_id out_var)
     set(${out_var} "${spdx_id}" PARENT_SCOPE)
 endfunction()
 
+# Returns the relative path of the current project's sbom document for the given format.
+# Returns an empty string if not set.
+function(_qt_internal_sbom_get_current_project_document_path out_var)
+    set(opt_args "")
+    set(single_args FORMAT)
+    set(multi_args "")
+    cmake_parse_arguments(PARSE_ARGV 1 arg "${opt_args}" "${single_args}" "${multi_args}")
+    _qt_internal_validate_all_args_are_parsed(arg)
+
+    get_property(begin_called GLOBAL PROPERTY _qt_internal_sbom_repo_begin_called)
+    if(NOT begin_called)
+        set(${out_var} "" PARENT_SCOPE)
+        return()
+    endif()
+
+    if(arg_FORMAT STREQUAL "SPDX_V2_TAG_VALUE")
+        get_property(document_relative_path GLOBAL PROPERTY
+            _qt_internal_sbom_document_spdx_v2_tag_value_relative_path)
+    elseif(arg_FORMAT STREQUAL "SPDX_V2_JSON")
+        get_property(document_relative_path GLOBAL PROPERTY
+            _qt_internal_sbom_document_spdx_v2_json_relative_path)
+    elseif(arg_FORMAT STREQUAL "CYDX_V1_6_JSON")
+        get_property(document_relative_path GLOBAL PROPERTY
+            _qt_internal_sbom_document_cydx_v1_6_json_relative_path)
+    else()
+        message(FATAL_ERROR
+            "Unknown FORMAT '${arg_FORMAT}' passed to "
+            "_qt_internal_sbom_get_current_project_document_path. Expected one of "
+            "SPDX_V2_TAG_VALUE, SPDX_V2_JSON, CYDX_V1_6_JSON.")
+    endif()
+
+    # Get rid of -NOTFOUND.
+    if(NOT document_relative_path)
+        set(document_relative_path "")
+    endif()
+
+    set(${out_var} "${document_relative_path}" PARENT_SCOPE)
+endfunction()
+
 # Returns a package infix for a given target sbom type to be used in spdx package id generation.
 function(_qt_internal_sbom_get_package_infix type out_infix)
     if(type STREQUAL "QT_MODULE")
