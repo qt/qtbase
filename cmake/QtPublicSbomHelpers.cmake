@@ -443,6 +443,10 @@ function(_qt_internal_sbom_begin_project)
     set_property(GLOBAL PROPERTY _qt_internal_sbom_project_spdx_id
         "${repo_project_spdx_id}")
 
+    # Record every generated project. The full list is used in tests for various checks.
+    set_property(GLOBAL APPEND PROPERTY _qt_internal_sbom_generated_project_spdx_ids
+        "${repo_project_spdx_id}")
+
     _qt_internal_create_project_sbom_target()
 
     # Collect project licenses.
