@@ -532,15 +532,14 @@ inline QStringView qToStringViewIgnoringNull(const QStringLike &s) noexcept
 
 qsizetype QtPrivate::findString(QStringView str, qsizetype from, QChar ch, Qt::CaseSensitivity cs) noexcept
 {
-    if (from < -str.size()) // from < 0 && abs(from) > str.size(), avoiding overflow
-        return -1;
+    const qsizetype size = str.size();
     if (from < 0)
-        from = qMax(from + str.size(), qsizetype(0));
-    if (from < str.size()) {
+        from += size;
+    if (size_t(from) < size_t(size)) {
         const char16_t *s = str.utf16();
         char16_t c = ch.unicode();
         const char16_t *n = s + from;
-        const char16_t *e = s + str.size();
+        const char16_t *e = s + size;
         if (cs == Qt::CaseSensitive)
             n = qustrchr(QStringView(n, e), c);
         else
