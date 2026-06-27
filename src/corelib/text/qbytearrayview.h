@@ -484,14 +484,13 @@ inline quint16 qChecksum(const char *s, qsizetype len,
 
 qsizetype QtPrivate::findByteArray(QByteArrayView haystack, qsizetype from, char needle) noexcept
 {
-    if (from < -haystack.size()) // from < 0 && abs(from) > haystack.size(), avoiding overflow
-        return -1;
+    const qsizetype size = haystack.size();
     if (from < 0)
-        from = from + haystack.size();
-    if (from < haystack.size()) {
+        from += size;
+    if (size_t(from) < size_t(size)) {
         const char *const b = haystack.data();
-        if (const auto n = static_cast<const char *>(
-                    memchr(b + from, needle, static_cast<size_t>(haystack.size() - from)))) {
+        const auto n = static_cast<const char *>(memchr(b + from, needle, size_t(size - from)));
+        if (n) {
             return n - b;
         }
     }
