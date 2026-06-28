@@ -105,11 +105,12 @@ inline bool qt_assume_is_deprecated(bool cond) noexcept { return cond; }
 #if __has_builtin(__builtin_assume)
 // Clang has this intrinsic and won't warn about its use in C++20 mode
 #  define Q_PRESUME_IMPL(assumption) __builtin_assume(assumption)
+#elif defined(Q_CC_MSVC)
+// MSVC claims to support [[assume]], but optimizations do not seem to be applied
+#  define Q_PRESUME_IMPL(assumption) __assume(assumption)
 #elif __has_cpp_attribute(assume)
 // GCC has implemented this attribute and allows its use in C++20 mode
 #  define Q_PRESUME_IMPL(assumption) [[assume(assumption)]]
-#elif defined(Q_CC_MSVC)
-#  define Q_PRESUME_IMPL(assumption) __assume(assumption)
 #else
 #  define Q_PRESUME_IMPL(assumption) (void)0
 #endif
