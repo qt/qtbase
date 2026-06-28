@@ -49,6 +49,8 @@ private slots:
     void fragmentation();
     void incomplete_data();
     void incomplete();
+    void connectWithDomainNameReply_data();
+    void connectWithDomainNameReply();
 
 protected slots:
     void proxyAuthenticationRequired(const QNetworkProxy &proxy, QAuthenticator *auth) override;
@@ -997,6 +999,57 @@ void tst_QSocks5SocketEngine::incomplete()
     QVERIFY(!QTestEventLoop::instance().timeout());
 
     QCOMPARE(socket.error(), QAbstractSocket::ProxyConnectionClosedError);
+}
+
+void tst_QSocks5SocketEngine::connectWithDomainNameReply_data()
+{
+    QTest::addColumn<QQueue<QByteArray>>("responses");
+
+    QByteArray authMethodNone = QByteArray::fromRawData("\5\0", 2);
+    // Reply to CONNECT whose BND.ADDR is a domain name (ATYP = 0x03):
+    // VER REP RSV ATYP LEN "domain" PORT(0x0506)
+    QByteArray connectResponseDomain = QByteArray::fromRawData("\5\0\0\3\6"
+                                                               "domain"
+                                                               "\5\6",
+                                                               13);
+
+    QQueue<QByteArray> responses;
+    responses << authMethodNone << connectResponseDomain;
+    QTest::newRow("whole") << responses;
+
+    // Same reply delivered in two fragments at every split point, to exec
+    // the "need more data" paths when the domain-name reply arrives fragmented.
+    for (int i = 1; i < connectResponseDomain.size() - 1; ++i) {
+        responses.clear();
+        responses << authMethodNone << connectResponseDomain.left(i)
+                  << connectResponseDomain.mid(i);
+        QTest::newRow(qPrintable(QString("fragmented-") + QString::number(i))) << responses;
+    }
+}
+
+void tst_QSocks5SocketEngine::connectWithDomainNameReply()
+{
+    QFETCH(QQueue<QByteArray>, responses);
+    MiniSocks5Server server(responses, 500);
+
+    QTcpSocket socket;
+    socket.setProxy(QNetworkProxy(QNetworkProxy::Socks5Proxy, "localhost", server.serverPort(),
+                                  "user", "password"));
+    socket.connectToHost("0.1.2.3", 12345);
+
+    connect(&socket, SIGNAL(connected()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    connect(&socket, SIGNAL(errorOccurred(QAbstractSocket::SocketError)),
+            &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    // A domain-name BND.ADDR must not be treated as a protocol error:
+    // the socket must reach ConnectedState rather than erroring out.
+    QCOMPARE(socket.state(), QAbstractSocket::ConnectedState);
+    // QHostAddress cannot hold a domain name, so the bound address is null,
+    // but the port following the name must still be parsed correctly.
+    QCOMPARE(socket.localAddress(), QHostAddress());
+    QCOMPARE(socket.localPort(), quint16(0x0506));
 }
 
 //----------------------------------------------------------------------------------

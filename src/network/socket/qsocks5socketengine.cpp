@@ -216,11 +216,24 @@ static int qt_socks5_get_host_address_and_port(const QByteArray &buf, QHostAddre
             add[i] = buf[pos++];
         address.setAddress(add);
         ret = 1;
-    } else if (pBuf[pos] == S5_DOMAINNAME){
-        // just skip it
+    } else if (pBuf[pos] == S5_DOMAINNAME) {
         pos++;
-        qDebug() << "skipping hostname of len" << uint(pBuf[pos]);
-        pos += uchar(pBuf[pos]);
+        if (buf.size() - pos < 1) {
+            QSOCKS5_DEBUG << "need more data for domain name length";
+            return 0;
+        }
+        const int hostNameLen = uchar(pBuf[pos]);
+        pos++;
+        if (buf.size() - pos < hostNameLen) {
+            QSOCKS5_DEBUG << "need more data for domain name";
+            return 0;
+        }
+        // QHostAddress cannot store a domain name
+        // The SOCKS5 bound address is not needed by the engine in CONNECT mode,
+        // so just consume it and leave the address empty.
+        QSOCKS5_DEBUG << "skipping hostname of len" << hostNameLen;
+        pos += hostNameLen;
+        ret = 1;
     } else {
         QSOCKS5_DEBUG << "invalid address type" << (int)pBuf[pos];
         ret = -1;
