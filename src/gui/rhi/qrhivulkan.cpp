@@ -2120,11 +2120,14 @@ bool QRhiVulkan::createOffscreenRenderPass(QVkRenderPassDescriptor *rpD,
         QVkTexture *rtexD = QRHI_RES(QVkTexture, depthResolveTexture);
         if (rtexD->samples > VK_SAMPLE_COUNT_1_BIT)
             qWarning("Resolving into a multisample depth texture is not supported");
+        const VkFormat dstFormat = rtexD->vkformat;
 
-        QVkTexture *texD = QRHI_RES(QVkTexture, depthResolveTexture);
-        if (texD->vkformat != rtexD->vkformat) {
+        QVkTexture *texD = QRHI_RES(QVkTexture, depthTexture);
+        QVkRenderBuffer *rbD = QRHI_RES(QVkRenderBuffer, depthStencilBuffer);
+        const VkFormat srcFormat = texD ? texD->vkformat : rbD->vkformat;
+        if (srcFormat != dstFormat) {
             qWarning("Multisample resolve between different depth-stencil formats (%d and %d) is not supported.",
-                     int(texD->vkformat), int(rtexD->vkformat));
+                     int(srcFormat), int(dstFormat));
         }
 
         VkAttachmentDescription attDesc = {};
