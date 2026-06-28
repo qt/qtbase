@@ -100,6 +100,8 @@ private slots:
 
     void removeRecursively_data();
     void removeRecursively();
+    void removeRecursivelyReadOnly_data();
+    void removeRecursivelyReadOnly();
     void removeRecursivelyFailure();
     void removeRecursivelySymlink();
     void removeRecursivelyNoStackExhaustion();
@@ -613,6 +615,49 @@ void tst_QDir::removeRecursively()
     QVERIFY(dir.removeRecursively());
 
     //make sure it really doesn't exist (ie that remove worked)
+    QVERIFY(!dir.exists());
+}
+
+void tst_QDir::removeRecursivelyReadOnly_data()
+{
+    QTest::addColumn<bool>("isDir");
+
+    QTest::newRow("file") << false;
+    QTest::newRow("directory") << true;
+}
+
+void tst_QDir::removeRecursivelyReadOnly()
+{
+    QFETCH(bool, isDir);
+
+    // removeRecursively() must delete read-only contents. On Unix, removing an
+    // entry depends on the parent directory's permissions, not the entry's own,
+    // so a read-only file or read-only empty sub-directory is still removable
+    // without first changing its permissions. On Windows, removeRecursively()
+    // clears the read-only attribute before deleting.
+    const QString tmpdir = QDir::currentPath() + "/tmpdir/";
+    const QString path = tmpdir + "readonly";
+    QVERIFY(QDir().mkpath(path));
+
+    QString entry;
+    if (isDir) {
+#ifdef Q_OS_WIN
+        QSKIP("Removing read-only directories is not supported on Windows");
+#endif
+        entry = path + "/subdir";
+        // read + execute, but not writable
+        QVERIFY(QDir().mkdir(entry, QFile::ReadOwner | QFile::ExeOwner));
+    } else {
+        entry = path + "/file";
+        QFile file(entry);
+        QVERIFY(file.open(QIODevice::WriteOnly));
+        file.write("Hello");
+        file.close();
+        QVERIFY(file.setPermissions(QFile::ReadOwner));
+    }
+
+    QDir dir(path);
+    QVERIFY(dir.removeRecursively());
     QVERIFY(!dir.exists());
 }
 
