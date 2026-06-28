@@ -5335,7 +5335,7 @@ void QRhiVulkan::trackedRegisterBuffer(QRhiPassResourceTracker *passResTracker,
     const VkAccessFlags newAccess = toVkAccess(access);
     const VkPipelineStageFlags newStage = toVkPipelineStage(stage);
     if (u.access == newAccess && u.stage == newStage) {
-        if (!accessIsWrite(access))
+        if (!accessIsWrite(newAccess))
             return;
     }
     passResTracker->registerBuffer(bufD, slot, &access, &stage, toPassTrackerUsageState(u));
@@ -5353,7 +5353,7 @@ void QRhiVulkan::trackedRegisterTexture(QRhiPassResourceTracker *passResTracker,
     const VkPipelineStageFlags newStage = toVkPipelineStage(stage);
     const VkImageLayout newLayout = toVkLayout(access);
     if (u.access == newAccess && u.stage == newStage && u.layout == newLayout) {
-        if (!accessIsWrite(access))
+        if (!accessIsWrite(newAccess))
             return;
     }
     passResTracker->registerTexture(texD, &access, &stage, toPassTrackerUsageState(u));
