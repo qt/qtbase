@@ -4442,6 +4442,9 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
             err = vmaMapMemory(toVmaAllocator(allocator), a, &mp);
             if (err != VK_SUCCESS) {
                 qWarning("Failed to map image data: %d", err);
+                vmaDestroyBuffer(toVmaAllocator(allocator), utexD->stagingBuffers[currentFrameSlot], a);
+                utexD->stagingBuffers[currentFrameSlot] = VK_NULL_HANDLE;
+                utexD->stagingAllocations[currentFrameSlot] = nullptr;
                 continue;
             }
 
