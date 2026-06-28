@@ -108,8 +108,8 @@ public:
         return !ptr;
     }
 
-    T *data() noexcept { return ptr; }
-    const T *data() const noexcept { return ptr; }
+    T *data() noexcept { T *p = ptr; if (size) Q_PRESUME(p); return p; }
+    const T *data() const noexcept { T *p = ptr; if (size) Q_PRESUME(p); return p; }
 
     T *begin() noexcept { return data(); }
     T *end() noexcept { return data() + size; }
