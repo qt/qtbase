@@ -3,6 +3,7 @@
 
 #include "qohosstatusbarmenu.h"
 #include "qohosjsutils.h"
+#include "qohospixelmapconversions.h"
 #include <QtCore/qobject.h>
 #include <QtCore/qlist.h>
 #include <QtGui/qicon.h>
@@ -16,6 +17,8 @@
 QT_BEGIN_NAMESPACE
 
 namespace {
+
+constexpr QSize defaultStatusBarMenuItemIconSize(48, 48);
 
 std::shared_ptr<void> registerOhosRightMenuClickListener(
     QtOhos::JsState &jsState, QOhosConsumer<std::string> clickedMenuCodeConsumer)
@@ -38,6 +41,52 @@ std::shared_ptr<void> registerOhosRightMenuClickListener(
        });
 }
 
+std::optional<QNapi::Object> makeJsStatusBarItemIcon(
+    QtOhos::JsState &jsState, const QIcon &icon, const QSize &iconSize)
+{
+    if (icon.isNull())
+        return std::nullopt;
+
+    auto *env = jsState.env();
+    QImage iconImage = icon.pixmap(iconSize).toImage();
+    auto whitePixelMap =
+        createDisplayDensityScaledJsMonochromePixelMapFromIconImage(jsState, iconImage, true);
+    auto blackPixelMap =
+        createDisplayDensityScaledJsMonochromePixelMapFromIconImage(jsState, iconImage, false);
+
+    if (!whitePixelMap || !blackPixelMap) {
+        qOhosPrintfDebug("%s: failed to create monochrome PixelMaps from the icon, returning empty options", Q_FUNC_INFO);
+        return std::nullopt;
+    }
+
+    auto imageSize = whitePixelMap->eval<QNapi::Object>("getImageInfoSync().size");
+
+    int imageWidth = imageSize.get<QNapi::Number>("width");
+    int imageHeight = imageSize.get<QNapi::Number>("height");
+    qOhosPrintfDebug("%s: created PixelMap size: %dx%d", Q_FUNC_INFO, imageWidth, imageHeight);
+
+    return QNapi::makeObject(
+        env,
+        {
+            {"white", *whitePixelMap},
+            {"black", *blackPixelMap},
+        });
+}
+
+std::optional<QNapi::Object> makeJsStatusBarMenuItemOptions(
+    QtOhos::JsState &jsState, const QIcon &icon, const QSize &iconSize)
+{
+    auto itemIcon = makeJsStatusBarItemIcon(jsState, icon, iconSize);
+    if (!itemIcon)
+        return std::nullopt;
+
+    return QNapi::makeObject(
+        jsState.env(),
+        {
+            {"icon", *itemIcon},
+        });
+}
+
 QNapi::Object makeNotifyOnlyJsStatusBarMenuAction(
     QtOhos::JsState &jsState, const std::string &menuCode)
 {
@@ -51,36 +100,54 @@ QNapi::Object makeNotifyOnlyJsStatusBarMenuAction(
 }
 
 QNapi::Object makeJsStatusBarMenuItemWithAction(
-    QtOhos::JsState &jsState, const std::string &title, const std::string &menuCode)
+    QtOhos::JsState &jsState, const std::string &title, const std::string &menuCode,
+    const QIcon &icon, const QSize &iconSize)
 {
-    return QNapi::makeObject(
+    auto statusBarMenuItem = QNapi::makeObject(
         jsState.env(),
         {
             {"title", title},
             {"menuAction", makeNotifyOnlyJsStatusBarMenuAction(jsState, menuCode)},
         });
+
+    if (auto options = makeJsStatusBarMenuItemOptions(jsState, icon, iconSize))
+        statusBarMenuItem.set("options", *options);
+
+    return statusBarMenuItem;
 }
 
 QNapi::Object makeJsStatusBarMenuItemWithSubMenu(
-    QtOhos::JsState &jsState, const std::string &title, QNapi::Array jsStatusBarSubMenuItems)
+    QtOhos::JsState &jsState, const std::string &title, QNapi::Array jsStatusBarSubMenuItems,
+    const QIcon &icon, const QSize &iconSize)
 {
-    return QNapi::makeObject(
+    auto statusBarMenuItem = QNapi::makeObject(
         jsState.env(),
         {
             {"title", title},
             {"subMenu", jsStatusBarSubMenuItems},
         });
+
+    if (auto options = makeJsStatusBarMenuItemOptions(jsState, icon, iconSize))
+        statusBarMenuItem.set("options", *options);
+
+    return statusBarMenuItem;
 }
 
 QNapi::Object makeJsStatusBarSubMenuItem(
-    QtOhos::JsState &jsState, const std::string &subTitle, const std::string &menuCode)
+    QtOhos::JsState &jsState, const std::string &subTitle, const std::string &menuCode,
+    const QIcon &icon, const QSize &iconSize)
 {
-    return QNapi::makeObject(
+    auto statusBarSubMenuItem = QNapi::makeObject(
         jsState.env(),
         {
             {"subTitle", subTitle},
             {"menuAction", makeNotifyOnlyJsStatusBarMenuAction(jsState, menuCode)},
         });
+
+    if (auto options = makeJsStatusBarMenuItemOptions(jsState, icon, iconSize))
+        statusBarSubMenuItem.set("options", *options);
+
+    return statusBarSubMenuItem;
 }
 
 class QOhosStatusBarMenuImpl;
@@ -116,6 +183,7 @@ public:
 private:
     QString m_text;
     std::string m_menuCode;
+    QIcon m_icon;
     bool m_isSeparator = false;
     QOhosStatusBarMenuImpl *m_menu = nullptr;
 
@@ -185,7 +253,7 @@ QString QOhosStatusBarMenuItem::text() const
 
 void QOhosStatusBarMenuItem::setIcon(const QIcon &icon)
 {
-    Q_UNUSED(icon);
+    m_icon = icon;
 }
 
 void QOhosStatusBarMenuItem::setMenu(QPlatformMenu *menu)
@@ -258,14 +326,17 @@ std::function<std::optional<QNapi::Object>(QtOhos::JsState &)> QOhosStatusBarMen
     auto title = QPlatformTheme::removeMnemonics(m_text).toStdString();
 
     if (m_menu == nullptr) {
-        return [title, menuCode = m_menuCode](QtOhos::JsState &jsState) {
+        return [title, menuCode = m_menuCode, icon = m_icon](QtOhos::JsState &jsState) {
             return std::optional(
-                makeJsStatusBarMenuItemWithAction(jsState, title, menuCode));
+                makeJsStatusBarMenuItemWithAction(
+                    jsState, title, menuCode, icon, defaultStatusBarMenuItemIconSize));
         };
     } else {
-        return [title, jsSubMenuItemsFactory = m_menu->makeJsStatusBarSubMenuItemsFactory()](QtOhos::JsState &jsState) {
+        return [title, jsSubMenuItemsFactory = m_menu->makeJsStatusBarSubMenuItemsFactory(),
+                icon = m_icon](QtOhos::JsState &jsState) {
             return std::optional(
-                makeJsStatusBarMenuItemWithSubMenu(jsState, title, jsSubMenuItemsFactory(jsState)));
+                makeJsStatusBarMenuItemWithSubMenu(
+                    jsState, title, jsSubMenuItemsFactory(jsState), icon, defaultStatusBarMenuItemIconSize));
         };
     }
 }
@@ -292,9 +363,10 @@ std::function<std::optional<QNapi::Object>(QtOhos::JsState &)> QOhosStatusBarMen
 
     auto subTitle = QPlatformTheme::removeMnemonics(m_text).toStdString();
 
-    return [subTitle, menuCode = m_menuCode](QtOhos::JsState &jsState) {
+    return [subTitle, menuCode = m_menuCode, icon = m_icon](QtOhos::JsState &jsState) {
         return std::optional(
-            makeJsStatusBarSubMenuItem(jsState, subTitle, menuCode));
+            makeJsStatusBarSubMenuItem(
+                jsState, subTitle, menuCode, icon, defaultStatusBarMenuItemIconSize));
     };
 }
 
