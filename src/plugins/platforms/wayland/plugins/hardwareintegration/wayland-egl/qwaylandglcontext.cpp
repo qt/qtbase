@@ -436,15 +436,6 @@ bool QWaylandGLContext::makeCurrent(QPlatformSurface *surface)
     EGLSurface eglSurface = m_currentWindow->eglSurface();
     QSize size = m_currentWindow->bufferSize();
 
-    // wl_egl_windows must have both width and height > 0
-    // mesa's egl returns NULL if we try to create a, invalid wl_egl_window, however not all EGL
-    // implementations may do that, so check the size ourself. Besides, we must deal with resizing
-    // a valid window to 0x0, which would make it invalid. Hence, destroy it.
-    if (size.isEmpty()) {
-        lock.unlock();
-        m_currentWindow->invalidateSurface();
-        return true;
-    }
     if (eglSurface == EGL_NO_SURFACE) {
         m_currentWindow->createSurface(size);
         eglSurface = m_currentWindow->eglSurface();
