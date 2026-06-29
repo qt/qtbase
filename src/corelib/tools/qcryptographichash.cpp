@@ -550,13 +550,21 @@ QCryptographicHashPrivate::EVP::EVP(QCryptographicHash::Algorithm method)
          * We need to load the legacy provider in order to have the MD4
          * algorithm available.
          */
-        legacyProvider = OSSL_PROVIDER_ptr(OSSL_PROVIDER_load(nullptr, "legacy"));
+        legacyProvider = OSSL_PROVIDER_ptr(OSSL_PROVIDER_try_load(nullptr, "legacy", /*retain_fallbacks=*/1));
 
         if (!legacyProvider)
             return;
     }
 
-    defaultProvider = OSSL_PROVIDER_ptr(OSSL_PROVIDER_load(nullptr, "default"));
+    /*
+     * Load with retain_fallbacks=1 so that loading these providers - and the
+     * unload performed by OSSL_PROVIDER_deleter - does not disable OpenSSL's
+     * fallback auto-loading of the default provider in the global library
+     * context. Plain OSSL_PROVIDER_load() disables that fallback, which then
+     * leaves later OpenSSL users (e.g. the TLS backend) without a default
+     * provider once we unload, breaking RAND seeding. See QTBUG-136223.
+     */
+    defaultProvider = OSSL_PROVIDER_ptr(OSSL_PROVIDER_try_load(nullptr, "default", /*retain_fallbacks=*/1));
     if (!defaultProvider)
         return;
 
@@ -1243,8 +1251,10 @@ bool QCryptographicHashPrivate::supportsAlgorithm(QCryptographicHash::Algorithm 
     case QCryptographicHash::RealSha3_512:
     case QCryptographicHash::Blake2b_512:
     case QCryptographicHash::Blake2s_256: {
-    auto legacyProvider = OSSL_PROVIDER_ptr(OSSL_PROVIDER_load(nullptr, "legacy"));
-    auto defaultProvider = OSSL_PROVIDER_ptr(OSSL_PROVIDER_load(nullptr, "default"));
+    // retain_fallbacks=1: don't disable the global default-provider fallback
+    // auto-load (see QTBUG-136223 and the EVP constructor above).
+    auto legacyProvider = OSSL_PROVIDER_ptr(OSSL_PROVIDER_try_load(nullptr, "legacy", /*retain_fallbacks=*/1));
+    auto defaultProvider = OSSL_PROVIDER_ptr(OSSL_PROVIDER_try_load(nullptr, "default", /*retain_fallbacks=*/1));
 
     const char *restriction = "-fips";
     EVP_MD_ptr algorithm = EVP_MD_ptr(EVP_MD_fetch(nullptr, methodToName(method), restriction));
