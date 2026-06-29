@@ -1,5 +1,9 @@
 analysis_instructions_axivion: &analysis_instructions_axivion
   type: Group
+  enable_if:
+    condition: runtime
+    env_var: AXIVION_ANALYSIS
+    equals_value: "1"
   instructions:
     - type: Group
       instructions:
@@ -49,7 +53,12 @@ analysis_instructions_axivion: &analysis_instructions_axivion
 
 build_environment_axivion: &build_environment_axivion
   type: Group
+  enable_if:
+    condition: runtime
+    env_var: AXIVION_ANALYSIS
+    equals_value: "1"
   instructions:
+    - !include "{{qt/qtbase}}/prepare_building_env.yaml"
     - type: ExecuteCommand
       command: ["sudo", "mkdir", "-p","/data/axivion"]
       maxTimeInSeconds: 100
@@ -89,27 +98,24 @@ build_environment_axivion: &build_environment_axivion
       maxTimeInSeconds: 1800
       maxTimeBetweenOutput: 900
       userMessageOnFailure: "Failed to initialize git submodules"
-    - type: Group
-      instructions:
-      - type: EnvironmentVariable
-        variableName: AXIVION_ANALYSIS
-        variableValue: null
-      - !include "{{qt/qtbase}}/cmake_module_build_instructions.yaml"
-      - type: EnvironmentVariable
-        variableName: AXIVION_ANALYSIS
-        variableValue: "1"
-      enable_if:
-        condition: runtime
-        env_var: PREBUILD_MODULE_FOR_AXIVION
-        not_equals_value: null
+
+prebuild_module: &prebuild_module
+  type: Group
+  instructions:
+    - type: EnvironmentVariable
+      variableName: AXIVION_ANALYSIS
+      variableValue: null
+    - !include "{{qt/qtbase}}/cmake_module_build_instructions.yaml"
+    - type: EnvironmentVariable
+      variableName: AXIVION_ANALYSIS
+      variableValue: "1"
+  enable_if:
+    condition: runtime
+    env_var: PREBUILD_MODULE_FOR_AXIVION
+    not_equals_value: null
 
 type: Group
 instructions:
-  - !include "{{qt/qtbase}}/prepare_building_env.yaml"
   - *build_environment_axivion
+  - *prebuild_module
   - *analysis_instructions_axivion
-enable_if:
-  condition: runtime
-  env_var: AXIVION_ANALYSIS
-  equals_value: "1"
-
