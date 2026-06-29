@@ -1780,6 +1780,45 @@ static bool readQmldirLines(const QString &qmldirPath, QStringList &lines)
     return true;
 }
 
+// Deploy the plugins (*.so files) a qmldir declares to libs/<arch>.
+static bool copyQmldirPlugins(const QString &qmldirPath, const Options &options)
+{
+    QStringList lines;
+    if (!readQmldirLines(qmldirPath, lines))
+        return false;
+
+    static const QRegularExpression pluginLine(
+        "^\\s*(?:optional\\s+)?plugin\\s+(?<name>\\S+)(?:\\s+(?<path>\\S+))?"_L1);
+
+    const QDir moduleDir = QFileInfo(qmldirPath).absoluteDir();
+
+    for (const QString &line : lines) {
+        const QRegularExpressionMatch match = pluginLine.match(line);
+        if (!match.hasMatch())
+            continue;
+
+        const QString pluginName = match.captured(u"name");
+        const QString pluginFile = "lib"_L1 + pluginName + ".so"_L1;
+        const QString optionalPluginPath = match.captured(u"path");
+        const QString pluginSrc = moduleDir.filePath(
+            optionalPluginPath.isEmpty() ? pluginFile : optionalPluginPath + "/"_L1 + pluginFile);
+
+        if (!QFileInfo::exists(pluginSrc)) {
+            if (options.verbose) {
+                fprintf(stdout, "  qmldir %s declares plugin %s, but %s is missing\n",
+                        qPrintable(qmldirPath), qPrintable(pluginName),
+                        qPrintable(pluginSrc));
+            }
+            continue;
+        }
+
+        if (!copyFileToArchitectures(options, pluginSrc, pluginFile))
+            return false;
+    }
+
+    return true;
+}
+
 static bool getQmldirModuleUri(const QString &qmldirPath, QString &uri)
 {
     QStringList lines;
@@ -1890,6 +1929,58 @@ static bool verifyUniqueTestQmlModuleDeployDirs(const QList<TestQmlModule> &modu
             return false;
         }
         deployDirToQmldir.insert(deployDir, module.qmldirPath);
+    }
+
+    return true;
+}
+
+static bool copyTestQmlModuleFiles(const QString &moduleSrcDirPath,
+                                   const QString &destModuleDirPath, const Options &options)
+{
+    static const QStringList qmlModuleFileNameFilters = {
+        "qmldir"_L1,
+        "*.qmltypes"_L1,
+        "*.qml"_L1,
+        "*.js"_L1,
+        "*.mjs"_L1,
+    };
+
+    const QDir moduleSrcDir(moduleSrcDirPath);
+    QDirIterator it(
+        moduleSrcDirPath, qmlModuleFileNameFilters, QDir::Files, QDirIterator::Subdirectories);
+    while (it.hasNext()) {
+        const QString srcPath = it.next();
+        const QString destPath =
+            destModuleDirPath + "/"_L1 + moduleSrcDir.relativeFilePath(srcPath);
+
+        QDir().mkpath(QFileInfo(destPath).absolutePath());
+
+        if (!copyFileIfNewer(srcPath, destPath, options.verbose))
+            return false;
+
+        if (!options.depFilePath.isEmpty())
+            dependenciesForDepfile << srcPath;
+
+        if (it.fileName() == "qmldir"_L1 && !copyQmldirPlugins(srcPath, options))
+            return false;
+    }
+
+    return true;
+}
+
+// Deploy each test's generated QML modules into resfile/qml
+static bool copyTestQmlModules(const QList<TestQmlModule> &modules, const Options &options)
+{
+    for (const TestQmlModule &module : modules) {
+        const QString moduleSrcDir = QFileInfo(module.qmldirPath).absolutePath();
+
+        QString deployDir;
+        if (!getTestQmlModuleDeployDir(module, deployDir))
+            return false;
+
+        const QString destModuleDir = hapQmlDir(options) + "/"_L1 + deployDir;
+        if (!copyTestQmlModuleFiles(moduleSrcDir, destModuleDir, options))
+            return false;
     }
 
     return true;
@@ -3322,6 +3413,10 @@ int main(int argc, char *argv[])
         }
         if (!copyAllQmlModules(options)) {
             fprintf(stderr, "Failed to copy QML modules\n");
+            return 1;
+        }
+        if (!copyTestQmlModules(testQmlModules, options)) {
+            fprintf(stderr, "Failed to copy test QML modules\n");
             return 1;
         }
     } else {
