@@ -9,3 +9,7 @@
     \externalpage https://doc.qt.io/vscodeext/vscodeext-tutorials-build-run-qt-example.html
     \title \QVSC: Tutorial: Build and run
 */
+/*!
+    \externalpage https://doc.qt.io/vscodeext/vscodeext-tutorials-qt-widgets.html
+    \title \QVSC: Tutorial: Qt Widgets application
+*/
