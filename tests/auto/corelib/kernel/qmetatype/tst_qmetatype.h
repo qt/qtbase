@@ -84,6 +84,7 @@ private slots:
     void isNotRegistered();
     void isEnum();
     void enumAndFlagNamesAreRegisteredLookupByName();
+    void containerOfConvertibleMetaTypeIsIterable();
     void underlyingType_data();
     void underlyingType();
     void automaticTemplateRegistration_1();

@@ -1963,6 +1963,65 @@ void tst_QMetaType::enumAndFlagNamesAreRegisteredLookupByName()
     }
 }
 
+void tst_QMetaType::containerOfConvertibleMetaTypeIsIterable()
+{
+    // Containers whose value/key/mapped type is not a compile-time
+    // QMetaTypeId2 type (no Q_DECLARE_METATYPE) must still be viewable as a
+    // QMetaSequence / QMetaAssociation, otherwise they cannot be iterated when
+    // only the metatype is known (e.g. when exposed to QML). This covers the
+    // element kinds that are treated as covertible metatypes without a
+    // declaration: QObject-derived pointers and default-constructible gadgets.
+    const auto sequenceCanConvert = [](QMetaType container) {
+        container.registerType(); // register the container and its converters
+        const QMetaType iterable = QMetaType::fromType<QIterable<QMetaSequence>>();
+        return QMetaType::canConvert(container, iterable)
+                && QMetaType::canView(container, iterable);
+    };
+    const auto associationCanConvert = [](QMetaType container) {
+        container.registerType();
+        const QMetaType iterable = QMetaType::fromType<QIterable<QMetaAssociation>>();
+        return QMetaType::canConvert(container, iterable);
+    };
+    // A std::pair gets a converter to the pair/variant
+    // interface registered under the same condition.
+    const auto pairCanConvert = [](QMetaType pair) {
+        pair.registerType();
+        return QMetaType::canConvert(
+                pair, QMetaType::fromType<QtMetaTypePrivate::QPairVariantInterfaceImpl>());
+    };
+
+    // Sequential containers.
+    // QObject-derived pointers without Q_DECLARE_METATYPE.
+    QVERIFY(sequenceCanConvert(QMetaType::fromType<QList<Derived *>>()));
+    QVERIFY(sequenceCanConvert(QMetaType::fromType<QList<CustomQObject *>>()));
+    QVERIFY(sequenceCanConvert(QMetaType::fromType<std::vector<Derived *>>()));
+    // Default-constructible gadget by value.
+    QVERIFY(sequenceCanConvert(QMetaType::fromType<QList<CustomGadget>>()));
+    // Controls: kinds that were never affected.
+    QVERIFY(sequenceCanConvert(QMetaType::fromType<QList<CustomGadget *>>()));   // pointer to gadget
+    QVERIFY(sequenceCanConvert(QMetaType::fromType<QList<CustomObject *>>()));   // Q_DECLARE_METATYPE'd
+    QVERIFY(sequenceCanConvert(QMetaType::fromType<QList<QObject *>>()));        // built-in
+    // Negative control: a gadget that is not default-constructible was never
+    // an implicit metatype and must stay non-iterable.
+    QVERIFY(!sequenceCanConvert(QMetaType::fromType<QList<CustomGadget_NonDefaultConstructible>>()));
+
+    // Associative containers (key and mapped covered independently).
+    QVERIFY(associationCanConvert(QMetaType::fromType<QMap<QString, Derived *>>()));   // mapped: QObject ptr
+    QVERIFY(associationCanConvert(QMetaType::fromType<QMap<Derived *, QString>>()));   // key: QObject ptr
+    QVERIFY(associationCanConvert(QMetaType::fromType<QHash<QString, CustomGadget>>())); // mapped: gadget
+    QVERIFY(associationCanConvert(QMetaType::fromType<QMap<QString, CustomObject *>>())); // control
+    QVERIFY(!associationCanConvert(
+            QMetaType::fromType<QMap<QString, CustomGadget_NonDefaultConstructible>>()));
+
+    // std::pair, covering first and second independently.
+    QVERIFY(pairCanConvert(QMetaType::fromType<std::pair<Derived *, int>>()));        // first: QObject ptr
+    QVERIFY(pairCanConvert(QMetaType::fromType<std::pair<int, Derived *>>()));        // second: QObject ptr
+    QVERIFY(pairCanConvert(QMetaType::fromType<std::pair<CustomGadget, int>>()));     // first: gadget
+    QVERIFY(pairCanConvert(QMetaType::fromType<std::pair<int, CustomObject *>>()));   // control
+    QVERIFY(!pairCanConvert(
+            QMetaType::fromType<std::pair<CustomGadget_NonDefaultConstructible, int>>()));
+}
+
 void tst_QMetaType::isRegisteredStaticLess_data()
 {
     isRegistered_data();
