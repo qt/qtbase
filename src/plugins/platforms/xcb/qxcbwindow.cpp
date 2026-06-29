@@ -922,7 +922,7 @@ QXcbWindow::NetWmStates QXcbWindow::netWmStates()
     return result;
 }
 
-void QXcbWindow::setWindowFlags(Qt::WindowFlags flags)
+static inline Qt::WindowFlags x11AdjustedWindowFlags(Qt::WindowFlags flags)
 {
     Qt::WindowType type = static_cast<Qt::WindowType>(int(flags & Qt::WindowType_Mask));
 
@@ -930,8 +930,13 @@ void QXcbWindow::setWindowFlags(Qt::WindowFlags flags)
         flags |= Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint | Qt::X11BypassWindowManagerHint;
     if (type == Qt::Popup)
         flags |= Qt::X11BypassWindowManagerHint;
+    return flags;
+}
 
-    Qt::WindowFlags oldflags = window()->flags();
+void QXcbWindow::setWindowFlags(Qt::WindowFlags flags)
+{
+    flags = x11AdjustedWindowFlags(flags);
+    Qt::WindowFlags oldflags = x11AdjustedWindowFlags(window()->flags());
     if ((oldflags & Qt::WindowStaysOnTopHint) != (flags & Qt::WindowStaysOnTopHint))
         m_recreationReasons |= WindowStaysOnTopHintChanged;
     if ((oldflags & Qt::WindowStaysOnBottomHint) != (flags & Qt::WindowStaysOnBottomHint))
