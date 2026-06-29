@@ -69,6 +69,15 @@ def send_cross_origin_isolation_headers(handler):
     handler.send_header("Cross-Origin-Resource-Policy", "cross-origin")
 
 
+def send_no_cache_headers(handler):
+    """Sends headers which disable browser caching. This is desirable for a
+    development server, where the served files change often and stale cache
+    entries (e.g. an outdated .wasm module) can cause hard-to-diagnose issues."""
+    handler.send_header("Cache-Control", "no-store, no-cache, must-revalidate")
+    handler.send_header("Pragma", "no-cache")
+    handler.send_header("Expires", "0")
+
+
 def send_empty_favicon(handle):
     """Sends an empty icon to surpess missing faviocon errors"""
     self.send_response(200)
@@ -82,6 +91,8 @@ class HttpRequestHandler(SimpleHTTPRequestHandler):
     def end_headers(self):
         if self.cross_origin_isolation == True:
             send_cross_origin_isolation_headers(self)
+        if self.no_cache == True:
+            send_no_cache_headers(self)
         super().end_headers()
 
 
@@ -123,6 +134,8 @@ class CompressionHttpRequesthandler(HTTPCompressionRequestHandler):
     def end_headers(self):
         if self.cross_origin_isolation == True:
             send_cross_origin_isolation_headers(self)
+        if self.no_cache == True:
+            send_no_cache_headers(self)
         super().end_headers()
 
 
@@ -161,10 +174,12 @@ def serve_on_thread(
     cert_key_file,
     compression_mode,
     cross_origin_isolation,
+    no_cache,
     serve_path,
 ):
     handler = select_http_handler_class(compression_mode, address)
     handler.cross_origin_isolation = cross_origin_isolation
+    handler.no_cache = no_cache
 
     try:
         httpd = ThreadingHTTPServer((address, port), partial(handler, directory=serve_path))
@@ -230,6 +245,11 @@ def main():
         action="store_true",
     )
     parser.add_argument(
+        "--no-cache",
+        help="Sends headers which disable browser caching",
+        action="store_true",
+    )
+    parser.add_argument(
         "path", help="The directory to serve", nargs="?", default=os.getcwd()
     )
 
@@ -240,6 +260,7 @@ def main():
     cmd_addresses = args.address or []
     serve_path = args.path
     cross_origin_isolation = args.cross_origin_isolation
+    no_cache = args.no_cache
 
     if not os.path.isdir(serve_path):
         print(f"The provided path '{serve_path}' does not exist or is not a directory")
@@ -273,6 +294,7 @@ def main():
     print(f"   Secure server:          {has_certificate}")
     print(f"   Cross Origin Isolation: {cross_origin_isolation}")
     print(f"   Compression:            {compression_mode.value}")
+    print(f"   Disable browser cache:  {no_cache}")
     print("")
 
     # Start servers
@@ -287,6 +309,7 @@ def main():
             cert_key_file,
             compression_mode,
             cross_origin_isolation,
+            no_cache,
             serve_path,
         )
 
@@ -301,6 +324,7 @@ def main():
                 cert_key_file,
                 compression_mode,
                 cross_origin_isolation,
+                no_cache,
                 serve_path,
             )
 
