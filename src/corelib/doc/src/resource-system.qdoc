@@ -63,10 +63,10 @@
     \c{:/images/copy.png} or \c{qrc:/images/copy.png}.
     To override this default run-time name, see \l{Prefixes} and \l{Aliases}.
 
-    \e{Qt Creator}, \e{Qt Design Studio}, \QD, and \e{Qt Visual Studio Tools}
-    allow you to create, inspect and edit \c .qrc files through a convenient
-    user interface. Except for \QD, they also provide wizards for projects
-    using the Qt resource system.
+    \e{\QC}, \e{\QDS}, \e{\QD}, \e{\QVSC}, and
+    \e{Qt Visual Studio Tools} allow you to create, inspect and edit \c .qrc
+    files through a convenient user interface. Except for \QD, they also provide
+    wizards for projects using the Qt resource system.
 
     \section1 Build System Integration
 

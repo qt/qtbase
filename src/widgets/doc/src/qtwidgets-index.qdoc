@@ -108,6 +108,7 @@ interfaces
         \li \l{Widgets Tutorial}
         \li \l{Getting Started Programming with Qt Widgets}
         \li \l{\QC: Tutorial: Qt Widgets application}
+        \li \l{\QVSC: Tutorial: Qt Widgets application}
         \li \l{Model/View Tutorial}
     \endlist
 
