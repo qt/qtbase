@@ -1118,6 +1118,23 @@ namespace QtPrivate
         enum { Value = false };
     };
 
+    /* Used to check whether we need to register a converter function
+       for associative and sequential containers.
+       The rule is that for any registered container (template), we register
+       the conversion function if the element type is "defined" in the sense
+       of QMetaTypeId2, or if it's a pointer to a QObject subclass or a
+       default-constructible gadget (for the rare non-default constructible gadgets,
+       we can't create the converter.
+    */
+    template<typename T>
+    struct IsContainerElementWhichNeedsConverter
+    {
+        static constexpr bool value =
+                QMetaTypeId2<T>::Defined
+                || IsPointerToTypeDerivedFromQObject<T>::Value
+                || (IsRealGadget<T>::value && std::is_default_constructible_v<T>);
+    };
+
     template<typename T, bool = QtPrivate::IsSequentialContainer<T>::Value>
     struct SequentialContainerTransformationHelper
     {
@@ -1132,7 +1149,7 @@ namespace QtPrivate
         }
     };
 
-    template<typename T, bool = QMetaTypeId2<typename T::value_type>::Defined>
+    template<typename T, bool = IsContainerElementWhichNeedsConverter<typename T::value_type>::value>
     struct SequentialValueTypeIsMetaType
     {
         static bool registerConverter()
@@ -1165,7 +1182,7 @@ namespace QtPrivate
         }
     };
 
-    template<typename T, bool = QMetaTypeId2<typename T::key_type>::Defined>
+    template<typename T, bool = IsContainerElementWhichNeedsConverter<typename T::key_type>::value>
     struct AssociativeKeyTypeIsMetaType
     {
         static bool registerConverter()
@@ -1179,7 +1196,7 @@ namespace QtPrivate
         }
     };
 
-    template<typename T, bool = QMetaTypeId2<typename T::mapped_type>::Defined>
+    template<typename T, bool = IsContainerElementWhichNeedsConverter<typename T::mapped_type>::value>
     struct AssociativeMappedTypeIsMetaType
     {
         static bool registerConverter()
@@ -1198,8 +1215,8 @@ namespace QtPrivate
     {
     };
 
-    template<typename T, bool = QMetaTypeId2<typename T::first_type>::Defined
-                                && QMetaTypeId2<typename T::second_type>::Defined>
+    template<typename T, bool = IsContainerElementWhichNeedsConverter<typename T::first_type>::value
+                                && IsContainerElementWhichNeedsConverter<typename T::second_type>::value>
     struct IsMetaTypePair
     {
         static bool registerConverter()
@@ -1543,7 +1560,7 @@ template <typename T> \
 struct QMetaTypeId< SINGLE_ARG_TEMPLATE<T> > \
 { \
     enum { \
-        Defined = QMetaTypeId2<T>::Defined \
+        Defined = QtPrivate::IsContainerElementWhichNeedsConverter<T>::value \
     }; \
     static int qt_metatype_id() \
     { \
@@ -1571,7 +1588,8 @@ template<typename T, typename U> \
 struct QMetaTypeId< DOUBLE_ARG_TEMPLATE<T, U> > \
 { \
     enum { \
-        Defined = QMetaTypeId2<T>::Defined && QMetaTypeId2<U>::Defined \
+        Defined = QtPrivate::IsContainerElementWhichNeedsConverter<T>::value \
+            && QtPrivate::IsContainerElementWhichNeedsConverter<U>::value \
     }; \
     static int qt_metatype_id() \
     { \
