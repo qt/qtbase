@@ -34,6 +34,8 @@
 #include <QOpenGLWindow>
 #include <QOpenGLFunctions>
 #include <QOpenGLShaderProgram>
+#include <QOpenGLContext>
+#include <QOffscreenSurface>
 
 #include <emscripten.h>
 #include <emscripten/bind.h>
@@ -1017,6 +1019,50 @@ void getOpenGLColorAt_0_0(const std::string &windowTitle)
                                                  emscripten::val(colorToJs(r, g, b)));
 }
 
+// Reproduces QTBUG-145723: a QOpenGLContext must stay valid and reusable after
+// doneCurrent(). The sequence makeCurrent() -> doneCurrent() -> makeCurrent()
+// must succeed, and isValid() must report true after each step (in particular
+// doneCurrent() must not invalidate the context). Returns a JS object with the
+// outcome of each step so the test driver can assert on it.
+void testContextReuse()
+{
+    QSurfaceFormat format;
+    format.setVersion(3, 0);
+
+    QOpenGLContext context;
+    context.setFormat(format);
+    const bool created = context.create();
+
+    QOffscreenSurface surface;
+    surface.setFormat(context.format());
+    surface.create();
+
+    const bool makeCurrent1 = context.makeCurrent(&surface);
+    const bool validAfterMakeCurrent1 = context.isValid();
+
+    context.doneCurrent();
+    const bool validAfterDoneCurrent = context.isValid();
+
+    const bool makeCurrent2 = context.makeCurrent(&surface);
+    const bool validAfterMakeCurrent2 = context.isValid();
+
+    context.doneCurrent();
+
+    auto boolStr = [](bool value) { return value ? "true" : "false"; };
+    std::ostringstream out;
+    out << "({"
+        << "created:" << boolStr(created) << ","
+        << "makeCurrent1:" << boolStr(makeCurrent1) << ","
+        << "validAfterMakeCurrent1:" << boolStr(validAfterMakeCurrent1) << ","
+        << "validAfterDoneCurrent:" << boolStr(validAfterDoneCurrent) << ","
+        << "makeCurrent2:" << boolStr(makeCurrent2) << ","
+        << "validAfterMakeCurrent2:" << boolStr(validAfterMakeCurrent2)
+        << "})";
+
+    emscripten::val::global("window").call<void>("testContextReuseCallback",
+                                                 emscripten::val(out.str()));
+}
+
 #if QT_CONFIG(wasm_jspi)
 #  define EMSC_BIND_FUNC(name, afunction) \
       emscripten::function(name, afunction, emscripten::async())
@@ -1037,6 +1083,7 @@ EMSCRIPTEN_BINDINGS(qwasmwindow)
     EMSC_BIND_FUNC("setWindowBackgroundColor", &setWindowBackgroundColor);
 
     EMSC_BIND_FUNC("getOpenGLColorAt_0_0", &getOpenGLColorAt_0_0);
+    EMSC_BIND_FUNC("testContextReuse", &testContextReuse);
 
     EMSC_BIND_FUNC("createWidget", &createWidget);
     EMSC_BIND_FUNC("createNativeWidget", &createNativeWidget);
