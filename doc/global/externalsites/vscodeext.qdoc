@@ -13,3 +13,35 @@
     \externalpage https://doc.qt.io/vscodeext/vscodeext-tutorials-qt-widgets.html
     \title \QVSC: Tutorial: Qt Widgets application
 */
+/*!
+    \externalpage https://doc.qt.io/vscodeext/vscodeext-tutorials-qt-quick.html
+    \title \QVSC: Tutorial: Qt Quick application
+*/
+/*!
+    \externalpage https://doc.qt.io/vscodeext/vscodeext-tutorials-qt-quick-python.html
+    \title \QVSC: Tutorial: Qt Quick and Qt for Python
+*/
+/*!
+    \externalpage https://doc.qt.io/vscodeext/vscodeext-how-register-qt-installations.html
+    \title \QVSC: Register Qt installations
+*/
+/*!
+    \externalpage https://doc.qt.io/vscodeext/vscodeext-how-debug-qml-apps.html
+    \title \QVSC: Debug Qt Quick applications
+*/
+/*!
+    \externalpage https://doc.qt.io/vscodeext/vscodeext-how-profile-qml.html
+    \title \QVSC: Profile QML code
+*/
+/*!
+    \externalpage https://doc.qt.io/vscodeext/vscodeext-how-create-projects.html
+    \title \QVSC: Create Qt projects
+*/
+/*!
+    \externalpage https://doc.qt.io/vscodeext/vscodeext-how-to-turn-on-qmlls.html
+    \title \QVSC: Turn on \QMLLS
+*/
+/*!
+    \externalpage https://doc.qt.io/vscodeext/vscodeext-how-create-files.html
+    \title \QVSC: Add files to projects
+*/
