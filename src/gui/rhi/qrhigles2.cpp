@@ -669,6 +669,11 @@ QRhiGles2::QRhiGles2(QRhiGles2InitParams *params, QRhiGles2NativeHandles *import
 
 static inline QSurface *currentSurfaceForCurrentContext(QOpenGLContext *ctx)
 {
+    static const bool doNotTrustCurrentContext =
+        qEnvironmentVariableIntValue("QT_GL_BROKEN_CONTEXT_TRACKING") != 0;
+    if (doNotTrustCurrentContext)
+        return nullptr; // -> makeCurrent all the time -> may have perf. implications
+
     if (QOpenGLContext::currentContext() != ctx)
         return nullptr;
 
@@ -698,8 +703,15 @@ bool QRhiGles2::ensureContext(QSurface *surface) const
 {
     if (!surface) {
         // null means any surface is good because not going to render
+
+        // Bail out if the makeCurrent is not necessary - important, given the
+        // frequency this is called at, and the varying implications of ending
+        // up in the EGL/GLX/etc. makeCurrent repeatedly (e.g., leading to,
+        // depending on the platform, unnecessary command stream flushes,
+        // ultimately degrading performance)
         if (currentSurfaceForCurrentContext(ctx))
             return true;
+
         // if the context is not already current with a valid surface, use our
         // fallback surface, but platform specific quirks may apply
         surface = evaluateFallbackSurface();
@@ -707,7 +719,7 @@ bool QRhiGles2::ensureContext(QSurface *surface) const
         // the window is not usable anymore (no native window underneath), behave as if offscreen
         surface = evaluateFallbackSurface();
     } else if (!needsMakeCurrentDueToSwap && currentSurfaceForCurrentContext(ctx) == surface) {
-        // bail out if the makeCurrent is not necessary
+        // bail out if the makeCurrent is not necessary; same perf. reason as above
         return true;
     }
     needsMakeCurrentDueToSwap = false;
