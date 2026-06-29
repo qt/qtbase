@@ -3,9 +3,12 @@
 
 #include <qohospixelmapconversions.h>
 
+#include "qohosdisplayinfo.h"
 #include <QtCore/private/qohoslogger_p.h>
 #include <QtCore/qspan.h>
 #include <QtCore/qsysinfo.h>
+#include <QtGui/private/qohosimageconversions_p.h>
+#include <cmath>
 #include <cstring>
 #include <qarkui/qarkuiutils.h>
 
@@ -170,6 +173,85 @@ QImage createQImageFromNativePixelMap(::OH_PixelmapNative *pixelMap)
     }
 
     return resultImage;
+}
+
+static double getPrimaryDisplayPixelDensity(QtOhos::JsState &jsState)
+{
+    constexpr auto fallbackDisplayDensity = 1.0;
+
+    auto primaryDisplay = jsState.eval<QNapi::Object>("@ohos.display.getPrimaryDisplaySync()");
+    auto displayInfo = QOhosDisplayInfo::makeFromOhosDisplayObject(jsState, primaryDisplay);
+
+    double density;
+    if (displayInfo.densityPixels > 0.0) {
+        density = std::lround(displayInfo.densityPixels);
+    } else {
+        qOhosPrintfDebug("%s: invalid display densityPixels: %.3f", Q_FUNC_INFO, displayInfo.densityPixels);
+        density = 0.0;
+    }
+
+    return density > 0.0 ? density : fallbackDisplayDensity;
+}
+
+QNapi::Object makeDisplayDensityScaledJsPixelMapFromQImage(QtOhos::JsState &jsState, const QImage &image)
+{
+    qOhosPrintfDebug(
+        "%s: image dimensions: %dx%d, format: %d, bytes: %lld",
+        Q_FUNC_INFO, image.width(), image.height(), static_cast<int>(image.format()), image.sizeInBytes());
+
+    const int sourceWidth = image.width();
+    const int sourceHeight = image.height();
+
+    double density = getPrimaryDisplayPixelDensity(jsState);
+
+    const double widthVp = std::lround(sourceWidth / density);
+    const double heightVp = std::lround(sourceHeight / density);
+
+    QImage newImage = image.scaled(widthVp, heightVp, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+
+    const int width = newImage.width();
+    const int height = newImage.height();
+    const double finalWidthVp = width / density;
+    const double finalHeightVp = height / density;
+
+    qOhosPrintfDebug(
+        "%s: density=%.3f, vp %.2f x %.2f -> %.2f x %.2f, px %dx%d -> %dx%d",
+        Q_FUNC_INFO, density, widthVp, heightVp, finalWidthVp, finalHeightVp, sourceWidth, sourceHeight, width, height);
+
+    return makeOhosNapiPixelMapFromQImage(jsState, newImage);
+}
+
+static QImage convertToMonochromeIconImage(const QImage &sourceImage, bool useWhite)
+{
+    QImage monochromeImage = sourceImage.copy();
+    const int colorValue = useWhite ? 255 : 0;
+
+    for (int y = 0; y < monochromeImage.height(); ++y) {
+        for (int x = 0; x < monochromeImage.width(); ++x) {
+            const QRgb pixel = monochromeImage.pixel(x, y);
+            const int alpha = qAlpha(pixel);
+
+            if (alpha > 0)
+                monochromeImage.setPixel(x, y, qRgba(colorValue, colorValue, colorValue, alpha));
+        }
+    }
+
+    return monochromeImage;
+}
+
+std::optional<QNapi::Object> createDisplayDensityScaledJsMonochromePixelMapFromIconImage(
+    QtOhos::JsState &jsState, const QImage &iconImage, bool isWhiteIcon)
+{
+    if (iconImage.isNull())
+        return std::nullopt;
+
+    qOhosPrintfDebug(
+        "%s: original Icon dimensions: %dx%d, format: %d, bytes: %lld",
+        Q_FUNC_INFO, iconImage.width(), iconImage.height(),
+        static_cast<int>(iconImage.format()), iconImage.sizeInBytes());
+
+    return makeDisplayDensityScaledJsPixelMapFromQImage(
+        jsState, convertToMonochromeIconImage(iconImage, isWhiteIcon));
 }
 
 QT_END_NAMESPACE
