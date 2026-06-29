@@ -6,8 +6,10 @@
 #include <QCommandLineOption>
 #include <QDebug>
 #include <QDir>
+#include <QDirIterator>
 #include <QFile>
 #include <QFileInfo>
+#include <QHash>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
@@ -1764,6 +1766,135 @@ static bool copyAllQmlModules(const Options &options)
     return copyQmlDir(options.qtQmlDirectory, QString(), qmlDestBase, options);
 }
 
+static bool readQmldirLines(const QString &qmldirPath, QStringList &lines)
+{
+    QFile qmldir(qmldirPath);
+    if (!qmldir.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        fprintf(stderr, "Failed to open qmldir %s: %s\n",
+                qPrintable(qmldirPath), qPrintable(qmldir.errorString()));
+        return false;
+    }
+
+    lines = QString::fromUtf8(qmldir.readAll()).split(u'\n');
+
+    return true;
+}
+
+static bool getQmldirModuleUri(const QString &qmldirPath, QString &uri)
+{
+    QStringList lines;
+    if (!readQmldirLines(qmldirPath, lines))
+        return false;
+
+    static const QRegularExpression moduleLine("^\\s*module\\s+(?<uri>\\S+)"_L1);
+    for (const QString &line : lines) {
+        const QRegularExpressionMatch match = moduleLine.match(line);
+        if (match.hasMatch()) {
+            uri = match.captured(u"uri");
+            return true;
+        }
+    }
+
+    uri.clear();
+
+    return true;
+}
+
+static QString findNearestEnclosingTestDir(const QString &startDir, const QSet<QString> &testDirs)
+{
+    for (QDir dir(startDir); ; ) {
+        const QString path = dir.absolutePath();
+
+        if (testDirs.contains(path))
+            return path;
+
+        if (!dir.cdUp())
+            return QString();
+    }
+}
+
+struct TestQmlModule
+{
+    QString qmldirPath;
+    QString testDir;
+};
+
+static bool getTestQmlModuleDeployDir(const TestQmlModule &testModule, QString &deployDir)
+{
+    QString uri;
+    if (!getQmldirModuleUri(testModule.qmldirPath, uri))
+        return false;
+
+    if (uri.isEmpty()) {
+        deployDir = QDir(testModule.testDir).relativeFilePath(
+            QFileInfo(testModule.qmldirPath).absolutePath());
+    } else {
+        deployDir = QString(uri).replace(u'.', u'/');
+    }
+
+    return true;
+}
+
+static QList<TestQmlModule> findTestQmlModules(const Options &options)
+{
+    if (options.testBinariesDirectory.isEmpty())
+        return {};
+
+    QStringList testBinaries;
+    QStringList unusedHelperLibs;
+    QSet<QString> unusedHelperLibNames;
+    const QStringList excludeDirs = { QFileInfo(options.outputDirectory).absoluteFilePath() };
+    scanTestBinariesDir(options.testBinariesDirectory, options.testExcludeList, excludeDirs,
+                        testBinaries, unusedHelperLibs, unusedHelperLibNames);
+
+    QSet<QString> testDirs;
+    for (const QString &testBinary : std::as_const(testBinaries))
+        testDirs.insert(QFileInfo(testBinary).absoluteDir().absolutePath());
+
+    QList<TestQmlModule> modules;
+    QSet<QString> seenQmldirs;
+    for (const QString &testDir : std::as_const(testDirs)) {
+        QDirIterator it(testDir, { "qmldir"_L1 }, QDir::Files, QDirIterator::Subdirectories);
+        while (it.hasNext()) {
+            const QString qmldirPath = it.next();
+            if (seenQmldirs.contains(qmldirPath))
+                continue;
+
+            const QString testDir =
+                findNearestEnclosingTestDir(QFileInfo(qmldirPath).absolutePath(), testDirs);
+            seenQmldirs.insert(qmldirPath);
+            modules.append({ qmldirPath, testDir });
+        }
+    }
+
+    return modules;
+}
+
+// Fail if two test QML modules in the bundle deploy to the same directory under
+// resfile/qml, where one would overwrite the other.
+static bool verifyUniqueTestQmlModuleDeployDirs(const QList<TestQmlModule> &modules)
+{
+    QHash<QString, QString> deployDirToQmldir;
+    for (const TestQmlModule &module : modules) {
+        QString deployDir;
+        if (!getTestQmlModuleDeployDir(module, deployDir))
+            return false;
+
+        const auto existing = deployDirToQmldir.constFind(deployDir);
+        if (existing != deployDirToQmldir.constEnd()) {
+            fprintf(stderr,
+                    "Error: two test QML modules deploy to the same directory \"%s\" "
+                    "under resfile/qml:\n  %s\n  %s\n"
+                    "They would overwrite one another; give one a different module URI.\n",
+                    qPrintable(deployDir), qPrintable(*existing), qPrintable(module.qmldirPath));
+            return false;
+        }
+        deployDirToQmldir.insert(deployDir, module.qmldirPath);
+    }
+
+    return true;
+}
+
 static QString findLlvmReadobj(const Options &options)
 {
     // Look for llvm-readobj in the NDK and alternative path
@@ -3149,6 +3280,12 @@ int main(int argc, char *argv[])
     }
 
     if (!readInputConfiguration(&options))
+        return 1;
+
+    const QList<TestQmlModule> testQmlModules =
+            options.testBundleMode ? findTestQmlModules(options) : QList<TestQmlModule>{};
+
+    if (options.testBundleMode && !verifyUniqueTestQmlModuleDeployDirs(testQmlModules))
         return 1;
 
     if (options.verbose)
