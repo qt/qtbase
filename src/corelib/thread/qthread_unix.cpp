@@ -358,6 +358,13 @@ static void setCurrentThreadName(QThread *thr, String &objectName)
         pthread_set_name_np(pthread_self(), name);
 #  elif defined(Q_OS_QNX) || defined(Q_OS_BSD4)
         pthread_setname_np(pthread_self(), name);
+#  elif defined(Q_OS_VXWORKS)
+        // VxWorks limits task names; pthread_setname_np() fails with ERANGE
+        // for names that are too long, leaving the task unnamed. Truncate the
+        // name to a safe length so the task gets named like it did in Qt 5.15.
+        char vxName[16];
+        qstrncpy(vxName, name, sizeof(vxName));
+        pthread_setname_np(pthread_self(), vxName);
 #  else
         Q_UNUSED(name)
 #  endif
