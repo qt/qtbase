@@ -191,12 +191,15 @@ bool QWasmOpenGLContext::isValid() const
 
     // We get isValid() calls before we see the surface and are able to
     // create a native context, which means that "no context" is a valid state.
-    if (!m_madeCurrentSurface && !m_contextOwningSurface)
+    if (!m_contextOwningSurface)
         return true;
 
-    // Can't use this context for a different surface, since the native
-    // webgl context is tied to a single canvas.
-    if (m_madeCurrentSurface != m_contextOwningSurface)
+    // The native webgl context is tied to a single canvas. If the last
+    // makeCurrent() targeted a surface other than the owning one then the
+    // context is lost. Note that doneCurrent() clears m_madeCurrentSurface;
+    // that is not a context loss - the context can be made current again on
+    // its owning surface.
+    if (m_madeCurrentSurface && m_madeCurrentSurface != m_contextOwningSurface)
         return false;
 
     // If the owning surfce/canvas has been deleted then this context is invalid

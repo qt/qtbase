@@ -288,6 +288,18 @@ class WidgetTestCase(unittest.TestCase):
     # The reason is that the color readback works
     # even if the display is incorrect
     #
+    def test_opengl_context_reuse_after_doneCurrent(self):
+        # QTBUG-145723: doneCurrent() must not invalidate a QOpenGLContext;
+        # the context must stay valid and be reusable for a subsequent
+        # makeCurrent() on the same surface.
+        result = call_instance_function(self._driver, 'testContextReuse')
+        self.assertTrue(result['created'])
+        self.assertTrue(result['makeCurrent1'])
+        self.assertTrue(result['validAfterMakeCurrent1'])
+        self.assertTrue(result['validAfterDoneCurrent'])
+        self.assertTrue(result['makeCurrent2'])
+        self.assertTrue(result['validAfterMakeCurrent2'])
+
     def test_native_widgets(self):
         screen = Screen(self._driver, ScreenPosition.FIXED,
                     x=0, y=0, width=600, height=1200)
