@@ -114,21 +114,6 @@ bool QTlsBackendOpenSSL::ensureLibraryLoaded()
         s_indexForSSLExtraData = q_CRYPTO_get_ex_new_index(CRYPTO_EX_INDEX_SSL, 0L, nullptr, nullptr,
                                                            nullptr, nullptr);
 
-        // If QCryptographicHash (openssl_hash feature) was used before this
-        // point, it may have loaded and then unloaded the default OpenSSL
-        // provider, draining its activation count to zero. With no providers
-        // active, RAND_status() returns 0 even though seeding would succeed
-        // with a loaded provider. Hold a permanent activation reference to
-        // prevent that. Skip in FIPS mode: the FIPS provider supplies its own
-        // RAND, and loading the non-FIPS default would violate the user's
-        // security policy.
-#if defined(OPENSSL_VERSION_MAJOR) && OPENSSL_VERSION_MAJOR >= 3
-        if (!q_EVP_default_properties_is_fips_enabled(nullptr)) {
-            static OSSL_PROVIDER *s_defaultProvider = q_OSSL_PROVIDER_load(nullptr, "default");
-            (void)s_defaultProvider;
-        }
-#endif
-
         // Initialize OpenSSL's random seed.
         if (!q_RAND_status()) {
             qWarning("Random number generator not seeded, disabling SSL support");
