@@ -707,7 +707,7 @@ static QStringList appleBundleSuffixes(QLibraryInfo::LibraryPath location)
     case QLibraryInfo::QmlImportsPath:
         return { resourcesDir + u"qml"_s };
     case QLibraryInfo::ArchDataPath:
-        return { resourcesDir + ARCH_PROCESSOR };
+        return { resourcesDir + QStringLiteral(ARCH_PROCESSOR) };
     case QLibraryInfo::TranslationsPath:
         return { resourcesDir + u"translations"_s };
     case QLibraryInfo::DocumentationPath:
