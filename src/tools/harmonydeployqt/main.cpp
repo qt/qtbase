@@ -2552,8 +2552,11 @@ struct QmlImportInfo
     QStringList scripts;    // List of JavaScript file paths
 };
 
-static QList<QmlImportInfo> scanQmlImports(const Options &options)
+static QList<QmlImportInfo> scanQmlImports(const Options &options, bool *ok = nullptr)
 {
+    if (ok)
+        *ok = true;
+
     QList<QmlImportInfo> imports;
 
     if (options.qmlRootPaths.isEmpty()) {
@@ -2675,7 +2678,24 @@ static QList<QmlImportInfo> scanQmlImports(const Options &options)
     process.start(qmlImportScannerPath, arguments);
 
     if (!process.waitForFinished(30000)) {
-        fprintf(stderr, "Error: qmlimportscanner timed out\n");
+        process.kill();
+        process.waitForFinished(2000);
+        fprintf(stderr, "Error: qmlimportscanner timed out after 30 seconds\n");
+        fprintf(stderr, "  Command: %s %s\n", qPrintable(qmlImportScannerPath),
+                qPrintable(arguments.join(u' ')));
+        const QByteArray errorOutput = process.readAllStandardError();
+        if (!errorOutput.isEmpty())
+            fprintf(stderr, "%s\n", errorOutput.constData());
+        if (ok)
+            *ok = false;
+        return imports;
+    }
+
+    if (process.exitStatus() != QProcess::NormalExit) {
+        fprintf(stderr, "Error: qmlimportscanner crashed\n");
+        fprintf(stderr, "%s\n", process.readAllStandardError().constData());
+        if (ok)
+            *ok = false;
         return imports;
     }
 
@@ -2683,6 +2703,8 @@ static QList<QmlImportInfo> scanQmlImports(const Options &options)
         fprintf(stderr, "Error: qmlimportscanner failed with exit code %d\n",
                 process.exitCode());
         fprintf(stderr, "%s\n", process.readAllStandardError().constData());
+        if (ok)
+            *ok = false;
         return imports;
     }
 
@@ -2692,6 +2714,8 @@ static QList<QmlImportInfo> scanQmlImports(const Options &options)
 
     if (!doc.isArray()) {
         fprintf(stderr, "Error: Invalid JSON output from qmlimportscanner\n");
+        if (ok)
+            *ok = false;
         return imports;
     }
 
@@ -3470,7 +3494,12 @@ int main(int argc, char *argv[])
             fprintf(stderr, "Failed to detect and copy dependencies\n");
             return 1;
         }
-        QList<QmlImportInfo> qmlImports = scanQmlImports(options);
+        bool qmlScanOk = true;
+        QList<QmlImportInfo> qmlImports = scanQmlImports(options, &qmlScanOk);
+        if (!qmlScanOk) {
+            fprintf(stderr, "Failed to scan QML imports\n");
+            return 1;
+        }
         if (!copyQmlFiles(options)) {
             fprintf(stderr, "Failed to copy QML files\n");
             return 1;
