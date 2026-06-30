@@ -528,14 +528,19 @@ void tst_QWidgetRepaintManager::paintOnScreenUpdates()
 
         topLevel.initialShow();
 
+        QWindow *window = topLevel.windowHandle();
+        QVERIFY(window);
+
+        const QRect safeRect = topLevel.rect().marginsRemoved(window->safeAreaMargins());
+        const QRect paintOnScreenGeometry(QPoint(safeRect.left() + 200, safeRect.top()),
+                                          paintOnScreenWidget.size());
+        paintOnScreenWidget.setGeometry(paintOnScreenGeometry.intersected(safeRect));
+
         // Updating before toggling WA_PaintOnScreen should work fine
         paintOnScreenWidget.update();
         paintOnScreenWidget.waitForPainted();
         QVERIFY(paintOnScreenWidget.waitForPainted());
 
-#ifdef Q_OS_ANDROID
-        QEXPECT_FAIL("", "This test fails on Android", Abort);
-#endif
         QCOMPARE(paintOnScreenWidget.takePaintedRegions(), paintOnScreenWidget.rect());
 
         renderToTextureWidget.update();
