@@ -138,6 +138,7 @@ private slots:
     void standaloneInlineObject_eliding();
 #endif
     void drawCursorOnTranslucentTarget_qtbug109173();
+    void drawCursorWidthZeroFractionalScale_qtbug109643();
 
 private:
     QFont testFont;
@@ -3140,6 +3141,37 @@ void tst_QTextLayout::drawCursorOnTranslucentTarget_qtbug109173()
                          "non-premultiplied pixel at (%d,%d): 0x%08x", x, y, pixel)));
         }
     }
+}
+
+void tst_QTextLayout::drawCursorWidthZeroFractionalScale_qtbug109643()
+{
+    // A zero-width cursor must stay hidden, also under fractional scaling (QTBUG-109643).
+    QImage image(64, 24, QImage::Format_ARGB32_Premultiplied);
+    image.fill(Qt::black);
+    const QImage reference = image;
+
+    QTextLayout layout("abc", testFont);
+    layout.beginLayout();
+    QTextLine line = layout.createLine();
+    line.setLineWidth(image.width());
+    layout.endLayout();
+
+    {
+        QPainter p(&image);
+        p.scale(1.25, 1.25);
+        p.setPen(Qt::white);
+        layout.drawCursor(&p, QPointF(0, 0), /*cursorPosition=*/1, /*width=*/0);
+    }
+    QCOMPARE(image, reference);
+
+    // A non-zero width must still draw the cursor under the same scale.
+    {
+        QPainter p(&image);
+        p.scale(1.25, 1.25);
+        p.setPen(Qt::white);
+        layout.drawCursor(&p, QPointF(0, 0), /*cursorPosition=*/1, /*width=*/1);
+    }
+    QVERIFY2(image != reference, "cursor with non-zero width was not drawn");
 }
 
 QTEST_MAIN(tst_QTextLayout)

@@ -1377,8 +1377,9 @@ void QTextLayout::drawCursor(QPainter *p, const QPointF &pos, int cursorPosition
     const qreal xScale = deviceTransform.m11();
     if (deviceTransform.type() != QTransform::TxScale || std::trunc(xScale) == xScale) {
         p->fillRect(QRectF(x, y, qreal(width), (base + descent).toReal()), p->pen().brush());
-    } else {
-        // Ensure consistently rendered cursor width under fractional scaling
+    } else if (width > 0) {
+        // Width 0 means no cursor; a cosmetic pen would still draw a 1px line (QTBUG-109643).
+        // Otherwise ensure a consistent cursor width under fractional scaling.
         const QPen origPen = p->pen();
         QPen pen(origPen.brush(), qRound(width * xScale), Qt::SolidLine, Qt::FlatCap);
         pen.setCosmetic(true);
