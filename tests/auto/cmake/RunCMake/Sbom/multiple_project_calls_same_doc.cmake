@@ -9,6 +9,7 @@ _qt_internal_setup_sbom(
 
 # This is used by common_result_gen.cmake.
 set(SBOM_VERSION "1.0.0")
+set(SBOM_INSTALL_DIR "sbom")
 
 _qt_internal_sbom_begin_project(
     SUPPLIER "QtProjectTest"
