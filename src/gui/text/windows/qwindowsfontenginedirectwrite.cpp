@@ -200,7 +200,7 @@ bool QWindowsFontEngineDirectWrite::useSymmetricAntialiasing() const
         if (gasp.size() > 4) {
             qCDebug(lcQpaFonts) << "    Checking GASP table, size=" << gasp.size();
 
-            const uchar *start = reinterpret_cast<const uchar *>(gasp.constData());
+            const uchar *start = reinterpret_cast<const uchar *>(gasp.constBegin());
 
             const quint16 numRanges = qFromBigEndian<quint16>(start + 2);
             if (gasp.size() >= 4 + numRanges * 4) {
@@ -439,7 +439,7 @@ void QWindowsFontEngineDirectWrite::collectMetrics()
     QByteArray table = getSfntTable(QFont::Tag("hhea").value());
     const int advanceWidthMaxLocation = 10;
     if (table.size() >= advanceWidthMaxLocation + int(sizeof(quint16))) {
-        quint16 advanceWidthMax = qFromBigEndian<quint16>(table.constData() + advanceWidthMaxLocation);
+        quint16 advanceWidthMax = qFromBigEndian<quint16>(table.constBegin() + advanceWidthMaxLocation);
         m_maxAdvanceWidth = DESIGN_TO_LOGICAL(advanceWidthMax);
     }
 
