@@ -19,7 +19,7 @@
 
 #include <QtCore/qglobal.h>
 
-#if defined(Q_OS_LINUX) && !defined(QT_LINUXBASE) && !defined(Q_OS_ANDROID)
+#if defined(Q_OS_LINUX) && !defined(QT_LINUXBASE) && !defined(Q_OS_ANDROID) && !defined(Q_OS_OHOS)
 #define QTESTLIB_USE_PERF_EVENTS
 #else
 #undef QTESTLIB_USE_PERF_EVENTS
