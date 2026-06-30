@@ -721,11 +721,18 @@ void QWasmWindow::handleKeyForInputContextEvent(const KeyEvent &keyEvent)
 
     qCDebug(qLcQpaWasmInputContext) << "processKey as KeyEvent";
     emscripten::val event = keyEvent.webEvent;
-    if (processKeyForInputContext(keyEvent)) {
-        // this event is already handled in Qt, but let it
-        // go to inputCallback to facilitate word suggestions
-        QWasmIntegration::get()->wasmInputContext()->m_ignoreNextInput = true;
-    }
+
+    processKeyForInputContext(keyEvent);
+
+    // Set/clear m_ignoreNextInput to prevent duplicate key handling. When QtGui
+    // has processed the key event any following "input" event must not insert
+    // the key/character again. This also applies if processKeyForInputContext()
+    // rejects the event. Clear m_ignoreNextInput on key up to prevent it from
+    // ignoring an unrelated input event, e.g. when navigating with the arrow
+    // keys (which produce no input event) while editing text.
+    QWasmIntegration::get()->wasmInputContext()->m_ignoreNextInput =
+            (keyEvent.type == EventType::KeyDown);
+
     event.call<void>("stopImmediatePropagation");
 }
 
