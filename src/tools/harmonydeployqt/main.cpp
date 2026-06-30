@@ -577,7 +577,8 @@ static bool writeDepfile(const Options &options, const QString &hapOutputPath)
     return true;
 }
 
-static bool copyRecursively(const QString &sourceDir, const QString &destDir, bool verbose)
+static bool copyRecursively(const QString &sourceDir, const QString &destDir, bool verbose,
+                            const QString &topDest = {})
 {
     QDir srcDir(sourceDir);
     if (!srcDir.exists()) {
@@ -593,12 +594,25 @@ static bool copyRecursively(const QString &sourceDir, const QString &destDir, bo
         }
     }
 
+    // Fixed top-level destination so the check below matches the output dir at any depth.
+    const QFileInfo cleanDestInfo{ topDest.isEmpty()
+                                   ? QDir::cleanPath(destDirectory.absolutePath())
+                                   : topDest };
+
     const QFileInfoList entries = srcDir.entryInfoList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot | QDir::Hidden);
     for (const QFileInfo &entry : entries) {
         QString destPath = destDir + "/"_L1 + entry.fileName();
 
         if (entry.isDir()) {
-            if (!copyRecursively(entry.filePath(), destPath, verbose))
+            // Skip the destination itself; otherwise the copy descends into its own output.
+            const QFileInfo cleanSrcInfo{ QDir::cleanPath(entry.absoluteFilePath()) };
+            if (cleanSrcInfo == cleanDestInfo) {
+                if (verbose)
+                    fprintf(stdout, "  Skipping %s (is the destination directory)\n",
+                            qPrintable(cleanSrcInfo.filePath()));
+                continue;
+            }
+            if (!copyRecursively(entry.filePath(), destPath, verbose, cleanDestInfo.filePath()))
                 return false;
         } else {
             if (!copyFileIfNewer(entry.filePath(), destPath, verbose))
