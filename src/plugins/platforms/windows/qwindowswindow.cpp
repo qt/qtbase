@@ -4076,6 +4076,11 @@ void QWindowsWindow::requestUpdate()
     QWindow *w = window();
     QDxgiVSyncService *vs = QDxgiVSyncService::instance();
     if (vs->supportsWindow(w)) {
+        // The base class's timer-based fallback may still be running from an
+        // earlier requestUpdate() serviced before DXGI vsync became available.
+        // Stop it now that DXGI vsync callbacks take over delivery, otherwise
+        // both mechanisms end up delivering update requests concurrently.
+        QPlatformWindow::d_ptr->updateTimer.stop();
         if (m_vsyncServiceCallbackId == 0) {
             m_vsyncServiceCallbackId = vs->registerCallback([this, w](const QDxgiVSyncService::CallbackWindowList &windowList, qint64) {
                 if (windowList.contains(w)) {
