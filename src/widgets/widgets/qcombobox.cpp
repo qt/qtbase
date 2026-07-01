@@ -869,14 +869,15 @@ void QComboBoxPrivateContainer::setItemView(QAbstractItemView *itemView)
     view->viewport()->installEventFilter(this);
     view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     QStyleOptionComboBox opt = comboStyleOption();
-    const bool usePopup = combo->style()->styleHint(QStyle::SH_ComboBox_Popup, &opt, combo);
+    const auto *style = combo->style();
+    const bool usePopup = style->styleHint(QStyle::SH_ComboBox_Popup, &opt, combo);
 #if QT_CONFIG(scrollbar)
     if (usePopup)
         view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 #endif
     if (usePopup ||
-        combo->style()->styleHint(QStyle::SH_ComboBox_ListMouseTracking_Current, &opt, combo) ||
-        combo->style()->styleHint(QStyle::SH_ComboBox_ListMouseTracking_Active, &opt, combo)
+        style->styleHint(QStyle::SH_ComboBox_ListMouseTracking_Current, &opt, combo) ||
+        style->styleHint(QStyle::SH_ComboBox_ListMouseTracking_Active, &opt, combo)
         ) {
         view->setMouseTracking(true);
     }
@@ -934,8 +935,9 @@ void QComboBoxPrivateContainer::updateTopBottomMargin()
         return;
 
     const QStyleOptionComboBox opt = comboStyleOption();
-    const bool usePopup = combo->style()->styleHint(QStyle::SH_ComboBox_Popup, &opt, combo);
-    const int margin = usePopup ? combo->style()->pixelMetric(QStyle::PM_MenuVMargin, &opt, combo) : 0;
+    const auto *style = combo->style();
+    const bool usePopup = style->styleHint(QStyle::SH_ComboBox_Popup, &opt, combo);
+    const int margin = usePopup ? style->pixelMetric(QStyle::PM_MenuVMargin, &opt, combo) : 0;
 
     QSpacerItem *topSpacer = boxLayout->itemAt(0)->spacerItem();
     if (topSpacer)
@@ -952,10 +954,11 @@ void QComboBoxPrivateContainer::updateStyleSettings()
 {
     // add scroller arrows if style needs them
     QStyleOptionComboBox opt = comboStyleOption();
-    view->setMouseTracking(combo->style()->styleHint(QStyle::SH_ComboBox_ListMouseTracking_Current, &opt, combo) ||
-                           combo->style()->styleHint(QStyle::SH_ComboBox_ListMouseTracking_Active, &opt, combo) ||
-                           combo->style()->styleHint(QStyle::SH_ComboBox_Popup, &opt, combo));
-    setFrameStyle(combo->style()->styleHint(QStyle::SH_ComboBox_PopupFrameStyle, &opt, combo));
+    const auto *style = combo->style();
+    view->setMouseTracking(style->styleHint(QStyle::SH_ComboBox_ListMouseTracking_Current, &opt, combo) ||
+                           style->styleHint(QStyle::SH_ComboBox_ListMouseTracking_Active, &opt, combo) ||
+                           style->styleHint(QStyle::SH_ComboBox_Popup, &opt, combo));
+    setFrameStyle(style->styleHint(QStyle::SH_ComboBox_PopupFrameStyle, &opt, combo));
     updateTopBottomMargin();
 }
 
