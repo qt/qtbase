@@ -1044,6 +1044,15 @@ qint64 QNetworkRequest::decompressedSafetyCheckThreshold() const
     ZStandard), the reply will be treated as an error. Setting the threshold
     to \c{-1} disables this check.
 
+    \note This check only detects responses with unusually high compression
+    ratios. It does not impose an absolute limit on the total decompressed
+    output size. A response that maintains a moderate compression ratio (for
+    example, 39:1 for GZip) can decompress to an arbitrarily large size
+    without triggering the check. Applications communicating with untrusted
+    servers should monitor QNetworkReply::bytesAvailable() or
+    QNetworkReply::downloadProgress() and abort transfers that exceed an
+    acceptable size.
+
     \sa decompressedSafetyCheckThreshold()
 */
 void QNetworkRequest::setDecompressedSafetyCheckThreshold(qint64 threshold)
