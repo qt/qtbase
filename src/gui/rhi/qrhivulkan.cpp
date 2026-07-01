@@ -2124,6 +2124,7 @@ bool QRhiVulkan::createOffscreenRenderPass(QVkRenderPassDescriptor *rpD,
 
         QVkTexture *texD = QRHI_RES(QVkTexture, depthTexture);
         QVkRenderBuffer *rbD = QRHI_RES(QVkRenderBuffer, depthStencilBuffer);
+        Q_ASSERT(texD || rbD);
         const VkFormat srcFormat = texD ? texD->vkformat : rbD->vkformat;
         if (srcFormat != dstFormat) {
             qWarning("Multisample resolve between different depth-stencil formats (%d and %d) is not supported.",
