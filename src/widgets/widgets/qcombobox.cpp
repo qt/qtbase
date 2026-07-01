@@ -952,7 +952,8 @@ void QComboBoxPrivateContainer::updateStyleSettings()
 {
     // add scroller arrows if style needs them
     QStyleOptionComboBox opt = comboStyleOption();
-    view->setMouseTracking(combo->style()->styleHint(QStyle::SH_ComboBox_ListMouseTracking, &opt, combo) ||
+    view->setMouseTracking(combo->style()->styleHint(QStyle::SH_ComboBox_ListMouseTracking_Current, &opt, combo) ||
+                           combo->style()->styleHint(QStyle::SH_ComboBox_ListMouseTracking_Active, &opt, combo) ||
                            combo->style()->styleHint(QStyle::SH_ComboBox_Popup, &opt, combo));
     setFrameStyle(combo->style()->styleHint(QStyle::SH_ComboBox_PopupFrameStyle, &opt, combo));
     updateTopBottomMargin();
