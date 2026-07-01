@@ -19,6 +19,10 @@ find_package(Qt6 OPTIONAL_COMPONENTS
 
 if (TARGET Qt6::Quick)
     qt_policy(SET QTP0001 NEW)
+    if(NOT QT_BUILD_STANDALONE_TESTS)
+        message(STATUS "Skipping rangemodel manual test")
+        return()
+    endif()
 endif()
 
 qt_standard_project_setup()
