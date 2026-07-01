@@ -196,6 +196,9 @@ private:
     static QString slowCanonicalized(const QString &path);
 #if defined(Q_OS_WIN)
     static void clearWinStatData(QFileSystemMetaData &data);
+#else
+    /*maybe inline*/ static
+    QFileSystemEntry canonicalNameViaRealpath(const QFileSystemEntry &entry, QFileSystemMetaData &data);
 #endif
 };
 

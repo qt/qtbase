@@ -721,7 +721,6 @@ QFileSystemEntry QFileSystemEngine::getRawLinkPath(const QFileSystemEntry &link,
 QFileSystemEntry QFileSystemEngine::canonicalName(const QFileSystemEntry &entry, QFileSystemMetaData &data)
 {
     Q_CHECK_FILE_NAME(entry, entry);
-    char *resolved_name = nullptr;
 
     // If we have OS support to getting the canonical path, let's use it,
     // because the OS can resolve symlinks on its own without transitions
@@ -766,9 +765,19 @@ QFileSystemEntry QFileSystemEngine::canonicalName(const QFileSystemEntry &entry,
         // an EACCES error.
         return {};
     }
+#  define REALPATH_FALLBACK_INLINE  Q_NEVER_INLINE
+#else
+#  define REALPATH_FALLBACK_INLINE  inline
 #endif
 
+    return canonicalNameViaRealpath(entry, data);
+}
 
+REALPATH_FALLBACK_INLINE // static
+QFileSystemEntry QFileSystemEngine::canonicalNameViaRealpath(const QFileSystemEntry &entry,
+                                                             QFileSystemMetaData &data)
+{
+    char *resolved_name = nullptr;
 #ifdef PATH_MAX
     // use the stack to avoid the overhead of memory allocation
     char stack_result[PATH_MAX + 1];
@@ -801,6 +810,7 @@ QFileSystemEntry QFileSystemEngine::canonicalName(const QFileSystemEntry &entry,
     }
     return QFileSystemEntry();
 }
+#undef REALPATH_FALLBACK_INLINE
 
 //static
 QFileSystemEntry QFileSystemEngine::absoluteName(const QFileSystemEntry &entry)
