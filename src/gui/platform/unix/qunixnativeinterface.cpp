@@ -322,6 +322,7 @@ QT_DEFINE_NATIVE_INTERFACE(QWaylandScreen);
     \internal
     \brief Native interface to a Wayland window.
     \inmodule QtGui
+    \inheaderfile QScreen
     \ingroup native-interfaces
 */
 

@@ -50,6 +50,7 @@ QT_DEFINE_PRIVATE_NATIVE_INTERFACE(QCocoaMenuBar);
 
     Accessed through QScreen::nativeInterface().
     \inmodule QtGui
+    \inheaderfile QScreen
     \ingroup native-interfaces
     \ingroup native-interfaces-qscreen
 */

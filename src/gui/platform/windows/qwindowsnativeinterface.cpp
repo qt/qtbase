@@ -272,6 +272,7 @@ QT_DEFINE_NATIVE_INTERFACE(QWindowsScreen);
     \internal
     \brief Native interface to QPlatformWindow.
     \inmodule QtGui
+    \inheaderfile QScreen
     \ingroup native-interfaces
 */
 
