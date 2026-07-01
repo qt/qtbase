@@ -1,13 +1,15 @@
 Copyright (C) 2009-2026 D. R. Commander
-Copyright (C) 2015-2016, 2018, 2022 Matthieu Darbois
-Copyright (C) 2019-2021 Arm Limited
-Copyright (C) 2015, 2020 Google, Inc.
-Copyright (C) 2011, 2014, 2016 Siarhei Siamashka
-Copyright (C) 2015 Intel Corporation
-Copyright (C) 2013-2014 Linaro Limited
-Copyright (C) 2013-2014 MIPS Technologies, Inc.
-Copyright (C) 2009, 2012 Pierre Ossman for Cendio AB
-Copyright (C) 2009-2011 Nokia Corporation and/or its subsidiary(-ies)
+Copyright (C) 1991-1998 Thomas G. Lane
+Copyright (C) 2009 Pierre Ossman for Cendio AB
 Copyright (C) 1999-2006 MIYASAKA Masaru
 Copyright (C) 1999 Ken Murchison
+Copyright (C) 2015-2016, 2018, 2022 Matthieu Darbois
+Copyright (C) 2018 Matthias Räncker
+Copyright (C) 2019-2020 Arm Limited
+Copyright (C) 2022 Felix Hanau
+Copyright (C) 1997-1998 Thomas G. Lane, Todd Newman
+Copyright (C) 2021 Alex Richardson
+Copyright (C) 2015, 2020 Google, Inc.
+Copyright (C) 2013 Linaro Limited
+Copyright (C) 2014 Olle Liljenzin
 Copyright (C) 1991-2020 Thomas G. Lane, Guido Vollbeding
