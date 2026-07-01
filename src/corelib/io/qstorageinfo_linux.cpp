@@ -445,9 +445,15 @@ void QStorageInfoPrivate::doStat()
     if (!ready)
         return;
 
-    rootPath = QFileInfo(rootPath).canonicalFilePath();
-    if (rootPath.isEmpty())
-        return;
+    QFileInfo fileInfo(rootPath);
+    if (QString canonicalPath = fileInfo.canonicalFilePath(); !canonicalPath.isEmpty()) {
+        rootPath = std::move(canonicalPath);
+    } else {
+        // The volume is ready but canonization process failed (for example, a
+        // mount point we're allowed to statfs() but not open(), as can happen
+        // under SELinux on Android). The absolute path will have to do.
+        rootPath = fileInfo.absoluteFilePath();
+    }
 
     std::vector<MountInfo> infos = parseMountInfo();
     if (infos.empty()) {
