@@ -5,6 +5,7 @@
 #include "recognizer.h"
 
 #include <QtCore/qdir.h>
+#include <QtCore/qstringlist.h>
 
 #include <cstdlib>
 #include <cstring>
@@ -225,7 +226,7 @@ int Recognizer::nextToken()
               return (token = IMPL);
             }
           else
-            text += ""_L1;
+            text += "./"_L1;
         }
     }
 
@@ -257,11 +258,48 @@ bool Recognizer::parse (const QString &input_file)
       return false;
     }
 
-  QString _M_contents = QTextStream(&file).readAll();
-  _M_firstChar = _M_contents.constBegin();
-  _M_lastChar = _M_contents.constEnd();
-  _M_currentChar = _M_firstChar;
-  _M_line = 1;
+  QTextStream stream(&file);
+
+  // Extract leading copyright header (-- comment lines) from the input file
+  {
+    QStringList copyrightLines;
+    QString accumulated;
+    bool done = false;
+
+    while (!stream.atEnd() && !done) {
+      QString line = stream.readLine();
+      auto trimmed = QStringView(line).trimmed();
+      if (trimmed.startsWith("--"_L1)) {
+        copyrightLines.append(line);
+        accumulated += line + '\n'_L1;
+      } else if (trimmed.isEmpty() && !copyrightLines.isEmpty()) {
+        accumulated += line + '\n'_L1;
+      } else {
+        accumulated += line + '\n'_L1;
+        done = true;
+      }
+    }
+
+    _M_contents = done ? accumulated + stream.readAll() : accumulated;
+    _M_firstChar = _M_contents.constBegin();
+    _M_lastChar = _M_contents.constEnd();
+    _M_currentChar = _M_firstChar;
+    _M_line = 1;
+
+    if (!copyrightLines.isEmpty()) {
+      // Convert -- comments to C++ // comments
+      QString header;
+      for (const QString &line : copyrightLines) {
+        QString cppLine = line;
+        int idx = cppLine.indexOf("--"_L1);
+        Q_ASSERT(idx >= 0);
+        cppLine.replace(idx, 2, "//"_L1);
+        header += cppLine;
+        header += '\n'_L1;
+      }
+      _M_grammar->inputCopyright = header;
+    }
+  }
 
   int yytoken = -1;
   inp ();

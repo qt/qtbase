@@ -52,6 +52,8 @@ public:
   }
 
   void setCopyright (bool t) { copyright = t; }
+  void setCopyrightText (const QString &text) { m_copyrightText = text; }
+  void setEmitQtCode (bool t) { emit_qt_code = t; }
 
   void setWarningsAreErrors (bool e) { warnings_are_errors = e; }
 
@@ -81,6 +83,8 @@ private:
   bool debug_info;
   bool use_pragma_once = false;
   bool copyright;
+  bool emit_qt_code = false;
+  QString m_copyrightText;
   bool warnings_are_errors;
   Compress compressed_action;
   Compress compressed_goto;

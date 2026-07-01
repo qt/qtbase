@@ -34,6 +34,7 @@ static void help_me ()
        << "\t\t\tmark the output files with Qt-Security (QUIP-23) headers" << Qt::endl
        << "\t\t\twith given score and free-form <reason>" << Qt::endl
        << "  --qt\t\t\tadd the Qt copyright header and Qt-specific types and macros" << Qt::endl
+       << "  --no-copyright-header\tdisable automatic copyright header from input file" << Qt::endl
        << "  --exit-on-warn\texit with status code 2 on warning" << Qt::endl
        << Qt::endl;
   exit (0);
@@ -50,6 +51,7 @@ int main (int argc, char *argv[])
   bool use_pragma_once = false;
   std::optional<CppGenerator::SecurityHeader> security;
   bool qt_copyright = false;
+  bool no_copyright_header = false;
   bool warnings_are_errors = false;
   QString file_name;
 
@@ -84,6 +86,9 @@ int main (int argc, char *argv[])
 
       else if (arg == "--qt"_L1)
         qt_copyright = true;
+
+      else if (arg == "--no-copyright-header"_L1)
+        no_copyright_header = true;
 
       else if (arg == "--exit-on-warn"_L1)
         warnings_are_errors = true;
@@ -130,7 +135,13 @@ int main (int argc, char *argv[])
   gen.setUsePragmaOnce(use_pragma_once);
   if (security)
       gen.setSecurityHeader(std::move(*security));
-  gen.setCopyright (qt_copyright);
+  if (qt_copyright) {
+    gen.setCopyright (true);
+    gen.setEmitQtCode (true);
+  } else if (!no_copyright_header && !grammar.inputCopyright.isEmpty()) {
+    gen.setCopyright (true);
+    gen.setCopyrightText (grammar.inputCopyright);
+  }
   gen.setWarningsAreErrors (warnings_are_errors);
   gen ();
 

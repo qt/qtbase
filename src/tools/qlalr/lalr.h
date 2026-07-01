@@ -247,6 +247,7 @@ public:
   NameSet declared_lhs;
   int expected_shift_reduce;
   int expected_reduce_reduce;
+  QString inputCopyright;
 
   enum Assoc {
     NonAssoc,
