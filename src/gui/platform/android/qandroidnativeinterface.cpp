@@ -43,6 +43,7 @@ QOffscreenSurface  *QNativeInterface::QAndroidOffscreenSurface::fromNative(ANati
 
     Accessed through QScreen::nativeInterface().
     \inmodule QtGui
+    \inheaderfile QScreen
     \ingroup native-interfaces
     \ingroup native-interfaces-qscreen
 */
