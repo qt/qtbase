@@ -1006,7 +1006,7 @@ bool QComboBoxPrivateContainer::eventFilter(QObject *o, QEvent *e)
         if (isVisible()) {
             QMouseEvent *m = static_cast<QMouseEvent *>(e);
             QWidget *widget = static_cast<QWidget *>(o);
-            const QPoint vector = widget->mapToGlobal(m->position()).toPoint() - initialClickPosition;
+            const QPointF vector = widget->mapToGlobal(m->position()) - initialClickPosition;
             if (vector.manhattanLength() > 9 && blockMouseReleaseTimer.isActive())
                 blockMouseReleaseTimer.stop();
             if (combo->style()->styleHint(QStyle::SH_ComboBox_ListMouseTracking_Current, nullptr, combo)) {
@@ -3443,7 +3443,7 @@ void QComboBoxPrivate::showPopupFromMouseEvent(QMouseEvent *e)
             updateArrow(QStyle::State_Sunken);
         // We've restricted the next couple of lines, because by not calling
         // viewContainer(), we avoid creating the QComboBoxPrivateContainer.
-        viewContainer()->initialClickPosition = q->mapToGlobal(e->position()).toPoint();
+        viewContainer()->initialClickPosition = q->mapToGlobal(e->position());
         QPointer<QComboBox> guard = q;
         q->showPopup();
         if (!guard)

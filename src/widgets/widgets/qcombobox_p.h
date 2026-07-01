@@ -104,7 +104,7 @@ public:
 
     QTimer blockMouseReleaseTimer;
     QBasicTimer adjustSizeTimer;
-    QPoint initialClickPosition;
+    QPointF initialClickPosition;
 
 public Q_SLOTS:
     void scrollItemView(int action);
