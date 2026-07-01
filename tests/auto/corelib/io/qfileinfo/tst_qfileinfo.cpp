@@ -150,7 +150,11 @@ private slots:
     void absFilePath();
 
     void canonicalPath();
+    void canonicalFilePath_data();
     void canonicalFilePath();
+#ifdef Q_OS_WIN
+    void canonicalPathWindowsSymlinks();
+#endif
     void canonicalFilePathInUnreadableDir();
 
     void fileName_data();
@@ -257,7 +261,7 @@ private slots:
 
 private:
     const QString m_currentDir;
-    QString m_sourceFile;
+    static inline QString m_sourceFile;
     QString m_proFile;
     QString m_resourcesDir;
     QTemporaryDir m_dir;
@@ -753,134 +757,163 @@ void tst_QFileInfo::canonicalPath()
     QCOMPARE(fi.canonicalPath(), QFileInfo(QDir::tempPath()).canonicalFilePath());
 }
 
-class FileDeleter {
-    Q_DISABLE_COPY(FileDeleter)
-public:
-    explicit FileDeleter(const QString fileName) : m_fileName(fileName) {}
-    ~FileDeleter() { QFile::remove(m_fileName); }
+void tst_QFileInfo::canonicalFilePath_data()
+{
+    // like touch(1)
+    static auto touch = [](const QString &fileName, QByteArrayView contents = {}) {
+        QFile f(fileName);
+        QVERIFY2(f.open(QIODevice::WriteOnly), qPrintable(f.errorString()));
+        if (!contents.isEmpty())
+            f.write(contents.data(), contents.size());
+    };
 
-private:
-    const QString m_fileName;
-};
+    QTest::addColumn<QString>("fileName");
+    QTest::addColumn<QString>("expected");
+    QTest::addColumn<void (*)()>("setupFunction");
+
+    constexpr void (*noSetupFunction)() = nullptr;
+    QTest::newRow("empty") << QString() << QString() << noSetupFunction;
+
+    // ASSUMPTION: we are running in a canonical path.
+    // These two tests will verify that the test environment is correct.
+    QTest::newRow("current-dir") << QDir::currentPath() << QDir::currentPath() << noSetupFunction;
+    QTest::newRow(".") << "." << "@" << noSetupFunction;
+
+    // non-existent or failing paths
+#if defined(Q_OS_UNIX)
+    // If this file exists, you can't log in to run this test ...
+    QTest::newRow("system-doesnt-exist") << "/etc/nologin" << QString() << noSetupFunction;
+    // A path with a non-directory as a directory component also doesn't exist:
+    QTest::newRow("system-bad-path") << "/dev/null/sub/dir/n'existe.pas" << QString() << noSetupFunction;
+#else
+    QTest::newRow("system-doesnt-exist") << "c:/this-does-not-exist.txt" << QString() << noSetupFunction;
+    QTest::newRow("system-bad-path") << qEnvironmentVariable("COMSPEC") + "/sub/dir/n'existe.pas"
+                                     << QString() << noSetupFunction;
+#endif
+    QTest::newRow("user-doesnt-exist")
+            << QDir::currentPath() + "/this-does-not-exist.txt" << QString() << noSetupFunction;
+    QTest::newRow("user-bad-path") << "subdir/file.txt" << QString() << +[] { touch("subdir"); };
+
+#ifndef Q_OS_WIN
+    // This used to crash on macOS
+    QTest::addRow("root") << "/" << "/" << noSetupFunction;
+    // This used to crash on Mac, verify that it doesn't anymore.
+    QTest::newRow("past-root-dir") << "/tmp/../../../../../../../../../../../../../../../../../"
+                                   << "/" << noSetupFunction;
+#else
+    if (QString tmpdir = QDir::tempPath(); !tmpdir.isEmpty())
+        QTest::newRow("past-root-dir") << tmpdir + "/../../../../../../../../../../../../../../../../../"
+                                       << tmpdir.left(3) << noSetupFunction;
+#endif
+
+    // simple file
+    QTest::newRow("simple-file") << "tmp.canon" << "@/tmp.canon" << +[] { touch("tmp.canon"); };
+
+    // symlink to files
+    static auto simpleFileSymlink = +[] {
+        QFile f("file.txt");
+        QVERIFY2(f.open(QIODevice::WriteOnly), qPrintable(f.errorString()));
+        QVERIFY2(f.link("link.lnk"), qPrintable(f.errorString()));
+    };
+    QTest::newRow("symlink-file") << "link.lnk" << "@/file.txt" << simpleFileSymlink;
+    QTest::newRow("symlink-source-file") << "link.lnk" << QFileInfo(m_sourceFile).canonicalFilePath() << +[] {
+        QFile(m_sourceFile).link("link.lnk");
+    };
+
+#ifdef Q_OS_UNIX
+    // QFile::link() creates absolute links
+    QTest::newRow("symlink-file-relative") << "link.lnk" << "@/file.txt" << +[] {
+        touch("file.txt");
+        symlink("file.txt", "link.lnk");
+    };
+
+    // symlink to dir
+    QTest::newRow("symlink-cur-dir") << "dir.lnk" << "@" << +[] {
+        symlink(".", "dir.lnk");
+    };
+
+    // path containing symlinked directory
+    QTest::newRow("path-contains-symlinks1") << "dir.lnk/file.txt" << "@/file.txt" << +[] {
+        touch("file.txt");
+        symlink(".", "dir.lnk");
+    };
+    QTest::newRow("path-contains-symlinks2") << "dir.lnk/file.txt" << "@/subdir/file.txt" << +[] {
+        mkdir("subdir", 0777);
+        touch("subdir/file.txt");
+        symlink("subdir", "dir.lnk");
+    };
+
+    // path containing symlinked directory to symlinked file
+    QTest::newRow("symlinked-path-symlinked-file1") << "dir.lnk/file.lnk" << QFileInfo(m_sourceFile).canonicalFilePath() << +[] {
+        symlink(m_sourceFile.toLocal8Bit(), "file.lnk");
+        symlink(".", "dir.lnk");
+    };
+    QTest::newRow("symlinked-path-symlinked-file2") << "dir.lnk/file.lnk" << QFileInfo(m_sourceFile).canonicalFilePath() << +[] {
+        mkdir("subdir", 0777);
+        symlink(m_sourceFile.toLocal8Bit(), "subdir/file.lnk");
+        symlink("subdir", "dir.lnk");
+    };
+
+    // On Darwin, this may change Unicode normalization forms
+    static const QString composed = u"caf\u00e9.txt"_s;
+    static const QString decomposed = u"cafe\u0301.txt"_s;
+    QTest::newRow("nfc-path") << composed << "@/" + QFile::decodeName(QFile::encodeName(composed))
+                              << +[] { touch(composed); };
+    QTest::newRow("nfd-path") << decomposed << "@/" + QFile::decodeName(QFile::encodeName(decomposed))
+                              << +[] { touch(decomposed); };
+#endif
+}
 
 void tst_QFileInfo::canonicalFilePath()
 {
-    const QString fileName("tmp.canon");
-    QFile tempFile(fileName);
-    QVERIFY(tempFile.open(QFile::WriteOnly));
-    QFileInfo fi(tempFile.fileName());
-    QCOMPARE(fi.canonicalFilePath(), QDir::currentPath() + "/" + fileName);
-    fi = QFileInfo(tempFile.fileName() + QString::fromLatin1("/"));
-    QCOMPARE(fi.canonicalFilePath(), QString::fromLatin1(""));
-    tempFile.remove();
-
-    // This used to crash on Mac, verify that it doesn't anymore.
-    QFileInfo info("/tmp/../../../../../../../../../../../../../../../../../");
-    info.canonicalFilePath();
-
-#if defined(Q_OS_UNIX)
-    // If this file exists, you can't log in to run this test ...
-    const QString notExtantPath(QStringLiteral("/etc/nologin"));
-    QFileInfo notExtant(notExtantPath);
-    QCOMPARE(notExtant.canonicalFilePath(), QString());
-
-    // A path with a non-directory as a directory component also doesn't exist:
-    const QString badDirPath(QStringLiteral("/dev/null/sub/dir/n'existe.pas"));
-    QFileInfo badDir(badDirPath);
-    QCOMPARE(badDir.canonicalFilePath(), QString());
-
-    // This used to crash on Mac
-    QFileInfo dontCrash(QLatin1String("/"));
-    QCOMPARE(dontCrash.canonicalFilePath(), QLatin1String("/"));
-#endif
-
-#ifndef Q_OS_WIN
-    // test symlinks
-    QFile::remove("link.lnk");
-    {
-        QFile file(m_sourceFile);
-        if (file.link("link.lnk")) {
-            QFileInfo info1(file);
-            QFileInfo info2("link.lnk");
-            QCOMPARE(info1.canonicalFilePath(), info2.canonicalFilePath());
-        }
-    }
-
-    const QString dirSymLinkName = QLatin1String("tst_qfileinfo")
-        + QDateTime::currentDateTime().toString(QLatin1String("yyMMddhhmmss"));
-    const QString link(QDir::tempPath() + QLatin1Char('/') + dirSymLinkName);
-    FileDeleter dirSymLinkDeleter(link);
-
-    {
-        QFile file(QDir::currentPath());
-        if (file.link(link)) {
-            QFile tempfile("tempfile.txt");
-            QVERIFY(tempfile.open(QIODevice::ReadWrite));
-            tempfile.write("This file is generated by the QFileInfo autotest.");
-            QVERIFY(tempfile.flush());
-            tempfile.close();
-
-            QFileInfo info1("tempfile.txt");
-            QFileInfo info2(link + QDir::separator() + "tempfile.txt");
-
-            QVERIFY(info1.exists());
-            QVERIFY(info2.exists());
-            QCOMPARE(info1.canonicalFilePath(), info2.canonicalFilePath());
-
-            QFileInfo info3(link + QDir::separator() + "link.lnk");
-            QFileInfo info4(m_sourceFile);
-            QVERIFY(!info3.canonicalFilePath().isEmpty());
-            QCOMPARE(info4.canonicalFilePath(), info3.canonicalFilePath());
-
-            tempfile.remove();
-        }
-    }
-    {
-        QString link(QDir::tempPath() + QLatin1Char('/') + dirSymLinkName
-                     + "/link_to_tst_qfileinfo");
-        QFile::remove(link);
-
-        QFile file(QDir::tempPath() + QLatin1Char('/') +  dirSymLinkName
-                   + "tst_qfileinfo.cpp");
-        if (file.link(link))
+    using SetupFunction = void (*)();
+    struct SetupCleanup {
+        QTemporaryDir dir{ QDir::current().filePath(u"canonicalFilePath_"_s + QTest::currentDataTag() + "-XXXXXX") };
+        QString oldCurrentPath = QDir::currentPath();
+        SetupCleanup(SetupFunction setupFunction)
         {
-            QFileInfo info1("tst_qfileinfo.cpp");
-            QFileInfo info2(link);
-            QCOMPARE(info1.canonicalFilePath(), info2.canonicalFilePath());
+            QVERIFY(dir.isValid());
+            QDir::setCurrent(dir.path());
+            if (setupFunction)
+                setupFunction();
         }
-    }
-#endif
+        ~SetupCleanup()
+        {
+            QDir::setCurrent(oldCurrentPath);
+        }
+    };
+
+    QFETCH(QString, fileName);
+    QFETCH(QString, expected);
+    QFETCH(SetupFunction, setupFunction);
+    SetupCleanup sc(setupFunction);
+    if (QTest::currentTestFailed())
+        return;
+
+    if (expected.startsWith(u'@'))
+        expected.replace(0, 1, QDir::currentPath());
+
+    QFileInfo fi(fileName);
+    QCOMPARE(fi.canonicalFilePath(), expected);
+}
 
 #if defined(Q_OS_WIN)
-    {
-        const QString linkTarget = QStringLiteral("res");
-        const auto result = FileSystem::createSymbolicLink(linkTarget, m_resourcesDir);
-        if (result.dwErr == ERROR_PRIVILEGE_NOT_HELD)
-            QSKIP(msgInsufficientPrivileges(result.errorMessage));
-        QVERIFY2(result.dwErr == ERROR_SUCCESS, qPrintable(result.errorMessage));
-        QString currentPath = QDir::currentPath();
-        QVERIFY(QDir::setCurrent(linkTarget));
-        const QString actualCanonicalPath = QFileInfo("file1").canonicalFilePath();
-        QVERIFY(QDir::setCurrent(currentPath));
-        QCOMPARE(actualCanonicalPath, m_resourcesDir + QStringLiteral("/file1"));
+void tst_QFileInfo::canonicalPathWindowsSymlinks()
+{
+    const QString linkTarget = QStringLiteral("res");
+    const auto result = FileSystem::createSymbolicLink(linkTarget, m_resourcesDir);
+    if (result.dwErr == ERROR_PRIVILEGE_NOT_HELD)
+        QSKIP(msgInsufficientPrivileges(result.errorMessage));
+    QVERIFY2(result.dwErr == ERROR_SUCCESS, qPrintable(result.errorMessage));
+    QString currentPath = QDir::currentPath();
+    QVERIFY(QDir::setCurrent(linkTarget));
+    const QString actualCanonicalPath = QFileInfo("file1").canonicalFilePath();
+    QVERIFY(QDir::setCurrent(currentPath));
+    QCOMPARE(actualCanonicalPath, m_resourcesDir + QStringLiteral("/file1"));
 
-        QDir::current().rmdir(linkTarget);
-    }
-#endif
-
-#ifdef Q_OS_DARWIN
-    {
-        // Check if canonicalFilePath's result is in Composed normalization form.
-        QString path = QString::fromLatin1("caf\xe9");
-        QDir dir(QDir::tempPath());
-        dir.mkdir(path);
-        QString canonical = QFileInfo(dir.filePath(path)).canonicalFilePath();
-        QString roundtrip = QFile::decodeName(QFile::encodeName(canonical));
-        QCOMPARE(canonical, roundtrip);
-        dir.rmdir(path);
-    }
-#endif
+    QDir::current().rmdir(linkTarget);
 }
+#endif
 
 void tst_QFileInfo::canonicalFilePathInUnreadableDir()
 {
