@@ -214,8 +214,11 @@ void QWaylandDataDevice::data_device_drop()
     }
 }
 
-void QWaylandDataDevice::data_device_enter(uint32_t serial, wl_surface *surface, wl_fixed_t x, wl_fixed_t y, wl_data_offer *id)
+void QWaylandDataDevice::data_device_enter(uint32_t serial, wl_surface *surface, wl_fixed_t x_fixed, wl_fixed_t y_fixed, wl_data_offer *id)
 {
+    const qreal x = wl_fixed_to_double(x_fixed);
+    const qreal y = wl_fixed_to_double(y_fixed);
+
     auto *dragWaylandWindow = surface ? QWaylandWindow::fromWlSurface(surface) : nullptr;
     if (!dragWaylandWindow)
         return; // Ignore foreign surfaces
@@ -260,9 +263,11 @@ void QWaylandDataDevice::data_device_leave()
     }
 }
 
-void QWaylandDataDevice::data_device_motion(uint32_t time, wl_fixed_t x, wl_fixed_t y)
+void QWaylandDataDevice::data_device_motion(uint32_t time, wl_fixed_t x_fixed, wl_fixed_t y_fixed)
 {
     Q_UNUSED(time);
+    const qreal x = wl_fixed_to_double(x_fixed);
+    const qreal y = wl_fixed_to_double(y_fixed);
 
     QDrag *drag = static_cast<QWaylandDrag *>(QGuiApplicationPrivate::platformIntegration()->drag())->currentDrag();
 
@@ -327,9 +332,9 @@ void QWaylandDataDevice::dragSourceCancelled()
     }
 }
 
-QPoint QWaylandDataDevice::calculateDragPosition(int x, int y, QWindow *wnd) const
+QPoint QWaylandDataDevice::calculateDragPosition(qreal x, qreal y, QWindow *wnd) const
 {
-    QPoint pnt(wl_fixed_to_int(x), wl_fixed_to_int(y));
+    QPoint pnt(x, y);
     if (wnd) {
         QWaylandWindow *wwnd = static_cast<QWaylandWindow*>(m_dragWindow->handle());
         if (wwnd && wwnd->decoration()) {
