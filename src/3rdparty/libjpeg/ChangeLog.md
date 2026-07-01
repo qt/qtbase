@@ -1,3 +1,203 @@
+3.2.0
+=====
+
+### Significant changes relative to 3.2 beta1:
+
+1. Fixed a regression introduced by 3.2 beta1[9] that broke Arm64EC Windows
+builds.
+
+2. Hardened the PNG writer (which is used by djpeg and `tj3SaveImage*()`)
+against applications that may erroneously attempt to write sample values that
+are out of range for the specified output data precision.  This could have
+caused a buffer overrun in the PNG writer's rescale array if the output data
+precision was not 8 or 16 bits.  The buffer overrun did not likely pose a
+security risk, since `tj3SaveImage*()` is not exposed to arbitrary external
+input data and since a caller that abused the API in the aforementioned manner
+could never work properly.
+
+3. Hardened the libjpeg API against hypothetical applications that may
+erroneously call `jpeg_crop_scanline()` with buffered-image mode and raw data
+output enabled.  `jpeg_crop_scanline()` does not work with raw data output, but
+due to an oversight, it did not throw an error if both buffered-image mode and
+raw data output were enabled.  If a hypothetical application aborted a normal
+decompression operation without reading any scanlines, started a new
+decompression operation using the same libjpeg instance with buffered-image
+mode and raw data output enabled, then called `jpeg_crop_scanline()` with
+arguments that would have caused any of the component planes to be cropped to a
+width of 1 sample, `jpeg_crop_scanline()` would have used freed memory.
+However, this did not likely pose a security risk, since an application that
+abused the API in the aforementioned manner could never work properly.
+
+4. Fixed a buffer overrun and subsequent segfault in jpegtran that occurred
+when attempting to use the `-crop` and `-trim` options to expand the width of
+an image narrower than one iMCU, discard partial iMCUs, and fill each block in
+the expanded region with the DC coefficient of the nearest block in the input
+image ("flatten.")  Similarly, fixed an infinite loop that occurred when
+attempting to use the `-crop` and `-trim` options to expand the width of an
+image narrower than one iMCU, discard partial iMCUs, and fill the expanded
+region with repeated reflections of the input image ("reflect.")  When the only
+iMCU column in the input image is partial and partial iMCUs are trimmed, the
+flatten and reflect extensions cannot work properly, so jpegtran now throws an
+error if that is the case.  These issues were confined to the jpegtran
+application and thus did not pose a security risk.
+
+
+3.1.90 (3.2 beta1)
+==================
+
+### Significant changes relative to 3.1.4.1:
+
+1. The legacy GNU Assembler (GAS) implementation of the Arm Neon SIMD
+extensions has been removed.  Arm builds of libjpeg-turbo must now use GCC 12
+or later or Clang in order to achieve full performance.
+
+2. The SIMD dispatchers have been overhauled so that the list of supported SIMD
+instruction sets is initialized on a per-instance basis rather than a
+per-thread basis, thus eliminating the need for thread-local storage in the
+libjpeg API library.  The overhaul also streamlines and modernizes the
+dispatcher architecture, eliminates redundant and unnecessary code, and
+generally simplifies the process of adding new SIMD extensions.  A new test
+program (simdcoverage) can be used to validate the correctness of a particular
+dispatcher.
+
+3. If the `WITH_PROFILE` CMake variable is enabled, libjpeg-turbo now measures
+the cumulative average throughput of each lossy JPEG compression and
+decompression algorithm and reports it to the command line when
+`jpeg_destroy_compress()`, `jpeg_destroy_decompress()`, or `tj3Destroy()` is
+called.
+
+4. jpegtran now honors the `-trim` and `-perfect` options when expanding the
+image size using the `-crop` option.  If `-trim` is specified, then partial
+iMCUs from the source image are discarded in the expanded image (equivalent to
+the previous behavior.)  If `-trim` is not specified, then partial iMCUs are
+left in place.  If `-perfect` is specified, then expanding the image size using
+the `-crop` option will fail if there are any partial iMCUs in the source
+image.  The new default behavior is useful, in combination with the `-drop`
+option, for reversibly combining multiple JPEG source images into a single
+composite JPEG image.
+
+5. The MIPS DSPr2 SIMD extensions have been removed.  Justifications:
+
+     - MIPS Technologies deprecated the MIPS architecture in favor of RISC-V in
+2021.
+     - The DSPr2 instruction set was already obsolete at that point, having
+been superseded by the MSA instruction set (which is now also deprecated.)
+     - The overall speedup from the DSPr2 SIMD extensions was never compelling,
+in part because some of the modules were implemented using scalar (non-SIMD)
+instructions and were thus no faster than the equivalent C modules.
+     - Some of the DSPr2 SIMD modules had long-standing bugs, and it was
+necessary to disable those modules in order to prevent accuracy issues with
+libjpeg-turbo on MIPS CPUs.
+     - The DSPr2 SIMD extensions only worked with 32-bit MIPS applications.
+     - The libjpeg-turbo Project has never had access to a MIPS test platform,
+which limited our ability to maintain the DSPr2 SIMD extensions.
+
+    Even before the MIPS architecture was deprecated, the aforementioned
+limitations had already reduced the number of platforms and applications that
+could benefit from the DSPr2 SIMD extensions to near zero.  The DSPr2 SIMD
+extensions will continue to be maintained in the 3.1.x branch on a break/fix
+basis.
+
+6. Added RISC-V Vector (RVV) SIMD implementations of the colorspace conversion,
+chroma downsampling and upsampling, integer quantization and sample conversion,
+and integer DCT/IDCT algorithms.  When using the accurate integer DCT/IDCT
+algorithms, RGB-to-baseline JPEG compression is approximately 149-246% (avg.
+201%) faster relative to libjpeg-turbo 3.1.x, and baseline-to-RGB JPEG
+decompression is approximately 48-180% (avg. 115%) faster.  (Tested on a 1.6
+GHz Ky X1 CPU.  Actual mileage may vary.)
+
+7. The TurboJPEG Java API has been moved to a
+[dedicated repository](https://github.com/libjpeg-turbo/turbojpeg-java) where
+it can evolve independently of the TurboJPEG C API based on demand.
+Justifications:
+
+     - The TurboJPEG Java API was designed around the needs of Java Web Start,
+an obsolete "zero-install" method of Java application deployment.  The idea was
+that JWS applications could be deployed along with JAR files containing the
+TurboJPEG Java API and TurboJPEG API library, which contained Java Native
+Interface (JNI) bindings to support the former.  It made sense for our project
+to package those resources so downstream developers could easily sign and
+deploy them via JWS.  These days, however, Java applications are more
+frequently deployed as standalone applications.
+     - The TurboJPEG Java API was designed at a time when libjpeg-turbo was not
+ubiquitous and JNA was nascent.  These days, libjpeg-turbo is used by most
+operating systems, so there is less of a need for us to package an end-to-end
+solution for high-speed JPEG support in Java.
+     - The Java-friendly design of the TurboJPEG Java API (specifically, the
+requirement that it work directly with Java arrays rather than NIO buffers)
+necessitated allocating all buffers on the Java heap in order to avoid buffer
+copies.  That necessitated using fixed-size JPEG buffers (the equivalent of
+`TJPARAM_NOREALLOC`), which meant that all JPEG buffers had to be big enough to
+account for the size of the ICC profile and the possibility of zero
+compression.  Some of the proposed new TurboJPEG API features would have been
+impossible to implement in the TurboJPEG Java API without completely
+redesigning it.
+     - The Java-friendly design of the TurboJPEG Java API made it
+more difficult to maintain, document, and extend than the C API, which reduced
+our ability to add needed features in a timely manner.
+
+    Example code (TurboJPEG/JNA) demonstrating how to use the TurboJPEG C API
+through Java Native Access (JNA) has been added to the source tree and can be
+built, tested, and installed by setting the `WITH_JNA` CMake variable.
+TurboJPEG/JNA generally performs as well as the TurboJPEG C API, whereas
+compressing JPEG images with the TurboJPEG Java API was slower on some
+platforms.
+
+8. To facilitate shadow recovery in underexposed images, the libjpeg and
+TurboJPEG APIs and associated programs now allow an 8-bit-per-sample lossy JPEG
+image to be decompressed to a 12-bit-per-sample output image.  This is enabled
+in the libjpeg API by setting `cinfo->data_precision = 12` after calling
+`jpeg_read_header()`, and in the TurboJPEG API by calling `tj3Decompress12()`
+after calling `tj3DecompressHeader()`.
+
+9. cjpeg, djpeg, `tj3LoadImage*()`, and `tj3SaveImage*()` now support
+8-bit-per-channel and 16-bit-per-channel PNG images.
+
+     - By default, cjpeg transfers the embedded ICC profile from a PNG input
+image to the JPEG image, and djpeg transfers the embedded ICC profile from the
+JPEG image to a PNG output image.  A new option (`-noicc`) can be used to
+disable that behavior.
+     - If called with a TurboJPEG compression instance, `tj3LoadImage*()`
+extracts the embedded ICC profile from a PNG image and associates it with the
+TurboJPEG instance if `TJPARAM_SAVEMARKERS` is set to 2 or 4.
+     - If called with a TurboJPEG decompression instance, `tj3SaveImage*()`
+transfers the ICC profile that was previously extracted from the JPEG image to
+a PNG image if `TJPARAM_SAVEMARKERS` is set to 2 or 4.
+     - The PNG writer upscales images with 2-7 and 9-15 bits of data
+precision to, respectively, 8-bit-per-channel and 16-bit-per-channel PNG
+images.  The upscaling algorithm is reversible, so a lossless JPEG image with a
+non-standard data precision can be losslessly converted to a PNG image and back
+to a lossless JPEG image with the same data precision.
+
+10. The TurboJPEG API has been improved in the following ways:
+
+     - `tj3GetICCProfile()` can now be called multiple times to retrieve the
+ICC profile that was previously extracted from a JPEG image.
+     - `tj3GetICCProfile()` can now be used to retrieve the ICC profile
+associated with a TurboJPEG compression instance (including an ICC profile
+extracted from a PNG image by `tj3LoadImage*()`.)
+     - The JPEG colorspace can now be reset to the default, using a new
+`TJPARAM_COLORSPACE` value (`TJCS_DEFAULT`.)
+     - 4:1:0 and 2:4 subsampling are now supported.
+
+11. Added a new cjpeg, djpeg, and jpegtran option (`-nooverwrite`) that causes
+the programs to fail if the specified output file exists.
+
+12. jpegtran now includes a `-roll` option that performs a lossless roll
+transform (shift with wraparound), which is similar in concept to the `-roll`
+option in ImageMagick and the Offset filter/tool in Photoshop and GIMP.
+
+
+3.1.4.1
+=======
+
+### Significant changes relative to 3.1.4:
+
+1. Fixed multiple issues, some long-standing and some that were regressions
+introduced in 3.1.4, that made the CMake package config files non-relocatable
+and broke the `--prefix` option to `cmake --install`.
+
+
 3.1.4
 =====
 

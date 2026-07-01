@@ -128,8 +128,6 @@ FILES="
    jquant1.c
    jquant2.c
    jsamplecomp.h
-   jsimd.h
-   jsimddct.h
    jstdhuff.c
    jutils.c
 "
@@ -142,12 +140,7 @@ copy_file "src/jversion.h.in" "src/jversion.h"
 cyear=$(grep COPYRIGHT_YEAR $LIBJPEG_DIR/CMakeLists.txt | sed -e 's/.*"\(.*\)".*/\1/')
 sed -i -e "s/@COPYRIGHT_YEAR@/$cyear/" $TARGET_DIR/src/jversion.h
 
-sed -n -e 's/^[ ]*"//
-           s/\(\\n\)*"[ ]*\\*$//
-           /JCOPYRIGHT.\ /,/^[ ]*$/ {
-               /Copyright/p
-           }
-          ' $TARGET_DIR/src/jversion.h > $TARGET_DIR/COPYRIGHT.txt
-
+SCRIPT_DIR=$(dirname "$0")
+python3 "$SCRIPT_DIR/generate_copyright.py" "$TARGET_DIR"
 
 echo Done. $TARGET_DIR/src/jconfig.h and jconfigint.h may need manual updating.

@@ -73,4 +73,8 @@
 /* Use accelerated SIMD routines. */
 #cmakedefine WITH_SIMD 1
 
+#define SIMD_ARCHITECTURE  @SIMD_ARCHITECTURE@
+
 #endif
+
+#cmakedefine WITH_PROFILE
