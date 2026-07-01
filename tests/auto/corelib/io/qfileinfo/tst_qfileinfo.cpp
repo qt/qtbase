@@ -151,6 +151,7 @@ private slots:
 
     void canonicalPath();
     void canonicalFilePath();
+    void canonicalFilePathInUnreadableDir();
 
     void fileName_data();
     void fileName();
@@ -879,6 +880,47 @@ void tst_QFileInfo::canonicalFilePath()
         dir.rmdir(path);
     }
 #endif
+}
+
+void tst_QFileInfo::canonicalFilePathInUnreadableDir()
+{
+    // Unreadable dir with a file inside (usually; root can trasverse it).
+    // Done as a separate test because QTemporaryDir can't remove this, so we
+    // want to have the explicit cleanup code.
+
+    // note: qt_error_string() may be non-sensical!
+    QVERIFY2(QDir().mkdir("unreadable-dir"), qPrintable(qt_error_string()));
+    auto cleanupUnreadableDir = qScopeGuard([] {
+        auto mode = QFileDevice::ReadOwner | QFileDevice::WriteOwner | QFileDevice::ExeOwner;
+        QFile::remove("unreadable-dir-file.txt");
+        QFile::setPermissions("unreadable-dir", mode);
+        QFile::remove("unreadable-dir/file.txt");
+        QDir().rmdir("unreadable-dir");
+    });
+
+    QFile f("unreadable-dir/file.txt");
+    QVERIFY(f.open(QIODevice::WriteOnly));
+    f.write("Readable file in unreadable dir");
+    f.link("unreadable-dir-file.txt");
+    f.close();
+    QFile::setPermissions("unreadable-dir", QFileDevice::Permissions{});
+
+    bool unreadableDirIsUnreadable = true;
+#ifdef Q_OS_WIN
+    // _access() can only tell whether dirs exist, not readability/transversability
+    unreadableDirIsUnreadable = QDir("unreadable-dir").entryList().isEmpty();
+#else
+    unreadableDirIsUnreadable = (access("unreadable-dir", X_OK) != 0);
+#endif
+    if (!unreadableDirIsUnreadable)
+        QSKIP("Unreadable dir was readable - running as root?");
+
+    // We CANNOT resolve the canonical path
+    QFileInfo unreadableDirFile("unreadable-dir/file.txt");
+    QCOMPARE(unreadableDirFile.canonicalFilePath(), QString());
+
+    unreadableDirFile.setFile("unreadable-dir-file.txt");
+    QCOMPARE(unreadableDirFile.canonicalFilePath(), QString());
 }
 
 void tst_QFileInfo::fileName_data()

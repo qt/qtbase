@@ -607,8 +607,10 @@ QString QFileInfo::absoluteFilePath() const
     name, that is, an absolute path without symbolic links or redundant
     \c{'.'} or \c{'..'} elements.
 
-    If the entry does not exist, canonicalFilePath() returns an empty
-    string.
+    This method returns an empty string if the entry does not exist, is not
+    reachable (for example, the current user does not have access to a
+    directory path), or an error occurs while canonicalizing the path (normally
+    due to dangling symbolic links).
 
     \sa filePath(), absoluteFilePath(), dir()
 */
@@ -650,7 +652,10 @@ QString QFileInfo::absolutePath() const
     Returns the file system entry's canonical path (excluding the entry's name),
     i.e. an absolute path without symbolic links or redundant "." or ".." elements.
 
-    If the entry does not exist, this method returns an empty string.
+    This method returns an empty string if the entry does not exist, is not
+    reachable (for example, the current user does not have access to a
+    directory path), or an error occurs while canonicalizing the path (normally
+    due to dangling symbolic links).
 
     \sa path(), absolutePath()
 */
