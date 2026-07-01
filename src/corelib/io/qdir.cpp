@@ -791,9 +791,11 @@ QString QDir::absolutePath() const
     redundant "." or ".." elements.
 
     On systems that do not have symbolic links this function will
-    always return the same string that absolutePath() returns. If the
-    canonical path does not exist (normally due to dangling symbolic
-    links) canonicalPath() returns an empty string.
+    always return the same string that absolutePath() returns. This method
+    returns an empty string if the entry does not exist, is not reachable (for
+    example, the current user does not have access to a directory path), or an
+    error occurs while canonicalizing the path (normally due to dangling
+    symbolic links).
 
     Example:
 
