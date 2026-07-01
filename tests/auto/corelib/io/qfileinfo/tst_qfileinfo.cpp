@@ -801,6 +801,10 @@ void tst_QFileInfo::canonicalFilePath_data()
     QTest::newRow("past-root-dir") << "/tmp/../../../../../../../../../../../../../../../../../"
                                    << "/" << noSetupFunction;
 #else
+    for (const QFileInfo &drive : QDir::drives()) {
+        QTest::addRow("drive-%c", char(drive.path().at(0).unicode()))
+                << drive.filePath() << drive.filePath() << noSetupFunction;
+    }
     if (QString tmpdir = QDir::tempPath(); !tmpdir.isEmpty())
         QTest::newRow("past-root-dir") << tmpdir + "/../../../../../../../../../../../../../../../../../"
                                        << tmpdir.left(3) << noSetupFunction;
@@ -808,6 +812,13 @@ void tst_QFileInfo::canonicalFilePath_data()
 
     // simple file
     QTest::newRow("simple-file") << "tmp.canon" << "@/tmp.canon" << +[] { touch("tmp.canon"); };
+
+    // un-openable file (though root can open it)
+    QTest::newRow("unopenable-file")  << "unopenable.txt" << "@/unopenable.txt" << +[] {
+        QFile f("unopenable.txt");
+        QVERIFY2(f.open(QIODevice::WriteOnly), qPrintable(f.errorString()));
+        f.setPermissions({});
+    };
 
     // symlink to files
     static auto simpleFileSymlink = +[] {
@@ -818,6 +829,10 @@ void tst_QFileInfo::canonicalFilePath_data()
     QTest::newRow("symlink-file") << "link.lnk" << "@/file.txt" << simpleFileSymlink;
     QTest::newRow("symlink-source-file") << "link.lnk" << QFileInfo(m_sourceFile).canonicalFilePath() << +[] {
         QFile(m_sourceFile).link("link.lnk");
+    };
+    QTest::newRow("broken-symlink") << "file.lnk" << QString() << +[] {
+        simpleFileSymlink();
+        QFile::remove("file.txt");
     };
 
 #ifdef Q_OS_UNIX
@@ -852,6 +867,11 @@ void tst_QFileInfo::canonicalFilePath_data()
         mkdir("subdir", 0777);
         symlink(m_sourceFile.toLocal8Bit(), "subdir/file.lnk");
         symlink("subdir", "dir.lnk");
+    };
+
+    QTest::newRow("symlink-loop") << "peter" << QString() << +[] {
+        symlink("peter", "paul");
+        symlink("paul", "peter");
     };
 
     // On Darwin, this may change Unicode normalization forms
