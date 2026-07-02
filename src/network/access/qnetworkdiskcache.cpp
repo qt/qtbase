@@ -214,13 +214,24 @@ void QNetworkDiskCache::insert(QIODevice *device)
 void QNetworkDiskCachePrivate::prepareLayout()
 {
     QDir helper;
+    static constexpr auto dirPermissions =
+        QFileDevice::ReadOwner | QFileDevice::WriteOwner | QFileDevice::ExeOwner;
 
     //Create directory and subdirectories 0-F
-    helper.mkpath(dataDirectory);
+    //Ensure the cache directory and any parents exist.
+    helper.mkpath(cacheDirectory);
+    // Create the data directory with owner-only permissions.
+    // If it already exists, tighten its permissions
+    if (!helper.mkdir(dataDirectory, dirPermissions)
+        && !QFile::setPermissions(dataDirectory, dirPermissions)) {
+        qWarning("QNetworkDiskCache::prepareLayout: could not create or set permissions on %ls",
+                 qUtf16Printable(dataDirectory));
+        return;
+    }
     for (uint i = 0; i < 16 ; i++) {
         QString str = QString::number(i, 16);
         QString subdir = dataDirectory + str;
-        helper.mkdir(subdir);
+        helper.mkdir(subdir, dirPermissions);
     }
 }
 
