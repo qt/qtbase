@@ -58,6 +58,6 @@ set_target_properties(
 
 \qtpolicydeprecatedbehavior
 
-\sa qt_policy, {Qt CMake policies}
+\sa qt_policy(), {Qt CMake policies}
 
 */

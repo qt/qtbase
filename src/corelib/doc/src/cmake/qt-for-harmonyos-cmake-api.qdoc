@@ -15,7 +15,7 @@ configure how a Qt application is packaged into a HarmonyOS Ability Package
 (HAP).
 
 When you create a Qt executable with
-\l{qt6_add_executable}{qt_add_executable()} while targeting HarmonyOS, Qt
+\l qt_add_executable() while targeting HarmonyOS, Qt
 automatically generates a \c {<target>_make_hap} build target that produces the
 HAP. The commands, properties, and variables below control the contents of that
 HAP and the metadata written into the HarmonyOS manifest files.
@@ -29,12 +29,12 @@ there is one command for each scope.
 \section1 Commands
 
 \list
-\li \l{qt6_set_harmonyos_app_metadata}{qt_set_harmonyos_app_metadata()} sets
+\li \l qt_set_harmonyos_app_metadata() sets
     application-level metadata, such as the vendor, version, label, and icon.
-\li \l{qt6_set_harmonyos_module_metadata}{qt_set_harmonyos_module_metadata()}
+\li \l qt_set_harmonyos_module_metadata()
     sets module-level metadata, such as the description, device types, and
     orientation.
-\li \l{qt6_add_harmonyos_permission}{qt_add_harmonyos_permission()} adds a
+\li \l qt_add_harmonyos_permission() adds a
     HarmonyOS permission to the application.
 \endlist
 

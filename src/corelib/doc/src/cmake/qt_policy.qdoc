@@ -6,7 +6,7 @@
 \ingroup cmake-commands-qtcore
 
 \title qt_policy
-\keyword qt6_policy
+\keyword qt_policy()
 
 \summary {Modify the default behavior of Qt's CMake API.}
 
@@ -64,6 +64,6 @@ You can set \c behavior to one of the following options:
 
 \annotatedlist qt-cmake-policies
 
-\sa qt_standard_project_setup
+\sa qt_standard_project_setup()
 
 */

@@ -6,7 +6,7 @@
 \ingroup cmake-commands-qtcore
 
 \title qt_set_harmonyos_app_metadata
-\keyword qt6_set_harmonyos_app_metadata
+\keyword qt_set_harmonyos_app_metadata()
 
 \summary {Sets HarmonyOS application-level metadata on the target.}
 
@@ -40,7 +40,7 @@ executable. The values are conceptually app-scoped (one application maps to one
 bundle) and are baked into \c {AppScope/app.json5} and
 \c {entry/build-profile.json5} when the HAP package is built. Module-scoped
 metadata, such as the description or orientation, is set with
-\l{qt6_set_harmonyos_module_metadata}{qt_set_harmonyos_module_metadata()}
+\l qt_set_harmonyos_module_metadata()
 instead.
 
 \section1 Arguments
@@ -79,6 +79,6 @@ the effective default for each option is whatever that template provides. See
 
 \snippet cmake-macros/examples.cmake qt_set_harmonyos_app_metadata
 
-\sa {qt6_set_harmonyos_module_metadata}{qt_set_harmonyos_module_metadata()},
+\sa qt_set_harmonyos_module_metadata(),
     {Qt for HarmonyOS CMake API}
 */

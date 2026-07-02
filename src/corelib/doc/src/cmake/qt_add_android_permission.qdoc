@@ -6,7 +6,7 @@
 \ingroup cmake-commands-qtcore
 
 \title qt_add_android_permission
-\keyword qt6_add_android_permission
+\keyword qt_add_android_permission()
 
 \summary {Adds an Android permission to the target executable.}
 

@@ -6,7 +6,7 @@
 \ingroup cmake-commands-qtcore
 
 \title qt_add_win_app_sdk
-\keyword qt6_add_win_app_sdk
+\keyword qt_add_win_app_sdk()
 
 \summary {Adds the Windows App SDK library to the application.}
 

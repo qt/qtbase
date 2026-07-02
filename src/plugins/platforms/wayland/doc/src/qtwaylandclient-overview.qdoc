@@ -24,7 +24,7 @@
   See \l{Qt for Linux/X11}{Qt for Linux} for general information. For more information
   about Wayland itself, see \l{Wayland and Qt}.
 
-  The cmake function \l{qt_generate_wayland_protocol_client_sources}{qt_generate_wayland_protocol_client_sources()}
+  The cmake function \l qt_generate_wayland_protocol_client_sources()
   can be used to create custom protocol extensions.
 
   Qt also provides the \l{Qt Wayland Compositor} module for developing compositors.

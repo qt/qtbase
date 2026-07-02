@@ -6,7 +6,7 @@
 \ingroup cmake-commands-qtcore
 
 \title qt_set_finalizer_mode
-\keyword qt6_set_finalizer_mode
+\keyword qt_set_finalizer_mode()
 
 \summary {Customizes aspects of a target's finalization.}
 
@@ -33,15 +33,15 @@ specific \c target. It only has an effect if called before \c target is
 finalized, which occurs in one of the following scenarios:
 
 \list
-\li The project explicitly calls \l{qt6_finalize_target}{qt_finalize_target()}
+\li The project explicitly calls \l qt_finalize_target()
     for the \c target. This usually means the \c MANUAL_FINALIZATION keyword was
-    passed to \l{qt6_add_executable}{qt_add_executable()} when the \c target
+    passed to \l qt_add_executable() when the \c target
     was defined.
 \li CMake 3.17 or earlier is being used, in which case finalization always
     occurs immediately as part of the call to
-    \l{qt6_add_executable}{qt_add_executable()}.
+    \l qt_add_executable().
 \li CMake 3.18 or later is being used, the \c MANUAL_FINALIZATION keyword was
-    not passed to \l{qt6_add_executable}{qt_add_executable()} when the \c target
+    not passed to \l qt_add_executable() when the \c target
     was defined, and deferred finalization has been completed at the end of the
     \c target's directory scope.
 \endlist
@@ -69,7 +69,7 @@ supported finalization modes are:
         statically, this finalizer mode is not relevant and isn't used.
 \endtable
 
-\sa {qt6_finalize_target}{qt_finalize_target()}
+\sa qt_finalize_target()
 
 \section1 Example
 

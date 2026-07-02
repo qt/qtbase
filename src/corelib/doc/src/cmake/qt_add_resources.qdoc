@@ -6,7 +6,7 @@
 \ingroup cmake-commands-qtcore
 
 \title qt_add_resources
-\keyword qt6_add_resources
+\keyword qt_add_resources()
 
 \summary {Compiles binary resources into source code.}
 
@@ -117,7 +117,7 @@ different static libraries conflict in the consuming target.
 
 In contrast to \l{qmake}'s \c{RESOURCES}, \c qt_add_resources does not
 attempt to compile any QML or JavaScript files using \l{qmlcachegen}. Use
-\l{qt_add_qml_module} for this.
+\l qt_add_qml_module() for this.
 
-\sa {qt6_add_big_resources}{qt_add_big_resources()}
+\sa qt_add_big_resources()
 */

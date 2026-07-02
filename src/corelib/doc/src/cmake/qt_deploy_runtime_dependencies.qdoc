@@ -6,7 +6,7 @@
 \ingroup cmake-commands-qtcore
 
 \title qt_deploy_runtime_dependencies
-\keyword qt6_deploy_runtime_dependencies
+\keyword qt_deploy_runtime_dependencies()
 
 \summary {Deploy Qt plugins, Qt and non-Qt libraries needed by an executable.}
 
@@ -70,7 +70,7 @@ which will only deploy libraries that are specific to Qt.
 
 This command only considers runtime dependencies for which linking
 relationships exist in the underlying binaries. It does not deploy QML modules,
-see \l{qt6_deploy_qml_imports}{qt_deploy_qml_imports()} for that.
+see \l qt_deploy_qml_imports() for that.
 
 \section1 Arguments
 
@@ -161,7 +161,7 @@ libraries that comply with Apple's app store requirements are deployed. The
 
 On platforms other than macOS, Qt translations are automatically deployed. To
 inhibit this behavior, specify \c{NO_TRANSLATIONS}. Use
-\l{qt6_deploy_translations}{qt_deploy_translations()} to deploy translations
+\l qt_deploy_translations() to deploy translations
 in a customized way.
 
 For Windows desktop applications, the required runtime files for the compiler
@@ -185,9 +185,9 @@ automatic exclusion is not performed.
 The default value of \c{POST_EXCLUDE_REGEXES} is constructed from the value of
 \l{QT_DEPLOY_IGNORED_LIB_DIRS}.
 
-\sa {qt6_generate_deploy_app_script}{qt_generate_deploy_app_script()},
-    {qt6_deploy_qt_conf}{qt_deploy_qt_conf()},
-    {qt6_deploy_qml_imports}{qt_deploy_qml_imports()}
+\sa qt_generate_deploy_app_script(),
+    qt_deploy_qt_conf(),
+    qt_deploy_qml_imports()
 
 \section1 Controlling deployment of Qt plugins
 

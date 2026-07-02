@@ -6,14 +6,14 @@
 \ingroup cmake-commands-qtcore
 
 \title qt_android_add_apk_target
-\keyword qt6_android_add_apk_target
+\keyword qt_android_add_apk_target()
 
 \summary {Defines a build target that runs androiddeployqt to produce an APK.}
 
 \include cmake-find-package-core.qdocinc
 
 \cmakecommandsince 6.0
-\warning This command is deprecated since Qt 6.5. Use \l qt_add_executable instead.
+\warning This command is deprecated since Qt 6.5. Use \l qt_add_executable() instead.
 \cmakecommandandroidonly
 
 \section1 Synopsis
@@ -31,7 +31,7 @@ custom targets created by this command take an Android deployment settings file
 and generate APK, AAB, and AAR packages respectively by running \c{androiddeployqt}.
 The location of the settings file is taken from the \c{target}'s
 \c{QT_ANDROID_DEPLOYMENT_SETTINGS_FILE} property. This file is typically created by
-\l{qt6_android_generate_deployment_settings}{qt_android_generate_deployment_settings()}.
+\l qt_android_generate_deployment_settings().
 The respective Android package will be generated in an \c{android-build}
 subdirectory below the CMake build directory of the \c{target}.
 
@@ -42,9 +42,9 @@ Creating of the \c{apk}, \c{aab}, and \c{aar} targets can be disabled by
 setting the \c{QT_NO_GLOBAL_APK_TARGET}, \c{QT_NO_GLOBAL_AAB_TARGET}, and
 \c{QT_NO_GLOBAL_AAR_TARGET} variables to \c{TRUE}.
 
-\sa {qt6_android_generate_deployment_settings}{qt_android_generate_deployment_settings()},
-    {qt6_finalize_target}{qt_finalize_target()},
-    {qt6_finalize_project}{qt_finalize_project()}
+\sa qt_android_generate_deployment_settings(),
+    qt_finalize_target(),
+    qt_finalize_project()
 
 \section1 Example
 

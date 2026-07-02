@@ -12,7 +12,7 @@
 
 This policy was introduced in Qt 6.7. The policy affects the default type of the
 libraries created using \l {CMake Commands in Qt6 Core}{Qt CMake API}, like
-\l {qt_add_library}, \l{qt_add_plugin}, \l{qt_add_qml_module}.
+\l qt_add_library(), \l qt_add_plugin(), \l qt_add_qml_module().
 
 If the policy is set to \c OLD, the default library type that is selected is
 aligned with the Qt build type, either \c shared or \c static.
@@ -28,19 +28,19 @@ set to \c ON:
 \badcode
 set(BUILD_SHARED_LIBS ON)
 ...
-qt6_add_library(MyLib sourcefile.h sourcefile.cpp)
+qt_add_library(MyLib sourcefile.h sourcefile.cpp)
 \endcode
 
-If you set the QTP0003 to \c NEW before the \l {qt6_add_library}{qt_add_library}
+If you set the QTP0003 to \c NEW before the \l qt_add_library()
 call, \c BUILD_SHARED_LIBS will affect the library default type and \c MyLib
 will be the shared library.
 \badcode
 set(BUILD_SHARED_LIBS ON)
 ...
 qt_policy(SET QTP0003 NEW)
-qt6_add_library(MyLib sourcefile.h sourcefile.cpp)
+qt_add_library(MyLib sourcefile.h sourcefile.cpp)
 \endcode
 
-\sa qt_policy, {Qt CMake policies}, qt_add_library
+\sa qt_policy(), {Qt CMake policies}, qt_add_library()
 
 */

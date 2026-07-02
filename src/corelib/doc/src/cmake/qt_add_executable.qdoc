@@ -6,7 +6,7 @@
 \ingroup cmake-commands-qtcore
 
 \title qt_add_executable
-\keyword qt6_add_executable
+\keyword qt_add_executable()
 
 \summary {Creates and finalizes an application target of a platform-specific type.}
 
@@ -63,8 +63,8 @@ commonly needed. The steps to perform depend on the platform and on various
 properties of the target.
 
 The finalization processing is implemented by two commands:
-\l{qt6_finalize_target}{qt_finalize_target()} and
-\l{qt6_finalize_project}{qt_finalize_project()}.
+\l qt_finalize_target() and
+\l qt_finalize_project().
 
 Target finalization can occur either as part of calling \c{qt_add_executable}
 or be deferred to sometime after this command returns (but it should still be in
@@ -77,21 +77,21 @@ CMake versions earlier than 3.19, automatic deferral isn't supported. In that
 case, target finalization is performed immediately before this command returns.
 
 Regardless of the CMake version, the \c{MANUAL_FINALIZATION} keyword can be given to
-indicate that you will explicitly call \l{qt6_finalize_target}{qt_finalize_target()}
+indicate that you will explicitly call \l qt_finalize_target()
 yourself instead at some later time. In general, \c MANUAL_FINALIZATION should
 not be needed unless the project has to support CMake 3.18 or earlier.
 
 Project finalization occurs automatically when using CMake 3.19 or later.
 When using an older CMake version, you should call
-\l{qt6_finalize_project}{qt_finalize_project()} manually, at the end
+\l qt_finalize_project() manually, at the end
 of the root \c CMakeLists.txt file.
 This is especially important when targeting Android, to collect dependencies
 between project targets for deployment purposes.
 
-\sa {qt6_finalize_target}{qt_finalize_target()},
-    {qt6_set_finalizer_mode}{qt_set_finalizer_mode()},
-    {qt6_add_library}{qt_add_library()},
-    {qt6_finalize_project}{qt_finalize_project()}
+\sa qt_finalize_target(),
+    qt_set_finalizer_mode(),
+    qt_add_library(),
+    qt_finalize_project()
 
 \section1 Examples
 

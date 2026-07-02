@@ -6,7 +6,7 @@
 \ingroup cmake-commands-qtcore
 
 \title qt_set_harmonyos_module_metadata
-\keyword qt6_set_harmonyos_module_metadata
+\keyword qt_set_harmonyos_module_metadata()
 
 \summary {Sets HarmonyOS module-level metadata on the target.}
 
@@ -34,7 +34,7 @@ The command sets module-level metadata for the HarmonyOS \c {target}
 executable. The values are conceptually module-scoped (they describe a single
 HAP module) and are written into \c {entry/src/main/module.json5} when the HAP
 package is built. Application-scoped metadata, such as the vendor or version, is
-set with \l{qt6_set_harmonyos_app_metadata}{qt_set_harmonyos_app_metadata()}
+set with \l qt_set_harmonyos_app_metadata()
 instead. Options that are not specified leave the corresponding manifest field
 at its default.
 
@@ -61,6 +61,6 @@ unrecognized value is ignored with a warning at HAP build time.
 
 \snippet cmake-macros/examples.cmake qt_set_harmonyos_module_metadata
 
-\sa {qt6_set_harmonyos_app_metadata}{qt_set_harmonyos_app_metadata()},
+\sa qt_set_harmonyos_app_metadata(),
     {Qt for HarmonyOS CMake API}
 */

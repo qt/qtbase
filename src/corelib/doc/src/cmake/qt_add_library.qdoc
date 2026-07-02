@@ -6,7 +6,7 @@
 \ingroup cmake-commands-qtcore
 
 \title qt_add_library
-\keyword qt6_add_library
+\keyword qt_add_library()
 
 \summary {Creates and finalizes a library.}
 
@@ -58,7 +58,7 @@ Any \c{sources} provided will be passed through to the internal call to
 
 After a target is created, further processing or \e{finalization} steps may be
 needed. The finalization processing is implemented by the
-\l{qt6_finalize_target}{qt_finalize_target()} command.
+\l qt_finalize_target() command.
 
 Finalization can occur either as part of this call or be deferred to sometime
 after this command returns (but it should still be in the same directory scope).
@@ -70,11 +70,11 @@ case, finalization is performed immediately before this command returns.
 
 Regardless of the CMake version, the \c{MANUAL_FINALIZATION} keyword can be
 given to indicate that you will explicitly call
-\l{qt6_finalize_target}{qt_finalize_target()} yourself instead at some later
+\l qt_finalize_target() yourself instead at some later
 time. In general, \c MANUAL_FINALIZATION should not be needed unless the
 project has to support CMake 3.18 or earlier.
 
-\sa {qt6_finalize_target}{qt_finalize_target()},
-    {qt6_add_executable}{qt_add_executable()}, QTP0003
+\sa qt_finalize_target(),
+    qt_add_executable(), QTP0003
 
 */

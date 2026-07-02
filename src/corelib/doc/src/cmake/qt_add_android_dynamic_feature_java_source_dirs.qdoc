@@ -6,7 +6,7 @@
 \ingroup cmake-commands-qtcore
 
 \title qt_add_android_dynamic_feature_java_source_dirs
-\keyword qt6_add_android_dynamic_feature_java_source_dirs
+\keyword qt_add_android_dynamic_feature_java_source_dirs()
 
 \summary {Adds Java source directories to a dynamic feature build.}
 
@@ -26,5 +26,5 @@ qt_add_android_dynamic_feature_java_source_dirs(target [SOURCE_DIRS <directory1>
 
 The command adds extra Java/Kotlin source directories to the \c {target}
 executable when building the executable app with dynamic feature functionality.
-To be used in conjunction with qt6_add_android_dynamic_features().
+To be used in conjunction with \l qt_add_android_dynamic_features().
 */

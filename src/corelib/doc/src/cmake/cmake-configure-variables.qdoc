@@ -38,7 +38,7 @@ find_package(Qt6 REQUIRED COMPONENTS Core)
 Usually, this variable is set by the Android NDK toolchain file. It is written out as
 part of the deployment settings for a target.
 
-\sa{qt6_android_generate_deployment_settings}{qt_android_generate_deployment_settings()}
+\sa qt_android_generate_deployment_settings()
 */
 
 /*!
@@ -57,7 +57,7 @@ part of the deployment settings for a target.
 Specifies the location of the Android SDK when building for the Android platform.
 This variable is written out as part of the deployment settings for a target.
 
-\sa{qt6_android_generate_deployment_settings}{qt_android_generate_deployment_settings()}.
+\sa qt_android_generate_deployment_settings().
 */
 
 /*!
@@ -77,7 +77,7 @@ This variable is written out as part of the deployment settings for a target.
 Contains a list of arguments to be passed to Android applications. This variable
 is written out as part of the deployment settings for a target.
 
-\sa{qt6_android_generate_deployment_settings}{qt_android_generate_deployment_settings()}
+\sa qt_android_generate_deployment_settings()
 */
 
 /*!
@@ -98,7 +98,7 @@ After the Android package build is done and the APK is created, perform a Gradle
 clean task to remove build artifacts. This is useful to keep disk space taken
 by Qt for Android projects at a minimal.
 
-\sa{qt6_android_generate_deployment_settings}{qt_android_generate_deployment_settings()}
+\sa qt_android_generate_deployment_settings()
 */
 
 /*!
@@ -119,7 +119,7 @@ Create symlinks for shared libraries, jars and resource, etc. instead of a full
 copy. This can be useful to avoid projects taking extra space, and instead directly
 use, for example, library files referenced from a Qt installation.
 
-\sa{qt6_android_generate_deployment_settings}{qt_android_generate_deployment_settings()}
+\sa qt_android_generate_deployment_settings()
 */
 
 /*!
@@ -224,11 +224,10 @@ Set the variable in this way to have a predefined set of
 variables that will always be forwarded to ABI-specific projects.
 
 \note The forwarding is done in the target finalizer, which is implicitly
-called when \l{qt6_add_executable}{qt_add_executable()} is used. The
+called when \l qt_add_executable() is used. The
 finalization occurs automatically when using CMake 3.19 or later.
 
-\sa {qt6_finalize_target}{qt_finalize_target()},
-    {qt6_add_executable}{qt_add_executable()}
+\sa qt_finalize_target(), qt_add_executable()
 */
 
 /*!
@@ -437,7 +436,7 @@ These locations are passed to \l androiddeployqt for deployment consideration wh
 resolving dependencies between libraries.
 To disable this behavior, set this variable to \c TRUE.
 
-\sa {qt6_finalize_project}{qt_finalize_project()}
+\sa qt_finalize_project()
 \sa {cmake-variable-QT_NO_COLLECT_IMPORTED_TARGET_APK_DEPS}{QT_NO_COLLECT_IMPORTED_TARGET_APK_DEPS}
 */
 
@@ -463,7 +462,7 @@ The collected locations are passed to \l androiddeployqt for deployment consider
 resolving dependencies between libraries.
 To disable this behavior, set this variable to \c TRUE.
 
-\sa {qt6_finalize_project}{qt_finalize_project()}
+\sa qt_finalize_project()
 \sa {cmake-variable-QT_NO_COLLECT_BUILD_TREE_APK_DEPS}{QT_NO_COLLECT_BUILD_TREE_APK_DEPS}
 */
 
@@ -525,7 +524,7 @@ versions should match in this case.
 \cmakevariablesince 6.1
 
 When finalizing an executable target on iOS,
-\l{qt6_finalize_target}{qt_finalize_target()} will populate the target's
+\l qt_finalize_target() will populate the target's
 \c XCODE_ATTRIBUTE_DEVELOPMENT_TEAM property if it hasn't been set.
 To prevent this, set \c QT_NO_SET_XCODE_DEVELOPMENT_TEAM_ID to \c TRUE.
 */
@@ -542,7 +541,7 @@ To prevent this, set \c QT_NO_SET_XCODE_DEVELOPMENT_TEAM_ID to \c TRUE.
 \cmakevariablesince 6.1
 
 When finalizing an executable target on iOS,
-\l{qt6_finalize_target}{qt_finalize_target()} will populate the target's
+\l qt_finalize_target() will populate the target's
 \c XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER and
 \c MACOSX_BUNDLE_GUI_IDENTIFIER properties if they haven't been set.
 To prevent this, set \c QT_NO_SET_XCODE_BUNDLE_IDENTIFIER to \c TRUE.
@@ -563,7 +562,7 @@ Enables verbose mode of the \l androiddeployqt deployment tool when it is called
 internally at build time, usually during target finalization.
 
 This variable also changes the default verbosity of install-time deployment
-scripts for other platforms (see \l{qt6_deploy_runtime_dependencies()}), but it
+scripts for other platforms (see \l qt_deploy_runtime_dependencies()), but it
 must be set before the first \c{find_package(Qt6)} call to have that effect.
 */
 
@@ -590,8 +589,7 @@ an application, along with its runtime dependencies:
 
 \include cmake-deploy-modified-variable-values.qdocinc
 
-\sa {qt6_deploy_runtime_dependencies}{qt_deploy_runtime_dependencies()},
-    {qt6_deploy_qml_imports}{qt_deploy_qml_imports()}
+\sa qt_deploy_runtime_dependencies(), qt_deploy_qml_imports()
 */
 
 /*!
@@ -605,7 +603,7 @@ an application, along with its runtime dependencies:
 
 \cmakevariablesince 6.3
 
-The \l{qt6_standard_project_setup}{qt_standard_project_setup()} command is
+The \l qt_standard_project_setup() command is
 typically called in the top level \c{CMakeLists.txt} file of a project. In some
 scenarios, such a project may be absorbed as a child project of a larger project
 hierarchy. A parent project may want to prevent any child project from applying
@@ -614,7 +612,7 @@ changes to the setup. The parent project can achieve this by setting
 via \l{add_subdirectory()}, \l{FetchContent_MakeAvailable()}, or other similar
 methods provided by CMake.
 
-\sa {qt6_standard_project_setup}{qt_standard_project_setup()}
+\sa qt_standard_project_setup()
 */
 
 /*!
@@ -636,16 +634,16 @@ The languages in \c QT_I18N_TRANSLATED_LANGUAGES are used to:
 \list
     \li Set up executable targets for consuming \c{.qm} files.
     \li Automatically construct \c{.ts} file names in
-        \l{qt6_add_translations}{qt_add_translations()}.
+        \l qt_add_translations().
 \endlist
 
 This variable can be conveniently set with the
-\l {qt6_standard_project_setup}{qt_standard_project_setup()} command.
+\l qt_standard_project_setup() command.
 
 By default, translatable strings are considered to be written in \c{en}.
 
-\sa {qt6_standard_project_setup}{qt_standard_project_setup()}
-\sa {qt6_add_translations}{qt_add_translations()}
+\sa qt_standard_project_setup()
+\sa qt_add_translations()
 */
 
 /*!
@@ -663,13 +661,13 @@ Specifies the language of translatable strings in the source code.
 The language must be compatible with the string-based \l QLocale constructor.
 
 Together with \c{QT_I18N_TRANSLATED_LANGUAGES}, this variable is used to determine the
-names of \c{.ts} files for \l{qt6_add_translations}{qt_add_translations()}.
+names of \c{.ts} files for \l qt_add_translations().
 
 This variable can be conveniently set with the
-\l {qt6_standard_project_setup}{qt_standard_project_setup()} command.
+\l qt_standard_project_setup() command.
 
-\sa {qt6_standard_project_setup}{qt_standard_project_setup()}
-\sa {qt6_add_translations}{qt_add_translations()}
+\sa qt_standard_project_setup()
+\sa qt_add_translations()
 */
 
 /*!

@@ -6,7 +6,7 @@
 \ingroup cmake-commands-qtcore
 
 \title qt_generate_deploy_script
-\keyword qt6_generate_deploy_script
+\keyword qt_generate_deploy_script()
 
 \summary {Generate a custom deployment script.}
 
@@ -52,11 +52,11 @@ script. The content may contain generator expressions.
 This command is intended for generating custom deployment scripts that
 directly call functions of Qt's deployment API. For less complex
 deployment purposes, it is more convenient to use
-\l{qt6_generate_deploy_app_script}{qt_generate_deploy_app_script()} or
-\l{qt6_generate_deploy_qml_app_script}{qt_generate_deploy_qml_app_script()}.
+\l qt_generate_deploy_app_script() or
+\l qt_generate_deploy_qml_app_script().
 
-\sa {qt6_generate_deploy_app_script}{qt_generate_deploy_app_script()},
-    {qt6_generate_deploy_qml_app_script}{qt_generate_deploy_qml_app_script()}
+\sa qt_generate_deploy_app_script(),
+    qt_generate_deploy_qml_app_script()
 
 \section1 Example
 
