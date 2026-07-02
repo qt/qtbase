@@ -255,10 +255,12 @@ static QByteArray getData(int cf, IDataObject *pDataObj, int lindex = -1)
         // or zero-sized hGlobal for CFSTR_FILECONTENTS (QTBUG-126980); fall
         // through to the IStream path in that case.
         if (s.hGlobal && GlobalSize(s.hGlobal) > 0) {
-            const void *val = GlobalLock(s.hGlobal);
-            data = QByteArray::fromRawData(reinterpret_cast<const char *>(val), int(GlobalSize(s.hGlobal)));
-            data.detach();
-            GlobalUnlock(s.hGlobal);
+            if (const void *val = GlobalLock(s.hGlobal)) {
+                data = QByteArray::fromRawData(reinterpret_cast<const char *>(val),
+                                               qsizetype(GlobalSize(s.hGlobal)));
+                data.detach();
+                GlobalUnlock(s.hGlobal);
+            }
         }
         ReleaseStgMedium(&s);
     }
