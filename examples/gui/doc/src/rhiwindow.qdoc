@@ -122,9 +122,8 @@
     example has the pre-processed \c{.qsb} files included in the
     \c{shaders/prebuilt} folder, and they are simply included within the
     executable via \c{qt_add_resources}. This approach is not generally
-    recommended for applications, consider rather using \l{Qt Shader Tools
-    Build System Integration}{qt_add_shaders}, which avoids the need to
-    manually generate and manage the \c{.qsb} files.
+    recommended for applications, consider rather using \l{qt_add_shaders}(),
+    which avoids the need to manually generate and manage the \c{.qsb} files.
 
     To generate the \c{.qsb} files for this example, the command \c{qsb --qt6
     color.vert -o prebuilt/color.vert.qsb} etc. was used. This leads to
