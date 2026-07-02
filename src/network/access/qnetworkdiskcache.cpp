@@ -593,7 +593,7 @@ bool QCacheItem::canCompress() const
         return false;
 
     const auto type = h.value(QHttpHeaders::WellKnownHeader::ContentType);
-    if (!type.empty())
+    if (type.empty())
         return false;
 
     if (!type.startsWith("text/")
