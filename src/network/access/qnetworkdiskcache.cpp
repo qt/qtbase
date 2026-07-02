@@ -67,6 +67,35 @@ using namespace Qt::StringLiterals;
     following can be applied:
 
     \snippet code/src_network_access_qnetworkdiskcache.cpp 2
+
+    \section1 Security Considerations
+
+    QNetworkDiskCache stores HTTP response bodies and metadata,
+    including response headers, to disk without encryption. The
+    compression applied to text content is for
+    storage efficiency only and does not provide confidentiality
+    protection.
+
+    Which responses are cached is primarily determined by the HTTP
+    cache control headers sent by the server. Well-configured servers
+    typically prevent caching of responses containing sensitive data
+    from authenticated sessions. However, the application cannot rely
+    on every server doing so correctly, and what the server considers
+    non-sensitive may not match the application's own requirements.
+
+    For cases where the server's caching policy is not sufficient:
+    \list
+    \li Set \l{QNetworkRequest::CacheSaveControlAttribute} to
+        \c false on requests whose responses should not be stored.
+    \li Subclass \l{QAbstractNetworkCache} to implement
+        application-specific filtering of which responses are
+        cached.
+    \endlist
+
+    Cache entries carry basic structural validation but may become
+    invalid due to disk corruption, unclean application shutdown, or
+    other causes. Applications should not treat cached data as
+    trustworthy without independent validation.
 */
 
 /*!
