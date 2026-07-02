@@ -118,7 +118,7 @@
 
     Due to being a Qt GUI module example, this example cannot have a dependency
     on the \l{Qt Shader Tools} module. This means that CMake helper functions
-    such as \c{qt_add_shaders} are not available for use. Therefore, the
+    such as \l qt_add_shaders() are not available for use. Therefore, the
     example has the pre-processed \c{.qsb} files included in the
     \c{shaders/prebuilt} folder, and they are simply included within the
     executable via \c{qt_add_resources}. This approach is not generally

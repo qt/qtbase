@@ -6,7 +6,7 @@
 \ingroup cmake-commands-qtcore
 
 \title qt_standard_project_setup
-\keyword qt6_standard_project_setup
+\keyword qt_standard_project_setup()
 
 \summary {Setup project-wide defaults to a standard arrangement.}
 
@@ -68,7 +68,7 @@ The following policies are available:
 
 \annotatedlist qt-cmake-policies
 
-See \l{qt_policy} for details on manually setting individual policies.
+See \l qt_policy() for details on manually setting individual policies.
 
 On platforms that support \c{RPATH} (other than Apple platforms), two values
 are appended to the \c{CMAKE_INSTALL_RPATH} variable by this command.
@@ -89,8 +89,8 @@ the call to \c{qt_standard_project_setup}.
 The \c{qt_standard_project_setup()} command can effectively be disabled by
 setting the \l{QT_NO_STANDARD_PROJECT_SETUP} variable to true.
 
-\sa {qt6_generate_deploy_app_script}{qt_generate_deploy_app_script()}
-\sa qt_policy
+\sa qt_generate_deploy_app_script()
+\sa qt_policy()
 
 \section1 Internationalization
 

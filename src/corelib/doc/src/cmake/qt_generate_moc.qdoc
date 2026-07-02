@@ -6,7 +6,7 @@
 \ingroup cmake-commands-qtcore
 
 \title qt_generate_moc
-\keyword qt6_generate_moc
+\keyword qt_generate_moc()
 
 \summary {Calls moc on an input file.}
 
@@ -30,7 +30,7 @@ and store the output in \c dest_file.
 
 \note This is a low-level macro. See the \l{CMake AUTOMOC Documentation} for a
 more convenient way to let source files be processed with \c{moc}.
-\l qt_wrap_cpp is also similar, but automatically generates a temporary file
+\l qt_wrap_cpp() is also similar, but automatically generates a temporary file
 path for you.
 
 \section1 Arguments

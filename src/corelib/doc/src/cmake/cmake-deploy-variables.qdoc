@@ -292,16 +292,16 @@ This variable is not meaningful when deploying on macOS or Windows.
 \cmakevariablesince 6.5
 
 This variable contains a list of directories that are not taken into account
-when searching for runtime dependencies with \l{qt_deploy_runtime_dependencies}.
+when searching for runtime dependencies with \l{qt_deploy_runtime_dependencies()}.
 
 Projects may alter this variable before calling
-\l{qt_deploy_runtime_dependencies} to control from which directory runtime
+\l{qt_deploy_runtime_dependencies()} to control from which directory runtime
 dependencies are deployed.
 
 This variable is ignored if the \c{POST_EXCLUDE_REGEXES} option is specified in
-the \l{qt_deploy_runtime_dependencies} call.
+the \l{qt_deploy_runtime_dependencies()} call.
 
 This variable is not meaningful when deploying on macOS or Windows.
 
-\sa qt_deploy_runtime_dependencies
+\sa qt_deploy_runtime_dependencies()
 */

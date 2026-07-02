@@ -6,7 +6,7 @@
 \ingroup cmake-commands-qtcore
 
 \title qt_deploy_qt_conf
-\keyword qt6_deploy_qt_conf
+\keyword qt_deploy_qt_conf()
 
 \summary {Write a qt.conf file at deployment time.}
 
@@ -56,8 +56,8 @@ The \c file_path argument expects an absolute path to the location where the
 variables can be used to dynamically specify a path relative to the deployment binary directory,
 as shown in the example below. This helps avoid hard-coding an absolute path.
 
-\sa {qt6_generate_deploy_app_script}{qt_generate_deploy_app_script()},
-    {qt6_deploy_runtime_dependencies}{qt_deploy_runtime_dependencies()}
+\sa qt_generate_deploy_app_script(),
+    qt_deploy_runtime_dependencies()
 
 \section1 Example
 

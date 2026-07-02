@@ -6,7 +6,7 @@
 \ingroup cmake-commands-qtcore
 
 \title qt_import_plugins
-\keyword qt6_import_plugins
+\keyword qt_import_plugins()
 
 \summary {Specifies a custom set of plugins to import or exclude.}
 
@@ -93,5 +93,5 @@ In the snippet above, the following occurs with the executable \c myapp:
 \li All \c sqldrivers plugins are excluded from automatic importing.
 \endlist
 
-\sa{qt6_import_qml_plugins}{qt_import_qml_plugins()}
+\sa qt_import_qml_plugins()
 */

@@ -6,7 +6,7 @@
 \ingroup cmake-commands-qtcore
 
 \title qt_add_big_resources
-\keyword qt6_add_big_resources
+\keyword qt_add_big_resources()
 
 \summary {Compiles big binary resources into object code.}
 
@@ -29,7 +29,7 @@ Creates compiled object files from Qt resource files using the
 \l{Resource Compiler (rcc)}. Paths to the generated files are added to
 \c{<VAR>}.
 
-This is similar to \l qt_add_resources, but directly
+This is similar to \l qt_add_resources(), but directly
 generates object files (\c .o, \c .obj) files instead of C++ source code.
 This allows to embed bigger resources, where compiling to C++ sources and then
 to binaries would be too time consuming or memory intensive.
@@ -39,7 +39,7 @@ needs to be added as a source file to a CMake target and have the property
 \c{SKIP_AUTORCC} set to \c{ON}.
 
 \warning This command is not supported when building for iOS, use
-\l qt_add_resources instead.
+\l qt_add_resources() instead.
 See \l{https://bugreports.qt.io/browse/QTBUG-103497}{QTBUG-103497} for details.
 
 \section1 Arguments

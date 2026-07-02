@@ -6,15 +6,15 @@
 \ingroup cmake-commands-qtcore
 
 \title qt_android_apply_arch_suffix
-\keyword qt6_android_apply_arch_suffix
+\keyword qt_android_apply_arch_suffix()
 
 \summary {Configures the target binary's name to include an architecture-specific suffix.}
 
 \include cmake-find-package-core.qdocinc
 
 \cmakecommandsince 6.0
-\warning This command is deprecated since Qt 6.5. Use \l qt_add_executable
-or \l qt_add_library instead.
+\warning This command is deprecated since Qt 6.5. Use \l qt_add_executable()
+or \l qt_add_library() instead.
 \cmakecommandandroidonly
 
 \section1 Synopsis

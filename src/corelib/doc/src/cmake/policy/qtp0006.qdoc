@@ -11,8 +11,8 @@
 \summary {Enables \c{PRIVATE_CODE} as the default for Wayland protocol source generation.}
 
 This policy was introduced in Qt 6.12. The policy affects the behavior of
-\l{qt_generate_wayland_protocol_client_sources} and
-\l{qt_generate_wayland_protocol_server_sources} when called without
+\l{qt_generate_wayland_protocol_client_sources()} and
+\l{qt_generate_wayland_protocol_server_sources()} when called without
 \c{PRIVATE_CODE} or \c{PUBLIC_CODE}.
 
 If the policy is set to \c OLD, and neither \c{PUBLIC_CODE} nor \c{PRIVATE_CODE}
@@ -45,11 +45,11 @@ qt_generate_wayland_protocol_client_sources(MyTarget
 )
 \endcode
 
-The same policy behaviour applies to \l{qt_generate_wayland_protocol_server_sources}.
+The same policy behaviour applies to \l{qt_generate_wayland_protocol_server_sources()}.
 
 \qtpolicydeprecatedbehavior
 
-\sa qt_policy, {Qt CMake policies}, qt_generate_wayland_protocol_client_sources,
-    qt_generate_wayland_protocol_server_sources
+\sa qt_policy(), {Qt CMake policies}, qt_generate_wayland_protocol_client_sources(),
+    qt_generate_wayland_protocol_server_sources()
 
 */

@@ -6,7 +6,7 @@
 \ingroup cmake-commands-qtcore
 
 \title qt_disable_unicode_defines
-\keyword qt6_disable_unicode_defines
+\keyword qt_disable_unicode_defines()
 
 \summary {Prevents some unicode-related compiler definitions being set automatically on a target.}
 
@@ -30,5 +30,5 @@ qmake behavior, but it is a change compared to the CMake API behavior in Qt 5.
 Calling \c{qt_disable_unicode_defines()} on a \c target prevents these compiler
 definitions from being automatically set.
 
-\sa {qt6_allow_non_utf8_sources}{qt_allow_non_utf8_sources()}
+\sa qt_allow_non_utf8_sources()
 */

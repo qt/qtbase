@@ -6,7 +6,7 @@
 \ingroup cmake-commands-qtwaylandclient
 
 \title qt_generate_wayland_protocol_client_sources
-\keyword qt6_generate_wayland_protocol_client_sources
+\keyword qt_generate_wayland_protocol_client_sources()
 
 \summary {Generates client-side C++ bindings for a Wayland protocol .XML file}
 
@@ -56,7 +56,7 @@ this option if you have a specific requirement for types not present in the core
 and are aware of the potential build-time conflicts.
 
 qt_generate_wayland_protocol_client_sources() will trigger generation of the files needed to
-implement the client side of the protocol. \l{qt_generate_wayland_protocol_server_sources}{qt_generate_wayland_protocol_server_sources()}
+implement the client side of the protocol. \l qt_generate_wayland_protocol_server_sources()
 is the equivalent function for the compositor.
 
 See the \l{Custom Shell} or \l{Custom Extension} examples for a demonstration of how to use these

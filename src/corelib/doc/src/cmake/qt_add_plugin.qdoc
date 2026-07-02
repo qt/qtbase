@@ -6,7 +6,7 @@
 \ingroup cmake-commands-qtcore
 
 \title qt_add_plugin
-\keyword qt6_add_plugin
+\keyword qt_add_plugin()
 
 \summary {Creates a Qt plugin target.}
 
@@ -75,13 +75,13 @@ of a variable in which to return the target list.
 
 After a target is created, further processing or \e{finalization} steps may be
 needed. The finalization processing is implemented by the
-\l{qt6_finalize_target}{qt_finalize_target()} command.
+\l qt_finalize_target() command.
 
 For details and the meaning of the \c{MANUAL_FINALIZATION} option, refer to the
 \l{qt_add_library finalization}{finalization documentation} for
 \c{qt_add_library}.
 
-\sa {qt6_finalize_target}{qt_finalize_target()},
-    {qt6_add_executable}{qt_add_executable()}
+\sa qt_finalize_target(),
+    qt_add_executable()
 
 */

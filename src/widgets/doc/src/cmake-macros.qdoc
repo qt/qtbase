@@ -6,7 +6,7 @@
 \ingroup cmake-macros-qtwidgets
 
 \title qt_wrap_ui
-\keyword qt6_wrap_ui
+\keyword qt_wrap_ui()
 
 \summary {Creates sources for .ui files.}
 
@@ -31,7 +31,7 @@ directory. The paths of the generated header files are added to \c{<VAR>}.
 more convenient way to process \c{.ui} files with \c{uic}.
 
 Since 6.8:
-\note \l{qt6_add_ui}{qt_add_ui} is the recommended way to process \c{.ui}
+\note \l qt_add_ui() is the recommended way to process \c{.ui}
 files.
 
 \section1 Options
@@ -49,7 +49,7 @@ You can find possible options in the \l{uic}{uic documentation}.
 \ingroup cmake-macros-qtwidgets
 
 \title qt_add_ui
-\keyword qt6_add_ui
+\keyword qt_add_ui()
 
 \summary {Adds .ui files to a target.}
 
@@ -171,5 +171,5 @@ specify the include prefix for the generated header files.
 \note It is not recommended to use both \c{qt_add_ui} and
 \l{CMake AUTOUIC Documentation}{AUTOUIC} for the same target.
 
-\sa {qt_wrap_ui}
+\sa qt_wrap_ui()
 */

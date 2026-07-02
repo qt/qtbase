@@ -6,14 +6,14 @@
 \ingroup cmake-commands-qtcore
 
 \title qt_android_generate_deployment_settings
-\keyword qt6_android_generate_deployment_settings
+\keyword qt_android_generate_deployment_settings()
 
 \summary {Generates the deployment settings file needed by androiddeployqt.}
 
 \include cmake-find-package-core.qdocinc
 
 \cmakecommandsince 6.0
-\warning This command is deprecated since Qt 6.5. Use \l qt_add_executable instead.
+\warning This command is deprecated since Qt 6.5. Use \l qt_add_executable() instead.
 \cmakecommandandroidonly
 
 \section1 Synopsis
@@ -50,10 +50,10 @@ Some are provided by Qt, others by CMake or the Android NDK.
 
 The properties below will be read from the specified \c{target}. Note that this
 command is called as part of target finalization (see
-\l{qt6_finalize_target}{qt_finalize_target()}). If you are using
-\l{qt6_add_executable}{qt_add_executable()} to create the target and you need to
+\l qt_finalize_target()). If you are using
+\l qt_add_executable() to create the target and you need to
 modify some of these target properties, you need to ensure that target
-finalization is deferred. See \l{qt6_add_executable}{qt_add_executable()} for
+finalization is deferred. See \l qt_add_executable() for
 how to accomplish this.
 
 \list
@@ -78,8 +78,8 @@ how to accomplish this.
 Upon return, the \c{QT_ANDROID_DEPLOYMENT_SETTINGS_FILE} target property will
 contain the location of the generated deployment settings file.
 
-\sa {qt6_android_add_apk_target}{qt_android_add_apk_target()},
-    {qt6_finalize_target}{qt_finalize_target()}
+\sa qt_android_add_apk_target(),
+    qt_finalize_target()
 
 \section1 Example
 
