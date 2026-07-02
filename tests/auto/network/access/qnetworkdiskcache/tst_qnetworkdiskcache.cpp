@@ -54,6 +54,8 @@ private slots:
 
     void sync();
 
+    void cachePermissions();
+
     void crashWhenParentingCache();
 
 private:
@@ -815,6 +817,49 @@ void tst_QNetworkDiskCache::sync()
     writer.wait();
     reader.wait();
 }
+
+void tst_QNetworkDiskCache::cachePermissions()
+{
+#ifndef Q_OS_UNIX
+    QSKIP("This test verifies POSIX permission bits, which are not applicable on this platform");
+#else
+    // Use a fresh directory to avoid interference from other tests
+    // and to exercise the initial-creation code path.
+    QTemporaryDir permTestDir;
+    QVERIFY(permTestDir.isValid());
+
+    SubQNetworkDiskCache cache;
+    QUrl url(EXAMPLE_URL);
+    cache.setupWithOne(permTestDir.path(), url);
+
+    static constexpr QFile::Permissions groupOtherPerms =
+        QFile::ReadGroup  | QFile::WriteGroup  | QFile::ExeGroup |
+        QFile::ReadOther  | QFile::WriteOther  | QFile::ExeOther;
+
+    // Verify that cache directories have no group or other permissions.
+    // File permissions are not restricted since the directory permissions
+    // already deny access to other users.
+    const QStringList entries = countFiles(permTestDir.path());
+    QVERIFY(!entries.isEmpty());
+
+    for (const QString &entry : entries) {
+        QFileInfo info(entry);
+        if (!info.isDir())
+            continue;
+        const QFile::Permissions perms = info.permissions();
+        QVERIFY2(!(perms & groupOtherPerms),
+                 qPrintable(entry + " has group/other permissions: 0"
+                            + QString::number(uint(perms), 8)));
+    }
+
+    // Verify the cache is still fully functional after tightening.
+    QIODevice *device = cache.data(url);
+    QVERIFY(device);
+    QCOMPARE(device->readAll(), QByteArray("Hello World!"));
+    delete device;
+#endif
+}
+
 
 QTEST_MAIN(tst_QNetworkDiskCache)
 #include "tst_qnetworkdiskcache.moc"
