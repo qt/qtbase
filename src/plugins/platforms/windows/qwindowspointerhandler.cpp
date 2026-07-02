@@ -58,6 +58,11 @@ bool QWindowsPointerHandler::translatePointerEvent(QWindow *window, HWND hwnd, Q
 
     if (!GetPointerType(pointerId, &m_pointerType)) {
         qWarning() << "GetPointerType() failed:" << qt_error_string();
+        const int id = m_touchInputIDToTouchPointID.value(pointerId, -1);
+        if (id != -1) {
+            m_lastTouchPoints.remove(id);
+            m_touchInputIDToTouchPointID.remove(pointerId);
+        }
         return false;
     }
 
