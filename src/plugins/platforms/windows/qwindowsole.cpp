@@ -119,9 +119,12 @@ QWindowsOleDataObject::SetData(LPFORMATETC pFormatetc, STGMEDIUM *pMedium, BOOL 
     HRESULT hr = ResultFromScode(E_NOTIMPL);
 
     if (pFormatetc->cfFormat == CF_PERFORMEDDROPEFFECT && pMedium->tymed == TYMED_HGLOBAL) {
-        auto * val = (DWORD*)GlobalLock(pMedium->hGlobal);
-        performedEffect = *val;
-        GlobalUnlock(pMedium->hGlobal);
+        if (GlobalSize(pMedium->hGlobal) >= sizeof(DWORD)) {
+            if (const auto *val = static_cast<const DWORD *>(GlobalLock(pMedium->hGlobal))) {
+                performedEffect = *val;
+                GlobalUnlock(pMedium->hGlobal);
+            }
+        }
         if (fRelease)
             ReleaseStgMedium(pMedium);
         hr = ResultFromScode(S_OK);
