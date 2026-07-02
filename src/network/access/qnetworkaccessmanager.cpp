@@ -697,6 +697,18 @@ bool QNetworkAccessManager::isStrictTransportSecurityEnabled() const
     If this behavior is undesired, enable HSTS store before enabling Strict Transport
     Security. By default, the persistent store of HSTS policies is disabled.
 
+    \note The HSTS store persists policies to disk using QSettings in INI format
+    without encryption or integrity protection. The store reveals which hosts the
+    application has communicated with over HTTPS, since an HSTS entry is recorded
+    for each host that sends a Strict-Transport-Security header. In privacy-sensitive
+    applications, this connection history should be treated as confidential data.
+
+    An attacker with write access to the store file could remove HSTS entries for
+    specific domains, causing the application to permit plaintext HTTP connections to
+    those domains on subsequent requests and potentially enabling SSL stripping attacks.
+    Applications that rely on HSTS should ensure the store directory is protected by
+    appropriate filesystem permissions.
+
     \sa isStrictTransportSecurityStoreEnabled(), setStrictTransportSecurityEnabled(),
     QStandardPaths::standardLocations()
 */
