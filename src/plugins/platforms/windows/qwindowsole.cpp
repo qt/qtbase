@@ -268,7 +268,12 @@ QWindowsOleEnumFmtEtc::Next(ULONG celt, LPFORMATETC rgelt, ULONG FAR* pceltFetch
         nOffset = m_nIndex + i;
 
         if (nOffset < ULONG(m_lpfmtetcs.count())) {
-            copyFormatEtc(rgelt + i, m_lpfmtetcs.at(int(nOffset)));
+            if (!copyFormatEtc(rgelt + i, m_lpfmtetcs.at(int(nOffset)))) {
+                m_nIndex += i;
+                if (pceltFetched != nullptr)
+                    *pceltFetched = i;
+                return ResultFromScode(E_OUTOFMEMORY);
+            }
             i++;
         } else {
             break;
@@ -343,14 +348,23 @@ bool QWindowsOleEnumFmtEtc::copyFormatEtc(LPFORMATETC dest, const FORMATETC *src
     *dest = *src;
 
     if (src->ptd) {
-        LPMALLOC pmalloc;
-
-        if (CoGetMalloc(MEMCTX_TASK, &pmalloc) != NOERROR)
+        if (src->ptd->tdSize < sizeof(DVTARGETDEVICE)) {
+            dest->ptd = nullptr;
             return false;
+        }
 
-        pmalloc->Alloc(src->ptd->tdSize);
+        LPMALLOC pmalloc;
+        if (CoGetMalloc(MEMCTX_TASK, &pmalloc) != NOERROR) {
+            dest->ptd = nullptr;
+            return false;
+        }
+
+        dest->ptd = static_cast<DVTARGETDEVICE *>(pmalloc->Alloc(src->ptd->tdSize));
+        if (!dest->ptd) {
+            pmalloc->Release();
+            return false;
+        }
         memcpy(dest->ptd, src->ptd, size_t(src->ptd->tdSize));
-
         pmalloc->Release();
     }
 
