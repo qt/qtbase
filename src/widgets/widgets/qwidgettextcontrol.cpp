@@ -2584,8 +2584,15 @@ void QWidgetTextControl::moveCursor(QTextCursor::MoveOperation op, QTextCursor::
 bool QWidgetTextControl::canPaste() const
 {
 #ifndef QT_NO_CLIPBOARD
-    Q_D(const QWidgetTextControl);
-    if (d->interactionFlags & Qt::TextEditable) {
+    const bool isEditable = d_func()->interactionFlags & Qt::TextEditable;
+#if defined(Q_OS_WASM)
+    // The web platform provides no synchronous, permission-free way to inspect the
+    // clipboard, so canPaste() cannot know whether pasteable data exists. Enable
+    // unconditionally for editable text controls and make paste menu items available
+    // to the user.
+    return isEditable;
+#endif
+    if (isEditable) {
         const QMimeData *md = QGuiApplication::clipboard()->mimeData();
         return md && canInsertFromMimeData(md);
     }
