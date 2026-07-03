@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qohosnouichildprocess.h"
-#include <QtCore/qbytearray.h>
 #include <QtCore/qjsondocument.h>
 #include <QtCore/private/qohoslogger_p.h>
 #include <cerrno>
@@ -161,7 +160,7 @@ void removeChildSetupDataFileIfExists(int childPid)
 
 }
 
-QJsonObject readChildProcessSetupData()
+QNapi::Object readChildProcessSetupData(Napi::Env env)
 {
     namespace ch = std::chrono;
 
@@ -186,11 +185,13 @@ QJsonObject readChildProcessSetupData()
         qOhosPrintfError("%s: error reading subprocess setup data: %s", Q_FUNC_INFO, e.what());
     }
 
-    auto setupDataDoc = QJsonDocument::fromJson(QByteArray::fromStdString(setupDataStr));
-    if (!setupDataDoc.isObject())
-        qOhosPrintfError("%s: subprocess setup data has illegal format", Q_FUNC_INFO);
-
-    return setupDataDoc.object();
+    QNapi::Object global = env.Global();
+    try {
+        return global.eval<QNapi::Object>("JSON.parse(*)", {setupDataStr});
+    } catch (const Napi::Error &e) {
+        qOhosPrintfError("%s: subprocess setup data has illegal format: %s", Q_FUNC_INFO, e.what());
+        return QNapi::makeObject(env);
+    }
 }
 
 void sendChildProcessSetupData(int childPid, QJsonObject setupData)

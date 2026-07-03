@@ -12,13 +12,13 @@
 #include <qos/qos.h>
 #include <QtCore/qdebug.h>
 #include <QtCore/qglobal.h>
+#include <QtCore/qjsonarray.h>
 #include <QtCore/qjsondocument.h>
 #include <QtCore/qjsonobject.h>
 #include <QtCore/qmap.h>
 #include <QtCore/qwaitcondition.h>
 #include <QtCore/qdir.h>
 #include <QtCore/private/qcore_unix_p.h>
-#include <qohosjsenv_p.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/private/qnapi_p.h>
 #include <QtCore/private/qohosappcontext_p.h>
@@ -1740,9 +1740,7 @@ void runQtChildProcess(const CallbackInfo &cbInfo)
 
     QOhosPlatformFontDatabase::setOhosNoUiChildMode();
 
-    auto childSetupJson = readChildProcessSetupData();
-    auto childSetupObj = QNapi::checkedCast<QNapi::Object>(
-        QOhosJsEnv::toNapiValue(cbInfo.Env(), childSetupJson));
+    auto childSetupObj = readChildProcessSetupData(cbInfo.Env());
     childSetupObj["modulesFactories"] = paramsObj.get<QNapi::Object>("modulesFactories");
 
     setupQtApplicationImpl(cbInfo.jsState(), childSetupObj, QtRunMode::NoUiChildProcess);
