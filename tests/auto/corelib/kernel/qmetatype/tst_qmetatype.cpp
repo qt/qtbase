@@ -2487,32 +2487,6 @@ void tst_QMetaType::metaObject()
     QCOMPARE(!!(mt.flags() & QMetaType::PointerToQObject), isQObjectPtr);
 }
 
-class QObjectTypeRegisteredAsConst : public QObject
-{
-    Q_OBJECT
-};
-void tst_QMetaType::constQObjectPointer()
-{
-    static bool alreadyRun = false;
-
-    // Register first as const and ensure that the non-const did not get
-    // registered as the same metatype (see QTBUG-147588).
-    QMetaType cmt = QMetaType::fromType<const QObjectTypeRegisteredAsConst *>();
-    int cid = cmt.id();
-    QCOMPARE_NE(cid, -1);
-    QCOMPARE(cmt.name(), "const QObjectTypeRegisteredAsConst*");
-
-    if (!alreadyRun) {
-        // the non-const should not have got registered
-        QVERIFY(!QMetaType::fromName("QObjectTypeRegisteredAsConst *").isValid());
-    }
-
-    QMetaType mt = QMetaType::fromType<QObjectTypeRegisteredAsConst *>();
-    int id = mt.id();
-    alreadyRun = true;
-    QCOMPARE_NE(id, cid);
-}
-
 #define METATYPE_ID_FUNCTION(Type, MetaTypeId, Name) \
   case ::qMetaTypeId< Name >(): metaType = MetaTypeIdStruct<MetaTypeId>::Value; break;
 

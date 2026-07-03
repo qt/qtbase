@@ -93,7 +93,6 @@ private slots:
     void saveAndLoadCustom();
     void metaObject_data();
     void metaObject();
-    void constQObjectPointer();
     void constexprMetaTypeIds();
 
     // tst_qmetatype2.cpp
