@@ -52,7 +52,7 @@ namespace {
 
 const QOhosPropertyDescriptor<QOhosQpaFunctions::AudioStreamUsage> audioStreamUsageProperty{};
 
-QOhosOptional<QOhosQpaFunctions::WantInfo::LaunchReason> tryMapOhosLaunchReasonToWantInfoEnum(
+std::optional<QOhosQpaFunctions::WantInfo::LaunchReason> tryMapOhosLaunchReasonToWantInfoEnum(
     enums::ohos::app::ability::AbilityConstant::LaunchReason ohosLaunchReason)
 {
     using OhosLaunchReason = enums::ohos::app::ability::AbilityConstant::LaunchReason;
@@ -60,20 +60,20 @@ QOhosOptional<QOhosQpaFunctions::WantInfo::LaunchReason> tryMapOhosLaunchReasonT
 
     switch (ohosLaunchReason) {
     case OhosLaunchReason::START_ABILITY:
-        return makeQOhosOptional(WantInfo::LaunchReason::START_ABILITY);
+        return WantInfo::LaunchReason::START_ABILITY;
     case OhosLaunchReason::CONTINUATION:
-        return makeQOhosOptional(WantInfo::LaunchReason::CONTINUATION);
+        return WantInfo::LaunchReason::CONTINUATION;
     case OhosLaunchReason::PREPARE_CONTINUATION:
-        return makeQOhosOptional(WantInfo::LaunchReason::PREPARE_CONTINUATION);
+        return WantInfo::LaunchReason::PREPARE_CONTINUATION;
     case OhosLaunchReason::PRELOAD:
-        return makeQOhosOptional(WantInfo::LaunchReason::PRELOAD);
+        return WantInfo::LaunchReason::PRELOAD;
     case OhosLaunchReason::UNKNOWN:
     case OhosLaunchReason::CALL:
     case OhosLaunchReason::APP_RECOVERY:
     case OhosLaunchReason::SHARE:
     case OhosLaunchReason::AUTO_STARTUP:
     case OhosLaunchReason::INSIGHT_INTENT:
-        return makeQOhosOptional(WantInfo::LaunchReason::UNKNOWN);
+        return WantInfo::LaunchReason::UNKNOWN;
     }
 
     return {};
@@ -87,7 +87,7 @@ QOhosQpaFunctions::WantInfo::LaunchReason mapJsLaunchReasonToWantInfoEnumWithFal
     auto optLaunchReason =
         optLaunchReasonJsEnum.has_value()
             ? tryMapOhosLaunchReasonToWantInfoEnum(optLaunchReasonJsEnum.value())
-            : makeEmptyQOhosOptional();
+            : std::nullopt;
     return optLaunchReason.value_or(QOhosQpaFunctions::WantInfo::LaunchReason::UNKNOWN);
 }
 
@@ -97,23 +97,23 @@ Q_NORETURN void killCurrentProcess()
     std::abort();
 }
 
-QOhosOptional<QOhosAbilityOnContinueResult> tryMapAbilityOnContinueResponseStatusToOhos(
+std::optional<QOhosAbilityOnContinueResult> tryMapAbilityOnContinueResponseStatusToOhos(
     QOhosQpaFunctions::AbilityOnContinueResponseStatus status)
 {
     using AbilityOnContinueResponseStatus = QOhosQpaFunctions::AbilityOnContinueResponseStatus;
 
     switch (status) {
     case AbilityOnContinueResponseStatus::Agree:
-        return makeQOhosOptional(QOhosAbilityOnContinueResult::AGREE);
+        return QOhosAbilityOnContinueResult::AGREE;
     case AbilityOnContinueResponseStatus::Reject:
-        return makeQOhosOptional(QOhosAbilityOnContinueResult::REJECT);
+        return QOhosAbilityOnContinueResult::REJECT;
     case AbilityOnContinueResponseStatus::Mismatch:
-        return makeQOhosOptional(QOhosAbilityOnContinueResult::MISMATCH);
+        return QOhosAbilityOnContinueResult::MISMATCH;
     }
     return {};
 }
 
-QOhosOptional<enums::ohos::app::ability::AbilityConstant::WindowMode> tryMapWindowModeToOhosOrLogWarning(
+std::optional<enums::ohos::app::ability::AbilityConstant::WindowMode> tryMapWindowModeToOhosOrLogWarning(
     QOhosQpaFunctions::StartOptions::WindowMode windowMode)
 {
     namespace AbilityConstant = enums::ohos::app::ability::AbilityConstant;
@@ -121,11 +121,11 @@ QOhosOptional<enums::ohos::app::ability::AbilityConstant::WindowMode> tryMapWind
 
     switch (windowMode) {
     case StartOptions::WindowMode::WINDOW_MODE_SPLIT_PRIMARY:
-        return makeQOhosOptional(AbilityConstant::WindowMode::WINDOW_MODE_SPLIT_PRIMARY);
+        return AbilityConstant::WindowMode::WINDOW_MODE_SPLIT_PRIMARY;
     case StartOptions::WindowMode::WINDOW_MODE_SPLIT_SECONDARY:
-        return makeQOhosOptional(AbilityConstant::WindowMode::WINDOW_MODE_SPLIT_SECONDARY);
+        return AbilityConstant::WindowMode::WINDOW_MODE_SPLIT_SECONDARY;
     case StartOptions::WindowMode::WINDOW_MODE_FULLSCREEN:
-        return makeQOhosOptional(AbilityConstant::WindowMode::WINDOW_MODE_FULLSCREEN);
+        return AbilityConstant::WindowMode::WINDOW_MODE_FULLSCREEN;
     }
 
     qCWarning(QtForOhos, "%s: got illegal WindowMode: %d", Q_FUNC_INFO, static_cast<int>(windowMode));
@@ -133,7 +133,7 @@ QOhosOptional<enums::ohos::app::ability::AbilityConstant::WindowMode> tryMapWind
     return {};
 }
 
-QOhosOptional<enums::ohos::app::ability::contextConstant::ProcessMode> tryMapProcessModeToOhosOrLogWarning(
+std::optional<enums::ohos::app::ability::contextConstant::ProcessMode> tryMapProcessModeToOhosOrLogWarning(
     QOhosQpaFunctions::StartOptions::ProcessMode processMode)
 {
     namespace contextConstant = enums::ohos::app::ability::contextConstant;
@@ -141,9 +141,9 @@ QOhosOptional<enums::ohos::app::ability::contextConstant::ProcessMode> tryMapPro
 
     switch (processMode) {
     case StartOptions::ProcessMode::NEW_PROCESS_ATTACH_TO_PARENT:
-        return makeQOhosOptional(contextConstant::ProcessMode::NEW_PROCESS_ATTACH_TO_PARENT);
+        return contextConstant::ProcessMode::NEW_PROCESS_ATTACH_TO_PARENT;
     case StartOptions::ProcessMode::NEW_PROCESS_ATTACH_TO_STATUS_BAR_ITEM:
-        return makeQOhosOptional(contextConstant::ProcessMode::NEW_PROCESS_ATTACH_TO_STATUS_BAR_ITEM);
+        return contextConstant::ProcessMode::NEW_PROCESS_ATTACH_TO_STATUS_BAR_ITEM;
     }
 
     qCWarning(QtForOhos, "%s: got illegal ProcessMode: %d", Q_FUNC_INFO, static_cast<int>(processMode));
@@ -151,7 +151,7 @@ QOhosOptional<enums::ohos::app::ability::contextConstant::ProcessMode> tryMapPro
     return {};
 }
 
-QOhosOptional<enums::ohos::app::ability::contextConstant::StartupVisibility> tryMapStartupVisibilityToOhosOrLogWarning(
+std::optional<enums::ohos::app::ability::contextConstant::StartupVisibility> tryMapStartupVisibilityToOhosOrLogWarning(
     QOhosQpaFunctions::StartOptions::StartupVisibility startupVisibility)
 {
     namespace contextConstant = enums::ohos::app::ability::contextConstant;
@@ -159,9 +159,9 @@ QOhosOptional<enums::ohos::app::ability::contextConstant::StartupVisibility> try
 
     switch (startupVisibility) {
     case StartOptions::StartupVisibility::STARTUP_HIDE:
-        return makeQOhosOptional(contextConstant::StartupVisibility::STARTUP_HIDE);
+        return contextConstant::StartupVisibility::STARTUP_HIDE;
     case StartOptions::StartupVisibility::STARTUP_SHOW:
-        return makeQOhosOptional(contextConstant::StartupVisibility::STARTUP_SHOW);
+        return contextConstant::StartupVisibility::STARTUP_SHOW;
     }
 
     qCWarning(QtForOhos, "%s: got illegal StartupVisibility: %d", Q_FUNC_INFO, static_cast<int>(startupVisibility));
@@ -169,7 +169,7 @@ QOhosOptional<enums::ohos::app::ability::contextConstant::StartupVisibility> try
     return {};
 }
 
-QOhosOptional<enums::ohos::bundle::bundleManager::SupportWindowMode> tryMapSupportWindowModeToOhosOrLogWarning(
+std::optional<enums::ohos::bundle::bundleManager::SupportWindowMode> tryMapSupportWindowModeToOhosOrLogWarning(
     QOhosQpaFunctions::StartOptions::SupportWindowMode supportWindowMode)
 {
     namespace bundleManager = enums::ohos::bundle::bundleManager;
@@ -177,11 +177,11 @@ QOhosOptional<enums::ohos::bundle::bundleManager::SupportWindowMode> tryMapSuppo
 
     switch (supportWindowMode) {
     case StartOptions::SupportWindowMode::FULL_SCREEN:
-        return makeQOhosOptional(bundleManager::SupportWindowMode::FULL_SCREEN);
+        return bundleManager::SupportWindowMode::FULL_SCREEN;
     case StartOptions::SupportWindowMode::SPLIT:
-        return makeQOhosOptional(bundleManager::SupportWindowMode::SPLIT);
+        return bundleManager::SupportWindowMode::SPLIT;
     case StartOptions::SupportWindowMode::FLOATING:
-        return makeQOhosOptional(bundleManager::SupportWindowMode::FLOATING);
+        return bundleManager::SupportWindowMode::FLOATING;
     }
 
     qCWarning(QtForOhos, "%s: got illegal SupportWindowMode: %d", Q_FUNC_INFO, static_cast<int>(supportWindowMode));
@@ -406,18 +406,18 @@ QOhosSupplier<OhosConfigurationColorMode> makeOhosConfigColorModeDataSource(
         std::move(valueChangedHandler));
 }
 
-QOhosOptional<bool> mapOhosConfigurationColorModeToDarkModeFlag(OhosConfigurationColorMode colorMode)
+std::optional<bool> mapOhosConfigurationColorModeToDarkModeFlag(OhosConfigurationColorMode colorMode)
 {
     switch (colorMode) {
     case OhosConfigurationColorMode::COLOR_MODE_NOT_SET:
-        return makeEmptyQOhosOptional();
+        return {};
     case OhosConfigurationColorMode::COLOR_MODE_LIGHT:
-        return makeQOhosOptional(false);
+        return false;
     case OhosConfigurationColorMode::COLOR_MODE_DARK:
-        return makeQOhosOptional(true);
+        return true;
     }
 
-    return makeEmptyQOhosOptional();
+    return {};
 }
 
 std::shared_ptr<char> makeSharedNullTerminatedString(std::string str)
@@ -614,21 +614,21 @@ template<typename PermissionActionFunc>
         policies, outResult);
 }
 
-QOhosOptional<QOhosQpaFunctions::FileShare::PolicyErrorCode> tryMapFileSharePolicyErrorCode(
+std::optional<QOhosQpaFunctions::FileShare::PolicyErrorCode> tryMapFileSharePolicyErrorCode(
     ::FileShare_PolicyErrorCode errorCode)
 {
     using PolicyErrorCode = QOhosQpaFunctions::FileShare::PolicyErrorCode;
     switch (errorCode) {
     case ::FileShare_PolicyErrorCode::PERSISTENCE_FORBIDDEN:
-        return makeQOhosOptional(PolicyErrorCode::PERSISTENCE_FORBIDDEN);
+        return PolicyErrorCode::PERSISTENCE_FORBIDDEN;
     case ::FileShare_PolicyErrorCode::INVALID_MODE:
-        return makeQOhosOptional(PolicyErrorCode::INVALID_MODE);
+        return PolicyErrorCode::INVALID_MODE;
     case ::FileShare_PolicyErrorCode::INVALID_PATH:
-        return makeQOhosOptional(PolicyErrorCode::INVALID_PATH);
+        return PolicyErrorCode::INVALID_PATH;
     case ::FileShare_PolicyErrorCode::PERMISSION_NOT_PERSISTED:
-        return makeQOhosOptional(PolicyErrorCode::PERMISSION_NOT_PERSISTED);
+        return PolicyErrorCode::PERMISSION_NOT_PERSISTED;
     }
-    return makeEmptyQOhosOptional();
+    return {};
 }
 
 QList<QOhosQpaFunctions::FileShare::PolicyErrorResult> convertToPolicyErrorResults(
@@ -655,7 +655,7 @@ bool isSuccessErrorCode(::FileManagement_ErrCode errorCode)
     return errorCode == ::FileManagement_ErrCode::ERR_OK;
 }
 
-QOhosOptional<QOhosQpaFunctions::ShareKit::SharedRecord> tryConvertNapiObjectToSharedRecord(QNapi::Object record)
+std::optional<QOhosQpaFunctions::ShareKit::SharedRecord> tryConvertNapiObjectToSharedRecord(QNapi::Object record)
 {
     auto tryGetOptionalStringProp = [](const QNapi::Object &object, const std::string &propName) {
         return qTransform(getOptionalProperty<QNapi::String>(object, propName), &QString::fromStdString);
@@ -682,12 +682,12 @@ QOhosOptional<QOhosQpaFunctions::ShareKit::SharedRecord> tryConvertNapiObjectToS
     std::string utd = record.get<QNapi::String>("utd");
     auto optMimeType = utd != QOhosUdsMeta<::OH_UdsHyperlink>::udmfMetaId
         ? tryMapUtdTypeIdToMimeType(utd)
-        : QOhosOptional<std::string>(QOhosShareKit::mimeTextUriList);
+        : QOhosShareKit::mimeTextUriList;
     if (!optMimeType.has_value()) {
         qOhosPrintfWarning(
             "%s: can't map utd '%s' to mimetype, not mapping the record",
             Q_FUNC_INFO, utd.c_str());
-        return makeEmptyQOhosOptional();
+        return {};
     }
 
     auto content = tryGetOptionalStringProp(record, "content");
@@ -695,21 +695,20 @@ QOhosOptional<QOhosQpaFunctions::ShareKit::SharedRecord> tryConvertNapiObjectToS
     if (!content.has_value() && !uri.has_value()) {
         qOhosPrintfWarning(
             "%s: cannot create Shared Record, content and uri properties are empty", Q_FUNC_INFO);
-        return makeEmptyQOhosOptional();
+        return {};
     }
 
-    return makeQOhosOptional(
-        QOhosQpaFunctions::ShareKit::SharedRecord{
-            .mimeType = QString::fromStdString(optMimeType.value()),
-            .content = content,
-            .filePath = uri,
-            .title = tryGetOptionalStringProp(record, "title"),
-            .label = tryGetOptionalStringProp(record, "label"),
-            .description = tryGetOptionalStringProp(record, "description"),
-            .thumbnail = tryGetOptionalByteArrayProp(record, "thumbnail"),
-            .thumbnailFilePath = tryGetOptionalStringProp(record, "thumbnailUri"),
-            .extraData = qTransform(tryGetOptionalJsonObjectProp(record, "extraData"), std::mem_fn(&QJsonObject::toVariantMap)),
-        });
+    return QOhosQpaFunctions::ShareKit::SharedRecord{
+        .mimeType = QString::fromStdString(optMimeType.value()),
+        .content = content,
+        .filePath = uri,
+        .title = tryGetOptionalStringProp(record, "title"),
+        .label = tryGetOptionalStringProp(record, "label"),
+        .description = tryGetOptionalStringProp(record, "description"),
+        .thumbnail = tryGetOptionalByteArrayProp(record, "thumbnail"),
+        .thumbnailFilePath = tryGetOptionalStringProp(record, "thumbnailUri"),
+        .extraData = qTransform(tryGetOptionalJsonObjectProp(record, "extraData"), std::mem_fn(&QJsonObject::toVariantMap)),
+    };
 }
 
 QOhosShareKit::ShareAbilityType mapShareAbilityTypeFromQpaFunctionsEnum(
@@ -733,7 +732,7 @@ QOhosShareKit::ShareAbilityType mapShareAbilityTypeFromQpaFunctionsEnum(
         Q_FUNC_INFO, static_cast<int>(abilityType));
 }
 
-QOhosOptional<std::uint32_t> tryConvertPortNameToSystemPortId(const QString &portName)
+std::optional<std::uint32_t> tryConvertPortNameToSystemPortId(const QString &portName)
 {
     constexpr const char *serialPortPrefix = "COM";
     const QString prefix = QLatin1String(serialPortPrefix);
@@ -796,9 +795,9 @@ public:
 
     QJsonObject jsonObject() const override;
 
-    QOhosOptional<QList<QOhosQpaFunctions::ShareKit::SharedRecord>> tryGetSharedDataRecords() const override;
+    std::optional<QList<QOhosQpaFunctions::ShareKit::SharedRecord>> tryGetSharedDataRecords() const override;
 
-    QOhosOptional<ContactInfo> tryGetContactInfo() const override;
+    std::optional<ContactInfo> tryGetContactInfo() const override;
 
     LaunchReason launchReason() const override;
 
@@ -831,12 +830,12 @@ QJsonObject WantInfoImpl::jsonObject() const
     return m_jsonObject;
 }
 
-QOhosOptional<QList<QOhosQpaFunctions::ShareKit::SharedRecord>> WantInfoImpl::tryGetSharedDataRecords() const
+std::optional<QList<QOhosQpaFunctions::ShareKit::SharedRecord>> WantInfoImpl::tryGetSharedDataRecords() const
 {
     using SharedRecord = QOhosQpaFunctions::ShareKit::SharedRecord;
 
-    return QtOhos::evalInJsThreadWithPromise<QOhosOptional<QList<SharedRecord>>>(
-        [&](QtOhos::JsState &jsState, QOhosTaskPromise<QOhosOptional<QList<SharedRecord>>> evalPromise) {
+    return QtOhos::evalInJsThreadWithPromise<std::optional<QList<SharedRecord>>>(
+        [&](QtOhos::JsState &jsState, QOhosTaskPromise<std::optional<QList<SharedRecord>>> evalPromise) {
             auto thenCatchPromises = std::move(evalPromise).makeThenCatchBranches(Q_FUNC_INFO);
             jsState.evalToPromiseOrRejectOnThrow(
                 "@kit.ShareKit.systemShare.getSharedData(*)", {m_jsScopeData->want.Value()})
@@ -844,7 +843,7 @@ QOhosOptional<QList<QOhosQpaFunctions::ShareKit::SharedRecord>> WantInfoImpl::tr
                 [thenPromise = std::move(thenCatchPromises.first)](const QtOhos::CallbackInfo &cbInfo) {
                     QNapi::Object sharedData = cbInfo.getFirstArg<QNapi::Object>(Q_FUNC_INFO);
 
-                    auto optRecords = QNapi::getArrayElements<QList<QOhosOptional<SharedRecord>>, QNapi::Object>(
+                    auto optRecords = QNapi::getArrayElements<QList<std::optional<SharedRecord>>, QNapi::Object>(
                         sharedData.call<QNapi::Array>("getRecords"), &tryConvertNapiObjectToSharedRecord);
 
                     QList<SharedRecord> records;
@@ -860,23 +859,23 @@ QOhosOptional<QList<QOhosQpaFunctions::ShareKit::SharedRecord>> WantInfoImpl::tr
                             Q_FUNC_INFO, unconvertedRecordsCount);
                     }
 
-                    thenPromise(makeQOhosOptional(records));
+                    thenPromise(records);
                 })
             .onCatch(
                 [catchPromise = std::move(thenCatchPromises.second)](const QtOhos::CallbackInfo &cbInfo) {
                     QtOhos::logJsCallbackError(cbInfo, "@kit.ShareKit.systemShare.getSharedData() failed");
-                    catchPromise(makeEmptyQOhosOptional());
+                    catchPromise({});
                 });
         },
         Q_FUNC_INFO);
 }
 
-QOhosOptional<QOhosQpaFunctions::WantInfo::ContactInfo> WantInfoImpl::tryGetContactInfo() const
+std::optional<QOhosQpaFunctions::WantInfo::ContactInfo> WantInfoImpl::tryGetContactInfo() const
 {
     using ContactInfo = QOhosQpaFunctions::WantInfo::ContactInfo;
 
-    return QtOhos::evalInJsThreadWithPromise<QOhosOptional<ContactInfo>>(
-        [&](QtOhos::JsState &jsState, QOhosTaskPromise<QOhosOptional<ContactInfo>> evalPromise) {
+    return QtOhos::evalInJsThreadWithPromise<std::optional<ContactInfo>>(
+        [&](QtOhos::JsState &jsState, QOhosTaskPromise<std::optional<ContactInfo>> evalPromise) {
             auto thenCatchPromises = std::move(evalPromise).makeThenCatchBranches(Q_FUNC_INFO);
             jsState.evalToPromiseOrRejectOnThrow(
                 "@kit.ShareKit.systemShare.getContactInfo(*)", {m_jsScopeData->want.Value()})
@@ -889,12 +888,12 @@ QOhosOptional<QOhosQpaFunctions::WantInfo::ContactInfo> WantInfoImpl::tryGetCont
                         .contactId = QString::fromStdString(
                             contactInfoObj.get<QNapi::String>("contactId")),
                     };
-                    thenPromise(makeQOhosOptional(contactInfo));
+                    thenPromise(contactInfo);
                 })
             .onCatch(
                 [catchPromise = std::move(thenCatchPromises.second)](const QtOhos::CallbackInfo &cbInfo) {
                     QtOhos::logJsCallbackError(cbInfo, "@kit.ShareKit.systemShare.getContactInfo() failed");
-                    catchPromise(makeEmptyQOhosOptional());
+                    catchPromise({});
                 });
         },
         Q_FUNC_INFO);
@@ -926,8 +925,8 @@ public:
 
     void setWindowDragResizable(QObject *windowOrWidget, bool dragResizable) override;
 
-    QOhosOptional<double> tryGetNativeWindowId(QObject *window) override;
-    QOhosOptional<double> tryGetScreenDisplayId(QObject *screenObject) override;
+    std::optional<double> tryGetNativeWindowId(QObject *window) override;
+    std::optional<double> tryGetScreenDisplayId(QObject *screenObject) override;
 
     void setOnContinueRequestsHandlerForAbilityInstanceWindow(
         QObject *windowObject, std::function<void(AbilityOnContinueRequest, QOhosConsumer<AbilityOnContinueResponse>)> requestsHandler) override;
@@ -935,7 +934,7 @@ public:
     void setAbilityContinuationActive(
         QObject *optInstanceMainWindow, bool continuationActive) override;
 
-    Q_NORETURN void restartApp(QOhosOptional<QJsonObject> want) override;
+    Q_NORETURN void restartApp(std::optional<QJsonObject> want) override;
 
     QJsonObject getAppLaunchWant() override;
     QSharedPointer<WantInfo> getAppLaunchWantInfo() const override;
@@ -946,24 +945,24 @@ public:
 
     void startAppProcess(
         const QString &processId, const QJsonObject &requestWant,
-        const QOhosOptional<StartOptions> &optStartOptions) override;
+        const std::optional<StartOptions> &optStartOptions) override;
 
-    bool startAbility(const QJsonObject &want, const QOhosOptional<StartOptions> &options) override;
+    bool startAbility(const QJsonObject &want, const std::optional<StartOptions> &options) override;
 
     bool startAbilityByType(const QString &appType, const QJsonObject &wantParameters) override;
 
     void startAbilityForResult(
-        const QJsonObject &want, const QOhosOptional<StartOptions> &options,
+        const QJsonObject &want, const std::optional<StartOptions> &options,
         QObject *optInstanceMainWindow, QObject *resultConsumerQtContext,
-        QOhosConsumer<QOhosOptional<AbilityResult>> resultConsumer) override;
+        QOhosConsumer<std::optional<AbilityResult>> resultConsumer) override;
 
     void setDestroyAllowedFlagForAbilityInstances(
         std::vector<QObject *> instancesMainWindows, bool destroyEnabled) override;
 
-    void setOhosConfigDarkModeFlag(QOhosOptional<bool> darkModeFlag) override;
+    void setOhosConfigDarkModeFlag(std::optional<bool> darkModeFlag) override;
 
-    QOhosSupplier<QOhosOptional<bool>> makeOhosConfigDarkModeFlagDataSource(
-        QOhosConsumer<QOhosOptional<bool>> darkModeFlagChangedHandler) override;
+    QOhosSupplier<std::optional<bool>> makeOhosConfigDarkModeFlagDataSource(
+        QOhosConsumer<std::optional<bool>> darkModeFlagChangedHandler) override;
 
     QOhosSupplier<double> makeOhosConfigFontSizeScaleDataSource(
         QOhosConsumer<double> valueChangedHandler) override;
@@ -1006,10 +1005,10 @@ public:
         std::function<void()> panelClosedCallback,
         QOhosConsumer<ShareKit::ShareOperationResult> optShareCompletedCallback) override;
 
-    bool tryOpenLink(QObject *optInstanceMainWindow, const QString &link, QOhosOptional<bool> appLinkingOnly) override;
+    bool tryOpenLink(QObject *optInstanceMainWindow, const QString &link, std::optional<bool> appLinkingOnly) override;
 
     void setAudioStreamUsageHintProperty(QObject *qObject, AudioStreamUsage usage) override;
-    QOhosOptional<AudioStreamUsage> tryGetAudioStreamUsageHintProperty(QObject *qObject) override;
+    std::optional<AudioStreamUsage> tryGetAudioStreamUsageHintProperty(QObject *qObject) override;
 
 private:
     void processSerialPortPermissionResponse(std::uint32_t serialPortId, bool granted);
@@ -1052,7 +1051,7 @@ void QOhosQpaFunctionsImpl::tagWindowOrWidgetAsFloatWindow(
 void QOhosQpaFunctionsImpl::setWindowOrWidgetNativeNodeRenderFitPolicyHint(
     QObject *windowOrWidget, QOhosQpaFunctionsImpl::NativeNodeRenderFitPolicy renderFitPolicyHint)
 {
-    QOhosOptional<QOhosPlatformWindow::NativeNodeRenderFitPolicy> policy;
+    std::optional<QOhosPlatformWindow::NativeNodeRenderFitPolicy> policy;
     switch (renderFitPolicyHint) {
     case QOhosQpaFunctions::NativeNodeRenderFitPolicy::TopLeft:
         policy = QOhosPlatformWindow::NativeNodeRenderFitPolicy::TopLeft;
@@ -1079,7 +1078,7 @@ void QOhosQpaFunctionsImpl::setSurfaceBackgroundColor(QObject *windowOrWidget, c
 void QOhosQpaFunctionsImpl::setMainWindowGeometryPersistencePolicy(
     WindowGeometryPersistencePolicy geometryPolicyHint)
 {
-    QOhosOptional<QOhosPlatformIntegration::WindowGeometryPersistencePolicy> policy;
+    std::optional<QOhosPlatformIntegration::WindowGeometryPersistencePolicy> policy;
     switch (geometryPolicyHint) {
     case QOhosQpaFunctions::WindowGeometryPersistencePolicy::Disabled:
         policy = QOhosPlatformIntegration::WindowGeometryPersistencePolicy::Disabled;
@@ -1111,40 +1110,40 @@ void QOhosQpaFunctionsImpl::setWindowDragResizable(QObject *windowOrWidget, bool
     QOhosPlatformWindow::setWindowDragResizable(windowOrWidget, dragResizable);
 }
 
-QOhosOptional<double> QOhosQpaFunctionsImpl::tryGetNativeWindowId(QObject *window)
+std::optional<double> QOhosQpaFunctionsImpl::tryGetNativeWindowId(QObject *window)
 {
     auto *qWindow = qobject_cast<QWindow *>(window);
     if (qWindow == nullptr)
-        return makeEmptyQOhosOptional();
+        return {};
 
     auto *platformWindow = QOhosPlatformWindow::fromQWindowOrNull(qWindow);
     if (platformWindow == nullptr)
-        return makeEmptyQOhosOptional();
+        return {};
 
     auto internalId = platformWindow->internalWindowId();
     auto jsWinId = QWindowProxyRegistry::instance().tryMapInternalWindowIdToJsWindowId(internalId);
     if (!jsWinId.has_value())
-        return makeEmptyQOhosOptional();
+        return {};
 
     qOhosPrintfInfo(
         "PlatformWindow WIID: %s is returning JsWindowId: %f to the user",
         qPrintable(internalId.toString()), jsWinId.value().value());
 
-    return makeQOhosOptional(jsWinId.value().value());
+    return jsWinId.value().value();
 }
 
-QOhosOptional<double> QOhosQpaFunctionsImpl::tryGetScreenDisplayId(QObject *screenObject)
+std::optional<double> QOhosQpaFunctionsImpl::tryGetScreenDisplayId(QObject *screenObject)
 {
     auto *qScreen = qobject_cast<QScreen *>(screenObject);
     if (qScreen == nullptr) {
         qOhosPrintfWarning("%s: screenObject argument is not a QScreen", Q_FUNC_INFO);
-        return makeEmptyQOhosOptional();
+        return {};
     }
     auto *ohosPlatformScreen = static_cast<QOhosPlatformScreen *>(qScreen->handle());
 
     return ohosPlatformScreen != nullptr
-        ? makeQOhosOptional(ohosPlatformScreen->displayInfo().id.value())
-        : makeEmptyQOhosOptional();
+        ? std::optional(ohosPlatformScreen->displayInfo().id.value())
+        : std::nullopt;
 }
 
 void QOhosQpaFunctionsImpl::setOnContinueRequestsHandlerForAbilityInstanceWindow(
@@ -1228,8 +1227,8 @@ void QOhosQpaFunctionsImpl::setAbilityContinuationActive(
 
     auto optInstanceMainWindowRef =
         optInstanceMainWindow != nullptr
-           ? makeQOhosOptional(QtOhos::QObjectThreadSafeRef(optInstanceMainWindow))
-           : makeEmptyQOhosOptional();
+           ? std::optional(QtOhos::QObjectThreadSafeRef(optInstanceMainWindow))
+           : std::nullopt;
 
     QtOhos::invokeInJsThreadAndWaitForContinue(
         [&](JsState &jsState, QOhosTaskPromise<> taskPromise) {
@@ -1248,7 +1247,7 @@ void QOhosQpaFunctionsImpl::setAbilityContinuationActive(
         Q_FUNC_INFO);
 }
 
-Q_NORETURN void QOhosQpaFunctionsImpl::restartApp(QOhosOptional<QJsonObject> want)
+Q_NORETURN void QOhosQpaFunctionsImpl::restartApp(std::optional<QJsonObject> want)
 {
     QtOhos::runInJsThreadAndWait(
         [&](JsState &jsState) {
@@ -1356,7 +1355,7 @@ void QOhosQpaFunctionsImpl::addNewWantConsumer(
 
 void QOhosQpaFunctionsImpl::startAppProcess(
     const QString &processId, const QJsonObject &requestWant,
-    const QOhosOptional<StartOptions> &optStartOptions)
+    const std::optional<StartOptions> &optStartOptions)
 {
     QtOhos::invokeInJsThreadAndWaitForContinue(
         [&](auto &jsState, QOhosTaskPromise<> taskPromise) {
@@ -1377,7 +1376,7 @@ void QOhosQpaFunctionsImpl::startAppProcess(
     Q_FUNC_INFO);
 }
 
-bool QOhosQpaFunctionsImpl::startAbility(const QJsonObject &want, const QOhosOptional<QOhosQpaFunctions::StartOptions> &options)
+bool QOhosQpaFunctionsImpl::startAbility(const QJsonObject &want, const std::optional<QOhosQpaFunctions::StartOptions> &options)
 {
     return QtOhos::evalInJsThread(
         [&](auto &jsState) {
@@ -1448,14 +1447,14 @@ bool QOhosQpaFunctionsImpl::startAbilityByType(const QString &appType, const QJs
 }
 
 void QOhosQpaFunctionsImpl::startAbilityForResult(
-    const QJsonObject &want, const QOhosOptional<StartOptions> &options,
+    const QJsonObject &want, const std::optional<StartOptions> &options,
     QObject *optInstanceMainWindow, QObject *resultConsumerQtContext,
-    QOhosConsumer<QOhosOptional<AbilityResult>> resultConsumer)
+    QOhosConsumer<std::optional<AbilityResult>> resultConsumer)
 {
     struct Context
     {
         QtOhos::QObjectThreadSafeRef resultConsumerQtContextRef;
-        QOhosConsumer<QOhosOptional<AbilityResult>> resultConsumer;
+        QOhosConsumer<std::optional<AbilityResult>> resultConsumer;
     };
 
     auto context = QtOhos::moveToSharedPtr(
@@ -1466,8 +1465,8 @@ void QOhosQpaFunctionsImpl::startAbilityForResult(
 
     auto optInstanceMainWindowRef =
         optInstanceMainWindow != nullptr
-           ? makeQOhosOptional(QtOhos::QObjectThreadSafeRef(optInstanceMainWindow))
-           : makeEmptyQOhosOptional();
+           ? std::optional(QtOhos::QObjectThreadSafeRef(optInstanceMainWindow))
+           : std::nullopt;
 
     QtOhos::invokeInJsThread(
         [context, want, options, optInstanceMainWindowRef](QtOhos::JsState &jsState) {
@@ -1492,16 +1491,16 @@ void QOhosQpaFunctionsImpl::startAbilityForResult(
 
                     auto wantOrEmpty = QNapi::getOptionalPropOrEmpty<QNapi::Object>(abilityResult, "want");
                     auto jsonWant = !wantOrEmpty.IsEmpty()
-                        ? QOhosOptional<QJsonObject>(QOhosJsEnv::fromNapiValue<QJsonObject>(wantOrEmpty))
-                        : makeEmptyQOhosOptional();
+                        ? std::optional<QJsonObject>(QOhosJsEnv::fromNapiValue<QJsonObject>(wantOrEmpty))
+                        : std::nullopt;
 
                     context->resultConsumerQtContextRef.visitInQtThreadIfAlive(
                         [context, resultCode, jsonWant](auto &) {
                             constexpr int startedAbilityErrorResultCode = -1;
                             context->resultConsumer(
                                 resultCode != startedAbilityErrorResultCode
-                                    ? QOhosOptional<AbilityResult>({resultCode, jsonWant})
-                                    : makeEmptyQOhosOptional());
+                                    ? std::optional<AbilityResult>({resultCode, jsonWant})
+                                    : std::nullopt);
                         });
                 })
             .onCatch(
@@ -1533,7 +1532,7 @@ void QOhosQpaFunctionsImpl::setDestroyAllowedFlagForAbilityInstances(
         Q_FUNC_INFO);
 }
 
-void QOhosQpaFunctionsImpl::setOhosConfigDarkModeFlag(QOhosOptional<bool> darkModeFlag)
+void QOhosQpaFunctionsImpl::setOhosConfigDarkModeFlag(std::optional<bool> darkModeFlag)
 {
     setOhosConfigColorMode(
         darkModeFlag.has_value()
@@ -1543,8 +1542,8 @@ void QOhosQpaFunctionsImpl::setOhosConfigDarkModeFlag(QOhosOptional<bool> darkMo
             : OhosConfigurationColorMode::COLOR_MODE_NOT_SET);
 }
 
-QOhosSupplier<QOhosOptional<bool>> QOhosQpaFunctionsImpl::makeOhosConfigDarkModeFlagDataSource(
-    QOhosConsumer<QOhosOptional<bool>> darkModeFlagChangedHandler)
+QOhosSupplier<std::optional<bool>> QOhosQpaFunctionsImpl::makeOhosConfigDarkModeFlagDataSource(
+    QOhosConsumer<std::optional<bool>> darkModeFlagChangedHandler)
 {
     auto colorModeDataSource = makeOhosConfigColorModeDataSource(
         [darkModeFlagChangedHandler = std::move(darkModeFlagChangedHandler)](OhosConfigurationColorMode newColorMode) {
@@ -1888,14 +1887,14 @@ std::shared_ptr<void> QOhosQpaFunctionsImpl::shareDataUsingShareKit(
         });
 }
 
-bool QOhosQpaFunctionsImpl::tryOpenLink(QObject *optInstanceMainWindow, const QString &link, QOhosOptional<bool> appLinkingOnly)
+bool QOhosQpaFunctionsImpl::tryOpenLink(QObject *optInstanceMainWindow, const QString &link, std::optional<bool> appLinkingOnly)
 {
     if (optInstanceMainWindow != nullptr && qobject_cast<QWindow *>(optInstanceMainWindow) == nullptr)
         qOhosReportFatalErrorAndAbort("%s: the main window argument is not a QWindow", Q_FUNC_INFO);
 
     auto optInstanceMainWindowRef = optInstanceMainWindow != nullptr
-        ? makeQOhosOptional(QtOhos::QObjectThreadSafeRef(optInstanceMainWindow))
-        : makeEmptyQOhosOptional();
+        ? std::optional(QtOhos::QObjectThreadSafeRef(optInstanceMainWindow))
+        : std::nullopt;
 
     return QtOhos::evalInJsThreadWithPromise<bool>(
         [&](QtOhos::JsState &jsState, QOhosTaskPromise<bool> evalPromise) {
@@ -1934,7 +1933,7 @@ void QOhosQpaFunctionsImpl::setAudioStreamUsageHintProperty(QObject *qObject, Au
     setQOhosPropertyOnQObject<QOhosQpaFunctions::AudioStreamUsage, &audioStreamUsageProperty>(qObject, usage);
 }
 
-QOhosOptional<QOhosQpaFunctions::AudioStreamUsage> QOhosQpaFunctionsImpl::tryGetAudioStreamUsageHintProperty(QObject *qObject)
+std::optional<QOhosQpaFunctions::AudioStreamUsage> QOhosQpaFunctionsImpl::tryGetAudioStreamUsageHintProperty(QObject *qObject)
 {
     return tryGetQOhosPropertyFromQObject<QOhosQpaFunctions::AudioStreamUsage, &audioStreamUsageProperty>(qObject);
 }
