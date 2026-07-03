@@ -164,11 +164,18 @@ bool QIOSWindow::shouldAutoActivateWindow() const
     if (![m_view canBecomeFirstResponder])
         return false;
 
+    const Qt::WindowType type = window()->type();
+
+    // Tooltips are documented to not activate, and activating one would cause
+    // it to immediately hide itself again, as QTipLabel treats the resulting
+    // focus/activation change as a signal to dismiss the tooltip.
+    if (type == Qt::ToolTip)
+        return false;
+
     // We don't want to do automatic window activation for popup windows
     // that are unlikely to contain editable controls (to avoid hiding
     // the keyboard while the popup is showing)
-    const Qt::WindowType type = window()->type();
-    return (type != Qt::Popup && type != Qt::ToolTip) || !window()->isActive();
+    return type != Qt::Popup || !window()->isActive();
 }
 
 void QIOSWindow::setOpacity(qreal level)
