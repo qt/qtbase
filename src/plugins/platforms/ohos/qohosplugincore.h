@@ -124,8 +124,6 @@ public:
         QNapi::Object optStartOptions, std::function<void(JsState &)> continueFunc) = 0;
 
     virtual void startNoUiChildProcess(JsState &jsState, const std::string &libraryName, const std::vector<std::string> &args) = 0;
-
-    virtual void tagWidgetOrWindowAsFloatWindow(QObject *widgetOrWindow, bool floatWindowEnabled) = 0;
 };
 
 enum class QtRunMode

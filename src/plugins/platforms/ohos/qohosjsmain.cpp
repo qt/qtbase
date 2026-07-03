@@ -57,7 +57,6 @@
 #include "qohosjsutils.h"
 #include "qohosnouichildprocess.h"
 #include "qohosplatformintegration.h"
-#include "qohosplatformwindow.h"
 #include "qohosqabilityinstancesmanager.h"
 #include "qohosutils.h"
 #include "qohoswatchdog.h"
@@ -882,8 +881,6 @@ public:
         QNapi::Object optStartOptions, std::function<void(JsState &)> continueFunc) override;
 
     void startNoUiChildProcess(JsState &jsState, const std::string &libraryName, const std::vector<std::string> &args) override;
-
-    void tagWidgetOrWindowAsFloatWindow(QObject *widgetOrWindow, bool floatWindowEnabled) override;
 };
 
 void AppFunctionsImpl::startQAbilityInstance(
@@ -996,11 +993,6 @@ void AppFunctionsImpl::startNoUiChildProcess(
                 }
             },
         });
-}
-
-void AppFunctionsImpl::tagWidgetOrWindowAsFloatWindow(QObject *widgetOrWindow, bool floatWindowEnabled)
-{
-    QOhosPlatformWindow::tagWindowOrWidgetAsFloatWindow(widgetOrWindow, floatWindowEnabled);
 }
 
 void handleAbilityOnForeground(const CallbackInfo &cbInfo)
