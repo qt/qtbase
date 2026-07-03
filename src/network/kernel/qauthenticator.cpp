@@ -531,9 +531,8 @@ static const char *methodName(QAuthenticatorPrivate::Method method)
 
 
 void QAuthenticatorPrivate::parseHttpResponse(const QHttpHeaders &headers,
-                                              bool isProxy, QStringView host)
+                                              bool isProxy)
 {
-    Q_UNUSED(host);
     const auto search = isProxy ? QHttpHeaders::WellKnownHeader::ProxyAuthenticate
                                 : QHttpHeaders::WellKnownHeader::WWWAuthenticate;
 

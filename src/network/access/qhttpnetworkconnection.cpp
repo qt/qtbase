@@ -442,7 +442,7 @@ bool QHttpNetworkConnectionPrivate::handleAuthenticateChallenge(QIODevice *socke
         if (auth->isNull())
             auth->detach();
         QAuthenticatorPrivate *priv = QAuthenticatorPrivate::getPrivate(*auth);
-        priv->parseHttpResponse(headers, isProxy, reply->url().host());
+        priv->parseHttpResponse(headers, isProxy);
         // Update method in case it changed
         if (priv->method == QAuthenticatorPrivate::None)
             return false;

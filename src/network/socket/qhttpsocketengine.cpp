@@ -565,7 +565,7 @@ void QHttpSocketEngine::slotSocketReadNotification()
         priv = QAuthenticatorPrivate::getPrivate(d->authenticator);
 
         const auto headers = d->reply->header();
-        priv->parseHttpResponse(headers, true, d->proxy.hostName());
+        priv->parseHttpResponse(headers, true);
 
         if (priv->phase == QAuthenticatorPrivate::Invalid) {
             // problem parsing the reply
