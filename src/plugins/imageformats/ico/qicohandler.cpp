@@ -92,7 +92,7 @@ private:
     void read1BitBMP(QImage & image);
     void read4BitBMP(QImage & image);
     void read8BitBMP(QImage & image);
-    void read16_24_32BMP(QImage & image);
+    void read24_32BMP(QImage &image);
 
     struct IcoAttrib
     {
@@ -280,8 +280,6 @@ void ICOReader::findColorInfo(QImage & image)
 {
     if (icoAttrib.ncolors > 0) {                // set color table
         readColorTable(image);
-    } else if (icoAttrib.nbits == 16) { // don't support RGB values for 15/16 bpp
-        image = QImage();
     }
 }
 
@@ -310,8 +308,8 @@ void ICOReader::readBMP(QImage & image)
         read4BitBMP(image);
     } else if (icoAttrib.nbits == 8) {
         read8BitBMP(image);
-    } else if (icoAttrib.nbits == 16 || icoAttrib.nbits == 24 || icoAttrib.nbits == 32 ) { // 16,24,32 bit BMP image
-        read16_24_32BMP(image);
+    } else if (icoAttrib.nbits == 24 || icoAttrib.nbits == 32) { // 24,32 bit BMP image
+        read24_32BMP(image);
     }
 }
 
@@ -388,7 +386,7 @@ void ICOReader::read8BitBMP(QImage & image)
     }
 }
 
-void ICOReader::read16_24_32BMP(QImage & image)
+void ICOReader::read24_32BMP(QImage &image)
 {
     if (iod) {
         int h = icoAttrib.h;
@@ -435,7 +433,7 @@ QImage ICOReader::iconAt(int index)
 
             static const uchar pngMagicData[] = { 137, 80, 78, 71, 13, 10, 26, 10 };
 
-            if (!iod->seek(iconEntry.dwImageOffset)
+            if (!iod->seek(startpos + iconEntry.dwImageOffset)
                 || iconEntry.dwBytesInRes > iod->bytesAvailable())
                 return img;
 
@@ -443,7 +441,7 @@ QImage ICOReader::iconAt(int index)
             const bool isPngImage = (iod->read(pngMagic.size()) == pngMagic);
 
             if (isPngImage) {
-                iod->seek(iconEntry.dwImageOffset);
+                iod->seek(startpos + iconEntry.dwImageOffset);
                 QImage image = QImage::fromData(iod->read(iconEntry.dwBytesInRes), "png");
                 image.setText(QLatin1String(icoOrigDepthKey), QString::number(iconEntry.wBitCount));
                 return image;
@@ -456,9 +454,9 @@ QImage ICOReader::iconAt(int index)
                 switch (icoAttrib.nbits) {
                 case 32:
                 case 24:
-                case 16:
                     icoAttrib.depth = 32;
                     break;
+                // NB: 15/16 bpp BMP decoding is not implemented, so such images are rejected here
                 case 8:
                 case 4:
                     icoAttrib.depth = 8;
