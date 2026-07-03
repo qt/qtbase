@@ -58,6 +58,7 @@ QT_BEGIN_NAMESPACE
 class QHttpNetworkRequest;
 class QHttpNetworkReply;
 class QByteArray;
+class QHttp2ProtocolHandler;
 
 #ifndef HttpMessagePair
 typedef std::pair<QHttpNetworkRequest, QHttpNetworkReply*> HttpMessagePair;
@@ -100,6 +101,7 @@ public:
     std::unique_ptr<QAbstractProtocolHandler> protocolHandler;
     QMultiMap<int, HttpMessagePair> h2RequestsToSend;
     bool switchedToHttp2 = false;
+    QHttp2ProtocolHandler *h2ProtocolHandler() const noexcept;
 #ifndef QT_NO_SSL
     bool ignoreAllSslErrors;
     QList<QSslError> ignoreSslErrorsList;
