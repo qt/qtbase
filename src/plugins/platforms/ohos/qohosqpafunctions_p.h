@@ -29,6 +29,7 @@
 #include <QtCore/qvariant.h>
 #include <functional>
 #include <memory>
+#include <optional>
 #include <qohosplugincore.h>
 #include <set>
 #include <utility>
@@ -87,7 +88,7 @@ public:
     {
         AbilityOnContinueResponseStatus status;
         QMap<QString, QString> wantObjectParams;
-        QOhosOptional<bool> exitAppOnSourceDeviceAfterMigration;
+        std::optional<bool> exitAppOnSourceDeviceAfterMigration;
     };
 
     struct FileShare {
@@ -113,7 +114,7 @@ public:
         struct PolicyErrorResult
         {
             QString path;
-            QOhosOptional<PolicyErrorCode> error;
+            std::optional<PolicyErrorCode> error;
             QString errorMessage;
         };
     };
@@ -151,25 +152,25 @@ public:
             bool setWindowFadeInOutAnimation = false;
         };
 
-        QOhosOptional<WindowMode> windowMode;
-        QOhosOptional<int> displayId;
-        QOhosOptional<bool> withAnimation;
-        QOhosOptional<int> windowLeft;
-        QOhosOptional<int> windowTop;
-        QOhosOptional<int> windowWidth;
-        QOhosOptional<int> windowHeight;
-        QOhosOptional<ProcessMode> processMode;
-        QOhosOptional<StartupVisibility> startupVisibility;
-        QOhosOptional<QVariant> windowIcon;
-        QOhosOptional<QString> windowBackgroundColorHex;
-        QOhosOptional<QList<SupportWindowMode>> supportWindowModes;
-        QOhosOptional<int> minWindowWidth;
-        QOhosOptional<int> minWindowHeight;
-        QOhosOptional<int> maxWindowWidth;
-        QOhosOptional<int> maxWindowHeight;
+        std::optional<WindowMode> windowMode;
+        std::optional<int> displayId;
+        std::optional<bool> withAnimation;
+        std::optional<int> windowLeft;
+        std::optional<int> windowTop;
+        std::optional<int> windowWidth;
+        std::optional<int> windowHeight;
+        std::optional<ProcessMode> processMode;
+        std::optional<StartupVisibility> startupVisibility;
+        std::optional<QVariant> windowIcon;
+        std::optional<QString> windowBackgroundColorHex;
+        std::optional<QList<SupportWindowMode>> supportWindowModes;
+        std::optional<int> minWindowWidth;
+        std::optional<int> minWindowHeight;
+        std::optional<int> maxWindowWidth;
+        std::optional<int> maxWindowHeight;
         std::shared_ptr<QOhosConsumer<bool, QJsonObject, QString>> optCompletionHandler;
-        QOhosOptional<bool> hideStartWindow;
-        QOhosOptional<WindowCreateParams> windowCreateParams;
+        std::optional<bool> hideStartWindow;
+        std::optional<WindowCreateParams> windowCreateParams;
     };
 
     struct AppPermissionResult
@@ -181,7 +182,7 @@ public:
     struct AbilityResult
     {
         int resultCode;
-        QOhosOptional<QJsonObject> want;
+        std::optional<QJsonObject> want;
     };
 
     struct ShareKit
@@ -199,24 +200,24 @@ public:
         {
             QString mimeType;
 
-            QOhosOptional<QString> content;
-            QOhosOptional<QString> filePath;
+            std::optional<QString> content;
+            std::optional<QString> filePath;
 
-            QOhosOptional<QString> title;
-            QOhosOptional<QString> label;
-            QOhosOptional<QString> description;
-            QOhosOptional<QByteArray> thumbnail;
-            QOhosOptional<QString> thumbnailFilePath;
-            QOhosOptional<QVariantMap> extraData;
+            std::optional<QString> title;
+            std::optional<QString> label;
+            std::optional<QString> description;
+            std::optional<QByteArray> thumbnail;
+            std::optional<QString> thumbnailFilePath;
+            std::optional<QVariantMap> extraData;
         };
 
         struct ShareControllerOptions
         {
-            QOhosOptional<QPoint> anchorOffset;
-            QOhosOptional<QSize> anchorSize;
-            QOhosOptional<bool> useSingleSelectionMode;
-            QOhosOptional<bool> useDefaultPreviewMode;
-            QOhosOptional<QList<ShareAbilityType>> excludedAbilities;
+            std::optional<QPoint> anchorOffset;
+            std::optional<QSize> anchorSize;
+            std::optional<bool> useSingleSelectionMode;
+            std::optional<bool> useDefaultPreviewMode;
+            std::optional<QList<ShareAbilityType>> excludedAbilities;
         };
 
         struct ShareOperationResult
@@ -247,9 +248,9 @@ public:
 
         virtual QJsonObject jsonObject() const = 0;
 
-        virtual QOhosOptional<QList<ShareKit::SharedRecord>> tryGetSharedDataRecords() const = 0;
+        virtual std::optional<QList<ShareKit::SharedRecord>> tryGetSharedDataRecords() const = 0;
 
-        virtual QOhosOptional<ContactInfo> tryGetContactInfo() const = 0;
+        virtual std::optional<ContactInfo> tryGetContactInfo() const = 0;
 
         virtual LaunchReason launchReason() const = 0;
 
@@ -280,8 +281,8 @@ public:
 
     virtual void setWindowDragResizable(QObject *windowOrWidget, bool dragResizable) = 0;
 
-    virtual QOhosOptional<double> tryGetNativeWindowId(QObject *window) = 0;
-    virtual QOhosOptional<double> tryGetScreenDisplayId(QObject *screenObject) = 0;
+    virtual std::optional<double> tryGetNativeWindowId(QObject *window) = 0;
+    virtual std::optional<double> tryGetScreenDisplayId(QObject *screenObject) = 0;
 
     virtual void setOnContinueRequestsHandlerForAbilityInstanceWindow(
         QObject *windowObject, std::function<void(AbilityOnContinueRequest, QOhosConsumer<AbilityOnContinueResponse>)> requestsHandler) = 0;
@@ -289,7 +290,7 @@ public:
     virtual void setAbilityContinuationActive(
         QObject *optInstanceMainWindow, bool continuationActive) = 0;
 
-    Q_NORETURN virtual void restartApp(QOhosOptional<QJsonObject> want) = 0;
+    Q_NORETURN virtual void restartApp(std::optional<QJsonObject> want) = 0;
 
     virtual QJsonObject getAppLaunchWant() = 0;
     virtual QSharedPointer<WantInfo> getAppLaunchWantInfo() const = 0;
@@ -300,24 +301,24 @@ public:
 
     virtual void startAppProcess(
         const QString &processId, const QJsonObject &requestWant,
-        const QOhosOptional<StartOptions> &optStartOptions) = 0;
+        const std::optional<StartOptions> &optStartOptions) = 0;
 
-    virtual bool startAbility(const QJsonObject &want, const QOhosOptional<StartOptions> &options) = 0;
+    virtual bool startAbility(const QJsonObject &want, const std::optional<StartOptions> &options) = 0;
 
     virtual bool startAbilityByType(const QString &appType, const QJsonObject &wantParameters) = 0;
 
     virtual void startAbilityForResult(
-        const QJsonObject &want, const QOhosOptional<StartOptions> &options,
+        const QJsonObject &want, const std::optional<StartOptions> &options,
         QObject *optInstanceMainWindow, QObject *resultConsumerQtContext,
-        QOhosConsumer<QOhosOptional<AbilityResult>> resultConsumer) = 0;
+        QOhosConsumer<std::optional<AbilityResult>> resultConsumer) = 0;
 
     virtual void setDestroyAllowedFlagForAbilityInstances(
         std::vector<QObject *> instancesMainWindows, bool destroyEnabled) = 0;
 
-    virtual void setOhosConfigDarkModeFlag(QOhosOptional<bool> darkModeFlag) = 0;
+    virtual void setOhosConfigDarkModeFlag(std::optional<bool> darkModeFlag) = 0;
 
-    virtual QOhosSupplier<QOhosOptional<bool>> makeOhosConfigDarkModeFlagDataSource(
-        QOhosConsumer<QOhosOptional<bool>> darkModeFlagChangedHandler) = 0;
+    virtual QOhosSupplier<std::optional<bool>> makeOhosConfigDarkModeFlagDataSource(
+        QOhosConsumer<std::optional<bool>> darkModeFlagChangedHandler) = 0;
 
     virtual QOhosSupplier<double> makeOhosConfigFontSizeScaleDataSource(
         QOhosConsumer<double> valueChangedHandler) = 0;
@@ -360,10 +361,10 @@ public:
         std::function<void()> panelClosedCallback,
         QOhosConsumer<ShareKit::ShareOperationResult> optShareCompletedCallback = nullptr) = 0;
 
-    virtual bool tryOpenLink(QObject *optInstanceMainWindow, const QString &link, QOhosOptional<bool> appLinkingOnly) = 0;
+    virtual bool tryOpenLink(QObject *optInstanceMainWindow, const QString &link, std::optional<bool> appLinkingOnly) = 0;
 
     virtual void setAudioStreamUsageHintProperty(QObject *qObject, AudioStreamUsage usage) = 0;
-    virtual QOhosOptional<AudioStreamUsage> tryGetAudioStreamUsageHintProperty(QObject *qObject) = 0;
+    virtual std::optional<AudioStreamUsage> tryGetAudioStreamUsageHintProperty(QObject *qObject) = 0;
 
 protected:
     QOhosQpaFunctions();
