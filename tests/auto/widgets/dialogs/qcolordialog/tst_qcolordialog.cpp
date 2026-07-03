@@ -96,8 +96,8 @@ void tst_QColorDialog::postKeyReturn() {
 
 void tst_QColorDialog::testGetRgba()
 {
-#ifdef Q_OS_MAC
-    QEXPECT_FAIL("", "Sending QTest::keyClick to OSX color dialog helper fails, see QTBUG-24320", Continue);
+#if defined(Q_OS_APPLE)
+    QEXPECT_FAIL("", "Sending QTest::keyClick to the native color dialog helper fails, see QTBUG-24320", Continue);
 #endif
     QTimer::singleShot(500, this, &tst_QColorDialog::postKeyReturn);
     const QColor color = QColorDialog::getColor(QColor::fromRgba(0xffffffff), nullptr, QString(),
