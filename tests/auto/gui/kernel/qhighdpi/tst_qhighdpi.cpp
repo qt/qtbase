@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <private/qhighdpiscaling_p.h>
+#include <qpa/qplatformintegrationfactory_p.h>
 #include <qpa/qplatformscreen.h>
 #include <qpa/qplatformnativeinterface.h>
 
@@ -155,6 +156,12 @@ QGuiApplication *tst_QHighDpi::createStandardOffscreenApp(const QJsonArray &scre
 
 void tst_QHighDpi::initTestCase()
 {
+    // Every test function creates a nested QGuiApplication on the offscreen
+    // platform, which aborts if the plugin is not available (e.g. static iOS
+    // builds that only link the ios plugin).
+    if (!QPlatformIntegrationFactory::keys().contains(QLatin1String("offscreen")))
+        QSKIP("This test requires the offscreen platform plugin");
+
     QDir::setCurrent(QDir::tempPath());
 }
 
