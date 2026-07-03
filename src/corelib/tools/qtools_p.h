@@ -23,10 +23,7 @@
 #include <QtCore/private/qnumeric_p.h>
 
 #include <cerrno>
-#include <chrono>
 #include <cstdlib>
-#include <limits.h>
-#include <time.h>
 
 QT_BEGIN_NAMESPACE
 
