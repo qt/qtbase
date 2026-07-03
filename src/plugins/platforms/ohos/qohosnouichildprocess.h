@@ -4,13 +4,14 @@
 #ifndef QOHOSNOUIPROCESS_H
 #define QOHOSNOUIPROCESS_H
 
+#include <QtCore/private/qnapi_p.h>
 #include <QtCore/qjsonobject.h>
 
 QT_BEGIN_NAMESPACE
 
 namespace QtOhos {
 
-QJsonObject readChildProcessSetupData();
+QNapi::Object readChildProcessSetupData(Napi::Env env);
 
 void sendChildProcessSetupData(int childPid, QJsonObject setupData);
 
