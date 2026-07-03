@@ -23,9 +23,11 @@ ignorewords += \
     macOS \
     WebAssembly \
     WebChannel \
+    WebEngine \
     WebSocket \
     WebSockets \
-    OpenGL
+    OpenGL \
+    StyleKit
 
 # Omit \since information for items introduced before Qt 6
 ignoresince = 6.0
