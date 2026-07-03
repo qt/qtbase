@@ -73,7 +73,7 @@ void tst_QKeyEvent::basicEventDelivery()
     }
 }
 
-static bool orderByModifier(const QList<int> &v1, const QList<int> &v2)
+static bool lessThanByModifier(const QList<int> &v1, const QList<int> &v2)
 {
     if (v1.size() != v2.size())
         return v1.size() < v2.size();
@@ -85,7 +85,7 @@ static bool orderByModifier(const QList<int> &v1, const QList<int> &v2)
         return v1.at(i) < v2.at(i);
     }
 
-    return true;
+    return false;
 }
 
 static QByteArray modifiersTestRowName(const QString &keySequence)
@@ -134,7 +134,7 @@ void tst_QKeyEvent::modifiers_data()
         modifierCombinations.append(modifierCombination);
     }
 
-    std::sort(modifierCombinations.begin(), modifierCombinations.end(), orderByModifier);
+    std::sort(modifierCombinations.begin(), modifierCombinations.end(), lessThanByModifier);
 
     QTest::addColumn<Qt::KeyboardModifiers>("modifiers");
     for (const QList<int> &combination : std::as_const(modifierCombinations)) {
