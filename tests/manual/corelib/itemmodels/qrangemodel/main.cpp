@@ -538,6 +538,30 @@ public slots:
         return new QRangeModel(&numbers);
     }
 
+    QRangeModel *makeDiacritics()
+    {
+        auto *model = new QRangeModel(QStringList{
+            u"Foie gras"_s,
+            u"Éclair"_s,
+            u"Pâté"_s,
+            u"Pain"_s,
+            u"Crème brûlée"_s,
+            u"Crêpe"_s,
+            u"Crevette"_s,
+            u"Soupe à l'oignon"_s,
+            u"Soupe aux amandes"_s,
+            u"Bûche de Noël"_s,
+            u"Bugne"_s,
+            u"Gâteau"_s,
+            u"Galette"_s,
+            u"Chèvre"_s,
+            u"Chevreuil"_s,
+            u"Macaron"_s,
+            u"Maïs"_s,
+        });
+        return model;
+    }
+
     QRangeModel *makeLargeArray()
     {
         for (int i = 0; i < int(largeArray.size()); ++i)
@@ -1017,6 +1041,32 @@ public:
         QAction *sortAction = toolBar->addAction(tr("Sort"));
         sortAction->setCheckable(true);
         connect(sortAction, &QAction::toggled, treeview, &QTreeView::setSortingEnabled);
+
+        QMenu *collatorOptions = new QMenu(this);
+        QAction *ignorePunctuationOption = collatorOptions->addAction(tr("IgnorePunctuation"));
+        ignorePunctuationOption->setCheckable(true);
+        ignorePunctuationOption->setData(QVariant::fromValue(QCollator::CollationOption::IgnorePunctuation));
+        QAction *diacriticInsensitiveOption = collatorOptions->addAction(tr("DiacriticInsensitive"));
+        diacriticInsensitiveOption->setCheckable(true);
+        diacriticInsensitiveOption->setData(QVariant::fromValue(QCollator::CollationOption::DiacriticInsensitive));
+        matchAction = toolBar->addAction(tr("Match"));
+        connect(matchAction, &QAction::toggled, this, [this](bool checked){
+            if (checked)
+                model->setMatchCollator(matchCollator);
+            else
+                model->resetMatchCollator();
+        });
+        connect(collatorOptions, &QMenu::triggered, this, [this](QAction *action){
+            auto options = matchCollator.options();
+            options.setFlag(action->data().value<QCollator::CollationOption>(), action->isChecked());
+            matchCollator.setOptions(options);
+            if (matchAction->isChecked())
+                model->setMatchCollator(matchCollator);
+        });
+
+        matchAction->setCheckable(true);
+        matchAction->setMenu(collatorOptions);
+
         toolBar->addSeparator();
 
         QAction *addAction = toolBar->addAction(tr("Add"), this, &MainWindow::onAdd);
@@ -1096,6 +1146,9 @@ private:
                 action->setChecked(action->data().value<QRangeModel::AutoConnectPolicy>()
                                 == model->autoConnectPolicy());
             }
+
+            if (matchAction->isChecked())
+                model->setMatchCollator(matchCollator);
         }
 
         delete oldModel;
@@ -1176,6 +1229,8 @@ private:
     QQuickWidget *quickWidget;
 #endif
     QActionGroup *connectionOptions;
+    QAction *matchAction;
+    QCollator matchCollator;
 };
 
 int main(int argc, char *argv[])

@@ -1977,15 +1977,27 @@ void tst_QRangeModel::matchCollator_data()
             << QVariantList{u"résumé"_s, u"RÉSUMÉ"_s, u"other"_s} << localeAware
             << u"resume"_s << Qt::MatchFlags(Qt::MatchFixedString)
             << QVariantList{u"résumé"_s, u"RÉSUMÉ"_s};
+        QTest::newRow("DiacriticInsensitiveStarts")
+            << QVariantList{u"résumé"_s, u"RÉSUMÉ"_s, u"other"_s} << localeAware
+            << u"re"_s << Qt::MatchFlags(Qt::MatchStartsWith)
+            << QVariantList{u"résumé"_s, u"RÉSUMÉ"_s};
+        QTest::newRow("DiacriticInsensitiveEnds")
+            << QVariantList{u"résumé"_s, u"RÉSUMÉ"_s, u"other"_s} << localeAware
+            << u"me"_s << Qt::MatchFlags(Qt::MatchEndsWith)
+            << QVariantList{u"résumé"_s, u"RÉSUMÉ"_s};
     } else {
         qInfo("Ignoring diacritic marks unsupported on this platform.");
     }
 
-    // The collator only affects Qt::MatchFixedString; substring matches keep
-    // their plain QString behavior, so the accented value is not matched.
-    QTest::newRow("CollatorIgnoredForMatchContains")
+    QTest::newRow("DiacriticInsensitiveContains")
             << QVariantList{u"résumé"_s, u"xyz"_s} << localeAware
-            << u"resume"_s << Qt::MatchFlags(Qt::MatchContains) << QVariantList{};
+            << u"resume"_s << Qt::MatchFlags(Qt::MatchContains)
+            << QVariantList{u"résumé"_s};
+
+    QTest::newRow("DiacriticInsensitiveContainsSubString")
+            << QVariantList{u"résumé"_s, u"xyz"_s} << localeAware
+            << u"esum"_s << Qt::MatchFlags(Qt::MatchContains)
+            << QVariantList{u"résumé"_s};
 
     // Locale unaware - collation options unavailable
     localeUnaware.setOptions(Opt::DiacriticInsensitive);
@@ -2003,6 +2015,36 @@ void tst_QRangeModel::matchCollator_data()
     } else {
         qInfo("Ignoring punctuation unsupported on this platform.");
     }
+
+    // Boundary, using plain ASCII with exact matches so that they produce
+    // the same result regardless of which collation options a platform supports.
+    QCollator plain = QCollator(QLocale::C);
+    const QVariantList haystack = {u"abcdef"_s, u"xyz"_s};
+
+    QTest::newRow("ContainsAtStart")
+        << haystack << plain << u"abc"_s << Qt::MatchFlags(Qt::MatchContains)
+        << QVariantList{u"abcdef"_s};
+
+    QTest::newRow("ContainsAtEnd")
+        << haystack << plain << u"def"_s << Qt::MatchFlags(Qt::MatchContains)
+        << QVariantList{u"abcdef"_s};
+
+    QTest::newRow("ContainsExactLength")
+        << haystack << plain << u"abcdef"_s << Qt::MatchFlags(Qt::MatchContains)
+        << QVariantList{u"abcdef"_s};
+
+    QTest::newRow("ContainsNeedleTooLong")
+        << haystack << plain << u"abcdefghij"_s << Qt::MatchFlags(Qt::MatchContains)
+        << QVariantList{};
+    QTest::newRow("StartsWithNeedleTooLong")
+        << haystack << plain << u"abcdefghij"_s << Qt::MatchFlags(Qt::MatchStartsWith)
+        << QVariantList{};
+    QTest::newRow("EndsWithNeedleTooLong")
+        << haystack << plain << u"abcdefghij"_s << Qt::MatchFlags(Qt::MatchEndsWith)
+        << QVariantList{};
+    QTest::newRow("ContainsNeedleLongerThanSomeItems")
+        << haystack << plain << u"xyzw"_s << Qt::MatchFlags(Qt::MatchContains)
+        << QVariantList{};
 }
 
 void tst_QRangeModel::matchCollator()

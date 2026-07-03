@@ -213,15 +213,37 @@ static bool matchValueImpl(const QString &itemData, const QVariant &value,
         return itemData.contains(value.toRegularExpression());
 #endif // QT_CONFIG(regularexpression)
     case Qt::MatchStartsWith:
+        if (collator) {
+            const QString needle = value.toString();
+            return needle.size() <= itemData.size()
+                && collator->compare(QStringView(itemData).left(needle.size()), needle) == 0;
+        }
         return itemData.startsWith(value.toString(), cs);
     case Qt::MatchEndsWith:
+        if (collator) {
+            const QString needle = value.toString();
+            return needle.size() <= itemData.size()
+                && collator->compare(QStringView(itemData).right(needle.size()), needle) == 0;
+        }
         return itemData.endsWith(value.toString(), cs);
     case Qt::MatchFixedString:
         if (collator)
             return collator->compare(itemData, value.toString()) == 0;
         return itemData.compare(value.toString(), cs) == 0;
-    case Qt::MatchContains:
+    case Qt::MatchContains: {
+        if (collator) {
+            const QString needle = value.toString();
+            const QStringView needleView(needle);
+            const QStringView itemDataView(itemData);
+            const qsizetype scans = itemData.size() - needle.size();
+            for (qsizetype pos = 0; pos <= scans; ++pos) {
+                if (collator->compare(itemDataView.sliced(pos, needle.size()), needleView) == 0)
+                    return true;
+            }
+            return false;
+        }
         return itemData.contains(value.toString(), cs);
+    }
     default:
         return false;
     }
