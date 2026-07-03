@@ -838,6 +838,18 @@ bool QHttpNetworkConnectionChannel::isSocketReading() const
     return (state & QHttpNetworkConnectionChannel::ReadingState);
 }
 
+QHttp2ProtocolHandler *QHttpNetworkConnectionChannel::h2ProtocolHandler() const noexcept
+{
+    if (!protocolHandler)
+        return nullptr;
+    const auto type = connection->connectionType();
+    if (type == QHttpNetworkConnection::ConnectionTypeHTTP2Direct
+        || (type == QHttpNetworkConnection::ConnectionTypeHTTP2 && switchedToHttp2)) {
+        return static_cast<QHttp2ProtocolHandler *>(protocolHandler.get());
+    }
+    return nullptr;
+}
+
 void QHttpNetworkConnectionChannel::_q_bytesWritten(qint64 bytes)
 {
     Q_UNUSED(bytes);
@@ -1041,14 +1053,8 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
             // we do not resend, but must report errors if any request is in progress (note, while
             // not in its sendRequest(), protocol handler switches the channel to IdleState, thus
             // this check is under this condition in 'if'):
-            if (protocolHandler) {
-                if (connection->connectionType() == QHttpNetworkConnection::ConnectionTypeHTTP2Direct
-                    || (connection->connectionType() == QHttpNetworkConnection::ConnectionTypeHTTP2
-                        && switchedToHttp2)) {
-                    auto h2Handler = static_cast<QHttp2ProtocolHandler *>(protocolHandler.get());
-                    h2Handler->handleConnectionClosure();
-                }
-            }
+            if (auto *h2Handler = h2ProtocolHandler())
+                h2Handler->handleConnectionClosure();
             return;
         } else if (state != QHttpNetworkConnectionChannel::IdleState && state != QHttpNetworkConnectionChannel::ReadingState) {
             // Try to reconnect/resend before sending an error.
