@@ -101,7 +101,9 @@ private:
     bool ipv6GetsockoptionMissing(int level, int optname);
 #endif
 
+#if QT_CONFIG(process)
     QString crashingServerDir;
+#endif
 };
 
 // Testing get/set functions
@@ -128,9 +130,11 @@ void tst_QTcpServer::initTestCase_data()
     QTest::newRow("WithSocks5Proxy") << true << int(QNetworkProxy::Socks5Proxy);
 #endif
 
+#if QT_CONFIG(process)
     crashingServerDir = QFINDTESTDATA("crashingServer");
     QVERIFY2(!crashingServerDir.isEmpty(), qPrintable(
         QString::fromLatin1("Couldn't find crashingServer dir starting from %1.").arg(QDir::currentPath())));
+#endif
 }
 
 void tst_QTcpServer::initTestCase()
