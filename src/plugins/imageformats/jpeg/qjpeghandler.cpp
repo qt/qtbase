@@ -9,6 +9,7 @@
 #include <qcolortransform.h>
 #include <qdebug.h>
 #include <qimage.h>
+#include <qimagereader.h>
 #include <qlist.h>
 #include <qloggingcategory.h>
 #include <qmath.h>
@@ -17,6 +18,7 @@
 #include <private/qsimd_p.h>
 #include <private/qimage_p.h>   // for qt_getImageText
 
+#include <limits>
 #include <stdio.h>      // jpeglib needs this to be pre-included
 #include <setjmp.h>
 
@@ -960,6 +962,10 @@ bool QJpegHandlerPrivate::readJpegHeader(QIODevice *device)
 
         jpeg_create_decompress(&info);
         info.src = iod_src;
+        if (const int mbLimit = QImageReader::allocationLimit()) {
+            const qint64 bMax = 2 * qint64(mbLimit) * 1024 * 1024; // Some overhead for temp alloc
+            info.mem->max_memory_to_use = long(qMin(bMax, qint64(std::numeric_limits<long>::max())));
+        }
 
         if (!setjmp(err.setjmp_buffer)) {
             jpeg_save_markers(&info, JPEG_COM, 0xFFFF);
