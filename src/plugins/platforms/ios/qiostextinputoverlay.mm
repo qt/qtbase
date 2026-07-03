@@ -32,6 +32,9 @@ static QPlatformInputContext *platformInputContext()
 
 static SelectionPair querySelection()
 {
+    if (!QGuiApplication::focusObject())
+        return {};
+
     QInputMethodQueryEvent query(Qt::ImAnchorPosition | Qt::ImCursorPosition);
     QGuiApplication::sendEvent(QGuiApplication::focusObject(), &query);
     int anchorPos = query.value(Qt::ImAnchorPosition).toInt();
