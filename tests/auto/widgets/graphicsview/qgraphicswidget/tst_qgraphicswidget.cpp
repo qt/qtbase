@@ -2961,8 +2961,8 @@ void tst_QGraphicsWidget::respectHFW()
     }
     const QSizeF winSize = window->size();
     qreal minHFW = window->effectiveSizeHint(Qt::MinimumSize, QSizeF(winSize.width(), -1)).height();
-#ifdef Q_OS_DARWIN
-    QEXPECT_FAIL("", "This test is known to fail on Apple platforms.", Continue);
+#if defined(Q_OS_MACOS)
+    QEXPECT_FAIL("", "This test is known to fail on macOS.", Continue);
 #endif
     QTRY_VERIFY(qAbs(minHFW - winSize.height()) < 1);
 }
