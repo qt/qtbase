@@ -282,6 +282,9 @@
 
 - (BOOL)hasSelection
 {
+    if (!QGuiApplication::focusObject())
+        return false;
+
     QInputMethodQueryEvent query(Qt::ImAnchorPosition | Qt::ImCursorPosition);
     QGuiApplication::sendEvent(QGuiApplication::focusObject(), &query);
     int anchorPos = query.value(Qt::ImAnchorPosition).toInt();
