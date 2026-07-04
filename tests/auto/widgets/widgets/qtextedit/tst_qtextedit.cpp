@@ -387,7 +387,7 @@ void tst_QTextEdit::cleanup()
 void tst_QTextEdit::inlineAttributesOnInsert()
 {
     const QColor blue(Qt::blue);
-    QVERIFY(ed->textCursor().charFormat().foreground().color() != blue);
+    QCOMPARE_NE(ed->textCursor().charFormat().foreground().color(), blue);
 
     ed->setTextColor(blue);
     QTest::keyClick(ed, Qt::Key_A);
@@ -560,7 +560,7 @@ void tst_QTextEdit::layoutingLoop()
     delete ed;
 
     // ###### should need less!
-    QVERIFY(callsToSetPageSize < 10);
+    QCOMPARE_LT(callsToSetPageSize, 10);
 }
 
 #ifndef QT_NO_CLIPBOARD
@@ -585,8 +585,7 @@ void tst_QTextEdit::asciiTab()
     QTextEdit edit;
     edit.setPlainText("\t");
     edit.show();
-    qApp->processEvents();
-    QCOMPARE(edit.toPlainText().at(0), QChar('\t'));
+    QTRY_COMPARE(edit.toPlainText().at(0), QChar('\t'));
 }
 
 
@@ -641,7 +640,7 @@ void tst_QTextEdit::mergeCurrentCharFormat()
     // do NOT select the current word under the cursor, /JUST/
     // call mergeCharFormat on the cursor
     QVERIFY(!cursor.charFormat().fontItalic());
-    QVERIFY(cursor.charFormat().foreground().color() != Qt::red);
+    QCOMPARE_NE(cursor.charFormat().foreground().color(), Qt::red);
 }
 
 void tst_QTextEdit::mergeCurrentBlockCharFormat()
@@ -661,12 +660,12 @@ void tst_QTextEdit::mergeCurrentBlockCharFormat()
     mod.setForeground(Qt::red);
     ed->mergeCurrentCharFormat(mod);
 
-    QVERIFY(cursor.blockCharFormat().foreground().color() != Qt::red);
+    QCOMPARE_NE(cursor.blockCharFormat().foreground().color(), Qt::red);
     cursor.movePosition(QTextCursor::Up);
-    QVERIFY(cursor.blockCharFormat().foreground().color() != Qt::red);
+    QCOMPARE_NE(cursor.blockCharFormat().foreground().color(), Qt::red);
     cursor.movePosition(QTextCursor::Down);
     cursor.movePosition(QTextCursor::Down);
-    QVERIFY(cursor.blockCharFormat().foreground().color() != Qt::red);
+    QCOMPARE_NE(cursor.blockCharFormat().foreground().color(), Qt::red);
 }
 
 int tst_QTextEdit::blockCount() const
@@ -755,7 +754,7 @@ void tst_QTextEdit::cursorPositionChanged()
     QCOMPARE(spy.size(), 1);
 
     CursorPositionChangedRecorder spy2(ed);
-    QVERIFY(ed->textCursor().position() > 0);
+    QCOMPARE_GT(ed->textCursor().position(), 0);
     ed->setPlainText("Hello World");
     QCOMPARE(spy2.cursorPositions.size(), 1);
     QCOMPARE(spy2.cursorPositions.at(0), 0);
@@ -793,7 +792,7 @@ void tst_QTextEdit::undoAvailableAfterPaste()
     const QString txt("Test");
     QApplication::clipboard()->setText(txt);
     ed->paste();
-    QVERIFY(spy.size() >= 1);
+    QCOMPARE_GE(spy.size(), 1);
     QCOMPARE(ed->toPlainText(), txt);
 }
 #endif
@@ -867,7 +866,7 @@ void tst_QTextEdit::appendShouldUseCurrentFormat()
     QTextCursor cursor(ed->document());
 
     QVERIFY(cursor.movePosition(QTextCursor::NextCharacter));
-    QVERIFY(cursor.charFormat().foreground().color() != blue);
+    QCOMPARE_NE(cursor.charFormat().foreground().color(), blue);
     QVERIFY(!cursor.charFormat().fontItalic());
 
     QVERIFY(cursor.movePosition(QTextCursor::NextBlock));
@@ -1217,7 +1216,7 @@ void tst_QTextEdit::lineWrapModes()
     cursor.mergeBlockFormat(fmt);
     cursor.insertText(QString("Another line"));
     ed->show(); // relayout;
-    QVERIFY(ed->document()->pageSize().width() > qreal(0));
+    QCOMPARE_GT(ed->document()->pageSize().width(), qreal(0));
 
     ed->setLineWrapColumnOrWidth(10);
     ed->setLineWrapMode(QTextEdit::FixedColumnWidth);
@@ -1256,13 +1255,13 @@ void tst_QTextEdit::implicitClear()
     QVariant testResource("hello world");
 
     ed->document()->addResource(QTextDocument::ImageResource, testUrl, testResource);
-    QVERIFY(ed->document()->resource(QTextDocument::ImageResource, testUrl) == testResource);
+    QCOMPARE(ed->document()->resource(QTextDocument::ImageResource, testUrl), testResource);
 
     ed->setPlainText("Blah");
-    QVERIFY(ed->document()->resource(QTextDocument::ImageResource, testUrl) == testResource);
+    QCOMPARE(ed->document()->resource(QTextDocument::ImageResource, testUrl), testResource);
 
     ed->setPlainText("<b>Blah</b>");
-    QVERIFY(ed->document()->resource(QTextDocument::ImageResource, testUrl) == testResource);
+    QCOMPARE(ed->document()->resource(QTextDocument::ImageResource, testUrl), testResource);
 
     ed->clear();
     QVERIFY(!ed->document()->resource(QTextDocument::ImageResource, testUrl).isValid());
@@ -1640,10 +1639,10 @@ void tst_QTextEdit::ensureCursorVisibleOnInitialShow()
 
     ed->moveCursor(QTextCursor::End);
     ed->show();
-    QVERIFY(ed->verticalScrollBar()->value() > 10);
+    QTRY_COMPARE_GT(ed->verticalScrollBar()->value(), 10);
 
     ed->moveCursor(QTextCursor::Start);
-    QVERIFY(ed->verticalScrollBar()->value() < 10);
+    QCOMPARE_LT(ed->verticalScrollBar()->value(), 10);
     ed->hide();
     ed->verticalScrollBar()->setValue(ed->verticalScrollBar()->maximum());
     ed->show();
@@ -1671,7 +1670,7 @@ void tst_QTextEdit::setHtmlInsideResizeEvent()
     TestEdit edit;
     edit.show();
     edit.resize(800, 600);
-    QVERIFY(edit.resizeEventCalled);
+    QTRY_VERIFY(edit.resizeEventCalled);
 }
 
 void tst_QTextEdit::colorfulAppend()
@@ -1686,13 +1685,13 @@ void tst_QTextEdit::colorfulAppend()
     QCOMPARE(ed->document()->blockCount(), 3);
     QTextBlock block = ed->document()->begin();
     QCOMPARE(block.begin().fragment().text(), QString("Red"));
-    QVERIFY(block.begin().fragment().charFormat().foreground().color() == Qt::red);
+    QCOMPARE(block.begin().fragment().charFormat().foreground().color(), Qt::red);
     block = block.next();
     QCOMPARE(block.begin().fragment().text(), QString("Blue"));
-    QVERIFY(block.begin().fragment().charFormat().foreground().color() == Qt::blue);
+    QCOMPARE(block.begin().fragment().charFormat().foreground().color(), Qt::blue);
     block = block.next();
     QCOMPARE(block.begin().fragment().text(), QString("Green"));
-    QVERIFY(block.begin().fragment().charFormat().foreground().color() == Qt::green);
+    QCOMPARE(block.begin().fragment().charFormat().foreground().color(), Qt::green);
 }
 
 void tst_QTextEdit::ensureVisibleWithRtl()
@@ -1705,9 +1704,7 @@ void tst_QTextEdit::ensureVisibleWithRtl()
     ed->resize(100, 100);
     ed->show();
 
-    qApp->processEvents();
-
-    QVERIFY(ed->horizontalScrollBar()->maximum() > 0);
+    QTRY_COMPARE_GT(ed->horizontalScrollBar()->maximum(), 0);
 
     ed->moveCursor(QTextCursor::Start);
     QCOMPARE(ed->horizontalScrollBar()->value(), ed->horizontalScrollBar()->maximum());
@@ -1770,7 +1767,7 @@ void tst_QTextEdit::adjustScrollbars()
     QLatin1String txt("\nabc def ghi jkl mno pqr stu vwx");
     ed->setText(txt + txt + txt + txt);
 
-    QVERIFY(ed->verticalScrollBar()->maximum() > 0);
+    QTRY_COMPARE_GT(ed->verticalScrollBar()->maximum(), 0);
 
     ed->moveCursor(QTextCursor::End);
     int oldMaximum = ed->verticalScrollBar()->maximum();
@@ -1809,7 +1806,7 @@ void tst_QTextEdit::currentCharFormatChanged()
     ed->show();
     ed->setCurrentFont(ff);
 
-    QVERIFY(receiver.receivedSignals() > 0);
+    QTRY_COMPARE_GT(receiver.receivedSignals(), 0);
     QCOMPARE(receiver.charFormat().font(), ff);
 }
 
@@ -1835,7 +1832,7 @@ void tst_QTextEdit::textObscuredByScrollbars()
     QSize documentSize = ed->document()->documentLayout()->documentSize().toSize();
     QSize viewportSize = ed->viewport()->size();
 
-    QVERIFY(documentSize.width() <= viewportSize.width());
+    QCOMPARE_LE(documentSize.width(), viewportSize.width());
 }
 
 void tst_QTextEdit::setTextPreservesUndoRedoEnabled()
@@ -1945,7 +1942,7 @@ void tst_QTextEdit::copyPasteBackgroundImage()
 
     QVERIFY(a);
     QVERIFY(b);
-    QVERIFY(a != b);
+    QCOMPARE_NE(a, b);
 
     QBrush ba = a->cellAt(0, 0).format().background();
     QBrush bb = b->cellAt(0, 0).format().background();
@@ -2316,6 +2313,7 @@ void tst_QTextEdit::noWrapBackgrounds()
 
     layout->addWidget(&edit);
     topLevel.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
 
     const QImage img = edit.viewport()->grab().toImage();
     QCOMPARE(img, img.flipped(Qt::Horizontal));
@@ -2645,7 +2643,7 @@ void tst_QTextEdit::highlightLongLine()
     };
     NumHighlighter nh(edit.document());
     edit.show();
-    QVERIFY(QTest::qWaitForWindowActive(edit.windowHandle()));
+    QVERIFY(QTest::qWaitForWindowActive(&edit));
     QCoreApplication::processEvents();
     //If there is a quadratic behaviour, this would take forever.
     QVERIFY(true);
@@ -3102,6 +3100,7 @@ void tst_QTextEdit::linkSelectionArtifact()
 
     e.setFont(QFont(e.font().family(), 30));
     e.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&e));
     QVERIFY(QTestPrivate::ensurePositionTopLeft(e.windowHandle()));
     QTRY_COMPARE(QApplication::topLevelAt(e.geometry().center()), &e);
 
