@@ -25,9 +25,11 @@ bool QFontEngineMultiFontConfig::shouldLoadFontEngineForCharacter(int at, uint u
     bool charSetHasChar = true;
     FcPattern *matchPattern = getMatchPatternForFallback(at - 1);
     if (matchPattern != nullptr) {
-        FcCharSet *charSet;
-        FcPatternGetCharSet(matchPattern, FC_CHARSET, 0, &charSet);
-        charSetHasChar = FcCharSetHasChar(charSet, ucs4);
+        FcCharSet *charSet = nullptr;
+        if (FcPatternGetCharSet(matchPattern, FC_CHARSET, 0, &charSet) == FcResultMatch
+            && charSet != nullptr) {
+            charSetHasChar = FcCharSetHasChar(charSet, ucs4);
+        }
     }
 
     return charSetHasChar;
