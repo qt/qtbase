@@ -92,7 +92,6 @@ extern char *__progname;
 #ifdef Q_OS_WIN
 #include <qt_windows.h>
 #include <processthreadsapi.h>
-#include "qfunctionpointer.h"
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -222,22 +221,10 @@ static bool qt_append_thread_name_to(QString &message)
     return false;
 }
 #elif defined(Q_OS_WIN)
-typedef HRESULT (WINAPI *GetThreadDescriptionFunc)(HANDLE, PWSTR *);
 static bool qt_append_thread_name_to(QString &message)
 {
-    // Once MinGW 12.0 is required for Qt, we can call GetThreadDescription directly
-    // instead of this runtime resolve:
-    static GetThreadDescriptionFunc pGetThreadDescription = []() -> GetThreadDescriptionFunc {
-        HMODULE hKernel = GetModuleHandleW(L"kernel32.dll");
-        if (!hKernel)
-            return nullptr;
-        auto funcPtr = reinterpret_cast<QFunctionPointer>(GetProcAddress(hKernel, "GetThreadDescription"));
-        return reinterpret_cast<GetThreadDescriptionFunc>(funcPtr);
-    } ();
-    if (!pGetThreadDescription)
-        return false; // Not available on this system
     PWSTR description = nullptr;
-    HRESULT hr = pGetThreadDescription(GetCurrentThread(), &description);
+    HRESULT hr = GetThreadDescription(GetCurrentThread(), &description);
     std::unique_ptr<WCHAR, decltype(&LocalFree)> descriptionOwner(description, &LocalFree);
     if (SUCCEEDED(hr)) {
         QStringView threadName(description);
