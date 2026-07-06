@@ -68,16 +68,17 @@ bool runIgnoringJsBusinessError(
     JsState &, std::uint32_t suppressedErrorCode, const char *callerContextName,
     const std::function<void()> &action);
 
-// Creates a Data Source: a Qt-thread object tracking a value owned by a JS object.
-// The returned supplier keeps it alive and yields the current value, valueChangedHandler
-// is called on each change (everything in the Qt thread).
-// The two std::function parameters provide JS-thread side implementation of the necessary
-// building blocks.
+// Creates a Data Source: an object tracking a value owned by a JS object and mirrored
+// onto a caller-chosen target thread. The returned supplier keeps it alive and yields
+// the current value; valueChangedHandler is called on each change. Value updates and the
+// handler are dispatched onto the target thread via targetThreadExecutor. The two
+// std::function parameters provide the JS-thread-side implementation building blocks.
 template<typename T>
 QOhosSupplier<T> makeDataSource(
     std::function<T(JsState &)> initialValueReader,
     std::function<std::shared_ptr<void>(JsState &, QOhosConsumer<T>)> changeListenerFactory,
     QOhosConsumer<T> valueChangedHandler,
+    QOhosConsumer<std::function<void()>> targetThreadExecutor,
     std::string callerContextName = {});
 
 template<typename T>
@@ -111,6 +112,7 @@ QOhosSupplier<T> makeDataSource(
     std::function<T(JsState &)> initialValueReader,
     std::function<std::shared_ptr<void>(JsState &, QOhosConsumer<T>)> changeListenerFactory,
     QOhosConsumer<T> valueChangedHandler,
+    QOhosConsumer<std::function<void()>> targetThreadExecutor,
     std::string callerContextName)
 {
     struct Context {
@@ -127,8 +129,8 @@ QOhosSupplier<T> makeDataSource(
             context->changeListenerHandle = makeProxyWithJsThreadDeleter(
                 changeListenerFactory(
                     jsState,
-                    [weakContext = makeWeakPtr(context)](T newValue) {
-                        invokeInQtThread(
+                    [weakContext = makeWeakPtr(context), targetThreadExecutor = std::move(targetThreadExecutor)](T newValue) {
+                        targetThreadExecutor(
                             [weakContext, newValue = std::move(newValue)]() mutable {
                                 auto context = weakContext.lock();
                                 if (context && newValue != context->currentValue) {
@@ -174,6 +176,7 @@ QOhosSupplier<ConfigValue> makeOhosConfigValueDataSource(
                 });
         },
         std::move(valueChangedHandler),
+        QtOhos::invokeInQtThread,
         Q_FUNC_INFO);
 }
 
