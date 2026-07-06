@@ -24,11 +24,24 @@ public:
 Q_DECLARE_OPERATORS_FOR_FLAGS(MyClass_1::Options)
 //! [1]
 
-#if 0
 //! [meta-object flags]
-Q_FLAG(Options)
+class MyClass_2
+{
+    Q_OBJECT
+public:
+    enum Option {
+        NoOptions = 0x0,
+        ShowTabs = 0x1,
+        ShowAll = 0x2,
+        SqueezeBlank = 0x4
+    };
+    Q_DECLARE_FLAGS(Options, Option)
+    Q_FLAG(Options)
+    //...
+};
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(MyClass_2::Options)
 //! [meta-object flags]
-#endif
 
 struct DummyDriver {
     bool isOpen() const { return true; }

@@ -93,6 +93,8 @@
 
     If you want to use QFlags for your own enum types, use
     the Q_DECLARE_FLAGS() and Q_DECLARE_OPERATORS_FOR_FLAGS().
+    In this case Q_DECLARE_FLAGS() must appear in the same scope (class or
+    namespace) as the corresponding enum.
 
     Example:
 
