@@ -3,7 +3,5 @@
 # QTBUG-87025
 [desktopSettingsAware]
 android
-[modalDialog]
-android
 [exitFromEventLoop]
 wayland
