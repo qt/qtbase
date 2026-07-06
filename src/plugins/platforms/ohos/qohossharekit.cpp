@@ -163,7 +163,7 @@ std::shared_ptr<void> registerOnOffShareCompletedEventHandler(
 }
 
 void shareDataImpl(
-    QtOhos::JsState &jsState, std::shared_ptr<QtOhos::QUiAbilityPeer> uiAbilityPeer,
+    QtOhos::JsState &jsState, QNapi::Object uiAbility,
     const std::vector<SharedRecord> &recordsToShare, ControllerOptions controllerOptions,
     std::function<void()> panelClosedCallback, QOhosConsumer<ShareOperationResult> shareCompletedCallback,
     QOhosConsumer<std::shared_ptr<void>> resultConsumer)
@@ -214,7 +214,7 @@ void shareDataImpl(
     controller.evalToPromiseOrRejectOnThrow(
         "show(*)",
         {
-            uiAbilityPeer->qAbility().get<QNapi::Object>("context"),
+            uiAbility.get<QNapi::Object>("context"),
             makeShareKitControllerOptionsObject(jsState, controllerOptions),
         })
     .withContext(std::move(resultConsumer))
@@ -272,7 +272,7 @@ std::shared_ptr<void> shareData(
             }
 
             shareDataImpl(
-                jsState, uiAbilityPeer, recordsToShare, controllerOptions, std::move(panelClosedJsCallback),
+                jsState, uiAbilityPeer->qAbility(), recordsToShare, controllerOptions, std::move(panelClosedJsCallback),
                 std::move(shareCompletedJsCallback),
                 [evalPromise = QtOhos::moveToSharedPtr(std::move(evalPromise))](std::shared_ptr<void> shareCallbacksHandle) {
                     (*evalPromise)(
