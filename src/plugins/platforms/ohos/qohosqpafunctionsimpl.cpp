@@ -1110,14 +1110,16 @@ void QOhosQpaFunctionsImpl::setAbilityContinuationActive(
 
     QtOhos::invokeInJsThreadAndWaitForContinue(
         [&](JsState &jsState, QOhosTaskPromise<> taskPromise) {
-            auto optAbilityPeer = tryMapOptMainWindowToAbilityPeer(jsState, optInstanceMainWindowRef);
-            if (!optAbilityPeer) {
+            auto optUiAbility = optInstanceMainWindowRef.has_value()
+                ? jsState.tryGetQAbilityByQWindow(optInstanceMainWindowRef.value())
+                : jsState.defaultQAbility();
+            if (!optUiAbility.has_value()) {
                 taskPromise();
                 return;
             }
 
             auto continueState = continuationActive ? ContinueState::ACTIVE : ContinueState::INACTIVE;
-            optAbilityPeer->qAbility().evalToPromiseOrRejectOnThrow(
+            optUiAbility.value().evalToPromiseOrRejectOnThrow(
                 "context.setMissionContinueState(*)", {jsState.mapOhosEnumToJs(continueState)})
             .onCatch(QtOhos::makeErrorLoggingJsCallback("setMissionContinueState()"))
             .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
@@ -1144,8 +1146,12 @@ Q_NORETURN void QOhosQpaFunctionsImpl::restartApp(std::optional<QJsonObject> wan
                     "%s: calling restartApp() using Want: %s",
                     Q_FUNC_INFO, QNapi::toJsonString(napiWant).c_str());
 
+                auto optQAbility = jsState.defaultQAbility();
+                if (!optQAbility.has_value())
+                    qOhosReportFatalErrorAndAbort("%s: no default UIAbility available to restart the app", Q_FUNC_INFO);
+
                 try {
-                    jsState.defaultQAbilityPeer()->qAbility().call(
+                    optQAbility.value().call(
                         "context.getApplicationContext().restartApp", {napiWant});
 
                     qOhosPrintfWarning("%s: restartApp() call unexpectedly returned, killing self", Q_FUNC_INFO);
@@ -1258,7 +1264,10 @@ bool QOhosQpaFunctionsImpl::startAbility(const QJsonObject &want, const std::opt
 {
     return QtOhos::evalInJsThread(
         [&](auto &jsState) {
-            auto mainUiAbility = jsState.defaultQAbilityPeer()->qAbility();
+            auto optMainUiAbility = jsState.defaultQAbility();
+            if (!optMainUiAbility.has_value())
+                return false;
+            auto mainUiAbility = optMainUiAbility.value();
             if (mainUiAbility.IsEmpty())
                 return false;
 
@@ -1282,14 +1291,14 @@ bool QOhosQpaFunctionsImpl::startAbilityByType(const QString &appType, const QJs
     // However, the started ability result won't be synced here.
     return QtOhos::evalInJsThreadWithPromise<bool>(
         [&](QtOhos::JsState &jsState, QOhosTaskPromise<bool> evalPromise) {
-            auto qAbility = jsState.defaultQAbilityPeer()->qAbility();
-            if (qAbility.IsEmpty()) {
+            auto optQAbility = jsState.defaultQAbility();
+            if (!optQAbility.has_value()) {
                 evalPromise(false);
                 return;
             }
 
             auto thenCatchPromises = std::move(evalPromise).makeThenCatchBranches(Q_FUNC_INFO);
-            qAbility.evalToPromiseOrRejectOnThrow(
+            optQAbility.value().evalToPromiseOrRejectOnThrow(
                 "context.startAbilityByType(*)",
                 {
                     appType.toStdString(),
@@ -1348,8 +1357,10 @@ void QOhosQpaFunctionsImpl::startAbilityForResult(
 
     QtOhos::invokeInJsThread(
         [context, want, options, optInstanceMainWindowRef](QtOhos::JsState &jsState) {
-            auto optAbilityPeer = tryMapOptMainWindowToAbilityPeer(jsState, optInstanceMainWindowRef);
-            if (!optAbilityPeer) {
+            auto optUiAbility = optInstanceMainWindowRef.has_value()
+                ? jsState.tryGetQAbilityByQWindow(optInstanceMainWindowRef.value())
+                : jsState.defaultQAbility();
+            if (!optUiAbility.has_value()) {
                 context->resultConsumerQtContextRef.visitInQtThreadIfAlive(
                     [context](auto &) {
                         context->resultConsumer({});
@@ -1361,7 +1372,7 @@ void QOhosQpaFunctionsImpl::startAbilityForResult(
             if (options.has_value())
                 arguments.push_back(convertStartOptionsToNapiObject(jsState, options.value()));
 
-            optAbilityPeer->qAbility().evalToPromiseOrRejectOnThrow("context.startAbilityForResult(*)", arguments)
+            optUiAbility.value().evalToPromiseOrRejectOnThrow("context.startAbilityForResult(*)", arguments)
             .onThen(
                 [context](const QtOhos::CallbackInfo &cbInfo) {
                     QNapi::Object abilityResult = cbInfo.getFirstArg<QNapi::Object>(Q_FUNC_INFO);
@@ -1402,9 +1413,9 @@ void QOhosQpaFunctionsImpl::setDestroyAllowedFlagForAbilityInstances(
     QtOhos::runInJsThreadAndWait(
         [&](auto &jsState) {
             for (const auto &instanceMainWindowRef : instancesMainWindowsRefs) {
-                auto abilityPeer = jsState.tryGetQAbilityPeerByQWindow(instanceMainWindowRef);
-                if (abilityPeer)
-                    abilityPeer->destroyAllowedFlag()->store(destroyEnabled);
+                auto optQAbility = jsState.tryGetQAbilityByQWindow(instanceMainWindowRef);
+                if (optQAbility)
+                    jsState.setDestroyFromSystemAllowed(optQAbility.value(), destroyEnabled);
             }
         },
         Q_FUNC_INFO);
@@ -1753,8 +1764,10 @@ bool QOhosQpaFunctionsImpl::tryOpenLink(QObject *optInstanceMainWindow, const QS
 
     return QtOhos::evalInJsThreadWithPromise<bool>(
         [&](QtOhos::JsState &jsState, QOhosTaskPromise<bool> evalPromise) {
-            auto optAbilityPeer = tryMapOptMainWindowToAbilityPeer(jsState, optInstanceMainWindowRef);
-            if (!optAbilityPeer) {
+            auto optUiAbility = optInstanceMainWindowRef.has_value()
+                ? jsState.tryGetQAbilityByQWindow(optInstanceMainWindowRef.value())
+                : jsState.defaultQAbility();
+            if (!optUiAbility.has_value()) {
                 evalPromise(false);
                 return;
             }
@@ -1764,7 +1777,7 @@ bool QOhosQpaFunctionsImpl::tryOpenLink(QObject *optInstanceMainWindow, const QS
                 openLinkOptions.emplace_back("appLinkingOnly", appLinkingOnly.value());
 
             auto thenCatchPromises = std::move(evalPromise).makeThenCatchBranches(Q_FUNC_INFO);
-            optAbilityPeer->qAbility().evalToPromiseOrRejectOnThrow(
+            optUiAbility.value().evalToPromiseOrRejectOnThrow(
                 "context.openLink(*)",
                 {
                     link.toStdString(),
