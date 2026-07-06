@@ -354,17 +354,17 @@ void QOhosInputMethodEventHandler::onMouseWheelEvent(const QOhosWheelEvent &even
 
         auto mousePixelDeltaMultiplier = wheelStepPixel / wheelStepDegree / angleBaseValue;
         pixelDelta.setX(
-            qRound(qFabs(angleDelta.x() * mousePixelDeltaMultiplier) * platformScreen->pixelScalingCoefficient()));
+            qRound(angleDelta.x() * mousePixelDeltaMultiplier * platformScreen->pixelScalingCoefficient()));
         pixelDelta.setY(
-            qRound(qFabs(angleDelta.y() * mousePixelDeltaMultiplier) * platformScreen->pixelScalingCoefficient()));
+            qRound(angleDelta.y() * mousePixelDeltaMultiplier * platformScreen->pixelScalingCoefficient()));
     } else if (event.eventToolType == UI_INPUT_EVENT_TOOL_TYPE_TOUCHPAD) {
         auto touchpadAngleDeltaMultiplier =
             wheelStepDegree / wheelStepPixel / platformScreen->pixelScalingCoefficient() * angleBaseValue * directionMultiplier / event.wheelScrollLines;
         angleDelta.setX(qRound(event.horizontalValue * touchpadAngleDeltaMultiplier));
         angleDelta.setY(qRound(event.verticalValue * touchpadAngleDeltaMultiplier));
 
-        pixelDelta.setX(qRound(qFabs(event.horizontalValue)));
-        pixelDelta.setY(qRound(qFabs(event.verticalValue)));
+        pixelDelta.setX(qRound(event.horizontalValue * directionMultiplier));
+        pixelDelta.setY(qRound(event.verticalValue * directionMultiplier));
     } else {
         qOhosWarning(QtForOhos)
             << Q_FUNC_INFO
