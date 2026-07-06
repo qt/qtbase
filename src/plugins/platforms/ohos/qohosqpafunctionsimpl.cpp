@@ -570,7 +570,7 @@ std::optional<QOhosQpaFunctions::ShareKit::SharedRecord> tryConvertNapiObjectToS
     };
 
     std::string utd = record.get<QNapi::String>("utd");
-    auto optMimeType = utd != QOhosUdsMeta<::OH_UdsHyperlink>::udmfMetaId
+    auto optMimeType = utd != UDMF_META_HYPERLINK
         ? tryMapUtdTypeIdToMimeType(utd)
         : QOhosShareKit::mimeTextUriList;
     if (!optMimeType.has_value()) {
