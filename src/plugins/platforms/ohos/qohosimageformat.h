@@ -7,11 +7,11 @@
 #include <QtCore/private/qohoscommon_p.h>
 #include <QtGui/qimage.h>
 #include <multimedia/image_framework/image/pixelmap_native.h>
-#include <qohosplugincore.h>
+#include <optional>
 
 QT_BEGIN_NAMESPACE
 
-QOhosOptional<::PIXEL_FORMAT> tryMapQtPixelFormatToOhosPixelFormat(QImage::Format format);
+std::optional<::PIXEL_FORMAT> tryMapQtPixelFormatToOhosPixelFormat(QImage::Format format);
 
 QT_END_NAMESPACE
 
