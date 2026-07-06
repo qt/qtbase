@@ -55,6 +55,7 @@ qt_internal_add_module(WaylandClient
         qwaylandappmenu.cpp qwaylandappmenu_p.h
         qwaylandbuffer.cpp qwaylandbuffer_p.h
         qwaylandcolormanagement.cpp qwaylandcolormanagement_p.h
+        qwaylandcutouts.cpp qwaylandcutouts_p.h
         qwaylanddatacontrolv1.cpp qwaylanddatacontrolv1_p.h
         qwaylanddecorationfactory.cpp qwaylanddecorationfactory_p.h
         qwaylanddecorationplugin.cpp qwaylanddecorationplugin_p.h
@@ -161,6 +162,7 @@ qt6_generate_wayland_protocol_client_sources(WaylandClient
         ${CMAKE_CURRENT_SOURCE_DIR}/../../../3rdparty/wayland/protocols/color-management/color-management-v1.xml
         ${CMAKE_CURRENT_SOURCE_DIR}/../../../3rdparty/wayland/protocols/pointer-warp/pointer-warp-v1.xml
         ${CMAKE_CURRENT_SOURCE_DIR}/../../../3rdparty/wayland/protocols/session-management/xdg-session-management-v1.xml
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../3rdparty/wayland/protocols/cutouts/xx-cutouts-v1.xml
 )
 
 #### Keys ignored in scope 1:.:.:client.pro:<TRUE>:

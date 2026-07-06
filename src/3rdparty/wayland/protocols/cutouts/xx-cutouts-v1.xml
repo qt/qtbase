@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<protocol name="xx_cutouts_unstable_v1">
+
+  <copyright>
+    Copyright © 2026 Phosh.mobi e.V.
+
+    Permission is hereby granted, free of charge, to any person obtaining a
+    copy of this software and associated documentation files (the "Software"),
+    to deal in the Software without restriction, including without limitation
+    the rights to use, copy, modify, merge, publish, distribute, sublicense,
+    and/or sell copies of the Software, and to permit persons to whom the
+    Software is furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice (including the next
+    paragraph) shall be included in all copies or substantial portions of the
+    Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+    THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+    DEALINGS IN THE SOFTWARE.
+
+    Warning! The protocol described in this file is currently in the
+    experimental phase. Backwards incompatible major versions of the protocol
+    are to be expected. Exposing this protocol without an opt-in mechanism is
+    discouraged.
+  </copyright>
+
+  <description summary="Protocol to describe cut out surface regions">
+    This protocol describes the areas of a toplevel that are cut out
+    of the available surface area by hardware elements present in the
+    physical display. This allows clients to avoid placing user interface
+    elements in those areas.
+
+    Typical cutout areas are notches (i.e. embedding a camera) or
+    "waterfall" display edges. In the case of a notch the compositor
+    would usually supply the bounding box of the notch or an
+    approximation by multiple rectangles. Thus a single physical
+    element in the display can correspond to multiple cutout events in
+    the protocol.
+
+    The protocol currently supports xdg_toplevel surfaces but is meant
+    to be extended to other surfaces (like layer surfaces) in the
+    future.
+
+    Warning! The protocol described in this file is experimental and
+    backward incompatible changes may be made. Backward compatible
+    changes may be added together with the corresponding interface
+    version bump. Backward incompatible changes can only be done by
+    creating a new major version of the extension.
+  </description>
+
+  <interface name="xx_cutouts_manager_v1" version="1">
+    <description summary="Display cutouts area manager">
+      This interface allows a compositor to announce support for
+      supplying cutout information to the client.
+    </description>
+
+    <enum name="error">
+      <entry name="invalid_role" value="0" summary="given wl_surface has incorrect role"/>
+      <entry name="defunct_cutouts_object" value="1"
+             summary="wl_surface or surface role was destroyed before the cutouts object"/>
+    </enum>
+
+    <request name="destroy" type="destructor">
+      <description summary="destroy the xx_cutouts_manager object">
+        Using this request a client can tell the server that it is not
+        going to use the xx_cutouts_manger object anymore.
+
+        Any objects already created through this instance are not affected.
+      </description>
+    </request>
+
+    <request name="get_cutouts">
+      <description summary="create a cutout notifier from a xdg toplevel">
+        This creates a new xx_cutouts object for the given
+        surface. The role of the surface must be xdg_toplevel
+        otherwise an invalid_role protocol error will be raised. Later
+        versions of this protocol might allow for other surface roles.
+      </description>
+      <arg name="id" type="new_id" interface="xx_cutouts_v1"/>
+      <arg name="surface" type="object" interface="wl_surface"/>
+    </request>
+
+  </interface>
+
+  <interface name="xx_cutouts_v1" version="1">
+    <description summary="cutout regions information">
+      An xx_cutouts describes the areas currently "cut out" of a
+      toplevel.
+
+      Each cutout event carries an id that identifies the
+      physical element. If the compositor describes an element by
+      multiple cutout events these should use the same element
+      id. A typical example is a curved notch that is approximated
+      by several cutout_box elements. Using the same element
+      id allows the client to identify that these belong to the
+      same physical object. Ids are only valid during one configure
+      sequence. No guarantee is given that the same id identifies
+      the same element in different configure sequences.
+
+      Typically compositors would only send cutout information when
+      the toplevel enters fullscreen or maxmized state (as specified
+      in the xdg_shell protocol).
+
+      The xx_cutouts_v1 object must be destroyed before its
+      underlying xdg_toplevel and wl_surface. Otherwise the
+      defunct_cutouts_object protocol error will be send.
+    </description>
+
+    <enum name="type">
+      <description summary="Cutout type">
+        These values indicate the type of cutout. The information is
+        meant to help clients to decide whether they can possibly
+        ignore the element.
+      </description>
+
+      <entry name="cutout" value="0">
+        <description summary="A generic cutout">
+          This element type can be used by the compositor if it
+          doesn't want to provide a more specific type.
+        </description>
+      </entry>
+      <entry name="notch" value="1">
+        <description summary="Small functional cutout area">
+          A functional, irregular shape on one of the device's
+          edges. It often contains a camera.
+        </description>
+      </entry>
+      <entry name="waterfall" value="2">
+        <description summary="A curved display edge">
+          A curved display edge intended to make the device appear
+          like not having any bezel.
+        </description>
+      </entry>
+    </enum>
+
+    <enum name="corner_position">
+      <description summary="Corner position">
+        The position of a corner on a surface
+      </description>
+
+      <entry name="top_left" value="0"/>
+      <entry name="top_right" value="1"/>
+      <entry name="bottom_right" value="2"/>
+      <entry name="bottom_left" value="3"/>
+    </enum>
+
+    <enum name="error">
+      <entry name="invalid_element_id" value="0"
+             summary="Invalid element id in a set_unhandled request"/>
+    </enum>
+
+    <request name="destroy" type="destructor">
+      <description summary="destroy the xx_cutouts object">
+        Using this request a client can tell the server that it is not
+        going to use the xx_cutouts object anymore.
+      </description>
+    </request>
+
+    <event name="cutout_box">
+      <description summary="A rectangular cutout region">
+        The cutout_box event describes a rectangular cutout area in
+        surface-local coordinates.
+
+        This can be an approximation of e.g. a circular camera notch.
+      </description>
+      <arg name="x" type="int"
+           summary="x coordinate of the box's top left corner"/>
+      <arg name="y" type="int"
+           summary="y coordinate of the box's top left corner"/>
+      <arg name="width" type="int"/>
+      <arg name="height" type="int"/>
+      <arg name="type" type="uint" enum="type" summary="The type of cutout"/>
+      <arg name="id" type="uint" summary="An identifier identifying the physical element"/>
+    </event>
+
+    <event name="cutout_corner">
+      <description summary="A cutout corner">
+        The cutout_corner event describes a rounded corner in
+        surface-local coordinates. The area towards the screen edge is
+        the cutout corner part.
+      </description>
+      <arg name="position" type="uint" enum="corner_position" summary="The position of the described corner"/>
+      <arg name="radius" type="uint" summary="The corner's radius"/>
+      <arg name="id" type="uint" summary="An identifier identifying the physical element"/>
+    </event>
+
+    <event name="configure">
+      <description summary="notify cutout changes">
+        The configure event marks the end of a configure sequence. A
+        configure sequence is a set of zero or more cutout events and
+        the final xx_cutout.configure event.
+
+        In the case of a xdg_toplevel clients should arrange their
+        surface for the new cutouts, and then send an
+        xdg_surface.ack_configure request at some point before
+        committing the new surface. See xdg_surface.configure and
+        xdg_surface.ack_configure in the xdg_shell protocol for
+        details.
+
+        If the cutout sequence consists of only a configure event and
+        contains no cutout or corner events this indicates that the
+        surface isn't overlapping with any cutouts or corners.
+
+        If the client receives multiple configure events before it can
+        respond to one, it is free to discard all but the last event
+        it received.
+      </description>
+    </event>
+
+    <request name="set_unhandled">
+      <description summary="Notify about unhandled cutouts">
+        If a client doesn't handle one or more cutouts in the to be
+        acked sequence, it can add their element's id to the
+        unhandled array. The compositor might then try to reposition
+        the surface in a way that avoids these elements in a future
+        configure sequence.
+
+        The request (if used) must be sent before acking the configure
+        sequence. State set with this request is double-buffered. It
+        will get applied on the next ack_configure and stay valid
+        until the next configure event.
+      </description>
+      <arg name="unhandled" type="array" summary="array of unhandled element ids"/>
+    </request>
+
+  </interface>
+</protocol>

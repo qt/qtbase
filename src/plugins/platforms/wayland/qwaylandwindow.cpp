@@ -7,6 +7,7 @@
 
 #include "qwaylandbuffer_p.h"
 #include "qwaylandcursor_p.h"
+#include "qwaylandcutouts_p.h"
 #include "qwaylanddisplay_p.h"
 #include "qwaylandsurface_p.h"
 #include "qwaylandinputdevice_p.h"
@@ -213,6 +214,10 @@ void QWaylandWindow::initWindow()
 
     if (mShellSurface && mShellSurface->commitSurfaceRole())
         mSurface->commit();
+
+    if (!QPlatformWindow::parent() && window()->flags().testFlag(Qt::ExpandedClientAreaHint) && mDisplay->cutoutsManager()) {
+        m_cutouts = std::make_unique<QtWaylandClient::Cutouts>(mDisplay->cutoutsManager()->get_cutouts(surface()), this);
+    }
 }
 
 void QWaylandWindow::setPendingImageDescription()
@@ -324,6 +329,9 @@ void QWaylandWindow::endFrame()
 void QWaylandWindow::reset()
 {
     resetSurfaceRole();
+
+    m_cutouts.reset();
+    m_safeAreaMargins = {};
 
     if (mSurface) {
         {
@@ -965,6 +973,17 @@ QPointF QWaylandWindow::mapFromWlSurface(const QPointF &surfacePosition) const
     return QPointF(surfacePosition.x() - margins.left(), surfacePosition.y() - margins.top());
 }
 
+QMargins QWaylandWindow::safeAreaMargins() const
+{
+    return m_safeAreaMargins;
+}
+
+void QWaylandWindow::setSafeAreaMargins(const QMargins &margins)
+{
+    m_safeAreaMargins = (margins - mWindowDecoration->margins()) | QMargins();
+    QWindowSystemInterface::handleSafeAreaMarginsChanged(window());
+}
+
 wl_surface *QWaylandWindow::wlSurface() const
 {
     QReadLocker locker(&mSurfaceLock);
@@ -1078,6 +1097,13 @@ void QWaylandWindow::setWindowFlags(Qt::WindowFlags flags)
     }
 
     createDecoration();
+
+    if (!m_cutouts && !QPlatformWindow::parent() && flags.testFlag(Qt::ExpandedClientAreaHint) && mDisplay->cutoutsManager()) {
+        m_cutouts = std::make_unique<QtWaylandClient::Cutouts>(mDisplay->cutoutsManager()->get_cutouts(surface()), this);
+    } else if (m_cutouts && !flags.testFlag(Qt::ExpandedClientAreaHint)) {
+        m_cutouts.reset();
+        setSafeAreaMargins({});
+    }
 
     QReadLocker locker(&mSurfaceLock);
     updateInputRegion();

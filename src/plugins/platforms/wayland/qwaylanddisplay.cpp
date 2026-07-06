@@ -59,6 +59,7 @@
 #include <QtWaylandClient/private/qwayland-xdg-toplevel-drag-v1.h>
 #include <QtWaylandClient/private/qwayland-wlr-data-control-unstable-v1.h>
 #include <QtWaylandClient/private/qwayland-pointer-warp-v1.h>
+#include <QtWaylandClient/private/qwayland-xx-cutouts-v1.h>
 
 #include <QtCore/private/qcore_unix_p.h>
 
@@ -847,6 +848,8 @@ void QWaylandDisplay::registry_global(uint32_t id, const QString &interface, uin
 #endif
     else if (interface == QLatin1String(QtWayland::wl_fixes::interface()->name)) {
         mFixes.reset(new WithDestructor<QtWayland::wl_fixes, wl_fixes_destroy>(registry, id, std::min(version, 2u)));
+    } else if (interface == QLatin1StringView(QtWayland::xx_cutouts_manager_v1::interface()->name)) {
+        mGlobals.cutoutManager.reset(new WithDestructor<QtWayland::xx_cutouts_manager_v1, xx_cutouts_manager_v1_destroy>(registry, id, 1));
     }
 
 

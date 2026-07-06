@@ -64,6 +64,7 @@ class QWaylandSurface;
 class QWaylandFractionalScale;
 class QWaylandViewport;
 class ColorManagementSurface;
+class Cutouts;
 class ImageDescription;
 
 class Q_WAYLANDCLIENT_EXPORT QWaylandWindow : public QNativeInterface::Private::QWaylandWindow,
@@ -134,6 +135,9 @@ public:
     QMargins windowContentMargins() const;
     QRect windowContentGeometry() const;
     QPointF mapFromWlSurface(const QPointF &surfacePosition) const;
+
+    QMargins safeAreaMargins() const override;
+    void setSafeAreaMargins(const QMargins &margins);
 
     QWaylandSurface *waylandSurface() const { return mSurface.get(); }
     ::wl_surface *wlSurface() const;
@@ -360,6 +364,7 @@ protected:
     QWaylandShmBackingStore *mBackingStore = nullptr;
 
     QMargins mCustomMargins;
+    QMargins m_safeAreaMargins;
     QString mSessionRestoreId;
 
     QPointer<QWaylandWindow> mTransientParent;
@@ -416,6 +421,8 @@ private:
 
     static QWaylandWindow *mMouseGrab;
     static QWaylandWindow *mTopPopup;
+
+    std::unique_ptr<QtWaylandClient::Cutouts> m_cutouts;
 
     friend class QWaylandSubSurface;
 };

@@ -1,0 +1,17 @@
+[
+    {
+        "Id": "wayland-cutout-protocol",
+        "Name": "Wayland Display Cutouts Protocol",
+        "QDocModule": "qtwaylandcompositor",
+        "QtUsage": "Used in the Qt Wayland platform plugin.",
+        "Files": "xx-cutouts-v1.xml",
+        "Description": "An extension to describe screen cutouts, notches and rounded corners.",
+        "Homepage": "https://wayland.freedesktop.org",
+        "Version": "experimental V1",
+        "DownloadLocation": "https://gitlab.freedesktop.org/wayland/wayland-protocols/-/blob/main/experimental/xx-cutouts/xx-cutouts-v1.xml",
+        "LicenseId": "MIT",
+        "License": "MIT License",
+        "LicenseFile": "../MIT_LICENSE.txt",
+        "Copyright": "Copyright © 2026 Phosh.mobi e.V."
+    }
+]

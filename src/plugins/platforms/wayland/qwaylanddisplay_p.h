@@ -63,6 +63,7 @@ namespace QtWayland {
     class xdg_system_bell_v1;
     class xdg_toplevel_drag_manager_v1;
     class wp_pointer_warp_v1;
+    class xx_cutouts_manager_v1;
 }
 
 namespace QtWaylandClient {
@@ -239,6 +240,10 @@ public:
     {
         return mGlobals.pointerWarp.get();
     }
+    QtWayland::xx_cutouts_manager_v1 *cutoutsManager() const
+    {
+        return mGlobals.cutoutManager.get();
+    }
 
     struct RegistryGlobal {
         uint32_t id;
@@ -381,6 +386,7 @@ private:
         std::unique_ptr<QWaylandAppMenuManager> appMenuManager;
         std::unique_ptr<ColorManager> colorManager;
         std::unique_ptr<QtWayland::wp_pointer_warp_v1> pointerWarp;
+        std::unique_ptr<QtWayland::xx_cutouts_manager_v1> cutoutManager;
     } mGlobals;
 
     int mFd = -1;

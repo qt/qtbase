@@ -1,0 +1,10 @@
+version = 1
+
+[[annotations]]
+path = "xx-cutouts-v1.xml"
+precedence = "closest"
+SPDX-FileCopyrightText = [
+    "Copyright © 2026 Phosh.mobi e.V."
+]
+
+SPDX-License-Identifier = "MIT"
