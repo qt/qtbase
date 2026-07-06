@@ -623,7 +623,12 @@ std::optional<std::uint32_t> tryConvertPortNameToSystemPortId(const QString &por
     if (!portName.startsWith(prefix))
         return {};
 
-    return QtOhos::tryParseStringAsUnsignedInteger<std::uint32_t>(portName.mid(prefix.length()).toStdString());
+    bool parsedOk = false;
+    const uint parsedValue = portName.mid(prefix.length()).toUInt(&parsedOk);
+    if (!parsedOk)
+        return {};
+
+    return static_cast<std::uint32_t>(parsedValue);
 }
 
 bool hasSerialPortAccessRightJsImpl(QOhosJsState &jsState, std::uint32_t serialPortId)
