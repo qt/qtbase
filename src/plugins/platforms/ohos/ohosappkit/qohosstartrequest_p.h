@@ -15,14 +15,14 @@
 // We mean it.
 //
 
-#include "qohosqpafunctionspart1_p.h"
+#include <QtOhosAppKit/private/qohosstartoptions_p.h>
 #include <QtOhosAppKit/qohosstartrequest.h>
 
 QT_BEGIN_NAMESPACE
 
 namespace QtOhosAppKit {
 
-std::optional<QtOhos::QOhosQpaFunctionsPart1::StartOptions> tryConvertStartRequestToQpaFunctionsStruct(
+std::optional<QOhosStartOptionsData> tryConvertStartRequestToQpaFunctionsStruct(
     const QOhosStartRequest &startRequest);
 
 }

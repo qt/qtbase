@@ -2,23 +2,27 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qohosfileshare.h"
+#include <QtCore/private/qcore_ohos_p.h>
 #include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/private/qohoslogger_p.h>
-#include "qohosqpafunctionspart1_p.h"
-#include <QtCore/qmetaobject.h>
+#include <QtCore/qscopeguard.h>
 #include <QtOhosAppKit/private/qohosoperationstatus_p.h>
+#include <cstdlib>
 #include <cstring>
-#include <set>
+#include <functional>
+#include <memory>
+#include <optional>
 #include <string>
 #include <tuple>
 #include <utility>
 #include <vector>
 
+#include <filemanagement/file_uri/oh_file_uri.h>
+#include <filemanagement/fileshare/oh_file_share.h>
+
 QT_BEGIN_NAMESPACE
 
 namespace QtOhosAppKit {
-
-using QOhosQpaFunctions = QtOhos::QOhosQpaFunctionsPart1;
 
 /*!
     \namespace QtOhosAppKit::FileShare
@@ -46,76 +50,226 @@ namespace FileShare {
 
 namespace {
 
-std::optional<QOhosQpaFunctions::FileShare::OperationMode> tryMapOperationModeToInternal(OperationMode operationMode)
+std::shared_ptr<char> makeSharedNullTerminatedString(std::string str)
 {
-    switch (operationMode) {
-    case OperationMode::Read:
-        return std::make_optional(QOhosQpaFunctions::FileShare::OperationMode::Read);
-    case OperationMode::Write:
-        return std::make_optional(QOhosQpaFunctions::FileShare::OperationMode::Write);
-    }
-    return {};
+    auto sharedStrData = QtOhos::moveToSharedPtr(std::move(str) + '\0');
+    return std::shared_ptr<char>(sharedStrData, &sharedStrData->front());
 }
 
-std::set<QOhosQpaFunctions::FileShare::OperationMode> mapOperationModesToInternalSet(OperationModes operationModes)
+std::shared_ptr<char> makeSharedNullTerminatedString(const char *str)
 {
-    auto operationModeMeta = QMetaEnum::fromType<OperationMode>();
-
-    std::set<QOhosQpaFunctions::FileShare::OperationMode> internalSet;
-    for (int i = 0; i < operationModeMeta.keyCount(); ++i) {
-        auto testedOperationMode = static_cast<OperationMode>(operationModeMeta.value(i));
-        auto optInternalValue = tryMapOperationModeToInternal(testedOperationMode);
-        if (operationModes.testFlag(testedOperationMode) && optInternalValue.has_value())
-            internalSet.insert(optInternalValue.value());
-    }
-
-    return internalSet;
+    return makeSharedNullTerminatedString(std::string(str != nullptr ? str : ""));
 }
 
-QList<QOhosQpaFunctions::FileShare::PolicyInfo> convertToPolicyInfos(const QList<PathPolicy> &policies)
+template<typename ConvFunc>
+std::string callOhFileUriConversionFunc(
+    ConvFunc convFunc, const std::string &input)
 {
-    QList<QOhosQpaFunctions::FileShare::PolicyInfo> policyInfos;
+    char *outputPtr = nullptr;
+    auto outputPtrGuard = qScopeGuard(std::bind(::free, outputPtr));
+    auto convFuncRetVal = convFunc(input.c_str(), input.size(), &outputPtr);
+
+    std::string outputString;
+    if (convFuncRetVal == ::FileManagement_ErrCode::ERR_OK && outputPtr != nullptr) {
+        outputString = outputPtr;
+    } else {
+        qOhosPrintfWarning(
+            "OH FileUri conversion function '%s' failed for input '%s', retval: %d",
+            convFunc.name(), input.c_str(), static_cast<int>(convFuncRetVal));
+    }
+
+    return outputString;
+}
+
+std::string mapPathToOhosUriInJsThread(const std::string &path)
+{
+    return callOhFileUriConversionFunc(Q_OHOS_NAMED_FUNC(::OH_FileUri_GetUriFromPath), path);
+}
+
+std::string mapOhosFileUriToPathInJsThread(const std::string &ohosFileUri)
+{
+    return callOhFileUriConversionFunc(Q_OHOS_NAMED_FUNC(::OH_FileUri_GetPathFromUri), ohosFileUri);
+}
+
+std::shared_ptr<::FileShare_PolicyInfo> makeFileSharePolicyInfo(
+    std::string uri, unsigned operationMode)
+{
+    auto sharedUri = makeSharedNullTerminatedString(std::move(uri));
+
+    auto policyInfo = QtOhos::moveToSharedPtr(
+        ::FileShare_PolicyInfo{
+            .uri = sharedUri.get(),
+            .length = static_cast<unsigned>(std::strlen(sharedUri.get())),
+            .operationMode = operationMode,
+        });
+
+    return QtOhos::makeSharedPtrWithAttachedExtraData(
+        policyInfo, sharedUri);
+}
+
+std::vector<std::shared_ptr<::FileShare_PolicyInfo>> convertToFileSharePolicyInfos(
+    const QList<PathPolicy> &policies)
+{
+    std::vector<std::shared_ptr<::FileShare_PolicyInfo>> fileSharePolicies;
+
     for (const auto &policy : policies) {
-        policyInfos.append(
-            {
-                .path = policy.path,
-                .operationModes = mapOperationModesToInternalSet(policy.operationModes),
-            });
+        fileSharePolicies.push_back(
+            makeFileSharePolicyInfo(
+                mapPathToOhosUriInJsThread(policy.path.toStdString()),
+                static_cast<unsigned>(policy.operationModes.toInt())));
     }
 
-    return policyInfos;
+    return fileSharePolicies;
 }
 
-std::optional<PathPolicyError> tryMapPolicyErrorCodeToPathPolicyError(
-    QOhosQpaFunctions::FileShare::PolicyErrorCode errorCode)
+std::shared_ptr<::FileShare_PolicyErrorResult> makeFileSharePolicyErrorResultFromRawStruct(
+    const ::FileShare_PolicyErrorResult &inputStruct)
 {
-    using PolicyErrorCode = QOhosQpaFunctions::FileShare::PolicyErrorCode;
+    auto sharedUri = makeSharedNullTerminatedString(inputStruct.uri);
+    auto sharedMessage = makeSharedNullTerminatedString(inputStruct.message);
+
+    auto policyErrorResult = QtOhos::moveToSharedPtr(
+        ::FileShare_PolicyErrorResult{
+            .uri = sharedUri.get(),
+            .code = inputStruct.code,
+            .message = sharedMessage.get(),
+        });
+
+    return QtOhos::makeSharedPtrWithAttachedExtraData(
+        policyErrorResult,
+        QtOhos::moveToSharedPtr(std::make_tuple(sharedUri, sharedMessage)));
+};
+
+std::vector<::FileShare_PolicyInfo> makePoliciesRawVectorView(
+    const std::vector<std::shared_ptr<::FileShare_PolicyInfo>> &policies)
+{
+    std::vector<::FileShare_PolicyInfo> rawVectorView;
+    for (const auto &policyPtr : policies)
+        rawVectorView.push_back(*policyPtr);
+
+    return rawVectorView;
+}
+
+template<typename PermissionActionFunc>
+::FileManagement_ErrCode callFileSharePermissionActionFunc(
+    PermissionActionFunc permissionActionFunc,
+    const std::vector<std::shared_ptr<::FileShare_PolicyInfo>> &policies,
+    std::vector<std::shared_ptr<::FileShare_PolicyErrorResult>> &outResult)
+{
+    auto policiesRawVectorView = makePoliciesRawVectorView(policies);
+    ::FileShare_PolicyErrorResult *resultParam = nullptr;
+    unsigned resultNumParam = 0;
+    auto resultParamReleaseGuard = qScopeGuard(
+        [&]() {
+            if (resultParam != nullptr && resultNumParam != 0)
+                ::OH_FileShare_ReleasePolicyErrorResult(resultParam, resultNumParam);
+        });
+
+    auto errCode = permissionActionFunc(
+        policiesRawVectorView.data(), policiesRawVectorView.size(),
+        &resultParam, &resultNumParam);
+
+    outResult.clear();
+    if (resultParam != nullptr) {
+        for (unsigned i = 0; i < resultNumParam; ++i) {
+            outResult.push_back(
+                makeFileSharePolicyErrorResultFromRawStruct(resultParam[i]));
+        }
+    }
+
+    return errCode;
+}
+
+::FileManagement_ErrCode fileShareCheckPersistentPermission(
+    const std::vector<std::shared_ptr<::FileShare_PolicyInfo>> &policies,
+    std::vector<bool> &outResult)
+{
+    auto policiesRawVectorView = makePoliciesRawVectorView(policies);
+    bool *resultParam = nullptr;
+    auto resultParamReleaseGuard = qScopeGuard(
+        [&]() {
+            ::free(resultParam);
+        });
+    unsigned resultNumParam = 0;
+
+    auto errCode = ::OH_FileShare_CheckPersistentPermission(
+        policiesRawVectorView.data(), policiesRawVectorView.size(),
+        &resultParam, &resultNumParam);
+
+    outResult.clear();
+    if (resultParam != nullptr) {
+        for (unsigned i = 0; i < resultNumParam; ++i)
+            outResult.push_back(resultParam[i]);
+    }
+
+    return errCode;
+}
+
+::FileManagement_ErrCode fileSharePersistPermission(
+    const std::vector<std::shared_ptr<::FileShare_PolicyInfo>> &policies,
+    std::vector<std::shared_ptr<::FileShare_PolicyErrorResult>> &outResult)
+{
+    return callFileSharePermissionActionFunc(
+        Q_OHOS_NAMED_FUNC(::OH_FileShare_PersistPermission),
+        policies, outResult);
+}
+
+::FileManagement_ErrCode fileShareRevokePermission(
+    const std::vector<std::shared_ptr<::FileShare_PolicyInfo>> &policies,
+    std::vector<std::shared_ptr<::FileShare_PolicyErrorResult>> &outResult)
+{
+    return callFileSharePermissionActionFunc(
+        Q_OHOS_NAMED_FUNC(::OH_FileShare_RevokePermission),
+        policies, outResult);
+}
+
+::FileManagement_ErrCode fileShareActivatePermission(
+    const std::vector<std::shared_ptr<::FileShare_PolicyInfo>> &policies,
+    std::vector<std::shared_ptr<::FileShare_PolicyErrorResult>> &outResult)
+{
+    return callFileSharePermissionActionFunc(
+        Q_OHOS_NAMED_FUNC(::OH_FileShare_ActivatePermission),
+        policies, outResult);
+}
+
+::FileManagement_ErrCode fileShareDeactivatePermission(
+    const std::vector<std::shared_ptr<::FileShare_PolicyInfo>> &policies,
+    std::vector<std::shared_ptr<::FileShare_PolicyErrorResult>> &outResult)
+{
+    return callFileSharePermissionActionFunc(
+        Q_OHOS_NAMED_FUNC(::OH_FileShare_DeactivatePermission),
+        policies, outResult);
+}
+
+std::optional<PathPolicyError> tryMapFileSharePolicyErrorCode(::FileShare_PolicyErrorCode errorCode)
+{
     switch (errorCode) {
-    case PolicyErrorCode::PERSISTENCE_FORBIDDEN:
+    case ::FileShare_PolicyErrorCode::PERSISTENCE_FORBIDDEN:
         return std::make_optional(PathPolicyError::PersistenceForbidden);
-    case PolicyErrorCode::INVALID_MODE:
+    case ::FileShare_PolicyErrorCode::INVALID_MODE:
         return std::make_optional(PathPolicyError::InvalidMode);
-    case PolicyErrorCode::INVALID_PATH:
+    case ::FileShare_PolicyErrorCode::INVALID_PATH:
         return std::make_optional(PathPolicyError::InvalidPath);
-    case PolicyErrorCode::PERMISSION_NOT_PERSISTED:
+    case ::FileShare_PolicyErrorCode::PERMISSION_NOT_PERSISTED:
         return std::make_optional(PathPolicyError::PermissionNotPersisted);
     }
     return std::nullopt;
 }
 
 QList<PathPolicyErrorInfo> convertToPathPolicyErrorInfos(
-    const QList<QOhosQpaFunctions::FileShare::PolicyErrorResult> &policyErrorResults)
+    const std::vector<std::shared_ptr<::FileShare_PolicyErrorResult>> &policyErrorResults)
 {
     QList<PathPolicyErrorInfo> result;
     for (const auto &policyErrorResult : policyErrorResults) {
         result.push_back({
-            .path = policyErrorResult.path,
+            .path = policyErrorResult->uri != nullptr
+                ? QString::fromStdString(mapOhosFileUriToPathInJsThread(policyErrorResult->uri))
+                : QString(),
             .error =
-                policyErrorResult.error.has_value()
-                ? tryMapPolicyErrorCodeToPathPolicyError(policyErrorResult.error.value())
-                      .value_or(PathPolicyError::Unknown)
-                : PathPolicyError::Unknown,
-            .errorMessage = policyErrorResult.errorMessage,
+                tryMapFileSharePolicyErrorCode(policyErrorResult->code)
+                    .value_or(PathPolicyError::Unknown),
+            .errorMessage = QLatin1String(
+                policyErrorResult->message != nullptr ? policyErrorResult->message : ""),
         });
     }
 
@@ -140,6 +294,11 @@ bool validateCheckResultsAgainstPolicies(
     return checkResults.size() == static_cast<std::size_t>(policies.size());
 }
 
+bool isSuccessErrorCode(::FileManagement_ErrCode errorCode)
+{
+    return errorCode == ::FileManagement_ErrCode::ERR_OK;
+}
+
 /*!
     \class QtOhosAppKit::FileShare::ActionResult
     \inmodule QtOhosAppKit
@@ -153,8 +312,7 @@ bool validateCheckResultsAgainstPolicies(
 class ActionResultImpl : public ActionResult
 {
 public:
-    ActionResultImpl(
-        bool successFlag, const QList<QOhosQpaFunctions::FileShare::PolicyErrorResult> &errorResults);
+    ActionResultImpl(bool successFlag, QList<PathPolicyErrorInfo> errorInfoList);
     QSharedPointer<QOhosOperationStatus> operationStatus() const override;
     QList<PathPolicyErrorInfo> errorInfoList() const override;
 
@@ -163,10 +321,9 @@ private:
     QList<PathPolicyErrorInfo> m_errorInfoList;
 };
 
-ActionResultImpl::ActionResultImpl(
-    bool successFlag, const QList<QOhosQpaFunctions::FileShare::PolicyErrorResult> &errorResults)
+ActionResultImpl::ActionResultImpl(bool successFlag, QList<PathPolicyErrorInfo> errorInfoList)
     : m_operationStatus(createOperationStatus(successFlag))
-    , m_errorInfoList(convertToPathPolicyErrorInfos(errorResults))
+    , m_errorInfoList(std::move(errorInfoList))
 {
 }
 
@@ -380,11 +537,16 @@ CheckResult::~CheckResult() = default;
 */
 QSharedPointer<ActionResult> persistPermission(const QList<PathPolicy> &policies)
 {
-    bool successFlag;
-    QList<QOhosQpaFunctions::FileShare::PolicyErrorResult> errorResults;
-    std::tie(successFlag, errorResults) =
-        QtOhos::getQOhosQpaFunctions().persistPermission(convertToPolicyInfos(policies));
-    return QSharedPointer<ActionResultImpl>::create(successFlag, errorResults);
+    auto actionResult = QOhosJsThreadGateway::eval(
+        [&](QOhosJsState &) {
+            std::vector<std::shared_ptr<::FileShare_PolicyErrorResult>> outResults;
+            auto retCode = fileSharePersistPermission(
+                convertToFileSharePolicyInfos(policies), outResults);
+
+            return std::make_pair(isSuccessErrorCode(retCode), convertToPathPolicyErrorInfos(outResults));
+        },
+        Q_FUNC_INFO);
+    return QSharedPointer<ActionResultImpl>::create(actionResult.first, actionResult.second);
 }
 
 /*!
@@ -401,11 +563,16 @@ QSharedPointer<ActionResult> persistPermission(const QList<PathPolicy> &policies
 */
 QSharedPointer<ActionResult> revokePermission(const QList<PathPolicy> &policies)
 {
-    bool successFlag;
-    QList<QOhosQpaFunctions::FileShare::PolicyErrorResult> errorResults;
-    std::tie(successFlag, errorResults) =
-        QtOhos::getQOhosQpaFunctions().revokePermission(convertToPolicyInfos(policies));
-    return QSharedPointer<ActionResultImpl>::create(successFlag, errorResults);
+    auto actionResult = QOhosJsThreadGateway::eval(
+        [&](QOhosJsState &) {
+            std::vector<std::shared_ptr<::FileShare_PolicyErrorResult>> outResults;
+            auto retCode = fileShareRevokePermission(
+                convertToFileSharePolicyInfos(policies), outResults);
+
+            return std::make_pair(isSuccessErrorCode(retCode), convertToPathPolicyErrorInfos(outResults));
+        },
+        Q_FUNC_INFO);
+    return QSharedPointer<ActionResultImpl>::create(actionResult.first, actionResult.second);
 }
 
 /*!
@@ -424,11 +591,16 @@ QSharedPointer<ActionResult> revokePermission(const QList<PathPolicy> &policies)
 */
 QSharedPointer<ActionResult> activatePermission(const QList<PathPolicy> &policies)
 {
-    bool successFlag;
-    QList<QOhosQpaFunctions::FileShare::PolicyErrorResult> errorResults;
-    std::tie(successFlag, errorResults) =
-        QtOhos::getQOhosQpaFunctions().activatePermission(convertToPolicyInfos(policies));
-    return QSharedPointer<ActionResultImpl>::create(successFlag, errorResults);
+    auto actionResult = QOhosJsThreadGateway::eval(
+        [&](QOhosJsState &) {
+            std::vector<std::shared_ptr<::FileShare_PolicyErrorResult>> outResults;
+            auto retCode = fileShareActivatePermission(
+                convertToFileSharePolicyInfos(policies), outResults);
+
+            return std::make_pair(isSuccessErrorCode(retCode), convertToPathPolicyErrorInfos(outResults));
+        },
+        Q_FUNC_INFO);
+    return QSharedPointer<ActionResultImpl>::create(actionResult.first, actionResult.second);
 }
 
 /*!
@@ -445,11 +617,16 @@ QSharedPointer<ActionResult> activatePermission(const QList<PathPolicy> &policie
 */
 QSharedPointer<ActionResult> deactivatePermission(const QList<PathPolicy> &policies)
 {
-    bool successFlag;
-    QList<QOhosQpaFunctions::FileShare::PolicyErrorResult> errorResults;
-    std::tie(successFlag, errorResults) =
-        QtOhos::getQOhosQpaFunctions().deactivatePermission(convertToPolicyInfos(policies));
-    return QSharedPointer<ActionResultImpl>::create(successFlag, errorResults);
+    auto actionResult = QOhosJsThreadGateway::eval(
+        [&](QOhosJsState &) {
+            std::vector<std::shared_ptr<::FileShare_PolicyErrorResult>> outResults;
+            auto retCode = fileShareDeactivatePermission(
+                convertToFileSharePolicyInfos(policies), outResults);
+
+            return std::make_pair(isSuccessErrorCode(retCode), convertToPathPolicyErrorInfos(outResults));
+        },
+        Q_FUNC_INFO);
+    return QSharedPointer<ActionResultImpl>::create(actionResult.first, actionResult.second);
 }
 
 /*!
@@ -467,11 +644,16 @@ QSharedPointer<ActionResult> deactivatePermission(const QList<PathPolicy> &polic
 */
 QSharedPointer<CheckResult> checkPersistent(const QList<PathPolicy> &policies)
 {
-    bool successFlag;
-    std::vector<bool> checkResults;
-    std::tie(successFlag, checkResults) =
-        QtOhos::getQOhosQpaFunctions().checkPersistent(convertToPolicyInfos(policies));
-    return QSharedPointer<CheckResultImpl>::create(successFlag, checkResults, policies);
+    auto checkResult = QOhosJsThreadGateway::eval(
+        [&](QOhosJsState &) {
+            std::vector<bool> outResults;
+            auto retCode = fileShareCheckPersistentPermission(
+                convertToFileSharePolicyInfos(policies), outResults);
+
+            return std::make_pair(isSuccessErrorCode(retCode), outResults);
+        },
+        Q_FUNC_INFO);
+    return QSharedPointer<CheckResultImpl>::create(checkResult.first, checkResult.second, policies);
 }
 
 }

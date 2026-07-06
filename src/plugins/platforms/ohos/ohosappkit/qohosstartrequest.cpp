@@ -5,7 +5,6 @@
 
 #include <QtCore/private/qcore_ohos_p.h>
 #include <QtCore/private/qohoscommon_p.h>
-#include "qohosqpafunctionspart1_p.h"
 #include <QtOhosAppKit/private/qohosstartoptions_p.h>
 #include <QtOhosAppKit/private/qohosstartrequest_p.h>
 #include <utility>
@@ -13,8 +12,6 @@
 QT_BEGIN_NAMESPACE
 
 namespace QtOhosAppKit {
-
-using QOhosQpaFunctions = QtOhos::QOhosQpaFunctionsPart1;
 
 /*!
     \class QtOhosAppKit::QOhosStartRequest
@@ -50,22 +47,22 @@ QOhosElementName convertElementNameFromJsonObject(const QJsonObject &object)
 class QOhosStartRequestImpl : public QOhosStartRequest
 {
 public:
-    explicit QOhosStartRequestImpl(QOhosQpaFunctions::StartOptions startOptions);
+    explicit QOhosStartRequestImpl(QOhosStartOptionsData startOptions);
 
-    QOhosQpaFunctions::StartOptions startOptions() const;
+    QOhosStartOptionsData startOptions() const;
 
     void setCompletionHandler(QOhosConsumer<bool, QJsonObject, QString> handler);
 
 private:
-    QOhosQpaFunctions::StartOptions m_startOptions;
+    QOhosStartOptionsData m_startOptions;
 };
 
-QOhosStartRequestImpl::QOhosStartRequestImpl(QOhosQpaFunctions::StartOptions startOptions)
+QOhosStartRequestImpl::QOhosStartRequestImpl(QOhosStartOptionsData startOptions)
     : m_startOptions(std::move(startOptions))
 {
 }
 
-QOhosQpaFunctions::StartOptions QOhosStartRequestImpl::startOptions() const
+QOhosStartOptionsData QOhosStartRequestImpl::startOptions() const
 {
     return m_startOptions;
 }
@@ -104,7 +101,7 @@ QSharedPointer<QOhosStartRequest> createStartRequest(const QOhosStartOptions &op
         qCWarning(QtForOhos, "%s: unsupported start options instance, using default options", Q_FUNC_INFO);
 
     auto request = QSharedPointer<QOhosStartRequestImpl>::create(
-        optQpaStartOptions.value_or(QOhosQpaFunctions::StartOptions()));
+        optQpaStartOptions.value_or(QOhosStartOptionsData()));
     request->setCompletionHandler(
         [request = request.toWeakRef()](bool success, const QJsonObject &elementName, const QString &message) {
             auto startRequest = request.toStrongRef();
@@ -120,7 +117,7 @@ QSharedPointer<QOhosStartRequest> createStartRequest(const QOhosStartOptions &op
     return request;
 }
 
-std::optional<QOhosQpaFunctions::StartOptions> tryConvertStartRequestToQpaFunctionsStruct(
+std::optional<QOhosStartOptionsData> tryConvertStartRequestToQpaFunctionsStruct(
     const QOhosStartRequest &startRequest)
 {
     const auto *startRequestImpl = dynamic_cast<const QOhosStartRequestImpl *>(&startRequest);

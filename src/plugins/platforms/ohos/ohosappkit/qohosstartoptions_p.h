@@ -15,14 +15,80 @@
 // We mean it.
 //
 
-#include "qohosqpafunctionspart1_p.h"
+#include <QtCore/private/qohoscommon_p.h>
+#include <QtCore/qjsonobject.h>
+#include <QtCore/qlist.h>
+#include <QtCore/qstring.h>
+#include <QtCore/qvariant.h>
 #include <QtOhosAppKit/qohosstartoptions.h>
+#include <memory>
+#include <optional>
 
 QT_BEGIN_NAMESPACE
 
 namespace QtOhosAppKit {
 
-std::optional<QtOhos::QOhosQpaFunctionsPart1::StartOptions> tryConvertStartOptionsToQpaFunctionsStruct(
+struct QOhosStartOptionsData
+{
+    enum class ProcessMode
+    {
+        NEW_PROCESS_ATTACH_TO_PARENT,
+        NEW_PROCESS_ATTACH_TO_STATUS_BAR_ITEM,
+    };
+
+    enum class StartupVisibility
+    {
+        STARTUP_HIDE,
+        STARTUP_SHOW,
+    };
+
+    enum class WindowMode
+    {
+        WINDOW_MODE_SPLIT_PRIMARY,
+        WINDOW_MODE_SPLIT_SECONDARY,
+        WINDOW_MODE_FULLSCREEN,
+    };
+
+    enum class SupportWindowMode
+    {
+        FULL_SCREEN,
+        SPLIT,
+        FLOATING,
+    };
+
+    struct WindowCreateParams
+    {
+        bool setWindowFadeInOutAnimation = false;
+    };
+
+    std::optional<WindowMode> windowMode;
+    std::optional<int> displayId;
+    std::optional<bool> withAnimation;
+    std::optional<int> windowLeft;
+    std::optional<int> windowTop;
+    std::optional<int> windowWidth;
+    std::optional<int> windowHeight;
+    std::optional<ProcessMode> processMode;
+    std::optional<StartupVisibility> startupVisibility;
+    std::optional<QVariant> windowIcon;
+    std::optional<QString> windowBackgroundColorHex;
+    std::optional<QList<SupportWindowMode>> supportWindowModes;
+    std::optional<int> minWindowWidth;
+    std::optional<int> minWindowHeight;
+    std::optional<int> maxWindowWidth;
+    std::optional<int> maxWindowHeight;
+    std::shared_ptr<QOhosConsumer<bool, QJsonObject, QString>> optCompletionHandler;
+    std::optional<bool> hideStartWindow;
+    std::optional<WindowCreateParams> windowCreateParams;
+};
+
+struct QOhosAbilityResult
+{
+    int resultCode;
+    std::optional<QJsonObject> want;
+};
+
+std::optional<QOhosStartOptionsData> tryConvertStartOptionsToQpaFunctionsStruct(
     const QOhosStartOptions &options);
 
 }

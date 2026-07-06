@@ -2,14 +2,31 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qohosappcontext.h"
+#include "qohosjsenv_p.h"
+#include "qohoswantinfo_p.h"
 #include "qohoswantutils_p.h"
+#include <QtCore/private/qcore_ohos_p.h>
+#include <QtCore/private/qnapi_p.h>
 #include <QtCore/private/qohoscommon_p.h>
-#include "qohosqpafunctionspart1_p.h"
+#include <QtCore/private/qohoslogger_p.h>
 #include <QtOhosAppKit/private/qohosappbundleinfo_p.h>
 #include <QtOhosAppKit/private/qohoswantutils_p.h>
 #include <QtOhosAppKit/qohosabilitycontext.h>
+#include <algorithm>
+#include <chrono>
+#include <csignal>
+#include <cstdint>
+#include <cstdlib>
 #include <functional>
+#include <iterator>
 #include <memory>
+#include <optional>
+#include <string>
+#include <thread>
+#include <unordered_map>
+#include <unistd.h>
+#include <utility>
+#include <vector>
 
 QT_BEGIN_NAMESPACE
 
@@ -19,6 +36,269 @@ namespace {
 
 template<typename T>
 using QOhosSupplier = std::function<T()>;
+
+int getCurrentApplicationVersionCode()
+{
+    return QOhosJsThreadGateway::eval(
+        [](QOhosJsState &jsState) {
+            auto applicationInfoFlag = jsState.eval<QNapi::Number>(
+                "@ohos.bundle.bundleManager.BundleFlag.GET_BUNDLE_INFO_WITH_APPLICATION");
+            auto bundleInfo = jsState.eval<QNapi::Object>(
+                "@ohos.bundle.bundleManager.getBundleInfoForSelfSync(*)", {applicationInfoFlag});
+            int versionCode = bundleInfo.get<QNapi::Number>("versionCode");
+
+            return versionCode;
+        },
+        Q_FUNC_INFO);
+}
+
+Q_NORETURN void killCurrentProcess()
+{
+    ::kill(getpid(), SIGKILL);
+    std::abort();
+}
+
+std::optional<std::uint32_t> tryGetCodeFromJsBusinessError(const Napi::Error &error)
+{
+    if (!error.Value().IsObject())
+        return std::nullopt;
+
+    auto errorObject = QNapi::checkedCast<QNapi::Object>(error.Value());
+    auto optErrorCode = QNapi::getOptionalPropOrEmpty<QNapi::Number>(errorObject, "code");
+
+    return !optErrorCode.IsEmpty()
+        ? std::make_optional(optErrorCode.Uint32Value())
+        : std::nullopt;
+}
+
+Q_NORETURN void restartAppImpl(std::optional<QJsonObject> want)
+{
+    QOhosJsThreadGateway::runAndWait(
+        [&](QOhosJsState &jsState) {
+            auto napiWant = want.has_value()
+                ? QNapi::checkedCast<QNapi::Object>(QOhosJsEnv::toNapiValue(jsState.env(), want.value()))
+                : jsState.appLaunchWant();
+
+            constexpr auto sleepTimeBeforeRetry = std::chrono::seconds(3);
+
+            unsigned remainingTries = 3;
+
+            while (true) {
+                --remainingTries;
+
+                qOhosPrintfInfo(
+                    "%s: calling restartApp() using Want: %s",
+                    Q_FUNC_INFO, QNapi::toJsonString(napiWant).c_str());
+
+                auto optQAbility = jsState.defaultQAbility();
+                if (!optQAbility.has_value())
+                    qOhosReportFatalErrorAndAbort("%s: no default UIAbility available to restart the app", Q_FUNC_INFO);
+
+                try {
+                    optQAbility.value().call(
+                        "context.getApplicationContext().restartApp", {napiWant});
+
+                    qOhosPrintfWarning("%s: restartApp() call unexpectedly returned, killing self", Q_FUNC_INFO);
+                    killCurrentProcess();
+                } catch (const Napi::Error &error) {
+                    constexpr std::uint32_t restartTooFrequentlyErrorCode = 16000064;
+
+                    auto errorCode = tryGetCodeFromJsBusinessError(error);
+
+                    if (errorCode == restartTooFrequentlyErrorCode && remainingTries != 0) {
+                        qOhosPrintfWarning(
+                            "%s: restartApp() returned with error %u, sleeping before retry",
+                            Q_FUNC_INFO, restartTooFrequentlyErrorCode);
+
+                        std::this_thread::sleep_for(sleepTimeBeforeRetry);
+                    } else {
+                        auto errorCodeStr = errorCode.has_value()
+                            ? std::to_string(errorCode.value())
+                            : "?";
+                        qOhosPrintfWarning(
+                            "%s: restartApp() returned with error %s, killing self",
+                            Q_FUNC_INFO, errorCodeStr.c_str());
+
+                        killCurrentProcess();
+                    }
+                }
+            }
+        },
+        Q_FUNC_INFO);
+
+    qOhosReportFatalErrorAndAbort("%s: unexpected return from the JS thread call", Q_FUNC_INFO);
+}
+
+struct SerialPortPermissionsState
+{
+    std::unordered_map<std::uint32_t, std::vector<QOhosConsumer<std::shared_ptr<void>>>> m_pendingSerialPortsPermissionRequestsConsumers;
+    std::unordered_map<std::uint32_t, std::weak_ptr<void>> m_grantedSerialPortsPermissionContexts;
+};
+
+std::shared_ptr<SerialPortPermissionsState> serialPortPermissionsState()
+{
+    static auto state = std::make_shared<SerialPortPermissionsState>();
+    return state;
+}
+
+std::optional<std::uint32_t> tryConvertPortNameToSystemPortId(const QString &portName)
+{
+    constexpr const char *serialPortPrefix = "COM";
+    const QString prefix = QLatin1String(serialPortPrefix);
+
+    if (!portName.startsWith(prefix))
+        return {};
+
+    bool parsedOk = false;
+    const uint parsedValue = portName.mid(prefix.length()).toUInt(&parsedOk);
+    if (!parsedOk)
+        return {};
+
+    return static_cast<std::uint32_t>(parsedValue);
+}
+
+bool hasSerialPortAccessRightJsImpl(QOhosJsState &jsState, std::uint32_t serialPortId)
+{
+    try {
+        return jsState.eval<QNapi::Boolean>("@ohos.usbManager.serial.hasSerialRight(*)", {serialPortId});
+    } catch (const Napi::Error &error) {
+        qOhosPrintfError(
+            "%s: hasSerialRight for port %d failed with error: %s",
+            Q_FUNC_INFO, serialPortId, error.what());
+        return false;
+    }
+}
+
+void requestSerialPortAccessRightJsImpl(
+    QOhosJsState &jsState, std::uint32_t serialPortId, QOhosConsumer<bool> resultConsumer)
+{
+    jsState.evalToPromiseOrRejectOnThrow(
+        "@ohos.usbManager.serial.requestSerialRight(*)", {serialPortId})
+    .withContext(std::move(resultConsumer))
+    .onThenWithContext(
+        [](const QOhosCallbackInfo &cbInfo, auto &resultConsumer) {
+            bool granted = cbInfo.getFirstArg<QNapi::Boolean>(Q_FUNC_INFO);
+            resultConsumer(granted);
+        })
+    .onCatchWithContext(
+        [](const QOhosCallbackInfo &cbInfo, auto &resultConsumer) {
+            QtOhos::logJsCallbackError(
+                cbInfo, "@ohos.usbManager.serial.requestSerialRight() failed");
+            resultConsumer(false);
+        });
+}
+
+void cancelSerialPortAccessRightJsImpl(QOhosJsState &jsState, std::uint32_t serialPortId)
+{
+    if (!hasSerialPortAccessRightJsImpl(jsState, serialPortId))
+        return;
+
+    try {
+        jsState.eval("@ohos.usbManager.serial.cancelSerialRight(*)", {serialPortId});
+    } catch (const Napi::Error &error) {
+        qOhosPrintfError(
+            "%s: cancelSerialRight(%u) failed with error (ignoring): %s",
+            Q_FUNC_INFO, serialPortId, error.what());
+    }
+}
+
+void processSerialPortPermissionResponse(std::uint32_t serialPortId, bool granted)
+{
+    auto self = serialPortPermissionsState();
+
+    auto permissionContext = granted
+        ? QtOhos::makeDestroyNotifier(
+            [serialPortId, weakSelf = QtOhos::makeWeakPtr(serialPortPermissionsState())]() {
+                QtOhos::invokeInQtThread(
+                    [serialPortId, weakSelf]() {
+                        QOhosJsThreadGateway::runAndWait(
+                            [&](QOhosJsState &jsState) {
+                                cancelSerialPortAccessRightJsImpl(jsState, serialPortId);
+                            },
+                            Q_FUNC_INFO);
+
+                        auto self = weakSelf.lock();
+                        if (self)
+                            self->m_grantedSerialPortsPermissionContexts.erase(serialPortId);
+                    });
+            })
+        : nullptr;
+
+    if (permissionContext)
+        self->m_grantedSerialPortsPermissionContexts[serialPortId] = permissionContext;
+
+    for (const auto &asyncPermissionRequestConsumer : self->m_pendingSerialPortsPermissionRequestsConsumers[serialPortId])
+        asyncPermissionRequestConsumer(permissionContext);
+
+    self->m_pendingSerialPortsPermissionRequestsConsumers.erase(serialPortId);
+}
+
+void requestSerialPortAccessRight(
+    const QString &portName, QObject *resultConsumerQtContext,
+    QOhosConsumer<std::shared_ptr<void>> resultConsumer)
+{
+    auto resultConsumerQtContextRef = QtOhos::makeQThreadSafeRef(resultConsumerQtContext);
+    auto asyncResultConsumer = [resultConsumerQtContextRef, resultConsumer = std::move(resultConsumer)](std::shared_ptr<void> permissionContext) {
+        resultConsumerQtContextRef.visitInQtThreadIfAlive(
+            [resultConsumer = std::move(resultConsumer), permissionContext](auto &resultConsumerQtContext) {
+                QMetaObject::invokeMethod(
+                    &resultConsumerQtContext,
+                    [resultConsumer = std::move(resultConsumer), permissionContext]() {
+                        resultConsumer(permissionContext);
+                    },
+                    Qt::QueuedConnection);
+            });
+    };
+
+    const auto optSerialPortId = tryConvertPortNameToSystemPortId(portName);
+    if (!optSerialPortId.has_value()) {
+        qOhosPrintfError(
+            "%s: cannot convert serial port name '%s' to port id.",
+            Q_FUNC_INFO, portName.toStdString().c_str());
+
+        asyncResultConsumer(nullptr);
+        return;
+    }
+
+    QtOhos::invokeInQtThread(
+        [serialPortId = optSerialPortId.value(), weakSelf = QtOhos::makeWeakPtr(serialPortPermissionsState()), asyncResultConsumer = std::move(asyncResultConsumer)]() {
+            auto self = weakSelf.lock();
+            if (!self)
+                return;
+
+            auto alreadyGrantedPermissionContextIt =
+                self->m_grantedSerialPortsPermissionContexts.find(serialPortId);
+            auto optAlreadyGrantedPermissionContext =
+                alreadyGrantedPermissionContextIt != self->m_grantedSerialPortsPermissionContexts.end()
+                    ? alreadyGrantedPermissionContextIt->second.lock()
+                    : nullptr;
+
+            if (optAlreadyGrantedPermissionContext) {
+                asyncResultConsumer(optAlreadyGrantedPermissionContext);
+                return;
+            }
+
+            self->m_pendingSerialPortsPermissionRequestsConsumers[serialPortId].push_back(
+                std::move(asyncResultConsumer));
+
+            if (self->m_pendingSerialPortsPermissionRequestsConsumers[serialPortId].size() == 1) {
+                QOhosJsThreadGateway::invoke(
+                    [serialPortId, weakSelf](QOhosJsState &jsState) {
+                        requestSerialPortAccessRightJsImpl(
+                            jsState,
+                            serialPortId,
+                            [serialPortId, weakSelf](bool granted) {
+                                QtOhos::invokeInQtThread(
+                                    [serialPortId, weakSelf, granted]() {
+                                        auto self = weakSelf.lock();
+                                        if (self)
+                                            processSerialPortPermissionResponse(serialPortId, granted);
+                                    });
+                        });
+                    });
+            }
+        });
+}
 
 class QOhosAppContextImpl : public QOhosAppContext
 {
@@ -110,7 +390,15 @@ QOhosAppContext *QOhosAppContext::instance()
 */
 void QOhosAppContext::startNoUiChildProcess(QString libraryName, QStringList args)
 {
-    QtOhos::getQOhosQpaFunctions().startNoUiChildProcess(libraryName, args);
+    QOhosJsThreadGateway::runAndWait(
+        [&](QOhosJsState &jsState) {
+            std::vector<std::string> argsVector;
+            std::transform(
+                args.begin(), args.end(), std::back_inserter(argsVector),
+                std::mem_fn(&QString::toStdString));
+            jsState.startNoUiChildProcess(libraryName.toStdString(), argsVector);
+        },
+        Q_FUNC_INFO);
 }
 
 /*!
@@ -121,7 +409,11 @@ void QOhosAppContext::startNoUiChildProcess(QString libraryName, QStringList arg
 */
 QOhosWant QOhosAppContext::getAppLaunchWant()
 {
-    auto jsonAppLaunchWant = QtOhos::getQOhosQpaFunctions().getAppLaunchWant();
+    auto jsonAppLaunchWant = QOhosJsThreadGateway::eval(
+        [](QOhosJsState &jsState) {
+            return QOhosJsEnv::fromNapiValue<QJsonObject>(jsState.appLaunchWant());
+        },
+        Q_FUNC_INFO);
     return convertWantFromJsonObject(jsonAppLaunchWant);
 }
 
@@ -132,7 +424,7 @@ QOhosWant QOhosAppContext::getAppLaunchWant()
 */
 QSharedPointer<QOhosWantInfo> QOhosAppContext::getAppLaunchWantInfo()
 {
-    return convertToOhosAppKitWantInfo(QtOhos::getQOhosQpaFunctions().getAppLaunchWantInfo());
+    return convertToOhosAppKitWantInfo(makeAppLaunchWantInfo());
 }
 
 /*!
@@ -160,7 +452,7 @@ QSharedPointer<QOhosWantInfo> QOhosAppContext::getAppLaunchWantInfo()
 */
 Q_NORETURN void QOhosAppContextImpl::restartApp()
 {
-    QtOhos::getQOhosQpaFunctions().restartApp({});
+    restartAppImpl({});
 }
 
 /*!
@@ -195,8 +487,7 @@ Q_NORETURN void QOhosAppContextImpl::restartApp()
 */
 Q_NORETURN void QOhosAppContextImpl::restartApp(const QOhosWant &requestWant)
 {
-    QtOhos::getQOhosQpaFunctions().restartApp(
-        std::make_optional(convertWantToJsonObject(requestWant)));
+    restartAppImpl(std::make_optional(convertWantToJsonObject(requestWant)));
 }
 
 QOhosAppContextImpl::QOhosAppContextImpl()
@@ -223,7 +514,19 @@ QOhosAppContextImpl::QOhosAppContextImpl()
 */
 bool QOhosAppContextImpl::hasSerialPortAccessRight(const QString &portName) const
 {
-    return QtOhos::getQOhosQpaFunctions().hasSerialPortAccessRight(portName);
+    const auto optSerialPortId = tryConvertPortNameToSystemPortId(portName);
+    if (!optSerialPortId.has_value()) {
+        qOhosPrintfError(
+            "%s: cannot convert serial port name '%s' to port id.",
+            Q_FUNC_INFO, portName.toStdString().c_str());
+        return false;
+    }
+
+    return QOhosJsThreadGateway::eval(
+        [&](QOhosJsState &jsState) {
+            return hasSerialPortAccessRightJsImpl(jsState, optSerialPortId.value());
+        },
+        Q_FUNC_INFO);
 }
 
 /*!
@@ -253,7 +556,7 @@ bool QOhosAppContextImpl::hasSerialPortAccessRight(const QString &portName) cons
 */
 void QOhosAppContextImpl::requestSerialPortAccessRightIfNeeded(const QString &portName)
 {
-    QtOhos::getQOhosQpaFunctions().requestSerialPortAccessRight(
+    requestSerialPortAccessRight(
         portName, this,
         [this, portName](std::shared_ptr<void> serialPortAccessRightContext) {
             Q_EMIT serialPortAccessRightResponseReceived(
@@ -269,7 +572,7 @@ void QOhosAppContextImpl::requestSerialPortAccessRightIfNeeded(const QString &po
 */
 QSharedPointer<QOhosBundleInfo> QOhosAppContextImpl::getBundleInfo() const
 {
-    return createBundleInfo(QtOhos::getQOhosQpaFunctions().getCurrentApplicationVersionCode());
+    return createBundleInfo(getCurrentApplicationVersionCode());
 }
 
 }

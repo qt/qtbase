@@ -5,13 +5,10 @@
 #include <QtOhosAppKit/private/qohosstartoptions_p.h>
 #include <QtCore/private/qcore_ohos_p.h>
 #include <QtCore/private/qohoscommon_p.h>
-#include "qohosqpafunctionspart1_p.h"
 
 QT_BEGIN_NAMESPACE
 
 namespace QtOhosAppKit {
-
-using QOhosQpaFunctions = QtOhos::QOhosQpaFunctionsPart1;
 
 /*!
     \class QtOhosAppKit::QOhosStartOptions
@@ -107,24 +104,24 @@ using QOhosQpaFunctions = QtOhos::QOhosQpaFunctionsPart1;
 
 namespace {
 
-std::optional<QOhosQpaFunctions::StartOptions::SupportWindowMode> tryMapSupportWindowModeToQpaFunctions(
+std::optional<QOhosStartOptionsData::SupportWindowMode> tryMapSupportWindowModeToQpaFunctions(
     QOhosStartOptions::SupportWindowMode supportWindowMode)
 {
     switch (supportWindowMode) {
     case QOhosStartOptions::SupportWindowMode::FULL_SCREEN:
-        return std::make_optional(QOhosQpaFunctions::StartOptions::SupportWindowMode::FULL_SCREEN);
+        return std::make_optional(QOhosStartOptionsData::SupportWindowMode::FULL_SCREEN);
     case QOhosStartOptions::SupportWindowMode::SPLIT:
-        return std::make_optional(QOhosQpaFunctions::StartOptions::SupportWindowMode::SPLIT);
+        return std::make_optional(QOhosStartOptionsData::SupportWindowMode::SPLIT);
     case QOhosStartOptions::SupportWindowMode::FLOATING:
-        return std::make_optional(QOhosQpaFunctions::StartOptions::SupportWindowMode::FLOATING);
+        return std::make_optional(QOhosStartOptionsData::SupportWindowMode::FLOATING);
     }
     return {};
 }
 
-QList<QOhosQpaFunctions::StartOptions::SupportWindowMode> mapSupportWindowModesToQpaFunctions(
+QList<QOhosStartOptionsData::SupportWindowMode> mapSupportWindowModesToQpaFunctions(
     const QList<QOhosStartOptions::SupportWindowMode> &supportWindowModes)
 {
-    QList<QOhosQpaFunctions::StartOptions::SupportWindowMode> qpaFuncsSupportWindowModes;
+    QList<QOhosStartOptionsData::SupportWindowMode> qpaFuncsSupportWindowModes;
     for (auto supportWindowMode : supportWindowModes) {
         auto optQpaFuncsSupportWindowMode = tryMapSupportWindowModeToQpaFunctions(supportWindowMode);
         if (optQpaFuncsSupportWindowMode.has_value()) {
@@ -146,10 +143,10 @@ public:
 
     void setAnimationType(AnimationType animationType) override;
 
-    QOhosQpaFunctions::StartOptions::WindowCreateParams qpaWindowCreateParams() const;
+    QOhosStartOptionsData::WindowCreateParams qpaWindowCreateParams() const;
 
 private:
-    QOhosQpaFunctions::StartOptions::WindowCreateParams m_qpaWindowCreateParams;
+    QOhosStartOptionsData::WindowCreateParams m_qpaWindowCreateParams;
 };
 
 QOhosWindowCreateParamsImpl::QOhosWindowCreateParamsImpl() = default;
@@ -171,7 +168,7 @@ void QOhosWindowCreateParamsImpl::setAnimationType(AnimationType animationType)
     }
 }
 
-QOhosQpaFunctions::StartOptions::WindowCreateParams QOhosWindowCreateParamsImpl::qpaWindowCreateParams() const
+QOhosStartOptionsData::WindowCreateParams QOhosWindowCreateParamsImpl::qpaWindowCreateParams() const
 {
     return m_qpaWindowCreateParams;
 }
@@ -192,16 +189,16 @@ public:
     */
     void setWindowMode(QOhosStartOptions::WindowMode windowMode) override
     {
-        std::optional<QOhosQpaFunctions::StartOptions::WindowMode> internalWindowMode;
+        std::optional<QOhosStartOptionsData::WindowMode> internalWindowMode;
         switch (windowMode) {
         case QOhosStartOptions::WindowMode::WINDOW_MODE_SPLIT_PRIMARY:
-            internalWindowMode = QOhosQpaFunctions::StartOptions::WindowMode::WINDOW_MODE_SPLIT_PRIMARY;
+            internalWindowMode = QOhosStartOptionsData::WindowMode::WINDOW_MODE_SPLIT_PRIMARY;
             break;
         case QOhosStartOptions::WindowMode::WINDOW_MODE_SPLIT_SECONDARY:
-            internalWindowMode = QOhosQpaFunctions::StartOptions::WindowMode::WINDOW_MODE_SPLIT_SECONDARY;
+            internalWindowMode = QOhosStartOptionsData::WindowMode::WINDOW_MODE_SPLIT_SECONDARY;
             break;
         case QOhosStartOptions::WindowMode::WINDOW_MODE_FULLSCREEN:
-            internalWindowMode = QOhosQpaFunctions::StartOptions::WindowMode::WINDOW_MODE_FULLSCREEN;
+            internalWindowMode = QOhosStartOptionsData::WindowMode::WINDOW_MODE_FULLSCREEN;
             break;
         }
 
@@ -292,13 +289,13 @@ public:
     */
     void setProcessMode(QOhosStartOptions::ProcessMode processMode) override
     {
-        std::optional<QOhosQpaFunctions::StartOptions::ProcessMode> internalProcessMode;
+        std::optional<QOhosStartOptionsData::ProcessMode> internalProcessMode;
         switch (processMode) {
         case QOhosStartOptions::ProcessMode::NEW_PROCESS_ATTACH_TO_PARENT:
-            internalProcessMode = QOhosQpaFunctions::StartOptions::ProcessMode::NEW_PROCESS_ATTACH_TO_PARENT;
+            internalProcessMode = QOhosStartOptionsData::ProcessMode::NEW_PROCESS_ATTACH_TO_PARENT;
             break;
         case QOhosStartOptions::ProcessMode::NEW_PROCESS_ATTACH_TO_STATUS_BAR_ITEM:
-            internalProcessMode = QOhosQpaFunctions::StartOptions::ProcessMode::NEW_PROCESS_ATTACH_TO_STATUS_BAR_ITEM;
+            internalProcessMode = QOhosStartOptionsData::ProcessMode::NEW_PROCESS_ATTACH_TO_STATUS_BAR_ITEM;
             break;
         }
 
@@ -317,13 +314,13 @@ public:
     */
     void setStartupVisibility(QOhosStartOptions::StartupVisibility startupVisibility) override
     {
-        std::optional<QOhosQpaFunctions::StartOptions::StartupVisibility> internalStartupVisibility;
+        std::optional<QOhosStartOptionsData::StartupVisibility> internalStartupVisibility;
         switch (startupVisibility) {
         case QOhosStartOptions::StartupVisibility::STARTUP_HIDE:
-            internalStartupVisibility = QOhosQpaFunctions::StartOptions::StartupVisibility::STARTUP_HIDE;
+            internalStartupVisibility = QOhosStartOptionsData::StartupVisibility::STARTUP_HIDE;
             break;
         case QOhosStartOptions::StartupVisibility::STARTUP_SHOW:
-            internalStartupVisibility = QOhosQpaFunctions::StartOptions::StartupVisibility::STARTUP_SHOW;
+            internalStartupVisibility = QOhosStartOptionsData::StartupVisibility::STARTUP_SHOW;
             break;
         }
 
@@ -471,13 +468,13 @@ public:
             m_startOptions.windowCreateParams = windowCreateParamsImpl->qpaWindowCreateParams();
     }
 
-    QOhosQpaFunctions::StartOptions getStartOptions() const
+    QOhosStartOptionsData getStartOptions() const
     {
         return m_startOptions;
     }
 
 private:
-    QOhosQpaFunctions::StartOptions m_startOptions;
+    QOhosStartOptionsData m_startOptions;
 };
 
 }
@@ -509,7 +506,7 @@ QSharedPointer<QOhosStartOptions> createStartOptions()
     return QSharedPointer<QOhosStartOptionsImpl>::create();
 }
 
-std::optional<QOhosQpaFunctions::StartOptions> tryConvertStartOptionsToQpaFunctionsStruct(
+std::optional<QOhosStartOptionsData> tryConvertStartOptionsToQpaFunctionsStruct(
     const QOhosStartOptions &options)
 {
     const auto *startOptionsImpl = dynamic_cast<const QOhosStartOptionsImpl *>(&options);

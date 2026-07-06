@@ -2,12 +2,16 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qohosabilitycontext.h"
+#include "qohosenums_p.h"
+#include "qohosjsenv_p.h"
+#include "qohoswantinfo_p.h"
 #include "qohoswantutils_p.h"
 #include <QtCore/private/qcore_ohos_p.h>
 #include <QtCore/private/qohoscommon_p.h>
-#include "qohosqpafunctionspart1_p.h"
+#include <QtCore/private/qohoslogger_p.h>
 #include <QtCore/qeventloop.h>
 #include <QtCore/qhash.h>
+#include <QtCore/qmap.h>
 #include <QtCore/qrandom.h>
 #include <QtOhosAppKit/private/qohosoperationstatus_p.h>
 #include <QtOhosAppKit/private/qohossharekit_p.h>
@@ -15,6 +19,8 @@
 #include <QtOhosAppKit/private/qohosstartrequest_p.h>
 #include <QtOhosAppKit/private/qohoswantutils_p.h>
 #include <QtGui/qwindow.h>
+#include <QtGui/private/qohosimageconversions_p.h>
+#include <QtGui/qimage.h>
 #include <array>
 #include <cstdint>
 #include <cstring>
@@ -26,8 +32,6 @@
 QT_BEGIN_NAMESPACE
 
 namespace QtOhosAppKit {
-
-using QOhosQpaFunctions = QtOhos::QOhosQpaFunctionsPart1;
 
 namespace {
 
@@ -69,6 +73,134 @@ std::optional<bool> QOhosOpenLinkOptionsImpl::appLinkingOnly() const
     return m_appLinkingOnly;
 }
 
+using OnContinueResult = QtOhos::enums::ohos::app::ability::AbilityConstant::OnContinueResult;
+
+enum class AbilityOnContinueResponseStatus
+{
+    Agree,
+    Reject,
+    Mismatch,
+};
+
+struct AbilityOnContinueRequest
+{
+    int sourceApplicationVersionCode;
+};
+
+struct AbilityOnContinueResponse
+{
+    AbilityOnContinueResponseStatus status;
+    QMap<QString, QString> wantObjectParams;
+    std::optional<bool> exitAppOnSourceDeviceAfterMigration;
+};
+
+std::optional<OnContinueResult> tryMapAbilityOnContinueResponseStatusToOhos(
+    AbilityOnContinueResponseStatus status)
+{
+    switch (status) {
+    case AbilityOnContinueResponseStatus::Agree:
+        return OnContinueResult::AGREE;
+    case AbilityOnContinueResponseStatus::Reject:
+        return OnContinueResult::REJECT;
+    case AbilityOnContinueResponseStatus::Mismatch:
+        return OnContinueResult::MISMATCH;
+    }
+    return std::nullopt;
+}
+
+void setOnContinueRequestsHandlerForAbilityInstanceWindow(
+    QObject *windowObject,
+    std::function<void(AbilityOnContinueRequest, QOhosConsumer<AbilityOnContinueResponse>)> requestsHandler)
+{
+    auto *qWindow = qobject_cast<QWindow *>(windowObject);
+    if (qWindow == nullptr)
+        qOhosReportFatalErrorAndAbort("%s: windowObject argument is null or not a QWindow", Q_FUNC_INFO);
+
+    auto qWindowRef = QtOhos::QObjectThreadSafeRef(qWindow);
+    auto sharedRequestsHandler = QtOhos::moveToSharedPtr(std::move(requestsHandler));
+
+    struct JsResultContext
+    {
+        QNapi::Reference<QNapi::Object> wantParamsReference;
+        QOhosConsumer<QOhosJsState &, QNapi::Number> resultConsumer;
+    };
+
+    QOhosJsThreadGateway::runAndWait(
+        [&](QOhosJsState &jsState) {
+            auto optQAbility = jsState.tryGetQAbilityByQWindow(qWindowRef);
+            if (!optQAbility) {
+                qOhosPrintfError(
+                    "%s: no ability for window %s, handler not set",
+                    Q_FUNC_INFO, qWindowRef.refName().c_str());
+                return;
+            }
+
+            jsState.setOnContinueRequestsHandler(
+                optQAbility.value(),
+                [sharedRequestsHandler](QOhosJsState &, QNapi::Object wantParamsObj, auto resultConsumer) {
+                    int sourceVersionCode = wantParamsObj.get<QNapi::Number>("version");
+                    auto jsResultContext = QtOhos::makeProxyWithJsThreadDeleter(std::make_shared<JsResultContext>());
+                    jsResultContext->wantParamsReference = QNapi::Reference<>::makePersistentFrom(wantParamsObj);
+                    jsResultContext->resultConsumer = std::move(resultConsumer);
+                    QtOhos::invokeInQtThread(
+                        [sharedRequestsHandler, sourceVersionCode, jsResultContext]() {
+                            (*sharedRequestsHandler)(
+                                AbilityOnContinueRequest{
+                                    .sourceApplicationVersionCode = sourceVersionCode,
+                                },
+                                [jsResultContext](AbilityOnContinueResponse qtResponse) {
+                                    QOhosJsThreadGateway::invoke(
+                                        [jsResultContext, qtResponse](QOhosJsState &jsState) {
+                                            if (qtResponse.status == AbilityOnContinueResponseStatus::Agree) {
+                                                auto wantParamsObj = jsResultContext->wantParamsReference.Value();
+                                                auto newWantParamsIter = qtResponse.wantObjectParams.constKeyValueBegin();
+                                                while (newWantParamsIter != qtResponse.wantObjectParams.constKeyValueEnd()) {
+                                                    wantParamsObj.set(
+                                                        newWantParamsIter->first.toStdString(),
+                                                        newWantParamsIter->second.toStdString());
+                                                    ++newWantParamsIter;
+                                                }
+                                                if (qtResponse.exitAppOnSourceDeviceAfterMigration.has_value()) {
+                                                    wantParamsObj.set(
+                                                        jsState.eval<QNapi::String>(
+                                                            "@ohos.app.ability.wantConstant.Params.SUPPORT_CONTINUE_SOURCE_EXIT_KEY"),
+                                                        qtResponse.exitAppOnSourceDeviceAfterMigration.value());
+                                                }
+                                            }
+                                            auto optResultEnum = tryMapAbilityOnContinueResponseStatusToOhos(qtResponse.status);
+                                            if (!optResultEnum) {
+                                                qOhosPrintfWarning(
+                                                    "%s: got illegal status (%d) from requests handler, rejecting the request",
+                                                    Q_FUNC_INFO, static_cast<int>(qtResponse.status));
+                                            }
+                                            jsResultContext->resultConsumer(
+                                                jsState, jsState.mapOhosEnumToJs(optResultEnum.value_or(OnContinueResult::REJECT)));
+                                        });
+                                });
+                        });
+                });
+        },
+        Q_FUNC_INFO);
+}
+
+void setDestroyAllowedFlagForAbilityInstances(
+    std::vector<QObject *> instancesMainWindows, bool destroyEnabled)
+{
+    std::vector<QtOhos::QObjectThreadSafeRef> instancesMainWindowsRefs;
+    for (auto *instanceMainWindow : instancesMainWindows)
+        instancesMainWindowsRefs.emplace_back(instanceMainWindow);
+
+    QOhosJsThreadGateway::runAndWait(
+        [&](QOhosJsState &jsState) {
+            for (const auto &instanceMainWindowRef : instancesMainWindowsRefs) {
+                auto optQAbility = jsState.tryGetQAbilityByQWindow(instanceMainWindowRef);
+                if (optQAbility)
+                    jsState.setDestroyFromSystemAllowed(optQAbility.value(), destroyEnabled);
+            }
+        },
+        Q_FUNC_INFO);
+}
+
 class QOhosOnContinueContextImpl : public QOhosOnContinueContext
 {
 public:
@@ -82,11 +214,11 @@ public:
 
     int sourceApplicationVersionCode() const override;
 
-    QOhosQpaFunctions::AbilityOnContinueResponse response() const;
+    AbilityOnContinueResponse response() const;
 
 private:
     int m_sourceApplicationVersionCode;
-    QOhosQpaFunctions::AbilityOnContinueResponse m_baseResponse;
+    AbilityOnContinueResponse m_baseResponse;
     std::optional<bool> m_exitAppOnSourceDeviceAfterMigration;
 };
 
@@ -107,8 +239,8 @@ QOhosOnContinueContextImpl::QOhosOnContinueContextImpl(int sourceApplicationVers
 */
 void QOhosOnContinueContextImpl::setAgreeResponse(const QByteArray &responseData)
 {
-    m_baseResponse = QOhosQpaFunctions::AbilityOnContinueResponse{
-        .status = QOhosQpaFunctions::AbilityOnContinueResponseStatus::Agree,
+    m_baseResponse = AbilityOnContinueResponse{
+        .status = AbilityOnContinueResponseStatus::Agree,
         .wantObjectParams = {
             {
                 QString::fromUtf8(qtOnContinueMigrationDataPropertyName),
@@ -130,8 +262,8 @@ void QOhosOnContinueContextImpl::setAgreeResponse(const QByteArray &responseData
 */
 void QOhosOnContinueContextImpl::setRejectResponse()
 {
-    m_baseResponse = QOhosQpaFunctions::AbilityOnContinueResponse{
-        .status = QOhosQpaFunctions::AbilityOnContinueResponseStatus::Reject,
+    m_baseResponse = AbilityOnContinueResponse{
+        .status = AbilityOnContinueResponseStatus::Reject,
         .wantObjectParams = {},
     };
 }
@@ -149,8 +281,8 @@ void QOhosOnContinueContextImpl::setRejectResponse()
 */
 void QOhosOnContinueContextImpl::setMismatchResponse()
 {
-    m_baseResponse = QOhosQpaFunctions::AbilityOnContinueResponse{
-        .status = QOhosQpaFunctions::AbilityOnContinueResponseStatus::Mismatch,
+    m_baseResponse = AbilityOnContinueResponse{
+        .status = AbilityOnContinueResponseStatus::Mismatch,
         .wantObjectParams = {},
     };
 }
@@ -168,7 +300,7 @@ void QOhosOnContinueContextImpl::setExitAppOnSourceDeviceAfterMigration(bool exi
     m_exitAppOnSourceDeviceAfterMigration = exitAfterMigration;
 }
 
-QOhosQpaFunctions::AbilityOnContinueResponse QOhosOnContinueContextImpl::response() const
+AbilityOnContinueResponse QOhosOnContinueContextImpl::response() const
 {
     auto response = m_baseResponse;
     response.exitAppOnSourceDeviceAfterMigration = m_exitAppOnSourceDeviceAfterMigration;
@@ -187,8 +319,205 @@ int QOhosOnContinueContextImpl::sourceApplicationVersionCode() const
     return m_sourceApplicationVersionCode;
 }
 
+std::optional<QtOhos::enums::ohos::app::ability::AbilityConstant::WindowMode> tryMapWindowModeToOhosOrLogWarning(
+    QOhosStartOptionsData::WindowMode windowMode)
+{
+    namespace AbilityConstant = QtOhos::enums::ohos::app::ability::AbilityConstant;
+    using StartOptions = QOhosStartOptionsData;
+
+    switch (windowMode) {
+    case StartOptions::WindowMode::WINDOW_MODE_SPLIT_PRIMARY:
+        return std::make_optional(AbilityConstant::WindowMode::WINDOW_MODE_SPLIT_PRIMARY);
+    case StartOptions::WindowMode::WINDOW_MODE_SPLIT_SECONDARY:
+        return std::make_optional(AbilityConstant::WindowMode::WINDOW_MODE_SPLIT_SECONDARY);
+    case StartOptions::WindowMode::WINDOW_MODE_FULLSCREEN:
+        return std::make_optional(AbilityConstant::WindowMode::WINDOW_MODE_FULLSCREEN);
+    }
+
+    qCWarning(QtForOhos, "%s: got illegal WindowMode: %d", Q_FUNC_INFO, static_cast<int>(windowMode));
+
+    return {};
+}
+
+std::optional<QtOhos::enums::ohos::app::ability::contextConstant::ProcessMode> tryMapProcessModeToOhosOrLogWarning(
+    QOhosStartOptionsData::ProcessMode processMode)
+{
+    namespace contextConstant = QtOhos::enums::ohos::app::ability::contextConstant;
+    using StartOptions = QOhosStartOptionsData;
+
+    switch (processMode) {
+    case StartOptions::ProcessMode::NEW_PROCESS_ATTACH_TO_PARENT:
+        return std::make_optional(contextConstant::ProcessMode::NEW_PROCESS_ATTACH_TO_PARENT);
+    case StartOptions::ProcessMode::NEW_PROCESS_ATTACH_TO_STATUS_BAR_ITEM:
+        return std::make_optional(contextConstant::ProcessMode::NEW_PROCESS_ATTACH_TO_STATUS_BAR_ITEM);
+    }
+
+    qCWarning(QtForOhos, "%s: got illegal ProcessMode: %d", Q_FUNC_INFO, static_cast<int>(processMode));
+
+    return {};
+}
+
+std::optional<QtOhos::enums::ohos::app::ability::contextConstant::StartupVisibility> tryMapStartupVisibilityToOhosOrLogWarning(
+    QOhosStartOptionsData::StartupVisibility startupVisibility)
+{
+    namespace contextConstant = QtOhos::enums::ohos::app::ability::contextConstant;
+    using StartOptions = QOhosStartOptionsData;
+
+    switch (startupVisibility) {
+    case StartOptions::StartupVisibility::STARTUP_HIDE:
+        return std::make_optional(contextConstant::StartupVisibility::STARTUP_HIDE);
+    case StartOptions::StartupVisibility::STARTUP_SHOW:
+        return std::make_optional(contextConstant::StartupVisibility::STARTUP_SHOW);
+    }
+
+    qCWarning(QtForOhos, "%s: got illegal StartupVisibility: %d", Q_FUNC_INFO, static_cast<int>(startupVisibility));
+
+    return {};
+}
+
+std::optional<QtOhos::enums::ohos::bundle::bundleManager::SupportWindowMode> tryMapSupportWindowModeToOhosOrLogWarning(
+    QOhosStartOptionsData::SupportWindowMode supportWindowMode)
+{
+    namespace bundleManager = QtOhos::enums::ohos::bundle::bundleManager;
+    using StartOptions = QOhosStartOptionsData;
+
+    switch (supportWindowMode) {
+    case StartOptions::SupportWindowMode::FULL_SCREEN:
+        return std::make_optional(bundleManager::SupportWindowMode::FULL_SCREEN);
+    case StartOptions::SupportWindowMode::SPLIT:
+        return std::make_optional(bundleManager::SupportWindowMode::SPLIT);
+    case StartOptions::SupportWindowMode::FLOATING:
+        return std::make_optional(bundleManager::SupportWindowMode::FLOATING);
+    }
+
+    qCWarning(QtForOhos, "%s: got illegal SupportWindowMode: %d", Q_FUNC_INFO, static_cast<int>(supportWindowMode));
+
+    return {};
+}
+
+QNapi::Array mapSupportWindowModesToJsEnumsArray(
+    QOhosJsState &jsState, const QList<QOhosStartOptionsData::SupportWindowMode> &supportWindowModes)
+{
+    std::vector<QNapi::ValueWrapper> jsSupportWindowModes;
+    for (auto supportWindowMode : supportWindowModes) {
+        auto optOhosSupportWindowMode = tryMapSupportWindowModeToOhosOrLogWarning(supportWindowMode);
+        if (optOhosSupportWindowMode.has_value())
+            jsSupportWindowModes.push_back(jsState.mapOhosEnumToJs(optOhosSupportWindowMode.value()));
+    }
+
+    return QNapi::makeArray(jsState.env(), jsSupportWindowModes);
+}
+
+QNapi::Object makeJsCompletionHandler(
+    QOhosJsState &jsState, std::shared_ptr<QOhosConsumer<bool, QJsonObject, QString>> qtThreadCompletionHandler)
+{
+    auto makeCompletionCallback = [qtThreadCompletionHandler](bool requestSuccess) {
+        return [qtThreadCompletionHandler, requestSuccess](const QNapi::CallbackInfo &cbInfo) {
+            QNapi::Object elementNameObj;
+            QNapi::String messageValue;
+            cbInfo.getLeadingArgs(Q_FUNC_INFO, elementNameObj, messageValue);
+
+            const QJsonObject elementName = QOhosJsEnv::fromNapiValue<QJsonObject>(elementNameObj);
+            const QString message = QString::fromStdString(messageValue);
+
+            QtOhos::invokeInQtThread(
+                [qtThreadCompletionHandler, requestSuccess, elementName, message]() {
+                    (*qtThreadCompletionHandler)(requestSuccess, elementName, message);
+                });
+        };
+    };
+
+    return QNapi::makeObject(
+        jsState.env(),
+        {
+            {"onRequestSuccess", makeCompletionCallback(true)},
+            {"onRequestFailure", makeCompletionCallback(false)},
+        });
+}
+
+QNapi::Object convertStartOptionsToNapiObject(
+    QOhosJsState &jsState, const QOhosStartOptionsData &opts)
+{
+    auto *env = jsState.env();
+    auto napiOptions = QNapi::Object::New(env);
+
+    auto optOhosWindowMode = opts.windowMode.has_value()
+        ? tryMapWindowModeToOhosOrLogWarning(opts.windowMode.value())
+        : std::nullopt;
+    if (optOhosWindowMode.has_value())
+        napiOptions.set("windowMode", jsState.mapOhosEnumToJs(optOhosWindowMode.value()));
+    if (opts.displayId.has_value())
+        napiOptions.set("displayId", opts.displayId.value());
+    if (opts.withAnimation.has_value())
+        napiOptions.set("withAnimation", opts.withAnimation.value());
+    if (opts.windowLeft.has_value())
+        napiOptions.set("windowLeft", opts.windowLeft.value());
+    if (opts.windowTop.has_value())
+        napiOptions.set("windowTop", opts.windowTop.value());
+    if (opts.windowWidth.has_value())
+        napiOptions.set("windowWidth", opts.windowWidth.value());
+    if (opts.windowHeight.has_value())
+        napiOptions.set("windowHeight", opts.windowHeight.value());
+    auto optOhosProcessMode = opts.processMode.has_value()
+        ? tryMapProcessModeToOhosOrLogWarning(opts.processMode.value())
+        : std::nullopt;
+    if (optOhosProcessMode.has_value())
+        napiOptions.set("processMode", jsState.mapOhosEnumToJs(optOhosProcessMode.value()));
+    auto optOhosStartupVisibility = opts.startupVisibility.has_value()
+        ? tryMapStartupVisibilityToOhosOrLogWarning(opts.startupVisibility.value())
+        : std::nullopt;
+    if (optOhosStartupVisibility.has_value())
+        napiOptions.set("startupVisibility", jsState.mapOhosEnumToJs(optOhosStartupVisibility.value()));
+    if (opts.windowIcon.has_value()) {
+        auto windowIcon = opts.windowIcon.value().value<QImage>();
+        if (!windowIcon.isNull())
+            napiOptions.set("startWindowIcon", makeOhosNapiPixelMapFromQImage(jsState, windowIcon));
+    }
+    if (opts.windowBackgroundColorHex.has_value())
+        napiOptions.set("startWindowBackgroundColor", opts.windowBackgroundColorHex.value().toStdString());
+    if (opts.supportWindowModes.has_value()) {
+        auto jsSupportWindowModes = mapSupportWindowModesToJsEnumsArray(jsState, opts.supportWindowModes.value());
+        if (jsSupportWindowModes.Length() != 0)
+            napiOptions.set("supportWindowModes", jsSupportWindowModes);
+        else
+            qCWarning(QtForOhos, "%s: OHOS doesn't support empty supportWindowModes, skipping", Q_FUNC_INFO);
+    }
+    if (opts.minWindowWidth.has_value())
+        napiOptions.set("minWindowWidth", opts.minWindowWidth.value());
+    if (opts.minWindowHeight.has_value())
+        napiOptions.set("minWindowHeight", opts.minWindowHeight.value());
+    if (opts.maxWindowWidth.has_value())
+        napiOptions.set("maxWindowWidth", opts.maxWindowWidth.value());
+    if (opts.maxWindowHeight.has_value())
+        napiOptions.set("maxWindowHeight", opts.maxWindowHeight.value());
+    if (opts.optCompletionHandler)
+        napiOptions.set("completionHandler", makeJsCompletionHandler(jsState, opts.optCompletionHandler));
+    if (opts.hideStartWindow.has_value())
+        napiOptions.set("hideStartWindow", opts.hideStartWindow.value());
+    if (opts.windowCreateParams.has_value()) {
+        const auto &windowCreateParams = opts.windowCreateParams.value();
+        std::vector<std::pair<std::string, QNapi::ValueWrapper>> windowCreateParamsProps;
+        if (windowCreateParams.setWindowFadeInOutAnimation) {
+            windowCreateParamsProps.emplace_back(
+                "animationParams",
+                QNapi::makeObject(
+                    env,
+                    {
+                        {
+                            "type",
+                            jsState.mapOhosEnumToJs(
+                                QtOhos::enums::ohos::window::AnimationType::FADE_IN_OUT),
+                        }
+                    }));
+        }
+        napiOptions.set("windowCreateParams", QNapi::makeObject(env, windowCreateParamsProps));
+    }
+
+    return napiOptions;
+}
+
 QByteArray requestStartAbilityForResult(
-    const QOhosWant &want, std::optional<QOhosQpaFunctions::StartOptions> options,
+    const QOhosWant &want, std::optional<QOhosStartOptionsData> options,
     QWindow *optInstanceMainWindow, QObject *callerContext, QByteArray requestId,
     QOhosConsumer<QByteArray, int, QSharedPointer<QOhosWant>> successConsumer,
     QOhosConsumer<QByteArray> errorConsumer)
@@ -198,6 +527,7 @@ QByteArray requestStartAbilityForResult(
         QByteArray requestId;
         QOhosConsumer<QByteArray, int, QSharedPointer<QOhosWant>> successConsumer;
         QOhosConsumer<QByteArray> errorConsumer;
+        QtOhos::QObjectThreadSafeRef resultConsumerQtContextRef;
     };
 
     auto context = QtOhos::moveToSharedPtr(
@@ -205,20 +535,72 @@ QByteArray requestStartAbilityForResult(
             .requestId = requestId,
             .successConsumer = std::move(successConsumer),
             .errorConsumer = std::move(errorConsumer),
+            .resultConsumerQtContextRef = QtOhos::QObjectThreadSafeRef(callerContext),
         });
 
-    QtOhos::getQOhosQpaFunctions().startAbilityForResult(
-        convertWantToJsonObject(want), options, optInstanceMainWindow, callerContext,
-        [context](std::optional<QOhosQpaFunctions::AbilityResult> optAbilityResult) {
-            if (optAbilityResult.has_value()) {
-                auto abilityResult = optAbilityResult.value();
-                auto want = abilityResult.want.has_value()
-                    ? QSharedPointer<QOhosWant>::create(convertWantFromJsonObject(abilityResult.want.value()))
-                    : nullptr;
-                context->successConsumer(context->requestId, abilityResult.resultCode, want);
-            } else {
-                context->errorConsumer(context->requestId);
+    auto resultConsumer = [context](std::optional<QOhosAbilityResult> optAbilityResult) {
+        if (optAbilityResult.has_value()) {
+            auto abilityResult = optAbilityResult.value();
+            auto want = abilityResult.want.has_value()
+                ? QSharedPointer<QOhosWant>::create(convertWantFromJsonObject(abilityResult.want.value()))
+                : nullptr;
+            context->successConsumer(context->requestId, abilityResult.resultCode, want);
+        } else {
+            context->errorConsumer(context->requestId);
+        }
+    };
+
+    auto wantJson = convertWantToJsonObject(want);
+    auto optInstanceMainWindowRef =
+        optInstanceMainWindow != nullptr
+           ? std::make_optional(QtOhos::QObjectThreadSafeRef(optInstanceMainWindow))
+           : std::nullopt;
+
+    QOhosJsThreadGateway::invoke(
+        [context, resultConsumer, wantJson, options, optInstanceMainWindowRef](QOhosJsState &jsState) {
+            auto optUiAbility = optInstanceMainWindowRef.has_value()
+                ? jsState.tryGetQAbilityByQWindow(optInstanceMainWindowRef.value())
+                : jsState.defaultQAbility();
+            if (!optUiAbility.has_value()) {
+                context->resultConsumerQtContextRef.visitInQtThreadIfAlive(
+                    [resultConsumer](auto &) {
+                        resultConsumer({});
+                    });
+                return;
             }
+
+            auto arguments = std::vector<QNapi::ValueWrapper>{QOhosJsEnv::toNapiValue(jsState.env(), wantJson)};
+            if (options.has_value())
+                arguments.push_back(convertStartOptionsToNapiObject(jsState, options.value()));
+
+            optUiAbility.value().evalToPromiseOrRejectOnThrow("context.startAbilityForResult(*)", arguments)
+            .onThen(
+                [context, resultConsumer](const QOhosCallbackInfo &cbInfo) {
+                    QNapi::Object abilityResult = cbInfo.getFirstArg<QNapi::Object>(Q_FUNC_INFO);
+                    int resultCode = abilityResult.get<QNapi::Number>("resultCode");
+
+                    auto wantOrEmpty = QNapi::getOptionalPropOrEmpty<QNapi::Object>(abilityResult, "want");
+                    auto jsonWant = !wantOrEmpty.IsEmpty()
+                        ? std::optional<QJsonObject>(QOhosJsEnv::fromNapiValue<QJsonObject>(wantOrEmpty))
+                        : std::nullopt;
+
+                    context->resultConsumerQtContextRef.visitInQtThreadIfAlive(
+                        [resultConsumer, resultCode, jsonWant](auto &) {
+                            constexpr int startedAbilityErrorResultCode = -1;
+                            resultConsumer(
+                                resultCode != startedAbilityErrorResultCode
+                                    ? std::optional<QOhosAbilityResult>({resultCode, jsonWant})
+                                    : std::nullopt);
+                        });
+                })
+            .onCatch(
+                [context, resultConsumer](const QOhosCallbackInfo &cbInfo) {
+                    QtOhos::logJsCallbackError(cbInfo, "Got error from startAbilityForResult()");
+                    context->resultConsumerQtContextRef.visitInQtThreadIfAlive(
+                        [resultConsumer](auto &) {
+                            resultConsumer({});
+                        });
+                });
         });
 
     return context->requestId;
@@ -233,7 +615,7 @@ protected:
 
     QByteArray startAbilityForResultImpl(
         const QOhosWant &want, QWindow *optInstanceMainWindow,
-        std::optional<QOhosQpaFunctions::StartOptions> qpaStartOptions);
+        std::optional<QOhosStartOptionsData> qpaStartOptions);
 
     QByteArray shareDataWithShareKitImpl(
         QWindow *optMainWindow, const QList<QSharedPointer<ShareKit::QOhosSharedRecord>> &records,
@@ -303,7 +685,7 @@ QByteArray QOhosBaseAbilityContextImpl::generateUniqueId()
 
 QByteArray QOhosBaseAbilityContextImpl::startAbilityForResultImpl(
     const QOhosWant &want, QWindow *optInstanceMainWindow,
-    std::optional<QOhosQpaFunctions::StartOptions> qpaStartOptions)
+    std::optional<QOhosStartOptionsData> qpaStartOptions)
 {
     return requestStartAbilityForResult(
         want, std::move(qpaStartOptions), optInstanceMainWindow, this,
@@ -350,7 +732,7 @@ void QOhosDefaultAbilityContextImpl::setDestroyFromSystemEnabled(bool destroyEna
     for (const auto &contextEntry : abilityContextsMap)
         instancesMainWindows.push_back(contextEntry.first);
 
-    QtOhos::getQOhosQpaFunctions().setDestroyAllowedFlagForAbilityInstances(instancesMainWindows, destroyEnabled);
+    setDestroyAllowedFlagForAbilityInstances(instancesMainWindows, destroyEnabled);
 }
 
 QByteArray QOhosDefaultAbilityContextImpl::startAbilityForResult(const QOhosWant &want)
@@ -379,26 +761,144 @@ QByteArray QOhosDefaultAbilityContextImpl::shareDataWithShareKit(
     return shareDataWithShareKitImpl(nullptr, records, controllerOptions);
 }
 
+bool startAbilityByTypeImpl(const QString &appType, const QJsonObject &wantParameters)
+{
+    // The call result of "context.startAbilityByType" will be synced and returned.
+    // However, the started ability result won't be synced here.
+    return QOhosJsThreadGateway::evalWithPromise<bool>(
+        [&](QOhosJsState &jsState, QOhosTaskPromise<bool> evalPromise) {
+            auto optQAbility = jsState.defaultQAbility();
+            if (!optQAbility.has_value()) {
+                evalPromise(false);
+                return;
+            }
+
+            auto thenCatchPromises = std::move(evalPromise).makeThenCatchBranches(Q_FUNC_INFO);
+            optQAbility.value().evalToPromiseOrRejectOnThrow(
+                "context.startAbilityByType(*)",
+                {
+                    appType.toStdString(),
+                    QOhosJsEnv::toNapiValue(jsState.env(), wantParameters),
+                    QNapi::makeObject(
+                        jsState.env(),
+                        {
+                            {
+                                "onResult",
+                                [](const QOhosCallbackInfo&) {
+                                    qOhosPrintfDebug("startAbilityByType: onResult called");
+                                }
+                            },
+                            {
+                                "onError",
+                                [](const QOhosCallbackInfo &cbInfo) {
+                                    QtOhos::logJsCallbackError(cbInfo, "startAbilityByType: onError called");
+                                }
+                            }
+                        })
+                })
+            .onThen(
+                [thenPromise = std::move(thenCatchPromises.first)](const QOhosCallbackInfo &) {
+                    thenPromise(true);
+                })
+            .onCatch(
+                [catchPromise = std::move(thenCatchPromises.second)](const QOhosCallbackInfo &cbInfo) {
+                    QtOhos::logJsCallbackError(cbInfo, "startAbilityByType: failed");
+                    catchPromise(false);
+                });
+        },
+        Q_FUNC_INFO);
+}
+
+bool tryOpenLinkImpl(QObject *optInstanceMainWindow, const QString &link, std::optional<bool> appLinkingOnly)
+{
+    if (optInstanceMainWindow != nullptr && qobject_cast<QWindow *>(optInstanceMainWindow) == nullptr)
+        qOhosReportFatalErrorAndAbort("%s: the main window argument is not a QWindow", Q_FUNC_INFO);
+
+    auto optInstanceMainWindowRef = optInstanceMainWindow != nullptr
+        ? std::make_optional(QtOhos::QObjectThreadSafeRef(optInstanceMainWindow))
+        : std::nullopt;
+
+    return QOhosJsThreadGateway::evalWithPromise<bool>(
+        [&](QOhosJsState &jsState, QOhosTaskPromise<bool> evalPromise) {
+            auto optUiAbility = optInstanceMainWindowRef.has_value()
+                ? jsState.tryGetQAbilityByQWindow(optInstanceMainWindowRef.value())
+                : jsState.defaultQAbility();
+            if (!optUiAbility.has_value()) {
+                evalPromise(false);
+                return;
+            }
+
+            std::vector<std::pair<std::string, QNapi::ValueWrapper>> openLinkOptions;
+            if (appLinkingOnly.has_value())
+                openLinkOptions.emplace_back("appLinkingOnly", appLinkingOnly.value());
+
+            auto thenCatchPromises = std::move(evalPromise).makeThenCatchBranches(Q_FUNC_INFO);
+            optUiAbility.value().evalToPromiseOrRejectOnThrow(
+                "context.openLink(*)",
+                {
+                    link.toStdString(),
+                    QNapi::makeObject(jsState.env(), openLinkOptions),
+                })
+            .onThen(
+                [thenPromise = std::move(thenCatchPromises.first)](const QOhosCallbackInfo &) {
+                    thenPromise(true);
+                })
+            .onCatch(
+                [catchPromise = std::move(thenCatchPromises.second)](const QOhosCallbackInfo &cbInfo) {
+                    QtOhos::logJsCallbackError(cbInfo, "Got error from openLink()");
+                    catchPromise(false);
+                });
+        },
+        Q_FUNC_INFO);
+}
+
+void setContinuationActiveImpl(QObject *optInstanceMainWindow, bool continuationActive)
+{
+    using ContinueState = QtOhos::enums::ohos::app::ability::AbilityConstant::ContinueState;
+
+    auto optInstanceMainWindowRef = optInstanceMainWindow != nullptr
+        ? std::make_optional(QtOhos::QObjectThreadSafeRef(optInstanceMainWindow))
+        : std::nullopt;
+
+    QOhosJsThreadGateway::invokeAndWaitForContinue(
+        [&](QOhosJsState &jsState, QOhosTaskPromise<> taskPromise) {
+            auto optUiAbility = optInstanceMainWindowRef.has_value()
+                ? jsState.tryGetQAbilityByQWindow(optInstanceMainWindowRef.value())
+                : jsState.defaultQAbility();
+            if (!optUiAbility.has_value()) {
+                taskPromise();
+                return;
+            }
+
+            auto continueState = continuationActive ? ContinueState::ACTIVE : ContinueState::INACTIVE;
+            optUiAbility.value().evalToPromiseOrRejectOnThrow(
+                "context.setMissionContinueState(*)", {jsState.mapOhosEnumToJs(continueState)})
+            .onCatch(QtOhos::makeErrorLoggingJsCallback("setMissionContinueState()"))
+            .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
+        },
+        Q_FUNC_INFO);
+}
+
 bool QOhosDefaultAbilityContextImpl::tryOpenLink(const QString &link)
 {
-    return QtOhos::getQOhosQpaFunctions().tryOpenLink(nullptr, link, {});
+    return tryOpenLinkImpl(nullptr, link, {});
 }
 
 bool QOhosDefaultAbilityContextImpl::tryOpenLink(const QString &link, const QOhosOpenLinkOptions &options)
 {
     const auto &optionsImpl = static_cast<const QOhosOpenLinkOptionsImpl &>(options);
-    return QtOhos::getQOhosQpaFunctions().tryOpenLink(nullptr, link, optionsImpl.appLinkingOnly());
+    return tryOpenLinkImpl(nullptr, link, optionsImpl.appLinkingOnly());
 }
 
 void QOhosDefaultAbilityContextImpl::setContinuationActive(bool continuationActive)
 {
-    QtOhos::getQOhosQpaFunctions().setAbilityContinuationActive(nullptr, continuationActive);
+    setContinuationActiveImpl(nullptr, continuationActive);
 }
 
 QOhosAbilityContextImpl::QOhosAbilityContextImpl(QWindow *instanceMainWindow)
     : m_instanceMainWindow(instanceMainWindow)
 {
-    QtOhos::getQOhosQpaFunctions().setOnContinueRequestsHandlerForAbilityInstanceWindow(
+    setOnContinueRequestsHandlerForAbilityInstanceWindow(
         instanceMainWindow,
         [self = QPointer<QOhosAbilityContextImpl>(this)](auto request, auto responseConsumer) {
             auto context = QSharedPointer<QOhosOnContinueContextImpl>::create(request.sourceApplicationVersionCode);
@@ -440,7 +940,7 @@ void QOhosAbilityContextImpl::setDestroyFromSystemEnabled(bool destroyEnabled)
         QtForOhos, "%s: setting destroyEnabled=%d for window %p",
         Q_FUNC_INFO, destroyEnabled, m_instanceMainWindow.data());
 
-    QtOhos::getQOhosQpaFunctions().setDestroyAllowedFlagForAbilityInstances(
+    setDestroyAllowedFlagForAbilityInstances(
         {m_instanceMainWindow.data()}, destroyEnabled);
 }
 
@@ -523,7 +1023,7 @@ QByteArray QOhosAbilityContextImpl::shareDataWithShareKit(
 */
 bool QOhosAbilityContextImpl::tryOpenLink(const QString &link)
 {
-    return QtOhos::getQOhosQpaFunctions().tryOpenLink(m_instanceMainWindow, link, {});
+    return tryOpenLinkImpl(m_instanceMainWindow, link, {});
 }
 
 /*!
@@ -537,7 +1037,7 @@ bool QOhosAbilityContextImpl::tryOpenLink(const QString &link)
 bool QOhosAbilityContextImpl::tryOpenLink(const QString &link, const QOhosOpenLinkOptions &options)
 {
     const auto &optionsImpl = static_cast<const QOhosOpenLinkOptionsImpl &>(options);
-    return QtOhos::getQOhosQpaFunctions().tryOpenLink(m_instanceMainWindow, link, optionsImpl.appLinkingOnly());
+    return tryOpenLinkImpl(m_instanceMainWindow, link, optionsImpl.appLinkingOnly());
 }
 
 /*!
@@ -550,23 +1050,59 @@ bool QOhosAbilityContextImpl::tryOpenLink(const QString &link, const QOhosOpenLi
 */
 void QOhosAbilityContextImpl::setContinuationActive(bool continuationActive)
 {
-    QtOhos::getQOhosQpaFunctions().setAbilityContinuationActive(m_instanceMainWindow, continuationActive);
+    setContinuationActiveImpl(m_instanceMainWindow, continuationActive);
 }
 
 QSharedPointer<QOhosOperationStatus> startAbilityImpl(
-    const QOhosWant &want, std::optional<QOhosQpaFunctions::StartOptions> qpaStartOptions)
+    const QOhosWant &want, std::optional<QOhosStartOptionsData> qpaStartOptions)
 {
-    bool success = QtOhos::getQOhosQpaFunctions().startAbility(
-        convertWantToJsonObject(want), std::move(qpaStartOptions));
+    auto wantJson = convertWantToJsonObject(want);
+    bool success = QOhosJsThreadGateway::eval(
+        [&](QOhosJsState &jsState) {
+            auto optMainUiAbility = jsState.defaultQAbility();
+            if (!optMainUiAbility.has_value())
+                return false;
+            auto mainUiAbility = optMainUiAbility.value();
+            if (mainUiAbility.IsEmpty())
+                return false;
+
+            auto arguments = std::vector<QNapi::ValueWrapper>{QOhosJsEnv::toNapiValue(jsState.env(), wantJson)};
+            if (qpaStartOptions.has_value())
+                arguments.push_back(convertStartOptionsToNapiObject(jsState, qpaStartOptions.value()));
+
+            mainUiAbility.call("context.startAbility", arguments);
+
+            // FIXME:
+            // * there should be error code taken from a call to JS `startAbility` function
+            // * error code should be checked and provided to the returned `operationStatus`
+            return true;
+        },
+        Q_FUNC_INFO);
     return createOperationStatus(success);
 }
 
 void startAppProcessImpl(
     const QString &processId, const QOhosWant &requestWant,
-    std::optional<QOhosQpaFunctions::StartOptions> qpaStartOptions)
+    std::optional<QOhosStartOptionsData> qpaStartOptions)
 {
-    QtOhos::getQOhosQpaFunctions().startAppProcess(
-        processId, convertWantToJsonObject(requestWant), std::move(qpaStartOptions));
+    auto requestWantJson = convertWantToJsonObject(requestWant);
+    QOhosJsThreadGateway::invokeAndWaitForContinue(
+        [&](QOhosJsState &jsState, QOhosTaskPromise<> taskPromise) {
+            auto startOptions = qpaStartOptions.has_value()
+                ? convertStartOptionsToNapiObject(jsState, qpaStartOptions.value())
+                : QNapi::Object();
+
+            auto sharedTaskPromise = QtOhos::moveToSharedPtr(std::move(taskPromise).makeChained(Q_FUNC_INFO));
+            jsState.startAppProcess(
+                processId.toStdString(),
+                QNapi::checkedCast<QNapi::Object>(
+                    QOhosJsEnv::toNapiValue(jsState.env(), requestWantJson)),
+                startOptions,
+                [sharedTaskPromise](QOhosJsState &) {
+                    (*sharedTaskPromise)();
+                });
+        },
+        Q_FUNC_INFO);
 }
 
 }
@@ -650,16 +1186,16 @@ void startAppProcessImpl(
 
 QOhosAbilityContext::QOhosAbilityContext()
 {
-    QtOhos::getQOhosQpaFunctions().addNewWantConsumer(
+    addNewWantConsumer(
         this,
         [this](QJsonObject jsonWant) {
             auto want = convertWantFromJsonObject(jsonWant);
             Q_EMIT newWantReceived(want);
         });
 
-    QtOhos::getQOhosQpaFunctions().addNewWantConsumer(
+    addNewWantConsumer(
         this,
-        [this](QSharedPointer<QOhosQpaFunctions::WantInfo> wantInfo) {
+        [this](QSharedPointer<detail::WantInfo> wantInfo) {
             Q_EMIT newWantInfoReceived(convertToOhosAppKitWantInfo(wantInfo));
         });
 }
@@ -781,7 +1317,7 @@ QSharedPointer<QOhosOperationStatus> startAbility(
 */
 QSharedPointer<QOhosOperationStatus> startAbilityByType(const QString &appType, const QJsonObject &wantParameters)
 {
-    bool success = QtOhos::getQOhosQpaFunctions().startAbilityByType(appType, wantParameters);
+    bool success = startAbilityByTypeImpl(appType, wantParameters);
     return createOperationStatus(success);
 }
 

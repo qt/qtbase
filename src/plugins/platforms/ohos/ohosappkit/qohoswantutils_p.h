@@ -15,9 +15,9 @@
 // We mean it.
 //
 
-#include "qohosqpafunctionspart1_p.h"
 #include <QtCore/qjsonobject.h>
 #include <QtCore/qsharedpointer.h>
+#include <QtOhosAppKit/private/qohoswantinfo_p.h>
 #include <QtOhosAppKit/qohoswant.h>
 
 QT_BEGIN_NAMESPACE
@@ -29,9 +29,9 @@ QJsonObject convertWantToJsonObject(const QOhosWant &want);
 QOhosWant convertWantFromJsonObject(const QJsonObject &jsonWant);
 
 QSharedPointer<QOhosWantInfo> convertToOhosAppKitWantInfo(
-    QSharedPointer<QtOhos::QOhosQpaFunctionsPart1::WantInfo> wantInfo);
+    QSharedPointer<detail::WantInfo> wantInfo);
 
-QSharedPointer<QtOhos::QOhosQpaFunctionsPart1::WantInfo> convertToQpaWantInfo(
+QSharedPointer<detail::WantInfo> convertToQpaWantInfo(
     QSharedPointer<QOhosWantInfo> wantInfo);
 
 }
