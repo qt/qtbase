@@ -156,9 +156,6 @@ public:
 
     QT_DEPRECATED virtual QNapi::Object getModule(const std::string &moduleName) = 0;
 
-    virtual QNapi::Object appLaunchWant() = 0;
-    virtual QOhosOptional<QNapi::Object> optAppLaunchParam() = 0;
-
     virtual std::shared_ptr<QAbilityPeer> defaultQAbilityPeer() = 0;
     virtual std::shared_ptr<QAbilityPeer> tryGetQAbilityPeerByInstanceId(const std::string &instanceId) = 0;
     virtual std::shared_ptr<QAbilityPeer> tryGetQAbilityPeerByInstance(QNapi::Object qAbility) = 0;
@@ -170,14 +167,6 @@ public:
         std::shared_ptr<QAbilityPeer> baseQAbilityPeer, QObjectThreadSafeRef qwindow,
         QNapi::Object optStartOptions,
         std::function<void(JsState &, std::shared_ptr<QAbilityPeer>)> startupNotifyFunc) = 0;
-
-    virtual void startAppProcess(
-        const std::string &processId, QNapi::Object requestWant,
-        QNapi::Object optStartOptions, std::function<void(JsState &)> continueFunc) = 0;
-
-    virtual void addNewWantConsumer(QOhosConsumer<JsState &, QNapi::Object, QNapi::Object> wantConsumer) = 0;
-
-    virtual void startNoUiChildProcess(const std::string &libraryName, const std::vector<std::string> &args) = 0;
 
     virtual QtRunMode qtRunMode() = 0;
 

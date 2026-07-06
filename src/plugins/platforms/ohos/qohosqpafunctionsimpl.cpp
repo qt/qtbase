@@ -79,7 +79,7 @@ std::optional<QOhosQpaFunctions::WantInfo::LaunchReason> tryMapOhosLaunchReasonT
 }
 
 QOhosQpaFunctions::WantInfo::LaunchReason mapJsLaunchReasonToWantInfoEnumWithFallback(
-    QtOhos::JsState &jsState, QNapi::Number jsLaunchReason)
+    QOhosJsState &jsState, QNapi::Number jsLaunchReason)
 {
     auto optLaunchReasonJsEnum =
         jsState.tryMapOhosEnumFromJs<enums::ohos::app::ability::AbilityConstant::LaunchReason>(jsLaunchReason);
@@ -1218,7 +1218,7 @@ void QOhosQpaFunctionsImpl::addNewWantConsumer(
     QtOhos::runInJsThreadAndWait(
         [&](auto &jsState) {
             jsState.addNewWantConsumer(
-                [contextRef, sharedWantConsumer](QtOhos::JsState &jsState, QNapi::Object napiWant, QNapi::Object launchParam) {
+                [contextRef, sharedWantConsumer](QOhosJsState &jsState, QNapi::Object napiWant, QNapi::Object launchParam) {
                     auto launchReason = mapJsLaunchReasonToWantInfoEnumWithFallback(
                         jsState, launchParam.get<QNapi::Number>("launchReason"));
                     auto wantInfo = QSharedPointer<WantInfoImpl>::create(napiWant, launchReason);
@@ -1247,7 +1247,7 @@ void QOhosQpaFunctionsImpl::startAppProcess(
                 QNapi::checkedCast<QNapi::Object>(
                     QOhosJsEnv::toNapiValue(jsState.env(), requestWant)),
                 startOptions,
-                [sharedTaskPromise](QtOhos::JsState &) {
+                [sharedTaskPromise](QOhosJsState &) {
                     (*sharedTaskPromise)();
                 });
     },
