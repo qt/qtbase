@@ -62,6 +62,7 @@ public:
     virtual QNapi::Object defaultUiContextOrEmpty() = 0;
 
     virtual std::optional<QNapi::Object> tryGetQAbilityByQWindow(QtOhos::QObjectThreadSafeRef qwindow) = 0;
+    virtual std::optional<QNapi::Object> defaultQAbility() = 0;
 
     virtual QNapi::Object appLaunchWant() = 0;
     virtual std::optional<QNapi::Object> optAppLaunchParam() = 0;
