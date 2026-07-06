@@ -20,7 +20,6 @@
 #include <memory>
 #include <qohosapppermissions_p.h>
 #include <qohosenums.h>
-#include <qohosjsmain.h>
 #include <qohosjsutils.h>
 #include <qohospixelmapconversions.h>
 #include <qohosplatformclipboard.h>
@@ -229,8 +228,6 @@ QNapi::Object makeJsCompletionHandler(
         });
 }
 
-using OhosConfigurationColorMode = QtOhos::enums::ohos::app::ability::ConfigurationConstant::ColorMode;
-
 QNapi::Object convertStartOptionsToNapiObject(
     QtOhos::JsState &jsState, const QOhosQpaFunctions::StartOptions &opts)
 {
@@ -304,57 +301,6 @@ QNapi::Object convertStartOptionsToNapiObject(
     }
 
     return napiOptions;
-}
-
-OhosConfigurationColorMode mapOhosConfigurationColorModeFromJs(QtOhos::JsState &jsState, QNapi::Number colorModeJsEnum)
-{
-    constexpr auto fallbackColorMode = OhosConfigurationColorMode::COLOR_MODE_NOT_SET;
-    auto optColorMode = jsState.tryMapOhosEnumFromJs<OhosConfigurationColorMode>(colorModeJsEnum);
-    return optColorMode.value_or(fallbackColorMode);
-};
-
-void setOhosConfigColorMode(OhosConfigurationColorMode colorMode)
-{
-    if (QtOhos::isOhosNoUiChildMode()) {
-        qCWarning(QtForOhos, "%s: cannot set a color mode in 'no UI child mode'", Q_FUNC_INFO);
-        return;
-    }
-
-    QtOhos::runInJsThreadAndWait(
-        [&](QtOhos::JsState &jsState) {
-            auto qAbility = jsState.defaultQAbilityPeer()->qAbility();
-            const auto jsColorMode = jsState.mapOhosEnumToJs(colorMode);
-            qAbility.call("context.getApplicationContext().setColorMode", {jsColorMode});
-        },
-        Q_FUNC_INFO);
-}
-
-QOhosSupplier<OhosConfigurationColorMode> makeOhosConfigColorModeDataSource(
-    QOhosConsumer<OhosConfigurationColorMode> valueChangedHandler)
-{
-    return makeOhosConfigValueDataSource<OhosConfigurationColorMode>(
-        [](QtOhos::JsState &jsState) {
-            return mapOhosConfigurationColorModeFromJs(
-                jsState, jsState.defaultQAbilityPeer()->qAbility().eval<QNapi::Number>("context.config.colorMode"));
-        },
-        [](QtOhos::JsState &jsState, const QNapi::Object &config) {
-            return mapOhosConfigurationColorModeFromJs(jsState, config.get<QNapi::Number>("colorMode"));
-        },
-        std::move(valueChangedHandler));
-}
-
-std::optional<bool> mapOhosConfigurationColorModeToDarkModeFlag(OhosConfigurationColorMode colorMode)
-{
-    switch (colorMode) {
-    case OhosConfigurationColorMode::COLOR_MODE_NOT_SET:
-        return {};
-    case OhosConfigurationColorMode::COLOR_MODE_LIGHT:
-        return false;
-    case OhosConfigurationColorMode::COLOR_MODE_DARK:
-        return true;
-    }
-
-    return {};
 }
 
 std::shared_ptr<char> makeSharedNullTerminatedString(std::string str)
@@ -895,11 +841,6 @@ public:
 
     void setDestroyAllowedFlagForAbilityInstances(
         std::vector<QObject *> instancesMainWindows, bool destroyEnabled) override;
-
-    void setOhosConfigDarkModeFlag(std::optional<bool> darkModeFlag) override;
-
-    QOhosSupplier<std::optional<bool>> makeOhosConfigDarkModeFlagDataSource(
-        QOhosConsumer<std::optional<bool>> darkModeFlagChangedHandler) override;
 
     QOhosSupplier<double> makeOhosConfigFontSizeScaleDataSource(
         QOhosConsumer<double> valueChangedHandler) override;
@@ -1467,29 +1408,6 @@ void QOhosQpaFunctionsImpl::setDestroyAllowedFlagForAbilityInstances(
             }
         },
         Q_FUNC_INFO);
-}
-
-void QOhosQpaFunctionsImpl::setOhosConfigDarkModeFlag(std::optional<bool> darkModeFlag)
-{
-    setOhosConfigColorMode(
-        darkModeFlag.has_value()
-            ? darkModeFlag.value()
-                ? OhosConfigurationColorMode::COLOR_MODE_DARK
-                : OhosConfigurationColorMode::COLOR_MODE_LIGHT
-            : OhosConfigurationColorMode::COLOR_MODE_NOT_SET);
-}
-
-QOhosSupplier<std::optional<bool>> QOhosQpaFunctionsImpl::makeOhosConfigDarkModeFlagDataSource(
-    QOhosConsumer<std::optional<bool>> darkModeFlagChangedHandler)
-{
-    auto colorModeDataSource = makeOhosConfigColorModeDataSource(
-        [darkModeFlagChangedHandler = std::move(darkModeFlagChangedHandler)](OhosConfigurationColorMode newColorMode) {
-            darkModeFlagChangedHandler(
-                mapOhosConfigurationColorModeToDarkModeFlag(newColorMode));
-        });
-    return [colorModeDataSource = std::move(colorModeDataSource)]() {
-        return mapOhosConfigurationColorModeToDarkModeFlag(colorModeDataSource());
-    };
 }
 
 QOhosSupplier<double> QOhosQpaFunctionsImpl::makeOhosConfigFontSizeScaleDataSource(

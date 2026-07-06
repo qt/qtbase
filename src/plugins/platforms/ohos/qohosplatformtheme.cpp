@@ -14,7 +14,9 @@
 #include <QtGui/private/qhighdpiscaling_p.h>
 #include <QtGui/private/qabstractfileiconengine_p.h>
 #include <initializer_list>
-#include <qohosqpafunctions_p.h>
+#include <qohosenums.h>
+#include <qohosjsmain.h>
+#include <qohosjsutils.h>
 #include <qohosutils.h>
 #include <qpa/qplatformfontdatabase.h>
 #include <qpa/qplatformintegration.h>
@@ -805,6 +807,59 @@ Qt::ColorScheme mapOhosThemeToColorScheme(
     }
 }
 
+using OhosConfigurationColorMode = QtOhos::enums::ohos::app::ability::ConfigurationConstant::ColorMode;
+
+OhosConfigurationColorMode mapOhosConfigurationColorModeFromJs(QtOhos::JsState &jsState, QNapi::Number colorModeJsEnum)
+{
+    constexpr auto fallbackColorMode = OhosConfigurationColorMode::COLOR_MODE_NOT_SET;
+    auto optColorMode = jsState.tryMapOhosEnumFromJs<OhosConfigurationColorMode>(colorModeJsEnum);
+    return optColorMode.value_or(fallbackColorMode);
+};
+
+void setOhosConfigColorMode(OhosConfigurationColorMode colorMode)
+{
+    if (QtOhos::isOhosNoUiChildMode()) {
+        qCWarning(QtForOhos, "%s: cannot set a color mode in 'no UI child mode'", Q_FUNC_INFO);
+        return;
+    }
+
+    QtOhos::runInJsThreadAndWait(
+        [&](QtOhos::JsState &jsState) {
+            auto qAbility = jsState.defaultQAbilityPeer()->qAbility();
+            const auto jsColorMode = jsState.mapOhosEnumToJs(colorMode);
+            qAbility.call("context.getApplicationContext().setColorMode", {jsColorMode});
+        },
+        Q_FUNC_INFO);
+}
+
+QOhosSupplier<OhosConfigurationColorMode> makeOhosConfigColorModeDataSource(
+    QOhosConsumer<OhosConfigurationColorMode> valueChangedHandler)
+{
+    return QtOhos::makeOhosConfigValueDataSource<OhosConfigurationColorMode>(
+        [](QtOhos::JsState &jsState) {
+            return mapOhosConfigurationColorModeFromJs(
+                jsState, jsState.defaultQAbilityPeer()->qAbility().eval<QNapi::Number>("context.config.colorMode"));
+        },
+        [](QtOhos::JsState &jsState, const QNapi::Object &config) {
+            return mapOhosConfigurationColorModeFromJs(jsState, config.get<QNapi::Number>("colorMode"));
+        },
+        std::move(valueChangedHandler));
+}
+
+std::optional<bool> mapOhosConfigurationColorModeToDarkModeFlag(OhosConfigurationColorMode colorMode)
+{
+    switch (colorMode) {
+    case OhosConfigurationColorMode::COLOR_MODE_NOT_SET:
+        return {};
+    case OhosConfigurationColorMode::COLOR_MODE_LIGHT:
+        return false;
+    case OhosConfigurationColorMode::COLOR_MODE_DARK:
+        return true;
+    }
+
+    return {};
+}
+
 QOhosOptional<QPixmap> tryGetFilePixmapByResourceObject(QtOhos::JsState &jsState, QNapi::Object resource)
 {
     std::string undocumentedParamsPropertyName("params");
@@ -923,16 +978,24 @@ QOhosPlatformTheme::QOhosPlatformTheme()
         })
     , m_wheelScrollLines(defaultWheelScrollLines)
 {
-    m_ohosConfigDarkModeFlagSupplier = QtOhos::getQOhosQpaFunctions().makeOhosConfigDarkModeFlagDataSource(
+    auto colorModeDataSource = makeOhosConfigColorModeDataSource(
         [](auto) {
             QWindowSystemInterface::handleThemeChange<QWindowSystemInterface::SynchronousDelivery>();
         });
+    m_ohosConfigDarkModeFlagSupplier = [colorModeDataSource = std::move(colorModeDataSource)]() {
+        return mapOhosConfigurationColorModeToDarkModeFlag(colorModeDataSource());
+    };
 }
 
 void QOhosPlatformTheme::requestColorScheme(Qt::ColorScheme scheme)
 {
     QOhosOptional<bool> isDarkMode = mapOhosThemeFromColorScheme(scheme);
-    QtOhos::getQOhosQpaFunctions().setOhosConfigDarkModeFlag(isDarkMode);
+    setOhosConfigColorMode(
+        isDarkMode.has_value()
+            ? isDarkMode.value()
+                ? OhosConfigurationColorMode::COLOR_MODE_DARK
+                : OhosConfigurationColorMode::COLOR_MODE_LIGHT
+            : OhosConfigurationColorMode::COLOR_MODE_NOT_SET);
 }
 
 Qt::ColorScheme QOhosPlatformTheme::colorScheme() const

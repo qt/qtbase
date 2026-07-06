@@ -315,11 +315,6 @@ public:
     virtual void setDestroyAllowedFlagForAbilityInstances(
         std::vector<QObject *> instancesMainWindows, bool destroyEnabled) = 0;
 
-    virtual void setOhosConfigDarkModeFlag(std::optional<bool> darkModeFlag) = 0;
-
-    virtual QOhosSupplier<std::optional<bool>> makeOhosConfigDarkModeFlagDataSource(
-        QOhosConsumer<std::optional<bool>> darkModeFlagChangedHandler) = 0;
-
     virtual QOhosSupplier<double> makeOhosConfigFontSizeScaleDataSource(
         QOhosConsumer<double> valueChangedHandler) = 0;
 
