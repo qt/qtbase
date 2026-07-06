@@ -275,6 +275,21 @@
     if (!m_platformWindow)
         return;
 
+    auto *qtMetalLayer = qt_objc_cast<QMetalLayer *>(layer);
+
+    if (qtMetalLayer) {
+        // Once we're done with display, even if we exit early below, we need to
+        // unlock the display lock. But we must wait to unlock the display lock
+        // until the display cycle finishes, as otherwise the render thread may
+        // step in and present before the transaction commits. The display lock
+        // is recursive, so setNeedsDisplay can be safely called in the meantime
+        // without any issue.
+        QMetaObject::invokeMethod(m_platformWindow, [qtMetalLayer]{
+            qCDebug(lcMetalLayer) << "Unlocking" << qtMetalLayer << "after finishing display-cycle";
+            qtMetalLayer.displayLock.unlock();
+        }, Qt::QueuedConnection);
+    }
+
     if (!NSThread.isMainThread) {
         // Qt is calling AppKit APIs such as -[NSOpenGLContext setView:] on secondary threads,
         // which we shouldn't do. This may result in AppKit (wrongly) triggering a display on
@@ -308,7 +323,7 @@
         m_platformWindow->handleExposeEvent(bounds);
     };
 
-    if (auto *qtMetalLayer = qt_objc_cast<QMetalLayer*>(layer)) {
+    if (qtMetalLayer) {
         const bool presentedWithTransaction = qtMetalLayer.presentsWithTransaction;
         qtMetalLayer.presentsWithTransaction = YES;
 
@@ -333,16 +348,6 @@
         }
 
         qtMetalLayer.presentsWithTransaction = presentedWithTransaction;
-
-        // We're done presenting, but we must wait to unlock the display lock
-        // until the display cycle finishes, as otherwise the render thread may
-        // step in and present before the transaction commits. The display lock
-        // is recursive, so setNeedsDisplay can be safely called in the meantime
-        // without any issue.
-        QMetaObject::invokeMethod(m_platformWindow, [qtMetalLayer]{
-            qCDebug(lcMetalLayer) << "Unlocking" << qtMetalLayer << "after finishing display-cycle";
-            qtMetalLayer.displayLock.unlock();
-        }, Qt::QueuedConnection);
     } else {
         handleExposeEvent();
     }
