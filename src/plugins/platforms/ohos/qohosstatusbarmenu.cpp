@@ -19,7 +19,7 @@ namespace {
 std::shared_ptr<void> registerOhosRightMenuClickListener(
     QtOhos::JsState &jsState, QOhosConsumer<std::string> clickedMenuCodeConsumer)
 {
-   return QtOhos::registerOnOffMethodsBasedEventHandler(
+   return registerQOhosOnOffMethodsBasedEventHandler(
        jsState.eval<QNapi::Object>("@kit.StatusBarExtensionKit.statusBarManager"),
        "rightMenuClick",
        [clickedMenuCodeConsumer = std::move(clickedMenuCodeConsumer)](const QtOhos::CallbackInfo &info) {

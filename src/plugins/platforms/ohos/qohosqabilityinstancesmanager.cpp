@@ -321,7 +321,7 @@ QUiAbilityPeerImpl::QUiAbilityPeerImpl(
     }
     m_launchParam = QNapi::Reference<>::makePersistentFrom(optLaunchParam);
 
-    m_windowWillCloseCallbackHandle = registerOnOffMethodsBasedEventHandler(
+    m_windowWillCloseCallbackHandle = registerQOhosOnOffMethodsBasedEventHandler(
         window(), "windowWillClose",
         [this](const CallbackInfo &cbInfo) {
             JsState &jsState = cbInfo.jsState();

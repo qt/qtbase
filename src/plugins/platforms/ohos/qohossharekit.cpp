@@ -149,7 +149,7 @@ QNapi::Object makeShareKitControllerOptionsObject(
 std::shared_ptr<void> registerOnOffShareCompletedEventHandler(
     QNapi::Object shareController, QOhosConsumer<ShareOperationResult> shareCompletedCallback)
 {
-    return QtOhos::registerOnOffMethodsBasedEventHandler(
+    return registerQOhosOnOffMethodsBasedEventHandler(
         shareController, "shareCompleted",
         [shareCompletedCallback = std::move(shareCompletedCallback)](const QtOhos::CallbackInfo &cbInfo) {
             const auto shareOperationResult = cbInfo.getFirstArg<QNapi::Object>(Q_FUNC_INFO);
@@ -206,7 +206,7 @@ void shareDataImpl(
 
     auto callbacksHandle = QtOhos::moveToSharedPtr(
         std::vector<std::shared_ptr<void>>{
-            QtOhos::registerOnOffMethodsBasedEventHandler(
+            registerQOhosOnOffMethodsBasedEventHandler(
                 controller, "dismiss", std::move(panelClosedCallback)),
             registerOnOffShareCompletedEventHandler(controller, std::move(shareCompletedCallback)),
         });

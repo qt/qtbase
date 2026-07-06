@@ -55,7 +55,7 @@ QNapi::Object getContextForStatusBarManager(QtOhos::JsState &jsState)
 std::shared_ptr<void> registerOhosIconLeftClickListener(
     QtOhos::JsState &jsState, std::function<void()> leftClickListener)
 {
-    return QtOhos::registerOnOffMethodsBasedEventHandler(
+    return registerQOhosOnOffMethodsBasedEventHandler(
         jsState.eval<QNapi::Object>("@kit.StatusBarExtensionKit.statusBarManager"),
         "statusBarIconClick",
         [leftClickListener = std::move(leftClickListener)](const QtOhos::CallbackInfo &cbInfo) {

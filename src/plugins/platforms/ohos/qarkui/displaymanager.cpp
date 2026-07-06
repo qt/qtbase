@@ -74,7 +74,7 @@ void QOhosDisplayManager::registerDisplayCallbackListener(
     QOhosConsumer<QtOhos::JsState &, JsDisplayId> handleFunction)
 {
     m_destroyNotifiers.push_back(
-        QtOhos::registerOnOffMethodsBasedEventHandler(
+        registerQOhosOnOffMethodsBasedEventHandler(
             displayModule, eventName,
             [handleFunction = std::move(handleFunction)](const QtOhos::CallbackInfo &cbInfo) {
                 auto changedDisplayIdValue = cbInfo.getFirstArg<QNapi::Number>(Q_FUNC_INFO);
@@ -98,7 +98,7 @@ bool QOhosDisplayManager::tryRegisterDisplay(
     if (displayInfo.shouldIgnoreDisplay())
         return false;
 
-    auto availableAreaChangeHandle = QtOhos::registerOnOffMethodsBasedEventHandler(
+    auto availableAreaChangeHandle = registerQOhosOnOffMethodsBasedEventHandler(
         optDisplay.value(),
         "availableAreaChange",
         [this, displayId](const QtOhos::CallbackInfo &cbInfo) {
