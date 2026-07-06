@@ -280,6 +280,11 @@ int main(int argc, char **argv)
     timestampFilePathOption.setValueName(QStringLiteral("timestamp file"));
     parser.addOption(timestampFilePathOption);
 
+    QCommandLineOption debugOption(QStringLiteral("debug"));
+    debugOption.setDescription(
+            QStringLiteral("Print verbose diagnostics to stderr."));
+    parser.addOption(debugOption);
+
     QStringList arguments = QCoreApplication::arguments();
     parser.process(arguments);
 
@@ -290,21 +295,50 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
+    const bool debug = parser.isSet(debugOption);
+
     // Read source files from AutogenInfo.json
     AutoGenHeaderMap autoGenHeaders;
     AutoGenSourcesList autoGenSources;
     QStringList headerExtList;
+    const QString cmakeAutogenInfoFile = parser.value(cmakeAutogenInfoFileOption);
+    const QString cmakeAutogenCacheFile = parser.value(cmakeAutogenCacheFileOption);
+
+    if (debug)
+        fprintf(stderr, "Parsing %s\n", qUtf8Printable(cmakeAutogenInfoFile));
     if (!readAutogenInfoJson(autoGenHeaders, autoGenSources, headerExtList,
-                             parser.value(cmakeAutogenInfoFileOption))) {
+                             cmakeAutogenInfoFile)) {
+        if (debug)
+            fprintf(stderr, "Failed to read AutogenInfo.json file: %s\n",
+                    qUtf8Printable(cmakeAutogenInfoFile));
         return EXIT_FAILURE;
     }
 
+    if (debug)
+        fprintf(stderr, "Parsing %s\n", qUtf8Printable(cmakeAutogenCacheFile));
+
     ParseCacheMap parseCacheEntries;
-    if (!readParseCache(parseCacheEntries, parser.value(cmakeAutogenCacheFileOption))) {
+    if (!readParseCache(parseCacheEntries, cmakeAutogenCacheFile)) {
+        if (debug)
+            fprintf(stderr, "Failed to read parse cache file: %s\n",
+                    qUtf8Printable(cmakeAutogenCacheFile));
         return EXIT_FAILURE;
     }
 
     const QString cmakeIncludeDir = parser.value(cmakeAutogenIncludeDirOption);
+
+    if (debug) {
+        fprintf(stderr, "AutoGen include dir: %s\n", qUtf8Printable(cmakeIncludeDir));
+        fprintf(stderr, "%lld header(s) from AutogenInfo.json (path -> moc file location if not "
+                        "included by a source):\n",
+                static_cast<long long>(autoGenHeaders.size()));
+        for (auto it = autoGenHeaders.cbegin(); it != autoGenHeaders.cend(); ++it)
+            fprintf(stderr, "    %s -> %s\n", qUtf8Printable(it.key()), qUtf8Printable(it.value()));
+        fprintf(stderr, "%lld source(s) from AutogenInfo.json:\n",
+                static_cast<long long>(autoGenSources.size()));
+        for (const auto &source : autoGenSources)
+            fprintf(stderr, "    %s\n", qUtf8Printable(source));
+    }
 
     // Algorithm description
     // 1) For each source from the AutoGenSources list check if there is a parse
@@ -323,39 +357,79 @@ int main(int argc, char **argv)
     jsonFileList.reserve(autoGenSources.size());
 
     // 1) Process sources
+    if (debug)
+        fprintf(stderr, "Processing %lld source(s)\n",
+                static_cast<long long>(autoGenSources.size()));
     for (const auto &source : autoGenSources) {
         auto it = parseCacheEntries.find(source);
         if (it == parseCacheEntries.end()) {
+            if (debug)
+                fprintf(stderr, "  source %s: no parse cache entry, skipping\n",
+                        qUtf8Printable(source));
             continue;
         }
 
         const QFileInfo fileInfo(source);
         const QString base = fileInfo.path() + fileInfo.completeBaseName();
+
+        if (debug) {
+            fprintf(stderr, "  source: %s base path: %s\n", qUtf8Printable(source),
+                    qUtf8Printable(base));
+        }
+
         // 1a) erase header
+        bool headerErased = false;
         for (const auto &ext : headerExtList) {
             const QString headerPath = base + u'.' + ext;
             auto it = autoGenHeaders.find(headerPath);
             if (it != autoGenHeaders.end()) {
+                if (debug)
+                    fprintf(stderr,
+                            "    1a) removed header %s from processing (matched source base "
+                            "path)\n",
+                            qUtf8Printable(headerPath));
                 autoGenHeaders.erase(it);
+                headerErased = true;
                 break;
             }
         }
+        if (debug && !headerErased)
+                fprintf(stderr, "    1a) no header matched base path %s, continuing\n",
+                        qUtf8Printable(base));
+
         // Add extra moc files
-        for (const auto &mocFile : it.value().mocFiles)
-            jsonFileList.push_back(dir.filePath(mocFile) + ".json"_L1);
+        for (const auto &mocFile : it.value().mocFiles) {
+            const QString jsonPath = dir.filePath(mocFile) + ".json"_L1;
+            if (debug)
+                fprintf(stderr, "    mid: %s -> adding %s\n", qUtf8Printable(mocFile),
+                        qUtf8Printable(jsonPath));
+            jsonFileList.push_back(jsonPath);
+        }
         // Add main moc files
         for (const auto &mocFile : it.value().mocIncludes) {
-            jsonFileList.push_back(dir.filePath(mocFile) + ".json"_L1);
+            const QString jsonPath = dir.filePath(mocFile) + ".json"_L1;
+            if (debug)
+                fprintf(stderr, "    miu: %s -> adding %s\n", qUtf8Printable(mocFile),
+                        qUtf8Printable(jsonPath));
+            jsonFileList.push_back(jsonPath);
             // 1b) Locate this header and delete it
             constexpr int mocKeyLen = 4; // length of "moc_"
             const QString headerBaseName =
                     QFileInfo(mocFile.right(mocFile.size() - mocKeyLen)).completeBaseName();
+            if (debug)
+                fprintf(stderr, "    1b) derived header base name '%s' from moc include '%s'\n",
+                        qUtf8Printable(headerBaseName), qUtf8Printable(mocFile));
             bool breakFree = false;
             for (auto &ext : headerExtList) {
                 const QString headerSuffix = headerBaseName + u'.' + ext;
                 for (auto it = autoGenHeaders.begin(); it != autoGenHeaders.end(); ++it) {
                     if (it.key().endsWith(headerSuffix)
                         && QFileInfo(it.key()).completeBaseName() == headerBaseName) {
+                        if (debug)
+                            fprintf(stderr,
+                                    "    1b) removed header %s from processing (matched moc "
+                                    "include base name '%s')\n",
+                                    qUtf8Printable(it.key()), qUtf8Printable(headerBaseName));
                         autoGenHeaders.erase(it);
                         breakFree = true;
                         break;
@@ -365,25 +439,45 @@ int main(int argc, char **argv)
                     break;
                 }
             }
+            if (!breakFree && debug) {
+                fprintf(stderr, "    1b) no header matched base name %s, continuing\n",
+                        qUtf8Printable(headerBaseName));
+            }
         }
     }
 
     // 2) Process headers
+    if (debug)
+        fprintf(stderr, "Processing %lld remaining header(s)\n",
+                static_cast<long long>(autoGenHeaders.size()));
     const bool isMultiConfig = parser.isSet(isMultiConfigOption);
     for (auto mapIt = autoGenHeaders.begin(); mapIt != autoGenHeaders.end(); ++mapIt) {
         auto it = parseCacheEntries.find(mapIt.key());
         if (it == parseCacheEntries.end()) {
+            if (debug)
+                fprintf(stderr, "  header %s: no parse cache entry, skipping\n",
+                        qUtf8Printable(mapIt.key()));
             continue;
         }
         const QString pathPrefix = !isMultiConfig
             ? QStringLiteral("../")
             : QString();
         const QString jsonPath = dir.filePath(pathPrefix + mapIt.value() + ".json"_L1);
+        if (debug)
+            fprintf(stderr, "  header %s:\n    adding %s\n", qUtf8Printable(mapIt.key()),
+                    qUtf8Printable(jsonPath));
         jsonFileList.push_back(jsonPath);
     }
 
     // Sort for consistent checks across runs
     jsonFileList.sort();
+
+    if (debug) {
+        fprintf(stderr, "Final metatypes json file list (%lld entries):\n",
+                static_cast<long long>(jsonFileList.size()));
+        for (const auto &jsonFile : jsonFileList)
+            fprintf(stderr, "    %s\n", qUtf8Printable(jsonFile));
+    }
 
     // Read Previous file list (if any)
     if (!writeJsonFiles(jsonFileList, parser.value(outputFileOption),
