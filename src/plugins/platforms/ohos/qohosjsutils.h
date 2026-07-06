@@ -6,12 +6,12 @@
 
 #include <QtCore/private/qnapi_p.h>
 #include <QtCore/private/qohoscommon_p.h>
+#include <QtCore/private/qohosjstools_p.h>
 #include <QtCore/qglobal.h>
 #include <chrono>
 #include <cstdint>
 #include <functional>
 #include <memory>
-#include <optional>
 #include <qohosplugincore.h>
 #include <qohosutils.h>
 #include <string>
@@ -23,22 +23,10 @@ QT_BEGIN_NAMESPACE
 
 namespace QtOhos {
 
-struct OnOffMethodsBasedEventHandlerOptions
-{
-    std::function<bool(QNapi::Object)> optEventSourceAliveCheckFunc;
-    std::optional<QNapi::ValueWrapper> extraOnArg;
-    std::optional<QNapi::ValueWrapper> extraOffArg;
-    std::function<void(const Napi::Error &)> optOnCallExceptionHandler;
-};
-
 template<typename T>
 QNapi::Promise adaptAsyncCallResultToJsPromise(
     JsState &jsState, std::function<QNapi::Value(JsState &, T)> promiseValueFactory,
     const QOhosConsumer<JsState &, QOhosConsumer<JsState &, T>> &asyncCallFunc);
-
-std::shared_ptr<void> registerOnOffMethodsBasedEventHandler(
-    QNapi::Object eventSourceObject, const std::string &eventTypeName,
-    QNapi::CallbackFuncWrapper handler, OnOffMethodsBasedEventHandlerOptions options = {});
 
 Q_REQUIRED_RESULT std::shared_ptr<void> startDelayedJsThreadTask(
     JsState &jsState, std::function<void(JsState &)> task,
@@ -68,11 +56,6 @@ bool runIgnoringJsBusinessError(
     JsState &, std::uint32_t suppressedErrorCode, const char *callerContextName,
     const std::function<void()> &action);
 
-// Creates a Data Source: an object tracking a value owned by a JS object and mirrored
-// onto a caller-chosen target thread. The returned supplier keeps it alive and yields
-// the current value; valueChangedHandler is called on each change. Value updates and the
-// handler are dispatched onto the target thread via targetThreadExecutor. The two
-// std::function parameters provide the JS-thread-side implementation building blocks.
 template<typename T>
 QOhosSupplier<T> makeDataSource(
     std::function<T(JsState &)> initialValueReader,
@@ -115,37 +98,17 @@ QOhosSupplier<T> makeDataSource(
     QOhosConsumer<std::function<void()>> targetThreadExecutor,
     std::string callerContextName)
 {
-    struct Context {
-        QOhosConsumer<T> valueChangedHandler;
-        T currentValue;
-        std::shared_ptr<void> changeListenerHandle;
-    };
-
-    auto context = evalInJsThread(
-        [&](JsState &jsState) {
-            auto context = std::make_shared<Context>();
-            context->valueChangedHandler = std::move(valueChangedHandler);
-            context->currentValue = initialValueReader(jsState);
-            context->changeListenerHandle = makeProxyWithJsThreadDeleter(
-                changeListenerFactory(
-                    jsState,
-                    [weakContext = makeWeakPtr(context), targetThreadExecutor = std::move(targetThreadExecutor)](T newValue) {
-                        targetThreadExecutor(
-                            [weakContext, newValue = std::move(newValue)]() mutable {
-                                auto context = weakContext.lock();
-                                if (context && newValue != context->currentValue) {
-                                    context->currentValue = std::move(newValue);
-                                    context->valueChangedHandler(context->currentValue);
-                                }
-                            });
-                    }));
-            return context;
+    return makeQOhosDataSource<T>(
+        [initialValueReader = std::move(initialValueReader)](QOhosJsState &jsState) {
+            return initialValueReader(static_cast<JsState &>(jsState));
         },
+        [changeListenerFactory = std::move(changeListenerFactory)](
+            QOhosJsState &jsState, QOhosConsumer<T> valueUpdatesConsumer) {
+            return changeListenerFactory(static_cast<JsState &>(jsState), std::move(valueUpdatesConsumer));
+        },
+        std::move(valueChangedHandler),
+        std::move(targetThreadExecutor),
         std::move(callerContextName));
-
-    return [context]() {
-        return context->currentValue;
-    };
 }
 
 namespace details_qohosjsutils_h {

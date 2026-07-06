@@ -1423,7 +1423,7 @@ std::shared_ptr<void> QOhosWindowProxy::JsScopeData::registerEventListener(
     std::weak_ptr<JsScopeData> weakSelf = shared_from_this();
     bool ignoreWhenAbilityIsTerminating = !eventHandlerFlags.testFlag(EventHandlerFlagBits::allowCallWhenAbilityIsTerminating);
 
-    return QtOhos::registerOnOffMethodsBasedEventHandler(
+    return registerQOhosOnOffMethodsBasedEventHandler(
         jsWindowRef->jsObject(), eventName,
         [weakSelf, handleFunction, eventName, ignoreWhenAbilityIsTerminating](const QtOhos::CallbackInfo &cbInfo) {
             auto self = weakSelf.lock();
@@ -1481,7 +1481,7 @@ std::shared_ptr<void> QOhosWindowProxy::JsScopeData::registerSubWindowCloseHandl
     QtOhos::JsState &, std::function<bool()> handler)
 {
     auto weakSelf = QtOhos::makeWeakPtr(shared_from_this());
-    return QtOhos::registerOnOffMethodsBasedEventHandler(
+    return registerQOhosOnOffMethodsBasedEventHandler(
         jsWindowRef->jsObject(), "subWindowClose",
         [weakSelf, handler = std::move(handler)](const QtOhos::CallbackInfo &cbInfo) {
             bool deferClose = handler();
