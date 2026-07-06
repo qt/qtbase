@@ -645,12 +645,12 @@ void requestSerialPortAccessRightJsImpl(
         "@ohos.usbManager.serial.requestSerialRight(*)", {serialPortId})
     .withContext(std::move(resultConsumer))
     .onThenWithContext(
-        [](const QtOhos::CallbackInfo &cbInfo, auto &resultConsumer) {
+        [](const QOhosCallbackInfo &cbInfo, auto &resultConsumer) {
             bool granted = cbInfo.getFirstArg<QNapi::Boolean>(Q_FUNC_INFO);
             resultConsumer(granted);
         })
     .onCatchWithContext(
-        [](const QtOhos::CallbackInfo &cbInfo, auto &resultConsumer) {
+        [](const QOhosCallbackInfo &cbInfo, auto &resultConsumer) {
             QtOhos::logJsCallbackError(
                 cbInfo, "@ohos.usbManager.serial.requestSerialRight() failed");
             resultConsumer(false);
@@ -723,7 +723,7 @@ std::optional<QList<QOhosQpaFunctions::ShareKit::SharedRecord>> WantInfoImpl::tr
             jsState.evalToPromiseOrRejectOnThrow(
                 "@kit.ShareKit.systemShare.getSharedData(*)", {m_jsScopeData->want.Value()})
             .onThen(
-                [thenPromise = std::move(thenCatchPromises.first)](const QtOhos::CallbackInfo &cbInfo) {
+                [thenPromise = std::move(thenCatchPromises.first)](const QOhosCallbackInfo &cbInfo) {
                     QNapi::Object sharedData = cbInfo.getFirstArg<QNapi::Object>(Q_FUNC_INFO);
 
                     auto optRecords = QNapi::getArrayElements<QList<std::optional<SharedRecord>>, QNapi::Object>(
@@ -745,7 +745,7 @@ std::optional<QList<QOhosQpaFunctions::ShareKit::SharedRecord>> WantInfoImpl::tr
                     thenPromise(records);
                 })
             .onCatch(
-                [catchPromise = std::move(thenCatchPromises.second)](const QtOhos::CallbackInfo &cbInfo) {
+                [catchPromise = std::move(thenCatchPromises.second)](const QOhosCallbackInfo &cbInfo) {
                     QtOhos::logJsCallbackError(cbInfo, "@kit.ShareKit.systemShare.getSharedData() failed");
                     catchPromise({});
                 });
@@ -763,7 +763,7 @@ std::optional<QOhosQpaFunctions::WantInfo::ContactInfo> WantInfoImpl::tryGetCont
             jsState.evalToPromiseOrRejectOnThrow(
                 "@kit.ShareKit.systemShare.getContactInfo(*)", {m_jsScopeData->want.Value()})
             .onThen(
-                [thenPromise = std::move(thenCatchPromises.first)](const QtOhos::CallbackInfo &cbInfo) {
+                [thenPromise = std::move(thenCatchPromises.first)](const QOhosCallbackInfo &cbInfo) {
                     auto contactInfoObj = cbInfo.getFirstArg<QNapi::Object>(Q_FUNC_INFO);
                     ContactInfo contactInfo = {
                         .contactType = QString::fromStdString(
@@ -774,7 +774,7 @@ std::optional<QOhosQpaFunctions::WantInfo::ContactInfo> WantInfoImpl::tryGetCont
                     thenPromise(contactInfo);
                 })
             .onCatch(
-                [catchPromise = std::move(thenCatchPromises.second)](const QtOhos::CallbackInfo &cbInfo) {
+                [catchPromise = std::move(thenCatchPromises.second)](const QOhosCallbackInfo &cbInfo) {
                     QtOhos::logJsCallbackError(cbInfo, "@kit.ShareKit.systemShare.getContactInfo() failed");
                     catchPromise({});
                 });
@@ -1308,24 +1308,24 @@ bool QOhosQpaFunctionsImpl::startAbilityByType(const QString &appType, const QJs
                         {
                             {
                                 "onResult",
-                                [](const QtOhos::CallbackInfo&) {
+                                [](const QOhosCallbackInfo&) {
                                     qOhosPrintfDebug("startAbilityByType: onResult called");
                                 }
                             },
                             {
                                 "onError",
-                                [](const QtOhos::CallbackInfo &cbInfo) {
+                                [](const QOhosCallbackInfo &cbInfo) {
                                     QtOhos::logJsCallbackError(cbInfo, "startAbilityByType: onError called");
                                 }
                             }
                         })
                 })
             .onThen(
-                [thenPromise = std::move(thenCatchPromises.first)](const QtOhos::CallbackInfo &) {
+                [thenPromise = std::move(thenCatchPromises.first)](const QOhosCallbackInfo &) {
                     thenPromise(true);
                 })
             .onCatch(
-                [catchPromise = std::move(thenCatchPromises.second)](const QtOhos::CallbackInfo &cbInfo) {
+                [catchPromise = std::move(thenCatchPromises.second)](const QOhosCallbackInfo &cbInfo) {
                     QtOhos::logJsCallbackError(cbInfo, "startAbilityByType: failed");
                     catchPromise(false);
                 });
@@ -1374,7 +1374,7 @@ void QOhosQpaFunctionsImpl::startAbilityForResult(
 
             optUiAbility.value().evalToPromiseOrRejectOnThrow("context.startAbilityForResult(*)", arguments)
             .onThen(
-                [context](const QtOhos::CallbackInfo &cbInfo) {
+                [context](const QOhosCallbackInfo &cbInfo) {
                     QNapi::Object abilityResult = cbInfo.getFirstArg<QNapi::Object>(Q_FUNC_INFO);
                     int resultCode = abilityResult.get<QNapi::Number>("resultCode");
 
@@ -1393,7 +1393,7 @@ void QOhosQpaFunctionsImpl::startAbilityForResult(
                         });
                 })
             .onCatch(
-                [context](const QtOhos::CallbackInfo &cbInfo) {
+                [context](const QOhosCallbackInfo &cbInfo) {
                     QtOhos::logJsCallbackError(cbInfo, "Got error from startAbilityForResult()");
                     context->resultConsumerQtContextRef.visitInQtThreadIfAlive(
                         [context](auto &) {
@@ -1784,11 +1784,11 @@ bool QOhosQpaFunctionsImpl::tryOpenLink(QObject *optInstanceMainWindow, const QS
                     QNapi::makeObject(jsState.env(), openLinkOptions),
                 })
             .onThen(
-                [thenPromise = std::move(thenCatchPromises.first)](const QtOhos::CallbackInfo &) {
+                [thenPromise = std::move(thenCatchPromises.first)](const QOhosCallbackInfo &) {
                     thenPromise(true);
                 })
             .onCatch(
-                [catchPromise = std::move(thenCatchPromises.second)](const QtOhos::CallbackInfo &cbInfo) {
+                [catchPromise = std::move(thenCatchPromises.second)](const QOhosCallbackInfo &cbInfo) {
                     QtOhos::logJsCallbackError(cbInfo, "Got error from openLink()");
                     catchPromise(false);
                 });
