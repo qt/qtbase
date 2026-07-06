@@ -164,6 +164,7 @@ QOhosSupplier<bool> makeWindowPcModeEnabledSupplier()
                 });
         },
         makeQOhosNoOpConsumer(),
+        QtOhos::invokeInQtThread,
         Q_FUNC_INFO);
 }
 
