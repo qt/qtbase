@@ -3,7 +3,6 @@
 
 #include "qohospermissionshelperimpl.h"
 
-#include <qohosqpafunctions_p.h>
 #include <qohosapppermissions_p.h>
 #include <qohosutils.h>
 #include <render/qwindowproxyregistry.h>
