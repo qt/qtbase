@@ -717,7 +717,7 @@ std::optional<QList<QOhosQpaFunctions::ShareKit::SharedRecord>> WantInfoImpl::tr
 {
     using SharedRecord = QOhosQpaFunctions::ShareKit::SharedRecord;
 
-    return QtOhos::evalInJsThreadWithPromise<std::optional<QList<SharedRecord>>>(
+    return QOhosJsThreadGateway::evalWithPromise<std::optional<QList<SharedRecord>>>(
         [&](QOhosJsState &jsState, QOhosTaskPromise<std::optional<QList<SharedRecord>>> evalPromise) {
             auto thenCatchPromises = std::move(evalPromise).makeThenCatchBranches(Q_FUNC_INFO);
             jsState.evalToPromiseOrRejectOnThrow(
@@ -757,7 +757,7 @@ std::optional<QOhosQpaFunctions::WantInfo::ContactInfo> WantInfoImpl::tryGetCont
 {
     using ContactInfo = QOhosQpaFunctions::WantInfo::ContactInfo;
 
-    return QtOhos::evalInJsThreadWithPromise<std::optional<ContactInfo>>(
+    return QOhosJsThreadGateway::evalWithPromise<std::optional<ContactInfo>>(
         [&](QOhosJsState &jsState, QOhosTaskPromise<std::optional<ContactInfo>> evalPromise) {
             auto thenCatchPromises = std::move(evalPromise).makeThenCatchBranches(Q_FUNC_INFO);
             jsState.evalToPromiseOrRejectOnThrow(
@@ -1040,7 +1040,7 @@ void QOhosQpaFunctionsImpl::setOnContinueRequestsHandlerForAbilityInstanceWindow
         QOhosConsumer<QOhosJsState &, QNapi::Number> resultConsumer;
     };
 
-    QtOhos::runInJsThreadAndWait(
+    QOhosJsThreadGateway::runAndWait(
         [&](QOhosJsState &jsState) {
             auto optQAbility = jsState.tryGetQAbilityByQWindow(qWindowRef);
             if (!optQAbility.has_value()) {
@@ -1064,7 +1064,7 @@ void QOhosQpaFunctionsImpl::setOnContinueRequestsHandlerForAbilityInstanceWindow
                                     .sourceApplicationVersionCode = sourceVersionCode,
                                 },
                                 [jsResultContext](AbilityOnContinueResponse qtResponse) {
-                                    QtOhos::invokeInJsThread(
+                                    QOhosJsThreadGateway::invoke(
                                         [jsResultContext, qtResponse](QOhosJsState &jsState) {
                                             if (qtResponse.status == AbilityOnContinueResponseStatus::Agree) {
                                                 auto wantParamsObj = jsResultContext->wantParamsReference.Value();
@@ -1108,7 +1108,7 @@ void QOhosQpaFunctionsImpl::setAbilityContinuationActive(
            ? std::optional(QtOhos::QObjectThreadSafeRef(optInstanceMainWindow))
            : std::nullopt;
 
-    QtOhos::invokeInJsThreadAndWaitForContinue(
+    QOhosJsThreadGateway::invokeAndWaitForContinue(
         [&](QOhosJsState &jsState, QOhosTaskPromise<> taskPromise) {
             auto optUiAbility = optInstanceMainWindowRef.has_value()
                 ? jsState.tryGetQAbilityByQWindow(optInstanceMainWindowRef.value())
@@ -1129,7 +1129,7 @@ void QOhosQpaFunctionsImpl::setAbilityContinuationActive(
 
 Q_NORETURN void QOhosQpaFunctionsImpl::restartApp(std::optional<QJsonObject> want)
 {
-    QtOhos::runInJsThreadAndWait(
+    QOhosJsThreadGateway::runAndWait(
         [&](QOhosJsState &jsState) {
             auto napiWant = want.has_value()
                 ? QNapi::checkedCast<QNapi::Object>(QOhosJsEnv::toNapiValue(jsState.env(), want.value()))
@@ -1192,7 +1192,7 @@ QJsonObject QOhosQpaFunctionsImpl::getAppLaunchWant()
 
 QSharedPointer<QOhosQpaFunctions::WantInfo> QOhosQpaFunctionsImpl::getAppLaunchWantInfo() const
 {
-    return QtOhos::evalInJsThread(
+    return QOhosJsThreadGateway::eval(
         [](QOhosJsState &jsState) {
             auto optAppLaunchReason = qTransform(
                 jsState.optAppLaunchParam(),
@@ -1221,7 +1221,7 @@ void QOhosQpaFunctionsImpl::addNewWantConsumer(
 {
     auto contextRef = QtOhos::makeQThreadSafeRef(context);
     auto sharedWantConsumer = QtOhos::moveToSharedPtr(std::move(wantConsumer));
-    QtOhos::runInJsThreadAndWait(
+    QOhosJsThreadGateway::runAndWait(
         [&](QOhosJsState &jsState) {
             jsState.addNewWantConsumer(
                 [contextRef, sharedWantConsumer](QOhosJsState &jsState, QNapi::Object napiWant, QNapi::Object launchParam) {
@@ -1241,7 +1241,7 @@ void QOhosQpaFunctionsImpl::startAppProcess(
     const QString &processId, const QJsonObject &requestWant,
     const std::optional<StartOptions> &optStartOptions)
 {
-    QtOhos::invokeInJsThreadAndWaitForContinue(
+    QOhosJsThreadGateway::invokeAndWaitForContinue(
         [&](QOhosJsState &jsState, QOhosTaskPromise<> taskPromise) {
             auto startOptions = optStartOptions.has_value()
                 ? convertStartOptionsToNapiObject(jsState, optStartOptions.value())
@@ -1262,7 +1262,7 @@ void QOhosQpaFunctionsImpl::startAppProcess(
 
 bool QOhosQpaFunctionsImpl::startAbility(const QJsonObject &want, const std::optional<QOhosQpaFunctions::StartOptions> &options)
 {
-    return QtOhos::evalInJsThread(
+    return QOhosJsThreadGateway::eval(
         [&](QOhosJsState &jsState) {
             auto optMainUiAbility = jsState.defaultQAbility();
             if (!optMainUiAbility.has_value())
@@ -1289,7 +1289,7 @@ bool QOhosQpaFunctionsImpl::startAbilityByType(const QString &appType, const QJs
 {
     // The call result of "context.startAbilityByType" will be synced and returned.
     // However, the started ability result won't be synced here.
-    return QtOhos::evalInJsThreadWithPromise<bool>(
+    return QOhosJsThreadGateway::evalWithPromise<bool>(
         [&](QOhosJsState &jsState, QOhosTaskPromise<bool> evalPromise) {
             auto optQAbility = jsState.defaultQAbility();
             if (!optQAbility.has_value()) {
@@ -1355,7 +1355,7 @@ void QOhosQpaFunctionsImpl::startAbilityForResult(
            ? std::optional(QtOhos::QObjectThreadSafeRef(optInstanceMainWindow))
            : std::nullopt;
 
-    QtOhos::invokeInJsThread(
+    QOhosJsThreadGateway::invoke(
         [context, want, options, optInstanceMainWindowRef](QOhosJsState &jsState) {
             auto optUiAbility = optInstanceMainWindowRef.has_value()
                 ? jsState.tryGetQAbilityByQWindow(optInstanceMainWindowRef.value())
@@ -1410,7 +1410,7 @@ void QOhosQpaFunctionsImpl::setDestroyAllowedFlagForAbilityInstances(
     for (auto *instanceMainWindow : instancesMainWindows)
         instancesMainWindowsRefs.emplace_back(instanceMainWindow);
 
-    QtOhos::runInJsThreadAndWait(
+    QOhosJsThreadGateway::runAndWait(
         [&](QOhosJsState &jsState) {
             for (const auto &instanceMainWindowRef : instancesMainWindowsRefs) {
                 auto optQAbility = jsState.tryGetQAbilityByQWindow(instanceMainWindowRef);
@@ -1437,7 +1437,7 @@ QOhosSupplier<double> QOhosQpaFunctionsImpl::makeOhosConfigFontSizeScaleDataSour
 
 int QOhosQpaFunctionsImpl::getCurrentApplicationVersionCode()
 {
-    return QtOhos::evalInJsThread(
+    return QOhosJsThreadGateway::eval(
         [](QOhosJsState &jsState) {
             auto applicationInfoFlag = jsState.eval<QNapi::Number>(
                 "@ohos.bundle.bundleManager.BundleFlag.GET_BUNDLE_INFO_WITH_APPLICATION");
@@ -1461,7 +1461,7 @@ bool QOhosQpaFunctionsImpl::readOhosNoUiChildMode()
 
 void QOhosQpaFunctionsImpl::startNoUiChildProcess(QString libraryName, QStringList args)
 {
-    QtOhos::runInJsThreadAndWait(
+    QOhosJsThreadGateway::runAndWait(
         [&](QOhosJsState &jsState) {
             std::vector<std::string> argsVector;
             std::transform(
@@ -1482,7 +1482,7 @@ bool QOhosQpaFunctionsImpl::hasSerialPortAccessRight(const QString &portName)
         return false;
     }
 
-    return QtOhos::evalInJsThread(
+    return QOhosJsThreadGateway::eval(
         [&](QOhosJsState &jsState) {
             return hasSerialPortAccessRightJsImpl(jsState, optSerialPortId.value());
         },
@@ -1538,7 +1538,7 @@ void QOhosQpaFunctionsImpl::requestSerialPortAccessRight(
                 std::move(asyncResultConsumer));
 
             if (self->m_pendingSerialPortsPermissionRequestsConsumers[serialPortId].size() == 1) {
-                QtOhos::invokeInJsThread(
+                QOhosJsThreadGateway::invoke(
                     [serialPortId, weakSelf](QOhosJsState &jsState) {
                         requestSerialPortAccessRightJsImpl(
                             jsState,
@@ -1559,7 +1559,7 @@ void QOhosQpaFunctionsImpl::requestSerialPortAccessRight(
 std::pair<bool, QList<QOhosQpaFunctions::FileShare::PolicyErrorResult>> QOhosQpaFunctionsImpl::persistPermission(
     const QList<FileShare::PolicyInfo> &policyInfos)
 {
-    return QtOhos::evalInJsThread(
+    return QOhosJsThreadGateway::eval(
         [&](QOhosJsState &) {
             std::vector<std::shared_ptr<::FileShare_PolicyErrorResult>> outResults;
             auto retCode = fileSharePersistPermission(
@@ -1573,7 +1573,7 @@ std::pair<bool, QList<QOhosQpaFunctions::FileShare::PolicyErrorResult>> QOhosQpa
 std::pair<bool, QList<QOhosQpaFunctions::FileShare::PolicyErrorResult>> QOhosQpaFunctionsImpl::revokePermission(
     const QList<FileShare::PolicyInfo> &policyInfos)
 {
-    return QtOhos::evalInJsThread(
+    return QOhosJsThreadGateway::eval(
         [&](QOhosJsState &) {
             std::vector<std::shared_ptr<::FileShare_PolicyErrorResult>> outResults;
             auto retCode = fileShareRevokePermission(
@@ -1587,7 +1587,7 @@ std::pair<bool, QList<QOhosQpaFunctions::FileShare::PolicyErrorResult>> QOhosQpa
 std::pair<bool, QList<QOhosQpaFunctions::FileShare::PolicyErrorResult>> QOhosQpaFunctionsImpl::activatePermission(
     const QList<FileShare::PolicyInfo> &policyInfos)
 {
-    return QtOhos::evalInJsThread(
+    return QOhosJsThreadGateway::eval(
         [&](QOhosJsState &) {
             std::vector<std::shared_ptr<::FileShare_PolicyErrorResult>> outResults;
             auto retCode = fileShareActivatePermission(
@@ -1601,7 +1601,7 @@ std::pair<bool, QList<QOhosQpaFunctions::FileShare::PolicyErrorResult>> QOhosQpa
 std::pair<bool, QList<QOhosQpaFunctions::FileShare::PolicyErrorResult>> QOhosQpaFunctionsImpl::deactivatePermission(
     const QList<FileShare::PolicyInfo> &policyInfos)
 {
-    return QtOhos::evalInJsThread(
+    return QOhosJsThreadGateway::eval(
         [&](QOhosJsState &) {
             std::vector<std::shared_ptr<::FileShare_PolicyErrorResult>> outResults;
             auto retCode = fileShareDeactivatePermission(
@@ -1615,7 +1615,7 @@ std::pair<bool, QList<QOhosQpaFunctions::FileShare::PolicyErrorResult>> QOhosQpa
 std::pair<bool, std::vector<bool>> QOhosQpaFunctionsImpl::checkPersistent(
     const QList<FileShare::PolicyInfo> &policyInfos)
 {
-    return QtOhos::evalInJsThread(
+    return QOhosJsThreadGateway::eval(
         [&](QOhosJsState &) {
             std::vector<bool> outResults;
             auto retCode = fileShareCheckPersistentPermission(
@@ -1762,7 +1762,7 @@ bool QOhosQpaFunctionsImpl::tryOpenLink(QObject *optInstanceMainWindow, const QS
         ? std::optional(QtOhos::QObjectThreadSafeRef(optInstanceMainWindow))
         : std::nullopt;
 
-    return QtOhos::evalInJsThreadWithPromise<bool>(
+    return QOhosJsThreadGateway::evalWithPromise<bool>(
         [&](QOhosJsState &jsState, QOhosTaskPromise<bool> evalPromise) {
             auto optUiAbility = optInstanceMainWindowRef.has_value()
                 ? jsState.tryGetQAbilityByQWindow(optInstanceMainWindowRef.value())
@@ -1813,7 +1813,7 @@ void QOhosQpaFunctionsImpl::processSerialPortPermissionResponse(std::uint32_t se
             [serialPortId, weakSelf = QtOhos::makeWeakPtr(shared_from_this())]() {
                 QtOhos::invokeInQtThread(
                     [serialPortId, weakSelf]() {
-                        QtOhos::runInJsThreadAndWait(
+                        QOhosJsThreadGateway::runAndWait(
                             [&](QOhosJsState &jsState) {
                                 cancelSerialPortAccessRightJsImpl(jsState, serialPortId);
                             },
