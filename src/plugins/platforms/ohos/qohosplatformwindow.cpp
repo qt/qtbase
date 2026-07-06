@@ -18,7 +18,6 @@
 #include <qohosjsmain.h>
 #include <qohosplatformintegration.h>
 #include <qohosplatformscreen.h>
-#include <qohosqpafunctions_p.h>
 #include <qohosruntimedevicetypeandmode.h>
 #include <qohossettings.h>
 #include <qohosutils.h>
