@@ -296,7 +296,7 @@ std::shared_ptr<::OH_PixelmapNative> makeEmptyNativePixelMap()
     return wrapNativePixelMapPtr(pixelMap);
 }
 
-QNapi::Object createNapiPixelMapFromQImage(QtOhos::JsState &jsState, const QImage &image)
+QNapi::Object createNapiPixelMapFromQImage(QOhosJsState &jsState, const QImage &image)
 {
     QImage effectiveImage =
         tryMapQtPixelFormatToOhosPixelFormat(image.format()).has_value()

@@ -22,7 +22,7 @@ std::shared_ptr<::OH_PixelmapNative> makeEmptyNativePixelMap();
 
 std::shared_ptr<::OH_PixelmapNative> wrapNativePixelMapPtr(::OH_PixelmapNative *pixelMap);
 
-QNapi::Object createNapiPixelMapFromQImage(QtOhos::JsState &jsState, const QImage &image);
+QNapi::Object createNapiPixelMapFromQImage(QOhosJsState &jsState, const QImage &image);
 
 QT_END_NAMESPACE
 
