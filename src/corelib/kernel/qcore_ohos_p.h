@@ -81,6 +81,8 @@ public:
         QNapi::Object qAbility,
         std::function<void(QOhosJsState &, QNapi::Object, QOhosConsumer<QOhosJsState &, QNapi::Number>)> requestsHandler) = 0;
 
+    virtual void setDestroyFromSystemAllowed(QNapi::Object qAbility, bool destroyAllowed) = 0;
+
     template<typename T = QNapi::Value>
     T eval(const std::string &expr, const std::vector<QNapi::ValueWrapper> &exprArgs = {});
 

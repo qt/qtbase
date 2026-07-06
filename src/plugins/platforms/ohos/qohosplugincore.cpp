@@ -13,6 +13,7 @@
 #include <napi.h>
 #include <napi/native_api.h>
 #include <optional>
+#include <qohosutils.h>
 #include <stdexcept>
 #include <tuple>
 #include <typeindex>
@@ -323,6 +324,8 @@ public:
         QNapi::Object qAbility,
         std::function<void(QOhosJsState &, QNapi::Object, QOhosConsumer<QOhosJsState &, QNapi::Number>)> requestsHandler) override;
 
+    void setDestroyFromSystemAllowed(QNapi::Object qAbility, bool destroyAllowed) override;
+
     void startNoUiChildProcess(const std::string &libraryName, const std::vector<std::string> &args) override;
 
     QtRunMode qtRunMode() override;
@@ -589,6 +592,18 @@ void JsStateImpl::setOnContinueRequestsHandler(
                         optResultEnum.value_or(QOhosAbilityOnContinueResult::REJECT));
                 });
         });
+}
+
+void JsStateImpl::setDestroyFromSystemAllowed(QNapi::Object qAbility, bool destroyAllowed)
+{
+    auto abilityPeer = tryGetQAbilityPeerByInstance(qAbility);
+    if (!abilityPeer) {
+        qOhosPrintfWarning(
+            "%s: no QAbilityPeer for the given qAbility, flag not set to %s",
+            Q_FUNC_INFO, mapBoolToTrueFalseStr(destroyAllowed));
+        return;
+    }
+    abilityPeer->destroyAllowedFlag()->store(destroyAllowed);
 }
 
 void JsStateImpl::visitEachQAbilityPeer(const std::function<void(std::shared_ptr<QAbilityPeer>)> &visitor)
