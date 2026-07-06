@@ -39,6 +39,8 @@ QT_BEGIN_NAMESPACE
 
 namespace QtOhos {
 
+class QObjectThreadSafeRef;
+
 template<typename Enum>
 struct OhosEnumMeta
 {
@@ -58,6 +60,8 @@ public:
 
     virtual QNapi::Object defaultWindowStageOrEmpty() = 0;
     virtual QNapi::Object defaultUiContextOrEmpty() = 0;
+
+    virtual std::optional<QNapi::Object> tryGetQAbilityByQWindow(QtOhos::QObjectThreadSafeRef qwindow) = 0;
 
     virtual QNapi::Object appLaunchWant() = 0;
     virtual std::optional<QNapi::Object> optAppLaunchParam() = 0;
