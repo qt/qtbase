@@ -1338,8 +1338,8 @@ void tst_QApplication::testDeleteLaterProcessEvents5()
 void tst_QApplication::desktopSettingsAware()
 {
 #if QT_CONFIG(process)
-#if defined(Q_OS_HARMONY)
-    QSKIP("Skipped on OHOS: can't launch helper");
+#if defined(Q_OS_ANDROID) || defined(Q_OS_HARMONY)
+    QSKIP("Skipped, cannot launch helper on Android (QTBUG-133037) or HarmonyOS");
 #endif
     QProcess testProcess;
 #ifdef Q_OS_MACOS
