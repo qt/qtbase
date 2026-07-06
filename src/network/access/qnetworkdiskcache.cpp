@@ -17,6 +17,8 @@
 #include <qcryptographichash.h>
 #include <qdebug.h>
 
+#include <QtCore/private/qtools_p.h>
+
 #include <memory>
 
 #define CACHE_POSTFIX ".d"_L1
@@ -229,8 +231,7 @@ void QNetworkDiskCachePrivate::prepareLayout()
         return;
     }
     for (uint i = 0; i < 16 ; i++) {
-        QString str = QString::number(i, 16);
-        QString subdir = dataDirectory + str;
+        QString subdir = dataDirectory + char16_t(QtMiscUtils::toHexLower(i));
         helper.mkdir(subdir, dirPermissions);
     }
 }
