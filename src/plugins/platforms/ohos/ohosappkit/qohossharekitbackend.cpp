@@ -1,15 +1,26 @@
 // Copyright (C) 2025 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#include "qohosjsutils.h"
-#include "qohosplatformservices.h"
-#include "qohossharekit.h"
-#include "qohosudmfconversions.h"
+#include "qohossharekitbackend_p.h"
+#include "qohosjsenv_p.h"
+#include <QtCore/private/qcore_ohos_p.h>
 #include <QtCore/private/qnapi_p.h>
 #include <QtCore/private/qohoscommon_p.h>
-#include <qohosjsenv_p.h>
+#include <QtCore/private/qohosjstools_p.h>
 #include <QtCore/private/qohoslogger_p.h>
+#include <QtCore/qscopeguard.h>
 #include <cstdint>
+#include <cstdlib>
+#include <cstring>
+#include <functional>
+#include <memory>
+#include <optional>
+#include <string>
+#include <utility>
+#include <vector>
+#include <database/udmf/udmf_meta.h>
+#include <database/udmf/utd.h>
+#include <filemanagement/file_uri/oh_file_uri.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -17,17 +28,67 @@ namespace QOhosShareKit {
 
 namespace {
 
-QOhosOptional<QNapi::Object> tryMakeShareKitSharedDataRecordObject(
-    QtOhos::JsState &jsState, const SharedRecord &record)
+template<typename ConvFunc>
+std::string callOhFileUriConversionFunc(
+    ConvFunc convFunc, const std::string &input)
+{
+    char *outputPtr = nullptr;
+    auto outputPtrGuard = qScopeGuard(std::bind(::free, outputPtr));
+    auto convFuncRetVal = convFunc(input.c_str(), input.size(), &outputPtr);
+
+    std::string outputString;
+    if (convFuncRetVal == ::FileManagement_ErrCode::ERR_OK && outputPtr != nullptr) {
+        outputString = outputPtr;
+    } else {
+        qOhosPrintfWarning(
+            "OH FileUri conversion function '%s' failed for input '%s', retval: %d",
+            convFunc.name(), input.c_str(), static_cast<int>(convFuncRetVal));
+    }
+
+    return outputString;
+}
+
+std::string mapPathToOhosUriInJsThread(const std::string &path)
+{
+    return callOhFileUriConversionFunc(Q_OHOS_NAMED_FUNC(::OH_FileUri_GetUriFromPath), path);
+}
+
+std::optional<std::string> tryMapMimeTypeToUtdTypeId(const std::string &mimeType)
+{
+    // FIXME: the `utdGetTypesByMimeType()` result interpretation is not quite clear.
+    // Documentaion does not mention why there is a list of possible type ids.
+    // Are they ordered in a specific manear? Is it possible to get en ampty list?
+    // Improve and fix the code when these are known.
+    unsigned int typesCount = 0;
+    const char **utdTypeIds = ::OH_Utd_GetTypesByMimeType(mimeType.c_str(), &typesCount);
+    if (utdTypeIds == nullptr && typesCount != 0) {
+        qOhosReportFatalErrorAndAbort(
+            "%s: got inconsistent result from OH_Utd_GetTypesByMimeType() call: array is null, size is %u",
+            Q_FUNC_INFO, typesCount);
+    }
+
+    auto utdTypeIdsList = utdTypeIds != nullptr
+        ? std::vector<std::string>(utdTypeIds, utdTypeIds + typesCount)
+        : std::vector<std::string>();
+
+    ::OH_Utd_DestroyStringList(utdTypeIds, typesCount);
+
+    return !utdTypeIdsList.empty()
+        ? std::make_optional(utdTypeIdsList.front())
+        : std::nullopt;
+}
+
+std::optional<QNapi::Object> tryMakeShareKitSharedDataRecordObject(
+    QOhosJsState &jsState, const SharedRecord &record)
 {
     auto optUtdType = record.mimeType != mimeTextUriList
         ? tryMapMimeTypeToUtdTypeId(record.mimeType)
-        : QOhosOptional<std::string>(QOhosUdsMeta<::OH_UdsHyperlink>::udmfMetaId);
+        : std::optional<std::string>(UDMF_META_HYPERLINK);
 
     if (!optUtdType.has_value()) {
         qOhosPrintfWarning(
             "%s: Cannot convert mime type: %s to utd type.", Q_FUNC_INFO, record.mimeType.c_str());
-        return makeEmptyQOhosOptional();
+        return std::nullopt;
     }
 
     std::vector<std::pair<std::string, QNapi::ValueWrapper>> objectProperties = {
@@ -39,10 +100,10 @@ QOhosOptional<QNapi::Object> tryMakeShareKitSharedDataRecordObject(
     } else if (record.filePath.has_value()) {
         objectProperties.emplace_back(
             "uri",
-            QOhosPlatformServices::mapPathToOhosUriInJsThread(record.filePath.value()));
+            mapPathToOhosUriInJsThread(record.filePath.value()));
     } else {
         qOhosPrintfWarning("%s: Record doesn't have content nor uri.", Q_FUNC_INFO);
-        return makeEmptyQOhosOptional();
+        return std::nullopt;
     }
 
     if (record.title.has_value())
@@ -65,7 +126,7 @@ QOhosOptional<QNapi::Object> tryMakeShareKitSharedDataRecordObject(
     if (record.thumbnailFilePath.has_value()) {
         objectProperties.emplace_back(
             "thumbnailUri",
-            QOhosPlatformServices::mapPathToOhosUriInJsThread(record.thumbnailFilePath.value()));
+            mapPathToOhosUriInJsThread(record.thumbnailFilePath.value()));
     }
 
     if (record.extraData.has_value()) {
@@ -74,14 +135,14 @@ QOhosOptional<QNapi::Object> tryMakeShareKitSharedDataRecordObject(
             QOhosJsEnv::toNapiValue(jsState.env(), QJsonObject::fromVariantMap(record.extraData.value())));
     }
 
-    return makeQOhosOptional(QNapi::makeObject(jsState.env(), objectProperties));
+    return std::make_optional(QNapi::makeObject(jsState.env(), objectProperties));
 }
 
-QOhosOptional<QNapi::Object> tryMakeShareKitShareControllerAnchorObject(
-    QtOhos::JsState &jsState, const ShareControllerAnchor &anchor)
+std::optional<QNapi::Object> tryMakeShareKitShareControllerAnchorObject(
+    QOhosJsState &jsState, const ShareControllerAnchor &anchor)
 {
     if (anchor.windowOffset.isNull())
-        return makeEmptyQOhosOptional();
+        return std::nullopt;
 
     auto shareControllerAnchorObject = QNapi::makeObject(
         jsState.env(),
@@ -108,11 +169,11 @@ QOhosOptional<QNapi::Object> tryMakeShareKitShareControllerAnchorObject(
                 }));
     }
 
-    return makeQOhosOptional(shareControllerAnchorObject);
+    return std::make_optional(shareControllerAnchorObject);
 }
 
 QNapi::Object makeShareKitControllerOptionsObject(
-    QtOhos::JsState &jsState, ControllerOptions controllerOptions)
+    QOhosJsState &jsState, ControllerOptions controllerOptions)
 {
     auto controllerOptionsObject = QNapi::makeObject(jsState.env());
 
@@ -151,7 +212,7 @@ std::shared_ptr<void> registerOnOffShareCompletedEventHandler(
 {
     return registerQOhosOnOffMethodsBasedEventHandler(
         shareController, "shareCompleted",
-        [shareCompletedCallback = std::move(shareCompletedCallback)](const QtOhos::CallbackInfo &cbInfo) {
+        [shareCompletedCallback = std::move(shareCompletedCallback)](const QNapi::CallbackInfo &cbInfo) {
             const auto shareOperationResult = cbInfo.getFirstArg<QNapi::Object>(Q_FUNC_INFO);
             const auto targetAbilityName = shareOperationResult.eval<QNapi::String>(
                 "targetAbilityInfo.name");
@@ -163,7 +224,7 @@ std::shared_ptr<void> registerOnOffShareCompletedEventHandler(
 }
 
 void shareDataImpl(
-    QtOhos::JsState &jsState, QNapi::Object uiAbility,
+    QOhosJsState &jsState, QNapi::Object uiAbility,
     const std::vector<SharedRecord> &recordsToShare, ControllerOptions controllerOptions,
     std::function<void()> panelClosedCallback, QOhosConsumer<ShareOperationResult> shareCompletedCallback,
     QOhosConsumer<std::shared_ptr<void>> resultConsumer)
@@ -223,7 +284,7 @@ void shareDataImpl(
             resultConsumer(callbacksHandle);
         })
     .onCatchWithContext(
-        [](const QtOhos::CallbackInfo &cbInfo, auto &resultConsumer) {
+        [](const QOhosCallbackInfo &cbInfo, auto &resultConsumer) {
             QtOhos::logJsCallbackError(cbInfo, "ShareController.show()");
             resultConsumer(nullptr);
         });
@@ -251,16 +312,16 @@ std::shared_ptr<void> shareData(
 {
     auto optMainWindowInstanceObjectRef =
         optInstanceMainWindow != nullptr
-            ? makeQOhosOptional(QtOhos::QObjectThreadSafeRef(optInstanceMainWindow))
-            : makeEmptyQOhosOptional();
+            ? std::make_optional(QtOhos::QObjectThreadSafeRef(optInstanceMainWindow))
+            : std::nullopt;
 
     auto panelClosedJsCallback = makeAsyncConsumer(
         std::move(panelClosedCallback), &QtOhos::invokeInQtThread);
     auto shareCompletedJsCallback = makeAsyncConsumer(
         std::move(shareCompletedCallback), &QtOhos::invokeInQtThread);
 
-    return QtOhos::evalInJsThreadWithPromise<std::shared_ptr<void>>(
-        [&](QtOhos::JsState &jsState, QOhosTaskPromise<std::shared_ptr<void>> evalPromise) {
+    return QOhosJsThreadGateway::evalWithPromise<std::shared_ptr<void>>(
+        [&](QOhosJsState &jsState, QOhosTaskPromise<std::shared_ptr<void>> evalPromise) {
             auto optUiAbility = optMainWindowInstanceObjectRef.has_value()
                 ? jsState.tryGetQAbilityByQWindow(optMainWindowInstanceObjectRef.value())
                 : jsState.defaultQAbility();
@@ -272,13 +333,7 @@ std::shared_ptr<void> shareData(
 
             shareDataImpl(
                 jsState, optUiAbility.value(), recordsToShare, controllerOptions, std::move(panelClosedJsCallback),
-                std::move(shareCompletedJsCallback),
-                [evalPromise = QtOhos::moveToSharedPtr(std::move(evalPromise))](std::shared_ptr<void> shareCallbacksHandle) {
-                    (*evalPromise)(
-                        shareCallbacksHandle
-                            ? QtOhos::makeProxyWithJsThreadDeleter(std::move(shareCallbacksHandle))
-                            : nullptr);
-                });
+                std::move(shareCompletedJsCallback), std::move(evalPromise));
         },
         Q_FUNC_INFO);
 }

@@ -1,9 +1,21 @@
 // Copyright (C) 2025 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#ifndef QOHOSSHAREKIT_H
-#define QOHOSSHAREKIT_H
+#ifndef QOHOSSHAREKITBACKEND_P_H
+#define QOHOSSHAREKITBACKEND_P_H
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include "qohosenums_p.h"
 #include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/qbytearray.h>
 #include <QtCore/qmap.h>
@@ -12,8 +24,7 @@
 #include <QtCore/qvariant.h>
 #include <QtGui/qwindow.h>
 #include <memory>
-#include <qohosenums.h>
-#include <qohosplugincore.h>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -27,21 +38,21 @@ struct SharedRecord
 {
     std::string mimeType;
 
-    QOhosOptional<std::string> content;
-    QOhosOptional<std::string> filePath;
+    std::optional<std::string> content;
+    std::optional<std::string> filePath;
 
-    QOhosOptional<std::string> title;
-    QOhosOptional<std::string> label;
-    QOhosOptional<std::string> description;
-    QOhosOptional<QByteArray> thumbnail;
-    QOhosOptional<std::string> thumbnailFilePath;
-    QOhosOptional<QVariantMap> extraData;
+    std::optional<std::string> title;
+    std::optional<std::string> label;
+    std::optional<std::string> description;
+    std::optional<QByteArray> thumbnail;
+    std::optional<std::string> thumbnailFilePath;
+    std::optional<QVariantMap> extraData;
 };
 
 struct ShareControllerAnchor
 {
     QPoint windowOffset;
-    QOhosOptional<QSize> size;
+    std::optional<QSize> size;
 };
 
 using SelectionMode = QtOhos::enums::kit::ShareKit::systemShare::SelectionMode;
@@ -52,10 +63,10 @@ using ShareAbilityType = QtOhos::enums::kit::ShareKit::systemShare::ShareAbility
 
 struct ControllerOptions
 {
-    QOhosOptional<ShareControllerAnchor> anchor;
-    QOhosOptional<SelectionMode> selectionMode;
-    QOhosOptional<SharePreviewMode> previewMode;
-    QOhosOptional<std::vector<ShareAbilityType>> excludedAbilities;
+    std::optional<ShareControllerAnchor> anchor;
+    std::optional<SelectionMode> selectionMode;
+    std::optional<SharePreviewMode> previewMode;
+    std::optional<std::vector<ShareAbilityType>> excludedAbilities;
 };
 
 struct ShareOperationResult
@@ -72,4 +83,4 @@ std::shared_ptr<void> shareData(
 
 QT_END_NAMESPACE
 
-#endif // QOHOSSHAREKIT_H
+#endif // QOHOSSHAREKITBACKEND_P_H
