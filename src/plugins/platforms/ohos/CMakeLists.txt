@@ -71,7 +71,6 @@ qt_internal_add_plugin(QOhosPlatformIntegrationPlugin
         qohosplugincore.cpp qohosplugincore.h
         qohosqabilityinstancesmanager.cpp qohosqabilityinstancesmanager.h
         qohosqpafunctionsimpl.cpp qohosqpafunctions_p.h
-        qohossharekit.cpp qohossharekit.h
         qohosruntimedevicetypeandmode.cpp qohosruntimedevicetypeandmode.h
         qohosscreenmanager.cpp qohosscreenmanager.h
         qohossettings.cpp qohossettings.h
@@ -153,3 +152,6 @@ qt_internal_extend_target(QOhosPlatformIntegrationPlugin
         VK_USE_PLATFORM_OHOS=1
 )
 
+if(QT_FEATURE_widgets)
+    add_subdirectory(ohosappkit)
+endif()
