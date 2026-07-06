@@ -1135,7 +1135,7 @@ Q_NORETURN void QOhosQpaFunctionsImpl::restartApp(std::optional<QJsonObject> wan
                 ? QNapi::checkedCast<QNapi::Object>(QOhosJsEnv::toNapiValue(jsState.env(), want.value()))
                 : jsState.appLaunchWant();
 
-            constexpr auto sleepTimeBeforeRetry = 3s;
+            constexpr auto sleepTimeBeforeRetry = std::chrono::seconds(3);
 
             unsigned remainingTries = 3;
 
