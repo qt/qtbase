@@ -319,6 +319,10 @@ public:
 
     void addNewWantConsumer(QOhosConsumer<QOhosJsState &, QNapi::Object, QNapi::Object> wantConsumer) override;
 
+    void setOnContinueRequestsHandler(
+        QNapi::Object qAbility,
+        std::function<void(QOhosJsState &, QNapi::Object, QOhosConsumer<QOhosJsState &, QNapi::Number>)> requestsHandler) override;
+
     void startNoUiChildProcess(const std::string &libraryName, const std::vector<std::string> &args) override;
 
     QtRunMode qtRunMode() override;
@@ -553,6 +557,38 @@ std::optional<QNapi::Object> JsStateImpl::defaultQAbility()
 {
     auto qAbility = defaultQAbilityPeer()->qAbility();
     return !qAbility.IsEmpty() ? std::optional(qAbility) : std::nullopt;
+}
+
+void JsStateImpl::setOnContinueRequestsHandler(
+    QNapi::Object qAbility,
+    std::function<void(QOhosJsState &, QNapi::Object, QOhosConsumer<QOhosJsState &, QNapi::Number>)> requestsHandler)
+{
+    auto uiAbilityPeer = QUiAbilityPeer::tryCastFromQAbilityPeerOrNull(
+        tryGetQAbilityPeerByInstance(qAbility));
+    if (!uiAbilityPeer) {
+        qOhosPrintfError(
+            "%s: no QUiAbilityPeer for the given qAbility, handler not set", Q_FUNC_INFO);
+        return;
+    }
+
+    uiAbilityPeer->setOnContinueRequestsHandler(
+        [requestsHandler = std::move(requestsHandler)](
+            JsState &jsState, QNapi::Object wantParams,
+            QOhosConsumer<JsState &, QOhosAbilityOnContinueResult> resultConsumer) {
+            requestsHandler(
+                jsState, wantParams,
+                [resultConsumer = std::move(resultConsumer)](QOhosJsState &resultJsState, QNapi::Number result) {
+                    auto optResultEnum = resultJsState.tryMapOhosEnumFromJs<QOhosAbilityOnContinueResult>(result);
+                    if (!optResultEnum) {
+                        qOhosPrintfWarning(
+                            "%s: got invalid OnContinueResult value (%f) from requests handler, rejecting the request",
+                            Q_FUNC_INFO, result.DoubleValue());
+                    }
+                    resultConsumer(
+                        static_cast<JsState &>(resultJsState),
+                        optResultEnum.value_or(QOhosAbilityOnContinueResult::REJECT));
+                });
+        });
 }
 
 void JsStateImpl::visitEachQAbilityPeer(const std::function<void(std::shared_ptr<QAbilityPeer>)> &visitor)

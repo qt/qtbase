@@ -76,6 +76,11 @@ public:
     virtual void addNewWantConsumer(
         QOhosConsumer<QOhosJsState &, QNapi::Object, QNapi::Object> wantConsumer) = 0;
 
+    // requestsHandler's parameters: jsState, wantParams, resultConsumer
+    virtual void setOnContinueRequestsHandler(
+        QNapi::Object qAbility,
+        std::function<void(QOhosJsState &, QNapi::Object, QOhosConsumer<QOhosJsState &, QNapi::Number>)> requestsHandler) = 0;
+
     template<typename T = QNapi::Value>
     T eval(const std::string &expr, const std::vector<QNapi::ValueWrapper> &exprArgs = {});
 
