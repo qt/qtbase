@@ -370,17 +370,17 @@ int main(int argc, char **argv)
         }
 
         const QFileInfo fileInfo(source);
-        const QString base = fileInfo.path() + fileInfo.completeBaseName();
+        const QString sourceBasePath = fileInfo.path() + u'/' + fileInfo.completeBaseName();
 
         if (debug) {
             fprintf(stderr, "  source: %s base path: %s\n", qUtf8Printable(source),
-                    qUtf8Printable(base));
+                    qUtf8Printable(sourceBasePath));
         }
 
-        // 1a) erase header
+        // 1a) Remove header from processing if it matches the source file base path
         bool headerErased = false;
-        for (const auto &ext : headerExtList) {
-            const QString headerPath = base + u'.' + ext;
+        for (const auto &headerExtension : headerExtList) {
+            const QString headerPath = sourceBasePath + u'.' + headerExtension;
             auto it = autoGenHeaders.find(headerPath);
             if (it != autoGenHeaders.end()) {
                 if (debug)
@@ -395,7 +395,7 @@ int main(int argc, char **argv)
         }
         if (debug && !headerErased)
                 fprintf(stderr, "    1a) no header matched base path %s, continuing\n",
-                        qUtf8Printable(base));
+                        qUtf8Printable(sourceBasePath));
 
         // Add extra moc files
         for (const auto &mocFile : it.value().mocFiles) {
@@ -412,36 +412,49 @@ int main(int argc, char **argv)
                 fprintf(stderr, "    miu: %s -> adding %s\n", qUtf8Printable(mocFile),
                         qUtf8Printable(jsonPath));
             jsonFileList.push_back(jsonPath);
-            // 1b) Locate this header and delete it
-            constexpr int mocKeyLen = 4; // length of "moc_"
+            // 1b) Locate a header and remove it from processing similarly to 1a), but this time
+            // for each moc include statement.
+            // Example:
+            // sourceFile:         "sub/foo.cpp"
+            // sourceFileDir:      "sub"
+            // mocFile:            "sub/moc_foo.cpp"
+            // mocIncludeFileName: "moc_foo.cpp"
+            // headerBaseName:     "foo"
+            // mocFileBaseDir:     "sub"
+            // headerSearchDir:    "sub/sub" yes, double "sub", this is what CMake does too
+            // candidateHeaderPath:"sub/sub/foo.h"
+            constexpr int mocPrefixLength = 4; // length of "moc_"
+            const QString mocIncludeFileName = QFileInfo(mocFile).fileName();
             const QString headerBaseName =
-                    QFileInfo(mocFile.right(mocFile.size() - mocKeyLen)).completeBaseName();
-            if (debug)
-                fprintf(stderr, "    1b) derived header base name '%s' from moc include '%s'\n",
-                        qUtf8Printable(headerBaseName), qUtf8Printable(mocFile));
-            bool breakFree = false;
-            for (auto &ext : headerExtList) {
-                const QString headerSuffix = headerBaseName + u'.' + ext;
-                for (auto it = autoGenHeaders.begin(); it != autoGenHeaders.end(); ++it) {
-                    if (it.key().endsWith(headerSuffix)
-                        && QFileInfo(it.key()).completeBaseName() == headerBaseName) {
-                        if (debug)
-                            fprintf(stderr,
-                                    "    1b) removed header %s from processing (matched moc "
-                                    "include base name '%s')\n",
-                                    qUtf8Printable(it.key()), qUtf8Printable(headerBaseName));
-                        autoGenHeaders.erase(it);
-                        breakFree = true;
-                        break;
-                    }
-                }
-                if (breakFree) {
+                    QFileInfo(mocIncludeFileName.right(
+                                mocIncludeFileName.size() - mocPrefixLength))
+                            .completeBaseName();
+            const QString mocFileBaseDir = QFileInfo(mocFile).path();
+            const QString sourceFileDir = fileInfo.path();
+
+            // Search for a header in the source file's dir using the mocFileBaseDir relative
+            // path, e.g. "sub/" from #include "sub/foo.h"
+            const QString headerSearchDir = QDir::cleanPath(sourceFileDir + u'/' + mocFileBaseDir);
+            auto matchedHeader = autoGenHeaders.end();
+            for (const auto &headerExtension : headerExtList) {
+                const QString candidateHeaderPath =
+                        headerSearchDir + u'/' + headerBaseName + u'.' + headerExtension;
+                matchedHeader = autoGenHeaders.find(candidateHeaderPath);
+                if (matchedHeader != autoGenHeaders.end())
                     break;
-                }
             }
-            if (!breakFree && debug) {
-                fprintf(stderr, "    1b) no header matched base name %s, continuing\n",
-                        qUtf8Printable(headerBaseName));
+
+            if (matchedHeader != autoGenHeaders.end()) {
+                if (debug)
+                    fprintf(stderr,
+                            "    1b) removed header %s from processing (matched moc include"
+                            " '%s')\n",
+                            qUtf8Printable(matchedHeader.key()), qUtf8Printable(mocFile));
+                autoGenHeaders.erase(matchedHeader);
+            } else if (debug) {
+                fprintf(stderr, "    1b) no header matched moc include '%s' in dir %s, "
+                        "continuing\n",
+                        qUtf8Printable(mocFile), qUtf8Printable(headerSearchDir));
             }
         }
     }
