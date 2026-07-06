@@ -146,6 +146,37 @@ QOhosSupplier<T> makeDataSource(
     };
 }
 
+namespace details_qohosjsutils_h {
+
+std::shared_ptr<void> registerAppContextEnvironmentCallback(
+    QtOhos::JsState &jsState, QNapi::Object environmentCallback);
+
+std::shared_ptr<void> registerAppConfigurationUpdateListener(
+    QtOhos::JsState &jsState, std::function<void(QtOhos::JsState &, QNapi::Object)> updateListener);
+
+}
+
+template<typename ConfigValue>
+QOhosSupplier<ConfigValue> makeOhosConfigValueDataSource(
+    std::function<ConfigValue(QtOhos::JsState &)> initValueSupplier,
+    std::function<ConfigValue(QtOhos::JsState &, const QNapi::Object &)> valueFetcher,
+    QOhosConsumer<ConfigValue> valueChangedHandler)
+{
+    using namespace details_qohosjsutils_h;
+
+    return QtOhos::makeDataSource<ConfigValue>(
+        std::move(initValueSupplier),
+        [valueFetcher = std::move(valueFetcher)](QtOhos::JsState &jsState, QOhosConsumer<ConfigValue> valueUpdatesConsumer) mutable {
+            return registerAppConfigurationUpdateListener(
+                jsState,
+                [valueFetcher = std::move(valueFetcher), valueUpdatesConsumer = std::move(valueUpdatesConsumer)](QtOhos::JsState &jsState, QNapi::Object config) {
+                    valueUpdatesConsumer(valueFetcher(jsState, config));
+                });
+        },
+        std::move(valueChangedHandler),
+        Q_FUNC_INFO);
+}
+
 }
 
 QT_END_NAMESPACE

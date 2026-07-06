@@ -114,6 +114,54 @@ std::shared_ptr<void> registerOnOffMethodsBasedEventHandler(
         });
 }
 
+namespace details_qohosjsutils_h {
+
+std::shared_ptr<void> registerAppContextEnvironmentCallback(
+    QtOhos::JsState &jsState, QNapi::Object environmentCallback)
+{
+    auto appContextRefPtr = QtOhos::moveToSharedPtr(
+        QNapi::Reference<>::makePersistentFrom(
+            jsState.defaultQAbilityPeer()->qAbility().eval<QNapi::Object>(
+                "context.getApplicationContext()")));
+
+    double environmentCallbackId = appContextRefPtr->call<QNapi::Number>(
+        "on",
+        {"environment", environmentCallback});
+
+    return std::shared_ptr<void>(
+        nullptr,
+        [environmentCallbackId, appContextRefPtr](auto) {
+            QtOhos::runInJsThreadAndWait(
+                [&](QtOhos::JsState &) {
+                    auto appContextRef = std::move(*appContextRefPtr);
+                    appContextRef.call(
+                        "off",
+                        {"environment", environmentCallbackId});
+                },
+                Q_FUNC_INFO);
+        });
+}
+
+std::shared_ptr<void> registerAppConfigurationUpdateListener(
+    QtOhos::JsState &jsState, std::function<void(QtOhos::JsState &, QNapi::Object)> updateListener)
+{
+    return registerAppContextEnvironmentCallback(
+        jsState,
+        QNapi::makeObject(
+            jsState.env(),
+            {
+                {
+                    "onConfigurationUpdated",
+                    [updateListener = std::move(updateListener)](const QtOhos::CallbackInfo &cbInfo) {
+                        auto config = cbInfo.getFirstArg<QNapi::Object>(Q_FUNC_INFO);
+                        updateListener(cbInfo.jsState(), config);
+                    }
+                },
+            }));
+}
+
+}
+
 std::shared_ptr<void> startDelayedJsThreadTask(
     JsState &jsState, std::function<void(JsState &)> task,
     std::chrono::milliseconds delay)

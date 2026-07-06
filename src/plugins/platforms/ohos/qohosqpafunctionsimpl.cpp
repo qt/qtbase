@@ -306,50 +306,6 @@ QNapi::Object convertStartOptionsToNapiObject(
     return napiOptions;
 }
 
-std::shared_ptr<void> registerAppContextEnvironmentCallback(
-    QtOhos::JsState &jsState, QNapi::Object environmentCallback)
-{
-    auto appContextRefPtr = QtOhos::moveToSharedPtr(
-        QNapi::Reference<>::makePersistentFrom(
-            jsState.defaultQAbilityPeer()->qAbility().eval<QNapi::Object>(
-                "context.getApplicationContext()")));
-
-    double environmentCallbackId = appContextRefPtr->call<QNapi::Number>(
-        "on",
-        {"environment", environmentCallback});
-
-    return std::shared_ptr<void>(
-        nullptr,
-        [environmentCallbackId, appContextRefPtr](auto) {
-            QtOhos::runInJsThreadAndWait(
-                [&](QtOhos::JsState &) {
-                    auto appContextRef = std::move(*appContextRefPtr);
-                    appContextRef.call(
-                        "off",
-                        {"environment", environmentCallbackId});
-                },
-                Q_FUNC_INFO);
-        });
-}
-
-std::shared_ptr<void> registerAppConfigurationUpdateListener(
-    QtOhos::JsState &jsState, std::function<void(QtOhos::JsState &, QNapi::Object)> updateListener)
-{
-    return registerAppContextEnvironmentCallback(
-        jsState,
-        QNapi::makeObject(
-            jsState.env(),
-            {
-                {
-                    "onConfigurationUpdated",
-                    [updateListener = std::move(updateListener)](const QtOhos::CallbackInfo &cbInfo) {
-                        auto config = cbInfo.getFirstArg<QNapi::Object>(Q_FUNC_INFO);
-                        updateListener(cbInfo.jsState(), config);
-                    }
-                },
-            }));
-}
-
 OhosConfigurationColorMode mapOhosConfigurationColorModeFromJs(QtOhos::JsState &jsState, QNapi::Number colorModeJsEnum)
 {
     constexpr auto fallbackColorMode = OhosConfigurationColorMode::COLOR_MODE_NOT_SET;
@@ -370,25 +326,6 @@ void setOhosConfigColorMode(OhosConfigurationColorMode colorMode)
             const auto jsColorMode = jsState.mapOhosEnumToJs(colorMode);
             qAbility.call("context.getApplicationContext().setColorMode", {jsColorMode});
         },
-        Q_FUNC_INFO);
-}
-
-template<typename ConfigValue>
-QOhosSupplier<ConfigValue> makeOhosConfigValueDataSource(
-    std::function<ConfigValue(QtOhos::JsState &)> initValueSupplier,
-    std::function<ConfigValue(QtOhos::JsState &, const QNapi::Object &)> valueFetcher,
-    QOhosConsumer<ConfigValue> valueChangedHandler)
-{
-    return QtOhos::makeDataSource<ConfigValue>(
-        std::move(initValueSupplier),
-        [valueFetcher = std::move(valueFetcher)](QtOhos::JsState &jsState, QOhosConsumer<ConfigValue> valueUpdatesConsumer) mutable {
-            return registerAppConfigurationUpdateListener(
-                jsState,
-                [valueFetcher = std::move(valueFetcher), valueUpdatesConsumer = std::move(valueUpdatesConsumer)](QtOhos::JsState &jsState, QNapi::Object config) {
-                    valueUpdatesConsumer(valueFetcher(jsState, config));
-                });
-        },
-        std::move(valueChangedHandler),
         Q_FUNC_INFO);
 }
 
