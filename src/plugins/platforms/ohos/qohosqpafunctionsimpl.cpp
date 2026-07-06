@@ -1187,7 +1187,11 @@ Q_NORETURN void QOhosQpaFunctionsImpl::restartApp(std::optional<QJsonObject> wan
 
 QJsonObject QOhosQpaFunctionsImpl::getAppLaunchWant()
 {
-    return getAppLaunchWantInfo()->jsonObject();
+    return QOhosJsThreadGateway::eval(
+        [](QOhosJsState &jsState) {
+            return QOhosJsEnv::fromNapiValue<QJsonObject>(jsState.appLaunchWant());
+        },
+        Q_FUNC_INFO);
 }
 
 QSharedPointer<QOhosQpaFunctions::WantInfo> QOhosQpaFunctionsImpl::getAppLaunchWantInfo() const
