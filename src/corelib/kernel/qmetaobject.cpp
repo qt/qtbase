@@ -1976,10 +1976,12 @@ QMetaMethod QMetaMethod::fromRelativeConstructorIndex(const QMetaObject *mobj, i
 
 /*!
     \macro Q_METAMETHOD_INVOKE_MAX_ARGS
+    \deprecated
     \relates QMetaMethod
 
-    Equals maximum number of arguments available for
-    execution of the method via QMetaMethod::invoke()
+    Equals maximum number of arguments available for execution of the method
+    via the old implementation of QMetaMethod::invoke(). The new implementation
+    (since Qt 6.5) uses variadic arguments and does not have an upper limit.
  */
 
 QByteArray QMetaMethodPrivate::signature() const
