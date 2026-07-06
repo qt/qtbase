@@ -9,11 +9,28 @@
 #include <cstring>
 #include <qarkui/qarkuiutils.h>
 #include <qohosimageformat.h>
+#include <utility>
 
 QT_BEGIN_NAMESPACE
 
 namespace
 {
+
+template<typename Func, Func f, typename... FuncArgs>
+QOhosInvokeResult<Func, FuncArgs...> callOhosCApiFunc(QOhosNamedFunc<Func, f> func, FuncArgs &&...funcArgs)
+{
+    return func.ptr()(std::forward<FuncArgs>(funcArgs)...);
+}
+
+template<typename Func, Func f, typename... FuncArgs>
+void callOhosCApiFuncOrFailOnErrorResult(QOhosNamedFunc<Func, f> func, FuncArgs &&...funcArgs)
+{
+    const auto result = func.ptr()(std::forward<FuncArgs>(funcArgs)...);
+    if (static_cast<int>(result) != 0) {
+        qOhosReportFatalErrorAndAbort(
+            "OHOS C API call %s failed with error: %d", func.name(), static_cast<int>(result));
+    }
+}
 
 struct QOhosPixelMapInfo
 {
@@ -35,7 +52,7 @@ std::shared_ptr<::OH_Pixelmap_InitializationOptions> createOhPixelmapInitializat
 {
     ::OH_Pixelmap_InitializationOptions *initOptionsPtr {};
 
-    QArkUi::callArkUiOrFailOnErrorResult(
+    callOhosCApiFuncOrFailOnErrorResult(
         Q_OHOS_NAMED_FUNC(::OH_PixelmapInitializationOptions_Create),
         &initOptionsPtr);
 
@@ -43,7 +60,7 @@ std::shared_ptr<::OH_Pixelmap_InitializationOptions> createOhPixelmapInitializat
         initOptionsPtr,
         [](auto *initOptionsPtr) {
             if (initOptionsPtr != nullptr) {
-                QArkUi::callArkUiOrFailOnErrorResult(
+                callOhosCApiFuncOrFailOnErrorResult(
                     Q_OHOS_NAMED_FUNC(::OH_PixelmapInitializationOptions_Release),
                     initOptionsPtr);
             }
@@ -56,23 +73,23 @@ std::shared_ptr<::OH_Pixelmap_InitializationOptions> makeNativePixelMapInitializ
 {
     auto initOptions = createOhPixelmapInitializationOptions();
 
-    QArkUi::callArkUiOrFailOnErrorResult(
+    callOhosCApiFuncOrFailOnErrorResult(
         Q_OHOS_NAMED_FUNC(::OH_PixelmapInitializationOptions_SetWidth),
         initOptions.get(), width);
 
-    QArkUi::callArkUiOrFailOnErrorResult(
+    callOhosCApiFuncOrFailOnErrorResult(
         Q_OHOS_NAMED_FUNC(::OH_PixelmapInitializationOptions_SetHeight),
         initOptions.get(), height);
 
-    QArkUi::callArkUiOrFailOnErrorResult(
+    callOhosCApiFuncOrFailOnErrorResult(
         Q_OHOS_NAMED_FUNC(::OH_PixelmapInitializationOptions_SetSrcPixelFormat),
         initOptions.get(), static_cast<int>(pixelFormat));
 
-    QArkUi::callArkUiOrFailOnErrorResult(
+    callOhosCApiFuncOrFailOnErrorResult(
         Q_OHOS_NAMED_FUNC(::OH_PixelmapInitializationOptions_SetPixelFormat),
         initOptions.get(), static_cast<int>(pixelFormat));
 
-    QArkUi::callArkUiOrFailOnErrorResult(
+    callOhosCApiFuncOrFailOnErrorResult(
         Q_OHOS_NAMED_FUNC(::OH_PixelmapInitializationOptions_SetAlphaType),
         initOptions.get(), static_cast<int>(alphaType));
 
@@ -155,7 +172,7 @@ std::shared_ptr<::OH_PixelmapNative> createNativePixelMapFromQImage(QImage qImag
         static_cast<std::uint32_t>(effectiveImage.height()), ohosPixelFormat,
         mapQtPixelFormatToOhosPixelMapAlphaType(effectiveImage.pixelFormat()));
 
-    QArkUi::callArkUiOrFailOnErrorResult(
+    callOhosCApiFuncOrFailOnErrorResult(
         Q_OHOS_NAMED_FUNC(::OH_PixelmapNative_CreatePixelmap),
         effectiveImage.bits(), effectiveImage.sizeInBytes(), initOptions.get(), &pixelMap);
 
@@ -163,7 +180,7 @@ std::shared_ptr<::OH_PixelmapNative> createNativePixelMapFromQImage(QImage qImag
         pixelMap,
         [](::OH_PixelmapNative *pixelMap) {
             if (pixelMap != nullptr) {
-                int res = QArkUi::callArkUi(Q_OHOS_NAMED_FUNC(::OH_PixelmapNative_Release), pixelMap);
+                int res = callOhosCApiFunc(Q_OHOS_NAMED_FUNC(::OH_PixelmapNative_Release), pixelMap);
                 if (res != ::Image_ErrorCode::IMAGE_SUCCESS) {
                     qOhosPrintfError(
                         "%s: cannot release the pixel map (error code: %d).",
@@ -271,7 +288,7 @@ std::shared_ptr<::OH_PixelmapNative> wrapNativePixelMapPtr(::OH_PixelmapNative *
         pixelMap,
         [](::OH_PixelmapNative *pixelMap) {
             if (pixelMap != nullptr) {
-                int res = QArkUi::callArkUi(Q_OHOS_NAMED_FUNC(::OH_PixelmapNative_Release), pixelMap);
+                int res = callOhosCApiFunc(Q_OHOS_NAMED_FUNC(::OH_PixelmapNative_Release), pixelMap);
                 if (res != ::Image_ErrorCode::IMAGE_SUCCESS) {
                     qOhosPrintfError(
                         "%s: cannot release the pixel map (error code: %d).",
@@ -289,7 +306,7 @@ std::shared_ptr<::OH_PixelmapNative> makeEmptyNativePixelMap()
     auto initOptions = makeNativePixelMapInitializationOptions(1, 1, pixelFormat, alphaType);
 
     ::OH_PixelmapNative *pixelMap = {};
-    QArkUi::callArkUiOrFailOnErrorResult(
+    callOhosCApiFuncOrFailOnErrorResult(
         Q_OHOS_NAMED_FUNC(::OH_PixelmapNative_CreateEmptyPixelmap),
         initOptions.get(), &pixelMap);
 
