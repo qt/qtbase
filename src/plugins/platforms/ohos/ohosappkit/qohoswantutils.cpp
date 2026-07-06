@@ -12,8 +12,6 @@ QT_BEGIN_NAMESPACE
 
 namespace QtOhosAppKit {
 
-using QOhosQpaFunctions = QtOhos::QOhosQpaFunctionsPart1;
-
 namespace {
 
 namespace WantProps {
@@ -67,9 +65,9 @@ QString getWantOptionalStringProp(const QJsonObject &jsonWant, const char *propN
 }
 
 QOhosWantInfo::LaunchReason mapLaunchReasonFromQpaFunctions(
-    QOhosQpaFunctions::WantInfo::LaunchReason reason)
+    detail::WantInfo::LaunchReason reason)
 {
-    using WantInfo = QOhosQpaFunctions::WantInfo;
+    using WantInfo = detail::WantInfo;
 
     switch (reason) {
     case WantInfo::LaunchReason::UNKNOWN:
@@ -90,7 +88,7 @@ QOhosWantInfo::LaunchReason mapLaunchReasonFromQpaFunctions(
 class QOhosWantInfoImpl : public QOhosWantInfo
 {
 public:
-    QOhosWantInfoImpl(QSharedPointer<QOhosQpaFunctions::WantInfo> want);
+    QOhosWantInfoImpl(QSharedPointer<detail::WantInfo> want);
 
     QOhosWant want() const override;
 
@@ -100,13 +98,13 @@ public:
 
     LaunchReason launchReason() const override;
 
-    QSharedPointer<QOhosQpaFunctions::WantInfo> qpaWantInfo() const;
+    QSharedPointer<detail::WantInfo> qpaWantInfo() const;
 
 private:
-    QSharedPointer<QOhosQpaFunctions::WantInfo> m_qpaWantInfo;
+    QSharedPointer<detail::WantInfo> m_qpaWantInfo;
 };
 
-QOhosWantInfoImpl::QOhosWantInfoImpl(QSharedPointer<QOhosQpaFunctions::WantInfo> want)
+QOhosWantInfoImpl::QOhosWantInfoImpl(QSharedPointer<detail::WantInfo> want)
     : QOhosWantInfo()
     , m_qpaWantInfo(want)
 {
@@ -173,7 +171,7 @@ QOhosWantInfo::LaunchReason QOhosWantInfoImpl::launchReason() const
     return mapLaunchReasonFromQpaFunctions(m_qpaWantInfo->launchReason());
 }
 
-QSharedPointer<QOhosQpaFunctions::WantInfo> QOhosWantInfoImpl::qpaWantInfo() const
+QSharedPointer<detail::WantInfo> QOhosWantInfoImpl::qpaWantInfo() const
 {
     return m_qpaWantInfo;
 }
@@ -265,12 +263,12 @@ QOhosWant convertWantFromJsonObject(const QJsonObject &jsonWant)
 }
 
 QSharedPointer<QOhosWantInfo> convertToOhosAppKitWantInfo(
-    QSharedPointer<QOhosQpaFunctions::WantInfo> wantInfo)
+    QSharedPointer<detail::WantInfo> wantInfo)
 {
     return QSharedPointer<QOhosWantInfoImpl>::create(wantInfo);
 }
 
-QSharedPointer<QOhosQpaFunctions::WantInfo> convertToQpaWantInfo(
+QSharedPointer<detail::WantInfo> convertToQpaWantInfo(
     QSharedPointer<QOhosWantInfo> wantInfo)
 {
     return qSharedPointerCast<QOhosWantInfoImpl>(wantInfo)->qpaWantInfo();

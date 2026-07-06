@@ -2,17 +2,15 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qohossharekit.h"
+#include "qohossharekitbackend_p.h"
 #include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/private/qohoslogger_p.h>
-#include "qohosqpafunctionspart1_p.h"
 #include <QtCore/qmimedatabase.h>
 #include <QtGui/qwindow.h>
 
 QT_BEGIN_NAMESPACE
 
 namespace QtOhosAppKit {
-
-using QOhosQpaFunctions = QtOhos::QOhosQpaFunctionsPart1;
 
 /*!
     \namespace QtOhosAppKit::ShareKit
@@ -26,35 +24,35 @@ namespace {
 
 constexpr const char *mimeTextUriList = "text/uri-list";
 
-std::optional<QOhosQpaFunctions::ShareKit::ShareAbilityType> tryMapShareAbilityTypeToQpaFunctionsEnum(
+std::optional<QOhosShareKit::ShareAbilityType> tryMapShareAbilityTypeToShareKitEnum(
     ShareAbilityType abilityType)
 {
     switch (abilityType) {
     case ShareAbilityType::CopyToPasteboard:
-        return std::make_optional(QOhosQpaFunctions::ShareKit::ShareAbilityType::COPY_TO_PASTEBOARD);
+        return std::make_optional(QOhosShareKit::ShareAbilityType::COPY_TO_PASTEBOARD);
     case ShareAbilityType::SaveToMediaAsset:
-        return std::make_optional(QOhosQpaFunctions::ShareKit::ShareAbilityType::SAVE_TO_MEDIA_ASSET);
+        return std::make_optional(QOhosShareKit::ShareAbilityType::SAVE_TO_MEDIA_ASSET);
     case ShareAbilityType::SaveAsFile:
-        return std::make_optional(QOhosQpaFunctions::ShareKit::ShareAbilityType::SAVE_AS_FILE);
+        return std::make_optional(QOhosShareKit::ShareAbilityType::SAVE_AS_FILE);
     case ShareAbilityType::Print:
-        return std::make_optional(QOhosQpaFunctions::ShareKit::ShareAbilityType::PRINT);
+        return std::make_optional(QOhosShareKit::ShareAbilityType::PRINT);
     case ShareAbilityType::SaveToSuperHub:
-        return std::make_optional(QOhosQpaFunctions::ShareKit::ShareAbilityType::SAVE_TO_SUPERHUB);
+        return std::make_optional(QOhosShareKit::ShareAbilityType::SAVE_TO_SUPERHUB);
     }
 
     return {};
 }
 
-QList<QOhosQpaFunctions::ShareKit::ShareAbilityType> mapExcludedAbilitiesToQpaFunctions(
+std::vector<QOhosShareKit::ShareAbilityType> mapExcludedAbilitiesToShareKit(
     const QList<ShareAbilityType> &excludedAbilities)
 {
-    QList<QOhosQpaFunctions::ShareKit::ShareAbilityType> qpaFuncsExcludedAbilities;
+    std::vector<QOhosShareKit::ShareAbilityType> shareKitExcludedAbilities;
     for (auto excludedAbilityType : excludedAbilities) {
-        auto optQpaFuncsExcludedAbilityType = tryMapShareAbilityTypeToQpaFunctionsEnum(excludedAbilityType);
-        if (optQpaFuncsExcludedAbilityType.has_value())
-            qpaFuncsExcludedAbilities.append(optQpaFuncsExcludedAbilityType.value());
+        auto optShareKitExcludedAbilityType = tryMapShareAbilityTypeToShareKitEnum(excludedAbilityType);
+        if (optShareKitExcludedAbilityType.has_value())
+            shareKitExcludedAbilities.push_back(optShareKitExcludedAbilityType.value());
     }
-    return qpaFuncsExcludedAbilities;
+    return shareKitExcludedAbilities;
 }
 
 class QOhosSharedRecordImpl : public QOhosSharedRecord
@@ -275,7 +273,7 @@ class QOhosShareOperationResultImpl : public QOhosShareOperationResult
 {
 public:
     QOhosShareOperationResultImpl(
-        const QOhosQpaFunctions::ShareKit::ShareOperationResult &shareOperationResult);
+        const QOhosShareKit::ShareOperationResult &shareOperationResult);
 
     QString targetAbilityName() const override;
 
@@ -284,9 +282,9 @@ private:
 };
 
 QOhosShareOperationResultImpl::QOhosShareOperationResultImpl(
-    const QOhosQpaFunctions::ShareKit::ShareOperationResult &shareOperationResult)
+    const QOhosShareKit::ShareOperationResult &shareOperationResult)
     : QOhosShareOperationResult()
-    , m_targetAbilityName(shareOperationResult.targetAbilityName)
+    , m_targetAbilityName(QString::fromStdString(shareOperationResult.targetAbilityName))
 {
 }
 
@@ -295,43 +293,43 @@ QString QOhosShareOperationResultImpl::targetAbilityName() const
     return m_targetAbilityName;
 }
 
-QList<QOhosQpaFunctions::ShareKit::SharedRecord> convertToQpaShareKitSharedRecords(
+std::vector<QOhosShareKit::SharedRecord> convertToShareKitSharedRecords(
     const QList<QSharedPointer<QOhosSharedRecord>> &dataToShare)
 {
-    QList<QOhosQpaFunctions::ShareKit::SharedRecord> records;
+    std::vector<QOhosShareKit::SharedRecord> records;
 
     for (const auto &sharedRecord : dataToShare) {
         const auto *sharedRecordImpl = static_cast<const QOhosSharedRecordImpl *>(sharedRecord.get());
 
-        auto shareKitSharedRecord = QOhosQpaFunctions::ShareKit::SharedRecord{
+        auto shareKitSharedRecord = QOhosShareKit::SharedRecord{
             .mimeType = !sharedRecordImpl->isUrlContent()
-                ? sharedRecordImpl->mimeType().name()
-                : QLatin1String(mimeTextUriList),
+                ? sharedRecordImpl->mimeType().name().toStdString()
+                : std::string(mimeTextUriList),
         };
 
         if (!sharedRecordImpl->content().isNull()) {
-            shareKitSharedRecord.content = sharedRecordImpl->content();
+            shareKitSharedRecord.content = sharedRecordImpl->content().toStdString();
         } else if (!sharedRecordImpl->filePath().isNull()) {
-            shareKitSharedRecord.filePath = sharedRecordImpl->filePath();
+            shareKitSharedRecord.filePath = sharedRecordImpl->filePath().toStdString();
         } else {
             qOhosPrintfWarning("%s: SharedRecord doesn't have content or uri, skipping...", Q_FUNC_INFO);
             continue;
         }
 
         if (!sharedRecordImpl->title().isNull())
-            shareKitSharedRecord.title = sharedRecordImpl->title();
+            shareKitSharedRecord.title = sharedRecordImpl->title().toStdString();
         if (!sharedRecordImpl->label().isNull())
-            shareKitSharedRecord.label = sharedRecordImpl->label();
+            shareKitSharedRecord.label = sharedRecordImpl->label().toStdString();
         if (!sharedRecordImpl->description().isNull())
-            shareKitSharedRecord.description = sharedRecordImpl->description();
+            shareKitSharedRecord.description = sharedRecordImpl->description().toStdString();
         if (!sharedRecordImpl->thumbnail().isNull())
             shareKitSharedRecord.thumbnail = sharedRecordImpl->thumbnail();
         if (!sharedRecordImpl->thumbnailFilePath().isNull())
-            shareKitSharedRecord.thumbnailFilePath = sharedRecordImpl->thumbnailFilePath();
+            shareKitSharedRecord.thumbnailFilePath = sharedRecordImpl->thumbnailFilePath().toStdString();
         if (!sharedRecordImpl->extraData().isEmpty())
             shareKitSharedRecord.extraData = sharedRecordImpl->extraData();
 
-        records.append(shareKitSharedRecord);
+        records.push_back(shareKitSharedRecord);
     }
 
     return records;
@@ -615,21 +613,40 @@ std::shared_ptr<void> shareData(
     std::function<void()> panelClosedCallback,
     std::function<void(QSharedPointer<ShareKit::QOhosShareOperationResult>)> shareCompletedCallback)
 {
-    QOhosQpaFunctions::ShareKit::ShareControllerOptions qpaControllerOptions;
+    QOhosShareKit::ControllerOptions shareKitControllerOptions;
     if (!controllerOptions.isNull()) {
         const auto *controllerOptionsImpl = static_cast<const QOhosShareControllerOptionsImpl *>(controllerOptions.get());
-        qpaControllerOptions.anchorOffset = controllerOptionsImpl->anchorOffset();
-        qpaControllerOptions.anchorSize = controllerOptionsImpl->anchorSize();
-        qpaControllerOptions.useSingleSelectionMode = controllerOptionsImpl->isSingleSelection();
-        qpaControllerOptions.useDefaultPreviewMode = controllerOptionsImpl->isDefaultPreview();
+
+        const auto optAnchorOffset = controllerOptionsImpl->anchorOffset();
+        if (optAnchorOffset.has_value()) {
+            shareKitControllerOptions.anchor = QOhosShareKit::ShareControllerAnchor{
+                .windowOffset = optAnchorOffset.value(),
+                .size = controllerOptionsImpl->anchorSize(),
+            };
+        }
+
+        const auto optSingleSelection = controllerOptionsImpl->isSingleSelection();
+        if (optSingleSelection.has_value()) {
+            shareKitControllerOptions.selectionMode = optSingleSelection.value()
+                ? QOhosShareKit::SelectionMode::SINGLE
+                : QOhosShareKit::SelectionMode::BATCH;
+        }
+
+        const auto optDefaultPreview = controllerOptionsImpl->isDefaultPreview();
+        if (optDefaultPreview.has_value()) {
+            shareKitControllerOptions.previewMode = optDefaultPreview.value()
+                ? QOhosShareKit::SharePreviewMode::DEFAULT
+                : QOhosShareKit::SharePreviewMode::DETAIL;
+        }
+
         const auto optExcludedAbilities = controllerOptionsImpl->excludedAbilities();
         if (optExcludedAbilities.has_value())
-            qpaControllerOptions.excludedAbilities =
-                mapExcludedAbilitiesToQpaFunctions(optExcludedAbilities.value());
+            shareKitControllerOptions.excludedAbilities =
+                mapExcludedAbilitiesToShareKit(optExcludedAbilities.value());
     }
 
-    return QtOhos::getQOhosQpaFunctions().shareDataUsingShareKit(
-        optMainWindow, convertToQpaShareKitSharedRecords(records), qpaControllerOptions,
+    return QOhosShareKit::shareData(
+        optMainWindow, convertToShareKitSharedRecords(records), shareKitControllerOptions,
         std::move(panelClosedCallback),
         [shareCompletedCallback = std::move(shareCompletedCallback)](auto shareOperationResult) {
             shareCompletedCallback(QSharedPointer<QOhosShareOperationResultImpl>::create(shareOperationResult));
