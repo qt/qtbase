@@ -133,10 +133,6 @@ public:
 
     virtual void startAppProcess(
         QNapi::Object baseQAbility, const std::string &processId, QNapi::Object want,
-        QNapi::Object optStartOptions) = 0;
-
-    virtual void startAppProcess(
-        QNapi::Object baseQAbility, const std::string &processId, QNapi::Object want,
         QNapi::Object optStartOptions, std::function<void(JsState &)> continueFunc) = 0;
 
     virtual void startNoUiChildProcess(JsState &jsState, const std::string &libraryName, const std::vector<std::string> &args) = 0;
@@ -174,10 +170,6 @@ public:
         std::shared_ptr<QAbilityPeer> baseQAbilityPeer, QObjectThreadSafeRef qwindow,
         QNapi::Object optStartOptions,
         std::function<void(JsState &, std::shared_ptr<QAbilityPeer>)> startupNotifyFunc) = 0;
-
-    virtual void startAppProcess(
-        const std::string &processId, QNapi::Object requestWant,
-        QNapi::Object optStartOptions = {}) = 0;
 
     virtual void startAppProcess(
         const std::string &processId, QNapi::Object requestWant,

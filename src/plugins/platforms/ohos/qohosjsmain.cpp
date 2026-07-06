@@ -838,20 +838,11 @@ public:
 
     void startAppProcess(
         QNapi::Object baseQAbility, const std::string &processId, QNapi::Object requestWant,
-        QNapi::Object optStartOptions) override;
-
-    void startAppProcess(
-        QNapi::Object baseQAbility, const std::string &processId, QNapi::Object requestWant,
         QNapi::Object optStartOptions, std::function<void(JsState &)> continueFunc) override;
 
     void startNoUiChildProcess(JsState &jsState, const std::string &libraryName, const std::vector<std::string> &args) override;
 
     void tagWidgetOrWindowAsFloatWindow(QObject *widgetOrWindow, bool floatWindowEnabled) override;
-
-private:
-    QNapi::Promise startAppProcessImpl(
-        QNapi::Object baseQAbility, const std::string &processId, QNapi::Object requestWant,
-        QNapi::Object optStartOptions);
 };
 
 void AppFunctionsImpl::startQAbilityInstance(
@@ -865,26 +856,7 @@ void AppFunctionsImpl::startQAbilityInstance(
 
 void AppFunctionsImpl::startAppProcess(
     QNapi::Object baseQAbility, const std::string &processId, QNapi::Object requestWant,
-    QNapi::Object optStartOptions)
-{
-    std::ignore = startAppProcessImpl(baseQAbility, processId, requestWant, optStartOptions);
-}
-
-void AppFunctionsImpl::startAppProcess(
-    QNapi::Object baseQAbility, const std::string &processId, QNapi::Object requestWant,
     QNapi::Object optStartOptions, std::function<void(JsState &)> continueFunc)
-{
-    startAppProcessImpl(baseQAbility, processId, requestWant, optStartOptions)
-    .onCatch(QtOhos::makeErrorLoggingJsCallback("startAbility()"))
-    .onFinally(
-        [continueFunc = std::move(continueFunc)](const CallbackInfo &cbInfo) {
-            continueFunc(cbInfo.jsState());
-        });
-}
-
-QNapi::Promise AppFunctionsImpl::startAppProcessImpl(
-    QNapi::Object baseQAbility, const std::string &processId, QNapi::Object requestWant,
-    QNapi::Object optStartOptions)
 {
     auto __dbg = make_QCScopedDebugJS("AppFunctionsImpl::startAppProcess");
 
@@ -928,7 +900,13 @@ QNapi::Promise AppFunctionsImpl::startAppProcessImpl(
     std::vector<QNapi::ValueWrapper> startAbilityArgs = {startWant};
     if (!optStartOptions.IsEmpty())
         startAbilityArgs.push_back(optStartOptions);
-    return baseQAbility.evalToPromiseOrRejectOnThrow("context.startAbility(*)", startAbilityArgs);
+
+    baseQAbility.evalToPromiseOrRejectOnThrow("context.startAbility(*)", startAbilityArgs)
+    .onCatch(QtOhos::makeErrorLoggingJsCallback("startAbility()"))
+    .onFinally(
+        [continueFunc = std::move(continueFunc)](const CallbackInfo &cbInfo) {
+            continueFunc(cbInfo.jsState());
+        });
 }
 
 void AppFunctionsImpl::startNoUiChildProcess(

@@ -313,10 +313,6 @@ public:
 
     void startAppProcess(
         const std::string &processId, QNapi::Object requestWant,
-        QNapi::Object optStartOptions) override;
-
-    void startAppProcess(
-        const std::string &processId, QNapi::Object requestWant,
         QNapi::Object optStartOptions, std::function<void(JsState &)> continueFunc) override;
 
     void addNewWantConsumer(QOhosConsumer<JsState &, QNapi::Object, QNapi::Object> wantConsumer) override;
@@ -561,14 +557,6 @@ void JsStateImpl::startNewQAbilityInstance(
         m_appFunctions->startQAbilityInstance(
             baseQAbility, qwindow, optStartOptions, std::move(startupNotifyFunc));
     }
-}
-
-void JsStateImpl::startAppProcess(
-    const std::string &processId, QNapi::Object requestWant, QNapi::Object optStartOptions)
-{
-    auto baseQAbility = defaultQAbilityPeer()->qAbility();
-    if (!baseQAbility.IsEmpty())
-        m_appFunctions->startAppProcess(baseQAbility, processId, requestWant, optStartOptions);
 }
 
 void JsStateImpl::startAppProcess(
