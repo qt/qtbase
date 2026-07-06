@@ -303,6 +303,7 @@ public:
     std::shared_ptr<QAbilityPeer> tryGetQAbilityPeerByInstanceId(const std::string &instanceId) override;
     std::shared_ptr<QAbilityPeer> tryGetQAbilityPeerByInstance(QNapi::Object qAbility) override;
     std::shared_ptr<QAbilityPeer> tryGetQAbilityPeerByQWindow(QObjectThreadSafeRef qwindow) override;
+    std::optional<QNapi::Object> tryGetQAbilityByQWindow(QObjectThreadSafeRef qwindow) override;
 
     void visitEachQAbilityPeer(const std::function<void(std::shared_ptr<QAbilityPeer>)> &visitor) override;
 
@@ -539,6 +540,12 @@ std::shared_ptr<QAbilityPeer> JsStateImpl::tryGetQAbilityPeerByQWindow(QObjectTh
         [&](const auto &peer) {
             return peer->qWindowRef() == qwindow;
         });
+}
+
+std::optional<QNapi::Object> JsStateImpl::tryGetQAbilityByQWindow(QObjectThreadSafeRef qwindow)
+{
+    auto qAbilityPeer = tryGetQAbilityPeerByQWindow(qwindow);
+    return qAbilityPeer ? std::optional(qAbilityPeer->qAbility()) : std::nullopt;
 }
 
 void JsStateImpl::visitEachQAbilityPeer(const std::function<void(std::shared_ptr<QAbilityPeer>)> &visitor)
