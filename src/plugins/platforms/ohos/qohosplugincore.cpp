@@ -313,9 +313,9 @@ public:
 
     void startAppProcess(
         const std::string &processId, QNapi::Object requestWant,
-        QNapi::Object optStartOptions, std::function<void(JsState &)> continueFunc) override;
+        QNapi::Object optStartOptions, std::function<void(QOhosJsState &)> continueFunc) override;
 
-    void addNewWantConsumer(QOhosConsumer<JsState &, QNapi::Object, QNapi::Object> wantConsumer) override;
+    void addNewWantConsumer(QOhosConsumer<QOhosJsState &, QNapi::Object, QNapi::Object> wantConsumer) override;
 
     void startNoUiChildProcess(const std::string &libraryName, const std::vector<std::string> &args) override;
 
@@ -561,7 +561,7 @@ void JsStateImpl::startNewQAbilityInstance(
 
 void JsStateImpl::startAppProcess(
     const std::string &processId, QNapi::Object requestWant,
-    QNapi::Object optStartOptions, std::function<void(JsState &)> continueFunc)
+    QNapi::Object optStartOptions, std::function<void(QOhosJsState &)> continueFunc)
 {
     auto baseQAbility = defaultQAbilityPeer()->qAbility();
     if (!baseQAbility.IsEmpty()) {
@@ -572,7 +572,7 @@ void JsStateImpl::startAppProcess(
     }
 }
 
-void JsStateImpl::addNewWantConsumer(QOhosConsumer<JsState &, QNapi::Object, QNapi::Object> wantConsumer)
+void JsStateImpl::addNewWantConsumer(QOhosConsumer<QOhosJsState &, QNapi::Object, QNapi::Object> wantConsumer)
 {
     m_newWantConsumers.push_back(std::move(wantConsumer));
 }

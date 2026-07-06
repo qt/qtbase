@@ -59,6 +59,18 @@ public:
     virtual QNapi::Object defaultWindowStageOrEmpty() = 0;
     virtual QNapi::Object defaultUiContextOrEmpty() = 0;
 
+    virtual QNapi::Object appLaunchWant() = 0;
+    virtual std::optional<QNapi::Object> optAppLaunchParam() = 0;
+
+    virtual void startAppProcess(
+        const std::string &processId, QNapi::Object requestWant,
+        QNapi::Object optStartOptions, std::function<void(QOhosJsState &)> continueFunc) = 0;
+
+    virtual void startNoUiChildProcess(const std::string &libraryName, const std::vector<std::string> &args) = 0;
+
+    virtual void addNewWantConsumer(
+        QOhosConsumer<QOhosJsState &, QNapi::Object, QNapi::Object> wantConsumer) = 0;
+
     template<typename T = QNapi::Value>
     T eval(const std::string &expr, const std::vector<QNapi::ValueWrapper> &exprArgs = {});
 
