@@ -1037,22 +1037,22 @@ void QOhosQpaFunctionsImpl::setOnContinueRequestsHandlerForAbilityInstanceWindow
     struct JsResultContext
     {
         QNapi::Reference<QNapi::Object> wantParamsReference;
-        QOhosConsumer<JsState &, QOhosAbilityOnContinueResult> resultConsumer;
+        QOhosConsumer<JsState &, QNapi::Number> resultConsumer;
     };
 
     QtOhos::runInJsThreadAndWait(
         [&](JsState &jsState) {
-            auto uiAbilityPeer = QUiAbilityPeer::tryCastFromQAbilityPeerOrNull(
-                jsState.tryGetQAbilityPeerByQWindow(qWindowRef));
-            if (!uiAbilityPeer) {
+            auto optQAbility = jsState.tryGetQAbilityByQWindow(qWindowRef);
+            if (!optQAbility.has_value()) {
                 qOhosPrintfError(
-                    "%s: no QUiAbilityPeer for window %s, handler not set",
+                    "%s: no ability for window %s, handler not set",
                     Q_FUNC_INFO, qWindowRef.refName().c_str());
                 return;
             }
 
-            uiAbilityPeer->setOnContinueRequestsHandler(
-                [sharedRequestsHandler](JsState &, QNapi::Object wantParamsObj, auto resultConsumer) {
+            jsState.setOnContinueRequestsHandler(
+                optQAbility.value(),
+                [sharedRequestsHandler](QOhosJsState &, QNapi::Object wantParamsObj, auto resultConsumer) {
                     int sourceVersionCode = wantParamsObj.get<QNapi::Number>("version");
                     auto jsResultContext = makeProxyWithJsThreadDeleter(std::make_shared<JsResultContext>());
                     jsResultContext->wantParamsReference = QNapi::Reference<>::makePersistentFrom(wantParamsObj);
@@ -1089,7 +1089,7 @@ void QOhosQpaFunctionsImpl::setOnContinueRequestsHandlerForAbilityInstanceWindow
                                                     Q_FUNC_INFO, static_cast<int>(qtResponse.status));
                                             }
                                             jsResultContext->resultConsumer(
-                                                jsState, ohosResult.value_or(QOhosAbilityOnContinueResult::REJECT));
+                                                jsState, jsState.mapOhosEnumToJs(ohosResult.value_or(QOhosAbilityOnContinueResult::REJECT)));
                                         });
                                 });
                         });
