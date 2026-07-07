@@ -3,6 +3,8 @@
 qt_internal_add_RunCMake_test(QtFlagHandlingHelpers)
 qt_internal_add_RunCMake_test(QtPrlHelpers)
 
+qt_internal_add_RunCMake_test(AutomocParser)
+
 qt_internal_add_RunCMake_test(find_package)
 
 set(extra_run_cmake_args "")
