@@ -1367,6 +1367,7 @@ void QHttp2Connection::connectionError(Http2Error errorCode, const QString &mess
         if (stream && stream->isActive())
             stream->finishWithError(errorCode, message);
     }
+    emit errorOccurred(errorCode, message);
     // RFC 9113 5.4.1: After sending the GOAWAY frame for an error condition,
     // the endpoint MUST close the TCP connection
     closeSession();
