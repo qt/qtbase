@@ -4,6 +4,7 @@
 
 #ifndef QOBJECT_H
 #error Do not include qobject_impl.h directly
+#include <QtCore/qobjectdefs_impl.h>
 #endif
 
 #if 0
@@ -11,31 +12,46 @@
 #pragma qt_sync_stop_processing
 #endif
 
+#include <QtCore/qmetatype.h>
+
 QT_BEGIN_NAMESPACE
 
 
 namespace QtPrivate {
+    namespace { struct UniqueType; }
     /*
         Logic to statically generate the array of qMetaTypeId
         ConnectionTypes<FunctionPointer<Signal>::Arguments>::types() returns an array
         of int that is suitable for the types arguments of the connection functions.
 
-        The array only exist of all the types are declared as a metatype
-        (detected using the TypesAreDeclaredMetaType helper struct)
-        If one of the type is not declared, the function return 0 and the signal
-        cannot be used in queued connection.
+        The array only exist if all the types are valid for QMetaType, detected
+        using qTryMetaTypeInterfaceForType(). If any type is not valid at this
+        point (non-const references and forward-declared types), the function
+        returns nullptr. If the issue is a forward-declared type, the function
+        can be used in a queued connection if the type is registered elsewhere
+        before the signal is emitted. If the type is a non-const reference, it
+        cannot be use in queued connections at all.
     */
-    template <typename ArgList> struct TypesAreDeclaredMetaType { enum { Value = false }; };
-    template <> struct TypesAreDeclaredMetaType<List<>> { enum { Value = true }; };
-    template <typename Arg, typename... Tail> struct TypesAreDeclaredMetaType<List<Arg, Tail...> >
-    { enum { Value = QMetaTypeId2<Arg>::Defined && TypesAreDeclaredMetaType<List<Tail...>>::Value }; };
+    template <typename... Args> struct ConnectionTypesHelper
+    {
+        static const int *types()
+        {
+            if constexpr ((TypeIsSuitableForMetaType<Args, UniqueType> && ...)) {
+                static const int t[] = { qMetaTypeId<Args>()..., 0 };
+                return t;
+            } else {
+                return nullptr;
+            }
+        }
+    };
 
-    template <typename ArgList, bool Declared = TypesAreDeclaredMetaType<ArgList>::Value > struct ConnectionTypes
+    template <typename ArgList> struct ConnectionTypes;
+    template <> struct ConnectionTypes<List<>>
     { static const int *types() { return nullptr; } };
-    template <> struct ConnectionTypes<List<>, true>
-    { static const int *types() { return nullptr; } };
-    template <typename... Args> struct ConnectionTypes<List<Args...>, true>
-    { static const int *types() { static const int t[sizeof...(Args) + 1] = { (QtPrivate::QMetaTypeIdHelper<Args>::qt_metatype_id())..., 0 }; return t; } };
+    template <typename... Args> struct ConnectionTypes<List<Args...>>
+            : public ConnectionTypesHelper<typename MetatypeDecay<Args>::type...>
+    {
+    };
 }
 
 

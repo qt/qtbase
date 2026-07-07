@@ -363,19 +363,31 @@ To convertImplicit(const From& from)
     template <> struct IsPointerDeclaredOpaque<void *>       : std::true_type {};
     template <> struct IsPointerDeclaredOpaque<const void *> : std::true_type {};
 
+    template <typename T, typename UniqueType = void> constexpr inline
+    bool TypeIsCompleteOrVoid = is_complete<T, UniqueType>::value || std::is_void_v<T>;
+    template <typename T> constexpr inline
+    bool PointerIsSuitableForMetaTypeHelper =
+            IsPointerDeclaredOpaque<T>::value
+            || is_complete<std::remove_pointer_t<T>>::value;
+    template <typename T, typename UniqueType = void> constexpr inline
+    bool TypeIsSuitableForMetaType =
+            TypeIsCompleteOrVoid<T, UniqueType>
+            && !std::is_reference_v<T>
+            && (!std::is_pointer_v<T> || PointerIsSuitableForMetaTypeHelper<T>);
+
     template <typename X> static constexpr bool checkTypeIsSuitableForMetaType()
     {
         using T = typename MetatypeDecay<X>::type;
-        static_assert(is_complete<T, void>::value || std::is_void_v<T>,
-                "Meta Types must be fully defined");
+        static_assert(TypeIsCompleteOrVoid<T>, "Meta Types must be fully defined");
         static_assert(!std::is_reference_v<T>,
                 "Meta Types cannot be non-const references or rvalue references.");
-        if constexpr (std::is_pointer_v<T> && !IsPointerDeclaredOpaque<T>::value) {
-            using Pointed = std::remove_pointer_t<T>;
-            static_assert(is_complete<Pointed, void>::value,
+        if constexpr (std::is_pointer_v<T>) {
+            static_assert(PointerIsSuitableForMetaTypeHelper<T>,
                     "Pointer Meta Types must either point to fully-defined types "
                     "or be declared with Q_DECLARE_OPAQUE_POINTER(T *)");
         }
+        // final check
+        static_assert(TypeIsSuitableForMetaType<T>);
         return true;
     }
 }  // namespace QtPrivate
