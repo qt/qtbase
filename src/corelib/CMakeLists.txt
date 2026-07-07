@@ -1720,6 +1720,8 @@ endif()
 if(QT_FEATURE_swift_interop)
   set_target_properties(Core PROPERTIES _qt_swift_apinotes
     "${CMAKE_CURRENT_SOURCE_DIR}/platform/swift/QtCore.apinotes")
+  set_target_properties(Core PROPERTIES _qt_swift_overlay
+    "${CMAKE_CURRENT_SOURCE_DIR}/platform/swift/QtCore.swift")
 endif()
 
 set(elf_linker_script_contents "")
