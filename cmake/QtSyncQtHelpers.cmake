@@ -75,6 +75,13 @@ function(qt_internal_target_sync_headers target
         set(internal_module_argument "-internal")
     endif()
 
+    # For framework builds syncqt also generates lowercase forwarding headers into the staging
+    # directory, so that the framework's headers can be reached via a plain include path.
+    set(framework_argument "")
+    if(is_framework)
+        set(framework_argument "-framework")
+    endif()
+
     get_target_property(qpa_filter_regex ${target} _qt_module_qpa_headers_filter_regex)
     get_target_property(rhi_filter_regex ${target} _qt_module_rhi_headers_filter_regex)
     get_target_property(ssg_filter_regex ${target} _qt_module_ssg_headers_filter_regex)
@@ -141,6 +148,7 @@ function(qt_internal_target_sync_headers target
         ${public_namespaces_filter}
         ${non_qt_module_argument}
         ${internal_module_argument}
+        ${framework_argument}
     )
 
     if(QT_INTERNAL_ENABLE_SYNCQT_DEBUG_OUTPUT)
@@ -267,8 +275,11 @@ function(qt_internal_target_sync_headers target
     endif()
     add_dependencies(sync_all_public_headers ${target}_sync_all_public_headers)
 
-    if(NOT is_3rd_party_library AND NOT is_framework AND module_headers)
-        # Install all the CaMeL style aliases of header files from the staging directory in one rule
+    if(NOT is_3rd_party_library AND module_headers)
+        # Install all the CaMeL style aliases of header files from the staging directory
+        # in one rule. For framework builds these forwarding headers are installed alongside
+        # the frameworks in the non-framework include dir, so that they can be found via a
+        # plain include path in addition to the framework's own Headers dir.
         qt_install(DIRECTORY "${syncqt_staging_dir}/"
             DESTINATION "${module_install_interface_include_dir}"
         )

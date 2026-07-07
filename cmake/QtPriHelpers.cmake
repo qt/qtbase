@@ -371,7 +371,9 @@ function(qt_generate_module_pri_file target)
     if(is_fw)
         qt_internal_get_framework_info(fw ${target})
         set(framework_base_path "$$QT_MODULE_LIB_BASE")
-        set(public_module_includes "${framework_base_path}/${fw_header_dir}")
+        # Expose the non-framework include/QtFoo dir, which holds forwarding
+        # headers, so that non-framework-style includes (<qfoo.h>) work.
+        set(public_module_includes "$$QT_MODULE_INCLUDE_BASE/${module}")
         set(public_module_frameworks "${framework_base_path}")
         set(private_module_includes "")
         qt_internal_append_include_directories_with_headers_check(${target}

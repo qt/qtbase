@@ -630,12 +630,9 @@ function(qt_internal_add_module target)
         set(fw_install_header_dir "${INSTALL_LIBDIR}/${fw_header_dir}")
         set(fw_output_header_dir "${QT_BUILD_DIR}/${fw_install_header_dir}")
         list(APPEND public_includes
-            # Add the framework Headers subdir, so that non-framework-style includes work. The
-            # BUILD_INTERFACE Headers symlink was previously claimed not to exist at the relevant
-            # time, and a fully specified Header path was used instead. This doesn't seem to be a
-            # problem anymore.
-            "$<BUILD_INTERFACE:${fw_output_header_dir}>"
-            "$<INSTALL_INTERFACE:${fw_install_header_dir}>"
+            # Expose the non-framework include/QtFoo dir, which holds forwarding
+            # headers, so that non-framework-style includes (<qfoo.h>) work.
+            "$<INSTALL_INTERFACE:${module_install_interface_include_dir}>"
 
             # Add the lib/Foo.framework dir as an include path, which moc
             # then turns into -F internally. FIXME: Once we require

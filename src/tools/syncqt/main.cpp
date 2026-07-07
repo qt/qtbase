@@ -256,6 +256,8 @@ public:
 
     bool showOnly() const { return m_showOnly; }
 
+    bool isFramework() const { return m_isFramework; }
+
     bool warningsAreErrors() const { return m_warningsAreErrors; }
 
     void printHelp() const
@@ -324,6 +326,10 @@ public:
                      "  -minimal                        Do not create CaMeL case headers for the\n"
                      "                                  public C++ symbols.\n"
                      "  -showonly                       Show actions, but not perform them.\n"
+                     "  -framework                      Indicates that the module is built as a\n"
+                     "                                  framework. Generates lowercase forwarding\n"
+                     "                                  headers so the framework's headers can\n"
+                     "                                  also be reached via a plain include path.\n"
                      "  -warningsAreErrors              Treat all warnings as errors.\n"
                      "  -help                           Print this help.\n";
     }
@@ -385,6 +391,7 @@ private:
             { "-internal", { &m_isInternal, true } }, { "-all", { &m_scanAllMode, true } },
             { "-copy", { &m_copy, true } },           { "-minimal", { &m_minimal, true } },
             { "-showonly", { &m_showOnly, true } },   { "-showOnly", { &m_showOnly, true } },
+            { "-framework", { &m_isFramework, true } },
             { "-warningsAreErrors", { &m_warningsAreErrors, true } }
         };
 
@@ -556,6 +563,7 @@ private:
     bool m_debug = false;
     bool m_minimal = false;
     bool m_showOnly = false;
+    bool m_isFramework = false;
     bool m_warningsAreErrors = false;
     std::regex m_qpaHeadersRegex;
     std::regex m_rhiHeadersRegex;
@@ -614,6 +622,7 @@ class SyncScanner
             m_deprecatedHeaders;
     std::vector<std::string> m_versionScriptContents;
     std::set<std::string> m_producedHeaders;
+    std::set<std::string> m_publicHeaders;
     std::vector<std::string> m_headerCheckExceptions;
     SymbolContainer m_symbols;
     std::ostream &scannerDebug() const
@@ -727,7 +736,7 @@ public:
         for (auto it = m_symbols.begin(); it != m_symbols.end(); ++it) {
             const std::string &filename = it->second.file();
             if (!filename.empty()) {
-                if (generateQtCamelCaseFileIfContentChanged(
+                if (generateForwardingHeader(
                             m_commandLineArgs->includeDir() + '/' + it->first, filename)) {
                     m_producedHeaders.insert(it->first);
                 } else {
@@ -787,6 +796,21 @@ public:
             // process eaiser.
             if (!copyGeneratedHeadersToStagingDirectory(m_commandLineArgs->stagingDir()))
                 error = SyncFailed;
+
+            // For framework builds the staging directory is installed into the non-framework
+            // include/<Module> dir alongside the framework, so that its headers can also be
+            // reached via a plain include path. Generate lowercase forwarding headers there
+            // (in addition to the CaMeL case aliases copied above) so that bare includes like
+            // #include <qstring.h> resolve into the framework. These are generated after the
+            // copy above so they are not overwritten by the build-tree source aliases.
+            if (m_commandLineArgs->isFramework()) {
+                for (const auto &header : m_publicHeaders) {
+                    if (!generateForwardingHeader(m_commandLineArgs->stagingDir() + '/' + header,
+                                                  header, /*useIncludeNext=*/true)) {
+                        error = SyncFailed;
+                    }
+                }
+            }
         }
         return error;
     }
@@ -953,6 +977,12 @@ public:
                                                              originalStamp))
                 return false;
         }
+
+        // Remember the public headers so that, for framework builds, we can generate
+        // forwarding headers that re-expose them via a plain (non-framework) include path
+        // alongside the framework (see generateForwardingHeader).
+        if (!isPrivate && !isQpa && !isRhi && !isSsg && !isSpi)
+            m_publicHeaders.insert(m_currentFilename);
 
         // No further processing in minimal mode.
         if (m_commandLineArgs->minimal())
@@ -1550,8 +1580,9 @@ public:
                 != m_commandLineArgs->generatedHeaders().end();
     }
 
-    [[nodiscard]] bool generateQtCamelCaseFileIfContentChanged(const std::string &outputFilePath,
-                                                               const std::string &aliasedFilePath);
+    [[nodiscard]] bool generateForwardingHeader(const std::string &outputFilePath,
+                                                const std::string &aliasedFilePath,
+                                                bool useIncludeNext = false);
 
     [[nodiscard]] bool generateAliasedHeaderFileIfTimestampChanged(
             const std::string &outputFilePath, const std::string &aliasedFilePath,
@@ -1764,13 +1795,18 @@ bool SyncScanner::updateOrCopy(const std::filesystem::path &src,
     return true;
 }
 
-// The function generates Qt CaMeL-case files.
-// CaMeL-case files can have timestamp that is the same as or newer than timestamp of file that
-// supposed to included there. It's not an issue when we generate regular aliases because the
-// content of aliases is always the same, but we only want to "touch" them when content of original
-// is changed.
-bool SyncScanner::generateQtCamelCaseFileIfContentChanged(const std::string &outputFilePath,
-                                                          const std::string &aliasedFilePath)
+// The function generates a forwarding header at outputFilePath that includes aliasedFilePath
+// from the current module (that is, <Module/aliasedFilePath>).
+//
+// With useIncludeNext the forwarder uses #include_next instead of a plain #include. This is
+// needed when the forwarder itself is found under the same spelling as it forwards to,
+// as is the case for the lowercase framework forwarders that re-expose a framework's own
+// headers via a plain include path: a plain #include would resolve back to the forwarder
+// itself and recurse, whereas #include_next continues the include search past the forwarder
+// into the framework.
+bool SyncScanner::generateForwardingHeader(const std::string &outputFilePath,
+                                           const std::string &aliasedFilePath,
+                                           bool useIncludeNext)
 {
     if (m_commandLineArgs->showOnly())
         return true;
@@ -1781,7 +1817,12 @@ bool SyncScanner::generateQtCamelCaseFileIfContentChanged(const std::string &out
         return false;
     }
 
-    std::string buffer = "#include <";
+    std::string buffer;
+    if (useIncludeNext)
+        buffer += "#include_next <";
+    else
+        buffer += "#include <";
+
     buffer += m_commandLineArgs->moduleName() + "/";
     buffer += aliasedFilePath;
     buffer += "> // IWYU pragma: export\n";

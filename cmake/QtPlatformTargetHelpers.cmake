@@ -16,8 +16,23 @@ function(qt_internal_setup_public_platform_target)
         $<BUILD_INTERFACE:${build_interface_definition_dir}>
         $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
         $<INSTALL_INTERFACE:${install_interface_definition_dir}>
-        $<INSTALL_INTERFACE:${INSTALL_INCLUDEDIR}>
         )
+
+    if(QT_FEATURE_framework)
+        # For framework builds the frameworks themselves are the primary route to Qt's headers
+        # (via -F/-iframework). The non-framework include dir only holds forwarding headers and
+        # a few header-only modules, so it must be searched *after* the frameworks and the system
+        # dirs; otherwise a prefixed include like <QtCore/qstring.h> would resolve to a forwarding
+        # header instead of directly to the framework. Emit it as -idirafter (the compiler's
+        # "after" group) which is guaranteed to be searched last, while still being considered
+        # a system include directory.
+        target_compile_options(Platform INTERFACE
+            "$<INSTALL_INTERFACE:SHELL:-idirafter $<INSTALL_PREFIX>/${INSTALL_INCLUDEDIR}>")
+    else()
+        target_include_directories(Platform INTERFACE
+            $<INSTALL_INTERFACE:${INSTALL_INCLUDEDIR}>)
+    endif()
+
     target_compile_definitions(Platform INTERFACE ${QT_PLATFORM_DEFINITIONS})
 
     set_target_properties(Platform PROPERTIES
