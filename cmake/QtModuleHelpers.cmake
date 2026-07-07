@@ -1301,6 +1301,43 @@ function(qt_internal_apply_apple_privacy_manifest target)
     endif()
 endfunction()
 
+# https://clang.llvm.org/docs/APINotes.html
+function(qt_internal_apply_swift_apinotes target)
+    get_target_property(apinotes ${target} _qt_swift_apinotes)
+    if(NOT apinotes)
+        return()
+    endif()
+
+    if(NOT QT_FEATURE_swift_interop)
+        return()
+    endif()
+
+    get_filename_component(apinotes "${apinotes}" ABSOLUTE)
+    qt_internal_module_info(module "${target}")
+
+    get_target_property(is_framework ${target} FRAMEWORK)
+    if(is_framework)
+        qt_internal_get_framework_info(fw ${target})
+        get_target_property(output_dir ${target} LIBRARY_OUTPUT_DIRECTORY)
+        set(apinotes_dir "${output_dir}/${fw_versioned_header_dir}")
+    else()
+        set(apinotes_dir "${module_build_interface_include_dir}")
+        qt_install(FILES "${apinotes_dir}/${module}.apinotes"
+            DESTINATION "${module_install_interface_include_dir}")
+    endif()
+
+    set(apinotes_output "${apinotes_dir}/${module}.apinotes")
+    add_custom_command(
+        OUTPUT "${apinotes_output}"
+        DEPENDS "${apinotes}"
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${apinotes_dir}"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${apinotes}" "${apinotes_output}"
+        VERBATIM
+        COMMENT "Copying Swift API notes for ${target}"
+    )
+    target_sources(${target} PRIVATE "${apinotes_output}")
+endfunction()
+
 function(qt_finalize_module target)
     set(no_value_options
         INTERNAL_MODULE
@@ -1372,6 +1409,8 @@ function(qt_finalize_module target)
     endif()
 
     qt_internal_apply_apple_privacy_manifest(${target})
+    qt_internal_apply_swift_apinotes(${target})
+
     _qt_internal_finalize_sbom(${target})
 endfunction()
 

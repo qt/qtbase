@@ -26,7 +26,7 @@ path = ["bin/*", "coin/**","libexec/*","**_clang-format", "**.cmake", "**.conf",
         "**.pro", "**.pri", "**.yaml", "cmake/**.in", "cmake/ios/LaunchScreen.storyboard",
         "cmake/**md", "**.yml", "**.dynlist.in", "cmake/**.plist",
         "src/corelib/global/qconfig.cpp.in", "src/corelib/Qt6CoreConfigureFileTemplate.in",
-        "**.cfg", "**/Makefile", "**/CMakeLists.txt", "**.qrc", ".tag"]
+        "**.cfg", "**/Makefile", "**/CMakeLists.txt", "**.qrc", ".tag", "**.apinotes"]
 precedence = "closest"
 comment = "build system"
 SPDX-FileCopyrightText = "Copyright (C) The Qt Company Ltd."

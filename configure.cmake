@@ -1348,6 +1348,12 @@ qt_feature_config("android_16kb_pages" QMAKE_PUBLIC_QT_CONFIG)
 qt_feature("clang_module_maps" PRIVATE
     LABEL "Generate Clang header module maps"
     AUTODETECT OFF
+    ENABLE QT_FEATURE_swift_interop
+)
+qt_feature("swift_interop" PRIVATE
+    LABEL "Swift/C++ interoperability"
+    PURPOSE "Enable Swift/C++ interoperability for Qt modules."
+    AUTODETECT OFF
 )
 
 qt_configure_add_summary_build_type_and_config()
@@ -1469,6 +1475,10 @@ qt_configure_add_summary_entry(
 qt_configure_add_summary_entry(
     ARGS "clang_module_maps"
     CONDITION QT_FEATURE_clang_module_maps
+)
+qt_configure_add_summary_entry(
+    ARGS "swift_interop"
+    CONDITION QT_FEATURE_swift_interop
 )
 qt_configure_end_summary_section() # end of "Build options" section
 qt_configure_add_summary_section(NAME "Qt modules and options")
