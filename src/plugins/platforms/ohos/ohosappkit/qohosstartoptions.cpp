@@ -331,21 +331,6 @@ public:
     }
 
     /*!
-        \fn QtOhosAppKit::QOhosStartOptions::setWindowFocused(bool windowFocused)
-        \obsolete
-
-        Sets \a windowFocused on a launched window.
-
-        This field is not supported from HarmonyOS SDK v5.0.3.400.
-        This function is deprecated and no longer has any effect.
-    */
-    void setWindowFocused(bool windowFocused) override
-    {
-        Q_UNUSED(windowFocused);
-        qCWarning(QtForOhos, "%s: the function is deprecated and no longer has any effect", Q_FUNC_INFO);
-    }
-
-    /*!
         \fn QtOhosAppKit::QOhosStartOptions::setStartWindowIcon(const QImage &startWindowIcon)
 
         Sets \a startWindowIcon for the start window.

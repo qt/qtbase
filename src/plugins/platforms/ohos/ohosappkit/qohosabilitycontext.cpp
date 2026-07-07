@@ -1117,16 +1117,6 @@ void startAppProcessImpl(
 */
 
 /*!
-    \fn void QtOhosAppKit::QOhosAbilityContext::newWantReceived(QOhosWant want)
-
-    Singal is emitted when an ability gets new \a want. It is recommended to use newer newWantInfoReceived() signal.
-    See \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references-V5/js-apis-app-ability-uiability-V5#uiabilityonnewwant}
-    {On New Want}.
-
-    \sa newWantInfoReceived()
-*/
-
-/*!
     \fn void QtOhosAppKit::QOhosAbilityContext::newWantInfoReceived(QSharedPointer<QtOhosAppKit::QOhosWantInfo> wantInfo)
 
     Singal is emitted when an ability gets new \a want. See
@@ -1188,28 +1178,9 @@ QOhosAbilityContext::QOhosAbilityContext()
 {
     addNewWantConsumer(
         this,
-        [this](QJsonObject jsonWant) {
-            auto want = convertWantFromJsonObject(jsonWant);
-            Q_EMIT newWantReceived(want);
-        });
-
-    addNewWantConsumer(
-        this,
         [this](QSharedPointer<detail::WantInfo> wantInfo) {
             Q_EMIT newWantInfoReceived(convertToOhosAppKitWantInfo(wantInfo));
         });
-}
-
-/*!
-    \fn QOhosAbilityContext *QtOhosAppKit::QOhosAbilityContext::instance()
-
-    Gets QOhosAbilityContext global default instance.
-
-    \sa getDefaultInstance()
-*/
-QOhosAbilityContext *QOhosAbilityContext::instance()
-{
-    return QOhosAbilityContext::getDefaultInstance().data();
 }
 
 /*!

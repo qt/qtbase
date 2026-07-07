@@ -25,7 +25,6 @@ public:
 
     static void startNoUiChildProcess(QString libraryName, QStringList args);
 
-    static QOhosWant getAppLaunchWant();
     static QSharedPointer<QOhosWantInfo> getAppLaunchWantInfo();
 
     virtual bool hasSerialPortAccessRight(const QString &portName) const = 0;

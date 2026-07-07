@@ -402,22 +402,6 @@ void QOhosAppContext::startNoUiChildProcess(QString libraryName, QStringList arg
 }
 
 /*!
-  Returns the Want object that was used to launch initial instance of the application's QAbility.
-  It is recommended to use newer getAppLaunchWantInfo() method.
-
-  \sa getAppLaunchWantInfo()
-*/
-QOhosWant QOhosAppContext::getAppLaunchWant()
-{
-    auto jsonAppLaunchWant = QOhosJsThreadGateway::eval(
-        [](QOhosJsState &jsState) {
-            return QOhosJsEnv::fromNapiValue<QJsonObject>(jsState.appLaunchWant());
-        },
-        Q_FUNC_INFO);
-    return convertWantFromJsonObject(jsonAppLaunchWant);
-}
-
-/*!
     \fn static QSharedPointer<QtOhosAppKit::QOhosWantInfo> QtOhosAppKit::QOhosAppContext::getAppLaunchWantInfo()
 
     Returns the Want object that was used to launch initial instance of the application's QAbility.
