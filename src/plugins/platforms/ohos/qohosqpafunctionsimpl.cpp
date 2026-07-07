@@ -11,6 +11,7 @@
 #include <QtGui/qimage.h>
 #include <QtGui/qscreen.h>
 #include <QtGui/qwindow.h>
+#include <QtGui/private/qohosimageconversions_p.h>
 #include <algorithm>
 #include <chrono>
 #include <filemanagement/file_uri/oh_file_uri.h>
@@ -21,7 +22,6 @@
 #include <qohosapppermissions_p.h>
 #include <qohosenums.h>
 #include <qohosjsutils.h>
-#include <qohospixelmapconversions.h>
 #include <qohosplatformclipboard.h>
 #include <qohosplatformintegration.h>
 #include <qohosplatformservices.h>
@@ -258,7 +258,7 @@ QNapi::Object convertStartOptionsToNapiObject(
     if (opts.windowIcon.has_value()) {
         auto windowIcon = opts.windowIcon.value().value<QImage>();
         if (!windowIcon.isNull())
-            napiOptions.set("startWindowIcon", createNapiPixelMapFromQImage(jsState, windowIcon));
+            napiOptions.set("startWindowIcon", makeOhosNapiPixelMapFromQImage(jsState, windowIcon));
     }
     if (opts.windowBackgroundColorHex.has_value())
         napiOptions.set("startWindowBackgroundColor", opts.windowBackgroundColorHex.value().toStdString());

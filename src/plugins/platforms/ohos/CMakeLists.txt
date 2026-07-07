@@ -38,7 +38,6 @@ qt_internal_add_plugin(QOhosPlatformIntegrationPlugin
         qohosfloatingwindow.cpp qohosfloatingwindow.h
         qohosforeignwindow.cpp qohosforeignwindow.h
         qohospermissionshelperimpl.cpp qohospermissionshelperimpl.h
-        qohosimageformat.cpp qohosimageformat.h
         qohosinputcontext.cpp qohosinputcontext.h
         qohosinputmethodproxy.cpp qohosinputmethodproxy.h
         qohosinputmethodeventhandler.cpp qohosinputmethodeventhandler.h

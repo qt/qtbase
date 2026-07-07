@@ -8,6 +8,7 @@
 #include <QtCore/private/qnapi_p.h>
 #include <qohosjsenv_p.h>
 #include <QtCore/qscopeguard.h>
+#include <QtGui/private/qohosimageconversions_p.h>
 #include <QtGui/qguiapplication.h>
 #include <QtGui/qimage.h>
 #include <algorithm>
@@ -22,7 +23,6 @@
 #include <qohosdeviceinfo_p.h>
 #include <qohosdisplayinfo.h>
 #include <qohosenums.h>
-#include <qohosimageformat.h>
 #include <qohosjsutils.h>
 #include <qohospixelmapconversions.h>
 #include <qohosplatformintegration.h>
@@ -492,7 +492,7 @@ void QOhosWindowProxy::setCustomCursor(const QImage &customCursorImage, const QP
         auto jsCursor = QNapi::makeObject(
             jsState.env(),
             {
-                {"pixelMap", createNapiPixelMapFromQImage(jsState, convertedImage)},
+                {"pixelMap", makeOhosNapiPixelMapFromQImage(jsState, convertedImage)},
                 {"focusX", hotSpot.x()},
                 {"focusY", hotSpot.y()},
             });
@@ -1678,7 +1678,7 @@ QPixmap QOhosWindowProxy::snapshot() const
                     QArkUi::callArkUiOrFailOnErrorResult(
                         Q_OHOS_NAMED_FUNC(::OH_PixelmapNative_ConvertPixelmapNativeFromNapi),
                         cbInfo.Env(), napiPixmap, &pixelMapNativePtr);
-                    auto pixelMap = wrapNativePixelMapPtr(pixelMapNativePtr);
+                    auto pixelMap = wrapOhosNativePixelMapPtr(pixelMapNativePtr);
 
                     thenPromise(
                         QPixmap::fromImage(createQImageFromNativePixelMap(pixelMap.get())));

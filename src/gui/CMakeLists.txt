@@ -511,7 +511,23 @@ qt_internal_extend_target(Gui CONDITION WIN32
 qt_internal_extend_target(Gui CONDITION OHOS
     SOURCES
         platform/ohos/qohosnativeinterface.cpp
+        platform/ohos/qohosimageconversions.cpp
+        platform/ohos/qohosimageconversions_p.h
+    DEFINES
+        NODE_ADDON_API_ENABLE_TYPE_CHECK_ON_AS
+        NAPI_CPP_EXCEPTIONS
+    LIBRARIES
+        NodeAddonApi::NodeAddonApi
+        ace_napi.z
+        hilog_ndk.z
+        pixelmap
 )
+
+if(OHOS)
+    # Node-API C++ wrapper needs exceptions; QtGui is otherwise built without.
+    set_source_files_properties(platform/ohos/qohosimageconversions.cpp
+        PROPERTIES COMPILE_FLAGS "-fexceptions")
+endif()
 
 if(QT_FEATURE_graphicsframecapture)
     qt_internal_extend_target(Gui

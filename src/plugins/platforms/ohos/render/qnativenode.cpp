@@ -7,6 +7,7 @@
 #include <QPointer>
 #include <qohosutils.h>
 #include <QtGui/private/qguiapplication_p.h>
+#include <QtGui/private/qohosimageconversions_p.h>
 #include <QtGui/qguiapplication.h>
 #include <ace/xcomponent/native_interface_xcomponent.h>
 #include <arkui/native_node.h>
@@ -16,7 +17,6 @@
 #include <qarkui/qembeddedwindownode.h>
 #include <qohosinputmethodeventhandler.h>
 #include <qohosjsmain.h>
-#include <qohospixelmapconversions.h>
 #include <qohosplatformintegration.h>
 #include <qohosplatformwindow.h>
 #include <qohosudmf.h>
@@ -439,7 +439,7 @@ void QNativeNode::startDrag(
             std::vector<std::shared_ptr<::OH_PixelmapNative>> pixelMaps;
             std::transform(
                 images.begin(), images.end(), std::back_inserter(pixelMaps),
-                &createNativePixelMapFromQImage);
+                &makeOhosNativePixelMapFromQImage);
 
             struct DragContext
             {
