@@ -3112,6 +3112,10 @@ void tst_QTextEdit::linkSelectionArtifact()
     endCur.movePosition(QTextCursor::End);
     const QRect endRect = e.cursorRect(endCur);
 
+    // Set the paintCount to 0
+    e.paintCount = 0;
+    QCOMPARE(e.paintCount, 0);
+
     // Click the link to activate the focus outline
     const QPoint clickPos((startRect.left() + endRect.left()) / 2,
                           startRect.center().y());
@@ -3119,8 +3123,9 @@ void tst_QTextEdit::linkSelectionArtifact()
 
     // Wait for cursor blink to trigger a partial repaint (the artifact
     // only appears after a partial repaint clips the selection region)
+    QTRY_COMPARE_NE(e.paintCount, 0);
     const int countAfterClick = e.paintCount;
-    QTRY_VERIFY(e.paintCount > countAfterClick + 1);
+    QTRY_COMPARE_GT(e.paintCount, countAfterClick);
 
     // Check the interior of the selection outline, inset to avoid the
     // outline's own borders. With transparent text and white background,
