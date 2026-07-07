@@ -10,6 +10,9 @@ Returns \c true if successful; otherwise returns \c false.
 
 Note that if a file with the name \a newName already exists,
 copy() returns \c false. This means QFile will not overwrite it.
+However, the operation is not atomic. There is a chance that another
+process creates a file with \a newName between the check and the copy.
+In such case the file will be overwritten.
 
 \note On Android, this operation is not yet supported for \c content
 scheme URIs.
