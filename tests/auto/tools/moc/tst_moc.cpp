@@ -849,6 +849,8 @@ private slots:
     void winNewline();
     void escapesInStringLiterals();
     void frameworkSearchPath();
+    void frameworkIncludePath_data();
+    void frameworkIncludePath();
     void cstyleEnums();
     void defineMacroViaCmdline();
     void defineMacroViaForcedInclude();
@@ -1588,6 +1590,59 @@ void tst_Moc::frameworkSearchPath()
     VERIFY_NO_ERRORS(proc);
 #else
     QSKIP("Only tested/relevant on unixy platforms");
+#endif
+}
+
+void tst_Moc::frameworkIncludePath_data()
+{
+    QTest::addColumn<QString>("includePath");
+    QTest::addColumn<QString>("header");
+
+    // moc must treat a regular -I include path that points at a .framework
+    // bundle as a framework search path, so that a prefixed framework include
+    // like <Test/testinterface.h> resolves. This is the shape CMake's AUTOMOC
+    // passes for framework dependencies; it only synthesizes a -F for a path
+    // ending in .framework/Headers, not for the bundle directory itself.
+    QTest::newRow("bundle")
+        << QStringLiteral("/Test.framework")
+        << QStringLiteral("/interface-from-framework.h");
+
+    // But we shouldn't touch -I includes that point into the Headers directory,
+    // as rewriting those might break non-module specific #include <qfoo.h>
+    QTest::newRow("headers")
+        << QStringLiteral("/Test.framework/Headers")
+        << QStringLiteral("/interface-from-include.h");
+
+    // A bare umbrella include <Test> (no slash) must resolve to the umbrella
+    // header Test.framework/Headers/Test, not the framework binary.
+    QTest::newRow("umbrella")
+        << QStringLiteral("/Test.framework")
+        << QStringLiteral("/interface-from-framework-umbrella.h");
+}
+
+void tst_Moc::frameworkIncludePath()
+{
+#ifdef MOC_CROSS_COMPILED
+    QSKIP("Not tested when cross-compiled");
+#endif
+#if defined(Q_OS_APPLE) && QT_CONFIG(process)
+    QFETCH(QString, includePath);
+    QFETCH(QString, header);
+
+    QStringList args;
+    args << "-I" << m_sourceDirectory + includePath
+         << m_sourceDirectory + header
+         ;
+
+    QProcess proc;
+    proc.start(m_moc, args);
+    bool finished = proc.waitForFinished();
+    if (!finished)
+        qWarning("waitForFinished failed. QProcess error: %d", (int)proc.error());
+    QVERIFY(finished);
+    VERIFY_NO_ERRORS(proc);
+#else
+    QSKIP("Only tested/relevant on Apple platforms");
 #endif
 }
 

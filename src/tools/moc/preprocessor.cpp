@@ -1093,10 +1093,14 @@ static QByteArray searchIncludePaths(const QList<Parser::IncludePath> &includepa
 
         if (p.isFrameworkPath) {
             const qsizetype slashPos = include.indexOf('/');
-            if (slashPos == -1)
-                continue;
-            fi.setFile(QString::fromLocal8Bit(p.path + '/' + include.left(slashPos) + ".framework/Headers/"),
-                       QString::fromLocal8Bit(include.mid(slashPos + 1)));
+            if (slashPos >= 0) {
+                fi.setFile(QString::fromLocal8Bit(p.path + '/' + include.left(slashPos) + ".framework/Headers/"),
+                           QString::fromLocal8Bit(include.mid(slashPos + 1)));
+            } else if (!include.contains('.')) {
+                // Possible umbrella header
+                fi.setFile(QString::fromLocal8Bit(p.path + '/' + include + ".framework/Headers/"),
+                           QString::fromLocal8Bit(include));
+            }
         } else {
             fi.setFile(QString::fromLocal8Bit(p.path), QString::fromLocal8Bit(include));
         }

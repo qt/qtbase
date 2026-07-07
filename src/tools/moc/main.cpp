@@ -389,8 +389,22 @@ int runMoc(int argc, char **argv)
     }
 
     const auto includePaths = parser.values(includePathOption);
-    for (const QString &path : includePaths)
-        pp.includes += Preprocessor::IncludePath(QFile::encodeName(path));
+    for (const QString &path : includePaths) {
+#if defined(Q_OS_APPLE)
+        if (path.endsWith(".framework"_L1)) {
+            // Treat -I$DIR/QtModule.framework as -F $DIR, to match CMake's AUTOMOC
+            // logic, and avoid accidentally treating an umbrella #include <QtModule>
+            // as an include of the library binary at $DIR/QtModule.framework/QtModule
+            auto frameworkPath = path.sliced(0, path.lastIndexOf(QDir::separator()));
+            Preprocessor::IncludePath p(QFile::encodeName(frameworkPath));
+            p.isFrameworkPath = true;
+            pp.includes += p;
+        } else
+#endif
+        {
+            pp.includes += Preprocessor::IncludePath(QFile::encodeName(path));
+        }
+    }
     QString compilerFlavor = parser.value(compilerFlavorOption);
     if (compilerFlavor.isEmpty() || compilerFlavor == "unix"_L1) {
         // traditional Unix compilers use both CPATH and CPLUS_INCLUDE_PATH

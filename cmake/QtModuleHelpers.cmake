@@ -603,9 +603,10 @@ function(qt_internal_add_module target)
     #
     # Make sure to add non-framework "build_dir/include" as an include path for moc to find the
     # currently built module headers. qmake does this too.
-    # Framework-style include paths are found by moc when cmQtAutoMocUic.cxx detects frameworks by
-    # looking at an include path and detecting a "QtFoo.framework/Headers" path.
-    # Make sure to create such paths for both the the BUILD_INTERFACE and the INSTALL_INTERFACE.
+    #
+    # Framework-style include paths (-F) are passed on to moc by cmQtAutoMocUic.cxx if it detects
+    # include paths suffixed with ".framework/Headers". Moc itself also turns -I include paths
+    # in their "QtFoo.framework" form into framework includes (-F) for compatibility.
     #
     # Only add syncqt headers if they exist.
     # This handles cases like QmlDevToolsPrivate which do not have their own headers, but borrow
@@ -636,12 +637,10 @@ function(qt_internal_add_module target)
             "$<BUILD_INTERFACE:${fw_output_header_dir}>"
             "$<INSTALL_INTERFACE:${fw_install_header_dir}>"
 
-            # Add the lib/Foo.framework dir as an include path to let CMake generate
-            # the -F compiler flag for framework-style includes to work.
-            # Make sure it is added AFTER the lib/Foo.framework/Headers include path,
-            # to mitigate issues like QTBUG-101718 and QTBUG-101775 where an include like
-            # #include <QtCore> might cause moc to include the QtCore framework shared library
-            # instead of the actual header.
+            # Add the lib/Foo.framework dir as an include path, which moc
+            # then turns into -F internally. FIXME: Once we require
+            # CMake version 3.27 or above we can remove this, as CMake
+            # will automatically add lib/Foo.framework as an include path.
             "$<INSTALL_INTERFACE:${fw_install_dir}>"
         )
     endif()
