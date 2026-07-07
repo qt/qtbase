@@ -153,6 +153,10 @@ function(qt_internal_add_jar target)
         list(APPEND gradle_extra_args "--offline")
     endif()
 
+    # Build tools version
+    _qt_internal_android_get_sdk_build_tools_revision(build_tools_revision)
+    list(APPEND gradle_props "-PbuildToolsVersion=${build_tools_revision}")
+
     # Invoke Gradle
     add_custom_command(OUTPUT "${jar_output_file}"
         COMMAND ${CMAKE_COMMAND} -E make_directory "${jar_output_dir}"
@@ -251,6 +255,11 @@ function(_qt_internal_verify_gradle_offline_cache gradle_source_dir)
     _qt_internal_resolve_gradle_build_variant(build_variant)
     set(build_variant_arg "-DGRADLE_BUILD_VARIANT=${build_variant}")
     set(only_verify_arg "-DONLY_VERIFY_GRADLE_CACHE=ON")
+    _qt_internal_android_get_sdk_build_tools_revision(build_tools_revision)
+    if(NOT IS_DIRECTORY "${ANDROID_SDK_ROOT}/build-tools/${build_tools_revision}")
+        message(FATAL_ERROR "Android build-tools '${build_tools_revision}' is not installed.")
+    endif()
+    set(build_tools_revision_arg "-DQT_ANDROID_SDK_BUILD_TOOLS_REVISION=${build_tools_revision}")
     set(gradle_env "ANDROID_SDK_ROOT=${ANDROID_SDK_ROOT}")
     execute_process(
         COMMAND "${CMAKE_COMMAND}" -E env "${gradle_env}"
@@ -260,6 +269,7 @@ function(_qt_internal_verify_gradle_offline_cache gradle_source_dir)
             "${project_dir_arg}"
             "${build_variant_arg}"
             "${only_verify_arg}"
+            "${build_tools_revision_arg}"
             -P "${setup_script}"
         RESULT_VARIABLE verify_result
         OUTPUT_QUIET
@@ -267,8 +277,9 @@ function(_qt_internal_verify_gradle_offline_cache gradle_source_dir)
     )
 
     if(NOT verify_result EQUAL 0)
-        set(resolve_cmd_args
-            "${action_resolve_arg} ${qt_dir_arg} ${project_dir_arg} ${build_variant_arg}")
+        string(JOIN " " resolve_cmd_args
+            "${action_resolve_arg}" "${qt_dir_arg}" "${project_dir_arg}"
+            "${build_variant_arg}" "${build_tools_revision_arg}")
         message(FATAL_ERROR
             "Downloads are disabled when building Qt and Gradle dependencies haven't been cached "
             "for such offline builds. Run the following command to populate the Gradle cache:\n"
