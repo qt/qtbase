@@ -1,0 +1,1 @@
+same include string "moc_foo.cpp"
