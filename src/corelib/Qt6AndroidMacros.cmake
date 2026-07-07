@@ -106,6 +106,11 @@ function(qt6_add_android_dynamic_features target)
     endif()
 endfunction()
 
+if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
+    function(qt_add_android_dynamic_features target)
+        qt6_add_android_dynamic_features(${ARGV})
+    endfunction()
+endif()
 
 function(qt_add_android_dynamic_feature_java_source_dirs)
     qt6_add_android_dynamic_feature_java_source_dirs(${ARGV})
