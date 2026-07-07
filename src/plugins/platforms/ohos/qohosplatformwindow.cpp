@@ -401,8 +401,7 @@ void QOhosPlatformWindow::initialize()
 
     auto initialWindowGeom = windowGeometry();
     auto initialGeom = initialGeometry(window(), initialWindowGeom, defaultWindowWidth, defaultWindowHeight);
-    m_lastRequestedWindowFrameGeometry = initialGeom;
-    QPlatformWindow::setGeometry(initialGeom);
+    QOhosPlatformWindow::setGeometry(initialGeom);
 
     m_parent = parent();
 }
