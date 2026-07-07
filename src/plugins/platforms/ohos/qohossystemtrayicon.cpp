@@ -4,13 +4,12 @@
 #include "qohossystemtrayicon.h"
 #include "qohosdisplayinfo.h"
 #include "qohosenums.h"
-#include "qohosimageformat.h"
 #include "qohosjsutils.h"
-#include "qohospixelmapconversions.h"
 #include "qohosstatusbarmenu.h"
 #include <QtCore/qdatetime.h>
 #include <QtCore/qobject.h>
 #include <QtGui/private/qhighdpiscaling_p.h>
+#include <QtGui/private/qohosimageconversions_p.h>
 #include <QtGui/qguiapplication.h>
 #include <QtGui/qicon.h>
 #include <QtGui/qpa/qplatformmenu.h>
@@ -195,7 +194,7 @@ QNapi::Object makeDisplayDensityScaledJsPixelMapFromQImage(QtOhos::JsState &jsSt
         "%s: density=%.3f, vp %.2f x %.2f -> %.2f x %.2f, px %dx%d -> %dx%d",
         Q_FUNC_INFO, density, widthVp, heightVp, finalWidthVp, finalHeightVp, sourceWidth, sourceHeight, width, height);
 
-    return createNapiPixelMapFromQImage(jsState, newImage);
+    return makeOhosNapiPixelMapFromQImage(jsState, newImage);
 }
 
 QImage convertIconToScaledImage(

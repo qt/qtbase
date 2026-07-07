@@ -4,11 +4,11 @@
 #ifndef QOHOSUDSOBJECT_H
 #define QOHOSUDSOBJECT_H
 
+#include <QtGui/private/qohosimageconversions_p.h>
 #include <database/udmf/udmf_meta.h>
 #include <database/udmf/uds.h>
 #include <multimedia/image_framework/image/pixelmap_native.h>
 #include <qarkui/qarkuiutils.h>
-#include <qohospixelmapconversions.h>
 #include <qohosutils.h>
 #include <utility>
 
@@ -80,7 +80,7 @@ struct QOhosUdsMeta<::OH_UdsPixelMap>
 
     static std::shared_ptr<::OH_PixelmapNative> getDefaultContent()
     {
-        return makeEmptyNativePixelMap();
+        return makeEmptyOhosNativePixelMap();
     }
 };
 

@@ -3,8 +3,8 @@
 
 #include <qohosudsobject.h>
 
+#include <QtGui/private/qohosimageconversions_p.h>
 #include <QtGui/qimage.h>
-#include <qohospixelmapconversions.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -34,7 +34,7 @@ QOhosUdsObject<::OH_UdsFileUri>::QOhosUdsObject(
 template<>
 typename QOhosUdsMeta<::OH_UdsPixelMap>::Content QOhosUdsObject<::OH_UdsPixelMap>::getContent()
 {
-    auto pixelMap = makeEmptyNativePixelMap();
+    auto pixelMap = makeEmptyOhosNativePixelMap();
     QArkUi::callArkUi(
         Q_OHOS_NAMED_FUNC(::OH_UdsPixelMap_GetPixelMap),
         m_data.get(), pixelMap.get());

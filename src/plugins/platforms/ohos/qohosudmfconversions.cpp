@@ -5,6 +5,7 @@
 #include <QtCore/private/qohoslogger_p.h>
 #include <QtCore/qspan.h>
 #include <QtCore/qurl.h>
+#include <QtGui/private/qohosimageconversions_p.h>
 #include <QtGui/qimage.h>
 #include <algorithm>
 #include <chrono>
@@ -591,7 +592,7 @@ std::vector<UdmfRecordEntryMetaFactory> makeRecordEntryMetaFactoriesForMimeDataF
                         auto dataImage = qvariant_cast<QImage>(mimeData.imageData());
                         return UdmfRecordEntryFactory::makeForUdsObjectFactory<::OH_UdsPixelMap>(
                             [dataImage]() {
-                                return QOhosUdsObject<::OH_UdsPixelMap>(createNativePixelMapFromQImage(dataImage));
+                                return QOhosUdsObject<::OH_UdsPixelMap>(makeOhosNativePixelMapFromQImage(dataImage));
                             });
                     }
                 });

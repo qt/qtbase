@@ -20,6 +20,7 @@
 #include <qguiapplication.h>
 #include <qohosapppermissions_p.h>
 #include <qohosjsutils.h>
+#include <QtGui/private/qohosimageconversions_p.h>
 #include <qohospixelmapconversions.h>
 #include <qohosutils.h>
 #include <render/qwindowproxyregistry.h>
@@ -49,7 +50,7 @@ std::shared_ptr<::OH_PixelmapNative> captureScreenPixelmap(
         Q_OHOS_NAMED_FUNC(::OH_NativeDisplayManager_CaptureScreenPixelmap),
         static_cast<std::uint32_t>(displayId.value()), &pixelMapNativePtr);
 
-    return wrapNativePixelMapPtr(pixelMapNativePtr);
+    return wrapOhosNativePixelMapPtr(pixelMapNativePtr);
 }
 
 void tryCaptureScreenPixelmapWithPermissionCheck(
