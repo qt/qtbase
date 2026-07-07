@@ -146,14 +146,26 @@ QWasmFileEngine::~QWasmFileEngine()
 bool QWasmFileEngine::open(QIODevice::OpenMode openMode, std::optional<QFile::Permissions> permissions)
 {
     Q_UNUSED(permissions);
-    m_openMode = openMode;
 
+    // Warn on missing asyncify/JSPI and fail the open
+    if (!qstdweb::canBlockCallingThread()) {
+        const QString message =
+                QStringLiteral("Accessing local file contents on Qt for WebAssembly "
+                               "requires JSPI or asyncify to be enabled.");
+        qWarning().noquote() << message;
+        setError(QFile::OpenError, message);
+        return false;
+    }
+
+    bool opened = false;
     if (m_fileDevice)
-        return m_fileDevice->open(openMode);
+        opened = m_fileDevice->open(openMode);
     else if (m_blobDevice)
-        return m_blobDevice->open(openMode);
+        opened = m_blobDevice->open(openMode);
 
-    return false;
+    if (opened)
+        m_openMode = openMode;
+    return opened;
 }
 
 bool QWasmFileEngine::close()
