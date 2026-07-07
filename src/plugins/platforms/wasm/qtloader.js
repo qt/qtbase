@@ -187,13 +187,14 @@ async function qtLoad(config)
         config.qt.onLoaded?.();
     }
 
-    const originalLocateFile = config.locateFile;
-    config.locateFile = filename => {
-        const originalLocatedFilename = originalLocateFile ? originalLocateFile(filename) : filename;
-        if (originalLocatedFilename.startsWith(
-                    'libQt6')) // wasmqtdeploy rely on this behavior, update both in case of change
-            return `${config.qt.qtdir}/lib/${originalLocatedFilename}`;
-        return originalLocatedFilename;
+    config.locateFile ??= (filename, prefix) => {
+        // dynamic linking: locate Qt libraries at qtdir location
+        // wasmdeployqt relies on this behavior, update both in case of change
+        if (filename.startsWith('libQt6'))
+            return `${config.qt.qtdir}/lib/${filename}`;
+
+        // Mirror Emscripten's default locateFile and prepend the prefix
+        return (prefix ?? '') + filename;
     }
 
     let onExitCalled = false;
