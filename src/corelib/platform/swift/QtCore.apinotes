@@ -1,0 +1,6 @@
+---
+# https://clang.llvm.org/docs/APINotes.html
+Name: QtCore
+Functions:
+  - Name: qVersion
+    SwiftName: "qtVersion()"
