@@ -272,8 +272,6 @@ function(_qt_internal_verify_gradle_offline_cache gradle_source_dir)
             "${build_tools_revision_arg}"
             -P "${setup_script}"
         RESULT_VARIABLE verify_result
-        OUTPUT_QUIET
-        ERROR_QUIET
     )
 
     if(NOT verify_result EQUAL 0)
@@ -281,9 +279,12 @@ function(_qt_internal_verify_gradle_offline_cache gradle_source_dir)
             "${action_resolve_arg}" "${qt_dir_arg}" "${project_dir_arg}"
             "${build_variant_arg}" "${build_tools_revision_arg}")
         message(FATAL_ERROR
+            "The offline Gradle check failed for the JAR build under '${gradle_source_dir}'.\n"
             "Downloads are disabled when building Qt and Gradle dependencies haven't been cached "
             "for such offline builds. Run the following command to populate the Gradle cache:\n"
             "  cmake -E env ${gradle_env} cmake ${resolve_cmd_args} -P ${setup_script}\n"
-            "Or configure Qt with QT_ALLOW_DOWNLOAD=ON to allow Gradle downloads at build time.")
+            "Or configure Qt with QT_ALLOW_DOWNLOAD=ON to allow downloads at build time.\n"
+            "Check the Gradle output above for more information."
+        )
     endif()
 endfunction()

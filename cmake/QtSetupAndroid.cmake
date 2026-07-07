@@ -65,13 +65,10 @@ function(_qt_setup_android_resolve_gradle_dependencies)
     set(output_args "")
     if(ONLY_VERIFY_GRADLE_CACHE)
         list(APPEND extra_args --offline)
-        list(APPEND output_args OUTPUT_QUIET ERROR_QUIET)
+        list(APPEND output_args OUTPUT_VARIABLE gradle_output ERROR_VARIABLE gradle_output)
     else()
         list(APPEND extra_args --info)
-        list(APPEND output_args
-            ECHO_OUTPUT_VARIABLE ECHO_ERROR_VARIABLE
-            OUTPUT_VARIABLE gradle_output
-            ERROR_VARIABLE gradle_error)
+        list(APPEND output_args "")
 
         message(STATUS "Resolving Gradle dependencies for Qt Android builds...")
         message(STATUS "Gradle wrapper:     ${gradlew}")
@@ -112,7 +109,7 @@ function(_qt_setup_android_resolve_gradle_dependencies)
     file(REMOVE_RECURSE "${resolve_dir}")
 
     if(NOT gradle_result EQUAL 0)
-        message(FATAL_ERROR "Failed to resolve Gradle dependencies.")
+        message(FATAL_ERROR "Failed to resolve Gradle dependencies.\n${gradle_output}")
     endif()
 endfunction()
 
