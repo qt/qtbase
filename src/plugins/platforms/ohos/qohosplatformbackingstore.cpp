@@ -60,7 +60,8 @@ void copyImage(
     QOhosPlatformBackingStore::QImageView srcImage, QImage &dstImage, const QRegion &region, const QPoint &dstOffset)
 {
     const auto intersectedRegion =
-        region.intersected(QRect({}, srcImage.size())).intersected(QRect({}, dstImage.size()));
+        region.intersected(QRect({}, srcImage.size()))
+        .intersected(QRect({}, dstImage.size()).translated(-dstOffset));
 
     for (const auto &rect : intersectedRegion) {
         const auto xSrc = rect.x() * srcImage.bytesPerPixel();
