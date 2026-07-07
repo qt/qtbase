@@ -19,6 +19,9 @@ allprojects {
 
     pluginManager.withPlugin('com.android.library') {
         android {
+            def buildTools = findProperty('buildToolsVersion')
+            if (buildTools) buildToolsVersion = buildTools
+
             compileOptions {
                 def javaSource = findProperty('javacSource')
                 def javaTarget = findProperty('javacTarget')
