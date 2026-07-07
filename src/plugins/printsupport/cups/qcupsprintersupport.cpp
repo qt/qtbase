@@ -145,18 +145,15 @@ QString QCupsPrinterSupport::defaultPrintDeviceId() const
 QString QCupsPrinterSupport::staticDefaultPrintDeviceId()
 {
     QString printerId;
-    cups_dest_t *dests;
-    int count = cupsGetDests(&dests);
-    for (int i = 0; i < count; ++i) {
-        if (dests[i].is_default) {
-            printerId = QString::fromLocal8Bit(dests[i].name);
-            if (dests[i].instance) {
-                printerId += u'/' + QString::fromLocal8Bit(dests[i].instance);
-                break;
-            }
-        }
+    // Use cupsGetNamedDest() rather than cupsGetDests(): the latter enumerates
+    // all destinations, triggering a blocking DNS-SD (avahi) network browse just
+    // to read the default. A NULL name returns only the default destination.
+    if (cups_dest_t *dest = cupsGetNamedDest(CUPS_HTTP_DEFAULT, nullptr, nullptr)) {
+        printerId = QString::fromLocal8Bit(dest->name);
+        if (dest->instance)
+            printerId += u'/' + QString::fromLocal8Bit(dest->instance);
+        cupsFreeDests(1, dest);
     }
-    cupsFreeDests(count, dests);
     return printerId;
 }
 
