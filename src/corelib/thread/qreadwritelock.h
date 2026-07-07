@@ -129,7 +129,7 @@ protected:
     Q_CORE_EXPORT bool isContendedLockForRead(const void *dd) Q_DECL_PURE_FUNCTION;
 #endif
     static Q_CORE_EXPORT quintptr describeLockInternal(void *dd) noexcept Q_DECL_PURE_FUNCTION;
-    static uint describeLockForTSan(const QReadWriteLockPrivate *d, uint flags = 0) noexcept
+    static uint describeLockForTSan(QReadWriteLockPrivate *d, uint flags = 0) noexcept
     {
         quintptr u = 0;
 #ifdef QT_BUILDING_UNDER_TSAN
