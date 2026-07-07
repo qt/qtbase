@@ -71,39 +71,32 @@ EM_ASYNC_JS(void, qtSuspendJs, (), {
 void qtRegisterEventHandlerJs(int index) {
     EM_ASM({
 
-        function createNamedFunction(name, parent, obj) {
-            return {
-                [name]: function(...args) {
-                    return obj.call(parent, args);
-                }
-            }[name];
-        }
+        // Create a shallow copy of an event by copying its properties
+        // to a new object.
+        function snapshotEvent(event) {
 
-        function deepShallowClone(obj) {
-            if (obj === null)
-                return obj;
+            // Return non-events (and null) as-is
+            if (!(event instanceof Event))
+                return event;
 
-            if (!(obj instanceof Event))
-                return obj;
-
-            const objCopy = {};
-            for (const key in obj) {
-                if (typeof obj[key] === 'function')
-                    objCopy[key] = createNamedFunction(obj[key].name, obj, obj[key]);
-                else
-                    objCopy[key] = obj[key];
+            // Create event copy
+            const copy = { isInstanceOfEvent: true };
+            for (const key in event) {
+                const value = event[key];
+                copy[key] = typeof value === 'function' ? value.bind(event) : value;
             }
 
-            objCopy['isInstanceOfEvent'] = true;
-            return objCopy;
+            return copy;
         }
 
         let index = $0;
         let control = Module.qtSuspendResumeControl;
         let handler = (arg) => {
-            // Copy the top level object, alias the rest.
-            // functions are copied by creating new forwarding functions.
-            arg = deepShallowClone(arg);
+
+            // Create a snapshot of the event for the queue. Browsers
+            // may recycle the event objects once control returns which
+            // means we can't store referenes to them in the queue.
+            arg = snapshotEvent(arg);
 
             // Add event to event queue
             control.pendingEvents.push({
