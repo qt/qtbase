@@ -77,7 +77,6 @@ public:
     virtual void setWindowHeight(int windowHeight) = 0;
     virtual void setProcessMode(ProcessMode processMode) = 0;
     virtual void setStartupVisibility(StartupVisibility startupVisibility) = 0;
-    QT_DEPRECATED_X("This API is deprecated and no longer has any effect") virtual void setWindowFocused(bool windowFocused) = 0;
     virtual void setStartWindowIcon(const QImage &startWindowIcon) = 0;
     virtual void setStartWindowBackgroundColor(const QColor &startWindowBackgroundColor) = 0;
     virtual void setSupportWindowModes(const QList<SupportWindowMode> &supportWindowModes) = 0;

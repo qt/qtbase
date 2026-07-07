@@ -63,8 +63,6 @@ class Q_OHOSAPPKIT_EXPORT QOhosAbilityContext : public QObject
     Q_OBJECT
 
 public:
-    static QOhosAbilityContext *instance();
-
     static QSharedPointer<QOhosAbilityContext> getDefaultInstance();
     static QSharedPointer<QOhosAbilityContext> getInstanceForMainWindow(QWindow *instanceMainWindow);
 
@@ -84,7 +82,6 @@ public:
     virtual void setContinuationActive(bool continuationActive) = 0;
 
 Q_SIGNALS:
-    void newWantReceived(QOhosWant want);
     void newWantInfoReceived(QSharedPointer<QOhosWantInfo> wantInfo);
     void continueRequestReceived(QSharedPointer<QOhosOnContinueContext> onContinueContext);
 
