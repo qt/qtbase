@@ -128,6 +128,11 @@ private slots:
     void connectManyArguments();
     void connectForwardDeclare();
     void connectNoDefaultConstructorArg();
+    void connectRegistersGadgetType();
+    void connectRegistersQEnumType();
+    void connectRegistersQObjectPointerType();
+    void connectRegistersQObjectConstPointerType();
+    void connectRegistersOtherType();
     void returnValue_data();
     void returnValue();
     void returnValue2_data();
@@ -5847,6 +5852,96 @@ void tst_QObject::connectNoDefaultConstructorArg()
     NoDefaultContructorArguments ob;
     // it should compile
     QVERIFY(connect(&ob, &NoDefaultContructorArguments::mySignal, &ob, &NoDefaultContructorArguments::mySlot, Qt::QueuedConnection));
+}
+
+struct GadgetForMetaTypeRegistration
+{
+    Q_GADGET
+};
+class OtherClassForMetaTypeRegistration : public QObject
+{
+    Q_OBJECT
+};
+class ClassForMetaTypeRegistration : public QObject
+{
+    Q_OBJECT
+public:
+    struct OtherType {};    // plain type
+    enum MyEnum {};
+    Q_ENUM(MyEnum)
+signals:
+    void signalOtherType(OtherType);
+    void signalGadgetType(GadgetForMetaTypeRegistration);
+    void signalQEnumType(MyEnum);
+    void signalQObjectPointerType(ClassForMetaTypeRegistration *);
+    void signalQObjectConstPointerType(const OtherClassForMetaTypeRegistration *);
+public slots:
+    void slot() { receivedSignalIdx = senderSignalIndex(); QTestEventLoop::instance().exitLoop(); }
+
+public:
+    int receivedSignalIdx = -1;
+
+    template <typename T> static q20::type_identity<T>
+    extractParameterFromSignal(void (ClassForMetaTypeRegistration::*)(T));
+    template <auto Signal> using ParameterFromSignal =
+        typename decltype(extractParameterFromSignal(Signal))::type;
+};
+
+template <auto Signal> static void connectRegistersType()
+{
+    static bool alreadyRunOnce = false;
+    if (alreadyRunOnce)
+        QSKIP("Test can only be run once (type gets registered)");
+
+    // extract the signal parameter type
+    using ParameterType = ClassForMetaTypeRegistration::ParameterFromSignal<Signal>;
+
+    // verify it's not registered
+    constexpr QMetaType mt = QMetaType::fromType<ParameterType>();
+    QVERIFY(!mt.isRegistered());
+    QVERIFY(!QMetaType::fromName(mt.name()).isValid());
+
+    // connect; this should register
+    ClassForMetaTypeRegistration obj;
+    QMetaObject::Connection conn =
+            QObject::connect(&obj, Signal, &obj, &ClassForMetaTypeRegistration::slot,
+                             Qt::QueuedConnection);
+    alreadyRunOnce = true;
+    QVERIFY(conn);
+    QVERIFY(QMetaType::fromName(mt.name()).isValid());
+
+    emit (obj.*Signal)(ParameterType{});
+    QTestEventLoop::instance().enterLoop(1);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    // sanity check that the signal was emitted properly and the slot was run
+    QMetaMethod mm = QMetaMethod::fromSignal(Signal);
+    QCOMPARE(obj.receivedSignalIdx, mm.methodIndex());
+}
+
+void tst_QObject::connectRegistersGadgetType()
+{
+    connectRegistersType<&ClassForMetaTypeRegistration::signalGadgetType>();
+}
+
+void tst_QObject::connectRegistersQEnumType()
+{
+    connectRegistersType<&ClassForMetaTypeRegistration::signalQEnumType>();
+}
+
+void tst_QObject::connectRegistersQObjectPointerType()
+{
+    connectRegistersType<&ClassForMetaTypeRegistration::signalQObjectPointerType>();
+}
+
+void tst_QObject::connectRegistersQObjectConstPointerType()
+{
+    connectRegistersType<&ClassForMetaTypeRegistration::signalQObjectConstPointerType>();
+}
+
+void tst_QObject::connectRegistersOtherType()
+{
+    connectRegistersType<&ClassForMetaTypeRegistration::signalOtherType>();
 }
 
 struct MoveOnly
