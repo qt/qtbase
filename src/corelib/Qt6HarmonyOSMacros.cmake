@@ -1135,7 +1135,9 @@ function(_qt_internal_harmonyos_add_all_tests_hap_target)
 endfunction()
 
 # FIXTURES_SETUP test that pushes the signed HAP to the device before any
-# autotest runs. Requires HARMONYOS_HDC.
+# autotest runs. Requires HARMONYOS_HDC. Use QT_HARMONYOS_DEVICE (read from
+# the environment when the generated script runs, i.e. per ctest invocation)
+# to target a specific device, matching harmonyostestrunner's --device/-t.
 function(_qt_internal_harmonyos_add_hap_install_fixture hap_signed_file)
     if(NOT HARMONYOS_HDC)
         return()
@@ -1145,9 +1147,13 @@ function(_qt_internal_harmonyos_add_hap_install_fixture hap_signed_file)
     file(GENERATE OUTPUT "${install_script}" CONTENT
 "set(hdc \"${HARMONYOS_HDC}\")
 set(hap \"${hap_signed_file}\")
+set(hdc_args \"\")
+if(DEFINED ENV{QT_HARMONYOS_DEVICE} AND NOT \"\$ENV{QT_HARMONYOS_DEVICE}\" STREQUAL \"\")
+    set(hdc_args -t \"\$ENV{QT_HARMONYOS_DEVICE}\")
+endif()
 message(STATUS \"Installing HarmonyOS test HAP: \${hap}\")
 execute_process(
-    COMMAND \"\${hdc}\" app install -r \"\${hap}\"
+    COMMAND \"\${hdc}\" \${hdc_args} app install -r \"\${hap}\"
     RESULT_VARIABLE result
     OUTPUT_VARIABLE output
     ERROR_VARIABLE output
