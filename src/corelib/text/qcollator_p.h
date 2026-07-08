@@ -28,6 +28,8 @@
 #include <CoreServices/CoreServices.h>
 #elif defined(Q_OS_WIN)
 #include <qt_windows.h>
+#elif defined(Q_OS_WASM)
+#include <emscripten/val.h>
 #endif
 #ifdef Q_OS_ANDROID
 #include "qjniobject.h"
@@ -52,6 +54,16 @@ const CollatorType NoCollator = 0;
 typedef QByteArray CollatorKeyType;
 typedef int CollatorType;
 const CollatorType NoCollator = 0;
+
+#elif defined(Q_OS_WASM)
+typedef emscripten::val *CollatorType;
+struct QCollatorSortKeyWasm
+{
+    QString string;
+    emscripten::val collator = emscripten::val::undefined();
+};
+typedef QCollatorSortKeyWasm CollatorKeyType;
+const CollatorType NoCollator = nullptr;
 
 #else // posix - ignores CollatorType collator, only handles system locale
 typedef QList<wchar_t> CollatorKeyType;

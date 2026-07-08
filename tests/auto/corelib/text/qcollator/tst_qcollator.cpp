@@ -740,10 +740,10 @@ void tst_QCollator::compare()
     if (tag.startsWith("en-9:19") || tag.startsWith("en-.19:,19"))
         QSKIP("Some en-us locale tests have issues on WASM");
 #endif // Q_OS_WASM
-#if !QT_CONFIG(icu) && !defined(Q_OS_WIN) && !defined(Q_OS_MACOS) && !defined(Q_OS_ANDROID)
+#if !QT_CONFIG(icu) && !defined(Q_OS_WIN) && !defined(Q_OS_MACOS) && !defined(Q_OS_ANDROID) && !defined(Q_OS_WASM)
     if (collator.locale() != QLocale::c() && collator.locale() != QLocale::system().collation())
         QSKIP("POSIX implementation of collation only supports C and system collation locales");
-#elif QT_CONFIG(icu) || defined(Q_OS_WIN) || defined(Q_OS_ANDROID)
+#elif QT_CONFIG(icu) || defined(Q_OS_WIN) || defined(Q_OS_ANDROID) || defined(Q_OS_WASM)
 #  define SORTKEY_WORKS
 #endif
 

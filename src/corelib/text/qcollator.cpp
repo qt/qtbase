@@ -106,6 +106,16 @@ Q_GLOBAL_STATIC(GenerationalCollatorHolder, defaultCollator)
 
     The use of any of the unsupported options will cause a warning to be
     printed to the application's output.
+
+    \section1 WebAssembly implementation
+
+    On WebAssembly, Qt uses the JavaScript \c{Intl.Collator} API as its
+    collation backend (unless ICU is available). This supports arbitrary
+    locales as well as numericMode(), caseSensitivity(), and ignorePunctuation().
+    \c{Intl.Collator} provides no sort-key extraction, so sortKey() produces
+    keys that delegate back to the collator when compared: their ordering
+    matches compare(), but they offer none of the performance benefit that sort
+    keys provide on the other backends (see QCollator::sortKey()).
 */
 
 /*!
@@ -568,6 +578,8 @@ QCollatorSortKey QCollator::defaultSortKey(QStringView key)
     keys for each string and then sort using the keys.
 
     \note Not supported with the C (a.k.a. POSIX) locale on Darwin.
+    \note Does not provide a performance improvement on Qt for WebAssembly
+    due to native API limitations.
 */
 
 /*!

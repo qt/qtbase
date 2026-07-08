@@ -1017,7 +1017,12 @@ qt_internal_extend_target(Core CONDITION MACOS AND NOT QT_FEATURE_icu
         text/qcollator_macx.cpp
 )
 
-qt_internal_extend_target(Core CONDITION UNIX AND NOT ANDROID AND NOT MACOS AND NOT QT_FEATURE_icu
+qt_internal_extend_target(Core CONDITION WASM AND NOT QT_FEATURE_icu
+    SOURCES
+        text/qcollator_wasm.cpp
+)
+
+qt_internal_extend_target(Core CONDITION UNIX AND NOT ANDROID AND NOT MACOS AND NOT WASM AND NOT QT_FEATURE_icu
     SOURCES
         text/qcollator_posix.cpp
 )
