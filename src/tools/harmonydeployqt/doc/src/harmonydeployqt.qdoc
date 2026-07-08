@@ -1,0 +1,145 @@
+// Copyright (C) 2026 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page harmonyos-deploy-qt-tool.html
+    \brief An overview of the harmonydeployqt tool and how to use it.
+    \title The harmonydeployqt Tool
+
+    \target harmonydeployqt
+
+    \note Qt for HarmonyOS is in technology preview and may change in future
+    releases.
+
+    Packaging a Qt application for HarmonyOS involves many steps, so Qt comes
+    with a tool that handles the work for you. Building the CMake
+    \c {<target>_make_hap} target runs \c harmonydeployqt automatically, so you
+    normally do not invoke it manually. The overall packaging and deployment
+    process is described in \l{Building and Deploying Qt Applications for
+    HarmonyOS}.
+
+    \section1 How it works
+
+    Like \l{The androiddeployqt Tool}{androiddeployqt}, \c harmonydeployqt
+    collects everything the application needs to run and assembles a deployable
+    package:
+
+    \list
+        \li It gathers the application's shared library, the HarmonyOS platform
+            plugin (\c libqohos.so), the required Qt modules and plugins, and,
+            for Qt Quick applications, the QML modules.
+        \li It places these into a HarmonyOS application template together with
+            the metadata and permissions declared through the
+            \l{Qt for HarmonyOS CMake API}.
+        \li It invokes the OpenHarmony \c hvigor build tool to assemble the
+            final HarmonyOS Ability Package (HAP).
+    \endlist
+
+    The settings that drive this process are passed to the tool in a JSON
+    configuration file, which the CMake build generates for you.
+
+    \section1 Command-line arguments
+
+    The only required argument is \c {--input}. The list below is also available
+    by passing \c {--help} to \c harmonydeployqt.
+
+    \table
+    \header
+        \li Argument
+        \li Description
+    \row
+        \li \c {--input <file>}
+        \li JSON configuration file describing the application and the Qt
+            installation to deploy. Required.
+    \row
+        \li \c {--output <dir>}
+        \li Output directory for the generated HarmonyOS project.
+    \row
+        \li \c {--hvigor <path>}
+        \li Path to the \c hvigorw script used to build the HAP. Can also be set
+            with the \c QT_HARMONYOS_HVIGOR environment variable.
+    \row
+        \li \c {--install}
+        \li Install the resulting HAP to a connected device using \c hdc.
+    \row
+        \li \c {--release}
+        \li Build the release configuration. The default is debug.
+    \row
+        \li \c {--no-build}
+        \li Generate the HarmonyOS project but skip building the HAP.
+    \row
+        \li \c {--test-bundle}
+        \li Enable test bundle mode, which bundles all test binaries into a
+            single HAP.
+    \row
+        \li \c {--verbose}
+        \li Enable verbose output.
+    \row
+        \li \c {--depfile <path>}
+        \li Write a dependency file for the build system to the given path.
+    \row
+        \li \c {--depfile-base <dir>}
+        \li Base directory used for relative paths in the dependency file.
+    \row
+        \li \c {--help}
+        \li Display the list of available arguments.
+    \endtable
+
+    \section1 Signing the HAP
+
+    A HAP must be signed before it can be installed on a device. You can provide
+    the signing material either through command-line arguments or through
+    the matching environment variables. When both are given, the command-line
+    argument wins for that individual field.
+
+    \table
+    \header
+        \li Argument
+        \li Environment variable
+        \li Description
+    \row
+        \li \c {--signing-cert-path <p>}
+        \li \c QT_HARMONYOS_SIGNING_CERT_PATH
+        \li Path to the \c .cer certificate file.
+    \row
+        \li \c {--signing-profile <p>}
+        \li \c QT_HARMONYOS_SIGNING_PROFILE
+        \li Path to the \c .p7b provisioning profile.
+    \row
+        \li \c {--signing-store-file <p>}
+        \li \c QT_HARMONYOS_SIGNING_STORE_FILE
+        \li Path to the \c .p12 keystore.
+    \row
+        \li \c {--signing-key-alias <a>}
+        \li \c QT_HARMONYOS_SIGNING_KEY_ALIAS
+        \li Key alias inside the keystore.
+    \row
+        \li \c {--signing-key-password <s>}
+        \li \c QT_HARMONYOS_SIGNING_KEY_PASSWORD
+        \li Encrypted key password.
+    \row
+        \li \c {--signing-store-password <s>}
+        \li \c QT_HARMONYOS_SIGNING_STORE_PASSWORD
+        \li Encrypted keystore password.
+    \row
+        \li \c {--signing-alg <alg>}
+        \li \c QT_HARMONYOS_SIGNING_ALG
+        \li Signature algorithm. Defaults to \c SHA256withECDSA.
+    \endtable
+
+    The passwords must be \c hvigor-encrypted blobs, not plain text. Signing is
+    all-or-nothing: if any signing input is set, all six required values (the
+    certificate, profile, keystore, key alias, key password, and keystore
+    password) must be present. Otherwise the HAP is left unsigned.
+
+    \section1 Running the application
+
+    Install and run the resulting HAP on a connected HarmonyOS device or on the
+    emulator. The most convenient way to deploy and debug is to open the
+    generated project in
+    \l{https://developer.huawei.com/consumer/en/deveco-studio/}{DevEco Studio}
+    and use its run and debug tooling.
+
+    For more information about packaging and deploying a Qt application for
+    HarmonyOS, see \l{Building and Deploying Qt Applications for HarmonyOS}.
+*/
