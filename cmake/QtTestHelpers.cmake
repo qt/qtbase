@@ -197,6 +197,15 @@ function(qt_internal_setup_docker_test_fixture name)
     set_tests_properties(${name}-cleanup PROPERTIES FIXTURES_CLEANUP ${name}-docker)
     set_tests_properties(${name} PROPERTIES FIXTURES_REQUIRED ${name}-docker)
 
+    # All docker network tests share a single docker-compose stack, so their
+    # setup/cleanup (docker-compose up --force-recreate / down) and the tests
+    # themselves must not run concurrently: a parallel ctest run (e.g. the
+    # VxWorks emulator jobs) would otherwise race on container creation and tear
+    # each other's servers down mid-run. A common RESOURCE_LOCK serializes them
+    # while leaving all non-network tests free to run in parallel.
+    set_tests_properties(${name} ${name}-setup ${name}-cleanup
+        PROPERTIES RESOURCE_LOCK qt_docker_test_server)
+
     foreach(test_name ${name} ${name}-setup ${name}-cleanup)
         set_property(TEST "${test_name}" APPEND PROPERTY ENVIRONMENT "testserver=${QT_DOCKER_COMPOSE_VERSION}")
         set_property(TEST "${test_name}" APPEND PROPERTY ENVIRONMENT TEST_DOMAIN=${DNSDOMAIN})
