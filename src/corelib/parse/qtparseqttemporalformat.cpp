@@ -115,8 +115,9 @@ ParsedDateTimeFormat prefix(QStringView pattern, QtTemporalPattern::DateTimePart
                 return F::Iso8601 | F::Numeric | F::ZeroPad;
             case 3: // 'ttt': offset (no-prefix, separator)
                 return F::Iso8601 | F::Verbal | F::ZeroPad;
-            default: // 'tttt': long name or IANA ID
-                return F::LocalizedZone | F::Verbal | F::Standalone | F::Wide | F::Short;
+            default: // 'tttt': long name, IANA ID or LocalTime name
+                return F::LocalizedZone | F::Verbal | F::Standalone | F::Wide | F::Short
+                     | F::LocalTimeName;
                 // This includes both metazone and exemplar city versions of long name.
             }
             Q_UNREACHABLE();
