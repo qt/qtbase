@@ -717,8 +717,8 @@ void Preprocessor::substituteUntilNewline(Symbols &substituted)
             macroExpand(&substituted, this, symbols, index, symbol().lineNum, true);
         } else if (token == PP_DEFINED) {
             bool braces = test(PP_LPAREN);
-            if (test(PP_HAS_INCLUDE)) {
-                // __has_include is always supported
+            if (test(PP_HAS_INCLUDE) || test(PP_HAS_INCLUDE_NEXT)) {
+                // __has_include / __has_include_next are always supported
                 Symbol definedOrNotDefined = symbol();
                 definedOrNotDefined.token = PP_MOC_TRUE;
                 substituted += definedOrNotDefined;
@@ -734,7 +734,8 @@ void Preprocessor::substituteUntilNewline(Symbols &substituted)
         } else if (token == PP_NEWLINE) {
             substituted += symbol();
             break;
-        } else if (token == PP_HAS_INCLUDE) {
+        } else if (token == PP_HAS_INCLUDE || token == PP_HAS_INCLUDE_NEXT) {
+            const bool isIncludeNext = (token == PP_HAS_INCLUDE_NEXT);
             next(LPAREN);
             Token tok = next(); // quote or LANGLE
             bool usesAngleInclude = false;
@@ -755,14 +756,20 @@ void Preprocessor::substituteUntilNewline(Symbols &substituted)
                 includeAsString = unquotedLexem();
             }
             next(RPAREN);
-            const QByteArray &relative  = usesAngleInclude ? QByteArray() : currentFilenames.top();
-            bool result = !resolveInclude(includeAsString, relative).isNull();
+            const qsizetype startIndex = isIncludeNext ? includeNextStartIndex() : 0;
+            const auto exists = [&](const QByteArray &include) {
+                if (isIncludeNext)
+                    return !resolveIncludeNext(include, startIndex).isNull();
+                const QByteArray &relative = usesAngleInclude ? QByteArray() : currentFilenames.top();
+                return !resolveInclude(include, relative).isNull();
+            };
+            bool result = exists(includeAsString);
             if (usesAngleInclude && !result) {
                 // try with expansion
                 includeAsString = {};
                 for (const auto &innerSymbol: innerSymbols)
                     includeAsString.append(innerSymbol.lexem());
-                result = !resolveInclude(includeAsString, relative).isNull();
+                result = exists(includeAsString);
             }
             Symbol definedOrNotDefined = symbol();
             definedOrNotDefined.token = result ? PP_MOC_TRUE : PP_MOC_FALSE;
@@ -1179,6 +1186,21 @@ QByteArray Preprocessor::resolveIncludeNext(const QByteArray &include, qsizetype
     return resolution.path;
 }
 
+qsizetype Preprocessor::includeNextStartIndex()
+{
+    // #include_next continues the search after the directory the current file
+    // was found in. If the current file was not found via the include path
+    // (e.g. the primary source file), warn and search from the start of the
+    // path, matching GCC/Clang.
+    const qsizetype currentDirIndex = currentIncludeDirIndex.top();
+    if (currentDirIndex < 0) {
+        warning("#include_next in primary source file; "
+                "will search from start of include path");
+        return 0;
+    }
+    return currentDirIndex + 1;
+}
+
 void Preprocessor::preprocess(const QByteArray &filename, Symbols &preprocessed, qsizetype includeDirIndex)
 {
     currentFilenames.push(filename);
@@ -1203,21 +1225,10 @@ void Preprocessor::preprocess(const QByteArray &filename, Symbols &preprocessed,
             until(PP_NEWLINE);
 
             qsizetype foundIndex = -1;
-            if (includeNext) {
-                // #include_next continues the search after the directory the
-                // current file was found in. If the current file was not found
-                // via the include path (e.g. the primary source file), warn and
-                // search from the start of the path, matching GCC/Clang.
-                qsizetype startIndex = currentIncludeDirIndex.top() + 1;
-                if (currentIncludeDirIndex.top() < 0) {
-                    warning("#include_next in primary source file; "
-                            "will search from start of include path");
-                    startIndex = 0;
-                }
-                include = resolveIncludeNext(include, startIndex, &foundIndex);
-            } else {
+            if (includeNext)
+                include = resolveIncludeNext(include, includeNextStartIndex(), &foundIndex);
+            else
                 include = resolveInclude(include, local ? filename : QByteArray(), &foundIndex);
-            }
             if (include.isNull())
                 continue;
 
