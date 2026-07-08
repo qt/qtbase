@@ -217,6 +217,19 @@ std::filesystem::copy(
 "
 )
 
+# dirfd
+qt_config_compile_test(dirfd
+    LABEL "dirfd()"
+    CODE
+"#include <dirent.h>
+
+int main(void)
+{
+    dirfd(nullptr);
+    return 0;
+}
+")
+
 # dladdr
 qt_config_compile_test(dladdr
     LABEL "dladdr"
@@ -759,6 +772,11 @@ qt_feature("windows-ioring-runtime" PRIVATE
 
 #### Features
 
+qt_feature("broken-threadlocal-dtors" PRIVATE
+    LABEL "Broken execution of thread_local destructors at exit() time"
+    # Windows is broken in different ways from Unix
+    CONDITION WIN32 OR NOT (TEST_cxa_thread_atexit OR TEST_cxa_thread_atexit_impl)
+)
 qt_feature("clock-gettime" PRIVATE
     LABEL "clock_gettime()"
     CONDITION UNIX AND WrapRt_FOUND
@@ -786,10 +804,9 @@ qt_feature("cxx17_filesystem" PUBLIC
     LABEL "C++17 <filesystem>"
     CONDITION TEST_cxx17_filesystem
 )
-qt_feature("broken-threadlocal-dtors" PRIVATE
-    LABEL "Broken execution of thread_local destructors at exit() time"
-    # Windows is broken in different ways from Unix
-    CONDITION WIN32 OR NOT (TEST_cxa_thread_atexit OR TEST_cxa_thread_atexit_impl)
+qt_feature("dirfd" PRIVATE
+    LABEL "dirfd()"
+    CONDITION NOT WIN32 AND TEST_dirfd
 )
 qt_feature("dladdr" PRIVATE
     LABEL "dladdr"

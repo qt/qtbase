@@ -24,6 +24,7 @@
 #include <QtCore/qstringlist.h>
 
 #include <QtCore/private/qdirentryinfo_p.h>
+#include <QtCore/private/qfilesystemengine_p.h>
 #include <QtCore/private/qfilesystementry_p.h>
 #include <QtCore/private/qfilesystemmetadata_p.h>
 
@@ -40,6 +41,8 @@ public:
     ~QFileSystemIterator();
 
     std::optional<QDirEntryInfo> advance();
+
+    QFileSystemNativeId nativeId() const;
 
 private:
     QString dirPath;

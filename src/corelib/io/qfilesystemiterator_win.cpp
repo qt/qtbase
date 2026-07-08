@@ -57,6 +57,15 @@ QFileSystemIterator::~QFileSystemIterator()
         FindClose(findFileHandle);
 }
 
+QFileSystemNativeId QFileSystemIterator::nativeId() const
+{
+    // nativePath is the resolved directory path with a trailing "\*" search
+    // glob appended (see the constructor). Drop the '*' to recover the
+    // directory itself (the trailing backslash is accepted by CreateFile).
+    QFileSystemEntry entry(nativePath.chopped(1), QFileSystemEntry::FromNativePath());
+    return QFileSystemEngine::nativeId(entry);
+}
+
 std::optional<QDirEntryInfo> QFileSystemIterator::advance()
 {
     bool haveData = false;

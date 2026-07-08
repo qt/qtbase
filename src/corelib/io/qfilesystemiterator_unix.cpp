@@ -45,6 +45,21 @@ QFileSystemIterator::QFileSystemIterator(const QFileSystemEntry &entry, QDir::Fi
 
 QFileSystemIterator::~QFileSystemIterator() = default;
 
+QFileSystemNativeId QFileSystemIterator::nativeId() const
+{
+    if (!dir)
+        return {};
+#if QT_CONFIG(dirfd)
+    // We can use dirfd() to fstat() the open directory - no race condition.
+    return QFileSystemEngine::nativeId(dirfd(dir.get()));
+#else
+    // We must stat() the name - possible race condition, but already present
+    // in QDirListing because we use full file names.
+    return QFileSystemEngine::nativeId(
+            QFileSystemEntry(dirPath, QFileSystemEntry::FromInternalPath()));
+#endif
+}
+
 std::optional<QDirEntryInfo> QFileSystemIterator::advance()
 {
     auto asFileEntry = [this](QStringView name) {
