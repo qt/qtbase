@@ -3576,22 +3576,43 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
                 auto *tf = static_cast<NSTextField *>(d->cocoaControl(cw));
                 tf.enabled = isEnabled;
                 tf.editable = !isReadOnly;
+                const QColor bgColor = frame->palette.brush(QPalette::Base).color();
+                bool hasCustomBackground = false;
+                if (qt_apple_runningWithLiquidGlass()) {
+                    // Starting with Tahoe's Liquid Glass, the rounded/square bezel of an
+                    // NSTextField is drawn using an opaque system material that does not
+                    // respect NSTextFieldCell's 'backgroundColor' in either 'Light' or
+                    // 'Dark' mode, unlike before. If the widget asks for a background
+                    // color other than the system's default text background, we can no
+                    // longer use the bezeled native cell to render it faithfully, so we
+                    // fall back to a plain border and paint the (custom) background
+                    // color ourselves below.
+                    NSColor *sysColor = [NSColor.textBackgroundColor colorUsingColorSpace:NSColorSpace.sRGBColorSpace];
+                    const QColor defaultColor = QColor::fromRgbF(sysColor.redComponent, sysColor.greenComponent,
+                                                                  sysColor.blueComponent, sysColor.alphaComponent);
+                    hasCustomBackground = bgColor != defaultColor;
+                }
                 tf.bezeled = YES;
+                if (hasCustomBackground) {
+                    tf.bezeled = NO;
+                    tf.bordered = YES;
+                }
                 static_cast<NSTextFieldCell *>(tf.cell).bezelStyle = isRounded ? NSTextFieldRoundedBezel : NSTextFieldSquareBezel;
                 tf.frame = opt->rect.toCGRect();
                 d->drawNSViewInRect(tf, opt->rect, p, ^(CGContextRef, const CGRect &rect) {
-                    if (!isDarkMode()) {
-                        // In 'Dark' mode controls are transparent, so we do not
-                        // over-paint the (potentially custom) color in the background.
-                        // In 'Light' mode we have to care about the correct
-                        // background color. See the comments below for PE_PanelLineEdit.
+                    if (!isDarkMode() || hasCustomBackground) {
+                        // In 'Dark' mode controls are transparent by default, so we do not
+                        // have to over-paint the (potentially custom) color in the
+                        // background. In 'Light' mode, and whenever we've fallen back to
+                        // a plain border above because of a custom background color, we
+                        // have to care about the correct background color.
+                        // See the comments below for PE_PanelLineEdit.
                         CGContextRef cgContext = NSGraphicsContext.currentContext.CGContext;
                         // See QMacCGContext, here we expect bitmap context created with
                         // color space 'kCGColorSpaceSRGB', if it's something else - we
                         // give up.
                         if (cgContext ? bool(CGBitmapContextGetColorSpace(cgContext)) : false) {
                             tf.drawsBackground = YES;
-                            const QColor bgColor = frame->palette.brush(QPalette::Base).color();
                             tf.backgroundColor = [NSColor colorWithSRGBRed:bgColor.redF()
                                                                      green:bgColor.greenF()
                                                                       blue:bgColor.blueF()
