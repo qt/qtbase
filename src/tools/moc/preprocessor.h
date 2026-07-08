@@ -25,6 +25,17 @@ typedef QHash<MacroName, Macro> Macros;
 
 class QFile;
 
+// Cached result of resolving an include: the canonical path of the resolved
+// file (null if not found) and the index into the include search list where it
+// was found (-1 if resolved relative to the including file, or not found). The
+// index lets #include_next resume the search *after* the directory the current
+// file was found in.
+struct IncludeResolution
+{
+    QByteArray path;
+    qsizetype foundIndex = -1;
+};
+
 class Preprocessor : public Parser
 {
 public:
@@ -32,9 +43,12 @@ public:
     static bool preprocessOnly;
     QList<QByteArray> frameworks;
     QSet<QByteArray> preprocessedIncludes;
-    QHash<QByteArray, QByteArray> nonlocalIncludePathResolutionCache;
+    QHash<QByteArray, IncludeResolution> nonlocalIncludePathResolutionCache;
     Macros macros;
-    QByteArray resolveInclude(const QByteArray &filename, const QByteArray &relativeTo);
+    QByteArray resolveInclude(const QByteArray &filename, const QByteArray &relativeTo,
+                              qsizetype *foundIndex = nullptr);
+    QByteArray resolveIncludeNext(const QByteArray &filename, qsizetype startIndex,
+                                  qsizetype *foundIndex = nullptr);
     Symbols preprocessed(const QByteArray &filename, QFile *device);
 
     void parseDefineArguments(Macro *m);
@@ -58,7 +72,11 @@ public:
 private:
     void until(Token);
 
-    void preprocess(const QByteArray &filename, Symbols &preprocessed);
+    void preprocess(const QByteArray &filename, Symbols &preprocessed, qsizetype includeDirIndex = -1);
+    // Parallel to Parser::currentFilenames: for each file currently being
+    // preprocessed, the index into the include search list where it was found
+    // (-1 if not found via the list). Used to implement #include_next.
+    std::stack<qsizetype, QList<qsizetype>> currentIncludeDirIndex;
     bool debugIncludes = false;
 };
 

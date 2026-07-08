@@ -851,6 +851,10 @@ private slots:
     void frameworkSearchPath();
     void frameworkIncludePath_data();
     void frameworkIncludePath();
+    void includeNext();
+    void includeNextFeatureGuard();
+    void includeNextInPrimarySourceFile();
+    void includeNextFramework();
     void cstyleEnums();
     void defineMacroViaCmdline();
     void defineMacroViaForcedInclude();
@@ -1641,6 +1645,142 @@ void tst_Moc::frameworkIncludePath()
         qWarning("waitForFinished failed. QProcess error: %d", (int)proc.error());
     QVERIFY(finished);
     VERIFY_NO_ERRORS(proc);
+#else
+    QSKIP("Only tested/relevant on Apple platforms");
+#endif
+}
+
+void tst_Moc::includeNext()
+{
+#ifdef MOC_CROSS_COMPILED
+    QSKIP("Not tested when cross-compiled");
+#endif
+#if defined(Q_OS_UNIX) && QT_CONFIG(process)
+    // <marker.h> resolves to include-next/first/marker.h, whose #include_next
+    // must continue the search into include-next/second/marker.h. With working
+    // #include_next both markers appear in the preprocessed output; without it
+    // the second one is missing (the search dead-ends at the forwarder).
+    const QString base = m_sourceDirectory + QStringLiteral("/include-next");
+    QStringList args;
+    args << "-E"
+         << "-I" << base + QStringLiteral("/first")
+         << "-I" << base + QStringLiteral("/second")
+         << base + QStringLiteral("/lookup-consumer.h");
+
+    QProcess proc;
+    proc.start(m_moc, args);
+    bool finished = proc.waitForFinished();
+    if (!finished)
+        qWarning("waitForFinished failed. QProcess error: %d", (int)proc.error());
+    QVERIFY(finished);
+    VERIFY_NO_ERRORS(proc);
+
+    const QByteArray mocOut = proc.readAllStandardOutput();
+    QVERIFY(mocOut.contains("included_marker_from_first"));
+    QVERIFY2(mocOut.contains("included_marker_from_second"),
+             "#include_next did not continue past the forwarding header");
+#else
+    QSKIP("Only tested/relevant on unixy platforms");
+#endif
+}
+
+void tst_Moc::includeNextFeatureGuard()
+{
+#ifdef MOC_CROSS_COMPILED
+    QSKIP("Not tested when cross-compiled");
+#endif
+#if defined(Q_OS_UNIX) && QT_CONFIG(process)
+    // Test a Q_OBJECT class guarded by a feature macro that is only reachable
+    // through an #include_next forwarder. If moc cannot follow #include_next,
+    // the macro stays undefined and the class is dropped from the generated
+    // meta-object.
+    const QString base = m_sourceDirectory + QStringLiteral("/include-next");
+    QStringList args;
+    args << "-I" << base + QStringLiteral("/first")
+         << "-I" << base + QStringLiteral("/second")
+         << base + QStringLiteral("/feature-consumer.h");
+
+    QProcess proc;
+    proc.start(m_moc, args);
+    bool finished = proc.waitForFinished();
+    if (!finished)
+        qWarning("waitForFinished failed. QProcess error: %d", (int)proc.error());
+    QVERIFY(finished);
+    VERIFY_NO_ERRORS(proc);
+
+    const QByteArray mocOut = proc.readAllStandardOutput();
+    QVERIFY2(mocOut.contains("IncludeNextFeatureObject"),
+             "feature-guarded class was dropped; #include_next did not reach the feature macro");
+#else
+    QSKIP("Only tested/relevant on unixy platforms");
+#endif
+}
+
+void tst_Moc::includeNextInPrimarySourceFile()
+{
+#ifdef MOC_CROSS_COMPILED
+    QSKIP("Not tested when cross-compiled");
+#endif
+#if defined(Q_OS_UNIX) && QT_CONFIG(process)
+    // An #include_next in the primary source file (not found via the include
+    // path) must warn and search from the start of the include path, matching
+    // GCC/Clang.
+    const QString base = m_sourceDirectory + QStringLiteral("/include-next");
+    QStringList args;
+    args << "-E"
+         << "-I" << base + QStringLiteral("/first")
+         << "-I" << base + QStringLiteral("/second")
+         << base + QStringLiteral("/primary-include-next.h");
+
+    QProcess proc;
+    proc.start(m_moc, args);
+    bool finished = proc.waitForFinished();
+    if (!finished)
+        qWarning("waitForFinished failed. QProcess error: %d", (int)proc.error());
+    QVERIFY(finished);
+    QCOMPARE(proc.exitCode(), 0);
+
+    const QByteArray mocErr = proc.readAllStandardError();
+    QVERIFY2(mocErr.contains("#include_next in primary source file"),
+             mocErr.constData());
+    // Searching from the start still reaches the forwarder and, through it, the
+    // real header.
+    const QByteArray mocOut = proc.readAllStandardOutput();
+    QVERIFY(mocOut.contains("included_marker_from_second"));
+#else
+    QSKIP("Only tested/relevant on unixy platforms");
+#endif
+}
+
+void tst_Moc::includeNextFramework()
+{
+#ifdef MOC_CROSS_COMPILED
+    QSKIP("Not tested when cross-compiled");
+#endif
+#if defined(Q_OS_DARWIN) && QT_CONFIG(process)
+    // The Qt framework build reaches a bare <qfoo.h> through a forwarder in a
+    // plain -I directory that does #include_next <QtFoo/qfoo.h>, continuing into
+    // the -F framework path. moc appends -F paths after -I paths, so the
+    // forwarder is always found first; #include_next must continue into the
+    // framework.
+    const QString base = m_sourceDirectory + QStringLiteral("/include-next");
+    QStringList args;
+    args << "-E"
+         << "-I" << base + QStringLiteral("/forwarder")
+         << "-F" << m_sourceDirectory
+         << base + QStringLiteral("/framework-consumer.h");
+
+    QProcess proc;
+    proc.start(m_moc, args);
+    bool finished = proc.waitForFinished();
+    if (!finished)
+        qWarning("waitForFinished failed. QProcess error: %d", (int)proc.error());
+    QVERIFY(finished);
+    VERIFY_NO_ERRORS(proc);
+
+    const QByteArray mocOut = proc.readAllStandardOutput();
+    QVERIFY2(mocOut.contains("struct TestInterface"),
+             "#include_next did not continue from the forwarder into the framework header");
 #else
     QSKIP("Only tested/relevant on Apple platforms");
 #endif
