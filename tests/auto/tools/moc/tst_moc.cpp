@@ -855,6 +855,7 @@ private slots:
     void includeNextFeatureGuard();
     void includeNextInPrimarySourceFile();
     void includeNextFramework();
+    void hasIncludeNext();
     void cstyleEnums();
     void defineMacroViaCmdline();
     void defineMacroViaForcedInclude();
@@ -1783,6 +1784,42 @@ void tst_Moc::includeNextFramework()
              "#include_next did not continue from the forwarder into the framework header");
 #else
     QSKIP("Only tested/relevant on Apple platforms");
+#endif
+}
+
+void tst_Moc::hasIncludeNext()
+{
+#ifdef MOC_CROSS_COMPILED
+    QSKIP("Not tested when cross-compiled");
+#endif
+#if defined(Q_OS_UNIX) && QT_CONFIG(process)
+    // <probe.h> resolves to first/probe.h, which uses __has_include_next to
+    // query the include path past its own directory: <probe.h> exists in
+    // second/ (true), <nonexistent-next.h> exists nowhere (false).
+    const QString base = m_sourceDirectory + QStringLiteral("/include-next");
+    QStringList args;
+    args << "-E"
+         << "-I" << base + QStringLiteral("/first")
+         << "-I" << base + QStringLiteral("/second")
+         << base + QStringLiteral("/hasincludenext-consumer.h");
+
+    QProcess proc;
+    proc.start(m_moc, args);
+    bool finished = proc.waitForFinished();
+    if (!finished)
+        qWarning("waitForFinished failed. QProcess error: %d", (int)proc.error());
+    QVERIFY(finished);
+    VERIFY_NO_ERRORS(proc);
+
+    const QByteArray mocOut = proc.readAllStandardOutput();
+    QVERIFY2(mocOut.contains("probe_has_next"),
+             "__has_include_next did not find the header in a later directory");
+    QVERIFY2(mocOut.contains("nonexistent_no_next"),
+             "__has_include_next reported a nonexistent header as present");
+    QVERIFY(!mocOut.contains("probe_no_next"));
+    QVERIFY(!mocOut.contains("nonexistent_has_next"));
+#else
+    QSKIP("Only tested/relevant on unixy platforms");
 #endif
 }
 

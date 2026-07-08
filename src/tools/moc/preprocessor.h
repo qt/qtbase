@@ -77,6 +77,10 @@ private:
     // preprocessed, the index into the include search list where it was found
     // (-1 if not found via the list). Used to implement #include_next.
     std::stack<qsizetype, QList<qsizetype>> currentIncludeDirIndex;
+    // The index to start searching from for an #include_next / __has_include_next
+    // in the current file: one past the directory it was found in, or (warning)
+    // the start of the path when it was not found via the include path.
+    qsizetype includeNextStartIndex();
     bool debugIncludes = false;
 };
 
