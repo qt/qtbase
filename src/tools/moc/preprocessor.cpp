@@ -377,6 +377,7 @@ Symbols Preprocessor::tokenize(const QByteArray& input, int lineNum, Preprocesso
                 symbols += Symbol(lineNum, PP_DEFINED);
                 continue;
             case PP_INCLUDE:
+            case PP_INCLUDE_NEXT:
                 mode = TokenizeInclude;
                 break;
             case PP_QUOTE:
@@ -1077,17 +1078,23 @@ static void mergeStringLiterals(Symbols &symbols)
     symbols.erase(dst, end);
 }
 
-static QByteArray searchIncludePaths(const QList<Parser::IncludePath> &includepaths,
-                                     const QByteArray &include,
-                                     const bool debugIncludes)
+// Searches the include path list for \a include, starting at \a startIndex.
+// For a plain #include startIndex is 0 (search the whole list); for
+// #include_next it is one past the directory the current file was found in.
+static IncludeResolution searchIncludePaths(const QList<Parser::IncludePath> &includepaths,
+                                            const QByteArray &include,
+                                            qsizetype startIndex,
+                                            const bool debugIncludes)
 {
     QFileInfo fi;
+    qsizetype foundIndex = -1;
 
     if (Q_UNLIKELY(debugIncludes)) {
         fprintf(stderr, "debug-includes: searching for '%s'\n", include.constData());
     }
 
-    for (const Parser::IncludePath &p : includepaths) {
+    for (qsizetype i = startIndex; i < includepaths.size(); ++i) {
+        const Parser::IncludePath &p = includepaths.at(i);
         if (fi.exists())
             break;
 
@@ -1116,13 +1123,14 @@ static QByteArray searchIncludePaths(const QList<Parser::IncludePath> &includepa
             fi = QFileInfo();
             continue;
         }
+        foundIndex = i;
     }
 
     if (!fi.exists() || fi.isDir()) {
         if (Q_UNLIKELY(debugIncludes)) {
             fprintf(stderr, "debug-includes: can't find '%s'\n", include.constData());
         }
-        return QByteArray();
+        return {};
     }
 
     const auto result = fi.canonicalFilePath().toLocal8Bit();
@@ -1131,11 +1139,15 @@ static QByteArray searchIncludePaths(const QList<Parser::IncludePath> &includepa
         fprintf(stderr, "debug-includes: found '%s'\n", result.constData());
     }
 
-    return result;
+    return { result, foundIndex };
 }
 
-QByteArray Preprocessor::resolveInclude(const QByteArray &include, const QByteArray &relativeTo)
+QByteArray Preprocessor::resolveInclude(const QByteArray &include, const QByteArray &relativeTo,
+                                        qsizetype *foundIndex)
 {
+    if (foundIndex)
+        *foundIndex = -1;
+
     if (!relativeTo.isEmpty()) {
         QFileInfo fi;
         fi.setFile(QFileInfo(QString::fromLocal8Bit(relativeTo)).dir(), QString::fromLocal8Bit(include));
@@ -1149,20 +1161,37 @@ QByteArray Preprocessor::resolveInclude(const QByteArray &include, const QByteAr
                                                       searchIncludePaths(
                                                           includes,
                                                           include,
+                                                          0,
                                                           debugIncludes));
-    return it.value();
+    if (foundIndex)
+        *foundIndex = it.value().foundIndex;
+    return it.value().path;
 }
 
-void Preprocessor::preprocess(const QByteArray &filename, Symbols &preprocessed)
+QByteArray Preprocessor::resolveIncludeNext(const QByteArray &include, qsizetype startIndex,
+                                            qsizetype *foundIndex)
+{
+    // #include_next never resolves relative to the including file, and its
+    // result depends on the start index, so it bypasses the resolution cache.
+    const IncludeResolution resolution = searchIncludePaths(includes, include, startIndex, debugIncludes);
+    if (foundIndex)
+        *foundIndex = resolution.foundIndex;
+    return resolution.path;
+}
+
+void Preprocessor::preprocess(const QByteArray &filename, Symbols &preprocessed, qsizetype includeDirIndex)
 {
     currentFilenames.push(filename);
+    currentIncludeDirIndex.push(includeDirIndex);
     preprocessed.reserve(preprocessed.size() + symbols.size());
     while (hasNext()) {
         Token token = next();
 
         switch (token) {
         case PP_INCLUDE:
+        case PP_INCLUDE_NEXT:
         {
+            const bool includeNext = (token == PP_INCLUDE_NEXT);
             int lineNum = symbol().lineNum;
             QByteArray include;
             bool local = false;
@@ -1173,7 +1202,22 @@ void Preprocessor::preprocess(const QByteArray &filename, Symbols &preprocessed)
                 continue;
             until(PP_NEWLINE);
 
-            include = resolveInclude(include, local ? filename : QByteArray());
+            qsizetype foundIndex = -1;
+            if (includeNext) {
+                // #include_next continues the search after the directory the
+                // current file was found in. If the current file was not found
+                // via the include path (e.g. the primary source file), warn and
+                // search from the start of the path, matching GCC/Clang.
+                qsizetype startIndex = currentIncludeDirIndex.top() + 1;
+                if (currentIncludeDirIndex.top() < 0) {
+                    warning("#include_next in primary source file; "
+                            "will search from start of include path");
+                    startIndex = 0;
+                }
+                include = resolveIncludeNext(include, startIndex, &foundIndex);
+            } else {
+                include = resolveInclude(include, local ? filename : QByteArray(), &foundIndex);
+            }
             if (include.isNull())
                 continue;
 
@@ -1205,7 +1249,7 @@ void Preprocessor::preprocess(const QByteArray &filename, Symbols &preprocessed)
 
             // phase 3: preprocess conditions and substitute macros
             preprocessed += Symbol(0, MOC_INCLUDE_BEGIN, include);
-            preprocess(include, preprocessed);
+            preprocess(include, preprocessed, foundIndex);
             preprocessed += Symbol(lineNum, MOC_INCLUDE_END, include);
 
             symbols = saveSymbols;
@@ -1315,6 +1359,7 @@ void Preprocessor::preprocess(const QByteArray &filename, Symbols &preprocessed)
         preprocessed += symbol();
     }
 
+    currentIncludeDirIndex.pop();
     currentFilenames.pop();
 }
 

@@ -27,6 +27,7 @@ static const Keyword pp_keywords[] = {
     { "#else", "PP_ELSE"},
     { "#endif", "PP_ENDIF"},
     { "#include", "PP_INCLUDE"},
+    { "#include_next", "PP_INCLUDE_NEXT"},
     { "__has_include", "PP_HAS_INCLUDE"},
     { "defined", "PP_DEFINED"},
     { "+", "PP_PLUS" },
