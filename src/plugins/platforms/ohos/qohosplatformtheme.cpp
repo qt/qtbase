@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "private/qohosplatformtheme_p.h"
+#include "qohosiconengine.h"
 #include "qohosplatformtheme.h"
 #include "qohosplatformscreen.h"
 #include "qohosplatformdialoghelper.h"
@@ -1040,6 +1041,8 @@ QVariant QOhosPlatformTheme::themeHint(ThemeHint hint) const
         return m_wheelScrollLines;
     case MenuBarFocusOnAltPressRelease:
         return true;
+    case PreferFileIconFromTheme:
+        return true;
     default:
         return QPlatformTheme::themeHint(hint);
     }
@@ -1078,6 +1081,11 @@ QIcon QOhosPlatformTheme::fileIcon(const QFileInfo &fileInfo, QPlatformTheme::Ic
     return !fileInfo.suffix().isEmpty()
         ? QIcon(new QOhosFileIconEngine(fileInfo, iconOptions))
         : QPlatformTheme::fileIcon(fileInfo, iconOptions);
+}
+
+QIconEngine *QOhosPlatformTheme::createIconEngine(const QString &iconName) const
+{
+    return tryCreateQOhosIconEngine(iconName);
 }
 
 QT_END_NAMESPACE

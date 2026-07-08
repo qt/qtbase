@@ -41,6 +41,7 @@ public:
     QPlatformSystemTrayIcon *createPlatformSystemTrayIcon() const override;
 
     QIcon fileIcon(const QFileInfo &fileInfo, QPlatformTheme::IconOptions iconOptions) const override;
+    QIconEngine *createIconEngine(const QString &iconName) const override;
 
 private:
     QMap<Qt::ColorScheme, QHash<Palette, QPalette>> m_themesPalettes;
