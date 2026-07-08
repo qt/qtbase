@@ -59,6 +59,7 @@ constexpr const char *napiLoadableModules[] = {
     "@ohos.net.connection",
     "@ohos.notificationManager",
     "@ohos.pasteboard",
+    "@ohos.resourceManager",
     "@ohos.settings",
     "@ohos.web.webview",
     "@ohos.wifiManager",
