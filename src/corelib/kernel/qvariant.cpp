@@ -504,8 +504,6 @@ void QVariant::create(int type, const void *copy)
 }
 
 /*!
-    \fn QVariant::create(int type, const void *copy)
-
     \internal
     \overload
 */
