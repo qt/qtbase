@@ -95,7 +95,8 @@ void tst_QtParseQtTemporalFormat::prefix_data()
     using Cat = QtTemporalPattern::TemporalFieldCategory;
     constexpr Parts AllParts = Part::Date | Part::Time | Part::Zone;
     constexpr Flags FullZoneName
-        = Flag::LocalizedZone | Flag::Verbal | Flag::Standalone | Flag::Wide | Flag::Short;
+        = Flag::LocalizedZone | Flag::Verbal | Flag::Standalone | Flag::Wide | Flag::Short
+        | Flag::LocalTimeName;
     constexpr Flags TextCommon = Flag::IgnoreCase | Flag::FlexSpace;
 
     QTest::addColumn<QString>("text");

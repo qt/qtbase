@@ -2567,6 +2567,13 @@ void tst_QLocale::toDateTime_data()
     QTest::newRow("longFormat")
         << "en_US" << QDateTime(QDate(2009, 1, 5), QTime(11, 48, 32))
         << "dddd, MMMM d, yyyy h:mm:ss AP " << "Monday, January 5, 2009 11:48:32 AM " << true;
+#if QT_CONFIG(timezone)
+    QTest::newRow("en-long")
+        << u"en"_s << QDateTime(QDate(2023, 12, 23), QTime(1, 23, 45), QTimeZone("Europe/Paris"))
+        << u"dddd, MMMM d, yyyy h:mm:ss Ap tttt"_s
+        << u"Saturday, December 23, 2023 1:23:45 AM CET"_s
+        << false;
+#endif
 
     // Parsing am/pm indicators case-insensitively:
     QTest::newRow("am-cs_CZ")
