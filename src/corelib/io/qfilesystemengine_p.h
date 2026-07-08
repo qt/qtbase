@@ -19,12 +19,41 @@
 #include "qfile.h"
 #include "qfilesystementry_p.h"
 #include "qfilesystemmetadata_p.h"
+#include <QtCore/qhashfunctions.h>
 #include <QtCore/private/qsystemerror_p.h>
 
+#include <array>
 #include <memory>
 #include <optional>
 
 QT_BEGIN_NAMESPACE
+
+struct QFileSystemNativeId
+{
+#if defined(Q_OS_WIN)
+    // FILE_ID_128 is 128-bit; store as two quint64 to avoid __int128.
+    using FileIdType = std::array<quint64, 2>;
+#else
+    using FileIdType = std::array<quint64, 1>;  // 64-bit inode number
+#endif
+
+    quint64 volumeId = 0;       // st_dev (Unix) / volume serial (Windows)
+    FileIdType fileId = {};     // st_ino (Unix) / file id (Windows)
+
+    bool isValid() const noexcept { return volumeId != 0 || fileId != FileIdType{}; }
+
+    Q_AUTOTEST_EXPORT QByteArray toByteArray() const;
+
+    friend bool operator==(const QFileSystemNativeId &lhs,
+                           const QFileSystemNativeId &rhs) noexcept
+    { return lhs.volumeId == rhs.volumeId && lhs.fileId == rhs.fileId; }
+    friend bool operator!=(const QFileSystemNativeId &lhs,
+                           const QFileSystemNativeId &rhs) noexcept
+    { return !(lhs == rhs); }
+
+    friend size_t qHash(const QFileSystemNativeId &id, size_t seed = 0) noexcept
+    { return qHashMulti(seed, id.volumeId, qHashRange(id.fileId.begin(), id.fileId.end())); }
+};
 
 Q_DECL_COLD_FUNCTION
 bool qCheckFileNameFail(const char *msg, const char *file, int line, const char *function);
@@ -65,7 +94,8 @@ public:
     static QFileSystemEntry getJunctionTarget(const QFileSystemEntry &link, QFileSystemMetaData &data);
     static QFileSystemEntry canonicalName(const QFileSystemEntry &entry, QFileSystemMetaData &data);
     static QFileSystemEntry absoluteName(const QFileSystemEntry &entry);
-    static QByteArray id(const QFileSystemEntry &entry);
+    static QByteArray id(const QFileSystemEntry &entry) { return nativeId(entry).toByteArray(); }
+    static QFileSystemNativeId nativeId(const QFileSystemEntry &entry);
     static QString resolveUserName(const QFileSystemEntry &entry, QFileSystemMetaData &data);
     static QString resolveGroupName(const QFileSystemEntry &entry, QFileSystemMetaData &data);
 
@@ -85,7 +115,8 @@ public:
 #if defined(Q_OS_UNIX)
     static TriStateResult cloneFile(int srcfd, int dstfd, const QFileSystemMetaData &knownData);
     static bool fillMetaData(int fd, QFileSystemMetaData &data); // what = PosixStatFlags
-    static QByteArray id(int fd);
+    static QByteArray id(int fd) { return nativeId(fd).toByteArray(); }
+    static QFileSystemNativeId nativeId(int fd);
     static bool setFileTime(int fd, const QDateTime &newDate,
                             QFile::FileTime whatTime, QSystemError &error);
     static bool setPermissions(int fd, QFile::Permissions permissions, QSystemError &error);
@@ -99,7 +130,8 @@ public:
                              QFileSystemMetaData::MetaDataFlags what);
     static bool fillPermissions(const QFileSystemEntry &entry, QFileSystemMetaData &data,
                                 QFileSystemMetaData::MetaDataFlags what);
-    static QByteArray id(HANDLE fHandle);
+    static QByteArray id(HANDLE fHandle) { return nativeId(fHandle).toByteArray(); }
+    static QFileSystemNativeId nativeId(HANDLE fHandle);
     static bool setFileTime(HANDLE fHandle, const QDateTime &newDate,
                             QFile::FileTime whatTime, QSystemError &error);
     static QString owner(const QFileSystemEntry &entry, QAbstractFileEngine::FileOwner own);

@@ -1008,64 +1008,68 @@ QFileSystemEntry QFileSystemEngine::absoluteName(const QFileSystemEntry &entry)
 }
 
 // File ID for Windows up to version 7 and FAT32 drives
-static inline QByteArray fileId(HANDLE handle)
+static inline QFileSystemNativeId fileId(HANDLE handle)
 {
     BY_HANDLE_FILE_INFORMATION info;
     if (GetFileInformationByHandle(handle, &info)) {
-        char buffer[sizeof "01234567:0123456701234567"];
-        std::snprintf(buffer, sizeof(buffer), "%lx:%08lx%08lx",
-                      info.dwVolumeSerialNumber,
-                      info.nFileIndexHigh,
-                      info.nFileIndexLow);
-        return buffer;
+        QFileSystemNativeId id;
+        id.volumeId = info.dwVolumeSerialNumber;
+        id.fileId[0] = (quint64(info.nFileIndexHigh) << 32) | info.nFileIndexLow;
+        return id;
     }
-    return QByteArray();
+    return {};
 }
 
 // File ID for Windows starting from version 8.
-QByteArray fileIdWin8(HANDLE handle)
+static QFileSystemNativeId fileIdWin8(HANDLE handle)
 {
 #if !defined(QT_BOOTSTRAPPED)
-    QByteArray result;
     FILE_ID_INFO infoEx;
     if (GetFileInformationByHandleEx(
                 handle,
                 static_cast<FILE_INFO_BY_HANDLE_CLASS>(18), // FileIdInfo in Windows 8
                 &infoEx, sizeof(FILE_ID_INFO))) {
-        result = QByteArray::number(infoEx.VolumeSerialNumber, 16);
-        result += ':';
+        QFileSystemNativeId id;
+        id.volumeId = infoEx.VolumeSerialNumber;
         // Note: MinGW-64's definition of FILE_ID_128 differs from the MSVC one.
-        result += QByteArray(reinterpret_cast<const char *>(&infoEx.FileId),
-                             int(sizeof(infoEx.FileId)))
-                          .toHex();
-    } else {
-        // GetFileInformationByHandleEx() is observed to fail for FAT32, QTBUG-74759
-        result = fileId(handle);
+        static_assert(sizeof(infoEx.FileId) == sizeof(id.fileId));
+        memcpy(id.fileId.data(), &infoEx.FileId, sizeof(infoEx.FileId));
+        return id;
     }
-    return result;
+    // GetFileInformationByHandleEx() is observed to fail for FAT32, QTBUG-74759
+    return fileId(handle);
 #else // !QT_BOOTSTRAPPED
     return fileId(handle);
 #endif
 }
 
-//static
-QByteArray QFileSystemEngine::id(const QFileSystemEntry &entry)
+QByteArray QFileSystemNativeId::toByteArray() const
 {
-    Q_CHECK_FILE_NAME(entry, QByteArray());
+    if (!isValid())
+        return {};
+    char buffer[sizeof "0123456789abcdef:0123456789abcdef0123456789abcdef"];
+    std::snprintf(buffer, sizeof(buffer), "%llx:%016llx%016llx",
+                  qulonglong(volumeId), qulonglong(fileId[1]), qulonglong(fileId[0]));
+    return buffer;
+}
 
-    QByteArray result;
+//static
+QFileSystemNativeId QFileSystemEngine::nativeId(const QFileSystemEntry &entry)
+{
+    Q_CHECK_FILE_NAME(entry, QFileSystemNativeId());
 
+    QFileSystemNativeId result;
     const HANDLE handle = CreateFile((wchar_t *)entry.nativeFilePath().utf16(), 0, FILE_SHARE_READ,
                                      nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
     if (handle != INVALID_HANDLE_VALUE) {
-        result = id(handle);
+        result = nativeId(handle);
         CloseHandle(handle);
     }
     return result;
 }
 
 //static
-QByteArray QFileSystemEngine::id(HANDLE fHandle)
+QFileSystemNativeId QFileSystemEngine::nativeId(HANDLE fHandle)
 {
     return fileIdWin8(HANDLE(fHandle));
 }

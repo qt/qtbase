@@ -785,35 +785,44 @@ QFileSystemEntry QFileSystemEngine::absoluteName(const QFileSystemEntry &entry)
     return QFileSystemEntry(stringVersion);
 }
 
-//static
-QByteArray QFileSystemEngine::id(const QFileSystemEntry &entry)
+QByteArray QFileSystemNativeId::toByteArray() const
 {
-    Q_CHECK_FILE_NAME(entry, QByteArray());
+    if (!isValid())
+        return {};
+    char buffer[sizeof "0123456789abcdef:18446744073709551615"];
+    std::snprintf(buffer, sizeof(buffer), "%llx:%llu",
+                  qulonglong(volumeId), qulonglong(fileId[0]));
+    return buffer;
+}
 
-    QT_STATBUF statResult;
-    if (QT_STAT(entry.nativeFilePath().constData(), &statResult)) {
-        if (errno != ENOENT)
-            qErrnoWarning("stat() failed for '%s'", entry.nativeFilePath().constData());
-        return QByteArray();
-    }
-    QByteArray result = QByteArray::number(quint64(statResult.st_dev), 16);
-    result += ':';
-    result += QByteArray::number(quint64(statResult.st_ino));
-    return result;
+static QFileSystemNativeId nativeIdFromStatBuf(const QT_STATBUF &statResult)
+{
+    QFileSystemNativeId id;
+    id.volumeId = quint64(statResult.st_dev);
+    id.fileId[0] = quint64(statResult.st_ino);
+    return id;
 }
 
 //static
-QByteArray QFileSystemEngine::id(int fd)
+QFileSystemNativeId QFileSystemEngine::nativeId(const QFileSystemEntry &entry)
+{
+    Q_CHECK_FILE_NAME(entry, QFileSystemNativeId());
+
+    QT_STATBUF statResult;
+    if (QT_STAT(entry.nativeFilePath().constData(), &statResult) != 0)
+        return {};
+    return nativeIdFromStatBuf(statResult);
+}
+
+//static
+QFileSystemNativeId QFileSystemEngine::nativeId(int fd)
 {
     QT_STATBUF statResult;
-    if (QT_FSTAT(fd, &statResult)) {
+    if (QT_FSTAT(fd, &statResult) != 0) {
         qErrnoWarning("fstat() failed for fd %d", fd);
-        return QByteArray();
+        return {};
     }
-    QByteArray result = QByteArray::number(quint64(statResult.st_dev), 16);
-    result += ':';
-    result += QByteArray::number(quint64(statResult.st_ino));
-    return result;
+    return nativeIdFromStatBuf(statResult);
 }
 
 //static

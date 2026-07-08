@@ -51,6 +51,7 @@ if(NOT ANDROID)
 endif()
 if(QT_FEATURE_private_tests)
     add_subdirectory(qfilesystementry)
+    add_subdirectory(qfilesystemengine)
 endif()
 # QTBUG-88508
 if(QT_FEATURE_filesystemwatcher AND NOT ANDROID)
