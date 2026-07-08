@@ -37,6 +37,7 @@ qt_internal_add_plugin(QOhosPlatformIntegrationPlugin
         qohoseventdispatcher.cpp qohoseventdispatcher.h
         qohosfloatingwindow.cpp qohosfloatingwindow.h
         qohosforeignwindow.cpp qohosforeignwindow.h
+        qohosiconengine.cpp qohosiconengine.h
         qohospermissionshelperimpl.cpp qohospermissionshelperimpl.h
         qohosinputcontext.cpp qohosinputcontext.h
         qohosinputmethodproxy.cpp qohosinputmethodproxy.h
