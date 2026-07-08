@@ -41,6 +41,9 @@ public:
 
     QPalette standardPalette() const override;
 
+    QIcon standardIcon(
+        StandardPixmap standardPixmap, const QStyleOption *option, const QWidget *widget) const override;
+
 private:
     Q_DISABLE_COPY(QOhosStyle)
 };

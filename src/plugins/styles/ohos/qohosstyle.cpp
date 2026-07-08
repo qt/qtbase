@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qohosstyle_p.h"
+#include <QtGui/qicon.h>
 #include <QtGui/qpainter.h>
 #include <QtGui/qpainterpath.h>
 #include <QtWidgets/qcheckbox.h>
@@ -24,6 +25,26 @@
 #include <algorithm>
 
 namespace {
+
+// Map a standard pixmap to the XDG icon-theme name that QAbstractFileIconProvider
+// uses for the same QFileIconProvider type, so the widgets path resolves through the
+// platform theme's icon engine exactly as the gui path does.
+QString ohosThemeIconName(QStyle::StandardPixmap standardPixmap)
+{
+    switch (standardPixmap) {
+    case QStyle::SP_ComputerIcon: return QStringLiteral("computer");
+    case QStyle::SP_DesktopIcon: return QStringLiteral("user-desktop");
+    case QStyle::SP_TrashIcon: return QStringLiteral("user-trash");
+    case QStyle::SP_DriveNetIcon: return QStringLiteral("network-workgroup");
+    case QStyle::SP_DriveHDIcon: return QStringLiteral("drive-harddisk");
+    case QStyle::SP_DirClosedIcon: return QStringLiteral("folder");
+    case QStyle::SP_DirIcon: return QStringLiteral("folder");
+    case QStyle::SP_FileIcon: return QStringLiteral("text-x-generic");
+    default: break;
+    }
+
+    return QString();
+}
 
 constexpr int checkBoxOrRadioButtonIndicatorSize = 24;
 constexpr int checkBoxOrRadioButtonIndicatorStrokeWidth = 1;
@@ -1988,4 +2009,17 @@ void QOhosStyle::unpolish(QWidget *widget)
 QPalette QOhosStyle::standardPalette() const
 {
     return *QGuiApplicationPrivate::platformTheme()->palette();
+}
+
+QIcon QOhosStyle::standardIcon(
+    StandardPixmap standardPixmap, const QStyleOption *option, const QWidget *widget) const
+{
+    const QString iconName = ohosThemeIconName(standardPixmap);
+    if (!iconName.isEmpty()) {
+        const QIcon icon = QIcon::fromTheme(iconName);
+        if (!icon.isNull())
+            return icon;
+    }
+
+    return QCommonStyle::standardIcon(standardPixmap, option, widget);
 }
