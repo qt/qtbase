@@ -9,17 +9,116 @@ instructions:
       # Seconds of serial silence before triggering an SSH probe; also the cadence for repeated probes
       EMPTY_READ_GRACE=60
 
-      # Maximum time (s) with no output while waiting; exceeding this triggers a timeout failure
-      MAX_WAIT_TIME=700
+      # Maximum time (s) with no output while waiting; exceeding this triggers a timeout failure.
+      # This is a *consecutive-silence* budget (reset by every serial line), not a total test-duration
+      # cap, so long-but-chatty tests (e.g. tst_qfiledialog ~536s total) are unaffected. Lowered
+      # 700 -> 300 (== 5 x EMPTY_READ_GRACE): the observed 700s timeouts were all stuck RTPs
+      # (probe==RUNNING), so a shorter budget reclaims ~400s per stuck occurrence without killing
+      # healthy tests.
+      MAX_WAIT_TIME=300
+
+      # The test executable (guest path) is the first argument, passed by ctest.
+      # Everything below keys off it -- 'rtp exec' launches it and
+      # ssh_probe_status() matches its basename ($RTP_NAME) in 'rtp list' to
+      # tell RUNNING from FINISHED -- so assert its validity up front instead
+      # of discovering a malformed value mid-run.
+      testexecutable="$1"
+      testdir="$(dirname "$testexecutable")"
+      RTP_NAME="$(basename "$testexecutable")"
+      if [[ -z "$testexecutable" || "$RTP_NAME" == "/" || "$RTP_NAME" == "." ]]; then
+          echo "Invalid test executable argument: '$1'"
+          exit 1
+      fi
 
       quoted_args=`python3 -c 'import sys, shlex; print(shlex.join(sys.argv[2:]))' "$@"`
 
+      # Acquire a free emulator slot. ctest runs this script once per test with
+      # up to VXWORKS_QEMU_INSTANCES jobs in parallel; each job takes exclusive
+      # ownership of one emulator instance via an flock held for its lifetime.
+      N=${VXWORKS_QEMU_INSTANCES:-1}
+      SLOT=""
+      slot_fd=""
+      for s in $(seq 0 $((N - 1))); do
+          exec {fd}>"/tmp/vxworks_slot_${s}.lock"
+          if flock -n "$fd"; then
+              SLOT="$s"
+              slot_fd="$fd"
+              break
+          fi
+          exec {fd}>&-
+      done
+      if [[ -z "$SLOT" ]]; then
+          echo "No free VxWorks emulator slot"
+          exit 1
+      fi
+      echo "Using VxWorks emulator slot ${SLOT}"
+
+      # Per-slot resources.
+      GUEST_IN="/tmp/guest${SLOT}.in"
+      GUEST_OUT="/tmp/guest${SLOT}.out"
+      VX_SCRIPT="/home/qt/work/vx${SLOT}.sh"
+      GUEST_IP="172.31.1.$((10 + SLOT))"
+      if [[ "$VXWORKS_SSH" == *"@"* ]]; then
+          SSH_TARGET="${VXWORKS_SSH%@*}@${GUEST_IP}"
+      else
+          SSH_TARGET="${GUEST_IP}"
+      fi
+      # Pattern uniquely matching this slot's QEMU process: the slot's tap
+      # interface name appears on the QEMU command line. The [,] keeps
+      # pgrep/pkill from matching the (sudo) pkill command line itself, which
+      # contains the same literal.
+      QEMU_PROC_PATTERN="ifname=tap${SLOT}[,]"
+
+      # Kill only this slot's emulator (matched by $QEMU_PROC_PATTERN),
+      # never the emulators owned by the parallel jobs. SIGTERM alone is not
+      # enough: a wedged QEMU can ignore the TERM relayed through its sudo
+      # wrapper and keep the tap device busy, so the relaunched instance dies
+      # at startup and the new serial FIFOs never get a reader. Verify death
+      # and escalate to SIGKILL; QEMU runs as root (sudo chrt), so the -9 has
+      # to go through sudo.
+      kill_qemu() {
+          pkill -f "$QEMU_PROC_PATTERN"
+          for _ in $(seq 1 10); do
+              pgrep -f "$QEMU_PROC_PATTERN" >/dev/null || return 0
+              sleep 1
+          done
+          sudo pkill -9 -f "$QEMU_PROC_PATTERN"
+          for _ in $(seq 1 5); do
+              pgrep -f "$QEMU_PROC_PATTERN" >/dev/null || return 0
+              sleep 1
+          done
+          echo "Emulator for slot ${SLOT} survived SIGKILL"
+          return 1
+      }
+
+      # Bounded write to the guest serial FIFO. A plain 'echo > "$GUEST_IN"' opens
+      # the FIFO for writing and blocks until the guest is reading it; if the guest
+      # has wedged, that block is unbounded. Cap it: on timeout the emulator is
+      # dead, so kill it (the next run relaunches via the health check) and fail
+      # this test rather than hanging the slot.
+      serial_send() {
+          if ! timeout 10 bash -c 'printf "%s\n" "$1" > "$2"' _ "$1" "$GUEST_IN"; then
+              echo "Serial write to slot ${SLOT} timed out; treating emulator as dead"
+              kill_qemu
+              exit 1
+          fi
+      }
+
       ssh_cmd() {
-      LD_LIBRARY_PATH=/usr/lib ssh -n -q -T \
-          -o BatchMode=yes -o ConnectTimeout=1 -o HostKeyAlgorithms=+ssh-rsa \
+      # A hard wall-clock cap ('timeout') plus ServerAlive* bound the *whole*
+      # probe. ConnectTimeout only limits TCP connect: if SSH connects but the
+      # guest command never returns (emulator wedged under heavy TCG load), the
+      # ssh call would otherwise block forever, so ssh_probe_status never
+      # returns and the MAX_WAIT_TIME watchdog below can never fire. That is
+      # exactly how a stuck test could deadlock the whole ctest run until the
+      # 4h CI ceiling.
+      LD_LIBRARY_PATH=/usr/lib timeout -k 5 20 ssh -n -q -T \
+          -o BatchMode=yes -o ConnectTimeout=1 \
+          -o ServerAliveInterval=3 -o ServerAliveCountMax=2 \
+          -o HostKeyAlgorithms=+ssh-rsa \
           -o PreferredAuthentications=publickey \
           -o NumberOfPasswordPrompts=0 \
-          ${VXWORKS_SSH} "$@" </dev/null
+          ${SSH_TARGET} "$@" </dev/null
       }
 
       ssh_probe_status() {
@@ -32,19 +131,23 @@ instructions:
               echo "UNRESPONSIVE"
               return 0
           fi
-          # Determine if our RTP is present; currently we match by 'tests' substring in 'rtp list' output
-          if printf '%s\n' "$out" | /usr/bin/grep -Fq "tests"; then
+          # Is our test's RTP still listed? Match the actual test-binary name
+          # ($RTP_NAME, set at the top from the executable path) rather than a generic
+          # "tests" substring: the RTP shows up in 'rtp list' by its launch path,
+          # and keying on the real basename works regardless of where the test is
+          # installed. A generic "tests" match only happened to work for the CI
+          # install path and would mis-report a still-running test as FINISHED
+          # (=> premature exit 0 / false pass) for any other layout.
+          if printf '%s\n' "$out" | /usr/bin/grep -Fq "$RTP_NAME"; then
               echo "RUNNING"
           else
               echo "FINISHED"
           fi
       }
 
-      testdir="$(dirname $1)"
-      testexecutable="$1"
       echo RUNNING via serial: "$quoted_args"
-      echo "cmd rtp exec -p 200 -t 0x01000000 -u 0x1000000 $testexecutable -- $quoted_args" > /home/qt/work/vx.sh
-      echo "cmd echo \"qtest_in_vxworks_complete: $?\"" >> /home/qt/work/vx.sh
+      echo "cmd rtp exec -p 200 -t 0x01000000 -u 0x1000000 $testexecutable -- $quoted_args" > "$VX_SCRIPT"
+      echo "cmd echo \"qtest_in_vxworks_complete: $?\"" >> "$VX_SCRIPT"
       #rtp exec            Execute a process.
       #               -p : specify the initial task priority
       #                     200 is high, 255 max
@@ -57,13 +160,13 @@ instructions:
       # be echoed after test process ends normally or crashes when normal log lines are not present.
 
       # Check that emulator is functioning
-      ( echo "cmd echo \"health check\"" > /tmp/guest.in ) & pid=$!
+      ( echo "cmd echo \"health check\"" > "$GUEST_IN" ) & pid=$!
       ( sleep 5 && kill -HUP $pid ) 2>/dev/null & watcher=$!
       wait $pid 2>/dev/null && pkill -HUP -P $watcher
 
       if [[ "$?" -eq "0" ]]; then
-          read -t 5 echoline</tmp/guest.out
-          read -t 1 testline</tmp/guest.out
+          read -t 5 echoline < "$GUEST_OUT"
+          read -t 1 testline < "$GUEST_OUT"
       fi
 
       probe0="$(ssh_probe_status)"
@@ -76,12 +179,35 @@ instructions:
           else
               echo "Restarting stuck emulator (serial down)"
           fi
-          pkill qemu-system
-          rm /tmp/guest.in /tmp/guest.out
-          mkfifo /tmp/guest.in /tmp/guest.out
-          /bin/bash /home/qt/vxworks_qemu_launcher.sh $VXWORKS_EMULATOR_TYPE
+          if ! kill_qemu; then
+              # Can't reclaim the tap device; relaunching would just produce a
+              # dead QEMU and readerless FIFOs. Fail the test instead of
+              # wedging the slot; the next run retries the whole teardown.
+              exit 1
+          fi
+          rm -f "$GUEST_IN" "$GUEST_OUT"
+          mkfifo "$GUEST_IN" "$GUEST_OUT"
+          # Close the slot lock fd for the spawned processes so the long-lived
+          # emulator does not inherit and hold this job's slot lock.
+          /bin/bash /home/qt/vxworks_qemu_launcher.sh "$VXWORKS_EMULATOR_TYPE" "$SLOT" {slot_fd}>&-
           sleep 1
-          /bin/bash /home/qt/work/coin_vxworks_vars.sh
+          # If the relaunched QEMU died at startup, the new FIFOs have no
+          # reader and every serial write below would block forever.
+          if ! pgrep -f "$QEMU_PROC_PATTERN" >/dev/null; then
+              echo "Relaunched emulator for slot ${SLOT} is not running"
+              exit 1
+          fi
+          # Guest configuration writes to the serial FIFO with no bound of its
+          # own; if the emulator wedges mid-boot those writes block forever.
+          # This exact hang deadlocked both ARM slots and two of four x86
+          # slots until the 4h CI ceiling (2026-07-10 runs). Normal duration
+          # is ~40s (sleep 10 + ~25 throttled writes); cap it and fail the
+          # test on overrun so the slot stays usable.
+          if ! timeout 120 /bin/bash /home/qt/work/coin_vxworks_vars.sh "$SLOT" {slot_fd}>&-; then
+              echo "Guest configuration for slot ${SLOT} timed out; treating emulator as dead"
+              kill_qemu
+              exit 1
+          fi
           sleep 1
       else
           echo "VxWorks is functional"
@@ -90,14 +216,14 @@ instructions:
       # Empty out any pending serial output to start clean
       while read -t 1 line; do
           echo $line
-      done < /tmp/guest.out
+      done < "$GUEST_OUT"
 
-      echo "cmd cd $testdir; echo done" > /tmp/guest.in
+      serial_send "cmd cd $testdir; echo done"
 
       # Empty line before result of cd
-      read -t 1 line_cmd </tmp/guest.out
+      read -t 1 line_cmd < "$GUEST_OUT"
 
-      if read -t 1 cdline </tmp/guest.out; then
+      if read -t 1 cdline < "$GUEST_OUT"; then
           cdline_clean=$(printf '%s' "$cdline" | tr -d '\r')
           if printf '%s' "$cdline_clean" | /usr/bin/grep -Eq 'error\s*='; then
               printf 'entering %s: %s\n' "$testdir" "$cdline_clean"
@@ -105,7 +231,7 @@ instructions:
           fi
       fi
 
-      echo "</home/qt/work/vx.sh" > /tmp/guest.in
+      serial_send "<$VX_SCRIPT"
 
       silent_seconds=0
       last_probe_result="NONE"
@@ -125,6 +251,10 @@ instructions:
               # RUNNING or UNRESPONSIVE - keep waiting
               if (( silent_seconds >= MAX_WAIT_TIME )); then
                   echo "Timeout: no output for ${MAX_WAIT_TIME}s (last SSH probe: ${last_probe_result})"
+                  # Tear down this slot's wedged emulator now rather than leaving it
+                  # burning host CPU (TCG) until the next test's health check finds
+                  # it; the next run relaunches a fresh instance.
+                  kill_qemu
                   exit 1
               fi
               continue
@@ -137,21 +267,25 @@ instructions:
 
           if echo "$line" | /usr/bin/grep -q "qtest_in_vxworks_complete"
           then
-              read -t 1 line</tmp/guest.out
+              read -t 1 line < "$GUEST_OUT"
               echo "$line"
               exitcode=$(echo "$line" | sed -nr 's/qtest_in_vxworks_complete: (-?[0-9]+)/\1/gp' | tr -d '\r')
               exit $exitcode
           fi
 
           # Handle crashes
-          if echo "$line" | /usr/bin/grep -qE "(SIGSEGV)|(SIGABRT)|(S_rtpLib_[A-Z_]+)"
+          # VxWorks reports RTP crashes on the serial console as e.g.
+          #   "RTP Signal 11" / "RTP Signal 6" (11=SIGSEGV, 6=SIGABRT, ...)
+          # in addition to the symbolic SIG* names and S_rtpLib_* errors, so
+          # match all of these forms.
+          if echo "$line" | /usr/bin/grep -qE "(SIGSEGV)|(SIGABRT)|([Rr][Tt][Pp][[:space:]]+[Ss]ignal[[:space:]]+[0-9]+)|(S_rtpLib_[A-Z_]+)"
           then
               # Drain the pipe for context, mark as crashed, and restart emulator next run.
               while read -t 1 line; do
                   echo $line
-              done < /tmp/guest.out
+              done < "$GUEST_OUT"
               echo "Test crashed"
-              pkill qemu-system
+              kill_qemu
               exit 1
           fi
-      done < /tmp/guest.out
+      done < "$GUEST_OUT"
