@@ -154,6 +154,7 @@
 
 #include <memory>
 #include <stack>
+#include <variant>
 #include <vector>
 
 QT_BEGIN_NAMESPACE
@@ -187,7 +188,6 @@ public:
     bool matchesFilters(QDirEntryInfo &data) const;
     bool hasIterators() const;
 
-    std::unique_ptr<QAbstractFileEngine> engine;
     QDirEntryInfo initialEntryInfo;
     QStringList nameFilters;
     QDirListing::IteratorFlags iteratorFlags;
@@ -204,15 +204,27 @@ public:
     }
 #endif
 
-    using FEngineIteratorPtr = std::unique_ptr<QAbstractFileEngineIterator>;
-    vector_stack<FEngineIteratorPtr> fileEngineIterators;
+    // QDirListing scans either through a QAbstractFileEngine (resources, custom
+    // engines) or natively (QFileSystemEngine + QFileSystemIterator). The mode
+    // is selected by beginIterating().
+    struct EngineData {
+        using FEngineIteratorPtr = std::unique_ptr<QAbstractFileEngineIterator>;
+        EngineData(std::unique_ptr<QAbstractFileEngine> engine) noexcept : engine(std::move(engine)) {}
+        std::unique_ptr<QAbstractFileEngine> engine;
+        vector_stack<FEngineIteratorPtr> iterators;
+        QDuplicateTracker<QString> visitedLinks;
+    };
+    struct NativeData {
 #ifndef QT_NO_FILESYSTEMITERATOR
-    using FsIteratorPtr = std::unique_ptr<QFileSystemIterator>;
-    vector_stack<FsIteratorPtr> nativeIterators;
+        using FsIteratorPtr = std::unique_ptr<QFileSystemIterator>;
+        vector_stack<FsIteratorPtr> iterators;
+        QDuplicateTracker<QString> visitedLinks;
+#else
+        NativeData() noexcept
+        { qWarning("Qt was built with -no-feature-filesystemiterator: no files/plugins will be found!"); }
 #endif
-
-    // Loop protection
-    std::optional<QDuplicateTracker<QString>> visitedLinks{std::in_place};
+    };
+    std::variant<std::monostate, EngineData, NativeData> data;
 
 private:
     bool matchesFilters(const QFileInfo &fileInfo) const;
@@ -234,10 +246,6 @@ void QDirListingPrivate::init()
     for (const auto &filter : std::as_const(nameFilters))
         nameRegExps.emplace_back(QRegularExpression::fromWildcard(filter, cs));
 #endif
-
-    auto *native = std::get_if<QDirEntryInfo::Native>(&initialEntryInfo.content);
-    Q_ASSERT(native);
-    engine = QFileSystemEngine::createLegacyEngine(native->entry, native->metaData);
 }
 
 /*!
@@ -248,47 +256,56 @@ void QDirListingPrivate::init()
 */
 void QDirListingPrivate::beginIterating()
 {
-#ifndef QT_NO_FILESYSTEMITERATOR
-    nativeIterators.clear();
-#endif
-    fileEngineIterators.clear();
-    visitedLinks.emplace();
+    Q_ASSERT(std::holds_alternative<QDirEntryInfo::Native>(initialEntryInfo.content));
+    QDirEntryInfo::Native &native = *std::get_if<QDirEntryInfo::Native>(&initialEntryInfo.content);
+
+    // (Re-)select our operating mode. Note how std::variant::emplace will
+    // recreate the object even if it matches the current type, which is
+    // necessary for QDuplicateTracker.
+    if (auto engine = QFileSystemEngine::createLegacyEngine(native.entry, native.metaData))
+        data.emplace<EngineData>(std::move(engine));
+    else
+        data.emplace<NativeData>();
+
     pushDirectory(initialEntryInfo);
 }
 
 void QDirListingPrivate::pushDirectory(QDirEntryInfo &entryInfo)
 {
-    const QString path = [&entryInfo] {
+    const bool followSymlinks =
+            iteratorFlags.testAnyFlags(QDirListing::IteratorFlag::FollowDirSymlinks);
+
+    if (auto *d = std::get_if<EngineData>(&data)) {
+        const QString path = [&entryInfo] {
 #ifdef Q_OS_WIN
-        if (entryInfo.isSymLink())
-            return entryInfo.canonicalFilePath();
+            if (entryInfo.isSymLink())
+                return entryInfo.canonicalFilePath();
 #endif
-        return entryInfo.filePath();
-    }();
+            return entryInfo.filePath();
+        }();
 
-
-    if (iteratorFlags.testAnyFlags(QDirListing::IteratorFlag::FollowDirSymlinks)) {
         // Stop link loops
-        if (visitedLinks->hasSeen(entryInfo.canonicalFilePath()))
+        if (followSymlinks && d->visitedLinks.hasSeen(entryInfo.canonicalFilePath()))
             return;
-    }
 
-    if (engine) {
-        engine->setFileName(path);
-        if (auto it = engine->beginEntryList(path, iteratorFlags, nameFilters)) {
-            fileEngineIterators.push(std::move(it));
+        d->engine->setFileName(path);
+        if (auto it = d->engine->beginEntryList(path, iteratorFlags, nameFilters)) {
+            d->iterators.push(std::move(it));
         } else {
             // No iterator; no entry list.
         }
-    } else {
+    } else if (auto *d = std::get_if<NativeData>(&data); true) {
+        Q_ASSERT(d);
 #ifndef QT_NO_FILESYSTEMITERATOR
-        nativeIterators.push(std::make_unique<QFileSystemIterator>(
+        // Stop link loops
+        if (followSymlinks && d->visitedLinks.hasSeen(entryInfo.canonicalFilePath()))
+            return;
+
+        d->iterators.push(std::make_unique<QFileSystemIterator>(
                 entryInfo.query(
                         [](const QDirEntryInfo::Native &native) { return native.entry; },
                         [](const QFileInfo &fileInfo) { return fileInfo.d_ptr->fileEntry; }),
                 iteratorFlags));
-#else
-        qWarning("Qt was built with -no-feature-filesystemiterator: no files/plugins will be found!");
 #endif
     }
 }
@@ -315,33 +332,34 @@ bool QDirListingPrivate::entryMatches(QDirEntryInfo &entryInfo)
 */
 void QDirListingPrivate::advance()
 {
-    if (engine) {
-        while (!fileEngineIterators.empty()) {
+    if (auto *d = std::get_if<EngineData>(&data)) {
+        while (!d->iterators.empty()) {
             // Find the next valid iterator that matches the filters.
-            // Always use top() because entryMatches() may modify `fileEngineIterators`!
-            while (fileEngineIterators.top()->advance()) {
-                QDirEntryInfo entryInfo{fileEngineIterators.top().get()};
+            // Always use top() because entryMatches() may modify `iterators`!
+            while (d->iterators.top()->advance()) {
+                QDirEntryInfo entryInfo{d->iterators.top().get()};
                 if (entryMatches(entryInfo)) {
                     currentEntryInfo = std::move(entryInfo);
                     return;
                 }
             }
 
-            fileEngineIterators.pop();
+            d->iterators.pop();
         }
-    } else {
+    } else if (auto *d = std::get_if<NativeData>(&data); true) {
+        Q_ASSERT(d);
 #ifndef QT_NO_FILESYSTEMITERATOR
-        while (!nativeIterators.empty()) {
+        while (!d->iterators.empty()) {
             // Find the next valid iterator that matches the filters.
-            // Always use top() because entryMatches() may modify `nativeIterators`!
-            while (std::optional r = nativeIterators.top()->advance()) {
+            // Always use top() because entryMatches() may modify `iterators`!
+            while (std::optional r = d->iterators.top()->advance()) {
                 if (entryMatches(*r)) {
                     currentEntryInfo = std::move(*r);
                     return;
                 }
             }
 
-            nativeIterators.pop();
+            d->iterators.pop();
         }
 #endif
     }
@@ -545,11 +563,12 @@ bool QDirListingPrivate::matchesFilters(QDirEntryInfo &entryInfo) const
 
 bool QDirListingPrivate::hasIterators() const
 {
-    if (engine)
-        return !fileEngineIterators.empty();
+    if (auto *d = std::get_if<EngineData>(&data))
+        return !d->iterators.empty();
 
 #if !defined(QT_NO_FILESYSTEMITERATOR)
-    return !nativeIterators.empty();
+    if (auto *d = std::get_if<NativeData>(&data))
+        return !d->iterators.empty();
 #endif
 
     return false;
