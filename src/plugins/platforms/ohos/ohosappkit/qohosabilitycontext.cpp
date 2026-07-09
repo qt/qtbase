@@ -611,9 +611,12 @@ protected:
         std::optional<QOhosStartOptionsData> qpaStartOptions,
         QObject *context, std::function<void(std::optional<QOhosStartAbilityResult>)> callback);
 
-    QByteArray shareDataWithShareKitImpl(
+    void shareDataWithShareKitImpl(
         QWindow *optMainWindow, const QList<QSharedPointer<ShareKit::QOhosSharedRecord>> &records,
-        QSharedPointer<ShareKit::QOhosShareControllerOptions> controllerOptions);
+        QSharedPointer<ShareKit::QOhosShareControllerOptions> controllerOptions,
+        QObject *context,
+        std::function<void(QSharedPointer<ShareKit::QOhosShareOperationResult>)> onShareCompleted,
+        std::function<void()> onPanelClosed);
 
 private:
     QOhosSupplier<QByteArray> m_uniqueIdsGenerator;
@@ -637,9 +640,12 @@ public:
         const QOhosWant &want, const QOhosStartRequest &startRequest, QObject *context,
         std::function<void(std::optional<QOhosStartAbilityResult>)> callback) override;
 
-    QByteArray shareDataWithShareKit(
+    void shareDataWithShareKit(
         const QList<QSharedPointer<ShareKit::QOhosSharedRecord>> &records,
-        QSharedPointer<ShareKit::QOhosShareControllerOptions> controllerOptions) override;
+        QSharedPointer<ShareKit::QOhosShareControllerOptions> controllerOptions,
+        QObject *context,
+        std::function<void(QSharedPointer<ShareKit::QOhosShareOperationResult>)> onShareCompleted,
+        std::function<void()> onPanelClosed) override;
 
     bool tryOpenLink(const QString &link) override;
     bool tryOpenLink(const QString &link, const QOhosOpenLinkOptions &options) override;
@@ -664,9 +670,12 @@ public:
         const QOhosWant &want, const QOhosStartRequest &startRequest, QObject *context,
         std::function<void(std::optional<QOhosStartAbilityResult>)> callback) override;
 
-    QByteArray shareDataWithShareKit(
+    void shareDataWithShareKit(
         const QList<QSharedPointer<ShareKit::QOhosSharedRecord>> &records,
-        QSharedPointer<ShareKit::QOhosShareControllerOptions> controllerOptions) override;
+        QSharedPointer<ShareKit::QOhosShareControllerOptions> controllerOptions,
+        QObject *context,
+        std::function<void(QSharedPointer<ShareKit::QOhosShareOperationResult>)> onShareCompleted,
+        std::function<void()> onPanelClosed) override;
 
     bool tryOpenLink(const QString &link) override;
     bool tryOpenLink(const QString &link, const QOhosOpenLinkOptions &options) override;
@@ -699,28 +708,30 @@ void QOhosBaseAbilityContextImpl::startAbilityForResultImpl(
         std::move(callback));
 }
 
-QByteArray QOhosBaseAbilityContextImpl::shareDataWithShareKitImpl(
+void QOhosBaseAbilityContextImpl::shareDataWithShareKitImpl(
     QWindow *optMainWindow, const QList<QSharedPointer<ShareKit::QOhosSharedRecord>> &records,
-    QSharedPointer<ShareKit::QOhosShareControllerOptions> controllerOptions)
+    QSharedPointer<ShareKit::QOhosShareControllerOptions> controllerOptions,
+    QObject *context,
+    std::function<void(QSharedPointer<ShareKit::QOhosShareOperationResult>)> onShareCompleted,
+    std::function<void()> onPanelClosed)
 {
     auto selfPtr = QPointer<QOhosBaseAbilityContextImpl>(this);
+    auto contextPtr = QPointer<QObject>(context);
     auto requestId = generateUniqueId();
     auto requestHandle = ShareKit::shareData(
         optMainWindow, records, controllerOptions,
-        [selfPtr, requestId]() {
-            if (!selfPtr.isNull()) {
-                selfPtr->m_shareDataRequestsHandles.remove(requestId);
-                Q_EMIT selfPtr->shareKitPanelClosed(requestId);
-            }
-        },
-        [selfPtr, requestId](auto shareOperationResult) {
+        [selfPtr, contextPtr, requestId, onPanelClosed]() {
             if (!selfPtr.isNull())
-                Q_EMIT selfPtr->shareKitCompleted(requestId, shareOperationResult);
+                selfPtr->m_shareDataRequestsHandles.remove(requestId);
+            if (!contextPtr.isNull() && onPanelClosed)
+                onPanelClosed();
+        },
+        [contextPtr, onShareCompleted](auto shareOperationResult) {
+            if (!contextPtr.isNull() && onShareCompleted)
+                onShareCompleted(shareOperationResult);
         }
     );
     m_shareDataRequestsHandles.insert(requestId, requestHandle);
-
-    return requestId;
 }
 
 QOhosDefaultAbilityContextImpl::QOhosDefaultAbilityContextImpl() = default;
@@ -758,11 +769,16 @@ void QOhosDefaultAbilityContextImpl::startAbilityForResult(
         want, nullptr, tryConvertStartRequestToQpaFunctionsStruct(startRequest), context, std::move(callback));
 }
 
-QByteArray QOhosDefaultAbilityContextImpl::shareDataWithShareKit(
+void QOhosDefaultAbilityContextImpl::shareDataWithShareKit(
     const QList<QSharedPointer<ShareKit::QOhosSharedRecord>> &records,
-    QSharedPointer<ShareKit::QOhosShareControllerOptions> controllerOptions)
+    QSharedPointer<ShareKit::QOhosShareControllerOptions> controllerOptions,
+    QObject *context,
+    std::function<void(QSharedPointer<ShareKit::QOhosShareOperationResult>)> onShareCompleted,
+    std::function<void()> onPanelClosed)
 {
-    return shareDataWithShareKitImpl(nullptr, records, controllerOptions);
+    shareDataWithShareKitImpl(
+        nullptr, records, controllerOptions, context,
+        std::move(onShareCompleted), std::move(onPanelClosed));
 }
 
 bool startAbilityByTypeImpl(const QString &appType, const QJsonObject &wantParameters)
@@ -1002,22 +1018,27 @@ void QOhosAbilityContextImpl::startAbilityForResult(
 }
 
 /*!
-    \fn virtual void QtOhosAppKit::QOhosAbilityContext::shareDataWithShareKit(const QList<QSharedPointer<ShareKit::QOhosSharedRecord>> &records, QSharedPointer<ShareKit::QOhosShareControllerOptions> controllerOptions) = 0
+    \fn virtual void QtOhosAppKit::QOhosAbilityContext::shareDataWithShareKit(const QList<QSharedPointer<ShareKit::QOhosSharedRecord>> &records, QSharedPointer<ShareKit::QOhosShareControllerOptions> controllerOptions, QObject *context, std::function<void(QSharedPointer<ShareKit::QOhosShareOperationResult>)> onShareCompleted, std::function<void()> onPanelClosed) = 0
 
     Share provided \a records with other applications using an inter-application mechanism called ShareKit. Share Kit panel can be controlled
     with a given \a controllerOptions. When called on the default QOhosAbilityContext instance, it shares \a records using the default UiAbility.
 
-    Returns request identifier which will be passed as an argument of the corresponding \sa shareKitPanelClosed() or \sa shareKitCompleted() signal.
-    shareKitPanelClosed() signal is emitted when the sharing panel is closed.
-    shareKitCompleted() signal is called when User selects application for sharing (can be called multiple times).
+    Results are delivered by invoking the callbacks on the thread of \a context; if \a context is destroyed the callbacks are not invoked.
+    \a onShareCompleted is called when the User selects an application for sharing (can be called multiple times).
+    \a onPanelClosed, if set, is called when the sharing panel is closed.
 
     See \l {https://developer.huawei.com/consumer/en/doc/harmonyos-guides-V5/share-introduction-V5}{Share Kit}
 */
-QByteArray QOhosAbilityContextImpl::shareDataWithShareKit(
+void QOhosAbilityContextImpl::shareDataWithShareKit(
     const QList<QSharedPointer<ShareKit::QOhosSharedRecord>> &records,
-    QSharedPointer<ShareKit::QOhosShareControllerOptions> controllerOptions)
+    QSharedPointer<ShareKit::QOhosShareControllerOptions> controllerOptions,
+    QObject *context,
+    std::function<void(QSharedPointer<ShareKit::QOhosShareOperationResult>)> onShareCompleted,
+    std::function<void()> onPanelClosed)
 {
-    return shareDataWithShareKitImpl(m_instanceMainWindow, records, controllerOptions);
+    shareDataWithShareKitImpl(
+        m_instanceMainWindow, records, controllerOptions, context,
+        std::move(onShareCompleted), std::move(onPanelClosed));
 }
 
 /*!
@@ -1140,24 +1161,6 @@ void startAppProcessImpl(
     {UIAbility onContinue}.
 
     \sa setAgreeResponse(), setMismatchResponse(), setRejectResponse()
-*/
-
-/*!
-    \fn void QtOhosAppKit::QOhosAbilityContext::shareKitPanelClosed(QByteArray requestId)
-
-    Signal emitted when the sharing panel (invoked via shareDataWithShareKit) closes.
-    It corresponds to OH ShareController's "dismiss" event.
-
-    See \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references/share-system-share#section147001858124512}{ShareController}
-*/
-
-/*!
-    \fn void QtOhosAppKit::QOhosAbilityContext::shareKitCompleted(QByteArray requestId, QSharedPointer<ShareKit::QOhosShareOperationResult> shareOperationResult)
-
-    Signal emitted when share operation is completed.
-    Please note that the shareKitCompleted() can be called multiple times as the User can change the target application.
-
-    See \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references/share-system-share#section238319917154}{ShareController}
 */
 
 QOhosAbilityContext::QOhosAbilityContext()
