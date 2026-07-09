@@ -61,7 +61,16 @@ protected:
     void zwp_text_input_v3_done(uint32_t serial) override;
 
 private:
-    ::wl_surface *m_surface = nullptr; // ### Here for debugging purposes
+    Q_DISABLE_COPY(QWaylandTextInputv3)
+
+    // The entered and enabled surfaces, according to text-input-v3.
+    ::wl_surface *m_enteredSurface = nullptr;
+    ::wl_surface *m_enabledSurface = nullptr;
+
+    // The surface for which enableSurface() has been called. This may
+    // not be enabled in text-input-v3 if it is not also entered in
+    // text-input-v3.
+    ::wl_surface *m_focusedSurface = nullptr;
 
     struct PreeditInfo {
         QString text;
