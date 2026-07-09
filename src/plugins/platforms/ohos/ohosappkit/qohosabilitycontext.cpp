@@ -1137,7 +1137,7 @@ QOhosAbilityContext::QOhosAbilityContext()
 }
 
 /*!
-    \fn QSharedPointer<QOhosAbilityContext> QtOhosAppKit::QOhosAbilityContext::getDefaultInstance()
+    \fn QSharedPointer<QOhosAbilityContext> QtOhosAppKit::QOhosAbilityContext::defaultInstance()
 
     Returns instance of the class which is not connected to any specific Ability instance. It should
     be used when the application needs to perform some operations without selecting specific
@@ -1146,20 +1146,20 @@ QOhosAbilityContext::QOhosAbilityContext()
     See descriptions of specific class methods for information about their behavior for the default
     instance.
 */
-QSharedPointer<QOhosAbilityContext> QOhosAbilityContext::getDefaultInstance()
+QSharedPointer<QOhosAbilityContext> QOhosAbilityContext::defaultInstance()
 {
     static auto instance = QSharedPointer<QOhosDefaultAbilityContextImpl>::create();
     return instance;
 }
 
 /*!
-    \fn QSharedPointer<QOhosAbilityContext> QtOhosAppKit::QOhosAbilityContext::getInstanceForMainWindow(QWindow *instanceMainWindow)
+    \fn QSharedPointer<QOhosAbilityContext> QtOhosAppKit::QOhosAbilityContext::instanceForMainWindow(QWindow *instanceMainWindow)
 
     Returns instance of the class which is connected to Ability instance identified by the
     \a instanceMainWindow. Methods called on the returned object will only affect the
     corresponding Ability instance.
 */
-QSharedPointer<QOhosAbilityContext> QOhosAbilityContext::getInstanceForMainWindow(QWindow *instanceMainWindow)
+QSharedPointer<QOhosAbilityContext> QOhosAbilityContext::instanceForMainWindow(QWindow *instanceMainWindow)
 {
     if (instanceMainWindow == nullptr) {
         qCWarning(QtForOhos, "%s: got null QWindow", Q_FUNC_INFO);
@@ -1272,7 +1272,7 @@ void startAppProcess(const QString &processId, const QOhosWant &requestWant, con
 */
 void setAbilityInstanceDestroyEnabled(QWindow *instanceWindow, bool destroyEnabled)
 {
-    QOhosAbilityContext::getInstanceForMainWindow(instanceWindow)->setDestroyFromSystemEnabled(destroyEnabled);
+    QOhosAbilityContext::instanceForMainWindow(instanceWindow)->setDestroyFromSystemEnabled(destroyEnabled);
 }
 
 /*!

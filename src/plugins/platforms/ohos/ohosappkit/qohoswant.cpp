@@ -153,7 +153,7 @@ namespace QtOhosAppKit {
     {systemShare.getSharedData}.
 
     \sa QtOhosAppKit::QOhosAbilityContext::newWantInfoReceived(QSharedPointer<QtOhosAppKit::QOhosWantInfo> wantInfo)
-    \sa QSharedPointer<QtOhosAppKit::QOhosWantInfo> QtOhosAppKit::QOhosAppContext::getAppLaunchWantInfo()
+    \sa QSharedPointer<QtOhosAppKit::QOhosWantInfo> QtOhosAppKit::QOhosAppContext::appLaunchWantInfo()
 */
 
 /*!
@@ -165,7 +165,7 @@ namespace QtOhosAppKit {
     {systemShare.getContactInfo}.
 
     \sa QtOhosAppKit::QOhosAbilityContext::newWantInfoReceived(QSharedPointer<QtOhosAppKit::QOhosWantInfo> wantInfo)
-    \sa QSharedPointer<QtOhosAppKit::QOhosWantInfo> QtOhosAppKit::QOhosAppContext::getAppLaunchWantInfo()
+    \sa QSharedPointer<QtOhosAppKit::QOhosWantInfo> QtOhosAppKit::QOhosAppContext::appLaunchWantInfo()
 */
 
 QOhosWantInfo::QOhosWantInfo() = default;

@@ -70,8 +70,8 @@ class Q_OHOSAPPKIT_EXPORT QOhosAbilityContext : public QObject
     Q_OBJECT
 
 public:
-    static QSharedPointer<QOhosAbilityContext> getDefaultInstance();
-    static QSharedPointer<QOhosAbilityContext> getInstanceForMainWindow(QWindow *instanceMainWindow);
+    static QSharedPointer<QOhosAbilityContext> defaultInstance();
+    static QSharedPointer<QOhosAbilityContext> instanceForMainWindow(QWindow *instanceMainWindow);
 
     virtual void setDestroyFromSystemEnabled(bool destroyEnabled) = 0;
 

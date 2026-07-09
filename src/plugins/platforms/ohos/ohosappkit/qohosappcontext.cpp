@@ -309,7 +309,7 @@ public:
     void requestSerialPortAccessRightIfNeeded(
         const QString &portName, QObject *context,
         std::function<void(QSharedPointer<QObject>)> callback) override;
-    QSharedPointer<QOhosBundleInfo> getBundleInfo() const override;
+    QSharedPointer<QOhosBundleInfo> bundleInfo() const override;
     Q_NORETURN void restartApp() override;
     Q_NORETURN void restartApp(const QOhosWant &want) override;
 
@@ -384,11 +384,11 @@ void QOhosAppContext::startNoUiChildProcess(QString libraryName, QStringList arg
 }
 
 /*!
-    \fn static QSharedPointer<QtOhosAppKit::QOhosWantInfo> QtOhosAppKit::QOhosAppContext::getAppLaunchWantInfo()
+    \fn static QSharedPointer<QtOhosAppKit::QOhosWantInfo> QtOhosAppKit::QOhosAppContext::appLaunchWantInfo()
 
     Returns the Want object that was used to launch initial instance of the application's QAbility.
 */
-QSharedPointer<QOhosWantInfo> QOhosAppContext::getAppLaunchWantInfo()
+QSharedPointer<QOhosWantInfo> QOhosAppContext::appLaunchWantInfo()
 {
     return convertToOhosAppKitWantInfo(makeAppLaunchWantInfo());
 }
@@ -531,12 +531,12 @@ void QOhosAppContextImpl::requestSerialPortAccessRightIfNeeded(
 }
 
 /*!
-    \fn QSharedPointer<QOhosBundleInfo> QtOhosAppKit::QOhosAppContext::getBundleInfo() const
+    \fn QSharedPointer<QOhosBundleInfo> QtOhosAppKit::QOhosAppContext::bundleInfo() const
 
     Returns QOhosBundleInfo object for the current application. The obtained information does not
     contain information about the signature, HAP module, ability, ExtensionAbility, or permission.
 */
-QSharedPointer<QOhosBundleInfo> QOhosAppContextImpl::getBundleInfo() const
+QSharedPointer<QOhosBundleInfo> QOhosAppContextImpl::bundleInfo() const
 {
     return createBundleInfo(getCurrentApplicationVersionCode());
 }
