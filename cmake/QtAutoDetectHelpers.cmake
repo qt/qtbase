@@ -205,6 +205,21 @@ function(qt_auto_detect_ohos)
         set(ohos_detected FALSE)
     endif()
 
+    # Native on-device HarmonyOS build: the user requested no OHOS SDK/toolchain
+    # (ohos_detected is FALSE) and is not cross-compiling (no toolchain file, no
+    # CMAKE_SYSTEM_NAME), yet the host is HarmonyOS, so the system compiler
+    # targets *-linux-ohos (predefining __OHOS__). Enable OHOS so the OHOS code
+    # paths are built without a manual -DOHOS=ON. CMAKE_SYSTEM_NAME is not set yet
+    # at auto-detect time (project() sets it), but CMAKE_HOST_SYSTEM_NAME is.
+    # If the user instead requests a cross build (OHOS_SDK_ROOT, a toolchain file,
+    # or CMAKE_SYSTEM_NAME) this yields to the normal cross flow below, exactly as
+    # on a Linux host.
+    if(NOT DEFINED OHOS AND NOT ohos_detected AND NOT DEFINED CMAKE_TOOLCHAIN_FILE
+            AND NOT CMAKE_SYSTEM_NAME AND CMAKE_HOST_SYSTEM_NAME STREQUAL "HarmonyOS")
+        message(STATUS "Native HarmonyOS build detected; enabling OHOS")
+        set(OHOS ON CACHE BOOL "Build for OpenHarmony (HarmonyOS)")
+    endif()
+
     # Auto-detect NDK root
     if(NOT DEFINED OHOS_NDK_ROOT AND DEFINED OHOS_SDK_ROOT)
         set(ndk_root "${OHOS_SDK_ROOT}/native")

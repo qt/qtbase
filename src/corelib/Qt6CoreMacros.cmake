@@ -746,7 +746,12 @@ function(_qt_internal_setup_warnings_are_errors_for_example_target target)
 endfunction()
 
 function(_qt_internal_create_executable target)
-    if(ANDROID OR OHOS)
+    # On Android, and when cross-compiling for HarmonyOS, executables are built as
+    # MODULE libraries (application modules) that are loaded via dlopen() at runtime.
+    # A native HarmonyOS build (CMAKE_CROSSCOMPILING is FALSE) builds real
+    # executables instead, so that build-time host tools such as moc and rcc can run
+    # on the build machine.
+    if(ANDROID OR (OHOS AND CMAKE_CROSSCOMPILING))
         list(REMOVE_ITEM ARGN "WIN32" "MACOSX_BUNDLE")
         cmake_policy(PUSH)
         __qt_internal_set_cmp0156()
