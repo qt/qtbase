@@ -220,11 +220,11 @@ QTouchEventSequence::QTouchEventSequence(QWindow *window, QPointingDevice *aDevi
 {
 }
 
-QPoint QTouchEventSequence::mapToScreen(QWindow *window, const QPoint &pt)
+QPointF QTouchEventSequence::mapToScreen(QWindow *window, const QPoint &pt)
 {
     if (window)
-        return window->mapToGlobal(pt);
-    return targetWindow ? targetWindow->mapToGlobal(pt) : pt;
+        return window->mapToGlobal(QPointF(pt));
+    return targetWindow ? targetWindow->mapToGlobal(QPointF(pt)) : QPointF(pt);
 }
 
 QEventPoint &QTouchEventSequence::point(int touchId)
