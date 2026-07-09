@@ -9,6 +9,7 @@
 #include "private/qhttpnetworkreply_p.h"
 
 #include <access/qhttp2configuration.h>
+#include <access/qhttp2configuration_p.h>
 
 #include <QtCore/qbytearray.h>
 #include <QtCore/qstring.h>
@@ -51,8 +52,15 @@ Frame configurationToSettingsFrame(const QHttp2Configuration &config)
         builder.append(Settings::MAX_FRAME_SIZE_ID);
         builder.append(config.maxFrameSize());
     }
+
+    if (const quint32 maxHeaderListSize =
+                QHttp2ConfigurationPrivate::get(config)->maxHeaderListSize;
+        maxHeaderListSize != (std::numeric_limits<quint32>::max)()) {
+        builder.append(Settings::MAX_HEADER_LIST_SIZE_ID);
+        builder.append(maxHeaderListSize);
+    }
     // TODO: In future, if the need is proven, we can
-    // also send decoding table size and header list size.
+    // also send the decoding table size.
     // For now, defaults suffice.
     return builder.outboundFrame();
 }
