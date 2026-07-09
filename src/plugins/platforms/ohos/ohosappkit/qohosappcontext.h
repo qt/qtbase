@@ -11,6 +11,7 @@
 #include <QtOhosAppKit/qohosappbundleinfo.h>
 #include <QtOhosAppKit/qohoswant.h>
 #include <QtOhosAppKit/qtohosappkitglobal.h>
+#include <functional>
 
 QT_BEGIN_NAMESPACE
 
@@ -28,16 +29,15 @@ public:
     static QSharedPointer<QOhosWantInfo> getAppLaunchWantInfo();
 
     virtual bool hasSerialPortAccessRight(const QString &portName) const = 0;
-    virtual void requestSerialPortAccessRightIfNeeded(const QString &portName) = 0;
+    virtual void requestSerialPortAccessRightIfNeeded(
+        const QString &portName, QObject *context,
+        std::function<void(QSharedPointer<QObject>)> callback) = 0;
 
     virtual QSharedPointer<QOhosBundleInfo> getBundleInfo() const = 0;
 
     Q_NORETURN virtual void restartApp() = 0;
 
     Q_NORETURN virtual void restartApp(const QOhosWant &want) = 0;
-
-Q_SIGNALS:
-    void serialPortAccessRightResponseReceived(const QString &portName, QSharedPointer<QObject> serialPortAccessRightContext);
 
 protected:
     QOhosAppContext();

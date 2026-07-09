@@ -306,7 +306,9 @@ public:
     QOhosAppContextImpl();
 
     bool hasSerialPortAccessRight(const QString &portName) const override;
-    void requestSerialPortAccessRightIfNeeded(const QString &portName) override;
+    void requestSerialPortAccessRightIfNeeded(
+        const QString &portName, QObject *context,
+        std::function<void(QSharedPointer<QObject>)> callback) override;
     QSharedPointer<QOhosBundleInfo> getBundleInfo() const override;
     Q_NORETURN void restartApp() override;
     Q_NORETURN void restartApp(const QOhosWant &want) override;
@@ -334,26 +336,6 @@ QSharedPointer<QObject> makeQObjectLifetimeHandleOrNull(std::shared_ptr<T> handl
     \inmodule QtOhosAppKit
     \since 5.12.12
     \brief The QOhosAppContext class contains API to manage native application context.
-*/
-
-/*!
-    \fn void QtOhosAppKit::QOhosAppContext::serialPortAccessRightResponseReceived(const QString &portName, QSharedPointer<QObject> serialPortAccessRightContext)
-
-    Emitted when the result of requestSerialPortAccessRightIfNeeded(const QString &portName) becomes available.
-
-    The signal provides the \a portName corresponding to the response.
-    Additionally, it includes a \a serialPortAccessRightContext that defines the access rights granted for the requested serial port.
-    The caller must keep this context alive for as long as access to the serial port is required.
-
-    Destroying or releasing the context automatically cancels the access rights for the associated serial port.
-
-    If access was not granted, the context will be nullptr.
-
-    \note The lifetime of the access permission is strictly tied to the lifetime of the provided context.
-    Once the last reference to the context is destroyed, the permission request is revoked internally.
-
-    \sa requestSerialPortAccessRightIfNeeded(const QString &portName)
-
 */
 
 QOhosAppContext::QOhosAppContext() = default;
@@ -514,18 +496,19 @@ bool QOhosAppContextImpl::hasSerialPortAccessRight(const QString &portName) cons
 }
 
 /*!
-    \fn void QtOhosAppKit::QOhosAppContext::requestSerialPortAccessRightIfNeeded(const QString &portName)
+    \fn void QtOhosAppKit::QOhosAppContext::requestSerialPortAccessRightIfNeeded(const QString &portName, QObject *context, std::function<void(QSharedPointer<QObject>)> callback)
 
     Requests permission for the application to access the serial port identified by \a portName.
 
-    This function performs an asynchronous permission request. The result of the request is delivered via the
-    serialPortAccessRightResponseReceived() signal.
+    This function performs an asynchronous permission request. The result of the request is delivered by
+    invoking \a callback on the thread of \a context; if \a context is destroyed before the response
+    arrives, \a callback is not invoked.
 
-    The outcome of the request (granted or denied) is reported asynchronously through serialPortAccessRightResponseReceived().
-    If access is granted, the signal provides a context object that must be kept alive for as long as the application
+    The outcome of the request (granted or denied) is reported asynchronously through \a callback.
+    If access is granted, \a callback provides a context object that must be kept alive for as long as the application
     requires access to the serial port.
 
-    If access is not granted, serialPortAccessRightResponseReceived() signal delivers nullptr. This may happen if:
+    If access is not granted, \a callback delivers nullptr. This may happen if:
     \list
         \li a provided \a portName cannot be mapped to a valid system serial port,
         \li an error occurred while requesting the access right,
@@ -535,16 +518,15 @@ bool QOhosAppContextImpl::hasSerialPortAccessRight(const QString &portName) cons
     For details about the underlying platform API, see
     \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references/js-apis-serialmanager}
     {Serial Port Manager}.
-
-    \sa serialPortAccessRightResponseReceived()
 */
-void QOhosAppContextImpl::requestSerialPortAccessRightIfNeeded(const QString &portName)
+void QOhosAppContextImpl::requestSerialPortAccessRightIfNeeded(
+    const QString &portName, QObject *context,
+    std::function<void(QSharedPointer<QObject>)> callback)
 {
     requestSerialPortAccessRight(
-        portName, this,
-        [this, portName](std::shared_ptr<void> serialPortAccessRightContext) {
-            Q_EMIT serialPortAccessRightResponseReceived(
-                portName, makeQObjectLifetimeHandleOrNull(serialPortAccessRightContext));
+        portName, context,
+        [callback = std::move(callback)](std::shared_ptr<void> serialPortAccessRightContext) {
+            callback(makeQObjectLifetimeHandleOrNull(serialPortAccessRightContext));
         });
 }
 
