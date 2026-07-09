@@ -615,7 +615,15 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     QRect aligned = alignedRect(QGuiApplication::layoutDirection(), QFlag(alignment), pixmap.size() / scale, rect);
     QRect inter = aligned.intersected(rect);
 
-    painter->drawPixmap(inter.x(), inter.y(), pixmap, inter.x() - aligned.x(), inter.y() - aligned.y(), qRound(inter.width() * scale), qRound(inter.height() *scale));
+    // The source rectangle indexes the pixmap's device pixels, so both the
+    // offset and the size of the visible (intersected) area have to be scaled
+    // by the pixmap's device pixel ratio.
+    const QRect source(qRound((inter.x() - aligned.x()) * scale),
+                       qRound((inter.y() - aligned.y()) * scale),
+                       qRound(inter.width() * scale),
+                       qRound(inter.height() * scale));
+
+    painter->drawPixmap(inter.topLeft(), pixmap, source);
 }
 
 /*!
