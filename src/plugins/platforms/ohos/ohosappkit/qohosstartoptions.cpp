@@ -5,6 +5,7 @@
 #include <QtOhosAppKit/private/qohosstartoptions_p.h>
 #include <QtCore/private/qcore_ohos_p.h>
 #include <QtCore/private/qohoscommon_p.h>
+#include <QtCore/qpointer.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -103,6 +104,18 @@ namespace QtOhosAppKit {
 */
 
 namespace {
+
+QOhosElementName convertElementNameFromJsonObject(const QJsonObject &object)
+{
+    return QOhosElementName{
+        .deviceId = object.value(QLatin1String("deviceId")).toString(),
+        .bundleName = object.value(QLatin1String("bundleName")).toString(),
+        .abilityName = object.value(QLatin1String("abilityName")).toString(),
+        .uri = object.value(QLatin1String("uri")).toString(),
+        .shortName = object.value(QLatin1String("shortName")).toString(),
+        .moduleName = object.value(QLatin1String("moduleName")).toString(),
+    };
+}
 
 std::optional<QOhosStartOptionsData::SupportWindowMode> tryMapSupportWindowModeToQpaFunctions(
     QOhosStartOptions::SupportWindowMode supportWindowMode)
@@ -451,6 +464,30 @@ public:
         const auto *windowCreateParamsImpl = dynamic_cast<const QOhosWindowCreateParamsImpl *>(&windowCreateParams);
         if (windowCreateParamsImpl != nullptr)
             m_startOptions.windowCreateParams = windowCreateParamsImpl->qpaWindowCreateParams();
+    }
+
+    /*!
+        \fn QtOhosAppKit::QOhosStartOptions::setCompletionHandler(QObject *context, std::function<void(bool, QOhosElementName, QString)> callback)
+
+        Sets the completion \a callback invoked when the corresponding start request completes. It is
+        invoked on the thread of \a context; if \a context is destroyed before completion, \a callback
+        is not invoked. Its arguments report whether the ability was started, the launched element
+        name, and a message with the outcome details.
+
+        See \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references/js-apis-app-ability-startoptions}
+        {Completion Handler}.
+    */
+    void setCompletionHandler(
+        QObject *context,
+        std::function<void(bool, QOhosElementName, QString)> callback) override
+    {
+        m_startOptions.optCompletionHandler =
+            std::make_shared<QOhosConsumer<bool, QJsonObject, QString>>(
+                [contextPtr = QPointer<QObject>(context), callback = std::move(callback)](
+                    bool succeeded, const QJsonObject &elementName, const QString &message) {
+                    if (!contextPtr.isNull() && callback)
+                        callback(succeeded, convertElementNameFromJsonObject(elementName), message);
+                });
     }
 
     QOhosStartOptionsData getStartOptions() const

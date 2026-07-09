@@ -13,7 +13,6 @@
 #include <QtOhosAppKit/qohosoperationstatus.h>
 #include <QtOhosAppKit/qohoswant.h>
 #include <QtOhosAppKit/qohosstartoptions.h>
-#include <QtOhosAppKit/qohosstartrequest.h>
 #include <QtOhosAppKit/qtohosappkitglobal.h>
 #include <QtOhosAppKit/qohossharekit.h>
 #include <QtWidgets/qwidget.h>
@@ -82,9 +81,6 @@ public:
     virtual void startAbilityForResult(
         const QOhosWant &want, const QOhosStartOptions &options, QObject *context,
         std::function<void(std::optional<QOhosStartAbilityResult>)> callback) = 0;
-    virtual void startAbilityForResult(
-        const QOhosWant &want, const QOhosStartRequest &startRequest, QObject *context,
-        std::function<void(std::optional<QOhosStartAbilityResult>)> callback) = 0;
 
     virtual void shareDataWithShareKit(
         const QList<QSharedPointer<ShareKit::QOhosSharedRecord>> &records,
@@ -110,7 +106,6 @@ protected:
 
 Q_OHOSAPPKIT_EXPORT QSharedPointer<QOhosOperationStatus> startAbility(const QOhosWant &want);
 Q_OHOSAPPKIT_EXPORT QSharedPointer<QOhosOperationStatus> startAbility(const QOhosWant &want, const QOhosStartOptions &options);
-Q_OHOSAPPKIT_EXPORT QSharedPointer<QOhosOperationStatus> startAbility(const QOhosWant &want, const QOhosStartRequest &startRequest);
 
 Q_OHOSAPPKIT_EXPORT QSharedPointer<QOhosOperationStatus> startAbilityByType(const QString &appType, const QJsonObject &wantParameters);
 
@@ -118,7 +113,6 @@ Q_OHOSAPPKIT_EXPORT void startNewAbilityInstance(QWidget *instanceWidget);
 
 Q_OHOSAPPKIT_EXPORT void startAppProcess(const QString &processId, const QOhosWant &requestWant);
 Q_OHOSAPPKIT_EXPORT void startAppProcess(const QString &processId, const QOhosWant &requestWant, const QOhosStartOptions &options);
-Q_OHOSAPPKIT_EXPORT void startAppProcess(const QString &processId, const QOhosWant &requestWant, const QOhosStartRequest &startRequest);
 
 Q_OHOSAPPKIT_EXPORT void setAbilityInstanceDestroyEnabled(QWindow *instanceWindow, bool destroyEnabled);
 

@@ -16,7 +16,6 @@
 #include <QtOhosAppKit/private/qohosoperationstatus_p.h>
 #include <QtOhosAppKit/private/qohossharekit_p.h>
 #include <QtOhosAppKit/private/qohosstartoptions_p.h>
-#include <QtOhosAppKit/private/qohosstartrequest_p.h>
 #include <QtOhosAppKit/private/qohoswantutils_p.h>
 #include <QtGui/qwindow.h>
 #include <QtGui/private/qohosimageconversions_p.h>
@@ -636,9 +635,6 @@ public:
     void startAbilityForResult(
         const QOhosWant &want, const QOhosStartOptions &options, QObject *context,
         std::function<void(std::optional<QOhosStartAbilityResult>)> callback) override;
-    void startAbilityForResult(
-        const QOhosWant &want, const QOhosStartRequest &startRequest, QObject *context,
-        std::function<void(std::optional<QOhosStartAbilityResult>)> callback) override;
 
     void shareDataWithShareKit(
         const QList<QSharedPointer<ShareKit::QOhosSharedRecord>> &records,
@@ -665,9 +661,6 @@ public:
         std::function<void(std::optional<QOhosStartAbilityResult>)> callback) override;
     void startAbilityForResult(
         const QOhosWant &want, const QOhosStartOptions &options, QObject *context,
-        std::function<void(std::optional<QOhosStartAbilityResult>)> callback) override;
-    void startAbilityForResult(
-        const QOhosWant &want, const QOhosStartRequest &startRequest, QObject *context,
         std::function<void(std::optional<QOhosStartAbilityResult>)> callback) override;
 
     void shareDataWithShareKit(
@@ -759,14 +752,6 @@ void QOhosDefaultAbilityContextImpl::startAbilityForResult(
 {
     startAbilityForResultImpl(
         want, nullptr, tryConvertStartOptionsToQpaFunctionsStruct(options), context, std::move(callback));
-}
-
-void QOhosDefaultAbilityContextImpl::startAbilityForResult(
-    const QOhosWant &want, const QOhosStartRequest &startRequest, QObject *context,
-    std::function<void(std::optional<QOhosStartAbilityResult>)> callback)
-{
-    startAbilityForResultImpl(
-        want, nullptr, tryConvertStartRequestToQpaFunctionsStruct(startRequest), context, std::move(callback));
 }
 
 void QOhosDefaultAbilityContextImpl::shareDataWithShareKit(
@@ -994,27 +979,6 @@ void QOhosAbilityContextImpl::startAbilityForResult(
 {
     startAbilityForResultImpl(
         want, m_instanceMainWindow, tryConvertStartOptionsToQpaFunctionsStruct(options), context, std::move(callback));
-}
-
-/*!
-    \fn void QtOhosAppKit::QOhosAbilityContext::startAbilityForResult(const QtOhosAppKit::QOhosWant &want, const QtOhosAppKit::QOhosStartRequest &startRequest, QObject *context, std::function<void(std::optional<QtOhosAppKit::QOhosStartAbilityResult>)> callback)
-
-    Starts a UIAbility with a given \a want and \a startRequest and delivers the result by invoking \a callback on the thread of \a context;
-    if \a context is destroyed before the result arrives, \a callback is not invoked. To start the UIAbility, at least bundleName and abilityName properties must be set.
-    On success \a callback receives the ability result; on failure (for example, the UIAbility was killed) it receives an empty std::optional.
-
-    The \a startRequest carries the completion handler from start options. Connect to
-    QOhosStartRequest::requestSucceeded() and QOhosStartRequest::requestFailed() to receive
-    completion handler results.
-    See \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references/js-apis-inner-application-uiabilitycontext#startabilityforresult-2}
-    {UIAbilityContext.startAbilityForResult}
-*/
-void QOhosAbilityContextImpl::startAbilityForResult(
-    const QOhosWant &want, const QOhosStartRequest &startRequest, QObject *context,
-    std::function<void(std::optional<QOhosStartAbilityResult>)> callback)
-{
-    startAbilityForResultImpl(
-        want, m_instanceMainWindow, tryConvertStartRequestToQpaFunctionsStruct(startRequest), context, std::move(callback));
 }
 
 /*!
@@ -1248,24 +1212,6 @@ QSharedPointer<QOhosOperationStatus> startAbility(const QOhosWant &want, const Q
 }
 
 /*!
-    \fn QSharedPointer<QOhosOperationStatus> QtOhosAppKit::startAbility(const QOhosWant &want,
-    const QOhosStartRequest &startRequest)
-
-    Starts an Ability for a given \a want and \a startRequest.
-
-    The \a startRequest carries the completion handler from start options. Connect to
-    QOhosStartRequest::requestSucceeded() and QOhosStartRequest::requestFailed() to receive
-    completion handler results. See
-    \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references-V5/js-apis-inner-application-uiabilitycontext-V5#uiabilitycontextstartability-1}
-    {Start Ability}.
-*/
-QSharedPointer<QOhosOperationStatus> startAbility(
-    const QOhosWant &want, const QOhosStartRequest &startRequest)
-{
-    return startAbilityImpl(want, tryConvertStartRequestToQpaFunctionsStruct(startRequest));
-}
-
-/*!
     \fn QSharedPointer<QOhosOperationStatus> QtOhosAppKit::startAbilityByType(const QString &appType,
     const QJsonObject &wantParameters)
 
@@ -1309,26 +1255,6 @@ void startAppProcess(const QString &processId, const QOhosWant &requestWant)
 void startAppProcess(const QString &processId, const QOhosWant &requestWant, const QOhosStartOptions &options)
 {
     startAppProcessImpl(processId, requestWant, tryConvertStartOptionsToQpaFunctionsStruct(options));
-}
-
-/*!
-    \fn void QtOhosAppKit::startAppProcess(const QString &processId, const QOhosWant &requestWant, const QOhosStartRequest &startRequest)
-
-    Starts application process for a given \a processId, \a requestWant and \a startRequest.
-    The \a startRequest carries the completion handler from start options. Connect to
-    QOhosStartRequest::requestSucceeded() and QOhosStartRequest::requestFailed() to receive
-    completion handler results.
-
-    See \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references-V5/js-apis-inner-application-uiabilitycontext-V5#uiabilitycontextstartability-1}
-    {Start Ability}.
-
-    \sa QOhosStartRequest
-*/
-void startAppProcess(
-    const QString &processId, const QOhosWant &requestWant, const QOhosStartRequest &startRequest)
-{
-    startAppProcessImpl(
-        processId, requestWant, tryConvertStartRequestToQpaFunctionsStruct(startRequest));
 }
 
 /*!
