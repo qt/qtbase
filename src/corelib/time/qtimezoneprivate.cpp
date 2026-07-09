@@ -1045,14 +1045,12 @@ QTimeZonePrivate::findLongNamePrefix(QStringView text, const QLocale &locale,
             // Canonical <=> not an alias
             return QTimeZonePrivate::aliasToIana(name).isEmpty();
         };
-        [[maybe_unused]]
-        const auto firstAlias = std::partition(avail.begin(), avail.end(), isCanonical);
+        [[maybe_unused]] const QList<QByteArray>::const_iterator
+            firstAlias = std::partition(avail.begin(), avail.end(), isCanonical);
         // Everything before firstAlias is canonical; everything after is an alias.
         // Some available IDs may be aliases for IANA IDs not in the list.
-        Q_ASSERT(std::all_of(static_cast<typeof(avail.constBegin())>(firstAlias),
-                             avail.constEnd(), // Every alias ...
-                             [from = avail.constBegin(),
-                              to = static_cast<typeof(avail.constBegin())>(firstAlias),
+        Q_ASSERT(std::all_of(firstAlias, avail.constEnd(), // Every alias ...
+                             [from = avail.constBegin(), to = firstAlias,
                               avail](const QByteArray &alias) {
                                  // ... maps to a canonical name:
                                  QByteArrayView iana = QTimeZonePrivate::aliasToIana(alias);
