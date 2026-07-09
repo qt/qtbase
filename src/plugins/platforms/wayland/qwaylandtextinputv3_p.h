@@ -53,10 +53,8 @@ public:
     void showInputPanel() override;
     void hideInputPanel() override;
 
-    // doing nothing in zwp_text_input_v3.
-    // enter() and leave() takes the role to enable/disable the surface
-    void enableSurface(::wl_surface *) override {};
-    void disableSurface(::wl_surface *) override {};
+    void enableSurface(::wl_surface *) override;
+    void disableSurface(::wl_surface *) override;
 
 protected:
     void zwp_text_input_v3_enter(struct ::wl_surface *surface) override;
@@ -73,7 +71,14 @@ protected:
 private:
     Q_DISABLE_COPY(QWaylandTextInputv3)
 
-    ::wl_surface *m_surface = nullptr; // ### Here for debugging purposes
+    // The entered and enabled surfaces, according to text-input-v3.
+    ::wl_surface *m_enteredSurface = nullptr;
+    ::wl_surface *m_enabledSurface = nullptr;
+
+    // The surface for which enableSurface() has been called. This may
+    // not be enabled in text-input-v3 if it is not also entered in
+    // text-input-v3.
+    ::wl_surface *m_focusedSurface = nullptr;
 
     struct StyleHint {
         uint32_t begin = 0;
