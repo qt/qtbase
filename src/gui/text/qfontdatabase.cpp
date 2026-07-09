@@ -513,11 +513,10 @@ static void initFontDef(const QtFontDesc &desc, const QFontDef &request, QFontDe
 static QStringList familyList(const QFontDef &req)
 {
     // list of families to try
-    QStringList family_list;
+    QStringList family_list = req.families;
 
-    family_list << req.families;
     // append the substitute list for each family in family_list
-    for (int i = 0, size = family_list.size(); i < size; ++i)
+    for (qsizetype i = 0, size = family_list.size(); i < size; ++i)
         family_list += QFont::substitutes(family_list.at(i));
 
     return family_list;
