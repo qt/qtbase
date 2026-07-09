@@ -52,14 +52,58 @@ const Qt::InputMethodQueries supportedQueries3 = Qt::ImEnabled |
                                                 Qt::ImCursorRectangle;
 }
 
+void QWaylandTextInputv3::enableSurface(struct ::wl_surface *surface)
+{
+    if (m_enabledSurface)
+        qCWarning(qLcQpaWaylandTextInput()) << Q_FUNC_INFO << "Trying to enable" << surface << "but"
+                                            << m_enabledSurface << "is already enabled";
+    else if (m_focusedSurface)
+        qCWarning(qLcQpaWaylandTextInput()) << Q_FUNC_INFO << "Trying to enable" << surface << "but"
+                                            << m_focusedSurface << "has focus";
+
+    m_focusedSurface = surface;
+
+    if (m_enteredSurface == surface) {
+        enable();
+        m_enabledSurface = surface;
+
+        updateState(supportedQueries3, update_state_enter);
+    }
+}
+
+void QWaylandTextInputv3::disableSurface(struct ::wl_surface *surface)
+{
+    if (m_enabledSurface && m_enabledSurface != surface) {
+        qCWarning(qLcQpaWaylandTextInput()) << Q_FUNC_INFO << "Trying to disable" << surface
+                                            << "but" << m_enabledSurface << "is enabled";
+        return;
+    } else if (m_focusedSurface != surface) {
+        qCWarning(qLcQpaWaylandTextInput()) << Q_FUNC_INFO << "Trying to disable" << surface
+                                            << "but" << m_focusedSurface << "is focused";
+        return;
+    }
+
+    if (m_enabledSurface == surface) {
+        disable();
+        commit();
+        m_enabledSurface = nullptr;
+    }
+
+    m_focusedSurface = nullptr;
+}
+
 void QWaylandTextInputv3::zwp_text_input_v3_enter(struct ::wl_surface *surface)
 {
-    qCDebug(qLcQpaWaylandTextInput) << Q_FUNC_INFO << "Trying to enable surface" << surface << "with focusing surface" << m_surface;
+    if (m_enabledSurface)
+        qCDebug(qLcQpaWaylandTextInput())
+                << Q_FUNC_INFO << "Got enter event for surface" << surface << "but"
+                << m_enabledSurface << "is already enabled";
+    else if (m_enteredSurface)
+        qCDebug(qLcQpaWaylandTextInput())
+                << Q_FUNC_INFO << "Got enter event for surface" << surface << "but"
+                << m_enteredSurface << "is already entered";
 
-    if (m_surface == surface)
-        return; // already enabled
-
-    m_surface = surface;
+    m_enteredSurface = surface;
     m_pendingPreeditString.clear();
     m_pendingCommitString.clear();
     m_pendingDeleteBeforeText = 0;
@@ -72,35 +116,41 @@ void QWaylandTextInputv3::zwp_text_input_v3_enter(struct ::wl_surface *surface)
     m_contentPurpose = 0;
     m_cursorRect = QRect();
 
-    enable();
-    updateState(supportedQueries3, update_state_enter);
+    if (m_focusedSurface == surface) {
+        enable();
+        m_enabledSurface = surface;
+
+        updateState(supportedQueries3, update_state_enter);
+    }
 }
 
 void QWaylandTextInputv3::zwp_text_input_v3_leave(struct ::wl_surface *surface)
 {
     qCDebug(qLcQpaWaylandTextInput) << Q_FUNC_INFO;
 
-    if (!m_surface)
-        return; // Nothing to leave
-
     // surface == nullptr means the wl_surface proxy was already freed (surface destroyed
     // before the leave event was dispatched); treat it as normal teardown, not a mismatch.
-    if (surface && m_surface != surface)
-        qCWarning(qLcQpaWaylandTextInput()) << Q_FUNC_INFO << "Got leave event for surface" << surface << "with focusing surface" << m_surface;
+    if (surface && m_enteredSurface != surface)
+        qCDebug(qLcQpaWaylandTextInput())
+                << Q_FUNC_INFO << "Got leave event for surface" << surface << "but"
+                << m_enteredSurface << "was entered";
 
     m_currentPreeditString.clear();
-    m_surface = nullptr;
-    disable();
-    commit();
+
+    if (m_enabledSurface) {
+        disable();
+        commit();
+        m_enabledSurface = nullptr;
+    }
+
+    m_enteredSurface = nullptr;
 }
 
 void QWaylandTextInputv3::zwp_text_input_v3_preedit_string(const QString &text, int32_t cursorBegin, int32_t cursorEnd)
 {
     qCDebug(qLcQpaWaylandTextInput) << Q_FUNC_INFO << text << cursorBegin << cursorEnd;
-    if (!m_surface) {
-        qCWarning(qLcQpaWaylandTextInput) << "Got preedit_string event without entering a surface";
+    if (!m_enabledSurface)
         return;
-    }
 
     if (!QGuiApplication::focusObject())
         return;
@@ -113,10 +163,8 @@ void QWaylandTextInputv3::zwp_text_input_v3_preedit_string(const QString &text, 
 void QWaylandTextInputv3::zwp_text_input_v3_commit_string(const QString &text)
 {
     qCDebug(qLcQpaWaylandTextInput) << Q_FUNC_INFO << text;
-    if (!m_surface) {
-        qCWarning(qLcQpaWaylandTextInput) << "Got commit_string event without entering a surface";
+    if (!m_enabledSurface)
         return;
-    }
 
     if (!QGuiApplication::focusObject())
         return;
@@ -127,10 +175,8 @@ void QWaylandTextInputv3::zwp_text_input_v3_commit_string(const QString &text)
 void QWaylandTextInputv3::zwp_text_input_v3_delete_surrounding_text(uint32_t beforeText, uint32_t afterText)
 {
     qCDebug(qLcQpaWaylandTextInput) << Q_FUNC_INFO << beforeText << afterText;
-    if (!m_surface) {
-        qCWarning(qLcQpaWaylandTextInput) << "Got delete_surrounding_text event without entering a surface";
+    if (!m_enabledSurface)
         return;
-    }
 
     if (!QGuiApplication::focusObject())
         return;
@@ -143,7 +189,7 @@ void QWaylandTextInputv3::zwp_text_input_v3_done(uint32_t serial)
 {
     qCDebug(qLcQpaWaylandTextInput) << Q_FUNC_INFO << "with serial" << serial << m_currentSerial;
 
-    if (!m_surface)
+    if (!m_enabledSurface)
         return;
 
     // This is a case of double click.
@@ -160,11 +206,6 @@ void QWaylandTextInputv3::zwp_text_input_v3_done(uint32_t serial)
     QObject *focusObject = QGuiApplication::focusObject();
     if (!focusObject)
         return;
-
-    if (!m_surface) {
-        qCWarning(qLcQpaWaylandTextInput) << Q_FUNC_INFO << serial << "Surface is not enabled yet";
-        return;
-    }
 
     if ((m_pendingPreeditString == m_currentPreeditString)
            && (m_pendingCommitString.isEmpty() && m_pendingDeleteBeforeText == 0
@@ -349,7 +390,7 @@ void QWaylandTextInputv3::updateState(Qt::InputMethodQueries queries, uint32_t f
 
     auto *window = static_cast<QWaylandWindow *>(QGuiApplication::focusWindow()->handle());
     auto *surface = window->wlSurface();
-    if (!surface || (surface != m_surface))
+    if (!surface || (surface != m_enabledSurface))
         return;
 
     queries &= supportedQueries3;
