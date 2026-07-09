@@ -80,21 +80,11 @@ void QWaylandInputContext::update(Qt::InputMethodQueries queries)
     qCDebug(qLcQpaInputMethods) << Q_FUNC_INFO << queries;
 
     QWaylandTextInputInterface *inputInterface = textInput();
-    if (!QGuiApplication::focusObject() || !inputInterface)
+
+    // When a client changing focusObject, update could be called
+    // before setFocusObject, but it will not be processed.
+    if ((m_focusObject != QGuiApplication::focusObject()) || !inputInterface)
         return;
-
-    auto *currentSurface = surfaceForWindow(mCurrentWindow);
-
-    if (currentSurface && !inputMethodAccepted()) {
-        inputInterface->disableSurface(currentSurface);
-        mCurrentWindow.clear();
-    } else if (!currentSurface && inputMethodAccepted()) {
-        QWindow *window = QGuiApplication::focusWindow();
-        if (auto *focusSurface = surfaceForWindow(window)) {
-            inputInterface->enableSurface(focusSurface);
-            mCurrentWindow = window;
-        }
-    }
 
     inputInterface->updateState(queries, QWaylandTextInputInterface::update_state_change);
 }
@@ -178,42 +168,29 @@ Qt::LayoutDirection QWaylandInputContext::inputDirection() const
 void QWaylandInputContext::setFocusObject(QObject *object)
 {
     qCDebug(qLcQpaInputMethods) << Q_FUNC_INFO;
-#if QT_CONFIG(xkbcommon)
-    m_focusObject = object;
-#else
-    Q_UNUSED(object);
-#endif
 
     QWaylandTextInputInterface *inputInterface = textInput();
     if (!inputInterface)
         return;
 
-    QWindow *window = QGuiApplication::focusWindow();
-
-    if (window && window->handle()) {
-        if (mCurrentWindow.data() != window) {
-            if (!inputMethodAccepted()) {
-                auto *surface = static_cast<QWaylandWindow *>(window->handle())->wlSurface();
-                if (surface)
-                    inputInterface->disableSurface(surface);
-                mCurrentWindow.clear();
-            } else {
-                auto *surface = static_cast<QWaylandWindow *>(window->handle())->wlSurface();
-                if (surface) {
-                    inputInterface->enableSurface(surface);
-                    mCurrentWindow = window;
-                } else {
-                    mCurrentWindow.clear();
-                }
-            }
-        }
-        if (mCurrentWindow)
-            inputInterface->updateState(Qt::ImQueryAll, QWaylandTextInputInterface::update_state_enter);
+    if (m_focusObject == object)
         return;
-    }
 
-    if (mCurrentWindow)
-        mCurrentWindow.clear();
+    if (m_inputMethodEnabled) {
+        inputInterface->disableSurface(mCurrentSurface);
+        mCurrentSurface = nullptr;
+        m_inputMethodEnabled = false;
+    }
+    if (object && inputMethodAccepted()) {
+        QWindow *window = QGuiApplication::focusWindow();
+        mCurrentSurface = surfaceForWindow(window);
+        if (mCurrentSurface) {
+            inputInterface->enableSurface(mCurrentSurface);
+            m_inputMethodEnabled = true;
+            inputInterface->updateState(Qt::ImQueryAll, QWaylandTextInputInterface::update_state_enter);
+        }
+    }
+    m_focusObject = object;
 }
 
 QWaylandTextInputInterface *QWaylandInputContext::textInput() const

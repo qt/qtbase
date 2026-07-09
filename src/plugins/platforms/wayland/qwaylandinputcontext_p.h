@@ -75,13 +75,14 @@ private:
     QWaylandTextInputInterface *textInput() const;
 
     QWaylandDisplay *mDisplay = nullptr;
-    QPointer<QWindow> mCurrentWindow;
+    ::wl_surface *mCurrentSurface = nullptr;
+    bool m_inputMethodEnabled = false;
+    QObject *m_focusObject = nullptr;
 
 #if QT_CONFIG(xkbcommon)
     void ensureInitialized();
 
     bool m_initialized = false;
-    QObject *m_focusObject = nullptr;
     xkb_compose_table *m_composeTable = nullptr;
     xkb_compose_state *m_composeState = nullptr;
     struct xkb_context *m_XkbContext = nullptr;
