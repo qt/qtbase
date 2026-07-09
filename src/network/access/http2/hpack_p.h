@@ -22,6 +22,7 @@
 
 #include <vector>
 #include <optional>
+#include <limits>
 
 QT_BEGIN_NAMESPACE
 
@@ -100,6 +101,7 @@ public:
     quint32 maxDynamicTableCapacity() const;
 
     void setMaxDynamicTableSize(quint32 size);
+    void setMaxHeaderListSize(quint32 size);
 
 private:
 
@@ -116,6 +118,9 @@ private:
 
     HttpHeader header;
     FieldLookupTable lookupTable;
+
+    quint64 headerListSize = 0;
+    quint32 maxHeaderListSize = (std::numeric_limits<quint32>::max)();
 };
 
 std::optional<QUrl> makePromiseKeyUrl(const HttpHeader &requestHeader);

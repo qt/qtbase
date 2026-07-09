@@ -389,6 +389,7 @@ Decoder::Decoder(quint32 size)
 bool Decoder::decodeHeaderFields(BitIStream &inputStream)
 {
     header.clear();
+    headerListSize = 0;
     while (true) {
         if (read_bit_pattern(Indexed, inputStream)) {
             if (!decodeIndexedField(inputStream))
@@ -433,6 +434,11 @@ void Decoder::setMaxDynamicTableSize(quint32 size)
     // Up to a caller (HTTP2 protocol handler)
     // to validate this size first.
     lookupTable.setMaxDynamicTableSize(size);
+}
+
+void Decoder::setMaxHeaderListSize(quint32 size)
+{
+    maxHeaderListSize = size;
 }
 
 bool Decoder::decodeIndexedField(BitIStream &inputStream)
@@ -515,6 +521,11 @@ bool Decoder::processDecodedField(BitPattern fieldType,
         qDebug("about to add a new field, but expected a Dynamic Table Size Update");
         return false; // We expected a dynamic table size update.
     }
+
+    const auto [sizeOk, fieldSize] = entry_size(name, value);
+    headerListSize += fieldSize;
+    if (!sizeOk || headerListSize > maxHeaderListSize)
+        return false;
 
     header.push_back(HeaderField(name, value));
     return true;
