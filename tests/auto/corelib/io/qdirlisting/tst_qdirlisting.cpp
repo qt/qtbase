@@ -10,9 +10,14 @@
 #include <qstringlist.h>
 #include <QSet>
 #include <QString>
+#include <QScopeGuard>
 
 #include <QtCore/private/qdir_p.h>
 #include <QtCore/private/qfsfileengine_p.h>
+
+#ifdef Q_OS_UNIX
+#include <unistd.h>
+#endif
 
 #if defined(Q_OS_VXWORKS)
 #define Q_NO_SYMLINKS
@@ -94,6 +99,8 @@ private slots:
 #ifndef Q_OS_WIN
     void hidden_data();
     void hidden();
+    void inaccessibleDir_data();
+    void inaccessibleDir();
 #endif
 
     void withStdAlgorithms();
@@ -916,6 +923,69 @@ void tst_QDirListing::hidden()
     list.sort();
 
     QCOMPARE_EQ(list, expected);
+}
+
+// Not tested on Windows because on Windows all directories have read and write
+// rights (I don't see how that makes sense, but it's what the docs[1] claim).
+// This test is intended to verify that QDirListing can cope with unreadable
+// directories and symlinks to them.
+// [1] https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/access-waccess
+void tst_QDirListing::inaccessibleDir_data()
+{
+    QTest::addColumn<QDirListing::IteratorFlags>("flags");
+
+    QTest::newRow("no-follow") << QDirListing::IteratorFlags(ItFlag::Recursive);
+    QTest::newRow("follow-symlinks")
+            << QDirListing::IteratorFlags(ItFlag::Recursive | ItFlag::FollowDirSymlinks);
+}
+
+void tst_QDirListing::inaccessibleDir()
+{
+#ifdef Q_NO_SYMLINKS
+    QSKIP("This platform does not support symlinks");
+#else
+    QFETCH(QDirListing::IteratorFlags, flags);
+
+    const QString parent = u"parent"_s;
+    const QString subDir = parent + "/sub"_L1;
+    const QString file = subDir + "/file"_L1;
+    const QString link = parent + "/symlink"_L1;
+    QVERIFY(createDirectory(parent));
+    QVERIFY(createDirectory(subDir));
+    QVERIFY(createFile(file));
+    QVERIFY(createLink("sub", link)); // relative to the link's directory (the parent)
+
+    // QFile is (perhaps surprisingly) how one changes a directory's permissions.
+    QFile subAsFile(subDir);
+    QVERIFY(subAsFile.setPermissions({}));
+    const auto cleanup = qScopeGuard([&] {
+        // removeRecursively can't remove a non-empty, non-accessible directory.
+        subAsFile.setPermissions(QFileDevice::ReadOwner | QFileDevice::WriteOwner
+                                 | QFileDevice::ExeOwner);
+        QDir(parent).removeRecursively();
+    });
+
+    // Check that we don't have superpowers and can read into unreadable
+    // directories.
+    if (::access(QFile::encodeName(subDir).constData(), R_OK) == 0) {
+        QSKIP("Directory is still readable after dropping permissions (running as root?); "
+              "cannot test");
+    }
+
+    // Listing the parent recursively must still succeed and see both the
+    // subdirectory and the symlink entries, but not anything inside.
+    QStringList found;
+    for (const auto &dirEntry : QDirListing(parent, flags))
+        found << dirEntry.filePath();
+
+    auto showListing = qScopeGuard([&found] {
+        qInfo() << "Listing was" << found;
+    });
+    QVERIFY(found.contains(subDir));
+    QVERIFY(found.contains(link));
+    QVERIFY2(!found.contains(file), "QDirListing could read the unreadable dir, check test source code");
+    showListing.dismiss();
+#endif // Q_NO_SYMLINKS
 }
 
 #endif // Q_OS_WIN
