@@ -26,14 +26,14 @@ public:
 
     static void startNoUiChildProcess(QString libraryName, QStringList args);
 
-    static QSharedPointer<QOhosWantInfo> getAppLaunchWantInfo();
+    static QSharedPointer<QOhosWantInfo> appLaunchWantInfo();
 
     virtual bool hasSerialPortAccessRight(const QString &portName) const = 0;
     virtual void requestSerialPortAccessRightIfNeeded(
         const QString &portName, QObject *context,
         std::function<void(QSharedPointer<QObject>)> callback) = 0;
 
-    virtual QSharedPointer<QOhosBundleInfo> getBundleInfo() const = 0;
+    virtual QSharedPointer<QOhosBundleInfo> bundleInfo() const = 0;
 
     Q_NORETURN virtual void restartApp() = 0;
 
