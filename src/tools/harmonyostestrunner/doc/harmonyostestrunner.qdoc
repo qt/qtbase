@@ -1,0 +1,126 @@
+// Copyright (C) 2026 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page harmonyos-test-runner.html
+    \brief Overview of the harmonyostestrunner tool for running Qt tests on HarmonyOS.
+    \title The harmonyostestrunner Tool
+
+    \target harmonyostestrunner
+
+    \note Qt for HarmonyOS is in technology preview and may change in future
+    releases.
+
+    \section1 Introduction
+
+    The \c harmonyostestrunner tool runs a single Qt auto test on a HarmonyOS
+    device or emulator and reports the result on the host. When you run a test
+    with \c ctest, the CMake test wrapper normally invokes it for you. Invoke it
+    directly when the test HAP is built on one machine but the device is
+    attached to another, or when you have a test HAP but no CMake build tree at
+    hand.
+
+    This tool does not build or install the test package. Instead, \l{The
+    harmonydeployqt Tool}{harmonydeployqt} bundles the test binaries into a
+    single test HAP (through its \c {--test-bundle} option). You must build,
+    sign, and install that HAP on the device beforehand:
+
+    \badcode
+    hdc install <path/to/autotests-signed.hap>
+    \endcode
+
+    \section1 How it works
+
+    \list 1
+        \li It verifies that the target device has the test bundle HAP
+            installed.
+        \li It force-stops any running instance of the bundle, then launches the
+            ability with \c {aa start}, telling the platform which test shared
+            library to load and where to redirect the test's standard output and
+            exit code inside the application sandbox.
+        \li It streams the test's standard output to the host as the test runs.
+        \li It waits for the test to finish, which it detects when the exit-code
+            file becomes readable. A liveness check catches a crashed process, and an
+            optional no-progress watchdog force-stops a test that stops producing
+            \c PASS or \c FAIL results.
+        \li If the test declares blocking system dialogs and the test's output
+            goes quiet, it dumps the screen layout with \c uitest and clicks the
+            expected button.
+        \li It returns the test's exit code as its own exit code.
+    \endlist
+
+    \section1 How to use it
+
+    The basic syntax is:
+
+    \badcode
+    harmonyostestrunner [OPTIONS] <test-binary> [TESTARGS]
+    \endcode
+
+    The \c {<test-binary>} argument is the path to the test shared library, for
+    example \c {libtst_qobject.so}. Its file name selects which test inside the
+    bundle to run. Anything after it, such as test function names or \c {-v2}, the
+    tool forwards to the test.
+
+    \section2 Options
+
+    The following table lists the command-line options of \c
+    harmonyostestrunner. You can set each option through the environment
+    variable in parentheses. The command-line value takes precedence.
+
+    \table
+    \header
+        \li Option
+        \li Description
+    \row
+        \li \c {--bundle-name <name>}
+        \li HarmonyOS bundle name of the installed test HAP
+            (\c QT_HARMONYOS_BUNDLE_NAME). Defaults to
+            \c org.qtproject.autotests.
+    \row
+        \li \c {--ability-name <name>}
+        \li HarmonyOS ability name inside the test HAP
+            (\c QT_HARMONYOS_ABILITY_NAME). Defaults to \c QAbility.
+    \row
+        \li \c {--hdc <path>}
+        \li Path to the \c hdc tool (\c QT_HARMONYOS_HDC). Defaults to the
+            \c hdc found in \c PATH.
+    \row
+        \li \c {--timeout <seconds>}
+        \li Seconds to wait for a test to complete before aborting
+            (\c QT_HARMONYOS_TEST_TIMEOUT). Defaults to 300.
+    \row
+        \li \c {--no-progress-timeout <seconds>}
+        \li Seconds without a \c PASS or \c FAIL result before the tool declares
+            the test hung (\c QT_HARMONYOS_NO_PROGRESS_TIMEOUT). Defaults to 60;
+            0 disables the watchdog.
+    \row
+        \li \c {--device <key>}
+        \li The \c hdc connect key (\c {-t}) for the target device
+            (\c QT_HARMONYOS_DEVICE). Required when you attach multiple
+            devices.
+    \row
+        \li \c {--test-config <path>}
+        \li Path to the generated test bundle deployment settings
+            (\c QT_HARMONYOS_TEST_CONFIG). The build generates this file, and the
+            CMake test wrapper passes it. The tool reads it for the blocking
+            system dialogs it has to answer.
+    \row
+        \li \c {--help}
+        \li Displays the help information.
+    \row
+        \li \c {--version}
+        \li Displays the tool version.
+    \endtable
+
+    \section2 Example usage
+
+    Run the \c tst_qobject test on a specific device, executing only the
+    \c signalsBlocked test case:
+
+    \badcode
+    harmonyostestrunner --device 127.0.0.1:5555 libtst_qobject.so signalsBlocked
+    \endcode
+
+    For more information about the Qt Test framework, see \l{Qt Test Overview}.
+*/

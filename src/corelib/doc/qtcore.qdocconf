@@ -50,6 +50,7 @@ sourcedirs  += .. \
                 ../../tools/androiddeployqt \
                 ../../tools/androidtestrunner \
                 ../../tools/harmonydeployqt \
+                ../../tools/harmonyostestrunner \
                 ../../android/templates \
                 src/includes
 
