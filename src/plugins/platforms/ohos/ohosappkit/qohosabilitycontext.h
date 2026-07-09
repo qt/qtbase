@@ -17,6 +17,8 @@
 #include <QtOhosAppKit/qtohosappkitglobal.h>
 #include <QtOhosAppKit/qohossharekit.h>
 #include <QtWidgets/qwidget.h>
+#include <functional>
+#include <optional>
 
 QT_BEGIN_NAMESPACE
 
@@ -58,6 +60,12 @@ private:
     Q_DISABLE_COPY(QOhosOnContinueContext)
 };
 
+struct QOhosStartAbilityResult
+{
+    int resultCode = 0;
+    QSharedPointer<QOhosWant> want;
+};
+
 class Q_OHOSAPPKIT_EXPORT QOhosAbilityContext : public QObject
 {
     Q_OBJECT
@@ -68,9 +76,15 @@ public:
 
     virtual void setDestroyFromSystemEnabled(bool destroyEnabled) = 0;
 
-    virtual QByteArray startAbilityForResult(const QOhosWant &want) = 0;
-    virtual QByteArray startAbilityForResult(const QOhosWant &want, const QOhosStartOptions &options) = 0;
-    virtual QByteArray startAbilityForResult(const QOhosWant &want, const QOhosStartRequest &startRequest) = 0;
+    virtual void startAbilityForResult(
+        const QOhosWant &want, QObject *context,
+        std::function<void(std::optional<QOhosStartAbilityResult>)> callback) = 0;
+    virtual void startAbilityForResult(
+        const QOhosWant &want, const QOhosStartOptions &options, QObject *context,
+        std::function<void(std::optional<QOhosStartAbilityResult>)> callback) = 0;
+    virtual void startAbilityForResult(
+        const QOhosWant &want, const QOhosStartRequest &startRequest, QObject *context,
+        std::function<void(std::optional<QOhosStartAbilityResult>)> callback) = 0;
 
     virtual QByteArray shareDataWithShareKit(
         const QList<QSharedPointer<ShareKit::QOhosSharedRecord>> &records,
@@ -84,9 +98,6 @@ public:
 Q_SIGNALS:
     void newWantInfoReceived(QSharedPointer<QOhosWantInfo> wantInfo);
     void continueRequestReceived(QSharedPointer<QOhosOnContinueContext> onContinueContext);
-
-    void startAbilityForResultResponseReceived(QByteArray requestId, int resultCode, QSharedPointer<QOhosWant> optWant);
-    void startAbilityForResultErrorResponseReceived(QByteArray requestId);
 
     void shareKitPanelClosed(QByteArray requestId);
     void shareKitCompleted(

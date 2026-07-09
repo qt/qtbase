@@ -516,25 +516,20 @@ QNapi::Object convertStartOptionsToNapiObject(
     return napiOptions;
 }
 
-QByteArray requestStartAbilityForResult(
+void requestStartAbilityForResult(
     const QOhosWant &want, std::optional<QOhosStartOptionsData> options,
-    QWindow *optInstanceMainWindow, QObject *callerContext, QByteArray requestId,
-    QOhosConsumer<QByteArray, int, QSharedPointer<QOhosWant>> successConsumer,
-    QOhosConsumer<QByteArray> errorConsumer)
+    QWindow *optInstanceMainWindow, QObject *callerContext,
+    std::function<void(std::optional<QOhosStartAbilityResult>)> resultCallback)
 {
     struct Context
     {
-        QByteArray requestId;
-        QOhosConsumer<QByteArray, int, QSharedPointer<QOhosWant>> successConsumer;
-        QOhosConsumer<QByteArray> errorConsumer;
+        std::function<void(std::optional<QOhosStartAbilityResult>)> resultCallback;
         QtOhos::QObjectThreadSafeRef resultConsumerQtContextRef;
     };
 
     auto context = QtOhos::moveToSharedPtr(
         Context{
-            .requestId = requestId,
-            .successConsumer = std::move(successConsumer),
-            .errorConsumer = std::move(errorConsumer),
+            .resultCallback = std::move(resultCallback),
             .resultConsumerQtContextRef = QtOhos::QObjectThreadSafeRef(callerContext),
         });
 
@@ -544,9 +539,9 @@ QByteArray requestStartAbilityForResult(
             auto want = abilityResult.want.has_value()
                 ? QSharedPointer<QOhosWant>::create(convertWantFromJsonObject(abilityResult.want.value()))
                 : nullptr;
-            context->successConsumer(context->requestId, abilityResult.resultCode, want);
+            context->resultCallback(QOhosStartAbilityResult{abilityResult.resultCode, want});
         } else {
-            context->errorConsumer(context->requestId);
+            context->resultCallback(std::nullopt);
         }
     };
 
@@ -602,8 +597,6 @@ QByteArray requestStartAbilityForResult(
                         });
                 });
         });
-
-    return context->requestId;
 }
 
 class QOhosBaseAbilityContextImpl : public QOhosAbilityContext
@@ -613,9 +606,10 @@ protected:
 
     QByteArray generateUniqueId();
 
-    QByteArray startAbilityForResultImpl(
+    void startAbilityForResultImpl(
         const QOhosWant &want, QWindow *optInstanceMainWindow,
-        std::optional<QOhosStartOptionsData> qpaStartOptions);
+        std::optional<QOhosStartOptionsData> qpaStartOptions,
+        QObject *context, std::function<void(std::optional<QOhosStartAbilityResult>)> callback);
 
     QByteArray shareDataWithShareKitImpl(
         QWindow *optMainWindow, const QList<QSharedPointer<ShareKit::QOhosSharedRecord>> &records,
@@ -633,9 +627,15 @@ public:
 
     void setDestroyFromSystemEnabled(bool destroyEnabled) override;
 
-    QByteArray startAbilityForResult(const QOhosWant &want) override;
-    QByteArray startAbilityForResult(const QOhosWant &want, const QOhosStartOptions &options) override;
-    QByteArray startAbilityForResult(const QOhosWant &want, const QOhosStartRequest &startRequest) override;
+    void startAbilityForResult(
+        const QOhosWant &want, QObject *context,
+        std::function<void(std::optional<QOhosStartAbilityResult>)> callback) override;
+    void startAbilityForResult(
+        const QOhosWant &want, const QOhosStartOptions &options, QObject *context,
+        std::function<void(std::optional<QOhosStartAbilityResult>)> callback) override;
+    void startAbilityForResult(
+        const QOhosWant &want, const QOhosStartRequest &startRequest, QObject *context,
+        std::function<void(std::optional<QOhosStartAbilityResult>)> callback) override;
 
     QByteArray shareDataWithShareKit(
         const QList<QSharedPointer<ShareKit::QOhosSharedRecord>> &records,
@@ -654,9 +654,15 @@ public:
 
     void setDestroyFromSystemEnabled(bool destroyEnabled) override;
 
-    QByteArray startAbilityForResult(const QOhosWant &want) override;
-    QByteArray startAbilityForResult(const QOhosWant &want, const QOhosStartOptions &options) override;
-    QByteArray startAbilityForResult(const QOhosWant &want, const QOhosStartRequest &startRequest) override;
+    void startAbilityForResult(
+        const QOhosWant &want, QObject *context,
+        std::function<void(std::optional<QOhosStartAbilityResult>)> callback) override;
+    void startAbilityForResult(
+        const QOhosWant &want, const QOhosStartOptions &options, QObject *context,
+        std::function<void(std::optional<QOhosStartAbilityResult>)> callback) override;
+    void startAbilityForResult(
+        const QOhosWant &want, const QOhosStartRequest &startRequest, QObject *context,
+        std::function<void(std::optional<QOhosStartAbilityResult>)> callback) override;
 
     QByteArray shareDataWithShareKit(
         const QList<QSharedPointer<ShareKit::QOhosSharedRecord>> &records,
@@ -683,19 +689,14 @@ QByteArray QOhosBaseAbilityContextImpl::generateUniqueId()
     return m_uniqueIdsGenerator();
 }
 
-QByteArray QOhosBaseAbilityContextImpl::startAbilityForResultImpl(
+void QOhosBaseAbilityContextImpl::startAbilityForResultImpl(
     const QOhosWant &want, QWindow *optInstanceMainWindow,
-    std::optional<QOhosStartOptionsData> qpaStartOptions)
+    std::optional<QOhosStartOptionsData> qpaStartOptions,
+    QObject *context, std::function<void(std::optional<QOhosStartAbilityResult>)> callback)
 {
-    return requestStartAbilityForResult(
-        want, std::move(qpaStartOptions), optInstanceMainWindow, this,
-        generateUniqueId(),
-        [this](auto requestIdentifier, auto resultCode, auto want) {
-            Q_EMIT startAbilityForResultResponseReceived(requestIdentifier, resultCode, want);
-        },
-        [this](auto requestIdentifier) {
-            Q_EMIT startAbilityForResultErrorResponseReceived(requestIdentifier);
-        });
+    requestStartAbilityForResult(
+        want, std::move(qpaStartOptions), optInstanceMainWindow, context,
+        std::move(callback));
 }
 
 QByteArray QOhosBaseAbilityContextImpl::shareDataWithShareKitImpl(
@@ -735,23 +736,26 @@ void QOhosDefaultAbilityContextImpl::setDestroyFromSystemEnabled(bool destroyEna
     setDestroyAllowedFlagForAbilityInstances(instancesMainWindows, destroyEnabled);
 }
 
-QByteArray QOhosDefaultAbilityContextImpl::startAbilityForResult(const QOhosWant &want)
+void QOhosDefaultAbilityContextImpl::startAbilityForResult(
+    const QOhosWant &want, QObject *context, std::function<void(std::optional<QOhosStartAbilityResult>)> callback)
 {
-    return startAbilityForResultImpl(want, nullptr, std::nullopt);
+    startAbilityForResultImpl(want, nullptr, std::nullopt, context, std::move(callback));
 }
 
-QByteArray QOhosDefaultAbilityContextImpl::startAbilityForResult(
-    const QOhosWant &want, const QOhosStartOptions &options)
+void QOhosDefaultAbilityContextImpl::startAbilityForResult(
+    const QOhosWant &want, const QOhosStartOptions &options, QObject *context,
+    std::function<void(std::optional<QOhosStartAbilityResult>)> callback)
 {
-    return startAbilityForResultImpl(
-        want, nullptr, tryConvertStartOptionsToQpaFunctionsStruct(options));
+    startAbilityForResultImpl(
+        want, nullptr, tryConvertStartOptionsToQpaFunctionsStruct(options), context, std::move(callback));
 }
 
-QByteArray QOhosDefaultAbilityContextImpl::startAbilityForResult(
-    const QOhosWant &want, const QOhosStartRequest &startRequest)
+void QOhosDefaultAbilityContextImpl::startAbilityForResult(
+    const QOhosWant &want, const QOhosStartRequest &startRequest, QObject *context,
+    std::function<void(std::optional<QOhosStartAbilityResult>)> callback)
 {
-    return startAbilityForResultImpl(
-        want, nullptr, tryConvertStartRequestToQpaFunctionsStruct(startRequest));
+    startAbilityForResultImpl(
+        want, nullptr, tryConvertStartRequestToQpaFunctionsStruct(startRequest), context, std::move(callback));
 }
 
 QByteArray QOhosDefaultAbilityContextImpl::shareDataWithShareKit(
@@ -945,41 +949,43 @@ void QOhosAbilityContextImpl::setDestroyFromSystemEnabled(bool destroyEnabled)
 }
 
 /*!
-    \fn QByteArray QtOhosAppKit::QOhosAbilityContext::startAbilityForResult(const QtOhosAppKit::QOhosWant &want)
+    \fn void QtOhosAppKit::QOhosAbilityContext::startAbilityForResult(const QtOhosAppKit::QOhosWant &want, QObject *context, std::function<void(std::optional<QtOhosAppKit::QOhosStartAbilityResult>)> callback)
 
-    Starts a UIAbility with a given \a want and delivers the result using startAbilityForResultResponseReceived() or
-    startAbilityForResultErrorResponseReceived() signal. To start the UIAbility, at least bundleName and abilityName properties must be set.
-    Returns request identifier which will be also provided by emitted signal \sa startAbilityForResultResponseReceived(), startAbilityForResultErrorResponseReceived().
+    Starts a UIAbility with a given \a want and delivers the result by invoking \a callback on the thread of \a context;
+    if \a context is destroyed before the result arrives, \a callback is not invoked. To start the UIAbility, at least bundleName and abilityName properties must be set.
+    On success \a callback receives the ability result; on failure (for example, the UIAbility was killed) it receives an empty std::optional.
     See \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references/js-apis-inner-application-uiabilitycontext#startabilityforresult-2}
     {UIAbilityContext.startAbilityForResult}
 */
-QByteArray QOhosAbilityContextImpl::startAbilityForResult(const QOhosWant &want)
+void QOhosAbilityContextImpl::startAbilityForResult(
+    const QOhosWant &want, QObject *context, std::function<void(std::optional<QOhosStartAbilityResult>)> callback)
 {
-    return startAbilityForResultImpl(want, m_instanceMainWindow, std::nullopt);
+    startAbilityForResultImpl(want, m_instanceMainWindow, std::nullopt, context, std::move(callback));
 }
 
 /*!
-    \fn QByteArray QtOhosAppKit::QOhosAbilityContext::startAbilityForResult(const QtOhosAppKit::QOhosWant &want, const QtOhosAppKit::QOhosStartOptions &options)
+    \fn void QtOhosAppKit::QOhosAbilityContext::startAbilityForResult(const QtOhosAppKit::QOhosWant &want, const QtOhosAppKit::QOhosStartOptions &options, QObject *context, std::function<void(std::optional<QtOhosAppKit::QOhosStartAbilityResult>)> callback)
 
-    Starts a UIAbility with a given \a want and \a options and delivers the result using startAbilityForResultResponseReceived() or
-    startAbilityForResultErrorResponseReceived() signal. To start the UIAbility, at least bundleName and abilityName properties must be set.
-    Returns request identifier which will be also provided by emitted signal \sa startAbilityForResultResponseReceived(), startAbilityForResultErrorResponseReceived().
+    Starts a UIAbility with a given \a want and \a options and delivers the result by invoking \a callback on the thread of \a context;
+    if \a context is destroyed before the result arrives, \a callback is not invoked. To start the UIAbility, at least bundleName and abilityName properties must be set.
+    On success \a callback receives the ability result; on failure (for example, the UIAbility was killed) it receives an empty std::optional.
     See \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references/js-apis-inner-application-uiabilitycontext#startabilityforresult-2}
     {UIAbilityContext.startAbilityForResult}
 */
-QByteArray QOhosAbilityContextImpl::startAbilityForResult(
-    const QOhosWant &want, const QOhosStartOptions &options)
+void QOhosAbilityContextImpl::startAbilityForResult(
+    const QOhosWant &want, const QOhosStartOptions &options, QObject *context,
+    std::function<void(std::optional<QOhosStartAbilityResult>)> callback)
 {
-    return startAbilityForResultImpl(
-        want, m_instanceMainWindow, tryConvertStartOptionsToQpaFunctionsStruct(options));
+    startAbilityForResultImpl(
+        want, m_instanceMainWindow, tryConvertStartOptionsToQpaFunctionsStruct(options), context, std::move(callback));
 }
 
 /*!
-    \fn QByteArray QtOhosAppKit::QOhosAbilityContext::startAbilityForResult(const QtOhosAppKit::QOhosWant &want,
-    const QtOhosAppKit::QOhosStartRequest &startRequest)
+    \fn void QtOhosAppKit::QOhosAbilityContext::startAbilityForResult(const QtOhosAppKit::QOhosWant &want, const QtOhosAppKit::QOhosStartRequest &startRequest, QObject *context, std::function<void(std::optional<QtOhosAppKit::QOhosStartAbilityResult>)> callback)
 
-    Starts a UIAbility with a given \a want and \a startRequest and delivers the result using startAbilityForResultResponseReceived() or
-    startAbilityForResultErrorResponseReceived() signal. To start the UIAbility, at least bundleName and abilityName properties must be set.
+    Starts a UIAbility with a given \a want and \a startRequest and delivers the result by invoking \a callback on the thread of \a context;
+    if \a context is destroyed before the result arrives, \a callback is not invoked. To start the UIAbility, at least bundleName and abilityName properties must be set.
+    On success \a callback receives the ability result; on failure (for example, the UIAbility was killed) it receives an empty std::optional.
 
     The \a startRequest carries the completion handler from start options. Connect to
     QOhosStartRequest::requestSucceeded() and QOhosStartRequest::requestFailed() to receive
@@ -987,11 +993,12 @@ QByteArray QOhosAbilityContextImpl::startAbilityForResult(
     See \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references/js-apis-inner-application-uiabilitycontext#startabilityforresult-2}
     {UIAbilityContext.startAbilityForResult}
 */
-QByteArray QOhosAbilityContextImpl::startAbilityForResult(
-    const QOhosWant &want, const QOhosStartRequest &startRequest)
+void QOhosAbilityContextImpl::startAbilityForResult(
+    const QOhosWant &want, const QOhosStartRequest &startRequest, QObject *context,
+    std::function<void(std::optional<QOhosStartAbilityResult>)> callback)
 {
-    return startAbilityForResultImpl(
-        want, m_instanceMainWindow, tryConvertStartRequestToQpaFunctionsStruct(startRequest));
+    startAbilityForResultImpl(
+        want, m_instanceMainWindow, tryConvertStartRequestToQpaFunctionsStruct(startRequest), context, std::move(callback));
 }
 
 /*!
@@ -1133,27 +1140,6 @@ void startAppProcessImpl(
     {UIAbility onContinue}.
 
     \sa setAgreeResponse(), setMismatchResponse(), setRejectResponse()
-*/
-
-/*!
-    \fn void QtOhosAppKit::QOhosAbilityContext::startAbilityForResultResponseReceived(QByteArray requestId, int resultCode, QSharedPointer<QOhosWant> optWant)
-
-    Signal emitted when started UIAbility is terminated. User request can be identified with \a requestId.
-    External application sets the result which is provided by \a resultCode and optionally \a optWant with extra data (the \a optWant is null if Want object is not available).
-    See {https://developer.huawei.com/consumer/en/doc/harmonyos-references/js-apis-inner-application-uiabilitycontext#startabilityforresult-2}
-    {UIAbilityContext.startAbilityForResult} and
-    {https://developer.huawei.com/consumer/en/doc/harmonyos-references/js-apis-inner-application-uiabilitycontext#terminateselfwithresult}
-    {UIAbilityContext.terminateSelfWithResult}
-*/
-
-/*!
-    \fn void QtOhosAppKit::QOhosAbilityContext::startAbilityForResultErrorResponseReceived(QByteArray requestId)
-
-    Signal emitted when started UIAbility got an exception for example, it was killed. Start ability User request can be identified with \a requestId.
-    See {https://developer.huawei.com/consumer/en/doc/harmonyos-references/js-apis-inner-application-uiabilitycontext#startabilityforresult-2}
-    {UIAbilityContext.startAbilityForResult} and
-    {https://developer.huawei.com/consumer/en/doc/harmonyos-references/js-apis-inner-application-uiabilitycontext#terminateselfwithresult}
-    {UIAbilityContext.terminateSelfWithResult}
 */
 
 /*!
