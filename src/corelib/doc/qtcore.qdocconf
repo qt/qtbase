@@ -47,10 +47,7 @@ depends                 = *
 headerdirs  += ..
 
 sourcedirs  += .. \
-                ../../tools/androiddeployqt \
-                ../../tools/androidtestrunner \
-                ../../tools/harmonydeployqt \
-                ../../tools/harmonyostestrunner \
+                ../../tools/doc/src \
                 ../../android/templates \
                 src/includes
 
