@@ -86,9 +86,12 @@ public:
         const QOhosWant &want, const QOhosStartRequest &startRequest, QObject *context,
         std::function<void(std::optional<QOhosStartAbilityResult>)> callback) = 0;
 
-    virtual QByteArray shareDataWithShareKit(
+    virtual void shareDataWithShareKit(
         const QList<QSharedPointer<ShareKit::QOhosSharedRecord>> &records,
-        QSharedPointer<ShareKit::QOhosShareControllerOptions> controllerOptions = nullptr) = 0;
+        QSharedPointer<ShareKit::QOhosShareControllerOptions> controllerOptions,
+        QObject *context,
+        std::function<void(QSharedPointer<ShareKit::QOhosShareOperationResult>)> onShareCompleted,
+        std::function<void()> onPanelClosed) = 0;
 
     virtual bool tryOpenLink(const QString &link) = 0;
     virtual bool tryOpenLink(const QString &link, const QOhosOpenLinkOptions &options) = 0;
@@ -98,10 +101,6 @@ public:
 Q_SIGNALS:
     void newWantInfoReceived(QSharedPointer<QOhosWantInfo> wantInfo);
     void continueRequestReceived(QSharedPointer<QOhosOnContinueContext> onContinueContext);
-
-    void shareKitPanelClosed(QByteArray requestId);
-    void shareKitCompleted(
-        QByteArray requestId, QSharedPointer<ShareKit::QOhosShareOperationResult> shareOperationResult);
 
 protected:
     QOhosAbilityContext();
