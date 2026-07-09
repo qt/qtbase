@@ -297,11 +297,12 @@ void QDirListingPrivate::pushDirectory(QDirEntryInfo &entryInfo)
     } else if (auto *d = std::get_if<NativeData>(&data); true) {
         Q_ASSERT(d);
 #ifndef QT_NO_FILESYSTEMITERATOR
-        auto it = std::make_unique<QFileSystemIterator>(
-                entryInfo.query(
-                        [](const QDirEntryInfo::Native &native) { return native.entry; },
-                        [](const QFileInfo &fileInfo) { return fileInfo.d_ptr->fileEntry; }),
-                iteratorFlags);
+        // In native mode, entryInfo is always Native: the initial entry is
+        // (see beginIterating()) and QFileSystemIterator::advance() only ever
+        // produces Native entries.
+        Q_ASSERT(std::holds_alternative<QDirEntryInfo::Native>(entryInfo.content));
+        const auto native = std::get_if<QDirEntryInfo::Native>(&entryInfo.content);
+        auto it = std::make_unique<QFileSystemIterator>(native->entry, iteratorFlags);
 
         // Stop link loops
         if (followSymlinks) {
