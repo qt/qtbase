@@ -17,6 +17,7 @@
 #include <QtNetwork/private/qhttp2protocolhandler_p.h>
 #include <QtNetwork/qnetworkaccessmanager.h>
 #include <QtNetwork/qhttp2configuration.h>
+#include <QtNetwork/private/qhttp2configuration_p.h>
 #include <QtNetwork/qnetworkrequest.h>
 #include <QtNetwork/qnetworkreply.h>
 
@@ -61,6 +62,10 @@ RawSettings qt_H2ConfigurationToSettings(const QHttp2Configuration &config = qt_
     settings[Http2::Settings::INITIAL_WINDOW_SIZE_ID] = config.streamReceiveWindowSize();
     if (config.maxFrameSize() != Http2::minPayloadLimit)
         settings[Http2::Settings::MAX_FRAME_SIZE_ID] = config.maxFrameSize();
+    if (const quint32 maxHeaderListSize =
+                QHttp2ConfigurationPrivate::get(config)->maxHeaderListSize;
+        maxHeaderListSize != (std::numeric_limits<quint32>::max)())
+        settings[Http2::Settings::MAX_HEADER_LIST_SIZE_ID] = maxHeaderListSize;
     return settings;
 }
 

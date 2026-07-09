@@ -5,6 +5,7 @@
 #include <QtTest/QSignalSpy>
 
 #include <QtNetwork/private/qhttp2connection_p.h>
+#include <QtNetwork/private/qhttp2configuration_p.h>
 #include <QtNetwork/private/hpack_p.h>
 #include <QtNetwork/private/bitstreams_p.h>
 
@@ -313,7 +314,8 @@ void tst_QHttp2Connection::testSETTINGSFrame()
         // { Http2::Settings::MAX_CONCURRENT_STREAMS_ID, Http2::maxConcurrentStreams },
         { Http2::Settings::INITIAL_WINDOW_SIZE_ID, StreamReceiveWindowSize },
         { Http2::Settings::MAX_FRAME_SIZE_ID, MaxFrameSize },
-        // { Http2::Settings::MAX_HEADER_LIST_SIZE_ID, ??? },
+        { Http2::Settings::MAX_HEADER_LIST_SIZE_ID,
+          QHttp2ConfigurationPrivate::get(config)->maxHeaderListSize },
     };
 
     QCOMPARE(quint32(settingsReceived), std::size(expectedSettings));

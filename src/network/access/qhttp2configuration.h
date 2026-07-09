@@ -46,6 +46,7 @@ public:
     void swap(QHttp2Configuration &other) noexcept;
 
 private:
+    friend class QHttp2ConfigurationPrivate;
     QSharedDataPointer<QHttp2ConfigurationPrivate> d;
 
     bool isEqual(const QHttp2Configuration &other) const noexcept;
