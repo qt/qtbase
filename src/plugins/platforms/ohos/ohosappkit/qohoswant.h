@@ -63,7 +63,7 @@ public:
 
     virtual QOhosWant want() const = 0;
 
-    virtual QSharedPointer<QList<QSharedPointer<ShareKit::QOhosSharedRecord>>> tryGetSharedRecordsFromShareKit() const = 0;
+    virtual QSharedPointer<QList<QSharedPointer<ShareKit::SharedRecord>>> tryGetSharedRecordsFromShareKit() const = 0;
 
     virtual QSharedPointer<ContactInfo> tryGetContactInfo() const = 0;
 

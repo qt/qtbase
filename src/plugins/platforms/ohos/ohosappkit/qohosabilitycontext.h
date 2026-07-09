@@ -83,10 +83,10 @@ public:
         std::function<void(std::optional<QOhosStartAbilityResult>)> callback) = 0;
 
     virtual void shareDataWithShareKit(
-        const QList<QSharedPointer<ShareKit::QOhosSharedRecord>> &records,
-        QSharedPointer<ShareKit::QOhosShareControllerOptions> controllerOptions,
+        const QList<QSharedPointer<ShareKit::SharedRecord>> &records,
+        QSharedPointer<ShareKit::ShareControllerOptions> controllerOptions,
         QObject *context,
-        std::function<void(QSharedPointer<ShareKit::QOhosShareOperationResult>)> onShareCompleted,
+        std::function<void(QSharedPointer<ShareKit::ShareOperationResult>)> onShareCompleted,
         std::function<void()> onPanelClosed) = 0;
 
     virtual bool tryOpenLink(const QString &link) = 0;

@@ -145,7 +145,7 @@ namespace QtOhosAppKit {
 */
 
 /*!
-    \fn virtual QSharedPointer<QList<QSharedPointer<QtOhosAppKit::ShareKit::QOhosSharedRecord>>> QtOhosAppKit::QOhosWantInfo::tryGetSharedRecordsFromShareKit() const = 0
+    \fn virtual QSharedPointer<QList<QSharedPointer<QtOhosAppKit::ShareKit::SharedRecord>>> QtOhosAppKit::QOhosWantInfo::tryGetSharedRecordsFromShareKit() const = 0
 
     Tries to get shared records from assosiated want. The shared data is expected to be stored in the want parameters.
     Shared records are delivered on an application start or while the application is already running. Returns \c nullptr if no such data found.

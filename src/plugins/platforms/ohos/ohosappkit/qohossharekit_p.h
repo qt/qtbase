@@ -29,10 +29,10 @@ namespace QtOhosAppKit {
 namespace ShareKit {
 
 std::shared_ptr<void> shareData(
-    QWindow *optMainWindow, const QList<QSharedPointer<QOhosSharedRecord>> &records,
-    QSharedPointer<QOhosShareControllerOptions> controllerOptions,
+    QWindow *optMainWindow, const QList<QSharedPointer<SharedRecord>> &records,
+    QSharedPointer<ShareControllerOptions> controllerOptions,
     std::function<void()> panelClosedCallback,
-    std::function<void(QSharedPointer<ShareKit::QOhosShareOperationResult>)> shareCompletedCallback);
+    std::function<void(QSharedPointer<ShareKit::ShareOperationResult>)> shareCompletedCallback);
 
 }
 

@@ -92,7 +92,7 @@ public:
 
     QOhosWant want() const override;
 
-    QSharedPointer<QList<QSharedPointer<ShareKit::QOhosSharedRecord>>> tryGetSharedRecordsFromShareKit() const override;
+    QSharedPointer<QList<QSharedPointer<ShareKit::SharedRecord>>> tryGetSharedRecordsFromShareKit() const override;
 
     QSharedPointer<ContactInfo> tryGetContactInfo() const override;
 
@@ -115,15 +115,15 @@ QOhosWant QOhosWantInfoImpl::want() const
     return convertWantFromJsonObject(m_qpaWantInfo->jsonObject());
 }
 
-QSharedPointer<QList<QSharedPointer<ShareKit::QOhosSharedRecord>>> QOhosWantInfoImpl::tryGetSharedRecordsFromShareKit() const
+QSharedPointer<QList<QSharedPointer<ShareKit::SharedRecord>>> QOhosWantInfoImpl::tryGetSharedRecordsFromShareKit() const
 {
     auto records = qpaWantInfo()->tryGetSharedDataRecords();
     if (!records.has_value())
         return nullptr;
 
-    auto result = QSharedPointer<QList<QSharedPointer<ShareKit::QOhosSharedRecord>>>::create();
+    auto result = QSharedPointer<QList<QSharedPointer<ShareKit::SharedRecord>>>::create();
     for (auto &record : records.value()) {
-        QSharedPointer<ShareKit::QOhosSharedRecord> extrasRecord;
+        QSharedPointer<ShareKit::SharedRecord> extrasRecord;
         if (record.content.has_value()) {
             extrasRecord = ShareKit::createContentRecord(
                 QMimeDatabase().mimeTypeForName(record.mimeType), record.content.value());

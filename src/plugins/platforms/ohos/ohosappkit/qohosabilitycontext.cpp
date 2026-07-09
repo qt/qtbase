@@ -611,10 +611,10 @@ protected:
         QObject *context, std::function<void(std::optional<QOhosStartAbilityResult>)> callback);
 
     void shareDataWithShareKitImpl(
-        QWindow *optMainWindow, const QList<QSharedPointer<ShareKit::QOhosSharedRecord>> &records,
-        QSharedPointer<ShareKit::QOhosShareControllerOptions> controllerOptions,
+        QWindow *optMainWindow, const QList<QSharedPointer<ShareKit::SharedRecord>> &records,
+        QSharedPointer<ShareKit::ShareControllerOptions> controllerOptions,
         QObject *context,
-        std::function<void(QSharedPointer<ShareKit::QOhosShareOperationResult>)> onShareCompleted,
+        std::function<void(QSharedPointer<ShareKit::ShareOperationResult>)> onShareCompleted,
         std::function<void()> onPanelClosed);
 
 private:
@@ -637,10 +637,10 @@ public:
         std::function<void(std::optional<QOhosStartAbilityResult>)> callback) override;
 
     void shareDataWithShareKit(
-        const QList<QSharedPointer<ShareKit::QOhosSharedRecord>> &records,
-        QSharedPointer<ShareKit::QOhosShareControllerOptions> controllerOptions,
+        const QList<QSharedPointer<ShareKit::SharedRecord>> &records,
+        QSharedPointer<ShareKit::ShareControllerOptions> controllerOptions,
         QObject *context,
-        std::function<void(QSharedPointer<ShareKit::QOhosShareOperationResult>)> onShareCompleted,
+        std::function<void(QSharedPointer<ShareKit::ShareOperationResult>)> onShareCompleted,
         std::function<void()> onPanelClosed) override;
 
     bool tryOpenLink(const QString &link) override;
@@ -664,10 +664,10 @@ public:
         std::function<void(std::optional<QOhosStartAbilityResult>)> callback) override;
 
     void shareDataWithShareKit(
-        const QList<QSharedPointer<ShareKit::QOhosSharedRecord>> &records,
-        QSharedPointer<ShareKit::QOhosShareControllerOptions> controllerOptions,
+        const QList<QSharedPointer<ShareKit::SharedRecord>> &records,
+        QSharedPointer<ShareKit::ShareControllerOptions> controllerOptions,
         QObject *context,
-        std::function<void(QSharedPointer<ShareKit::QOhosShareOperationResult>)> onShareCompleted,
+        std::function<void(QSharedPointer<ShareKit::ShareOperationResult>)> onShareCompleted,
         std::function<void()> onPanelClosed) override;
 
     bool tryOpenLink(const QString &link) override;
@@ -702,10 +702,10 @@ void QOhosBaseAbilityContextImpl::startAbilityForResultImpl(
 }
 
 void QOhosBaseAbilityContextImpl::shareDataWithShareKitImpl(
-    QWindow *optMainWindow, const QList<QSharedPointer<ShareKit::QOhosSharedRecord>> &records,
-    QSharedPointer<ShareKit::QOhosShareControllerOptions> controllerOptions,
+    QWindow *optMainWindow, const QList<QSharedPointer<ShareKit::SharedRecord>> &records,
+    QSharedPointer<ShareKit::ShareControllerOptions> controllerOptions,
     QObject *context,
-    std::function<void(QSharedPointer<ShareKit::QOhosShareOperationResult>)> onShareCompleted,
+    std::function<void(QSharedPointer<ShareKit::ShareOperationResult>)> onShareCompleted,
     std::function<void()> onPanelClosed)
 {
     auto selfPtr = QPointer<QOhosBaseAbilityContextImpl>(this);
@@ -755,10 +755,10 @@ void QOhosDefaultAbilityContextImpl::startAbilityForResult(
 }
 
 void QOhosDefaultAbilityContextImpl::shareDataWithShareKit(
-    const QList<QSharedPointer<ShareKit::QOhosSharedRecord>> &records,
-    QSharedPointer<ShareKit::QOhosShareControllerOptions> controllerOptions,
+    const QList<QSharedPointer<ShareKit::SharedRecord>> &records,
+    QSharedPointer<ShareKit::ShareControllerOptions> controllerOptions,
     QObject *context,
-    std::function<void(QSharedPointer<ShareKit::QOhosShareOperationResult>)> onShareCompleted,
+    std::function<void(QSharedPointer<ShareKit::ShareOperationResult>)> onShareCompleted,
     std::function<void()> onPanelClosed)
 {
     shareDataWithShareKitImpl(
@@ -982,7 +982,7 @@ void QOhosAbilityContextImpl::startAbilityForResult(
 }
 
 /*!
-    \fn virtual void QtOhosAppKit::QOhosAbilityContext::shareDataWithShareKit(const QList<QSharedPointer<ShareKit::QOhosSharedRecord>> &records, QSharedPointer<ShareKit::QOhosShareControllerOptions> controllerOptions, QObject *context, std::function<void(QSharedPointer<ShareKit::QOhosShareOperationResult>)> onShareCompleted, std::function<void()> onPanelClosed) = 0
+    \fn virtual void QtOhosAppKit::QOhosAbilityContext::shareDataWithShareKit(const QList<QSharedPointer<ShareKit::SharedRecord>> &records, QSharedPointer<ShareKit::ShareControllerOptions> controllerOptions, QObject *context, std::function<void(QSharedPointer<ShareKit::ShareOperationResult>)> onShareCompleted, std::function<void()> onPanelClosed) = 0
 
     Share provided \a records with other applications using an inter-application mechanism called ShareKit. Share Kit panel can be controlled
     with a given \a controllerOptions. When called on the default QOhosAbilityContext instance, it shares \a records using the default UiAbility.
@@ -994,10 +994,10 @@ void QOhosAbilityContextImpl::startAbilityForResult(
     See \l {https://developer.huawei.com/consumer/en/doc/harmonyos-guides-V5/share-introduction-V5}{Share Kit}
 */
 void QOhosAbilityContextImpl::shareDataWithShareKit(
-    const QList<QSharedPointer<ShareKit::QOhosSharedRecord>> &records,
-    QSharedPointer<ShareKit::QOhosShareControllerOptions> controllerOptions,
+    const QList<QSharedPointer<ShareKit::SharedRecord>> &records,
+    QSharedPointer<ShareKit::ShareControllerOptions> controllerOptions,
     QObject *context,
-    std::function<void(QSharedPointer<ShareKit::QOhosShareOperationResult>)> onShareCompleted,
+    std::function<void(QSharedPointer<ShareKit::ShareOperationResult>)> onShareCompleted,
     std::function<void()> onPanelClosed)
 {
     shareDataWithShareKitImpl(

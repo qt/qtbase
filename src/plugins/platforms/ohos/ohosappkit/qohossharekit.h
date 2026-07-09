@@ -30,10 +30,10 @@ enum class ShareAbilityType {
     SaveToSuperHub,
 };
 
-class Q_OHOSAPPKIT_EXPORT QOhosSharedRecord
+class Q_OHOSAPPKIT_EXPORT SharedRecord
 {
 public:
-    virtual ~QOhosSharedRecord();
+    virtual ~SharedRecord();
 
     virtual QMimeType mimeType() const = 0;
     virtual QString content() const = 0;
@@ -59,16 +59,16 @@ public:
     virtual QVariantMap extraData() const = 0;
 
 protected:
-    QOhosSharedRecord();
+    SharedRecord();
 
 private:
-    Q_DISABLE_COPY(QOhosSharedRecord)
+    Q_DISABLE_COPY(SharedRecord)
 };
 
-class Q_OHOSAPPKIT_EXPORT QOhosShareControllerOptions
+class Q_OHOSAPPKIT_EXPORT ShareControllerOptions
 {
 public:
-    virtual ~QOhosShareControllerOptions();
+    virtual ~ShareControllerOptions();
 
     virtual void setAnchor(const QPoint &anchorOffset) = 0;
     virtual void setAnchor(const QRect &anchor) = 0;
@@ -77,32 +77,32 @@ public:
     virtual void setExcludedAbilities(const QList<ShareAbilityType> &excludedAbilities) = 0;
 
 protected:
-    QOhosShareControllerOptions();
+    ShareControllerOptions();
 
 private:
-    Q_DISABLE_COPY(QOhosShareControllerOptions)
+    Q_DISABLE_COPY(ShareControllerOptions)
 };
 
-class Q_OHOSAPPKIT_EXPORT QOhosShareOperationResult
+class Q_OHOSAPPKIT_EXPORT ShareOperationResult
 {
 public:
-    virtual ~QOhosShareOperationResult();
+    virtual ~ShareOperationResult();
 
     virtual QString targetAbilityName() const = 0;
 
 protected:
-    QOhosShareOperationResult();
+    ShareOperationResult();
 
 private:
-    Q_DISABLE_COPY(QOhosShareOperationResult)
+    Q_DISABLE_COPY(ShareOperationResult)
 };
 
-Q_OHOSAPPKIT_EXPORT QSharedPointer<QOhosSharedRecord> createContentRecord(
+Q_OHOSAPPKIT_EXPORT QSharedPointer<SharedRecord> createContentRecord(
     const QMimeType &mimeType, const QString &content);
-Q_OHOSAPPKIT_EXPORT QSharedPointer<QOhosSharedRecord> createFileRecord(const QFileInfo &fileInfo);
-Q_OHOSAPPKIT_EXPORT QSharedPointer<QOhosSharedRecord> createUrlRecord(const QUrl &url);
+Q_OHOSAPPKIT_EXPORT QSharedPointer<SharedRecord> createFileRecord(const QFileInfo &fileInfo);
+Q_OHOSAPPKIT_EXPORT QSharedPointer<SharedRecord> createUrlRecord(const QUrl &url);
 
-Q_OHOSAPPKIT_EXPORT QSharedPointer<QOhosShareControllerOptions> createControllerOptions();
+Q_OHOSAPPKIT_EXPORT QSharedPointer<ShareControllerOptions> createControllerOptions();
 
 }
 
