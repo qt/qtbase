@@ -6,6 +6,8 @@
     \brief Overview of the androidtestrunner tool for running Qt tests on Android.
     \title The androidtestrunner Tool
 
+    \target androidtestrunner
+
     \ingroup android-platform-extra-topics
 
     \section1 Introduction
