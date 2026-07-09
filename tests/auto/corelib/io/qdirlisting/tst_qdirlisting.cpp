@@ -7,6 +7,9 @@
 #include <qdebug.h>
 #include <qdirlisting.h>
 #include <qfileinfo.h>
+#if QT_CONFIG(process)
+#include <QProcess>
+#endif
 #include <qstringlist.h>
 #include <QSet>
 #include <QString>
@@ -80,6 +83,7 @@ private slots:
     void iterateResource_data();
     void iterateResource();
     void stopLinkLoop();
+    void stopLinkLoopVisitOnce();
 #ifdef QT_BUILD_INTERNAL
     void engineWithNoIterator();
     void testQFsFileEngineIterator_data() { iterateRelativeDirectory_data(); }
@@ -101,6 +105,10 @@ private slots:
     void hidden();
     void inaccessibleDir_data();
     void inaccessibleDir();
+#endif
+#ifdef Q_OS_LINUX
+    void bindMountDuplicateId_data();
+    void bindMountDuplicateId();
 #endif
 
     void withStdAlgorithms();
@@ -645,6 +653,57 @@ void tst_QDirListing::stopLinkLoop()
     // The goal of this test is only to ensure that the test above don't malfunction
 }
 
+void tst_QDirListing::stopLinkLoopVisitOnce()
+{
+#ifdef Q_NO_SYMLINKS
+    QSKIP("This platform does not support symlinks");
+#else
+    // A self-contained tree in which every symlink loops back to a directory
+    // that has already been visited by the time the symlink is encountered.
+    // Following the loops must therefore never traverse (and hence list) any
+    // directory a second time, so the exact set of visited entries is
+    // deterministic regardless of the order in which readdir() returns them.
+    createDirectory("linkloop");
+    createDirectory("linkloop/a");
+    createFile("linkloop/a/file");
+#  ifdef Q_OS_WIN
+    // On Windows QFile::link() stores an absolute target in the .lnk shortcut.
+    const QString root = QDir::currentPath() + "/linkloop"_L1;
+    createLink(root, "linkloop/a/loopabs.lnk");             // -> linkloop
+    createLink(root + "/a"_L1, "linkloop/a/loopdot.lnk");   // -> linkloop/a
+    createLink(root, "linkloop/a/loopdotdot.lnk");          // -> linkloop
+    createLink(root + "/a"_L1, "linkloop/a/loopsub.lnk");   // -> linkloop/a
+#  else
+    // On Unix the target is stored verbatim, relative to the link's directory.
+    createLink(QDir::currentPath() + "/linkloop"_L1, "linkloop/a/loopabs.lnk"); // -> linkloop
+    createLink(".", "linkloop/a/loopdot.lnk");         // -> linkloop/a
+    createLink("..", "linkloop/a/loopdotdot.lnk");     // -> linkloop
+    createLink("../a", "linkloop/a/loopsub.lnk");      // -> linkloop/a
+#  endif
+
+    constexpr auto flags = ItFlag::Recursive | ItFlag::FollowDirSymlinks;
+    QStringList visited;
+    int max = 200;
+    QDirListing dirList(u"linkloop"_s, flags);
+    auto it = dirList.begin();
+    for ( ; --max && it != dirList.end(); ++it)
+        visited << it->filePath();
+    QCOMPARE_GT(max, 0); // iteration must terminate
+
+    QStringList expected = {
+        u"linkloop/a"_s,
+        u"linkloop/a/file"_s,
+        u"linkloop/a/loopabs.lnk"_s,
+        u"linkloop/a/loopdot.lnk"_s,
+        u"linkloop/a/loopdotdot.lnk"_s,
+        u"linkloop/a/loopsub.lnk"_s,
+    };
+    visited.sort();
+    expected.sort();
+    QCOMPARE(visited, expected);
+#endif
+}
+
 #ifdef QT_BUILD_INTERNAL
 class EngineWithNoIterator : public QFSFileEngine
 {
@@ -989,6 +1048,108 @@ void tst_QDirListing::inaccessibleDir()
 }
 
 #endif // Q_OS_WIN
+
+#ifdef Q_OS_LINUX
+void tst_QDirListing::bindMountDuplicateId_data()
+{
+    QTest::addColumn<QDirListing::IteratorFlags>("flags");
+    QTest::addColumn<int>("expectedLeafCount");
+
+    // Without FollowDirSymlinks the native-id loop guard is inactive, so every
+    // path is descended and all three copies of the file are listed. With it,
+    // the three siblings share one (device, inode), so only the first-visited is
+    // descended and the file is listed exactly once.
+    QTest::newRow("no-follow")
+            << QDirListing::IteratorFlags(ItFlag::Recursive) << 3;
+    QTest::newRow("follow-symlinks")
+            << QDirListing::IteratorFlags(ItFlag::Recursive | ItFlag::FollowDirSymlinks) << 1;
+}
+
+void tst_QDirListing::bindMountDuplicateId()
+{
+#if !QT_CONFIG(process)
+    QSKIP("This test requires QProcess");
+#elif defined(Q_OS_ANDROID) || defined(Q_OS_HARMONY)
+    QSKIP("Helper process cannot be found.");
+#else
+    QFETCH(QDirListing::IteratorFlags, flags);
+    QFETCH(int, expectedLeafCount);
+
+    const QString lister = QCoreApplication::applicationDirPath() + "/lister"_L1;
+    QVERIFY2(QFile::exists(lister), qPrintable(lister));
+
+    // Create a new user + mount namespace so we can bind-mount without real root
+    // (mapping our uid to root inside) and have the mounts torn down on exit.
+    const QStringList nsArgs = {
+        u"--user"_s, u"--map-root-user"_s, u"--mount"_s, u"--propagation"_s, u"private"_s,
+    };
+
+    // Unprivileged user namespaces are disabled on many hardened/CI kernels;
+    // find out by trying to run /bin/true, and skip if that doesn't run.
+    {
+        QProcess probe;
+        probe.start(u"unshare"_s, nsArgs + QStringList{u"true"_s});
+        if (!probe.waitForFinished())
+            QSKIP("Could not run unshare(1): " + probe.errorString().toLocal8Bit());
+        if (probe.exitStatus() != QProcess::NormalExit || probe.exitCode() != 0) {
+            QSKIP("Unprivileged user/mount namespaces are unavailable: "
+                  + probe.readAllStandardError().trimmed());
+        }
+    }
+
+    // A source directory holding one file, plus two empty mountpoints. Inside the
+    // namespace we bind-mount the source onto both, giving three sibling paths
+    // (source, mnt1, mnt2) that share a single (device, inode) identity.
+    const QString base = u"bindMountBase"_s;
+    QVERIFY(createDirectory(base));
+    const auto cleanup = qScopeGuard([&] { QDir(base).removeRecursively(); });
+    QVERIFY(createDirectory(base + "/source"_L1));
+    QVERIFY(createDirectory(base + "/mnt1"_L1));
+    QVERIFY(createDirectory(base + "/mnt2"_L1));
+    QVERIFY(createFile(base + "/source/leaf"_L1));
+
+    const QString absBase = QDir::current().absoluteFilePath(base);
+    const bool follow = flags.testAnyFlags(ItFlag::FollowDirSymlinks);
+    // Paths are passed through the environment to avoid any shell quoting issues;
+    // -e makes the shell abort if either bind mount fails.
+    const QString script =
+            "mount --bind \"$BASE/source\" \"$BASE/mnt1\"\n"
+            "mount --bind \"$BASE/source\" \"$BASE/mnt2\"\n"
+            "exec \"$LISTER\" ${FOLLOW:+--follow} \"$BASE\"\n"_L1;
+
+    QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+    env.insert(u"BASE"_s, absBase);
+    env.insert(u"LISTER"_s, lister);
+    if (follow)
+        env.insert(u"FOLLOW"_s, u"1"_s);
+
+    QProcess p;
+    p.setProcessEnvironment(env);
+    p.start(u"unshare"_s, nsArgs + QStringList{u"/bin/sh"_s, u"-e"_s, u"-c"_s, script});
+    QVERIFY2(p.waitForFinished(), qPrintable(p.errorString()));
+    const QByteArray err = p.readAllStandardError();
+    QCOMPARE(p.exitStatus(), QProcess::NormalExit);
+    QVERIFY2(p.exitCode() == 0, err.constData());
+
+    const QList<QByteArray> lines = p.readAllStandardOutput().split('\n');
+    int dirCount = 0;   // entries for the three sibling directories themselves
+    int leafCount = 0;  // entries for the file inside them
+    for (const QByteArray &line : lines) {
+        if (line.endsWith("/source") || line.endsWith("/mnt1") || line.endsWith("/mnt2"))
+            ++dirCount;
+        else if (line.endsWith("/leaf"))
+            ++leafCount;
+    }
+
+    auto showListing = qScopeGuard([&lines] {
+        qInfo() << "Listing was" << lines;
+    });
+    QCOMPARE(dirCount, 3);
+    QCOMPARE(leafCount, expectedLeafCount);
+    showListing.dismiss();
+#endif // QT_CONFIG(process)
+}
+#endif // Q_OS_LINUX
 
 void tst_QDirListing::withStdAlgorithms()
 {

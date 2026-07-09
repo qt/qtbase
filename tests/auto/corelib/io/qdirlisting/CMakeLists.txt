@@ -36,6 +36,16 @@ qt_internal_add_resource(tst_qdirlisting "qdirlisting"
         ${qdirlisting_resource_files}
 )
 
+if(LINUX AND QT_FEATURE_process)
+    qt_internal_add_executable(lister
+        OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/"
+        SOURCES
+            lister.cpp
+        LIBRARIES
+            Qt::Core
+    )
+    add_dependencies(tst_qdirlisting lister)
+endif()
 
 ## Scopes:
 #####################################################################

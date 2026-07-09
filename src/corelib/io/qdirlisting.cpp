@@ -218,7 +218,7 @@ public:
 #ifndef QT_NO_FILESYSTEMITERATOR
         using FsIteratorPtr = std::unique_ptr<QFileSystemIterator>;
         vector_stack<FsIteratorPtr> iterators;
-        QDuplicateTracker<QString> visitedLinks;
+        QDuplicateTracker<QFileSystemNativeId> visitedLinks;
 #else
         NativeData() noexcept
         { qWarning("Qt was built with -no-feature-filesystemiterator: no files/plugins will be found!"); }
@@ -297,15 +297,20 @@ void QDirListingPrivate::pushDirectory(QDirEntryInfo &entryInfo)
     } else if (auto *d = std::get_if<NativeData>(&data); true) {
         Q_ASSERT(d);
 #ifndef QT_NO_FILESYSTEMITERATOR
-        // Stop link loops
-        if (followSymlinks && d->visitedLinks.hasSeen(entryInfo.canonicalFilePath()))
-            return;
-
-        d->iterators.push(std::make_unique<QFileSystemIterator>(
+        auto it = std::make_unique<QFileSystemIterator>(
                 entryInfo.query(
                         [](const QDirEntryInfo::Native &native) { return native.entry; },
                         [](const QFileInfo &fileInfo) { return fileInfo.d_ptr->fileEntry; }),
-                iteratorFlags));
+                iteratorFlags);
+
+        // Stop link loops
+        if (followSymlinks) {
+            QFileSystemNativeId id = it->nativeId();
+            if (id.isValid() && d->visitedLinks.hasSeen(id))
+                return;
+        }
+
+        d->iterators.push(std::move(it));
 #endif
     }
 }
