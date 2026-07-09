@@ -3,6 +3,7 @@
 // Qt-Security score:critical reason:network-protocol
 
 #include "qhttp2connection_p.h"
+#include "qhttp2configuration_p.h"
 
 #include <private/bitstreams_p.h>
 
@@ -1327,6 +1328,8 @@ void QHttp2Connection::setH2Configuration(QHttp2Configuration config)
     streamInitialReceiveWindowSize = qint32(m_config.streamReceiveWindowSize());
     m_maxConcurrentStreams = m_config.maxConcurrentStreams();
     encoder.setCompressStrings(m_config.huffmanCompressionEnabled());
+    decoder.setMaxHeaderListSize(
+            QHttp2ConfigurationPrivate::get(std::as_const(m_config))->maxHeaderListSize);
 }
 
 void QHttp2Connection::connectionError(Http2Error errorCode, const char *message, bool logAsError)
@@ -1717,6 +1720,9 @@ void QHttp2Connection::handleHEADERS()
 
     const bool endHeaders = flags.testFlag(FrameFlag::END_HEADERS);
     continuedFrames.clear();
+    m_headerBlockSize = 0;
+    if (!validateHeaderListSize(inboundFrame))
+        return;
     continuedFrames.push_back(std::move(inboundFrame));
     if (!endHeaders) {
         continuationExpected = true;
@@ -1937,6 +1943,9 @@ void QHttp2Connection::handlePUSH_PROMISE()
     Q_ASSERT(inboundFrame.dataSize() > inboundFrame.padding());
     const bool endHeaders = inboundFrame.flags().testFlag(FrameFlag::END_HEADERS);
     continuedFrames.clear();
+    m_headerBlockSize = 0;
+    if (!validateHeaderListSize(inboundFrame))
+        return;
     continuedFrames.push_back(std::move(inboundFrame));
 
     if (!endHeaders) {
@@ -2149,6 +2158,10 @@ void QHttp2Connection::handleCONTINUATION()
         return connectionError(PROTOCOL_ERROR, "CONTINUATION on invalid stream");
 
     const bool endHeaders = inboundFrame.flags().testFlag(FrameFlag::END_HEADERS);
+    // No reset here: this frame continues the block begun by HEADERS/PUSH_PROMISE,
+    // so it must add to the running total rather than start a new one.
+    if (!validateHeaderListSize(inboundFrame))
+        return;
     continuedFrames.push_back(std::move(inboundFrame));
 
     if (!endHeaders)
@@ -2156,6 +2169,24 @@ void QHttp2Connection::handleCONTINUATION()
 
     continuationExpected = false;
     handleContinuedHEADERS();
+}
+
+bool QHttp2Connection::validateHeaderListSize(const Frame &frame)
+{
+    const quint32 limit =
+            QHttp2ConfigurationPrivate::get(std::as_const(m_config))->maxHeaderListSize;
+    if (limit == std::numeric_limits<quint32>::max())
+        return true;
+    // Conservative pre-decode resource check. The compressed header block cannot
+    // exceed the decoded header list size, so decoding would inevitably exceed
+    // SETTINGS_MAX_HEADER_LIST_SIZE. Reject the request early with
+    // ENHANCE_YOUR_CALM rather than attempting HPACK decoding.
+    m_headerBlockSize += frame.hpackBlockSize();
+    if (m_headerBlockSize > limit) {
+        connectionError(ENHANCE_YOUR_CALM, "Header list size limit exceeded");
+        return false;
+    }
+    return true;
 }
 
 void QHttp2Connection::handleContinuedHEADERS()

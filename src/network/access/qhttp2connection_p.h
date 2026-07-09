@@ -336,6 +336,8 @@ private:
 
     void handleContinuedHEADERS();
 
+    bool validateHeaderListSize(const Http2::Frame &frame);
+
     bool acceptSetting(Http2::Settings identifier, quint32 newValue);
 
     bool readClientPreface();
@@ -380,6 +382,7 @@ private:
     // from several CONTINUATION frames ...
     bool continuationExpected = false;
     std::vector<Http2::Frame> continuedFrames;
+    quint32 m_headerBlockSize = 0;
 
     // Control flow:
 
@@ -415,8 +418,9 @@ private:
     // Our peer's header size limitations. It's unlimited by default, but can
     // be changed via peer's SETTINGS frame.
     quint32 m_maxHeaderListSize = (std::numeric_limits<quint32>::max)();
-    // While we can send SETTINGS_MAX_HEADER_LIST_SIZE value (our limit on
-    // the headers size), we never enforce it, it's just a hint to our peer.
+    // The limit we advertise via SETTINGS_MAX_HEADER_LIST_SIZE is enforced on
+    // incoming header blocks both before HPACK decoding (compressed size) and
+    // during HPACK decoding (decoded size).
 
     bool m_upgradedConnection = false;
     bool m_goingAway = false;
