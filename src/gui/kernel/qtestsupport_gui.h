@@ -52,7 +52,7 @@ public:
 protected:
     QTouchEventSequence(QWindow *window, QPointingDevice *aDevice, bool autoCommit);
 
-    QPoint mapToScreen(QWindow *window, const QPoint &pt);
+    QPointF mapToScreen(QWindow *window, const QPoint &pt);
 
     QEventPoint &point(int touchId);
 
