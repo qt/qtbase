@@ -5,10 +5,13 @@
 #define QOHOSSTARTOPTIONS_H
 
 #include <QtCore/qlist.h>
+#include <QtCore/qobject.h>
 #include <QtCore/qsharedpointer.h>
 #include <QtGui/qcolor.h>
 #include <QtGui/qimage.h>
+#include <QtOhosAppKit/qohosbundlemanager.h>
 #include <QtOhosAppKit/qtohosappkitglobal.h>
+#include <functional>
 
 QT_BEGIN_NAMESPACE
 
@@ -86,6 +89,9 @@ public:
     virtual void setMaxWindowHeight(int maxWindowHeight) = 0;
     virtual void setHideStartWindow(bool hideStartWindow) = 0;
     virtual void setWindowCreateParams(const QOhosWindowCreateParams &windowCreateParams) = 0;
+    virtual void setCompletionHandler(
+        QObject *context,
+        std::function<void(bool, QOhosElementName, QString)> callback) = 0;
 
 protected:
     QOhosStartOptions();

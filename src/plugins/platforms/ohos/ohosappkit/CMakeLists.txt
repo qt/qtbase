@@ -20,7 +20,6 @@ qt_internal_add_module(OhosAppKit
         qohossharekit.cpp qohossharekit.h qohossharekit_p.h
         qohossharekitbackend.cpp qohossharekitbackend_p.h
         qohosstartoptions.cpp qohosstartoptions.h qohosstartoptions_p.h
-        qohosstartrequest.cpp qohosstartrequest.h qohosstartrequest_p.h
         qohoswant.cpp qohoswant.h
         qohoswantinfo.cpp qohoswantinfo_p.h
         qohoswantutils.cpp qohoswantutils_p.h
