@@ -26,6 +26,7 @@
 #include <private/qabstractbutton_p.h>
 #include <private/qaction_p.h>
 #if QT_CONFIG(menu)
+#include <qeventloop.h>
 #include <qmenu.h>
 #include <private/qmenu_p.h>
 #endif
@@ -42,7 +43,7 @@ public:
 #if QT_CONFIG(menu)
     void onButtonPressed();
     void onButtonReleased();
-    void popupTimerDone();
+    QMenu *showMenu();
     void updateButtonDown();
     void onMenuTriggered(QAction *);
     void onDefaultActionChanged();
@@ -535,7 +536,9 @@ void QToolButton::timerEvent(QTimerEvent *e)
 #if QT_CONFIG(menu)
     Q_D(QToolButton);
     if (e->timerId() == d->popupTimer.timerId()) {
-        d->popupTimerDone();
+        d->popupTimer.stop();
+        if (d->menuButtonDown || d->down)
+            d->showMenu();
         return;
     }
 #endif
@@ -579,7 +582,7 @@ void QToolButton::mousePressEvent(QMouseEvent *e)
                                                QStyle::SC_ToolButtonMenu, this);
         if (popupr.isValid() && popupr.contains(e->position().toPoint())) {
             d->buttonPressed = QToolButtonPrivate::MenuButtonPressed;
-            showMenu();
+            d->showMenu();
             return;
         }
     }
@@ -667,19 +670,15 @@ QMenu* QToolButton::menu() const
 void QToolButton::showMenu()
 {
     Q_D(QToolButton);
-    if (!d->hasMenu()) {
-        d->menuButtonDown = false;
-        return; // no menu to show
-    }
-    // prevent recursions spinning another event loop
-    if (d->menuButtonDown)
+    QPointer<QMenu> menu = d->showMenu();
+    if (!menu)
         return;
 
-
-    d->menuButtonDown = true;
-    repaint();
-    d->popupTimer.stop();
-    d->popupTimerDone();
+    // Block until the menu closes; quit when the menu is closed or destroyed
+    QEventLoop loop;
+    QObject::connect(menu, &QMenu::aboutToHide, &loop, &QEventLoop::quit);
+    QObject::connect(menu, &QObject::destroyed, &loop, &QEventLoop::quit);
+    loop.exec();
 }
 
 void QToolButtonPrivate::onButtonPressed()
@@ -692,7 +691,7 @@ void QToolButtonPrivate::onButtonPressed()
     else if (delay > 0 && popupMode == QToolButton::DelayedPopup)
         popupTimer.start(delay, q);
     else if (delay == 0 || popupMode == QToolButton::InstantPopup)
-        q->showMenu();
+        showMenu();
 }
 
 void QToolButtonPrivate::onButtonReleased()
@@ -747,14 +746,24 @@ static QPoint positionMenu(const QToolButton *q, bool horizontal,
     return p;
 }
 
-void QToolButtonPrivate::popupTimerDone()
+// Shows the tool button's menu. Returns immediately and does not block or
+// spin a nested event loop.
+QMenu *QToolButtonPrivate::showMenu()
 {
     Q_Q(QToolButton);
-    popupTimer.stop();
-    if (!menuButtonDown && !down)
-        return;
+
+    if (!hasMenu()) {
+        menuButtonDown = false;
+        return nullptr; // no menu to show
+    }
+    // prevent recursions from showing the menu again
+    if (menuButtonDown)
+        return nullptr;
 
     menuButtonDown = true;
+    q->repaint();
+    popupTimer.stop();
+
     QPointer<QMenu> actualMenu;
     bool mustDeleteActualMenu = false;
     if (menuAction) {
@@ -791,29 +800,58 @@ void QToolButtonPrivate::popupTimerDone()
     auto positionFunction = [q, horizontal](const QSize &sizeHint) {
         return positionMenu(q, horizontal, sizeHint); };
     const auto initialPos = positionFunction(actualMenu->sizeHint());
-    actualMenu->d_func()->exec(initialPos, nullptr, positionFunction);
 
-    if (!that)
-        return;
+    auto cleanup = [that, mustDeleteActualMenu, actualMenu] {
+        if (!that)
+            return;
+        QToolButtonPrivate *d = that->d_func();
 
-    QObjectPrivate::disconnect(actualMenu, &QMenu::aboutToHide,
-                               this, &QToolButtonPrivate::updateButtonDown);
-    if (menuButtonDown) {
-        // The menu was empty, it didn't actually show up, so it was never hidden either
-        updateButtonDown();
+        if (d->menuButtonDown) {
+            // The menu was empty, it didn't actually show up, so it was never hidden either
+            d->updateButtonDown();
+        }
+
+        if (mustDeleteActualMenu) {
+            actualMenu->deleteLater();
+        } else if (actualMenu) {
+            QObjectPrivate::disconnect(actualMenu, &QMenu::aboutToHide,
+                                       d, &QToolButtonPrivate::updateButtonDown);
+            QObjectPrivate::disconnect(actualMenu, &QMenu::triggered,
+                                       d, &QToolButtonPrivate::onMenuTriggered);
+        }
+
+        d->actionsCopy.clear();
+        if (d->repeat)
+            that->setAutoRepeat(true);
+    };
+
+    // Run cleanup when the menu is done. There are two relevant signals in order
+    //    1. aboutToHide
+    //    2. triggered [optional]
+    // But since aboutToHide is first and triggered is optional there is no
+    // one single place to clean up. (cleanup disconnects from the triggered signal)
+    auto runCleanupWhenDone = [actualMenu, cleanup] {
+        if (actualMenu && actualMenu->d_func()->actionAboutToTrigger) {
+            QObject::connect(actualMenu, &QMenu::triggered, actualMenu, cleanup,
+                             Qt::SingleShotConnection);
+        } else {
+            cleanup();
+        }
+    };
+
+    QMetaObject::Connection hideConnection = QObject::connect(
+            actualMenu, &QMenu::aboutToHide, q, runCleanupWhenDone,
+            Qt::SingleShotConnection);
+    actualMenu->d_func()->popup(initialPos, nullptr, positionFunction);
+
+    if (!actualMenu || !actualMenu->isVisible()) {
+        // Nothing was shown (e.g. an empty menu), so aboutToHide will never
+        // fire. Run the cleanup now instead.
+        QObject::disconnect(hideConnection);
+        cleanup();
+        return nullptr;
     }
-
-    if (mustDeleteActualMenu) {
-        delete actualMenu;
-    } else {
-        QObjectPrivate::disconnect(actualMenu, &QMenu::triggered,
-                                   this, &QToolButtonPrivate::onMenuTriggered);
-    }
-
-    actionsCopy.clear();
-
-    if (repeat)
-        q->setAutoRepeat(true);
+    return actualMenu;
 }
 
 void QToolButtonPrivate::updateButtonDown()
