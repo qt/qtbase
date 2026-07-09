@@ -26,6 +26,9 @@ private slots:
     void streamConfiguration_data();
     void streamConfiguration();
     void testSETTINGSFrame();
+    void maxHeaderListSizeEnforced_data();
+    void maxHeaderListSizeEnforced();
+    void maxHeaderListSizeDecoderEnforced();
     void maxHeaderTableSize();
     void testPING();
     void testRSTServerSide();
@@ -351,6 +354,129 @@ void tst_QHttp2Connection::testSETTINGSFrame()
                                          QString::number(expectedSetting.value),
                                          QString::number(i))));
     }
+}
+
+void tst_QHttp2Connection::maxHeaderListSizeEnforced_data()
+{
+    QTest::addColumn<bool>("serverSends");
+    QTest::newRow("client-to-server") << false;
+    QTest::newRow("server-to-client") << true;
+}
+
+void tst_QHttp2Connection::maxHeaderListSizeEnforced()
+{
+    QFETCH(const bool, serverSends);
+
+    // Each peer advertises a different limit so we can tell which one the
+    // sender is actually being held to.
+    constexpr quint32 ClientLimit = 4096;
+    constexpr quint32 ServerLimit = 8192;
+    QHttp2Configuration clientConfig;
+    QHttp2ConfigurationPrivate::get(clientConfig)->maxHeaderListSize = ClientLimit;
+    QHttp2Configuration serverConfig;
+    QHttp2ConfigurationPrivate::get(serverConfig)->maxHeaderListSize = ServerLimit;
+
+    auto [client, server] = makeFakeConnectedSockets();
+    auto clientConn = makeHttp2Connection(client.get(), clientConfig, Client);
+    auto serverConn = makeHttp2Connection(server.get(), serverConfig, Server);
+
+    QHttp2Stream *clientStream = clientConn->createStream().unwrap();
+    QVERIFY(clientStream);
+    QVERIFY(waitForSettingsExchange(clientConn, serverConn));
+
+    // Each peer parsed and stored the limit its counterpart advertised.
+    QCOMPARE(clientConn->maxHeaderListSize(), ServerLimit);
+    QCOMPARE(serverConn->maxHeaderListSize(), ClientLimit);
+
+    // Resolve the sender (whose send is checked) and the receiver (which
+    // enforces its advertised limit on incoming header blocks).
+    QHttp2Stream *sender = clientStream;
+    QHttp2Connection *receiver = serverConn;
+    QHttp2Connection *flooder = clientConn;
+    QIODevice *receiverInput = client->out.get(); // the buffer the server reads
+    quint32 limit = ServerLimit;
+    quint32 floodStreamID = 3; // fresh, client-initiated
+    HPack::HttpHeader base = getRequiredHeaders();
+    if (serverSends) {
+        // A server stream only exists once the client has opened one.
+        QSignalSpy newIncomingStreamSpy{ serverConn, &QHttp2Connection::newIncomingStream };
+        QVERIFY(clientStream->sendHEADERS(base, false));
+        QVERIFY(newIncomingStreamSpy.wait());
+        sender = newIncomingStreamSpy.front().front().value<QHttp2Stream *>();
+        QVERIFY(sender);
+        receiver = clientConn;
+        flooder = serverConn;
+        receiverInput = server->out.get(); // the buffer the client reads
+        limit = ClientLimit;
+        floodStreamID = 2; // fresh, server-initiated
+        base = HPack::HttpHeader{ { ":status", "200" } };
+    }
+
+    // Send side: a header list exceeding the peer's advertised limit is
+    // refused; the rejection leaves the stream untouched...
+    HPack::HttpHeader oversized = base;
+    oversized.emplace_back("x-big", QByteArray(limit, 'a'));
+    QVERIFY(!sender->sendHEADERS(oversized, true));
+
+    // ...so a list within the limit is still accepted on the same stream.
+    QVERIFY(sender->sendHEADERS(base, false));
+
+    // Receive side: verify that the advertised limit is enforced across
+    // HEADERS/CONTINUATION frames. A block that starts below the limit and
+    // exceeds it only after a CONTINUATION frame must be rejected before
+    // HPACK decoding.
+    QSignalSpy goawaySpy{ flooder, &QHttp2Connection::receivedGOAWAY };
+
+    using namespace Http2;
+    const QByteArray filler(limit, char(0));
+    FrameWriter headers(FrameType::HEADERS, FrameFlag::EMPTY, floodStreamID);
+    headers.append(QByteArrayView(filler).first(limit / 2));
+    QVERIFY(headers.write(*receiverInput));
+
+    FrameWriter continuation(FrameType::CONTINUATION, FrameFlag::END_HEADERS, floodStreamID);
+    continuation.append(QByteArrayView(filler));
+    QVERIFY(continuation.write(*receiverInput));
+
+    receiver->handleReadyRead();
+
+    QVERIFY(receiver->isGoingAway());
+    QTRY_COMPARE(goawaySpy.count(), 1);
+    QCOMPARE(goawaySpy.first().first().value<Http2::Http2Error>(),
+             Http2::Http2Error::ENHANCE_YOUR_CALM);
+}
+
+void tst_QHttp2Connection::maxHeaderListSizeDecoderEnforced()
+{
+    // Verify that a compressed header block within the limit is rejected
+    // if HPACK decoding expands it beyond the advertised limit.
+    constexpr quint32 Limit = 8192;
+    QHttp2Configuration serverConfig;
+    QHttp2ConfigurationPrivate::get(serverConfig)->maxHeaderListSize = Limit;
+
+    auto [client, server] = makeFakeConnectedSockets();
+    auto clientConn = makeHttp2Connection(client.get(), { }, Client);
+    auto serverConn = makeHttp2Connection(server.get(), serverConfig, Server);
+
+    QHttp2Stream *clientStream = clientConn->createStream().unwrap();
+    QVERIFY(clientStream);
+    QVERIFY(waitForSettingsExchange(clientConn, serverConn));
+
+    // HPACK "bomb": 0x00 0x00 0x00 encodes one empty-name/empty-value field.
+    // Each costs 3 bytes on the wire but 32 toward the header-list size (+32
+    // bytes overhead per entry) -> 3000 / 3 * 32 = ~32000 decoded bytes.
+    using namespace Http2;
+    const QByteArray block(3000, char(0));
+    FrameWriter headers(FrameType::HEADERS, FrameFlag::END_HEADERS, 3);
+    headers.append(QByteArrayView(block));
+    QVERIFY(headers.write(*client->out));
+
+    QSignalSpy goawaySpy{ clientConn, &QHttp2Connection::receivedGOAWAY };
+    serverConn->handleReadyRead();
+
+    QVERIFY(serverConn->isGoingAway());
+    QTRY_COMPARE(goawaySpy.count(), 1);
+    QCOMPARE(goawaySpy.first().first().value<Http2::Http2Error>(),
+             Http2::Http2Error::COMPRESSION_ERROR);
 }
 
 void tst_QHttp2Connection::maxHeaderTableSize()
