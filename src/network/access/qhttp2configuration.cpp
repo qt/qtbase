@@ -269,6 +269,38 @@ unsigned QHttp2Configuration::maxConcurrentStreams() const
 }
 
 /*!
+    \since 6.13
+
+    Sets the value advertised to the peer as SETTINGS_MAX_HEADER_LIST_SIZE.
+
+    \a size specifies the maximum allowed size, in octets, of an
+    uncompressed header field section. The size includes each field
+    name and value plus an overhead of 32 octets per field line.
+
+    By default this is 262144 (256 KiB). Pass
+    \c{std::numeric_limits<quint32>::max()} to advertise no limit.
+
+    \sa maxHeaderListSize()
+*/
+void QHttp2Configuration::setMaxHeaderListSize(quint32 size)
+{
+    d->maxHeaderListSize = size;
+}
+
+/*!
+    \since 6.13
+
+    Returns the value advertised to the peer as SETTINGS_MAX_HEADER_LIST_SIZE.
+    By default, returns 262144 (256 KiB).
+
+    \sa setMaxHeaderListSize()
+*/
+quint32 QHttp2Configuration::maxHeaderListSize() const
+{
+    return d->maxHeaderListSize;
+}
+
+/*!
     \memberswap{configuration}
 */
 void QHttp2Configuration::swap(QHttp2Configuration &other) noexcept

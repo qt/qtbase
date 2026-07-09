@@ -43,6 +43,9 @@ public:
     void setMaxConcurrentStreams(unsigned value);
     unsigned maxConcurrentStreams() const;
 
+    void setMaxHeaderListSize(quint32 size);
+    quint32 maxHeaderListSize() const;
+
     void swap(QHttp2Configuration &other) noexcept;
 
 private:

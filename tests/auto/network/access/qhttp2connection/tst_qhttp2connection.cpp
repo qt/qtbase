@@ -26,6 +26,7 @@ private slots:
     void streamConfiguration_data();
     void streamConfiguration();
     void testSETTINGSFrame();
+    void maxHeaderListSizeConfiguration();
     void maxHeaderListSizeEnforced_data();
     void maxHeaderListSizeEnforced();
     void maxHeaderListSizeDecoderEnforced();
@@ -354,6 +355,23 @@ void tst_QHttp2Connection::testSETTINGSFrame()
                                          QString::number(expectedSetting.value),
                                          QString::number(i))));
     }
+}
+
+void tst_QHttp2Connection::maxHeaderListSizeConfiguration()
+{
+    QHttp2Configuration config;
+    // Defaults to 256 KiB.
+    QCOMPARE(config.maxHeaderListSize(), 256u * 1024u);
+
+    constexpr quint32 CustomLimit = 1234;
+    config.setMaxHeaderListSize(CustomLimit);
+    QCOMPARE(config.maxHeaderListSize(), CustomLimit);
+
+    // The parameter participates in equality comparison.
+    QHttp2Configuration other;
+    QVERIFY(config != other);
+    other.setMaxHeaderListSize(CustomLimit);
+    QVERIFY(config == other);
 }
 
 void tst_QHttp2Connection::maxHeaderListSizeEnforced_data()
