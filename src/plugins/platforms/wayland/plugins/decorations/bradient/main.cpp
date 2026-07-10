@@ -79,17 +79,26 @@ QWaylandBradientDecoration::QWaylandBradientDecoration()
 
 bool QWaylandBradientDecoration::hasMaximizeButton() const
 {
-    return window()->flags() & Qt::WindowMaximizeButtonHint;
+    const Qt::WindowFlags flags = window()->flags();
+    if (!flags.testFlag(Qt::CustomizeWindowHint))
+        return true;
+    return flags.testFlag(Qt::WindowMaximizeButtonHint);
 }
 
 bool QWaylandBradientDecoration::hasMinimizeButton() const
 {
-    return window()->flags() & Qt::WindowMinimizeButtonHint;
+    const Qt::WindowFlags flags = window()->flags();
+    if (!flags.testFlag(Qt::CustomizeWindowHint))
+        return true;
+    return flags.testFlag(Qt::WindowMinimizeButtonHint);
 }
 
 bool QWaylandBradientDecoration::hasCloseButton() const
 {
-    return window()->flags() & Qt::WindowCloseButtonHint;
+    const Qt::WindowFlags flags = window()->flags();
+    if (!flags.testFlag(Qt::CustomizeWindowHint))
+        return true;
+    return flags.testFlag(Qt::WindowCloseButtonHint);
 }
 
 QRectF QWaylandBradientDecoration::closeButtonRect() const
