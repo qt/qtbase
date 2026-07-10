@@ -72,6 +72,7 @@ struct NativeNodeMouseEvent
     std::int32_t button;
     std::int32_t action;
     QFlags<OhosKeyboardModifier> modifiers;
+    QInputDevice::DeviceType deviceType;
 
     static NativeNodeMouseEvent makeFromUiInputEvent(::ArkUI_UIInputEvent *event);
 };

@@ -167,9 +167,11 @@ QInputDevice::DeviceType getPointingDeviceType(const ::ArkUI_UIInputEvent *input
     const auto sourceType = ::OH_ArkUI_UIInputEvent_GetSourceType(inputEvent);
     if (sourceType == ::UI_INPUT_EVENT_SOURCE_TYPE_UNKNOWN)
         qOhosWarning(QtForOhos) << "Obtained ArkUI unknown source type for input event";
-    return sourceType == ::UI_INPUT_EVENT_SOURCE_TYPE_TOUCH_SCREEN
-        ? QInputDevice::DeviceType::TouchScreen
-        : QInputDevice::DeviceType::TouchPad;
+    if (sourceType == ::UI_INPUT_EVENT_SOURCE_TYPE_TOUCH_SCREEN)
+        return QInputDevice::DeviceType::TouchScreen;
+    if (sourceType == ::UI_INPUT_EVENT_SOURCE_TYPE_MOUSE)
+        return QInputDevice::DeviceType::Mouse;
+    return QInputDevice::DeviceType::TouchPad;
 }
 
 QPointF getPointerEventLocalPosition(const ::ArkUI_UIInputEvent *event)
@@ -209,6 +211,7 @@ NativeNodeMouseEvent NativeNodeMouseEvent::makeFromUiInputEvent(::ArkUI_UIInputE
         .button = callArkUi(Q_OHOS_NAMED_FUNC(::OH_ArkUI_MouseEvent_GetMouseButton), event),
         .action = callArkUi(Q_OHOS_NAMED_FUNC(::OH_ArkUI_MouseEvent_GetMouseAction), event),
         .modifiers = readKeyModifiersFromOhosUiInputEvent(event),
+        .deviceType = getPointingDeviceType(event),
     };
 }
 
