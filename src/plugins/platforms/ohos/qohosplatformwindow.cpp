@@ -59,7 +59,7 @@ const QOhosPropertyDescriptor<bool> QOhosPlatformWindow::floatWindowTagProperty;
 const QOhosPropertyDescriptor<double> QOhosPlatformWindow::windowCornerRadiusProperty;
 const QOhosPropertyDescriptor<bool> QOhosPlatformWindow::windowPrivacyModeSettingProperty;
 const QOhosPropertyDescriptor<QColor> QOhosPlatformWindow::surfaceBackgroundColorProperty;
-const QOhosPropertyDescriptor<QOhosPlatformWindow::NativeNodeRenderFitPolicy> QOhosPlatformWindow::nativeNodeRenderFitPolicyHintProperty;
+const QOhosPropertyDescriptor<int> QOhosPlatformWindow::nativeNodeRenderFitPolicyHintProperty;
 const QOhosPropertyDescriptor<bool> QOhosPlatformWindow::windowKeepScreenOnProperty;
 const QOhosPropertyDescriptor<bool> QOhosPlatformWindow::windowDragResizableProperty;
 const QOhosPropertyDescriptor<bool> QOhosPlatformWindow::windowFixedSizeStateProperty;
@@ -367,9 +367,9 @@ QWindow *QOhosPlatformWindow::getWindowOrWidgetAsSubWindowOfTagValue(QObject *wi
 }
 
 void QOhosPlatformWindow::setWindowOrWidgetNativeNodeRenderFitPolicyHint(
-    QObject *windowOrWidget, QOhosPlatformWindow::NativeNodeRenderFitPolicy renderFitPolicy)
+    QObject *windowOrWidget, ::ArkUI_RenderFit renderFitPolicy)
 {
-    setWindowOrWidgetProperty<NativeNodeRenderFitPolicy, &nativeNodeRenderFitPolicyHintProperty>(windowOrWidget, renderFitPolicy);
+    setWindowOrWidgetProperty<int, &nativeNodeRenderFitPolicyHintProperty>(windowOrWidget, static_cast<int>(renderFitPolicy));
 }
 
 Qt::WindowFlags QOhosPlatformWindow::platformWindowFlagsForQWindow(QWindow *window)

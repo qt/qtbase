@@ -110,19 +110,6 @@ void CallbackReceiver::onHoverEvent(bool isHover)
     m_xComponentInputHandler->handleHoverEvent(m_lastWindowArgReceivedViaAnyCallback.value(), isHover);
 }
 
-QOhosOptional<::ArkUI_RenderFit> tryMapRenderFitPolicyToArkUi(
-    QOhosPlatformWindow::NativeNodeRenderFitPolicy renderFitPolicy)
-{
-    switch (renderFitPolicy) {
-    case QOhosPlatformWindow::NativeNodeRenderFitPolicy::TopLeft:
-        return makeQOhosOptional(::ARKUI_RENDER_FIT_TOP_LEFT);
-    case QOhosPlatformWindow::NativeNodeRenderFitPolicy::Fill:
-        return makeQOhosOptional(::ARKUI_RENDER_FIT_RESIZE_FILL);
-    }
-
-    return makeEmptyQOhosOptional();
-}
-
 }
 
 QNativeNode::QNativeNode(const CreateInfo &nativeNodeCreateInfo)
@@ -135,9 +122,7 @@ QNativeNode::QNativeNode(const CreateInfo &nativeNodeCreateInfo)
     auto platformWindowFlags = QOhosPlatformWindow::platformWindowFlagsForQWindow(qWindow);
     bool focusable = !platformWindowFlags.testFlag(Qt::WindowDoesNotAcceptFocus);
 
-    auto renderFit = qAndThen(
-        nativeNodeCreateInfo.renderFitPolicyHint, tryMapRenderFitPolicyToArkUi)
-        .value_or(::ARKUI_RENDER_FIT_TOP_LEFT);
+    auto renderFit = nativeNodeCreateInfo.renderFitPolicyHint.value_or(::ARKUI_RENDER_FIT_TOP_LEFT);
 
     connect(
         qGuiApp, &QGuiApplication::focusWindowChanged,

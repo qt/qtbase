@@ -38,7 +38,7 @@ public:
         QWindow *window;
         QOhosOptional<QNativeNode *> optParent;
         QOhosOptional<QColor> backgroundColor;
-        QOhosOptional<QOhosPlatformWindow::NativeNodeRenderFitPolicy> renderFitPolicyHint;
+        QOhosOptional<::ArkUI_RenderFit> renderFitPolicyHint;
     };
 
     explicit QNativeNode(const CreateInfo &nativeNodeCreateInfo);
