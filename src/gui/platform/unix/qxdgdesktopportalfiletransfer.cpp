@@ -12,6 +12,8 @@
 #include <QtDBus/QDBusReply>
 #include <QtDBus/QDBusUnixFileDescriptor>
 
+#include <QtCore/private/qcore_unix_p.h>
+
 #include <unistd.h>
 #include <fcntl.h>
 
@@ -46,7 +48,7 @@ QString exportFiles(const QList<QUrl> &urls)
     }
     QList<QDBusUnixFileDescriptor> fds;
     for (const auto &url : urls) {
-        if (int fd = open(QFile::encodeName(url.toLocalFile()), O_PATH | O_CLOEXEC); fd > 0)
+        if (int fd = qt_safe_open(QFile::encodeName(url.toLocalFile()), O_PATH); fd >= 0)
             fds.emplaceBack().giveFileDescriptor(fd);
         else
             qCInfo(lcQpaPortalFileTransfer) << "failed to open" << url;
