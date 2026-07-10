@@ -761,6 +761,9 @@ if(OHOS)
         REASON "Used to read clipboard contents."
         USED_SCENE_WHEN always
     )
+    qt_internal_add_harmonyos_permission(Gui
+        NAME ohos.permission.GET_FILE_ICON
+    )
 endif()
 
 qt_internal_extend_target(Gui CONDITION ANDROID AND (TEST_architecture_arch STREQUAL arm64 OR TEST_architecture_arch STREQUAL arm)
