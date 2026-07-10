@@ -23,6 +23,7 @@ qt_internal_add_module(OhosAppKit
         qohoswant.cpp qohoswant.h
         qohoswantinfo.cpp qohoswantinfo_p.h
         qohoswantutils.cpp qohoswantutils_p.h
+        qohoswindowutils.cpp qohoswindowutils.h
         qtohosappkitglobal.h
     DEFINES
         NODE_ADDON_API_ENABLE_TYPE_CHECK_ON_AS
