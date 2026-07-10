@@ -20,13 +20,25 @@ template<typename T>
 class QOhosPropertyDescriptor
 {
 public:
-    constexpr QOhosPropertyDescriptor();
+    explicit QOhosPropertyDescriptor(const char *name);
+
+    const char *name() const;
+
+private:
+    const char *m_name;
 };
 
 template<typename T>
-constexpr QOhosPropertyDescriptor<T>::QOhosPropertyDescriptor()
+QOhosPropertyDescriptor<T>::QOhosPropertyDescriptor(const char *name)
+    : m_name(name)
 {
     qMetaTypeId<T>();
+}
+
+template<typename T>
+const char *QOhosPropertyDescriptor<T>::name() const
+{
+    return m_name;
 }
 
 template<typename T, const QOhosPropertyDescriptor<T> *propertyPtr>
@@ -255,17 +267,9 @@ std::shared_ptr<void> QOhosPropertiesProvider::addPropertyWriteCallback(QOhosCon
 namespace qohoswindowproperty_h_detail {
 
 template<typename T, const QOhosPropertyDescriptor<T> *propertyPtr>
-std::string makeQObjectOhosPropertyName()
-{
-    return QtOhos::printfToString(
-        "_q_platform_ohos_%d_%p", qMetaTypeId<T>(), static_cast<const void *>(propertyPtr));
-}
-
-template<typename T, const QOhosPropertyDescriptor<T> *propertyPtr>
 const char *qObjectOhosPropertyName()
 {
-    static const std::string propertyName = makeQObjectOhosPropertyName<T, propertyPtr>();
-    return propertyName.c_str();
+    return propertyPtr->name();
 }
 
 template<typename T>

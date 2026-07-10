@@ -6,6 +6,7 @@
 #include <QtCore/private/qohoslogger_p.h>
 #include <QtCore/qpointer.h>
 #include <QtGui/private/qguiapplication_p.h>
+#include <QtGui/private/qohoswindowhints_p.h>
 #include <QtGui/private/qwindow_p.h>
 #include <algorithm>
 #include <cmath>
@@ -53,19 +54,19 @@ QOhosView *getWindowsViewOrNull(QWindow *targetWindow)
 
 }
 
-const QOhosPropertyDescriptor<QWindow *> QOhosPlatformWindow::subWindowOfTagProperty;
-const QOhosPropertyDescriptor<bool> QOhosPlatformWindow::mainWindowTagProperty;
-const QOhosPropertyDescriptor<bool> QOhosPlatformWindow::floatWindowTagProperty;
-const QOhosPropertyDescriptor<double> QOhosPlatformWindow::windowCornerRadiusProperty;
-const QOhosPropertyDescriptor<bool> QOhosPlatformWindow::windowPrivacyModeSettingProperty;
-const QOhosPropertyDescriptor<QColor> QOhosPlatformWindow::surfaceBackgroundColorProperty;
-const QOhosPropertyDescriptor<int> QOhosPlatformWindow::nativeNodeRenderFitPolicyHintProperty;
-const QOhosPropertyDescriptor<bool> QOhosPlatformWindow::windowKeepScreenOnProperty;
-const QOhosPropertyDescriptor<bool> QOhosPlatformWindow::windowDragResizableProperty;
-const QOhosPropertyDescriptor<bool> QOhosPlatformWindow::windowFixedSizeStateProperty;
-const QOhosPropertyDescriptor<int> QOhosPlatformWindow::windowBrightnessProperty;
-const QOhosPropertyDescriptor<int> QOhosPlatformWindow::windowContrastProperty;
-const QOhosPropertyDescriptor<int> QOhosPlatformWindow::windowSaturationProperty;
+const QOhosPropertyDescriptor<QWindow *> QOhosPlatformWindow::subWindowOfTagProperty{"_q_platform_ohos_subWindowOf"};
+const QOhosPropertyDescriptor<bool> QOhosPlatformWindow::mainWindowTagProperty{"_q_platform_ohos_mainWindow"};
+const QOhosPropertyDescriptor<bool> QOhosPlatformWindow::floatWindowTagProperty{QOhosWindowHints::floatWindowKey};
+const QOhosPropertyDescriptor<double> QOhosPlatformWindow::windowCornerRadiusProperty{QOhosWindowHints::cornerRadiusKey};
+const QOhosPropertyDescriptor<bool> QOhosPlatformWindow::windowPrivacyModeSettingProperty{QOhosWindowHints::privacyModeKey};
+const QOhosPropertyDescriptor<QColor> QOhosPlatformWindow::surfaceBackgroundColorProperty{QOhosWindowHints::surfaceBackgroundColorKey};
+const QOhosPropertyDescriptor<int> QOhosPlatformWindow::nativeNodeRenderFitPolicyHintProperty{QOhosWindowHints::renderFitKey};
+const QOhosPropertyDescriptor<bool> QOhosPlatformWindow::windowKeepScreenOnProperty{QOhosWindowHints::keepScreenOnKey};
+const QOhosPropertyDescriptor<bool> QOhosPlatformWindow::windowDragResizableProperty{QOhosWindowHints::dragResizableKey};
+const QOhosPropertyDescriptor<bool> QOhosPlatformWindow::windowFixedSizeStateProperty{"_q_platform_ohos_fixedSizeState"};
+const QOhosPropertyDescriptor<int> QOhosPlatformWindow::windowBrightnessProperty{QOhosWindowHints::brightnessKey};
+const QOhosPropertyDescriptor<int> QOhosPlatformWindow::windowContrastProperty{QOhosWindowHints::contrastKey};
+const QOhosPropertyDescriptor<int> QOhosPlatformWindow::windowSaturationProperty{QOhosWindowHints::saturationKey};
 
 QOhosPlatformWindow::QOhosPlatformWindow(QWindow *window)
     : QPlatformWindow(window)

@@ -513,6 +513,7 @@ qt_internal_extend_target(Gui CONDITION OHOS
         platform/ohos/qohosnativeinterface.cpp
         platform/ohos/qohosimageconversions.cpp
         platform/ohos/qohosimageconversions_p.h
+        platform/ohos/qohoswindowhints_p.h
     DEFINES
         NODE_ADDON_API_ENABLE_TYPE_CHECK_ON_AS
         NAPI_CPP_EXCEPTIONS
