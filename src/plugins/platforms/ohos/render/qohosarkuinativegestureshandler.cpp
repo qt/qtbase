@@ -87,7 +87,7 @@ void QOhosArkUiNativeGesturesHandler::handleRotationGestureEvent(
     const auto gestureTimestamp = ::OH_ArkUI_UIInputEvent_GetEventTime(inputEvent);
     const auto localPosition = QArkUi::getPointerEventLocalPosition(inputEvent);
     const auto globalPosition = QArkUi::getPointerEventGlobalPosition(inputEvent);
-    const auto deviceType = QArkUi::getTouchDeviceType(inputEvent);
+    const auto deviceType = QArkUi::getPointingDeviceType(inputEvent);
 
     QOhosNativeGestureEvent newEvent {
         .timestamp = timestamp,
@@ -121,7 +121,7 @@ void QOhosArkUiNativeGesturesHandler::handlePinchGestureEvent(const ::ArkUI_Gest
 
     const auto gestureTimestamp = ::OH_ArkUI_UIInputEvent_GetEventTime(inputEvent);
     const auto globalPosition = QArkUi::getPointerEventGlobalPosition(inputEvent);
-    const auto deviceType = QArkUi::getTouchDeviceType(inputEvent);
+    const auto deviceType = QArkUi::getPointingDeviceType(inputEvent);
 
     const auto scaleFactor =
         qtGestureType == Qt::BeginNativeGesture

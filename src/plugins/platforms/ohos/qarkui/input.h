@@ -57,7 +57,7 @@ struct TouchEvent
     static QOhosOptional<TouchEvent> createFromNativeEvent(const ::Input_TouchEvent *event);
 };
 
-QInputDevice::DeviceType getTouchDeviceType(const ::ArkUI_UIInputEvent *inputEvent);
+QInputDevice::DeviceType getPointingDeviceType(const ::ArkUI_UIInputEvent *inputEvent);
 QPointF getPointerEventLocalPosition(const ::ArkUI_UIInputEvent *event);
 QPointF getPointerEventDisplayPosition(const ::ArkUI_UIInputEvent *event);
 QPointF getPointerEventGlobalPosition(const ::ArkUI_UIInputEvent *event);
