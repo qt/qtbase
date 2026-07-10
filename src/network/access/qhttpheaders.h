@@ -57,14 +57,14 @@ private:
     }
     Q_DECLARE_EQUALITY_COMPARABLE(QHttpHeaderRange)
 
+    friend size_t qHash(QHttpHeaderRange range, size_t seed = 0) noexcept
+    {
+        return qHashMulti(seed, range.start().value_or(0), range.end().value_or(0));
+    }
+
     std::optional<qint64> m_start;
     std::optional<qint64> m_end;
 };
-
-inline size_t qHash(QHttpHeaderRange range, size_t seed = 0) noexcept
-{
-    return qHashMulti(seed, range.start().value_or(0), range.end().value_or(0));
-}
 
 class QHttpHeadersPrivate;
 QT_DECLARE_QESDP_SPECIALIZATION_DTOR_WITH_EXPORT(QHttpHeadersPrivate, Q_NETWORK_EXPORT)
