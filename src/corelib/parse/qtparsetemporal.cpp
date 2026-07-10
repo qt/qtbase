@@ -788,7 +788,7 @@ TemporalFieldMatcher::continuations(const PartialParse &base, QStringView text,
         using Flag = TemporalFieldFlag;
     case Cat::Literal:
         if (auto match = matchesAt(text, textPos, field.literal, field.options)) {
-            matches.push_back(PartialParse(base, match));
+            matches.emplace_back(base, match);
             if (field.options.testFlag(Flag::SpacePad))
                 matches = spacePadExtend(std::move(matches), text);
         }
@@ -797,7 +797,7 @@ TemporalFieldMatcher::continuations(const PartialParse &base, QStringView text,
         if (const auto zones = QtParseTimeZone::prefix(text, locale, textPos, field.options);
             !zones.isEmpty()) {
             for (const auto &match : zones) {
-                matches.push_back(PartialParse(base, match));
+                matches.emplace_back(base, match);
                 if (field.options.testFlag(Flag::SpacePad))
                     matches = spacePadExtend(std::move(matches), text);
             }
@@ -1031,7 +1031,8 @@ ParsedTemporal prefix(QStringView text, QSpan<const QtTemporalPattern::TemporalF
 
     const TemporalFieldMatcher matcher(locale, cal, baseYear);
     // Technically this is the correct (empty) result when fields.isEmpty():
-    std::vector<PartialParse> maybe{PartialParse(from)};
+    std::vector<PartialParse> maybe;
+    maybe.emplace_back(from);
 
     qsizetype toCome = fields.size();
     for (const QtTemporalPattern::TemporalField &field : fields) {
