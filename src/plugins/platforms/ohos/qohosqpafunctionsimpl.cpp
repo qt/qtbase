@@ -7,10 +7,8 @@
 #include <QtCore/qobject.h>
 #include <QtCore/qscopeguard.h>
 #include <QtGui/private/qguiapplication_p.h>
-#include <QtGui/qcolor.h>
 #include <QtGui/qscreen.h>
 #include <QtGui/qwindow.h>
-#include <arkui/native_type.h>
 #include <functional>
 #include <info/application_target_sdk_version.h>
 #include <memory>
@@ -41,23 +39,11 @@ const QOhosPropertyDescriptor<QOhosQpaFunctions::AudioStreamUsage> audioStreamUs
 class QOhosQpaFunctionsImpl : public QOhosQpaFunctions
 {
 public:
-    void setWindowPrivacyMode(QObject *window, bool privacyModeEnabled) override;
-    void setWindowCornerRadius(QObject *window, double radius) override;
-    void tagWindowOrWidgetAsFloatWindow(QObject *windowOrWidget, bool floatWindow) override;
-
     void setInAppOnlyPasteboardShareOption(bool shareInAppOnly) override;
     QVariant getImageDataFromPasteboard() const override;
     QString getTextDataFromPasteboard() const override;
 
-    void setWindowOrWidgetNativeNodeRenderFitPolicyHint(QObject *windowOrWidget, NativeNodeRenderFitPolicy renderFitPolicy) override;
-
-    void setSurfaceBackgroundColor(QObject *windowOrWidget, const QColor &color) override;
-
     void setMainWindowGeometryPersistencePolicy(WindowGeometryPersistencePolicy policy) override;
-
-    void setWindowKeepScreenOn(QObject *windowOrWidget, bool keepScreenOn) override;
-
-    void setWindowDragResizable(QObject *windowOrWidget, bool dragResizable) override;
 
     std::optional<double> tryGetNativeWindowId(QObject *window) override;
     std::optional<double> tryGetScreenDisplayId(QObject *screenObject) override;
@@ -69,18 +55,9 @@ public:
 
     bool showFileDialogToAuthorizeFilePath(QObject *parentWindow, const QString &filePath) override;
 
-    void setWindowBrightness(QObject *window, int brightness) override;
-    void setWindowContrast(QObject *window, int contrast) override;
-    void setWindowSaturation(QObject *window, int saturation) override;
-
     void setAudioStreamUsageHintProperty(QObject *qObject, AudioStreamUsage usage) override;
     std::optional<AudioStreamUsage> tryGetAudioStreamUsageHintProperty(QObject *qObject) override;
 };
-
-void QOhosQpaFunctionsImpl::setWindowPrivacyMode(QObject *window, bool privacyModeEnabled)
-{
-    QOhosPlatformWindow::setWindowPrivacyMode(window, privacyModeEnabled);
-}
 
 void QOhosQpaFunctionsImpl::setInAppOnlyPasteboardShareOption(bool shareInAppOnly)
 {
@@ -95,44 +72,6 @@ QVariant QOhosQpaFunctionsImpl::getImageDataFromPasteboard() const
 QString QOhosQpaFunctionsImpl::getTextDataFromPasteboard() const
 {
     return QOhosPlatformIntegration::instance()->clipboard()->getPasteboardDataWithLazyFetchOrLocalIfOwner()->text();
-}
-
-void QOhosQpaFunctionsImpl::setWindowCornerRadius(QObject *windowOrWidget, double radius)
-{
-    QOhosPlatformWindow::setWindowCornerRadius(windowOrWidget, radius);
-}
-
-void QOhosQpaFunctionsImpl::tagWindowOrWidgetAsFloatWindow(
-    QObject *windowOrWidget, bool floatWindow)
-{
-    QOhosPlatformWindow::tagWindowOrWidgetAsFloatWindow(windowOrWidget, floatWindow);
-}
-
-void QOhosQpaFunctionsImpl::setWindowOrWidgetNativeNodeRenderFitPolicyHint(
-    QObject *windowOrWidget, QOhosQpaFunctionsImpl::NativeNodeRenderFitPolicy renderFitPolicyHint)
-{
-    std::optional<::ArkUI_RenderFit> renderFit;
-    switch (renderFitPolicyHint) {
-    case QOhosQpaFunctions::NativeNodeRenderFitPolicy::TopLeft:
-        renderFit = ::ARKUI_RENDER_FIT_TOP_LEFT;
-        break;
-    case QOhosQpaFunctions::NativeNodeRenderFitPolicy::Fill:
-        renderFit = ::ARKUI_RENDER_FIT_RESIZE_FILL;
-        break;
-    }
-
-    if (renderFit.has_value()) {
-        QOhosPlatformWindow::setWindowOrWidgetNativeNodeRenderFitPolicyHint(windowOrWidget, renderFit.value());
-    } else {
-        qOhosReportFatalErrorAndAbort(
-            "%s: Failed to convert render fit policy hint to ArkUI_RenderFit",
-            Q_FUNC_INFO);
-    }
-}
-
-void QOhosQpaFunctionsImpl::setSurfaceBackgroundColor(QObject *windowOrWidget, const QColor &color)
-{
-    QOhosPlatformWindow::setSurfaceBackgroundColor(windowOrWidget, color);
 }
 
 void QOhosQpaFunctionsImpl::setMainWindowGeometryPersistencePolicy(
@@ -158,16 +97,6 @@ void QOhosQpaFunctionsImpl::setMainWindowGeometryPersistencePolicy(
             "%s: Failed to convert persistence geometry policy hint to QOhosPlatformIntegration enum",
             Q_FUNC_INFO);
     }
-}
-
-void QOhosQpaFunctionsImpl::setWindowKeepScreenOn(QObject *windowOrWidget, bool keepScreenOn)
-{
-    QOhosPlatformWindow::setWindowKeepScreenOn(windowOrWidget, keepScreenOn);
-}
-
-void QOhosQpaFunctionsImpl::setWindowDragResizable(QObject *windowOrWidget, bool dragResizable)
-{
-    QOhosPlatformWindow::setWindowDragResizable(windowOrWidget, dragResizable);
 }
 
 std::optional<double> QOhosQpaFunctionsImpl::tryGetNativeWindowId(QObject *window)
@@ -252,33 +181,6 @@ bool QOhosQpaFunctionsImpl::showFileDialogToAuthorizeFilePath(QObject *parentWin
     eventLoop->exec();
 
     return *filePathAuthorized;
-}
-
-void QOhosQpaFunctionsImpl::setWindowBrightness(QObject *window, int brightness)
-{
-    auto *qWindow = qobject_cast<QWindow *>(window);
-    if (qWindow == nullptr)
-        qOhosReportFatalErrorAndAbort("%s: window argument is null or not a QWindow", Q_FUNC_INFO);
-
-    QOhosPlatformWindow::setBrightness(qWindow, brightness);
-}
-
-void QOhosQpaFunctionsImpl::setWindowContrast(QObject *window, int contrast)
-{
-    auto *qWindow = qobject_cast<QWindow *>(window);
-    if (qWindow == nullptr)
-        qOhosReportFatalErrorAndAbort("%s: window argument is null or not a QWindow", Q_FUNC_INFO);
-
-    QOhosPlatformWindow::setContrast(qWindow, contrast);
-}
-
-void QOhosQpaFunctionsImpl::setWindowSaturation(QObject *window, int saturation)
-{
-    auto *qWindow = qobject_cast<QWindow *>(window);
-    if (qWindow == nullptr)
-        qOhosReportFatalErrorAndAbort("%s: window argument is null or not a QWindow", Q_FUNC_INFO);
-
-    QOhosPlatformWindow::setSaturation(qWindow, saturation);
 }
 
 void QOhosQpaFunctionsImpl::setAudioStreamUsageHintProperty(QObject *qObject, AudioStreamUsage usage)

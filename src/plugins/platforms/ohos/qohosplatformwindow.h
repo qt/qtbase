@@ -8,7 +8,6 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qrect.h>
-#include <arkui/native_type.h>
 #include <functional>
 #include <memory>
 #include <qohosdisplayinfo.h>
@@ -51,17 +50,8 @@ public:
     static void tagWindowOrWidgetAsSubWindowOf(QObject *windowOrWidgetToTag, QWindow *targetMainWindow);
     static void tagWindowOrWidgetAsMainWindow(QObject *windowOrWidgetToTag, bool forceMainWindow);
     static void tagWindowOrWidgetAsFloatWindow(QObject *windowOrWidgetToTag, bool showAsFloatWindow);
-    static void setWindowPrivacyMode(QObject *window, bool privacyModeEnabled);
-    static void setWindowCornerRadius(QObject *windowOrWidget, double radius);
     static QWindow *getWindowOrWidgetAsSubWindowOfTagValue(QObject *windowOrWidget);
-    static void setWindowOrWidgetNativeNodeRenderFitPolicyHint(QObject *windowOrWidget, ::ArkUI_RenderFit renderFitPolicy);
     static Qt::WindowFlags platformWindowFlagsForQWindow(QWindow *window);
-    static void setSurfaceBackgroundColor(QObject *windowOrWidget, const QColor &color);
-    static void setWindowKeepScreenOn(QObject *windowOrWidget, bool keepScreenOn);
-    static void setWindowDragResizable(QObject *windowOrWidget, bool dragResizable);
-    static void setBrightness(QObject *windowOrWidget, int brightness);
-    static void setContrast(QObject *windowOrWidget, int contrast);
-    static void setSaturation(QObject *windowOrWidget, int saturation);
     static void closeAllActivePopups();
 
     template<typename T, const QOhosPropertyDescriptor<T> *propertyPtr>

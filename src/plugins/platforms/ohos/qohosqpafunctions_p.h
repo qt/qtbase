@@ -25,19 +25,11 @@
 
 QT_BEGIN_NAMESPACE
 
-class QColor;
-
 namespace QtOhos {
 
 class QOhosQpaFunctions
 {
 public:
-    enum class NativeNodeRenderFitPolicy
-    {
-        TopLeft,
-        Fill,
-    };
-
     enum class WindowGeometryPersistencePolicy
     {
         Disabled,
@@ -64,23 +56,11 @@ public:
 
     virtual ~QOhosQpaFunctions();
 
-    virtual void setWindowPrivacyMode(QObject *window, bool privacyModeEnabled) = 0;
-    virtual void setWindowCornerRadius(QObject *windowOrWidget, double radius) = 0;
-    virtual void tagWindowOrWidgetAsFloatWindow(QObject *windowOrWidget, bool floatWindow) = 0;
-
     virtual void setInAppOnlyPasteboardShareOption(bool shareInAppOnly) = 0;
     virtual QVariant getImageDataFromPasteboard() const = 0;
     virtual QString getTextDataFromPasteboard() const = 0;
 
-    virtual void setWindowOrWidgetNativeNodeRenderFitPolicyHint(QObject *windowOrWidget, NativeNodeRenderFitPolicy renderFitPolicy) = 0;
-
-    virtual void setSurfaceBackgroundColor(QObject *windowOrWidget, const QColor &color) = 0;
-
     virtual void setMainWindowGeometryPersistencePolicy(WindowGeometryPersistencePolicy policy) = 0;
-
-    virtual void setWindowKeepScreenOn(QObject *windowOrWidget, bool keepScreenOn) = 0;
-
-    virtual void setWindowDragResizable(QObject *windowOrWidget, bool dragResizable) = 0;
 
     virtual std::optional<double> tryGetNativeWindowId(QObject *window) = 0;
     virtual std::optional<double> tryGetScreenDisplayId(QObject *screenObject) = 0;
@@ -91,10 +71,6 @@ public:
     virtual bool readOhosNoUiChildMode() = 0;
 
     virtual bool showFileDialogToAuthorizeFilePath(QObject *parentWindow, const QString &filePath) = 0;
-
-    virtual void setWindowBrightness(QObject *window, int brightness) = 0;
-    virtual void setWindowContrast(QObject *window, int contrast) = 0;
-    virtual void setWindowSaturation(QObject *window, int saturation) = 0;
 
     virtual void setAudioStreamUsageHintProperty(QObject *qObject, AudioStreamUsage usage) = 0;
     virtual std::optional<AudioStreamUsage> tryGetAudioStreamUsageHintProperty(QObject *qObject) = 0;
