@@ -496,6 +496,8 @@ std::vector<PartialParse>
 TemporalFieldMatcher::numericExtend(const PartialParse &base, QStringView text,
                                     TemporalFieldFlags flags, FieldConfig &&config) const
 {
+    std::vector<PartialParse> matches;
+
     using Flag = TemporalFieldFlag;
     qsizetype leadingSpace = 0;
     const bool spacePad = flags.testFlag(Flag::SpacePad);
@@ -531,7 +533,6 @@ TemporalFieldMatcher::numericExtend(const PartialParse &base, QStringView text,
         ? qMax(-config.maxDigits, qMax(config.width, config.roundAfter)) - 1
         : digits.size();
 
-    std::vector<PartialParse> matches;
     for (; digits.size() >= width; digits.chop(1)) {
         bool ok = false;
         unsigned whole = digits.toUInt(&ok);
