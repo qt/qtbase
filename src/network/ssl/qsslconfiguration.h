@@ -27,6 +27,8 @@
 #include <QtNetwork/qsslsocket.h>
 #include <QtNetwork/qssl.h>
 
+#include <optional>
+
 #ifndef QT_NO_SSL
 
 QT_BEGIN_NAMESPACE
