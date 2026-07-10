@@ -118,7 +118,7 @@ parseDigitSequence(QStringView text, qsizetype from, const QLocale &locale, bool
     return data->digitSequence(text, flags, from);
 }
 
-std::vector<PartialParse> spacePadExtend(std::vector<PartialParse> &&matched, QStringView text)
+std::vector<PartialParse> spacePadExtend(std::vector<PartialParse> matched, QStringView text)
 {
     // Pass the whole text: the results.endIndex of the last entry in matched is
     // an index into it that we shall use to add entries that extend that entry.
