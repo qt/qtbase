@@ -34,6 +34,10 @@ run_cmake_and_build(same_name_parent_child)
 # Two same-named pairs in sibling subdirectories.
 run_cmake_and_build(same_name_siblings)
 
+# A source that #include's a moc file of a foreign header that is reachable
+# only through the target's moc include path (not next to the including source).
+run_cmake_and_build(foreign_include)
+
 # Two same-named sources #include the *bare* "moc_foo.cpp". The includes are
 # ambiguous, so AUTOMOC fails at build time.
 run_cmake_and_build_expect_fail(same_include_string)

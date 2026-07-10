@@ -32,7 +32,8 @@ using AutoGenHeaderMap = QMap<QString, QString>;
 using AutoGenSourcesList = QList<QString>;
 
 static bool readAutogenInfoJson(AutoGenHeaderMap &headers, AutoGenSourcesList &sources,
-                                QStringList &headerExts, const QString &autoGenInfoJsonPath)
+                                QStringList &headerExts, QStringList &mocIncludePaths,
+                                const QString &config, const QString &autoGenInfoJsonPath)
 {
     QFile file(autoGenInfoJsonPath);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -89,6 +90,21 @@ static bool readAutogenInfoJson(AutoGenHeaderMap &headers, AutoGenSourcesList &s
     headerExts.reserve(headerExtArray.size());
     for (const QJsonValue value : headerExtArray) {
         headerExts.push_back(value.toString());
+    }
+
+    // MOC_INCLUDES holds the target's moc include paths, which are used to resolve a
+    // moc include back to a header that is not next to the including source.
+    // Prefer the per-config key when it is set.
+    QJsonValue mocIncludesValue;
+    if (!config.isEmpty())
+        mocIncludesValue = rootObject.value("MOC_INCLUDES_"_L1 + config);
+    if (!mocIncludesValue.isArray())
+        mocIncludesValue = rootObject.value("MOC_INCLUDES"_L1);
+    if (mocIncludesValue.isArray()) {
+        const QJsonArray mocIncludesArray = mocIncludesValue.toArray();
+        mocIncludePaths.reserve(mocIncludesArray.size());
+        for (const QJsonValue value : mocIncludesArray)
+            mocIncludePaths.push_back(value.toString());
     }
 
     return true;
@@ -273,6 +289,13 @@ int main(int argc, char **argv)
             QStringLiteral("Set this option when using CMake with a multi-config generator"));
     parser.addOption(isMultiConfigOption);
 
+    QCommandLineOption configOption(QStringLiteral("config"));
+    configOption.setDescription(
+            QStringLiteral("The active CMake configuration (e.g. Debug). Only meaningful "
+                           "for multi-config generators"));
+    configOption.setValueName(QStringLiteral("config"));
+    parser.addOption(configOption);
+
     QCommandLineOption timestampFilePathOption(QStringLiteral("timestamp-file-path"));
     timestampFilePathOption.setDescription(
             QStringLiteral("The path to a timestamp file that determines whether the output"
@@ -301,13 +324,15 @@ int main(int argc, char **argv)
     AutoGenHeaderMap autoGenHeaders;
     AutoGenSourcesList autoGenSources;
     QStringList headerExtList;
+    QStringList mocIncludePaths;
     const QString cmakeAutogenInfoFile = parser.value(cmakeAutogenInfoFileOption);
     const QString cmakeAutogenCacheFile = parser.value(cmakeAutogenCacheFileOption);
+    const QString config = parser.value(configOption);
 
     if (debug)
         fprintf(stderr, "Parsing %s\n", qUtf8Printable(cmakeAutogenInfoFile));
-    if (!readAutogenInfoJson(autoGenHeaders, autoGenSources, headerExtList,
-                             cmakeAutogenInfoFile)) {
+    if (!readAutogenInfoJson(autoGenHeaders, autoGenSources, headerExtList, mocIncludePaths,
+                             config, cmakeAutogenInfoFile)) {
         if (debug)
             fprintf(stderr, "Failed to read AutogenInfo.json file: %s\n",
                     qUtf8Printable(cmakeAutogenInfoFile));
@@ -338,6 +363,12 @@ int main(int argc, char **argv)
                 static_cast<long long>(autoGenSources.size()));
         for (const auto &source : autoGenSources)
             fprintf(stderr, "    %s\n", qUtf8Printable(source));
+        fprintf(stderr, "config: %s\n",
+                config.isEmpty() ? "<none>" : qUtf8Printable(config));
+        fprintf(stderr, "%lld moc include path(s) from AutogenInfo.json:\n",
+                static_cast<long long>(mocIncludePaths.size()));
+        for (const auto &includePath : mocIncludePaths)
+            fprintf(stderr, "    %s\n", qUtf8Printable(includePath));
     }
 
     // Algorithm description
@@ -412,8 +443,11 @@ int main(int argc, char **argv)
                 fprintf(stderr, "    miu: %s -> adding %s\n", qUtf8Printable(mocFile),
                         qUtf8Printable(jsonPath));
             jsonFileList.push_back(jsonPath);
+
             // 1b) Locate a header and remove it from processing similarly to 1a), but this time
             // for each moc include statement.
+            // This mirrors CMake AUTOMOC's cmQtAutoMocUicT::JobEvalCacheMocT::FindIncludedHeader.
+            // Search the vicinity of the source first, then each moc include path in order.
             // Example:
             // sourceFile:         "sub/foo.cpp"
             // sourceFileDir:      "sub"
@@ -421,8 +455,9 @@ int main(int argc, char **argv)
             // mocIncludeFileName: "moc_foo.cpp"
             // headerBaseName:     "foo"
             // mocFileBaseDir:     "sub"
-            // headerSearchDir:    "sub/sub" yes, double "sub", this is what CMake does too
-            // candidateHeaderPath:"sub/sub/foo.h"
+            // headerRelBase:      "sub/foo"
+            // vicinity candidate: "sub/sub/foo.h" yes, double "sub", this is what CMake does too
+            // include  candidate: "<I>/sub/foo.h" for each moc include path I
             constexpr int mocPrefixLength = 4; // length of "moc_"
             const QString mocIncludeFileName = QFileInfo(mocFile).fileName();
             const QString headerBaseName =
@@ -432,29 +467,54 @@ int main(int argc, char **argv)
             const QString mocFileBaseDir = QFileInfo(mocFile).path();
             const QString sourceFileDir = fileInfo.path();
 
-            // Search for a header in the source file's dir using the mocFileBaseDir relative
-            // path, e.g. "sub/" from #include "sub/foo.h"
-            const QString headerSearchDir = QDir::cleanPath(sourceFileDir + u'/' + mocFileBaseDir);
-            auto matchedHeader = autoGenHeaders.end();
-            for (const auto &headerExtension : headerExtList) {
-                const QString candidateHeaderPath =
-                        headerSearchDir + u'/' + headerBaseName + u'.' + headerExtension;
-                matchedHeader = autoGenHeaders.find(candidateHeaderPath);
-                if (matchedHeader != autoGenHeaders.end())
-                    break;
+            // The header path relative to the directory it is searched in, e.g. "sub/foo" for
+            // #include "sub/moc_foo.cpp".
+            const QString headerRelBase = mocFileBaseDir + u'/' + headerBaseName;
+
+            auto findHeaderIn = [&](const QString &headerSearchDir) {
+                for (const auto &headerExtension : headerExtList) {
+                    const QString candidateHeaderPath = QDir::cleanPath(
+                            headerSearchDir + u'/' + headerRelBase + u'.' + headerExtension);
+                    auto found = autoGenHeaders.find(candidateHeaderPath);
+                    if (found != autoGenHeaders.end())
+                        return found;
+                }
+                return autoGenHeaders.end();
+            };
+
+            // Look in the vicinity of the source file.
+            auto matchedHeader = findHeaderIn(sourceFileDir);
+            QString matchedDir = sourceFileDir;
+            QString matchedLabel = u"vicinity of source"_s;
+
+            // Look in each moc include path.
+            if (matchedHeader == autoGenHeaders.end()) {
+                for (const QString &includePath : mocIncludePaths) {
+                    matchedHeader = findHeaderIn(includePath);
+                    if (matchedHeader != autoGenHeaders.end()) {
+                        matchedDir = includePath;
+                        matchedLabel = u"moc include path"_s;
+                        break;
+                    }
+                }
             }
 
             if (matchedHeader != autoGenHeaders.end()) {
                 if (debug)
                     fprintf(stderr,
                             "    1b) removed header %s from processing (matched moc include"
-                            " '%s')\n",
-                            qUtf8Printable(matchedHeader.key()), qUtf8Printable(mocFile));
+                            " '%s' via %s %s)\n",
+                            qUtf8Printable(matchedHeader.key()), qUtf8Printable(mocFile),
+                            qUtf8Printable(matchedLabel), qUtf8Printable(matchedDir));
                 autoGenHeaders.erase(matchedHeader);
             } else if (debug) {
-                fprintf(stderr, "    1b) no header matched moc include '%s' in dir %s, "
-                        "continuing\n",
-                        qUtf8Printable(mocFile), qUtf8Printable(headerSearchDir));
+                fprintf(stderr,
+                        "    1b) no header matched moc include '%s' (searched as %s.<ext>):\n",
+                        qUtf8Printable(mocFile), qUtf8Printable(headerRelBase));
+                fprintf(stderr, "         vicinity dir: %s\n", qUtf8Printable(sourceFileDir));
+                if (!mocIncludePaths.isEmpty())
+                    fprintf(stderr, "         nor in the moc include dirs\n");
+                fprintf(stderr, "         continuing\n");
             }
         }
     }
