@@ -9,6 +9,7 @@
 #include "private/qttemporalpattern_p.h"
 
 #include <algorithm> // sort, stable_sort
+#include <QtCore/qxpfunctional.h>
 #include <optional>
 #include <utility> // exchange, move, pair
 #include <vector>
@@ -251,8 +252,8 @@ bool longerEarlier(const PartialParse &left, const PartialParse &right)
     return left.results.endIndex > right.results.endIndex;
 }
 
-template <typename Action>
-void forEachLocaleFormat(TemporalFieldFlags flags, Action action)
+void forEachLocaleFormat(TemporalFieldFlags flags,
+                         qxp::function_ref<void(QLocale::FormatType) const> action)
 {
     using Flag = TemporalFieldFlag;
     constexpr auto Widths = FieldGroup::WidthMask;
@@ -631,7 +632,7 @@ TemporalFieldMatcher::monthNameExtend(const PartialParse &base, QStringView text
     std::vector<PartialParse> matches;
     using Flag = TemporalFieldFlag;
 
-    auto addIfMatch = [&matches, base, text, flags](int month, QString &&name) {
+    const auto addIfMatch = [&matches, &base, text, flags](int month, const QString &name) {
         // tryEachMonth() has ensured this:
         Q_ASSERT(!base.results.month || base.results.month == month);
         if (name.isEmpty()) // Locale doesn't know this month's name.
@@ -659,8 +660,7 @@ TemporalFieldMatcher::monthNameExtend(const PartialParse &base, QStringView text
     // years. If we do that, its return should package month number, whether the
     // month appears in all years and whether it was standalone or plain, along
     // with the start and end indices of the match within the text.
-    auto tryEachNameType = [this, verb, lone, year,
-                            addIfMatch](QLocale::FormatType form, int month) {
+    const auto tryEachNameType = [&](QLocale::FormatType form, int month) {
         if (lone)
             addIfMatch(month, calendar.standaloneMonthName(locale, month, year, form));
         if (verb)
@@ -673,8 +673,9 @@ TemporalFieldMatcher::monthNameExtend(const PartialParse &base, QStringView text
     // if/when we discover it's a significant bottle-neck and/or we've unpicked
     // the existing entanglement a bit first.
 
-    auto tryEachMonth = [month = base.results.month, bound = calendar.maximumMonthsInYear(),
-                         tryEachNameType](QLocale::FormatType form) {
+    const auto tryEachMonth = [month = base.results.month,
+                               bound = calendar.maximumMonthsInYear(),
+                               &tryEachNameType](QLocale::FormatType form) {
         if (month > 0) {
             tryEachNameType(form, month);
         } else {
@@ -694,7 +695,7 @@ TemporalFieldMatcher::dayNameExtend(const PartialParse &base, QStringView text,
     std::vector<PartialParse> matches;
     using Flag = TemporalFieldFlag;
 
-    auto addIfMatch = [&matches, base, text, flags](int dow, QString &&name) {
+    const auto addIfMatch = [&matches, &base, text, flags](int dow, const QString &name) {
         // tryEachDayOfWeek() has ensured this:
         Q_ASSERT(!base.results.dayOfWeek || base.results.dayOfWeek == dow);
         if (name.isEmpty()) // Locale doesn't know this day of the week's name.
@@ -711,7 +712,7 @@ TemporalFieldMatcher::dayNameExtend(const PartialParse &base, QStringView text,
     constexpr auto Forms = FieldGroup::FormMask;
     const bool verb = matchesFlagWithin(flags, Flag::Verbal, Forms);
     const bool lone = matchesFlagWithin(flags, Flag::Standalone, Forms);
-    auto tryEachNameType = [this, addIfMatch, verb, lone](QLocale::FormatType form, int dow) {
+    const auto tryEachNameType = [&](QLocale::FormatType form, int dow) {
         if (lone)
             addIfMatch(dow, calendar.standaloneWeekDayName(locale, dow, form));
         if (verb)
@@ -721,8 +722,8 @@ TemporalFieldMatcher::dayNameExtend(const PartialParse &base, QStringView text,
     // might make this more efficient for non-system locales, at the expense of
     // adding to the existing tangle of complexity.
 
-    auto tryEachDayOfWeek = [dow = base.results.dayOfWeek,
-                             tryEachNameType](QLocale::FormatType form) {
+    const auto tryEachDayOfWeek = [dow = base.results.dayOfWeek,
+                                   &tryEachNameType](QLocale::FormatType form) {
         if (dow > 0) {
             tryEachNameType(form, dow);
         } else {
