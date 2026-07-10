@@ -10,6 +10,7 @@
 #include <QtGui/qcolor.h>
 #include <QtGui/qscreen.h>
 #include <QtGui/qwindow.h>
+#include <arkui/native_type.h>
 #include <functional>
 #include <info/application_target_sdk_version.h>
 #include <memory>
@@ -110,21 +111,21 @@ void QOhosQpaFunctionsImpl::tagWindowOrWidgetAsFloatWindow(
 void QOhosQpaFunctionsImpl::setWindowOrWidgetNativeNodeRenderFitPolicyHint(
     QObject *windowOrWidget, QOhosQpaFunctionsImpl::NativeNodeRenderFitPolicy renderFitPolicyHint)
 {
-    std::optional<QOhosPlatformWindow::NativeNodeRenderFitPolicy> policy;
+    std::optional<::ArkUI_RenderFit> renderFit;
     switch (renderFitPolicyHint) {
     case QOhosQpaFunctions::NativeNodeRenderFitPolicy::TopLeft:
-        policy = QOhosPlatformWindow::NativeNodeRenderFitPolicy::TopLeft;
+        renderFit = ::ARKUI_RENDER_FIT_TOP_LEFT;
         break;
     case QOhosQpaFunctions::NativeNodeRenderFitPolicy::Fill:
-        policy = QOhosPlatformWindow::NativeNodeRenderFitPolicy::Fill;
+        renderFit = ::ARKUI_RENDER_FIT_RESIZE_FILL;
         break;
     }
 
-    if (policy.has_value()) {
-        QOhosPlatformWindow::setWindowOrWidgetNativeNodeRenderFitPolicyHint(windowOrWidget, policy.value());
+    if (renderFit.has_value()) {
+        QOhosPlatformWindow::setWindowOrWidgetNativeNodeRenderFitPolicyHint(windowOrWidget, renderFit.value());
     } else {
         qOhosReportFatalErrorAndAbort(
-            "%s: Failed to convert render fit policy hint to QOhosPlatformWindow enum",
+            "%s: Failed to convert render fit policy hint to ArkUI_RenderFit",
             Q_FUNC_INFO);
     }
 }

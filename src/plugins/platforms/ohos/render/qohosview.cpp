@@ -1081,8 +1081,11 @@ std::unique_ptr<QOhosView> QOhosView::createForWindow(QOhosPlatformWindow *windo
     createInfo.geometry = window->geometry();
     createInfo.window = qWindow;
     createInfo.backgroundColor = windowPropertiesProvider.tryGetProperty<QColor, &QOhosPlatformWindow::surfaceBackgroundColorProperty>();
-    createInfo.renderFitPolicyHint =
-        windowPropertiesProvider.tryGetProperty<QOhosPlatformWindow::NativeNodeRenderFitPolicy, &QOhosPlatformWindow::nativeNodeRenderFitPolicyHintProperty>();
+    createInfo.renderFitPolicyHint = qTransform(
+        windowPropertiesProvider.tryGetProperty<int, &QOhosPlatformWindow::nativeNodeRenderFitPolicyHintProperty>(),
+        [](int renderFit) {
+            return static_cast<::ArkUI_RenderFit>(renderFit);
+        });
 
     QPlatformWindow *parentPlatformWindow = window->parent();
 

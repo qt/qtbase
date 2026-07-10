@@ -8,6 +8,7 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qrect.h>
+#include <arkui/native_type.h>
 #include <functional>
 #include <memory>
 #include <qohosdisplayinfo.h>
@@ -31,19 +32,13 @@ public:
         Frameless,
     };
 
-    enum class NativeNodeRenderFitPolicy
-    {
-        TopLeft,
-        Fill,
-    };
-
     static const QOhosPropertyDescriptor<QWindow *> subWindowOfTagProperty;
     static const QOhosPropertyDescriptor<bool> mainWindowTagProperty;
     static const QOhosPropertyDescriptor<bool> floatWindowTagProperty;
     static const QOhosPropertyDescriptor<double> windowCornerRadiusProperty;
     static const QOhosPropertyDescriptor<bool> windowPrivacyModeSettingProperty;
     static const QOhosPropertyDescriptor<QColor> surfaceBackgroundColorProperty;
-    static const QOhosPropertyDescriptor<NativeNodeRenderFitPolicy> nativeNodeRenderFitPolicyHintProperty;
+    static const QOhosPropertyDescriptor<int> nativeNodeRenderFitPolicyHintProperty;
     static const QOhosPropertyDescriptor<bool> windowKeepScreenOnProperty;
     static const QOhosPropertyDescriptor<bool> windowDragResizableProperty;
     static const QOhosPropertyDescriptor<bool> windowFixedSizeStateProperty;
@@ -59,7 +54,7 @@ public:
     static void setWindowPrivacyMode(QObject *window, bool privacyModeEnabled);
     static void setWindowCornerRadius(QObject *windowOrWidget, double radius);
     static QWindow *getWindowOrWidgetAsSubWindowOfTagValue(QObject *windowOrWidget);
-    static void setWindowOrWidgetNativeNodeRenderFitPolicyHint(QObject *windowOrWidget, NativeNodeRenderFitPolicy renderFitPolicy);
+    static void setWindowOrWidgetNativeNodeRenderFitPolicyHint(QObject *windowOrWidget, ::ArkUI_RenderFit renderFitPolicy);
     static Qt::WindowFlags platformWindowFlagsForQWindow(QWindow *window);
     static void setSurfaceBackgroundColor(QObject *windowOrWidget, const QColor &color);
     static void setWindowKeepScreenOn(QObject *windowOrWidget, bool keepScreenOn);
@@ -195,7 +190,5 @@ QOhosOptional<T> QOhosPlatformWindow::tryGetWindowOrWidgetProperty(QObject *wind
 }
 
 QT_END_NAMESPACE
-
-Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QOhosPlatformWindow::NativeNodeRenderFitPolicy));
 
 #endif // OHOSPLATFORMWINDOW_H
