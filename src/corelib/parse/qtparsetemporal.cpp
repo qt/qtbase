@@ -638,9 +638,7 @@ TemporalFieldMatcher::monthNameExtend(const PartialParse &base, QStringView text
         // If matchesAt(), add to matches:
         auto match = matchesAt(text, base.results.endIndex, name, flags);
         if (match) {
-            PartialParse grow(base, match);
-            grow.results.month = month;
-            matches.push_back(grow);
+            matches.emplace_back(base, match).results.month = month;
             if (flags.testFlag(Flag::SpacePad))
                 matches = spacePadExtend(std::move(matches), text);
         }
@@ -703,9 +701,7 @@ TemporalFieldMatcher::dayNameExtend(const PartialParse &base, QStringView text,
         // If matchesAt(), add to matches:
         auto match = matchesAt(text, base.results.endIndex, name, flags);
         if (match) {
-            PartialParse grow(base,match);
-            grow.results.dayOfWeek = dow;
-            matches.push_back(grow);
+            matches.emplace_back(base, match).results.dayOfWeek = dow;
             if (flags.testFlag(Flag::SpacePad))
                 matches = spacePadExtend(std::move(matches), text);
         }
@@ -847,10 +843,9 @@ TemporalFieldMatcher::continuations(const PartialParse &base, QStringView text,
         if (const auto match = dayPeriodPrefix(base, text, field.options); match.second >= 0) {
             // Ensured by dayPeriodPrefix:
             Q_ASSERT(base.periodInDay < 0 || base.periodInDay == match.second);
-            PartialParse grow = base;
+            PartialParse &grow = matches.emplace_back(base);
             grow.results.endIndex = match.first;
             grow.periodInDay = match.second;
-            matches.push_back(grow);
             if (field.options.testFlag(Flag::SpacePad))
                 matches = spacePadExtend(std::move(matches), text);
         }
