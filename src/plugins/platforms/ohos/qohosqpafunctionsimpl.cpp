@@ -36,7 +36,7 @@ namespace QtOhos {
 
 namespace {
 
-const QOhosPropertyDescriptor<QOhosQpaFunctions::AudioStreamUsage> audioStreamUsageProperty{};
+const QOhosPropertyDescriptor<QOhosQpaFunctions::AudioStreamUsage> audioStreamUsageProperty{"_q_ohos_audioStreamUsage"};
 
 class QOhosQpaFunctionsImpl : public QOhosQpaFunctions
 {
