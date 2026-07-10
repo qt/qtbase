@@ -33,6 +33,7 @@ class EventCallback;
 struct KeyEvent;
 struct PointerEvent;
 struct WheelEvent;
+class QWasmInputContext;
 
 Q_DECLARE_LOGGING_CATEGORY(qLcQpaWasmInputContext)
 
@@ -158,6 +159,7 @@ private:
     Qt::WindowFlags fixTopLevelWindowFlags(Qt::WindowFlags) const;
     bool shouldBeAboveTransientParentFlags(Qt::WindowFlags flags) const;
     QWasmWindowStack<>::PositionPreference positionPreferenceFromWindowFlags(Qt::WindowFlags) const;
+    QWasmInputContext *activeWasmInputContext() const;
 
     QWasmCompositor *m_compositor = nullptr;
     QWasmBackingStore *m_backingStore = nullptr;
