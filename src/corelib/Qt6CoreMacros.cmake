@@ -1437,7 +1437,8 @@ function(qt6_extract_metatypes target)
             set(cmake_autogen_cache_file "${target_autogen_info_dir}/ParseCache_$<CONFIG>.txt")
             set(multi_config_args
                 --cmake-autogen-include-dir-path "${target_autogen_build_dir}/include_$<CONFIG>"
-                "--cmake-multi-config")
+                "--cmake-multi-config"
+                --config "$<CONFIG>")
         endif()
 
         set(cmake_autogen_info_file "${target_autogen_info_dir}/AutogenInfo.json")
