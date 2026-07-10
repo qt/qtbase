@@ -118,8 +118,8 @@ static inline bool ensurePositionTopLeft(QWindow *window)
 
 inline static bool moveCursorAway()
 {
-#if !QT_CONFIG(cursor)
-    // QCursor disabled, skipping cursor move
+#if !QT_CONFIG(cursor) || defined(Q_OS_ANDROID)
+    // QCursor repositioning is unavailable or unsupported.
     return true;
 #endif
     QPoint safePos = QGuiApplication::primaryScreen()->availableGeometry().bottomRight();
