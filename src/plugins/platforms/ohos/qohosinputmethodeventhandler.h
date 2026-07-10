@@ -60,6 +60,7 @@ struct QOhosMouseEvent
     Qt::MouseButton button;
     QEvent::Type eventType;
     QFlags<OhosKeyboardModifier> modifiers;
+    QInputDevice::DeviceType deviceType = QInputDevice::DeviceType::Mouse;
 };
 
 struct QOhosHoverEvent

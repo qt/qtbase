@@ -111,6 +111,7 @@ void QOhosNativeNodeMouseInputHandler::handleMouseEvent(QArkUi::NativeNodeMouseE
         .button = tryMapNativeNodeMouseButtonToQt(nativeNodeMouseEvent.button).value_or(Qt::NoButton),
         .eventType = eventType.value(),
         .modifiers = nativeNodeMouseEvent.modifiers,
+        .deviceType = nativeNodeMouseEvent.deviceType,
     };
 
     m_hoverEventsGenerator->handleQOhosMouseEvent(mouseEvent);

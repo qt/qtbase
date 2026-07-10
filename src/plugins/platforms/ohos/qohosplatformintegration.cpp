@@ -71,6 +71,11 @@ bool isInputDeviceWithTouchpad(QtOhos::JsState &jsState, std::uint32_t deviceId)
     return isInputDeviceOfType(jsState, deviceId, "touchpad");
 }
 
+bool isInputDeviceWithMouse(QtOhos::JsState &jsState, std::uint32_t deviceId)
+{
+    return isInputDeviceOfType(jsState, deviceId, "mouse");
+}
+
 bool isDeviceTypeInDeviceIds(
     QtOhos::JsState &jsState, const std::vector<std::uint32_t> &deviceIds,
     const std::function<bool(QtOhos::JsState &, std::uint32_t)> &isDeviceTypeFunc)
@@ -97,11 +102,16 @@ std::set<QInputDevice::DeviceType> getAvailableDeviceTypes()
                             deviceTypes.insert(QInputDevice::DeviceType::TouchScreen);
                         if (isDeviceTypeInDeviceIds(cbInfo.jsState(), deviceIds, isInputDeviceWithTouchpad))
                             deviceTypes.insert(QInputDevice::DeviceType::TouchPad);
+                        if (isDeviceTypeInDeviceIds(cbInfo.jsState(), deviceIds, isInputDeviceWithMouse))
+                            deviceTypes.insert(QInputDevice::DeviceType::Mouse);
                         thenPromise(deviceTypes);
                     })
                 .onCatch(
                     [catchPromise = std::move(thenCatchPromises.second)](const QtOhos::CallbackInfo &) {
-                        qOhosPrintfError("Error while obtaining device list (@ohos.multimodalInput.inputDevice.getDeviceList())");
+                        qOhosPrintfError(
+                            "Error while obtaining device list (@ohos.multimodalInput.inputDevice.getDeviceList()). "
+                            "No pointing devices will be pre-registered; every device will instead be lazily "
+                            "created and registered on first use.");
                         catchPromise({});
                     });
         },

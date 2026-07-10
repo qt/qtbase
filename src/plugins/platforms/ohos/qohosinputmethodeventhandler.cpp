@@ -28,21 +28,35 @@ namespace {
 constexpr double fingerAreaWidth = 50.0;
 constexpr double fingerAreaHeight = 50.0;
 
+QInputDevice *registerPointingDevice(std::unique_ptr<QPointingDevice> device)
+{
+    auto *deviceRaw = device.get();
+    QWindowSystemInterface::registerInputDevice(device.release());
+    return deviceRaw;
+}
+
 QInputDevice *createPointingDevice(QInputDevice::DeviceType deviceType)
 {
-    qOhosDebug(QtForOhos) << "Creating touchDevice!";
-    auto touchDevice =
-        std::make_unique<QPointingDevice>("OHOS touch device"_L1, 1,
-                                          deviceType, QPointingDevice::PointerType::Finger,
-                                          QInputDevice::Capability::Position
-                                            | QInputDevice::Capability::Area
-                                            | QInputDevice::Capability::Pressure
-                                            | QInputDevice::Capability::NormalizedPosition,
-                                          10, 0);
+    qOhosDebug(QtForOhos) << "Creating pointing device! type:" << deviceType;
 
-    auto *touchDeviceRaw = touchDevice.get();
-    QWindowSystemInterface::registerInputDevice(touchDevice.release());
-    return touchDeviceRaw;
+    // QInputDevice::systemId() is expected to be unique per device; reusing
+    // the DeviceType flag value keeps that true across the devices created
+    // here without needing a separate ID scheme.
+    const qint64 systemId = static_cast<qint64>(deviceType);
+
+    if (deviceType == QInputDevice::DeviceType::Mouse) {
+        return registerPointingDevice(std::make_unique<QPointingDevice>(
+            "OHOS mouse device"_L1, systemId, deviceType, QPointingDevice::PointerType::Generic,
+            QInputDevice::Capability::Position, 1, 3));
+    }
+
+    return registerPointingDevice(std::make_unique<QPointingDevice>(
+        "OHOS touch device"_L1, systemId, deviceType, QPointingDevice::PointerType::Finger,
+        QInputDevice::Capability::Position
+            | QInputDevice::Capability::Area
+            | QInputDevice::Capability::Pressure
+            | QInputDevice::Capability::NormalizedPosition,
+        10, 0));
 }
 
 std::shared_ptr<void> registerObjectDestroyedSignalHandler(
@@ -304,6 +318,7 @@ void QOhosInputMethodEventHandler::onMouseEvent(const QOhosMouseEvent &mouseEven
         .button = button,
         .eventType = mouseEvent.eventType,
         .modifiers = mouseEvent.modifiers,
+        .deviceType = mouseEvent.deviceType,
     };
 
     handleMouseEvent(wsiEvent);
@@ -377,9 +392,16 @@ void QOhosInputMethodEventHandler::onMouseWheelEvent(const QOhosWheelEvent &even
         : Qt::MouseEventNotSynthesized;
     bool inverted = false;
 
+    const QInputDevice::DeviceType wheelDeviceType = event.eventToolType == UI_INPUT_EVENT_TOOL_TYPE_MOUSE
+        ? QInputDevice::DeviceType::Mouse
+        : QInputDevice::DeviceType::TouchPad;
+    const auto *wheelDevice =
+        static_cast<const QPointingDevice *>(getPointingDeviceOrCreate(wheelDeviceType));
+
     QWindowSystemInterface::handleWheelEvent(
         window,
         event.timestamp,
+        wheelDevice,
         event.localPoint,
         event.globalPoint,
         pixelDelta,
@@ -405,6 +427,13 @@ void QOhosInputMethodEventHandler::onNonClientAreaMouseEvents(
         eventBatch.end());
 
     for (const auto &mouseEvent : eventBatch) {
+        // Input_MouseEvent (unlike ArkUI_UIInputEvent) exposes no source type, so
+        // we cannot tell a real mouse from a touchpad here. TouchPad is the safe
+        // guess: if getPointingDeviceOrCreate() has to lazily register a device
+        // for it, that doesn't change what QPointingDevice::primaryPointingDevice()
+        // resolves to elsewhere, since TouchPad is already its fallback in the
+        // absence of a real Mouse device. Guessing Mouse instead could register a
+        // phantom Mouse device and make primaryPointingDevice() prefer it process-wide.
         QOhosMouseEvent qtMouseEvent = {
             .targetWindow = targetWindow,
             .timestampMs = mouseEvent.timestamp,
@@ -412,6 +441,7 @@ void QOhosInputMethodEventHandler::onNonClientAreaMouseEvents(
             .globalPosition = mouseEvent.displayPosition,
             .button = mouseEvent.button,
             .eventType = mouseEvent.action,
+            .deviceType = QInputDevice::DeviceType::TouchPad,
         };
 
         // HACK
@@ -476,7 +506,7 @@ QInputDevice *QOhosInputMethodEventHandler::getPointingDeviceOrCreate(QInputDevi
 {
     auto pointingDeviceIter = m_pointingDevices.find(deviceType);
     if (pointingDeviceIter == m_pointingDevices.end()) {
-        qOhosWarning(QtForOhos) << "Trying to get touch device but it isn't registered. Creating and registering one now.";
+        qOhosWarning(QtForOhos) << "Trying to get pointing device but it isn't registered. Creating and registering one now.";
         std::tie(pointingDeviceIter, std::ignore) = m_pointingDevices.emplace(
             deviceType, createPointingDevice(deviceType));
     }
@@ -612,9 +642,13 @@ void QOhosInputMethodEventHandler::handleMouseEvent(const QOhosMouseEvent &wsiEv
         return;
     }
 
+    const auto *mouseDevice =
+        static_cast<const QPointingDevice *>(getPointingDeviceOrCreate(wsiEvent.deviceType));
+
     QWindowSystemInterface::handleMouseEvent(
         targetWindow,
         wsiEvent.timestampMs.count(),
+        mouseDevice,
         localPosition,
         wsiEvent.globalPosition,
         m_mouseButtonsState,
