@@ -28,7 +28,7 @@ namespace {
 constexpr double fingerAreaWidth = 50.0;
 constexpr double fingerAreaHeight = 50.0;
 
-QInputDevice *createTouchDevice(QInputDevice::DeviceType deviceType)
+QInputDevice *createPointingDevice(QInputDevice::DeviceType deviceType)
 {
     qOhosDebug(QtForOhos) << "Creating touchDevice!";
     auto touchDevice =
@@ -120,7 +120,7 @@ QOhosInputMethodEventHandler::QOhosInputMethodEventHandler(
     const std::set<QInputDevice::DeviceType> &deviceTypes)
 {
     for (const auto &deviceType : deviceTypes)
-        m_touchDevices.emplace(deviceType, createTouchDevice(deviceType));
+        m_pointingDevices.emplace(deviceType, createPointingDevice(deviceType));
 }
 
 QOhosInputMethodEventHandler::~QOhosInputMethodEventHandler() = default;
@@ -130,7 +130,7 @@ void QOhosInputMethodEventHandler::onTouchEventFromXComponent(
     const std::vector<QOhosTouchEventTouchPointData> &touchPoints,
     QInputDevice::DeviceType deviceType, QFlags<OhosKeyboardModifier> modifiers)
 {
-    auto *touchDevice = getTouchDeviceOrCreateIfNeeded(deviceType);
+    auto *touchDevice = getPointingDeviceOrCreate(deviceType);
 
     QList<QWindowSystemInterface::TouchPoint> wsiTouchPoints;
 
@@ -228,7 +228,7 @@ void QOhosInputMethodEventHandler::onTouchEventFromXComponent(
 
 void QOhosInputMethodEventHandler::onGestureEventFromNativeNode(const QOhosGestureEvent &gestureEvent)
 {
-    auto *touchDevice = getTouchDeviceOrCreateIfNeeded(gestureEvent.deviceType);
+    auto *pointingDevice = getPointingDeviceOrCreate(gestureEvent.deviceType);
     auto *window = gestureEvent.targetWindow.data();
 
     // NOTE: Contrary to all other QWindowSystemInterface functions, the
@@ -240,7 +240,7 @@ void QOhosInputMethodEventHandler::onGestureEventFromNativeNode(const QOhosGestu
     QWindowSystemInterface::handleGestureEventWithRealValue(
         gestureEvent.targetWindow,
         gestureEvent.timestamp,
-        static_cast<const QPointingDevice *>(touchDevice),
+        static_cast<const QPointingDevice *>(pointingDevice),
         gestureEvent.gestureType,
         gestureEvent.value,
         scaledLocalPosition,
@@ -456,7 +456,7 @@ void QOhosInputMethodEventHandler::onNonClientAreaTouchEvents(
         QWindowSystemInterfaceTouchEvent qwsiTouchEvent = {
             .targetWindow = targetWindow,
             .touchPoints = {qwsiTouchPoint},
-            .touchDevice = getTouchDeviceOrCreateIfNeeded(QInputDevice::DeviceType::TouchScreen),
+            .touchDevice = getPointingDeviceOrCreate(QInputDevice::DeviceType::TouchScreen),
             .timestampMs = touchEvent.timestamp,
         };
 
@@ -472,15 +472,15 @@ QWindow *QOhosInputMethodEventHandler::lastTouchedWindowOrNull() const
         : nullptr;
 }
 
-QInputDevice *QOhosInputMethodEventHandler::getTouchDeviceOrCreateIfNeeded(QInputDevice::DeviceType deviceType)
+QInputDevice *QOhosInputMethodEventHandler::getPointingDeviceOrCreate(QInputDevice::DeviceType deviceType)
 {
-    auto touchDeviceIter = m_touchDevices.find(deviceType);
-    if (touchDeviceIter == m_touchDevices.end()) {
+    auto pointingDeviceIter = m_pointingDevices.find(deviceType);
+    if (pointingDeviceIter == m_pointingDevices.end()) {
         qOhosWarning(QtForOhos) << "Trying to get touch device but it isn't registered. Creating and registering one now.";
-        std::tie(touchDeviceIter, std::ignore) = m_touchDevices.emplace(
-            deviceType, createTouchDevice(deviceType));
+        std::tie(pointingDeviceIter, std::ignore) = m_pointingDevices.emplace(
+            deviceType, createPointingDevice(deviceType));
     }
-    return touchDeviceIter->second;
+    return pointingDeviceIter->second;
 }
 
 QOhosOptional<std::pair<QWindow *, std::uint64_t>> QOhosInputMethodEventHandler::getLastTouchedWindowWithSeqNoIfPresent() const

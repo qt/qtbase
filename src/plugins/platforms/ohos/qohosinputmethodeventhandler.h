@@ -125,7 +125,7 @@ private:
         QOhosOptional<QPoint> singleTouchPointEventGlobalPosition;
     };
 
-    QInputDevice *getTouchDeviceOrCreateIfNeeded(QInputDevice::DeviceType deviceType);
+    QInputDevice *getPointingDeviceOrCreate(QInputDevice::DeviceType deviceType);
 
     QOhosOptional<std::pair<QWindow *, std::uint64_t>> getLastTouchedWindowWithSeqNoIfPresent() const;
     void handleMouseEvent(const QOhosMouseEvent &wsiEvent);
@@ -133,7 +133,7 @@ private:
     void updateWindowsUnderTouchPoints(const QWindowSystemInterfaceTouchEvent &touchEvent);
     void registerOnWindowCloseToResetMouseButtonsState(QWindow *window);
 
-    std::unordered_map<QInputDevice::DeviceType, QInputDevice *> m_touchDevices;
+    std::unordered_map<QInputDevice::DeviceType, QInputDevice *> m_pointingDevices;
 
     Qt::MouseButtons m_mouseButtonsState = Qt::NoButton;
     std::shared_ptr<void> m_lastMouseEventViewLifetimeTrackerHandle;

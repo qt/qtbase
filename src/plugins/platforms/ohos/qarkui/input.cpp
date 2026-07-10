@@ -162,7 +162,7 @@ QOhosOptional<KeyEvent> KeyEvent::createFromNativeEvent(const ::Input_KeyEvent *
     return makeQOhosOptional(keyEvent);
 }
 
-QInputDevice::DeviceType getTouchDeviceType(const ::ArkUI_UIInputEvent *inputEvent)
+QInputDevice::DeviceType getPointingDeviceType(const ::ArkUI_UIInputEvent *inputEvent)
 {
     const auto sourceType = ::OH_ArkUI_UIInputEvent_GetSourceType(inputEvent);
     if (sourceType == ::UI_INPUT_EVENT_SOURCE_TYPE_UNKNOWN)

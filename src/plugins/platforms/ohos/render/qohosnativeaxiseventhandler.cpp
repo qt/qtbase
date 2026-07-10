@@ -147,7 +147,7 @@ void QOhosAxisEventHandler::handleUiAxisEvent(ArkUI_UIInputEvent *event)
     const auto totalScale = OH_ArkUI_AxisEvent_GetPinchAxisScaleValue(event);
 
     if (qFuzzyIsNull(horizontalAxisValue) && qFuzzyIsNull(verticalAxisValue) && !qFuzzyIsNull(totalScale)) {
-        const auto deviceType = QArkUi::getTouchDeviceType(event);
+        const auto deviceType = QArkUi::getPointingDeviceType(event);
         const auto gestureType = getQtGestureType(
             static_cast<InputEvent_AxisAction>(eventAxisAction)).value_or(Qt::ZoomNativeGesture);
 
