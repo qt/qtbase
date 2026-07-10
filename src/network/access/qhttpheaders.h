@@ -18,6 +18,7 @@
 
 QT_BEGIN_NAMESPACE
 
+class QDataStream;
 class QDebug;
 
 class QHttpHeaderRange
