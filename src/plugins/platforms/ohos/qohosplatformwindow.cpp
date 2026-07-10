@@ -327,16 +327,6 @@ void QOhosPlatformWindow::tagWindowOrWidgetAsFloatWindow(
     setWindowOrWidgetProperty<bool, &floatWindowTagProperty>(windowOrWidgetToTag, showAsFloatWindow);
 }
 
-void QOhosPlatformWindow::setWindowPrivacyMode(QObject *window, bool privacyModeEnabled)
-{
-    setWindowOrWidgetProperty<bool, &windowPrivacyModeSettingProperty>(window, privacyModeEnabled);
-}
-
-void QOhosPlatformWindow::setWindowCornerRadius(QObject *windowOrWidget, double radius)
-{
-    setWindowOrWidgetProperty<double, &windowCornerRadiusProperty>(windowOrWidget, radius);
-}
-
 QWindow *QOhosPlatformWindow::validSubWindowOfTagValueOrNull() const
 {
     auto *tagValue = QOhosPlatformWindow::getWindowOrWidgetAsSubWindowOfTagValue(window());
@@ -367,46 +357,10 @@ QWindow *QOhosPlatformWindow::getWindowOrWidgetAsSubWindowOfTagValue(QObject *wi
     return tryGetWindowOrWidgetProperty<QWindow *, &subWindowOfTagProperty>(windowOrWidget).value_or(nullptr);
 }
 
-void QOhosPlatformWindow::setWindowOrWidgetNativeNodeRenderFitPolicyHint(
-    QObject *windowOrWidget, ::ArkUI_RenderFit renderFitPolicy)
-{
-    setWindowOrWidgetProperty<int, &nativeNodeRenderFitPolicyHintProperty>(windowOrWidget, static_cast<int>(renderFitPolicy));
-}
-
 Qt::WindowFlags QOhosPlatformWindow::platformWindowFlagsForQWindow(QWindow *window)
 {
     auto *platformWindow = QOhosPlatformWindow::fromQWindow(window);
     return platformWindow->windowFlags();
-}
-
-void QOhosPlatformWindow::setSurfaceBackgroundColor(QObject *windowOrWidget, const QColor &color)
-{
-    setWindowOrWidgetProperty<QColor, &surfaceBackgroundColorProperty>(windowOrWidget, color);
-}
-
-void QOhosPlatformWindow::setWindowKeepScreenOn(QObject *windowOrWidget, bool keepScreenOn)
-{
-    setWindowOrWidgetProperty<bool, &windowKeepScreenOnProperty>(windowOrWidget, keepScreenOn);
-}
-
-void QOhosPlatformWindow::setWindowDragResizable(QObject *windowOrWidget, bool dragResizable)
-{
-    setWindowOrWidgetProperty<bool, &windowDragResizableProperty>(windowOrWidget, dragResizable);
-}
-
-void QOhosPlatformWindow::setBrightness(QObject *windowOrWidget, int brightness)
-{
-    setWindowOrWidgetProperty<int, &windowBrightnessProperty>(windowOrWidget, brightness);
-}
-
-void QOhosPlatformWindow::setContrast(QObject *windowOrWidget, int contrast)
-{
-    setWindowOrWidgetProperty<int, &windowContrastProperty>(windowOrWidget, contrast);
-}
-
-void QOhosPlatformWindow::setSaturation(QObject *windowOrWidget, int saturation)
-{
-    setWindowOrWidgetProperty<int, &windowSaturationProperty>(windowOrWidget, saturation);
 }
 
 void QOhosPlatformWindow::closeAllActivePopups()
