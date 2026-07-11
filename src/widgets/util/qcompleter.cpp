@@ -393,6 +393,19 @@ void QCompletionModel::filter(const QStringList& parts)
 
     if (d->model->canFetchMore(engine->curParent))
         d->model->fetchMore(engine->curParent);
+
+#if QT_CONFIG(filesystemmodel)
+    // No match can mean the directory being completed within was never listed by
+    // the QFileSystemModel (e.g. a path set via setText() and then edited). Start
+    // its listing so directoryLoaded() re-runs the completion. (QTBUG-148220)
+    if (engine->matchCount() == 0 && parts.size() > 1) {
+        if (auto *fsModel = qobject_cast<QFileSystemModel *>(d->model)) {
+            const QModelIndex dirIndex = fsModel->index(QFileInfo(c->prefix).path());
+            if (dirIndex.isValid() && fsModel->canFetchMore(dirIndex))
+                fsModel->fetchMore(dirIndex);
+        }
+    }
+#endif
 }
 
 //////////////////////////////////////////////////////////////////////////////
