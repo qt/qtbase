@@ -135,6 +135,9 @@ private slots:
     void task253125_lineEditCompletion();
     void task247560_keyboardNavigation();
     void QTBUG_14292_filesystem();
+    void completeComponentInUnlistedDir_data();
+    void completeComponentInUnlistedDir();
+    void completeIntoUnlistedDir();
     void QTBUG_52028_tabAutoCompletes();
     void QTBUG_51889_activatedSentTwice();
     void showPopupInGraphicsView();
@@ -1767,6 +1770,88 @@ void tst_QCompleter::QTBUG_14292_filesystem()
     if (!filesAddedSpy.wait())
         QSKIP("File system model didn't notify about new file, skipping tests");
     QVERIFY(!comp.popup()->isVisible());
+}
+
+void tst_QCompleter::completeComponentInUnlistedDir_data()
+{
+    QTest::addColumn<QString>("rootPath");
+    // An empty root path lists the invisible root eagerly; a non-empty one does
+    // not, which exercises the code path where the parent chain is unpopulated.
+    QTest::newRow("empty root") << QString();
+    QTest::newRow("filesystem root") << QDir::rootPath();
+}
+
+void tst_QCompleter::completeComponentInUnlistedDir()
+{
+    QFETCH(QString, rootPath);
+
+    // Editing the last component of a path whose parent directory has not been
+    // listed yet by the QFileSystemModel must still produce completions. This
+    // happens when an application pre-fills a stored path with setText() and the
+    // user edits the last component without ever typing a separator to navigate
+    // into the directory, so nothing asked the model to list it. The parent must
+    // then be listed on demand and the completion re-run once it is loaded.
+    FileSystem fs;
+    QVERIFY(fs.createDirectory(QLatin1String("project_one")));
+    QVERIFY(fs.createDirectory(QLatin1String("project_two")));
+
+    QFileSystemModel model;
+    // The temporary directory can live under a hidden system directory (e.g.
+    // /var/folders/... or /Volumes/... on macOS). Show hidden entries so the
+    // path can be resolved when the filesystem root has already been listed.
+    model.setFilter(model.filter() | QDir::Hidden);
+    model.setRootPath(rootPath); // fs.path() is deliberately *not* listed.
+
+    QLineEdit edit;
+    edit.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
+    QCompleter comp;
+    comp.setModel(&model);
+    edit.setCompleter(&comp);
+    edit.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&edit));
+    edit.setFocus();
+
+    // Pre-fill with an existing path, then delete the last component down to the
+    // prefix shared by both directories, as a user editing a loaded path would.
+    const QString full = fs.absoluteFilePath(QLatin1String("project_one"));
+    edit.setText(full);
+    edit.setCursorPosition(full.size());
+    for (int i = 0; i < 4; ++i) // "project_one" -> "project"
+        QTest::keyClick(&edit, Qt::Key_Backspace);
+
+    QCOMPARE(edit.text(), fs.absoluteFilePath(QLatin1String("project")));
+    // Assert on the completion result, not popup visibility: a Wayland client
+    // cannot force its popup to become visible, but the completion itself works.
+    QTRY_COMPARE(comp.completionCount(), 2);
+}
+
+void tst_QCompleter::completeIntoUnlistedDir()
+{
+    // Same defect with a trailing separator: navigating into a directory whose
+    // parent was never listed (by typing the separator that ends a pre-filled
+    // path) must list that directory and complete to its contents.
+    FileSystem fs;
+    QVERIFY(fs.createDirectory(QLatin1String("outer/inner_a")));
+    QVERIFY(fs.createDirectory(QLatin1String("outer/inner_b")));
+
+    QFileSystemModel model;
+    model.setRootPath(QString());
+
+    QLineEdit edit;
+    edit.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
+    QCompleter comp;
+    comp.setModel(&model);
+    edit.setCompleter(&comp);
+    edit.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&edit));
+    edit.setFocus();
+
+    const QString outer = fs.absoluteFilePath(QLatin1String("outer"));
+    edit.setText(outer);
+    edit.setCursorPosition(outer.size());
+    QTest::keyClick(&edit, '/'); // ".../outer" -> ".../outer/"
+
+    QTRY_COMPARE(comp.completionCount(), 2);
 }
 
 void tst_QCompleter::QTBUG_52028_tabAutoCompletes()
