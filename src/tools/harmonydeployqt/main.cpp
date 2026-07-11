@@ -2937,7 +2937,7 @@ static bool buildHap(const Options &options, QString *hapOutputPath = nullptr)
         // Auto-detect hvigorw in the output directory (always present in the template)
         QString candidate = options.outputDirectory + "/hvigorw"_L1;
         if (QFile::exists(candidate))
-            hvigorPath = candidate;
+            hvigorPath = std::move(candidate);
     }
 
     if (hvigorPath.isEmpty()) {
@@ -3051,7 +3051,7 @@ static bool installToDevice(const Options &options, const QString &hapPath)
     if (!options.sdkRoot.isEmpty()) {
         QString sdkHdc = options.sdkRoot + "/command-line-tools/hdc"_L1;
         if (QFile::exists(sdkHdc))
-            hdcPath = sdkHdc;
+            hdcPath = std::move(sdkHdc);
     }
 
     // Check for connected devices
