@@ -80,8 +80,7 @@ QList<QString> retrieveFiles(const QString &key)
         qCDebug(lcQpaPortalFileTransfer) << "error retrieving files" << reply.error();
         return {};
     }
-    const QStringList paths = reply.value();
-    return paths;
+    return reply.value();
 }
 
 } // namespace QXdgDesktopPortalFileTransfer
