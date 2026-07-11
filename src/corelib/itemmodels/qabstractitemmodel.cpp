@@ -1562,7 +1562,7 @@ void QAbstractItemModel::resetInternalData()
     \include models.qdocinc {thread-safety-section1}{QAbstractItemModel}
 
     \sa {Model Classes}, {Model Subclassing Reference}, QModelIndex,
-        QAbstractItemView, {Using drag and drop with item views},
+        QAbstractItemView, QRangeModel, {Using drag and drop with item views},
         {Simple Tree Model Example}, {Editable Tree Model Example},
         {Fetch More Example}
 */
@@ -3835,7 +3835,7 @@ void QAbstractItemModel::multiData(const QModelIndex &index, QModelRoleDataSpan 
 
     \include models.qdocinc {thread-safety-section1}{QAbstractTableModel}
 
-    \sa {Model Classes}, QAbstractItemModel, QAbstractListModel
+    \sa {Model Classes}, QAbstractItemModel, QAbstractListModel, QRangeModel
 */
 
 /*!
@@ -3986,7 +3986,7 @@ Qt::ItemFlags QAbstractTableModel::flags(const QModelIndex &index) const
     \l{Model Subclassing Reference}.
 
     \sa {Model Classes}, {Model Subclassing Reference}, QAbstractItemView,
-        QAbstractTableModel
+        QAbstractTableModel, QRangeModel
 */
 
 /*!

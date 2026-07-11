@@ -112,6 +112,8 @@
     data:
 
     \list
+    \li QRangeModel adapts an existing C++ container or any iterable C++ range,
+       to the model/view framework without subclassing.
     \li QStringListModel is used to store a simple list of QString items.
     \li QStandardItemModel manages more complex tree structures of items, each
        of which can contain arbitrary data.
@@ -123,7 +125,8 @@
 
     If these standard models do not meet your requirements, you can subclass
     QAbstractItemModel, QAbstractListModel, or QAbstractTableModel to create
-    your own custom models.
+    your own custom models. Alternatively, if your data already lives in a C++
+    container or range, QRangeModel can often adapt it without subclassing.
 
     \section3 Views
 
@@ -1165,7 +1168,12 @@
 
     When creating a new model for an existing data structure, it is
     important to consider which type of model should be used to
-    provide an interface onto the data. If the data structure can be
+    provide an interface onto the data. If the data is already held in a
+    C++ container or in any type that models an iterable C++ range,
+    QRangeModel may provide a suitable model without any subclassing,
+    provided that the input range and its element type are supported.
+
+    If a ready-made model is not applicable and the data structure can be
     represented as a list or table of items, you can subclass
     QAbstractListModel or QAbstractTableModel since these classes
     provide suitable default implementations for many functions.

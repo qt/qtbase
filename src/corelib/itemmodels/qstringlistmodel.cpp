@@ -49,7 +49,7 @@ QT_BEGIN_NAMESPACE
 
     \snippet qstringlistmodel/main.cpp 0
 
-    \sa QAbstractListModel, QAbstractItemModel, {Model Classes}
+    \sa QAbstractListModel, QAbstractItemModel, QRangeModel, {Model Classes}
 */
 
 /*!

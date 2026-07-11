@@ -878,7 +878,8 @@ Q_CORE_EXPORT QVariant qVariantAtIndex(const QModelIndex &index)
     Qt library used is Qt 6.12. To benefit from such new overrides, recompile
     your application.
 
-    \sa {Model/View Programming}
+    \sa QRangeModelAdapter, QAbstractItemModel, QStandardItemModel,
+        {Model/View Programming}
 */
 
 /*!
