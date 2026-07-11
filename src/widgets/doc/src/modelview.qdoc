@@ -473,6 +473,9 @@
 
     \table
         \row
+            \li  QRangeModel
+            \li  Adapts an existing C++ container or range
+        \row
             \li  QStringListModel
             \li  Stores a list of strings
         \row
