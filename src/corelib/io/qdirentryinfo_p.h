@@ -16,10 +16,13 @@
 // We mean it.
 //
 
+#include <QtCore/qassert.h>
 #include <QtCore/private/qfileinfo_p.h>
 #include <QtCore/private/qfilesystementry_p.h>
 #include <QtCore/private/qfilesystemmetadata_p.h>
 
+#include <type_traits>
+#include <QtCore/q23utility.h>
 #include <variant>
 
 QT_BEGIN_NAMESPACE
@@ -42,6 +45,41 @@ T &emplace(Variant &v, Args&&...args)
     return *std::get_if<T>(&v);
 }
 
+//
+// Reimplementation of std::visit() to fight Coverity's UNCAUGHT_EXCEPTION
+//
+// This version never throws std::bad_variant_access (unless thrown by the
+// visitor), but Q_UNREACHABLE()s the valueless_by_exception() case. It should
+// otherwise be identical to std::visit(), incl. the O(1) access.
+//
+// Known limitations:
+// - at most three alternatives are supported (but more can be trivially added)
+// - only one variant is supported (unary visitor; binary visitation isn't)
+// - only works for "raw" std::variant, not "anything inheriting std::variant"
+//
+template <typename Visitor, typename Variant>
+constexpr decltype(auto) visit(Visitor &&vis, Variant &&var)
+{
+    using V = std::remove_reference_t<Variant>;
+    constexpr auto NumAlternatives = std::variant_size_v<V>;
+    switch (var.index()) {
+    #define QT_VARIANT_VISIT_CASE(num) \
+        case num: \
+            if constexpr (NumAlternatives > num) { \
+                const auto p = std::get_if<num>(&var); \
+                return std::forward<Visitor>(vis)(q23::forward_like<Variant>(*p)); \
+            } \
+            break \
+        /* end */
+    QT_VARIANT_VISIT_CASE(0);
+    QT_VARIANT_VISIT_CASE(1);
+    QT_VARIANT_VISIT_CASE(2);
+    static_assert(NumAlternatives <= 3, "### extend this switch if you need more");
+    #undef QT_VARIANT_VISIT_CASE
+    }
+    Q_UNREACHABLE();
+}
+
 } // namespace QDirEntryInfoPrivate
 
 class QDirEntryInfo
@@ -50,11 +88,7 @@ class QDirEntryInfo
     decltype(auto) visit(QueryNative qn, QueryFileInfo qf, QueryIterator qi)
     {
         auto visitor = QDirEntryInfoPrivate::overloaded{std::move(qn), std::move(qf), std::move(qi)};
-        {
-            [[maybe_unused]] const bool valueless = content.valueless_by_exception();
-            Q_PRESUME(!valueless);
-        }
-        return std::visit(visitor, content);
+        return QDirEntryInfoPrivate::visit(std::move(visitor), content);
     }
     template<typename QueryNative, typename QueryFileInfo, typename QueryIterator>
     auto query(
