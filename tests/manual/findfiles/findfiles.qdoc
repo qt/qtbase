@@ -224,7 +224,7 @@
     When the user enters a new string in an editable combobox, the
     widget may or may not insert it, and it can insert it in several
     locations, depending on the QComboBox::InsertPolicy. The default
-    policy is is QComboBox::InsertAtBottom.
+    policy is QComboBox::InsertAtBottom.
 
     Then we add the provided text to the combobox, and specify the
     widget's size policies, before we return a pointer to the

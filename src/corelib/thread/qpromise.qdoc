@@ -111,7 +111,7 @@
     \since 6.6
 
     Adds a result constructed from \a args... to the internal result collection
-    at \a index position (emplaceResultAt()) or the end of of the collection
+    at \a index position (emplaceResultAt()) or the end of the collection
     (emplaceResult()).
 
     Returns \c true when the result was added to the collection.
