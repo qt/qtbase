@@ -339,6 +339,10 @@ QDateTime &QFileInfoPrivate::getFileTime(QFile::FileTime request) const
 
     Move-assigns \a other to this QFileInfo instance.
 
+    \note The moved-from object \a other is placed in a partially-formed state,
+    in which the only valid operations are destruction and assignment of a new
+    value.
+
     \since 5.2
 */
 
