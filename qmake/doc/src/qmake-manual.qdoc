@@ -4937,7 +4937,7 @@
         \li Description
     \row
         \li commands
-        \li The commands used for for generating the output from the input.
+        \li The commands used for generating the output from the input.
     \row
         \li CONFIG
         \li Specific configuration options for the custom compiler. See the
