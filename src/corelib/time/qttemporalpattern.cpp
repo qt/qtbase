@@ -704,7 +704,7 @@ SupportType supports(DateTimeParts wanted, QSpan<const TemporalField> range,
     };
 
     if (wanted.testFlag(DateTimePart::Date)) {
-        const SupportType hasDate = [=]() {
+        const SupportType hasDate = [&] {
             constexpr auto bitFor = [](TemporalFieldCategory cat) {
                 return quint8(cat) - 64;
             };
@@ -745,7 +745,7 @@ SupportType supports(DateTimeParts wanted, QSpan<const TemporalField> range,
     }
 
     if (wanted.testFlag(DateTimePart::Time)) {
-        const SupportType hasTime = [=]() {
+        const SupportType hasTime = [&] {
             constexpr auto bitFor = [](TemporalFieldCategory cat) {
                 return quint8(cat) - 16;
             };
