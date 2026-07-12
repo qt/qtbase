@@ -18,7 +18,9 @@ QT_BEGIN_NAMESPACE
 
 class QDir;
 class QDirIteratorPrivate;
+
 class QFileInfoPrivate;
+QT_DECLARE_QSDP_SPECIALIZATION_DTOR(QFileInfoPrivate)
 
 class Q_CORE_EXPORT QFileInfo
 {
@@ -39,6 +41,7 @@ public:
     QFILEINFO_MAYBE_EXPLICIT QFileInfo(const QFileDevice &file);
     QFILEINFO_MAYBE_EXPLICIT QFileInfo(const QDir &dir, const QString &file);
     QFileInfo(const QFileInfo &fileinfo);
+    QFileInfo(QFileInfo &&other) = default;
 #ifdef Q_QDOC
     QFileInfo(const std::filesystem::path &file);
     QFileInfo(const QDir &dir, const std::filesystem::path &file);

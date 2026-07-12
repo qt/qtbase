@@ -14,6 +14,7 @@ QT_BEGIN_NAMESPACE
 using namespace Qt::StringLiterals;
 
 QT_IMPL_METATYPE_EXTERN(QFileInfo)
+QT_DEFINE_QSDP_SPECIALIZATION_DTOR(QFileInfoPrivate)
 
 QString QFileInfoPrivate::getFileName(QAbstractFileEngine::FileName name) const
 {
@@ -416,6 +417,17 @@ QFileInfo::QFileInfo(const QFileInfo &fileinfo)
 {
 
 }
+
+/*!
+    \since 6.12
+    \fn QFileInfo::QFileInfo(QFileInfo &&other)
+
+    Move-constructs a new QFileInfo from \a other.
+
+    \note The moved-from object \a other is placed in a partially-formed state,
+    in which the only valid operations are destruction and assignment of a new
+    value.
+*/
 
 /*!
     Destroys the QFileInfo and frees its resources.
