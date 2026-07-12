@@ -898,7 +898,7 @@ QDateTimePattern::parse(QStringView text, const QDateTime &defaults) const
     const QTime time = seen.time(defaults.time());
 
     if (QDateTime result(date, time, seen.zone, seen.resolveType()); result.isValid())
-        return {result, seen.size()};
+        return {std::move(result), seen.size()};
     // Fall back to default transition resolution:
     return {QDateTime(date, time, seen.zone), seen.size()};
 #else
