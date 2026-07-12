@@ -58,7 +58,7 @@
 
     In the constructor we first create the \c SlidersGroup widget
     that displays the slider widgets. With \c createControls() we
-    create the controlling widgets, and connect those to to the
+    create the controlling widgets, and connect those to the
     sliders.
 
     \snippet widgets/sliders/window.cpp 1

@@ -70,7 +70,7 @@
     \endcode
 
     To run the test on a specific device/emulator, use the \c adb environment
-    varialbe \c ANDROID_SERIAL or \c ANDROID_DEVICE_SERIAL.
+    variable \c ANDROID_SERIAL or \c ANDROID_DEVICE_SERIAL.
 
     \section2 Mandatory Arguments
 

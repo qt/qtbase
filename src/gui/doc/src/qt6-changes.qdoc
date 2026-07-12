@@ -146,6 +146,6 @@
     are implied by implementation of the above functions, so overrides of those
     functions can be removed.
 
-    As with the the QWindowsMimeConverter, registration is done by instantiating
+    As with the QWindowsMimeConverter, registration is done by instantiating
     the type.
 */
