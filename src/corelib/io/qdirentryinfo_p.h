@@ -29,6 +29,19 @@ template<class... Ts>
 struct overloaded : Ts... { using Ts::operator()...; };
 template<class... Ts>
 overloaded(Ts...) -> overloaded<Ts...>;
+
+template <typename T, typename Variant, typename...Args>
+T &emplace(Variant &v, Args&&...args)
+{
+#if !defined(Q_OS_VXWORKS) /* lacks LWG 2857 resolution */ \
+    && !defined(Q_CC_COVERITY) /* would report "structurally dead code" */ \
+    /* end */
+    return
+#endif
+    v.template emplace<T>(std::forward<Args>(args)...);
+    return *std::get_if<T>(&v);
+}
+
 } // namespace QDirEntryInfoPrivate
 
 class QDirEntryInfo
@@ -87,8 +100,8 @@ public:
         return visit(
             [](Iterator &iterator) -> const QFileInfo & { return iterator.ensureFileInfo(); },
             [this](const Native &native) -> const QFileInfo & {
-                content = QFileInfo(new QFileInfoPrivate(native.entry, native.metaData));
-                return std::get<QFileInfo>(content);
+                return QDirEntryInfoPrivate::emplace<QFileInfo>(content,
+                                            new QFileInfoPrivate(native.entry, native.metaData));
             },
             [](const QFileInfo &fileInfo) -> const QFileInfo & { return fileInfo; }
         );
