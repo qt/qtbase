@@ -1386,6 +1386,7 @@ QOhosWindowProxy::JsScopeData::JsScopeData(
             }))
     , jsWindowRef(
         std::make_shared<QArkUi::JsWindowRef>(
+            qAbilityPeer->instanceId(),
             getWindowPropertiesFromJsWindow(jsWindow.Value()).id,
             jsWindow.Value(),
             owningQWindowRef))
