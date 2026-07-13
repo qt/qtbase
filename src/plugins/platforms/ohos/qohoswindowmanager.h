@@ -10,7 +10,6 @@
 #include <QtCore/qstringlist.h>
 #include <QtCore/qstring.h>
 #include <qohosenums.h>
-#include <qohosinternalwindowid_p.h>
 #include <qohosplugincore.h>
 #include <functional>
 
@@ -38,17 +37,17 @@ struct SaveResult
 };
 
 void showFileDialogOpen(
-    QtOhos::InternalWindowId contextWinId, QStringList filters, QString defaultPath,
+    QtOhos::QObjectThreadSafeRef contextWindowRef, QStringList filters, QString defaultPath,
     DocumentSelectMode documentSelectMode, ResultMultiplicity resultMultiplicity,
     QOhosConsumer<QOhosOptional<OpenResult>> resultCallback);
 
 void showFileDialogSave(
-    QtOhos::InternalWindowId contextWinId, QStringList newFileNames,
+    QtOhos::QObjectThreadSafeRef contextWindowRef, QStringList newFileNames,
     QString defaultFilePath, QStringList fileSuffixChoices,
     QOhosConsumer<QOhosOptional<SaveResult>> resultCallback);
 
 void showFileDialogAuthorization(
-    QtOhos::InternalWindowId contextWinId, QString filePath,
+    QtOhos::QObjectThreadSafeRef contextWindowRef, QString filePath,
     QOhosConsumer<bool> resultCallback);
 
 }
