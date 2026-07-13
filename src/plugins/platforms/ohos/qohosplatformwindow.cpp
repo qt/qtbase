@@ -24,6 +24,7 @@
 #include <qohosutils.h>
 #include <qpa/qwindowsysteminterface.h>
 #include <render/qohosview.h>
+#include <render/qwindowproxyregistry.h>
 #include <private/qwindow_p.h>
 #include <utility>
 
@@ -237,6 +238,20 @@ bool QOhosPlatformWindow::isExposed() const
 QtOhos::InternalWindowId QOhosPlatformWindow::internalWindowId() const
 {
     return m_windowId;
+}
+
+std::optional<double> QOhosPlatformWindow::windowId() const
+{
+    auto internalId = internalWindowId();
+    auto jsWinId = QWindowProxyRegistry::instance().tryMapInternalWindowIdToJsWindowId(internalId);
+    if (!jsWinId.has_value())
+        return {};
+
+    qOhosPrintfInfo(
+        "PlatformWindow WIID: %s is returning JsWindowId: %f to the user",
+        qPrintable(internalId.toString()), jsWinId.value().value());
+
+    return jsWinId.value().value();
 }
 
 bool QOhosPlatformWindow::shouldDisplayAsOhosWindow() const
