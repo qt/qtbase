@@ -2021,10 +2021,10 @@ static bool detectAndCopyDependencies(const Options &options, QSet<QString> &pro
             QtDependency qtDep;
             qtDep.relativePath = "lib/"_L1 + dep;
             qtDep.absolutePath = depPath;
-            qtDependencies.append(qtDep);
+            qtDependencies.append(std::move(qtDep));
 
             // Add to processing queue for recursive dependency detection
-            toProcess.append(depPath);
+            toProcess.append(std::move(depPath));
         }
     }
 
@@ -2144,8 +2144,8 @@ static bool copyPlatformPlugin(const Options &options,
         processedLibs.insert(depPath);
         QtDependency qtDep;
         qtDep.relativePath = "lib/"_L1 + dep;
-        qtDep.absolutePath = depPath;
-        additionalLibs.append(qtDep);
+        qtDep.absolutePath = std::move(depPath);
+        additionalLibs.append(std::move(qtDep));
     }
 
     // Copy additional Qt libraries needed by the plugin
