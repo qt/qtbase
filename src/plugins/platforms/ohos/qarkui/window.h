@@ -34,8 +34,8 @@ class JsWindowRef
 {
 public:
     explicit JsWindowRef(
-        JsWindowId windowId, QNapi::Object jsWindow,
-        QtOhos::QObjectThreadSafeRef owningQWindowRef);
+        std::string owningQAbilityInstanceId, JsWindowId windowId,
+        QNapi::Object jsWindow, QtOhos::QObjectThreadSafeRef owningQWindowRef);
 
     JsWindowRef(const JsWindowRef &) = delete;
     JsWindowRef &operator=(const JsWindowRef &) = delete;
@@ -45,6 +45,7 @@ public:
 
     bool isFocused() const;
     bool isWindowShown() const;
+    const std::string &owningQAbilityInstanceId() const;
     JsWindowId id() const;
     QtOhos::QObjectThreadSafeRef owningQWindowRef() const;
 
@@ -57,6 +58,7 @@ public:
     QNapi::Object jsObject();
 
 private:
+    std::string m_owningQAbilityInstanceId;
     JsWindowId m_jsWindowId;
     QNapi::Reference<QNapi::Object> m_jsWindow;
     QtOhos::QObjectThreadSafeRef m_owningQWindowRef;

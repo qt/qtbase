@@ -44,8 +44,10 @@ QOhosOptional<WindowProperties> tryGetWindowProperties(JsWindowId jsWindowId)
 }
 
 JsWindowRef::JsWindowRef(
-    JsWindowId windowId, QNapi::Object jsWindow, QtOhos::QObjectThreadSafeRef owningQWindowRef)
-    : m_jsWindowId(windowId)
+    std::string owningQAbilityInstanceId, JsWindowId windowId,
+    QNapi::Object jsWindow, QtOhos::QObjectThreadSafeRef owningQWindowRef)
+    : m_owningQAbilityInstanceId(std::move(owningQAbilityInstanceId))
+    , m_jsWindowId(windowId)
     , m_jsWindow(Napi::Persistent(jsWindow))
     , m_owningQWindowRef(owningQWindowRef)
 {
@@ -69,6 +71,11 @@ bool JsWindowRef::isFocused() const
     if (QtOhos::JsWindowsTracker::isWindowClosing(m_jsWindow.Value()))
         return false;
     return m_jsWindow.call<QNapi::Boolean>("isFocused").Value();
+}
+
+const std::string &JsWindowRef::owningQAbilityInstanceId() const
+{
+    return m_owningQAbilityInstanceId;
 }
 
 JsWindowId JsWindowRef::id() const
