@@ -1,5 +1,9 @@
 type: Group
 instructions:
+  - type: ScheduleUploadTestResults
+  - type: EnvironmentVariable
+    variableName: COIN_CTEST_RESULTSDIR
+    variableValue: "{{.AgentWorkingDir}}/testresults"
   - type: EnvironmentVariable
     variableName: HDC
     variableValue: "/Applications/DevEco-Studio.app/Contents/sdk/default/openharmony/toolchains/hdc"
@@ -102,3 +106,23 @@ instructions:
     maxTimeInSeconds: 21600
     maxTimeBetweenOutput: 1800
     userMessageOnFailure: "Running hap failed!"
+  - type: MakeDirectory
+    directory: "/home/qt/work/testresults"
+  - type: ChangeDirectory
+    directory: "/home/qt/work/testresults"
+  - type: ExecuteCommand
+    command: ["scp", "qt@{{.Env.HARMONY_BROKER}}:{{.Env.REMOTE_WORKING_DIR}}/testresults.tar.gz", "{{.Env.COIN_CTEST_RESULTSDIR}}/testresults.tar.gz"]
+    maxTimeInSeconds: 14400
+    maxTimeBetweenOutput: 14400
+    userMessageOnFailure: >
+      Failed to copy testresults.
+  - type: ExecuteCommand
+    command: ["tar", "-xzf", "{{.Env.COIN_CTEST_RESULTSDIR}}/testresults.tar.gz","-C", "{{.Env.COIN_CTEST_RESULTSDIR}}/"]
+    maxTimeInSeconds: 600
+    maxTimeBetweenOutput: 600
+    userMessageOnFailure: "Extracting testresults failed!"
+  - type: ExecuteCommand
+    command: ["rm", "-f", "{{.Env.COIN_CTEST_RESULTSDIR}}/testresults.tar.gz"]
+    maxTimeInSeconds: 600
+    maxTimeBetweenOutput: 600
+    userMessageOnFailure: "Removing results archive failed!"
