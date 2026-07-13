@@ -376,20 +376,20 @@ void QNetworkCookie::setValue(const QByteArray &value)
 }
 
 // ### move this to qnetworkcookie_p.h and share with qnetworkaccesshttpbackend
-static std::pair<QByteArray, QByteArray> nextField(QByteArrayView text, int &position, bool isNameValue)
+static std::pair<QByteArray, QByteArray> nextField(QByteArrayView text, qsizetype &position, bool isNameValue)
 {
     // format is one of:
     //    (1)  token
     //    (2)  token = token
     //    (3)  token = quoted-string
-    const int length = text.size();
+    const qsizetype length = text.size();
     position = nextNonWhitespace(text, position);
 
-    int semiColonPosition = text.indexOf(';', position);
+    qsizetype semiColonPosition = text.indexOf(';', position);
     if (semiColonPosition < 0)
         semiColonPosition = length; //no ';' means take everything to end of string
 
-    int equalsPosition = text.indexOf('=', position);
+    qsizetype equalsPosition = text.indexOf('=', position);
     if (equalsPosition < 0 || equalsPosition > semiColonPosition) {
         if (isNameValue)
             return std::pair(QByteArray(), QByteArray()); //'=' is required for name-value-pair (RFC6265 section 5.2, rule 2)
@@ -398,7 +398,7 @@ static std::pair<QByteArray, QByteArray> nextField(QByteArrayView text, int &pos
 
     QByteArray first = text.mid(position, equalsPosition - position).trimmed().toByteArray();
     QByteArray second;
-    int secondLength = semiColonPosition - equalsPosition - 1;
+    qsizetype secondLength = semiColonPosition - equalsPosition - 1;
     if (secondLength > 0)
         second = text.mid(equalsPosition + 1, secondLength).trimmed().toByteArray();
 
@@ -958,8 +958,8 @@ QList<QNetworkCookie> QNetworkCookiePrivate::parseSetCookieHeaderLine(QByteArray
     QList<QNetworkCookie> result;
     const QDateTime now = QDateTime::currentDateTimeUtc();
 
-    int position = 0;
-    const int length = cookieString.size();
+    qsizetype position = 0;
+    const qsizetype length = cookieString.size();
     while (position < length) {
         QNetworkCookie cookie;
 
@@ -980,7 +980,7 @@ QList<QNetworkCookie> QNetworkCookiePrivate::parseSetCookieHeaderLine(QByteArray
 
                 if (field.first.compare("expires", Qt::CaseInsensitive) == 0) {
                     position -= field.second.size();
-                    int end;
+                    qsizetype end;
                     for (end = position; end < length; ++end)
                         if (isValueSeparator(cookieString.at(end)))
                             break;
