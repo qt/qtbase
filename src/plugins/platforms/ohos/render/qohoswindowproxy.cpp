@@ -606,11 +606,6 @@ bool QOhosWindowProxy::qtIsMainWindow() const
     return m_windowProxyType == WindowProxyType::MainWindow;
 }
 
-WindowProxyType QOhosWindowProxy::windowProxyType() const
-{
-    return m_windowProxyType;
-}
-
 void QOhosWindowProxy::raiseToAppTop()
 {
     qCDebug(QtForOhos, "%s", Q_FUNC_INFO);
