@@ -17,7 +17,7 @@ class Q_GUI_EXPORT QAccessibilityHints : public QObject
     Q_OBJECT
     Q_DECLARE_PRIVATE(QAccessibilityHints)
     Q_PROPERTY(Qt::ContrastPreference contrastPreference READ contrastPreference NOTIFY contrastPreferenceChanged FINAL REVISION(6, 10))
-    Q_PROPERTY(Qt::MotionPreference motionPreference READ motionPreference NOTIFY motionPreferenceChanged FINAL REVISION(6, 12))
+    Q_PROPERTY(Qt::MotionPreference motionPreference READ motionPreference NOTIFY motionPreferenceChanged REVISION(6, 12))
 
 public:
     explicit QAccessibilityHints(QObject *parent = nullptr);
