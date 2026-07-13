@@ -206,7 +206,6 @@ public:
     std::shared_ptr<QOhosWindowProxy> createSubWindow(const SubWindowCreateInfo &createInfo);
 
     bool qtIsMainWindow() const;
-    WindowProxyType windowProxyType() const;
     WindowLimits getWindowLimits() const;
     AvoidArea getWindowAvoidArea(AvoidAreaType type) const;
     std::shared_ptr<QXComponentNode> nodeXComponent() const;
