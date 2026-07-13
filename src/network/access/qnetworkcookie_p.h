@@ -46,7 +46,7 @@ inline bool isLWS(char c)
 }
 
 // Used in qnetworkcookie.cpp and qnetworkreplyhttpimpl.cpp
-inline int nextNonWhitespace(QByteArrayView text, int from)
+inline qsizetype nextNonWhitespace(QByteArrayView text, qsizetype from)
 {
     // RFC 2616 defines linear whitespace as:
     //  LWS = [CRLF] 1*( SP | HT )
