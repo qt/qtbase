@@ -214,20 +214,12 @@ void showFileDialogAuthorization(
             documentViewPicker->evalToPromiseOrRejectOnThrow("select(*)", {documentSelectOptions}).onThen(
                 [documentViewPicker, sharedResultCallback](const QtOhos::CallbackInfo &cbInfo) {
                     auto actionResult = cbInfo.getFirstArg<QNapi::Array>(Q_FUNC_INFO);
-                    auto resultOhosUris = QNapi::getArrayElements<std::vector<std::string>, QNapi::String>(actionResult);
 
                     qOhosPrintfDebug(
                         "Called DocumentViewPicker.select() callback with result: %s",
                         QNapi::toJsonString(actionResult).c_str());
 
-                    std::vector<std::string> resultPaths;
-                    std::transform(
-                        resultOhosUris.cbegin(), resultOhosUris.cend(), std::back_inserter(resultPaths),
-                        [&](const auto &uri) {
-                            return tryMapOhosFileUriToPath(uri).value_or("");
-                        });
-
-                    bool authorized = !mapFilePathsToQtUrls(resultPaths).isEmpty();
+                    bool authorized = actionResult.Length() > 0;
                     QtOhos::invokeInQtThread(
                         [sharedResultCallback, authorized]() {
                             (*sharedResultCallback)(authorized);
