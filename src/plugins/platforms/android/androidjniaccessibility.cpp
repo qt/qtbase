@@ -51,9 +51,9 @@ namespace QtAndroidAccessibility
     static jmethodID m_setScrollXMethodID = 0;
     static jmethodID m_setMaxScrollYMethodID = 0;
     static jmethodID m_setScrollYMethodID = 0;
-    static jmethodID m_setItemCount = 0;
-    static jmethodID m_setFromIndex = 0;
-    static jmethodID m_setToIndex = 0;
+    static jmethodID m_setItemCountMethodID = 0;
+    static jmethodID m_setFromIndexMethodID = 0;
+    static jmethodID m_setToIndexMethodID = 0;
 
     static int RANGE_TYPE_INT = 0;
     static int RANGE_TYPE_FLOAT = 0;
@@ -956,12 +956,12 @@ namespace QtAndroidAccessibility
 
         if (info.isIndexed) {
             const int itemCount = std::max(info.contentSize.width(), info.contentSize.height());
-            env->CallVoidMethod(event, m_setItemCount, itemCount);
+            env->CallVoidMethod(event, m_setItemCountMethodID, itemCount);
             const int fromIndex = std::max(info.position.x(), info.position.y()) * itemCount;
-            env->CallVoidMethod(event, m_setFromIndex, fromIndex);
+            env->CallVoidMethod(event, m_setFromIndexMethodID, fromIndex);
             const int toIndex = fromIndex
                     + std::min(info.viewportSize.width(), info.viewportSize.height() * itemCount);
-            env->CallVoidMethod(event, m_setToIndex, toIndex);
+            env->CallVoidMethod(event, m_setToIndexMethodID, toIndex);
 
         } else {
             env->CallVoidMethod(event, m_setScrollXMethodID,
@@ -1047,9 +1047,9 @@ namespace QtAndroidAccessibility
         GET_AND_CHECK_STATIC_METHOD(m_setScrollXMethodID, eventClass, "setScrollX", "(I)V");
         GET_AND_CHECK_STATIC_METHOD(m_setMaxScrollYMethodID, eventClass, "setMaxScrollY", "(I)V");
         GET_AND_CHECK_STATIC_METHOD(m_setScrollYMethodID, eventClass, "setScrollY", "(I)V");
-        GET_AND_CHECK_STATIC_METHOD(m_setItemCount, eventClass, "setItemCount", "(I)V");
-        GET_AND_CHECK_STATIC_METHOD(m_setFromIndex, eventClass, "setFromIndex", "(I)V");
-        GET_AND_CHECK_STATIC_METHOD(m_setToIndex, eventClass, "setToIndex", "(I)V");
+        GET_AND_CHECK_STATIC_METHOD(m_setItemCountMethodID, eventClass, "setItemCount", "(I)V");
+        GET_AND_CHECK_STATIC_METHOD(m_setFromIndexMethodID, eventClass, "setFromIndex", "(I)V");
+        GET_AND_CHECK_STATIC_METHOD(m_setToIndexMethodID, eventClass, "setToIndex", "(I)V");
 
         jclass rangeInfoClass =
                 env->FindClass("android/view/accessibility/AccessibilityNodeInfo$RangeInfo");
