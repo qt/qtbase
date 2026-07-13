@@ -321,7 +321,8 @@ QOhosWindowProxy::QOhosWindowProxy(
                 windowProxyData.windowProxyType,
                 std::move(windowProxyData.jsWindow),
                 std::move(windowProxyData.jsKeepAliveData),
-                std::move(windowProxyData.qAbilityPeer))))
+                std::move(windowProxyData.qAbilityPeer),
+                windowProxyData.owningQWindowRef)))
     , m_windowProxyType(windowProxyData.windowProxyType)
     , m_nodeXComponent(windowProxyData.nodeXComponent)
     , m_qAbilityInstanceId(m_jsScopeData->qAbilityPeer->instanceId())
@@ -1364,7 +1365,8 @@ QOhosWindowProxy::createSubWindow(const SubWindowCreateInfo &createInfo)
 QOhosWindowProxy::JsScopeData::JsScopeData(
     WindowProxyType windowProxyType, QNapi::Reference<QNapi::Object> jsWindow,
     std::shared_ptr<void> optKeepAliveData,
-    std::shared_ptr<QtOhos::QAbilityPeer> qAbilityPeer)
+    std::shared_ptr<QtOhos::QAbilityPeer> qAbilityPeer,
+    QtOhos::QObjectThreadSafeRef owningQWindowRef)
     : windowProxyType(windowProxyType)
     , windowCallbackReceiver(nullptr)
     , windowDestroyedFromSystem(false)
@@ -1385,7 +1387,8 @@ QOhosWindowProxy::JsScopeData::JsScopeData(
     , jsWindowRef(
         std::make_shared<QArkUi::JsWindowRef>(
             getWindowPropertiesFromJsWindow(jsWindow.Value()).id,
-            jsWindow.Value()))
+            jsWindow.Value(),
+            owningQWindowRef))
 {
 }
 

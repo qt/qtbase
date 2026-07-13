@@ -460,6 +460,7 @@ std::shared_ptr<QOhosWindowProxy> QOhosView::tryCreateWindowProxyIfNeeded(ViewTy
         }
 
         QOhosWindowProxy::SubWindowCreateInfo createInfo;
+        createInfo.window = QtOhos::QObjectThreadSafeRef(qWindow);
         createInfo.windowTitle = qWindow->title().toStdString();
         createInfo.windowId = window->internalWindowId();
         createInfo.qAbilityInstanceId = parentWindowProxy->qAbilityInstanceId();

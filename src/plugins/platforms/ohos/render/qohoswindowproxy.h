@@ -234,7 +234,8 @@ private:
         JsScopeData(
             WindowProxyType windowProxyType, QNapi::Reference<QNapi::Object> jsWindow,
             std::shared_ptr<void> optKeepAliveData,
-            std::shared_ptr<QtOhos::QAbilityPeer> qAbilityPeer);
+            std::shared_ptr<QtOhos::QAbilityPeer> qAbilityPeer,
+            QtOhos::QObjectThreadSafeRef owningQWindowRef);
         ~JsScopeData();
 
         std::shared_ptr<void> registerEventListener(

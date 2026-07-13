@@ -33,7 +33,9 @@ QOhosOptional<WindowProperties> tryGetWindowProperties(JsWindowId jsWindowId);
 class JsWindowRef
 {
 public:
-    explicit JsWindowRef(JsWindowId windowId, QNapi::Object jsWindow);
+    explicit JsWindowRef(
+        JsWindowId windowId, QNapi::Object jsWindow,
+        QtOhos::QObjectThreadSafeRef owningQWindowRef);
 
     JsWindowRef(const JsWindowRef &) = delete;
     JsWindowRef &operator=(const JsWindowRef &) = delete;
@@ -44,6 +46,7 @@ public:
     bool isFocused() const;
     bool isWindowShown() const;
     JsWindowId id() const;
+    QtOhos::QObjectThreadSafeRef owningQWindowRef() const;
 
     template<typename Result = QNapi::Value>
     Result eval(const std::string &expr, const std::vector<QNapi::ValueWrapper> &exprArgs = {}) const;
@@ -56,6 +59,7 @@ public:
 private:
     JsWindowId m_jsWindowId;
     QNapi::Reference<QNapi::Object> m_jsWindow;
+    QtOhos::QObjectThreadSafeRef m_owningQWindowRef;
 };
 
 template<typename Result>

@@ -43,9 +43,11 @@ QOhosOptional<WindowProperties> tryGetWindowProperties(JsWindowId jsWindowId)
         });
 }
 
-JsWindowRef::JsWindowRef(JsWindowId windowId, QNapi::Object jsWindow)
+JsWindowRef::JsWindowRef(
+    JsWindowId windowId, QNapi::Object jsWindow, QtOhos::QObjectThreadSafeRef owningQWindowRef)
     : m_jsWindowId(windowId)
     , m_jsWindow(Napi::Persistent(jsWindow))
+    , m_owningQWindowRef(owningQWindowRef)
 {
 }
 
@@ -72,6 +74,11 @@ bool JsWindowRef::isFocused() const
 JsWindowId JsWindowRef::id() const
 {
     return m_jsWindowId;
+}
+
+QtOhos::QObjectThreadSafeRef JsWindowRef::owningQWindowRef() const
+{
+    return m_owningQWindowRef;
 }
 
 QNapi::Object JsWindowRef::jsObject()
