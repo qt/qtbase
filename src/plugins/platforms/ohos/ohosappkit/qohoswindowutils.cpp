@@ -6,7 +6,9 @@
 #include <QtCore/qvariant.h>
 #include <QtGui/private/qohoswindowhints_p.h>
 #include <QtGui/qcolor.h>
+#include <QtGui/qpa/qplatformscreen_p.h>
 #include <QtGui/qpa/qplatformwindow_p.h>
+#include <QtGui/qscreen.h>
 #include <QtGui/qwindow.h>
 #include <QtWidgets/qwidget.h>
 #include <optional>
@@ -163,6 +165,15 @@ std::optional<double> tryGetNativeWindowId(QWindow *window)
         return {};
 
     return ohosWindow->windowId();
+}
+
+std::optional<double> tryGetScreenDisplayId(QScreen *screen)
+{
+    auto *ohosScreen = screen->nativeInterface<QNativeInterface::Private::QOhosScreen>();
+    if (!ohosScreen)
+        return {};
+
+    return ohosScreen->displayId();
 }
 
 }

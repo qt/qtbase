@@ -7,7 +7,6 @@
 #include <QtCore/qobject.h>
 #include <QtCore/qscopeguard.h>
 #include <QtGui/private/qguiapplication_p.h>
-#include <QtGui/qscreen.h>
 #include <QtGui/qwindow.h>
 #include <functional>
 #include <info/application_target_sdk_version.h>
@@ -42,8 +41,6 @@ public:
     QString getTextDataFromPasteboard() const override;
 
     void setMainWindowGeometryPersistencePolicy(WindowGeometryPersistencePolicy policy) override;
-
-    std::optional<double> tryGetScreenDisplayId(QObject *screenObject) override;
 
     QOhosSupplier<double> makeOhosConfigFontSizeScaleDataSource(
         QOhosConsumer<double> valueChangedHandler) override;
@@ -92,20 +89,6 @@ void QOhosQpaFunctionsImpl::setMainWindowGeometryPersistencePolicy(
             "%s: Failed to convert persistence geometry policy hint to QOhosPlatformIntegration enum",
             Q_FUNC_INFO);
     }
-}
-
-std::optional<double> QOhosQpaFunctionsImpl::tryGetScreenDisplayId(QObject *screenObject)
-{
-    auto *qScreen = qobject_cast<QScreen *>(screenObject);
-    if (qScreen == nullptr) {
-        qOhosPrintfWarning("%s: screenObject argument is not a QScreen", Q_FUNC_INFO);
-        return {};
-    }
-    auto *ohosPlatformScreen = static_cast<QOhosPlatformScreen *>(qScreen->handle());
-
-    return ohosPlatformScreen != nullptr
-        ? std::optional(ohosPlatformScreen->displayInfo().id.value())
-        : std::nullopt;
 }
 
 QOhosSupplier<double> QOhosQpaFunctionsImpl::makeOhosConfigFontSizeScaleDataSource(

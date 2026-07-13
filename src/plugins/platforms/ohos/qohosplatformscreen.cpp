@@ -334,6 +334,11 @@ const QOhosDisplayInfo &QOhosPlatformScreen::displayInfo() const
     return m_displayInfo;
 }
 
+double QOhosPlatformScreen::displayId() const
+{
+    return m_displayInfo.id.value();
+}
+
 QRect QOhosPlatformScreen::geometry() const
 {
     return m_displayInfo.displayGeometryPixels();
