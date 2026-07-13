@@ -3,6 +3,7 @@
 
 #include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/private/qohoslogger_p.h>
+#include <QtCore/private/qohospathutils_p.h>
 #include <QtCore/qspan.h>
 #include <QtCore/qurl.h>
 #include <QtGui/private/qohosimageconversions_p.h>
@@ -16,7 +17,6 @@
 #include <qarkui/qarkuiutils.h>
 #include <qohosmimedata.h>
 #include <qohospixelmapconversions.h>
-#include <qohosplatformservices.h>
 #include <qohosplugincore.h>
 #include <qohosudmfconversions.h>
 #include <qohosudmf.h>
@@ -263,8 +263,8 @@ void addMimeDataSuppliersForUrlLikeEntriesFromRecords(
                         {
                             QUrl::fromLocalFile(
                                 QString::fromStdString(
-                                    QOhosPlatformServices::mapOhosFileUriToPathInJsThread(
-                                        udsEntry.getContent()))),
+                                    tryMapOhosFileUriToPath(
+                                        udsEntry.getContent()).value_or(""))),
                         });
                 });
             tryProcessEntriesOfTypeInRecords<::OH_UdsHyperlink>(
@@ -402,8 +402,8 @@ UdmfRecordEntryFactory makeUdmfRecordEntryFactoryForUrl(const QUrl &url)
         ? UdmfRecordEntryFactory::makeForUdsObjectFactory<::OH_UdsFileUri>(
             [url]() {
                 return QOhosUdsObject<::OH_UdsFileUri>(
-                    QOhosPlatformServices::mapPathToOhosUriInJsThread(
-                        url.toLocalFile().toStdString()).c_str());
+                    tryMapPathToOhosFileUri(
+                        url.toLocalFile().toStdString()).value_or("").c_str());
             })
         : UdmfRecordEntryFactory::makeForUdsObjectFactory<::OH_UdsHyperlink>(
             [url]() {

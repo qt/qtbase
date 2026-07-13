@@ -5,11 +5,9 @@
 #include <QtCore/QUrl>
 #include <QtCore/private/qnapi_p.h>
 #include <QtCore/private/qohoscommon_p.h>
+#include <QtCore/private/qohospathutils_p.h>
 #include <QtCore/qfileinfo.h>
-#include <QtCore/qscopeguard.h>
 #include <QtGui/QColor>
-#include <cstdlib>
-#include <filemanagement/file_uri/oh_file_uri.h>
 #include <qohosenums.h>
 #include <qohosplugincore.h>
 #include <utility>
@@ -36,27 +34,6 @@ void callStartAbility(QNapi::Object baseQAbility, QNapi::Object want, QOhosConsu
             QtOhos::logJsCallbackError(cbInfo, "Got error from startAbility()");
             resultConsumer(false);
         });
-}
-
-std::string callOhFileUriConversionFunc(
-    FileManagement_ErrCode (*convFunc)(const char *, unsigned int, char **),
-    const char *convFuncName, const std::string &input)
-{
-    std::string outputString;
-
-    char *outputPtr = nullptr;
-    auto outputPtrGuard = qScopeGuard(std::bind(::free, std::ref(outputPtr)));
-    auto convFuncRetVal = convFunc(input.c_str(), input.size(), &outputPtr);
-
-    if (convFuncRetVal == FileManagement_ErrCode::ERR_OK && outputPtr != nullptr) {
-        outputString = outputPtr;
-    } else {
-        qWarning(
-            "OH FileUri conversion function '%s' failed for input '%s', retval: %d",
-            convFuncName, input.c_str(), static_cast<int>(convFuncRetVal));
-    }
-
-    return outputString;
 }
 
 class QOhosColorPicker : public QPlatformServiceColorPicker
@@ -145,7 +122,7 @@ bool QOhosPlatformServices::openUrl(const QUrl &url)
                                     QNapi::makeObject(
                                         jsState.env(),
                                         {
-                                            {"fileUri", mapPathToOhosUriInJsThread(url.path().toStdString())},
+                                            {"fileUri", tryMapPathToOhosFileUri(url.path().toStdString()).value_or("")},
                                         })
                                 },
                             })
@@ -153,7 +130,7 @@ bool QOhosPlatformServices::openUrl(const QUrl &url)
                             jsState.env(),
                             {
                                 {"action", "ohos.want.action.viewData"},
-                                {"uri", mapPathToOhosUriInJsThread(url.path().toStdString())},
+                                {"uri", tryMapPathToOhosFileUri(url.path().toStdString()).value_or("")},
                                 {
                                     "flags",
                                     jsState.mapOhosEnumToJs(QOhosWantConstantFlags::FLAG_AUTH_READ_URI_PERMISSION).Int32Value()
@@ -173,16 +150,6 @@ bool QOhosPlatformServices::openDocument(const QUrl &url)
 QByteArray QOhosPlatformServices::desktopEnvironment() const
 {
     return QByteArray("Ohos");
-}
-
-std::string QOhosPlatformServices::mapPathToOhosUriInJsThread(const std::string &path)
-{
-    return callOhFileUriConversionFunc(OH_FileUri_GetUriFromPath, "OH_FileUri_GetUriFromPath", path);
-}
-
-std::string QOhosPlatformServices::mapOhosFileUriToPathInJsThread(const std::string &ohosFileUri)
-{
-    return callOhFileUriConversionFunc(OH_FileUri_GetPathFromUri, "OH_FileUri_GetPathFromUri", ohosFileUri);
 }
 
 QT_END_NAMESPACE

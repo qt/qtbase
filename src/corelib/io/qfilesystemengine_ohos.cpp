@@ -11,9 +11,7 @@
 #include <QtCore/private/qnapi_p.h>
 #include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/private/qohoslogger_p.h>
-#include <QtCore/qscopeguard.h>
-#include <cstdlib>
-#include <filemanagement/file_uri/oh_file_uri.h>
+#include <QtCore/private/qohospathutils_p.h>
 #include <optional>
 #include <string>
 
@@ -21,32 +19,11 @@ QT_BEGIN_NAMESPACE
 
 namespace {
 
-std::optional<std::string> tryMapPathToOhosUri(const std::string &inputPath)
-{
-    char *outputPtr = nullptr;
-    auto outputPtrGuard = qScopeGuard(
-        [&]() {
-            ::free(outputPtr);
-        });
-    auto getUriResult = ::OH_FileUri_GetUriFromPath(inputPath.c_str(), inputPath.size(), &outputPtr);
-
-    std::optional<std::string> outputOhosUri;
-    if (getUriResult == FileManagement_ErrCode::ERR_OK && outputPtr != nullptr) {
-        outputOhosUri.emplace(outputPtr);
-    } else {
-        qOhosPrintfWarning(
-            "%s: path to OHOS URI conversion failed for input path '%s', retval: %d",
-            Q_FUNC_INFO, inputPath.c_str(), static_cast<int>(getUriResult));
-    }
-
-    return outputOhosUri;
-}
-
 bool tryDeleteToTrash(const QString &filePath)
 {
     return QOhosJsThreadGateway::evalWithConsumer<bool>(
         [&](QOhosJsState &jsState, QOhosConsumer<bool> resultConsumer) {
-            auto optFileOhosUri = tryMapPathToOhosUri(filePath.toStdString());
+            auto optFileOhosUri = tryMapPathToOhosFileUri(filePath.toStdString());
             if (!optFileOhosUri.has_value()) {
                 resultConsumer(false);
                 return;

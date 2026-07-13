@@ -5,7 +5,6 @@
 #define QOHOSPLATFORMSERVICES_H
 
 #include <qpa/qplatformservices.h>
-#include <string>
 
 QT_BEGIN_NAMESPACE
 
@@ -18,9 +17,6 @@ public:
     bool openUrl(const QUrl &url) override;
     bool openDocument(const QUrl &url) override;
     QByteArray desktopEnvironment() const override;
-
-    static std::string mapPathToOhosUriInJsThread(const std::string &path);
-    static std::string mapOhosFileUriToPathInJsThread(const std::string &ohosFileUri);
 
     QPlatformServiceColorPicker *colorPicker(QWindow *parent) override;
 };
