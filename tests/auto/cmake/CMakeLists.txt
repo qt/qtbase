@@ -566,5 +566,9 @@ if(QT_FEATURE_clang_module_maps AND QT_WILL_INSTALL
     add_subdirectory(test_clang_module_maps)
 endif()
 
+if(QT_FEATURE_framework)
+    add_subdirectory(test_framework_forwarding_headers)
+endif()
+
 # Add all tests using CMake's RunCMake test module
 add_subdirectory(RunCMake)

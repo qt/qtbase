@@ -921,6 +921,15 @@ public:
         static const std::regex ConfigHeaderRegex("^(q|.+-)config(_p)?\\.h");
 
         resetCurrentFileInfoData(headerFile);
+
+        bool isPrivate = m_currentFileType & PrivateHeader;
+        bool isQpa = m_currentFileType & QpaHeader;
+        bool isRhi = m_currentFileType & RhiHeader;
+        bool isSsg = m_currentFileType & SsgHeader;
+        bool isSpi = m_currentFileType & SpiHeader;
+        bool isExport = m_currentFileType & ExportHeader;
+        bool isPublic = !isPrivate && !isQpa && !isRhi && !isSsg && !isSpi;
+
         // We assume that header files ouside of the module source or build directories do not
         // belong to the module. Skip any processing.
         if (!m_currentFileInSourceDir
@@ -932,8 +941,14 @@ public:
             // For some reason we don't treat the export header or Depends header as
             // "belonging to the module", as per the comment above. Yet we do need it
             // in the module map if it's in the include dir.
-            if (m_currentFileString.find(m_commandLineArgs->includeDir()) == 0)
+            // And we need to create a forwarding header in the install include dir for
+            // framework builds.
+            if (m_currentFileString.find(m_commandLineArgs->includeDir()) == 0) {
                 m_moduleMapContents.insert({m_currentFileString, {}});
+
+                if (m_commandLineArgs->isFramework() && isPublic)
+                    m_publicHeaders.insert(m_currentFilename);
+            }
 
             return true;
         }
@@ -950,12 +965,6 @@ public:
             originalStamp = FileStamp::clock::now();
         ec.clear();
 
-        bool isPrivate = m_currentFileType & PrivateHeader;
-        bool isQpa = m_currentFileType & QpaHeader;
-        bool isRhi = m_currentFileType & RhiHeader;
-        bool isSsg = m_currentFileType & SsgHeader;
-        bool isSpi = m_currentFileType & SpiHeader;
-        bool isExport = m_currentFileType & ExportHeader;
         scannerDebug()
             << "processHeader:start: " << headerFile
             << " m_currentFilename: " << m_currentFilename
@@ -1005,7 +1014,7 @@ public:
         // Remember the public headers so that, for framework builds, we can generate
         // forwarding headers that re-expose them via a plain (non-framework) include path
         // alongside the framework (see generateForwardingHeader).
-        if (!isPrivate && !isQpa && !isRhi && !isSsg && !isSpi)
+        if (isPublic)
             m_publicHeaders.insert(m_currentFilename);
 
         // No further processing in minimal mode.
@@ -1058,7 +1067,7 @@ public:
 
             ParsingResult parsingResult;
             parsingResult.masterInclude = m_currentFileInSourceDir && !isExport && !is3rdParty
-                    && !isQpa && !isRhi && !isSsg && !isSpi && !isPrivate && !isGenerated;
+                    && isPublic && !isGenerated;
             if (!parseHeader(headerFile, parsingResult, skipChecks)) {
                 scannerDebug() << "parseHeader failed: " << headerFile << std::endl;
                 return false;
@@ -1075,7 +1084,7 @@ public:
             // Add the '#if QT_CONFIG(<feature>)' check for header files that supposed to be
             // included into the module master header only if corresponding feature is enabled.
             bool willBeInModuleMasterHeader = false;
-            if (!isQpa && !isRhi && !isSsg && !isSpi && !isPrivate) {
+            if (isPublic) {
                 if (m_currentFilename.find('_') == std::string::npos
                     && parsingResult.masterInclude) {
                     m_masterHeaderContents[m_currentFilename] = parsingResult.requireConfig;
