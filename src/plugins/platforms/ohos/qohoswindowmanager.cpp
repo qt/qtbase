@@ -192,6 +192,17 @@ void showFileDialogAuthorization(
 
     QtOhos::invokeInJsThread(
         [contextWindowRef, filePath, sharedResultCallback](QtOhos::JsState &jsState) {
+            auto optWindowQAbility = jsState.tryGetQAbilityByQWindow(contextWindowRef);
+            auto optQAbility = optWindowQAbility ? optWindowQAbility : jsState.defaultQAbility();
+            if (!optQAbility) {
+                qOhosPrintfError("%s: no ability available for the file dialog", Q_FUNC_INFO);
+                QtOhos::invokeInQtThread(
+                    [sharedResultCallback]() {
+                        (*sharedResultCallback)(false);
+                    });
+                return;
+            }
+
             auto documentSelectOptions = QNapi::makeObject(
                 jsState.env(),
                 {
@@ -202,9 +213,8 @@ void showFileDialogAuthorization(
             qOhosPrintfDebug(
                 "Calling DocumentViewPicker.select() with options: %s",
                 QNapi::toJsonString(documentSelectOptions).c_str());
-            auto qAbilityPeer = getQAbilityPeerForQWindow(jsState, contextWindowRef);
             auto optContextJsWindow = jsState.tryGetJsWindowByQWindow(contextWindowRef);
-            std::vector<QNapi::ValueWrapper> constructorParams = {qAbilityPeer->qAbility().get("context")};
+            std::vector<QNapi::ValueWrapper> constructorParams = {optQAbility.value().get("context")};
             if (optContextJsWindow)
                 constructorParams.push_back(optContextJsWindow.value());
             auto documentViewPicker = QtOhos::moveToSharedPtr(
