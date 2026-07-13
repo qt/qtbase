@@ -66,6 +66,9 @@ void QOhosFloatingWindow::setGeometry(const QRect &rect)
         if (!qt_window_private(window())->positionAutomatic)
             view->setPosition(frameGeometry.topLeft());
         view->setSize(frameGeometry.size());
+
+        if (view->viewType() == QOhosView::ViewType::EmbeddedWindow)
+            setWindowGeometryFromOhos(rect);
     }
 }
 
@@ -514,10 +517,9 @@ void QOhosFloatingWindow::handleNodeResizeEvent(const QArkUi::QQtEmbeddedWindowN
     if (Q_UNLIKELY(!m_view))
         return;
 
-    setWindowGeometryFromOhos(
-        m_view->viewType() != QOhosView::ViewType::EmbeddedWindow
-            ? QRect(areaChangeEvent.globalRelativeOffsetPixels, areaChangeEvent.screenGeometryPixels.size())
-            : QRect(areaChangeEvent.parentRelativeOffsetPixels, areaChangeEvent.screenGeometryPixels.size()));
+    if (m_view->viewType() != QOhosView::ViewType::EmbeddedWindow)
+        setWindowGeometryFromOhos(
+            QRect(areaChangeEvent.globalRelativeOffsetPixels, areaChangeEvent.screenGeometryPixels.size()));
 }
 
 QT_END_NAMESPACE
