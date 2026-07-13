@@ -6,6 +6,7 @@
 #include <QtCore/private/qnapi_p.h>
 #include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/private/qohoslogger_p.h>
+#include <QtCore/private/qohospathutils_p.h>
 #include <qohosjsenv_p.h>
 #include <qohosplugincore.h>
 #include <QtCore/qurl.h>
@@ -14,7 +15,6 @@
 #include <render/qohosjswindowregistry.h>
 #include <render/qwindowproxyregistry.h>
 #include <vector>
-#include "qohosplatformservices.h"
 #include "qohosplatformwindow.h"
 
 QT_BEGIN_NAMESPACE
@@ -82,7 +82,7 @@ void startOhosFilePicker(
             std::transform(
                 resultOhosUris.cbegin(), resultOhosUris.cend(), std::back_inserter(resultPaths),
                 [&](const auto &uri) {
-                    return QOhosPlatformServices::mapOhosFileUriToPathInJsThread(uri);
+                    return tryMapOhosFileUriToPath(uri).value_or("");
                 });
 
             (*sharedResultConsumer)(
@@ -135,7 +135,7 @@ void showFileDialogOpen(
                 {
                     {"maxSelectNumber", resultMultiplicity == ResultMultiplicity::SINGLE ? 1 : ohosMaxValueForMaxSelectNumber},
                     {"fileSuffixFilters", QNapi::makeArray(env, filters, std::mem_fn(&QString::toStdString))},
-                    {"defaultFilePathUri", QOhosPlatformServices::mapPathToOhosUriInJsThread(defaultPath.toStdString())},
+                    {"defaultFilePathUri", tryMapPathToOhosFileUri(defaultPath.toStdString()).value_or("")},
                     {"selectMode", jsState.mapOhosEnumToJs(documentSelectMode)},
                 });
 
@@ -176,7 +176,7 @@ void showFileDialogSave(
             if (!newFileNames.isEmpty())
                 documentSaveOptions.Set("newFileNames", QNapi::makeArray(env, newFileNames, std::mem_fn(&QString::toStdString)));
             if (!defaultFilePath.isEmpty())
-                documentSaveOptions.Set("defaultFilePathUri", QOhosPlatformServices::mapPathToOhosUriInJsThread(defaultFilePath.toStdString()));
+                documentSaveOptions.Set("defaultFilePathUri", tryMapPathToOhosFileUri(defaultFilePath.toStdString()).value_or(""));
             if (!fileSuffixChoices.isEmpty())
                 documentSaveOptions.Set("fileSuffixChoices", QNapi::makeArray(env, fileSuffixChoices, std::mem_fn(&QString::toStdString)));
             documentSaveOptions.Set("autoCreateEmptyFile", false);
@@ -216,7 +216,7 @@ void showFileDialogAuthorization(
             auto documentSelectOptions = QNapi::makeObject(
                 jsState.env(),
                 {
-                    {"defaultFilePathUri", QOhosPlatformServices::mapPathToOhosUriInJsThread(filePath.toStdString())},
+                    {"defaultFilePathUri", tryMapPathToOhosFileUri(filePath.toStdString()).value_or("")},
                     {"authMode", true},
                 });
 

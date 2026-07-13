@@ -8,9 +8,8 @@
 #include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/private/qohosjstools_p.h>
 #include <QtCore/private/qohoslogger_p.h>
-#include <QtCore/qscopeguard.h>
+#include <QtCore/private/qohospathutils_p.h>
 #include <cstdint>
-#include <cstdlib>
 #include <cstring>
 #include <functional>
 #include <memory>
@@ -20,38 +19,12 @@
 #include <vector>
 #include <database/udmf/udmf_meta.h>
 #include <database/udmf/utd.h>
-#include <filemanagement/file_uri/oh_file_uri.h>
 
 QT_BEGIN_NAMESPACE
 
 namespace QOhosShareKit {
 
 namespace {
-
-template<typename ConvFunc>
-std::string callOhFileUriConversionFunc(
-    ConvFunc convFunc, const std::string &input)
-{
-    char *outputPtr = nullptr;
-    auto outputPtrGuard = qScopeGuard(std::bind(::free, std::ref(outputPtr)));
-    auto convFuncRetVal = convFunc(input.c_str(), input.size(), &outputPtr);
-
-    std::string outputString;
-    if (convFuncRetVal == ::FileManagement_ErrCode::ERR_OK && outputPtr != nullptr) {
-        outputString = outputPtr;
-    } else {
-        qOhosPrintfWarning(
-            "OH FileUri conversion function '%s' failed for input '%s', retval: %d",
-            convFunc.name(), input.c_str(), static_cast<int>(convFuncRetVal));
-    }
-
-    return outputString;
-}
-
-std::string mapPathToOhosUriInJsThread(const std::string &path)
-{
-    return callOhFileUriConversionFunc(Q_OHOS_NAMED_FUNC(::OH_FileUri_GetUriFromPath), path);
-}
 
 std::optional<std::string> tryMapMimeTypeToUtdTypeId(const std::string &mimeType)
 {
@@ -100,7 +73,7 @@ std::optional<QNapi::Object> tryMakeShareKitSharedDataRecordObject(
     } else if (record.filePath.has_value()) {
         objectProperties.emplace_back(
             "uri",
-            mapPathToOhosUriInJsThread(record.filePath.value()));
+            tryMapPathToOhosFileUri(record.filePath.value()).value_or(""));
     } else {
         qOhosPrintfWarning("%s: Record doesn't have content nor uri.", Q_FUNC_INFO);
         return std::nullopt;
@@ -126,7 +99,7 @@ std::optional<QNapi::Object> tryMakeShareKitSharedDataRecordObject(
     if (record.thumbnailFilePath.has_value()) {
         objectProperties.emplace_back(
             "thumbnailUri",
-            mapPathToOhosUriInJsThread(record.thumbnailFilePath.value()));
+            tryMapPathToOhosFileUri(record.thumbnailFilePath.value()).value_or(""));
     }
 
     if (record.extraData.has_value()) {

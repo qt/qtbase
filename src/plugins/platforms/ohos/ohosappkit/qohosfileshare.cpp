@@ -5,11 +5,11 @@
 #include <QtCore/private/qcore_ohos_p.h>
 #include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/private/qohoslogger_p.h>
+#include <QtCore/private/qohospathutils_p.h>
 #include <QtCore/qscopeguard.h>
 #include <QtOhosAppKit/private/qohosoperationstatus_p.h>
 #include <cstdlib>
 #include <cstring>
-#include <functional>
 #include <memory>
 #include <optional>
 #include <string>
@@ -17,7 +17,6 @@
 #include <utility>
 #include <vector>
 
-#include <filemanagement/file_uri/oh_file_uri.h>
 #include <filemanagement/fileshare/oh_file_share.h>
 
 QT_BEGIN_NAMESPACE
@@ -61,36 +60,6 @@ std::shared_ptr<char> makeSharedNullTerminatedString(const char *str)
     return makeSharedNullTerminatedString(std::string(str != nullptr ? str : ""));
 }
 
-template<typename ConvFunc>
-std::string callOhFileUriConversionFunc(
-    ConvFunc convFunc, const std::string &input)
-{
-    char *outputPtr = nullptr;
-    auto outputPtrGuard = qScopeGuard(std::bind(::free, std::ref(outputPtr)));
-    auto convFuncRetVal = convFunc(input.c_str(), input.size(), &outputPtr);
-
-    std::string outputString;
-    if (convFuncRetVal == ::FileManagement_ErrCode::ERR_OK && outputPtr != nullptr) {
-        outputString = outputPtr;
-    } else {
-        qOhosPrintfWarning(
-            "OH FileUri conversion function '%s' failed for input '%s', retval: %d",
-            convFunc.name(), input.c_str(), static_cast<int>(convFuncRetVal));
-    }
-
-    return outputString;
-}
-
-std::string mapPathToOhosUriInJsThread(const std::string &path)
-{
-    return callOhFileUriConversionFunc(Q_OHOS_NAMED_FUNC(::OH_FileUri_GetUriFromPath), path);
-}
-
-std::string mapOhosFileUriToPathInJsThread(const std::string &ohosFileUri)
-{
-    return callOhFileUriConversionFunc(Q_OHOS_NAMED_FUNC(::OH_FileUri_GetPathFromUri), ohosFileUri);
-}
-
 std::shared_ptr<::FileShare_PolicyInfo> makeFileSharePolicyInfo(
     std::string uri, unsigned operationMode)
 {
@@ -115,7 +84,7 @@ std::vector<std::shared_ptr<::FileShare_PolicyInfo>> convertToFileSharePolicyInf
     for (const auto &policy : policies) {
         fileSharePolicies.push_back(
             makeFileSharePolicyInfo(
-                mapPathToOhosUriInJsThread(policy.path.toStdString()),
+                tryMapPathToOhosFileUri(policy.path.toStdString()).value_or(""),
                 static_cast<unsigned>(policy.operationModes.toInt())));
     }
 
@@ -263,7 +232,7 @@ QList<PathPolicyErrorInfo> convertToPathPolicyErrorInfos(
     for (const auto &policyErrorResult : policyErrorResults) {
         result.push_back({
             .path = policyErrorResult->uri != nullptr
-                ? QString::fromStdString(mapOhosFileUriToPathInJsThread(policyErrorResult->uri))
+                ? QString::fromStdString(tryMapOhosFileUriToPath(policyErrorResult->uri).value_or(""))
                 : QString(),
             .error =
                 tryMapFileSharePolicyErrorCode(policyErrorResult->code)
