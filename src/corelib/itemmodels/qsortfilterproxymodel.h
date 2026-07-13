@@ -113,7 +113,7 @@ public:
         NotRelevant = 0x00,
         RelevantForFiltering = 0x01,
         RelevantForSorting = 0x02,
-        RelevantForFilteringAndSorting = RelevantForFiltering | RelevantForSorting
+        RelevantForFilteringAndSorting = RelevantForFiltering | RelevantForSorting,
     };
     Q_DECLARE_FLAGS(DataChangeRelevanceFlags, DataChangeRelevanceFlag)
 
