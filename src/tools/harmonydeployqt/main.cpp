@@ -387,10 +387,9 @@ static bool readInputConfiguration(Options *options)
             fprintf(stdout, "Searching for template starting from: %s\n", qPrintable(searchPath));
 
         // Walk up directory tree to find Qt installation using string manipulation
-        QString currentPath = searchPath;
         for (int i = 0; i < 10; ++i) {
             // Check for installed template in share directory (matches CMakeLists.txt install path)
-            QString templatePath = currentPath + "/share/qt6/src/harmonyos/templates"_L1;
+            QString templatePath = searchPath + "/share/qt6/src/harmonyos/templates"_L1;
             if (options->verbose) {
                 fprintf(stdout, "  Checking: %s ... %s\n", qPrintable(templatePath),
                        QDir(templatePath).exists() ? "FOUND" : "not found");
@@ -401,7 +400,7 @@ static bool readInputConfiguration(Options *options)
             }
 
             // Check for source tree location (development builds)
-            templatePath = currentPath + "/src/harmonyos/templates"_L1;
+            templatePath = searchPath + "/src/harmonyos/templates"_L1;
             if (options->verbose) {
                 fprintf(stdout, "  Checking: %s ... %s\n", qPrintable(templatePath),
                        QDir(templatePath).exists() ? "FOUND" : "not found");
@@ -412,13 +411,13 @@ static bool readInputConfiguration(Options *options)
             }
 
             // Move up one directory by removing last path component
-            int lastSlash = currentPath.lastIndexOf('/'_L1);
+            const auto lastSlash = searchPath.lastIndexOf('/'_L1);
             if (lastSlash <= 0) {
                 if (options->verbose)
                     fprintf(stdout, "  Reached root directory\n");
                 break;
             }
-            currentPath = currentPath.left(lastSlash);
+            searchPath.resize(lastSlash);
         }
 
         if (options->harmonyOsPackageSourceDirectory.isEmpty()) {
