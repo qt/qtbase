@@ -164,15 +164,11 @@ bool QOhosQpaFunctionsImpl::showFileDialogToAuthorizeFilePath(QObject *parentWin
     if (qWindow == nullptr)
         qOhosReportFatalErrorAndAbort("%s: window argument is null or not a QWindow", Q_FUNC_INFO);
 
-    auto *platformWindow = QOhosPlatformWindow::fromQWindowOrNull(qWindow);
-    if (platformWindow == nullptr)
-        qOhosReportFatalErrorAndAbort("%s: failed to get platform window", Q_FUNC_INFO);
-
     auto eventLoop = std::make_shared<QEventLoop>();
     auto filePathAuthorized = std::make_shared<bool>(false);
 
     QOhosWindowManager::showFileDialogAuthorization(
-       platformWindow->internalWindowId(), filePath,
+       QtOhos::QObjectThreadSafeRef(qWindow), filePath,
        [filePathAuthorized, eventLoop](bool result) {
             *filePathAuthorized = result;
             eventLoop->quit();

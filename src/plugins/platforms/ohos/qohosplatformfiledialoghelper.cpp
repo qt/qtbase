@@ -3,7 +3,6 @@
 
 #include "qohosplatformdialoghelper.h"
 #include "qohosplatformintegration.h"
-#include "qohosplatformwindow.h"
 #include <QtCore/qeventloop.h>
 #include <QtCore/qfileinfo.h>
 #include <qohosjsenv_p.h>
@@ -41,27 +40,6 @@ mapQFileDialogOptionsToOhosResultMultiplicity(const QFileDialogOptions &options)
     return options.fileMode() == QFileDialogOptions::FileMode::ExistingFile
         ? QOhosWindowManager::ResultMultiplicity::SINGLE
         : QOhosWindowManager::ResultMultiplicity::MULTIPLE;
-}
-
-QtOhos::InternalWindowId getQWindowInternalWindowIdOrFail(QWindow *qWindow)
-{
-    auto *platformWindow = QOhosPlatformWindow::fromQWindowOrNull(qWindow);
-    auto windowId = platformWindow != nullptr
-        ? platformWindow->internalWindowId()
-        : QtOhos::InternalWindowId::invalidWindowId();
-
-    if (!windowId.isValid())
-        qOhosReportFatalErrorAndAbort("%s: Failed to retrieve window id", Q_FUNC_INFO);
-
-    return windowId;
-}
-
-QtOhos::InternalWindowId tryGetFocusedWindowInternalWindowId()
-{
-    auto *focusedWindow = QGuiApplication::focusWindow();
-    return focusedWindow != nullptr
-        ? getQWindowInternalWindowIdOrFail(focusedWindow)
-        : QtOhos::InternalWindowId::invalidWindowId();
 }
 
 class QOhosPlatformFileDialogHelperImpl : public QPlatformFileDialogHelper
@@ -220,16 +198,15 @@ bool QOhosPlatformFileDialogHelperImpl::show(
     Q_UNUSED(windowFlags)
     Q_UNUSED(windowModality)
 
-    const auto contextWinId = parent != nullptr
-        ? getQWindowInternalWindowIdOrFail(parent)
-        : tryGetFocusedWindowInternalWindowId();
+    auto contextWindowRef = QtOhos::QObjectThreadSafeRef(
+        parent != nullptr ? parent : QGuiApplication::focusWindow());
 
     // TODO: don't assume that "this" is always alive
     QSharedPointer<QFileDialogOptions> opt = options();
     auto ohosNameFilters = convertQtNameFiltersToOhosStandard(opt->nameFilters());
     if (opt->acceptMode() == QFileDialogOptions::AcceptOpen)
         QOhosWindowManager::showFileDialogOpen(
-            contextWinId,
+            contextWindowRef,
             ohosNameFilters,
             !m_selectFileName.isEmpty()
                 ? m_selectFileName.toLocalFile()
@@ -246,7 +223,7 @@ bool QOhosPlatformFileDialogHelperImpl::show(
             });
     else
         QOhosWindowManager::showFileDialogSave(
-            contextWinId,
+            contextWindowRef,
             !m_selectFileName.isEmpty()
                 ? QStringList(QFileInfo(m_selectFileName.toLocalFile()).fileName())
                 : QStringList(),
