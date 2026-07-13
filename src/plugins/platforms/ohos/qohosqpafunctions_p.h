@@ -62,7 +62,6 @@ public:
 
     virtual void setMainWindowGeometryPersistencePolicy(WindowGeometryPersistencePolicy policy) = 0;
 
-    virtual std::optional<double> tryGetNativeWindowId(QObject *window) = 0;
     virtual std::optional<double> tryGetScreenDisplayId(QObject *screenObject) = 0;
 
     virtual QOhosSupplier<double> makeOhosConfigFontSizeScaleDataSource(

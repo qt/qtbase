@@ -8,8 +8,10 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qrect.h>
+#include <QtGui/qpa/qplatformwindow_p.h>
 #include <functional>
 #include <memory>
+#include <optional>
 #include <qohosdisplayinfo.h>
 #include <qohosinternalwindowid_p.h>
 #include <qohosplugincore.h>
@@ -23,7 +25,7 @@ class QOhosPlatformScreen;
 class QOhosPlatformBackingStore;
 class QOhosView;
 
-class QOhosPlatformWindow: public QPlatformWindow
+class QOhosPlatformWindow: public QPlatformWindow, public QNativeInterface::Private::QOhosWindow
 {
 public:
     enum class DecorationPreset {
@@ -92,6 +94,7 @@ public:
     void setGeometry(const QRect &rect) override;
     bool shouldDisplayAsOhosWindow() const;
     QtOhos::InternalWindowId internalWindowId() const;
+    std::optional<double> windowId() const override;
 
     virtual QOhosSurface *ownedSurfaceOrNull() const;
     virtual QOhosView *ownedViewOrNull() const;

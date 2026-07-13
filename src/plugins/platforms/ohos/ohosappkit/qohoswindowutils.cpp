@@ -6,8 +6,10 @@
 #include <QtCore/qvariant.h>
 #include <QtGui/private/qohoswindowhints_p.h>
 #include <QtGui/qcolor.h>
+#include <QtGui/qpa/qplatformwindow_p.h>
 #include <QtGui/qwindow.h>
 #include <QtWidgets/qwidget.h>
+#include <optional>
 
 QT_BEGIN_NAMESPACE
 
@@ -152,6 +154,15 @@ void setWindowDragResizable(QWidget *widget, bool dragResizable)
     widget->setProperty(QOhosWindowHints::dragResizableKey, QVariant::fromValue(dragResizable));
 }
 
+}
+
+std::optional<double> tryGetNativeWindowId(QWindow *window)
+{
+    auto *ohosWindow = window->nativeInterface<QNativeInterface::Private::QOhosWindow>();
+    if (!ohosWindow)
+        return {};
+
+    return ohosWindow->windowId();
 }
 
 }

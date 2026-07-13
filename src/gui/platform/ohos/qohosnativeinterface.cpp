@@ -15,7 +15,7 @@ using namespace QNativeInterface::Private;
     \class QNativeInterface::Private::QOhosWindow
     \since 6.12
     \internal
-    \brief Native interface for wrapping a native ArkUI node in a QWindow on OpenHarmony.
+    \brief Native interface to a window on OpenHarmony.
     \inmodule QtGui
     \ingroup native-interfaces
 */

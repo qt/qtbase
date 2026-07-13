@@ -24,7 +24,6 @@
 #include <qohossettings.h>
 #include <qohosutils.h>
 #include <qohoswindowproperty.h>
-#include <render/qwindowproxyregistry.h>
 #include <vector>
 
 QT_BEGIN_NAMESPACE
@@ -44,7 +43,6 @@ public:
 
     void setMainWindowGeometryPersistencePolicy(WindowGeometryPersistencePolicy policy) override;
 
-    std::optional<double> tryGetNativeWindowId(QObject *window) override;
     std::optional<double> tryGetScreenDisplayId(QObject *screenObject) override;
 
     QOhosSupplier<double> makeOhosConfigFontSizeScaleDataSource(
@@ -94,28 +92,6 @@ void QOhosQpaFunctionsImpl::setMainWindowGeometryPersistencePolicy(
             "%s: Failed to convert persistence geometry policy hint to QOhosPlatformIntegration enum",
             Q_FUNC_INFO);
     }
-}
-
-std::optional<double> QOhosQpaFunctionsImpl::tryGetNativeWindowId(QObject *window)
-{
-    auto *qWindow = qobject_cast<QWindow *>(window);
-    if (qWindow == nullptr)
-        return {};
-
-    auto *platformWindow = QOhosPlatformWindow::fromQWindowOrNull(qWindow);
-    if (platformWindow == nullptr)
-        return {};
-
-    auto internalId = platformWindow->internalWindowId();
-    auto jsWinId = QWindowProxyRegistry::instance().tryMapInternalWindowIdToJsWindowId(internalId);
-    if (!jsWinId.has_value())
-        return {};
-
-    qOhosPrintfInfo(
-        "PlatformWindow WIID: %s is returning JsWindowId: %f to the user",
-        qPrintable(internalId.toString()), jsWinId.value().value());
-
-    return jsWinId.value().value();
 }
 
 std::optional<double> QOhosQpaFunctionsImpl::tryGetScreenDisplayId(QObject *screenObject)

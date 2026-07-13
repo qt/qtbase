@@ -8,6 +8,7 @@
 #include <QtGui/qwindow.h>
 #include <QtOhosAppKit/qtohosappkitglobal.h>
 #include <QtWidgets/qwidget.h>
+#include <optional>
 
 QT_BEGIN_NAMESPACE
 
@@ -33,6 +34,8 @@ Q_OHOSAPPKIT_EXPORT void setWindowDragResizable(QWindow *window, bool dragResiza
 Q_OHOSAPPKIT_EXPORT void setWindowDragResizable(QWidget *widget, bool dragResizable);
 
 }
+
+Q_OHOSAPPKIT_EXPORT std::optional<double> tryGetNativeWindowId(QWindow *window);
 
 }
 

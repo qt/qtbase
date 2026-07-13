@@ -38,6 +38,8 @@ enum NSVisualEffectState: NSInteger;
 #endif
 
 #if defined(Q_OS_OHOS)
+#include <optional>
+
 typedef struct ArkUI_Node *ArkUI_NodeHandle;
 #endif
 
@@ -170,6 +172,7 @@ struct Q_GUI_EXPORT QOhosWindow
 {
     QT_DECLARE_NATIVE_INTERFACE(QOhosWindow, 1, QWindow)
     static QWindow *fromNative(ArkUI_NodeHandle content);
+    virtual std::optional<double> windowId() const = 0;
 };
 
 struct Q_GUI_EXPORT QOhosIntegration
