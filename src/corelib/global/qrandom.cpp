@@ -214,8 +214,8 @@ static void fallback_update_seed(unsigned value)
 }
 
 Q_NEVER_INLINE
-#ifdef Q_CC_GNU
-__attribute__((cold))   // this function is pretty big, so optimize for size
+#if defined(Q_CC_GNU) && __has_attribute(optimize)
+__attribute__((optimize("Os")))   // this function is pretty big, so optimize for size
 #endif
 static void fallback_fill(quint32 *ptr, qsizetype left) noexcept
 {
