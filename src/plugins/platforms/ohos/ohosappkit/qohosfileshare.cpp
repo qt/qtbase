@@ -66,7 +66,7 @@ std::string callOhFileUriConversionFunc(
     ConvFunc convFunc, const std::string &input)
 {
     char *outputPtr = nullptr;
-    auto outputPtrGuard = qScopeGuard(std::bind(::free, outputPtr));
+    auto outputPtrGuard = qScopeGuard(std::bind(::free, std::ref(outputPtr)));
     auto convFuncRetVal = convFunc(input.c_str(), input.size(), &outputPtr);
 
     std::string outputString;

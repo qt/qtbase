@@ -45,7 +45,7 @@ std::string callOhFileUriConversionFunc(
     std::string outputString;
 
     char *outputPtr = nullptr;
-    auto outputPtrGuard = qScopeGuard(std::bind(::free, outputPtr));
+    auto outputPtrGuard = qScopeGuard(std::bind(::free, std::ref(outputPtr)));
     auto convFuncRetVal = convFunc(input.c_str(), input.size(), &outputPtr);
 
     if (convFuncRetVal == FileManagement_ErrCode::ERR_OK && outputPtr != nullptr) {
