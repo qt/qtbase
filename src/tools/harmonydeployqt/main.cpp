@@ -395,7 +395,7 @@ static bool readInputConfiguration(Options *options)
                        QDir(templatePath).exists() ? "FOUND" : "not found");
             }
             if (QDir(templatePath).exists()) {
-                options->harmonyOsPackageSourceDirectory = templatePath;
+                options->harmonyOsPackageSourceDirectory = std::move(templatePath);
                 break;
             }
 
@@ -406,7 +406,7 @@ static bool readInputConfiguration(Options *options)
                        QDir(templatePath).exists() ? "FOUND" : "not found");
             }
             if (QDir(templatePath).exists()) {
-                options->harmonyOsPackageSourceDirectory = templatePath;
+                options->harmonyOsPackageSourceDirectory = std::move(templatePath);
                 break;
             }
 
