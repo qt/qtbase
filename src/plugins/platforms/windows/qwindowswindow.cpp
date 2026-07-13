@@ -2875,24 +2875,8 @@ void QWindowsWindow::setWindowState_sys(Qt::WindowStates newState)
             setFlag(WithinMaximize);
             if (newState & Qt::WindowFullScreen)
                 setFlag(MaximizeToFullScreen);
-            if (m_data.flags & Qt::FramelessWindowHint) {
-                if (newState == Qt::WindowNoState) {
-                    const QRect &rect = m_savedFrameGeometry;
-                    MoveWindow(m_data.hwnd, rect.x(), rect.y(), rect.width(), rect.height(), true);
-                } else {
-                    HMONITOR monitor = MonitorFromWindow(m_data.hwnd, MONITOR_DEFAULTTONEAREST);
-                    MONITORINFO monitorInfo = {};
-                    monitorInfo.cbSize = sizeof(MONITORINFO);
-                    GetMonitorInfo(monitor, &monitorInfo);
-                    const RECT &rect = monitorInfo.rcWork;
-                    m_savedFrameGeometry = geometry();
-                    MoveWindow(m_data.hwnd, rect.left, rect.top,
-                               rect.right - rect.left, rect.bottom - rect.top, true);
-                }
-            } else {
-                ShowWindow(m_data.hwnd,
-                           (newState & Qt::WindowMaximized) ? SW_MAXIMIZE : SW_SHOWNOACTIVATE);
-            }
+            ShowWindow(m_data.hwnd,
+                       (newState & Qt::WindowMaximized) ? SW_MAXIMIZE : SW_SHOWNOACTIVATE);
             clearFlag(WithinMaximize);
             clearFlag(MaximizeToFullScreen);
         } else if (visible && (oldState & newState & Qt::WindowMinimized)) {
@@ -3322,6 +3306,25 @@ void QWindowsWindow::setFrameStrutEventsEnabled(bool enabled)
 void QWindowsWindow::getSizeHints(MINMAXINFO *mmi) const
 {
     QWindowsGeometryHint::applyToMinMaxInfo(window(), fullFrameMargins(), mmi);
+
+    // A frameless (WS_POPUP) window maximizes to the full screen geometry
+    // instead of the work area (QTBUG-129791). Constrain the maximize rect
+    // here, unless the window is meant to fill the screen.
+    if ((m_data.flags & Qt::FramelessWindowHint) && window()->isTopLevel()
+        && !testFlag(MaximizeToFullScreen)) {
+        const HMONITOR monitor = MonitorFromWindow(m_data.hwnd, MONITOR_DEFAULTTONEAREST);
+        MONITORINFO monitorInfo = {};
+        monitorInfo.cbSize = sizeof(MONITORINFO);
+        GetMonitorInfoW(monitor, &monitorInfo);
+        const RECT &work = monitorInfo.rcWork;
+        const RECT &screen = monitorInfo.rcMonitor;
+        // ptMaxPosition and ptMaxSize are relative to the monitor the window
+        // maximizes on, which handles multi-monitor setups.
+        mmi->ptMaxPosition.x = work.left - screen.left;
+        mmi->ptMaxPosition.y = work.top - screen.top;
+        mmi->ptMaxSize.x = work.right - work.left;
+        mmi->ptMaxSize.y = work.bottom - work.top;
+    }
     qCDebug(lcQpaWindow) << __FUNCTION__ << window() << *mmi;
 }
 
