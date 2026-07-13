@@ -854,6 +854,7 @@ private slots:
     void includeNext();
     void includeNextFeatureGuard();
     void includeNextInPrimarySourceFile();
+    void includeNextRelativeForwarder();
     void includeNextFramework();
     void hasIncludeNext();
     void cstyleEnums();
@@ -1748,6 +1749,43 @@ void tst_Moc::includeNextInPrimarySourceFile()
     // real header.
     const QByteArray mocOut = proc.readAllStandardOutput();
     QVERIFY(mocOut.contains("included_marker_from_second"));
+#else
+    QSKIP("Only tested/relevant on unixy platforms");
+#endif
+}
+
+void tst_Moc::includeNextRelativeForwarder()
+{
+#ifdef MOC_CROSS_COMPILED
+    QSKIP("Not tested when cross-compiled");
+#endif
+#if defined(Q_OS_UNIX) && QT_CONFIG(process)
+    // A path-found header relatively includes a sibling that does #include_next.
+    // The sibling must inherit the includer's position and resume after "first"
+    // (reaching second/marker.h), not be mistaken for the primary source file.
+    // Mirrors GCC's limits.h/syslimits.h.
+    const QString base = m_sourceDirectory + QStringLiteral("/include-next");
+    QStringList args;
+    args << "-E"
+         << "-I" << base + QStringLiteral("/first") << "-I" << base + QStringLiteral("/second")
+         << base + QStringLiteral("/relative-include-consumer.h");
+
+    QProcess proc;
+    proc.start(m_moc, args);
+    bool finished = proc.waitForFinished();
+    if (!finished)
+        qWarning("waitForFinished failed. QProcess error: %d", (int)proc.error());
+    QVERIFY(finished);
+    QCOMPARE(proc.exitCode(), 0);
+
+    const QByteArray mocErr = proc.readAllStandardError();
+    QVERIFY2(!mocErr.contains("#include_next in primary source file"), mocErr.constData());
+
+    const QByteArray mocOut = proc.readAllStandardOutput();
+    // The #include_next resumed after "first", so it reached second/marker.h ...
+    QVERIFY(mocOut.contains("included_marker_from_second"));
+    // ... and skipped first/marker.h entirely.
+    QVERIFY(!mocOut.contains("included_marker_from_first"));
 #else
     QSKIP("Only tested/relevant on unixy platforms");
 #endif
