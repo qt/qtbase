@@ -5,6 +5,7 @@
 #define QOHOSPLATFORMSCREEN_H
 
 #include <qpa/qplatformscreen.h>
+#include <QtGui/qpa/qplatformscreen_p.h>
 #include <QList>
 #include <QPainter>
 #include <QTimer>
@@ -23,7 +24,7 @@ QT_BEGIN_NAMESPACE
 class QOhosPlatformWindow;
 class QOhosNativeXComponent;
 
-class QOhosPlatformScreen: public QObject, public QPlatformScreen
+class QOhosPlatformScreen: public QObject, public QPlatformScreen, public QNativeInterface::Private::QOhosScreen
 {
     Q_OBJECT
 public:
@@ -52,6 +53,8 @@ public:
     void removeWindow(QOhosPlatformWindow *window);
 
     const QOhosDisplayInfo &displayInfo() const;
+
+    double displayId() const override;
 
     QPixmap grabWindow(WId wId, int x, int y, int width, int height) const override;
 

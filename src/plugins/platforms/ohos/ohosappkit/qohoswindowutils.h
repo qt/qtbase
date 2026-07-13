@@ -5,6 +5,7 @@
 #define QOHOSWINDOWUTILS_H
 
 #include <QtGui/qcolor.h>
+#include <QtGui/qscreen.h>
 #include <QtGui/qwindow.h>
 #include <QtOhosAppKit/qtohosappkitglobal.h>
 #include <QtWidgets/qwidget.h>
@@ -36,6 +37,8 @@ Q_OHOSAPPKIT_EXPORT void setWindowDragResizable(QWidget *widget, bool dragResiza
 }
 
 Q_OHOSAPPKIT_EXPORT std::optional<double> tryGetNativeWindowId(QWindow *window);
+
+Q_OHOSAPPKIT_EXPORT std::optional<double> tryGetScreenDisplayId(QScreen *screen);
 
 }
 
