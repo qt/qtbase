@@ -14,6 +14,7 @@
 #include <napi/native_api.h>
 #include <optional>
 #include <qohosutils.h>
+#include <render/qohosjswindowregistry.h>
 #include <stdexcept>
 #include <tuple>
 #include <typeindex>
@@ -545,10 +546,18 @@ std::shared_ptr<QAbilityPeer> JsStateImpl::tryGetQAbilityPeerByInstance(QNapi::O
 
 std::shared_ptr<QAbilityPeer> JsStateImpl::tryGetQAbilityPeerByQWindow(QObjectThreadSafeRef qwindow)
 {
-    return tryFindMatchingQAbilityPeer(
+    auto optQAbilityPeer = tryFindMatchingQAbilityPeer(
         [&](const auto &peer) {
             return peer->qWindowRef() == qwindow;
         });
+    if (optQAbilityPeer)
+        return optQAbilityPeer;
+
+    auto &jsWindowRegistry = JsState::getAttachedObjectWithLazyCreate<QOhosJsWindowRegistry>();
+    auto optJsWindowRef = jsWindowRegistry.tryFindJsWindowByQWindowRef(qwindow);
+    return optJsWindowRef
+        ? tryGetQAbilityPeerByInstanceId(optJsWindowRef->owningQAbilityInstanceId())
+        : nullptr;
 }
 
 std::optional<QNapi::Object> JsStateImpl::tryGetQAbilityByQWindow(QObjectThreadSafeRef qwindow)
