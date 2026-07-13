@@ -131,14 +131,10 @@ protected:
     static Q_CORE_EXPORT quintptr describeLockInternal(void *dd) noexcept Q_DECL_PURE_FUNCTION;
     static uint describeLockForTSan(QReadWriteLockPrivate *d, uint flags = 0) noexcept
     {
-        quintptr u = 0;
-#ifdef QT_BUILDING_UNDER_TSAN
-        u = describeLockInternal(d);
-#else
-        Q_UNUSED(d);
-#endif
-        if (u & StateLockedForRead)
-            flags |= QtTsan::ReadLock;
+        if constexpr (QtTsan::IsEnabled) {
+            if (describeLockInternal(d) & StateLockedForRead)
+                flags |= QtTsan::ReadLock;
+        }
         return flags;
     }
 
