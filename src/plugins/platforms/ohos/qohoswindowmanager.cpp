@@ -202,10 +202,15 @@ void showFileDialogAuthorization(
             qOhosPrintfDebug(
                 "Calling DocumentViewPicker.select() with options: %s",
                 QNapi::toJsonString(documentSelectOptions).c_str());
+            auto qAbilityPeer = getQAbilityPeerForQWindow(jsState, contextWindowRef);
+            auto optContextJsWindow = jsState.tryGetJsWindowByQWindow(contextWindowRef);
+            std::vector<QNapi::ValueWrapper> constructorParams = {qAbilityPeer->qAbility().get("context")};
+            if (optContextJsWindow)
+                constructorParams.push_back(optContextJsWindow.value());
             auto documentViewPicker = QtOhos::moveToSharedPtr(
                 QNapi::Reference<>::makePersistentFrom(
-                    makeDocumentViewPicker(
-                        jsState, getQAbilityPeerForQWindow(jsState, contextWindowRef), contextWindowRef)));
+                    jsState.eval<QNapi::Object>(
+                        "@ohos.file.picker.DocumentViewPicker<new>(*)", constructorParams)));
             documentViewPicker->evalToPromiseOrRejectOnThrow("select(*)", {documentSelectOptions}).onThen(
                 [documentViewPicker, sharedResultCallback](const QtOhos::CallbackInfo &cbInfo) {
                     auto actionResult = cbInfo.getFirstArg<QNapi::Array>(Q_FUNC_INFO);
