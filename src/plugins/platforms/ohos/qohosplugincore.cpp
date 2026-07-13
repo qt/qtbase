@@ -306,6 +306,7 @@ public:
     std::shared_ptr<QAbilityPeer> tryGetQAbilityPeerByInstanceId(const std::string &instanceId) override;
     std::shared_ptr<QAbilityPeer> tryGetQAbilityPeerByInstance(QNapi::Object qAbility) override;
     std::shared_ptr<QAbilityPeer> tryGetQAbilityPeerByQWindow(QObjectThreadSafeRef qwindow) override;
+    std::optional<QNapi::Object> tryGetJsWindowByQWindow(QObjectThreadSafeRef qwindow) override;
     std::optional<QNapi::Object> tryGetQAbilityByQWindow(QObjectThreadSafeRef qwindow) override;
     std::optional<QNapi::Object> defaultQAbility() override;
 
@@ -558,6 +559,13 @@ std::shared_ptr<QAbilityPeer> JsStateImpl::tryGetQAbilityPeerByQWindow(QObjectTh
     return optJsWindowRef
         ? tryGetQAbilityPeerByInstanceId(optJsWindowRef->owningQAbilityInstanceId())
         : nullptr;
+}
+
+std::optional<QNapi::Object> JsStateImpl::tryGetJsWindowByQWindow(QObjectThreadSafeRef qwindow)
+{
+    auto &jsWindowRegistry = JsState::getAttachedObjectWithLazyCreate<QOhosJsWindowRegistry>();
+    auto optJsWindowRef = jsWindowRegistry.tryFindJsWindowByQWindowRef(qwindow);
+    return optJsWindowRef ? std::optional(optJsWindowRef->jsObject()) : std::nullopt;
 }
 
 std::optional<QNapi::Object> JsStateImpl::tryGetQAbilityByQWindow(QObjectThreadSafeRef qwindow)

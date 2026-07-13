@@ -61,6 +61,7 @@ public:
     virtual QNapi::Object defaultWindowStageOrEmpty() = 0;
     virtual QNapi::Object defaultUiContextOrEmpty() = 0;
 
+    virtual std::optional<QNapi::Object> tryGetJsWindowByQWindow(QtOhos::QObjectThreadSafeRef qwindow) = 0;
     virtual std::optional<QNapi::Object> tryGetQAbilityByQWindow(QtOhos::QObjectThreadSafeRef qwindow) = 0;
     virtual std::optional<QNapi::Object> defaultQAbility() = 0;
 
