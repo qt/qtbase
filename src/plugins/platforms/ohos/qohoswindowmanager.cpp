@@ -199,19 +199,40 @@ void showFileDialogAuthorization(
                     {"authMode", true},
                 });
 
-            startOhosFilePicker(
-                jsState, getQAbilityPeerForQWindow(jsState, contextWindowRef), contextWindowRef,
-                "select", documentSelectOptions,
-                [sharedResultCallback](auto optResult) {
-                    auto optSelectedUrls = qTransform(
-                        optResult,
-                        [](const auto &result) {
-                            return mapFilePathsToQtUrls(result.resultPaths);
+            qOhosPrintfDebug(
+                "Calling DocumentViewPicker.select() with options: %s",
+                QNapi::toJsonString(documentSelectOptions).c_str());
+            auto documentViewPicker = QtOhos::moveToSharedPtr(
+                QNapi::Reference<>::makePersistentFrom(
+                    makeDocumentViewPicker(
+                        jsState, getQAbilityPeerForQWindow(jsState, contextWindowRef), contextWindowRef)));
+            documentViewPicker->evalToPromiseOrRejectOnThrow("select(*)", {documentSelectOptions}).onThen(
+                [documentViewPicker, sharedResultCallback](const QtOhos::CallbackInfo &cbInfo) {
+                    auto actionResult = cbInfo.getFirstArg<QNapi::Array>(Q_FUNC_INFO);
+                    auto resultOhosUris = QNapi::getArrayElements<std::vector<std::string>, QNapi::String>(actionResult);
+
+                    qOhosPrintfDebug(
+                        "Called DocumentViewPicker.select() callback with result: %s",
+                        QNapi::toJsonString(actionResult).c_str());
+
+                    std::vector<std::string> resultPaths;
+                    std::transform(
+                        resultOhosUris.cbegin(), resultOhosUris.cend(), std::back_inserter(resultPaths),
+                        [&](const auto &uri) {
+                            return tryMapOhosFileUriToPath(uri).value_or("");
                         });
+
+                    bool authorized = !mapFilePathsToQtUrls(resultPaths).isEmpty();
                     QtOhos::invokeInQtThread(
-                        [sharedResultCallback, optSelectedUrls]() {
-                            bool authorized = optSelectedUrls.has_value() && !optSelectedUrls.value().isEmpty();
+                        [sharedResultCallback, authorized]() {
                             (*sharedResultCallback)(authorized);
+                        });
+                },
+                [sharedResultCallback]() {
+                    qOhosPrintfError("DocumentViewPicker.select() call failed");
+                    QtOhos::invokeInQtThread(
+                        [sharedResultCallback]() {
+                            (*sharedResultCallback)(false);
                         });
                 });
         });
