@@ -48,6 +48,7 @@ struct SubWindowOnAppearContext
     QOhosConsumer<QtOhos::JsState &, QOhosWindowProxyData> resultConsumer;
     std::shared_ptr<QtOhos::QAbilityPeer> qAbilityPeer;
     WindowProxyType windowProxyType;
+    QtOhos::QObjectThreadSafeRef owningQWindowRef;
 };
 
 struct LocalStorageForWindowCreateInfo
@@ -57,6 +58,7 @@ struct LocalStorageForWindowCreateInfo
     QOhosConsumer<QtOhos::JsState &, QOhosWindowProxyData> resultConsumer;
     std::shared_ptr<QtOhos::QAbilityPeer> qAbilityPeer;
     WindowProxyType windowProxyType;
+    QtOhos::QObjectThreadSafeRef owningQWindowRef;
 };
 
 std::shared_ptr<QtOhos::QAbilityPeer> getQAbilityPeerByInstanceIdOrFail(
@@ -147,6 +149,7 @@ makeSubWindowOnAppearCallbackHandler(SubWindowOnAppearContext subWindowOnAppearC
                 .windowProxyType = sharedContext->windowProxyType,
                 .nodeXComponent = std::make_shared<QXComponentNode>(xComponent),
                 .jsKeepAliveData = QtOhos::moveToSharedPtr(std::move(sharedContext->localStorageObj)),
+                .owningQWindowRef = sharedContext->owningQWindowRef,
             });
 
         sharedContext.reset();
@@ -185,6 +188,7 @@ QNapi::Object makeLocalStorageForWindow(
                     .resultConsumer = std::move(createInfo.resultConsumer),
                     .qAbilityPeer = std::move(createInfo.qAbilityPeer),
                     .windowProxyType = createInfo.windowProxyType,
+                    .owningQWindowRef = createInfo.owningQWindowRef,
                 }),
             }
         });
@@ -286,6 +290,7 @@ void makeWindowProxyDataForExistingMainWindowInJsThread(
             .windowProxyType = WindowProxyType::MainWindow,
             .nodeXComponent = std::make_shared<QXComponentNode>(nodeXComponent),
             .jsKeepAliveData = nullptr,
+            .owningQWindowRef = createInfo.qWindowRef,
         });
 }
 
@@ -317,6 +322,7 @@ void makeWindowProxyDataForSubWindowInJsThread(
         bool disableWindowFocusableBeforeLoadContentHack;
         QXComponentId xComponentId;
         std::shared_ptr<QtOhos::QAbilityPeer> qAbilityPeer;
+        QtOhos::QObjectThreadSafeRef owningQWindowRef;
     };
 
     auto qAbilityPeer = getQAbilityPeerByInstanceIdOrFail(jsState, createInfo.qAbilityInstanceId);
@@ -355,6 +361,7 @@ void makeWindowProxyDataForSubWindowInJsThread(
             .disableWindowFocusableBeforeLoadContentHack = createInfo.disableWindowFocusableBeforeLoadContentHack,
             .xComponentId = xComponentId,
             .qAbilityPeer = qAbilityPeer,
+            .owningQWindowRef = createInfo.window,
         })
         .onThenWithContext([resultConsumer = std::move(resultConsumer)](const QtOhos::CallbackInfo &cbInfo, Context &context) mutable {
             auto windowObject = cbInfo.getFirstArg<QNapi::Object>(Q_FUNC_INFO);
@@ -367,6 +374,7 @@ void makeWindowProxyDataForSubWindowInJsThread(
                     .resultConsumer = std::move(resultConsumer),
                     .qAbilityPeer = context.qAbilityPeer,
                     .windowProxyType = WindowProxyType::SubWindow,
+                    .owningQWindowRef = context.owningQWindowRef,
                 });
 
             return onWindowCreatedLoadWindowContents(
@@ -405,6 +413,7 @@ void makeWindowProxyDataForFloatWindowInJsThread(
     {
         QXComponentId xComponentId;
         std::shared_ptr<QtOhos::QAbilityPeer> qAbilityPeer;
+        QtOhos::QObjectThreadSafeRef owningQWindowRef;
     };
 
     jsState
@@ -412,6 +421,7 @@ void makeWindowProxyDataForFloatWindowInJsThread(
         .withContext(Context {
             .xComponentId = xComponentId,
             .qAbilityPeer = qAbilityPeer,
+            .owningQWindowRef = createInfo.qWindowRef,
         })
         .onThenWithContext([resultConsumer = std::move(resultConsumer)](const QtOhos::CallbackInfo &cbInfo, Context &context) mutable {
             auto windowObject = cbInfo.getFirstArg<QNapi::Object>(Q_FUNC_INFO);
@@ -424,6 +434,7 @@ void makeWindowProxyDataForFloatWindowInJsThread(
                     .resultConsumer = std::move(resultConsumer),
                     .qAbilityPeer = context.qAbilityPeer,
                     .windowProxyType = WindowProxyType::FloatWindow,
+                    .owningQWindowRef = context.owningQWindowRef,
                 });
 
             return onWindowCreatedLoadWindowContents(

@@ -65,6 +65,7 @@ struct QOhosWindowProxyData
     WindowProxyType windowProxyType;
     std::shared_ptr<QXComponentNode> nodeXComponent;
     std::shared_ptr<void> jsKeepAliveData;
+    QtOhos::QObjectThreadSafeRef owningQWindowRef;
 };
 
 void makeWindowProxyDataForMainWindowInJsThread(
