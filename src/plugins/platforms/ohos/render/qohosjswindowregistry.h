@@ -30,6 +30,7 @@ public:
         const std::function<bool(QtOhos::JsState &, const QArkUi::JsWindowRef &)> &predicate);
 
     std::shared_ptr<QArkUi::JsWindowRef> tryFindJsWindowById(QArkUi::JsWindowId jsWinId) const;
+    std::shared_ptr<QArkUi::JsWindowRef> tryFindJsWindowByQWindowRef(QtOhos::QObjectThreadSafeRef qwindow) const;
 
 private:
     std::map<QArkUi::JsWindowId, std::shared_ptr<QArkUi::JsWindowRef>> m_windowRefs;

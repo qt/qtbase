@@ -46,4 +46,14 @@ std::shared_ptr<QArkUi::JsWindowRef> QOhosJsWindowRegistry::tryFindJsWindowById(
         : nullptr;
 }
 
+std::shared_ptr<QArkUi::JsWindowRef> QOhosJsWindowRegistry::tryFindJsWindowByQWindowRef(
+    QtOhos::QObjectThreadSafeRef qwindow) const
+{
+    for (const auto &windowIdRefPair : m_windowRefs) {
+        if (windowIdRefPair.second->owningQWindowRef() == qwindow)
+            return windowIdRefPair.second;
+    }
+    return nullptr;
+}
+
 QT_END_NAMESPACE
