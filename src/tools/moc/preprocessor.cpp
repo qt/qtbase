@@ -1158,8 +1158,15 @@ QByteArray Preprocessor::resolveInclude(const QByteArray &include, const QByteAr
     if (!relativeTo.isEmpty()) {
         QFileInfo fi;
         fi.setFile(QFileInfo(QString::fromLocal8Bit(relativeTo)).dir(), QString::fromLocal8Bit(include));
-        if (fi.exists() && !fi.isDir())
+        if (fi.exists() && !fi.isDir()) {
+            // Found next to the including file, not via the search path. Inherit
+            // the includer's include-path position so a later #include_next
+            // resumes after that directory instead of being mistaken for one in
+            // the primary source file (e.g. GCC's syslimits.h via limits.h).
+            if (foundIndex && !currentIncludeDirIndex.empty())
+                *foundIndex = currentIncludeDirIndex.top();
             return fi.canonicalFilePath().toLocal8Bit();
+        }
     }
 
     auto it = nonlocalIncludePathResolutionCache.find(include);
