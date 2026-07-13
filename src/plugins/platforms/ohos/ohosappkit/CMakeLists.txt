@@ -14,6 +14,7 @@ qt_internal_add_module(OhosAppKit
         qohosbundlemanager.h
         qohosenums_p.h
         qohosfileshare.cpp qohosfileshare.h
+        qohosfileutils.cpp qohosfileutils.h
         qohosjsenv_p.h
         qohosoperationstatus.cpp qohosoperationstatus.h qohosoperationstatus_p.h
         qohospasteboard.cpp qohospasteboard.h

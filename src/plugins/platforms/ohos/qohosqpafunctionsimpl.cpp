@@ -23,7 +23,6 @@
 #include <qohosqpafunctions_p.h>
 #include <qohossettings.h>
 #include <qohosutils.h>
-#include <qohoswindowmanager.h>
 #include <qohoswindowproperty.h>
 #include <render/qwindowproxyregistry.h>
 #include <vector>
@@ -52,8 +51,6 @@ public:
         QOhosConsumer<double> valueChangedHandler) override;
 
     bool readOhosNoUiChildMode() override;
-
-    bool showFileDialogToAuthorizeFilePath(QObject *parentWindow, const QString &filePath) override;
 
     void setAudioStreamUsageHintProperty(QObject *qObject, AudioStreamUsage usage) override;
     std::optional<AudioStreamUsage> tryGetAudioStreamUsageHintProperty(QObject *qObject) override;
@@ -156,27 +153,6 @@ bool QOhosQpaFunctionsImpl::readOhosNoUiChildMode()
             return jsState.defaultQAbilityPeer()->instanceId().empty();
         },
         Q_FUNC_INFO);
-}
-
-bool QOhosQpaFunctionsImpl::showFileDialogToAuthorizeFilePath(QObject *parentWindow, const QString &filePath)
-{
-    auto *qWindow = qobject_cast<QWindow *>(parentWindow);
-    if (qWindow == nullptr)
-        qOhosReportFatalErrorAndAbort("%s: window argument is null or not a QWindow", Q_FUNC_INFO);
-
-    auto eventLoop = std::make_shared<QEventLoop>();
-    auto filePathAuthorized = std::make_shared<bool>(false);
-
-    QOhosWindowManager::showFileDialogAuthorization(
-       QtOhos::QObjectThreadSafeRef(qWindow), filePath,
-       [filePathAuthorized, eventLoop](bool result) {
-            *filePathAuthorized = result;
-            eventLoop->quit();
-       });
-
-    eventLoop->exec();
-
-    return *filePathAuthorized;
 }
 
 void QOhosQpaFunctionsImpl::setAudioStreamUsageHintProperty(QObject *qObject, AudioStreamUsage usage)

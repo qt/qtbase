@@ -46,10 +46,6 @@ void showFileDialogSave(
     QString defaultFilePath, QStringList fileSuffixChoices,
     QOhosConsumer<QOhosOptional<SaveResult>> resultCallback);
 
-void showFileDialogAuthorization(
-    QtOhos::QObjectThreadSafeRef contextWindowRef, QString filePath,
-    QOhosConsumer<bool> resultCallback);
-
 }
 
 QT_END_NAMESPACE
