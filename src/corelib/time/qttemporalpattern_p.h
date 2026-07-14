@@ -56,7 +56,10 @@ namespace QtTemporalPattern {
         // RelatedGregorianYear = 90, Century = 91,
         YearWithinCentury = 92, Year = 93,
         // Era = 100,
+
+        EndCategories
     };
+    constexpr inline auto EndTemporalFieldCategories = qToUnderlying(TemporalFieldCategory::EndCategories);
 
     enum class TemporalFieldFlag : quint32 {
         Numeric = 1, Verbal = 2, Standalone = 4,

@@ -103,6 +103,8 @@ namespace QtTemporalPattern {
     since the last year that's a multiple of 100 is -100 (for Gregorian, 100
     BCE).
 
+    \omitvalue EndCategories
+
     \sa {QtTemporalPattern::}{TemporalFieldFlag}, {QtTemporalPattern::}{DateTimePart}
 */
 
@@ -655,24 +657,31 @@ namespace QtTemporalPattern {
     \endlist
 */
 
+template <typename Enum, size_t Size>
+class EnumIndexedBitSet
+{
+    std::bitset<Size> bits;
+    static size_t map(Enum cat) { return qToUnderlying(cat); }
+public:
+    void set(Enum cat)        { bits[map(cat)] = true; }
+    bool test(Enum cat) const { return bits[map(cat)]; }
+};
+
 SupportType supports(DateTimeParts wanted, QSpan<const TemporalField> range,
                      bool hasBaseYear) noexcept
 {
     // TODO: may need to take into account calendar (and perhaps locale).
     SupportType support = SupportType::HasStrays;
     SupportType zone = SupportType::None;
-    std::bitset<40> date;
-    std::bitset<24> time;
+    EnumIndexedBitSet<TemporalFieldCategory, EndTemporalFieldCategories> categories;
     for (const TemporalField &field : range) {
         const DateTimePart part = field.part();
         switch (part) {
         case DateTimePart::None: // Literal contributes no data.
             continue;
         case DateTimePart::Date:
-            date[quint8(field.category) - 64] = true;
-            break;
         case DateTimePart::Time:
-            time[quint8(field.category) - 16] = true;
+            categories.set(field.category);
             break;
         case DateTimePart::Zone:
             if (field.options.testAnyFlags(TemporalFieldFlag::Wide | TemporalFieldFlag::Short)
@@ -704,12 +713,10 @@ SupportType supports(DateTimeParts wanted, QSpan<const TemporalField> range,
         return SupportType::Partial;
     };
 
+#define CHECK(field) (categories.test(TemporalFieldCategory::field))
+
     if (wanted.testFlag(DateTimePart::Date)) {
         const SupportType hasDate = [&] {
-            constexpr auto bitFor = [](TemporalFieldCategory cat) {
-                return quint8(cat) - 64;
-            };
-#define CHECK(field) (date[bitFor(TemporalFieldCategory::field)])
             // if (CHECK(JulianDay)) return SupportType::Clear;
             int fields = 0;
             bool partial = false;
@@ -734,7 +741,6 @@ SupportType supports(DateTimeParts wanted, QSpan<const TemporalField> range,
                 ++fields;
             else if (CHECK(DayOfWeek))
                 partial = true;
-#undef CHECK
             if (fields == 3 && !partial)
                 return SupportType::Clear;
             if (fields || partial)
@@ -747,10 +753,6 @@ SupportType supports(DateTimeParts wanted, QSpan<const TemporalField> range,
 
     if (wanted.testFlag(DateTimePart::Time)) {
         const SupportType hasTime = [&] {
-            constexpr auto bitFor = [](TemporalFieldCategory cat) {
-                return quint8(cat) - 16;
-            };
-#define CHECK(field) (time[bitFor(TemporalFieldCategory::field)])
             // if (CHECK(MillisecondInDay)) return SupportType::Clear;
             int fields = 0;
             bool partial = false;
@@ -772,7 +774,6 @@ SupportType supports(DateTimeParts wanted, QSpan<const TemporalField> range,
                 partial = fields < 2;
             else if (CHECK(SecondFraction))
                 partial = true;
-#undef CHECK
             if (fields == 2 && !partial)
                 return SupportType::Clear;
             if (fields || partial)
@@ -782,6 +783,9 @@ SupportType supports(DateTimeParts wanted, QSpan<const TemporalField> range,
         support = partsSeen ? join(support, hasTime) : hasTime;
         partsSeen = true;
     }
+
+#undef CHECK
+
     // Shall still be None if we've seen no fields:
     Q_ASSERT(partsSeen || support == SupportType::None);
     return support;
