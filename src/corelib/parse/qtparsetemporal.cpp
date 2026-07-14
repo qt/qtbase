@@ -803,6 +803,8 @@ TemporalFieldMatcher::continuations(const PartialParse &base, QStringView text,
     switch (field.category) {
         using Cat = TemporalFieldCategory;
         using Flag = TemporalFieldFlag;
+    case Cat::EndCategories:
+        Q_UNREACHABLE();
     case Cat::Literal:
         if (auto match = matchesAt(text, textPos, field.literal, field.options)) {
             matches.emplace_back(base, match);
