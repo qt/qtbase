@@ -17,6 +17,8 @@ QT_BEGIN_NAMESPACE
 
 namespace QtTsan {
 #ifdef QT_BUILDING_UNDER_TSAN
+constexpr inline bool IsEnabled = true;
+
 inline void futexAcquire(void *addr, void *addr2 = nullptr)
 {
     // A futex call ensures total ordering on the futex words
@@ -71,6 +73,8 @@ enum : unsigned {
     ReadLock = ::__tsan_mutex_read_lock,
 };
 #else
+constexpr inline bool IsEnabled = false;
+
 inline void futexAcquire(void *, void * = nullptr) {}
 inline void futexRelease(void *, void * = nullptr) {}
 inline void latchCountDown(void *) {}
