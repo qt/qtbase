@@ -133,6 +133,7 @@ QOhosPlatformIntegration::QOhosPlatformIntegration(const QStringList &paramList)
 {
     Q_UNUSED(paramList);
     auto __dbg = make_QCScopedDebug("QOhosPlatformIntegration::QOhosPlatformIntegration");
+    m_settingsCacheHandle = QOhosSettings::instance().installSettingsCache();
     m_ohosPlatformNativeInterface.reset(new QOhosPlatformNativeInterface());
 
     if (!QtOhos::isOhosNoUiChildMode()) {
@@ -321,7 +322,7 @@ bool QOhosPlatformIntegration::hasCapability(Capability cap) const
         case MultipleWindows: return true;
         case WindowManagement:
         case NonFullScreenWindows:
-            return settings()->isWindowPcModeEnabled();
+            return QOhosSettings::instance().isWindowPcModeEnabled();
         case TopStackedNativeChildWindows: return false;
         default:
             return QPlatformIntegration::hasCapability(cap);
@@ -353,13 +354,6 @@ void QOhosPlatformIntegration::initialize()
         [tracker = std::move(tracker)]() {
             QWindowSystemInterfacePrivate::removeWindowSystemEventhandler(tracker.get());
         });
-
-    m_settings = std::make_unique<QOhosSettings>();
-}
-
-QOhosSettings *QOhosPlatformIntegration::settings() const
-{
-    return m_settings.get();
 }
 
 QPlatformTheme *QOhosPlatformIntegration::createPlatformTheme(const QString &name) const
