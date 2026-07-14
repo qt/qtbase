@@ -15,9 +15,13 @@ namespace QtOhos {
 namespace details_qohosjsutils_h {
 
 std::shared_ptr<void> registerAppContextEnvironmentCallback(
-    QtOhos::JsState &jsState,
+    QOhosJsState &jsState,
     std::vector<std::pair<std::string, QNapi::CallbackFuncWrapper>> environmentCallbackMethods)
 {
+    auto optQAbility = jsState.defaultQAbility();
+    if (!optQAbility.has_value())
+        return {};
+
     auto environmentCallback = QNapi::makeObject(
         jsState.env(),
         std::vector<std::pair<std::string, QNapi::ValueWrapper>>(
@@ -26,8 +30,7 @@ std::shared_ptr<void> registerAppContextEnvironmentCallback(
 
     auto appContextRefPtr = QtOhos::moveToSharedPtr(
         QNapi::Reference<>::makePersistentFrom(
-            jsState.defaultQAbilityPeer()->qAbility().eval<QNapi::Object>(
-                "context.getApplicationContext()")));
+            optQAbility->eval<QNapi::Object>("context.getApplicationContext()")));
 
     double environmentCallbackId = appContextRefPtr->call<QNapi::Number>(
         "on",
@@ -36,8 +39,8 @@ std::shared_ptr<void> registerAppContextEnvironmentCallback(
     return std::shared_ptr<void>(
         nullptr,
         [environmentCallbackId, appContextRefPtr](auto) {
-            QtOhos::runInJsThreadAndWait(
-                [&](QtOhos::JsState &) {
+            QOhosJsThreadGateway::runAndWait(
+                [&](QOhosJsState &) {
                     auto appContextRef = std::move(*appContextRefPtr);
                     appContextRef.call(
                         "off",
