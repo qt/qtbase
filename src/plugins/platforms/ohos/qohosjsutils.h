@@ -117,9 +117,6 @@ std::shared_ptr<void> registerAppContextEnvironmentCallback(
     QtOhos::JsState &jsState,
     std::vector<std::pair<std::string, QNapi::CallbackFuncWrapper>> environmentCallbackMethods);
 
-std::shared_ptr<void> registerAppConfigurationUpdateListener(
-    QtOhos::JsState &jsState, std::function<void(QtOhos::JsState &, QNapi::Object)> updateListener);
-
 }
 
 template<typename ConfigValue>
@@ -133,10 +130,16 @@ QOhosSupplier<ConfigValue> makeOhosConfigValueDataSource(
     return QtOhos::makeDataSource<ConfigValue>(
         std::move(initValueSupplier),
         [valueFetcher = std::move(valueFetcher)](QtOhos::JsState &jsState, QOhosConsumer<ConfigValue> valueUpdatesConsumer) mutable {
-            return registerAppConfigurationUpdateListener(
+            return registerAppContextEnvironmentCallback(
                 jsState,
-                [valueFetcher = std::move(valueFetcher), valueUpdatesConsumer = std::move(valueUpdatesConsumer)](QtOhos::JsState &jsState, QNapi::Object config) {
-                    valueUpdatesConsumer(valueFetcher(jsState, config));
+                {
+                    {
+                        "onConfigurationUpdated",
+                        [valueFetcher = std::move(valueFetcher), valueUpdatesConsumer = std::move(valueUpdatesConsumer)](const QtOhos::CallbackInfo &cbInfo) {
+                            auto config = cbInfo.getFirstArg<QNapi::Object>(Q_FUNC_INFO);
+                            valueUpdatesConsumer(valueFetcher(cbInfo.jsState(), config));
+                        }
+                    },
                 });
         },
         std::move(valueChangedHandler),
