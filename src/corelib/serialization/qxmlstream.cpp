@@ -2637,8 +2637,11 @@ QXmlStreamAttribute::QXmlStreamAttribute()
 
 /*!  Constructs an attribute in the namespace described with \a
   namespaceUri with \a name and value \a value.
+
+    The attribute will have isDefault() == \c{false}.
  */
 QXmlStreamAttribute::QXmlStreamAttribute(const QString &namespaceUri, const QString &name, const QString &value)
+    : m_isDefault(false)
 {
     m_namespaceUri = namespaceUri;
     m_name = m_qualifiedName = name;
@@ -2648,8 +2651,11 @@ QXmlStreamAttribute::QXmlStreamAttribute(const QString &namespaceUri, const QStr
 
 /*!
     Constructs an attribute with qualified name \a qualifiedName and value \a value.
+
+    The attribute will have isDefault() == \c{false}.
  */
 QXmlStreamAttribute::QXmlStreamAttribute(const QString &qualifiedName, const QString &value)
+    : m_isDefault(false)
 {
     qsizetype colon = qualifiedName.indexOf(u':');
     m_name = qualifiedName.mid(colon + 1);
