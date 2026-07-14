@@ -5,6 +5,8 @@
 #include "qohosprintdevice.h"
 #include <QPageSize>
 #include <QtCore/private/qohoslogger_p.h>
+#include <QtCore/qjsondocument.h>
+#include <QtCore/qjsonobject.h>
 #if __has_include(<BasicServicesKit/ohprint.h>)
 #include <BasicServicesKit/ohprint.h>
 #else
@@ -41,6 +43,29 @@ QPrint::ColorMode convertOhosToQtColorMode(Print_ColorMode nativeColorMode)
     }
 }
 
+QString printerAliasFromDetailedInfo(const QString &detailedInfo)
+{
+    if (detailedInfo.isEmpty())
+        return QString();
+
+    QJsonParseError error;
+    const auto detailedInfoDoc = QJsonDocument::fromJson(detailedInfo.toUtf8(), &error);
+    if (error.error != QJsonParseError::NoError) {
+        qOhosWarning(QtForOhos) << "Failed to parse PrinterInfo.detailedInfo:"
+                                << error.errorString();
+        return QString();
+    }
+
+    const auto alias = detailedInfoDoc.object().value(QLatin1String("printerAlias"));
+    if (alias.isUndefined()) {
+        qOhosWarning(QtForOhos) << "PrinterInfo.detailedInfo has no \"printerAlias\" key; "
+                                   "it is available since OHOS API 24";
+        return QString();
+    }
+
+    return alias.toString();
+}
+
 }
 
 QOhosPrintDevice::QOhosPrintDevice()
@@ -53,7 +78,6 @@ QOhosPrintDevice::QOhosPrintDevice(const QString &id)
 {
     QOhosNativePrint::PrinterInfo printerInfo;
     if (QOhosNativePrint::queryPrinterInfo(m_id, printerInfo)) {
-        m_name = printerInfo.name;
         m_location = printerInfo.location;
         m_makeAndModel = printerInfo.makeAndModel;
         m_supportsMultipleCopies = printerInfo.capabilities.supportedCopies > 1;
@@ -61,6 +85,19 @@ QOhosPrintDevice::QOhosPrintDevice(const QString &id)
 }
 
 QOhosPrintDevice::~QOhosPrintDevice() = default;
+
+QString QOhosPrintDevice::name() const
+{
+    QOhosNativePrint::PrinterInfo printerInfo;
+    if (!QOhosNativePrint::queryPrinterInfo(m_id, printerInfo)) {
+        qOhosWarning(QtForOhos) << "Failed to get printerInfo for"
+                                << m_id;
+        return QString();
+    }
+
+    const QString alias = printerAliasFromDetailedInfo(printerInfo.detailedInfo);
+    return alias.isEmpty() ? printerInfo.name : alias;
+}
 
 bool QOhosPrintDevice::isValid() const
 {
