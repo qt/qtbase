@@ -40,8 +40,6 @@ public:
     QVariant getImageDataFromPasteboard() const override;
     QString getTextDataFromPasteboard() const override;
 
-    void setMainWindowGeometryPersistencePolicy(WindowGeometryPersistencePolicy policy) override;
-
     QOhosSupplier<double> makeOhosConfigFontSizeScaleDataSource(
         QOhosConsumer<double> valueChangedHandler) override;
 
@@ -62,31 +60,6 @@ QVariant QOhosQpaFunctionsImpl::getImageDataFromPasteboard() const
 QString QOhosQpaFunctionsImpl::getTextDataFromPasteboard() const
 {
     return QOhosPlatformIntegration::instance()->clipboard()->getPasteboardDataWithLazyFetchOrLocalIfOwner()->text();
-}
-
-void QOhosQpaFunctionsImpl::setMainWindowGeometryPersistencePolicy(
-    WindowGeometryPersistencePolicy geometryPolicyHint)
-{
-    std::optional<QOhosPlatformIntegration::WindowGeometryPersistencePolicy> policy;
-    switch (geometryPolicyHint) {
-    case QOhosQpaFunctions::WindowGeometryPersistencePolicy::Disabled:
-        policy = QOhosPlatformIntegration::WindowGeometryPersistencePolicy::Disabled;
-        break;
-    case QOhosQpaFunctions::WindowGeometryPersistencePolicy::Enabled:
-        policy = QOhosPlatformIntegration::WindowGeometryPersistencePolicy::Enabled;
-        break;
-    case QOhosQpaFunctions::WindowGeometryPersistencePolicy::FollowSystemSetting:
-        policy = QOhosPlatformIntegration::WindowGeometryPersistencePolicy::FollowSystemSetting;
-        break;
-    }
-
-    if (policy.has_value()) {
-        QOhosPlatformIntegration::setMainWindowGeometryPersistencePolicy(policy.value());
-    } else {
-        qOhosReportFatalErrorAndAbort(
-            "%s: Failed to convert persistence geometry policy hint to QOhosPlatformIntegration enum",
-            Q_FUNC_INFO);
-    }
 }
 
 QOhosSupplier<double> QOhosQpaFunctionsImpl::makeOhosConfigFontSizeScaleDataSource(

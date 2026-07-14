@@ -4,8 +4,10 @@
 #include "qohoswindowutils.h"
 
 #include <QtCore/qvariant.h>
+#include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qohoswindowhints_p.h>
 #include <QtGui/qcolor.h>
+#include <QtGui/qpa/qplatformintegration.h>
 #include <QtGui/qpa/qplatformscreen_p.h>
 #include <QtGui/qpa/qplatformwindow_p.h>
 #include <QtGui/qscreen.h>
@@ -154,6 +156,31 @@ void setWindowDragResizable(QWindow *window, bool dragResizable)
 void setWindowDragResizable(QWidget *widget, bool dragResizable)
 {
     widget->setProperty(QOhosWindowHints::dragResizableKey, QVariant::fromValue(dragResizable));
+}
+
+/*!
+    Sets whether the application's main window restores its last geometry on
+    startup according to \a hint. WindowGeometryPersistenceHint::FollowSystemSetting
+    defers to the system default. This has to be called before the main window is
+    shown.
+*/
+void setMainWindowGeometryPersistenceHint(WindowGeometryPersistenceHint hint)
+{
+    std::optional<bool> enabled;
+    switch (hint) {
+    case WindowGeometryPersistenceHint::Disabled:
+        enabled = false;
+        break;
+    case WindowGeometryPersistenceHint::Enabled:
+        enabled = true;
+        break;
+    case WindowGeometryPersistenceHint::FollowSystemSetting:
+        break;
+    }
+
+    using QOhosIntegration = QNativeInterface::Private::QOhosIntegration;
+    auto *integration = QGuiApplicationPrivate::platformIntegration();
+    integration->call<&QOhosIntegration::setMainWindowGeometryPersistenceEnabled>(enabled);
 }
 
 }

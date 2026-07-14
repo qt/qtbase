@@ -179,6 +179,7 @@ struct Q_GUI_EXPORT QOhosIntegration
 {
     QT_DECLARE_NATIVE_INTERFACE(QOhosIntegration)
     virtual WId windowHandle(ArkUI_NodeHandle content) = 0;
+    virtual void setMainWindowGeometryPersistenceEnabled(std::optional<bool> enabled) = 0;
 };
 #endif // defined(Q_OS_OHOS)
 

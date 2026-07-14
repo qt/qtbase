@@ -388,6 +388,16 @@ void QOhosPlatformIntegration::setMainWindowGeometryPersistencePolicy(
     m_mainWindowPersistencePolicy = policy;
 }
 
+void QOhosPlatformIntegration::setMainWindowGeometryPersistenceEnabled(std::optional<bool> enabled)
+{
+    const auto policy = !enabled.has_value()
+        ? WindowGeometryPersistencePolicy::FollowSystemSetting
+        : *enabled
+            ? WindowGeometryPersistencePolicy::Enabled
+            : WindowGeometryPersistencePolicy::Disabled;
+    setMainWindowGeometryPersistencePolicy(policy);
+}
+
 QOhosPlatformIntegration::WindowGeometryPersistencePolicy QOhosPlatformIntegration::getMainWindowGeometryPersistencePolicy()
 {
     return m_mainWindowPersistencePolicy;
