@@ -95,6 +95,23 @@
 
     Since Qt 4.5, Qt style sheets fully supports \macos.
 
+    \section1 Security Considerations
+
+    Style sheet text is parsed by Qt and can reference external resources: the
+    \c{url()} function can point at any local file or Qt resource, which Qt
+    will then load and render, for example as a background, border, or icon
+    image. Applications that construct a style sheet, in whole or in part,
+    from data that is not fully under their own control - such as a
+    runtime-selectable theme file, a path supplied via the \c{-stylesheet}
+    command-line option, or content coming from a plugin - should treat that
+    content as they would any other file path taken from an untrusted source.
+    A malicious style sheet can cause Qt to read and display the contents of
+    arbitrary local files that the application process has permission to
+    access.
+
+    Style sheets that are hardcoded in the application, or embedded in a
+    compiled-in Qt resource file, are not affected by this consideration,
+    since their content is fully controlled by the application itself.
 */
 
 /*!
