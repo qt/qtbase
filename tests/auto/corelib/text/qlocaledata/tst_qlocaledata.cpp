@@ -968,6 +968,8 @@ public:
                 return QVariant(QStringList{u"en-DK"_s, u"en-GB"_s, u"fo-FO"_s,
                                             u"da-FO"_s, u"da-DK"_s});
             }
+            if (m_name == u"en-AU") // An anglophone in Oz who knows Japanese:
+                return QVariant(QStringList{u"en-AU"_s, u"en-GB"_s, u"ja-JP"_s});
             if (m_name == u"en-NL") // Anglophone in Netherlands:
                 return QVariant(QStringList{u"en-NL"_s, u"nl-NL"_s});
             if (m_name == u"en-NL-GB") // Netherlander at work for a GB-ish employer:
@@ -978,6 +980,8 @@ public:
             }
             if (m_name == u"pa-Arab-GB") // Pakistani Punjabi in Britain
                 return QVariant(QStringList{u"pa-PK"_s, u"en-GB"_s});
+            if (m_name == u"pa-IN-educated")
+                return QVariant(QStringList{u"pa-IN"_s, u"en-IN"_s, u"pa-PK"_s});
             if (m_name == u"no") // QTBUG-131127
                 return QVariant(QStringList{u"no"_s, u"en-US"_s, u"nb"_s});
             if (m_name == u"no-US") // Empty query result:
@@ -1081,11 +1085,12 @@ void tst_QLocaleData::mySystemLocale_data()
 
     QTest::addRow("english-germany")
         << u"en-DE"_s << QLocale::English
-        // First two were missed out before fix to QTBUG-104930:
+        // The en-GB entries were missed out before the fix to QTBUG-104930:
         << QStringList{u"en-Latn-GB"_s, u"en-GB"_s,
                        u"en-Latn-DE"_s, u"en-DE"_s,
                        // Truncations after the English locale:
                        u"en-Latn"_s, u"en"_s,
+                       // Different language and script so after the fallbacks:
                        u"de-Latn-DE"_s, u"de-DE"_s, u"de-Latn"_s, u"de"_s};
 
     QTest::addRow("german")
@@ -1129,6 +1134,11 @@ void tst_QLocaleData::mySystemLocale_data()
             // implied by the entry that it's derived from, pa-PK - in contrast
             // to en-Latn and en.
             u"pa"_s};
+    QTest::addRow("pa-IN-biliteral")
+        << u"pa-IN-educated"_s << QLocale::Punjabi
+        << QStringList{u"pa-Guru-IN"_s, u"pa-IN"_s, u"pa-Guru"_s, u"pa"_s,
+                       u"en-Latn-IN"_s, u"en-IN"_s, u"en-Latn"_s, u"en"_s,
+                       u"pa-Arab-PK"_s, u"pa-PK"_s, u"pa-Arab"_s};
 
     QTest::newRow("en-Dsrt-GB")
         << u"en-Dsrt-GB"_s << QLocale::English
@@ -1141,9 +1151,17 @@ void tst_QLocaleData::mySystemLocale_data()
                        u"en-Latn-FO"_s, u"en-FO"_s,
                        // Truncations after the last English locale:
                        u"en-Latn"_s, u"en"_s,
+                       // Other languages:
                        u"fo-Latn-FO"_s, u"fo-FO"_s, u"fo-Latn"_s, u"fo"_s,
                        u"da-Latn-FO"_s, u"da-FO"_s,
                        u"da-Latn-DK"_s, u"da-DK"_s, u"da-Latn"_s, u"da"_s};
+    QTest::newRow("en-AU+GB+ja")
+        << u"en-AU"_s << QLocale::English
+        << QStringList{u"en-Latn-AU"_s, u"en-AU"_s, u"en-Latn-GB"_s, u"en-GB"_s,
+                       // Script-compatible non-equivalent truncations should
+                       // appear between last en and first non-en:
+                       u"en-Latn"_s, u"en"_s,
+                       u"ja-Jpan-JP"_s, u"ja-JP"_s, u"ja-Jpan"_s, u"ja"_s};
     QTest::newRow("polylingual-CA")
         << u"de-CA"_s << QLocale::German
         << QStringList{u"en-Latn-CA"_s, u"en-CA"_s, u"fr-Latn-CA"_s, u"fr-CA"_s,
@@ -1153,6 +1171,7 @@ void tst_QLocaleData::mySystemLocale_data()
                        u"en-Latn-GB"_s, u"en-GB"_s,
                        // Truncations after the last English locale:
                        u"en-Latn"_s, u"en"_s,
+                       // Results of fr-FR:
                        u"fr-Latn-FR"_s, u"fr-FR"_s, u"fr-Latn"_s, u"fr"_s};
 
     QTest::newRow("und-US")
