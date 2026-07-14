@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include <QtCore/private/qnapi_p.h>
-#include <QtCore/private/qohoscommon_p.h>
 #include <qohosjsenv_p.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qscopeguard.h>
@@ -13,14 +12,12 @@
 #include <memory>
 #include <qohosapppermissions_p.h>
 #include <qohosenums.h>
-#include <qohosjsutils.h>
 #include <qohosplatformclipboard.h>
 #include <qohosplatformintegration.h>
 #include <qohosplatformservices.h>
 #include <qohosplatformwindow.h>
 #include <qohosplugincore.h>
 #include <qohosqpafunctions_p.h>
-#include <qohossettings.h>
 #include <qohosutils.h>
 #include <qohoswindowproperty.h>
 #include <vector>
@@ -39,9 +36,6 @@ public:
     QVariant getImageDataFromPasteboard() const override;
     QString getTextDataFromPasteboard() const override;
 
-    QOhosSupplier<double> makeOhosConfigFontSizeScaleDataSource(
-        QOhosConsumer<double> valueChangedHandler) override;
-
     void setAudioStreamUsageHintProperty(QObject *qObject, AudioStreamUsage usage) override;
     std::optional<AudioStreamUsage> tryGetAudioStreamUsageHintProperty(QObject *qObject) override;
 };
@@ -54,20 +48,6 @@ QVariant QOhosQpaFunctionsImpl::getImageDataFromPasteboard() const
 QString QOhosQpaFunctionsImpl::getTextDataFromPasteboard() const
 {
     return QOhosPlatformIntegration::instance()->clipboard()->getPasteboardDataWithLazyFetchOrLocalIfOwner()->text();
-}
-
-QOhosSupplier<double> QOhosQpaFunctionsImpl::makeOhosConfigFontSizeScaleDataSource(
-    QOhosConsumer<double> valueChangedHandler)
-{
-    auto initFontSizeScale = QOhosPlatformIntegration::instance()->settings()->fontSizeScale();
-    return makeOhosConfigValueDataSource<double>(
-        [initFontSizeScale](QtOhos::JsState &) {
-            return initFontSizeScale;
-        },
-        [](QtOhos::JsState &, const QNapi::Object &config) {
-            return config.get<QNapi::Number>("fontSizeScale").DoubleValue();
-        },
-        std::move(valueChangedHandler));
 }
 
 void QOhosQpaFunctionsImpl::setAudioStreamUsageHintProperty(QObject *qObject, AudioStreamUsage usage)
