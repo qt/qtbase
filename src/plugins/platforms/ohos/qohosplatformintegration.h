@@ -6,7 +6,7 @@
 
 #include <QtGui/qtguiglobal.h>
 
-
+#include <optional>
 #include <qohosdisplayinfo.h>
 #include <qohosscreenmanager.h>
 #include <qpa/qplatformnativeinterface.h>
@@ -95,6 +95,7 @@ public:
     QStringList themeNames() const override;
 
     WId windowHandle(ArkUI_NodeHandle content) override;
+    void setMainWindowGeometryPersistenceEnabled(std::optional<bool> enabled) override;
 
     static QOhosSystemLocale *systemLocale();
     static void setSystemLocale(QOhosSystemLocale *systemLocale);

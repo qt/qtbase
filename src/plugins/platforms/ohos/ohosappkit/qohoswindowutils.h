@@ -17,6 +17,16 @@ namespace QtOhosAppKit {
 
 namespace Window {
 
+Q_NAMESPACE
+
+enum class WindowGeometryPersistenceHint
+{
+    Disabled,
+    Enabled,
+    FollowSystemSetting,
+};
+Q_ENUM_NS(WindowGeometryPersistenceHint)
+
 Q_OHOSAPPKIT_EXPORT void setShowWindowAsFloatWindowHint(QWindow *window, bool showAsFloatWindow);
 Q_OHOSAPPKIT_EXPORT void setShowWindowAsFloatWindowHint(QWidget *widget, bool showAsFloatWindow);
 
@@ -33,6 +43,8 @@ Q_OHOSAPPKIT_EXPORT void setWindowKeepScreenOn(QWidget *widget, bool keepScreenO
 
 Q_OHOSAPPKIT_EXPORT void setWindowDragResizable(QWindow *window, bool dragResizable);
 Q_OHOSAPPKIT_EXPORT void setWindowDragResizable(QWidget *widget, bool dragResizable);
+
+Q_OHOSAPPKIT_EXPORT void setMainWindowGeometryPersistenceHint(WindowGeometryPersistenceHint hint);
 
 }
 

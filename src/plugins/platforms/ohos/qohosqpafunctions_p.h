@@ -30,13 +30,6 @@ namespace QtOhos {
 class QOhosQpaFunctions
 {
 public:
-    enum class WindowGeometryPersistencePolicy
-    {
-        Disabled,
-        Enabled,
-        FollowSystemSetting,
-    };
-
     enum class AudioStreamUsage {
         Unknown,
         Music,
@@ -59,8 +52,6 @@ public:
     virtual void setInAppOnlyPasteboardShareOption(bool shareInAppOnly) = 0;
     virtual QVariant getImageDataFromPasteboard() const = 0;
     virtual QString getTextDataFromPasteboard() const = 0;
-
-    virtual void setMainWindowGeometryPersistencePolicy(WindowGeometryPersistencePolicy policy) = 0;
 
     virtual QOhosSupplier<double> makeOhosConfigFontSizeScaleDataSource(
         QOhosConsumer<double> valueChangedHandler) = 0;
