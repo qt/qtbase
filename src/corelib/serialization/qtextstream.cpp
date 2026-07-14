@@ -312,6 +312,8 @@ void QTextStreamPrivate::reset()
     toUtf16 = QStringDecoder(encoding);
     fromUtf16 = QStringEncoder(encoding);
     autoDetectUnicode = true;
+
+    status = QTextStream::Ok;
 }
 
 void QTextStreamPrivate::setupDevice(QIODevice *device)
@@ -930,8 +932,6 @@ QTextStream::QTextStream()
 #if defined (QTEXTSTREAM_DEBUG)
     qDebug("QTextStream::QTextStream()");
 #endif
-    Q_D(QTextStream);
-    d->status = Ok;
 }
 
 /*!
@@ -947,7 +947,6 @@ QTextStream::QTextStream(QIODevice *device)
     Q_D(QTextStream);
     d->device = device;
     d->setupDevice(device);
-    d->status = Ok;
 }
 
 /*!
@@ -964,7 +963,6 @@ QTextStream::QTextStream(QString *string, OpenMode openMode)
     Q_D(QTextStream);
     d->string = string;
     d->stringOpenMode = openMode;
-    d->status = Ok;
 }
 
 #ifndef QT_BOOTSTRAPPED
@@ -985,7 +983,6 @@ QTextStream::QTextStream(QByteArray *array, OpenMode openMode)
     d->device->open(openMode);
     d->deleteDevice = true;
     d->setupDevice(d->device);
-    d->status = Ok;
 }
 
 /*!
@@ -1013,7 +1010,6 @@ QTextStream::QTextStream(const QByteArray &array, OpenMode openMode)
     d->device = buffer;
     d->deleteDevice = true;
     d->setupDevice(d->device);
-    d->status = Ok;
 }
 #endif
 
@@ -1045,7 +1041,6 @@ QTextStream::QTextStream(FILE *fileHandle, OpenMode openMode)
     d->device = file;
     d->deleteDevice = true;
     d->setupDevice(d->device);
-    d->status = Ok;
 }
 
 /*!
@@ -1213,7 +1208,6 @@ void QTextStream::setDevice(QIODevice *device)
     }
 
     d->reset();
-    d->status = Ok;
     d->device = device;
     d->resetReadBuffer();
     d->setupDevice(d->device);
@@ -1252,7 +1246,6 @@ void QTextStream::setString(QString *string, OpenMode openMode)
     }
 
     d->reset();
-    d->status = Ok;
     d->string = string;
     d->stringOpenMode = openMode;
 }
