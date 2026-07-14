@@ -2646,7 +2646,6 @@ QXmlStreamAttribute::QXmlStreamAttribute(const QString &namespaceUri, const QStr
     m_namespaceUri = namespaceUri;
     m_name = m_qualifiedName = name;
     m_value = value;
-    m_namespaceUri = namespaceUri;
 }
 
 /*!
