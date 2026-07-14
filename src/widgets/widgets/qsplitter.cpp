@@ -906,6 +906,20 @@ QSplitterLayoutStruct *QSplitterPrivate::insertWidget(int index, QWidget *w)
     setLayout() or making the QSplitter a parent of the QLayout); use addWidget()
     instead (see example above).
 
+    \section1 Security Considerations
+
+    The restoreState() function deserializes a versioned binary blob that
+    describes the sizes and orientation of the splitter's children. The
+    format's magic number and version are validated, but the individual fields
+    are not otherwise sanity-checked once the outer structure is accepted.
+
+    Only pass restoreState() a QByteArray that was previously produced by
+    saveState() and persisted by the same, or a compatible, version of your
+    application, typically through QSettings. Do not call restoreState()
+    with data of unknown or untrusted origin, such as a file downloaded from
+    the network, a synced or shared configuration file, or data supplied by
+    another, potentially compromised, application.
+
     \sa QSplitterHandle, QHBoxLayout, QVBoxLayout, QTabWidget
 */
 

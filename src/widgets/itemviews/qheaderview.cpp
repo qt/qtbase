@@ -151,6 +151,24 @@ static const int maxSizeSection = 1048575; // since section size is in a bitfiel
     \l{QHeaderView::ResizeMode}{Fixed} (without specifying it for any indexes,
     as that will do the opposite). The user should also be prevented from
     moving sections by keeping \l sectionsMovable disabled.
+
+    \section1 Security Considerations
+
+    The restoreState() function deserializes a versioned binary blob that
+    describes column order, section sizes, the sort indicator, and related view
+    state. The format's magic number, version, and reported total length are
+    validated, but the deserialized visual and logical indices and the sort
+    indicator's section are not checked against the header's actual section
+    count before being used to index internal data structures.
+
+    Only pass restoreState() a QByteArray that was previously produced by
+    saveState() and persisted by the same, or a compatible, version of your
+    application, typically round-tripped through QSettings. Do not call
+    restoreState() with data of unknown or untrusted origin, such as a file
+    downloaded from the network, a synced or shared configuration file, or
+    data supplied by another, potentially compromised, application.
+
+    \sa saveState(), restoreState()
 */
 
 /*!

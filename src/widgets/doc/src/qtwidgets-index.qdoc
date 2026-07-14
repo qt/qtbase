@@ -102,6 +102,30 @@ interfaces
 
     \include {module-use.qdocinc} {building_with_qmake} {widgets}
 
+    \section1 Security Considerations
+
+    Several Qt Widgets classes deserialize or parse data that an application
+    can supply from any source, and Qt cannot verify its provenance. Give
+    particular consideration to the following:
+
+    \list
+    \li \l{QHeaderView#Security Considerations}{QHeaderView::restoreState()}
+        deserializes a versioned binary state blob.
+    \li \l{QFileDialog#Security Considerations}{QFileDialog::restoreState()}
+        likewise deserializes a binary state blob, which embeds a
+        QHeaderView state blob.
+    \li \l{QMainWindow#Security Considerations}{QMainWindow::restoreState()}
+        deserializes a binary state blob describing a recursively nested
+        toolbar and dock widget layout.
+    \li \l{QSplitter#Security Considerations}{QSplitter::restoreState()}
+        deserializes a binary state blob describing splitter sizes and
+        orientation.
+    \endlist
+
+    Only pass such APIs data that your application previously produced and
+    persisted itself (typically via QSettings), or that is otherwise fully
+    under your application's control.
+
     \section1 Articles and Guides
 
     \list
