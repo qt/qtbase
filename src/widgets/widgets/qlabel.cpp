@@ -191,8 +191,11 @@ QLabel::~QLabel()
 {
     Q_D(QLabel);
 
+#ifndef QT_NO_SHORTCUT
     if (d->buddy)
         d->buddy->d_func()->labels.removeAll(this);
+#endif
+
     d->clearContents();
 }
 
