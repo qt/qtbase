@@ -860,6 +860,7 @@ void QWaylandInputDevice::Pointer::pointer_button(uint32_t serial, uint32_t time
     }
 
     mLastButton = qt_button;
+    const bool firstPress = state && mButtons == Qt::NoButton;
 
     if (state)
         mButtons |= qt_button;
@@ -882,13 +883,18 @@ void QWaylandInputDevice::Pointer::pointer_button(uint32_t serial, uint32_t time
         surface = grab->waylandSurface();
     }
 
+    if (firstPress)
+        mPressedSurface = surface;
+
     if (state) {
         if (auto *window = surface->waylandWindow())
             window->handleMousePressActivation();
         setFrameEvent(new PressEvent(surface, time, pos, global, mButtons, qt_button, mParent->modifiers()));
-    }
-    else
+    } else {
         setFrameEvent(new ReleaseEvent(surface, time, pos, global, mButtons, qt_button, mParent->modifiers()));
+        if (mButtons == Qt::NoButton)
+            mPressedSurface.clear();
+    }
 }
 
 void QWaylandInputDevice::Pointer::invalidateFocus()
@@ -902,7 +908,12 @@ void QWaylandInputDevice::Pointer::invalidateFocus()
 
 void QWaylandInputDevice::Pointer::releaseButtons()
 {
-    setFrameEvent(new ReleaseEvent(nullptr, mParent->mTime, mSurfacePos, mGlobalPos, Qt::NoButton, Qt::NoButton, mParent->modifiers()));
+    QWaylandSurface *pressedSurface = mPressedSurface;
+    mPressedSurface.clear();
+    mButtons = Qt::NoButton;
+
+    setFrameEvent(new ReleaseEvent(pressedSurface, mParent->mTime, mSurfacePos, mGlobalPos,
+                                   Qt::NoButton, Qt::NoButton, mParent->modifiers()));
     flushFrameEvent();
 }
 

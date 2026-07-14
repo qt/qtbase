@@ -395,6 +395,7 @@ public:
     QPointer<QWaylandSurface> mScrollTarget;
 
     QWaylandEventCompressionPrivate mEventCompression;
+    QPointer<QWaylandSurface> mPressedSurface;
 
     void maybePointerFrame();
 
