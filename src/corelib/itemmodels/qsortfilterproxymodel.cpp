@@ -2674,6 +2674,14 @@ Qt::SortOrder QSortFilterProxyModel::sortOrder() const
     If no QRegularExpression or an empty string is set, everything in the source
     model will be accepted.
 
+    The regular expression is matched against every row in the source model, so
+    a complex or malformed pattern can slow down or freeze the entire
+    application, especially when used with large models. Application developers
+    are advised to measure the performance and scalability of the regular
+    expression before using it. If the regular expression comes
+    from a potentially untrusted input, consider sanitizing it before passing
+    to this method or using setFilterFixedString() instead.
+
     \note Setting this property propagates the case sensitivity of the new
     regular expression to the \l filterCaseSensitivity property, and so breaks
     its binding. Likewise explicitly setting \l filterCaseSensitivity changes
