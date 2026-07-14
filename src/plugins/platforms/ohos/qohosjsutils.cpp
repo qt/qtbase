@@ -15,8 +15,15 @@ namespace QtOhos {
 namespace details_qohosjsutils_h {
 
 std::shared_ptr<void> registerAppContextEnvironmentCallback(
-    QtOhos::JsState &jsState, QNapi::Object environmentCallback)
+    QtOhos::JsState &jsState,
+    std::vector<std::pair<std::string, QNapi::CallbackFuncWrapper>> environmentCallbackMethods)
 {
+    auto environmentCallback = QNapi::makeObject(
+        jsState.env(),
+        std::vector<std::pair<std::string, QNapi::ValueWrapper>>(
+            std::make_move_iterator(environmentCallbackMethods.begin()),
+            std::make_move_iterator(environmentCallbackMethods.end())));
+
     auto appContextRefPtr = QtOhos::moveToSharedPtr(
         QNapi::Reference<>::makePersistentFrom(
             jsState.defaultQAbilityPeer()->qAbility().eval<QNapi::Object>(
@@ -45,17 +52,15 @@ std::shared_ptr<void> registerAppConfigurationUpdateListener(
 {
     return registerAppContextEnvironmentCallback(
         jsState,
-        QNapi::makeObject(
-            jsState.env(),
+        {
             {
-                {
-                    "onConfigurationUpdated",
-                    [updateListener = std::move(updateListener)](const QtOhos::CallbackInfo &cbInfo) {
-                        auto config = cbInfo.getFirstArg<QNapi::Object>(Q_FUNC_INFO);
-                        updateListener(cbInfo.jsState(), config);
-                    }
-                },
-            }));
+                "onConfigurationUpdated",
+                [updateListener = std::move(updateListener)](const QtOhos::CallbackInfo &cbInfo) {
+                    auto config = cbInfo.getFirstArg<QNapi::Object>(Q_FUNC_INFO);
+                    updateListener(cbInfo.jsState(), config);
+                }
+            },
+        });
 }
 
 }
