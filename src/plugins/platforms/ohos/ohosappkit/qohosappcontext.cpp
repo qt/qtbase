@@ -8,6 +8,7 @@
 #include <QtCore/private/qcore_ohos_p.h>
 #include <QtCore/private/qnapi_p.h>
 #include <QtCore/private/qohoscommon_p.h>
+#include <QtCore/private/qohosjstools_p.h>
 #include <QtCore/private/qohoslogger_p.h>
 #include <QtOhosAppKit/private/qohosappbundleinfo_p.h>
 #include <QtOhosAppKit/private/qohoswantutils_p.h>
@@ -313,7 +314,10 @@ public:
     Q_NORETURN void restartApp() override;
     Q_NORETURN void restartApp(const QOhosWant &want) override;
 
+    double fontSizeScale() const override;
+
 private:
+    QOhosSupplier<double> m_fontSizeScaleSupplier;
 };
 
 template<typename T>
@@ -475,6 +479,37 @@ Q_NORETURN void QOhosAppContextImpl::restartApp(const QOhosWant &requestWant)
 QOhosAppContextImpl::QOhosAppContextImpl()
 {
     qRegisterMetaType<QSharedPointer<QObject>>();
+
+    m_fontSizeScaleSupplier = makeQOhosDataSource<double>(
+        [](QOhosJsState &jsState) -> double {
+            auto optQAbility = jsState.defaultQAbility();
+            if (!optQAbility.has_value())
+                return 1.0;
+            return optQAbility->eval<QNapi::Number>("context.config.fontSizeScale");
+        },
+        [](QOhosJsState &jsState, QOhosConsumer<double> valueUpdatesConsumer) {
+            return registerOhosAppContextEnvironmentCallback(
+                jsState,
+                {
+                    {
+                        "onConfigurationUpdated",
+                        [valueUpdatesConsumer = std::move(valueUpdatesConsumer)](const QOhosCallbackInfo &cbInfo) {
+                            auto config = cbInfo.getFirstArg<QNapi::Object>(Q_FUNC_INFO);
+                            valueUpdatesConsumer(config.get<QNapi::Number>("fontSizeScale"));
+                        }
+                    },
+                });
+        },
+        [this](double fontSizeScale) {
+            Q_EMIT fontSizeScaleChanged(fontSizeScale);
+        },
+        QtOhos::invokeInQtThread,
+        Q_FUNC_INFO);
+}
+
+double QOhosAppContextImpl::fontSizeScale() const
+{
+    return m_fontSizeScaleSupplier();
 }
 
 /*!

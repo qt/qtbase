@@ -41,6 +41,11 @@ public:
 
     Q_NORETURN virtual void restartApp(const QOhosWant &want) = 0;
 
+    virtual double fontSizeScale() const = 0;
+
+Q_SIGNALS:
+    void fontSizeScaleChanged(double fontSizeScale);
+
 protected:
     QOhosAppContext();
     ~QOhosAppContext() override;

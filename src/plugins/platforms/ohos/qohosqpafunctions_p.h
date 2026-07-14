@@ -15,7 +15,6 @@
 // We mean it.
 //
 
-#include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/qglobal.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qstring.h>
@@ -51,9 +50,6 @@ public:
 
     virtual QVariant getImageDataFromPasteboard() const = 0;
     virtual QString getTextDataFromPasteboard() const = 0;
-
-    virtual QOhosSupplier<double> makeOhosConfigFontSizeScaleDataSource(
-        QOhosConsumer<double> valueChangedHandler) = 0;
 
     virtual void setAudioStreamUsageHintProperty(QObject *qObject, AudioStreamUsage usage) = 0;
     virtual std::optional<AudioStreamUsage> tryGetAudioStreamUsageHintProperty(QObject *qObject) = 0;
