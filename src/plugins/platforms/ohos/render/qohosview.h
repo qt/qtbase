@@ -16,7 +16,6 @@
 #include <memory>
 #include <qohosdisplayinfo.h>
 #include <qohosforeignwindow.h>
-#include <qohosplatformintegration.h>
 #include <qohosplatformwindow.h>
 #include <qohosplugincore.h>
 #include <qohosruntimedevicetypeandmode.h>
@@ -309,7 +308,7 @@ void QOhosView::setSystemUpdateProperty(SystemUpdateDataProperty<T, SupportedMod
         && (supportedModes.testFlag(QOhosRuntimeDeviceTypeAndMode::_2in1)
             || supportedModes.testFlag(QOhosRuntimeDeviceTypeAndMode::HandheldDeviceWindowPcMode));
 
-    if (windowModeOnly && !QOhosPlatformIntegration::instance()->settings()->isWindowPcModeEnabled()
+    if (windowModeOnly && !QOhosSettings::instance().isWindowPcModeEnabled()
         && viewType() == ViewType::MainWindow) {
         return;
     }

@@ -168,10 +168,32 @@ QOhosSupplier<bool> makeWindowPcModeEnabledSupplier()
         Q_FUNC_INFO);
 }
 
+QOhosSupplier<bool> makeUncachedWindowPcModeEnabledSupplier()
+{
+    return [] {
+        return QOhosDeviceInfo::is2in1()
+            || QtOhos::evalInJsThread(readWindowPcModeEnabled, Q_FUNC_INFO);
+    };
+}
+
+}
+
+QOhosSettings &QOhosSettings::instance()
+{
+    static QOhosSettings instance;
+    return instance;
+}
+
+std::shared_ptr<void> QOhosSettings::installSettingsCache()
+{
+    return QtOhos::makeDestroyNotifier(
+        [this, previousSupplier = std::exchange(m_windowPcModeEnabled, makeWindowPcModeEnabledSupplier())]() mutable {
+            m_windowPcModeEnabled = std::move(previousSupplier);
+        });
 }
 
 QOhosSettings::QOhosSettings()
-    : m_windowPcModeEnabled(makeWindowPcModeEnabledSupplier())
+    : m_windowPcModeEnabled(makeUncachedWindowPcModeEnabledSupplier())
 {
 }
 

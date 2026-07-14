@@ -24,7 +24,6 @@
 #include <QtCore/qscopedpointer.h>
 #include <QInputDevice>
 #include <qohosplatformclipboard.h>
-#include <qohossettings.h>
 #include <render/qxcomponent.h>
 #include <memory>
 
@@ -105,9 +104,10 @@ public:
 
     QOhosInputMethodEventHandler *inputMethodEventHandler() const;
     QOhosScreenManager *screenManager() const;
-    QOhosSettings *settings() const;
 
 private:
+    std::shared_ptr<void> m_settingsCacheHandle;
+
     std::shared_ptr<EGLDisplay> m_eglDisplay;
 
     QThread *m_mainThread;
@@ -132,8 +132,6 @@ private:
     static WindowGeometryPersistencePolicy m_mainWindowPersistencePolicy;
 
     std::shared_ptr<void> m_applicationStateTracker;
-
-    std::unique_ptr<QOhosSettings> m_settings;
 };
 
 QT_END_NAMESPACE

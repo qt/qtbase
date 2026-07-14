@@ -5,7 +5,6 @@
 
 #include <QtCore/private/qohoslogger_p.h>
 #include <qohosdeviceinfo_p.h>
-#include <qohosplatformintegration.h>
 #include <qohossettings.h>
 
 QT_BEGIN_NAMESPACE
@@ -15,7 +14,7 @@ QOhosRuntimeDeviceTypeAndMode queryQOhosRuntimeDeviceAndMode()
     if (QOhosDeviceInfo::is2in1()) {
         return QOhosRuntimeDeviceTypeAndMode::_2in1;
     } else if (isHandheldDeviceType()) {
-        return QOhosPlatformIntegration::instance()->settings()->isWindowPcModeEnabled()
+        return QOhosSettings::instance().isWindowPcModeEnabled()
             ? QOhosRuntimeDeviceTypeAndMode::HandheldDeviceWindowPcMode
             : QOhosRuntimeDeviceTypeAndMode::HandheldDeviceFullScreen;
     } else {

@@ -6,18 +6,28 @@
 
 #include <QtCore/QtGlobal>
 #include <QtCore/private/qohoscommon_p.h>
+#include <memory>
 
 QT_BEGIN_NAMESPACE
 
 class QOhosSettings
 {
 public:
-    QOhosSettings();
+    static QOhosSettings &instance();
+    Q_REQUIRED_RESULT std::shared_ptr<void> installSettingsCache();
+
+    QOhosSettings(const QOhosSettings &) = delete;
+    QOhosSettings &operator=(const QOhosSettings &) = delete;
+
+    QOhosSettings(QOhosSettings &&) = delete;
+    QOhosSettings &operator=(QOhosSettings &&) = delete;
 
     double fontSizeScale() const;
     bool isWindowPcModeEnabled() const;
 
 private:
+    QOhosSettings();
+
     QOhosSupplier<bool> m_windowPcModeEnabled;
 };
 
