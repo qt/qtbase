@@ -45,8 +45,6 @@ public:
     QOhosSupplier<double> makeOhosConfigFontSizeScaleDataSource(
         QOhosConsumer<double> valueChangedHandler) override;
 
-    bool readOhosNoUiChildMode() override;
-
     void setAudioStreamUsageHintProperty(QObject *qObject, AudioStreamUsage usage) override;
     std::optional<AudioStreamUsage> tryGetAudioStreamUsageHintProperty(QObject *qObject) override;
 };
@@ -103,15 +101,6 @@ QOhosSupplier<double> QOhosQpaFunctionsImpl::makeOhosConfigFontSizeScaleDataSour
             return config.get<QNapi::Number>("fontSizeScale").DoubleValue();
         },
         std::move(valueChangedHandler));
-}
-
-bool QOhosQpaFunctionsImpl::readOhosNoUiChildMode()
-{
-    return QtOhos::evalInJsThread(
-        [&](auto &jsState) {
-            return jsState.defaultQAbilityPeer()->instanceId().empty();
-        },
-        Q_FUNC_INFO);
 }
 
 void QOhosQpaFunctionsImpl::setAudioStreamUsageHintProperty(QObject *qObject, AudioStreamUsage usage)

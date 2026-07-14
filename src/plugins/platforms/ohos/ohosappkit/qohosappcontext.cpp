@@ -354,6 +354,22 @@ QOhosAppContext *QOhosAppContext::instance()
 }
 
 /*!
+    \fn static bool QtOhosAppKit::QOhosAppContext::isNoUiChildMode()
+
+    Returns \c true if the current process was started as a "No UI" child
+    process (see startNoUiChildProcess()), otherwise returns \c false.
+*/
+bool QOhosAppContext::isNoUiChildMode()
+{
+    static const bool noUiChildMode = QOhosJsThreadGateway::eval(
+        [](QOhosJsState &jsState) {
+            return !jsState.defaultQAbility();
+        },
+        Q_FUNC_INFO);
+    return noUiChildMode;
+}
+
+/*!
     \fn static void QtOhosAppKit::QOhosAppContext::startNoUiChildProcess(QString libraryName, QStringList args)
 
     Starts "No UI" child process for a given \a libraryName and \a args. Arguments passed to the

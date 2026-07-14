@@ -24,6 +24,8 @@ class Q_OHOSAPPKIT_EXPORT QOhosAppContext : public QObject
 public:
     static QOhosAppContext *instance();
 
+    static bool isNoUiChildMode();
+
     static void startNoUiChildProcess(QString libraryName, QStringList args);
 
     static QSharedPointer<QOhosWantInfo> appLaunchWantInfo();
