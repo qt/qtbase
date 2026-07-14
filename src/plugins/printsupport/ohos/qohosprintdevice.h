@@ -15,6 +15,8 @@ public:
     explicit QOhosPrintDevice(const QString &id);
     virtual ~QOhosPrintDevice();
 
+    QString name() const override;
+
     bool isValid() const override;
     bool isDefault() const override;
 
