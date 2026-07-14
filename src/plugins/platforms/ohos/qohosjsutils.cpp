@@ -47,22 +47,6 @@ std::shared_ptr<void> registerAppContextEnvironmentCallback(
         });
 }
 
-std::shared_ptr<void> registerAppConfigurationUpdateListener(
-    QtOhos::JsState &jsState, std::function<void(QtOhos::JsState &, QNapi::Object)> updateListener)
-{
-    return registerAppContextEnvironmentCallback(
-        jsState,
-        {
-            {
-                "onConfigurationUpdated",
-                [updateListener = std::move(updateListener)](const QtOhos::CallbackInfo &cbInfo) {
-                    auto config = cbInfo.getFirstArg<QNapi::Object>(Q_FUNC_INFO);
-                    updateListener(cbInfo.jsState(), config);
-                }
-            },
-        });
-}
-
 }
 
 std::shared_ptr<void> startDelayedJsThreadTask(
