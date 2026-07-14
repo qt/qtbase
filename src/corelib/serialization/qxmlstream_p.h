@@ -279,7 +279,6 @@ public:
     void addData(const QByteArray &data, QStringDecoder::Encoding enc);
 
     QByteArray rawReadBuffer;
-    uchar firstByte;
     qint64 nbytesread;
     QString readBuffer;
     qsizetype readBufferPos;
