@@ -126,7 +126,8 @@ public:
     QDockAreaLayoutInfo *info(QWidget *widget);
 
     void saveState(QDataStream &stream) const;
-    bool restoreState(QDataStream &stream, QList<QDockWidget*> &widgets, QInternal::CallMode);
+    bool restoreState(QDataStream &stream, QList<QDockWidget*> &widgets, QInternal::CallMode,
+                       int depth = 0);
 
     void fitItems();
     bool expansive(Qt::Orientation o) const;
