@@ -57,7 +57,7 @@ class QtEditText extends View
     private final int ImhEmailCharactersOnly = 0x200000;
     private final int ImhUrlCharactersOnly = 0x400000;
     private final int ImhLatinOnly = 0x800000;
-    private final int ImhDecimaNumbersOnly = 0x1000000;
+    private final int ImhDecimalNumbersOnly = 0x1000000;
 
     private final QtInputConnectionListener m_qtInputConnectionListener;
 
@@ -170,7 +170,7 @@ class QtEditText extends View
 
             if ((inputHints & ImhHiddenText) != 0)
                 inputType |= android.text.InputType.TYPE_NUMBER_VARIATION_PASSWORD;
-        } else if ((inputHints & ImhDecimaNumbersOnly) != 0) {
+        } else if ((inputHints & ImhDecimalNumbersOnly) != 0) {
             inputType |= android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL;
         } else if ((inputHints & ImhDialableCharactersOnly) != 0) {
             inputType = android.text.InputType.TYPE_CLASS_PHONE;
