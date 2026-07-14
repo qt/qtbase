@@ -36,7 +36,6 @@ const QOhosPropertyDescriptor<QOhosQpaFunctions::AudioStreamUsage> audioStreamUs
 class QOhosQpaFunctionsImpl : public QOhosQpaFunctions
 {
 public:
-    void setInAppOnlyPasteboardShareOption(bool shareInAppOnly) override;
     QVariant getImageDataFromPasteboard() const override;
     QString getTextDataFromPasteboard() const override;
 
@@ -46,11 +45,6 @@ public:
     void setAudioStreamUsageHintProperty(QObject *qObject, AudioStreamUsage usage) override;
     std::optional<AudioStreamUsage> tryGetAudioStreamUsageHintProperty(QObject *qObject) override;
 };
-
-void QOhosQpaFunctionsImpl::setInAppOnlyPasteboardShareOption(bool shareInAppOnly)
-{
-    QOhosPlatformClipboard::setInAppOnlyPasteboardShareOption(shareInAppOnly);
-}
 
 QVariant QOhosQpaFunctionsImpl::getImageDataFromPasteboard() const
 {

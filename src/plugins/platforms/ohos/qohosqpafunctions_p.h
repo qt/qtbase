@@ -49,7 +49,6 @@ public:
 
     virtual ~QOhosQpaFunctions();
 
-    virtual void setInAppOnlyPasteboardShareOption(bool shareInAppOnly) = 0;
     virtual QVariant getImageDataFromPasteboard() const = 0;
     virtual QString getTextDataFromPasteboard() const = 0;
 
