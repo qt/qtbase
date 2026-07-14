@@ -2726,7 +2726,7 @@
     Flags that restrict input (exclusive flags):
 
     \value ImhDigitsOnly             Only digits are allowed.
-    \value ImhDecimaNumbersOnly      [since 6.12] Only number input is allowed. This includes decimal point, but not negative numbers.
+    \value ImhDecimalNumbersOnly     [since 6.12] Only number input is allowed. This includes decimal point, but not negative numbers.
     \value ImhFormattedNumbersOnly   Only number input is allowed. This includes decimal point and minus sign.
     \value ImhUppercaseOnly          Only upper case letter input is allowed.
     \value ImhLowercaseOnly          Only lower case letter input is allowed.

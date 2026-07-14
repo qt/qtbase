@@ -1449,7 +1449,7 @@ namespace Qt {
         ImhEmailCharactersOnly = 0x200000,
         ImhUrlCharactersOnly = 0x400000,
         ImhLatinOnly = 0x800000,
-        ImhDecimaNumbersOnly = 0x1000000,
+        ImhDecimalNumbersOnly = 0x1000000,
 
         ImhExclusiveInputMask = 0xffff0000
     };

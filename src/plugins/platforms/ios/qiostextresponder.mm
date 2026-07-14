@@ -397,7 +397,7 @@
         self.keyboardType = UIKeyboardTypeASCIICapable;
     else if (hints & (Qt::ImhPreferNumbers | Qt::ImhFormattedNumbersOnly))
         self.keyboardType = UIKeyboardTypeNumbersAndPunctuation;
-    else if (hints & Qt::ImhDecimaNumbersOnly)
+    else if (hints & Qt::ImhDecimalNumbersOnly)
         self.keyboardType = UIKeyboardTypeDecimalPad;
     else
         self.keyboardType = UIKeyboardTypeDefault;
