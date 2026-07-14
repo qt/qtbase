@@ -232,6 +232,23 @@ void QMainWindowPrivate::init()
     is the position and size (relative to the size of the main window)
     of the toolbars and dock widgets that are stored.
 
+    \section1 Security Considerations
+
+    The restoreState() function deserializes a versioned binary blob that
+    describes the toolbar and dock widget layout, including a recursively
+    nested tree structure for split and tabbed dock areas. The format's magic
+    marker and version are validated, but individual fields - such as dock area
+    indices and the depth of the nested layout tree - are not bounds-checked
+    against the main window's actual configuration once the outer structure is
+    accepted.
+
+    Only pass restoreState() a QByteArray that was previously produced by
+    saveState() and persisted by the same, or a compatible, version of your
+    application, typically through QSettings. Do not call restoreState()
+    with data of unknown or untrusted origin, such as a file downloaded from
+    the network, a synced or shared configuration file, or data supplied by
+    another, potentially compromised, application.
+
     \sa QMenuBar, QToolBar, QStatusBar, QDockWidget, {Menus Example}
 */
 

@@ -154,6 +154,22 @@ Q_GLOBAL_STATIC(QUrl, lastVisitedDir)
   \l{Qt::AA_DontUseNativeDialogs}{AA_DontUseNativeDialogs} application
   attribute.
 
+  \section1 Security Considerations
+
+  The restoreState() function deserializes a versioned binary blob describing
+  the dialog's splitter layout, sidebar bookmarks, navigation history, current
+  directory, and an embedded QHeaderView state blob. The format's magic number
+  and version are validated, but the individual fields are not otherwise
+  sanity-checked once the outer structure is accepted.
+
+  Only pass restoreState() a QByteArray that was previously produced by
+  saveState() and persisted by the same, or a compatible, version of your
+  application, typically through QSettings. Do not restore state from a file,
+  configuration, or other source whose provenance cannot be trusted. The
+  embedded header state is subject to the same considerations described in
+  \l{QHeaderView#Security Considerations}{QHeaderView's Security
+  Considerations}.
+
   \sa QDir, QFileInfo, QFile, QColorDialog, QFontDialog, {Standard Dialogs Example}
 */
 
