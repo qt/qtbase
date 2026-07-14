@@ -661,8 +661,7 @@ public:
             */
             int prev = counter->fetchAndAddRelaxed(1);
             if (prev == numThreads - 1) {
-#ifdef QT_BUILDING_UNDER_TSAN
-            /*
+                /*
                 Under TSAN, deleting and freeing an object
                 will trigger a write operation on the memory
                 of the object. Since we used fetchAndAddRelaxed
@@ -678,9 +677,9 @@ public:
                 will not result in any data read or written to the
                 memory region of the counter, so no data race will
                 happen.
-            */
-                counter->fetchAndStoreOrdered(0);
-#endif
+                */
+                if constexpr (QtTsan::IsEnabled)
+                    counter->fetchAndStoreOrdered(0);
                 releaseCounter(i);
             }
         }
