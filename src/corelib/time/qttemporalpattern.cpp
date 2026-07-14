@@ -2,12 +2,13 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 #include "private/qttemporalpattern_p.h"
 
-#include <QtCore/qbitarray.h>
 #include "private/qlocale_p.h"
 #include "private/qtparseqttemporalformat_p.h"
 #if QT_CONFIG(datetimeparser)
 #  include "private/qtparsetemporal_p.h"
 #endif
+
+#include <bitset>
 
 QT_BEGIN_NAMESPACE
 
@@ -660,18 +661,18 @@ SupportType supports(DateTimeParts wanted, QSpan<const TemporalField> range,
     // TODO: may need to take into account calendar (and perhaps locale).
     SupportType support = SupportType::HasStrays;
     SupportType zone = SupportType::None;
-    QBitArray date(40);
-    QBitArray time(24);
+    std::bitset<40> date;
+    std::bitset<24> time;
     for (const TemporalField &field : range) {
         const DateTimePart part = field.part();
         switch (part) {
         case DateTimePart::None: // Literal contributes no data.
             continue;
         case DateTimePart::Date:
-            date.setBit(quint8(field.category) - 64);
+            date[quint8(field.category) - 64] = true;
             break;
         case DateTimePart::Time:
-            time.setBit(quint8(field.category) - 16);
+            time[quint8(field.category) - 16] = true;
             break;
         case DateTimePart::Zone:
             if (field.options.testAnyFlags(TemporalFieldFlag::Wide | TemporalFieldFlag::Short)
@@ -708,7 +709,7 @@ SupportType supports(DateTimeParts wanted, QSpan<const TemporalField> range,
             constexpr auto bitFor = [](TemporalFieldCategory cat) {
                 return quint8(cat) - 64;
             };
-#define CHECK(field) date.testBit(bitFor(TemporalFieldCategory::field))
+#define CHECK(field) (date[bitFor(TemporalFieldCategory::field)])
             // if (CHECK(JulianDay)) return SupportType::Clear;
             int fields = 0;
             bool partial = false;
@@ -749,7 +750,7 @@ SupportType supports(DateTimeParts wanted, QSpan<const TemporalField> range,
             constexpr auto bitFor = [](TemporalFieldCategory cat) {
                 return quint8(cat) - 16;
             };
-#define CHECK(field) time.testBit(bitFor(TemporalFieldCategory::field))
+#define CHECK(field) (time[bitFor(TemporalFieldCategory::field)])
             // if (CHECK(MillisecondInDay)) return SupportType::Clear;
             int fields = 0;
             bool partial = false;
