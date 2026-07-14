@@ -2828,7 +2828,7 @@ void tst_QGraphicsView::levelOfDetail()
 
 static void scrollBarRanges_addTestData(const QString &style, bool styled)
 {
-    const int viewWidth = 250;
+    const int viewWidth = 400;
     const int viewHeight = 100;
 
     static constexpr struct Data {
