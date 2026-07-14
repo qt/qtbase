@@ -111,26 +111,16 @@ QOhosSupplier<T> makeDataSource(
         std::move(callerContextName));
 }
 
-namespace details_qohosjsutils_h {
-
-std::shared_ptr<void> registerAppContextEnvironmentCallback(
-    QOhosJsState &jsState,
-    std::vector<std::pair<std::string, QNapi::CallbackFuncWrapper>> environmentCallbackMethods);
-
-}
-
 template<typename ConfigValue>
 QOhosSupplier<ConfigValue> makeOhosConfigValueDataSource(
     std::function<ConfigValue(QtOhos::JsState &)> initValueSupplier,
     std::function<ConfigValue(QtOhos::JsState &, const QNapi::Object &)> valueFetcher,
     QOhosConsumer<ConfigValue> valueChangedHandler)
 {
-    using namespace details_qohosjsutils_h;
-
     return QtOhos::makeDataSource<ConfigValue>(
         std::move(initValueSupplier),
         [valueFetcher = std::move(valueFetcher)](QtOhos::JsState &jsState, QOhosConsumer<ConfigValue> valueUpdatesConsumer) mutable {
-            return registerAppContextEnvironmentCallback(
+            return registerOhosAppContextEnvironmentCallback(
                 jsState,
                 {
                     {
