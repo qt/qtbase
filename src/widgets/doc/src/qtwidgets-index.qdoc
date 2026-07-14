@@ -120,6 +120,9 @@ interfaces
     \li \l{QSplitter#Security Considerations}{QSplitter::restoreState()}
         deserializes a binary state blob describing splitter sizes and
         orientation.
+    \li \l{Qt Style Sheets#Security Considerations}{Qt Style Sheets} can
+        reference and load arbitrary local files through the \c{url()}
+        function.
     \endlist
 
     Only pass such APIs data that your application previously produced and
