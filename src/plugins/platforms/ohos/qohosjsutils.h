@@ -114,7 +114,7 @@ QOhosSupplier<T> makeDataSource(
 namespace details_qohosjsutils_h {
 
 std::shared_ptr<void> registerAppContextEnvironmentCallback(
-    QtOhos::JsState &jsState,
+    QOhosJsState &jsState,
     std::vector<std::pair<std::string, QNapi::CallbackFuncWrapper>> environmentCallbackMethods);
 
 }
