@@ -1970,8 +1970,15 @@ static Qt::DockWidgetArea toDockWidgetArea(QInternal::DockPosition pos)
     return Qt::NoDockWidgetArea;
 }
 
-bool QDockAreaLayoutInfo::restoreState(QDataStream &stream, QList<QDockWidget*> &widgets, QInternal::CallMode callMode)
+bool QDockAreaLayoutInfo::restoreState(QDataStream &stream, QList<QDockWidget*> &widgets,
+                                        QInternal::CallMode callMode, int depth)
 {
+    // A sane layout nests at most one level per dock widget; a stream nested
+    // deeper than this is corrupt or hostile.
+    constexpr int maxDepth = 100;
+    if (depth >= maxDepth)
+        return false;
+
     const bool testing = callMode == QInternal::Testing;
     const QLatin1StringView debugCallMode = testing ? QLatin1StringView("(testing)")
                                                     : QLatin1StringView("(restoring)");
@@ -2092,7 +2099,7 @@ bool QDockAreaLayoutInfo::restoreState(QDataStream &stream, QList<QDockWidget*> 
             //here we need to make sure we change the item in the item_list
             QDockAreaLayoutItem &lastItem = testing ? item : item_list.last();
 
-            if (!lastItem.subinfo->restoreState(stream, widgets, callMode))
+            if (!lastItem.subinfo->restoreState(stream, widgets, callMode, depth + 1))
                 return false;
 
         } else {
@@ -2484,9 +2491,21 @@ bool QDockAreaLayout::restoreState(QDataStream &stream, const QList<QDockWidget*
     const bool testing = callMode == QInternal::Testing;
     int cnt;
     stream >> cnt;
+    static const int dockCount = docks.size();
+    if (cnt < 0 || cnt > dockCount) {
+        qWarning() << "Invalid data stream. Dock count" << cnt << "is out of bound. Maximum:" << dockCount;
+        stream.setStatus(QDataStream::Status::ReadCorruptData);
+        return false;
+    }
     for (int i = 0; i < cnt; ++i) {
         int pos;
         stream >> pos;
+        if (pos < 0 || pos >= dockCount) {
+            qWarning() << "Invalid data stream. Dock position" << pos << "is out of bound. Maximum:" << dockCount - 1;
+            stream.setStatus(QDataStream::Status::ReadCorruptData);
+            return false;
+        }
+
         QSize size;
         stream >> size;
         if (!testing) {

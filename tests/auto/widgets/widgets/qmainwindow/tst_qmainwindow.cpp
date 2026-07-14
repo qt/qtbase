@@ -103,6 +103,8 @@ private slots:
     void removeDockWidget();
     void dockWidgetArea();
     void restoreState();
+    void restoreStateCorruptStream_data();
+    void restoreStateCorruptStream();
     void restoreStateFromPreviousVersion();
     void restoreStateSizeChanged_data();
     void restoreStateSizeChanged();
@@ -1359,6 +1361,77 @@ void tst_QMainWindow::restoreState()
     QVERIFY(!mw.restoreState(state));
     QVERIFY(mw.restoreState(state, 1));
     QVERIFY(tbp->widgetItem);
+}
+
+void tst_QMainWindow::restoreStateCorruptStream_data()
+{
+    QTest::addColumn<QByteArray>("state");
+    QTest::addColumn<QString>("warning");
+
+    // The markers' streaming operators are not exported, so cast to the
+    // representation they write (uchar; VersionMarker is written as int).
+    using StateMarkers = QMainWindowLayoutState::StateMarkers;
+    const auto writeHeader = [](QDataStream &stream) {
+        stream.setVersion(QDataStream::Qt_5_0);
+        stream << int(QMainWindowLayout::VersionMarker) << 0; // marker, version
+        stream << uchar(StateMarkers::DockWidget);
+    };
+
+    {
+        // A corrupt or hostile state stream can nest Sequence markers
+        // arbitrarily deep; restoreState() must reject it instead of
+        // recursing into a stack overflow.
+        QByteArray data;
+        QDataStream stream(&data, QIODevice::WriteOnly);
+        writeHeader(stream);
+        stream << 1;                                          // dock area count
+        stream << int(QInternal::LeftDock) << QSize(100, 100);
+        stream << uchar(StateMarkers::Sequence)
+               << uchar(Qt::Horizontal) << 1;                 // orientation, item count
+        for (int i = 0; i < 100000; ++i) {
+            stream << uchar(StateMarkers::Sequence);          // item: nested sequence
+            stream << 0 << 50 << 0 << 0;                      // pos, size, min, max
+            stream << uchar(StateMarkers::Sequence)           // nested info header
+                   << uchar(Qt::Horizontal) << 1;
+        }
+        QTest::newRow("deeply nested sequence") << data << QString();
+    }
+
+    // A dock area count or position outside of QDockAreaLayout::docks must
+    // not be used to bound the restore loop or index the docks array.
+    const auto dockData = [&writeHeader](int count, int position) {
+        QByteArray data;
+        QDataStream stream(&data, QIODevice::WriteOnly);
+        writeHeader(stream);
+        stream << count;
+        stream << position << QSize(100, 100);
+        return data;
+    };
+
+    QTest::newRow("dock count out of bounds")
+        << dockData(QInternal::DockCount + 1, QInternal::LeftDock)
+        << QString("Invalid data stream. Dock count 5 is out of bound. Maximum: 4");
+    QTest::newRow("negative dock count")
+        << dockData(-1, QInternal::LeftDock)
+        << QString("Invalid data stream. Dock count -1 is out of bound. Maximum: 4");
+    QTest::newRow("dock position out of bounds")
+        << dockData(1, QInternal::DockCount)
+        << QString("Invalid data stream. Dock position 4 is out of bound. Maximum: 3");
+    QTest::newRow("negative dock position")
+        << dockData(1, -1)
+        << QString("Invalid data stream. Dock position -1 is out of bound. Maximum: 3");
+}
+
+void tst_QMainWindow::restoreStateCorruptStream()
+{
+    QFETCH(QByteArray, state);
+    QFETCH(QString, warning);
+
+    if (!warning.isEmpty())
+        QTest::ignoreMessage(QtWarningMsg, qPrintable(warning));
+
+    QMainWindow mw;
+    QVERIFY(!mw.restoreState(state));
 }
 
 //tests the restoration of the previous versions of window settings
