@@ -22,6 +22,8 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <utility>
+#include <vector>
 
 QT_BEGIN_NAMESPACE
 
@@ -36,6 +38,10 @@ struct QOhosOnOffMethodsBasedEventHandlerOptions
 Q_CORE_EXPORT std::shared_ptr<void> registerQOhosOnOffMethodsBasedEventHandler(
     QNapi::Object eventSourceObject, const std::string &eventTypeName,
     QNapi::CallbackFuncWrapper handler, QOhosOnOffMethodsBasedEventHandlerOptions options = {});
+
+Q_CORE_EXPORT std::shared_ptr<void> registerOhosAppContextEnvironmentCallback(
+    QOhosJsState &jsState,
+    std::vector<std::pair<std::string, QNapi::CallbackFuncWrapper>> environmentCallbackMethods);
 
 // Creates a Data Source: an object tracking a value owned by a JS object and mirrored
 // onto a caller-chosen target thread. The returned supplier keeps it alive and yields

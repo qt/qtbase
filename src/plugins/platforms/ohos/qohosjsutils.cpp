@@ -12,46 +12,6 @@ QT_BEGIN_NAMESPACE
 
 namespace QtOhos {
 
-namespace details_qohosjsutils_h {
-
-std::shared_ptr<void> registerAppContextEnvironmentCallback(
-    QOhosJsState &jsState,
-    std::vector<std::pair<std::string, QNapi::CallbackFuncWrapper>> environmentCallbackMethods)
-{
-    auto optQAbility = jsState.defaultQAbility();
-    if (!optQAbility.has_value())
-        return {};
-
-    auto environmentCallback = QNapi::makeObject(
-        jsState.env(),
-        std::vector<std::pair<std::string, QNapi::ValueWrapper>>(
-            std::make_move_iterator(environmentCallbackMethods.begin()),
-            std::make_move_iterator(environmentCallbackMethods.end())));
-
-    auto appContextRefPtr = QtOhos::moveToSharedPtr(
-        QNapi::Reference<>::makePersistentFrom(
-            optQAbility->eval<QNapi::Object>("context.getApplicationContext()")));
-
-    double environmentCallbackId = appContextRefPtr->call<QNapi::Number>(
-        "on",
-        {"environment", environmentCallback});
-
-    return std::shared_ptr<void>(
-        nullptr,
-        [environmentCallbackId, appContextRefPtr](auto) {
-            QOhosJsThreadGateway::runAndWait(
-                [&](QOhosJsState &) {
-                    auto appContextRef = std::move(*appContextRefPtr);
-                    appContextRef.call(
-                        "off",
-                        {"environment", environmentCallbackId});
-                },
-                Q_FUNC_INFO);
-        });
-}
-
-}
-
 std::shared_ptr<void> startDelayedJsThreadTask(
     JsState &jsState, std::function<void(JsState &)> task,
     std::chrono::milliseconds delay)

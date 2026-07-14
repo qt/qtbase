@@ -4,6 +4,7 @@
 #include "qohosjstools_p.h"
 #include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/private/qohoslogger_p.h>
+#include <iterator>
 #include <utility>
 #include <vector>
 
@@ -108,6 +109,42 @@ std::shared_ptr<void> registerQOhosOnOffMethodsBasedEventHandler(
                     "%s: not calling off(%s, ...), event source not alive",
                     Q_FUNC_INFO, eventTypeName.c_str());
             }
+        });
+}
+
+std::shared_ptr<void> registerOhosAppContextEnvironmentCallback(
+    QOhosJsState &jsState,
+    std::vector<std::pair<std::string, QNapi::CallbackFuncWrapper>> environmentCallbackMethods)
+{
+    auto optQAbility = jsState.defaultQAbility();
+    if (!optQAbility.has_value())
+        return {};
+
+    auto environmentCallback = QNapi::makeObject(
+        jsState.env(),
+        std::vector<std::pair<std::string, QNapi::ValueWrapper>>(
+            std::make_move_iterator(environmentCallbackMethods.begin()),
+            std::make_move_iterator(environmentCallbackMethods.end())));
+
+    auto appContextRefPtr = QtOhos::moveToSharedPtr(
+        QNapi::Reference<>::makePersistentFrom(
+            optQAbility->eval<QNapi::Object>("context.getApplicationContext()")));
+
+    double environmentCallbackId = appContextRefPtr->call<QNapi::Number>(
+        "on",
+        {"environment", environmentCallback});
+
+    return std::shared_ptr<void>(
+        nullptr,
+        [environmentCallbackId, appContextRefPtr](auto) {
+            QOhosJsThreadGateway::runAndWait(
+                [&](QOhosJsState &) {
+                    auto appContextRef = std::move(*appContextRefPtr);
+                    appContextRef.call(
+                        "off",
+                        {"environment", environmentCallbackId});
+                },
+                Q_FUNC_INFO);
         });
 }
 
