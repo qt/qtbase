@@ -3235,7 +3235,7 @@ void tst_QObject::recursiveSignalEmission()
 {
 #if !QT_CONFIG(process)
     QSKIP("No qprocess support");
-#elif defined(Q_OS_OHOS)
+#elif defined(Q_OS_HARMONY)
     // TODO: OHOS: Skip tests depending on external executables
     QSKIP("Currently, OHOS platform cannot run test depending on external executables");
 #else

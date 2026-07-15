@@ -97,7 +97,7 @@ public:
     {
         m_key = key;
         m_testCandidate = testCandidate;
-#if defined(Q_OS_OHOS)
+#if defined(Q_OS_HARMONY)
         m_timerId = startTimer(200);
 #else
         m_timerId = startTimer(50);

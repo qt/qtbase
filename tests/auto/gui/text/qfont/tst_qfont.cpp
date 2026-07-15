@@ -628,7 +628,7 @@ void tst_QFont::defaultFamily()
 #ifdef Q_OS_ANDROID
     QEXPECT_FAIL("serif", "QTBUG-69215", Continue);
 #endif
-#ifdef Q_OS_OHOS
+#ifdef Q_OS_HARMONY
     if (styleHint != QFont::SansSerif)
         QSKIP("OHOS currently falls back to HarmonyOS Sans for all styles");
 #endif

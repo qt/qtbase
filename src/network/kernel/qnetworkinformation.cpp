@@ -734,7 +734,7 @@ bool QNetworkInformation::loadDefaultBackend()
     index = QNetworkInformationBackend::PluginNamesAppleIndex;
 #elif defined(Q_OS_ANDROID)
     index = QNetworkInformationBackend::PluginNamesAndroidIndex;
-#elif defined(Q_OS_OHOS)
+#elif defined(Q_OS_HARMONY)
     index = QNetworkInformationBackend::PluginNamesOhosIndex;
 #elif defined(Q_OS_LINUX)
     index = QNetworkInformationBackend::PluginNamesLinuxIndex;

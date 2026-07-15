@@ -64,7 +64,7 @@ __attribute__((weak))
 #endif
 extern char **environ;
 
-#ifdef Q_OS_OHOS
+#ifdef Q_OS_HARMONY
 // OHOS SDK defines PTHREAD_CANCEL_DISABLE but lacks matching pthread_*() functions
 // Details in QTBUG-146708
 #  undef PTHREAD_CANCEL_DISABLE

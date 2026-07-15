@@ -17,7 +17,7 @@ private slots:
 
 void tst_QProcess_and_GuiEventLoop::waitForAndEventLoop()
 {
-#if defined(Q_OS_ANDROID) || defined(Q_OS_OHOS)
+#if defined(Q_OS_ANDROID) || defined(Q_OS_HARMONY)
     QSKIP("Not supported on this platform");
 #else
 

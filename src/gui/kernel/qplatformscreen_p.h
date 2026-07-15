@@ -69,7 +69,7 @@ struct Q_GUI_EXPORT QWebOSScreen
 };
 #endif
 
-#if defined(Q_OS_OHOS)
+#if defined(Q_OS_HARMONY)
 struct Q_GUI_EXPORT QOhosScreen
 {
     QT_DECLARE_NATIVE_INTERFACE(QOhosScreen, 1, QScreen)

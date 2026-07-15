@@ -21,7 +21,7 @@ inline void run()
 {
     QSKIP("Skipped on Android: helper not present");
 }
-#elif defined(Q_OS_OHOS)
+#elif defined(Q_OS_HARMONY)
 inline void run()
 {
     QSKIP("Skipped on OHOS: can't launch helper");

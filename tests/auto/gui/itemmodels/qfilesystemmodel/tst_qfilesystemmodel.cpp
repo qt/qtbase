@@ -1453,7 +1453,7 @@ void tst_QFileSystemModel::specialFiles()
 #ifndef Q_OS_UNIX
      QSKIP("Not implemented");
 #endif
-#if defined(Q_OS_ANDROID) || defined(Q_OS_OHOS)
+#if defined(Q_OS_ANDROID) || defined(Q_OS_HARMONY)
      QSKIP("This platform does not allow access to the root filesystem");
 #endif
 

@@ -76,7 +76,7 @@ void tst_QCssParser::scanner_data()
     QTest::addColumn<QString>("input");
     QTest::addColumn<QString>("output");
 
-#if defined(Q_OS_ANDROID) || defined(Q_OS_OHOS)
+#if defined(Q_OS_ANDROID) || defined(Q_OS_HARMONY)
     QDir d(":/");
 #else
     QDir d(QT_TESTCASE_SOURCEDIR);

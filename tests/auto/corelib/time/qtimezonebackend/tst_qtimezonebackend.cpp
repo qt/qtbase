@@ -433,7 +433,7 @@ void tst_QTimeZoneBackend::findOffsetPrefix()
 
 void tst_QTimeZoneBackend::icuTest()
 {
-#if QT_CONFIG(icu) && !QT_CONFIG(timezone_tzdb) && (defined(Q_OS_VXWORKS) || defined(Q_OS_OHOS) || !defined(Q_OS_UNIX))
+#if QT_CONFIG(icu) && !QT_CONFIG(timezone_tzdb) && (defined(Q_OS_VXWORKS) || defined(Q_OS_HARMONY) || !defined(Q_OS_UNIX))
     // Known datetimes
     qint64 std = QDateTime(QDate(2012, 1, 1), QTime(0, 0), QTimeZone::UTC).toMSecsSinceEpoch();
     qint64 dst = QDateTime(QDate(2012, 6, 1), QTime(0, 0), QTimeZone::UTC).toMSecsSinceEpoch();
@@ -482,7 +482,7 @@ void tst_QTimeZoneBackend::icuTest()
 void tst_QTimeZoneBackend::tzTest()
 {
 #if defined(Q_OS_UNIX) && !(QT_CONFIG(timezone_tzdb) || defined(Q_OS_DARWIN) \
-                            || defined(Q_OS_ANDROID) || defined(Q_OS_VXWORKS) || defined(Q_OS_OHOS))
+                            || defined(Q_OS_ANDROID) || defined(Q_OS_VXWORKS) || defined(Q_OS_HARMONY))
     const auto UTC = QTimeZone::UTC;
     // Known datetimes
     qint64 std = QDateTime(QDate(2012, 1, 1), QTime(0, 0), UTC).toMSecsSinceEpoch();

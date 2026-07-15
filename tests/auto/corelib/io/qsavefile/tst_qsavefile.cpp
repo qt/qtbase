@@ -469,7 +469,7 @@ void tst_QSaveFile::transactionalWriteTypeErrorRenaming()
 
 void tst_QSaveFile::symlink()
 {
-#if defined(Q_OS_UNIX) && !defined(Q_OS_OHOS)
+#if defined(Q_OS_UNIX) && !defined(Q_OS_HARMONY)
     QByteArray someData = "some data";
     QTemporaryDir dir;
     QVERIFY2(dir.isValid(), qPrintable(dir.errorString()));
@@ -594,7 +594,7 @@ void tst_QSaveFile::directory()
         QVERIFY(!sf.open(QIODevice::WriteOnly));
     }
 
-#if defined(Q_OS_UNIX) && !defined(Q_OS_OHOS)
+#if defined(Q_OS_UNIX) && !defined(Q_OS_HARMONY)
     //link to a directory
     const QString linkToDir = dir.path() + QLatin1String("/linkToDir");
     QVERIFY(QFile::link(subdir, linkToDir));

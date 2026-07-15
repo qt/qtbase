@@ -685,7 +685,7 @@ QDebug operator<<(QDebug debug, const QPermission &permission)
 
 #undef QT_PERMISSION_IMPL_COMMON
 
-#if !defined(Q_OS_DARWIN) && !defined(Q_OS_ANDROID) && !defined(Q_OS_WASM) && !defined(Q_OS_OHOS)
+#if !defined(Q_OS_DARWIN) && !defined(Q_OS_ANDROID) && !defined(Q_OS_WASM) && !defined(Q_OS_HARMONY)
 // Default backend for platforms without a permission implementation.
 // Always returns Granted, to match behavior when not using permission APIs
 // https://bugreports.qt.io/browse/QTBUG-90498?focusedCommentId=725085#comment-725085

@@ -23,7 +23,7 @@
 #include <pwd.h>
 #endif
 
-#if defined(Q_OS_UNIX) && !defined(Q_OS_MACOS) && !defined(Q_OS_ANDROID) && !defined(Q_OS_OHOS)
+#if defined(Q_OS_UNIX) && !defined(Q_OS_MACOS) && !defined(Q_OS_ANDROID) && !defined(Q_OS_HARMONY)
 #define Q_XDG_PLATFORM
 #endif
 
@@ -399,7 +399,7 @@ void tst_qstandardpaths::testDataLocation()
     // Android is an exception to this case, owing to the fact that
     // applications are sandboxed.
     // OHOS is also an exception for the same reason.
-#if !defined(Q_OS_ANDROID) && !defined(Q_OS_OHOS)
+#if !defined(Q_OS_ANDROID) && !defined(Q_OS_HARMONY)
     const QString base = genericDataLoc();
     QCOMPARE(appLocalDataLoc(), base + "/tst_qstandardpaths");
     QCoreApplication::instance()->setOrganizationName("Qt");
@@ -424,7 +424,7 @@ void tst_qstandardpaths::testAppConfigLocation()
 {
     // On all platforms where applications are not sandboxed,
     // AppConfigLocation should be GenericConfigLocation / organization name / app name
-#if !defined(Q_OS_ANDROID) && !defined(Q_OS_OHOS)
+#if !defined(Q_OS_ANDROID) && !defined(Q_OS_HARMONY)
     const QString base = genericConfigLoc();
     QCOMPARE(appConfigLoc(), base + "/tst_qstandardpaths");
     QCoreApplication::setOrganizationName("Qt");
@@ -529,7 +529,7 @@ void tst_qstandardpaths::testFindExecutable()
 #else
     const Qt::CaseSensitivity sensitivity = Qt::CaseSensitive;
 #endif
-#ifdef Q_OS_OHOS
+#ifdef Q_OS_HARMONY
     if (QByteArray(QTest::currentDataTag()).contains("unix-sh"))
         QEXPECT_FAIL("", "stat() returns EACCES on /bin/sh while access() succeeds, "
             "causing QFileInfo::isFile() to fail, see also QTBUG-146625", Continue);
@@ -542,7 +542,7 @@ void tst_qstandardpaths::testFindExecutableLinkToDirectory()
 {
 #ifdef Q_OS_WASM
     QSKIP("No applicationdir on wasm");
-#elif defined(Q_OS_OHOS)
+#elif defined(Q_OS_HARMONY)
     QSKIP("Creating symbolic links is not permitted in the OHOS app sandbox (EACCES)");
 #else
     const QString appPath = QCoreApplication::applicationDirPath();
@@ -576,7 +576,7 @@ void tst_qstandardpaths::testRuntimeDirectory()
 #if defined(Q_XDG_PLATFORM) && !defined(Q_OS_INTEGRITY)
 static QString fallbackXdgRuntimeDir()
 {
-#ifdef Q_OS_OHOS
+#ifdef Q_OS_HARMONY
     QString username = "ohos-currentUser";
 #else
     static QString username = [] {

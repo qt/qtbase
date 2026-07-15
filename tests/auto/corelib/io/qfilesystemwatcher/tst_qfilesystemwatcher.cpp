@@ -419,7 +419,7 @@ void tst_QFileSystemWatcher::addPaths()
     QFileSystemWatcher watcher;
     QStringList paths;
     paths << QDir::homePath() << QDir::tempPath();
-#if !defined(Q_OS_QNX) && !defined(Q_OS_OHOS)
+#if !defined(Q_OS_QNX) && !defined(Q_OS_HARMONY)
     // Adding this makes QNX fail and we haven't investigated why
     for (const QFileInfo &fi : QDir::drives())
         paths << fi.absoluteFilePath();     // on Unix, this will be just "/"
@@ -493,7 +493,7 @@ void tst_QFileSystemWatcher::removePaths()
     QFileSystemWatcher watcher;
     QStringList paths;
     paths << QDir::homePath() << QDir::tempPath();
-#if !defined(Q_OS_QNX) && !defined(Q_OS_OHOS)
+#if !defined(Q_OS_QNX) && !defined(Q_OS_HARMONY)
     // Adding this makes QNX fail and we haven't investigated why
     for (const QFileInfo &fi : QDir::drives())
         paths << fi.absoluteFilePath();     // on Unix, this will be just "/"

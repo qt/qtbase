@@ -101,7 +101,7 @@ static QByteArray &removeTrailingSlashes(QByteArray &path)
 }
 
 enum {
-#if defined(Q_OS_ANDROID) || defined(Q_OS_OHOS)
+#if defined(Q_OS_ANDROID) || defined(Q_OS_HARMONY)
     // On Android/OHOS, the link(2) system call has been observed to always fail
     // with EACCES, regardless of whether there are permission problems or not.
     SupportsHardlinking = false
@@ -1380,7 +1380,7 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &, QFileSystemEnt
 }
 #elif defined(Q_OS_DARWIN)
 // see qfilesystemengine_mac.mm
-#elif defined(Q_OS_OHOS)
+#elif defined(Q_OS_HARMONY)
 // see qfilesystemengine_ohos.cpp
 #else
 /*

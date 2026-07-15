@@ -64,7 +64,7 @@ public:
         return VisionOS;
 #elif defined(Q_OS_ANDROID)
         return Android;
-#elif defined(Q_OS_OHOS)
+#elif defined(Q_OS_HARMONY)
         return OHOS;
 #else
         return Unknown;

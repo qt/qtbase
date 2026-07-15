@@ -60,7 +60,7 @@
 #include <sys/neutrino.h>
 #endif
 
-#if defined(Q_OS_OHOS)
+#if defined(Q_OS_HARMONY)
 // OHOS SDK defines PTHREAD_CANCEL_DISABLE but lacks matching pthread_*() functions
 // Details in QTBUG-146708
 #  undef PTHREAD_CANCEL_DISABLE
@@ -901,7 +901,7 @@ void QThread::start(Priority priority)
 
 void QThread::terminate()
 {
-#if !defined(Q_OS_ANDROID) && !defined(Q_OS_OHOS)
+#if !defined(Q_OS_ANDROID) && !defined(Q_OS_HARMONY)
     Q_D(QThread);
     QMutexLocker locker(&d->mutex);
 

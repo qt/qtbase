@@ -1655,7 +1655,7 @@ void QColorDialogPrivate::updateColorLabelText(const QPoint &globalPos)
 {
     if (!lblScreenColorInfo)
         return;
-#ifdef Q_OS_OHOS
+#ifdef Q_OS_HARMONY
     Q_UNUSED(globalPos)
     lblScreenColorInfo->setText(QColorDialog::tr("Cursor at %1, %2\nPress ESC to cancel")
                                 .arg(QStringLiteral("-"))

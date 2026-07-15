@@ -13,7 +13,7 @@
 #include <QtCore/QString>
 #include <QtCore/QHash>
 #include <QtCore/QDebug>
-#ifdef Q_OS_OHOS
+#ifdef Q_OS_HARMONY
 #include <qpa/qwindowsysteminterface.h>
 #endif
 #include <memory>
@@ -225,7 +225,7 @@ void tst_QGestureRecognizer::pinchGesture_data()
 {
     QTest::addColumn<int>("pinchSubTest");
     QTest::addColumn<bool>("gestureExpected");
-#ifdef Q_OS_OHOS
+#ifdef Q_OS_HARMONY
     QTest::newRow("NativeGesture") << int(StandardPinchSubTest) << true;
 #else
     QTest::newRow("Standard") << int(StandardPinchSubTest) << true;
@@ -246,7 +246,7 @@ void tst_QGestureRecognizer::pinchGesture()
     QVERIFY(QTest::qWaitForWindowExposed(&widget));
     QTRY_VERIFY(QApplication::topLevelAt(widget.geometry().center()));
 
-#ifdef Q_OS_OHOS
+#ifdef Q_OS_HARMONY
     // QOhosPinchGestureRecognizer::recognize() only handles QNativeGestureEvent
     // (event->type() == QEvent::NativeGesture); it returns Ignore for
     // TouchBegin/Update/End, which QTest::touchEvent sends.

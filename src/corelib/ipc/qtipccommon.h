@@ -194,7 +194,7 @@ inline auto QNativeIpcKey::legacyDefaultTypeForOs() noexcept -> Type
 {
 #if defined(Q_OS_WIN)
     return Type::Windows;
-#elif defined(QT_POSIX_IPC) || defined(Q_OS_OHOS)
+#elif defined(QT_POSIX_IPC) || defined(Q_OS_HARMONY)
     return Type::PosixRealtime;
 #elif defined(Q_OS_DARWIN)
     return defaultTypeForOs_internal();

@@ -4962,7 +4962,7 @@ void tst_QLineEdit::QTBUG59957_clearButtonLeftmostAction()
 
 bool tst_QLineEdit::unselectingWithLeftOrRightChangesCursorPosition()
 {
-#if defined Q_OS_WIN || defined Q_OS_QNX || defined Q_OS_VXWORKS || defined Q_OS_ANDROID || defined Q_OS_OHOS // Android, Windows, QNX, VxWorks and HarmonyOS do not jump to the beginning of the selection
+#if defined Q_OS_WIN || defined Q_OS_QNX || defined Q_OS_VXWORKS || defined Q_OS_ANDROID || defined Q_OS_HARMONY // Android, Windows, QNX, VxWorks and HarmonyOS do not jump to the beginning of the selection
     return true;
 #endif
     // Platforms minimal/offscreen also need left after unselecting with right
@@ -5005,7 +5005,7 @@ void tst_QLineEdit::testQuickSelectionWithMouse()
 #endif
 
    auto mouseReleaseIfNeeded = [&lineEdit](QPoint p) {
-#if defined (Q_OS_ANDROID) || defined (Q_OS_OHOS)
+#if defined (Q_OS_ANDROID) || defined (Q_OS_HARMONY)
         // Android expects that mouse click will be released before next click.
         // If it will not happen, the next selection will not work correctly
         QTest::mouseRelease(lineEdit.windowHandle(), Qt::LeftButton, Qt::NoModifier, p);

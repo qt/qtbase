@@ -21,7 +21,7 @@
 #include <qjniobject.h>
 #endif
 
-#if defined(Q_OS_OHOS)
+#if defined(Q_OS_HARMONY)
 #include <deviceinfo.h>
 #endif
 
@@ -795,7 +795,7 @@ QString QSysInfo::productType()
 #elif defined(Q_OS_ANDROID)
     return QStringLiteral("android");
 
-#elif defined(Q_OS_OHOS)
+#elif defined(Q_OS_HARMONY)
     return QStringLiteral("ohos");
 #elif defined(Q_OS_IOS)
     return QStringLiteral("ios");
@@ -863,7 +863,7 @@ QString QSysInfo::productVersion()
 #if defined(Q_OS_ANDROID)
     const auto version = QOperatingSystemVersion::current();
     return QString::asprintf("%d.%d", version.majorVersion(), version.minorVersion());
-#elif defined(Q_OS_DARWIN) || defined(Q_OS_OHOS)
+#elif defined(Q_OS_DARWIN) || defined(Q_OS_HARMONY)
     const auto version = QOperatingSystemVersion::current();
     return QString::asprintf("%d.%d.%d", version.majorVersion(),
                                          version.minorVersion(),
@@ -935,7 +935,7 @@ QString QSysInfo::prettyProductName()
         result += " Version "_L1 + displayVersion;
     return result;
 #  endif // Windows
-#elif defined(Q_OS_OHOS)
+#elif defined(Q_OS_HARMONY)
     QString result = QString::asprintf("%s %s", OH_GetOSFullName(),
                                 OH_GetDistributionOSReleaseType());
     return result;
