@@ -79,6 +79,8 @@
 #include <private/qtextengine_p.h>
 #include <private/qstylehelper_p.h>
 
+#include <QtCore/q26numeric.h>
+
 QT_BEGIN_NAMESPACE
 
 Q_STATIC_LOGGING_CATEGORY(lcCommonStyle, "qt.widgets.commonstyle");
@@ -5347,7 +5349,7 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
         break;
 #if QT_CONFIG(tooltip)
     case SH_ToolTip_WakeUpDelay:
-        ret = qGuiApp->styleHints()->toolTipWakeUpDelay();
+        ret = q26::saturating_cast<int>(qGuiApp->styleHints()->toolTipWakeUpDelay().count());
         break;
     case SH_ToolTip_FallAsleepDelay:
         ret = 2000;

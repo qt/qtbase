@@ -8,6 +8,8 @@
 #include <QtGui/qtguiglobal.h>
 #include <QtCore/qobject.h>
 
+#include <chrono>
+
 QT_BEGIN_NAMESPACE
 
 class QPlatformIntegration;
@@ -59,8 +61,8 @@ class Q_GUI_EXPORT QStyleHints : public QObject
                RESET unsetColorScheme NOTIFY colorSchemeChanged FINAL)
     Q_PROPERTY(bool menuSelectionWraps READ menuSelectionWraps STORED false CONSTANT FINAL REVISION(6, 10))
     Q_PROPERTY(const QAccessibilityHints* accessibility READ accessibility CONSTANT FINAL REVISION(6, 10))
-    Q_PROPERTY(int toolTipWakeUpDelay READ toolTipWakeUpDelay WRITE setToolTipWakeUpDelay
-        NOTIFY toolTipWakeUpDelayChanged FINAL REVISION(6, 12))
+    Q_PROPERTY(std::chrono::milliseconds toolTipWakeUpDelay READ toolTipWakeUpDelay
+               WRITE setToolTipWakeUpDelay NOTIFY toolTipWakeUpDelayChanged FINAL REVISION(6, 12))
 
 public:
     void setMouseDoubleClickInterval(int mouseDoubleClickInterval);
@@ -108,8 +110,8 @@ public:
     void setColorScheme(Qt::ColorScheme scheme);
     void unsetColorScheme() { setColorScheme(Qt::ColorScheme::Unknown); }
     const QAccessibilityHints* accessibility() const;
-    int toolTipWakeUpDelay() const;
-    void setToolTipWakeUpDelay(int toolTipWakeUpDelay);
+    std::chrono::milliseconds toolTipWakeUpDelay() const;
+    void setToolTipWakeUpDelay(std::chrono::milliseconds toolTipWakeUpDelay);
 
 Q_SIGNALS:
     void cursorFlashTimeChanged(int cursorFlashTime);
@@ -125,7 +127,7 @@ Q_SIGNALS:
     void wheelScrollLinesChanged(int scrollLines);
     void mouseQuickSelectionThresholdChanged(int threshold);
     void colorSchemeChanged(Qt::ColorScheme colorScheme);
-    Q_REVISION(6, 12) void toolTipWakeUpDelayChanged(int toolTipWakeUpDelay);
+    Q_REVISION(6, 12) void toolTipWakeUpDelayChanged(std::chrono::milliseconds toolTipWakeUpDelay);
 
 private:
     friend class QGuiApplication;
