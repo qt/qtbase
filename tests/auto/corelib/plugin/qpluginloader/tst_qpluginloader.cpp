@@ -23,7 +23,7 @@
 #include <private/qjnihelpers_p.h>
 #endif
 
-#ifdef Q_OS_OHOS
+#ifdef Q_OS_HARMONY
 #include <QStandardPaths>
 #endif
 
@@ -1042,7 +1042,7 @@ void tst_QPluginLoader::loadSectionTableStrippedElf()
 #if defined(Q_OS_ANDROID)
     if (QNativeInterface::QAndroidApplication::sdkVersion() >= 24)
         QSKIP("Android 7+ (API 24+) linker doesn't allow missing or bad section header");
-#elif defined(Q_OS_OHOS)
+#elif defined(Q_OS_HARMONY)
     QSKIP("HarmonyOS linker fails to load section-header-stripped ELFs "
           "(LOAD_ORDER_RANDOMIZATION depends on e_shoff/e_shnum)");
 #endif

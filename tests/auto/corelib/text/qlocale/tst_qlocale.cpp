@@ -207,7 +207,7 @@ tst_QLocale::tst_QLocale()
 
 void tst_QLocale::initTestCase()
 {
-#if defined(Q_OS_ANDROID) || defined(Q_OS_OHOS)
+#if defined(Q_OS_ANDROID) || defined(Q_OS_HARMONY)
     // We can't start a QProcess on Android, and we anyway skip the test
     // that uses m_sysapp. So no need to initialize it properly.
     return;
@@ -665,7 +665,7 @@ void tst_QLocale::systemLocale_data()
 #if !QT_CONFIG(process)
     QSKIP("No qprocess support");
 #endif
-#if defined(Q_OS_ANDROID) || defined(Q_OS_OHOS)
+#if defined(Q_OS_ANDROID) || defined(Q_OS_HARMONY)
     QSKIP("Can't start QProcess to run a custom user binary on Android");
 #endif
 #if defined(__QNX__) && __QNX__ >= 800

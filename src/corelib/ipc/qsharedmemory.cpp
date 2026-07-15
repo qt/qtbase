@@ -49,7 +49,7 @@ inline void QSharedMemoryPrivate::destructBackend()
 #if QT_CONFIG(systemsemaphore)
 inline QNativeIpcKey QSharedMemoryPrivate::semaphoreNativeKey() const
 {
-#if defined(Q_OS_OHOS)
+#if defined(Q_OS_HARMONY)
     auto suffix = "_sem"_L1;
     QString semkey = nativeKey.nativeKey();
     semkey.truncate(MAX_PATH - suffix.size() - 1);

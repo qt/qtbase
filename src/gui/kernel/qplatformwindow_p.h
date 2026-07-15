@@ -37,7 +37,7 @@ enum NSVisualEffectBlendingMode : NSInteger;
 enum NSVisualEffectState: NSInteger;
 #endif
 
-#if defined(Q_OS_OHOS)
+#if defined(Q_OS_HARMONY)
 #include <optional>
 
 typedef struct ArkUI_Node *ArkUI_NodeHandle;
@@ -167,7 +167,7 @@ protected:
 };
 #endif
 
-#if defined(Q_OS_OHOS)
+#if defined(Q_OS_HARMONY)
 struct Q_GUI_EXPORT QOhosWindow
 {
     QT_DECLARE_NATIVE_INTERFACE(QOhosWindow, 1, QWindow)
@@ -181,7 +181,7 @@ struct Q_GUI_EXPORT QOhosIntegration
     virtual WId windowHandle(ArkUI_NodeHandle content) = 0;
     virtual void setMainWindowGeometryPersistenceEnabled(std::optional<bool> enabled) = 0;
 };
-#endif // defined(Q_OS_OHOS)
+#endif // defined(Q_OS_HARMONY)
 
 } // QNativeInterface::Private
 

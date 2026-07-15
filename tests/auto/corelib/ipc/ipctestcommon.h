@@ -16,7 +16,7 @@ template <typename IpcClass> void addGlobalTestRows()
     qDebug() << "Default key type is" << QNativeIpcKey::DefaultTypeForOs
              << "and legacy key type is" << QNativeIpcKey::legacyDefaultTypeForOs();
 
-#if defined(Q_OS_FREEBSD) || defined(Q_OS_DARWIN) || defined(Q_OS_WIN) || (defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID) && !defined(Q_OS_OHOS))
+#if defined(Q_OS_FREEBSD) || defined(Q_OS_DARWIN) || defined(Q_OS_WIN) || (defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID) && !defined(Q_OS_HARMONY))
     // only enforce that IPC works on the platforms above; other platforms may
     // have no working backends (notably, Android)
     QVERIFY(IpcClass::isKeyTypeSupported(QNativeIpcKey::DefaultTypeForOs));
@@ -35,7 +35,7 @@ template <typename IpcClass> void addGlobalTestRows()
     addRowIfSupported("Windows", QNativeIpcKey::Type::Windows);
     addRowIfSupported("POSIX", QNativeIpcKey::Type::PosixRealtime);
     addRowIfSupported("SystemV-Q", QNativeIpcKey::Type::SystemV);
-#if !defined(Q_OS_OHOS) // TODO: May need to handle internally within qtipccommon_p.h
+#if !defined(Q_OS_HARMONY) // TODO: May need to handle internally within qtipccommon_p.h
     addRowIfSupported("SystemV-T", QNativeIpcKey::Type('T'));
 #endif
 

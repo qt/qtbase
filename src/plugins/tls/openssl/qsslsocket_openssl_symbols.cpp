@@ -571,7 +571,7 @@ struct LibGreaterThan
     }
 };
 
-#if defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID) && !defined(Q_OS_OHOS)
+#if defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID) && !defined(Q_OS_HARMONY)
 static int dlIterateCallback(struct dl_phdr_info *info, size_t size, void *data)
 {
     if (size < sizeof (info->dlpi_addr) + sizeof (info->dlpi_name))
@@ -611,7 +611,7 @@ static QStringList libraryPathList()
 
 #if defined(Q_OS_ANDROID)
     paths << "/system/lib"_L1;
-#elif defined(Q_OS_OHOS)
+#elif defined(Q_OS_HARMONY)
     paths << "/system/lib64/platformsdk"_L1;
     paths << "/system/lib64/chipset-sdk"_L1;
     paths << "/system/lib64/chipset-sdk-sp"_L1;
@@ -648,7 +648,7 @@ static QStringList findAllLibs(QLatin1StringView filter)
 
 static QStringList findAllLibSsl()
 {
-#if defined(Q_OS_OHOS)
+#if defined(Q_OS_HARMONY)
     return findAllLibs("libssl_openssl*"_L1);
 #else
     return findAllLibs("libssl.*"_L1);
@@ -657,7 +657,7 @@ static QStringList findAllLibSsl()
 
 static QStringList findAllLibCrypto()
 {
-#if defined(Q_OS_OHOS)
+#if defined(Q_OS_HARMONY)
     return findAllLibs("libcrypto_openssl*"_L1);
 #else
     return findAllLibs("libcrypto.*"_L1);

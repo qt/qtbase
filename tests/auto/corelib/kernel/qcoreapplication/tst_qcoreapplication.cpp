@@ -326,7 +326,7 @@ void tst_QCoreApplication::libraryPaths()
         if (!installPathPlugins.contains(appDirPath))
             QCOMPARE(QCoreApplication::libraryPaths().size(), count + 2);
     }
-#if !defined(Q_OS_OHOS)
+#if !defined(Q_OS_HARMONY)
     {
         int argc = 1;
         QCoreApplication app(argc, &argv0);
@@ -383,7 +383,7 @@ void tst_QCoreApplication::libraryPaths_qt_plugin_path_2()
     QByteArray validPath = "C:\\windows";
     QByteArray nonExistentPath = "Z:\\nonexistent";
     QByteArray pluginPath = validPath + ';' + nonExistentPath;
-#elif defined(Q_OS_OHOS)
+#elif defined(Q_OS_HARMONY)
     QByteArray pluginPath = "/nonexistent";
 #endif
 
@@ -405,7 +405,7 @@ void tst_QCoreApplication::libraryPaths_qt_plugin_path_2()
         }
 #endif
         expected << QDir(QCoreApplication::applicationDirPath()).canonicalPath();
-#ifndef Q_OS_OHOS
+#ifndef Q_OS_HARMONY
         expected << QDir(QDir::fromNativeSeparators(QString::fromLatin1(validPath))).canonicalPath();
 #endif
 
@@ -1320,7 +1320,7 @@ static bool theMainThreadIsSet()
 static bool theMainThreadWasUnset = !theMainThreadIsSet(); // global static
 void tst_QCoreApplication::theMainThread()
 {
-#if defined(Q_OS_OHOS)
+#if defined(Q_OS_HARMONY)
     QSKIP("Skipped on OHOS: QPA sets theMainThread early to prevent the JS thread from being "
           "misregistered as Qt's main thread during initialization");
 #endif

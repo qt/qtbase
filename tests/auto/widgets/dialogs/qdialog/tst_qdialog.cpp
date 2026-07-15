@@ -523,7 +523,7 @@ void tst_QDialog::snapToDefaultButton()
     if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::MouseCursorPositioning))
         QSKIP("Platform does not support cursor positioning");
 
-#ifdef Q_OS_OHOS
+#ifdef Q_OS_HARMONY
     QSKIP("OHOS does not support setting cursor position.");
 #endif
 

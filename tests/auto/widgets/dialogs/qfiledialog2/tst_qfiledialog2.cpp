@@ -745,7 +745,7 @@ void tst_QFileDialog2::completionOnLevelAfterRoot()
     }
     if (testDir.isEmpty())
         QSKIP("This test requires to have a unique directory of at least six ascii characters under c:/");
-#elif defined(Q_OS_ANDROID) || defined(Q_OS_OHOS)
+#elif defined(Q_OS_ANDROID) || defined(Q_OS_HARMONY)
     // Android 11 and above and OHOS do not allow accessing the root filesystem
     // as before, so let's opt into the app's home.
     const auto homePaths = QStandardPaths::standardLocations(QStandardPaths::HomeLocation);

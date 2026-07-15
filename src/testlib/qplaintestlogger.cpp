@@ -29,7 +29,7 @@
 #  include <qt_windows.h>
 #endif
 
-#ifdef Q_OS_OHOS
+#ifdef Q_OS_HARMONY
 #  include <QtCore/private/qohoslogger_p.h>
 #endif
 
@@ -209,7 +209,7 @@ void QPlainTestLogger::outputMessage(const char *str)
     }
 #elif defined(Q_OS_ANDROID)
     __android_log_write(ANDROID_LOG_INFO, "QTestLib", str);
-#elif defined(Q_OS_OHOS)
+#elif defined(Q_OS_HARMONY)
     qOhosLogMessage(LOG_INFO, "QTestLib", str);
 #endif
     outputString(str);

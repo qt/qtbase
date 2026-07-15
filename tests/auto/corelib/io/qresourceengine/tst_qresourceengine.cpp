@@ -9,7 +9,7 @@
 #include <QtCore/QScopeGuard>
 #include <QtCore/private/qglobal_p.h>
 
-#if defined(Q_OS_OHOS)
+#if defined(Q_OS_HARMONY)
 // TODO: Replace with QStandardPaths-based path once the appropriate mapping
 // for QOhosAppContext::Type::resourceDir is determined.
 // See: https://jira.qtgroup.qt.io/browse/QT6HAROS-309
@@ -28,7 +28,7 @@ public:
         : m_runtimeResourceRcc(
             QFileInfo(QStandardPaths::writableLocation(QStandardPaths::CacheLocation)
                       + QStringLiteral("/runtime_resource.rcc")).absoluteFilePath())
-#elif defined(Q_OS_OHOS)
+#elif defined(Q_OS_HARMONY)
         : m_runtimeResourceRcc(ohosResourceRcc)
 #else
         : m_runtimeResourceRcc(QFINDTESTDATA("runtime_resource.rcc"))
@@ -202,7 +202,7 @@ void tst_QResourceEngine::checkStructure_data()
                  << QLatin1String("empty")
                  << QLatin1String("nestedrcc")
                  << QLatin1String("otherdir")
-#ifdef Q_OS_OHOS
+#ifdef Q_OS_HARMONY
                  << QLatin1String("qpdf")
                  << QLatin1String("qt-project.org")
 #endif
@@ -582,7 +582,7 @@ void tst_QResourceEngine::checkUnregisterResource_data()
     QTest::addColumn<int>("size");
 
     QTest::newRow("currentdir.txt")
-#if defined(Q_OS_OHOS)
+#if defined(Q_OS_HARMONY)
         << ohosResourceRcc
 #else
         << QFINDTESTDATA("runtime_resource.rcc")

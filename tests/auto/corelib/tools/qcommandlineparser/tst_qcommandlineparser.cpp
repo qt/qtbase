@@ -574,7 +574,7 @@ void tst_QCommandLineParser::testVersionOption()
 {
 #if !QT_CONFIG(process)
     QSKIP("This test requires QProcess support");
-#elif defined(Q_OS_ANDROID) || defined(Q_OS_OHOS)
+#elif defined(Q_OS_ANDROID) || defined(Q_OS_HARMONY)
     QSKIP("Deploying executable applications to file system is not supported on this platform.");
 #else
 
@@ -641,7 +641,7 @@ void tst_QCommandLineParser::testHelpOption()
 {
 #if !QT_CONFIG(process)
     QSKIP("This test requires QProcess support");
-#elif defined(Q_OS_ANDROID) || defined(Q_OS_OHOS)
+#elif defined(Q_OS_ANDROID) || defined(Q_OS_HARMONY)
     QSKIP("Deploying executable applications to file system is not supported on this platform.");
 #else
 
@@ -688,7 +688,7 @@ void tst_QCommandLineParser::testQuoteEscaping()
 {
 #if !QT_CONFIG(process)
     QSKIP("This test requires QProcess support");
-#elif defined(Q_OS_ANDROID) || defined(Q_OS_OHOS)
+#elif defined(Q_OS_ANDROID) || defined(Q_OS_HARMONY)
     QSKIP("Deploying executable applications to file system is not supported on this platform.");
 #else
     QCoreApplication app(empty_argc, empty_argv);
@@ -714,7 +714,7 @@ void tst_QCommandLineParser::testUnknownOption()
 {
 #if !QT_CONFIG(process)
     QSKIP("This test requires QProcess support");
-#elif defined(Q_OS_ANDROID) || defined(Q_OS_OHOS)
+#elif defined(Q_OS_ANDROID) || defined(Q_OS_HARMONY)
     QSKIP("Deploying executable applications to file system is not supported on this platform.");
 #else
     QCoreApplication app(empty_argc, empty_argv);
@@ -765,7 +765,7 @@ void tst_QCommandLineParser::testHelpAll()
 #if !QT_CONFIG(process)
     QSKIP("This test requires QProcess support");
 #else
-#if defined(Q_OS_ANDROID) || defined(Q_OS_OHOS)
+#if defined(Q_OS_ANDROID) || defined(Q_OS_HARMONY)
     QSKIP("Deploying executable applications to file system is not supported on this platform.");
 #endif
 
@@ -789,7 +789,7 @@ void tst_QCommandLineParser::testVeryLongOptionNames()
 {
 #if !QT_CONFIG(process)
     QSKIP("This test requires QProcess support");
-#elif defined(Q_OS_ANDROID) || defined(Q_OS_OHOS)
+#elif defined(Q_OS_ANDROID) || defined(Q_OS_HARMONY)
     QSKIP("Deploying executable applications to file system is not supported on this platform.");
 #else
 

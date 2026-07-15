@@ -13,7 +13,7 @@
 #include <quuid.h>
 #include <QtCore/private/quuid_p.h>
 
-#if defined(Q_OS_ANDROID) || defined(Q_OS_OHOS)
+#if defined(Q_OS_ANDROID) || defined(Q_OS_HARMONY)
 #include <QStandardPaths>
 #endif
 
@@ -92,7 +92,7 @@ void tst_QUuid::initTestCase()
 
 #if QT_CONFIG(process)
     // chdir to the directory containing our testdata, then refer to it with relative paths
-#if defined(Q_OS_ANDROID) || defined(Q_OS_OHOS)
+#if defined(Q_OS_ANDROID) || defined(Q_OS_HARMONY)
     QString testdata_dir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
 #else // !Q_OS_ANDROID
     QString testdata_dir = QFileInfo(QFINDTESTDATA("testProcessUniqueness")).absolutePath();
@@ -742,7 +742,7 @@ void tst_QUuid::processUniqueness()
 #else
 #if defined(Q_OS_ANDROID)
     QSKIP("This test crashes on Android");
-#elif defined(Q_OS_OHOS)
+#elif defined(Q_OS_HARMONY)
     QSKIP("OHOS does not support external process");
 #endif
     QProcess process;

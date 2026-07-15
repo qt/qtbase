@@ -348,7 +348,7 @@ void tst_QTemporaryDir::nonWritableCurrentDir()
 {
 #ifdef Q_OS_UNIX
 
-#  if defined(Q_OS_ANDROID) || defined(Q_OS_OHOS)
+#  if defined(Q_OS_ANDROID) || defined(Q_OS_HARMONY)
     const char nonWritableDir[] = "/data";
 #  else
     const char nonWritableDir[] = "/home";

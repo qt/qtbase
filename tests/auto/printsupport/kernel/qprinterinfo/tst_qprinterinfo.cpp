@@ -26,7 +26,7 @@ public slots:
     void cleanupTestCase();
 #else
 private slots:
-#if !defined(Q_OS_WIN32) && !defined(Q_OS_OHOS)
+#if !defined(Q_OS_WIN32) && !defined(Q_OS_HARMONY)
     void testForDefaultPrinter();
     void testForPrinters();
 #endif
@@ -69,9 +69,9 @@ QString tst_QPrinterInfo::getDefaultPrinterFromSystem()
 #ifdef Q_OS_WIN32
     // TODO "cscript c:\windows\system32\prnmngr.vbs -g"
 #endif // Q_OS_WIN32
-#ifdef Q_OS_OHOS
+#ifdef Q_OS_HARMONY
     // TODO: implement once OHOS provides a self-contained method to get printer info
-#endif // Q_OS_OHOS
+#endif // Q_OS_HARMONY
 #ifdef USE_PIPE_EXEC
     QStringList command;
     command << "lpstat" << "-d";
@@ -97,9 +97,9 @@ QStringList tst_QPrinterInfo::getPrintersFromSystem()
 #ifdef Q_OS_WIN32
     // TODO "cscript c:\windows\system32\prnmngr.vbs -l"
 #endif // Q_OS_WIN32
-#ifdef Q_OS_OHOS
+#ifdef Q_OS_HARMONY
     // TODO: implement once OHOS provides a self-contained method to get printer info
-#endif // Q_OS_OHOS
+#endif // Q_OS_HARMONY
 #ifdef USE_PIPE_EXEC
     QString output = getOutputFromCommand({ "lpstat", "-e" });
     QStringList list = output.split(QChar::fromLatin1('\n'));
@@ -193,7 +193,7 @@ QString tst_QPrinterInfo::getOutputFromCommand(const QStringList &command)
 
 // Windows test support not yet implemented
 // OHOS doesn't support the lpstat command and doesn't have an equivalent
-#if !defined(Q_OS_WIN32) && !defined(Q_OS_OHOS)
+#if !defined(Q_OS_WIN32) && !defined(Q_OS_HARMONY)
 void tst_QPrinterInfo::testForDefaultPrinter()
 {
     QString testPrinter = getDefaultPrinterFromSystem();
@@ -222,7 +222,7 @@ void tst_QPrinterInfo::testForDefaultPrinter()
 
 // Windows test support not yet implemented
 // OHOS doesn't support the lpstat command and doesn't have an equivalent
-#if !defined(Q_OS_WIN32) && !defined(Q_OS_OHOS)
+#if !defined(Q_OS_WIN32) && !defined(Q_OS_HARMONY)
 void tst_QPrinterInfo::testForPrinters()
 {
     QStringList testPrinters = getPrintersFromSystem();

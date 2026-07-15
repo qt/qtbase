@@ -184,7 +184,7 @@ void tst_QPlugin::scanInvalidPlugin()
 #if defined(Q_OS_MACOS) && defined(Q_PROCESSOR_ARM)
     QSKIP("This test crashes on ARM macOS");
 #endif
-#if defined(Q_OS_OHOS)
+#if defined(Q_OS_HARMONY)
     QSKIP("OHOS MUSL-LDSO namespace policy prevents dlopen from paths "
           "under QTemporaryDir, which is inaccessible to all "
           "MUSL-LDSO namespaces (moduleNs_default, default, ndk).");

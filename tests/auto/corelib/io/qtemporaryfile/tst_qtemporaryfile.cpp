@@ -375,7 +375,7 @@ void tst_QTemporaryFile::nonWritableCurrentDir()
 
     ChdirOnReturn cor(QDir::currentPath());
 
-#if defined(Q_OS_ANDROID) || defined(Q_OS_OHOS)
+#if defined(Q_OS_ANDROID) || defined(Q_OS_HARMONY)
     QDir::setCurrent("/data");
 #else
     QDir::setCurrent("/home");
@@ -646,7 +646,7 @@ void tst_QTemporaryFile::renameFdLeak()
     QSKIP("QTBUG-130066");
 #endif
 #if defined(Q_OS_UNIX) && !defined(Q_OS_ANDROID)
-#if defined(Q_OS_OHOS)
+#if defined(Q_OS_HARMONY)
     ChdirOnReturn cor(QDir::currentPath());
     // TODO: OHOS: hardcode cache path until QStandardPaths is implemented
     QDir::setCurrent("/data/storage/el2/base/cache");
@@ -695,7 +695,7 @@ void tst_QTemporaryFile::moveToTrash()
     QSKIP("This platform doesn't implement a trash bin");
 #endif
 
-#if defined(Q_OS_OHOS)
+#if defined(Q_OS_HARMONY)
     QSKIP("OHOS: moveToTrash requires user input via FilePicker to get temp permissions");
 #endif
 

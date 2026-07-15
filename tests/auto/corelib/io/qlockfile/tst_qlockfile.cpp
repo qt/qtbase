@@ -113,7 +113,7 @@ void tst_QLockFile::lockOutOtherProcess()
 {
 #if !QT_CONFIG(process)
     QSKIP("This test requires QProcess support");
-#elif defined(Q_OS_OHOS)
+#elif defined(Q_OS_HARMONY)
     QSKIP("This test requires deploying and running external console applications");
 #else
     // Lock
@@ -255,7 +255,7 @@ void tst_QLockFile::staleLockFromCrashedProcess()
 {
 #if !QT_CONFIG(process)
     QSKIP("This test requires QProcess support");
-#elif defined(Q_OS_OHOS)
+#elif defined(Q_OS_HARMONY)
     QSKIP("This test requires deploying and running external console applications");
 #else
     QFETCH(int, staleLockTime);
@@ -282,7 +282,7 @@ void tst_QLockFile::staleLockFromCrashedProcessReusedPid()
 {
 #if !QT_CONFIG(process)
     QSKIP("This test requires QProcess support");
-#elif defined(QT_PLATFORM_UIKIT) || defined(Q_OS_OHOS)
+#elif defined(QT_PLATFORM_UIKIT) || defined(Q_OS_HARMONY)
     QSKIP("We cannot retrieve information about other processes on this platform.");
 #else
     const QString fileName = dir.path() + "/staleLockFromCrashedProcessReusedPid";
@@ -306,7 +306,7 @@ void tst_QLockFile::staleShortLockFromBusyProcess()
 {
 #if !QT_CONFIG(process)
     QSKIP("This test requires QProcess support");
-#elif defined(Q_OS_OHOS)
+#elif defined(Q_OS_HARMONY)
     QSKIP("This test requires deploying and running external console applications");
 #else
     const QString fileName = dir.path() + "/staleLockFromBusyProcess";
@@ -341,7 +341,7 @@ void tst_QLockFile::staleLongLockFromBusyProcess()
 {
 #if !QT_CONFIG(process)
     QSKIP("This test requires QProcess support");
-#elif defined(Q_OS_OHOS)
+#elif defined(Q_OS_HARMONY)
     QSKIP("This test requires deploying and running external console applications");
 #else
     const QString fileName = dir.path() + "/staleLockFromBusyProcess";
@@ -395,7 +395,7 @@ void tst_QLockFile::staleLockRace()
 {
 #if !QT_CONFIG(process)
     QSKIP("This test requires QProcess support");
-#elif defined(Q_OS_OHOS)
+#elif defined(Q_OS_HARMONY)
     QSKIP("This test requires deploying and running external console applications");
 #else
     // Multiple threads notice a stale lock at the same time

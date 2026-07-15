@@ -20,7 +20,7 @@
 #include <QJniObject>
 #endif
 
-#if defined(Q_OS_OHOS)
+#if defined(Q_OS_HARMONY)
 #include <QtCore/private/qcore_ohos_p.h>
 #include <array>
 #endif
@@ -199,7 +199,7 @@ QOperatingSystemVersionBase QOperatingSystemVersionBase::current_impl()
 
     // API level 6 was exactly version 2.0.1
     version.m_micro = versionIdx == 5 ? 1 : -1;
-#elif defined(Q_OS_OHOS)
+#elif defined(Q_OS_HARMONY)
     static auto ohosVersionProps = QOhosJsThreadGateway::eval(
         [](QOhosJsState &jsState) {
             auto deviceInfoObj = jsState.eval<QNapi::Object>("@ohos.deviceInfo");

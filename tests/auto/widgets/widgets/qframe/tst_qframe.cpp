@@ -158,7 +158,7 @@ void tst_QFrame::testPainting()
     frame.resize(16, 16);
 
     QPixmap pixmap = frame.grab();
-#if defined(Q_OS_ANDROID) || defined(Q_OS_OHOS)
+#if defined(Q_OS_ANDROID) || defined(Q_OS_HARMONY)
     // QPixmap is created with system's default format, which is
     // ARGB32_Premultiplied for Android. For desktop systems the format is
     // RGB32, so that's also the format of the images in resources. So on

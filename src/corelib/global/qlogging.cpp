@@ -38,7 +38,7 @@
 #include <android/log.h>
 #endif
 
-#ifdef Q_OS_OHOS
+#ifdef Q_OS_HARMONY
 #include <QtCore/private/qohoslogger_p.h>
 #endif
 
@@ -266,7 +266,7 @@ static bool qt_append_thread_name_to(QString &message)
 */
 static bool systemHasStderr()
 {
-#if defined(Q_OS_OHOS)
+#if defined(Q_OS_HARMONY)
     return false; // OHOS has no stderr
 #endif
 
@@ -1998,7 +1998,7 @@ static bool android_default_message_handler(QtMsgType type,
 }
 #endif //Q_OS_ANDROID
 
-#if defined(Q_OS_OHOS)
+#if defined(Q_OS_HARMONY)
 static bool ohos_default_message_handler(QtMsgType type,
                                   const QMessageLogContext &context,
                                   const QString &message)
@@ -2018,7 +2018,7 @@ static bool ohos_default_message_handler(QtMsgType type,
 
     return true; // Prevent further output to stderr
 }
-#endif //Q_OS_OHOS
+#endif //Q_OS_HARMONY
 
 #ifdef Q_OS_WIN
 static void win_outputDebugString_helper(const QString &message)
@@ -2123,7 +2123,7 @@ static constexpr SystemMessageSink systemMessageSink = {
         syslog_default_message_handler
 #elif defined(Q_OS_ANDROID)
         android_default_message_handler
-# elif defined(Q_OS_OHOS)
+# elif defined(Q_OS_HARMONY)
         ohos_default_message_handler
 #elif defined(QT_USE_APPLE_UNIFIED_LOGGING)
         AppleUnifiedLogger::messageHandler, true

@@ -212,7 +212,7 @@ private slots:
 
         qputenv("QT_LOGGING_RULES", "qt.foo.bar=true");
         QLoggingCategory qtEnabledByLoggingRule("qt.foo.bar");
-#if defined(Q_OS_OHOS)
+#if defined(Q_OS_HARMONY)
         QEXPECT_FAIL("", "QT_LOGGING_RULES is not automatically applied without "
                          "qApp on OHOS (intentional behavior)", Continue);
 #endif

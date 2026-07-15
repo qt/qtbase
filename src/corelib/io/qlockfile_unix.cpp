@@ -14,7 +14,7 @@
 #include "QtCore/qcache.h"
 #include "QtCore/qglobalstatic.h"
 #include "QtCore/qmutex.h"
-#if defined(Q_OS_OHOS)
+#if defined(Q_OS_HARMONY)
 #include "QtCore/qcoreapplication.h"
 #endif
 
@@ -210,7 +210,7 @@ QString QLockFilePrivate::processNameByPid(qint64 pid)
     char name[1024];
     proc_name(pid, name, sizeof(name) / sizeof(char));
     return QFile::decodeName(name);
-#elif defined(Q_OS_OHOS)
+#elif defined(Q_OS_HARMONY)
     // On OHOS, all Qt applications are started by the appspawn daemon via fork() + dlopen(),
     // so /proc/{pid}/exe always resolves to "appspawn" rather than the actual application.
     // For the current process, qAppName() is used instead, which is set by the OHOS QPA plugin

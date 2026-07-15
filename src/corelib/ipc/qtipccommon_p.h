@@ -70,7 +70,7 @@ constexpr bool isIpcSupported(IpcType ipcType, QNativeIpcKey::Type type)
 {
     switch (type) {
     case QNativeIpcKey::Type::SystemV:
-#ifdef Q_OS_OHOS
+#ifdef Q_OS_HARMONY
         return false;
 #else
         break;

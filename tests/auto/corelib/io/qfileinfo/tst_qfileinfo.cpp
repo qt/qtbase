@@ -42,7 +42,7 @@
 #include <QProcess>
 #endif
 
-#if defined(Q_OS_VXWORKS) || defined(Q_OS_OHOS)
+#if defined(Q_OS_VXWORKS) || defined(Q_OS_HARMONY)
 #define Q_NO_SYMLINKS
 #endif
 
@@ -1096,7 +1096,7 @@ void tst_QFileInfo::permission_data()
     QTest::addColumn<int>("perms");
     QTest::addColumn<bool>("expected");
 
-#ifndef Q_OS_OHOS
+#ifndef Q_OS_HARMONY
     QTest::newRow("data0") << QCoreApplication::instance()->applicationFilePath() << int(QFile::ExeUser) << true;
 #endif
     QTest::newRow("data1") << m_sourceFile << int(QFile::ReadUser) << true;
@@ -1345,7 +1345,7 @@ void tst_QFileInfo::fileTimes()
     QCOMPARE(fileInfo.birthTime(QTimeZone::UTC), birthTime); // mustn't have changed
     QVERIFY(readTime.isValid());
 
-#if defined(Q_OS_QNX) || defined(Q_OS_ANDROID) || defined(Q_OS_OHOS)
+#if defined(Q_OS_QNX) || defined(Q_OS_ANDROID) || defined(Q_OS_HARMONY)
     noAccessTime = true;
 #elif defined(Q_OS_WIN)
     //In Vista the last-access timestamp is not updated when the file is accessed/touched (by default).
@@ -1394,7 +1394,7 @@ void tst_QFileInfo::fakeFileTimes_data()
 
     // This is 2^{31} seconds before 1970-01-01 15:14:8,
     // i.e. shortly after the start of time_t, in any time-zone:
-#if !defined(Q_OS_QNX) && !defined(Q_OS_OHOS)  // qnx6 filesystem stores timestamps as 32-bit unsigned;
+#if !defined(Q_OS_QNX) && !defined(Q_OS_HARMONY)  // qnx6 filesystem stores timestamps as 32-bit unsigned;
                                                 // pre-epoch values overflow silently to ~2038
                                                 // OHOS filesystem doesn't support pre-epoch timestamps
     QTest::newRow("early") << QDateTime(QDate(1901, 12, 14), QTime(12, 0));
@@ -2157,7 +2157,7 @@ void tst_QFileInfo::isWritable()
 
 void tst_QFileInfo::isExecutable()
 {
-#ifdef Q_OS_OHOS
+#ifdef Q_OS_HARMONY
     QSKIP("Shared libraries on HarmonyOS do not have the executable bit set");
 #endif
     QString appPath = QCoreApplication::applicationDirPath();
@@ -2354,7 +2354,7 @@ bool IsUserAdmin()
 void tst_QFileInfo::owner()
 {
     QString userName;
-#if defined(Q_OS_UNIX) && !defined(Q_OS_VXWORKS) && !defined(Q_OS_INTEGRITY) && !defined(Q_OS_OHOS)
+#if defined(Q_OS_UNIX) && !defined(Q_OS_VXWORKS) && !defined(Q_OS_INTEGRITY) && !defined(Q_OS_HARMONY)
     {
         passwd *user = getpwuid(geteuid());
         QVERIFY(user);
@@ -2413,7 +2413,7 @@ void tst_QFileInfo::owner()
 void tst_QFileInfo::group()
 {
     QString expected;
-#if defined(Q_OS_UNIX) && !defined(Q_OS_VXWORKS) && !defined(Q_OS_INTEGRITY) && !defined(Q_OS_OHOS)
+#if defined(Q_OS_UNIX) && !defined(Q_OS_VXWORKS) && !defined(Q_OS_INTEGRITY) && !defined(Q_OS_HARMONY)
     struct group *gr;
     gid_t gid = getegid();
 

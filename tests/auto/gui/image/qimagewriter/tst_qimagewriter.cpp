@@ -172,7 +172,7 @@ void tst_QImageWriter::writeImage()
         if (!skip) {
             // Shouldn't be able to write to read-only file
             QFile sourceFile(writePrefix + "gen-" + fileName);
-#ifndef Q_OS_OHOS
+#ifndef Q_OS_HARMONY
             QFile::Permissions permissions = sourceFile.permissions();
 #endif
             QVERIFY(sourceFile.setPermissions(QFile::ReadOwner | QFile::ReadUser | QFile::ReadGroup | QFile::ReadOther));
@@ -180,7 +180,7 @@ void tst_QImageWriter::writeImage()
             QImageWriter writer(writePrefix + "gen-" + fileName, format);
             QVERIFY(!writer.write(image));
 
-#ifndef Q_OS_OHOS
+#ifndef Q_OS_HARMONY
             QVERIFY(sourceFile.setPermissions(permissions));
 #endif
         }
