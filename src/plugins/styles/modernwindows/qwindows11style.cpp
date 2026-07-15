@@ -2849,8 +2849,10 @@ void QWindows11Style::unpolish(QApplication *app)
 
 bool QWindows11Style::eventFilter(QObject *obj, QEvent *event)
 {
-    // QEvent::WinIdChange is to early so we have to wait for QEvent::Show
-    if (event->type() == QEvent::Show)
+    // QEvent::WinIdChange is too early so we have to wait for QEvent::Show
+    // QEvent::WindowStateChange is needed to update the corners when the
+    // window enters or leaves fullscreen
+    if (event->type() == QEvent::Show || event->type() == QEvent::WindowStateChange)
         dwmSetWindowCornerPreference(qobject_cast<QWidget *>(obj), true);
     return QWindowsVistaStyle::eventFilter(obj, event);
 }
@@ -2884,7 +2886,10 @@ void QWindows11Style::dwmSetWindowCornerPreference(const QWidget *widget, bool b
 #else
                         false;
 #endif
-                uint32_t pref = bSet ? (isToolTip ? dwmcpRoundSmall : dwmcpRound) : dwmcpDefault;
+                // A fullscreen window must not have rounded corners because
+                // then it would not cover the whole screen (QTBUG-147453)
+                const bool round = bSet && !widget->isFullScreen();
+                uint32_t pref = round ? (isToolTip ? dwmcpRoundSmall : dwmcpRound) : dwmcpDefault;
                 DwmSetWindowAttribute(wId, dmwmaWindowCornerPreference, &pref, sizeof(pref));
             }
         }
