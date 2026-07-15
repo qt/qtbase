@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include <QtCore/private/qohoscommon_p.h>
+#include <optional>
 #include <render/qohoshovereventsgenerator.h>
 
 QT_BEGIN_NAMESPACE
@@ -27,8 +28,8 @@ private:
     QtOhos::QThreadSafeRef<QWindow> m_qWindowRef;
     QtOhos::QThreadSafeRef<QOhosInputMethodEventHandler> m_imEventHandlerRef;
 
-    QOhosOptional<QPointF> m_optCurrentLocalPosition;
-    QOhosOptional<QPointF> m_optCurrentGlobalPosition;
+    std::optional<QPointF> m_optCurrentLocalPosition;
+    std::optional<QPointF> m_optCurrentGlobalPosition;
     bool m_hovered;
 };
 

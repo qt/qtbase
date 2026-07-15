@@ -3,6 +3,7 @@
 
 #include <render/qohosnativeaxiseventhandler.h>
 
+#include <optional>
 #include <qarkui/input.h>
 #include <qarkui/qarkuiutils.h>
 #include <render/qohosnativegestureshandler.h>
@@ -25,25 +26,25 @@ private:
     QtOhos::QThreadSafeRef<QWindow> m_qWindowRef;
     QtOhos::QThreadSafeRef<QOhosInputMethodEventHandler> m_imEventHandlerRef;
 
-    QOhosOptional<QPointF> m_localPosition;
-    QOhosOptional<QPointF> m_globalPosition;
-    QOhosOptional<std::int32_t> m_wheelScrollLines;
+    std::optional<QPointF> m_localPosition;
+    std::optional<QPointF> m_globalPosition;
+    std::optional<std::int32_t> m_wheelScrollLines;
 
     QOhosConsumer<const QOhosNativeGestureEvent &> m_nativeGesturesHandler;
 };
 
-QOhosOptional<Qt::NativeGestureType> getQtGestureType(::InputEvent_AxisAction ohAxisActionType)
+std::optional<Qt::NativeGestureType> getQtGestureType(::InputEvent_AxisAction ohAxisActionType)
 {
     switch (ohAxisActionType) {
     case ::AXIS_ACTION_BEGIN:
-        return makeQOhosOptional(Qt::BeginNativeGesture);
+        return Qt::BeginNativeGesture;
     case ::AXIS_ACTION_END :
     case ::AXIS_ACTION_CANCEL:
-        return makeQOhosOptional(Qt::EndNativeGesture);
+        return Qt::EndNativeGesture;
     case ::AXIS_ACTION_UPDATE:
-        return makeQOhosOptional(Qt::ZoomNativeGesture);
+        return Qt::ZoomNativeGesture;
     }
-    return makeEmptyQOhosOptional();
+    return {};
 }
 
 Qt::ScrollPhase convertArkUiAxisEventActionToQtScrollPhase(std::int32_t arkUiAxisEventAction)
@@ -118,9 +119,9 @@ void QOhosAxisEventHandler::handleUiAxisEvent(ArkUI_UIInputEvent *event)
     std::int32_t wheelScrollLines;
     wheelScrollLines = OH_ArkUI_AxisEvent_GetScrollStep(event);
 
-    m_localPosition = makeQOhosOptional(localPosition);
-    m_globalPosition = makeQOhosOptional(globalPosition);
-    m_wheelScrollLines = makeQOhosOptional(wheelScrollLines);
+    m_localPosition = localPosition;
+    m_globalPosition = globalPosition;
+    m_wheelScrollLines = wheelScrollLines;
 
     QOhosWheelEvent ohosWheelEvent = {
         .timestamp = eventTimestamp,

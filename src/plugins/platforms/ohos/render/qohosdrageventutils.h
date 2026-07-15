@@ -7,13 +7,13 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/qnamespace.h>
 #include <arkui/drag_and_drop.h>
-#include <qohosplugincore.h>
+#include <optional>
 
 QT_BEGIN_NAMESPACE
 
 Qt::DropAction mapQOhosArkUiDropOperationToQt(::ArkUI_DropOperation dropOperation);
 
-QOhosOptional<::ArkUI_DropOperation> tryMapQOhosArkUiDropOperationFromQt(Qt::DropAction dropAction);
+std::optional<::ArkUI_DropOperation> tryMapQOhosArkUiDropOperationFromQt(Qt::DropAction dropAction);
 
 ::ArkUI_DropOperation getQOhosDragEventDropOperation(::ArkUI_DragEvent *dragEvent);
 

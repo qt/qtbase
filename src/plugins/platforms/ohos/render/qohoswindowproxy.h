@@ -19,6 +19,7 @@
 #include <functional>
 #include <cstdint>
 #include <memory>
+#include <optional>
 #include <qarkui/input.h>
 #include <qarkui/window.h>
 #include <qohosdisplayinfo.h>
@@ -58,10 +59,10 @@ public:
 
     struct WindowLimits
     {
-        QOhosOptional<double> minWidth;
-        QOhosOptional<double> minHeight;
-        QOhosOptional<double> maxWidth;
-        QOhosOptional<double> maxHeight;
+        std::optional<double> minWidth;
+        std::optional<double> minHeight;
+        std::optional<double> maxWidth;
+        std::optional<double> maxHeight;
     };
 
     struct AvoidArea
@@ -86,7 +87,7 @@ public:
 
     struct MoveConfiguration
     {
-        QOhosOptional<QOhosDisplayInfo::JsDisplayId> displayId;
+        std::optional<QOhosDisplayInfo::JsDisplayId> displayId;
     };
 
     struct NonClientAreaMouseEvent
@@ -110,7 +111,7 @@ public:
 
     struct ShowWindowOptions
     {
-        QOhosOptional<bool> focusOnShow;
+        std::optional<bool> focusOnShow;
     };
 
     using SupportWindowMode = QtOhos::enums::ohos::bundle::bundleManager::SupportWindowMode;
@@ -145,7 +146,7 @@ public:
     ~QOhosWindowProxy();
 
     void moveWindowToGlobalOrGlobalDisplay(
-        const QPoint &position, QOhosOptional<QOhosDisplayInfo::JsDisplayId> optDisplayId);
+        const QPoint &position, std::optional<QOhosDisplayInfo::JsDisplayId> optDisplayId);
 
     void setSize(const QSize &size);
     void moveWindowToGlobal(const QPoint &position, const MoveConfiguration &moveConfiguration);
@@ -157,7 +158,7 @@ public:
     void setWindowTouchable(bool touchable);
     void setWindowLimits(const QSize &minSize, const QSize &maxSize);
     void setWindowMask(
-        const WindowMask &windowMask, const QOhosOptional<QSize> &ohosMaskSizeOverride = {});
+        const WindowMask &windowMask, const std::optional<QSize> &ohosMaskSizeOverride = {});
     void setSubWindowModalDisabled();
     void setSubWindowModalEnabled(ModalityType ModalityType);
     void setTitle(const QString &title);
@@ -193,7 +194,7 @@ public:
     bool startMoving();
     void enableDrag(bool enable);
 
-    QOhosOptional<bool> isFocused() const;
+    std::optional<bool> isFocused() const;
 
     QArkUi::WindowProperties getWindowProperties() const;
     void setWindowCallbackReceiver(std::unique_ptr<WindowCallbacks> receiver);
@@ -217,7 +218,7 @@ public:
     static std::vector<QArkUi::JsWindowId> queryQtManagedWindowIdsByPredicate(
         const std::function<bool(QtOhos::JsState &jsState, const QArkUi::JsWindowRef &)> &predicate);
 
-    QOhosOptional<QOhosDisplayInfo::JsDisplayId> tryGetMainWindowJsDisplayId() const;
+    std::optional<QOhosDisplayInfo::JsDisplayId> tryGetMainWindowJsDisplayId() const;
     void shiftAppWindowFocus(QOhosWindowProxy &targetProxy);
 
 private:

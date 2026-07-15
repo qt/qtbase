@@ -21,6 +21,7 @@
 #include <future>
 #include <info/application_target_sdk_version.h>
 #include <memory>
+#include <optional>
 #include <qarkui/qarkuiutils.h>
 #include <qarkui/qnativenodeapi.h>
 #include <qohosjsutils.h>
@@ -114,7 +115,7 @@ std::shared_ptr<QOhosUdmfData> tryGetDragEventUdmfDataOrNull(::ArkUI_DragEvent *
 }
 
 void setDragEventSuggestedDropOperationIfAvailable(
-    ::ArkUI_DragEvent *dragEvent, QOhosOptional<::ArkUI_DropOperation> optDropOperation)
+    ::ArkUI_DragEvent *dragEvent, std::optional<::ArkUI_DropOperation> optDropOperation)
 {
     if (optDropOperation.has_value()) {
         QArkUi::callArkUiOrFailOnErrorResult(
@@ -149,7 +150,7 @@ Qt::KeyboardModifiers mapArkUiModifierKeyStatesToQt(std::uint64_t modifierKeySta
 }
 
 template<typename Context, typename Result>
-QOhosOptional<Result> tryRunInQtThreadAndGetResult(
+std::optional<Result> tryRunInQtThreadAndGetResult(
     QtOhos::QThreadSafeRef<Context> context, std::function<Result(Context &)> qtThreadProcessFunc)
 {
     constexpr auto maxResultWaitTime = ch::milliseconds(50);
@@ -164,12 +165,12 @@ QOhosOptional<Result> tryRunInQtThreadAndGetResult(
 
     return
         resultFuture.wait_for(maxResultWaitTime) == std::future_status::ready
-            ? makeQOhosOptional(resultFuture.get())
-            : makeEmptyQOhosOptional();
+            ? std::optional<Result>(resultFuture.get())
+            : std::nullopt;
 }
 
 template<typename Context, typename Result>
-std::function<QOhosOptional<Result>(std::function<Result(Context &)>)>
+std::function<std::optional<Result>(std::function<Result(Context &)>)>
 makeBestEffortQtThreadFunctionsExecutor(
     QtOhos::QThreadSafeRef<Context> contextRef,
     QOhosSupplier<ch::nanoseconds> timeoutsSupplier)
@@ -209,8 +210,8 @@ makeBestEffortQtThreadFunctionsExecutor(
             });
 
         return future.wait_for(maxResultWaitTime) == std::future_status::ready
-            ? makeQOhosOptional(future.get())
-            : makeEmptyQOhosOptional();
+            ? std::optional<Result>(future.get())
+            : std::nullopt;
     };
 }
 

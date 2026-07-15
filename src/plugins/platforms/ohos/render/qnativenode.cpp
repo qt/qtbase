@@ -51,7 +51,7 @@ public:
         QXComponentRender xComponent,
         QtOhos::QThreadSafeRef<QWindow> windowRef,
         QtOhos::QThreadSafeRef<QOhosInputMethodEventHandler> imEventHandlerRef,
-        std::function<void(SurfaceEventType, ::OHNativeWindow *, QOhosOptional<QSize>)> surfaceEventHandler);
+        std::function<void(SurfaceEventType, ::OHNativeWindow *, std::optional<QSize>)> surfaceEventHandler);
 
     void onSurfaceEvent(SurfaceEventType surfaceEventType, ::OHNativeWindow *nativeWindow) override;
     void onInputEvent(InputEventType inputEventType, ::OHNativeWindow *window) override;
@@ -59,8 +59,8 @@ public:
 
     ~CallbackReceiver() override = default;
 private:
-    QOhosOptional<void *> m_lastWindowArgReceivedViaAnyCallback;
-    std::function<void(SurfaceEventType, ::OHNativeWindow *, QOhosOptional<QSize>)> m_surfaceEventHandler;
+    std::optional<void *> m_lastWindowArgReceivedViaAnyCallback;
+    std::function<void(SurfaceEventType, ::OHNativeWindow *, std::optional<QSize>)> m_surfaceEventHandler;
     QSharedPointer<QOhosNativeXComponentInputHandler> m_xComponentInputHandler;
 };
 
@@ -68,7 +68,7 @@ CallbackReceiver::CallbackReceiver(
     QXComponentRender xComponent,
     QtOhos::QThreadSafeRef<QWindow> windowRef,
     QtOhos::QThreadSafeRef<QOhosInputMethodEventHandler> imEventHandlerRef,
-    std::function<void(SurfaceEventType, ::OHNativeWindow *, QOhosOptional<QSize>)> surfaceEventHandler)
+    std::function<void(SurfaceEventType, ::OHNativeWindow *, std::optional<QSize>)> surfaceEventHandler)
     : m_lastWindowArgReceivedViaAnyCallback()
     , m_surfaceEventHandler(std::move(surfaceEventHandler))
     , m_xComponentInputHandler(
@@ -144,7 +144,7 @@ QNativeNode::QNativeNode(const CreateInfo &nativeNodeCreateInfo)
 
         using ParentDescriptor = QArkUi::QEmbeddedWindowNode::ParentDescriptor;
 
-        QOhosOptional<ParentDescriptor> optParentDescriptor;
+        std::optional<ParentDescriptor> optParentDescriptor;
         if (nativeNodeCreateInfo.optParent.has_value()) {
             auto *parentNode = nativeNodeCreateInfo.optParent.value()->m_jsStateData->embeddedWindow.get();
             optParentDescriptor = ParentDescriptor(*parentNode);
@@ -168,7 +168,7 @@ QNativeNode::QNativeNode(const CreateInfo &nativeNodeCreateInfo)
             std::make_unique<CallbackReceiver>(
                 m_jsStateData->embeddedWindow->renderXComponent(),
                 qWindowRef, imEventHandlerRef,
-                [selfRef](SurfaceEventType type, ::OHNativeWindow *window, QOhosOptional<QSize> optSurfaceSize) {
+                [selfRef](SurfaceEventType type, ::OHNativeWindow *window, std::optional<QSize> optSurfaceSize) {
                     selfRef.visitInQtThreadIfAlive(
                         [type, window, optSurfaceSize](auto &self) {
                             self.handleSurfaceEvent(type, window, optSurfaceSize);
@@ -281,7 +281,7 @@ void QNativeNode::fillToParent()
 void QNativeNode::handleSurfaceEvent(
     SurfaceEventType surfaceEventType,
     ::OHNativeWindow *nativeWindow,
-    const QOhosOptional<QSize> &optSurfaceSize)
+    const std::optional<QSize> &optSurfaceSize)
 {
     qCDebug(QtForOhos, "Surface event: %d window: %p", surfaceEventType, nativeWindow);
     switch (surfaceEventType) {

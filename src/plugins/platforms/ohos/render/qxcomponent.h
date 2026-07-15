@@ -8,6 +8,7 @@
 #include <QtCore/private/qnapi_p.h>
 #include <QtCore/private/qohoscommon_p.h>
 #include <ace/xcomponent/native_interface_xcomponent.h>
+#include <optional>
 #include <qohosinternalwindowid_p.h>
 #include <qohosplugincore.h>
 #include <string>
@@ -69,18 +70,18 @@ public:
     static QXComponentId createForRenderXComponent(QtOhos::InternalWindowId windowId);
     static QXComponentId createForNativeNodeFloatWindow(QtOhos::InternalWindowId windowId);
 
-    static QOhosOptional<QXComponentId> tryCreateFromXComponent(::OH_NativeXComponent *xComponent);
+    static std::optional<QXComponentId> tryCreateFromXComponent(::OH_NativeXComponent *xComponent);
 
     std::string stringId() const;
     QNapi::Value toNapiValue(napi_env env) const;
 
-    QOhosOptional<RecognizedType> recognizedType() const;
+    std::optional<RecognizedType> recognizedType() const;
 
 private:
     QXComponentId(std::string id);
 
     std::string m_id;
-    QOhosOptional<RecognizedType> m_optRecognizedType;
+    std::optional<RecognizedType> m_optRecognizedType;
 };
 
 template<QXComponentType Type>

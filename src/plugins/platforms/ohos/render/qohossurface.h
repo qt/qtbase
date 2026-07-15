@@ -13,8 +13,9 @@
 #include <memory>
 #include <native_buffer/native_buffer.h>
 #include <native_window/external_window.h>
-#include <qohosplugincore.h>
+#include <optional>
 #include <render/qohosegl.h>
+#include <vector>
 
 #if QT_CONFIG(vulkan)
 #include <render/qohosvulkansurface.h>
@@ -28,14 +29,14 @@ class QOhosSurface final
 public:
     static constexpr ::OH_NativeBuffer_Format bufferFormat = ::NATIVEBUFFER_PIXEL_FMT_BGRA_8888;
     static QImage::Format mapNativeBufferFormatToQImageFormatOrFail(std::int32_t format);
-    static QOhosOptional<QSize> tryGetBufferGeometryForWindow(::OHNativeWindow *nativeWindow);
+    static std::optional<QSize> tryGetBufferGeometryForWindow(::OHNativeWindow *nativeWindow);
 
     explicit QOhosSurface(::OHNativeWindow *nativeWindow);
 
     ::OHNativeWindow *nativeWindow() const;
-    void setNativeWindowSurface(::OHNativeWindow *nativeWindow, const QOhosOptional<QSize> &optSurfaceSize);
+    void setNativeWindowSurface(::OHNativeWindow *nativeWindow, const std::optional<QSize> &optSurfaceSize);
     EGLSurface tryGetOrCreateEGLWindowSurface(EGLDisplay display, EGLConfig config, bool swappingBuffers);
-    QOhosOptional<QSize> surfaceResolution() const;
+    std::optional<QSize> surfaceResolution() const;
 
     void paintOnNativeWindowSurface(
         std::function<std::vector<::Region::Rect>(QImage &, ::BufferHandle *)> paintFunc,

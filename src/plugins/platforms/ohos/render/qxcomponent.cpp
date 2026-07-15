@@ -23,7 +23,7 @@ bool startsWith(const std::string &str, const std::string &prefix)
     return str.compare(0, prefix.size(), prefix) == 0;
 }
 
-QOhosOptional<QXComponentId::RecognizedType> tryMapXComponentIdValueToRecognizedType(const std::string &idValue)
+std::optional<QXComponentId::RecognizedType> tryMapXComponentIdValueToRecognizedType(const std::string &idValue)
 {
     static const std::pair<std::string, QXComponentId::RecognizedType> prefixToTypeMapping[] = {
         {xComponentPrefixForMainWindow, QXComponentId::RecognizedType::NativeNodeMainWindow},
@@ -34,7 +34,7 @@ QOhosOptional<QXComponentId::RecognizedType> tryMapXComponentIdValueToRecognized
 
     for (const auto &prefixTypePair: prefixToTypeMapping) {
         if (startsWith(idValue, prefixTypePair.first))
-            return makeQOhosOptional(prefixTypePair.second);
+            return prefixTypePair.second;
     }
 
     return {};
@@ -88,7 +88,7 @@ std::string QXComponentId::stringId() const
     return m_id;
 }
 
-QOhosOptional<QXComponentId> QXComponentId::tryCreateFromXComponent(::OH_NativeXComponent *xComponent)
+std::optional<QXComponentId> QXComponentId::tryCreateFromXComponent(::OH_NativeXComponent *xComponent)
 {
     constexpr auto requiredBufferSize = OH_XCOMPONENT_ID_LEN_MAX + 1;
 
@@ -106,11 +106,10 @@ QOhosOptional<QXComponentId> QXComponentId::tryCreateFromXComponent(::OH_NativeX
             "OH_NativeXComponent_GetXComponentId failed with error: %d", errorCode);
     }
 
-    return makeQOhosOptional(
-        QXComponentId(
-            std::string(
-                xComponentIdData.data(),
-                xComponentIdLength)));
+    return QXComponentId(
+        std::string(
+            xComponentIdData.data(),
+            xComponentIdLength));
 }
 
 QNapi::Value QXComponentId::toNapiValue(napi_env env) const
@@ -118,7 +117,7 @@ QNapi::Value QXComponentId::toNapiValue(napi_env env) const
     return QNapi::String::New(env, m_id);
 }
 
-QOhosOptional<QXComponentId::RecognizedType> QXComponentId::recognizedType() const
+std::optional<QXComponentId::RecognizedType> QXComponentId::recognizedType() const
 {
     return m_optRecognizedType;
 }

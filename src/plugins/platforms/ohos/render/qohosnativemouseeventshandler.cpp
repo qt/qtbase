@@ -5,6 +5,7 @@
 #include <chrono>
 #include <cstdint>
 #include <functional>
+#include <optional>
 #include <qarkui/input.h>
 #include <render/qohosbatchingrequestshandler.h>
 #include <render/qohosnativemouseeventshandler.h>
@@ -18,40 +19,40 @@ namespace {
 
 constexpr auto mouseMotionEventMinAgeForDrop = ch::milliseconds(20);
 
-QOhosOptional<Qt::MouseButton> tryMapNativeNodeMouseButtonToQt(std::int32_t button)
+std::optional<Qt::MouseButton> tryMapNativeNodeMouseButtonToQt(std::int32_t button)
 {
     switch (button) {
     case ::UI_MOUSE_EVENT_BUTTON_NONE:
-        return makeEmptyQOhosOptional();
+        return {};
     case ::UI_MOUSE_EVENT_BUTTON_LEFT:
-        return makeQOhosOptional(Qt::LeftButton);
+        return Qt::LeftButton;
     case ::UI_MOUSE_EVENT_BUTTON_RIGHT:
-        return makeQOhosOptional(Qt::RightButton);
+        return Qt::RightButton;
     case ::UI_MOUSE_EVENT_BUTTON_MIDDLE:
-        return makeQOhosOptional(Qt::MiddleButton);
+        return Qt::MiddleButton;
     case ::UI_MOUSE_EVENT_BUTTON_BACK:
-        return makeQOhosOptional(Qt::BackButton);
+        return Qt::BackButton;
     case ::UI_MOUSE_EVENT_BUTTON_FORWARD:
-        return makeQOhosOptional(Qt::ForwardButton);
+        return Qt::ForwardButton;
     }
 
-    return makeEmptyQOhosOptional();
+    return {};
 };
 
-QOhosOptional<QEvent::Type> tryMapNativeNodeMouseActionToQt(std::int32_t action)
+std::optional<QEvent::Type> tryMapNativeNodeMouseActionToQt(std::int32_t action)
 {
     switch (action) {
     case ::UI_MOUSE_EVENT_ACTION_UNKNOWN:
-        return makeEmptyQOhosOptional();
+        return {};
     case ::UI_MOUSE_EVENT_ACTION_PRESS:
-        return makeQOhosOptional(QEvent::MouseButtonPress);
+        return QEvent::MouseButtonPress;
     case ::UI_MOUSE_EVENT_ACTION_RELEASE:
-        return makeQOhosOptional(QEvent::MouseButtonRelease);
+        return QEvent::MouseButtonRelease;
     case ::UI_MOUSE_EVENT_ACTION_MOVE:
-        return makeQOhosOptional(QEvent::MouseMove);
+        return QEvent::MouseMove;
     }
 
-    return makeEmptyQOhosOptional();
+    return {};
 }
 
 class QOhosNativeNodeMouseInputHandler final : public std::enable_shared_from_this<QOhosNativeNodeMouseInputHandler>
