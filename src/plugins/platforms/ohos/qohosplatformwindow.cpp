@@ -79,20 +79,21 @@ QOhosPlatformWindow::QOhosPlatformWindow(QWindow *window)
 
 void QOhosPlatformWindow::setGeometry(const QRect &rect)
 {
-    QRect adjustedRect = rect;
-    if (qt_window_private(const_cast<QWindow *>(window()))->positionPolicy
-        == QWindowPrivate::WindowFrameInclusive) {
-        const auto margins = frameMargins();
-        adjustedRect.adjust(margins.left(), margins.top(), -margins.right(), -margins.bottom());
-    }
+    const bool frameTopLeftGiven =
+        qt_window_private(window())->positionPolicy == QWindowPrivate::WindowFrameInclusive;
+    const QMargins margins = frameMargins();
+    const QRect clientRect = frameTopLeftGiven
+        ? rect.translated(margins.left(), margins.top())
+        : rect;
 
     qOhosPrintfDebug(
         "%s: pos: %d,%d size: %d,%d",
         Q_FUNC_INFO,
-        adjustedRect.x(), adjustedRect.y(),
-        adjustedRect.width(), adjustedRect.height());
-    m_lastRequestedWindowFrameGeometry = rect.marginsAdded(frameMargins());
-    QPlatformWindow::setGeometry(adjustedRect);
+        clientRect.x(), clientRect.y(),
+        clientRect.width(), clientRect.height());
+
+    m_lastRequestedWindowFrameGeometry = clientRect.marginsAdded(margins);
+    QPlatformWindow::setGeometry(clientRect);
 }
 
 bool QOhosPlatformWindow::canBeShownOnScreen() const
