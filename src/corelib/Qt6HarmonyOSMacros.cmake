@@ -77,8 +77,8 @@ endfunction()
 
 # Helper function to extract project libraries from QtDeployTargets.cmake
 function(_qt_internal_harmonyos_extract_project_libraries target output_var)
-    # QtDeployTargets.cmake is generated in ${CMAKE_BINARY_DIR}/.qt/
-    set(deploy_targets_file "${CMAKE_BINARY_DIR}/.qt/QtDeployTargets.cmake")
+    _qt_internal_get_deploy_impl_dir(deploy_impl_dir)
+    set(deploy_targets_file "${deploy_impl_dir}/QtDeployTargets.cmake")
 
     # Check if file exists
     if(NOT EXISTS "${deploy_targets_file}")
