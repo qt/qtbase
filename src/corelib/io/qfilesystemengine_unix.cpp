@@ -1418,11 +1418,11 @@ struct FreeDesktopTrashOperation
     QString trashPath;
     int filesDirFd = -1;
     int infoDirFd = -1;
-    qsizetype volumePrefixLength = 0;
 
     // relative file paths to the filesDirFd and infoDirFd from above
     QByteArray tempTrashFileName;
     QByteArray infoFilePath;
+    QByteArray encodedRelativeFilePath;
 
     int infoFileFd = -1;        // if we've already opened it
     ~FreeDesktopTrashOperation()
@@ -1497,6 +1497,43 @@ struct FreeDesktopTrashOperation
         // try to open it again
         return openDirFd(dfd, path, openmode);
     }
+
+    // returns the path to \a source relative to the \a storage's mount point
+    static QByteArray getRelativeFilePath(const QFileSystemEntry &source,
+                                          const QStorageInfo &storage)
+    {
+        QString relativeFilePath = source.filePath();
+        QString volumeRoot = storage.rootPath();
+        qsizetype volumePrefixLength = volumeRoot.size();
+        if (volumePrefixLength == 1) {
+            // root volume: keep relativeFilePath unchanged
+            return source.nativeFilePath();
+        }
+        if (Q_LIKELY(relativeFilePath.startsWith(volumeRoot))) {
+            // another volume: remove the prefix and the slash
+            relativeFilePath.remove(0, volumePrefixLength + 1);
+            return QFile::encodeName(relativeFilePath);
+        }
+
+        // Uh oh, we must have followed some symlink to get there... Ideally we
+        // should resolve symlinks only as far as getting to the device, but
+        // keep remaining symlinks after that. Instead, we'll canonicalize the
+        // directory where our entry is located, and hope that's enough.
+        QFileSystemMetaData md;
+        QFileSystemEntry dir(source.path(), QFileSystemEntry::FromInternalPath());
+        relativeFilePath = QFileSystemEngine::canonicalName(dir, md).filePath() + u'/'
+                + source.fileName();
+        if (Q_UNLIKELY(!relativeFilePath.startsWith(volumeRoot))) {
+            // still didn't match, this probably means the volume root is not a
+            // canonical path
+            md.clear();
+            dir = QFileSystemEntry(volumeRoot, QFileSystemEntry::FromInternalPath());
+            volumeRoot = QFileSystemEngine::canonicalName(dir, md).filePath();
+        }
+        relativeFilePath.remove(0, volumePrefixLength  + 1);
+        return QFile::encodeName(relativeFilePath);
+    }
+
 
     // opens or makes the XDG Trash hierarchy on parentfd (may be -1) called targetDir
     QSystemError getTrashDir(int parentfd, QString targetDir, const QFileSystemEntry &source,
@@ -1620,21 +1657,24 @@ struct FreeDesktopTrashOperation
             error = getTrashDir(AT_FDCWD, sourceStorage.rootPath() + dotTrash + u'-' + userID, source,
                                 O_NOFOLLOW);
 
-        if (isTrashDirOpen()) {
-            volumePrefixLength = sourceStorage.rootPath().size();
-            if (volumePrefixLength == 1)
-                volumePrefixLength = 0;         // isRoot
-            else
-                ++volumePrefixLength;           // to include the slash
-        }
-        return isTrashDirOpen() ? QSystemError() : error;
+        if (!isTrashDirOpen())
+            return error;
+
+        encodedRelativeFilePath = getRelativeFilePath(source, sourceStorage).toPercentEncoding("/");
+        return QSystemError();
     }
 
     QSystemError openHomeTrashLocation(const QFileSystemEntry &source)
     {
         QString topDir = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
         int openmode = 0;   // do allow following symlinks
-        return getTrashDir(AT_FDCWD, topDir + "/Trash"_L1, source, openmode);
+        QSystemError error = getTrashDir(AT_FDCWD, topDir + "/Trash"_L1, source, openmode);
+        if (!error.ok())
+            return error;
+
+        // for the "home trash", we use the full, absolute path name
+        encodedRelativeFilePath = QFile::encodeName(source.filePath()).toPercentEncoding("/");
+        return QSystemError();
     }
 
     QSystemError findTrashFor(const QFileSystemEntry &source)
@@ -1720,7 +1760,7 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
 
     QByteArray info =
             "[Trash Info]\n"
-            "Path=" + QUrl::toPercentEncoding(source.filePath().mid(op.volumePrefixLength), "/") + "\n"
+            "Path=" + op.encodedRelativeFilePath + "\n"
             "DeletionDate=" + QDateTime::currentDateTime().toString(Qt::ISODate).toUtf8()
             + "\n";
     if (QT_WRITE(op.infoFileFd, info.data(), info.size()) < 0) {
