@@ -626,7 +626,8 @@ void JsStateImpl::setDestroyFromSystemAllowed(QNapi::Object qAbility, bool destr
 
 void JsStateImpl::visitEachQAbilityPeer(const std::function<void(std::shared_ptr<QAbilityPeer>)> &visitor)
 {
-    for (const auto &qAbilityPeerEntry : m_qAbilityPeers)
+    auto qAbilityPeersSnapshot = m_qAbilityPeers;
+    for (const auto &qAbilityPeerEntry : qAbilityPeersSnapshot)
         visitor(qAbilityPeerEntry.second);
 }
 
