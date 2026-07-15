@@ -83,7 +83,8 @@ public:
     explicit qfloat16(Qt::Initialization) noexcept { }
 
 #if QFLOAT16_IS_NATIVE
-    constexpr inline qfloat16(NativeType f = {}) : nf(f) {}
+    constexpr inline qfloat16() noexcept : nf(0) {}
+    constexpr inline qfloat16(NativeType f) : nf(f) {}
     constexpr operator NativeType() const noexcept { return nf; }
 #else
     constexpr inline qfloat16() noexcept : b16(0) {}
