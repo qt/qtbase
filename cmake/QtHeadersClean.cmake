@@ -172,6 +172,13 @@ function(qt_internal_add_headersclean_target module_target module_headers)
                         "-iframework" "${libdir}")
                 endif()
             endforeach()
+
+            # Avoid '#include_next is a language extension' enabled by `-pedantic-errors` in
+            # `Xcode 26`. We use the directive in framework forwarding headers.
+            if("${CMAKE_CXX_COMPILER_ID}" MATCHES "AppleClang"
+                    AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "17.0.0.17000319")
+                list(APPEND hcleanFLAGS -Wno-gnu-include-next)
+            endif()
         endif()
 
         set(compiler_command_line
