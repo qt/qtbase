@@ -526,8 +526,12 @@ qt_internal_extend_target(Gui CONDITION OHOS
 
 if(OHOS)
     # Node-API C++ wrapper needs exceptions; QtGui is otherwise built without.
+    # Skip the precompiled header, which was built with -fno-exceptions.
     set_source_files_properties(platform/ohos/qohosimageconversions.cpp
-        PROPERTIES COMPILE_FLAGS "-fexceptions")
+        PROPERTIES
+            COMPILE_FLAGS "-fexceptions"
+            SKIP_PRECOMPILE_HEADERS ON
+    )
 endif()
 
 if(QT_FEATURE_graphicsframecapture)
