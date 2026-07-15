@@ -3195,6 +3195,9 @@ static bool buildHap(const Options &options, QString *hapOutputPath = nullptr)
 
     QStringList arguments;
     arguments << buildTask;
+    // The hvigor daemon outlives the build and, on Windows, inherits our output
+    // pipe; QProcess then never sees EOF and this call hangs. Build daemon-less.
+    arguments << "--no-daemon"_L1;
 
     process.start(hvigorPath, arguments);
 
