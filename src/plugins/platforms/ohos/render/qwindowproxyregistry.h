@@ -7,6 +7,7 @@
 #include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/qglobal.h>
 #include <map>
+#include <optional>
 #include <qarkui/window.h>
 #include <qohosplugincore.h>
 #include <render/qohoswindowproxy.h>
@@ -28,11 +29,11 @@ public:
     std::shared_ptr<void> registerQWindowWithWindowProxy(
         QWindow *window, const QOhosWindowProxy &windowProxy);
 
-    QOhosOptional<QArkUi::JsWindowId> tryMapInternalWindowIdToJsWindowId(
+    std::optional<QArkUi::JsWindowId> tryMapInternalWindowIdToJsWindowId(
         QtOhos::InternalWindowId internalWindowId) const;
 
     QWindow *findQWindowByJsWindowIdOrNull(QArkUi::JsWindowId jsWindowId);
-    QOhosOptional<std::string> tryFindQAbilityInstanceIdByInternalWindowId(
+    std::optional<std::string> tryFindQAbilityInstanceIdByInternalWindowId(
         QtOhos::InternalWindowId internalWindowId);
 
     std::vector<QWindow *> queryWindowsWithSystemWindowAndFocus();

@@ -124,12 +124,12 @@ QOhosPointerStyle convertToOhosCursor(Qt::CursorShape shape)
     return QOhosPointerStyle::DEFAULT;
 }
 
-QOhosOptional<double> getOptionalNumberPropAsOptionalDouble(const QNapi::Object &object, const std::string &propertyName)
+std::optional<double> getOptionalNumberPropAsOptionalDouble(const QNapi::Object &object, const std::string &propertyName)
 {
     auto propOrEmpty = QNapi::getOptionalPropOrEmpty<QNapi::Number>(object, propertyName);
     return !propOrEmpty.IsEmpty()
-        ? QOhosOptional<double>(propOrEmpty)
-        : makeEmptyQOhosOptional();
+        ? std::optional<double>(propOrEmpty)
+        : std::nullopt;
 }
 
 QArkUi::WindowProperties getWindowPropertiesFromJsWindow(QNapi::Object jsWindow)
@@ -141,8 +141,8 @@ QArkUi::WindowProperties getWindowPropertiesFromJsWindow(QNapi::Object jsWindow)
         .drawableRect = ohosWindowRectToQRect(windowPropsObj.get<QNapi::Object>("drawableRect")),
         .id = QArkUi::JsWindowId(windowPropsObj.get<QNapi::Number>("id")),
         .displayId = !displayIdOrEmpty.IsEmpty()
-            ? makeQOhosOptional(QOhosDisplayInfo::JsDisplayId{displayIdOrEmpty.DoubleValue()})
-            : makeEmptyQOhosOptional(),
+            ? std::optional(QOhosDisplayInfo::JsDisplayId{displayIdOrEmpty.DoubleValue()})
+            : std::nullopt,
     };
 }
 
@@ -197,56 +197,56 @@ bool isPointInNonClientArea(const QPoint &point, const QArkUi::WindowProperties 
     return !drawableRectInScreenSpace.contains(point, containsPolicyExcludeEdgeValue);
 }
 
-QOhosOptional<QEvent::Type> tryMapMouseEventActionToNonClientAreaEventType(::Input_MouseEventAction action)
+std::optional<QEvent::Type> tryMapMouseEventActionToNonClientAreaEventType(::Input_MouseEventAction action)
 {
     switch (action) {
     case ::MOUSE_ACTION_MOVE:
-        return makeQOhosOptional(QEvent::NonClientAreaMouseMove);
+        return QEvent::NonClientAreaMouseMove;
     case ::MOUSE_ACTION_BUTTON_DOWN:
-        return makeQOhosOptional(QEvent::NonClientAreaMouseButtonPress);
+        return QEvent::NonClientAreaMouseButtonPress;
     case ::MOUSE_ACTION_BUTTON_UP:
-        return makeQOhosOptional(QEvent::NonClientAreaMouseButtonRelease);
+        return QEvent::NonClientAreaMouseButtonRelease;
     case ::MOUSE_ACTION_CANCEL:
     case ::MOUSE_ACTION_AXIS_BEGIN:
     case ::MOUSE_ACTION_AXIS_UPDATE:
     case ::MOUSE_ACTION_AXIS_END:
         break;
     }
-    return makeEmptyQOhosOptional();
+    return {};
 }
 
-QOhosOptional<Qt::MouseButton> tryMapMouseEventButtonToQt(::Input_MouseEventButton button)
+std::optional<Qt::MouseButton> tryMapMouseEventButtonToQt(::Input_MouseEventButton button)
 {
     switch (button) {
     case ::MOUSE_BUTTON_LEFT:
-        return makeQOhosOptional(Qt::LeftButton);
+        return Qt::LeftButton;
     case ::MOUSE_BUTTON_MIDDLE:
-        return makeQOhosOptional(Qt::MiddleButton);
+        return Qt::MiddleButton;
     case ::MOUSE_BUTTON_RIGHT:
-        return makeQOhosOptional(Qt::RightButton);
+        return Qt::RightButton;
     case ::MOUSE_BUTTON_FORWARD:
-        return makeQOhosOptional(Qt::ForwardButton);
+        return Qt::ForwardButton;
     case ::MOUSE_BUTTON_BACK:
-        return makeQOhosOptional(Qt::BackButton);
+        return Qt::BackButton;
     case ::MOUSE_BUTTON_NONE:
         break;
     }
-    return makeEmptyQOhosOptional();
+    return {};
 }
 
-QOhosOptional<QEventPoint::State> tryMapTouchEventActionToNonClientAreaEventState(::Input_TouchEventAction action)
+std::optional<QEventPoint::State> tryMapTouchEventActionToNonClientAreaEventState(::Input_TouchEventAction action)
 {
     switch (action) {
     case ::TOUCH_ACTION_MOVE:
-        return makeQOhosOptional(QEventPoint::State::Updated);
+        return QEventPoint::State::Updated;
     case ::TOUCH_ACTION_DOWN:
-        return makeQOhosOptional(QEventPoint::State::Pressed);
+        return QEventPoint::State::Pressed;
     case ::TOUCH_ACTION_UP:
-        return makeQOhosOptional(QEventPoint::State::Released);
+        return QEventPoint::State::Released;
     case ::TOUCH_ACTION_CANCEL:
         break;
     }
-    return makeEmptyQOhosOptional();
+    return {};
 }
 
 template<typename EnumsContainer>
@@ -370,7 +370,7 @@ void QOhosWindowProxy::removeStartingWindow()
 }
 
 void QOhosWindowProxy::moveWindowToGlobalOrGlobalDisplay(
-    const QPoint &point, QOhosOptional<QOhosDisplayInfo::JsDisplayId> optMoveToTargetDisplay)
+    const QPoint &point, std::optional<QOhosDisplayInfo::JsDisplayId> optMoveToTargetDisplay)
 {
     auto displayIdValue = optMoveToTargetDisplay.value_or(QOhosDisplayInfo::JsDisplayId(-1)).value();
     qOhosPrintfDebug("%s: %d,%d,%f", Q_FUNC_INFO, point.x(), point.y(), displayIdValue);
@@ -898,7 +898,7 @@ QOhosWindowProxy::AvoidArea QOhosWindowProxy::getWindowAvoidArea(AvoidAreaType a
 }
 
 void QOhosWindowProxy::setWindowMask(
-    const WindowMask &windowMask, const QOhosOptional<QSize> &ohosMaskSizeOverride)
+    const WindowMask &windowMask, const std::optional<QSize> &ohosMaskSizeOverride)
 {
     if (qtIsMainWindow())
         return;
@@ -1736,15 +1736,14 @@ void QOhosWindowProxy::enableDrag(bool enable)
         Q_FUNC_INFO);
 }
 
-QOhosOptional<bool> QOhosWindowProxy::isFocused() const
+std::optional<bool> QOhosWindowProxy::isFocused() const
 {
     return QtOhos::evalInJsThread(
-        [&](QtOhos::JsState &) {
+        [&](QtOhos::JsState &) -> std::optional<bool> {
             if (m_jsScopeData->isWindowClosing())
-                return QOhosOptional<bool>();
+                return {};
 
-            bool focused = m_jsScopeData->jsWindowRef->eval<QNapi::Boolean>("isFocused()");
-            return makeQOhosOptional(focused);
+            return m_jsScopeData->jsWindowRef->eval<QNapi::Boolean>("isFocused()");
         },
         Q_FUNC_INFO);
 }
@@ -1813,7 +1812,7 @@ void QOhosWindowProxy::moveWindowToGlobal(
         Q_FUNC_INFO);
 }
 
-QOhosOptional<QOhosDisplayInfo::JsDisplayId> QOhosWindowProxy::tryGetMainWindowJsDisplayId() const
+std::optional<QOhosDisplayInfo::JsDisplayId> QOhosWindowProxy::tryGetMainWindowJsDisplayId() const
 {
     return qtIsMainWindow()
         ? getWindowProperties().displayId
@@ -1823,7 +1822,7 @@ QOhosOptional<QOhosDisplayInfo::JsDisplayId> QOhosWindowProxy::tryGetMainWindowJ
                     = QtOhos::QUiAbilityPeer::tryCastFromQAbilityPeerOrNull(m_jsScopeData->qAbilityPeer);
                 return qUiAbilityPeer
                     ? getWindowPropertiesFromJsWindow(qUiAbilityPeer->window()).displayId
-                    : makeEmptyQOhosOptional();
+                    : std::nullopt;
             },
             Q_FUNC_INFO);
 }

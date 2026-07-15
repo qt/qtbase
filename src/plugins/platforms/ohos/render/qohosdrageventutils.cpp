@@ -17,13 +17,13 @@ Qt::DropAction mapQOhosArkUiDropOperationToQt(::ArkUI_DropOperation dropOperatio
     return Qt::CopyAction;
 }
 
-QOhosOptional<::ArkUI_DropOperation> tryMapQOhosArkUiDropOperationFromQt(Qt::DropAction dropAction)
+std::optional<::ArkUI_DropOperation> tryMapQOhosArkUiDropOperationFromQt(Qt::DropAction dropAction)
 {
     switch (dropAction) {
     case Qt::CopyAction:
-        return makeQOhosOptional(::ARKUI_DROP_OPERATION_COPY);
+        return ::ARKUI_DROP_OPERATION_COPY;
     case Qt::MoveAction:
-        return makeQOhosOptional(::ARKUI_DROP_OPERATION_MOVE);
+        return ::ARKUI_DROP_OPERATION_MOVE;
     default:
         return {};
     }

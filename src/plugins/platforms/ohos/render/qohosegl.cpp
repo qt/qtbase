@@ -10,7 +10,7 @@
 QT_BEGIN_NAMESPACE
 
 void QOhosEGLSurface::setNativeWindowSurface(
-    EGLNativeWindowType nativeWindow, const QOhosOptional<QSize> &optSurfaceSize)
+    EGLNativeWindowType nativeWindow, const std::optional<QSize> &optSurfaceSize)
 {
     m_targetSurfaceSize = optSurfaceSize;
     m_refTargetNativeWindow = nativeWindow;
@@ -64,24 +64,24 @@ void QOhosEGLSurface::tryCreateSurface(EGLDisplay display, EGLConfig config, Sur
     m_currentSurfaceFlags = surfaceFlags;
 }
 
-QOhosOptional<QSize> QOhosEGLSurface::currentSurfaceSize() const
+std::optional<QSize> QOhosEGLSurface::currentSurfaceSize() const
 {
     if (m_refCurrentDisplay == EGL_NO_DISPLAY || m_ownEglSurface == EGL_NO_SURFACE)
-        return makeEmptyQOhosOptional();
+        return {};
 
     EGLint width;
     if (eglQuerySurface(m_refCurrentDisplay, m_ownEglSurface, EGL_WIDTH, &width) != EGL_TRUE) {
         qOhosPrintfWarning("%s - cannot get surface width, error: %d", Q_FUNC_INFO, eglGetError());
-        return makeEmptyQOhosOptional();
+        return {};
     }
 
     EGLint height;
     if (eglQuerySurface(m_refCurrentDisplay, m_ownEglSurface, EGL_HEIGHT, &height) != EGL_TRUE) {
         qOhosPrintfWarning("%s - cannot get surface height, error: %d", Q_FUNC_INFO, eglGetError());
-        return makeEmptyQOhosOptional();
+        return {};
     }
 
-    return makeQOhosOptional(QSize(width, height));
+    return QSize(width, height);
 }
 
 EGLSurface QOhosEGLSurface::tryGetOrCreateEGLWindowSurface(
@@ -123,7 +123,7 @@ void QOhosEGLSurface::cleanup()
     m_refCurrentNativeWindow = nullptr;
     m_ownEglSurface = EGL_NO_SURFACE;
     m_currentSurfaceFlags = {};
-    m_targetSurfaceSize = makeEmptyQOhosOptional();
+    m_targetSurfaceSize = {};
 }
 
 QOhosEGLSurface::~QOhosEGLSurface()

@@ -65,7 +65,7 @@ std::shared_ptr<void> QWindowProxyRegistry::registerQWindowWithWindowProxy(
         : nullptr;
 }
 
-QOhosOptional<QArkUi::JsWindowId> QWindowProxyRegistry::tryMapInternalWindowIdToJsWindowId(
+std::optional<QArkUi::JsWindowId> QWindowProxyRegistry::tryMapInternalWindowIdToJsWindowId(
     QtOhos::InternalWindowId internalWindowId) const
 {
     auto foundEntryIter = std::find_if(
@@ -75,8 +75,8 @@ QOhosOptional<QArkUi::JsWindowId> QWindowProxyRegistry::tryMapInternalWindowIdTo
         });
 
     return foundEntryIter != m_jsWindowIdMap.end()
-        ? makeQOhosOptional(foundEntryIter->first)
-        : makeEmptyQOhosOptional();
+        ? std::optional(foundEntryIter->first)
+        : std::nullopt;
 }
 
 QWindow *QWindowProxyRegistry::findQWindowByJsWindowIdOrNull(
@@ -90,13 +90,13 @@ QWindow *QWindowProxyRegistry::findQWindowByJsWindowIdOrNull(
     return findQWindowByInternalWindowIdOrNull(internalWindowId);
 }
 
-QOhosOptional<std::string> QWindowProxyRegistry::tryFindQAbilityInstanceIdByInternalWindowId(
+std::optional<std::string> QWindowProxyRegistry::tryFindQAbilityInstanceIdByInternalWindowId(
     QtOhos::InternalWindowId internalWindowId)
 {
     auto qAbilityInstanceIdIt = m_qAbilityInstanceIdMap.find(internalWindowId);
     return qAbilityInstanceIdIt != m_qAbilityInstanceIdMap.end()
-        ? makeQOhosOptional(qAbilityInstanceIdIt->second)
-        : makeEmptyQOhosOptional();
+        ? std::optional(qAbilityInstanceIdIt->second)
+        : std::nullopt;
 }
 
 QWindowProxyRegistry &QWindowProxyRegistry::instance()

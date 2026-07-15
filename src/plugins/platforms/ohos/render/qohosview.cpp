@@ -54,25 +54,25 @@ enum class WindowGeometryPersistenceState
     Enabled,
 };
 
-QOhosOptional<QOhosWindowProxy::ModalityType> mapQtWindowModalityToOhosOrDefault(
+std::optional<QOhosWindowProxy::ModalityType> mapQtWindowModalityToOhosOrDefault(
     Qt::WindowModality windowModality)
 {
     using ModalityType = QOhosWindowProxy::ModalityType;
 
     switch (windowModality) {
     case Qt::WindowModality::NonModal:
-        return makeEmptyQOhosOptional();
+        return {};
     case Qt::WindowModality::WindowModal:
-        return makeQOhosOptional(ModalityType::WINDOW_MODALITY);
+        return ModalityType::WINDOW_MODALITY;
     case Qt::WindowModality::ApplicationModal:
-        return makeQOhosOptional(ModalityType::APPLICATION_MODALITY);
+        return ModalityType::APPLICATION_MODALITY;
     }
 
     qOhosPrintfWarning(
         "%s: got illegal Qt::WindowModality value (%d), using the default instead",
         Q_FUNC_INFO, static_cast<int>(windowModality));
 
-    return makeEmptyQOhosOptional();
+    return {};
 }
 
 template<typename ...SignalParams>
@@ -354,7 +354,7 @@ WindowGeometryPersistenceState syncWindowGeometryPersistenceState(QOhosWindowPro
         : WindowGeometryPersistenceState::Disabled;
 }
 
-QOhosOptional<QOhosDisplayInfo::JsDisplayId> tryGetSubWindowJsDisplayId(
+std::optional<QOhosDisplayInfo::JsDisplayId> tryGetSubWindowJsDisplayId(
     QWindow *logicalParent, QOhosWindowProxy &windowProxy)
 {
     auto *screen = logicalParent->screen();
@@ -363,19 +363,19 @@ QOhosOptional<QOhosDisplayInfo::JsDisplayId> tryGetSubWindowJsDisplayId(
         : nullptr;
 
     return ohosPlatformScreen != nullptr
-        ? makeQOhosOptional(ohosPlatformScreen->displayInfo().id)
+        ? std::optional(ohosPlatformScreen->displayInfo().id)
         : windowProxy.tryGetMainWindowJsDisplayId();
 }
 
-QOhosOptional<QColor> tryGetBackgroundColorFromWindow(QWindow *window)
+std::optional<QColor> tryGetBackgroundColorFromWindow(QWindow *window)
 {
     if (window != nullptr) {
         QWindowPrivate *windowPrivate = qt_window_private(window);
         QPalette palette = windowPrivate->windowPalette();
         QColor backgroundColor = palette.color(QPalette::Window);
-        return makeQOhosOptional(backgroundColor);
+        return backgroundColor;
     }
-    return makeEmptyQOhosOptional();
+    return {};
 }
 
 }
@@ -579,7 +579,7 @@ QOhosView::QOhosView(QWindow *ownerWindow, QSharedPointer<QNativeNode> nativeNod
 
     connect(
         m_nativeNode.get(), &QNativeNode::surfaceStatusChanged,
-        this, [this](const QOhosOptional<QSize> &optSurfaceSize) {
+        this, [this](const std::optional<QSize> &optSurfaceSize) {
             Q_EMIT surfaceStatusChanged(optSurfaceSize);
         });
 
@@ -657,7 +657,7 @@ void QOhosView::setPosition(const QPoint &position)
 void QOhosView::setPositionOnScreenImmediate(
     const QPoint &position, QOhosDisplayInfo::JsDisplayId jsDisplayId)
 {
-    setSystemUpdateProperty(&SystemUpdateData::position, {position, makeQOhosOptional(jsDisplayId)});
+    setSystemUpdateProperty(&SystemUpdateData::position, {position, jsDisplayId});
     flushSystemPropertyUpdatesImmediate();
 }
 
@@ -733,8 +733,8 @@ void QOhosView::showWindow()
     m_ohosWindowProxy->showWindow(
         QOhosWindowProxy::ShowWindowOptions{
             .focusOnShow = ohosPlatformWindow->shouldShowWindowWithoutActivating()
-                ? makeQOhosOptional(false)
-                : makeEmptyQOhosOptional(),
+                ? std::optional(false)
+                : std::nullopt,
         });
 }
 
@@ -799,10 +799,10 @@ void QOhosView::updateWindowSize(const QSize &size)
         m_nativeNode->setSize(size);
 }
 
-void QOhosView::updateWindowPosition(const std::pair<QPoint, QOhosOptional<QOhosDisplayInfo::JsDisplayId>> &positionProp)
+void QOhosView::updateWindowPosition(const std::pair<QPoint, std::optional<QOhosDisplayInfo::JsDisplayId>> &positionProp)
 {
     QPoint position;
-    QOhosOptional<QOhosDisplayInfo::JsDisplayId> displayId;
+    std::optional<QOhosDisplayInfo::JsDisplayId> displayId;
     std::tie(position, displayId) = positionProp;
 
     if (m_ohosWindowProxy != nullptr) {
@@ -1094,8 +1094,8 @@ std::unique_ptr<QOhosView> QOhosView::createForWindow(QOhosPlatformWindow *windo
         auto *parentPlatformWindow = static_cast<QOhosPlatformWindow *>(window->parent());
         auto *parentView = parentPlatformWindow->ownedViewOrNull();
         createInfo.optParent = parentView != nullptr
-            ? makeQOhosOptional(parentView->m_nativeNode.get())
-            : makeEmptyQOhosOptional();
+            ? std::optional(parentView->m_nativeNode.get())
+            : std::nullopt;
     }
 
     auto nativeNode = QSharedPointer<QNativeNode>::create(createInfo);
@@ -1124,7 +1124,7 @@ QOhosView::ViewGeometry QOhosView::viewGeometry() const
         const auto *ancestorViewWithWindow = ancestorViewWithWindowOrNull();
         result.displayId = ancestorViewWithWindow != nullptr
             ? ancestorViewWithWindow->m_ohosWindowProxy->getWindowProperties().displayId
-            : makeEmptyQOhosOptional();
+            : std::nullopt;
     }
 
     return result;
@@ -1322,7 +1322,7 @@ void QOhosView::syncWindowStateImmediate(WindowStateSyncReason reason)
         break;
     }
 
-    QOhosOptional<QOhosDisplayInfo::JsDisplayId> targetDisplayId;
+    std::optional<QOhosDisplayInfo::JsDisplayId> targetDisplayId;
     switch (viewType()) {
     case ViewType::SubWindow:
         if (m_optLogicalParent == nullptr)
@@ -1389,7 +1389,7 @@ void QOhosView::syncWindowStateImmediate(WindowStateSyncReason reason)
             QOhosWindowProxy::WindowMask {
                 .windowMaskRegion = m_ownerWindow->mask(),
             },
-            makeQOhosOptional(targetGeometryToSet.size()));
+            targetGeometryToSet.size());
     }
     const auto privacyModeSetting = m_windowPropertiesProvider
         .tryGetProperty<bool, &QOhosPlatformWindow::windowPrivacyModeSettingProperty>();
@@ -1455,12 +1455,12 @@ void QOhosView::addForeignWindowChild(QOhosForeignWindow *foreignWindow)
     m_nativeNode->addForeignWindowChild(foreignWindow);
 }
 
-QOhosOptional<QSize> QOhosView::surfaceResolution() const
+std::optional<QSize> QOhosView::surfaceResolution() const
 {
     auto *surface = m_nativeNode->surfaceOrNull();
     return surface != nullptr
         ? surface->surfaceResolution()
-        : makeEmptyQOhosOptional();
+        : std::nullopt;
 }
 
 bool QOhosView::isFullscreenImmersiveModeEnabled()
@@ -1565,7 +1565,7 @@ void QOhosView::startDrag(
 
 void QOhosView::restoreMainWindow()
 {
-    const auto lastMainWindowHideMethod = std::exchange(m_lastMainWindowHideMethod, makeEmptyQOhosOptional());
+    const auto lastMainWindowHideMethod = std::exchange(m_lastMainWindowHideMethod, {});
     if (m_ohosWindowProxy == nullptr || !m_ohosWindowProxy->qtIsMainWindow())
         return;
 

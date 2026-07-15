@@ -20,6 +20,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <memory>
+#include <optional>
 #include <vector>
 
 QT_BEGIN_NAMESPACE
@@ -56,7 +57,7 @@ std::tuple<QPointF, QPointF> getLocalAndGlobalPointsOrDefault(OH_NativeXComponen
         : std::tuple<QPointF, QPointF>({{}, {}});
 }
 
-QOhosOptional<QPointF> tryGetTouchPointDisplayPosition(QXComponentRender xComponent, std::int32_t touchPointIndex)
+std::optional<QPointF> tryGetTouchPointDisplayPosition(QXComponentRender xComponent, std::int32_t touchPointIndex)
 {
     float x;
     float y;
@@ -66,17 +67,17 @@ QOhosOptional<QPointF> tryGetTouchPointDisplayPosition(QXComponentRender xCompon
             == ::OH_NATIVEXCOMPONENT_RESULT_SUCCESS
         && ::OH_NativeXComponent_GetTouchPointDisplayY(xComponent.handle(), touchPointIndex, &y)
             == ::OH_NATIVEXCOMPONENT_RESULT_SUCCESS
-                ? makeQOhosOptional(QPointF{x, y})
-                : makeEmptyQOhosOptional();
+                ? std::optional(QPointF{x, y})
+                : std::nullopt;
 }
 
-QOhosOptional<QOhosTouchEventTouchPointData> tryMakeTouchEventPointData(
+std::optional<QOhosTouchEventTouchPointData> tryMakeTouchEventPointData(
     QXComponentRender xComponent, const OH_NativeXComponent_TouchEvent &touchEvent,
     std::uint32_t pointIndex)
 {
     auto touchDisplayPosition = tryGetTouchPointDisplayPosition(xComponent, pointIndex);
     if (!touchDisplayPosition.has_value())
-        return makeEmptyQOhosOptional();
+        return {};
 
     ::OH_NativeXComponent_TouchPointToolType toolType = ::OH_NATIVEXCOMPONENT_TOOL_TYPE_UNKNOWN;
     std::int32_t resToolType = ::OH_NativeXComponent_GetTouchPointToolType(xComponent.handle(), pointIndex, &toolType);
@@ -107,14 +108,13 @@ QOhosOptional<QOhosTouchEventTouchPointData> tryMakeTouchEventPointData(
         }
     }
 
-    return makeQOhosOptional(
-        QOhosTouchEventTouchPointData{
-            .touchPoint = touchEvent.touchPoints[pointIndex],
-            .toolType = toolType,
-            .displayPosition = touchDisplayPosition.value(),
-            .tiltX = tiltX,
-            .tiltY = tiltY,
-        });
+    return QOhosTouchEventTouchPointData{
+        .touchPoint = touchEvent.touchPoints[pointIndex],
+        .toolType = toolType,
+        .displayPosition = touchDisplayPosition.value(),
+        .tiltX = tiltX,
+        .tiltY = tiltY,
+    };
 }
 
 QInputDevice::DeviceType getTouchDeviceType(::OH_NativeXComponent *component, std::int32_t pointId)
@@ -152,39 +152,39 @@ bool isModifierKey(OH_NativeXComponent_KeyCode keyCode)
     }
 }
 
-QOhosOptional<QEvent::Type> tryMapXComponentMouseEventActionToQEventType(::OH_NativeXComponent_MouseEventAction action)
+std::optional<QEvent::Type> tryMapXComponentMouseEventActionToQEventType(::OH_NativeXComponent_MouseEventAction action)
 {
     switch (action) {
     case OH_NATIVEXCOMPONENT_MOUSE_PRESS:
-        return makeQOhosOptional(QEvent::MouseButtonPress);
+        return QEvent::MouseButtonPress;
     case OH_NATIVEXCOMPONENT_MOUSE_RELEASE:
-        return makeQOhosOptional(QEvent::MouseButtonRelease);
+        return QEvent::MouseButtonRelease;
     case OH_NATIVEXCOMPONENT_MOUSE_MOVE:
-        return makeQOhosOptional(QEvent::MouseMove);
+        return QEvent::MouseMove;
     case OH_NATIVEXCOMPONENT_MOUSE_NONE:
     case OH_NATIVEXCOMPONENT_MOUSE_CANCEL:
         break;
     }
-    return makeEmptyQOhosOptional();
+    return {};
 }
 
-QOhosOptional<Qt::MouseButton> tryMapXComponentMouseButtonToQt(::OH_NativeXComponent_MouseEventButton button)
+std::optional<Qt::MouseButton> tryMapXComponentMouseButtonToQt(::OH_NativeXComponent_MouseEventButton button)
 {
     switch (button) {
     case OH_NATIVEXCOMPONENT_LEFT_BUTTON:
-        return makeQOhosOptional(Qt::LeftButton);
+        return Qt::LeftButton;
     case OH_NATIVEXCOMPONENT_MIDDLE_BUTTON:
-        return makeQOhosOptional(Qt::MiddleButton);
+        return Qt::MiddleButton;
     case OH_NATIVEXCOMPONENT_RIGHT_BUTTON:
-        return makeQOhosOptional(Qt::RightButton);
+        return Qt::RightButton;
     case OH_NATIVEXCOMPONENT_BACK_BUTTON:
-        return makeQOhosOptional(Qt::BackButton);
+        return Qt::BackButton;
     case OH_NATIVEXCOMPONENT_FORWARD_BUTTON:
-        return makeQOhosOptional(Qt::ForwardButton);
+        return Qt::ForwardButton;
     case OH_NATIVEXCOMPONENT_NONE_BUTTON:
         break;
     }
-    return makeEmptyQOhosOptional();
+    return {};
 }
 
 

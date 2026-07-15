@@ -138,7 +138,7 @@ QOhosSurface::mapNativeBufferFormatToQImageFormatOrFail(std::int32_t format)
     return result;
 }
 
-QOhosOptional<QSize> QOhosSurface::tryGetBufferGeometryForWindow(::OHNativeWindow *nativeWindow)
+std::optional<QSize> QOhosSurface::tryGetBufferGeometryForWindow(::OHNativeWindow *nativeWindow)
 {
     std::int32_t surfaceWidth = 0;
     std::int32_t surfaceHeight = 0;
@@ -149,8 +149,8 @@ QOhosOptional<QSize> QOhosSurface::tryGetBufferGeometryForWindow(::OHNativeWindo
         nativeWindow, ::GET_BUFFER_GEOMETRY, &surfaceHeight, &surfaceWidth);
 
     return getWindowHandleErrorCode == ohNativeWindowErrorCodeSuccess
-        ? QOhosOptional<QSize>({surfaceWidth, surfaceHeight})
-        : makeEmptyQOhosOptional();
+        ? std::optional<QSize>({surfaceWidth, surfaceHeight})
+        : std::nullopt;
 }
 
 QOhosSurface::QOhosSurface(::OHNativeWindow *nativeWindow)
@@ -170,7 +170,7 @@ QOhosSurface::QOhosSurface(::OHNativeWindow *nativeWindow)
 }
 
 void QOhosSurface::setNativeWindowSurface(
-    ::OHNativeWindow *nativeWindow, const QOhosOptional<QSize> &optSurfaceSize)
+    ::OHNativeWindow *nativeWindow, const std::optional<QSize> &optSurfaceSize)
 {
     if (nativeWindow == nullptr)
         qOhosReportFatalErrorAndAbort("NativeWindow cannot be null");
@@ -196,12 +196,12 @@ EGLSurface QOhosSurface::tryGetOrCreateEGLWindowSurface(EGLDisplay display, EGLC
     if (!m_eglSurface) {
         m_eglSurface = std::make_unique<QOhosEGLSurface>();
         m_eglSurface->setNativeWindowSurface(
-            reinterpret_cast<::EGLNativeWindowType>(m_nativeWindow), makeEmptyQOhosOptional());
+            reinterpret_cast<::EGLNativeWindowType>(m_nativeWindow), {});
     }
     return m_eglSurface->tryGetOrCreateEGLWindowSurface(display, config, swappingBuffers, {});
 }
 
-QOhosOptional<QSize> QOhosSurface::surfaceResolution() const
+std::optional<QSize> QOhosSurface::surfaceResolution() const
 {
     return tryGetBufferGeometryForWindow(m_nativeWindow);
 }

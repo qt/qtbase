@@ -14,6 +14,7 @@
 #include <QtGui/qimage.h>
 #include <QtGui/qwindow.h>
 #include <memory>
+#include <optional>
 #include <qohosdisplayinfo.h>
 #include <qohosforeignwindow.h>
 #include <qohosplatformintegration.h>
@@ -71,7 +72,7 @@ public:
 
     struct ViewGeometry
     {
-        QOhosOptional<QOhosDisplayInfo::JsDisplayId> displayId;
+        std::optional<QOhosDisplayInfo::JsDisplayId> displayId;
         QRect frameGeometry;
         QRect geometry;
     };
@@ -152,7 +153,7 @@ public:
     ViewGeometry viewGeometry() const;
     QMargins avoidAreaMargins(QOhosWindowProxy::AvoidAreaType type) const;
     ViewType viewType() const;
-    QOhosOptional<QSize> surfaceResolution() const;
+    std::optional<QSize> surfaceResolution() const;
     const QOhosView *viewParentOrNull() const;
     QRect nodeScreenGeometryPixels() const;
     QRect nodeParentRelativeGeometryPixels() const;
@@ -167,7 +168,7 @@ Q_SIGNALS:
     void avoidAreaChanged(QOhosWindowProxy::AvoidAreaType avoidAreaType, const QOhosWindowProxy::AvoidArea &avoidArea);
     void windowRectChanged(QOhosWindowProxy::RectChangeOptions rectChangeOptions);
     void windowRectChangedInGlobalDisplay(QOhosWindowProxy::RectChangeOptions rectChangeOptions);
-    void surfaceStatusChanged(const QOhosOptional<QSize> &optSurfaceSize);
+    void surfaceStatusChanged(const std::optional<QSize> &optSurfaceSize);
     void windowDisplayIdChanged(QOhosDisplayInfo::JsDisplayId);
     void externalContentInteractionDetected();
     void nodeAreaChanged(QArkUi::QQtEmbeddedWindowNode::NodeAreaInfo areaChangeEvt);
@@ -183,7 +184,7 @@ private:
     template <typename T, QOhosRuntimeDeviceTypeAndMode supportedModes = allModes>
     struct SystemUpdateDataProperty
     {
-        QOhosOptional<T> optPendingUpdateRequest;
+        std::optional<T> optPendingUpdateRequest;
     };
 
     template<typename T>
@@ -197,7 +198,7 @@ private:
     {
         WindowModeOnlySystemUpdateDataProperty<QSize> size;
         WindowModeOnlySystemUpdateDataProperty<std::pair<QSize, QSize>> sizeLimits;
-        WindowModeOnlySystemUpdateDataProperty<std::pair<QPoint, QOhosOptional<QOhosDisplayInfo::JsDisplayId>>> position;
+        WindowModeOnlySystemUpdateDataProperty<std::pair<QPoint, std::optional<QOhosDisplayInfo::JsDisplayId>>> position;
         SystemUpdateDataProperty<bool> visibility;
         NoTabletSystemUpdateDataProperty<bool> backgroundTransparent;
         SystemUpdateDataProperty<QCursor> cursor;
@@ -241,7 +242,7 @@ private:
     void scheduleSystemUpdateIfNeeded();
     void updateWindowSize(const QSize &size);
     void updateWindowSizeLimits(const std::pair<QSize, QSize> &sizeLimits);
-    void updateWindowPosition(const std::pair<QPoint, QOhosOptional<QOhosDisplayInfo::JsDisplayId>> &position);
+    void updateWindowPosition(const std::pair<QPoint, std::optional<QOhosDisplayInfo::JsDisplayId>> &position);
     void updateWindowBackgroundTransparency(bool transparent);
     void updateWindowCursor(const QCursor &cursor);
     void updateWindowFocusable(bool focusable);
@@ -287,7 +288,7 @@ private:
     QtOhos::InternalWindowId m_ownerWindowId;
     bool m_windowDestroyed = false;
     QPointer<QWindow> m_optLogicalParent;
-    QOhosOptional<WindowHideMethod> m_lastMainWindowHideMethod;
+    std::optional<WindowHideMethod> m_lastMainWindowHideMethod;
     ViewGeometryPersistencePolicy m_geometryPersistencePolicy = ViewGeometryPersistencePolicy::Ignore;
     std::shared_ptr<void> m_windowPropertiesProviderCallbacksHandle;
     std::function<void()> m_optPostSurfaceDrawTask;

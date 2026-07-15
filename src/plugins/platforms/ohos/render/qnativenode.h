@@ -18,6 +18,7 @@
 #include <functional>
 #include <memory>
 #include <native_window/external_window.h>
+#include <optional>
 #include <qarkui/qqtembeddedwindownode.h>
 #include <qohosforeignwindow.h>
 #include <qohosplatformwindow.h>
@@ -36,9 +37,9 @@ public:
     {
         QRect geometry;
         QWindow *window;
-        QOhosOptional<QNativeNode *> optParent;
-        QOhosOptional<QColor> backgroundColor;
-        QOhosOptional<::ArkUI_RenderFit> renderFitPolicyHint;
+        std::optional<QNativeNode *> optParent;
+        std::optional<QColor> backgroundColor;
+        std::optional<::ArkUI_RenderFit> renderFitPolicyHint;
     };
 
     explicit QNativeNode(const CreateInfo &nativeNodeCreateInfo);
@@ -78,7 +79,7 @@ public:
     WId windowId() const;
 
 Q_SIGNALS:
-    void surfaceStatusChanged(const QOhosOptional<QSize> &optSurfaceSize);
+    void surfaceStatusChanged(const std::optional<QSize> &optSurfaceSize);
     void externalContentClickDetected();
 
 private:
@@ -90,12 +91,12 @@ private:
     void handleSurfaceEvent(
         QArkUi::QXComponentCallbackReceiver::SurfaceEventType eventType,
         ::OHNativeWindow *nativeWindow,
-        const QOhosOptional<QSize> &optSurfaceSize);
+        const std::optional<QSize> &optSurfaceSize);
 
     std::shared_ptr<JsStateData> m_jsStateData;
     std::unique_ptr<QOhosSurface> m_optSurface;
     QRectF m_nodeGeometry;
-    QOhosOptional<QXComponentNode> m_nodeXComponentParent;
+    std::optional<QXComponentNode> m_nodeXComponentParent;
 };
 
 QT_END_NAMESPACE
