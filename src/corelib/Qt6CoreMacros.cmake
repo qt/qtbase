@@ -3179,7 +3179,9 @@ if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
 endif()
 
 function(_qt_internal_get_deploy_impl_dir var)
-    set(${var} "${CMAKE_BINARY_DIR}/.qt" PARENT_SCOPE)
+    # Resolve symlinks/junctions so this matches where file(GENERATE) writes.
+    get_filename_component(deploy_impl_dir "${CMAKE_BINARY_DIR}/.qt" REALPATH)
+    set(${var} "${deploy_impl_dir}" PARENT_SCOPE)
 endfunction()
 
 function(_qt_internal_add_deploy_support deploy_support_file)
