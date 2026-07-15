@@ -26,6 +26,7 @@
 #include <private/qheaderview_p.h>
 #include <private/qabstractitemmodel_p.h>
 #include <private/qabstractitemdelegate_p.h>
+#include <QtCore/private/qduplicatetracker_p.h>
 
 #ifndef QT_NO_DATASTREAM
 #include <qdatastream.h>
@@ -4311,6 +4312,31 @@ bool QHeaderViewPrivate::read(QDataStream &in)
 
     if (sectionItemsLengthTotal != lengthIn && newSectionItems.size() > 0)
         return false;
+
+    // visualIndicesIn/logicalIndicesIn map visual <-> logical section indices for
+    // each other. Each must either be empty (meaning identity mapping) or have
+    // exactly one entry per section, and every entry must be a valid index into
+    // the restored section list. Without this check, a corrupted or malicious
+    // state blob could make logicalIndex()/visualIndex() index out of bounds.
+    const auto isValidIndexMapping = [](const QList<int> &mapping, qsizetype sectionCount) {
+        if (mapping.isEmpty())
+            return true;
+        if (mapping.size() != sectionCount)
+            return false;
+        QDuplicateTracker<int> seenIndices;
+        for (int index : mapping) {
+            if (index < 0 || index >= sectionCount)
+                return false;
+            if (seenIndices.hasSeen(index))
+                return false;
+        }
+        return true;
+    };
+    const qsizetype newSectionCount = newSectionItems.size();
+    if (!isValidIndexMapping(visualIndicesIn, newSectionCount)
+        || !isValidIndexMapping(logicalIndicesIn, newSectionCount)) {
+        return false;
+    }
 
     // We don't want to do an actual change in normal mode.
     // (Hence we have already set up sections etc)
