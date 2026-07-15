@@ -208,13 +208,13 @@ const QAccessibilityHints *QStyleHints::accessibility() const
     \since 6.12
     \sa QWidget::toolTip, {QtQuick.Controls::ToolTip::delay}
 */
-int QStyleHints::toolTipWakeUpDelay() const
+std::chrono::milliseconds QStyleHints::toolTipWakeUpDelay() const
 {
     Q_D(const QStyleHints);
     return d->m_toolTipWakeUpDelay;
 }
 
-void QStyleHints::setToolTipWakeUpDelay(int toolTipWakeUpDelay)
+void QStyleHints::setToolTipWakeUpDelay(std::chrono::milliseconds toolTipWakeUpDelay)
 {
     Q_D(QStyleHints);
     if (d->m_toolTipWakeUpDelay == toolTipWakeUpDelay)

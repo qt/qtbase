@@ -42,7 +42,7 @@ public:
     int m_mouseQuickSelectionThreshold = -1;
     int m_mouseDoubleClickDistance = -1;
     int m_touchDoubleTapDistance = -1;
-    int m_toolTipWakeUpDelay = 700;
+    std::chrono::milliseconds m_toolTipWakeUpDelay{700};
 
     Qt::ColorScheme colorScheme() const { return m_colorScheme; }
     void updateColorScheme(Qt::ColorScheme colorScheme);
