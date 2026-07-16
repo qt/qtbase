@@ -119,15 +119,9 @@ auto matchIanaId(QStringView text)
     // Subsequent truncation won't trigger reallocation, so is efficient despite
     // the owning container.
 
+    // IANA includes a limited few three-letter abbreviations as IDs.
     // Find longest IANA ID match:
-    for (; index > 3; name.truncate(--index)) {
-        QTimeZone zone(name);
-        if (zone.isValid())
-            return R{zone, index};
-    }
-    // GMT may be recognized as other things, but if it's the actual name given
-    // and our backend supports it, prefer the backend version over other forms.
-    if (index == 3 && name == "GMT") {
+    for (; index >= 3; name.truncate(--index)) {
         QTimeZone zone(name);
         if (zone.isValid())
             return R{zone, index};
