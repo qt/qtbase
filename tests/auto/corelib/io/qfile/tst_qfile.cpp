@@ -306,6 +306,7 @@ private slots:
     void moveToTrashSymlinkToDirectory_data();
     void moveToTrashSymlinkToDirectory();
     void moveToTrashXdgHomeTrashIsSymlink();
+    void moveToTrashXdgSymlinkToOtherMountPoint_data();
     void moveToTrashXdgSymlinkToOtherMountPoint();
     void moveToTrashXdgSafety();
 
@@ -4654,12 +4655,21 @@ void tst_QFile::moveToTrashXdgHomeTrashIsSymlink()
     QVERIFY(QFile(otherTrash.filePath("info")).exists());
 }
 
+void tst_QFile::moveToTrashXdgSymlinkToOtherMountPoint_data()
+{
+    QTest::addColumn<bool>("innerSymlink");
+    QTest::newRow("one-symlink") << false;
+    QTest::newRow("two-symlinks") << true;
+}
+
 void tst_QFile::moveToTrashXdgSymlinkToOtherMountPoint()
 {
     if (!QFile::supportsMoveToTrash())
         QSKIP("This platform doesn't implement a trash bin");
     if constexpr (!SystemUsesXdgTrashSpec)
         QSKIP("This test is specific to XDG Unix systems");
+
+    QFETCH(bool, innerSymlink);
 
     // We need a writable volume other than the one holding the symlink, so we
     // can reach a file on that other volume through a symlink and trash it.
@@ -4684,9 +4694,22 @@ void tst_QFile::moveToTrashXdgSymlinkToOtherMountPoint()
         QFile::remove(linkPath);
     });
 
-    // Create a file through the symlink; it physically lives on the other volume.
+    // The file's directory relative to the volume's mount point. With
+    // "innerSymlink" we add a symlink inside the volume (pointing to a real
+    // subdirectory) and reach the file through it; that symlink must be
+    // preserved, not resolved.
+    QString relativeDir = realDirName;
+    QString dirViaLink = linkPath;
+    if (innerSymlink) {
+        QVERIFY(QDir(realDir).mkdir("realsub"));
+        QVERIFY2(QFile::link("realsub", realDir + "/innerlink"), "Failed to create inner symlink");
+        relativeDir += "/innerlink"_L1;
+        dirViaLink += "/innerlink"_L1;
+    }
+
+    // Create a file through the symlink(s); it physically lives on the other volume.
     const QString fileName = "trashme"_L1;
-    const QString fileViaLink = linkPath + u'/' + fileName;
+    const QString fileViaLink = dirViaLink + u'/' + fileName;
     {
         QFile f(fileViaLink);
         QVERIFY2(f.open(QIODevice::WriteOnly | QIODevice::Truncate), qPrintable(f.errorString()));
@@ -4707,7 +4730,9 @@ void tst_QFile::moveToTrashXdgSymlinkToOtherMountPoint()
     QCOMPARE_NE(infoFile, QString());
 
     // Read the recorded Path= entry and check it is the path relative to the
-    // volume root, not the symlinked path we used to reach the file.
+    // volume root, resolving only the symlink that led onto the volume: the
+    // symlink used to reach the volume must be gone, but the in-volume symlink
+    // must be preserved (i.e. not resolved to "realsub").
     QFile info(infoFile);
     QVERIFY2(info.open(QIODevice::ReadOnly | QIODevice::Text), qPrintable(info.errorString()));
     QByteArray recordedPath;
@@ -4719,9 +4744,7 @@ void tst_QFile::moveToTrashXdgSymlinkToOtherMountPoint()
         }
     }
 
-    QCOMPARE(recordedPath, QFile::encodeName(realDirName + u'/' + fileName));
-    QVERIFY2(!recordedPath.contains(QFile::encodeName(linkName)),
-             "The recorded path must not contain the symlink used to reach the file");
+    QCOMPARE(recordedPath, QFile::encodeName(relativeDir + u'/' + fileName));
 }
 
 void tst_QFile::moveToTrashXdgSafety()

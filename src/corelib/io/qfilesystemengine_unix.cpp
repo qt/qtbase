@@ -8,7 +8,6 @@
 #include "qfilesystemengine_p.h"
 #include "qfile.h"
 #include "qstorageinfo.h"
-#include "qurl.h"
 
 #include <QtCore/qoperatingsystemversion.h>
 #include <QtCore/private/qcore_unix_p.h>
@@ -16,6 +15,7 @@
 #include <QtCore/private/qfunctions_p.h>
 #include <QtCore/qvarlengtharray.h>
 #ifndef QT_BOOTSTRAPPED
+# include <QtCore/qscopedvaluerollback.h>
 # include <QtCore/qstandardpaths.h>
 # include <QtCore/private/qtemporaryfile_p.h>
 #endif // QT_BOOTSTRAPPED
@@ -1498,6 +1498,66 @@ struct FreeDesktopTrashOperation
         return openDirFd(dfd, path, openmode);
     }
 
+    static QByteArray
+    getRelativeFilePathResolvingSymlinks(const QFileSystemEntry &source, const QString &volumeRoot)
+    {
+        // Walk the directory's ancestors from the shortest to the longest,
+        // following symlinks (as QT_STAT does), until we reach the volume's
+        // device. The shallowest ancestor already on that device is the point
+        // at which we cross onto the volume; everything below it is kept
+        // verbatim.
+        // We could also have scanned from longest until we step outside of the
+        // volume's device. The results would be the same, except for the case
+        // of symlink loops. There's no technical reason to choose one way or
+        // the other. Note that scanning from the root produces the same result
+        // as the startsWith() match from the caller, if it were removed.
+
+        QByteArray result;
+        QByteArray nativeVolumeRoot = QFile::encodeName(volumeRoot);
+        QT_STATBUF st;
+        if (QT_STAT(nativeVolumeRoot.constData(), &st) != 0)
+            return result;
+        const auto volumeDevice = st.st_dev;
+
+        // The directory part is absolute and already cleaned of "." and "..".
+        QByteArray dirPath = QFile::encodeName(source.path());
+        char *nativeDir = dirPath.data();
+        qsizetype crossingLength = dirPath.size();      // default: the whole directory
+        for (qsizetype pos = 1; pos <= dirPath.size(); ++pos) {
+            if (pos < dirPath.size() && nativeDir[pos] != '/')
+                continue;
+
+            // temporarily terminate the string at this ancestor and stat() it
+            QScopedValueRollback null(nativeDir[pos], '\0');
+            if (QT_STAT(nativeDir, &st) == 0 && st.st_dev == volumeDevice) {
+                crossingLength = pos;
+                break;
+            }
+        }
+
+        // Canonicalize just the crossing directory, to express it relative to
+        // the mount point; the components below it are kept verbatim.
+        QFileSystemMetaData md;
+        QFileSystemEntry dir(dirPath.first(crossingLength), QFileSystemEntry::FromNativePath{});
+        result = QFileSystemEngine::canonicalName(dir, md).nativeFilePath();
+        if (Q_UNLIKELY(!result.startsWith(nativeVolumeRoot))) {
+            // still didn't match, this probably means the volume root is not a
+            // canonical path
+            md.clear();
+            dir = QFileSystemEntry(volumeRoot, QFileSystemEntry::FromInternalPath());
+            nativeVolumeRoot = QFileSystemEngine::canonicalName(dir, md).nativeFilePath();
+        }
+        result.remove(0, nativeVolumeRoot.size());
+
+        // Append the remaining directory components and the file name verbatim.
+        result += dirPath.sliced(crossingLength);
+        result += '/';
+        result += QFile::encodeName(source.fileName());
+        Q_ASSERT(result.startsWith('/'));
+        result.remove(0, 1);
+        return result;
+    }
+
     // returns the path to \a source relative to the \a storage's mount point
     static QByteArray getRelativeFilePath(const QFileSystemEntry &source,
                                           const QStorageInfo &storage)
@@ -1515,23 +1575,10 @@ struct FreeDesktopTrashOperation
             return QFile::encodeName(relativeFilePath);
         }
 
-        // Uh oh, we must have followed some symlink to get there... Ideally we
-        // should resolve symlinks only as far as getting to the device, but
-        // keep remaining symlinks after that. Instead, we'll canonicalize the
-        // directory where our entry is located, and hope that's enough.
-        QFileSystemMetaData md;
-        QFileSystemEntry dir(source.path(), QFileSystemEntry::FromInternalPath());
-        relativeFilePath = QFileSystemEngine::canonicalName(dir, md).filePath() + u'/'
-                + source.fileName();
-        if (Q_UNLIKELY(!relativeFilePath.startsWith(volumeRoot))) {
-            // still didn't match, this probably means the volume root is not a
-            // canonical path
-            md.clear();
-            dir = QFileSystemEntry(volumeRoot, QFileSystemEntry::FromInternalPath());
-            volumeRoot = QFileSystemEngine::canonicalName(dir, md).filePath();
-        }
-        relativeFilePath.remove(0, volumePrefixLength  + 1);
-        return QFile::encodeName(relativeFilePath);
+        // Uh oh, we must have followed some symlink to get here. We want to
+        // resolve symlinks only as far as getting onto the volume's device, but
+        // keep any symlinks below that point intact.
+        return getRelativeFilePathResolvingSymlinks(source, volumeRoot);
     }
 
 
@@ -1660,7 +1707,10 @@ struct FreeDesktopTrashOperation
         if (!isTrashDirOpen())
             return error;
 
-        encodedRelativeFilePath = getRelativeFilePath(source, sourceStorage).toPercentEncoding("/");
+        QByteArray relativePath = getRelativeFilePath(source, sourceStorage);
+        if (relativePath.isEmpty())
+            return QSystemError::stdError(errno);
+        encodedRelativeFilePath = relativePath.toPercentEncoding("/");
         return QSystemError();
     }
 
