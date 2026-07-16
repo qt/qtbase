@@ -484,6 +484,12 @@ QList<ParsedZone> prefix(QStringView text, const QLocale &locale, qsizetype from
         if (const auto sys = matchSystemName(tail, locale))
             includeMatch(sys.length, QTimeZone(QTimeZone::LocalTime), sys.season);
     }
+    if (text.sliced(from).startsWith(u"LMT")) {
+        // Local (solar) mean time: every zone falls back to this as
+        // abbreviation long enough ago, so we can't resolve it. Treat as local
+        // time, as there's no better way to interpret it.
+        includeMatch(3, QTimeZone(QTimeZone::LocalTime), QDTP::UnknownDaylightTime);
+    }
 
     return matches;
 }
