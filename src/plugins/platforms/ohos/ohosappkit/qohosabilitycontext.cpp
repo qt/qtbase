@@ -1062,7 +1062,7 @@ QSharedPointer<QOhosOperationStatus> startAbilityImpl(
             if (qpaStartOptions.has_value())
                 arguments.push_back(convertStartOptionsToNapiObject(jsState, qpaStartOptions.value()));
 
-            mainUiAbility.call("context.startAbility", arguments);
+            mainUiAbility.eval("context.startAbility(*)", arguments);
 
             // FIXME:
             // * there should be error code taken from a call to JS `startAbility` function

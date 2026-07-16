@@ -827,7 +827,7 @@ void setOhosConfigColorMode(OhosConfigurationColorMode colorMode)
         [&](QtOhos::JsState &jsState) {
             auto qAbility = jsState.defaultQAbilityPeer()->qAbility();
             const auto jsColorMode = jsState.mapOhosEnumToJs(colorMode);
-            qAbility.call("context.getApplicationContext().setColorMode", {jsColorMode});
+            qAbility.eval("context.getApplicationContext().setColorMode(*)", {jsColorMode});
         },
         Q_FUNC_INFO);
 }

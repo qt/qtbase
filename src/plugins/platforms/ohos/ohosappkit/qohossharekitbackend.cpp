@@ -229,7 +229,7 @@ void shareDataImpl(
             qOhosPrintfDebug(
                 "%s: record #%zu to be shared: %s",
                 Q_FUNC_INFO, i, QNapi::toJsonString(record.value()).c_str());
-            sharedDataObject.call("addRecord", {record.value()});
+            sharedDataObject.eval("addRecord(*)", {record.value()});
         } else {
             qOhosPrintfWarning("%s: Failed to create record", Q_FUNC_INFO);
         }

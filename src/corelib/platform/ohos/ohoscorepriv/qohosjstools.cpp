@@ -65,7 +65,7 @@ std::shared_ptr<void> registerQOhosOnOffMethodsBasedEventHandler(
     onCallArgs.push_back(jsEventHandlerRef->Value());
     bool onCallSuccessful;
     try {
-        eventSourceObject.call("on", onCallArgs);
+        eventSourceObject.eval("on(*)", onCallArgs);
         onCallSuccessful = true;
     } catch (const Napi::Error &error) {
         onCallSuccessful = false;
@@ -93,7 +93,7 @@ std::shared_ptr<void> registerQOhosOnOffMethodsBasedEventHandler(
                         if (!sharedContext->optExtraOffArg.IsEmpty())
                             offCallArgs.push_back(sharedContext->optExtraOffArg.Value());
                         offCallArgs.push_back(jsEventHandlerRef->Value());
-                        eventSourceObject.call("off", offCallArgs);
+                        eventSourceObject.eval("off(*)", offCallArgs);
                     } catch (const Napi::Error &e) {
                         qOhosPrintfError(
                             "%s: got exception from off(%s, ...) call (ignoring): %s",
@@ -130,8 +130,8 @@ std::shared_ptr<void> registerOhosAppContextEnvironmentCallback(
         QNapi::Reference<>::makePersistentFrom(
             optQAbility->eval<QNapi::Object>("context.getApplicationContext()")));
 
-    double environmentCallbackId = appContextRefPtr->call<QNapi::Number>(
-        "on",
+    double environmentCallbackId = appContextRefPtr->eval<QNapi::Number>(
+        "on(*)",
         {"environment", environmentCallback});
 
     return std::shared_ptr<void>(
@@ -140,8 +140,8 @@ std::shared_ptr<void> registerOhosAppContextEnvironmentCallback(
             QOhosJsThreadGateway::runAndWait(
                 [&](QOhosJsState &) {
                     auto appContextRef = std::move(*appContextRefPtr);
-                    appContextRef.call(
-                        "off",
+                    appContextRef.eval(
+                        "off(*)",
                         {"environment", environmentCallbackId});
                 },
                 Q_FUNC_INFO);

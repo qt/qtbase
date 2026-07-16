@@ -598,7 +598,7 @@ void terminateAllAbilityInstances(JsState &jsState, const char *logContext)
             auto optQUiAbilityPeer = QUiAbilityPeer::tryCastFromQAbilityPeerOrNull(qAbilityPeer);
             if (optQUiAbilityPeer)
                 JsWindowsTracker::tagWindowAsClosing(optQUiAbilityPeer->window(), logContext);
-            qAbilityPeer->qAbility().call("context.terminateSelf");
+            qAbilityPeer->qAbility().eval("context.terminateSelf()");
         });
 }
 
@@ -1279,8 +1279,8 @@ void loadWindowStageContentPage(JsState &jsState, QNapi::Object &qAbility, const
     auto windowStageRef = moveToSharedPtr(QNapi::Reference<>::makePersistentFrom(windowStage));
 
     auto localStorage = jsState.eval<QNapi::Object>("LocalStorage.makeNewLocalStorage()");
-    localStorage.call(
-        "setOrCreate",
+    localStorage.eval(
+        "setOrCreate(*)",
         {
             "createInfo",
             QNapi::makeObject(
@@ -1560,7 +1560,7 @@ void initAppData(JsState &jsState, QNapi::Object appContext)
         });
 
     if (!isOhosNoUiChildMode())
-        appContext.call("setColorMode", {jsState.mapOhosEnumToJs(defaultColorMode)});
+        appContext.eval("setColorMode(*)", {jsState.mapOhosEnumToJs(defaultColorMode)});
 }
 
 std::string buildFcLangEnvVariableValue(JsState &jsState)

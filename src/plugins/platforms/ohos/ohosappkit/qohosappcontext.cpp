@@ -96,8 +96,8 @@ Q_NORETURN void restartAppImpl(std::optional<QJsonObject> want)
                     qOhosReportFatalErrorAndAbort("%s: no default UIAbility available to restart the app", Q_FUNC_INFO);
 
                 try {
-                    optQAbility.value().call(
-                        "context.getApplicationContext().restartApp", {napiWant});
+                    optQAbility.value().eval(
+                        "context.getApplicationContext().restartApp(*)", {napiWant});
 
                     qOhosPrintfWarning("%s: restartApp() call unexpectedly returned, killing self", Q_FUNC_INFO);
                     killCurrentProcess();

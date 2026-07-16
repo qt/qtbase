@@ -133,7 +133,7 @@ std::optional<double> getOptionalNumberPropAsOptionalDouble(const QNapi::Object 
 
 QArkUi::WindowProperties getWindowPropertiesFromJsWindow(QNapi::Object jsWindow)
 {
-    auto windowPropsObj = jsWindow.call<QNapi::Object>("getWindowProperties", {});
+    auto windowPropsObj = jsWindow.eval<QNapi::Object>("getWindowProperties()");
     auto displayIdOrEmpty = QNapi::getOptionalPropOrEmpty<QNapi::Number>(windowPropsObj, "displayId");
     return QArkUi::WindowProperties {
         .windowRect = ohosWindowRectToQRect(windowPropsObj.get<QNapi::Object>("windowRect")),
@@ -1409,7 +1409,7 @@ QOhosWindowProxy::JsScopeData::~JsScopeData()
         qOhosPrintfWarning(
             "Attempting to terminate qAbility with instance id: %s",
             qAbilityPeer->instanceId().c_str());
-        qAbilityPeer->qAbility().call("context.terminateSelf");
+        qAbilityPeer->qAbility().eval("context.terminateSelf()");
     } else if (!windowDestroyedFromSystem) {
         // FIXME - destroyWindow usually does and returns nothing
         // once the actual implementation is provided wait for the proomise that this function should return

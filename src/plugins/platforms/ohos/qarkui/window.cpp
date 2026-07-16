@@ -70,7 +70,7 @@ bool JsWindowRef::isFocused() const
 {
     if (QtOhos::JsWindowsTracker::isWindowClosing(m_jsWindow.Value()))
         return false;
-    return m_jsWindow.call<QNapi::Boolean>("isFocused").Value();
+    return m_jsWindow.eval<QNapi::Boolean>("isFocused()").Value();
 }
 
 const std::string &JsWindowRef::owningQAbilityInstanceId() const

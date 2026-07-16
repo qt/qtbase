@@ -310,7 +310,7 @@ QUiAbilityPeerImpl::QUiAbilityPeerImpl(
     QNapi::Object uiAbility, QNapi::Object windowStage)
     : QAbilityPeerImpl(jsState, abilityEngine, instanceId, qwindow, uiAbility)
     , m_windowStage(Napi::Persistent(windowStage))
-    , m_window(Napi::Persistent(windowStage.call<QNapi::Object>("getMainWindowSync")))
+    , m_window(Napi::Persistent(windowStage.eval<QNapi::Object>("getMainWindowSync()")))
 {
     auto optLaunchParam = QNapi::getOptionalPropOrEmpty<QNapi::Object>(
         uiAbility, getAbilityLaunchParamPropSymbol(jsState));
@@ -358,7 +358,7 @@ QUiAbilityPeerImpl::QUiAbilityPeerImpl(
 
 QNapi::Object QUiAbilityPeerImpl::uiContext()
 {
-    return window().call<QNapi::Object>("getUIContext");
+    return window().eval<QNapi::Object>("getUIContext()");
 }
 
 QNapi::Object QUiAbilityPeerImpl::launchWant()
@@ -383,7 +383,7 @@ QNapi::Object QUiAbilityPeerImpl::window()
 
 bool QUiAbilityPeerImpl::isTerminating()
 {
-    return qAbility().call<QNapi::Boolean>("context.isTerminating");
+    return qAbility().eval<QNapi::Boolean>("context.isTerminating()");
 }
 
 QOhosCloseEventContext::CloseRootCause mapCloseAbilityRequestSourceToRootCause(
