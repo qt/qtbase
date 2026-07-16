@@ -106,7 +106,7 @@ QT_BEGIN_NAMESPACE
     \value WatchOS      The Apple watchOS operating system.
     \value VisionOS     The Apple visionOS operating system.
     \value Windows      The Microsoft Windows operating system.
-    \value [since 6.12] OHOS The OpenHarmony (HarmonyOS) operating system.
+    \value [since 6.12] HarmonyOS The HarmonyOS operating system.
 
     \value Unknown      An unknown or unsupported operating system.
 */
@@ -352,8 +352,8 @@ QString QOperatingSystemVersionBase::name(QOperatingSystemVersionBase osversion)
         return QStringLiteral("visionOS");
     case QOperatingSystemVersionBase::Android:
         return QStringLiteral("Android");
-    case QOperatingSystemVersionBase::OHOS:
-        return QStringLiteral("OpenHarmony");
+    case QOperatingSystemVersionBase::HarmonyOS:
+        return QStringLiteral("HarmonyOS");
     case QOperatingSystemVersionBase::Unknown:
     default:
         return QString();
