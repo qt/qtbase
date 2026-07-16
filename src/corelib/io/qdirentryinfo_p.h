@@ -32,26 +32,31 @@ overloaded(Ts...) -> overloaded<Ts...>;
 class QDirEntryInfo
 {
     template<typename QueryNative, typename QueryFileInfo, typename QueryIterator>
+    decltype(auto) visit(QueryNative qn, QueryFileInfo qf, QueryIterator qi)
+    {
+        Q_ASSERT(!content.valueless_by_exception());
+        auto visitor = QDirEntryInfoPrivate::overloaded{std::move(qn), std::move(qf), std::move(qi)};
+        return std::visit(visitor, content);
+    }
+    template<typename QueryNative, typename QueryFileInfo, typename QueryIterator>
     auto query(
             QueryNative &&queryNative, QueryFileInfo &&queryFileInfo, QueryIterator &&queryIterator)
     {
-        Q_ASSERT(!content.valueless_by_exception());
-        return std::visit(QDirEntryInfoPrivate::overloaded {
+        return visit(
             std::forward<QueryNative>(queryNative),
             std::forward<QueryFileInfo>(queryFileInfo),
             [&](const Iterator &iterator) { return queryIterator(iterator.iterator); }
-        }, content);
+        );
     }
 
     template<typename QueryNative, typename QueryFileInfo>
     auto query(QueryNative &&queryNative, const QueryFileInfo &queryFileInfo)
     {
-        Q_ASSERT(!content.valueless_by_exception());
-        return std::visit(QDirEntryInfoPrivate::overloaded {
+        return visit(
             std::forward<QueryNative>(queryNative),
             [&](Iterator &iterator) { return queryFileInfo(iterator.ensureFileInfo()); },
-            queryFileInfo,
-        }, content);
+            queryFileInfo
+        );
     }
 
 public:
@@ -74,15 +79,14 @@ public:
 
     const QFileInfo &fileInfo()
     {
-        Q_ASSERT(!content.valueless_by_exception());
-        return std::visit(QDirEntryInfoPrivate::overloaded {
+        return visit(
             [](Iterator &iterator) -> const QFileInfo & { return iterator.ensureFileInfo(); },
             [this](const Native &native) -> const QFileInfo & {
                 content = QFileInfo(new QFileInfoPrivate(native.entry, native.metaData));
                 return std::get<QFileInfo>(content);
             },
             [](const QFileInfo &fileInfo) -> const QFileInfo & { return fileInfo; }
-        }, content);
+        );
     }
 
     QString fileName()
