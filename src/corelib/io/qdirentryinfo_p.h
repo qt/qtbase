@@ -34,8 +34,11 @@ class QDirEntryInfo
     template<typename QueryNative, typename QueryFileInfo, typename QueryIterator>
     decltype(auto) visit(QueryNative qn, QueryFileInfo qf, QueryIterator qi)
     {
-        Q_ASSERT(!content.valueless_by_exception());
         auto visitor = QDirEntryInfoPrivate::overloaded{std::move(qn), std::move(qf), std::move(qi)};
+        {
+            [[maybe_unused]] const bool valueless = content.valueless_by_exception();
+            Q_PRESUME(!valueless);
+        }
         return std::visit(visitor, content);
     }
     template<typename QueryNative, typename QueryFileInfo, typename QueryIterator>
