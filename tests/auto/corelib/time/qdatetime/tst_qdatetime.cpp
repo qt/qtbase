@@ -3492,6 +3492,15 @@ void tst_QDateTime::fromStringStringFormat_data()
     QTest::newRow("leap-next-century")
             << u"29/02/00 00:00:00"_s << u"dd/MM/yy HH:mm:ss"_s << 1900 << greg
             << QDateTime(QDate(2000, 2, 29), QTime(0, 0));
+#if QT_CONFIG(timezone) // Reproducer for QTBUG-148356 (MST = America/Phoenix in 2026b)
+    if (const QTimeZone mst("MST"); mst.isValid()) {
+        QTest::newRow("asn.1-like-MST")
+                << u"20170601102132MST"_s << u"yyyyMMddhhmmsst"_s << 1900 << greg
+                << QDateTime(QDate(2017, 6, 1), QTime(10, 21, 32), mst);
+    } else {
+        qDebug("Skipping MST test as zone ID is not supported");
+    }
+#endif
 
     // fuzzer test
     QTest::newRow("integer overflow found by fuzzer")
