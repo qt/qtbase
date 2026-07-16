@@ -4123,6 +4123,52 @@ void tst_QFile::supportsMoveToTrash()
 #endif
 }
 
+#if defined(Q_OS_ANDROID) || \
+    defined(Q_OS_DARWIN) || \
+    defined(Q_OS_HARMONY) || \
+    defined(Q_OS_WEBOS) || \
+    defined(Q_OS_WIN)
+constexpr bool SystemUsesXdgTrashSpec = false;
+#else
+constexpr bool SystemUsesXdgTrashSpec = true;
+#endif
+
+static QString xdgTrashInfoFile(const QString &trashedFile)
+{
+    constexpr QLatin1StringView filesComponent = "/files/"_L1;
+    const qsizetype filesIdx = trashedFile.lastIndexOf(filesComponent);
+    if (filesIdx < 0)
+        return QString();
+
+    QString infoFile = trashedFile;
+    infoFile.replace(filesIdx, filesComponent.size(), "/info/"_L1);
+    infoFile += ".trashinfo"_L1;
+    return infoFile;
+}
+
+static bool removeXdgTrashInfoFile(const QString &trashedFile)
+{
+    if (QString trashInfo = xdgTrashInfoFile(trashedFile); !trashInfo.isEmpty())
+        return QFile::remove(trashInfo);
+    return true;
+}
+
+static bool removeTrashedDir(const QString &trashedDir)
+{
+    bool ok = QDir(trashedDir).removeRecursively();
+    if constexpr (SystemUsesXdgTrashSpec)
+        ok = removeXdgTrashInfoFile(trashedDir) && ok;
+    return ok;
+}
+
+static bool removeTrashedFile(const QString &trashedFile)
+{
+    bool ok = QFile::remove(trashedFile);
+    if constexpr (SystemUsesXdgTrashSpec)
+        ok = removeXdgTrashInfoFile(trashedFile) && ok;
+    return ok;
+}
+
 void tst_QFile::moveToTrash_data()
 {
     QTest::addColumn<QString>("source");
@@ -4207,10 +4253,9 @@ void tst_QFile::moveToTrash()
         if (!QFileInfo::exists(source) || !create)
             return;
         if (source.endsWith(QLatin1Char('/'))) {
-            QDir(source).removeRecursively();
+            removeTrashedDir(source);
         } else {
-            QFile sourceFile(source);
-            sourceFile.remove();
+            removeTrashedFile(source);
         }
     };
 
@@ -4245,9 +4290,9 @@ void tst_QFile::moveToTrash()
                 QVERIFY2(sourceFile.exists(), qPrintable(sourceFile.fileName()));
                 // remove file/dir in trash as well, don't fill disk
                 if (source.endsWith(QLatin1Char('/')))
-                    QDir(sourceFile.fileName()).removeRecursively();
+                    removeTrashedDir(sourceFile.fileName());
                 else
-                    sourceFile.remove();
+                    removeTrashedFile(sourceFile.fileName());
             }
         } else {
             QVERIFY(!success);
@@ -4274,9 +4319,9 @@ void tst_QFile::moveToTrash()
                 // remove file/dir in trash as well, don't fill disk
                 QVERIFY2(QFile::exists(pathInTrash), qPrintable(pathInTrash));
                 if (source.endsWith(QLatin1Char('/')))
-                    QDir(pathInTrash).removeRecursively();
+                    removeTrashedDir(pathInTrash);
                 else
-                    QFile::remove(pathInTrash);
+                    removeTrashedFile(pathInTrash);
             }
         }
     }
@@ -4314,9 +4359,9 @@ void tst_QFile::moveToTrashDuplicateName()
 
         QCOMPARE_NE(f1.fileName(), f2.fileName());
     }();
-    f1.remove();
-    if (!f2.fileName().isEmpty())
-        f2.remove();
+    removeTrashedFile(f1.fileName());
+    if (QString f2name = f2.fileName(); !f2name.isEmpty())
+        removeTrashedFile(f2name);
     QFile::remove(origFileName);
 }
 
@@ -4357,7 +4402,7 @@ void tst_QFile::moveToTrashOpenFile()
         if (!origFileName.isEmpty())
             QFile::remove(origFileName);
         if (!newFileName.isEmpty() && newFileName != origFileName)
-            QFile::remove(newFileName);
+            removeTrashedFile(newFileName);
     });
 
     origFileName = []() {
@@ -4416,26 +4461,26 @@ void tst_QFile::moveToTrashSymlinkToFile()
 
     // Create the symlink
     const QString linkName = temp.fileName() + ".lnk";
+    QString trashedName = linkName;
     QVERIFY2(temp.link(linkName), "Failed to create link: " + temp.errorString().toLocal8Bit());
     auto cleanLink = qScopeGuard([&]() {
-        QFile::remove(linkName);
+        removeTrashedFile(trashedName);
     });
 
     // now trash it
     QFile symlink(linkName);
     QVERIFY(symlink.moveToTrash());
-    QCOMPARE_NE(symlink.fileName(), linkName);
+    trashedName = symlink.fileName();
+    QCOMPARE_NE(trashedName, linkName);
 
-    // confirm that the target is still a symlink
-    QFileInfo fi(symlink.fileName());
+    // confirm that the target is still a symlink and lives in the home trash
+    QFileInfo fi(trashedName);
     QVERIFY(fi.isSymLink());
     QVERIFY(fi.isFile());   // we used an absolute path, so it should not be broken!
-    symlink.remove();
 
     // confirm that the symlink disappeared but the original file is still present
     QVERIFY(QFile::exists(temp.fileName()));
     QVERIFY(!QFile::exists(linkName));
-    cleanLink.dismiss();
 }
 
 void tst_QFile::moveToTrashSymlinkToDirectory_data()
@@ -4459,37 +4504,35 @@ void tst_QFile::moveToTrashSymlinkToDirectory()
 
     // Create the symlink
     const QString linkName = temp.path() + ".lnk";
+    QString trashedName = linkName;
     QVERIFY(QFile::link(temp.path(), linkName));
     auto cleanLink = qScopeGuard([&]() {
-        QFile::remove(linkName);
+        removeTrashedFile(trashedName);
     });
 
     // now trash it
     QFile symlink(appendSlash ? linkName + u'/' : linkName);
     QVERIFY(symlink.moveToTrash());
-    QCOMPARE_NE(symlink.fileName(), linkName);
-    QCOMPARE_NE(symlink.fileName(), linkName + u'/');
+    trashedName = symlink.fileName();
+    QCOMPARE_NE(trashedName, linkName);
+    QCOMPARE_NE(trashedName, linkName + u'/');
 
     // confirm that the target is still a symlink
-    QFileInfo fi(symlink.fileName());
+    QFileInfo fi(trashedName);
     QVERIFY(fi.isSymLink());
     QVERIFY(fi.isDir());    // we used an absolute path, so it should not be broken!
-    symlink.remove();
 
     // confirm that the symlink disappeared but the original dir is still present
     QVERIFY(QFile::exists(temp.path()));
     QVERIFY(!QFile::exists(linkName));
-    cleanLink.dismiss();
 }
 
 void tst_QFile::moveToTrashXdgHomeTrashIsSymlink()
 {
     if (!QFile::supportsMoveToTrash())
         QSKIP("This platform doesn't implement a trash bin");
-
-#if defined(Q_OS_WIN) || defined(Q_OS_DARWIN) || defined(Q_OS_ANDROID) || defined(Q_OS_WEBOS) || defined(Q_OS_HARMONY)
-    QSKIP("This test is specific to XDG Unix systems");
-#else
+    if constexpr (!SystemUsesXdgTrashSpec)
+        QSKIP("This test is specific to XDG Unix systems");
     if (!QStandardPaths::isTestModeEnabled())
         QFAIL("Constructor should have enabled test mode");
 
@@ -4498,7 +4541,7 @@ void tst_QFile::moveToTrashXdgHomeTrashIsSymlink()
     QString xdgHomeTrash = xdgDataHome + "/Trash"_L1;
     QString tempPattern = xdgDataHome + "/tst_qfile_moveToTrashXdgHomeTrashIsSymlink.XXXXXX";
     auto removeTrashAsSymlink = [&xdgHomeTrash] {
-        QFile::remove(xdgHomeTrash);
+        removeTrashedFile(xdgHomeTrash);
     };
 
     // create a file for us to trash
@@ -4526,17 +4569,15 @@ void tst_QFile::moveToTrashXdgHomeTrashIsSymlink()
     QVERIFY(!QFileInfo(fileToTrash.fileName()).exists());
     QVERIFY(QFile(otherTrash.filePath("files")).exists());
     QVERIFY(QFile(otherTrash.filePath("info")).exists());
-#endif
 }
 
 void tst_QFile::moveToTrashXdgSafety()
 {
     if (!QFile::supportsMoveToTrash())
         QSKIP("This platform doesn't implement a trash bin");
+    if constexpr (!SystemUsesXdgTrashSpec)
+        QSKIP("This test is specific to XDG Unix systems");
 
-#if defined(Q_OS_WIN) || defined(Q_OS_DARWIN) || defined(Q_OS_ANDROID) || defined(Q_OS_WEBOS) || defined(Q_OS_HARMONY)
-    QSKIP("This test is specific to XDG Unix systems");
-#else
     QDir(m_temporaryDir.path()).mkdir("emptydir");
 
     // See if we can find a writable volume to conduct our tests on
@@ -4570,9 +4611,9 @@ void tst_QFile::moveToTrashXdgSafety()
     QDir genericTrashDir = volumeRoot + "/.Trash";
     auto cleanup = qScopeGuard([&] {
         if (QFileInfo(genericTrashDir.path()).isDir())
-            genericTrashDir.removeRecursively();
+            removeTrashedDir(genericTrashDir.path());
         else
-            QFile::remove(genericTrashDir.path());
+            removeTrashedFile(genericTrashDir.path());
     });
 
     QString testFileName = volumeRoot + "/tst_qfile.moveToTrashSafety." + QString::number(getpid());
@@ -4603,6 +4644,7 @@ void tst_QFile::moveToTrashXdgSafety()
     QVERIFY(tryTrashing());
     QVERIFY(genericTrashDir.entryList(QDir::NoDotAndDotDot).isEmpty());
 
+#ifdef Q_OS_UNIX
     if (geteuid() != 0) {
         // set the sticky bit, but make the dir unwritable; there'll be no
         // warning and we should just fall back to the next option
