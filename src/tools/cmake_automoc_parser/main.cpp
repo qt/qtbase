@@ -372,16 +372,15 @@ int main(int argc, char **argv)
     }
 
     // Algorithm description
-    // 1) For each source from the AutoGenSources list check if there is a parse
-    // cache entry.
-    // 1a) If an entry was wound there exists an moc_...cpp file somewhere.
-    // Remove the header file from the AutoGenHeader files
-    // 1b) For every matched source entry, check the moc includes as it is
-    // possible for a source file to include moc files from other headers.
-    // Remove the header from AutoGenHeaders
-    // 2) For every remaining header in AutoGenHeaders, check if there is an
-    // entry for it in the parse cache. Use the value for the location of the
-    // moc.json file
+    // 1) For each source from the AutoGenSources list that has a parse cache entry:
+    // - for each #include "<base>.moc" file in 'mocFiles' add the <base>.moc.json to the output
+    //   because this is the source moc file
+    // - for each #include "moc_<base>.cpp" file in 'mocIncludes', search for a header with the
+    //   same base name next to the source file or the moc include dirs.
+    //   If found, add moc_<base>.cpp.json to the output, and remove the <base>.h header from
+    //   AutoGenHeaders so it does not get a standalone moc_<base>.cpp.json entry in step 2.
+    // 2) For every header still left in AutoGenHeaders, add the .json file for its standalone moc
+    //   file, using the location recorded in AutogenInfo.json.
 
     QList<QString> jsonFileList;
     QDir dir(cmakeIncludeDir);
@@ -401,34 +400,10 @@ int main(int argc, char **argv)
         }
 
         const QFileInfo fileInfo(source);
-        const QString sourceBasePath = fileInfo.path() + u'/' + fileInfo.completeBaseName();
+        if (debug)
+            fprintf(stderr, "  source: %s\n", qUtf8Printable(source));
 
-        if (debug) {
-            fprintf(stderr, "  source: %s base path: %s\n", qUtf8Printable(source),
-                    qUtf8Printable(sourceBasePath));
-        }
-
-        // 1a) Remove header from processing if it matches the source file base path
-        bool headerErased = false;
-        for (const auto &headerExtension : headerExtList) {
-            const QString headerPath = sourceBasePath + u'.' + headerExtension;
-            auto it = autoGenHeaders.find(headerPath);
-            if (it != autoGenHeaders.end()) {
-                if (debug)
-                    fprintf(stderr,
-                            "    1a) removed header %s from processing (matched source base "
-                            "path)\n",
-                            qUtf8Printable(headerPath));
-                autoGenHeaders.erase(it);
-                headerErased = true;
-                break;
-            }
-        }
-        if (debug && !headerErased)
-                fprintf(stderr, "    1a) no header matched base path %s, continuing\n",
-                        qUtf8Printable(sourceBasePath));
-
-        // Add extra moc files
+        // Add source-file based <base>.moc files
         for (const auto &mocFile : it.value().mocFiles) {
             const QString jsonPath = dir.filePath(mocFile) + ".json"_L1;
             if (debug)
@@ -436,7 +411,7 @@ int main(int argc, char **argv)
                         qUtf8Printable(jsonPath));
             jsonFileList.push_back(jsonPath);
         }
-        // Add main moc files
+        // Add header-file based moc_<base>.cpp files
         for (const auto &mocFile : it.value().mocIncludes) {
             const QString jsonPath = dir.filePath(mocFile) + ".json"_L1;
             if (debug)
@@ -444,8 +419,8 @@ int main(int argc, char **argv)
                         qUtf8Printable(jsonPath));
             jsonFileList.push_back(jsonPath);
 
-            // 1b) Locate a header and remove it from processing similarly to 1a), but this time
-            // for each moc include statement.
+            // Locate the header this moc include was generated from and remove it from
+            // processing, so it does not also get a standalone moc entry in step 2.
             // This mirrors CMake AUTOMOC's cmQtAutoMocUicT::JobEvalCacheMocT::FindIncludedHeader.
             // Search the vicinity of the source first, then each moc include path in order.
             // Example:
@@ -502,14 +477,14 @@ int main(int argc, char **argv)
             if (matchedHeader != autoGenHeaders.end()) {
                 if (debug)
                     fprintf(stderr,
-                            "    1b) removed header %s from processing (matched moc include"
+                            "    removed header %s from processing (matched moc include"
                             " '%s' via %s %s)\n",
                             qUtf8Printable(matchedHeader.key()), qUtf8Printable(mocFile),
                             qUtf8Printable(matchedLabel), qUtf8Printable(matchedDir));
                 autoGenHeaders.erase(matchedHeader);
             } else if (debug) {
                 fprintf(stderr,
-                        "    1b) no header matched moc include '%s' (searched as %s.<ext>):\n",
+                        "    no header matched moc include '%s' (searched as %s.<ext>):\n",
                         qUtf8Printable(mocFile), qUtf8Printable(headerRelBase));
                 fprintf(stderr, "         vicinity dir: %s\n", qUtf8Printable(sourceFileDir));
                 if (!mocIncludePaths.isEmpty())

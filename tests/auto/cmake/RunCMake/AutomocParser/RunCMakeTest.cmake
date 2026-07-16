@@ -31,6 +31,9 @@ run_cmake_and_build(single_source)
 # Two same-named pairs in a parent and a child directory.
 run_cmake_and_build(same_name_parent_child)
 
+# Like same_name_parent_child, but each source also has a Q_OBJECT and #include's its own .moc.
+run_cmake_and_build(same_name_parent_child_dot_moc)
+
 # Two same-named pairs in sibling subdirectories.
 run_cmake_and_build(same_name_siblings)
 
@@ -57,6 +60,13 @@ run_cmake_and_build(dot_moc)
 
 # Two same-named source files each #include's its own .moc.
 run_cmake_and_build(dot_moc_same_name)
+
+# A source #include's its own <base>.moc next to a <base>.h header that is also moc'd, plus
+# variations.
+run_cmake_and_build(dot_moc_and_header)
+run_cmake_and_build(dot_moc_and_header_moc_included)
+run_cmake_and_build(dot_moc_empty_and_header)
+run_cmake_and_build(dot_moc_empty_and_header_moc_included)
 
 # A source file that omits its foo.moc include, AUTOMOC fails.
 run_cmake_and_build_expect_fail(dot_moc_missing)
