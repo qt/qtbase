@@ -6,6 +6,8 @@
 
 #include <qendian.h>
 
+#include <optional>
+
 #include <mach-o/loader.h>
 #include <mach-o/fat.h>
 
@@ -57,18 +59,42 @@ static QLibraryScanResult notfound(const QString &reason, QString *errorString)
     return {};
 }
 
-static bool isEncrypted(const my_mach_header *header)
+// Returns whether the binary is encrypted, or nullopt if the load-command table
+// is malformed or extends past the end of the (mmapped) file.
+static std::optional<bool> isEncrypted(const my_mach_header *header, ulong fdlen)
 {
     auto commandCursor = uintptr_t(header) + sizeof(my_mach_header);
+    // QMachOParser::parse() verifies that fdlen is large enough for at least
+    // my_mach_header + load_command.
+    ulong minsize = sizeof(my_mach_header);
+
     for (uint32_t i = 0; i < header->ncmds; ++i) {
+        // We must be able to read the load command header (cmd + cmdsize).
+        if (Q_UNLIKELY(fdlen - sizeof(load_command) < minsize))
+            return std::nullopt;
+
         load_command *loadCommand = reinterpret_cast<load_command *>(commandCursor);
+        const uint32_t cmdsize = loadCommand->cmdsize;
+
+        // A load command must at least contain its own header
+        if (Q_UNLIKELY(cmdsize < sizeof(load_command)))
+            return std::nullopt;
+
+        // cmdsize can't be trusted until validated against fdlen
+        if (qAddOverflow(minsize, ulong(cmdsize), &minsize) || Q_UNLIKELY(minsize > fdlen))
+            return std::nullopt;
+
         if (loadCommand->cmd == LC_ENCRYPTION_INFO || loadCommand->cmd == LC_ENCRYPTION_INFO_64) {
             // The layout of encryption_info_command and encryption_info_command_64 is the same
             // up until and including cryptid, so we can treat it as encryption_info_command.
+            // Make sure the command is big enough to hold the field we read.
+            if (Q_UNLIKELY(cmdsize < sizeof(encryption_info_command)))
+                return std::nullopt;
             auto encryptionInfoCommand = reinterpret_cast<encryption_info_command*>(loadCommand);
             return encryptionInfoCommand->cryptid != 0;
         }
-        commandCursor += loadCommand->cmdsize;
+
+        commandCursor += cmdsize;
     }
 
     return false;
@@ -184,12 +210,14 @@ QLibraryScanResult  QMachOParser::parse(const char *m_s, ulong fdlen, QString *e
                 if (sect[j].size < sizeof(QPluginMetaData::MagicHeader))
                     return notfound(QLibrary::tr(".qtmetadata section is too small"), errorString);
 
-                const bool binaryIsEncrypted = isEncrypted(header);
+                const std::optional<bool> binaryIsEncrypted = isEncrypted(header, fdlen);
+                if (Q_UNLIKELY(!binaryIsEncrypted))
+                    return notfound(QLibrary::tr("corrupted encryption_info section"), errorString);
                 qsizetype pos = reinterpret_cast<const char *>(header) - m_s + sect[j].offset;
 
                 // We can not read the section data of encrypted libraries until they
                 // have been dlopened(), so skip validity check if that's the case.
-                if (IncludeValidityChecks && !binaryIsEncrypted) {
+                if (IncludeValidityChecks && !*binaryIsEncrypted) {
                     QByteArrayView expectedMagic = QByteArrayView::fromArray(QPluginMetaData::MagicString);
                     QByteArrayView actualMagic = QByteArrayView(m_s + pos, expectedMagic.size());
                     if (expectedMagic != actualMagic)
@@ -197,7 +225,7 @@ QLibraryScanResult  QMachOParser::parse(const char *m_s, ulong fdlen, QString *e
                 }
 
                 pos += sizeof(QPluginMetaData::MagicString);
-                return { pos, qsizetype(sect[j].size - sizeof(QPluginMetaData::MagicString)), binaryIsEncrypted };
+                return { pos, qsizetype(sect[j].size - sizeof(QPluginMetaData::MagicString)), *binaryIsEncrypted };
             }
         }
 
