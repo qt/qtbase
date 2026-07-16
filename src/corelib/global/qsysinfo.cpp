@@ -796,7 +796,7 @@ QString QSysInfo::productType()
     return QStringLiteral("android");
 
 #elif defined(Q_OS_HARMONY)
-    return QStringLiteral("ohos");
+    return QStringLiteral("harmonyos");
 #elif defined(Q_OS_IOS)
     return QStringLiteral("ios");
 #elif defined(Q_OS_TVOS)
