@@ -4,6 +4,7 @@
 
 #include "qwasmtheme.h"
 #include "qwasmfiledialoghelper.h"
+#include "qwasmplatform.h"
 #include <QtCore/qvariant.h>
 #include <QFontDatabase>
 #include <QList>
@@ -136,6 +137,8 @@ QVariant QWasmTheme::themeHint(ThemeHint hint) const
         return QVariant(QStringList() << "Fusion"_L1);
     if (hint == QPlatformTheme::UiEffects)
         return QVariant(int(HoverEffect));
+    if (hint == QPlatformTheme::MnemonicsEnabled)
+        return platform() != Platform::MacOS;
     return QPlatformTheme::themeHint(hint);
 }
 

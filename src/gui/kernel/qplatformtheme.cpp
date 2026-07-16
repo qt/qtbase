@@ -163,6 +163,8 @@ QT_BEGIN_NAMESPACE
            controls should scroll in response to a single step (e.g. scroll-bar arrow click,
            mouse wheel line).
 
+    \value MnemonicsEnabled (bool) Whether \l {QShortcut#mnemonic}{mnemonics} are enabled.
+
     \sa themeHint(), QStyle::pixelMetric()
 */
 
@@ -722,6 +724,8 @@ QVariant QPlatformTheme::defaultThemeHint(ThemeHint hint)
         return true;
     case ScrollSingleStepDistance:
         return 20;
+    case MnemonicsEnabled:
+        return true;
     }
 
     return QVariant();

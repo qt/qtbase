@@ -469,6 +469,8 @@ QVariant QCocoaTheme::themeHint(ThemeHint hint) const
         return QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSTahoe;
     case QPlatformTheme::MenuSelectionWraps:
         return false;
+    case QPlatformTheme::MnemonicsEnabled:
+        return false;
     default:
         break;
     }

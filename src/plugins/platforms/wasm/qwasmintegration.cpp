@@ -40,8 +40,6 @@
 
 QT_BEGIN_NAMESPACE
 
-extern void qt_set_sequence_auto_mnemonic(bool);
-
 using namespace emscripten;
 
 using namespace Qt::StringLiterals;
@@ -106,9 +104,6 @@ QWasmIntegration::QWasmIntegration()
 #endif
 {
     s_instance = this;
-
-    if (platform() == Platform::MacOS)
-        qt_set_sequence_auto_mnemonic(false);
 
     touchPoints = emscripten::val::global("navigator")["maxTouchPoints"].as<int>();
     QWindowSystemInterfacePrivate::TabletEvent::setPlatformSynthesizesMouse(false);

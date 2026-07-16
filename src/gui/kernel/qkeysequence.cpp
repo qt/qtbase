@@ -19,6 +19,7 @@
 #endif
 
 #include <algorithm>
+#include <optional>
 #include <q20algorithm.h>
 
 QT_BEGIN_NAMESPACE
@@ -26,7 +27,6 @@ QT_BEGIN_NAMESPACE
 using namespace Qt::StringLiterals;
 
 #if defined(Q_OS_APPLE) || defined(Q_QDOC)
-Q_CONSTINIT static bool qt_sequence_no_mnemonics = true;
 struct AppleSpecialKey {
     int key;
     ushort appleSymbol;
@@ -117,9 +117,12 @@ static int qtkeyForAppleSymbol(const QChar ch)
     return -1;
 }
 
-#else
-Q_CONSTINIT static bool qt_sequence_no_mnemonics = false;
 #endif
+
+// Explicit override set via qt_set_sequence_auto_mnemonic(), taking precedence
+// over QPlatformTheme::MnemonicsEnabled when set.
+// ### Qt 7: remove in favor of theme hint.
+Q_CONSTINIT static std::optional<bool> qt_sequence_auto_mnemonic_override;
 
 /*!
     \fn void qt_set_sequence_auto_mnemonic(bool b)
@@ -137,7 +140,7 @@ Q_CONSTINIT static bool qt_sequence_no_mnemonics = false;
 
     \sa QShortcut
 */
-void Q_GUI_EXPORT qt_set_sequence_auto_mnemonic(bool b) { qt_sequence_no_mnemonics = !b; }
+void Q_GUI_EXPORT qt_set_sequence_auto_mnemonic(bool b) { qt_sequence_auto_mnemonic_override = b; }
 
 /*!
     \class QKeySequence
@@ -936,7 +939,9 @@ QKeySequence QKeySequence::mnemonic(const QString &text)
 {
     QKeySequence ret;
 
-    if (qt_sequence_no_mnemonics)
+    const bool mnemonicsEnabled = qt_sequence_auto_mnemonic_override.value_or(
+        QGuiApplicationPrivate::platformTheme()->themeHint(QPlatformTheme::MnemonicsEnabled).toBool());
+    if (!mnemonicsEnabled)
         return ret;
 
     bool found = false;
