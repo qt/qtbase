@@ -977,6 +977,7 @@ void QOhosView::showImmediate()
             m_nativeNode->fillToParent();
         }
 
+        m_viewType = currentViewTypeInfo.viewType;
         setOrResetWindowProxy(qOhosWindowProxy, currentViewTypeInfo.optLogicalParent);
     } else {
         syncWindowStateImmediate();
@@ -1149,19 +1150,7 @@ QMargins QOhosView::avoidAreaMargins(QOhosWindowProxy::AvoidAreaType type) const
 
 QOhosView::ViewType QOhosView::viewType() const
 {
-    if (!m_ohosWindowProxy)
-        return ViewType::EmbeddedWindow;
-
-    switch (m_ohosWindowProxy->windowProxyType()) {
-    case WindowProxyType::FloatWindow:
-        return ViewType::FloatWindow;
-    case WindowProxyType::MainWindow:
-        return ViewType::MainWindow;
-    case WindowProxyType::SubWindow:
-        return ViewType::SubWindow;
-    }
-
-    qOhosReportFatalErrorAndAbort("Unrecognized WindowProxyType: %d", static_cast<int>(m_ohosWindowProxy->windowProxyType()));
+    return m_viewType.value_or(ViewType::EmbeddedWindow);
 }
 
 void QOhosView::forceGeometryUpdate()
@@ -1223,6 +1212,7 @@ void QOhosView::setParentOrReparent(QOhosView &parentView)
 {
     qCDebug(QtForOhos) << "view:" << this << "setParentOrReparent parentView:" << &parentView;
     m_nativeNode->setParent(*parentView.m_nativeNode);
+    m_viewType.reset();
     setOrResetWindowProxy(nullptr, parentView.ownerWindow());
 }
 

@@ -286,6 +286,7 @@ private:
     bool m_requireHandheldDeviceSupport;
     QtOhos::InternalWindowId m_ownerWindowId;
     bool m_windowDestroyed = false;
+    std::optional<ViewType> m_viewType;
     QPointer<QWindow> m_optLogicalParent;
     std::optional<WindowHideMethod> m_lastMainWindowHideMethod;
     ViewGeometryPersistencePolicy m_geometryPersistencePolicy = ViewGeometryPersistencePolicy::Ignore;
