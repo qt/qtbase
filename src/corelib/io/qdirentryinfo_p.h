@@ -35,6 +35,7 @@ class QDirEntryInfo
     auto query(
             QueryNative &&queryNative, QueryFileInfo &&queryFileInfo, QueryIterator &&queryIterator)
     {
+        Q_ASSERT(!content.valueless_by_exception());
         return std::visit(QDirEntryInfoPrivate::overloaded {
             std::forward<QueryNative>(queryNative),
             std::forward<QueryFileInfo>(queryFileInfo),
@@ -45,6 +46,7 @@ class QDirEntryInfo
     template<typename QueryNative, typename QueryFileInfo>
     auto query(QueryNative &&queryNative, const QueryFileInfo &queryFileInfo)
     {
+        Q_ASSERT(!content.valueless_by_exception());
         return std::visit(QDirEntryInfoPrivate::overloaded {
             std::forward<QueryNative>(queryNative),
             [&](Iterator &iterator) { return queryFileInfo(iterator.ensureFileInfo()); },
@@ -72,6 +74,7 @@ public:
 
     const QFileInfo &fileInfo()
     {
+        Q_ASSERT(!content.valueless_by_exception());
         return std::visit(QDirEntryInfoPrivate::overloaded {
             [](Iterator &iterator) -> const QFileInfo & { return iterator.ensureFileInfo(); },
             [this](const Native &native) -> const QFileInfo & {
