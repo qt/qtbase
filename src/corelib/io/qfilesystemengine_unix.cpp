@@ -1401,7 +1401,7 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &, QFileSystemEnt
 // see qfilesystemengine_ohos.cpp
 #else
 /*
-    Implementing as per https://specifications.freedesktop.org/trash-spec/1.0/
+    Implementing as per https://specifications.freedesktop.org/trash/1.0/
 */
 //static
 bool QFileSystemEngine::supportsMoveFileToTrash()
@@ -1651,7 +1651,8 @@ struct FreeDesktopTrashOperation
             return error;
 
         // didn't work, try to find the trash outside the home filesystem
-        const QStorageInfo sourceStorage(source.filePath());
+        // (use source.path() in case the entry itself is a symlink to another fs)
+        const QStorageInfo sourceStorage(source.path());
         if (!sourceStorage.isValid())
             return QSystemError::stdError(ENODEV);
         return openMountPointTrashLocation(source, sourceStorage);

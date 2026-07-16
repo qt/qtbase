@@ -4521,7 +4521,6 @@ void tst_QFile::moveToTrashSymlinkToFile()
 
     // now trash it
     QFile symlink(linkName);
-    QEXPECT_FAIL("link-to-home", "We get the volume of the symlink target", Abort);
     QVERIFY(symlink.moveToTrash());
     trashedName = symlink.fileName();
     QCOMPARE_NE(trashedName, linkName);
@@ -4587,8 +4586,6 @@ void tst_QFile::moveToTrashSymlinkToDirectory()
 
     // now trash it
     QFile symlink(appendSlash ? linkName + u'/' : linkName);
-    QEXPECT_FAIL("without-slash+link-to-home", "We get the volume of the symlink target", Abort);
-    QEXPECT_FAIL("with-slash+link-to-home", "We get the volume of the symlink target", Abort);
     QVERIFY(symlink.moveToTrash());
     trashedName = symlink.fileName();
     QCOMPARE_NE(trashedName, linkName);
