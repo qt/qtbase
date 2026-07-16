@@ -301,6 +301,7 @@ private slots:
     void moveToTrashDuplicateName();
     void moveToTrashOpenFile_data();
     void moveToTrashOpenFile();
+    void moveToTrashSymlinkToFile_data();
     void moveToTrashSymlinkToFile();
     void moveToTrashSymlinkToDirectory_data();
     void moveToTrashSymlinkToDirectory();
@@ -4448,7 +4449,41 @@ void tst_QFile::moveToTrashOpenFile()
     }
 }
 
-void tst_QFile::moveToTrashSymlinkToFile()
+// Finds a writable volume other than the home/root one. Returns the mount
+// point, or a null string if none was found.
+template <typename Predicate>
+[[maybe_unused]] static QString findOtherWritableVolume(Predicate isVolumeSuitable)
+{
+    const QStorageInfo homeVolume(QDir::homePath());
+    for (const QStorageInfo &volume : QStorageInfo::mountedVolumes()) {
+        if (volume.isRoot())
+            continue;
+        if (volume == homeVolume)
+            continue;
+        if (QString path = volume.rootPath(); isVolumeSuitable(path))
+            return path;
+    }
+
+#ifdef Q_OS_LINUX
+    // fallback to /dev/shm, which is usually a tmpfs but is ignored by
+    // QStorageInfo as a virtual filesystem
+    if (isVolumeSuitable(u"/dev/shm"_s))
+        return u"/dev/shm"_s;
+#endif
+
+    return QString();
+}
+
+static QString otherWritableVolume()
+{
+    static QString otherVolume = findOtherWritableVolume([&](const QString &volumePath) {
+        QTemporaryFile temp(volumePath + "/checkWritable.XXXXX");
+        return temp.open();
+    });
+    return otherVolume;
+}
+
+void tst_QFile::moveToTrashSymlinkToFile_data()
 {
 #ifdef Q_OS_HARMONY
     QSKIP("OHOS does not support symlink creation");
@@ -4456,11 +4491,28 @@ void tst_QFile::moveToTrashSymlinkToFile()
     if (!QFile::supportsMoveToTrash())
         QSKIP("This platform doesn't implement a trash bin");
 
-    QTemporaryFile temp(QDir::homePath() + "/tst_qfile.moveToTrashSymlinkFile.XXXXXX");
+    QTest::addColumn<QString>("concreteVolume");
+    QTest::addColumn<QString>("linkVolume");
+    QTest::newRow("same-volume") << QDir::homePath() << QDir::homePath();
+
+    QString otherVolume = otherWritableVolume();
+    QTest::newRow("link-from-home") << otherVolume << QDir::homePath();
+    QTest::newRow("link-to-home") << QDir::homePath() << otherVolume;
+}
+
+void tst_QFile::moveToTrashSymlinkToFile()
+{
+    constexpr QLatin1StringView fileTemplate = "/tst_qfile.moveToTrashSymlinkFile.XXXXXX"_L1;
+    QFETCH(QString, concreteVolume);
+    QFETCH(QString, linkVolume);
+    if (concreteVolume.isEmpty() || linkVolume.isEmpty())
+        QSKIP("Could not find any suitable volume to run this test with");
+
+    QTemporaryFile temp(concreteVolume + fileTemplate);
     QVERIFY2(temp.open(), "Failed to create temporary file: " + temp.errorString().toLocal8Bit());
 
     // Create the symlink
-    const QString linkName = temp.fileName() + ".lnk";
+    QString linkName = linkVolume + u'/' + QFileInfo(temp.fileName()).fileName() + ".lnk"_L1;
     QString trashedName = linkName;
     QVERIFY2(temp.link(linkName), "Failed to create link: " + temp.errorString().toLocal8Bit());
     auto cleanLink = qScopeGuard([&]() {
@@ -4469,6 +4521,7 @@ void tst_QFile::moveToTrashSymlinkToFile()
 
     // now trash it
     QFile symlink(linkName);
+    QEXPECT_FAIL("link-to-home", "We get the volume of the symlink target", Abort);
     QVERIFY(symlink.moveToTrash());
     trashedName = symlink.fileName();
     QCOMPARE_NE(trashedName, linkName);
@@ -4477,6 +4530,14 @@ void tst_QFile::moveToTrashSymlinkToFile()
     QFileInfo fi(trashedName);
     QVERIFY(fi.isSymLink());
     QVERIFY(fi.isFile());   // we used an absolute path, so it should not be broken!
+    if constexpr (SystemUsesXdgTrashSpec) {
+        if (linkVolume == QDir::homePath()) {
+            QVERIFY2(trashedName.startsWith(QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation)),
+                     qPrintable(trashedName));
+        } else {
+            QVERIFY2(trashedName.startsWith(linkVolume + "/.Trash-"), qPrintable(trashedName));
+        }
+    }
 
     // confirm that the symlink disappeared but the original file is still present
     QVERIFY(QFile::exists(temp.fileName()));
@@ -4485,25 +4546,39 @@ void tst_QFile::moveToTrashSymlinkToFile()
 
 void tst_QFile::moveToTrashSymlinkToDirectory_data()
 {
-    QTest::addColumn<bool>("appendSlash");
-    QTest::newRow("without-slash") << false;
-    QTest::newRow("with-slash") << true;
-}
-
-void tst_QFile::moveToTrashSymlinkToDirectory()
-{
 #ifdef Q_OS_HARMONY
     QSKIP("OHOS does not support symlink creation");
 #endif
     if (!QFile::supportsMoveToTrash())
         QSKIP("This platform doesn't implement a trash bin");
 
+    QTest::addColumn<QString>("concreteVolume");
+    QTest::addColumn<QString>("linkVolume");
+    QTest::addColumn<bool>("appendSlash");
+
+    QString otherVolume = otherWritableVolume();
+    QTest::newRow("without-slash+same-volume")  << QDir::homePath() << QDir::homePath() << false;
+    QTest::newRow("with-slash+same-volume")     << QDir::homePath() << QDir::homePath() << true;
+    QTest::newRow("without-slash+link-from-home")<< otherVolume << QDir::homePath() << false;
+    QTest::newRow("with-slash+link-from-home")  << otherVolume << QDir::homePath() << true;
+    QTest::newRow("without-slash+link-to-home") << QDir::homePath() << otherVolume << false;
+    QTest::newRow("with-slash+link-to-home")    << QDir::homePath() << otherVolume << true;
+}
+
+void tst_QFile::moveToTrashSymlinkToDirectory()
+{
+    constexpr QLatin1StringView fileTemplate = "/tst_qfile.moveToTrashSymlinkDir.XXXXXX"_L1;
     QFETCH(bool, appendSlash);
-    QTemporaryDir temp(QDir::homePath() + "/tst_qfile.moveToTrashSymlinkDir.XXXXXX");
+    QFETCH(QString, concreteVolume);
+    QFETCH(QString, linkVolume);
+    if (concreteVolume.isEmpty() || linkVolume.isEmpty())
+        QSKIP("Could not find any suitable volume to run this test with");
+
+    QTemporaryDir temp(concreteVolume + fileTemplate);
     QVERIFY2(temp.isValid(), "Failed to create temporary dir: " + temp.errorString().toLocal8Bit());
 
     // Create the symlink
-    const QString linkName = temp.path() + ".lnk";
+    QString linkName = linkVolume + u'/' + QFileInfo(temp.path()).fileName() + ".lnk"_L1;
     QString trashedName = linkName;
     QVERIFY(QFile::link(temp.path(), linkName));
     auto cleanLink = qScopeGuard([&]() {
@@ -4512,6 +4587,8 @@ void tst_QFile::moveToTrashSymlinkToDirectory()
 
     // now trash it
     QFile symlink(appendSlash ? linkName + u'/' : linkName);
+    QEXPECT_FAIL("without-slash+link-to-home", "We get the volume of the symlink target", Abort);
+    QEXPECT_FAIL("with-slash+link-to-home", "We get the volume of the symlink target", Abort);
     QVERIFY(symlink.moveToTrash());
     trashedName = symlink.fileName();
     QCOMPARE_NE(trashedName, linkName);
@@ -4521,6 +4598,14 @@ void tst_QFile::moveToTrashSymlinkToDirectory()
     QFileInfo fi(trashedName);
     QVERIFY(fi.isSymLink());
     QVERIFY(fi.isDir());    // we used an absolute path, so it should not be broken!
+    if constexpr (SystemUsesXdgTrashSpec) {
+        if (linkVolume == QDir::homePath()) {
+            QVERIFY2(trashedName.startsWith(QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation)),
+                     qPrintable(trashedName));
+        } else {
+            QVERIFY2(trashedName.startsWith(linkVolume + "/.Trash-"), qPrintable(trashedName));
+        }
+    }
 
     // confirm that the symlink disappeared but the original dir is still present
     QVERIFY(QFile::exists(temp.path()));
@@ -4581,29 +4666,9 @@ void tst_QFile::moveToTrashXdgSafety()
     QDir(m_temporaryDir.path()).mkdir("emptydir");
 
     // See if we can find a writable volume to conduct our tests on
-    QString volumeRoot;
-    QStorageInfo homeVolume(QDir::homePath());
-    auto isVolumeSuitable = [this](const QString &rootPath) {
+    const QString volumeRoot = findOtherWritableVolume([this](const QString &rootPath) {
         return QFile::link(m_temporaryDir.path() + "/emptydir", rootPath + "/.Trash");
-    };
-    for (const QStorageInfo &volume : QStorageInfo::mountedVolumes()) {
-        if (volume.isRoot())
-            continue;
-        if (volume == homeVolume)
-            continue;
-
-        if (isVolumeSuitable(volume.rootPath())) {
-            volumeRoot = volume.rootPath();
-            break;
-        }
-    }
-
-#  ifdef Q_OS_LINUX
-    // fallback to /dev/shm, which is usually a tmpfs but is ignored by
-    // QStorageInfo as a virtual filesystem
-    if (volumeRoot.isEmpty() && isVolumeSuitable("/dev/shm"))
-        volumeRoot = "/dev/shm";
-#  endif
+    });
 
     if (volumeRoot.isEmpty())
         QSKIP("Could not find any suitable volume to run this test with");
