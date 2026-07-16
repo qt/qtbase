@@ -33,7 +33,7 @@ public:
         WatchOS,
         Android,
         VisionOS,
-        OHOS,
+        HarmonyOS,
     };
 
     constexpr QOperatingSystemVersionBase(OSType osType,
@@ -65,7 +65,7 @@ public:
 #elif defined(Q_OS_ANDROID)
         return Android;
 #elif defined(Q_OS_HARMONY)
-        return OHOS;
+        return HarmonyOS;
 #else
         return Unknown;
 #endif
@@ -173,7 +173,7 @@ public:
         WatchOS,
         Android,
         VisionOS,
-        OHOS,
+        HarmonyOS,
     };
 #endif
 
