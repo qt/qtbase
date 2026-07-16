@@ -594,7 +594,7 @@ QOhosView::QOhosView(QWindow *ownerWindow, QSharedPointer<QNativeNode> nativeNod
 
     m_nativeNode->setNodeVisibilityChangeHandler(
         [this](bool visible) {
-            if (viewType() == QOhosView::ViewType::EmbeddedWindow)
+            if (m_ohosWindowProxy == nullptr)
                 Q_EMIT windowVisibilityChange(visible);
         });
 
@@ -709,7 +709,7 @@ void QOhosView::setWindowKeepScreenOn(bool keepScreenOn)
 
 void QOhosView::setFixedSizeStateEnabled(bool enabled)
 {
-    if (viewType() != ViewType::MainWindow)
+    if (m_ohosWindowProxy == nullptr || viewType() != ViewType::MainWindow)
         return;
 
     if (queryQOhosRuntimeDeviceAndMode() == QOhosRuntimeDeviceTypeAndMode::HandheldDeviceFullScreen) {
@@ -768,6 +768,11 @@ void QOhosView::setTitle(const QString &title)
 
 void QOhosView::raise()
 {
+    if (m_ohosWindowProxy == nullptr) {
+        m_nativeNode->raise();
+        return;
+    }
+
     switch (viewType()) {
     case ViewType::MainWindow:
         showWindow();
@@ -776,9 +781,7 @@ void QOhosView::raise()
         m_ohosWindowProxy->raiseToAppTop();
         break;
     case ViewType::FloatWindow:
-        break;
     case ViewType::EmbeddedWindow:
-        m_nativeNode->raise();
         break;
     }
 }
@@ -943,9 +946,13 @@ void QOhosView::showImmediate()
     auto *platformWindow = QOhosPlatformWindow::fromQWindow(m_ownerWindow);
 
     auto currentViewTypeInfo = determineViewTypeAndLogicalParent(platformWindow);
-    bool viewTypeChanged = viewType() != currentViewTypeInfo.viewType;
+    const bool hadWindowProxy = m_ohosWindowProxy != nullptr;
+    const bool needsWindowProxy = !hadWindowProxy
+        && currentViewTypeInfo.viewType != ViewType::EmbeddedWindow;
+    const bool windowProxyRoleChanged = hadWindowProxy
+        && viewType() != currentViewTypeInfo.viewType;
 
-    if (viewTypeChanged) {
+    if (needsWindowProxy || windowProxyRoleChanged) {
         auto qOhosWindowProxy = tryCreateWindowProxyIfNeeded(currentViewTypeInfo.viewType, currentViewTypeInfo.optLogicalParent);
 
         if (qOhosWindowProxy != nullptr
@@ -981,7 +988,7 @@ void QOhosView::showImmediate()
             // A phone window created fullscreen still shows the system bars, so
             // hide them explicitly. On 2-in-1/tablet the window is already
             // immersive at creation; re-applying would only make it twitch.
-            if (!viewTypeChanged || QOhosDeviceInfo::isPhone())
+            if (hadWindowProxy || QOhosDeviceInfo::isPhone())
                 setFullScreen();
         } else if (windowStates.testFlag(Qt::WindowState::WindowMaximized)) {
             maximize();
@@ -1257,7 +1264,7 @@ void QOhosView::hideMainWindow()
 
 void QOhosView::syncWindowStateImmediate(WindowStateSyncReason reason)
 {
-    if (viewType() == ViewType::EmbeddedWindow && m_optLogicalParent == nullptr)
+    if (m_ohosWindowProxy == nullptr && m_optLogicalParent == nullptr)
         return;
 
     std::vector<std::function<void()>> postSurfaceDrawTasks;
