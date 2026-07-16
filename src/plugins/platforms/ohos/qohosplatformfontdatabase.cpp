@@ -34,9 +34,9 @@ QStringList getSystemFontPaths(QtOhos::JsState &jsState)
     auto fontModule = jsState.eval<QNapi::Object>("@ohos.font");
 
     auto systemFontPaths = QNapi::getArrayElements<QStringList, QNapi::String>(
-        fontModule.call<QNapi::Array>("getSystemFontList"),
+        fontModule.eval<QNapi::Array>("getSystemFontList()"),
         [&](QNapi::String fontName) {
-            auto fontInfo = fontModule.call("getFontByName", {fontName});
+            auto fontInfo = fontModule.eval("getFontByName(*)", {fontName});
             return fontInfo.IsObject()
                 ? QString::fromStdString(
                     QNapi::checkedCast<QNapi::Object>(fontInfo).get<QNapi::String>("path"))

@@ -224,7 +224,7 @@ std::optional<QList<detail::SharedRecord>> WantInfoImpl::tryGetSharedDataRecords
                     QNapi::Object sharedData = cbInfo.getFirstArg<QNapi::Object>(Q_FUNC_INFO);
 
                     auto optRecords = QNapi::getArrayElements<QList<std::optional<SharedRecord>>, QNapi::Object>(
-                        sharedData.call<QNapi::Array>("getRecords"), &tryConvertNapiObjectToSharedRecord);
+                        sharedData.eval<QNapi::Array>("getRecords()"), &tryConvertNapiObjectToSharedRecord);
 
                     QList<SharedRecord> records;
                     for (const auto &optRecord : optRecords) {

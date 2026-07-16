@@ -193,7 +193,7 @@ QNapi::Object makeLocalStorageForWindow(
             }
         });
 
-    localStorage.call("setOrCreate", {"createInfo", subWindowNativeNodeCreateInfo});
+    localStorage.eval("setOrCreate(*)", {"createInfo", subWindowNativeNodeCreateInfo});
     return localStorage;
 }
 
@@ -278,7 +278,7 @@ void makeWindowProxyDataForExistingMainWindowInJsThread(
     }
     optQUiAbilityPeer->setQWindow(jsState.env(), createInfo.qWindowRef);
 
-    auto window = optQUiAbilityPeer->windowStage().call<QNapi::Object>("getMainWindowSync");
+    auto window = optQUiAbilityPeer->windowStage().eval<QNapi::Object>("getMainWindowSync()");
     auto nativeNodeXComponentId = QXComponentId::createForNativeNodeMainWindow(optQUiAbilityPeer->instanceId());
     auto nodeXComponent = takeNodeXComponentFromRegistryOrFail(nativeNodeXComponentId);
 
