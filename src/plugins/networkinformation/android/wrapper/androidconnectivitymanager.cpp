@@ -21,31 +21,47 @@ Q_GLOBAL_STATIC(AndroidConnectivityManagerInstance, androidConnManagerInstance)
 static const char networkInformationClass[] =
         "org/qtproject/qt/android/networkinformation/QtAndroidNetworkInformation";
 
-static void networkConnectivityChanged(JNIEnv *env, jobject obj, jint enumValue)
+static AndroidConnectivityManager *liveConnManager()
 {
-    Q_UNUSED(env);
-    Q_UNUSED(obj);
+    if (!androidConnManagerInstance())
+        return nullptr;
+    return androidConnManagerInstance->connManager.get();
+}
+
+static void networkConnectivityChanged(JNIEnv *, jobject, jint enumValue)
+{
+    AndroidConnectivityManager *manager = liveConnManager();
+    if (!manager)
+        return;
     const auto connectivity =
             static_cast<AndroidConnectivityManager::AndroidConnectivity>(enumValue);
-    Q_EMIT androidConnManagerInstance->connManager->connectivityChanged(connectivity);
+    QMetaObject::invokeMethod(manager, [manager, connectivity] {
+        Q_EMIT manager->connectivityChanged(connectivity);
+    }, Qt::QueuedConnection);
 }
 Q_DECLARE_JNI_NATIVE_METHOD(networkConnectivityChanged)
 
-static void genericInfoChanged(JNIEnv *env, jobject obj, jboolean captivePortal, jboolean metered)
+static void genericInfoChanged(JNIEnv *, jobject, jboolean captivePortal, jboolean metered)
 {
-    Q_UNUSED(env);
-    Q_UNUSED(obj);
-    Q_EMIT androidConnManagerInstance->connManager->captivePortalChanged(captivePortal);
-    Q_EMIT androidConnManagerInstance->connManager->meteredChanged(metered);
+    AndroidConnectivityManager *manager = liveConnManager();
+    if (!manager)
+        return;
+    QMetaObject::invokeMethod(manager, [manager, captivePortal, metered] {
+        Q_EMIT manager->captivePortalChanged(captivePortal);
+        Q_EMIT manager->meteredChanged(metered);
+    }, Qt::QueuedConnection);
 }
 Q_DECLARE_JNI_NATIVE_METHOD(genericInfoChanged)
 
-static void transportMediumChanged(JNIEnv *env, jobject obj, jint enumValue)
+static void transportMediumChanged(JNIEnv *, jobject, jint enumValue)
 {
-    Q_UNUSED(env);
-    Q_UNUSED(obj);
+    AndroidConnectivityManager *manager = liveConnManager();
+    if (!manager)
+        return;
     const auto transport = static_cast<AndroidConnectivityManager::AndroidTransport>(enumValue);
-    emit androidConnManagerInstance->connManager->transportMediumChanged(transport);
+    QMetaObject::invokeMethod(manager, [manager, transport] {
+        Q_EMIT manager->transportMediumChanged(transport);
+    }, Qt::QueuedConnection);
 }
 Q_DECLARE_JNI_NATIVE_METHOD(transportMediumChanged)
 
