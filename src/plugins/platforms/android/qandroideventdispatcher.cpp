@@ -101,7 +101,9 @@ void QAndroidEventDispatcherStopper::addEventDispatcher(QAndroidEventDispatcher 
 void QAndroidEventDispatcherStopper::removeEventDispatcher(QAndroidEventDispatcher *dispatcher)
 {
     QMutexLocker lock(&m_mutex);
-    m_dispatchers.erase(std::find(m_dispatchers.begin(), m_dispatchers.end(), dispatcher));
+    const auto it = std::find(m_dispatchers.begin(), m_dispatchers.end(), dispatcher);
+    if (it != m_dispatchers.end())
+        m_dispatchers.erase(it);
 }
 
 void QAndroidEventDispatcherStopper::goingToStop(bool stop)
