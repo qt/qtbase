@@ -26,6 +26,24 @@ class QTestData;
 class Q_TESTLIB_EXPORT QTestResult
 {
 public:
+    // Locks the parts of the current test's identifier for reading, from any thread. The
+    // strings below are only valid while the locker lives, so keep the scope short. Never
+    // log while holding one: the loggers take this lock too.
+    class IdentifierLocker
+    {
+    public:
+        Q_NODISCARD_CTOR IdentifierLocker();
+        ~IdentifierLocker();
+
+        const char *objectName() const;
+        const char *testFunction() const;
+        const char *dataTag() const;
+        const char *globalDataTag() const;
+
+    private:
+        Q_DISABLE_COPY_MOVE(IdentifierLocker)
+    };
+
     static const char *currentTestObjectName();
     static bool currentTestFailed();
     static QTestData *currentTestData();

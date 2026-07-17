@@ -449,14 +449,20 @@ namespace QTestPrivate
 
 void generateTestIdentifier(QTestCharBuffer *identifier, int parts)
 {
-    const char *testObject = parts & TestObject ? QTestResult::currentTestObjectName() : "";
-    const char *testFunction = parts & TestFunction ? (QTestResult::currentTestFunction() ? QTestResult::currentTestFunction() : "UnknownTestFunc") : "";
+    // We may run on any thread, while the main thread moves on to the next data row or test
+    // function. Hold the lock until we're done copying the strings.
+    const QTestResult::IdentifierLocker locker;
+
+    const char *function = locker.testFunction() ? locker.testFunction() : "UnknownTestFunc";
+    const char *testObject = parts & TestObject ? locker.objectName() : "";
+    const char *testFunction = parts & TestFunction ? function : "";
     const char *objectFunctionFiller = parts & TestObject && parts & (TestFunction | TestDataTag) ? "::" : "";
     const char *testFuctionStart = parts & TestFunction ? "(" : "";
     const char *testFuctionEnd = parts & TestFunction ? ")" : "";
 
-    const char *dataTag = (parts & TestDataTag) && QTestResult::currentDataTag() ? QTestResult::currentDataTag() : "";
-    const char *globalDataTag = (parts & TestDataTag) && QTestResult::currentGlobalDataTag() ? QTestResult::currentGlobalDataTag() : "";
+    const char *dataTag = (parts & TestDataTag) && locker.dataTag() ? locker.dataTag() : "";
+    const char *globalDataTag =
+            (parts & TestDataTag) && locker.globalDataTag() ? locker.globalDataTag() : "";
     const char *tagFiller = (dataTag[0] && globalDataTag[0]) ? ":" : "";
 
     QTest::qt_asprintf(identifier, "%s%s%s%s%s%s%s%s",
