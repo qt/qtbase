@@ -17,6 +17,7 @@
 #include <functional>
 #include <memory>
 #include <native_window/external_window.h>
+#include <optional>
 #include <qarkui/input.h>
 #include <qarkui/qnativenodeapi.h>
 #include <qohosplugincore.h>
@@ -66,8 +67,8 @@ public:
 
     private:
         Type m_type;
-        QOhosOptional<std::weak_ptr<QEmbeddedWindowNode>> m_embeddedWindowNode;
-        QOhosOptional<std::weak_ptr<QXComponentNode>> m_xComponentNode;
+        std::optional<std::weak_ptr<QEmbeddedWindowNode>> m_embeddedWindowNode;
+        std::optional<std::weak_ptr<QXComponentNode>> m_xComponentNode;
     };
 
     static const std::int32_t minimumNodeZIndexValue;
@@ -136,7 +137,7 @@ private:
     std::unique_ptr<Node> m_stackNode;
     std::unique_ptr<Node> m_contentNode;
     std::shared_ptr<void> m_nodeEventDispatcherToken;
-    QOhosOptional<ParentDescriptor> m_parentDescriptor;
+    std::optional<ParentDescriptor> m_parentDescriptor;
     std::unique_ptr<QtOhos::WindowIdStruct> m_windowIdStruct;
     std::shared_ptr<void> m_nativeNodeDispatcherHandle;
     QOhosConsumer<const NativeGestureInfo &> m_gesturesHandler;

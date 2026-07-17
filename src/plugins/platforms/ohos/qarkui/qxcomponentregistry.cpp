@@ -10,10 +10,10 @@ QT_BEGIN_NAMESPACE
 
 namespace QArkUi {
 
-QOhosOptional<QXComponentNode>
+std::optional<QXComponentNode>
 QXComponentRegistry::tryTakeNodeByXComponentId(const QXComponentId &id)
 {
-    QOhosOptional<QXComponentNode> result;
+    std::optional<QXComponentNode> result;
     auto it = m_xComponents.find(id);
     if (it != m_xComponents.end()) {
         result = it->second;

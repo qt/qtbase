@@ -329,16 +329,16 @@ void Node::moveTo(std::uint32_t index)
         handle(), nativeNodeApi().getParent(handle()), index);
 }
 
-QOhosOptional<::ArkUI_NodeHandle> Node::tryfindChild(
+std::optional<::ArkUI_NodeHandle> Node::tryfindChild(
     ::ArkUI_NodeHandle nodeHandle, const std::function<bool(::ArkUI_NodeHandle)> predicate)
 {
     const auto childCount = nativeNodeApi().getTotalChildCount(nodeHandle);
     for (std::uint32_t i = 0; i < childCount; ++i) {
         auto *childNodeHandle = nativeNodeApi().getChildAt(nodeHandle, i);
         if (predicate(childNodeHandle))
-            return makeQOhosOptional(childNodeHandle);
+            return childNodeHandle;
     }
-    return makeEmptyQOhosOptional();
+    return {};
 }
 
 QPoint Node::nodeGlobalPosition(::ArkUI_NodeHandle nodeHandle)

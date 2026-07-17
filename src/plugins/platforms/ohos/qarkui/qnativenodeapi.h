@@ -13,6 +13,7 @@
 #include <cstdint>
 #include <functional>
 #include <memory>
+#include <optional>
 #include <qohosplugincore.h>
 #include <qohosutils.h>
 #include <set>
@@ -30,7 +31,7 @@ public:
     static std::unique_ptr<Node> createOrFail(::ArkUI_NodeType type);
     static std::unique_ptr<Node> takeOwnershipOfExternalNode(::ArkUI_NodeHandle nodeHandle);
     static bool isQtManagedNode(::ArkUI_NodeHandle nodeHandle);
-    static QOhosOptional<::ArkUI_NodeHandle> tryfindChild(
+    static std::optional<::ArkUI_NodeHandle> tryfindChild(
         ::ArkUI_NodeHandle nodeHandle, const std::function<bool(::ArkUI_NodeHandle)> predicate);
 
     static QPoint nodeGlobalPosition(::ArkUI_NodeHandle nodeHandle);
