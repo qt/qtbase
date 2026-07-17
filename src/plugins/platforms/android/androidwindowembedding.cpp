@@ -22,6 +22,8 @@ namespace QtAndroidWindowEmbedding {
         // To avoid hitting checkReceiverThread assert in QCoreApplication::doNotify
         QMetaObject::invokeMethod(qApp, [rootView, x, y, width, height] {
             QWindow *parentWindow = QWindow::fromWinId(reinterpret_cast<WId>(rootView.object()));
+            if (!parentWindow)
+                return;
             parentWindow->setGeometry(x, y, width, height);
             rootView.callMethod<void>("createWindow", reinterpret_cast<jlong>(parentWindow));
         });
@@ -30,17 +32,21 @@ namespace QtAndroidWindowEmbedding {
     void deleteWindow(JNIEnv *, jclass, jlong windowRef)
     {
         QWindow *window = reinterpret_cast<QWindow*>(windowRef);
-        window->deleteLater();
+        if (window)
+            window->deleteLater();
     }
 
     void setWindowVisible(JNIEnv *, jclass, jlong windowRef, jboolean visible)
     {
         QMetaObject::invokeMethod(qApp, [windowRef, visible] {
             QWindow *window = reinterpret_cast<QWindow*>(windowRef);
+            if (!window)
+                return;
             if (visible) {
                 window->showNormal();
-                if (!window->parent()->isVisible())
-                    window->parent()->showNormal();
+                QWindow *parent = window->parent();
+                if (parent && !parent->isVisible())
+                    parent->showNormal();
             } else {
                 window->hide();
             }
@@ -51,6 +57,8 @@ namespace QtAndroidWindowEmbedding {
     {
         QMetaObject::invokeMethod(qApp, [windowRef, x, y, width, height] {
             QWindow *window = reinterpret_cast<QWindow*>(windowRef);
+            if (!window)
+                return;
             QWindow *parent = window->parent();
             if (parent)
                 parent->setGeometry(x, y, width, height);
