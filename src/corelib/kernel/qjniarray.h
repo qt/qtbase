@@ -741,6 +741,7 @@ public:
         JNIEnv *env = jniEnv();
         if constexpr (QtJniTypes::isObjectType<T>()) {
             jobject element = env->GetObjectArrayElement(object<jobjectArray>(), i);
+            QJniEnvironment::checkAndClearExceptions(env);
             if constexpr (std::is_base_of_v<std::remove_pointer_t<jobject>, std::remove_pointer_t<T>>)
                 return static_cast<T>(element);
             else
@@ -763,6 +764,7 @@ public:
                 env->GetFloatArrayRegion(object<jfloatArray>(), i, 1, &res);
             else if constexpr (QtJniTypes::sameTypeForJni<T, jdouble>)
                 env->GetDoubleArrayRegion(object<jdoubleArray>(), i, 1, &res);
+            QJniEnvironment::checkAndClearExceptions(env);
             return res;
         }
     }
@@ -793,6 +795,7 @@ public:
             else if constexpr (QtJniTypes::sameTypeForJni<T, jdouble>)
                 env->SetDoubleArrayRegion(object<jdoubleArray>(), i, 1, &val);
         }
+        QJniEnvironment::checkAndClearExceptions(env);
     }
 
     template <typename Container = ToContainerType<T>, if_compatible_target_container<T, Container> = true>
