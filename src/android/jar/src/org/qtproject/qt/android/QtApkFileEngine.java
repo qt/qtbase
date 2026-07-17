@@ -112,11 +112,10 @@ class QtApkFileEngine {
         if (m_assetInputStream == null)
             return null;
 
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         int bytesRead;
         int totalBytesRead = 0;
         byte[] buffer = new byte[1024];
-        try {
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             while (totalBytesRead < maxlen) {
                 int remainingBytes = (int) maxlen - totalBytesRead;
                 int bytesToRead = Math.min(buffer.length, remainingBytes);
@@ -125,13 +124,12 @@ class QtApkFileEngine {
                 outputStream.write(buffer, 0, bytesRead);
                 totalBytesRead += bytesRead;
             }
-
-            outputStream.close();
+            return outputStream.toByteArray();
         } catch (IOException e) {
             Log.e(QtTAG, "Failed to read content with " + e);
         }
 
-        return outputStream.toByteArray();
+        return null;
     }
 
     static String getAppApkFilePath()
