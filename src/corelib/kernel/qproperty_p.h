@@ -330,6 +330,7 @@ public:
         return sizeEnsuringAlignment;
     }
 
+    const QtPrivate::BindingFunctionVTable *bindingFunctionVTable() const { return vtable; }
 
     // public because the auto-tests access it, too.
     size_t dependencyObserverCount = 0;
