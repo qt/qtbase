@@ -819,6 +819,8 @@ int QAndroidStyle::Android9PatchDrawable::calculateStretch(int boundsLimit,
 {
     int spaceRemaining = boundsLimit - startingPoint;
     int stretchySpaceRemaining = spaceRemaining - numFixedPixelsRemaining;
+    if (numStrechyPixelsRemaining == 0)
+        return 0;
     return (float(srcSpace) * stretchySpaceRemaining / numStrechyPixelsRemaining + .5);
 }
 
@@ -858,6 +860,14 @@ void QAndroidStyle::Android9PatchDrawable::draw(QPainter *painter, const QStyleO
     QRectF dst;
     QRectF src;
 
+    // Malformed chunk data (empty division arrays) would read out of bounds
+    // below, so fall back to drawing the pixmap stretched into the bounds.
+    if (m_chunkData.xDivs.isEmpty() || m_chunkData.yDivs.isEmpty()) {
+        painter->drawPixmap(bounds, pixmap);
+        painter->setRenderHints(savedHints);
+        return;
+    }
+
     const qint32 x0 = m_chunkData.xDivs[0];
     const qint32 y0 = m_chunkData.yDivs[0];
     const quint8 numXDivs = m_chunkData.xDivs.size();
@@ -876,12 +886,12 @@ void QAndroidStyle::Android9PatchDrawable::draw(QPainter *painter, const QStyleO
     bool dstRightsHaveBeenCached = false;
 
     int numStretchyXPixelsRemaining = 0;
-    for (i = 0; i < numXDivs; i += 2)
+    for (i = 0; i + 1 < numXDivs; i += 2)
         numStretchyXPixelsRemaining += m_chunkData.xDivs[i + 1] - m_chunkData.xDivs[i];
 
     int numFixedXPixelsRemaining = bitmapWidth - numStretchyXPixelsRemaining;
     int numStretchyYPixelsRemaining = 0;
-    for (i = 0; i < numYDivs; i += 2)
+    for (i = 0; i + 1 < numYDivs; i += 2)
         numStretchyYPixelsRemaining += m_chunkData.yDivs[i + 1] - m_chunkData.yDivs[i];
 
     int numFixedYPixelsRemaining = bitmapHeight - numStretchyYPixelsRemaining;
@@ -932,7 +942,9 @@ void QAndroidStyle::Android9PatchDrawable::draw(QPainter *painter, const QStyleO
         for (i = xIsStretchable ? 1 : 0;
               i <= numXDivs && src.left() < bitmapWidth;
               i++, xIsStretchable = !xIsStretchable) {
-            color = m_chunkData.colors[colorIndex++];
+            color = colorIndex < m_chunkData.colors.size() ? m_chunkData.colors[colorIndex]
+                                                           : NO_COLOR;
+            ++colorIndex;
             if (color != TRANSPARENT_COLOR)
                 color = NO_COLOR;
             if (i == numXDivs) {
