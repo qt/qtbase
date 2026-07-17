@@ -38,6 +38,7 @@ class tst_QReadWriteLock : public QObject
 private slots:
     void constructDestruct();
     void readLockUnlock();
+    void waitConditionMultipleReaders();
     void writeLockUnlock();
     void readLockUnlockLoop();
     void writeLockUnlockLoop();
@@ -85,6 +86,19 @@ void tst_QReadWriteLock::readLockUnlock()
      QReadWriteLock rwlock;
      rwlock.lockForRead();
      rwlock.unlock();
+}
+
+void tst_QReadWriteLock::waitConditionMultipleReaders()
+{
+    // With more than one reader, the d_ptr encodes the reader count in the
+    // upper bits; it must not be mistaken for a QReadWriteLockPrivate pointer.
+    QReadWriteLock rwlock;
+    QWaitCondition cond;
+    rwlock.lockForRead();
+    rwlock.lockForRead();
+    QVERIFY(!cond.wait(&rwlock, QDeadlineTimer(1)));
+    rwlock.unlock();
+    rwlock.unlock();
 }
 
 void tst_QReadWriteLock::writeLockUnlock()
