@@ -19,7 +19,13 @@ QModelIndex QAndroidModelIndexProxy::qInstance(JQtModelIndex jModelIndex)
 
     const QJniArray<jlong> jPrivateArray = jModelIndex.getField<jlong[]>("m_privateData");
     const auto privateData = jPrivateArray.toContainer();
+    // The private data must hold row, column, internalId, and model reference.
     Q_ASSERT(privateData.size() == 4);
+    if (privateData.size() != 4) {
+        qCritical("QtModelIndex has %lld private data entries, expected 4",
+                  qlonglong(privateData.size()));
+        return QModelIndex();
+    }
 
     const jlong modelReference = privateData[3];
     if (!modelReference)
