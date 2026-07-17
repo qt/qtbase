@@ -118,8 +118,10 @@ abstract class QtLoader {
         appendApplicationParameters(getMetaData("android.app.arguments"));
 
         if (context instanceof Activity) {
+            final int flags = context.getApplicationInfo().flags;
+            final boolean isDebuggable = (flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
             Intent intent = ((Activity) context).getIntent();
-            if (intent != null)
+            if (isDebuggable && intent != null && intent.hasExtra("applicationArguments"))
                 appendApplicationParameters(intent.getStringExtra("applicationArguments"));
         }
     }
