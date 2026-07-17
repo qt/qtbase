@@ -94,10 +94,13 @@ public:
     static quintptr describeState(void *dd) noexcept
     {
         quintptr u = quintptr(dd);
-        if (u < StateMask) {
-            // non-recursive; unlocked or uncontended
-            return u;
+        if (quintptr state = u & StateMask) {
+            // Not a pointer: a non-recursive, uncontended lock. The upper bits
+            // may hold a reader count, which we don't report.
+            return state;
         }
+        if (!u)
+            return 0; // unlocked
 
         auto d = static_cast<QReadWriteLockPrivate *>(dd);
         const auto lock = qt_scoped_lock(d->mutex);
