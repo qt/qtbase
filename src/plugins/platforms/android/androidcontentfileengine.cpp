@@ -311,14 +311,14 @@ bool AndroidContentFileEngineIterator::advance()
 
 QString AndroidContentFileEngineIterator::currentFileName() const
 {
-    if (m_index < 0 || m_index > m_files.size())
+    if (m_index < 0 || m_index >= m_files.size())
         return QString();
     return m_files.at(m_index)->name();
 }
 
 QString AndroidContentFileEngineIterator::currentFilePath() const
 {
-    if (m_index < 0 || m_index > m_files.size())
+    if (m_index < 0 || m_index >= m_files.size())
         return QString();
     return m_files.at(m_index)->uri().toString();
 }
