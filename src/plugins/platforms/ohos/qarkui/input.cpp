@@ -15,7 +15,7 @@ namespace QArkUi {
 
 using JsDisplayId = QOhosDisplayInfo::JsDisplayId;
 
-QOhosOptional<::Input_MouseEventAction> tryMapMouseEventAction(std::int32_t actionValue)
+std::optional<::Input_MouseEventAction> tryMapMouseEventAction(std::int32_t actionValue)
 {
     switch (actionValue) {
     case ::MOUSE_ACTION_CANCEL:
@@ -25,12 +25,12 @@ QOhosOptional<::Input_MouseEventAction> tryMapMouseEventAction(std::int32_t acti
     case ::MOUSE_ACTION_AXIS_BEGIN:
     case ::MOUSE_ACTION_AXIS_UPDATE:
     case ::MOUSE_ACTION_AXIS_END:
-        return makeQOhosOptional(static_cast<::Input_MouseEventAction>(actionValue));
+        return static_cast<::Input_MouseEventAction>(actionValue);
     }
-    return makeEmptyQOhosOptional();
+    return {};
 }
 
-QOhosOptional<::Input_MouseEventButton> tryMapMouseEventButton(std::int32_t buttonValue)
+std::optional<::Input_MouseEventButton> tryMapMouseEventButton(std::int32_t buttonValue)
 {
     switch (buttonValue) {
     case ::MOUSE_BUTTON_NONE:
@@ -39,35 +39,35 @@ QOhosOptional<::Input_MouseEventButton> tryMapMouseEventButton(std::int32_t butt
     case ::MOUSE_BUTTON_RIGHT:
     case ::MOUSE_BUTTON_FORWARD:
     case ::MOUSE_BUTTON_BACK:
-        return makeQOhosOptional(static_cast<::Input_MouseEventButton>(buttonValue));
+        return static_cast<::Input_MouseEventButton>(buttonValue);
     }
-    return makeEmptyQOhosOptional();
+    return {};
 }
 
-QOhosOptional<::Input_TouchEventAction> tryMapTouchEventAction(std::int32_t actionValue)
+std::optional<::Input_TouchEventAction> tryMapTouchEventAction(std::int32_t actionValue)
 {
     switch (actionValue) {
     case ::TOUCH_ACTION_CANCEL:
     case ::TOUCH_ACTION_DOWN:
     case ::TOUCH_ACTION_MOVE:
     case ::TOUCH_ACTION_UP:
-        return makeQOhosOptional(static_cast<::Input_TouchEventAction>(actionValue));
+        return static_cast<::Input_TouchEventAction>(actionValue);
     }
-    return makeEmptyQOhosOptional();
+    return {};
 }
 
-QOhosOptional<::Input_KeyEventAction> tryMapKeyEventAction(std::int32_t actionValue)
+std::optional<::Input_KeyEventAction> tryMapKeyEventAction(std::int32_t actionValue)
 {
     switch (actionValue) {
     case ::KEY_ACTION_CANCEL:
     case ::KEY_ACTION_DOWN:
     case ::KEY_ACTION_UP:
-        return makeQOhosOptional(static_cast<::Input_KeyEventAction>(actionValue));
+        return static_cast<::Input_KeyEventAction>(actionValue);
     }
-    return makeEmptyQOhosOptional();
+    return {};
 }
 
-QOhosOptional<MouseEvent> MouseEvent::createFromNativeEvent(const ::Input_MouseEvent *event)
+std::optional<MouseEvent> MouseEvent::createFromNativeEvent(const ::Input_MouseEvent *event)
 {
     auto jsWindowId = JsWindowId(::OH_Input_GetMouseEventWindowId(event));
 
@@ -77,7 +77,7 @@ QOhosOptional<MouseEvent> MouseEvent::createFromNativeEvent(const ::Input_MouseE
         qOhosPrintfError(
             "%s: Filter for jsWindowId: %f, received unrecognized mouse event action: %d, event will be ignored",
             Q_FUNC_INFO, jsWindowId.value(), actionValue);
-        return makeEmptyQOhosOptional();
+        return {};
     }
 
     auto buttonValue = ::OH_Input_GetMouseEventButton(event);
@@ -86,7 +86,7 @@ QOhosOptional<MouseEvent> MouseEvent::createFromNativeEvent(const ::Input_MouseE
         qOhosPrintfError(
             "%s: Filter for jsWindowId: %f, received unrecognized mouse event action: %d, event will be ignored",
             Q_FUNC_INFO, jsWindowId.value(), actionValue);
-        return makeEmptyQOhosOptional();
+        return {};
     }
 
     auto displayId = QOhosDisplayInfo::JsDisplayId(::OH_Input_GetMouseEventDisplayId(event));
@@ -105,10 +105,10 @@ QOhosOptional<MouseEvent> MouseEvent::createFromNativeEvent(const ::Input_MouseE
         .actionTime = std::chrono::microseconds(::OH_Input_GetMouseEventActionTime(event)),
     };
 
-    return makeQOhosOptional(mouseEvent);
+    return mouseEvent;
 }
 
-QOhosOptional<TouchEvent> TouchEvent::createFromNativeEvent(const ::Input_TouchEvent *event)
+std::optional<TouchEvent> TouchEvent::createFromNativeEvent(const ::Input_TouchEvent *event)
 {
     auto jsWindowId = JsWindowId(::OH_Input_GetTouchEventWindowId(event));
 
@@ -118,7 +118,7 @@ QOhosOptional<TouchEvent> TouchEvent::createFromNativeEvent(const ::Input_TouchE
         qOhosPrintfError(
             "%s: Filter for jsWindowId: %f, received unrecognized touch event action: %d, event will be ignored",
             Q_FUNC_INFO, jsWindowId.value(), actionValue);
-        return makeEmptyQOhosOptional();
+        return {};
     }
 
     auto displayId = JsDisplayId(::OH_Input_GetTouchEventDisplayId(event));
@@ -136,10 +136,10 @@ QOhosOptional<TouchEvent> TouchEvent::createFromNativeEvent(const ::Input_TouchE
         .actionTime = std::chrono::microseconds(::OH_Input_GetTouchEventActionTime(event)),
     };
 
-    return makeQOhosOptional(keyEvent);
+    return keyEvent;
 }
 
-QOhosOptional<KeyEvent> KeyEvent::createFromNativeEvent(const ::Input_KeyEvent *event)
+std::optional<KeyEvent> KeyEvent::createFromNativeEvent(const ::Input_KeyEvent *event)
 {
     auto jsWindowId = JsWindowId(::OH_Input_GetKeyEventWindowId(event));
 
@@ -149,7 +149,7 @@ QOhosOptional<KeyEvent> KeyEvent::createFromNativeEvent(const ::Input_KeyEvent *
         qOhosPrintfError(
             "%s: Filter for jsWindowId: %f, received unrecognized key event action: %d, event will be ignored",
             Q_FUNC_INFO, jsWindowId.value(), actionValue);
-        return makeEmptyQOhosOptional();
+        return {};
     }
 
     KeyEvent keyEvent = {
@@ -159,7 +159,7 @@ QOhosOptional<KeyEvent> KeyEvent::createFromNativeEvent(const ::Input_KeyEvent *
         .keyCode = ::OH_Input_GetKeyEventKeyCode(event),
     };
 
-    return makeQOhosOptional(keyEvent);
+    return keyEvent;
 }
 
 QInputDevice::DeviceType getPointingDeviceType(const ::ArkUI_UIInputEvent *inputEvent)

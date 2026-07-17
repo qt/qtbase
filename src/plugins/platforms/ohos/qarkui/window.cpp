@@ -24,7 +24,7 @@ QRect makeQRectFromWindowManagerRect(const ::WindowManager_Rect &wmRect)
 
 }
 
-QOhosOptional<WindowProperties> tryGetWindowProperties(JsWindowId jsWindowId)
+std::optional<WindowProperties> tryGetWindowProperties(JsWindowId jsWindowId)
 {
     ::WindowManager_WindowProperties windowProperties;
     auto errorCode = ::OH_WindowManager_GetWindowProperties(
@@ -32,15 +32,14 @@ QOhosOptional<WindowProperties> tryGetWindowProperties(JsWindowId jsWindowId)
         &windowProperties);
 
     if (errorCode != ::OK)
-        return makeEmptyQOhosOptional();
+        return {};
 
-    return makeQOhosOptional(
-        WindowProperties {
-            .windowRect = makeQRectFromWindowManagerRect(windowProperties.windowRect),
-            .drawableRect = makeQRectFromWindowManagerRect(windowProperties.drawableRect),
-            .id = JsWindowId(windowProperties.id),
-            .displayId = makeQOhosOptional(QOhosDisplayInfo::JsDisplayId(windowProperties.displayId)),
-        });
+    return WindowProperties {
+        .windowRect = makeQRectFromWindowManagerRect(windowProperties.windowRect),
+        .drawableRect = makeQRectFromWindowManagerRect(windowProperties.drawableRect),
+        .id = JsWindowId(windowProperties.id),
+        .displayId = QOhosDisplayInfo::JsDisplayId(windowProperties.displayId),
+    };
 }
 
 JsWindowRef::JsWindowRef(

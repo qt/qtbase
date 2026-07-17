@@ -5,6 +5,7 @@
 #define QQTEMBEDDEDWINDOWNODE_H
 
 #include <QtCore/qglobal.h>
+#include <optional>
 #include <qarkui/qembeddedwindownode.h>
 #include <qohosplugincore.h>
 #include <QtCore/qpoint.h>
@@ -50,10 +51,10 @@ public:
         ::ArkUI_XComponentType xComponentType = ::ArkUI_XComponentType::ARKUI_XCOMPONENT_TYPE_SURFACE;
         bool focusOnTouch = false;
         bool focusable = false;
-        QOhosOptional<ParentDescriptor> optParent;
+        std::optional<ParentDescriptor> optParent;
         SizePolicy sizePolicy = SizePolicy::Points;
         ::ArkUI_RenderFit renderFit = ::ARKUI_RENDER_FIT_TOP_LEFT;
-        QOhosOptional<QColor> backgroundColor;
+        std::optional<QColor> backgroundColor;
     };
 
     struct NodeAreaInfo

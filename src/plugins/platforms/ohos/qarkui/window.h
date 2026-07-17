@@ -8,6 +8,7 @@
 #include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/qglobal.h>
 #include <QtCore/qrect.h>
+#include <optional>
 #include <qohosdisplayinfo.h>
 #include <qohosplugincore.h>
 #include <qohosutils.h>
@@ -25,10 +26,10 @@ struct WindowProperties
     QRect windowRect;
     QRect drawableRect;
     JsWindowId id;
-    QOhosOptional<QOhosDisplayInfo::JsDisplayId> displayId;
+    std::optional<QOhosDisplayInfo::JsDisplayId> displayId;
 };
 
-QOhosOptional<WindowProperties> tryGetWindowProperties(JsWindowId jsWindowId);
+std::optional<WindowProperties> tryGetWindowProperties(JsWindowId jsWindowId);
 
 class JsWindowRef
 {

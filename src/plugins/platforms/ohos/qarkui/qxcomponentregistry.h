@@ -8,7 +8,7 @@
 #include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/qglobal.h>
 #include <map>
-#include <qohosplugincore.h>
+#include <optional>
 #include <render/qxcomponent.h>
 
 QT_BEGIN_NAMESPACE
@@ -20,7 +20,7 @@ class QXComponentRegistry
 public:
     static QXComponentRegistry &instance();
 
-    QOhosOptional<QXComponentNode> tryTakeNodeByXComponentId(const QXComponentId &id);
+    std::optional<QXComponentNode> tryTakeNodeByXComponentId(const QXComponentId &id);
 
     QXComponentRegistry(const QXComponentRegistry &) = delete;
     QXComponentRegistry(QXComponentRegistry &&) = delete;

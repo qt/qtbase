@@ -11,10 +11,10 @@
 #include <arkui/ui_input_event.h>
 #include <chrono>
 #include <multimodalinput/oh_input_manager.h>
+#include <optional>
 #include <qarkui/window.h>
 #include <qohosdisplayinfo.h>
 #include <qohoskeymodifiers.h>
-#include <qohosplugincore.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -30,7 +30,7 @@ struct MouseEvent
     QPoint globalPosition;
     std::chrono::microseconds actionTime;
 
-    static QOhosOptional<MouseEvent> createFromNativeEvent(const ::Input_MouseEvent *event);
+    static std::optional<MouseEvent> createFromNativeEvent(const ::Input_MouseEvent *event);
 };
 
 struct KeyEvent
@@ -41,7 +41,7 @@ struct KeyEvent
     ::Input_KeyEventAction action;
     std::int32_t keyCode;
 
-    static QOhosOptional<KeyEvent> createFromNativeEvent(const ::Input_KeyEvent *event);
+    static std::optional<KeyEvent> createFromNativeEvent(const ::Input_KeyEvent *event);
 };
 
 struct TouchEvent
@@ -54,7 +54,7 @@ struct TouchEvent
     std::int32_t fingerId;
     std::chrono::microseconds actionTime;
 
-    static QOhosOptional<TouchEvent> createFromNativeEvent(const ::Input_TouchEvent *event);
+    static std::optional<TouchEvent> createFromNativeEvent(const ::Input_TouchEvent *event);
 };
 
 QInputDevice::DeviceType getPointingDeviceType(const ::ArkUI_UIInputEvent *inputEvent);
