@@ -358,16 +358,8 @@ public:
         case FIELD_TYPE_STRING:
             return QVariant::fromValue(m_object.callMethod<jstring>("getString",
                                                                     columnIndex).toString());
-        case FIELD_TYPE_BLOB: {
-            auto blob = m_object.callMethod<jbyteArray>("getBlob", columnIndex);
-            QJniEnvironment env;
-            const auto blobArray = blob.object<jbyteArray>();
-            const int size = env->GetArrayLength(blobArray);
-            const auto byteArray = env->GetByteArrayElements(blobArray, nullptr);
-            QByteArray data{reinterpret_cast<const char *>(byteArray), size};
-            env->ReleaseByteArrayElements(blobArray, byteArray, 0);
-            return QVariant::fromValue(data);
-        }
+        case FIELD_TYPE_BLOB:
+            return QVariant::fromValue(m_object.callMethod<QByteArray>("getBlob", columnIndex));
         }
         return {};
     }
