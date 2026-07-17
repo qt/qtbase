@@ -874,7 +874,7 @@ void QAndroidInputContext::longPress(int x, int y)
             ++anchor;
         }
 
-        for (auto itch = before.rbegin(); itch != after.rend(); ++itch) {
+        for (auto itch = before.rbegin(); itch != before.rend(); ++itch) {
             if (!itch->isLetterOrNumber())
                 break;
             --cursor;
