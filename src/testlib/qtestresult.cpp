@@ -199,7 +199,7 @@ void QTestResult::finishedCurrentTestDataCleanup()
     This function is called after completing each test function,
     including test functions that are data-driven.
 
-    For data-driven functions, this is called after after all data rows
+    For data-driven functions, this is called after all data rows
     have been tested, and the data table has been cleared, so both
     currentTestData() and currentGlobalTestData() will be \nullptr.
 */
