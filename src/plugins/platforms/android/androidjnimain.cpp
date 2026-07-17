@@ -408,7 +408,7 @@ static bool initAndroidQpaPlugin(JNIEnv *jenv, jobject object)
 
     m_backendRegister = new AndroidBackendRegister();
 
-    if (sem_init(&m_exitSemaphore, 0, 0) == -1 && sem_init(&m_stopQtSemaphore, 0, 0) == -1) {
+    if (sem_init(&m_exitSemaphore, 0, 0) == -1 || sem_init(&m_stopQtSemaphore, 0, 0) == -1) {
         qCritical() << "Failed to init Qt application cleanup semaphores";
         return false;
     }
