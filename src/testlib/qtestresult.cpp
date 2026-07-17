@@ -3,6 +3,7 @@
 
 #include <QtTest/private/qtestresult_p.h>
 #include <QtCore/qglobal.h>
+#include <QtCore/qmutex.h>
 #include <QtCore/qstringview.h>
 
 #include <QtTest/private/qtestlog_p.h>
@@ -66,6 +67,41 @@ namespace QTest
 
     static const char *expectFailComment = nullptr;
     static int expectFailMode = 0;
+
+    // The pointers above belong to the main thread, and the strings they point at don't
+    // outlive the test function: currentTestFunc points into a QByteArray local to
+    // invokeTest(), and the QTestData rows are owned by a QTestTable local to it. Loggers,
+    // however, run on whatever thread called qDebug(), so they must not read them. They get
+    // these copies instead, which testlib owns and only hands out under identifierMutex.
+    // See QTestResult::IdentifierLocker.
+    Q_CONSTINIT static QBasicMutex identifierMutex;
+    static char *identifierObjectName = nullptr;
+    static char *identifierTestFunc = nullptr;
+    static char *identifierDataTag = nullptr;
+    static char *identifierGlobalDataTag = nullptr;
+
+    static void storeIdentifierString(char *&dest, const char *src)
+    {
+        delete[] std::exchange(dest, src ? qstrdup(src) : nullptr);
+    }
+
+    // Call from the main thread after changing any of the above. Must not be called with
+    // identifierMutex held.
+    static void updateIdentifier()
+    {
+        // Read before locking, through the accessors: the data belongs to this thread, and
+        // they are where absent names are turned into whatever the loggers expect.
+        const char *objectName = QTestResult::currentTestObjectName();
+        const char *testFunc = QTestResult::currentTestFunction();
+        const char *dataTag = QTestResult::currentDataTag();
+        const char *globalDataTag = QTestResult::currentGlobalDataTag();
+
+        const QMutexLocker locker(&identifierMutex);
+        storeIdentifierString(identifierObjectName, objectName);
+        storeIdentifierString(identifierTestFunc, testFunc);
+        storeIdentifierString(identifierDataTag, dataTag);
+        storeIdentifierString(identifierGlobalDataTag, globalDataTag);
+    }
 }
 
 /*!
@@ -74,12 +110,43 @@ namespace QTest
     \internal
 */
 
+QTestResult::IdentifierLocker::IdentifierLocker()
+{
+    QTest::identifierMutex.lock();
+}
+
+QTestResult::IdentifierLocker::~IdentifierLocker()
+{
+    QTest::identifierMutex.unlock();
+}
+
+const char *QTestResult::IdentifierLocker::objectName() const
+{
+    return QTest::identifierObjectName;
+}
+
+const char *QTestResult::IdentifierLocker::testFunction() const
+{
+    return QTest::identifierTestFunc;
+}
+
+const char *QTestResult::IdentifierLocker::dataTag() const
+{
+    return QTest::identifierDataTag;
+}
+
+const char *QTestResult::IdentifierLocker::globalDataTag() const
+{
+    return QTest::identifierGlobalDataTag;
+}
+
 void QTestResult::reset()
 {
     QTest::currentTestData = nullptr;
     QTest::currentGlobalTestData = nullptr;
     QTest::currentTestFunc = nullptr;
     QTest::currentTestObjectName = nullptr;
+    QTest::updateIdentifier();
     QTest::resetFailed();
 
     QTest::expectFailComment = nullptr;
@@ -112,11 +179,13 @@ QTestData *QTestResult::currentTestData()
 void QTestResult::setCurrentGlobalTestData(QTestData *data)
 {
     QTest::currentGlobalTestData = data;
+    QTest::updateIdentifier();
 }
 
 void QTestResult::setCurrentTestData(QTestData *data)
 {
     QTest::currentTestData = data;
+    QTest::updateIdentifier();
     QTest::resetFailed();
     if (data)
         QTestLog::enterTestData(data);
@@ -125,6 +194,7 @@ void QTestResult::setCurrentTestData(QTestData *data)
 void QTestResult::setCurrentTestFunction(const char *func)
 {
     QTest::currentTestFunc = func;
+    QTest::updateIdentifier();
     QTest::resetFailed();
     if (func)
         QTestLog::enterTestFunction(func);
@@ -619,6 +689,7 @@ void QTestResult::addSkip(const char *message, const char *file, int line)
 void QTestResult::setCurrentTestObject(const char *name)
 {
     QTest::currentTestObjectName = name;
+    QTest::updateIdentifier();
 }
 
 const char *QTestResult::currentTestObjectName()
