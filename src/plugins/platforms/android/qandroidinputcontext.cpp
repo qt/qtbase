@@ -130,7 +130,7 @@ static jboolean commitText(JNIEnv *env, jobject /*thiz*/, jstring text, jint new
     QString str(reinterpret_cast<const QChar *>(jstr), env->GetStringLength(text));
     env->ReleaseStringChars(text, jstr);
 
-    qCDebug(lcQpaInputMethods) << "@@@ COMMIT" << str << newCursorPosition;
+    qCDebug(lcQpaInputMethods) << "@@@ COMMIT len:" << str.size() << newCursorPosition;
     jboolean res = JNI_FALSE;
     runOnQtThread([&]{res = m_androidInputContext->commitText(str, newCursorPosition);});
     return res;
@@ -168,7 +168,7 @@ static jboolean replaceText(JNIEnv *env, jobject /*thiz*/, jint start, jint end,
     QString str(reinterpret_cast<const QChar *>(jstr), env->GetStringLength(text));
     env->ReleaseStringChars(text, jstr);
 
-    qCDebug(lcQpaInputMethods) << "@@@ REPLACE" << start << end << str << newCursorPosition;
+    qCDebug(lcQpaInputMethods) << "@@@ REPLACE" << start << end << "len:" << str.size() << newCursorPosition;
     jboolean res = JNI_FALSE;
     runOnQtThread([&]{res = m_androidInputContext->replaceText(start, end, str, newCursorPosition);});
 
@@ -193,7 +193,7 @@ static jobject getExtractedText(JNIEnv *env, jobject /*thiz*/, int hintMaxChars,
     QAndroidInputContext::ExtractedText extractedText;
     runOnQtThread([&]{extractedText = m_androidInputContext->getExtractedText(hintMaxChars, hintMaxLines, flags);});
 
-    qCDebug(lcQpaInputMethods) << "@@@ GETEX" << hintMaxChars << hintMaxLines << QString::fromLatin1("0x") + QString::number(flags,16) << extractedText.text << "partOff:" << extractedText.partialStartOffset << extractedText.partialEndOffset << "sel:" << extractedText.selectionStart << extractedText.selectionEnd << "offset:" << extractedText.startOffset;
+    qCDebug(lcQpaInputMethods) << "@@@ GETEX" << hintMaxChars << hintMaxLines << QString::fromLatin1("0x") + QString::number(flags,16) << "textLen:" << extractedText.text.size() << "partOff:" << extractedText.partialStartOffset << extractedText.partialEndOffset << "sel:" << extractedText.selectionStart << extractedText.selectionEnd << "offset:" << extractedText.startOffset;
 
     jobject object = env->NewObject(m_extractedTextClass, m_classConstructorMethodID);
     env->SetIntField(object, m_partialStartOffsetFieldID, extractedText.partialStartOffset);
@@ -216,7 +216,7 @@ static jstring getSelectedText(JNIEnv *env, jobject /*thiz*/, jint flags)
 
     QString text;
     runOnQtThread([&]{text = m_androidInputContext->getSelectedText(flags);});
-    qCDebug(lcQpaInputMethods) << "@@@ GETSEL" << text;
+    qCDebug(lcQpaInputMethods) << "@@@ GETSEL len:" << text.size();
     if (text.isEmpty())
         return 0;
     return env->NewString(reinterpret_cast<const jchar *>(text.constData()), jsize(text.length()));
@@ -229,7 +229,7 @@ static jstring getTextAfterCursor(JNIEnv *env, jobject /*thiz*/, jint length, ji
 
     QString text;
     runOnQtThread([&]{text = m_androidInputContext->getTextAfterCursor(length, flags);});
-    qCDebug(lcQpaInputMethods) << "@@@ GETA" << length << text;
+    qCDebug(lcQpaInputMethods) << "@@@ GETA" << length << "len:" << text.size();
     return env->NewString(reinterpret_cast<const jchar *>(text.constData()), jsize(text.length()));
 }
 
@@ -240,7 +240,7 @@ static jstring getTextBeforeCursor(JNIEnv *env, jobject /*thiz*/, jint length, j
 
     QString text;
     runOnQtThread([&]{text = m_androidInputContext->getTextBeforeCursor(length, flags);});
-    qCDebug(lcQpaInputMethods) << "@@@ GETB" << length << text;
+    qCDebug(lcQpaInputMethods) << "@@@ GETB" << length << "len:" << text.size();
     return env->NewString(reinterpret_cast<const jchar *>(text.constData()), jsize(text.length()));
 }
 
@@ -254,7 +254,7 @@ static jboolean setComposingText(JNIEnv *env, jobject /*thiz*/, jstring text, ji
     QString str(reinterpret_cast<const QChar *>(jstr), env->GetStringLength(text));
     env->ReleaseStringChars(text, jstr);
 
-    qCDebug(lcQpaInputMethods) << "@@@ SET" << str << newCursorPosition;
+    qCDebug(lcQpaInputMethods) << "@@@ SET len:" << str.size() << newCursorPosition;
     jboolean res = JNI_FALSE;
     runOnQtThread([&]{res = m_androidInputContext->setComposingText(str, newCursorPosition);});
     return res;
