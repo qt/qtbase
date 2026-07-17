@@ -556,7 +556,9 @@ class ExtractStyle {
 
     private JSONArray getJsonArray(int[] array, int pos, int len) {
         JSONArray a = new JSONArray();
-        final int l = pos + len;
+        if (array == null || pos < 0)
+            return a;
+        final int l = Math.min(pos + len, array.length);
         for (int i = pos; i < l; i++)
             a.put(array[i]);
         return a;
@@ -572,7 +574,7 @@ class ExtractStyle {
 
     private JSONObject getJsonChunkInfo(int[] chunkData) throws JSONException {
         JSONObject jsonRect = new JSONObject();
-        if (chunkData == null)
+        if (chunkData == null || chunkData.length < 3)
             return jsonRect;
 
         jsonRect.put("xdivs", getJsonArray(chunkData, 3, chunkData[0]));
