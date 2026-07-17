@@ -15,7 +15,7 @@
 #
 # If AUTO_ADD_PROJECT_RELATIONSHIP is specified, an automatic relationship entry is created
 # that the tool is a BUILD_DEPENDENCY_OF the current project.
-function(_qt_internal_add_sbom_build_tool target)
+function(_qt_internal_add_sbom_system_build_tool target)
     if(NOT QT_GENERATE_SBOM)
         return()
     endif()
@@ -65,7 +65,7 @@ function(_qt_internal_add_sbom_build_tool target)
             list(APPEND build_tool_type_args GET_RELATIONSHIP_COMMENT)
         endif()
 
-        _qt_internal_sbom_handle_default_build_tool_type(
+        _qt_internal_sbom_handle_default_system_build_tool_type(
             BUILD_TOOL_TYPE "${arg_BUILD_TOOL_TYPE}"
             OUT_VAR_SBOM_ARGS extra_args
             OUT_VAR_RELATIONSHIP_COMMENT relationship_comment
@@ -75,7 +75,7 @@ function(_qt_internal_add_sbom_build_tool target)
 
     set(forward_args
         ${arg_SBOM_ARGS}
-        SBOM_ENTITY_TYPE BUILD_TOOL
+        SBOM_ENTITY_TYPE SYSTEM_BUILD_TOOL
     )
     if(extra_args)
         list(APPEND forward_args ${extra_args})
@@ -103,17 +103,25 @@ function(_qt_internal_add_sbom_build_tool target)
     endif()
 endfunction()
 
+# Deprecated wrapper for _qt_internal_add_sbom_system_build_tool. Use that function instead.
+function(_qt_internal_add_sbom_build_tool target)
+    message(DEPRECATION "The function _qt_internal_add_sbom_build_tool is deprecated. Use "
+        "_qt_internal_add_sbom_system_build_tool instead.")
+
+    _qt_internal_add_sbom_system_build_tool("${target}" ${ARGN})
+endfunction()
+
 # Adds a set of default build tools that CMake uses for the current SBOM project.
 # This includes the compiler, cmake, the make tool, and optionally the linker.
-function(_qt_internal_sbom_add_project_default_build_tools)
-    _qt_internal_sbom_get_project_default_build_tool_types(default_build_tool_types)
+function(_qt_internal_sbom_add_project_default_system_build_tools)
+    _qt_internal_sbom_get_project_default_system_build_tool_types(default_build_tool_types)
 
     foreach(build_tool_type IN LISTS default_build_tool_types)
-        _qt_internal_sbom_get_build_tool_target_for_type(
+        _qt_internal_sbom_get_system_build_tool_target_for_type(
             BUILD_TOOL_TYPE "${build_tool_type}"
             OUT_VAR_TARGET target
         )
-        _qt_internal_add_sbom_build_tool("${target}"
+        _qt_internal_add_sbom_system_build_tool("${target}"
             BUILD_TOOL_TYPE "${build_tool_type}"
             AUTO_ADD_PROJECT_RELATIONSHIP
         )
@@ -121,7 +129,7 @@ function(_qt_internal_sbom_add_project_default_build_tools)
 endfunction()
 
 # Returns the list of default build tool types that CMake uses for the current SBOM project.
-function(_qt_internal_sbom_get_project_default_build_tool_types out_var)
+function(_qt_internal_sbom_get_project_default_system_build_tool_types out_var)
     set(default_build_tool_types
         CMAKE
         CMAKE_GENERATOR
@@ -136,7 +144,7 @@ function(_qt_internal_sbom_get_project_default_build_tool_types out_var)
 endfunction()
 
 # Returns the target name for one of the project default build tool types.
-function(_qt_internal_sbom_get_build_tool_target_for_type)
+function(_qt_internal_sbom_get_system_build_tool_target_for_type)
     if(NOT QT_GENERATE_SBOM)
         if(arg_OUT_VAR_TARGET)
             set(${arg_OUT_VAR_TARGET} "" PARENT_SCOPE)
@@ -189,7 +197,7 @@ function(_qt_internal_sbom_get_build_tool_target_for_type)
 endfunction()
 
 # Returns common build tool information depending on the build tool type.
-function(_qt_internal_sbom_handle_default_build_tool_type)
+function(_qt_internal_sbom_handle_default_system_build_tool_type)
     set(opt_args
         GET_RELATIONSHIP_COMMENT
     )

@@ -69,6 +69,7 @@ function(_qt_internal_sbom_handle_target_binary_files target)
         ARCHIVES
         INSTALLERS
         BUILD_TOOL
+        SYSTEM_BUILD_TOOL
         CUSTOM
         CUSTOM_NO_INFIX
     )
@@ -99,7 +100,7 @@ function(_qt_internal_sbom_handle_target_binary_files target)
         FILES_ENTITY_TYPE
         ARCHIVES
         INSTALLERS
-        BUILD_TOOL
+        SYSTEM_BUILD_TOOL
         CUSTOM
         CUSTOM_NO_INFIX
     )
@@ -157,7 +158,9 @@ function(_qt_internal_sbom_handle_target_binary_files target)
 
     if(arg_SBOM_ENTITY_TYPE STREQUAL "QT_TOOL"
             OR arg_SBOM_ENTITY_TYPE STREQUAL "QT_APP"
-            OR arg_SBOM_ENTITY_TYPE STREQUAL "EXECUTABLE")
+            OR arg_SBOM_ENTITY_TYPE STREQUAL "EXECUTABLE"
+            OR arg_SBOM_ENTITY_TYPE STREQUAL "BUILD_TOOL"
+        )
 
         set(valid_executable_types
             "EXECUTABLE"
