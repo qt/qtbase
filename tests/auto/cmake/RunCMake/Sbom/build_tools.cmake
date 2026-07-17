@@ -44,18 +44,18 @@ set(SBOM_SUPPLIER "QtProjectTest")
 set(SBOM_SUPPLIER_URL "https://qt-project.org/SbomTest")
 set(SBOM_VERSION "1.0.0")
 
-# Case 1, check that the default project build tools are created
-set(SBOM_PROJECT_NAME "001-auto-tools")
+# Case 1, check that the default project system build tools are created
+set(SBOM_PROJECT_NAME "001-auto-system-build-tools")
 set_common_sbom_begin_args(sbom_begin_args)
 _qt_internal_sbom_begin_project(
     ${sbom_begin_args}
 )
 sbom_test_record_project()
 
-_qt_internal_sbom_get_project_default_build_tool_types(default_build_tools_types)
+_qt_internal_sbom_get_project_default_system_build_tool_types(default_build_tools_types)
 if(QT_GENERATE_SBOM)
     foreach(build_tool_type IN LISTS default_build_tools_types)
-        _qt_internal_sbom_get_build_tool_target_for_type(
+        _qt_internal_sbom_get_system_build_tool_target_for_type(
             BUILD_TOOL_TYPE "${build_tool_type}"
             OUT_VAR_TARGET target
         )
@@ -68,8 +68,8 @@ if(QT_GENERATE_SBOM)
 endif()
 _qt_internal_sbom_end_project()
 
-# Case 2, check that the default project build tools are not created
-set(SBOM_PROJECT_NAME "002-no-auto-tools")
+# Case 2, check that the default project system build tools are not created
+set(SBOM_PROJECT_NAME "002-no-auto-system-build-tools")
 set_common_sbom_begin_args(sbom_begin_args)
 _qt_internal_sbom_begin_project(
     ${sbom_begin_args}
@@ -79,7 +79,7 @@ sbom_test_record_project()
 
 if(QT_GENERATE_SBOM)
     foreach(build_tool_type IN LISTS default_build_tools_types)
-        _qt_internal_sbom_get_build_tool_target_for_type(
+        _qt_internal_sbom_get_system_build_tool_target_for_type(
             BUILD_TOOL_TYPE "${build_tool_type}"
             OUT_VAR_TARGET target
         )
@@ -92,8 +92,8 @@ if(QT_GENERATE_SBOM)
 endif()
 _qt_internal_sbom_end_project()
 
-# Case 3, check that we can create the pre-defined tool types manually
-set(SBOM_PROJECT_NAME "003-manual-predefined-tools")
+# Case 3, check that we can create the pre-defined system tool types manually
+set(SBOM_PROJECT_NAME "003-manual-predefined-system-build-tools")
 set_common_sbom_begin_args(sbom_begin_args)
 _qt_internal_sbom_begin_project(
     ${sbom_begin_args}
@@ -103,11 +103,11 @@ sbom_test_record_project()
 
 if(QT_GENERATE_SBOM)
     foreach(build_tool_type IN LISTS default_build_tools_types)
-        _qt_internal_sbom_get_build_tool_target_for_type(
+        _qt_internal_sbom_get_system_build_tool_target_for_type(
             BUILD_TOOL_TYPE "${build_tool_type}"
             OUT_VAR_TARGET target
         )
-        _qt_internal_add_sbom_build_tool("${target}"
+        _qt_internal_add_sbom_system_build_tool("${target}"
             BUILD_TOOL_TYPE "${build_tool_type}"
         )
         if(NOT TARGET "${target}")
@@ -119,8 +119,8 @@ if(QT_GENERATE_SBOM)
 endif()
 _qt_internal_sbom_end_project()
 
-# Case 4, add a custom build tool
-set(SBOM_PROJECT_NAME "004-custom-tool")
+# Case 4, add a custom system build tool
+set(SBOM_PROJECT_NAME "004-custom-system-build-tool")
 set_common_sbom_begin_args(sbom_begin_args)
 _qt_internal_sbom_begin_project(
     ${sbom_begin_args}
@@ -130,7 +130,7 @@ sbom_test_record_project()
 
 set(build_tool_target "BuildToolHammer")
 _qt_internal_sbom_get_current_project_target(project_target)
-_qt_internal_add_sbom_build_tool("${build_tool_target}"
+_qt_internal_add_sbom_system_build_tool("${build_tool_target}"
     BUILD_TOOL_TYPE "CUSTOM"
     SBOM_ARGS
         FRIENDLY_PACKAGE_NAME "Hammer"
@@ -159,7 +159,7 @@ if(QT_GENERATE_SBOM)
     endif()
 endif()
 
-# Case 4, add an extra relationship that a library is generated using the above tool
+# Case 4, add an extra relationship that a library is generated using the above system build tool
 if(QT_GENERATE_SBOM)
     _qt_internal_sbom_get_spdx_id_for_target(${build_tool_target} ${build_tool_target}_spdx_id)
 endif()
@@ -176,6 +176,45 @@ _qt_internal_extend_sbom(Plank
 )
 add_assert_str_exists_in_spdx_v2_3_doc("Relationship: ${Plank_spdx_id} GENERATED_FROM ${${build_tool_target}_spdx_id}")
 add_cydx_v1_6_deps_to_result_file(Plank DEPS "${${build_tool_target}_spdx_id}")
+
+_qt_internal_sbom_end_project()
+
+# Case 5, add a (non-system) build tool and install it
+set(SBOM_PROJECT_NAME "005-non-system-build-tool-installed")
+set_common_sbom_begin_args(sbom_begin_args)
+_qt_internal_sbom_begin_project(
+    ${sbom_begin_args}
+    NO_AUTO_ADD_BUILD_TOOLS
+)
+sbom_test_record_project()
+
+add_executable(build_tool_installed)
+target_sources(build_tool_installed PRIVATE sources/tool_main.cpp)
+install(TARGETS build_tool_installed
+    BUNDLE DESTINATION bin
+)
+_qt_internal_add_sbom(build_tool_installed
+    TYPE "BUILD_TOOL"
+    RUNTIME_PATH bin
+)
+
+_qt_internal_sbom_end_project()
+
+# Case 6, add a (non-system) build tool but don't install it
+set(SBOM_PROJECT_NAME "006-non-system-build-tool-not-installed")
+set_common_sbom_begin_args(sbom_begin_args)
+_qt_internal_sbom_begin_project(
+    ${sbom_begin_args}
+    NO_AUTO_ADD_BUILD_TOOLS
+)
+sbom_test_record_project()
+
+add_executable(build_tool_not_installed)
+target_sources(build_tool_not_installed PRIVATE sources/tool_main.cpp)
+_qt_internal_add_sbom(build_tool_not_installed
+    TYPE "BUILD_TOOL"
+    NO_INSTALL
+)
 
 _qt_internal_sbom_end_project()
 
