@@ -545,18 +545,11 @@ abstract class QtLoader {
     {
         String loadedLib = null;
         try {
-            File libFile = new File(library);
-            if (library.startsWith("/")) {
-                if (libFile.exists()) {
-                    System.load(library);
-                    loadedLib = library;
-                } else {
-                    Log.e(QtTAG, "Can't find '" + library + "'");
-                }
-            } else {
+            if (library.startsWith("/"))
+                System.load(library);
+            else
                 System.loadLibrary(library);
-                loadedLib = library;
-            }
+            loadedLib = library;
         } catch (Exception | UnsatisfiedLinkError e) {
             Log.e(QtTAG, "Can't load '" + library + "'", e);
         }
