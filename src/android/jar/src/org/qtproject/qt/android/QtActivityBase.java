@@ -167,7 +167,11 @@ public class QtActivityBase extends Activity
     }
 
     private boolean isLaunchedAsAlias() {
-        final ComponentName component = getIntent().getComponent();
+        final Intent intent = getIntent();
+        if (intent == null)
+            return false;
+
+        final ComponentName component = intent.getComponent();
         if (component == null)
             return false;
 
