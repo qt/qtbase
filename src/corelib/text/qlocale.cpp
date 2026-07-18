@@ -5496,6 +5496,8 @@ QStringList QLocale::uiLanguages(TagSeparator separator) const
         localeIds.append(d->m_data->id());
     }
 
+    // First pass: add all likely-equivalents of each entry immediately after
+    // it, in decreasing order of specificity.
     for (qsizetype i = localeIds.size(); i-- > 0; ) {
         const QLocaleId id = localeIds.at(i);
         Q_ASSERT(id.language_id);
@@ -5577,39 +5579,19 @@ QStringList QLocale::uiLanguages(TagSeparator separator) const
         return name.startsWith(stem)
             && (name.size() == stem.size() || name.at(stem.size()) == cut);
     };
-    // As we now forward-traverse the list, we need to keep track of the
-    // positions just after (a) the block of things added above that are
-    // equivalent to the current entry and (b) the block of truncations (if any)
-    // added just after this block. All truncations of entries in (a) belong at
-    // the end of (b); once i advances to the end of (a) it must jump to just
-    // after (b). The more specific entries in (a) may well have truncations
-    // that can also arise from less specific ones later in (a); for the
-    // purposes of determining whether such truncations go at the end of (b) or
-    // the end of the list, we thus need to ignore these matches.
-    qsizetype afterEquivs = 0;
-    qsizetype afterTruncs = 0;
-    // From here onwards, we only have the truncations we're adding, whose
-    // truncations should all have been included already.
-    // If advancing i brings us to the end of block (a), jump to the end of (b):
-    for (qsizetype i = 0; i < uiLanguages.size(); ++i >= afterEquivs && (i = afterTruncs)) {
+    // As we now forward-traverse the list, add each truncation after the last
+    // existing entry that matches its (likely-implied) language and script, if
+    // there is one. If not, append it to the current end.
+    //
+    // Thus [en-NL, nl-NL, en-GB] will append en but [en-NL, en-GB, nl-NL]
+    // will put it before nl-NL, for example. We require a script match so
+    // we don't pick translations that the user cannot read, despite knowing
+    // the language. (Ideally that would be a constraint the caller can opt
+    // into / out of. See QTBUG-112765.)
+    for (qsizetype i = 0; i < uiLanguages.size(); ++i) {
         const QString entry = uiLanguages.at(i);
-        const QLocaleId max = QLocaleId::fromName(entry).withLikelySubtagsAdded();
-        // Keep track of our two blocks:
-        if (i >= afterEquivs) {
-            Q_ASSERT(i >= afterTruncs); // i.e. we just skipped past the end of a block
-            afterEquivs = i + 1;
-            // Advance past equivalents of entry:
-            while (afterEquivs < uiLanguages.size()
-                   && QLocaleId::fromName(uiLanguages.at(afterEquivs))
-                           .withLikelySubtagsAdded() == max) {
-                ++afterEquivs;
-            }
-            // We'll add any truncations starting there:
-            afterTruncs = afterEquivs;
-        }
         if (hasPrefix(entry, u"C") || hasPrefix(entry, u"und"))
             continue;
-        qsizetype stopAt = uiLanguages.size();
         qsizetype at = entry.size(); // if 0, calls lastIndexOf(cut, -1), which is in-contract
         while ((at = entry.lastIndexOf(cut, at - 1)) > 0) {
             QString prefix = entry.first(at);
@@ -5617,60 +5599,32 @@ QStringList QLocale::uiLanguages(TagSeparator separator) const
             // we'll need known to see the later entry's offering of this prefix
             // as a new entry.
             bool found = known.contains(prefix);
-            /* By default we append but if no later entry has this as a prefix
-               and the locale it implies would use the same script as entry, put
-               it after the block of consecutive equivalents of which entry is a
-               part instead. Thus [en-NL, nl-NL, en-GB] will append en but
-               [en-NL, en-GB, nl-NL] will put it before nl-NL, for example. We
-               require a script match so we don't pick translations that the
-               user cannot read, despite knowing the language. (Ideally that
-               would be a constraint the caller can opt into / out of. See
-               QTBUG-112765.)
-            */
-            bool justAfter
-                = (QLocaleId::fromName(prefix).withLikelySubtagsAdded().script_id == max.script_id);
-            for (qsizetype j = afterTruncs; !found && j < stopAt; ++j) {
+            for (qsizetype j = i + 1; !found && j < uiLanguages.size(); ++j) {
                 QString later = uiLanguages.at(j);
-                if (!later.startsWith(prefix)) {
-                    const QByteArray laterFull =
-                        QLocaleId::fromName(later.replace(cut, u'-')
-                            ).withLikelySubtagsAdded().name(sep);
-                    // When prefix matches a later entry's max, it belongs later.
-                    if (hasPrefix(QLatin1StringView(laterFull), prefix))
-                        justAfter = false;
-                    continue;
-                }
-                // The duplicate tracker would already have spotted if equal:
-                Q_ASSERT(later.size() > prefix.size());
-                if (later.at(prefix.size()) == cut) {
-                    justAfter = false;
-                    // Prefix match. Shall produce the same prefix, but possibly
-                    // after prefixes of other entries in the list. If later has
-                    // a longer prefix not yet in the list, we want that before
-                    // this shorter prefix, so leave this for later, otherwise,
-                    // we include this prefix right away.
-                    QStringView head{later};
-                    for (qsizetype as = head.lastIndexOf(cut);
-                         !found && as > prefix.size(); as = head.lastIndexOf(cut)) {
-                        head = head.first(as);
-                        bool seen = false;
-                        for (qsizetype k = j + 1; !seen && k < uiLanguages.size(); ++k)
-                            seen = uiLanguages.at(k) == head;
-                        if (!seen)
-                            found = true;
-                    }
+                if (hasPrefix(later, prefix)) {
+                    // Prefix match. Leave this for later to add.
+                    found = true;
+                    break;
                 }
             }
             if (found) // Don't duplicate.
                 continue; // Some shorter truncations may still be missing.
             // Now we're committed to adding it, get it into known:
             (void) known.hasSeen(prefix);
-            if (justAfter) {
-                uiLanguages.insert(afterTruncs++, std::move(prefix));
-                ++stopAt; // All later entries have moved one step later.
-            } else {
-                uiLanguages.append(std::move(prefix));
+            const QLocaleId max = QLocaleId::fromName(prefix).withLikelySubtagsAdded();
+            bool justAfter = true;
+            for (qsizetype j = uiLanguages.size(); j > i; ) {
+                --j;
+                if (QLocaleId::fromName(uiLanguages.at(j))
+                              .withLikelySubtagsAdded()
+                              .sameLanguageScript(max)) {
+                    justAfter = false;
+                    uiLanguages.insert(j + 1, std::move(prefix));
+                    break;
+                }
             }
+            if (justAfter)
+                uiLanguages.append(std::move(prefix));
         }
     }
 
