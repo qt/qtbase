@@ -233,6 +233,11 @@ struct QLocaleId
         return (!territory_id || other.territory_id == territory_id)
                 && (!script_id || other.script_id == script_id);
     }
+    [[nodiscard]] inline bool sameLanguageScript(QLocaleId other) const noexcept
+    {
+        return language_id && language_id == other.language_id
+                && script_id == other.script_id;
+    }
 
     [[nodiscard]] QLocaleId withLikelySubtagsAdded() const noexcept;
     [[nodiscard]] QLocaleId withLikelySubtagsRemoved() const noexcept;

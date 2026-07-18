@@ -1084,9 +1084,9 @@ void tst_QLocaleData::mySystemLocale_data()
         // First two were missed out before fix to QTBUG-104930:
         << QStringList{u"en-Latn-GB"_s, u"en-GB"_s,
                        u"en-Latn-DE"_s, u"en-DE"_s,
-                       u"de-Latn-DE"_s, u"de-DE"_s, u"de-Latn"_s, u"de"_s,
-                       // Fallbacks implied by those:
-                       u"en-Latn"_s, u"en"_s};
+                       // Truncations after the English locale:
+                       u"en-Latn"_s, u"en"_s,
+                       u"de-Latn-DE"_s, u"de-DE"_s, u"de-Latn"_s, u"de"_s};
 
     QTest::addRow("german")
         << u"de"_s << QLocale::German
@@ -1139,19 +1139,21 @@ void tst_QLocaleData::mySystemLocale_data()
         << QStringList{u"en-Latn-DK"_s, u"en-DK"_s,
                        u"en-Latn-GB"_s, u"en-GB"_s,
                        u"en-Latn-FO"_s, u"en-FO"_s,
+                       // Truncations after the last English locale:
+                       u"en-Latn"_s, u"en"_s,
                        u"fo-Latn-FO"_s, u"fo-FO"_s, u"fo-Latn"_s, u"fo"_s,
                        u"da-Latn-FO"_s, u"da-FO"_s,
-                       u"da-Latn-DK"_s, u"da-DK"_s, u"da-Latn"_s, u"da"_s,
-                       // Fallbacks implied by those:
-                       u"en-Latn"_s, u"en"_s};
+                       u"da-Latn-DK"_s, u"da-DK"_s, u"da-Latn"_s, u"da"_s};
     QTest::newRow("polylingual-CA")
         << u"de-CA"_s << QLocale::German
         << QStringList{u"en-Latn-CA"_s, u"en-CA"_s, u"fr-Latn-CA"_s, u"fr-CA"_s,
                        u"de-Latn-AT"_s, u"de-AT"_s, u"de-Latn-CA"_s, u"de-CA"_s,
+                       // Truncations implied by German locale:
+                       u"de-Latn"_s, u"de"_s,
                        u"en-Latn-GB"_s, u"en-GB"_s,
-                       u"fr-Latn-FR"_s, u"fr-FR"_s, u"fr-Latn"_s, u"fr"_s,
-                       // Fallbacks:
-                       u"en-Latn"_s, u"en"_s, u"de-Latn"_s, u"de"_s};
+                       // Truncations after the last English locale:
+                       u"en-Latn"_s, u"en"_s,
+                       u"fr-Latn-FR"_s, u"fr-FR"_s, u"fr-Latn"_s, u"fr"_s};
 
     QTest::newRow("und-US")
         << u"und-US"_s << QLocale::C
