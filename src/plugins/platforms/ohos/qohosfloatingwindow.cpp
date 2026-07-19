@@ -271,8 +271,6 @@ void QOhosFloatingWindow::handleWindowEvent(QOhosWindowProxy::WindowEvent evt)
 {
     auto *qWindow = window();
     bool windowAcceptsFocusAndInput = checkWindowAcceptsFocus() && checkWindowAcceptsInput();
-    Qt::WindowStates windowStatesToSet = windowStates();
-    bool windowActive = true;
     auto previousWindowEventType = std::exchange(m_lastWindowEventType, evt.type);
 
     switch (evt.type) {
@@ -297,7 +295,6 @@ void QOhosFloatingWindow::handleWindowEvent(QOhosWindowProxy::WindowEvent evt)
         break;
     }
     case QOhosWindowProxy::WindowEventType::WINDOW_INACTIVE:
-        windowActive = false;
         if (!windowAcceptsFocusAndInput)
             break;
         if (QGuiApplicationPrivate::focus_window == qWindow
@@ -312,7 +309,6 @@ void QOhosFloatingWindow::handleWindowEvent(QOhosWindowProxy::WindowEvent evt)
         if (!checkWindowAcceptsFocus() && QGuiApplicationPrivate::focus_window == qWindow)
             focusHijackingPopupHidden();
         setExposedFromOhos(false);
-        windowActive = false;
         break;
     case QOhosWindowProxy::WindowEventType::WINDOW_SHOWN:
         // HACK
@@ -327,13 +323,9 @@ void QOhosFloatingWindow::handleWindowEvent(QOhosWindowProxy::WindowEvent evt)
         startAsyncWaitForNodeResizeIfNeeded();
         break;
     case QOhosWindowProxy::WindowEventType::WINDOW_DESTROYED:
-        windowActive = false;
         notifyWindowDestroyedFromOhos();
         return;
     }
-
-    windowStatesToSet.setFlag(Qt::WindowState::WindowActive, windowActive && windowAcceptsFocusAndInput);
-    setWindowStateFromOhos(windowStatesToSet);
 }
 
 void QOhosFloatingWindow::handleWindowStatusChange(QOhosWindowProxy::WindowStatus evt)
