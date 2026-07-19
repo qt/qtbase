@@ -414,8 +414,9 @@ Qt::WindowStates QOhosPlatformWindow::windowStates() const
 
 void QOhosPlatformWindow::setWindowStateFromOhos(Qt::WindowStates state)
 {
-    if (m_windowState != state) {
+    if (m_lastWindowState != state) {
         m_windowState = state;
+        m_lastWindowState = state;
         QWindowSystemInterface::handleWindowStateChanged(window(), m_windowState);
     }
 }

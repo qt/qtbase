@@ -144,6 +144,7 @@ protected:
 
     Qt::WindowFlags m_windowFlags;
     Qt::WindowStates m_windowState;
+    std::optional<Qt::WindowStates> m_lastWindowState;
 
     QtOhos::InternalWindowId m_windowId = QtOhos::InternalWindowId::invalidWindowId();
     QRect m_oldGeometry;
