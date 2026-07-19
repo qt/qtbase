@@ -343,6 +343,17 @@ void QOhosFloatingWindow::handleWindowStatusChange(QOhosWindowProxy::WindowStatu
         qWindow,
         qPrintable(qWindow->objectName()),
         evt.type);
+
+    // Drop duplicate FULL_SCREEN notifications; MainWindow views in non-PC mode
+    // are exempt because initialize() pre-seeds their status to FULL_SCREEN.
+    if (m_lastWindowStatusType == evt.type
+        && m_lastWindowStatusType == QOhosWindowProxy::WindowStatusType::FULL_SCREEN
+        && !(m_view->viewType() == QOhosView::ViewType::MainWindow
+             && !QOhosSettings::instance().isWindowPcModeEnabled())) {
+        qCDebug(QtForOhos, "Window status is the same as the previous one");
+        return;
+    }
+
     Qt::WindowStates windowStatesToSet = windowStates();
     Qt::WindowState flagToSet;
     m_lastWindowStatusType = evt.type;
