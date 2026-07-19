@@ -21,7 +21,6 @@ namespace
 
 using WindowSystemEventType = QWindowSystemInterfacePrivate::EventType;
 using WindowSystemEvent = QWindowSystemInterfacePrivate::WindowSystemEvent;
-using WindowStateChangedEvent = QWindowSystemInterfacePrivate::WindowStateChangedEvent;
 using ExposeEvent = QWindowSystemInterfacePrivate::ExposeEvent;
 using ApplicationStateChangedEvent = QWindowSystemInterfacePrivate::ApplicationStateChangedEvent;
 
@@ -37,7 +36,6 @@ public:
     bool sendEvent(WindowSystemEvent *event) override;
 
 private:
-    ProcessEventResult processWindowStateChangedEvent(WindowStateChangedEvent *event);
     ProcessEventResult processExposeEvent(ExposeEvent *event);
     ProcessEventResult processApplicationStateChangedEvent(ApplicationStateChangedEvent *event);
 
@@ -46,7 +44,6 @@ private:
 
     std::set<QOhosView *> m_trackedViews;
     std::set<QOhosView *> m_visibleViews;
-    std::set<QOhosView *> m_activeViews;
 
     QOhosOptional<Qt::ApplicationState> m_lastReceivedApplicationState;
     QOhosOptional<Qt::ApplicationState> m_lastSentApplicationState;
@@ -59,25 +56,6 @@ QOhosView *mapQWindowToViewOrNull(QWindow *window)
     return platformWindow != nullptr
         ? platformWindow->ownedViewOrNull()
         : nullptr;
-}
-
-ProcessEventResult ApplicationStateTracker::processWindowStateChangedEvent(WindowStateChangedEvent *evt)
-{
-    auto *view = evt->window != nullptr
-        ? mapQWindowToViewOrNull(evt->window)
-        : nullptr;
-
-    if (view == nullptr)
-        return ProcessEventResult::ForwardToGuiApplication;
-
-    startTrackingViewIfNeeded(view);
-
-    if (evt->newState.testFlag(Qt::WindowState::WindowActive))
-        std::ignore = m_activeViews.insert(view);
-    else
-        std::ignore = m_activeViews.erase(view);
-
-    return ProcessEventResult::ForwardToGuiApplication;
 }
 
 ProcessEventResult ApplicationStateTracker::processExposeEvent(ExposeEvent *evt)
@@ -109,9 +87,6 @@ bool ApplicationStateTracker::sendEvent(WindowSystemEvent *event)
 {
     QOhosOptional<ProcessEventResult> processEventResult;
     switch (event->type) {
-    case WindowSystemEventType::WindowStateChanged:
-        processEventResult = processWindowStateChangedEvent(static_cast<WindowStateChangedEvent *>(event));
-        break;
     case WindowSystemEventType::Expose:
         processEventResult = processExposeEvent(static_cast<ExposeEvent *>(event));
         break;
@@ -135,17 +110,23 @@ bool ApplicationStateTracker::sendEvent(WindowSystemEvent *event)
 
 void ApplicationStateTracker::tryUpdateApplicationState()
 {
-    bool allWindowsInactive = m_activeViews.empty();
-    bool allWindowsHidden = m_visibleViews.empty();
+    const bool allWindowsHidden = m_visibleViews.empty();
 
-    auto updatedApplicationState =
-        m_lastReceivedApplicationState == Qt::ApplicationSuspended
+    // Trust the OHOS ability lifecycle for active/inactive (a foreground app is
+    // active even without a focused window); visibility only refines to Hidden.
+    const Qt::ApplicationState lifecycleState =
+        m_lastReceivedApplicationState.has_value()
+            ? m_lastReceivedApplicationState.value()
+            : Qt::ApplicationActive;
+
+    const auto updatedApplicationState =
+        lifecycleState == Qt::ApplicationSuspended
             ? Qt::ApplicationSuspended
             : allWindowsHidden
                 ? Qt::ApplicationHidden
-                :  allWindowsInactive
-                    ? Qt::ApplicationInactive
-                    : Qt::ApplicationActive;
+                : lifecycleState == Qt::ApplicationActive
+                    ? Qt::ApplicationActive
+                    : Qt::ApplicationInactive;
 
     if (m_lastSentApplicationState == updatedApplicationState)
         return;
@@ -165,7 +146,6 @@ void ApplicationStateTracker::startTrackingViewIfNeeded(QOhosView *viewToTrack)
             &m_signalReceiver, [this, viewToTrack](QObject *) {
                 std::ignore = m_trackedViews.erase(viewToTrack);
                 std::ignore = m_visibleViews.erase(viewToTrack);
-                std::ignore = m_activeViews.erase(viewToTrack);
             });
     }
 }
