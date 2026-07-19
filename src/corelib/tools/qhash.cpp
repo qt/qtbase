@@ -2349,7 +2349,8 @@ size_t qHash(long double key, size_t seed) noexcept
 
     Inserts a new element into the container. This new element
     is constructed in-place using \a args as the arguments for its
-    construction.
+    construction. If the element already exists in the container, it
+    is replaced.
 
     Returns an iterator pointing to the new element.
 
