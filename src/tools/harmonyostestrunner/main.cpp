@@ -8,6 +8,8 @@
 #include <QtCore/qprocess.h>
 #include <QtCore/qthread.h>
 #include <QtCore/qelapsedtimer.h>
+#include <QtCore/qjsonarray.h>
+#include <QtCore/qjsondocument.h>
 #if QT_CONFIG(systemsemaphore)
 #  include <QtCore/qsystemsemaphore.h>
 #  include <QtCore/qtipccommon.h>
@@ -33,6 +35,13 @@ static constexpr int EXIT_TIMEOUT = 251;
 
 // --device / QT_HARMONYOS_DEVICE, prepended as `-t <key>` to every hdc call.
 static QString g_hdcConnectKey;
+
+static QString shellSingleQuote(const QString &value)
+{
+    QString escaped = value;
+    escaped.replace(u"'"_s, uR"('\'')"_s);
+    return u"'"_s + escaped + u"'"_s;
+}
 
 static QString runHdc(const QString &hdcPath, const QStringList &args,
                       bool printOnFailure = false)
@@ -343,17 +352,9 @@ int main(int argc, char *argv[])
     aaStartArgs << u"--pb"_s << u"io.qt.watchdogEnabled"_s << u"false"_s;
 
     if (!testArgs.isEmpty()) {
-        QString json = u"["_s;
-        for (int i = 0; i < testArgs.size(); ++i) {
-            if (i > 0)
-                json += u","_s;
-            QString escaped = testArgs.at(i);
-            escaped.replace(u'\\', u"\\\\"_s);
-            escaped.replace(u'"', u"\\\""_s);
-            json += u"\""_s + escaped + u"\""_s;
-        }
-        json += u"]"_s;
-        aaStartArgs += {u"--ps"_s, u"io.qt.appArgsJson"_s, json};
+        const QString json = QString::fromUtf8(
+            QJsonDocument(QJsonArray::fromStringList(testArgs)).toJson(QJsonDocument::Compact));
+        aaStartArgs += {u"--ps"_s, u"io.qt.appArgsJson"_s, shellSingleQuote(json)};
     }
 
     // aa start prints errors (screen locked, ability not found, ...) to stdout.
