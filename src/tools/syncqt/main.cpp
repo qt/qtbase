@@ -1932,7 +1932,7 @@ bool SyncScanner::generateModuleMapFile()
     std::string content;
     for (const auto& [header, aliasHeader] : m_moduleMapContents) {
         auto relativePath = std::filesystem::relative(header, m_commandLineArgs->includeDir());
-        const auto nonCamelCaseHeader = aliasHeader.empty() ? header : aliasHeader;
+        const auto &nonCamelCaseHeader = aliasHeader.empty() ? header : aliasHeader;
         resetCurrentFileInfoData(nonCamelCaseHeader);
         const bool isPrivate = m_currentFileType & PrivateHeader;
         const bool isDeprecated =
