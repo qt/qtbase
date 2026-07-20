@@ -16,6 +16,7 @@
 #include <qstring.h>
 
 #include <private/qcalendarmath_p.h>
+#include <private/qduplicatetracker_p.h>
 #include <private/qnumeric_p.h>
 #if QT_CONFIG(icu) || !QT_CONFIG(timezone_locale)
 #  include <private/qstringiterator_p.h>
@@ -981,6 +982,9 @@ QTimeZonePrivate::findLongNamePrefix(QStringView text, const QLocale &locale,
                                      std::optional<qint64> atEpochMillis)
 {
     // Search all known zones for one that matches a prefix of text in our locale.
+    // We allow an offset form, as those are used as long names for QUtcTZP:
+    QTimeZonePrivate::NamePrefixMatch best = findUtcOffsetPrefix(text, locale);
+
     const auto matchLength = [text](QStringView name) -> qsizetype {
         qsizetype length = 0; // "Does not match" by default.
         if (name.size() > 0 && text.startsWith(name, Qt::CaseInsensitive)) {
@@ -1007,9 +1011,34 @@ QTimeZonePrivate::findLongNamePrefix(QStringView text, const QLocale &locale,
         // Assume standard time name applies equally as generic:
         return QTimeZone::GenericTime;
     };
-    QTimeZonePrivate::NamePrefixMatch best = findUtcOffsetPrefix(text, locale);
-    constexpr QTimeZone::TimeType types[]
-        = { QTimeZone::GenericTime, QTimeZone::StandardTime, QTimeZone::DaylightTime };
+    const auto tryZone = [&](const QByteArray &iana) {
+        bool matched = false;
+        constexpr QTimeZone::TimeType types[]
+            = { QTimeZone::GenericTime, QTimeZone::StandardTime, QTimeZone::DaylightTime };
+        QTimeZone zone(iana);
+        if (!zone.isValid())
+            return matched;
+        if (when.isValid()) {
+            const QString name = zone.displayName(when, QTimeZone::LongName, locale);
+            if (qsizetype match = matchLength(name); match > best.nameLength) {
+                best = { iana, match, typeFor(zone) };
+                matched = true;
+            }
+        } else {
+            const bool neverDst = !zone.hasDaylightTime();
+            for (const QTimeZone::TimeType type : types) {
+                if (neverDst && type == QTimeZone::DaylightTime)
+                    continue;
+                const QString name = zone.displayName(type, QTimeZone::LongName, locale);
+                if (qsizetype match = matchLength(name); match > best.nameLength) {
+                    best = { iana, match, type };
+                    matched = true;
+                }
+            }
+        }
+        return matched;
+    };
+
     const QList<QByteArray> allZones = []() {
         QList<QByteArray> avail = QTimeZone::availableTimeZoneIds();
         const auto isCanonical = [](const QByteArray &name) {
@@ -1036,31 +1065,32 @@ QTimeZonePrivate::findLongNamePrefix(QStringView text, const QLocale &locale,
     }();
 
     for (const QByteArray &iana : allZones) {
-        QTimeZone zone(iana);
-        if (!zone.isValid())
-            continue;
-        if (when.isValid()) {
-            const QString name = zone.displayName(when, QTimeZone::LongName, locale);
-            if (qsizetype match = matchLength(name); match > best.nameLength)
-                best = { iana, match, typeFor(zone) };
-        } else {
-            const bool neverDst = !zone.hasDaylightTime();
-            for (const QTimeZone::TimeType type : types) {
-                if (neverDst && type == QTimeZone::DaylightTime)
-                    continue;
-                const QString name = zone.displayName(type, QTimeZone::LongName, locale);
-                if (qsizetype match = matchLength(name); match > best.nameLength)
-                    best = { iana, match, type };
-            }
-        }
         // If we have a match for all of text, we can't get any better:
-        if (best.nameLength >= text.size())
+        if (tryZone(iana) && best.nameLength >= text.size())
             break;
     }
     // This has the problem of selecting the first IANA ID of a zone with a
     // match; where several IANA IDs share a long name, this may not be the
     // natural one to pick. Hopefully a backend that does its own name L10n will
     // at least produce one with the same offsets as the most natural choice.
+    // The initialization of allZones should at least mean we prefer canonical.
+
+    // However, some zones may have aliases that are supported and get different
+    // display names, e.g. because the ID appears as part of the name.
+    if (!best) {
+        // Search the alias table for names we've not tried that might be
+        // supported but not "available". Non-canonical aliases of available
+        // names won't have been added to allZones.
+        QDuplicateTracker<QByteArray, std::size(aliasMappingTable)> triedAlready;
+        for (const QByteArray &iana : allZones)
+            (void) triedAlready.hasSeen(iana);
+        for (const auto &data : aliasMappingTable) {
+            const QByteArray alias = data.aliasId().toByteArray();
+            if (!triedAlready.hasSeen(alias) && tryZone(alias) && best.nameLength >= text.size())
+                break;
+        }
+    }
+
     return best;
 }
 
