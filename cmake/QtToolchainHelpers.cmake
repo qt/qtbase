@@ -342,7 +342,21 @@ endif()")
         )
 
         list(APPEND init_platform
-            "set(OHOS_ARCH \"${OHOS_ARCH}\" CACHE STRING \"\")")
+            "set(OHOS_ARCH \"${OHOS_ARCH}\" CACHE STRING \"\")"
+            "if(\"$\{OHOS_SDK_ROOT}\" STREQUAL \"\" AND NOT \"\$ENV{OHOS_SDK_ROOT}\" STREQUAL \"\")"
+            "    set(OHOS_SDK_ROOT \"\$ENV{OHOS_SDK_ROOT}\" CACHE STRING \"Path to the HarmonyOS SDK\")"
+            "endif()"
+            "if(NOT EXISTS \"\${__qt_chainload_toolchain_file}\" AND NOT \"$\{OHOS_SDK_ROOT\}\" STREQUAL \"\")"
+            "    set(__qt_toolchain_file_candidate \"$\{OHOS_SDK_ROOT\}/native/build/cmake/ohos.toolchain.cmake\")"
+            "    if(EXISTS \"$\{__qt_toolchain_file_candidate\}\")"
+            "        message(DEBUG \"HarmonyOS toolchain file within SDK detected: $\{__qt_toolchain_file_candidate\}\")"
+            "        set(__qt_chainload_toolchain_file \"$\{__qt_toolchain_file_candidate\}\")"
+            "    else()"
+            "        message(FATAL_ERROR \"Cannot find the toolchain file '$\{__qt_toolchain_file_candidate\}'. \""
+            "            \"Please specify the toolchain file with -DQT_CHAINLOAD_TOOLCHAIN_FILE=<file>.\")"
+            "    endif()"
+            "endif()"
+        )
 
         qt_internal_get_cmake_policy_version_minimum_assignment(OHOS
             ohos_cmake_policy_version_minimum TYPE TOOLCHAIN_FILE_ASSIGNMENT)
