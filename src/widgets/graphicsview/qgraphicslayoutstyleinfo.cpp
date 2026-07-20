@@ -9,14 +9,17 @@
 #include <QtWidgets/qstyle.h>
 #include <QtWidgets/qwidget.h>
 #include <QtWidgets/qapplication.h>
+#include <QtCore/qthread.h>
 
 QT_BEGIN_NAMESPACE
 
 QGraphicsLayoutStyleInfo::QGraphicsLayoutStyleInfo(const QGraphicsLayoutPrivate *layout)
     : m_layout(layout), m_style(nullptr)
 {
-    m_widget.reset(new QWidget); // pixelMetric might need a widget ptr
-    m_styleOption.initFrom(m_widget.get());
+    if (QThread::isMainThread()) {
+        m_widget = std::make_unique<QWidget>(); // pixelMetric might need a widget ptr
+        m_styleOption.initFrom(m_widget.get());
+    }
     m_isWindow = m_styleOption.state & QStyle::State_Window;
 }
 
