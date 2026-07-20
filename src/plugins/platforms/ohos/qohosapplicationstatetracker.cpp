@@ -22,7 +22,6 @@ namespace
 using WindowSystemEventType = QWindowSystemInterfacePrivate::EventType;
 using WindowSystemEvent = QWindowSystemInterfacePrivate::WindowSystemEvent;
 using WindowStateChangedEvent = QWindowSystemInterfacePrivate::WindowStateChangedEvent;
-using FocusWindowEvent = QWindowSystemInterfacePrivate::FocusWindowEvent;
 using ExposeEvent = QWindowSystemInterfacePrivate::ExposeEvent;
 using ApplicationStateChangedEvent = QWindowSystemInterfacePrivate::ApplicationStateChangedEvent;
 
@@ -102,8 +101,7 @@ ProcessEventResult ApplicationStateTracker::processExposeEvent(ExposeEvent *evt)
 
 ProcessEventResult ApplicationStateTracker::processApplicationStateChangedEvent(ApplicationStateChangedEvent *evt)
 {
-    auto state = evt->newState;
-    m_lastReceivedApplicationState = state;
+    m_lastReceivedApplicationState = evt->newState;
     return ProcessEventResult::Ignore;
 }
 
