@@ -1868,7 +1868,7 @@ static bool getTestQmlModuleDeployDir(const TestQmlModule &testModule, QString &
         deployDir = QDir(testModule.testDir).relativeFilePath(
             QFileInfo(testModule.qmldirPath).absolutePath());
     } else {
-        deployDir = QString(uri).replace(u'.', u'/');
+        deployDir = uri.replace(u'.', u'/');
     }
 
     return true;
