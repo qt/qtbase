@@ -588,7 +588,7 @@ QVariant QMYSQLResult::data(int field)
             else if (f.type.isSameType<char>())
                 return variant.toInt();
             return variant;
-        } else if (qIsTimeOrDate(f.myField->type) && f.bufLength >= sizeof(QT_MYSQL_TIME)) {
+        } else if (qIsTimeOrDate(f.myField->type)) {
             auto t = reinterpret_cast<const QT_MYSQL_TIME *>(f.outField);
             QDate date;
             QTime time;

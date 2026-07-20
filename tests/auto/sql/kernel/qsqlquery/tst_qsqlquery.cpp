@@ -127,6 +127,8 @@ private slots:
     void prepare_bind_exec();
     void prepared_select_data() { generic_data(); }
     void prepared_select();
+    void preparedSelectDate_data() { generic_data(); }
+    void preparedSelectDate();
     void sqlServerLongStrings_data() { generic_data(); }
     void sqlServerLongStrings();
     void invalidQuery_data() { generic_data(); }
@@ -2431,6 +2433,31 @@ void tst_QSqlQuery::prepared_select()
     QVERIFY_SQL(q, prepare(query));
     QCOMPARE(q.at(), QSql::BeforeFirstRow);
     QVERIFY(!q.first());
+}
+
+void tst_QSqlQuery::preparedSelectDate()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    TableScope ts(db, "prepared_select_date", __FILE__);
+    QSqlQuery q(db);
+    QVERIFY_SQL(q, exec(QLatin1String("CREATE TABLE %1 (id int NOT NULL, dt date)")
+                        .arg(ts.tableName())));
+    QVERIFY_SQL(q, prepare(QLatin1String("INSERT INTO %1 VALUES (?, ?)").arg(ts.tableName())));
+    const QDate date(2015, 1, 30);
+    q.addBindValue(1);
+    q.addBindValue(date);
+    QVERIFY_SQL(q, exec());
+
+    // Read the date back through a prepared SELECT, which uses the binary
+    // protocol. Against libmariadb this returned an invalid QDate.
+    QVERIFY_SQL(q, prepare(QLatin1String("SELECT dt FROM %1 WHERE id = ?").arg(ts.tableName())));
+    q.addBindValue(1);
+    QVERIFY_SQL(q, exec());
+    QVERIFY(q.next());
+    QCOMPARE(q.value(0).toDate(), date);
 }
 
 void tst_QSqlQuery::sqlServerLongStrings()
