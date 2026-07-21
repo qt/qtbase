@@ -129,6 +129,9 @@ static QSet<QByteArray> keywords()
 #ifdef Q_OS_WEBOS
             << "webos"
 #endif
+#ifdef Q_OS_HARMONY
+            << "harmonyos"
+#endif
 
 #if QT_POINTER_SIZE == 8
             << "64bit"
