@@ -49,7 +49,9 @@ class QAccessibleViewportInterface;
 
 class Q_GUI_EXPORT QAccessibleInterface
 {
+    Q_DISABLE_COPY_MOVE(QAccessibleInterface)
 protected:
+    QAccessibleInterface() = default;
     virtual ~QAccessibleInterface();
 
 public:
@@ -125,8 +127,11 @@ protected:
 
 class Q_GUI_EXPORT QAccessibleTextInterface
 {
+    Q_DISABLE_COPY_MOVE(QAccessibleTextInterface)
 public:
+    QAccessibleTextInterface() = default;
     virtual ~QAccessibleTextInterface();
+
     // selection
     virtual void selection(int selectionIndex, int *startOffset, int *endOffset) const = 0;
     virtual int selectionCount() const = 0;
@@ -158,7 +163,9 @@ public:
 
 class Q_GUI_EXPORT QAccessibleEditableTextInterface
 {
+    Q_DISABLE_COPY_MOVE(QAccessibleEditableTextInterface)
 public:
+    QAccessibleEditableTextInterface() = default;
     virtual ~QAccessibleEditableTextInterface();
 
     virtual void deleteText(int startOffset, int endOffset) = 0;
@@ -168,7 +175,9 @@ public:
 
 class Q_GUI_EXPORT QAccessibleValueInterface
 {
+    Q_DISABLE_COPY_MOVE(QAccessibleValueInterface)
 public:
+    QAccessibleValueInterface() = default;
     virtual ~QAccessibleValueInterface();
 
     virtual QVariant currentValue() const = 0;
@@ -180,7 +189,9 @@ public:
 
 class Q_GUI_EXPORT QAccessibleTableCellInterface
 {
+    Q_DISABLE_COPY_MOVE(QAccessibleTableCellInterface)
 public:
+    QAccessibleTableCellInterface() = default;
     virtual ~QAccessibleTableCellInterface();
 
     virtual bool isSelected() const = 0;
@@ -197,7 +208,9 @@ public:
 
 class Q_GUI_EXPORT QAccessibleTableInterface
 {
+    Q_DISABLE_COPY_MOVE(QAccessibleTableInterface)
 public:
+    QAccessibleTableInterface() = default;
     virtual ~QAccessibleTableInterface();
 
     virtual QAccessibleInterface *caption() const = 0;
@@ -231,8 +244,10 @@ friend class QAbstractItemViewPrivate;
 
 class Q_GUI_EXPORT QAccessibleActionInterface
 {
+    Q_DISABLE_COPY_MOVE(QAccessibleActionInterface)
     Q_DECLARE_TR_FUNCTIONS(QAccessibleActionInterface)
 public:
+    QAccessibleActionInterface() = default;
     virtual ~QAccessibleActionInterface();
 
     virtual QStringList actionNames() const = 0;
@@ -258,7 +273,9 @@ public:
 
 class Q_GUI_EXPORT QAccessibleImageInterface
 {
+    Q_DISABLE_COPY_MOVE(QAccessibleImageInterface)
 public:
+    QAccessibleImageInterface() = default;
     virtual ~QAccessibleImageInterface();
 
     virtual QString imageDescription() const = 0;
@@ -268,7 +285,9 @@ public:
 
 class Q_GUI_EXPORT QAccessibleHyperlinkInterface
 {
+    Q_DISABLE_COPY_MOVE(QAccessibleHyperlinkInterface)
 public:
+    QAccessibleHyperlinkInterface() = default;
     virtual ~QAccessibleHyperlinkInterface();
 
     virtual QString anchor() const = 0;
@@ -280,7 +299,9 @@ public:
 
 class Q_GUI_EXPORT QAccessibleSelectionInterface
 {
+    Q_DISABLE_COPY_MOVE(QAccessibleSelectionInterface)
 public:
+    QAccessibleSelectionInterface() = default;
     virtual ~QAccessibleSelectionInterface();
 
     virtual int selectedItemCount() const = 0;
@@ -295,15 +316,20 @@ public:
 
 class Q_GUI_EXPORT QAccessibleAttributesInterface
 {
+    Q_DISABLE_COPY_MOVE(QAccessibleAttributesInterface)
 public:
+    QAccessibleAttributesInterface() = default;
     virtual ~QAccessibleAttributesInterface();
+
     virtual QList<QAccessible::Attribute> attributeKeys() const = 0;
     virtual QVariant attributeValue(QAccessible::Attribute key) const = 0;
 };
 
 class Q_GUI_EXPORT QAccessibleViewportInterface
 {
+    Q_DISABLE_COPY_MOVE(QAccessibleViewportInterface)
 public:
+    QAccessibleViewportInterface() = default;
     virtual ~QAccessibleViewportInterface();
 
     virtual QSizeF contentSize() const = 0;
