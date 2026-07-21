@@ -911,7 +911,7 @@ inline bool QQueuedMetaCallEvent::typeFitsInPlace(const QMetaType type)
     \l uic generates code that invokes this function to enable
     auto-connection to be performed between widgets on forms created
     with \e{\QD}. More information about using auto-connection with \e{\QD} is
-    given in the \l{Using a Designer UI File in Your Application} section of
+    given in the \l{Using a Qt Widgets Designer UI File in Your Application} section of
     the \l{Qt Widgets Designer Manual}{\QD} manual.
 
     \section1 Dynamic Properties
