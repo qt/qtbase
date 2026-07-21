@@ -44,6 +44,7 @@ public:
     void notifyConfigurationChange(
         ::InputMethod_EnterKeyType enterKeyType, ::InputMethod_TextInputType textInputType);
     void notifyCursorUpdate(const QRectF &cursorRect);
+    void notifySelectionChange(std::u16string text, int start, int end);
     void setTextAroundCursor(std::u16string leftText, std::u16string rightText, int cursorIndex);
 
 private:

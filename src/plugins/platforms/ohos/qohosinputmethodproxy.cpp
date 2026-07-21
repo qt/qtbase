@@ -446,6 +446,26 @@ void QOhosInputMethodProxy::notifyCursorUpdate(const QRectF &cursorRect)
         Q_FUNC_INFO);
 }
 
+void QOhosInputMethodProxy::notifySelectionChange(std::u16string text, int start, int end)
+{
+    if (!hasAttachedSuccessfully()) {
+        qOhosPrintfError("%s: operation aborted, IMC not attached.", Q_FUNC_INFO);
+        return;
+    }
+
+    QtOhos::runInJsThreadAndWait(
+        [&](QtOhos::JsState &) {
+            ::InputMethod_ErrorCode errcode = QArkUi::callArkUi(
+                Q_OHOS_NAMED_FUNC(::OH_InputMethodProxy_NotifySelectionChange),
+                m_jsScopeData->inputMethodProxy.get(), &text[0], text.size(), start, end);
+            if (errcode != ::InputMethod_ErrorCode::IME_ERR_OK)
+                qOhosPrintfError(
+                    "%s: OH_InputMethodProxy_NotifySelectionChange failed with error code: %d", Q_FUNC_INFO,
+                    errcode);
+        },
+        Q_FUNC_INFO);
+}
+
 void QOhosInputMethodProxy::setTextAroundCursor(
     std::u16string leftText, std::u16string rightText, int cursorIndex)
 {
