@@ -654,6 +654,7 @@ private slots:
     void tokenErrorHandling() const;
     void checkStreamNotationDeclarations() const;
     void checkStreamEntityDeclarations() const;
+    void readElementTextDeepNesting() const;
 
 private:
     static QByteArray readFile(const QString &filename);
@@ -3104,4 +3105,28 @@ void tst_QXmlStream::checkStreamEntityDeclarations() const
         QT_TEST_EQUALITY_OPS(entity, entityDeclarations.at(1), true);
     }
 }
+
+void tst_QXmlStream::readElementTextDeepNesting() const
+{
+    // readElementText(IncludeChildElements) must not recurse per nested element: deep nesting
+    // would otherwise exhaust the stack.
+    constexpr qsizetype depth = 300'000;
+
+    QByteArray xml;
+    xml.reserve(depth * 7 + 8);
+    for (qsizetype i = 0; i < depth; ++i)
+        xml += "<a>";
+    xml += 'x';
+    for (qsizetype i = 0; i < depth; ++i)
+        xml += "</a>";
+
+    QString result;
+    QXmlStreamReader reader(xml);
+    if (reader.readNextStartElement())
+        result = reader.readElementText(QXmlStreamReader::IncludeChildElements);
+    QVERIFY(!reader.hasError());
+
+    QCOMPARE(result, "x"_L1);
+}
+
 #include "tst_qxmlstream.moc"
