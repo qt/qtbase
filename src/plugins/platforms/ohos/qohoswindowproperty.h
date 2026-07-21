@@ -4,7 +4,6 @@
 #ifndef QOHOSWINDOWPROPERTY_H
 #define QOHOSWINDOWPROPERTY_H
 
-#include <qohosplugincore.h>
 #include <qohosutils.h>
 #include <QtCore/qpointer.h>
 #include <QtCore/private/qohoscommon_p.h>
@@ -12,6 +11,7 @@
 #include <QtCore/qvariant.h>
 #include <QtGui/qwindow.h>
 #include <memory>
+#include <optional>
 #include <utility>
 
 QT_BEGIN_NAMESPACE
@@ -45,7 +45,7 @@ template<typename T, const QOhosPropertyDescriptor<T> *propertyPtr>
 void setQOhosPropertyOnQObject(QObject *qObject, T propertyValue);
 
 template<typename T, const QOhosPropertyDescriptor<T> *propertyPtr>
-QOhosOptional<T> tryGetQOhosPropertyFromQObject(QObject *qObject);
+std::optional<T> tryGetQOhosPropertyFromQObject(QObject *qObject);
 
 class QOhosPropertiesStore
 {
@@ -53,7 +53,7 @@ public:
     explicit QOhosPropertiesStore(QObject *qObject);
 
     template<typename T, const QOhosPropertyDescriptor<T> *propertyPtr>
-    QOhosOptional<T> tryGetProperty() const;
+    std::optional<T> tryGetProperty() const;
 
     void notifyPropertyWrite(const QByteArray &propertyName);
 
@@ -97,7 +97,7 @@ public:
     explicit QOhosPropertiesProvider(QOhosPropertiesStore &store);
 
     template<typename T, const QOhosPropertyDescriptor<T> *propertyPtr>
-    QOhosOptional<T> tryGetProperty() const;
+    std::optional<T> tryGetProperty() const;
 
     template<typename T, const QOhosPropertyDescriptor<T> *propertyPtr>
     std::shared_ptr<void> addPropertyWriteCallback(QOhosConsumer<T> propertyWriteCallback);
@@ -112,7 +112,7 @@ template<typename T, const QOhosPropertyDescriptor<T> *propertyPtr>
 const char *qObjectOhosPropertyName();
 
 template<typename T>
-QOhosOptional<T> tryMapFromQVariant(QVariant variant);
+std::optional<T> tryMapFromQVariant(QVariant variant);
 
 }
 
@@ -125,14 +125,14 @@ void setQOhosPropertyOnQObject(QObject *qObject, T propertyValue)
 }
 
 template<typename T, const QOhosPropertyDescriptor<T> *propertyPtr>
-QOhosOptional<T> tryGetQOhosPropertyFromQObject(QObject *qObject)
+std::optional<T> tryGetQOhosPropertyFromQObject(QObject *qObject)
 {
     const char *propertyName = qohoswindowproperty_h_detail::qObjectOhosPropertyName<T, propertyPtr>();
     const auto propertyTypeId = qMetaTypeId<T>();
     auto value = qObject->property(propertyName);
 
     if (!value.isValid())
-        return makeEmptyQOhosOptional();
+        return {};
 
     auto optValue = qohoswindowproperty_h_detail::tryMapFromQVariant<T>(value);
     if (!optValue.has_value()) {
@@ -150,7 +150,7 @@ inline QOhosPropertiesStore::QOhosPropertiesStore(QObject *qObject)
 }
 
 template<typename T, const QOhosPropertyDescriptor<T> *propertyPtr>
-QOhosOptional<T> QOhosPropertiesStore::tryGetProperty() const
+std::optional<T> QOhosPropertiesStore::tryGetProperty() const
 {
     return tryGetQOhosPropertyFromQObject<T, propertyPtr>(objectOrFail());
 }
@@ -253,7 +253,7 @@ inline QOhosPropertiesProvider::QOhosPropertiesProvider(QOhosPropertiesStore &st
 }
 
 template<typename T, const QOhosPropertyDescriptor<T> *propertyPtr>
-QOhosOptional<T> QOhosPropertiesProvider::tryGetProperty() const
+std::optional<T> QOhosPropertiesProvider::tryGetProperty() const
 {
     return m_store->tryGetProperty<T, propertyPtr>();
 }
@@ -273,21 +273,21 @@ const char *qObjectOhosPropertyName()
 }
 
 template<typename T>
-QOhosOptional<T> tryMapFromQVariant(QVariant variant)
+std::optional<T> tryMapFromQVariant(QVariant variant)
 {
     return qMetaTypeId<T>() == variant.userType()
-        ? makeQOhosOptional(variant.value<T>())
-        : makeEmptyQOhosOptional();
+        ? std::optional(variant.value<T>())
+        : std::nullopt;
 }
 
 template<>
-inline QOhosOptional<QWindow *> tryMapFromQVariant<QWindow *>(QVariant variant)
+inline std::optional<QWindow *> tryMapFromQVariant<QWindow *>(QVariant variant)
 {
     if (!variant.canConvert<QWindow *>())
-        return makeEmptyQOhosOptional();
+        return {};
     return !variant.isNull()
-        ? makeQOhosOptional(reinterpret_cast<QWindow *>(variant.value<QObject*>()))
-        : makeQOhosOptional<QWindow *>(nullptr);
+        ? std::optional(reinterpret_cast<QWindow *>(variant.value<QObject*>()))
+        : std::optional<QWindow *>(nullptr);
 }
 
 }

@@ -5,7 +5,6 @@
 #define QOHOSPLATFORMBACKINGSTORE_H
 
 #include <qohosplatformwindow.h>
-#include <qohosplugincore.h>
 #include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/qspan.h>
 #include <QtGui/qimage.h>
@@ -21,6 +20,7 @@
 #include <memory>
 #include <native_window/buffer_handle.h>
 #include <native_window/external_window.h>
+#include <optional>
 #include <unordered_map>
 #include <utility>
 
@@ -49,7 +49,7 @@ public:
     public:
         BufferRegionHandler(::OHNativeWindow *nativeWindow);
 
-        QOhosOptional<QRegion> mergeRegionForBufferHandle(::BufferHandle *bufferHandle, QRegion region) const;
+        std::optional<QRegion> mergeRegionForBufferHandle(::BufferHandle *bufferHandle, QRegion region) const;
         void storeRegionForBufferHandle(::BufferHandle *bufferHandle, const QRegion &region);
 
     private:

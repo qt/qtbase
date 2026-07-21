@@ -472,7 +472,7 @@ void QOhosPlatformWindow::handleDpiChange()
 
 std::shared_ptr<void> QOhosPlatformWindow::setSurfaceConsumer(
     QWindow *targetWindow, QObject *surfaceConsumerContext,
-    std::function<void(QOhosOptional<void *>)> surfaceConsumer)
+    std::function<void(std::optional<void *>)> surfaceConsumer)
 {
     qCDebug(
         QtForOhos,
@@ -508,22 +508,22 @@ std::shared_ptr<void> QOhosPlatformWindow::setSurfaceConsumer(
                 auto *surface = view->surfaceOrNull();
                 (*sharedSurfaceConsumer)(
                     surface != nullptr
-                        ? QOhosOptional<void *>(surface->nativeWindow())
-                        : makeEmptyQOhosOptional());
+                        ? std::optional<void *>(surface->nativeWindow())
+                        : std::nullopt);
             },
             Qt::QueuedConnection);
     }
 
     auto surfaceStatusChangedConnectionHandle = QObject::connect(
         view, &QOhosView::surfaceStatusChanged, surfaceConsumerContext,
-        [view = QPointer<QOhosView>(view), sharedSurfaceConsumer](const QOhosOptional<QSize> &) {
+        [view = QPointer<QOhosView>(view), sharedSurfaceConsumer](const std::optional<QSize> &) {
             if (view == nullptr)
                 return;
             auto *surface = view->surfaceOrNull();
             (*sharedSurfaceConsumer)(
                 surface != nullptr
-                    ? QOhosOptional<void *>(surface->nativeWindow())
-                    : makeEmptyQOhosOptional());
+                    ? std::optional<void *>(surface->nativeWindow())
+                    : std::nullopt);
         });
 
     if (!surfaceStatusChangedConnectionHandle) {
@@ -537,7 +537,7 @@ std::shared_ptr<void> QOhosPlatformWindow::setSurfaceConsumer(
     auto viewDestroyedConnectionHandle = QObject::connect(
         view, &QObject::destroyed, surfaceConsumerContext,
         [sharedSurfaceConsumer]() {
-            (*sharedSurfaceConsumer)(makeEmptyQOhosOptional());
+            (*sharedSurfaceConsumer)({});
         },
         Qt::QueuedConnection);
 
@@ -567,7 +567,7 @@ QPixmap QOhosPlatformWindow::makeSnapshot() const
     return ownedViewOrNull() != nullptr ? ownedViewOrNull()->makeSnapshot() : QPixmap();
 }
 
-void QOhosPlatformWindow::setDisplayIdFromOhos(QOhosOptional<QOhosDisplayInfo::JsDisplayId> displayId)
+void QOhosPlatformWindow::setDisplayIdFromOhos(std::optional<QOhosDisplayInfo::JsDisplayId> displayId)
 {
     if (m_displayId != displayId) {
         m_displayId = displayId;

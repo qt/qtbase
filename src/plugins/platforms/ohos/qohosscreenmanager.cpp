@@ -52,14 +52,14 @@ QOhosPlatformScreen *QOhosScreenManager::QOhosPlatformScreenHolder::platformScre
     return m_platformScreen;
 }
 
-QOhosOptional<QOhosDisplayInfo> QOhosScreenManager::QOhosPlatformScreenHolder::displayInfoOrEmpty() const
+std::optional<QOhosDisplayInfo> QOhosScreenManager::QOhosPlatformScreenHolder::displayInfoOrEmpty() const
 {
     return m_platformScreen != nullptr
-        ? makeQOhosOptional(m_platformScreen->displayInfo())
-        : makeEmptyQOhosOptional();
+        ? std::optional(m_platformScreen->displayInfo())
+        : std::nullopt;
 }
 
-QOhosOptional<QOhosDisplayInfo::JsDisplayId> QOhosScreenManager::QOhosPlatformScreenHolder::displayIdOrEmpty() const
+std::optional<QOhosDisplayInfo::JsDisplayId> QOhosScreenManager::QOhosPlatformScreenHolder::displayIdOrEmpty() const
 {
     return qTransform(
         displayInfoOrEmpty(),

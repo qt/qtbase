@@ -7,9 +7,9 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/qmap.h>
 #include <napi.h>
+#include <optional>
 #include <qohosplatformscreen.h>
 #include <qohosplatformwindow.h>
-#include <qohosplugincore.h>
 #include <render/qohossurface.h>
 #include <render/qohosview.h>
 
@@ -61,14 +61,14 @@ private:
     void handleAvoidAreaChanged(QOhosWindowProxy::AvoidAreaType avoidAreaType,
                                 const QOhosWindowProxy::AvoidArea &systemAvoidArea);
     void handleWindowRectChanged(const QOhosWindowProxy::RectChangeOptions &rectChangeOptions);
-    void handleSurfaceStatusChanged(const QOhosOptional<QSize> &optSurfaceSize);
+    void handleSurfaceStatusChanged(const std::optional<QSize> &optSurfaceSize);
     void handleWindowDisplayIdChanged(QOhosDisplayInfo::JsDisplayId displayId);
 
     std::unique_ptr<QOhosView> m_view;
-    QOhosOptional<QOhosWindowProxy::WindowEventType> m_lastWindowEventType;
-    QOhosOptional<QOhosWindowProxy::WindowStatusType> m_lastWindowStatusType;
-    QOhosOptional<QRegion> m_windowMask;
-    QOhosOptional<QSize> m_optLastSurfaceSize;
+    std::optional<QOhosWindowProxy::WindowEventType> m_lastWindowEventType;
+    std::optional<QOhosWindowProxy::WindowStatusType> m_lastWindowStatusType;
+    std::optional<QRegion> m_windowMask;
+    std::optional<QSize> m_optLastSurfaceSize;
     QMap<QOhosWindowProxy::AvoidAreaType, QOhosWindowProxy::AvoidArea> m_avoidAreaCache;
     QBasicTimer m_geometryChangeTimer;
 };

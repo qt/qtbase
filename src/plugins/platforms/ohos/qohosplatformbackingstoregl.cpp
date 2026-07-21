@@ -10,6 +10,7 @@
 #include <QtGui/qopenglfunctions.h>
 #include <QtOpenGL/qopengltextureblitter.h>
 #include <memory>
+#include <optional>
 #include <qohosplatformscreen.h>
 #include <qohosplatformwindow.h>
 #include <render/qohosview.h>
@@ -91,10 +92,10 @@ struct RenderContextData
     QRect unscaledWindowGeometry;
     QSize surfaceResolution;
 
-    static QOhosOptional<RenderContextData> tryCreateForQWindow(QWindow *window);
+    static std::optional<RenderContextData> tryCreateForQWindow(QWindow *window);
 };
 
-QOhosOptional<RenderContextData> RenderContextData::tryCreateForQWindow(QWindow *window)
+std::optional<RenderContextData> RenderContextData::tryCreateForQWindow(QWindow *window)
 {
     auto *platformWindow = QOhosPlatformWindow::fromQWindowOrNull(window);
     if (platformWindow == nullptr)
@@ -106,7 +107,7 @@ QOhosOptional<RenderContextData> RenderContextData::tryCreateForQWindow(QWindow 
 
     auto optSurfaceResolution = view->surfaceResolution();
     return optSurfaceResolution.has_value()
-        ? makeQOhosOptional(
+        ? std::optional(
             RenderContextData{
                 .qWindow = window,
                 .platformWindow = platformWindow,
@@ -114,7 +115,7 @@ QOhosOptional<RenderContextData> RenderContextData::tryCreateForQWindow(QWindow 
                 .unscaledWindowGeometry = platformWindow->windowGeometry(),
                 .surfaceResolution = optSurfaceResolution.value(),
             })
-        : makeEmptyQOhosOptional();
+        : std::nullopt;
 }
 
 class QOhosPlatformBackingStoreGL : public QPlatformBackingStore
@@ -141,7 +142,7 @@ private:
     std::unique_ptr<QOpenGLContext> m_glContext;
     std::unique_ptr<QOpenGLFramebufferObject> m_framebuffer;
     std::unique_ptr<QOpenGLTextureBlitter> m_blitter;
-    QOhosOptional<QSize> m_pendingResizeRequest;
+    std::optional<QSize> m_pendingResizeRequest;
 };
 
 
@@ -237,7 +238,7 @@ void QOhosPlatformBackingStoreGL::beginPaint(const QRegion &)
     if (!m_framebuffer)
         return;
 
-    m_pendingResizeRequest = makeEmptyQOhosOptional();
+    m_pendingResizeRequest = {};
 
     m_glContext->makeCurrent(window());
     m_framebuffer->bind();

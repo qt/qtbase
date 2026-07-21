@@ -186,7 +186,7 @@ void QOhosFloatingWindow::initialize()
     QObject::connect(
         m_view.get(), &QOhosView::surfaceStatusChanged,
         qWindow,
-        [this](const QOhosOptional<QSize> &optSurfaceSize) { handleSurfaceStatusChanged(optSurfaceSize); });
+        [this](const std::optional<QSize> &optSurfaceSize) { handleSurfaceStatusChanged(optSurfaceSize); });
 
     QObject::connect(qWindow, &QWindow::windowTitleChanged, m_view.get(), &QOhosView::setTitle);
 
@@ -271,7 +271,7 @@ void QOhosFloatingWindow::handleWindowEvent(QOhosWindowProxy::WindowEvent evt)
     bool windowAcceptsFocusAndInput = checkWindowAcceptsFocus() && checkWindowAcceptsInput();
     Qt::WindowStates windowStatesToSet = windowStates();
     bool windowActive = true;
-    auto previousWindowEventType = std::exchange(m_lastWindowEventType, makeQOhosOptional(evt.type));
+    auto previousWindowEventType = std::exchange(m_lastWindowEventType, evt.type);
 
     switch (evt.type) {
     case QOhosWindowProxy::WindowEventType::WINDOW_ACTIVE:
@@ -445,7 +445,7 @@ void QOhosFloatingWindow::handleAvoidAreaChanged(
     }
 }
 
-void QOhosFloatingWindow::handleSurfaceStatusChanged(const QOhosOptional<QSize> &optSurfaceSize)
+void QOhosFloatingWindow::handleSurfaceStatusChanged(const std::optional<QSize> &optSurfaceSize)
 {
     m_optLastSurfaceSize = optSurfaceSize;
     bool hasSurface = m_view->surfaceOrNull() != nullptr;
@@ -459,7 +459,7 @@ void QOhosFloatingWindow::handleSurfaceStatusChanged(const QOhosOptional<QSize> 
 
 void QOhosFloatingWindow::handleWindowDisplayIdChanged(QOhosDisplayInfo::JsDisplayId displayId)
 {
-    setDisplayIdFromOhos(makeQOhosOptional(displayId));
+    setDisplayIdFromOhos(displayId);
     startAsyncWaitForNodeResizeIfNeeded();
 }
 
