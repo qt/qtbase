@@ -236,7 +236,7 @@ QOhosPlatformBackingStore::BufferRegionHandler::BufferRegionHandler(::OHNativeWi
 {
 }
 
-QOhosOptional<QRegion> QOhosPlatformBackingStore::BufferRegionHandler::mergeRegionForBufferHandle(
+std::optional<QRegion> QOhosPlatformBackingStore::BufferRegionHandler::mergeRegionForBufferHandle(
     ::BufferHandle *bufferHandle,
     QRegion region) const
 {
@@ -251,7 +251,7 @@ QOhosOptional<QRegion> QOhosPlatformBackingStore::BufferRegionHandler::mergeRegi
     for (auto it = m_lastFlushedRegions.cend() - numberOfRegions; it != m_lastFlushedRegions.cend(); ++it)
         region = region.united(*it);
 
-    return makeQOhosOptional(region);
+    return region;
 }
 
 void QOhosPlatformBackingStore::BufferRegionHandler::storeRegionForBufferHandle(

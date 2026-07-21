@@ -21,7 +21,7 @@ QOhosDisplayInfo QOhosDisplayInfo::makeFromOhosDisplayObject(QtOhos::JsState &js
 {
     constexpr auto forceEmptyTopLevelOffsetPixels  = false;
 
-    auto sourceMode = makeQOhosOptional(
+    auto sourceMode = std::optional(
         jsState.mapOhosEnumFromJs<DisplaySourceMode>(
             displayObject.get<QNapi::Number>("sourceMode")));
 
@@ -42,13 +42,13 @@ QOhosDisplayInfo QOhosDisplayInfo::makeFromOhosDisplayObject(QtOhos::JsState &js
         .topLeftOffsetPixels = !forceEmptyTopLevelOffsetPixels
             ? qAndThen(sourceMode, [&](DisplaySourceMode mode) {
                 return mode == DisplaySourceMode::MAIN || mode == DisplaySourceMode::EXTEND
-                    ? makeQOhosOptional(
+                    ? std::optional(
                         QPoint(
                             displayObject.get<QNapi::Number>("x"),
                             displayObject.get<QNapi::Number>("y")))
-                    : makeEmptyQOhosOptional();
+                    : std::nullopt;
             })
-            : makeEmptyQOhosOptional()
+            : std::nullopt
     };
 
     // The value obtained via displayObject.get<QNapi::Number>("densityDPI") has only float precision.
@@ -61,9 +61,9 @@ QOhosDisplayInfo QOhosDisplayInfo::makeFromOhosDisplayObject(QtOhos::JsState &js
     return result;
 }
 
-QOhosOptional<QNapi::Object> QOhosDisplayInfo::tryGetDisplayById(QtOhos::JsState &jsState, QOhosDisplayInfo::JsDisplayId displayId)
+std::optional<QNapi::Object> QOhosDisplayInfo::tryGetDisplayById(QtOhos::JsState &jsState, QOhosDisplayInfo::JsDisplayId displayId)
 {
-    QOhosOptional<QNapi::Object> result;
+    std::optional<QNapi::Object> result;
     try {
         result = jsState.eval<QNapi::Object>(
             "@ohos.display.getDisplayByIdSync(*)", { displayId.value() });

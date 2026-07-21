@@ -9,10 +9,10 @@
 #include <QtCore/private/qnapi_p.h>
 #include <QtCore/private/qohoscommon_p.h>
 #include <memory>
+#include <optional>
 #include <qarkui/displaymanager.h>
 #include <qohosdisplayinfo.h>
 #include <qohosplatformscreen.h>
-#include <qohosplugincore.h>
 #include <vector>
 
 QT_BEGIN_NAMESPACE
@@ -43,8 +43,8 @@ private:
         ~QOhosPlatformScreenHolder();
 
         QOhosPlatformScreen *platformScreenOrNull() const;
-        QOhosOptional<QOhosDisplayInfo> displayInfoOrEmpty() const;
-        QOhosOptional<JsDisplayId> displayIdOrEmpty() const;
+        std::optional<QOhosDisplayInfo> displayInfoOrEmpty() const;
+        std::optional<JsDisplayId> displayIdOrEmpty() const;
 
     private:
         QPointer<QOhosPlatformScreen> m_platformScreen;

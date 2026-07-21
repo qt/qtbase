@@ -8,6 +8,7 @@
 #include <QtCore/private/qnapi_p.h>
 #include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/qstring.h>
+#include <optional>
 #include <qohosenums.h>
 #include <qohosplugincore.h>
 #include <qohosutils.h>
@@ -24,7 +25,7 @@ struct QOhosDisplayInfo
     using JsDisplayId = QtOhos::TypedId<double, struct JsDisplayIdTag>;
 
     static QOhosDisplayInfo makeFromOhosDisplayObject(QtOhos::JsState &jsState, QNapi::Object displayObject);
-    static QOhosOptional<QNapi::Object> tryGetDisplayById(QtOhos::JsState &jsState, QOhosDisplayInfo::JsDisplayId displayId);
+    static std::optional<QNapi::Object> tryGetDisplayById(QtOhos::JsState &jsState, QOhosDisplayInfo::JsDisplayId displayId);
 
     JsDisplayId id;
     QString name;
@@ -34,9 +35,9 @@ struct QOhosDisplayInfo
     double densityScaled;
     uint refreshRate;
     QDpi dpi;
-    QOhosOptional<JsDisplayOrientation> orientation;
-    QOhosOptional<DisplaySourceMode> sourceMode;
-    QOhosOptional<QPoint> topLeftOffsetPixels;
+    std::optional<JsDisplayOrientation> orientation;
+    std::optional<DisplaySourceMode> sourceMode;
+    std::optional<QPoint> topLeftOffsetPixels;
 
     QRect displayGeometryPixels() const;
     QSizeF physicalSize() const;

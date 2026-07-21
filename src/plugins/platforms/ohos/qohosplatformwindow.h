@@ -14,7 +14,6 @@
 #include <optional>
 #include <qohosdisplayinfo.h>
 #include <qohosinternalwindowid_p.h>
-#include <qohosplugincore.h>
 #include <qohoswindowproperty.h>
 #include <qpa/qplatformwindow.h>
 #include <render/qohossurface.h>
@@ -60,11 +59,11 @@ public:
     static void setWindowOrWidgetProperty(QObject *windowOrWidget, T propertyValue);
 
     template<typename T, const QOhosPropertyDescriptor<T> *propertyPtr>
-    static QOhosOptional<T> tryGetWindowOrWidgetProperty(QObject *windowOrWidget);
+    static std::optional<T> tryGetWindowOrWidgetProperty(QObject *windowOrWidget);
 
     static std::shared_ptr<void> setSurfaceConsumer(
         QWindow *targetWindow, QObject *surfaceConsumerContext,
-        std::function<void(QOhosOptional<void *>)> surfaceConsumer);
+        std::function<void(std::optional<void *>)> surfaceConsumer);
 
     explicit QOhosPlatformWindow(QWindow *window);
 
@@ -125,7 +124,7 @@ protected:
     void setWindowStateFromOhos(Qt::WindowStates state);
     void setWindowMarginsFromOhos(const QMargins &margins);
     void setExposedFromOhos(bool exposed);
-    void setDisplayIdFromOhos(QOhosOptional<QOhosDisplayInfo::JsDisplayId> displayId);
+    void setDisplayIdFromOhos(std::optional<QOhosDisplayInfo::JsDisplayId> displayId);
     void setWindowGeometryFromOhos(const QRect &nativeWindowDrawGeometry);
     void notifyWindowDestroyedFromOhos();
     bool checkWindowAcceptsFocus() const;
@@ -149,13 +148,13 @@ protected:
     QtOhos::InternalWindowId m_windowId = QtOhos::InternalWindowId::invalidWindowId();
     QRect m_oldGeometry;
     std::unique_ptr<QMargins> m_optFrameMargins;
-    QOhosOptional<QCursor> m_cursor;
+    std::optional<QCursor> m_cursor;
 
 private:
     void sendExposeUpdate();
 
     QPlatformWindow *m_parent {nullptr};
-    QOhosOptional<QOhosDisplayInfo::JsDisplayId> m_displayId;
+    std::optional<QOhosDisplayInfo::JsDisplayId> m_displayId;
     QOhosPropertiesStore m_propertiesStore;
     bool m_exposed = false;
     QRect m_lastRequestedWindowFrameGeometry;
@@ -178,7 +177,7 @@ void QOhosPlatformWindow::setWindowOrWidgetProperty(QObject *windowOrWidget, T p
 }
 
 template<typename T, const QOhosPropertyDescriptor<T> *propertyPtr>
-QOhosOptional<T> QOhosPlatformWindow::tryGetWindowOrWidgetProperty(QObject *windowOrWidget)
+std::optional<T> QOhosPlatformWindow::tryGetWindowOrWidgetProperty(QObject *windowOrWidget)
 {
     return tryGetQOhosPropertyFromQObject<T, propertyPtr>(windowOrWidget);
 }

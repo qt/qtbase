@@ -16,6 +16,7 @@
 #include "render/qohosview.h"
 #include <algorithm>
 #include <multimedia/image_framework/image/pixelmap_native.h>
+#include <optional>
 #include <qarkui/qarkuiutils.h>
 #include <qguiapplication.h>
 #include <qohosapppermissions_p.h>
@@ -144,19 +145,19 @@ QPixmap grabWindowFromCapturedScreenPixmap(
     return result;
 }
 
-QOhosOptional<Qt::ScreenOrientation> tryMapJsDisplayOrientationToQt(QOhosDisplayInfo::JsDisplayOrientation jsDisplayOrientation)
+std::optional<Qt::ScreenOrientation> tryMapJsDisplayOrientationToQt(QOhosDisplayInfo::JsDisplayOrientation jsDisplayOrientation)
 {
     using JsDisplayOrientation = QOhosDisplayInfo::JsDisplayOrientation;
 
     switch (jsDisplayOrientation) {
     case JsDisplayOrientation::PORTRAIT:
-        return makeQOhosOptional(Qt::ScreenOrientation::PortraitOrientation);
+        return Qt::ScreenOrientation::PortraitOrientation;
     case JsDisplayOrientation::LANDSCAPE:
-        return makeQOhosOptional(Qt::ScreenOrientation::LandscapeOrientation);
+        return Qt::ScreenOrientation::LandscapeOrientation;
     case JsDisplayOrientation::PORTRAIT_INVERTED:
-        return makeQOhosOptional(Qt::ScreenOrientation::InvertedPortraitOrientation);
+        return Qt::ScreenOrientation::InvertedPortraitOrientation;
     case JsDisplayOrientation::LANDSCAPE_INVERTED:
-        return makeQOhosOptional(Qt::ScreenOrientation::InvertedLandscapeOrientation);
+        return Qt::ScreenOrientation::InvertedLandscapeOrientation;
     }
 
     return {};
@@ -210,7 +211,7 @@ void QOhosPlatformScreen::setDisplayInfo(const QOhosDisplayInfo &displayInfo)
     auto geometryChanged = displayInfo.displayGeometryPixels() != m_displayInfo.displayGeometryPixels();
     auto logicalDpiChanged = displayInfo.densityDPI != m_displayInfo.densityDPI;
 
-    QVector<QPair<QWindow *, QOhosOptional<QRect>>> windowRectPairs;
+    QVector<QPair<QWindow *, std::optional<QRect>>> windowRectPairs;
 
     if (logicalDpiChanged) {
         for (auto *window : qGuiApp->allWindows()) {
@@ -225,8 +226,8 @@ void QOhosPlatformScreen::setDisplayInfo(const QOhosDisplayInfo &displayInfo)
             windowRectPairs.push_back({
                 window,
                 ownedView->viewType() == QOhosView::ViewType::EmbeddedWindow
-                    ? makeQOhosOptional(window->geometry())
-                    : makeEmptyQOhosOptional()});
+                    ? std::optional(window->geometry())
+                    : std::nullopt});
         }
     }
 
