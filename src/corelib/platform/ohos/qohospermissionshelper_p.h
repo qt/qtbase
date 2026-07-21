@@ -35,7 +35,7 @@ public:
 
     virtual ~QOhosPermissionsHelper() = default;
 
-    virtual bool isPermissionGranted(const QString &permissionName) const = 0;
+    virtual QList<Qt::PermissionStatus> checkStatusesOfPermissions(const QStringList &permissionNames) const = 0;
 
     virtual void requestPermissionsFromUserIfNeeded(
         const QStringList &permissionNames, QObject *resultConsumerContext,

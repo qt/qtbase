@@ -47,6 +47,18 @@ enum class SharePreviewMode {
 
 namespace ohos {
 
+namespace abilityAccessCtrl {
+
+enum class PermissionStatus {
+    DENIED,
+    GRANTED,
+    INVALID,
+    NOT_DETERMINED,
+    RESTRICTED,
+};
+
+}
+
 namespace app {
 
 namespace ability {
@@ -421,6 +433,20 @@ struct OhosEnumMeta<enums::kit::ShareKit::systemShare::SharePreviewMode>
     static constexpr std::array<std::pair<Enum, const char *>, 2> enumeratorsNames = {{
         {Enum::DEFAULT, "DEFAULT"},
         {Enum::DETAIL, "DETAIL"},
+    }};
+};
+
+template<>
+struct OhosEnumMeta<enums::ohos::abilityAccessCtrl::PermissionStatus>
+{
+    using Enum = enums::ohos::abilityAccessCtrl::PermissionStatus;
+    static constexpr const char *fullTypeName = "@ohos.abilityAccessCtrl.PermissionStatus";
+    static constexpr std::array<std::pair<Enum, const char *>, 5> enumeratorsNames = {{
+        {Enum::DENIED, "DENIED"},
+        {Enum::GRANTED, "GRANTED"},
+        {Enum::INVALID, "INVALID"},
+        {Enum::NOT_DETERMINED, "NOT_DETERMINED"},
+        {Enum::RESTRICTED, "RESTRICTED"},
     }};
 };
 
@@ -855,6 +881,7 @@ QT_END_NAMESPACE
 Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::kit::ShareKit::systemShare::SelectionMode));
 Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::kit::ShareKit::systemShare::ShareAbilityType));
 Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::kit::ShareKit::systemShare::SharePreviewMode));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::abilityAccessCtrl::PermissionStatus));
 Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::app::ability::AbilityConstant::ContinueState));
 Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::app::ability::AbilityConstant::LaunchReason));
 Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::app::ability::AbilityConstant::OnContinueResult));
