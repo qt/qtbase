@@ -9,7 +9,6 @@
 #include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/private/qohoslogger_p.h>
 #include <qohosclipboardobject.h>
-#include <qohosplugincore.h>
 #include <functional>
 #include <utility>
 
@@ -18,23 +17,23 @@ QT_BEGIN_NAMESPACE
 namespace {
 
 std::shared_ptr<QOhosClipboardObject> makeClipboardObjectInstance(
-    std::function<void(QOhosOptional<QOhosClipboardObject::PasteboardDataSource>)> &&pasteboardUpdatesNotifier)
+    std::function<void(std::optional<QOhosClipboardObject::PasteboardDataSource>)> &&pasteboardUpdatesNotifier)
 {
     return QOhosClipboardObject::makeInstance(std::move(pasteboardUpdatesNotifier));
 }
 
 }
 
-QOhosOptional<bool> &QOhosPlatformClipboard::shareInAppOnlyFlagRef()
+std::optional<bool> &QOhosPlatformClipboard::shareInAppOnlyFlagRef()
 {
-    static QOhosOptional<bool> shareInAppOnly;
+    static std::optional<bool> shareInAppOnly;
     return shareInAppOnly;
 }
 
 QOhosPlatformClipboard::QOhosPlatformClipboard()
 {
     m_clipboardObject = makeClipboardObjectInstance(
-        [this](QOhosOptional<QOhosClipboardObject::PasteboardDataSource> dataSource) {
+        [this](std::optional<QOhosClipboardObject::PasteboardDataSource> dataSource) {
             if (dataSource == QOhosClipboardObject::PasteboardDataSource::OtherProcess
                 || (!dataSource.has_value() && m_mimeData)) {
                 m_mimeData = nullptr;
@@ -73,7 +72,7 @@ void QOhosPlatformClipboard::setMimeData(QMimeData *mimeData, QClipboard::Mode m
         if (mimeData != nullptr) {
             m_clipboardObject->setMimeDataSync(m_mimeData, shareInAppOnlyFlagRef());
             // HACK: reset share option state for next to come UdmfData to cross-app + cross-device.
-            shareInAppOnlyFlagRef() = makeEmptyQOhosOptional();
+            shareInAppOnlyFlagRef() = {};
         } else {
             m_clipboardObject->setMimeDataSync(std::make_shared<QMimeData>(), {});
         }

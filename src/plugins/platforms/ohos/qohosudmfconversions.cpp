@@ -68,7 +68,7 @@ private:
 
 struct UdmfRecordEntryMetaFactory
 {
-    QOhosSupplier<QOhosOptional<std::string>> optUdmfMetaIdFactory;
+    QOhosSupplier<std::optional<std::string>> optUdmfMetaIdFactory;
     std::function<UdmfRecordEntryFactory(const QMimeData &)> metaFactoryFunc;
 };
 
@@ -92,10 +92,10 @@ std::vector<std::uint8_t> getAppInfoDataForThisProcess()
 }
 
 template<typename T>
-QOhosOptional<T> tryEvalInQtThreadWithConsumer(
+std::optional<T> tryEvalInQtThreadWithConsumer(
     std::function<void(QOhosConsumer<T>)> qtEvalFunc, ch::nanoseconds timeout)
 {
-    auto sharedResultBox = std::make_shared<QOhosOptional<T>>();
+    auto sharedResultBox = std::make_shared<std::optional<T>>();
 
     auto qtTaskFinished = QtOhos::tryInvokeInQtThreadAndTryWaitForContinue(
         [sharedResultBox, qtEvalFunc = std::move(qtEvalFunc)](std::function<void()> continueFunc) {
@@ -109,7 +109,7 @@ QOhosOptional<T> tryEvalInQtThreadWithConsumer(
 
     return qtTaskFinished
         ? std::move(*sharedResultBox)
-        : makeEmptyQOhosOptional();
+        : std::nullopt;
 }
 
 template<typename T, typename K>
@@ -123,10 +123,10 @@ std::vector<T> getMapKeys(const std::map<T, K> &inputMap)
 }
 
 template<typename T>
-QOhosSupplier<QOhosOptional<T>> makeOptionalValueSupplier(T value)
+QOhosSupplier<std::optional<T>> makeOptionalValueSupplier(T value)
 {
     return [value = std::move(value)]() {
-        return makeQOhosOptional(value);
+        return std::optional(value);
     };
 }
 
@@ -699,7 +699,7 @@ std::function<QOhosUdmfRecord()> tryMakeDefaultUdmfRecordFactoryFromQMimeDataOrN
 }
 
 std::function<QOhosUdmfData()> makeUdmfDataFactoryFromQMimeDataImpl(
-    const QMimeData &mimeData, const QOhosOptional<bool> &shareInAppOnly,
+    const QMimeData &mimeData, const std::optional<bool> &shareInAppOnly,
     std::shared_ptr<QMimeData> optLazyProcessingMimeData = nullptr)
 {
     std::vector<std::function<QOhosUdmfRecord()>> recordFactories;
@@ -754,13 +754,13 @@ std::function<QOhosUdmfData()> makeUdmfDataFactoryFromQMimeDataImpl(
 }
 
 std::function<QOhosUdmfData()> makeUdmfDataFactoryFromQMimeData(
-    const QMimeData &mimeData, const QOhosOptional<bool> &shareInAppOnly)
+    const QMimeData &mimeData, const std::optional<bool> &shareInAppOnly)
 {
     return makeUdmfDataFactoryFromQMimeDataImpl(mimeData, shareInAppOnly, nullptr);
 }
 
 std::function<QOhosUdmfData()> makeLazyProcessingUdmfDataFactoryFromQMimeData(
-    std::shared_ptr<QMimeData> mimeData, const QOhosOptional<bool> &shareInAppOnly)
+    std::shared_ptr<QMimeData> mimeData, const std::optional<bool> &shareInAppOnly)
 {
     return makeUdmfDataFactoryFromQMimeDataImpl(*mimeData, shareInAppOnly, mimeData);
 }
@@ -847,7 +847,7 @@ bool isQOhosUdmfDataConvertedFromThisProcessMimeData(QOhosUdmfData &udmfData)
         });
 }
 
-QOhosOptional<std::string> tryMapUtdTypeIdToMimeType(const std::string &utdTypeId)
+std::optional<std::string> tryMapUtdTypeIdToMimeType(const std::string &utdTypeId)
 {
     auto optUtdWithTypeId = utdCreateOrNull(utdTypeId);
     auto mimeTypes = optUtdWithTypeId
@@ -855,11 +855,11 @@ QOhosOptional<std::string> tryMapUtdTypeIdToMimeType(const std::string &utdTypeI
         : std::vector<std::string>();
 
     return !mimeTypes.empty()
-        ? makeQOhosOptional(mimeTypes.front())
-        : makeEmptyQOhosOptional();
+        ? std::optional(mimeTypes.front())
+        : std::nullopt;
 }
 
-QOhosOptional<std::string> tryMapMimeTypeToUtdTypeId(const std::string &mimeType)
+std::optional<std::string> tryMapMimeTypeToUtdTypeId(const std::string &mimeType)
 {
     // FIXME: the `utdGetTypesByMimeType()` result interpretation is not quite clear.
     // Documentaion does not mention why there is a list of possible type ids.
@@ -868,8 +868,8 @@ QOhosOptional<std::string> tryMapMimeTypeToUtdTypeId(const std::string &mimeType
     auto utdTypeIds = utdGetTypesByMimeType(mimeType);
     return
         !utdTypeIds.empty()
-            ? makeQOhosOptional(utdTypeIds.front())
-            : makeEmptyQOhosOptional();
+            ? std::optional(utdTypeIds.front())
+            : std::nullopt;
 }
 
 QT_END_NAMESPACE

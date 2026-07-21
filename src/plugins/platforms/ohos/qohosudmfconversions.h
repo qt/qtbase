@@ -9,7 +9,7 @@
 #include <database/udmf/udmf.h>
 #include <functional>
 #include <memory>
-#include <qohosplugincore.h>
+#include <optional>
 #include <qohosudmf.h>
 #include <string>
 #include <vector>
@@ -17,10 +17,10 @@
 QT_BEGIN_NAMESPACE
 
 std::function<QOhosUdmfData()> makeUdmfDataFactoryFromQMimeData(
-    const QMimeData &mimeData, const QOhosOptional<bool> &shareInAppOnly);
+    const QMimeData &mimeData, const std::optional<bool> &shareInAppOnly);
 
 std::function<QOhosUdmfData()> makeLazyProcessingUdmfDataFactoryFromQMimeData(
-    std::shared_ptr<QMimeData> mimeData, const QOhosOptional<bool> &shareInAppOnly);
+    std::shared_ptr<QMimeData> mimeData, const std::optional<bool> &shareInAppOnly);
 
 QOhosSupplier<std::unique_ptr<QMimeData>> createQMimeDataFactoryFromUdmfData(QOhosUdmfData udmfData);
 
@@ -31,9 +31,9 @@ QOhosSupplier<std::unique_ptr<QMimeData>> makeDummyQMimeDataFactoryFromUdmfDataT
 
 bool isQOhosUdmfDataConvertedFromThisProcessMimeData(QOhosUdmfData &udmfData);
 
-QOhosOptional<std::string> tryMapUtdTypeIdToMimeType(const std::string &utdTypeId);
+std::optional<std::string> tryMapUtdTypeIdToMimeType(const std::string &utdTypeId);
 
-QOhosOptional<std::string> tryMapMimeTypeToUtdTypeId(const std::string &mimeType);
+std::optional<std::string> tryMapMimeTypeToUtdTypeId(const std::string &mimeType);
 
 QT_END_NAMESPACE
 

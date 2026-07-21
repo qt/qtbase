@@ -9,7 +9,7 @@
 #include <QtCore/qmimedata.h>
 #include <database/pasteboard/oh_pasteboard.h>
 #include <memory>
-#include <qohosplugincore.h>
+#include <optional>
 
 QT_BEGIN_NAMESPACE
 
@@ -24,19 +24,19 @@ public:
 
     struct PasteboardData
     {
-        QOhosOptional<PasteboardDataSource> dataSource;
+        std::optional<PasteboardDataSource> dataSource;
         std::unique_ptr<QMimeData> lazyFetchingData;
     };
 
     static std::unique_ptr<QOhosClipboardObject> makeInstance(
-        std::function<void(QOhosOptional<PasteboardDataSource>)> &&pasteboardUpdatesNotifier);
+        std::function<void(std::optional<PasteboardDataSource>)> &&pasteboardUpdatesNotifier);
 
     PasteboardData getPasteboardDataWithLazyFetch();
     void setMimeDataSync(
-        std::shared_ptr<QMimeData> mimeData, const QOhosOptional<bool> &shareInAppOnly);
+        std::shared_ptr<QMimeData> mimeData, const std::optional<bool> &shareInAppOnly);
 
 protected:
-    QOhosClipboardObject(std::function<void(QOhosOptional<PasteboardDataSource>)> &&pasteboardUpdatesNotifier);
+    QOhosClipboardObject(std::function<void(std::optional<PasteboardDataSource>)> &&pasteboardUpdatesNotifier);
 
 private:
     struct JsScopeData
@@ -45,7 +45,7 @@ private:
         std::shared_ptr<void> pasteboardDataChangedListenerHandle;
     };
 
-    std::shared_ptr<QOhosConsumer<QOhosOptional<PasteboardDataSource>>> m_pasteboardUpdatesNotifier;
+    std::shared_ptr<QOhosConsumer<std::optional<PasteboardDataSource>>> m_pasteboardUpdatesNotifier;
     std::shared_ptr<JsScopeData> m_jsScopeData;
 };
 
