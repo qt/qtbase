@@ -2457,14 +2457,16 @@ QString QXmlStreamReader::readElementText(ReadElementTextBehaviour behaviour)
     Q_D(QXmlStreamReader);
     if (isStartElement()) {
         QString result;
-        forever {
+        qsizetype nestingLevel = 1;
+        do {
             switch (readNext()) {
             case Characters:
             case EntityReference:
                 result.insert(result.size(), d->text);
                 break;
             case EndElement:
-                return result;
+                --nestingLevel;
+                break;
             case ProcessingInstruction:
             case Comment:
                 break;
@@ -2473,7 +2475,7 @@ QString QXmlStreamReader::readElementText(ReadElementTextBehaviour behaviour)
                     skipCurrentElement();
                     break;
                 } else if (behaviour == IncludeChildElements) {
-                    result += readElementText(behaviour);
+                    ++nestingLevel;
                     break;
                 }
                 Q_FALLTHROUGH();
@@ -2484,7 +2486,8 @@ QString QXmlStreamReader::readElementText(ReadElementTextBehaviour behaviour)
                     return result;
                 }
             }
-        }
+        } while (nestingLevel);
+        return result;
     }
     return QString();
 }
