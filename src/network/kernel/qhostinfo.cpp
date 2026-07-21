@@ -17,6 +17,9 @@
 #include <qthread.h>
 #include <qurl.h>
 
+#include <private/qobject_p.h>
+#include <private/qthread_p.h>
+
 #include <algorithm>
 
 #ifdef Q_OS_UNIX
@@ -808,8 +811,8 @@ int QHostInfo::lookupHostImpl(const QString &name,
         // cache is not enabled or it was not in the cache, do normal lookup
         QHostInfoRunnable *runnable = new QHostInfoRunnable(name, id, receiver, std::move(slotObj));
         if (isUsingStringBasedSlot) {
-            QObject::connect(&runnable->resultEmitter, SIGNAL(resultsReady(QHostInfo)),
-                                receiver, member, Qt::QueuedConnection);
+            QObject::connect(runnable->resultEmitter.get(), SIGNAL(resultsReady(QHostInfo)),
+                             receiver, member, Qt::QueuedConnection);
         }
         manager->scheduleLookup(runnable);
     }
@@ -819,13 +822,27 @@ int QHostInfo::lookupHostImpl(const QString &name,
 
 QHostInfoRunnable::QHostInfoRunnable(const QString &hn, int i, const QObject *receiver,
                                      QtPrivate::SlotObjUniquePtr slotObj)
-    : toBeLookedUp{hn}, id{i}, resultEmitter{receiver, std::move(slotObj)}
+    : toBeLookedUp{hn}, id{i}, resultEmitter{new QHostInfoResult(receiver, std::move(slotObj))}
 {
     setAutoDelete(true);
 }
 
 QHostInfoRunnable::~QHostInfoRunnable()
-    = default;
+{
+    // A QObject may only be destroyed in the thread it belongs to, and resultEmitter belongs to
+    // the receiver's thread, which is rarely the one deleting this runnable.
+    // Only hand it back to that thread if it still has an event dispatcher to run the deferred
+    // delete, otherwise deleteLater() would silently leak the emitter.
+    // The emitter keeps its QThreadData alive, but not the QThread, which its own thread may be
+    // destroying right now, so read both from the QThreadData and never dereference the QThread.
+    QThreadData *emitterData = QObjectPrivate::get(resultEmitter.get())->threadData.loadRelaxed();
+    if (emitterData->eventDispatcher.loadRelaxed()
+        && emitterData->thread.loadAcquire() != QThread::currentThread()) {
+        resultEmitter.release()->deleteLater();
+    } else {
+        resultEmitter.reset();
+    }
+}
 
 // the QHostInfoLookupManager will at some point call this via a QThreadPool
 void QHostInfoRunnable::run()
@@ -861,7 +878,7 @@ void QHostInfoRunnable::run()
 
     // signal emission
     hostInfo.setLookupId(id);
-    resultEmitter.postResultsReady(hostInfo);
+    resultEmitter->postResultsReady(hostInfo);
 
 #if QT_CONFIG(thread)
     // now also iterate through the postponed ones
@@ -874,7 +891,7 @@ void QHostInfoRunnable::run()
             QHostInfoRunnable* postponed = *it;
             // we can now emit
             hostInfo.setLookupId(postponed->id);
-            postponed->resultEmitter.postResultsReady(hostInfo);
+            postponed->resultEmitter->postResultsReady(hostInfo);
             delete postponed;
         }
         manager->postponedLookups.erase(partitionBegin, partitionEnd);

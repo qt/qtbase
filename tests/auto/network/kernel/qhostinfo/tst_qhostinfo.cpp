@@ -25,6 +25,8 @@
 
 #include <private/qthread_p.h>
 
+#include <memory>
+
 #include <sys/types.h>
 
 #if defined(Q_OS_WIN)
@@ -85,6 +87,7 @@ private slots:
     void cache();
 
     void abortHostLookup();
+    void abortedLookupDestroysEmitter();
 
 private:
     bool ipv6LookupsAvailable;
@@ -627,6 +630,35 @@ void tst_QHostInfo::abortHostLookup()
     QHostInfo::abortHostLookup(id);
     QTestEventLoop::instance().enterLoop(5);
     QCOMPARE(helper.lookupsDoneCounter, 0);
+}
+
+// A lookup's result emitter lives in the receiver's thread, but the runnable holding it is
+// usually deleted elsewhere. When that thread has no event dispatcher to run a deferred delete,
+// the runnable must destroy the emitter directly, otherwise the emitter and the functor it
+// holds are leaked.
+void tst_QHostInfo::abortedLookupDestroysEmitter()
+{
+    QThread neverStarted; // and therefore never has an event dispatcher
+    QObject receiver;
+    receiver.moveToThread(&neverStarted);
+
+    auto functorAlive = std::make_shared<int>();
+    std::weak_ptr<int> weak = functorAlive;
+
+    // Two lookups for the same host: the second one is postponed rather than started, so
+    // aborting it deletes its runnable right here, before it emitted anything.
+    // As in abortHostLookup(), this assumes the DNS backend is slower than these few calls.
+    const QString hostname = QStringLiteral("a-single" TEST_DOMAIN);
+    const int running = QHostInfo::lookupHost(hostname, &receiver, [](const QHostInfo &) {});
+    const int postponed =
+            QHostInfo::lookupHost(hostname, &receiver, [functorAlive](const QHostInfo &) {});
+    functorAlive.reset();
+    QVERIFY(!weak.expired());
+
+    QHostInfo::abortHostLookup(postponed);
+    QVERIFY(weak.expired());
+
+    QHostInfo::abortHostLookup(running);
 }
 
 class LookupAborter : public QObject

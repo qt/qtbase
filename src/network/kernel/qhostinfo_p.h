@@ -36,6 +36,7 @@
 #include <QCache>
 
 #include <atomic>
+#include <memory>
 
 QT_BEGIN_NAMESPACE
 
@@ -146,7 +147,7 @@ public:
 
     QString toBeLookedUp;
     int id;
-    QHostInfoResult resultEmitter;
+    std::unique_ptr<QHostInfoResult> resultEmitter;
 };
 
 
