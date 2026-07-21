@@ -294,6 +294,8 @@ public:
 
         SafeAreaMarginsChange = 227,
 
+        DisconnectNotify = 228,                 // internal, see QObject::disconnectNotify()
+
         // 512 reserved for Qt Jambi's MetaCall event
         // 513 reserved for Qt Jambi's DeleteOnMainThread event
 

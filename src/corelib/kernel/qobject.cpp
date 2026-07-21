@@ -150,6 +150,29 @@ static inline QBasicMutex *signalSlotLock(const QObject *o)
     return &_q_ObjectMutexPool[quintptr(o) % std::size(_q_ObjectMutexPool)];
 }
 
+/**
+ * \internal
+ * Tells \a sender that the connection for \a signalIndex is gone, because its receiver is being
+ * destroyed.
+ *
+ * The caller holds the receiver's signalSlotLock, which \a sender's destructor must also take to
+ * tear down this (still-present) connection. So \a sender cannot get past ~QObject(), and reading
+ * its QObjectPrivate here is safe. That lock does not, however, hold back \a sender's
+ * further-derived destructors: those run before ~QObject() takes any lock, and rewrite the vptr as
+ * they go. Resolving the signal and calling disconnectNotify() are therefore virtual calls that
+ * may only be made from the thread that owns \a sender. Post them to that thread otherwise, unless
+ * it can no longer deliver events (e.g. it has finished), where the event would leak.
+ */
+static void disconnectNotifySender(QObject *sender, int signalIndex, Qt::HANDLE currentThreadId)
+{
+    QObjectPrivate *senderPriv = QObjectPrivate::get(sender);
+    QThreadData *senderThread = senderPriv->threadData.loadRelaxed();
+    if (senderThread->threadId.loadRelaxed() == currentThreadId)
+        senderPriv->disconnectNotify(QMetaObjectPrivate::signal(sender->metaObject(), signalIndex));
+    else if (senderThread->hasEventDispatcher())
+        QCoreApplication::postEvent(sender, new QDisconnectNotifyEvent(signalIndex));
+}
+
 void (*QAbstractDeclarativeData::destroyed)(QAbstractDeclarativeData *, QObject *) = nullptr;
 void (*QAbstractDeclarativeData::signalEmitted)(QAbstractDeclarativeData *, QObject *, int, void **) = nullptr;
 int  (*QAbstractDeclarativeData::receivers)(QAbstractDeclarativeData *, const QObject *, int) = nullptr;
@@ -1128,13 +1151,15 @@ QObject::~QObject()
 
         /* Disconnect all senders:
          */
+        const Qt::HANDLE currentThreadId = QThread::currentThreadId();
         while (QObjectPrivate::Connection *node = cd->senders) {
             Q_ASSERT(node->receiver.loadAcquire());
             QObject *sender = node->sender;
-            // Send disconnectNotify before removing the connection from sender's connection list.
-            // This ensures any eventual destructor of sender will block on getting receiver's lock
-            // and not finish until we release it.
-            sender->disconnectNotify(QMetaObjectPrivate::signal(sender->metaObject(), node->signal_index));
+            // Notify sender before removing the connection from its list. If sender is being
+            // destroyed too, this makes its destructor block on the receiver's lock (which we
+            // hold) and not finish until we release it, so sender stays alive while
+            // disconnectNotifySender() touches it.
+            disconnectNotifySender(sender, node->signal_index, currentThreadId);
             QBasicMutex *m = signalSlotLock(sender);
             bool needToUnlock = QOrderedMutexLocker::relock(signalSlotMutex, m);
             //the node has maybe been removed while the mutex was unlocked in relock?
@@ -1478,6 +1503,13 @@ bool QObject::event(QEvent *e)
     case QEvent::DeferredDelete:
         delete this;
         break;
+
+    case QEvent::DisconnectNotify: {
+        // Posted by disconnectNotifySender(), now that we are in our own thread
+        const int signalIndex = static_cast<QDisconnectNotifyEvent *>(e)->signalIndex();
+        disconnectNotify(QMetaObjectPrivate::signal(metaObject(), signalIndex));
+        break;
+    }
 
     case QEvent::MetaCall:
         {
@@ -3701,6 +3733,11 @@ void QObject::connectNotify(const QMetaMethod &signal)
     signal argument to disconnect() was \nullptr), disconnectNotify()
     is only called once, and the \a signal will be an invalid
     QMetaMethod (QMetaMethod::isValid() returns \c false).
+
+    When a receiver living in another thread is destroyed, this function is
+    called later, from this object's own thread; if that thread has no running
+    event loop, it is not called at all. In every other case it is called right
+    away, from the thread that is disconnecting the signal.
 
     \warning This function violates the object-oriented principle of
     modularity. However, it might be useful for optimizing access to

@@ -35,6 +35,17 @@ private:
     int m_scopeLevel = 0;
 };
 
+class QDisconnectNotifyEvent : public QEvent
+{
+    Q_DECL_EVENT_COMMON(QDisconnectNotifyEvent)
+public:
+    explicit QDisconnectNotifyEvent(int signalIndex);
+    int signalIndex() const { return m_signalIndex; }
+
+private:
+    int m_signalIndex;
+};
+
 QT_END_NAMESPACE
 
 #endif // QCOREEVENT_P_H

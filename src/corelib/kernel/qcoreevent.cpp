@@ -248,6 +248,7 @@ Q_TRACE_POINT(qtcore, QEvent_dtor, QEvent *event, QEvent::Type type);
     \omitvalue Create
     \omitvalue DeactivateControl
     \omitvalue Destroy
+    \omitvalue DisconnectNotify
     \omitvalue DragResponse
     \omitvalue EmbeddingControl
     \omitvalue HelpRequest
@@ -679,6 +680,12 @@ QDeferredDeleteEvent::QDeferredDeleteEvent(int loopLevel, int scopeLevel)
 { }
 
 Q_IMPL_EVENT_COMMON(QDeferredDeleteEvent)
+
+QDisconnectNotifyEvent::QDisconnectNotifyEvent(int signalIndex)
+    : QEvent(QEvent::DisconnectNotify), m_signalIndex(signalIndex)
+{ }
+
+Q_IMPL_EVENT_COMMON(QDisconnectNotifyEvent)
 
 QT_END_NAMESPACE
 

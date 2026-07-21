@@ -36,6 +36,7 @@
 #ifdef QT_BUILD_INTERNAL
 #include <private/qobject_p.h>
 #endif
+#include <private/qlatch_p.h>
 
 #include <functional>
 #include <thread>
@@ -61,6 +62,8 @@ private slots:
     void connectDisconnectNotify();
     void connectDisconnectNotifyPMF();
     void disconnectNotify_receiverDestroyed();
+    void disconnectNotify_receiverDestroyedInOtherThread();
+    void disconnectNotify_receiverDestroyedInOtherThread_notifies();
     void disconnectNotify_metaObjConnection();
     void connectNotify_connectSlotsByName();
     void connectDisconnectNotify_shadowing();
@@ -1209,6 +1212,79 @@ void tst_QObject::disconnectNotify_receiverDestroyed()
 
     QCOMPARE(s.disconnectedSignals.size(), 1);
     QCOMPARE(s.disconnectedSignals.at(0), QMetaMethod::fromSignal(&QObject::destroyed));
+}
+
+// Destroys a receiver in a secondary thread, so that it can be done in parallel
+// with the destruction of its sender in the main thread.
+class ReceiverDestroyerThread : public QThread
+{
+public:
+    explicit ReceiverDestroyerThread(SenderObject *sender) : m_sender(sender) {}
+
+    QLatch connected{1};
+    QLatch go{1};
+
+private:
+    void run() override
+    {
+        ReceiverObject receiver;
+        QObject::connect(m_sender, &SenderObject::signal1, &receiver, &ReceiverObject::slot1);
+        connected.countDown();
+        go.wait();
+        // ~receiver runs here, in parallel with ~SenderObject in the main thread
+    }
+
+    SenderObject *m_sender;
+};
+
+void tst_QObject::disconnectNotify_receiverDestroyedInOtherThread()
+{
+    // Two connected objects living in different threads may be destroyed at the
+    // same time. While disconnecting its senders, ~QObject calls
+    // sender->metaObject() and sender->disconnectNotify(); those virtual calls
+    // must not race with the vptr stores of the sender's own destructor chain.
+    // Only a sanitizer can see the difference, so all this test can do is
+    // exercise the pattern.
+    for (int i = 0; i < 100; ++i) {
+        auto sender = std::make_unique<SenderObject>();
+        ReceiverDestroyerThread thread(sender.get());
+        thread.start();
+        thread.connected.wait();
+        thread.go.countDown();
+        sender.reset();
+        QVERIFY(thread.wait());
+    }
+}
+
+// Connects to a sender owned by the main thread, then destroys the receiver here.
+class NotifyReceiverThread : public QThread
+{
+public:
+    explicit NotifyReceiverThread(SenderObject *sender) : m_sender(sender) {}
+
+private:
+    void run() override
+    {
+        ReceiverObject receiver;
+        QObject::connect(m_sender, &SenderObject::signal1, &receiver, &ReceiverObject::slot1);
+        // ~receiver runs here; the sender stays alive in the main thread
+    }
+
+    SenderObject *m_sender;
+};
+
+void tst_QObject::disconnectNotify_receiverDestroyedInOtherThread_notifies()
+{
+    // A receiver destroyed in another thread still notifies the sender, but the notification
+    // is posted, because only the sender's own thread may make those virtual calls.
+    NotifyObject s;
+    NotifyReceiverThread thread(&s);
+    thread.start();
+    QVERIFY(thread.wait());
+
+    QCoreApplication::processEvents();
+    QCOMPARE(s.disconnectedSignals.size(), 1);
+    QCOMPARE(s.disconnectedSignals.at(0), QMetaMethod::fromSignal(&SenderObject::signal1));
 }
 
 void tst_QObject::disconnectNotify_metaObjConnection()
