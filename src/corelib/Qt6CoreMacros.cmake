@@ -1905,10 +1905,10 @@ END
     endif()
 endfunction()
 
-# Generate Win32 longPathAware RC and Manifest files for a target.
+# Generate an RC and manifest file for a target, enabling longPathAware support and
+# declaring an asInvoker execution level.
 # MSVC needs the manifest file as part of target_sources. MinGW the RC file.
-#
-function(_qt_internal_generate_longpath_win32_rc_file_and_manifest target)
+function(_qt_internal_generate_win32_rc_file_and_manifest target)
     set(prohibited_target_types INTERFACE_LIBRARY STATIC_LIBRARY OBJECT_LIBRARY)
     get_target_property(target_type ${target} TYPE)
     if(target_type IN_LIST prohibited_target_types)
@@ -1918,11 +1918,18 @@ function(_qt_internal_generate_longpath_win32_rc_file_and_manifest target)
     get_target_property(target_binary_dir ${target} BINARY_DIR)
 
     # Generate manifest
-    set(target_mn_filename "${target}_longpath.manifest")
+    set(target_mn_filename "${target}_internal_qt.manifest")
     set(mn_file_output "${target_binary_dir}/${target_mn_filename}")
 
     set(mn_contents [=[<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
+<trustInfo xmlns="urn:schemas-microsoft-com:asm.v2">
+    <security>
+        <requestedPrivileges xmlns="urn:schemas-microsoft-com:asm.v3">
+            <requestedExecutionLevel level="asInvoker" uiAccess="false" />
+        </requestedPrivileges>
+    </security>
+</trustInfo>
 <application  xmlns="urn:schemas-microsoft-com:asm.v3">
     <windowsSettings xmlns:ws2="http://schemas.microsoft.com/SMI/2016/WindowsSettings">
         <ws2:longPathAware>true</ws2:longPathAware>
@@ -1932,7 +1939,7 @@ function(_qt_internal_generate_longpath_win32_rc_file_and_manifest target)
     file(GENERATE OUTPUT "${mn_file_output}" CONTENT "${mn_contents}")
 
     # Generate RC File
-    set(rc_file_output "${target_binary_dir}/${target}_longpath.rc")
+    set(rc_file_output "${target_binary_dir}/${target}_internal_qt.rc")
     set(rc_contents "1 /* CREATEPROCESS_MANIFEST_RESOURCE_ID */ 24 /* RT_MANIFEST */ ${target_mn_filename}")
     file(GENERATE OUTPUT "${rc_file_output}" CONTENT "${rc_contents}")
 
