@@ -8,9 +8,9 @@
 #include <QtCore/qmimedata.h>
 #include <QtCore/private/qohoscommon_p.h>
 #include <qohosclipboardobject.h>
-#include <qohosplugincore.h>
 #include <qpa/qplatformclipboard.h>
 #include <memory>
+#include <optional>
 
 QT_BEGIN_NAMESPACE
 
@@ -31,7 +31,7 @@ public:
     std::shared_ptr<QMimeData> getPasteboardDataWithLazyFetchOrLocalIfOwner() const;
 
 private:
-    Q_REQUIRED_RESULT static QOhosOptional<bool> &shareInAppOnlyFlagRef();
+    Q_REQUIRED_RESULT static std::optional<bool> &shareInAppOnlyFlagRef();
 
     std::shared_ptr<QMimeData> m_mimeData;
     bool m_mimeDataIsOurs = false;

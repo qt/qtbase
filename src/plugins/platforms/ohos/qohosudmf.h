@@ -10,8 +10,8 @@
 #include <database/udmf/udmf_err_code.h>
 #include <database/udmf/udmf.h>
 #include <memory>
+#include <optional>
 #include <qarkui/qarkuiutils.h>
-#include <qohosplugincore.h>
 #include <qohosudsobject.h>
 #include <qohosutils.h>
 #include <string>
@@ -43,7 +43,7 @@ public:
     template<typename T>
     QOhosUdsObject<T> getEntry() const;
 
-    QOhosOptional<QSpan<const std::uint8_t>> tryGetGeneralEntry(const std::string &typeId) const;
+    std::optional<QSpan<const std::uint8_t>> tryGetGeneralEntry(const std::string &typeId) const;
 
     bool isEmpty() const;
 

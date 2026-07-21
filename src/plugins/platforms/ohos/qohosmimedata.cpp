@@ -3,8 +3,8 @@
 
 #include <QtCore/qstringlist.h>
 #include <QtGui/private/qinternalmimedata_p.h>
+#include <optional>
 #include <qohosmimedata.h>
-#include <qohosplugincore.h>
 #include <utility>
 
 QT_BEGIN_NAMESPACE
@@ -14,7 +14,7 @@ namespace {
 template<typename T>
 QOhosSupplier<T> makeMemoizingSupplier(QOhosSupplier<T> baseSupplier)
 {
-    return [baseSupplier = std::move(baseSupplier), value = QOhosOptional<T>()]() mutable {
+    return [baseSupplier = std::move(baseSupplier), value = std::optional<T>()]() mutable {
         if (!value.has_value()) {
             value.emplace(baseSupplier());
             baseSupplier = nullptr;

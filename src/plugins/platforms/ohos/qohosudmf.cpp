@@ -139,18 +139,18 @@ void QOhosUdmfRecord::addGeneralEntry(const std::string &typeId, QSpan<const std
         const_cast<std::uint8_t *>(buffer.data()), buffer.size());
 }
 
-QOhosOptional<QSpan<const std::uint8_t>> QOhosUdmfRecord::tryGetGeneralEntry(
+std::optional<QSpan<const std::uint8_t>> QOhosUdmfRecord::tryGetGeneralEntry(
     const std::string &typeId) const
 {
     if (m_invalidated) {
         qOhosPrintfError("%s: This record is invalidated. Returning empty value.", Q_FUNC_INFO);
-        return makeEmptyQOhosOptional();
+        return {};
     }
 
     auto availableTypes = getTypes();
     auto foundTypeIt = std::find(std::begin(availableTypes), std::end(availableTypes), typeId);
     if (foundTypeIt == std::end(availableTypes))
-        return makeEmptyQOhosOptional();
+        return {};
 
     std::uint8_t *buff;
     std::uint32_t buffSize;
@@ -164,10 +164,10 @@ QOhosOptional<QSpan<const std::uint8_t>> QOhosUdmfRecord::tryGetGeneralEntry(
             Q_FUNC_INFO, typeId.c_str());
         m_invalidated = true;
 
-        return makeEmptyQOhosOptional();
+        return {};
     }
 
-    return makeQOhosOptional(QSpan<const std::uint8_t>(buff, buffSize));
+    return QSpan<const std::uint8_t>(buff, buffSize);
 }
 
 bool QOhosUdmfRecord::isEmpty() const

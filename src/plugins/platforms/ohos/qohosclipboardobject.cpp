@@ -148,7 +148,7 @@ std::unique_ptr<QOhosUdmfData> tryGetUdmfDataFromPasteboard(::OH_Pasteboard *pas
 }
 
 QOhosClipboardObject::QOhosClipboardObject(
-    std::function<void(QOhosOptional<PasteboardDataSource>)> &&pasteboardUpdatesNotifier)
+    std::function<void(std::optional<PasteboardDataSource>)> &&pasteboardUpdatesNotifier)
     : m_pasteboardUpdatesNotifier(
         QtOhos::moveToSharedPtr(std::move(pasteboardUpdatesNotifier)))
 {
@@ -167,11 +167,11 @@ QOhosClipboardObject::QOhosClipboardObject(
                     auto optPasteboardUdmfData = tryGetUdmfDataFromPasteboard(pasteboard.get());
                     auto pasteboardDataSource =
                         optPasteboardUdmfData
-                            ? makeQOhosOptional(
+                            ? std::optional(
                                 isQOhosUdmfDataConvertedFromThisProcessMimeData(*optPasteboardUdmfData)
                                     ? PasteboardDataSource::OurProcess
                                     : PasteboardDataSource::OtherProcess)
-                            : makeEmptyQOhosOptional();
+                            : std::nullopt;
 
                     qOhosPrintfDebug(
                         "%s: Pasteboard data source: %s",
@@ -211,7 +211,7 @@ QOhosClipboardObject::QOhosClipboardObject(
 }
 
 std::unique_ptr<QOhosClipboardObject> QOhosClipboardObject::makeInstance(
-    std::function<void(QOhosOptional<QOhosClipboardObject::PasteboardDataSource>)> &&pasteboardUpdatesNotifier)
+    std::function<void(std::optional<QOhosClipboardObject::PasteboardDataSource>)> &&pasteboardUpdatesNotifier)
 {
     return std::unique_ptr<QOhosClipboardObject>(
         new QOhosClipboardObject(std::move(pasteboardUpdatesNotifier)));
@@ -219,9 +219,9 @@ std::unique_ptr<QOhosClipboardObject> QOhosClipboardObject::makeInstance(
 
 QOhosClipboardObject::PasteboardData QOhosClipboardObject::getPasteboardDataWithLazyFetch()
 {
-    QOhosOptional<PasteboardDataSource> dataSource;
+    std::optional<PasteboardDataSource> dataSource;
     QOhosSupplier<std::unique_ptr<QMimeData>> mimeDataFactory;
-    std::tie(dataSource, mimeDataFactory) = QtOhos::evalInJsThreadWithPromise<std::pair<QOhosOptional<PasteboardDataSource>, QOhosSupplier<std::unique_ptr<QMimeData>>>>(
+    std::tie(dataSource, mimeDataFactory) = QtOhos::evalInJsThreadWithPromise<std::pair<std::optional<PasteboardDataSource>, QOhosSupplier<std::unique_ptr<QMimeData>>>>(
         [&](QtOhos::JsState &jsState, auto evalPromise) {
             static constexpr const char *ohosGetPasteboardDataPermission = "ohos.permission.READ_PASTEBOARD";
             auto sharedEvalPromise = QtOhos::moveToSharedPtr(std::move(evalPromise).makeChained(Q_FUNC_INFO));
@@ -244,10 +244,9 @@ QOhosClipboardObject::PasteboardData QOhosClipboardObject::getPasteboardDataWith
 
                     (*sharedEvalPromise)(
                         {
-                            makeQOhosOptional(
-                                isQOhosUdmfDataConvertedFromThisProcessMimeData(*optPasteboardUdmfData)
-                                    ? PasteboardDataSource::OurProcess
-                                    : PasteboardDataSource::OtherProcess),
+                            isQOhosUdmfDataConvertedFromThisProcessMimeData(*optPasteboardUdmfData)
+                                ? PasteboardDataSource::OurProcess
+                                : PasteboardDataSource::OtherProcess,
                             makeLazyFetchingQMimeDataFactoryFromUdmfData(std::move(*optPasteboardUdmfData))
                         });
                 });
@@ -261,7 +260,7 @@ QOhosClipboardObject::PasteboardData QOhosClipboardObject::getPasteboardDataWith
 }
 
 void QOhosClipboardObject::setMimeDataSync(
-    std::shared_ptr<QMimeData> mimeData, const QOhosOptional<bool> &shareInAppOnly)
+    std::shared_ptr<QMimeData> mimeData, const std::optional<bool> &shareInAppOnly)
 {
     if (!mimeData)
         return;
