@@ -88,7 +88,7 @@ QString QAndroidPlatformServices::getMimeOfUrl(const QUrl &url) const
 
 bool QAndroidPlatformServices::openURL(const QUrl &url) const
 {
-    return  openURL(url.toString());
+    return  openURL(url.toString(QUrl::FullyEncoded));
 }
 
 bool QAndroidPlatformServices::openURL(const QString &url) const
