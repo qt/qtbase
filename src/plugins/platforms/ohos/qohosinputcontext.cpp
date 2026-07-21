@@ -221,8 +221,10 @@ void QOhosInputContext::update(Qt::InputMethodQueries queries)
     m_qtEnterKeyType = qtEnterKeyTypeValue;
 
     if (inputMethodAccepted() && m_qtImEnabled) {
-        if (imAlreadyAttached)
+        if (imAlreadyAttached) {
             pushTextAroundCursorToProxy();
+            updateSelection();
+        }
 
         auto updateCausedByWidgetTransform = queries == Qt::ImInputItemClipRectangle;
         auto updateCausedByQueryAllImParameters = queries == Qt::ImQueryAll;
@@ -539,6 +541,33 @@ void QOhosInputContext::pushTextAroundCursorToProxy()
         textAroundCursor.first.toStdU16String(),
         textAroundCursor.second.toStdU16String(),
         tryQueryCursorPosition().value_or(0));
+}
+
+void QOhosInputContext::updateSelection()
+{
+    if (m_imProxy == nullptr) {
+        qOhosPrintfError("%s: proxy doesn't exist!", Q_FUNC_INFO);
+        return;
+    }
+
+    auto query = tryQueryFocusObjectInputMethod(
+        Qt::ImSurroundingText | Qt::ImCursorPosition | Qt::ImAnchorPosition);
+    if (query.isNull())
+        return;
+
+    const auto surroundingText = query->value(Qt::ImSurroundingText);
+    const auto cursorPosition = query->value(Qt::ImCursorPosition);
+    const auto anchorPosition = query->value(Qt::ImAnchorPosition);
+
+    if (!surroundingText.canConvert<QString>() || !cursorPosition.canConvert<int>()
+        || !anchorPosition.canConvert<int>())
+        return;
+
+    const int cursor = cursorPosition.toInt();
+    const int anchor = anchorPosition.toInt();
+
+    m_imProxy->notifySelectionChange(
+        surroundingText.toString().toStdU16String(), std::min(anchor, cursor), std::max(anchor, cursor));
 }
 
 void QOhosInputContext::handleFocusInEvent(QObject *obj, QFocusEvent *event)

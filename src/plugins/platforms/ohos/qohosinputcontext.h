@@ -69,6 +69,7 @@ private:
         Qt::InputMethodHints qtInputMethodHints, Qt::EnterKeyType qtEnterKeyType);
     void updateOhosCursor(const QRect &globalCursorRect);
     void pushTextAroundCursorToProxy();
+    void updateSelection();
     bool attachToInputMethodController();
     bool detachFromInputMethodController();
     void handleRequestedImConnectionState(ImConnectionState requestedState, bool success);
