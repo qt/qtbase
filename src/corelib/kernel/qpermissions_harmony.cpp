@@ -92,12 +92,12 @@ namespace QPermissions::Private
         if (s_permissionsHelper == nullptr)
             return Qt::PermissionStatus::Undetermined;
 
-        const auto permissionStrList = ohosPermissionStrings(permission);
-        if (!permissionStrList.isEmpty()) {
-            for (const auto &ohosPermissionStr : permissionStrList)
-                if (!s_permissionsHelper->isPermissionGranted(ohosPermissionStr))
-                    return Qt::PermissionStatus::Undetermined;
-        }
+        const auto permissionStatuses = s_permissionsHelper->checkStatusesOfPermissions(
+            ohosPermissionStrings(permission));
+        if (permissionStatuses.contains(Qt::PermissionStatus::Denied))
+            return Qt::PermissionStatus::Denied;
+        if (permissionStatuses.contains(Qt::PermissionStatus::Undetermined))
+            return Qt::PermissionStatus::Undetermined;
         return Qt::PermissionStatus::Granted;
     }
 

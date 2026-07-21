@@ -3,7 +3,10 @@
 
 #include "qohospermissionshelperimpl.h"
 
+#include <QtCore/private/qohoslogger_p.h>
+#include <optional>
 #include <qohosapppermissions_p.h>
+#include <qohosenums.h>
 #include <qohosutils.h>
 #include <render/qwindowproxyregistry.h>
 #include <utility>
@@ -20,10 +23,50 @@ QWindow *getFocusedWindowOrNull()
     return !focusedWindows.empty() ? focusedWindows.front() : nullptr;
 }
 
+std::optional<Qt::PermissionStatus> tryMapPermissionStatusFromOhos(
+    QtOhos::enums::ohos::abilityAccessCtrl::PermissionStatus ohosPermissionStatus)
+{
+    using OhosPermissionStatus = QtOhos::enums::ohos::abilityAccessCtrl::PermissionStatus;
+
+    switch (ohosPermissionStatus) {
+    case OhosPermissionStatus::GRANTED:
+        return Qt::PermissionStatus::Granted;
+    case OhosPermissionStatus::NOT_DETERMINED:
+        return Qt::PermissionStatus::Undetermined;
+    case OhosPermissionStatus::DENIED:
+    case OhosPermissionStatus::INVALID:
+    case OhosPermissionStatus::RESTRICTED:
+        return Qt::PermissionStatus::Denied;
+    }
+
+    return {};
+}
+
+std::optional<QtOhos::enums::ohos::abilityAccessCtrl::PermissionStatus> tryGetSelfPermissionStatus(
+    QtOhos::JsState &jsState, const std::string &permissionName)
+{
+    using OhosPermissionStatus = QtOhos::enums::ohos::abilityAccessCtrl::PermissionStatus;
+
+    std::optional<QNapi::Number> optJsPermissionStatusValue;
+    try {
+        optJsPermissionStatusValue = jsState.eval<QNapi::Number>(
+            "@ohos.abilityAccessCtrl.createAtManager().getSelfPermissionStatus(*)",
+            {permissionName});
+    } catch (const Napi::Error &error) {
+        qOhosPrintfError("%s: getSelfPermissionStatus() failed: %s", Q_FUNC_INFO, error.what());
+    }
+
+    return qAndThen(
+        optJsPermissionStatusValue,
+        [&](auto jsPermissionStatusValue) {
+            return jsState.tryMapOhosEnumFromJs<OhosPermissionStatus>(jsPermissionStatusValue);
+        });
+}
+
 class QOhosPermissionsHelperImpl : public QOhosPermissionsHelper
 {
 public:
-    bool isPermissionGranted(const QString &permissionName) const override;
+    QList<Qt::PermissionStatus> checkStatusesOfPermissions(const QStringList &permissionNames) const override;
 
     void requestPermissionsFromUserIfNeeded(
         const QStringList &permissionNames, QObject *resultConsumerContext,
@@ -34,15 +77,22 @@ public:
         QOhosConsumer<QList<bool>> resultConsumer) override;
 };
 
-bool QOhosPermissionsHelperImpl::isPermissionGranted(const QString &permissionName) const
+QList<Qt::PermissionStatus> QOhosPermissionsHelperImpl::checkStatusesOfPermissions(
+    const QStringList &permissionNames) const
 {
-    return QtOhos::evalInJsThreadWithConsumer<bool>(
-        [&](auto &jsState, std::function<void(bool)> resultConsumer) {
-            QOhosAppPermissions::checkAppPermissionGrantedWithConsumer(
-                jsState, permissionName.toStdString(),
-                [resultConsumer = std::move(resultConsumer)](QtOhos::JsState &, bool granted) {
-                    resultConsumer(granted);
-                });
+    if (permissionNames.isEmpty())
+        return {};
+
+    return QtOhos::evalInJsThread(
+        [&](QtOhos::JsState &jsState) {
+            QList<Qt::PermissionStatus> statuses;
+            for (const auto &permissionName : permissionNames) {
+                auto optPermissionStatus = qAndThen(
+                    tryGetSelfPermissionStatus(jsState, permissionName.toStdString()),
+                    &tryMapPermissionStatusFromOhos);
+                statuses.append(optPermissionStatus.value_or(Qt::PermissionStatus::Denied));
+            }
+            return statuses;
         });
 }
 
