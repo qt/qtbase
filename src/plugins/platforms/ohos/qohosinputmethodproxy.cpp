@@ -288,12 +288,21 @@ std::shared_ptr<void> QOhosInputMethodProxy::registerCallbacks(
                     return rightText.substr(0, std::min(maxLength, rightText.size()));
                 })));
 
-    QArkUi::callArkUiOrFailOnErrorResult(
-        Q_OHOS_NAMED_FUNC(::OH_TextEditorProxy_SetGetTextIndexAtCursorFunc),
-        textEditorProxy.get(),
-        [](::InputMethod_TextEditorProxy *) {
-            return 0;
-        });
+    registrationHandles.push_back(
+        registerTextEditorProxyCallback(
+            textEditorProxy.get(), Q_OHOS_NAMED_FUNC(::OH_TextEditorProxy_SetGetTextIndexAtCursorFunc),
+            [weakTextAroundCursor = QtOhos::makeWeakPtr(textAroundCursor)]() {
+                auto protectedTextAroundCursor = weakTextAroundCursor.lock();
+                if (!protectedTextAroundCursor) {
+                    qOhosPrintfWarning("%s: cannot get text index at cursor", Q_FUNC_INFO);
+                    return 0;
+                }
+
+                return protectedTextAroundCursor->evalWithValue(
+                    [](const TextAroundCursor &textAroundCursor) {
+                        return textAroundCursor.cursorIndex;
+                    });
+            }));
 
     QArkUi::callArkUiOrFailOnErrorResult(
         Q_OHOS_NAMED_FUNC(::OH_TextEditorProxy_SetReceivePrivateCommandFunc),
@@ -437,7 +446,8 @@ void QOhosInputMethodProxy::notifyCursorUpdate(const QRectF &cursorRect)
         Q_FUNC_INFO);
 }
 
-void QOhosInputMethodProxy::setTextAroundCursor(std::u16string leftText, std::u16string rightText)
+void QOhosInputMethodProxy::setTextAroundCursor(
+    std::u16string leftText, std::u16string rightText, int cursorIndex)
 {
     if (!hasAttachedSuccessfully()) {
         qOhosPrintfError("%s: operation aborted, IMC not attached.", Q_FUNC_INFO);
@@ -448,6 +458,7 @@ void QOhosInputMethodProxy::setTextAroundCursor(std::u16string leftText, std::u1
         [&](TextAroundCursor &textAroundCursor) {
             textAroundCursor.leftText = std::move(leftText);
             textAroundCursor.rightText = std::move(rightText);
+            textAroundCursor.cursorIndex = cursorIndex;
         });
 }
 
