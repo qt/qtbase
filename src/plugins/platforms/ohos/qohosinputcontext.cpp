@@ -25,83 +25,6 @@ namespace {
 const Qt::InputMethodHints defaultInputMethodHints = Qt::ImhNone;
 const Qt::EnterKeyType defaultEnterKeyType = Qt::EnterKeyDefault;
 
-using InsertedTextId = QtOhos::TypedId<std::uint64_t, struct InsertedTextIdTag>;
-
-class QOhosInsertedText
-{
-public:
-    QOhosInsertedText(const std::string &text, const InsertedTextId &id);
-
-    InsertedTextId id() const;
-    std::string text() const;
-
-private:
-    InsertedTextId m_id;
-    std::string m_text;
-};
-
-class JsInputMethodInsertedTextComposer
-{
-public:
-    static JsInputMethodInsertedTextComposer &instance();
-
-    JsInputMethodInsertedTextComposer(const JsInputMethodInsertedTextComposer &) = delete;
-    JsInputMethodInsertedTextComposer(JsInputMethodInsertedTextComposer &&) = delete;
-    JsInputMethodInsertedTextComposer &operator=(const JsInputMethodInsertedTextComposer &) = delete;
-    JsInputMethodInsertedTextComposer &operator=(JsInputMethodInsertedTextComposer &&) = delete;
-
-    std::optional<InsertedTextId> lastId() const;
-    QOhosInsertedText makeInsertedText(const std::string &text);
-
-private:
-    JsInputMethodInsertedTextComposer() = default;
-    void initOrIncrementId();
-
-    std::optional<InsertedTextId> m_id;
-};
-
-QOhosInsertedText::QOhosInsertedText(const std::string &text, const InsertedTextId &id)
-    : m_id(id)
-    , m_text(text)
-{}
-
-InsertedTextId QOhosInsertedText::id() const
-{
-    return m_id;
-}
-
-std::string QOhosInsertedText::text() const
-{
-    return m_text;
-}
-
-JsInputMethodInsertedTextComposer &JsInputMethodInsertedTextComposer::instance()
-{
-    static JsInputMethodInsertedTextComposer imHelper;
-    return imHelper;
-}
-
-std::optional<InsertedTextId> JsInputMethodInsertedTextComposer::lastId() const
-{
-    return m_id;
-}
-
-void JsInputMethodInsertedTextComposer::initOrIncrementId()
-{
-    if (!m_id.has_value()) {
-        m_id = InsertedTextId(0);
-    } else {
-        auto oldValue = m_id.value().value();
-        m_id = InsertedTextId(++oldValue);
-    }
-}
-
-QOhosInsertedText JsInputMethodInsertedTextComposer::makeInsertedText(const std::string &text)
-{
-    initOrIncrementId();
-    return QOhosInsertedText(text, m_id.value());
-}
-
 ::InputMethod_TextInputType mapQtInputMethodHintsToOhosImeTextInputType(Qt::InputMethodHints hints)
 {
     using TextInputType = ::InputMethod_TextInputType;
@@ -193,33 +116,6 @@ std::optional<int> tryGetIntPropertyFromQuery(Qt::InputMethodQuery property, QSh
     bool converted;
     const auto value = query->value(property).toInt(&converted);
     return converted ? std::optional(value) : std::nullopt;
-}
-
-void notifyOhosInputMethodAboutPossibleAutocorrection(const QOhosInsertedText &insertedText, int cursorPosition)
-{
-    auto lastInsertedTextId = JsInputMethodInsertedTextComposer::instance().lastId();
-    if (!lastInsertedTextId.has_value()) {
-        qOhosPrintfError("%s: JsInputMethodInsertedTextComposer has no last inserted text ID", Q_FUNC_INFO);
-        return;
-    }
-
-    auto currentInsertedTextId = insertedText.id();
-    if (currentInsertedTextId != lastInsertedTextId.value()) {
-        qOhosPrintfWarning(
-            "%s: inserted text and one currently processed differ from each other, system won't be notified with changeSelection()", Q_FUNC_INFO);
-        return;
-    }
-
-    QtOhos::invokeInJsThreadAndWaitForContinue(
-        [&](QtOhos::JsState &jsState, QOhosTaskPromise<> taskPromise) {
-            auto startPosition = cursorPosition;
-            auto endPosition = cursorPosition + insertedText.text().length();
-            jsState.evalToPromiseOrRejectOnThrow(
-                "@ohos.inputMethod.getController().changeSelection(*)", {insertedText.text(), startPosition, endPosition})
-            .onCatch(QtOhos::makeErrorLoggingJsCallback("changeSelection()"))
-            .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
-        },
-        Q_FUNC_INFO);
 }
 
 inline QPoint clampToRect(const QPoint &p, const QRect &rect)
@@ -663,8 +559,6 @@ bool QOhosInputContext::eventFilter(QObject *obj, QEvent *event)
 
 void QOhosInputContext::sendInsertedTextToQt(const std::string &textToInsert)
 {
-    auto insertedText = JsInputMethodInsertedTextComposer::instance().makeInsertedText(textToInsert);
-
     auto query = tryQueryFocusObjectInputMethod(Qt::ImEnabled);
     if (query.isNull())
         return;
@@ -677,14 +571,8 @@ void QOhosInputContext::sendInsertedTextToQt(const std::string &textToInsert)
     m_pendingPreeditText.clear();
 
     QInputMethodEvent event;
-    event.setCommitString(QString::fromStdString(insertedText.text()));
+    event.setCommitString(QString::fromStdString(textToInsert));
     sendFocusObjectInputMethodEvent(&event);
-
-    auto cursorPosition = tryQueryCursorPosition();
-    if (cursorPosition.has_value())
-        notifyOhosInputMethodAboutPossibleAutocorrection(insertedText, cursorPosition.value());
-    else
-        qOhosWarning(QtForOhos) << "Couldn't obtain IM cursorPosition";
 }
 
 void QOhosInputContext::sendInsertedPreviewTextToQt(std::string previewText)
