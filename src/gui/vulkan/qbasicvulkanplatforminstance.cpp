@@ -445,6 +445,14 @@ void QBasicPlatformVulkanInstance::setupDebugOutput()
     m_vkDestroyDebugUtilsMessengerEXT = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(
                 m_vkGetInstanceProcAddr(m_vkInst, "vkDestroyDebugUtilsMessengerEXT"));
 
+    // This cannot happen as per spec if the extension was advertised and
+    // the instance was successfully created, but is reported to happen on
+    // some Android devices (QTBUG-148216). Handle it gracefully.
+    if (!vkCreateDebugUtilsMessengerEXT || !m_vkDestroyDebugUtilsMessengerEXT) {
+        qWarning("VK_EXT_debug_utils advertised but entry points are not available, skipping Vulkan debug output");
+        return;
+    }
+
     VkDebugUtilsMessengerCreateInfoEXT messengerInfo = {};
     messengerInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
     messengerInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT
