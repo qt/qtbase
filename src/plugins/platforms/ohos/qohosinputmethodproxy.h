@@ -44,13 +44,14 @@ public:
     void notifyConfigurationChange(
         ::InputMethod_EnterKeyType enterKeyType, ::InputMethod_TextInputType textInputType);
     void notifyCursorUpdate(const QRectF &cursorRect);
-    void setTextAroundCursor(std::u16string leftText, std::u16string rightText);
+    void setTextAroundCursor(std::u16string leftText, std::u16string rightText, int cursorIndex);
 
 private:
     struct TextAroundCursor
     {
         std::u16string leftText;
         std::u16string rightText;
+        int cursorIndex = 0;
     };
 
     struct JsScopeData

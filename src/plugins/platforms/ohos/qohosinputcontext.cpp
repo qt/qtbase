@@ -641,7 +641,8 @@ void QOhosInputContext::pushTextAroundCursorToProxy()
     const auto textAroundCursor = queryQtImTextAroundCursorOrEmpty();
     m_imProxy->setTextAroundCursor(
         textAroundCursor.first.toStdU16String(),
-        textAroundCursor.second.toStdU16String());
+        textAroundCursor.second.toStdU16String(),
+        tryQueryCursorPosition().value_or(0));
 }
 
 void QOhosInputContext::handleFocusInEvent(QObject *obj, QFocusEvent *event)
