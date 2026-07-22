@@ -887,6 +887,11 @@ function(_qt_internal_harmonyos_generate_test_bundle_deployment_settings)
     string(APPEND JSON_CONTENT "    \"harmonyos-app-bundle-name\": \"org.qtproject.autotests\",\n")
     string(APPEND JSON_CONTENT "    \"harmonyos-target-arch\": [\"arm64-v8a\"]")
 
+    # Exclude "phone" so the bundle is a native 2-in-1 app: a bundle that
+    # lists "phone" is treated as a phone-app-on-PC, which makes
+    # window.restore() fail (QTBUG-148467) and breaks window-state tests.
+    string(APPEND JSON_CONTENT ",\n    \"harmonyos-module-device-types\": [\"tablet\", \"2in1\"]")
+
     if(sdk_root)
         string(APPEND JSON_CONTENT ",\n    \"sdk-root\": \"${sdk_root}\"")
     endif()
