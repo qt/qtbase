@@ -143,6 +143,7 @@ public:
     void set(const std::vector<std::pair<std::string, ValueWrapper>> &namedValues);
 
     template<typename Result = Value>
+    Q_DECL_DEPRECATED_X("Use eval() with a methodName() or methodName(*) expression instead.")
     Result call(const std::string &methodName, const std::vector<ValueWrapper> &args = {}) const;
 };
 
@@ -231,6 +232,7 @@ public:
     void set(const std::vector<std::pair<std::string, ValueWrapper>> &namedValues);
 
     template<typename Result = ::QNapi::Value>
+    Q_DECL_DEPRECATED_X("Use eval() with a methodName() or methodName(*) expression instead.")
     Result call(const std::string &methodName, const std::vector<ValueWrapper> &args = {}) const;
 
     static Reference<Object> makePersistentFrom(const Object &value);
