@@ -780,22 +780,22 @@ QHash<QPlatformTheme::Palette, QPalette> makePalettesMap(Qt::ColorScheme scheme)
     };
 }
 
-QOhosOptional<bool> mapOhosThemeFromColorScheme(
+std::optional<bool> mapOhosThemeFromColorScheme(
     Qt::ColorScheme scheme)
 {
     switch (scheme) {
     case Qt::ColorScheme::Unknown:
-        return makeEmptyQOhosOptional();
+        return {};
     case Qt::ColorScheme::Light:
-        return makeQOhosOptional(false);
+        return false;
     case Qt::ColorScheme::Dark:
-        return makeQOhosOptional(true);
+        return true;
     };
-    return makeEmptyQOhosOptional();
+    return {};
 }
 
 Qt::ColorScheme mapOhosThemeToColorScheme(
-    QOhosOptional<bool> darkModeFlag)
+    std::optional<bool> darkModeFlag)
 {
     if (darkModeFlag.has_value()) {
         if (!darkModeFlag.value_or(false))
@@ -860,7 +860,7 @@ std::optional<bool> mapOhosConfigurationColorModeToDarkModeFlag(OhosConfiguratio
     return {};
 }
 
-QOhosOptional<QPixmap> tryGetFilePixmapByResourceObject(QtOhos::JsState &jsState, QNapi::Object resource)
+std::optional<QPixmap> tryGetFilePixmapByResourceObject(QtOhos::JsState &jsState, QNapi::Object resource)
 {
     std::string undocumentedParamsPropertyName("params");
     auto optParams = QNapi::getOptionalPropOrEmpty<QNapi::Value>(resource, undocumentedParamsPropertyName);
@@ -868,13 +868,13 @@ QOhosOptional<QPixmap> tryGetFilePixmapByResourceObject(QtOhos::JsState &jsState
         qOhosPrintfWarning(
             "%s: expected '%s' property not found in resource object, ignore getting pixmap",
             Q_FUNC_INFO, undocumentedParamsPropertyName.c_str());
-        return makeEmptyQOhosOptional();
+        return {};
     }
     if (!optParams.IsArray()) {
         qOhosPrintfWarning(
             "%s: '%s' property is not an array, ignore getting pixmap",
             Q_FUNC_INFO, undocumentedParamsPropertyName.c_str());
-        return makeEmptyQOhosOptional();
+        return {};
     }
 
     auto params = QNapi::getArrayElements<std::vector<std::string>, QNapi::String>(
@@ -883,7 +883,7 @@ QOhosOptional<QPixmap> tryGetFilePixmapByResourceObject(QtOhos::JsState &jsState
         qOhosPrintfWarning(
             "%s: '%s' property is empty, ignore getting pixmap",
             Q_FUNC_INFO, undocumentedParamsPropertyName.c_str());
-        return makeEmptyQOhosOptional();
+        return {};
     }
 
     const auto resourceIdentifier = params.front();
@@ -892,7 +892,7 @@ QOhosOptional<QPixmap> tryGetFilePixmapByResourceObject(QtOhos::JsState &jsState
         qOhosPrintfWarning(
             "%s: '%s' property has unknown resource name, ignore getting pixmap",
             Q_FUNC_INFO, undocumentedParamsPropertyName.c_str());
-        return makeEmptyQOhosOptional();
+        return {};
     }
 
     const auto simpleName = resourceIdentifier.substr(lastSeparatorPosition + 1);
@@ -904,14 +904,14 @@ QOhosOptional<QPixmap> tryGetFilePixmapByResourceObject(QtOhos::JsState &jsState
         static_cast<const uchar *>(resourceContentBuffer.Data()), resourceContentBuffer.ByteLength());
 
     if (pixmapLoadResult) {
-        return makeQOhosOptional(pixmap);
+        return pixmap;
     } else {
         qOhosPrintfWarning("%s: cannot load pixmap", Q_FUNC_INFO);
-        return makeEmptyQOhosOptional();
+        return {};
     }
 }
 
-QOhosOptional<QPixmap> tryGetFilePixmapByFilenameExtension(
+std::optional<QPixmap> tryGetFilePixmapByFilenameExtension(
     QtOhos::JsState &jsState, const std::string &filenameExtension)
 {
     std::string ohosDotFilenameExtension = "." + filenameExtension;
@@ -925,7 +925,7 @@ QOhosOptional<QPixmap> tryGetFilePixmapByFilenameExtension(
         return tryGetFilePixmapByResourceObject(jsState, QNapi::checkedCast<QNapi::Object>(resourceValue));
     } else {
         qOhosPrintfWarning("%s: got unhandled resource result type, ignore it", Q_FUNC_INFO);
-        return makeEmptyQOhosOptional();
+        return {};
     }
 }
 
@@ -989,7 +989,7 @@ QOhosPlatformTheme::QOhosPlatformTheme()
 
 void QOhosPlatformTheme::requestColorScheme(Qt::ColorScheme scheme)
 {
-    QOhosOptional<bool> isDarkMode = mapOhosThemeFromColorScheme(scheme);
+    std::optional<bool> isDarkMode = mapOhosThemeFromColorScheme(scheme);
     setOhosConfigColorMode(
         isDarkMode.has_value()
             ? isDarkMode.value()
