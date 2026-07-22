@@ -61,8 +61,8 @@ void QLibInputPointer::processMotion(libinput_event_pointer *e)
     QScreen * const primaryScreen = QGuiApplication::primaryScreen();
     const QRect g = QHighDpi::toNativePixels(primaryScreen->virtualGeometry(), primaryScreen);
 
-    m_pos.setX(qBound(g.left(), qRound(m_pos.x() + dx), g.right()));
-    m_pos.setY(qBound(g.top(), qRound(m_pos.y() + dy), g.bottom()));
+    m_pos.setX(qBound<qreal>(g.left(), m_pos.x() + dx, g.right()));
+    m_pos.setY(qBound<qreal>(g.top(), m_pos.y() + dy, g.bottom()));
 
     Qt::KeyboardModifiers mods = QGuiApplicationPrivate::inputDeviceManager()->keyboardModifiers();
 
@@ -79,8 +79,8 @@ void QLibInputPointer::processAbsMotion(libinput_event_pointer *e)
     const double x = libinput_event_pointer_get_absolute_x_transformed(e, g.width());
     const double y = libinput_event_pointer_get_absolute_y_transformed(e, g.height());
 
-    m_pos.setX(qBound(g.left(), qRound(g.left() + x), g.right()));
-    m_pos.setY(qBound(g.top(), qRound(g.top() + y), g.bottom()));
+    m_pos.setX(qBound<qreal>(g.left(), g.left() + x, g.right()));
+    m_pos.setY(qBound<qreal>(g.top(), g.top() + y, g.bottom()));
 
     Qt::KeyboardModifiers mods = QGuiApplicationPrivate::inputDeviceManager()->keyboardModifiers();
 
