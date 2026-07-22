@@ -35,7 +35,7 @@ public:
     void setPos(const QPoint &pos);
 
 private:
-    QPoint m_pos;
+    QPointF m_pos;
     Qt::MouseButtons m_buttons;
 };
 
