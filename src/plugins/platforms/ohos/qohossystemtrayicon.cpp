@@ -15,6 +15,7 @@
 #include <QtGui/qpa/qplatformmenu.h>
 #include <QtGui/qscreen.h>
 #include <algorithm>
+#include <optional>
 #include <qohosplugincore.h>
 
 QT_BEGIN_NAMESPACE
@@ -124,7 +125,7 @@ void updateOhosStatusBarMenu(QtOhos::JsState &jsState, QNapi::Array statusBarGro
 
 QNapi::Object makeJsStatusBarItem(
     QtOhos::JsState &jsState, QNapi::Object statusBarIcon, const std::string &title,
-    QNapi::Array statusBarGroupMenus, QOhosOptional<std::string> hoverTips)
+    QNapi::Array statusBarGroupMenus, std::optional<std::string> hoverTips)
 {
     auto *env = jsState.env();
 
@@ -220,7 +221,7 @@ QNapi::Object makeJsNotificationContent(
 
 QNapi::Object makeJsNotificationRequest(
     QtOhos::JsState &jsState, const std::string &title, const std::string &content,
-    const QIcon &icon, QOhosOptional<int> optAutoDeletedDelayMs)
+    const QIcon &icon, std::optional<int> optAutoDeletedDelayMs)
 {
     auto iconPixelMap = makeDisplayDensityScaledJsPixelMapFromQImage(
         jsState, convertIconToScaledImage(icon, notificationIconSize, Qt::transparent));
@@ -261,7 +262,7 @@ public:
 
 private:
     QIcon m_icon;
-    QOhosOptional<QString> m_optToolTip;
+    std::optional<QString> m_optToolTip;
     QPlatformMenu *m_menu = nullptr;
 
     struct JsScopeData
@@ -365,7 +366,7 @@ void QOhosSystemTrayIcon::showMessage(
         [&](QtOhos::JsState &jsState, QOhosTaskPromise<> taskPromise) {
             auto notificationRequest = makeJsNotificationRequest(
                 jsState, title.toStdString(), msg.toStdString(), icon,
-                msecs > 0 ? makeQOhosOptional(msecs) : makeEmptyQOhosOptional());
+                msecs > 0 ? std::optional(msecs) : std::nullopt);
             jsState.evalToPromiseOrRejectOnThrow("@ohos.notificationManager.publish(*)", {notificationRequest})
             .onCatch(QtOhos::makeErrorLoggingJsCallback("publish()"))
             .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
