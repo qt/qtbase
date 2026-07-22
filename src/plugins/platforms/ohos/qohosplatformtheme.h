@@ -9,7 +9,8 @@
 #include <QtCore/qmap.h>
 #include <QtGui/qicon.h>
 #include <QtGui/qpalette.h>
-#include <qohosplugincore.h>
+#include <functional>
+#include <optional>
 #include <qpa/qplatformtheme.h>
 #include <qpa/qplatformdialoghelper.h>
 
@@ -46,7 +47,7 @@ private:
     QMap<Qt::ColorScheme, QHash<Palette, QPalette>> m_themesPalettes;
     QHash<Font, QFont> m_fonts;
     int m_wheelScrollLines;
-    QOhosSupplier<QOhosOptional<bool>> m_ohosConfigDarkModeFlagSupplier;
+    QOhosSupplier<std::optional<bool>> m_ohosConfigDarkModeFlagSupplier;
 };
 
 QT_END_NAMESPACE
