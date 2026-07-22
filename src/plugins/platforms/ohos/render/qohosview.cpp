@@ -1599,8 +1599,12 @@ void QOhosView::handleWindowStateChange(
     Qt::WindowStates previousWindowState, Qt::WindowStates currentWindowState)
 {
     auto stateChange = previousWindowState ^ currentWindowState;
-    if (stateChange.testFlag(Qt::WindowState::WindowMinimized) && !currentWindowState.testFlag(Qt::WindowState::WindowMinimized))
-        restoreMainWindow();
+    if (stateChange.testFlag(Qt::WindowState::WindowMinimized) && !currentWindowState.testFlag(Qt::WindowState::WindowMinimized)) {
+        if (viewType() == ViewType::MainWindow)
+            restoreMainWindow();
+        else if (m_ohosWindowProxy)
+            showWindow();
+    }
 
     if (stateChange.testFlag(Qt::WindowState::WindowMaximized) && currentWindowState.testFlag(Qt::WindowState::WindowMaximized)) {
         maximize();
