@@ -69,20 +69,20 @@ std::shared_ptr<void> registerObjectDestroyedSignalHandler(
         });
 }
 
-QOhosOptional<QEventPoint::State> tryMapXComponentTouchEventTypeToQt(::OH_NativeXComponent_TouchEventType eventType)
+std::optional<QEventPoint::State> tryMapXComponentTouchEventTypeToQt(::OH_NativeXComponent_TouchEventType eventType)
 {
     switch (eventType) {
     case OH_NATIVEXCOMPONENT_DOWN:
-        return makeQOhosOptional(QEventPoint::State::Pressed);
+        return QEventPoint::State::Pressed;
     case OH_NATIVEXCOMPONENT_UP:
-        return makeQOhosOptional(QEventPoint::State::Released);
+        return QEventPoint::State::Released;
     case OH_NATIVEXCOMPONENT_MOVE:
-        return makeQOhosOptional(QEventPoint::State::Updated);
+        return QEventPoint::State::Updated;
     case OH_NATIVEXCOMPONENT_CANCEL:
     case OH_NATIVEXCOMPONENT_UNKNOWN:
         break;
     }
-    return makeEmptyQOhosOptional();
+    return {};
 }
 
 QPointF calculateTouchPointNormalPosition(QWindow *targetWindow, const QPointF &clickPoint)
@@ -224,8 +224,8 @@ void QOhosInputMethodEventHandler::onTouchEventFromXComponent(
 
     if (!wsiTouchPoints.isEmpty()) {
         auto singleActiveTouchEventGlobalPosition = activeTouchPointDisplayPositions.size() == 1
-            ? makeQOhosOptional(displayOffset + activeTouchPointDisplayPositions.front())
-            : makeEmptyQOhosOptional();
+            ? std::optional(displayOffset + activeTouchPointDisplayPositions.front())
+            : std::nullopt;
 
         QWindowSystemInterfaceTouchEvent touchEvent = {
             .targetWindow = targetWindow,
@@ -513,7 +513,7 @@ QInputDevice *QOhosInputMethodEventHandler::getPointingDeviceOrCreate(QInputDevi
     return pointingDeviceIter->second;
 }
 
-QOhosOptional<std::pair<QWindow *, std::uint64_t>> QOhosInputMethodEventHandler::getLastTouchedWindowWithSeqNoIfPresent() const
+std::optional<std::pair<QWindow *, std::uint64_t>> QOhosInputMethodEventHandler::getLastTouchedWindowWithSeqNoIfPresent() const
 {
     auto maxSeqNoEntryIter = std::max_element(
         m_windowsUnderTouchPoints.begin(), m_windowsUnderTouchPoints.end(),
@@ -522,9 +522,9 @@ QOhosOptional<std::pair<QWindow *, std::uint64_t>> QOhosInputMethodEventHandler:
         });
 
     return maxSeqNoEntryIter != m_windowsUnderTouchPoints.end()
-        ? makeQOhosOptional(
+        ? std::optional(
             std::make_pair(maxSeqNoEntryIter->first, maxSeqNoEntryIter->second.second))
-        : makeEmptyQOhosOptional();
+        : std::nullopt;
 }
 
 void QOhosInputMethodEventHandler::grabMouse(QWindow *window)

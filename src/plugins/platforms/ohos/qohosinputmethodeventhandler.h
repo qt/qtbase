@@ -15,13 +15,15 @@
 #include <QtCore/qpointer.h>
 #include <qohoskeyevent.h>
 #include <qohoskeymodifiers.h>
-#include <qohosplugincore.h>
 #include <render/qohoswindowproxy.h>
 #include <chrono>
+#include <map>
 #include <memory>
+#include <optional>
 #include <set>
 #include <unordered_map>
 #include <utility>
+#include <vector>
 
 #include "qohosplatformintegration.h"
 
@@ -123,12 +125,12 @@ private:
         QInputDevice *touchDevice;
         std::chrono::milliseconds timestampMs;
         QFlags<OhosKeyboardModifier> modifiers;
-        QOhosOptional<QPoint> singleTouchPointEventGlobalPosition;
+        std::optional<QPoint> singleTouchPointEventGlobalPosition;
     };
 
     QInputDevice *getPointingDeviceOrCreate(QInputDevice::DeviceType deviceType);
 
-    QOhosOptional<std::pair<QWindow *, std::uint64_t>> getLastTouchedWindowWithSeqNoIfPresent() const;
+    std::optional<std::pair<QWindow *, std::uint64_t>> getLastTouchedWindowWithSeqNoIfPresent() const;
     void handleMouseEvent(const QOhosMouseEvent &wsiEvent);
     void handleTouchEvent(const QWindowSystemInterfaceTouchEvent &touchEvent);
     void updateWindowsUnderTouchPoints(const QWindowSystemInterfaceTouchEvent &touchEvent);
@@ -143,8 +145,8 @@ private:
     QPointer<QWindow> m_currentMouseGrabbingWindow;
     QPointer<QWindow> m_currentKeyboardGrabbingWindow;
     QMap<Qt::Key, ushort> m_autoRepeatCountMap;
-    QOhosOptional<QOhosMouseEvent> m_lastWsiMouseEvent;
-    QOhosOptional<QWindowSystemInterfaceTouchEvent> m_lastWsiTouchEvent;
+    std::optional<QOhosMouseEvent> m_lastWsiMouseEvent;
+    std::optional<QWindowSystemInterfaceTouchEvent> m_lastWsiTouchEvent;
 };
 
 QT_END_NAMESPACE

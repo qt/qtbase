@@ -4,6 +4,7 @@
 #ifndef QOHOSINPUTCONTEXT_H
 #define QOHOSINPUTCONTEXT_H
 
+#include <optional>
 #include <qohosenums.h>
 #include <qohosinputmethodproxy.h>
 #include <qohosplugincore.h>
@@ -83,7 +84,7 @@ private:
     bool queryImEnabled() const;
     Qt::InputMethodHints queryInputMethodHints() const;
     Qt::EnterKeyType queryEnterKeyType() const;
-    QOhosOptional<int> tryQueryCursorPosition() const;
+    std::optional<int> tryQueryCursorPosition() const;
     QSharedPointer<QInputMethodQueryEvent> tryQueryFocusObjectInputMethod(Qt::InputMethodQueries queries) const;
 
     QRect m_lastCursorRectangle;
@@ -96,7 +97,7 @@ private:
     bool m_updateCursorRectangleAfterAttaching = false;
     bool m_softwareKeyboardVisible = false;
 
-    QOhosOptional<RequestKeyboardReason> m_lastInputTypeToTriggerSoftKeyboard;
+    std::optional<RequestKeyboardReason> m_lastInputTypeToTriggerSoftKeyboard;
 
     bool m_qtImEnabled;
     Qt::InputMethodHints m_qtInputMethodHints;

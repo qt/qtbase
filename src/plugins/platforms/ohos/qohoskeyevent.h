@@ -8,7 +8,7 @@
 #include <QtCore/qcoreevent.h>
 #include <QtCore/qflags.h>
 #include <QtCore/qglobal.h>
-#include <qohosplugincore.h>
+#include <optional>
 
 QT_BEGIN_NAMESPACE
 
@@ -26,7 +26,7 @@ class QOhosKeyEvent
 {
 public:
     virtual ~QOhosKeyEvent();
-    virtual QOhosOptional<QOhosQtKeyEvent> tryConvertToQOhosQtKeyEvent() const = 0;
+    virtual std::optional<QOhosQtKeyEvent> tryConvertToQOhosQtKeyEvent() const = 0;
     virtual bool equals(const QOhosKeyEvent &other) const = 0;
 
 protected:

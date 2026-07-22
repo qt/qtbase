@@ -4,21 +4,21 @@
 #include <QtCore/private/qohoscommon_p.h>
 #include <array>
 #include <cstdint>
+#include <optional>
 #include <qarkui/qarkuiutils.h>
 #include <qohoskeymodifiers.h>
-#include <qohosplugincore.h>
 
 QT_BEGIN_NAMESPACE
 
 namespace {
 
-QOhosOptional<std::uint64_t> tryGetUiInputEventModifierKeyStates(::ArkUI_UIInputEvent *uiInputEvent)
+std::optional<std::uint64_t> tryGetUiInputEventModifierKeyStates(::ArkUI_UIInputEvent *uiInputEvent)
 {
 std::uint64_t keys;
     QArkUi::callArkUiOrFailOnErrorResult(
         Q_OHOS_NAMED_FUNC(::OH_ArkUI_UIInputEvent_GetModifierKeyStates),
         uiInputEvent, &keys);
-    return makeQOhosOptional(keys);
+    return keys;
 }
 
 QFlags<OhosKeyboardModifier> mapArkUiModifierKeyStatesToOhosKeyboardModifiers(std::uint64_t modifierKeyStates)

@@ -4,6 +4,7 @@
 #include <qohosxcomponentkeyevent.h>
 
 #include <QtCore/qmap.h>
+#include <optional>
 
 QT_BEGIN_NAMESPACE
 
@@ -271,7 +272,7 @@ public:
         QFlags<OhosKeyboardModifier> keysFlags);
     ~QOhosXComponentKeyEvent() override;
 
-    QOhosOptional<QOhosQtKeyEvent> tryConvertToQOhosQtKeyEvent() const override;
+    std::optional<QOhosQtKeyEvent> tryConvertToQOhosQtKeyEvent() const override;
     bool equals(const QOhosKeyEvent &other) const override;
 
 private:
@@ -294,7 +295,7 @@ QOhosXComponentKeyEvent::QOhosXComponentKeyEvent(
 
 QOhosXComponentKeyEvent::~QOhosXComponentKeyEvent() = default;
 
-QOhosOptional<QOhosQtKeyEvent> QOhosXComponentKeyEvent::tryConvertToQOhosQtKeyEvent() const
+std::optional<QOhosQtKeyEvent> QOhosXComponentKeyEvent::tryConvertToQOhosQtKeyEvent() const
 {
     const auto qtModifiers = QtKeyEventHelpers::convertOhosToQtKeyboardModifiersWithNumpad(
         m_keysFlags, isKeyFromNumPad());
@@ -304,9 +305,9 @@ QOhosOptional<QOhosQtKeyEvent> QOhosXComponentKeyEvent::tryConvertToQOhosQtKeyEv
         qtModifiers, m_keysFlags, qtKeyCode);
     const auto qtKeyText = QtKeyEventHelpers::tryConvertQtKeyCodeToKeyText(qtKeyCode, qtModifiers, m_keysFlags);
 
-    return makeQOhosOptional<QOhosQtKeyEvent>(
-        {qtKeyAction, qtKeyCode, qtKeyText, qtModifiers, qGuiApplicationKeyboardModifiers,
-            static_cast<quint32>(m_keyCode)});
+    return QOhosQtKeyEvent{
+        qtKeyAction, qtKeyCode, qtKeyText, qtModifiers, qGuiApplicationKeyboardModifiers,
+        static_cast<quint32>(m_keyCode)};
 }
 
 bool QOhosXComponentKeyEvent::equals(const QOhosKeyEvent &other) const
