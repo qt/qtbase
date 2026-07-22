@@ -49,14 +49,14 @@ public:
     JsInputMethodInsertedTextComposer &operator=(const JsInputMethodInsertedTextComposer &) = delete;
     JsInputMethodInsertedTextComposer &operator=(JsInputMethodInsertedTextComposer &&) = delete;
 
-    QOhosOptional<InsertedTextId> lastId() const;
+    std::optional<InsertedTextId> lastId() const;
     QOhosInsertedText makeInsertedText(const std::string &text);
 
 private:
     JsInputMethodInsertedTextComposer() = default;
     void initOrIncrementId();
 
-    QOhosOptional<InsertedTextId> m_id;
+    std::optional<InsertedTextId> m_id;
 };
 
 QOhosInsertedText::QOhosInsertedText(const std::string &text, const InsertedTextId &id)
@@ -80,7 +80,7 @@ JsInputMethodInsertedTextComposer &JsInputMethodInsertedTextComposer::instance()
     return imHelper;
 }
 
-QOhosOptional<InsertedTextId> JsInputMethodInsertedTextComposer::lastId() const
+std::optional<InsertedTextId> JsInputMethodInsertedTextComposer::lastId() const
 {
     return m_id;
 }
@@ -125,21 +125,21 @@ QOhosInsertedText JsInputMethodInsertedTextComposer::makeInsertedText(const std:
     }
 }
 
-QOhosOptional<QOhosInputContext::Direction> tryMapInputMethodDirectionToQt(::InputMethod_Direction direction)
+std::optional<QOhosInputContext::Direction> tryMapInputMethodDirectionToQt(::InputMethod_Direction direction)
 {
     switch (direction) {
     case ::InputMethod_Direction::IME_DIRECTION_NONE:
-        return makeEmptyQOhosOptional();
+        return {};
     case ::InputMethod_Direction::IME_DIRECTION_UP:
-        return makeQOhosOptional(QOhosInputContext::Direction::CURSOR_UP);
+        return QOhosInputContext::Direction::CURSOR_UP;
     case ::InputMethod_Direction::IME_DIRECTION_DOWN:
-        return makeQOhosOptional(QOhosInputContext::Direction::CURSOR_DOWN);
+        return QOhosInputContext::Direction::CURSOR_DOWN;
     case ::InputMethod_Direction::IME_DIRECTION_LEFT:
-        return makeQOhosOptional(QOhosInputContext::Direction::CURSOR_LEFT);
+        return QOhosInputContext::Direction::CURSOR_LEFT;
     case ::InputMethod_Direction::IME_DIRECTION_RIGHT:
-        return makeQOhosOptional(QOhosInputContext::Direction::CURSOR_RIGHT);
+        return QOhosInputContext::Direction::CURSOR_RIGHT;
     }
-    return makeEmptyQOhosOptional();
+    return {};
 }
 
 ::InputMethod_EnterKeyType mapQtToOhosImeEnterKeyType(Qt::EnterKeyType qtEnterKeyType)
@@ -187,11 +187,11 @@ QOhosOptional<QOhosInputContext::Direction> tryMapInputMethodDirectionToQt(::Inp
     return ::InputMethod_RequestKeyboardReason::IME_REQUEST_REASON_NONE;
 }
 
-QOhosOptional<int> tryGetIntPropertyFromQuery(Qt::InputMethodQuery property, QSharedPointer<QInputMethodQueryEvent> query)
+std::optional<int> tryGetIntPropertyFromQuery(Qt::InputMethodQuery property, QSharedPointer<QInputMethodQueryEvent> query)
 {
     bool converted;
     const auto value = query->value(property).toInt(&converted);
-    return converted ? makeQOhosOptional(value) : makeEmptyQOhosOptional();
+    return converted ? std::optional(value) : std::nullopt;
 }
 
 void notifyOhosInputMethodAboutPossibleAutocorrection(const QOhosInsertedText &insertedText, int cursorPosition)
@@ -701,7 +701,7 @@ bool QOhosInputContext::queryImEnabled() const
 
 Qt::InputMethodHints QOhosInputContext::queryInputMethodHints() const
 {
-    QOhosOptional<Qt::InputMethodHints> hints;
+    std::optional<Qt::InputMethodHints> hints;
     auto query = tryQueryFocusObjectInputMethod(Qt::ImHints);
     if (!query.isNull()) {
         auto imHintsInt = tryGetIntPropertyFromQuery(Qt::ImHints, query);
@@ -714,7 +714,7 @@ Qt::InputMethodHints QOhosInputContext::queryInputMethodHints() const
 
 Qt::EnterKeyType QOhosInputContext::queryEnterKeyType() const
 {
-    QOhosOptional<Qt::EnterKeyType> enterKeyType;
+    std::optional<Qt::EnterKeyType> enterKeyType;
     auto query = tryQueryFocusObjectInputMethod(Qt::ImEnterKeyType);
     if (!query.isNull()) {
         auto imEnterKeyTypeInt = tryGetIntPropertyFromQuery(Qt::ImEnterKeyType, query);
@@ -725,12 +725,12 @@ Qt::EnterKeyType QOhosInputContext::queryEnterKeyType() const
     return enterKeyType.value_or(defaultEnterKeyType);
 }
 
-QOhosOptional<int> QOhosInputContext::tryQueryCursorPosition() const
+std::optional<int> QOhosInputContext::tryQueryCursorPosition() const
 {
     auto query = tryQueryFocusObjectInputMethod(Qt::ImCursorPosition);
     return !query.isNull()
         ? tryGetIntPropertyFromQuery(Qt::ImCursorPosition, query)
-        : makeEmptyQOhosOptional();
+        : std::nullopt;
 }
 
 QSharedPointer<QInputMethodQueryEvent> QOhosInputContext::tryQueryFocusObjectInputMethod(Qt::InputMethodQueries queries) const

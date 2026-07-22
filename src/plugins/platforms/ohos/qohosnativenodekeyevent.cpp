@@ -4,6 +4,7 @@
 #include <qohosnativenodekeyevent.h>
 
 #include <QtCore/qmap.h>
+#include <optional>
 
 QT_BEGIN_NAMESPACE
 
@@ -188,7 +189,7 @@ public:
         QFlags<OhosKeyboardModifier> keysFlags);
     ~QOhosNativeNodeKeyEvent() override;
 
-    QOhosOptional<QOhosQtKeyEvent> tryConvertToQOhosQtKeyEvent() const override;
+    std::optional<QOhosQtKeyEvent> tryConvertToQOhosQtKeyEvent() const override;
     bool equals(const QOhosKeyEvent &other) const override;
 
 private:
@@ -211,7 +212,7 @@ QOhosNativeNodeKeyEvent::QOhosNativeNodeKeyEvent(
 
 QOhosNativeNodeKeyEvent::~QOhosNativeNodeKeyEvent() = default;
 
-QOhosOptional<QOhosQtKeyEvent> QOhosNativeNodeKeyEvent::tryConvertToQOhosQtKeyEvent() const
+std::optional<QOhosQtKeyEvent> QOhosNativeNodeKeyEvent::tryConvertToQOhosQtKeyEvent() const
 {
     if (m_keyEventType == ::ArkUI_KeyEventType::ARKUI_KEY_EVENT_UNKNOWN) {
         qOhosWarning(QtForOhos) << "Cannot convert to QOhosQtKeyEvent - key action unknown";
@@ -226,9 +227,9 @@ QOhosOptional<QOhosQtKeyEvent> QOhosNativeNodeKeyEvent::tryConvertToQOhosQtKeyEv
         qtModifiers, m_keysFlags, qtKeyCode);
     const auto qtKeyText = QtKeyEventHelpers::tryConvertQtKeyCodeToKeyText(qtKeyCode, qtModifiers, m_keysFlags);
 
-    return makeQOhosOptional<QOhosQtKeyEvent>(
-        {qtKeyAction, qtKeyCode, qtKeyText, qtModifiers, qGuiApplicationKeyboardModifiers,
-            static_cast<quint32>(m_keyCode)});
+    return QOhosQtKeyEvent{
+        qtKeyAction, qtKeyCode, qtKeyText, qtModifiers, qGuiApplicationKeyboardModifiers,
+        static_cast<quint32>(m_keyCode)};
 }
 
 bool QOhosNativeNodeKeyEvent::equals(const QOhosKeyEvent &other) const
