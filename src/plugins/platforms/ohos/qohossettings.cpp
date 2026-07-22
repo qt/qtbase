@@ -6,6 +6,7 @@
 #include <cmath>
 #include <cstring>
 #include <functional>
+#include <optional>
 #include <qohosdeviceinfo_p.h>
 #include <qohosjsutils.h>
 #include <qohosplugincore.h>
@@ -21,13 +22,13 @@ namespace {
 constexpr const char *fontSizeScalePropertyName = "font_scale";
 constexpr const char *windowPcModeSwitchStatusPropertyName = "window_pcmode_switch_status";
 
-QOhosOptional<std::string> tryGetDataItemValue(const std::string &name, const std::string &domainName)
+std::optional<std::string> tryGetDataItemValue(const std::string &name, const std::string &domainName)
 {
-    return QtOhos::evalInJsThreadWithPromise<QOhosOptional<std::string>>(
+    return QtOhos::evalInJsThreadWithPromise<std::optional<std::string>>(
         [&](QtOhos::JsState &jsState, auto evalPromise) {
         auto defaultQAbility = jsState.defaultQAbilityPeer()->qAbility();
         if (defaultQAbility.IsEmpty()) {
-            evalPromise(makeEmptyQOhosOptional());
+            evalPromise({});
             return;
         }
 
@@ -37,28 +38,28 @@ QOhosOptional<std::string> tryGetDataItemValue(const std::string &name, const st
             {defaultQAbility.get("context"), name, domainName})
         .onThen([thenPromise = std::move(thenCatchPromises.first)](const QtOhos::CallbackInfo &cbInfo) {
             std::string result = cbInfo.getFirstArg<QNapi::String>(Q_FUNC_INFO);
-            thenPromise(makeQOhosOptional(result));
+            thenPromise(result);
         })
         .onCatch([catchPromise = std::move(thenCatchPromises.second), name, domainName](const QtOhos::CallbackInfo &) {
             qOhosPrintfError(
                 "Got error from @ohos.settings.getValue(..., '%s', '%s').",
                 name.c_str(), domainName.c_str());
-            catchPromise(makeEmptyQOhosOptional());
+            catchPromise({});
         });
     },
     Q_FUNC_INFO);
 }
 
 template<typename T>
-QOhosOptional<T> tryGetDataItemTypedValue(const std::string &name, const std::string &domainName);
+std::optional<T> tryGetDataItemTypedValue(const std::string &name, const std::string &domainName);
 
 template<>
-QOhosOptional<double> tryGetDataItemTypedValue(const std::string &name, const std::string &domainName)
+std::optional<double> tryGetDataItemTypedValue(const std::string &name, const std::string &domainName)
 {
     auto optStringValue = tryGetDataItemValue(name, domainName);
     auto optDoubleValue = optStringValue.has_value()
         ? QtOhos::tryParseStringAsFiniteDouble(optStringValue.value())
-        : makeEmptyQOhosOptional();
+        : std::nullopt;
 
     if (optStringValue.has_value() && !optDoubleValue.has_value()) {
         qOhosPrintfError(

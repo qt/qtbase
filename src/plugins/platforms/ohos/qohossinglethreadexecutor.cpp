@@ -39,7 +39,7 @@ std::shared_ptr<void> startNewThread(
     struct Context
     {
         std::function<void()> threadFunction;
-        QOhosOptional<::pthread_t> optThreadId;
+        std::optional<::pthread_t> optThreadId;
     };
 
     auto context = std::make_shared<Context>();

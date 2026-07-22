@@ -7,6 +7,7 @@
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/qwindow.h>
 #include <memory>
+#include <optional>
 #include <qohosplatformwindow.h>
 #include <qohosutils.h>
 #include <qpa/qwindowsysteminterface_p.h>
@@ -45,8 +46,8 @@ private:
     std::set<QOhosView *> m_trackedViews;
     std::set<QOhosView *> m_visibleViews;
 
-    QOhosOptional<Qt::ApplicationState> m_lastReceivedApplicationState;
-    QOhosOptional<Qt::ApplicationState> m_lastSentApplicationState;
+    std::optional<Qt::ApplicationState> m_lastReceivedApplicationState;
+    std::optional<Qt::ApplicationState> m_lastSentApplicationState;
     QObject m_signalReceiver;
 };
 
@@ -85,7 +86,7 @@ ProcessEventResult ApplicationStateTracker::processApplicationStateChangedEvent(
 
 bool ApplicationStateTracker::sendEvent(WindowSystemEvent *event)
 {
-    QOhosOptional<ProcessEventResult> processEventResult;
+    std::optional<ProcessEventResult> processEventResult;
     switch (event->type) {
     case WindowSystemEventType::Expose:
         processEventResult = processExposeEvent(static_cast<ExposeEvent *>(event));

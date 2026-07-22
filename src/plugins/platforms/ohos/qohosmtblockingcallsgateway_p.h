@@ -23,7 +23,7 @@
 #include <future>
 #include <memory>
 #include <mutex>
-#include <qohosplugincore.h>
+#include <optional>
 #include <utility>
 
 QT_BEGIN_NAMESPACE
@@ -60,7 +60,7 @@ private:
     struct MasterThreadTaskState
     {
         bool started = false;
-        QOhosOptional<MasterThreadTaskResult> result;
+        std::optional<MasterThreadTaskResult> result;
         std::condition_variable resultSetCondVar;
     };
 

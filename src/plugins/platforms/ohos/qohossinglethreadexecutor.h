@@ -6,7 +6,7 @@
 
 #include <QtCore/private/qohoscommon_p.h>
 #include <functional>
-#include <qohosplugincore.h>
+#include <optional>
 
 QT_BEGIN_NAMESPACE
 
@@ -14,7 +14,7 @@ namespace QtOhos {
 
 struct SingleThreadExecutorConfig
 {
-    QOhosOptional<std::size_t> threadPreferredStackSize;
+    std::optional<std::size_t> threadPreferredStackSize;
 };
 
 QOhosConsumer<std::function<void()>> makeSingleThreadExecutor(const SingleThreadExecutorConfig &config = {});

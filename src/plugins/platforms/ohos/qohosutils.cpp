@@ -12,20 +12,20 @@ namespace QtOhos
 
 namespace qohosutils_details {
 
-QOhosOptional<std::uintmax_t> tryParseStringAsUIntMax(const std::string &inputString)
+std::optional<std::uintmax_t> tryParseStringAsUIntMax(const std::string &inputString)
 {
     char *endPtr;
     auto value = std::strtoumax(inputString.c_str(), &endPtr, 10);
     auto validValue = !inputString.empty() && endPtr == inputString.c_str() + inputString.size();
 
     return validValue
-        ? makeQOhosOptional(value)
-        : makeEmptyQOhosOptional();
+        ? std::optional(value)
+        : std::nullopt;
 }
 
 }
 
-QOhosOptional<double> tryParseStringAsFiniteDouble(const std::string &inputString)
+std::optional<double> tryParseStringAsFiniteDouble(const std::string &inputString)
 {
     double parsedValue;
     std::size_t processedInputChars;
@@ -37,8 +37,8 @@ QOhosOptional<double> tryParseStringAsFiniteDouble(const std::string &inputStrin
     }
 
     return processedInputChars == inputString.size() && std::isfinite(parsedValue)
-        ? makeQOhosOptional(parsedValue)
-        : makeEmptyQOhosOptional();
+        ? std::optional(parsedValue)
+        : std::nullopt;
 }
 
 std::string printfToString(const char *format, ...)
@@ -74,7 +74,7 @@ const char *mapBoolToTrueFalseStr(bool value)
 }
 
 std::shared_ptr<QtOhos::QAbilityPeer> tryMapOptMainWindowToAbilityPeer(
-    QtOhos::JsState &jsState, QOhosOptional<QtOhos::QObjectThreadSafeRef> optInstanceMainWindowRef)
+    QtOhos::JsState &jsState, std::optional<QtOhos::QObjectThreadSafeRef> optInstanceMainWindowRef)
 {
     if (!optInstanceMainWindowRef.has_value())
         return jsState.defaultQAbilityPeer();

@@ -77,7 +77,7 @@ public:
     QNapi::Object qAbility() override;
     QNapi::Object launchWant() override;
     QObjectThreadSafeRef qWindowRef() override;
-    QOhosOptional<QNapi::Promise> qWindowDestroyPromise() override;
+    std::optional<QNapi::Promise> qWindowDestroyPromise() override;
     void forceResolveQWindowDestroyPromiseIfPresent(Napi::Env env) override;
     std::shared_ptr<std::atomic_bool> destroyAllowedFlag() override;
     bool isTerminating() override;
@@ -112,7 +112,7 @@ QObjectThreadSafeRef DummyQAbilityPeer::qWindowRef()
     return {};
 }
 
-QOhosOptional<QNapi::Promise> DummyQAbilityPeer::qWindowDestroyPromise()
+std::optional<QNapi::Promise> DummyQAbilityPeer::qWindowDestroyPromise()
 {
     return {};
 }
@@ -297,7 +297,7 @@ public:
     QNapi::Object getModule(const std::string &moduleName) override;
 
     QNapi::Object appLaunchWant() override;
-    QOhosOptional<QNapi::Object> optAppLaunchParam() override;
+    std::optional<QNapi::Object> optAppLaunchParam() override;
 
     QNapi::Object defaultWindowStageOrEmpty() override;
     QNapi::Object defaultUiContextOrEmpty() override;
@@ -504,11 +504,11 @@ QNapi::Object JsStateImpl::appLaunchWant()
     return m_appLaunchWant.Value();
 }
 
-QOhosOptional<QNapi::Object> JsStateImpl::optAppLaunchParam()
+std::optional<QNapi::Object> JsStateImpl::optAppLaunchParam()
 {
     return !m_optAppLaunchParam.IsEmpty()
-        ? makeQOhosOptional(m_optAppLaunchParam.Value())
-        : makeEmptyQOhosOptional();
+        ? std::optional(m_optAppLaunchParam.Value())
+        : std::nullopt;
 }
 
 QNapi::Object JsStateImpl::defaultWindowStageOrEmpty()
@@ -990,7 +990,7 @@ void invokeInJsThreadAndWaitForContinue(
     {
         std::mutex mutex;
         bool outerTaskPromiseSettled = false;
-        QOhosOptional<std::string> jsThreadExceptionMsg;
+        std::optional<std::string> jsThreadExceptionMsg;
     };
     auto completionState = std::make_shared<JsTaskCompletionState>();
 
@@ -1001,7 +1001,7 @@ void invokeInJsThreadAndWaitForContinue(
                 std::make_shared<QOhosTaskPromise<>>(std::move(outerTaskPromise));
 
             auto settleOuterTaskPromise =
-                [completionState, sharedOuterTaskPromise](QOhosOptional<std::string> exceptionMsg) {
+                [completionState, sharedOuterTaskPromise](std::optional<std::string> exceptionMsg) {
                     {
                         std::lock_guard<std::mutex> lock(completionState->mutex);
                         if (completionState->outerTaskPromiseSettled)
@@ -1028,9 +1028,9 @@ void invokeInJsThreadAndWaitForContinue(
             try {
                 task(jsState, std::move(innerTaskPromise));
             } catch (const std::exception &e) {
-                settleOuterTaskPromise(QOhosOptional<std::string>(e.what()));
+                settleOuterTaskPromise(std::optional<std::string>(e.what()));
             } catch (...) {
-                settleOuterTaskPromise(QOhosOptional<std::string>("<unknown exception>"));
+                settleOuterTaskPromise(std::optional<std::string>("<unknown exception>"));
             }
         };
 

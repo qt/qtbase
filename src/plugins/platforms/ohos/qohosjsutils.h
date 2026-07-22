@@ -12,6 +12,7 @@
 #include <cstdint>
 #include <functional>
 #include <memory>
+#include <optional>
 #include <qohosplugincore.h>
 #include <qohosutils.h>
 #include <string>
@@ -41,9 +42,9 @@ void clearJsTimeout(JsState &jsState, int timerId);
 QNapi::Promise makeResolvedPromise(QNapi::Value valueForResolve);
 
 template<typename T>
-QOhosOptional<T> getOptionalProperty(const QNapi::Object &object, const std::string &propName);
+std::optional<T> getOptionalProperty(const QNapi::Object &object, const std::string &propName);
 
-QOhosOptional<std::uint32_t> tryGetCodeFromJsBusinessError(const Napi::Error &error);
+std::optional<std::uint32_t> tryGetCodeFromJsBusinessError(const Napi::Error &error);
 
 // On JS business error matching suppressedErrorCode warns and returns, otherwise rethrows.
 // Call from a catch block.
@@ -82,12 +83,12 @@ QNapi::Promise adaptAsyncCallResultToJsPromise(
 }
 
 template<typename T>
-QOhosOptional<T> getOptionalProperty(const QNapi::Object &object, const std::string &propName)
+std::optional<T> getOptionalProperty(const QNapi::Object &object, const std::string &propName)
 {
     auto optPropValue = QNapi::getOptionalPropOrEmpty<T>(object, propName);
     return !optPropValue.IsEmpty()
-        ? makeQOhosOptional(optPropValue)
-        : makeEmptyQOhosOptional();
+        ? std::optional(optPropValue)
+        : std::nullopt;
 }
 
 template<typename T>

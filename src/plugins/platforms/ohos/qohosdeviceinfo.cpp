@@ -40,7 +40,7 @@ QVariant getProperty(Type prop)
     return result;
 }
 
-QOhosOptional<RecognizedDeviceType> tryGetRecognizedDeviceType()
+std::optional<RecognizedDeviceType> tryGetRecognizedDeviceType()
 {
     static const QMap<QString, RecognizedDeviceType> deviceTypeNameMapping = {
         {QStringLiteral("2in1"), RecognizedDeviceType::_2in1},
@@ -51,8 +51,8 @@ QOhosOptional<RecognizedDeviceType> tryGetRecognizedDeviceType()
     auto deviceTypeName = getProperty(Type::deviceType).toString();
     auto deviceTypeIt = deviceTypeNameMapping.constFind(deviceTypeName);
     auto deviceType = deviceTypeIt != deviceTypeNameMapping.constEnd()
-        ? makeQOhosOptional(deviceTypeIt.value())
-        : makeEmptyQOhosOptional();
+        ? std::optional(deviceTypeIt.value())
+        : std::nullopt;
 
     return deviceType;
 }

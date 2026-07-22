@@ -9,6 +9,7 @@
 #include <QtGui/qguiapplication.h>
 #include <QtGui/qwindow.h>
 #include <algorithm>
+#include <optional>
 #include <qohoswindowmanager.h>
 
 QT_BEGIN_NAMESPACE
@@ -61,7 +62,7 @@ public:
     bool show(Qt::WindowFlags windowFlags, Qt::WindowModality windowModality, QWindow *parent) override;
 
 private:
-    void setDialogResult(bool accepted, QStringList files, QOhosOptional<int> optSelectedFilterIndex);
+    void setDialogResult(bool accepted, QStringList files, std::optional<int> optSelectedFilterIndex);
     static QStringList convertQtNameFiltersToOhosStandard(const QStringList &);
 
     QEventLoop m_eventLoop;
@@ -138,7 +139,7 @@ void QOhosPlatformFileDialogHelperImpl::hide()
 }
 
 void QOhosPlatformFileDialogHelperImpl::setDialogResult(
-    bool accepted, QStringList files, QOhosOptional<int> optSelectedFilterIndex)
+    bool accepted, QStringList files, std::optional<int> optSelectedFilterIndex)
 {
     auto _dbg = make_QCScopedDebug("QOhosPlatformFileDialogHelperImpl::dialogResult()");
 
@@ -215,7 +216,7 @@ bool QOhosPlatformFileDialogHelperImpl::show(
                     : QString(),
             mapQFileDialogOptionsToOhosDocumentSelectMode(*opt),
             mapQFileDialogOptionsToOhosResultMultiplicity(*opt),
-            [this](QOhosOptional<QOhosWindowManager::OpenResult> optOpenResult) {
+            [this](std::optional<QOhosWindowManager::OpenResult> optOpenResult) {
                 auto filesPaths = optOpenResult.has_value()
                     ? optOpenResult.value().selectedUrls
                     : QStringList();
@@ -233,7 +234,7 @@ bool QOhosPlatformFileDialogHelperImpl::show(
                     ? QFileInfo(m_selectFileName.toLocalFile()).absoluteDir().path()
                     : QString(),
             ohosNameFilters,
-            [this](QOhosOptional<QOhosWindowManager::SaveResult> optSaveResult) {
+            [this](std::optional<QOhosWindowManager::SaveResult> optSaveResult) {
                 auto filesPaths = optSaveResult.has_value()
                     ? optSaveResult.value().savedUrls
                     : QStringList();

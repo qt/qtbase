@@ -18,7 +18,7 @@
 #include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/qmap.h>
 #include <QtCore/qvariant.h>
-#include <qohosplugincore.h>
+#include <optional>
 
 QT_BEGIN_NAMESPACE
 
@@ -69,7 +69,7 @@ enum class RecognizedDeviceType {
 void init(QMap<Type, QVariant> devinfo);
 QVariant getProperty(Type prop);
 
-QOhosOptional<RecognizedDeviceType> tryGetRecognizedDeviceType();
+std::optional<RecognizedDeviceType> tryGetRecognizedDeviceType();
 bool isTablet();
 bool is2in1();
 bool isPhone();

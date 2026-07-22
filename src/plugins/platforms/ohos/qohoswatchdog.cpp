@@ -12,6 +12,7 @@
 #include <QtCore/qobject.h>
 #include <functional>
 #include <mutex>
+#include <optional>
 
 namespace ch = std::chrono;
 
@@ -75,7 +76,7 @@ private:
     ch::steady_clock::time_point m_lastWatchTime;
     bool m_appMainThreadIsAlive = false;
     bool m_isSixSecondEvent = false;
-    QOhosOptional<ch::system_clock::time_point> m_sixSecondEventDetectionTime;
+    std::optional<ch::system_clock::time_point> m_sixSecondEventDetectionTime;
 };
 
 QEvent::Type getCheckMainThreadIsAliveQEventType()
