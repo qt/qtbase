@@ -504,7 +504,9 @@ bool QGLXContext::makeCurrent(QPlatformSurface *surface)
         int interval = surface->format().swapInterval();
         QXcbWindow *window = static_cast<QXcbWindow *>(surface);
         QXcbScreen *screen = screenForPlatformSurface(surface);
-        if (interval >= 0 && interval != window->swapInterval() && screen) {
+        // Always re-apply the swap interval to have it set correctly when the
+        // same drawable is used with multiple contexts. See QTBUG-147854.
+        if (interval >= 0 && screen) {
             typedef void (*qt_glXSwapIntervalEXT)(Display *, GLXDrawable, int);
             typedef void (*qt_glXSwapIntervalMESA)(unsigned int);
             static qt_glXSwapIntervalEXT glXSwapIntervalEXT = nullptr;
