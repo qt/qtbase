@@ -99,6 +99,22 @@ public:
         , m_quitting(false)
     {
         setObjectName(QStringLiteral("WaylandEventThread"));
+
+        // The pipe lets stop() interrupt the poll() in run(), which would otherwise never
+        // return once the compositor stops sending events.
+        if (qt_safe_pipe(m_pipefd) != 0)
+            qErrnoWarning("Pipe creation failed. Quitting may hang.");
+    }
+
+    ~EventThread() override
+    {
+        // run()'s poll() uses the pipe, so the thread must be stopped by now.
+        Q_ASSERT(!isRunning());
+
+        if (m_pipefd[0] != -1) {
+            qt_safe_close(m_pipefd[0]);
+            qt_safe_close(m_pipefd[1]);
+        }
     }
 
     void readAndDispatchEvents()
@@ -142,8 +158,8 @@ public:
     {
         // We have to both write to the pipe and set the flag, as the thread may be
         // either in the poll() or waiting for _prepare_read().
-        if (m_pipefd[1] != -1 && write(m_pipefd[1], "\0", 1) == -1)
-            qWarning("Failed to write to the pipe: %s.", strerror(errno));
+        if (m_pipefd[1] != -1 && qt_safe_write(m_pipefd[1], "\0", 1) == -1)
+            qErrnoWarning("Failed to write to the pipe");
 
         m_quitting.storeRelaxed(true);
         m_cond.wakeOne();
@@ -158,35 +174,13 @@ Q_SIGNALS:
 protected:
     void run() override
     {
-        // we use this pipe to make the loop exit otherwise if we simply used a flag on the loop condition, if stop() gets
-        // called while poll() is blocking the thread will never quit since there are no wayland messages coming anymore.
-        struct Pipe
-        {
-            Pipe(int *fds)
-                : fds(fds)
-            {
-                if (qt_safe_pipe(fds) != 0)
-                    qWarning("Pipe creation failed. Quitting may hang.");
-            }
-            ~Pipe()
-            {
-                if (fds[0] != -1) {
-                    close(fds[0]);
-                    close(fds[1]);
-                }
-            }
-
-            int *fds;
-        private:
-            Q_DISABLE_COPY(Pipe)
-        } pipe(m_pipefd);
-
         // Make the main thread call wl_prepare_read(), dispatch the pending messages and flush the
         // outbound ones. Wait until it's done before proceeding, unless we're told to quit.
         while (waitForReading()) {
             if (!m_reading.loadRelaxed())
                 break;
 
+            // m_pipefd[0] is what makes this poll() return when stop() is called.
             pollfd fds[2] = { { m_fd, POLLIN, 0 }, { m_pipefd[0], POLLIN, 0 } };
             poll(fds, 2, -1);
 
@@ -245,7 +239,7 @@ private:
     }
 
     int m_fd;
-    int m_pipefd[2];
+    int m_pipefd[2]; // set in the constructor, closed in the destructor, constant in between
     wl_display *m_wldisplay;
     wl_event_queue *m_wlevqueue;
     OperatingMode m_mode;
