@@ -11,7 +11,6 @@
 #include <cstdint>
 #include <cstring>
 #include <map>
-#include <optional>
 #include <qohosdeviceinfo_p.h>
 #include <qohosjsutils.h>
 #include <qohosplatformwindow.h>
@@ -121,7 +120,7 @@ public:
     std::string instanceId() final;
     QNapi::Object qAbility() final;
     QObjectThreadSafeRef qWindowRef() final;
-    QOhosOptional<QNapi::Promise> qWindowDestroyPromise() final;
+    std::optional<QNapi::Promise> qWindowDestroyPromise() final;
     void forceResolveQWindowDestroyPromiseIfPresent(Napi::Env env) final;
     std::shared_ptr<std::atomic_bool> destroyAllowedFlag() final;
 
@@ -169,7 +168,7 @@ QObjectThreadSafeRef QAbilityPeerImpl::qWindowRef()
     return m_qwindow;
 }
 
-QOhosOptional<QNapi::Promise> QAbilityPeerImpl::qWindowDestroyPromise()
+std::optional<QNapi::Promise> QAbilityPeerImpl::qWindowDestroyPromise()
 {
     if (!m_optQWindowDestroyPromiseData || m_optQWindowDestroyPromiseData->promise.IsEmpty())
         return {};
@@ -177,7 +176,7 @@ QOhosOptional<QNapi::Promise> QAbilityPeerImpl::qWindowDestroyPromise()
     auto promiseValue = m_optQWindowDestroyPromiseData->promise.Value();
     m_optQWindowDestroyPromiseData->promise.Reset();
 
-    return makeQOhosOptional(promiseValue);
+    return promiseValue;
 }
 
 void QAbilityPeerImpl::forceResolveQWindowDestroyPromiseIfPresent(Napi::Env env)
@@ -538,10 +537,10 @@ public:
 
     bool isWantFromThisApp(QNapi::Object appQAbility, QNapi::Object want) const override;
 
-    QOhosOptional<std::string> tryGetQAbilityInstanceIdFromWant(QNapi::Object appQAbility, QNapi::Object want) const override;
+    std::optional<std::string> tryGetQAbilityInstanceIdFromWant(QNapi::Object appQAbility, QNapi::Object want) const override;
     std::string getQAbilityInstanceIdOrPendingAutoStartedId(QNapi::Object qAbility) const override;
 
-    QOhosOptional<std::string> pendingAutoStartedInstanceId() const override;
+    std::optional<std::string> pendingAutoStartedInstanceId() const override;
 
     void registerPendingAutoStartedInstance() override;
 
@@ -570,7 +569,7 @@ private:
     std::shared_ptr<std::map<QUiAbilityPeer *, std::weak_ptr<QUiAbilityPeerImpl>>> m_ownedUiAbilityPeers;
     QOhosSupplier<std::string> m_abilityInstanceIdsGenerator;
     std::map<std::string, InstanceStartParams> m_pendingInstancesStartParams;
-    QOhosOptional<std::string> m_pendingAutoStartedInstanceId;
+    std::optional<std::string> m_pendingAutoStartedInstanceId;
 };
 
 QAbilityInstancesManagerImpl::QAbilityInstancesManagerImpl(
@@ -584,7 +583,7 @@ QAbilityInstancesManagerImpl::QAbilityInstancesManagerImpl(
     registerPendingAutoStartedInstance();
 }
 
-QOhosOptional<std::string> QAbilityInstancesManagerImpl::tryGetQAbilityInstanceIdFromWant(
+std::optional<std::string> QAbilityInstancesManagerImpl::tryGetQAbilityInstanceIdFromWant(
     QNapi::Object appQAbility, QNapi::Object want) const
 {
     auto wantParameters = QNapi::getPropOrUndefined(want, "parameters");
@@ -596,8 +595,8 @@ QOhosOptional<std::string> QAbilityInstancesManagerImpl::tryGetQAbilityInstanceI
     bool validInstanceId = isWantFromThisApp(appQAbility, want) && instanceIdParam.IsString();
 
     return validInstanceId
-        ? makeQOhosOptional(QNapi::checkedCast<QNapi::String>(instanceIdParam).Utf8Value())
-        : makeEmptyQOhosOptional();
+        ? std::optional(QNapi::checkedCast<QNapi::String>(instanceIdParam).Utf8Value())
+        : std::nullopt;
 }
 
 std::string QAbilityInstancesManagerImpl::getQAbilityInstanceIdOrPendingAutoStartedId(QNapi::Object qAbility) const
@@ -639,7 +638,7 @@ bool QAbilityInstancesManagerImpl::isWantFromThisApp(QNapi::Object appQAbility, 
         && QNapi::checkedCast<QNapi::String>(callerBundleNameParam).Utf8Value() == appAbilityInfo.bundleName;
 }
 
-QOhosOptional<std::string> QAbilityInstancesManagerImpl::pendingAutoStartedInstanceId() const
+std::optional<std::string> QAbilityInstancesManagerImpl::pendingAutoStartedInstanceId() const
 {
     return m_pendingAutoStartedInstanceId;
 }

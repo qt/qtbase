@@ -12,6 +12,7 @@
 #include <qohosenums.h>
 #include <qohosplugincore.h>
 #include <functional>
+#include <optional>
 
 QT_BEGIN_NAMESPACE
 
@@ -39,12 +40,12 @@ struct SaveResult
 void showFileDialogOpen(
     QtOhos::QObjectThreadSafeRef contextWindowRef, QStringList filters, QString defaultPath,
     DocumentSelectMode documentSelectMode, ResultMultiplicity resultMultiplicity,
-    QOhosConsumer<QOhosOptional<OpenResult>> resultCallback);
+    QOhosConsumer<std::optional<OpenResult>> resultCallback);
 
 void showFileDialogSave(
     QtOhos::QObjectThreadSafeRef contextWindowRef, QStringList newFileNames,
     QString defaultFilePath, QStringList fileSuffixChoices,
-    QOhosConsumer<QOhosOptional<SaveResult>> resultCallback);
+    QOhosConsumer<std::optional<SaveResult>> resultCallback);
 
 }
 

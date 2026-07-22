@@ -132,8 +132,8 @@ void QOhosPermissionsHelperImpl::requestPermissionsFromUserIfNeeded(
     QObject *optInstanceMainWindow = getFocusedWindowOrNull();
     auto optInstanceMainWindowRef =
         optInstanceMainWindow != nullptr
-           ? makeQOhosOptional(QtOhos::QObjectThreadSafeRef(optInstanceMainWindow))
-           : makeEmptyQOhosOptional();
+           ? std::optional(QtOhos::QObjectThreadSafeRef(optInstanceMainWindow))
+           : std::nullopt;
 
     QtOhos::invokeInJsThread(
         [context, permissionNames, optInstanceMainWindowRef](QtOhos::JsState &jsState) {
@@ -193,8 +193,8 @@ void QOhosPermissionsHelperImpl::requestPermissionsOnSettingIfNeeded(
     QObject *optInstanceMainWindow = getFocusedWindowOrNull();
     auto optInstanceMainWindowRef =
         optInstanceMainWindow != nullptr
-           ? makeQOhosOptional(QtOhos::QObjectThreadSafeRef(optInstanceMainWindow))
-           : makeEmptyQOhosOptional();
+           ? std::optional(QtOhos::QObjectThreadSafeRef(optInstanceMainWindow))
+           : std::nullopt;
 
     QtOhos::invokeInJsThread(
         [context, permissionNames, optInstanceMainWindowRef](auto &jsState) {

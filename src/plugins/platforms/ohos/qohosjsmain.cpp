@@ -46,6 +46,7 @@
 #include <sys/resource.h>
 #include <type_traits>
 #include <cstdlib>
+#include <optional>
 #include <unordered_map>
 #include <utility>
 
@@ -72,8 +73,8 @@ static QList<QByteArray> s_applicationParams;
 
 QOhosConsumer<std::vector<std::string>> s_qtAppThreadMainFuncLauncher;
 struct {
-    QOhosOptional<std::uint64_t> lastRequestedInJsThread;
-    QOhosOptional<std::uint64_t> activeInQtThread;
+    std::optional<std::uint64_t> lastRequestedInJsThread;
+    std::optional<std::uint64_t> activeInQtThread;
 } s_hotStartIteration;
 std::function<void()> s_qtAppThreadIdleStateWaitFunc;
 extern "C" typedef int (*Main)(int, char **); //use the standard main method to start the application
@@ -602,7 +603,7 @@ void terminateAllAbilityInstances(JsState &jsState, const char *logContext)
         });
 }
 
-QOhosOptional<std::size_t> tryGetMaxStackSizeHardLimit()
+std::optional<std::size_t> tryGetMaxStackSizeHardLimit()
 {
     struct ::rlimit limit;
     if (::getrlimit(RLIMIT_STACK, &limit) != 0) {
@@ -614,16 +615,16 @@ QOhosOptional<std::size_t> tryGetMaxStackSizeHardLimit()
     }
 
     return limit.rlim_max != RLIM_INFINITY
-        ? QOhosOptional<std::size_t>(limit.rlim_max)
-        : makeEmptyQOhosOptional();
+        ? std::optional<std::size_t>(limit.rlim_max)
+        : std::nullopt;
 }
 
-QOhosOptional<std::size_t> tryGetQtThreadStackSizeFromEnv()
+std::optional<std::size_t> tryGetQtThreadStackSizeFromEnv()
 {
     int stackSizeFromEnv = qEnvironmentVariableIntValue(qtMainThreadStackSizeEnvVariableName);
     return stackSizeFromEnv > 0
-        ? makeQOhosOptional(static_cast<std::size_t>(stackSizeFromEnv))
-        : makeEmptyQOhosOptional();
+        ? std::optional(static_cast<std::size_t>(stackSizeFromEnv))
+        : std::nullopt;
 }
 
 std::size_t getPreferredStackSizeForQtThread()
@@ -661,7 +662,7 @@ QOhosConsumer<std::vector<std::string>> makeQtThreadWithMainFuncLauncher(
     QOhosConsumer<std::vector<std::string>> baseMainFuncLauncher)
 {
     SingleThreadExecutorConfig qtThreadExecutorConfig = {
-        .threadPreferredStackSize = makeQOhosOptional(getPreferredStackSizeForQtThread()),
+        .threadPreferredStackSize = getPreferredStackSizeForQtThread(),
     };
     auto qtThreadExecutor = makeSingleThreadExecutor(qtThreadExecutorConfig);
 
@@ -1177,7 +1178,7 @@ QNapi::Value handleAbilityStageOnAcceptWant(const CallbackInfo &cbInfo)
     auto receivedQAbilityInstanceId =
         !defaultQAbility.IsEmpty()
             ? getQAbilityInstancesManager().tryGetQAbilityInstanceIdFromWant(defaultQAbility, want)
-            : makeEmptyQOhosOptional();
+            : std::nullopt;
 
     auto qAbilityInstanceId =
         receivedQAbilityInstanceId.has_value()

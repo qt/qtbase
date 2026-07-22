@@ -4,6 +4,7 @@
 #include "qohosapppermissions_p.h"
 #include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/private/qohoslogger_p.h>
+#include <optional>
 #include <qohosplugincore.h>
 
 QT_BEGIN_NAMESPACE
@@ -13,7 +14,7 @@ namespace QOhosAppPermissions {
 namespace {
 
 void tryGetBundleAccessTokenIdWithConsumer(
-    QtOhos::JsState &jsState, QOhosConsumer<QtOhos::JsState &, QOhosOptional<int>> resultConsumer)
+    QtOhos::JsState &jsState, QOhosConsumer<QtOhos::JsState &, std::optional<int>> resultConsumer)
 {
     auto bundleFlags = jsState.eval<QNapi::Number>(
         "@ohos.bundle.bundleManager.BundleFlag.GET_BUNDLE_INFO_WITH_APPLICATION");
@@ -25,11 +26,11 @@ void tryGetBundleAccessTokenIdWithConsumer(
         QNapi::Object bundleInfo = cbInfo.getFirstArg<QNapi::Object>(Q_FUNC_INFO);
         resultConsumer(
             cbInfo.jsState(),
-            QOhosOptional<int>(bundleInfo.eval<QNapi::Number>("appInfo.accessTokenId")));
+            std::optional<int>(bundleInfo.eval<QNapi::Number>("appInfo.accessTokenId")));
     })
     .onCatchWithContext([](const QtOhos::CallbackInfo &cbInfo, auto &resultConsumer) {
         QtOhos::logJsCallbackError(cbInfo, "Got error from getBundleInfoForSelf()");
-        resultConsumer(cbInfo.jsState(), makeEmptyQOhosOptional());
+        resultConsumer(cbInfo.jsState(), {});
     });
 }
 
@@ -62,7 +63,7 @@ void checkAppPermissionGrantedWithConsumer(
     tryGetBundleAccessTokenIdWithConsumer(
         jsState,
         [permissionName, resultConsumer = std::move(resultConsumer)](
-            QtOhos::JsState &jsState, QOhosOptional<int> bundleAccessTokenId) mutable {
+            QtOhos::JsState &jsState, std::optional<int> bundleAccessTokenId) mutable {
             if (bundleAccessTokenId.has_value()) {
                 checkAppPermissionStatusGrantedWithConsumer(
                     jsState, bundleAccessTokenId.value(), permissionName,

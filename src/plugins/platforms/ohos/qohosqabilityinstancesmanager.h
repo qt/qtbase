@@ -10,6 +10,7 @@
 #include <functional>
 #include <map>
 #include <memory>
+#include <optional>
 #include <qohosplugincore.h>
 #include <string>
 
@@ -57,10 +58,10 @@ public:
 
     virtual bool isWantFromThisApp(QNapi::Object appQAbility, QNapi::Object want) const = 0;
 
-    virtual QOhosOptional<std::string> tryGetQAbilityInstanceIdFromWant(QNapi::Object appQAbility, QNapi::Object want) const = 0;
+    virtual std::optional<std::string> tryGetQAbilityInstanceIdFromWant(QNapi::Object appQAbility, QNapi::Object want) const = 0;
     virtual std::string getQAbilityInstanceIdOrPendingAutoStartedId(QNapi::Object qAbility) const = 0;
 
-    virtual QOhosOptional<std::string> pendingAutoStartedInstanceId() const = 0;
+    virtual std::optional<std::string> pendingAutoStartedInstanceId() const = 0;
 
     virtual void registerPendingAutoStartedInstance() = 0;
 

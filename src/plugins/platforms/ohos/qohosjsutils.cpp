@@ -19,7 +19,7 @@ std::shared_ptr<void> startDelayedJsThreadTask(
     struct Context
     {
         std::function<void(JsState &)> task;
-        QOhosOptional<int> timerId;
+        std::optional<int> timerId;
     };
 
     auto context = std::make_shared<Context>();
@@ -74,7 +74,7 @@ QNapi::Promise makeResolvedPromise(QNapi::Value valueForResolve)
     return promiseDeferred.Promise();
 }
 
-QOhosOptional<std::uint32_t> tryGetCodeFromJsBusinessError(const Napi::Error &error)
+std::optional<std::uint32_t> tryGetCodeFromJsBusinessError(const Napi::Error &error)
 {
     if (!error.Value().IsObject())
         return {};
@@ -83,8 +83,8 @@ QOhosOptional<std::uint32_t> tryGetCodeFromJsBusinessError(const Napi::Error &er
     auto optErrorCode = QNapi::getOptionalPropOrEmpty<QNapi::Number>(errorObject, "code");
 
     return !optErrorCode.IsEmpty()
-        ? makeQOhosOptional(optErrorCode.Uint32Value())
-        : makeEmptyQOhosOptional();
+        ? std::optional(optErrorCode.Uint32Value())
+        : std::nullopt;
 }
 
 void rethrowUnlessJsBusinessErrorIs(

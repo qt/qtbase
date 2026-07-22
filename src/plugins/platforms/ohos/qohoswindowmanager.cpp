@@ -50,7 +50,7 @@ void startOhosFilePicker(
     QtOhos::JsState &jsState, std::shared_ptr<QtOhos::QAbilityPeer> qAbilityPeer,
     QtOhos::QObjectThreadSafeRef contextWindowRef,
     const std::string &pickerActionName, QNapi::Object pickerActionOptions,
-    QOhosConsumer<QOhosOptional<FilePickerResult>> resultConsumer)
+    QOhosConsumer<std::optional<FilePickerResult>> resultConsumer)
 {
     auto sharedResultConsumer = QtOhos::moveToSharedPtr(std::move(resultConsumer));
 
@@ -77,7 +77,7 @@ void startOhosFilePicker(
                 });
 
             (*sharedResultConsumer)(
-                QOhosOptional<FilePickerResult>(
+                std::optional<FilePickerResult>(
                     {
                         .resultPaths = std::move(resultPaths),
                         .selectedIndex = documentViewPicker->eval<QNapi::Number>("getSelectedIndex()"),
@@ -85,7 +85,7 @@ void startOhosFilePicker(
         },
         [pickerActionName, sharedResultConsumer]() {
             qOhosPrintfError("DocumentViewPicker.%s() call failed", pickerActionName.c_str());
-            (*sharedResultConsumer)(makeEmptyQOhosOptional());
+            (*sharedResultConsumer)({});
         });
 }
 
@@ -107,7 +107,7 @@ namespace QOhosWindowManager {
 void showFileDialogOpen(
     QtOhos::QObjectThreadSafeRef contextWindowRef, QStringList filters, QString defaultPath,
     DocumentSelectMode documentSelectMode, ResultMultiplicity resultMultiplicity,
-    QOhosConsumer<QOhosOptional<OpenResult>> resultCallback)
+    QOhosConsumer<std::optional<OpenResult>> resultCallback)
 {
     auto sharedResultCallback = QtOhos::moveToSharedPtr(std::move(resultCallback));
 
@@ -148,7 +148,7 @@ void showFileDialogOpen(
 void showFileDialogSave(
     QtOhos::QObjectThreadSafeRef contextWindowRef, QStringList newFileNames,
     QString defaultFilePath, QStringList fileSuffixChoices,
-    QOhosConsumer<QOhosOptional<SaveResult>> resultCallback)
+    QOhosConsumer<std::optional<SaveResult>> resultCallback)
 {
     auto sharedResultCallback = QtOhos::moveToSharedPtr(std::move(resultCallback));
 

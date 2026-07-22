@@ -13,6 +13,7 @@
 #include <limits>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <qohosplugincore.h>
 #include <string>
 #include <tuple>
@@ -26,7 +27,7 @@ namespace QtOhos
 
 namespace qohosutils_details {
 
-QOhosOptional<std::uintmax_t> tryParseStringAsUIntMax(const std::string &inputString);
+std::optional<std::uintmax_t> tryParseStringAsUIntMax(const std::string &inputString);
 
 }
 
@@ -84,10 +85,10 @@ template<typename ...Ts, typename BaseConsumer>
 std::enable_if_t<std::is_assignable<QOhosConsumer<Ts...>, BaseConsumer>::value, std::function<bool(Ts...)>>
 makeCallOnceConsumerWrapper(BaseConsumer &&baseConsumer);
 
-QOhosOptional<double> tryParseStringAsFiniteDouble(const std::string &inputString);
+std::optional<double> tryParseStringAsFiniteDouble(const std::string &inputString);
 
 template<typename T>
-std::enable_if_t<std::is_integral<T>::value && std::is_unsigned<T>::value, QOhosOptional<T>>
+std::enable_if_t<std::is_integral<T>::value && std::is_unsigned<T>::value, std::optional<T>>
 tryParseStringAsUnsignedInteger(const std::string &inputString);
 
 std::string printfToString(const char *format, ...) Q_ATTRIBUTE_FORMAT_PRINTF(1, 2);
@@ -95,7 +96,7 @@ std::string printfToString(const char *format, ...) Q_ATTRIBUTE_FORMAT_PRINTF(1,
 const char *mapBoolToTrueFalseStr(bool value);
 
 std::shared_ptr<QtOhos::QAbilityPeer> tryMapOptMainWindowToAbilityPeer(
-    QtOhos::JsState &jsState, QOhosOptional<QtOhos::QObjectThreadSafeRef> optInstanceMainWindowRef);
+    QtOhos::JsState &jsState, std::optional<QtOhos::QObjectThreadSafeRef> optInstanceMainWindowRef);
 
 template<typename ForwardIt, typename Predicate>
 ForwardIt removeMatchingWithLookahead(ForwardIt firstIt, ForwardIt lastIt, Predicate &&predicate)
@@ -196,7 +197,7 @@ QOhosConsumer<T> makeCompressingAsyncConsumer(
         QOhosConsumer<T> baseConsumer;
         QOhosConsumer<std::function<void()>> asyncExecutor;
         std::mutex pendingValueMutex;
-        QOhosOptional<T> pendingValue;
+        std::optional<T> pendingValue;
     };
 
     auto context = std::make_shared<Context>();
@@ -208,7 +209,7 @@ QOhosConsumer<T> makeCompressingAsyncConsumer(
         if (!context->pendingValue.has_value()) {
             context->asyncExecutor(
                 [context]() {
-                    QOhosOptional<T> pendingValue;
+                    std::optional<T> pendingValue;
                     {
                         std::lock_guard<std::mutex> pendingValueLock(context->pendingValueMutex);
                         std::swap(pendingValue, context->pendingValue);
@@ -235,15 +236,15 @@ makeCallOnceConsumerWrapper(BaseConsumer &&baseConsumer)
 }
 
 template<typename T>
-std::enable_if_t<std::is_integral<T>::value && std::is_unsigned<T>::value, QOhosOptional<T>>
+std::enable_if_t<std::is_integral<T>::value && std::is_unsigned<T>::value, std::optional<T>>
 tryParseStringAsUnsignedInteger(const std::string &inputString)
 {
     auto parsedValue = qohosutils_details::tryParseStringAsUIntMax(inputString);
     bool valueValidForType = parsedValue.has_value()
         && parsedValue.value() <= std::numeric_limits<T>::max();
     return valueValidForType
-        ? makeQOhosOptional(static_cast<T>(parsedValue.value()))
-        : makeEmptyQOhosOptional();
+        ? std::optional(static_cast<T>(parsedValue.value()))
+        : std::nullopt;
 }
 
 }
