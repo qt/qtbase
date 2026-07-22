@@ -9,6 +9,7 @@
 #include <QtGui/QWindow>
 #include <atomic>
 #include <cstdint>
+#include <optional>
 #include <qpa/qplatformtheme.h>
 #include <string>
 
@@ -109,8 +110,8 @@ public:
 
     std::string menuCode() const;
 
-    std::function<QOhosOptional<QNapi::Object>(QtOhos::JsState &)> makeJsStatusBarMenuItemFactory() const;
-    std::function<QOhosOptional<QNapi::Object>(QtOhos::JsState &)> makeJsStatusBarSubMenuItemFactory() const;
+    std::function<std::optional<QNapi::Object>(QtOhos::JsState &)> makeJsStatusBarMenuItemFactory() const;
+    std::function<std::optional<QNapi::Object>(QtOhos::JsState &)> makeJsStatusBarSubMenuItemFactory() const;
 
 private:
     QString m_text;
@@ -246,11 +247,11 @@ std::string QOhosStatusBarMenuItem::menuCode() const
     return m_menuCode;
 }
 
-std::function<QOhosOptional<QNapi::Object>(QtOhos::JsState &)> QOhosStatusBarMenuItem::makeJsStatusBarMenuItemFactory() const
+std::function<std::optional<QNapi::Object>(QtOhos::JsState &)> QOhosStatusBarMenuItem::makeJsStatusBarMenuItemFactory() const
 {
     if (m_isSeparator) {
         return [](QtOhos::JsState &) {
-            return QOhosOptional<QNapi::Object>();
+            return std::optional<QNapi::Object>();
         };
     }
 
@@ -258,25 +259,25 @@ std::function<QOhosOptional<QNapi::Object>(QtOhos::JsState &)> QOhosStatusBarMen
 
     if (m_menu == nullptr) {
         return [title, menuCode = m_menuCode](QtOhos::JsState &jsState) {
-            return makeQOhosOptional(
+            return std::optional(
                 makeJsStatusBarMenuItemWithAction(jsState, title, menuCode));
         };
     } else {
         return [title, jsSubMenuItemsFactory = m_menu->makeJsStatusBarSubMenuItemsFactory()](QtOhos::JsState &jsState) {
-            return makeQOhosOptional(
+            return std::optional(
                 makeJsStatusBarMenuItemWithSubMenu(jsState, title, jsSubMenuItemsFactory(jsState)));
         };
     }
 }
 
-std::function<QOhosOptional<QNapi::Object>(QtOhos::JsState &)> QOhosStatusBarMenuItem::makeJsStatusBarSubMenuItemFactory() const
+std::function<std::optional<QNapi::Object>(QtOhos::JsState &)> QOhosStatusBarMenuItem::makeJsStatusBarSubMenuItemFactory() const
 {
     if (m_isSeparator) {
         qOhosPrintfWarning(
             "%s: separator item %p used in sub-menu, which is unsupported on OHOS, ignoring",
             Q_FUNC_INFO, this);
         return [](QtOhos::JsState &) {
-            return QOhosOptional<QNapi::Object>();
+            return std::optional<QNapi::Object>();
         };
     }
 
@@ -285,14 +286,14 @@ std::function<QOhosOptional<QNapi::Object>(QtOhos::JsState &)> QOhosStatusBarMen
             "%s: nested-menu item %p used in sub-menu, which is unsupported on OHOS, ignoring",
             Q_FUNC_INFO, this);
         return [](QtOhos::JsState &) {
-            return QOhosOptional<QNapi::Object>();
+            return std::optional<QNapi::Object>();
         };
     }
 
     auto subTitle = QPlatformTheme::removeMnemonics(m_text).toStdString();
 
     return [subTitle, menuCode = m_menuCode](QtOhos::JsState &jsState) {
-        return makeQOhosOptional(
+        return std::optional(
             makeJsStatusBarSubMenuItem(jsState, subTitle, menuCode));
     };
 }
@@ -420,14 +421,14 @@ QPlatformMenu *QOhosStatusBarMenuImpl::createSubMenu() const
 
 std::function<QNapi::Array(QtOhos::JsState &)> QOhosStatusBarMenuImpl::makeJsStatusBarGroupMenusFactory() const
 {
-    std::vector<std::function<QOhosOptional<QNapi::Object>(QtOhos::JsState &)>> jsMenuItemsFactories;
+    std::vector<std::function<std::optional<QNapi::Object>(QtOhos::JsState &)>> jsMenuItemsFactories;
     for (auto *item : m_menuItems) {
         auto *ohosItem = qobject_cast<QOhosStatusBarMenuItem *>(item);
         jsMenuItemsFactories.push_back(
             ohosItem != nullptr
                 ? ohosItem->makeJsStatusBarMenuItemFactory()
                 : [](QtOhos::JsState &) {
-                    return QOhosOptional<QNapi::Object>();
+                    return std::optional<QNapi::Object>();
                 });
     }
 
@@ -437,7 +438,7 @@ std::function<QNapi::Array(QtOhos::JsState &)> QOhosStatusBarMenuImpl::makeJsSta
         std::vector<QNapi::ValueWrapper> currentJsMenuItemsArray;
 
         for (const auto &jsMenuItemFactory : jsMenuItemsFactories) {
-            QOhosOptional<QNapi::Object> optJsMenuItem = jsMenuItemFactory(jsState);
+            std::optional<QNapi::Object> optJsMenuItem = jsMenuItemFactory(jsState);
             if (optJsMenuItem.has_value()) {
                 currentJsMenuItemsArray.push_back(optJsMenuItem.value());
             } else {
@@ -455,7 +456,7 @@ std::function<QNapi::Array(QtOhos::JsState &)> QOhosStatusBarMenuImpl::makeJsSta
 
 std::function<QNapi::Array(QtOhos::JsState &)> QOhosStatusBarMenuImpl::makeJsStatusBarSubMenuItemsFactory() const
 {
-    std::vector<std::function<QOhosOptional<QNapi::Object>(QtOhos::JsState &)>> jsSubMenuItemsFactories;
+    std::vector<std::function<std::optional<QNapi::Object>(QtOhos::JsState &)>> jsSubMenuItemsFactories;
     for (auto *item : m_menuItems) {
         auto *ohosItem = qobject_cast<QOhosStatusBarMenuItem *>(item);
         if (ohosItem != nullptr)
@@ -465,7 +466,7 @@ std::function<QNapi::Array(QtOhos::JsState &)> QOhosStatusBarMenuImpl::makeJsSta
     return [jsSubMenuItemsFactories = std::move(jsSubMenuItemsFactories)](QtOhos::JsState &jsState) {
         std::vector<QNapi::ValueWrapper> jsSubMenuItems;
         for (const auto &jsSubMenuItemsFactory : jsSubMenuItemsFactories) {
-            QOhosOptional<QNapi::Object> optJsSubMenuItem = jsSubMenuItemsFactory(jsState);
+            std::optional<QNapi::Object> optJsSubMenuItem = jsSubMenuItemsFactory(jsState);
             if (optJsSubMenuItem.has_value())
                 jsSubMenuItems.push_back(optJsSubMenuItem.value());
         }
