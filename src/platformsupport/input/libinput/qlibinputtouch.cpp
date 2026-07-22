@@ -58,7 +58,8 @@ QPointF QLibInputTouch::getPos(libinput_event_touch *e)
     QRect geom = screenGeometry(state);
     const double x = libinput_event_touch_get_x_transformed(e, geom.width());
     const double y = libinput_event_touch_get_y_transformed(e, geom.height());
-    return geom.topLeft() + QPointF(x, y);
+    return geom.topLeft() + QPointF(qMin(x, geom.width() - 1.0),
+                                    qMin(y, geom.height() - 1.0));
 }
 
 static void setMatrix(libinput_device *dev)
