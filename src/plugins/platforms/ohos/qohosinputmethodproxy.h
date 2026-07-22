@@ -4,11 +4,13 @@
 #ifndef QOHOSINPUTMETHODPROXY_H
 #define QOHOSINPUTMETHODPROXY_H
 
+#include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/qglobal.h>
 #include <QtCore/qrect.h>
 #include <functional>
 #include <inputmethod/inputmethod_controller_capi.h>
 #include <memory>
+#include <string>
 
 QT_BEGIN_NAMESPACE
 
@@ -42,8 +44,15 @@ public:
     void notifyConfigurationChange(
         ::InputMethod_EnterKeyType enterKeyType, ::InputMethod_TextInputType textInputType);
     void notifyCursorUpdate(const QRectF &cursorRect);
+    void setTextAroundCursor(std::u16string leftText, std::u16string rightText);
 
 private:
+    struct TextAroundCursor
+    {
+        std::u16string leftText;
+        std::u16string rightText;
+    };
+
     struct JsScopeData
     {
         struct JsTextEditorProxyData
@@ -60,9 +69,11 @@ private:
     std::shared_ptr<void> registerCallbacks(
         std::shared_ptr<::InputMethod_TextEditorProxy> textEditorProxy,
         std::shared_ptr<JsScopeData::JsTextEditorProxyData> textEditorProxyData,
+        std::shared_ptr<QOhosMutexProtectedValue<TextAroundCursor>> textAroundCursor,
         std::weak_ptr<QOhosInputMethodProxy::ClientCallbacks> weakClientCallbacks);
 
     std::shared_ptr<ClientCallbacks> m_clientCallbacks;
+    std::shared_ptr<QOhosMutexProtectedValue<TextAroundCursor>> m_textAroundCursor;
     std::shared_ptr<JsScopeData> m_jsScopeData;
 };
 

@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <qohosjsutils.h>
 #include <inputmethod/inputmethod_controller_capi.h>
+#include <utility>
 QT_BEGIN_NAMESPACE
 
 namespace {
@@ -228,6 +229,37 @@ inline QPoint clampToRect(const QPoint &p, const QRect &rect)
     return QPoint(x, y);
 }
 
+std::pair<QString, QString> queryQtImTextAroundCursorOrEmpty()
+{
+    auto *focusObject = QGuiApplication::focusObject();
+    if (!focusObject)
+        return {};
+
+    QInputMethodQueryEvent directEvent(Qt::ImTextBeforeCursor | Qt::ImTextAfterCursor);
+    QCoreApplication::sendEvent(focusObject, &directEvent);
+
+    const auto textBeforeCursorResult = directEvent.value(Qt::ImTextBeforeCursor);
+    const auto textAfterCursorResult = directEvent.value(Qt::ImTextAfterCursor);
+    if (textBeforeCursorResult.canConvert<QString>() && textAfterCursorResult.canConvert<QString>())
+        return {textBeforeCursorResult.toString(), textAfterCursorResult.toString()};
+
+    QInputMethodQueryEvent fallbackEvent(Qt::ImSurroundingText | Qt::ImCursorPosition);
+    QCoreApplication::sendEvent(focusObject, &fallbackEvent);
+
+    const auto surroundingTextResult = fallbackEvent.value(Qt::ImSurroundingText);
+    const auto cursorPositionResult = fallbackEvent.value(Qt::ImCursorPosition);
+
+    if (!surroundingTextResult.canConvert<QString>() || !cursorPositionResult.canConvert<int>())
+        return {};
+
+    const auto cursorPos = cursorPositionResult.toInt();
+    if (cursorPos < 0)
+        return {};
+
+    const QString text = surroundingTextResult.toString();
+    return {text.left(cursorPos), text.mid(cursorPos)};
+}
+
 }
 
 QOhosInputContext::QOhosInputContext()
@@ -293,6 +325,9 @@ void QOhosInputContext::update(Qt::InputMethodQueries queries)
     m_qtEnterKeyType = qtEnterKeyTypeValue;
 
     if (inputMethodAccepted() && m_qtImEnabled) {
+        if (imAlreadyAttached)
+            pushTextAroundCursorToProxy();
+
         auto updateCausedByWidgetTransform = queries == Qt::ImInputItemClipRectangle;
         auto updateCausedByQueryAllImParameters = queries == Qt::ImQueryAll;
 
@@ -455,6 +490,7 @@ bool QOhosInputContext::attachToInputMethodController()
             m_lastInputTypeToTriggerSoftKeyboard.value_or(RequestKeyboardReason::OTHER)));
 
     if (m_imProxy->hasAttachedSuccessfully()) {
+        pushTextAroundCursorToProxy();
         m_imProxy->notifyConfigurationChange(
             mapQtToOhosImeEnterKeyType(m_qtEnterKeyType),
             mapQtInputMethodHintsToOhosImeTextInputType(m_qtInputMethodHints));
@@ -579,6 +615,19 @@ void QOhosInputContext::updateOhosCursor(const QRect &globalCursorRect)
     }
 
     m_imProxy->notifyCursorUpdate(globalCursorRect);
+}
+
+void QOhosInputContext::pushTextAroundCursorToProxy()
+{
+    if (m_imProxy == nullptr) {
+        qOhosPrintfError("%s: proxy doesn't exist!", Q_FUNC_INFO);
+        return;
+    }
+
+    const auto textAroundCursor = queryQtImTextAroundCursorOrEmpty();
+    m_imProxy->setTextAroundCursor(
+        textAroundCursor.first.toStdU16String(),
+        textAroundCursor.second.toStdU16String());
 }
 
 void QOhosInputContext::handleFocusInEvent(QObject *obj, QFocusEvent *event)
