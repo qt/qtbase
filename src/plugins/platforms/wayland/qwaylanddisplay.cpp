@@ -134,7 +134,9 @@ public:
         for (;;) {
             if (dispatchQueuePending() < 0) {
                 Q_EMIT waylandError();
+                QMutexLocker lock(&m_mutex);
                 m_quitting.storeRelaxed(true);
+                m_cond.wakeOne();
                 return;
             }
 
@@ -161,8 +163,13 @@ public:
         if (m_pipefd[1] != -1 && qt_safe_write(m_pipefd[1], "\0", 1) == -1)
             qErrnoWarning("Failed to write to the pipe");
 
-        m_quitting.storeRelaxed(true);
-        m_cond.wakeOne();
+        {
+            // The lock makes sure the event thread doesn't start waiting just after it
+            // checked m_quitting, which would make it miss the wakeOne() here.
+            QMutexLocker lock(&m_mutex);
+            m_quitting.storeRelaxed(true);
+            m_cond.wakeOne();
+        }
 
         wait();
     }
@@ -251,6 +258,8 @@ private:
      * is not actively waiting for it to turn false. However, the lock is taken
      * inside readAndDispatchEvents() before setting m_reading to true,
      * as the event thread is actively waiting for it under the wait condition.
+     * m_quitting is set inside stop() and readAndDispatchEvents(), which both take the
+     * lock for the same reason: the event thread waits on it too.
      */
 
     QAtomicInteger<bool> m_reading;
