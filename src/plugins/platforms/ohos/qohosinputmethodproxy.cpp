@@ -4,6 +4,7 @@
 #include "qohosinputmethodproxy.h"
 #include <QtCore/private/qohoslogger_p.h>
 #include <QtCore/private/qstringconverter_p.h>
+#include <algorithm>
 #include <codecvt>
 #include <locale>
 #include <qarkui/qarkuiutils.h>
@@ -165,6 +166,7 @@ void callInQtThread(
 std::shared_ptr<void> QOhosInputMethodProxy::registerCallbacks(
     std::shared_ptr<::InputMethod_TextEditorProxy> textEditorProxy,
     std::shared_ptr<JsScopeData::JsTextEditorProxyData> textEditorProxyData,
+    std::shared_ptr<QOhosMutexProtectedValue<TextAroundCursor>> textAroundCursor,
     std::weak_ptr<QOhosInputMethodProxy::ClientCallbacks> weakClientCallbacks)
 {
     std::vector<std::shared_ptr<void>> registrationHandles;
@@ -249,17 +251,42 @@ std::shared_ptr<void> QOhosInputMethodProxy::registerCallbacks(
             [](auto...) {
             }));
 
+    auto makeGetTextOfCursorCallback = [weakTextAroundCursor = QtOhos::makeWeakPtr(textAroundCursor)](
+        std::function<std::u16string(const TextAroundCursor &, std::size_t maxLength)> selectFromTextAroundCursorFunc) {
+        return [weakTextAroundCursor, selectFromTextAroundCursorFunc = std::move(selectFromTextAroundCursorFunc)](
+            int32_t maxLength, char16_t *outBuffer, std::size_t *outLength) {
+                auto protectedTextAroundCursor = weakTextAroundCursor.lock();
+                if (!protectedTextAroundCursor) {
+                    qOhosPrintfDebug("%s: cannot get text of cursor", Q_FUNC_INFO);
+                    *outLength = 0;
+                    return;
+                }
+
+                const auto selectedText = protectedTextAroundCursor->evalWithValue(
+                    [maxLength, &selectFromTextAroundCursorFunc](const TextAroundCursor &textAroundCursor) {
+                        return selectFromTextAroundCursorFunc(textAroundCursor, static_cast<std::size_t>(maxLength));
+                    });
+                *outLength = selectedText.copy(outBuffer, selectedText.size());
+            };
+    };
+
     registrationHandles.push_back(
         registerTextEditorProxyCallback(
             textEditorProxy.get(), Q_OHOS_NAMED_FUNC(::OH_TextEditorProxy_SetGetLeftTextOfCursorFunc),
-            [](auto...) {
-            }));
+            makeGetTextOfCursorCallback(
+                [](const TextAroundCursor &textAroundCursor, std::size_t maxLength) {
+                    const auto &leftText = textAroundCursor.leftText;
+                    return leftText.substr(leftText.size() - std::min(maxLength, leftText.size()));
+                })));
 
     registrationHandles.push_back(
         registerTextEditorProxyCallback(
             textEditorProxy.get(), Q_OHOS_NAMED_FUNC(::OH_TextEditorProxy_SetGetRightTextOfCursorFunc),
-            [](auto...) {
-            }));
+            makeGetTextOfCursorCallback(
+                [](const TextAroundCursor &textAroundCursor, std::size_t maxLength) {
+                    const auto &rightText = textAroundCursor.rightText;
+                    return rightText.substr(0, std::min(maxLength, rightText.size()));
+                })));
 
     QArkUi::callArkUiOrFailOnErrorResult(
         Q_OHOS_NAMED_FUNC(::OH_TextEditorProxy_SetGetTextIndexAtCursorFunc),
@@ -301,13 +328,15 @@ std::shared_ptr<void> QOhosInputMethodProxy::registerCallbacks(
 QOhosInputMethodProxy::QOhosInputMethodProxy(
     std::shared_ptr<ClientCallbacks> clientCallbacks, ::InputMethod_RequestKeyboardReason requestKeyboardReason)
     : m_clientCallbacks(clientCallbacks)
+    , m_textAroundCursor(std::make_shared<QOhosMutexProtectedValue<TextAroundCursor>>())
 {
     auto weakClientCallbacks = QtOhos::makeWeakPtr(clientCallbacks);
     m_jsScopeData = QtOhos::evalInJsThread(
         [&](auto &) -> std::shared_ptr<JsScopeData> {
             auto textEditorProxyData = std::make_shared<JsScopeData::JsTextEditorProxyData>();
             auto textEditorProxy = makeTextEditorProxy();
-            auto callbacksRegistrationHandle = registerCallbacks(textEditorProxy, textEditorProxyData, weakClientCallbacks);
+            auto callbacksRegistrationHandle = registerCallbacks(
+                textEditorProxy, textEditorProxyData, m_textAroundCursor, weakClientCallbacks);
 
             auto showKeyboard = true;
             auto attachOptions = makeAttachOptions(showKeyboard, requestKeyboardReason);
@@ -406,6 +435,20 @@ void QOhosInputMethodProxy::notifyCursorUpdate(const QRectF &cursorRect)
                 qOhosPrintfError("%s: OH_InputMethodProxy_NotifyCursorUpdate failed!", Q_FUNC_INFO);
         },
         Q_FUNC_INFO);
+}
+
+void QOhosInputMethodProxy::setTextAroundCursor(std::u16string leftText, std::u16string rightText)
+{
+    if (!hasAttachedSuccessfully()) {
+        qOhosPrintfError("%s: operation aborted, IMC not attached.", Q_FUNC_INFO);
+        return;
+    }
+
+    m_textAroundCursor->processValue(
+        [&](TextAroundCursor &textAroundCursor) {
+            textAroundCursor.leftText = std::move(leftText);
+            textAroundCursor.rightText = std::move(rightText);
+        });
 }
 
 QOhosInputMethodProxy::ClientCallbacks::ClientCallbacks() = default;
