@@ -22,6 +22,8 @@
 
 QT_BEGIN_NAMESPACE
 
+namespace QtOhosAppKit {
+
 namespace QOhosShareKit {
 
 namespace {
@@ -309,6 +311,8 @@ std::shared_ptr<void> shareData(
                 std::move(shareCompletedJsCallback), std::move(evalPromise));
         },
         Q_FUNC_INFO);
+}
+
 }
 
 }

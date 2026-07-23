@@ -35,6 +35,8 @@
 
 QT_BEGIN_NAMESPACE
 
+namespace QtOhosAppKit {
+
 struct QOhosJsEnv
 {
     template <typename T, typename Enable = void>
@@ -239,6 +241,8 @@ inline Napi::Maybe<QJsonObject> QOhosJsEnv::QNapiValue<QJsonObject>::get(const Q
     return allElementsSet
         ? Napi::Just(result)
         : Napi::Nothing<QJsonObject>();
+}
+
 }
 
 QT_END_NAMESPACE

@@ -30,6 +30,8 @@
 
 QT_BEGIN_NAMESPACE
 
+namespace QtOhosAppKit {
+
 namespace QOhosShareKit {
 
 constexpr const char *mimeTextUriList = "text/uri-list";
@@ -78,6 +80,8 @@ std::shared_ptr<void> shareData(
     QWindow *optInstanceMainWindow, const std::vector<SharedRecord> &recordsToShare,
     ControllerOptions controllerOptions, std::function<void()> panelClosedCallback,
     QOhosConsumer<ShareOperationResult> shareCompletedCallback);
+
+}
 
 }
 
