@@ -156,10 +156,10 @@ public:
 
     void setAnimationType(AnimationType animationType) override;
 
-    QOhosStartOptionsData::WindowCreateParams qpaWindowCreateParams() const;
+    QOhosStartOptionsData::WindowCreateParamsPriv qpaWindowCreateParams() const;
 
 private:
-    QOhosStartOptionsData::WindowCreateParams m_qpaWindowCreateParams;
+    QOhosStartOptionsData::WindowCreateParamsPriv m_qpaWindowCreateParams;
 };
 
 QOhosWindowCreateParamsImpl::QOhosWindowCreateParamsImpl() = default;
@@ -181,7 +181,7 @@ void QOhosWindowCreateParamsImpl::setAnimationType(AnimationType animationType)
     }
 }
 
-QOhosStartOptionsData::WindowCreateParams QOhosWindowCreateParamsImpl::qpaWindowCreateParams() const
+QOhosStartOptionsData::WindowCreateParamsPriv QOhosWindowCreateParamsImpl::qpaWindowCreateParams() const
 {
     return m_qpaWindowCreateParams;
 }

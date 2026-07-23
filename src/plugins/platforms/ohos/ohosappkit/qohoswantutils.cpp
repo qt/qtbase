@@ -65,20 +65,20 @@ QString getWantOptionalStringProp(const QJsonObject &jsonWant, const char *propN
 }
 
 QOhosWantInfo::LaunchReason mapLaunchReasonFromQpaFunctions(
-    detail::WantInfo::LaunchReason reason)
+    detail::WantInfoPriv::LaunchReason reason)
 {
-    using WantInfo = detail::WantInfo;
+    using WantInfoPriv = detail::WantInfoPriv;
 
     switch (reason) {
-    case WantInfo::LaunchReason::UNKNOWN:
+    case WantInfoPriv::LaunchReason::UNKNOWN:
         return QOhosWantInfo::LaunchReason::Unknown;
-    case WantInfo::LaunchReason::START_ABILITY:
+    case WantInfoPriv::LaunchReason::START_ABILITY:
         return QOhosWantInfo::LaunchReason::StartAbility;
-    case WantInfo::LaunchReason::CONTINUATION:
+    case WantInfoPriv::LaunchReason::CONTINUATION:
         return QOhosWantInfo::LaunchReason::Continuation;
-    case WantInfo::LaunchReason::PREPARE_CONTINUATION:
+    case WantInfoPriv::LaunchReason::PREPARE_CONTINUATION:
         return QOhosWantInfo::LaunchReason::PrepareContinuation;
-    case WantInfo::LaunchReason::PRELOAD:
+    case WantInfoPriv::LaunchReason::PRELOAD:
         return QOhosWantInfo::LaunchReason::Preload;
     }
 
@@ -88,7 +88,7 @@ QOhosWantInfo::LaunchReason mapLaunchReasonFromQpaFunctions(
 class QOhosWantInfoImpl : public QOhosWantInfo
 {
 public:
-    QOhosWantInfoImpl(QSharedPointer<detail::WantInfo> want);
+    QOhosWantInfoImpl(QSharedPointer<detail::WantInfoPriv> want);
 
     QOhosWant want() const override;
 
@@ -98,13 +98,13 @@ public:
 
     LaunchReason launchReason() const override;
 
-    QSharedPointer<detail::WantInfo> qpaWantInfo() const;
+    QSharedPointer<detail::WantInfoPriv> qpaWantInfo() const;
 
 private:
-    QSharedPointer<detail::WantInfo> m_qpaWantInfo;
+    QSharedPointer<detail::WantInfoPriv> m_qpaWantInfo;
 };
 
-QOhosWantInfoImpl::QOhosWantInfoImpl(QSharedPointer<detail::WantInfo> want)
+QOhosWantInfoImpl::QOhosWantInfoImpl(QSharedPointer<detail::WantInfoPriv> want)
     : QOhosWantInfo()
     , m_qpaWantInfo(want)
 {
@@ -171,7 +171,7 @@ QOhosWantInfo::LaunchReason QOhosWantInfoImpl::launchReason() const
     return mapLaunchReasonFromQpaFunctions(m_qpaWantInfo->launchReason());
 }
 
-QSharedPointer<detail::WantInfo> QOhosWantInfoImpl::qpaWantInfo() const
+QSharedPointer<detail::WantInfoPriv> QOhosWantInfoImpl::qpaWantInfo() const
 {
     return m_qpaWantInfo;
 }
@@ -263,12 +263,12 @@ QOhosWant convertWantFromJsonObject(const QJsonObject &jsonWant)
 }
 
 QSharedPointer<QOhosWantInfo> convertToOhosAppKitWantInfo(
-    QSharedPointer<detail::WantInfo> wantInfo)
+    QSharedPointer<detail::WantInfoPriv> wantInfo)
 {
     return QSharedPointer<QOhosWantInfoImpl>::create(wantInfo);
 }
 
-QSharedPointer<detail::WantInfo> convertToQpaWantInfo(
+QSharedPointer<detail::WantInfoPriv> convertToQpaWantInfo(
     QSharedPointer<QOhosWantInfo> wantInfo)
 {
     return qSharedPointerCast<QOhosWantInfoImpl>(wantInfo)->qpaWantInfo();

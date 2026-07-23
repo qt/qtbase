@@ -47,7 +47,7 @@ struct SharedRecord
     std::optional<QVariantMap> extraData;
 };
 
-class WantInfo
+class WantInfoPriv
 {
 public:
     enum class LaunchReason
@@ -65,7 +65,7 @@ public:
         QString contactId;
     };
 
-    virtual ~WantInfo();
+    virtual ~WantInfoPriv();
 
     virtual QJsonObject jsonObject() const = 0;
 
@@ -76,21 +76,21 @@ public:
     virtual LaunchReason launchReason() const = 0;
 
 protected:
-    WantInfo();
+    WantInfoPriv();
 
 private:
-    Q_DISABLE_COPY(WantInfo)
+    Q_DISABLE_COPY(WantInfoPriv)
 };
 
 }
 
-QSharedPointer<detail::WantInfo> makeAppLaunchWantInfo();
+QSharedPointer<detail::WantInfoPriv> makeAppLaunchWantInfo();
 
 void addNewWantConsumer(QObject *context, QOhosConsumer<QJsonObject> wantConsumer);
 
 void addNewWantConsumer(
     QObject *context,
-    QOhosConsumer<QSharedPointer<detail::WantInfo>> wantConsumer);
+    QOhosConsumer<QSharedPointer<detail::WantInfoPriv>> wantConsumer);
 
 }
 
