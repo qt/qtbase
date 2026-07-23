@@ -16,7 +16,6 @@
 //
 
 #include <QtCore/qlist.h>
-#include <QtCore/qsharedpointer.h>
 #include <QtGui/qwindow.h>
 #include <QtOhosAppKit/qohossharekit.h>
 #include <functional>
@@ -29,10 +28,10 @@ namespace QtOhosAppKit {
 namespace ShareKit {
 
 std::shared_ptr<void> shareData(
-    QWindow *optMainWindow, const QList<QSharedPointer<SharedRecord>> &records,
-    QSharedPointer<ShareControllerOptions> controllerOptions,
+    QWindow *optMainWindow, const QList<std::shared_ptr<SharedRecord>> &records,
+    std::shared_ptr<ShareControllerOptions> controllerOptions,
     std::function<void()> panelClosedCallback,
-    std::function<void(QSharedPointer<ShareKit::ShareOperationResult>)> shareCompletedCallback);
+    std::function<void(std::shared_ptr<ShareKit::ShareOperationResult>)> shareCompletedCallback);
 
 }
 

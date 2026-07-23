@@ -15,14 +15,14 @@
 // We mean it.
 //
 
-#include <QtCore/qsharedpointer.h>
 #include <QtOhosAppKit/qohosappbundleinfo.h>
+#include <memory>
 
 QT_BEGIN_NAMESPACE
 
 namespace QtOhosAppKit {
 
-QSharedPointer<BundleInfo> createBundleInfo(int versionCode);
+std::shared_ptr<BundleInfo> createBundleInfo(int versionCode);
 
 }
 

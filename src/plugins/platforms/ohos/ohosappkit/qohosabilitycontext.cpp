@@ -13,6 +13,7 @@
 #include <QtCore/qhash.h>
 #include <QtCore/qmap.h>
 #include <QtCore/qrandom.h>
+#include <QtCore/qsharedpointer.h>
 #include <QtOhosAppKit/private/qohosoperationstatus_p.h>
 #include <QtOhosAppKit/private/qohossharekit_p.h>
 #include <QtOhosAppKit/private/qohosstartoptions_p.h>
@@ -611,10 +612,10 @@ protected:
         QObject *context, std::function<void(std::optional<StartAbilityResult>)> callback);
 
     void shareDataWithShareKitImpl(
-        QWindow *optMainWindow, const QList<QSharedPointer<ShareKit::SharedRecord>> &records,
-        QSharedPointer<ShareKit::ShareControllerOptions> controllerOptions,
+        QWindow *optMainWindow, const QList<std::shared_ptr<ShareKit::SharedRecord>> &records,
+        std::shared_ptr<ShareKit::ShareControllerOptions> controllerOptions,
         QObject *context,
-        std::function<void(QSharedPointer<ShareKit::ShareOperationResult>)> onShareCompleted,
+        std::function<void(std::shared_ptr<ShareKit::ShareOperationResult>)> onShareCompleted,
         std::function<void()> onPanelClosed);
 
 private:
@@ -637,10 +638,10 @@ public:
         std::function<void(std::optional<StartAbilityResult>)> callback) override;
 
     void shareDataWithShareKit(
-        const QList<QSharedPointer<ShareKit::SharedRecord>> &records,
-        QSharedPointer<ShareKit::ShareControllerOptions> controllerOptions,
+        const QList<std::shared_ptr<ShareKit::SharedRecord>> &records,
+        std::shared_ptr<ShareKit::ShareControllerOptions> controllerOptions,
         QObject *context,
-        std::function<void(QSharedPointer<ShareKit::ShareOperationResult>)> onShareCompleted,
+        std::function<void(std::shared_ptr<ShareKit::ShareOperationResult>)> onShareCompleted,
         std::function<void()> onPanelClosed) override;
 
     bool tryOpenLink(const QString &link) override;
@@ -664,10 +665,10 @@ public:
         std::function<void(std::optional<StartAbilityResult>)> callback) override;
 
     void shareDataWithShareKit(
-        const QList<QSharedPointer<ShareKit::SharedRecord>> &records,
-        QSharedPointer<ShareKit::ShareControllerOptions> controllerOptions,
+        const QList<std::shared_ptr<ShareKit::SharedRecord>> &records,
+        std::shared_ptr<ShareKit::ShareControllerOptions> controllerOptions,
         QObject *context,
-        std::function<void(QSharedPointer<ShareKit::ShareOperationResult>)> onShareCompleted,
+        std::function<void(std::shared_ptr<ShareKit::ShareOperationResult>)> onShareCompleted,
         std::function<void()> onPanelClosed) override;
 
     bool tryOpenLink(const QString &link) override;
@@ -679,7 +680,7 @@ private:
     QPointer<QWindow> m_instanceMainWindow;
 };
 
-std::map<QWindow *, QSharedPointer<QOhosAbilityContextImpl>> abilityContextsMap;
+std::map<QWindow *, std::shared_ptr<QOhosAbilityContextImpl>> abilityContextsMap;
 
 QOhosBaseAbilityContextImpl::QOhosBaseAbilityContextImpl()
     : m_uniqueIdsGenerator(makeUniqueIdsGenerator())
@@ -702,10 +703,10 @@ void QOhosBaseAbilityContextImpl::startAbilityForResultImpl(
 }
 
 void QOhosBaseAbilityContextImpl::shareDataWithShareKitImpl(
-    QWindow *optMainWindow, const QList<QSharedPointer<ShareKit::SharedRecord>> &records,
-    QSharedPointer<ShareKit::ShareControllerOptions> controllerOptions,
+    QWindow *optMainWindow, const QList<std::shared_ptr<ShareKit::SharedRecord>> &records,
+    std::shared_ptr<ShareKit::ShareControllerOptions> controllerOptions,
     QObject *context,
-    std::function<void(QSharedPointer<ShareKit::ShareOperationResult>)> onShareCompleted,
+    std::function<void(std::shared_ptr<ShareKit::ShareOperationResult>)> onShareCompleted,
     std::function<void()> onPanelClosed)
 {
     auto selfPtr = QPointer<QOhosBaseAbilityContextImpl>(this);
@@ -755,10 +756,10 @@ void QOhosDefaultAbilityContextImpl::startAbilityForResult(
 }
 
 void QOhosDefaultAbilityContextImpl::shareDataWithShareKit(
-    const QList<QSharedPointer<ShareKit::SharedRecord>> &records,
-    QSharedPointer<ShareKit::ShareControllerOptions> controllerOptions,
+    const QList<std::shared_ptr<ShareKit::SharedRecord>> &records,
+    std::shared_ptr<ShareKit::ShareControllerOptions> controllerOptions,
     QObject *context,
-    std::function<void(QSharedPointer<ShareKit::ShareOperationResult>)> onShareCompleted,
+    std::function<void(std::shared_ptr<ShareKit::ShareOperationResult>)> onShareCompleted,
     std::function<void()> onPanelClosed)
 {
     shareDataWithShareKitImpl(
@@ -906,7 +907,7 @@ QOhosAbilityContextImpl::QOhosAbilityContextImpl(QWindow *instanceMainWindow)
     setOnContinueRequestsHandlerForAbilityInstanceWindow(
         instanceMainWindow,
         [self = QPointer<QOhosAbilityContextImpl>(this)](auto request, auto responseConsumer) {
-            auto context = QSharedPointer<QOhosOnContinueContextImpl>::create(request.sourceApplicationVersionCode);
+            auto context = std::make_shared<QOhosOnContinueContextImpl>(request.sourceApplicationVersionCode);
 
             if (!self.isNull())
                 Q_EMIT self->continueRequestReceived(context);
@@ -982,7 +983,7 @@ void QOhosAbilityContextImpl::startAbilityForResult(
 }
 
 /*!
-    \fn virtual void QtOhosAppKit::AbilityContext::shareDataWithShareKit(const QList<QSharedPointer<ShareKit::SharedRecord>> &records, QSharedPointer<ShareKit::ShareControllerOptions> controllerOptions, QObject *context, std::function<void(QSharedPointer<ShareKit::ShareOperationResult>)> onShareCompleted, std::function<void()> onPanelClosed) = 0
+    \fn virtual void QtOhosAppKit::AbilityContext::shareDataWithShareKit(const QList<std::shared_ptr<ShareKit::SharedRecord>> &records, std::shared_ptr<ShareKit::ShareControllerOptions> controllerOptions, QObject *context, std::function<void(std::shared_ptr<ShareKit::ShareOperationResult>)> onShareCompleted, std::function<void()> onPanelClosed) = 0
 
     Share provided \a records with other applications using an inter-application mechanism called ShareKit. Share Kit panel can be controlled
     with a given \a controllerOptions. When called on the default AbilityContext instance, it shares \a records using the default UiAbility.
@@ -994,10 +995,10 @@ void QOhosAbilityContextImpl::startAbilityForResult(
     See \l {https://developer.huawei.com/consumer/en/doc/harmonyos-guides-V5/share-introduction-V5}{Share Kit}
 */
 void QOhosAbilityContextImpl::shareDataWithShareKit(
-    const QList<QSharedPointer<ShareKit::SharedRecord>> &records,
-    QSharedPointer<ShareKit::ShareControllerOptions> controllerOptions,
+    const QList<std::shared_ptr<ShareKit::SharedRecord>> &records,
+    std::shared_ptr<ShareKit::ShareControllerOptions> controllerOptions,
     QObject *context,
-    std::function<void(QSharedPointer<ShareKit::ShareOperationResult>)> onShareCompleted,
+    std::function<void(std::shared_ptr<ShareKit::ShareOperationResult>)> onShareCompleted,
     std::function<void()> onPanelClosed)
 {
     shareDataWithShareKitImpl(
@@ -1045,7 +1046,7 @@ void QOhosAbilityContextImpl::setContinuationActive(bool continuationActive)
     setContinuationActiveImpl(m_instanceMainWindow, continuationActive);
 }
 
-QSharedPointer<OperationStatus> startAbilityImpl(
+std::shared_ptr<OperationStatus> startAbilityImpl(
     const Want &want, std::optional<QOhosStartOptionsData> qpaStartOptions)
 {
     auto wantJson = convertWantToJsonObject(want);
@@ -1109,7 +1110,7 @@ void startAppProcessImpl(
 */
 
 /*!
-    \fn void QtOhosAppKit::AbilityContext::newWantInfoReceived(QSharedPointer<QtOhosAppKit::WantInfo> wantInfo)
+    \fn void QtOhosAppKit::AbilityContext::newWantInfoReceived(std::shared_ptr<QtOhosAppKit::WantInfo> wantInfo)
 
     Singal is emitted when an ability gets new \a want. See
     \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references-V5/js-apis-app-ability-uiability-V5#uiabilityonnewwant}
@@ -1117,7 +1118,7 @@ void startAppProcessImpl(
 */
 
 /*!
-    \fn void QtOhosAppKit::AbilityContext::continueRequestReceived(QSharedPointer<QtOhosAppKit::OnContinueContext> onContinueContext)
+    \fn void QtOhosAppKit::AbilityContext::continueRequestReceived(std::shared_ptr<QtOhosAppKit::OnContinueContext> onContinueContext)
 
     Signal emitted when the ability receives onContinue request. The signal delivers \a onContinueContext on which User
     can set onContinue response.
@@ -1137,7 +1138,7 @@ AbilityContext::AbilityContext()
 }
 
 /*!
-    \fn QSharedPointer<AbilityContext> QtOhosAppKit::AbilityContext::defaultInstance()
+    \fn std::shared_ptr<AbilityContext> QtOhosAppKit::AbilityContext::defaultInstance()
 
     Returns instance of the class which is not connected to any specific Ability instance. It should
     be used when the application needs to perform some operations without selecting specific
@@ -1146,30 +1147,30 @@ AbilityContext::AbilityContext()
     See descriptions of specific class methods for information about their behavior for the default
     instance.
 */
-QSharedPointer<AbilityContext> AbilityContext::defaultInstance()
+std::shared_ptr<AbilityContext> AbilityContext::defaultInstance()
 {
-    static auto instance = QSharedPointer<QOhosDefaultAbilityContextImpl>::create();
+    static auto instance = std::make_shared<QOhosDefaultAbilityContextImpl>();
     return instance;
 }
 
 /*!
-    \fn QSharedPointer<AbilityContext> QtOhosAppKit::AbilityContext::instanceForMainWindow(QWindow *instanceMainWindow)
+    \fn std::shared_ptr<AbilityContext> QtOhosAppKit::AbilityContext::instanceForMainWindow(QWindow *instanceMainWindow)
 
     Returns instance of the class which is connected to Ability instance identified by the
     \a instanceMainWindow. Methods called on the returned object will only affect the
     corresponding Ability instance.
 */
-QSharedPointer<AbilityContext> AbilityContext::instanceForMainWindow(QWindow *instanceMainWindow)
+std::shared_ptr<AbilityContext> AbilityContext::instanceForMainWindow(QWindow *instanceMainWindow)
 {
     if (instanceMainWindow == nullptr) {
         qCWarning(QtForOhos, "%s: got null QWindow", Q_FUNC_INFO);
-        return QSharedPointer<QOhosAbilityContextImpl>::create(nullptr);
+        return std::make_shared<QOhosAbilityContextImpl>(nullptr);
     }
 
     auto abilityContextIter = abilityContextsMap.find(instanceMainWindow);
     if (abilityContextIter == abilityContextsMap.end()) {
         std::tie(abilityContextIter, std::ignore) = abilityContextsMap.emplace(
-            instanceMainWindow, QSharedPointer<QOhosAbilityContextImpl>::create(instanceMainWindow));
+            instanceMainWindow, std::make_shared<QOhosAbilityContextImpl>(instanceMainWindow));
             QObject::connect(
                 instanceMainWindow, &QObject::destroyed,
                 [instanceMainWindow](QObject *) {
@@ -1181,7 +1182,7 @@ QSharedPointer<AbilityContext> AbilityContext::instanceForMainWindow(QWindow *in
 }
 
 /*!
-    \fn QSharedPointer<OperationStatus> QtOhosAppKit::startAbility(const Want &want)
+    \fn std::shared_ptr<OperationStatus> QtOhosAppKit::startAbility(const Want &want)
 
     Starts an Ability for a given \a want. See
     \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references-V5/js-apis-inner-application-uiabilitycontext-V5#uiabilitycontextstartability}
@@ -1190,13 +1191,13 @@ QSharedPointer<AbilityContext> AbilityContext::instanceForMainWindow(QWindow *in
     \warning Currently, operation status result is hardcoded as "successful" (even if ability were
     not started).
 */
-QSharedPointer<OperationStatus> startAbility(const Want &want)
+std::shared_ptr<OperationStatus> startAbility(const Want &want)
 {
     return startAbilityImpl(want, std::nullopt);
 }
 
 /*!
-    \fn QSharedPointer<OperationStatus> QtOhosAppKit::startAbility(const Want &want,
+    \fn std::shared_ptr<OperationStatus> QtOhosAppKit::startAbility(const Want &want,
     const StartOptions &options)
 
     Starts an Ability for a given \a want and \a options. See
@@ -1206,13 +1207,13 @@ QSharedPointer<OperationStatus> startAbility(const Want &want)
     \warning Currently, operation status result is hardcoded as "successful" (even if ability were
     not started).
 */
-QSharedPointer<OperationStatus> startAbility(const Want &want, const StartOptions &options)
+std::shared_ptr<OperationStatus> startAbility(const Want &want, const StartOptions &options)
 {
     return startAbilityImpl(want, tryConvertStartOptionsToQpaFunctionsStruct(options));
 }
 
 /*!
-    \fn QSharedPointer<OperationStatus> QtOhosAppKit::startAbilityByType(const QString &appType,
+    \fn std::shared_ptr<OperationStatus> QtOhosAppKit::startAbilityByType(const QString &appType,
     const QJsonObject &wantParameters)
 
     Starts an Ability for a given \a appType and \a wantParameters. See
@@ -1221,7 +1222,7 @@ QSharedPointer<OperationStatus> startAbility(const Want &want, const StartOption
 
     \return true on success
 */
-QSharedPointer<OperationStatus> startAbilityByType(const QString &appType, const QJsonObject &wantParameters)
+std::shared_ptr<OperationStatus> startAbilityByType(const QString &appType, const QJsonObject &wantParameters)
 {
     bool success = startAbilityByTypeImpl(appType, wantParameters);
     return createOperationStatus(success);
@@ -1310,9 +1311,9 @@ QtOhosAppKit::OnContinueContext::~OnContinueContext() = default;
 OpenLinkOptions::OpenLinkOptions() = default;
 OpenLinkOptions::~OpenLinkOptions() = default;
 
-QSharedPointer<OpenLinkOptions> createOpenLinkOptions()
+std::shared_ptr<OpenLinkOptions> createOpenLinkOptions()
 {
-    return QSharedPointer<QOhosOpenLinkOptionsImpl>::create();
+    return std::make_shared<QOhosOpenLinkOptionsImpl>();
 }
 
 }

@@ -145,15 +145,15 @@ namespace QtOhosAppKit {
 */
 
 /*!
-    \fn virtual std::optional<QList<QSharedPointer<QtOhosAppKit::ShareKit::SharedRecord>>> QtOhosAppKit::WantInfo::tryGetSharedRecordsFromShareKit() const = 0
+    \fn virtual std::optional<QList<std::shared_ptr<QtOhosAppKit::ShareKit::SharedRecord>>> QtOhosAppKit::WantInfo::tryGetSharedRecordsFromShareKit() const = 0
 
     Tries to get shared records from assosiated want. The shared data is expected to be stored in the want parameters.
     Shared records are delivered on an application start or while the application is already running. Returns an empty optional if no such data found.
     See \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references/share-system-share#section661613319216}
     {systemShare.getSharedData}.
 
-    \sa QtOhosAppKit::AbilityContext::newWantInfoReceived(QSharedPointer<QtOhosAppKit::WantInfo> wantInfo)
-    \sa QSharedPointer<QtOhosAppKit::WantInfo> QtOhosAppKit::AppContext::appLaunchWantInfo()
+    \sa QtOhosAppKit::AbilityContext::newWantInfoReceived(std::shared_ptr<QtOhosAppKit::WantInfo> wantInfo)
+    \sa std::shared_ptr<QtOhosAppKit::WantInfo> QtOhosAppKit::AppContext::appLaunchWantInfo()
 */
 
 /*!
@@ -164,8 +164,8 @@ namespace QtOhosAppKit {
     See \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references/share-system-share#section19799132782117}
     {systemShare.getContactInfo}.
 
-    \sa QtOhosAppKit::AbilityContext::newWantInfoReceived(QSharedPointer<QtOhosAppKit::WantInfo> wantInfo)
-    \sa QSharedPointer<QtOhosAppKit::WantInfo> QtOhosAppKit::AppContext::appLaunchWantInfo()
+    \sa QtOhosAppKit::AbilityContext::newWantInfoReceived(std::shared_ptr<QtOhosAppKit::WantInfo> wantInfo)
+    \sa std::shared_ptr<QtOhosAppKit::WantInfo> QtOhosAppKit::AppContext::appLaunchWantInfo()
 */
 
 WantInfo::WantInfo() = default;

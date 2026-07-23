@@ -55,9 +55,9 @@ int QOhosBundleInfoImpl::versionCode() const
 BundleInfo::BundleInfo() = default;
 BundleInfo::~BundleInfo() = default;
 
-QSharedPointer<BundleInfo> createBundleInfo(int versionCode)
+std::shared_ptr<BundleInfo> createBundleInfo(int versionCode)
 {
-    return QSharedPointer<QOhosBundleInfoImpl>::create(versionCode);
+    return std::make_shared<QOhosBundleInfoImpl>(versionCode);
 }
 
 }

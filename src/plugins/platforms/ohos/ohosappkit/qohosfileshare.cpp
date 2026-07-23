@@ -282,11 +282,11 @@ class ActionResultImpl : public ActionResult
 {
 public:
     ActionResultImpl(bool successFlag, QList<PathPolicyErrorInfo> errorInfoList);
-    QSharedPointer<OperationStatus> operationStatus() const override;
+    std::shared_ptr<OperationStatus> operationStatus() const override;
     QList<PathPolicyErrorInfo> errorInfoList() const override;
 
 private:
-    QSharedPointer<OperationStatus> m_operationStatus;
+    std::shared_ptr<OperationStatus> m_operationStatus;
     QList<PathPolicyErrorInfo> m_errorInfoList;
 };
 
@@ -297,13 +297,13 @@ ActionResultImpl::ActionResultImpl(bool successFlag, QList<PathPolicyErrorInfo> 
 }
 
 /*!
-    \fn QSharedPointer<OperationStatus> QtOhosAppKit::FileShare::ActionResult::operationStatus() const
+    \fn std::shared_ptr<OperationStatus> QtOhosAppKit::FileShare::ActionResult::operationStatus() const
 
     Returns the overall result of all requested file access permission actions.
 
     \sa OperationStatus
 */
-QSharedPointer<OperationStatus> ActionResultImpl::operationStatus() const
+std::shared_ptr<OperationStatus> ActionResultImpl::operationStatus() const
 {
     return m_operationStatus;
 }
@@ -336,11 +336,11 @@ public:
     CheckResultImpl(
         bool successFlag, const std::vector<bool> &checkResults,
         const QList<PathPolicy> &policies);
-    QSharedPointer<OperationStatus> operationStatus() const override;
+    std::shared_ptr<OperationStatus> operationStatus() const override;
     QList<PathPolicyCheckResult> checkResultList() const override;
 
 private:
-    QSharedPointer<OperationStatus> m_operationStatus;
+    std::shared_ptr<OperationStatus> m_operationStatus;
     QList<PathPolicyCheckResult> m_checkResultList;
 };
 
@@ -362,13 +362,13 @@ CheckResultImpl::CheckResultImpl(
 }
 
 /*!
-    \fn QSharedPointer<OperationStatus> QtOhosAppKit::FileShare::CheckResult::operationStatus() const
+    \fn std::shared_ptr<OperationStatus> QtOhosAppKit::FileShare::CheckResult::operationStatus() const
 
     Returns the overall result of all requested file access permission checks.
 
     \sa OperationStatus
 */
-QSharedPointer<OperationStatus> CheckResultImpl::operationStatus() const
+std::shared_ptr<OperationStatus> CheckResultImpl::operationStatus() const
 {
     return m_operationStatus;
 }
@@ -491,7 +491,7 @@ CheckResult::CheckResult() = default;
 CheckResult::~CheckResult() = default;
 
 /*!
-    \fn QSharedPointer<ActionResult> QtOhosAppKit::FileShare::persistPermission(const QList<PathPolicy> &policies)
+    \fn std::shared_ptr<ActionResult> QtOhosAppKit::FileShare::persistPermission(const QList<PathPolicy> &policies)
 
     Persists file or folder permissions from \a policies.
     The success of the action can be determined from ActionResult.
@@ -504,7 +504,7 @@ CheckResult::~CheckResult() = default;
 
     \sa ActionResult, PathPolicy, revokePermission(), activatePermission()
 */
-QSharedPointer<ActionResult> persistPermission(const QList<PathPolicy> &policies)
+std::shared_ptr<ActionResult> persistPermission(const QList<PathPolicy> &policies)
 {
     auto actionResult = QOhosJsThreadGateway::eval(
         [&](QOhosJsState &) {
@@ -515,11 +515,11 @@ QSharedPointer<ActionResult> persistPermission(const QList<PathPolicy> &policies
             return std::make_pair(isSuccessErrorCode(retCode), convertToPathPolicyErrorInfos(outResults));
         },
         Q_FUNC_INFO);
-    return QSharedPointer<ActionResultImpl>::create(actionResult.first, actionResult.second);
+    return std::make_shared<ActionResultImpl>(actionResult.first, actionResult.second);
 }
 
 /*!
-    \fn QSharedPointer<ActionResult> QtOhosAppKit::FileShare::revokePermission(const QList<PathPolicy> &policies)
+    \fn std::shared_ptr<ActionResult> QtOhosAppKit::FileShare::revokePermission(const QList<PathPolicy> &policies)
 
     Revokes file or folder permissions from \a policies.
     The success of the action can be determined from ActionResult.
@@ -530,7 +530,7 @@ QSharedPointer<ActionResult> persistPermission(const QList<PathPolicy> &policies
 
     \sa ActionResult, PathPolicy, persistPermission()
 */
-QSharedPointer<ActionResult> revokePermission(const QList<PathPolicy> &policies)
+std::shared_ptr<ActionResult> revokePermission(const QList<PathPolicy> &policies)
 {
     auto actionResult = QOhosJsThreadGateway::eval(
         [&](QOhosJsState &) {
@@ -541,11 +541,11 @@ QSharedPointer<ActionResult> revokePermission(const QList<PathPolicy> &policies)
             return std::make_pair(isSuccessErrorCode(retCode), convertToPathPolicyErrorInfos(outResults));
         },
         Q_FUNC_INFO);
-    return QSharedPointer<ActionResultImpl>::create(actionResult.first, actionResult.second);
+    return std::make_shared<ActionResultImpl>(actionResult.first, actionResult.second);
 }
 
 /*!
-    \fn QSharedPointer<ActionResult> QtOhosAppKit::FileShare::activatePermission(const QList<PathPolicy> &policies)
+    \fn std::shared_ptr<ActionResult> QtOhosAppKit::FileShare::activatePermission(const QList<PathPolicy> &policies)
 
     Activates file or folder permissions from \a policies.
     The success of the action can be determined from ActionResult.
@@ -558,7 +558,7 @@ QSharedPointer<ActionResult> revokePermission(const QList<PathPolicy> &policies)
 
     \sa ActionResult, PathPolicy, persistPermission(), deactivatePermission()
 */
-QSharedPointer<ActionResult> activatePermission(const QList<PathPolicy> &policies)
+std::shared_ptr<ActionResult> activatePermission(const QList<PathPolicy> &policies)
 {
     auto actionResult = QOhosJsThreadGateway::eval(
         [&](QOhosJsState &) {
@@ -569,11 +569,11 @@ QSharedPointer<ActionResult> activatePermission(const QList<PathPolicy> &policie
             return std::make_pair(isSuccessErrorCode(retCode), convertToPathPolicyErrorInfos(outResults));
         },
         Q_FUNC_INFO);
-    return QSharedPointer<ActionResultImpl>::create(actionResult.first, actionResult.second);
+    return std::make_shared<ActionResultImpl>(actionResult.first, actionResult.second);
 }
 
 /*!
-    \fn QSharedPointer<ActionResult> QtOhosAppKit::FileShare::deactivatePermission(const QList<PathPolicy> &policies)
+    \fn std::shared_ptr<ActionResult> QtOhosAppKit::FileShare::deactivatePermission(const QList<PathPolicy> &policies)
 
     Deactivates file or folder permissions from \a policies.
     The success of the action can be determined from ActionResult.
@@ -584,7 +584,7 @@ QSharedPointer<ActionResult> activatePermission(const QList<PathPolicy> &policie
 
     \sa ActionResult, PathPolicy, activatePermission()
 */
-QSharedPointer<ActionResult> deactivatePermission(const QList<PathPolicy> &policies)
+std::shared_ptr<ActionResult> deactivatePermission(const QList<PathPolicy> &policies)
 {
     auto actionResult = QOhosJsThreadGateway::eval(
         [&](QOhosJsState &) {
@@ -595,11 +595,11 @@ QSharedPointer<ActionResult> deactivatePermission(const QList<PathPolicy> &polic
             return std::make_pair(isSuccessErrorCode(retCode), convertToPathPolicyErrorInfos(outResults));
         },
         Q_FUNC_INFO);
-    return QSharedPointer<ActionResultImpl>::create(actionResult.first, actionResult.second);
+    return std::make_shared<ActionResultImpl>(actionResult.first, actionResult.second);
 }
 
 /*!
-    \fn QSharedPointer<CheckResult> QtOhosAppKit::FileShare::checkPersistent(const QList<PathPolicy> &policies)
+    \fn std::shared_ptr<CheckResult> QtOhosAppKit::FileShare::checkPersistent(const QList<PathPolicy> &policies)
 
     Checks if file or folder permissions from \a policies have persistent permissions.
     The result check for each file or folder can be determined from CheckResult.
@@ -611,7 +611,7 @@ QSharedPointer<ActionResult> deactivatePermission(const QList<PathPolicy> &polic
 
     \sa CheckResult, PathPolicy, persistPermission()
 */
-QSharedPointer<CheckResult> checkPersistent(const QList<PathPolicy> &policies)
+std::shared_ptr<CheckResult> checkPersistent(const QList<PathPolicy> &policies)
 {
     auto checkResult = QOhosJsThreadGateway::eval(
         [&](QOhosJsState &) {
@@ -622,7 +622,7 @@ QSharedPointer<CheckResult> checkPersistent(const QList<PathPolicy> &policies)
             return std::make_pair(isSuccessErrorCode(retCode), outResults);
         },
         Q_FUNC_INFO);
-    return QSharedPointer<CheckResultImpl>::create(checkResult.first, checkResult.second, policies);
+    return std::make_shared<CheckResultImpl>(checkResult.first, checkResult.second, policies);
 }
 
 }

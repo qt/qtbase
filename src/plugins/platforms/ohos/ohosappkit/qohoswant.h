@@ -9,11 +9,11 @@
 #include <QtCore/qhash.h>
 #include <QtCore/qjsonobject.h>
 #include <QtCore/qlist.h>
-#include <QtCore/qsharedpointer.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qstringlist.h>
 #include <QtOhosAppKit/qohossharekit.h>
 #include <QtOhosAppKit/qtohosappkitglobal.h>
+#include <memory>
 #include <optional>
 
 QT_BEGIN_NAMESPACE
@@ -64,7 +64,7 @@ public:
 
     virtual Want want() const = 0;
 
-    virtual std::optional<QList<QSharedPointer<ShareKit::SharedRecord>>> tryGetSharedRecordsFromShareKit() const = 0;
+    virtual std::optional<QList<std::shared_ptr<ShareKit::SharedRecord>>> tryGetSharedRecordsFromShareKit() const = 0;
 
     virtual std::optional<ContactInfo> tryGetContactInfo() const = 0;
 

@@ -15,14 +15,14 @@
 // We mean it.
 //
 
-#include <QtCore/qsharedpointer.h>
 #include <QtOhosAppKit/qohosoperationstatus.h>
+#include <memory>
 
 QT_BEGIN_NAMESPACE
 
 namespace QtOhosAppKit {
 
-QSharedPointer<OperationStatus> createOperationStatus(bool status);
+std::shared_ptr<OperationStatus> createOperationStatus(bool status);
 
 }
 
