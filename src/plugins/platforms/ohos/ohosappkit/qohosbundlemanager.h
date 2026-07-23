@@ -5,13 +5,12 @@
 #define QOHOSBUNDLEMANAGER_H
 
 #include <QtCore/qstring.h>
-#include <QtOhosAppKit/qtohosappkitglobal.h>
 
 QT_BEGIN_NAMESPACE
 
 namespace QtOhosAppKit {
 
-struct Q_OHOSAPPKIT_EXPORT ElementName
+struct ElementName
 {
     QString deviceId;
     QString bundleName;
