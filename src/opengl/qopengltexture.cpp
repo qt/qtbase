@@ -2071,6 +2071,12 @@ QOpenGLTexture *QOpenGLTexturePrivate::createTextureView(QOpenGLTexture::Target 
     Note that the QImage is flipped vertically to account for the fact that
     OpenGL and QImage use opposite directions for the y axis. Another option
     would be to transform your texture coordinates.
+
+    \warning All data consumed by QOpenGLTexture is expected to be trusted
+    content. Pixel and image data is passed on to the underlying OpenGL
+    implementation. Application developers are advised to carefully consider the
+    potential implications before passing in user-provided content to functions
+    such as setData().
 */
 
 /*!

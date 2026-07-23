@@ -32,6 +32,12 @@ QT_BEGIN_NAMESPACE
     QOpenGLBuffer performs a shallow copy when objects are copied in this
     manner, but does not implement copy-on-write semantics.  The original
     object will be affected whenever the copy is modified.
+
+    \warning All data consumed by QOpenGLBuffer is expected to be trusted
+    content. Buffer data is passed on to the underlying OpenGL implementation.
+    Application developers are advised to carefully consider the potential
+    implications before passing in user-provided content to functions such as
+    allocate() and write().
 */
 
 /*!
