@@ -54,9 +54,10 @@ QOhosPinchGestureRecognizer::recognize(QGesture *gesture, QObject *, QEvent *eve
                 g->setChangeFlags(g->changeFlags() | QPinchGesture::CenterPointChanged);
             }
 
-            if (g->scaleFactor() != ev->value()) {
+            // value is an incremental delta, so the per-event scale factor is (1.0 + value).
+            if (!qFuzzyIsNull(ev->value())) {
                 g->setLastScaleFactor(g->scaleFactor());
-                g->setScaleFactor(ev->value());
+                g->setScaleFactor(1.0 + ev->value());
                 g->setTotalScaleFactor(g->totalScaleFactor() * g->scaleFactor());
                 g->setChangeFlags(g->changeFlags() | QPinchGesture::ScaleFactorChanged);
             }
@@ -74,10 +75,11 @@ QOhosPinchGestureRecognizer::recognize(QGesture *gesture, QObject *, QEvent *eve
                 g->setChangeFlags(g->changeFlags() | QPinchGesture::CenterPointChanged);
             }
 
-            if (g->rotationAngle() != ev->value()) {
+            // value is an incremental delta, so accumulate it into the angle.
+            if (!qFuzzyIsNull(ev->value())) {
                 g->setLastRotationAngle(g->rotationAngle());
-                g->setRotationAngle(ev->value());
-                g->setTotalRotationAngle(g->rotationAngle());
+                g->setRotationAngle(g->rotationAngle() + ev->value());
+                g->setTotalRotationAngle(g->totalRotationAngle() + ev->value());
                 g->setChangeFlags(g->changeFlags() | QPinchGesture::RotationAngleChanged);
             }
 
