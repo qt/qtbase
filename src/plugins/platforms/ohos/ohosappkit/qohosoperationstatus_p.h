@@ -22,7 +22,7 @@ QT_BEGIN_NAMESPACE
 
 namespace QtOhosAppKit {
 
-QSharedPointer<QOhosOperationStatus> createOperationStatus(bool status);
+QSharedPointer<OperationStatus> createOperationStatus(bool status);
 
 }
 

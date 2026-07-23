@@ -10,18 +10,18 @@ QT_BEGIN_NAMESPACE
 
 namespace QtOhosAppKit {
 
-class Q_OHOSAPPKIT_EXPORT QOhosBundleInfo
+class Q_OHOSAPPKIT_EXPORT BundleInfo
 {
 public:
-    virtual ~QOhosBundleInfo();
+    virtual ~BundleInfo();
 
     virtual int versionCode() const = 0;
 
 protected:
-    QOhosBundleInfo();
+    BundleInfo();
 
 private:
-    Q_DISABLE_COPY(QOhosBundleInfo)
+    Q_DISABLE_COPY(BundleInfo)
 };
 
 }

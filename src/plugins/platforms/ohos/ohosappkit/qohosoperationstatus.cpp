@@ -9,11 +9,11 @@ QT_BEGIN_NAMESPACE
 namespace QtOhosAppKit {
 
 /*!
-    \class QtOhosAppKit::QOhosOperationStatus
+    \class QtOhosAppKit::OperationStatus
     \inmodule QtOhosAppKit
     \since 5.12.12
 
-    \brief The QOhosOperationStatus class provides interface to get an opertaion status.
+    \brief The OperationStatus class provides interface to get an opertaion status.
 
     An instance of this class is created internally by QtOhosAppKit module. Developer cannot
     create an instance - it is for checking operation status only.
@@ -21,16 +21,16 @@ namespace QtOhosAppKit {
 
 namespace {
 
-class QOhosOperationStatusImpl : public QOhosOperationStatus
+class QOhosOperationStatusImpl : public OperationStatus
 {
 public:
     QOhosOperationStatusImpl(bool success)
-        : QOhosOperationStatus()
+        : OperationStatus()
         , m_success(success)
     {}
 
     /*!
-        \fn bool QtOhosAppKit::QOhosOperationStatus::success() const
+        \fn bool QtOhosAppKit::OperationStatus::success() const
 
         Returns operations status.
 
@@ -47,10 +47,10 @@ private:
 
 }
 
-QOhosOperationStatus::QOhosOperationStatus() = default;
-QOhosOperationStatus::~QOhosOperationStatus() = default;
+OperationStatus::OperationStatus() = default;
+OperationStatus::~OperationStatus() = default;
 
-QSharedPointer<QOhosOperationStatus> createOperationStatus(bool status)
+QSharedPointer<OperationStatus> createOperationStatus(bool status)
 {
     return QSharedPointer<QOhosOperationStatusImpl>::create(status);
 }

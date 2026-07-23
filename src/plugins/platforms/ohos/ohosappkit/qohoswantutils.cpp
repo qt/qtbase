@@ -28,13 +28,13 @@ namespace WantProps {
     constexpr auto fds = "fds";
 }
 
-static const std::array<std::pair<QOhosWantFlag, int>, 3> qtToOhosFlagsMappings {
-    std::make_pair(QOhosWantFlag::AuthReadUriPermission, 0x00000001),
-    std::make_pair(QOhosWantFlag::AuthWriteUriPermission, 0x00000002),
-    std::make_pair(QOhosWantFlag::InstallOnDemand, 0x00000800),
+static const std::array<std::pair<WantFlag, int>, 3> qtToOhosFlagsMappings {
+    std::make_pair(WantFlag::AuthReadUriPermission, 0x00000001),
+    std::make_pair(WantFlag::AuthWriteUriPermission, 0x00000002),
+    std::make_pair(WantFlag::InstallOnDemand, 0x00000800),
 };
 
-int convertToOhosFlags(const QOhosWantFlags &flags)
+int convertToOhosFlags(const WantFlags &flags)
 {
     int result = 0;
     for (const auto &flagsMapping : qtToOhosFlagsMappings) {
@@ -45,9 +45,9 @@ int convertToOhosFlags(const QOhosWantFlags &flags)
     return result;
 }
 
-QOhosWantFlags convertFromOhosFlags(int intFlags)
+WantFlags convertFromOhosFlags(int intFlags)
 {
-    QOhosWantFlags flags = {};
+    WantFlags flags = {};
     for (const auto &flagsMapping : qtToOhosFlagsMappings) {
         if ((intFlags & flagsMapping.second) != 0)
             flags |= flagsMapping.first;
@@ -64,33 +64,33 @@ QString getWantOptionalStringProp(const QJsonObject &jsonWant, const char *propN
         : QString();
 }
 
-QOhosWantInfo::LaunchReason mapLaunchReasonFromQpaFunctions(
+WantInfo::LaunchReason mapLaunchReasonFromQpaFunctions(
     detail::WantInfoPriv::LaunchReason reason)
 {
     using WantInfoPriv = detail::WantInfoPriv;
 
     switch (reason) {
     case WantInfoPriv::LaunchReason::UNKNOWN:
-        return QOhosWantInfo::LaunchReason::Unknown;
+        return WantInfo::LaunchReason::Unknown;
     case WantInfoPriv::LaunchReason::START_ABILITY:
-        return QOhosWantInfo::LaunchReason::StartAbility;
+        return WantInfo::LaunchReason::StartAbility;
     case WantInfoPriv::LaunchReason::CONTINUATION:
-        return QOhosWantInfo::LaunchReason::Continuation;
+        return WantInfo::LaunchReason::Continuation;
     case WantInfoPriv::LaunchReason::PREPARE_CONTINUATION:
-        return QOhosWantInfo::LaunchReason::PrepareContinuation;
+        return WantInfo::LaunchReason::PrepareContinuation;
     case WantInfoPriv::LaunchReason::PRELOAD:
-        return QOhosWantInfo::LaunchReason::Preload;
+        return WantInfo::LaunchReason::Preload;
     }
 
-    return QOhosWantInfo::LaunchReason::Unknown;
+    return WantInfo::LaunchReason::Unknown;
 }
 
-class QOhosWantInfoImpl : public QOhosWantInfo
+class QOhosWantInfoImpl : public WantInfo
 {
 public:
     QOhosWantInfoImpl(QSharedPointer<detail::WantInfoPriv> want);
 
-    QOhosWant want() const override;
+    Want want() const override;
 
     QSharedPointer<QList<QSharedPointer<ShareKit::SharedRecord>>> tryGetSharedRecordsFromShareKit() const override;
 
@@ -105,12 +105,12 @@ private:
 };
 
 QOhosWantInfoImpl::QOhosWantInfoImpl(QSharedPointer<detail::WantInfoPriv> want)
-    : QOhosWantInfo()
+    : WantInfo()
     , m_qpaWantInfo(want)
 {
 }
 
-QOhosWant QOhosWantInfoImpl::want() const
+Want QOhosWantInfoImpl::want() const
 {
     return convertWantFromJsonObject(m_qpaWantInfo->jsonObject());
 }
@@ -153,7 +153,7 @@ QSharedPointer<QList<QSharedPointer<ShareKit::SharedRecord>>> QOhosWantInfoImpl:
     return result;
 }
 
-QSharedPointer<QOhosWantInfo::ContactInfo> QOhosWantInfoImpl::tryGetContactInfo() const
+QSharedPointer<WantInfo::ContactInfo> QOhosWantInfoImpl::tryGetContactInfo() const
 {
     auto optContactInfo = qpaWantInfo()->tryGetContactInfo();
     if (!optContactInfo.has_value())
@@ -166,7 +166,7 @@ QSharedPointer<QOhosWantInfo::ContactInfo> QOhosWantInfoImpl::tryGetContactInfo(
         });
 }
 
-QOhosWantInfo::LaunchReason QOhosWantInfoImpl::launchReason() const
+WantInfo::LaunchReason QOhosWantInfoImpl::launchReason() const
 {
     return mapLaunchReasonFromQpaFunctions(m_qpaWantInfo->launchReason());
 }
@@ -178,7 +178,7 @@ QSharedPointer<detail::WantInfoPriv> QOhosWantInfoImpl::qpaWantInfo() const
 
 }
 
-QJsonObject convertWantToJsonObject(const QOhosWant &want)
+QJsonObject convertWantToJsonObject(const Want &want)
 {
     QJsonObject jsonWant;
 
@@ -212,7 +212,7 @@ QJsonObject convertWantToJsonObject(const QOhosWant &want)
     return jsonWant;
 }
 
-QOhosWant convertWantFromJsonObject(const QJsonObject &jsonWant)
+Want convertWantFromJsonObject(const QJsonObject &jsonWant)
 {
     auto flagsIter = jsonWant.find(QLatin1String(WantProps::flags));
     auto flagsInt = flagsIter != jsonWant.end() && flagsIter->isDouble()
@@ -245,7 +245,7 @@ QOhosWant convertWantFromJsonObject(const QJsonObject &jsonWant)
             fds.insert(it.key(), it.value().toInt());
     }
 
-    QOhosWant want = {
+    Want want = {
         .deviceId = getWantOptionalStringProp(jsonWant, WantProps::deviceId),
         .bundleName = getWantOptionalStringProp(jsonWant, WantProps::bundleName),
         .moduleName = getWantOptionalStringProp(jsonWant, WantProps::moduleName),
@@ -262,14 +262,14 @@ QOhosWant convertWantFromJsonObject(const QJsonObject &jsonWant)
     return want;
 }
 
-QSharedPointer<QOhosWantInfo> convertToOhosAppKitWantInfo(
+QSharedPointer<WantInfo> convertToOhosAppKitWantInfo(
     QSharedPointer<detail::WantInfoPriv> wantInfo)
 {
     return QSharedPointer<QOhosWantInfoImpl>::create(wantInfo);
 }
 
 QSharedPointer<detail::WantInfoPriv> convertToQpaWantInfo(
-    QSharedPointer<QOhosWantInfo> wantInfo)
+    QSharedPointer<WantInfo> wantInfo)
 {
     return qSharedPointerCast<QOhosWantInfoImpl>(wantInfo)->qpaWantInfo();
 }

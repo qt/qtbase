@@ -47,7 +47,7 @@ QOhosSupplier<QByteArray> makeUniqueIdsGenerator()
     };
 }
 
-class QOhosOpenLinkOptionsImpl : public QOhosOpenLinkOptions
+class QOhosOpenLinkOptionsImpl : public OpenLinkOptions
 {
 public:
     QOhosOpenLinkOptionsImpl();
@@ -200,7 +200,7 @@ void setDestroyAllowedFlagForAbilityInstances(
         Q_FUNC_INFO);
 }
 
-class QOhosOnContinueContextImpl : public QOhosOnContinueContext
+class QOhosOnContinueContextImpl : public OnContinueContext
 {
 public:
     QOhosOnContinueContextImpl(int sourceApplicationVersionCode);
@@ -222,14 +222,14 @@ private:
 };
 
 QOhosOnContinueContextImpl::QOhosOnContinueContextImpl(int sourceApplicationVersionCode)
-    : QOhosOnContinueContext()
+    : OnContinueContext()
     , m_sourceApplicationVersionCode(sourceApplicationVersionCode)
 {
     setRejectResponse();
 }
 
 /*!
-    \fn void QtOhosAppKit::QOhosOnContinueContext::setAgreeResponse(const QByteArray &responseData)
+    \fn void QtOhosAppKit::OnContinueContext::setAgreeResponse(const QByteArray &responseData)
 
     Sets On Continue action as agreed with a given \a responseData.
     Agreed response means that on continuation process is accepted.
@@ -250,7 +250,7 @@ void QOhosOnContinueContextImpl::setAgreeResponse(const QByteArray &responseData
 }
 
 /*!
-    \fn void QtOhosAppKit::QOhosOnContinueContext::setRejectResponse()
+    \fn void QtOhosAppKit::OnContinueContext::setRejectResponse()
 
     Sets On Continue action as rejected.
     Rejected responses means that on continuation process should not be continued.
@@ -268,7 +268,7 @@ void QOhosOnContinueContextImpl::setRejectResponse()
 }
 
 /*!
-    \fn void QOhosOnContinueContext::setMismatchResponse()
+    \fn void OnContinueContext::setMismatchResponse()
 
     Sets On Continue action as mismatched.
     Mismatched responses means that on continuation process should not be continued - most probably due to
@@ -287,7 +287,7 @@ void QOhosOnContinueContextImpl::setMismatchResponse()
 }
 
 /*!
-    \fn void QOhosOnContinueContext::setExitAppOnSourceDeviceAfterMigration(bool exitAfterMigration)
+    \fn void OnContinueContext::setExitAppOnSourceDeviceAfterMigration(bool exitAfterMigration)
 
     Decides whether the application should automatically exit on the source device after successful
     migration to the target device.
@@ -307,7 +307,7 @@ AbilityOnContinueResponse QOhosOnContinueContextImpl::response() const
 }
 
 /*!
-    \fn int QtOhosAppKit::QOhosOnContinueContext::sourceApplicationVersionCode() const
+    \fn int QtOhosAppKit::OnContinueContext::sourceApplicationVersionCode() const
 
     Returns source application version code. Source application is the one which has started
     the continuation process. This version code is devlivered as "version" property in
@@ -516,13 +516,13 @@ QNapi::Object convertStartOptionsToNapiObject(
 }
 
 void requestStartAbilityForResult(
-    const QOhosWant &want, std::optional<QOhosStartOptionsData> options,
+    const Want &want, std::optional<QOhosStartOptionsData> options,
     QWindow *optInstanceMainWindow, QObject *callerContext,
-    std::function<void(std::optional<QOhosStartAbilityResult>)> resultCallback)
+    std::function<void(std::optional<StartAbilityResult>)> resultCallback)
 {
     struct Context
     {
-        std::function<void(std::optional<QOhosStartAbilityResult>)> resultCallback;
+        std::function<void(std::optional<StartAbilityResult>)> resultCallback;
         QtOhos::QObjectThreadSafeRef resultConsumerQtContextRef;
     };
 
@@ -536,9 +536,9 @@ void requestStartAbilityForResult(
         if (optAbilityResult.has_value()) {
             auto abilityResult = optAbilityResult.value();
             auto want = abilityResult.want.has_value()
-                ? QSharedPointer<QOhosWant>::create(convertWantFromJsonObject(abilityResult.want.value()))
+                ? QSharedPointer<Want>::create(convertWantFromJsonObject(abilityResult.want.value()))
                 : nullptr;
-            context->resultCallback(QOhosStartAbilityResult{abilityResult.resultCode, want});
+            context->resultCallback(StartAbilityResult{abilityResult.resultCode, want});
         } else {
             context->resultCallback(std::nullopt);
         }
@@ -598,7 +598,7 @@ void requestStartAbilityForResult(
         });
 }
 
-class QOhosBaseAbilityContextImpl : public QOhosAbilityContext
+class QOhosBaseAbilityContextImpl : public AbilityContext
 {
 protected:
     QOhosBaseAbilityContextImpl();
@@ -606,9 +606,9 @@ protected:
     QByteArray generateUniqueId();
 
     void startAbilityForResultImpl(
-        const QOhosWant &want, QWindow *optInstanceMainWindow,
+        const Want &want, QWindow *optInstanceMainWindow,
         std::optional<QOhosStartOptionsData> qpaStartOptions,
-        QObject *context, std::function<void(std::optional<QOhosStartAbilityResult>)> callback);
+        QObject *context, std::function<void(std::optional<StartAbilityResult>)> callback);
 
     void shareDataWithShareKitImpl(
         QWindow *optMainWindow, const QList<QSharedPointer<ShareKit::SharedRecord>> &records,
@@ -630,11 +630,11 @@ public:
     void setDestroyFromSystemEnabled(bool destroyEnabled) override;
 
     void startAbilityForResult(
-        const QOhosWant &want, QObject *context,
-        std::function<void(std::optional<QOhosStartAbilityResult>)> callback) override;
+        const Want &want, QObject *context,
+        std::function<void(std::optional<StartAbilityResult>)> callback) override;
     void startAbilityForResult(
-        const QOhosWant &want, const QOhosStartOptions &options, QObject *context,
-        std::function<void(std::optional<QOhosStartAbilityResult>)> callback) override;
+        const Want &want, const StartOptions &options, QObject *context,
+        std::function<void(std::optional<StartAbilityResult>)> callback) override;
 
     void shareDataWithShareKit(
         const QList<QSharedPointer<ShareKit::SharedRecord>> &records,
@@ -644,7 +644,7 @@ public:
         std::function<void()> onPanelClosed) override;
 
     bool tryOpenLink(const QString &link) override;
-    bool tryOpenLink(const QString &link, const QOhosOpenLinkOptions &options) override;
+    bool tryOpenLink(const QString &link, const OpenLinkOptions &options) override;
 
     void setContinuationActive(bool continuationActive) override;
 };
@@ -657,11 +657,11 @@ public:
     void setDestroyFromSystemEnabled(bool destroyEnabled) override;
 
     void startAbilityForResult(
-        const QOhosWant &want, QObject *context,
-        std::function<void(std::optional<QOhosStartAbilityResult>)> callback) override;
+        const Want &want, QObject *context,
+        std::function<void(std::optional<StartAbilityResult>)> callback) override;
     void startAbilityForResult(
-        const QOhosWant &want, const QOhosStartOptions &options, QObject *context,
-        std::function<void(std::optional<QOhosStartAbilityResult>)> callback) override;
+        const Want &want, const StartOptions &options, QObject *context,
+        std::function<void(std::optional<StartAbilityResult>)> callback) override;
 
     void shareDataWithShareKit(
         const QList<QSharedPointer<ShareKit::SharedRecord>> &records,
@@ -671,7 +671,7 @@ public:
         std::function<void()> onPanelClosed) override;
 
     bool tryOpenLink(const QString &link) override;
-    bool tryOpenLink(const QString &link, const QOhosOpenLinkOptions &options) override;
+    bool tryOpenLink(const QString &link, const OpenLinkOptions &options) override;
 
     void setContinuationActive(bool continuationActive) override;
 
@@ -692,9 +692,9 @@ QByteArray QOhosBaseAbilityContextImpl::generateUniqueId()
 }
 
 void QOhosBaseAbilityContextImpl::startAbilityForResultImpl(
-    const QOhosWant &want, QWindow *optInstanceMainWindow,
+    const Want &want, QWindow *optInstanceMainWindow,
     std::optional<QOhosStartOptionsData> qpaStartOptions,
-    QObject *context, std::function<void(std::optional<QOhosStartAbilityResult>)> callback)
+    QObject *context, std::function<void(std::optional<StartAbilityResult>)> callback)
 {
     requestStartAbilityForResult(
         want, std::move(qpaStartOptions), optInstanceMainWindow, context,
@@ -741,14 +741,14 @@ void QOhosDefaultAbilityContextImpl::setDestroyFromSystemEnabled(bool destroyEna
 }
 
 void QOhosDefaultAbilityContextImpl::startAbilityForResult(
-    const QOhosWant &want, QObject *context, std::function<void(std::optional<QOhosStartAbilityResult>)> callback)
+    const Want &want, QObject *context, std::function<void(std::optional<StartAbilityResult>)> callback)
 {
     startAbilityForResultImpl(want, nullptr, std::nullopt, context, std::move(callback));
 }
 
 void QOhosDefaultAbilityContextImpl::startAbilityForResult(
-    const QOhosWant &want, const QOhosStartOptions &options, QObject *context,
-    std::function<void(std::optional<QOhosStartAbilityResult>)> callback)
+    const Want &want, const StartOptions &options, QObject *context,
+    std::function<void(std::optional<StartAbilityResult>)> callback)
 {
     startAbilityForResultImpl(
         want, nullptr, tryConvertStartOptionsToQpaFunctionsStruct(options), context, std::move(callback));
@@ -889,7 +889,7 @@ bool QOhosDefaultAbilityContextImpl::tryOpenLink(const QString &link)
     return tryOpenLinkImpl(nullptr, link, {});
 }
 
-bool QOhosDefaultAbilityContextImpl::tryOpenLink(const QString &link, const QOhosOpenLinkOptions &options)
+bool QOhosDefaultAbilityContextImpl::tryOpenLink(const QString &link, const OpenLinkOptions &options)
 {
     const auto &optionsImpl = static_cast<const QOhosOpenLinkOptionsImpl &>(options);
     return tryOpenLinkImpl(nullptr, link, optionsImpl.appLinkingOnly());
@@ -921,7 +921,7 @@ QOhosAbilityContextImpl::QOhosAbilityContextImpl(QWindow *instanceMainWindow)
 }
 
 /*!
-    \fn void QtOhosAppKit::QOhosAbilityContext::setDestroyFromSystemEnabled(bool destroyEnabled)
+    \fn void QtOhosAppKit::AbilityContext::setDestroyFromSystemEnabled(bool destroyEnabled)
 
     Sets whether the Ability can be automatically destroyed by the system when the user clicks on
     the window's "close" button. If \a destroyEnabled is \c true, the system destroys the Ability
@@ -931,7 +931,7 @@ QOhosAbilityContextImpl::QOhosAbilityContextImpl(QWindow *instanceMainWindow)
 
     By default, the flag is set to \c false.
 
-    When called on the default QOhosAbilityContext instance it sets the flag to \a destroyEnabled
+    When called on the default AbilityContext instance it sets the flag to \a destroyEnabled
     for all Ability instances.
 */
 void QOhosAbilityContextImpl::setDestroyFromSystemEnabled(bool destroyEnabled)
@@ -950,7 +950,7 @@ void QOhosAbilityContextImpl::setDestroyFromSystemEnabled(bool destroyEnabled)
 }
 
 /*!
-    \fn void QtOhosAppKit::QOhosAbilityContext::startAbilityForResult(const QtOhosAppKit::QOhosWant &want, QObject *context, std::function<void(std::optional<QtOhosAppKit::QOhosStartAbilityResult>)> callback)
+    \fn void QtOhosAppKit::AbilityContext::startAbilityForResult(const QtOhosAppKit::Want &want, QObject *context, std::function<void(std::optional<QtOhosAppKit::StartAbilityResult>)> callback)
 
     Starts a UIAbility with a given \a want and delivers the result by invoking \a callback on the thread of \a context;
     if \a context is destroyed before the result arrives, \a callback is not invoked. To start the UIAbility, at least bundleName and abilityName properties must be set.
@@ -959,13 +959,13 @@ void QOhosAbilityContextImpl::setDestroyFromSystemEnabled(bool destroyEnabled)
     {UIAbilityContext.startAbilityForResult}
 */
 void QOhosAbilityContextImpl::startAbilityForResult(
-    const QOhosWant &want, QObject *context, std::function<void(std::optional<QOhosStartAbilityResult>)> callback)
+    const Want &want, QObject *context, std::function<void(std::optional<StartAbilityResult>)> callback)
 {
     startAbilityForResultImpl(want, m_instanceMainWindow, std::nullopt, context, std::move(callback));
 }
 
 /*!
-    \fn void QtOhosAppKit::QOhosAbilityContext::startAbilityForResult(const QtOhosAppKit::QOhosWant &want, const QtOhosAppKit::QOhosStartOptions &options, QObject *context, std::function<void(std::optional<QtOhosAppKit::QOhosStartAbilityResult>)> callback)
+    \fn void QtOhosAppKit::AbilityContext::startAbilityForResult(const QtOhosAppKit::Want &want, const QtOhosAppKit::StartOptions &options, QObject *context, std::function<void(std::optional<QtOhosAppKit::StartAbilityResult>)> callback)
 
     Starts a UIAbility with a given \a want and \a options and delivers the result by invoking \a callback on the thread of \a context;
     if \a context is destroyed before the result arrives, \a callback is not invoked. To start the UIAbility, at least bundleName and abilityName properties must be set.
@@ -974,18 +974,18 @@ void QOhosAbilityContextImpl::startAbilityForResult(
     {UIAbilityContext.startAbilityForResult}
 */
 void QOhosAbilityContextImpl::startAbilityForResult(
-    const QOhosWant &want, const QOhosStartOptions &options, QObject *context,
-    std::function<void(std::optional<QOhosStartAbilityResult>)> callback)
+    const Want &want, const StartOptions &options, QObject *context,
+    std::function<void(std::optional<StartAbilityResult>)> callback)
 {
     startAbilityForResultImpl(
         want, m_instanceMainWindow, tryConvertStartOptionsToQpaFunctionsStruct(options), context, std::move(callback));
 }
 
 /*!
-    \fn virtual void QtOhosAppKit::QOhosAbilityContext::shareDataWithShareKit(const QList<QSharedPointer<ShareKit::SharedRecord>> &records, QSharedPointer<ShareKit::ShareControllerOptions> controllerOptions, QObject *context, std::function<void(QSharedPointer<ShareKit::ShareOperationResult>)> onShareCompleted, std::function<void()> onPanelClosed) = 0
+    \fn virtual void QtOhosAppKit::AbilityContext::shareDataWithShareKit(const QList<QSharedPointer<ShareKit::SharedRecord>> &records, QSharedPointer<ShareKit::ShareControllerOptions> controllerOptions, QObject *context, std::function<void(QSharedPointer<ShareKit::ShareOperationResult>)> onShareCompleted, std::function<void()> onPanelClosed) = 0
 
     Share provided \a records with other applications using an inter-application mechanism called ShareKit. Share Kit panel can be controlled
-    with a given \a controllerOptions. When called on the default QOhosAbilityContext instance, it shares \a records using the default UiAbility.
+    with a given \a controllerOptions. When called on the default AbilityContext instance, it shares \a records using the default UiAbility.
 
     Results are delivered by invoking the callbacks on the thread of \a context; if \a context is destroyed the callbacks are not invoked.
     \a onShareCompleted is called when the User selects an application for sharing (can be called multiple times).
@@ -1006,7 +1006,7 @@ void QOhosAbilityContextImpl::shareDataWithShareKit(
 }
 
 /*!
-    \fn virtual bool QtOhosAppKit::QOhosAbilityContext::tryOpenLink(const QString &link) = 0
+    \fn virtual bool QtOhosAppKit::AbilityContext::tryOpenLink(const QString &link) = 0
 
     Use provided \a link to open application with a deep link.
     Returns true if successful, false otherwise.
@@ -1019,21 +1019,21 @@ bool QOhosAbilityContextImpl::tryOpenLink(const QString &link)
 }
 
 /*!
-    \fn virtual bool QtOhosAppKit::QOhosAbilityContext::tryOpenLink(const QString &link, const QOhosOpenLinkOptions &options) = 0
+    \fn virtual bool QtOhosAppKit::AbilityContext::tryOpenLink(const QString &link, const OpenLinkOptions &options) = 0
 
     Use provided \a link and \a options to open application with a deep link.
     Returns true if successful, false otherwise.
 
     See \l {https://developer.huawei.com/consumer/en/doc/harmonyos-guides/app-linking-startup}{App Linking}
 */
-bool QOhosAbilityContextImpl::tryOpenLink(const QString &link, const QOhosOpenLinkOptions &options)
+bool QOhosAbilityContextImpl::tryOpenLink(const QString &link, const OpenLinkOptions &options)
 {
     const auto &optionsImpl = static_cast<const QOhosOpenLinkOptionsImpl &>(options);
     return tryOpenLinkImpl(m_instanceMainWindow, link, optionsImpl.appLinkingOnly());
 }
 
 /*!
-    \fn virtual void QtOhosAppKit::QOhosAbilityContext::setContinuationActive(bool continuationActive)
+    \fn virtual void QtOhosAppKit::AbilityContext::setContinuationActive(bool continuationActive)
 
     Sets the mission continuation state of the underlying Ability instance as per the
     \a continuationActive parameter (\c true = active, \c false = inactive).
@@ -1045,8 +1045,8 @@ void QOhosAbilityContextImpl::setContinuationActive(bool continuationActive)
     setContinuationActiveImpl(m_instanceMainWindow, continuationActive);
 }
 
-QSharedPointer<QOhosOperationStatus> startAbilityImpl(
-    const QOhosWant &want, std::optional<QOhosStartOptionsData> qpaStartOptions)
+QSharedPointer<OperationStatus> startAbilityImpl(
+    const Want &want, std::optional<QOhosStartOptionsData> qpaStartOptions)
 {
     auto wantJson = convertWantToJsonObject(want);
     bool success = QOhosJsThreadGateway::eval(
@@ -1074,7 +1074,7 @@ QSharedPointer<QOhosOperationStatus> startAbilityImpl(
 }
 
 void startAppProcessImpl(
-    const QString &processId, const QOhosWant &requestWant,
+    const QString &processId, const Want &requestWant,
     std::optional<QOhosStartOptionsData> qpaStartOptions)
 {
     auto requestWantJson = convertWantToJsonObject(requestWant);
@@ -1100,16 +1100,16 @@ void startAppProcessImpl(
 }
 
 /*!
-    \class QtOhosAppKit::QOhosAbilityContext
+    \class QtOhosAppKit::AbilityContext
     \inmodule QtOhosAppKit
     \since 5.12.12
-    \brief The QOhosAbilityContext class is to manage native UI Ability context. See
+    \brief The AbilityContext class is to manage native UI Ability context. See
     \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references-V5/js-apis-inner-application-uiabilitycontext-V5}
     {UIAbilityContext}.
 */
 
 /*!
-    \fn void QtOhosAppKit::QOhosAbilityContext::newWantInfoReceived(QSharedPointer<QtOhosAppKit::QOhosWantInfo> wantInfo)
+    \fn void QtOhosAppKit::AbilityContext::newWantInfoReceived(QSharedPointer<QtOhosAppKit::WantInfo> wantInfo)
 
     Singal is emitted when an ability gets new \a want. See
     \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references-V5/js-apis-app-ability-uiability-V5#uiabilityonnewwant}
@@ -1117,7 +1117,7 @@ void startAppProcessImpl(
 */
 
 /*!
-    \fn void QtOhosAppKit::QOhosAbilityContext::continueRequestReceived(QSharedPointer<QtOhosAppKit::QOhosOnContinueContext> onContinueContext)
+    \fn void QtOhosAppKit::AbilityContext::continueRequestReceived(QSharedPointer<QtOhosAppKit::OnContinueContext> onContinueContext)
 
     Signal emitted when the ability receives onContinue request. The signal delivers \a onContinueContext on which User
     can set onContinue response.
@@ -1127,7 +1127,7 @@ void startAppProcessImpl(
     \sa setAgreeResponse(), setMismatchResponse(), setRejectResponse()
 */
 
-QOhosAbilityContext::QOhosAbilityContext()
+AbilityContext::AbilityContext()
 {
     addNewWantConsumer(
         this,
@@ -1137,7 +1137,7 @@ QOhosAbilityContext::QOhosAbilityContext()
 }
 
 /*!
-    \fn QSharedPointer<QOhosAbilityContext> QtOhosAppKit::QOhosAbilityContext::defaultInstance()
+    \fn QSharedPointer<AbilityContext> QtOhosAppKit::AbilityContext::defaultInstance()
 
     Returns instance of the class which is not connected to any specific Ability instance. It should
     be used when the application needs to perform some operations without selecting specific
@@ -1146,20 +1146,20 @@ QOhosAbilityContext::QOhosAbilityContext()
     See descriptions of specific class methods for information about their behavior for the default
     instance.
 */
-QSharedPointer<QOhosAbilityContext> QOhosAbilityContext::defaultInstance()
+QSharedPointer<AbilityContext> AbilityContext::defaultInstance()
 {
     static auto instance = QSharedPointer<QOhosDefaultAbilityContextImpl>::create();
     return instance;
 }
 
 /*!
-    \fn QSharedPointer<QOhosAbilityContext> QtOhosAppKit::QOhosAbilityContext::instanceForMainWindow(QWindow *instanceMainWindow)
+    \fn QSharedPointer<AbilityContext> QtOhosAppKit::AbilityContext::instanceForMainWindow(QWindow *instanceMainWindow)
 
     Returns instance of the class which is connected to Ability instance identified by the
     \a instanceMainWindow. Methods called on the returned object will only affect the
     corresponding Ability instance.
 */
-QSharedPointer<QOhosAbilityContext> QOhosAbilityContext::instanceForMainWindow(QWindow *instanceMainWindow)
+QSharedPointer<AbilityContext> AbilityContext::instanceForMainWindow(QWindow *instanceMainWindow)
 {
     if (instanceMainWindow == nullptr) {
         qCWarning(QtForOhos, "%s: got null QWindow", Q_FUNC_INFO);
@@ -1181,7 +1181,7 @@ QSharedPointer<QOhosAbilityContext> QOhosAbilityContext::instanceForMainWindow(Q
 }
 
 /*!
-    \fn QSharedPointer<QOhosOperationStatus> QtOhosAppKit::startAbility(const QOhosWant &want)
+    \fn QSharedPointer<OperationStatus> QtOhosAppKit::startAbility(const Want &want)
 
     Starts an Ability for a given \a want. See
     \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references-V5/js-apis-inner-application-uiabilitycontext-V5#uiabilitycontextstartability}
@@ -1190,14 +1190,14 @@ QSharedPointer<QOhosAbilityContext> QOhosAbilityContext::instanceForMainWindow(Q
     \warning Currently, operation status result is hardcoded as "successful" (even if ability were
     not started).
 */
-QSharedPointer<QOhosOperationStatus> startAbility(const QOhosWant &want)
+QSharedPointer<OperationStatus> startAbility(const Want &want)
 {
     return startAbilityImpl(want, std::nullopt);
 }
 
 /*!
-    \fn QSharedPointer<QOhosOperationStatus> QtOhosAppKit::startAbility(const QOhosWant &want,
-    const QOhosStartOptions &options)
+    \fn QSharedPointer<OperationStatus> QtOhosAppKit::startAbility(const Want &want,
+    const StartOptions &options)
 
     Starts an Ability for a given \a want and \a options. See
     \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references-V5/js-apis-inner-application-uiabilitycontext-V5#uiabilitycontextstartability-1}
@@ -1206,13 +1206,13 @@ QSharedPointer<QOhosOperationStatus> startAbility(const QOhosWant &want)
     \warning Currently, operation status result is hardcoded as "successful" (even if ability were
     not started).
 */
-QSharedPointer<QOhosOperationStatus> startAbility(const QOhosWant &want, const QOhosStartOptions &options)
+QSharedPointer<OperationStatus> startAbility(const Want &want, const StartOptions &options)
 {
     return startAbilityImpl(want, tryConvertStartOptionsToQpaFunctionsStruct(options));
 }
 
 /*!
-    \fn QSharedPointer<QOhosOperationStatus> QtOhosAppKit::startAbilityByType(const QString &appType,
+    \fn QSharedPointer<OperationStatus> QtOhosAppKit::startAbilityByType(const QString &appType,
     const QJsonObject &wantParameters)
 
     Starts an Ability for a given \a appType and \a wantParameters. See
@@ -1221,7 +1221,7 @@ QSharedPointer<QOhosOperationStatus> startAbility(const QOhosWant &want, const Q
 
     \return true on success
 */
-QSharedPointer<QOhosOperationStatus> startAbilityByType(const QString &appType, const QJsonObject &wantParameters)
+QSharedPointer<OperationStatus> startAbilityByType(const QString &appType, const QJsonObject &wantParameters)
 {
     bool success = startAbilityByTypeImpl(appType, wantParameters);
     return createOperationStatus(success);
@@ -1238,21 +1238,21 @@ void startNewAbilityInstance(QWidget *instanceWidget)
 }
 
 /*!
-    \fn void QtOhosAppKit::startAppProcess(const QString &processId, const QOhosWant &requestWant)
+    \fn void QtOhosAppKit::startAppProcess(const QString &processId, const Want &requestWant)
 
     Starts application process for a given \a processId and \a requestWant.
 */
-void startAppProcess(const QString &processId, const QOhosWant &requestWant)
+void startAppProcess(const QString &processId, const Want &requestWant)
 {
     startAppProcessImpl(processId, requestWant, std::nullopt);
 }
 
 /*!
-    \fn void QtOhosAppKit::startAppProcess(const QString &processId, const QOhosWant &requestWant, const QOhosStartOptions &options)
+    \fn void QtOhosAppKit::startAppProcess(const QString &processId, const Want &requestWant, const StartOptions &options)
 
     Starts application process for a given \a processId, \a requestWant and \a options.
 */
-void startAppProcess(const QString &processId, const QOhosWant &requestWant, const QOhosStartOptions &options)
+void startAppProcess(const QString &processId, const Want &requestWant, const StartOptions &options)
 {
     startAppProcessImpl(processId, requestWant, tryConvertStartOptionsToQpaFunctionsStruct(options));
 }
@@ -1268,22 +1268,22 @@ void startAppProcess(const QString &processId, const QOhosWant &requestWant, con
 
     By default, the flag is set to \c false.
 
-    \sa QtOhosAppKit::QOhosAbilityContext::setDestroyFromSystemEnabled()
+    \sa QtOhosAppKit::AbilityContext::setDestroyFromSystemEnabled()
 */
 void setAbilityInstanceDestroyEnabled(QWindow *instanceWindow, bool destroyEnabled)
 {
-    QOhosAbilityContext::instanceForMainWindow(instanceWindow)->setDestroyFromSystemEnabled(destroyEnabled);
+    AbilityContext::instanceForMainWindow(instanceWindow)->setDestroyFromSystemEnabled(destroyEnabled);
 }
 
 /*!
-    \fn QSharedPointer<QByteArray> tryGetOnContinueData(const QOhosWant &want)
+    \fn QSharedPointer<QByteArray> tryGetOnContinueData(const Want &want)
 
     Tries to get continuation / migration related data that was provided on the source device.
     Returns \c nullptr if no such data found. The data is expected to be stored in the \a want parameters.
     See \l {https://developer.huawei.com/consumer/en/doc/harmonyos-guides/app-continuation-guide}
     {Application Continuation}.
 */
-QSharedPointer<QByteArray> tryGetOnContinueData(const QOhosWant &want)
+QSharedPointer<QByteArray> tryGetOnContinueData(const Want &want)
 {
     auto key = QString::fromUtf8(qtOnContinueMigrationDataPropertyName);
     if (want.parameters.contains(key)) {
@@ -1296,21 +1296,21 @@ QSharedPointer<QByteArray> tryGetOnContinueData(const QOhosWant &want)
 }
 
 /*!
-    \class QtOhosAppKit::QOhosOnContinueContext
+    \class QtOhosAppKit::OnContinueContext
     \inmodule QtOhosAppKit
     \since 5.12.12
-    \brief The QOhosOnContinueContext class manages onContinue context. It provides system
+    \brief The OnContinueContext class manages onContinue context. It provides system
     data, like source application version code and set the onContinue result that is requested by the system.
     See \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references-V13/js-apis-app-ability-uiability-V13#uiabilityoncontinue}
     {UIAbility onContinue}.
 */
-QtOhosAppKit::QOhosOnContinueContext::QOhosOnContinueContext() = default;
-QtOhosAppKit::QOhosOnContinueContext::~QOhosOnContinueContext() = default;
+QtOhosAppKit::OnContinueContext::OnContinueContext() = default;
+QtOhosAppKit::OnContinueContext::~OnContinueContext() = default;
 
-QOhosOpenLinkOptions::QOhosOpenLinkOptions() = default;
-QOhosOpenLinkOptions::~QOhosOpenLinkOptions() = default;
+OpenLinkOptions::OpenLinkOptions() = default;
+OpenLinkOptions::~OpenLinkOptions() = default;
 
-QSharedPointer<QOhosOpenLinkOptions> createOpenLinkOptions()
+QSharedPointer<OpenLinkOptions> createOpenLinkOptions()
 {
     return QSharedPointer<QOhosOpenLinkOptionsImpl>::create();
 }

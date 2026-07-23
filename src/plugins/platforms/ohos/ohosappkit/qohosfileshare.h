@@ -57,7 +57,7 @@ struct PathPolicyCheckResult
 class Q_OHOSAPPKIT_EXPORT ActionResult
 {
 public:
-    virtual QSharedPointer<QOhosOperationStatus> operationStatus() const = 0;
+    virtual QSharedPointer<OperationStatus> operationStatus() const = 0;
     virtual QList<PathPolicyErrorInfo> errorInfoList() const = 0;
 
     virtual ~ActionResult();
@@ -72,7 +72,7 @@ private:
 class Q_OHOSAPPKIT_EXPORT CheckResult
 {
 public:
-    virtual QSharedPointer<QOhosOperationStatus> operationStatus() const = 0;
+    virtual QSharedPointer<OperationStatus> operationStatus() const = 0;
     virtual QList<PathPolicyCheckResult> checkResultList() const = 0;
 
     virtual ~CheckResult();

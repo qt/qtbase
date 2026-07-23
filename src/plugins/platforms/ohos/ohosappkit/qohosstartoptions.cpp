@@ -12,11 +12,11 @@ QT_BEGIN_NAMESPACE
 namespace QtOhosAppKit {
 
 /*!
-    \class QtOhosAppKit::QOhosStartOptions
+    \class QtOhosAppKit::StartOptions
     \inmodule QtOhosAppKit
     \since 5.12.12
 
-    \brief The QOhosStartOptions class is to provide new options for new started ability or process.
+    \brief The StartOptions class is to provide new options for new started ability or process.
 
     \sa createStartOptions()
     \sa startAbility()
@@ -24,7 +24,7 @@ namespace QtOhosAppKit {
 */
 
 /*!
-    \enum QtOhosAppKit::QOhosStartOptions::ProcessMode
+    \enum QtOhosAppKit::StartOptions::ProcessMode
     \since 5.12.12
 
     Enumerates the process modes. See
@@ -38,7 +38,7 @@ namespace QtOhosAppKit {
 */
 
 /*!
-    \enum QtOhosAppKit::QOhosStartOptions::StartupVisibility
+    \enum QtOhosAppKit::StartOptions::StartupVisibility
     \since 5.12.12
 
     Enumerates the visibility statuses of an ability after it is started. See
@@ -50,7 +50,7 @@ namespace QtOhosAppKit {
 */
 
 /*!
-    \enum QtOhosAppKit::QOhosStartOptions::WindowMode
+    \enum QtOhosAppKit::StartOptions::WindowMode
     \since 5.12.12
 
     Enumerates the window mode when the ability is started. See
@@ -65,7 +65,7 @@ namespace QtOhosAppKit {
 */
 
 /*!
-    \enum QtOhosAppKit::QOhosStartOptions::SupportWindowMode
+    \enum QtOhosAppKit::StartOptions::SupportWindowMode
     \since 5.12.12
 
     Enumerates the supported window modes when the ability is started. See
@@ -78,11 +78,11 @@ namespace QtOhosAppKit {
 */
 
 /*!
-    \class QtOhosAppKit::QOhosWindowCreateParams
+    \class QtOhosAppKit::WindowCreateParams
     \inmodule QtOhosAppKit
     \since 5.12.12
 
-    \brief The QOhosWindowCreateParams class provides window creation parameters
+    \brief The WindowCreateParams class provides window creation parameters
     for a started ability window.
 
     See \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references/arkts-apis-window-i#windowcreateparams20}
@@ -92,7 +92,7 @@ namespace QtOhosAppKit {
 */
 
 /*!
-    \enum QtOhosAppKit::QOhosWindowCreateParams::AnimationType
+    \enum QtOhosAppKit::WindowCreateParams::AnimationType
     \since 5.12.12
 
     Enumerates the animation types for window creation. See
@@ -105,9 +105,9 @@ namespace QtOhosAppKit {
 
 namespace {
 
-QOhosElementName convertElementNameFromJsonObject(const QJsonObject &object)
+ElementName convertElementNameFromJsonObject(const QJsonObject &object)
 {
-    return QOhosElementName{
+    return ElementName{
         .deviceId = object.value(QLatin1String("deviceId")).toString(),
         .bundleName = object.value(QLatin1String("bundleName")).toString(),
         .abilityName = object.value(QLatin1String("abilityName")).toString(),
@@ -118,21 +118,21 @@ QOhosElementName convertElementNameFromJsonObject(const QJsonObject &object)
 }
 
 std::optional<QOhosStartOptionsData::SupportWindowMode> tryMapSupportWindowModeToQpaFunctions(
-    QOhosStartOptions::SupportWindowMode supportWindowMode)
+    StartOptions::SupportWindowMode supportWindowMode)
 {
     switch (supportWindowMode) {
-    case QOhosStartOptions::SupportWindowMode::FULL_SCREEN:
+    case StartOptions::SupportWindowMode::FULL_SCREEN:
         return std::make_optional(QOhosStartOptionsData::SupportWindowMode::FULL_SCREEN);
-    case QOhosStartOptions::SupportWindowMode::SPLIT:
+    case StartOptions::SupportWindowMode::SPLIT:
         return std::make_optional(QOhosStartOptionsData::SupportWindowMode::SPLIT);
-    case QOhosStartOptions::SupportWindowMode::FLOATING:
+    case StartOptions::SupportWindowMode::FLOATING:
         return std::make_optional(QOhosStartOptionsData::SupportWindowMode::FLOATING);
     }
     return {};
 }
 
 QList<QOhosStartOptionsData::SupportWindowMode> mapSupportWindowModesToQpaFunctions(
-    const QList<QOhosStartOptions::SupportWindowMode> &supportWindowModes)
+    const QList<StartOptions::SupportWindowMode> &supportWindowModes)
 {
     QList<QOhosStartOptionsData::SupportWindowMode> qpaFuncsSupportWindowModes;
     for (auto supportWindowMode : supportWindowModes) {
@@ -149,7 +149,7 @@ QList<QOhosStartOptionsData::SupportWindowMode> mapSupportWindowModesToQpaFuncti
     return qpaFuncsSupportWindowModes;
 }
 
-class QOhosWindowCreateParamsImpl : public QOhosWindowCreateParams
+class QOhosWindowCreateParamsImpl : public WindowCreateParams
 {
 public:
     QOhosWindowCreateParamsImpl();
@@ -186,31 +186,31 @@ QOhosStartOptionsData::WindowCreateParamsPriv QOhosWindowCreateParamsImpl::qpaWi
     return m_qpaWindowCreateParams;
 }
 
-class QOhosStartOptionsImpl : public QOhosStartOptions
+class QOhosStartOptionsImpl : public StartOptions
 {
 public:
     QOhosStartOptionsImpl()
-        : QOhosStartOptions()
+        : StartOptions()
     {}
 
     /*!
-        \fn QtOhosAppKit::QOhosStartOptions::setWindowMode(WindowMode windowMode)
+        \fn QtOhosAppKit::StartOptions::setWindowMode(WindowMode windowMode)
 
         Sets \a windowMode when the ability is started. See
         \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references-V5/js-apis-app-ability-startoptions-V5#properties}
         {Window Mode}.
     */
-    void setWindowMode(QOhosStartOptions::WindowMode windowMode) override
+    void setWindowMode(StartOptions::WindowMode windowMode) override
     {
         std::optional<QOhosStartOptionsData::WindowMode> internalWindowMode;
         switch (windowMode) {
-        case QOhosStartOptions::WindowMode::WINDOW_MODE_SPLIT_PRIMARY:
+        case StartOptions::WindowMode::WINDOW_MODE_SPLIT_PRIMARY:
             internalWindowMode = QOhosStartOptionsData::WindowMode::WINDOW_MODE_SPLIT_PRIMARY;
             break;
-        case QOhosStartOptions::WindowMode::WINDOW_MODE_SPLIT_SECONDARY:
+        case StartOptions::WindowMode::WINDOW_MODE_SPLIT_SECONDARY:
             internalWindowMode = QOhosStartOptionsData::WindowMode::WINDOW_MODE_SPLIT_SECONDARY;
             break;
-        case QOhosStartOptions::WindowMode::WINDOW_MODE_FULLSCREEN:
+        case StartOptions::WindowMode::WINDOW_MODE_FULLSCREEN:
             internalWindowMode = QOhosStartOptionsData::WindowMode::WINDOW_MODE_FULLSCREEN;
             break;
         }
@@ -222,7 +222,7 @@ public:
     }
 
     /*!
-        \fn QtOhosAppKit::QOhosStartOptions::setDisplayId(int displayId)
+        \fn QtOhosAppKit::StartOptions::setDisplayId(int displayId)
 
         Sets \a displayId. The default value is 0, indicating the current display. See
         \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references-V5/js-apis-app-ability-startoptions-V5#properties}
@@ -234,7 +234,7 @@ public:
     }
 
     /*!
-        \fn QtOhosAppKit::QOhosStartOptions::setWithAnimation(bool withAnimation)
+        \fn QtOhosAppKit::StartOptions::setWithAnimation(bool withAnimation)
 
         Sets \a withAnimation whether the ability has the animation effect. See
         \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references-V5/js-apis-app-ability-startoptions-V5}
@@ -246,7 +246,7 @@ public:
     }
 
     /*!
-        \fn QtOhosAppKit::QOhosStartOptions::setWindowLeft(int windowLeft)
+        \fn QtOhosAppKit::StartOptions::setWindowLeft(int windowLeft)
 
         Sets \a windowLeft left position of the window. See
         \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references-V5/js-apis-app-ability-startoptions-V5}
@@ -258,7 +258,7 @@ public:
     }
 
     /*!
-        \fn QtOhosAppKit::QOhosStartOptions::setWindowTop(int windowTop)
+        \fn QtOhosAppKit::StartOptions::setWindowTop(int windowTop)
 
         Sets \a windowTop top position of the window. See
         \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references-V5/js-apis-app-ability-startoptions-V5}
@@ -270,7 +270,7 @@ public:
     }
 
     /*!
-        \fn QtOhosAppKit::QOhosStartOptions::setWindowWidth(int windowWidth)
+        \fn QtOhosAppKit::StartOptions::setWindowWidth(int windowWidth)
 
         Sets \a windowWidth width of of the window. See
         \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references-V5/js-apis-app-ability-startoptions-V5}
@@ -282,7 +282,7 @@ public:
     }
 
     /*!
-        \fn QtOhosAppKit::QOhosStartOptions::setWindowHeight(int windowHeight)
+        \fn QtOhosAppKit::StartOptions::setWindowHeight(int windowHeight)
 
         Sets \a windowHeight height of of the window. See
         \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references-V5/js-apis-app-ability-startoptions-V5}
@@ -294,20 +294,20 @@ public:
     }
 
     /*!
-        \fn QtOhosAppKit::QOhosStartOptions::setProcessMode(ProcessMode processMode)
+        \fn QtOhosAppKit::StartOptions::setProcessMode(ProcessMode processMode)
 
         Sets \a processMode. See
         \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references-V5/js-apis-app-ability-startoptions-V5}
         {Process Mode}.
     */
-    void setProcessMode(QOhosStartOptions::ProcessMode processMode) override
+    void setProcessMode(StartOptions::ProcessMode processMode) override
     {
         std::optional<QOhosStartOptionsData::ProcessMode> internalProcessMode;
         switch (processMode) {
-        case QOhosStartOptions::ProcessMode::NEW_PROCESS_ATTACH_TO_PARENT:
+        case StartOptions::ProcessMode::NEW_PROCESS_ATTACH_TO_PARENT:
             internalProcessMode = QOhosStartOptionsData::ProcessMode::NEW_PROCESS_ATTACH_TO_PARENT;
             break;
-        case QOhosStartOptions::ProcessMode::NEW_PROCESS_ATTACH_TO_STATUS_BAR_ITEM:
+        case StartOptions::ProcessMode::NEW_PROCESS_ATTACH_TO_STATUS_BAR_ITEM:
             internalProcessMode = QOhosStartOptionsData::ProcessMode::NEW_PROCESS_ATTACH_TO_STATUS_BAR_ITEM;
             break;
         }
@@ -319,20 +319,20 @@ public:
     }
 
     /*!
-        \fn QtOhosAppKit::QOhosStartOptions::setStartupVisibility(StartupVisibility startupVisibility)
+        \fn QtOhosAppKit::StartOptions::setStartupVisibility(StartupVisibility startupVisibility)
 
         Sets \a startupVisibility of the ability after it is started. See
         \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references-V5/js-apis-app-ability-startoptions-V5}
         {Startup Visibility}.
     */
-    void setStartupVisibility(QOhosStartOptions::StartupVisibility startupVisibility) override
+    void setStartupVisibility(StartOptions::StartupVisibility startupVisibility) override
     {
         std::optional<QOhosStartOptionsData::StartupVisibility> internalStartupVisibility;
         switch (startupVisibility) {
-        case QOhosStartOptions::StartupVisibility::STARTUP_HIDE:
+        case StartOptions::StartupVisibility::STARTUP_HIDE:
             internalStartupVisibility = QOhosStartOptionsData::StartupVisibility::STARTUP_HIDE;
             break;
-        case QOhosStartOptions::StartupVisibility::STARTUP_SHOW:
+        case StartOptions::StartupVisibility::STARTUP_SHOW:
             internalStartupVisibility = QOhosStartOptionsData::StartupVisibility::STARTUP_SHOW;
             break;
         }
@@ -344,7 +344,7 @@ public:
     }
 
     /*!
-        \fn QtOhosAppKit::QOhosStartOptions::setStartWindowIcon(const QImage &startWindowIcon)
+        \fn QtOhosAppKit::StartOptions::setStartWindowIcon(const QImage &startWindowIcon)
 
         Sets \a startWindowIcon for the start window.
 
@@ -357,7 +357,7 @@ public:
     }
 
     /*!
-        \fn QtOhosAppKit::QOhosStartOptions::setStartWindowBackgroundColor(const QColor &startWindowBackgroundColor)
+        \fn QtOhosAppKit::StartOptions::setStartWindowBackgroundColor(const QColor &startWindowBackgroundColor)
 
         Sets \a startWindowBackgroundColor for the start window.
 
@@ -371,7 +371,7 @@ public:
     }
 
     /*!
-        \fn QtOhosAppKit::QOhosStartOptions::setSupportWindowModes(const QList<SupportWindowMode> &supportWindowModes)
+        \fn QtOhosAppKit::StartOptions::setSupportWindowModes(const QList<SupportWindowMode> &supportWindowModes)
 
         Sets \a supportWindowModes when the ability is started. See
         \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references/js-apis-app-ability-startoptions}
@@ -387,7 +387,7 @@ public:
     }
 
     /*!
-        \fn QtOhosAppKit::QOhosStartOptions::setMinWindowWidth(int minWindowWidth)
+        \fn QtOhosAppKit::StartOptions::setMinWindowWidth(int minWindowWidth)
 
         Sets \a minWindowWidth as the minimum width, in px.
 
@@ -400,7 +400,7 @@ public:
     }
 
     /*!
-        \fn QtOhosAppKit::QOhosStartOptions::setMinWindowHeight(int minWindowHeight)
+        \fn QtOhosAppKit::StartOptions::setMinWindowHeight(int minWindowHeight)
 
         Sets \a minWindowHeight as the minimum height, in px.
 
@@ -413,7 +413,7 @@ public:
     }
 
     /*!
-        \fn QtOhosAppKit::QOhosStartOptions::setMaxWindowWidth(int maxWindowWidth)
+        \fn QtOhosAppKit::StartOptions::setMaxWindowWidth(int maxWindowWidth)
 
         Sets \a maxWindowWidth as the maximum width, in px.
 
@@ -426,7 +426,7 @@ public:
     }
 
     /*!
-        \fn QtOhosAppKit::QOhosStartOptions::setMaxWindowHeight(int maxWindowHeight)
+        \fn QtOhosAppKit::StartOptions::setMaxWindowHeight(int maxWindowHeight)
 
         Sets \a maxWindowHeight as the maximum height, in px.
 
@@ -439,7 +439,7 @@ public:
     }
 
     /*!
-        \fn QtOhosAppKit::QOhosStartOptions::setHideStartWindow(bool hideStartWindow)
+        \fn QtOhosAppKit::StartOptions::setHideStartWindow(bool hideStartWindow)
 
         Controls whether to hide the start window when launching the current application's UIAbility.
 
@@ -452,14 +452,14 @@ public:
     }
 
     /*!
-        \fn QtOhosAppKit::QOhosStartOptions::setWindowCreateParams(const QOhosWindowCreateParams &windowCreateParams)
+        \fn QtOhosAppKit::StartOptions::setWindowCreateParams(const WindowCreateParams &windowCreateParams)
 
         Sets \a windowCreateParams used when creating the window.
 
         See \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references/arkts-apis-window-i#windowcreateparams20}
         {Window Create Params}.
     */
-    void setWindowCreateParams(const QOhosWindowCreateParams &windowCreateParams) override
+    void setWindowCreateParams(const WindowCreateParams &windowCreateParams) override
     {
         const auto *windowCreateParamsImpl = dynamic_cast<const QOhosWindowCreateParamsImpl *>(&windowCreateParams);
         if (windowCreateParamsImpl != nullptr)
@@ -467,7 +467,7 @@ public:
     }
 
     /*!
-        \fn QtOhosAppKit::QOhosStartOptions::setCompletionHandler(QObject *context, std::function<void(bool, QOhosElementName, QString)> callback)
+        \fn QtOhosAppKit::StartOptions::setCompletionHandler(QObject *context, std::function<void(bool, ElementName, QString)> callback)
 
         Sets the completion \a callback invoked when the corresponding start request completes. It is
         invoked on the thread of \a context; if \a context is destroyed before completion, \a callback
@@ -479,7 +479,7 @@ public:
     */
     void setCompletionHandler(
         QObject *context,
-        std::function<void(bool, QOhosElementName, QString)> callback) override
+        std::function<void(bool, ElementName, QString)> callback) override
     {
         m_startOptions.optCompletionHandler =
             std::make_shared<QOhosConsumer<bool, QJsonObject, QString>>(
@@ -501,35 +501,35 @@ private:
 
 }
 
-QOhosWindowCreateParams::QOhosWindowCreateParams() = default;
+WindowCreateParams::WindowCreateParams() = default;
 
-QOhosWindowCreateParams::~QOhosWindowCreateParams() = default;
+WindowCreateParams::~WindowCreateParams() = default;
 
-QOhosStartOptions::QOhosStartOptions() = default;
-QOhosStartOptions::~QOhosStartOptions() = default;
+StartOptions::StartOptions() = default;
+StartOptions::~StartOptions() = default;
 
 /*!
-    \fn QSharedPointer<QtOhosAppKit::QOhosWindowCreateParams> QtOhosAppKit::createWindowCreateParams()
+    \fn QSharedPointer<QtOhosAppKit::WindowCreateParams> QtOhosAppKit::createWindowCreateParams()
 
-    Creates QOhosWindowCreateParams instance.
+    Creates WindowCreateParams instance.
 */
-QSharedPointer<QOhosWindowCreateParams> createWindowCreateParams()
+QSharedPointer<WindowCreateParams> createWindowCreateParams()
 {
     return QSharedPointer<QOhosWindowCreateParamsImpl>::create();
 }
 
 /*!
-    \fn QSharedPointer<QtOhosAppKit::QOhosStartOptions> QtOhosAppKit::createStartOptions()
+    \fn QSharedPointer<QtOhosAppKit::StartOptions> QtOhosAppKit::createStartOptions()
 
-    Creates QOhosStartOptions instance.
+    Creates StartOptions instance.
 */
-QSharedPointer<QOhosStartOptions> createStartOptions()
+QSharedPointer<StartOptions> createStartOptions()
 {
     return QSharedPointer<QOhosStartOptionsImpl>::create();
 }
 
 std::optional<QOhosStartOptionsData> tryConvertStartOptionsToQpaFunctionsStruct(
-    const QOhosStartOptions &options)
+    const StartOptions &options)
 {
     const auto *startOptionsImpl = dynamic_cast<const QOhosStartOptionsImpl *>(&options);
     return startOptionsImpl != nullptr

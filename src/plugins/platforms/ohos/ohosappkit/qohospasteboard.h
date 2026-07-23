@@ -10,7 +10,7 @@ QT_BEGIN_NAMESPACE
 
 namespace QtOhosAppKit {
 
-namespace QOhosPasteboard {
+namespace Pasteboard {
 
 Q_OHOSAPPKIT_EXPORT void setInAppOnlyPasteboardShareOption(bool shareInAppOnly);
 

@@ -89,7 +89,7 @@ struct QOhosAbilityResult
 };
 
 std::optional<QOhosStartOptionsData> tryConvertStartOptionsToQpaFunctionsStruct(
-    const QOhosStartOptions &options);
+    const StartOptions &options);
 
 }
 

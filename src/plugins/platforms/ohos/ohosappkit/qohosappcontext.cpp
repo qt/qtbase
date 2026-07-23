@@ -301,7 +301,7 @@ void requestSerialPortAccessRight(
         });
 }
 
-class QOhosAppContextImpl : public QOhosAppContext
+class QOhosAppContextImpl : public AppContext
 {
 public:
     QOhosAppContextImpl();
@@ -310,9 +310,9 @@ public:
     void requestSerialPortAccessRightIfNeeded(
         const QString &portName, QObject *context,
         std::function<void(QSharedPointer<QObject>)> callback) override;
-    QSharedPointer<QOhosBundleInfo> bundleInfo() const override;
+    QSharedPointer<BundleInfo> bundleInfo() const override;
     Q_NORETURN void restartApp() override;
-    Q_NORETURN void restartApp(const QOhosWant &want) override;
+    Q_NORETURN void restartApp(const Want &want) override;
 
     double fontSizeScale() const override;
 
@@ -336,34 +336,34 @@ QSharedPointer<QObject> makeQObjectLifetimeHandleOrNull(std::shared_ptr<T> handl
 }
 
 /*!
-    \class QtOhosAppKit::QOhosAppContext
+    \class QtOhosAppKit::AppContext
     \inmodule QtOhosAppKit
     \since 5.12.12
-    \brief The QOhosAppContext class contains API to manage native application context.
+    \brief The AppContext class contains API to manage native application context.
 */
 
-QOhosAppContext::QOhosAppContext() = default;
+AppContext::AppContext() = default;
 
-QOhosAppContext::~QOhosAppContext() = default;
+AppContext::~AppContext() = default;
 
 /*!
-    \fn static QOhosAppContext *QtOhosAppKit::QOhosAppContext::instance()
+    \fn static AppContext *QtOhosAppKit::AppContext::instance()
 
-    Gets QOhosAppContext global instance.
+    Gets AppContext global instance.
 */
-QOhosAppContext *QOhosAppContext::instance()
+AppContext *AppContext::instance()
 {
     static QOhosAppContextImpl instanceObj;
     return &instanceObj;
 }
 
 /*!
-    \fn static bool QtOhosAppKit::QOhosAppContext::isNoUiChildMode()
+    \fn static bool QtOhosAppKit::AppContext::isNoUiChildMode()
 
     Returns \c true if the current process was started as a "No UI" child
     process (see startNoUiChildProcess()), otherwise returns \c false.
 */
-bool QOhosAppContext::isNoUiChildMode()
+bool AppContext::isNoUiChildMode()
 {
     static const bool noUiChildMode = QOhosJsThreadGateway::eval(
         [](QOhosJsState &jsState) {
@@ -374,7 +374,7 @@ bool QOhosAppContext::isNoUiChildMode()
 }
 
 /*!
-    \fn static void QtOhosAppKit::QOhosAppContext::startNoUiChildProcess(QString libraryName, QStringList args)
+    \fn static void QtOhosAppKit::AppContext::startNoUiChildProcess(QString libraryName, QStringList args)
 
     Starts "No UI" child process for a given \a libraryName and \a args. Arguments passed to the
     startNoUiChildProcess() function are forwarded to the child's main() function.
@@ -382,7 +382,7 @@ bool QOhosAppContext::isNoUiChildMode()
     {Child Process Manager}.
 
     \code
-    QtOhosAppKit::QOhosAppContext::startNoUiChildProcess(
+    QtOhosAppKit::AppContext::startNoUiChildProcess(
         "libapp.so",
         QStringList{
             "first arg",
@@ -390,7 +390,7 @@ bool QOhosAppContext::isNoUiChildMode()
         });
     \endcode
 */
-void QOhosAppContext::startNoUiChildProcess(QString libraryName, QStringList args)
+void AppContext::startNoUiChildProcess(QString libraryName, QStringList args)
 {
     QOhosJsThreadGateway::runAndWait(
         [&](QOhosJsState &jsState) {
@@ -404,17 +404,17 @@ void QOhosAppContext::startNoUiChildProcess(QString libraryName, QStringList arg
 }
 
 /*!
-    \fn static QSharedPointer<QtOhosAppKit::QOhosWantInfo> QtOhosAppKit::QOhosAppContext::appLaunchWantInfo()
+    \fn static QSharedPointer<QtOhosAppKit::WantInfo> QtOhosAppKit::AppContext::appLaunchWantInfo()
 
     Returns the Want object that was used to launch initial instance of the application's QAbility.
 */
-QSharedPointer<QOhosWantInfo> QOhosAppContext::appLaunchWantInfo()
+QSharedPointer<WantInfo> AppContext::appLaunchWantInfo()
 {
     return convertToOhosAppKitWantInfo(makeAppLaunchWantInfo());
 }
 
 /*!
-    \fn static void QtOhosAppKit::QOhosAppContext::restartApp()
+    \fn static void QtOhosAppKit::AppContext::restartApp()
 
     Restarts the Application using the app launch want.
 
@@ -433,8 +433,8 @@ QSharedPointer<QOhosWantInfo> QOhosAppContext::appLaunchWantInfo()
     If restartApp is called too frequently, the system call will be throttled to avoid errors.
 
     Use this function, if you want to restart app with app launch want, instead of calling
-    \sa QtOhosAppKit::QOhosAppContext::restartApp(const QtOhosAppKit::QOhosWant &requestWant) with
-    \sa QtOhosAppKit::QOhosAppContext::getAppLaunchWant() as a parameter.
+    \sa QtOhosAppKit::AppContext::restartApp(const QtOhosAppKit::Want &requestWant) with
+    \sa QtOhosAppKit::AppContext::getAppLaunchWant() as a parameter.
 */
 Q_NORETURN void QOhosAppContextImpl::restartApp()
 {
@@ -442,7 +442,7 @@ Q_NORETURN void QOhosAppContextImpl::restartApp()
 }
 
 /*!
-    \fn static void QtOhosAppKit::QOhosAppContext::restartApp(const QtOhosAppKit::QOhosWant &requestWant)
+    \fn static void QtOhosAppKit::AppContext::restartApp(const QtOhosAppKit::Want &requestWant)
 
     Restarts the Application using the \a requestWant.
 
@@ -461,17 +461,17 @@ Q_NORETURN void QOhosAppContextImpl::restartApp()
     If restartApp is called too frequently, the system call will be throttled to avoid errors.
 
     To call this function with the app launch want
-    (\sa QtOhosAppKit::QOhosAppContext::getAppLaunchWant()), use
-    \sa QtOhosAppKit::QOhosAppContext::restartApp()
+    (\sa QtOhosAppKit::AppContext::getAppLaunchWant()), use
+    \sa QtOhosAppKit::AppContext::restartApp()
 
     \code
-    QtOhosAppKit::QOhosWant requestWant = QtOhosAppKit::QOhosAppContext::getAppLaunchWant();
+    QtOhosAppKit::Want requestWant = QtOhosAppKit::AppContext::getAppLaunchWant();
     requestWant.parameters["first_parameter"] = "first_parameter_value";
     requestWant.parameters["second_parameter"] = "second_parameter_value";
-    QtOhosAppKit::QOhosAppContext::restartApp(requestWant);
+    QtOhosAppKit::AppContext::restartApp(requestWant);
     \endcode
 */
-Q_NORETURN void QOhosAppContextImpl::restartApp(const QOhosWant &requestWant)
+Q_NORETURN void QOhosAppContextImpl::restartApp(const Want &requestWant)
 {
     restartAppImpl(std::make_optional(convertWantToJsonObject(requestWant)));
 }
@@ -513,7 +513,7 @@ double QOhosAppContextImpl::fontSizeScale() const
 }
 
 /*!
-    \fn bool QtOhosAppKit::QOhosAppContext::hasSerialPortAccessRight(const QString &portName) const
+    \fn bool QtOhosAppKit::AppContext::hasSerialPortAccessRight(const QString &portName) const
 
     Checks whether the application currently has permission to access the serial port identified by \a portName.
 
@@ -547,7 +547,7 @@ bool QOhosAppContextImpl::hasSerialPortAccessRight(const QString &portName) cons
 }
 
 /*!
-    \fn void QtOhosAppKit::QOhosAppContext::requestSerialPortAccessRightIfNeeded(const QString &portName, QObject *context, std::function<void(QSharedPointer<QObject>)> callback)
+    \fn void QtOhosAppKit::AppContext::requestSerialPortAccessRightIfNeeded(const QString &portName, QObject *context, std::function<void(QSharedPointer<QObject>)> callback)
 
     Requests permission for the application to access the serial port identified by \a portName.
 
@@ -582,12 +582,12 @@ void QOhosAppContextImpl::requestSerialPortAccessRightIfNeeded(
 }
 
 /*!
-    \fn QSharedPointer<QOhosBundleInfo> QtOhosAppKit::QOhosAppContext::bundleInfo() const
+    \fn QSharedPointer<BundleInfo> QtOhosAppKit::AppContext::bundleInfo() const
 
-    Returns QOhosBundleInfo object for the current application. The obtained information does not
+    Returns BundleInfo object for the current application. The obtained information does not
     contain information about the signature, HAP module, ability, ExtensionAbility, or permission.
 */
-QSharedPointer<QOhosBundleInfo> QOhosAppContextImpl::bundleInfo() const
+QSharedPointer<BundleInfo> QOhosAppContextImpl::bundleInfo() const
 {
     return createBundleInfo(getCurrentApplicationVersionCode());
 }

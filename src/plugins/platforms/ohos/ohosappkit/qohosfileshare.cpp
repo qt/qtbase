@@ -282,11 +282,11 @@ class ActionResultImpl : public ActionResult
 {
 public:
     ActionResultImpl(bool successFlag, QList<PathPolicyErrorInfo> errorInfoList);
-    QSharedPointer<QOhosOperationStatus> operationStatus() const override;
+    QSharedPointer<OperationStatus> operationStatus() const override;
     QList<PathPolicyErrorInfo> errorInfoList() const override;
 
 private:
-    QSharedPointer<QOhosOperationStatus> m_operationStatus;
+    QSharedPointer<OperationStatus> m_operationStatus;
     QList<PathPolicyErrorInfo> m_errorInfoList;
 };
 
@@ -297,13 +297,13 @@ ActionResultImpl::ActionResultImpl(bool successFlag, QList<PathPolicyErrorInfo> 
 }
 
 /*!
-    \fn QSharedPointer<QOhosOperationStatus> QtOhosAppKit::FileShare::ActionResult::operationStatus() const
+    \fn QSharedPointer<OperationStatus> QtOhosAppKit::FileShare::ActionResult::operationStatus() const
 
     Returns the overall result of all requested file access permission actions.
 
-    \sa QOhosOperationStatus
+    \sa OperationStatus
 */
-QSharedPointer<QOhosOperationStatus> ActionResultImpl::operationStatus() const
+QSharedPointer<OperationStatus> ActionResultImpl::operationStatus() const
 {
     return m_operationStatus;
 }
@@ -336,11 +336,11 @@ public:
     CheckResultImpl(
         bool successFlag, const std::vector<bool> &checkResults,
         const QList<PathPolicy> &policies);
-    QSharedPointer<QOhosOperationStatus> operationStatus() const override;
+    QSharedPointer<OperationStatus> operationStatus() const override;
     QList<PathPolicyCheckResult> checkResultList() const override;
 
 private:
-    QSharedPointer<QOhosOperationStatus> m_operationStatus;
+    QSharedPointer<OperationStatus> m_operationStatus;
     QList<PathPolicyCheckResult> m_checkResultList;
 };
 
@@ -362,13 +362,13 @@ CheckResultImpl::CheckResultImpl(
 }
 
 /*!
-    \fn QSharedPointer<QOhosOperationStatus> QtOhosAppKit::FileShare::CheckResult::operationStatus() const
+    \fn QSharedPointer<OperationStatus> QtOhosAppKit::FileShare::CheckResult::operationStatus() const
 
     Returns the overall result of all requested file access permission checks.
 
-    \sa QOhosOperationStatus
+    \sa OperationStatus
 */
-QSharedPointer<QOhosOperationStatus> CheckResultImpl::operationStatus() const
+QSharedPointer<OperationStatus> CheckResultImpl::operationStatus() const
 {
     return m_operationStatus;
 }

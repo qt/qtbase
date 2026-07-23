@@ -12,7 +12,7 @@ QT_BEGIN_NAMESPACE
 
 namespace QtOhosAppKit {
 
-struct Q_OHOSAPPKIT_EXPORT QOhosElementName
+struct Q_OHOSAPPKIT_EXPORT ElementName
 {
     QString deviceId;
     QString bundleName;
@@ -26,6 +26,6 @@ struct Q_OHOSAPPKIT_EXPORT QOhosElementName
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QtOhosAppKit::QOhosElementName)
+Q_DECLARE_METATYPE(QtOhosAppKit::ElementName)
 
 #endif // QOHOSBUNDLEMANAGER_H

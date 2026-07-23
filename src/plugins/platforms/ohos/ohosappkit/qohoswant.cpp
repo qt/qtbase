@@ -8,10 +8,10 @@ QT_BEGIN_NAMESPACE
 namespace QtOhosAppKit {
 
 /*!
-    \enum QtOhosAppKit::QOhosWantFlag
+    \enum QtOhosAppKit::WantFlag
     \since 5.12.12
 
-    QOhosWantFlag specifies how the Want will be handled.
+    WantFlag specifies how the Want will be handled.
     See \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references-V5/js-apis-ability-wantconstant-V5#flags}
     {Flags}.
 
@@ -21,63 +21,63 @@ namespace QtOhosAppKit {
 */
 
 /*!
-    \class QtOhosAppKit::QOhosWant
+    \class QtOhosAppKit::Want
     \inmodule QtOhosAppKit
     \since 5.12.12
-    \brief QOhosWant wraps Ohos \l {https://developer.huawei.com/consumer/en/doc/harmonyos-guides-V5/want-V5}
+    \brief Want wraps Ohos \l {https://developer.huawei.com/consumer/en/doc/harmonyos-guides-V5/want-V5}
     {Want} class.
 
     It keeps information that can be transmitted between applications. One of the usage scenarios of
-    QOhosWant is a parameter of starting an ability or starting application process.
+    Want is a parameter of starting an ability or starting application process.
 
     \sa startAbility()
     \sa startAppProcess()
 */
 
 /*!
-    \variable QtOhosAppKit::QOhosWant::deviceId
+    \variable QtOhosAppKit::Want::deviceId
     \brief Represents the device Id on which Ability is to be performed.
     See \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references-V5/js-apis-app-ability-want-V5}
     {Device Id}.
 */
 
 /*!
-    \variable QtOhosAppKit::QOhosWant::bundleName
+    \variable QtOhosAppKit::Want::bundleName
     \brief Represents an application bundle name.
     See \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references-V5/js-apis-app-ability-want-V5}
     {Bundle Name}.
 */
 
 /*!
-    \variable QtOhosAppKit::QOhosWant::moduleName
+    \variable QtOhosAppKit::Want::moduleName
     \brief Represents the module name.
     See \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references-V5/js-apis-app-ability-want-V5}
     {Module Name}.
 */
 
 /*!
-    \variable QtOhosAppKit::QOhosWant::abilityName
+    \variable QtOhosAppKit::Want::abilityName
     \brief Represents the name of Ability to be started.
     See \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references-V5/js-apis-app-ability-want-V5}
     {Ability Name}.
 */
 
 /*!
-    \variable QtOhosAppKit::QOhosWant::uri
+    \variable QtOhosAppKit::Want::uri
     \brief Represents the type of pending data.
     See \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references-V5/js-apis-app-ability-want-V5}
     {Uri}.
 */
 
 /*!
-    \variable QtOhosAppKit::QOhosWant::type
+    \variable QtOhosAppKit::Want::type
     \brief Represents the MIME type of the file to open for example 'text/xml', 'image/ * ', etc.
     See \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references-V5/js-apis-app-ability-want-V5}
     {Type}.
 */
 
 /*!
-    \variable QtOhosAppKit::QOhosWant::action
+    \variable QtOhosAppKit::Want::action
     \brief Represents the general operations to be performed, for example: viewing, sharing,
     application details.
     See \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references-V5/js-apis-app-ability-want-V5}
@@ -85,7 +85,7 @@ namespace QtOhosAppKit {
 */
 
 /*!
-    \variable QtOhosAppKit::QOhosWant::entities
+    \variable QtOhosAppKit::Want::entities
     \brief Represents the additional category information of the target Ability for example:
     browser, video player.
     See \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references-V5/js-apis-app-ability-want-V5}
@@ -93,23 +93,23 @@ namespace QtOhosAppKit {
 */
 
 /*!
-    \variable QtOhosAppKit::QOhosWant::flags
+    \variable QtOhosAppKit::Want::flags
     \brief Represents the way to deal with Want.
     See \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references-V5/js-apis-app-ability-want-V5}
     {Flags}.
 
-    \sa QOhosWantFlag
+    \sa WantFlag
 */
 
 /*!
-    \variable QtOhosAppKit::QOhosWant::parameters
+    \variable QtOhosAppKit::Want::parameters
     \brief Represents the list of parameters in the Want object.
     See \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references-V5/js-apis-app-ability-want-V5}
     {Parameters}.
 */
 
 /*!
-    \variable QtOhosAppKit::QOhosWant::fds
+    \variable QtOhosAppKit::Want::fds
     \brief Represents the file descriptor map in the Want object.
     When serialized for startAbility(), each entry is passed to the platform
     using the fixed HarmonyOS file descriptor parameter format:
@@ -123,15 +123,15 @@ namespace QtOhosAppKit {
 */
 
 /*!
-    \class QtOhosAppKit::QOhosWantInfo
+    \class QtOhosAppKit::WantInfo
     \inmodule QtOhosAppKit
     \since 5.12.12
 
-    \brief The QOhosWantInfo class is to represent Ohos want type.
+    \brief The WantInfo class is to represent Ohos want type.
 */
 
 /*!
-    \class QtOhosAppKit::QOhosWantInfo::ContactInfo
+    \class QtOhosAppKit::WantInfo::ContactInfo
     \brief The ContactInfo struct represents contact information extracted from a Want.
 
     This struct is used to hold the contact type and contact ID when the application
@@ -139,38 +139,38 @@ namespace QtOhosAppKit {
 */
 
 /*!
-    \fn QtOhosAppKit::QOhosWant QtOhosAppKit::QOhosWantInfo::want() const = 0;
+    \fn QtOhosAppKit::Want QtOhosAppKit::WantInfo::want() const = 0;
 
-    Return associated with this instance QOhosWant object.
+    Return associated with this instance Want object.
 */
 
 /*!
-    \fn virtual QSharedPointer<QList<QSharedPointer<QtOhosAppKit::ShareKit::SharedRecord>>> QtOhosAppKit::QOhosWantInfo::tryGetSharedRecordsFromShareKit() const = 0
+    \fn virtual QSharedPointer<QList<QSharedPointer<QtOhosAppKit::ShareKit::SharedRecord>>> QtOhosAppKit::WantInfo::tryGetSharedRecordsFromShareKit() const = 0
 
     Tries to get shared records from assosiated want. The shared data is expected to be stored in the want parameters.
     Shared records are delivered on an application start or while the application is already running. Returns \c nullptr if no such data found.
     See \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references/share-system-share#section661613319216}
     {systemShare.getSharedData}.
 
-    \sa QtOhosAppKit::QOhosAbilityContext::newWantInfoReceived(QSharedPointer<QtOhosAppKit::QOhosWantInfo> wantInfo)
-    \sa QSharedPointer<QtOhosAppKit::QOhosWantInfo> QtOhosAppKit::QOhosAppContext::appLaunchWantInfo()
+    \sa QtOhosAppKit::AbilityContext::newWantInfoReceived(QSharedPointer<QtOhosAppKit::WantInfo> wantInfo)
+    \sa QSharedPointer<QtOhosAppKit::WantInfo> QtOhosAppKit::AppContext::appLaunchWantInfo()
 */
 
 /*!
-    \fn virtual QSharedPointer<QtOhosAppKit::QOhosWantInfo::ContactInfo> QtOhosAppKit::QOhosWantInfo::tryGetContactInfo() const = 0
+    \fn virtual QSharedPointer<QtOhosAppKit::WantInfo::ContactInfo> QtOhosAppKit::WantInfo::tryGetContactInfo() const = 0
 
     Tries to get contact information from the associated Want. Returns \c nullptr if no contact
     information is found.
     See \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references/share-system-share#section19799132782117}
     {systemShare.getContactInfo}.
 
-    \sa QtOhosAppKit::QOhosAbilityContext::newWantInfoReceived(QSharedPointer<QtOhosAppKit::QOhosWantInfo> wantInfo)
-    \sa QSharedPointer<QtOhosAppKit::QOhosWantInfo> QtOhosAppKit::QOhosAppContext::appLaunchWantInfo()
+    \sa QtOhosAppKit::AbilityContext::newWantInfoReceived(QSharedPointer<QtOhosAppKit::WantInfo> wantInfo)
+    \sa QSharedPointer<QtOhosAppKit::WantInfo> QtOhosAppKit::AppContext::appLaunchWantInfo()
 */
 
-QOhosWantInfo::QOhosWantInfo() = default;
+WantInfo::WantInfo() = default;
 
-QOhosWantInfo::~QOhosWantInfo() = default;
+WantInfo::~WantInfo() = default;
 
 }
 
