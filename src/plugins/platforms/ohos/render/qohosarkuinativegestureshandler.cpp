@@ -52,6 +52,7 @@ private:
 
     QOhosConsumer<const QOhosNativeGestureEvent &> m_baseGesturesHandler;
     qreal m_lastTotalScale{1.0};
+    qreal m_lastTotalAngle{0.0};
     QtOhos::QThreadSafeRef<QWindow> m_qWindowRef;
 };
 
@@ -81,12 +82,18 @@ void QOhosArkUiNativeGesturesHandler::handleRotationGestureEvent(
     const auto timestamp = std::chrono::steady_clock::now();
     const auto actionType = ::OH_ArkUI_GestureEvent_GetActionType(gestureEvent);
     const auto qtGestureType = getQtGestureType(actionType, Qt::RotateNativeGesture);
-    const auto delta = ::OH_ArkUI_RotationGesture_GetAngle(gestureEvent);
 
     const auto *inputEvent = ::OH_ArkUI_GestureEvent_GetRawInputEvent(gestureEvent);
     const auto toolType = ::OH_ArkUI_UIInputEvent_GetToolType(inputEvent);
     if (toolType != UI_INPUT_EVENT_TOOL_TYPE_TOUCHPAD)
         return;
+
+    const auto totalAngle = ::OH_ArkUI_RotationGesture_GetAngle(gestureEvent);
+    const auto delta =
+        qtGestureType == Qt::BeginNativeGesture
+            ? 0.0
+            : totalAngle - m_lastTotalAngle;
+    m_lastTotalAngle = totalAngle;
 
     const auto gestureTimestamp = ::OH_ArkUI_UIInputEvent_GetEventTime(inputEvent);
     const auto localPosition = QArkUi::getPointerEventLocalPosition(inputEvent);
@@ -124,16 +131,16 @@ void QOhosArkUiNativeGesturesHandler::handlePinchGestureEvent(const ::ArkUI_Gest
     const auto globalPosition = QArkUi::getPointerEventGlobalPosition(inputEvent);
     const auto deviceType = QArkUi::getPointingDeviceType(inputEvent);
 
-    const auto scaleFactor =
-        qtGestureType == Qt::BeginNativeGesture
-            ? totalScale
-            : totalScale / m_lastTotalScale;
+    const auto scaleDelta =
+        (qtGestureType == Qt::BeginNativeGesture)
+            ? 0.0
+            : (totalScale / m_lastTotalScale) - 1.0;
     m_lastTotalScale = totalScale;
 
     QOhosNativeGestureEvent newEvent {
         .timestamp = timestamp,
         .gestureTimestamp = gestureTimestamp,
-        .value = scaleFactor,
+        .value = scaleDelta,
         .localPosition = localPosition,
         .globalPosition = globalPosition,
         .gestureType = qtGestureType,
