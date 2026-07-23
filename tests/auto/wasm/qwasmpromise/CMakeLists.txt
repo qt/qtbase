@@ -14,8 +14,6 @@ endif()
 qt_internal_add_test(tst_qwasmpromise
     SOURCES
         tst_qwasmpromise.cpp
-    DEFINES
-        QT_NO_FOREACH
     LIBRARIES
         Qt::Core
         Qt::Gui

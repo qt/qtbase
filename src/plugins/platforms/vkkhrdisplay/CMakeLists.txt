@@ -11,8 +11,6 @@ qt_internal_add_plugin(QVkKhrDisplayIntegrationPlugin
         main.cpp
         qvkkhrdisplayintegration.cpp qvkkhrdisplayintegration.h
         qvkkhrdisplayvulkaninstance.cpp qvkkhrdisplayvulkaninstance.h
-    DEFINES
-        QT_NO_FOREACH
     LIBRARIES
         Qt::Core
         Qt::CorePrivate
