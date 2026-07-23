@@ -5,7 +5,6 @@
     \group examples-dbus
     \title Qt D-Bus Examples
     \brief Using D-Bus from Qt applications.
-    \ingroup all-examples
 
     \l{Qt D-Bus} allows applications to send messages to each other using
     D-Bus. This page lists examples which specifically use D-Bus for

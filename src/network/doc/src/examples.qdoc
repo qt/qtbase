@@ -3,7 +3,6 @@
 
 /*!
     \group examples-network
-    \ingroup all-examples
     \title Network Examples
     \brief How to do network programming in Qt.
 

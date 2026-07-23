@@ -4,7 +4,6 @@
 /*!
     \title Qt Widgets Examples
     \brief Lots of examples of how to use different kinds of widgets.
-    \ingroup all-examples
     \group examples-widgets
 
     \image widget-examples.png {Gallery of various widgets}
@@ -22,7 +21,6 @@
 */
 
 /*!
-    \ingroup all-examples
     \title Painting Examples
     \brief How to use the Qt painting system.
     \group examples-painting
@@ -41,7 +39,6 @@
 */
 
 /*!
-    \ingroup all-examples
     \title Rich Text Examples
     \brief Using the document-oriented rich text engine.
     \group examples-richtext
@@ -57,7 +54,6 @@
  */
 
 /*!
-    \ingroup all-examples
     \title Desktop Examples
     \brief Integrating your Qt application with your favorite desktop.
     \group examples-desktop
@@ -77,7 +73,6 @@
 
 /*!
     \group examples-dialogs
-    \ingroup all-examples
     \title Dialog Examples
     \brief Using Qt's standard dialogs and building and using custom dialogs.
 
@@ -92,7 +87,6 @@
 */
 
 /*!
-    \ingroup all-examples
     \title Item Views Examples
     \brief Using the model/view framework.
     \group examples-itemviews
@@ -108,7 +102,6 @@
 */
 
 /*!
-    \ingroup all-examples
     \keyword Graphicsview Examples
     \title Graphics View Examples
     \brief Using the Graphics View framework.
@@ -136,7 +129,6 @@
 
 /*!
     \group examples-mainwindow
-    \ingroup all-examples
     \title Main Window Examples
     \brief Building applications around a main window.
 

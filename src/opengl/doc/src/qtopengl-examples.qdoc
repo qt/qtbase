@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
 
 /*!
-    \ingroup all-examples
     \title Qt OpenGL Examples
     \brief Accessing OpenGL from Qt.
     \group examples-widgets-opengl
