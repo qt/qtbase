@@ -11,6 +11,8 @@ QT_BEGIN_NAMESPACE
 
 namespace QtOhosAppKit {
 
+using namespace Private;
+
 /*!
     \class QtOhosAppKit::StartOptions
     \inmodule QtOhosAppKit
@@ -528,7 +530,7 @@ std::shared_ptr<StartOptions> createStartOptions()
     return std::make_shared<QOhosStartOptionsImpl>();
 }
 
-std::optional<QOhosStartOptionsData> tryConvertStartOptionsToQpaFunctionsStruct(
+std::optional<QOhosStartOptionsData> Private::tryConvertStartOptionsToQpaFunctionsStruct(
     const StartOptions &options)
 {
     const auto *startOptionsImpl = dynamic_cast<const QOhosStartOptionsImpl *>(&options);

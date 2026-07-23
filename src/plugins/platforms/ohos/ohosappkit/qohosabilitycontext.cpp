@@ -33,6 +33,8 @@ QT_BEGIN_NAMESPACE
 
 namespace QtOhosAppKit {
 
+using namespace Private;
+
 namespace {
 
 constexpr const char *qtOnContinueMigrationDataPropertyName = "__io_qt_on_continue_migration_data";
@@ -704,7 +706,7 @@ void QOhosBaseAbilityContextImpl::shareDataWithShareKitImpl(
     auto selfPtr = QPointer<QOhosBaseAbilityContextImpl>(this);
     auto contextPtr = QPointer<QObject>(context);
     auto requestId = generateUniqueId();
-    auto requestHandle = ShareKit::shareData(
+    auto requestHandle = shareData(
         optMainWindow, records, controllerOptions,
         [selfPtr, contextPtr, requestId, onPanelClosed]() {
             if (!selfPtr.isNull())

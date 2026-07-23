@@ -10,7 +10,7 @@
 
 QT_BEGIN_NAMESPACE
 
-namespace QtOhosAppKit {
+namespace QtOhosAppKit::Private {
 
 namespace {
 

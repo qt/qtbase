@@ -20,7 +20,7 @@
 
 QT_BEGIN_NAMESPACE
 
-namespace QtOhosAppKit {
+namespace QtOhosAppKit::Private {
 
 std::shared_ptr<BundleInfo> createBundleInfo(int versionCode);
 
