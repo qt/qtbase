@@ -727,15 +727,25 @@ void QPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
     if (ti.fontEngine->glyphFormat == QFontEngine::Format_ARGB) {
         QVarLengthArray<QFixedPoint> positions;
         QVarLengthArray<glyph_t> glyphs;
-        QTransform matrix = QTransform::fromTranslate(p.x(), p.y() - ti.fontEngine->ascent().toReal());
+        QTransform matrix = QTransform::fromTranslate(p.x(), p.y());
         ti.fontEngine->getGlyphPositions(ti.glyphs, matrix, ti.flags, glyphs, positions);
         painter()->save();
         painter()->setRenderHint(QPainter::SmoothPixmapTransform,
                                  bool((painter()->renderHints() & QPainter::TextAntialiasing)
                                       && !(painter()->font().styleStrategy() & QFont::NoAntialias)));
-        for (int i = 0; i < ti.glyphs.numGlyphs; ++i) {
-            QImage glyph = ti.fontEngine->bitmapForGlyph(glyphs[i], QFixedPoint(), QTransform());
-            painter()->drawImage(positions[i].x.toReal(), positions[i].y.toReal(), glyph);
+        const QColor color = painter()->pen().color();
+        for (qsizetype i = 0; i < glyphs.size(); ++i) {
+            QImage glyph
+                = ti.fontEngine->bitmapForGlyph(glyphs[i], QFixedPoint(), QTransform(), color);
+            if (glyph.isNull())
+                continue;
+            // The glyph positions are on the baseline; place the image using
+            // the glyph's own bearings.
+            const glyph_metrics_t metrics = ti.fontEngine->alphaMapBoundingBox(
+                glyphs[i], QFixedPoint(), QTransform(), QFontEngine::Format_ARGB);
+            painter()->drawImage(positions[i].x.toReal() + metrics.x.toReal(),
+                                 positions[i].y.toReal() + metrics.y.toReal(),
+                                 glyph);
         }
         painter()->restore();
         return;
