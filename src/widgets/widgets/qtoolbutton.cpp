@@ -1007,7 +1007,8 @@ void QToolButton::setDefaultAction(QAction *action)
             setPopupMode(QToolButton::MenuButtonPopup);
         } else {
             QObjectPrivate::connect(d->defaultAction, &QAction::changed, d,
-                                    &QToolButtonPrivate::onDefaultActionChanged);
+                                    &QToolButtonPrivate::onDefaultActionChanged,
+                                    Qt::UniqueConnection);
         }
     }
 #endif
