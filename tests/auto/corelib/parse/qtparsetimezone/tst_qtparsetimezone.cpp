@@ -991,7 +991,6 @@ void tst_QtParseTimeZone::prefix_data()
     const auto zoneTests = [](const QTimeZone &zone, const QLocale &locale,
                               QTimeZone::TimeType season,
                               QStringView prefix = {}, QStringView suffix = {}) {
-        using QTZ = QTimeZone;
         constexpr QTZ::NameType nameTypes[] = {
             QTZ::LongName,
 #if 0 // If we ever support abbreviation-parsing ...
