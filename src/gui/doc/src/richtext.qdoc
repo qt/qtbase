@@ -864,7 +864,7 @@
             \li Comment
     \row    \li \c a
             \li Anchor or link
-            \li Supports the \c href and \c name attributes.
+            \li Supports the \c href \c name and \c title attributes.
     \row    \li \c address
             \li Address
             \li
@@ -954,8 +954,7 @@
             \li
     \row    \li \c img
             \li Image
-            \li Supports the \c src, \c source
-               (for Qt 3 compatibility), \c width, and \c height
+            \li Supports the \c src, \c width, \c height, \c style, \c alt and \c title
                attributes.
     \row    \li \c kbd
             \li User-entered text
