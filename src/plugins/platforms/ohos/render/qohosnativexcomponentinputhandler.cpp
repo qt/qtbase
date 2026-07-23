@@ -362,19 +362,24 @@ void QOhosNativeXComponentInputHandler::processMouseEventsInQtThread(std::vector
 void QOhosNativeXComponentInputHandler::processTouchEventsInQtThread(std::vector<TouchEvent> &&batch)
 {
     QWindow *window = m_qWindowRef.data();
-    auto now = std::chrono::steady_clock::now();
+    const auto now = std::chrono::steady_clock::now();
+    const auto isFullyMovingEvent = [](const TouchEvent &event) {
+        return !event.touchPoints.empty()
+            && std::all_of(event.touchPoints.begin(), event.touchPoints.end(),
+                   [](const auto &touchPointData) {
+                       return touchPointData.touchPoint.type == OH_NATIVEXCOMPONENT_MOVE;
+                   });
+    };
+    batch.erase(
+        QtOhos::removeMatchingWithLookahead(
+            batch.begin(), batch.end(),
+            [&](const TouchEvent &event, const TouchEvent &nextEvent) {
+                return now - event.timestamp >= touchEventMinAgeForDrop
+                    && isFullyMovingEvent(event) && isFullyMovingEvent(nextEvent);
+            }),
+        batch.end());
+
     for (auto &event : batch) {
-        if (now - event.timestamp >= touchEventMinAgeForDrop) {
-            event.touchPoints.erase(
-                QtOhos::removeMatchingWithLookahead(
-                    event.touchPoints.begin(), event.touchPoints.end(),
-                    [](const auto &touchPointData, const auto &nextTouchPointData) {
-                        return
-                            touchPointData.touchPoint.type == OH_NATIVEXCOMPONENT_MOVE
-                            && nextTouchPointData.touchPoint.type == OH_NATIVEXCOMPONENT_MOVE;
-                    }),
-                event.touchPoints.end());
-        }
         m_imEventHandlerRef.data()->onTouchEventFromXComponent(
             window, event.touchTimeStamp, event.touchPoints, event.deviceType, event.modifiers);
     }
