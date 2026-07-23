@@ -4,13 +4,20 @@
 #include <QTest>
 #include <QtGlobal>
 #include <QtAlgorithms>
+#include <QScopeGuard>
 #include <QTemporaryFile>
 
 #include <QtGui/QAbstractTextDocumentLayout>
+#include <QtGui/QFontDatabase>
 #include <QtGui/QPageLayout>
+#include <QtGui/QPainter>
 #include <QtGui/QPdfWriter>
 #include <QtGui/QTextCursor>
 #include <QtGui/QTextDocument>
+
+#include <QtGui/private/qguiapplication_p.h>
+#include <QtGui/qpa/qplatformfontdatabase.h>
+#include <QtGui/qpa/qplatformintegration.h>
 
 class tst_QPdfWriter : public QObject
 {
@@ -21,6 +28,7 @@ private slots:
     void testPageMetrics_data();
     void testPageMetrics();
     void qtbug59443();
+    void colorFont();
 };
 
 void tst_QPdfWriter::basics()
@@ -255,6 +263,49 @@ void tst_QPdfWriter::qtbug59443()
     cursor.insertText(QString::fromStdWString(L"기초하며, 베어링제조업체와 타\n"));
     doc.print(&writer);
 
+}
+
+void tst_QPdfWriter::colorFont()
+{
+    {
+        QPlatformFontDatabase *pfdb = QGuiApplicationPrivate::platformIntegration()->fontDatabase();
+        if (!pfdb->supportsColrv0Fonts())
+            QSKIP("This test depends on COLRv0 support.");
+    }
+
+    const QString fontFile = QFINDTESTDATA("QtEmojiTestFont-Regular.ttf");
+    QVERIFY(!fontFile.isEmpty());
+
+    int id = -1;
+    auto cleanup = qScopeGuard([&id] {
+        if (id >= 0)
+            QFontDatabase::removeApplicationFont(id);
+    });
+
+    id = QFontDatabase::addApplicationFont(fontFile);
+    QVERIFY(id >= 0);
+
+    const QStringList families = QFontDatabase::applicationFontFamilies(id);
+    QVERIFY(!families.isEmpty());
+
+    QTemporaryFile file;
+    QVERIFY2(file.open(), qPrintable(file.errorString()));
+    {
+        QPdfWriter writer(file.fileName());
+        QPainter painter(&writer);
+        QFont font(families.first());
+        font.setPointSize(20);
+        painter.setFont(font);
+        painter.drawText(QPointF(100, 100), QString(QChar(0x2708)) + QChar(0xfe0f));
+    }
+
+    const QByteArray contents = file.readAll();
+    QVERIFY(!contents.isEmpty());
+
+    // A color font cannot be embedded as an outline font subset; its glyphs
+    // are drawn as images instead.
+    QVERIFY(!contents.contains("/FontFile"));
+    QVERIFY(contents.contains("/Subtype /Image"));
 }
 
 QTEST_MAIN(tst_QPdfWriter)
