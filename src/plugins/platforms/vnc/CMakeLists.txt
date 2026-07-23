@@ -15,8 +15,6 @@ qt_internal_add_plugin(QVncIntegrationPlugin
         qvncclient.cpp qvncclient.h
         qvncintegration.cpp qvncintegration.h
         qvncscreen.cpp qvncscreen.h
-    DEFINES
-        QT_NO_FOREACH
     LIBRARIES
         Qt::Core
         Qt::CorePrivate

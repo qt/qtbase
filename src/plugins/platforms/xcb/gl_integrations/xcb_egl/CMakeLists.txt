@@ -16,8 +16,6 @@ qt_internal_add_plugin(QXcbEglIntegrationPlugin
         qxcbeglmain.cpp
         qxcbeglnativeinterfacehandler.cpp qxcbeglnativeinterfacehandler.h
         qxcbeglwindow.cpp qxcbeglwindow.h
-    DEFINES
-        QT_NO_FOREACH
     INCLUDE_DIRECTORIES
         ..
         ../..

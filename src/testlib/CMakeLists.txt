@@ -70,7 +70,6 @@ qt_internal_add_module(Test
         QT_NO_CAST_TO_ASCII
         QT_NO_CONTEXTLESS_CONNECT
         QT_NO_DATASTREAM
-        QT_NO_FOREACH
         QT_NO_URL_CAST_FROM_STRING
         QT_USE_NODISCARD_FILE_OPEN
         # Ensure uniform location info between release and debug builds

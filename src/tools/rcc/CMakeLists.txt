@@ -16,7 +16,6 @@ qt_internal_add_tool(${target_name}
         rcc.cpp rcc.h
     DEFINES
         QT_NO_CAST_FROM_ASCII
-        QT_NO_FOREACH
         QT_RCC
         QT_USE_NODISCARD_FILE_OPEN
         QT_NO_URL_CAST_FROM_STRING

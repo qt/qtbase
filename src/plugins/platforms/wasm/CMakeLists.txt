@@ -36,7 +36,6 @@ qt_internal_add_plugin(QWasmIntegrationPlugin
         qwasmfiledialoghelper.cpp qwasmfiledialoghelper.h
     DEFINES
         QT_EGL_NO_X11
-        QT_NO_FOREACH
     LIBRARIES
         Qt::Core
         Qt::CorePrivate

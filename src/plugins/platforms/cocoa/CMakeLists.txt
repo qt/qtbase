@@ -55,8 +55,6 @@ qt_internal_add_plugin(QCocoaIntegrationPlugin
         qcocoafiledialoghelper.h qcocoafiledialoghelper.mm
         qcocoafontdialoghelper.h qcocoafontdialoghelper.mm
         qcocoamessagedialog.h qcocoamessagedialog.mm
-    DEFINES
-        QT_NO_FOREACH
     PRECOMPILED_HEADER
         $<$<COMPILE_LANGUAGE:OBJCXX>:qcocoa_plugin_pch.h>
     LIBRARIES

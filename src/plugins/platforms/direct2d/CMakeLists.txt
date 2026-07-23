@@ -51,7 +51,6 @@ qt_internal_add_plugin(QWindowsDirect2DIntegrationPlugin
         ../windows/qwindowspointerhandler.cpp
     DEFINES
         QT_NO_CAST_FROM_ASCII
-        QT_NO_FOREACH
     INCLUDE_DIRECTORIES
         ../windows
     LIBRARIES

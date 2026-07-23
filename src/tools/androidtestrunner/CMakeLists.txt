@@ -14,7 +14,6 @@ qt_internal_add_tool(${target_name}
     DEFINES
         QT_NO_CAST_FROM_ASCII
         QT_NO_CAST_TO_ASCII
-        QT_NO_FOREACH
         QT_NO_URL_CAST_FROM_STRING
     LIBRARIES
         Qt::Core

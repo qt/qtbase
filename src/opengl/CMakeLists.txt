@@ -40,7 +40,6 @@ qt_internal_add_module(OpenGL
         compat/removed_api.cpp
     DEFINES
         QT_NO_CONTEXTLESS_CONNECT
-        QT_NO_FOREACH
         QT_NO_URL_CAST_FROM_STRING
         QT_NO_USING_NAMESPACE
         QT_USE_NODISCARD_FILE_OPEN

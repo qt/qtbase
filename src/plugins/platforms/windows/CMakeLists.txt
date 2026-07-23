@@ -44,7 +44,6 @@ qt_internal_add_plugin(QWindowsIntegrationPlugin
         qwindowspointerhandler.cpp
     DEFINES
         QT_NO_CAST_FROM_ASCII
-        QT_NO_FOREACH
     INCLUDE_DIRECTORIES
         ${CMAKE_CURRENT_SOURCE_DIR}
     LIBRARIES

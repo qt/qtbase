@@ -13,8 +13,6 @@ qt_internal_add_plugin(QLinuxFbIntegrationPlugin
         main.cpp
         qlinuxfbintegration.cpp qlinuxfbintegration.h
         qlinuxfbscreen.cpp qlinuxfbscreen.h
-    DEFINES
-        QT_NO_FOREACH
     LIBRARIES
         Qt::Core
         Qt::CorePrivate

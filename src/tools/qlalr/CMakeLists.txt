@@ -20,7 +20,6 @@ qt_internal_add_tool(${target_name}
         parsetable.cpp parsetable.h
         recognizer.cpp recognizer.h
     DEFINES
-        QT_NO_FOREACH
         QT_NO_QPAIR
         QT_USE_NODISCARD_FILE_OPEN
         QT_NO_URL_CAST_FROM_STRING
