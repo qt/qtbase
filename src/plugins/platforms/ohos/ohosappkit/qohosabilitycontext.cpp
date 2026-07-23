@@ -536,8 +536,8 @@ void requestStartAbilityForResult(
         if (optAbilityResult.has_value()) {
             auto abilityResult = optAbilityResult.value();
             auto want = abilityResult.want.has_value()
-                ? QSharedPointer<Want>::create(convertWantFromJsonObject(abilityResult.want.value()))
-                : nullptr;
+                ? std::optional(convertWantFromJsonObject(abilityResult.want.value()))
+                : std::nullopt;
             context->resultCallback(StartAbilityResult{abilityResult.resultCode, want});
         } else {
             context->resultCallback(std::nullopt);
@@ -1276,22 +1276,22 @@ void setAbilityInstanceDestroyEnabled(QWindow *instanceWindow, bool destroyEnabl
 }
 
 /*!
-    \fn QSharedPointer<QByteArray> tryGetOnContinueData(const Want &want)
+    \fn std::optional<QByteArray> tryGetOnContinueData(const Want &want)
 
     Tries to get continuation / migration related data that was provided on the source device.
-    Returns \c nullptr if no such data found. The data is expected to be stored in the \a want parameters.
+    Returns an empty optional if no such data found. The data is expected to be stored in the \a want parameters.
     See \l {https://developer.huawei.com/consumer/en/doc/harmonyos-guides/app-continuation-guide}
     {Application Continuation}.
 */
-QSharedPointer<QByteArray> tryGetOnContinueData(const Want &want)
+std::optional<QByteArray> tryGetOnContinueData(const Want &want)
 {
     auto key = QString::fromUtf8(qtOnContinueMigrationDataPropertyName);
     if (want.parameters.contains(key)) {
         auto base64String = want.parameters.value(key).toString();
         auto decodedData = QByteArray::fromBase64(base64String.toUtf8());
-        return QSharedPointer<QByteArray>::create(decodedData);
+        return decodedData;
     } else {
-        return nullptr;
+        return {};
     }
 }
 

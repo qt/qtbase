@@ -62,7 +62,7 @@ private:
 struct StartAbilityResult
 {
     int resultCode = 0;
-    QSharedPointer<Want> want;
+    std::optional<Want> want;
 };
 
 class Q_OHOSAPPKIT_EXPORT AbilityContext : public QObject
@@ -116,7 +116,7 @@ Q_OHOSAPPKIT_EXPORT void startAppProcess(const QString &processId, const Want &r
 
 Q_OHOSAPPKIT_EXPORT void setAbilityInstanceDestroyEnabled(QWindow *instanceWindow, bool destroyEnabled);
 
-Q_OHOSAPPKIT_EXPORT QSharedPointer<QByteArray> tryGetOnContinueData(const Want &want);
+Q_OHOSAPPKIT_EXPORT std::optional<QByteArray> tryGetOnContinueData(const Want &want);
 
 }
 

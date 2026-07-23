@@ -14,6 +14,7 @@
 #include <QtCore/qstringlist.h>
 #include <QtOhosAppKit/qohossharekit.h>
 #include <QtOhosAppKit/qtohosappkitglobal.h>
+#include <optional>
 
 QT_BEGIN_NAMESPACE
 
@@ -63,9 +64,9 @@ public:
 
     virtual Want want() const = 0;
 
-    virtual QSharedPointer<QList<QSharedPointer<ShareKit::SharedRecord>>> tryGetSharedRecordsFromShareKit() const = 0;
+    virtual std::optional<QList<QSharedPointer<ShareKit::SharedRecord>>> tryGetSharedRecordsFromShareKit() const = 0;
 
-    virtual QSharedPointer<ContactInfo> tryGetContactInfo() const = 0;
+    virtual std::optional<ContactInfo> tryGetContactInfo() const = 0;
 
     virtual LaunchReason launchReason() const = 0;
 

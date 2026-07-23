@@ -145,10 +145,10 @@ namespace QtOhosAppKit {
 */
 
 /*!
-    \fn virtual QSharedPointer<QList<QSharedPointer<QtOhosAppKit::ShareKit::SharedRecord>>> QtOhosAppKit::WantInfo::tryGetSharedRecordsFromShareKit() const = 0
+    \fn virtual std::optional<QList<QSharedPointer<QtOhosAppKit::ShareKit::SharedRecord>>> QtOhosAppKit::WantInfo::tryGetSharedRecordsFromShareKit() const = 0
 
     Tries to get shared records from assosiated want. The shared data is expected to be stored in the want parameters.
-    Shared records are delivered on an application start or while the application is already running. Returns \c nullptr if no such data found.
+    Shared records are delivered on an application start or while the application is already running. Returns an empty optional if no such data found.
     See \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references/share-system-share#section661613319216}
     {systemShare.getSharedData}.
 
@@ -157,10 +157,10 @@ namespace QtOhosAppKit {
 */
 
 /*!
-    \fn virtual QSharedPointer<QtOhosAppKit::WantInfo::ContactInfo> QtOhosAppKit::WantInfo::tryGetContactInfo() const = 0
+    \fn virtual std::optional<QtOhosAppKit::WantInfo::ContactInfo> QtOhosAppKit::WantInfo::tryGetContactInfo() const = 0
 
-    Tries to get contact information from the associated Want. Returns \c nullptr if no contact
-    information is found.
+    Tries to get contact information from the associated Want. Returns an empty optional if no
+    contact information is found.
     See \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references/share-system-share#section19799132782117}
     {systemShare.getContactInfo}.
 

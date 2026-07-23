@@ -92,9 +92,9 @@ public:
 
     Want want() const override;
 
-    QSharedPointer<QList<QSharedPointer<ShareKit::SharedRecord>>> tryGetSharedRecordsFromShareKit() const override;
+    std::optional<QList<QSharedPointer<ShareKit::SharedRecord>>> tryGetSharedRecordsFromShareKit() const override;
 
-    QSharedPointer<ContactInfo> tryGetContactInfo() const override;
+    std::optional<ContactInfo> tryGetContactInfo() const override;
 
     LaunchReason launchReason() const override;
 
@@ -115,13 +115,13 @@ Want QOhosWantInfoImpl::want() const
     return convertWantFromJsonObject(m_qpaWantInfo->jsonObject());
 }
 
-QSharedPointer<QList<QSharedPointer<ShareKit::SharedRecord>>> QOhosWantInfoImpl::tryGetSharedRecordsFromShareKit() const
+std::optional<QList<QSharedPointer<ShareKit::SharedRecord>>> QOhosWantInfoImpl::tryGetSharedRecordsFromShareKit() const
 {
     auto records = qpaWantInfo()->tryGetSharedDataRecords();
     if (!records.has_value())
-        return nullptr;
+        return {};
 
-    auto result = QSharedPointer<QList<QSharedPointer<ShareKit::SharedRecord>>>::create();
+    QList<QSharedPointer<ShareKit::SharedRecord>> result;
     for (auto &record : records.value()) {
         QSharedPointer<ShareKit::SharedRecord> extrasRecord;
         if (record.content.has_value()) {
@@ -147,23 +147,22 @@ QSharedPointer<QList<QSharedPointer<ShareKit::SharedRecord>>> QOhosWantInfoImpl:
         if (record.extraData.has_value())
             extrasRecord->setExtraData(record.extraData.value());
 
-        result->push_back(extrasRecord);
+        result.push_back(extrasRecord);
     }
 
     return result;
 }
 
-QSharedPointer<WantInfo::ContactInfo> QOhosWantInfoImpl::tryGetContactInfo() const
+std::optional<WantInfo::ContactInfo> QOhosWantInfoImpl::tryGetContactInfo() const
 {
     auto optContactInfo = qpaWantInfo()->tryGetContactInfo();
     if (!optContactInfo.has_value())
-        return nullptr;
+        return {};
 
-    return QSharedPointer<ContactInfo>::create(
-        ContactInfo{
-            .contactType = optContactInfo.value().contactType,
-            .contactId = optContactInfo.value().contactId,
-        });
+    return ContactInfo{
+        .contactType = optContactInfo.value().contactType,
+        .contactId = optContactInfo.value().contactId,
+    };
 }
 
 WantInfo::LaunchReason QOhosWantInfoImpl::launchReason() const
