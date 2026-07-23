@@ -1117,181 +1117,75 @@ void tst_QtParseTimeZone::prefix_data()
                 << until << QDTP::UnknownDaylightTime << zone;
         }
     };
+    const auto maybeTestZone = [&zoneTests](const QByteArray &zoneName, const QLocale &locale,
+                                            QTimeZone::TimeType season,
+                                            QStringView prefix = {}, QStringView suffix = {}) {
+        const QTZ zone(zoneName);
+        if (zone.isValid())
+            zoneTests(zone, locale, season, prefix, suffix);
+        else
+            qDebug("Skipping %s tests, not recognised by system backend", zoneName.constData());
+    };
 
     // Everything else used in tst_QDateTime, in alphabetic order
-    if (const QTZ alaska("America/Anchorage"); alaska.isValid()) {
-        // America/Metlakatla is also used, but essentially synonymous:
-        zoneTests(alaska, QLocale(QLocale::English),
+    // America/Metlakatla is also used, but essentially synonymous:
+    maybeTestZone("America/Anchorage", QLocale(QLocale::English),
                   QTZ::StandardTime, u"1867-10-18 14:31:37 ", u" (Gregorian)");
-    } else {
-        qDebug("Skipping America/Anchorage tests, not recognised by system backend");
-    }
-
-    if (const QTZ ny("America/New_York"); ny.isValid()) {
-        zoneTests(ny, QLocale(QLocale::English),
+    maybeTestZone("America/New_York", QLocale(QLocale::English),
                   QTZ::DaylightTime, u"1664-08-27 ", u" (treachery)");
-    } else {
-        qDebug("Skipping America/New_York tests, not recognised by system backend");
-    }
-
-    if (const QTZ southBrazil("America/Sao_Paulo"); southBrazil.isValid()) {
-        zoneTests(southBrazil, QLocale(QLocale::Portuguese, QLocale::Brazil),
+    maybeTestZone("America/Sao_Paulo", QLocale(QLocale::Portuguese, QLocale::Brazil),
                   QTZ::GenericTime, u"2005-10-16 00:30:00 ", u" (in a spring forward gap)");
-    } else {
-        qDebug("Skipping America/Sao_Paulo tests, not recognised by system backend");
-    }
-
-    if (const QTZ eastern("America/Toronto"); eastern.isValid()) {
-        zoneTests(eastern, QLocale(QLocale::English, QLocale::Canada),
+    maybeTestZone("America/Toronto", QLocale(QLocale::English, QLocale::Canada),
                   QTZ::GenericTime, u"2015-03-08 02:30 ", u" (in a spring forward gap)");
-    } else {
-        qDebug("Skipping America/Toronto tests (ET), not recognised by system backend");
-    }
-
-    if (const QTZ pst("America/Vancouver"); pst.isValid()) {
-        zoneTests(pst, QLocale(QLocale::English, QLocale::Canada),
+    maybeTestZone("America/Vancouver", QLocale(QLocale::English, QLocale::Canada),
                   QTZ::GenericTime, u"2015-03-08 02:30 ", u" (in a spring forward gap)");
-    } else {
-        qDebug("Skipping America/Vancouver tests (PST), not recognised by system backend");
-    }
-
-    if (const QTZ phillip("Asia/Manila"); phillip.isValid()) {
-        zoneTests(phillip, QLocale(QLocale::Filipino, QLocale::Philippines),
+    maybeTestZone("Asia/Manila", QLocale(QLocale::Filipino, QLocale::Philippines),
                   QTZ::GenericTime, u"1844-12-31 12:00 ", u" (noon on a skipped day)");
-    } else {
-        qDebug("Skipping Asia/Manila tests, not recognised by system backend");
-    }
-
-    if (const QTZ sgt("Asia/Singapore"); sgt.isValid()) {
-        zoneTests(sgt, QLocale(QLocale::English, QLocale::Singapore),
+    maybeTestZone("Asia/Singapore", QLocale(QLocale::English, QLocale::Singapore),
                   QTZ::GenericTime, u"1982-01-01 00:15 ", u" (in a transition gap)");
-    } else {
-        qDebug("Skipping Asia/Singapore tests, not recognised by system backend");
-    }
-
-    if (const QTZ aest("Australia/Brisbane"); aest.isValid()) {
-        // Australia/Sydney also appears, but is the same zone in modern times.
-        // Contrast Australia/NSW (below) which calls itself Sydney Time.
-        zoneTests(aest, QLocale(QLocale::English, QLocale::Australia),
+    // Australia/Sydney also appears, but is the same zone in modern times.
+    // Contrast Australia/NSW (below) which calls itself Sydney Time.
+    maybeTestZone("Australia/Brisbane", QLocale(QLocale::English, QLocale::Australia),
                   QTZ::GenericTime, u"2012-06-01 02:15:30 ");
-    } else {
-        qDebug("Skipping Australia/Brisbane tests, not recognised by system backend");
-    }
-
-    if (const QTZ cet("Europe/Berlin"); cet.isValid()) {
-        zoneTests(cet, QLocale(QLocale::German),
+    maybeTestZone("Europe/Berlin", QLocale(QLocale::German),
                   QTZ::GenericTime, u"1970-01-01 01:00", u" (epoch)");
-    } else {
-        qDebug("Skipping Europe/Berlin tests (CET), not recognised by system backend");
-    }
-
-    if (const QTZ eet("Europe/Helsinki"); eet.isValid()) {
-        zoneTests(eet, QLocale(QLocale::Finnish),
+    maybeTestZone("Europe/Helsinki", QLocale(QLocale::Finnish),
                   QTZ::GenericTime, u"210501 001006 ", u" (in gap: end of LMT)");
-    } else {
-        qDebug("Skipping Europe/Helsinki tests (EET), not recognised by system backend");
-    }
-
-    if (const QTZ wet("Europe/Lisbon"); wet.isValid()) {
-        zoneTests(wet, QLocale(QLocale::Portuguese, QLocale::Portugal),
+    maybeTestZone("Europe/Lisbon", QLocale(QLocale::Portuguese, QLocale::Portugal),
                   QTZ::GenericTime, u"2015-03-29 01:30 ", u" (in spring-forward gap)");
-    } else {
-        qDebug("Skipping Europe/Lisbon tests (WET), not recognised by system backend");
-    }
-
-    if (const QTZ cet("Europe/Oslo"); cet.isValid()) {
-        zoneTests(cet, QLocale(QLocale::NorwegianBokmal),
+    maybeTestZone("Europe/Oslo", QLocale(QLocale::NorwegianBokmal),
                   QTZ::GenericTime, u"1940-04-09 04:21 ", u" (Oscarsborg)");
-    } else {
-        qDebug("Skipping Europe/Oslo tests (CET), not recognised by system backend");
-    }
-
-    if (const QTZ rome("Europe/Rome"); rome.isValid())
-        zoneTests(rome, QLocale(QLocale::Italian), QTZ::GenericTime, u"1970-01-01 12:00");
-    else
-        qDebug("Skipping Europe/Rome tests, not recognised by system backend");
-
-    if (const QTZ nz("Pacific/Auckland"); nz.isValid()) {
-        zoneTests(nz, QLocale(QLocale::English, QLocale::NewZealand),
+    maybeTestZone("Europe/Rome", QLocale(QLocale::Italian), QTZ::GenericTime, u"1970-01-01 12:00");
+    maybeTestZone("Pacific/Auckland", QLocale(QLocale::English, QLocale::NewZealand),
                   QTZ::GenericTime, u"1840-02-06 ", u" (Te Tiriti o Waitangi)");
-    } else {
-        qDebug("Skipping Pacific/Auckland tests, not recognised by system backend");
-    }
-
-    if (const QTZ lint("Pacific/Kiritimati"); lint.isValid()) {
-        // No gil-KI in CLDR, so use en-KI.
-        zoneTests(lint, QLocale(QLocale::English, QLocale::Kiribati),
-                  QTZ::GenericTime, u"1994-12-31 12:00 ", u" (skipped day)");
-        // No DST.
-    } else {
-        qDebug("Skipping Pacific/Kiritimati tests, not recognised by system backend");
-    }
+    // No gil-KI in CLDR, so use en-KI. Has no DST.
+    maybeTestZone("Pacific/Kiritimati", QLocale(QLocale::English, QLocale::Kiribati),
+                  QTZ::GenericTime, u"1994-12-31 12:00 ", u" (skipped day)"); //
 
     // Zones used by tst_QTimeZoneBackend:
-    if (const QTZ wet("Africa/Casablanca"); wet.isValid()) { // lng/gen/any/{0,16} get Accra
-        // ar_MA (little zgh_MA in CLDR)
-        zoneTests(wet, QLocale(QLocale::Arabic, QLocale::Morocco),
+    // ar_MA (little zgh_MA in CLDR)
+    maybeTestZone("Africa/Casablanca", QLocale(QLocale::Arabic, QLocale::Morocco),
                   QTZ::GenericTime, u"1942-11-08 dawn ", u" (Operation Torch)");
-        // (It was actually on permanent DST on that date, but we're not parsing
-        // the datetime - it's just there as dangling cruft - so that's beside
-        // the point, here.)
-    } else {
-        qDebug("Skipping Africa/Casablanca tests, not recognised by system backend");
-    }
+    // (It was actually on permanent DST on that date, but we're not parsing the
+    // datetime - it's just there as dangling cruft - so that's beside the
+    // point, here.)
 
-    if (const QTZ lagos("Africa/Lagos"); lagos.isValid()) {
-        zoneTests(lagos, QLocale(QLocale::Hausa, QLocale::Nigeria),
+    maybeTestZone("Africa/Lagos", QLocale(QLocale::Hausa, QLocale::Nigeria), // No DST.
                   QTZ::GenericTime, u"1908-07-01 00:00 ", u" (revert from GMT to LMT)");
-        // No DST.
-    } else {
-        qDebug("Skipping Africa/Lagos tests, not recognised by system backend");
-    }
-
-    if (const QTZ tunis("Africa/Tunis"); tunis.isValid()) {
-        zoneTests(tunis, QLocale(QLocale::Arabic, QLocale::Tunisia),
+    maybeTestZone("Africa/Tunis", QLocale(QLocale::Arabic, QLocale::Tunisia),
                   QTZ::GenericTime, u"2008-10-26 03:00 ", u" (final escape from DST)");
-    } else {
-        qDebug("Skipping Africa/Tunis tests, not recognised by system backend");
-    }
-
-    if (const QTZ vet("America/Caracas"); vet.isValid()) {
-        zoneTests(vet, QLocale(QLocale::Spanish, QLocale::Venezuela),
+    maybeTestZone("America/Caracas", QLocale(QLocale::Spanish, QLocale::Venezuela), // No DST
                   QTZ::GenericTime, u"2016-05-01 02:45 ", u" (in skipped half-hour)");
-        // No DST
-    } else {
-        qDebug("Skipping America/Caracas tests, not recognised by system backend");
-    }
-
 #if 0 // Permanent DST leads to its standard time long name being mistaken for Chile DST
-    if (const QTZ chile("America/Coyhaique"); chile.isValid()) {
-        zoneTests(chile, QLocale(QLocale::Spanish, QLocale::Chile),
+    maybeTestZone("America/Coyhaique", QLocale(QLocale::Spanish, QLocale::Chile),
                   QTZ::GenericTime, u"2025-03-20 01:00 ", u" (or maybe 00:00; escaped DST)");
-    } else {
-        qDebug("Skipping America/Coyhaique tests, not recognised by system backend");
-    }
 #endif
-
-    if (const QTZ tell("America/Indiana/Tell_City"); tell.isValid()) {
-        zoneTests(tell, QLocale(QLocale::English),
+    maybeTestZone("America/Indiana/Tell_City", QLocale(QLocale::English),
                   QTZ::GenericTime, u"2006-04-02 02:00 ", u" (EST \u2192 CDT)");
-    } else {
-        qDebug("Skipping America/Indiana/Tell_City tests, not recognised by system backend");
-    }
-
-    if (const QTZ cst("America/Managua"); cst.isValid()) {
-        zoneTests(cst, QLocale(QLocale::Spanish, QLocale::Nicaragua),
+    maybeTestZone("America/Managua", QLocale(QLocale::Spanish, QLocale::Nicaragua),
                   QTZ::GenericTime, u"2006-10-01 01:00 ", u" (escaped DST)");
-    } else {
-        qDebug("Skipping America/Managua tests, not recognised by system backend");
-    }
-
-    if (const QTZ thai("Asia/Bangkok"); thai.isValid()) {
-        zoneTests(thai, QLocale(QLocale::Thai),
+    maybeTestZone("Asia/Bangkok", QLocale(QLocale::Thai), // No DST
                   QTZ::GenericTime, u"1920-04-01 00:00 ", u" (end LMT)");
-        // No DST
-    } else {
-        qDebug("Skipping Asia/Bangkok tests, not recognised by system backend");
-    }
 
     if (const QTZ sri("Asia/Colombo"); sri.isValid()) {
         zoneTests(sri, QLocale(QLocale::Sinhala, QLocale::SriLanka),
@@ -1302,68 +1196,26 @@ void tst_QtParseTimeZone::prefix_data()
         qDebug("Skipping Asia/Colombo tests, not recognised by system backend");
     }
 
-    if (const QTZ nipon("Asia/Tokyo"); nipon.isValid()) {
-        zoneTests(nipon, QLocale(QLocale::Japanese),
+    maybeTestZone("Asia/Tokyo", QLocale(QLocale::Japanese),
                   QTZ::GenericTime, u"1951-09-08 02:00 ", u" (escaped DST)");
-    } else {
-        qDebug("Skipping Asia/Tokyo tests, not recognised by system backend");
-    }
-
-    if (const QTZ ast("Atlantic/Bermuda"); ast.isValid()) {
-        zoneTests(ast, QLocale(QLocale::English, QLocale::Bermuda),
+    maybeTestZone("Atlantic/Bermuda", QLocale(QLocale::English, QLocale::Bermuda),
                   QTZ::GenericTime, u"1974-04-28 02:00 ", u" (revert to DST)");
-    } else {
-        qDebug("Skipping Atlantic/Bermuda tests, not recognised by system backend");
-    }
-
-    if (const QTZ tors("Atlantic/Faroe"); tors.isValid()) {
-        zoneTests(tors, QLocale(QLocale::Faroese),
+    maybeTestZone("Atlantic/Faroe", QLocale(QLocale::Faroese),
                   QTZ::GenericTime, u"1981-03-29 01:00 ", u" (fell for DST)");
-    } else {
-        qDebug("Skipping Atlantic/Faroe tests, not recognised by system backend");
-    }
-
-    if (const QTZ wet("Atlantic/Madeira"); wet.isValid()) {
-        zoneTests(wet, QLocale(QLocale::Portuguese, QLocale::Portugal),
+    maybeTestZone("Atlantic/Madeira", QLocale(QLocale::Portuguese, QLocale::Portugal),
                   QTZ::GenericTime, u"1976-09-26 01:00 ", u" (joined WEST)");
-    } else {
-        qDebug("Skipping Atlantic/Madeira tests, not recognised by system backend");
-    }
-
-    if (const QTZ act("Australia/Broken_Hill"); act.isValid()) {
-        zoneTests(act, QLocale(QLocale::English, QLocale::Australia),
+    maybeTestZone("Australia/Broken_Hill", QLocale(QLocale::English, QLocale::Australia),
                   QTZ::GenericTime, u"1971-10-31 02:00 ", u" (fell for DST)");
-    } else {
-        qDebug("Skipping Australia/Broken_Hill tests, not recognised by system backend");
-    }
-
-    if (const QTZ nsw("Australia/NSW"); nsw.isValid()) {// Alias for Australia/Sydney
-        zoneTests(nsw, QLocale(QLocale::English, QLocale::Australia),
+    maybeTestZone("Australia/NSW", QLocale(QLocale::English, QLocale::Australia),
                   QTZ::GenericTime, u"1942-01-01 02:00 ", u" (war-time DST)");
-    } else {
-        qDebug("Skipping Australia/NSW tests, not recognised by system backend");
-    }
-
-    if (const QTZ tas("Australia/Tasmania"); tas.isValid()) { // Alias for Australia/Hobart
-        zoneTests(tas, QLocale(QLocale::English, QLocale::Australia),
+    // Alias for Australia/Hobart:
+    maybeTestZone("Australia/Tasmania", QLocale(QLocale::English, QLocale::Australia),
                   QTZ::GenericTime, u"1967-10-01 02:00 ", u" (fell for DST)");
-    } else {
-        qDebug("Skipping Australia/Tasmania tests, not recognised by system backend");
-    }
-
-    if (const QTZ acre("Brazil/Acre"); acre.isValid()) { // Alias for America/Rio_Branco
-        zoneTests(acre, QLocale(QLocale::Portuguese, QLocale::Brazil),
+    maybeTestZone("Brazil/Acre", QLocale(QLocale::Portuguese, QLocale::Brazil),
                   QTZ::GenericTime, u"2013-11-10 00:00 ", u" (split from Amazon Time)");
-    } else {
-        qDebug("Skipping Brazil/Acre tests, not recognised by system backend");
-    }
-
-    if (const QTZ ast("Canada/Atlantic"); ast.isValid()) { // Alias for America/Halifax
-        zoneTests(ast, QLocale(QLocale::French, QLocale::Canada),
+    // Alias for America/Halifax
+    maybeTestZone("Canada/Atlantic", QLocale(QLocale::French, QLocale::Canada),
                   QTZ::GenericTime, u"1974-04-28 02:00 ", u" (sync into Canada Time)");
-    } else {
-        qDebug("Skipping Canada/Atlantic tests, not recognised by system backend");
-    }
 
     if (const QTZ ahu("Chile/EasterIsland"); ahu.isValid()) { // Alias for Pacific/Easter
         const QLocale esCL(QLocale::Spanish, QLocale::Chile); // (No CLDR data for Rapa Nui)
@@ -1390,113 +1242,44 @@ void tst_QtParseTimeZone::prefix_data()
         qDebug("Skipping Chile/EasterIsland tests, not recognised by system backend");
     }
 
-    if (const QTZ cst("CST6CDT"); cst.isValid()) { // Alias for America/Chicago
-        zoneTests(cst, QLocale(QLocale::Spanish, QLocale::Mexico),
+    // Legacy alias for America/Chicago
+    maybeTestZone("CST6CDT", QLocale(QLocale::Spanish, QLocale::Mexico),
                   QTZ::GenericTime, u"1942-02-09 02:00 ", u" (wartime no-DST)");
-    } else {
-        qDebug("Skipping CST6CDT tests, not recognised by system backend");
-    }
-
-    if (const QTZ egmt("Etc/Greenwich"); egmt.isValid()) { // Alias for Etc/GMT
-        zoneTests(egmt, QLocale(QLocale::English, QLocale::UnitedKingdom), QTZ::GenericTime);
-        // No DST.
-    } else {
-        qDebug("Skipping Etc/Greenwich tests, not recognised by system backend");
-    }
-
-    if (const QTZ univ("Etc/Universal"); univ.isValid()) { // Alias for Etc/UTC
-        zoneTests(univ, QLocale(QLocale::Fulah, QLocale::AdlamScript), QTZ::GenericTime);
-        // No DST.
-    } else {
-        qDebug("Skipping Etc/Universal tests, not recognised by system backend");
-    }
-
-    if (const QTZ sark("Europe/Guernsey"); sark.isValid()) {
-        zoneTests(sark, QLocale(QLocale::English, QLocale::UnitedKingdom),
+    // Alias for Etc/GMT
+    maybeTestZone("Etc/Greenwich", QLocale(QLocale::English, QLocale::UnitedKingdom),
+                  QTZ::GenericTime); // No DST.
+    // Alias for Etc/UTC. (No DST.)
+    maybeTestZone("Etc/Universal", QLocale(QLocale::Fulah, QLocale::AdlamScript), QTZ::GenericTime);
+    maybeTestZone("Europe/Guernsey", QLocale(QLocale::English, QLocale::UnitedKingdom),
                   QTZ::GenericTime, u"1945-05-09 ", u" (Liberation Day)");
-    } else {
-        qDebug("Skipping Europe/Guernsey tests, not recognised by system backend");
-    }
-
-    if (const QTZ eet("Europe/Kaliningrad"); eet.isValid()) {
-        zoneTests(eet, QLocale(QLocale::Russian),
+    maybeTestZone("Europe/Kaliningrad", QLocale(QLocale::Russian),
                   QTZ::GenericTime, u"1945-04-09 18:00 ", u" (siege ended)");
-    } else {
-        qDebug("Skipping Europe/Kaliningrad tests, not recognised by system backend");
-    }
-
-    if (const QTZ kyiv("Europe/Kyiv"); kyiv.isValid()) {
-        zoneTests(kyiv, QLocale(QLocale::Ukrainian),
+    maybeTestZone("Europe/Kyiv", QLocale(QLocale::Ukrainian),
                   QTZ::GenericTime, u"1990-07-01 02:00 ", u" (switch to EET)");
-    } else {
-        qDebug("Skipping Europe/Kyiv tests, not recognised by system backend");
-    }
-
-    if (const QTZ czek("Europe/Prague"); czek.isValid()) {
-        zoneTests(czek, QLocale(QLocale::Czech),
+    maybeTestZone("Europe/Prague", QLocale(QLocale::Czech),
                   QTZ::GenericTime, u"1942-11-02 03:00 ", u" (back to DST)");
-    } else {
-        qDebug("Skipping Europe/Prague tests, not recognised by system backend");
-    }
-
-    if (const QTZ pope("Europe/Vatican"); pope.isValid()) {
-        // Alias for Europe/Rome
-        // la_VA lacks zone data
-        zoneTests(pope, QLocale(QLocale::Italian, QLocale::VaticanCity),
+    // Alias for Europe/Rome, la_VA lacks zone data
+    maybeTestZone("Europe/Vatican", QLocale(QLocale::Italian, QLocale::VaticanCity),
                   QTZ::GenericTime, u"1929-02-11 ", u" (Lateran Treaty)");
-    } else {
-        qDebug("Skipping Europe/Vatican tests, not recognised by system backend");
-    }
-
-    if (const QTZ eat("Indian/Comoro"); eat.isValid()) {
-        zoneTests(eat, QLocale(QLocale::Arabic, QLocale::Comoros),
+    maybeTestZone("Indian/Comoro", QLocale(QLocale::Arabic, QLocale::Comoros), // No DST.
                   QTZ::GenericTime, u"1911-07-01 00:00", u" (LMT \u2192 EAT)");
-        // No DST.
-    } else {
-        qDebug("Skipping Indian/Comoro tests, not recognised by system backend");
-    }
-
-    if (const QTZ sur("Mexico/BajaSur"); sur.isValid()) { // Alias for America/Mazatlan
-        zoneTests(sur, QLocale(QLocale::Spanish, QLocale::Mexico),
+    // Alias for America/Mazatlan
+    maybeTestZone("Mexico/BajaSur", QLocale(QLocale::Spanish, QLocale::Mexico),
                   QTZ::GenericTime, u"2022-10-30 02:00 ", u" (quit DST)");
-    } else {
-        qDebug("Skipping Mexico/BajaSur tests, not recognised by system backend");
-    }
-
-    if (const QTZ buka("Pacific/Bougainville"); buka.isValid()) {
-        // No ho_PG data, no tpi zone data, so make do with English:
-        zoneTests(buka, QLocale(QLocale::English, QLocale::PapuaNewGuinea),
-                  QTZ::GenericTime, u"2014-12-28 00:00 ", u" (split from PGT)");
-        // No DST.
-    } else {
-        qDebug("Skipping Pacific/Bougainville tests, not recognised by system backend");
-    }
-
-    if (const QTZ sst("Pacific/Midway"); sst.isValid()) {
-        // Functionally an alias for Pacitic/Pago_Pago, which has no DST.
-        zoneTests(sst, QLocale(QLocale::English, QLocale::UnitedStatesOutlyingIslands),
+    // No ho_PG data, no tpi zone data, so make do with English:
+    maybeTestZone("Pacific/Bougainville", QLocale(QLocale::English, QLocale::PapuaNewGuinea),
+                  QTZ::GenericTime, u"2014-12-28 00:00 ", u" (split from PGT)"); // No DST.
+    // Functionally an alias for Pacitic/Pago_Pago, which has no DST.
+    maybeTestZone("Pacific/Midway", QLocale(QLocale::English, QLocale::UnitedStatesOutlyingIslands),
                   QTZ::GenericTime, u"1942-06-04 04:30 ", u" (a battle)");
-        // sst.displayName(DST, Long, enUM) gets "American Samoa DaylightTime",
-        // but apparently Pacific/Pago_pago's equivalent is empty - presumably
-        // because it does no DST, although Midway also does no DST.
-    } else {
-        qDebug("Skipping Pacific/Midway tests, not recognised by system backend");
-    }
+    // sst.displayName(DST, Long, enUM) gets "American Samoa DaylightTime", but
+    // apparently Pacific/Pago_pago's equivalent is empty - presumably because
+    // it does no DST, although Midway also does no DST.
 
-    if (const QTZ wft("Pacific/Wallis"); wft.isValid()) {
-        zoneTests(wft, QLocale(QLocale::French, QLocale::WallisAndFutuna),
-                  QTZ::GenericTime, u"1942-05-27 ", u" (exit Vichy)");
-        // No DST.
-    } else {
-        qDebug("Skipping Pacific/Wallis tests, not recognised by system backend");
-    }
-
-    if (const QTZ adak("US/Aleutian"); adak.isValid()) { // Alias for America/Adak
-        zoneTests(adak, QLocale(QLocale::English),
+    maybeTestZone("Pacific/Wallis", QLocale(QLocale::French, QLocale::WallisAndFutuna),
+                  QTZ::GenericTime, u"1942-05-27 ", u" (exit Vichy)"); // No DST.
+    maybeTestZone("US/Aleutian", QLocale(QLocale::English), // Alias for America/Adak
                   QTZ::GenericTime, u"1967-04-01 00:00 ", u" (fell for DST)");
-    } else {
-        qDebug("Skipping US/Aleutian tests, not recognised by system backend");
-    }
 
     // Some tests use "Vulcan/ShiKahr" as an invalid name; but it is indeed invalid.
 #endif
