@@ -66,6 +66,14 @@ QT_BEGIN_NAMESPACE
     rendering and calling \l QPainter::endNativePainting() after
     finishing.
 
+    \section1 Security Considerations
+
+    \warning All content rendered through QOpenGLPaintDevice is expected to be
+    trusted content. Vector geometry, images, and other drawing data are
+    processed, possibly modified, and passed on to the underlying OpenGL
+    implementation. Application developers are advised to carefully consider the
+    potential implications before rendering (passing on) user-provided content.
+
     \sa {OpenGL Window Example}
 
 */
