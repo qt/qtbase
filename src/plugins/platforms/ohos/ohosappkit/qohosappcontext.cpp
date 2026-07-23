@@ -374,7 +374,7 @@ bool AppContext::isNoUiChildMode()
 }
 
 /*!
-    \fn static void QtOhosAppKit::AppContext::startNoUiChildProcess(QString libraryName, QStringList args)
+    \fn static void QtOhosAppKit::AppContext::startNoUiChildProcess(const QString &libraryName, const QStringList &args)
 
     Starts "No UI" child process for a given \a libraryName and \a args. Arguments passed to the
     startNoUiChildProcess() function are forwarded to the child's main() function.
@@ -390,7 +390,7 @@ bool AppContext::isNoUiChildMode()
         });
     \endcode
 */
-void AppContext::startNoUiChildProcess(QString libraryName, QStringList args)
+void AppContext::startNoUiChildProcess(const QString &libraryName, const QStringList &args)
 {
     QOhosJsThreadGateway::runAndWait(
         [&](QOhosJsState &jsState) {

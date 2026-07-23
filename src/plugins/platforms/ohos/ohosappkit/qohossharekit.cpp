@@ -196,8 +196,8 @@ QVariantMap SharedRecordImpl::extraData() const
 class ShareControllerOptionsImpl : public ShareControllerOptions
 {
 public:
-    void setAnchor(const QPoint &anchorOffset) override;
-    void setAnchor(const QRect &anchor) override;
+    void setAnchor(QPoint anchorOffset) override;
+    void setAnchor(QRect anchor) override;
     std::optional<QPoint> anchorOffset() const;
     std::optional<QSize> anchorSize() const;
 
@@ -218,12 +218,12 @@ private:
     std::optional<QList<ShareAbilityType>> m_excludedAbilities;
 };
 
-void ShareControllerOptionsImpl::setAnchor(const QPoint &anchorOffset)
+void ShareControllerOptionsImpl::setAnchor(QPoint anchorOffset)
 {
     m_anchorOffset = anchorOffset;
 }
 
-void ShareControllerOptionsImpl::setAnchor(const QRect &anchor)
+void ShareControllerOptionsImpl::setAnchor(QRect anchor)
 {
     m_anchorOffset = anchor.topLeft();
     m_anchorSize = anchor.size();
@@ -489,7 +489,7 @@ SharedRecord::~SharedRecord() = default;
 */
 
 /*!
-    \fn virtual void QtOhosAppKit::ShareKit::ShareControllerOptions::setAnchor(const QPoint &anchorOffset) = 0
+    \fn virtual void QtOhosAppKit::ShareKit::ShareControllerOptions::setAnchor(QPoint anchorOffset) = 0
 
     Sets sharing pop-up window anchor window offset with a given \a anchorOffset.
     See \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references/share-system-share#section107934816010}
@@ -497,7 +497,7 @@ SharedRecord::~SharedRecord() = default;
 */
 
 /*!
-    \fn virtual void QtOhosAppKit::ShareKit::ShareControllerOptions::setAnchor(const QRect &anchor) = 0
+    \fn virtual void QtOhosAppKit::ShareKit::ShareControllerOptions::setAnchor(QRect anchor) = 0
 
     Sets anchor offset and size with a given \a anchor.
     See \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references/share-system-share#section19505934714}

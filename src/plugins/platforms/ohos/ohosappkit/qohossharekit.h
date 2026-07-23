@@ -70,8 +70,8 @@ class Q_OHOSAPPKIT_EXPORT ShareControllerOptions
 public:
     virtual ~ShareControllerOptions();
 
-    virtual void setAnchor(const QPoint &anchorOffset) = 0;
-    virtual void setAnchor(const QRect &anchor) = 0;
+    virtual void setAnchor(QPoint anchorOffset) = 0;
+    virtual void setAnchor(QRect anchor) = 0;
     virtual void setSingleSelectionMode(bool singleSelectionMode) = 0;
     virtual void setDefaultPreviewMode(bool defaultPreviewMode) = 0;
     virtual void setExcludedAbilities(const QList<ShareAbilityType> &excludedAbilities) = 0;
