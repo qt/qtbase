@@ -1,8 +1,7 @@
 // Copyright (C) 2026 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#include "qohosstartoptions.h"
-#include <QtOhosAppKit/private/qohosstartoptions_p.h>
+#include "qohosstartoptions_p.h"
 #include <QtCore/private/qcore_ohos_p.h>
 #include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/qpointer.h>

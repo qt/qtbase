@@ -1,7 +1,7 @@
 // Copyright (C) 2026 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#include "qohosappcontext.h"
+#include "qohosappcontext_p.h"
 #include "qohosjsenv_p.h"
 #include "qohoswantinfo_p.h"
 #include "qohoswantutils_p.h"
@@ -11,8 +11,7 @@
 #include <QtCore/private/qohosjstools_p.h>
 #include <QtCore/private/qohoslogger_p.h>
 #include <QtOhosAppKit/private/qohosappbundleinfo_p.h>
-#include <QtOhosAppKit/private/qohoswantutils_p.h>
-#include <QtOhosAppKit/qohosabilitycontext.h>
+#include <QtOhosAppKit/private/qohosabilitycontext_p.h>
 #include <algorithm>
 #include <chrono>
 #include <csignal>

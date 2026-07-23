@@ -18,7 +18,7 @@
 #include <QtCore/qjsonobject.h>
 #include <QtCore/qsharedpointer.h>
 #include <QtOhosAppKit/private/qohoswantinfo_p.h>
-#include <QtOhosAppKit/qohoswant.h>
+#include <QtOhosAppKit/private/qohoswant_p.h>
 #include <memory>
 
 QT_BEGIN_NAMESPACE

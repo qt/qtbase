@@ -1,8 +1,8 @@
 // Copyright (C) 2026 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#ifndef QOHOSOPERATIONSTATUS_P_H
-#define QOHOSOPERATIONSTATUS_P_H
+#ifndef QOHOSFILEUTILS_P_H
+#define QOHOSFILEUTILS_P_H
 
 //
 //  W A R N I N G
@@ -15,36 +15,18 @@
 // We mean it.
 //
 
-#include <QtCore/qglobal.h>
+#include <QtCore/qstring.h>
+#include <QtGui/qwindow.h>
 #include <QtOhosAppKit/private/qtohosappkitglobal_p.h>
-#include <memory>
 
 QT_BEGIN_NAMESPACE
 
 namespace QtOhosAppKit {
 
-class Q_OHOSAPPKIT_EXPORT OperationStatus
-{
-public:
-    virtual ~OperationStatus();
-
-    virtual bool success() const = 0;
-
-protected:
-    OperationStatus();
-
-private:
-    Q_DISABLE_COPY(OperationStatus)
-};
-
-}
-
-namespace QtOhosAppKit::Private {
-
-std::shared_ptr<OperationStatus> createOperationStatus(bool status);
+Q_OHOSAPPKIT_EXPORT bool authorizeFilePath(QWindow *parentWindow, const QString &filePath);
 
 }
 
 QT_END_NAMESPACE
 
-#endif // QOHOSOPERATIONSTATUS_P_H
+#endif // QOHOSFILEUTILS_P_H

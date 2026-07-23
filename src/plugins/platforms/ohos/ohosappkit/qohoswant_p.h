@@ -1,8 +1,19 @@
 // Copyright (C) 2026 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#ifndef QOHOSWANT_H
-#define QOHOSWANT_H
+#ifndef QOHOSWANT_P_H
+#define QOHOSWANT_P_H
+
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
 #include <QtCore/qflags.h>
 #include <QtCore/qglobal.h>
@@ -11,8 +22,8 @@
 #include <QtCore/qlist.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qstringlist.h>
-#include <QtOhosAppKit/qohossharekit.h>
-#include <QtOhosAppKit/qtohosappkitglobal.h>
+#include <QtOhosAppKit/private/qohossharekit_p.h>
+#include <QtOhosAppKit/private/qtohosappkitglobal_p.h>
 #include <memory>
 #include <optional>
 

@@ -1,8 +1,8 @@
 // Copyright (C) 2026 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#ifndef QOHOSOPERATIONSTATUS_P_H
-#define QOHOSOPERATIONSTATUS_P_H
+#ifndef QOHOSPASTEBOARD_P_H
+#define QOHOSPASTEBOARD_P_H
 
 //
 //  W A R N I N G
@@ -15,36 +15,20 @@
 // We mean it.
 //
 
-#include <QtCore/qglobal.h>
 #include <QtOhosAppKit/private/qtohosappkitglobal_p.h>
-#include <memory>
 
 QT_BEGIN_NAMESPACE
 
 namespace QtOhosAppKit {
 
-class Q_OHOSAPPKIT_EXPORT OperationStatus
-{
-public:
-    virtual ~OperationStatus();
+namespace Pasteboard {
 
-    virtual bool success() const = 0;
-
-protected:
-    OperationStatus();
-
-private:
-    Q_DISABLE_COPY(OperationStatus)
-};
+Q_OHOSAPPKIT_EXPORT void setInAppOnlyPasteboardShareOption(bool shareInAppOnly);
 
 }
-
-namespace QtOhosAppKit::Private {
-
-std::shared_ptr<OperationStatus> createOperationStatus(bool status);
 
 }
 
 QT_END_NAMESPACE
 
-#endif // QOHOSOPERATIONSTATUS_P_H
+#endif

@@ -1,19 +1,30 @@
 // Copyright (C) 2026 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#ifndef QOHOSABILITYCONTEXT_H
-#define QOHOSABILITYCONTEXT_H
+#ifndef QOHOSABILITYCONTEXT_P_H
+#define QOHOSABILITYCONTEXT_P_H
+
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
 #include <QtCore/qbytearray.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qjsonobject.h>
 #include <QtGui/qwindow.h>
-#include <QtOhosAppKit/qohosoperationstatus.h>
-#include <QtOhosAppKit/qohoswant.h>
-#include <QtOhosAppKit/qohosstartoptions.h>
-#include <QtOhosAppKit/qtohosappkitglobal.h>
-#include <QtOhosAppKit/qohossharekit.h>
+#include <QtOhosAppKit/private/qohosoperationstatus_p.h>
+#include <QtOhosAppKit/private/qohoswant_p.h>
+#include <QtOhosAppKit/private/qohosstartoptions_p.h>
+#include <QtOhosAppKit/private/qtohosappkitglobal_p.h>
+#include <QtOhosAppKit/private/qohossharekit_p.h>
 #include <QtWidgets/qwidget.h>
 #include <functional>
 #include <memory>
@@ -116,4 +127,4 @@ Q_OHOSAPPKIT_EXPORT std::optional<QByteArray> tryGetOnContinueData(const Want &w
 
 QT_END_NAMESPACE
 
-#endif // QOHOSABILITYCONTEXT_H
+#endif // QOHOSABILITYCONTEXT_P_H
