@@ -65,6 +65,7 @@ QGestureManager::QGestureManager(QObject *parent)
     registerGestureRecognizer(new QMacPanGestureRecognizer);
 #elif defined(Q_OS_HARMONY)
     registerGestureRecognizer(new QPanGestureRecognizer(panTouchPoints()));
+    registerGestureRecognizer(new QPinchGestureRecognizer);
     registerGestureRecognizer(makeQOhosPinchGestureRecognizer().release());
     registerGestureRecognizer(new QSwipeGestureRecognizer);
     registerGestureRecognizer(new QTapGestureRecognizer);
