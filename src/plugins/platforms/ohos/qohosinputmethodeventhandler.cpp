@@ -315,22 +315,16 @@ void QOhosInputMethodEventHandler::onTouchEventFromXComponent(
 void QOhosInputMethodEventHandler::onGestureEventFromNativeNode(const QOhosGestureEvent &gestureEvent)
 {
     auto *pointingDevice = getPointingDeviceOrCreate(gestureEvent.deviceType);
-    auto *window = gestureEvent.targetWindow.data();
 
-    // NOTE: Contrary to all other QWindowSystemInterface functions, the
-    // QWindowSystemInterface::handleGestureEventWithRealValue requires that the provided positions
-    // are converted to device independent units
-    auto scaledLocalPosition = QHighDpi::fromNativeLocalPosition(gestureEvent.localPosition, window);
-    auto scaledGlobalPosition = QHighDpi::fromNativePixels(gestureEvent.globalPosition, window);
-
+    // handleGestureEventWithRealValue() takes native positions and applies QHighDpi internally.
     QWindowSystemInterface::handleGestureEventWithRealValue(
         gestureEvent.targetWindow,
         gestureEvent.timestamp,
         static_cast<const QPointingDevice *>(pointingDevice),
         gestureEvent.gestureType,
         gestureEvent.value,
-        scaledLocalPosition,
-        scaledGlobalPosition);
+        gestureEvent.localPosition,
+        gestureEvent.globalPosition);
 }
 
 void QOhosInputMethodEventHandler::onKeyEvent(const QOhosKeyEvent &keyEvent, QWindow *targetWindow)
