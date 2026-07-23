@@ -15,10 +15,28 @@
 // We mean it.
 //
 
-#include <QtOhosAppKit/qohosappbundleinfo.h>
+#include <QtOhosAppKit/private/qtohosappkitglobal_p.h>
 #include <memory>
 
 QT_BEGIN_NAMESPACE
+
+namespace QtOhosAppKit {
+
+class Q_OHOSAPPKIT_EXPORT BundleInfo
+{
+public:
+    virtual ~BundleInfo();
+
+    virtual int versionCode() const = 0;
+
+protected:
+    BundleInfo();
+
+private:
+    Q_DISABLE_COPY(BundleInfo)
+};
+
+}
 
 namespace QtOhosAppKit::Private {
 

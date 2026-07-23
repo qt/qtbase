@@ -8,24 +8,24 @@
 qt_internal_add_module(OhosAppKit
     EXCEPTIONS
     SOURCES
-        qohosabilitycontext.cpp qohosabilitycontext.h
-        qohosappbundleinfo.cpp qohosappbundleinfo.h qohosappbundleinfo_p.h
-        qohosappcontext.cpp qohosappcontext.h
-        qohosbundlemanager.h
+        qohosabilitycontext.cpp qohosabilitycontext_p.h
+        qohosappbundleinfo.cpp qohosappbundleinfo_p.h
+        qohosappcontext.cpp qohosappcontext_p.h
+        qohosbundlemanager_p.h
         qohosenums_p.h
-        qohosfileshare.cpp qohosfileshare.h
-        qohosfileutils.cpp qohosfileutils.h
+        qohosfileshare.cpp qohosfileshare_p.h
+        qohosfileutils.cpp qohosfileutils_p.h
         qohosjsenv_p.h
-        qohosoperationstatus.cpp qohosoperationstatus.h qohosoperationstatus_p.h
-        qohospasteboard.cpp qohospasteboard.h
-        qohossharekit.cpp qohossharekit.h qohossharekit_p.h
+        qohosoperationstatus.cpp qohosoperationstatus_p.h
+        qohospasteboard.cpp qohospasteboard_p.h
+        qohossharekit.cpp qohossharekit_p.h
         qohossharekitbackend.cpp qohossharekitbackend_p.h
-        qohosstartoptions.cpp qohosstartoptions.h qohosstartoptions_p.h
-        qohoswant.cpp qohoswant.h
+        qohosstartoptions.cpp qohosstartoptions_p.h
+        qohoswant.cpp qohoswant_p.h
         qohoswantinfo.cpp qohoswantinfo_p.h
         qohoswantutils.cpp qohoswantutils_p.h
-        qohoswindowutils.cpp qohoswindowutils.h
-        qtohosappkitglobal.h
+        qohoswindowutils.cpp qohoswindowutils_p.h
+        qtohosappkitglobal_p.h
     DEFINES
         NODE_ADDON_API_ENABLE_TYPE_CHECK_ON_AS
         NAPI_CPP_EXCEPTIONS
