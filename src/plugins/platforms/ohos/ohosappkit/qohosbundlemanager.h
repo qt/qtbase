@@ -4,7 +4,6 @@
 #ifndef QOHOSBUNDLEMANAGER_H
 #define QOHOSBUNDLEMANAGER_H
 
-#include <QtCore/qmetatype.h>
 #include <QtCore/qstring.h>
 #include <QtOhosAppKit/qtohosappkitglobal.h>
 
@@ -25,7 +24,5 @@ struct Q_OHOSAPPKIT_EXPORT ElementName
 }
 
 QT_END_NAMESPACE
-
-Q_DECLARE_METATYPE(QtOhosAppKit::ElementName)
 
 #endif // QOHOSBUNDLEMANAGER_H
