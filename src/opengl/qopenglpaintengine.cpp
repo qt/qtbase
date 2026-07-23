@@ -1921,6 +1921,15 @@ void QOpenGL2PaintEngineExPrivate::drawCachedGlyphs(QFontEngine::GlyphFormat gly
     if (numGlyphs == 0)
         return;
 
+    // Using uint16 indices. Also we do not want 0xFFFF to be used as an index
+    // value to not accidentally conflict with primitive restart.
+    constexpr int maxGlyphsPerRun = 65536 / 4 - 1; // 16383 -> largest index value is 65531
+    if (numGlyphs > maxGlyphsPerRun) {
+        qWarning("drawCachedGlyphs: glyph run of %d glyphs exceeds the %d-glyph limit; clamping",
+                 numGlyphs, maxGlyphsPerRun);
+        numGlyphs = maxGlyphsPerRun;
+    }
+
     if (elementIndices.size() < numGlyphs*6) {
         Q_ASSERT(elementIndices.size() % 6 == 0);
         int j = elementIndices.size() / 6 * 4;
