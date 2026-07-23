@@ -12,6 +12,7 @@
 #include <QtOhosAppKit/qtohosappkitglobal.h>
 #include <functional>
 #include <memory>
+#include <optional>
 
 QT_BEGIN_NAMESPACE
 
@@ -37,9 +38,7 @@ public:
 
     virtual std::shared_ptr<BundleInfo> bundleInfo() const = 0;
 
-    Q_NORETURN virtual void restartApp() = 0;
-
-    Q_NORETURN virtual void restartApp(const Want &want) = 0;
+    Q_NORETURN virtual void restartApp(const std::optional<Want> &want) = 0;
 
     virtual double fontSizeScale() const = 0;
 
