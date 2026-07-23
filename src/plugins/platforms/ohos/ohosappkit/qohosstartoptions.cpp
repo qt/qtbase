@@ -31,9 +31,9 @@ namespace QtOhosAppKit {
     \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references-V13/js-apis-app-ability-contextconstant-V13#processmode12}
     {Process Mode}.
 
-    \value NEW_PROCESS_ATTACH_TO_PARENT A new process is created, the ability is started on the
+    \value NewProcessAttachToParent A new process is created, the ability is started on the
     process, and the process exits along with the parent process.
-    \value NEW_PROCESS_ATTACH_TO_STATUS_BAR_ITEM A new process is created, the ability is started
+    \value NewProcessAttachToStatusBarItem A new process is created, the ability is started
     on the process, and the process is bound to the status bar icon.
 */
 
@@ -45,8 +45,8 @@ namespace QtOhosAppKit {
     \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references-V13/js-apis-app-ability-contextconstant-V13#startupvisibility12}
     {Startup Visibility}.
 
-    \value STARTUP_HIDE The target ability is hidden after it is started in the new process.
-    \value STARTUP_SHOW The target ability is displayed normally after it is started in the new process.
+    \value Hide The target ability is hidden after it is started in the new process.
+    \value Show The target ability is displayed normally after it is started in the new process.
 */
 
 /*!
@@ -57,11 +57,11 @@ namespace QtOhosAppKit {
     \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references-V13/js-apis-app-ability-abilityconstant-V13#windowmode12}
     {Window Mode}.
 
-    \value WINDOW_MODE_SPLIT_PRIMARY Primary screen (left screen in the case of horizontal
+    \value SplitPrimary Primary screen (left screen in the case of horizontal
     orientation) in split-screen mode.
-    \value WINDOW_MODE_SPLIT_SECONDARY Secondary screen (right screen in the case of horizontal
+    \value SplitSecondary Secondary screen (right screen in the case of horizontal
     orientation) in split-screen mode.
-    \value WINDOW_MODE_FULLSCREEN Full screen mode.
+    \value Fullscreen Full screen mode.
 */
 
 /*!
@@ -72,9 +72,9 @@ namespace QtOhosAppKit {
     \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references/js-apis-bundlemanager#supportwindowmode}
     {Support Window Mode}.
 
-    \value FULL_SCREEN Indicates support for full screen mode.
-    \value SPLIT Indicates support for split mode.
-    \value FLOATING Indicates support for floating mode.
+    \value FullScreen Indicates support for full screen mode.
+    \value Split Indicates support for split mode.
+    \value Floating Indicates support for floating mode.
 */
 
 /*!
@@ -99,7 +99,7 @@ namespace QtOhosAppKit {
     \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references/arkts-apis-window-e#animationtype20}
     {Animation Type}.
 
-    \value FADE_IN_OUT Fade-in/fade-out animation when the window is created and
+    \value FadeInOut Fade-in/fade-out animation when the window is created and
     destroyed.
 */
 
@@ -121,11 +121,11 @@ std::optional<QOhosStartOptionsData::SupportWindowMode> tryMapSupportWindowModeT
     StartOptions::SupportWindowMode supportWindowMode)
 {
     switch (supportWindowMode) {
-    case StartOptions::SupportWindowMode::FULL_SCREEN:
+    case StartOptions::SupportWindowMode::FullScreen:
         return std::make_optional(QOhosStartOptionsData::SupportWindowMode::FULL_SCREEN);
-    case StartOptions::SupportWindowMode::SPLIT:
+    case StartOptions::SupportWindowMode::Split:
         return std::make_optional(QOhosStartOptionsData::SupportWindowMode::SPLIT);
-    case StartOptions::SupportWindowMode::FLOATING:
+    case StartOptions::SupportWindowMode::Floating:
         return std::make_optional(QOhosStartOptionsData::SupportWindowMode::FLOATING);
     }
     return {};
@@ -168,7 +168,7 @@ void QOhosWindowCreateParamsImpl::setAnimationType(AnimationType animationType)
 {
     bool supportedAnimationType = false;
     switch (animationType) {
-    case AnimationType::FADE_IN_OUT:
+    case AnimationType::FadeInOut:
         m_qpaWindowCreateParams.setWindowFadeInOutAnimation = true;
         supportedAnimationType = true;
         break;
@@ -204,13 +204,13 @@ public:
     {
         std::optional<QOhosStartOptionsData::WindowMode> internalWindowMode;
         switch (windowMode) {
-        case StartOptions::WindowMode::WINDOW_MODE_SPLIT_PRIMARY:
+        case StartOptions::WindowMode::SplitPrimary:
             internalWindowMode = QOhosStartOptionsData::WindowMode::WINDOW_MODE_SPLIT_PRIMARY;
             break;
-        case StartOptions::WindowMode::WINDOW_MODE_SPLIT_SECONDARY:
+        case StartOptions::WindowMode::SplitSecondary:
             internalWindowMode = QOhosStartOptionsData::WindowMode::WINDOW_MODE_SPLIT_SECONDARY;
             break;
-        case StartOptions::WindowMode::WINDOW_MODE_FULLSCREEN:
+        case StartOptions::WindowMode::Fullscreen:
             internalWindowMode = QOhosStartOptionsData::WindowMode::WINDOW_MODE_FULLSCREEN;
             break;
         }
@@ -304,10 +304,10 @@ public:
     {
         std::optional<QOhosStartOptionsData::ProcessMode> internalProcessMode;
         switch (processMode) {
-        case StartOptions::ProcessMode::NEW_PROCESS_ATTACH_TO_PARENT:
+        case StartOptions::ProcessMode::NewProcessAttachToParent:
             internalProcessMode = QOhosStartOptionsData::ProcessMode::NEW_PROCESS_ATTACH_TO_PARENT;
             break;
-        case StartOptions::ProcessMode::NEW_PROCESS_ATTACH_TO_STATUS_BAR_ITEM:
+        case StartOptions::ProcessMode::NewProcessAttachToStatusBarItem:
             internalProcessMode = QOhosStartOptionsData::ProcessMode::NEW_PROCESS_ATTACH_TO_STATUS_BAR_ITEM;
             break;
         }
@@ -329,10 +329,10 @@ public:
     {
         std::optional<QOhosStartOptionsData::StartupVisibility> internalStartupVisibility;
         switch (startupVisibility) {
-        case StartOptions::StartupVisibility::STARTUP_HIDE:
+        case StartOptions::StartupVisibility::Hide:
             internalStartupVisibility = QOhosStartOptionsData::StartupVisibility::STARTUP_HIDE;
             break;
-        case StartOptions::StartupVisibility::STARTUP_SHOW:
+        case StartOptions::StartupVisibility::Show:
             internalStartupVisibility = QOhosStartOptionsData::StartupVisibility::STARTUP_SHOW;
             break;
         }
