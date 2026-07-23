@@ -114,7 +114,7 @@ auto matchIanaId(QStringView text)
         // If any of those conditions was met, index <= slash, so this exits the loop:
         lastSlash = slash;
     }
-    // Only ASCII characters aren't invalid, so we can now convert to Latin1.
+    // Only ASCII characters are valid, so we can now convert to Latin1.
     QByteArray name = text.first(index).toLatin1();
     // Subsequent truncation won't trigger reallocation, so is efficient despite
     // the owning container.
