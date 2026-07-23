@@ -147,7 +147,7 @@ void QOpenGL2GradientCache::generateGradientColorTable(const QGradient& gradient
     qreal fpos = 1.5 * incr;
     colorTable[pos++] = qPremultiply(current_color);
 
-    while (fpos <= s.first().first) {
+    while (pos < size && fpos <= s.first().first) {
         colorTable[pos] = colorTable[pos - 1];
         pos++;
         fpos += incr;
@@ -200,7 +200,7 @@ void QOpenGL2GradientCache::generateGradientColorTable(const QGradient& gradient
     qreal fpos = 1.5 * incr;
     colorTable[pos++] = ARGB2RGBA(qPremultiply(current_color));
 
-    while (fpos <= s.first().first) {
+    while (pos < size && fpos <= s.first().first) {
         colorTable[pos] = colorTable[pos - 1];
         pos++;
         fpos += incr;
