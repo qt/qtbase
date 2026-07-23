@@ -16,8 +16,6 @@ qt_internal_add_plugin(QTuioTouchPlugin
         qtuiocursor_p.h
         qtuiohandler.cpp qtuiohandler_p.h
         qtuiotoken_p.h
-    DEFINES
-        QT_NO_FOREACH
     LIBRARIES
         Qt::Core
         Qt::CorePrivate

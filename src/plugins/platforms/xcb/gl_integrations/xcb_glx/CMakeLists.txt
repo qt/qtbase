@@ -14,8 +14,6 @@ qt_internal_add_plugin(QXcbGlxIntegrationPlugin
         qxcbglxmain.cpp
         qxcbglxnativeinterfacehandler.cpp qxcbglxnativeinterfacehandler.h
         qxcbglxwindow.cpp qxcbglxwindow.h
-    DEFINES
-        QT_NO_FOREACH
     INCLUDE_DIRECTORIES
         ..
         ../..

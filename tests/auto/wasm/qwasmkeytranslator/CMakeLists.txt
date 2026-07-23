@@ -14,8 +14,6 @@ endif()
 qt_internal_add_test(tst_qwasmkeytranslator
     SOURCES
         tst_qwasmkeytranslator.cpp
-    DEFINES
-        QT_NO_FOREACH
     LIBRARIES
         Qt::Core
         Qt::Gui

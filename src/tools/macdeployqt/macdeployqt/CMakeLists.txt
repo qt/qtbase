@@ -15,7 +15,6 @@ qt_internal_add_tool(${target_name}
         ../shared/shared.cpp
         main.cpp
     DEFINES
-        QT_NO_FOREACH
         QT_USE_NODISCARD_FILE_OPEN
     LIBRARIES
         ${FWCoreFoundation}

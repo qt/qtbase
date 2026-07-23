@@ -78,7 +78,6 @@ qt_internal_extend_target(Bootstrap
         QT_BOOTSTRAPPED
         QT_NO_CAST_FROM_ASCII
         QT_NO_CAST_TO_ASCII
-        QT_NO_FOREACH
     INCLUDE_DIRECTORIES
         ..
         ../../3rdparty/tinycbor/src

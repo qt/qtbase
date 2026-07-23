@@ -15,8 +15,6 @@ qt_internal_add_plugin(QMinimalIntegrationPlugin
         main.cpp
         qminimalbackingstore.cpp qminimalbackingstore.h
         qminimalintegration.cpp qminimalintegration.h
-    DEFINES
-        QT_NO_FOREACH
     LIBRARIES
         Qt::Core
         Qt::CorePrivate

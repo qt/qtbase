@@ -364,7 +364,6 @@ qt_internal_add_module(Core
         kernel/qobject.cpp # undef QT_NO_DISCONNECT_CONST_CONNECTION
     DEFINES
         QT_NO_CONTEXTLESS_CONNECT
-        QT_NO_FOREACH
         QT_NO_QPAIR
         QT_NO_USING_NAMESPACE
         QT_TYPESAFE_FLAGS

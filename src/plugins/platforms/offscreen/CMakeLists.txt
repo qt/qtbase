@@ -14,8 +14,6 @@ qt_internal_add_plugin(QOffscreenIntegrationPlugin
         qoffscreencommon.cpp qoffscreencommon.h
         qoffscreenintegration.cpp qoffscreenintegration.h
         qoffscreenwindow.cpp qoffscreenwindow.h
-    DEFINES
-        QT_NO_FOREACH
     LIBRARIES
         Qt::Core
         Qt::CorePrivate

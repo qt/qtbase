@@ -43,7 +43,6 @@ qt_internal_add_module(XcbQpaPrivate
         qxcbxsettings.cpp qxcbxsettings.h
     DEFINES
         QT_BUILD_XCB_PLUGIN
-        QT_NO_FOREACH
     INCLUDE_DIRECTORIES
         gl_integrations
     PUBLIC_LIBRARIES
@@ -148,8 +147,6 @@ qt_internal_add_plugin(QXcbIntegrationPlugin
     DEFAULT_IF "xcb" IN_LIST QT_QPA_PLATFORMS
     SOURCES
         qxcbmain.cpp
-    DEFINES
-        QT_NO_FOREACH
     LIBRARIES
         Qt::CorePrivate
         Qt::GuiPrivate

@@ -45,7 +45,6 @@ qt_internal_add_module(DBus
     DEFINES
         DBUS_API_SUBJECT_TO_CHANGE
         QT_NO_CONTEXTLESS_CONNECT
-        QT_NO_FOREACH
         QT_NO_QPAIR
         QT_NO_URL_CAST_FROM_STRING
         QT_USE_NODISCARD_FILE_OPEN
