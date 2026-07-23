@@ -99,18 +99,20 @@ auto matchIanaId(QStringView text)
 
     // Limit name fragments (between slashes) to 20 characters.
     // (Valid time-zone IDs are allowed up to 14 and Android has quirks up to 17.)
+    constexpr qsizetype MaxFragmentLength = 20;
     // Limit number of fragments to six; no known zone name has more than four.
+    constexpr int MaxFragmentIndex = 5;
     qsizetype lastSlash = -1;
-    int count = 0;
+    int fragment = 1;
     while (lastSlash < index) {
         const qsizetype newToken = lastSlash + 1;
         qsizetype slash = text.indexOf(u'/', newToken);
         if (slash < 0)
             slash = index; // i.e. the end of the candidate text
-        else if (++count > 5)
+        else if (++fragment > MaxFragmentIndex)
             index = slash; // Truncate
-        if (slash - newToken > 20)
-            index = newToken + 20; // Truncate
+        if (slash - newToken > MaxFragmentLength)
+            index = newToken + MaxFragmentLength; // Truncate
         // If any of those conditions was met, index <= slash, so this exits the loop:
         lastSlash = slash;
     }
