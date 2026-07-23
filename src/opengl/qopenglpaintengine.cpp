@@ -894,7 +894,7 @@ void QOpenGL2PaintEngineExPrivate::fill(const QVectorPath& path)
                 vertexCoordinateArray.clear();
                 vertexCoordinateArray.addPath(path, inverseScale, false);
                 int vertexCount = vertexCoordinateArray.vertexCount();
-                int floatSizeInBytes = vertexCount * 2 * sizeof(float);
+                qsizetype floatSizeInBytes = qsizetype(vertexCount) * 2 * sizeof(float);
                 cache->vertexCount = vertexCount;
                 cache->indexCount = 0;
                 cache->primitiveType = GL_TRIANGLE_FAN;
