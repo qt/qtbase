@@ -19,6 +19,7 @@ namespace QtOhosAppKit {
 
 class Q_OHOSAPPKIT_EXPORT WindowCreateParams
 {
+    // Q_GADGET added to Q_ENUM the nested enum
     Q_GADGET
 
 public:
@@ -40,6 +41,7 @@ private:
 
 class Q_OHOSAPPKIT_EXPORT StartOptions
 {
+    // Q_GADGET added to Q_ENUM the nested enums
     Q_GADGET
 
 public:
