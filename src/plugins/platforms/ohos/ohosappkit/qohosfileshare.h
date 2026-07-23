@@ -22,8 +22,8 @@ enum class OperationMode {
     Read = 1 << 0,
     Write = 1 << 1,
 };
-Q_FLAG_NS(OperationMode)
 Q_DECLARE_FLAGS(OperationModes, OperationMode)
+Q_FLAG_NS(OperationModes)
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(OperationModes)
 
