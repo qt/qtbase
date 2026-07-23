@@ -90,8 +90,8 @@ auto matchIanaId(QStringView text)
         const auto cu = c.unicode();
         return cu >= 127u || !(matcher.matches(uchar(cu)) || c.isLetterOrNumber());
     };
-    int index = std::distance(text.cbegin(),
-                              std::find_if(text.cbegin(), text.cend(), invalidZoneNameCharacter));
+    qsizetype index = std::distance(text.cbegin(), std::find_if(text.cbegin(), text.cend(),
+                                                                invalidZoneNameCharacter));
     if (!index)
         return R{};
     Q_ASSERT(index <= text.size());
@@ -100,11 +100,11 @@ auto matchIanaId(QStringView text)
     // Limit name fragments (between slashes) to 20 characters.
     // (Valid time-zone IDs are allowed up to 14 and Android has quirks up to 17.)
     // Limit number of fragments to six; no known zone name has more than four.
-    int lastSlash = -1;
+    qsizetype lastSlash = -1;
     int count = 0;
     while (lastSlash < index) {
-        const int newToken = lastSlash + 1;
-        int slash = text.indexOf(u'/', newToken);
+        const qsizetype newToken = lastSlash + 1;
+        qsizetype slash = text.indexOf(u'/', newToken);
         if (slash < 0)
             slash = index; // i.e. the end of the candidate text
         else if (++count > 5)
