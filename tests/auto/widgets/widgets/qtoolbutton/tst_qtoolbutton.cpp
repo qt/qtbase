@@ -34,6 +34,7 @@ private slots:
     void qtbug_26956_popupTimerDone();
     void qtbug_34759_sizeHintResetWhenSettingMenu();
     void defaultActionSynced();
+    void defaultActionChangedConnectionIsUnique();
     void deleteInHandler();
     void emptyMenu();
     void popupMode();
@@ -46,6 +47,17 @@ public:
     void initStyleOption(QStyleOptionToolButton *option) const override
     {
         QToolButton::initStyleOption(option);
+    }
+};
+
+class ReceiverCountingAction : public QAction
+{
+public:
+    using QAction::QAction;
+
+    int changedReceiverCount() const
+    {
+        return receivers(SIGNAL(changed()));
     }
 };
 
@@ -304,6 +316,21 @@ void tst_QToolButton::defaultActionSynced()
     QCOMPARE(tbSpy.size(), ++tbToggledCount);
     QCOMPARE(aSpy.size(), aToggledCount);
     QCOMPARE(bSpy.size(), ++bToggledCount);
+}
+
+void tst_QToolButton::defaultActionChangedConnectionIsUnique()
+{
+    ReceiverCountingAction action;
+    QToolButton button;
+
+    button.setDefaultAction(&action);
+    const int initialReceiverCount = action.changedReceiverCount();
+    QCOMPARE_GT(initialReceiverCount, 0);
+
+    action.setEnabled(false);
+    QCOMPARE(action.changedReceiverCount(), initialReceiverCount);
+    action.setText(QStringLiteral("updated"));
+    QCOMPARE(action.changedReceiverCount(), initialReceiverCount);
 }
 
 void tst_QToolButton::deleteInHandler()
