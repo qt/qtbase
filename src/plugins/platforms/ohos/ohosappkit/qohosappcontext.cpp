@@ -311,8 +311,7 @@ public:
         const QString &portName, QObject *context,
         std::function<void(std::shared_ptr<QObject>)> callback) override;
     std::shared_ptr<BundleInfo> bundleInfo() const override;
-    Q_NORETURN void restartApp() override;
-    Q_NORETURN void restartApp(const Want &want) override;
+    Q_NORETURN void restartApp(const std::optional<Want> &want) override;
 
     double fontSizeScale() const override;
 
@@ -414,12 +413,13 @@ std::shared_ptr<WantInfo> AppContext::appLaunchWantInfo()
 }
 
 /*!
-    \fn static void QtOhosAppKit::AppContext::restartApp()
+    \fn static void QtOhosAppKit::AppContext::restartApp(const std::optional<QtOhosAppKit::Want> &want)
 
-    Restarts the Application using the app launch want.
+    Restarts the Application. If \a want is set, the new instance is launched with it; if \a want is
+    empty, the application is restarted with the app launch want.
 
     The current application will be killed using SIGKILL and a new instance of the application will
-    be launched with the application start want.
+    be launched.
 
     All abilities and sub-widnows created within this process will be closed.
 
@@ -431,38 +431,6 @@ std::shared_ptr<WantInfo> AppContext::appLaunchWantInfo()
     dialog is open, the application loses the system focus.
 
     If restartApp is called too frequently, the system call will be throttled to avoid errors.
-
-    Use this function, if you want to restart app with app launch want, instead of calling
-    \sa QtOhosAppKit::AppContext::restartApp(const QtOhosAppKit::Want &requestWant) with
-    \sa QtOhosAppKit::AppContext::getAppLaunchWant() as a parameter.
-*/
-Q_NORETURN void QOhosAppContextImpl::restartApp()
-{
-    restartAppImpl({});
-}
-
-/*!
-    \fn static void QtOhosAppKit::AppContext::restartApp(const QtOhosAppKit::Want &requestWant)
-
-    Restarts the Application using the \a requestWant.
-
-    The current application will be killed using SIGKILL and a new instance of the application will
-    be launched with the \a requestWant.
-
-    All abilities and sub-widnows created within this process will be closed.
-
-    The application will be killed ungracefully. This function won't return to the caller.
-
-    The caller must ensure, that the application has system focus when this function is called,
-    otherwise the application will be killed but the new application won't be started. OHOS system
-    treats some system dialogs (for example File Dialog) as separate from the application. If such
-    dialog is open, the application loses the system focus.
-
-    If restartApp is called too frequently, the system call will be throttled to avoid errors.
-
-    To call this function with the app launch want
-    (\sa QtOhosAppKit::AppContext::getAppLaunchWant()), use
-    \sa QtOhosAppKit::AppContext::restartApp()
 
     \code
     QtOhosAppKit::Want requestWant = QtOhosAppKit::AppContext::getAppLaunchWant();
@@ -471,9 +439,9 @@ Q_NORETURN void QOhosAppContextImpl::restartApp()
     QtOhosAppKit::AppContext::restartApp(requestWant);
     \endcode
 */
-Q_NORETURN void QOhosAppContextImpl::restartApp(const Want &requestWant)
+Q_NORETURN void QOhosAppContextImpl::restartApp(const std::optional<Want> &want)
 {
-    restartAppImpl(std::make_optional(convertWantToJsonObject(requestWant)));
+    restartAppImpl(want ? std::optional(convertWantToJsonObject(*want)) : std::nullopt);
 }
 
 QOhosAppContextImpl::QOhosAppContextImpl()
