@@ -8,6 +8,8 @@ QT_BEGIN_NAMESPACE
 
 namespace QtOhosAppKit {
 
+using namespace Private;
+
 namespace {
 
 class QOhosBundleInfoImpl : public BundleInfo
@@ -55,7 +57,7 @@ int QOhosBundleInfoImpl::versionCode() const
 BundleInfo::BundleInfo() = default;
 BundleInfo::~BundleInfo() = default;
 
-std::shared_ptr<BundleInfo> createBundleInfo(int versionCode)
+std::shared_ptr<BundleInfo> Private::createBundleInfo(int versionCode)
 {
     return std::make_shared<QOhosBundleInfoImpl>(versionCode);
 }

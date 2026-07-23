@@ -24,7 +24,7 @@
 
 QT_BEGIN_NAMESPACE
 
-namespace QtOhosAppKit {
+namespace QtOhosAppKit::Private {
 
 detail::WantInfoPriv::WantInfoPriv() = default;
 detail::WantInfoPriv::~WantInfoPriv() = default;

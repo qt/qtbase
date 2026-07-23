@@ -23,17 +23,13 @@
 
 QT_BEGIN_NAMESPACE
 
-namespace QtOhosAppKit {
-
-namespace ShareKit {
+namespace QtOhosAppKit::Private {
 
 std::shared_ptr<void> shareData(
-    QWindow *optMainWindow, const QList<std::shared_ptr<SharedRecord>> &records,
-    std::shared_ptr<ShareControllerOptions> controllerOptions,
+    QWindow *optMainWindow, const QList<std::shared_ptr<ShareKit::SharedRecord>> &records,
+    std::shared_ptr<ShareKit::ShareControllerOptions> controllerOptions,
     std::function<void()> panelClosedCallback,
     std::function<void(std::shared_ptr<ShareKit::ShareOperationResult>)> shareCompletedCallback);
-
-}
 
 }
 

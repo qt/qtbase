@@ -8,6 +8,8 @@ QT_BEGIN_NAMESPACE
 
 namespace QtOhosAppKit {
 
+using namespace Private;
+
 /*!
     \class QtOhosAppKit::OperationStatus
     \inmodule QtOhosAppKit
@@ -50,7 +52,7 @@ private:
 OperationStatus::OperationStatus() = default;
 OperationStatus::~OperationStatus() = default;
 
-std::shared_ptr<OperationStatus> createOperationStatus(bool status)
+std::shared_ptr<OperationStatus> Private::createOperationStatus(bool status)
 {
     return std::make_shared<QOhosOperationStatusImpl>(status);
 }

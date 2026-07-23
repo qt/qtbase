@@ -12,6 +12,8 @@ QT_BEGIN_NAMESPACE
 
 namespace QtOhosAppKit {
 
+using namespace Private;
+
 /*!
     \namespace QtOhosAppKit::ShareKit
     \inmodule QtOhosAppKit
@@ -606,6 +608,12 @@ std::shared_ptr<ShareControllerOptions> createControllerOptions()
 {
     return std::make_shared<ShareControllerOptionsImpl>();
 }
+
+}
+
+namespace Private {
+
+using namespace ShareKit;
 
 std::shared_ptr<void> shareData(
     QWindow *optMainWindow, const QList<std::shared_ptr<SharedRecord>> &records,
