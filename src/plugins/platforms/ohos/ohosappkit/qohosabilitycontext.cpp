@@ -322,14 +322,14 @@ std::optional<QtOhos::enums::ohos::app::ability::AbilityConstant::WindowMode> tr
     QOhosStartOptionsData::WindowMode windowMode)
 {
     namespace AbilityConstant = QtOhos::enums::ohos::app::ability::AbilityConstant;
-    using StartOptions = QOhosStartOptionsData;
+    using OptionsData = QOhosStartOptionsData;
 
     switch (windowMode) {
-    case StartOptions::WindowMode::WINDOW_MODE_SPLIT_PRIMARY:
+    case OptionsData::WindowMode::WINDOW_MODE_SPLIT_PRIMARY:
         return std::make_optional(AbilityConstant::WindowMode::WINDOW_MODE_SPLIT_PRIMARY);
-    case StartOptions::WindowMode::WINDOW_MODE_SPLIT_SECONDARY:
+    case OptionsData::WindowMode::WINDOW_MODE_SPLIT_SECONDARY:
         return std::make_optional(AbilityConstant::WindowMode::WINDOW_MODE_SPLIT_SECONDARY);
-    case StartOptions::WindowMode::WINDOW_MODE_FULLSCREEN:
+    case OptionsData::WindowMode::WINDOW_MODE_FULLSCREEN:
         return std::make_optional(AbilityConstant::WindowMode::WINDOW_MODE_FULLSCREEN);
     }
 
@@ -342,12 +342,12 @@ std::optional<QtOhos::enums::ohos::app::ability::contextConstant::ProcessMode> t
     QOhosStartOptionsData::ProcessMode processMode)
 {
     namespace contextConstant = QtOhos::enums::ohos::app::ability::contextConstant;
-    using StartOptions = QOhosStartOptionsData;
+    using OptionsData = QOhosStartOptionsData;
 
     switch (processMode) {
-    case StartOptions::ProcessMode::NEW_PROCESS_ATTACH_TO_PARENT:
+    case OptionsData::ProcessMode::NEW_PROCESS_ATTACH_TO_PARENT:
         return std::make_optional(contextConstant::ProcessMode::NEW_PROCESS_ATTACH_TO_PARENT);
-    case StartOptions::ProcessMode::NEW_PROCESS_ATTACH_TO_STATUS_BAR_ITEM:
+    case OptionsData::ProcessMode::NEW_PROCESS_ATTACH_TO_STATUS_BAR_ITEM:
         return std::make_optional(contextConstant::ProcessMode::NEW_PROCESS_ATTACH_TO_STATUS_BAR_ITEM);
     }
 
@@ -360,12 +360,12 @@ std::optional<QtOhos::enums::ohos::app::ability::contextConstant::StartupVisibil
     QOhosStartOptionsData::StartupVisibility startupVisibility)
 {
     namespace contextConstant = QtOhos::enums::ohos::app::ability::contextConstant;
-    using StartOptions = QOhosStartOptionsData;
+    using OptionsData = QOhosStartOptionsData;
 
     switch (startupVisibility) {
-    case StartOptions::StartupVisibility::STARTUP_HIDE:
+    case OptionsData::StartupVisibility::STARTUP_HIDE:
         return std::make_optional(contextConstant::StartupVisibility::STARTUP_HIDE);
-    case StartOptions::StartupVisibility::STARTUP_SHOW:
+    case OptionsData::StartupVisibility::STARTUP_SHOW:
         return std::make_optional(contextConstant::StartupVisibility::STARTUP_SHOW);
     }
 
@@ -378,14 +378,14 @@ std::optional<QtOhos::enums::ohos::bundle::bundleManager::SupportWindowMode> try
     QOhosStartOptionsData::SupportWindowMode supportWindowMode)
 {
     namespace bundleManager = QtOhos::enums::ohos::bundle::bundleManager;
-    using StartOptions = QOhosStartOptionsData;
+    using OptionsData = QOhosStartOptionsData;
 
     switch (supportWindowMode) {
-    case StartOptions::SupportWindowMode::FULL_SCREEN:
+    case OptionsData::SupportWindowMode::FULL_SCREEN:
         return std::make_optional(bundleManager::SupportWindowMode::FULL_SCREEN);
-    case StartOptions::SupportWindowMode::SPLIT:
+    case OptionsData::SupportWindowMode::SPLIT:
         return std::make_optional(bundleManager::SupportWindowMode::SPLIT);
-    case StartOptions::SupportWindowMode::FLOATING:
+    case OptionsData::SupportWindowMode::FLOATING:
         return std::make_optional(bundleManager::SupportWindowMode::FLOATING);
     }
 
@@ -1131,7 +1131,7 @@ QOhosAbilityContext::QOhosAbilityContext()
 {
     addNewWantConsumer(
         this,
-        [this](QSharedPointer<detail::WantInfo> wantInfo) {
+        [this](QSharedPointer<detail::WantInfoPriv> wantInfo) {
             Q_EMIT newWantInfoReceived(convertToOhosAppKitWantInfo(wantInfo));
         });
 }

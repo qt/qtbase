@@ -26,8 +26,8 @@ QT_BEGIN_NAMESPACE
 
 namespace QtOhosAppKit {
 
-detail::WantInfo::WantInfo() = default;
-detail::WantInfo::~WantInfo() = default;
+detail::WantInfoPriv::WantInfoPriv() = default;
+detail::WantInfoPriv::~WantInfoPriv() = default;
 
 namespace {
 
@@ -129,34 +129,34 @@ std::optional<detail::SharedRecord> tryConvertNapiObjectToSharedRecord(QNapi::Ob
         });
 }
 
-std::optional<detail::WantInfo::LaunchReason> tryMapOhosLaunchReasonToWantInfoEnum(
+std::optional<detail::WantInfoPriv::LaunchReason> tryMapOhosLaunchReasonToWantInfoEnum(
     QtOhos::enums::ohos::app::ability::AbilityConstant::LaunchReason ohosLaunchReason)
 {
     using OhosLaunchReason = QtOhos::enums::ohos::app::ability::AbilityConstant::LaunchReason;
-    using WantInfo = detail::WantInfo;
+    using WantInfoPriv = detail::WantInfoPriv;
 
     switch (ohosLaunchReason) {
     case OhosLaunchReason::START_ABILITY:
-        return std::make_optional(WantInfo::LaunchReason::START_ABILITY);
+        return std::make_optional(WantInfoPriv::LaunchReason::START_ABILITY);
     case OhosLaunchReason::CONTINUATION:
-        return std::make_optional(WantInfo::LaunchReason::CONTINUATION);
+        return std::make_optional(WantInfoPriv::LaunchReason::CONTINUATION);
     case OhosLaunchReason::PREPARE_CONTINUATION:
-        return std::make_optional(WantInfo::LaunchReason::PREPARE_CONTINUATION);
+        return std::make_optional(WantInfoPriv::LaunchReason::PREPARE_CONTINUATION);
     case OhosLaunchReason::PRELOAD:
-        return std::make_optional(WantInfo::LaunchReason::PRELOAD);
+        return std::make_optional(WantInfoPriv::LaunchReason::PRELOAD);
     case OhosLaunchReason::UNKNOWN:
     case OhosLaunchReason::CALL:
     case OhosLaunchReason::APP_RECOVERY:
     case OhosLaunchReason::SHARE:
     case OhosLaunchReason::AUTO_STARTUP:
     case OhosLaunchReason::INSIGHT_INTENT:
-        return std::make_optional(WantInfo::LaunchReason::UNKNOWN);
+        return std::make_optional(WantInfoPriv::LaunchReason::UNKNOWN);
     }
 
     return {};
 }
 
-detail::WantInfo::LaunchReason mapJsLaunchReasonToWantInfoEnumWithFallback(
+detail::WantInfoPriv::LaunchReason mapJsLaunchReasonToWantInfoEnumWithFallback(
     QOhosJsState &jsState, QNapi::Number jsLaunchReason)
 {
     auto optLaunchReasonJsEnum =
@@ -165,10 +165,10 @@ detail::WantInfo::LaunchReason mapJsLaunchReasonToWantInfoEnumWithFallback(
         optLaunchReasonJsEnum.has_value()
             ? tryMapOhosLaunchReasonToWantInfoEnum(optLaunchReasonJsEnum.value())
             : std::nullopt;
-    return optLaunchReason.value_or(detail::WantInfo::LaunchReason::UNKNOWN);
+    return optLaunchReason.value_or(detail::WantInfoPriv::LaunchReason::UNKNOWN);
 }
 
-class WantInfoImpl : public detail::WantInfo
+class WantInfoImpl : public detail::WantInfoPriv
 {
 public:
     WantInfoImpl(QNapi::Object want, LaunchReason launchReason);
@@ -193,7 +193,7 @@ private:
 };
 
 WantInfoImpl::WantInfoImpl(QNapi::Object want, LaunchReason launchReason)
-    : detail::WantInfo()
+    : detail::WantInfoPriv()
     , m_jsScopeData(
         QtOhos::makeProxyWithJsThreadDeleter(
             QtOhos::moveToSharedPtr(
@@ -250,9 +250,9 @@ std::optional<QList<detail::SharedRecord>> WantInfoImpl::tryGetSharedDataRecords
         Q_FUNC_INFO);
 }
 
-std::optional<detail::WantInfo::ContactInfo> WantInfoImpl::tryGetContactInfo() const
+std::optional<detail::WantInfoPriv::ContactInfo> WantInfoImpl::tryGetContactInfo() const
 {
-    using ContactInfo = detail::WantInfo::ContactInfo;
+    using ContactInfo = detail::WantInfoPriv::ContactInfo;
 
     return QOhosJsThreadGateway::evalWithPromise<std::optional<ContactInfo>>(
         [&](QOhosJsState &jsState, QOhosTaskPromise<std::optional<ContactInfo>> evalPromise) {
@@ -279,14 +279,14 @@ std::optional<detail::WantInfo::ContactInfo> WantInfoImpl::tryGetContactInfo() c
         Q_FUNC_INFO);
 }
 
-detail::WantInfo::LaunchReason WantInfoImpl::launchReason() const
+detail::WantInfoPriv::LaunchReason WantInfoImpl::launchReason() const
 {
     return m_launchReason;
 }
 
 }
 
-QSharedPointer<detail::WantInfo> makeAppLaunchWantInfo()
+QSharedPointer<detail::WantInfoPriv> makeAppLaunchWantInfo()
 {
     return QOhosJsThreadGateway::eval(
         [](QOhosJsState &jsState) {
@@ -295,7 +295,7 @@ QSharedPointer<detail::WantInfo> makeAppLaunchWantInfo()
                 ? std::make_optional(mapJsLaunchReasonToWantInfoEnumWithFallback(
                       jsState, optAppLaunchParam.value().get<QNapi::Number>("launchReason")))
                 : std::nullopt;
-            auto appLaunchReason = optAppLaunchReason.value_or(detail::WantInfo::LaunchReason::UNKNOWN);
+            auto appLaunchReason = optAppLaunchReason.value_or(detail::WantInfoPriv::LaunchReason::UNKNOWN);
             return QSharedPointer<WantInfoImpl>::create(jsState.appLaunchWant(), appLaunchReason);
         },
         Q_FUNC_INFO);
@@ -306,13 +306,13 @@ void addNewWantConsumer(QObject *context, QOhosConsumer<QJsonObject> wantConsume
     auto sharedWantConsumer = QtOhos::moveToSharedPtr(std::move(wantConsumer));
     addNewWantConsumer(
         context,
-        [sharedWantConsumer](QSharedPointer<detail::WantInfo> wantInfo) {
+        [sharedWantConsumer](QSharedPointer<detail::WantInfoPriv> wantInfo) {
             (*sharedWantConsumer)(wantInfo->jsonObject());
         });
 }
 
 void addNewWantConsumer(
-    QObject *context, QOhosConsumer<QSharedPointer<detail::WantInfo>> wantConsumer)
+    QObject *context, QOhosConsumer<QSharedPointer<detail::WantInfoPriv>> wantConsumer)
 {
     auto contextRef = QtOhos::makeQThreadSafeRef(context);
     auto sharedWantConsumer = QtOhos::moveToSharedPtr(std::move(wantConsumer));

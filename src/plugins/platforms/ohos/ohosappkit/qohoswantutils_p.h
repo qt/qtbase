@@ -29,9 +29,9 @@ QJsonObject convertWantToJsonObject(const QOhosWant &want);
 QOhosWant convertWantFromJsonObject(const QJsonObject &jsonWant);
 
 QSharedPointer<QOhosWantInfo> convertToOhosAppKitWantInfo(
-    QSharedPointer<detail::WantInfo> wantInfo);
+    QSharedPointer<detail::WantInfoPriv> wantInfo);
 
-QSharedPointer<detail::WantInfo> convertToQpaWantInfo(
+QSharedPointer<detail::WantInfoPriv> convertToQpaWantInfo(
     QSharedPointer<QOhosWantInfo> wantInfo);
 
 }

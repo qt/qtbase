@@ -56,7 +56,7 @@ struct QOhosStartOptionsData
         FLOATING,
     };
 
-    struct WindowCreateParams
+    struct WindowCreateParamsPriv
     {
         bool setWindowFadeInOutAnimation = false;
     };
@@ -79,7 +79,7 @@ struct QOhosStartOptionsData
     std::optional<int> maxWindowHeight;
     std::shared_ptr<QOhosConsumer<bool, QJsonObject, QString>> optCompletionHandler;
     std::optional<bool> hideStartWindow;
-    std::optional<WindowCreateParams> windowCreateParams;
+    std::optional<WindowCreateParamsPriv> windowCreateParams;
 };
 
 struct QOhosAbilityResult
