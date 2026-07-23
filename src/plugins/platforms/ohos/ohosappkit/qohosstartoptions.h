@@ -23,7 +23,7 @@ class Q_OHOSAPPKIT_EXPORT WindowCreateParams
 
 public:
     enum class AnimationType {
-        FADE_IN_OUT = 0,
+        FadeInOut = 0,
     };
     Q_ENUM(AnimationType)
 
@@ -44,28 +44,28 @@ class Q_OHOSAPPKIT_EXPORT StartOptions
 
 public:
     enum class ProcessMode {
-        NEW_PROCESS_ATTACH_TO_PARENT,
-        NEW_PROCESS_ATTACH_TO_STATUS_BAR_ITEM,
+        NewProcessAttachToParent,
+        NewProcessAttachToStatusBarItem,
     };
     Q_ENUM(ProcessMode)
 
     enum class StartupVisibility {
-        STARTUP_HIDE,
-        STARTUP_SHOW,
+        Hide,
+        Show,
     };
     Q_ENUM(StartupVisibility)
 
     enum class WindowMode {
-        WINDOW_MODE_SPLIT_PRIMARY,
-        WINDOW_MODE_SPLIT_SECONDARY,
-        WINDOW_MODE_FULLSCREEN,
+        SplitPrimary,
+        SplitSecondary,
+        Fullscreen,
     };
     Q_ENUM(WindowMode)
 
     enum class SupportWindowMode {
-        FULL_SCREEN,
-        SPLIT,
-        FLOATING,
+        FullScreen,
+        Split,
+        Floating,
     };
     Q_ENUM(SupportWindowMode)
 
