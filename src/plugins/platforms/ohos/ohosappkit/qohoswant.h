@@ -19,15 +19,15 @@ QT_BEGIN_NAMESPACE
 
 namespace QtOhosAppKit {
 
-enum class QOhosWantFlag {
+enum class WantFlag {
     AuthReadUriPermission = 1 << 0,
     AuthWriteUriPermission = 1 << 1,
     InstallOnDemand = 1 << 2,
 };
-Q_DECLARE_FLAGS(QOhosWantFlags, QOhosWantFlag)
-Q_DECLARE_OPERATORS_FOR_FLAGS(QOhosWantFlags)
+Q_DECLARE_FLAGS(WantFlags, WantFlag)
+Q_DECLARE_OPERATORS_FOR_FLAGS(WantFlags)
 
-struct QOhosWant
+struct Want
 {
     QString deviceId;
     QString bundleName;
@@ -37,12 +37,12 @@ struct QOhosWant
     QString type;
     QString action;
     QStringList entities;
-    QOhosWantFlags flags;
+    WantFlags flags;
     QJsonObject parameters;
     QHash<QString, int> fds;
 };
 
-class Q_OHOSAPPKIT_EXPORT QOhosWantInfo
+class Q_OHOSAPPKIT_EXPORT WantInfo
 {
 public:
     enum class LaunchReason {
@@ -59,9 +59,9 @@ public:
         QString contactId;
     };
 
-    virtual ~QOhosWantInfo();
+    virtual ~WantInfo();
 
-    virtual QOhosWant want() const = 0;
+    virtual Want want() const = 0;
 
     virtual QSharedPointer<QList<QSharedPointer<ShareKit::SharedRecord>>> tryGetSharedRecordsFromShareKit() const = 0;
 
@@ -70,10 +70,10 @@ public:
     virtual LaunchReason launchReason() const = 0;
 
 protected:
-    QOhosWantInfo();
+    WantInfo();
 
 private:
-    Q_DISABLE_COPY(QOhosWantInfo)
+    Q_DISABLE_COPY(WantInfo)
 };
 
 }

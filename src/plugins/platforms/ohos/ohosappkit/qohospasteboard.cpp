@@ -9,15 +9,15 @@ QT_BEGIN_NAMESPACE
 namespace QtOhosAppKit {
 
 /*!
-    \namespace QtOhosAppKit::QOhosPasteboard
+    \namespace QtOhosAppKit::Pasteboard
     \inmodule QtOhosAppKit
     \since 5.12.12
-    \brief The QOhosPasteboard class is to manage native pasteboard.
+    \brief The Pasteboard class is to manage native pasteboard.
 */
-namespace QOhosPasteboard {
+namespace Pasteboard {
 
 /*!
-    \fn void QtOhosAppKit::QOhosPasteboard::setInAppOnlyPasteboardShareOption(bool shareInAppOnly)
+    \fn void QtOhosAppKit::Pasteboard::setInAppOnlyPasteboardShareOption(bool shareInAppOnly)
 
     According to \a shareInAppOnly sets if pasteboard data content can be used only in the same
     application or across applications of a device.

@@ -17,7 +17,7 @@ QT_BEGIN_NAMESPACE
 
 namespace QtOhosAppKit {
 
-class Q_OHOSAPPKIT_EXPORT QOhosWindowCreateParams
+class Q_OHOSAPPKIT_EXPORT WindowCreateParams
 {
     Q_GADGET
 
@@ -27,18 +27,18 @@ public:
     };
     Q_ENUM(AnimationType)
 
-    virtual ~QOhosWindowCreateParams();
+    virtual ~WindowCreateParams();
 
     virtual void setAnimationType(AnimationType animationType) = 0;
 
 protected:
-    QOhosWindowCreateParams();
+    WindowCreateParams();
 
 private:
-    Q_DISABLE_COPY(QOhosWindowCreateParams)
+    Q_DISABLE_COPY(WindowCreateParams)
 };
 
-class Q_OHOSAPPKIT_EXPORT QOhosStartOptions
+class Q_OHOSAPPKIT_EXPORT StartOptions
 {
     Q_GADGET
 
@@ -69,7 +69,7 @@ public:
     };
     Q_ENUM(SupportWindowMode)
 
-    virtual ~QOhosStartOptions();
+    virtual ~StartOptions();
 
     virtual void setWindowMode(WindowMode windowMode) = 0;
     virtual void setDisplayId(int displayId) = 0;
@@ -88,21 +88,21 @@ public:
     virtual void setMaxWindowWidth(int maxWindowWidth) = 0;
     virtual void setMaxWindowHeight(int maxWindowHeight) = 0;
     virtual void setHideStartWindow(bool hideStartWindow) = 0;
-    virtual void setWindowCreateParams(const QOhosWindowCreateParams &windowCreateParams) = 0;
+    virtual void setWindowCreateParams(const WindowCreateParams &windowCreateParams) = 0;
     virtual void setCompletionHandler(
         QObject *context,
-        std::function<void(bool, QOhosElementName, QString)> callback) = 0;
+        std::function<void(bool, ElementName, QString)> callback) = 0;
 
 protected:
-    QOhosStartOptions();
+    StartOptions();
 
 private:
-    Q_DISABLE_COPY(QOhosStartOptions)
+    Q_DISABLE_COPY(StartOptions)
 };
 
-Q_OHOSAPPKIT_EXPORT QSharedPointer<QOhosWindowCreateParams> createWindowCreateParams();
+Q_OHOSAPPKIT_EXPORT QSharedPointer<WindowCreateParams> createWindowCreateParams();
 
-Q_OHOSAPPKIT_EXPORT QSharedPointer<QOhosStartOptions> createStartOptions();
+Q_OHOSAPPKIT_EXPORT QSharedPointer<StartOptions> createStartOptions();
 
 }
 

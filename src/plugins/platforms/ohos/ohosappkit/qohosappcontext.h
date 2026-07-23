@@ -17,29 +17,29 @@ QT_BEGIN_NAMESPACE
 
 namespace QtOhosAppKit {
 
-class Q_OHOSAPPKIT_EXPORT QOhosAppContext : public QObject
+class Q_OHOSAPPKIT_EXPORT AppContext : public QObject
 {
     Q_OBJECT
 
 public:
-    static QOhosAppContext *instance();
+    static AppContext *instance();
 
     static bool isNoUiChildMode();
 
     static void startNoUiChildProcess(QString libraryName, QStringList args);
 
-    static QSharedPointer<QOhosWantInfo> appLaunchWantInfo();
+    static QSharedPointer<WantInfo> appLaunchWantInfo();
 
     virtual bool hasSerialPortAccessRight(const QString &portName) const = 0;
     virtual void requestSerialPortAccessRightIfNeeded(
         const QString &portName, QObject *context,
         std::function<void(QSharedPointer<QObject>)> callback) = 0;
 
-    virtual QSharedPointer<QOhosBundleInfo> bundleInfo() const = 0;
+    virtual QSharedPointer<BundleInfo> bundleInfo() const = 0;
 
     Q_NORETURN virtual void restartApp() = 0;
 
-    Q_NORETURN virtual void restartApp(const QOhosWant &want) = 0;
+    Q_NORETURN virtual void restartApp(const Want &want) = 0;
 
     virtual double fontSizeScale() const = 0;
 
@@ -47,10 +47,10 @@ Q_SIGNALS:
     void fontSizeScaleChanged(double fontSizeScale);
 
 protected:
-    QOhosAppContext();
-    ~QOhosAppContext() override;
+    AppContext();
+    ~AppContext() override;
 
-    Q_DISABLE_COPY(QOhosAppContext)
+    Q_DISABLE_COPY(AppContext)
 };
 
 }

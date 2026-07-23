@@ -11,18 +11,18 @@ QT_BEGIN_NAMESPACE
 
 namespace QtOhosAppKit {
 
-class Q_OHOSAPPKIT_EXPORT QOhosOperationStatus
+class Q_OHOSAPPKIT_EXPORT OperationStatus
 {
 public:
-    virtual ~QOhosOperationStatus();
+    virtual ~OperationStatus();
 
     virtual bool success() const = 0;
 
 protected:
-    QOhosOperationStatus();
+    OperationStatus();
 
 private:
-    Q_DISABLE_COPY(QOhosOperationStatus)
+    Q_DISABLE_COPY(OperationStatus)
 };
 
 }

@@ -10,7 +10,7 @@ namespace QtOhosAppKit {
 
 namespace {
 
-class QOhosBundleInfoImpl : public QOhosBundleInfo
+class QOhosBundleInfoImpl : public BundleInfo
 {
 public:
     QOhosBundleInfoImpl(int versionCode);
@@ -22,7 +22,7 @@ private:
 };
 
 QOhosBundleInfoImpl::QOhosBundleInfoImpl(int versionCode)
-    : QOhosBundleInfo()
+    : BundleInfo()
     , m_versionCode(versionCode)
 {
 }
@@ -42,20 +42,20 @@ int QOhosBundleInfoImpl::versionCode() const
 }
 
 /*!
-    \class QtOhosAppKit::QOhosBundleInfo
+    \class QtOhosAppKit::BundleInfo
     \inmodule QtOhosAppKit
     \since 5.12.12
-    \brief The QOhosBundleInfo class contains API to provide native application bundle info.
+    \brief The BundleInfo class contains API to provide native application bundle info.
 
     To learn more about bundle info in HarmonyOS, see
     \l{https://developer.huawei.com/consumer/en/doc/harmonyos-references/js-apis-bundlemanager-bundleinfo}
     {Bundle Info}.
 */
 
-QOhosBundleInfo::QOhosBundleInfo() = default;
-QOhosBundleInfo::~QOhosBundleInfo() = default;
+BundleInfo::BundleInfo() = default;
+BundleInfo::~BundleInfo() = default;
 
-QSharedPointer<QOhosBundleInfo> createBundleInfo(int versionCode)
+QSharedPointer<BundleInfo> createBundleInfo(int versionCode)
 {
     return QSharedPointer<QOhosBundleInfoImpl>::create(versionCode);
 }

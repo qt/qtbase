@@ -24,15 +24,15 @@ QT_BEGIN_NAMESPACE
 
 namespace QtOhosAppKit {
 
-QJsonObject convertWantToJsonObject(const QOhosWant &want);
+QJsonObject convertWantToJsonObject(const Want &want);
 
-QOhosWant convertWantFromJsonObject(const QJsonObject &jsonWant);
+Want convertWantFromJsonObject(const QJsonObject &jsonWant);
 
-QSharedPointer<QOhosWantInfo> convertToOhosAppKitWantInfo(
+QSharedPointer<WantInfo> convertToOhosAppKitWantInfo(
     QSharedPointer<detail::WantInfoPriv> wantInfo);
 
 QSharedPointer<detail::WantInfoPriv> convertToQpaWantInfo(
-    QSharedPointer<QOhosWantInfo> wantInfo);
+    QSharedPointer<WantInfo> wantInfo);
 
 }
 

@@ -22,7 +22,7 @@ QT_BEGIN_NAMESPACE
 
 namespace QtOhosAppKit {
 
-QSharedPointer<QOhosBundleInfo> createBundleInfo(int versionCode);
+QSharedPointer<BundleInfo> createBundleInfo(int versionCode);
 
 }
 
