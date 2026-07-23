@@ -26,7 +26,7 @@ public:
 
     static bool isNoUiChildMode();
 
-    static void startNoUiChildProcess(QString libraryName, QStringList args);
+    static void startNoUiChildProcess(const QString &libraryName, const QStringList &args);
 
     static QSharedPointer<WantInfo> appLaunchWantInfo();
 
