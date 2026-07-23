@@ -631,10 +631,7 @@ public:
     void setDestroyFromSystemEnabled(bool destroyEnabled) override;
 
     void startAbilityForResult(
-        const Want &want, QObject *context,
-        std::function<void(std::optional<StartAbilityResult>)> callback) override;
-    void startAbilityForResult(
-        const Want &want, const StartOptions &options, QObject *context,
+        const Want &want, std::shared_ptr<StartOptions> options, QObject *context,
         std::function<void(std::optional<StartAbilityResult>)> callback) override;
 
     void shareDataWithShareKit(
@@ -644,8 +641,7 @@ public:
         std::function<void(std::shared_ptr<ShareKit::ShareOperationResult>)> onShareCompleted,
         std::function<void()> onPanelClosed) override;
 
-    bool tryOpenLink(const QString &link) override;
-    bool tryOpenLink(const QString &link, const OpenLinkOptions &options) override;
+    bool tryOpenLink(const QString &link, std::shared_ptr<OpenLinkOptions> options) override;
 
     void setContinuationActive(bool continuationActive) override;
 };
@@ -658,10 +654,7 @@ public:
     void setDestroyFromSystemEnabled(bool destroyEnabled) override;
 
     void startAbilityForResult(
-        const Want &want, QObject *context,
-        std::function<void(std::optional<StartAbilityResult>)> callback) override;
-    void startAbilityForResult(
-        const Want &want, const StartOptions &options, QObject *context,
+        const Want &want, std::shared_ptr<StartOptions> options, QObject *context,
         std::function<void(std::optional<StartAbilityResult>)> callback) override;
 
     void shareDataWithShareKit(
@@ -671,8 +664,7 @@ public:
         std::function<void(std::shared_ptr<ShareKit::ShareOperationResult>)> onShareCompleted,
         std::function<void()> onPanelClosed) override;
 
-    bool tryOpenLink(const QString &link) override;
-    bool tryOpenLink(const QString &link, const OpenLinkOptions &options) override;
+    bool tryOpenLink(const QString &link, std::shared_ptr<OpenLinkOptions> options) override;
 
     void setContinuationActive(bool continuationActive) override;
 
@@ -742,17 +734,13 @@ void QOhosDefaultAbilityContextImpl::setDestroyFromSystemEnabled(bool destroyEna
 }
 
 void QOhosDefaultAbilityContextImpl::startAbilityForResult(
-    const Want &want, QObject *context, std::function<void(std::optional<StartAbilityResult>)> callback)
-{
-    startAbilityForResultImpl(want, nullptr, std::nullopt, context, std::move(callback));
-}
-
-void QOhosDefaultAbilityContextImpl::startAbilityForResult(
-    const Want &want, const StartOptions &options, QObject *context,
+    const Want &want, std::shared_ptr<StartOptions> options, QObject *context,
     std::function<void(std::optional<StartAbilityResult>)> callback)
 {
     startAbilityForResultImpl(
-        want, nullptr, tryConvertStartOptionsToQpaFunctionsStruct(options), context, std::move(callback));
+        want, nullptr,
+        options ? tryConvertStartOptionsToQpaFunctionsStruct(*options) : std::nullopt,
+        context, std::move(callback));
 }
 
 void QOhosDefaultAbilityContextImpl::shareDataWithShareKit(
@@ -885,15 +873,13 @@ void setContinuationActiveImpl(QObject *optInstanceMainWindow, bool continuation
         Q_FUNC_INFO);
 }
 
-bool QOhosDefaultAbilityContextImpl::tryOpenLink(const QString &link)
+bool QOhosDefaultAbilityContextImpl::tryOpenLink(const QString &link, std::shared_ptr<OpenLinkOptions> options)
 {
-    return tryOpenLinkImpl(nullptr, link, {});
-}
-
-bool QOhosDefaultAbilityContextImpl::tryOpenLink(const QString &link, const OpenLinkOptions &options)
-{
-    const auto &optionsImpl = static_cast<const QOhosOpenLinkOptionsImpl &>(options);
-    return tryOpenLinkImpl(nullptr, link, optionsImpl.appLinkingOnly());
+    return tryOpenLinkImpl(
+        nullptr, link,
+        options
+            ? static_cast<const QOhosOpenLinkOptionsImpl &>(*options).appLinkingOnly()
+            : std::nullopt);
 }
 
 void QOhosDefaultAbilityContextImpl::setContinuationActive(bool continuationActive)
@@ -951,35 +937,23 @@ void QOhosAbilityContextImpl::setDestroyFromSystemEnabled(bool destroyEnabled)
 }
 
 /*!
-    \fn void QtOhosAppKit::AbilityContext::startAbilityForResult(const QtOhosAppKit::Want &want, QObject *context, std::function<void(std::optional<QtOhosAppKit::StartAbilityResult>)> callback)
-
-    Starts a UIAbility with a given \a want and delivers the result by invoking \a callback on the thread of \a context;
-    if \a context is destroyed before the result arrives, \a callback is not invoked. To start the UIAbility, at least bundleName and abilityName properties must be set.
-    On success \a callback receives the ability result; on failure (for example, the UIAbility was killed) it receives an empty std::optional.
-    See \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references/js-apis-inner-application-uiabilitycontext#startabilityforresult-2}
-    {UIAbilityContext.startAbilityForResult}
-*/
-void QOhosAbilityContextImpl::startAbilityForResult(
-    const Want &want, QObject *context, std::function<void(std::optional<StartAbilityResult>)> callback)
-{
-    startAbilityForResultImpl(want, m_instanceMainWindow, std::nullopt, context, std::move(callback));
-}
-
-/*!
-    \fn void QtOhosAppKit::AbilityContext::startAbilityForResult(const QtOhosAppKit::Want &want, const QtOhosAppKit::StartOptions &options, QObject *context, std::function<void(std::optional<QtOhosAppKit::StartAbilityResult>)> callback)
+    \fn void QtOhosAppKit::AbilityContext::startAbilityForResult(const QtOhosAppKit::Want &want, std::shared_ptr<QtOhosAppKit::StartOptions> options, QObject *context, std::function<void(std::optional<QtOhosAppKit::StartAbilityResult>)> callback)
 
     Starts a UIAbility with a given \a want and \a options and delivers the result by invoking \a callback on the thread of \a context;
     if \a context is destroyed before the result arrives, \a callback is not invoked. To start the UIAbility, at least bundleName and abilityName properties must be set.
+    Pass a null \a options to start without any start options.
     On success \a callback receives the ability result; on failure (for example, the UIAbility was killed) it receives an empty std::optional.
     See \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references/js-apis-inner-application-uiabilitycontext#startabilityforresult-2}
     {UIAbilityContext.startAbilityForResult}
 */
 void QOhosAbilityContextImpl::startAbilityForResult(
-    const Want &want, const StartOptions &options, QObject *context,
+    const Want &want, std::shared_ptr<StartOptions> options, QObject *context,
     std::function<void(std::optional<StartAbilityResult>)> callback)
 {
     startAbilityForResultImpl(
-        want, m_instanceMainWindow, tryConvertStartOptionsToQpaFunctionsStruct(options), context, std::move(callback));
+        want, m_instanceMainWindow,
+        options ? tryConvertStartOptionsToQpaFunctionsStruct(*options) : std::nullopt,
+        context, std::move(callback));
 }
 
 /*!
@@ -1007,30 +981,21 @@ void QOhosAbilityContextImpl::shareDataWithShareKit(
 }
 
 /*!
-    \fn virtual bool QtOhosAppKit::AbilityContext::tryOpenLink(const QString &link) = 0
+    \fn virtual bool QtOhosAppKit::AbilityContext::tryOpenLink(const QString &link, std::shared_ptr<OpenLinkOptions> options) = 0
 
-    Use provided \a link to open application with a deep link.
+    Use provided \a link and \a options to open application with a deep link; pass a null \a options
+    to open without any options.
     Returns true if successful, false otherwise.
 
     See \l {https://developer.huawei.com/consumer/en/doc/harmonyos-guides/app-linking-startup}{App Linking}
 */
-bool QOhosAbilityContextImpl::tryOpenLink(const QString &link)
+bool QOhosAbilityContextImpl::tryOpenLink(const QString &link, std::shared_ptr<OpenLinkOptions> options)
 {
-    return tryOpenLinkImpl(m_instanceMainWindow, link, {});
-}
-
-/*!
-    \fn virtual bool QtOhosAppKit::AbilityContext::tryOpenLink(const QString &link, const OpenLinkOptions &options) = 0
-
-    Use provided \a link and \a options to open application with a deep link.
-    Returns true if successful, false otherwise.
-
-    See \l {https://developer.huawei.com/consumer/en/doc/harmonyos-guides/app-linking-startup}{App Linking}
-*/
-bool QOhosAbilityContextImpl::tryOpenLink(const QString &link, const OpenLinkOptions &options)
-{
-    const auto &optionsImpl = static_cast<const QOhosOpenLinkOptionsImpl &>(options);
-    return tryOpenLinkImpl(m_instanceMainWindow, link, optionsImpl.appLinkingOnly());
+    return tryOpenLinkImpl(
+        m_instanceMainWindow, link,
+        options
+            ? static_cast<const QOhosOpenLinkOptionsImpl &>(*options).appLinkingOnly()
+            : std::nullopt);
 }
 
 /*!
@@ -1182,34 +1147,19 @@ std::shared_ptr<AbilityContext> AbilityContext::instanceForMainWindow(QWindow *i
 }
 
 /*!
-    \fn std::shared_ptr<OperationStatus> QtOhosAppKit::startAbility(const Want &want)
+    \fn std::shared_ptr<OperationStatus> QtOhosAppKit::startAbility(const Want &want, std::shared_ptr<StartOptions> options)
 
-    Starts an Ability for a given \a want. See
-    \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references-V5/js-apis-inner-application-uiabilitycontext-V5#uiabilitycontextstartability}
-    {Start Ability}.
-
-    \warning Currently, operation status result is hardcoded as "successful" (even if ability were
-    not started).
-*/
-std::shared_ptr<OperationStatus> startAbility(const Want &want)
-{
-    return startAbilityImpl(want, std::nullopt);
-}
-
-/*!
-    \fn std::shared_ptr<OperationStatus> QtOhosAppKit::startAbility(const Want &want,
-    const StartOptions &options)
-
-    Starts an Ability for a given \a want and \a options. See
+    Starts an Ability for a given \a want and \a options; pass a null \a options to start without
+    any start options. See
     \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references-V5/js-apis-inner-application-uiabilitycontext-V5#uiabilitycontextstartability-1}
     {Start Ability}.
 
     \warning Currently, operation status result is hardcoded as "successful" (even if ability were
     not started).
 */
-std::shared_ptr<OperationStatus> startAbility(const Want &want, const StartOptions &options)
+std::shared_ptr<OperationStatus> startAbility(const Want &want, std::shared_ptr<StartOptions> options)
 {
-    return startAbilityImpl(want, tryConvertStartOptionsToQpaFunctionsStruct(options));
+    return startAbilityImpl(want, options ? tryConvertStartOptionsToQpaFunctionsStruct(*options) : std::nullopt);
 }
 
 /*!
@@ -1239,23 +1189,14 @@ void startNewAbilityInstance(QWidget *instanceWidget)
 }
 
 /*!
-    \fn void QtOhosAppKit::startAppProcess(const QString &processId, const Want &requestWant)
+    \fn void QtOhosAppKit::startAppProcess(const QString &processId, const Want &requestWant, std::shared_ptr<StartOptions> options)
 
-    Starts application process for a given \a processId and \a requestWant.
+    Starts application process for a given \a processId, \a requestWant and \a options; pass a null
+    \a options to start without any start options.
 */
-void startAppProcess(const QString &processId, const Want &requestWant)
+void startAppProcess(const QString &processId, const Want &requestWant, std::shared_ptr<StartOptions> options)
 {
-    startAppProcessImpl(processId, requestWant, std::nullopt);
-}
-
-/*!
-    \fn void QtOhosAppKit::startAppProcess(const QString &processId, const Want &requestWant, const StartOptions &options)
-
-    Starts application process for a given \a processId, \a requestWant and \a options.
-*/
-void startAppProcess(const QString &processId, const Want &requestWant, const StartOptions &options)
-{
-    startAppProcessImpl(processId, requestWant, tryConvertStartOptionsToQpaFunctionsStruct(options));
+    startAppProcessImpl(processId, requestWant, options ? tryConvertStartOptionsToQpaFunctionsStruct(*options) : std::nullopt);
 }
 
 /*!

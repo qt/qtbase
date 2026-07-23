@@ -76,10 +76,7 @@ public:
     virtual void setDestroyFromSystemEnabled(bool destroyEnabled) = 0;
 
     virtual void startAbilityForResult(
-        const Want &want, QObject *context,
-        std::function<void(std::optional<StartAbilityResult>)> callback) = 0;
-    virtual void startAbilityForResult(
-        const Want &want, const StartOptions &options, QObject *context,
+        const Want &want, std::shared_ptr<StartOptions> options, QObject *context,
         std::function<void(std::optional<StartAbilityResult>)> callback) = 0;
 
     virtual void shareDataWithShareKit(
@@ -89,8 +86,7 @@ public:
         std::function<void(std::shared_ptr<ShareKit::ShareOperationResult>)> onShareCompleted,
         std::function<void()> onPanelClosed) = 0;
 
-    virtual bool tryOpenLink(const QString &link) = 0;
-    virtual bool tryOpenLink(const QString &link, const OpenLinkOptions &options) = 0;
+    virtual bool tryOpenLink(const QString &link, std::shared_ptr<OpenLinkOptions> options) = 0;
 
     virtual void setContinuationActive(bool continuationActive) = 0;
 
@@ -104,15 +100,13 @@ protected:
     Q_DISABLE_COPY(AbilityContext)
 };
 
-Q_OHOSAPPKIT_EXPORT std::shared_ptr<OperationStatus> startAbility(const Want &want);
-Q_OHOSAPPKIT_EXPORT std::shared_ptr<OperationStatus> startAbility(const Want &want, const StartOptions &options);
+Q_OHOSAPPKIT_EXPORT std::shared_ptr<OperationStatus> startAbility(const Want &want, std::shared_ptr<StartOptions> options = nullptr);
 
 Q_OHOSAPPKIT_EXPORT std::shared_ptr<OperationStatus> startAbilityByType(const QString &appType, const QJsonObject &wantParameters);
 
 Q_OHOSAPPKIT_EXPORT void startNewAbilityInstance(QWidget *instanceWidget);
 
-Q_OHOSAPPKIT_EXPORT void startAppProcess(const QString &processId, const Want &requestWant);
-Q_OHOSAPPKIT_EXPORT void startAppProcess(const QString &processId, const Want &requestWant, const StartOptions &options);
+Q_OHOSAPPKIT_EXPORT void startAppProcess(const QString &processId, const Want &requestWant, std::shared_ptr<StartOptions> options = nullptr);
 
 Q_OHOSAPPKIT_EXPORT void setAbilityInstanceDestroyEnabled(QWindow *instanceWindow, bool destroyEnabled);
 
