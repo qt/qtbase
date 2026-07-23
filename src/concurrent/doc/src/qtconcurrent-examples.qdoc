@@ -5,7 +5,6 @@
     \group qtconcurrentexamples
     \title Qt Concurrent Examples
     \brief Examples for the Qt Concurrent module
-    \ingroup all-examples
     \ingroup qtconcurrent
 
     The list of \l {Qt Concurrent} examples demonstrating how to use
