@@ -6,7 +6,6 @@
 #include <optional>
 #include <qarkui/input.h>
 #include <qarkui/qarkuiutils.h>
-#include <render/qohosnativegestureshandler.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -29,23 +28,7 @@ private:
     std::optional<QPointF> m_localPosition;
     std::optional<QPointF> m_globalPosition;
     std::optional<std::int32_t> m_wheelScrollLines;
-
-    QOhosConsumer<const QOhosNativeGestureEvent &> m_nativeGesturesHandler;
 };
-
-std::optional<Qt::NativeGestureType> getQtGestureType(::InputEvent_AxisAction ohAxisActionType)
-{
-    switch (ohAxisActionType) {
-    case ::AXIS_ACTION_BEGIN:
-        return Qt::BeginNativeGesture;
-    case ::AXIS_ACTION_END :
-    case ::AXIS_ACTION_CANCEL:
-        return Qt::EndNativeGesture;
-    case ::AXIS_ACTION_UPDATE:
-        return Qt::ZoomNativeGesture;
-    }
-    return {};
-}
 
 Qt::ScrollPhase convertArkUiAxisEventActionToQtScrollPhase(std::int32_t arkUiAxisEventAction)
 {
@@ -87,28 +70,11 @@ QOhosAxisEventHandler::QOhosAxisEventHandler(
     QtOhos::QThreadSafeRef<QOhosInputMethodEventHandler> imEventHandlerRef)
     : m_qWindowRef(qWindowRef)
     , m_imEventHandlerRef(imEventHandlerRef)
-    , m_nativeGesturesHandler(
-        makeQOhosNativeGesturesHandler(
-            m_qWindowRef,
-            [lastTotalScale = 1.0](QOhosNativeGestureEvent &event) mutable {
-                const auto totalScale =
-                    event.gestureType == Qt::BeginNativeGesture
-                        ? 1.0
-                        : event.value;
-                const auto scaleFactor =
-                    event.gestureType == Qt::BeginNativeGesture
-                        ? totalScale
-                        : totalScale / lastTotalScale;
-                lastTotalScale = totalScale;
-                event.value = scaleFactor;
-            }))
 {
 }
 
 void QOhosAxisEventHandler::handleUiAxisEvent(ArkUI_UIInputEvent *event)
 {
-    const auto now = std::chrono::steady_clock::now();
-
     auto eventTimestamp = OH_ArkUI_UIInputEvent_GetEventTime(event);
     auto localPosition = QArkUi::getPointerEventLocalPosition(event);
     auto globalPosition = QArkUi::getPointerEventGlobalPosition(event);
@@ -118,6 +84,11 @@ void QOhosAxisEventHandler::handleUiAxisEvent(ArkUI_UIInputEvent *event)
     auto eventAxisAction = OH_ArkUI_AxisEvent_GetAxisAction(event);
     std::int32_t wheelScrollLines;
     wheelScrollLines = OH_ArkUI_AxisEvent_GetScrollStep(event);
+
+    const auto totalScale = OH_ArkUI_AxisEvent_GetPinchAxisScaleValue(event);
+
+    if (qFuzzyIsNull(horizontalAxisValue) && qFuzzyIsNull(verticalAxisValue) && !qFuzzyIsNull(totalScale))
+        return;
 
     m_localPosition = localPosition;
     m_globalPosition = globalPosition;
@@ -144,26 +115,6 @@ void QOhosAxisEventHandler::handleUiAxisEvent(ArkUI_UIInputEvent *event)
             };
             eventHandler.onMouseWheelEvent(ohosWheelEvent, qWindowRef.data());
         });
-
-    const auto totalScale = OH_ArkUI_AxisEvent_GetPinchAxisScaleValue(event);
-
-    if (qFuzzyIsNull(horizontalAxisValue) && qFuzzyIsNull(verticalAxisValue) && !qFuzzyIsNull(totalScale)) {
-        const auto deviceType = QArkUi::getPointingDeviceType(event);
-        const auto gestureType = getQtGestureType(
-            static_cast<InputEvent_AxisAction>(eventAxisAction)).value_or(Qt::ZoomNativeGesture);
-
-        QOhosNativeGestureEvent newEvent {
-            .timestamp = now,
-            .gestureTimestamp = eventTimestamp,
-            .value = totalScale,
-            .localPosition = localPosition,
-            .globalPosition = globalPosition,
-            .gestureType = gestureType,
-            .deviceType = deviceType,
-        };
-
-        m_nativeGesturesHandler(newEvent);
-    }
 }
 
 void QOhosAxisEventHandler::handleUiCoastingAxisEvent(::ArkUI_UIInputEvent *event)

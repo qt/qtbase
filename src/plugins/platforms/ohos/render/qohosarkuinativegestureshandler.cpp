@@ -84,6 +84,10 @@ void QOhosArkUiNativeGesturesHandler::handleRotationGestureEvent(
     const auto delta = ::OH_ArkUI_RotationGesture_GetAngle(gestureEvent);
 
     const auto *inputEvent = ::OH_ArkUI_GestureEvent_GetRawInputEvent(gestureEvent);
+    const auto toolType = ::OH_ArkUI_UIInputEvent_GetToolType(inputEvent);
+    if (toolType != UI_INPUT_EVENT_TOOL_TYPE_TOUCHPAD)
+        return;
+
     const auto gestureTimestamp = ::OH_ArkUI_UIInputEvent_GetEventTime(inputEvent);
     const auto localPosition = QArkUi::getPointerEventLocalPosition(inputEvent);
     const auto globalPosition = QArkUi::getPointerEventGlobalPosition(inputEvent);
@@ -109,14 +113,11 @@ void QOhosArkUiNativeGesturesHandler::handlePinchGestureEvent(const ::ArkUI_Gest
     const auto qtGestureType = getQtGestureType(actionType, Qt::ZoomNativeGesture);
 
     const auto totalScale = ::OH_ArkUI_PinchGesture_GetScale(gestureEvent);
-    const auto localX = ::OH_ArkUI_PinchGesture_GetCenterX(gestureEvent);
-    const auto localY = ::OH_ArkUI_PinchGesture_GetCenterY(gestureEvent);
-    const QPointF localPosition { localX, localY };
-
     const auto *inputEvent = ::OH_ArkUI_GestureEvent_GetRawInputEvent(gestureEvent);
 
+    const QPointF localPosition = QArkUi::getPointerEventLocalPosition(inputEvent);
     const auto toolType = ::OH_ArkUI_UIInputEvent_GetToolType(inputEvent);
-    if (toolType == UI_INPUT_EVENT_TOOL_TYPE_MOUSE || toolType == UI_INPUT_EVENT_TOOL_TYPE_TOUCHPAD)
+    if (toolType != UI_INPUT_EVENT_TOOL_TYPE_TOUCHPAD)
         return;
 
     const auto gestureTimestamp = ::OH_ArkUI_UIInputEvent_GetEventTime(inputEvent);
