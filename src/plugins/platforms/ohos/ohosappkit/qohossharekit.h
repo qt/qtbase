@@ -22,6 +22,8 @@ namespace QtOhosAppKit {
 
 namespace ShareKit {
 
+Q_NAMESPACE
+
 enum class ShareAbilityType {
     CopyToPasteboard,
     SaveToMediaAsset,
@@ -29,6 +31,7 @@ enum class ShareAbilityType {
     Print,
     SaveToSuperHub,
 };
+Q_ENUM_NS(ShareAbilityType)
 
 class Q_OHOSAPPKIT_EXPORT SharedRecord
 {

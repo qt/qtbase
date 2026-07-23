@@ -34,6 +34,7 @@ enum class PathPolicyError {
     InvalidPath,
     PermissionNotPersisted,
 };
+Q_ENUM_NS(PathPolicyError)
 
 struct PathPolicy
 {
