@@ -6,7 +6,6 @@
 
 #include <QtCore/qbytearray.h>
 #include <QtCore/qlist.h>
-#include <QtCore/qsharedpointer.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qjsonobject.h>
 #include <QtGui/qwindow.h>
@@ -17,6 +16,7 @@
 #include <QtOhosAppKit/qohossharekit.h>
 #include <QtWidgets/qwidget.h>
 #include <functional>
+#include <memory>
 #include <optional>
 
 QT_BEGIN_NAMESPACE
@@ -37,7 +37,7 @@ private:
     Q_DISABLE_COPY(OpenLinkOptions)
 };
 
-Q_OHOSAPPKIT_EXPORT QSharedPointer<OpenLinkOptions> createOpenLinkOptions();
+Q_OHOSAPPKIT_EXPORT std::shared_ptr<OpenLinkOptions> createOpenLinkOptions();
 
 class Q_OHOSAPPKIT_EXPORT OnContinueContext
 {
@@ -70,8 +70,8 @@ class Q_OHOSAPPKIT_EXPORT AbilityContext : public QObject
     Q_OBJECT
 
 public:
-    static QSharedPointer<AbilityContext> defaultInstance();
-    static QSharedPointer<AbilityContext> instanceForMainWindow(QWindow *instanceMainWindow);
+    static std::shared_ptr<AbilityContext> defaultInstance();
+    static std::shared_ptr<AbilityContext> instanceForMainWindow(QWindow *instanceMainWindow);
 
     virtual void setDestroyFromSystemEnabled(bool destroyEnabled) = 0;
 
@@ -83,10 +83,10 @@ public:
         std::function<void(std::optional<StartAbilityResult>)> callback) = 0;
 
     virtual void shareDataWithShareKit(
-        const QList<QSharedPointer<ShareKit::SharedRecord>> &records,
-        QSharedPointer<ShareKit::ShareControllerOptions> controllerOptions,
+        const QList<std::shared_ptr<ShareKit::SharedRecord>> &records,
+        std::shared_ptr<ShareKit::ShareControllerOptions> controllerOptions,
         QObject *context,
-        std::function<void(QSharedPointer<ShareKit::ShareOperationResult>)> onShareCompleted,
+        std::function<void(std::shared_ptr<ShareKit::ShareOperationResult>)> onShareCompleted,
         std::function<void()> onPanelClosed) = 0;
 
     virtual bool tryOpenLink(const QString &link) = 0;
@@ -95,8 +95,8 @@ public:
     virtual void setContinuationActive(bool continuationActive) = 0;
 
 Q_SIGNALS:
-    void newWantInfoReceived(QSharedPointer<WantInfo> wantInfo);
-    void continueRequestReceived(QSharedPointer<OnContinueContext> onContinueContext);
+    void newWantInfoReceived(std::shared_ptr<WantInfo> wantInfo);
+    void continueRequestReceived(std::shared_ptr<OnContinueContext> onContinueContext);
 
 protected:
     AbilityContext();
@@ -104,10 +104,10 @@ protected:
     Q_DISABLE_COPY(AbilityContext)
 };
 
-Q_OHOSAPPKIT_EXPORT QSharedPointer<OperationStatus> startAbility(const Want &want);
-Q_OHOSAPPKIT_EXPORT QSharedPointer<OperationStatus> startAbility(const Want &want, const StartOptions &options);
+Q_OHOSAPPKIT_EXPORT std::shared_ptr<OperationStatus> startAbility(const Want &want);
+Q_OHOSAPPKIT_EXPORT std::shared_ptr<OperationStatus> startAbility(const Want &want, const StartOptions &options);
 
-Q_OHOSAPPKIT_EXPORT QSharedPointer<OperationStatus> startAbilityByType(const QString &appType, const QJsonObject &wantParameters);
+Q_OHOSAPPKIT_EXPORT std::shared_ptr<OperationStatus> startAbilityByType(const QString &appType, const QJsonObject &wantParameters);
 
 Q_OHOSAPPKIT_EXPORT void startNewAbilityInstance(QWidget *instanceWidget);
 

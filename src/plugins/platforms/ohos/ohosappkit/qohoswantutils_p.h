@@ -19,6 +19,7 @@
 #include <QtCore/qsharedpointer.h>
 #include <QtOhosAppKit/private/qohoswantinfo_p.h>
 #include <QtOhosAppKit/qohoswant.h>
+#include <memory>
 
 QT_BEGIN_NAMESPACE
 
@@ -28,11 +29,11 @@ QJsonObject convertWantToJsonObject(const Want &want);
 
 Want convertWantFromJsonObject(const QJsonObject &jsonWant);
 
-QSharedPointer<WantInfo> convertToOhosAppKitWantInfo(
+std::shared_ptr<WantInfo> convertToOhosAppKitWantInfo(
     QSharedPointer<detail::WantInfoPriv> wantInfo);
 
 QSharedPointer<detail::WantInfoPriv> convertToQpaWantInfo(
-    QSharedPointer<WantInfo> wantInfo);
+    std::shared_ptr<WantInfo> wantInfo);
 
 }
 

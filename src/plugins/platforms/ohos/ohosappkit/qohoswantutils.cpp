@@ -92,7 +92,7 @@ public:
 
     Want want() const override;
 
-    std::optional<QList<QSharedPointer<ShareKit::SharedRecord>>> tryGetSharedRecordsFromShareKit() const override;
+    std::optional<QList<std::shared_ptr<ShareKit::SharedRecord>>> tryGetSharedRecordsFromShareKit() const override;
 
     std::optional<ContactInfo> tryGetContactInfo() const override;
 
@@ -115,15 +115,15 @@ Want QOhosWantInfoImpl::want() const
     return convertWantFromJsonObject(m_qpaWantInfo->jsonObject());
 }
 
-std::optional<QList<QSharedPointer<ShareKit::SharedRecord>>> QOhosWantInfoImpl::tryGetSharedRecordsFromShareKit() const
+std::optional<QList<std::shared_ptr<ShareKit::SharedRecord>>> QOhosWantInfoImpl::tryGetSharedRecordsFromShareKit() const
 {
     auto records = qpaWantInfo()->tryGetSharedDataRecords();
     if (!records.has_value())
         return {};
 
-    QList<QSharedPointer<ShareKit::SharedRecord>> result;
+    QList<std::shared_ptr<ShareKit::SharedRecord>> result;
     for (auto &record : records.value()) {
-        QSharedPointer<ShareKit::SharedRecord> extrasRecord;
+        std::shared_ptr<ShareKit::SharedRecord> extrasRecord;
         if (record.content.has_value()) {
             extrasRecord = ShareKit::createContentRecord(
                 QMimeDatabase().mimeTypeForName(record.mimeType), record.content.value());
@@ -261,16 +261,16 @@ Want convertWantFromJsonObject(const QJsonObject &jsonWant)
     return want;
 }
 
-QSharedPointer<WantInfo> convertToOhosAppKitWantInfo(
+std::shared_ptr<WantInfo> convertToOhosAppKitWantInfo(
     QSharedPointer<detail::WantInfoPriv> wantInfo)
 {
-    return QSharedPointer<QOhosWantInfoImpl>::create(wantInfo);
+    return std::make_shared<QOhosWantInfoImpl>(wantInfo);
 }
 
 QSharedPointer<detail::WantInfoPriv> convertToQpaWantInfo(
-    QSharedPointer<WantInfo> wantInfo)
+    std::shared_ptr<WantInfo> wantInfo)
 {
-    return qSharedPointerCast<QOhosWantInfoImpl>(wantInfo)->qpaWantInfo();
+    return std::static_pointer_cast<QOhosWantInfoImpl>(wantInfo)->qpaWantInfo();
 }
 
 }

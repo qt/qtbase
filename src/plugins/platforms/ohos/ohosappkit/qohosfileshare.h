@@ -5,10 +5,10 @@
 #define QOHOSFILESHARE_H
 
 #include <QtCore/qlist.h>
-#include <QtCore/qsharedpointer.h>
 #include <QtCore/qstring.h>
 #include <QtOhosAppKit/qohosoperationstatus.h>
 #include <QtOhosAppKit/qtohosappkitglobal.h>
+#include <memory>
 
 QT_BEGIN_NAMESPACE
 
@@ -57,7 +57,7 @@ struct PathPolicyCheckResult
 class Q_OHOSAPPKIT_EXPORT ActionResult
 {
 public:
-    virtual QSharedPointer<OperationStatus> operationStatus() const = 0;
+    virtual std::shared_ptr<OperationStatus> operationStatus() const = 0;
     virtual QList<PathPolicyErrorInfo> errorInfoList() const = 0;
 
     virtual ~ActionResult();
@@ -72,7 +72,7 @@ private:
 class Q_OHOSAPPKIT_EXPORT CheckResult
 {
 public:
-    virtual QSharedPointer<OperationStatus> operationStatus() const = 0;
+    virtual std::shared_ptr<OperationStatus> operationStatus() const = 0;
     virtual QList<PathPolicyCheckResult> checkResultList() const = 0;
 
     virtual ~CheckResult();
@@ -84,12 +84,12 @@ private:
     Q_DISABLE_COPY(CheckResult)
 };
 
-Q_OHOSAPPKIT_EXPORT QSharedPointer<ActionResult> persistPermission(const QList<PathPolicy> &policies);
-Q_OHOSAPPKIT_EXPORT QSharedPointer<ActionResult> revokePermission(const QList<PathPolicy> &policies);
-Q_OHOSAPPKIT_EXPORT QSharedPointer<ActionResult> activatePermission(const QList<PathPolicy> &policies);
-Q_OHOSAPPKIT_EXPORT QSharedPointer<ActionResult> deactivatePermission(const QList<PathPolicy> &policies);
+Q_OHOSAPPKIT_EXPORT std::shared_ptr<ActionResult> persistPermission(const QList<PathPolicy> &policies);
+Q_OHOSAPPKIT_EXPORT std::shared_ptr<ActionResult> revokePermission(const QList<PathPolicy> &policies);
+Q_OHOSAPPKIT_EXPORT std::shared_ptr<ActionResult> activatePermission(const QList<PathPolicy> &policies);
+Q_OHOSAPPKIT_EXPORT std::shared_ptr<ActionResult> deactivatePermission(const QList<PathPolicy> &policies);
 
-Q_OHOSAPPKIT_EXPORT QSharedPointer<CheckResult> checkPersistent(const QList<PathPolicy> &policies);
+Q_OHOSAPPKIT_EXPORT std::shared_ptr<CheckResult> checkPersistent(const QList<PathPolicy> &policies);
 
 }
 

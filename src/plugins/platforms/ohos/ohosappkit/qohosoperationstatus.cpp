@@ -50,9 +50,9 @@ private:
 OperationStatus::OperationStatus() = default;
 OperationStatus::~OperationStatus() = default;
 
-QSharedPointer<OperationStatus> createOperationStatus(bool status)
+std::shared_ptr<OperationStatus> createOperationStatus(bool status)
 {
-    return QSharedPointer<QOhosOperationStatusImpl>::create(status);
+    return std::make_shared<QOhosOperationStatusImpl>(status);
 }
 
 }

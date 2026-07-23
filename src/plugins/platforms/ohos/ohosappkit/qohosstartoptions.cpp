@@ -509,23 +509,23 @@ StartOptions::StartOptions() = default;
 StartOptions::~StartOptions() = default;
 
 /*!
-    \fn QSharedPointer<QtOhosAppKit::WindowCreateParams> QtOhosAppKit::createWindowCreateParams()
+    \fn std::shared_ptr<QtOhosAppKit::WindowCreateParams> QtOhosAppKit::createWindowCreateParams()
 
     Creates WindowCreateParams instance.
 */
-QSharedPointer<WindowCreateParams> createWindowCreateParams()
+std::shared_ptr<WindowCreateParams> createWindowCreateParams()
 {
-    return QSharedPointer<QOhosWindowCreateParamsImpl>::create();
+    return std::make_shared<QOhosWindowCreateParamsImpl>();
 }
 
 /*!
-    \fn QSharedPointer<QtOhosAppKit::StartOptions> QtOhosAppKit::createStartOptions()
+    \fn std::shared_ptr<QtOhosAppKit::StartOptions> QtOhosAppKit::createStartOptions()
 
     Creates StartOptions instance.
 */
-QSharedPointer<StartOptions> createStartOptions()
+std::shared_ptr<StartOptions> createStartOptions()
 {
-    return QSharedPointer<QOhosStartOptionsImpl>::create();
+    return std::make_shared<QOhosStartOptionsImpl>();
 }
 
 std::optional<QOhosStartOptionsData> tryConvertStartOptionsToQpaFunctionsStruct(

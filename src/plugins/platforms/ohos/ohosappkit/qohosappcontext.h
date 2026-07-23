@@ -5,13 +5,13 @@
 #define QOHOSAPPCONTEXT_H
 
 #include <QtCore/qobject.h>
-#include <QtCore/qsharedpointer.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qstringlist.h>
 #include <QtOhosAppKit/qohosappbundleinfo.h>
 #include <QtOhosAppKit/qohoswant.h>
 #include <QtOhosAppKit/qtohosappkitglobal.h>
 #include <functional>
+#include <memory>
 
 QT_BEGIN_NAMESPACE
 
@@ -28,14 +28,14 @@ public:
 
     static void startNoUiChildProcess(const QString &libraryName, const QStringList &args);
 
-    static QSharedPointer<WantInfo> appLaunchWantInfo();
+    static std::shared_ptr<WantInfo> appLaunchWantInfo();
 
     virtual bool hasSerialPortAccessRight(const QString &portName) const = 0;
     virtual void requestSerialPortAccessRightIfNeeded(
         const QString &portName, QObject *context,
-        std::function<void(QSharedPointer<QObject>)> callback) = 0;
+        std::function<void(std::shared_ptr<QObject>)> callback) = 0;
 
-    virtual QSharedPointer<BundleInfo> bundleInfo() const = 0;
+    virtual std::shared_ptr<BundleInfo> bundleInfo() const = 0;
 
     Q_NORETURN virtual void restartApp() = 0;
 

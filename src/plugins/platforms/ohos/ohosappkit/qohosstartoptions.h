@@ -6,12 +6,12 @@
 
 #include <QtCore/qlist.h>
 #include <QtCore/qobject.h>
-#include <QtCore/qsharedpointer.h>
 #include <QtGui/qcolor.h>
 #include <QtGui/qimage.h>
 #include <QtOhosAppKit/qohosbundlemanager.h>
 #include <QtOhosAppKit/qtohosappkitglobal.h>
 #include <functional>
+#include <memory>
 
 QT_BEGIN_NAMESPACE
 
@@ -100,9 +100,9 @@ private:
     Q_DISABLE_COPY(StartOptions)
 };
 
-Q_OHOSAPPKIT_EXPORT QSharedPointer<WindowCreateParams> createWindowCreateParams();
+Q_OHOSAPPKIT_EXPORT std::shared_ptr<WindowCreateParams> createWindowCreateParams();
 
-Q_OHOSAPPKIT_EXPORT QSharedPointer<StartOptions> createStartOptions();
+Q_OHOSAPPKIT_EXPORT std::shared_ptr<StartOptions> createStartOptions();
 
 }
 

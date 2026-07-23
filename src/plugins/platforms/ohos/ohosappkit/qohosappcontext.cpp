@@ -309,8 +309,8 @@ public:
     bool hasSerialPortAccessRight(const QString &portName) const override;
     void requestSerialPortAccessRightIfNeeded(
         const QString &portName, QObject *context,
-        std::function<void(QSharedPointer<QObject>)> callback) override;
-    QSharedPointer<BundleInfo> bundleInfo() const override;
+        std::function<void(std::shared_ptr<QObject>)> callback) override;
+    std::shared_ptr<BundleInfo> bundleInfo() const override;
     Q_NORETURN void restartApp() override;
     Q_NORETURN void restartApp(const Want &want) override;
 
@@ -321,12 +321,12 @@ private:
 };
 
 template<typename T>
-QSharedPointer<QObject> makeQObjectLifetimeHandleOrNull(std::shared_ptr<T> handle)
+std::shared_ptr<QObject> makeQObjectLifetimeHandleOrNull(std::shared_ptr<T> handle)
 {
     if (!handle)
         return {};
 
-    return QSharedPointer<QObject>(
+    return std::shared_ptr<QObject>(
         new QObject(),
         [handle](QObject *ptr) {
             ptr->deleteLater();
@@ -404,11 +404,11 @@ void AppContext::startNoUiChildProcess(const QString &libraryName, const QString
 }
 
 /*!
-    \fn static QSharedPointer<QtOhosAppKit::WantInfo> QtOhosAppKit::AppContext::appLaunchWantInfo()
+    \fn static std::shared_ptr<QtOhosAppKit::WantInfo> QtOhosAppKit::AppContext::appLaunchWantInfo()
 
     Returns the Want object that was used to launch initial instance of the application's QAbility.
 */
-QSharedPointer<WantInfo> AppContext::appLaunchWantInfo()
+std::shared_ptr<WantInfo> AppContext::appLaunchWantInfo()
 {
     return convertToOhosAppKitWantInfo(makeAppLaunchWantInfo());
 }
@@ -478,7 +478,7 @@ Q_NORETURN void QOhosAppContextImpl::restartApp(const Want &requestWant)
 
 QOhosAppContextImpl::QOhosAppContextImpl()
 {
-    qRegisterMetaType<QSharedPointer<QObject>>();
+    qRegisterMetaType<std::shared_ptr<QObject>>();
 
     m_fontSizeScaleSupplier = makeQOhosDataSource<double>(
         [](QOhosJsState &jsState) -> double {
@@ -547,7 +547,7 @@ bool QOhosAppContextImpl::hasSerialPortAccessRight(const QString &portName) cons
 }
 
 /*!
-    \fn void QtOhosAppKit::AppContext::requestSerialPortAccessRightIfNeeded(const QString &portName, QObject *context, std::function<void(QSharedPointer<QObject>)> callback)
+    \fn void QtOhosAppKit::AppContext::requestSerialPortAccessRightIfNeeded(const QString &portName, QObject *context, std::function<void(std::shared_ptr<QObject>)> callback)
 
     Requests permission for the application to access the serial port identified by \a portName.
 
@@ -572,7 +572,7 @@ bool QOhosAppContextImpl::hasSerialPortAccessRight(const QString &portName) cons
 */
 void QOhosAppContextImpl::requestSerialPortAccessRightIfNeeded(
     const QString &portName, QObject *context,
-    std::function<void(QSharedPointer<QObject>)> callback)
+    std::function<void(std::shared_ptr<QObject>)> callback)
 {
     requestSerialPortAccessRight(
         portName, context,
@@ -582,12 +582,12 @@ void QOhosAppContextImpl::requestSerialPortAccessRightIfNeeded(
 }
 
 /*!
-    \fn QSharedPointer<BundleInfo> QtOhosAppKit::AppContext::bundleInfo() const
+    \fn std::shared_ptr<BundleInfo> QtOhosAppKit::AppContext::bundleInfo() const
 
     Returns BundleInfo object for the current application. The obtained information does not
     contain information about the signature, HAP module, ability, ExtensionAbility, or permission.
 */
-QSharedPointer<BundleInfo> QOhosAppContextImpl::bundleInfo() const
+std::shared_ptr<BundleInfo> QOhosAppContextImpl::bundleInfo() const
 {
     return createBundleInfo(getCurrentApplicationVersionCode());
 }

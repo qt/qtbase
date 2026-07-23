@@ -294,7 +294,7 @@ QString ShareOperationResultImpl::targetAbilityName() const
 }
 
 std::vector<QOhosShareKit::SharedRecord> convertToShareKitSharedRecords(
-    const QList<QSharedPointer<SharedRecord>> &dataToShare)
+    const QList<std::shared_ptr<SharedRecord>> &dataToShare)
 {
     std::vector<QOhosShareKit::SharedRecord> records;
 
@@ -556,65 +556,65 @@ ShareOperationResult::ShareOperationResult() = default;
 ShareOperationResult::~ShareOperationResult() = default;
 
 /*!
-    \fn QSharedPointer<QtOhosAppKit::ShareKit::SharedRecord> QtOhosAppKit::ShareKit::createContentRecord(const QMimeType &mimeType, const QString &content)
+    \fn std::shared_ptr<QtOhosAppKit::ShareKit::SharedRecord> QtOhosAppKit::ShareKit::createContentRecord(const QMimeType &mimeType, const QString &content)
 
     Creates a shared "content" record with a given \a mimeType and \a content. Shared record can be created
     with content (this function) or as a file shared record \sa QtOhosAppKit::ShareKit::createFileRecord().
     See \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references/share-system-share#section20696483813}
     {SharedRecord.content}
 */
-QSharedPointer<SharedRecord> createContentRecord(
+std::shared_ptr<SharedRecord> createContentRecord(
     const QMimeType &mimeType, const QString &content)
 {
-    return QSharedPointer<SharedRecordImpl>::create(mimeType, content, false);
+    return std::make_shared<SharedRecordImpl>(mimeType, content, false);
 }
 
 /*!
-    \fn QSharedPointer<QtOhosAppKit::ShareKit::SharedRecord> QtOhosAppKit::ShareKit::createFileRecord(const QFileInfo &fileInfo)
+    \fn std::shared_ptr<QtOhosAppKit::ShareKit::SharedRecord> QtOhosAppKit::ShareKit::createFileRecord(const QFileInfo &fileInfo)
 
     Creates a shared "file" record with a given \a fileInfo. Shared record can be created
     with file (this function) or as a content record \sa QtOhosAppKit::ShareKit::createContentRecord().
     See \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references/share-system-share#section20696483813}
     {SharedRecord.uri}
 */
-QSharedPointer<SharedRecord> createFileRecord(const QFileInfo &fileInfo)
+std::shared_ptr<SharedRecord> createFileRecord(const QFileInfo &fileInfo)
 {
-    return QSharedPointer<SharedRecordImpl>::create(fileInfo);
+    return std::make_shared<SharedRecordImpl>(fileInfo);
 }
 
 /*!
-    \fn QSharedPointer<QtOhosAppKit::ShareKit::SharedRecord> QtOhosAppKit::ShareKit::createUrlRecord(const QUrl &url)
+    \fn std::shared_ptr<QtOhosAppKit::ShareKit::SharedRecord> QtOhosAppKit::ShareKit::createUrlRecord(const QUrl &url)
 
     Creates a shared record with a given \a url.
     See \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references/share-system-share#section20696483813}
     {SharedRecord.content}
 */
-QSharedPointer<SharedRecord> createUrlRecord(const QUrl &url)
+std::shared_ptr<SharedRecord> createUrlRecord(const QUrl &url)
 {
-    return QSharedPointer<SharedRecordImpl>::create(QMimeType(), url.toString(), true);
+    return std::make_shared<SharedRecordImpl>(QMimeType(), url.toString(), true);
 }
 
 /*!
-    \fn QSharedPointer<QtOhosAppKit::ShareKit::ShareControllerOptions> QtOhosAppKit::ShareKit::createControllerOptions()
+    \fn std::shared_ptr<QtOhosAppKit::ShareKit::ShareControllerOptions> QtOhosAppKit::ShareKit::createControllerOptions()
 
     Creates a controller options instnace. Controller options can be used to configure preview mode,
     selection mode and pop-up window anchor.
     See \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references/share-system-share#section107934816010}
     {ShareControllerOptions}
 */
-QSharedPointer<ShareControllerOptions> createControllerOptions()
+std::shared_ptr<ShareControllerOptions> createControllerOptions()
 {
-    return QSharedPointer<ShareControllerOptionsImpl>::create();
+    return std::make_shared<ShareControllerOptionsImpl>();
 }
 
 std::shared_ptr<void> shareData(
-    QWindow *optMainWindow, const QList<QSharedPointer<SharedRecord>> &records,
-    QSharedPointer<ShareControllerOptions> controllerOptions,
+    QWindow *optMainWindow, const QList<std::shared_ptr<SharedRecord>> &records,
+    std::shared_ptr<ShareControllerOptions> controllerOptions,
     std::function<void()> panelClosedCallback,
-    std::function<void(QSharedPointer<ShareKit::ShareOperationResult>)> shareCompletedCallback)
+    std::function<void(std::shared_ptr<ShareKit::ShareOperationResult>)> shareCompletedCallback)
 {
     QOhosShareKit::ControllerOptions shareKitControllerOptions;
-    if (!controllerOptions.isNull()) {
+    if (controllerOptions) {
         const auto *controllerOptionsImpl = static_cast<const ShareControllerOptionsImpl *>(controllerOptions.get());
 
         const auto optAnchorOffset = controllerOptionsImpl->anchorOffset();
@@ -649,7 +649,7 @@ std::shared_ptr<void> shareData(
         optMainWindow, convertToShareKitSharedRecords(records), shareKitControllerOptions,
         std::move(panelClosedCallback),
         [shareCompletedCallback = std::move(shareCompletedCallback)](auto shareOperationResult) {
-            shareCompletedCallback(QSharedPointer<ShareOperationResultImpl>::create(shareOperationResult));
+            shareCompletedCallback(std::make_shared<ShareOperationResultImpl>(shareOperationResult));
         });
 }
 

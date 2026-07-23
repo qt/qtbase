@@ -10,11 +10,11 @@
 #include <QtCore/qmimetype.h>
 #include <QtCore/qpoint.h>
 #include <QtCore/qrect.h>
-#include <QtCore/qsharedpointer.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qurl.h>
 #include <QtCore/qvariant.h>
 #include <QtOhosAppKit/qtohosappkitglobal.h>
+#include <memory>
 
 QT_BEGIN_NAMESPACE
 
@@ -97,12 +97,12 @@ private:
     Q_DISABLE_COPY(ShareOperationResult)
 };
 
-Q_OHOSAPPKIT_EXPORT QSharedPointer<SharedRecord> createContentRecord(
+Q_OHOSAPPKIT_EXPORT std::shared_ptr<SharedRecord> createContentRecord(
     const QMimeType &mimeType, const QString &content);
-Q_OHOSAPPKIT_EXPORT QSharedPointer<SharedRecord> createFileRecord(const QFileInfo &fileInfo);
-Q_OHOSAPPKIT_EXPORT QSharedPointer<SharedRecord> createUrlRecord(const QUrl &url);
+Q_OHOSAPPKIT_EXPORT std::shared_ptr<SharedRecord> createFileRecord(const QFileInfo &fileInfo);
+Q_OHOSAPPKIT_EXPORT std::shared_ptr<SharedRecord> createUrlRecord(const QUrl &url);
 
-Q_OHOSAPPKIT_EXPORT QSharedPointer<ShareControllerOptions> createControllerOptions();
+Q_OHOSAPPKIT_EXPORT std::shared_ptr<ShareControllerOptions> createControllerOptions();
 
 }
 
