@@ -1365,6 +1365,26 @@ void tst_QTextDocument::toHtml_data()
     {
         CREATE_DOC_AND_CURSOR();
 
+        // A malformed run where an image char format has been applied over
+        // ordinary text as well as the image (e.g. by selecting a whole block
+        // and setting an image format on it). The exporter must emit <img>
+        // only for the object replacement character and keep the text, rather
+        // than emitting one <img> per character and dropping the text.
+        QTextImageFormat fmt;
+        fmt.setName("foo");
+        cursor.insertText("Blah");
+        cursor.insertImage(fmt);
+        cursor.movePosition(QTextCursor::StartOfBlock);
+        cursor.movePosition(QTextCursor::EndOfBlock, QTextCursor::KeepAnchor);
+        cursor.setCharFormat(fmt);
+
+        QTest::newRow("image-format-over-text") << QTextDocumentFragment(&doc)
+                            << QString("<p DEFAULTBLOCKSTYLE>Blah<img src=\"foo\" /></p>");
+    }
+
+    {
+        CREATE_DOC_AND_CURSOR();
+
         QString txt = QLatin1String("Blah");
         txt += QChar::LineSeparator;
         txt += QLatin1String("Bar");

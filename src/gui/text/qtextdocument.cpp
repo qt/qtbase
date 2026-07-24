@@ -2992,6 +2992,14 @@ void QTextHtmlExporter::emitFragment(const QTextFragment &fragment)
 
     if (isObject) {
         for (int i = 0; isImage && i < txt.size(); ++i) {
+            if (txt.at(i) != QChar::ObjectReplacementCharacter) {
+                // A well-formed image fragment consists only of object
+                // replacement characters. If an image char format was somehow
+                // applied over ordinary text, emit that text rather than a
+                // spurious <img>, so the content is never silently dropped.
+                html += QString(txt.at(i)).toHtmlEscaped();
+                continue;
+            }
             QTextImageFormat imgFmt = format.toImageFormat();
 
             html += "<img"_L1;
