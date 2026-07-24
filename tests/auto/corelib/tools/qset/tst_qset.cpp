@@ -33,12 +33,14 @@ public:
     uint value() const { return m_i; }
 
 private:
-    // move might change value, use cref for qHash() and relation operator:
+    // move might change value, use cref for qHash() and relation operators:
     friend size_t qHash(const MovedFromTracker &key, size_t seed = 0) noexcept // clazy:exclude=function-args-by-value
     { return qHash(key.m_i, seed); }
 
     friend bool operator==(const MovedFromTracker &lhs, const MovedFromTracker &rhs) noexcept // clazy:exclude=function-args-by-value
     { return lhs.m_i == rhs.m_i; }
+    friend bool operator<(const MovedFromTracker &lhs, const MovedFromTracker &rhs) noexcept // clazy:exclude=function-args-by-value
+    { return lhs.m_i < rhs.m_i; }
 };
 
 int toNumber(const QString &str)
@@ -1310,6 +1312,23 @@ void tst_QSet::values()
     set.remove(5);
 
     QCOMPARE(sorted(set.values()), QList<int>({ 1, 2, 10 }));
+
+    {
+        QSet<MovedFromTracker> s = {{2}, {1}, {3}};
+
+        const QList<MovedFromTracker> expected = {{1}, {2}, {3}};
+
+        QCOMPARE_EQ(sorted(s.values()), expected);
+
+        QCOMPARE_EQ(sorted(QSet(s).values()), expected); // rvalue overload, shared
+
+        QVERIFY(s.isDetached());
+        QCOMPARE_EQ(sorted(std::move(s).values()), expected); // rvalue overload, unshared
+
+        QCOMPARE_EQ(s.size(), 3); // we moved from the elements, which remain
+        for (const auto &e : std::as_const(s))
+            QCOMPARE_EQ(e.value(), MovedFromTracker::MovedFrom);
+    }
 }
 
 void tst_QSet::setOperationsPickEquivalentElementsFromLHSContainer_data()

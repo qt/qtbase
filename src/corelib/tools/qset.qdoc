@@ -852,7 +852,8 @@
     current item.
 */
 
-/*! \fn template <class T> QList<T> QSet<T>::values() const
+/*!
+    \fn template <class T> QList<T> QSet<T>::values() const &
 
     Returns a new QList containing the elements in the set. The
     order of the elements in the QList is undefined.
@@ -864,6 +865,11 @@
     \l constEnd().
 */
 
+/*!
+    \fn template <class T> QList<T> QSet<T>::values() &&
+    \since 6.12
+    \overload
+*/
 
 /*!
     \fn template <class T> QDataStream &operator<<(QDataStream &out, const QSet<T> &set)
