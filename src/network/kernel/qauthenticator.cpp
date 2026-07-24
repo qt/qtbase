@@ -538,7 +538,8 @@ void QAuthenticatorPrivate::parseHttpResponse(const QHttpHeaders &headers,
     */
 
     QByteArrayView headerVal;
-    for (const auto &current : headers.values(search)) {
+    const QByteArrayList values = headers.values(search); // pinned for headerVal
+    for (const auto &current : values) {
         const QLatin1StringView str(current);
         if (method < Basic && str.startsWith("basic"_L1, Qt::CaseInsensitive)) {
             method = Basic;
