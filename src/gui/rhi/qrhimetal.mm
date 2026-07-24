@@ -1877,7 +1877,8 @@ void QRhiMetal::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
         cbD->currentSrbGeneration = srbD->generation;
         cbD->currentResSlot = resSlot;
 
-        const bool offsetOnlyChange = hasDynamicOffsetInSrb && !resNeedsRebind && !srbChanged && !srbRebuilt;
+        const bool offsetOnlyChange = hasDynamicOffsetInSrb && !resNeedsRebind
+                && !srbChanged && !srbRebuilt && !pipelineChanged;
         enqueueShaderResourceBindings(srbD, cbD, dynamicOffsetCount, dynamicOffsets, offsetOnlyChange, resBindMaps);
     }
 }
