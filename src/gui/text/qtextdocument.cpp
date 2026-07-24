@@ -2967,10 +2967,22 @@ void QTextHtmlExporter::emitFragment(const QTextFragment &fragment)
             html += "\"></a>"_L1;
         }
         const QString href = format.anchorHref();
-        if (!href.isEmpty()) {
-            html += "<a href=\""_L1;
-            html += href.toHtmlEscaped();
-            html += "\">"_L1;
+        const QString tooltip = format.toolTip();
+        const bool hasHref = !href.isEmpty();
+        const bool hasTooltip = !tooltip.isEmpty();
+        if (hasHref || hasTooltip) {
+            html += "<a"_L1;
+            if (hasHref) {
+                html += " href=\""_L1;
+                html += href.toHtmlEscaped();
+                html += u'"';
+            }
+            if (hasTooltip) {
+                html += " title=\""_L1;
+                html += tooltip.toHtmlEscaped();
+                html += u'"';
+            }
+            html += u'>';
             closeAnchor = true;
         }
     }
@@ -2979,16 +2991,37 @@ void QTextHtmlExporter::emitFragment(const QTextFragment &fragment)
     const bool isObject = txt.contains(QChar::ObjectReplacementCharacter);
     const bool isImage = isObject && format.isImageFormat();
 
+    // A tool tip on a fragment that is not an (href) anchor and not an image is
+    // exported as a title attribute on the wrapping span. title and href are
+    // independent, so a tool tip does not require an anchor; the anchor case
+    // already emitted the tool tip as the <a> title above, and images carry
+    // their own title attribute.
+    const QString spanToolTip = (!closeAnchor && !isImage) ? format.toolTip() : QString();
+
     const auto styleTag = "<span style=\""_L1;
     html += styleTag;
 
     bool attributesEmitted = false;
     if (!isImage)
         attributesEmitted = emitCharFormatStyle(format);
+
+    bool spanEmitted = attributesEmitted;
     if (attributesEmitted)
-        html += "\">"_L1;
+        html += u'"'; // close the style="..." value; the tag is closed below
     else
-        html.chop(styleTag.size());
+        html.chop(styleTag.size()); // there was no style attribute after all
+
+    if (!spanToolTip.isEmpty()) {
+        if (!spanEmitted) {
+            html += "<span"_L1;
+            spanEmitted = true;
+        }
+        html += " title=\""_L1;
+        html += spanToolTip.toHtmlEscaped();
+        html += u'"';
+    }
+    if (spanEmitted)
+        html += u'>';
 
     if (isObject) {
         for (int i = 0; isImage && i < txt.size(); ++i) {
@@ -3046,7 +3079,7 @@ void QTextHtmlExporter::emitFragment(const QTextFragment &fragment)
         html += txt;
     }
 
-    if (attributesEmitted)
+    if (spanEmitted)
         html += "</span>"_L1;
 
     if (closeAnchor)
