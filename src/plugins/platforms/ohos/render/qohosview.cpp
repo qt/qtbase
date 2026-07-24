@@ -1080,8 +1080,9 @@ void QOhosView::requestActivate()
 
 void QOhosView::maximize()
 {
-    if (m_ohosWindowProxy != nullptr)
-        m_ohosWindowProxy->maximize(QOhosWindowProxy::MaximizePresentation::EXIT_IMMERSIVE);
+    auto *windowProxy = flushedWindowProxyOrNull();
+    if (windowProxy != nullptr)
+        windowProxy->maximize(QOhosWindowProxy::MaximizePresentation::EXIT_IMMERSIVE);
 }
 
 std::unique_ptr<QOhosView> QOhosView::createForWindow(QOhosPlatformWindow *window, QOhosPropertiesProvider windowPropertiesProvider)
@@ -1446,6 +1447,15 @@ void QOhosView::flushSystemPropertyUpdatesImmediate()
                 (this->*updateFuncPtr)(optUpdateRequest.value());
     });
     m_updatePending = false;
+}
+
+QOhosWindowProxy *QOhosView::flushedWindowProxyOrNull()
+{
+    if (m_ohosWindowProxy == nullptr)
+        return nullptr;
+
+    flushSystemPropertyUpdatesImmediate();
+    return m_ohosWindowProxy.get();
 }
 
 void QOhosView::addForeignWindowChild(QOhosForeignWindow *foreignWindow)
