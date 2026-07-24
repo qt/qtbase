@@ -107,6 +107,7 @@ Q_SIGNALS:
 
 protected:
     AbilityContext();
+    ~AbilityContext() override;
 
     Q_DISABLE_COPY(AbilityContext)
 };
