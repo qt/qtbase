@@ -1184,6 +1184,22 @@ void tst_QTextDocument::toHtml_data()
     {
         CREATE_DOC_AND_CURSOR();
 
+        // A tool tip on a table cell is exported as the cell's title attribute.
+        QTextTable *table = cursor.insertTable(1, 1);
+        QTextTableCell cell = table->cellAt(0, 0);
+        QTextTableCellFormat fmt = cell.format().toTableCellFormat();
+        fmt.setToolTip("cell tip");
+        cell.setFormat(fmt);
+
+        QTest::newRow("tablecelltooltip") << QTextDocumentFragment(&doc)
+                                  << QString("<table border=\"1\" style=\" border-collapse:collapse;\" cellpadding=\"4\">"
+                                             "\n<tr>\n<td title=\"cell tip\"></td></tr>"
+                                             "</table>");
+    }
+
+    {
+        CREATE_DOC_AND_CURSOR();
+
         QTextTable *table = cursor.insertTable(1, 4);
         table->mergeCells(0, 0, 1, 2);
         table->mergeCells(0, 2, 1, 2);

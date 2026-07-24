@@ -3481,6 +3481,9 @@ void QTextHtmlExporter::emitTable(const QTextTable *table)
             const QTextTableCellFormat cellFormat = cell.format().toTableCellFormat();
             emitBackgroundAttribute(cellFormat);
 
+            if (!cellFormat.toolTip().isEmpty())
+                emitAttribute("title", cellFormat.toolTip());
+
             QTextCharFormat oldDefaultCharFormat = defaultCharFormat;
 
             QTextCharFormat::VerticalAlignment valign = cellFormat.verticalAlignment();
