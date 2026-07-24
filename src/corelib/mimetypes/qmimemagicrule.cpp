@@ -222,6 +222,12 @@ QMimeMagicRule::QMimeMagicRule(const QString &type,
         m_type = Invalid;
         return;
     }
+    if (m_startPos < 0 || m_endPos < 0 || m_endPos < m_startPos) {
+        if (errorString)
+            *errorString = "Invalid offset range \""_L1 + offsets + u'"';
+        m_type = Invalid;
+        return;
+    }
 
     if (Q_UNLIKELY(m_value.isEmpty())) {
         m_type = Invalid;
