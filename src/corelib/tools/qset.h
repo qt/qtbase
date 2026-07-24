@@ -183,6 +183,7 @@ public:
     inline bool empty() const { return isEmpty(); }
 
     iterator insert(const_iterator, const T &value) { return insert(value); }
+    iterator insert(const_iterator, T &&value) { return insert(std::move(value)); }
 
     // comfort
     inline QSet<T> &operator<<(const T &value) { insert(value); return *this; }

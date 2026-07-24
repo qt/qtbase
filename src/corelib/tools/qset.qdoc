@@ -512,6 +512,12 @@
 */
 
 /*!
+    \fn template <class T> QSet<T>::iterator QSet<T>::insert(const_iterator it, T &&value)
+    \overload
+    \since 6.12
+*/
+
+/*!
     \fn template <class T> bool QSet<T>::count() const
 
     Same as size().
