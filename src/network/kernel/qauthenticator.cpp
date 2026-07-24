@@ -601,7 +601,7 @@ void QAuthenticatorPrivate::parseHttpResponse(const QHttpHeaders &headers,
         if (newRealm != realm) {
             if (phase == Done)
                 phase = Start;
-            realm = newRealm;
+            realm = std::move(newRealm);
             this->options["realm"_L1] = realm;
         }
     };
