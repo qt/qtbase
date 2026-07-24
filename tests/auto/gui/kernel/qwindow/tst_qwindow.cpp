@@ -2768,7 +2768,7 @@ void tst_QWindow::modalWindowPosition()
     if (isPlatformEglFS())
         QEXPECT_FAIL("", "eglfs windows are fullscreen by default.", Continue);
 
-    QCOMPARE(window.geometry(), origGeo);
+    QTRY_COMPARE(window.geometry(), origGeo);
 }
 
 void tst_QWindow::modalCloseWhileBlocked()
