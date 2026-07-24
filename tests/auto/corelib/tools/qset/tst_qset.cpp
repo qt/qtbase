@@ -7,6 +7,40 @@
 
 #include <private/qcomparisontesthelper_p.h>
 
+class MovedFromTracker
+{
+    uint m_i;
+public:
+    enum : uint {
+        DefaultConstructed = 0x7654'3210,
+        MovedFrom = 0xfedc'ba98,
+    };
+
+    MovedFromTracker() noexcept : m_i{DefaultConstructed} {}
+    Q_IMPLICIT MovedFromTracker(uint i) : m_i{i} {}
+    MovedFromTracker(const MovedFromTracker &) = default;
+    MovedFromTracker &operator=(const MovedFromTracker &) = default;
+    MovedFromTracker(MovedFromTracker &&other) noexcept
+        : m_i{std::exchange(other.m_i, MovedFrom)}
+    {}
+    MovedFromTracker &operator=(MovedFromTracker &&other) noexcept
+    {
+        m_i = std::exchange(other.m_i, MovedFrom);
+        return *this;
+    }
+    ~MovedFromTracker() = default;
+
+    uint value() const { return m_i; }
+
+private:
+    // move might change value, use cref for qHash() and relation operator:
+    friend size_t qHash(const MovedFromTracker &key, size_t seed = 0) noexcept // clazy:exclude=function-args-by-value
+    { return qHash(key.m_i, seed); }
+
+    friend bool operator==(const MovedFromTracker &lhs, const MovedFromTracker &rhs) noexcept // clazy:exclude=function-args-by-value
+    { return lhs.m_i == rhs.m_i; }
+};
+
 int toNumber(const QString &str)
 {
     int res = 0;
@@ -40,6 +74,7 @@ private slots:
     void end();
     void insert();
     void insertConstructionCounted();
+    void uniteMovesRatherThanCopies();
     void setOperations();
     void setOperationsOnEmptySet();
     void stlIterator();
@@ -787,6 +822,35 @@ void tst_QSet::insertConstructionCounted()
     // The previously existing key is used as they compare equal:
     QCOMPARE(inserted->copies, 1);
     QCOMPARE(inserted->moves, 1);
+}
+
+void tst_QSet::uniteMovesRatherThanCopies()
+{
+    //
+    // GIVEN: two QSets such that unite() will move from one of them
+    //
+    QSet<MovedFromTracker> lhs = {{2}, {1}};
+    QSet<MovedFromTracker> rhs = {{4}, {2}, {3}};
+
+    //
+    // WHEN: unite()ing them
+    //
+    lhs.unite(std::move(rhs)); // rvalue, unshared: this should hit the path that moves from elements
+
+    const QSet<MovedFromTracker> expected = {{1}, {2}, {3}, {4}};
+    QCOMPARE_EQ(lhs, expected);
+
+    //
+    // THEN elements from `rhs` have been moved from
+    //
+
+    // we moved from the elements, which remain in the container
+    // (don't assume it's `lhs` or `rhs`, so just check for > 0):
+    QCOMPARE_GT(rhs.size(), 0);
+
+    // check all were moved from:
+    for (const auto &e : std::as_const(rhs))
+        QCOMPARE_EQ(e.value(), MovedFromTracker::MovedFrom);
 }
 
 void tst_QSet::setOperations()

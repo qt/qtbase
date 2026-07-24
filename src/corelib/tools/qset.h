@@ -268,8 +268,8 @@ Q_INLINE_TEMPLATE auto QSet<T>::unite(QSet &&other) -> QSet&
         //      equivalent elements from `other`:
 
         if (other.isDetached()) { // can move elements from `other`
-            for (auto &e : other)
-                _emplace_or_overwrite(std::move(e));
+            for (auto it = other.q_hash.begin(), end = other.q_hash.end(); it != end; ++it)
+                _emplace_or_overwrite(std::move(it.i.node()->key));
         } else { // need to copy elements from `other`
             for (const auto &e : std::as_const(other))
                 _emplace_or_overwrite(e);
