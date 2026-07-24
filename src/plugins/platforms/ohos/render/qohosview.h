@@ -257,6 +257,7 @@ private:
     void updateWindowFrameless(bool frameless);
     void syncWindowStateImmediate(WindowStateSyncReason reason = WindowStateSyncReason::Normal);
     void flushSystemPropertyUpdatesImmediate();
+    QOhosWindowProxy *flushedWindowProxyOrNull();
     void setOrResetWindowProxy(std::shared_ptr<QOhosWindowProxy> windowProxy, QWindow *optLogicalParent);
     const QOhosView *ancestorViewWithWindowOrNull() const;
     void hideMainWindow();
