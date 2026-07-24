@@ -2753,6 +2753,9 @@ void tst_QWindow::modalWindowPosition()
     if (isPlatformWayland())
         QSKIP("Window position not queryable on Wayland");
 
+    if (!supportsNonFullScreenWindows())
+        QSKIP("This platform does not support non-fullscreen windows");
+
     QWindow window;
     window.setTitle(QLatin1String(QTest::currentTestFunction()));
     window.setGeometry(QRect(m_availableTopLeft + QPoint(100, 100), m_testWindowSize));
