@@ -33,7 +33,7 @@ protected:
             ;
 
 public:
-    constexpr QBasicMutex()
+    constexpr QBasicMutex() noexcept
         : d_ptr(nullptr)
     {}
 
