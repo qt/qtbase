@@ -215,7 +215,8 @@ public:
     friend QSet operator-(const QSet &lhs, const QSet &rhs) { return QSet(lhs) -= rhs; }
     friend QSet operator-(QSet &&lhs, const QSet &rhs) { lhs -= rhs; return std::move(lhs); }
 
-    inline QList<T> values() const;
+    inline QList<T> values() const &;
+    inline QList<T> values() &&;
 
 private:
     static inline QSet intersected_helper(const QSet &lhs, const QSet &rhs);
@@ -386,7 +387,7 @@ Q_INLINE_TEMPLATE bool QSet<T>::contains(const QSet<T> &other) const
 }
 
 template <typename T>
-QList<T> QSet<T>::values() const
+QList<T> QSet<T>::values() const &
 {
     QList<T> result;
     result.reserve(size());
@@ -396,6 +397,21 @@ QList<T> QSet<T>::values() const
         ++i;
     }
     return result;
+}
+
+template <typename T>
+QList<T> QSet<T>::values() &&
+{
+    if (!isDetached())
+        return values(); // lvalue overload
+    // we can move from *this:
+    return [&] {
+        QList<T> result;
+        result.reserve(size());
+        for (auto it = q_hash.begin(), end = q_hash.end(); it != end; ++it)
+            result.push_back(std::move(it.i.node()->key));
+        return result;
+    }();
 }
 
 Q_DECLARE_SEQUENTIAL_ITERATOR(Set)
