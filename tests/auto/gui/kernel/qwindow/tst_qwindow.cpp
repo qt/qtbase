@@ -133,6 +133,12 @@ static bool isPlatformWayland()
     return QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive);
 }
 
+static bool supportsNonFullScreenWindows()
+{
+    return QGuiApplicationPrivate::platformIntegration()->hasCapability(
+        QPlatformIntegration::NonFullScreenWindows);
+}
+
 void tst_QWindow::initTestCase()
 {
 #ifdef Q_OS_ANDROID
@@ -568,10 +574,8 @@ void tst_QWindow::positioning()
 #ifdef Q_OS_ANDROID
     QSKIP("Fails on Android. QTBUG-105201");
 #endif
-    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(
-                QPlatformIntegration::NonFullScreenWindows)) {
+    if (!supportsNonFullScreenWindows())
         QSKIP("This platform does not support non-fullscreen windows");
-    }
 
     if (isPlatformWayland())
         QSKIP("Wayland: This fails. See QTBUG-68660.");
@@ -629,10 +633,9 @@ void tst_QWindow::framePositioning()
 #ifdef Q_OS_ANDROID
     QSKIP("Fails on Android. QTBUG-105201");
 #endif
-    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(
-                QPlatformIntegration::NonFullScreenWindows)) {
+    if (!supportsNonFullScreenWindows())
         QSKIP("This platform does not support non-fullscreen windows");
-    }
+
     if (isPlatformWayland())
         QSKIP("Wayland: This fails. See QTBUG-68660.");
 
@@ -2531,8 +2534,7 @@ void tst_QWindow::initialPosition()
     if (isPlatformWayland())
         QSKIP("Window position not queryable on Wayland");
 
-    const auto *platformIntegration = QGuiApplicationPrivate::platformIntegration();
-    if (!platformIntegration->hasCapability(QPlatformIntegration::NonFullScreenWindows))
+    if (!supportsNonFullScreenWindows())
         QSKIP("This platform does not support non-fullscreen windows");
 
     // Child and Qt::SubWindow windows should default to position (0,0) when shown
@@ -3715,8 +3717,7 @@ void tst_QWindow::expandedClientAreaSize_data()
 
 void tst_QWindow::expandedClientAreaSize()
 {
-    const auto *platformIntegration = QGuiApplicationPrivate::platformIntegration();
-    if (!platformIntegration->hasCapability(QPlatformIntegration::NonFullScreenWindows))
+    if (!supportsNonFullScreenWindows())
         QSKIP("This platform does not support non-fullscreen windows");
 
 #if !defined(Q_OS_MACOS)
