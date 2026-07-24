@@ -447,7 +447,9 @@ int QTextMarkdownImporter::cbEnterSpan(int spanType, void *det)
         m_imageFormat = QTextImageFormat();
         MD_SPAN_IMG_DETAIL *detail = static_cast<MD_SPAN_IMG_DETAIL *>(det);
         m_imageFormat.setName(QString::fromUtf8(detail->src.text, int(detail->src.size)));
-        m_imageFormat.setProperty(QTextFormat::ImageTitle, QString::fromUtf8(detail->title.text, int(detail->title.size)));
+        const QVariant tooltip = QString::fromUtf8(detail->title.text, int(detail->title.size));
+        m_imageFormat.setProperty(QTextFormat::ImageTitle, tooltip);
+        m_imageFormat.setProperty(QTextFormat::TextToolTip, tooltip);
         break;
     }
     case MD_SPAN_CODE:

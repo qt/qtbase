@@ -497,6 +497,18 @@ void tst_QTextMarkdownImporter::fragmentsAndProperties_data()
             << QString("<b>x&amp;lt;</b>")
             << 0 << "x&lt;" << QTextFormat::FontWeight << QVariant(700)
             << 1 << 1;
+    // An image title is stored as both ImageTitle (for serialization) and
+    // TextToolTip (what QTextEdit/Text display on hover). QTBUG-148545
+    QTest::newRow("imageTitleAsImageTitle")
+            << QString("before ![alt](/path/to/image.png \"the title\") after")
+            << 1 << QString(QChar(QChar::ObjectReplacementCharacter))
+            << QTextFormat::ImageTitle << QVariant(QStringLiteral("the title"))
+            << 1 << 3;
+    QTest::newRow("imageTitleAsToolTip")
+            << QString("before ![alt](/path/to/image.png \"the title\") after")
+            << 1 << QString(QChar(QChar::ObjectReplacementCharacter))
+            << QTextFormat::TextToolTip << QVariant(QStringLiteral("the title"))
+            << 1 << 3;
 }
 
 void tst_QTextMarkdownImporter::fragmentsAndProperties()
