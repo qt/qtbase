@@ -1103,6 +1103,8 @@ AbilityContext::AbilityContext()
         });
 }
 
+AbilityContext::~AbilityContext() = default;
+
 /*!
     \fn std::shared_ptr<AbilityContext> QtOhosAppKit::AbilityContext::defaultInstance()
 
