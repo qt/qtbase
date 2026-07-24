@@ -445,6 +445,12 @@
 */
 
 /*!
+    \fn template <class T> QSet<T>::iterator QSet<T>::insert(T &&value)
+    \overload
+    \since 6.1
+*/
+
+/*!
     \fn template <class T> QSet<T> &QSet<T>::unite(const QSet<T> &other)
     \fn template <class T> QSet<T> &QSet<T>::unite(QSet &&other)
 
