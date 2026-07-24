@@ -625,7 +625,7 @@ void QAuthenticatorPrivate::parseHttpResponse(const QHttpHeaders &headers,
             phase = Done;
         break;
     }
-    default:
+    case None:
         realm.clear();
         challenge = QByteArray();
         phase = Invalid;
