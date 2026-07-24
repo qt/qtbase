@@ -3518,10 +3518,12 @@ void tst_QWindow::childGeometryAfterReparent()
     QVERIFY(QTest::qWaitForWindowExposed(&child));
 
     // Check initial geometry. Window has a frame, so geometry != frameGeometry
-    QTRY_COMPARE(child.geometry(), topLevelChildGeometry);
-    QCOMPARE_NE(child.frameGeometry(), child.geometry());
-    QCOMPARE(child.position(), topLevelChildGeometry.topLeft());
-    QCOMPARE_NE(child.framePosition(), m_availableTopLeft);
+    if (supportsNonFullScreenWindows()) {
+        QTRY_COMPARE(child.geometry(), topLevelChildGeometry);
+        QCOMPARE_NE(child.frameGeometry(), child.geometry());
+        QCOMPARE(child.position(), topLevelChildGeometry.topLeft());
+        QCOMPARE_NE(child.framePosition(), m_availableTopLeft);
+    }
 
     // Reparent to become a child window
     child.setParent(&parent);
@@ -3538,10 +3540,12 @@ void tst_QWindow::childGeometryAfterReparent()
     child.setGeometry(topLevelChildGeometry);
 
     // Window has a frame, so geometry != frameGeometry
-    QTRY_COMPARE(child.geometry(), topLevelChildGeometry);
-    QCOMPARE_NE(child.frameGeometry(), child.geometry());
-    QCOMPARE(child.position(), topLevelChildGeometry.topLeft());
-    QCOMPARE_NE(child.framePosition(), m_availableTopLeft);
+    if (supportsNonFullScreenWindows()) {
+        QTRY_COMPARE(child.geometry(), topLevelChildGeometry);
+        QCOMPARE_NE(child.frameGeometry(), child.geometry());
+        QCOMPARE(child.position(), topLevelChildGeometry.topLeft());
+        QCOMPARE_NE(child.framePosition(), m_availableTopLeft);
+    }
 }
 
 struct ParentWindow : public QWindow
