@@ -37,6 +37,14 @@ class QSmallByteArray
     std::array<quint8, N> m_data;
     static_assert(N <= (std::numeric_limits<std::uint8_t>::max)());
     quint8 m_size = 0;
+
+    void assign_impl(const void *p, size_t n)
+    {
+        Q_PRE(n <= N);
+        if (n)
+            memcpy(data(), p, n);
+        m_size = quint8(n);
+    }
 public:
     QSmallByteArray() = default;
     // all compiler-generated SMFs are ok!
@@ -55,10 +63,7 @@ public:
     template <typename Container> // ### underconstrained
     constexpr void assign(const Container &c)
     {
-        const size_t otherSize = size_t(std::size(c));
-        Q_ASSERT(otherSize <= N);
-        memcpy(data(), std::data(c), otherSize);
-        m_size = quint8(otherSize);
+        assign_impl(std::data(c), size_t(std::size(c)));
     }
 
     constexpr quint8 *data() noexcept { return m_data.data(); }
