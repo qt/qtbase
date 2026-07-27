@@ -15,7 +15,6 @@
 #include <optional>
 #include <qohosutils.h>
 #include <render/qohosjswindowregistry.h>
-#include <stdexcept>
 #include <tuple>
 #include <typeindex>
 #include <vector>
@@ -981,8 +980,6 @@ void invokeInJsThreadAndWaitForContinue(
     std::function<void(JsState &, QOhosTaskPromise<>)> &&task,
     std::string callerContextName)
 {
-    using namespace std::string_literals;
-
     const auto funcInfo = Q_FUNC_INFO;
 
     struct JsTaskCompletionState
@@ -1058,11 +1055,11 @@ void invokeInJsThreadAndWaitForContinue(
         taskReadyFuture.wait();
     }
 
-    if (completionState->jsThreadExceptionMsg.has_value()) {
-        throw std::runtime_error(
-            "Got exception from task invoked in JS thread"s
-            + " (caller: \""s + callerContextName + "\"): "
-            + completionState->jsThreadExceptionMsg.value());
+    if (completionState->jsThreadExceptionMsg) {
+        qOhosReportFatalErrorAndAbort(
+            "%s: exception from task invoked in JS thread (caller: \"%s\"): %s",
+            Q_FUNC_INFO, callerContextName.c_str(),
+            completionState->jsThreadExceptionMsg.value().c_str());
     }
 }
 
