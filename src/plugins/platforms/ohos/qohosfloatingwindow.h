@@ -65,6 +65,7 @@ private:
     void handleWindowDisplayIdChanged(QOhosDisplayInfo::JsDisplayId displayId);
 
     std::unique_ptr<QOhosView> m_view;
+    std::optional<QOhosWindowProxy::WindowEvent> m_activationEventDeferredUntilWindowUnblocked;
     std::optional<QOhosWindowProxy::WindowEventType> m_lastWindowEventType;
     std::optional<QOhosWindowProxy::WindowStatusType> m_lastWindowStatusType;
     std::optional<QRegion> m_windowMask;

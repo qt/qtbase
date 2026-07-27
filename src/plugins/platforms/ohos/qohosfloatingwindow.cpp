@@ -286,12 +286,17 @@ void QOhosFloatingWindow::handleWindowEvent(QOhosWindowProxy::WindowEvent evt)
     bool windowAcceptsFocusAndInput = checkWindowAcceptsFocus() && checkWindowAcceptsInput();
     auto previousWindowEventType = std::exchange(m_lastWindowEventType, evt.type);
 
+    if (evt.type != QOhosWindowProxy::WindowEventType::WINDOW_SHOWN)
+        m_activationEventDeferredUntilWindowUnblocked.reset();
+
     switch (evt.type) {
     case QOhosWindowProxy::WindowEventType::WINDOW_ACTIVE:
     {
         QWindow *modalWindow = nullptr;
         if (QGuiApplicationPrivate::instance()->isWindowBlocked(qWindow, &modalWindow)
             && qWindow != modalWindow) {
+            if (qWindow->isTopLevel())
+                m_activationEventDeferredUntilWindowUnblocked = evt;
             modalWindow->requestActivate();
             return;
         }
@@ -478,6 +483,16 @@ void QOhosFloatingWindow::handleWindowRectChanged(
 
 bool QOhosFloatingWindow::windowEvent(QEvent *event)
 {
+    if (event->type() == QEvent::WindowUnblocked) {
+        auto deferredActivationEvent =
+            std::exchange(m_activationEventDeferredUntilWindowUnblocked, std::nullopt);
+        const QWindow *windowHoldingFocus = QGuiApplicationPrivate::focus_window;
+        bool noVisibleWindowHoldsFocus =
+            windowHoldingFocus == nullptr || !windowHoldingFocus->isVisible();
+        if (deferredActivationEvent && noVisibleWindowHoldsFocus)
+            handleWindowEvent(*deferredActivationEvent);
+    }
+
     if (event->type() == QEvent::Timer) {
         auto *timerEvent = static_cast<QTimerEvent *>(event);
         if (m_view && timerEvent->timerId() == m_geometryChangeTimer.timerId()) {
