@@ -153,5 +153,5 @@ qt_internal_extend_target(QOhosPlatformIntegrationPlugin
 )
 
 if(QT_FEATURE_widgets)
-    add_subdirectory(ohosappkit)
+    add_subdirectory(extras)
 endif()
