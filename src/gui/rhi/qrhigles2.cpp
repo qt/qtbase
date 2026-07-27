@@ -14,6 +14,8 @@
 #include <qpa/qplatformopenglcontext.h>
 #include <qmath.h>
 
+#include <limits>
+
 QT_BEGIN_NAMESPACE
 
 /*
@@ -2718,13 +2720,19 @@ void QRhiGles2::enqueueSubresUpload(QGles2Texture *texD, QGles2CommandBuffer *cb
             // upload for a compressed texture must cover the entire image, but
             // that is clearly not ideal when building a texture atlas, or when
             // having a 3D texture with per-slice data.
-            quint32 byteSize = 0;
-            compressedFormatInfo(texD->m_format, texD->m_pixelSize, nullptr, &byteSize, nullptr);
+            quint32 levelByteSize = 0;
+            compressedFormatInfo(texD->m_format, texD->m_pixelSize, nullptr, &levelByteSize, nullptr);
+            quint64 byteSize = levelByteSize;
             if (is3D)
-                byteSize *= depth;
+                byteSize *= quint64(depth);
             if (isArray)
-                byteSize *= arraySize;
-            QByteArray zeroBuf(byteSize, 0);
+                byteSize *= quint64(arraySize);
+            if (byteSize > quint64(std::numeric_limits<int>::max())) {
+                qWarning("Compressed texture zero-initialization would need %llu bytes "
+                         "which is too large; skipping", byteSize);
+                return;
+            }
+            QByteArray zeroBuf(qsizetype(byteSize), 0);
             QGles2CommandBuffer::Command &cmd(cbD->commands.get());
             cmd.cmd = QGles2CommandBuffer::Command::CompressedImage;
             cmd.args.compressedImage.target = texD->target;
@@ -2735,7 +2743,7 @@ void QRhiGles2::enqueueSubresUpload(QGles2Texture *texD, QGles2CommandBuffer *cb
             cmd.args.compressedImage.w = texD->m_pixelSize.width();
             cmd.args.compressedImage.h = is1D && isArray ? arraySize : texD->m_pixelSize.height();
             cmd.args.compressedImage.depth = is3D ? depth : (isArray ? arraySize : 0);
-            cmd.args.compressedImage.size = byteSize;
+            cmd.args.compressedImage.size = int(byteSize);
             cmd.args.compressedImage.data = cbD->retainData(zeroBuf);
             texD->zeroInitialized = true;
         }
@@ -6070,6 +6078,9 @@ bool QGles2Texture::prepareCreate(QSize *adjustedSize)
     samplerState = QGles2SamplerData();
 
     usageState.access = AccessNone;
+
+    if (!rhiD->textureFormatInfo(m_format, size, nullptr, nullptr, nullptr))
+        return false;
 
     if (adjustedSize)
         *adjustedSize = size;

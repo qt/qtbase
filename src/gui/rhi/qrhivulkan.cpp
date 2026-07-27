@@ -7590,6 +7590,9 @@ bool QVkTexture::prepareCreate(QSize *adjustedSize)
     usageState.access = 0;
     usageState.stage = 0;
 
+    if (!rhiD->textureFormatInfo(m_format, size, nullptr, nullptr, nullptr))
+        return false;
+
     if (adjustedSize)
         *adjustedSize = size;
 

@@ -158,10 +158,10 @@ public:
     void prepareForCreate(QRhi *rhi, QRhi::Implementation impl, QRhi::Flags flags, QRhiAdapter *adapter);
 
     bool isCompressedFormat(QRhiTexture::Format format) const;
-    void compressedFormatInfo(QRhiTexture::Format format, const QSize &size,
+    bool compressedFormatInfo(QRhiTexture::Format format, const QSize &size,
                               quint32 *bpl, quint32 *byteSize,
                               QSize *blockDim) const;
-    void textureFormatInfo(QRhiTexture::Format format, const QSize &size,
+    bool textureFormatInfo(QRhiTexture::Format format, const QSize &size,
                            quint32 *bpl, quint32 *byteSize, quint32 *bytesPerPixel) const;
     bool isStencilSupportingFormat(QRhiTexture::Format format) const;
 

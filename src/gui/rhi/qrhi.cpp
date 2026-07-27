@@ -22,6 +22,7 @@
 #include "qrhimetal_p.h"
 #endif
 
+#include <limits>
 #include <memory>
 
 QT_BEGIN_NAMESPACE
@@ -8614,7 +8615,7 @@ bool QRhiImplementation::isCompressedFormat(QRhiTexture::Format format) const
             || (format >= QRhiTexture::ASTC_4x4 && format <= QRhiTexture::ASTC_12x12);
 }
 
-void QRhiImplementation::compressedFormatInfo(QRhiTexture::Format format, const QSize &size,
+bool QRhiImplementation::compressedFormatInfo(QRhiTexture::Format format, const QSize &size,
                                               quint32 *bpl, quint32 *byteSize,
                                               QSize *blockDim) const
 {
@@ -8723,24 +8724,42 @@ void QRhiImplementation::compressedFormatInfo(QRhiTexture::Format format, const 
         break;
     }
 
-    const quint32 wblocks = uint((size.width() + xdim - 1) / xdim);
-    const quint32 hblocks = uint((size.height() + ydim - 1) / ydim);
+    const quint32 wblocks = quint32((qint64(qMax(0, size.width())) + xdim - 1) / xdim);
+    const quint32 hblocks = quint32((qint64(qMax(0, size.height())) + ydim - 1) / ydim);
 
-    if (bpl)
-        *bpl = wblocks * blockSize;
-    if (byteSize)
-        *byteSize = wblocks * hblocks * blockSize;
     if (blockDim)
         *blockDim = QSize(xdim, ydim);
+
+    // Compute in 64-bit, as safety for extreme geometry that would not fit.
+    // wblocks and hblocks are at most 2^29 and blockSize at most 16.
+    const quint64 bytesPerLine = quint64(wblocks) * quint64(blockSize);
+    const quint64 totalSize = quint64(wblocks) * quint64(hblocks) * quint64(blockSize);
+    if (bytesPerLine > std::numeric_limits<quint32>::max()
+        || totalSize > std::numeric_limits<quint32>::max())
+    {
+        qWarning("Compressed texture of size %dx%d with format %d has a byte size of %llu "
+                 "which is too large to be handled",
+                 size.width(), size.height(), int(format), totalSize);
+        if (bpl)
+            *bpl = 0;
+        if (byteSize)
+            *byteSize = 0;
+        return false;
+    }
+
+    if (bpl)
+        *bpl = quint32(bytesPerLine);
+    if (byteSize)
+        *byteSize = quint32(totalSize);
+
+    return true;
 }
 
-void QRhiImplementation::textureFormatInfo(QRhiTexture::Format format, const QSize &size,
+bool QRhiImplementation::textureFormatInfo(QRhiTexture::Format format, const QSize &size,
                                            quint32 *bpl, quint32 *byteSize, quint32 *bytesPerPixel) const
 {
-    if (isCompressedFormat(format)) {
-        compressedFormatInfo(format, size, bpl, byteSize, nullptr);
-        return;
-    }
+    if (isCompressedFormat(format))
+        return compressedFormatInfo(format, size, bpl, byteSize, nullptr);
 
     quint32 bpc = 0;
     switch (format) {
@@ -8818,12 +8837,34 @@ void QRhiImplementation::textureFormatInfo(QRhiTexture::Format format, const QSi
         break;
     }
 
-    if (bpl)
-        *bpl = uint(size.width()) * bpc;
-    if (byteSize)
-        *byteSize = uint(size.width() * size.height()) * bpc;
+    const quint32 width = uint(qMax(0, size.width()));
+    const quint32 height = uint(qMax(0, size.height()));
+
     if (bytesPerPixel)
         *bytesPerPixel = bpc;
+
+    // Compute in 64-bit, as safety for extreme geometry that would not fit.
+    const quint64 bytesPerLine = quint64(width) * quint64(bpc);
+    const quint64 pixelCount = quint64(width) * quint64(height);
+    if (bytesPerLine > std::numeric_limits<quint32>::max()
+        || pixelCount > std::numeric_limits<quint32>::max() / bpc)
+    {
+        qWarning("Texture of size %dx%d with format %d has a byte size "
+                 "which is too large to be handled",
+                 size.width(), size.height(), int(format));
+        if (bpl)
+            *bpl = 0;
+        if (byteSize)
+            *byteSize = 0;
+        return false;
+    }
+
+    if (bpl)
+        *bpl = quint32(bytesPerLine);
+    if (byteSize)
+        *byteSize = quint32(pixelCount * quint64(bpc));
+
+    return true;
 }
 
 bool QRhiImplementation::isStencilSupportingFormat(QRhiTexture::Format format) const
