@@ -1752,7 +1752,8 @@ void tst_Moc::includeNextInPrimarySourceFile()
     QCOMPARE(proc.exitCode(), 0);
 
     const QByteArray mocErr = proc.readAllStandardError();
-    QVERIFY2(mocErr.contains("#include_next in primary source file"),
+    QVERIFY2(mocErr.contains("primary-include-next.h:7:1: warning: "
+                             "#include_next in primary source file"),
              mocErr.constData());
     // Searching from the start still reaches the forwarder and, through it, the
     // real header.
