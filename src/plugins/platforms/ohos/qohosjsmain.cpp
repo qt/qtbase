@@ -397,22 +397,26 @@ QOhosConsumer<std::vector<std::string>> makeAppMainFuncLauncher(
     };
 }
 
-std::vector<std::string> mapJsonArrayToStrings(const std::string &inputJson)
+std::optional<std::vector<std::string>> tryMapJsonArrayToStrings(const std::string &inputJson)
 {
-    using namespace std::string_literals;
-
     auto doc = QJsonDocument::fromJson(QByteArray::fromStdString(inputJson));
-    if (doc.isNull())
-        throw std::runtime_error("input is not valid JSON string");
-    if (!doc.isArray())
-        throw std::runtime_error("input JSON does not contain an array");
+    if (doc.isNull()) {
+        qOhosPrintfWarning("%s: input is not valid JSON string", Q_FUNC_INFO);
+        return std::nullopt;
+    }
+    if (!doc.isArray()) {
+        qOhosPrintfWarning("%s: input JSON does not contain an array", Q_FUNC_INFO);
+        return std::nullopt;
+    }
 
     const auto inputArray = doc.array();
 
     std::vector<std::string> result;
     for (const auto &elem : inputArray) {
-        if (!elem.isString())
-            throw std::runtime_error("input array's element is not a string");
+        if (!elem.isString()) {
+            qOhosPrintfWarning("%s: input array's element is not a string", Q_FUNC_INFO);
+            return std::nullopt;
+        }
         result.push_back(elem.toString().toStdString());
     }
 
@@ -461,14 +465,12 @@ std::vector<std::string> getQtAppArgsFromWant(QNapi::Object want)
         auto qtAppArgsStrings = QNapi::getArrayElements<std::vector<std::string>, QNapi::String>(optQtAppArgs);
         result.insert(result.end(), qtAppArgsStrings.begin(), qtAppArgsStrings.end());
     } else if (!optQtAppArgsJson.IsEmpty()) {
-        std::vector<std::string> qtAppArgsJsonStrings;
-        try {
-            qtAppArgsJsonStrings = mapJsonArrayToStrings(optQtAppArgsJson);
-        } catch (const std::exception &e) {
+        auto optQtAppArgsJsonStrings = tryMapJsonArrayToStrings(optQtAppArgsJson);
+        if (!optQtAppArgsJsonStrings) {
             throw QNapi::makeLoggedException(
-                want.Env(), "Want parameter '"s + qtAppArgsJsonPropName + "' is invalid: "s + e.what());
+                want.Env(), "Want parameter '"s + qtAppArgsJsonPropName + "' is invalid"s);
         }
-        result.insert(result.end(), qtAppArgsJsonStrings.begin(), qtAppArgsJsonStrings.end());
+        result.insert(result.end(), optQtAppArgsJsonStrings->begin(), optQtAppArgsJsonStrings->end());
     }
 
     return result;
