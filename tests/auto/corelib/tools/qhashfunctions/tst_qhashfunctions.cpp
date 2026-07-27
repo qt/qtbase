@@ -508,7 +508,7 @@ void tst_QHashFunctions::qhash_of_zero_floating_points()
 static void forceBufferSpill(void *buf)
 {
     std::atomic_signal_fence(std::memory_order_release);
-    QT_WRITE(1, buf, 0);    // we don't actually write anything
+    std::ignore = QT_WRITE(1, buf, 0);    // we don't actually write anything
 }
 
 // Overwrite space in the stack that qHash() calls will use.
