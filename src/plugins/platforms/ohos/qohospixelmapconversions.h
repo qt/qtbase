@@ -6,7 +6,6 @@
 
 #include <QtCore/qglobal.h>
 #include <QtGui/qimage.h>
-#include <optional>
 #include <multimedia/image_framework/image/pixelmap_native.h>
 #include <qohosplugincore.h>
 
@@ -15,9 +14,6 @@ QT_BEGIN_NAMESPACE
 QImage createQImageFromNativePixelMap(::OH_PixelmapNative *pixelMap);
 
 QNapi::Object makeDisplayDensityScaledJsPixelMapFromQImage(QtOhos::JsState &jsState, const QImage &image);
-
-std::optional<QNapi::Object> createDisplayDensityScaledJsMonochromePixelMapFromIconImage(
-    QtOhos::JsState &jsState, const QImage &iconImage, bool isWhiteIcon);
 
 QT_END_NAMESPACE
 

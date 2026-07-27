@@ -221,37 +221,4 @@ QNapi::Object makeDisplayDensityScaledJsPixelMapFromQImage(QtOhos::JsState &jsSt
     return makeOhosNapiPixelMapFromQImage(jsState, newImage);
 }
 
-static QImage convertToMonochromeIconImage(const QImage &sourceImage, bool useWhite)
-{
-    QImage monochromeImage = sourceImage.copy();
-    const int colorValue = useWhite ? 255 : 0;
-
-    for (int y = 0; y < monochromeImage.height(); ++y) {
-        for (int x = 0; x < monochromeImage.width(); ++x) {
-            const QRgb pixel = monochromeImage.pixel(x, y);
-            const int alpha = qAlpha(pixel);
-
-            if (alpha > 0)
-                monochromeImage.setPixel(x, y, qRgba(colorValue, colorValue, colorValue, alpha));
-        }
-    }
-
-    return monochromeImage;
-}
-
-std::optional<QNapi::Object> createDisplayDensityScaledJsMonochromePixelMapFromIconImage(
-    QtOhos::JsState &jsState, const QImage &iconImage, bool isWhiteIcon)
-{
-    if (iconImage.isNull())
-        return std::nullopt;
-
-    qOhosPrintfDebug(
-        "%s: original Icon dimensions: %dx%d, format: %d, bytes: %lld",
-        Q_FUNC_INFO, iconImage.width(), iconImage.height(),
-        static_cast<int>(iconImage.format()), iconImage.sizeInBytes());
-
-    return makeDisplayDensityScaledJsPixelMapFromQImage(
-        jsState, convertToMonochromeIconImage(iconImage, isWhiteIcon));
-}
-
 QT_END_NAMESPACE

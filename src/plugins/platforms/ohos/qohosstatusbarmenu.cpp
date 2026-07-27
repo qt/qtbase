@@ -47,19 +47,15 @@ std::optional<QNapi::Object> makeJsStatusBarItemIcon(
     if (icon.isNull())
         return std::nullopt;
 
-    auto *env = jsState.env();
     QImage iconImage = icon.pixmap(iconSize).toImage();
-    auto whitePixelMap =
-        createDisplayDensityScaledJsMonochromePixelMapFromIconImage(jsState, iconImage, true);
-    auto blackPixelMap =
-        createDisplayDensityScaledJsMonochromePixelMapFromIconImage(jsState, iconImage, false);
-
-    if (!whitePixelMap || !blackPixelMap) {
-        qOhosPrintfDebug("%s: failed to create monochrome PixelMaps from the icon, returning empty options", Q_FUNC_INFO);
+    if (iconImage.isNull())
         return std::nullopt;
-    }
 
-    auto imageSize = whitePixelMap->eval<QNapi::Object>("getImageInfoSync().size");
+    auto *env = jsState.env();
+    auto menuIcon =
+        makeDisplayDensityScaledJsPixelMapFromQImage(jsState, iconImage);
+
+    auto imageSize = menuIcon.eval<QNapi::Object>("getImageInfoSync().size");
 
     int imageWidth = imageSize.get<QNapi::Number>("width");
     int imageHeight = imageSize.get<QNapi::Number>("height");
@@ -68,8 +64,8 @@ std::optional<QNapi::Object> makeJsStatusBarItemIcon(
     return QNapi::makeObject(
         env,
         {
-            {"white", *whitePixelMap},
-            {"black", *blackPixelMap},
+            {"white", menuIcon},
+            {"black", menuIcon},
         });
 }
 
