@@ -1,12 +1,15 @@
 // Copyright (C) 2013 Ruslan Nigmatullin <euroelessar@yandex.ru>
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
-
 #include <QtCore/QCoreApplication>
 #include <QTest>
 #include <QCryptographicHash>
 #include <QMessageAuthenticationCode>
 #include <QBuffer>
+
+#include <numeric>
+
+using namespace Qt::StringLiterals;
 
 class tst_QMessageAuthenticationCode : public QObject
 {
@@ -138,6 +141,23 @@ void tst_QMessageAuthenticationCode::result_data()
                                << QByteArray::fromHex("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
                                << QByteArray(50, char(0xdd))
                                << QByteArray::fromHex("56be34521d144c88dbb8c733f0e8b3f6");
+
+    {
+        // Keccak_224/RealSha3_224 has the largest known hash block size (144
+        // octets), so a key exactly that long exercises QSmallByteArray::assign()
+        // right at its boundary (this used to trip an off-by-one precondition
+        // check).
+        //
+        // NIST CSRC "Examples with Intermediate Values" for HMAC-SHA3-224,
+        // Sample #2 (Key length = Block length = 144):
+        // https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Standards-and-Guidelines/documents/examples/HMAC_SHA3-224.pdf
+        QByteArray maxBlockSizeKey(144, Qt::Uninitialized);
+        std::iota(maxBlockSizeKey.begin(), maxBlockSizeKey.end(), uchar(0));
+        QTest::newRow("keylen=blocklen-sha3-224") << QCryptographicHash::RealSha3_224
+                                                  << maxBlockSizeKey
+                                                  << "Sample message for keylen=blocklen"_ba
+                                                  << QByteArray::fromHex("d8b733bcf66c644a12323d564e24dcf3fc75f231f3b67968359100c7");
+    }
 }
 
 void tst_QMessageAuthenticationCode::result()
