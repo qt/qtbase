@@ -1227,15 +1227,18 @@ void Preprocessor::preprocess(const QByteArray &filename, Symbols &preprocessed,
             if (test(PP_STRING_LITERAL)) {
                 local = lexemView().startsWith('\"');
                 include = unquotedLexem();
-            } else
+            } else {
                 continue;
-            until(PP_NEWLINE);
+            }
 
             qsizetype foundIndex = -1;
             if (includeNext)
                 include = resolveIncludeNext(include, includeNextStartIndex(), &foundIndex);
             else
                 include = resolveInclude(include, local ? filename : QByteArray(), &foundIndex);
+
+            until(PP_NEWLINE);
+
             if (include.isNull())
                 continue;
 
