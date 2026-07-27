@@ -55,9 +55,9 @@ class Q_HARMONYEXTRAS_EXPORT OnContinueContext
 public:
     virtual ~OnContinueContext();
 
-    virtual void setAgreeResponse(const QByteArray &responseData) = 0;
-    virtual void setRejectResponse() = 0;
-    virtual void setMismatchResponse() = 0;
+    virtual void sendAgreeResponse(const QByteArray &responseData) = 0;
+    virtual void sendRejectResponse() = 0;
+    virtual void sendMismatchResponse() = 0;
 
     virtual void setExitAppOnSourceDeviceAfterMigration(bool exitAfterMigration) = 0;
 
