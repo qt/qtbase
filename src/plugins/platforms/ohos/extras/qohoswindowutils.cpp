@@ -185,22 +185,39 @@ void setMainWindowGeometryPersistenceHint(WindowGeometryPersistenceHint hint)
 
 }
 
-std::optional<double> tryGetNativeWindowId(QWindow *window)
+std::optional<qint64> tryGetNativeWindowId(QWindow *window)
 {
     auto *ohosWindow = window->nativeInterface<QNativeInterface::Private::QOhosWindow>();
     if (!ohosWindow)
         return {};
 
-    return ohosWindow->windowId();
+    const std::optional<double> optWindowId = ohosWindow->windowId();
+    if (!optWindowId)
+        return {};
+
+    qint64 windowId = 0;
+    if (!convertDoubleTo(*optWindowId, &windowId)) {
+        qWarning("tryGetNativeWindowId: window id %g out of qint64 range", *optWindowId);
+        return {};
+    }
+
+    return windowId;
 }
 
-std::optional<double> tryGetScreenDisplayId(QScreen *screen)
+std::optional<qint64> tryGetScreenDisplayId(QScreen *screen)
 {
     auto *ohosScreen = screen->nativeInterface<QNativeInterface::Private::QOhosScreen>();
     if (!ohosScreen)
         return {};
 
-    return ohosScreen->displayId();
+    const double ohosDisplayId = ohosScreen->displayId();
+    qint64 displayId = 0;
+    if (!convertDoubleTo(ohosDisplayId, &displayId)) {
+        qWarning("tryGetScreenDisplayId: display id %g out of qint64 range", ohosDisplayId);
+        return {};
+    }
+
+    return displayId;
 }
 
 }

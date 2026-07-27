@@ -15,11 +15,12 @@
 // We mean it.
 //
 
+#include <QtHarmonyExtras/private/qtharmonyextrasglobal_p.h>
 #include <QtGui/qcolor.h>
 #include <QtGui/qscreen.h>
 #include <QtGui/qwindow.h>
-#include <QtHarmonyExtras/private/qtharmonyextrasglobal_p.h>
 #include <QtWidgets/qwidget.h>
+#include <QtCore/qtypes.h>
 #include <optional>
 
 QT_BEGIN_NAMESPACE
@@ -59,9 +60,9 @@ Q_HARMONYEXTRAS_EXPORT void setMainWindowGeometryPersistenceHint(WindowGeometryP
 
 }
 
-Q_HARMONYEXTRAS_EXPORT std::optional<double> tryGetNativeWindowId(QWindow *window);
+Q_HARMONYEXTRAS_EXPORT std::optional<qint64> tryGetNativeWindowId(QWindow *window);
 
-Q_HARMONYEXTRAS_EXPORT std::optional<double> tryGetScreenDisplayId(QScreen *screen);
+Q_HARMONYEXTRAS_EXPORT std::optional<qint64> tryGetScreenDisplayId(QScreen *screen);
 
 }
 
