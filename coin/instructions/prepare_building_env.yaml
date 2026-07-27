@@ -820,6 +820,15 @@ instructions:
       - type: AppendToEnvironmentVariable
         variableName: COMMON_TARGET_CMAKE_ARGS
         variableValue: " -DQT_DEPLOY_MINIMAL_EXAMPLES=ON"
+
+      # Show verbose ninja build logs when building examples as external
+      - type: AppendToEnvironmentVariable
+        variableName: COMMON_CMAKE_ARGS
+        variableValue: " -DQT_INTERNAL_VERBOSE_EXAMPLES=ON"
+      - type: AppendToEnvironmentVariable
+        variableName: COMMON_TARGET_CMAKE_ARGS
+        variableValue: " -DQT_INTERNAL_VERBOSE_EXAMPLES=ON"
+
       - type: Group
         instructions:
           - type: AppendToEnvironmentVariable
