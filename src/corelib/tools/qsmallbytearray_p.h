@@ -56,7 +56,7 @@ public:
     constexpr void assign(const Container &c)
     {
         const size_t otherSize = size_t(std::size(c));
-        Q_ASSERT(otherSize < N);
+        Q_ASSERT(otherSize <= N);
         memcpy(data(), std::data(c), otherSize);
         m_size = quint8(otherSize);
     }
