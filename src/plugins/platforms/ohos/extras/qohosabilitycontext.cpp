@@ -207,9 +207,9 @@ class QOhosOnContinueContextImpl : public OnContinueContext
 public:
     QOhosOnContinueContextImpl(int sourceApplicationVersionCode);
 
-    void setAgreeResponse(const QByteArray &responseData) override;
-    void setRejectResponse() override;
-    void setMismatchResponse() override;
+    void sendAgreeResponse(const QByteArray &responseData) override;
+    void sendRejectResponse() override;
+    void sendMismatchResponse() override;
 
     void setExitAppOnSourceDeviceAfterMigration(bool exitAfterMigration) override;
 
@@ -227,18 +227,18 @@ QOhosOnContinueContextImpl::QOhosOnContinueContextImpl(int sourceApplicationVers
     : OnContinueContext()
     , m_sourceApplicationVersionCode(sourceApplicationVersionCode)
 {
-    setRejectResponse();
+    sendRejectResponse();
 }
 
 /*!
-    \fn void QtHarmonyExtras::OnContinueContext::setAgreeResponse(const QByteArray &responseData)
+    \fn void QtHarmonyExtras::OnContinueContext::sendAgreeResponse(const QByteArray &responseData)
 
-    Sets On Continue action as agreed with a given \a responseData.
-    Agreed response means that on continuation process is accepted.
+    Sends an agree response to the OnContinue request, carrying \a responseData.
+    Agreeing accepts the continuation process.
     See \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references-V13/js-apis-app-ability-abilityconstant-V13#oncontinueresult}
     {OnContinueResult}
 */
-void QOhosOnContinueContextImpl::setAgreeResponse(const QByteArray &responseData)
+void QOhosOnContinueContextImpl::sendAgreeResponse(const QByteArray &responseData)
 {
     m_baseResponse = AbilityOnContinueResponse{
         .status = AbilityOnContinueResponseStatus::Agree,
@@ -252,16 +252,16 @@ void QOhosOnContinueContextImpl::setAgreeResponse(const QByteArray &responseData
 }
 
 /*!
-    \fn void QtHarmonyExtras::OnContinueContext::setRejectResponse()
+    \fn void QtHarmonyExtras::OnContinueContext::sendRejectResponse()
 
-    Sets On Continue action as rejected.
-    Rejected responses means that on continuation process should not be continued.
+    Sends a reject response to the OnContinue request.
+    Rejecting means the continuation process should not be continued.
     This is typically used when the target application cannot handle the continuation
     request for any reason.
     See \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references-V13/js-apis-app-ability-abilityconstant-V13#oncontinueresult}
     {OnContinueResult}
 */
-void QOhosOnContinueContextImpl::setRejectResponse()
+void QOhosOnContinueContextImpl::sendRejectResponse()
 {
     m_baseResponse = AbilityOnContinueResponse{
         .status = AbilityOnContinueResponseStatus::Reject,
@@ -270,17 +270,17 @@ void QOhosOnContinueContextImpl::setRejectResponse()
 }
 
 /*!
-    \fn void OnContinueContext::setMismatchResponse()
+    \fn void OnContinueContext::sendMismatchResponse()
 
-    Sets On Continue action as mismatched.
-    Mismatched responses means that on continuation process should not be continued - most probably due to
+    Sends a mismatch response to the OnContinue request.
+    A mismatch means the continuation process should not be continued - most probably due to
     source and target application version code difference.
     See \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references-V13/js-apis-app-ability-abilityconstant-V13#oncontinueresult}
     {OnContinueResult}
 
     \sa sourceApplicationVersionCode()
 */
-void QOhosOnContinueContextImpl::setMismatchResponse()
+void QOhosOnContinueContextImpl::sendMismatchResponse()
 {
     m_baseResponse = AbilityOnContinueResponse{
         .status = AbilityOnContinueResponseStatus::Mismatch,
@@ -899,7 +899,7 @@ QOhosAbilityContextImpl::QOhosAbilityContextImpl(QWindow *instanceMainWindow)
             if (!self.isNull())
                 Q_EMIT self->continueRequestReceived(context);
             else
-                context->setRejectResponse();
+                context->sendRejectResponse();
 
             QtOhos::invokeInQtThread(
                 [response = context->response(), responseConsumer = std::move(responseConsumer)]() {
@@ -1091,7 +1091,7 @@ void startAppProcessImpl(
     See \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references-V13/js-apis-app-ability-uiability-V13#uiabilityoncontinue}
     {UIAbility onContinue}.
 
-    \sa setAgreeResponse(), setMismatchResponse(), setRejectResponse()
+    \sa sendAgreeResponse(), sendMismatchResponse(), sendRejectResponse()
 */
 
 AbilityContext::AbilityContext()
