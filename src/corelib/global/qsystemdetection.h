@@ -85,7 +85,6 @@
 #  define Q_OS_ANDROID
 #  define Q_OS_LINUX
 #elif defined(__OHOS__)
-#  define Q_OS_OHOS
 #  define Q_OS_HARMONY
 #  define Q_OS_LINUX
 #elif defined(__CYGWIN__)
