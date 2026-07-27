@@ -1672,10 +1672,8 @@ void setupQtApplicationImpl(JsState &jsState, QNapi::Object appStartupObj, QtRun
     };
 
     for (const auto &e : env_variables) {
-        if (::setenv(e.variable, e.value.c_str(), 1) != 0) {
-            throw std::runtime_error(
-                QString::fromUtf8("Cannot set %1 environment variable").arg(QString::fromUtf8(e.variable)).toStdString());
-        }
+        if (::setenv(e.variable, e.value.c_str(), 1) != 0)
+            qOhosReportFatalErrorAndAbort("%s: Cannot set '%s' environment variable", Q_FUNC_INFO, e.variable);
     }
 
     if (::chdir(appContextDirs.filesDir.c_str()) != 0) {
