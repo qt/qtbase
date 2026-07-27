@@ -1458,7 +1458,11 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
                 tab->icon.paint(painter, iconRect, Qt::AlignCenter, mode, state);
             }
 
-            painter->setPen(winUI3Color(isSelected ? textPrimary : textSecondary));
+            const auto textRole = widget ? widget->foregroundRole() : QPalette::WindowText;
+            if (tab->palette.isBrushSet(QPalette::Current, textRole))
+                painter->setPen(tab->palette.color(QPalette::Current, textRole));
+            else
+                painter->setPen(winUI3Color(isSelected ? textPrimary : textSecondary));
             proxy()->drawItemText(painter, tr, alignment, tab->palette, isEnabled, tab->text);
         }
         break;
