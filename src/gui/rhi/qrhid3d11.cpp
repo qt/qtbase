@@ -912,48 +912,28 @@ void QRhiD3D11::setPipelineCacheData(const QByteArray &data)
     if (header.count == 0)
         return;
 
-    if (data.size() < qsizetype(dataOffset + header.dataSize)) {
+    if (quint64(data.size()) < quint64(dataOffset) + header.dataSize) {
         qCDebug(QRHI_LOG_INFO, "setPipelineCacheData: Invalid blob size (data incomplete)");
         return;
     }
 
     m_bytecodeCache.clear();
 
-    const char *p = data.constData() + dataOffset;
+    QRhiPipelineCacheDataReader reader(data.constData() + dataOffset, header.dataSize);
     for (quint32 i = 0; i < header.count; ++i) {
-        quint32 len = 0;
-        memcpy(&len, p, 4);
-        p += 4;
-        QByteArray sourceHash(len, Qt::Uninitialized);
-        memcpy(sourceHash.data(), p, len);
-        p += len;
-
-        memcpy(&len, p, 4);
-        p += 4;
-        QByteArray target(len, Qt::Uninitialized);
-        memcpy(target.data(), p, len);
-        p += len;
-
-        memcpy(&len, p, 4);
-        p += 4;
-        QByteArray entryPoint(len, Qt::Uninitialized);
-        memcpy(entryPoint.data(), p, len);
-        p += len;
-
-        quint32 flags;
-        memcpy(&flags, p, 4);
-        p += 4;
-
-        memcpy(&len, p, 4);
-        p += 4;
-        QByteArray bytecode(len, Qt::Uninitialized);
-        memcpy(bytecode.data(), p, len);
-        p += len;
-
         BytecodeCacheKey cacheKey;
-        cacheKey.sourceHash = sourceHash;
-        cacheKey.target = target;
-        cacheKey.entryPoint = entryPoint;
+        QByteArray bytecode;
+        quint32 flags = 0;
+        if (!reader.readByteArray(&cacheKey.sourceHash)
+                || !reader.readByteArray(&cacheKey.target)
+                || !reader.readByteArray(&cacheKey.entryPoint)
+                || !reader.readUInt32(&flags)
+                || !reader.readByteArray(&bytecode))
+        {
+            qCDebug(QRHI_LOG_INFO, "setPipelineCacheData: Invalid blob (truncated or corrupt bytecode data)");
+            m_bytecodeCache.clear();
+            return;
+        }
         cacheKey.compileFlags = flags;
 
         m_bytecodeCache.insert(cacheKey, bytecode);

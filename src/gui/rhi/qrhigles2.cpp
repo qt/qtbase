@@ -1911,33 +1911,24 @@ void QRhiGles2::setPipelineCacheData(const QByteArray &data)
         return;
     }
 
-    if (data.size() < qsizetype(dataOffset + header.dataSize)) {
+    if (quint64(data.size()) < quint64(dataOffset) + header.dataSize) {
         qCDebug(QRHI_LOG_INFO, "setPipelineCacheData: Invalid blob size (data incomplete)");
         return;
     }
 
     m_pipelineCache.clear();
 
-    const char *p = data.constData() + dataOffset;
+    QRhiPipelineCacheDataReader reader(data.constData() + dataOffset, header.dataSize);
     for (quint32 i = 0; i < header.programBinaryCount; ++i) {
-        quint32 len = 0;
-        memcpy(&len, p, 4);
-        p += 4;
-        QByteArray key(len, Qt::Uninitialized);
-        memcpy(key.data(), p, len);
-        p += len;
-
-        memcpy(&len, p, 4);
-        p += 4;
-        QByteArray data(len, Qt::Uninitialized);
-        memcpy(data.data(), p, len);
-        p += len;
-
-        quint32 format;
-        memcpy(&format, p, 4);
-        p += 4;
-
-        m_pipelineCache.insert(key, { format, data });
+        QByteArray key;
+        QByteArray binary;
+        quint32 format = 0;
+        if (!reader.readByteArray(&key) || !reader.readByteArray(&binary) || !reader.readUInt32(&format)) {
+            qCDebug(QRHI_LOG_INFO, "setPipelineCacheData: Invalid blob (truncated or corrupt program binary data)");
+            m_pipelineCache.clear();
+            return;
+        }
+        m_pipelineCache.insert(key, { format, binary });
     }
 
     qCDebug(QRHI_LOG_INFO, "Seeded pipeline cache with %d program binaries", int(m_pipelineCache.size()));

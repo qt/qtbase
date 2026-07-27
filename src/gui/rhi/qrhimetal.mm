@@ -1115,7 +1115,7 @@ void QRhiMetal::setPipelineCacheData(const QByteArray &data)
         return;
     }
 
-    if (data.size() < qsizetype(dataOffset + header.dataSize)) {
+    if (quint64(data.size()) < quint64(dataOffset) + header.dataSize) {
         qCDebug(QRHI_LOG_INFO, "setPipelineCacheData: Invalid blob size (data incomplete)");
         return;
     }
