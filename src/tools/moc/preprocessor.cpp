@@ -1197,12 +1197,18 @@ qsizetype Preprocessor::includeNextStartIndex()
 {
     // #include_next continues the search after the directory the current file
     // was found in. If the current file was not found via the include path
-    // (e.g. the primary source file), warn and search from the start of the
-    // path, matching GCC/Clang.
+    // (the primary source file, or a file included relative to it), search from
+    // the start of the path, matching GCC/Clang. This is not worth warning
+    // about: the same file is also seen by the compiler, either as its primary
+    // source file or, for a moc'ed header, through the relative #include in the
+    // generated moc_*.cpp, and it resolves the #include_next the same way.
     const qsizetype currentDirIndex = currentIncludeDirIndex.top();
     if (currentDirIndex < 0) {
-        warning("#include_next in primary source file; "
-                "will search from start of include path");
+        if (Q_UNLIKELY(debugIncludes)) {
+            fprintf(stderr, "debug-includes: '%s' was not found via the include path; "
+                            "#include_next will search from the start\n",
+                    currentFilenames.top().constData());
+        }
         return 0;
     }
     return currentDirIndex + 1;

@@ -1734,8 +1734,9 @@ void tst_Moc::includeNextInPrimarySourceFile()
 #endif
 #if defined(Q_OS_UNIX) && QT_CONFIG(process)
     // An #include_next in the primary source file (not found via the include
-    // path) must warn and search from the start of the include path, matching
-    // GCC/Clang.
+    // path) searches from the start of the include path, matching GCC/Clang.
+    // That is not worth warning about, since the compiler sees the same file and
+    // resolves it the same way, but it is reported under --debug-includes.
     const QString base = m_sourceDirectory + QStringLiteral("/include-next");
     QStringList args;
     args << "-E"
@@ -1752,13 +1753,24 @@ void tst_Moc::includeNextInPrimarySourceFile()
     QCOMPARE(proc.exitCode(), 0);
 
     const QByteArray mocErr = proc.readAllStandardError();
-    QVERIFY2(mocErr.contains("primary-include-next.h:7:1: warning: "
-                             "#include_next in primary source file"),
-             mocErr.constData());
+    QVERIFY2(!mocErr.contains("warning:"), mocErr.constData());
     // Searching from the start still reaches the forwarder and, through it, the
     // real header.
     const QByteArray mocOut = proc.readAllStandardOutput();
     QVERIFY(mocOut.contains("included_marker_from_second"));
+
+    // The same run with --debug-includes explains where the search started.
+    proc.start(m_moc, QStringList(args) << "--debug-includes");
+    finished = proc.waitForFinished();
+    if (!finished)
+        qWarning("waitForFinished failed. QProcess error: %d", (int)proc.error());
+    QVERIFY(finished);
+    QCOMPARE(proc.exitCode(), 0);
+
+    const QByteArray debugErr = proc.readAllStandardError();
+    QVERIFY2(debugErr.contains("primary-include-next.h' was not found via the "
+                               "include path; #include_next will search from the start"),
+             debugErr.constData());
 #else
     QSKIP("Only tested/relevant on unixy platforms");
 #endif
@@ -1781,15 +1793,17 @@ void tst_Moc::includeNextRelativeForwarder()
          << base + QStringLiteral("/relative-include-consumer.h");
 
     QProcess proc;
-    proc.start(m_moc, args);
+    proc.start(m_moc, QStringList(args) << "--debug-includes");
     bool finished = proc.waitForFinished();
     if (!finished)
         qWarning("waitForFinished failed. QProcess error: %d", (int)proc.error());
     QVERIFY(finished);
     QCOMPARE(proc.exitCode(), 0);
 
+    // The sibling inherited a position in the include path, so the search never
+    // restarted from the start.
     const QByteArray mocErr = proc.readAllStandardError();
-    QVERIFY2(!mocErr.contains("#include_next in primary source file"), mocErr.constData());
+    QVERIFY2(!mocErr.contains("was not found via the include path"), mocErr.constData());
 
     const QByteArray mocOut = proc.readAllStandardOutput();
     // The #include_next resumed after "first", so it reached second/marker.h ...
