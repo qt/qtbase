@@ -6,13 +6,17 @@
 #include "qdnslookup_p.h"
 
 #include <qendian.h>
+#include <qrandom.h>
 #include <qspan.h>
 #include <qurl.h>
 #include <qvarlengtharray.h>
 #include <private/qnativesocketengine_p.h>      // for setSockAddr
 #include <private/qtnetwork-config_p.h>
 
-QT_REQUIRE_CONFIG(libresolv);
+// Two backends: libresolv on Unix and Android's DnsResolver (bionic has no
+// libresolv). They share everything but the transport.
+static_assert(QT_CONFIG(libresolv) || QT_CONFIG(android_dnsresolver),
+              "This file requires either libresolv or Android's DnsResolver");
 
 #include <sys/types.h>
 #include <netinet/in.h>
@@ -22,6 +26,10 @@ QT_REQUIRE_CONFIG(libresolv);
 #endif
 #include <errno.h>
 #include <resolv.h>
+
+#if QT_CONFIG(android_dnsresolver)
+#  include <android/multinetwork.h>
+#endif
 
 #include <array>
 
@@ -62,6 +70,7 @@ struct QDnsCachedName
 Q_DECLARE_TYPEINFO(QDnsCachedName, Q_RELOCATABLE_TYPE);
 using Cache = QList<QDnsCachedName>;    // QHash or QMap are overkill
 
+#if QT_CONFIG(libresolv)
 #if QT_CONFIG(res_setservers)
 // https://www.ibm.com/docs/en/i/7.3?topic=ssw_ibm_i_73/apis/ressetservers.html
 // https://docs.oracle.com/cd/E86824_01/html/E54774/res-setservers-3resolv.html
@@ -267,6 +276,140 @@ void QDnsLookupRunnable::query(QDnsLookupReply *reply)
     if (responseLength < 0)
         return;
 
+    parseResponse(reply, buffer, responseLength);
+}
+
+#else // QT_CONFIG(libresolv), that is: Q_OS_ANDROID
+
+// Bionic does not export res_nmkquery(), so we assemble the query ourselves.
+// See https://www.rfc-editor.org/rfc/rfc1035#section-4.1.
+static int prepareQueryBuffer(QueryBuffer &buffer, const char *label, ns_type type)
+{
+    std::memset(buffer.data(), 0, HFIXEDSZ);
+    auto header = new (buffer.data()) HEADER;
+    header->id = QRandomGenerator::system()->generate();
+    header->opcode = QUERY;
+    header->rd = true;                  // recursion desired
+    header->qdcount = qToBigEndian<quint16>(1);
+    header->arcount = qToBigEndian<quint16>(1); // EDNS0 record
+
+    // the question: QNAME, QTYPE, QCLASS; a single-question query has nothing
+    // to compress against, so dn_comp() gets no compression pointers
+    unsigned char *ptr = buffer.data() + HFIXEDSZ;
+    int labelLength = dn_comp(label, ptr,
+                              int(buffer.size() - HFIXEDSZ - QFIXEDSZ - sizeof(Edns0Record)),
+                              nullptr, nullptr);
+    if (Q_UNLIKELY(labelLength < 0))
+        return labelLength;
+    ptr += labelLength;
+    qToBigEndian<quint16>(type, ptr);
+    qToBigEndian<quint16>(C_IN, ptr + sizeof(quint16));
+    ptr += QFIXEDSZ;
+
+    Q_ASSERT(ptr + sizeof(Edns0Record) <= buffer.data() + buffer.size());
+    ptr = std::copy_n(std::begin(Edns0Record), sizeof(Edns0Record), ptr);
+
+    return ptr - buffer.data();
+}
+
+// These are API level 29, while Qt still supports 28, where the NDK headers
+// mark them unavailable; weakrefs are resolved to null if they are missing.
+static int local_res_nsend(net_handle_t network, const uint8_t *msg, size_t msglen, uint32_t flags)
+__attribute__((weakref("android_res_nsend")));
+
+static int local_res_nresult(int fd, int *rcode, uint8_t *answer, size_t anslen)
+__attribute__((weakref("android_res_nresult")));
+
+bool qt_androidDnsResolverAvailable()
+{
+    return local_res_nsend && local_res_nresult;
+}
+
+static int sendStandardDns(QDnsLookupReply *reply, QSpan<unsigned char> qbuffer,
+                           ReplyBuffer &buffer, const QHostAddress &nameserver)
+{
+    if (!qt_androidDnsResolverAvailable()) {
+        reply->setError(QDnsLookup::ResolverError,
+                        QDnsLookup::tr("DNS lookups require Android 10 or later"));
+        return -1;
+    }
+
+    // the DnsResolver only queries the name servers of the network we're bound to
+    if (!nameserver.isNull()) {
+        reply->setError(QDnsLookup::ResolverError,
+                        QDnsLookup::tr("Setting a nameserver is currently not supported on this OS"));
+        return -1;
+    }
+
+    // unused: the rcode is also in the reply header, where parseResponse() finds it
+    int rcode = 0;
+    auto attemptToSend = [&]() {
+        int fd = local_res_nsend(NETWORK_UNSPECIFIED, qbuffer.data(), qbuffer.size(), 0);
+        if (fd < 0)
+            return fd;
+        // android_res_nresult() closes the file descriptor in all cases
+        return local_res_nresult(fd, &rcode, buffer.data(), buffer.size());
+    };
+
+    int responseLength = attemptToSend();
+    if (responseLength == -EMSGSIZE) {
+        // The reply did not fit (was truncated) and the resolver closed the
+        // socket, so ask again with a buffer that any DNS message fits into.
+        // The repeated query will normally be answered from the resolver's cache.
+        buffer.resize(std::numeric_limits<quint16>::max());
+        responseLength = attemptToSend();
+    }
+    if (responseLength < 0) {
+        if (responseLength == -ETIMEDOUT)
+            reply->makeTimeoutError();
+        else
+            reply->makeResolverSystemError(-responseLength);
+        return -1;
+    }
+
+    // We can't tell whether the system resolver validated the reply, so don't
+    // pass on the AD bit (see the RES_TRUSTAD handling above).
+    if (responseLength >= int(sizeof(HEADER)))
+        reinterpret_cast<HEADER *>(buffer.data())->ad = false;
+
+    return responseLength;
+}
+
+void QDnsLookupRunnable::query(QDnsLookupReply *reply)
+{
+    // Prepare the DNS query.
+    QueryBuffer qbuffer;
+    int queryLength = prepareQueryBuffer(qbuffer, requestName.constData(), ns_type(requestType));
+    if (Q_UNLIKELY(queryLength < 0))
+        return reply->setError(QDnsLookup::InvalidRequestError,
+                               QDnsLookup::tr("Invalid domain name"));
+
+    // Perform DNS query.
+    QSpan query(qbuffer.data(), queryLength);
+    ReplyBuffer buffer(ReplyBufferSize);
+    int responseLength = -1;
+    switch (protocol) {
+    case QDnsLookup::Standard:
+        responseLength = sendStandardDns(reply, query, buffer, nameserver);
+        break;
+    case QDnsLookup::DnsOverTls:
+        if (!sendDnsOverTls(reply, query, buffer))
+            return;
+        responseLength = buffer.size();
+        break;
+    }
+
+    if (responseLength < 0)
+        return;
+
+    parseResponse(reply, buffer, responseLength);
+}
+
+#endif // QT_CONFIG(libresolv)
+
+void QDnsLookupRunnable::parseResponse(QDnsLookupReply *reply, ReplyBuffer &buffer,
+                                       int responseLength)
+{
     // Check the reply is valid.
     if (responseLength < int(sizeof(HEADER)))
         return reply->makeInvalidReplyError();

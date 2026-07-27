@@ -239,6 +239,10 @@ qt_feature("libresolv" PRIVATE
     CONDITION WrapResolv_FOUND
     AUTODETECT UNIX
 )
+qt_feature("android_dnsresolver" PRIVATE
+    LABEL "Android DnsResolver"
+    CONDITION ANDROID AND NOT QT_FEATURE_libresolv
+)
 qt_feature("libproxy" PRIVATE
     LABEL "libproxy"
     AUTODETECT OFF

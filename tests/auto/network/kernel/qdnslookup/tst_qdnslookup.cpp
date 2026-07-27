@@ -259,6 +259,9 @@ static QList<QHostAddress> globalPublicNameservers(QDnsLookup::Protocol proto)
 
 void tst_QDnsLookup::initTestCase()
 {
+    if (!QDnsLookup::isProtocolSupported(QDnsLookup::Standard))
+        QSKIP("Standard DNS queries are not supported on this system");
+
     if (qgetenv("QTEST_ENVIRONMENT") == "ci")
         dnsServersMustWork = true;
 
@@ -719,6 +722,9 @@ void tst_QDnsLookup::lookupAbortRetry()
 
 void tst_QDnsLookup::setNameserverLoopback()
 {
+#ifdef Q_OS_ANDROID
+    QSKIP("Android's DnsResolver can only query the system's nameservers");
+#endif
 #if !QT_CONFIG(udpsocket)
     QSKIP("UDP socket not enabled");
 #else
@@ -783,6 +789,12 @@ static void setNameserver_data_helper(const QByteArray &protoName)
 {
     if (!QDnsLookup::isProtocolSupported(Protocol))
         QSKIP(protoName + " not supported");
+
+#ifdef Q_OS_ANDROID
+    // DNS-over-TLS is ours, so it can still be pointed at a specific server
+    if (Protocol == QDnsLookup::Standard)
+        QSKIP("Android's DnsResolver can only query the system's nameservers");
+#endif
 
     static QList<QHostAddress> servers = systemNameservers(Protocol)
             + globalPublicNameservers(Protocol);

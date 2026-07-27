@@ -42,6 +42,11 @@ constexpr qsizetype MaxDomainNameLength = 255;
 constexpr quint16 DnsPort = 53;
 constexpr quint16 DnsOverTlsPort = 853;
 
+#if QT_CONFIG(android_dnsresolver)
+// whether android_res_nsend() is present, that is, we're on Android 10 or later
+bool qt_androidDnsResolverAvailable();
+#endif
+
 class QDnsLookupRunnable;
 QDebug operator<<(QDebug &, QDnsLookupRunnable *);
 
@@ -222,6 +227,10 @@ private:
         return qt_ACE_do(encodedLabel.toString(), NormalizeAce, ForbidLeadingDot);
     }
     void query(QDnsLookupReply *reply);
+#if QT_CONFIG(libresolv) || QT_CONFIG(android_dnsresolver)
+    // implemented in qdnslookup_unix.cpp, shared by both backends there
+    void parseResponse(QDnsLookupReply *reply, ReplyBuffer &buffer, int responseLength);
+#endif
 
     EncodedLabel requestName;
     QHostAddress nameserver;
