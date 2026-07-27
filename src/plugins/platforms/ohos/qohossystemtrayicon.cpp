@@ -163,28 +163,20 @@ QImage convertIconToScaledImage(
     return fallbackImage;
 }
 
-QNapi::Object makeJsPixelMapFromIcon(QtOhos::JsState &jsState, const QIcon &icon, bool isWhiteIcon)
+QNapi::Object makeJsPixelMapFromIcon(QtOhos::JsState &jsState, const QIcon &icon)
 {
     const QSize iconSize(48, 48);
-    QImage iconImage = icon.pixmap(iconSize).toImage();
-    auto pixelMap =
-        createDisplayDensityScaledJsMonochromePixelMapFromIconImage(jsState, iconImage, isWhiteIcon);
-    if (pixelMap)
-        return *pixelMap;
-
-    QImage defaultImage(iconSize, QImage::Format_RGBA8888);
-    defaultImage.fill(isWhiteIcon ? Qt::white : Qt::black);
-    return makeDisplayDensityScaledJsPixelMapFromQImage(jsState, defaultImage);
+    return makeDisplayDensityScaledJsPixelMapFromQImage(
+        jsState, convertIconToScaledImage(icon, iconSize, Qt::transparent));
 }
 
 QNapi::Object makeJsStatusBarIcon(QtOhos::JsState &jsState, const QIcon &icon)
 {
     auto *env = jsState.env();
 
-    auto whitePixelMap = makeJsPixelMapFromIcon(jsState, icon, true);
-    auto blackPixelMap = makeJsPixelMapFromIcon(jsState, icon, false);
+    auto trayIcon = makeJsPixelMapFromIcon(jsState, icon);
 
-    auto imageSize = whitePixelMap.eval<QNapi::Object>("getImageInfoSync().size");;
+    auto imageSize = trayIcon.eval<QNapi::Object>("getImageInfoSync().size");
 
     int imageWidth = imageSize.get<QNapi::Number>("width");
     int imageHeight = imageSize.get<QNapi::Number>("height");
@@ -193,8 +185,8 @@ QNapi::Object makeJsStatusBarIcon(QtOhos::JsState &jsState, const QIcon &icon)
     return QNapi::makeObject(
         env,
         {
-            {"white", whitePixelMap},
-            {"black", blackPixelMap},
+            {"white", trayIcon},
+            {"black", trayIcon},
         });
 }
 
