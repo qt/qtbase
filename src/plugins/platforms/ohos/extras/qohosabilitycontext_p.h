@@ -81,8 +81,8 @@ class Q_HARMONYEXTRAS_EXPORT AbilityContext : public QObject
     Q_OBJECT
 
 public:
-    static std::shared_ptr<AbilityContext> defaultInstance();
-    static std::shared_ptr<AbilityContext> instanceForMainWindow(QWindow *instanceMainWindow);
+    static AbilityContext *defaultInstance();
+    static AbilityContext *instanceForMainWindow(QWindow *instanceMainWindow);
 
     virtual void setDestroyFromSystemEnabled(bool destroyEnabled) = 0;
 

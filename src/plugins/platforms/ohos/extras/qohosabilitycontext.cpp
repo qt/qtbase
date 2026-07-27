@@ -673,7 +673,7 @@ private:
     QPointer<QWindow> m_instanceMainWindow;
 };
 
-std::map<QWindow *, std::shared_ptr<QOhosAbilityContextImpl>> abilityContextsMap;
+std::map<QWindow *, std::unique_ptr<QOhosAbilityContextImpl>> abilityContextsMap;
 
 QOhosBaseAbilityContextImpl::QOhosBaseAbilityContextImpl()
     : m_uniqueIdsGenerator(makeUniqueIdsGenerator())
@@ -1106,7 +1106,7 @@ AbilityContext::AbilityContext()
 AbilityContext::~AbilityContext() = default;
 
 /*!
-    \fn std::shared_ptr<AbilityContext> QtHarmonyExtras::AbilityContext::defaultInstance()
+    \fn AbilityContext *QtHarmonyExtras::AbilityContext::defaultInstance()
 
     Returns instance of the class which is not connected to any specific Ability instance. It should
     be used when the application needs to perform some operations without selecting specific
@@ -1114,31 +1114,36 @@ AbilityContext::~AbilityContext() = default;
 
     See descriptions of specific class methods for information about their behavior for the default
     instance.
+
+    The returned object is owned by QtHarmonyExtras and lives for the lifetime of the application;
+    do not delete it.
 */
-std::shared_ptr<AbilityContext> AbilityContext::defaultInstance()
+AbilityContext *AbilityContext::defaultInstance()
 {
-    static auto instance = std::make_shared<QOhosDefaultAbilityContextImpl>();
-    return instance;
+    static QOhosDefaultAbilityContextImpl instance;
+    return &instance;
 }
 
 /*!
-    \fn std::shared_ptr<AbilityContext> QtHarmonyExtras::AbilityContext::instanceForMainWindow(QWindow *instanceMainWindow)
+    \fn AbilityContext *QtHarmonyExtras::AbilityContext::instanceForMainWindow(QWindow *instanceMainWindow)
 
     Returns instance of the class which is connected to Ability instance identified by the
     \a instanceMainWindow. Methods called on the returned object will only affect the
     corresponding Ability instance.
+
+    \a instanceMainWindow must not be \c nullptr.
+
+    The returned object is owned by QtHarmonyExtras and remains valid while \a instanceMainWindow
+    exists; do not delete it. Use QPointer to hold a reference that may outlive the window.
 */
-std::shared_ptr<AbilityContext> AbilityContext::instanceForMainWindow(QWindow *instanceMainWindow)
+AbilityContext *AbilityContext::instanceForMainWindow(QWindow *instanceMainWindow)
 {
-    if (instanceMainWindow == nullptr) {
-        qCWarning(QtForOhos, "%s: got null QWindow", Q_FUNC_INFO);
-        return std::make_shared<QOhosAbilityContextImpl>(nullptr);
-    }
+    Q_PRE_X(instanceMainWindow, "instanceMainWindow must not be null");
 
     auto abilityContextIter = abilityContextsMap.find(instanceMainWindow);
     if (abilityContextIter == abilityContextsMap.end()) {
         std::tie(abilityContextIter, std::ignore) = abilityContextsMap.emplace(
-            instanceMainWindow, std::make_shared<QOhosAbilityContextImpl>(instanceMainWindow));
+            instanceMainWindow, std::make_unique<QOhosAbilityContextImpl>(instanceMainWindow));
             QObject::connect(
                 instanceMainWindow, &QObject::destroyed,
                 [instanceMainWindow](QObject *) {
@@ -1146,7 +1151,7 @@ std::shared_ptr<AbilityContext> AbilityContext::instanceForMainWindow(QWindow *i
                 });
     }
 
-    return abilityContextIter->second;
+    return abilityContextIter->second.get();
 }
 
 /*!
