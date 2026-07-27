@@ -11,7 +11,6 @@
 #include <qohosjsutils.h>
 #include <qohosplugincore.h>
 #include <qohosutils.h>
-#include <stdexcept>
 #include <string>
 
 QT_BEGIN_NAMESPACE
