@@ -55,8 +55,8 @@ std::shared_ptr<void> XComponentCallbackDispatcher::registerCallbackReceiver(
     qOhosPrintfDebug("Registering callbacks for xcomponent %p", xComponent);
 
     if (m_receivers.find(xComponent) != m_receivers.end()) {
-        qOhosPrintfError("XComponent %p callbacks were already registered", xComponent);
-        throw std::runtime_error("Duplicate xcomponent");
+        qOhosReportFatalErrorAndAbort(
+            "%s: XComponent %p callbacks were already registered", Q_FUNC_INFO, xComponent);
     }
 
     m_receivers[xComponent] = receiver;
