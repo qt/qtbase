@@ -15,12 +15,14 @@
 // We mean it.
 //
 
-#include <QtCore/qobject.h>
-#include <QtCore/qstring.h>
-#include <QtCore/qstringlist.h>
 #include <QtHarmonyExtras/private/qohosappbundleinfo_p.h>
 #include <QtHarmonyExtras/private/qohoswant_p.h>
 #include <QtHarmonyExtras/private/qtharmonyextrasglobal_p.h>
+
+#include <QtCore/qobject.h>
+#include <QtCore/qstring.h>
+#include <QtCore/qstringlist.h>
+
 #include <functional>
 #include <memory>
 #include <optional>

@@ -15,6 +15,10 @@
 // We mean it.
 //
 
+#include <QtHarmonyExtras/private/qtharmonyextrasglobal_p.h>
+
+#include <QtGui/qwindow.h>
+
 #include <QtCore/qbytearray.h>
 #include <QtCore/qfileinfo.h>
 #include <QtCore/qlist.h>
@@ -24,8 +28,7 @@
 #include <QtCore/qstring.h>
 #include <QtCore/qurl.h>
 #include <QtCore/qvariant.h>
-#include <QtGui/qwindow.h>
-#include <QtHarmonyExtras/private/qtharmonyextrasglobal_p.h>
+
 #include <functional>
 #include <memory>
 

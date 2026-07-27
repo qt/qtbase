@@ -15,14 +15,17 @@
 // We mean it.
 //
 
-#include "qohosenums_p.h"
-#include <QtCore/private/qohoscommon_p.h>
+#include <QtHarmonyExtras/private/qohosenums_p.h>
+
+#include <QtGui/qwindow.h>
+
 #include <QtCore/qbytearray.h>
 #include <QtCore/qmap.h>
 #include <QtCore/qpoint.h>
 #include <QtCore/qsize.h>
 #include <QtCore/qvariant.h>
-#include <QtGui/qwindow.h>
+#include <QtCore/private/qohoscommon_p.h>
+
 #include <memory>
 #include <optional>
 #include <string>

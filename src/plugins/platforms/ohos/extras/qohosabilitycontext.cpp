@@ -2,24 +2,28 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qohosabilitycontext_p.h"
-#include "qohosenums_p.h"
-#include "qohosjsenv_p.h"
-#include "qohoswantinfo_p.h"
-#include "qohoswantutils_p.h"
-#include <QtCore/private/qcore_ohos_p.h>
-#include <QtCore/private/qohoscommon_p.h>
-#include <QtCore/private/qohoslogger_p.h>
+
+#include <QtHarmonyExtras/private/qohosenums_p.h>
+#include <QtHarmonyExtras/private/qohosjsenv_p.h>
+#include <QtHarmonyExtras/private/qohosoperationstatus_p.h>
+#include <QtHarmonyExtras/private/qohossharekit_p.h>
+#include <QtHarmonyExtras/private/qohosstartoptions_p.h>
+#include <QtHarmonyExtras/private/qohoswantinfo_p.h>
+#include <QtHarmonyExtras/private/qohoswantutils_p.h>
+
+#include <QtGui/qimage.h>
+#include <QtGui/qwindow.h>
+#include <QtGui/private/qohosimageconversions_p.h>
+
 #include <QtCore/qeventloop.h>
 #include <QtCore/qhash.h>
 #include <QtCore/qmap.h>
 #include <QtCore/qrandom.h>
 #include <QtCore/qsharedpointer.h>
-#include <QtHarmonyExtras/private/qohosoperationstatus_p.h>
-#include <QtHarmonyExtras/private/qohossharekit_p.h>
-#include <QtHarmonyExtras/private/qohosstartoptions_p.h>
-#include <QtGui/qwindow.h>
-#include <QtGui/private/qohosimageconversions_p.h>
-#include <QtGui/qimage.h>
+#include <QtCore/private/qcore_ohos_p.h>
+#include <QtCore/private/qohoscommon_p.h>
+#include <QtCore/private/qohoslogger_p.h>
+
 #include <array>
 #include <cstdint>
 #include <cstring>

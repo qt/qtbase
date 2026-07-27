@@ -15,10 +15,12 @@
 // We mean it.
 //
 
-#include <QtCore/qlist.h>
-#include <QtCore/qstring.h>
 #include <QtHarmonyExtras/private/qohosoperationstatus_p.h>
 #include <QtHarmonyExtras/private/qtharmonyextrasglobal_p.h>
+
+#include <QtCore/qlist.h>
+#include <QtCore/qstring.h>
+
 #include <memory>
 
 QT_BEGIN_NAMESPACE

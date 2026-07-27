@@ -3,12 +3,13 @@
 
 #include "qohosfileutils_p.h"
 
+#include <QtCore/qeventloop.h>
 #include <QtCore/private/qcore_ohos_p.h>
 #include <QtCore/private/qnapi_p.h>
 #include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/private/qohoslogger_p.h>
 #include <QtCore/private/qohospathutils_p.h>
-#include <QtCore/qeventloop.h>
+
 #include <memory>
 #include <utility>
 #include <vector>

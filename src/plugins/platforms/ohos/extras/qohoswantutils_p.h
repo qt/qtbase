@@ -15,10 +15,12 @@
 // We mean it.
 //
 
+#include <QtHarmonyExtras/private/qohoswant_p.h>
+#include <QtHarmonyExtras/private/qohoswantinfo_p.h>
+
 #include <QtCore/qjsonobject.h>
 #include <QtCore/qsharedpointer.h>
-#include <QtHarmonyExtras/private/qohoswantinfo_p.h>
-#include <QtHarmonyExtras/private/qohoswant_p.h>
+
 #include <memory>
 
 QT_BEGIN_NAMESPACE

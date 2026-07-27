@@ -16,6 +16,7 @@
 //
 
 #include <QtCore/qglobal.h>
+
 #include <array>
 
 QT_BEGIN_NAMESPACE

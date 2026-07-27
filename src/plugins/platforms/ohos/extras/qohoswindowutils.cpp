@@ -3,16 +3,18 @@
 
 #include "qohoswindowutils_p.h"
 
-#include <QtCore/qvariant.h>
-#include <QtGui/private/qguiapplication_p.h>
-#include <QtGui/private/qohoswindowhints_p.h>
 #include <QtGui/qcolor.h>
 #include <QtGui/qpa/qplatformintegration.h>
-#include <QtGui/qpa/qplatformscreen_p.h>
-#include <QtGui/qpa/qplatformwindow_p.h>
 #include <QtGui/qscreen.h>
 #include <QtGui/qwindow.h>
+#include <QtGui/private/qguiapplication_p.h>
+#include <QtGui/private/qohoswindowhints_p.h>
+#include <QtGui/qpa/qplatformscreen_p.h>
+#include <QtGui/qpa/qplatformwindow_p.h>
 #include <QtWidgets/qwidget.h>
+
+#include <QtCore/qvariant.h>
+
 #include <optional>
 
 QT_BEGIN_NAMESPACE

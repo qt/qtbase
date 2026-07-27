@@ -15,23 +15,24 @@
 // We mean it.
 //
 
-#include <QtCore/private/qnapi_p.h>
-#include <QtCore/private/qohoslogger_p.h>
 #include <QtCore/qjsonarray.h>
 #include <QtCore/qjsonobject.h>
 #include <QtCore/qjsonvalue.h>
 #include <QtCore/qstring.h>
+#include <QtCore/private/qnapi_p.h>
+#include <QtCore/private/qohoslogger_p.h>
 
 #include <algorithm>
 #include <array>
 #include <cstdint>
 #include <iterator>
 #include <limits>
-#include <type_traits>
 #include <memory>
-#include <napi/native_api.h>
-#include <napi.h>
+#include <type_traits>
 #include <utility>
+
+#include <napi.h>
+#include <napi/native_api.h>
 
 QT_BEGIN_NAMESPACE
 

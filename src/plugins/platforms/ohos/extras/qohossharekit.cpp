@@ -2,11 +2,14 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qohossharekit_p.h"
-#include "qohossharekitbackend_p.h"
+
+#include <QtHarmonyExtras/private/qohossharekitbackend_p.h>
+
+#include <QtGui/qwindow.h>
+
+#include <QtCore/qmimedatabase.h>
 #include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/private/qohoslogger_p.h>
-#include <QtCore/qmimedatabase.h>
-#include <QtGui/qwindow.h>
 
 QT_BEGIN_NAMESPACE
 

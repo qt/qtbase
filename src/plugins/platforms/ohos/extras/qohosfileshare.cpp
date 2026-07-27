@@ -2,12 +2,15 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qohosfileshare_p.h"
+
+#include <QtHarmonyExtras/private/qohosoperationstatus_p.h>
+
+#include <QtCore/qscopeguard.h>
 #include <QtCore/private/qcore_ohos_p.h>
 #include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/private/qohoslogger_p.h>
 #include <QtCore/private/qohospathutils_p.h>
-#include <QtCore/qscopeguard.h>
-#include <QtHarmonyExtras/private/qohosoperationstatus_p.h>
+
 #include <cstdlib>
 #include <cstring>
 #include <memory>

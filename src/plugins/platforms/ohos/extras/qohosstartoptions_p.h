@@ -15,16 +15,19 @@
 // We mean it.
 //
 
-#include <QtCore/private/qohoscommon_p.h>
+#include <QtHarmonyExtras/private/qohosbundlemanager_p.h>
+#include <QtHarmonyExtras/private/qtharmonyextrasglobal_p.h>
+
+#include <QtGui/qcolor.h>
+#include <QtGui/qimage.h>
+
 #include <QtCore/qjsonobject.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qvariant.h>
-#include <QtGui/qcolor.h>
-#include <QtGui/qimage.h>
-#include <QtHarmonyExtras/private/qohosbundlemanager_p.h>
-#include <QtHarmonyExtras/private/qtharmonyextrasglobal_p.h>
+#include <QtCore/private/qohoscommon_p.h>
+
 #include <functional>
 #include <memory>
 #include <optional>
