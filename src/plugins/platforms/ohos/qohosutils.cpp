@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qohosutils.h"
+#include <cerrno>
 #include <cinttypes>
 #include <cstdarg>
 
@@ -27,17 +28,16 @@ std::optional<std::uintmax_t> tryParseStringAsUIntMax(const std::string &inputSt
 
 std::optional<double> tryParseStringAsFiniteDouble(const std::string &inputString)
 {
-    double parsedValue;
-    std::size_t processedInputChars;
-    try {
-        parsedValue = std::stod(inputString, &processedInputChars);
-    } catch (const std::logic_error &) {
-        parsedValue = NAN;
-        processedInputChars = 0;
-    }
+    char *endPtr;
+    errno = 0;
+    auto value = std::strtod(inputString.c_str(), &endPtr);
+    bool validValue = !inputString.empty()
+        && endPtr == inputString.c_str() + inputString.size()
+        && errno != ERANGE
+        && std::isfinite(value);
 
-    return processedInputChars == inputString.size() && std::isfinite(parsedValue)
-        ? std::optional(parsedValue)
+    return validValue
+        ? std::optional(value)
         : std::nullopt;
 }
 
