@@ -858,6 +858,8 @@ private slots:
     void frameworkSearchPath();
     void frameworkIncludePath_data();
     void frameworkIncludePath();
+    void frameworkBareInclude_data();
+    void frameworkBareInclude();
     void includeNext();
     void includeNextFeatureGuard();
     void includeNextInPrimarySourceFile();
@@ -1627,12 +1629,6 @@ void tst_Moc::frameworkIncludePath_data()
     QTest::newRow("headers")
         << QStringLiteral("/Test.framework/Headers")
         << QStringLiteral("/interface-from-include.h");
-
-    // A bare umbrella include <Test> (no slash) must resolve to the umbrella
-    // header Test.framework/Headers/Test, not the framework binary.
-    QTest::newRow("umbrella")
-        << QStringLiteral("/Test.framework")
-        << QStringLiteral("/interface-from-framework-umbrella.h");
 }
 
 void tst_Moc::frameworkIncludePath()
@@ -1656,6 +1652,54 @@ void tst_Moc::frameworkIncludePath()
         qWarning("waitForFinished failed. QProcess error: %d", (int)proc.error());
     QVERIFY(finished);
     VERIFY_NO_ERRORS(proc);
+#else
+    QSKIP("Only tested/relevant on Apple platforms");
+#endif
+}
+
+void tst_Moc::frameworkBareInclude_data()
+{
+    QTest::addColumn<QString>("flag");
+    QTest::addColumn<QString>("path");
+
+    // Replicate what CMake's AUTOMOC passes for a framework dependency, which moc
+    // turns into a framework search path itself.
+    QTest::newRow("include path") << QStringLiteral("-I") << QStringLiteral("/Test.framework");
+
+    // Replicate what qmake passes.
+    QTest::newRow("framework path") << QStringLiteral("-F") << QStringLiteral("/.");
+}
+
+void tst_Moc::frameworkBareInclude()
+{
+#ifdef MOC_CROSS_COMPILED
+    QSKIP("Not tested when cross-compiled");
+#endif
+#if defined(Q_OS_APPLE) && QT_CONFIG(process)
+    QFETCH(QString, flag);
+    QFETCH(QString, path);
+
+    // A framework search path resolves prefixed <Framework/Header> includes
+    // only, as Clang does. A bare <Test> must not resolve through it, even
+    // though Test.framework/Headers/Test exists, so that an umbrella include
+    // keeps answering whether the module itself is in the include path.
+    QStringList args;
+    args << "-E"
+         << flag << m_sourceDirectory + path
+         << m_sourceDirectory + QStringLiteral("/framework-bare-include.h");
+
+    QProcess proc;
+    proc.start(m_moc, args);
+    bool finished = proc.waitForFinished();
+    if (!finished)
+        qWarning("waitForFinished failed. QProcess error: %d", (int)proc.error());
+    QVERIFY(finished);
+    VERIFY_NO_ERRORS(proc);
+
+    const QByteArray mocOut = proc.readAllStandardOutput();
+    QVERIFY2(mocOut.contains("prefixed_framework_include_resolves"), mocOut.constData());
+    QVERIFY2(!mocOut.contains("bare_framework_include_resolves"),
+             "a bare include resolved through the framework search path");
 #else
     QSKIP("Only tested/relevant on Apple platforms");
 #endif

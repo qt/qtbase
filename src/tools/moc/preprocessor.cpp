@@ -1106,15 +1106,15 @@ static IncludeResolution searchIncludePaths(const QList<Parser::IncludePath> &in
             break;
 
         if (p.isFrameworkPath) {
+            // A framework include names the framework, as in <Framework/Header>.
+            // An include without a slash is never resolved via a framework
+            // search path, matching Clang, so that an umbrella include such as
+            // <QtGui> only resolves through the module's own include directory.
             const qsizetype slashPos = include.indexOf('/');
-            if (slashPos >= 0) {
-                fi.setFile(QString::fromLocal8Bit(p.path + '/' + include.left(slashPos) + ".framework/Headers/"),
-                           QString::fromLocal8Bit(include.mid(slashPos + 1)));
-            } else if (!include.contains('.')) {
-                // Possible umbrella header
-                fi.setFile(QString::fromLocal8Bit(p.path + '/' + include + ".framework/Headers/"),
-                           QString::fromLocal8Bit(include));
-            }
+            if (slashPos < 0)
+                continue;
+            fi.setFile(QString::fromLocal8Bit(p.path + '/' + include.left(slashPos) + ".framework/Headers/"),
+                       QString::fromLocal8Bit(include.mid(slashPos + 1)));
         } else {
             fi.setFile(QString::fromLocal8Bit(p.path), QString::fromLocal8Bit(include));
         }
