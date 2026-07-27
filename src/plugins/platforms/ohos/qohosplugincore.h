@@ -16,9 +16,6 @@
 #include <memory>
 #include <optional>
 #include <qohosenums.h>
-#ifndef QT_NO_EXCEPTIONS
-#include <stdexcept>
-#endif
 #include <string>
 #include <type_traits>
 #include <typeinfo>
