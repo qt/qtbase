@@ -876,6 +876,41 @@ inline T *qrhi_objectFromProxyData(QRhiSwapChainProxyData *pd, QWindow *window, 
     return static_cast<T *>(pd->reserved[objectIndex]);
 }
 
+class QRhiPipelineCacheDataReader
+{
+public:
+    QRhiPipelineCacheDataReader(const char *data, quint32 size)
+        : m_p(data), m_end(data + size)
+    {
+    }
+
+    bool readUInt32(quint32 *dst)
+    {
+        if (m_end - m_p < qptrdiff(sizeof(quint32)))
+            return false;
+        memcpy(dst, m_p, sizeof(quint32));
+        m_p += sizeof(quint32);
+        return true;
+    }
+
+    // Reads a 32-bit length, followed by that many bytes.
+    bool readByteArray(QByteArray *dst)
+    {
+        quint32 len = 0;
+        if (!readUInt32(&len))
+            return false;
+        if (quint64(m_end - m_p) < len)
+            return false;
+        *dst = QByteArray(m_p, qsizetype(len));
+        m_p += len;
+        return true;
+    }
+
+private:
+    const char *m_p;
+    const char *m_end;
+};
+
 QT_END_NAMESPACE
 
 #endif

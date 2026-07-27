@@ -155,6 +155,7 @@ private slots:
 
     void pipelineCache_data();
     void pipelineCache();
+    void pipelineCacheBlobReader();
     void textureImportOpenGL();
     void renderbufferImportOpenGL();
     void threeDimTexture_data();
@@ -6458,6 +6459,135 @@ void tst_QRhi::pipelineCache()
         pipeline->setShaderResourceBindings(srb.data());
         pipeline->setRenderPassDescriptor(rpDesc.data());
         QVERIFY(pipeline->create());
+    }
+
+    {
+        // Corrupted and truncated blobs must be rejected by QRhi's own header
+        // and size validation, without any part of the payload being handed to
+        // the 3D API.
+        QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::EnablePipelineCacheDataSave));
+        QVERIFY(rhi);
+
+        // rhiId and arch are the first two quint32s of the header with every
+        // backend, and both are validated up front. (the blob can legitimately
+        // be empty, e.g. with the Null backend, hence the clamping)
+        for (qsizetype offset = 0; offset < qMin<qsizetype>(8, pcd.size()); ++offset) {
+            for (uchar value : { uchar(0x00), uchar(0xff) }) {
+                QByteArray corrupt = pcd;
+                corrupt[offset] = char(value);
+                rhi->setPipelineCacheData(corrupt);
+            }
+        }
+
+        // Truncated: lengths that do not even cover the header, and lengths
+        // that cover the header but not all of the payload it advertises. Note
+        // that we won't test the case of corrupting the actual blob that, with
+        // Vulkan for example, is passed on to the driver.
+        const qsizetype truncationWindow = qMin<qsizetype>(320, pcd.size());
+        for (qsizetype size = 0; size < truncationWindow; ++size) {
+            rhi->setPipelineCacheData(pcd.left(size));
+            rhi->setPipelineCacheData(pcd.left(pcd.size() - 1 - size));
+        }
+
+        // Now reload the valid data and verify the QRhi still works.
+        rhi->setPipelineCacheData(pcd);
+
+        QScopedPointer<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGBA8, QSize(256, 256), 1, QRhiTexture::RenderTarget));
+        QVERIFY(texture->create());
+        QScopedPointer<QRhiTextureRenderTarget> rt(rhi->newTextureRenderTarget({ texture.data() }));
+        QScopedPointer<QRhiRenderPassDescriptor> rpDesc(rt->newCompatibleRenderPassDescriptor());
+        rt->setRenderPassDescriptor(rpDesc.data());
+        QVERIFY(rt->create());
+        QScopedPointer<QRhiShaderResourceBindings> srb(rhi->newShaderResourceBindings());
+        QVERIFY(srb->create());
+        QScopedPointer<QRhiGraphicsPipeline> pipeline(rhi->newGraphicsPipeline());
+        pipeline->setShaderStages({ { QRhiShaderStage::Vertex, vs }, { QRhiShaderStage::Fragment, fs } });
+        pipeline->setVertexInputLayout(inputLayout);
+        pipeline->setShaderResourceBindings(srb.data());
+        pipeline->setRenderPassDescriptor(rpDesc.data());
+        QVERIFY(pipeline->create());
+    }
+}
+
+void tst_QRhi::pipelineCacheBlobReader()
+{
+    // The OpenGL and D3D11 backends serialize their own list of entries into the
+    // pipeline cache blob and have to walk it in setPipelineCacheData(). Verify
+    // that the reader they share for that never goes past the end of the data,
+    // so that a truncated or crafted blob gets rejected instead of resulting in
+    // an out-of-bounds read. This is a device-independent check on the parsing
+    // itself, hence no QRhi here.
+
+    const auto appendUInt32 = [](QByteArray *blob, quint32 value) {
+        blob->append(reinterpret_cast<const char *>(&value), 4);
+    };
+    const auto makeByteArrayEntry = [&appendUInt32](const QByteArray &payload) {
+        QByteArray blob;
+        appendUInt32(&blob, quint32(payload.size()));
+        blob.append(payload);
+        return blob;
+    };
+
+    // Well-formed: a length-prefixed byte array followed by a quint32, with
+    // nothing left over afterwards.
+    {
+        QByteArray blob = makeByteArrayEntry(QByteArrayLiteral("test"));
+        appendUInt32(&blob, 42);
+
+        QRhiPipelineCacheDataReader reader(blob.constData(), quint32(blob.size()));
+        QByteArray value;
+        QVERIFY(reader.readByteArray(&value));
+        QCOMPARE(value, QByteArrayLiteral("test"));
+        quint32 number = 0;
+        QVERIFY(reader.readUInt32(&number));
+        QCOMPARE(number, 42u);
+        QVERIFY(!reader.readUInt32(&number));
+    }
+
+    // An empty payload is legitimate, and must not be confused with a failure.
+    {
+        const QByteArray blob = makeByteArrayEntry(QByteArray());
+        QRhiPipelineCacheDataReader reader(blob.constData(), quint32(blob.size()));
+        QByteArray value = QByteArrayLiteral("not empty");
+        QVERIFY(reader.readByteArray(&value));
+        QVERIFY(value.isEmpty());
+    }
+
+    // Truncated at every possible length: must fail instead of reading beyond
+    // the end of the buffer.
+    {
+        const QByteArray blob = makeByteArrayEntry(QByteArrayLiteral("test"));
+        for (qsizetype size = 0; size < blob.size(); ++size) {
+            QRhiPipelineCacheDataReader reader(blob.constData(), quint32(size));
+            QByteArray value;
+            QVERIFY(!reader.readByteArray(&value));
+        }
+        for (qsizetype size = 0; size < 4; ++size) {
+            QRhiPipelineCacheDataReader reader(blob.constData(), quint32(size));
+            quint32 number = 0;
+            QVERIFY(!reader.readUInt32(&number));
+        }
+    }
+
+    // A length prefix that claims more than the blob can possibly hold.
+    {
+        for (quint32 len : { 6u, 0x10000u, 0x7fffffffu, 0xffffffffu }) {
+            QByteArray blob;
+            appendUInt32(&blob, len);
+            blob.append(QByteArrayLiteral("test"));
+            QRhiPipelineCacheDataReader reader(blob.constData(), quint32(blob.size()));
+            QByteArray value;
+            QVERIFY(!reader.readByteArray(&value));
+        }
+    }
+
+    // Zero-sized input: every read must fail immediately.
+    {
+        QRhiPipelineCacheDataReader reader(nullptr, 0);
+        QByteArray value;
+        quint32 number = 0;
+        QVERIFY(!reader.readByteArray(&value));
+        QVERIFY(!reader.readUInt32(&number));
     }
 }
 
