@@ -2579,6 +2579,31 @@ void QObject::deleteLater()
 }
 
 /*!
+    \internal
+
+    Destroys \a object in the thread it belongs to, via deleteLater(), so that its
+    vtable and members are not touched from the wrong thread. Falls back to deleting
+    it right away when that thread cannot run the deferred delete: it is the current
+    thread, or it has no event dispatcher (never started, or torn down at application
+    exit). This is meant for objects deleted from a thread that is usually not their
+    own, e.g. a worker handed to a thread pool.
+
+    The thread and the dispatcher are read from the object's QThreadData, which stays
+    alive as long as the object does, rather than from QThread, which the owning thread
+    may be destroying concurrently.
+*/
+void QObjectPrivate::deleteInOwnThread(QObject *object)
+{
+    QThreadData *objectData = QObjectPrivate::get(object)->threadData.loadRelaxed();
+    if (objectData->hasEventDispatcher()
+        && objectData->threadId.loadRelaxed() != QThread::currentThreadId()) {
+        object->deleteLater();
+    } else {
+        delete object;
+    }
+}
+
+/*!
     \fn QString QObject::tr(const char *sourceText, const char *disambiguation, int n)
     \reentrant
 

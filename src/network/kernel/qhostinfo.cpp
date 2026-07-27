@@ -18,7 +18,6 @@
 #include <qurl.h>
 
 #include <private/qobject_p.h>
-#include <private/qthread_p.h>
 
 #include <algorithm>
 
@@ -829,19 +828,9 @@ QHostInfoRunnable::QHostInfoRunnable(const QString &hn, int i, const QObject *re
 
 QHostInfoRunnable::~QHostInfoRunnable()
 {
-    // A QObject may only be destroyed in the thread it belongs to, and resultEmitter belongs to
-    // the receiver's thread, which is rarely the one deleting this runnable.
-    // Only hand it back to that thread if it still has an event dispatcher to run the deferred
-    // delete, otherwise deleteLater() would silently leak the emitter.
-    // The emitter keeps its QThreadData alive, but not the QThread, which its own thread may be
-    // destroying right now, so read both from the QThreadData and never dereference the QThread.
-    QThreadData *emitterData = QObjectPrivate::get(resultEmitter.get())->threadData.loadRelaxed();
-    if (emitterData->eventDispatcher.loadRelaxed()
-        && emitterData->thread.loadAcquire() != QThread::currentThread()) {
-        resultEmitter.release()->deleteLater();
-    } else {
-        resultEmitter.reset();
-    }
+    // resultEmitter belongs to the receiver's thread, which is rarely the one deleting this
+    // runnable, so it can't be destroyed here directly.
+    QObjectPrivate::deleteInOwnThread(resultEmitter.release());
 }
 
 // the QHostInfoLookupManager will at some point call this via a QThreadPool
