@@ -2840,7 +2840,7 @@ bool QMetaType::canConvert(QMetaType fromType, QMetaType toType)
 
 /*!
     \fn bool QMetaType::compare(const void *lhs, const void *rhs, int typeId, int* result)
-    \deprecated Use the non-static compare method instead
+    \deprecated Use the non-static compare method instead.
 
     Compares the objects at \a lhs and \a rhs. Both objects need to be of type \a typeId.
     \a result is set to less than, equal to or greater than zero, if \a lhs is less than, equal to

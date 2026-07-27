@@ -15,7 +15,7 @@
 /*!
     \macro QT_DISABLE_DEPRECATED_BEFORE
     \relates <QtDeprecationMarkers>
-    \deprecated [6.5] Use QT_DISABLE_DEPRECATED_UP_TO instead
+    \deprecated [6.5] Use QT_DISABLE_DEPRECATED_UP_TO instead.
 
     \sa QT_DISABLE_DEPRECATED_UP_TO
 */
