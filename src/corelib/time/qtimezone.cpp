@@ -14,6 +14,7 @@
 #include <qdebug.h>
 
 #include <algorithm>
+#include <functional>
 
 QT_BEGIN_NAMESPACE
 
@@ -1501,10 +1502,9 @@ bool QTimeZone::isTimeZoneIdAvailable(const QByteArray &ianaId)
 
 [[maybe_unused]] static bool isUniqueSorted(const QList<QByteArray> &seq)
 {
-    // Since [..., b, a, ...] isn't unique-sorted if a <= b, at least the
-    // suggested implementations of is_sorted() and is_sorted_until() imply a
-    // non-unique sorted list will fail is_sorted() with <= comparison.
-    return std::is_sorted(seq.begin(), seq.end(), std::less_equal<QByteArray>());
+    // Verify every [..., b, a, ...] has b < a, i.e. none has b >= a.
+    return std::adjacent_find(seq.cbegin(), seq.cend(),
+                              std::greater_equal<QByteArray>()) == seq.cend();
 }
 
 static QList<QByteArray> set_union(const QList<QByteArray> &l1, const QList<QByteArray> &l2)
