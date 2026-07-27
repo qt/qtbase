@@ -736,6 +736,11 @@ bool QNullTexture::create()
                                           : (isArray ? qMax(0, m_arraySize)
                                                      : 1));
 
+    if (!rhiD->textureFormatInfo(m_format, size, nullptr, nullptr, nullptr)) {
+        valid = false;
+        return false;
+    }
+
     if (m_format == RGBA8) {
         image.resize(layerCount);
         for (int layer = 0; layer < layerCount; ++layer) {

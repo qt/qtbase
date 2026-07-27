@@ -4878,6 +4878,9 @@ bool QD3D12Texture::prepareCreate(QSize *adjustedSize)
         return false;
     }
 
+    if (!rhiD->textureFormatInfo(m_format, size, nullptr, nullptr, nullptr))
+        return false;
+
     if (adjustedSize)
         *adjustedSize = size;
 
