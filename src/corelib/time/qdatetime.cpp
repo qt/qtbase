@@ -4415,7 +4415,7 @@ void QDateTime::setTime(QTime time, TransitionResolution resolve)
 
 #if QT_DEPRECATED_SINCE(6, 9)
 /*!
-    \deprecated [6.9] Use setTimeZone() instead
+    \deprecated [6.9] Use setTimeZone() instead.
 
     Sets the time specification used in this datetime to \a spec.
     The datetime may refer to a different point in time.
@@ -4440,7 +4440,7 @@ void QDateTime::setTimeSpec(Qt::TimeSpec spec)
 
 /*!
     \since 5.2
-    \deprecated [6.9] Use setTimeZone(QTimeZone::fromSecondsAheadOfUtc(offsetSeconds)) instead
+    \deprecated [6.9] Use setTimeZone(QTimeZone::fromSecondsAheadOfUtc(offsetSeconds)) instead.
 
     Sets the timeSpec() to Qt::OffsetFromUTC and the offset to \a offsetSeconds.
     The datetime may refer to a different point in time.

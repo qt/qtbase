@@ -416,7 +416,7 @@ void QAbstractEventDispatcher::closingDown()
 
 /*!
     \class QAbstractEventDispatcher::TimerInfo
-    \deprecated [6.8] Use TimerInfoV2
+    \deprecated [6.8] Use TimerInfoV2.
     \inmodule QtCore
 
     This struct represents information about a timer:
