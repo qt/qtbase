@@ -15,9 +15,11 @@
 // We mean it.
 //
 
-#include <QtCore/qstring.h>
-#include <QtGui/qwindow.h>
 #include <QtHarmonyExtras/private/qtharmonyextrasglobal_p.h>
+
+#include <QtGui/qwindow.h>
+
+#include <QtCore/qstring.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -15,6 +15,9 @@
 // We mean it.
 //
 
+#include <QtHarmonyExtras/private/qohossharekit_p.h>
+#include <QtHarmonyExtras/private/qtharmonyextrasglobal_p.h>
+
 #include <QtCore/qflags.h>
 #include <QtCore/qglobal.h>
 #include <QtCore/qhash.h>
@@ -22,8 +25,7 @@
 #include <QtCore/qlist.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qstringlist.h>
-#include <QtHarmonyExtras/private/qohossharekit_p.h>
-#include <QtHarmonyExtras/private/qtharmonyextrasglobal_p.h>
+
 #include <memory>
 #include <optional>
 

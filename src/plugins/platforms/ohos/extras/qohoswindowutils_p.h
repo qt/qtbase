@@ -16,11 +16,13 @@
 //
 
 #include <QtHarmonyExtras/private/qtharmonyextrasglobal_p.h>
+
 #include <QtGui/qcolor.h>
 #include <QtGui/qscreen.h>
 #include <QtGui/qwindow.h>
 #include <QtWidgets/qwidget.h>
 #include <QtCore/qtypes.h>
+
 #include <optional>
 
 QT_BEGIN_NAMESPACE

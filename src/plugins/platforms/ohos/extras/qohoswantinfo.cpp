@@ -2,23 +2,27 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qohoswantinfo_p.h"
-#include "qohosenums_p.h"
-#include "qohosjsenv_p.h"
-#include <QtCore/private/qcore_ohos_p.h>
-#include <QtCore/private/qnapi_p.h>
-#include <QtCore/private/qohoscommon_p.h>
-#include <QtCore/private/qohoslogger_p.h>
+
+#include <QtHarmonyExtras/private/qohosenums_p.h>
+#include <QtHarmonyExtras/private/qohosjsenv_p.h>
+
 #include <QtCore/qbytearray.h>
 #include <QtCore/qjsonobject.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qvariant.h>
+#include <QtCore/private/qcore_ohos_p.h>
+#include <QtCore/private/qnapi_p.h>
+#include <QtCore/private/qohoscommon_p.h>
+#include <QtCore/private/qohoslogger_p.h>
+
 #include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <optional>
 #include <string>
 #include <vector>
+
 #include <database/udmf/udmf_meta.h>
 #include <database/udmf/utd.h>
 

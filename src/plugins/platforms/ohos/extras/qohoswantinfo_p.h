@@ -15,7 +15,6 @@
 // We mean it.
 //
 
-#include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/qbytearray.h>
 #include <QtCore/qjsonobject.h>
 #include <QtCore/qlist.h>
@@ -24,6 +23,8 @@
 #include <QtCore/qsharedpointer.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qvariant.h>
+#include <QtCore/private/qohoscommon_p.h>
+
 #include <optional>
 
 QT_BEGIN_NAMESPACE

@@ -15,8 +15,10 @@
 // We mean it.
 //
 
-#include <QtCore/qglobal.h>
 #include <QtHarmonyExtras/private/qtharmonyextrasglobal_p.h>
+
+#include <QtCore/qglobal.h>
+
 #include <memory>
 
 QT_BEGIN_NAMESPACE

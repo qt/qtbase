@@ -15,17 +15,20 @@
 // We mean it.
 //
 
+#include <QtHarmonyExtras/private/qohosoperationstatus_p.h>
+#include <QtHarmonyExtras/private/qohossharekit_p.h>
+#include <QtHarmonyExtras/private/qohosstartoptions_p.h>
+#include <QtHarmonyExtras/private/qohoswant_p.h>
+#include <QtHarmonyExtras/private/qtharmonyextrasglobal_p.h>
+
+#include <QtGui/qwindow.h>
+#include <QtWidgets/qwidget.h>
+
 #include <QtCore/qbytearray.h>
+#include <QtCore/qjsonobject.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qstring.h>
-#include <QtCore/qjsonobject.h>
-#include <QtGui/qwindow.h>
-#include <QtHarmonyExtras/private/qohosoperationstatus_p.h>
-#include <QtHarmonyExtras/private/qohoswant_p.h>
-#include <QtHarmonyExtras/private/qohosstartoptions_p.h>
-#include <QtHarmonyExtras/private/qtharmonyextrasglobal_p.h>
-#include <QtHarmonyExtras/private/qohossharekit_p.h>
-#include <QtWidgets/qwidget.h>
+
 #include <functional>
 #include <memory>
 #include <optional>

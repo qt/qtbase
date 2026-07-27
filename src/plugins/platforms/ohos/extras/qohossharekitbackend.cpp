@@ -2,13 +2,16 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qohossharekitbackend_p.h"
-#include "qohosjsenv_p.h"
+
+#include <QtHarmonyExtras/private/qohosjsenv_p.h>
+
 #include <QtCore/private/qcore_ohos_p.h>
 #include <QtCore/private/qnapi_p.h>
 #include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/private/qohosjstools_p.h>
 #include <QtCore/private/qohoslogger_p.h>
 #include <QtCore/private/qohospathutils_p.h>
+
 #include <cstdint>
 #include <cstring>
 #include <functional>
@@ -17,6 +20,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+
 #include <database/udmf/udmf_meta.h>
 #include <database/udmf/utd.h>
 
