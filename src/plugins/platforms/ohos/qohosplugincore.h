@@ -50,9 +50,6 @@ constexpr bool isStdOptional = IsStdOptional<T>::value;
 
 }
 
-template<typename T>
-using QOhosOptional = std::optional<T>;
-
 template<typename T, typename Func>
 std::enable_if_t<
     qohosplugincore_h_detail::isStdOptional<QOhosInvokeResult<Func, T>>,
@@ -61,11 +58,6 @@ qAndThen(const std::optional<T> &opt, Func &&func);
 
 template<typename T, typename Func>
 std::optional<std::remove_cv_t<QOhosInvokeResult<Func, T>>> qTransform(const std::optional<T> &opt, Func &&func);
-
-template<typename T>
-std::optional<T> makeQOhosOptional(const T &value);
-
-std::nullopt_t makeEmptyQOhosOptional();
 
 namespace QtOhos {
 
@@ -347,17 +339,6 @@ std::optional<std::remove_cv_t<QOhosInvokeResult<Func, T>>> qTransform(const std
     return opt.has_value()
         ? std::optional<TransformedT>(func(*opt))
         : std::optional<TransformedT>();
-}
-
-template<typename T>
-std::optional<T> makeQOhosOptional(const T &value)
-{
-    return std::optional<T>(value);
-}
-
-inline std::nullopt_t makeEmptyQOhosOptional()
-{
-    return std::nullopt;
 }
 
 QT_END_NAMESPACE
