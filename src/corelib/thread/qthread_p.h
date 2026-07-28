@@ -323,6 +323,8 @@ public:
             return data;
         return createCurrentThreadData();
     }
+    // non-creating version of current():
+    Q_DECL_PURE_FUNCTION static Q_AUTOTEST_EXPORT QThreadData *currentThreadData() noexcept;
     static void clearCurrentThreadData();
     static QThreadData *get2(QThread *thread)
     { Q_ASSERT_X(thread != nullptr, "QThread", "internal error"); return thread->d_func()->data; }
@@ -392,7 +394,6 @@ public:
 private:
     friend class QAbstractEventDispatcher;
     friend class QBasicTimer;
-    Q_DECL_PURE_FUNCTION static Q_AUTOTEST_EXPORT QThreadData *currentThreadData() noexcept;
     static Q_AUTOTEST_EXPORT QThreadData *createCurrentThreadData();
 };
 
