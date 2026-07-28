@@ -1373,7 +1373,6 @@ void QRhiD3D12::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
                         state = D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
                     }
                     barrierGen.addTransitionBarrier(texD->handle, D3D12_RESOURCE_STATES(state));
-                    barrierGen.enqueueBufferedTransitionBarriers(cbD);
                 }
             }
         }
@@ -1409,7 +1408,6 @@ void QRhiD3D12::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
                 if (b->type == QRhiShaderResourceBinding::ImageStore || b->type == QRhiShaderResourceBinding::ImageLoadStore)
                     res->uavUsage |= QD3D12Resource::UavUsageWrite;
                 barrierGen.addTransitionBarrier(texD->handle, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-                barrierGen.enqueueBufferedTransitionBarriers(cbD);
             }
         }
             break;
@@ -1446,7 +1444,6 @@ void QRhiD3D12::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
                 if (b->type == QRhiShaderResourceBinding::BufferStore || b->type == QRhiShaderResourceBinding::BufferLoadStore)
                     res->uavUsage |= QD3D12Resource::UavUsageWrite;
                 barrierGen.addTransitionBarrier(bufD->handles[0], D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-                barrierGen.enqueueBufferedTransitionBarriers(cbD);
             }
         }
             break;
@@ -1455,6 +1452,14 @@ void QRhiD3D12::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
 
     const bool srbChanged = gfxPsD ? (cbD->currentGraphicsSrb != srb) : (cbD->currentComputeSrb != srb);
     const bool srbRebuilt = cbD->currentSrbGeneration != srbD->generation;
+
+    // One ResourceBarrier() for all the transitions, instead of one per
+    // binding. While the enqueueUavBarrier() calls in the loop above may make
+    // deferring this to here seem incorrect, that is not a problem: no draw or
+    // dispatch is recorded in-between, so the whole set takes effect before the
+    // next one either way, and for a given resource the relative order is still
+    // preserved.
+    barrierGen.enqueueBufferedTransitionBarriers(cbD);
 
     // Rebuilding the cache is the expensive part (it runs the visitor over all
     // bindings for all stages), so only do it when something it depends on
