@@ -2032,7 +2032,7 @@ QRhi::FrameOpResult QRhiD3D12::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginF
     cbD->cmdList = fr.cmdList;
 
     swapChainD->rtWrapper.d.rtv[0] = swapChainD->sampleDesc.Count > 1
-            ? swapChainD->msaaRtvs[swapChainD->currentBackBufferIndex].cpuHandle
+            ? swapChainD->msaaRtvs[currentFrameSlot].cpuHandle
             : swapChainD->rtvs[swapChainD->currentBackBufferIndex].cpuHandle;
 
     swapChainD->rtWrapper.d.dsv = swapChainD->ds ? swapChainD->ds->dsv.cpuHandle
@@ -2040,7 +2040,7 @@ QRhi::FrameOpResult QRhiD3D12::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginF
 
     if (swapChainD->stereo) {
         swapChainD->rtWrapperRight.d.rtv[0] = swapChainD->sampleDesc.Count > 1
-                ? swapChainD->msaaRtvs[swapChainD->currentBackBufferIndex].cpuHandle
+                ? swapChainD->msaaRtvs[currentFrameSlot].cpuHandle
                 : swapChainD->rtvsRight[swapChainD->currentBackBufferIndex].cpuHandle;
 
         swapChainD->rtWrapperRight.d.dsv =
@@ -2092,7 +2092,7 @@ QRhi::FrameOpResult QRhiD3D12::endFrame(QRhiSwapChain *swapChain, QRhi::EndFrame
 
     QD3D12ObjectHandle backBufferResourceHandle = swapChainD->colorBuffers[swapChainD->currentBackBufferIndex];
     if (swapChainD->sampleDesc.Count > 1) {
-        QD3D12ObjectHandle msaaBackBufferResourceHandle = swapChainD->msaaBuffers[swapChainD->currentBackBufferIndex];
+        QD3D12ObjectHandle msaaBackBufferResourceHandle = swapChainD->msaaBuffers[currentFrameSlot];
         barrierGen.addTransitionBarrier(msaaBackBufferResourceHandle, D3D12_RESOURCE_STATE_RESOLVE_SOURCE);
         barrierGen.addTransitionBarrier(backBufferResourceHandle, D3D12_RESOURCE_STATE_RESOLVE_DEST);
         barrierGen.enqueueBufferedTransitionBarriers(cbD);
@@ -2387,7 +2387,7 @@ void QRhiD3D12::beginPass(QRhiCommandBuffer *cb,
     } else {
         Q_ASSERT(currentSwapChain);
         barrierGen.addTransitionBarrier(currentSwapChain->sampleDesc.Count > 1
-                                        ? currentSwapChain->msaaBuffers[currentSwapChain->currentBackBufferIndex]
+                                        ? currentSwapChain->msaaBuffers[currentFrameSlot]
                                         : currentSwapChain->colorBuffers[currentSwapChain->currentBackBufferIndex],
                                         D3D12_RESOURCE_STATE_RENDER_TARGET);
         barrierGen.enqueueBufferedTransitionBarriers(cbD);
@@ -7065,6 +7065,8 @@ void QD3D12SwapChain::releaseBuffers()
         rhiD->rtvPool.release(rtvs[i], 1);
         if (stereo)
             rhiD->rtvPool.release(rtvsRight[i], 1);
+    }
+    for (int i = 0; i < QD3D12_FRAMES_IN_FLIGHT; ++i) {
         if (!msaaBuffers[i].isNull())
             rhiD->resourcePool.remove(msaaBuffers[i]);
         if (msaaRtvs[i].isValid())
@@ -7432,7 +7434,7 @@ bool QD3D12SwapChain::createOrResize()
     ds = m_depthStencil ? QRHI_RES(QD3D12RenderBuffer, m_depthStencil) : nullptr;
 
     if (sampleDesc.Count > 1) {
-        for (UINT i = 0; i < BUFFER_COUNT; ++i) {
+        for (int i = 0; i < QD3D12_FRAMES_IN_FLIGHT; ++i) {
             D3D12_RESOURCE_DESC resourceDesc = {};
             resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
             resourceDesc.Width = UINT64(pixelSize.width());

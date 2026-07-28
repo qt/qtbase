@@ -1200,8 +1200,8 @@ struct QD3D12SwapChain : public QRhiSwapChain
     QD3D12Descriptor rtvs[BUFFER_COUNT];
     QD3D12Descriptor rtvsRight[BUFFER_COUNT];
     DXGI_SAMPLE_DESC sampleDesc;
-    QD3D12ObjectHandle msaaBuffers[BUFFER_COUNT];
-    QD3D12Descriptor msaaRtvs[BUFFER_COUNT];
+    QD3D12ObjectHandle msaaBuffers[QD3D12_FRAMES_IN_FLIGHT]; // one per frame slot, not swapchain buffer, is enough
+    QD3D12Descriptor msaaRtvs[QD3D12_FRAMES_IN_FLIGHT];
     QD3D12RenderBuffer *ds = nullptr;
     UINT currentBackBufferIndex = 0;
     QD3D12SwapChainRenderTarget rtWrapper;
