@@ -1767,6 +1767,7 @@ void tst_QSequentialAnimationGroup::noIntegerOverflow()
         // correct, but that's pre-existing. We just fixed a potential overflow
         // here.
         group.removeAnimation(a2);
+        delete a2;
         QCOMPARE(group.currentTime(), Max);
     }
 }
