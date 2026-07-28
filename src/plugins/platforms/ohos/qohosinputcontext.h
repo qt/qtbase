@@ -79,7 +79,7 @@ private:
     void sendInsertedPreviewTextToQt(std::string previewText);
     void sendFocusObjectInputMethodEvent(QInputMethodEvent *event);
     void sendCursorMoveToQt(QOhosInputContext::Direction direction);
-    void sendFocusObjectFunctionalKeyEvent(Qt::Key key, const QChar &keyChar, int repeatCount = 1);
+    void sendFocusObjectFunctionalKeyEvent(Qt::Key key, const QString &keyText = {}, int repeatCount = 1);
 
     bool queryImEnabled() const;
     Qt::InputMethodHints queryInputMethodHints() const;
