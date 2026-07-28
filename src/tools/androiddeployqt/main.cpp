@@ -2105,6 +2105,9 @@ bool updateAndroidFiles(Options &options)
 
 static QString absoluteFilePath(const Options *options, const QString &relativeFileName)
 {
+    if (QDir::isAbsolutePath(relativeFileName))
+        return relativeFileName;
+
     // Use extraLibraryDirs as the extra library lookup folder if it is expected to find a file in
     // any $prefix/lib folder.
     // Library directories from a build tree(extraLibraryDirs) have the higher priority.
@@ -2142,6 +2145,25 @@ static QString absoluteFilePath(const Options *options, const QString &relativeF
                u'/' + relativeFileName.mid(sizeof("lib/") - 1);
     }
     return options->qtInstallDirectory + u'/' + relativeFileName;
+}
+
+// Returns the entry as recorded, or with the ABI suffix added or stripped, whichever is on disk.
+static QString resolveLibDependency(const Options *options, const QString &fileName)
+{
+    if (QFile::exists(absoluteFilePath(options, fileName)))
+        return fileName;
+
+    const QString abiSuffix = u'_' + options->currentArchitecture + ".so"_L1;
+    QString alternative;
+    if (fileName.endsWith(abiSuffix))
+        alternative = fileName.chopped(abiSuffix.size()) + ".so"_L1;
+    else
+        alternative = fileName.chopped(sizeof(".so") - 1) + abiSuffix;
+
+    if (QFile::exists(absoluteFilePath(options, alternative)))
+        return alternative;
+
+    return fileName;
 }
 
 QList<QtDependency> findFilesRecursively(const Options &options, const QFileInfo &info, const QString &rootPath)
@@ -2273,6 +2295,8 @@ bool readAndroidDependencyXml(Options *options,
                     }
                 } else if (reader.name() == "lib"_L1) {
                     QString fileName = QDir::cleanPath(reader.attributes().value("file"_L1).toString());
+                    if (fileName.endsWith(".so"_L1))
+                        fileName = resolveLibDependency(options, fileName);
                     if (reader.attributes().hasAttribute("replaces"_L1)) {
                         QString replaces = reader.attributes().value("replaces"_L1).toString();
                         for (int i=0; i<options->localLibs.size(); ++i) {
@@ -2284,8 +2308,9 @@ bool readAndroidDependencyXml(Options *options,
                     } else if (!fileName.isEmpty()) {
                         options->localLibs[options->currentArchitecture].append(fileName);
                     }
-                    if (fileName.endsWith(".so"_L1) && checkArchitecture(*options, fileName)) {
-                        remainingDependencies->insert(fileName);
+                    if (fileName.endsWith(".so"_L1)) {
+                        if (checkArchitecture(*options, absoluteFilePath(options, fileName)))
+                            remainingDependencies->insert(fileName);
                     }
                 } else if (reader.name() == "permission"_L1) {
                     QString name = reader.attributes().value("name"_L1).toString();
