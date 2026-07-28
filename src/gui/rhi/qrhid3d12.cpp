@@ -2690,11 +2690,15 @@ QD3D12Descriptor QD3D12CpuDescriptorPool::allocate(quint32 count)
             } else {
                 freeCount += 1;
                 if (freeCount == count) {
-                    quint32 firstIndex = i - (freeCount - 1);
-                    for (quint32 j = 0; j < count; ++j) {
+                    const quint32 firstIndex = i - (freeCount - 1);
+                    for (quint32 j = 0; j < count; ++j)
                         heap.map.setBit(firstIndex + j);
-                        return heap.heap.at(firstIndex);
-                    }
+                    // May need to bump heap.head to ensure the heap.get() on
+                    // the other code path above does not accidentally alias the
+                    // same entries when count > 1.
+                    if (firstIndex + count > heap.heap.head)
+                        heap.heap.head = firstIndex + count;
+                    return heap.heap.at(firstIndex);
                 }
             }
         }
