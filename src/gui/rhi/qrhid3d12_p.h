@@ -1239,9 +1239,12 @@ public:
 class QRhiD3D12 : public QRhiImplementation
 {
 public:
-    // 16MB * QD3D12_FRAMES_IN_FLIGHT; buffer and texture upload staging data that
-    // gets no space from this will get their own temporary staging areas.
-    static const quint32 SMALL_STAGING_AREA_BYTES_PER_FRAME = 16 * 1024 * 1024;
+    // The shared, per-slot staging area starts at 512 KB and grows up to 16 MB.
+    static const quint32 SMALL_STAGING_AREA_BYTES_PER_FRAME_START = 512 * 1024;
+    static const quint32 SMALL_STAGING_AREA_BYTES_PER_FRAME_MAX = 16 * 1024 * 1024;
+    // Only give the memory back once the demand has stayed low for a while,
+    // so that an alternating pattern does not recreate the area every frame.
+    static const int SMALL_STAGING_AREA_LOW_DEMAND_FRAMES = 60;
 
     static const quint32 SHADER_VISIBLE_CBV_SRV_UAV_HEAP_PER_FRAME_START_SIZE = 16384;
 
@@ -1366,6 +1369,18 @@ public:
     QByteArray pipelineCacheData() override;
     void setPipelineCacheData(const QByteArray &data) override;
 
+    // Must be called for every request made of the per-frame staging area,
+    // whether or not it ends up fitting: what does not fit is exactly what the
+    // area should have been big enough for. The point being that if the common
+    // area is too small, we record the demand for the next frame, and fall back
+    // to using a temporary, dedicated staging area instead, but in the next
+    // frame the common one will be big enough, if still needed.
+    void recordSmallStagingAreaDemand(quint32 byteSize)
+    {
+        smallStagingAreaBytesNeeded[currentFrameSlot] += byteSize;
+    }
+    void resetAndResizeSmallStagingArea(int frameSlot);
+
     void waitGpu();
     DXGI_SAMPLE_DESC effectiveSampleDesc(int sampleCount, DXGI_FORMAT format) const;
     bool ensureDirectCompositionDevice();
@@ -1416,6 +1431,8 @@ public:
     QD3D12MipmapGenerator mipmapGen;
     QD3D12MipmapGenerator3D mipmapGen3D;
     QD3D12StagingArea smallStagingAreas[QD3D12_FRAMES_IN_FLIGHT];
+    quint32 smallStagingAreaBytesNeeded[QD3D12_FRAMES_IN_FLIGHT] = {};
+    int smallStagingAreaLowDemandFrames[QD3D12_FRAMES_IN_FLIGHT] = {};
     QD3D12ShaderVisibleDescriptorHeap shaderVisibleCbvSrvUavHeap;
     UINT64 timestampTicksPerSecond = 0;
     QD3D12QueryHeap timestampQueryHeap;

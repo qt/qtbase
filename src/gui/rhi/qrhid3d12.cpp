@@ -502,7 +502,7 @@ bool QRhiD3D12::create(QRhi::Flags flags)
         return false;
     }
 
-    const qint32 smallStagingSize = aligned(SMALL_STAGING_AREA_BYTES_PER_FRAME, QD3D12StagingArea::ALIGNMENT);
+    const qint32 smallStagingSize = aligned(SMALL_STAGING_AREA_BYTES_PER_FRAME_START, QD3D12StagingArea::ALIGNMENT);
     for (int i = 0; i < QD3D12_FRAMES_IN_FLIGHT; ++i) {
         if (!smallStagingAreas[i].create(this, smallStagingSize, D3D12_HEAP_TYPE_UPLOAD)) {
             qWarning("Could not create host-visible staging area");
@@ -2058,8 +2058,9 @@ QRhi::FrameOpResult QRhiD3D12::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginF
 
     // Move the head back to zero for the per-frame shader-visible descriptor heap work areas.
     shaderVisibleCbvSrvUavHeap.perFrameHeapSlice[currentFrameSlot].head = 0;
-    // Same for the small staging area.
-    smallStagingAreas[currentFrameSlot].head = 0;
+    // Same for the small staging area, resizing it first if what this slot was
+    // asked for the last time round says it should be bigger or smaller.
+    resetAndResizeSmallStagingArea(currentFrameSlot);
 
     bindShaderVisibleHeaps(cbD);
 
@@ -2209,7 +2210,7 @@ QRhi::FrameOpResult QRhiD3D12::beginOffscreenFrame(QRhiCommandBuffer **cb, QRhi:
     releaseQueue.executeDeferredReleases(currentFrameSlot);
     cbD->resetState();
     shaderVisibleCbvSrvUavHeap.perFrameHeapSlice[currentFrameSlot].head = 0;
-    smallStagingAreas[currentFrameSlot].head = 0;
+    resetAndResizeSmallStagingArea(currentFrameSlot);
 
     bindShaderVisibleHeaps(cbD);
 
@@ -3485,6 +3486,7 @@ void QD3D12MipmapGenerator::generate(QD3D12CommandBuffer *cbD, const QD3D12Objec
 
     const quint32 allocSize = QD3D12StagingArea::allocSizeForArray(sizeof(CBufData), mipLevelCount * layerCount);
     std::optional<QD3D12StagingArea> ownStagingArea;
+    rhiD->recordSmallStagingAreaDemand(allocSize);
     if (rhiD->smallStagingAreas[rhiD->currentFrameSlot].remainingCapacity() < allocSize) {
         ownStagingArea = QD3D12StagingArea();
         if (!ownStagingArea->create(rhiD, allocSize, D3D12_HEAP_TYPE_UPLOAD)) {
@@ -3722,6 +3724,7 @@ void QD3D12MipmapGenerator3D::generate(QD3D12CommandBuffer *cbD, const QD3D12Obj
 
     const quint32 allocSize = QD3D12StagingArea::allocSizeForArray(sizeof(CBufData), mipLevelCount);
     std::optional<QD3D12StagingArea> ownStagingArea;
+    rhiD->recordSmallStagingAreaDemand(allocSize);
     if (rhiD->smallStagingAreas[rhiD->currentFrameSlot].remainingCapacity() < allocSize) {
         ownStagingArea = QD3D12StagingArea();
         if (!ownStagingArea->create(rhiD, allocSize, D3D12_HEAP_TYPE_UPLOAD)) {
@@ -3997,6 +4000,7 @@ void QRhiD3D12::enqueueResourceUpdates(QD3D12CommandBuffer *cbD, QRhiResourceUpd
 
             QD3D12StagingArea::Allocation stagingAlloc;
             const quint32 allocSize = QD3D12StagingArea::allocSizeForArray(bufD->m_size, 1);
+            recordSmallStagingAreaDemand(allocSize);
             if (smallStagingAreas[currentFrameSlot].remainingCapacity() >= allocSize)
                 stagingAlloc = smallStagingAreas[currentFrameSlot].get(bufD->m_size);
 
@@ -4121,6 +4125,7 @@ void QRhiD3D12::enqueueResourceUpdates(QD3D12CommandBuffer *cbD, QRhiResourceUpd
 
                         const quint32 allocSize = QD3D12StagingArea::allocSizeForArray(totalBytes, 1);
                         QD3D12StagingArea::Allocation stagingAlloc;
+                        recordSmallStagingAreaDemand(allocSize);
                         if (smallStagingAreas[currentFrameSlot].remainingCapacity() >= allocSize)
                             stagingAlloc = smallStagingAreas[currentFrameSlot].get(allocSize);
 
@@ -4454,6 +4459,48 @@ bool QRhiD3D12::ensureShaderVisibleDescriptorHeapCapacity(QD3D12ShaderVisibleDes
         *gotNew = true;
     }
     return true;
+}
+
+void QRhiD3D12::resetAndResizeSmallStagingArea(int frameSlot)
+{
+    QD3D12StagingArea &area(smallStagingAreas[frameSlot]);
+
+    // What this slot was asked for the last time it was used. Note that a
+    // finish() in the middle of a frame rewinds the area without clearing the
+    // counter, so with that this is an overestimate - which only means the
+    // area may end up somewhat larger than strictly necessary.
+    const quint32 needed = smallStagingAreaBytesNeeded[frameSlot];
+    smallStagingAreaBytesNeeded[frameSlot] = 0;
+
+    quint32 newCapacity = 0;
+    if (needed > area.capacity) {
+        // Fell back to dedicated staging areas last time. Grow so that it
+        // does not have to happen again.
+        smallStagingAreaLowDemandFrames[frameSlot] = 0;
+        newCapacity = qMin(qNextPowerOfTwo(needed), SMALL_STAGING_AREA_BYTES_PER_FRAME_MAX);
+    } else if (needed <= area.capacity / 4 && area.capacity > SMALL_STAGING_AREA_BYTES_PER_FRAME_START) {
+        if (++smallStagingAreaLowDemandFrames[frameSlot] >= SMALL_STAGING_AREA_LOW_DEMAND_FRAMES) {
+            smallStagingAreaLowDemandFrames[frameSlot] = 0;
+            newCapacity = qMax(area.capacity / 2, SMALL_STAGING_AREA_BYTES_PER_FRAME_START);
+        }
+    } else {
+        smallStagingAreaLowDemandFrames[frameSlot] = 0;
+    }
+
+    if (newCapacity && newCapacity != area.capacity) {
+        QD3D12StagingArea newArea;
+        if (newArea.create(this, aligned(newCapacity, QD3D12StagingArea::ALIGNMENT), D3D12_HEAP_TYPE_UPLOAD)) {
+            area.destroyWithDeferredRelease(&releaseQueue);
+            area = newArea;
+            QString decoratedName = QLatin1String("Small staging area buffer/");
+            decoratedName += QString::number(frameSlot);
+            area.mem.buffer->SetName(reinterpret_cast<LPCWSTR>(decoratedName.utf16()));
+        }
+        // If it failed, just carry on with the existing area; the dedicated
+        // staging area fallback keeps things working.
+    }
+
+    area.head = 0;
 }
 
 void QRhiD3D12::bindShaderVisibleHeaps(QD3D12CommandBuffer *cbD)
