@@ -797,6 +797,9 @@ instructions:
     - type: AppendToEnvironmentVariable
       variableName: COMMON_TARGET_TEST_CMAKE_ARGS
       variableValue: " -DQT_USE_VCPKG=ON -DVCPKG_INSTALLED_DIR={{.Env.VCPKG_INSTALLED_DIR}} -DVCPKG_HOST_TRIPLET={{.Env.VCPKG_HOST_TRIPLET}} -DVCPKG_TARGET_TRIPLET={{.Env.VCPKG_TARGET_TRIPLET}}"
+    - type: AppendToEnvironmentVariable
+      variableName: COMMON_TARGET_EXAMPLES_CMAKE_ARGS
+      variableValue: " -DQT_USE_VCPKG=ON -DVCPKG_INSTALLED_DIR={{.Env.VCPKG_INSTALLED_DIR}} -DVCPKG_HOST_TRIPLET={{.Env.VCPKG_HOST_TRIPLET}} -DVCPKG_TARGET_TRIPLET={{.Env.VCPKG_TARGET_TRIPLET}}"
     enable_if:
       condition: runtime
       env_var: USE_VCPKG
