@@ -3195,11 +3195,13 @@ static bool buildHap(const Options &options, QString *hapOutputPath = nullptr)
         return false;
     }
 
-    // Determine build task
-    QString buildTask = options.releaseMode ? "assembleHap"_L1 : "assembleHap"_L1;
+    // Determine build task and build mode. hvigor's assembleHap builds in debug
+    // mode unless the mode is passed explicitly.
+    QString buildTask = "assembleHap"_L1;
+    QString buildMode = options.releaseMode ? "release"_L1 : "debug"_L1;
 
     if (options.verbose) {
-        fprintf(stdout, "  Build mode: %s\n", options.releaseMode ? "release" : "debug");
+        fprintf(stdout, "  Build mode: %s\n", qPrintable(buildMode));
         fprintf(stdout, "  Running: %s %s\n", qPrintable(hvigorPath), qPrintable(buildTask));
     }
 
@@ -3209,7 +3211,7 @@ static bool buildHap(const Options &options, QString *hapOutputPath = nullptr)
     process.setProcessChannelMode(QProcess::MergedChannels);
 
     QStringList arguments;
-    arguments << buildTask;
+    arguments << buildTask << "-p"_L1 << ("buildMode="_L1 + buildMode);
     // The hvigor daemon outlives the build and, on Windows, inherits our output
     // pipe; QProcess then never sees EOF and this call hangs. Build daemon-less.
     arguments << "--no-daemon"_L1;
