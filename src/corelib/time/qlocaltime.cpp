@@ -533,7 +533,7 @@ QDateTimePrivate::ZoneState utcToLocal(qint64 utcMillis)
 {
     const auto epoch = QRoundingDown::qDivMod<MSECS_PER_SEC>(utcMillis);
     const time_t epochSeconds = epoch.quotient;
-    const int msec = epoch.remainder;
+    const auto msec = epoch.remainder;
     Q_ASSERT(msec >= 0 && msec < MSECS_PER_SEC);
     if (qint64(epochSeconds) * MSECS_PER_SEC + msec != utcMillis) // time_t range too narrow
         return {utcMillis};
@@ -550,7 +550,7 @@ QDateTimePrivate::ZoneState utcToLocal(qint64 utcMillis)
     Q_ASSERT(0 <= daySeconds && daySeconds < SECS_PER_DAY);
     qint64 localSeconds, localMillis;
     if (Q_UNLIKELY(daysAndSecondsOverflow(*jd, daySeconds, &localSeconds)
-                   || secondsAndMillisOverflow(localSeconds, qint64(msec), &localMillis))) {
+                   || secondsAndMillisOverflow(localSeconds, msec, &localMillis))) {
         return {utcMillis};
     }
     const auto dst
