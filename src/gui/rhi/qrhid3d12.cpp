@@ -2439,17 +2439,49 @@ void QRhiD3D12::endPass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resource
                 }
             }
 
-            barrierGen.addTransitionBarrier(srcTexD ? srcTexD->handle : srcRbD->handle, D3D12_RESOURCE_STATE_RESOLVE_SOURCE);
-            barrierGen.addTransitionBarrier(dstTexD->handle, D3D12_RESOURCE_STATE_RESOLVE_DEST);
-            barrierGen.enqueueBufferedTransitionBarriers(cbD);
-
+            // The subresources of a placed resource must be initialized with a
+            // Discard, Clear, or Copy before they can be used for anything else.
+            // ResolveSubresource is not one of those, so discard the destination
+            // subresources that were never written to, otherwise the debug layer
+            // complains. Only the subresources that are about to be overwritten
+            // by the resolve are discarded, and only once each.
             const UINT resolveCount = colorAtt.multiViewCount() >= 2 ? colorAtt.multiViewCount() : 1;
+            QBitArray &initialized(dstTexD->resolveDestInitialized);
+            QVarLengthArray<UINT, 4> dstSubresources;
+            QVarLengthArray<UINT, 4> subresourcesToDiscard;
             for (UINT resolveIdx = 0; resolveIdx < resolveCount; ++resolveIdx) {
-                const UINT srcSubresource = calcSubresource(0, UINT(colorAtt.layer()) + resolveIdx, 1);
                 const UINT dstSubresource = calcSubresource(UINT(colorAtt.resolveLevel()),
                                                             UINT(colorAtt.resolveLayer()) + resolveIdx,
                                                             dstTexD->mipLevelCount);
-                cbD->cmdList->ResolveSubresource(dstRes->resource, dstSubresource,
+                dstSubresources.append(dstSubresource);
+                if (int(dstSubresource) >= initialized.size())
+                    initialized.resize(int(dstSubresource) + 1);
+                if (!initialized.testBit(int(dstSubresource))) {
+                    initialized.setBit(int(dstSubresource));
+                    subresourcesToDiscard.append(dstSubresource);
+                }
+            }
+
+            barrierGen.addTransitionBarrier(srcTexD ? srcTexD->handle : srcRbD->handle, D3D12_RESOURCE_STATE_RESOLVE_SOURCE);
+
+            // Discarding needs the RENDER_TARGET state, unlike the resolve itself.
+            if (!subresourcesToDiscard.isEmpty()) {
+                barrierGen.addTransitionBarrier(dstTexD->handle, D3D12_RESOURCE_STATE_RENDER_TARGET);
+                barrierGen.enqueueBufferedTransitionBarriers(cbD);
+                for (UINT dstSubresource : subresourcesToDiscard) {
+                    D3D12_DISCARD_REGION region = {};
+                    region.FirstSubresource = dstSubresource;
+                    region.NumSubresources = 1;
+                    cbD->cmdList->DiscardResource(dstRes->resource, &region);
+                }
+            }
+
+            barrierGen.addTransitionBarrier(dstTexD->handle, D3D12_RESOURCE_STATE_RESOLVE_DEST);
+            barrierGen.enqueueBufferedTransitionBarriers(cbD);
+
+            for (UINT resolveIdx = 0; resolveIdx < resolveCount; ++resolveIdx) {
+                const UINT srcSubresource = calcSubresource(0, UINT(colorAtt.layer()) + resolveIdx, 1);
+                cbD->cmdList->ResolveSubresource(dstRes->resource, dstSubresources[resolveIdx],
                                                  srcRes->resource, srcSubresource,
                                                  dstTexD->dxgiFormat);
             }
@@ -4838,6 +4870,7 @@ void QD3D12Texture::destroy()
 
     handle = {};
     srv = {};
+    resolveDestInitialized.clear();
 
     if (rhiD)
         rhiD->unregisterResource(this);
