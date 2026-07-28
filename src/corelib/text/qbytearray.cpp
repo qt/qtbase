@@ -2286,7 +2286,8 @@ QByteArray &QByteArray::assign(QByteArrayView v)
         const auto offset = d.freeSpaceAtBegin();
         if (offset)
             d.setBegin(d.begin() - offset);
-        std::memcpy(d.begin(), v.data(), len);
+        if (len)
+            std::memcpy(d.begin(), v.data(), len);
         d.size = len;
         d.data()[d.size] = '\0';
     } else {
