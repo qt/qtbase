@@ -29,7 +29,6 @@
 #include <cstring>
 #include <functional>
 #include <map>
-#include <utility>
 #include <vector>
 
 QT_BEGIN_NAMESPACE

@@ -18,7 +18,6 @@
 #include <memory>
 #include <optional>
 #include <string>
-#include <utility>
 #include <vector>
 
 #include <database/udmf/udmf_meta.h>

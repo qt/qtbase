@@ -8,7 +8,6 @@
 #include <QtCore/private/qohoslogger_p.h>
 
 #include <array>
-#include <utility>
 
 QT_BEGIN_NAMESPACE
 
