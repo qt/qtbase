@@ -29,7 +29,6 @@
 #include <limits>
 #include <memory>
 #include <type_traits>
-#include <utility>
 
 #include <napi.h>
 #include <napi/native_api.h>

@@ -11,7 +11,6 @@
 #include <QtCore/private/qohospathutils_p.h>
 
 #include <memory>
-#include <utility>
 #include <vector>
 
 QT_BEGIN_NAMESPACE
