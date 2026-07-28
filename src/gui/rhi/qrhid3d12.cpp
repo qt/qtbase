@@ -69,6 +69,10 @@ QT_BEGIN_NAMESPACE
 
     When set to true, the debug layer is enabled, if installed and available.
     The default value is false.
+
+    The messages from the debug layer are printed via qDebug, unless the debug
+    layer is too old to support message callbacks, in which case the messages
+    are only sent to the debug output.
 */
 
 /*!
@@ -202,6 +206,32 @@ static inline QD3D12RenderTargetData *rtData(QRhiRenderTarget *rt)
     }
     Q_UNREACHABLE_RETURN(nullptr);
 }
+
+#ifdef QRHI_D3D12_INFOQUEUE1_AVAILABLE
+static void __stdcall qd3d12_message_callback(D3D12_MESSAGE_CATEGORY category,
+                                              D3D12_MESSAGE_SEVERITY severity,
+                                              D3D12_MESSAGE_ID id,
+                                              LPCSTR description,
+                                              void *context)
+{
+    Q_UNUSED(category);
+    Q_UNUSED(context);
+
+    // The callback is registered with IGNORE_FILTERS, so apply the same
+    // filtering the storage filter does.
+    if (severity == D3D12_MESSAGE_SEVERITY_INFO)
+        return;
+    if (id == D3D12_MESSAGE_ID_CLEARRENDERTARGETVIEW_MISMATCHINGCLEARVALUE
+            || id == D3D12_MESSAGE_ID_DRAW_EMPTY_SCISSOR_RECTANGLE)
+    {
+        return;
+    }
+
+    // Called on the thread that made the offending call, from within the D3D12
+    // call itself; must not call back into D3D12 from here.
+    qDebug("D3D12: %s", description);
+}
+#endif
 
 bool QRhiD3D12::create(QRhi::Flags flags)
 {
@@ -374,6 +404,30 @@ bool QRhiD3D12::create(QRhi::Flags flags)
             filter.DenyList.NumSeverities = 1;
             filter.DenyList.pSeverityList = &infoSev;
             infoQueue->PushStorageFilter(&filter);
+#ifdef QRHI_D3D12_INFOQUEUE1_AVAILABLE
+            // Route the messages to qDebug, like QVulkanInstance does with the
+            // Vulkan validation layer messages. Needs a recent enough debug
+            // layer, otherwise this is not possible and the messages will only
+            // show up on the debug output.
+            if (SUCCEEDED(infoQueue->QueryInterface(__uuidof(ID3D12InfoQueue1), reinterpret_cast<void **>(&infoQueue1)))) {
+                // Registering with IGNORE_FILTERS, and so filtering in the
+                // callback instead, is not optional: with FLAG_NONE the
+                // callback stops getting invoked once the debug output is muted
+                // below.
+                if (SUCCEEDED(infoQueue1->RegisterMessageCallback(qd3d12_message_callback,
+                                                                  D3D12_MESSAGE_CALLBACK_IGNORE_FILTERS,
+                                                                  nullptr,
+                                                                  &infoQueueCallbackCookie)))
+                {
+                    // Do not want the messages twice, so stop them from going
+                    // to the debug output now that we print them ourselves.
+                    infoQueue1->SetMuteDebugOutput(true);
+                } else {
+                    infoQueue1->Release();
+                    infoQueue1 = nullptr;
+                }
+            }
+#endif
             infoQueue->Release();
         }
     }
@@ -631,6 +685,15 @@ void QRhiD3D12::destroy()
     }
 
     vma.destroy();
+
+#ifdef QRHI_D3D12_INFOQUEUE1_AVAILABLE
+    if (infoQueue1) {
+        infoQueue1->UnregisterMessageCallback(infoQueueCallbackCookie);
+        infoQueue1->Release();
+        infoQueue1 = nullptr;
+        infoQueueCallbackCookie = 0;
+    }
+#endif
 
     if (!importedDevice) {
         if (dev) {
