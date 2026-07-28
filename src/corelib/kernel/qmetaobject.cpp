@@ -3801,7 +3801,7 @@ const char *QMetaProperty::typeName() const
 }
 
 /*! \fn QVariant::Type QMetaProperty::type() const
-    \deprecated
+    \deprecated [6.0]
 
     Returns this property's type. The return value is one
     of the values of the QVariant::Type enumeration.

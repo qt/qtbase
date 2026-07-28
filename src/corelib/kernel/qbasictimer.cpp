@@ -104,7 +104,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \fn int QBasicTimer::timerId() const
-    \obsolete
+    \obsolete [6.8]
 
     Returns the timer's ID.
 
@@ -125,7 +125,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn void QBasicTimer::start(int msec, QObject *object)
 
-    \obsolete Use chrono overload instead.
+    \obsolete [6.5] Use chrono overload instead.
 */
 
 /*!
@@ -162,7 +162,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn QBasicTimer::start(int msec, Qt::TimerType timerType, QObject *obj)
     \overload
-    \obsolete
+    \obsolete [6.5]
 
     Use chrono overload instead.
 */

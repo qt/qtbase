@@ -3534,7 +3534,7 @@
 #if QT_DEPRECATED_SINCE(6, 0)
 /*!
   \fn QKeyCombination::operator int() const noexcept
-  \deprecated
+  \deprecated [6.0]
 
   Use toCombined() instead.
 */
@@ -3585,7 +3585,7 @@
   \fn QKeyCombination Qt::operator+(Qt::Key key, Qt::KeyboardModifier modifier) noexcept
 
   \relates QKeyCombination
-  \deprecated
+  \deprecated [6.0]
 
   Use operator| instead.
 
@@ -3600,7 +3600,7 @@
   \fn QKeyCombination Qt::operator+(Qt::Key key, Qt::KeyboardModifiers modifiers) noexcept
 
   \relates QKeyCombination
-  \deprecated
+  \deprecated [6.0]
 
   Use operator| instead.
 

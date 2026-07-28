@@ -190,7 +190,7 @@ void qBadAlloc()
 
 /*!
     \macro void Q_ASSUME(bool expr)
-    \deprecated
+    \deprecated [6.6]
     \relates <QtAssert>
     \since 5.0
 

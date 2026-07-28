@@ -421,7 +421,7 @@
 /*!
     \macro Q_DECL_OVERRIDE
     \since 5.0
-    \deprecated
+    \deprecated [5.15]
     \relates <QtCompilerDetection>
 
     This macro can be used to declare an overriding virtual
@@ -441,7 +441,7 @@
 /*!
     \macro Q_DECL_FINAL
     \since 5.0
-    \deprecated
+    \deprecated [5.15]
     \relates <QtCompilerDetection>
 
     This macro can be used to declare an overriding virtual or a class

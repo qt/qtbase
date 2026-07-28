@@ -490,7 +490,7 @@ static_assert(QtPrivate::IsContainerCompatibleWithQUtf8StringView<QAnyStringView
     Returns the substring of length \a n starting at position
     \a pos in this object.
 
-    \deprecated Use sliced() instead in new code.
+    \deprecated [6.5] Use sliced() instead in new code.
 
     Returns an empty string view if \a n exceeds the
     length of the string view. If there are less than \a n code points
@@ -505,7 +505,7 @@ static_assert(QtPrivate::IsContainerCompatibleWithQUtf8StringView<QAnyStringView
     \fn QAnyStringView::left(qsizetype n) const
     \since 6.5
 
-    \deprecated Use first() instead in new code.
+    \deprecated [6.5] Use first() instead in new code.
 
     Returns the substring of length \a n starting at position
     0 in this object.
@@ -520,7 +520,7 @@ static_assert(QtPrivate::IsContainerCompatibleWithQUtf8StringView<QAnyStringView
     \fn QAnyStringView::right(qsizetype n) const
     \since 6.5
 
-    \deprecated Use last() instead in new code.
+    \deprecated [6.5] Use last() instead in new code.
 
     Returns the substring of length \a n starting at position
     size() - \a n in this object.
