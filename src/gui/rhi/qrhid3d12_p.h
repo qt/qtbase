@@ -754,8 +754,9 @@ struct QD3D12Buffer : public QRhiBuffer
         QRhiBufferData data;
     };
     QVarLengthArray<HostWrite, 16> pendingHostWrites[QD3D12_FRAMES_IN_FLIGHT];
+    uint generation = 0;
     friend class QRhiD3D12;
-    friend struct QD3D12CommandBuffer;
+    friend struct QD3D12ShaderResourceBindings;
 };
 
 struct QD3D12RenderBuffer : public QRhiRenderBuffer
@@ -806,7 +807,7 @@ struct QD3D12Texture : public QRhiTexture
     QBitArray resolveDestInitialized;
     uint generation = 0;
     friend class QRhiD3D12;
-    friend struct QD3D12CommandBuffer;
+    friend struct QD3D12ShaderResourceBindings;
 };
 
 struct QD3D12Sampler : public QRhiSampler
@@ -821,6 +822,8 @@ struct QD3D12Sampler : public QRhiSampler
 
     D3D12_SAMPLER_DESC desc = {};
     QD3D12Descriptor shaderVisibleDescriptor;
+    uint generation = 0;
+    friend class QRhiD3D12;
 };
 
 struct QD3D12ShadingRateMap : public QRhiShadingRateMap
@@ -957,10 +960,103 @@ struct QD3D12ShaderResourceBindings : public QRhiShaderResourceBindings
                            QD3D12ShaderResourceVisitor::StorageOp op,
                            int shaderRegister);
 
+    // The translation of the QRhi-level bindings into what has to be handed to
+    // the command list. This depends both on the srb's own contents and on the
+    // per-stage native resource binding maps of the pipeline, and is rebuilt
+    // whenever either changes - but not on every setShaderResources().
+    struct BindingCache {
+        // The frame slot's resource and any dynamic offset are only known when
+        // binding, so keep the QRhiBuffer and resolve there.
+        struct CBuf {
+            QD3D12Buffer *buf;
+            quint32 offset;
+            int binding;
+        };
+        QVarLengthArray<CBuf, 2> cbufs[6];
+        QVarLengthArray<D3D12_CPU_DESCRIPTOR_HANDLE, 8> srvs[6];
+        QVarLengthArray<D3D12_GPU_DESCRIPTOR_HANDLE, 8> samplers[6];
+        struct Uav {
+            QD3D12ObjectHandle handle;
+            D3D12_UNORDERED_ACCESS_VIEW_DESC desc;
+        };
+        QVarLengthArray<Uav, 4> uavs[6];
+        quint32 srvUavCount = 0;
+
+        void reset() {
+            for (int s = 0; s < 6; ++s) {
+                cbufs[s].clear();
+                srvs[s].clear();
+                samplers[s].clear();
+                uavs[s].clear();
+            }
+            srvUavCount = 0;
+        }
+    } bindingCache;
+
+    bool bindingCacheValid = false;
+    uint bindingCacheGeneration = 0;
+
+    void rebuildBindingCache(const QD3D12ShaderStageData *stageData, int stageCount);
+
+    // Unlike the visit* functions above, these run at setShaderResources() time
+    // and so are free to look at the bound QRhiBuffer/Texture/Sampler objects.
+    void cacheUniformBuffer(QD3D12Stage s,
+                            const QRhiShaderResourceBinding::Data::UniformBufferData &d,
+                            int shaderRegister,
+                            int binding);
+    void cacheTextures(QD3D12Stage s,
+                       const QRhiShaderResourceBinding::TextureAndSampler *d,
+                       int count,
+                       int baseShaderRegister);
+    void cacheSamplers(QD3D12Stage s,
+                       const QRhiShaderResourceBinding::TextureAndSampler *d,
+                       int count,
+                       int baseShaderRegister);
+    void cacheStorageBuffer(QD3D12Stage s,
+                            const QRhiShaderResourceBinding::Data::StorageBufferData &d,
+                            QD3D12ShaderResourceVisitor::StorageOp op,
+                            int shaderRegister);
+    void cacheStorageImage(QD3D12Stage s,
+                           const QRhiShaderResourceBinding::Data::StorageImageData &d,
+                           QD3D12ShaderResourceVisitor::StorageOp op,
+                           int shaderRegister);
+
+    struct BoundUniformBufferData {
+        quint64 id;
+        uint generation;
+    };
+    struct BoundSampledTextureData {
+        int count;
+        struct {
+            quint64 texId;
+            uint texGeneration;
+            quint64 samplerId;
+            uint samplerGeneration;
+        } d[QRhiShaderResourceBinding::Data::MAX_TEX_SAMPLER_ARRAY_SIZE];
+    };
+    struct BoundStorageImageData {
+        quint64 id;
+        uint generation;
+    };
+    struct BoundStorageBufferData {
+        quint64 id;
+        uint generation;
+    };
+    struct BoundResourceData {
+        union {
+            BoundUniformBufferData ubuf;
+            BoundSampledTextureData stex;
+            BoundStorageImageData simage;
+            BoundStorageBufferData sbuf;
+        };
+    };
+    QVarLengthArray<BoundResourceData, 8> boundResourceData;
+
     bool hasDynamicOffset = false;
     uint generation = 0;
     QD3D12GraphicsPipeline *lastUsedGraphicsPipeline = nullptr;
     QD3D12ComputePipeline *lastUsedComputePipeline = nullptr;
+    uint lastUsedPipelineGeneration = 0;
 
     friend class QRhiD3D12;
     friend struct QD3D12ShaderResourceVisitor;
@@ -1063,37 +1159,6 @@ struct QD3D12CommandBuffer : public QRhiCommandBuffer
 
     // global
     double lastGpuTime = 0;
-
-    // per-setShaderResources
-    struct VisitorData {
-        QVarLengthArray<std::pair<QD3D12ObjectHandle, quint32>, 4> cbufs[6];
-        QVarLengthArray<QD3D12Descriptor, 8> srvs[6];
-        QVarLengthArray<QD3D12Descriptor, 8> samplers[6];
-        QVarLengthArray<std::pair<QD3D12ObjectHandle, D3D12_UNORDERED_ACCESS_VIEW_DESC>, 4> uavs[6];
-    } visitorData;
-
-    void visitUniformBuffer(QD3D12Stage s,
-                            const QRhiShaderResourceBinding::Data::UniformBufferData &d,
-                            int shaderRegister,
-                            int binding,
-                            int dynamicOffsetCount,
-                            const QRhiCommandBuffer::DynamicOffset *dynamicOffsets);
-    void visitTextures(QD3D12Stage s,
-                       const QRhiShaderResourceBinding::TextureAndSampler *d,
-                       int count,
-                       int baseShaderRegister);
-    void visitSamplers(QD3D12Stage s,
-                       const QRhiShaderResourceBinding::TextureAndSampler *d,
-                       int count,
-                       int baseShaderRegister);
-    void visitStorageBuffer(QD3D12Stage s,
-                            const QRhiShaderResourceBinding::Data::StorageBufferData &d,
-                            QD3D12ShaderResourceVisitor::StorageOp op,
-                            int shaderRegister);
-    void visitStorageImage(QD3D12Stage s,
-                           const QRhiShaderResourceBinding::Data::StorageImageData &d,
-                           QD3D12ShaderResourceVisitor::StorageOp op,
-                           int shaderRegister);
 };
 
 struct QD3D12SwapChain : public QRhiSwapChain
