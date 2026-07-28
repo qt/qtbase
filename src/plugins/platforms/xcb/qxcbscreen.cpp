@@ -888,6 +888,7 @@ void QXcbScreen::setOutput(xcb_randr_output_t outputId,
     m_crtc = outputInfo ? outputInfo->crtc : XCB_NONE;
     m_mode = XCB_NONE;
     m_outputName = getOutputName(outputInfo);
+    m_outputSizeMillimeters = outputInfo ? QSizeF(outputInfo->mm_width, outputInfo->mm_height) : QSizeF();
     // TODO: Send an event to the QScreen instance that the screen changed its name
 }
 
