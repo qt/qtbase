@@ -2147,6 +2147,7 @@ void tst_QRhi::renderToTextureCubemapFace()
 
     const int LAYER = 1; // render into the layer for face -X
     const int BAD_LAYER = 2; // +Y
+    const QColor badLayerColor = Qt::green;
 
     QRhiColorAttachment colorAtt(texture.data());
     colorAtt.setLayer(LAYER);
@@ -2168,6 +2169,16 @@ void tst_QRhi::renderToTextureCubemapFace()
     QScopedPointer<QRhiBuffer> vbuf(rhi->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, sizeof(triangleVertices)));
     QVERIFY(vbuf->create());
     updates->uploadStaticBuffer(vbuf.data(), triangleVertices);
+
+    // The face we do not render into gets read back later on. Give it a known
+    // content: reading back a texture subresource that was never written to
+    // gives undefined results, and with D3D12 it makes the debug layer complain
+    // as well, because such a subresource is not initialized.
+    QImage badLayerImage(outputSize, QImage::Format_RGBA8888);
+    badLayerImage.fill(badLayerColor);
+    updates->uploadTexture(texture.data(),
+                           QRhiTextureUploadDescription({ BAD_LAYER, 0,
+                                                          QRhiTextureSubresourceUploadDescription(badLayerImage) }));
 
     QScopedPointer<QRhiShaderResourceBindings> srb(rhi->newShaderResourceBindings());
     QVERIFY(srb->create());
@@ -2194,7 +2205,7 @@ void tst_QRhi::renderToTextureCubemapFace()
     readbackDescription.setLayer(LAYER);
     readbackBatch->readBackTexture(readbackDescription, &readResult);
 
-    // also read back a layer we did not render into
+    // also read back a layer we did not render into, only uploaded to
     QRhiReadbackResult readResult2;
     QImage result2;
     readResult2.completed = [&readResult2, &result2] {
@@ -2219,6 +2230,9 @@ void tst_QRhi::renderToTextureCubemapFace()
     // just want to ensure that we did not read the same thing back twice, i.e.
     // that the 'layer' parameter was not ignored
     QVERIFY(result != result2);
+
+    // the face we only uploaded to must have the uploaded content
+    QCOMPARE(result2.pixelColor(result2.width() / 2, result2.height() / 2), badLayerColor);
 
     const int y = 100;
     const quint32 *p = reinterpret_cast<const quint32 *>(result.constScanLine(y));
