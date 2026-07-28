@@ -1753,7 +1753,9 @@ template <typename T> void test_isSameType(QMetaType mt)
 {
 #if defined(QT_SUPPORTS_IS_CONSTANT_EVALUATED) && (!defined(Q_CC_GNU_ONLY) || Q_CC_GNU_ONLY >= 1200)
     // test constexprness of isSameType()
+#ifndef QT_SANITIZE_UNDEFINED
     static_assert(!QMetaType().isSameType<T>());
+#endif
     static_assert(QMetaType::fromType<T>().template isSameType<T>());
 #endif
 

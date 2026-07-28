@@ -72,3 +72,10 @@ qt_internal_extend_target(tst_qmetatype CONDITION MSVC
     COMPILE_OPTIONS
         /bigobj
 )
+
+if(QT_FEATURE_sanitize_undefined)
+    qt_internal_extend_target(tst_qmetatype
+        DEFINES
+            QT_SANITIZE_UNDEFINED # GCC (in)famously doesn't provide a predefined macro for this
+    )
+endif()
