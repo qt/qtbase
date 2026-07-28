@@ -31,6 +31,10 @@ QWaylandInputContext::QWaylandInputContext(QWaylandDisplay *display)
 
 QWaylandInputContext::~QWaylandInputContext()
 {
+#if QT_CONFIG(xkbcommon)
+    xkb_compose_state_unref(m_composeState);
+    xkb_compose_table_unref(m_composeTable);
+#endif
 }
 
 bool QWaylandInputContext::isValid() const
