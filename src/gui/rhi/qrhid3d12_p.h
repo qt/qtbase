@@ -523,6 +523,28 @@ struct Q_D3D12_SAMPLER_DESC
     }
 };
 
+// A list of sampler descriptions, used as the key for looking up the
+// contiguous descriptor run that backs an array of samplers.
+struct Q_D3D12_SAMPLER_DESC_LIST
+{
+    QVarLengthArray<Q_D3D12_SAMPLER_DESC, 8> descs;
+
+    friend bool operator==(const Q_D3D12_SAMPLER_DESC_LIST &lhs, const Q_D3D12_SAMPLER_DESC_LIST &rhs) noexcept
+    {
+        return lhs.descs == rhs.descs;
+    }
+
+    friend bool operator!=(const Q_D3D12_SAMPLER_DESC_LIST &lhs, const Q_D3D12_SAMPLER_DESC_LIST &rhs) noexcept
+    {
+        return !(lhs == rhs);
+    }
+
+    friend size_t qHash(const Q_D3D12_SAMPLER_DESC_LIST &key, size_t seed = 0) noexcept
+    {
+        return qHashRange(key.descs.cbegin(), key.descs.cend(), seed);
+    }
+};
+
 struct QD3D12SamplerManager
 {
     const quint32 MAX_SAMPLERS = 512;
@@ -531,10 +553,25 @@ struct QD3D12SamplerManager
     void destroy();
 
     QD3D12Descriptor getShaderVisibleDescriptor(const D3D12_SAMPLER_DESC &desc);
+    // For an array of samplers: returns the start of a run of count
+    // consecutive descriptors, so that the array can be bound as one
+    // descriptor range.
+    QD3D12Descriptor getShaderVisibleDescriptors(const QVarLengthArray<Q_D3D12_SAMPLER_DESC, 8> &descs);
 
     ID3D12Device *device = nullptr;
     QD3D12ShaderVisibleDescriptorHeap shaderVisibleSamplerHeap;
+    // Nothing is ever pruned from these: the heap is allocated from linearly
+    // and a descriptor (run) is kept until the QRhi goes away. This relies on
+    // the number of distinct sampler descriptions an application uses being
+    // small, which holds in practice because the descriptions are generated
+    // from the handful of filtering and addressing modes QRhiSampler exposes.
+    // The assumption is weaker for gpuArrayMap, where the key is a list, so
+    // combinations of even a few distinct samplers can multiply, and each
+    // entry takes count descriptors out of MAX_SAMPLERS. Should that ever
+    // become a problem in practice, the runs would need reference counting and
+    // deferred release, not just a bump allocator.
     QHash<Q_D3D12_SAMPLER_DESC, QD3D12Descriptor> gpuMap;
+    QHash<Q_D3D12_SAMPLER_DESC_LIST, QD3D12Descriptor> gpuArrayMap;
 };
 
 enum QD3D12Stage { VS = 0, HS, DS, GS, PS, CS };
@@ -619,8 +656,14 @@ struct QD3D12ShaderResourceVisitor
     }
 
     std::function<void(QD3D12Stage, const QRhiShaderResourceBinding::Data::UniformBufferData &, int, int)> uniformBuffer = nullptr;
-    std::function<void(QD3D12Stage, const QRhiShaderResourceBinding::TextureAndSampler &, int)> texture = nullptr;
-    std::function<void(QD3D12Stage, const QRhiShaderResourceBinding::TextureAndSampler &, int)> sampler = nullptr;
+    // Textures and samplers are visited per binding, not per array element: a
+    // shader declares an array of textures or samplers as a single descriptor
+    // range, and D3D12 will not accept a pipeline where such a range is only
+    // partially bound (a series of one-descriptor ranges does not qualify), so
+    // the whole array has to be seen at once. (arguments: stage, elements,
+    // element count, base shader register)
+    std::function<void(QD3D12Stage, const QRhiShaderResourceBinding::TextureAndSampler *, int, int)> textures = nullptr;
+    std::function<void(QD3D12Stage, const QRhiShaderResourceBinding::TextureAndSampler *, int, int)> samplers = nullptr;
     std::function<void(QD3D12Stage, const QRhiShaderResourceBinding::Data::StorageImageData &, StorageOp, int)> storageImage = nullptr;
     std::function<void(QD3D12Stage, const QRhiShaderResourceBinding::Data::StorageBufferData &, StorageOp, int)> storageBuffer = nullptr;
 
@@ -892,12 +935,14 @@ struct QD3D12ShaderResourceBindings : public QRhiShaderResourceBindings
                             const QRhiShaderResourceBinding::Data::UniformBufferData &d,
                             int shaderRegister,
                             int binding);
-    void visitTexture(QD3D12Stage s,
-                      const QRhiShaderResourceBinding::TextureAndSampler &d,
-                      int shaderRegister);
-    void visitSampler(QD3D12Stage s,
-                      const QRhiShaderResourceBinding::TextureAndSampler &d,
-                      int shaderRegister);
+    void visitTextures(QD3D12Stage s,
+                       const QRhiShaderResourceBinding::TextureAndSampler *d,
+                       int count,
+                       int baseShaderRegister);
+    void visitSamplers(QD3D12Stage s,
+                       const QRhiShaderResourceBinding::TextureAndSampler *d,
+                       int count,
+                       int baseShaderRegister);
     void visitStorageBuffer(QD3D12Stage s,
                             const QRhiShaderResourceBinding::Data::StorageBufferData &d,
                             QD3D12ShaderResourceVisitor::StorageOp op,
@@ -1028,12 +1073,14 @@ struct QD3D12CommandBuffer : public QRhiCommandBuffer
                             int binding,
                             int dynamicOffsetCount,
                             const QRhiCommandBuffer::DynamicOffset *dynamicOffsets);
-    void visitTexture(QD3D12Stage s,
-                      const QRhiShaderResourceBinding::TextureAndSampler &d,
-                      int shaderRegister);
-    void visitSampler(QD3D12Stage s,
-                      const QRhiShaderResourceBinding::TextureAndSampler &d,
-                      int shaderRegister);
+    void visitTextures(QD3D12Stage s,
+                       const QRhiShaderResourceBinding::TextureAndSampler *d,
+                       int count,
+                       int baseShaderRegister);
+    void visitSamplers(QD3D12Stage s,
+                       const QRhiShaderResourceBinding::TextureAndSampler *d,
+                       int count,
+                       int baseShaderRegister);
     void visitStorageBuffer(QD3D12Stage s,
                             const QRhiShaderResourceBinding::Data::StorageBufferData &d,
                             QD3D12ShaderResourceVisitor::StorageOp op,

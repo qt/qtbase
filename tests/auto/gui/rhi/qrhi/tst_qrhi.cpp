@@ -8,6 +8,7 @@
 #include <QPainter>
 #include <QSpan>
 #include <QRegularExpression>
+#include <QOperatingSystemVersion>
 #include <qrgbafloat.h>
 #include <qrgba64.h>
 
@@ -110,6 +111,8 @@ private slots:
     void renderToTextureSampleWithSeparateTextureAndSampler();
     void renderToTextureArrayOfTexturedQuad_data();
     void renderToTextureArrayOfTexturedQuad();
+    void renderToTextureArrayOfSampledTextures_data();
+    void renderToTextureArrayOfSampledTextures();
     void renderToTextureTexturedQuadAndUniformBuffer_data();
     void renderToTextureTexturedQuadAndUniformBuffer();
     void renderToTextureTexturedQuadAllDynamicBuffers_data();
@@ -2749,6 +2752,164 @@ void tst_QRhi::renderToTextureArrayOfTexturedQuad()
             QCOMPARE(qRed(pixel), 255);
             QCOMPARE(qGreen(pixel), 255);
         }
+    }
+}
+
+void tst_QRhi::renderToTextureArrayOfSampledTextures_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::renderToTextureArrayOfSampledTextures()
+{
+    // Like renderToTextureArrayOfTexturedQuad, but each element of the array of
+    // combined image samplers is sampled into a column of its own, so the
+    // result also tells which texture ended up where in the array. Unlike most
+    // other shaders here, these have SM 6.0 bytecode as well: with D3D12 that
+    // is what makes an array of textures/samplers appear as a single
+    // shader-declared descriptor range, which a root signature built from a
+    // series of one-descriptor ranges does not satisfy.
+
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing rendering");
+
+    if (isAndroidOpenGLSwiftShader(impl, rhi.get())) {
+        QSKIP("SwiftShader software acceleration is used which does not support this OpenGLES "
+              "feature. See QTBUG-132934");
+    }
+
+#ifdef Q_OS_WIN
+    // The in-box software rasterizer ('Microsoft Basic Render Driver', vendor
+    // 0x1414) in Windows 10 samples the wrong element of the array, even though
+    // pipeline creation succeeds. This is specific to the DXIL (SM 6.0) shader
+    // the D3D12 backend picks here: the SM 5.0 based
+    // renderToTextureArrayOfTexturedQuad passes on the same machine. Does not
+    // happen with the much newer WARP in Windows 11, nor with real GPUs, so
+    // keep testing everywhere else.
+    if (impl == QRhi::D3D12 && rhi->driverInfo().vendorId == 0x1414
+            && QOperatingSystemVersion::current() < QOperatingSystemVersion::Windows11)
+    {
+        QSKIP("Windows 10 software rasterizer is used which cannot sample an array of "
+              "textures correctly with SM 6.0 shaders");
+    }
+#endif
+
+    constexpr int ARRAY_SIZE = 8; // must match the shader
+    static const QRgb colors[ARRAY_SIZE] = {
+        qRgb(255, 0, 0), qRgb(0, 255, 0), qRgb(0, 0, 255), qRgb(255, 255, 0),
+        qRgb(255, 0, 255), qRgb(0, 255, 255), qRgb(255, 255, 255), qRgb(128, 128, 128)
+    };
+    const QSize outputSize(8 * ARRAY_SIZE, 32);
+
+    QScopedPointer<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGBA8, outputSize, 1,
+                                                        QRhiTexture::RenderTarget | QRhiTexture::UsedAsTransferSource));
+    QVERIFY(texture->create());
+
+    QScopedPointer<QRhiTextureRenderTarget> rt(rhi->newTextureRenderTarget({ texture.data() }));
+    QScopedPointer<QRhiRenderPassDescriptor> rpDesc(rt->newCompatibleRenderPassDescriptor());
+    rt->setRenderPassDescriptor(rpDesc.data());
+    QVERIFY(rt->create());
+
+    QRhiCommandBuffer *cb = nullptr;
+    QVERIFY(rhi->beginOffscreenFrame(&cb) == QRhi::FrameOpSuccess);
+    QVERIFY(cb);
+
+    QRhiResourceUpdateBatch *updates = rhi->nextResourceUpdateBatch();
+
+    QScopedPointer<QRhiBuffer> vbuf(rhi->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, sizeof(quadVerticesUvs)));
+    QVERIFY(vbuf->create());
+    updates->uploadStaticBuffer(vbuf.data(), quadVerticesUvs);
+
+    std::unique_ptr<QRhiTexture> inputTextures[ARRAY_SIZE];
+    for (int i = 0; i < ARRAY_SIZE; ++i) {
+        QImage image(QSize(16, 16), QImage::Format_RGBA8888);
+        image.fill(QColor::fromRgb(colors[i]));
+        inputTextures[i].reset(rhi->newTexture(QRhiTexture::RGBA8, image.size()));
+        QVERIFY(inputTextures[i]->create());
+        updates->uploadTexture(inputTextures[i].get(), image);
+    }
+
+    // Two different samplers, so that the array is not just the same sampler
+    // repeated. (with some backends an array of samplers needs a set of
+    // consecutive native sampler descriptors of its own) The input textures are
+    // single color fills, so the filtering does not affect the result.
+    QScopedPointer<QRhiSampler> nearestSampler(rhi->newSampler(QRhiSampler::Nearest, QRhiSampler::Nearest, QRhiSampler::None,
+                                                               QRhiSampler::ClampToEdge, QRhiSampler::ClampToEdge));
+    QVERIFY(nearestSampler->create());
+    QScopedPointer<QRhiSampler> linearSampler(rhi->newSampler(QRhiSampler::Linear, QRhiSampler::Linear, QRhiSampler::None,
+                                                              QRhiSampler::ClampToEdge, QRhiSampler::ClampToEdge));
+    QVERIFY(linearSampler->create());
+
+    QRhiShaderResourceBinding::TextureAndSampler texSamplers[ARRAY_SIZE];
+    for (int i = 0; i < ARRAY_SIZE; ++i) {
+        texSamplers[i] = { inputTextures[i].get(),
+                           i % 2 ? linearSampler.data() : nearestSampler.data() };
+    }
+
+    QScopedPointer<QRhiShaderResourceBindings> srb(rhi->newShaderResourceBindings());
+    srb->setBindings({
+                         QRhiShaderResourceBinding::sampledTextures(0, QRhiShaderResourceBinding::FragmentStage, ARRAY_SIZE, texSamplers)
+                     });
+    QVERIFY(srb->create());
+
+    QScopedPointer<QRhiGraphicsPipeline> pipeline(rhi->newGraphicsPipeline());
+    pipeline->setTopology(QRhiGraphicsPipeline::TriangleStrip);
+    QShader vs = loadShader(":/data/arrayofsampledtextures.vert.qsb");
+    QVERIFY(vs.isValid());
+    QShader fs = loadShader(":/data/arrayofsampledtextures.frag.qsb");
+    QVERIFY(fs.isValid());
+    pipeline->setShaderStages({ { QRhiShaderStage::Vertex, vs }, { QRhiShaderStage::Fragment, fs } });
+    QRhiVertexInputLayout inputLayout;
+    inputLayout.setBindings({ { 4 * sizeof(float) } });
+    inputLayout.setAttributes({
+                                  { 0, 0, QRhiVertexInputAttribute::Float2, 0 },
+                                  { 0, 1, QRhiVertexInputAttribute::Float2, 2 * sizeof(float) }
+                              });
+    pipeline->setVertexInputLayout(inputLayout);
+    pipeline->setShaderResourceBindings(srb.data());
+    pipeline->setRenderPassDescriptor(rpDesc.data());
+
+    QVERIFY(pipeline->create());
+
+    cb->beginPass(rt.data(), Qt::black, { 1.0f, 0 }, updates);
+    cb->setGraphicsPipeline(pipeline.data());
+    cb->setShaderResources();
+    cb->setViewport({ 0, 0, float(outputSize.width()), float(outputSize.height()) });
+    QRhiCommandBuffer::VertexInput vbindings(vbuf.data(), 0);
+    cb->setVertexInput(0, 1, &vbindings);
+    cb->draw(4);
+
+    QRhiReadbackResult readResult;
+    QImage result;
+    readResult.completed = [&readResult, &result] {
+        result = QImage(reinterpret_cast<const uchar *>(readResult.data.constData()),
+                        readResult.pixelSize.width(), readResult.pixelSize.height(),
+                        QImage::Format_RGBA8888_Premultiplied);
+    };
+    QRhiResourceUpdateBatch *readbackBatch = rhi->nextResourceUpdateBatch();
+    readbackBatch->readBackTexture({ texture.data() }, &readResult);
+    cb->endPass(readbackBatch);
+
+    rhi->endOffscreenFrame();
+
+    QVERIFY(!result.isNull());
+
+    if (impl == QRhi::Null)
+        return;
+
+    // No flipping needed here, unlike in the other tests: the columns run along
+    // X, so the Y direction difference between the backends does not change
+    // which column a pixel belongs to.
+    const int columnWidth = outputSize.width() / ARRAY_SIZE;
+    for (int i = 0; i < ARRAY_SIZE; ++i) {
+        const QRgb pixel = result.pixel(i * columnWidth + columnWidth / 2, outputSize.height() / 2);
+        QCOMPARE(qRed(pixel), qRed(colors[i]));
+        QCOMPARE(qGreen(pixel), qGreen(colors[i]));
+        QCOMPARE(qBlue(pixel), qBlue(colors[i]));
     }
 }
 
