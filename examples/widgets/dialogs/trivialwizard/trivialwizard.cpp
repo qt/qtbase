@@ -6,6 +6,8 @@
 #include <QLocale>
 #include <QLibraryInfo>
 
+using namespace Qt::StringLiterals;
+
 //! [0] //! [1]
 QWizardPage *createIntroPage()
 {
@@ -78,12 +80,14 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
-#ifndef QT_NO_TRANSLATION
-    QString translatorFileName = QLatin1String("qtbase_");
-    translatorFileName += QLocale::system().name();
-    QTranslator *translator = new QTranslator(&app);
-    if (translator->load(translatorFileName, QLibraryInfo::path(QLibraryInfo::TranslationsPath)))
-        app.installTranslator(translator);
+#if QT_CONFIG(translation)
+    QTranslator translator;
+    for (const QString &trPath : QLibraryInfo::paths(QLibraryInfo::TranslationsPath)) {
+        if (translator.load(QLocale(), u"qtbase"_s, u"_"_s, trPath)) {
+            app.installTranslator(&translator);
+            break;
+        }
+    }
 #endif
 
 //! [linearAddPage]
