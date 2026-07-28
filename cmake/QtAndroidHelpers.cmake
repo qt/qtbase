@@ -161,6 +161,14 @@ function(qt_internal_add_android_permission target)
     _qt_internal_add_android_permission(${ARGV})
 endfunction()
 
+# Add the suffix Qt's Android libraries are named with, and only to a plain relative path.
+function(qt_internal_android_abi_suffixed_lib_path out_var path)
+    if(NOT IS_ABSOLUTE "${path}" AND NOT path MATCHES "_${CMAKE_ANDROID_ARCH_ABI}\\.so$")
+        string(REGEX REPLACE "\\.so$" "_${CMAKE_ANDROID_ARCH_ABI}.so" path "${path}")
+    endif()
+    set(${out_var} "${path}" PARENT_SCOPE)
+endfunction()
+
 function(qt_internal_android_dependencies_content target file_content_out)
     get_target_property(arg_JAR_DEPENDENCIES ${target} QT_ANDROID_JAR_DEPENDENCIES)
     get_target_property(arg_BUNDLED_JAR_DEPENDENCIES ${target} QT_ANDROID_BUNDLED_JAR_DEPENDENCIES)
@@ -221,9 +229,10 @@ function(qt_internal_android_dependencies_content target file_content_out)
     # Lib Dependencies
     if(arg_LIB_DEPENDENCIES)
         foreach(lib IN LISTS arg_LIB_DEPENDENCIES)
-            string(REPLACE ".so" "_${CMAKE_ANDROID_ARCH_ABI}.so" lib ${lib})
             section(${lib} ":" lib_file lib_extends)
+            qt_internal_android_abi_suffixed_lib_path(lib_file "${lib_file}")
             if (lib_extends)
+                qt_internal_android_abi_suffixed_lib_path(lib_extends "${lib_extends}")
                 set(lib_extends "extends=\"${lib_extends}\"")
             endif()
             # Use unix path to allow using files on any host platform.
@@ -235,9 +244,10 @@ function(qt_internal_android_dependencies_content target file_content_out)
     # Lib Dependencies Replacements
     if(arg_LIB_DEPENDENCY_REPLACEMENTS)
         foreach(lib IN LISTS arg_LIB_DEPENDENCY_REPLACEMENTS)
-            string(REPLACE ".so" "_${CMAKE_ANDROID_ARCH_ABI}.so" lib ${lib})
             section(${lib} ":" lib_file lib_replacement)
+            qt_internal_android_abi_suffixed_lib_path(lib_file "${lib_file}")
             if (lib_replacement)
+                qt_internal_android_abi_suffixed_lib_path(lib_replacement "${lib_replacement}")
                 # Use unix path to allow using files on any host platform.
                 file(TO_CMAKE_PATH ${lib_replacement} lib_replacement_unix_path)
                 set(lib_replacement "replaces=\"${lib_replacement_unix_path}\"")
