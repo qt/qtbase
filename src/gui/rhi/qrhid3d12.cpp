@@ -1160,47 +1160,36 @@ void QRhiD3D12::setGraphicsPipeline(QRhiCommandBuffer *cb, QRhiGraphicsPipeline 
     }
 }
 
-void QD3D12CommandBuffer::visitUniformBuffer(QD3D12Stage s,
-                                             const QRhiShaderResourceBinding::Data::UniformBufferData &d,
-                                             int,
-                                             int binding,
-                                             int dynamicOffsetCount,
-                                             const QRhiCommandBuffer::DynamicOffset *dynamicOffsets)
+void QD3D12ShaderResourceBindings::cacheUniformBuffer(QD3D12Stage s,
+                                                      const QRhiShaderResourceBinding::Data::UniformBufferData &d,
+                                                      int,
+                                                      int binding)
 {
-    QD3D12Buffer *bufD = QRHI_RES(QD3D12Buffer, d.buf);
-    quint32 offset = d.offset;
-    if (d.hasDynamicOffset) {
-        for (int i = 0; i < dynamicOffsetCount; ++i) {
-            const QRhiCommandBuffer::DynamicOffset &dynOfs(dynamicOffsets[i]);
-            if (dynOfs.first == binding) {
-                Q_ASSERT(aligned(dynOfs.second, 256u) == dynOfs.second);
-                offset += dynOfs.second;
-            }
-        }
-    }
-    QRHI_RES_RHI(QRhiD3D12);
-    visitorData.cbufs[s].append({ bufD->handles[rhiD->currentFrameSlot], offset });
+    // Which of the buffer's per-frame-slot resources to use, and what dynamic
+    // offset to add, is only known when binding. Keep the QRhiBuffer so that
+    // the cache stays valid regardless of the frame slot and the offsets.
+    bindingCache.cbufs[s].append({ QRHI_RES(QD3D12Buffer, d.buf), d.offset, binding });
 }
 
-void QD3D12CommandBuffer::visitTextures(QD3D12Stage s,
-                                        const QRhiShaderResourceBinding::TextureAndSampler *d,
-                                        int count,
-                                        int)
+void QD3D12ShaderResourceBindings::cacheTextures(QD3D12Stage s,
+                                                 const QRhiShaderResourceBinding::TextureAndSampler *d,
+                                                 int count,
+                                                 int)
 {
     for (int i = 0; i < count; ++i) {
         QD3D12Texture *texD = QRHI_RES(QD3D12Texture, d[i].tex);
-        visitorData.srvs[s].append(texD->srv);
+        bindingCache.srvs[s].append(texD->srv.cpuHandle);
     }
 }
 
-void QD3D12CommandBuffer::visitSamplers(QD3D12Stage s,
-                                        const QRhiShaderResourceBinding::TextureAndSampler *d,
-                                        int count,
-                                        int)
+void QD3D12ShaderResourceBindings::cacheSamplers(QD3D12Stage s,
+                                                 const QRhiShaderResourceBinding::TextureAndSampler *d,
+                                                 int count,
+                                                 int)
 {
     if (count == 1) {
         QD3D12Sampler *samplerD = QRHI_RES(QD3D12Sampler, d[0].sampler);
-        visitorData.samplers[s].append(samplerD->lookupOrCreateShaderVisibleDescriptor());
+        bindingCache.samplers[s].append(samplerD->lookupOrCreateShaderVisibleDescriptor().gpuHandle);
         return;
     }
 
@@ -1212,13 +1201,13 @@ void QD3D12CommandBuffer::visitSamplers(QD3D12Stage s,
     QVarLengthArray<Q_D3D12_SAMPLER_DESC, 8> descs;
     for (int i = 0; i < count; ++i)
         descs.append({ QRHI_RES(QD3D12Sampler, d[i].sampler)->desc });
-    visitorData.samplers[s].append(rhiD->samplerMgr.getShaderVisibleDescriptors(descs));
+    bindingCache.samplers[s].append(rhiD->samplerMgr.getShaderVisibleDescriptors(descs).gpuHandle);
 }
 
-void QD3D12CommandBuffer::visitStorageBuffer(QD3D12Stage s,
-                                             const QRhiShaderResourceBinding::Data::StorageBufferData &d,
-                                             QD3D12ShaderResourceVisitor::StorageOp,
-                                             int)
+void QD3D12ShaderResourceBindings::cacheStorageBuffer(QD3D12Stage s,
+                                                      const QRhiShaderResourceBinding::Data::StorageBufferData &d,
+                                                      QD3D12ShaderResourceVisitor::StorageOp,
+                                                      int)
 {
     QD3D12Buffer *bufD = QRHI_RES(QD3D12Buffer, d.buf);
     // SPIRV-Cross generated HLSL uses RWByteAddressBuffer
@@ -1228,13 +1217,13 @@ void QD3D12CommandBuffer::visitStorageBuffer(QD3D12Stage s,
     uavDesc.Buffer.FirstElement = d.offset / 4;
     uavDesc.Buffer.NumElements = aligned(bufD->m_size - d.offset, 4u) / 4;
     uavDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_RAW;
-    visitorData.uavs[s].append({ bufD->handles[0], uavDesc });
+    bindingCache.uavs[s].append({ bufD->handles[0], uavDesc });
 }
 
-void QD3D12CommandBuffer::visitStorageImage(QD3D12Stage s,
-                                            const QRhiShaderResourceBinding::Data::StorageImageData &d,
-                                            QD3D12ShaderResourceVisitor::StorageOp,
-                                            int)
+void QD3D12ShaderResourceBindings::cacheStorageImage(QD3D12Stage s,
+                                                     const QRhiShaderResourceBinding::Data::StorageImageData &d,
+                                                     QD3D12ShaderResourceVisitor::StorageOp,
+                                                     int)
 {
     QD3D12Texture *texD = QRHI_RES(QD3D12Texture, d.tex);
     const bool isCube = texD->m_flags.testFlag(QRhiTexture::CubeMap);
@@ -1260,7 +1249,33 @@ void QD3D12CommandBuffer::visitStorageImage(QD3D12Stage s,
         uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
         uavDesc.Texture2D.MipSlice = UINT(d.level);
     }
-    visitorData.uavs[s].append({ texD->handle, uavDesc });
+    bindingCache.uavs[s].append({ texD->handle, uavDesc });
+}
+
+void QD3D12ShaderResourceBindings::rebuildBindingCache(const QD3D12ShaderStageData *stageData,
+                                                       int stageCount)
+{
+    bindingCache.reset();
+
+    QD3D12ShaderResourceVisitor visitor(this, stageData, stageCount);
+
+    using namespace std::placeholders;
+    visitor.uniformBuffer = std::bind(&QD3D12ShaderResourceBindings::cacheUniformBuffer, this, _1, _2, _3, _4);
+    visitor.textures = std::bind(&QD3D12ShaderResourceBindings::cacheTextures, this, _1, _2, _3, _4);
+    visitor.samplers = std::bind(&QD3D12ShaderResourceBindings::cacheSamplers, this, _1, _2, _3, _4);
+    visitor.storageBuffer = std::bind(&QD3D12ShaderResourceBindings::cacheStorageBuffer, this, _1, _2, _3, _4);
+    visitor.storageImage = std::bind(&QD3D12ShaderResourceBindings::cacheStorageImage, this, _1, _2, _3, _4);
+
+    visitor.visit();
+
+    // CBs use root constant buffer views, no need to count them here.
+    for (int s = 0; s < 6; ++s) {
+        bindingCache.srvUavCount += bindingCache.srvs[s].count();
+        bindingCache.srvUavCount += bindingCache.uavs[s].count();
+    }
+
+    bindingCacheValid = true;
+    bindingCacheGeneration = generation;
 }
 
 void QRhiD3D12::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBindings *srb,
@@ -1283,15 +1298,24 @@ void QRhiD3D12::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
 
     bool pipelineChanged = false;
     if (gfxPsD) {
-        pipelineChanged = srbD->lastUsedGraphicsPipeline != gfxPsD;
+        pipelineChanged = srbD->lastUsedGraphicsPipeline != gfxPsD
+                || srbD->lastUsedPipelineGeneration != gfxPsD->generation;
         srbD->lastUsedGraphicsPipeline = gfxPsD;
+        srbD->lastUsedComputePipeline = nullptr;
+        srbD->lastUsedPipelineGeneration = gfxPsD->generation;
     } else {
-        pipelineChanged = srbD->lastUsedComputePipeline != compPsD;
+        pipelineChanged = srbD->lastUsedComputePipeline != compPsD
+                || srbD->lastUsedPipelineGeneration != compPsD->generation;
+        srbD->lastUsedGraphicsPipeline = nullptr;
         srbD->lastUsedComputePipeline = compPsD;
+        srbD->lastUsedPipelineGeneration = compPsD->generation;
     }
+
+    bool srbUpdate = false;
 
     for (int i = 0, ie = srbD->m_bindings.size(); i != ie; ++i) {
         const QRhiShaderResourceBinding::Data *b = shaderResourceBindingData(srbD->m_bindings[i]);
+        QD3D12ShaderResourceBindings::BoundResourceData &bd(srbD->boundResourceData[i]);
         switch (b->type) {
         case QRhiShaderResourceBinding::UniformBuffer:
         {
@@ -1300,6 +1324,11 @@ void QRhiD3D12::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
             Q_ASSERT(bufD->m_type == QRhiBuffer::Dynamic);
             sanityCheckResourceOwnership(bufD);
             bufD->executeHostWritesForFrameSlot(currentFrameSlot);
+            if (bufD->generation != bd.ubuf.generation || bufD->m_id != bd.ubuf.id) {
+                srbUpdate = true;
+                bd.ubuf.id = bufD->m_id;
+                bd.ubuf.generation = bufD->generation;
+            }
         }
             break;
         case QRhiShaderResourceBinding::SampledTexture:
@@ -1307,6 +1336,10 @@ void QRhiD3D12::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
         case QRhiShaderResourceBinding::Sampler:
         {
             const QRhiShaderResourceBinding::Data::TextureAndOrSamplerData *data = &b->u.stex;
+            if (bd.stex.count != data->count) {
+                bd.stex.count = data->count;
+                srbUpdate = true;
+            }
             for (int elem = 0; elem < data->count; ++elem) {
                 QD3D12Texture *texD = QRHI_RES(QD3D12Texture, data->texSamplers[elem].tex);
                 QD3D12Sampler *samplerD = QRHI_RES(QD3D12Sampler, data->texSamplers[elem].sampler);
@@ -1316,6 +1349,20 @@ void QRhiD3D12::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
                 Q_ASSERT(texD || samplerD);
                 sanityCheckResourceOwnership(texD);
                 sanityCheckResourceOwnership(samplerD);
+                const quint64 texId = texD ? texD->m_id : 0;
+                const uint texGen = texD ? texD->generation : 0;
+                const quint64 samplerId = samplerD ? samplerD->m_id : 0;
+                const uint samplerGen = samplerD ? samplerD->generation : 0;
+                if (texId != bd.stex.d[elem].texId || texGen != bd.stex.d[elem].texGeneration
+                        || samplerId != bd.stex.d[elem].samplerId
+                        || samplerGen != bd.stex.d[elem].samplerGeneration)
+                {
+                    srbUpdate = true;
+                    bd.stex.d[elem].texId = texId;
+                    bd.stex.d[elem].texGeneration = texGen;
+                    bd.stex.d[elem].samplerId = samplerId;
+                    bd.stex.d[elem].samplerGeneration = samplerGen;
+                }
                 if (texD) {
                     UINT state = 0;
                     if (b->stage == QRhiShaderResourceBinding::FragmentStage) {
@@ -1337,6 +1384,11 @@ void QRhiD3D12::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
         {
             QD3D12Texture *texD = QRHI_RES(QD3D12Texture, b->u.simage.tex);
             sanityCheckResourceOwnership(texD);
+            if (texD->generation != bd.simage.generation || texD->m_id != bd.simage.id) {
+                srbUpdate = true;
+                bd.simage.id = texD->m_id;
+                bd.simage.generation = texD->generation;
+            }
             if (QD3D12Resource *res = resourcePool.lookupRef(texD->handle)) {
                 if (res->uavUsage) {
                     if (res->uavUsage & QD3D12Resource::UavUsageWrite) {
@@ -1369,6 +1421,11 @@ void QRhiD3D12::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
             sanityCheckResourceOwnership(bufD);
             Q_ASSERT(bufD->m_usage.testFlag(QRhiBuffer::StorageBuffer));
             Q_ASSERT(bufD->m_type != QRhiBuffer::Dynamic);
+            if (bufD->generation != bd.sbuf.generation || bufD->m_id != bd.sbuf.id) {
+                srbUpdate = true;
+                bd.sbuf.id = bufD->m_id;
+                bd.sbuf.generation = bufD->generation;
+            }
             if (QD3D12Resource *res = resourcePool.lookupRef(bufD->handles[0])) {
                 if (res->uavUsage) {
                     if (res->uavUsage & QD3D12Resource::UavUsageWrite) {
@@ -1399,39 +1456,29 @@ void QRhiD3D12::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
     const bool srbChanged = gfxPsD ? (cbD->currentGraphicsSrb != srb) : (cbD->currentComputeSrb != srb);
     const bool srbRebuilt = cbD->currentSrbGeneration != srbD->generation;
 
-    if (pipelineChanged || srbChanged || srbRebuilt || srbD->hasDynamicOffset) {
+    // Rebuilding the cache is the expensive part (it runs the visitor over all
+    // bindings for all stages), so only do it when something it depends on
+    // actually changed. Note that srbChanged is deliberately not part of this:
+    // binding a different srb does not invalidate this srb's cache.
+    if (pipelineChanged || srbUpdate || !srbD->bindingCacheValid
+        || srbD->bindingCacheGeneration != srbD->generation)
+    {
         const QD3D12ShaderStageData *stageData = gfxPsD ? gfxPsD->stageData.data() : &compPsD->stageData;
+        srbD->rebuildBindingCache(stageData, gfxPsD ? 5 : 1);
+    }
 
+    if (pipelineChanged || srbChanged || srbRebuilt || srbUpdate || srbD->hasDynamicOffset) {
         // The order of root parameters must match
         // QD3D12ShaderResourceBindings::createRootSignature(), meaning the
         // logic below must mirror that function (uniform buffers first etc.)
 
-        QD3D12ShaderResourceVisitor visitor(srbD, stageData, gfxPsD ? 5 : 1);
-
-        QD3D12CommandBuffer::VisitorData &visitorData(cbD->visitorData);
-        visitorData = {};
-
-        using namespace std::placeholders;
-        visitor.uniformBuffer = std::bind(&QD3D12CommandBuffer::visitUniformBuffer, cbD, _1, _2, _3, _4, dynamicOffsetCount, dynamicOffsets);
-        visitor.textures = std::bind(&QD3D12CommandBuffer::visitTextures, cbD, _1, _2, _3, _4);
-        visitor.samplers = std::bind(&QD3D12CommandBuffer::visitSamplers, cbD, _1, _2, _3, _4);
-        visitor.storageBuffer = std::bind(&QD3D12CommandBuffer::visitStorageBuffer, cbD, _1, _2, _3, _4);
-        visitor.storageImage = std::bind(&QD3D12CommandBuffer::visitStorageImage, cbD, _1, _2, _3, _4);
-
-        visitor.visit();
-
-        quint32 cbvSrvUavCount = 0;
-        for (int s = 0; s < 6; ++s) {
-            // CBs use root constant buffer views, no need to count them here
-            cbvSrvUavCount += visitorData.srvs[s].count();
-            cbvSrvUavCount += visitorData.uavs[s].count();
-        }
+        const QD3D12ShaderResourceBindings::BindingCache &cache(srbD->bindingCache);
 
         bool gotNewHeap = false;
         if (!ensureShaderVisibleDescriptorHeapCapacity(&shaderVisibleCbvSrvUavHeap,
                                                        D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
                                                        currentFrameSlot,
-                                                       cbvSrvUavCount,
+                                                       cache.srvUavCount,
                                                        &gotNewHeap))
         {
             return;
@@ -1446,34 +1493,41 @@ void QRhiD3D12::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
 
         int rootParamIndex = 0;
         for (int s = 0; s < 6; ++s) {
-            if (!visitorData.cbufs[s].isEmpty()) {
-                for (int i = 0, count = visitorData.cbufs[s].count(); i < count; ++i) {
-                    const auto &cbuf(visitorData.cbufs[s][i]);
-                    if (QD3D12Resource *res = resourcePool.lookupRef(cbuf.first)) {
-                        quint32 offset = cbuf.second;
-                        D3D12_GPU_VIRTUAL_ADDRESS gpuAddr = res->resource->GetGPUVirtualAddress() + offset;
-                        if (cbD->currentGraphicsPipeline)
-                            cbD->cmdList->SetGraphicsRootConstantBufferView(rootParamIndex, gpuAddr);
-                        else
-                            cbD->cmdList->SetComputeRootConstantBufferView(rootParamIndex, gpuAddr);
+            for (const QD3D12ShaderResourceBindings::BindingCache::CBuf &cbuf : cache.cbufs[s]) {
+                if (QD3D12Resource *res = resourcePool.lookupRef(cbuf.buf->handles[currentFrameSlot])) {
+                    quint32 offset = cbuf.offset;
+                    if (srbD->hasDynamicOffset) {
+                        for (int i = 0; i < dynamicOffsetCount; ++i) {
+                            const QRhiCommandBuffer::DynamicOffset &dynOfs(dynamicOffsets[i]);
+                            if (dynOfs.first == cbuf.binding) {
+                                Q_ASSERT(aligned(dynOfs.second, 256u) == dynOfs.second);
+                                offset += dynOfs.second;
+                            }
+                        }
                     }
-                    rootParamIndex += 1;
+                    const D3D12_GPU_VIRTUAL_ADDRESS gpuAddr = res->resource->GetGPUVirtualAddress() + offset;
+                    if (gfxPsD)
+                        cbD->cmdList->SetGraphicsRootConstantBufferView(rootParamIndex, gpuAddr);
+                    else
+                        cbD->cmdList->SetComputeRootConstantBufferView(rootParamIndex, gpuAddr);
                 }
+                rootParamIndex += 1;
             }
         }
         for (int s = 0; s < 6; ++s) {
-            if (!visitorData.srvs[s].isEmpty()) {
+            if (!cache.srvs[s].isEmpty()) {
                 QD3D12DescriptorHeap &gpuSrvHeap(shaderVisibleCbvSrvUavHeap.perFrameHeapSlice[currentFrameSlot]);
-                QD3D12Descriptor startDesc = gpuSrvHeap.get(visitorData.srvs[s].count());
-                for (int i = 0, count = visitorData.srvs[s].count(); i < count; ++i) {
-                    const auto &srv(visitorData.srvs[s][i]);
-                    dev->CopyDescriptorsSimple(1, gpuSrvHeap.incremented(startDesc, i).cpuHandle, srv.cpuHandle,
-                                               D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-                }
+                const UINT count = UINT(cache.srvs[s].count());
+                const QD3D12Descriptor startDesc = gpuSrvHeap.get(count);
+                // One destination range of count descriptors, count source
+                // ranges of one descriptor each (nullptr sizes means all 1).
+                dev->CopyDescriptors(1, &startDesc.cpuHandle, &count,
+                                     count, cache.srvs[s].constData(), nullptr,
+                                     D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-                if (cbD->currentGraphicsPipeline)
+                if (gfxPsD)
                     cbD->cmdList->SetGraphicsRootDescriptorTable(rootParamIndex, startDesc.gpuHandle);
-                else if (cbD->currentComputePipeline)
+                else
                     cbD->cmdList->SetComputeRootDescriptorTable(rootParamIndex, startDesc.gpuHandle);
 
                 rootParamIndex += 1;
@@ -1482,23 +1536,24 @@ void QRhiD3D12::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
         for (int s = 0; s < 6; ++s) {
             // Samplers are one parameter / descriptor table each, and the
             // descriptor is from the shader visible sampler heap already.
-            for (const QD3D12Descriptor &samplerDescriptor : visitorData.samplers[s]) {
-                if (cbD->currentGraphicsPipeline)
-                    cbD->cmdList->SetGraphicsRootDescriptorTable(rootParamIndex, samplerDescriptor.gpuHandle);
-                else if (cbD->currentComputePipeline)
-                    cbD->cmdList->SetComputeRootDescriptorTable(rootParamIndex, samplerDescriptor.gpuHandle);
+            for (D3D12_GPU_DESCRIPTOR_HANDLE samplerDescriptor : cache.samplers[s]) {
+                if (gfxPsD)
+                    cbD->cmdList->SetGraphicsRootDescriptorTable(rootParamIndex, samplerDescriptor);
+                else
+                    cbD->cmdList->SetComputeRootDescriptorTable(rootParamIndex, samplerDescriptor);
 
                 rootParamIndex += 1;
             }
         }
         for (int s = 0; s < 6; ++s) {
-            if (!visitorData.uavs[s].isEmpty()) {
+            if (!cache.uavs[s].isEmpty()) {
                 QD3D12DescriptorHeap &gpuUavHeap(shaderVisibleCbvSrvUavHeap.perFrameHeapSlice[currentFrameSlot]);
-                QD3D12Descriptor startDesc = gpuUavHeap.get(visitorData.uavs[s].count());
-                for (int i = 0, count = visitorData.uavs[s].count(); i < count; ++i) {
-                    const auto &uav(visitorData.uavs[s][i]);
-                    if (QD3D12Resource *res = resourcePool.lookupRef(uav.first)) {
-                        dev->CreateUnorderedAccessView(res->resource, nullptr, &uav.second,
+                const int count = cache.uavs[s].count();
+                const QD3D12Descriptor startDesc = gpuUavHeap.get(count);
+                for (int i = 0; i < count; ++i) {
+                    const QD3D12ShaderResourceBindings::BindingCache::Uav &uav(cache.uavs[s][i]);
+                    if (QD3D12Resource *res = resourcePool.lookupRef(uav.handle)) {
+                        dev->CreateUnorderedAccessView(res->resource, nullptr, &uav.desc,
                                                        gpuUavHeap.incremented(startDesc, i).cpuHandle);
                     } else {
                         dev->CreateUnorderedAccessView(nullptr, nullptr, nullptr,
@@ -1506,9 +1561,9 @@ void QRhiD3D12::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
                     }
                 }
 
-                if (cbD->currentGraphicsPipeline)
+                if (gfxPsD)
                     cbD->cmdList->SetGraphicsRootDescriptorTable(rootParamIndex, startDesc.gpuHandle);
-                else if (cbD->currentComputePipeline)
+                else
                     cbD->cmdList->SetComputeRootDescriptorTable(rootParamIndex, startDesc.gpuHandle);
 
                 rootParamIndex += 1;
@@ -4530,6 +4585,7 @@ bool QD3D12Buffer::create()
         return false;
     }
 
+    generation += 1;
     rhiD->registerResource(this);
     return true;
 }
@@ -5337,6 +5393,12 @@ bool QD3D12Sampler::create()
     desc.ComparisonFunc = toD3DTextureComparisonFunc(m_compareOp);
     desc.MaxLOD = m_mipmapMode == None ? 0.0f : 10000.0f;
 
+    // The shader-visible descriptor is looked up lazily and depends on desc, so
+    // drop the old one.
+    shaderVisibleDescriptor = {};
+
+    generation += 1;
+
     QRHI_RES_RHI(QRhiD3D12);
     rhiD->registerResource(this, false);
     return true;
@@ -5653,6 +5715,10 @@ QD3D12ShaderResourceBindings::~QD3D12ShaderResourceBindings()
 
 void QD3D12ShaderResourceBindings::destroy()
 {
+    bindingCache.reset();
+    bindingCacheValid = false;
+    boundResourceData.clear();
+
     QRHI_RES_RHI(QRhiD3D12);
     if (rhiD)
         rhiD->unregisterResource(this);
@@ -5665,6 +5731,13 @@ bool QD3D12ShaderResourceBindings::create()
         return false;
 
     rhiD->updateLayoutDesc(this);
+
+    boundResourceData.resize(m_bindings.count());
+    for (BoundResourceData &bd : boundResourceData)
+        memset(&bd, 0, sizeof(BoundResourceData));
+
+    bindingCache.reset();
+    bindingCacheValid = false;
 
     hasDynamicOffset = false;
     for (const QRhiShaderResourceBinding &b : std::as_const(m_bindings)) {
@@ -5691,6 +5764,14 @@ bool QD3D12ShaderResourceBindings::create()
 void QD3D12ShaderResourceBindings::updateResources(UpdateFlags flags)
 {
     Q_UNUSED(flags);
+
+    Q_ASSERT(boundResourceData.count() == m_bindings.count());
+    for (BoundResourceData &bd : boundResourceData)
+        memset(&bd, 0, sizeof(BoundResourceData));
+
+    bindingCache.reset();
+    bindingCacheValid = false;
+
     generation += 1;
 }
 
