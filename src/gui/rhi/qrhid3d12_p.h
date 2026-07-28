@@ -803,6 +803,7 @@ struct QD3D12Texture : public QRhiTexture
     DXGI_FORMAT rtFormat; // RTV/DSV/UAV
     uint mipLevelCount;
     DXGI_SAMPLE_DESC sampleDesc;
+    QBitArray resolveDestInitialized;
     uint generation = 0;
     friend class QRhiD3D12;
     friend struct QD3D12CommandBuffer;
