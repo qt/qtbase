@@ -421,7 +421,7 @@ static QVariant::Private clonePrivate(const QVariant::Private &other)
 */
 
 /*!
-    \deprecated Use \l QMetaType::Type instead.
+    \deprecated [6.0] Use \l QMetaType::Type instead.
     \enum QVariant::Type
 
     This enum type defines the types of variable that a QVariant can
@@ -2882,7 +2882,7 @@ QVariant QVariant::fromMetaType(QMetaType type, const void *copy)
 
 /*! \fn template<typename T> T qVariantValue(const QVariant &value)
     \relates QVariant
-    \deprecated
+    \deprecated [4.8]
 
     Returns the given \a value converted to the template type \c{T}.
 
@@ -2898,7 +2898,7 @@ QVariant QVariant::fromMetaType(QMetaType type, const void *copy)
 
 /*! \fn bool qVariantCanConvert(const QVariant &value)
     \relates QVariant
-    \deprecated
+    \deprecated [4.8]
 
     Returns \c true if the given \a value can be converted to the
     template type specified; otherwise returns \c false.

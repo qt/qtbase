@@ -6097,7 +6097,7 @@ QString& QString::setUnicode(const QChar *unicode, qsizetype size)
 
 /*!
     \fn QString &QString::setUtf16(const ushort *unicode, qsizetype size)
-    \obsolete Use the \c char16_t overload instead.
+    \obsolete [6.10] Use the \c char16_t overload instead.
 */
 
 /*!

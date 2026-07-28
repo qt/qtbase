@@ -103,7 +103,7 @@ void QFutureWatcherBase::cancel()
 #if QT_DEPRECATED_SINCE(6, 0)
 /*! \fn template <typename T> void QFutureWatcher<T>::setPaused(bool paused)
 
-    \deprecated [6.6] Use setSuspended() instead.
+    \deprecated [6.0] Use setSuspended() instead.
 
     If \a paused is true, this function pauses the asynchronous computation
     represented by the future(). If the computation is already paused, this
@@ -129,7 +129,7 @@ void QFutureWatcherBase::setPaused(bool paused)
 
 /*! \fn template <typename T> void QFutureWatcher<T>::pause()
 
-    \deprecated
+    \deprecated [6.0]
     Use suspend() instead.
 
     Pauses the asynchronous computation represented by the future(). This is a

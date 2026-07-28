@@ -1995,12 +1995,12 @@ bool QMetaType::debugStream(QDebug& dbg, const void *rhs)
 /*!
     \fn bool QMetaType::debugStream(QDebug& dbg, const void *rhs, int typeId)
     \overload
-    \deprecated
+    \deprecated [6.0]
 */
 
 /*!
     \fn template<typename T> bool QMetaType::hasRegisteredDebugStreamOperator()
-    \deprecated
+    \deprecated [6.0]
     \since 5.2
 
     Returns \c true, if the meta type system has a registered debug stream operator for type T.
@@ -2008,7 +2008,7 @@ bool QMetaType::debugStream(QDebug& dbg, const void *rhs)
 
 /*!
     \fn bool QMetaType::hasRegisteredDebugStreamOperator(int typeId)
-    \deprecated Use QMetaType::hasRegisteredDebugStreamOperator() instead.
+    \deprecated [6.0] Use QMetaType::hasRegisteredDebugStreamOperator() instead.
 
     Returns \c true, if the meta type system has a registered debug stream operator for type
     id \a typeId.
@@ -2473,7 +2473,7 @@ static bool convertMetaObject(QMetaType fromType, const void *from, QMetaType to
 
 /*!
     \fn bool QMetaType::convert(const void *from, int fromTypeId, void *to, int toTypeId)
-    \deprecated
+    \deprecated [6.0]
 
     Converts the object at \a from from \a fromTypeId to the preallocated space at \a to
     typed \a toTypeId. Returns \c true, if the conversion succeeded, otherwise false.
@@ -2840,7 +2840,7 @@ bool QMetaType::canConvert(QMetaType fromType, QMetaType toType)
 
 /*!
     \fn bool QMetaType::compare(const void *lhs, const void *rhs, int typeId, int* result)
-    \deprecated Use the non-static compare method instead.
+    \deprecated [6.0] Use the non-static compare method instead.
 
     Compares the objects at \a lhs and \a rhs. Both objects need to be of type \a typeId.
     \a result is set to less than, equal to or greater than zero, if \a lhs is less than, equal to
@@ -2934,7 +2934,7 @@ bool QtPrivate::hasRegisteredMutableViewFunctionToIterableMetaAssociation(QMetaT
 
 /*!
     \fn const char *QMetaType::typeName(int typeId)
-    \deprecated
+    \deprecated [6.0]
 
     Returns the type name associated with the given \a typeId, or a null
     pointer if no matching type was found. The returned pointer must not be
@@ -3048,7 +3048,7 @@ static const QtPrivate::QMetaTypeInterface *findMetaTypeByName(QByteArrayView na
 
 /*!
     \fn int QMetaType::type(const char *typeName)
-    \deprecated
+    \deprecated [6.0]
 
     Returns a handle to the type called \a typeName, or QMetaType::UnknownType if there is
     no such type.
@@ -3078,7 +3078,7 @@ int qMetaTypeTypeInternal(QByteArrayView name)
 
     \since 5.5
     \overload
-    \deprecated
+    \deprecated [6.0]
 
     Returns a handle to the type called \a typeName, or 0 if there is
     no such type.
@@ -3122,7 +3122,7 @@ bool QMetaType::save(QDataStream &stream, const void *data) const
 /*!
    \fn bool QMetaType::save(QDataStream &stream, int type, const void *data)
    \overload
-   \deprecated
+   \deprecated [6.0]
 */
 
 /*!
@@ -3228,7 +3228,7 @@ QMetaType QMetaType::underlyingType() const
 /*!
    \fn bool QMetaType::load(QDataStream &stream, int type, void *data)
    \overload
-   \deprecated
+   \deprecated [6.0]
 */
 #endif // QT_NO_DATASTREAM
 
@@ -3256,7 +3256,7 @@ QMetaType QMetaType::fromName(QByteArrayView typeName)
 
 /*!
     \fn void *QMetaType::create(int type, const void *copy)
-    \deprecated
+    \deprecated [6.0]
 
     Returns a copy of \a copy, assuming it is of type \a type. If \a
     copy is zero, creates a default constructed instance.
@@ -3266,7 +3266,7 @@ QMetaType QMetaType::fromName(QByteArrayView typeName)
 
 /*!
     \fn void QMetaType::destroy(int type, void *data)
-    \deprecated
+    \deprecated [6.0]
     Destroys the \a data, assuming it is of the \a type given.
 
     \sa create(), isRegistered(), Type
@@ -3275,7 +3275,7 @@ QMetaType QMetaType::fromName(QByteArrayView typeName)
 /*!
     \fn void *QMetaType::construct(int type, void *where, const void *copy)
     \since 5.0
-    \deprecated
+    \deprecated [6.0]
 
     Constructs a value of the given \a type in the existing memory
     addressed by \a where, that is a copy of \a copy, and returns
@@ -3305,7 +3305,7 @@ QMetaType QMetaType::fromName(QByteArrayView typeName)
 /*!
     \fn void QMetaType::destruct(int type, void *where)
     \since 5.0
-    \deprecated
+    \deprecated [6.0]
 
     Destructs the value of the given \a type, located at \a where.
 
@@ -3318,7 +3318,7 @@ QMetaType QMetaType::fromName(QByteArrayView typeName)
 /*!
     \fn int QMetaType::sizeOf(int type)
     \since 5.0
-    \deprecated
+    \deprecated [6.0]
 
     Returns the size of the given \a type in bytes (i.e. sizeof(T),
     where T is the actual type identified by the \a type argument).
@@ -3332,7 +3332,7 @@ QMetaType QMetaType::fromName(QByteArrayView typeName)
 /*!
     \fn QMetaType::TypeFlags QMetaType::typeFlags(int type)
     \since 5.0
-    \deprecated
+    \deprecated [6.0]
 
     Returns flags of the given \a type.
 
@@ -3342,7 +3342,7 @@ QMetaType QMetaType::fromName(QByteArrayView typeName)
 /*!
     \fn const QMetaObject *QMetaType::metaObjectForType(int type)
     \since 5.0
-    \deprecated
+    \deprecated [6.0]
 
     returns QMetaType::metaObject for \a type
 
@@ -3352,7 +3352,7 @@ QMetaType QMetaType::fromName(QByteArrayView typeName)
 /*!
     \fn template <typename T> int qRegisterMetaType(const char *typeName)
     \relates QMetaType
-    \obsolete
+    \obsolete [6.5]
     \threadsafe
 
     Registers the type name \a typeName for the type \c{T}. Returns

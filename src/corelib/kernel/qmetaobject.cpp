@@ -1976,7 +1976,7 @@ QMetaMethod QMetaMethod::fromRelativeConstructorIndex(const QMetaObject *mobj, i
 
 /*!
     \macro Q_METAMETHOD_INVOKE_MAX_ARGS
-    \deprecated
+    \deprecated [6.13]
     \relates QMetaMethod
 
     Equals maximum number of arguments available for execution of the method
@@ -3808,7 +3808,7 @@ const char *QMetaProperty::typeName() const
 }
 
 /*! \fn QVariant::Type QMetaProperty::type() const
-    \deprecated
+    \deprecated [6.0]
 
     Returns this property's type. The return value is one
     of the values of the QVariant::Type enumeration.

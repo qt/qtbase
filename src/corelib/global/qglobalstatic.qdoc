@@ -261,7 +261,7 @@
 /*!
     \macro Q_GLOBAL_STATIC_WITH_ARGS(Type, variableName, Arguments)
     \since 5.1
-    \obsolete
+    \obsolete [6.4]
     \relates QGlobalStatic
 
     Creates a global and static object of type \l QGlobalStatic, of name \a

@@ -943,7 +943,7 @@ protected:
 private:
     // force compile error, prevent QVariant(bool) to be called
     inline QVariant(void *) = delete;
-    // QVariant::Type is marked as \obsolete, but we don't want to
+    // QVariant::Type is marked as \deprecated, but we don't want to
     // provide a constructor from its intended replacement,
     // QMetaType::Type, instead, because the idea behind these
     // constructors is flawed in the first place. But we also don't

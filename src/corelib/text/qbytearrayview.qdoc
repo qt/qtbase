@@ -674,7 +674,7 @@
     \fn QByteArrayView QByteArrayView::mid(qsizetype start, qsizetype length) const
     \since 6.5
 
-    \deprecated Use sliced() instead in new code.
+    \deprecated [6.5] Use sliced() instead in new code.
 
     Returns the subarray of length \a length starting at position
     \a start in this object.
@@ -692,7 +692,7 @@
     \fn QByteArrayView QByteArrayView::left(qsizetype length) const
     \since 6.5
 
-    \deprecated Use first() instead in new code.
+    \deprecated [6.5] Use first() instead in new code.
 
     Returns the subarray of length \a length starting at position
     0 in this object.
@@ -707,7 +707,7 @@
     \fn QByteArrayView QByteArrayView::right(qsizetype length) const
     \since 6.5
 
-    \deprecated Use last() instead in new code.
+    \deprecated [6.5] Use last() instead in new code.
 
     Returns the subarray of length \a length starting at position
     size() - \a length in this object.
