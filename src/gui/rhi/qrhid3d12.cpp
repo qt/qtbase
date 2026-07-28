@@ -1119,20 +1119,37 @@ void QD3D12CommandBuffer::visitUniformBuffer(QD3D12Stage s,
     visitorData.cbufs[s].append({ bufD->handles[rhiD->currentFrameSlot], offset });
 }
 
-void QD3D12CommandBuffer::visitTexture(QD3D12Stage s,
-                                       const QRhiShaderResourceBinding::TextureAndSampler &d,
-                                       int)
+void QD3D12CommandBuffer::visitTextures(QD3D12Stage s,
+                                        const QRhiShaderResourceBinding::TextureAndSampler *d,
+                                        int count,
+                                        int)
 {
-    QD3D12Texture *texD = QRHI_RES(QD3D12Texture, d.tex);
-    visitorData.srvs[s].append(texD->srv);
+    for (int i = 0; i < count; ++i) {
+        QD3D12Texture *texD = QRHI_RES(QD3D12Texture, d[i].tex);
+        visitorData.srvs[s].append(texD->srv);
+    }
 }
 
-void QD3D12CommandBuffer::visitSampler(QD3D12Stage s,
-                                       const QRhiShaderResourceBinding::TextureAndSampler &d,
-                                       int)
+void QD3D12CommandBuffer::visitSamplers(QD3D12Stage s,
+                                        const QRhiShaderResourceBinding::TextureAndSampler *d,
+                                        int count,
+                                        int)
 {
-    QD3D12Sampler *samplerD = QRHI_RES(QD3D12Sampler, d.sampler);
-    visitorData.samplers[s].append(samplerD->lookupOrCreateShaderVisibleDescriptor());
+    if (count == 1) {
+        QD3D12Sampler *samplerD = QRHI_RES(QD3D12Sampler, d[0].sampler);
+        visitorData.samplers[s].append(samplerD->lookupOrCreateShaderVisibleDescriptor());
+        return;
+    }
+
+    // An array of samplers must be backed by consecutive descriptors. The
+    // per-sampler descriptors are scattered in the shader-visible sampler
+    // heap, so get a dedicated run for this combination of samplers instead.
+    // (deduplicated by sampler description, so this is not per srb)
+    QRHI_RES_RHI(QRhiD3D12);
+    QVarLengthArray<Q_D3D12_SAMPLER_DESC, 8> descs;
+    for (int i = 0; i < count; ++i)
+        descs.append({ QRHI_RES(QD3D12Sampler, d[i].sampler)->desc });
+    visitorData.samplers[s].append(rhiD->samplerMgr.getShaderVisibleDescriptors(descs));
 }
 
 void QD3D12CommandBuffer::visitStorageBuffer(QD3D12Stage s,
@@ -1333,8 +1350,8 @@ void QRhiD3D12::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
 
         using namespace std::placeholders;
         visitor.uniformBuffer = std::bind(&QD3D12CommandBuffer::visitUniformBuffer, cbD, _1, _2, _3, _4, dynamicOffsetCount, dynamicOffsets);
-        visitor.texture = std::bind(&QD3D12CommandBuffer::visitTexture, cbD, _1, _2, _3);
-        visitor.sampler = std::bind(&QD3D12CommandBuffer::visitSampler, cbD, _1, _2, _3);
+        visitor.textures = std::bind(&QD3D12CommandBuffer::visitTextures, cbD, _1, _2, _3, _4);
+        visitor.samplers = std::bind(&QD3D12CommandBuffer::visitSamplers, cbD, _1, _2, _3, _4);
         visitor.storageBuffer = std::bind(&QD3D12CommandBuffer::visitStorageBuffer, cbD, _1, _2, _3, _4);
         visitor.storageImage = std::bind(&QD3D12CommandBuffer::visitStorageImage, cbD, _1, _2, _3, _4);
 
@@ -3017,32 +3034,26 @@ void QD3D12ShaderResourceVisitor::visit()
                 Q_ASSERT(bd->u.stex.count > 0);
                 const int textureBaseShaderRegister = mapBinding(bd->binding, sd->nativeResourceBindingMap).first;
                 const int samplerBaseShaderRegister = mapBinding(bd->binding, sd->nativeResourceBindingMap).second;
-                for (int i = 0; i < bd->u.stex.count; ++i) {
-                    if (textureBaseShaderRegister >= 0 && texture)
-                        texture(sd->stage, bd->u.stex.texSamplers[i], textureBaseShaderRegister + i);
-                    if (samplerBaseShaderRegister >= 0 && sampler)
-                        sampler(sd->stage, bd->u.stex.texSamplers[i], samplerBaseShaderRegister + i);
-                }
+                if (textureBaseShaderRegister >= 0 && textures)
+                    textures(sd->stage, bd->u.stex.texSamplers, bd->u.stex.count, textureBaseShaderRegister);
+                if (samplerBaseShaderRegister >= 0 && samplers)
+                    samplers(sd->stage, bd->u.stex.texSamplers, bd->u.stex.count, samplerBaseShaderRegister);
             }
                 break;
             case QRhiShaderResourceBinding::Texture:
             {
                 Q_ASSERT(bd->u.stex.count > 0);
                 const int baseShaderRegister = mapBinding(bd->binding, sd->nativeResourceBindingMap).first;
-                if (baseShaderRegister >= 0 && texture) {
-                    for (int i = 0; i < bd->u.stex.count; ++i)
-                        texture(sd->stage, bd->u.stex.texSamplers[i], baseShaderRegister + i);
-                }
+                if (baseShaderRegister >= 0 && textures)
+                    textures(sd->stage, bd->u.stex.texSamplers, bd->u.stex.count, baseShaderRegister);
             }
                 break;
             case QRhiShaderResourceBinding::Sampler:
             {
                 Q_ASSERT(bd->u.stex.count > 0);
                 const int baseShaderRegister = mapBinding(bd->binding, sd->nativeResourceBindingMap).first;
-                if (baseShaderRegister >= 0 && sampler) {
-                    for (int i = 0; i < bd->u.stex.count; ++i)
-                        sampler(sd->stage, bd->u.stex.texSamplers[i], baseShaderRegister + i);
-                }
+                if (baseShaderRegister >= 0 && samplers)
+                    samplers(sd->stage, bd->u.stex.texSamplers, bd->u.stex.count, baseShaderRegister);
             }
                 break;
             case QRhiShaderResourceBinding::ImageLoad:
@@ -3132,6 +3143,39 @@ QD3D12Descriptor QD3D12SamplerManager::getShaderVisibleDescriptor(const D3D12_SA
     }
 
     return descriptor;
+}
+
+QD3D12Descriptor QD3D12SamplerManager::getShaderVisibleDescriptors(const QVarLengthArray<Q_D3D12_SAMPLER_DESC, 8> &descs)
+{
+    // Deliberately keyed on the sampler descriptions, not on the QRhiSampler
+    // objects: an array of samplers with the same combination of filtering and
+    // addressing modes can share one descriptor run, however many
+    // QRhiShaderResourceBindings reference it.
+    auto it = gpuArrayMap.constFind({ descs });
+    if (it != gpuArrayMap.cend())
+        return *it;
+
+    const quint32 count = quint32(descs.count());
+    QD3D12Descriptor startDescriptor = shaderVisibleSamplerHeap.heap.get(count);
+    if (startDescriptor.isValid()) {
+        for (quint32 i = 0; i < count; ++i) {
+            device->CreateSampler(&descs[int(i)].desc,
+                                  shaderVisibleSamplerHeap.heap.incremented(startDescriptor, i).cpuHandle);
+        }
+        gpuArrayMap.insert({ descs }, startDescriptor);
+    } else {
+        // Not inserting anything into the map on failure, so this is retried
+        // (and warns again) on every setShaderResources() with this binding.
+        // Same as the single sampler case above, and preferable to caching the
+        // invalid descriptor, which would keep binding a null descriptor table
+        // without saying anything about it.
+        qWarning("Out of shader-visible SAMPLER descriptor heap space when reserving"
+                 " %u consecutive descriptors for a sampler array, maximum number of"
+                 " sampler descriptors is %u",
+                 count, shaderVisibleSamplerHeap.heap.capacity);
+    }
+
+    return startDescriptor;
 }
 
 bool QD3D12MipmapGenerator::create(QRhiD3D12 *rhiD)
@@ -5568,16 +5612,20 @@ void QD3D12ShaderResourceBindings::visitUniformBuffer(QD3D12Stage s,
     visitorData.cbParams[s].append(rootParam);
 }
 
-void QD3D12ShaderResourceBindings::visitTexture(QD3D12Stage s,
-                                                const QRhiShaderResourceBinding::TextureAndSampler &,
-                                                int shaderRegister)
+void QD3D12ShaderResourceBindings::visitTextures(QD3D12Stage s,
+                                                 const QRhiShaderResourceBinding::TextureAndSampler *,
+                                                 int count,
+                                                 int baseShaderRegister)
 {
+    // An array of textures is one range of count descriptors, not count ranges
+    // of one: the shader declares the array as a single range and D3D12
+    // rejects the pipeline unless the range is bound in full.
     D3D12_DESCRIPTOR_RANGE1 range = {};
     range.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-    range.NumDescriptors = 1;
-    range.BaseShaderRegister = shaderRegister;
+    range.NumDescriptors = UINT(count);
+    range.BaseShaderRegister = baseShaderRegister;
     range.OffsetInDescriptorsFromTableStart = visitorData.currentSrvRangeOffset[s];
-    visitorData.currentSrvRangeOffset[s] += 1;
+    visitorData.currentSrvRangeOffset[s] += UINT(count);
     visitorData.srvRanges[s].append(range);
     if (visitorData.srvRanges[s].count() == 1) {
         visitorData.srvTables[s].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
@@ -5585,22 +5633,26 @@ void QD3D12ShaderResourceBindings::visitTexture(QD3D12Stage s,
     }
 }
 
-void QD3D12ShaderResourceBindings::visitSampler(QD3D12Stage s,
-                                                const QRhiShaderResourceBinding::TextureAndSampler &,
-                                                int shaderRegister)
+void QD3D12ShaderResourceBindings::visitSamplers(QD3D12Stage s,
+                                                 const QRhiShaderResourceBinding::TextureAndSampler *,
+                                                 int count,
+                                                 int baseShaderRegister)
 {
-    // Unlike SRVs and UAVs, samplers are handled so that each sampler becomes
-    // a root parameter with its own descriptor table.
+    // Unlike SRVs and UAVs, samplers are handled so that each binding becomes
+    // a root parameter with its own descriptor table. An array of samplers is
+    // one range of count descriptors within that table: shaders declare such
+    // an array as a single range and D3D12 rejects the pipeline unless the
+    // range is bound in full.
 
     int &rangeStoreIdx(visitorData.samplerRangeHeads[s]);
     if (rangeStoreIdx == 16) {
-        qWarning("Sampler count in QD3D12Stage %d exceeds the limit of 16, this is disallowed by QRhi", s);
+        qWarning("Sampler binding count in QD3D12Stage %d exceeds the limit of 16, this is disallowed by QRhi", s);
         return;
     }
     D3D12_DESCRIPTOR_RANGE1 range = {};
     range.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
-    range.NumDescriptors = 1;
-    range.BaseShaderRegister = shaderRegister;
+    range.NumDescriptors = UINT(count);
+    range.BaseShaderRegister = baseShaderRegister;
     visitorData.samplerRanges[s][rangeStoreIdx] = range;
     D3D12_ROOT_PARAMETER1 param = {};
     param.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
@@ -5670,8 +5722,8 @@ QD3D12ObjectHandle QD3D12ShaderResourceBindings::createRootSignature(const QD3D1
 
     using namespace std::placeholders;
     visitor.uniformBuffer = std::bind(&QD3D12ShaderResourceBindings::visitUniformBuffer, this, _1, _2, _3, _4);
-    visitor.texture = std::bind(&QD3D12ShaderResourceBindings::visitTexture, this, _1, _2, _3);
-    visitor.sampler = std::bind(&QD3D12ShaderResourceBindings::visitSampler, this, _1, _2, _3);
+    visitor.textures = std::bind(&QD3D12ShaderResourceBindings::visitTextures, this, _1, _2, _3, _4);
+    visitor.samplers = std::bind(&QD3D12ShaderResourceBindings::visitSamplers, this, _1, _2, _3, _4);
     visitor.storageBuffer = std::bind(&QD3D12ShaderResourceBindings::visitStorageBuffer, this, _1, _2, _3, _4);
     visitor.storageImage = std::bind(&QD3D12ShaderResourceBindings::visitStorageImage, this, _1, _2, _3, _4);
 
