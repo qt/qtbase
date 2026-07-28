@@ -446,12 +446,12 @@ bool QOhosInputContext::attachToInputMethodController()
 
         void onDeleteForward(int length) override
         {
-            m_inputContext.sendFocusObjectFunctionalKeyEvent(Qt::Key_Delete, QChar::fromLatin1('\u007F'), length);
+            m_inputContext.sendFocusObjectFunctionalKeyEvent(Qt::Key_Delete, QStringLiteral("\u007F"), length);
         }
 
         void onDeleteBackward(int length) override
         {
-            m_inputContext.sendFocusObjectFunctionalKeyEvent(Qt::Key_Backspace, QChar::fromLatin1('\u0008'), length);
+            m_inputContext.sendFocusObjectFunctionalKeyEvent(Qt::Key_Backspace, QStringLiteral("\u0008"), length);
         }
 
         void onSendKeyboardStatus(::InputMethod_KeyboardStatus keyboardStatus) override
@@ -462,7 +462,7 @@ bool QOhosInputContext::attachToInputMethodController()
 
         void onSendEnterKey(::InputMethod_EnterKeyType) override
         {
-            m_inputContext.sendFocusObjectFunctionalKeyEvent(Qt::Key_Enter, QChar::fromLatin1('\u000D'));
+            m_inputContext.sendFocusObjectFunctionalKeyEvent(Qt::Key_Enter, QStringLiteral("\u000D"));
         }
 
         void onMoveCursor(::InputMethod_Direction direction) override
@@ -714,21 +714,21 @@ void QOhosInputContext::sendCursorMoveToQt(QOhosInputContext::Direction directio
 {
     switch (direction) {
     case QOhosInputContext::Direction::CURSOR_UP:
-        sendFocusObjectFunctionalKeyEvent(Qt::Key_Up, QChar(std::int32_t(Qt::Key_Up)));
+        sendFocusObjectFunctionalKeyEvent(Qt::Key_Up);
         break;
     case QOhosInputContext::Direction::CURSOR_DOWN:
-        sendFocusObjectFunctionalKeyEvent(Qt::Key_Down, QChar(std::int32_t(Qt::Key_Down)));
+        sendFocusObjectFunctionalKeyEvent(Qt::Key_Down);
         break;
     case QOhosInputContext::Direction::CURSOR_LEFT:
-        sendFocusObjectFunctionalKeyEvent(Qt::Key_Left, QChar(std::int32_t(Qt::Key_Left)));
+        sendFocusObjectFunctionalKeyEvent(Qt::Key_Left);
         break;
     case QOhosInputContext::Direction::CURSOR_RIGHT:
-        sendFocusObjectFunctionalKeyEvent(Qt::Key_Right, QChar(std::int32_t(Qt::Key_Right)));
+        sendFocusObjectFunctionalKeyEvent(Qt::Key_Right);
         break;
     }
 }
 
-void QOhosInputContext::sendFocusObjectFunctionalKeyEvent(Qt::Key key, const QChar &keyChar, int repeatCount)
+void QOhosInputContext::sendFocusObjectFunctionalKeyEvent(Qt::Key key, const QString &keyText, int repeatCount)
 {
     auto *focusObject = focusObjectOrNull();
     if (focusObject == nullptr) {
@@ -737,8 +737,8 @@ void QOhosInputContext::sendFocusObjectFunctionalKeyEvent(Qt::Key key, const QCh
     }
 
     for (int i = 0; i < repeatCount; ++i) {
-        QGuiApplication::postEvent(focusObject, new QKeyEvent(QEvent::KeyPress, key, Qt::NoModifier, QString(keyChar)));
-        QGuiApplication::postEvent(focusObject, new QKeyEvent(QEvent::KeyRelease, key, Qt::NoModifier, QString(keyChar)));
+        QGuiApplication::postEvent(focusObject, new QKeyEvent(QEvent::KeyPress, key, Qt::NoModifier, keyText));
+        QGuiApplication::postEvent(focusObject, new QKeyEvent(QEvent::KeyRelease, key, Qt::NoModifier, keyText));
     }
 }
 
