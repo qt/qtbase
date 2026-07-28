@@ -1604,7 +1604,7 @@ QRegularExpressionMatch QRegularExpression::match(const QString &subject,
 /*!
     \since 6.0
     \overload
-    \obsolete
+    \deprecated [6.8]
 
     Use matchView() instead.
 */
@@ -1677,7 +1677,7 @@ QRegularExpressionMatchIterator QRegularExpression::globalMatch(const QString &s
 /*!
     \since 6.0
     \overload
-    \obsolete
+    \deprecated [6.8]
 
     Use globalMatchView() instead.
 */

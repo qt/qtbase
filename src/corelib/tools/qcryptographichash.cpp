@@ -766,7 +766,7 @@ void QCryptographicHashPrivate::State::reset(QCryptographicHash::Algorithm metho
     Adds the first \a length chars of \a data to the cryptographic
     hash.
 
-    \obsolete
+    \deprecated [6.4]
     Use the QByteArrayView overload instead.
 */
 void QCryptographicHash::addData(const char *data, qsizetype length)

@@ -1996,7 +1996,7 @@ QProcess::ProcessState QProcess::state() const
 }
 
 /*!
-    \deprecated
+    \deprecated [4.6]
     Sets the environment that QProcess will pass to the child process.
     The parameter \a environment is a list of key=value pairs.
 
@@ -2015,7 +2015,7 @@ void QProcess::setEnvironment(const QStringList &environment)
 }
 
 /*!
-    \deprecated
+    \deprecated [4.6]
     Returns the environment that QProcess will pass to its child
     process, or an empty QStringList if no environment has been set
     using setEnvironment(). If no environment has been set, the

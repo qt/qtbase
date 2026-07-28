@@ -316,7 +316,7 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
 /*!
     \macro qMove(x)
     \relates <QtGlobal>
-    \deprecated
+    \deprecated [5.15]
 
     Use \c std::move instead.
 
