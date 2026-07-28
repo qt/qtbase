@@ -575,5 +575,17 @@ if(QT_FEATURE_framework)
     add_subdirectory(test_framework_forwarding_headers)
 endif()
 
+if(CMAKE_GENERATOR MATCHES "Ninja")
+    _qt_internal_test_expect_pass(test_cxx_modules)
+else()
+    find_program(NINJA_EXECUTABLE NAMES ninja ninja-build)
+    if(NINJA_EXECUTABLE)
+        _qt_internal_test_expect_pass(test_cxx_modules
+            GENERATOR Ninja
+            MAKE_PROGRAM "${NINJA_EXECUTABLE}"
+        )
+    endif()
+endif()
+
 # Add all tests using CMake's RunCMake test module
 add_subdirectory(RunCMake)

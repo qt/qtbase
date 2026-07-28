@@ -68,7 +68,7 @@ struct IsContainerCompatibleWithQByteArrayView<T, std::enable_if_t<
 
 // Used by QLatin1StringView too
 template <typename Char>
-static constexpr qsizetype lengthHelperPointer(const Char *data) noexcept
+inline constexpr qsizetype lengthHelperPointer(const Char *data) noexcept
 {
     // std::char_traits can only be used with one of the regular char types
     // (char, char16_t, wchar_t, but not uchar or QChar), so we roll the loop

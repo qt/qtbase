@@ -86,7 +86,7 @@ Q_DECL_CONST_FUNCTION constexpr size_t hash(size_t key, size_t seed) noexcept
     }
 }
 
-template <typename T1, typename T2> static constexpr bool noexceptPairHash();
+template <typename T1, typename T2> inline constexpr bool noexceptPairHash();
 }
 
 Q_CORE_EXPORT Q_DECL_PURE_FUNCTION size_t qHashBits(const void *p, size_t size, size_t seed = 0) noexcept;
@@ -448,7 +448,7 @@ inline size_t qHashRangeCommutative(InputIterator first, InputIterator last, siz
 }
 
 namespace QHashPrivate {
-template <typename T1, typename T2> static constexpr bool noexceptPairHash()
+template <typename T1, typename T2> inline constexpr bool noexceptPairHash()
 {
     size_t seed = 0;
     return noexcept(qHash(std::declval<T1>(), seed)) && noexcept(qHash(std::declval<T2>(), seed));

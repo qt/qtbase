@@ -1243,7 +1243,7 @@ constexpr bool compareThreeWayNoexcept() noexcept
 
 QT_WARNING_POP // QT_WARNING_DISABLE_DEPRECATED
 
-[[maybe_unused]] inline constexpr struct { /* Niebloid */
+[[maybe_unused]] inline constexpr struct WeakComparator { /* Niebloid */
     template <typename LT, typename RT = LT>
     [[maybe_unused]] constexpr Qt::weak_ordering operator()(const LT &lhs, const RT &rhs) const
     {
@@ -1344,7 +1344,7 @@ auto threeWayOrWeakCompare(const LT &lhs, const RT &rhs)
 }
 
 #ifdef __cpp_lib_three_way_comparison
-[[maybe_unused]] inline constexpr struct { /* Niebloid */
+[[maybe_unused]] inline constexpr struct SynthThreeWay { /* Niebloid */
     template <typename LT, typename RT = LT>
     [[maybe_unused]] constexpr auto operator()(const LT &lhs, const RT &rhs) const
     {

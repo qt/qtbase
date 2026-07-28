@@ -62,7 +62,7 @@ namespace QTest
         double-clicks, it's necessary to give a realistic \a delay value (for
         example, 10ms).
     */
-    static void mouseEvent(MouseAction action, QWindow *window, Qt::MouseButton button,
+    inline void mouseEvent(MouseAction action, QWindow *window, Qt::MouseButton button,
                            Qt::KeyboardModifiers stateKey, QPoint pos, int delay=-1)
     {
         QTEST_ASSERT(window);
@@ -148,7 +148,7 @@ namespace QTest
     { mouseEvent(MouseMove, window, Qt::NoButton, Qt::KeyboardModifiers(), pos, delay); }
 
 #ifdef QT_WIDGETS_LIB
-    static void mouseEvent(MouseAction action, QWidget *widget, Qt::MouseButton button,
+    inline void mouseEvent(MouseAction action, QWidget *widget, Qt::MouseButton button,
                            Qt::KeyboardModifiers stateKey, QPoint pos, int delay=-1)
     {
         QTEST_ASSERT(widget);

@@ -32,7 +32,7 @@ template <typename T> class QQueue;
 template <typename T> class QSet;
 template <typename T, std::size_t E = std::size_t(-1) /* = std::dynamic_extent*/> class QSpan;
 template <typename T> class QStack;
-constexpr qsizetype QVarLengthArrayDefaultPrealloc = 256;
+inline constexpr qsizetype QVarLengthArrayDefaultPrealloc = 256;
 template <typename T, qsizetype Prealloc = QVarLengthArrayDefaultPrealloc> class QVarLengthArray;
 template <typename T> class QList;
 class QString;
@@ -57,7 +57,7 @@ using QVariantPair = std::pair<QVariant, QVariant>;
 namespace QtPrivate
 {
 [[maybe_unused]]
-constexpr qsizetype MaxAllocSize = (std::numeric_limits<qsizetype>::max)();
+inline constexpr qsizetype MaxAllocSize = (std::numeric_limits<qsizetype>::max)();
 }
 
 QT_END_NAMESPACE

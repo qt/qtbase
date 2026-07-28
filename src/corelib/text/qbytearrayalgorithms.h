@@ -78,7 +78,7 @@ public:
 // a workaround.
 template <typename T, typename ByteArrayView,
           typename = std::enable_if_t<std::is_same_v<ByteArrayView, QByteArrayView>>>
-static inline T toIntegral(ByteArrayView data, bool *ok, int base)
+inline T toIntegral(ByteArrayView data, bool *ok, int base)
 {
     const auto val = [&] {
         if constexpr (std::is_unsigned_v<T>)

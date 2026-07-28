@@ -34,8 +34,8 @@ namespace QtPrivate
   Returns whether \a p is within a range [b, e). In simplest form equivalent to:
   b <= p < e.
 */
-template<typename T>
-static constexpr bool q_points_into_range(const T *p, const T *b, const T *e)
+template <typename T>
+inline constexpr bool q_points_into_range(const T *p, const T *b, const T *e)
 {
     if (q20::is_constant_evaluated()) {
         for (; b != e; ++b) {
@@ -54,7 +54,7 @@ static constexpr bool q_points_into_range(const T *p, const T *b, const T *e)
   c.data() <= p < c.data() + c.size()
 */
 template <typename C, typename T>
-static constexpr bool q_points_into_range(const T &p, const C &c) noexcept
+inline constexpr bool q_points_into_range(const T &p, const C &c) noexcept
 {
     static_assert(std::is_same_v<decltype(std::data(c)), T>);
 

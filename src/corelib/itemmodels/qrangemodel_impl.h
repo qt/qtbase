@@ -96,7 +96,7 @@ namespace QRangeModelDetails
     using is_owning_or_raw_pointer = std::disjunction<is_any_owning_ptr<T>, std::is_pointer<T>>;
 
     template <typename T>
-    static auto pointerTo(T&& t) {
+    inline auto pointerTo(T&& t) {
         using Type = q20::remove_cvref_t<T>;
         if constexpr (is_any_of<Type, std::optional>())
             return t ? std::addressof(*std::forward<T>(t)) : nullptr;
@@ -156,7 +156,7 @@ namespace QRangeModelDetails
     [[maybe_unused]] static constexpr bool has_metaobject_v = has_metaobject<T>::value;
 
     template <typename T>
-    static constexpr bool isValid(const T &t) noexcept
+    inline constexpr bool isValid(const T &t) noexcept
     {
         if constexpr (std::is_array_v<T>)
             return true;
@@ -167,7 +167,7 @@ namespace QRangeModelDetails
     }
 
     template <typename T>
-    static decltype(auto) refTo(T&& t) {
+    inline decltype(auto) refTo(T&& t) {
         Q_ASSERT(QRangeModelDetails::isValid(t));
         // it's allowed to move only if the object holds unique ownership of the wrapped data
         using Type = q20::remove_cvref_t<T>;

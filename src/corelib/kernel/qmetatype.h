@@ -375,7 +375,7 @@ To convertImplicit(const From& from)
             && !std::is_reference_v<T>
             && (!std::is_pointer_v<T> || PointerIsSuitableForMetaTypeHelper<T>);
 
-    template <typename X> static constexpr bool checkTypeIsSuitableForMetaType()
+    template <typename X> inline constexpr bool checkTypeIsSuitableForMetaType()
     {
         using T = typename MetatypeDecay<X>::type;
         static_assert(TypeIsCompleteOrVoid<T>, "Meta Types must be fully defined");

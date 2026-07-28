@@ -600,7 +600,7 @@ namespace QtPrivate {
         not compatible with the expected Prototype.
     */
     template <typename Prototype, typename Functor>
-    static constexpr std::enable_if_t<QtPrivate::countMatchingArguments<Prototype, Functor>() >= 0,
+    inline constexpr std::enable_if_t<QtPrivate::countMatchingArguments<Prototype, Functor>() >= 0,
         QtPrivate::QSlotObjectBase *>
     makeCallableObject(Functor &&func)
     {
