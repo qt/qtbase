@@ -1759,6 +1759,8 @@ template <typename T> void test_isSameType(QMetaType mt)
 
     QMetaType otherMt = QMetaType::fromType<T>();
     QCOMPARE(mt.isSameType<T>(), mt == otherMt);
+
+    QVERIFY(!QMetaType().isSameType<T>());
 }
 
 void tst_QMetaType::isSameType()
