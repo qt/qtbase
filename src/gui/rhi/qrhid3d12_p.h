@@ -48,6 +48,10 @@ using D3D12GraphicsCommandList = ID3D12GraphicsCommandList5;
 using D3D12GraphicsCommandList = ID3D12GraphicsCommandList1;
 #endif
 
+#ifdef __ID3D12InfoQueue1_INTERFACE_DEFINED__
+#define QRHI_D3D12_INFOQUEUE1_AVAILABLE
+#endif
+
 QT_BEGIN_NAMESPACE
 
 static const int QD3D12_FRAMES_IN_FLIGHT = 2;
@@ -1311,6 +1315,10 @@ public:
     void setDefaultScissor(QD3D12CommandBuffer *cbD);
 
     bool debugLayer = false;
+#ifdef QRHI_D3D12_INFOQUEUE1_AVAILABLE
+    ID3D12InfoQueue1 *infoQueue1 = nullptr;
+    DWORD infoQueueCallbackCookie = 0;
+#endif
     UINT maxFrameLatency = 2; // 1-3, use 2 to keep CPU-GPU parallelism while reducing lag compared to tripple buffering
     ID3D12Device2 *dev = nullptr;
     D3D_FEATURE_LEVEL minimumFeatureLevel = D3D_FEATURE_LEVEL(0);

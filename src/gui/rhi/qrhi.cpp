@@ -520,9 +520,12 @@ Q_LOGGING_CATEGORY(QRHI_LOG_RUB, "qt.rhi.rub")
 
     \li With Direct 3D 11 and 12, a graphics device with the debug layer
     enabled can be requested by toggling the \c enableDebugLayer flag in the
-    appropriate \l{QRhiD3D11InitParams}{init params struct}. The messages appear on the
-    debug output, which is visible in Qt Creator's messages panel or via a tool
-    such as \l{https://learn.microsoft.com/en-us/sysinternals/downloads/debugview}{DebugView}.
+    appropriate \l{QRhiD3D11InitParams}{init params struct}. With Direct 3D 12 the
+    messages are then printed via qDebug, just like the Vulkan validation
+    messages, as long as the debug layer supports message callbacks. Otherwise,
+    and always with Direct 3D 11, the messages appear on the debug output, which
+    is visible in Qt Creator's messages panel or via a tool such as
+    \l{https://learn.microsoft.com/en-us/sysinternals/downloads/debugview}{DebugView}.
 
     \li For Metal, controlling Metal Validation is outside of QRhi's scope.
     Rather, to enable validation, run the application with the environment
