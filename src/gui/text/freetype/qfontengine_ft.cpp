@@ -1829,6 +1829,12 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
     if (transform || obliquen || (format != Format_Mono && !isScalableBitmap()))
         load_flags |= FT_LOAD_NO_BITMAP;
 
+#if (FREETYPE_MAJOR*10000 + FREETYPE_MINOR*100 + FREETYPE_PATCH) >= 20701
+    // Only the advance/metrics are needed here, not the rendered bitmap
+    if (fetchMetricsOnly)
+        load_flags |= FT_LOAD_BITMAP_METRICS_ONLY;
+#endif
+
 #if defined(QFONTENGINE_FT_SUPPORT_COLRV1)
     if (FT_IS_SCALABLE(freetype->face)
         && FT_HAS_COLOR(freetype->face)
