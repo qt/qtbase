@@ -1677,6 +1677,18 @@ void tst_QDateTime::addMSecs_data()
     QTest::newRow("to-first")
         << QDateTime::fromSecsSinceEpoch(1 - maxSeconds, UTC) << qint64(-1)
         << QDateTime::fromSecsSinceEpoch(-maxSeconds, UTC);
+    // Same four cases, but with the extreme value in nsecs (the rhs of the
+    // addition) instead of in dt (the lhs):
+    QTest::newRow("after-last-rhs")
+        << QDateTime::fromSecsSinceEpoch(1, UTC) << maxSeconds << QDateTime();
+    QTest::newRow("to-last-rhs")
+        << QDateTime::fromSecsSinceEpoch(1, UTC) << (maxSeconds - 1)
+        << QDateTime::fromSecsSinceEpoch(maxSeconds, UTC);
+    QTest::newRow("before-first-rhs")
+        << QDateTime::fromSecsSinceEpoch(-1, UTC) << -maxSeconds << QDateTime();
+    QTest::newRow("to-first-rhs")
+        << QDateTime::fromSecsSinceEpoch(-1, UTC) << (1 - maxSeconds)
+        << QDateTime::fromSecsSinceEpoch(-maxSeconds, UTC);
 
 #if QT_CONFIG(timezone)
     if (const QTimeZone cet("Europe/Oslo"); cet.isValid()) {
