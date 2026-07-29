@@ -71,7 +71,7 @@ ZSTD_DStream *toZstandardPointer(void *ptr)
 #endif
 }
 
-bool QDecompressHelper::isSupportedEncoding(QByteArrayView encoding)
+bool QDecompressHelper::isSupportedEncoding(QByteArrayView encoding) noexcept
 {
     return encodingFromByteArray(encoding) != QDecompressHelper::None;
 }
