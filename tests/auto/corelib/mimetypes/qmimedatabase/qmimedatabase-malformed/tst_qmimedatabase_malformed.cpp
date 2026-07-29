@@ -91,6 +91,8 @@ private slots:
     void binaryCacheUnvalidatedOffsets_data();
     void binaryCacheUnvalidatedOffsets();
     void binaryCacheAliasMissingNulTerminator();
+    void xmlMagicOffset_data();
+    void xmlMagicOffset();
 
 private:
     struct VictimResult {
@@ -145,6 +147,7 @@ private:
                          const QString &dataFile = QString());
 
     static QString expectedResult(const QString &queryCase);
+    static QString expectedResultLine(const QString &mimeTypeName);
     static QByteArray emptyCache();
     static void putRecord(QByteArray &cache, int recordOffset, const QList<quint32> &fields);
     static QByteArray directListCache(int posListField, const QList<quint32> &fields);
@@ -176,7 +179,13 @@ QString tst_QMimeDatabaseMalformed::expectedResult(const QString &queryCase)
                 + " icon="_L1 + QLatin1StringView(ProbedIconName)
                 + " genericIcon="_L1 + QLatin1StringView(ProbedGenericIconName);
     }
-    return "ok="_L1 + QLatin1StringView(ProbedFileMimeTypeName);
+    return expectedResultLine(ProbedFileMimeTypeName);
+}
+
+// The result line of a content or filename query that must end up at mimeTypeName.
+QString tst_QMimeDatabaseMalformed::expectedResultLine(const QString &mimeTypeName)
+{
+    return "ok="_L1 + mimeTypeName;
 }
 
 // The smallest well-formed cache: a supported version, and a list-offset table
@@ -486,6 +495,78 @@ void tst_QMimeDatabaseMalformed::binaryCacheAliasMissingNulTerminator()
     // would end up with an invalid, unnamed QMimeType instead.
     const QString expected = expectedResult(QueryCase::Name);
     const VictimResult r = runCase(QueryCase::Name, tmp.path());
+    QVERIFY2(r.succeeded(expected), qPrintable(r.diagnostic(expected)));
+}
+
+// Each row is one <match> element whose offset range would make a matcher read
+// outside the sniffed buffer, plus the content to sniff and the mimetype the
+// built-in database has to answer with once the rule has been rejected.
+void tst_QMimeDatabaseMalformed::xmlMagicOffset_data()
+{
+    QTest::addColumn<QByteArray>("matchElement");
+    QTest::addColumn<QByteArray>("fileContents");
+    QTest::addColumn<QByteArray>("expectedMimeType");
+
+    // Data the bogus ranges can actually find their value in: the scan a missing
+    // check leaves clamped to the buffer end then does match, instead of matching
+    // nothing either way. No built-in magic rule claims these 16 bytes, so on
+    // their own they sniff as text/plain.
+    const QByteArray probe = "0123456789abcdef"_ba;
+
+    // Without the m_startPos < 0 check, matchNumber() would dereference
+    // data.constData() + m_startPos, well before the buffer, on first use.
+    QTest::newRow("negative-offset")
+            << "<match value=\"1\" type=\"little32\" offset=\"-2000000000\"/>"_ba
+            << QByteArray(PngSignature, sizeof(PngSignature) - 1)
+            << QByteArray(ProbedFileMimeTypeName);
+    // Without the m_endPos < m_startPos check, matchString() would pass a negative
+    // m_endPos - m_startPos + 1 as matchSubstring()'s quint64 rangeLength, clamped
+    // to the end of the buffer: the rule would scan everything from m_startPos on,
+    // instead of nothing.
+    QTest::newRow("reversed-range")
+            << "<match value=\"a\" type=\"string\" offset=\"10:5\"/>"_ba
+            << probe << "text/plain"_ba;
+    // Without the m_endPos < 0 check, the same negative rangeLength reaches
+    // matchSubstring(), this time with an end that is not merely below m_startPos
+    // but below the start of the buffer.
+    QTest::newRow("negative-range-end")
+            << "<match value=\"abcd\" type=\"string\" offset=\"5:-1\"/>"_ba
+            << probe << "text/plain"_ba;
+}
+
+// Such a rule must be rejected while its offset range is parsed, leaving the
+// built-in database to answer the sniff on its own.
+void tst_QMimeDatabaseMalformed::xmlMagicOffset()
+{
+    QFETCH(const QByteArray, matchElement);
+    QFETCH(const QByteArray, fileContents);
+    QFETCH(const QByteArray, expectedMimeType);
+
+    QTemporaryDir tmp;
+    QVERIFY2(tmp.isValid(), qPrintable(tmp.errorString()));
+    QString err;
+    QVERIFY2(makeMimeDir(tmp.path(), &err), qPrintable(err));
+    const QString packagesDir = tmp.path() + "/mime/packages"_L1;
+    QVERIFY2(QDir().mkpath(packagesDir), qPrintable("cannot create "_L1 + packagesDir));
+
+    const QByteArray xml =
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+            "<mime-info xmlns='http://www.freedesktop.org/standards/shared-mime-info'>\n"
+            "  <mime-type type=\"application/badoffset\">\n"
+            "    <magic priority=\"50\">\n"
+            "      "_ba
+            + matchElement
+            + "\n"
+              "    </magic>\n"
+              "  </mime-type>\n"
+              "</mime-info>\n";
+    QVERIFY2(writeFile(packagesDir + "/badoffset.xml"_L1, xml, &err), qPrintable(err));
+
+    const QString dataFile = tmp.path() + u'/' + QLatin1StringView(ProbedFileName);
+    QVERIFY2(writeFile(dataFile, fileContents, &err), qPrintable(err));
+
+    const QString expected = expectedResultLine(expectedMimeType);
+    const VictimResult r = runCase(QueryCase::Content, tmp.path(), dataFile);
     QVERIFY2(r.succeeded(expected), qPrintable(r.diagnostic(expected)));
 }
 
