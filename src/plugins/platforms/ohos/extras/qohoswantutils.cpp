@@ -261,7 +261,7 @@ Want convertWantFromJsonObject(const QJsonObject &jsonWant)
     return want;
 }
 
-std::shared_ptr<WantInfo> convertToOhosAppKitWantInfo(
+std::shared_ptr<WantInfo> convertToOhosExtrasWantInfo(
     QSharedPointer<detail::WantInfoPriv> wantInfo)
 {
     return std::make_shared<QOhosWantInfoImpl>(wantInfo);

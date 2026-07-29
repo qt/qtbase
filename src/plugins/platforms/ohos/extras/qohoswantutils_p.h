@@ -29,7 +29,7 @@ QJsonObject convertWantToJsonObject(const Want &want);
 
 Want convertWantFromJsonObject(const QJsonObject &jsonWant);
 
-std::shared_ptr<WantInfo> convertToOhosAppKitWantInfo(
+std::shared_ptr<WantInfo> convertToOhosExtrasWantInfo(
     QSharedPointer<detail::WantInfoPriv> wantInfo);
 
 QSharedPointer<detail::WantInfoPriv> convertToQpaWantInfo(

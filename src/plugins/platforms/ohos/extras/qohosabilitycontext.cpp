@@ -1099,7 +1099,7 @@ AbilityContext::AbilityContext()
     addNewWantConsumer(
         this,
         [this](QSharedPointer<detail::WantInfoPriv> wantInfo) {
-            Q_EMIT newWantInfoReceived(convertToOhosAppKitWantInfo(wantInfo));
+            Q_EMIT newWantInfoReceived(convertToOhosExtrasWantInfo(wantInfo));
         });
 }
 
