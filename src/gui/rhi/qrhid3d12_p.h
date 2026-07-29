@@ -694,24 +694,32 @@ struct QD3D12Readback
 
 struct QD3D12MipmapGenerator
 {
-    bool create(QRhiD3D12 *rhiD);
+    void create(QRhiD3D12 *rhiD);
     void destroy();
     void generate(QD3D12CommandBuffer *cbD, const QD3D12ObjectHandle &textureHandle);
 
-    QRhiD3D12 *rhiD;
+    bool ensureCreated();
+    bool buildPipeline();
+
+    QRhiD3D12 *rhiD = nullptr;
     QD3D12ObjectHandle rootSigHandle;
     QD3D12ObjectHandle pipelineHandle;
+    bool createFailed = false;
 };
 
 struct QD3D12MipmapGenerator3D
 {
-    bool create(QRhiD3D12 *rhiD);
+    void create(QRhiD3D12 *rhiD);
     void destroy();
     void generate(QD3D12CommandBuffer *cbD, const QD3D12ObjectHandle &textureHandle);
 
-    QRhiD3D12 *rhiD;
+    bool ensureCreated();
+    bool buildPipeline();
+
+    QRhiD3D12 *rhiD = nullptr;
     QD3D12ObjectHandle rootSigHandle;
     QD3D12ObjectHandle pipelineHandle;
+    bool createFailed = false;
 };
 
 struct QD3D12MemoryAllocator
