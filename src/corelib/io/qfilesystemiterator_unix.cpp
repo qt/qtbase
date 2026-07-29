@@ -11,8 +11,6 @@
 
 #include <private/qstringconverter_p.h>
 
-#include <memory>
-
 #include <stdlib.h>
 #include <errno.h>
 
