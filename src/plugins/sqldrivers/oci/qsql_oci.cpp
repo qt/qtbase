@@ -27,6 +27,8 @@
 #include <qvariant.h>
 #include <qvarlengtharray.h>
 
+#include <QtCore/q20memory.h>
+
 // This is needed for oracle oci when compiling with mingw-w64 headers
 #if defined(__MINGW64_VERSION_MAJOR) && defined(_WIN64)
 #define _int64 __int64
@@ -1069,11 +1071,10 @@ int QOCICols::readPiecewise(QVariantList &values, int index)
     ub4            idxp;
     ub1            piecep;
     sword          status;
-    Q_DECL_UNINITIALIZED
-    text           col [QOCI_DYNAMIC_CHUNK_SIZE+1];
     int            r = 0;
     bool           nullField;
 
+    const auto col = q20::make_unique_for_overwrite<text[]>(QOCI_DYNAMIC_CHUNK_SIZE + 1);
     do {
         r = OCIStmtGetPieceInfo(d->stmtp, d->err, reinterpret_cast<void **>(&dfn), &typep,
                                  &in_outp, &iterp, &idxp, &piecep);
@@ -1084,7 +1085,7 @@ int QOCICols::readPiecewise(QVariantList &values, int index)
         ub4 chunkSize = QOCI_DYNAMIC_CHUNK_SIZE;
         nullField = false;
         r  = OCIStmtSetPieceInfo(dfn, OCI_HTYPE_DEFINE,
-                                 d->err, col,
+                                 d->err, col.get(),
                                  &chunkSize, piecep, NULL, NULL);
         if (r != OCI_SUCCESS)
             qOraWarning("OCIResultPrivate::readPiecewise: unable to set piece info:", d->err);
@@ -1107,15 +1108,13 @@ int QOCICols::readPiecewise(QVariantList &values, int index)
             fieldInf[fieldNum].ind = -1;
         } else {
             if (isStringField) {
-                QString str = values.at(fieldNum + index).toString();
-                str += QString(reinterpret_cast<const QChar *>(col), chunkSize / 2);
+                QString str = values.at(fieldNum + index).toString()
+                            + QStringView(reinterpret_cast<const QChar *>(col.get()), chunkSize / 2);
                 values[fieldNum + index] = str;
                 fieldInf[fieldNum].ind = 0;
             } else {
-                QByteArray ba = values.at(fieldNum + index).toByteArray();
-                int sz = ba.size();
-                ba.resize(sz + chunkSize);
-                memcpy(ba.data() + sz, reinterpret_cast<char *>(col), chunkSize);
+                QByteArray ba = values.at(fieldNum + index).toByteArray()
+                              + QByteArrayView(col.get(), chunkSize);
                 values[fieldNum + index] = ba;
                 fieldInf[fieldNum].ind = 0;
             }
