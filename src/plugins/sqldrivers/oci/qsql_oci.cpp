@@ -1069,6 +1069,7 @@ int QOCICols::readPiecewise(QVariantList &values, int index)
     ub4            idxp;
     ub1            piecep;
     sword          status;
+    Q_DECL_UNINITIALIZED
     text           col [QOCI_DYNAMIC_CHUNK_SIZE+1];
     int            r = 0;
     bool           nullField;
