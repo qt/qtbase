@@ -410,7 +410,7 @@ void AppContext::startNoUiChildProcess(const QString &libraryName, const QString
 */
 std::shared_ptr<WantInfo> AppContext::appLaunchWantInfo()
 {
-    return convertToOhosAppKitWantInfo(makeAppLaunchWantInfo());
+    return convertToOhosExtrasWantInfo(makeAppLaunchWantInfo());
 }
 
 /*!
