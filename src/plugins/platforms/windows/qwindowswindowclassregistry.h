@@ -34,7 +34,6 @@ public:
 private:
     static QString classNamePrefix();
 
-    bool shouldDecorateWindowClassName(const QWindowsWindowClassDescription &description) const;
     bool shouldDecorateWindowClassName(const QString &name, WNDPROC procedure) const;
     void unregisterWindowClasses();
 

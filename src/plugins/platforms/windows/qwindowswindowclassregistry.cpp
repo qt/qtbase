@@ -69,7 +69,7 @@ QString QWindowsWindowClassRegistry::registerWindowClass(const QWindowsWindowCla
     // add a UUID. The check needs to be performed for each name
     // in case new message windows are added (QTBUG-81347).
     // Note: GetClassInfo() returns != 0 when a class exists.
-    if (shouldDecorateWindowClassName(description))
+    if (shouldDecorateWindowClassName(className, description.procedure))
         className += QUuid::createUuid().toString();
 
     if (m_registeredWindowClassNames.contains(className))        // already registered in our list
@@ -116,11 +116,6 @@ QString QWindowsWindowClassRegistry::registerWindowClass(const QWindow *window)
 QString QWindowsWindowClassRegistry::registerWindowClass(QString name, WNDPROC procedure)
 {
     return registerWindowClass(QWindowsWindowClassDescription::fromName(name, procedure));
-}
-
-bool QWindowsWindowClassRegistry::shouldDecorateWindowClassName(const QWindowsWindowClassDescription &description) const
-{
-    return shouldDecorateWindowClassName(description.name, description.procedure);
 }
 
 bool QWindowsWindowClassRegistry::shouldDecorateWindowClassName(const QString &name, WNDPROC procedure) const
