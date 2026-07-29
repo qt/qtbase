@@ -348,7 +348,7 @@ template <> struct QConcatenable<const char16_t *> : private QAbstractConcatenab
     using ConvertTo = QString;
     enum { ExactSize = true };
     static qsizetype size(const char16_t *a) { return QStringView(a).size(); }
-    QT_ASCII_CAST_WARN static inline void appendTo(const char16_t *a, QChar *&out)
+    static inline void appendTo(const char16_t *a, QChar *&out)
     {
         if (!a)
             return;
