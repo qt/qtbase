@@ -5,6 +5,7 @@
 #include "qrhid3d12_p.h"
 #include <qmath.h>
 #include <QtCore/private/qsystemerror_p.h>
+#include <QtCore/qcryptographichash.h>
 #include <comdef.h>
 #include "qrhid3dhelpers_p.h"
 #include "cs_mipmap_p.h"
@@ -725,6 +726,8 @@ void QRhiD3D12::destroy()
         drawIndexedCommandSignature->Release();
         drawIndexedCommandSignature = nullptr;
     }
+
+    destroyPipelineLibrary();
 }
 
 QRhi::AdapterList QRhiD3D12::enumerateAdaptersBeforeCreate(QRhiNativeHandles *nativeHandles) const
@@ -921,7 +924,11 @@ bool QRhiD3D12::isFeatureSupported(QRhi::Feature feature) const
     case QRhi::ReadBackAnyTextureFormat:
         return true;
     case QRhi::PipelineCacheDataLoadSave:
-        return false; // ###
+#ifdef QRHI_D3D12_PIPELINE_LIBRARY_AVAILABLE
+        return true;
+#else
+        return false;
+#endif
     case QRhi::ImageDataStride:
         return true;
     case QRhi::RenderBufferImport:
@@ -1062,19 +1069,238 @@ void QRhiD3D12::releaseCachedResources()
     shaderBytecodeCache.data.clear();
 }
 
-bool QRhiD3D12::isDeviceLost() const
+// The pipeline library identifies pipelines by name, so we need a key that
+// covers everything the PSO is built from. Note that the plain-data subobjects
+// of the pipeline state stream can be hashed as they are: they are all
+// value-initialized before their fields get set, so the padding is
+// deterministic. The ones holding pointers cannot, and are fed in separately.
+
+static inline void addToKey(QCryptographicHash *h, const void *p, size_t size)
 {
-    return deviceLost;
+    h->addData(QByteArrayView(static_cast<const char *>(p), qsizetype(size)));
 }
+
+template<typename T>
+static inline void addToKey(QCryptographicHash *h, const T &v)
+{
+    addToKey(h, &v, sizeof(T));
+}
+
+static inline void addToKey(QCryptographicHash *h, const QByteArray &b)
+{
+    const quint32 size = quint32(b.size());
+    addToKey(h, size);
+    h->addData(b);
+}
+
+static inline void addToKey(QCryptographicHash *h, const QVector<quint32> &v)
+{
+    const quint32 count = quint32(v.count());
+    addToKey(h, count);
+    addToKey(h, v.constData(), v.count() * sizeof(quint32));
+}
+
+bool QRhiD3D12::createPipelineLibrary(const QByteArray &blob)
+{
+#ifdef QRHI_D3D12_PIPELINE_LIBRARY_AVAILABLE
+    destroyPipelineLibrary();
+
+    pipelineLibraryBlob = blob;
+    HRESULT hr = dev->CreatePipelineLibrary(pipelineLibraryBlob.isEmpty() ? nullptr
+                                                                         : pipelineLibraryBlob.constData(),
+                                            SIZE_T(pipelineLibraryBlob.size()),
+                                            __uuidof(ID3D12PipelineLibrary1),
+                                            reinterpret_cast<void **>(&pipelineLibrary));
+    if (FAILED(hr)) {
+        // E_NOTIMPL with drivers that have no pipeline library support,
+        // D3D12_ERROR_DRIVER_VERSION_MISMATCH and
+        // D3D12_ERROR_ADAPTER_NOT_FOUND for a stale blob. None of these are
+        // fatal, they just mean no pipeline cache.
+        qCDebug(QRHI_LOG_INFO, "Failed to create pipeline library: %s",
+                qPrintable(QSystemError::windowsComString(hr)));
+        pipelineLibrary = nullptr;
+        pipelineLibraryBlob.clear();
+        return false;
+    }
+    return true;
+#else
+    Q_UNUSED(blob);
+    return false;
+#endif
+}
+
+bool QRhiD3D12::ensurePipelineLibrary()
+{
+#ifdef QRHI_D3D12_PIPELINE_LIBRARY_AVAILABLE
+    if (pipelineLibrary)
+        return true;
+    if (!rhiFlags.testFlag(QRhi::EnablePipelineCacheDataSave))
+        return false;
+    return createPipelineLibrary(QByteArray());
+#else
+    return false;
+#endif
+}
+
+void QRhiD3D12::destroyPipelineLibrary()
+{
+#ifdef QRHI_D3D12_PIPELINE_LIBRARY_AVAILABLE
+    if (pipelineLibrary) {
+        pipelineLibrary->Release();
+        pipelineLibrary = nullptr;
+    }
+    pipelineLibraryBlob.clear();
+    pipelineLibraryNames.clear();
+#endif
+}
+
+ID3D12PipelineState *QRhiD3D12::loadOrCreatePipelineState(const D3D12_PIPELINE_STATE_STREAM_DESC *streamDesc,
+                                                          const QByteArray &cacheKey,
+                                                          const char *what)
+{
+    ID3D12PipelineState *pso = nullptr;
+
+#ifdef QRHI_D3D12_PIPELINE_LIBRARY_AVAILABLE
+    QVarLengthArray<wchar_t, 64> name;
+    if (ensurePipelineLibrary() && !cacheKey.isEmpty()) {
+        name.resize(cacheKey.size() + 1);
+        for (qsizetype i = 0; i < cacheKey.size(); ++i)
+            name[i] = wchar_t(cacheKey.at(i));
+        name[cacheKey.size()] = 0;
+        HRESULT hr = pipelineLibrary->LoadPipeline(name.constData(),
+                                                  streamDesc,
+                                                  __uuidof(ID3D12PipelineState),
+                                                  reinterpret_cast<void **>(&pso));
+        if (SUCCEEDED(hr))
+            return pso;
+    }
+#endif
+
+    HRESULT hr = dev->CreatePipelineState(streamDesc,
+                                          __uuidof(ID3D12PipelineState),
+                                          reinterpret_cast<void **>(&pso));
+    if (FAILED(hr)) {
+        qWarning("Failed to create %s pipeline state: %s",
+                 what, qPrintable(QSystemError::windowsComString(hr)));
+        return nullptr;
+    }
+
+#ifdef QRHI_D3D12_PIPELINE_LIBRARY_AVAILABLE
+    if (pipelineLibrary && !name.isEmpty() && !pipelineLibraryNames.contains(cacheKey)) {
+        if (SUCCEEDED(pipelineLibrary->StorePipeline(name.constData(), pso)))
+            pipelineLibraryNames.insert(cacheKey);
+    }
+#endif
+
+    return pso;
+}
+
+struct QD3D12PipelineCacheDataHeader
+{
+    quint32 rhiId;
+    quint32 arch;
+    quint32 dataSize;
+    quint32 vendorId;
+    quint32 deviceId;
+    quint32 reserved;
+    quint64 adapterLuid;
+};
 
 QByteArray QRhiD3D12::pipelineCacheData()
 {
-    return {};
+    static_assert(sizeof(QD3D12PipelineCacheDataHeader) == 32);
+
+    QByteArray data;
+#ifdef QRHI_D3D12_PIPELINE_LIBRARY_AVAILABLE
+    if (!pipelineLibrary || !rhiFlags.testFlag(QRhi::EnablePipelineCacheDataSave))
+        return data;
+
+    const SIZE_T dataSize = pipelineLibrary->GetSerializedSize();
+    if (!dataSize)
+        return data;
+
+    const size_t headerSize = sizeof(QD3D12PipelineCacheDataHeader);
+    data.resize(qsizetype(headerSize + dataSize));
+    HRESULT hr = pipelineLibrary->Serialize(data.data() + headerSize, dataSize);
+    if (FAILED(hr)) {
+        qCDebug(QRHI_LOG_INFO, "Failed to serialize pipeline library: %s",
+                qPrintable(QSystemError::windowsComString(hr)));
+        return QByteArray();
+    }
+
+    QD3D12PipelineCacheDataHeader header = {};
+    header.rhiId = pipelineCacheRhiId();
+    header.arch = quint32(sizeof(void *));
+    header.dataSize = quint32(dataSize);
+    header.vendorId = quint32(driverInfoStruct.vendorId);
+    header.deviceId = quint32(driverInfoStruct.deviceId);
+    header.adapterLuid = (quint64(quint32(adapterLuid.HighPart)) << 32) | quint64(adapterLuid.LowPart);
+    memcpy(data.data(), &header, headerSize);
+#endif
+    return data;
 }
 
 void QRhiD3D12::setPipelineCacheData(const QByteArray &data)
 {
+#ifdef QRHI_D3D12_PIPELINE_LIBRARY_AVAILABLE
+    if (data.isEmpty())
+        return;
+
+    const size_t headerSize = sizeof(QD3D12PipelineCacheDataHeader);
+    if (data.size() < qsizetype(headerSize)) {
+        qCDebug(QRHI_LOG_INFO, "setPipelineCacheData: Invalid blob size");
+        return;
+    }
+    QD3D12PipelineCacheDataHeader header;
+    memcpy(&header, data.constData(), headerSize);
+
+    const quint32 rhiId = pipelineCacheRhiId();
+    if (header.rhiId != rhiId) {
+        qCDebug(QRHI_LOG_INFO, "setPipelineCacheData: The data is for a different QRhi version or backend (%u, %u)",
+                rhiId, header.rhiId);
+        return;
+    }
+    const quint32 arch = quint32(sizeof(void *));
+    if (header.arch != arch) {
+        qCDebug(QRHI_LOG_INFO, "setPipelineCacheData: Architecture does not match (%u, %u)",
+                arch, header.arch);
+        return;
+    }
+    if (header.vendorId != quint32(driverInfoStruct.vendorId)) {
+        qCDebug(QRHI_LOG_INFO, "setPipelineCacheData: vendorId does not match (%u, %u)",
+                quint32(driverInfoStruct.vendorId), header.vendorId);
+        return;
+    }
+    if (header.deviceId != quint32(driverInfoStruct.deviceId)) {
+        qCDebug(QRHI_LOG_INFO, "setPipelineCacheData: deviceId does not match (%u, %u)",
+                quint32(driverInfoStruct.deviceId), header.deviceId);
+        return;
+    }
+    const quint64 luid = (quint64(quint32(adapterLuid.HighPart)) << 32) | quint64(adapterLuid.LowPart);
+    if (header.adapterLuid != luid) {
+        qCDebug(QRHI_LOG_INFO, "setPipelineCacheData: adapter LUID does not match");
+        return;
+    }
+    if (quint64(data.size()) < quint64(headerSize) + header.dataSize) {
+        qCDebug(QRHI_LOG_INFO, "setPipelineCacheData: Invalid blob, data missing");
+        return;
+    }
+
+    // The driver version is not in the header: CreatePipelineLibrary() checks
+    // the blob against the current driver and adapter itself and fails with
+    // D3D12_ERROR_DRIVER_VERSION_MISMATCH or _ADAPTER_NOT_FOUND when stale.
+    if (createPipelineLibrary(data.mid(qsizetype(headerSize)))) {
+        qCDebug(QRHI_LOG_INFO, "Created pipeline library with initial data of %u bytes",
+                header.dataSize);
+    }
+#else
     Q_UNUSED(data);
+#endif
+}
+
+bool QRhiD3D12::isDeviceLost() const
+{
+    return deviceLost;
 }
 
 QRhiRenderBuffer *QRhiD3D12::createRenderBuffer(QRhiRenderBuffer::Type type, const QSize &pixelSize,
@@ -6832,11 +7058,37 @@ bool QD3D12GraphicsPipeline::create()
 
     const D3D12_PIPELINE_STATE_STREAM_DESC streamDesc = { sizeof(stream), &stream };
 
-    ID3D12PipelineState *pso = nullptr;
-    HRESULT hr = rhiD->dev->CreatePipelineState(&streamDesc, __uuidof(ID3D12PipelineState), reinterpret_cast<void **>(&pso));
-    if (FAILED(hr)) {
-        qWarning("Failed to create graphics pipeline state: %s",
-                 qPrintable(QSystemError::windowsComString(hr)));
+    QCryptographicHash keyHash(QCryptographicHash::Sha1);
+    for (const QByteArray &bytecode : shaderBytecode)
+        addToKey(&keyHash, bytecode);
+    for (const D3D12_INPUT_ELEMENT_DESC &desc : inputDescs) {
+        keyHash.addData(QByteArrayView(desc.SemanticName));
+        addToKey(&keyHash, desc.SemanticIndex);
+        addToKey(&keyHash, desc.Format);
+        addToKey(&keyHash, desc.InputSlot);
+        addToKey(&keyHash, desc.AlignedByteOffset);
+        addToKey(&keyHash, desc.InputSlotClass);
+        addToKey(&keyHash, desc.InstanceDataStepRate);
+    }
+    addToKey(&keyHash, stream.primitiveRestartValue.object);
+    addToKey(&keyHash, stream.primitiveTopology.object);
+    addToKey(&keyHash, stream.rasterizerState.object);
+    addToKey(&keyHash, stream.depthStencilState.object);
+    addToKey(&keyHash, stream.blendState.object);
+    addToKey(&keyHash, stream.rtFormats.object);
+    addToKey(&keyHash, stream.dsFormat.object);
+    addToKey(&keyHash, stream.sampleDesc.object);
+    addToKey(&keyHash, stream.sampleMask.object);
+    addToKey(&keyHash, stream.viewInstancingDesc.object.ViewInstanceCount);
+    addToKey(&keyHash, stream.viewInstancingDesc.object.Flags);
+    addToKey(&keyHash, viewInstanceLocations.constData(),
+             viewInstanceLocations.count() * sizeof(D3D12_VIEW_INSTANCE_LOCATION));
+    // Stands in for the root signature, which is built from this plus the
+    // shaders' native resource binding maps.
+    addToKey(&keyHash, srbD->serializedLayoutDescription());
+
+    ID3D12PipelineState *pso = rhiD->loadOrCreatePipelineState(&streamDesc, keyHash.result().toHex(), "graphics");
+    if (!pso) {
         rhiD->rootSignaturePool.remove(rootSigHandle);
         rootSigHandle = {};
         return false;
@@ -6940,11 +7192,13 @@ bool QD3D12ComputePipeline::create()
     stream.CS.object.pShaderBytecode = shaderBytecode.constData();
     stream.CS.object.BytecodeLength = shaderBytecode.size();
     const D3D12_PIPELINE_STATE_STREAM_DESC streamDesc = { sizeof(stream), &stream };
-    ID3D12PipelineState *pso = nullptr;
-    HRESULT hr = rhiD->dev->CreatePipelineState(&streamDesc, __uuidof(ID3D12PipelineState), reinterpret_cast<void **>(&pso));
-    if (FAILED(hr)) {
-        qWarning("Failed to create compute pipeline state: %s",
-                 qPrintable(QSystemError::windowsComString(hr)));
+
+    QCryptographicHash keyHash(QCryptographicHash::Sha1);
+    addToKey(&keyHash, shaderBytecode);
+    addToKey(&keyHash, srbD->serializedLayoutDescription());
+
+    ID3D12PipelineState *pso = rhiD->loadOrCreatePipelineState(&streamDesc, keyHash.result().toHex(), "compute");
+    if (!pso) {
         rhiD->rootSignaturePool.remove(rootSigHandle);
         rootSigHandle = {};
         return false;

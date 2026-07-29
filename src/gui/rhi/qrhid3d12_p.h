@@ -52,6 +52,10 @@ using D3D12GraphicsCommandList = ID3D12GraphicsCommandList1;
 #define QRHI_D3D12_INFOQUEUE1_AVAILABLE
 #endif
 
+#ifdef __ID3D12PipelineLibrary1_INTERFACE_DEFINED__
+#define QRHI_D3D12_PIPELINE_LIBRARY_AVAILABLE
+#endif
+
 QT_BEGIN_NAMESPACE
 
 static const int QD3D12_FRAMES_IN_FLIGHT = 2;
@@ -1389,6 +1393,13 @@ public:
     }
     void resetAndResizeSmallStagingArea(int frameSlot);
 
+    ID3D12PipelineState *loadOrCreatePipelineState(const D3D12_PIPELINE_STATE_STREAM_DESC *streamDesc,
+                                                   const QByteArray &cacheKey,
+                                                   const char *what);
+    bool ensurePipelineLibrary();
+    bool createPipelineLibrary(const QByteArray &blob);
+    void destroyPipelineLibrary();
+
     void waitGpu();
     DXGI_SAMPLE_DESC effectiveSampleDesc(int sampleCount, DXGI_FORMAT format) const;
     bool ensureDirectCompositionDevice();
@@ -1455,6 +1466,14 @@ public:
     UINT shadingRateImageTileSize = 0;
     ID3D12CommandSignature *drawCommandSignature = nullptr;
     ID3D12CommandSignature *drawIndexedCommandSignature = nullptr;
+#ifdef QRHI_D3D12_PIPELINE_LIBRARY_AVAILABLE
+    ID3D12PipelineLibrary1 *pipelineLibrary = nullptr;
+    // CreatePipelineLibrary() does not copy: the blob must stay alive and
+    // unmodified for as long as the library does.
+    QByteArray pipelineLibraryBlob;
+    // StorePipeline() fails if the name is taken already.
+    QSet<QByteArray> pipelineLibraryNames;
+#endif
 
     struct {
         bool multiView = false;
