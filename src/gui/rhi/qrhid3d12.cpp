@@ -492,15 +492,8 @@ bool QRhiD3D12::create(QRhi::Flags flags)
         return false;
     }
 
-    if (!mipmapGen.create(this)) {
-        qWarning("Could not initialize mipmap generator");
-        return false;
-    }
-
-    if (!mipmapGen3D.create(this)) {
-        qWarning("Could not initialize 3D texture mipmap generator");
-        return false;
-    }
+    mipmapGen.create(this);
+    mipmapGen3D.create(this);
 
     const qint32 smallStagingSize = aligned(SMALL_STAGING_AREA_BYTES_PER_FRAME_START, QD3D12StagingArea::ALIGNMENT);
     for (int i = 0; i < QD3D12_FRAMES_IN_FLIGHT; ++i) {
@@ -3335,9 +3328,30 @@ QD3D12Descriptor QD3D12SamplerManager::getShaderVisibleDescriptors(const QVarLen
     return startDescriptor;
 }
 
-bool QD3D12MipmapGenerator::create(QRhiD3D12 *rhiD)
+void QD3D12MipmapGenerator::create(QRhiD3D12 *rhiD)
 {
     this->rhiD = rhiD;
+}
+
+bool QD3D12MipmapGenerator::ensureCreated()
+{
+    if (!pipelineHandle.isNull())
+        return true;
+
+    if (createFailed)
+        return false;
+
+    if (!buildPipeline()) {
+        createFailed = true;
+        return false;
+    }
+
+    return true;
+}
+
+bool QD3D12MipmapGenerator::buildPipeline()
+{
+    qCDebug(QRHI_LOG_INFO, "Building mipmap generator compute pipeline on first use");
 
     D3D12_ROOT_PARAMETER1 rootParams[3] = {};
     D3D12_DESCRIPTOR_RANGE1 descriptorRanges[2] = {};
@@ -3423,14 +3437,23 @@ bool QD3D12MipmapGenerator::create(QRhiD3D12 *rhiD)
 
 void QD3D12MipmapGenerator::destroy()
 {
+    // Be safe even if create() was never called due to other failures in the
+    // init sequence.
+    if (!rhiD)
+        return;
+
     rhiD->pipelinePool.remove(pipelineHandle);
     pipelineHandle = {};
     rhiD->rootSignaturePool.remove(rootSigHandle);
     rootSigHandle = {};
+    createFailed = false;
 }
 
 void QD3D12MipmapGenerator::generate(QD3D12CommandBuffer *cbD, const QD3D12ObjectHandle &textureHandle)
 {
+    if (!ensureCreated())
+        return;
+
     QD3D12Pipeline *pipeline = rhiD->pipelinePool.lookupRef(pipelineHandle);
     if (!pipeline)
         return;
@@ -3588,9 +3611,30 @@ void QD3D12MipmapGenerator::generate(QD3D12CommandBuffer *cbD, const QD3D12Objec
         ownStagingArea->destroyWithDeferredRelease(&rhiD->releaseQueue);
 }
 
-bool QD3D12MipmapGenerator3D::create(QRhiD3D12 *rhiD)
+void QD3D12MipmapGenerator3D::create(QRhiD3D12 *rhiD)
 {
     this->rhiD = rhiD;
+}
+
+bool QD3D12MipmapGenerator3D::ensureCreated()
+{
+    if (!pipelineHandle.isNull())
+        return true;
+
+    if (createFailed)
+        return false;
+
+    if (!buildPipeline()) {
+        createFailed = true;
+        return false;
+    }
+
+    return true;
+}
+
+bool QD3D12MipmapGenerator3D::buildPipeline()
+{
+    qCDebug(QRHI_LOG_INFO, "Building 3D texture mipmap generator compute pipeline on first use");
 
     D3D12_ROOT_PARAMETER1 rootParams[3] = {};
     D3D12_DESCRIPTOR_RANGE1 descriptorRanges[2] = {};
@@ -3676,14 +3720,21 @@ bool QD3D12MipmapGenerator3D::create(QRhiD3D12 *rhiD)
 
 void QD3D12MipmapGenerator3D::destroy()
 {
+    if (!rhiD)
+        return;
+
     rhiD->pipelinePool.remove(pipelineHandle);
     pipelineHandle = {};
     rhiD->rootSignaturePool.remove(rootSigHandle);
     rootSigHandle = {};
+    createFailed = false;
 }
 
 void QD3D12MipmapGenerator3D::generate(QD3D12CommandBuffer *cbD, const QD3D12ObjectHandle &textureHandle)
 {
+    if (!ensureCreated())
+        return;
+
     QD3D12Pipeline *pipeline = rhiD->pipelinePool.lookupRef(pipelineHandle);
     if (!pipeline)
         return;
