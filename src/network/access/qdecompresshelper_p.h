@@ -58,7 +58,7 @@ public:
 
     Q_NETWORK_EXPORT void setDecompressedSafetyCheckThreshold(qint64 threshold);
 
-    Q_NETWORK_EXPORT static bool isSupportedEncoding(QByteArrayView encoding);
+    Q_NETWORK_EXPORT static bool isSupportedEncoding(QByteArrayView encoding) noexcept;
     Q_NETWORK_EXPORT static QByteArrayList acceptedEncoding();
 
     Q_NETWORK_EXPORT QString errorString() const;
