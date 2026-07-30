@@ -4703,7 +4703,7 @@ QByteArray QRhiD3D11::compileHlslShaderSource(const QShader &shader, QShader::Va
         target = "cs_5_0";
         break;
     default:
-        Q_UNREACHABLE();
+        qWarning("compileHlslShaderSource: Unknown SM 5.0 stage (%d)", int(shader.stage()));
         return QByteArray();
     }
 

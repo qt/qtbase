@@ -6527,6 +6527,9 @@ static QByteArray compileHlslShaderSource(const QShader &shader,
     case QShader::ComputeStage:
         makeHlslTargetString(target, "cs", key.sourceVersion().version());
         break;
+    default:
+        qWarning("compileHlslShaderSource: Unknown stage (%d)", int(shader.stage()));
+        return QByteArray();
     }
 
     if (key.sourceVersion().version() >= 60) {
