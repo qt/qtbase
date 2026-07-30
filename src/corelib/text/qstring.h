@@ -319,13 +319,13 @@ public:
     inline bool isSharedWith(const QString &other) const { return d.isSharedWith(other.d); }
     inline void clear();
 
-    inline const QChar at(qsizetype i) const;
-    inline const QChar operator[](qsizetype i) const;
+    constexpr inline const QChar at(qsizetype i) const;
+    constexpr inline const QChar operator[](qsizetype i) const;
     [[nodiscard]] inline QChar &operator[](qsizetype i);
 
-    [[nodiscard]] inline QChar front() const { return at(0); }
+    [[nodiscard]] constexpr inline QChar front() const { return at(0); }
     [[nodiscard]] inline QChar &front();
-    [[nodiscard]] inline QChar back() const { return at(size() - 1); }
+    [[nodiscard]] constexpr inline QChar back() const { return at(size() - 1); }
     [[nodiscard]] inline QChar &back();
 
 #if QT_CORE_REMOVED_SINCE(6, 9)
@@ -1368,9 +1368,9 @@ QString QAnyStringView::toString() const
 //
 QString::QString(QLatin1StringView latin1)
     : QString{QString::fromLatin1(latin1.data(), latin1.size())} {}
-const QChar QString::at(qsizetype i) const
+constexpr const QChar QString::at(qsizetype i) const
 { verify(i, 1); return QChar(d.data()[i]); }
-const QChar QString::operator[](qsizetype i) const
+constexpr const QChar QString::operator[](qsizetype i) const
 { verify(i, 1); return QChar(d.data()[i]); }
 const QChar *QString::unicode() const
 { return data(); }

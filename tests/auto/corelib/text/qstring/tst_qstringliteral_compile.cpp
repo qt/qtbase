@@ -17,6 +17,10 @@ constexpr bool checkConstexprness()
 
     constexpr QString fromQStringLiteral = QStringLiteral("test");
     result &= fromQStringLiteral.size() == 4;
+    result &= fromQStringLiteral.at(0) == u't';
+    result &= fromQStringLiteral[1] == u'e';
+    result &= fromQStringLiteral.front() == u't';
+    result &= fromQStringLiteral.back() == u't';
 
     constexpr QString fromLiteralOperator = u"test"_s;
     result &= fromLiteralOperator.size() == 4;
