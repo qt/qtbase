@@ -64,6 +64,7 @@ private Q_SLOTS:
     void leakInDestructor();
     void resetInDestructor();
     void valueBased();
+    void clearLocalData();
     void otherStorageInDestructor();
 
 private:
@@ -581,6 +582,85 @@ void tst_QThreadStorage::valueBased()
 
 }
 
+
+void tst_QThreadStorage::clearLocalData()
+{
+    // pointer-based
+    {
+        QThreadStorage<Pointer *> pointers;
+        QVERIFY(!pointers.hasLocalData());
+        pointers.clearLocalData(); // no-op, must not crash
+        QVERIFY(!pointers.hasLocalData());
+
+        const int before = Pointer::count;
+        pointers.setLocalData(new Pointer);
+        QVERIFY(pointers.hasLocalData());
+        QCOMPARE(Pointer::count, before + 1);
+
+        pointers.clearLocalData();
+        QVERIFY(!pointers.hasLocalData());
+        QCOMPARE(Pointer::count, before); // old data was destroyed
+
+        pointers.clearLocalData(); // no-op, must not crash
+        QVERIFY(!pointers.hasLocalData());
+        QCOMPARE(Pointer::count, before); // nothing more was deleted
+
+        QCOMPARE(pointers.localData(), nullptr); // fresh default value
+    }
+
+    // value-based
+    {
+        QThreadStorage<SPointer> tls;
+        QVERIFY(!tls.hasLocalData());
+        tls.clearLocalData(); // no-op, must not crash
+        QVERIFY(!tls.hasLocalData());
+
+        const int before = SPointer::count.loadRelaxed();
+        tls.localData(); // default-constructs
+        QVERIFY(tls.hasLocalData());
+        QCOMPARE(SPointer::count.loadRelaxed(), before + 1);
+
+        tls.clearLocalData();
+        QVERIFY(!tls.hasLocalData());
+        QCOMPARE(SPointer::count.loadRelaxed(), before); // old data was destroyed
+
+        tls.clearLocalData(); // no-op, must not crash
+        QVERIFY(!tls.hasLocalData());
+        QCOMPARE(SPointer::count.loadRelaxed(), before); // nothing more was deleted
+    }
+
+    // works on secondary threads, too
+    {
+        QThreadStorage<SPointer> pointers;
+        const int before = SPointer::count.loadRelaxed();
+
+        struct Thread : QThread // clazy:exclude=missing-qobject-macro
+        {
+            QThreadStorage<SPointer> &pointers;
+
+            explicit Thread(QThreadStorage<SPointer> &p) : pointers(p) {}
+
+            void run() override
+            {
+                QVERIFY(!pointers.hasLocalData());
+                pointers.clearLocalData(); // no-op, must not crash
+                QVERIFY(!pointers.hasLocalData());
+
+                pointers.localData(); // default-constructs
+                QVERIFY(pointers.hasLocalData());
+
+                pointers.clearLocalData();
+                QVERIFY(!pointers.hasLocalData());
+            }
+        } t1(pointers), t2(pointers);
+
+        t1.start();
+        t2.start();
+        QVERIFY(t1.wait(WaitTimeout));
+        QVERIFY(t2.wait(WaitTimeout / 2));
+        QCOMPARE(SPointer::count.loadRelaxed(), before);
+    }
+}
 
 // ---------------------------------------------------------------------
 // QThreadStorage reentrancy contracts.

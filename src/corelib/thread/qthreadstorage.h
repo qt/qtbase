@@ -35,6 +35,7 @@ public:
 
     void** get() const;
     void** set(void* p);
+    void clear();
 
     int id;
 };
@@ -122,6 +123,8 @@ public:
 
     inline void setLocalData(T t)
     { qThreadStorage_setLocalData(d, &t); }
+
+    void clearLocalData() { d.clear(); }
 };
 
 #else // !QT_CONFIG(thread)
@@ -193,6 +196,8 @@ public:
     {
         data.reset(new T(t));
     }
+
+    void clearLocalData() { data.reset(); }
 };
 
 #endif // QT_CONFIG(thread)

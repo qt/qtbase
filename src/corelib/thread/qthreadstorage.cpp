@@ -131,6 +131,15 @@ void **QThreadStorageData::set(void *p)
     return ptr;
 }
 
+void QThreadStorageData::clear()
+{
+    // Skip if this thread doesn't have a QThreadData (anymore): there's
+    // nothing to clear, then, and set() would otherwise re-create it, here,
+    // during shutdown, with nothing left to destroy it again.
+    if (QThreadData::currentThreadData())
+        set(nullptr);
+}
+
 void QThreadStoragePrivate::init()
 {
     // Make sure the Q_GLOBAL_STATIC is initialized, ensuring consistent
@@ -215,9 +224,12 @@ void QThreadStoragePrivate::finish(QList<void *> *tls, bool suppressWarnings)
 
     \list
 
+    \target qthreadstorage-shutdown-caveat
     \li Calling hasLocalData(), localData() or setLocalData() during thread or
     program shutdown may re-create the thread-local storage for the current
-    thread with nothing left to destroy it afterwards.
+    thread with nothing left to destroy it afterwards. The clearLocalData()
+    function is the only one that is unconditionally safe to call during
+    shutdown.
 
     \li The QThreadStorage destructor does not delete per-thread data.
     QThreadStorage only deletes per-thread data when the thread exits
@@ -294,7 +306,30 @@ void QThreadStoragePrivate::finish(QList<void *> *tls, bool suppressWarnings)
     and deletes it automatically either when the thread exits (either
     normally or via termination) or when setLocalData() is called again.
 
-    \sa localData(), hasLocalData()
+    \sa localData(), hasLocalData(), clearLocalData()
+*/
+
+/*!
+    \fn template <class T> void QThreadStorage<T>::clearLocalData()
+    \since 6.13
+
+    Resets the local data (if any) for the calling thread.
+
+    If the thread had no localData(), does nothing. After the call,
+    hasLocalData() is \c{false} (unless the destructor of the previous value
+    stored a new one).
+
+    \note If \c{T} is a pointer type, this is mostly the same as
+    \c{setLocalData(nullptr)}. For non-pointers, this functionality was not
+    accessible before Qt 6.13.
+
+    This function differs from setLocalData() in that it will not create
+    thread-local storage when it doesn't exist for the current thread (yet, or
+    anymore). This makes calling the function safe in shutdown code, where
+    thread-local storage may already have been destroyed, and setLocalData()
+    would re-create it with nothing left to destroy it afterwards.
+
+    \sa setLocalData(), hasLocalData(), {qthreadstorage-shutdown-caveat}{Caveats}
 */
 
 QT_END_NAMESPACE

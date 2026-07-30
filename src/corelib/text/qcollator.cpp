@@ -10,7 +10,6 @@
 #include "qdebug.h"
 #include "qlocale_p.h"
 #include "qthreadstorage.h"
-#include <QtCore/private/qthread_p.h>
 
 QT_BEGIN_NAMESPACE
 QT_DEFINE_QESDP_SPECIALIZATION_DTOR(QCollatorSortKeyPrivate)
@@ -36,29 +35,18 @@ public:
     }
 };
 class GenerationalCollatorHolder
+    : QThreadStorage<GenerationalCollator>
 {
-    QThreadStorage<GenerationalCollator*> storage;
 public:
-    GenerationalCollatorHolder() = default;
     ~GenerationalCollatorHolder()
     {
         // Delete local data when the Q_GLOBAL_STATIC is destroyed.
         // QThreadStorage's own cleanup for it runs too late, so we'd
-        // "leak" in an appless program. Skip if this thread doesn't have
-        // a QThreadData (anymore): there's nothing to clear, then, and
-        // setLocalData() would otherwise re-create it, here, during
-        // shutdown, with nothing left to destroy it again.
-        if (QThreadData::currentThreadData())
-            storage.setLocalData(nullptr);
+        // "leak" in an appless program.
+        clearLocalData();
     }
 
-    GenerationalCollator &localData()
-    {
-        auto &d = storage.localData();
-        if (!d)
-            d = new GenerationalCollator();
-        return *d;
-    }
+    using QThreadStorage<GenerationalCollator>::localData;
 };
 }
 Q_GLOBAL_STATIC(GenerationalCollatorHolder, defaultCollator)
