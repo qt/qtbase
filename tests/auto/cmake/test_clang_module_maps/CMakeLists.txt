@@ -1,6 +1,24 @@
 # Copyright (C) 2025 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
+# The module maps can only be verified against an installed Qt, as the headers of
+# a non-installed Qt are forwarding headers that point into the source tree,
+# which Clang can not attribute to any module.
+if(NOT QT_WILL_INSTALL)
+    message(NOTICE "Skipping Clang module map test, as Qt will not be installed.")
+    return()
+endif()
+
+# The same applies if we picked up Qt from the build directory of a prefix build,
+# for example by using the build directory's qt-cmake-standalone-test instead of
+# the installed one. Detected by the Qt prefix also being a CMake build directory.
+if(EXISTS "${QT6_INSTALL_PREFIX}/cmake_install.cmake")
+    message(NOTICE "Skipping Clang module map test, as Qt was found in its build"
+        " directory '${QT6_INSTALL_PREFIX}', which only has forwarding headers."
+        " Please configure the test via the installed Qt's qt-cmake-standalone-test.")
+    return()
+endif()
+
 set(modules_cache_path "${CMAKE_CURRENT_BINARY_DIR}/module-cache")
 
 add_test(NAME test_clang_module_maps_setup
