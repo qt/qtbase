@@ -164,7 +164,7 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
     if (!target)
         return NSDragOperationNone;
 
-    const auto modifiers = QAppleKeyMapper::fromCocoaModifiers(NSApp.currentEvent.modifierFlags);
+    const auto modifiers = QAppleKeyMapper::fromCocoaModifiers(NSEvent.modifierFlags);
     const auto buttons = currentlyPressedMouseButtons();
     const auto point = mapWindowCoordinates(m_platformWindow->window(), target, windowPoint);
 
@@ -228,7 +228,7 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
 
     QPlatformDropQtResponse response(false, Qt::IgnoreAction);
     QCocoaDrag* nativeDrag = QCocoaIntegration::instance()->drag();
-    const auto modifiers = QAppleKeyMapper::fromCocoaModifiers(NSApp.currentEvent.modifierFlags);
+    const auto modifiers = QAppleKeyMapper::fromCocoaModifiers(NSEvent.modifierFlags);
     const auto buttons = currentlyPressedMouseButtons();
     const auto point = mapWindowCoordinates(m_platformWindow->window(), target, windowPoint);
 
@@ -271,7 +271,7 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
     // this case won't send the matching release event, so we have to
     // synthesize it here.
     m_buttons = currentlyPressedMouseButtons();
-    const auto modifiers = QAppleKeyMapper::fromCocoaModifiers(NSApp.currentEvent.modifierFlags);
+    const auto modifiers = QAppleKeyMapper::fromCocoaModifiers(NSEvent.modifierFlags);
 
     NSPoint windowPoint = [self.window convertRectFromScreen:NSMakeRect(screenPoint.x, screenPoint.y, 1, 1)].origin;
     NSPoint nsViewPoint = [self convertPoint: windowPoint fromView: nil];
