@@ -689,7 +689,7 @@ PFN_vkVoidFunction QVulkanInstance::getInstanceProcAddr(const char *name)
 {
     // The return value is PFN_vkVoidFunction instead of QFunctionPointer or
     // similar because on some platforms honoring VKAPI_PTR is important.
-    return d_ptr->platformInst->getInstanceProcAddr(name);
+    return d_ptr->platformInst ? d_ptr->platformInst->getInstanceProcAddr(name) : nullptr;
 }
 
 /*!
@@ -822,7 +822,7 @@ VkSurfaceKHR QVulkanInstance::surfaceForWindow(QWindow *window)
  */
 bool QVulkanInstance::supportsPresent(VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex, QWindow *window)
 {
-    return d_ptr->platformInst->supportsPresent(physicalDevice, queueFamilyIndex, window);
+    return d_ptr->platformInst ? d_ptr->platformInst->supportsPresent(physicalDevice, queueFamilyIndex, window) : false;
 }
 
 /*!
@@ -838,7 +838,8 @@ bool QVulkanInstance::supportsPresent(VkPhysicalDevice physicalDevice, uint32_t 
  */
 void QVulkanInstance::presentAboutToBeQueued(QWindow *window)
 {
-    d_ptr->platformInst->presentAboutToBeQueued(window);
+    if (d_ptr->platformInst)
+        d_ptr->platformInst->presentAboutToBeQueued(window);
 }
 
 /*!
@@ -851,7 +852,8 @@ void QVulkanInstance::presentAboutToBeQueued(QWindow *window)
  */
 void QVulkanInstance::presentQueued(QWindow *window)
 {
-    d_ptr->platformInst->presentQueued(window);
+    if (d_ptr->platformInst)
+        d_ptr->platformInst->presentQueued(window);
 }
 
 /*!
