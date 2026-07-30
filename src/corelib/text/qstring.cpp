@@ -45,7 +45,6 @@
 #include "qstringmatcher.cpp"
 #include "qstringiterator_p.h"
 #include "qstringalgorithms_p.h"
-#include "qthreadstorage.h"
 
 #include <algorithm>
 #include <functional>
