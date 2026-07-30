@@ -19,6 +19,7 @@
 #include <QtGui/qtguiglobal.h>
 
 #include <QtCore/QLibrary>
+#include <QtCore/QMutex>
 #include <qpa/qplatformvulkaninstance.h>
 #include <private/qglobal_p.h>
 
@@ -44,8 +45,9 @@ public:
     void setDebugUtilsFilters(const QList<QVulkanInstance::DebugUtilsFilter> &filters) override;
 
     void destroySurface(VkSurfaceKHR surface) const;
-    const QList<QVulkanInstance::DebugFilter> *debugFilters() const { return &m_debugFilters; }
-    const QList<QVulkanInstance::DebugUtilsFilter> *debugUtilsFilters() const { return &m_debugUtilsFilters; }
+
+    QList<QVulkanInstance::DebugFilter> debugFilters() const;
+    QList<QVulkanInstance::DebugUtilsFilter> debugUtilsFilters() const;
 
 protected:
     void loadVulkanLibrary(const QString &defaultLibraryName, int defaultLibraryVersion = -1);
@@ -80,6 +82,7 @@ private:
     VkDebugUtilsMessengerEXT m_debugMessenger = VK_NULL_HANDLE;
     PFN_vkDestroyDebugUtilsMessengerEXT m_vkDestroyDebugUtilsMessengerEXT;
 #endif
+    mutable QMutex m_debugFilterMutex;
     QList<QVulkanInstance::DebugFilter> m_debugFilters;
     QList<QVulkanInstance::DebugUtilsFilter> m_debugUtilsFilters;
 };
