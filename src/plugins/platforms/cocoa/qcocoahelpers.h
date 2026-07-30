@@ -73,6 +73,7 @@ Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum);
 Qt::MouseButton cocoaButton2QtButton(NSEvent *event);
 
 QEvent::Type cocoaEvent2QtMouseEvent(NSEvent *event);
+bool qt_mac_isMouseEvent(NSEvent *event);
 
 Qt::MouseButtons cocoaMouseButtons2QtMouseButtons(NSInteger pressedMouseButtons);
 Qt::MouseButtons currentlyPressedMouseButtons();
