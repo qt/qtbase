@@ -52,12 +52,7 @@
         // have produced, for example when 'Pinyin - Simplified' does smart
         // replacement of quotes. If that's the case we can't rely on
         // handleKeyEvent for sending the text.
-        auto *currentEvent = NSApp.currentEvent;
-        NSString *eventText = currentEvent.type == NSEventTypeKeyDown
-                           || currentEvent.type == NSEventTypeKeyUp
-                                ? currentEvent.characters : nil;
-
-        if ([string isEqualToString:eventText]) {
+        if ([string isEqualToString:m_currentlyInterpretedKeyEvent.characters]) {
             // We do not send input method events for simple text input,
             // and instead let handleKeyEvent send the key event.
             qCDebug(lcQpaKeys) << "Ignoring text insertion for simple text";
