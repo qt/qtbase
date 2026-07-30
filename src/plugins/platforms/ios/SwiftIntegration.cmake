@@ -47,7 +47,7 @@ list(TRANSFORM QT_CORE_PRIVATE_INCLUDES PREPEND "-I")
 list(TRANSFORM QT_GUI_PRIVATE_INCLUDES PREPEND "-I")
 add_custom_command(
     COMMAND
-      ${CMAKE_Swift_COMPILER} -frontend -typecheck
+      ${CMAKE_Swift_COMPILER} -typecheck
       ${SWIFT_SOURCES}
       -I ${CMAKE_CURRENT_SOURCE_DIR}
       ${QT_CORE_INCLUDES}
