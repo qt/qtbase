@@ -13,15 +13,15 @@
 int ready_pipe[2] = { -1, -1 };
 static void setUpAbortControl()
 {
-    pipe(ready_pipe);
+    std::ignore = pipe(ready_pipe);
 
     struct sigaction sa = {};
 #  ifdef SA_RESETHAND
     sa.sa_flags = SA_RESETHAND; // reset to SIG_DFL after first use
 #  endif
     sa.sa_handler = [](int) {
-        write(ready_pipe[1], "", 1);    // release main thread
-        poll(nullptr, 0, -1);           // hang forever
+        std::ignore = write(ready_pipe[1], "", 1);    // release main thread
+        std::ignore = poll(nullptr, 0, -1);           // hang forever
     };
     sigaction(SIGABRT, &sa, nullptr);
 }
@@ -29,7 +29,7 @@ static void setUpAbortControl()
 static void wait()
 {
     char c;
-    read(ready_pipe[0], &c, 1);
+    std::ignore = read(ready_pipe[0], &c, 1);
 }
 #else
 static void setUpAbortControl()
