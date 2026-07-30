@@ -4402,6 +4402,58 @@ static inline void qrhi_std140_to_packed(T *dst, int vecSize, int elemCount, con
     }
 }
 
+static inline qint64 qrhi_std140_read_size(QShaderDescription::VariableType type, int arrayDim)
+{
+    qint64 elemSize;
+    qint64 stride = 16;
+
+    switch (type) {
+    case QShaderDescription::Float:
+    case QShaderDescription::Int:
+        elemSize = 4;
+        break;
+    case QShaderDescription::Vec2:
+    case QShaderDescription::Int2:
+        elemSize = 8;
+        break;
+    case QShaderDescription::Vec3:
+    case QShaderDescription::Int3:
+        elemSize = 12;
+        break;
+    case QShaderDescription::Vec4:
+    case QShaderDescription::Int4:
+        elemSize = 16;
+        break;
+    case QShaderDescription::Mat3:
+        // three columns with a 16 byte stride
+        elemSize = 44;
+        stride = 48;
+        break;
+    case QShaderDescription::Mat4:
+        elemSize = 64;
+        stride = 64;
+        break;
+    case QShaderDescription::Mat2:
+        return 16;
+    case QShaderDescription::Uint:
+    case QShaderDescription::Bool:
+        return 4;
+    case QShaderDescription::Uint2:
+    case QShaderDescription::Bool2:
+        return 8;
+    case QShaderDescription::Uint3:
+    case QShaderDescription::Bool3:
+        return 12;
+    case QShaderDescription::Uint4:
+    case QShaderDescription::Bool4:
+        return 16;
+    default:
+        return 0;
+    }
+
+    return arrayDim < 1 ? elemSize : (arrayDim - 1) * stride + elemSize;
+}
+
 void QRhiGles2::bindCombinedSampler(QGles2CommandBuffer *cbD, QGles2Texture *texD, QGles2Sampler *samplerD,
                                     void *ps, uint psGeneration, int glslLocation,
                                     int *texUnit, bool *activeTexUnitAltered)
@@ -4487,6 +4539,17 @@ void QRhiGles2::bindShaderResources(QGles2CommandBuffer *cbD,
             const char *bufView = bufD->data.constData() + viewOffset;
             for (const QGles2UniformDescription &uniform : std::as_const(uniforms)) {
                 if (uniform.binding == b->binding) {
+                    const qint64 readOffset = qint64(viewOffset) + uniform.offset;
+                    const qint64 readSize = qrhi_std140_read_size(uniform.type, uniform.arrayDim);
+                    if (readOffset < 0 || readOffset + readSize > bufD->data.size()) {
+                        qWarning("Uniform with buffer binding %d, buffer offset %u, type %d, array "
+                                 "dimension %d would read outside of the uniform buffer of size %lld. "
+                                 "Skipping.",
+                                 uniform.binding, uniform.offset, uniform.type, uniform.arrayDim,
+                                 qint64(bufD->data.size()));
+                        continue;
+                    }
+
                     // in a uniform buffer everything is at least 4 byte aligned
                     // so this should not cause unaligned reads
                     const void *src = bufView + uniform.offset;
