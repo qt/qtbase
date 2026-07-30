@@ -244,6 +244,15 @@ void QCocoaSystemTrayIcon::showMessage(const QString &title, const QString &mess
 
 void QCocoaSystemTrayIcon::emitActivated()
 {
+    // NSControls are driven by gesture recognizers in macOS 27,
+    // which means NSApp.currentEvent may not be a mouse event
+    // at the point when we receive the status bar button's
+    // action callback. This is a quick fix to avoid crashing.
+    if (!qt_mac_isMouseEvent(NSApp.currentEvent)) {
+        emit activated(QPlatformSystemTrayIcon::Unknown);
+        return;
+    }
+
     auto *mouseEvent = NSApp.currentEvent;
 
     auto activationReason = QPlatformSystemTrayIcon::Unknown;
