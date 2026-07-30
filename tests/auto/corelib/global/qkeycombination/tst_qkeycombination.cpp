@@ -281,7 +281,9 @@ S operator+(S, S);
 
 [[maybe_unused]] constexpr QKeyCombination kc1 = Qt::SHIFT | Qt::Key_A;
 #if QT_DEPRECATED_SINCE(6, 0)
+QT_IGNORE_DEPRECATIONS(
 [[maybe_unused]] constexpr QKeyCombination kc2 = Qt::SHIFT + Qt::Key_A;
+)
 #endif
 }
 
