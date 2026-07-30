@@ -467,30 +467,34 @@ void QOhosInputMethodEventHandler::onNonClientAreaTouchEvents(
         QtOhos::removeMatchingWithLookahead(
             eventBatch.begin(), eventBatch.end(),
             [](const NonClientAreaTouchEvent &event, const NonClientAreaTouchEvent &nextEvent) {
-                return
-                    event.state == QEventPoint::State::Updated
-                    && nextEvent.state == QEventPoint::State::Updated;
+                return event.action == QEvent::NonClientAreaMouseMove
+                    && nextEvent.action == QEvent::NonClientAreaMouseMove;
             }),
         eventBatch.end());
 
     for (const auto &touchEvent : eventBatch) {
-        QPointF clickPoint = touchEvent.displayPosition;
+        if (touchEvent.action == QEvent::NonClientAreaMouseButtonPress)
+            m_optNonClientAreaTouchPointerId = touchEvent.id;
+        else if (m_optNonClientAreaTouchPointerId != touchEvent.id)
+            continue;
 
-        QWindowSystemInterface::TouchPoint qwsiTouchPoint;
-        qwsiTouchPoint.id = touchEvent.id;
-        qwsiTouchPoint.pressure = 1.0;
-        qwsiTouchPoint.normalPosition = calculateTouchPointNormalPosition(targetWindow, clickPoint);
-        qwsiTouchPoint.state = touchEvent.state;
-        qwsiTouchPoint.area = calculateTouchPointArea(clickPoint);
+        if (touchEvent.action == QEvent::NonClientAreaMouseButtonRelease)
+            m_optNonClientAreaTouchPointerId.reset();
 
-        QWindowSystemInterfaceTouchEvent qwsiTouchEvent = {
+        QOhosMouseEvent qtMouseEvent = {
             .targetWindow = targetWindow,
-            .touchPoints = {qwsiTouchPoint},
-            .touchDevice = getPointingDeviceOrCreate(QInputDevice::DeviceType::TouchScreen),
             .timestampMs = touchEvent.timestamp,
+            .localPosition = touchEvent.localPosition,
+            .globalPosition = touchEvent.displayPosition,
+            .button = Qt::LeftButton,
+            .eventType = touchEvent.action,
+            .deviceType = QInputDevice::DeviceType::TouchScreen,
         };
 
-        handleTouchEvent(qwsiTouchEvent);
+        if (touchEvent.action == QEvent::NonClientAreaMouseButtonPress)
+            registerOnWindowCloseToResetMouseButtonsState(targetWindow);
+
+        handleMouseEvent(qtMouseEvent);
     }
 }
 

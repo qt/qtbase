@@ -104,8 +104,9 @@ public:
     {
         std::int32_t id;
         std::chrono::milliseconds timestamp;
-        QEventPoint::State state;
+        QEvent::Type action;
         QPointF displayPosition;
+        QPointF localPosition;
         QPointF globalPosition;
     };
 
