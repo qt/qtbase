@@ -233,15 +233,15 @@ std::optional<Qt::MouseButton> tryMapMouseEventButtonToQt(::Input_MouseEventButt
     return {};
 }
 
-std::optional<QEventPoint::State> tryMapTouchEventActionToNonClientAreaEventState(::Input_TouchEventAction action)
+std::optional<QEvent::Type> tryMapTouchEventActionToNonClientAreaEventType(::Input_TouchEventAction action)
 {
     switch (action) {
     case ::TOUCH_ACTION_MOVE:
-        return QEventPoint::State::Updated;
+        return QEvent::NonClientAreaMouseMove;
     case ::TOUCH_ACTION_DOWN:
-        return QEventPoint::State::Pressed;
+        return QEvent::NonClientAreaMouseButtonPress;
     case ::TOUCH_ACTION_UP:
-        return QEventPoint::State::Released;
+        return QEvent::NonClientAreaMouseButtonRelease;
     case ::TOUCH_ACTION_CANCEL:
         break;
     }
@@ -1644,8 +1644,8 @@ void QOhosWindowProxy::JsScopeData::onTouchEventFromArkUi(const QArkUi::TouchEve
     if (nonClientAreaTouchEventConsumer == nullptr)
         return;
 
-    auto optState = tryMapTouchEventActionToNonClientAreaEventState(event.action);
-    if (!optState.has_value())
+    auto optAction = tryMapTouchEventActionToNonClientAreaEventType(event.action);
+    if (!optAction.has_value())
         return;
 
     auto optWindowProperties = QArkUi::tryGetWindowProperties(event.jsWindowId);
@@ -1656,14 +1656,17 @@ void QOhosWindowProxy::JsScopeData::onTouchEventFromArkUi(const QArkUi::TouchEve
         return;
     }
 
-    if (!isPointInNonClientArea(event.displayPosition, optWindowProperties.value()))
+    const auto &windowProperties = optWindowProperties.value();
+    if (!isPointInNonClientArea(event.displayPosition, windowProperties))
         return;
 
+    auto windowOrigin = windowProperties.windowRect.topLeft() + windowProperties.drawableRect.topLeft();
     NonClientAreaTouchEvent nonClientAreaTouchEvent = {
         .id = event.fingerId,
         .timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(event.actionTime),
-        .state = optState.value(),
+        .action = optAction.value(),
         .displayPosition = event.displayPosition,
+        .localPosition = event.displayPosition - windowOrigin,
         .globalPosition = event.globalPosition,
     };
 

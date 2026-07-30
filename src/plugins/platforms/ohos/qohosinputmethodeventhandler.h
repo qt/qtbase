@@ -147,6 +147,7 @@ private:
     QMap<Qt::Key, ushort> m_autoRepeatCountMap;
     std::optional<QOhosMouseEvent> m_lastWsiMouseEvent;
     std::optional<QWindowSystemInterfaceTouchEvent> m_lastWsiTouchEvent;
+    std::optional<std::int32_t> m_optNonClientAreaTouchPointerId;
 };
 
 QT_END_NAMESPACE
