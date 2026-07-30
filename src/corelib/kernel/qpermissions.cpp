@@ -129,7 +129,7 @@ Q_LOGGING_CATEGORY(lcPermissions, "qt.permissions", QtWarningMsg);
     the AndroidManifest.xml. For further information on the use of this tag,
     see \l {Qt Permissions and Features}
 
-    \sa {Qt Creator: Editing Manifest Files}.
+    \sa {Qt Creator: Editing Manifest Files}
 
     \section1 Available Permissions
 
