@@ -12,6 +12,7 @@
 #include "qvulkaninstance.h"
 #include <private/qvulkanfunctions_p.h>
 #include <QtCore/QHash>
+#include <QtCore/QMutex>
 
 //
 //  W A R N I N G
@@ -49,6 +50,7 @@ public:
     QVersionNumber apiVersion;
     VkResult errorCode;
     QScopedPointer<QVulkanFunctions> funcs;
+    QMutex deviceFuncsMutex;
     QHash<VkDevice, QVulkanDeviceFunctions *> deviceFuncs;
     QList<QVulkanInstance::DebugFilter> debugFilters; // legacy filters based on VK_EXT_debug_report
     QList<QVulkanInstance::DebugUtilsFilter> debugUtilsFilters; // the modern version based on VK_EXT_debug_utils

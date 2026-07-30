@@ -244,8 +244,11 @@ bool QVulkanInstancePrivate::ensureVulkan()
 
 void QVulkanInstancePrivate::reset()
 {
-    qDeleteAll(deviceFuncs);
-    deviceFuncs.clear();
+    {
+        QMutexLocker locker(&deviceFuncsMutex);
+        qDeleteAll(deviceFuncs);
+        deviceFuncs.clear();
+    }
     funcs.reset();
     platformInst.reset();
     vkInst = VK_NULL_HANDLE;
@@ -756,9 +759,23 @@ QVulkanFunctions *QVulkanInstance::functions() const
  */
 QVulkanDeviceFunctions *QVulkanInstance::deviceFunctions(VkDevice device)
 {
+    {
+        QMutexLocker locker(&d_ptr->deviceFuncsMutex);
+        if (QVulkanDeviceFunctions *f = d_ptr->deviceFuncs.value(device))
+            return f;
+    }
+
+    // Creating the object resolves a few hundred function pointers, so do that
+    // without holding the lock. If another thread wins the race for the same
+    // device, throw ours away.
+    QVulkanDeviceFunctions *candidate = new QVulkanDeviceFunctions(this, device);
+
+    QMutexLocker locker(&d_ptr->deviceFuncsMutex);
     QVulkanDeviceFunctions *&f = d_ptr->deviceFuncs[device];
-    if (!f)
-        f = new QVulkanDeviceFunctions(this, device);
+    if (f)
+        delete candidate;
+    else
+        f = candidate;
     return f;
 }
 
@@ -777,9 +794,8 @@ QVulkanDeviceFunctions *QVulkanInstance::deviceFunctions(VkDevice device)
  */
 void QVulkanInstance::resetDeviceFunctions(VkDevice device)
 {
-    QVulkanDeviceFunctions *&f = d_ptr->deviceFuncs[device];
-    delete f;
-    f = nullptr;
+    QMutexLocker locker(&d_ptr->deviceFuncsMutex);
+    delete d_ptr->deviceFuncs.take(device);
 }
 
 /*!
