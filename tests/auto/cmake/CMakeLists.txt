@@ -564,6 +564,12 @@ endforeach()
 if(QT_FEATURE_clang_module_maps AND QT_WILL_INSTALL
         AND "${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
     add_subdirectory(test_clang_module_maps)
+
+    # Restricted to Apple platforms, as building the C++ standard library as a
+    # Clang module is not viable with the standard libraries used elsewhere.
+    if(APPLE)
+        _qt_internal_test_expect_pass(test_clang_module_maps_disabled)
+    endif()
 endif()
 
 if(QT_FEATURE_framework)
