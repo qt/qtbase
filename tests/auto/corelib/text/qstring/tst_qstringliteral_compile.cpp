@@ -74,4 +74,7 @@ constexpr bool checkConstexprness()
 }
 static_assert(checkConstexprness());
 
+constexpr std::u16string_view stringView = u"test"_s;
+static_assert(stringView == u"test");
+
 #endif // __cpp_constexpr >= 201907L
