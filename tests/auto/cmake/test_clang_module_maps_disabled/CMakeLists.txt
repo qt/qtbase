@@ -5,6 +5,17 @@ cmake_minimum_required(VERSION 3.16)
 
 project(test_clang_module_maps_disabled)
 
+# We only mask the module maps for Clang 16 and later, which is where the overlay's
+# 'root-relative' key was introduced, so older versions will still build Qt as a
+# Clang module. The check has to happen here, and not where the test is added, as
+# this project is configured when the test is run, possibly with a different
+# toolchain than the one that built Qt.
+if(NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang"
+        OR CMAKE_CXX_COMPILER_VERSION VERSION_LESS 16)
+    message(STATUS "Compiler doesn't understand our VFS overlay, skipping test.")
+    return()
+endif()
+
 if (EXISTS "${CMAKE_CURRENT_LIST_DIR}/FindPackageHints.cmake")
     include("${CMAKE_CURRENT_LIST_DIR}/FindPackageHints.cmake")
 endif()
