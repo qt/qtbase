@@ -515,6 +515,10 @@ function(qt_internal_add_example_external_project subdir)
         QT_INTERNAL_SKIP_DEPLOYMENT:BOOL
         QT_REPO_EXAMPLES_WARNINGS_CLEAN:BOOL
         QT_EXTRA_EXAMPLE_TARGET_DEFINES:STRING
+        QT_USE_VCPKG:STRING
+        VCPKG_HOST_TRIPLET:STRING
+        VCPKG_TARGET_TRIPLET:STRING
+        VCPKG_INSTALLED_DIR:STRING
         WARNINGS_ARE_ERRORS:BOOL
         CMAKE_FIND_ROOT_PATH:STRING
         CMAKE_MODULE_PATH:STRING
@@ -528,6 +532,14 @@ function(qt_internal_add_example_external_project subdir)
         CMAKE_OBJC_COMPILER_LAUNCHER:STRING
         CMAKE_OBJCXX_COMPILER_LAUNCHER:STRING
     )
+
+    if(QT_USE_VCPKG AND NOT QT_NO_SKIP_VCPKG_MANIFEST_INSTALL)
+        # Make sure that if each example has a vcpkg.json manifest file, we don't attempt to
+        # download, build and install its packages into each example build root.
+        list(APPEND var_defs
+            -DVCPKG_MANIFEST_INSTALL:BOOL=OFF
+        )
+    endif()
 
     # QT_EXAMPLE_CMAKE_VARS_TO_PASS can be set by specific repos to pass any additional required
     # CMake cache variables.
