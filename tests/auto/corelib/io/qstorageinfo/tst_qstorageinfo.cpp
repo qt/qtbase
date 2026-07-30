@@ -68,6 +68,8 @@ void tst_QStorageInfo::defaultValues()
 
 static int qInfoPrinter(const char *format, ...)
 {
+    Q_PRESUME(format);
+
     static char buf[1024];
     static size_t bufuse = 0;
 
