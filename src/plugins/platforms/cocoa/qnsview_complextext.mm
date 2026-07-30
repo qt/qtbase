@@ -124,8 +124,7 @@
     // e.g. "~\r". We have already inserted the composition,
     // so we need to follow up with a single newline event.
 
-    KeyEvent newlineEvent(m_currentlyInterpretedKeyEvent ?
-        m_currentlyInterpretedKeyEvent : NSApp.currentEvent);
+    KeyEvent newlineEvent(m_currentlyInterpretedKeyEvent);
     newlineEvent.type = QEvent::KeyPress;
 
     const bool isEnter = newlineEvent.modifiers & Qt::KeypadModifier;
