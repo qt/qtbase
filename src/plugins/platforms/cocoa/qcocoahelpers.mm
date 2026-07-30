@@ -309,6 +309,11 @@ QEvent::Type cocoaEvent2QtMouseEvent(NSEvent *event)
     return QEvent::None;
 }
 
+bool qt_mac_isMouseEvent(NSEvent *event)
+{
+    return cocoaEvent2QtMouseEvent(event) != QEvent::None;
+}
+
 /*!
   \fn Qt::MouseButtons cocoaMouseButtons2QtMouseButtons(NSInteger pressedMouseButtons)
 
