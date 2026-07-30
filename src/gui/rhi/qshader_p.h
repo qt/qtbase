@@ -23,6 +23,8 @@
 
 QT_BEGIN_NAMESPACE
 
+class QDataStream;
+
 struct Q_GUI_EXPORT QShaderPrivate
 {
     static const int QSB_VERSION = 9;
@@ -65,6 +67,7 @@ struct Q_GUI_EXPORT QShaderPrivate
 
     static QShaderPrivate *get(QShader *s) { return s->d; }
     static const QShaderPrivate *get(const QShader *s) { return s->d; }
+    static bool readCount(QDataStream *stream, int *count);
     static int qtQsbVersion(QShader::SerializedFormatVersion qtVersion) {
         switch (qtVersion) {
         case QShader::SerializedFormatVersion::Qt_6_4:

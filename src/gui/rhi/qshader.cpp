@@ -521,6 +521,36 @@ QByteArray QShader::serialized(SerializedFormatVersion version) const
     return qCompress(buf.buffer());
 }
 
+bool QShaderPrivate::readCount(QDataStream *stream, int *count)
+{
+    // Returns false if the stream is not in the Ok state, or if the count
+    // cannot be valid because it is negative or exceeds the number of elements
+    // the remaining data could possibly hold. In the latter case the stream is
+    // switched to ReadCorruptData. This keeps a truncated or corrupt .qsb blob
+    // from leading to a huge allocation or a long spin over a count that the
+    // data cannot back. Every element of every list in the serialized format
+    // takes at least one 32-bit value, hence the bytesAvailable() / 4 bound.
+    // (also, QDataStream turns all subsequent reads into no-ops once its status
+    // is not Ok)
+    //
+    // On failure the stream is never left in the Ok state and *count is set to
+    // 0, so a caller that checks the stream status once at the end can ignore
+    // the return value: the loop it guards just runs zero times.
+
+    *count = 0;
+    int n = 0;
+    (*stream) >> n;
+    if (stream->status() != QDataStream::Ok)
+        return false;
+    const QIODevice *dev = stream->device();
+    if (n < 0 || !dev || n > dev->bytesAvailable() / 4) {
+        stream->setStatus(QDataStream::ReadCorruptData);
+        return false;
+    }
+    *count = n;
+    return true;
+}
+
 static void readShaderKey(QDataStream *ds, QShaderKey *k)
 {
     int intVal;
@@ -591,7 +621,7 @@ QShader QShader::fromSerialized(const QByteArray &data)
         d->desc = QShaderDescription();
     }
     int count;
-    ds >> count;
+    QShaderPrivate::readCount(&ds, &count);
     for (int i = 0; i < count; ++i) {
         QShaderKey k;
         readShaderKey(&ds, &k);
@@ -605,13 +635,14 @@ QShader QShader::fromSerialized(const QByteArray &data)
     }
 
     if (d->qsbVersion > QShaderPrivate::QSB_VERSION_WITHOUT_BINDINGS) {
-        ds >> count;
+        QShaderPrivate::readCount(&ds, &count);
         for (int i = 0; i < count; ++i) {
             QShaderKey k;
             readShaderKey(&ds, &k);
             NativeResourceBindingMap map;
             int mapSize;
-            ds >> mapSize;
+            if (!QShaderPrivate::readCount(&ds, &mapSize))
+                break;
             for (int b = 0; b < mapSize; ++b) {
                 int binding;
                 ds >> binding;
@@ -626,13 +657,14 @@ QShader QShader::fromSerialized(const QByteArray &data)
     }
 
     if (d->qsbVersion > QShaderPrivate::QSB_VERSION_WITHOUT_SEPARATE_IMAGES_AND_SAMPLERS) {
-        ds >> count;
+        QShaderPrivate::readCount(&ds, &count);
         for (int i = 0; i < count; ++i) {
             QShaderKey k;
             readShaderKey(&ds, &k);
             SeparateToCombinedImageSamplerMappingList list;
             int listSize;
-            ds >> listSize;
+            if (!QShaderPrivate::readCount(&ds, &listSize))
+                break;
             for (int b = 0; b < listSize; ++b) {
                 QByteArray combinedSamplerName;
                 ds >> combinedSamplerName;
@@ -647,7 +679,7 @@ QShader QShader::fromSerialized(const QByteArray &data)
     }
 
     if (d->qsbVersion > QShaderPrivate::QSB_VERSION_WITHOUT_NATIVE_SHADER_INFO) {
-        ds >> count;
+        QShaderPrivate::readCount(&ds, &count);
         for (int i = 0; i < count; ++i) {
             QShaderKey k;
             readShaderKey(&ds, &k);
@@ -655,7 +687,8 @@ QShader QShader::fromSerialized(const QByteArray &data)
             ds >> flags;
             QMap<int, int> extraBufferBindings;
             int mapSize;
-            ds >> mapSize;
+            if (!QShaderPrivate::readCount(&ds, &mapSize))
+                break;
             for (int b = 0; b < mapSize; ++b) {
                 int k, v;
                 ds >> k;
@@ -664,6 +697,11 @@ QShader QShader::fromSerialized(const QByteArray &data)
             }
             d->nativeShaderInfoMap.insert(k, { flags, extraBufferBindings });
         }
+    }
+
+    if (ds.status() != QDataStream::Ok) {
+        qWarning("Failed to deserialize QShader: QDataStream status %d.", int(ds.status()));
+        return QShader();
     }
 
     return bs;
