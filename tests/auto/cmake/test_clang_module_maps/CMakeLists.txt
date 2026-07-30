@@ -3,17 +3,17 @@
 
 set(modules_cache_path "${CMAKE_CURRENT_BINARY_DIR}/module-cache")
 
-add_test(NAME test_clang_header_map_setup
+add_test(NAME test_clang_module_maps_setup
     COMMAND mkdir -p "${modules_cache_path}"
 )
-set_tests_properties(test_clang_header_map_setup
-    PROPERTIES FIXTURES_SETUP header_map_test
+set_tests_properties(test_clang_module_maps_setup
+    PROPERTIES FIXTURES_SETUP module_map_test
 )
-add_test(NAME test_clang_header_map_cleanup
+add_test(NAME test_clang_module_maps_cleanup
     COMMAND rm -Rf "${modules_cache_path}"
 )
-set_tests_properties(test_clang_header_map_cleanup
-    PROPERTIES FIXTURES_CLEANUP header_map_test
+set_tests_properties(test_clang_module_maps_cleanup
+    PROPERTIES FIXTURES_CLEANUP module_maps_test
 )
 set(module_compile_command
     clang
@@ -49,10 +49,10 @@ foreach(module_target IN LISTS QT_ALL_MODULES_VERSIONED_FOUND_VIA_FIND_PACKAGE)
     endif()
     qt_internal_module_info(module "${module_target}")
 
-    add_test(NAME test_clang_header_map_${module_lower}
+    add_test(NAME test_clang_module_maps_${module_lower}
         COMMAND ${CMAKE_COMMAND} -E env bash -c
             "${module_compile_command} <(echo '@import ${module};')"
     )
-    set_tests_properties(test_clang_header_map_${module_lower}
-        PROPERTIES FIXTURES_REQUIRED header_map_test)
+    set_tests_properties(test_clang_module_maps_${module_lower}
+        PROPERTIES FIXTURES_REQUIRED module_maps_test)
 endforeach()
