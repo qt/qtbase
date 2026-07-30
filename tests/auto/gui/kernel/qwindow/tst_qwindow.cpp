@@ -1344,16 +1344,14 @@ void tst_QWindow::testInputEvents()
     QVERIFY(QTestPrivate::ensurePositionTopLeft(&window));
 
     QTest::keyClick(&window, Qt::Key_A, Qt::NoModifier);
-    QCoreApplication::processEvents();
-    QCOMPARE(window.keyPressCode, int(Qt::Key_A));
-    QCOMPARE(window.keyReleaseCode, int(Qt::Key_A));
+    QTRY_COMPARE(window.keyPressCode, int(Qt::Key_A));
+    QTRY_COMPARE(window.keyReleaseCode, int(Qt::Key_A));
 
     QPointF local(12, 34);
     QTest::mouseClick(&window, Qt::LeftButton, Qt::NoModifier, local.toPoint());
-    QCoreApplication::processEvents();
-    QCOMPARE(window.mousePressButton, int(Qt::LeftButton));
-    QCOMPARE(window.mouseReleaseButton, int(Qt::LeftButton));
-    QCOMPARE(window.mousePressLocalPos, local);
+    QTRY_COMPARE(window.mousePressButton, int(Qt::LeftButton));
+    QTRY_COMPARE(window.mouseReleaseButton, int(Qt::LeftButton));
+    QTRY_COMPARE(window.mousePressLocalPos, local);
 
     QList<QWindowSystemInterface::TouchPoint> points;
     QWindowSystemInterface::TouchPoint tp1, tp2;
@@ -1368,7 +1366,6 @@ void tst_QWindow::testInputEvents()
     points[0].state = QEventPoint::State::Released;
     points[1].state = QEventPoint::State::Released;
     QWindowSystemInterface::handleTouchEvent(&window, touchDevice, points);
-    QCoreApplication::processEvents();
     QTRY_COMPARE(window.touchPressedCount, 2);
     QTRY_COMPARE(window.touchReleasedCount, 2);
 
@@ -1378,17 +1375,15 @@ void tst_QWindow::testInputEvents()
     const QPointF nonWindowGlobal(window.geometry().topRight() + QPoint(200, 50)); // not inside the window
     const QPointF deviceNonWindowGlobal = QHighDpi::toNativePixels(nonWindowGlobal, window.screen());
     simulateMouseClick(nullptr, deviceNonWindowGlobal, deviceNonWindowGlobal);
-    QCoreApplication::processEvents();
-    QCOMPARE(window.mousePressButton, 0);
-    QCOMPARE(window.mouseReleaseButton, 0);
+    QTRY_COMPARE(window.mousePressButton, 0);
+    QTRY_COMPARE(window.mouseReleaseButton, 0);
     const QPointF windowGlobal = window.mapToGlobal(local.toPoint());
     const QPointF deviceWindowGlobal = QHighDpi::toNativePixels(windowGlobal, window.screen());
     simulateMouseClick(nullptr, deviceWindowGlobal, deviceWindowGlobal);
-    QCoreApplication::processEvents();
-    QCOMPARE(window.mousePressButton, int(Qt::LeftButton));
-    QCOMPARE(window.mouseReleaseButton, int(Qt::LeftButton));
-    QCOMPARE(window.mousePressScreenPos, windowGlobal);
-    QCOMPARE(window.mousePressLocalPos, local); // the local we passed was bogus, verify that qGuiApp calculated the proper one
+    QTRY_COMPARE(window.mousePressButton, int(Qt::LeftButton));
+    QTRY_COMPARE(window.mouseReleaseButton, int(Qt::LeftButton));
+    QTRY_COMPARE(window.mousePressScreenPos, windowGlobal);
+    QTRY_COMPARE(window.mousePressLocalPos, local); // the local we passed was bogus, verify that qGuiApp calculated the proper one
 }
 
 void tst_QWindow::touchToMouseTranslation()
