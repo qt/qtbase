@@ -16,6 +16,7 @@
 #include <QtGui/private/qohosimageconversions_p.h>
 
 #include <QtCore/qeventloop.h>
+#include <QtCore/qglobalstatic.h>
 #include <QtCore/qhash.h>
 #include <QtCore/qmap.h>
 #include <QtCore/qrandom.h>
@@ -653,6 +654,8 @@ public:
     void setContinuationActive(bool continuationActive) override;
 };
 
+Q_GLOBAL_STATIC(QOhosDefaultAbilityContextImpl, s_defaultAbilityContextInstance)
+
 class QOhosAbilityContextImpl : public QOhosBaseAbilityContextImpl
 {
 public:
@@ -1126,8 +1129,7 @@ AbilityContext::~AbilityContext() = default;
 */
 AbilityContext *AbilityContext::defaultInstance()
 {
-    static QOhosDefaultAbilityContextImpl instance;
-    return &instance;
+    return s_defaultAbilityContextInstance();
 }
 
 /*!
