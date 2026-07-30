@@ -102,9 +102,13 @@ function(qt_internal_generate_module_map target)
 
 
     set(module_map_path "${module_clang_modules_dir}/module.modulemap")
+    set(module_map_disable_path "${module_map_path}.disable.yaml")
+
+    qt_internal_generate_module_map_disable_overlay("${target}" "${module_map_disable_path}")
+
     get_target_property(is_framework ${target} FRAMEWORK)
     if(NOT is_framework)
-        qt_install(FILES ${module_map_path}
+        qt_install(FILES ${module_map_path} ${module_map_disable_path}
             DESTINATION "${module_install_interface_include_dir}")
     endif()
 
@@ -123,5 +127,52 @@ function(qt_internal_generate_module_map target)
          OUTPUT "${module_modulemap_intermediate_path}"
          CONTENT "${module_map_content}"
          ${condition_args}
+    )
+endfunction()
+
+# Generates a Clang VFS overlay next to the module's Clang module map, masking
+# the module map by redirecting it to an empty file.
+#
+# The module maps are generated and shipped to support Swift consumers. Normal
+# C++ consumers won't pick them up automatically, unless they build with explicit
+# support for C++ Clang modules via -fmodules -fcxx-modules. While our module
+# maps should work fine for C++ usage too, we want to avoid any risk of regression
+# for C++ consumers, so if we detect C++ Clang modules enablement we automatically
+# pass the overlay during compilation via -ivfsoverlay, making the includes textual
+# again, without affecting the module maps of any other library, or those of the
+# platform SDK.
+#
+# The overlay is propagated to consumers that enable QT_DISABLE_CLANG_MODULE_MAPS,
+# which _qt_internal_finalize_clang_module_maps does automatically on detecting
+# that the consuming target builds with C++ Clang modules.
+function(qt_internal_generate_module_map_disable_overlay target overlay_path)
+    # Redirecting to a file that doesn't exist makes Clang report the module map
+    # as missing, which is explicitly supported, and is what we want. Redirecting
+    # to an empty file would still leave a module map for Clang to load. Both the
+    # redirected and the redirected-to path are relative to the overlay itself,
+    # which keeps the overlay valid for a relocated Qt.
+    string(JOIN "\n" overlay_content
+        "{"
+        "  'version': 0,"
+        "  'root-relative': 'overlay-dir',"
+        "  'overlay-relative': true,"
+        "  'roots': ["
+        "    { 'name': 'module.modulemap', 'type': 'file',"
+        "      'external-contents': 'nonexistent.modulemap' }"
+        "  ]"
+        "}"
+        ""
+    )
+
+    qt_configure_file(OUTPUT "${overlay_path}" CONTENT "${overlay_content}")
+
+    # The overlay sits at the same location relative to the build dir as it does
+    # relative to the install prefix, for both framework and non-framework builds.
+    file(RELATIVE_PATH relative_overlay_path "${QT_BUILD_DIR}" "${overlay_path}")
+
+    set(is_disabled "$<BOOL:$<TARGET_PROPERTY:QT_DISABLE_CLANG_MODULE_MAPS>>")
+    target_compile_options(${target} INTERFACE
+        "$<BUILD_INTERFACE:$<${is_disabled}:-ivfsoverlay${overlay_path}>>"
+        "$<INSTALL_INTERFACE:$<${is_disabled}:-ivfsoverlay$<INSTALL_PREFIX>/${relative_overlay_path}>>"
     )
 endfunction()

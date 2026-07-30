@@ -914,6 +914,8 @@ function(qt6_finalize_target target)
         _qt_internal_finalize_executable(${ARGV})
     endif()
 
+    _qt_internal_finalize_clang_module_maps("${target}")
+
     if(APPLE)
         # Tell CMake to generate run-scheme for the executable when generating
         # Xcode projects. This avoids Xcode auto-generating default schemes for
@@ -1042,6 +1044,69 @@ function(_qt_internal_darwin_permission_finalizer target)
             endif()
         endforeach()
     endforeach()
+endfunction()
+
+# Opts the target into disabling Qt's Clang module maps if it's built with Clang
+# modules enabled, so that including a Qt header doesn't implicitly turn into an
+# @import of the corresponding Qt module, and a build of that module.
+#
+# An explicitly set QT_DISABLE_CLANG_MODULE_MAPS target property or variable takes
+# precedence, and allows opting out of the automatic detection, or into masking the
+# module maps for a target that enables Clang modules in a way we can't detect,
+# for example via a generator expression.
+function(_qt_internal_finalize_clang_module_maps target)
+    if(NOT QT_FEATURE_clang_module_maps)
+        return()
+    endif()
+
+    # Interface libraries don't compile anything, so there's nothing to mask, and
+    # querying their compile options is not allowed with older CMake versions.
+    get_target_property(target_type "${target}" TYPE)
+    if(target_type STREQUAL "INTERFACE_LIBRARY")
+        return()
+    endif()
+
+    # Only Clang picks up the module maps, and only Clang understands the overlay
+    # we would pass to mask them. The overlay relies on the 'root-relative' key,
+    # which both upstream and Apple Clang learned in version 16. Older versions
+    # reject unknown keys outright, so we must not hand them the overlay at all.
+    if(NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang"
+            OR CMAKE_CXX_COMPILER_VERSION VERSION_LESS 16)
+        return()
+    endif()
+
+    get_target_property(disable_module_maps "${target}" QT_DISABLE_CLANG_MODULE_MAPS)
+    if(NOT disable_module_maps MATCHES "-NOTFOUND$")
+        return()
+    endif()
+
+    if(DEFINED QT_DISABLE_CLANG_MODULE_MAPS)
+        set_property(TARGET "${target}" PROPERTY
+            QT_DISABLE_CLANG_MODULE_MAPS "${QT_DISABLE_CLANG_MODULE_MAPS}")
+        return()
+    endif()
+
+    get_target_property(flags "${target}" COMPILE_OPTIONS)
+    if(NOT flags)
+        set(flags "")
+    endif()
+
+    get_target_property(source_dir "${target}" SOURCE_DIR)
+    get_directory_property(directory_flags DIRECTORY "${source_dir}" COMPILE_OPTIONS)
+    if(directory_flags)
+        list(APPEND flags ${directory_flags})
+    endif()
+
+    list(APPEND flags ${CMAKE_CXX_FLAGS})
+    if(CMAKE_BUILD_TYPE)
+        string(TOUPPER "${CMAKE_BUILD_TYPE}" config)
+        list(APPEND flags ${CMAKE_CXX_FLAGS_${config}})
+    endif()
+
+    # Note that -fmodules-cache-path and friends should not count as enabling modules.
+    if("${flags}" MATCHES "(^|[; ])-f(cxx-)?modules([; ]|$)")
+        set_property(TARGET "${target}" PROPERTY QT_DISABLE_CLANG_MODULE_MAPS TRUE)
+    endif()
 endfunction()
 
 if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
