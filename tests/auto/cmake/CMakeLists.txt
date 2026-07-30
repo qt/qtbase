@@ -577,6 +577,10 @@ endif()
 
 if(CMAKE_GENERATOR MATCHES "Ninja")
     _qt_internal_test_expect_pass(test_cxx_modules)
+    _qt_internal_test_expect_pass(test_cxx_modules_moc)
+    _qt_internal_set_up_test_run_environment(test_cxx_modules_moc)
+    _qt_internal_test_expect_pass(test_cxx_modules_moc_lowlevel)
+    _qt_internal_set_up_test_run_environment(test_cxx_modules_moc_lowlevel)
 else()
     find_program(NINJA_EXECUTABLE NAMES ninja ninja-build)
     if(NINJA_EXECUTABLE)
@@ -584,6 +588,16 @@ else()
             GENERATOR Ninja
             MAKE_PROGRAM "${NINJA_EXECUTABLE}"
         )
+        _qt_internal_test_expect_pass(test_cxx_modules_moc
+            GENERATOR Ninja
+            MAKE_PROGRAM "${NINJA_EXECUTABLE}"
+        )
+        _qt_internal_set_up_test_run_environment(test_cxx_modules_moc)
+        _qt_internal_test_expect_pass(test_cxx_modules_moc_lowlevel
+            GENERATOR Ninja
+            MAKE_PROGRAM "${NINJA_EXECUTABLE}"
+        )
+        _qt_internal_set_up_test_run_environment(test_cxx_modules_moc_lowlevel)
     endif()
 endif()
 

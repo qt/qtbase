@@ -699,6 +699,79 @@ void Moc::checkListSizes(const ClassDef &def)
               "std::numeric_limits<int>::max().");
 }
 
+void Moc::parseModuleDeclaration(qsizetype rewind, bool exported)
+{
+    // If we already found a module declaration, this can't be one.
+    if (moduleUnitKind != ModuleUnitKind::NotAModule)
+        return;
+
+    if (test(SEMIC)) {
+        hasGlobalModuleFragment = true;
+        return;
+    }
+
+    if (!test(IDENTIFIER)) {
+        index = rewind;
+        return;
+    }
+
+    // Collect full module name, including dots.
+    QByteArray name = lexem();
+    while (test(DOT)) {
+        if (!test(IDENTIFIER)) {
+            index = rewind;
+            return;
+        }
+        name += '.';
+        name += lexem();
+    }
+
+    QByteArray partition;
+    if (test(COLON)) {
+        if (!test(IDENTIFIER)) {
+            index = rewind;
+            return;
+        }
+        partition = lexem();
+    }
+
+    if (!test(SEMIC)) {
+        index = rewind;
+        return;
+    }
+
+    moduleName = name;
+    modulePartitionName = partition;
+    if (exported) {
+        moduleUnitKind = partition.isEmpty() ? ModuleUnitKind::PrimaryInterface
+                                             : ModuleUnitKind::InterfacePartition;
+    } else {
+        moduleUnitKind = partition.isEmpty() ? ModuleUnitKind::ImplementationUnit
+                                             : ModuleUnitKind::InternalPartition;
+    }
+}
+
+void Moc::parsePrivateModuleFragment(qsizetype rewind)
+{
+    // A private module fragment can only occur once, and only in the primary module interface.
+    if (moduleUnitKind != ModuleUnitKind::PrimaryInterface || inPrivateModuleFragment) {
+        index = rewind;
+        return;
+    }
+
+    if (!test(PRIVATE)) {
+        index = rewind;
+        return;
+    }
+
+    if (!test(SEMIC)) {
+        index = rewind;
+        return;
+    }
+
+    inPrivateModuleFragment = true;
+}
+
 void Moc::parse()
 {
     QList<NamespaceDef> namespaceList;
@@ -768,15 +841,18 @@ void Moc::parse()
                                     }
                                 }
                                 break;
-                            case Q_NAMESPACE_TOKEN:
-                                def.hasQNamespace = true;
-                                break;
                             case Q_NAMESPACE_EXPORT_TOKEN:
                                 next(LPAREN);
                                 while (test(IDENTIFIER))
                                     {}
                                 next(RPAREN);
+                                Q_FALLTHROUGH();
+                            case Q_NAMESPACE_TOKEN:
                                 def.hasQNamespace = true;
+                                if (moduleUnitKind == ModuleUnitKind::ImplementationUnit)
+                                    error("Q_NAMESPACE is not supported in a module implementation unit");
+                                if (inPrivateModuleFragment)
+                                    error("Q_NAMESPACE is not supported in a private module fragment");
                                 break;
                             case Q_ENUMS_TOKEN:
                             case Q_ENUM_NS_TOKEN:
@@ -835,6 +911,16 @@ void Moc::parse()
                 templateClass = true;
                 break;
             case MOC_INCLUDE_BEGIN:
+                // Record (top-level) includes in the global module fragment for later
+                // insertion into the generated file.
+                // As it is fiendishly difficult to find out if and how the contents of
+                // a header file are being used, we have to assume that the compiler will need
+                // all of them when building our generated file.
+                if (hasGlobalModuleFragment && moduleUnitKind == ModuleUnitKind::NotAModule
+                    && currentFilenames.size() == 1) {
+                    moduleFragmentIncludes += symbol().lexem();
+                }
+
                 currentFilenames.push(symbol().unquotedLexem());
                 break;
             case MOC_INCLUDE_END:
@@ -896,6 +982,37 @@ void Moc::parse()
                 classHash.insert(def.qualified, def.qualified);
 
                 continue; }
+            case EXPORT: {
+                const qsizetype afterExport = index;
+                if (currentFilenames.size() == 1 && test(IDENTIFIER) && lexem() == "module")
+                    parseModuleDeclaration(index, /*exported=*/true);
+                else
+                    index = afterExport;
+                break;
+            }
+            case IDENTIFIER:
+                if (currentFilenames.size() == 1 && lexem() == "module") {
+                    const qsizetype afterModule = index;
+                    if (test(COLON)) {
+                        // A private module fragment can follow any ordinary declaration
+                        // in the primary interface.
+                        parsePrivateModuleFragment(afterModule);
+                    } else {
+                        // Since "module" is a legal identifier in most contexts, we
+                        // must be careful about false positives.
+                        const bool precededByBareModuleFragment = afterModule == 3
+                                && symbols.at(afterModule - 2).token == SEMIC
+                                && symbols.at(afterModule - 3).token == IDENTIFIER
+                                && symbols.at(afterModule - 3).lexem() == "module";
+                        const bool isModuleCandidate = afterModule < 2
+                                || precededByBareModuleFragment
+                                || (hasGlobalModuleFragment
+                                    && symbols.at(afterModule - 2).token == MOC_INCLUDE_END);
+                        if (isModuleCandidate)
+                            parseModuleDeclaration(afterModule, /*exported=*/false);
+                    }
+                }
+                break;
             default: break;
         }
         if ((t != CLASS && t != STRUCT)|| currentFilenames.size() > 1)
@@ -954,6 +1071,10 @@ void Moc::parse()
                         error("Template classes not supported by Q_OBJECT");
                     if (def.classname != "Qt" && def.classname != "QObject" && def.superclassList.isEmpty())
                         error("Class contains Q_OBJECT macro but does not inherit from QObject");
+                    if (moduleUnitKind == ModuleUnitKind::ImplementationUnit)
+                        error("Q_OBJECT is not supported in a module implementation unit");
+                    if (inPrivateModuleFragment)
+                        error("Q_OBJECT is not supported in a private module fragment");
                     break;
                 case Q_GADGET_EXPORT_TOKEN:
                     next(LPAREN);
@@ -965,6 +1086,10 @@ void Moc::parse()
                     def.hasQGadget = true;
                     if (templateClass)
                         error("Template classes not supported by Q_GADGET");
+                    if (moduleUnitKind == ModuleUnitKind::ImplementationUnit)
+                        error("Q_GADGET is not supported in a module implementation unit");
+                    if (inPrivateModuleFragment)
+                        error("Q_GADGET is not supported in a private module fragment");
                     break;
                 case Q_PROPERTY_TOKEN:
                     parseProperty(&def, Named);
@@ -1222,10 +1347,18 @@ void Moc::generate(FILE *out, FILE *jsonOutput)
     fprintf(out, "** WARNING! All changes made in this file will be lost!\n"
             "*****************************************************************************/\n\n");
 
-    // include header(s) of user class definitions at _first_ to allow
-    // for preprocessor definitions possibly affecting standard headers.
-    // see https://codereview.qt-project.org/c/qt/qtbase/+/445937
-    if (!noInclude) {
+    // If the source file is part of a module, the generated code becomes an implementation unit
+    // of the same module, so that it gains access to the module's interface and can import
+    // internal partitions, if needed.
+    // Includes from the source file's own global module fragment need to be copied over.
+    if (moduleUnitKind != ModuleUnitKind::NotAModule) {
+        fprintf(out, "module;\n\n");
+        for (const QByteArray &inc : std::as_const(moduleFragmentIncludes))
+            fprintf(out, "#include \"%s\"\n", inc.constData());
+    } else if (!noInclude) {
+        // include header(s) of user class definitions at _first_ to allow
+        // for preprocessor definitions possibly affecting standard headers.
+        // see https://codereview.qt-project.org/c/qt/qtbase/+/445937
         if (includePath.size() && !includePath.endsWith('/'))
             includePath += '/';
         for (QByteArray inc : std::as_const(includeFiles)) {
@@ -1252,6 +1385,21 @@ void Moc::generate(FILE *out, FILE *jsonOutput)
 
     fprintf(out, "\n#include <memory>\n\n");  // For std::addressof
     fprintf(out, "\n#include <QtCore/qxptype_traits.h>\n"); // is_detected
+
+    if (moduleUnitKind != ModuleUnitKind::NotAModule) {
+        fprintf(out, "\nmodule %s;\n", moduleName.constData());
+
+        // Internal partitions need to be imported to get access to them.
+        // Interface partitions should normally be available implicitly
+        // via the re-export from the primary interface, but we import them
+        // anyway to be on the safe side.
+        if (moduleUnitKind == ModuleUnitKind::InterfacePartition
+                || moduleUnitKind == ModuleUnitKind::InternalPartition) {
+            fprintf(out, "import :%s;\n", modulePartitionName.constData());
+        }
+
+        fprintf(out, "\n");
+    }
 
     fprintf(out, "#if !defined(Q_MOC_OUTPUT_REVISION)\n"
             "#error \"The header file '%s' doesn't include <QObject>.\"\n", fn.constData());
@@ -1310,6 +1458,13 @@ void Moc::generate(FILE *out, FILE *jsonOutput)
         QJsonObject mocData;
         mocData["outputRevision"_L1] = mocOutputRevision;
         mocData["inputFile"_L1] = QLatin1StringView(fn.constData());
+
+        if (moduleUnitKind != ModuleUnitKind::NotAModule) {
+            QByteArray moduleId = moduleName;
+            if (!modulePartitionName.isEmpty())
+                moduleId += ':' + modulePartitionName;
+            mocData["module"_L1] = QLatin1StringView(moduleId.constData(), moduleId.size());
+        }
 
         QJsonArray classesJsonFormatted;
 

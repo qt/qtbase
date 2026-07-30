@@ -222,6 +222,14 @@ struct NamespaceDef : BaseDef {
 };
 Q_DECLARE_TYPEINFO(NamespaceDef, Q_RELOCATABLE_TYPE);
 
+enum class ModuleUnitKind {
+    NotAModule,
+    PrimaryInterface,
+    InterfacePartition,
+    InternalPartition,
+    ImplementationUnit,
+};
+
 class Moc : public Parser
 {
 public:
@@ -247,9 +255,24 @@ public:
     QMap<QString, QJsonArray> metaArgs;
     QList<QString> parsedPluginMetadataFiles;
 
+    ModuleUnitKind moduleUnitKind = ModuleUnitKind::NotAModule;
+    QByteArray moduleName;
+    QByteArray modulePartitionName;
+    bool inPrivateModuleFragment = false;
+    bool hasGlobalModuleFragment = false;
+
+    // The direct #includes seen in the file's global module fragment (i.e. before the
+    // module-declaration), to be replayed into the generated code's own global module
+    // fragment: The types used in Q_OBJECT signal/slot/property signatures that come from such
+    // an #include aren't otherwise visible there.
+    QList<QByteArray> moduleFragmentIncludes;
+
     void parse();
     QByteArrayView strippedFileName() const;
     void generate(FILE *out, FILE *jsonOutput);
+
+    void parseModuleDeclaration(qsizetype rewind, bool exported);
+    void parsePrivateModuleFragment(qsizetype rewind);
 
     bool parseClassHead(ClassDef *def);
     inline bool inClass(const ClassDef *def) const {

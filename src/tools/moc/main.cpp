@@ -603,11 +603,17 @@ int runMoc(int argc, char **argv)
     } else if (moc.classList.isEmpty()) {
         moc.note("No relevant classes found. No output generated.");
         if (jsonOutput) {
-            const QJsonDocument jsonDoc(QJsonObject {
+            QJsonObject obj {
                     { "outputRevision"_L1, mocOutputRevision },
                     { "inputFile"_L1, QLatin1StringView(moc.strippedFileName()) }
-            });
-            fputs(jsonDoc.toJson().constData(), jsonOutput.get());
+            };
+            if (moc.moduleUnitKind != ModuleUnitKind::NotAModule) {
+                QByteArray moduleId = moc.moduleName;
+                if (!moc.modulePartitionName.isEmpty())
+                    moduleId += ':' + moc.modulePartitionName;
+                obj["module"_L1] = QLatin1StringView(moduleId.constData(), moduleId.size());
+            }
+            fputs(QJsonDocument(obj).toJson().constData(), jsonOutput.get());
         }
     } else {
         moc.generate(out.get(), jsonOutput.get());

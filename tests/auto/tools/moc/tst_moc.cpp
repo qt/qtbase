@@ -911,6 +911,18 @@ private slots:
     void parseDefines();
     void preprocessorOnly();
     void unterminatedFunctionMacro();
+    void qObjectInModulePrimaryInterface();
+    void qObjectInModuleInterfacePartition();
+    void qObjectInModuleInternalPartition();
+    void qObjectInModuleImplementationUnit();
+    void moduleJsonMarkerPrimaryInterface();
+    void moduleJsonMarkerInterfacePartition();
+    void moduleJsonMarkerInternalPartition();
+    void qObjectInPrivateModuleFragment();
+    void qGadgetInModuleImplementationUnit();
+    void qGadgetInPrivateModuleFragment();
+    void qNamespaceInModuleImplementationUnit();
+    void qNamespaceInPrivateModuleFragment();
     void QTBUG32933_relatedObjectsDontIncludeItself();
     void writeEnumFromUnrelatedClass();
     void relatedMetaObjectsWithinNamespaces();
@@ -4406,6 +4418,263 @@ void tst_Moc::unterminatedFunctionMacro()
 #endif
 }
 
+void tst_Moc::qObjectInModulePrimaryInterface()
+{
+#ifdef MOC_CROSS_COMPILED
+    QSKIP("Not tested when cross-compiled");
+#endif
+#if QT_CONFIG(process)
+    QProcess proc;
+    proc.start(m_moc, QStringList(m_sourceDirectory
+                                   + QStringLiteral("/module-primary-interface-qobject.cppm")));
+    QVERIFY(proc.waitForFinished());
+    QCOMPARE(proc.exitCode(), EXIT_SUCCESS);
+    const QByteArray mocOut = proc.readAllStandardOutput();
+    QVERIFY(mocOut.contains("\"PrimaryValid\""));
+    QVERIFY(mocOut.contains("\"primarySignal\""));
+    // The generated code must itself be a unit of the same module, so that it implicitly
+    // gains access to the primary interface unit (and thus PrimaryValid).
+    QVERIFY(mocOut.contains("module Module.PrimaryInterfaceQObject;"));
+#else
+    QSKIP("Requires QProcess");
+#endif
+}
+
+void tst_Moc::qObjectInModuleInterfacePartition()
+{
+#ifdef MOC_CROSS_COMPILED
+    QSKIP("Not tested when cross-compiled");
+#endif
+#if QT_CONFIG(process)
+    QProcess proc;
+    proc.start(m_moc, QStringList(m_sourceDirectory
+                                   + QStringLiteral("/module-interface-partition-qobject.cppm")));
+    QVERIFY(proc.waitForFinished());
+    QCOMPARE(proc.exitCode(), EXIT_SUCCESS);
+    const QByteArray mocOut = proc.readAllStandardOutput();
+    QVERIFY(mocOut.contains("\"PartValid\""));
+    QVERIFY(mocOut.contains("\"partSignal\""));
+    // The generated code must itself be a unit of the same module, so that it implicitly
+    // gains access to the primary interface unit, which is assumed to re-export this
+    // interface partition (and thus PartValid) via "export import :Part;".
+    QVERIFY(mocOut.contains("module Module.InterfacePartitionQObject;"));
+#else
+    QSKIP("Requires QProcess");
+#endif
+}
+
+void tst_Moc::qObjectInModuleInternalPartition()
+{
+#ifdef MOC_CROSS_COMPILED
+    QSKIP("Not tested when cross-compiled");
+#endif
+#if QT_CONFIG(process)
+    QProcess proc;
+    proc.start(m_moc, QStringList(m_sourceDirectory
+                                   + QStringLiteral("/module-internal-partition-qobject.cppm")));
+    QVERIFY(proc.waitForFinished());
+    QCOMPARE(proc.exitCode(), EXIT_SUCCESS);
+    const QByteArray mocOut = proc.readAllStandardOutput();
+    QVERIFY(mocOut.contains("\"InternalValid\""));
+    QVERIFY(mocOut.contains("\"internalSignal\""));
+    // The generated code must itself be a unit of the same module, and, unlike an
+    // (exported) interface partition, an internal partition is never implicitly
+    // reachable, so the generated code also needs to import it explicitly.
+    QVERIFY(mocOut.contains("module Module.InternalPartitionQObject;"));
+    QVERIFY(mocOut.contains("import :Part;"));
+#else
+    QSKIP("Requires QProcess");
+#endif
+}
+
+struct MocJsonResult {
+    QJsonObject obj;
+    QByteArray error;
+};
+
+static MocJsonResult runMocAndReadJson(const QString &mocPath, const QString &inputFile)
+{
+    QTemporaryDir tempDir;
+    if (!tempDir.isValid())
+        return {{}, "Failed to create temporary directory: " + tempDir.errorString().toLocal8Bit()};
+    const QString outPath = tempDir.filePath("moc_out"_L1);
+
+    QProcess proc;
+    proc.start(mocPath, { "--output-json", "-o", outPath, inputFile });
+    if (!proc.waitForFinished())
+        return {{}, "moc process did not finish"};
+    if (proc.exitCode() != EXIT_SUCCESS) {
+        return {{}, "moc exited with code " + QByteArray::number(proc.exitCode())
+                        + ":\n" + proc.readAllStandardError()};
+    }
+
+    QFile jsonFile(outPath + ".json"_L1);
+    if (!jsonFile.open(QIODevice::ReadOnly)) {
+        return {{}, "Could not open JSON output file '" + jsonFile.fileName().toLocal8Bit()
+                        + "': " + jsonFile.errorString().toLocal8Bit()};
+    }
+    return {QJsonDocument::fromJson(jsonFile.readAll()).object(), {}};
+}
+
+void tst_Moc::moduleJsonMarkerPrimaryInterface()
+{
+#ifdef MOC_CROSS_COMPILED
+    QSKIP("Not tested when cross-compiled");
+#endif
+#if QT_CONFIG(process)
+    const auto [obj, error] = runMocAndReadJson(
+            m_moc, m_sourceDirectory + "/module-primary-interface-qobject.cppm"_L1);
+    QVERIFY2(error.isEmpty(), error.constData());
+    QCOMPARE(obj["module"_L1].toString(), "Module.PrimaryInterfaceQObject"_L1);
+#else
+    QSKIP("Requires QProcess");
+#endif
+}
+
+void tst_Moc::moduleJsonMarkerInterfacePartition()
+{
+#ifdef MOC_CROSS_COMPILED
+    QSKIP("Not tested when cross-compiled");
+#endif
+#if QT_CONFIG(process)
+    const auto [obj, error] = runMocAndReadJson(
+            m_moc, m_sourceDirectory + "/module-interface-partition-qobject.cppm"_L1);
+    QVERIFY2(error.isEmpty(), error.constData());
+    QCOMPARE(obj["module"_L1].toString(), "Module.InterfacePartitionQObject:Part"_L1);
+#else
+    QSKIP("Requires QProcess");
+#endif
+}
+
+void tst_Moc::moduleJsonMarkerInternalPartition()
+{
+#ifdef MOC_CROSS_COMPILED
+    QSKIP("Not tested when cross-compiled");
+#endif
+#if QT_CONFIG(process)
+    const auto [obj, error] = runMocAndReadJson(
+            m_moc, m_sourceDirectory + "/module-internal-partition-qobject.cppm"_L1);
+    QVERIFY2(error.isEmpty(), error.constData());
+    QCOMPARE(obj["module"_L1].toString(), "Module.InternalPartitionQObject:Part"_L1);
+#else
+    QSKIP("Requires QProcess");
+#endif
+}
+
+void tst_Moc::qObjectInModuleImplementationUnit()
+{
+#ifdef MOC_CROSS_COMPILED
+    QSKIP("Not tested when cross-compiled");
+#endif
+#if QT_CONFIG(process)
+    QProcess proc;
+    proc.start(m_moc, QStringList(m_sourceDirectory
+                                   + QStringLiteral("/module-implementation-unit-qobject.cppm")));
+    QVERIFY(proc.waitForFinished());
+    QCOMPARE(proc.exitCode(), EXIT_FAILURE);
+    const QByteArray errorMsg = proc.readAllStandardError();
+    QVERIFY2(errorMsg.contains("Q_OBJECT is not supported in a module implementation unit"),
+             errorMsg.constData());
+#else
+    QSKIP("Requires QProcess");
+#endif
+}
+
+void tst_Moc::qObjectInPrivateModuleFragment()
+{
+#ifdef MOC_CROSS_COMPILED
+    QSKIP("Not tested when cross-compiled");
+#endif
+#if QT_CONFIG(process)
+    QProcess proc;
+    proc.start(m_moc, QStringList(m_sourceDirectory
+                                   + QStringLiteral("/private-module-fragment-qobject.cppm")));
+    QVERIFY(proc.waitForFinished());
+    QCOMPARE(proc.exitCode(), EXIT_FAILURE);
+    const QByteArray errorMsg = proc.readAllStandardError();
+    QVERIFY2(errorMsg.contains("Q_OBJECT is not supported in a private module fragment"),
+             errorMsg.constData());
+#else
+    QSKIP("Requires QProcess");
+#endif
+}
+
+void tst_Moc::qGadgetInModuleImplementationUnit()
+{
+#ifdef MOC_CROSS_COMPILED
+    QSKIP("Not tested when cross-compiled");
+#endif
+#if QT_CONFIG(process)
+    QProcess proc;
+    proc.start(m_moc, QStringList(m_sourceDirectory
+                                   + QStringLiteral("/module-implementation-unit-qgadget.cppm")));
+    QVERIFY(proc.waitForFinished());
+    QCOMPARE(proc.exitCode(), EXIT_FAILURE);
+    const QByteArray errorMsg = proc.readAllStandardError();
+    QVERIFY2(errorMsg.contains("Q_GADGET is not supported in a module implementation unit"),
+             errorMsg.constData());
+#else
+    QSKIP("Requires QProcess");
+#endif
+}
+
+void tst_Moc::qGadgetInPrivateModuleFragment()
+{
+#ifdef MOC_CROSS_COMPILED
+    QSKIP("Not tested when cross-compiled");
+#endif
+#if QT_CONFIG(process)
+    QProcess proc;
+    proc.start(m_moc, QStringList(m_sourceDirectory
+                                   + QStringLiteral("/private-module-fragment-qgadget.cppm")));
+    QVERIFY(proc.waitForFinished());
+    QCOMPARE(proc.exitCode(), EXIT_FAILURE);
+    const QByteArray errorMsg = proc.readAllStandardError();
+    QVERIFY2(errorMsg.contains("Q_GADGET is not supported in a private module fragment"),
+             errorMsg.constData());
+#else
+    QSKIP("Requires QProcess");
+#endif
+}
+
+void tst_Moc::qNamespaceInModuleImplementationUnit()
+{
+#ifdef MOC_CROSS_COMPILED
+    QSKIP("Not tested when cross-compiled");
+#endif
+#if QT_CONFIG(process)
+    QProcess proc;
+    proc.start(m_moc, QStringList(m_sourceDirectory
+                                   + QStringLiteral("/module-implementation-unit-qnamespace.cppm")));
+    QVERIFY(proc.waitForFinished());
+    QCOMPARE(proc.exitCode(), EXIT_FAILURE);
+    const QByteArray errorMsg = proc.readAllStandardError();
+    QVERIFY2(errorMsg.contains("Q_NAMESPACE is not supported in a module implementation unit"),
+             errorMsg.constData());
+#else
+    QSKIP("Requires QProcess");
+#endif
+}
+
+void tst_Moc::qNamespaceInPrivateModuleFragment()
+{
+#ifdef MOC_CROSS_COMPILED
+    QSKIP("Not tested when cross-compiled");
+#endif
+#if QT_CONFIG(process)
+    QProcess proc;
+    proc.start(m_moc, QStringList(m_sourceDirectory
+                                   + QStringLiteral("/private-module-fragment-qnamespace.cppm")));
+    QVERIFY(proc.waitForFinished());
+    QCOMPARE(proc.exitCode(), EXIT_FAILURE);
+    const QByteArray errorMsg = proc.readAllStandardError();
+    QVERIFY2(errorMsg.contains("Q_NAMESPACE is not supported in a private module fragment"),
+             errorMsg.constData());
+#else
+    QSKIP("Requires QProcess");
+#endif
+}
+
 namespace QTBUG32933_relatedObjectsDontIncludeItself {
     namespace NS {
         class Obj : QObject {
@@ -4986,6 +5255,11 @@ void tst_Moc::mocJsonOutput()
         }
         return diffProc.readAllStandardOutput();
     };
+
+    // None of the input files in this collection are C++ module units; verify that the
+    // new "module" JSON marker is absent from every entry.
+    for (const QJsonValue &entry : actualOutput->array())
+        QVERIFY(!entry.toObject().contains("module"_L1));
 
     QVERIFY2(*actualOutput == *expectedOutput, showPotentialDiff(*actualOutput, *expectedOutput).constData());
 }
