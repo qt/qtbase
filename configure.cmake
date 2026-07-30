@@ -1347,7 +1347,11 @@ qt_feature_config("android_16kb_pages" QMAKE_PUBLIC_QT_CONFIG)
 
 qt_feature("clang_module_maps" PRIVATE
     LABEL "Generate Clang header module maps"
-    AUTODETECT OFF
+    # The module maps are only picked up by Clang and Swift consumers, so we don't
+    # generate them for Windows, nor for cross-compiled targets such as Android,
+    # WebAssembly, or OHOS. Apple platforms are included even though everything but
+    # macOS is cross-compiled there, as that's where we expect Swift consumers.
+    AUTODETECT APPLE OR (UNIX AND NOT CMAKE_CROSSCOMPILING)
     ENABLE QT_FEATURE_swift_interop
 )
 qt_feature("swift_interop" PRIVATE

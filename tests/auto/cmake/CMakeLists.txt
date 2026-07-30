@@ -561,12 +561,12 @@ foreach(plugin_class_name IN LISTS invalid_plugin_class_names)
     )
 endforeach()
 
-if(QT_FEATURE_clang_module_maps AND "${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+# Restricted to Apple platforms, as building the C++ standard library as a
+# Clang module is not viable with the standard libraries used elsewhere.
+if(QT_FEATURE_clang_module_maps AND APPLE AND "${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
     add_subdirectory(test_clang_module_maps)
 
-    # Restricted to Apple platforms, as building the C++ standard library as a
-    # Clang module is not viable with the standard libraries used elsewhere.
-    if(APPLE AND QT_WILL_INSTALL)
+    if(QT_WILL_INSTALL)
         _qt_internal_test_expect_pass(test_clang_module_maps_disabled)
     endif()
 endif()
