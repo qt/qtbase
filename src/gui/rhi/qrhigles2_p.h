@@ -53,7 +53,8 @@ struct QGles2Buffer : public QRhiBuffer
         AccessStorageRead,
         AccessStorageWrite,
         AccessStorageReadWrite,
-        AccessUpdate
+        AccessUpdate,
+        AccessIndirectDraw
     };
     struct UsageState {
         Access access;

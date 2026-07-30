@@ -374,6 +374,10 @@ QT_BEGIN_NAMESPACE
 #define GL_SHADER_STORAGE_BARRIER_BIT      0x00002000
 #endif
 
+#ifndef GL_COMMAND_BARRIER_BIT
+#define GL_COMMAND_BARRIER_BIT             0x00000040
+#endif
+
 #ifndef GL_TEXTURE_FETCH_BARRIER_BIT
 #define GL_TEXTURE_FETCH_BARRIER_BIT       0x00000008
 #endif
@@ -2304,6 +2308,13 @@ void QRhiGles2::drawIndirect(QRhiCommandBuffer *cb, QRhiBuffer *indirectBuffer,
 
     QGles2Buffer *indirectBufD = QRHI_RES(QGles2Buffer, indirectBuffer);
 
+    if (cbD->passNeedsResourceTracking) {
+        QRhiPassResourceTracker &passResTracker(cbD->passResTrackers[cbD->currentPassResTrackerIndex]);
+        trackedRegisterBuffer(&passResTracker, indirectBufD,
+                              QRhiPassResourceTracker::BufIndirectDraw,
+                              QRhiPassResourceTracker::BufIndirectDrawStage);
+    }
+
     QGles2CommandBuffer::Command &cmd(cbD->commands.get());
     cmd.cmd = QGles2CommandBuffer::Command::DrawIndirect;
     cmd.args.drawIndirect.ps = cbD->currentGraphicsPipeline;
@@ -2323,6 +2334,13 @@ void QRhiGles2::drawIndexedIndirect(QRhiCommandBuffer *cb, QRhiBuffer *indirectB
     Q_ASSERT(cbD->recordingPass == QGles2CommandBuffer::RenderPass);
 
     QGles2Buffer *indirectBufD = QRHI_RES(QGles2Buffer, indirectBuffer);
+
+    if (cbD->passNeedsResourceTracking) {
+        QRhiPassResourceTracker &passResTracker(cbD->passResTrackers[cbD->currentPassResTrackerIndex]);
+        trackedRegisterBuffer(&passResTracker, indirectBufD,
+                              QRhiPassResourceTracker::BufIndirectDraw,
+                              QRhiPassResourceTracker::BufIndirectDrawStage);
+    }
 
     QGles2CommandBuffer::Command &cmd(cbD->commands.get());
     cmd.cmd = QGles2CommandBuffer::Command::DrawIndexedIndirect;
@@ -2603,7 +2621,8 @@ static inline GLbitfield barriersForBuffer()
         | GL_ELEMENT_ARRAY_BARRIER_BIT
         | GL_UNIFORM_BARRIER_BIT
         | GL_BUFFER_UPDATE_BARRIER_BIT
-        | GL_SHADER_STORAGE_BARRIER_BIT;
+        | GL_SHADER_STORAGE_BARRIER_BIT
+        | GL_COMMAND_BARRIER_BIT;
 }
 
 static inline GLbitfield barriersForTexture()
@@ -3228,6 +3247,8 @@ static inline QGles2Buffer::Access toGlAccess(QRhiPassResourceTracker::BufferAcc
         return QGles2Buffer::AccessStorageWrite;
     case QRhiPassResourceTracker::BufStorageLoadStore:
         return QGles2Buffer::AccessStorageReadWrite;
+    case QRhiPassResourceTracker::BufIndirectDraw:
+        return QGles2Buffer::AccessIndirectDraw;
     default:
         Q_UNREACHABLE();
         break;
