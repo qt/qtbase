@@ -5489,6 +5489,11 @@ void QRhiGles2::gatherUniforms(GLuint program,
                              blockMember.name.constData());
                 }
                 const int dim = blockMember.arrayDims.first();
+                if (dim < 1) {
+                    qWarning("Array of struct '%s' has an invalid first dimension (%d). Ignored.",
+                             blockMember.name.constData(), dim);
+                    continue;
+                }
                 const int elemSize = blockMember.size / dim;
                 int elemOffset = baseOffset;
                 for (int di = 0; di < dim; ++di) {
