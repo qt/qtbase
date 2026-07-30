@@ -14,6 +14,7 @@ endif()
 qt_internal_add_test(tst_qbytearray
     SOURCES
         tst_qbytearray.cpp
+        tst_qbytearrayliteral_compile.cpp
     LIBRARIES
         Qt::CorePrivate
 )

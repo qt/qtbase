@@ -88,21 +88,23 @@ public:
         IllegalPadding,
     };
 
-    inline constexpr QByteArray() noexcept;
+    constexpr QByteArray() noexcept = default;
     QByteArray(const char *, qsizetype size = -1);
     QByteArray(qsizetype size, char c);
     QByteArray(qsizetype size, Qt::Initialization);
     explicit QByteArray(QByteArrayView v) : QByteArray(v.data(), v.size()) {}
     Q_DECL_CONSTEXPR_DTOR QByteArray(const QByteArray &other) noexcept : d(other.d) {}
-    inline ~QByteArray();
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) && !defined(QT_BOOTSTRAPPED)
+    Q_DECL_CONSTEXPR_DTOR ~QByteArray() = default;
+#endif
 
     QT_CORE_CONSTEXPR_DTOR_INLINE_SINCE(6, 13)
     QByteArray &operator=(const QByteArray &) noexcept;
     QByteArray &operator=(const char *str);
-    inline QByteArray(QByteArray && other) noexcept
-        = default;
+    Q_DECL_CONSTEXPR_DTOR QByteArray(QByteArray &&other) noexcept = default;
+    Q_DECL_CONSTEXPR_DTOR
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QByteArray)
-    inline void swap(QByteArray &other) noexcept
+    constexpr void swap(QByteArray &other) noexcept
     { d.swap(other.d); }
 
     constexpr bool isEmpty() const noexcept { return size() == 0; }
@@ -539,7 +541,7 @@ public:
 #if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
     explicit inline QByteArray(const DataPointer &dd) : d(dd) {}
 #endif
-    explicit inline QByteArray(DataPointer &&dd) : d(std::move(dd)) {}
+    explicit Q_DECL_CONSTEXPR_DTOR QByteArray(DataPointer &&dd) : d(std::move(dd)) {}
 
     [[nodiscard]] QByteArray nullTerminated() const &;
     [[nodiscard]] QByteArray nullTerminated() &&;
@@ -638,9 +640,6 @@ private:
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QByteArray::Base64Options)
-
-inline constexpr QByteArray::QByteArray() noexcept {}
-inline QByteArray::~QByteArray() {}
 
 inline char QByteArray::at(qsizetype i) const
 { verify(i, 1); return d.data()[i]; }
@@ -865,7 +864,7 @@ namespace Qt {
 inline namespace Literals {
 inline namespace StringLiterals {
 
-inline QByteArray operator""_ba(const char *str, size_t size) noexcept
+Q_DECL_CONSTEXPR_DTOR QByteArray operator""_ba(const char *str, size_t size) noexcept
 {
     return QByteArray(QByteArrayData(nullptr, const_cast<char *>(str), qsizetype(size)));
 }
