@@ -1190,13 +1190,9 @@ void tst_QLocale::toTimeFormat_data()
 
     const QTime time(13, 2, 3, 444);
 
-    struct LocaleInput {
-        const char *name;
-    };
-
-    const char *locales[] = {
-        "C",
-        "de-DE"
+    constexpr QLatin1StringView locales[] = {
+        "C"_L1,
+        "de-DE"_L1,
     };
 
     struct FormatInput {
@@ -1207,19 +1203,19 @@ void tst_QLocale::toTimeFormat_data()
     const FormatInput formats[] = {
         { "LongFormat", QLocale::LongFormat },
         { "ShortFormat", QLocale::ShortFormat },
-        { "NarrowFormat", QLocale::NarrowFormat }
+        { "NarrowFormat", QLocale::NarrowFormat },
     };
 
-    for (const auto &localeData : locales) {
-        const QLocale loc(QString::fromLatin1(localeData));
+    for (const auto &localeName : locales) {
+        const QLocale loc(localeName);
 
         for (const auto &formatData : formats) {
 
             const QString str = loc.toString(time, formatData.type);
             const QString formatStr = loc.timeFormat(formatData.type);
-            QTest::addRow("%s_%s(%s)", localeData, formatData.name,
-                          formatStr.toLatin1().constData())
-                << QString::fromLatin1(localeData) << formatData.type << str;
+            QTest::addRow("%s_%s(%s)", localeName.constData(), formatData.name,
+                          formatStr.toUtf8().constData())
+                << QString(localeName) << formatData.type << str;
         }
     }
 }
