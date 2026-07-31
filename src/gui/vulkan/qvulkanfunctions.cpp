@@ -58,6 +58,26 @@ QT_BEGIN_NAMESPACE
     applications will only be able to call the Vulkan 1.0 commands through
     QVulkanFunctions and QVulkanDeviceFunctions.
 
+    \section1 Security Considerations
+
+    QVulkanFunctions is a thin dispatch layer that exposes the Vulkan API as-is.
+    The arguments are forwarded verbatim to the underlying Vulkan
+    implementation, which is a trusted, in-process platform dependency. Qt does
+    not inspect, validate, or sanitize the handles, structures, and pointers
+    passed in, and does not act on the results returned. Calling a member
+    function here is therefore equivalent to calling the corresponding Vulkan
+    command directly, and the valid usage rules in the
+    \l{https://www.khronos.org/registry/vulkan/}{Vulkan specification} apply
+    unchanged. Violating them leads to undefined behavior in the Vulkan
+    implementation, not to a graceful failure from Qt.
+
+    \warning All data passed through QVulkanFunctions is expected to be trusted
+    content. Application developers are advised to carefully consider the
+    potential implications before deriving any of it from user-provided content
+    that is not part of the application and is not under the developers'
+    control. See \l{QVulkanInstance#Security Considerations}{QVulkanInstance}
+    for more information.
+
     \sa QVulkanInstance, QVulkanDeviceFunctions, QWindow::setVulkanInstance(), QWindow::setSurfaceType()
 */
 
@@ -98,6 +118,27 @@ QT_BEGIN_NAMESPACE
     implementations export function symbols for the core commands. See
     \l{https://www.khronos.org/registry/vulkan/specs/1.0/man/html/vkGetInstanceProcAddr.html}{the
     man page for vkGetInstanceProcAddr} for more information.
+
+    \section1 Security Considerations
+
+    QVulkanDeviceFunctions is a thin dispatch layer that exposes the Vulkan API
+    as-is. The arguments are forwarded verbatim to the underlying Vulkan
+    implementation, which is a trusted, in-process platform dependency. Qt does
+    not inspect, validate, or sanitize the handles, structures, and pointers
+    passed in, and does not act on the results returned. This covers, among
+    others, all resource creation, memory mapping, and command buffer building
+    commands. Calling a member function here is therefore equivalent to calling
+    the corresponding Vulkan command directly, and the valid usage rules in the
+    \l{https://www.khronos.org/registry/vulkan/}{Vulkan specification} apply
+    unchanged. Violating them leads to undefined behavior in the Vulkan
+    implementation, not to a graceful failure from Qt.
+
+    \warning All data passed through QVulkanDeviceFunctions is expected to be
+    trusted content. Application developers are advised to carefully consider
+    the potential implications before deriving any of it from user-provided
+    content that is not part of the application and is not under the developers'
+    control. See \l{QVulkanInstance#Security Considerations}{QVulkanInstance}
+    for more information.
 
     \sa QVulkanInstance, QVulkanFunctions, QWindow::setVulkanInstance(), QWindow::setSurfaceType()
 */
