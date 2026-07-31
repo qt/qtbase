@@ -1076,8 +1076,12 @@ void QVulkanWindowPrivate::recreateSwapChain()
     }
 
     VkPhysicalDevice physDev = physDevs.at(physDevIndex);
-    VkSurfaceCapabilitiesKHR surfaceCaps;
-    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physDev, surface, &surfaceCaps);
+    VkSurfaceCapabilitiesKHR surfaceCaps = {};
+    VkResult err = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physDev, surface, &surfaceCaps);
+    if (err != VK_SUCCESS) {
+        qWarning("QVulkanWindow: Failed to get surface capabilities: %d", err);
+        return;
+    }
     uint32_t reqBufferCount;
     if (surfaceCaps.maxImageCount == 0)
         reqBufferCount = qMax<uint32_t>(2, surfaceCaps.minImageCount);
@@ -1136,7 +1140,7 @@ void QVulkanWindowPrivate::recreateSwapChain()
     qCDebug(lcGuiVk, "Creating new swap chain of %d buffers, size %dx%d", reqBufferCount, bufferSize.width, bufferSize.height);
 
     VkSwapchainKHR newSwapChain;
-    VkResult err = vkCreateSwapchainKHR(dev, &swapChainInfo, nullptr, &newSwapChain);
+    err = vkCreateSwapchainKHR(dev, &swapChainInfo, nullptr, &newSwapChain);
     if (err != VK_SUCCESS) {
         qWarning("QVulkanWindow: Failed to create swap chain: %d", err);
         return;
@@ -1920,7 +1924,11 @@ QSize QVulkanWindowPrivate::surfacePixelSize() const
 {
     Q_Q(const QVulkanWindow);
     VkSurfaceCapabilitiesKHR surfaceCaps = {};
-    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physDevs.at(physDevIndex), surface, &surfaceCaps);
+    const VkResult err = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physDevs.at(physDevIndex), surface, &surfaceCaps);
+    if (err != VK_SUCCESS) {
+        qWarning("QVulkanWindow: Failed to get surface capabilities: %d", err);
+        return q->size() * q->devicePixelRatio();
+    }
     VkExtent2D bufferSize = surfaceCaps.currentExtent;
     if (bufferSize.width == uint32_t(-1)) {
         Q_ASSERT(bufferSize.height == uint32_t(-1));
