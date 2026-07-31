@@ -834,16 +834,11 @@ static bool qColorCheckCmykFValidity(float c, float m, float y, float k, float a
  */
 QColor::QColor(Qt::GlobalColor color) noexcept
 {
-#define QRGB(r, g, b) \
-    QRgb(((0xffu << 24) | ((r & 0xff) << 16) | ((g & 0xff) << 8) | (b & 0xff)))
-#define QRGBA(r, g, b, a) \
-    QRgb(((a & 0xff) << 24) | ((r & 0xff) << 16) | ((g & 0xff) << 8) | (b & 0xff))
-
-    static const QRgb global_colors[] = {
-        QRGB(255, 255, 255), // Qt::color0
-        QRGB(  0,   0,   0), // Qt::color1
-        QRGB(  0,   0,   0), // black
-        QRGB(255, 255, 255), // white
+    static constexpr QRgb global_colors[] = {
+        qRgb(255, 255, 255), // Qt::color0
+        qRgb(  0,   0,   0), // Qt::color1
+        qRgb(  0,   0,   0), // black
+        qRgb(255, 255, 255), // white
         /*
          * From the "The Palette Manager: How and Why" by Ron Gery,
          * March 23, 1992, archived on MSDN:
@@ -863,25 +858,23 @@ QColor::QColor(Qt::GlobalColor color) noexcept
          * The 20 reserved entries have indices in [0,9] and
          * [246,255]. We reuse 17 of them.
          */
-        QRGB(128, 128, 128), // index 248   medium gray
-        QRGB(160, 160, 164), // index 247   light gray
-        QRGB(192, 192, 192), // index 7     light gray
-        QRGB(255,   0,   0), // index 249   red
-        QRGB(  0, 255,   0), // index 250   green
-        QRGB(  0,   0, 255), // index 252   blue
-        QRGB(  0, 255, 255), // index 254   cyan
-        QRGB(255,   0, 255), // index 253   magenta
-        QRGB(255, 255,   0), // index 251   yellow
-        QRGB(128,   0,   0), // index 1     dark red
-        QRGB(  0, 128,   0), // index 2     dark green
-        QRGB(  0,   0, 128), // index 4     dark blue
-        QRGB(  0, 128, 128), // index 6     dark cyan
-        QRGB(128,   0, 128), // index 5     dark magenta
-        QRGB(128, 128,   0), // index 3     dark yellow
-        QRGBA(0, 0, 0, 0)    //             transparent
+        qRgb(128, 128, 128), // index 248   medium gray
+        qRgb(160, 160, 164), // index 247   light gray
+        qRgb(192, 192, 192), // index 7     light gray
+        qRgb(255,   0,   0), // index 249   red
+        qRgb(  0, 255,   0), // index 250   green
+        qRgb(  0,   0, 255), // index 252   blue
+        qRgb(  0, 255, 255), // index 254   cyan
+        qRgb(255,   0, 255), // index 253   magenta
+        qRgb(255, 255,   0), // index 251   yellow
+        qRgb(128,   0,   0), // index 1     dark red
+        qRgb(  0, 128,   0), // index 2     dark green
+        qRgb(  0,   0, 128), // index 4     dark blue
+        qRgb(  0, 128, 128), // index 6     dark cyan
+        qRgb(128,   0, 128), // index 5     dark magenta
+        qRgb(128, 128,   0), // index 3     dark yellow
+        qRgba(0, 0, 0, 0)    //             transparent
     };
-#undef QRGB
-#undef QRGBA
 
     setRgb(qRed(global_colors[color]),
            qGreen(global_colors[color]),
