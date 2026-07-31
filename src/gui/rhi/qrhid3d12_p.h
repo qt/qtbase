@@ -1252,13 +1252,13 @@ class QRhiD3D12 : public QRhiImplementation
 {
 public:
     // The shared, per-slot staging area starts at 512 KB and grows up to 16 MB.
-    static const quint32 SMALL_STAGING_AREA_BYTES_PER_FRAME_START = 512 * 1024;
-    static const quint32 SMALL_STAGING_AREA_BYTES_PER_FRAME_MAX = 16 * 1024 * 1024;
+    static constexpr quint32 SMALL_STAGING_AREA_BYTES_PER_FRAME_START = 512 * 1024;
+    static constexpr quint32 SMALL_STAGING_AREA_BYTES_PER_FRAME_MAX = 16 * 1024 * 1024;
     // Only give the memory back once the demand has stayed low for a while,
     // so that an alternating pattern does not recreate the area every frame.
-    static const int SMALL_STAGING_AREA_LOW_DEMAND_FRAMES = 60;
+    static constexpr int SMALL_STAGING_AREA_LOW_DEMAND_FRAMES = 60;
 
-    static const quint32 SHADER_VISIBLE_CBV_SRV_UAV_HEAP_PER_FRAME_START_SIZE = 16384;
+    static constexpr quint32 SHADER_VISIBLE_CBV_SRV_UAV_HEAP_PER_FRAME_START_SIZE = 16384;
 
     QRhiD3D12(QRhiD3D12InitParams *params, QRhiD3D12NativeHandles *importDevice = nullptr);
 
