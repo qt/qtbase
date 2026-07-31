@@ -213,6 +213,41 @@ defineTest(qtProcessModuleFlags) {
     export($$1)
 }
 
+# Qt ships Clang module maps for its modules, to support Swift consumers. Normal
+# C++ consumers don't pick them up, unless they build with explicit support for C++
+# Clang modules via -fmodules -fcxx-modules, in which case Clang translates every Qt
+# include into an implicit @import of the corresponding Qt module, along with a build
+# of that module. Our module maps should work fine for C++ usage too, but we want to
+# avoid any risk of regression for C++ consumers, so we mask them via a Clang VFS
+# overlay that Qt ships next to each module map, passed during compilation with
+# -ivfsoverlay. That makes the Qt includes textual again, without affecting the module
+# maps of any other library, or those of the platform SDK.
+#
+# CONFIG += qt_clang_module_maps opts out of the detection below, and keeps the module
+# maps in place. CONFIG += no_qt_clang_module_maps masks them without detection, for
+# example when the compiler flags are set by a wrapper we can't see.
+QT_FOR_CONFIG += core-private
+mask_qt_module_maps = false
+qtConfig(clang_module_maps):clang:!clang_cl:!qt_clang_module_maps {
+    # The overlay relies on its 'root-relative' key, which both upstream and Apple
+    # Clang learned in version 16. Older versions reject unknown keys outright, so
+    # we must not hand them the overlay at all.
+    clang_major_version = $$QMAKE_APPLE_CLANG_MAJOR_VERSION
+    isEmpty(clang_major_version): clang_major_version = $$QMAKE_CLANG_MAJOR_VERSION
+    !isEmpty(clang_major_version):!lessThan(clang_major_version, 16) {
+        no_qt_clang_module_maps {
+            mask_qt_module_maps = true
+        } else {
+            # The per-configuration flags have already been folded into QMAKE_CXXFLAGS
+            # by default_post.prf, but the Objective-C/C++ flags may not have been, as
+            # that happens in a feature file like this one.
+            module_flags = $$QMAKE_CXXFLAGS $$QMAKE_OBJECTIVE_CFLAGS
+            contains(module_flags, -fcxx-modules): \
+                mask_qt_module_maps = true
+        }
+    }
+}
+
 unset(using_private_headers)
 var_sfx =
 for(ever) {
@@ -256,6 +291,21 @@ for(ever) {
                 |contains(MODULE_CONFIG, internal_module): \
             INCLUDEPATH *= $$MODULE_INCLUDES
         QMAKE_FRAMEWORKPATH *= $$MODULE_FRAMEWORKS
+
+        $$mask_qt_module_maps {
+            # The module map, and the overlay masking it, sit in the module's include
+            # directory, or in the framework's Modules directory for framework builds.
+            # Only public modules with headers have one, so add the ones we find.
+            module_map_dirs = $$MODULE_INCLUDES
+            contains(MODULE_CONFIG, lib_bundle): \
+                module_map_dirs += $$MODULE_FRAMEWORKS/$${MODULE_MODULE}.framework/Modules
+            for (module_map_dir, module_map_dirs) {
+                overlay = $$module_map_dir/module.modulemap.disable.yaml
+                exists($$overlay): \
+                    QMAKE_CXXFLAGS *= -ivfsoverlay$$shell_quote($$overlay)
+            }
+        }
+
         !isEmpty(MODULE_MODULE) {
             contains(MODULE_CONFIG, lib_bundle) {
                 framework = $$MODULE_MODULE
