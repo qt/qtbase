@@ -73,26 +73,26 @@ public:
     QVulkanWindow::EnabledFeatures2Modifier enabledFeatures2Modifier;
 
     VkDevice dev = VK_NULL_HANDLE;
-    QVulkanDeviceFunctions *devFuncs;
-    uint32_t gfxQueueFamilyIdx;
-    uint32_t presQueueFamilyIdx;
-    VkQueue gfxQueue;
-    VkQueue presQueue;
+    QVulkanDeviceFunctions *devFuncs = nullptr;
+    uint32_t gfxQueueFamilyIdx = uint32_t(-1);
+    uint32_t presQueueFamilyIdx = uint32_t(-1);
+    VkQueue gfxQueue = VK_NULL_HANDLE;
+    VkQueue presQueue = VK_NULL_HANDLE;
     VkCommandPool cmdPool = VK_NULL_HANDLE;
     VkCommandPool presCmdPool = VK_NULL_HANDLE;
-    uint32_t hostVisibleMemIndex;
-    uint32_t deviceLocalMemIndex;
-    VkFormat colorFormat;
-    VkColorSpaceKHR colorSpace;
+    uint32_t hostVisibleMemIndex = 0;
+    uint32_t deviceLocalMemIndex = 0;
+    VkFormat colorFormat = VK_FORMAT_B8G8R8A8_UNORM;
+    VkColorSpaceKHR colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
     VkFormat dsFormat = VK_FORMAT_D24_UNORM_S8_UINT;
 
     PFN_vkCreateSwapchainKHR vkCreateSwapchainKHR = nullptr;
-    PFN_vkDestroySwapchainKHR vkDestroySwapchainKHR;
-    PFN_vkGetSwapchainImagesKHR vkGetSwapchainImagesKHR;
-    PFN_vkAcquireNextImageKHR vkAcquireNextImageKHR;
-    PFN_vkQueuePresentKHR vkQueuePresentKHR;
+    PFN_vkDestroySwapchainKHR vkDestroySwapchainKHR = nullptr;
+    PFN_vkGetSwapchainImagesKHR vkGetSwapchainImagesKHR = nullptr;
+    PFN_vkAcquireNextImageKHR vkAcquireNextImageKHR = nullptr;
+    PFN_vkQueuePresentKHR vkQueuePresentKHR = nullptr;
     PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR vkGetPhysicalDeviceSurfaceCapabilitiesKHR = nullptr;
-    PFN_vkGetPhysicalDeviceSurfaceFormatsKHR vkGetPhysicalDeviceSurfaceFormatsKHR;
+    PFN_vkGetPhysicalDeviceSurfaceFormatsKHR vkGetPhysicalDeviceSurfaceFormatsKHR = nullptr;
 
     static const int MAX_SWAPCHAIN_BUFFER_COUNT = 4;
     static const int MAX_FRAME_LAG = QVulkanWindow::MAX_CONCURRENT_FRAME_COUNT;
@@ -118,7 +118,7 @@ public:
 
     VkDeviceMemory msaaImageMem = VK_NULL_HANDLE;
 
-    uint32_t currentImage;
+    uint32_t currentImage = 0;
 
     struct FrameResources {
         VkSemaphore imageSem = VK_NULL_HANDLE;
@@ -131,7 +131,7 @@ public:
         bool cmdFenceWaitable = false;
     } frameRes[MAX_FRAME_LAG];
 
-    uint32_t currentFrame;
+    uint32_t currentFrame = 0;
 
     VkRenderPass defaultRenderPass = VK_NULL_HANDLE;
 
