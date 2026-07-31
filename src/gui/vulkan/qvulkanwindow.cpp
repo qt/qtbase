@@ -1151,18 +1151,31 @@ void QVulkanWindowPrivate::recreateSwapChain()
 
     swapChain = newSwapChain;
 
+    if (!createSwapChainResources()) {
+        destroySwapChainResources();
+        return;
+    }
+
+    if (renderer)
+        renderer->initSwapChainResources();
+
+    status = StatusReady;
+}
+
+bool QVulkanWindowPrivate::createSwapChainResources()
+{
     uint32_t actualSwapChainBufferCount = 0;
-    err = vkGetSwapchainImagesKHR(dev, swapChain, &actualSwapChainBufferCount, nullptr);
+    VkResult err = vkGetSwapchainImagesKHR(dev, swapChain, &actualSwapChainBufferCount, nullptr);
     if (err != VK_SUCCESS || actualSwapChainBufferCount < 2) {
         qWarning("QVulkanWindow: Failed to get swapchain images: %d (count=%d)", err, actualSwapChainBufferCount);
-        return;
+        return false;
     }
 
     qCDebug(lcGuiVk, "Actual swap chain buffer count: %d (supportsReadback=%d)",
             actualSwapChainBufferCount, swapChainSupportsReadBack);
     if (actualSwapChainBufferCount > MAX_SWAPCHAIN_BUFFER_COUNT) {
         qWarning("QVulkanWindow: Too many swapchain buffers (%d)", actualSwapChainBufferCount);
-        return;
+        return false;
     }
     swapChainBufferCount = actualSwapChainBufferCount;
 
@@ -1170,7 +1183,7 @@ void QVulkanWindowPrivate::recreateSwapChain()
     err = vkGetSwapchainImagesKHR(dev, swapChain, &actualSwapChainBufferCount, swapChainImages);
     if (err != VK_SUCCESS) {
         qWarning("QVulkanWindow: Failed to get swapchain images: %d", err);
-        return;
+        return false;
     }
 
     if (!createTransientImage(dsFormat,
@@ -1181,7 +1194,7 @@ void QVulkanWindowPrivate::recreateSwapChain()
                               &dsView,
                               1))
     {
-        return;
+        return false;
     }
 
     const bool msaa = sampleCount > VK_SAMPLE_COUNT_1_BIT;
@@ -1197,7 +1210,7 @@ void QVulkanWindowPrivate::recreateSwapChain()
                                   msaaViews,
                                   swapChainBufferCount))
         {
-            return;
+            return false;
         }
     }
 
@@ -1227,7 +1240,7 @@ void QVulkanWindowPrivate::recreateSwapChain()
         err = devFuncs->vkCreateImageView(dev, &imgViewInfo, nullptr, &image.imageView);
         if (err != VK_SUCCESS) {
             qWarning("QVulkanWindow: Failed to create swapchain image view %d: %d", i, err);
-            return;
+            return false;
         }
 
         VkImageView views[3] = { image.imageView,
@@ -1242,10 +1255,10 @@ void QVulkanWindowPrivate::recreateSwapChain()
         fbInfo.width = swapChainImageSize.width();
         fbInfo.height = swapChainImageSize.height();
         fbInfo.layers = 1;
-        VkResult err = devFuncs->vkCreateFramebuffer(dev, &fbInfo, nullptr, &image.fb);
+        err = devFuncs->vkCreateFramebuffer(dev, &fbInfo, nullptr, &image.fb);
         if (err != VK_SUCCESS) {
             qWarning("QVulkanWindow: Failed to create framebuffer: %d", err);
-            return;
+            return false;
         }
 
         if (gfxQueueFamilyIdx != presQueueFamilyIdx) {
@@ -1255,7 +1268,7 @@ void QVulkanWindowPrivate::recreateSwapChain()
             err = devFuncs->vkAllocateCommandBuffers(dev, &cmdBufInfo, &image.presTransCmdBuf);
             if (err != VK_SUCCESS) {
                 qWarning("QVulkanWindow: Failed to allocate acquire-on-present-queue command buffer: %d", err);
-                return;
+                return false;
             }
             VkCommandBufferBeginInfo cmdBufBeginInfo = {
                 VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO, nullptr,
@@ -1263,7 +1276,7 @@ void QVulkanWindowPrivate::recreateSwapChain()
             err = devFuncs->vkBeginCommandBuffer(image.presTransCmdBuf, &cmdBufBeginInfo);
             if (err != VK_SUCCESS) {
                 qWarning("QVulkanWindow: Failed to begin acquire-on-present-queue command buffer: %d", err);
-                return;
+                return false;
             }
             VkImageMemoryBarrier presTrans;
             memset(&presTrans, 0, sizeof(presTrans));
@@ -1283,7 +1296,7 @@ void QVulkanWindowPrivate::recreateSwapChain()
             err = devFuncs->vkEndCommandBuffer(image.presTransCmdBuf);
             if (err != VK_SUCCESS) {
                 qWarning("QVulkanWindow: Failed to end acquire-on-present-queue command buffer: %d", err);
-                return;
+                return false;
             }
         }
     }
@@ -1305,17 +1318,14 @@ void QVulkanWindowPrivate::recreateSwapChain()
         err = devFuncs->vkCreateFence(dev, &fenceInfo, nullptr, &frame.cmdFence);
         if (err != VK_SUCCESS) {
             qWarning("QVulkanWindow: Failed to create command buffer fence: %d", err);
-            return;
+            return false;
         }
         frame.cmdFenceWaitable = true; // fence was created in signaled state
     }
 
     currentFrame = 0;
 
-    if (renderer)
-        renderer->initSwapChainResources();
-
-    status = StatusReady;
+    return true;
 }
 
 uint32_t QVulkanWindowPrivate::chooseTransientImageMemType(VkImage img, uint32_t startIndex)
@@ -1461,6 +1471,14 @@ void QVulkanWindowPrivate::releaseSwapChain()
         devFuncs->vkDeviceWaitIdle(dev);
     }
 
+    destroySwapChainResources();
+
+    if (status == StatusReady)
+        status = StatusDeviceReady;
+}
+
+void QVulkanWindowPrivate::destroySwapChainResources()
+{
     for (int i = 0; i < frameLag; ++i) {
         FrameResources &frame(frameRes[i]);
         if (frame.cmdBuf) {
@@ -1535,8 +1553,7 @@ void QVulkanWindowPrivate::releaseSwapChain()
         swapChain = VK_NULL_HANDLE;
     }
 
-    if (status == StatusReady)
-        status = StatusDeviceReady;
+    swapChainBufferCount = 0;
 }
 
 /*!
@@ -1939,13 +1956,13 @@ QSize QVulkanWindowPrivate::surfacePixelSize() const
 
 void QVulkanWindowPrivate::beginFrame()
 {
-    if (!swapChain || framePending)
+    if (status != StatusReady || framePending)
         return;
 
     Q_Q(QVulkanWindow);
     if (swapChainImageSize != surfacePixelSize()) {
         recreateSwapChain();
-        if (!swapChain)
+        if (status != StatusReady)
             return;
     }
 
