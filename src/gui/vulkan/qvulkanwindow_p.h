@@ -42,6 +42,8 @@ public:
     uint32_t chooseTransientImageMemType(VkImage img, uint32_t startIndex);
     bool createTransientImage(VkFormat format, VkImageUsageFlags usage, VkImageAspectFlags aspectMask,
                               VkImage *images, VkDeviceMemory *mem, VkImageView *views, int count);
+    bool createSwapChainResources();
+    void destroySwapChainResources();
     void releaseSwapChain();
     void beginFrame();
     void endFrame();
