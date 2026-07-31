@@ -959,15 +959,7 @@ void QVulkanWindowPrivate::reset()
         presCmdPool = VK_NULL_HANDLE;
     }
 
-    if (frameGrabImage) {
-        devFuncs->vkDestroyImage(dev, frameGrabImage, nullptr);
-        frameGrabImage = VK_NULL_HANDLE;
-    }
-
-    if (frameGrabImageMem) {
-        devFuncs->vkFreeMemory(dev, frameGrabImageMem, nullptr);
-        frameGrabImageMem = VK_NULL_HANDLE;
-    }
+    releaseReadbackResources();
 
     if (dev) {
         devFuncs->vkDestroyDevice(dev, nullptr);
@@ -2017,8 +2009,15 @@ void QVulkanWindowPrivate::beginFrame()
         return;
     }
 
-    if (frameGrabbing)
+    if (frameGrabbing) {
         frameGrabTargetImage = QImage(swapChainImageSize, QImage::Format_RGBA8888); // the format is as documented
+        if (frameGrabTargetImage.isNull()) {
+            qWarning("QVulkanWindow: Failed to allocate readback image of size %dx%d",
+                     swapChainImageSize.width(), swapChainImageSize.height());
+            frameGrabbing = false;
+            return;
+        }
+    }
 
     ImageResources &image(imageRes[currentImage]);
     if (renderer) {
@@ -2077,8 +2076,13 @@ void QVulkanWindowPrivate::endFrame()
     }
 
     // When grabbing a frame, add a readback at the end and skip presenting.
-    if (frameGrabbing)
-        addReadback();
+    if (frameGrabbing && !addReadback()) {
+        devFuncs->vkEndCommandBuffer(frame.cmdBuf);
+        releaseReadbackResources();
+        frameGrabbing = false;
+        frameGrabTargetImage = QImage();
+        return;
+    }
 
     VkResult err = devFuncs->vkEndCommandBuffer(frame.cmdBuf);
     if (err != VK_SUCCESS) {
@@ -2219,7 +2223,7 @@ bool QVulkanWindowPrivate::checkDeviceLost(VkResult err)
     return false;
 }
 
-void QVulkanWindowPrivate::addReadback()
+bool QVulkanWindowPrivate::addReadback()
 {
     VkImageCreateInfo imageInfo;
     memset(&imageInfo, 0, sizeof(imageInfo));
@@ -2239,7 +2243,7 @@ void QVulkanWindowPrivate::addReadback()
     VkResult err = devFuncs->vkCreateImage(dev, &imageInfo, nullptr, &frameGrabImage);
     if (err != VK_SUCCESS) {
         qWarning("QVulkanWindow: Failed to create image for readback: %d", err);
-        return;
+        return false;
     }
 
     VkMemoryRequirements memReq;
@@ -2255,13 +2259,13 @@ void QVulkanWindowPrivate::addReadback()
     err = devFuncs->vkAllocateMemory(dev, &allocInfo, nullptr, &frameGrabImageMem);
     if (err != VK_SUCCESS) {
         qWarning("QVulkanWindow: Failed to allocate memory for readback image: %d", err);
-        return;
+        return false;
     }
 
     err = devFuncs->vkBindImageMemory(dev, frameGrabImage, frameGrabImageMem, 0);
     if (err != VK_SUCCESS) {
         qWarning("QVulkanWindow: Failed to bind readback image memory: %d", err);
-        return;
+        return false;
     }
 
     FrameResources &frame(frameRes[currentFrame]);
@@ -2319,6 +2323,20 @@ void QVulkanWindowPrivate::addReadback()
                                    VK_PIPELINE_STAGE_HOST_BIT,
                                    0, 0, nullptr, 0, nullptr,
                                    1, &barrier);
+
+    return true;
+}
+
+void QVulkanWindowPrivate::releaseReadbackResources()
+{
+    if (frameGrabImage) {
+        devFuncs->vkDestroyImage(dev, frameGrabImage, nullptr);
+        frameGrabImage = VK_NULL_HANDLE;
+    }
+    if (frameGrabImageMem) {
+        devFuncs->vkFreeMemory(dev, frameGrabImageMem, nullptr);
+        frameGrabImageMem = VK_NULL_HANDLE;
+    }
 }
 
 void QVulkanWindowPrivate::finishBlockingReadback()
@@ -2340,6 +2358,7 @@ void QVulkanWindowPrivate::finishBlockingReadback()
     VkResult err = devFuncs->vkMapMemory(dev, frameGrabImageMem, layout.offset, layout.size, 0, reinterpret_cast<void **>(&p));
     if (err != VK_SUCCESS) {
         qWarning("QVulkanWindow: Failed to map readback image memory after transfer: %d", err);
+        releaseReadbackResources();
         return;
     }
 
@@ -2350,10 +2369,7 @@ void QVulkanWindowPrivate::finishBlockingReadback()
 
     devFuncs->vkUnmapMemory(dev, frameGrabImageMem);
 
-    devFuncs->vkDestroyImage(dev, frameGrabImage, nullptr);
-    frameGrabImage = VK_NULL_HANDLE;
-    devFuncs->vkFreeMemory(dev, frameGrabImageMem, nullptr);
-    frameGrabImageMem = VK_NULL_HANDLE;
+    releaseReadbackResources();
 }
 
 /*!
@@ -2851,8 +2867,13 @@ QImage QVulkanWindow::grab()
         return QImage();
     }
 
+    d->frameGrabTargetImage = QImage();
+
     d->frameGrabbing = true;
     d->beginFrame();
+
+    if (!d->framePending)
+        d->frameGrabbing = false;
 
     if (d->colorFormat == VK_FORMAT_B8G8R8A8_UNORM)
         d->frameGrabTargetImage = std::move(d->frameGrabTargetImage).rgbSwapped();
