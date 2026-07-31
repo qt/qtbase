@@ -4014,9 +4014,10 @@ void tst_QLineEdit::QTBUG697_paletteCurrentColorGroup()
     QVERIFY(le.hasFocus());
     le.selectAll();
 
-    QImage img(le.size(),QImage::Format_ARGB32 );
+    QImage img(le.size(),QImage::Format_ARGB32);
     le.render(&img);
-    const QPoint pixelPosition(cursorXStartPosition + 10, le.height()/2);
+    // height()/2 misses the text line when the widget is shown full screen.
+    const QPoint pixelPosition(cursorXStartPosition + 10, le.cursorRect().center().y());
     QCOMPARE(img.pixel(pixelPosition), QColor(Qt::green).rgb());
 
     QWindow window;
