@@ -475,10 +475,10 @@ void tst_QRhi::create()
         QVERIFY(supportedSampleCounts.contains(1));
         for (int i = 1; i < supportedSampleCounts.count(); ++i) {
             // Verify the list is sorted. Internally the backends rely on this.
-            QVERIFY(supportedSampleCounts[i] > supportedSampleCounts[i - 1]);
+            QCOMPARE_GT(supportedSampleCounts[i], supportedSampleCounts[i - 1]);
         }
 
-        QVERIFY(rhi->ubufAlignment() > 0);
+        QCOMPARE_GT(rhi->ubufAlignment(), 0);
         QCOMPARE(rhi->ubufAligned(123), aligned(123, rhi->ubufAlignment()));
 
         QCOMPARE(rhi->mipLevelsForSize(QSize(512, 300)), 10);
@@ -524,19 +524,19 @@ void tst_QRhi::create()
         const int maxVertexStorageBuffers = rhi->resourceLimit(QRhi::MaxVertexStorageBuffers);
         const int maxFragmentStorageBuffers = rhi->resourceLimit(QRhi::MaxFragmentStorageBuffers);
 
-        QVERIFY(texMin >= 1);
-        QVERIFY(texMax >= texMin);
-        QVERIFY(maxAtt >= 1);
-        QVERIFY(framesInFlight >= 1);
+        QCOMPARE_GE(texMin, 1);
+        QCOMPARE_GE(texMax, texMin);
+        QCOMPARE_GE(maxAtt, 1);
+        QCOMPARE_GE(framesInFlight, 1);
         if (rhi->isFeatureSupported(QRhi::TextureArrays))
-            QVERIFY(texArrayMax > 1);
-        QVERIFY(uniBufRangeMax >= 224 * 4 * 4);
-        QVERIFY(maxVertexInputs >= 8);
-        QVERIFY(maxVertexOutputs >= 8);
+            QCOMPARE_GT(texArrayMax, 1);
+        QCOMPARE_GE(uniBufRangeMax, 224 * 4 * 4);
+        QCOMPARE_GE(maxVertexInputs, 8);
+        QCOMPARE_GE(maxVertexOutputs, 8);
         // 0 is legitimate (optional per stage in OpenGL ES, no vertex-stage
         // support in the D3D11 backend), negative is not.
-        QVERIFY(maxVertexStorageBuffers >= 0);
-        QVERIFY(maxFragmentStorageBuffers >= 0);
+        QCOMPARE_GE(maxVertexStorageBuffers, 0);
+        QCOMPARE_GE(maxFragmentStorageBuffers, 0);
 
         QVERIFY(rhi->nativeHandles());
 
@@ -695,9 +695,9 @@ void tst_QRhi::stats()
 
         stats = rhi->statistics();
         qDebug() << stats;
-        QVERIFY(stats.allocCount > 0);
-        QVERIFY(stats.blockCount > 0);
-        QVERIFY(stats.usedBytes > 0);
+        QCOMPARE_GT(stats.allocCount, 0);
+        QCOMPARE_GT(stats.blockCount, 0);
+        QCOMPARE_GT(stats.usedBytes, 0);
     }
 }
 
@@ -1041,8 +1041,8 @@ void tst_QRhi::nativeTexture()
     {
         auto image = VkImage(nativeTex.object);
         QVERIFY(image);
-        QVERIFY(nativeTex.layout >= 1); // VK_IMAGE_LAYOUT_GENERAL
-        QVERIFY(nativeTex.layout <= 8); // VK_IMAGE_LAYOUT_PREINITIALIZED
+        QCOMPARE_GE(nativeTex.layout, 1); // VK_IMAGE_LAYOUT_GENERAL
+        QCOMPARE_LE(nativeTex.layout, 8); // VK_IMAGE_LAYOUT_PREINITIALIZED
     }
         break;
 #endif
@@ -1104,7 +1104,7 @@ void tst_QRhi::nativeBuffer()
         QVERIFY(buf->create());
 
         const QRhiBuffer::NativeBuffer nativeBuf = buf->nativeBuffer();
-        QVERIFY(nativeBuf.slotCount <= rhi->resourceLimit(QRhi::FramesInFlight));
+        QCOMPARE_LE(nativeBuf.slotCount, rhi->resourceLimit(QRhi::FramesInFlight));
 
         switch (impl) {
         case QRhi::Null:
@@ -1112,7 +1112,7 @@ void tst_QRhi::nativeBuffer()
     #ifdef TST_VK
         case QRhi::Vulkan:
         {
-            QVERIFY(nativeBuf.slotCount >= 1); // always backed by native buffers
+            QCOMPARE_GE(nativeBuf.slotCount, 1); // always backed by native buffers
             for (int i = 0; i < nativeBuf.slotCount; ++i) {
                 auto *buffer = static_cast<const VkBuffer *>(nativeBuf.objects[i]);
                 QVERIFY(buffer);
@@ -1124,7 +1124,7 @@ void tst_QRhi::nativeBuffer()
     #ifdef TST_GL
         case QRhi::OpenGLES2:
         {
-            QVERIFY(nativeBuf.slotCount >= 0); // UniformBuffers are not backed by native buffers, so 0 is perfectly valid
+            QCOMPARE_GE(nativeBuf.slotCount, 0); // UniformBuffers are not backed by native buffers, so 0 is perfectly valid
             for (int i = 0; i < nativeBuf.slotCount; ++i) {
                 auto *bufferId = static_cast<const uint *>(nativeBuf.objects[i]);
                 QVERIFY(bufferId);
@@ -1136,7 +1136,7 @@ void tst_QRhi::nativeBuffer()
     #ifdef TST_D3D11
         case QRhi::D3D11:
         {
-            QVERIFY(nativeBuf.slotCount >= 1); // always backed by native buffers
+            QCOMPARE_GE(nativeBuf.slotCount, 1); // always backed by native buffers
             for (int i = 0; i < nativeBuf.slotCount; ++i) {
                 auto *buffer = static_cast<void * const *>(nativeBuf.objects[i]);
                 QVERIFY(buffer);
@@ -1148,7 +1148,7 @@ void tst_QRhi::nativeBuffer()
     #ifdef TST_D3D12
         case QRhi::D3D12:
         {
-            QVERIFY(nativeBuf.slotCount >= 1); // always backed by native buffers
+            QCOMPARE_GE(nativeBuf.slotCount, 1); // always backed by native buffers
             for (int i = 0; i < nativeBuf.slotCount; ++i) {
                 auto *buffer = static_cast<void * const *>(nativeBuf.objects[i]);
                 QVERIFY(buffer);
@@ -1160,7 +1160,7 @@ void tst_QRhi::nativeBuffer()
     #ifdef TST_MTL
         case QRhi::Metal:
         {
-            QVERIFY(nativeBuf.slotCount >= 1); // always backed by native buffers
+            QCOMPARE_GE(nativeBuf.slotCount, 1); // always backed by native buffers
             for (int i = 0; i < nativeBuf.slotCount; ++i) {
                 void * const * buffer = (void * const *) nativeBuf.objects[i];
                 QVERIFY(buffer);
@@ -1254,7 +1254,7 @@ void tst_QRhi::resourceUpdateBatchBuffer()
         // completed at this point. With swapchain frames this would not be the
         // case.
         QVERIFY(readCompleted);
-        QVERIFY(readResult.data.size() == 10);
+        QCOMPARE(readResult.data.size(), 10);
         QCOMPARE(readResult.data.left(7), QByteArrayLiteral("BBBBBBB"));
         QCOMPARE(readResult.data.mid(7), QByteArrayLiteral("AAA"));
     }
@@ -1283,7 +1283,7 @@ void tst_QRhi::resourceUpdateBatchBuffer()
 
         if (rhi->isFeatureSupported(QRhi::ReadBackNonUniformBuffer)) {
             QVERIFY(readCompleted);
-            QVERIFY(readResult.data.size() == 10);
+            QCOMPARE(readResult.data.size(), 10);
             QCOMPARE(readResult.data.left(7), QByteArrayLiteral("BBBBBBB"));
             QCOMPARE(readResult.data.mid(7), QByteArrayLiteral("AAA"));
         } else {
@@ -2246,9 +2246,9 @@ void tst_QRhi::renderToTextureSimple()
     // with Y up in mind), but "pointing down" with D3D (because Y is up in NDC
     // but down in images).
     if (rhi->isYUpInFramebuffer() == rhi->isYUpInNDC())
-        QVERIFY(redCount < blueCount);
+        QCOMPARE_LT(redCount, blueCount);
     else
-        QVERIFY(redCount > blueCount);
+        QCOMPARE_GT(redCount, blueCount);
 }
 
 void tst_QRhi::renderToTextureMip_data()
@@ -2353,9 +2353,9 @@ void tst_QRhi::renderToTextureMip()
     QCOMPARE(redCount + blueCount, mipSize.width());
 
     if (rhi->isYUpInFramebuffer() == rhi->isYUpInNDC())
-        QVERIFY(redCount > blueCount); // 100, 28
+        QCOMPARE_GT(redCount, blueCount); // 100, 28
     else
-        QVERIFY(redCount < blueCount); // 28, 100
+        QCOMPARE_LT(redCount, blueCount); // 28, 100
 }
 
 void tst_QRhi::renderToTextureCubemapFace_data()
@@ -2487,13 +2487,14 @@ void tst_QRhi::renderToTextureCubemapFace()
             QFAIL("Encountered a pixel that is neither red or blue");
     }
 
-    QVERIFY(redCount > 0 && blueCount > 0);
+    QCOMPARE_GT(redCount, 0);
+    QCOMPARE_GT(blueCount, 0);
     QCOMPARE(redCount + blueCount, outputSize.width());
 
     if (rhi->isYUpInFramebuffer() == rhi->isYUpInNDC())
-        QVERIFY(redCount < blueCount); // 100, 412
+        QCOMPARE_LT(redCount, blueCount); // 100, 412
     else
-        QVERIFY(redCount > blueCount); // 412, 100
+        QCOMPARE_GT(redCount, blueCount); // 412, 100
 }
 
 void tst_QRhi::renderToTextureTextureArray_data()
@@ -2602,13 +2603,14 @@ void tst_QRhi::renderToTextureTextureArray()
             QFAIL("Encountered a pixel that is neither red or blue");
     }
 
-    QVERIFY(redCount > 0 && blueCount > 0);
+    QCOMPARE_GT(redCount, 0);
+    QCOMPARE_GT(blueCount, 0);
     QCOMPARE(redCount + blueCount, outputSize.width());
 
     if (rhi->isYUpInFramebuffer() == rhi->isYUpInNDC())
-        QVERIFY(redCount < blueCount); // 100, 412
+        QCOMPARE_LT(redCount, blueCount); // 100, 412
     else
-        QVERIFY(redCount > blueCount); // 412, 100
+        QCOMPARE_GT(redCount, blueCount); // 412, 100
 }
 
 static const float quadVerticesUvs[] = {
@@ -2738,10 +2740,10 @@ void tst_QRhi::renderToTextureTexturedQuad()
     QCOMPARE(result.pixel(130, 18), empty);
     QCOMPARE(result.pixel(4, 227), empty);
 
-    QVERIFY(qGreen(result.pixel(32, 52)) > 2 * qRed(result.pixel(32, 52)));
-    QVERIFY(qGreen(result.pixel(32, 52)) > 2 * qBlue(result.pixel(32, 52)));
-    QVERIFY(qGreen(result.pixel(214, 191)) > 2 * qRed(result.pixel(214, 191)));
-    QVERIFY(qGreen(result.pixel(214, 191)) > 2 * qBlue(result.pixel(214, 191)));
+    QCOMPARE_GT(qGreen(result.pixel(32, 52)), 2 * qRed(result.pixel(32, 52)));
+    QCOMPARE_GT(qGreen(result.pixel(32, 52)), 2 * qBlue(result.pixel(32, 52)));
+    QCOMPARE_GT(qGreen(result.pixel(214, 191)), 2 * qRed(result.pixel(214, 191)));
+    QCOMPARE_GT(qGreen(result.pixel(214, 191)), 2 * qBlue(result.pixel(214, 191)));
 }
 
 void tst_QRhi::renderToTextureSampleWithSeparateTextureAndSampler_data()
@@ -2866,10 +2868,10 @@ void tst_QRhi::renderToTextureSampleWithSeparateTextureAndSampler()
     QCOMPARE(result.pixel(130, 18), empty);
     QCOMPARE(result.pixel(4, 227), empty);
 
-    QVERIFY(qGreen(result.pixel(32, 52)) > 2 * qRed(result.pixel(32, 52)));
-    QVERIFY(qGreen(result.pixel(32, 52)) > 2 * qBlue(result.pixel(32, 52)));
-    QVERIFY(qGreen(result.pixel(214, 191)) > 2 * qRed(result.pixel(214, 191)));
-    QVERIFY(qGreen(result.pixel(214, 191)) > 2 * qBlue(result.pixel(214, 191)));
+    QCOMPARE_GT(qGreen(result.pixel(32, 52)), 2 * qRed(result.pixel(32, 52)));
+    QCOMPARE_GT(qGreen(result.pixel(32, 52)), 2 * qBlue(result.pixel(32, 52)));
+    QCOMPARE_GT(qGreen(result.pixel(214, 191)), 2 * qRed(result.pixel(214, 191)));
+    QCOMPARE_GT(qGreen(result.pixel(214, 191)), 2 * qBlue(result.pixel(214, 191)));
 }
 
 void tst_QRhi::renderToTextureArrayOfTexturedQuad_data()
@@ -3918,7 +3920,7 @@ void tst_QRhi::renderToTextureMultipleUniformBuffersAndDynamicOffset()
 
     const int MATRIX_COUNT = 4; // put 4 mat4s into the buffer, will only use one
     const int ubufElemSize = rhi->ubufAligned(64);
-    QVERIFY(ubufElemSize >= 64);
+    QCOMPARE_GE(ubufElemSize, 64);
     QScopedPointer<QRhiBuffer> ubuf(rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, MATRIX_COUNT * ubufElemSize));
     QVERIFY(ubuf->create());
 
@@ -3933,7 +3935,7 @@ void tst_QRhi::renderToTextureMultipleUniformBuffersAndDynamicOffset()
 
     const int OPACITY_COUNT = 6; // put 6 floats into the buffer, will only use one
     const int ubuf2ElemSize = rhi->ubufAligned(4);
-    QVERIFY(ubuf2ElemSize >= 4);
+    QCOMPARE_GE(ubuf2ElemSize, 4);
     QScopedPointer<QRhiBuffer> ubuf2(rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, OPACITY_COUNT * ubuf2ElemSize));
     QVERIFY(ubuf2->create());
 
@@ -4329,9 +4331,9 @@ void tst_QRhi::renderToTextureIndexedDraw()
     QCOMPARE(redCount + blueCount, texture->pixelSize().width());
 
     if (rhi->isYUpInFramebuffer() == rhi->isYUpInNDC())
-        QVERIFY(redCount < blueCount);
+        QCOMPARE_LT(redCount, blueCount);
     else
-        QVERIFY(redCount > blueCount);
+        QCOMPARE_GT(redCount, blueCount);
 }
 
 void tst_QRhi::renderToTextureArrayMultiView_data()
@@ -4509,7 +4511,7 @@ void tst_QRhi::renderToTextureArrayMultiView()
             if (qRed(c) > 250 && qGreen(c) < 10 && qBlue(c) < 10)
                 ++n;
         }
-        QVERIFY(n >= 10);
+        QCOMPARE_GE(n, 10);
 
         y = image1.height() / 2;
         n = 0;
@@ -4518,7 +4520,7 @@ void tst_QRhi::renderToTextureArrayMultiView()
             if (qRed(c) > 250 && qGreen(c) < 10 && qBlue(c) < 10)
                 ++n;
         }
-        QVERIFY(n >= 10);
+        QCOMPARE_GE(n, 10);
     }
 }
 
@@ -4626,7 +4628,7 @@ void tst_QRhi::renderToTextureScissorChange()
             if (qRed(c) >= 254 && qGreen(c) == 0 && qBlue(c) == 0)
                 ++redCount;
         }
-        QVERIFY(redCount == 200);
+        QCOMPARE(redCount, 200);
 
         // should be white outside the scissor rect
         y = outputSize.height() - 50;
@@ -4670,7 +4672,7 @@ void tst_QRhi::renderToTextureScissorChange()
             if (!(qRed(c) >= 254 && qGreen(c) == 0 && qBlue(c) == 0))
                 ++nonRedCount;
         }
-        QVERIFY(nonRedCount == 0);
+        QCOMPARE(nonRedCount, 0);
     }
 
     rhi->endOffscreenFrame();
@@ -5029,7 +5031,7 @@ void tst_QRhi::renderToWindowSimple()
     }
 
     QCOMPARE(redCount + blueCount, readbackWidth);
-    QVERIFY(redCount < blueCount);
+    QCOMPARE_LT(redCount, blueCount);
 
     // Verify the backbuffer single-pixel readback
     QVERIFY(readCompletedPartial);
@@ -5161,7 +5163,9 @@ void tst_QRhi::renderToTextureSameSrbDifferentShaders()
     // it's just not there; should be with the patch in place, with all backends
     const int maxFuzz = 4;
     QRgb c = image.pixel(result.width() / 2, result.height() / 2);
-    QVERIFY(qAbs(qRed(c) - 127) <= maxFuzz && qAbs(qGreen(c) - 127) <= maxFuzz && qAbs(qBlue(c) - 127) <= maxFuzz);
+    QCOMPARE_LE(qAbs(qRed(c) - 127), maxFuzz);
+    QCOMPARE_LE(qAbs(qGreen(c) - 127), maxFuzz);
+    QCOMPARE_LE(qAbs(qBlue(c) - 127), maxFuzz);
 }
 
 void tst_QRhi::continuousReadbackFromWindow_data()
@@ -10738,7 +10742,7 @@ void tst_QRhi::renderToFloatTexture()
             QFAIL("Encountered a pixel that is neither red or blue");
     }
     QCOMPARE(redCount + blueCount, texture->pixelSize().width());
-    QVERIFY(redCount > blueCount); // 1742 > 178
+    QCOMPARE_GT(redCount, blueCount); // 1742 > 178
 }
 
 void tst_QRhi::renderToRgb10Texture_data()
@@ -10833,7 +10837,7 @@ void tst_QRhi::renderToRgb10Texture()
             QFAIL("Encountered a pixel that is neither red or blue");
     }
     QCOMPARE(redCount + blueCount, texture->pixelSize().width());
-    QVERIFY(redCount > blueCount); // 1742 > 178
+    QCOMPARE_GT(redCount, blueCount); // 1742 > 178
 }
 
 void tst_QRhi::tessellation_data()
@@ -11914,9 +11918,9 @@ void tst_QRhi::halfPrecisionAttributes()
     // with Y up in mind), but "pointing down" with D3D (because Y is up in NDC
     // but down in images).
     if (rhi->isYUpInFramebuffer() == rhi->isYUpInNDC())
-        QVERIFY(redCount < blueCount);
+        QCOMPARE_LT(redCount, blueCount);
     else
-        QVERIFY(redCount > blueCount);
+        QCOMPARE_GT(redCount, blueCount);
 
 }
 
