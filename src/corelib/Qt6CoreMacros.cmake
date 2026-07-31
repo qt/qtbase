@@ -1115,7 +1115,7 @@ function(_qt_internal_finalize_clang_module_maps target)
     endif()
 
     # Note that -fmodules-cache-path and friends should not count as enabling modules.
-    if("${flags}" MATCHES "(^|[; ])-f(cxx-)?modules([; ]|$)")
+    if("${flags}" MATCHES "(^|[; ])-fcxx-modules([; ]|$)")
         set_property(TARGET "${target}" PROPERTY QT_DISABLE_CLANG_MODULE_MAPS TRUE)
     endif()
 endfunction()
