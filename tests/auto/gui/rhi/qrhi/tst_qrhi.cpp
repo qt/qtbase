@@ -4278,8 +4278,11 @@ void tst_QRhi::renderToTextureArrayMultiView()
         QScopedPointer<QRhiTexture> texture(rhi->newTextureArray(QRhiTexture::RGBA8, 2, outputSize, sampleCount, textureFlags));
         QVERIFY(texture->create());
 
-        // exercise a depth-stencil buffer as well, not that the triangle needs it; note that this also needs to be a two-layer texture array
-        QScopedPointer<QRhiTexture> ds(rhi->newTextureArray(QRhiTexture::D24S8, 2, outputSize, sampleCount, QRhiTexture::RenderTarget));
+        // Some Vulkan drivers lack D24S8, so fallback to D32FS8.
+        const QRhiTexture::Format dsFormat = rhi->isTextureFormatSupported(QRhiTexture::D24S8)
+                ? QRhiTexture::D24S8
+                : QRhiTexture::D32FS8;
+        QScopedPointer<QRhiTexture> ds(rhi->newTextureArray(dsFormat, 2, outputSize, sampleCount, QRhiTexture::RenderTarget));
         QVERIFY(ds->create());
 
         QScopedPointer<QRhiTexture> resolveTexture;
