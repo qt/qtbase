@@ -9,7 +9,7 @@
 
         "Homepage": "https://github.com/adobe-type-tools/agl-aglfn",
         "Version": "1.7",
-        "PURL": "pkg:github/adobe-type-tools/agl-aglfn@$<VERSION>",
+        "PURL": "pkg:github/adobe-type-tools/agl-aglfn@0276763a3cdf204a1badc283d90f5bc7ac13130d",
         "License": "BSD 3-Clause \"New\" or \"Revised\" License",
         "LicenseId": "BSD-3-Clause",
         "LicenseFile": "LICENSE.AGLFN.txt",
