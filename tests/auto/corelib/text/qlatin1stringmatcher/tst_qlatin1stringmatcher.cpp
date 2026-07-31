@@ -12,6 +12,10 @@
 
 #include <thread>
 
+#if defined(Q_OS_UNIX)
+#    include <unistd.h>
+#endif
+
 // COM interface
 #if defined(interface)
 #    undef interface
@@ -515,6 +519,21 @@ void tst_QLatin1StringMatcher::indexIn()
     QCOMPARE(matcher.indexIn(haystack, 3), -1);
 }
 
+// bad_alloc never fires under memory overcommit, the process is OOM-killed instead.
+static bool hasPhysicalMemory(quint64 needed)
+{
+#if defined(_SC_PHYS_PAGES) && defined(_SC_PAGESIZE)
+    const long pages = sysconf(_SC_PHYS_PAGES);
+    const long pageSize = sysconf(_SC_PAGESIZE);
+    if (pages <= 0 || pageSize <= 0)
+        return true; // size unknown, leave it to bad_alloc
+    return quint64(pages) * quint64(pageSize) >= needed;
+#else
+    Q_UNUSED(needed);
+    return true; // leave it to bad_alloc
+#endif
+}
+
 void tst_QLatin1StringMatcher::haystacksWithMoreThan4GiBWork()
 {
 #if QT_POINTER_SIZE > 4
@@ -533,6 +552,9 @@ void tst_QLatin1StringMatcher::haystacksWithMoreThan4GiBWork()
     timer.start();
     constexpr size_t GiB = 1024 * 1024 * 1024;
     constexpr size_t BaseSize = 4 * GiB + 1;
+    // A system with exactly 4GiB cannot spare all of it, so require headroom.
+    if (!hasPhysicalMemory(2 * BaseSize))
+        QSKIP("Not enough memory to hold a 4GiB haystack.");
     try {
         large.reserve(BaseSize + needle.size());
         large.resize(BaseSize, '\0');
@@ -564,6 +586,9 @@ void tst_QLatin1StringMatcher::haystacksWithMoreThan4GiBWork()
     {
         qsizetype dynamicResult;
         QString toSearch;
+        // The 8GiB QString comes on top of the haystack.
+        if (!hasPhysicalMemory(4 * BaseSize))
+            QSKIP("Not enough memory for an additional 8GiB QString.");
         try {
             toSearch = QString::fromLatin1(large);
         } catch (const std::bad_alloc &) {
