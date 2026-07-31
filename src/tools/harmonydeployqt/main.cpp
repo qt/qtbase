@@ -354,9 +354,22 @@ static bool readInputConfiguration(Options *options)
     options->harmonyOsAbilityOrientation = obj["harmonyos-ability-orientation"_L1].toString();
 
     // Validate required fields
-    if (!options->testBundleMode && options->applicationBinary.isEmpty()) {
-        fprintf(stderr, "Error: 'application-binary' not specified in JSON\n");
-        return false;
+    if (!options->testBundleMode) {
+        if (options->applicationBinary.isEmpty()) {
+            fprintf(stderr, "Error: 'application-binary' not specified in JSON\n");
+            return false;
+        }
+
+        // The settings file is generated at CMake generate time, so it names the
+        // application binary long before the build produces it. Fail early with a
+        // clear reason instead of copying the whole template first and then
+        // tripping over the missing file in copyApplicationBinary().
+        if (!QFile::exists(options->applicationBinary)) {
+            fprintf(stderr, "Error: application binary does not exist: %s\n",
+                    qPrintable(options->applicationBinary));
+            fprintf(stderr, "       Build the project before running harmonydeployqt.\n");
+            return false;
+        }
     }
 
     // Set defaults for test bundle mode
@@ -508,8 +521,10 @@ static bool copyFileIfNewer(const QString &sourceFileName,
     if (verbose)
         fprintf(stdout, "  Copying: %s\n", qPrintable(QFileInfo(sourceFileName).fileName()));
 
-    if (!QFile::copy(sourceFileName, destinationFileName)) {
-        fprintf(stderr, "Failed to copy file: %s to %s\n", qPrintable(sourceFileName), qPrintable(destinationFileName));
+    QFile sourceFile(sourceFileName);
+    if (!sourceFile.copy(destinationFileName)) {
+        fprintf(stderr, "Failed to copy file: %s to %s: %s\n", qPrintable(sourceFileName),
+                qPrintable(destinationFileName), qPrintable(sourceFile.errorString()));
         return false;
     }
 
