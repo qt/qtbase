@@ -448,6 +448,15 @@ QVersionNumber QVulkanInstance::supportedApiVersion() const
     debug output redirection is functional, \c{VK_EXT_debug_utils} is needed as
     well.
 
+    Qt has no means to enable layers and extensions on an already created
+    VkInstance. Therefore, the responsibility is on the caller to ensure \a
+    existingVkInstance is suitable to be used with Qt. If QRhi-based rendering
+    is involved, call \l QRhiVulkanInitParams::preferredInstanceExtensions() to
+    query an additional list of instance extensions that should be enabled by
+    the creator of \a existingVkInstance, in addition to the extensions
+    mentioned above, as long as they are available and supported by the system
+    at run time.
+
     \note This function can only be called before create() and has no effect if
     called afterwards.
  */
