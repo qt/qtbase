@@ -48,7 +48,8 @@ public:
     void beginFrame();
     void endFrame();
     bool checkDeviceLost(VkResult err);
-    void addReadback();
+    bool addReadback();
+    void releaseReadbackResources();
     void finishBlockingReadback();
 
     enum Status {
