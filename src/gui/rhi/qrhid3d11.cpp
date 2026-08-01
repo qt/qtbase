@@ -1476,6 +1476,9 @@ QRhi::FrameOpResult QRhiD3D11::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginF
 {
     Q_UNUSED(flags);
 
+    if (deviceLost)
+        return QRhi::FrameOpDeviceLost;
+
     QD3D11SwapChain *swapChainD = QRHI_RES(QD3D11SwapChain, swapChain);
     contextState.currentSwapChain = swapChainD;
     const int currentFrameSlot = swapChainD->currentFrameSlot;
@@ -3152,9 +3155,12 @@ void QRhiD3D11::executeCommandBuffer(QD3D11CommandBuffer *cbD)
             }
             break;
         case QD3D11CommandBuffer::Command::UpdateSubRes:
-            context->UpdateSubresource(cmd.args.updateSubRes.dst, cmd.args.updateSubRes.dstSubRes,
-                                       cmd.args.updateSubRes.hasDstBox ? &cmd.args.updateSubRes.dstBox : nullptr,
-                                       cmd.args.updateSubRes.src, cmd.args.updateSubRes.srcRowPitch, 0);
+            // dst can be null (e.g. device lost), but d3d11 dereferences it unconditionally
+            if (cmd.args.updateSubRes.dst) {
+                context->UpdateSubresource(cmd.args.updateSubRes.dst, cmd.args.updateSubRes.dstSubRes,
+                                           cmd.args.updateSubRes.hasDstBox ? &cmd.args.updateSubRes.dstBox : nullptr,
+                                           cmd.args.updateSubRes.src, cmd.args.updateSubRes.srcRowPitch, 0);
+            }
             break;
         case QD3D11CommandBuffer::Command::CopySubRes:
             context->CopySubresourceRegion(cmd.args.copySubRes.dst, cmd.args.copySubRes.dstSubRes,
@@ -3771,6 +3777,8 @@ bool QD3D11Texture::create()
         if (FAILED(hr)) {
             qWarning("Failed to create 2D texture: %s",
                 qPrintable(QSystemError::windowsComString(hr)));
+            if (hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET)
+                rhiD->deviceLost = true;
             return false;
         }
         if (!m_objectName.isEmpty())
@@ -3790,6 +3798,8 @@ bool QD3D11Texture::create()
         if (FAILED(hr)) {
             qWarning("Failed to create 3D texture: %s",
                 qPrintable(QSystemError::windowsComString(hr)));
+            if (hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET)
+                rhiD->deviceLost = true;
             return false;
         }
         if (!m_objectName.isEmpty())
