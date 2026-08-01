@@ -107,7 +107,12 @@ QRhiTexture *QBackingStoreDefaultCompositor::toTexture(const QImage &sourceImage
             m_texture.reset(rhi->newTexture(QRhiTexture::RGBA8, image.size()));
         else
             m_texture->setPixelSize(image.size());
-        m_texture->create();
+        if (!m_texture->create()) {
+            // Typically a lost device. Make sure to reset the null native resource
+            qWarning("QBackingStoreDefaultCompositor: Failed to create backing store texture");
+            m_texture.reset();
+            return nullptr;
+        }
         resourceUpdates->uploadTexture(m_texture.get(), image);
     } else {
         QRect imageRect = image.rect();
@@ -508,8 +513,12 @@ QPlatformBackingStore::FlushResult QBackingStoreDefaultCompositor::flush(QPlatfo
 
     QWindowPrivate::get(window)->lastComposeTime.start();
 
-    if (swapchain->currentPixelSize() != swapchain->surfacePixelSize())
-        swapchain->createOrResize();
+    if (swapchain->currentPixelSize() != swapchain->surfacePixelSize()) {
+        if (!swapchain->createOrResize()) {
+            return rhi->isDeviceLost() ? QPlatformBackingStore::FlushFailedDueToLostDevice
+                                       : QPlatformBackingStore::FlushFailed;
+        }
+    }
 
     // Start recording a new frame.
     QRhi::FrameOpResult frameResult = rhi->beginFrame(swapchain);
@@ -694,7 +703,11 @@ QPlatformBackingStore::FlushResult QBackingStoreDefaultCompositor::flush(QPlatfo
     } else
         render();
 
-    rhi->endFrame(swapchain);
+    const QRhi::FrameOpResult endResult = rhi->endFrame(swapchain);
+    if (endResult == QRhi::FrameOpDeviceLost)
+        return QPlatformBackingStore::FlushFailedDueToLostDevice;
+    if (endResult != QRhi::FrameOpSuccess)
+        return QPlatformBackingStore::FlushFailed;
 
     return QPlatformBackingStore::FlushSuccess;
 }
