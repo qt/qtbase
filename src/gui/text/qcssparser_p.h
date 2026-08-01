@@ -175,7 +175,6 @@ enum Property {
     QtStrokeDashArray,
     QtStrokeDashOffset,
     QtForeground,
-    NumProperties
 };
 
 enum KnownValue {
@@ -270,8 +269,6 @@ enum KnownValue {
     Value_Selected,
     Value_On,
     Value_Off,
-
-    NumKnownValues
 };
 
 enum BorderStyle {
@@ -288,7 +285,6 @@ enum BorderStyle {
     BorderStyle_Inset,
     BorderStyle_Outset,
     BorderStyle_Native,
-    NumKnownBorderStyles
 };
 
 enum Edge {
@@ -311,7 +307,6 @@ enum TileMode {
     TileMode_Round,
     TileMode_Stretch,
     TileMode_Repeat,
-    NumKnownTileModes
 };
 
 enum Repeat {
@@ -320,7 +315,6 @@ enum Repeat {
     Repeat_X,
     Repeat_Y,
     Repeat_XY,
-    NumKnownRepeats
 };
 
 enum Origin {
@@ -329,7 +323,6 @@ enum Origin {
     Origin_Border,
     Origin_Content,
     Origin_Margin,
-    NumKnownOrigins
 };
 
 enum PositionMode {
@@ -338,21 +331,18 @@ enum PositionMode {
     PositionMode_Relative,
     PositionMode_Absolute,
     PositionMode_Fixed,
-    NumKnownPositionModes
 };
 
 enum Attachment {
     Attachment_Unknown,
     Attachment_Fixed,
     Attachment_Scroll,
-    NumKnownAttachments
 };
 
 enum StyleFeature {
     StyleFeature_None = 0,
     StyleFeature_BackgroundColor = 1,
     StyleFeature_BackgroundGradient = 2,
-    NumKnownStyleFeatures = 4
 };
 
 struct Value

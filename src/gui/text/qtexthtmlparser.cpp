@@ -1160,8 +1160,6 @@ static QTextFrameFormat::BorderStyle toQTextFrameFormat(QCss::BorderStyle cssSty
     case QCss::BorderStyle::BorderStyle_None:
     case QCss::BorderStyle::BorderStyle_Native:
         return QTextFrameFormat::BorderStyle::BorderStyle_None;
-    case QCss::BorderStyle::NumKnownBorderStyles:
-        break;
     // Intentionally no "default" to allow a compiler warning when extending the enum
     // without updating this here. clang gives such a warning.
     }
