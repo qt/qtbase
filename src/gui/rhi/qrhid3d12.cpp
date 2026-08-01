@@ -1745,6 +1745,14 @@ QRhi::FrameOpResult QRhiD3D12::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginF
 {
     Q_UNUSED(flags);
 
+    // Report a device loss that was detected earlier (in createOrResize()'s
+    // ResizeBuffers(), during swapchain creation, or by the previous frame's
+    // Present()). Without this the caller has no way to find out - it would
+    // carry on and render into resources that could not be recreated. The
+    // Vulkan and OpenGL backends already report the loss from beginFrame().
+    if (deviceLost)
+        return QRhi::FrameOpDeviceLost;
+
     QD3D12SwapChain *swapChainD = QRHI_RES(QD3D12SwapChain, swapChain);
     currentSwapChain = swapChainD;
     currentFrameSlot = swapChainD->currentFrameSlot;
@@ -4963,6 +4971,8 @@ bool QD3D12Texture::create()
                  uint(resourceDesc.MipLevels),
                  int(resourceDesc.Format),
                  int(resourceDesc.SampleDesc.Count));
+        if (hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET)
+            rhiD->deviceLost = true;
         return false;
     }
 
