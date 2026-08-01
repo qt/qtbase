@@ -197,7 +197,7 @@ private slots:
 
 private:
     void setWindowType(QWindow *window, QRhi::Implementation impl);
-    bool isAndroidOpenGLSwiftShader(QRhi::Implementation impl, const QRhi *rhi);
+    bool isAndroidSwiftShader(const QRhi *rhi);
     QRhi *sharedRhi(QRhi::Implementation impl, QRhiInitParams *initParams);
 
     struct {
@@ -351,17 +351,16 @@ void tst_QRhi::rhiTestDataWithParam(const char *paramName, QSpan<T, E> paramValu
 #endif
 }
 
-bool tst_QRhi::isAndroidOpenGLSwiftShader(QRhi::Implementation impl, const QRhi *rhi)
+// True when running on the Android emulator's SwiftShader software renderer.
+bool tst_QRhi::isAndroidSwiftShader(const QRhi *rhi)
 {
 #ifdef Q_OS_ANDROID
     qWarning() << rhi->driverInfo();
-    if (impl == QRhi::OpenGLES2 && rhi->driverInfo().deviceName.contains("SwiftShader"))
-        return true;
+    return rhi->driverInfo().deviceName.contains("SwiftShader");
 #else
-    Q_UNUSED(impl);
     Q_UNUSED(rhi);
-#endif
     return false;
+#endif
 }
 
 void tst_QRhi::create_data()
@@ -1182,6 +1181,9 @@ void tst_QRhi::resourceUpdateBatchBuffer()
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing buffer resource updates");
 
+    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi.get()))
+        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
+
     const int bufferSize = 23;
     const QByteArray a(bufferSize, 'A');
     const QByteArray b(bufferSize, 'B');
@@ -1288,6 +1290,9 @@ void tst_QRhi::resourceUpdateBatchRGBATextureUpload()
     QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing texture resource updates");
+
+    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi.get()))
+        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
 
     QImage image(234, 123, QImage::Format_RGBA8888_Premultiplied);
     image.fill(Qt::red);
@@ -1508,6 +1513,9 @@ void tst_QRhi::resourceUpdateBatchRGBATextureCopy()
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing texture resource updates");
 
+    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi.get()))
+        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
+
     QImage red(256, 256, QImage::Format_RGBA8888_Premultiplied);
     red.fill(Qt::red);
 
@@ -1607,6 +1615,9 @@ void tst_QRhi::resourceUpdateBatchRGBATextureMip()
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing texture resource updates");
 
+    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi.get()))
+        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
+
 
     QImage red(512, 512, QImage::Format_RGBA8888_Premultiplied);
     red.fill(Qt::red);
@@ -1671,6 +1682,9 @@ void tst_QRhi::resourceUpdateBatchTextureRawDataStride()
     QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing texture resource updates");
+
+    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi.get()))
+        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
 
     const int WIDTH = 150;
     const int DATA_WIDTH = 180;
@@ -1903,6 +1917,9 @@ void tst_QRhi::resourceUpdateBatchBetweenFrames()
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing resource updates");
 
+    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi.get()))
+        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
+
     QImage image(128, 128, QImage::Format_RGBA8888_Premultiplied);
     image.fill(Qt::red);
     static const float bufferData[64] = {};
@@ -2103,6 +2120,9 @@ void tst_QRhi::renderToTextureSimple()
     QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing rendering");
+
+    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi.get()))
+        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
 
     const QSize outputSize(1920, 1080);
     QScopedPointer<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGBA8, outputSize, 1,
@@ -2308,6 +2328,9 @@ void tst_QRhi::renderToTextureCubemapFace()
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing rendering");
 
+    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi.get()))
+        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
+
     const QSize outputSize(512, 512); // width must be same as height
     QScopedPointer<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGBA8, outputSize, 1,
                                                         QRhiTexture::RenderTarget
@@ -2443,13 +2466,14 @@ void tst_QRhi::renderToTextureTextureArray()
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing rendering");
 
+    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi.get()))
+        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
+
+    if (impl == QRhi::OpenGLES2 && isAndroidSwiftShader(rhi.get()))
+        QSKIP("SwiftShader does not support this OpenGLES feature (QTBUG-132934)");
+
     if (!rhi->isFeatureSupported(QRhi::TextureArrays))
         QSKIP("TextureArrays is not supported with this backend, skipping test");
-
-    if (isAndroidOpenGLSwiftShader(impl, rhi.get())) {
-        QSKIP("SwiftShader software acceleration is used which does not support this OpenGLES "
-              "feature. See QTBUG-132934");
-    }
 
     const QSize outputSize(512, 256);
     const int ARRAY_SIZE = 8;
@@ -2563,6 +2587,9 @@ void tst_QRhi::renderToTextureTexturedQuad()
     QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing rendering");
+
+    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi.get()))
+        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
 
     QImage inputImage;
     inputImage.load(QLatin1String(":/data/qt256.png"));
@@ -2693,6 +2720,9 @@ void tst_QRhi::renderToTextureSampleWithSeparateTextureAndSampler()
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing rendering");
 
+    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi.get()))
+        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
+
     QImage inputImage;
     inputImage.load(QLatin1String(":/data/qt256.png"));
     QVERIFY(!inputImage.isNull());
@@ -2812,10 +2842,11 @@ void tst_QRhi::renderToTextureArrayOfTexturedQuad()
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing rendering");
 
-    if (isAndroidOpenGLSwiftShader(impl, rhi.get())) {
-        QSKIP("SwiftShader software acceleration is used which does not support this OpenGLES "
-              "feature. See QTBUG-132934");
-    }
+    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi.get()))
+        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
+
+    if (impl == QRhi::OpenGLES2 && isAndroidSwiftShader(rhi.get()))
+        QSKIP("SwiftShader does not support this OpenGLES feature (QTBUG-132934)");
 
     QImage inputImage;
     inputImage.load(QLatin1String(":/data/qt256.png"));
@@ -2960,10 +2991,11 @@ void tst_QRhi::renderToTextureArrayOfSampledTextures()
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing rendering");
 
-    if (isAndroidOpenGLSwiftShader(impl, rhi.get())) {
-        QSKIP("SwiftShader software acceleration is used which does not support this OpenGLES "
-              "feature. See QTBUG-132934");
-    }
+    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi.get()))
+        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
+
+    if (impl == QRhi::OpenGLES2 && isAndroidSwiftShader(rhi.get()))
+        QSKIP("SwiftShader does not support this OpenGLES feature (QTBUG-132934)");
 
 #ifdef Q_OS_WIN
     // The in-box software rasterizer ('Microsoft Basic Render Driver', vendor
@@ -3109,6 +3141,9 @@ void tst_QRhi::renderToTextureTexturedQuadAndUniformBuffer()
     QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing rendering");
+
+    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi.get()))
+        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
 
     QImage inputImage;
     inputImage.load(QLatin1String(":/data/qt256.png"));
@@ -3307,6 +3342,9 @@ void tst_QRhi::renderToTextureTexturedQuadAllDynamicBuffers()
     QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing rendering");
+
+    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi.get()))
+        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
 
     QImage inputImage;
     inputImage.load(QLatin1String(":/data/qt256.png"));
@@ -3515,6 +3553,9 @@ void tst_QRhi::renderToTextureDeferredSrb()
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing rendering");
 
+    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi.get()))
+        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
+
     QImage inputImage;
     inputImage.load(QLatin1String(":/data/qt256.png"));
     QVERIFY(!inputImage.isNull());
@@ -3652,6 +3693,9 @@ void tst_QRhi::renderToTextureDeferredUpdateSamplerInSrb()
     QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing rendering");
+
+    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi.get()))
+        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
 
     QImage inputImage;
     inputImage.load(QLatin1String(":/data/qt256.png"));
@@ -3793,6 +3837,9 @@ void tst_QRhi::renderToTextureMultipleUniformBuffersAndDynamicOffset()
     QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing rendering");
+
+    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi.get()))
+        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
 
     QImage inputImage;
     inputImage.load(QLatin1String(":/data/qt256.png"));
@@ -3956,6 +4003,9 @@ void tst_QRhi::renderToTextureSrbReuse()
     QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing rendering");
+
+    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi.get()))
+        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
 
     // Draw a textured quad with opacity 0.5. The difference to the simple tests
     // of the same kind is that there are two (configuration-wise identical)
@@ -4131,6 +4181,9 @@ void tst_QRhi::renderToTextureIndexedDraw()
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing rendering");
 
+    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi.get()))
+        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
+
     const QSize outputSize(1920, 1080);
     QScopedPointer<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGBA8, outputSize, 1,
                                                         QRhiTexture::RenderTarget | QRhiTexture::UsedAsTransferSource));
@@ -4250,6 +4303,9 @@ void tst_QRhi::renderToTextureArrayMultiView()
     QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing rendering");
+
+    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi.get()))
+        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
 
     if (!rhi->isFeatureSupported(QRhi::MultiView))
         QSKIP("Multiview not supported, skipping testing on this backend");
@@ -4436,6 +4492,9 @@ void tst_QRhi::renderToTextureScissorChange()
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing rendering");
 
+    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi.get()))
+        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
+
 #ifdef TST_GL
     if (impl == QRhi::OpenGLES2) {
         rhi->makeThreadLocalNativeContextCurrent();
@@ -4590,6 +4649,9 @@ void tst_QRhi::renderToWindowSimple()
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing rendering");
 
+    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi.get()))
+        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
+
     QScopedPointer<QWindow> window(new QWindow);
     setWindowType(window.data(), impl);
 
@@ -4740,6 +4802,9 @@ void tst_QRhi::renderToTextureSameSrbDifferentShaders()
     QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing rendering");
+
+    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi.get()))
+        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
 
     const QSize outputSize(1920, 1080);
     QScopedPointer<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGBA8, outputSize, 1,
@@ -5037,6 +5102,9 @@ void tst_QRhi::resourceUpdateBatchBufferTextureWithSwapchainFrames()
     QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing buffer resource updates");
+
+    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi.get()))
+        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
 
     QScopedPointer<QWindow> window(new QWindow);
     setWindowType(window.data(), impl);
@@ -5474,6 +5542,9 @@ void tst_QRhi::indexedIndirectMultiDrawBaseline()
     QRhi *rhi = sharedRhi(impl, initParams);
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing indexedIndirectMultiDrawBaseline");
+
+    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi))
+        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
     if (!rhi->isFeatureSupported(QRhi::DrawIndirect))
         QSKIP("Indirect draw not supported on this backend");
     if (!rhi->isFeatureSupported(QRhi::BaseVertex))
@@ -5614,6 +5685,9 @@ void tst_QRhi::indexedIndirectMultiDrawCustomStride()
     QRhi *rhi = sharedRhi(impl, initParams);
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing indexedIndirectMultiDrawCustomStride");
+
+    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi))
+        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
     if (!rhi->isFeatureSupported(QRhi::DrawIndirect))
         QSKIP("Indirect draw not supported on this backend");
     if (!rhi->isFeatureSupported(QRhi::BaseVertex))
@@ -5758,6 +5832,9 @@ void tst_QRhi::indexedIndirectMultiDrawFromCompute()
     QRhi *rhi = sharedRhi(impl, initParams);
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing indexedIndirectMultiDrawFromCompute");
+
+    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi))
+        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
     if (!rhi->isFeatureSupported(QRhi::Compute))
         QSKIP("Compute not supported on this backend");
     if (!rhi->isFeatureSupported(QRhi::DrawIndirect))
@@ -5921,6 +5998,9 @@ void tst_QRhi::indexedIndirectMultiDrawHighDrawCount()
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing "
               "indexedIndirectMultiDrawHighDrawCount");
+
+    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi))
+        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
     if (!rhi->isFeatureSupported(QRhi::DrawIndirect))
         QSKIP("Indirect draw not supported on this backend");
     if (!rhi->isFeatureSupported(QRhi::BaseVertex))
@@ -7223,10 +7303,10 @@ void tst_QRhi::threeDimTexture()
     if (!rhi->isFeatureSupported(QRhi::ThreeDimensionalTextures))
         QSKIP("Skipping testing 3D textures because they are reported as unsupported");
 
-    if (isAndroidOpenGLSwiftShader(impl, rhi)) {
-        QSKIP("SwiftShader software acceleration is used which does not support this OpenGLES "
-            "feature. See QTBUG-132934");
-    }
+    // SwiftShader reports 3D textures as supported but samples them incorrectly,
+    // on Vulkan as well as on OpenGLES.
+    if (isAndroidSwiftShader(rhi))
+        QSKIP("SwiftShader does not implement 3D textures correctly (QTBUG-132934)");
 
     const int WIDTH = 512;
     const int HEIGHT = 256;
@@ -7398,6 +7478,9 @@ void tst_QRhi::oneDimTexture()
     QRhi *rhi = sharedRhi(impl, initParams);
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing 1D textures");
+
+    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi))
+        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
 
     if (!rhi->isFeatureSupported(QRhi::OneDimensionalTextures))
         QSKIP("Skipping testing 1D textures because they are reported as unsupported");
@@ -7995,13 +8078,14 @@ void tst_QRhi::renderToFloatTexture()
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing rendering");
 
+    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi))
+        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
+
+    if (impl == QRhi::OpenGLES2 && isAndroidSwiftShader(rhi))
+        QSKIP("SwiftShader does not support this OpenGLES feature (QTBUG-132934)");
+
     if (!rhi->isTextureFormatSupported(QRhiTexture::RGBA16F))
         QSKIP("RGBA16F is not supported, skipping test");
-
-    if (isAndroidOpenGLSwiftShader(impl, rhi)) {
-        QSKIP("SwiftShader software acceleration is used which does not support this OpenGLES "
-              "feature. See QTBUG-132934");
-    }
 
     const QSize outputSize(1920, 1080);
     QScopedPointer<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGBA16F, outputSize, 1,
@@ -8090,13 +8174,14 @@ void tst_QRhi::renderToRgb10Texture()
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing rendering");
 
+    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi))
+        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
+
+    if (impl == QRhi::OpenGLES2 && isAndroidSwiftShader(rhi))
+        QSKIP("SwiftShader does not support this OpenGLES feature (QTBUG-132934)");
+
     if (!rhi->isTextureFormatSupported(QRhiTexture::RGB10A2))
         QSKIP("RGB10A2 is not supported, skipping test");
-
-    if (isAndroidOpenGLSwiftShader(impl, rhi)) {
-        QSKIP("SwiftShader software acceleration is used which does not support this OpenGLES "
-              "feature. See QTBUG-132934");
-    }
 
     const QSize outputSize(1920, 1080);
     QScopedPointer<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGB10A2, outputSize, 1,
@@ -8689,6 +8774,9 @@ void tst_QRhi::storageBuffer()
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing");
 
+    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi))
+        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
+
     if (!rhi->isFeatureSupported(QRhi::Feature::Compute))
         QSKIP("Compute is not supported with this graphics API, skipping test");
 
@@ -8816,6 +8904,9 @@ void tst_QRhi::storageBuffer()
     QRhi *rhi = sharedRhi(impl, initParams);
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing");
+
+    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi))
+        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
 
     if (!rhi->isFeatureSupported(QRhi::Feature::Compute))
         QSKIP("Compute is not supported with this graphics API, skipping test");
