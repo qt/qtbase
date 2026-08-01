@@ -185,11 +185,12 @@ void tst_AndroidTestRunnerTestApp::runScenario()
 
 void tst_AndroidTestRunnerTestApp::anrBlockUi()
 {
+    using namespace std::chrono_literals;
     QNativeInterface::QAndroidApplication::runOnAndroidMainThread([]() -> QVariant {
-        std::this_thread::sleep_for(std::chrono::seconds(15));
+        std::this_thread::sleep_for(40s);
         return {};
     });
-    std::this_thread::sleep_for(std::chrono::seconds(15));
+    std::this_thread::sleep_for(40s);
 }
 
 void tst_AndroidTestRunnerTestApp::blockForDisconnect()
