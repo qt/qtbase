@@ -803,10 +803,6 @@ bool QRhiVulkan::create(QRhi::Flags flags)
         queueInfo.queueCount = 1;
         queueInfo.pQueuePriorities = prio;
 
-        QList<const char *> devLayers;
-        if (inst->layers().contains("VK_LAYER_KHRONOS_validation"))
-            devLayers.append("VK_LAYER_KHRONOS_validation");
-
         QList<const char *> requestedDevExts;
         requestedDevExts.append("VK_KHR_swapchain");
 
@@ -890,8 +886,9 @@ bool QRhiVulkan::create(QRhi::Flags flags)
         devInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
         devInfo.queueCreateInfoCount = 1;
         devInfo.pQueueCreateInfos = &queueInfo;
-        devInfo.enabledLayerCount = uint32_t(devLayers.size());
-        devInfo.ppEnabledLayerNames = devLayers.constData();
+        // Device layers are deprecated, the spec requires enabledLayerCount to be 0.
+        devInfo.enabledLayerCount = 0;
+        devInfo.ppEnabledLayerNames = nullptr;
         devInfo.enabledExtensionCount = uint32_t(requestedDevExts.size());
         devInfo.ppEnabledExtensionNames = requestedDevExts.constData();
 
