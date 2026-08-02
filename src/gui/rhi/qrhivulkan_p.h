@@ -926,6 +926,7 @@ public:
     void ensureCommandPoolForNewFrame();
     double elapsedSecondsFromTimestamp(quint64 timestamp[2], bool *ok);
     void printExtraErrorInfo(VkResult err);
+    Q_DECL_COLD_FUNCTION
     void printDeviceLossErrorInfo() const;
     void setDefaultScissor(QVkCommandBuffer *cbD);
 

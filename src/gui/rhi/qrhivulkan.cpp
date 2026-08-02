@@ -47,6 +47,8 @@ QT_WARNING_POP
 #include <QVulkanFunctions>
 #include <QtGui/qwindow.h>
 #include <private/qvulkandefaultinstance_p.h>
+
+#include <QtCore/q20memory.h>
 #include <optional>
 
 QT_BEGIN_NAMESPACE
@@ -4200,17 +4202,19 @@ void QRhiVulkan::printDeviceLossErrorInfo() const
     }
     faultCounts.vendorBinarySize = 0;
 
-    QVarLengthArray<VkDeviceFaultAddressInfoEXT> addressInfos;
-    addressInfos.resize(faultCounts.addressInfoCount);
+    const auto numAddressInfos = faultCounts.addressInfoCount;
+    const auto addressInfos
+        = q20::make_unique_for_overwrite<VkDeviceFaultAddressInfoEXT[]>(numAddressInfos);
 
-    QVarLengthArray<VkDeviceFaultVendorInfoEXT> vendorInfos;
-    vendorInfos.resize(faultCounts.vendorInfoCount);
+    const auto numVendorInfos = faultCounts.vendorInfoCount;
+    const auto vendorInfos
+        = q20::make_unique_for_overwrite<VkDeviceFaultVendorInfoEXT[]>(numVendorInfos);
 
     VkDeviceFaultInfoEXT info{};
     info.sType             = VK_STRUCTURE_TYPE_DEVICE_FAULT_INFO_EXT;
     info.pNext             = nullptr;
-    info.pAddressInfos     = addressInfos.isEmpty() ? nullptr : addressInfos.data();
-    info.pVendorInfos      = vendorInfos.isEmpty()  ? nullptr : vendorInfos.data();
+    info.pAddressInfos     = numAddressInfos ? addressInfos.get() : nullptr;
+    info.pVendorInfos      = numVendorInfos  ? vendorInfos.get()  : nullptr;
     info.pVendorBinaryData = nullptr;
 
     result = vkGetDeviceFaultInfoEXT(dev, &faultCounts, &info);
