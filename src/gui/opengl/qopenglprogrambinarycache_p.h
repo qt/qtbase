@@ -61,7 +61,7 @@ private:
     QString m_currentCacheDir;
     bool m_cacheWritable;
     struct MemCacheEntry {
-        MemCacheEntry(const void *p, int size, uint format)
+        MemCacheEntry(const void *p, qsizetype size, uint format)
           : blob(reinterpret_cast<const char *>(p), size),
             format(format)
         { }
