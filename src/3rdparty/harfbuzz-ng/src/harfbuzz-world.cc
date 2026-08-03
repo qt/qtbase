@@ -2,6 +2,33 @@
 #include HB_FEATURES_H
 #endif
 
+#ifdef HB_HAS_CORETEXT
+#define HAVE_CORETEXT 1
+#endif
+#ifdef HB_HAS_DIRECTWRITE
+#define HAVE_DIRECTWRITE 1
+#endif
+#ifdef HB_HAS_FREETYPE
+#define HAVE_FREETYPE 1
+#endif
+#ifdef HB_HAS_GDI
+#define HAVE_GDI 1
+#endif
+#ifdef HB_HAS_GLIB
+#define HAVE_GLIB 1
+#endif
+#ifdef HB_HAS_GRAPHITE
+#define HAVE_GRAPHITE 1
+#endif
+#ifdef HB_HAS_UNISCRIBE
+#define HAVE_UNISCRIBE 1
+#define HAVE_GDI 1
+#endif
+#ifdef HB_HAS_WASM
+#define HAVE_WASM 1
+#endif
+
+
 /* Core library. */
 #include "OT/Var/VARC/VARC.cc"
 #include "hb-aat-layout.cc"
@@ -22,6 +49,7 @@
 #include "hb-ot-cff2-table.cc"
 #include "hb-ot-color.cc"
 #include "hb-ot-face.cc"
+#include "hb-ot-fetch.cc"
 #include "hb-ot-font.cc"
 #include "hb-ot-layout.cc"
 #include "hb-ot-map.cc"
@@ -66,38 +94,32 @@
 #endif
 
 #ifdef HB_HAS_CORETEXT
-#define HAVE_CORETEXT 1
 #include "hb-coretext-font.cc"
 #include "hb-coretext-shape.cc"
 #include "hb-coretext.cc"
 #endif
 
 #ifdef HB_HAS_DIRECTWRITE
-#define HAVE_DIRECTWRITE 1
 #include "hb-directwrite-font.cc"
 #include "hb-directwrite-shape.cc"
 #include "hb-directwrite.cc"
 #endif
 
 #ifdef HB_HAS_FREETYPE
-#define HAVE_FREETYPE 1
 #include "hb-ft.cc"
 #endif
 
 #ifdef HB_HAS_GDI
 #ifndef HAVE_GDI
-#define HAVE_GDI 1
 #include "hb-gdi.cc"
 #endif
 #endif
 
 #ifdef HB_HAS_GLIB
-#define HAVE_GLIB 1
 #include "hb-glib.cc"
 #endif
 
 #ifdef HB_HAS_GRAPHITE
-#define HAVE_GRAPHITE 1
 #include "hb-graphite2.cc"
 #endif
 
@@ -116,19 +138,18 @@
 #include "hb-raster-draw.cc"
 #include "hb-raster-image.cc"
 #include "hb-raster-paint.cc"
-#include "hb-raster.cc"
 #include "hb-static.cc"
 #endif
 
 #ifdef HB_HAS_SUBSET
 #include "graph/gsubgpos-context.cc"
+#include "hb-depend.cc"
 #include "hb-number.cc"
 #include "hb-ot-cff1-table.cc"
 #include "hb-ot-cff2-table.cc"
 #include "hb-static.cc"
 #include "hb-subset-cff-common.cc"
 #include "hb-subset-cff1.cc"
-#include "hb-subset-cff2-to-cff1.cc"
 #include "hb-subset-cff2.cc"
 #include "hb-subset-input.cc"
 #include "hb-subset-instancer-iup.cc"
@@ -146,8 +167,6 @@
 #endif
 
 #ifdef HB_HAS_UNISCRIBE
-#define HAVE_UNISCRIBE 1
-#define HAVE_GDI 1
 #include "hb-uniscribe.cc"
 #endif
 
@@ -163,7 +182,6 @@
 #endif
 
 #ifdef HB_HAS_WASM
-#define HAVE_WASM 1
 #include "hb-wasm-api.cc"
 #include "hb-wasm-shape.cc"
 #endif
