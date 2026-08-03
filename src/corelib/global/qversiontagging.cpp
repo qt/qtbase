@@ -22,7 +22,7 @@ extern "C" {
 //
 // [1] https://sourceware.org/binutils/docs/as/Symver.html
 
-#if defined(Q_CC_GNU) && defined(Q_OF_ELF)
+#if defined(Q_CC_GNU) && defined(Q_OF_ELF) && !defined(QT_STATIC)
 #  define make_versioned_symbol2(sym, m, n, separator)     \
     Q_CORE_EXPORT extern __attribute__((alias("_" SSYM))) const char sym ## _ ## m ## _ ## n; \
     asm(".symver " QT_STRINGIFY(sym) "_" QT_STRINGIFY(m) "_" QT_STRINGIFY(n) ", " \
