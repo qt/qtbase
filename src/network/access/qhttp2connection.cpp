@@ -1766,7 +1766,7 @@ void QHttp2Connection::handleRST_STREAM()
     Q_ASSERT(inboundFrame.payloadSize() == 4);
 
     const auto error = qFromBigEndian<quint32>(inboundFrame.dataBegin());
-    if (QPointer<QHttp2Stream> stream = m_streams[streamID])
+    if (QPointer<QHttp2Stream> stream = m_streams.value(streamID))
         emit stream->rstFrameReceived(error);
 
     // Verify that whatever stream is being RST'd is not in the idle state:
@@ -1783,7 +1783,7 @@ void QHttp2Connection::handleRST_STREAM()
 
     Q_ASSERT(inboundFrame.dataSize() == 4);
 
-    if (QPointer<QHttp2Stream> stream = m_streams[streamID])
+    if (QPointer<QHttp2Stream> stream = m_streams.value(streamID))
         stream->handleRST_STREAM(inboundFrame);
 }
 
@@ -1871,7 +1871,7 @@ void QHttp2Connection::handlePUSH_PROMISE()
     // I.e. If you are the server then the client must have initiated the stream you are sending
     // the promise on. And since this is about _sending_ we have to invert "Remote" to "Local"
     // because we are receiving.
-    if (it == m_streams.constEnd())
+    if (it == m_streams.constEnd() || it->isNull())
         return connectionError(ENHANCE_YOUR_CALM, "PUSH_PROMISE with invalid associated stream");
     if ((m_connectionType == Type::Client && (streamID & 1) == 0) ||
         (m_connectionType == Type::Server && (streamID & 1) == 1)) {
