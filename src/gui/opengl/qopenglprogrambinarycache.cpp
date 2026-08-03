@@ -369,6 +369,8 @@ static inline bool writeFile(const QString &filename, const QByteArray &data)
 
 void QOpenGLProgramBinaryCache::save(const QByteArray &cacheKey, uint programId)
 {
+    QMutexLocker lock(&m_mutex);
+
     if (!m_cacheWritable)
         return;
 
@@ -420,7 +422,6 @@ void QOpenGLProgramBinaryCache::save(const QByteArray &cacheKey, uint programId)
     GLint outSize = 0;
 #if QT_CONFIG(opengles2)
     if (context->isOpenGLES() && context->format().majorVersion() < 3) {
-        QMutexLocker lock(&m_mutex);
         initializeProgramBinaryOES(context);
         getProgramBinaryOES(programId, blobSize, &outSize, &blobFormat, p);
     } else
