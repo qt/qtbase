@@ -4,7 +4,7 @@ plugins {
 
 android {
     namespace = 'org.qtproject.qt.android.network'
-    compileSdk = (project.findProperty('compileSdk') ?: '36') as int
+    compileSdk = (project.findProperty('compileSdk') ?: '37') as int
 
     defaultConfig {
         minSdk = (project.findProperty('minSdk') ?: '28') as int

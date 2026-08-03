@@ -241,7 +241,7 @@ function(_qt_internal_android_generate_target_build_gradle target)
         QT_ANDROID_MIN_SDK_VERSION "28")
 
     _qt_internal_android_get_gradle_property(target_sdk_version ${target}
-        QT_ANDROID_TARGET_SDK_VERSION "36")
+        QT_ANDROID_TARGET_SDK_VERSION "37")
 
     get_target_property(android_target_type ${target} _qt_android_target_type)
 
