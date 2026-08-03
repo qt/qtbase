@@ -659,6 +659,8 @@ void QHttp2Stream::uploadDeviceDestroyed()
         emit uploadDeviceError(message);
     }
     m_uploadDevice = nullptr;
+    m_owningByteDevice = false;
+    m_uploadByteDevice = nullptr;
 }
 
 void QHttp2Stream::setState(State newState)
