@@ -385,7 +385,7 @@ function(qt_auto_detect_apple)
         elseif(QT_APPLE_SDK STREQUAL "iphoneos")
             set(osx_architectures "arm64")
         elseif(QT_APPLE_SDK STREQUAL "iphonesimulator")
-            set(osx_architectures "x86_64")
+            qt_internal_get_early_apple_host_system_arch(osx_architectures)
         else()
             if(NOT DEFINED QT_APPLE_SDK)
                 message(FATAL_ERROR "Please provide a value for -DQT_APPLE_SDK."
