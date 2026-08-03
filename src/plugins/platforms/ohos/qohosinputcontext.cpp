@@ -52,7 +52,7 @@ std::optional<QOhosInputContext::Direction> tryMapInputMethodDirectionToQt(::Inp
 {
     switch (direction) {
     case ::InputMethod_Direction::IME_DIRECTION_NONE:
-        return {};
+        return std::nullopt;
     case ::InputMethod_Direction::IME_DIRECTION_UP:
         return QOhosInputContext::Direction::CURSOR_UP;
     case ::InputMethod_Direction::IME_DIRECTION_DOWN:
@@ -62,7 +62,7 @@ std::optional<QOhosInputContext::Direction> tryMapInputMethodDirectionToQt(::Inp
     case ::InputMethod_Direction::IME_DIRECTION_RIGHT:
         return QOhosInputContext::Direction::CURSOR_RIGHT;
     }
-    return {};
+    return std::nullopt;
 }
 
 ::InputMethod_EnterKeyType mapQtToOhosImeEnterKeyType(Qt::EnterKeyType qtEnterKeyType)
