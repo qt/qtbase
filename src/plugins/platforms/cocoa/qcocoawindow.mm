@@ -1016,8 +1016,11 @@ void QCocoaWindow::handleWindowStateChanged(HandleFlags flags)
     qCDebug(lcQpaWindow) << "QCocoaWindow::handleWindowStateChanged" <<
         m_lastReportedWindowState << "-->" << currentState;
 
+    QPointer<QCocoaWindow> destructionGuard = this;
     QWindowSystemInterface::handleWindowStateChanged<QWindowSystemInterface::SynchronousDelivery>(
         window(), currentState, m_lastReportedWindowState);
+    if (!destructionGuard)
+        return;
     m_lastReportedWindowState = currentState;
 }
 
@@ -1471,8 +1474,11 @@ void QCocoaWindow::windowDidChangeScreen()
     // device-pixel ratio may have changed, and needs to be delivered to all
     // windows, both top level and child windows.
 
+    QPointer<QCocoaWindow> destructionGuard = this;
     QWindowSystemInterface::handleWindowScreenChanged<QWindowSystemInterface::SynchronousDelivery>(
         window(), currentScreen ? currentScreen->screen() : nullptr);
+    if (!destructionGuard)
+        return;
 
     if (currentScreen && hasPendingUpdateRequest()) {
         // Restart display-link on new screen. We need to do this unconditionally,
@@ -1578,7 +1584,11 @@ void QCocoaWindow::handleExposeEvent(const QRegion &region)
     }
 
     qCDebug(lcQpaDrawing) << "QCocoaWindow::handleExposeEvent" << window() << region << "isExposed" << isExposed();
+
+    QPointer<QCocoaWindow> destructionGuard = this;
     QWindowSystemInterface::handleExposeEvent<QWindowSystemInterface::SynchronousDelivery>(window(), region);
+    if (!destructionGuard)
+        return;
 
     if (!isExposed())
         static_cast<QCocoaScreen *>(screen())->maybeStopDisplayLink();
