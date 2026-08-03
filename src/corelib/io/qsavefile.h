@@ -37,8 +37,10 @@ public:
     QString fileName() const override;
     void setFileName(const QString &name);
 
+#ifdef Q_QDOC
     Permissions permissions() const override;
     bool setPermissions(Permissions permissionSpec) override;
+#endif // Q_QDOC
 
     QFILE_MAYBE_NODISCARD bool open(OpenMode flags) override;
     bool commit();
