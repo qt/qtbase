@@ -379,7 +379,21 @@ bool QOhosInputContext::isInputPanelVisible() const
 
 void QOhosInputContext::setFocusObject(QObject *object)
 {
+    if (object == m_focusObject)
+        return;
+
+    const bool wasAttached = m_imConnectionState == ImConnectionState::Attached;
+
+    if (!m_pendingPreeditText.isEmpty())
+        commit();
+
     m_focusObject = object;
+
+    if (wasAttached && object != nullptr) {
+        m_qtImEnabled = queryImEnabled();
+        if (m_qtImEnabled)
+            reset();
+    }
 }
 
 QObject *QOhosInputContext::focusObjectOrNull() const
