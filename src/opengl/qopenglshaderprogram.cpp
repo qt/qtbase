@@ -103,9 +103,9 @@ using namespace Qt::StringLiterals;
     enable this, switch to using addCacheableShaderFromSourceCode() and
     addCacheableShaderFromSourceFile(). With an OpenGL ES 3.x context or support
     for \c{GL_ARB_get_program_binary}, this will transparently cache program
-    binaries under QStandardPaths::GenericCacheLocation or
-    QStandardPaths::CacheLocation. When support is not available, calling the
-    cacheable function variants is equivalent to the normal ones.
+    binaries under QStandardPaths::CacheLocation. When support is not
+    available, calling the cacheable function variants is equivalent to the
+    normal ones.
 
     \note Some drivers do not have any binary formats available, even though
     they advertise the extension or offer OpenGL ES 3.0. In this case program
