@@ -217,7 +217,7 @@ To target another SDK / device type, use one of the following values:
 
 Depending on what value you pass to ``-DQT_APPLE_SDK=`` a list of target architectures is chosen
 by default:
-  * iphonesimulator: ``x86_64``
+  * iphonesimulator: the host architecture
   * iphoneos: ``arm64``
   * simulator_and_device: ``arm64;x86_64``
 
