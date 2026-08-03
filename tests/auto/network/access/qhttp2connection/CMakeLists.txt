@@ -11,6 +11,7 @@ qt_internal_add_test(tst_qhttp2connection
     SOURCES
         tst_qhttp2connection.cpp
     LIBRARIES
+        Qt::CorePrivate
         Qt::NetworkPrivate
         Qt::Test
 )

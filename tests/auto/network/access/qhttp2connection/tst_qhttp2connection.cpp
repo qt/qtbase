@@ -9,8 +9,10 @@
 #include <QtNetwork/private/hpack_p.h>
 #include <QtNetwork/private/bitstreams_p.h>
 
+#include <QtCore/qbuffer.h>
 #include <QtCore/qregularexpression.h>
 #include <QtCore/qthread.h>
+#include <QtCore/private/qnoncontiguousbytedevice_p.h> // for uploadByteDeviceDestroyedWhileBlocked
 
 #include <limits>
 
@@ -55,6 +57,7 @@ private slots:
     void windowUpdateOverflow_data();
     void windowUpdateOverflow();
     void totalBytesReceivedDATACounts();
+    void uploadByteDeviceDestroyedWhileBlocked();
 
 private:
     enum PeerType { Client, Server };
@@ -1822,6 +1825,69 @@ void tst_QHttp2Connection::totalBytesReceivedDATACounts()
         streamEnd = serverDataReceivedSpy.back().back().value<bool>();
     }
     QCOMPARE(serverConn->totalBytesReceivedDATA(), quint64(payload.size()));
+}
+
+void tst_QHttp2Connection::uploadByteDeviceDestroyedWhileBlocked()
+{
+    // uploadDeviceDestroyed() used to clear m_uploadDevice only, leaving
+    // m_uploadByteDevice dangling. A later SETTINGS INITIAL_WINDOW_SIZE
+    // increase from the peer would then queue maybeResumeUpload(), which
+    // dereferences the freed device (heap-use-after-free).
+    auto [client, server] = makeFakeConnectedSockets();
+    auto clientConn = makeHttp2Connection(client.get(), {}, Client);
+
+    // Creating the stream flushes the client preface; handleReadyRead()
+    // ignores incoming frames until that has happened.
+    QHttp2Stream *clientStream = clientConn->createStream().unwrap();
+    QVERIFY(clientStream);
+
+    // Shrink the per-stream send window so a 4096-byte upload stalls almost
+    // immediately, well before the device is exhausted. There's no public
+    // API for this, so inject the SETTINGS frame directly.
+    {
+        Http2::FrameWriter s(Http2::FrameType::SETTINGS, Http2::FrameFlag::EMPTY,
+                             Http2::connectionStreamID);
+        s.append(Http2::Settings::INITIAL_WINDOW_SIZE_ID);
+        s.append(quint32(64));
+        QVERIFY(s.write(*server));
+    }
+    QVERIFY(QTest::qWaitFor([&]() { return clientStream->m_sendWindow == 64; }));
+
+    QVERIFY(clientStream->sendHEADERS(getRequiredHeaders(), false));
+
+    auto *buffer = new QBuffer;
+    buffer->setData(QByteArray(4096, 'A'));
+    buffer->open(QIODevice::ReadOnly);
+    auto *uploadDevice = QNonContiguousByteDeviceFactory::create(buffer);
+    buffer->setParent(uploadDevice);
+
+    QSignalSpy uploadBlockedSpy{ clientStream, &QHttp2Stream::uploadBlocked };
+    // This is the overload of sendDATA() QNetworkAccessManager's HTTP/2 handler uses: the
+    // caller (not QHttp2Stream) owns the device's lifetime. Because we can't send everything in one
+    // go it will return early and try to send more later.
+    QVERIFY(clientStream->sendDATA(uploadDevice, true));
+    QCOMPARE(uploadBlockedSpy.count(), 1);
+    QVERIFY(clientStream->isUploadingDATA());
+
+    // The upload source is destroyed while the upload is window-stalled and
+    // the stream object survives.
+    delete uploadDevice;
+    QVERIFY(!clientStream->isUploadingDATA());
+
+    // Grow the window again, as if resuming a live upload.
+    {
+        Http2::FrameWriter s(Http2::FrameType::SETTINGS, Http2::FrameFlag::EMPTY,
+                             Http2::connectionStreamID);
+        s.append(Http2::Settings::INITIAL_WINDOW_SIZE_ID);
+        s.append(quint32(1024 * 1024));
+        QVERIFY(s.write(*server));
+    }
+    // Processing the frame above queues a maybeResumeUpload() call that runs
+    // during this wait. This would crash, reading through the already-freed
+    // device's vtable, before this patch.
+    QVERIFY(QTest::qWaitFor(
+            [&]() { return clientConn->streamInitialSendWindowSize == 1024 * 1024; }));
+    QVERIFY(!clientConn->m_connectionAborted);
 }
 
 QTEST_MAIN(tst_QHttp2Connection)
