@@ -19,9 +19,11 @@ int main(int argc, char *argv[])
     QCoreApplication app(argc, argv);
 
     // Use QCryptographicHash before any SSL API is touched.  When
-    // openssl_hash is enabled, the destructor calls OSSL_PROVIDER_unload()
-    // on the default provider, draining its activation count to zero.
-    // ensureLibraryLoaded() (called below via supportsSsl()) must recover.
+    // openssl_hash is enabled, this loads the default provider into the
+    // global library context and, as of QTBUG-148575, leaves it loaded;
+    // ensureLibraryLoaded() (called below via supportsSsl()) must come up
+    // regardless.  It used to unload the provider again, draining its
+    // activation count to zero and leaving SSL without one (QTBUG-136223).
     {
         QCryptographicHash hash(QCryptographicHash::Sha256);
         hash.addData("regression test for QTBUG-openssl-rand-after-hash");

@@ -115,6 +115,7 @@ QT_WARNING_POP
 
 #if !defined(QT_BOOTSTRAPPED) && QT_CONFIG(openssl_hash)
 #define USING_OPENSSL30
+#include <openssl/crypto.h>
 #include <openssl/evp.h>
 #include <openssl/provider.h>
 #endif
@@ -212,6 +213,56 @@ static constexpr const char * methodToName(QCryptographicHash::Algorithm method)
     }
     return nullptr;
 }
+
+/*
+    Never unloaded: it is the unload that trips OpenSSL up, freeing a stale
+    provider-store entry a second time at exit (QTBUG-148575;
+    openssl/openssl#32079 has the exact sequence, and is where to look before
+    removing any of this). retain_fallbacks=1 leaves OpenSSL's own fallback in
+    place for everyone else in the process, e.g. the TLS backend (QTBUG-136223).
+
+    Whether the load succeeded is of no interest to the callers: the
+    EVP_MD_fetch() that follows is the actual availability test, and it can
+    still succeed from the fallback or from another provider (e.g. FIPS).
+*/
+static void ensureDefaultProviderLoaded()
+{
+    static const bool loaded = OSSL_PROVIDER_try_load(nullptr, "default", /*retain_fallbacks=*/1);
+    Q_UNUSED(loaded);
+}
+
+namespace {
+struct OSSL_LIB_CTX_deleter {
+    void operator()(OSSL_LIB_CTX *ctx) const noexcept {
+        OSSL_LIB_CTX_free(ctx);
+    }
+};
+using OSSL_LIB_CTX_ptr = std::unique_ptr<OSSL_LIB_CTX, OSSL_LIB_CTX_deleter>;
+} // unnamed namespace
+
+/*
+    MD4 only exists in OpenSSL's "legacy" provider, which we don't want loaded
+    process-wide - other OpenSSL users in the process could then fetch other,
+    deliberately-weak algorithms from it too. Give it its own context instead:
+    load it (and its config, since OSSL_LIB_CTX_new() doesn't do that on its
+    own) once and keep it alive like ensureDefaultProviderLoaded() above.
+*/
+static OSSL_LIB_CTX *legacyProviderContext()
+{
+    static const OSSL_LIB_CTX_ptr ctx = [] {
+        OSSL_LIB_CTX_ptr ctx(OSSL_LIB_CTX_new());
+        if (ctx) {
+            // Unlike the global context's automatic init, this fails when
+            // there is no readable openssl.cnf.
+            const bool configLoaded = OSSL_LIB_CTX_load_config(ctx.get(), nullptr);
+            Q_UNUSED(configLoaded);
+            if (!OSSL_PROVIDER_load(ctx.get(), "legacy"))
+                ctx.reset();
+        }
+        return ctx;
+    }();
+    return ctx.get();
+}
 #endif // USING_OPENSSL30
 
 class QCryptographicHashPrivate
@@ -250,20 +301,11 @@ public:
             EVP_MD_free(md);
         }
     };
-    struct OSSL_PROVIDER_deleter {
-        void operator()(OSSL_PROVIDER *provider) const noexcept {
-            OSSL_PROVIDER_unload(provider);
-        }
-    };
-
     using EVP_MD_CTX_ptr = std::unique_ptr<EVP_MD_CTX, EVP_MD_CTX_deleter>;
     using EVP_MD_ptr = std::unique_ptr<EVP_MD, EVP_MD_deleter>;
-    using OSSL_PROVIDER_ptr = std::unique_ptr<OSSL_PROVIDER, OSSL_PROVIDER_deleter>;
     struct EVP {
         EVP_MD_ptr algorithm;
         EVP_MD_CTX_ptr context;
-        OSSL_PROVIDER_ptr defaultProvider;
-        OSSL_PROVIDER_ptr legacyProvider;
         bool initializationFailed;
 
         explicit EVP(QCryptographicHash::Algorithm method);
@@ -545,28 +587,14 @@ void QCryptographicHashPrivate::State::destroy(QCryptographicHash::Algorithm met
 QCryptographicHashPrivate::EVP::EVP(QCryptographicHash::Algorithm method)
     : initializationFailed{true}
 {
+    OSSL_LIB_CTX *fetchCtx = nullptr;
     if (method == QCryptographicHash::Md4) {
-        /*
-         * We need to load the legacy provider in order to have the MD4
-         * algorithm available.
-         */
-        legacyProvider = OSSL_PROVIDER_ptr(OSSL_PROVIDER_try_load(nullptr, "legacy", /*retain_fallbacks=*/1));
-
-        if (!legacyProvider)
+        fetchCtx = legacyProviderContext();
+        if (!fetchCtx)
             return;
+    } else {
+        ensureDefaultProviderLoaded();
     }
-
-    /*
-     * Load with retain_fallbacks=1 so that loading these providers - and the
-     * unload performed by OSSL_PROVIDER_deleter - does not disable OpenSSL's
-     * fallback auto-loading of the default provider in the global library
-     * context. Plain OSSL_PROVIDER_load() disables that fallback, which then
-     * leaves later OpenSSL users (e.g. the TLS backend) without a default
-     * provider once we unload, breaking RAND seeding. See QTBUG-136223.
-     */
-    defaultProvider = OSSL_PROVIDER_ptr(OSSL_PROVIDER_try_load(nullptr, "default", /*retain_fallbacks=*/1));
-    if (!defaultProvider)
-        return;
 
     context = EVP_MD_CTX_ptr(EVP_MD_CTX_new());
 
@@ -577,9 +605,10 @@ QCryptographicHashPrivate::EVP::EVP(QCryptographicHash::Algorithm method)
     /*
      * Using the "-fips" option will disable the global "fips=yes" for
      * this one lookup and the algorithm can be fetched from any provider
-     * that implements the algorithm (including the FIPS provider).
+     * that implements the algorithm (including the FIPS provider). For Md4
+     * that is moot: fetchCtx only ever holds the legacy provider.
      */
-    algorithm = EVP_MD_ptr(EVP_MD_fetch(nullptr, methodToName(method), "-fips"));
+    algorithm = EVP_MD_ptr{EVP_MD_fetch(fetchCtx, methodToName(method), "-fips")};
     if (!algorithm) {
         return;
     }
@@ -1240,8 +1269,13 @@ bool QCryptographicHashPrivate::supportsAlgorithm(QCryptographicHash::Algorithm 
     case QCryptographicHash::Blake2s_160:
     case QCryptographicHash::Blake2s_224:
         return true;
-    case QCryptographicHash::Sha1:
     case QCryptographicHash::Md4:
+        if (OSSL_LIB_CTX *legacyLibCtx = legacyProviderContext()) {
+            return EVP_MD_ptr{EVP_MD_fetch(legacyLibCtx, methodToName(method), "-fips")}
+                != nullptr;
+        }
+        return false;
+    case QCryptographicHash::Sha1:
     case QCryptographicHash::Md5:
     case QCryptographicHash::Sha224:
     case QCryptographicHash::Sha256:
@@ -1253,10 +1287,7 @@ bool QCryptographicHashPrivate::supportsAlgorithm(QCryptographicHash::Algorithm 
     case QCryptographicHash::RealSha3_512:
     case QCryptographicHash::Blake2b_512:
     case QCryptographicHash::Blake2s_256: {
-    // retain_fallbacks=1: don't disable the global default-provider fallback
-    // auto-load (see QTBUG-136223 and the EVP constructor above).
-    auto legacyProvider = OSSL_PROVIDER_ptr(OSSL_PROVIDER_try_load(nullptr, "legacy", /*retain_fallbacks=*/1));
-    auto defaultProvider = OSSL_PROVIDER_ptr(OSSL_PROVIDER_try_load(nullptr, "default", /*retain_fallbacks=*/1));
+    ensureDefaultProviderLoaded();
 
     const char *restriction = "-fips";
     EVP_MD_ptr algorithm = EVP_MD_ptr(EVP_MD_fetch(nullptr, methodToName(method), restriction));
