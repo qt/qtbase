@@ -1990,7 +1990,7 @@ void QTextEngine::itemize() const
 
     bool rtl = isRightToLeft();
 
-    QVarLengthArray<QScriptAnalysis, 4096> scriptAnalysis(length);
+    QVarLengthArray<QScriptAnalysis> scriptAnalysis(length);
     QScriptAnalysis *analysis = scriptAnalysis.data();
 
     QBidiAlgorithm bidi(layoutData->string.constData(), analysis, length, rtl);
