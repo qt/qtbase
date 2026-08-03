@@ -1124,10 +1124,14 @@ qt_internal_add_docs(Gui
     doc/qtgui.qdocconf
 )
 
-if(IOS)
+if(MACOS)
+    qt_internal_set_apple_privacy_manifest(Gui
+        "${CMAKE_CURRENT_SOURCE_DIR}/platform/macos/PrivacyInfo.xcprivacy")
+elseif(UIKIT)
     qt_internal_set_apple_privacy_manifest(Gui
         "${CMAKE_CURRENT_SOURCE_DIR}/platform/ios/PrivacyInfo.xcprivacy")
 endif()
+
 
 qt_internal_add_optimize_full_flags()
 
