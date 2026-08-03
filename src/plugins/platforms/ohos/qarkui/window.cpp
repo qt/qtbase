@@ -33,7 +33,7 @@ std::optional<WindowProperties> tryGetWindowProperties(JsWindowId jsWindowId)
         &windowProperties);
 
     if (errorCode != ::OK)
-        return {};
+        return std::nullopt;
 
     return WindowProperties {
         .windowRect = makeQRectFromWindowManagerRect(windowProperties.windowRect),
