@@ -53,6 +53,7 @@ public:
     static void tagWindowOrWidgetAsFloatWindow(QObject *windowOrWidgetToTag, bool showAsFloatWindow);
     static QWindow *getWindowOrWidgetAsSubWindowOfTagValue(QObject *windowOrWidget);
     static Qt::WindowFlags platformWindowFlagsForQWindow(QWindow *window);
+    static bool isEmbeddedWindow(QWindow *window);
     static void closeAllActivePopups();
 
     template<typename T, const QOhosPropertyDescriptor<T> *propertyPtr>

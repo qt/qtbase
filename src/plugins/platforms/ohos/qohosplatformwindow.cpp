@@ -377,6 +377,13 @@ Qt::WindowFlags QOhosPlatformWindow::platformWindowFlagsForQWindow(QWindow *wind
     return platformWindow->windowFlags();
 }
 
+bool QOhosPlatformWindow::isEmbeddedWindow(QWindow *window)
+{
+    auto *platformWindow = QOhosPlatformWindow::fromQWindowOrNull(window);
+    auto *view = platformWindow != nullptr ? platformWindow->ownedViewOrNull() : nullptr;
+    return view != nullptr && view->viewType() == QOhosView::ViewType::EmbeddedWindow;
+}
+
 void QOhosPlatformWindow::closeAllActivePopups()
 {
     auto windows = qGuiApp->allWindows();

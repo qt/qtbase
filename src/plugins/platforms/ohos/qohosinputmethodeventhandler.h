@@ -130,6 +130,7 @@ private:
     QInputDevice *getPointingDeviceOrCreate(QInputDevice::DeviceType deviceType);
 
     std::optional<std::pair<QWindow *, std::uint64_t>> getLastTouchedWindowWithSeqNoIfPresent() const;
+    void requestActivationOnPressIfNeeded(QWindow *pressTargetWindow);
     void handleMouseEvent(const QOhosMouseEvent &wsiEvent);
     void handleTouchEvent(const QWindowSystemInterfaceTouchEvent &touchEvent);
     void updateWindowsUnderTouchPoints(const QWindowSystemInterfaceTouchEvent &touchEvent);
@@ -143,6 +144,7 @@ private:
     std::map<QWindow *, std::pair<std::shared_ptr<void>, std::uint64_t>> m_windowsUnderTouchPoints;
     QPointer<QWindow> m_currentMouseGrabbingWindow;
     QPointer<QWindow> m_currentKeyboardGrabbingWindow;
+    QPointer<QWindow> m_pendingActivationWindow;
     QMap<Qt::Key, ushort> m_autoRepeatCountMap;
     std::optional<QOhosMouseEvent> m_lastWsiMouseEvent;
     std::optional<QWindowSystemInterfaceTouchEvent> m_lastWsiTouchEvent;
