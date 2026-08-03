@@ -345,7 +345,7 @@ std::optional<::ArkUI_NodeHandle> Node::tryfindChild(
         if (predicate(childNodeHandle))
             return childNodeHandle;
     }
-    return {};
+    return std::nullopt;
 }
 
 QPoint Node::nodeGlobalPosition(::ArkUI_NodeHandle nodeHandle)
