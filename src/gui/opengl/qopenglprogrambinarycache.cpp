@@ -84,26 +84,18 @@ static inline bool qt_ensureWritableDir(const QString &name)
 QOpenGLProgramBinaryCache::QOpenGLProgramBinaryCache()
     : m_cacheWritable(false)
 {
-    const QString subPath = "/qtshadercache-"_L1 + QSysInfo::buildAbi() + u'/';
-    const QString sharedCachePath = QStandardPaths::writableLocation(QStandardPaths::GenericCacheLocation);
-    m_globalCacheDir = sharedCachePath + subPath;
-    m_localCacheDir = QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + subPath;
-
-    if (!sharedCachePath.isEmpty()) {
-        m_currentCacheDir = m_globalCacheDir;
-        m_cacheWritable = qt_ensureWritableDir(m_currentCacheDir);
-    }
-    if (!m_cacheWritable) {
-        m_currentCacheDir = m_localCacheDir;
-        m_cacheWritable = qt_ensureWritableDir(m_currentCacheDir);
+    const QString cachePath = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
+    if (!cachePath.isEmpty()) {
+        m_cacheDir = cachePath + "/qtshadercache-"_L1 + QSysInfo::buildAbi() + u'/';
+        m_cacheWritable = qt_ensureWritableDir(m_cacheDir);
     }
 
-    qCDebug(lcOpenGLProgramDiskCache, "Cache location '%s' writable = %d", qPrintable(m_currentCacheDir), m_cacheWritable);
+    qCDebug(lcOpenGLProgramDiskCache, "Cache location '%s' writable = %d", qPrintable(m_cacheDir), m_cacheWritable);
 }
 
 QString QOpenGLProgramBinaryCache::cacheFileName(const QByteArray &cacheKey) const
 {
-    return m_currentCacheDir + QString::fromUtf8(cacheKey);
+    return m_cacheDir + QString::fromUtf8(cacheKey);
 }
 
 #define BASE_HEADER_SIZE (int(4 * sizeof(quint32)))
@@ -434,19 +426,8 @@ void QOpenGLProgramBinaryCache::save(const QByteArray &cacheKey, uint programId)
 
     writeUInt(&blobFormatPtr, blobFormat);
 
-    QString filename = cacheFileName(cacheKey);
-    bool ok = writeFile(filename, blob);
-    if (!ok && m_currentCacheDir == m_globalCacheDir) {
-        m_currentCacheDir = m_localCacheDir;
-        m_cacheWritable = qt_ensureWritableDir(m_currentCacheDir);
-        qCDebug(lcOpenGLProgramDiskCache, "Cache location changed to '%s' writable = %d",
-                qPrintable(m_currentCacheDir), m_cacheWritable);
-        if (m_cacheWritable) {
-            filename = cacheFileName(cacheKey);
-            ok = writeFile(filename, blob);
-        }
-    }
-    if (!ok)
+    const QString filename = cacheFileName(cacheKey);
+    if (!writeFile(filename, blob))
         qCDebug(lcOpenGLProgramDiskCache, "Failed to write %s to shader cache", qPrintable(filename));
 }
 
