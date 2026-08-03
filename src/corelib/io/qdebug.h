@@ -44,6 +44,10 @@
 #  include <QtCore/qvarlengtharray.h>
 #endif
 
+#ifdef Q_OS_DARWIN
+Q_FORWARD_DECLARE_OBJC_CLASS(NSString);
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QT6_ONLY(Q_CORE_EXPORT) QDebug : public QIODeviceBase
@@ -318,6 +322,10 @@ private:
         debug.putQtOrdering(QtOrderingPrivate::orderingFlagsFor(t), Qt::partial_ordering(t));
         return debug;
     }
+
+#ifdef Q_OS_DARWIN
+    Q_CORE_EXPORT friend QDebug operator<<(QDebug, const NSString *);
+#endif
 };
 
 Q_DECLARE_SHARED(QDebug)
@@ -747,7 +755,6 @@ QT_END_NAMESPACE
 Q_FORWARD_DECLARE_CF_TYPE(CFString);
 struct objc_object;
 Q_FORWARD_DECLARE_OBJC_CLASS(NSObject);
-Q_FORWARD_DECLARE_OBJC_CLASS(NSString);
 QT_FOR_EACH_CORE_FOUNDATION_TYPE(QT_FORWARD_DECLARE_CF_TYPE)
 QT_FOR_EACH_MUTABLE_CORE_FOUNDATION_TYPE(QT_FORWARD_DECLARE_MUTABLE_CF_TYPE)
 QT_FOR_EACH_CORE_GRAPHICS_TYPE(QT_FORWARD_DECLARE_CG_TYPE)
@@ -776,7 +783,6 @@ Q_CORE_EXPORT QDebug operator<<(QDebug, id);
 #endif
 Q_CORE_EXPORT QDebug operator<<(QDebug, objc_object *);
 Q_CORE_EXPORT QDebug operator<<(QDebug, const NSObject *);
-Q_CORE_EXPORT QDebug operator<<(QDebug, const NSString *);
 Q_CORE_EXPORT QDebug operator<<(QDebug, CFStringRef);
 
 QT_FOR_EACH_CORE_FOUNDATION_TYPE(QT_FORWARD_DECLARE_QDEBUG_OPERATOR_FOR_CF_TYPE)
