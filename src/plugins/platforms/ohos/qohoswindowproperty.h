@@ -131,7 +131,7 @@ std::optional<T> tryGetQOhosPropertyFromQObject(QObject *qObject)
     auto value = qObject->property(propertyName);
 
     if (!value.isValid())
-        return {};
+        return std::nullopt;
 
     auto optValue = qohoswindowproperty_h_detail::tryMapFromQVariant<T>(value);
     if (!optValue.has_value()) {
@@ -283,7 +283,7 @@ template<>
 inline std::optional<QWindow *> tryMapFromQVariant<QWindow *>(QVariant variant)
 {
     if (!variant.canConvert<QWindow *>())
-        return {};
+        return std::nullopt;
     return !variant.isNull()
         ? std::optional(reinterpret_cast<QWindow *>(variant.value<QObject*>()))
         : std::optional<QWindow *>(nullptr);

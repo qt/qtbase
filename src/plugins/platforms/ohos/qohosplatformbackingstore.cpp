@@ -243,11 +243,11 @@ std::optional<QRegion> QOhosPlatformBackingStore::BufferRegionHandler::mergeRegi
 {
     const auto it = m_buffersToFlushSequenceIds.find(bufferHandle);
     if (it == m_buffersToFlushSequenceIds.end())
-        return {};
+        return std::nullopt;
 
     std::uint64_t numberOfRegions = m_flushSequenceId - it->second;
     if (numberOfRegions > m_bufferQueueSize)
-        return {};
+        return std::nullopt;
 
     for (auto it = m_lastFlushedRegions.cend() - numberOfRegions; it != m_lastFlushedRegions.cend(); ++it)
         region = region.united(*it);

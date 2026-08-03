@@ -160,7 +160,7 @@ std::optional<Qt::ScreenOrientation> tryMapJsDisplayOrientationToQt(QOhosDisplay
         return Qt::ScreenOrientation::InvertedLandscapeOrientation;
     }
 
-    return {};
+    return std::nullopt;
 }
 
 // log2 index, one step per 90 degrees, as in QPlatformScreen::angleBetween().
@@ -196,7 +196,7 @@ tryMapNativeDisplayOrientationToQt(NativeDisplayManager_Orientation nativeOrient
         break;
     }
 
-    return {};
+    return std::nullopt;
 }
 
 Qt::ScreenOrientation orientationFromIndex(int index)

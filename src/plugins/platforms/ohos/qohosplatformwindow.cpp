@@ -243,7 +243,7 @@ std::optional<double> QOhosPlatformWindow::windowId() const
     auto internalId = internalWindowId();
     auto jsWinId = QWindowProxyRegistry::instance().tryMapInternalWindowIdToJsWindowId(internalId);
     if (!jsWinId.has_value())
-        return {};
+        return std::nullopt;
 
     qOhosPrintfInfo(
         "PlatformWindow WIID: %s is returning JsWindowId: %f to the user",

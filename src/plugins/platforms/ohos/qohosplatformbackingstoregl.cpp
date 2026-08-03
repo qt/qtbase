@@ -99,11 +99,11 @@ std::optional<RenderContextData> RenderContextData::tryCreateForQWindow(QWindow 
 {
     auto *platformWindow = QOhosPlatformWindow::fromQWindowOrNull(window);
     if (platformWindow == nullptr)
-        return {};
+        return std::nullopt;
 
     auto *view = platformWindow->ownedViewOrNull();
     if (view == nullptr)
-        return {};
+        return std::nullopt;
 
     auto optSurfaceResolution = view->surfaceResolution();
     return optSurfaceResolution.has_value()
