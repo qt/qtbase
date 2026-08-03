@@ -60,7 +60,7 @@ std::optional<QOhosWindowProxy::ModalityType> mapQtWindowModalityToOhosOrDefault
 
     switch (windowModality) {
     case Qt::WindowModality::NonModal:
-        return {};
+        return std::nullopt;
     case Qt::WindowModality::WindowModal:
         return ModalityType::WINDOW_MODALITY;
     case Qt::WindowModality::ApplicationModal:
@@ -71,7 +71,7 @@ std::optional<QOhosWindowProxy::ModalityType> mapQtWindowModalityToOhosOrDefault
         "%s: got illegal Qt::WindowModality value (%d), using the default instead",
         Q_FUNC_INFO, static_cast<int>(windowModality));
 
-    return {};
+    return std::nullopt;
 }
 
 template<typename ...SignalParams>
@@ -374,7 +374,7 @@ std::optional<QColor> tryGetBackgroundColorFromWindow(QWindow *window)
         QColor backgroundColor = palette.color(QPalette::Window);
         return backgroundColor;
     }
-    return {};
+    return std::nullopt;
 }
 
 }

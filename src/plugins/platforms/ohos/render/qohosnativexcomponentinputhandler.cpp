@@ -77,7 +77,7 @@ std::optional<QOhosTouchEventTouchPointData> tryMakeTouchEventPointData(
 {
     auto touchDisplayPosition = tryGetTouchPointDisplayPosition(xComponent, pointIndex);
     if (!touchDisplayPosition.has_value())
-        return {};
+        return std::nullopt;
 
     ::OH_NativeXComponent_TouchPointToolType toolType = ::OH_NATIVEXCOMPONENT_TOOL_TYPE_UNKNOWN;
     std::int32_t resToolType = ::OH_NativeXComponent_GetTouchPointToolType(xComponent.handle(), pointIndex, &toolType);
@@ -165,7 +165,7 @@ std::optional<QEvent::Type> tryMapXComponentMouseEventActionToQEventType(::OH_Na
     case OH_NATIVEXCOMPONENT_MOUSE_CANCEL:
         break;
     }
-    return {};
+    return std::nullopt;
 }
 
 std::optional<Qt::MouseButton> tryMapXComponentMouseButtonToQt(::OH_NativeXComponent_MouseEventButton button)
@@ -184,7 +184,7 @@ std::optional<Qt::MouseButton> tryMapXComponentMouseButtonToQt(::OH_NativeXCompo
     case OH_NATIVEXCOMPONENT_NONE_BUTTON:
         break;
     }
-    return {};
+    return std::nullopt;
 }
 
 

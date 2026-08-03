@@ -210,7 +210,7 @@ std::optional<QEvent::Type> tryMapMouseEventActionToNonClientAreaEventType(::Inp
     case ::MOUSE_ACTION_AXIS_END:
         break;
     }
-    return {};
+    return std::nullopt;
 }
 
 std::optional<Qt::MouseButton> tryMapMouseEventButtonToQt(::Input_MouseEventButton button)
@@ -229,7 +229,7 @@ std::optional<Qt::MouseButton> tryMapMouseEventButtonToQt(::Input_MouseEventButt
     case ::MOUSE_BUTTON_NONE:
         break;
     }
-    return {};
+    return std::nullopt;
 }
 
 std::optional<QEvent::Type> tryMapTouchEventActionToNonClientAreaEventType(::Input_TouchEventAction action)
@@ -244,7 +244,7 @@ std::optional<QEvent::Type> tryMapTouchEventActionToNonClientAreaEventType(::Inp
     case ::TOUCH_ACTION_CANCEL:
         break;
     }
-    return {};
+    return std::nullopt;
 }
 
 template<typename EnumsContainer>
@@ -1815,7 +1815,7 @@ std::optional<bool> QOhosWindowProxy::isFocused() const
     return QtOhos::evalInJsThread(
         [&](QtOhos::JsState &) -> std::optional<bool> {
             if (m_jsScopeData->isWindowClosing())
-                return {};
+                return std::nullopt;
 
             return m_jsScopeData->jsWindowRef->eval<QNapi::Boolean>("isFocused()");
         },

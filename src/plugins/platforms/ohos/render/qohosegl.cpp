@@ -67,18 +67,18 @@ void QOhosEGLSurface::tryCreateSurface(EGLDisplay display, EGLConfig config, Sur
 std::optional<QSize> QOhosEGLSurface::currentSurfaceSize() const
 {
     if (m_refCurrentDisplay == EGL_NO_DISPLAY || m_ownEglSurface == EGL_NO_SURFACE)
-        return {};
+        return std::nullopt;
 
     EGLint width;
     if (eglQuerySurface(m_refCurrentDisplay, m_ownEglSurface, EGL_WIDTH, &width) != EGL_TRUE) {
         qOhosPrintfWarning("%s - cannot get surface width, error: %d", Q_FUNC_INFO, eglGetError());
-        return {};
+        return std::nullopt;
     }
 
     EGLint height;
     if (eglQuerySurface(m_refCurrentDisplay, m_ownEglSurface, EGL_HEIGHT, &height) != EGL_TRUE) {
         qOhosPrintfWarning("%s - cannot get surface height, error: %d", Q_FUNC_INFO, eglGetError());
-        return {};
+        return std::nullopt;
     }
 
     return QSize(width, height);

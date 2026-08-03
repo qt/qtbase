@@ -23,7 +23,7 @@ std::optional<Qt::MouseButton> tryMapNativeNodeMouseButtonToQt(std::int32_t butt
 {
     switch (button) {
     case ::UI_MOUSE_EVENT_BUTTON_NONE:
-        return {};
+        return std::nullopt;
     case ::UI_MOUSE_EVENT_BUTTON_LEFT:
         return Qt::LeftButton;
     case ::UI_MOUSE_EVENT_BUTTON_RIGHT:
@@ -36,14 +36,14 @@ std::optional<Qt::MouseButton> tryMapNativeNodeMouseButtonToQt(std::int32_t butt
         return Qt::ForwardButton;
     }
 
-    return {};
+    return std::nullopt;
 };
 
 std::optional<QEvent::Type> tryMapNativeNodeMouseActionToQt(std::int32_t action)
 {
     switch (action) {
     case ::UI_MOUSE_EVENT_ACTION_UNKNOWN:
-        return {};
+        return std::nullopt;
     case ::UI_MOUSE_EVENT_ACTION_PRESS:
         return QEvent::MouseButtonPress;
     case ::UI_MOUSE_EVENT_ACTION_RELEASE:
@@ -52,7 +52,7 @@ std::optional<QEvent::Type> tryMapNativeNodeMouseActionToQt(std::int32_t action)
         return QEvent::MouseMove;
     }
 
-    return {};
+    return std::nullopt;
 }
 
 class QOhosNativeNodeMouseInputHandler final : public std::enable_shared_from_this<QOhosNativeNodeMouseInputHandler>
