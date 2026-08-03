@@ -45,6 +45,9 @@ protected:
 
 public:
     bool open(QIODevice::OpenMode mode);
+
+    QFileDevice::Permissions permissions() const override;
+    bool setPermissions(QFileDevice::Permissions perms) override;
 };
 
 QT_END_NAMESPACE

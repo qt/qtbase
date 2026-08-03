@@ -33,6 +33,22 @@ QAbstractFileEngine *QFileDevicePrivate::engine() const
     return fileEngine.get();
 }
 
+QFileDevice::Permissions QFileDevicePrivate::permissions() const
+{
+    QAbstractFileEngine::FileFlags perms = engine()->fileFlags(QAbstractFileEngine::PermsMask) & QAbstractFileEngine::PermsMask;
+    return QFile::Permissions::fromInt(perms.toInt()); //ewww
+}
+
+bool QFileDevicePrivate::setPermissions(QFileDevice::Permissions perms)
+{
+    if (engine()->setPermissions(perms.toInt())) {
+        setError(QFileDevice::NoError);
+        return true;
+    }
+    setError(QFile::PermissionsError, fileEngine->errorString());
+    return false;
+}
+
 void QFileDevicePrivate::setError(QFileDevice::FileError err)
 {
     error = err;
@@ -655,8 +671,7 @@ bool QFileDevice::resize(qint64 sz)
 QFile::Permissions QFileDevice::permissions() const
 {
     Q_D(const QFileDevice);
-    QAbstractFileEngine::FileFlags perms = d->engine()->fileFlags(QAbstractFileEngine::PermsMask) & QAbstractFileEngine::PermsMask;
-    return QFile::Permissions::fromInt(perms.toInt()); //ewww
+    return d->permissions();
 }
 
 /*!
@@ -672,12 +687,7 @@ QFile::Permissions QFileDevice::permissions() const
 bool QFileDevice::setPermissions(Permissions permissions)
 {
     Q_D(QFileDevice);
-    if (d->engine()->setPermissions(permissions.toInt())) {
-        unsetError();
-        return true;
-    }
-    d->setError(QFile::PermissionsError, d->fileEngine->errorString());
-    return false;
+    return d->setPermissions(permissions);
 }
 
 /*!

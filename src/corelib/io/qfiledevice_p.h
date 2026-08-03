@@ -49,6 +49,9 @@ protected:
 public:
     virtual QAbstractFileEngine *engine() const;
 
+    virtual QFileDevice::Permissions permissions() const;
+    virtual bool setPermissions(QFileDevice::Permissions perms);
+
 protected:
     inline bool ensureFlushed() const;
 

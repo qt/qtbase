@@ -137,8 +137,7 @@ bool QSaveFilePrivate::open(QIODevice::OpenMode mode)
         // Dry-run of what follows, but with different permissions.
         static_cast<QTemporaryFileEngine *>(fileEngine.get())->initialize(finalFileName, 0666);
         if (fileEngine->open(mode | QIODevice::Unbuffered)) {
-            Q_Q(QSaveFile);
-            finalPermissions = q->QFileDevice::permissions();
+            finalPermissions = QFileDevicePrivate::permissions();
             fileEngine->close();
         }
         fileEngine->remove();
@@ -165,6 +164,19 @@ bool QSaveFilePrivate::open(QIODevice::OpenMode mode)
         return false;
     }
     useTemporaryFile = true;
+    return true;
+}
+
+QFileDevice::Permissions QSaveFilePrivate::permissions() const
+{
+    if (finalPermissions)
+        return *finalPermissions;
+    return QFileDevicePrivate::permissions();
+}
+
+bool QSaveFilePrivate::setPermissions(QFileDevice::Permissions perms)
+{
+    finalPermissions = perms;
     return true;
 }
 
@@ -318,6 +330,7 @@ void QSaveFile::close()
 }
 
 /*!
+    \fn bool QSaveFile::setPermissions(Permissions permissions)
     \reimp
     \since 6.12
     Sets the \a permissions the file shall be given on successful commit().
@@ -325,24 +338,13 @@ void QSaveFile::close()
     While being written via QSaveFile the file may have more restrictive
     permissions.
 */
-bool QSaveFile::setPermissions(Permissions permissions)
-{
-    Q_D(QSaveFile);
-    d->finalPermissions = permissions;
-    return true;
-}
 
 /*!
+    \fn QFileDevice::Permissions QSaveFile::permissions() const
     \reimp
     \since 6.12
     Reports the permissions the file shall be given on successful commit().
 */
-QFileDevice::Permissions QSaveFile::permissions() const
-{
-    if (d_func()->finalPermissions)
-        return *d_func()->finalPermissions;
-    return QFileDevice::permissions();
-}
 
 /*!
   Commits the changes to disk, if all previous writes were successful.
@@ -367,7 +369,7 @@ bool QSaveFile::commit()
         return false;
     }
     if (d->finalPermissions)
-        QFileDevice::setPermissions(*d->finalPermissions); // Records error on failure.
+        d->QFileDevicePrivate::setPermissions(*d->finalPermissions); // Records error on failure.
     QFileDevice::close(); // calls flush()
 
     const auto &fe = d->fileEngine;
