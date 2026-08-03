@@ -21,7 +21,8 @@ instructions:
     variableValue: "/Users/qt/depot/ohos-scripts/test-runner"
   - type: EnvironmentVariable
     variableName: REMOTE_WORKING_DIR
-    variableValue: "/Users/qt/work/{{.Env.TESTED_MODULE_COIN}}_{{.Env.TESTED_MODULE_BRANCH_COIN}}"
+    variableValue: "/Users/qt/work/{{.Env.TESTED_MODULE_COIN}}_{{.Env.TESTED_MODULE_BRANCH_COIN}}_{{.Env.COIN_UNIQUE_JOB_ID}}"
+
   # At the moment test runner uses relative path
   - type: EnvironmentVariable
     variableName: REMOTE_RESULTS_DIR
@@ -97,12 +98,12 @@ instructions:
     maxTimeBetweenOutput: 600
     userMessageOnFailure: "Re-assembling hap failed!"
   - type: ExecuteCommand
-    command: ["ssh", "qt@{{.Env.HARMONY_BROKER}}", "{{.Env.REMOTE_TOOLS_DIR}}/install_hap.sh {{.Env.REMOTE_WORKING_DIR}}/harmonyos-tests-bundle/entry/build/default/outputs/default/entry-default-signed.hap {{.Env.HDC}}"]
+    command: ["ssh", "qt@{{.Env.HARMONY_BROKER}}", "cp /Users/qt/utils/run_all_test.sh {{.Env.REMOTE_WORKING_DIR}}/run_all_test.sh"]
     maxTimeInSeconds: 600
     maxTimeBetweenOutput: 600
-    userMessageOnFailure: "Installing hap failed!"
+    userMessageOnFailure: "Copying runner script failed!"
   - type: ExecuteCommand
-    command: ["ssh", "qt@{{.Env.HARMONY_BROKER}}", "cd {{.Env.REMOTE_WORKING_DIR}} && cat all_tests.txt | while IFS= read -r line; do ~/utils/harmonyostestrunner $line; done"]
+    command: ["ssh", "qt@{{.Env.HARMONY_BROKER}}", "cd {{.Env.REMOTE_WORKING_DIR}} && ./run_all_test.sh"]
     maxTimeInSeconds: 21600
     maxTimeBetweenOutput: 1800
     userMessageOnFailure: "Running hap failed!"
@@ -126,3 +127,9 @@ instructions:
     maxTimeInSeconds: 600
     maxTimeBetweenOutput: 600
     userMessageOnFailure: "Removing results archive failed!"
+  - type: ExecuteCommand
+    command: ["ssh", "qt@{{.Env.HARMONY_BROKER}}", "rm -rf {{.Env.REMOTE_WORKING_DIR}}"]
+    executeOn: always
+    maxTimeInSeconds: 60
+    maxTimeBetweenOutput: 60
+    userMessageOnFailure: "Removing work dir failed!"
