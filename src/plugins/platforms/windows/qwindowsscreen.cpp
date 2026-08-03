@@ -35,7 +35,11 @@
 #include <shellscalingapi.h>
 #include <icm.h>
 
-#if QT_CONFIG(cpp_winrt)
+#if QT_CONFIG(cpp_winrt) && __has_include(<windows.graphics.display.interop.h>)
+#  define QT_USE_WINRT_DISPLAY_INTEROP
+#endif
+
+#ifdef QT_USE_WINRT_DISPLAY_INTEROP
 #  include <QtCore/qoperatingsystemversion.h>
 #  include <QtCore/private/qt_winrtbase_p.h>
 #  include <winrt/Windows.Foundation.h>
@@ -404,7 +408,7 @@ static QColorSpace resolveColorSpace(HMONITOR hMonitor,
         // profile for a display will return "no profile", regardless of what
         // profiles are actually installed.
 
-#if QT_CONFIG(cpp_winrt)
+#ifdef QT_USE_WINRT_DISPLAY_INTEROP
         // Try to to resolve what color space the Windows compositor (DWM) is
         // working in, and reflect that as the screen's preferred color space.
 
