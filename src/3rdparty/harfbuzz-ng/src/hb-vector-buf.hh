@@ -46,7 +46,9 @@ struct hb_vector_buf_t : hb_vector_t<char>
   bool append_len (const char *s, unsigned l)
   {
     unsigned old_len = length;
-    if (unlikely (!resize_dirty ((int) (old_len + l))))
+    unsigned new_len;
+    if (unlikely (hb_unsigned_add_overflows (old_len, l, &new_len) ||
+		  !resize_dirty ((int) new_len)))
       return false;
     hb_memcpy (arrayZ + old_len, s, l);
     return true;
@@ -153,9 +155,14 @@ struct hb_vector_buf_t : hb_vector_t<char>
 
   bool append_base64 (const uint8_t *data, unsigned len)
   {
-    unsigned out_len = ((len + 2) / 3) * 4;
+    /* Output is 4 bytes per 3 input bytes; compute without overflowing. */
+    unsigned ngroups = len / 3 + (len % 3 != 0);
+    unsigned out_len;
     unsigned old_len = length;
-    if (unlikely (!resize_dirty ((int) (old_len + out_len))))
+    unsigned new_len;
+    if (unlikely (hb_unsigned_mul_overflows (ngroups, 4, &out_len) ||
+		  hb_unsigned_add_overflows (old_len, out_len, &new_len) ||
+		  !resize_dirty ((int) new_len)))
       return false;
 
     char *dst = arrayZ + old_len;

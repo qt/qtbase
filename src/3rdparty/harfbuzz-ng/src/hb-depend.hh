@@ -1,5 +1,5 @@
 /*
- * Copyright © 2026 Behdad Esfahbod
+ * Copyright © 2024  Adobe, Inc.
  *
  *  This is part of HarfBuzz, a text shaping library.
  *
@@ -20,21 +20,45 @@
  * FITNESS FOR A PARTICULAR PURPOSE.  THE SOFTWARE PROVIDED HEREUNDER IS
  * ON AN "AS IS" BASIS, AND THE COPYRIGHT HOLDER HAS NO OBLIGATION TO
  * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+ *
+ * Adobe Author(s): Skef Iterum
  */
 
-/*
- * CFF2 to CFF1 Converter
- *
- * The actual implementation is in hb-subset-cff2.cc where it has access
- * to the full cff2_subset_plan definition.
- *
- * This file just exists to keep the build system happy.
- */
+#ifndef HB_DEPEND_HH
+#define HB_DEPEND_HH
 
 #include "hb.hh"
 
-#ifndef HB_NO_SUBSET_CFF
+#include "hb-subset-depend.h"
+#include "hb-depend-data.hh"
 
-#include "hb-subset-cff2-to-cff1.hh"
 
-#endif /* HB_NO_SUBSET_CFF */
+/**
+ * hb_subset_depend_t:
+ *
+ * Internal structure implementing the dependency graph API.
+ *
+ * Initialized via hb_subset_depend_from_face_or_fail() which computes the dependency
+ * graph once via hb_depend_data_builder_t::compile(). The graph remains
+ * immutable for the lifetime of the object.
+ */
+struct hb_subset_depend_t
+{
+  HB_INTERNAL hb_subset_depend_t (hb_face_t *face);
+
+  hb_object_header_t header;
+
+  bool successful;
+
+  bool in_error () const { return !successful; }
+
+  const hb_set_t *get_set_from_index (hb_codepoint_t index)
+  {
+    return data.get_set_from_index (index);
+  }
+
+  hb_depend_data_t data;
+};
+
+
+#endif /* HB_DEPEND_HH */

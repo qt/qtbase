@@ -27,6 +27,8 @@ qt_internal_add_3rdparty_library(BundledHarfbuzz
         src/hb-common.h
         src/hb-debug.hh
         src/hb-decycler.hh
+        src/hb-depend-data.hh
+        src/hb-depend.cc src/hb-depend.hh
         src/hb-deprecated.h
         src/hb-draw.cc src/hb-draw.h src/hb-draw.hh
         src/hb-face.cc src/hb-face.h src/hb-face.hh
@@ -62,6 +64,7 @@ qt_internal_add_3rdparty_library(BundledHarfbuzz
         src/hb-subset-cff-common.cc
         src/hb-subset-cff1.cc
         src/hb-subset-cff2.cc
+        src/hb-subset-depend.h
         src/hb-subset-input.cc
         src/hb-subset-instancer-iup.cc src/hb-subset-instancer-iup.hh
         src/hb-subset-instancer-solver.cc
@@ -126,6 +129,7 @@ qt_internal_extend_target(BundledHarfbuzz CONDITION TRUE
         src/hb-ot-cmap-table.hh
         src/hb-ot-color.cc
         src/hb-ot-face.cc
+        src/hb-ot-fetch.cc src/hb-ot-fetch.h
         src/hb-ot-font.cc src/hb-ot-font.h
         src/hb-ot-glyf-table.hh
         src/hb-ot-head-table.hh

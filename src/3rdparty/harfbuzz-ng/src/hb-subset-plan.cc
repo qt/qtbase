@@ -451,6 +451,14 @@ _populate_gids_to_retain (hb_subset_plan_t* plan,
   plan->_glyphset_gsub.add (0); // Not-def
 
   _cmap_closure (plan->source, &plan->unicodes, &plan->_glyphset_gsub);
+  plan->_glyphset_cmaped = plan->_glyphset_gsub;
+
+  if (!drop_tables->has (HB_OT_TAG_MATH))
+  {
+    _math_closure (plan, &plan->_glyphset_gsub);
+    _remove_invalid_gids (&plan->_glyphset_gsub, plan->source->get_num_glyphs ());
+  }
+  plan->_glyphset_mathed = plan->_glyphset_gsub;
 
 #ifndef HB_NO_SUBSET_LAYOUT
   layout_populate_gids_to_retain(plan, drop_tables);
@@ -458,14 +466,7 @@ _populate_gids_to_retain (hb_subset_plan_t* plan,
 
   _remove_invalid_gids (&plan->_glyphset_gsub, plan->source->get_num_glyphs ());
 
-  plan->_glyphset_mathed = plan->_glyphset_gsub;
-  if (!drop_tables->has (HB_OT_TAG_MATH))
-  {
-    _math_closure (plan, &plan->_glyphset_mathed);
-    _remove_invalid_gids (&plan->_glyphset_mathed, plan->source->get_num_glyphs ());
-  }
-
-  hb_set_t cur_glyphset = plan->_glyphset_mathed;
+  hb_set_t cur_glyphset = plan->_glyphset_gsub;
   if (!drop_tables->has (HB_OT_TAG_COLR))
   {
     _colr_closure (plan, &cur_glyphset);
@@ -647,6 +648,7 @@ hb_subset_plan_t::hb_subset_plan_t (hb_face_t *face,
   all_axes_pinned = false;
   pinned_at_default = true;
   has_gdef_varstore = false;
+  has_avar2 = false;
 
 #ifdef HB_EXPERIMENTAL_API
   for (auto _ : input->name_table_overrides)
@@ -743,8 +745,10 @@ hb_subset_plan_t::hb_subset_plan_t (hb_face_t *face,
   if (unlikely (in_error ()))
     return;
 
-#ifndef HB_NO_VAR
+#if !defined(HB_NO_VAR) && !defined(HB_NO_OT_FONT_CFF)
   update_instance_metrics_map_from_cff2 (this);
+#endif
+#ifndef HB_NO_VAR
   if (!check_success (get_instance_glyphs_contour_points (this)))
       return;
 #endif
