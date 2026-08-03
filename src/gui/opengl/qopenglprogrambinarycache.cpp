@@ -11,6 +11,7 @@
 #include <QCoreApplication>
 #include <QCryptographicHash>
 #include <q20memory.h>
+#include <limits>
 
 #ifdef Q_OS_UNIX
 #include <sys/mman.h>
@@ -102,21 +103,50 @@ QString QOpenGLProgramBinaryCache::cacheFileName(const QByteArray &cacheKey) con
 #define FULL_HEADER_SIZE(stringsSize) (BASE_HEADER_SIZE + 12 + stringsSize + 8)
 #define PADDING_SIZE(fullHeaderSize) (((fullHeaderSize + 3) & ~3) - fullHeaderSize)
 
-static inline quint32 readUInt(const uchar **p)
+namespace {
+class CacheFileReader
 {
-    quint32 v;
-    memcpy(&v, *p, sizeof(quint32));
-    *p += sizeof(quint32);
-    return v;
-}
+public:
+    CacheFileReader(const uchar *p, qsizetype size) : m_p(p), m_end(p + size) { }
 
-static inline QByteArray readStr(const uchar **p)
-{
-    quint32 len = readUInt(p);
-    QByteArray ba = QByteArray::fromRawData(reinterpret_cast<const char *>(*p), len);
-    *p += len;
-    return ba;
-}
+    quint64 remaining() const { return quint64(m_end - m_p); }
+    const uchar *cursor() const { return m_p; }
+
+    bool readUInt(quint32 *v)
+    {
+        if (remaining() < sizeof(quint32))
+            return false;
+        memcpy(v, m_p, sizeof(quint32));
+        m_p += sizeof(quint32);
+        return true;
+    }
+
+    // Returns non-null terminated strings just pointing to inside the cache
+    // file data, so callers must print these via the stream qCDebug and not
+    // constData().
+    bool readStr(QByteArray *ba)
+    {
+        quint32 len;
+        if (!readUInt(&len) || quint64(len) > remaining())
+            return false;
+        *ba = QByteArray::fromRawData(reinterpret_cast<const char *>(m_p), len);
+        m_p += len;
+        return true;
+    }
+
+    bool skip(quint64 n)
+    {
+        if (remaining() < n)
+            return false;
+        m_p += n;
+        return true;
+    }
+
+private:
+    const uchar *m_p;
+    const uchar *m_end;
+};
+} // namespace
 
 bool QOpenGLProgramBinaryCache::verifyHeader(const QByteArray &buf) const
 {
@@ -124,20 +154,21 @@ bool QOpenGLProgramBinaryCache::verifyHeader(const QByteArray &buf) const
         qCDebug(lcOpenGLProgramDiskCache, "Cached size too small");
         return false;
     }
-    const uchar *p = reinterpret_cast<const uchar *>(buf.constData());
-    if (readUInt(&p) != BINSHADER_MAGIC) {
+    CacheFileReader reader(reinterpret_cast<const uchar *>(buf.constData()), buf.size());
+    quint32 v;
+    if (!reader.readUInt(&v) || v != BINSHADER_MAGIC) {
         qCDebug(lcOpenGLProgramDiskCache, "Magic does not match");
         return false;
     }
-    if (readUInt(&p) != BINSHADER_VERSION) {
+    if (!reader.readUInt(&v) || v != BINSHADER_VERSION) {
         qCDebug(lcOpenGLProgramDiskCache, "Version does not match");
         return false;
     }
-    if (readUInt(&p) != BINSHADER_QTVERSION) {
+    if (!reader.readUInt(&v) || v != BINSHADER_QTVERSION) {
         qCDebug(lcOpenGLProgramDiskCache, "Qt version does not match");
         return false;
     }
-    if (readUInt(&p) != sizeof(quintptr)) {
+    if (!reader.readUInt(&v) || v != sizeof(quintptr)) {
         qCDebug(lcOpenGLProgramDiskCache, "Architecture does not match");
         return false;
     }
@@ -281,48 +312,60 @@ bool QOpenGLProgramBinaryCache::load(const QByteArray &cacheKey, uint programId)
         return false;
     }
 
-    const uchar *p;
 #ifdef Q_OS_UNIX
     const auto map = fdw.map();
-    if (!map) {
+    if (!map || map.mapSize < size_t(BASE_HEADER_SIZE)) {
         undertaker.setActive();
         return false;
     }
-    p = static_cast<const uchar *>(map.ptr) + BASE_HEADER_SIZE;
+    CacheFileReader reader(static_cast<const uchar *>(map.ptr) + BASE_HEADER_SIZE,
+                           qsizetype(map.mapSize) - BASE_HEADER_SIZE);
 #else
     buf = f.readAll();
     // QTBUG-142080: QByteArray::constData() confuses GCC, do it differently
-    p = reinterpret_cast<const uchar *>(q20::to_address(buf.cbegin()));
+    CacheFileReader reader(reinterpret_cast<const uchar *>(q20::to_address(buf.cbegin())), buf.size());
 #endif
 
     GLEnvInfo info;
 
-    QByteArray vendor = readStr(&p);
+    QByteArray vendor;
+    QByteArray renderer;
+    QByteArray version;
+    quint32 blobFormat = 0;
+    quint32 blobSize = 0;
+    if (!reader.readStr(&vendor) || !reader.readStr(&renderer) || !reader.readStr(&version)
+        || !reader.readUInt(&blobFormat) || !reader.readUInt(&blobSize)
+        || !reader.skip(PADDING_SIZE(FULL_HEADER_SIZE(vendor.size() + renderer.size() + version.size()))))
+    {
+        qCDebug(lcOpenGLProgramDiskCache, "Cached program binary is truncated");
+        undertaker.setActive();
+        return false;
+    }
+
     if (vendor != info.glvendor) {
-        // readStr returns non-null terminated strings just pointing to inside
-        // 'p' so must print these via the stream qCDebug and not constData().
         qCDebug(lcOpenGLProgramDiskCache) << "GL_VENDOR does not match" << vendor << info.glvendor;
         undertaker.setActive();
         return false;
     }
-    QByteArray renderer = readStr(&p);
     if (renderer != info.glrenderer) {
         qCDebug(lcOpenGLProgramDiskCache) << "GL_RENDERER does not match" << renderer << info.glrenderer;
         undertaker.setActive();
         return false;
     }
-    QByteArray version = readStr(&p);
     if (version != info.glversion) {
         qCDebug(lcOpenGLProgramDiskCache) <<  "GL_VERSION does not match" << version << info.glversion;
         undertaker.setActive();
         return false;
     }
 
-    quint32 blobFormat = readUInt(&p);
-    quint32 blobSize = readUInt(&p);
+    if (blobSize > reader.remaining() || blobSize > quint32(std::numeric_limits<int>::max())) {
+        qCDebug(lcOpenGLProgramDiskCache, "Cached program binary claims %u bytes, file has %llu",
+                blobSize, reader.remaining());
+        undertaker.setActive();
+        return false;
+    }
 
-    p += PADDING_SIZE(FULL_HEADER_SIZE(vendor.size() + renderer.size() + version.size()));
-
+    const uchar *p = reader.cursor();
     return setProgramBinary(programId, blobFormat, p, blobSize)
         && m_memCache.insert(cacheKey, new MemCacheEntry(p, blobSize, blobFormat));
 }
