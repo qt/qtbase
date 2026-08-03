@@ -58,6 +58,8 @@ private slots:
     void windowUpdateOverflow();
     void totalBytesReceivedDATACounts();
     void uploadByteDeviceDestroyedWhileBlocked();
+    void pushPromiseOnStreamRemovedAfterRST_data();
+    void pushPromiseOnStreamRemovedAfterRST();
 
 private:
     enum PeerType { Client, Server };
@@ -1888,6 +1890,73 @@ void tst_QHttp2Connection::uploadByteDeviceDestroyedWhileBlocked()
     QVERIFY(QTest::qWaitFor(
             [&]() { return clientConn->streamInitialSendWindowSize == 1024 * 1024; }));
     QVERIFY(!clientConn->m_connectionAborted);
+}
+
+void tst_QHttp2Connection::pushPromiseOnStreamRemovedAfterRST_data()
+{
+    QTest::addColumn<bool>("pushEnabled");
+    QTest::newRow("push-disabled-default") << false;
+    QTest::newRow("push-enabled") << true;
+}
+
+void tst_QHttp2Connection::pushPromiseOnStreamRemovedAfterRST()
+{
+    QFETCH(const bool, pushEnabled);
+
+    // handleRST_STREAM() used QHash::operator[] to look up the stream,
+    // planting a null QPointer<QHttp2Stream> for an unknown/disposed stream
+    // ID. A later PUSH_PROMISE referencing that ID only checked constEnd()
+    // and dereferenced the null QPointer via (*it)->state(). Reachable with
+    // push enabled or disabled (see below).
+    auto [client, server] = makeFakeConnectedSockets();
+    QHttp2Configuration config;
+    config.setServerPushEnabled(pushEnabled);
+    auto clientConn = makeHttp2Connection(client.get(), config, Client);
+
+    QHttp2Stream *clientStream = clientConn->createStream().unwrap();
+    QVERIFY(clientStream);
+    const quint32 streamId = clientStream->streamID();
+    QVERIFY(clientStream->sendHEADERS(getRequiredHeaders(), true));
+
+    // Simulate normal disposal of a (from the client's point of view)
+    // finished stream, the same way QNetworkAccessManager's handler
+    // deleteLater()s streams. The destructor removes the m_streams entry.
+    delete clientStream;
+    QVERIFY(!clientConn->getStream(streamId));
+
+    if (!pushEnabled) {
+        // With push disabled, PUSH_PROMISE is otherwise rejected outright;
+        // the client's own initial SETTINGS being still unacknowledged is
+        // what lets it past the "!pushPromiseEnabled" gate
+        QVERIFY(clientConn->waitingForSettingsACK);
+    }
+
+    // The attack makes the *client* raise the connection error (and send its
+    // own GOAWAY out) - it never receives one, so spy on errorOccurred().
+    QSignalSpy clientErrorSpy{ clientConn, &QHttp2Connection::errorOccurred };
+
+    // RST_STREAM on the now-absent stream.
+    {
+        Http2::FrameWriter rst(Http2::FrameType::RST_STREAM, Http2::FrameFlag::EMPTY, streamId);
+        rst.append(quint32(Http2::CANCEL));
+        QVERIFY(rst.write(*server));
+    }
+    QIODevice *clientDevice = client.get();
+    QVERIFY(QTest::qWaitFor([clientDevice]() { return clientDevice->bytesAvailable() == 0; }));
+
+    // PUSH_PROMISE associated with that same now-absent stream ID.
+    {
+        Http2::FrameWriter pp(Http2::FrameType::PUSH_PROMISE, Http2::FrameFlag::END_HEADERS,
+                              streamId);
+        pp.append(quint32(streamId + 1)); // promised stream ID
+        QVERIFY(pp.write(*server));
+    }
+
+    // Processing the frame above is what would crash, dereferencing the
+    // planted null QPointer, before this patch.
+    QVERIFY(QTest::qWaitFor([&]() { return clientErrorSpy.count() == 1; }));
+    QCOMPARE(clientErrorSpy.first().first().value<Http2::Http2Error>(), Http2::ENHANCE_YOUR_CALM);
+    QVERIFY(clientConn->m_connectionAborted);
 }
 
 QTEST_MAIN(tst_QHttp2Connection)
