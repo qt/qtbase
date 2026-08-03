@@ -831,13 +831,13 @@ std::optional<bool> mapOhosThemeFromColorScheme(
 {
     switch (scheme) {
     case Qt::ColorScheme::Unknown:
-        return {};
+        return std::nullopt;
     case Qt::ColorScheme::Light:
         return false;
     case Qt::ColorScheme::Dark:
         return true;
     };
-    return {};
+    return std::nullopt;
 }
 
 Qt::ColorScheme mapOhosThemeToColorScheme(
@@ -904,14 +904,14 @@ std::optional<bool> mapOhosConfigurationColorModeToDarkModeFlag(OhosConfiguratio
 {
     switch (colorMode) {
     case OhosConfigurationColorMode::COLOR_MODE_NOT_SET:
-        return {};
+        return std::nullopt;
     case OhosConfigurationColorMode::COLOR_MODE_LIGHT:
         return false;
     case OhosConfigurationColorMode::COLOR_MODE_DARK:
         return true;
     }
 
-    return {};
+    return std::nullopt;
 }
 
 QColor readAccentColor(QOhosJsState &jsState)
@@ -945,13 +945,13 @@ std::optional<QPixmap> tryGetFilePixmapByResourceObject(QOhosJsState &jsState, Q
         qOhosPrintfWarning(
             "%s: expected '%s' property not found in resource object, ignore getting pixmap",
             Q_FUNC_INFO, undocumentedParamsPropertyName.c_str());
-        return {};
+        return std::nullopt;
     }
     if (!optParams.IsArray()) {
         qOhosPrintfWarning(
             "%s: '%s' property is not an array, ignore getting pixmap",
             Q_FUNC_INFO, undocumentedParamsPropertyName.c_str());
-        return {};
+        return std::nullopt;
     }
 
     auto params = QNapi::getArrayElements<std::vector<std::string>, QNapi::String>(
@@ -960,7 +960,7 @@ std::optional<QPixmap> tryGetFilePixmapByResourceObject(QOhosJsState &jsState, Q
         qOhosPrintfWarning(
             "%s: '%s' property is empty, ignore getting pixmap",
             Q_FUNC_INFO, undocumentedParamsPropertyName.c_str());
-        return {};
+        return std::nullopt;
     }
 
     const auto resourceIdentifier = params.front();
@@ -969,7 +969,7 @@ std::optional<QPixmap> tryGetFilePixmapByResourceObject(QOhosJsState &jsState, Q
         qOhosPrintfWarning(
             "%s: '%s' property has unknown resource name, ignore getting pixmap",
             Q_FUNC_INFO, undocumentedParamsPropertyName.c_str());
-        return {};
+        return std::nullopt;
     }
 
     const auto simpleName = resourceIdentifier.substr(lastSeparatorPosition + 1);
@@ -984,7 +984,7 @@ std::optional<QPixmap> tryGetFilePixmapByResourceObject(QOhosJsState &jsState, Q
         return pixmap;
     } else {
         qOhosPrintfWarning("%s: cannot load pixmap", Q_FUNC_INFO);
-        return {};
+        return std::nullopt;
     }
 }
 
@@ -1002,7 +1002,7 @@ std::optional<QPixmap> tryGetFilePixmapByFilenameExtension(
         return tryGetFilePixmapByResourceObject(jsState, QNapi::checkedCast<QNapi::Object>(resourceValue));
     } else {
         qOhosPrintfWarning("%s: got unhandled resource result type, ignore it", Q_FUNC_INFO);
-        return {};
+        return std::nullopt;
     }
 }
 
