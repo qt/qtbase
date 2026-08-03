@@ -319,6 +319,9 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSViewMenuHelper);
 {
     qCDebug(lcQpaWindow) << "Did hide" << self;
 
+    if (!m_platformWindow)
+        return;
+
     if (!m_platformWindow->isExposed())
         return;
 
