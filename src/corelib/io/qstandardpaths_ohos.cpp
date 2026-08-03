@@ -25,7 +25,7 @@ std::optional<QString> tryGetUserDirFromOhEnvironment(QOhosJsState &)
     FileManagement_ErrCode dirGetterRetVal = ohEnvironmentDirGetter(&dirPath);
     if (dirGetterRetVal != FileManagement_ErrCode::ERR_OK || dirPath == nullptr) {
         qOhosPrintfDebug("OH_Environment_GetUser* dir getter failed, retval: %d", static_cast<int>(dirGetterRetVal));
-        return {};
+        return std::nullopt;
     }
 
     auto result = QString::fromUtf8(dirPath);

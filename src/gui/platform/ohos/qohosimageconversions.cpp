@@ -107,7 +107,7 @@ std::optional<::PIXEL_FORMAT> tryMapQtPixelFormatToOhosPixelFormat(QImage::Forma
         case QImage::Format_RGB16:
             return ::PIXEL_FORMAT::PIXEL_FORMAT_RGB_565;
         default:
-            return {};
+            return std::nullopt;
     }
 }
 
