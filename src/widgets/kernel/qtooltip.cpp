@@ -381,6 +381,7 @@ bool QTipLabel::tipChanged(const QPoint &pos, const QString &text, QObject *o)
        return false;
 }
 
+#if QT_CONFIG(style_stylesheet)
 /** \internal
   Cleanup the _q_stylesheet_parent property.
  */
@@ -389,6 +390,7 @@ void QTipLabel::styleSheetParentDestroyed()
     setProperty("_q_stylesheet_parent", QVariant());
     styleSheetParent = nullptr;
 }
+#endif
 
 /*!
     Shows \a text as a tool tip, with the global position \a pos as
