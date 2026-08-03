@@ -27,7 +27,7 @@ std::optional<std::string> tryCallOhFileUriConversionFunc(ConvFunc convFunc, con
         "OH FileUri conversion function '%s' failed for input '%s', retval: %d",
         convFunc.name(), input.c_str(), static_cast<int>(convFuncRetVal));
 
-    return {};
+    return std::nullopt;
 }
 
 }
