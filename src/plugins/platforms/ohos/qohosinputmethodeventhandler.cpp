@@ -10,6 +10,7 @@
 #include <QtCore/qmap.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qhighdpiscaling_p.h>
+#include <QtGui/private/qwindow_p.h>
 #include <QtCore/qmath.h>
 #include <algorithm>
 #include <arkui/ui_input_event.h>
@@ -128,6 +129,39 @@ QPoint makeWindowLocalPosition(const QPoint &globalPosition, QWindow *qWindow)
     return globalPosition - platformWindowGeometry.topLeft();
 }
 
+// Whether a press on qWindow should make it the focus window. Based on the
+// check in QXcbWindow::handleButtonPressEvent(), with the window types and
+// states that OHOS must also skip.
+bool windowShouldTakeFocusOnPress(QWindow *qWindow)
+{
+    if (qWindow == nullptr || qWindow == QGuiApplication::focusWindow())
+        return false;
+
+    if (QGuiApplicationPrivate::activePopupWindow() != nullptr)
+        return false;
+
+    if (QOhosPlatformWindow::fromQWindowOrNull(qWindow) == nullptr)
+        return false;
+
+    const auto flags = QOhosPlatformWindow::platformWindowFlagsForQWindow(qWindow);
+    if (flags.testFlag(Qt::WindowDoesNotAcceptFocus)
+        || flags.testFlag(Qt::WindowTransparentForInput)
+        || flags.testFlag(Qt::BypassWindowManagerHint)) {
+        return false;
+    }
+
+    switch (qWindow->type()) {
+    case Qt::ToolTip:
+    case Qt::Popup:
+    case Qt::SplashScreen:
+        return false;
+    default:
+        break;
+    }
+
+    return !QGuiApplicationPrivate::instance()->isWindowBlocked(qWindow);
+}
+
 }
 
 QOhosInputMethodEventHandler::QOhosInputMethodEventHandler(
@@ -135,6 +169,41 @@ QOhosInputMethodEventHandler::QOhosInputMethodEventHandler(
 {
     for (const auto &deviceType : deviceTypes)
         m_pointingDevices.emplace(deviceType, createPointingDevice(deviceType));
+
+    // Activation is asynchronous, so a request is latched until focus changes.
+    connect(qGuiApp, &QGuiApplication::focusWindowChanged,
+            this, [this](QWindow *) { m_pendingActivationWindow.clear(); });
+}
+
+void QOhosInputMethodEventHandler::requestActivationOnPressIfNeeded(QWindow *pressTargetWindow)
+{
+    if (!m_currentMouseGrabbingWindow.isNull())
+        return;
+
+    if (pressTargetWindow == nullptr)
+        return;
+
+    // Activate the event receiver, not the hit window: a native child
+    // QWidgetWindow must not become the focus window on its own.
+    auto *targetWindow =
+        static_cast<QWindowPrivate *>(QObjectPrivate::get(pressTargetWindow))->eventReceiver();
+
+    if (!windowShouldTakeFocusOnPress(targetWindow))
+        return;
+
+    auto *currentFocusWindow = QGuiApplication::focusWindow();
+    const bool embeddedWindowInvolved =
+        QOhosPlatformWindow::isEmbeddedWindow(targetWindow)
+        || (currentFocusWindow != nullptr
+            && QOhosPlatformWindow::isEmbeddedWindow(currentFocusWindow));
+    if (!embeddedWindowInvolved)
+        return;
+
+    if (m_pendingActivationWindow == targetWindow)
+        return;
+
+    m_pendingActivationWindow = targetWindow;
+    targetWindow->requestActivate();
 }
 
 QOhosInputMethodEventHandler::~QOhosInputMethodEventHandler() = default;
@@ -183,6 +252,9 @@ void QOhosInputMethodEventHandler::onTouchEventFromXComponent(
             Qt::MouseButtons buttons = Qt::NoButton;
             switch (touchPoint.type) {
             case OH_NATIVEXCOMPONENT_DOWN:
+                requestActivationOnPressIfNeeded(targetWindow);
+                buttons = Qt::LeftButton;
+                break;
             case OH_NATIVEXCOMPONENT_MOVE:
                 buttons = Qt::LeftButton;
                 break;
@@ -613,6 +685,9 @@ void QOhosInputMethodEventHandler::handleMouseEvent(const QOhosMouseEvent &wsiEv
             ohosInputContext->setLastInputTypeToTriggerSoftKeyboard(QOhosInputContext::RequestKeyboardReason::MOUSE);
     }
 
+    if (eventTypeIsPress)
+        requestActivationOnPressIfNeeded(wsiEvent.targetWindow.data());
+
     QEvent::Type targetEventType;
     QWindow *targetWindow;
     QPointF localPosition;
@@ -670,18 +745,21 @@ void QOhosInputMethodEventHandler::handleTouchEvent(const QWindowSystemInterface
 
     m_lastWsiMouseEvent.reset();
 
-    bool anyEventPressedOrReleased =
-        std::any_of(
-            touchEvent.touchPoints.begin(),
-            touchEvent.touchPoints.end(),
-            [](const QWindowSystemInterface::TouchPoint &touchPoint) {
-                return touchPoint.state == QEventPoint::State::Pressed || touchPoint.state == QEventPoint::State::Released;
-            });
-    if (anyEventPressedOrReleased) {
+    bool anyTouchPointPressed = false;
+    bool anyTouchPointReleased = false;
+    for (const auto &touchPoint : touchEvent.touchPoints) {
+        anyTouchPointPressed = anyTouchPointPressed || touchPoint.state == QEventPoint::State::Pressed;
+        anyTouchPointReleased = anyTouchPointReleased || touchPoint.state == QEventPoint::State::Released;
+    }
+
+    if (anyTouchPointPressed || anyTouchPointReleased) {
         auto *ohosInputContext = qobject_cast<QOhosInputContext *>(QOhosPlatformIntegration::instance()->inputContext());
         if (ohosInputContext != nullptr)
             ohosInputContext->setLastInputTypeToTriggerSoftKeyboard(QOhosInputContext::RequestKeyboardReason::TOUCH);
     }
+
+    if (anyTouchPointPressed)
+        requestActivationOnPressIfNeeded(touchEvent.targetWindow);
 
     updateWindowsUnderTouchPoints(touchEvent);
 
