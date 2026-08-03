@@ -79,6 +79,9 @@
 
 - (BOOL)shouldUseMetalLayer
 {
+    if (!m_platformWindow)
+        return false;
+
     // MetalSurface needs a layer, and so does VulkanSurface (via MoltenVK)
     QSurface::SurfaceType surfaceType = m_platformWindow->window()->surfaceType();
     return surfaceType == QWindow::MetalSurface || surfaceType == QWindow::VulkanSurface;
@@ -135,6 +138,11 @@
 */
 - (void)setLayer:(CALayer *)layer
 {
+    if (!m_platformWindow) {
+        [super setLayer:layer];
+        return;
+    }
+
     qCDebug(lcQpaDrawing) << "Making" << self
         << (self.wantsLayer ? "layer-backed" : "layer-hosted")
         << "with" << layer;
