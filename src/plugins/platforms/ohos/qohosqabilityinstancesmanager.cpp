@@ -165,7 +165,7 @@ QObjectThreadSafeRef QAbilityPeerImpl::qWindowRef()
 std::optional<QNapi::Promise> QAbilityPeerImpl::qWindowDestroyPromise()
 {
     if (!m_optQWindowDestroyPromiseData || m_optQWindowDestroyPromiseData->promise.IsEmpty())
-        return {};
+        return std::nullopt;
 
     auto promiseValue = m_optQWindowDestroyPromiseData->promise.Value();
     m_optQWindowDestroyPromiseData->promise.Reset();
@@ -576,7 +576,7 @@ std::optional<std::string> QAbilityInstancesManagerImpl::tryGetQAbilityInstanceI
 {
     auto wantParameters = QNapi::getPropOrUndefined(want, "parameters");
     if (wantParameters.IsUndefined())
-        return {};
+        return std::nullopt;
 
     auto instanceIdParam = QNapi::getPropOrUndefined(wantParameters, qAbilityInstanceIdWantParamKey);
 

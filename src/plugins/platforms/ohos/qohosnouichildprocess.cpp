@@ -138,7 +138,7 @@ std::optional<std::string> tryReadChildSetupDataFile(int childPid)
         qOhosPrintfError(
             "%s: error opening 'child setup data' file '%s' for read: %s",
             Q_FUNC_INFO, childSetupDataPath.c_str(), std::strerror(errno));
-        return {};
+        return std::nullopt;
     }
     int fileFd = openRes;
 
@@ -152,20 +152,20 @@ std::optional<std::string> tryReadChildSetupDataFile(int childPid)
         qOhosPrintfError(
             "%s: error reading 'child setup data' file '%s': %s",
             Q_FUNC_INFO, childSetupDataPath.c_str(), std::strerror(readErrno));
-        return {};
+        return std::nullopt;
     }
     auto readSize = static_cast<std::size_t>(readRes);
     if (readSize > qChildSetupMaxSetupDataSize) {
         qOhosPrintfError(
             "%s: received 'child setup data' file '%s' is too big",
             Q_FUNC_INFO, childSetupDataPath.c_str());
-        return {};
+        return std::nullopt;
     }
     if (readSize == 0) {
         qOhosPrintfError(
             "%s: received 'child setup data' file '%s' is empty",
             Q_FUNC_INFO, childSetupDataPath.c_str());
-        return {};
+        return std::nullopt;
     }
 
     return std::string(readBuffer, readSize);
@@ -190,7 +190,7 @@ std::optional<std::string> tryWaitForChildSetupData(int childPid)
     do {
         auto optSetupDataStr = tryReadChildSetupDataFile(childPid);
         if (!optSetupDataStr)
-            return {};
+            return std::nullopt;
         if (!optSetupDataStr->empty()) {
             removeChildSetupDataFileIfExists(childPid);
             return optSetupDataStr;
@@ -199,7 +199,7 @@ std::optional<std::string> tryWaitForChildSetupData(int childPid)
     } while (ch::steady_clock::now() < timeoutEnd);
 
     qOhosPrintfError("%s: timeout waiting for 'child setup data' file", Q_FUNC_INFO);
-    return {};
+    return std::nullopt;
 }
 
 }

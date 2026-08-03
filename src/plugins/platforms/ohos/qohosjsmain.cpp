@@ -625,7 +625,7 @@ std::optional<std::size_t> tryGetMaxStackSizeHardLimit()
         qOhosPrintfWarning(
             "%s: error reading stack size hard limit (assuming no limit): %s",
             Q_FUNC_INFO, std::strerror(getrlimitErrno));
-        return {};
+        return std::nullopt;
     }
 
     return limit.rlim_max != RLIM_INFINITY

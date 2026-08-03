@@ -82,7 +82,7 @@ QNapi::Promise makeResolvedPromise(Napi::Env env)
 std::optional<std::uint32_t> tryGetCodeFromJsBusinessError(const Napi::Error &error)
 {
     if (!error.Value().IsObject())
-        return {};
+        return std::nullopt;
 
     auto errorObject = QNapi::checkedCast<QNapi::Object>(error.Value());
     auto optErrorCode = QNapi::getOptionalPropOrEmpty<QNapi::Number>(errorObject, "code");

@@ -115,7 +115,7 @@ QObjectThreadSafeRef DummyQAbilityPeer::qWindowRef()
 
 std::optional<QNapi::Promise> DummyQAbilityPeer::qWindowDestroyPromise()
 {
-    return {};
+    return std::nullopt;
 }
 
 void DummyQAbilityPeer::forceResolveQWindowDestroyPromiseIfPresent(Napi::Env)
