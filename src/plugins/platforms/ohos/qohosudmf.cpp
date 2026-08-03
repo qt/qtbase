@@ -144,13 +144,13 @@ std::optional<QSpan<const std::uint8_t>> QOhosUdmfRecord::tryGetGeneralEntry(
 {
     if (m_invalidated) {
         qOhosPrintfError("%s: This record is invalidated. Returning empty value.", Q_FUNC_INFO);
-        return {};
+        return std::nullopt;
     }
 
     auto availableTypes = getTypes();
     auto foundTypeIt = std::find(std::begin(availableTypes), std::end(availableTypes), typeId);
     if (foundTypeIt == std::end(availableTypes))
-        return {};
+        return std::nullopt;
 
     std::uint8_t *buff;
     std::uint32_t buffSize;
@@ -164,7 +164,7 @@ std::optional<QSpan<const std::uint8_t>> QOhosUdmfRecord::tryGetGeneralEntry(
             Q_FUNC_INFO, typeId.c_str());
         m_invalidated = true;
 
-        return {};
+        return std::nullopt;
     }
 
     return QSpan<const std::uint8_t>(buff, buffSize);
