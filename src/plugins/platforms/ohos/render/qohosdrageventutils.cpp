@@ -25,7 +25,7 @@ std::optional<::ArkUI_DropOperation> tryMapQOhosArkUiDropOperationFromQt(Qt::Dro
     case Qt::MoveAction:
         return ::ARKUI_DROP_OPERATION_MOVE;
     default:
-        return {};
+        return std::nullopt;
     }
 }
 

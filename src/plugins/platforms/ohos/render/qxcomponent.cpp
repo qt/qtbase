@@ -36,7 +36,7 @@ std::optional<QXComponentId::RecognizedType> tryMapXComponentIdValueToRecognized
             return prefixTypePair.second;
     }
 
-    return {};
+    return std::nullopt;
 }
 
 }
