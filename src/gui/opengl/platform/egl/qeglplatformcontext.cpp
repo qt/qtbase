@@ -367,7 +367,7 @@ bool QEGLPlatformContext::hasExtension(const char *name)
 
         for (int i = 0; i < extensionCount; ++i) {
             const char *extensionName = reinterpret_cast<const char *>(glGetStringi(GL_EXTENSIONS, i));
-            if (strcmp(extensionName, name) == 0) {
+            if (extensionName && strcmp(extensionName, name) == 0) {
                 return true;
             }
         }
