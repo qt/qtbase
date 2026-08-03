@@ -1886,7 +1886,7 @@ function(_qt_internal_android_create_runner_wrapper target)
         set(script_content "${formatted_command} ${args_splitter}\n    %*\n")
         set(wrapper_path "${wrapper_output_dir}/${output_name}.bat")
     else()
-        set(script_content "#!/bin/sh\n\n${formatted_command} ${args_splitter}\n    $@\n")
+        set(script_content "#!/bin/sh\n\n${formatted_command} ${args_splitter}\n    \"$@\"\n")
         set(wrapper_path "${wrapper_output_dir}/${output_name}")
     endif()
 

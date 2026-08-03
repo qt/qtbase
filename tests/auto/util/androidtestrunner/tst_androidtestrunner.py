@@ -14,6 +14,7 @@
 #   --testapp-aab    path to the built testapp AAB (empty when modern
 #                    bundle is not configured)
 #   --testapp-dir    android-build-tst_androidtestrunner_testapp directory
+#   --testapp-wrapper  runner wrapper script CMake generated for the testapp
 #   --cmake          path to the host cmake binary
 #   --build-dir      standalone-tests build root
 #   --bundletool     path to the bundletool jar (empty when not configured)
@@ -57,7 +58,7 @@ def _parse_args():
     # Parse args at module load so @unittest.skipUnless decorators can see them.
     parser = argparse.ArgumentParser(add_help=False)
     for name in ("runner-bin", "testapp-apk", "testapp-aab",
-                 "testapp-dir", "testapp-package",
+                 "testapp-dir", "testapp-package", "testapp-wrapper",
                  "cmake", "build-dir", "bundletool"):
         parser.add_argument(f"--{name}", default="")
     parser.add_argument("--debug", action="store_true")
@@ -803,6 +804,23 @@ class CommandLineTests(unittest.TestCase):
             self.assertLess(elapsed, 30,
                 f"per-serial isolation regressed; took {elapsed:.1f}s")
 
+class RunnerWrapperScriptTests(unittest.TestCase):
+    """Check the runner wrapper script that CMake generates next to a target."""
+
+    @unittest.skipIf(sys.platform == "win32",
+                     "the .bat wrapper forwards %*, which keeps the quoting")
+    @unittest.skipUnless(ARGS.testapp_wrapper, "runner wrapper script path not passed in")
+    def test_wrapper_forwards_arguments_quoted(self):
+        # An unquoted $@ word-splits every argument, so ctest re-running a data
+        # row like "parseFile:from_file:extended multiplexing" reaches the test
+        # as three separate test names. The tool itself quotes correctly, so the
+        # wrapper is the only place where this can be lost.
+        with open(ARGS.testapp_wrapper) as f:
+            lines = [line.strip() for line in f if line.strip()]
+        self.assertEqual(lines[-1], '"$@"',
+                         f"wrapper does not forward argv verbatim: {lines[-1]!r}")
+
+
 @unittest.skipUnless(has_device(), "no Android device or emulator attached")
 class DeviceRunTests(unittest.TestCase):
     """Drive androidtestrunner against the testapp APK on a real device."""
@@ -937,6 +955,15 @@ class DeviceRunTests(unittest.TestCase):
         proc = self.invoke(scenario="crash_before_main", test_args=["alwaysPasses"])
         self.assertEqual(proc.returncode, EXIT_NOEXITCODE,
             f"got {proc.returncode}\n{proc.stdout}{proc.stderr}")
+
+    def test_test_arg_with_space_stays_one_argument(self):
+        # qt-testrunner re-runs a failing data row as a single argument, e.g.
+        # "parseFile:from_file:extended multiplexing". The quoting has to survive
+        # adb, the device shell, the am start extra and QProcess::splitCommand()
+        # in androidjnimain.cpp, otherwise QTest sees one test name per word.
+        proc = self.invoke(test_args=["no such function"])
+        out = proc.stdout + proc.stderr
+        self.assertIn("Function not found: no such function", out, out)
 
     @unittest.skipUnless(
         ARGS.testapp_aab and ARGS.bundletool,

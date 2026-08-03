@@ -25,6 +25,9 @@ set(_testapp_apk "${_testapp_dir}/tst_androidtestrunner_testapp.apk")
 set(_testapp_aab "${_testapp_dir}/tst_androidtestrunner_testapp.aab")
 set(_testapp_package "org.qtproject.example.tst_androidtestrunner_testapp")
 
+get_target_property(_testapp_wrapper tst_androidtestrunner_testapp
+    _qt_android_runner_wrapper_path)
+
 set(_args
     "--cmake" "${CMAKE_COMMAND}"
     "--build-dir" "${CMAKE_BINARY_DIR}"
@@ -33,6 +36,10 @@ set(_args
     "--testapp-apk" "${_testapp_apk}"
     "--testapp-package" "${_testapp_package}"
 )
+
+if(_testapp_wrapper)
+    list(APPEND _args "--testapp-wrapper" "${_testapp_wrapper}")
+endif()
 
 if(QT_USE_ANDROID_MODERN_BUNDLE AND EXISTS "${Bundletool_EXECUTABLE}")
     list(APPEND _args "--bundletool" "${Bundletool_EXECUTABLE}")
