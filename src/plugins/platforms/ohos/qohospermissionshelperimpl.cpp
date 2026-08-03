@@ -39,7 +39,7 @@ std::optional<Qt::PermissionStatus> tryMapPermissionStatusFromOhos(
         return Qt::PermissionStatus::Denied;
     }
 
-    return {};
+    return std::nullopt;
 }
 
 std::optional<QtOhosQpa::enums::ohos::abilityAccessCtrl::PermissionStatus> tryGetSelfPermissionStatus(
