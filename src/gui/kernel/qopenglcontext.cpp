@@ -153,6 +153,35 @@ QOpenGLContext *qt_gl_global_share_context()
     \note This means that when targeting WebAssembly with existing OpenGL-based
     Qt code, some porting may be required to cater to these limitations.
 
+    \section1 Security Considerations
+
+    All data consumed by QOpenGLContext and the classes building on it, such as
+    QOpenGLFunctions, the QtOpenGL module classes, and QRhi with its OpenGL
+    backend, is expected to be trusted content. This includes shader source
+    code, vertex and index data, textures and other pixel data, and all
+    parameters passed to OpenGL functions. Qt does not validate or sanitize any
+    of it.
+
+    Note also that getProcAddress() returns a raw function pointer resolved by
+    name from the OpenGL implementation. Qt cannot check that the signature the
+    caller casts it to matches the one the implementation provides; getting this
+    wrong results in undefined behavior.
+
+    The OpenGL implementation, meaning the driver and, on platforms that have
+    one, the library that dispatches to it, is a trusted, in-process platform
+    dependency. Qt loads it and calls into it directly, without any sandboxing
+    or verification, in the same way as it treats the Vulkan implementation.
+
+    Which library is loaded is decided by the platform's ordinary shared library
+    search order and, on some platforms, by environment variables. That
+    selection is part of the deployment's trusted configuration: a deployment
+    that does not control it does not control which native code runs inside the
+    process.
+
+    \warning Application developers are advised to carefully consider the
+    potential implications before allowing the feeding of user-provided content
+    that is not part of the application and is not under the developers'
+    control.
 
     \sa QOpenGLFunctions, QOpenGLBuffer, QOpenGLShaderProgram, QOpenGLFramebufferObject
 */
