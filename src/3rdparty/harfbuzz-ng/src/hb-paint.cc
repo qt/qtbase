@@ -61,6 +61,20 @@ hb_paint_color_glyph_nil (hb_paint_funcs_t *funcs, void *paint_data,
                           void *user_data) { return false; }
 
 static void
+hb_paint_fill_glyph_nil (hb_paint_funcs_t *funcs, void *paint_data,
+                         hb_codepoint_t glyph,
+                         hb_font_t *font,
+                         hb_bool_t is_foreground,
+                         hb_color_t color,
+                         void *user_data)
+{
+  /* Decompose into the equivalent general sequence. */
+  funcs->push_clip_glyph (paint_data, glyph, font);
+  funcs->color (paint_data, is_foreground, color);
+  funcs->pop_clip (paint_data);
+}
+
+static void
 hb_paint_push_clip_glyph_nil (hb_paint_funcs_t *funcs, void *paint_data,
                               hb_codepoint_t glyph,
                               hb_font_t *font,
@@ -552,6 +566,30 @@ hb_paint_color_glyph (hb_paint_funcs_t *funcs, void *paint_data,
 }
 
 /**
+ * hb_paint_fill_glyph:
+ * @funcs: paint functions
+ * @paint_data: associated data passed by the caller
+ * @glyph: the glyph ID
+ * @font: the font
+ * @is_foreground: whether the color is the foreground
+ * @color: The color to use
+ *
+ * Perform a "fill-glyph" paint operation: fill the glyph's shape
+ * with a solid color.
+ *
+ * Since: 14.3.0
+ */
+void
+hb_paint_fill_glyph (hb_paint_funcs_t *funcs, void *paint_data,
+                     hb_codepoint_t glyph,
+                     hb_font_t *font,
+                     hb_bool_t is_foreground,
+                     hb_color_t color)
+{
+  funcs->fill_glyph (paint_data, glyph, font, is_foreground, color);
+}
+
+/**
  * hb_paint_push_clip_glyph:
  * @funcs: paint functions
  * @paint_data: associated data passed by the caller
@@ -939,7 +977,7 @@ hb_paint_normalize_color_line (hb_color_stop_t *stops,
 
   hb_array_t<hb_color_stop_t> (stops, len)
     .qsort ([] (const hb_color_stop_t &a, const hb_color_stop_t &b) {
-      return a.offset < b.offset;
+      return (a.offset > b.offset) - (a.offset < b.offset);
     });
 
   float mn = stops[0].offset, mx = stops[0].offset;

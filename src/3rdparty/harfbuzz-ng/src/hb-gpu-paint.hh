@@ -287,10 +287,10 @@ struct hb_gpu_paint_t
     hb_font_t            *font;     /* borrowed; nullptr for path clips */
     hb_transform_t<float> transform;
     /* Path clips are encoded into a sub-blob at push_clip_path_end
-     * time; glyph clips re-encode per consuming layer.  For path
-     * clips, sub_blob_index is the pre-baked index and ext_* the
-     * captured design-unit extents.  For glyph clips, sub_blob_index
-     * is -1 and the ext_* fields are unused. */
+     * time; glyph clips are encoded lazily on first consuming layer
+     * and cached.  sub_blob_index is -1 until the encode happens,
+     * then holds the index into c->sub_blobs and ext_* hold the
+     * design-unit extents. */
     int                   sub_blob_index;
     int                   ext_x0, ext_y0, ext_x1, ext_y1;
   };
