@@ -93,6 +93,33 @@ void CLASS::init(QOpenGLContext *context) \
 
     \snippet code/src_gui_opengl_qopenglfunctions.cpp 4
 
+    \section1 Security Considerations
+
+    QOpenGLFunctions is a thin dispatch layer that exposes the OpenGL ES 2.0 API
+    as-is. The arguments are forwarded verbatim to the underlying OpenGL
+    implementation, which is a trusted, in-process platform dependency. Qt does
+    not inspect, validate, or sanitize the enums, sizes, offsets, and pointers
+    passed in, and does not act on the results returned. Calling a member
+    function here is therefore equivalent to calling the corresponding OpenGL
+    function directly, and the rules in the
+    \l{https://www.khronos.org/opengl/}{OpenGL and OpenGL ES specifications}
+    apply unchanged. Violating them leads to undefined behavior in the OpenGL
+    implementation, not to a graceful failure from Qt.
+
+    Note in particular that the functions taking a client-side pointer together
+    with a size or a format description, such as glTexImage2D(), glBufferData(),
+    glDrawElements(), and glReadPixels(), cause that memory to be read or
+    written as directed by the other arguments. Sizes that do not match the
+    buffer actually provided are therefore an out-of-bounds access in the
+    application's own address space, not only a driver-side error.
+
+    \warning All data passed through QOpenGLFunctions is expected to be trusted
+    content. Application developers are advised to carefully consider the
+    potential implications before deriving any of it from user-provided content
+    that is not part of the application and is not under the developers'
+    control. See \l{QOpenGLContext#Security Considerations}{QOpenGLContext} for
+    more information.
+
     \sa QOpenGLContext, QSurfaceFormat
 */
 
@@ -2206,6 +2233,22 @@ QT_OPENGL_IMPLEMENT(QOpenGLFunctionsPrivate, QT_OPENGL_FUNCTIONS)
     instance QOpenGLFunctions_3_2_Core. The versioned function wrappers target a
     given version and profile of OpenGL. They are therefore not suitable for
     cross-OpenGL-OpenGLES development.
+
+    \section1 Security Considerations
+
+    QOpenGLExtraFunctions is a thin dispatch layer that exposes the OpenGL ES
+    3.x API as-is, and the same considerations apply as for the base class. In
+    addition to the entry points already available there, this class exposes
+    compute shaders, shader storage buffers, image load/store, and program
+    binaries, all of which forward caller-supplied content straight to the
+    OpenGL implementation without inspection by Qt.
+
+    \warning All data passed through QOpenGLExtraFunctions is expected to be
+    trusted content. Application developers are advised to carefully consider
+    the potential implications before deriving any of it from user-provided
+    content that is not part of the application and is not under the
+    developers' control. See \l{QOpenGLFunctions#Security
+    Considerations}{QOpenGLFunctions} for more information.
  */
 
 /*!
