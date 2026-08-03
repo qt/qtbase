@@ -83,7 +83,7 @@ std::optional<QEventPoint::State> tryMapXComponentTouchEventTypeToQt(::OH_Native
     case OH_NATIVEXCOMPONENT_UNKNOWN:
         break;
     }
-    return {};
+    return std::nullopt;
 }
 
 QPointF calculateTouchPointNormalPosition(QWindow *targetWindow, const QPointF &clickPoint)

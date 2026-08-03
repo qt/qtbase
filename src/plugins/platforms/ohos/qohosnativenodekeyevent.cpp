@@ -216,7 +216,7 @@ std::optional<QOhosQtKeyEvent> QOhosNativeNodeKeyEvent::tryConvertToQOhosQtKeyEv
 {
     if (m_keyEventType == ::ArkUI_KeyEventType::ARKUI_KEY_EVENT_UNKNOWN) {
         qOhosWarning(QtForOhos) << "Cannot convert to QOhosQtKeyEvent - key action unknown";
-        return {};
+        return std::nullopt;
     }
 
     const auto qtModifiers = QtKeyEventHelpers::convertOhosToQtKeyboardModifiersWithNumpad(
