@@ -13,6 +13,8 @@ class QtCollator
     {
         Locale locale = Locale.forLanguageTag(bcp47Name);
         Collator c = Collator.getInstance(locale);
+        // Match qcollator_icu.cpp which enables UCOL_NORMALIZATION_MODE on its native path.
+        c.setDecomposition(Collator.CANONICAL_DECOMPOSITION);
         if (strength >= 0) {
             c.setStrength(strength);
         }
