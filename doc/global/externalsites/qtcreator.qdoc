@@ -1302,10 +1302,6 @@
     \title \QC: Add debuggers
 */
 /*!
-    \externalpage https://doc.qt.io/qtcreator/qtcreator-accelbubble-example.html
-    \title \QC: Tutorial: Mobile application
-*/
-/*!
     \externalpage https://doc.qt.io/qtcreator/creator-diff-editor.html
     \title \QC: Compare files
 */
@@ -1718,4 +1714,8 @@
 /*!
     \externalpage https://doc.qt.io/qtcreator/creator-deploying-android.html#signing-android-packages
     \title \QC: Signing Android Packages
+*/
+/*!
+    \externalpage https://doc.qt.io/qtcreator/creator-how-to-android-manifest.html
+    \title \QC: Edit Android manifest files
 */
