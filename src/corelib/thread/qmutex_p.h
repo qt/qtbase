@@ -26,9 +26,7 @@
 
 #include "qplatformdefs.h" // _POSIX_VERSION
 
-#if defined(Q_OS_DARWIN)
-# include <mach/semaphore.h>
-#elif defined(Q_OS_UNIX)
+#if defined(Q_OS_UNIX)
 #  include <semaphore.h>
 #endif
 
@@ -84,9 +82,7 @@ public:
     void derefWaiters(int value) noexcept;
 
     //platform specific stuff
-#if defined(Q_OS_DARWIN)
-    semaphore_t mach_semaphore;
-#elif defined(Q_OS_UNIX)
+#if defined(Q_OS_UNIX)
     sem_t semaphore;
 #endif
 };
