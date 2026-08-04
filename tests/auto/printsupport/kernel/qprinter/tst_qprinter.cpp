@@ -18,6 +18,7 @@
 #include <qtemporarydir.h>
 #include <qpicture.h>
 #include <qimage.h>
+#include <qtimer.h>
 
 #include <QtPrintSupport/private/qprinter_p.h>
 
@@ -49,6 +50,7 @@ private slots:
     void testMargins_data();
     void testMargins();
     void testPageSetupDialog();
+    void customPageSizeInPrintDialog();
     void testPrintPreviewDialog();
     void previewRecordsStartingPenOnEveryPage();
     void testMultipleSets_data();
@@ -126,6 +128,30 @@ void tst_QPrinter::testPageSetupDialog()
         QPrinter printer;
         QPageSetupDialog dialog(&printer);
     }
+}
+
+void tst_QPrinter::customPageSizeInPrintDialog()
+{
+#if defined(Q_OS_UNIX) && !defined(Q_OS_MACOS)
+    QPrinter printer;
+    printer.setOutputFormat(QPrinter::PdfFormat);
+    printer.setOutputFileName(testPdfFileName(QStringLiteral("customPageSize")));
+
+    const QPageSize customPageSize(QSizeF(123.0, 234.0), QPageSize::Millimeter,
+                                   QString(), QPageSize::ExactMatch);
+    QCOMPARE(customPageSize.id(), QPageSize::Custom);
+    printer.setPageSize(customPageSize);
+
+    QPrintDialog dialog(&printer);
+    QTimer::singleShot(0, &dialog, &QDialog::accept);
+    QCOMPARE(dialog.exec(), QDialog::Accepted);
+
+    const QPageSize actualPageSize = printer.pageLayout().pageSize();
+    QCOMPARE(actualPageSize.id(), QPageSize::Custom);
+    QVERIFY(actualPageSize.isEquivalentTo(customPageSize));
+#else
+    QSKIP("This test targets the Unix print dialog");
+#endif
 }
 
 // A preview dialog showing 4 pages for testPrintPreviewDialog().

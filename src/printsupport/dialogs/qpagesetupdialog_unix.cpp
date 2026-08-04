@@ -434,8 +434,12 @@ void QPageSetupWidget::updateWidget()
 
     m_ui.unitCombo->setCurrentIndex(m_ui.unitCombo->findData(QVariant::fromValue(m_units)));
 
-    const bool isCustom = m_ui.pageSizeCombo->currentIndex() == m_realCustomPageSizeIndex && m_realCustomPageSizeIndex != -1;
-    if (!isCustom)
+    const bool isCustom = m_realCustomPageSizeIndex != -1
+            && (m_pageLayout.pageSize().id() == QPageSize::Custom
+                || m_ui.pageSizeCombo->currentIndex() == m_realCustomPageSizeIndex);
+    if (isCustom)
+        m_ui.pageSizeCombo->setCurrentIndex(m_realCustomPageSizeIndex);
+    else
         m_ui.pageSizeCombo->setCurrentIndex(m_ui.pageSizeCombo->findData(QVariant::fromValue(m_pageLayout.pageSize())));
 
     QMarginsF min;
