@@ -861,7 +861,6 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_thread AND UNIX
 qt_internal_extend_target(Core CONDITION APPLE AND QT_FEATURE_thread
     SOURCES
         thread/qfutex_mac_p.h
-        thread/qmutex_mac.cpp
 )
 
 qt_internal_extend_target(Core CONDITION QT_FEATURE_thread AND UNIX AND NOT APPLE AND NOT LINUX
@@ -1640,9 +1639,8 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_tracecallback
         tracing/qtracecallback.cpp tracing/qtracecallback_p.h
 )
 
-# These files are included by qmutex.cpp
+# This file is included by qmutex.cpp
 set_source_files_properties(
-    thread/qmutex_mac.cpp
     thread/qmutex_unix.cpp
     PROPERTIES HEADER_FILE_ONLY ON)
 
