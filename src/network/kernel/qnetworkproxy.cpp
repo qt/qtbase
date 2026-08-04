@@ -1447,7 +1447,7 @@ void QNetworkProxyFactory::setUseSystemConfiguration(bool enable)
     The application-wide proxy is used as a last-resort when all other
     proxy selection requests returned QNetworkProxy::DefaultProxy. For
     example, QTcpSocket objects can have a proxy set with
-    QTcpSocket::setProxy, but if none is set, the proxy factory class
+    QTcpSocket::setProxy(), but if none is set, the proxy factory class
     set with this function will be queried.
 
     If you set a proxy factory with this function, any application

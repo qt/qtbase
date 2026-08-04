@@ -1884,7 +1884,7 @@ QString QPropertyBindingError::description() const
   Programmatically signals a change of the property. Any binding which depend on
   it will be notified, and if the property has a signal, it will be emitted.
 
-  This can be useful in combination with setValueBypassingBindings to defer
+  This can be useful in combination with setValueBypassingBindings() to defer
   signalling the change until a class invariant has been restored.
 
   \note If this property has a binding (i.e. hasBinding() returns true), that

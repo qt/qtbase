@@ -569,7 +569,7 @@ QHash<int,QByteArray> QAbstractProxyModel::roleNames() const
 }
 
 /*!
-    Equivalent to calling createIndex on the source model.
+    Equivalent to calling createIndex() on the source model.
 
     This method is useful if your proxy model wants to maintain the
     parent-child relationship of items in the source model.
