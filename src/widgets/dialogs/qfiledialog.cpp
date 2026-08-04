@@ -2820,16 +2820,17 @@ void QFileDialogPrivate::saveSettings()
 
     if (usingWidgets()) {
         settings.setValue("sidebarWidth", qFileDialogUi->splitter->sizes().constFirst());
-        settings.setValue("shortcuts", QUrl::toStringList(qFileDialogUi->sidebar->urls()));
+        settings.setValue("shortcuts",
+                          QUrl::toStringList(qFileDialogUi->sidebar->urls(), QUrl::FullyEncoded));
         settings.setValue("treeViewHeader", qFileDialogUi->treeView->header()->saveState());
     }
     QStringList historyUrls;
     const QStringList history = q->history();
     historyUrls.reserve(history.size());
     for (const QString &path : history)
-        historyUrls << QUrl::fromLocalFile(path).toString();
+        historyUrls << QUrl::fromLocalFile(path).toString(QUrl::FullyEncoded);
     settings.setValue("history", historyUrls);
-    settings.setValue("lastVisited", lastVisitedDir()->toString());
+    settings.setValue("lastVisited", lastVisitedDir()->toString(QUrl::FullyEncoded));
     const QMetaEnum &viewModeMeta = q->metaObject()->enumerator(q->metaObject()->indexOfEnumerator("ViewMode"));
     settings.setValue("viewMode", QLatin1StringView(viewModeMeta.key(q->viewMode())));
     settings.setValue("qtVersion", QT_VERSION_STR ""_L1);

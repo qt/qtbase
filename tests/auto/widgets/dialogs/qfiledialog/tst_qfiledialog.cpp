@@ -89,6 +89,7 @@ private slots:
     void fileMode();
     void filters();
     void history();
+    void saveSettingsUsesFullyEncodedUrls();
     void iconProvider();
     void isReadOnly();
     void itemDelegate();
@@ -768,6 +769,34 @@ void tst_QFiledialog::history()
     QCOMPARE(spyDirectoryEntered.size(), 0);
     QCOMPARE(spyFilesSelected.size(), 0);
     QCOMPARE(spyFilterSelected.size(), 0);
+}
+
+void tst_QFiledialog::saveSettingsUsesFullyEncodedUrls()
+{
+    QTemporaryDir temporaryDir;
+    QVERIFY(temporaryDir.isValid());
+    const QString path = temporaryDir.filePath(
+            QStringLiteral("M\u00fasica/\u041a\u0438\u0440\u0438\u043b\u043b\u0438\u0446\u0430"));
+    QVERIFY(QDir().mkpath(path));
+
+    const QUrl url = QUrl::fromLocalFile(path);
+    const QString fullyEncodedUrl = url.toString(QUrl::FullyEncoded);
+    QVERIFY(url.toString() != fullyEncodedUrl);
+
+    {
+        QFileDialog dialog;
+        dialog.setSidebarUrls({url});
+        dialog.setHistory({path});
+        QCOMPARE(dialog.sidebarUrls(), QList<QUrl>{url});
+        QFileDialogPrivate::setLastVisitedDirectory(url);
+    }
+
+    QSettings settings(QSettings::UserScope, QStringLiteral("QtProject"));
+    settings.beginGroup(QStringLiteral("FileDialog"));
+    QCOMPARE(settings.value(QStringLiteral("shortcuts")).toStringList(),
+             QStringList{fullyEncodedUrl});
+    QVERIFY(settings.value(QStringLiteral("history")).toStringList().contains(fullyEncodedUrl));
+    QCOMPARE(settings.value(QStringLiteral("lastVisited")).toString(), fullyEncodedUrl);
 }
 
 void tst_QFiledialog::iconProvider()
