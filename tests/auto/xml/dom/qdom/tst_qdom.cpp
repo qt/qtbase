@@ -105,6 +105,8 @@ private slots:
     void germanUmlautToFile() const;
     void setInvalidDataPolicy() const;
     void crashInSetContent() const;
+    void invalidCharDataInSetContent() const;
+    void invalidCharDataInSetContent_data() const;
     void doubleNamespaceDeclarations() const;
     void setContentQXmlReaderOverload() const;
     void toStringWithoutNewlines() const;
@@ -2334,6 +2336,60 @@ void tst_QDom::crashInSetContent() const
     QVERIFY(!docImport.setContent(QLatin1String("<a:>text</a:>"),
                                   QDomDocument::ParseOption::UseNamespaceProcessing));
     QVERIFY(docImport.setContent(QLatin1String("<?xml version=\"1.0\"?><e/>")));
+}
+
+void tst_QDom::invalidCharDataInSetContent_data() const
+{
+    QTest::addColumn<QByteArray>("input");
+    QTest::addColumn<bool>("parsed");
+    QTest::addColumn<QString>("document");
+
+    QTest::newRow("control")
+            << "<r><before/><a>TextNode</a><after/></r>"_ba << true
+            << u"<r><before/><a>TextNode</a><after/></r>"_s;
+    QTest::newRow("text-with-nul")
+            << "<r><before/><a>te\0xt</a><after/></r>"_ba << false
+            << u"<r><before/><a>te</a></r>"_s;
+    QTest::newRow("cdata")
+            << "<r><before/><![CDATA[da\0ta]]><after/></r>"_ba << false
+            << u"<r><before/></r>"_s;
+    QTest::newRow("comment")
+            << "<r><before/><!-- co\0m --><after/></r>"_ba << false
+            << u"<r><before/></r>"_s;
+    QTest::newRow("pi-data")
+            << "<r><before/><?pi da\0ta?><after/></r>"_ba << false
+            << u"<r><before/></r>"_s;
+    QTest::newRow("start-element")
+            << "<r><before/><a\0b/><after/></r>"_ba << false
+            << u"<r><before/></r>"_s;
+    QTest::newRow("nul-at-end")
+            << "<r><before/><before2/></r>\0"_ba << false
+            << u"<r><before/><before2/></r>"_s;
+}
+
+void tst_QDom::invalidCharDataInSetContent() const
+{
+    QFETCH(const QByteArray, input);
+    QFETCH(const bool, parsed);
+    QFETCH(const QString, document);
+
+    const auto policy = QDomImplementation::invalidDataPolicy();
+    const auto restoreInvalidDataPolicy = qScopeGuard([policy] {
+        QDomImplementation::setInvalidDataPolicy(policy);
+    });
+    QDomImplementation::setInvalidDataPolicy(QDomImplementation::ReturnNullNode);
+
+    QDomDocument doc;
+    const QDomDocument::ParseResult result =
+            doc.setContent(input, QDomDocument::ParseOption::UseNamespaceProcessing);
+
+    QCOMPARE(bool(result), parsed);
+    if (!parsed) {
+        QVERIFY(!result.errorMessage.isEmpty());
+        QCOMPARE(result.errorLine, qsizetype(1));
+        QVERIFY(result.errorColumn > 0);
+    }
+    QCOMPARE(doc.toString(-1), document);
 }
 
 void tst_QDom::doubleNamespaceDeclarations() const

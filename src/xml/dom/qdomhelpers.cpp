@@ -151,6 +151,8 @@ bool QDomBuilder::characters(const QString &characters, bool cdata)
     } else {
         n.reset(doc->createTextNode(characters));
     }
+    if (!n)
+        return false;
     n->setLocation(int(reader->lineNumber()), int(reader->columnNumber()));
     node->appendChild(n.get());
 
@@ -172,6 +174,8 @@ bool QDomBuilder::processingInstruction(const QString &target, const QString &da
 bool QDomBuilder::skippedEntity(const QString &name)
 {
     QDomNodePrivate *n = doc->createEntityReference(name);
+    if (!n)
+        return false;
     n->setLocation(int(reader->lineNumber()), int(reader->columnNumber()));
     node->appendChild(n);
     return true;
@@ -200,6 +204,8 @@ bool QDomBuilder::comment(const QString &characters)
 {
     QDomNodePrivate *n;
     n = doc->createComment(characters);
+    if (!n)
+        return false;
     n->setLocation(int(reader->lineNumber()), int(reader->columnNumber()));
     node->appendChild(n);
     return true;
