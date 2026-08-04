@@ -58,6 +58,8 @@ bool QIslamicCivilCalendar::isLeapYear(int year) const
         return false;
     if (year < 0)
         ++year;
+
+    year = qMod<30>(year); // Avoids overflow in:
     return qMod<30>(year * 11 + 14) < 11;
 }
 

@@ -29,6 +29,8 @@ private Q_SLOTS:
     void properties_data();
     void properties();
     void aliases();
+    void extremes_data();
+    void extremes();
 
     void gregory();
 };
@@ -447,6 +449,42 @@ void tst_QCalendar::gregory()
                      QGregorianCalendar::weekDayOfJulian(*last));
         }
     }
+}
+
+void tst_QCalendar::extremes_data()
+{
+    QTest::addColumn<QCalendar::System>("system");
+    // First and last leap years representable as int for this system:
+    QTest::addColumn<int>("minLeap");
+    QTest::addColumn<int>("maxLeap");
+
+#define NEWROW(sys, minLeap, maxLeap) \
+    QTest::addRow(#sys) << QCalendar::System::sys << minLeap << maxLeap
+
+    NEWROW(Gregorian, -2147483645, 2147483644);
+#ifndef QT_BOOTSTRAPPED
+    NEWROW(Julian, -2147483645, 2147483644);
+    NEWROW(Milankovic, -2147483645, 2147483644);
+#endif
+#if QT_CONFIG(jalalicalendar)
+    NEWROW(Jalali, -2147483647, 2147483646);
+#endif
+#if QT_CONFIG(islamiccivilcalendar)
+    NEWROW(IslamicCivil, -2147483647, 2147483647);
+#endif
+
+#undef NEWROW
+}
+
+void tst_QCalendar::extremes()
+{
+    QFETCH(const QCalendar::System, system);
+    QFETCH(const int, minLeap);
+    QFETCH(const int, maxLeap);
+    const QCalendar cal(system);
+
+    QVERIFY(cal.isLeapYear(minLeap));
+    QVERIFY(cal.isLeapYear(maxLeap));
 }
 
 QTEST_APPLESS_MAIN(tst_QCalendar)
