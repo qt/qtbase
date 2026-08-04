@@ -1,3 +1,4 @@
+// Qt-Security score:insignificant reason:build-tool
 QT_CLASS_LIB(QAbstractAnimation, QtCore, qabstractanimation.h)
 QT_CLASS_LIB(QAnimationDriver, QtCore, qabstractanimation.h)
 QT_CLASS_LIB(QAnimationGroup, QtCore, qanimationgroup.h)
