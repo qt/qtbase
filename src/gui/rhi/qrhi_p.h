@@ -249,6 +249,8 @@ public:
 
     int effectiveSampleCount(int sampleCount) const;
     QSize clampedSubResourceUploadSize(QSize size, QPoint dstPos, int level, QSize textureSizeAtLevelZero, bool warn = true);
+    QSize clampedSubResourceUploadSizeForSourceData(QSize size, quint32 bpl, quint32 bytesPerPixel,
+                                                    qsizetype dataSize, bool warn = true);
 
     void runCleanup();
 

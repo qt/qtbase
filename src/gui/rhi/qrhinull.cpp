@@ -461,12 +461,20 @@ void QRhiNull::simulateTextureUpload(const QRhiResourceUpdateBatchPrivate::Textu
                     }
                     // sourceTopLeft is not supported on this path as per QRhi docs
                     const QByteArray srcData = subresDesc.data();
+                    const QPoint dstOffset = subresDesc.destinationTopLeft();
+                    QSize size = clampedSubResourceUploadSize(QSize(w, h), dstOffset, level,
+                                                              texD->pixelSize());
+                    size = clampedSubResourceUploadSizeForSourceData(size, subresDesc.dataStride(),
+                                                                     4, srcData.size());
+                    if (size.isEmpty())
+                        continue;
+                    w = size.width();
+                    h = size.height();
                     const char *src = srcData.constData();
                     const int srcBpl = w * 4;
                     int srcStride = srcBpl;
                     if (subresDesc.dataStride())
                         srcStride = subresDesc.dataStride();
-                    const QPoint dstOffset = subresDesc.destinationTopLeft();
                     uchar *dst = texD->image[layer][level].bits();
                     const int dstBpl = texD->image[layer][level].bytesPerLine();
                     for (int y = 0; y < h; ++y) {

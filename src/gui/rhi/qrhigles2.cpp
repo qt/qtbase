@@ -2792,8 +2792,15 @@ void QRhiGles2::enqueueSubresUpload(QGles2Texture *texD, QGles2CommandBuffer *cb
             cmd.args.compressedImage.data = cbD->retainData(rawData);
         }
     } else if (!rawData.isEmpty()) {
-        const QSize size = subresDesc.sourceSize().isEmpty() ? q->sizeForMipLevel(level, texD->m_pixelSize)
-                                                             : subresDesc.sourceSize();
+        QSize size = subresDesc.sourceSize().isEmpty() ? q->sizeForMipLevel(level, texD->m_pixelSize)
+                                                       : subresDesc.sourceSize();
+        size = clampedSubResourceUploadSize(size, dp, level, texD->m_pixelSize);
+        quint32 bytesPerPixel = 0;
+        textureFormatInfo(texD->m_format, size, nullptr, nullptr, &bytesPerPixel);
+        size = clampedSubResourceUploadSizeForSourceData(size, subresDesc.dataStride(),
+                                                        bytesPerPixel, rawData.size());
+        if (size.isEmpty())
+            return;
 
         setCmdByNotCompressedData(cbD->retainData(rawData), size, subresDesc.dataStride());
     } else {

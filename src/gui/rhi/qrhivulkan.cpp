@@ -4154,19 +4154,25 @@ void QRhiVulkan::prepareUploadSubres(QVkTexture *texD, int layer, int level,
         copySizeBytes = imageSizeBytes = rawData.size();
         src = rawData.constData();
         QSize size = q->sizeForMipLevel(level, texD->m_pixelSize);
-        if (subresDesc.dataStride()) {
-            quint32 bytesPerPixel = 0;
-            textureFormatInfo(texD->m_format, size, nullptr, nullptr, &bytesPerPixel);
-            if (bytesPerPixel)
-                copyInfo.bufferRowLength = subresDesc.dataStride() / bytesPerPixel;
-        }
         if (!subresDesc.sourceSize().isEmpty())
             size = subresDesc.sourceSize();
-        copyInfo.imageOffset.x = dp.x();
-        copyInfo.imageOffset.y = dp.y();
-        copyInfo.imageExtent.width = uint32_t(size.width());
-        copyInfo.imageExtent.height = uint32_t(size.height());
-        copyInfos->append(copyInfo);
+        size = clampedSubResourceUploadSize(size, dp, level, texD->m_pixelSize);
+
+        quint32 bytesPerPixel = 0;
+        textureFormatInfo(texD->m_format, size, nullptr, nullptr, &bytesPerPixel);
+        if (subresDesc.dataStride() && bytesPerPixel)
+            copyInfo.bufferRowLength = subresDesc.dataStride() / bytesPerPixel;
+
+        size = clampedSubResourceUploadSizeForSourceData(size, subresDesc.dataStride(),
+                                                        bytesPerPixel, rawData.size());
+
+        if (!size.isEmpty()) {
+            copyInfo.imageOffset.x = dp.x();
+            copyInfo.imageOffset.y = dp.y();
+            copyInfo.imageExtent.width = uint32_t(size.width());
+            copyInfo.imageExtent.height = uint32_t(size.height());
+            copyInfos->append(copyInfo);
+        }
     } else {
         qWarning("Invalid texture upload for %p layer=%d mip=%d", texD, layer, level);
     }
@@ -4473,14 +4479,16 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
             trackedImageBarrier(cbD, utexD, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                                 VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
 
-            QVkCommandBuffer::Command &cmd(cbD->commands.get());
-            cmd.cmd = QVkCommandBuffer::Command::CopyBufferToImage;
-            cmd.args.copyBufferToImage.src = utexD->stagingBuffers[currentFrameSlot];
-            cmd.args.copyBufferToImage.dst = utexD->image;
-            cmd.args.copyBufferToImage.dstLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-            cmd.args.copyBufferToImage.count = copyInfos.size();
-            cmd.args.copyBufferToImage.bufferImageCopyIndex = cbD->pools.bufferImageCopy.size();
-            cbD->pools.bufferImageCopy.append(copyInfos.constData(), copyInfos.size());
+            if (!copyInfos.isEmpty()) {
+                QVkCommandBuffer::Command &cmd(cbD->commands.get());
+                cmd.cmd = QVkCommandBuffer::Command::CopyBufferToImage;
+                cmd.args.copyBufferToImage.src = utexD->stagingBuffers[currentFrameSlot];
+                cmd.args.copyBufferToImage.dst = utexD->image;
+                cmd.args.copyBufferToImage.dstLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+                cmd.args.copyBufferToImage.count = copyInfos.size();
+                cmd.args.copyBufferToImage.bufferImageCopyIndex = cbD->pools.bufferImageCopy.size();
+                cbD->pools.bufferImageCopy.append(copyInfos.constData(), copyInfos.size());
+            }
 
             // no reuse of staging, this is intentional
             QRhiVulkan::DeferredReleaseEntry e;
