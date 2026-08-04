@@ -1,6 +1,7 @@
 // Copyright (C) 2018 The Qt Company Ltd.
 // Copyright (C) 2018 Intel Corporation.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// Qt-Security score:significant reason:default
 
 // Note: A copy of this file is used in Qt Widgets Designer (qttools/src/designer/src/lib/shared/rcc_p.h)
 
