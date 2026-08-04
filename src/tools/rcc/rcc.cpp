@@ -2,6 +2,7 @@
 // Copyright (C) 2018 Intel Corporation.
 // Copyright (C) 2024 Christoph Cullmann <christoph@cullmann.io>
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// Qt-Security score:significant reason:default
 
 #include "rcc.h"
 
