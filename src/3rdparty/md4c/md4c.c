@@ -26,6 +26,7 @@
 #include "md4c.h"
 
 #include <limits.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -180,6 +181,7 @@ struct MD_CTX_tag {
     int alloc_ref_defs;
     void** ref_def_hashtable;
     int ref_def_hashtable_size;
+    SZ max_ref_def_output;
 
     /* Stack of inline/span markers.
      * This is only used for parsing a single block contents but by storing it
@@ -410,7 +412,7 @@ md_text_with_null_replacement(MD_CTX* ctx, MD_TEXTTYPE type, const CHAR* str, SZ
 #define MD_CHECK(func)                                                      \
     do {                                                                    \
         ret = (func);                                                       \
-        if(ret < 0)                                                         \
+        if(ret != 0)                                                        \
             goto abort;                                                     \
     } while(0)
 
@@ -616,50 +618,54 @@ struct MD_UNICODE_FOLD_INFO_tag {
             R(0x109e,0x109f), S(0x10fb), R(0x1360,0x1368), R(0x1390,0x1399), S(0x1400), R(0x166d,0x166e),
             R(0x169b,0x169c), R(0x16eb,0x16ed), R(0x1735,0x1736), R(0x17d4,0x17d6), R(0x17d8,0x17db),
             R(0x1800,0x180a), S(0x1940), R(0x1944,0x1945), R(0x19de,0x19ff), R(0x1a1e,0x1a1f), R(0x1aa0,0x1aa6),
-            R(0x1aa8,0x1aad), R(0x1b5a,0x1b6a), R(0x1b74,0x1b7e), R(0x1bfc,0x1bff), R(0x1c3b,0x1c3f),
-            R(0x1c7e,0x1c7f), R(0x1cc0,0x1cc7), S(0x1cd3), S(0x1fbd), R(0x1fbf,0x1fc1), R(0x1fcd,0x1fcf),
-            R(0x1fdd,0x1fdf), R(0x1fed,0x1fef), R(0x1ffd,0x1ffe), R(0x2010,0x2027), R(0x2030,0x205e),
-            R(0x207a,0x207e), R(0x208a,0x208e), R(0x20a0,0x20c0), R(0x2100,0x2101), R(0x2103,0x2106),
-            R(0x2108,0x2109), S(0x2114), R(0x2116,0x2118), R(0x211e,0x2123), S(0x2125), S(0x2127), S(0x2129),
-            S(0x212e), R(0x213a,0x213b), R(0x2140,0x2144), R(0x214a,0x214d), S(0x214f), R(0x218a,0x218b),
-            R(0x2190,0x2426), R(0x2440,0x244a), R(0x249c,0x24e9), R(0x2500,0x2775), R(0x2794,0x2b73),
-            R(0x2b76,0x2b95), R(0x2b97,0x2bff), R(0x2ce5,0x2cea), R(0x2cf9,0x2cfc), R(0x2cfe,0x2cff), S(0x2d70),
-            R(0x2e00,0x2e2e), R(0x2e30,0x2e5d), R(0x2e80,0x2e99), R(0x2e9b,0x2ef3), R(0x2f00,0x2fd5),
+            R(0x1aa8,0x1aad), R(0x1b4e,0x1b4f), R(0x1b5a,0x1b6a), R(0x1b74,0x1b7f), R(0x1bfc,0x1bff),
+            R(0x1c3b,0x1c3f), R(0x1c7e,0x1c7f), R(0x1cc0,0x1cc7), S(0x1cd3), S(0x1fbd), R(0x1fbf,0x1fc1),
+            R(0x1fcd,0x1fcf), R(0x1fdd,0x1fdf), R(0x1fed,0x1fef), R(0x1ffd,0x1ffe), R(0x2010,0x2027),
+            R(0x2030,0x205e), R(0x207a,0x207e), R(0x208a,0x208e), R(0x20a0,0x20c4), R(0x2100,0x2101),
+            R(0x2103,0x2106), R(0x2108,0x2109), S(0x2114), R(0x2116,0x2118), R(0x211e,0x2123), S(0x2125), S(0x2127),
+            S(0x2129), S(0x212e), R(0x213a,0x213b), R(0x2140,0x2144), R(0x214a,0x214d), S(0x214f), R(0x218a,0x218b),
+            R(0x2190,0x2429), R(0x2440,0x244a), R(0x249c,0x24e9), R(0x2500,0x2775), R(0x2794,0x2b73),
+            R(0x2b76,0x2bff), R(0x2ce5,0x2cea), R(0x2cf9,0x2cfc), R(0x2cfe,0x2cff), S(0x2d70), R(0x2e00,0x2e2e),
+            R(0x2e30,0x2e5d), R(0x2e60,0x2e63), R(0x2e80,0x2e99), R(0x2e9b,0x2ef3), R(0x2f00,0x2fd5),
             R(0x2ff0,0x2fff), R(0x3001,0x3004), R(0x3008,0x3020), S(0x3030), R(0x3036,0x3037), R(0x303d,0x303f),
-            R(0x309b,0x309c), S(0x30a0), S(0x30fb), R(0x3190,0x3191), R(0x3196,0x319f), R(0x31c0,0x31e3), S(0x31ef),
+            R(0x309b,0x309c), S(0x30a0), S(0x30fb), R(0x3190,0x3191), R(0x3196,0x319f), R(0x31c0,0x31e5), S(0x31ef),
             R(0x3200,0x321e), R(0x322a,0x3247), S(0x3250), R(0x3260,0x327f), R(0x328a,0x32b0), R(0x32c0,0x33ff),
             R(0x4dc0,0x4dff), R(0xa490,0xa4c6), R(0xa4fe,0xa4ff), R(0xa60d,0xa60f), S(0xa673), S(0xa67e),
             R(0xa6f2,0xa6f7), R(0xa700,0xa716), R(0xa720,0xa721), R(0xa789,0xa78a), R(0xa828,0xa82b),
             R(0xa836,0xa839), R(0xa874,0xa877), R(0xa8ce,0xa8cf), R(0xa8f8,0xa8fa), S(0xa8fc), R(0xa92e,0xa92f),
             S(0xa95f), R(0xa9c1,0xa9cd), R(0xa9de,0xa9df), R(0xaa5c,0xaa5f), R(0xaa77,0xaa79), R(0xaade,0xaadf),
-            R(0xaaf0,0xaaf1), S(0xab5b), R(0xab6a,0xab6b), S(0xabeb), S(0xfb29), R(0xfbb2,0xfbc2), R(0xfd3e,0xfd4f),
-            S(0xfdcf), R(0xfdfc,0xfdff), R(0xfe10,0xfe19), R(0xfe30,0xfe52), R(0xfe54,0xfe66), R(0xfe68,0xfe6b),
-            R(0xff01,0xff0f), R(0xff1a,0xff20), R(0xff3b,0xff40), R(0xff5b,0xff65), R(0xffe0,0xffe6),
-            R(0xffe8,0xffee), R(0xfffc,0xfffd), R(0x10100,0x10102), R(0x10137,0x1013f), R(0x10179,0x10189),
-            R(0x1018c,0x1018e), R(0x10190,0x1019c), S(0x101a0), R(0x101d0,0x101fc), S(0x1039f), S(0x103d0),
-            S(0x1056f), S(0x10857), R(0x10877,0x10878), S(0x1091f), S(0x1093f), R(0x10a50,0x10a58), S(0x10a7f),
-            S(0x10ac8), R(0x10af0,0x10af6), R(0x10b39,0x10b3f), R(0x10b99,0x10b9c), S(0x10ead), R(0x10f55,0x10f59),
-            R(0x10f86,0x10f89), R(0x11047,0x1104d), R(0x110bb,0x110bc), R(0x110be,0x110c1), R(0x11140,0x11143),
-            R(0x11174,0x11175), R(0x111c5,0x111c8), S(0x111cd), S(0x111db), R(0x111dd,0x111df), R(0x11238,0x1123d),
-            S(0x112a9), R(0x1144b,0x1144f), R(0x1145a,0x1145b), S(0x1145d), S(0x114c6), R(0x115c1,0x115d7),
-            R(0x11641,0x11643), R(0x11660,0x1166c), S(0x116b9), R(0x1173c,0x1173f), S(0x1183b), R(0x11944,0x11946),
-            S(0x119e2), R(0x11a3f,0x11a46), R(0x11a9a,0x11a9c), R(0x11a9e,0x11aa2), R(0x11b00,0x11b09),
-            R(0x11c41,0x11c45), R(0x11c70,0x11c71), R(0x11ef7,0x11ef8), R(0x11f43,0x11f4f), R(0x11fd5,0x11ff1),
-            S(0x11fff), R(0x12470,0x12474), R(0x12ff1,0x12ff2), R(0x16a6e,0x16a6f), S(0x16af5), R(0x16b37,0x16b3f),
-            R(0x16b44,0x16b45), R(0x16e97,0x16e9a), S(0x16fe2), S(0x1bc9c), S(0x1bc9f), R(0x1cf50,0x1cfc3),
-            R(0x1d000,0x1d0f5), R(0x1d100,0x1d126), R(0x1d129,0x1d164), R(0x1d16a,0x1d16c), R(0x1d183,0x1d184),
-            R(0x1d18c,0x1d1a9), R(0x1d1ae,0x1d1ea), R(0x1d200,0x1d241), S(0x1d245), R(0x1d300,0x1d356), S(0x1d6c1),
-            S(0x1d6db), S(0x1d6fb), S(0x1d715), S(0x1d735), S(0x1d74f), S(0x1d76f), S(0x1d789), S(0x1d7a9),
-            S(0x1d7c3), R(0x1d800,0x1d9ff), R(0x1da37,0x1da3a), R(0x1da6d,0x1da74), R(0x1da76,0x1da83),
-            R(0x1da85,0x1da8b), S(0x1e14f), S(0x1e2ff), R(0x1e95e,0x1e95f), S(0x1ecac), S(0x1ecb0), S(0x1ed2e),
-            R(0x1eef0,0x1eef1), R(0x1f000,0x1f02b), R(0x1f030,0x1f093), R(0x1f0a0,0x1f0ae), R(0x1f0b1,0x1f0bf),
-            R(0x1f0c1,0x1f0cf), R(0x1f0d1,0x1f0f5), R(0x1f10d,0x1f1ad), R(0x1f1e6,0x1f202), R(0x1f210,0x1f23b),
-            R(0x1f240,0x1f248), R(0x1f250,0x1f251), R(0x1f260,0x1f265), R(0x1f300,0x1f6d7), R(0x1f6dc,0x1f6ec),
-            R(0x1f6f0,0x1f6fc), R(0x1f700,0x1f776), R(0x1f77b,0x1f7d9), R(0x1f7e0,0x1f7eb), S(0x1f7f0),
-            R(0x1f800,0x1f80b), R(0x1f810,0x1f847), R(0x1f850,0x1f859), R(0x1f860,0x1f887), R(0x1f890,0x1f8ad),
-            R(0x1f8b0,0x1f8b1), R(0x1f900,0x1fa53), R(0x1fa60,0x1fa6d), R(0x1fa70,0x1fa7c), R(0x1fa80,0x1fa88),
-            R(0x1fa90,0x1fabd), R(0x1fabf,0x1fac5), R(0x1face,0x1fadb), R(0x1fae0,0x1fae8), R(0x1faf0,0x1faf8),
-            R(0x1fb00,0x1fb92), R(0x1fb94,0x1fbca)
+            R(0xaaf0,0xaaf1), S(0xab5b), R(0xab6a,0xab6b), S(0xabeb), S(0xfb29), R(0xfbb2,0xfbd2), R(0xfd3e,0xfd4f),
+            R(0xfd90,0xfd91), R(0xfdc8,0xfdcf), R(0xfdfc,0xfdff), R(0xfe10,0xfe19), R(0xfe30,0xfe52),
+            R(0xfe54,0xfe66), R(0xfe68,0xfe6b), R(0xff01,0xff0f), R(0xff1a,0xff20), R(0xff3b,0xff40),
+            R(0xff5b,0xff65), R(0xffe0,0xffe6), R(0xffe8,0xffee), R(0xfffc,0xfffd), R(0x10100,0x10102),
+            R(0x10137,0x1013f), R(0x10179,0x10189), R(0x1018c,0x1018e), R(0x10190,0x1019c), S(0x101a0),
+            R(0x101d0,0x101fc), S(0x1039f), S(0x103d0), S(0x1056f), S(0x10857), R(0x10877,0x10878), S(0x1091f),
+            S(0x1093f), R(0x10a50,0x10a58), S(0x10a7f), S(0x10ac8), R(0x10af0,0x10af6), R(0x10b39,0x10b3f),
+            R(0x10b99,0x10b9c), S(0x10d6e), R(0x10d8e,0x10d8f), S(0x10ead), R(0x10ec9,0x10eca), R(0x10ed0,0x10ed8),
+            R(0x10f55,0x10f59), R(0x10f86,0x10f89), R(0x11047,0x1104d), R(0x110bb,0x110bc), R(0x110be,0x110c1),
+            R(0x11140,0x11143), R(0x11174,0x11175), R(0x111c5,0x111c8), S(0x111cd), S(0x111db), R(0x111dd,0x111df),
+            R(0x11238,0x1123d), S(0x112a9), R(0x113d4,0x113d5), R(0x113d7,0x113d8), R(0x1144b,0x1144f),
+            R(0x1145a,0x1145b), S(0x1145d), S(0x114c6), R(0x115c1,0x115d7), R(0x11641,0x11643), R(0x11660,0x1166c),
+            S(0x116b9), R(0x1173c,0x1173f), S(0x1183b), R(0x11944,0x11946), S(0x119e2), R(0x11a3f,0x11a46),
+            R(0x11a9a,0x11a9c), R(0x11a9e,0x11aa2), R(0x11b00,0x11b09), S(0x11be1), R(0x11c41,0x11c45),
+            R(0x11c70,0x11c71), R(0x11ef7,0x11ef8), R(0x11f43,0x11f4f), R(0x11fd5,0x11ff1), S(0x11fff),
+            R(0x12470,0x12474), R(0x12ff1,0x12ff2), R(0x16a6e,0x16a6f), S(0x16af5), R(0x16b37,0x16b3f),
+            R(0x16b44,0x16b45), R(0x16d6d,0x16d6f), R(0x16e97,0x16e9a), S(0x16fe2), S(0x1bc9c), S(0x1bc9f),
+            R(0x1cc00,0x1ccef), R(0x1ccfa,0x1ccfc), R(0x1cd00,0x1ceb3), R(0x1ceba,0x1ced0), R(0x1ced2,0x1ced4),
+            R(0x1cedd,0x1cefd), R(0x1cf50,0x1cfc3), R(0x1d000,0x1d0f5), R(0x1d100,0x1d126), R(0x1d129,0x1d164),
+            R(0x1d16a,0x1d16c), R(0x1d183,0x1d184), R(0x1d18c,0x1d1a9), R(0x1d1ae,0x1d241), S(0x1d245),
+            R(0x1d253,0x1d25a), R(0x1d25d,0x1d25e), R(0x1d260,0x1d27f), R(0x1d300,0x1d356), S(0x1d6c1), S(0x1d6db),
+            S(0x1d6fb), S(0x1d715), S(0x1d735), S(0x1d74f), S(0x1d76f), S(0x1d789), S(0x1d7a9), S(0x1d7c3),
+            R(0x1d800,0x1d9ff), R(0x1da37,0x1da3a), R(0x1da6d,0x1da74), R(0x1da76,0x1da83), R(0x1da85,0x1da8b),
+            R(0x1db00,0x1db1c), S(0x1e14f), S(0x1e2ff), S(0x1e5ff), R(0x1e95e,0x1e95f), S(0x1ecac), S(0x1ecb0),
+            S(0x1ed2e), R(0x1eef0,0x1eef1), R(0x1f000,0x1f02b), R(0x1f030,0x1f093), R(0x1f0a0,0x1f0ae),
+            R(0x1f0b1,0x1f0bf), R(0x1f0c1,0x1f0cf), R(0x1f0d1,0x1f0f5), R(0x1f10d,0x1f1ae), R(0x1f1e6,0x1f202),
+            R(0x1f210,0x1f23b), R(0x1f240,0x1f248), R(0x1f250,0x1f251), R(0x1f260,0x1f265), R(0x1f300,0x1f6d9),
+            R(0x1f6dc,0x1f6ec), R(0x1f6f0,0x1f6fc), R(0x1f700,0x1f7db), R(0x1f7e0,0x1f7eb), R(0x1f7f0,0x1f80b),
+            R(0x1f810,0x1f847), R(0x1f850,0x1f859), R(0x1f860,0x1f887), R(0x1f890,0x1f8ad), R(0x1f8b0,0x1f8bb),
+            R(0x1f8c0,0x1f8c1), R(0x1f8d0,0x1f8d8), R(0x1f900,0x1fa57), R(0x1fa60,0x1fa6d), R(0x1fa70,0x1fa7c),
+            R(0x1fa80,0x1fac6), S(0x1fac8), R(0x1facc,0x1fadd), R(0x1fadf,0x1faeb), R(0x1faef,0x1fafa),
+            R(0x1fb00,0x1fb92), R(0x1fb94,0x1fbef), S(0x1fbfa)
         };
 #undef R
 #undef S
@@ -694,7 +700,7 @@ struct MD_UNICODE_FOLD_INFO_tag {
             S(0x03f4), S(0x03f5), S(0x03f7), S(0x03f9), S(0x03fa), R(0x03fd,0x03ff), R(0x0400,0x040f),
             R(0x0410,0x042f), R(0x0460,0x0480), R(0x048a,0x04be), S(0x04c0), R(0x04c1,0x04cd), R(0x04d0,0x052e),
             R(0x0531,0x0556), R(0x10a0,0x10c5), S(0x10c7), S(0x10cd), R(0x13f8,0x13fd), S(0x1c80), S(0x1c81),
-            S(0x1c82), S(0x1c83), S(0x1c84), S(0x1c85), S(0x1c86), S(0x1c87), S(0x1c88), R(0x1c90,0x1cba),
+            S(0x1c82), S(0x1c83), S(0x1c84), S(0x1c85), S(0x1c86), S(0x1c87), S(0x1c88), S(0x1c89), R(0x1c90,0x1cba),
             R(0x1cbd,0x1cbf), R(0x1e00,0x1e94), S(0x1e9b), R(0x1ea0,0x1efe), R(0x1f08,0x1f0f), R(0x1f18,0x1f1d),
             R(0x1f28,0x1f2f), R(0x1f38,0x1f3f), R(0x1f48,0x1f4d), S(0x1f59), S(0x1f5b), S(0x1f5d), S(0x1f5f),
             R(0x1f68,0x1f6f), S(0x1fb8), S(0x1fb9), S(0x1fba), S(0x1fbb), S(0x1fbe), R(0x1fc8,0x1fcb), S(0x1fd8),
@@ -705,10 +711,12 @@ struct MD_UNICODE_FOLD_INFO_tag {
             S(0x2ceb), S(0x2ced), S(0x2cf2), R(0xa640,0xa66c), R(0xa680,0xa69a), R(0xa722,0xa72e), R(0xa732,0xa76e),
             S(0xa779), S(0xa77b), S(0xa77d), R(0xa77e,0xa786), S(0xa78b), S(0xa78d), S(0xa790), S(0xa792),
             R(0xa796,0xa7a8), S(0xa7aa), S(0xa7ab), S(0xa7ac), S(0xa7ad), S(0xa7ae), S(0xa7b0), S(0xa7b1), S(0xa7b2),
-            S(0xa7b3), R(0xa7b4,0xa7c2), S(0xa7c4), S(0xa7c5), S(0xa7c6), S(0xa7c7), S(0xa7c9), S(0xa7d0), S(0xa7d6),
-            S(0xa7d8), S(0xa7f5), R(0xab70,0xabbf), R(0xff21,0xff3a), R(0x10400,0x10427), R(0x104b0,0x104d3),
-            R(0x10570,0x1057a), R(0x1057c,0x1058a), R(0x1058c,0x10592), S(0x10594), S(0x10595), R(0x10c80,0x10cb2),
-            R(0x118a0,0x118bf), R(0x16e40,0x16e5f), R(0x1e900,0x1e921)
+            S(0xa7b3), R(0xa7b4,0xa7c2), S(0xa7c4), S(0xa7c5), S(0xa7c6), S(0xa7c7), S(0xa7c9), S(0xa7cb),
+            R(0xa7cc,0xa7da), S(0xa7dc), S(0xa7dd), S(0xa7e2), S(0xa7f5), S(0xab6c), S(0xab6d), R(0xab70,0xabbf),
+            R(0xff21,0xff3a), R(0x10400,0x10427), R(0x104b0,0x104d3), R(0x10570,0x1057a), R(0x1057c,0x1058a),
+            R(0x1058c,0x10592), S(0x10594), S(0x10595), R(0x10c80,0x10cb2), R(0x10d50,0x10d65), R(0x118a0,0x118bf),
+            R(0x16e40,0x16e5f), R(0x16ea0,0x16eb8), S(0x1df40), S(0x1df48), S(0x1df4a), S(0x1df4d), S(0x1df51),
+            R(0x1df68,0x1df6e), R(0x1df72,0x1df7e), R(0x1e900,0x1e921)
         };
         static const unsigned FOLD_MAP_1_DATA[] = {
             0x0061, 0x007a, 0x03bc, 0x00e0, 0x00f6, 0x00f8, 0x00fe, 0x0101, 0x012f, 0x0133, 0x0137, 0x013a, 0x0148,
@@ -722,17 +730,19 @@ struct MD_UNICODE_FOLD_INFO_tag {
             0x03d9, 0x03ef, 0x03ba, 0x03c1, 0x03b8, 0x03b5, 0x03f8, 0x03f2, 0x03fb, 0x037b, 0x037d, 0x0450, 0x045f,
             0x0430, 0x044f, 0x0461, 0x0481, 0x048b, 0x04bf, 0x04cf, 0x04c2, 0x04ce, 0x04d1, 0x052f, 0x0561, 0x0586,
             0x2d00, 0x2d25, 0x2d27, 0x2d2d, 0x13f0, 0x13f5, 0x0432, 0x0434, 0x043e, 0x0441, 0x0442, 0x0442, 0x044a,
-            0x0463, 0xa64b, 0x10d0, 0x10fa, 0x10fd, 0x10ff, 0x1e01, 0x1e95, 0x1e61, 0x1ea1, 0x1eff, 0x1f00, 0x1f07,
-            0x1f10, 0x1f15, 0x1f20, 0x1f27, 0x1f30, 0x1f37, 0x1f40, 0x1f45, 0x1f51, 0x1f53, 0x1f55, 0x1f57, 0x1f60,
-            0x1f67, 0x1fb0, 0x1fb1, 0x1f70, 0x1f71, 0x03b9, 0x1f72, 0x1f75, 0x1fd0, 0x1fd1, 0x1f76, 0x1f77, 0x1fe0,
-            0x1fe1, 0x1f7a, 0x1f7b, 0x1fe5, 0x1f78, 0x1f79, 0x1f7c, 0x1f7d, 0x03c9, 0x006b, 0x00e5, 0x214e, 0x2170,
-            0x217f, 0x2184, 0x24d0, 0x24e9, 0x2c30, 0x2c5f, 0x2c61, 0x026b, 0x1d7d, 0x027d, 0x2c68, 0x2c6c, 0x0251,
-            0x0271, 0x0250, 0x0252, 0x2c73, 0x2c76, 0x023f, 0x0240, 0x2c81, 0x2ce3, 0x2cec, 0x2cee, 0x2cf3, 0xa641,
-            0xa66d, 0xa681, 0xa69b, 0xa723, 0xa72f, 0xa733, 0xa76f, 0xa77a, 0xa77c, 0x1d79, 0xa77f, 0xa787, 0xa78c,
-            0x0265, 0xa791, 0xa793, 0xa797, 0xa7a9, 0x0266, 0x025c, 0x0261, 0x026c, 0x026a, 0x029e, 0x0287, 0x029d,
-            0xab53, 0xa7b5, 0xa7c3, 0xa794, 0x0282, 0x1d8e, 0xa7c8, 0xa7ca, 0xa7d1, 0xa7d7, 0xa7d9, 0xa7f6, 0x13a0,
-            0x13ef, 0xff41, 0xff5a, 0x10428, 0x1044f, 0x104d8, 0x104fb, 0x10597, 0x105a1, 0x105a3, 0x105b1, 0x105b3,
-            0x105b9, 0x105bb, 0x105bc, 0x10cc0, 0x10cf2, 0x118c0, 0x118df, 0x16e60, 0x16e7f, 0x1e922, 0x1e943
+            0x0463, 0xa64b, 0x1c8a, 0x10d0, 0x10fa, 0x10fd, 0x10ff, 0x1e01, 0x1e95, 0x1e61, 0x1ea1, 0x1eff, 0x1f00,
+            0x1f07, 0x1f10, 0x1f15, 0x1f20, 0x1f27, 0x1f30, 0x1f37, 0x1f40, 0x1f45, 0x1f51, 0x1f53, 0x1f55, 0x1f57,
+            0x1f60, 0x1f67, 0x1fb0, 0x1fb1, 0x1f70, 0x1f71, 0x03b9, 0x1f72, 0x1f75, 0x1fd0, 0x1fd1, 0x1f76, 0x1f77,
+            0x1fe0, 0x1fe1, 0x1f7a, 0x1f7b, 0x1fe5, 0x1f78, 0x1f79, 0x1f7c, 0x1f7d, 0x03c9, 0x006b, 0x00e5, 0x214e,
+            0x2170, 0x217f, 0x2184, 0x24d0, 0x24e9, 0x2c30, 0x2c5f, 0x2c61, 0x026b, 0x1d7d, 0x027d, 0x2c68, 0x2c6c,
+            0x0251, 0x0271, 0x0250, 0x0252, 0x2c73, 0x2c76, 0x023f, 0x0240, 0x2c81, 0x2ce3, 0x2cec, 0x2cee, 0x2cf3,
+            0xa641, 0xa66d, 0xa681, 0xa69b, 0xa723, 0xa72f, 0xa733, 0xa76f, 0xa77a, 0xa77c, 0x1d79, 0xa77f, 0xa787,
+            0xa78c, 0x0265, 0xa791, 0xa793, 0xa797, 0xa7a9, 0x0266, 0x025c, 0x0261, 0x026c, 0x026a, 0x029e, 0x0287,
+            0x029d, 0xab53, 0xa7b5, 0xa7c3, 0xa794, 0x0282, 0x1d8e, 0xa7c8, 0xa7ca, 0x0264, 0xa7cd, 0xa7db, 0x019b,
+            0x0277, 0x027c, 0xa7f6, 0xab4b, 0xab4c, 0x13a0, 0x13ef, 0xff41, 0xff5a, 0x10428, 0x1044f, 0x104d8,
+            0x104fb, 0x10597, 0x105a1, 0x105a3, 0x105b1, 0x105b3, 0x105b9, 0x105bb, 0x105bc, 0x10cc0, 0x10cf2,
+            0x10d70, 0x10d85, 0x118c0, 0x118df, 0x16e60, 0x16e7f, 0x16ebb, 0x16ed3, 0x1df41, 0x1df49, 0x1df4b,
+            0x1df4e, 0x1df52, 0x1df69, 0x1df6f, 0x1df73, 0x1df7f, 0x1e922, 0x1e943
         };
         static const unsigned FOLD_MAP_2[] = {
             S(0x00df), S(0x0130), S(0x0149), S(0x01f0), S(0x0587), S(0x1e96), S(0x1e97), S(0x1e98), S(0x1e99),
@@ -740,7 +750,7 @@ struct MD_UNICODE_FOLD_INFO_tag {
             R(0x1fa0,0x1fa7), R(0x1fa8,0x1faf), S(0x1fb2), S(0x1fb3), S(0x1fb4), S(0x1fb6), S(0x1fbc), S(0x1fc2),
             S(0x1fc3), S(0x1fc4), S(0x1fc6), S(0x1fcc), S(0x1fd6), S(0x1fe4), S(0x1fe6), S(0x1ff2), S(0x1ff3),
             S(0x1ff4), S(0x1ff6), S(0x1ffc), S(0xfb00), S(0xfb01), S(0xfb02), S(0xfb05), S(0xfb06), S(0xfb13),
-            S(0xfb14), S(0xfb15), S(0xfb16), S(0xfb17)
+            S(0xfb14), S(0xfb15), S(0xfb16), S(0xfb17), S(0x1df95)
         };
         static const unsigned FOLD_MAP_2_DATA[] = {
             0x0073,0x0073, 0x0069,0x0307, 0x02bc,0x006e, 0x006a,0x030c, 0x0565,0x0582, 0x0068,0x0331, 0x0074,0x0308,
@@ -750,7 +760,7 @@ struct MD_UNICODE_FOLD_INFO_tag {
             0x03b1,0x03b9, 0x1f74,0x03b9, 0x03b7,0x03b9, 0x03ae,0x03b9, 0x03b7,0x0342, 0x03b7,0x03b9, 0x03b9,0x0342,
             0x03c1,0x0313, 0x03c5,0x0342, 0x1f7c,0x03b9, 0x03c9,0x03b9, 0x03ce,0x03b9, 0x03c9,0x0342, 0x03c9,0x03b9,
             0x0066,0x0066, 0x0066,0x0069, 0x0066,0x006c, 0x0073,0x0074, 0x0073,0x0074, 0x0574,0x0576, 0x0574,0x0565,
-            0x0574,0x056b, 0x057e,0x0576, 0x0574,0x056d
+            0x0574,0x056b, 0x057e,0x0576, 0x0574,0x056d, 0x0073,0x0073
         };
         static const unsigned FOLD_MAP_3[] = {
             S(0x0390), S(0x03b0), S(0x1f52), S(0x1f54), S(0x1f56), S(0x1fb7), S(0x1fc7), S(0x1fd2), S(0x1fd3),
@@ -850,7 +860,7 @@ struct MD_UNICODE_FOLD_INFO_tag {
         if(off > 2 && IS_UTF16_SURROGATE_HI(CH(off-2)) && IS_UTF16_SURROGATE_LO(CH(off-1)))
             return UTF16_DECODE_SURROGATE(CH(off-2), CH(off-1));
 
-        return CH(off);
+        return CH(off-1);
     }
 
     /* No whitespace uses surrogates, so no decoding needed here. */
@@ -981,7 +991,7 @@ struct MD_UNICODE_FOLD_INFO_tag {
  * line breaks with given replacement character.
  *
  * NOTE: Caller is responsible to make sure the buffer is large enough.
- * (Given the output is always shorter then input, (end - beg) is good idea
+ * (Given the output is always shorter than input, (end - beg) is good idea
  * what the caller should allocate.)
  */
 static void
@@ -1936,6 +1946,8 @@ md_is_link_label(MD_CTX* ctx, const MD_LINE* lines, MD_SIZE n_lines, OFF beg,
     MD_SIZE line_index = 0;
     int len = 0;
 
+    *p_beg_line_index = 0;
+
     if(CH(off) != _T('['))
         return FALSE;
     off++;
@@ -2281,10 +2293,13 @@ md_is_link_reference(MD_CTX* ctx, const MD_LINE* lines, MD_SIZE n_lines,
     int is_multiline;
     CHAR* label;
     SZ label_size;
-    int ret;
+    int ret = FALSE;
 
     MD_ASSERT(CH(beg) == _T('[') || CH(beg) == _T('!'));
     MD_ASSERT(CH(end-1) == _T(']'));
+
+    if(ctx->max_ref_def_output == 0)
+        return FALSE;
 
     beg += (CH(beg) == _T('!') ? 2 : 1);
     end--;
@@ -2313,7 +2328,17 @@ md_is_link_reference(MD_CTX* ctx, const MD_LINE* lines, MD_SIZE n_lines,
     if(is_multiline)
         free(label);
 
-    ret = (def != NULL);
+    if(def != NULL) {
+        /* See https://github.com/mity/md4c/issues/238 */
+        MD_SIZE output_size_estimation = def->label_size + def->title_size + def->dest_end - def->dest_beg;
+        if(output_size_estimation < ctx->max_ref_def_output) {
+            ctx->max_ref_def_output -= output_size_estimation;
+            ret = TRUE;
+        } else {
+            MD_LOG("Too many link reference definition instantiations.");
+            ctx->max_ref_def_output = 0;
+        }
+    }
 
 abort:
     return ret;
@@ -2332,8 +2357,7 @@ md_is_inline_link_spec(MD_CTX* ctx, const MD_LINE* lines, MD_SIZE n_lines,
     OFF off = beg;
     int ret = FALSE;
 
-    while(off >= lines[line_index].end)
-        line_index++;
+    md_lookup_line(off, lines, n_lines, &line_index);
 
     MD_ASSERT(CH(off) == _T('('));
     off++;
@@ -2501,8 +2525,13 @@ md_free_ref_defs(MD_CTX* ctx)
  * cache line.)
  */
 struct MD_MARK_tag {
-    OFF beg;
-    OFF end;
+    union {
+        struct {
+            OFF beg;
+            OFF end;
+        };
+        void* pointer; // Dummy marks can sometimes store a pointer
+    };
 
     /* For unresolved openers, 'next' may be used to form a stack of
      * unresolved open openers.
@@ -2634,28 +2663,20 @@ md_mark_stack_pop(MD_CTX* ctx, MD_MARKSTACK* stack)
     return top;
 }
 
-/* Sometimes, we need to store a pointer into the mark. It is quite rare
- * so we do not bother to make MD_MARK use union, and it can only happen
+/* Sometimes, we need to store a pointer into the mark. It can only happen
  * for dummy marks. */
 static inline void
 md_mark_store_ptr(MD_CTX* ctx, int mark_index, void* ptr)
 {
-    MD_MARK* mark = &ctx->marks[mark_index];
-    MD_ASSERT(mark->ch == 'D');
-
-    /* Check only members beg and end are misused for this. */
-    MD_ASSERT(sizeof(void*) <= 2 * sizeof(OFF));
-    memcpy(mark, &ptr, sizeof(void*));
+    MD_ASSERT(ctx->marks[mark_index].ch == 'D');
+    ctx->marks[mark_index].pointer = ptr;
 }
 
 static inline void*
 md_mark_get_ptr(MD_CTX* ctx, int mark_index)
 {
-    void* ptr;
-    MD_MARK* mark = &ctx->marks[mark_index];
-    MD_ASSERT(mark->ch == 'D');
-    memcpy(&ptr, mark, sizeof(void*));
-    return ptr;
+    MD_ASSERT(ctx->marks[mark_index].ch == 'D');
+    return ctx->marks[mark_index].pointer;
 }
 
 static inline void
@@ -2672,25 +2693,10 @@ md_resolve_range(MD_CTX* ctx, int opener_index, int closer_index)
     closer->flags |= MD_MARK_CLOSER | MD_MARK_RESOLVED;
 }
 
-
-#define MD_ROLLBACK_CROSSING    0
-#define MD_ROLLBACK_ALL         1
-
-/* In the range ctx->marks[opener_index] ... [closer_index], undo some or all
- * resolvings accordingly to these rules:
- *
- * (1) All stacks of openers are cut so that any pending potential openers
- *     are discarded from future consideration.
- *
- * (2) If 'how' is MD_ROLLBACK_ALL, then ALL resolved marks inside the range
- *     are thrown away and turned into dummy marks ('D').
- *
- * WARNING: Do not call for arbitrary range of opener and closer.
- * This must form (potentially) valid range not crossing nesting boundaries
- * of already resolved ranges.
- */
+/* Pop all opener records in the activated chains after the given mark.
+ * This makes sure, we have no crossing ranges. */
 static void
-md_rollback(MD_CTX* ctx, int opener_index, int closer_index, int how)
+md_pop_openers(MD_CTX* ctx, int opener_index)
 {
     int i;
 
@@ -2699,12 +2705,16 @@ md_rollback(MD_CTX* ctx, int opener_index, int closer_index, int how)
         while(stack->top >= opener_index)
             md_mark_stack_pop(ctx, stack);
     }
+}
 
-    if(how == MD_ROLLBACK_ALL) {
-        for(i = opener_index + 1; i < closer_index; i++) {
-            ctx->marks[i].ch = 'D';
-            ctx->marks[i].flags = 0;
-        }
+static void
+md_disable_marks(MD_CTX* ctx, int mark_index0, int mark_index1)
+{
+    int i;
+
+    for(i = mark_index0; i < mark_index1; i++) {
+        ctx->marks[i].ch = 'D';
+        ctx->marks[i].flags &= ~MD_MARK_RESOLVED;
     }
 }
 
@@ -3219,7 +3229,7 @@ md_collect_marks(MD_CTX* ctx, const MD_LINE* lines, MD_SIZE n_lines, int table_m
 
             /* A potential permissive URL autolink. */
             if(ch == _T(':')) {
-                static struct {
+                static const struct {
                     const CHAR* scheme;
                     SZ scheme_size;
                     const CHAR* suffix;
@@ -3276,35 +3286,11 @@ md_collect_marks(MD_CTX* ctx, const MD_LINE* lines, MD_SIZE n_lines, int table_m
                 continue;
             }
 
-            /* A potential strikethrough start/end. */
-            if(ch == _T('~')) {
+            /* A potential strikethrough/equation start/end. */
+            if(ch == _T('$') || ch == _T('~')) {
                 OFF tmp = off+1;
 
-                while(tmp < line->end  &&  CH(tmp) == _T('~'))
-                    tmp++;
-
-                if(tmp - off < 3) {
-                    unsigned flags = 0;
-
-                    if(tmp < line->end  &&  !ISUNICODEWHITESPACE(tmp))
-                        flags |= MD_MARK_POTENTIAL_OPENER;
-                    if(off > line->beg  &&  !ISUNICODEWHITESPACEBEFORE(off))
-                        flags |= MD_MARK_POTENTIAL_CLOSER;
-                    if(flags != 0)
-                        ADD_MARK(ch, off, tmp, flags);
-                }
-
-                off = tmp;
-                continue;
-            }
-
-            /* A potential equation start/end */
-            if(ch == _T('$')) {
-                /* We can have at most two consecutive $ signs,
-                 * where two dollar signs signify a display equation. */
-                OFF tmp = off+1;
-
-                while(tmp < line->end && CH(tmp) == _T('$'))
+                while(tmp < line->end && CH(tmp) == ch)
                     tmp++;
 
                 if(tmp - off <= 2) {
@@ -3503,17 +3489,17 @@ md_resolve_links(MD_CTX* ctx, const MD_LINE* lines, MD_SIZE n_lines)
             }
 
             if(is_link) {
+                md_pop_openers(ctx, opener_index);
+
                 if(delim != NULL) {
                     if(delim->end < closer->beg) {
-                        md_rollback(ctx, opener_index, delim_index, MD_ROLLBACK_ALL);
-                        md_rollback(ctx, delim_index, closer_index, MD_ROLLBACK_CROSSING);
+                        md_disable_marks(ctx, delim_index+1, delim_index);
                         delim->flags |= MD_MARK_RESOLVED;
                         opener->end = delim->beg;
                     } else {
                         /* The pipe is just before the closer: [[foo|]] */
-                        md_rollback(ctx, opener_index, closer_index, MD_ROLLBACK_ALL);
+                        md_disable_marks(ctx, opener_index+1, closer_index);
                         closer->beg = delim->beg;
-                        delim = NULL;
                     }
                 }
 
@@ -3562,6 +3548,7 @@ md_resolve_links(MD_CTX* ctx, const MD_LINE* lines, MD_SIZE n_lines)
             if(closer->end < ctx->size  &&  CH(closer->end) == _T('(')) {
                 /* Might be inline link. */
                 OFF inline_link_end = UINT_MAX;
+                int following_mark_index = closer_index + 1;
 
                 is_link = md_is_inline_link_spec(ctx, lines, n_lines, closer->end, &inline_link_end, &attr);
                 if(is_link < 0)
@@ -3570,10 +3557,8 @@ md_resolve_links(MD_CTX* ctx, const MD_LINE* lines, MD_SIZE n_lines)
                 /* Check the closing ')' is not inside an already resolved range
                  * (i.e. a range with a higher priority), e.g. a code span. */
                 if(is_link) {
-                    int i = closer_index + 1;
-
-                    while(i < ctx->n_marks) {
-                        MD_MARK* mark = &ctx->marks[i];
+                    while(following_mark_index < ctx->n_marks) {
+                        MD_MARK* mark = &ctx->marks[following_mark_index];
 
                         if(mark->beg >= inline_link_end)
                             break;
@@ -3586,9 +3571,9 @@ md_resolve_links(MD_CTX* ctx, const MD_LINE* lines, MD_SIZE n_lines)
                                 break;
                             }
 
-                            i = mark->next + 1;
+                            following_mark_index = mark->next + 1;
                         } else {
-                            i++;
+                            following_mark_index++;
                         }
                     }
                 }
@@ -3596,6 +3581,7 @@ md_resolve_links(MD_CTX* ctx, const MD_LINE* lines, MD_SIZE n_lines)
                 if(is_link) {
                     /* Eat the "(...)" */
                     closer->end = inline_link_end;
+                    md_disable_marks(ctx, closer_index+1, following_mark_index);
                 }
             }
 
@@ -3790,10 +3776,7 @@ md_analyze_emph(MD_CTX* ctx, int mark_index)
                 md_split_emph_mark(ctx, mark_index, closer_size - opener_size);
             }
 
-            /* Above we were only peeking. */
-            md_mark_stack_pop(ctx, stack);
-
-            md_rollback(ctx, opener_index, mark_index, MD_ROLLBACK_CROSSING);
+            md_pop_openers(ctx, opener_index);
             md_resolve_range(ctx, opener_index, mark_index);
             return;
         }
@@ -3817,8 +3800,7 @@ md_analyze_tilde(MD_CTX* ctx, int mark_index)
     if((mark->flags & MD_MARK_POTENTIAL_CLOSER)  &&  stack->top >= 0) {
         int opener_index = stack->top;
 
-        md_mark_stack_pop(ctx, stack);
-        md_rollback(ctx, opener_index, mark_index, MD_ROLLBACK_CROSSING);
+        md_pop_openers(ctx, opener_index);
         md_resolve_range(ctx, opener_index, mark_index);
         return;
     }
@@ -3841,8 +3823,8 @@ md_analyze_dollar(MD_CTX* ctx, int mark_index)
 
         if(opener->end - opener->beg == closer->end - closer->beg) {
             /* We are the matching closer */
-            md_mark_stack_pop(ctx, &DOLLAR_OPENERS);
-            md_rollback(ctx, opener_index, closer_index, MD_ROLLBACK_ALL);
+            md_pop_openers(ctx, opener_index);
+            md_disable_marks(ctx, opener_index+1, closer_index);
             md_resolve_range(ctx, opener_index, closer_index);
 
             /* Discard all pending openers: Latex math span do not allow
@@ -3906,14 +3888,15 @@ md_analyze_permissive_autolink(MD_CTX* ctx, int mark_index)
     static const struct {
         const MD_CHAR start_char;
         const MD_CHAR delim_char;
-        const MD_CHAR* allowed_nonalnum_chars;
+        const MD_CHAR* allowed_nonalnum_chars_inside;
+        const MD_CHAR* allowed_nonalnum_chars_anywhere;
         int min_components;
         const MD_CHAR optional_end_char;
     } URL_MAP[] = {
-        { _T('\0'), _T('.'),  _T(".-_"),      2, _T('\0') },    /* host, mandatory */
-        { _T('/'),  _T('/'),  _T("/.-_"),     0, _T('/') },     /* path */
-        { _T('?'),  _T('&'),  _T("&.-+_=()"), 1, _T('\0') },    /* query */
-        { _T('#'),  _T('\0'), _T(".-+_") ,    1, _T('\0') }     /* fragment */
+        { _T('\0'), _T('.'),  _T(".-_"),      _T(""),   2, _T('\0') },    /* host, mandatory */
+        { _T('/'),  _T('/'),  _T("/._"),      _T("+-"), 0, _T('/') },     /* path */
+        { _T('?'),  _T('&'),  _T("&.-+_=()"), _T(""),   1, _T('\0') },    /* query */
+        { _T('#'),  _T('\0'), _T(".-+_") ,    _T(""),   1, _T('\0') }     /* fragment */
     };
 
     MD_MARK* opener = &ctx->marks[mark_index];
@@ -3966,6 +3949,7 @@ md_analyze_permissive_autolink(MD_CTX* ctx, int mark_index)
     for(i = 0; i < SIZEOF_ARRAY(URL_MAP); i++) {
         int n_components = 0;
         int n_open_brackets = 0;
+        int component_len = 0;
 
         if(URL_MAP[i].start_char != _T('\0')) {
             if(end >= line_end  ||  CH(end) != URL_MAP[i].start_char)
@@ -3976,19 +3960,21 @@ md_analyze_permissive_autolink(MD_CTX* ctx, int mark_index)
         }
 
         while(end < line_end) {
-            if(ISALNUM(end)) {
+            if(ISALNUM(end)  ||  ISANYOF(end, URL_MAP[i].allowed_nonalnum_chars_anywhere)) {
                 if(n_components == 0)
                     n_components++;
+                component_len++;
                 end++;
-            } else if(end < line_end  &&
-                        ISANYOF(end, URL_MAP[i].allowed_nonalnum_chars)  &&
-                        md_scan_right_for_resolved_mark(ctx, right_cursor, end, &right_cursor) == NULL  &&
-                        ((end > line_beg && (ISALNUM(end-1) || CH(end-1) == _T(')')))  ||  CH(end) == _T('('))  &&
-                        ((end+1 < line_end && (ISALNUM(end+1) || CH(end+1) == _T('(')))  ||  CH(end) == _T(')')))
+            } else if(component_len > 0  &&  CH(end) == URL_MAP[i].delim_char  &&  end+1 < line_end  &&
+                      (ISALNUM(end+1)  ||  ISANYOF(end+1, URL_MAP[i].allowed_nonalnum_chars_anywhere))) {
+                n_components++;
+                component_len = 0;
+                end++;
+            } else if(ISANYOF(end, URL_MAP[i].allowed_nonalnum_chars_inside)  &&
+                      md_scan_right_for_resolved_mark(ctx, right_cursor, end, &right_cursor) == NULL  &&
+                      ((end > line_beg && (ISALNUM(end-1) || CH(end-1) == _T(')')))  ||  CH(end) == _T('('))  &&
+                      ((end+1 < line_end && (ISALNUM(end+1) || CH(end+1) == _T('(')))  ||  CH(end) == _T(')')))
             {
-                if(CH(end) == URL_MAP[i].delim_char)
-                    n_components++;
-
                 /* brackets have to be balanced. */
                 if(CH(end) == _T('(')) {
                     n_open_brackets++;
@@ -3998,6 +3984,7 @@ md_analyze_permissive_autolink(MD_CTX* ctx, int mark_index)
                     n_open_brackets--;
                 }
 
+                component_len++;
                 end++;
             } else {
                 break;
@@ -4475,12 +4462,14 @@ md_process_inlines(MD_CTX* ctx, const MD_LINE* lines, MD_SIZE n_lines)
                 MD_TEXTTYPE break_type = MD_TEXT_SOFTBR;
 
                 if(text_type == MD_TEXT_NORMAL) {
-                    if(ctx->parser.flags & MD_FLAG_HARD_SOFT_BREAKS)
+                    if(enforce_hardbreak  ||  (ctx->parser.flags & MD_FLAG_HARD_SOFT_BREAKS)) {
                         break_type = MD_TEXT_BR;
-                    else if(enforce_hardbreak)
-                        break_type = MD_TEXT_BR;
-                    else if((CH(line->end) == _T(' ') && CH(line->end+1) == _T(' ')))
-                        break_type = MD_TEXT_BR;
+                    } else {
+                        while(off < ctx->size  &&  ISBLANK(off))
+                            off++;
+                        if(off >= line->end + 2  &&  CH(off-2) == _T(' ')  &&  CH(off-1) == _T(' ')  &&  ISNEWLINE(off))
+                            break_type = MD_TEXT_BR;
+                    }
                 }
 
                 MD_TEXT(break_type, _T("\n"), 1);
@@ -4488,7 +4477,7 @@ md_process_inlines(MD_CTX* ctx, const MD_LINE* lines, MD_SIZE n_lines)
 
             /* Move to the next line. */
             line++;
-            off = line->beg;
+            off = MAX(off, line->beg);
 
             enforce_hardbreak = 0;
         }
@@ -4812,8 +4801,8 @@ md_process_leaf_block(MD_CTX* ctx, const MD_BLOCK* block)
         MD_BLOCK_CODE_DETAIL code;
         MD_BLOCK_TABLE_DETAIL table;
     } det;
-    MD_ATTRIBUTE_BUILD info_build;
-    MD_ATTRIBUTE_BUILD lang_build;
+    MD_ATTRIBUTE_BUILD info_build = { 0 };
+    MD_ATTRIBUTE_BUILD lang_build = { 0 };
     int is_in_tight_list;
     int clean_fence_code_detail = FALSE;
     int ret = 0;
@@ -5255,10 +5244,10 @@ md_is_atxheader_line(MD_CTX* ctx, OFF beg, OFF* p_beg, OFF* p_end, unsigned* p_l
     *p_level = n;
 
     if(!(ctx->parser.flags & MD_FLAG_PERMISSIVEATXHEADERS)  &&  off < ctx->size  &&
-       CH(off) != _T(' ')  &&  CH(off) != _T('\t')  &&  !ISNEWLINE(off))
+       !ISBLANK(off)  &&  !ISNEWLINE(off))
         return FALSE;
 
-    while(off < ctx->size  &&  CH(off) == _T(' '))
+    while(off < ctx->size  &&  ISBLANK(off))
         off++;
     *p_beg = off;
     *p_end = off;
@@ -5390,7 +5379,7 @@ md_is_closing_code_fence(MD_CTX* ctx, CHAR ch, OFF beg, OFF* p_end)
         goto out;
 
     /* Optionally, space(s) can follow */
-    while(off < ctx->size  &&  CH(off) == _T(' '))
+    while(off < ctx->size  &&  ISANYOF2(off, _T(' '), _T('\t')))
         off++;
 
     /* But nothing more is allowed on the line. */
@@ -6217,35 +6206,13 @@ md_analyze_line(MD_CTX* ctx, OFF beg, OFF* p_end,
         break;
     }
 
-    /* Scan for end of the line.
-     *
-     * Note this is quite a bottleneck of the parsing as we here iterate almost
-     * over compete document.
-     */
-#if defined __linux__ && !defined MD4C_USE_UTF16
-    /* Recent glibc versions have superbly optimized strcspn(), even using
-     * vectorization if available. */
-    if(ctx->doc_ends_with_newline  &&  off < ctx->size) {
-        while(TRUE) {
-            off += (OFF) strcspn(STR(off), "\r\n");
-
-            /* strcspn() can stop on zero terminator; but that can appear
-             * anywhere in the Markfown input... */
-            if(CH(off) == _T('\0'))
-                off++;
-            else
-                break;
-        }
-    } else
-#endif
-    {
-        /* Optimization: Use some loop unrolling. */
-        while(off + 3 < ctx->size  &&  !ISNEWLINE(off+0)  &&  !ISNEWLINE(off+1)
-                                   &&  !ISNEWLINE(off+2)  &&  !ISNEWLINE(off+3))
-            off += 4;
-        while(off < ctx->size  &&  !ISNEWLINE(off))
-            off++;
-    }
+    /* Scan for end of the line. */
+    /* Optimization: Use some loop unrolling. */
+    while(off + 3 < ctx->size  &&  !ISNEWLINE(off+0)  &&  !ISNEWLINE(off+1)
+                               &&  !ISNEWLINE(off+2)  &&  !ISNEWLINE(off+3))
+        off += 4;
+    while(off < ctx->size  &&  !ISNEWLINE(off))
+        off++;
 
     /* Set end of the line. */
     line->end = off;
@@ -6253,17 +6220,17 @@ md_analyze_line(MD_CTX* ctx, OFF beg, OFF* p_end,
     /* But for ATX header, we should exclude the optional trailing mark. */
     if(line->type == MD_LINE_ATXHEADER) {
         OFF tmp = line->end;
-        while(tmp > line->beg && CH(tmp-1) == _T(' '))
+        while(tmp > line->beg && ISBLANK(tmp-1))
             tmp--;
         while(tmp > line->beg && CH(tmp-1) == _T('#'))
             tmp--;
-        if(tmp == line->beg || CH(tmp-1) == _T(' ') || (ctx->parser.flags & MD_FLAG_PERMISSIVEATXHEADERS))
+        if(tmp == line->beg || ISBLANK(tmp-1) || (ctx->parser.flags & MD_FLAG_PERMISSIVEATXHEADERS))
             line->end = tmp;
     }
 
     /* Trim trailing spaces. */
     if(line->type != MD_LINE_INDENTEDCODE  &&  line->type != MD_LINE_FENCEDCODE  && line->type != MD_LINE_HTML) {
-        while(line->end > line->beg && CH(line->end-1) == _T(' '))
+        while(line->end > line->beg && ISBLANK(line->end-1))
             line->end--;
     }
 
@@ -6469,6 +6436,7 @@ md_parse(const MD_CHAR* text, MD_SIZE size, const MD_PARSER* parser, void* userd
     ctx.code_indent_offset = (ctx.parser.flags & MD_FLAG_NOINDENTEDCODEBLOCKS) ? (OFF)(-1) : 4;
     md_build_mark_char_map(&ctx);
     ctx.doc_ends_with_newline = (size > 0  &&  ISNEWLINE_(text[size-1]));
+    ctx.max_ref_def_output = 16 * MIN(size, (MD_SIZE)(1024 * 1024 / 16));
 
     /* Reset all mark stacks and lists. */
     for(i = 0; i < (int) SIZEOF_ARRAY(ctx.opener_stacks); i++)
