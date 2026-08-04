@@ -3563,6 +3563,14 @@ void tst_QDateTime::fromStringStringFormat_data()
     QTest::newRow("hh:mm:ss.zz ddd, dd MMM yyyy/IslamicCivil")
             << u"07:01:04.78 Wed, 01 Ram. 2024"_s << u"hh:mm:ss.zz ddd, dd MMM yyyy"_s
             << 2000 << islam << QDateTime(QDate(2024, 9, 1, islam), QTime(7, 1, 4, 780));
+    // Found by OSS-Fuzz - tripped overflows:
+    QTest::newRow("12/3/-922337202/IslamicCivil") // QTBUG-148792
+            << u"12/3/-922337202"_s << u"M/d/yyyy"_s << 1900 << islam << QDateTime();
+    QTest::newRow("12/3/-92233720/IslamicCivil") // Longest parseable substring of that:
+            << u"12/3/-92233720"_s << u"M/d/yyyy"_s << 1900 << islam
+            << QDate(-92233720, 12, 3, islam).startOfDay();
+    QTest::newRow("12/3/-9223372036854775809/IslamicCivil") // Year too long - rejected.
+            << u"12/3/-9223372036854775809"_s << u"M/d/yyyy"_s << 1900 << islam << QDateTime();
 #endif
 #if QT_CONFIG(jalalicalendar)
     const QCalendar farsi(Sys::Jalali);
