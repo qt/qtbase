@@ -2142,6 +2142,11 @@ void QWindowsWindow::handleDpiChanged(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     QWindowsThemeCache::clearThemeCache(hwnd);
 
+    // QTBUG-148525: The icons are created for a specific DPI, so they have to
+    // be recreated for the DPI of the monitor the window has been moved to.
+    if (isTopLevel() && !window()->icon().isNull())
+        setWindowIcon(window()->icon());
+
     // Send screen change first, so that the new screen is set during any following resize
     const auto prcNewWindow = reinterpret_cast<const RECT *>(lParam);
     checkForScreenChanged(QWindowsWindow::FromDpiChange, !m_inSetgeometry ? prcNewWindow : nullptr);
