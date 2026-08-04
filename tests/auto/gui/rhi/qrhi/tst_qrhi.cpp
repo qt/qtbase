@@ -1124,6 +1124,25 @@ void tst_QRhi::nativeBuffer()
     }
 }
 
+// When using sharedRhi(), prefer using a local OffscreenFrameGuard to get an
+// automatic endOffscreenFrame() if the test function returns early due to a
+// failure.
+class OffscreenFrameGuard
+{
+public:
+    OffscreenFrameGuard(QRhi *rhi) : m_rhi(rhi) { }
+    ~OffscreenFrameGuard() { endFrame(); }
+    void endFrame()
+    {
+        if (m_rhi) {
+            m_rhi->endOffscreenFrame();
+            m_rhi = nullptr;
+        }
+    }
+private:
+    QRhi *m_rhi;
+};
+
 static bool submitResourceUpdates(QRhi *rhi, QRhiResourceUpdateBatch *batch)
 {
     QRhiCommandBuffer *cb = nullptr;
@@ -5188,6 +5207,7 @@ void tst_QRhi::renderToMRTPerRenderTargetBlending()
     QRhiCommandBuffer *cb = nullptr;
     QVERIFY(rhi->beginOffscreenFrame(&cb) == QRhi::FrameOpSuccess);
     QVERIFY(cb);
+    OffscreenFrameGuard frameGuard(rhi);
 
     QRhiResourceUpdateBatch *updates = rhi->nextResourceUpdateBatch();
 
@@ -5239,7 +5259,7 @@ void tst_QRhi::renderToMRTPerRenderTargetBlending()
     readbackBatch->readBackTexture({ texture2.data() }, &readResult2);
     cb->endPass(readbackBatch);
 
-    rhi->endOffscreenFrame();
+    frameGuard.endFrame();
 
     QCOMPARE(result1.size(), texture->pixelSize());
     QCOMPARE(result2.size(), texture2->pixelSize());
@@ -5337,6 +5357,7 @@ void tst_QRhi::indexedIndirectMultiDrawBaseline()
     QRhiCommandBuffer *cb = nullptr;
     QVERIFY(rhi->beginOffscreenFrame(&cb) == QRhi::FrameOpSuccess);
     QVERIFY(cb);
+    OffscreenFrameGuard frameGuard(rhi);
 
     QRhiResourceUpdateBatch *u = rhi->nextResourceUpdateBatch();
 
@@ -5401,7 +5422,7 @@ void tst_QRhi::indexedIndirectMultiDrawBaseline()
     u2->readBackTexture({ texture.get() }, &rb);
     cb->endPass(u2);
 
-    rhi->endOffscreenFrame();
+    frameGuard.endFrame();
 
     // cannot check rendering results with Null, because there is no rendering there
     if (impl == QRhi::Null)
@@ -5480,6 +5501,7 @@ void tst_QRhi::indexedIndirectMultiDrawCustomStride()
     QRhiCommandBuffer *cb = nullptr;
     QVERIFY(rhi->beginOffscreenFrame(&cb) == QRhi::FrameOpSuccess);
     QVERIFY(cb);
+    OffscreenFrameGuard frameGuard(rhi);
 
     QRhiResourceUpdateBatch *u = rhi->nextResourceUpdateBatch();
 
@@ -5545,7 +5567,7 @@ void tst_QRhi::indexedIndirectMultiDrawCustomStride()
     u2->readBackTexture({ texture.get() }, &rb);
     cb->endPass(u2);
 
-    rhi->endOffscreenFrame();
+    frameGuard.endFrame();
 
     // cannot check rendering results with Null, because there is no rendering there
     if (impl == QRhi::Null)
@@ -5616,6 +5638,7 @@ void tst_QRhi::indexedIndirectMultiDrawFromCompute()
     QRhiCommandBuffer *cb = nullptr;
     QVERIFY(rhi->beginOffscreenFrame(&cb) == QRhi::FrameOpSuccess);
     QVERIFY(cb);
+    OffscreenFrameGuard frameGuard(rhi);
 
     QRhiResourceUpdateBatch *u = rhi->nextResourceUpdateBatch();
 
@@ -5701,7 +5724,7 @@ void tst_QRhi::indexedIndirectMultiDrawFromCompute()
     u2->readBackTexture({ texture.get() }, &rb);
     cb->endPass(u2);
 
-    rhi->endOffscreenFrame();
+    frameGuard.endFrame();
 
     // cannot check rendering results with Null, because there is no rendering there
     if (impl == QRhi::Null)
@@ -5790,6 +5813,7 @@ void tst_QRhi::indexedIndirectMultiDrawHighDrawCount()
     QRhiCommandBuffer *cb = nullptr;
     QVERIFY(rhi->beginOffscreenFrame(&cb) == QRhi::FrameOpSuccess);
     QVERIFY(cb);
+    OffscreenFrameGuard frameGuard(rhi);
 
     QRhiResourceUpdateBatch *u = rhi->nextResourceUpdateBatch();
 
@@ -5883,7 +5907,7 @@ void tst_QRhi::indexedIndirectMultiDrawHighDrawCount()
     u2->readBackTexture({ texture.get() }, &rb);
     cb->endPass(u2);
 
-    rhi->endOffscreenFrame();
+    frameGuard.endFrame();
 
     // Cannot check rendering results with Null, because there is no rendering there
     if (impl == QRhi::Null)
@@ -5980,6 +6004,7 @@ void tst_QRhi::indexedIndirectMultiDrawShaderDrawParams()
     QRhiCommandBuffer *cb = nullptr;
     QVERIFY(rhi->beginOffscreenFrame(&cb) == QRhi::FrameOpSuccess);
     QVERIFY(cb);
+    OffscreenFrameGuard frameGuard(rhi);
 
     QRhiResourceUpdateBatch *beginPassUpdates = rhi->nextResourceUpdateBatch();
 
@@ -6043,7 +6068,7 @@ void tst_QRhi::indexedIndirectMultiDrawShaderDrawParams()
     inPassUpdates->readBackTexture({ texture.get() }, &readResult);
     cb->endPass(inPassUpdates);
 
-    rhi->endOffscreenFrame();
+    frameGuard.endFrame();
 
     if (rhi->isYUpInFramebuffer() != rhi->isYUpInNDC())
         result.flip();
@@ -7013,6 +7038,7 @@ void tst_QRhi::renderbufferImportOpenGL()
     QRhiCommandBuffer *cb = nullptr;
     QVERIFY(rhi->beginOffscreenFrame(&cb) == QRhi::FrameOpSuccess);
     QVERIFY(cb);
+    OffscreenFrameGuard frameGuard(rhi);
     cb->beginPass(rt.data(), Qt::red, { 1.0f, 0 }, nullptr, QRhiCommandBuffer::ExternalContent);
     cb->beginExternal();
     QByteArray tmpBuf;
@@ -7020,7 +7046,7 @@ void tst_QRhi::renderbufferImportOpenGL()
     f->glReadPixels(0, 0, size.width(), size.height(), GL_RGBA, GL_UNSIGNED_BYTE, tmpBuf.data());
     cb->endExternal();
     cb->endPass();
-    rhi->endOffscreenFrame();
+    frameGuard.endFrame();
 
     f->glDeleteRenderbuffers(1, &b);
 
@@ -7152,10 +7178,11 @@ void tst_QRhi::threeDimTexture()
         QRhiCommandBuffer *cb = nullptr;
         QVERIFY(rhi->beginOffscreenFrame(&cb) == QRhi::FrameOpSuccess);
         QVERIFY(cb);
+        OffscreenFrameGuard frameGuard(rhi);
         cb->beginPass(rt.data(), Qt::blue, { 1.0f, 0 });
         // slice 23 is now blue
         cb->endPass();
-        rhi->endOffscreenFrame();
+        frameGuard.endFrame();
 
         // Fill all other slices with some color. We should be free to do this
         // step *before* the "render to slice 23" block above as well. However,
@@ -7632,10 +7659,11 @@ void tst_QRhi::oneDimTexture()
         QRhiCommandBuffer *cb = nullptr;
         QVERIFY(rhi->beginOffscreenFrame(&cb) == QRhi::FrameOpSuccess);
         QVERIFY(cb);
+        OffscreenFrameGuard frameGuard(rhi);
         cb->beginPass(rt.data(), Qt::blue, { 1.0f, 0 }, batch);
         // texture is now blue
         cb->endPass();
-        rhi->endOffscreenFrame();
+        frameGuard.endFrame();
 
         // read back texture (blue)
         batch = rhi->nextResourceUpdateBatch();
@@ -7688,10 +7716,11 @@ void tst_QRhi::oneDimTexture()
         QRhiCommandBuffer *cb = nullptr;
         QVERIFY(rhi->beginOffscreenFrame(&cb) == QRhi::FrameOpSuccess);
         QVERIFY(cb);
+        OffscreenFrameGuard frameGuard(rhi);
         cb->beginPass(rt.data(), Qt::blue, { 1.0f, 0 }, batch);
         // slice 23 is now blue
         cb->endPass();
-        rhi->endOffscreenFrame();
+        frameGuard.endFrame();
 
         // read back slice 23 (blue)
         batch = rhi->nextResourceUpdateBatch();
@@ -7846,6 +7875,7 @@ void tst_QRhi::renderToFloatTexture()
     QRhiCommandBuffer *cb = nullptr;
     QVERIFY(rhi->beginOffscreenFrame(&cb) == QRhi::FrameOpSuccess);
     QVERIFY(cb);
+    OffscreenFrameGuard frameGuard(rhi);
 
     QRhiResourceUpdateBatch *updates = rhi->nextResourceUpdateBatch();
 
@@ -7877,7 +7907,7 @@ void tst_QRhi::renderToFloatTexture()
     readbackBatch->readBackTexture({ texture.data() }, &readResult);
     cb->endPass(readbackBatch);
 
-    rhi->endOffscreenFrame();
+    frameGuard.endFrame();
     QCOMPARE(result.size(), texture->pixelSize());
 
     if (impl == QRhi::Null)
@@ -7940,6 +7970,7 @@ void tst_QRhi::renderToRgb10Texture()
     QRhiCommandBuffer *cb = nullptr;
     QVERIFY(rhi->beginOffscreenFrame(&cb) == QRhi::FrameOpSuccess);
     QVERIFY(cb);
+    OffscreenFrameGuard frameGuard(rhi);
 
     QRhiResourceUpdateBatch *updates = rhi->nextResourceUpdateBatch();
 
@@ -7971,7 +8002,7 @@ void tst_QRhi::renderToRgb10Texture()
     readbackBatch->readBackTexture({ texture.data() }, &readResult);
     cb->endPass(readbackBatch);
 
-    rhi->endOffscreenFrame();
+    frameGuard.endFrame();
     QCOMPARE(result.size(), texture->pixelSize());
 
     if (impl == QRhi::Null)
@@ -8099,6 +8130,8 @@ void tst_QRhi::tessellation()
 
     QRhiCommandBuffer *cb = nullptr;
     QCOMPARE(rhi->beginOffscreenFrame(&cb), QRhi::FrameOpSuccess);
+    QVERIFY(cb);
+    OffscreenFrameGuard frameGuard(rhi);
 
     cb->beginPass(rt.data(), Qt::black, { 1.0f, 0 }, u);
     cb->setGraphicsPipeline(pipeline.data());
@@ -8119,7 +8152,7 @@ void tst_QRhi::tessellation()
     readbackBatch->readBackTexture({ texture.data() }, &readResult);
     cb->endPass(readbackBatch);
 
-    rhi->endOffscreenFrame();
+    frameGuard.endFrame();
 
     if (rhi->isYUpInFramebuffer()) // we used clipSpaceCorrMatrix so this is different from many other tests
         result.flip();
@@ -8288,6 +8321,8 @@ void tst_QRhi::tessellationInterfaceBlocks()
 
     QRhiCommandBuffer *cb = nullptr;
     QCOMPARE(rhi->beginOffscreenFrame(&cb), QRhi::FrameOpSuccess);
+    QVERIFY(cb);
+    OffscreenFrameGuard frameGuard(rhi);
 
     cb->beginPass(rt.data(), Qt::black, { 1.0f, 0 }, u);
     cb->setGraphicsPipeline(pipeline.data());
@@ -8313,7 +8348,7 @@ void tst_QRhi::tessellationInterfaceBlocks()
 
     cb->endPass(readbackBatch);
 
-    rhi->endOffscreenFrame();
+    frameGuard.endFrame();
 
     if (rhi->isYUpInFramebuffer()) // we used clipSpaceCorrMatrix so this is different from many
                                    // other tests
@@ -8537,6 +8572,7 @@ void tst_QRhi::storageBuffer()
         QRhiCommandBuffer *cb = nullptr;
         rhi->beginOffscreenFrame(&cb);
         QVERIFY(cb);
+        OffscreenFrameGuard frameGuard(rhi);
 
         QRhiResourceUpdateBatch *u = rhi->nextResourceUpdateBatch();
         QVERIFY(u);
@@ -8589,7 +8625,7 @@ void tst_QRhi::storageBuffer()
 
         cb->endComputePass(u);
 
-        rhi->endOffscreenFrame();
+        frameGuard.endFrame();
 
         QCOMPARE(readCompletedNotifications, 1);
 
@@ -8664,6 +8700,7 @@ void tst_QRhi::storageBuffer()
 
         rhi->beginOffscreenFrame(&cb);
         QVERIFY(cb);
+        OffscreenFrameGuard frameGuard(rhi);
 
         QRhiResourceUpdateBatch *u = rhi->nextResourceUpdateBatch();
         QVERIFY(u);
@@ -8721,7 +8758,7 @@ void tst_QRhi::storageBuffer()
 
         cb->endComputePass(u);
 
-        rhi->endOffscreenFrame();
+        frameGuard.endFrame();
 
         QVERIFY(readbackCompleted > 0);
         QCOMPARE(result.data.size(), fromGpuBuffer->size());
@@ -8886,6 +8923,8 @@ void tst_QRhi::storageBufferRuntimeSizeGraphics()
 
     QRhiCommandBuffer *cb = nullptr;
     QCOMPARE(rhi->beginOffscreenFrame(&cb), QRhi::FrameOpSuccess);
+    QVERIFY(cb);
+    OffscreenFrameGuard frameGuard(rhi);
 
     cb->beginPass(rt.data(), Qt::black, { 1.0f, 0 }, u);
     cb->setGraphicsPipeline(pipeline.data());
@@ -8906,7 +8945,7 @@ void tst_QRhi::storageBufferRuntimeSizeGraphics()
     readbackBatch->readBackTexture({ texture.data() }, &readResult);
     cb->endPass(readbackBatch);
 
-    rhi->endOffscreenFrame();
+    frameGuard.endFrame();
 
     QCOMPARE(result.size(), rt->pixelSize());
 
@@ -8956,6 +8995,7 @@ void tst_QRhi::halfPrecisionAttributes()
     QRhiCommandBuffer *cb = nullptr;
     QVERIFY(rhi->beginOffscreenFrame(&cb) == QRhi::FrameOpSuccess);
     QVERIFY(cb);
+    OffscreenFrameGuard frameGuard(rhi);
 
     QRhiResourceUpdateBatch *updates = rhi->nextResourceUpdateBatch();
 
@@ -9025,7 +9065,7 @@ void tst_QRhi::halfPrecisionAttributes()
     readbackBatch->readBackTexture({ texture.data() }, &readResult);
     cb->endPass(readbackBatch);
 
-    rhi->endOffscreenFrame();
+    frameGuard.endFrame();
     // Offscreen frames are synchronous, so the readback is guaranteed to
     // complete at this point. This would not be the case with swapchain-based
     // frames.
