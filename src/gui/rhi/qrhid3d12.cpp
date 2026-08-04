@@ -4367,10 +4367,25 @@ void QRhiD3D12::enqueueResourceUpdates(QD3D12CommandBuffer *cbD, QRhiResourceUpd
                         footprint.Depth = 1;
                         quint32 totalBytes = 0;
 
-                        const QSize subresSize = subresDesc.sourceSize().isEmpty() ? q->sizeForMipLevel(level, texD->m_pixelSize)
-                                                                                   : subresDesc.sourceSize();
+                        QSize subresSize = subresDesc.sourceSize().isEmpty() ? q->sizeForMipLevel(level, texD->m_pixelSize)
+                                                                             : subresDesc.sourceSize();
                         const QPoint srcPos = subresDesc.sourceTopLeft();
                         QPoint dstPos = subresDesc.destinationTopLeft();
+
+                        if (subresDesc.image().isNull()
+                            && !subresDesc.data().isEmpty()
+                            && !isCompressedFormat(texD->m_format))
+                        {
+                            subresSize = clampedSubResourceUploadSize(subresSize, dstPos, level, texD->m_pixelSize);
+                            quint32 bytesPerPixel = 0;
+                            textureFormatInfo(texD->m_format, subresSize, nullptr, nullptr, &bytesPerPixel);
+                            subresSize = clampedSubResourceUploadSizeForSourceData(subresSize,
+                                                                                   subresDesc.dataStride(),
+                                                                                   bytesPerPixel,
+                                                                                   subresDesc.data().size());
+                            if (subresSize.isEmpty())
+                                continue;
+                        }
 
                         if (!subresDesc.image().isNull()) {
                             const QImage img = subresDesc.image();
@@ -4477,8 +4492,14 @@ void QRhiD3D12::enqueueResourceUpdates(QD3D12CommandBuffer *cbD, QRhiResourceUpd
                             const QByteArray imgData = subresDesc.data();
                             const char *imgPtr = imgData.constData();
                             const int rowCount = aligned(subresSize.height(), blockDim.height()) / blockDim.height();
-                            for (int y = 0; y < rowCount; ++y)
-                                memcpy(stagingAlloc.p + y * footprint.RowPitch, imgPtr + y * bpl, copyBytes);
+                            for (int y = 0; y < rowCount; ++y) {
+                                const quint64 srcOffset = quint64(y) * bpl;
+                                if (srcOffset >= quint64(imgData.size()))
+                                    break;
+                                const quint32 n = quint32(qMin(quint64(copyBytes),
+                                                               quint64(imgData.size()) - srcOffset));
+                                memcpy(stagingAlloc.p + y * footprint.RowPitch, imgPtr + srcOffset, n);
+                            }
                         } else if (!subresDesc.data().isEmpty()) {
                             srcBox.left = 0;
                             srcBox.top = 0;
@@ -4499,8 +4520,18 @@ void QRhiD3D12::enqueueResourceUpdates(QD3D12CommandBuffer *cbD, QRhiResourceUpd
                             const quint32 copyBytes = qMin(bpl, footprint.RowPitch);
                             const QByteArray data = subresDesc.data();
                             const char *imgPtr = data.constData();
-                            for (int y = 0, h = subresSize.height(); y < h; ++y)
-                                memcpy(stagingAlloc.p + y * footprint.RowPitch, imgPtr + y * bpl, copyBytes);
+                            for (int y = 0, h = subresSize.height(); y < h; ++y) {
+                                // subresSize is bounded above, but copyBytes is the full bpl
+                                // for a padded dataStride(), so the last row would still read
+                                // past the data: a stride pads only *between* rows, and the
+                                // caller is not required to supply trailing padding.
+                                const quint64 srcOffset = quint64(y) * bpl;
+                                if (srcOffset >= quint64(data.size()))
+                                    break;
+                                const quint32 n = quint32(qMin(quint64(copyBytes),
+                                                               quint64(data.size()) - srcOffset));
+                                memcpy(stagingAlloc.p + y * footprint.RowPitch, imgPtr + srcOffset, n);
+                            }
                         }
 
                         src.PlacedFootprint.Footprint = footprint;

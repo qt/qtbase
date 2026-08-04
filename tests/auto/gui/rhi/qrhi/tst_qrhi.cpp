@@ -78,6 +78,8 @@ private slots:
     void resourceUpdateBatchRGBATextureMip();
     void resourceUpdateBatchTextureRawDataStride_data();
     void resourceUpdateBatchTextureRawDataStride();
+    void resourceUpdateBatchTextureInvalidSizeAndStride_data();
+    void resourceUpdateBatchTextureInvalidSizeAndStride();
     void resourceUpdateBatchLotsOfResources_data();
     void resourceUpdateBatchLotsOfResources();
     void resourceUpdateBatchBetweenFrames_data();
@@ -1705,6 +1707,136 @@ void tst_QRhi::resourceUpdateBatchTextureRawDataStride()
                                     WIDTH, HEIGHT, DATA_WIDTH * 4,
                                     QImage::Format_RGBA8888_Premultiplied);
         QVERIFY(imageRGBAEquals(wrapperImage, originalWrapperImage));
+    }
+}
+
+void tst_QRhi::resourceUpdateBatchTextureInvalidSizeAndStride_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::resourceUpdateBatchTextureInvalidSizeAndStride()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing texture resource updates");
+
+    // Raw data uploads where sourceSize() or dataStride() describe more data than
+    // was actually provided, or where the destination region runs outside the
+    // subresource. All of these are invalid usage and are expected to produce a
+    // warning and a clamped (or skipped) upload, never a crash or an out-of-bounds
+    // access. Verify that by starting from a known texture content and checking
+    // that only the rows the data can back are touched.
+
+    const int WIDTH = 64;
+    const int HEIGHT = 32;
+    const int GOOD_ROWS = 4;
+    const char BASE = 0x10;
+    const char NEW = 0x20;
+
+    // Uniform values across all four channels, so that the test does not depend
+    // on the channel order of the read back data.
+    const QByteArray baseData(WIDTH * HEIGHT * 4, BASE);
+    const QByteArray fullData(WIDTH * HEIGHT * 4, NEW);
+    const QByteArray partialData(WIDTH * GOOD_ROWS * 4, NEW);
+
+    // Uploads badDesc onto a texture pre-filled with BASE, then reads back.
+    auto upload = [&](const QRhiTextureSubresourceUploadDescription &badDesc, QImage *result) -> bool {
+        QScopedPointer<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGBA8, QSize(WIDTH, HEIGHT),
+                                                            1, QRhiTexture::UsedAsTransferSource));
+        if (!texture->create())
+            return false;
+
+        QRhiResourceUpdateBatch *batch = rhi->nextResourceUpdateBatch();
+        QRhiTextureSubresourceUploadDescription baseDesc(baseData.constData(), baseData.size());
+        batch->uploadTexture(texture.data(),
+                            QRhiTextureUploadDescription(QRhiTextureUploadEntry(0, 0, baseDesc)));
+        if (!submitResourceUpdates(rhi.data(), batch))
+            return false;
+
+        batch = rhi->nextResourceUpdateBatch();
+        batch->uploadTexture(texture.data(),
+                            QRhiTextureUploadDescription(QRhiTextureUploadEntry(0, 0, badDesc)));
+
+        QRhiReadbackResult readResult;
+        bool readCompleted = false;
+        readResult.completed = [&readCompleted] { readCompleted = true; };
+        batch->readBackTexture(texture.data(), &readResult);
+        if (!submitResourceUpdates(rhi.data(), batch) || !readCompleted)
+            return false;
+
+        *result = QImage(reinterpret_cast<const uchar *>(readResult.data.constData()),
+                         readResult.pixelSize.width(), readResult.pixelSize.height(),
+                         QImage::Format_RGBA8888_Premultiplied).copy();
+        return !result->isNull();
+    };
+
+    // Rows [0, changedRows) are expected to hold NEW, the rest must still hold BASE.
+    auto verifyRows = [BASE, NEW](const QImage &image, int firstChangedRow, int lastChangedRow) -> bool {
+        for (int y = 0; y < image.height(); ++y) {
+            const bool changed = y >= firstChangedRow && y < lastChangedRow;
+            const uchar expected = uchar(changed ? NEW : BASE);
+            const uchar *p = image.constScanLine(y);
+            for (int i = 0, count = image.width() * 4; i < count; ++i) {
+                if (p[i] != expected) {
+                    qWarning("Row %d byte %d is 0x%02x, expected 0x%02x", y, i, p[i], expected);
+                    return false;
+                }
+            }
+        }
+        return true;
+    };
+
+    // sourceSize() claims the full texture, but only GOOD_ROWS rows were provided.
+    {
+        QTest::ignoreMessage(QtWarningMsg, QRegularExpression(QStringLiteral("Invalid texture upload issued.+")));
+        QRhiTextureSubresourceUploadDescription desc(partialData.constData(), partialData.size());
+        desc.setSourceSize(QSize(WIDTH, HEIGHT));
+        QImage result;
+        QVERIFY(upload(desc, &result));
+        QVERIFY(verifyRows(result, 0, GOOD_ROWS));
+    }
+
+    // destinationTopLeft() puts the bottom of the upload outside the subresource.
+    {
+        QTest::ignoreMessage(QtWarningMsg, QRegularExpression(QStringLiteral("Invalid texture upload issued.+")));
+        QRhiTextureSubresourceUploadDescription desc(fullData.constData(), fullData.size());
+        desc.setSourceSize(QSize(WIDTH, HEIGHT));
+        desc.setDestinationTopLeft(QPoint(0, 2));
+        QImage result;
+        QVERIFY(upload(desc, &result));
+        QVERIFY(verifyRows(result, 2, HEIGHT));
+    }
+
+    if (rhi->isFeatureSupported(QRhi::ImageDataStride)) {
+        // A padded dataStride(), with data for GOOD_ROWS rows only but a
+        // sourceSize() claiming the full height.
+        {
+            const int STRIDE = WIDTH * 4 + 64;
+            const QByteArray stridedData(STRIDE * GOOD_ROWS, NEW);
+            QTest::ignoreMessage(QtWarningMsg, QRegularExpression(QStringLiteral("Invalid texture upload issued.+")));
+            QRhiTextureSubresourceUploadDescription desc(stridedData.constData(), stridedData.size());
+            desc.setDataStride(STRIDE);
+            desc.setSourceSize(QSize(WIDTH, HEIGHT));
+            QImage result;
+            QVERIFY(upload(desc, &result));
+            QVERIFY(verifyRows(result, 0, GOOD_ROWS));
+        }
+
+        // A dataStride() smaller than a single row needs. Nothing can be
+        // satisfied, so the upload is expected to be skipped entirely.
+        {
+            QTest::ignoreMessage(QtWarningMsg, QRegularExpression(QStringLiteral("Invalid texture upload issued.+")));
+            QRhiTextureSubresourceUploadDescription desc(fullData.constData(), fullData.size());
+            desc.setDataStride(WIDTH * 2);
+            desc.setSourceSize(QSize(WIDTH, HEIGHT));
+            QImage result;
+            QVERIFY(upload(desc, &result));
+            QVERIFY(verifyRows(result, 0, 0));
+        }
     }
 }
 

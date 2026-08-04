@@ -3087,6 +3087,14 @@ QRhiTextureSubresourceUploadDescription::QRhiTextureSubresourceUploadDescription
     data is provided, and is not necessary when working QImage since that has
     its own \l{QImage::bytesPerLine()}{stride} value.
 
+    \note When a non-zero \a stride is set, make sure the data contains the
+    trailing padding for the last row as well, i.e. at least \c{stride * height}
+    bytes in total. While providing the data without the last row's padding
+    (i.e., interpreting stride as not applicable to the last row) could be safe,
+    and is in fact safe with Vulkan, OpenGL, and D3D12, this cannot be
+    guaranteed for all backends, so the safe approach is to avoid this and treat
+    the last line like all others.
+
     \note Setting the stride via setDataStride() is only functional when
     QRhi::ImageDataStride is reported as
     \l{QRhi::isFeatureSupported()}{supported}.
@@ -12209,6 +12217,49 @@ QSize QRhiImplementation::clampedSubResourceUploadSize(QSize size, QPoint dstPos
             size.setHeight(subResSize.height() - dstPos.y());
     }
     return size;
+}
+
+// Clamps size so that reading the image with a source row stride of bpl does
+// not go past dataSize bytes. bpl may be 0, meaning the data is tightly packed.
+// Returns a size with a height of 0 when not even a single row can be
+// satisfied, in which case the caller is expected to skip the copy.
+QSize QRhiImplementation::clampedSubResourceUploadSizeForSourceData(QSize size, quint32 bpl,
+                                                                    quint32 bytesPerPixel,
+                                                                    qsizetype dataSize, bool warn)
+{
+    if (size.isEmpty() || !bytesPerPixel)
+        return size;
+
+    const quint64 rowBytes = quint64(bytesPerPixel) * quint64(size.width());
+    if (!bpl)
+        bpl = quint32(qMin(rowBytes, quint64(std::numeric_limits<quint32>::max())));
+
+    if (quint64(bpl) < rowBytes) {
+        if (warn) {
+            qWarning("Invalid texture upload issued; source row stride %u is smaller than the %llu "
+                     "bytes a row of %d pixels needs; upload will be skipped",
+                     bpl, rowBytes, size.width());
+        }
+        return QSize(size.width(), 0);
+    }
+
+    // Row y is read from y * bpl and needs rowBytes bytes, so the last row ends
+    // at (height - 1) * bpl + rowBytes.
+    const quint64 needed = quint64(bpl) * quint64(size.height() - 1) + rowBytes;
+    if (quint64(dataSize) >= needed)
+        return size;
+
+    int rows = 0;
+    if (quint64(dataSize) >= rowBytes)
+        rows = int((quint64(dataSize) - rowBytes) / quint64(bpl)) + 1;
+
+    if (warn) {
+        qWarning("Invalid texture upload issued; %lld bytes of data cannot back a %dx%d upload with "
+                 "source row stride %u (needs %llu bytes); height will be clamped to %d",
+                 qint64(dataSize), size.width(), size.height(), bpl, needed, rows);
+    }
+
+    return QSize(size.width(), rows);
 }
 
 QT_END_NAMESPACE

@@ -3105,6 +3105,14 @@ void QRhiMetal::enqueueSubresUpload(QMetalTexture *texD, void *mp, void *blitEnc
             h = subresDesc.sourceSize().height();
         }
 
+        QSize size = clampedSubResourceUploadSize(QSize(w, h), dp, level, texD->m_pixelSize);
+        quint32 bytesPerPixel = 0;
+        textureFormatInfo(texD->m_format, size, nullptr, nullptr, &bytesPerPixel);
+        size = clampedSubResourceUploadSizeForSourceData(size, subresDesc.dataStride(),
+                                                        bytesPerPixel, rawData.size());
+        w = size.width();
+        h = size.height();
+
         quint32 bpl = 0;
         if (subresDesc.dataStride())
             bpl = subresDesc.dataStride();
@@ -3113,16 +3121,18 @@ void QRhiMetal::enqueueSubresUpload(QMetalTexture *texD, void *mp, void *blitEnc
 
         memcpy(reinterpret_cast<char *>(mp) + *curOfs, rawData.constData(), size_t(rawData.size()));
 
-        [blitEnc copyFromBuffer: texD->d->stagingBuf[currentFrameSlot]
-                                 sourceOffset: NSUInteger(*curOfs)
-                                 sourceBytesPerRow: bpl
-                                 sourceBytesPerImage: 0
-                                 sourceSize: MTLSizeMake(NSUInteger(w), NSUInteger(h), 1)
-          toTexture: texD->d->tex
-          destinationSlice: NSUInteger(is3D ? 0 : layer)
-          destinationLevel: NSUInteger(level)
-          destinationOrigin: MTLOriginMake(NSUInteger(dp.x()), NSUInteger(dp.y()), NSUInteger(is3D ? layer : 0))
-          options: MTLBlitOptionNone];
+        if (!size.isEmpty()) {
+            [blitEnc copyFromBuffer: texD->d->stagingBuf[currentFrameSlot]
+                                     sourceOffset: NSUInteger(*curOfs)
+                                     sourceBytesPerRow: bpl
+                                     sourceBytesPerImage: 0
+                                     sourceSize: MTLSizeMake(NSUInteger(w), NSUInteger(h), 1)
+              toTexture: texD->d->tex
+              destinationSlice: NSUInteger(is3D ? 0 : layer)
+              destinationLevel: NSUInteger(level)
+              destinationOrigin: MTLOriginMake(NSUInteger(dp.x()), NSUInteger(dp.y()), NSUInteger(is3D ? layer : 0))
+              options: MTLBlitOptionNone];
+        }
 
         *curOfs += aligned<qsizetype>(rawData.size(), QRhiMetalData::TEXBUF_ALIGN);
     } else {

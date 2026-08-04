@@ -1897,8 +1897,17 @@ void QRhiD3D11::enqueueSubresUpload(QD3D11Texture *texD, QD3D11CommandBuffer *cb
         cmd.args.updateSubRes.src = cbD->retainData(subresDesc.data());
         cmd.args.updateSubRes.srcRowPitch = bpl;
     } else if (!subresDesc.data().isEmpty()) {
-        const QSize size = subresDesc.sourceSize().isEmpty() ? q->sizeForMipLevel(level, texD->m_pixelSize)
-                                                             : subresDesc.sourceSize();
+        QSize size = subresDesc.sourceSize().isEmpty() ? q->sizeForMipLevel(level, texD->m_pixelSize)
+                                                       : subresDesc.sourceSize();
+        size = clampedSubResourceUploadSize(size, dp, level, texD->m_pixelSize);
+        quint32 bytesPerPixel = 0;
+        textureFormatInfo(texD->m_format, size, nullptr, nullptr, &bytesPerPixel);
+        size = clampedSubResourceUploadSizeForSourceData(size, subresDesc.dataStride(),
+                                                         bytesPerPixel, subresDesc.data().size());
+        if (size.isEmpty()) {
+            cbD->commands.unget();
+            return;
+        }
         quint32 bpl = 0;
         if (subresDesc.dataStride())
             bpl = subresDesc.dataStride();
