@@ -140,10 +140,11 @@ table, all of which are expected to be relative to the base install location.
     \li
 \endtable
 
-A \c{qt.conf} file is always written if \c{executable} is a macOS app bundle,
-regardless of whether or not \c{GENERATE_QT_CONF} is provided. The \c{..._DIR}
-options are also ignored in that case, since the directory layout of an app
-bundle is dictated by Apple's requirements.
+No \c{qt.conf} file is written if \c{executable} is a macOS app bundle, and
+both \c{GENERATE_QT_CONF} and the \c{..._DIR} options are ignored in that
+case. The directory layout of an app bundle is dictated by Apple's
+requirements, and Qt finds libraries, plugins and resources at those
+conventional locations without a \c{qt.conf}.
 
 More verbose output about the deployment steps can be enabled by providing the
 \c{VERBOSE} option. Alternatively, the \l{QT_ENABLE_VERBOSE_DEPLOYMENT}
