@@ -122,6 +122,9 @@ inline static bool moveCursorAway()
     // QCursor repositioning is unavailable or unsupported.
     return true;
 #endif
+    if (QSysInfo::productType() == "rhel" && QSysInfo::productVersion().startsWith(u'1'))
+        return true; //Positioning of QCursor does not currently work on RHEL 10
+
     QPoint safePos = QGuiApplication::primaryScreen()->availableGeometry().bottomRight();
     safePos -= QPoint(50, 50);
     QCursor::setPos(safePos);
