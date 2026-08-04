@@ -36,6 +36,7 @@
 #include <QtCore/private/qcomobject_p.h>
 
 #include <algorithm>
+#include <QtCore/q20memory.h>
 #include <vector>
 
 using namespace std::chrono_literals;
@@ -611,7 +612,8 @@ bool QWindowsShellItem::copyData(QIODevice *out, QString *errorMessage)
         return false;
     }
     enum : ULONG { bufSize = 102400 };
-    char buffer[bufSize];
+    const auto memory = q20::make_unique_for_overwrite<char[]>(bufSize);
+    char * const buffer = memory.get();
     ULONG bytesRead;
     forever {
         bytesRead = 0;
