@@ -3842,11 +3842,32 @@ void QWindowsWindow::setEnabled(bool enabled)
         setStyle(newStyle);
 }
 
-static HICON createHIcon(const QIcon &icon, int xSize, int ySize)
+static UINT primaryScreenDpi()
+{
+    // The primary monitor is the one that has its origin at (0, 0).
+    const POINT origin{0, 0};
+    if (const HMONITOR monitor = MonitorFromPoint(origin, MONITOR_DEFAULTTOPRIMARY)) {
+        UINT dpiX;
+        UINT dpiY;
+        if (SUCCEEDED(GetDpiForMonitor(monitor, MDT_EFFECTIVE_DPI, &dpiX, &dpiY)))
+            return dpiX;
+    }
+    return GetDpiForSystem();
+}
+
+static HICON createHIcon(const QIcon &icon, UINT dpi, int xSizeMetric, int ySizeMetric)
 {
     if (!icon.isNull()) {
-        // QTBUG-90363, request DPR=1 for the title bar.
-        const QPixmap pm = icon.pixmap(icon.actualSize(QSize(xSize, ySize)), 1);
+        // QTBUG-90363, QTBUG-148524: Deliver the icon in exactly the physical
+        // size that is expected at the given DPI, so that it does not have to be
+        // rescaled for display. GetSystemMetrics() must not be used, as it
+        // reports metrics for the system (primary monitor) DPI only. Pass the
+        // corresponding device pixel ratio rather than 1, so that QIcon can
+        // pick a representation authored for fractional scale factors.
+        const qreal dpr = qreal(dpi) / QWindowsScreen::baseDpi;
+        const QSize physicalSize(GetSystemMetricsForDpi(xSizeMetric, dpi),
+                                 GetSystemMetricsForDpi(ySizeMetric, dpi));
+        const QPixmap pm = icon.pixmap(icon.actualSize(physicalSize / dpr), dpr);
         if (!pm.isNull())
             return qt_pixmapToWinHICON(pm);
     }
@@ -3858,8 +3879,20 @@ void QWindowsWindow::setWindowIcon(const QIcon &icon)
     if (m_data.hwnd) {
         destroyIcon();
 
-        m_iconSmall = createHIcon(icon, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON));
-        m_iconBig = createHIcon(icon, GetSystemMetrics(SM_CXICON), GetSystemMetrics(SM_CYICON));
+        // The small icon is drawn in the window's title bar, so it is sized for the
+        // monitor the window is shown on. Note: Do not use savedDpi() here, it is
+        // initialized in initialize(), whereas setWindowIcon() is already called
+        // from the constructor.
+        const UINT windowDpi = GetDpiForWindow(m_data.hwnd);
+        const UINT titleBarDpi = windowDpi ? windowDpi : UINT(QWindowsScreen::baseDpi);
+        m_iconSmall = createHIcon(icon, titleBarDpi, SM_CXSMICON, SM_CYSMICON);
+
+        // The big icon is used by the task bar and the Alt+Tab dialog. The task bar
+        // is shown on every monitor, so there is no size that is correct on all of
+        // them. Size it for the primary monitor, which keeps it sharp where the task
+        // bar usually is, and, more importantly, keeps it stable when the window is
+        // moved to a monitor with a different scale factor.
+        m_iconBig = createHIcon(icon, primaryScreenDpi(), SM_CXICON, SM_CYICON);
 
         if (m_iconBig) {
             SendMessage(m_data.hwnd, WM_SETICON, 0 /* ICON_SMALL */, LPARAM(m_iconSmall));
