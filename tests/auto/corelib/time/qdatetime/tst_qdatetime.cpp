@@ -3581,15 +3581,17 @@ void tst_QDateTime::fromStringStringFormat_data()
     QTest::newRow("hh:mm:ss.zz ddd, dd MMM yyyy/Jalali")
             << u"07:01:04.78 Sat, 01 Aza 2024"_s << u"hh:mm:ss.zz ddd, dd MMM yyyy"_s
             << 2000 << farsi << QDateTime(QDate(2024, 9, 1, farsi), QTime(7, 1, 4, 780));
-    // Found by fuzzer - tripped overflows:
-    QTest::newRow("12/3/-922337203/Jalali") // QTBUG-147418
-            << u"12/3/-922337203"_s << u"M/d/yyyy"_s
-            << 1900 << farsi << QDate(-922337203, 12, 3).startOfDay();
+    // Found by OSS-Fuzz - tripped overflows:
+    QTest::newRow("12/3/-92233720/Jalali") // QTBUG-147418
+            << u"12/3/-92233720"_s << u"M/d/yyyy"_s
+            << 1900 << farsi << QDate(-92233720, 12, 3, farsi).startOfDay();
     QTest::newRow("12/3/-9223372036854775809/Jalali") // Year too long - rejected.
             << u"12/3/-9223372036854775809"_s << u"M/d/yyyy"_s << 1900 << farsi << QDateTime();
     QTest::newRow("2/2/-2147483296/Jalali") // QTBUG-147419
-            << u"2/2/-2147483296"_s << u"M/d/yyyy"_s
-            << 1900 << farsi << QDate(-2147483296, 2, 2).startOfDay();
+            << u"2/2/-2147483296"_s << u"M/d/yyyy"_s << 1900 << farsi << QDateTime();
+    QTest::newRow("2/2/-214748329/Jalali") // Longest parseable sustring of that:
+            << u"2/2/-214748329"_s << u"M/d/yyyy"_s
+            << 1900 << farsi << QDate(-214748329, 2, 2, farsi).startOfDay();
 #endif
 }
 
