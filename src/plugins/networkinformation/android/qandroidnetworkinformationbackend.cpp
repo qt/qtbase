@@ -12,7 +12,8 @@ QT_BEGIN_NAMESPACE
 Q_DECLARE_LOGGING_CATEGORY(lcNetInfoAndroid)
 Q_LOGGING_CATEGORY(lcNetInfoAndroid, "qt.network.info.android");
 
-static QString backendName() {
+static QString backendName()
+{
     return QString::fromUtf16(QNetworkInformationBackend::PluginNames
                                       [QNetworkInformationBackend::PluginNamesAndroidIndex]);
 }
