@@ -34,7 +34,7 @@ public:
     {
         using Feature = QNetworkInformation::Feature;
         return QNetworkInformation::Features(Feature::Reachability | Feature::CaptivePortal
-                                             | Feature::TransportMedium);
+                                             | Feature::TransportMedium | Feature::Metered);
     }
 
     bool isValid() { return m_valid; }
