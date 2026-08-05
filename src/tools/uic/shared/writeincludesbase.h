@@ -64,6 +64,8 @@ protected:
     const Uic *uic() const { return m_uic; }
     Uic *uic() { return m_uic; }
 
+    static bool extractHeader(QLatin1StringView languageMarker, QString *headerSpec);
+
 private:
     QSet<QString> m_knownClasses;
     Uic *m_uic;

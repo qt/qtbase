@@ -2449,7 +2449,7 @@
   <customwidget>
    <class>GammaView</class>
    <extends></extends>
-   <header>gammaview.h</header>
+   <header>C++:gammaview.h,Python:GammaModule</header>
   </customwidget>
  </customwidgets>
  <resources/>

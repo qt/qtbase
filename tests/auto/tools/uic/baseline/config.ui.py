@@ -25,7 +25,7 @@ from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QDialog,
     QPushButton, QRadioButton, QSizePolicy, QSlider,
     QSpacerItem, QSpinBox, QVBoxLayout, QWidget)
 
-from gammaview import GammaView
+from GammaModule import GammaView
 
 class Ui_Config(object):
     def setupUi(self, Config):
