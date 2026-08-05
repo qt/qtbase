@@ -3520,6 +3520,20 @@ void tst_QDateTime::fromStringStringFormat_data()
         << 2000 << greg << QDateTime(QDate(2001, 9, 15), QTime(9, 33, 1),
                                      QTimeZone::fromSecondsAheadOfUtc(18000));
 
+    // Bounds testing:
+    using Bound = std::numeric_limits<qint64>;
+    const auto earliest = QDateTime::fromMSecsSinceEpoch(Bound::min(), UTC);
+    const auto latest = QDateTime::fromMSecsSinceEpoch(Bound::max(), UTC);
+    Q_ASSERT(earliest.isValid());
+    Q_ASSERT(latest.isValid());
+    // Supported Gregorian range:
+    QTest::newRow("yyyy/MM/dd HH:mm:ss.zzz/Gregorian/min")
+            << u"-292275056/05/16 16:47:04.192 UTC"_s << u"yyyy/MM/dd HH:mm:ss.zzz t"_s
+            << 2000 << greg << earliest;
+    QTest::newRow("yyyy/MM/dd HH:mm:ss.zzz/Gregorian/max")
+            << u"+292278994/08/17 07:12:55.807 UTC"_s << u"yyyy/MM/dd HH:mm:ss.zzz t"_s
+            << 2000 << greg << latest;
+
     // Found to fail in some benchmarks, when first added:
     QTest::newRow("H:m:s.zz ddd d-MMM-yyyy/Gregorian")
             << u"7:1:4.78 Sun 1-Sep-2024"_s << u"H:m:s.zz ddd d-MMM-yyyy"_s
@@ -3538,6 +3552,14 @@ void tst_QDateTime::fromStringStringFormat_data()
             << 2000 << greg << QDateTime(QDate(2024, 9, 1), QTime(7, 1, 4, 780));
 #if QT_CONFIG(islamiccivilcalendar)
     const QCalendar islam(Sys::IslamicCivil);
+    // Supported range:
+    QTest::newRow("yyyy/MM/dd HH:mm:ss.zzz/IslamicCivil/min")
+            << u"-301245882/02/02 16:47:04.192 UTC"_s << u"yyyy/MM/dd HH:mm:ss.zzz t"_s
+            << 2000 << islam << earliest;
+    QTest::newRow("yyyy/MM/dd HH:mm:ss.zzz/IslamicCivil/max")
+            << u"+301248660/07/11 07:12:55.807 UTC"_s << u"yyyy/MM/dd HH:mm:ss.zzz t"_s
+            << 2000 << islam << latest;
+    // From benchmarks, as above:
     QTest::newRow("H:m:s.zz ddd d-MMM-yyyy/IslamicCivil")
             << u"7:1:4.78 Wed 1-Ram.-2024"_s << u"H:m:s.zz ddd d-MMM-yyyy"_s
             << 2000 << islam << QDateTime(QDate(2024, 9, 1, islam), QTime(7, 1, 4, 780));
@@ -3564,6 +3586,14 @@ void tst_QDateTime::fromStringStringFormat_data()
 #endif
 #if QT_CONFIG(jalalicalendar)
     const QCalendar farsi(Sys::Jalali);
+    // Supported range:
+    QTest::newRow("yyyy/MM/dd HH:mm:ss.zzz/Jalali/min")
+            << u"-292275919/12/12 16:47:04.192 UTC"_s << u"yyyy/MM/dd HH:mm:ss.zzz t"_s
+            << 2000 << farsi << earliest;
+    QTest::newRow("yyyy/MM/dd HH:mm:ss.zzz/Jalali/max")
+            << u"+292278614/08/09 07:12:55.807 UTC"_s << u"yyyy/MM/dd HH:mm:ss.zzz t"_s
+            << 2000 << farsi << latest;
+    // From benchmarks, as above:
     QTest::newRow("H:m:s.zz ddd d-MMM-yyyy/Jalali")
             << u"7:1:4.78 Sat 1-Aza-2024"_s << u"H:m:s.zz ddd d-MMM-yyyy"_s
             << 2000 << farsi << QDateTime(QDate(2024, 9, 1, farsi), QTime(7, 1, 4, 780));
