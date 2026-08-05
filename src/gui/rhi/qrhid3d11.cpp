@@ -475,10 +475,10 @@ void QRhiD3D11::destroy()
         dxgiFactory = nullptr;
     }
 
+    QDxgiVSyncService::instance()->derefAdapter(adapterLuid);
+
     importedDeviceAndContext = false;
     adapterLuid = {};
-
-    QDxgiVSyncService::instance()->derefAdapter(adapterLuid);
 }
 
 void QRhiD3D11::reportLiveObjects(ID3D11Device *device)
