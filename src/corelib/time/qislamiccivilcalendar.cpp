@@ -6,6 +6,8 @@
 #include "qislamiccivilcalendar_p.h"
 #include "qcalendarmath_p.h"
 
+#include <limits>
+
 QT_BEGIN_NAMESPACE
 
 using namespace QRoundingDown;
@@ -84,13 +86,20 @@ bool QIslamicCivilCalendar::dateToJulianDay(int year, int month, int day, qint64
 
 QCalendar::YearMonthDay QIslamicCivilCalendar::julianDayToDate(qint64 jd) const
 {
+    using Bound = std::numeric_limits<int>;
+    constexpr qint64 maxInt = Bound::max();
     const auto year30Day = qDivMod<ThirtyYears>(30 * (jd - EpochJd) + 15);
     // Its remainder changes by 30 per day, except roughly yearly.
     const auto month11Day = qDivMod<ElevenMonths>(11 * qDiv<30>(year30Day.remainder) + 5);
     // Its remainder changes by 11 per day except roughly monthly.
     const int month = month11Day.quotient + 1;
     const int day = qDiv<11>(month11Day.remainder) + 1;
-    const int y = year30Day.quotient + 1;
+    const qint64 year = year30Day.quotient + 1;
+    // We'll be subtracting 1 if -ve, so the lower bound is -maxInt, not Bound::min():
+    if (year < -maxInt || year > maxInt)
+        return {};
+
+    int y = static_cast<int>(year);
     return QCalendar::YearMonthDay(y > 0 ? y : y - 1, month, day);
 }
 

@@ -87,15 +87,24 @@ bool QMilankovicCalendar::dateToJulianDay(int year, int month, int day, qint64 *
     return true;
 }
 
-QCalendar::YearMonthDay  QMilankovicCalendar::julianDayToDate(qint64 jd) const
+QCalendar::YearMonthDay QMilankovicCalendar::julianDayToDate(qint64 jd) const
 {
+    using Bound = std::numeric_limits<int>;
+    constexpr qint64 maxInt = Bound::max();
+
     const auto century9Day = qDivMod<NineCenturies>(9 * (jd - MilankovicBaseJd) - 7);
     // Its remainder changes by 9 per day, except roughly once per century.
     const auto year100Day = qDivMod<LeapCentury>(100 * qDiv<9>(century9Day.remainder) + 99);
     // Its remainder changes by 100 per day, except roughly once per year.
     const auto ymd = dayInYearToYmd(qDiv<100>(year100Day.remainder));
-    const int y = 100 * century9Day.quotient + year100Day.quotient + ymd.year;
-    return QCalendar::YearMonthDay(y > 0 ? y : y - 1, ymd.month, ymd.day);
+
+    const qint64 y = 100 * century9Day.quotient + year100Day.quotient + ymd.year;
+    // We'll be subtracting 1 if negative, so -maxInt is the lower bound, not Bound::min().
+    if (y > maxInt || y < -maxInt)
+        return {};
+
+    int year = static_cast<int>(y);
+    return QCalendar::YearMonthDay(year > 0 ? year : year - 1, ymd.month, ymd.day);
 }
 
 QT_END_NAMESPACE
