@@ -108,6 +108,19 @@ void WriteIncludesBase::add(const QString &className, const DomCustomWidget *dcw
     doAdd(className, dcw);
 }
 
+bool WriteIncludesBase::extractHeader(QLatin1StringView languageMarker, QString *headerSpec)
+{
+    // Check for "C++:header.h;Python:Module"
+    const auto markerPos = headerSpec->indexOf(languageMarker, Qt::CaseInsensitive);
+    if (markerPos == -1)
+        return false;
+    headerSpec->remove(0, markerPos + languageMarker.size());
+    if (const auto commaPos = headerSpec->indexOf(u','); commaPos != -1)
+        headerSpec->truncate(commaPos);
+    *headerSpec = headerSpec->trimmed();
+    return true;
+}
+
 void WriteIncludesBase::acceptCustomWidget(DomCustomWidget *node)
 {
     const QString className = node->elementClass();

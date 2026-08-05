@@ -436,7 +436,7 @@
   <customwidget>
    <class>LEDWidget</class>
    <extends>QLabel</extends>
-   <header>ledwidget.h</header>
+   <header>C++:ledwidget.h</header>
   </customwidget>
   <customwidget>
    <class>LocaleSelector</class>

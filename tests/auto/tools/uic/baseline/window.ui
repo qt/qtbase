@@ -170,7 +170,7 @@
   <customwidget>
    <class>DisplayWidget</class>
    <extends>QWidget</extends>
-   <header>displaywidget.h</header>
+   <header>C++:displaywidget.h,Python:MyModule</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
