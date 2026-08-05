@@ -6,6 +6,7 @@
 #include <QtCore/qscopeguard.h>
 #include <QtCore/private/qlibraryinfo_p.h>
 #include <QStandardPaths>
+#include <QDir>
 
 #if defined(Q_OS_MACOS)
 #include <QProcess>
@@ -13,11 +14,12 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QTemporaryDir>
-#include <QDir>
 #include <QFile>
 #include <QFileInfo>
 #include <filesystem>
 #endif
+
+using namespace Qt::StringLiterals;
 
 class tst_QLibraryInfo : public QObject
 {
@@ -28,11 +30,23 @@ private slots:
     void path_data();
     void path();
     void paths();
+    void relativePrefix();
     void merge();
     void mergeRelativePrefix();
+    void mergeUnlistedPaths();
 #if defined(Q_OS_MACOS)
     void bundle_data();
     void bundle();
+    void bundleWithExternalQt();
+    void bundleWithExternalQtAndQtConf();
+#endif
+
+#if defined(Q_OS_MACOS)
+private:
+    void createBundle(const QString &bundlePath, const QString &packageType,
+                      const QString &subBundlePath, const QString &qtConf,
+                      QString *executableDir);
+    void runBundledHelper(const QString &executableDir, QJsonObject *paths);
 #endif
 };
 
@@ -90,18 +104,53 @@ void tst_QLibraryInfo::paths()
     QLibraryInfoPrivate::setQtconfManualPath(&qtConfPath);
     QLibraryInfoPrivate::reload();
 
-    QList<QString> values = QLibraryInfo::paths(QLibraryInfo::DocumentationPath);
-    QCOMPARE(values.length(), 3);
-    QCOMPARE(values[0], "/path/to/mydoc");
-    QCOMPARE(values[1], "/path/to/anotherdoc");
-    QString baseDir = QCoreApplication::applicationDirPath();
-    QCOMPARE(values[2], baseDir + "/relativePath");
+    // The qt.conf is user-written, in that it doesn't merge with the Qt build
+    // defaults, so it declares the layout the application follows, and replaces
+    // the paths of the Qt build we run against: the paths it lists come first,
+    // followed by the generic layout at the application prefix for the locations
+    // it leaves out, and nothing else.
+    //
+    // The qt.conf gives an absolute Prefix, which is used verbatim as the
+    // application prefix, so we know exactly what an app-prefixed path looks like
+    // on every platform. It also keeps the application prefix from being detected
+    // as a bundle, which would add the modern Apple suffixes to the app paths and
+    // make the expectations below platform dependent, as every application is a
+    // bundle on iOS.
+    const QString appPrefix = u"/nonexistent/list/prefix"_s;
+    QCOMPARE(QLibraryInfo::paths(QLibraryInfo::PrefixPath), QStringList { appPrefix });
+
+    const auto expectedPaths = [&](const QStringList &listed, const QString &suffix) {
+        return listed + QStringList { appPrefix + '/' + suffix };
+    };
+
+    const QStringList docPaths = QLibraryInfo::paths(QLibraryInfo::DocumentationPath);
+    QCOMPARE(docPaths, expectedPaths({
+        "/path/to/mydoc", "/path/to/anotherdoc", appPrefix + "/relativePath"
+    }, "doc"));
 
     const QStringList qmlImportPaths = QLibraryInfo::paths(QLibraryInfo::QmlImportsPath);
-    const QStringList expected = {
-        ":/a/resource/path", ":a/broken/path", baseDir + "/a/relative/path"
-    };
-    QCOMPARE(qmlImportPaths, expected);
+    QCOMPARE(qmlImportPaths, expectedPaths({
+        ":/a/resource/path", ":a/broken/path", appPrefix + "/a/relative/path"
+    }, "qml"));
+}
+
+void tst_QLibraryInfo::relativePrefix()
+{
+    QString qtConfPath(u":/relative-prefix.qt.conf");
+    QLibraryInfoPrivate::setQtconfManualPath(&qtConfPath);
+    QLibraryInfoPrivate::reload();
+
+    // A static and relocatable Qt embeds a qt.conf like this one into its own
+    // tools, with a Prefix relative to the bin directory the tool lives in.
+    // The Prefix is resolved against the application directory, once, and must
+    // not be applied a second time to the application prefix it produced.
+    const QString appDir = QCoreApplication::applicationDirPath();
+    const QString appPrefix = QDir::cleanPath(appDir + "/.."_L1);
+    QCOMPARE(QLibraryInfo::paths(QLibraryInfo::PrefixPath), QStringList { appPrefix });
+
+    // The locations the qt.conf leaves out are rooted at that prefix, as a
+    // user-written qt.conf declares the layout the application follows.
+    QCOMPARE(QLibraryInfo::path(QLibraryInfo::QmlImportsPath), appPrefix + "/qml"_L1);
 }
 
 void tst_QLibraryInfo::merge()
@@ -137,6 +186,42 @@ void tst_QLibraryInfo::mergeRelativePrefix()
     QCOMPARE_NE(qmlImportsPath, prefixPath + "/qml");
 }
 
+void tst_QLibraryInfo::mergeUnlistedPaths()
+{
+    QString qtConfPath(u":/merge-absolute-prefix.qt.conf");
+    QLibraryInfoPrivate::setQtconfManualPath(&qtConfPath);
+    QLibraryInfoPrivate::reload();
+
+    // An absolute Prefix becomes the application prefix verbatim, independently
+    // of where the application lives, so we know exactly what an app-prefixed
+    // path looks like. It also keeps the application prefix from being detected
+    // as a bundle, which would report app paths on its own.
+    const QString appPrefix = QStringLiteral("/nonexistent/app/prefix");
+    QCOMPARE(QLibraryInfo::path(QLibraryInfo::PrefixPath), appPrefix);
+
+    // The one location the qt.conf does list is still honored.
+    QCOMPARE(QLibraryInfo::path(QLibraryInfo::QmlImportsPath),
+             QStringLiteral("/path/to/myqml"));
+
+    // A merging qt.conf is an overlay: it contributes only the locations it
+    // lists, and we report nothing of our own for the rest, so they resolve
+    // against the Qt prefix. Rooting the generic default at the app prefix
+    // instead would shadow the Qt path, and path() reports the first one only.
+    const QLibraryInfo::LibraryPath unlisted[] = {
+        QLibraryInfo::BinariesPath,
+        QLibraryInfo::LibraryExecutablesPath,
+        QLibraryInfo::DocumentationPath,
+    };
+    for (const QLibraryInfo::LibraryPath location : unlisted) {
+        const QStringList paths = QLibraryInfo::paths(location);
+        QVERIFY(!paths.isEmpty());
+        for (const QString &path : paths) {
+            QVERIFY2(!path.startsWith(appPrefix),
+                     qPrintable("Unlisted location was rooted at the app prefix: " + path));
+        }
+    }
+}
+
 #if defined(Q_OS_MACOS)
 void tst_QLibraryInfo::bundle_data()
 {
@@ -153,13 +238,87 @@ void tst_QLibraryInfo::bundle_data()
                                    << "Contents/PlugIns/audio-unit-v3.appex";
 }
 
+/*
+    The paths the bundlehelper reported for the \a location key of \a paths.
+*/
+static QStringList pathsFor(const QJsonObject &paths, const QString &location)
+{
+    QStringList list;
+    for (const QJsonValue &value : paths.value(location).toArray())
+        list << value.toString();
+    return list;
+}
+
+/*
+    Creates an app bundle at \a bundlePath, of the given \a packageType,
+    containing the bundlehelper executable, optionally in a nested bundle at
+    \a subBundlePath, and optionally with the given \a qtConf written to the
+    bundle's Resources directory. Reports the directory the bundled executable
+    ended up in via \a executableDir.
+*/
+void tst_QLibraryInfo::createBundle(const QString &bundlePath, const QString &packageType,
+                                    const QString &subBundlePath, const QString &qtConf,
+                                    QString *executableDir)
+{
+    *executableDir = (subBundlePath.isEmpty()
+            ? bundlePath : bundlePath + '/' + subBundlePath) + "/Contents/MacOS";
+    QVERIFY(QDir().mkpath(*executableDir));
+
+    // Write the PkgInfo file describing the bundle's package type
+
+    QFile pkgInfo(bundlePath + "/Contents/PkgInfo");
+    QVERIFY2(pkgInfo.open(QIODevice::WriteOnly), qPrintable(pkgInfo.errorString()));
+    pkgInfo.write(packageType.toUtf8() + "TQTC");
+    pkgInfo.close();
+
+    // Write the qt.conf, if any, where CFBundleCopyResourceURL will find it
+
+    if (!qtConf.isEmpty()) {
+        const QString resourcesDir = bundlePath + "/Contents/Resources";
+        QVERIFY(QDir().mkpath(resourcesDir));
+        QFile qtConfFile(resourcesDir + "/qt.conf");
+        QVERIFY2(qtConfFile.open(QIODevice::WriteOnly), qPrintable(qtConfFile.errorString()));
+        qtConfFile.write(qtConf.toUtf8());
+        qtConfFile.close();
+    }
+
+    // Copy helper to bundle
+
+    const QString helper = QCoreApplication::applicationDirPath() + "/bundlehelper";
+    const QString bundledHelper = *executableDir + "/bundlehelper";
+    QVERIFY2(QFile::copy(helper, bundledHelper),
+             qPrintable("Failed to copy " + helper + " to " + bundledHelper));
+}
+
+/*
+    Runs the bundlehelper in \a executableDir and reports the library paths it
+    sees via \a paths, keyed by QLibraryInfo::LibraryPath enum name.
+*/
+void tst_QLibraryInfo::runBundledHelper(const QString &executableDir, QJsonObject *paths)
+{
+    QProcess process;
+    process.start(executableDir + "/bundlehelper", QStringList());
+    QVERIFY2(process.waitForStarted(), qPrintable(process.errorString()));
+    QVERIFY2(process.waitForFinished(), qPrintable(process.errorString()));
+    QVERIFY2(process.exitStatus() == QProcess::NormalExit,
+             qPrintable(process.readAllStandardError()));
+    QCOMPARE(process.exitCode(), 0);
+
+    QJsonParseError error;
+    const QJsonDocument document = QJsonDocument::fromJson(
+        process.readAllStandardOutput(), &error);
+    QVERIFY2(error.error == QJsonParseError::NoError, qPrintable(error.errorString()));
+    QVERIFY(document.isObject());
+
+    *paths = document.object();
+    QVERIFY(!paths->isEmpty());
+}
+
 void tst_QLibraryInfo::bundle()
 {
     QFETCH(QString, bundleName);
     QFETCH(QString, packageType);
     QFETCH(QString, subBundlePath);
-
-    const QString helper = QCoreApplication::applicationDirPath() + "/bundlehelper";
 
     // Create bundle
 
@@ -173,25 +332,15 @@ void tst_QLibraryInfo::bundle()
     });
 
     const QString bundlePath = tempDir.filePath(bundleName);
-    const QString executableDir = (subBundlePath.isEmpty()
-            ? bundlePath : bundlePath + '/' + subBundlePath) + "/Contents/MacOS";
-    QVERIFY(QDir().mkpath(executableDir));
-
-    // Write the PkgInfo file describing the bundle's package type
-
-    QFile pkgInfo(bundlePath + "/Contents/PkgInfo");
-    QVERIFY2(pkgInfo.open(QIODevice::WriteOnly), qPrintable(pkgInfo.errorString()));
-    pkgInfo.write(packageType.toUtf8() + "TQTC");
-    pkgInfo.close();
-
-    // Copy helper to bundle
-
-    const QString bundledHelper = executableDir + "/bundlehelper";
-    QVERIFY2(QFile::copy(helper, bundledHelper),
-             qPrintable("Failed to copy " + helper + " to " + bundledHelper));
+    QString executableDir;
+    createBundle(bundlePath, packageType, subBundlePath, QString(), &executableDir);
+    if (QTest::currentTestFailed())
+        return;
 
 #if !QT_CONFIG(static)
     // Relocate Qt into the bundle
+
+    const QString bundledHelper = executableDir + "/bundlehelper";
 
     namespace fs = std::filesystem;
     const QString librariesPath = QLibraryInfo::paths(QLibraryInfo::LibrariesPath).last();
@@ -223,53 +372,55 @@ void tst_QLibraryInfo::bundle()
     QVERIFY2(installNameTool.exitCode() == 0, qPrintable(installNameTool.readAllStandardError()));
 #endif // !QT_CONFIG(static)
 
-    // Launch helper
+    // Launch helper and check output
 
-    QProcess process;
-    process.start(bundledHelper, QStringList());
-    QVERIFY2(process.waitForStarted(), qPrintable(process.errorString()));
-    QVERIFY2(process.waitForFinished(), qPrintable(process.errorString()));
-    QVERIFY2(process.exitStatus() == QProcess::NormalExit, qPrintable(process.readAllStandardError()));
-    QCOMPARE(process.exitCode(), 0);
+    QJsonObject paths;
+    runBundledHelper(executableDir, &paths);
+    if (QTest::currentTestFailed())
+        return;
 
-    // Check output
-
-    QByteArray output = process.readAllStandardOutput();
-
-    QJsonParseError error;
-    const QJsonDocument document = QJsonDocument::fromJson(output, &error);
-    QVERIFY2(error.error == QJsonParseError::NoError, qPrintable(error.errorString()));
-    QVERIFY(document.isObject());
-
-    const QJsonObject paths = document.object();
-    QVERIFY(!paths.isEmpty());
-
-    // Verify the prefix paths resolve inside the bundle
+    // Verify the app prefix is reported, and resolves inside the bundle
 
     const QString canonicalBundlePath = QFileInfo(bundlePath).canonicalFilePath();
     QVERIFY(!canonicalBundlePath.isEmpty());
 
     const QJsonArray prefixPaths = paths.value("PrefixPath").toArray();
     QVERIFY(!prefixPaths.isEmpty());
+
+    // The app prefix is the Contents directory of the bundle the executable
+    // lives in. We look it up among the reported prefix paths rather than
+    // assuming a position, as the Qt prefix may take priority over it.
+    const QString expectedAppPrefix = QFileInfo(executableDir + "/..").canonicalFilePath();
+    QVERIFY2(expectedAppPrefix.startsWith(canonicalBundlePath),
+             qPrintable("App prefix '" + expectedAppPrefix + "' is not inside bundle '"
+                        + canonicalBundlePath + "'"));
+
+    QStringList canonicalPrefixPaths;
+    for (const QJsonValue &value : prefixPaths)
+        canonicalPrefixPaths << QFileInfo(value.toString()).canonicalFilePath();
+
+    QString appPrefix;
     for (const QJsonValue &value : prefixPaths) {
-        const QString prefixPath = QFileInfo(value.toString()).canonicalFilePath();
+        if (QFileInfo(value.toString()).canonicalFilePath() == expectedAppPrefix) {
+            appPrefix = value.toString();
+            break;
+        }
+    }
+    QVERIFY2(!appPrefix.isEmpty(),
+             qPrintable("App prefix '" + expectedAppPrefix + "' not in prefix paths: "
+                        + canonicalPrefixPaths.join(", ")));
+
+#if !QT_CONFIG(static)
+    // Qt was relocated into the bundle, so all the prefix paths are in there
+
+    for (const QString &prefixPath : canonicalPrefixPaths) {
         QVERIFY2(prefixPath.startsWith(canonicalBundlePath),
                  qPrintable("Prefix path '" + prefixPath + "' is not inside bundle '"
                             + canonicalBundlePath + "'"));
-#if QT_CONFIG(static)
-        // Static Qt builds with non-sandboxed apps will still report the Qt install prefix
-        // as the Qt prefix, for compatibility reasons, so only check the app prefix here.
-        break;
-#endif
     }
 
-#if !QT_CONFIG(static)
     if (!subBundlePath.isEmpty()) {
         // Verify that both the main bundle and sub bundle paths are present in the prefix paths
-        QStringList canonicalPrefixPaths;
-        for (const QJsonValue &value : prefixPaths)
-            canonicalPrefixPaths << QFileInfo(value.toString()).canonicalFilePath();
-
         const QString mainBundlePrefix = QFileInfo(bundlePath + "/Contents").canonicalFilePath();
         QVERIFY2(canonicalPrefixPaths.contains(mainBundlePrefix),
                  qPrintable("Main bundle prefix '" + mainBundlePrefix
@@ -283,32 +434,141 @@ void tst_QLibraryInfo::bundle()
     }
 #endif
 
-    // The modern bundle suffixes are rooted at the application prefix, which
-    // is the first of the prefix paths.
-    const QString appPrefix = prefixPaths.first().toString();
-    const auto pathsFor = [&](const QString &key) {
-        QStringList list;
-        for (const QJsonValue &value : paths.value(key).toArray())
-            list << value.toString();
-        return list;
-    };
+    // Verify that the libraries and plugins follow modern bundle conventions,
+    // rooted at the application prefix
 
-    // Verify that the libraries and plugins follow modern bundle conventions
-
-    const QStringList libraryPaths = pathsFor("LibrariesPath");
+    const QStringList libraryPaths = pathsFor(paths, "LibrariesPath");
     QVERIFY2(libraryPaths.contains(QDir::cleanPath(appPrefix + "/Frameworks")),
              qPrintable("Frameworks not in LibrariesPath: " + libraryPaths.join(", ")));
 
-    const QStringList pluginPaths = pathsFor("PluginsPath");
+    const QStringList pluginPaths = pathsFor(paths, "PluginsPath");
     QVERIFY2(pluginPaths.contains(QDir::cleanPath(appPrefix + "/PlugIns")),
              qPrintable("PlugIns not in PluginsPath: " + pluginPaths.join(", ")));
 
     // Verify that QML import paths include the QML resources
 
-    const QStringList qmlImportPaths = pathsFor("QmlImportsPath");
+    const QStringList qmlImportPaths = pathsFor(paths, "QmlImportsPath");
     const QString expectedQmlImport = QDir::cleanPath(appPrefix + "/Resources/qml");
     QVERIFY2(qmlImportPaths.contains(expectedQmlImport),
              qPrintable(expectedQmlImport + " not in QmlImportsPath: " + qmlImportPaths.join(", ")));
+}
+
+/*
+    An app bundle that links an external Qt, an app under development for
+    example, must report the paths of the Qt it runs against first. This is what
+    the Qt tools asking QLibraryInfo where the Qt they run against lives depend
+    on, as QLibraryInfo::path() reports the first path only. The paths implied by
+    the app's own bundle layout are still reported, as further candidates.
+*/
+void tst_QLibraryInfo::bundleWithExternalQt()
+{
+#if QT_CONFIG(static)
+    QSKIP("A static build of Qt is never external to the app");
+#else
+    QTemporaryDir tempDir;
+    QVERIFY2(tempDir.isValid(), qPrintable(tempDir.errorString()));
+    auto cleanup = qScopeGuard([&] {
+        if (QTest::currentTestFailed()) {
+            tempDir.setAutoRemove(false);
+            qDebug() << tempDir.path();
+        }
+    });
+
+    // Canonical, so that the paths the helper reports match ours verbatim
+    const QString bundlePath = QFileInfo(tempDir.path()).canonicalFilePath() + "/external-qt.app";
+
+    QString executableDir;
+    createBundle(bundlePath, u"APPL"_s, QString(), QString(), &executableDir);
+    if (QTest::currentTestFailed())
+        return;
+
+    QJsonObject paths;
+    runBundledHelper(executableDir, &paths);
+    if (QTest::currentTestFailed())
+        return;
+
+    // The test executable is a plain executable with no qt.conf of its own, so
+    // the paths it reports are those of the Qt we, and the helper, run against.
+    const QString appPrefix = bundlePath + "/Contents";
+
+    const QStringList prefixPaths = pathsFor(paths, "PrefixPath");
+    QCOMPARE(prefixPaths.first(), QLibraryInfo::path(QLibraryInfo::PrefixPath));
+    QVERIFY2(prefixPaths.contains(appPrefix),
+             qPrintable(appPrefix + " not in PrefixPath: " + prefixPaths.join(", ")));
+
+    const QStringList binaryPaths = pathsFor(paths, "BinariesPath");
+    QCOMPARE(binaryPaths.first(), QLibraryInfo::path(QLibraryInfo::BinariesPath));
+    QVERIFY2(binaryPaths.contains(appPrefix + "/MacOS"),
+             qPrintable(appPrefix + "/MacOS not in BinariesPath: " + binaryPaths.join(", ")));
+
+    const QStringList qmlImportPaths = pathsFor(paths, "QmlImportsPath");
+    QCOMPARE(qmlImportPaths.first(), QLibraryInfo::path(QLibraryInfo::QmlImportsPath));
+    QVERIFY2(qmlImportPaths.contains(appPrefix + "/Resources/qml"),
+             qPrintable(appPrefix + "/Resources/qml not in QmlImportsPath: "
+                        + qmlImportPaths.join(", ")));
+
+    // A bundle on its own only implies the modern Apple layout, not the Unixy
+    // one, which nothing but a qt.conf roots at the application prefix.
+    QVERIFY2(!binaryPaths.contains(appPrefix + "/bin"),
+             qPrintable("Unexpected " + appPrefix + "/bin in BinariesPath: "
+                        + binaryPaths.join(", ")));
+
+    // The settings path has no bundle equivalent, and nothing implies the Unixy
+    // layout here, so the app contributes nothing at all: system settings are
+    // looked up where the Qt we run against says, not inside the app bundle.
+    QCOMPARE(pathsFor(paths, "SettingsPath"),
+             QStringList { QLibraryInfo::path(QLibraryInfo::SettingsPath) });
+#endif
+}
+
+/*
+    A user-written qt.conf, with explicit paths and no merging with the Qt build
+    defaults, declares the layout the app follows, and replaces the paths of the
+    Qt we run against, including for the locations the qt.conf leaves out. The
+    modern Apple layout takes priority over the Unixy one there as well.
+*/
+void tst_QLibraryInfo::bundleWithExternalQtAndQtConf()
+{
+#if QT_CONFIG(static)
+    QSKIP("A static build of Qt is never external to the app");
+#else
+    QTemporaryDir tempDir;
+    QVERIFY2(tempDir.isValid(), qPrintable(tempDir.errorString()));
+    auto cleanup = qScopeGuard([&] {
+        if (QTest::currentTestFailed()) {
+            tempDir.setAutoRemove(false);
+            qDebug() << tempDir.path();
+        }
+    });
+
+    const QString bundlePath = QFileInfo(tempDir.path()).canonicalFilePath() + "/qt-conf.app";
+
+    // The qt.conf lists the prefix only, so every other location is left out
+    QString executableDir;
+    createBundle(bundlePath, u"APPL"_s, QString(), u"[Paths]\nPrefix=.\n"_s, &executableDir);
+    if (QTest::currentTestFailed())
+        return;
+
+    QJsonObject paths;
+    runBundledHelper(executableDir, &paths);
+    if (QTest::currentTestFailed())
+        return;
+
+    const QString appPrefix = bundlePath + "/Contents";
+
+    // The lists are exhaustive: the Qt we run against is external to the bundle,
+    // and the qt.conf pointed away from it, so none of its paths show up.
+
+    QCOMPARE(pathsFor(paths, "PrefixPath"), QStringList({ appPrefix }));
+
+    QCOMPARE(pathsFor(paths, "BinariesPath"), QStringList({
+        appPrefix + "/MacOS", appPrefix + "/bin"
+    }));
+
+    QCOMPARE(pathsFor(paths, "QmlImportsPath"), QStringList({
+        appPrefix + "/Resources/qml", appPrefix + "/qml"
+    }));
+#endif
 }
 #endif
 

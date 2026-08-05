@@ -20,8 +20,10 @@ qt_add_resources(tst_qlibraryinfo "qtconffiles"
         empty.qt.conf
         partial.qt.conf
         list.qt.conf
+        relative-prefix.qt.conf
         merge.qt.conf
         merge-relative-prefix.qt.conf
+        merge-absolute-prefix.qt.conf
 )
 
 if(MACOS)
