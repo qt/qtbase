@@ -202,24 +202,25 @@ static QByteArray execCommand(const QString &command, bool verbose = true,
     return execCommand(program, args, verbose, timeout);
 }
 
-// Insert `--` before the first unknown arg so QTest's own flags can follow without a separator.
+// Split argv into our and test options, then re-join as "<ours> -- <test args>".
 static QStringList splitOwnAndTestArgs(const QStringList &args,
                                        const QSet<QString> &knownOpts,
                                        const QSet<QString> &valueOpts)
 {
-    QStringList out;
-    out.reserve(args.size() + 1);
+    QStringList ownArgs;
+    QStringList testArgs;
+    ownArgs.reserve(args.size() + 1);
     for (int i = 0; i < args.size(); ++i) {
         const QString &arg = args.at(i);
         if (i == 0) {
-            out << arg;
+            ownArgs << arg;
             continue;
         }
         if (arg == "--"_L1) {
-            // Caller already split things explicitly; forward the rest as-is.
-            for (int j = i; j < args.size(); ++j)
-                out << args.at(j);
-            return out;
+            // Caller already split things explicitly, so forward the rest as-is.
+            for (int j = i + 1; j < args.size(); ++j)
+                testArgs << args.at(j);
+            break;
         }
         if (arg.startsWith("--"_L1) && arg.size() > 2) {
             QString name = arg.mid(2);
@@ -231,23 +232,25 @@ static QStringList splitOwnAndTestArgs(const QStringList &args,
                           qPrintable(name));
                 return {};
             }
-            out << arg;
+            ownArgs << arg;
             if (eqIdx == -1 && valueOpts.contains(name)) {
                 if (i + 1 >= args.size()) {
                     qCritical("Option --%s requires a value.", qPrintable(name));
                     return {};
                 }
-                out << args.at(++i);
+                ownArgs << args.at(++i);
             }
             continue;
         }
-        // Bare positional or single-dash QTest flag; everything from here is a test arg.
-        out << "--"_L1;
-        for (int j = i; j < args.size(); ++j)
-            out << args.at(j);
-        return out;
+        // Keep scanning, because CMake appends our flags after the test's flags.
+        testArgs << arg;
     }
-    return out;
+
+    if (!testArgs.isEmpty()) {
+        ownArgs << "--"_L1;
+        ownArgs += testArgs;
+    }
+    return ownArgs;
 }
 
 static bool parseOptions()
