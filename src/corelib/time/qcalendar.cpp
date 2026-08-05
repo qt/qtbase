@@ -827,7 +827,8 @@ int QCalendarBackend::maximumMonthsInYear() const
 
     Computes the Julian day number corresponding to the specified \a year, \a
     month, and \a day. Returns true and sets \a jd if there is such a date in
-    this calendar; otherwise, returns false.
+    this calendar; otherwise, returns false. (Its caller will deal with any case
+    where the result falls outside the range that QDate can represnt.)
 
     \sa QCalendar::partsFromDate(), julianDayToDate()
 */
@@ -837,9 +838,10 @@ int QCalendarBackend::maximumMonthsInYear() const
 
     Computes the year, month, and day in this calendar for the given Julian day
     number \a jd. If the given day falls outside this calendar's scope
-    (e.g. before the start-date of a non-proleptic calendar), the returned
-    structure's isValid() is false; otherwise, its year, month, and day fields
-    provide this calendar's description of the date.
+    (e.g. before the start-date of a non-proleptic calendar, or outside the
+    range in which \c int can represent all fields), the returned structure's
+    isValid() is false; otherwise, its year, month, and day fields provide this
+    calendar's description of the date.
 
     \sa QCalendar::dateFromParts(), dateToJulianDay()
 */
@@ -1463,7 +1465,9 @@ int QCalendar::maximumMonthsInYear() const
     packaged together as the members of \a parts. Returns a QDate with the given
     year, month, and day of the month in this calendar, if there is one.
     Otherwise, including the case where any of the values is
-    QCalendar::Unspecified, returns a QDate whose isNull() is true.
+    QCalendar::Unspecified, returns a QDate whose isNull() is true. If the date
+    represented falls outside QDate's supported range, the returned QDate's
+    isValid() shall be false.
 
     \sa isDateValid(), partsFromDate()
 */
@@ -1510,8 +1514,9 @@ QDate QCalendar::matchCenturyToWeekday(const QCalendar::YearMonthDay &parts, int
     Converts a QDate to a year, month, and day of the month.
 
     The returned structure's isValid() shall be false if the calendar is unable
-    to represent the given \a date. Otherwise its year, month, and day
-    members record the so-named parts of its representation.
+    to represent the given \a date (or its year would be outside the range that
+    \c int can represent). Otherwise its year, month, and day members record the
+    so-named parts of its representation.
 
     \sa dateFromParts(), isProleptic(), hasYearZero()
 */

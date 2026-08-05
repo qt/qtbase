@@ -19,6 +19,8 @@
 #include <QtCore/private/qglobal_p.h>
 #include <QtCore/QtAlgorithms>
 
+#include <limits>
+
 QT_BEGIN_NAMESPACE
 
 namespace QRoundingDown {
