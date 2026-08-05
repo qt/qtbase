@@ -711,11 +711,11 @@ void QRhiD3D12::destroy()
         dxgiFactory = nullptr;
     }
 
+    QDxgiVSyncService::instance()->derefAdapter(adapterLuid);
+
     adapterLuid = {};
     importedDevice = false;
     importedCommandQueue = false;
-
-    QDxgiVSyncService::instance()->derefAdapter(adapterLuid);
 
     if (drawCommandSignature) {
         drawCommandSignature->Release();
