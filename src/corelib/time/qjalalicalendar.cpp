@@ -27,15 +27,25 @@ static inline int cycle(qint64 jdn)
     return qDiv<cycleDays>(jdn - jalaliEpoch);
 }
 
-qint64 cycleStart(int cycleNo)
+static qint64 cycleStart(int cycleNo)
 {
-    return jalaliEpoch + cycleNo * cycleDays;
+    return jalaliEpoch + cycleNo * qint64(cycleDays);
 }
 
-qint64 firstDayOfYear(int year, int cycleNo)
+static qint64 firstDayOfYear(int year, int cycleNo)
 {
-    qint64 firstDOYinEra = static_cast<qint64>(qFloor(year * yearLength));
-    return jalaliEpoch + cycleNo * cycleDays + firstDOYinEra;
+    using std::floor;
+    qint64 firstDOYinEra
+        = QtPrivate::qCheckedFPConversionToInteger<qint64>(floor(year * yearLength));
+    return jalaliEpoch + cycleNo * qint64(cycleDays) + firstDOYinEra;
+}
+
+// Promoted to qint64 to avoid overflows and handle julianDayToDate()'s qint64.
+static bool isLeap(qint64 year)
+{
+    // This handles a year < 0 ? year + 1 : year adjusted year, or a value due
+    // to be subjected to the reverse of that to deliver a year.
+    return qMod<2820>((year + 2346) * 683) < 683;
 }
 
 /*!
@@ -100,8 +110,7 @@ bool QJalaliCalendar::isLeapYear(int year) const
     if (year < 0)
         ++year;
 
-    year = qMod<2820>(year); // Avoids overflow in:
-    return qMod<2820>((year + 2346) * 683) < 683;
+    return isLeap(year);
 }
 
 bool QJalaliCalendar::isLunar() const
@@ -142,14 +151,24 @@ bool QJalaliCalendar::dateToJulianDay(int year, int month, int day, qint64 *jd) 
 
 QCalendar::YearMonthDay QJalaliCalendar::julianDayToDate(qint64 jd) const
 {
+    using Bound = std::numeric_limits<int>;
+    constexpr qint64 maxInt = Bound::max();
     const int c = cycle(jd);
     int yearInCycle = qFloor((jd - cycleStart(c)) / yearLength);
-    int year = yearInCycle + 475 + c * cycleYears;
     int day = jd - firstDayOfYear(yearInCycle, c) + 1;
-    if (day > daysInYear(year <= 0 ? year - 1 : year)) {
-        ++year;
+
+    // Near the bounds of the supported range this is just outside int's range:
+    qint64 y = yearInCycle + 475 + c * qint64(cycleYears);
+    // Inline daysInYear() to bypass corrections for no year 0 (and its int parameter):
+    if (day > (isLeap(y) ? 366 : 365)) {
+        ++y;
         day = 1;
     }
+    // We'll be subtracting 1 if negative, so -maxInt is the lower bound, not Bound::min().
+    if (y > maxInt || y < -maxInt)
+        return {};
+
+    int year = static_cast<int>(y);
     if (year <= 0)
         year--;
     int month;
@@ -159,7 +178,7 @@ QCalendar::YearMonthDay QJalaliCalendar::julianDayToDate(qint64 jd) const
             break;
         day -= last;
     }
-    return QCalendar::YearMonthDay(year, month, day);
+    return {year, month, day};
 }
 
 int QJalaliCalendar::daysInMonth(int month, int year) const
