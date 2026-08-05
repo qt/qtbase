@@ -58,14 +58,14 @@ private:
     // Helper for reading out PE executable files: Find a section header for an RVA
     // (IMAGE_NT_HEADERS64, IMAGE_NT_HEADERS32).
     template <class ImageNtHeader>
-    const IMAGE_SECTION_HEADER *findSectionHeader(DWORD rva, const ImageNtHeader *nTHeader);
+    static const IMAGE_SECTION_HEADER *findSectionHeader(DWORD rva, const ImageNtHeader *nTHeader);
 
     // Helper for reading out PE executable files: convert RVA to pointer (IMAGE_NT_HEADERS64, IMAGE_NT_HEADERS32).
     template <class ImageNtHeader>
-    const void *rvaToPtr(DWORD rva, const ImageNtHeader *nTHeader, const void *imageBase);
+    static const void *rvaToPtr(DWORD rva, const ImageNtHeader *nTHeader, const void *imageBase);
 
     template <class ImageNtHeader>
-    unsigned ntHeaderWordSize(const ImageNtHeader *header);
+    static unsigned ntHeaderWordSize(const ImageNtHeader *header);
 
     // Check for MSCV runtime (MSVCP90D.dll/MSVCP90.dll, MSVCP120D.dll/MSVCP120.dll,
     // VCRUNTIME140D.DLL/VCRUNTIME140.DLL (VS2015) or msvcp120d_app.dll/msvcp120_app.dll).
