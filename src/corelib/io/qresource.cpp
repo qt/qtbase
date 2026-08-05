@@ -146,7 +146,7 @@ public:
     const uchar *data(int node, qint64 *size) const;
     qint64 lastModified(int node) const;
     QStringList children(int node) const;
-    virtual QString mappingRoot() const { return QString(); }
+    virtual QStringView mappingRoot() const { return {}; }
     bool mappingRootSubdir(const QString &path, QString *match = nullptr) const;
     inline bool operator==(const QResourceRoot &other) const
     { return tree == other.tree && names == other.names && payloads == other.payloads && version == other.version; }
@@ -812,19 +812,21 @@ inline bool QResourceRoot::nameMatches(int node, QStringView other) const
 
 int QResourceRoot::findNode(const QString &_path, const QLocale &locale) const
 {
-    QString path = _path;
+    QStringView path = _path;
     {
-        QString root = mappingRoot();
+        const QStringView root = mappingRoot();
         if (!root.isEmpty()) {
             if (root == path) {
-                path = u'/';
+                path = u"/"_sv;
             } else {
-                if (!root.endsWith(u'/'))
-                    root += u'/';
-                if (path.size() >= root.size() && path.startsWith(root))
-                    path = path.mid(root.size() - 1);
+                const bool rootEndsWithSlash = root.endsWith(u'/');
+                const qsizetype prefixLength = root.size() + !rootEndsWithSlash;
+                if (path.size() >= prefixLength && path.startsWith(root)
+                    && (rootEndsWithSlash || path.at(root.size()) == u'/')) {
+                    path = path.sliced(prefixLength - 1);
+                }
                 if (path.isEmpty())
-                    path = u'/';
+                    path = u"/"_sv;
             }
         }
     }
@@ -1000,7 +1002,7 @@ QStringList QResourceRoot::children(int node) const
 }
 bool QResourceRoot::mappingRootSubdir(const QString &path, QString *match) const
 {
-    const QString root = mappingRoot();
+    const QStringView root = mappingRoot();
     if (root.isEmpty())
         return false;
 
@@ -1082,7 +1084,7 @@ public:
     inline QDynamicBufferResourceRoot(const QString &_root) : root(_root), buffer(nullptr) { }
     inline ~QDynamicBufferResourceRoot() { }
     inline const uchar *mappingBuffer() const { return buffer; }
-    QString mappingRoot() const override { return root; }
+    QStringView mappingRoot() const override { return root; }
     ResourceRootType type() const override { return Resource_Buffer; }
 
     // size == -1 means "unknown"
