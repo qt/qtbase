@@ -52,6 +52,7 @@ public:
     static QStringList paths(QLibraryInfo::LibraryPath p);
 
 private:
+    static QStringList qtConfPaths(QLibraryInfo::LibraryPath location);
     static QStringList appPaths(QLibraryInfo::LibraryPath location);
     static QStringList qtPaths(QLibraryInfo::LibraryPath location);
 };
