@@ -369,6 +369,26 @@ class CommandLineTests(unittest.TestCase):
                                 "-o", "/tmp/foo.xml,xml", "-o", "-,txt"])
         self.assertNotIn("Unknown option", proc.stderr)
 
+    def test_own_option_after_test_args_is_still_ours(self):
+        # CMake appends -import before --timeout, forwarding ours made QTest exit 1 (QTBUG-148805).
+        proc = self.run_runner(["--path", "/tmp", "--apk", "/tmp/foo.apk", "--make", "true",
+                                "-import", "/tmp/imports", "--timeout", "abc"])
+        self.assertEqual(proc.returncode, EXIT_ERROR,
+            f"--timeout after a test arg was forwarded instead of parsed: {proc.stderr!r}")
+        self.assertIn("positive integer", proc.stderr)
+
+    def test_own_value_option_after_test_args_still_takes_effect(self):
+        # Not just parsed: a value-taking flag behind a test arg must still drive the run.
+        with fake_make("make") as (make_path, log), fake_adb() as adb, \
+                tempfile.TemporaryDirectory(prefix="atr-order-") as tmp:
+            write_minimal_manifest(tmp)
+            apk = os.path.join(tmp, "stub.apk")
+            open(apk, "w").close()
+            self.run_runner(["--path", tmp, "--apk", apk, "--adb", adb, "--timeout", "1",
+                             "-import", "/tmp/a", "--make", make_path])
+            self.assertTrue(os.path.exists(log),
+                "--make behind a test arg was forwarded to the test instead of honoured")
+
     def test_verbose_prints_execute_lines(self):
         # --verbose makes execCommand echo each spawned command to stdout.
         proc = self.run_runner(["--verbose", "--path", "/tmp",
