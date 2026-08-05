@@ -1887,7 +1887,7 @@ void tst_QtParseTemporal::prefix_data()
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
         << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
 
-    // Found by fuzzer:
+    // Found by OSS-Fuzz:
     QTest::newRow("Huge negative year/date/C/jalali/0") // QTBUG-147418
         << u"12/3/-9223372036854775809"_s
         << Fields{ Field{empty, 1, Flag::Numeric, Cat::Month},
