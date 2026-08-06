@@ -29,6 +29,21 @@
 
 enum { spacing  = 50, windowSize = 200 };
 
+// helper to skip an autotest that shows two top-level windows at once
+#if defined(Q_OS_HARMONY)
+// FIXME: the plugin backs every top-level window with its own UIAbility instance, and the
+// platform runs several instances on 2-in-1 devices and in free-window mode only. Drop this
+// once several top-level windows work outside free-window mode.
+#define SKIP_IF_TWO_TOP_LEVEL_WINDOWS_UNSUPPORTED()                                      \
+    do {                                                                                 \
+        if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(               \
+                QPlatformIntegration::MultipleWindows))                                  \
+            QSKIP("Two top-level windows require free-window mode on OHOS.");            \
+    } while (0)
+#else
+#define SKIP_IF_TWO_TOP_LEVEL_WINDOWS_UNSUPPORTED() do {} while (0)
+#endif
+
 class tst_QGuiApplication: public tst_QCoreApplication
 {
     Q_OBJECT
@@ -188,6 +203,8 @@ void tst_QGuiApplication::focusObject()
 
     if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
         QSKIP("QWindow::requestActivate() is not supported.");
+
+    SKIP_IF_TWO_TOP_LEVEL_WINDOWS_UNSUPPORTED();
 
     QObject obj1, obj2, obj3;
     const QRect screenGeometry = QGuiApplication::primaryScreen()->availableVirtualGeometry();
@@ -359,6 +376,8 @@ void tst_QGuiApplication::changeFocusWindow()
 
     if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
         QSKIP("QWindow::requestActivate() is not supported.");
+
+    SKIP_IF_TWO_TOP_LEVEL_WINDOWS_UNSUPPORTED();
 
     const QRect screenGeometry = QGuiApplication::primaryScreen()->availableVirtualGeometry();
 
