@@ -8,6 +8,8 @@
 #include <QtCore/qarraydataops.h>
 #include <QtCore/qcontainertools_impl.h>
 
+#include <QtCore/q20utility.h>
+
 QT_BEGIN_NAMESPACE
 
 template <class T>
@@ -32,6 +34,7 @@ public:
     constexpr QArrayDataPointer() = default;
 
     Q_NODISCARD_CTOR
+    Q_DECL_CONSTEXPR_DTOR
     QArrayDataPointer(const QArrayDataPointer &other) noexcept
         : QArrayDataPointer(other.d, other.ptr, other.size)
     {
@@ -68,6 +71,7 @@ public:
         return { nullptr, const_cast<T *>(rawData), length };
     }
 
+    Q_DECL_CONSTEXPR_DTOR
     QArrayDataPointer &operator=(const QArrayDataPointer &other) noexcept
     {
         QArrayDataPointer tmp(other);
@@ -76,13 +80,15 @@ public:
     }
 
     Q_NODISCARD_CTOR
+    constexpr
     QArrayDataPointer(QArrayDataPointer &&other) noexcept
-        : QArrayDataPointer(std::exchange(other.d, nullptr),
-                            std::exchange(other.ptr, nullptr),
-                            std::exchange(other.size, 0))
+        : QArrayDataPointer(q20::exchange(other.d, nullptr),
+                            q20::exchange(other.ptr, nullptr),
+                            q20::exchange(other.size, 0))
     {
     }
 
+    Q_DECL_CONSTEXPR_DTOR
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QArrayDataPointer)
 
     DataOps operator*() noexcept
@@ -95,12 +101,18 @@ public:
         return DataOps(*this);
     }
 
+    Q_DECL_CONSTEXPR_DTOR
     ~QArrayDataPointer()
     {
-        if (!deref()) {
-            (*this)->destroyAll();
-            Data::deallocate(d);
-        }
+        if (!deref())
+            destroyAndDeallocate();
+    }
+
+    // Avoid instantiating QArrayDataOps<T> inside the constexpr destructor.
+    void destroyAndDeallocate()
+    {
+        (*this)->destroyAll();
+        Data::deallocate(d);
     }
 
     constexpr bool isNull() const noexcept
@@ -118,7 +130,7 @@ public:
     const T *constBegin() const noexcept { return data(); }
     const T *constEnd() const noexcept { return data() + size; }
 
-    void swap(QArrayDataPointer &other) noexcept
+    constexpr void swap(QArrayDataPointer &other) noexcept
     {
         qt_ptr_swap(d, other.d);
         qt_ptr_swap(ptr, other.ptr);
@@ -346,30 +358,35 @@ public:
     }
 
     // forwards from QArrayData
-    qsizetype allocatedCapacity() noexcept { return d ? d->allocatedCapacity() : 0; }
+    constexpr qsizetype allocatedCapacity() noexcept { return d ? d->allocatedCapacity() : 0; }
+    constexpr
     qsizetype constAllocatedCapacity() const noexcept { return d ? d->constAllocatedCapacity() : 0; }
-    void ref() noexcept { if (d) d->ref(); }
-    bool deref() noexcept { return !d || d->deref(); }
+    constexpr void ref() noexcept { if (d) d->ref(); }
+    constexpr bool deref() noexcept { return !d || d->deref(); }
+    constexpr
     bool isMutable() const noexcept { return d; } // Returns false if this object is fromRawData()
-    bool isShared() const noexcept { return !d || d->isShared(); }
+    constexpr bool isShared() const noexcept { return !d || d->isShared(); }
+    constexpr
     bool isSharedWith(const QArrayDataPointer &other) const noexcept { return d && d == other.d; }
-    bool needsDetach() const noexcept { return !d || d->needsDetach(); }
+    constexpr bool needsDetach() const noexcept { return !d || d->needsDetach(); }
+    constexpr
     qsizetype detachCapacity(qsizetype newSize) const noexcept { return d ? d->detachCapacity(newSize) : newSize; }
+    constexpr
     const typename Data::ArrayOptions flags() const noexcept { return d ? d->flags : Data::ArrayOptionDefault; }
     void setFlag(typename Data::ArrayOptions f) noexcept { Q_ASSERT(d); d->flags |= f; }
     void clearFlag(typename Data::ArrayOptions f) noexcept { if (d) d->flags &= ~f; }
 
-    Data *d_ptr() noexcept { return d; }
-    void setBegin(T *begin) noexcept { ptr = begin; }
+    constexpr Data *d_ptr() noexcept { return d; }
+    constexpr void setBegin(T *begin) noexcept { ptr = begin; }
 
-    qsizetype freeSpaceAtBegin() const noexcept
+    constexpr qsizetype freeSpaceAtBegin() const noexcept
     {
         if (d == nullptr)
             return 0;
         return this->ptr - Data::dataStart(d, alignof(typename Data::AlignmentDummy));
     }
 
-    qsizetype freeSpaceAtEnd() const noexcept
+    constexpr qsizetype freeSpaceAtEnd() const noexcept
     {
         if (d == nullptr)
             return 0;
@@ -424,7 +441,7 @@ public:
 };
 
 template <class T>
-inline void swap(QArrayDataPointer<T> &p1, QArrayDataPointer<T> &p2) noexcept
+constexpr void swap(QArrayDataPointer<T> &p1, QArrayDataPointer<T> &p2) noexcept
 {
     p1.swap(p2);
 }

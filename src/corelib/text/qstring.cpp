@@ -2840,12 +2840,6 @@ void QString::reallocGrowData(qsizetype n)
     string.
 */
 
-QString &QString::operator=(const QString &other) noexcept
-{
-    d = other.d;
-    return *this;
-}
-
 /*!
     \fn QString &QString::operator=(QString &&other)
 

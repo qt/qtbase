@@ -256,9 +256,10 @@ public:
         : QString(fromUtf8(str))
     {}
 #endif
-    inline QString(const QString &) noexcept;
+    Q_DECL_CONSTEXPR_DTOR QString(const QString &other) noexcept : d(other.d) {}
     inline ~QString();
     QString &operator=(QChar c);
+    QT_CORE_CONSTEXPR_DTOR_INLINE_SINCE(6, 13)
     QString &operator=(const QString &) noexcept;
     QString &operator=(QLatin1StringView latin1);
     inline QString(QString &&other) noexcept
@@ -1392,8 +1393,14 @@ bool QString::isDetached() const
 { return !d.isShared(); }
 void QString::clear()
 { if (!isNull()) *this = QString(); }
-QString::QString(const QString &other) noexcept : d(other.d)
-{ }
+#if QT_CORE_INLINE_IMPL_SINCE(6, 13)
+QT_CORE_CONSTEXPR_DTOR_INLINE_SINCE(6, 13)
+QString &QString::operator=(const QString &other) noexcept
+{
+    d = other.d;
+    return *this;
+}
+#endif // QT_CORE_INLINE_IMPL_SINCE(6, 13)
 qsizetype QString::capacity() const { return qsizetype(d.constAllocatedCapacity()); }
 QString &QString::setNum(short n, int base)
 { return setNum(qlonglong(n), base); }

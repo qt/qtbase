@@ -93,9 +93,10 @@ public:
     QByteArray(qsizetype size, char c);
     QByteArray(qsizetype size, Qt::Initialization);
     explicit QByteArray(QByteArrayView v) : QByteArray(v.data(), v.size()) {}
-    inline QByteArray(const QByteArray &) noexcept;
+    Q_DECL_CONSTEXPR_DTOR QByteArray(const QByteArray &other) noexcept : d(other.d) {}
     inline ~QByteArray();
 
+    QT_CORE_CONSTEXPR_DTOR_INLINE_SINCE(6, 13)
     QByteArray &operator=(const QByteArray &) noexcept;
     QByteArray &operator=(const char *str);
     inline QByteArray(QByteArray && other) noexcept
@@ -670,8 +671,14 @@ inline void QByteArray::detach()
 { if (d.needsDetach()) reallocData(size(), QArrayData::KeepSize); }
 inline bool QByteArray::isDetached() const
 { return !d.isShared(); }
-inline QByteArray::QByteArray(const QByteArray &a) noexcept : d(a.d)
-{}
+#if QT_CORE_INLINE_IMPL_SINCE(6, 13)
+QT_CORE_CONSTEXPR_DTOR_INLINE_SINCE(6, 13)
+QByteArray &QByteArray::operator=(const QByteArray &other) noexcept
+{
+    d = other.d;
+    return *this;
+}
+#endif // QT_CORE_INLINE_IMPL_SINCE(6, 13)
 
 inline qsizetype QByteArray::capacity() const { return qsizetype(d.constAllocatedCapacity()); }
 

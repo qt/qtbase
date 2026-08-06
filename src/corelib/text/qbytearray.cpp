@@ -1303,16 +1303,11 @@ QByteArray::iterator QByteArray::erase(QByteArray::const_iterator first, QByteAr
     Destroys the byte array.
 */
 
-/*!
+/*! \fn QByteArray &QByteArray::operator=(const QByteArray &other)
+
     Assigns \a other to this byte array and returns a reference to
     this byte array.
 */
-QByteArray &QByteArray::operator=(const QByteArray & other) noexcept
-{
-    d = other.d;
-    return *this;
-}
-
 
 /*!
     \overload

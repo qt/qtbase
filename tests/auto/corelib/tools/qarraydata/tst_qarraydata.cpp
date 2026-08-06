@@ -23,6 +23,47 @@ do { \
         QFAIL("Test case " #test "(" #__VA_ARGS__ ") failed"); \
 } while (false)
 
+#if __cpp_constexpr >= 201907L
+constexpr bool checkDataPointerConstexprness()
+{
+    bool result = true;
+
+    char data[] = "test";
+    QArrayDataPointer<char> dataPointer(nullptr, data, 4);
+    result &= dataPointer.allocatedCapacity() == 0;
+    result &= dataPointer.constAllocatedCapacity() == 0;
+    result &= !dataPointer.isMutable();
+    result &= dataPointer.isShared();
+    result &= !dataPointer.isSharedWith(dataPointer);
+    result &= dataPointer.needsDetach();
+    result &= dataPointer.detachCapacity(8) == 8;
+    result &= dataPointer.flags() == QArrayData::ArrayOptionDefault;
+    result &= dataPointer.d_ptr() == nullptr;
+    result &= dataPointer.freeSpaceAtBegin() == 0;
+    result &= dataPointer.freeSpaceAtEnd() == 0;
+
+    dataPointer.ref();
+    result &= dataPointer.deref();
+    dataPointer.setBegin(data + 1);
+    result &= dataPointer.ptr == data + 1;
+    dataPointer.setBegin(data);
+
+    QArrayDataPointer<char> copy(dataPointer);
+    dataPointer = dataPointer;
+
+    QArrayDataPointer<char> moved(std::move(copy));
+    copy = dataPointer;
+    moved = std::move(copy);
+    swap(dataPointer, moved);
+
+    result &= dataPointer.size == 4;
+    result &= moved.size == 4;
+    result &= copy.size == 0;
+    return result;
+}
+static_assert(checkDataPointerConstexprness());
+#endif // __cpp_constexpr >= 201907L
+
 class tst_QArrayData : public QObject
 {
     Q_OBJECT
