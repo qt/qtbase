@@ -17,7 +17,6 @@
 #include <qohosplugincore.h>
 #include "EGL/eglplatform.h"
 #include "qohosplatformcursor.h"
-// #include <ohos/native_window.h>
 
 QT_BEGIN_NAMESPACE
 
