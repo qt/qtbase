@@ -324,7 +324,7 @@ bool QOhosPlatformIntegration::hasCapability(Capability cap) const
         case OpenGLOnRasterSurface: {
             return (QOhosDeviceInfo::getProperty(QOhosDeviceInfo::Type::productModel).toString() == QString::fromUtf8("emulator"));
         }
-        case MultipleWindows: return true;
+        case MultipleWindows:
         case WindowManagement:
         case NonFullScreenWindows:
             return QOhosSettings::instance().isWindowPcModeEnabled();
