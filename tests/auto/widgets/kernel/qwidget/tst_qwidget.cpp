@@ -3974,7 +3974,7 @@ void tst_QWidget::setGeometry()
         QSKIP("Your window manager is too broken for this test");
     if (m_platform == QStringLiteral("xcb") && tlw.geometry() != tr)
         QEXPECT_FAIL("", "QTBUG-26424", Continue);
-    QCOMPARE(tlw.geometry(), tr);
+    QTRY_COMPARE(tlw.geometry(), tr);
 }
 
 void tst_QWidget::setGeometryHidden()
