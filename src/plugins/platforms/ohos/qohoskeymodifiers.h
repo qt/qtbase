@@ -6,6 +6,7 @@
 
 #include <QtCore/qflags.h>
 #include <QtCore/qglobal.h>
+#include <QtCore/qnamespace.h>
 #include <QtCore/qspan.h>
 #include <arkui/ui_input_event.h>
 #include <multimodalinput/oh_input_manager.h>
