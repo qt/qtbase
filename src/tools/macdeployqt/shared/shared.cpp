@@ -1403,6 +1403,8 @@ void codesignFile(const QString &identity, const QString &filePath)
         codeSignLogMessage += ", enable hardened runtime";
     if (secureTimestamp)
         codeSignLogMessage += ", include secure timestamp";
+    if (!extraEntitlements.isEmpty())
+        codeSignLogMessage += QStringLiteral(", include entitlements (%1)").arg(extraEntitlements);
     LogNormal() << codeSignLogMessage << filePath;
 
     QStringList codeSignOptions = { "--preserve-metadata=identifier,entitlements", "--force", "-s",
