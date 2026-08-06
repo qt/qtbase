@@ -26,7 +26,9 @@ To run a test with libFuzzer:
    It might also make sense to add sanitizers by passing
     -sanitize <...>
 4. Build Qt.
-5. Build one of the tests using this Qt build.
+5. Build one of the tests using this Qt build as a standalone program.
+   Usually this only takes a command like:
+   <qt build dir>/qtbase/bin/qt-cmake -D CMAKE_CXX_COMPILER=clang++ -S <fuzzer source dir> && cmake --build .
 6. Execute the resulting executable.
    Depending on the expected input format of the tested function, you will get results faster if
    you:
@@ -38,6 +40,9 @@ To run a test with libFuzzer:
       A couple of such dictionaries are provided by AFL (http://lcamtuf.coredump.cx/afl/)
     * tell libFuzzer to generate only ASCII data using
        -only_ascii=1
+    * In case you want to run the fuzzer only on a single input, e.g. to validate that an earlier
+      issue was fixed, you can simply pass the name of a file which contains that data:
+       ./theFuzzer crash.txt
 
 For further info about libFuzzer, see https://llvm.org/docs/LibFuzzer.html
 
