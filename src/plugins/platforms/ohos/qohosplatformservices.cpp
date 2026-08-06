@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qohosplatformservices.h"
-#include <QtCore/QUrl>
+#include <QtCore/qurl.h>
 #include <QtCore/private/qnapi_p.h>
 #include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/private/qohospathutils_p.h>
 #include <QtCore/qfileinfo.h>
-#include <QtGui/QColor>
+#include <QtGui/qcolor.h>
 #include <qohosenums.h>
 #include <qohosplugincore.h>
 #include <utility>

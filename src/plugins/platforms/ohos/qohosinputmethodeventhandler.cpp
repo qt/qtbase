@@ -10,7 +10,7 @@
 #include <QtCore/qmap.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qhighdpiscaling_p.h>
-#include <QtMath>
+#include <QtCore/qmath.h>
 #include <algorithm>
 #include <arkui/ui_input_event.h>
 #include <chrono>

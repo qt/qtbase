@@ -4,9 +4,9 @@
 #ifndef QOHOSNATIVEXCOMPONENTINPUTHANDLER_H
 #define QOHOSNATIVEXCOMPONENTINPUTHANDLER_H
 
-#include <QtCore/QPointer>
-#include <QtCore/QtGlobal>
-#include <QtGui/QWindow>
+#include <QtCore/qpointer.h>
+#include <QtCore/qglobal.h>
+#include <QtGui/qwindow.h>
 #include <QtGui/qinputdevice.h>
 #include <ace/xcomponent/native_interface_xcomponent.h>
 #include <arkui/ui_input_event.h>

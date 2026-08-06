@@ -4,7 +4,7 @@
 #ifndef QOHOSSETTINGS_H
 #define QOHOSSETTINGS_H
 
-#include <QtCore/QtGlobal>
+#include <QtCore/qglobal.h>
 #include <QtCore/private/qohoscommon_p.h>
 #include <memory>
 

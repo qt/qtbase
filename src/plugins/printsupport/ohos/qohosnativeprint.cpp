@@ -2,10 +2,9 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qohosnativeprint.h"
-#include <QDebug>
-#include <QDebugStateSaver>
+#include <QtCore/qdebug.h>
 #include <QtCore/private/qohoslogger_p.h>
-#include <QtGlobal>
+#include <QtCore/qglobal.h>
 #include <cmath>
 #include <cstdint>
 

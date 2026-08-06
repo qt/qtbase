@@ -4,7 +4,7 @@
 #ifndef QOHOSDISPLAYINFO_H
 #define QOHOSDISPLAYINFO_H
 
-#include <QtCore/QSizeF>
+#include <QtCore/qsize.h>
 #include <QtCore/private/qnapi_p.h>
 #include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/qstring.h>

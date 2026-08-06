@@ -4,7 +4,7 @@
 #ifndef QOHOSBATCHINGREQUESTSHANDLER_H
 #define QOHOSBATCHINGREQUESTSHANDLER_H
 
-#include <QtCore/QtGlobal>
+#include <QtCore/qglobal.h>
 #include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/qmetaobject.h>
 #include <QtCore/qobject.h>

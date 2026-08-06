@@ -3,8 +3,8 @@
 
 #include <render/qohoswindowproxy.h>
 
-#include <QtCore/QCoreApplication>
-#include <QtCore/QSet>
+#include <QtCore/qcoreapplication.h>
+#include <QtCore/qset.h>
 #include <QtCore/private/qnapi_p.h>
 #include <qohosjsenv_p.h>
 #include <QtCore/qscopeguard.h>

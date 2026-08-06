@@ -7,7 +7,7 @@
 #include <QtCore/qobject.h>
 #include <QtCore/qlist.h>
 #include <QtGui/qicon.h>
-#include <QtGui/QWindow>
+#include <QtGui/qwindow.h>
 #include <atomic>
 #include <cstdint>
 #include <optional>

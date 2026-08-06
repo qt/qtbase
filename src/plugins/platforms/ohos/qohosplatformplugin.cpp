@@ -3,7 +3,7 @@
 
 #include <qpa/qplatformintegrationplugin.h>
 #include "qohosplatformintegration.h"
-#include <QDebug>
+#include <QtCore/qdebug.h>
 #include <qohosjsenv_p.h>
 
 QT_BEGIN_NAMESPACE

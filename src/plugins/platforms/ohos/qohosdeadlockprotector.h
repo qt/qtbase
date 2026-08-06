@@ -4,7 +4,7 @@
 #ifndef QOHOS_DEADLOCKPROTECTOR_H
 #define QOHOS_DEADLOCKPROTECTOR_H
 
-#include <QAtomicInt>
+#include <QtCore/qatomic.h>
 
 QT_BEGIN_NAMESPACE
 

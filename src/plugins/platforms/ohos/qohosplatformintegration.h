@@ -22,7 +22,7 @@
 #include <EGL/egl.h>
 #include <QtCore/qpoint.h>
 #include <QtCore/qscopedpointer.h>
-#include <QInputDevice>
+#include <QtGui/qinputdevice.h>
 #include <qohosplatformclipboard.h>
 #include <render/qxcomponent.h>
 #include <memory>

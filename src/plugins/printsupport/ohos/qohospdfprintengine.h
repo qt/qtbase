@@ -4,8 +4,8 @@
 #ifndef QOHOSPDFPRINTENGINE_H_
 #define QOHOSPDFPRINTENGINE_H_
 
-#include <QScopedPointer>
-#include <QTemporaryDir>
+#include <QtCore/qscopedpointer.h>
+#include <QtCore/qtemporarydir.h>
 #include <qprintengine_pdf_p.h>
 
 QT_BEGIN_NAMESPACE

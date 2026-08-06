@@ -4,8 +4,8 @@
 #ifndef QOHOSSCREENMANAGER_H
 #define QOHOSSCREENMANAGER_H
 
-#include <QObject>
-#include <QPointer>
+#include <QtCore/qobject.h>
+#include <QtCore/qpointer.h>
 #include <QtCore/private/qnapi_p.h>
 #include <QtCore/private/qohoscommon_p.h>
 #include <memory>
