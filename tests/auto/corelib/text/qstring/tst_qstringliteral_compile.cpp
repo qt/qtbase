@@ -45,11 +45,31 @@ constexpr bool checkConstexprness()
     result &= copyConstructed.size() == 6;
 #endif
 
+    QString copy = moved;
+    copy.clear();
+    result &= copy.isNull();
+    result &= moved.size() == 6;
+    result &= moved.at(0) == u'W';
+    result &= moved.at(1) == u'o';
+    result &= moved.at(2) == u'r';
+    result &= moved.at(3) == u'l';
+    result &= moved.at(4) == u'd';
+    result &= moved.at(5) == u'!';
+
     QString returned = []() constexpr {
         QString result = u"Hello"_s;
         return result;
     }();
     result &= returned.size() == 5;
+
+    QString empty = u""_s;
+    empty.clear();
+    result &= empty.isNull();
+
+    QString null;
+    null.clear();
+    result &= null.isNull();
+
     return result;
 }
 static_assert(checkConstexprness());

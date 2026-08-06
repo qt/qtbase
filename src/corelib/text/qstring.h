@@ -317,7 +317,7 @@ public:
     inline void detach();
     inline bool isDetached() const;
     inline bool isSharedWith(const QString &other) const { return d.isSharedWith(other.d); }
-    inline void clear();
+    Q_DECL_CONSTEXPR_DTOR void clear();
 
     constexpr inline const QChar at(qsizetype i) const;
     constexpr inline const QChar operator[](qsizetype i) const;
@@ -1394,6 +1394,7 @@ void QString::detach()
 { if (d.needsDetach()) reallocData(d.size, QArrayData::KeepSize); }
 bool QString::isDetached() const
 { return !d.isShared(); }
+Q_DECL_CONSTEXPR_DTOR
 void QString::clear()
 { if (!isNull()) *this = QString(); }
 #if QT_CORE_INLINE_IMPL_SINCE(6, 13)
