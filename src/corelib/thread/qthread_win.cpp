@@ -340,7 +340,7 @@ void QThread::yieldCurrentThread()
 void QThread::sleep(std::chrono::nanoseconds nsecs)
 {
     using namespace std::chrono;
-    if (nsecs < 2ms) {
+    if (nsecs < 30ms) {
         QUniqueWin32NullHandle waitableTimerHandle;
         waitableTimerHandle.reset(CreateWaitableTimerEx(
                 nullptr, nullptr, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS));
