@@ -14,6 +14,7 @@
 
 #include <QtCore/qmutex.h>
 #include <QtGui/private/qguiapplication_p.h>
+
 QT_BEGIN_NAMESPACE
 
 void *QOhosPlatformNativeInterface::nativeResourceForWindow(const QByteArray &resource, QWindow *window)

@@ -14,7 +14,6 @@
 #include <qpa/qplatformtheme.h>
 #include <qpa/qplatformdialoghelper.h>
 
-
 QT_BEGIN_NAMESPACE
 
 template<typename T>
