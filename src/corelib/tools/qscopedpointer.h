@@ -82,7 +82,7 @@ public:
         Cleanup::cleanup(oldD);
     }
 
-    inline T &operator*() const
+    inline std::add_lvalue_reference_t<T> operator*() const
     {
         Q_ASSERT(d);
         return *d;

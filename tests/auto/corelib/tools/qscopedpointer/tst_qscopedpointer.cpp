@@ -6,6 +6,8 @@
 
 #include <QtCore/qstdlibdetection.h>
 
+#include <cstdlib>
+
 /*!
  \class tst_QScopedPointer
  \internal
@@ -38,6 +40,7 @@ private Q_SLOTS:
     void objectSize();
     void comparison();
     void array();
+    void voidPointer();
     // TODO instanciate on const object
 
     // Tests for deprecated APIs
@@ -525,6 +528,40 @@ void tst_QScopedPointer::array()
         QCOMPARE(instCount, RefCounted::instanceCount.loadRelaxed());
     }
     QCOMPARE(instCount, RefCounted::instanceCount.loadRelaxed());
+}
+
+void tst_QScopedPointer::voidPointer()
+{
+    using VoidPointer = QScopedPointer<void, QScopedPointerPodDeleter>;
+    static_assert(std::is_same_v<decltype(*std::declval<const VoidPointer &>()), void>);
+
+    {
+        VoidPointer p;
+        QVERIFY(p.isNull());
+        QVERIFY(!p);
+        QCOMPARE(bool(p), false);
+        QCOMPARE(p.data(), nullptr);
+        QCOMPARE(p.get(), nullptr);
+        QVERIFY(p == nullptr);
+    }
+    {
+        void *raw = std::malloc(sizeof(int));
+        VoidPointer p(raw);
+        QVERIFY(!p.isNull());
+        QVERIFY(p);
+        QCOMPARE(p.data(), raw);
+        QCOMPARE(p.get(), raw);
+        QVERIFY(p != nullptr);
+
+        p.reset();
+        QVERIFY(p.isNull());
+    }
+    {
+        VoidPointer p(std::malloc(sizeof(int)));
+        void *raw = std::malloc(sizeof(int));
+        p.reset(raw);
+        QCOMPARE(p.data(), raw);
+    }
 }
 
 #if QT_DEPRECATED_SINCE(6, 1)
