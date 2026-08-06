@@ -18,7 +18,6 @@
 #include <multimedia/image_framework/image/pixelmap_native.h>
 #include <optional>
 #include <qarkui/qarkuiutils.h>
-#include <qguiapplication.h>
 #include <qohosapppermissions_p.h>
 #include <qohosjsutils.h>
 #include <QtGui/private/qohosimageconversions_p.h>

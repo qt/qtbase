@@ -25,7 +25,6 @@
 #include <qpa/qwindowsysteminterface.h>
 #include <render/qohosview.h>
 #include <render/qwindowproxyregistry.h>
-#include <private/qwindow_p.h>
 #include <utility>
 
 QT_BEGIN_NAMESPACE
