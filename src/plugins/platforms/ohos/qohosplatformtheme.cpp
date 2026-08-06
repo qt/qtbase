@@ -4,7 +4,7 @@
 #include "private/qohosplatformtheme_p.h"
 #include "qohosplatformtheme.h"
 #include "qohosplatformscreen.h"
-#include"qohosplatformdialoghelper.h"
+#include "qohosplatformdialoghelper.h"
 #include "qohosplatformintegration.h"
 #include "qohossystemtrayicon.h"
 #include <QtCore/private/qcore_ohos_p.h>
