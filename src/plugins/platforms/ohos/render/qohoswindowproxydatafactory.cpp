@@ -6,7 +6,6 @@
 #include <QtCore/qscopeguard.h>
 #include <cstdint>
 #include <qarkui/qxcomponentregistry.h>
-#include <qohosdeviceinfo_p.h>
 #include <qohosutils.h>
 #include <render/qohoswindowproxy.h>
 #include <render/qxcomponent.h>
@@ -129,6 +128,36 @@ QNapi::Promise createSubWindow(
 {
     return windowStageOrWindowObject.evalToPromiseOrRejectOnThrow(
         "createSubWindow(*)", {windowName});
+}
+
+// createSubWindow() exists only on the WindowStage, not on a Window.
+QNapi::Promise createSubWindowViaWindowStage(
+    const std::shared_ptr<QtOhos::QAbilityPeer> &qAbilityPeer, const std::string &windowName)
+{
+    auto optQUiAbilityPeer = QtOhos::QUiAbilityPeer::tryCastFromQAbilityPeerOrNull(qAbilityPeer);
+    if (!optQUiAbilityPeer) {
+        qOhosReportFatalErrorAndAbort(
+            "%s sub window creation requires an ability with a windowStage. Aborting...",
+            Q_FUNC_INFO);
+    }
+    return createSubWindow(optQUiAbilityPeer->windowStage(), windowName);
+}
+
+// Query SystemCapability.Window.SessionManager (needed by createSubWindowWithOptions())
+// directly rather than inferring it from the device type.
+bool isWindowSessionManagerAvailable(QtOhos::JsState &jsState)
+{
+    try {
+        return jsState.eval<QNapi::Boolean>(
+            "Global.canIUse(*)",
+            {std::string("SystemCapability.Window.SessionManager")}).Value();
+    } catch (const Napi::Error &error) {
+        qOhosPrintfWarning(
+            "canIUse('SystemCapability.Window.SessionManager') query failed (%s); assuming the "
+            "capability is unavailable and using createSubWindow()",
+            error.what());
+        return false;
+    }
 }
 
 std::function<void(const QtOhos::CallbackInfo &)>
@@ -329,31 +358,29 @@ void makeWindowProxyDataForSubWindowInJsThread(
 
     const auto windowName = makeOhosUniqueSystemWindowName(createInfo.windowId);
 
-    // createSubWindowWithOptions() needs SystemCapability.Window.SessionManager, which is absent
-    // on phones (it is present on 2-in-1 and tablet). On phones fall back to the optionless
-    // createSubWindow(); its dropped options (title/decor/modality/rect) are applied separately
-    // after creation anyway.
+    // Prefer createSubWindowWithOptions() when the capability is present, but fall back to the
+    // @crossplatform createSubWindow() when it is absent or fails (its dropped options are
+    // applied separately after creation anyway) rather than aborting the application.
     auto subWindowCreationPromise = [&]() -> QNapi::Promise {
-        if (!QOhosDeviceInfo::isPhone()) {
-            return createSubWindowWithOptions(
-                windowStageOrWindowObject,
-                windowName,
-                SubWindowOptions {
-                    .windowTitle = createInfo.windowTitle,
-                    .decorEnabled = createInfo.decorEnabled,
-                    .isModal = createInfo.modal,
-                    .windowRect = createInfo.windowRect,
-                });
-        }
+        if (!isWindowSessionManagerAvailable(jsState))
+            return createSubWindowViaWindowStage(qAbilityPeer, windowName);
 
-        // createSubWindow() exists only on the WindowStage, not on a Window.
-        auto optQUiAbilityPeer = QtOhos::QUiAbilityPeer::tryCastFromQAbilityPeerOrNull(qAbilityPeer);
-        if (!optQUiAbilityPeer) {
-            qOhosReportFatalErrorAndAbort(
-                "%s sub window creation requires an ability with a windowStage. Aborting...",
-                Q_FUNC_INFO);
-        }
-        return createSubWindow(optQUiAbilityPeer->windowStage(), windowName);
+        return createSubWindowWithOptions(
+                   windowStageOrWindowObject,
+                   windowName,
+                   SubWindowOptions {
+                       .windowTitle = createInfo.windowTitle,
+                       .decorEnabled = createInfo.decorEnabled,
+                       .isModal = createInfo.modal,
+                       .windowRect = createInfo.windowRect,
+                   })
+            .onCatch([qAbilityPeer, windowName](const QtOhos::CallbackInfo &) -> QNapi::Promise {
+                // Unsupported in some window contexts even when the capability is advertised.
+                qOhosPrintfWarning(
+                    "createSubWindowWithOptions() is unavailable in this context; "
+                    "falling back to createSubWindow()");
+                return createSubWindowViaWindowStage(qAbilityPeer, windowName);
+            });
     }();
 
     subWindowCreationPromise
