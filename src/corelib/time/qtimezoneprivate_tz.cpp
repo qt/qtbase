@@ -73,7 +73,7 @@ static bool openZoneInfo(const QString &name, QFile *file)
     // Fall back to legacy system path:
     constexpr auto zoneLib = "/usr/lib/zoneinfo/"_L1;
     if (tzdir != zoneLib && tzdir != zoneLib.chopped(1)) {
-        file->setFileName(zoneShare + name);
+        file->setFileName(zoneLib + name);
         if (file->open(QIODevice::ReadOnly))
             return true;
     }
