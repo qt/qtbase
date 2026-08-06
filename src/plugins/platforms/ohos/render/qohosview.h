@@ -156,6 +156,7 @@ public:
     const QOhosView *viewParentOrNull() const;
     QRect nodeScreenGeometryPixels() const;
     QRect nodeParentRelativeGeometryPixels() const;
+    bool consumePendingSelfMinimizeEcho();
 
     ~QOhosView();
 
@@ -293,6 +294,7 @@ private:
     ViewGeometryPersistencePolicy m_geometryPersistencePolicy = ViewGeometryPersistencePolicy::Ignore;
     std::shared_ptr<void> m_windowPropertiesProviderCallbacksHandle;
     std::function<void()> m_optPostSurfaceDrawTask;
+    int m_pendingSelfMinimizeEchoes = 0;
 };
 
 template <typename T, QOhosRuntimeDeviceTypeAndMode SupportedModes>

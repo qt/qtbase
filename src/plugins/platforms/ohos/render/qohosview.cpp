@@ -1252,6 +1252,10 @@ void QOhosView::hideMainWindow()
 
     m_ohosWindowProxy->minimize();
     m_lastMainWindowHideMethod = WindowHideMethod::Minimize;
+
+    auto *platformWindow = QOhosPlatformWindow::fromQWindow(m_ownerWindow);
+    if (!platformWindow->windowStates().testFlag(Qt::WindowMinimized))
+        ++m_pendingSelfMinimizeEchoes;
 }
 
 void QOhosView::syncWindowStateImmediate(WindowStateSyncReason reason)
@@ -1733,6 +1737,15 @@ QRect QOhosView::nodeScreenGeometryPixels() const
 QRect QOhosView::nodeParentRelativeGeometryPixels() const
 {
     return m_nativeNode->nodeParentRelativeGeometryPixels();
+}
+
+bool QOhosView::consumePendingSelfMinimizeEcho()
+{
+    if (m_pendingSelfMinimizeEchoes <= 0)
+        return false;
+
+    --m_pendingSelfMinimizeEchoes;
+    return true;
 }
 
 QT_END_NAMESPACE

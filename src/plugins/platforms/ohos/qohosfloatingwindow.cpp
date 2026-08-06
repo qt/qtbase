@@ -362,6 +362,16 @@ void QOhosFloatingWindow::handleWindowStatusChange(QOhosWindowProxy::WindowStatu
             : Qt::WindowState::WindowMaximized;
         break;
     case QOhosWindowProxy::WindowStatusType::MINIMIZE:
+        if (m_view->consumePendingSelfMinimizeEcho()) {
+            // The window is hidden in Qt's view, so ignore this echo entirely.
+            // Deliberately skip setWindowStateFromOhos() and the node-resize
+            // reconciliation below: reporting WindowMinimized would cause a
+            // spurious restore -> QShowEvent, and the reconciliation would apply
+            // the minimized node's geometry to a window Qt still considers to be
+            // at its normal (pre-hide) geometry. showImmediate() reconciles it
+            // when the window is shown again.
+            return;
+        }
         windowStatesToSet.setFlag(Qt::WindowState::WindowMinimized);
         break;
     case QOhosWindowProxy::WindowStatusType::UNDEFINED:
