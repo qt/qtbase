@@ -1030,15 +1030,14 @@ void QOhosView::applyPhoneWindowChrome()
 
 void QOhosView::setFullScreen()
 {
-    if (m_ohosWindowProxy == nullptr)
+    auto *windowProxy = flushedWindowProxyOrNull();
+    if (windowProxy == nullptr)
         return;
 
-    if (!QOhosDeviceInfo::isPhone()) {
-        flushSystemPropertyUpdatesImmediate();
-        m_ohosWindowProxy->maximize(QOhosWindowProxy::MaximizePresentation::ENTER_IMMERSIVE);
-    } else {
+    if (!QOhosDeviceInfo::isPhone())
+        windowProxy->maximize(QOhosWindowProxy::MaximizePresentation::ENTER_IMMERSIVE);
+    else
         applyPhoneWindowChrome();
-    }
 }
 
 void QOhosView::recover()
