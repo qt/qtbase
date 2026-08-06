@@ -24,7 +24,6 @@
 #include <unordered_map>
 #include <utility>
 
-
 QT_BEGIN_NAMESPACE
 
 class QOhosPlatformBackingStore final : public QRasterBackingStore

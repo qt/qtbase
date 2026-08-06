@@ -3,6 +3,7 @@
 
 #ifndef QOHOSPLATFORMNATIVEINTERFACE_H
 #define QOHOSPLATFORMNATIVEINTERFACE_H
+
 #include <QtCore/qglobal.h>
 #include <qpa/qplatformnativeinterface.h>
 
