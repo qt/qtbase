@@ -8,6 +8,12 @@
 #include <QtCore/qtemporarydir.h>
 #include <qprintengine_pdf_p.h>
 
+#if __has_include(<BasicServicesKit/ohprint.h>)
+#include <BasicServicesKit/ohprint.h>
+#else
+#include <ohprint/print_base.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QOhosPdfPrintEnginePrivate;
