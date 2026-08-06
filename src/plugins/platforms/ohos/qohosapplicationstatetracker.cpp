@@ -111,7 +111,8 @@ bool ApplicationStateTracker::sendEvent(WindowSystemEvent *event)
 
 void ApplicationStateTracker::tryUpdateApplicationState()
 {
-    const bool allWindowsHidden = m_visibleViews.empty();
+    const bool hasAnyTrackedWindow = !m_trackedViews.empty();
+    const bool allWindowsHidden = hasAnyTrackedWindow && m_visibleViews.empty();
 
     // Trust the OHOS ability lifecycle for active/inactive (a foreground app is
     // active even without a focused window); visibility only refines to Hidden.
