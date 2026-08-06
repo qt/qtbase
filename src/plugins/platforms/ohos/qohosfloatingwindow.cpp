@@ -31,6 +31,14 @@ bool isWindowRotatedByTabletScreenRotation(
         && rectChangeOptions.reason == QOhosWindowProxy::RectChangeReason::UNDEFINED;
 }
 
+bool shouldClearQtFocusOnSystemFocusLoss(QWindow *windowLosingSystemFocus)
+{
+    return QGuiApplicationPrivate::focus_window == windowLosingSystemFocus
+        || (QGuiApplicationPrivate::focus_window != nullptr
+            && QOhosPlatformWindow::platformWindowFlagsForQWindow(
+                QGuiApplicationPrivate::focus_window).testFlag(Qt::WindowDoesNotAcceptFocus));
+}
+
 }
 
 QOhosFloatingWindow::QOhosFloatingWindow(QWindow *window)
@@ -297,12 +305,8 @@ void QOhosFloatingWindow::handleWindowEvent(QOhosWindowProxy::WindowEvent evt)
     case QOhosWindowProxy::WindowEventType::WINDOW_INACTIVE:
         if (!windowAcceptsFocusAndInput)
             break;
-        if (QGuiApplicationPrivate::focus_window == qWindow
-            || (QGuiApplicationPrivate::focus_window != nullptr
-                && QOhosPlatformWindow::platformWindowFlagsForQWindow(
-                    QGuiApplicationPrivate::focus_window).testFlag(Qt::WindowDoesNotAcceptFocus))) {
+        if (shouldClearQtFocusOnSystemFocusLoss(qWindow))
             QWindowSystemInterface::handleFocusWindowChanged(nullptr, Qt::ActiveWindowFocusReason);
-        }
         notifyInputSystemsWindowActiveStatusChanged(false);
         break;
     case QOhosWindowProxy::WindowEventType::WINDOW_HIDDEN:
