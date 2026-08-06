@@ -125,9 +125,13 @@ public:
 
     T *begin() noexcept { return data(); }
     T *end() noexcept { return data() + size; }
+    constexpr
     const T *begin() const noexcept { return data(); }
+    constexpr
     const T *end() const noexcept { return data() + size; }
+    constexpr
     const T *constBegin() const noexcept { return data(); }
+    constexpr
     const T *constEnd() const noexcept { return data() + size; }
 
     constexpr void swap(QArrayDataPointer &other) noexcept

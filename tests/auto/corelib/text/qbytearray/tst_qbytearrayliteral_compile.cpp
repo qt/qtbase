@@ -20,6 +20,22 @@ static_assert(z.size() == 4);
 constexpr bool checkConstexprness()
 {
     bool result = true;
+    result &= y.at(0) == 't';
+    result &= y[1] == 'e';
+    result &= y.front() == 't';
+    result &= y.back() == 't';
+    result &= y.data()[2] == 's';
+    result &= y.constData()[3] == 't';
+    result &= y.begin() == y.data();
+    result &= y.cbegin() == y.data();
+    result &= y.constBegin() == y.data();
+    result &= y.end() == y.data() + y.size();
+    result &= y.cend() == y.data() + y.size();
+    result &= y.constEnd() == y.data() + y.size();
+    result &= y.rbegin().base() == y.end();
+    result &= y.rend().base() == y.begin();
+    result &= y.crbegin().base() == y.end();
+    result &= y.crend().base() == y.begin();
 
     QByteArray value = "Hello"_ba;
 #if QT_CORE_INLINE_IMPL_SINCE(6, 13)

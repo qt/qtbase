@@ -135,7 +135,9 @@ public:
 #endif
 
     inline char *data();
+    constexpr
     inline const char *data() const noexcept;
+    constexpr
     const char *constData() const noexcept { return data(); }
     inline void detach();
     inline bool isDetached() const;
@@ -143,12 +145,14 @@ public:
     { return data() == other.data() && size() == other.size(); }
     void clear();
 
+    constexpr
     inline char at(qsizetype i) const;
+    constexpr
     inline char operator[](qsizetype i) const;
     [[nodiscard]] inline char &operator[](qsizetype i);
-    [[nodiscard]] char front() const { return at(0); }
+    [[nodiscard]] constexpr char front() const { return at(0); }
     [[nodiscard]] inline char &front();
-    [[nodiscard]] char back() const { return at(size() - 1); }
+    [[nodiscard]] constexpr char back() const { return at(size() - 1); }
     [[nodiscard]] inline char &back();
 
     QT_CORE_INLINE_SINCE(6, 8)
@@ -468,18 +472,28 @@ public:
     typedef std::reverse_iterator<iterator> reverse_iterator;
     typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
     iterator begin() { return data(); }
+    constexpr
     const_iterator begin() const noexcept { return d.data(); }
+    constexpr
     const_iterator cbegin() const noexcept { return begin(); }
+    constexpr
     const_iterator constBegin() const noexcept { return begin(); }
     iterator end() { return begin() + size(); }
+    constexpr
     const_iterator end() const noexcept { return begin() + size(); }
+    constexpr
     const_iterator cend() const noexcept { return end(); }
+    constexpr
     const_iterator constEnd() const noexcept { return end(); }
     reverse_iterator rbegin() { return reverse_iterator(end()); }
     reverse_iterator rend() { return reverse_iterator(begin()); }
+    constexpr
     const_reverse_iterator rbegin() const noexcept { return const_reverse_iterator(end()); }
+    constexpr
     const_reverse_iterator rend() const noexcept { return const_reverse_iterator(begin()); }
+    constexpr
     const_reverse_iterator crbegin() const noexcept { return rbegin(); }
+    constexpr
     const_reverse_iterator crend() const noexcept { return rend(); }
 
     // stl compatibility
@@ -641,8 +655,10 @@ private:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QByteArray::Base64Options)
 
+constexpr
 inline char QByteArray::at(qsizetype i) const
 { verify(i, 1); return d.data()[i]; }
+constexpr
 inline char QByteArray::operator[](qsizetype i) const
 { verify(i, 1); return d.data()[i]; }
 
@@ -658,6 +674,7 @@ inline char *QByteArray::data()
     Q_ASSERT(d.data());
     return d.data();
 }
+constexpr
 inline const char *QByteArray::data() const noexcept
 {
 #if QT5_NULL_STRINGS == 1

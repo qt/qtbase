@@ -48,6 +48,12 @@ constexpr bool checkDataPointerConstexprness()
     result &= dataPointer.ptr == data + 1;
     dataPointer.setBegin(data);
 
+    const QArrayDataPointer<char> &constDataPointer = dataPointer;
+    result &= constDataPointer.begin() == data;
+    result &= constDataPointer.end() == data + 4;
+    result &= constDataPointer.constBegin() == data;
+    result &= constDataPointer.constEnd() == data + 4;
+
     QArrayDataPointer<char> copy(dataPointer);
     dataPointer = dataPointer;
 
