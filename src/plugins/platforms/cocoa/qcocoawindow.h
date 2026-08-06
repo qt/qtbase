@@ -185,6 +185,11 @@ public:
     QPoint mapToGlobal(const QPoint &pos) const override;
     QPoint mapFromGlobal(const QPoint &pos) const override;
 
+#if QT_CONFIG(accessibility)
+    void updateAccessibleParent();
+    void clearAccessibleParent();
+#endif
+
     // Maps between Qt coordinates and potentially non-flipped NSView coordinates
     static CGPoint mapToNative(const QPointF &pos, NSView *referenceView);
     static CGRect mapToNative(const QRectF &rect, NSView *referenceView);
@@ -263,6 +268,10 @@ public: // for QNSView
 
     bool m_isEmbedded = false;
     void updateEmbeddedState();
+
+#if QT_CONFIG(accessibility)
+    bool m_didOverrideAccessibleParent = false;
+#endif
 
     static inline id s_globalMouseMonitor = 0;
     static inline id s_applicationActivationObserver = 0;

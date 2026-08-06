@@ -50,6 +50,40 @@
         return [super accessibilityAttributeValue:attribute];
 }
 
+- (id)accessibilityParent
+{
+    [self activateQtAccessibility];
+
+    // An NSView reports the nearest ancestor in the view hierarchy that is also
+    // in the accessibility hierarchy, which is the enclosing NSWindow in the
+    // common case. But our window may be hosted by something that has a place in
+    // Qt's tree, such as a Widget or Quick window container, and the host is then
+    // the parent, matching the child the host reports.
+    auto parentAccessibleElement = [self]() -> id {
+        QCocoaWindow *platformWindow = self.platformWindow;
+        if (!platformWindow)
+            return nil;
+
+        QAccessibleInterface *root = platformWindow->window()->accessibleRoot();
+        if (!root)
+            return nil;
+
+        QAccessibleInterface *parent = root->parent();
+        if (!parent)
+            return nil;
+
+        if (QCocoaAccessible::isRepresentedByAppKit(parent))
+            return nil;
+
+        return [QMacAccessibilityElement elementWithInterface:parent];
+    };
+
+    if (id element = parentAccessibleElement())
+        return NSAccessibilityUnignoredAncestor(element);
+
+    return [super accessibilityParent];
+}
+
 - (id)accessibilityHitTest:(NSPoint)point
 {
     [self activateQtAccessibility];

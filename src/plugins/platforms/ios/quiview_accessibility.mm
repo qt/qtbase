@@ -4,8 +4,10 @@
 
 #include "qiosplatformaccessibility.h"
 #include "quiaccessibilityelement.h"
+#include "qioswindow.h"
 
 #include <QtGui/private/qguiapplication_p.h>
+#include <QtGui/private/qaccessiblebridgeutils_p.h>
 
 @implementation QUIView (Accessibility)
 
@@ -23,8 +25,21 @@
     if (!iface || iface->state().invisible)
         return;
 
-    for (int i = 0; i < iface->childCount(); ++i)
-        [self createAccessibleContainer: iface->child(i)];
+    QWindow *window = self.qwindow;
+
+    for (int i = 0; i < iface->childCount(); ++i) {
+        QAccessibleInterface *child = iface->child(i);
+        if (!child || child->state().invisible)
+            continue;
+
+        QWindow *childWindow = QAccessibleBridgeUtils::windowFor(child, iface, window);
+        if (childWindow != window && childWindow->handle()) {
+            [m_accessibleElements addObject:reinterpret_cast<UIView *>(childWindow->handle()->winId())];
+            continue;
+        }
+
+        [self createAccessibleContainer:child];
+    }
 
     // The container element must go last, so that it underlays all its children
     [self createAccessibleElement:iface];

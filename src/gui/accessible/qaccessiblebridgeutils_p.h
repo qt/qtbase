@@ -25,10 +25,15 @@ QT_REQUIRE_CONFIG(accessibility);
 
 QT_BEGIN_NAMESPACE
 
+class QWindow;
+
 namespace QAccessibleBridgeUtils {
     Q_GUI_EXPORT QStringList effectiveActionNames(QAccessibleInterface *iface);
     Q_GUI_EXPORT bool performEffectiveAction(QAccessibleInterface *iface, const QString &actionName);
     Q_GUI_EXPORT QString accessibleId(QAccessibleInterface *accessible);
+    Q_GUI_EXPORT QWindow *windowFor(const QAccessibleInterface *iface,
+                                    const QAccessibleInterface *ancestorInterface = nullptr,
+                                    QWindow *ancestorWindow = nullptr);
 }
 
 QT_END_NAMESPACE

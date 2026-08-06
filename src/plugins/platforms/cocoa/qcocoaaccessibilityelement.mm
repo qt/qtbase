@@ -642,12 +642,10 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
             QMacAccessibilityElement *rowElement = tableElement->rows[rowIndex];
             return NSAccessibilityUnignoredAncestor(rowElement);
         }
-        // macOS expects that the hierarchy is:
-        // App -> Window -> Children
-        // We don't actually have the window reflected properly in QAccessibility;
-        // the native framework does that for us. Check if the parent is the
-        // Application or a window, and if so return the native NSView instead.
-        if (parent->role() != QAccessible::Application && parent->role() != QAccessible::Window)
+
+        // If AppKit reports the parent for us, fall through to the native
+        // view below, whose unignored ancestor is the NSWindow.
+        if (!QCocoaAccessible::isRepresentedByAppKit(parent))
             return NSAccessibilityUnignoredAncestor([QMacAccessibilityElement elementWithInterface: parent]);
     }
 
@@ -1072,26 +1070,34 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
     return true;
 }
 
-- (id)accessibilityHitTest:(NSPoint)point {
+- (id)accessibilityHitTest:(NSPoint)point
+{
     QAccessibleInterface *iface = self.qtInterface;
-    if (!iface) {
-//        qDebug("Hit test: INVALID");
+    if (!iface)
         return NSAccessibilityUnignoredAncestor(self);
-    }
 
     QPointF screenPoint = QCocoaScreen::mapFromNative(point);
-    QAccessibleInterface *childInterface = iface->childAt(screenPoint.x(), screenPoint.y());
-    // No child found, meaning we hit this element.
-    if (!childInterface || !childInterface->isValid())
-        return NSAccessibilityUnignoredAncestor(self);
+    QWindow *window = QAccessibleBridgeUtils::windowFor(iface);
 
-    // find the deepest child at the point
-    QAccessibleInterface *childOfChildInterface = nullptr;
-    do {
-        childOfChildInterface = childInterface->childAt(screenPoint.x(), screenPoint.y());
-        if (childOfChildInterface && childOfChildInterface->isValid())
-            childInterface = childOfChildInterface;
-    } while (childOfChildInterface && childOfChildInterface->isValid());
+    // Find the deepest child at the point, stopping where a child lives in a
+    // window of its own, as that window's view answers for its own content.
+    QAccessibleInterface *childInterface = iface;
+    while (QAccessibleInterface *child = childInterface->childAt(screenPoint.x(), screenPoint.y())) {
+        if (!child->isValid())
+            break;
+
+        QWindow *childWindow = QAccessibleBridgeUtils::windowFor(child, childInterface, window);
+        if (childWindow != window) {
+            if (auto *view = QCocoaAccessible::accessibleViewFor(childWindow))
+                return [view accessibilityHitTest:point];
+        }
+
+        childInterface = child;
+    }
+
+    // No child found, meaning we hit this element.
+    if (childInterface == iface)
+        return NSAccessibilityUnignoredAncestor(self);
 
     // hit a child, forward to child accessible interface.
     QMacAccessibilityElement *accessibleElement = [QMacAccessibilityElement elementWithInterface:childInterface];
@@ -1107,9 +1113,22 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
         return nil;
     }
 
-    QAccessibleInterface *childInterface = iface->focusChild();
-    if (childInterface && childInterface->isValid()) {
-        QMacAccessibilityElement *accessibleElement = [QMacAccessibilityElement elementWithInterface:childInterface];
+    QAccessibleInterface *focusInterface = iface->focusChild();
+    if (focusInterface && focusInterface->isValid()) {
+        // The focus may have moved into a window of its own, whose view answers
+        // for its own content. QAccessibleWindow::focusChild() reports
+        // the child window holding the focus, so this is the ordinary way for
+        // the focus to leave our window. Note that focusChild() answers with
+        // the deepest focused interface, which may be any depth below us, and
+        // need not report a window of its own.
+        QWindow *window = QAccessibleBridgeUtils::windowFor(iface);
+        QWindow *focusWindow = QAccessibleBridgeUtils::windowFor(focusInterface, iface, window);
+        if (focusWindow != window) {
+            if (auto *view = QCocoaAccessible::accessibleViewFor(focusWindow))
+                return [view accessibilityFocusedUIElement];
+        }
+
+        QMacAccessibilityElement *accessibleElement = [QMacAccessibilityElement elementWithInterface:focusInterface];
         return NSAccessibilityUnignoredAncestor(accessibleElement);
     }
 

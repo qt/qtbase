@@ -16,6 +16,7 @@ qt_internal_add_test(tst_qaccessibilitymac
         tst_qaccessibilitymac.mm
     LIBRARIES
         Qt::Gui
+        Qt::GuiPrivate
         Qt::Widgets
         ${FWAppKit}
         ${FWApplicationServices}

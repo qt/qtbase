@@ -6,7 +6,9 @@
 
 #include "qcocoaaccessibility.h"
 #include "qcocoaaccessibilityelement.h"
+#include "qcocoawindow.h"
 #include <QtGui/qaccessible.h>
+#include <QtGui/private/qaccessiblebridgeutils_p.h>
 #include <QtCore/qmap.h>
 #include <private/qcore_mac_p.h>
 
@@ -268,17 +270,74 @@ bool defaultUnignored(QAccessibleInterface *child)
     return false;
 }
 
-NSArray<QMacAccessibilityElement *> *unignoredChildren(QAccessibleInterface *interface,
+/*
+    Returns whether AppKit reports \a interface on our behalf.
+
+    macOS expects the hierarchy App -> Window -> Children, and takes the first
+    two from NSApp and the NSWindow, so an element of ours for either of them
+    would double up on a node AppKit already provides.
+*/
+bool isRepresentedByAppKit(QAccessibleInterface *interface)
+{
+    const QAccessible::Role role = interface->role();
+    return role == QAccessible::Application || role == QAccessible::Window;
+}
+
+/*
+    Returns the view backing \a window, with its accessible parent up to date.
+
+    A Qt view resolves its parent when asked, via [QNSView accessibilityParent],
+    but foreign views have no getter, so the parent has to be pushed onto it.
+    The parent we push is the unignored ancestor of the window container hosting
+    the window, which can change whenever anything above the container moves in
+    the hierarchy, or stops being ignored.
+
+    Rather than tracking those changes we resolve the parent here, on every path
+    by which a client reaches a foreign view. The parent is then correct as of
+    the last query that touched the view, and a query is the only thing that can
+    observe it.
+
+    Any stale parent relationships held by accessibility clients will either be
+    reflected as invalidated accessibility handles as a result of us emitting
+    layout changes, or be refreshed on the next walk of the a11y herarchy.
+*/
+NSView *accessibleViewFor(QWindow *window)
+{
+    // Opt-out, in case this regresses some use-cases
+    const bool disable = qEnvironmentVariableIsSet("QT_MAC_A11Y_NO_SPLIT_ON_VIEW_BOUNDARY");
+    if (disable)
+        return nil;
+
+    auto *platformWindow = static_cast<QCocoaWindow *>(window->handle());
+    if (!platformWindow)
+        return nil;
+    if (platformWindow->isForeignWindow())
+        platformWindow->updateAccessibleParent();
+    return platformWindow->view();
+}
+
+NSArray<id> *unignoredChildren(QAccessibleInterface *interface,
                                     const std::function<bool(QAccessibleInterface *child)> &pred)
 {
-    int numKids = interface->childCount();
+    QWindow *window = QAccessibleBridgeUtils::windowFor(interface);
 
-    NSMutableArray<QMacAccessibilityElement *> *kids = [NSMutableArray<QMacAccessibilityElement *> arrayWithCapacity:numKids];
+    int numKids = interface->childCount();
+    NSMutableArray<id> *kids = [NSMutableArray<id> arrayWithCapacity:numKids];
     for (int i = 0; i < numKids; ++i) {
         QAccessibleInterface *child = interface->child(i);
 
         if (!pred(child))
             continue;
+
+        // A child that lives in a window of its own is represented by that
+        // window's view, which then vends the a11y subtree.
+        QWindow *childWindow = QAccessibleBridgeUtils::windowFor(child, interface, window);
+        if (childWindow != window) {
+            if (auto *view = QCocoaAccessible::accessibleViewFor(childWindow)) {
+                [kids addObject:view];
+                continue;
+            }
+        }
 
         QAccessible::Id childId = QAccessible::uniqueId(child);
 

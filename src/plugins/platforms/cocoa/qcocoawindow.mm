@@ -15,6 +15,7 @@
 #endif
 #include "qcocoahelpers.h"
 #include "qcocoanativeinterface.h"
+#include "qcocoaaccessibilityelement.h"
 #include "qnsview.h"
 #include "qnswindow.h"
 #include <QtCore/qfileinfo.h>
@@ -23,6 +24,7 @@
 #include <private/qwindow_p.h>
 #include <qpa/qwindowsysteminterface.h>
 #include <qpa/qplatformscreen.h>
+#include <QtGui/qaccessible.h>
 #include <QtGui/private/qcoregraphics_p.h>
 #include <QtGui/private/qhighdpiscaling_p.h>
 #include <QtGui/private/qmetallayer_p.h>
@@ -240,6 +242,11 @@ QCocoaWindow::~QCocoaWindow()
     // window used only to contain Qt windows (ie no parent)
     if (!isForeignWindow() || QPlatformWindow::parent())
         [m_view removeFromSuperview];
+
+#if QT_CONFIG(accessibility)
+    if (isForeignWindow())
+        clearAccessibleParent();
+#endif
 
     m_safeAreaInsetsObserver = {};
 
@@ -1347,6 +1354,16 @@ void QCocoaWindow::setParent(const QPlatformWindow *parentWindow)
 {
     qCDebug(lcQpaWindow) << "QCocoaWindow::setParent" << window() << (parentWindow ? parentWindow->window() : 0);
 
+#if QT_CONFIG(accessibility)
+    // The accessibility parent we push onto a foreign view is resolved when a
+    // client reaches the view, and a client reaches it through the window
+    // container that hosts the window. A window that changes parent is on its
+    // way out of its container, so let go of the parent we pushed rather than
+    // leave the view pointing into a hierarchy that no longer holds it.
+    if (isForeignWindow())
+        clearAccessibleParent();
+#endif
+
     // Recreate in case we need to get rid of a NSWindow, or create one
     recreateWindowIfNeeded();
 
@@ -2399,6 +2416,79 @@ QDebug operator<<(QDebug debug, const QCocoaWindow *window)
     return debug;
 }
 #endif // !QT_NO_DEBUG_STREAM
+
+// --------------------------------------------------------------------------
+
+#if QT_CONFIG(accessibility)
+
+static void setAccessibilityParent(NSView *view, id accessibilityParent)
+{
+    // The elements that show up in the parent's child list are the view itself
+    // if the view is unignored, and the view's own accessible children if it is
+    // not, so we set the parent on that same set, for the child and parent
+    // relations to match.
+    for (id<NSAccessibility> element in NSAccessibilityUnignoredChildrenForOnlyChild(view)) {
+        // We can't assume all elements implement this part of the NSAccessibility protocol
+        if (![element respondsToSelector:@selector(setAccessibilityParent:)])
+            continue;
+
+        if (element.accessibilityParent == accessibilityParent)
+            continue;
+
+        qCDebug(lcQpaAccessibility) << "Setting a11y parent of" << element
+                                    << "for" << view << "to" << accessibilityParent;
+        element.accessibilityParent = accessibilityParent;
+    }
+}
+
+/*
+    Reflects the window's accessibility parent onto a foreign view.
+
+    Our own views resolve the parent on demand via [QNSView accessibilityParent],
+    but a foreign view has no getter of ours to run, so the parent has to be
+    pushed onto it. The parent we push is the unignored ancestor of the window
+    container hosting the window, and it changes whenever anything above the
+    container moves in the hierarchy, or stops being ignored.
+
+    Rather than tracking those changes we resolve the parent here, called from
+    QCocoaAccessible::viewFor() on each of the paths that hand a foreign view to
+    an accessibility client, so that the pushed parent is resolved as late as
+    possible.
+*/
+void QCocoaWindow::updateAccessibleParent()
+{
+    if (!isForeignWindow())
+        return;
+
+    QObject *accessibleParent = QWindowPrivate::get(window())->accessibleParent;
+    if (QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(accessibleParent)) {
+        setAccessibilityParent(m_view, NSAccessibilityUnignoredAncestor(
+            [QMacAccessibilityElement elementWithInterface:iface]));
+        m_didOverrideAccessibleParent = true;
+    } else {
+        clearAccessibleParent();
+    }
+}
+
+void QCocoaWindow::clearAccessibleParent()
+{
+    if (!isForeignWindow() || !m_didOverrideAccessibleParent)
+        return;
+
+    // AppKit has no way to remove an accessibility attribute override, and
+    // stores nil as an explicit "no parent", so the view can not be handed back
+    // the parent it resolves by default. By the time we get here the view has
+    // normally left the view hierarchy of its former accessible parent, so our
+    // best option is to reflect an unknown accessible parent and let the new
+    // parent update it if needed.
+    setAccessibilityParent(m_view, nil);
+
+    m_didOverrideAccessibleParent = false;
+}
+
+#endif // QT_CONFIG(accessibility)
+
+// --------------------------------------------------------------------------
 
 QT_END_NAMESPACE
 

@@ -10,7 +10,10 @@
 // some versions of CALayer.h use 'slots' as an identifier
 #define QT_NO_KEYWORDS
 
+#include <QtGui/qwindow.h>
+#include <QtGui/private/qaccessiblewindow_p.h>
 #include <QtWidgets/qapplication.h>
+#include <QtWidgets/qgroupbox.h>
 #include <QtWidgets/qlineedit.h>
 #include <QtWidgets/qpushbutton.h>
 #include <QtWidgets>
@@ -183,6 +186,69 @@ QDebug operator<<(QDebug dbg, AXErrorTag err)
     AXUIElementRef ret = [result ref];
     [result release];
     return ret;
+}
+
+// Quiet attribute access, for walking a tree where not every element answers
+// for every attribute, and where an unanswered attribute is not a failure.
+- (CFTypeRef)_optionalAttributeValue:(CFStringRef)attribute
+{
+    CFTypeRef value = nullptr;
+    if (AXUIElementCopyAttributeValue(reference, attribute, &value) != kAXErrorSuccess)
+        return nullptr;
+    return value;
+}
+
+- (NSArray *)optionalChildList
+{
+    NSArray *list = nil;
+    if (AXUIElementCopyAttributeValues(reference, kAXChildrenAttribute,
+                                       0, 100, /*min, max*/
+                                       (CFArrayRef *)&list) != kAXErrorSuccess) {
+        return @[];
+    }
+    return list;
+}
+
+- (void)collectDescendantsWithRole:(CFStringRef)role title:(NSString *)title
+                             depth:(int)depth into:(NSMutableArray *)result
+{
+    // A bridge that redirects into an element that already contains it leaves
+    // the system walking in circles, so bound the walk instead of hanging.
+    if (depth <= 0)
+        return;
+
+    for (id child in [self optionalChildList]) {
+        TestAXObject *childObject = [[TestAXObject alloc] initWithAXUIElementRef:(AXUIElementRef)child];
+        NSString *childRole = (NSString *)[childObject _optionalAttributeValue:kAXRoleAttribute];
+        NSString *childTitle = (NSString *)[childObject _optionalAttributeValue:kAXTitleAttribute];
+        if ([childRole isEqualToString:(NSString *)role] && [childTitle isEqualToString:title])
+            [result addObject:child];
+        [childObject collectDescendantsWithRole:role title:title depth:depth - 1 into:result];
+        [childObject release];
+    }
+}
+
+// Walks the entire subtree, as content behind a native view boundary is vended
+// by that view, and may end up deeper than a direct child.
+- (NSArray *)descendantsWithRole:(CFStringRef)role title:(NSString *)title
+{
+    NSMutableArray *result = [NSMutableArray array];
+    [self collectDescendantsWithRole:role title:title depth:32 into:result];
+    return result;
+}
+
+- (AXUIElementRef)elementAtPosition:(CGPoint)point
+{
+    AXUIElementRef element = nil;
+    AXError err;
+
+    if (kAXErrorSuccess != (err = AXUIElementCopyElementAtPosition(reference, point.x, point.y,
+                                                                  &element))) {
+        axError = true;
+        qDebug() << "AXUIElementCopyElementAtPosition(" << point.x << "," << point.y
+                 << ") returned error = " << AXErrorTag(err);
+    }
+    return element;
 }
 
 + (TestAXObject *) getApplicationAXObject
@@ -382,7 +448,9 @@ QDebug operator<<(QDebug dbg, AXErrorTag err)
     return rect;
 }
 - (AXUIElementRef)      parent { return (AXUIElementRef)[self _attributeValue:kAXParentAttribute]; }
+- (AXUIElementRef)      optionalParent { return (AXUIElementRef)[self _optionalAttributeValue:kAXParentAttribute]; }
 - (AXUIElementRef)      window { return (AXUIElementRef)[self _attributeValue:kAXWindowAttribute]; }
+- (AXUIElementRef)      focusedUIElement { return (AXUIElementRef)[self _attributeValue:kAXFocusedUIElementAttribute]; }
 - (BOOL)                focused { return [self _boolAttributeValue:kAXFocusedAttribute]; }
 - (NSInteger)           numberOfCharacters { return [self _numberAttributeValue:kAXNumberOfCharactersAttribute]; }
 - (NSString*)           selectedText { return [self _stringAttributeValue:kAXSelectedTextAttribute]; }
@@ -435,10 +503,345 @@ public:
     }
 };
 
+// Creates a child widget that lives in a native view of its own, so that the
+// walk from the window's accessible root has a native view boundary to stop at.
+// The caller adds it to the window once its content is in place.
+static QWidget *createNativeChild(QWidget *parent)
+{
+    QWidget *nativeChild = new QWidget(parent);
+    nativeChild->setAttribute(Qt::WA_DontCreateNativeAncestors);
+    nativeChild->setAttribute(Qt::WA_NativeWindow);
+    nativeChild->setLayout(new QVBoxLayout);
+    return nativeChild;
+}
+
+// Adds a native child widget holding a button, and returns the button.
+static QPushButton *addNativeChildWithButton(AccessibleTestWindow *window, const QString &text)
+{
+    QWidget *nativeChild = createNativeChild(window);
+    QPushButton *button = new QPushButton(text, nativeChild);
+    nativeChild->layout()->addWidget(button);
+    window->addWidget(nativeChild);
+    return button;
+}
+
+// Hosts a native NSButton in a foreign window, in a window container, so that
+// the window has content in front of it that Qt's interface tree cannot see.
+// Returns the container, and reports the foreign window through foreignWindow.
+static QWidget *addForeignNativeButton(AccessibleTestWindow *window, NSString *title,
+                                       QWindow **foreignWindow)
+{
+    NSButton *nativeButton = [[NSButton alloc] initWithFrame:NSMakeRect(0, 0, 200, 32)];
+    nativeButton.title = title;
+
+    *foreignWindow = QWindow::fromWinId(reinterpret_cast<WId>(nativeButton));
+    if (!*foreignWindow)
+        return nullptr;
+
+    QWidget *container = QWidget::createWindowContainer(*foreignWindow, window);
+    window->addWidget(container);
+    return container;
+}
+
+// Presents the embedded window as a single button, the way the foreign window
+// presents the native button it wraps, so that both cases can be found and
+// checked the same way. Everything else, the parent above all, comes from
+// QAccessibleWindow, which is what a real window subclass inherits too.
+class EmbeddedWindowInterface : public QAccessibleWindow
+{
+public:
+    using QAccessibleWindow::QAccessibleWindow;
+
+    QAccessible::Role role() const override { return QAccessible::Button; }
+
+    QString text(QAccessible::Text text) const override
+    {
+        return text == QAccessible::Name ? window()->title() : QString();
+    }
+};
+
+// A window class of its own, so that the factory below can answer for it. A
+// plain QWindow has no accessible root, and so no element to check, and no way
+// to report the window container hosting it as its parent.
+class EmbeddedWindow : public QWindow
+{
+    Q_OBJECT
+public:
+    QAccessibleInterface *accessibleRoot() const override
+    {
+        return QAccessible::queryAccessibleInterface(const_cast<EmbeddedWindow *>(this));
+    }
+};
+
+// The content of a WindowRoleWindow, so that the element under test has the
+// window's own node as its parent, rather than being that node.
+class EmbeddedContent : public QObject
+{
+    Q_OBJECT
+public:
+    using QObject::QObject;
+};
+
+class EmbeddedContentInterface : public QAccessibleObject
+{
+public:
+    using QAccessibleObject::QAccessibleObject;
+
+    QWindow *window() const override
+    {
+        return static_cast<QWindow *>(object()->parent());
+    }
+
+    QAccessibleInterface *parent() const override
+    {
+        return QAccessible::queryAccessibleInterface(object()->parent());
+    }
+
+    QAccessibleInterface *child(int) const override { return nullptr; }
+    int childCount() const override { return 0; }
+    int indexOfChild(const QAccessibleInterface *) const override { return -1; }
+
+    QRect rect() const override
+    {
+        return QRect(window()->mapToGlobal(QPoint(0, 0)), window()->size());
+    }
+
+    QAccessible::Role role() const override { return QAccessible::Button; }
+
+    QAccessible::State state() const override
+    {
+        QAccessible::State state;
+        state.invisible = !window()->isVisible();
+        return state;
+    }
+
+    QString text(QAccessible::Text text) const override
+    {
+        return text == QAccessible::Name ? window()->title() : QString();
+    }
+};
+
+// Reports the Window role for a window that is hosted, and so is not a window
+// on screen at all. Interfaces in the wild do this, so the bridge has to keep
+// placing the content correctly when they do.
+class WindowRoleWindowInterface : public QAccessibleWindow
+{
+public:
+    using QAccessibleWindow::QAccessibleWindow;
+
+    QAccessible::Role role() const override { return QAccessible::Window; }
+
+    int childCount() const override { return 1; }
+
+    QAccessibleInterface *child(int index) const override
+    {
+        return index == 0 ? QAccessible::queryAccessibleInterface(content()) : nullptr;
+    }
+
+    int indexOfChild(const QAccessibleInterface *child) const override
+    {
+        return child && child->object() == content() ? 0 : -1;
+    }
+
+private:
+    QObject *content() const { return window()->findChild<EmbeddedContent *>(); }
+};
+
+class WindowRoleWindow : public QWindow
+{
+    Q_OBJECT
+public:
+    WindowRoleWindow() { new EmbeddedContent(this); }
+
+    QAccessibleInterface *accessibleRoot() const override
+    {
+        return QAccessible::queryAccessibleInterface(const_cast<WindowRoleWindow *>(this));
+    }
+};
+
+static QAccessibleInterface *embeddedWindowFactory(const QString &classname, QObject *object)
+{
+    if (classname == QStringLiteral("EmbeddedWindow"))
+        return new EmbeddedWindowInterface(static_cast<QWindow *>(object));
+    if (classname == QStringLiteral("WindowRoleWindow"))
+        return new WindowRoleWindowInterface(static_cast<QWindow *>(object));
+    if (classname == QStringLiteral("EmbeddedContent"))
+        return new EmbeddedContentInterface(object);
+    return nullptr;
+}
+
+// Creates a window to embed in a window container, presenting a single
+// accessible button with the given title, whether the window is one of ours
+// or a foreign window wrapping a native button.
+static QWindow *createEmbeddedWindow(bool foreign, const QString &title)
+{
+    if (!foreign) {
+        auto *window = new EmbeddedWindow;
+        window->setTitle(title);
+        window->resize(200, 32);
+        return window;
+    }
+
+    NSButton *nativeButton = [[NSButton alloc] initWithFrame:NSMakeRect(0, 0, 200, 32)];
+    nativeButton.title = title.toNSString();
+    return QWindow::fromWinId(reinterpret_cast<WId>(nativeButton));
+}
+
+// Adds a group box, to give a window container an unignored ancestor to resolve
+// to, as the container itself is not part of the user-visible tree.
+static QGroupBox *addGroup(QWidget *parent, const QString &title)
+{
+    QGroupBox *group = new QGroupBox(title, parent);
+    group->setLayout(new QVBoxLayout);
+    parent->layout()->addWidget(group);
+    group->show();
+    return group;
+}
+
+static QWidget *addContainer(QWidget *parent, QWindow *embedded)
+{
+    QWidget *container = QWidget::createWindowContainer(embedded, parent);
+    parent->layout()->addWidget(container);
+    container->show();
+    return container;
+}
+
+// Returns the elements a foreign view vends to its parent, which is the view
+// itself when the view is unignored, and its accessible children when it is
+// not. An NSButton, for one, vends its cell. This is the set that carries the
+// parent Qt pushes, so it is where a pushed parent can be read back.
+static NSArray *vendedElements(QWindow *foreignWindow)
+{
+    NSView *view = reinterpret_cast<NSView *>(foreignWindow->winId());
+    return NSAccessibilityUnignoredChildrenForOnlyChild(view);
+}
+
+static QList<id> accessibilityParents(NSArray *elements)
+{
+    QList<id> parents;
+    for (id<NSAccessibility> element in elements)
+        parents.append(element.accessibilityParent);
+    return parents;
+}
+
+// Drops the parent Qt pushed onto a foreign view, so that the only thing that
+// can put a parent back is an update from Qt. Reports whether the view now
+// answers with no parent, so that a test can tell a parent that was restored
+// from one that was never dropped.
+static bool clearPushedParents(QWindow *foreignWindow)
+{
+    NSArray *elements = vendedElements(foreignWindow);
+    for (id<NSAccessibility> element in elements)
+        element.accessibilityParent = nil;
+
+    for (id parent : accessibilityParents(elements)) {
+        if (parent)
+            return false;
+    }
+    return true;
+}
+
+// Returns the object for the test window, once the accessibility layer knows
+// about it. The test window is the application's only window.
+static TestAXObject *testWindowObject()
+{
+    TestAXObject *appObject = [TestAXObject getApplicationAXObject];
+    NSArray *windowList = nil;
+    if (!QTest::qWaitFor([&]{ windowList = appObject.windowList; return [windowList count] == 1; }))
+        return nil;
+    return [[TestAXObject alloc] initWithAXUIElementRef:(AXUIElementRef)windowList[0]];
+}
+
+// Walks the subtree below the given element and discards what it finds. The
+// parent Qt pushes onto a foreign view is resolved as the view is handed out,
+// so a client that holds an element from before a change in the hierarchy sees
+// the parent it was given then, until a walk hands the view out again.
+static void walkHierarchy(TestAXObject *root)
+{
+    [root descendantsWithRole:kAXUnknownRole title:nil];
+}
+
+// Returns the one element in the subtree with the given role and title, or nil
+// if there is no such element, or more than one.
+static AXUIElementRef elementWithRoleAndTitle(TestAXObject *root, CFStringRef role, NSString *title)
+{
+    NSArray *elements = [root descendantsWithRole:role title:title];
+    return [elements count] == 1 ? (AXUIElementRef)elements[0] : nullptr;
+}
+
+// Wraps an element so that QCOMPARE compares the elements referred to, rather
+// than the references, and reports what they were when they differ.
+struct AXElement
+{
+    AXElement(AXUIElementRef element = nullptr) : element(element) {}
+    AXUIElementRef element;
+};
+
+static bool operator==(const AXElement &lhs, const AXElement &rhs)
+{
+    if (lhs.element == rhs.element)
+        return true;
+    return lhs.element && rhs.element && CFEqual(lhs.element, rhs.element);
+}
+
+// An element reference says nothing about what it refers to, so describe the
+// element by what a reader of a test failure needs to tell it from another.
+static QByteArray describeElement(AXUIElementRef element)
+{
+    if (!element)
+        return "<none>";
+
+    TestAXObject *object = [[TestAXObject alloc] initWithAXUIElementRef:element];
+    NSString *role = (NSString *)[object _optionalAttributeValue:kAXRoleAttribute];
+    NSString *title = (NSString *)[object _optionalAttributeValue:kAXTitleAttribute];
+    [object release];
+
+    QByteArray description = role ? QString::fromNSString(role).toUtf8() : QByteArray("<no role>");
+    if (title)
+        description += " '" + QString::fromNSString(title).toUtf8() + '\'';
+    return description;
+}
+
+static QByteArray describeElements(NSArray *elements)
+{
+    QByteArray description = "[";
+    for (id element in elements) {
+        if (description.size() > 1)
+            description += ", ";
+        description += describeElement((AXUIElementRef)element);
+    }
+    return description + ']';
+}
+
+char *toString(const AXElement &element)
+{
+    return QTest::toString(describeElement(element.element));
+}
+
+static bool containsElement(NSArray *elements, AXUIElementRef element)
+{
+    for (id candidate in elements) {
+        if (AXElement((AXUIElementRef)candidate) == AXElement(element))
+            return true;
+    }
+    return false;
+}
+
+// The two ways a window container gets its content: a window of ours, whose
+// view resolves the parent when asked, and a foreign window, whose view has
+// the parent pushed onto it.
+static void addWindowTypeRows()
+{
+    QTest::addColumn<bool>("foreign");
+    QTest::newRow("qt window") << false;
+    QTest::newRow("foreign window") << true;
+}
+
 class tst_QAccessibilityMac : public QObject
 {
 Q_OBJECT
 private Q_SLOTS:
+    void initTestCase();
     void init();
     void cleanup();
 
@@ -452,10 +855,64 @@ private Q_SLOTS:
     void tabBarTest();
     void windowTest();
 
+    void nativeChildWidget();
+    void nativeChildWidgetViewParent();
+    void hitTest();
+    void focusAcrossNativeBoundary();
+    void foreignWindow();
+    void foreignWindowHitTest();
+    void foreignWindowMultipleChildren();
+
+    void windowContainerParent_data();
+    void windowContainerParent();
+    void windowContainerParentThroughWindowRole();
+    void windowContainerParentWithoutGroup_data();
+    void windowContainerParentWithoutGroup();
+    void windowContainerParentWhileInactive_data();
+    void windowContainerParentWhileInactive();
+    void windowContainerReparent_data();
+    void windowContainerReparent();
+    void windowContainerIndirectReparent_data();
+    void windowContainerIndirectReparent();
+    void windowContainerBelowNativeWidget_data();
+    void windowContainerBelowNativeWidget();
+    void windowContainerBelowNestedNativeWidgets_data();
+    void windowContainerBelowNestedNativeWidgets();
+    void windowContainerRemoved_data();
+    void windowContainerRemoved();
+    void foreignWindowReleasedFromContainer();
+    void foreignWindowParentWhileInactive_data();
+    void foreignWindowParentWhileInactive();
+    void windowContainerSiblingOrder_data();
+    void windowContainerSiblingOrder();
+    void windowContainerHidden_data();
+    void windowContainerHidden();
+    void windowContainerUpdatedWhileHidden_data();
+    void windowContainerUpdatedWhileHidden();
+    void windowContainerParentsRestoredByWalk();
+
 private:
     AccessibleTestWindow *m_window;
 };
 
+
+void tst_QAccessibilityMac::initTestCase()
+{
+    QApplication::setAttribute(Qt::AA_DontCreateNativeWidgetSiblings);
+    QAccessible::installFactory(embeddedWindowFactory);
+
+    // Queries from other accessibility clients, such as VoiceOver or Karabiner
+    // Elements, will affect our tests, making them flakey, so bail out early.
+    AccessibleTestWindow probe;
+    probe.setWindowTitle("Accessibility client probe");
+    probe.resize(400, 400);
+    probe.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&probe));
+    QTest::qWait(500);
+
+    if (QAccessible::isActive())
+        QSKIP("An accessibility client is already querying this process");
+}
 
 void tst_QAccessibilityMac::init()
 {
@@ -963,6 +1420,1085 @@ void tst_QAccessibilityMac::windowTest()
     QVERIFY(edit.valid);
     AXUIElementRef axWindow = edit.window;
     QVERIFY(axWindow);
+}
+
+void tst_QAccessibilityMac::nativeChildWidget()
+{
+    QPushButton *button = addNativeChildWithButton(m_window, "Button in native child");
+    QVERIFY(button->nativeParentWidget()->windowHandle() != m_window->windowHandle());
+    QVERIFY(QTest::qWaitForWindowExposed(m_window));
+    QCoreApplication::processEvents();
+
+    TestAXObject *appObject = [TestAXObject getApplicationAXObject];
+    QVERIFY(appObject);
+
+    QTRY_VERIFY(appObject.windowList.count == 1);
+    AXUIElementRef windowRef = (AXUIElementRef)[appObject.windowList objectAtIndex:0];
+    QVERIFY(windowRef != nil);
+    TestAXObject *window = [[TestAXObject alloc] initWithAXUIElementRef:windowRef];
+    QVERIFY(window.valid);
+
+    // The child widget lives in a native view of its own, so the view of the
+    // child window vends the button now, rather than the view of the top level.
+    // The button must still appear, exactly once, and in the same place.
+    NSArray *buttons = [window descendantsWithRole:kAXButtonRole
+                                             title:button->text().toNSString()];
+    QCOMPARE([buttons count], 1u);
+
+    TestAXObject *buttonObject = [[TestAXObject alloc] initWithAXUIElementRef:(AXUIElementRef)buttons[0]];
+    QVERIFY(buttonObject.valid);
+
+    // Both views are containers the user does not interact with, and are
+    // ignored, so the window is still the button's parent
+    TestAXObject *parentObject = [[TestAXObject alloc] initWithAXUIElementRef:[buttonObject parent]];
+    QCOMPARE(QString::fromNSString(parentObject.role), QString::fromNSString(NSAccessibilityWindowRole));
+
+    TestAXObject *windowObject = [[TestAXObject alloc] initWithAXUIElementRef:[buttonObject window]];
+    QCOMPARE(QString::fromNSString(windowObject.role), QString::fromNSString(NSAccessibilityWindowRole));
+
+    [appObject release];
+    [window release];
+}
+
+// The view of a native child widget is ignored, so it never shows up as an
+// element, and the elements inside it resolve their own parents through Qt's
+// interface tree without ever consulting the view. AppKit still asks the view
+// itself whenever it walks up out of one, and there is no way to provoke that
+// through an accessibility client, so ask the view directly.
+void tst_QAccessibilityMac::nativeChildWidgetViewParent()
+{
+    QGroupBox *group = addGroup(m_window, "Group");
+    QWidget *nativeChild = createNativeChild(group);
+    QPushButton *button = new QPushButton("Button in native child", nativeChild);
+    nativeChild->layout()->addWidget(button);
+    group->layout()->addWidget(nativeChild);
+    nativeChild->show();
+
+    QVERIFY(QTest::qWaitForWindowExposed(m_window));
+    QTRY_VERIFY(nativeChild->windowHandle());
+    QCoreApplication::processEvents();
+
+    // The premise: the child lives in a native view of its own, below the group box
+    QVERIFY(nativeChild->windowHandle() != m_window->windowHandle());
+
+    TestAXObject *window = testWindowObject();
+    QVERIFY(window);
+
+    NSView *view = reinterpret_cast<NSView *>(nativeChild->windowHandle()->winId());
+    id<NSAccessibility> parent = [view accessibilityParent];
+    QVERIFY(parent);
+
+    // The group box is what vends the view to accessibility clients, so it is
+    // what the view has to name in return. Left to AppKit the view would report
+    // the enclosing NSWindow, the nearest ancestor of the view that AppKit
+    // itself puts in the tree.
+    QCOMPARE(QString::fromNSString(parent.accessibilityRole),
+             QString::fromNSString(NSAccessibilityGroupRole));
+    QCOMPARE(QString::fromNSString(parent.accessibilityTitle), group->title());
+
+    [window release];
+}
+
+void tst_QAccessibilityMac::hitTest()
+{
+    QPushButton *button = addNativeChildWithButton(m_window, "Hit me");
+    QVERIFY(button->nativeParentWidget()->windowHandle() != m_window->windowHandle());
+    QVERIFY(QTest::qWaitForWindowExposed(m_window));
+    QCoreApplication::processEvents();
+
+    TestAXObject *appObject = [TestAXObject getApplicationAXObject];
+    QVERIFY(appObject);
+
+    QTRY_VERIFY(appObject.windowList.count == 1);
+
+    // A point over the button hits the button, even though the button is
+    // vended by the view of the child window, and not by the one we start in
+    const QPoint buttonCenter = button->mapToGlobal(button->rect().center());
+    AXUIElementRef hitRef = [appObject elementAtPosition:CGPointMake(buttonCenter.x(),
+                                                                    buttonCenter.y())];
+    QVERIFY(hitRef != nil);
+    TestAXObject *hitObject = [[TestAXObject alloc] initWithAXUIElementRef:hitRef];
+    QCOMPARE(QString::fromNSString(hitObject.role), QString::fromNSString(NSAccessibilityButtonRole));
+    QCOMPARE(QString::fromNSString(hitObject.title), button->text());
+
+    // A point in the layout margin hits no child at all, and lands on the
+    // window, rather than on whatever child was tried last. Check the title
+    // too, so that landing on a window of an earlier test does not pass.
+    const QPoint margin = m_window->mapToGlobal(QPoint(1, 1));
+    AXUIElementRef missRef = [appObject elementAtPosition:CGPointMake(margin.x(), margin.y())];
+    QVERIFY(missRef != nil);
+    TestAXObject *missObject = [[TestAXObject alloc] initWithAXUIElementRef:missRef];
+    QCOMPARE(QString::fromNSString(missObject.role), QString::fromNSString(NSAccessibilityWindowRole));
+    QCOMPARE(QString::fromNSString(missObject.title), m_window->windowTitle());
+
+    [appObject release];
+    [hitObject release];
+    [missObject release];
+}
+
+void tst_QAccessibilityMac::focusAcrossNativeBoundary()
+{
+    QPushButton *inner = addNativeChildWithButton(m_window, "Inner button");
+    QVERIFY(inner->nativeParentWidget()->windowHandle() != m_window->windowHandle());
+
+    // The outer button stays in the top level's own window, so the focus has
+    // to cross the boundary in both directions
+    QPushButton *outer = new QPushButton("Outer button", m_window);
+    m_window->addWidget(outer);
+    QCOMPARE(outer->nativeParentWidget()->windowHandle(), m_window->windowHandle());
+
+    QVERIFY(QTest::qWaitForWindowExposed(m_window));
+    m_window->activateWindow();
+    QVERIFY(QTest::qWaitForWindowActive(m_window));
+    QCoreApplication::processEvents();
+
+    TestAXObject *appObject = [TestAXObject getApplicationAXObject];
+    QVERIFY(appObject);
+
+    // The focus moving into the child window is the ordinary way for it to
+    // leave ours, and the view of that window answers for its own content
+    inner->setFocus();
+    QTRY_VERIFY(inner->hasFocus());
+    AXUIElementRef innerRef = [appObject focusedUIElement];
+    QVERIFY(innerRef != nil);
+    TestAXObject *focusInner = [[TestAXObject alloc] initWithAXUIElementRef:innerRef];
+    QCOMPARE(QString::fromNSString(focusInner.role), QString::fromNSString(NSAccessibilityButtonRole));
+    QCOMPARE(QString::fromNSString(focusInner.title), inner->text());
+
+    // And back out again, so that the hand off is not one way
+    outer->setFocus();
+    QTRY_VERIFY(outer->hasFocus());
+    AXUIElementRef outerRef = [appObject focusedUIElement];
+    QVERIFY(outerRef != nil);
+    TestAXObject *focusOuter = [[TestAXObject alloc] initWithAXUIElementRef:outerRef];
+    QCOMPARE(QString::fromNSString(focusOuter.role), QString::fromNSString(NSAccessibilityButtonRole));
+    QCOMPARE(QString::fromNSString(focusOuter.title), outer->text());
+
+    [appObject release];
+    [focusInner release];
+    [focusOuter release];
+}
+
+void tst_QAccessibilityMac::foreignWindow()
+{
+    QWindow *foreignWindow = nullptr;
+    QVERIFY(addForeignNativeButton(m_window, @"Native button", &foreignWindow));
+    QVERIFY(QTest::qWaitForWindowExposed(m_window));
+    QTRY_VERIFY(foreignWindow->isVisible());
+    QVERIFY(foreignWindow->handle());
+    QCoreApplication::processEvents();
+
+    TestAXObject *appObject = [TestAXObject getApplicationAXObject];
+    QVERIFY(appObject);
+
+    QTRY_VERIFY(appObject.windowList.count == 1);
+    AXUIElementRef windowRef = (AXUIElementRef)[appObject.windowList objectAtIndex:0];
+    QVERIFY(windowRef != nil);
+    TestAXObject *window = [[TestAXObject alloc] initWithAXUIElementRef:windowRef];
+    QVERIFY(window.valid);
+
+    // The foreign window's native subtree is content that Qt's interface tree
+    // cannot see, so it can only appear if the walk stops at the foreign view
+    // and leaves the system to walk into it
+    NSArray *buttons = [window descendantsWithRole:kAXButtonRole title:@"Native button"];
+    QCOMPARE([buttons count], 1u);
+
+    [appObject release];
+    [window release];
+}
+
+void tst_QAccessibilityMac::foreignWindowHitTest()
+{
+    QWindow *foreignWindow = nullptr;
+    QWidget *container = addForeignNativeButton(m_window, @"Native button", &foreignWindow);
+    QVERIFY(container);
+    QVERIFY(QTest::qWaitForWindowExposed(m_window));
+    QTRY_VERIFY(foreignWindow->isVisible());
+    QVERIFY(foreignWindow->handle());
+    QCoreApplication::processEvents();
+
+    TestAXObject *appObject = [TestAXObject getApplicationAXObject];
+    QVERIFY(appObject);
+
+    QTRY_VERIFY(appObject.windowList.count == 1);
+
+    const QPoint center = container->mapToGlobal(container->rect().center());
+    AXUIElementRef hitRef = [appObject elementAtPosition:CGPointMake(center.x(), center.y())];
+    QVERIFY(hitRef != nil);
+    TestAXObject *hitObject = [[TestAXObject alloc] initWithAXUIElementRef:hitRef];
+    QCOMPARE(QString::fromNSString(hitObject.role), QString::fromNSString(NSAccessibilityButtonRole));
+    QCOMPARE(QString::fromNSString(hitObject.title), QString("Native button"));
+
+    [appObject release];
+    [hitObject release];
+}
+
+void tst_QAccessibilityMac::foreignWindowMultipleChildren()
+{
+    // A view whose own accessibility is more than one element, so that the
+    // parent has to be reflected onto each of them, not just the first
+    NSView *nativeView = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 200, 64)];
+    NSArray *titles = @[@"First native button", @"Second native button"];
+    for (NSUInteger i = 0; i < [titles count]; ++i) {
+        NSButton *nativeButton = [[NSButton alloc] initWithFrame:NSMakeRect(0, i * 32, 200, 32)];
+        nativeButton.title = titles[i];
+        [nativeView addSubview:nativeButton];
+    }
+
+    QWindow *embedded = QWindow::fromWinId(reinterpret_cast<WId>(nativeView));
+    QVERIFY(embedded);
+    QGroupBox *group = addGroup(m_window, "Group");
+    addContainer(group, embedded);
+    QTRY_VERIFY(embedded->handle());
+    QCoreApplication::processEvents();
+
+    TestAXObject *window = testWindowObject();
+    QVERIFY(window);
+    AXUIElementRef groupRef = elementWithRoleAndTitle(window, kAXGroupRole,
+                                                      group->title().toNSString());
+    QVERIFY(groupRef);
+    TestAXObject *groupObject = [[TestAXObject alloc] initWithAXUIElementRef:groupRef];
+
+    for (NSString *title in titles) {
+        AXUIElementRef buttonRef = elementWithRoleAndTitle(window, kAXButtonRole, title);
+        QVERIFY(buttonRef);
+        TestAXObject *button = [[TestAXObject alloc] initWithAXUIElementRef:buttonRef];
+        QCOMPARE(AXElement([button parent]), AXElement(groupRef));
+        NSArray *children = [groupObject childList];
+        QVERIFY2(containsElement(children, buttonRef),
+                 (describeElement(buttonRef) + " not among " + describeElements(children)).constData());
+        [button release];
+    }
+
+    [window release];
+    [groupObject release];
+}
+
+void tst_QAccessibilityMac::windowContainerParent_data()
+{
+    addWindowTypeRows();
+}
+
+void tst_QAccessibilityMac::windowContainerParent()
+{
+    QFETCH(bool, foreign);
+
+    QWindow *embedded = createEmbeddedWindow(foreign, "Embedded button");
+    QVERIFY(embedded);
+    QGroupBox *group = addGroup(m_window, "Group");
+    addContainer(group, embedded);
+    QTRY_VERIFY(embedded->handle());
+    QCoreApplication::processEvents();
+
+    TestAXObject *window = testWindowObject();
+    QVERIFY(window);
+
+    AXUIElementRef groupRef = elementWithRoleAndTitle(window, kAXGroupRole,
+                                                      group->title().toNSString());
+    QVERIFY(groupRef);
+    AXUIElementRef buttonRef = elementWithRoleAndTitle(window, kAXButtonRole, @"Embedded button");
+    QVERIFY(buttonRef);
+
+    // The window container is not part of the user-visible tree, so the group
+    // box is what the embedded window points back to
+    TestAXObject *button = [[TestAXObject alloc] initWithAXUIElementRef:buttonRef];
+    QCOMPARE(AXElement([button parent]), AXElement(groupRef));
+
+    // And the group box points to it in turn, so that walking down and walking
+    // up agree on the hierarchy. The view of our own window is ignored and
+    // never appears here, only the content it vends.
+    TestAXObject *groupObject = [[TestAXObject alloc] initWithAXUIElementRef:groupRef];
+    NSArray *children = [groupObject childList];
+    QVERIFY2(containsElement(children, buttonRef),
+             (describeElement(buttonRef) + " not among " + describeElements(children)).constData());
+
+    // Pushing a parent onto a foreign view puts a Qt element into the chain
+    // AppKit derives the window attribute from
+    TestAXObject *buttonWindow = [[TestAXObject alloc] initWithAXUIElementRef:[button window]];
+    QCOMPARE(QString::fromNSString(buttonWindow.title), m_window->windowTitle());
+
+    [window release];
+    [button release];
+    [groupObject release];
+    [buttonWindow release];
+}
+
+// A hosted window whose node reports the Window role puts the bridge on a
+// different path: QMacAccessibilityElement's accessibilityParent declines to
+// build an element for an Application or Window parent, and hands back the view
+// of the interface's own window instead. So the view is what answers, and the
+// window container has its say only through [QNSView accessibilityParent].
+void tst_QAccessibilityMac::windowContainerParentThroughWindowRole()
+{
+    auto *embedded = new WindowRoleWindow;
+    embedded->setTitle("Embedded button");
+    embedded->resize(200, 32);
+
+    QGroupBox *group = addGroup(m_window, "Group");
+    addContainer(group, embedded);
+    QTRY_VERIFY(embedded->handle());
+    QCoreApplication::processEvents();
+
+    TestAXObject *window = testWindowObject();
+    QVERIFY(window);
+
+    AXUIElementRef groupRef = elementWithRoleAndTitle(window, kAXGroupRole,
+                                                      group->title().toNSString());
+    QVERIFY(groupRef);
+    AXUIElementRef buttonRef = elementWithRoleAndTitle(window, kAXButtonRole, @"Embedded button");
+    QVERIFY(buttonRef);
+
+    // The window node is between the button and the container, and is ignored
+    // in both directions, so the two ends still meet at the group box
+    TestAXObject *button = [[TestAXObject alloc] initWithAXUIElementRef:buttonRef];
+    QCOMPARE(AXElement([button parent]), AXElement(groupRef));
+
+    TestAXObject *groupObject = [[TestAXObject alloc] initWithAXUIElementRef:groupRef];
+    NSArray *children = [groupObject childList];
+    QVERIFY2(containsElement(children, buttonRef),
+             (describeElement(buttonRef) + " not among " + describeElements(children)).constData());
+
+    [window release];
+    [button release];
+    [groupObject release];
+}
+
+void tst_QAccessibilityMac::windowContainerParentWithoutGroup_data()
+{
+    addWindowTypeRows();
+}
+
+void tst_QAccessibilityMac::windowContainerParentWithoutGroup()
+{
+    QFETCH(bool, foreign);
+
+    QWindow *embedded = createEmbeddedWindow(foreign, "Embedded button");
+    QVERIFY(embedded);
+    addContainer(m_window, embedded);
+    QTRY_VERIFY(embedded->handle());
+    QCoreApplication::processEvents();
+
+    TestAXObject *window = testWindowObject();
+    QVERIFY(window);
+
+    AXUIElementRef buttonRef = elementWithRoleAndTitle(window, kAXButtonRole, @"Embedded button");
+    QVERIFY(buttonRef);
+
+    // With nothing but ignored widgets between the container and the top level,
+    // the parent is the window itself
+    TestAXObject *button = [[TestAXObject alloc] initWithAXUIElementRef:buttonRef];
+    QCOMPARE(AXElement([button parent]), AXElement([window ref]));
+
+    NSArray *children = [window childList];
+    QVERIFY2(containsElement(children, buttonRef),
+             (describeElement(buttonRef) + " not among " + describeElements(children)).constData());
+
+    [window release];
+    [button release];
+}
+
+void tst_QAccessibilityMac::windowContainerParentWhileInactive_data()
+{
+    addWindowTypeRows();
+}
+
+void tst_QAccessibilityMac::windowContainerParentWhileInactive()
+{
+    QFETCH(bool, foreign);
+
+    // The normal order of events: a window container adopts its window long
+    // before any accessibility client shows up, so the parent it sets is not
+    // pushed onto a foreign view at that point, and the first query from a
+    // client is what has to bring the two in sync.
+    QAccessible::setActive(false);
+
+    QWindow *embedded = createEmbeddedWindow(foreign, "Embedded button");
+    QVERIFY(embedded);
+    QGroupBox *group = addGroup(m_window, "Group");
+    addContainer(group, embedded);
+    QTRY_VERIFY(embedded->handle());
+    QCoreApplication::processEvents();
+
+    // Had something asked about accessibility while we were building the
+    // hierarchy above, the parent would already be resolved, and the query
+    // below would no longer be the first one
+    QVERIFY(!QAccessible::isActive());
+
+    TestAXObject *window = testWindowObject();
+    QVERIFY(window);
+
+    AXUIElementRef groupRef = elementWithRoleAndTitle(window, kAXGroupRole,
+                                                      group->title().toNSString());
+    QVERIFY(groupRef);
+    AXUIElementRef buttonRef = elementWithRoleAndTitle(window, kAXButtonRole, @"Embedded button");
+    QVERIFY(buttonRef);
+
+    // Walking the hierarchy is what asks our views about accessibility, and
+    // hence what turned the machinery on
+    QVERIFY(QAccessible::isActive());
+
+    TestAXObject *button = [[TestAXObject alloc] initWithAXUIElementRef:buttonRef];
+    QCOMPARE(AXElement([button parent]), AXElement(groupRef));
+
+    [window release];
+    [button release];
+}
+
+void tst_QAccessibilityMac::windowContainerReparent_data()
+{
+    addWindowTypeRows();
+}
+
+void tst_QAccessibilityMac::windowContainerReparent()
+{
+    QFETCH(bool, foreign);
+
+    QWindow *embedded = createEmbeddedWindow(foreign, "Embedded button");
+    QVERIFY(embedded);
+    NSArray *nativeElements = foreign ? vendedElements(embedded) : @[];
+    QGroupBox *first = addGroup(m_window, "First group");
+    QGroupBox *second = addGroup(m_window, "Second group");
+    addContainer(first, embedded);
+    QTRY_VERIFY(embedded->handle());
+    QCoreApplication::processEvents();
+
+    TestAXObject *window = testWindowObject();
+    QVERIFY(window);
+
+    // Walk the hierarchy before the move, so that the elements under test are
+    // the ones the system already holds, rather than ones built afterwards
+    AXUIElementRef buttonRef = elementWithRoleAndTitle(window, kAXButtonRole, @"Embedded button");
+    QVERIFY(buttonRef);
+    TestAXObject *button = [[TestAXObject alloc] initWithAXUIElementRef:buttonRef];
+
+    AXUIElementRef firstRef = elementWithRoleAndTitle(window, kAXGroupRole,
+                                                      first->title().toNSString());
+    QVERIFY(firstRef);
+    QCOMPARE(AXElement([button parent]), AXElement(firstRef));
+
+    // What a foreign view answers with is a parent pushed onto the elements it
+    // vends, so hold on to it, to tell a replaced parent from a replaced element
+    const QList<id> pushedParents = accessibilityParents(nativeElements);
+
+    addContainer(second, embedded);
+    QCoreApplication::processEvents();
+
+    // Finding the group box the window moved to is also the walk that hands the
+    // foreign view out again, and hence what resolves its parent anew
+    AXUIElementRef secondRef = elementWithRoleAndTitle(window, kAXGroupRole,
+                                                       second->title().toNSString());
+    QVERIFY(secondRef);
+
+    // The push has to follow the move. Were it left as it was, the checks below
+    // could still pass on an element AppKit built after the move.
+    const QList<id> movedParents = accessibilityParents(nativeElements);
+    for (int i = 0; i < pushedParents.count(); ++i) {
+        QVERIFY(movedParents.at(i));
+        QVERIFY(movedParents.at(i) != pushedParents.at(i));
+    }
+
+    // AppKit hands out a new element for a foreign view that has moved between
+    // superviews, so the element we held before the move may not answer anymore.
+    // Our own elements outlive the move, and are still the ones under test.
+    if (![button optionalParent]) {
+        buttonRef = elementWithRoleAndTitle(window, kAXButtonRole, @"Embedded button");
+        QVERIFY(buttonRef);
+        [button release];
+        button = [[TestAXObject alloc] initWithAXUIElementRef:buttonRef];
+    }
+
+    QCOMPARE(AXElement([button parent]), AXElement(secondRef));
+
+    // The group box the window left has to let go of it, or the same window
+    // is reported in two places
+    TestAXObject *firstObject = [[TestAXObject alloc] initWithAXUIElementRef:firstRef];
+    QCOMPARE([[firstObject descendantsWithRole:kAXButtonRole title:@"Embedded button"] count], 0u);
+
+    [window release];
+    [button release];
+    [firstObject release];
+}
+
+void tst_QAccessibilityMac::windowContainerIndirectReparent_data()
+{
+    addWindowTypeRows();
+}
+
+void tst_QAccessibilityMac::windowContainerIndirectReparent()
+{
+    QFETCH(bool, foreign);
+
+    QWindow *embedded = createEmbeddedWindow(foreign, "Embedded button");
+    QVERIFY(embedded);
+    QGroupBox *first = addGroup(m_window, "First group");
+    QGroupBox *second = addGroup(m_window, "Second group");
+
+    // The container is not a direct child of the group box, so the parent the
+    // embedded window reports follows the widget in between
+    QWidget *intermediate = new QWidget(first);
+    intermediate->setLayout(new QVBoxLayout);
+    addContainer(intermediate, embedded);
+    first->layout()->addWidget(intermediate);
+    intermediate->show();
+    QTRY_VERIFY(embedded->handle());
+    QCoreApplication::processEvents();
+
+    TestAXObject *window = testWindowObject();
+    QVERIFY(window);
+
+    AXUIElementRef buttonRef = elementWithRoleAndTitle(window, kAXButtonRole, @"Embedded button");
+    QVERIFY(buttonRef);
+    TestAXObject *button = [[TestAXObject alloc] initWithAXUIElementRef:buttonRef];
+
+    AXUIElementRef firstRef = elementWithRoleAndTitle(window, kAXGroupRole,
+                                                      first->title().toNSString());
+    QVERIFY(firstRef);
+    QCOMPARE(AXElement([button parent]), AXElement(firstRef));
+
+    // Find the group box to move to before moving, so that the element we
+    // compare against is one the system already handed out, rather than one
+    // built by the search afterwards
+    AXUIElementRef secondRef = elementWithRoleAndTitle(window, kAXGroupRole,
+                                                       second->title().toNSString());
+    QVERIFY(secondRef);
+
+    second->layout()->addWidget(intermediate);
+    QCoreApplication::processEvents();
+
+    walkHierarchy(window);
+    QCOMPARE(AXElement([button parent]), AXElement(secondRef));
+
+    [window release];
+    [button release];
+}
+
+void tst_QAccessibilityMac::windowContainerBelowNativeWidget_data()
+{
+    addWindowTypeRows();
+}
+
+void tst_QAccessibilityMac::windowContainerBelowNativeWidget()
+{
+    QFETCH(bool, foreign);
+
+    // A window container hands its window to the top level, not to the nearest
+    // native ancestor, so with a native widget in between, the widget that
+    // reparents and the window that hosts the embedded window sit in different
+    // native views.
+    QWidget *nativeChild = createNativeChild(m_window);
+    QGroupBox *first = addGroup(nativeChild, "First group");
+    QGroupBox *second = addGroup(nativeChild, "Second group");
+    m_window->addWidget(nativeChild);
+
+    QWindow *embedded = createEmbeddedWindow(foreign, "Embedded button");
+    QVERIFY(embedded);
+    QWidget *container = addContainer(first, embedded);
+    QTRY_VERIFY(embedded->handle());
+    QCoreApplication::processEvents();
+
+    TestAXObject *window = testWindowObject();
+    QVERIFY(window);
+
+    // The content of a foreign window has to be in the tree at all first. The
+    // bridge substitutes a native view for the interface of the window it
+    // represents only when that window is nested below the one responsible for
+    // the ancestor, and the interfaces here answer with the native child's
+    // window, which the embedded window is not below.
+    AXUIElementRef buttonRef = elementWithRoleAndTitle(window, kAXButtonRole, @"Embedded button");
+    QVERIFY(buttonRef);
+    TestAXObject *button = [[TestAXObject alloc] initWithAXUIElementRef:buttonRef];
+
+    AXUIElementRef firstRef = elementWithRoleAndTitle(window, kAXGroupRole,
+                                                      first->title().toNSString());
+    QVERIFY(firstRef);
+    QCOMPARE(AXElement([button parent]), AXElement(firstRef));
+
+    AXUIElementRef secondRef = elementWithRoleAndTitle(window, kAXGroupRole,
+                                                       second->title().toNSString());
+    QVERIFY(secondRef);
+
+    // The container moves within the native child's widget tree, while the
+    // embedded window stays a child of the top level window, so the walk that
+    // resolves the parent anew starts in a different window than the one the
+    // moved widget belongs to
+    second->layout()->addWidget(container);
+    QCoreApplication::processEvents();
+
+    walkHierarchy(window);
+    QCOMPARE(AXElement([button parent]), AXElement(secondRef));
+
+    [window release];
+    [button release];
+}
+
+void tst_QAccessibilityMac::windowContainerBelowNestedNativeWidgets_data()
+{
+    addWindowTypeRows();
+}
+
+void tst_QAccessibilityMac::windowContainerBelowNestedNativeWidgets()
+{
+    QFETCH(bool, foreign);
+
+    // With one native widget between the container and the top level, the window
+    // of the widget that vends the container's element is a sibling of the
+    // embedded window. With two, it is neither a sibling nor an ancestor of it,
+    // and the semantic hierarchy leaves a nested view for one that hangs off the
+    // top level view directly.
+    QWidget *outerNative = createNativeChild(m_window);
+    QWidget *innerNative = createNativeChild(outerNative);
+    outerNative->layout()->addWidget(innerNative);
+    QGroupBox *group = addGroup(innerNative, "Group");
+    m_window->addWidget(outerNative);
+
+    QWindow *embedded = createEmbeddedWindow(foreign, "Embedded button");
+    QVERIFY(embedded);
+    addContainer(group, embedded);
+    QTRY_VERIFY(embedded->handle());
+    QCoreApplication::processEvents();
+
+    // The premise of the test: a container hands its window to the top level,
+    // not to the nearest native ancestor, so no amount of native widgets in
+    // between changes where the embedded window ends up.
+    QCOMPARE(embedded->parent(), m_window->windowHandle());
+
+    TestAXObject *window = testWindowObject();
+    QVERIFY(window);
+
+    AXUIElementRef groupRef = elementWithRoleAndTitle(window, kAXGroupRole,
+                                                      group->title().toNSString());
+    QVERIFY(groupRef);
+    AXUIElementRef buttonRef = elementWithRoleAndTitle(window, kAXButtonRole, @"Embedded button");
+    QVERIFY(buttonRef);
+
+    TestAXObject *button = [[TestAXObject alloc] initWithAXUIElementRef:buttonRef];
+    QCOMPARE(AXElement([button parent]), AXElement(groupRef));
+
+    TestAXObject *groupObject = [[TestAXObject alloc] initWithAXUIElementRef:groupRef];
+    NSArray *children = [groupObject childList];
+    QVERIFY2(containsElement(children, buttonRef),
+             (describeElement(buttonRef) + " not among " + describeElements(children)).constData());
+
+    // AppKit resolves the window attribute by walking the parent chain, so the
+    // walk has to arrive at our window from an element that the view hierarchy
+    // places two native views below it
+    TestAXObject *buttonWindow = [[TestAXObject alloc] initWithAXUIElementRef:[button window]];
+    QCOMPARE(QString::fromNSString(buttonWindow.title), m_window->windowTitle());
+
+    [window release];
+    [button release];
+    [groupObject release];
+    [buttonWindow release];
+}
+
+void tst_QAccessibilityMac::windowContainerRemoved_data()
+{
+    addWindowTypeRows();
+}
+
+void tst_QAccessibilityMac::windowContainerRemoved()
+{
+    QFETCH(bool, foreign);
+
+    QWindow *embedded = createEmbeddedWindow(foreign, "Embedded button");
+    QVERIFY(embedded);
+
+    // Remember what the native elements answer with on their own, before Qt
+    // hosts them anywhere
+    NSArray *nativeElements = foreign ? vendedElements(embedded) : @[];
+    const QList<id> defaultParents = accessibilityParents(nativeElements);
+
+    QGroupBox *group = addGroup(m_window, "Group");
+    QWidget *container = addContainer(group, embedded);
+    QTRY_VERIFY(embedded->handle());
+    QCoreApplication::processEvents();
+
+    TestAXObject *window = testWindowObject();
+    QVERIFY(window);
+    AXUIElementRef groupRef = elementWithRoleAndTitle(window, kAXGroupRole,
+                                                      group->title().toNSString());
+    QVERIFY(groupRef);
+    QVERIFY(elementWithRoleAndTitle(window, kAXButtonRole, @"Embedded button"));
+
+    // And what Qt wrote onto them in its place, so that the two can be told
+    // apart once the window is gone
+    const QList<id> pushedParents = accessibilityParents(nativeElements);
+    for (int i = 0; i < pushedParents.count(); ++i)
+        QVERIFY(pushedParents.at(i) != defaultParents.at(i));
+
+    // The container owns the window, so this takes the platform window with it
+    delete container;
+    QCoreApplication::processEvents();
+
+    TestAXObject *groupObject = [[TestAXObject alloc] initWithAXUIElementRef:groupRef];
+    QCOMPARE([[groupObject descendantsWithRole:kAXButtonRole title:@"Embedded button"] count], 0u);
+
+    // The native view outlives the window that hosted it, and must not be left
+    // pointing at an element of a group box that no longer knows about it. The
+    // override is set to nothing rather than removed, which for a view that has
+    // left the view hierarchy is what it reported to begin with.
+    for (int i = 0; i < defaultParents.count(); ++i) {
+        id<NSAccessibility> element = nativeElements[i];
+        QVERIFY(element.accessibilityParent != pushedParents.at(i));
+        QVERIFY(element.accessibilityParent == defaultParents.at(i));
+    }
+
+    [window release];
+    [groupObject release];
+}
+
+// A window that leaves its container is a different case from one that goes
+// away with it, as the view lives on in a view hierarchy of its own.
+void tst_QAccessibilityMac::foreignWindowReleasedFromContainer()
+{
+    QWindow *embedded = createEmbeddedWindow(true, "Embedded button");
+    QVERIFY(embedded);
+    NSArray *nativeElements = vendedElements(embedded);
+    const QList<id> defaultParents = accessibilityParents(nativeElements);
+
+    QGroupBox *group = addGroup(m_window, "Group");
+    addContainer(group, embedded);
+    QTRY_VERIFY(embedded->handle());
+    QCoreApplication::processEvents();
+
+    TestAXObject *window = testWindowObject();
+    QVERIFY(window);
+    AXUIElementRef groupRef = elementWithRoleAndTitle(window, kAXGroupRole,
+                                                      group->title().toNSString());
+    QVERIFY(groupRef);
+    AXUIElementRef buttonRef = elementWithRoleAndTitle(window, kAXButtonRole, @"Embedded button");
+    QVERIFY(buttonRef);
+    TestAXObject *button = [[TestAXObject alloc] initWithAXUIElementRef:buttonRef];
+    QCOMPARE(AXElement([button parent]), AXElement(groupRef));
+
+    const QList<id> pushedParents = accessibilityParents(nativeElements);
+    for (int i = 0; i < pushedParents.count(); ++i)
+        QVERIFY(pushedParents.at(i) != defaultParents.at(i));
+
+    // Hand the window to a window of our own instead, so that the view outlives
+    // the container that hosted it
+    QWindow host;
+    host.setTitle("Host window");
+    host.resize(200, 200);
+    host.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&host));
+
+    embedded->setParent(&host);
+    QCoreApplication::processEvents();
+
+    // An override can be set to nothing, but not removed, so the elements report
+    // no parent rather than the one they would have resolved on their own, even
+    // though the view is still in a view hierarchy here
+    for (id parent : accessibilityParents(nativeElements))
+        QVERIFY(!parent);
+
+    TestAXObject *groupObject = [[TestAXObject alloc] initWithAXUIElementRef:groupRef];
+    QCOMPARE([[groupObject descendantsWithRole:kAXButtonRole title:@"Embedded button"] count], 0u);
+
+    delete embedded;
+
+    [window release];
+    [button release];
+    [groupObject release];
+}
+
+void tst_QAccessibilityMac::foreignWindowParentWhileInactive_data()
+{
+    // The window either stays where it is while nobody is listening, or is
+    // handed over to someone else, which is what has to drop the push
+    QTest::addColumn<bool>("released");
+    QTest::newRow("kept") << false;
+    QTest::newRow("released") << true;
+}
+
+void tst_QAccessibilityMac::foreignWindowParentWhileInactive()
+{
+    QFETCH(bool, released);
+
+    QWindow *embedded = createEmbeddedWindow(true, "Embedded button");
+    QVERIFY(embedded);
+    NSArray *nativeElements = vendedElements(embedded);
+
+    QGroupBox *group = addGroup(m_window, "Group");
+    addContainer(group, embedded);
+    QTRY_VERIFY(embedded->handle());
+    QCoreApplication::processEvents();
+
+    TestAXObject *window = testWindowObject();
+    QVERIFY(window);
+    AXUIElementRef groupRef = elementWithRoleAndTitle(window, kAXGroupRole,
+                                                      group->title().toNSString());
+    QVERIFY(groupRef);
+    AXUIElementRef buttonRef = elementWithRoleAndTitle(window, kAXButtonRole, @"Embedded button");
+    QVERIFY(buttonRef);
+    TestAXObject *button = [[TestAXObject alloc] initWithAXUIElementRef:buttonRef];
+    QCOMPARE(AXElement([button parent]), AXElement(groupRef));
+
+    for (id parent : accessibilityParents(nativeElements))
+        QVERIFY(parent);
+
+    // Somewhere to hand the window over to, prepared before we go inactive, as
+    // showing a window is enough for AppKit to ask about accessibility again
+    QWindow host;
+    if (released) {
+        host.setTitle("Host window");
+        host.resize(200, 200);
+        host.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&host));
+    }
+
+    // Only a query can observe the push, and a query is what refreshes it, so
+    // going inactive leaves it as it is
+    QAccessible::setActive(false);
+    for (id parent : accessibilityParents(nativeElements))
+        QVERIFY(parent);
+
+    // Hand the window over with nobody listening, so that nothing but the move
+    // itself can let go of the container as the accessible parent
+    if (released)
+        embedded->setParent(&host);
+
+    QCoreApplication::processEvents();
+
+    QVERIFY(!QAccessible::isActive());
+    QAccessible::setActive(true);
+
+    if (released) {
+        // There is no parent to resolve anymore, and the view must not be left
+        // pointing at the one it had before
+        for (id parent : accessibilityParents(nativeElements))
+            QVERIFY(!parent);
+        delete embedded;
+    } else {
+        // The hierarchy is the one we left, so a client that walks it again
+        // ends up where it started
+        walkHierarchy(window);
+        for (id parent : accessibilityParents(nativeElements))
+            QVERIFY(parent);
+        QCOMPARE(AXElement([button parent]), AXElement(groupRef));
+    }
+
+    [window release];
+    [button release];
+}
+
+void tst_QAccessibilityMac::windowContainerSiblingOrder_data()
+{
+    addWindowTypeRows();
+}
+
+void tst_QAccessibilityMac::windowContainerSiblingOrder()
+{
+    QFETCH(bool, foreign);
+
+    QWindow *embedded = createEmbeddedWindow(foreign, "Embedded button");
+    QVERIFY(embedded);
+    QGroupBox *group = addGroup(m_window, "Group");
+
+    QPushButton *first = new QPushButton("First button", group);
+    group->layout()->addWidget(first);
+    first->show();
+    addContainer(group, embedded);
+    QPushButton *last = new QPushButton("Last button", group);
+    group->layout()->addWidget(last);
+    last->show();
+
+    QTRY_VERIFY(embedded->handle());
+    QCoreApplication::processEvents();
+
+    TestAXObject *window = testWindowObject();
+    QVERIFY(window);
+    AXUIElementRef groupRef = elementWithRoleAndTitle(window, kAXGroupRole,
+                                                      group->title().toNSString());
+    QVERIFY(groupRef);
+    TestAXObject *groupObject = [[TestAXObject alloc] initWithAXUIElementRef:groupRef];
+
+    // The embedded window takes the container's place among the group box's
+    // children, rather than being appended to them
+    NSMutableArray *titles = [NSMutableArray array];
+    for (id child in [groupObject childList]) {
+        TestAXObject *childObject = [[TestAXObject alloc] initWithAXUIElementRef:(AXUIElementRef)child];
+        [titles addObject:childObject.title ?: @"<untitled>"];
+        [childObject release];
+    }
+    NSArray *expected = @[@"First button", @"Embedded button", @"Last button"];
+    QCOMPARE(QString::fromNSString([titles componentsJoinedByString:@", "]),
+             QString::fromNSString([expected componentsJoinedByString:@", "]));
+
+    [window release];
+    [groupObject release];
+}
+
+void tst_QAccessibilityMac::windowContainerHidden_data()
+{
+    addWindowTypeRows();
+}
+
+void tst_QAccessibilityMac::windowContainerHidden()
+{
+    QFETCH(bool, foreign);
+
+    QWindow *embedded = createEmbeddedWindow(foreign, "Embedded button");
+    QVERIFY(embedded);
+    QGroupBox *group = addGroup(m_window, "Group");
+    addContainer(group, embedded);
+    QTRY_VERIFY(embedded->handle());
+    QCoreApplication::processEvents();
+
+    TestAXObject *window = testWindowObject();
+    QVERIFY(window);
+
+    // Take hold of the elements before hiding anything, so that the ones
+    // compared after the cycle are the ones the system held before it
+    AXUIElementRef groupRef = elementWithRoleAndTitle(window, kAXGroupRole,
+                                                      group->title().toNSString());
+    QVERIFY(groupRef);
+    AXUIElementRef buttonRef = elementWithRoleAndTitle(window, kAXButtonRole, @"Embedded button");
+    QVERIFY(buttonRef);
+
+    TestAXObject *button = [[TestAXObject alloc] initWithAXUIElementRef:buttonRef];
+    QCOMPARE(AXElement([button parent]), AXElement(groupRef));
+
+    // A hidden widget reports itself as invisible, which takes it and
+    // everything below it out of the tree, the embedded window included
+    group->hide();
+    QCoreApplication::processEvents();
+    QCOMPARE([[window descendantsWithRole:kAXButtonRole title:@"Embedded button"] count], 0u);
+
+    group->show();
+    QTRY_VERIFY(embedded->isVisible());
+    QCoreApplication::processEvents();
+
+    // And on the way back in the embedded window names the group box again
+    QCOMPARE(AXElement([button parent]), AXElement(groupRef));
+
+    [window release];
+    [button release];
+}
+
+void tst_QAccessibilityMac::windowContainerUpdatedWhileHidden_data()
+{
+    addWindowTypeRows();
+}
+
+void tst_QAccessibilityMac::windowContainerUpdatedWhileHidden()
+{
+    QFETCH(bool, foreign);
+
+    QWindow *embedded = createEmbeddedWindow(foreign, "Embedded button");
+    QVERIFY(embedded);
+    QGroupBox *group = addGroup(m_window, "Group");
+    addContainer(group, embedded);
+    QTRY_VERIFY(embedded->handle());
+    QCoreApplication::processEvents();
+
+    TestAXObject *window = testWindowObject();
+    QVERIFY(window);
+
+    AXUIElementRef groupRef = elementWithRoleAndTitle(window, kAXGroupRole,
+                                                      group->title().toNSString());
+    QVERIFY(groupRef);
+    AXUIElementRef buttonRef = elementWithRoleAndTitle(window, kAXButtonRole, @"Embedded button");
+    QVERIFY(buttonRef);
+    TestAXObject *button = [[TestAXObject alloc] initWithAXUIElementRef:buttonRef];
+    QCOMPARE(AXElement([button parent]), AXElement(groupRef));
+
+    group->hide();
+    QCoreApplication::processEvents();
+
+    // Something elsewhere in the window changes parent while the group box is
+    // hidden. A hidden widget is out of the user-visible tree, so a parent
+    // resolved for the embedded window now would resolve past the group box.
+    // Nothing hands the view out while it is hidden, so nothing resolves one.
+    QPushButton *other = new QPushButton("Other button");
+    m_window->addWidget(other);
+    QCoreApplication::processEvents();
+
+    group->show();
+    QTRY_VERIFY(embedded->isVisible());
+    QCoreApplication::processEvents();
+
+    // The group box is back in the tree, and is the parent again
+    QCOMPARE(AXElement([button parent]), AXElement(groupRef));
+
+    TestAXObject *groupObject = [[TestAXObject alloc] initWithAXUIElementRef:groupRef];
+    NSArray *children = [groupObject childList];
+    QVERIFY2(containsElement(children, buttonRef),
+             (describeElement(buttonRef) + " not among " + describeElements(children)).constData());
+
+    [window release];
+    [button release];
+    [groupObject release];
+}
+
+// A walk puts a pushed parent back, wherever in the window tree the foreign
+// window sits. The nested branch below is the awkward one, with its group box in
+// the native child's window while the container hands the window it hosts to the
+// top level, so the element that vends the foreign view and the window holding
+// that view belong to different native views.
+void tst_QAccessibilityMac::windowContainerParentsRestoredByWalk()
+{
+    QWidget *nativeChild = createNativeChild(m_window);
+    QGroupBox *nestedGroup = addGroup(nativeChild, "Nested group");
+    m_window->addWidget(nativeChild);
+    QGroupBox *siblingGroup = addGroup(m_window, "Sibling group");
+
+    QWindow *nestedEmbedded = createEmbeddedWindow(true, "Nested embedded button");
+    QVERIFY(nestedEmbedded);
+    addContainer(nestedGroup, nestedEmbedded);
+    QWindow *siblingEmbedded = createEmbeddedWindow(true, "Sibling embedded button");
+    QVERIFY(siblingEmbedded);
+    addContainer(siblingGroup, siblingEmbedded);
+    QTRY_VERIFY(nestedEmbedded->handle());
+    QTRY_VERIFY(siblingEmbedded->handle());
+    QCoreApplication::processEvents();
+
+    // The premise of the nested branch: the group box lives in the native
+    // child's window, while the window hosting its embedded window is the
+    // top level
+    QVERIFY(nativeChild->windowHandle());
+    QVERIFY(nativeChild->windowHandle() != m_window->windowHandle());
+    QCOMPARE(nestedEmbedded->parent(), m_window->windowHandle());
+
+    TestAXObject *window = testWindowObject();
+    QVERIFY(window);
+
+    AXUIElementRef nestedGroupRef = elementWithRoleAndTitle(window, kAXGroupRole,
+                                                            nestedGroup->title().toNSString());
+    QVERIFY(nestedGroupRef);
+    AXUIElementRef nestedButtonRef = elementWithRoleAndTitle(window, kAXButtonRole,
+                                                             @"Nested embedded button");
+    QVERIFY(nestedButtonRef);
+    TestAXObject *nestedButton = [[TestAXObject alloc] initWithAXUIElementRef:nestedButtonRef];
+    QCOMPARE(AXElement([nestedButton parent]), AXElement(nestedGroupRef));
+
+    AXUIElementRef siblingGroupRef = elementWithRoleAndTitle(window, kAXGroupRole,
+                                                             siblingGroup->title().toNSString());
+    QVERIFY(siblingGroupRef);
+    AXUIElementRef siblingButtonRef = elementWithRoleAndTitle(window, kAXButtonRole,
+                                                              @"Sibling embedded button");
+    QVERIFY(siblingButtonRef);
+    TestAXObject *siblingButton = [[TestAXObject alloc] initWithAXUIElementRef:siblingButtonRef];
+    QCOMPARE(AXElement([siblingButton parent]), AXElement(siblingGroupRef));
+
+    // Drop both, so that the walk below is the only thing that can put a parent
+    // back on either of them
+    QVERIFY(clearPushedParents(nestedEmbedded));
+    QVERIFY(clearPushedParents(siblingEmbedded));
+
+    walkHierarchy(window);
+
+    for (id parent : accessibilityParents(vendedElements(nestedEmbedded)))
+        QVERIFY(parent);
+    for (id parent : accessibilityParents(vendedElements(siblingEmbedded)))
+        QVERIFY(parent);
+
+    QCOMPARE(AXElement([nestedButton parent]), AXElement(nestedGroupRef));
+    QCOMPARE(AXElement([siblingButton parent]), AXElement(siblingGroupRef));
+
+    [window release];
+    [nestedButton release];
+    [siblingButton release];
 }
 
 QTEST_MAIN(tst_QAccessibilityMac)

@@ -47,6 +47,7 @@ Q_DECLARE_LOGGING_CATEGORY(lcQpaApplication)
 Q_DECLARE_LOGGING_CATEGORY(lcQpaClipboard)
 Q_DECLARE_LOGGING_CATEGORY(lcQpaDialogs)
 Q_DECLARE_LOGGING_CATEGORY(lcQpaMenus)
+Q_DECLARE_LOGGING_CATEGORY(lcQpaAccessibility)
 
 class QPixmap;
 class QString;

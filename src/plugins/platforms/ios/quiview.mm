@@ -70,7 +70,7 @@ inline ulong getTimeStamp(UIEvent *event)
 @implementation QUIView {
     QHash<NSUInteger, QWindowSystemInterface::TouchPoint> m_activeTouches;
     UITouch *m_activePencilTouch;
-    NSMutableArray<UIAccessibilityElement *> *m_accessibleElements;
+    NSMutableArray<id> *m_accessibleElements;
     CGPoint m_lastScrollCursorPos;
     CGPoint m_lastScrollDelta;
 }
@@ -91,7 +91,7 @@ inline ulong getTimeStamp(UIEvent *event)
         if (isQtApplication())
             self.hidden = YES;
 
-        m_accessibleElements = [[NSMutableArray<UIAccessibilityElement *> alloc] init];
+        m_accessibleElements = [NSMutableArray<id> new];
 
 #ifndef Q_OS_TVOS
         self.multipleTouchEnabled = YES;

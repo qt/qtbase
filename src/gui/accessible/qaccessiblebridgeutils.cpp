@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 #include "qaccessiblebridgeutils_p.h"
 #include <QtCore/qmath.h>
+#include <QtGui/qwindow.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -92,6 +93,61 @@ QString accessibleId(QAccessibleInterface *accessible) {
         accessible = accessible->parent();
     }
     return result;
+}
+
+/*
+    Returns the window whose native handle is responsible for \a iface.
+
+    Not every interface implements window(), so we walk up the ancestors until
+    one does, as the documentation asks of the backend. The first ancestor to
+    answer gives the closest window, since a window's root interface sits on this
+    chain and reports its own window.
+
+    A caller that already knows the window of an ancestor passes the ancestor as
+    \a ancestorInterface and its window as \a ancestorWindow. The walk then stops
+    at that ancestor and answers with \a ancestorWindow. The full walk ends up at
+    the same window, so the two arguments only skip the part the caller has
+    already walked.
+
+    The two arguments also let us reject an answer that can not be true. An
+    interface below \a ancestorInterface can not live in a window that contains
+    \a ancestorWindow. A bridge that substituted the native view of such a window
+    would hand back a view that contains \a ancestorWindow's own view, and the
+    native accessibility tree would loop. An interface that answers window() with
+    the top level instead of the window containing it gives such an answer, so we
+    discard it and keep walking.
+
+    We do however accept a window that is not a descendant of \a ancestorWindow. A
+    QWindowContainer inside a child QWindow hands its contained window to the top
+    level, and the two windows are then siblings. Move the container further down
+    the QWindow hierarchy and \a ancestorWindow becomes a descendant of a sibling
+    of the window we return.
+
+    Callers that have specific demands on the accepted window hierarchy beyond
+    the loop detection must handle those cases at the call site.
+*/
+QWindow *windowFor(const QAccessibleInterface *iface,
+                   const QAccessibleInterface *ancestorInterface,
+                   QWindow *ancestorWindow)
+{
+    Q_ASSERT(bool(ancestorInterface) == bool(ancestorWindow));
+
+    for (const auto *candidate = iface; candidate && candidate != ancestorInterface;
+         candidate = candidate->parent()) {
+        QWindow *window = candidate->window();
+        if (!window)
+            continue;
+
+        // We found a window before reaching ancestorInterface. It can only
+        // represent the interface if it does not contain ancestorWindow,
+        // as otherwise the native accessibility tree would loop.
+        if (ancestorWindow && window->isAncestorOf(ancestorWindow, QWindow::ExcludeTransients))
+            continue;
+
+        return window;
+    }
+
+    return ancestorWindow;
 }
 
 }   //namespace

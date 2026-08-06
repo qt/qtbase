@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 // Qt-Security score:significant reason:default
 
-#undef QT_NO_FOREACH // this file contains unported legacy Q_FOREACH uses
-
 #include "qiosplatformaccessibility.h"
 
 #if QT_CONFIG(accessibility)
@@ -37,9 +35,14 @@ void invalidateCache(QAccessibleInterface *iface)
     // This will invalidate everything regardless of what window the
     // interface belonged to. We might want to revisit this strategy later.
     // (Therefore this function still takes the interface as argument)
-    foreach (QWindow *win, QGuiApplication::topLevelWindows()) {
+    //
+    // Clear every window, not just the top levels, as each view vends the
+    // elements of its own window only, so a child window's cache is the one
+    // holding the elements that a change below a native view boundary affects.
+    const auto windows = QGuiApplication::allWindows();
+    for (QWindow *win : windows) {
         if (win && win->handle()) {
-            QT_PREPEND_NAMESPACE(QIOSWindow) *window = static_cast<QT_PREPEND_NAMESPACE(QIOSWindow) *>(win->handle());
+            auto *window = static_cast<QIOSWindow *>(win->handle());
             window->clearAccessibleCache();
         }
     }
