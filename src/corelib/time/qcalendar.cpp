@@ -645,8 +645,8 @@ QString QCalendar::name() const
    Returns number of days in the month number \a month, in year \a year.
 
    An implementation should return 0 if the given year had no such month. If
-   year is QCalendar::Unspecified, return the usual number of days for the
-   month, in those years that include it.
+   year is QCalendar::Unspecified, return the greatest number of days for the
+   month, in any year.
 
    Calendars with intercalary days may represent these as extra days of the
    preceding month, or as short months separate from the usual ones. In the
