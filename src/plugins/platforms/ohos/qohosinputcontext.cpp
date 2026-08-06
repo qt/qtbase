@@ -10,10 +10,10 @@
 #include "qohosjsmain.h"
 #include "qohosplatformintegration.h"
 #include "qohosplatformscreen.h"
-#include <QRect>
-#include <QInputDevice>
-#include <QGuiApplication>
-#include <QTextCharFormat>
+#include <QtCore/qrect.h>
+#include <QtGui/qinputdevice.h>
+#include <QtGui/qguiapplication.h>
+#include <QtGui/qtextformat.h>
 #include <algorithm>
 #include <qohosjsutils.h>
 #include <inputmethod/inputmethod_controller_capi.h>

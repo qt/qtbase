@@ -4,7 +4,7 @@
 #ifndef QXCOMPONENT_H
 #define QXCOMPONENT_H
 
-#include <QtCore/QtGlobal>
+#include <QtCore/qglobal.h>
 #include <QtCore/private/qnapi_p.h>
 #include <QtCore/private/qohoscommon_p.h>
 #include <ace/xcomponent/native_interface_xcomponent.h>

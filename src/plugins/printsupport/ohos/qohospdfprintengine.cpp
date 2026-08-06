@@ -4,7 +4,7 @@
 #include "qohosnativeprint.h"
 #include "qohospdfprintengine.h"
 #include "qohosprintdevice.h"
-#include <QByteArray>
+#include <QtCore/qbytearray.h>
 #include <QtCore/private/qohoslogger_p.h>
 #include <QtCore/qjsondocument.h>
 #include <QtCore/qjsonobject.h>

@@ -6,10 +6,10 @@
 
 #include <qpa/qplatformscreen.h>
 #include <QtGui/qpa/qplatformscreen_p.h>
-#include <QList>
-#include <QPainter>
-#include <QTimer>
-#include <QWaitCondition>
+#include <QtCore/qlist.h>
+#include <QtGui/qpainter.h>
+#include <QtCore/qtimer.h>
+#include <QtCore/qwaitcondition.h>
 #include <QtCore/qatomic.h>
 
 #include <functional>

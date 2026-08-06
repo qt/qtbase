@@ -3,7 +3,7 @@
 
 #include "qohosnativeprint.h"
 #include "qohosprintdevice.h"
-#include <QPageSize>
+#include <QtGui/qpagesize.h>
 #include <QtCore/private/qohoslogger_p.h>
 #include <QtCore/qjsondocument.h>
 #include <QtCore/qjsonobject.h>

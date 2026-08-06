@@ -11,9 +11,9 @@
 #include <qpa/qplatformbackingstore.h>
 #include <qpa/qwindowsysteminterface.h>
 #include <QtGui/private/qrasterbackingstore_p.h>
-#include <QtOpenGL/QOpenGLPaintDevice>
-#include <QOpenGLContext>
-#include <QScopedPointer>
+#include <QtOpenGL/qopenglpaintdevice.h>
+#include <QtGui/qopenglcontext.h>
+#include <QtCore/qscopedpointer.h>
 #include <cstddef>
 #include <deque>
 #include <functional>

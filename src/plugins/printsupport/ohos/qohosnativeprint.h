@@ -4,10 +4,10 @@
 #ifndef QOHOSNATIVEPRINT_H_
 #define QOHOSNATIVEPRINT_H_
 
-#include <QString>
-#include <QStringList>
-#include <QVector>
-#include <QtGlobal>
+#include <QtCore/qstring.h>
+#include <QtCore/qstringlist.h>
+#include <QtCore/qvector.h>
+#include <QtCore/qglobal.h>
 #if __has_include(<BasicServicesKit/ohprint.h>)
 #include <BasicServicesKit/ohprint.h>
 #else

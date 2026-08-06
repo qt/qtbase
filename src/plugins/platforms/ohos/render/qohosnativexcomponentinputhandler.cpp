@@ -6,7 +6,7 @@
 #include <multimodalinput/oh_input_manager.h>
 #include <render/qohosnativexcomponentinputhandler.h>
 
-#include <QtCore/QCoreApplication>
+#include <QtCore/qcoreapplication.h>
 #include <QtCore/qspan.h>
 #include <native_window/external_window.h>
 #include <qohosinputmethodeventhandler.h>

@@ -5,8 +5,8 @@
 #ifndef QOHOSEVENTDISPATCHER_H
 #define QOHOSEVENTDISPATCHER_H
 
-#include <QtCore/QMutex>
-#include <QtCore/QSemaphore>
+#include <QtCore/qmutex.h>
+#include <QtCore/qsemaphore.h>
 #include <QtGui/private/qunixeventdispatcher_qpa_p.h>
 
 class QOhosEventDispatcher : public QUnixEventDispatcherQPA

@@ -7,7 +7,7 @@
 #include "EGL/egl.h"
 #include "EGL/eglplatform.h"
 #include <GLES3/gl3.h>
-#include <QSharedPointer>
+#include <QtCore/qsharedpointer.h>
 #include <QtCore/qglobal.h>
 #include <QtCore/qsize.h>
 #include <optional>

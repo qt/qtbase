@@ -4,8 +4,8 @@
 #ifndef QOHOSSTYLE_P_H
 #define QOHOSSTYLE_P_H
 
-#include <QCommonStyle>
-#include <QObject>
+#include <QtWidgets/qcommonstyle.h>
+#include <QtCore/qobject.h>
 
 QT_BEGIN_NAMESPACE
 

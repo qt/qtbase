@@ -4,7 +4,7 @@
 #include <render/qnativenode.h>
 
 #include <EGL/eglplatform.h>
-#include <QPointer>
+#include <QtCore/qpointer.h>
 #include <qohosutils.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qohosimageconversions_p.h>

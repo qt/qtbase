@@ -1,8 +1,8 @@
 // Copyright (C) 2025 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#include <QDebug>
-#include <QTime>
+#include <QtCore/qdebug.h>
+#include <QtCore/qdatetime.h>
 
 #include <qpa/qwindowsysteminterface.h>
 
@@ -26,8 +26,8 @@
 #include <render/qwindowproxyregistry.h>
 #include <window_manager/oh_display_capture.h>
 
-#include <QtGui/QGuiApplication>
-#include <QtGui/QWindow>
+#include <QtGui/qguiapplication.h>
+#include <QtGui/qwindow.h>
 #include <QtCore/private/qnapi_p.h>
 #include <QtCore/private/qohoslogger_p.h>
 #include <QtGui/private/qhighdpiscaling_p.h>
