@@ -1054,8 +1054,9 @@ void QOhosView::recover()
 
 void QOhosView::minimize()
 {
-    if (m_ohosWindowProxy != nullptr)
-        m_ohosWindowProxy->minimize();
+    auto *windowProxy = flushedWindowProxyOrNull();
+    if (windowProxy != nullptr)
+        windowProxy->minimize();
 }
 
 void QOhosView::requestActivate()
