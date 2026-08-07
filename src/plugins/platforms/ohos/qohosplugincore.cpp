@@ -17,7 +17,6 @@
 #include <render/qohosjswindowregistry.h>
 #include <tuple>
 #include <typeindex>
-#include <utility>
 #include <vector>
 
 QT_BEGIN_NAMESPACE

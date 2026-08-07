@@ -37,7 +37,6 @@
 #include <render/qohosnativedrageventshandler.h>
 #include <string>
 #include <type_traits>
-#include <utility>
 #include <vector>
 
 namespace ch = std::chrono;

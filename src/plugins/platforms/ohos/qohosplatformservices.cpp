@@ -10,7 +10,6 @@
 #include <QtGui/qcolor.h>
 #include <qohosenums.h>
 #include <qohosplugincore.h>
-#include <utility>
 
 QT_BEGIN_NAMESPACE
 

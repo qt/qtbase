@@ -17,7 +17,6 @@
 #include <algorithm>
 #include <qohosjsutils.h>
 #include <inputmethod/inputmethod_controller_capi.h>
-#include <utility>
 
 QT_BEGIN_NAMESPACE
 

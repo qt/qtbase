@@ -26,7 +26,6 @@
 #include <render/qohossurface.h>
 #include <render/qohoswindowproxy.h>
 #include <functional>
-#include <utility>
 #include <vector>
 
 QT_BEGIN_NAMESPACE

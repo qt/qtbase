@@ -29,7 +29,6 @@
 #include <stdexcept>
 #endif
 #include <type_traits>
-#include <utility>
 
 #define Q_OHOS_NAMED_FUNC(func) (QT_PREPEND_NAMESPACE(makeQOhosNamedFunc)<decltype(func)*, func>)(QT_STRINGIFY(func))
 

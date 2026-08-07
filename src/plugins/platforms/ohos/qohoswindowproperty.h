@@ -12,7 +12,6 @@
 #include <QtGui/qwindow.h>
 #include <memory>
 #include <optional>
-#include <utility>
 
 QT_BEGIN_NAMESPACE
 

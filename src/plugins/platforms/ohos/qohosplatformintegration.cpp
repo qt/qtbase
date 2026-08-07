@@ -41,7 +41,6 @@
 #include <QtCore/qset.h>
 #include <algorithm>
 #include <string>
-#include <utility>
 #include <vector>
 
 #if QT_CONFIG(vulkan)

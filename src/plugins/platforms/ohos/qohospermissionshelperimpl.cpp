@@ -9,7 +9,6 @@
 #include <qohosenums.h>
 #include <qohosutils.h>
 #include <render/qwindowproxyregistry.h>
-#include <utility>
 
 QT_BEGIN_NAMESPACE
 

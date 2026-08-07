@@ -22,7 +22,6 @@
 #include <native_window/external_window.h>
 #include <optional>
 #include <unordered_map>
-#include <utility>
 
 QT_BEGIN_NAMESPACE
 

@@ -6,7 +6,6 @@
 #include <array>
 #include <cstdint>
 #include <qohosutils.h>
-#include <utility>
 
 QT_BEGIN_NAMESPACE
 

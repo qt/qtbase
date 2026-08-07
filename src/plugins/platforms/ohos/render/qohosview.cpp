@@ -32,7 +32,6 @@
 #include <render/qwindowproxyregistry.h>
 #include <string>
 #include <tuple>
-#include <utility>
 #include <vector>
 
 #include "qohoscloseeventcontext_p.h"

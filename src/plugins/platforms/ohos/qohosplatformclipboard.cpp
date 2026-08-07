@@ -10,7 +10,6 @@
 #include <QtCore/private/qohoslogger_p.h>
 #include <qohosclipboardobject.h>
 #include <functional>
-#include <utility>
 
 QT_BEGIN_NAMESPACE
 

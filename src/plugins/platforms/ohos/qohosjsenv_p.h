@@ -31,7 +31,6 @@
 #include <memory>
 #include <napi/native_api.h>
 #include <napi.h>
-#include <utility>
 
 QT_BEGIN_NAMESPACE
 

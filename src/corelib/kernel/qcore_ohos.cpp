@@ -10,7 +10,6 @@
 #include <stdexcept>
 #include <napi.h>
 #include <tuple>
-#include <utility>
 
 QT_BEGIN_NAMESPACE
 
