@@ -539,17 +539,6 @@ void tst_QDnsLookup::lookupNxDomain()
         return;
     QCOMPARE(lookup->name(), domainName(domain));
     QCOMPARE(lookup->type(), type);
-
-    static bool firstRun = true;
-    if (!firstRun
-        && QOperatingSystemVersion::current()
-                >= QOperatingSystemVersion(QOperatingSystemVersion::Windows11_24H2)) {
-        // It fails only after the first run, something is incorrectly cached by
-        // Windows!
-        QEXPECT_FAIL("", "This test fails on Windows 11 24H2. QTBUG-135599", Abort);
-    }
-    firstRun = false;
-
     QCOMPARE(lookup->error(), QDnsLookup::NotFoundError);
 }
 
