@@ -3662,25 +3662,23 @@ void tst_QDateTime::fromStringStringFormat_localTimeZone_data()
             << "GMT"_ba << u"2008-10-13 Etc/GMT+3 11.50"_s
             << u"yyyy-MM-dd ttt hh.mm"_s << 1900 << greg
             << QDateTime(); // Zone name not valid when offset expected
+    // A naked {UTC,GMT}-with-offset always gets represented as such by
+    // preference, even if it also exists as an IANA ID:
     QTimeZone gmtWithOffset("GMT-0");
-    // That may be an alias for "Etc/GMT" on some systems, in which case it
+    // GMT-0 may be an alias for "Etc/GMT" on some systems, in which case it
     // won't be parsed as itself.
     if (gmtWithOffset.isValid() && gmtWithOffset.id() == "GMT-0") {
         QTest::newRow("local-timezone-with-offset:GMT-0")
                 << "GMT"_ba << u"2008-10-13 GMT-0 11.50"_s
                 << u"yyyy-MM-dd t hh.mm"_s << 1900 << greg
-                << QDateTime(QDate(2008, 10, 13), QTime(11, 50), gmtWithOffset);
+                << QDateTime(QDate(2008, 10, 13), QTime(11, 50), UTC);
     }
+    // GMT is (potentially another IANA ID, but also) an alias for UTC:
     QTimeZone gmt("GMT");
     if (gmt.isValid()) {
-        const bool fullyLocal = ([]() {
-            TimeZoneRollback useZone("GMT");
-            return qTzName(0) == u"GMT"_s;
-        })();
         QTest::newRow("local-timezone-with-offset:GMT")
                 << "GMT"_ba << u"2008-10-13 GMT 11.50"_s << u"yyyy-MM-dd t hh.mm"_s << 1900 << greg
-                << QDateTime(QDate(2008, 10, 13), QTime(11, 50),
-                             fullyLocal ? QTimeZone(QTimeZone::LocalTime) : gmt);
+                << QDateTime(QDate(2008, 10, 13), QTime(11, 50), UTC);
     }
     QTimeZone helsinki("Europe/Helsinki");
     if (helsinki.isValid()) {

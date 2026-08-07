@@ -948,10 +948,10 @@ void tst_QtParseTimeZone::prefix_data()
     QTest::addRow("UTC+01:00/C/num+wide/0")
         << u"UTC+01:00"_s << QLocale::c()
         << Flags{ Flag::Numeric | Flag::Wide }
-        << 0 << 9 << QDTP::UnknownDaylightTime << QTimeZone(3600);
+        << 0 << 9 << QDTP::UnknownDaylightTime << QTimeZone::fromSecondsAheadOfUtc(3600);
     QTest::addRow("UTC-31/C/none/0") // Treats the 1 as trailing cruft, as 31 > 24.
         << u"UTC-31"_s << QLocale::c() << Flags{}
-        << 0 << 5 << QDTP::UnknownDaylightTime << QTimeZone(-3 * 3600);
+        << 0 << 5 << QDTP::UnknownDaylightTime << QTimeZone::fromSecondsAheadOfUtc(-3 * 3600);
     QTest::addRow("UTC+0086:U0") // Treats 86 as trailing cruft, not minutes.
         << u"UTC+0086:U0"_s << QLocale::c() << Flags{}
         << 0 << 6 << QDTP::UnknownDaylightTime << QTimeZone(QTimeZone::UTC);
@@ -973,10 +973,12 @@ void tst_QtParseTimeZone::prefix_data()
 #endif
         QTest::addRow("UTC+0300/am_ET/num+wide/0")
             << formatted << am_ET << Flags{ Flag::Numeric | Flag::Wide }
-            << 0 << formatted.size() << QDTP::UnknownDaylightTime << QTimeZone(3600 * 3);
+            << 0 << formatted.size() << QDTP::UnknownDaylightTime
+            << QTimeZone::fromSecondsAheadOfUtc(3600 * 3);
         QTest::addRow("UTC+0300/am_ET/num+wide/11") // Date of Haile Selassie's murder:
             << u"1975-08-27 " + formatted << am_ET << Flags{ Flag::Numeric | Flag::Wide }
-            << 11 << 11 + formatted.size() << QDTP::UnknownDaylightTime << QTimeZone(3600 * 3);
+            << 11 << 11 + formatted.size() << QDTP::UnknownDaylightTime
+            << QTimeZone::fromSecondsAheadOfUtc(3600 * 3);
     }
 
 #if QT_CONFIG(timezone) // Basic well-known zones in relevant locales:
@@ -1058,6 +1060,9 @@ void tst_QtParseTimeZone::prefix_data()
                     // Use zone unless name is or looks like an offset name:
                     if (nameType != QTZ::OffsetName && !matchesOffset(name, timeType))
                         return zone;
+                    constexpr auto offsetBy = [](int offset) {
+                        return QTZ::fromSecondsAheadOfUtc(offset);
+                    };
                     // Otherwise, expect the relevant offset-zone instead:
                     const QDateTime noon(QDate::currentDate(), QTime(12, 0), zone);
                     if (noon.date().year() == 2026 && zone.id() == "America/Vancouver") {
@@ -1066,17 +1071,17 @@ void tst_QtParseTimeZone::prefix_data()
                         // DST for the last time. This confuses the GenericTime
                         // test, so use the year-end standard time for it:
                         if (timeType == QTZ::GenericTime)
-                            return QTZ(zone.standardTimeOffset(QDateTime(QDate(2026, 12, 1),
-                                                                         QTime(12, 0), zone)));
+                            return offsetBy(zone.standardTimeOffset(QDateTime(QDate(2026, 12, 1),
+                                                                              QTime(12, 0), zone)));
                     }
                     if (timeType != QTZ::DaylightTime)
-                        return QTZ(zone.standardTimeOffset(noon));
+                        return offsetBy(zone.standardTimeOffset(noon));
                     const QDateTime june(QDate(noon.date().year(), 6, 21), QTime(12, 0), zone);
                     if (zone.daylightTimeOffset(june))
-                        return QTZ(june.offsetFromUtc());
+                        return offsetBy(june.offsetFromUtc());
                     const QDateTime yule(QDate(noon.date().year(), 12, 21), QTime(12, 0), zone);
                     if (zone.daylightTimeOffset(yule))
-                        return QTZ(yule.offsetFromUtc());
+                        return offsetBy(yule.offsetFromUtc());
                     return QTZ(); // Abandon test case.
                 }();
                 if (!expect.isValid())

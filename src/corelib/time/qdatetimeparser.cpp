@@ -1252,7 +1252,10 @@ static auto findZoneByLongName(QStringView str, const QLocale &locale, const QDa
     if (!pfx)
         pfx = QTimeZonePrivate::findLongUtcPrefix(str);
     if (pfx) {
-        result = R{ QTimeZone(pfx.ianaId), pfx.nameLength };
+        result = R{ pfx.offset
+                        ? QTimeZone::fromSecondsAheadOfUtc(*pfx.offset)
+                        : QTimeZone(pfx.ianaId),
+                    pfx.nameLength };
         Q_ASSERT(result.zone.isValid());
         // TODO: we should be able to take pfx.timeType into account.
     }
