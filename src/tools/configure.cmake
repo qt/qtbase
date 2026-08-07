@@ -35,7 +35,8 @@ qt_feature("harmonydeployqt" PRIVATE
     SECTION "Deployment"
     LABEL "HarmonyOS deployment tool"
     PURPOSE "The HarmonyOS deployment tool automates the process of creating HarmonyOS HAP packages."
-    CONDITION NOT CMAKE_CROSSCOMPILING AND QT_FEATURE_regularexpression AND QT_FEATURE_settings)
+    CONDITION NOT CMAKE_CROSSCOMPILING AND QT_FEATURE_commandlineparser
+        AND QT_FEATURE_process AND QT_FEATURE_regularexpression)
 
 qt_feature("qmake" PRIVATE
     PURPOSE "The qmake tool helps simplify the build process for development projects across different platforms."
