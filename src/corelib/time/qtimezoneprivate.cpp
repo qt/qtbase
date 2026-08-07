@@ -335,8 +335,9 @@ QDateTimePrivate::ZoneState QTimeZonePrivate::stateAtZoneTime(
     const qint64 imminent =
         qAddOverflow(forLocalMSecs, seventeenHoursInMSecs, &millis)
         ? maxMSecs() : millis; // Necessarily >= forLocalMSecs
-    // At most one of those was clipped to its boundary value:
-    Q_ASSERT(recent < imminent && seventeenHoursInMSecs < imminent - recent + 1);
+    // At most one of those was clipped to its boundary value, but recent may be millis + 1:
+    Q_ASSERT(recent < imminent && seventeenHoursInMSecs - 1 <= imminent - recent);
+    // (We only actually need imminent - recent > abs(zone offset), so the stray 2 ms won't hurt.)
 
     const Data past = data(recent), future = data(imminent);
     if (future.atMSecsSinceEpoch == invalidMSecs()
@@ -399,7 +400,7 @@ QDateTimePrivate::ZoneState QTimeZonePrivate::stateAtZoneTime(
         Data tran = past; // Data after last transition before our window.
         Q_ASSERT(forLocalMSecs < 0 || // Pre-epoch TZ info may be unavailable
                  forLocalMSecs - tran.offsetFromUtc * 1000 >= tran.atMSecsSinceEpoch);
-        // If offset actually exceeds 17 hours, that assert may trigger.
+        // An offset of 17 hours or more could trigger that assert.
         Data nextTran = nextTransition(tran.atMSecsSinceEpoch);
         /*
           Now walk those forward until they bracket forLocalMSecs with transitions.
