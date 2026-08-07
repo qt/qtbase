@@ -25,6 +25,7 @@
 #include <qohosutils.h>
 #include <render/qwindowproxyregistry.h>
 #include <window_manager/oh_display_capture.h>
+#include <window_manager/oh_display_manager.h>
 
 #include <QtGui/qguiapplication.h>
 #include <QtGui/qwindow.h>
@@ -162,6 +163,56 @@ std::optional<Qt::ScreenOrientation> tryMapJsDisplayOrientationToQt(QOhosDisplay
     return {};
 }
 
+// log2 index, one step per 90 degrees, as in QPlatformScreen::angleBetween().
+int orientationToIndex(Qt::ScreenOrientation orientation)
+{
+    switch (orientation) {
+    case Qt::ScreenOrientation::PortraitOrientation:
+        return 0;
+    case Qt::ScreenOrientation::LandscapeOrientation:
+        return 1;
+    case Qt::ScreenOrientation::InvertedPortraitOrientation:
+        return 2;
+    case Qt::ScreenOrientation::InvertedLandscapeOrientation:
+        return 3;
+    default:
+        return -1;
+    }
+}
+
+std::optional<Qt::ScreenOrientation>
+tryMapNativeDisplayOrientationToQt(NativeDisplayManager_Orientation nativeOrientation)
+{
+    switch (nativeOrientation) {
+    case DISPLAY_MANAGER_PORTRAIT:
+        return Qt::ScreenOrientation::PortraitOrientation;
+    case DISPLAY_MANAGER_LANDSCAPE:
+        return Qt::ScreenOrientation::LandscapeOrientation;
+    case DISPLAY_MANAGER_PORTRAIT_INVERTED:
+        return Qt::ScreenOrientation::InvertedPortraitOrientation;
+    case DISPLAY_MANAGER_LANDSCAPE_INVERTED:
+        return Qt::ScreenOrientation::InvertedLandscapeOrientation;
+    case DISPLAY_MANAGER_UNKNOWN:
+        break;
+    }
+
+    return {};
+}
+
+Qt::ScreenOrientation orientationFromIndex(int index)
+{
+    switch (((index % 4) + 4) % 4) {
+    case 0:
+        return Qt::ScreenOrientation::PortraitOrientation;
+    case 1:
+        return Qt::ScreenOrientation::LandscapeOrientation;
+    case 2:
+        return Qt::ScreenOrientation::InvertedPortraitOrientation;
+    default:
+        return Qt::ScreenOrientation::InvertedLandscapeOrientation;
+    }
+}
+
 }
 
 QOhosPlatformScreen::QOhosPlatformScreen(const QOhosDisplayInfo &displayInfo, QOhosSupplier<std::vector<QOhosPlatformScreen *>> platformScreenListSupplier)
@@ -209,6 +260,7 @@ void QOhosPlatformScreen::setDisplayInfo(const QOhosDisplayInfo &displayInfo)
 {
     auto geometryChanged = displayInfo.displayGeometryPixels() != m_displayInfo.displayGeometryPixels();
     auto logicalDpiChanged = displayInfo.densityDPI != m_displayInfo.densityDPI;
+    const Qt::ScreenOrientation previousOrientation = orientation();
 
     QVector<QPair<QWindow *, std::optional<QRect>>> windowRectPairs;
 
@@ -234,6 +286,9 @@ void QOhosPlatformScreen::setDisplayInfo(const QOhosDisplayInfo &displayInfo)
 
     if (geometryChanged)
         QWindowSystemInterface::handleScreenGeometryChange(QPlatformScreen::screen(), geometry(), availableGeometry());
+
+    if (orientation() != previousOrientation)
+        QWindowSystemInterface::handleScreenOrientationChange(QPlatformScreen::screen(), orientation());
 
     if (logicalDpiChanged) {
         auto ldpi = logicalDpi();
@@ -284,7 +339,32 @@ Qt::ScreenOrientation QOhosPlatformScreen::orientation() const
 
 Qt::ScreenOrientation QOhosPlatformScreen::nativeOrientation() const
 {
-    return Qt::ScreenOrientation::PrimaryOrientation;
+    // No direct query exists, so derive it from this display's orientation
+    // stepped back by its rotation. A hardware constant, so cache it.
+    if (m_nativeOrientation)
+        return *m_nativeOrientation;
+
+    NativeDisplayManager_DisplayInfo *displayInfo = nullptr;
+    const auto displayId = static_cast<uint32_t>(m_displayInfo.id.value());
+    if (OH_NativeDisplayManager_CreateDisplayById(displayId, &displayInfo) != DISPLAY_MANAGER_OK
+        || displayInfo == nullptr) {
+        return Qt::ScreenOrientation::PrimaryOrientation;
+    }
+
+    const NativeDisplayManager_Orientation nativeOrientation = displayInfo->orientation;
+    const NativeDisplayManager_Rotation rotation = displayInfo->rotation;
+    OH_NativeDisplayManager_DestroyDisplay(displayInfo);
+
+    const auto current = tryMapNativeDisplayOrientationToQt(nativeOrientation);
+    if (!current)
+        return Qt::ScreenOrientation::PrimaryOrientation;
+
+    const int currentIndex = orientationToIndex(*current);
+    if (currentIndex < 0)
+        return Qt::ScreenOrientation::PrimaryOrientation;
+
+    m_nativeOrientation = orientationFromIndex(currentIndex - static_cast<int>(rotation));
+    return *m_nativeOrientation;
 }
 
 QRect QOhosPlatformScreen::getAvailableArea() const

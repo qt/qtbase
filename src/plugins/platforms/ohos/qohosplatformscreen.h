@@ -13,6 +13,7 @@
 #include <QtCore/qatomic.h>
 
 #include <functional>
+#include <optional>
 #include <qohosdisplayinfo.h>
 #include <qohosplugincore.h>
 #include "EGL/eglplatform.h"
@@ -76,6 +77,7 @@ private:
     void releaseSurface();
     QScopedPointer<QOhosPlatformCursor> m_platformCursor;
     QOhosDisplayInfo m_displayInfo;
+    mutable std::optional<Qt::ScreenOrientation> m_nativeOrientation;
     QRect m_availableGeometry;
     QOhosSupplier<std::vector<QOhosPlatformScreen *>> m_platformScreenListSupplier;
 };
