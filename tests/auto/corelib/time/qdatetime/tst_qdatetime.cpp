@@ -3637,14 +3637,12 @@ void tst_QDateTime::fromStringStringFormat_localTimeZone_data()
     const QCalendar greg;
 
 #if QT_CONFIG(timezone)
-    bool lacksRows = true;
     // Note that the localTimeZone needn't match the zone used in the string and
     // expected date-time; indeed, having them different is probably best.
     // Both zones need to be valid; GMT always is, so is a safe one to use for
     // whichever the test-case doesn't care about (if that applies to either).
     QTimeZone etcGmtWithOffset("Etc/GMT+3");
     if (etcGmtWithOffset.isValid()) {
-        lacksRows = false;
         QTest::newRow("local-timezone-t-with-zone:Etc/GMT+3")
                 << "GMT"_ba << u"2008-10-13 Etc/GMT+3 11.50"_s
                 << u"yyyy-MM-dd t hh.mm"_s << 1900 << greg
@@ -3664,7 +3662,6 @@ void tst_QDateTime::fromStringStringFormat_localTimeZone_data()
             << QDateTime(); // Zone name not valid when offset expected
     QTimeZone gmtWithOffset("GMT-0");
     if (gmtWithOffset.isValid()) {
-        lacksRows = false;
         QTest::newRow("local-timezone-with-offset:GMT-0")
                 << "GMT"_ba << u"2008-10-13 GMT-0 11.50"_s
                 << u"yyyy-MM-dd t hh.mm"_s << 1900 << greg
@@ -3672,7 +3669,6 @@ void tst_QDateTime::fromStringStringFormat_localTimeZone_data()
     }
     QTimeZone gmt("GMT");
     if (gmt.isValid()) {
-        lacksRows = false;
         const bool fullyLocal = ([]() {
             TimeZoneRollback useZone("GMT");
             return qTzName(0) == u"GMT"_s;
@@ -3684,7 +3680,6 @@ void tst_QDateTime::fromStringStringFormat_localTimeZone_data()
     }
     QTimeZone helsinki("Europe/Helsinki");
     if (helsinki.isValid()) {
-        lacksRows = false;
         // QTBUG-96861: QAsn1Element::toDateTime() tripped over an assert due to
         // the first 20m 11s of 1921-05-01 being skipped, so the parser's
         // attempt to construct a local time after scanning yyMM tripped up on
@@ -3701,8 +3696,6 @@ void tst_QDateTime::fromStringStringFormat_localTimeZone_data()
                 << "Europe/Helsinki"_ba << u"210501001006Z"_s << u"yyMMddHHmmsst"_s << 1950 << greg
                 << QDateTime(QDate(2021, 5, 1), QTime(0, 10, 6), UTC);
     }
-    if (lacksRows)
-        QSKIP("Testcases all use zones unsupported on this platform");
 #else
     QSKIP("Test only possible with timezone support enabled");
 #endif
