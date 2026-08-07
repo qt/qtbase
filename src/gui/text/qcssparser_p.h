@@ -299,13 +299,6 @@ enum Edge {
     NumEdges
 };
 
-enum Corner {
-    TopLeftCorner,
-    TopRightCorner,
-    BottomLeftCorner,
-    BottomRightCorner
-};
-
 enum TileMode {
     TileMode_Unknown,
     TileMode_Round,
