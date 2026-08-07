@@ -1042,11 +1042,12 @@ void QOhosView::setFullScreen()
 
 void QOhosView::recover()
 {
-    if (m_ohosWindowProxy == nullptr)
+    auto *windowProxy = flushedWindowProxyOrNull();
+    if (windowProxy == nullptr)
         return;
 
     if (!QOhosDeviceInfo::isPhone())
-        m_ohosWindowProxy->recover();
+        windowProxy->recover();
     else
         applyPhoneWindowChrome();
 }
