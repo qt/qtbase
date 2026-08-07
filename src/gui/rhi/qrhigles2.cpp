@@ -1009,6 +1009,11 @@ bool QRhiGles2::create(QRhi::Flags flags)
 
     caps.coreProfile = actualFormat.profile() == QSurfaceFormat::CoreProfile;
 
+    // Core profile has no usable default vertex array object. On OpenGL ES
+    // object 0 works for ordinary draws, but the indirect draw commands are
+    // specified to fail with INVALID_OPERATION unless a non-zero one is bound.
+    caps.vertexArrayObject = caps.coreProfile || (caps.gles && caps.ctxMajor >= 3); // ES 3.0
+
     if (caps.gles)
         caps.uniformBuffers = caps.ctxMajor >= 3; // ES 3.0
     else
@@ -2419,14 +2424,14 @@ void QRhiGles2::beginExternal(QRhiCommandBuffer *cb)
 
     cbD->resetCommands();
 
-    if (vao) {
+    // ARRAY_BUFFER and SHADER_STORAGE_BUFFER are context state, not vertex
+    // array object state, so going back to object 0 does not clear them.
+    if (vao)
         f->glBindVertexArray(0);
-    } else {
-        f->glBindBuffer(GL_ARRAY_BUFFER, 0);
-        f->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-        if (caps.compute)
-            f->glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-    }
+    f->glBindBuffer(GL_ARRAY_BUFFER, 0);
+    f->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    if (caps.compute)
+        f->glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
 void QRhiGles2::endExternal(QRhiCommandBuffer *cb)
@@ -3368,7 +3373,7 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
         case QGles2CommandBuffer::Command::BeginFrame:
             if (cmd.args.beginFrame.timestampQuery)
                 glQueryCounter(cmd.args.beginFrame.timestampQuery, GL_TIMESTAMP);
-            if (caps.coreProfile) {
+            if (caps.vertexArrayObject) {
                 if (!vao)
                     f->glGenVertexArrays(1, &vao);
                 f->glBindVertexArray(vao);
@@ -3384,16 +3389,16 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
                     f->glVertexAttribDivisor(GLuint(i), 0);
                 state.instancedAttributesUsed = false;
             }
-            if (!vao) {
-                for (int i = 0; i < CommandBufferExecTrackedState::TRACKED_ATTRIB_COUNT; ++i) {
-                    if (state.enabledAttribArrays[i]) {
-                        f->glDisableVertexAttribArray(GLuint(i));
-                        state.enabledAttribArrays[i] = false;
-                    }
+            // The enables are vertex array object state, so without this they
+            // would persist across frames, pointing into deleted buffers.
+            for (int i = 0; i < CommandBufferExecTrackedState::TRACKED_ATTRIB_COUNT; ++i) {
+                if (state.enabledAttribArrays[i]) {
+                    f->glDisableVertexAttribArray(GLuint(i));
+                    state.enabledAttribArrays[i] = false;
                 }
-            } else {
-                f->glBindVertexArray(0);
             }
+            if (vao)
+                f->glBindVertexArray(0);
             if (cmd.args.endFrame.timestampQuery)
                 glQueryCounter(cmd.args.endFrame.timestampQuery, GL_TIMESTAMP);
             break;

@@ -1033,6 +1033,7 @@ public:
               needsDepthStencilCombinedAttach(false),
               srgbWriteControl(false),
               coreProfile(false),
+              vertexArrayObject(false),
               uniformBuffers(false),
               elementIndexUint(false),
               depth24(false),
@@ -1095,6 +1096,7 @@ public:
         uint needsDepthStencilCombinedAttach : 1;
         uint srgbWriteControl : 1;
         uint coreProfile : 1;
+        uint vertexArrayObject : 1;
         uint uniformBuffers : 1;
         uint elementIndexUint : 1;
         uint depth24 : 1;
