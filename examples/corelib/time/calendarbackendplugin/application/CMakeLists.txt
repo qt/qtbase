@@ -14,3 +14,12 @@ target_link_libraries(JulianGregorianCalendar
         Qt::Core
 )
 
+# On WebAssembly the plugin is a side module. One way to make it available to
+# the app is to preload it into the in-memory filesystem at startup.
+if(EMSCRIPTEN)
+    qt_add_wasm_preload(JulianGregorianCalendar
+        DESTINATION /plugin
+        TARGETS calendarPlugin
+    )
+endif()
+
