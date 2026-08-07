@@ -7,7 +7,6 @@
 #include <qarkui/qohosdragaction.h>
 #include <qohospixelmapconversions.h>
 #include <qohosutils.h>
-#include <utility>
 
 QT_BEGIN_NAMESPACE
 

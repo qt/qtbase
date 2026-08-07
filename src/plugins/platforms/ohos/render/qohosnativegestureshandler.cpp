@@ -8,7 +8,6 @@
 #include <qohosplatformintegration.h>
 #include <qohosutils.h>
 #include <render/qohosbatchingrequestshandler.h>
-#include <utility>
 #include <vector>
 
 QT_BEGIN_NAMESPACE

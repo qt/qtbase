@@ -24,7 +24,6 @@
 #include <memory>
 #include <mutex>
 #include <optional>
-#include <utility>
 
 QT_BEGIN_NAMESPACE
 

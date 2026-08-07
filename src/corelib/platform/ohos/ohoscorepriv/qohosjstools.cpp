@@ -5,7 +5,6 @@
 #include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/private/qohoslogger_p.h>
 #include <iterator>
-#include <utility>
 #include <vector>
 
 QT_BEGIN_NAMESPACE

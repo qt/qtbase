@@ -22,7 +22,6 @@
 #include <optional>
 #include <set>
 #include <unordered_map>
-#include <utility>
 #include <vector>
 
 #include "qohosplatformintegration.h"

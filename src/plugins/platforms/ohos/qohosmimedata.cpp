@@ -5,7 +5,6 @@
 #include <QtGui/private/qinternalmimedata_p.h>
 #include <optional>
 #include <qohosmimedata.h>
-#include <utility>
 
 QT_BEGIN_NAMESPACE
 

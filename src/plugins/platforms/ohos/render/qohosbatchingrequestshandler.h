@@ -12,7 +12,6 @@
 #include <memory>
 #include <mutex>
 #include <qohosplugincore.h>
-#include <utility>
 #include <vector>
 
 QT_BEGIN_NAMESPACE

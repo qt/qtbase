@@ -48,7 +48,6 @@
 #include <cstdlib>
 #include <optional>
 #include <unordered_map>
-#include <utility>
 
 #include "private/qohosplatformtheme_p.h"
 #include "qarkui/qxcomponentregistry.h"

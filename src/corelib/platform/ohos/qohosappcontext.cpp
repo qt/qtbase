@@ -3,7 +3,6 @@
 
 #include "qohosappcontext_p.h"
 #include <QtCore/qglobalstatic.h>
-#include <utility>
 
 QT_BEGIN_NAMESPACE
 

@@ -4,7 +4,6 @@
 #include "qohosjsutils.h"
 #include <QtCore/private/qohoscommon_p.h>
 #include <qohosutils.h>
-#include <utility>
 
 using namespace std::chrono_literals;
 

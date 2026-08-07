@@ -10,7 +10,6 @@
 #include <multimedia/image_framework/image/pixelmap_native.h>
 #include <qarkui/qarkuiutils.h>
 #include <qohosutils.h>
-#include <utility>
 
 QT_BEGIN_NAMESPACE
 

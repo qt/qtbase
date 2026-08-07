@@ -22,7 +22,6 @@
 #include <string>
 #include <type_traits>
 #include <typeinfo>
-#include <utility>
 #include <vector>
 
 QT_BEGIN_NAMESPACE

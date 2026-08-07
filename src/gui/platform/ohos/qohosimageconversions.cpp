@@ -8,7 +8,6 @@
 #include <cstdint>
 #include <cstring>
 #include <optional>
-#include <utility>
 
 QT_BEGIN_NAMESPACE
 

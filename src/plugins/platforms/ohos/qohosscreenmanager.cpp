@@ -4,7 +4,6 @@
 #include <qohosscreenmanager.h>
 #include <cstdint>
 #include <memory>
-#include <utility>
 #include <qarkui/displaymanager.h>
 #include <qohosdisplayinfo.h>
 #include <qohosjsutils.h>

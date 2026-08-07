@@ -14,7 +14,6 @@
 #include <qohosutils.h>
 #include <render/qohosbatchingrequestshandler.h>
 #include <unordered_set>
-#include <utility>
 
 using VsyncId = QtOhos::TypedId<std::uintptr_t, struct VsyncIdTag>;
 

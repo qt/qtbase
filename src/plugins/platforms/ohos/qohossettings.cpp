@@ -13,7 +13,6 @@
 #include <qohosutils.h>
 #include <stdexcept>
 #include <string>
-#include <utility>
 
 QT_BEGIN_NAMESPACE
 

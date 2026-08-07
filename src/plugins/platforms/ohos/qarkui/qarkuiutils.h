@@ -15,7 +15,6 @@
 #include <qohosutils.h>
 #include <string>
 #include <type_traits>
-#include <utility>
 
 QT_BEGIN_NAMESPACE
 

@@ -9,7 +9,6 @@
 #include <pthread.h>
 #include <qohossinglethreadexecutor.h>
 #include <queue>
-#include <utility>
 
 QT_BEGIN_NAMESPACE
 

@@ -33,7 +33,6 @@
 #include <render/qohoswindowproxydatafactory.h>
 #include <render/qxcomponent.h>
 #include <type_traits>
-#include <utility>
 
 QT_BEGIN_NAMESPACE
 
