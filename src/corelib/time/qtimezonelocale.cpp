@@ -1049,7 +1049,7 @@ QTimeZonePrivate::findNarrowOffsetPrefix(QStringView text, const QLocale &locale
             // should match what the QLocale(ianaId) constructor accepts, which
             // is good enough for our purposes.
             return { isoOffsetFormat(match.offset, QTimeZone::OffsetName).toLatin1(),
-                     match.size, QTimeZone::GenericTime };
+                     match.size, QTimeZone::GenericTime, match.offset };
         }
     }
     return {};
@@ -1073,7 +1073,7 @@ QTimeZonePrivate::findOffsetPrefix(QStringView text, const QLocale &locale,
     if (match && match.size > best.nameLength
         && QTimeZone::MinUtcOffsetSecs <= match.offset
         && match.offset <= QTimeZone::MaxUtcOffsetSecs) {
-        best = { idForOffset(match.offset), match.size, QTimeZone::GenericTime };
+        best = { idForOffset(match.offset), match.size, QTimeZone::GenericTime, match.offset };
     }
 
     return best;

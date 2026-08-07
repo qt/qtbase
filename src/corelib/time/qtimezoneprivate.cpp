@@ -994,8 +994,11 @@ findUtcOffsetPrefix(QStringView text, const QLocale &locale)
 
     constexpr int MaxOffsetSeconds
         = qMax(QTimeZone::MaxUtcOffsetSecs, -QTimeZone::MinUtcOffsetSecs);
-    if (!ok || (hour * 60 + minute) * 60 > MaxOffsetSeconds)
+    int seconds = (hour * 60 + minute) * 60;
+    if (!ok || seconds > MaxOffsetSeconds)
         return {}; // Let the zone-name scan find UTC or GMT prefix as a zone name.
+    if (sign == '-')
+        seconds = -seconds;
 
     // Transform offset into the form the QTimeZone constructor prefers:
     char buffer[26];
@@ -1009,8 +1012,7 @@ findUtcOffsetPrefix(QStringView text, const QLocale &locale)
         std::snprintf(buffer, sizeof(buffer), "UTC%c%02u", sign, hour);
 
     return { QByteArray(buffer, qstrnlen(buffer, sizeof(buffer))),
-             3 + signLen + minEnd,
-             QTimeZone::GenericTime };
+             3 + signLen + minEnd, QTimeZone::GenericTime, seconds };
 }
 
 QTimeZonePrivate::NamePrefixMatch
@@ -1295,6 +1297,12 @@ public:
     // recognising its representation in an offset text straightforward.
     static constexpr qint32 OffsetMagnitude = 38245; // 10h 37m 25s in seconds.
     static constexpr QByteArrayView hourAscii{"10"}, minuteAscii{"37"}, secondAscii{"25"};
+
+    bool compare(QStringView str)
+    {
+        reset();
+        return txt.size() >= str.size() && textMatch(str, 0, str.size(), str.size());
+    }
 
     auto match(QStringView str, const QList<qsizetype> &strPat,
                const QLocaleData *locData, char signChar);
@@ -1741,11 +1749,9 @@ findOffsetPrefixImpl(QStringView text, const QLocale &locale,
         // Returns true if candidate uses digitLocale's digits.
         const auto consider = [&best, &aligner, txtSign = textPattern.sign, digitLocale]
             (QStringView candidate, char sign, QTimeZone::TimeType season) {
-            const auto idForOffset = [sign](int offsetSeconds) -> QByteArray {
+            const auto idForOffset = [](int offsetSeconds) -> QByteArray {
                 if (!offsetSeconds)
                     return "UTC";
-                if (sign == '-')
-                    offsetSeconds = -offsetSeconds;
                 return QTimeZonePrivate::isoOffsetFormat(offsetSeconds,
                                                          QTimeZone::OffsetName).toLatin1();
             };
@@ -1762,8 +1768,12 @@ findOffsetPrefixImpl(QStringView text, const QLocale &locale,
                 (pat.sign & sign) != sign || (txtSign & sign) == sign) {
                 const auto parsed = aligner.match(
                     candidate, pat.pattern, localeDataFor(pat), pat.sign);
-                if (parsed && parsed.length > best.nameLength)
-                    best = { idForOffset(parsed.offset), parsed.length, season };
+                if (parsed && parsed.length > best.nameLength) {
+                    // Formally, ISO 8601 does not allow a minus sign on a 0
+                    // offset, but parsing is allowed to be permissive.
+                    const int offset = sign == '-' ? -parsed.offset : parsed.offset;
+                    best = { idForOffset(offset), parsed.length, season, offset };
+                }
                 return pat.digitsAreLocale;
             }
             return false;
@@ -1788,8 +1798,8 @@ findOffsetPrefixImpl(QStringView text, const QLocale &locale,
                 }
                 if (const QString nul = greenwich.displayName(season, format, locale);
                     nul.size() > best.nameLength) {
-                    if (text.startsWith(nul))
-                        best = { "UTC"_ba, nul.size() };
+                    if (aligner.compare(nul))
+                        best = { "UTC"_ba, nul.size(), QTimeZone::GenericTime, 0 };
                 }
                 if (best.nameLength == text.size()) // Shortcut when fully matched.
                     return best;
@@ -1834,30 +1844,41 @@ QTimeZonePrivate::findLongUtcPrefix(QStringView text)
                 return index < text.size() && isAsciiDigit(text[index].unicode());
             };
             qsizetype length = 3;
+            constexpr int MaxGroups = 3;
             int groups = 0; // Number of groups of digits seen (allow up to three).
+            int fields[MaxGroups] = {0, 0, 0};
             do {
                 // text[length] is sign or the colon after last digit-group.
                 Q_ASSERT(length < text.size());
                 if (!digitAt(length + 1))
                     break;
+                QStringView tail = text.sliced(length + 1);
                 qsizetype digits = digitAt(length + 2) ? 2 : 1;
-                do {
-                    bool ok = false;
-                    unsigned short field = text.sliced(length + 1, digits).toUShort(&ok);
-                    if (ok && field < (groups ? 60 : 24))
-                        break;
-                    // On failure, drop a digit and (if any remain) try again:
-                } while (--digits > 0);
                 // Fields after hour must have two digits:
-                if (digits < (groups ? 2 : 1))
+                const qsizetype minDigits = groups ? 2 : 1;
+                while (digits >= minDigits) {
+                    bool ok = false;
+                    const unsigned short field = tail.first(digits).toUShort(&ok);
+                    if (ok && field < (groups ? 60 : 24)) {
+                        fields[groups] = field;
+                        break;
+                    }
+                    // On failure, drop a digit and (if any remain) try again:
+                    --digits;
+                }
+                if (digits < minDigits)
                     break;
                 // Consume sign or colon and digits that make up this field:
                 length += 1 + digits;
-            } while (++groups < 3 && length < text.size() && text[length] == u':');
-            if (length > 4)
-                return { text.first(length).toLatin1(), length, QTimeZone::GenericTime };
+            } while (++groups < MaxGroups && length < text.size() && text[length] == u':');
+            if (length > 4) {
+                int offset = (fields[0] * 60 + fields[1]) * 60 + fields[2];
+                if (text[3] == u'-')
+                    offset = -offset;
+                return { text.first(length).toLatin1(), length, QTimeZone::GenericTime, offset };
+            }
         }
-        return { utcQByteArray(), 3, QTimeZone::GenericTime };
+        return { utcQByteArray(), 3 };
     }
 
     return {};
