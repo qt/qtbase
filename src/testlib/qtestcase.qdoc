@@ -940,18 +940,10 @@
     Similarly, if qmake is used and the configuration includes \c{QT += gui}, then
     \c QT_GUI_LIB will be defined automatically.
 
-    \note On platforms that have keypad navigation enabled by default,
-    this macro will forcefully disable it if \c QT_WIDGETS_LIB is defined.  This is done
-    to simplify the usage of key events when writing autotests. If you wish to write a
-    test case that uses keypad navigation, you should enable it either in the
-    \c {initTestCase()} or \c {init()} functions of your test case by calling
-    \l {QApplication::setNavigationMode()}.
-
     Example:
     \snippet code/src_qtestlib_qtestcase.cpp 11
 
-    \sa QTEST_APPLESS_MAIN(), QTEST_GUILESS_MAIN(), QTest::qExec(),
-    QApplication::setNavigationMode()
+    \sa QTEST_APPLESS_MAIN(), QTEST_GUILESS_MAIN(), QTest::qExec()
 */
 
 /*! \macro QTEST_APPLESS_MAIN(TestClass)
