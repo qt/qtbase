@@ -37,7 +37,7 @@ qsb --glsl "300 es,330" --hlsl 61 -c --msl 12 multiview.frag -o multiview.frag.q
 qsb --glsl "150,120,100 es" --hlsl 50 --msl 12 -o samesrb_1.vert.qsb samesrb_1.vert
 qsb --glsl "150,120,100 es" --hlsl 50 --msl 12 -o samesrb_2.vert.qsb samesrb_2.vert
 qsb --glsl "150,120,100 es" --hlsl 50 --msl 12 -o samesrb.frag.qsb samesrb.frag
-qsb --glsl 430 --hlsl 50 --msl 12 -o indirect_draw_args.comp.qsb indirect_draw_args.comp
+qsb --glsl 310es,430 --hlsl 50 --msl 12 -o indirect_draw_args.comp.qsb indirect_draw_args.comp
 qsb --glsl "150,130,300 es" --hlsl 50 --msl 12 -o fullscreenquad.vert.qsb fullscreenquad.vert
 qsb --glsl "150,130,300 es" --hlsl 50 --msl 12 -o fullscreenquad_color.frag.qsb fullscreenquad_color.frag
 qsb --glsl "420,430,460" -o indirect_multi_draw_sdp.vert.qsb indirect_multi_draw_sdp.vert
