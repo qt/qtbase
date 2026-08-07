@@ -155,11 +155,13 @@ void QHttpNetworkConnectionChannel::init()
                          this, &QHttpNetworkConnectionChannel::_q_encryptedBytesWritten,
                          Qt::DirectConnection);
 
+        // AXIVION DISABLE Qt-Security-QSslSocketIgnoreSslErrors: intentional behavior
         if (ignoreAllSslErrors)
             sslSocket->ignoreSslErrors();
 
         if (!ignoreSslErrorsList.isEmpty())
             sslSocket->ignoreSslErrors(ignoreSslErrorsList);
+        // AXIVION ENABLE Qt-Security-QSslSocketIgnoreSslErrors
 
         if (sslConfiguration && !sslConfiguration->isNull())
            sslSocket->setSslConfiguration(*sslConfiguration);
@@ -406,9 +408,11 @@ bool QHttpNetworkConnectionChannel::ensureConnection()
 
             sslSocket->setPeerVerifyName(connection->d_func()->peerVerifyName);
             sslSocket->connectToHostEncrypted(connectHost, connectPort, QIODevice::ReadWrite, networkLayerPreference);
+            // AXIVION DISABLE Qt-Security-QSslSocketIgnoreSslErrors: intentional behavior
             if (ignoreAllSslErrors)
                 sslSocket->ignoreSslErrors();
             sslSocket->ignoreSslErrors(ignoreSslErrorsList);
+            // AXIVION ENABLE Qt-Security-QSslSocketIgnoreSslErrors
 
             // limit the socket read buffer size. we will read everything into
             // the QHttpNetworkReply anyway, so let's grow only that and not
@@ -724,8 +728,10 @@ void QHttpNetworkConnectionChannel::setProxy(const QNetworkProxy &networkProxy)
 
 void QHttpNetworkConnectionChannel::ignoreSslErrors()
 {
+    // AXIVION DISABLE Qt-Security-QSslSocketIgnoreSslErrors: intentional behavior
     if (socket)
         static_cast<QSslSocket *>(socket)->ignoreSslErrors();
+    // AXIVION ENABLE Qt-Security-QSslSocketIgnoreSslErrors
 
     ignoreAllSslErrors = true;
 }
@@ -733,8 +739,10 @@ void QHttpNetworkConnectionChannel::ignoreSslErrors()
 
 void QHttpNetworkConnectionChannel::ignoreSslErrors(const QList<QSslError> &errors)
 {
+    // AXIVION DISABLE Qt-Security-QSslSocketIgnoreSslErrors: intentional behavior
     if (socket)
         static_cast<QSslSocket *>(socket)->ignoreSslErrors(errors);
+    // AXIVION ENABLE Qt-Security-QSslSocketIgnoreSslErrors
 
     ignoreSslErrorsList = errors;
 }
