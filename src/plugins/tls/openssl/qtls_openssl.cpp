@@ -651,7 +651,7 @@ bool TlsCryptographOpenSSL::startHandshake()
                 return false;
             }
 
-            for (const QSslError &error : ocspErrors) {
+            for (const QSslError &error : std::as_const(ocspErrors)) {
                 errors << error;
                 emit q->peerVerifyError(error);
                 if (q->state() != QAbstractSocket::ConnectedState)
