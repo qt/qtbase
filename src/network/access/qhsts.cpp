@@ -329,8 +329,8 @@ quoted-pair    = "\" CHAR
 
 bool QHstsHeaderParser::parse(const QHttpHeaders &headers)
 {
-    for (const auto &value : headers.values(
-                 QHttpHeaders::WellKnownHeader::StrictTransportSecurity)) {
+    const auto stsHeaders = headers.values(QHttpHeaders::WellKnownHeader::StrictTransportSecurity);
+    for (const auto &value : stsHeaders) {
         header = value;
         // RFC6797, 8.1:
         //
