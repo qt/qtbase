@@ -165,6 +165,7 @@ public:
         QByteArray ianaId;
         qsizetype nameLength = 0;
         QTimeZone::TimeType timeType = QTimeZone::GenericTime;
+        std::optional<int> offset = {}; // Set when fixed-offset for UTC / OffsetFromUTC
         operator bool() const { return nameLength > 0; }
     };
     static NamePrefixMatch findLongNamePrefix(QStringView text, const QLocale &locale,

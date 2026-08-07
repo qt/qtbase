@@ -263,9 +263,11 @@ void tst_QTimeZoneBackend::roundtripDisplayNames()
                      << "via" << name;
         });
         QCOMPARE(match.nameLength, name.size());
-        report.dismiss();
+        if (zone.isUtcOrFixedOffset()) {
+            QVERIFY(match.offset);
+            QCOMPARE(*match.offset, zone.fixedSecondsAheadOfUtc());
 #if 0
-        if (match.ianaId != zone.id()) {
+        } else if (match.ianaId != zone.id()) {
             const QTimeZone found = QTimeZone(match.ianaId);
             if (QTimeZonePrivate::extractPrivate(found)->offsetFromUtc(when)
                 != QTimeZonePrivate::extractPrivate(zone)->offsetFromUtc(when)) {
@@ -281,8 +283,9 @@ void tst_QTimeZoneBackend::roundtripDisplayNames()
                 // There are also some absurdly over-generic names, that lead to
                 // ambiguities, e.g. "heure : West"
             }
-        }
 #endif // Debug code
+        }
+        report.dismiss();
     } else if (type != QTimeZone::DaylightTime) { /* Zones with no DST have no DST-name */
         qDebug("Empty display name");
     }
