@@ -127,7 +127,9 @@ async function qtLoad(config)
     const preloadFetchHelper = async (path) => {
         const response = await fetch(path);
         if (!response.ok)
-            throw new Error("Could not fetch preload file: " + path);
+            throw new Error("Could not fetch preload file: " + path +
+                ". For a shared (dynamic) build, run wasmdeployqt on the app to " +
+                "generate the Qt preload manifests before serving it.");
         return response.json();
     }
     const filesToPreload = (await Promise.all(config.qt.preload.map(preloadFetchHelper))).flat();
