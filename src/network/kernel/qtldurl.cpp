@@ -76,7 +76,8 @@ static QStringList locatePublicSuffixFiles()
 
 QPublicSuffixDatabase::QPublicSuffixDatabase()
 {
-    for (auto &&fileName : locatePublicSuffixFiles()) {
+    const auto fileNames = locatePublicSuffixFiles();
+    for (const auto &fileName : fileNames) {
         if (loadFile(fileName))
             return;
     }
