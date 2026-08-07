@@ -32,13 +32,11 @@ namespace QTest {
 //! [16]
 
 //! [toString-overload]
-namespace {
-    char *toString(const MyPoint &point)
-    {
-        return QTest::toString("MyPoint(" +
-                               QByteArray::number(point.x()) + ", " +
-                               QByteArray::number(point.y()) + ')');
-    }
+char *toString(const MyPoint &point) // should be inside the same namespace as MyPoint
+{
+    return QTest::toString("MyPoint(" +
+                           QByteArray::number(point.x()) + ", " +
+                           QByteArray::number(point.y()) + ')');
 }
 //! [toString-overload]
 
