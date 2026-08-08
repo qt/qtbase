@@ -22,7 +22,9 @@
 #include <atomic>
 #include <chrono>
 #include <csignal>
+#include <QtCore/qxpfunctional.h>
 #include <optional>
+
 #if defined(Q_OS_WIN32)
 #include <process.h>
 #else
@@ -724,8 +726,8 @@ static bool isRunning() {
     return output.simplified().toInt(&ok) > 0 && ok;
 }
 
-template <typename Predicate>
-static bool pollUntil(Predicate predicate, QDeadlineTimer deadline,
+static bool pollUntil(qxp::function_ref<bool() const> predicate,
+                      QDeadlineTimer deadline,
                       std::chrono::nanoseconds interval)
 {
     do {
