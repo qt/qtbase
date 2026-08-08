@@ -4,6 +4,13 @@
 #include <QResource>
 #include <QTest>
 
+class TestResource : public QResource
+{
+public:
+    using QResource::QResource;
+    using QResource::children;
+};
+
 class tst_QResource : public QObject
 {
     Q_OBJECT
@@ -14,6 +21,7 @@ private slots:
 
     void lookup_data();
     void lookup();
+    void children();
 
 private:
     QString resourceFile;
@@ -50,6 +58,17 @@ void tst_QResource::lookup()
         isValid = QResource(path).isValid();
     }
     QCOMPARE(isValid, expectedValid);
+}
+
+void tst_QResource::children()
+{
+    const QString path = QStringLiteral(":/mappedroot");
+    const QLocale locale;
+    QStringList result;
+    QBENCHMARK {
+        result = TestResource(path, locale).children();
+    }
+    QCOMPARE(result, QStringList{QStringLiteral("resource.txt")});
 }
 
 QTEST_MAIN(tst_QResource)
