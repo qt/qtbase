@@ -4043,6 +4043,11 @@ void tst_QVariant::numericalConvert_data()
     QTest::newRow("long") << QVariant::fromValue(long(5)) << 5.0 << true;
     QTest::newRow("stringint") << QVariant(QString::fromLatin1("5")) << 5.0 << true;
     QTest::newRow("string") << QVariant(QString::fromLatin1("5.30000019")) << 5.3 << false;
+
+    QTest::newRow("float-0.3") << QVariant(float(0.3)) << 0.3 << false;
+    QTest::newRow("double-0.3") << QVariant(double(0.3)) << 0.3 << false;
+    QTest::newRow("qreal-0.3") << QVariant(qreal(0.3)) << 0.3 << false;
+    QTest::newRow("string-0.3") << QVariant(QString::fromLatin1("0.29999999999999999")) << 0.3 << false;
 }
 
 void tst_QVariant::numericalConvert()
@@ -4051,6 +4056,8 @@ void tst_QVariant::numericalConvert()
     QFETCH(bool, isInteger);
     QFETCH(double, num);
 
+    if (v.userType() != QMetaType::QString)
+        QCOMPARE(v.toBool(), (num != 0));
     QCOMPARE(v.toFloat() , float(num));
     QCOMPARE(float(v.toReal()) , float(num));
     QCOMPARE(float(v.toDouble()) , float(num));

@@ -1061,6 +1061,9 @@ static bool qIntegerConversionFromFPHelper(From from, To *to)
     if (qt_is_nan(fromD)) {
         *to = To(0);
         return false;
+    } else if constexpr (std::is_same_v<To, bool>) {
+        *to = (fromD != 0);
+        return true;
     }
 
     qint64 result;
