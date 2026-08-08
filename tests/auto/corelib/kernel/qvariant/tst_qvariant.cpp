@@ -4042,7 +4042,7 @@ void tst_QVariant::numericalConvert()
     QCOMPARE(v.toFloat() , float(num));
     QCOMPARE(float(v.toReal()) , float(num));
     QCOMPARE(float(v.toDouble()) , float(num));
-    if (isInteger) {
+    if (isInteger || v.userType() != QMetaType::QString) {
         QCOMPARE(v.toInt() , int(num));
         QCOMPARE(v.toUInt() , uint(num));
         QCOMPARE(v.toULongLong() , quint64(num));
