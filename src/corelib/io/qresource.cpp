@@ -132,7 +132,7 @@ public:
     inline QResourceRoot(int version, const uchar *t, const uchar *n, const uchar *d) { setSource(version, t, n, d); }
     virtual ~QResourceRoot() = default;
     Q_DISABLE_COPY_MOVE(QResourceRoot)
-    int findNode(const QString &path, const QLocale &locale=QLocale()) const;
+    int findNode(const QString &path, const QLocale &locale) const;
     inline bool isContainer(int node) const { return flags(node) & Directory; }
     QResource::Compression compressionAlgo(int node)
     {
@@ -416,7 +416,7 @@ void QResourcePrivate::ensureChildren() const
             if (!kids.hasSeen(k))
                 children += k;
         } else {
-            const int node = res->findNode(cleaned);
+            const int node = res->findNode(cleaned, locale);
             if (node != -1) {
                 QStringList related_children = res->children(node);
                 for (int kid = 0; kid < related_children.size(); ++kid) {
