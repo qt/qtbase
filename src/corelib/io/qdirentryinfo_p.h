@@ -20,6 +20,8 @@
 #include <QtCore/private/qfilesystementry_p.h>
 #include <QtCore/private/qfilesystemmetadata_p.h>
 
+#include <variant>
+
 QT_BEGIN_NAMESPACE
 
 namespace QDirEntryInfoPrivate {
