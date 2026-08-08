@@ -198,8 +198,7 @@ static QByteArray execCommand(const QString &command, bool verbose = true,
                               std::chrono::milliseconds timeout = std::chrono::milliseconds(-1))
 {
     auto args = QProcess::splitCommand(command);
-    const auto program = args.first();
-    args.removeOne(program);
+    const auto program = args.takeFirst();
     return execCommand(program, args, verbose, timeout);
 }
 
