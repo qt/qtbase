@@ -3,6 +3,7 @@
 
 #include <QtCore/qbytearray.h>
 
+#include <string_view>
 #include <utility>
 
 auto x = QByteArrayLiteral("test");
@@ -65,5 +66,8 @@ constexpr bool checkConstexprness()
     return result;
 }
 static_assert(checkConstexprness());
+
+constexpr std::string_view stringView = "test"_ba;
+static_assert(stringView == "test");
 
 #endif // __cpp_constexpr >= 201907L
