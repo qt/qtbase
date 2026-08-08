@@ -283,7 +283,11 @@ static inline ResourceList *resourceList()
 
 class QResourcePrivate {
 public:
-    inline QResourcePrivate(QResource *_q) : q_ptr(_q) { clear(); }
+    inline QResourcePrivate(QResource *_q, const QString &file, const QLocale &locale)
+        : locale(locale), fileName(file), q_ptr(_q)
+    {
+        clear();
+    }
     inline ~QResourcePrivate() { clear(); }
 
     void ensureInitialized() const;
@@ -507,11 +511,9 @@ qsizetype QResourcePrivate::decompress(char *buffer, qsizetype bufferSize) const
     \sa QFileInfo, QDir::searchPaths(), setFileName(), setLocale()
 */
 
-QResource::QResource(const QString &file, const QLocale &locale) : d_ptr(new QResourcePrivate(this))
+QResource::QResource(const QString &file, const QLocale &locale)
+    : d_ptr(new QResourcePrivate(this, file, locale))
 {
-    Q_D(QResource);
-    d->fileName = file;
-    d->locale = locale;
 }
 
 /*!
