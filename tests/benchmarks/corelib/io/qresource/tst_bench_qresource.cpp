@@ -21,6 +21,7 @@ private slots:
 
     void lookup_data();
     void lookup();
+    void lookupWithTwoRoots();
     void children();
 
 private:
@@ -58,6 +59,21 @@ void tst_QResource::lookup()
         isValid = QResource(path).isValid();
     }
     QCOMPARE(isValid, expectedValid);
+}
+
+void tst_QResource::lookupWithTwoRoots()
+{
+    const QString path = QStringLiteral(":/mappedroot/resource.txt");
+    QVERIFY(QResource::registerResource(resourceFile, "/mappedroot"));
+
+    bool isValid = false;
+    QBENCHMARK {
+        isValid = QResource(path).isValid();
+    }
+
+    const bool unregistered = QResource::unregisterResource(resourceFile, "/mappedroot");
+    QVERIFY(isValid);
+    QVERIFY(unregistered);
 }
 
 void tst_QResource::children()

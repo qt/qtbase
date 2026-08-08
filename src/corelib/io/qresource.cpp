@@ -15,6 +15,7 @@
 #include "qdatetime.h"
 #include "qbytearray.h"
 #include "qstringlist.h"
+#include "qvarlengtharray.h"
 #include "qendian.h"
 #include <qshareddata.h>
 #include <qplatformdefs.h>
@@ -302,7 +303,7 @@ public:
 
     QLocale locale;
     QString fileName, absoluteFilePath;
-    QList<QResourceRoot *> related;
+    QVarLengthArray<QResourceRoot *, 1> related;
     qint64 size;
     qint64 lastModified;
     const uchar *data;
