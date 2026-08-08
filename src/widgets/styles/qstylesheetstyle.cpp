@@ -4304,15 +4304,21 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
         if (const QStyleOptionSizeGrip *sgOpt = qstyleoption_cast<const QStyleOptionSizeGrip *>(opt)) {
             if (rule.hasDrawable()) {
                 rule.drawFrame(p, opt->rect);
-                p->save();
-                static constexpr int rotation[] = { 180, 270, 90, 0 };
-                if (rotation[sgOpt->corner]) {
+                int rotation = 0;
+                switch (sgOpt->corner) {
+                    case Qt::TopLeftCorner: rotation = 180; break;
+                    case Qt::TopRightCorner: rotation = 270; break;
+                    case Qt::BottomLeftCorner: rotation = 90; break;
+                    case Qt::BottomRightCorner: rotation = 0; break;
+                }
+                QPainterStateGuard psg(p, QPainterStateGuard::InitialState::NoSave);
+                if (rotation != 0) {
+                    psg.save();
                     p->translate(opt->rect.center());
-                    p->rotate(rotation[sgOpt->corner]);
+                    p->rotate(rotation);
                     p->translate(-opt->rect.center());
                 }
                 rule.drawImage(p, opt->rect);
-                p->restore();
             } else {
                 QStyleOptionSizeGrip sg(*sgOpt);
                 sg.rect = rule.contentsRect(opt->rect);
