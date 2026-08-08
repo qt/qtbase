@@ -659,12 +659,12 @@ static bool isRunning() {
 
 template <typename Predicate>
 static bool pollUntil(Predicate predicate, QDeadlineTimer deadline,
-                      std::chrono::milliseconds interval)
+                      std::chrono::nanoseconds interval)
 {
     do {
         if (predicate())
             return true;
-        QThread::msleep(interval.count());
+        QThread::sleep(interval);
     } while (!deadline.hasExpired() && !g_testInfo.isTestRunnerInterrupted.load());
     if (g_testInfo.isTestRunnerInterrupted.load())
         return false;
