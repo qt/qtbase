@@ -153,8 +153,7 @@ static void setPackagePath(const QString &path)
 static bool execCommand(const QString &command, QByteArray *output = nullptr, bool verbose = true)
 {
     auto args = QProcess::splitCommand(command);
-    const auto program = args.first();
-    args.removeOne(program);
+    const auto program = args.takeFirst();
     return execCommand(program, args, output, verbose);
 }
 
