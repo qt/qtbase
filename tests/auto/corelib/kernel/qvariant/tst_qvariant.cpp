@@ -4020,24 +4020,36 @@ void tst_QVariant::fpStringRoundtrip() const
 void tst_QVariant::numericalConvert_data()
 {
     QTest::addColumn<QVariant>("v");
+    QTest::addColumn<double>("num");
     QTest::addColumn<bool>("isInteger");
-    QTest::newRow("float") << QVariant(float(5.3)) << false;
-    QTest::newRow("double") << QVariant(double(5.3)) << false;
-    QTest::newRow("qreal") << QVariant(qreal(5.3)) << false;
-    QTest::newRow("int") << QVariant(int(5)) << true;
-    QTest::newRow("uint") << QVariant(uint(5)) << true;
-    QTest::newRow("short") << QVariant(short(5)) << true;
-    QTest::newRow("longlong") << QVariant(quint64(5)) << true;
-    QTest::newRow("long") << QVariant::fromValue(long(5)) << true;
-    QTest::newRow("stringint") << QVariant(QString::fromLatin1("5")) << true;
-    QTest::newRow("string") << QVariant(QString::fromLatin1("5.30000019")) << false;
+    QTest::newRow("float-zero") << QVariant(float(0)) << 0.0 << false;
+    QTest::newRow("double-zero") << QVariant(double(0)) << 0.0 << false;
+    QTest::newRow("qreal-zero") << QVariant(qreal(0)) << 0.0 << false;
+    QTest::newRow("int-zero") << QVariant(int(0)) << 0.0 << true;
+    QTest::newRow("uint-zero") << QVariant(uint(0)) << 0.0 << true;
+    QTest::newRow("short-zero") << QVariant(short(0)) << 0.0 << true;
+    QTest::newRow("longlong-zero") << QVariant(quint64(0)) << 0.0 << true;
+    QTest::newRow("long-zero") << QVariant::fromValue(long(0)) << 0.0 << true;
+    QTest::newRow("stringint-zero") << QVariant(QString::fromLatin1("0")) << 0.0 << true;
+    QTest::newRow("string-zero") << QVariant(QString::fromLatin1("0.0")) << 0.0 << false;
+
+    QTest::newRow("float") << QVariant(float(5.3)) << 5.3 << false;
+    QTest::newRow("double") << QVariant(double(5.3)) << 5.3 << false;
+    QTest::newRow("qreal") << QVariant(qreal(5.3)) << 5.3 << false;
+    QTest::newRow("int") << QVariant(int(5)) << 5.0 << true;
+    QTest::newRow("uint") << QVariant(uint(5)) << 5.0 << true;
+    QTest::newRow("short") << QVariant(short(5)) << 5.0 << true;
+    QTest::newRow("longlong") << QVariant(quint64(5)) << 5.0 << true;
+    QTest::newRow("long") << QVariant::fromValue(long(5)) << 5.0 << true;
+    QTest::newRow("stringint") << QVariant(QString::fromLatin1("5")) << 5.0 << true;
+    QTest::newRow("string") << QVariant(QString::fromLatin1("5.30000019")) << 5.3 << false;
 }
 
 void tst_QVariant::numericalConvert()
 {
     QFETCH(QVariant, v);
     QFETCH(bool, isInteger);
-    double num = isInteger ? 5 : 5.3;
+    QFETCH(double, num);
 
     QCOMPARE(v.toFloat() , float(num));
     QCOMPARE(float(v.toReal()) , float(num));
