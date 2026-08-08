@@ -1881,7 +1881,7 @@ void QRhiGles2::setPipelineCacheData(const QByteArray &data)
         memcpy(&format, p, 4);
         p += 4;
 
-        m_pipelineCache.insert(key, { format, data });
+        m_pipelineCache.insert(std::move(key), { format, std::move(data) }); // ### C++20: emplace
     }
 
     qCDebug(QRHI_LOG_INFO, "Seeded pipeline cache with %d program binaries", int(m_pipelineCache.size()));
