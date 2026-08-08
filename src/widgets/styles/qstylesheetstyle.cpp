@@ -1167,8 +1167,19 @@ void QRenderRule::fixupBorder(int nativeWidth)
 void QRenderRule::drawBorderImage(QPainter *p, const QRect& rect)
 {
     setClip(p, rect);
-    static const Qt::TileRule tileMode2TileRule[] = {
-        Qt::StretchTile, Qt::RoundTile, Qt::StretchTile, Qt::RepeatTile, Qt::StretchTile };
+    const auto tileMode2TileRule = [](TileMode tileMode) -> Qt::TileRule {
+        switch (tileMode) {
+        case TileMode_Unknown:
+        case TileMode_Stretch:
+            return Qt::StretchTile;
+        case TileMode_Round:
+            return Qt::RoundTile;
+        case TileMode_Repeat:
+            return Qt::RepeatTile;
+        }
+        qWarning() << "Invalid tile mode:" << tileMode;
+        Q_UNREACHABLE_RETURN(Qt::StretchTile);
+    };
 
     const QStyleSheetBorderImageData *borderImageData = border()->borderImage();
     const auto &targetBorders = border()->borders;
@@ -1182,7 +1193,8 @@ void QRenderRule::drawBorderImage(QPainter *p, const QRect& rect)
     p->setRenderHint(QPainter::SmoothPixmapTransform);
     qDrawBorderPixmap(p, rect, targetMargins, borderImageData->pixmap,
                       QRect(QPoint(), borderImageData->pixmap.size()), sourceMargins,
-                      QTileRules(tileMode2TileRule[borderImageData->horizStretch], tileMode2TileRule[borderImageData->vertStretch]));
+                      QTileRules(tileMode2TileRule(borderImageData->horizStretch),
+                                 tileMode2TileRule(borderImageData->vertStretch)));
     p->setRenderHint(QPainter::SmoothPixmapTransform, wasSmoothPixmapTransform);
     unsetClip(p);
 }
