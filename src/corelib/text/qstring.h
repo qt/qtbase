@@ -1396,7 +1396,7 @@ bool QString::isDetached() const
 { return !d.isShared(); }
 Q_DECL_CONSTEXPR_DTOR
 void QString::clear()
-{ if (!isNull()) *this = QString(); }
+{ *this = QString(); }
 #if QT_CORE_INLINE_IMPL_SINCE(6, 13)
 QT_CORE_CONSTEXPR_DTOR_INLINE_SINCE(6, 13)
 QString &QString::operator=(const QString &other) noexcept

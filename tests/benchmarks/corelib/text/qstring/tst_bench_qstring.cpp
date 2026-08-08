@@ -9,6 +9,12 @@
 
 using namespace Qt::StringLiterals;
 
+// Avoid having the compiler elide clear() when string remains null.
+Q_NEVER_INLINE static void clearNullString(QString &string)
+{
+    string.clear();
+}
+
 class tst_QString: public QObject
 {
     Q_OBJECT
@@ -27,6 +33,9 @@ private slots:
     void toLower();
     void toCaseFolded_data();
     void toCaseFolded();
+
+    void clear_data();
+    void clear();
 
     // Serializing:
     void number_qlonglong_data();
@@ -201,6 +210,33 @@ void tst_QString::toCaseFolded()
     QBENCHMARK {
         [[maybe_unused]] auto r = s.toCaseFolded();
     }
+}
+
+void tst_QString::clear_data()
+{
+    QTest::addColumn<QString>("source");
+
+    QTest::newRow("null") << QString();
+    QTest::newRow("empty") << u""_s;
+    QTest::newRow("non-empty") << u"Hello World!"_s;
+}
+
+void tst_QString::clear()
+{
+    QFETCH(const QString, source);
+
+    QString string;
+    if (source.isNull()) {
+        QBENCHMARK {
+            clearNullString(string);
+        }
+    } else {
+        QBENCHMARK {
+            string = source;
+            string.clear();
+        }
+    }
+    QVERIFY(string.isNull());
 }
 
 template <typename Integer>
