@@ -784,24 +784,7 @@ QMenu *QToolButtonPrivate::showMenu()
     if (tb && tb->orientation() == Qt::Vertical)
         horizontal = false;
 #endif
-    QPointer<QToolButton> that = q;
-    actualMenu->setNoReplayFor(q);
-    if (!mustDeleteActualMenu) { //only if action are not in this widget
-        QObjectPrivate::connect(actualMenu, &QMenu::triggered,
-                                this, &QToolButtonPrivate::onMenuTriggered);
-    }
-    QObjectPrivate::connect(actualMenu, &QMenu::aboutToHide,
-                            this, &QToolButtonPrivate::updateButtonDown);
-    actualMenu->d_func()->causedPopup.widget = q;
-    actualMenu->d_func()->causedPopup.action = defaultAction;
-    actionsCopy = q->actions(); //(the list of action may be modified in slots)
-
-    // QTBUG-78966, Delay positioning until after aboutToShow().
-    auto positionFunction = [q, horizontal](const QSize &sizeHint) {
-        return positionMenu(q, horizontal, sizeHint); };
-    const auto initialPos = positionFunction(actualMenu->sizeHint());
-
-    auto cleanup = [that, mustDeleteActualMenu, actualMenu] {
+    auto cleanup = [that = QPointer(q), mustDeleteActualMenu, actualMenu] {
         if (!that)
             return;
         QToolButtonPrivate *d = that->d_func();
@@ -824,6 +807,22 @@ QMenu *QToolButtonPrivate::showMenu()
         if (d->repeat)
             that->setAutoRepeat(true);
     };
+
+    actualMenu->setNoReplayFor(q);
+    if (!mustDeleteActualMenu) { //only if action are not in this widget
+        QObjectPrivate::connect(actualMenu, &QMenu::triggered,
+                                this, &QToolButtonPrivate::onMenuTriggered);
+    }
+    QObjectPrivate::connect(actualMenu, &QMenu::aboutToHide,
+                            this, &QToolButtonPrivate::updateButtonDown);
+    actualMenu->d_func()->causedPopup.widget = q;
+    actualMenu->d_func()->causedPopup.action = defaultAction;
+    actionsCopy = q->actions(); //(the list of action may be modified in slots)
+
+    // QTBUG-78966, Delay positioning until after aboutToShow().
+    auto positionFunction = [q, horizontal](const QSize &sizeHint) {
+        return positionMenu(q, horizontal, sizeHint); };
+    const auto initialPos = positionFunction(actualMenu->sizeHint());
 
     // Run cleanup when the menu is done. There are two relevant signals in order
     //    1. aboutToHide
