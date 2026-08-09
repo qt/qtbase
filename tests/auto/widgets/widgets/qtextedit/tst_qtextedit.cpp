@@ -413,7 +413,7 @@ void tst_QTextEdit::inlineAttributeSymmetry()
     QCOMPARE(ed->fontFamily(), QString("Test"));
 
     ed->setFontWeight(QFont::Bold);
-    QCOMPARE((int)ed->fontWeight(), (int)QFont::Bold);
+    QCOMPARE(ed->fontWeight(), QFont::Bold);
 
     ed->setFontUnderline(true);
     QCOMPARE(ed->fontUnderline(), true);
@@ -428,7 +428,7 @@ void tst_QTextEdit::inlineAttributeSymmetry()
     QCOMPARE(ed->textBackgroundColor(), QColor(Qt::red));
 
     ed->setAlignment(Qt::AlignRight);
-    QCOMPARE((int)ed->alignment(), (int)Qt::AlignRight);
+    QCOMPARE(ed->alignment(), Qt::AlignRight);
 }
 
 void tst_QTextEdit::inlineAttributeSymmetryWithSelection()
@@ -989,17 +989,17 @@ void tst_QTextEdit::preserveCharFormatInAppend()
 
     cursor.movePosition(QTextCursor::Start);
     cursor.movePosition(QTextCursor::NextCharacter);
-    QCOMPARE(cursor.charFormat().fontWeight(), (int)QFont::Normal);
+    QCOMPARE(cursor.charFormat().fontWeight(), QFont::Normal);
     QCOMPARE(cursor.block().text(), QString("First para"));
 
     cursor.movePosition(QTextCursor::NextBlock);
     cursor.movePosition(QTextCursor::NextCharacter);
-    QCOMPARE(cursor.charFormat().fontWeight(), (int)QFont::Bold);
+    QCOMPARE(cursor.charFormat().fontWeight(), QFont::Bold);
     QCOMPARE(cursor.block().text(), QString("Second para"));
 
     cursor.movePosition(QTextCursor::NextBlock);
     cursor.movePosition(QTextCursor::NextCharacter);
-    QCOMPARE(cursor.charFormat().fontWeight(), (int)QFont::Normal);
+    QCOMPARE(cursor.charFormat().fontWeight(), QFont::Normal);
     QCOMPARE(cursor.block().text(), QString("third para"));
 }
 
@@ -2373,48 +2373,48 @@ void tst_QTextEdit::taskQTBUG_7902_contextMenuCrash()
 void tst_QTextEdit::bidiVisualMovement_data()
 {
     QTest::addColumn<QString>("logical");
-    QTest::addColumn<int>("basicDir");
+    QTest::addColumn<QChar::Direction>("basicDir");
     QTest::addColumn<QList<int> >("positionList");
 
     QTest::newRow("Latin text")
         << QString::fromUtf8("abc")
-        << (int) QChar::DirL
+        << QChar::DirL
         << (QList<int>() << 0 << 1 << 2 << 3);
     QTest::newRow("Hebrew text, one item")
         << QString::fromUtf8("\327\220\327\221\327\222")
-        << (int) QChar::DirR
+        << QChar::DirR
         << (QList<int>() << 0 << 1 << 2 << 3);
     QTest::newRow("Hebrew text after Latin text")
         << QString::fromUtf8("abc\327\220\327\221\327\222")
-        << (int) QChar::DirL
+        << QChar::DirL
         << (QList<int>() << 0 << 1 << 2 << 6 << 5 << 4 << 3);
     QTest::newRow("Latin text after Hebrew text")
         << QString::fromUtf8("\327\220\327\221\327\222abc")
-        << (int) QChar::DirR
+        << QChar::DirR
         << (QList<int>() << 0 << 1 << 2 << 6 << 5 << 4 << 3);
     QTest::newRow("LTR, 3 items")
         << QString::fromUtf8("abc\327\220\327\221\327\222abc")
-        << (int) QChar::DirL
+        << QChar::DirL
         << (QList<int>() << 0 << 1 << 2 << 5 << 4 << 3 << 6 << 7 << 8 << 9);
     QTest::newRow("RTL, 3 items")
         << QString::fromUtf8("\327\220\327\221\327\222abc\327\220\327\221\327\222")
-        << (int) QChar::DirR
+        << QChar::DirR
         << (QList<int>() << 0 << 1 << 2 << 5 << 4 << 3 << 6 << 7 << 8 << 9);
     QTest::newRow("LTR, 4 items")
         << QString::fromUtf8("abc\327\220\327\221\327\222abc\327\220\327\221\327\222")
-        << (int) QChar::DirL
+        << QChar::DirL
         << (QList<int>() << 0 << 1 << 2 << 5 << 4 << 3 << 6 << 7 << 8 << 12 << 11 << 10 << 9);
     QTest::newRow("RTL, 4 items")
         << QString::fromUtf8("\327\220\327\221\327\222abc\327\220\327\221\327\222abc")
-        << (int) QChar::DirR
+        << QChar::DirR
         << (QList<int>() << 0 << 1 << 2 << 5 << 4 << 3 << 6 << 7 << 8 << 12 << 11 << 10 << 9);
 }
 
 void tst_QTextEdit::bidiVisualMovement()
 {
-    QFETCH(QString,      logical);
-    QFETCH(int,          basicDir);
-    QFETCH(QList<int>,   positionList);
+    QFETCH(QString,          logical);
+    QFETCH(QChar::Direction, basicDir);
+    QFETCH(QList<int>,       positionList);
 
     ed->setText(logical);
 
@@ -2467,9 +2467,9 @@ void tst_QTextEdit::bidiLogicalMovement_data()
 
 void tst_QTextEdit::bidiLogicalMovement()
 {
-    QFETCH(QString,      logical);
-    QFETCH(int,          basicDir);
-    QFETCH(QList<int>,   positionList);
+    QFETCH(QString,          logical);
+    QFETCH(QChar::Direction, basicDir);
+    QFETCH(QList<int>,       positionList);
 
     ed->setText(logical);
 
