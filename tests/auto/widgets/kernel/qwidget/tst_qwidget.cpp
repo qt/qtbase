@@ -3187,99 +3187,82 @@ void tst_QWidget::windowState()
     QCOMPARE(widget1.size(), size);
 
 #define VERIFY_STATE(s)                                                                            \
-    QCOMPARE(int(widget1.windowState() & stateMask), int(s));                                      \
-    QCOMPARE(int(widget1.windowHandle()->windowStates() & stateMask), int(s))
+    QTRY_COMPARE(int(widget1.windowState() & stateMask), int(s));                                      \
+    QTRY_COMPARE(int(widget1.windowHandle()->windowStates() & stateMask), int(s))
 
     const auto stateMask = Qt::WindowMaximized | Qt::WindowMinimized | Qt::WindowFullScreen;
 
     widget1.setWindowState(Qt::WindowMaximized);
-    QTest::qWait(100);
     VERIFY_STATE(Qt::WindowMaximized);
     QCOMPARE(widget1.windowHandle()->windowState(), Qt::WindowMaximized);
 
     widget1.setVisible(true);
-    QTest::qWait(100);
     VERIFY_STATE(Qt::WindowMaximized);
     QCOMPARE(widget1.windowHandle()->windowState(), Qt::WindowMaximized);
 
     widget1.setWindowState(widget1.windowState() ^ Qt::WindowMaximized);
-    QTest::qWait(100);
     QVERIFY(!(widget1.windowState() & Qt::WindowMaximized));
     QTRY_VERIFY2(HighDpi::fuzzyCompare(widget1.pos(), pos, m_fuzz),
                  qPrintable(HighDpi::msgPointMismatch(widget1.pos(), pos)));
     QCOMPARE(widget1.windowHandle()->windowState(), Qt::WindowNoState);
 
     widget1.setWindowState(Qt::WindowMinimized);
-    QTest::qWait(100);
     VERIFY_STATE(Qt::WindowMinimized);
     QCOMPARE(widget1.windowHandle()->windowState(), Qt::WindowMinimized);
 
     widget1.setWindowState(widget1.windowState() | Qt::WindowMaximized);
-    QTest::qWait(100);
     VERIFY_STATE((Qt::WindowMinimized|Qt::WindowMaximized));
     QCOMPARE(widget1.windowHandle()->windowState(), Qt::WindowMinimized);
 
     widget1.setWindowState(widget1.windowState() ^ Qt::WindowMinimized);
-    QTest::qWait(100);
     VERIFY_STATE(Qt::WindowMaximized);
     QCOMPARE(widget1.windowHandle()->windowState(), Qt::WindowMaximized);
 
     widget1.setWindowState(widget1.windowState() ^ Qt::WindowMaximized);
-    QTest::qWait(100);
     QVERIFY(!(widget1.windowState() & (Qt::WindowMinimized|Qt::WindowMaximized)));
     QTRY_VERIFY2(HighDpi::fuzzyCompare(widget1.pos(), pos, m_fuzz),
                  qPrintable(HighDpi::msgPointMismatch(widget1.pos(), pos)));
     QCOMPARE(widget1.windowHandle()->windowState(), Qt::WindowNoState);
 
     widget1.setWindowState(Qt::WindowFullScreen);
-    QTest::qWait(100);
     VERIFY_STATE(Qt::WindowFullScreen);
     QCOMPARE(widget1.windowHandle()->windowState(), Qt::WindowFullScreen);
 
     widget1.setWindowState(widget1.windowState() ^ Qt::WindowMinimized);
-    QTest::qWait(100);
     VERIFY_STATE((Qt::WindowFullScreen|Qt::WindowMinimized));
     QCOMPARE(widget1.windowHandle()->windowState(), Qt::WindowMinimized);
 
     widget1.setWindowState(widget1.windowState() ^ Qt::WindowMinimized);
-    QTest::qWait(100);
     VERIFY_STATE(Qt::WindowFullScreen);
     QCOMPARE(widget1.windowHandle()->windowState(), Qt::WindowFullScreen);
 
     widget1.setWindowState(Qt::WindowNoState);
-    QTest::qWait(100);
     VERIFY_STATE(Qt::WindowNoState);
     QTRY_VERIFY2(HighDpi::fuzzyCompare(widget1.pos(), pos, m_fuzz),
                  qPrintable(HighDpi::msgPointMismatch(widget1.pos(), pos)));
     QCOMPARE(widget1.windowHandle()->windowState(), Qt::WindowNoState);
 
     widget1.setWindowState(Qt::WindowFullScreen);
-    QTest::qWait(100);
     VERIFY_STATE(Qt::WindowFullScreen);
     QCOMPARE(widget1.windowHandle()->windowState(), Qt::WindowFullScreen);
 
     widget1.setWindowState(widget1.windowState() ^ Qt::WindowMaximized);
-    QTest::qWait(100);
     VERIFY_STATE((Qt::WindowFullScreen|Qt::WindowMaximized));
     QCOMPARE(widget1.windowHandle()->windowState(), Qt::WindowFullScreen);
 
     widget1.setWindowState(widget1.windowState() ^ Qt::WindowMinimized);
-    QTest::qWait(100);
     VERIFY_STATE((Qt::WindowFullScreen|Qt::WindowMaximized|Qt::WindowMinimized));
     QCOMPARE(widget1.windowHandle()->windowState(), Qt::WindowMinimized);
 
     widget1.setWindowState(widget1.windowState() ^ Qt::WindowMinimized);
-    QTest::qWait(100);
     VERIFY_STATE((Qt::WindowFullScreen|Qt::WindowMaximized));
     QCOMPARE(widget1.windowHandle()->windowState(), Qt::WindowFullScreen);
 
     widget1.setWindowState(widget1.windowState() ^ Qt::WindowFullScreen);
-    QTest::qWait(100);
     VERIFY_STATE(Qt::WindowMaximized);
     QCOMPARE(widget1.windowHandle()->windowState(), Qt::WindowMaximized);
 
     widget1.setWindowState(widget1.windowState() ^ Qt::WindowMaximized);
-    QTest::qWait(100);
     QVERIFY(!(widget1.windowState() & stateMask));
     QCOMPARE(widget1.windowHandle()->windowState(), Qt::WindowNoState);
 
@@ -3596,7 +3579,6 @@ void tst_QWidget::showMinimizedKeepsFocus()
         QTRY_COMPARE(window.focusWidget(), &child2);
 
         window.showNormal();
-        QTest::qWait(10);
         QTRY_COMPARE(window.focusWidget(), &child2);
     }
 
@@ -3675,7 +3657,6 @@ void tst_QWidget::showMinimizedKeepsFocus()
         QCOMPARE(QApplication::focusWidget(), nullptr);
 
         window.showMinimized();
-        QTest::qWait(30);
         QTRY_VERIFY(window.isMinimized());
         QCOMPARE(window.focusWidget(), nullptr);
         QTRY_COMPARE(QApplication::focusWidget(), nullptr);
@@ -4613,7 +4594,6 @@ void tst_QWidget::restoreVersion1Geometry()
 
     widget.showNormal();
     QVERIFY(QTest::qWaitForWindowExposed(&widget));
-    QTest::qWait(100);
 
     if (expectedWindowState == Qt::WindowNoState) {
         QTRY_COMPARE(widget.size(), expectedSize);
@@ -4621,7 +4601,6 @@ void tst_QWidget::restoreVersion1Geometry()
     }
 
     widget.showNormal();
-    QTest::qWait(10);
 
     QTRY_COMPARE(widget.geometry(), expectedNormalGeometry);
     if (expectedWindowState == Qt::WindowNoState)
