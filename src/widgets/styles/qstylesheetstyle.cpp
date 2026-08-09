@@ -476,9 +476,10 @@ public:
     QRect paddingRect(const QRect &r) const;
     QRect contentsRect(const QRect &r) const;
 
-    enum { Margin = 1, Border = 2, Padding = 4, All=Margin|Border|Padding };
-    QRect boxRect(const QRect &r, int flags = All) const;
-    QSize boxSize(const QSize &s, int flags = All) const;
+    enum BoxFlag { Margin = 1, Border = 2, Padding = 4, All=Margin|Border|Padding };
+    Q_DECLARE_FLAGS(BoxFlags, BoxFlag)
+    QRect boxRect(const QRect &r, BoxFlags flags = BoxFlag::All) const;
+    QSize boxSize(const QSize &s, BoxFlags flags = BoxFlag::All) const;
     QRect originRect(const QRect &rect, Origin origin) const;
 
     QPainterPath borderClip(QRect rect);
@@ -1094,7 +1095,7 @@ QRect QRenderRule::contentsRect(const QRect& r) const
     return pr.adjusted(p[LeftEdge], p[TopEdge], -p[RightEdge], -p[BottomEdge]);
 }
 
-QRect QRenderRule::boxRect(const QRect& cr, int flags) const
+QRect QRenderRule::boxRect(const QRect &cr, BoxFlags flags) const
 {
     QRect r = cr;
     if (hasBox()) {
@@ -1114,7 +1115,7 @@ QRect QRenderRule::boxRect(const QRect& cr, int flags) const
     return r;
 }
 
-QSize QRenderRule::boxSize(const QSize &cs, int flags) const
+QSize QRenderRule::boxSize(const QSize &cs, BoxFlags flags) const
 {
     QSize bs = boxRect(QRect(QPoint(0, 0), cs), flags).size();
     if (cs.width() < 0) bs.setWidth(-1);
@@ -3463,7 +3464,7 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
                     }
                 }
 
-                handleSubRule.drawRule(p, handleSubRule.boxRect(hr, Margin));
+                handleSubRule.drawRule(p, handleSubRule.boxRect(hr, QRenderRule::BoxFlag::Margin));
             }
 
             if (slider->subControls & SC_SliderTickmarks) {
@@ -3495,7 +3496,7 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
                     continue;
                 QRenderRule subRule = renderRule(w, opt, layoutButton);
                 if (subRule.hasDrawable()) {
-                    QRect rect = subRule.boxRect(subControlRect(CC_MdiControls, opt, control, w), Margin);
+                    QRect rect = subRule.boxRect(subControlRect(CC_MdiControls, opt, control, w), QRenderRule::BoxFlag::Margin);
                     subRule.drawRule(p, rect);
                     QIcon icon = standardIcon(subControlIcon(layoutButton), opt);
                     icon.paint(p, subRule.contentsRect(rect), Qt::AlignCenter);
@@ -4191,7 +4192,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
 
     case CE_ProgressBarGroove:
         if (!rule.hasNativeBorder()) {
-            rule.drawRule(p, rule.boxRect(opt->rect, Margin));
+            rule.drawRule(p, rule.boxRect(opt->rect, QRenderRule::BoxFlag::Margin));
             return;
         }
         break;
@@ -4642,13 +4643,13 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
             //the window style will draw the borders
             ParentStyle::drawPrimitive(pe, opt, p, w);
             if (!rule.background()->pixmap.isNull() || rule.hasImage()) {
-                rule.drawRule(p, rule.boxRect(opt->rect, QRenderRule::Margin).adjusted(1,1,-1,-1));
+                rule.drawRule(p, rule.boxRect(opt->rect, QRenderRule::BoxFlag::Margin).adjusted(1,1,-1,-1));
             }
             return;
         }
 #endif
         if (!rule.hasNativeBorder()) {
-            rule.drawRule(p, rule.boxRect(opt->rect, QRenderRule::Margin));
+            rule.drawRule(p, rule.boxRect(opt->rect, QRenderRule::BoxFlag::Margin));
             return;
         }
         break;
@@ -5384,7 +5385,7 @@ QSize QStyleSheetStyle::sizeFromContents(ContentsType ct, const QStyleOption *op
         }
         sz = rule.baseStyleCanDraw() ? baseStyle()->sizeFromContents(ct, opt, sz, w)
                                      : QWindowsStyle::sizeFromContents(ct, opt, sz, w);
-        return rule.boxSize(sz, Margin);
+        return rule.boxSize(sz, QRenderRule::BoxFlag::Margin);
 
     case CT_HeaderSection: {
             if (const QStyleOptionHeader *hdr = qstyleoption_cast<const QStyleOptionHeader *>(opt)) {
