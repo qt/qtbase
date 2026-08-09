@@ -423,8 +423,7 @@ void tst_QAbstractButton::setDown()
     QVERIFY( !testWidget->isDown() );
 
     testWidget->setDown( true );
-    QTest::qWait(300);
-    QVERIFY( testWidget->isDown() );
+    QTRY_VERIFY( testWidget->isDown() );
 
     testWidget->setDown( true );
 
@@ -485,23 +484,11 @@ void tst_QAbstractButton::setShortcut()
     QVERIFY(QTest::qWaitForWindowActive(testWidget));
 
     QTest::keyClick( testWidget, 'A' );
-    QTest::qWait(300);                      // Animate click takes time
-    QCOMPARE(click_count,  (uint)1);
-    QCOMPARE(press_count,  (uint)1); // Press is part of a click
-    QCOMPARE(release_count,(uint)1); // Release is part of a click
+    QTRY_COMPARE(click_count,  1);
+    QTRY_COMPARE(press_count,  1); // Press is part of a click
+    QTRY_COMPARE(release_count,1); // Release is part of a click
 
     QVERIFY( toggle_count == 0 );
-
-//     resetValues();
-//     QTest::keyPress( testWidget, 'A' );
-//     QTest::qWait(10000);
-//     QTest::keyRelease( testWidget, 'A' );
-//     QCOMPARE(click_count,  (uint)1);
-//     QCOMPARE(press_count,  (uint)1);
-//     QCOMPARE(release_count,(uint)1);
-
-//     qDebug() << click_count;
-
 }
 #endif // QT_CONFIG(shortcut)
 
@@ -555,11 +542,9 @@ void tst_QAbstractButton::shortcutEvents()
             QTest::qWait(500);
     }
 
-    QTest::qWait(1000); // ensure animate timer is expired
-
-    QCOMPARE(pressedSpy.size(), 3);
-    QCOMPARE(releasedSpy.size(), 3);
-    QCOMPARE(clickedSpy.size(), 3);
+    QTRY_COMPARE(pressedSpy.size(), 3);
+    QTRY_COMPARE(releasedSpy.size(), 3);
+    QTRY_COMPARE(clickedSpy.size(), 3);
 }
 
 #endif // QT_CONFIG(shortcut)
@@ -572,8 +557,7 @@ void tst_QAbstractButton::stopRepeatTimer()
     // Mouse trigger case:
     button.resetTimerEvents();
     QTest::mousePress(&button, Qt::LeftButton);
-    QTest::qWait(1000);
-    QVERIFY(button.timerEventCount() > 0);
+    QTRY_COMPARE_GE(button.timerEventCount(), 1);
 
     QTest::mouseRelease(&button, Qt::LeftButton);
     button.resetTimerEvents();
@@ -583,8 +567,7 @@ void tst_QAbstractButton::stopRepeatTimer()
     // Key trigger case:
     button.resetTimerEvents();
     QTest::keyPress(&button, Qt::Key_Space);
-    QTest::qWait(1000);
-    QVERIFY(button.timerEventCount() > 0);
+    QTRY_COMPARE_GE(button.timerEventCount(), 1);
 
     QTest::keyRelease(&button, Qt::Key_Space);
     button.resetTimerEvents();

@@ -1563,13 +1563,11 @@ void tst_QFiledialog::trailingDotsAndSpaces()
     int currentChildrenCount = list->model()->rowCount(list->rootIndex());
     QTest::keyClick(lineEdit, Qt::Key_Space);
     QTest::keyClick(lineEdit, Qt::Key_Period);
-    QTest::qWait(1000);
-    QCOMPARE(currentChildrenCount, list->model()->rowCount(list->rootIndex()));
+    QTRY_COMPARE(currentChildrenCount, list->model()->rowCount(list->rootIndex()));
     lineEdit->clear();
     QTest::keyClick(lineEdit, Qt::Key_Period);
     QTest::keyClick(lineEdit, Qt::Key_Space);
-    QTest::qWait(1000);
-    QCOMPARE(currentChildrenCount, list->model()->rowCount(list->rootIndex()));
+    QTRY_COMPARE(currentChildrenCount, list->model()->rowCount(list->rootIndex()));
 }
 
 #ifdef Q_OS_UNIX

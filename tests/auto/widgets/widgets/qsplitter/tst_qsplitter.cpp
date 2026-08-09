@@ -885,16 +885,13 @@ void tst_QSplitter::handleMinimumWidth()
     QVERIFY(QTest::qWaitForWindowExposed(&split));
     for (int i = 0; i < 10; i++) {
         split.setHandleWidth(i);
-        QTest::qWait(100); // resizing
-        QCOMPARE(split.handle(1)->width(), qMax(4 + (i & 1), i));
+        QTRY_COMPARE(split.handle(1)->width(), qMax(4 + (i & 1), i));
     }
 
     split.setOrientation(Qt::Vertical);
-    QTest::qWait(100);
     for (int i = 0; i < 10; i++) {
         split.setHandleWidth(i);
-        QTest::qWait(100); // resizing
-        QCOMPARE(split.handle(1)->height(), qMax(4 + (i & 1), i));
+        QTRY_COMPARE(split.handle(1)->height(), qMax(4 + (i & 1), i));
     }
 }
 
