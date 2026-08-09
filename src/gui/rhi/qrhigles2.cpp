@@ -306,6 +306,14 @@ QT_BEGIN_NAMESPACE
 #define GL_FRAMEBUFFER_SRGB               0x8DB9
 #endif
 
+#ifndef GL_SRGB_ALPHA
+#define GL_SRGB_ALPHA                     0x8C42
+#endif
+
+#ifndef GL_SRGB8_ALPHA8
+#define GL_SRGB8_ALPHA8                   0x8C43
+#endif
+
 #ifndef GL_READ_FRAMEBUFFER
 #define GL_READ_FRAMEBUFFER               0x8CA8
 #endif
@@ -904,6 +912,22 @@ bool QRhiGles2::create(QRhi::Flags flags)
     caps.ctxMajor = actualFormat.majorVersion();
     caps.ctxMinor = actualFormat.minorVersion();
 
+    if (caps.gles) {
+        caps.srgbTextureFormat = caps.ctxMajor >= 3 || ctx->hasExtension("GL_EXT_sRGB");
+        caps.srgbGenerateMipmap = caps.ctxMajor >= 3
+                || ctx->hasExtension("GL_NV_generate_mipmap_sRGB");
+        caps.srgbTextureRenderTarget = caps.srgbTextureFormat;
+    } else {
+        const bool hasCoreSrgbTexture = caps.ctxMajor > 2
+                || (caps.ctxMajor == 2 && caps.ctxMinor >= 1);
+        caps.srgbTextureFormat = hasCoreSrgbTexture
+                || ctx->hasExtension("GL_EXT_texture_sRGB");
+        caps.srgbGenerateMipmap = caps.srgbTextureFormat;
+        // Before OpenGL 3.0, framebuffer sRGB extensions do not guarantee
+        // that an sRGB texture attached to an FBO is sRGB-capable.
+        caps.srgbTextureRenderTarget = caps.ctxMajor >= 3;
+    }
+
     GLint n = 0;
     f->glGetIntegerv(GL_NUM_COMPRESSED_TEXTURE_FORMATS, &n);
     if (n > 0) {
@@ -1025,7 +1049,14 @@ bool QRhiGles2::create(QRhi::Flags flags)
     // controlling the sRGB-on-shader-write state is supported, not that if the
     // default framebuffer is sRGB-capable. And there are two different
     // extensions for desktop and ES.
-    caps.srgbWriteControl = ctx->hasExtension("GL_EXT_framebuffer_sRGB") || ctx->hasExtension("GL_EXT_sRGB_write_control");
+    if (caps.gles) {
+        caps.srgbWriteControl = ctx->hasExtension("GL_EXT_sRGB_write_control");
+    } else {
+        const bool hasCoreSrgbWriteControl = caps.ctxMajor >= 3;
+        caps.srgbWriteControl = hasCoreSrgbWriteControl
+                || ctx->hasExtension("GL_ARB_framebuffer_sRGB")
+                || ctx->hasExtension("GL_EXT_framebuffer_sRGB");
+    }
 
     caps.coreProfile = actualFormat.profile() == QSurfaceFormat::CoreProfile;
 
@@ -1487,20 +1518,23 @@ QMatrix4x4 QRhiGles2::clipSpaceCorrMatrix() const
     return QMatrix4x4(); // identity
 }
 
-static inline void toGlTextureFormat(QRhiTexture::Format format, const QRhiGles2::Caps &caps,
+static inline void toGlTextureFormat(QRhiTexture::Format format, QRhiTexture::Flags flags,
+                                     const QRhiGles2::Caps &caps,
                                      GLenum *glintformat, GLenum *glsizedintformat,
                                      GLenum *glformat, GLenum *gltype)
 {
+    const bool srgb = flags.testFlag(QRhiTexture::sRGB);
+    const bool legacyGlesSrgb = srgb && caps.gles && caps.ctxMajor < 3;
     switch (format) {
     case QRhiTexture::RGBA8:
-        *glintformat = GL_RGBA;
-        *glsizedintformat = caps.rgba8Format ? GL_RGBA8 : GL_RGBA;
-        *glformat = GL_RGBA;
+        *glintformat = srgb ? (legacyGlesSrgb ? GL_SRGB_ALPHA : GL_SRGB8_ALPHA8) : GL_RGBA;
+        *glsizedintformat = srgb ? GL_SRGB8_ALPHA8 : (caps.rgba8Format ? GL_RGBA8 : GL_RGBA);
+        *glformat = legacyGlesSrgb ? GL_SRGB_ALPHA : GL_RGBA;
         *gltype = GL_UNSIGNED_BYTE;
         break;
     case QRhiTexture::BGRA8:
-        *glintformat = caps.bgraInternalFormat ? GL_BGRA : GL_RGBA;
-        *glsizedintformat = caps.rgba8Format ? GL_RGBA8 : GL_RGBA;
+        *glintformat = srgb ? GL_SRGB8_ALPHA8 : (caps.bgraInternalFormat ? GL_BGRA : GL_RGBA);
+        *glsizedintformat = srgb ? GL_SRGB8_ALPHA8 : (caps.rgba8Format ? GL_RGBA8 : GL_RGBA);
         *glformat = GL_BGRA;
         *gltype = GL_UNSIGNED_BYTE;
         break;
@@ -1659,6 +1693,19 @@ bool QRhiGles2::isTextureFormatSupported(QRhiTexture::Format format, QRhiTexture
 
     if ((flags & QRhiTexture::UsedWithLoadStore) && !caps.imageLoadStore)
         return false;
+
+    if (flags.testFlag(QRhiTexture::sRGB)) {
+        if (format != QRhiTexture::RGBA8 && format != QRhiTexture::BGRA8)
+            return false;
+        if (!caps.srgbTextureFormat || flags.testFlag(QRhiTexture::UsedWithLoadStore))
+            return false;
+        if (format == QRhiTexture::BGRA8 && caps.gles)
+            return false;
+        if (flags.testFlag(QRhiTexture::UsedWithGenerateMips) && !caps.srgbGenerateMipmap)
+            return false;
+        if (flags.testFlag(QRhiTexture::RenderTarget) && !caps.srgbTextureRenderTarget)
+            return false;
+    }
 
     switch (format) {
     case QRhiTexture::D16:
@@ -4171,7 +4218,8 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
                     [[maybe_unused]] GLenum glsizedintformat;
                     GLenum glformat;
                     GLenum gltype;
-                    toGlTextureFormat(result->format, caps, &glintformat, &glsizedintformat, &glformat, &gltype);
+                    toGlTextureFormat(result->format, {}, caps,
+                                      &glintformat, &glsizedintformat, &glformat, &gltype);
                     quint32 byteSize;
                     textureFormatInfo(result->format, result->pixelSize, nullptr, &byteSize, nullptr);
                     result->data.resizeForOverwrite(byteSize);
@@ -6460,7 +6508,7 @@ bool QGles2RenderBuffer::create()
             if (m_backingFormatHint != QRhiTexture::UnknownFormat) {
                 GLenum glintformat, glformat, gltype;
                 // only care about the sized internal format, the rest is not used here
-                toGlTextureFormat(m_backingFormatHint, rhiD->caps,
+                toGlTextureFormat(m_backingFormatHint, {}, rhiD->caps,
                                   &glintformat, &internalFormat, &glformat, &gltype);
             }
         }
@@ -6561,6 +6609,8 @@ bool QGles2Texture::prepareCreate(QSize *adjustedSize)
     QRHI_RES_RHI(QRhiGles2);
     if (!rhiD->ensureContext())
         return false;
+    if (!rhiD->isTextureFormatSupported(m_format, m_flags))
+        return false;
 
     const bool isCube = m_flags.testFlag(CubeMap);
     const bool isArray = m_flags.testFlag(QRhiTexture::TextureArray);
@@ -6639,7 +6689,7 @@ bool QGles2Texture::prepareCreate(QSize *adjustedSize)
         glsizedintformat = glintformat;
         glformat = GL_RGBA;
     } else {
-        toGlTextureFormat(m_format, rhiD->caps,
+        toGlTextureFormat(m_format, m_flags, rhiD->caps,
                           &glintformat, &glsizedintformat, &glformat, &gltype);
     }
 
@@ -6965,10 +7015,34 @@ bool QGles2TextureRenderTarget::create()
     if (!rhiD->ensureContext())
         return false;
 
+    for (auto it = m_desc.cbeginColorAttachments(), itEnd = m_desc.cendColorAttachments();
+         it != itEnd; ++it) {
+        const QRhiColorAttachment &colorAtt(*it);
+        const QRhiTexture *resolveTexture = colorAtt.resolveTexture();
+        if (!resolveTexture)
+            continue;
+
+        const QRhiTexture *texture = colorAtt.texture();
+        const QRhiRenderBuffer *renderBuffer = colorAtt.renderBuffer();
+        Q_ASSERT(texture || renderBuffer);
+        const QRhiTexture::Format sourceFormat = texture ? texture->format()
+                                                         : renderBuffer->backingFormat();
+        const bool sourceIsSrgb = texture && texture->flags().testFlag(QRhiTexture::sRGB);
+        const bool resolveIsSrgb = resolveTexture->flags().testFlag(QRhiTexture::sRGB);
+        if (sourceFormat != resolveTexture->format() || sourceIsSrgb != resolveIsSrgb) {
+            qWarning("Multisample resolve between different formats "
+                     "(%d, sRGB %d) and (%d, sRGB %d) is not supported.",
+                     int(sourceFormat), int(sourceIsSrgb),
+                     int(resolveTexture->format()), int(resolveIsSrgb));
+            return false;
+        }
+    }
+
     rhiD->f->glGenFramebuffers(1, &framebuffer);
     rhiD->f->glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 
     d.colorAttCount = 0;
+    d.srgbUpdateAndBlend = false;
     int attIndex = 0;
     int multiViewCount = 0;
     for (auto it = m_desc.cbeginColorAttachments(), itEnd = m_desc.cendColorAttachments(); it != itEnd; ++it, ++attIndex) {
@@ -6980,6 +7054,9 @@ bool QGles2TextureRenderTarget::create()
         if (texture) {
             QGles2Texture *texD = QRHI_RES(QGles2Texture, texture);
             Q_ASSERT(texD->texture && texD->specified);
+            d.srgbUpdateAndBlend |= texD->flags().testFlag(QRhiTexture::sRGB);
+            if (colorAtt.resolveTexture())
+                d.srgbUpdateAndBlend |= colorAtt.resolveTexture()->flags().testFlag(QRhiTexture::sRGB);
             if (texD->flags().testFlag(QRhiTexture::ThreeDimensional) || texD->flags().testFlag(QRhiTexture::TextureArray)) {
                 if (colorAtt.multiViewCount() < 2) {
                     rhiD->f->glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + uint(attIndex), texD->texture,
@@ -7034,6 +7111,8 @@ bool QGles2TextureRenderTarget::create()
             }
         } else if (renderBuffer) {
             QGles2RenderBuffer *rbD = QRHI_RES(QGles2RenderBuffer, renderBuffer);
+            if (colorAtt.resolveTexture())
+                d.srgbUpdateAndBlend |= colorAtt.resolveTexture()->flags().testFlag(QRhiTexture::sRGB);
             if (rbD->samples > 1 && rhiD->caps.glesMultisampleRenderToTexture && colorAtt.resolveTexture()) {
                 // Special path for GLES and GL_EXT_multisampled_render_to_texture: ignore
                 // the (multisample) renderbuffer and give the resolve texture to GL. (so

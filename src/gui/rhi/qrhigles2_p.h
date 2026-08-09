@@ -1085,6 +1085,9 @@ public:
               depthTexture(false),
               packedDepthStencil(false),
               needsDepthStencilCombinedAttach(false),
+              srgbTextureFormat(false),
+              srgbGenerateMipmap(false),
+              srgbTextureRenderTarget(false),
               srgbWriteControl(false),
               coreProfile(false),
               vertexArrayObject(false),
@@ -1153,6 +1156,9 @@ public:
         uint depthTexture : 1;
         uint packedDepthStencil : 1;
         uint needsDepthStencilCombinedAttach : 1;
+        uint srgbTextureFormat : 1;
+        uint srgbGenerateMipmap : 1;
+        uint srgbTextureRenderTarget : 1;
         uint srgbWriteControl : 1;
         uint coreProfile : 1;
         uint vertexArrayObject : 1;

@@ -2654,13 +2654,17 @@ static const float quadVerticesUvs[] = {
 
 void tst_QRhi::renderToTextureTexturedQuad_data()
 {
-    rhiTestData();
+    bool srgbModes[] = { false, true };
+    rhiTestDataWithParam("srgb", QSpan(srgbModes), [](bool srgb) {
+        return srgb ? QStringLiteral("sRGB") : QStringLiteral("linear");
+    });
 }
 
 void tst_QRhi::renderToTextureTexturedQuad()
 {
     QFETCH(QRhi::Implementation, impl);
     QFETCH(QRhiInitParams *, initParams);
+    QFETCH(bool, srgb);
 
     QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
     if (!rhi)
@@ -2672,6 +2676,15 @@ void tst_QRhi::renderToTextureTexturedQuad()
     QImage inputImage;
     inputImage.load(QLatin1String(":/data/qt256.png"));
     QVERIFY(!inputImage.isNull());
+    inputImage = inputImage.convertToFormat(QImage::Format_RGBA8888);
+    const QPoint srgbProbePoint(64, 96);
+    inputImage.setPixel(srgbProbePoint, qRgba(225, 225, 225, 255));
+
+    QRhiTexture::Flags inputTextureFlags;
+    if (srgb)
+        inputTextureFlags |= QRhiTexture::sRGB;
+    if (!rhi->isTextureFormatSupported(QRhiTexture::RGBA8, inputTextureFlags))
+        QSKIP("Texture format not supported on this backend");
 
     QScopedPointer<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGBA8, inputImage.size(), 1,
                                                         QRhiTexture::RenderTarget | QRhiTexture::UsedAsTransferSource));
@@ -2692,7 +2705,8 @@ void tst_QRhi::renderToTextureTexturedQuad()
     QVERIFY(vbuf->create());
     updates->uploadStaticBuffer(vbuf.data(), quadVerticesUvs);
 
-    QScopedPointer<QRhiTexture> inputTexture(rhi->newTexture(QRhiTexture::RGBA8, inputImage.size()));
+    QScopedPointer<QRhiTexture> inputTexture(rhi->newTexture(QRhiTexture::RGBA8, inputImage.size(), 1,
+                                                             inputTextureFlags));
     QVERIFY(inputTexture->create());
     updates->uploadTexture(inputTexture.data(), inputImage);
 
@@ -2776,6 +2790,13 @@ void tst_QRhi::renderToTextureTexturedQuad()
     QCOMPARE_GT(qGreen(result.pixel(32, 52)), 2 * qBlue(result.pixel(32, 52)));
     QCOMPARE_GT(qGreen(result.pixel(214, 191)), 2 * qRed(result.pixel(214, 191)));
     QCOMPARE_GT(qGreen(result.pixel(214, 191)), 2 * qBlue(result.pixel(214, 191)));
+
+    const QRgb srgbProbe = result.pixel(srgbProbePoint);
+    const int expectedProbeValue = srgb ? 192 : 225;
+    QCOMPARE_EQ(qRed(srgbProbe), expectedProbeValue);
+    QCOMPARE_EQ(qGreen(srgbProbe), expectedProbeValue);
+    QCOMPARE_EQ(qBlue(srgbProbe), expectedProbeValue);
+    QCOMPARE_EQ(qAlpha(srgbProbe), 255);
 }
 
 void tst_QRhi::renderToTextureSampleWithSeparateTextureAndSampler_data()
