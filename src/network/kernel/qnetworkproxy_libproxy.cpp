@@ -193,7 +193,7 @@ QList<QNetworkProxy> QNetworkProxyFactory::systemProxyForQuery(const QNetworkPro
         const QString scheme = url.scheme();
         if (scheme == "http"_L1) {
             type = QNetworkProxy::HttpProxy;
-        } else if (scheme == "socks"_L1 || scheme == "socks5"_L1) {
+        } else if (scheme == "socks"_L1 || scheme == "socks5"_L1 || scheme == "socks5h"_L1) {
             type = QNetworkProxy::Socks5Proxy;
         } else if (scheme == "ftp"_L1) {
             type = QNetworkProxy::FtpCachingProxy;
