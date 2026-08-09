@@ -2642,9 +2642,7 @@ void tst_QTextEdit::highlightLongLine()
     edit.setAcceptRichText(false);
     edit.setWordWrapMode(QTextOption::NoWrap);
 
-    QString singeLongLine;
-    for (int i = 0; i < 10000; ++i)
-        singeLongLine += "0123456789";
+    QString singeLongLine = QString(QLatin1StringView("0123456789")).repeated(10000);
     edit.setPlainText(singeLongLine);
 
     class NumHighlighter : public QSyntaxHighlighter {

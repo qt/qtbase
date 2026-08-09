@@ -1934,9 +1934,8 @@ void tst_QPlainTextEdit::placeholderVisibility()
 void tst_QPlainTextEdit::scrollBarSignals()
 {
     QPlainTextEdit plainTextEdit;
-    QString longText;
-    for (uint i = 0; i < 500; ++i)
-        longText += "This is going to be a very long text for scroll signal testing.\n";
+    const auto text = QLatin1StringView("This is going to be a very long text for scroll signal testing.\n");
+    QString longText = QString(text).repeated(500);
     plainTextEdit.setPlainText(longText);
     QScrollBar *vbar = plainTextEdit.verticalScrollBar();
     plainTextEdit.show();
