@@ -183,12 +183,10 @@ private slots:
     void setValidator_QIntValidator_data();
     void setValidator_QIntValidator();
 
-    void frame_data();
     void frame();
 
     void leftKeyOnSelectedText();
 
-    void setAlignment_data();
     void setAlignment();
 
     void isModified();
@@ -2744,7 +2742,6 @@ void tst_QLineEdit::setValidator_QIntValidator()
     testWidget->setEchoMode((QLineEdit::EchoMode)echoMode);
     testWidget->setValidator(&intValidator);
     QVERIFY(testWidget->text().isEmpty());
-//qDebug("1 input: '" + input + "' Exp: '" + expectedText + "'");
 
     // tests valid input
     if (!useKeys) {
@@ -2755,25 +2752,7 @@ void tst_QLineEdit::setValidator_QIntValidator()
         QTest::keyClick(testWidget, Qt::Key_Return);
         QCOMPARE(return_count, int(is_valid)); // assuming that is_valid = true equals 1
     }
-//qDebug("2 input: '" + input + "' Exp: '" + expectedText + "'");
-//    QCOMPARE(testWidget->displayText(), expectedText);
     QCOMPARE(testWidget->text(), expectedText);
-}
-
-#define NO_PIXMAP_TESTS
-
-void tst_QLineEdit::frame_data()
-{
-#ifndef NO_PIXMAP_TESTS
-#if defined Q_OS_WIN
-    QTest::addColumn<QPixmap>("noFrame");
-    QTest::addColumn<QPixmap>("useFrame");
-
-    QTest::newRow("win");
-//#else
-//    QTest::newRow("x11");
-#endif
-#endif
 }
 
 void tst_QLineEdit::frame()
@@ -2781,37 +2760,11 @@ void tst_QLineEdit::frame()
     QLineEdit *testWidget = ensureTestWidget();
     testWidget->setFrame(false);
     // verify that the editor is shown without a frame
-#ifndef NO_PIXMAP_TESTS
-#if defined Q_OS_WIN
-    QTEST(testWidget, "noFrame");
-#endif
-#endif
     QVERIFY(!testWidget->hasFrame());
 
     testWidget->setFrame(true);
     // verify that the editor is shown with a frame
-#ifndef NO_PIXMAP_TESTS
-#if defined Q_OS_WIN
-    QTEST(testWidget, "useFrame");
-#endif
-#endif
     QVERIFY(testWidget->hasFrame());
-}
-
-void tst_QLineEdit::setAlignment_data()
-{
-#ifndef NO_PIXMAP_TESTS
-#if defined Q_OS_WIN
-    QTest::addColumn<QPixmap>("left");
-    QTest::addColumn<QPixmap>("right");
-    QTest::addColumn<QPixmap>("hcenter");
-    QTest::addColumn<QPixmap>("auto");
-
-    QTest::newRow("win");
-//#else
-//    QTest::newRow("x11");
-#endif
-#endif
 }
 
 void tst_QLineEdit::setAlignment()
@@ -2819,29 +2772,14 @@ void tst_QLineEdit::setAlignment()
     QLineEdit *testWidget = ensureTestWidget();
     testWidget->setText("left");
     testWidget->setAlignment(Qt::AlignLeft);
-#ifndef NO_PIXMAP_TESTS
-#if defined Q_OS_WIN
-    QTEST(testWidget, "left");
-#endif
-#endif
     QCOMPARE(testWidget->alignment(), Qt::AlignLeft);
 
     testWidget->setText("hcenter");
     testWidget->setAlignment(Qt::AlignHCenter);
-#ifndef NO_PIXMAP_TESTS
-#if defined Q_OS_WIN
-    QTEST(testWidget, "hcenter");
-#endif
-#endif
     QCOMPARE(testWidget->alignment(), Qt::AlignHCenter);
 
     testWidget->setText("right");
     testWidget->setAlignment(Qt::AlignRight);
-#ifndef NO_PIXMAP_TESTS
-#if defined Q_OS_WIN
-    QTEST(testWidget, "right");
-#endif
-#endif
     QCOMPARE(testWidget->alignment(), Qt::AlignRight);
 
     testWidget->setAlignment(Qt::AlignTop);
