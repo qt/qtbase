@@ -606,17 +606,13 @@ void tst_QTabWidget::paintEventCount()
 
     tw->setCurrentIndex(1);
 
-    QTest::qWait(100);
-
-    QCOMPARE(tab1->count, initalPaintCount);
-    QCOMPARE(tab2->count, 1);
+    QTRY_COMPARE(tab1->count, initalPaintCount);
+    QTRY_COMPARE(tab2->count, 1);
 
     tw->setCurrentIndex(0);
 
-    QTest::qWait(100);
-
-    QCOMPARE(tab1->count, initalPaintCount + 1);
-    QCOMPARE(tab2->count, 1);
+    QTRY_COMPARE(tab1->count, initalPaintCount + 1);
+    QTRY_COMPARE(tab2->count, 1);
 }
 
 void tst_QTabWidget::minimumSizeHint()
@@ -810,8 +806,6 @@ void tst_QTabWidget::setCurrentBeforeShow()
 
     QCOMPARE_GE(tabWidget.tabBar()->tabRect(0).x(), 0);
     QCOMPARE_GE(tabWidget.tabBar()->tabRect(0).y(), 0);
-
-    QTest::qWait(2000);
 }
 
 QTEST_MAIN(tst_QTabWidget)
