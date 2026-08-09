@@ -622,17 +622,17 @@ void tst_QPlainTextEdit::preserveCharFormatInAppend()
 
     cursor.movePosition(QTextCursor::Start);
     cursor.movePosition(QTextCursor::NextCharacter);
-    QCOMPARE(cursor.charFormat().fontWeight(), (int)QFont::Normal);
+    QCOMPARE(cursor.charFormat().fontWeight(), QFont::Normal);
     QCOMPARE(cursor.block().text(), QString("First para"));
 
     cursor.movePosition(QTextCursor::NextBlock);
     cursor.movePosition(QTextCursor::NextCharacter);
-    QCOMPARE(cursor.charFormat().fontWeight(), (int)QFont::Bold);
+    QCOMPARE(cursor.charFormat().fontWeight(), QFont::Bold);
     QCOMPARE(cursor.block().text(), QString("Second para"));
 
     cursor.movePosition(QTextCursor::NextBlock);
     cursor.movePosition(QTextCursor::NextCharacter);
-    QCOMPARE(cursor.charFormat().fontWeight(), (int)QFont::Normal);
+    QCOMPARE(cursor.charFormat().fontWeight(), QFont::Normal);
     QCOMPARE(cursor.block().text(), QString("third para"));
 }
 
