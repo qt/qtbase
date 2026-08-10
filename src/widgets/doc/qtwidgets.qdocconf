@@ -38,6 +38,7 @@ depends += \
     qtdoc \
     qtsql \
     qtdesigner \
+    qtqml \
     qtquick \
     qmake \
     qtnetwork \
