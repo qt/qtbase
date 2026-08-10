@@ -1976,7 +1976,7 @@ QMetaMethod QMetaMethod::fromRelativeConstructorIndex(const QMetaObject *mobj, i
 
 /*!
     \macro Q_METAMETHOD_INVOKE_MAX_ARGS
-    \deprecated [6.13]
+    \deprecated [6.12]
     \relates QMetaMethod
 
     Equals maximum number of arguments available for execution of the method
