@@ -3,8 +3,10 @@
 
 # Assuming EMSDK == /path/emsdk
 #
-# Then we expect /path/emsdk/.emscripten file to contain the following line
+# Then we expect /path/emsdk/.emscripten file to contain either
 #   EMSCRIPTEN_ROOT = emsdk_path + '/upstream/emscripten'
+# or, as written by newer emsdk versions
+#   EMSCRIPTEN_ROOT = '$CFGDIR/upstream/emscripten'
 #
 # then we set out_var to '/upstream/emscripten', so it's not a full path
 function(__qt_internal_get_emroot_path_suffix_from_emsdk_env out_var)
@@ -13,6 +15,11 @@ function(__qt_internal_get_emroot_path_suffix_from_emsdk_env out_var)
     string(REGEX MATCH "EMSCRIPTEN_ROOT.*$" EMROOT "${ver}")
     string(REGEX MATCH "'([^' ]*)'" EMROOT2 "${EMROOT}")
     string(REPLACE "'" "" EMROOT_PATH "${EMROOT2}")
+
+    # Newer emsdk versions write the path relative to the config file's directory, using a
+    # $CFGDIR placeholder that only emscripten itself expands. The config file lives in EMSDK,
+    # so dropping the placeholder leaves the suffix we want.
+    string(REGEX REPLACE "^\\$[{]?CFGDIR[}]?" "" EMROOT_PATH "${EMROOT_PATH}")
 
     set(${out_var} "${EMROOT_PATH}" PARENT_SCOPE)
 endfunction()
