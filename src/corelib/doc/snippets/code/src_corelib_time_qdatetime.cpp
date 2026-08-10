@@ -27,7 +27,7 @@ void examples()
 
     {
         //! [2]
-        QDate date = QDate::fromString("130", "Md"); // invalid
+        QDate date = QDate::fromString("130", "Md"); // Janary 30
         //! [2]
     }
 
@@ -71,7 +71,7 @@ void examples()
 
     {
         //! [7]
-        QTime time = QTime::fromString("00:710", "hh:ms"); // invalid
+        QTime time = QTime::fromString("00:710", "hh:ms"); // 7 mins, 10 secs after midnight
         //! [7]
     }
 
@@ -112,7 +112,7 @@ void examples()
 
     {
         //! [13]
-        QDateTime dateTime = QDateTime::fromString("130", "Mm"); // invalid
+        QDateTime dateTime = QDateTime::fromString("130", "Mm"); // January, 30 mins
         //! [13]
     }
 

@@ -1289,11 +1289,14 @@ QString QDate::toString(Qt::DateFormat format) const
             a minus sign is prepended, making five characters.
     \endtable
 
-    Any sequence of characters enclosed in single quotes will be included
-    verbatim in the output string (stripped of the quotes), even if it contains
-    formatting characters. Two consecutive single quotes ("''") are replaced by
-    a single quote in the output. All other characters in the format string are
-    included verbatim in the output string.
+//! [to-string-single-quote]
+    Any non-empty sequence of characters enclosed in single quotes will be
+    included verbatim in the output string (stripped of the quotes), even if it
+    contains formatting characters. Two consecutive single quotes ("''") are
+    replaced by a single quote in the output, rather than starting or ending a
+    verbatim sequence. All other characters in the format string are included
+    verbatim in the output string.
+//! [to-string-single-quote]
 
     Formats without separators (e.g. "ddMM") are supported but must be used with
     care, as the resulting strings aren't always reliably readable (e.g. if "dM"
@@ -1754,19 +1757,32 @@ QDate QDate::fromString(QStringView string, Qt::DateFormat format)
     \note Day and month names must be given in English (C locale). If localized
     month and day names are to be recognized, use QLocale::system().toDate().
 
-    All other input characters will be treated as text. Any non-empty sequence
-    of characters enclosed in single quotes will also be treated (stripped of
-    the quotes) as text and not be interpreted as expressions. For example:
+//! [from-string-single-quote]
+    Any non-empty sequence of characters enclosed in single quotes will also be
+    treated (stripped of the quotes) as text and not be interpreted as
+    expressions. Two consecutive single quotes ("''") are read as a single quote
+    to be matched by the input, rather than starting or ending a verbatim
+    sequence. All other input characters will be treated as verbatim text to be
+    matched in the input string. For example:
+//! [from-string-single-quote]
+
 
     \snippet code/src_corelib_time_qdatetime.cpp 1
 
-    If the format is not satisfied, an invalid QDate is returned. The
-    expressions that don't expect leading zeroes (d, M) will be
-    greedy. This means that they will use two digits even if this
-    will put them outside the accepted range of values and leaves too
-    few digits for other sections. For example, the following format
-    string could have meant January 30 but the M will grab two
-    digits, resulting in an invalid date:
+    If the format is not satisfied, an invalid QDate is returned.
+
+//! [from-string-juxtaposed]
+    Where numeric fields are juxtaposed, with no separators to break up the
+    sequences of digits, there may be ambiguity as to whether some fields
+    allowed to be single-digit use two digits (due to the value to represent
+    being more than 9). Where giving such a field two digits would leave too few
+    for other fields, and the single-digit reading is consistent with other
+    fields, this ambiguity can be resolved. Otherwise (where more than one field
+    is allowed to have only one digit and there would be spare digits if each
+    only got one), a resolution that gives extra digits to earlier fields is
+    preferred over one that gives them to later fields, provided the data remain
+    consistent.  For example:
+//! [from-string-juxtaposed]
 
     \snippet code/src_corelib_time_qdatetime.cpp 2
 
@@ -2261,11 +2277,7 @@ QString QTime::toString(Qt::DateFormat format) const
     is available, the \c{t} forms to represent it may be skipped. See \l
     QTimeZone::displayName() for details of when it returns an empty string.
 
-    Any non-empty sequence of characters enclosed in single quotes will be
-    included verbatim in the output string (stripped of the quotes), even if it
-    contains formatting characters. Two consecutive single quotes ("''") are
-    replaced by a single quote in the output. All other characters in the format
-    string are included verbatim in the output string.
+    \include qdatetime.cpp to-string-single-quote
 
     Formats without separators (e.g. "hhmm") are supported but must be used with
     care, as the resulting strings aren't always reliably readable (e.g. if "Hm"
@@ -2656,19 +2668,13 @@ QTime QTime::fromString(QStringView string, Qt::DateFormat format)
              matched case-insensitively.
     \endtable
 
-    All other input characters will be treated as text. Any non-empty sequence
-    of characters enclosed in single quotes will also be treated (stripped of
-    the quotes) as text and not be interpreted as expressions.
+    \include qdatetime.cpp from-string-single-quote
 
     \snippet code/src_corelib_time_qdatetime.cpp 6
 
     If the format is not satisfied, an invalid QTime is returned.
-    Expressions that do not expect leading zeroes to be given (h, m, s
-    and z) are greedy. This means that they will use two digits (or three, for z) even if
-    this puts them outside the range of accepted values and leaves too
-    few digits for other sections. For example, the following string
-    could have meant 00:07:10, but the m will grab two digits, resulting
-    in an invalid time:
+
+    \include qdatetime.cpp from-string-juxtaposed
 
     \snippet code/src_corelib_time_qdatetime.cpp 7
 
@@ -4756,11 +4762,7 @@ QString QDateTime::toString(Qt::DateFormat format) const
     used. See QTime::toString() and QDate::toString() for the supported
     specifiers for time and date, respectively, in the \a format parameter.
 
-    Any sequence of characters enclosed in single quotes will be included
-    verbatim in the output string (stripped of the quotes), even if it contains
-    formatting characters. Two consecutive single quotes ("''") are replaced by
-    a single quote in the output. All other characters in the format string are
-    included verbatim in the output string.
+    \include qdatetime.cpp to-string-single-quote
 
     Formats without separators (e.g. "ddMM") are supported but must be used with
     care, as the resulting strings aren't always reliably readable (e.g. if "dM"
@@ -5977,16 +5979,13 @@ QDateTime QDateTime::fromString(QStringView string, Qt::DateFormat format)
 
     \snippet code/src_corelib_time_qdatetime.cpp 14
 
-    All other input characters will be treated as text. Any non-empty sequence
-    of characters enclosed in single quotes will also be treated (stripped of
-    the quotes) as text and not be interpreted as expressions.
+    \include qdatetime.cpp from-string-single-quote
 
     \snippet code/src_corelib_time_qdatetime.cpp 12
 
-    If the format is not satisfied, an invalid QDateTime is returned.  If the
-    format is satisfied but \a string represents an invalid datetime (e.g. in a
-    gap skipped by a time-zone transition), an valid QDateTime is returned, that
-    represents a near-by datetime that is valid.
+    If the format is not satisfied, an invalid QDateTime is returned.
+
+    \include qdatetime.cpp from-string-juxtaposed
 
     The expressions that don't have leading zeroes (d, M, h, m, s, z) will be
     greedy. This means that they will use two digits (or three, for z) even if this will
