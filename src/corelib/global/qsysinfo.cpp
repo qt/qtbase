@@ -347,22 +347,12 @@ static bool readEtcLsbRelease(QUnixOSVersion &v)
 }
 
 #if defined(Q_OS_LINUX)
-static QByteArray getEtcFileFirstLine(const char *fileName)
-{
-    QByteArray buffer = getEtcFileContent(fileName);
-    if (buffer.isEmpty())
-        return QByteArray();
-
-    const char *ptr = buffer.constData();
-    return QByteArray(ptr, buffer.indexOf("\n")).trimmed();
-}
-
 static bool readEtcRedHatRelease(QUnixOSVersion &v)
 {
     // /etc/redhat-release analysed should be a one line file
     // the format of its content is <Vendor_ID release Version>
     // i.e. "Red Hat Enterprise Linux Workstation release 6.5 (Santiago)"
-    QByteArray line = getEtcFileFirstLine("/etc/redhat-release");
+    QByteArray line = getEtcFileContent("/etc/redhat-release").trimmed();
     if (line.isEmpty())
         return false;
 
@@ -382,7 +372,7 @@ static bool readEtcDebianVersion(QUnixOSVersion &v)
     // /etc/debian_version analysed should be a one line file
     // the format of its content is <Release_ID/sid>
     // i.e. "jessie/sid"
-    QByteArray line = getEtcFileFirstLine("/etc/debian_version");
+    QByteArray line = getEtcFileContent("/etc/debian_version").trimmed();
     if (line.isEmpty())
         return false;
 
