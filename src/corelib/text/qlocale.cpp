@@ -2318,11 +2318,7 @@ QString QLocale::toString(qulonglong number, int fieldWidth, char32_t fillChar) 
 }
 
 /*!
-    Returns a localized string representation of the given \a date in the
-    specified \a format.
-    If \a format is an empty string, an empty string is returned.
-
-    \sa QDate::toString()
+    \overload
 */
 
 QString QLocale::toString(QDate date, const QString &format) const
@@ -2331,11 +2327,13 @@ QString QLocale::toString(QDate date, const QString &format) const
 }
 
 /*!
+    \overload
     Returns a localized string representation of the given \a time according
-    to the specified \a format.
+    to the specified \a format (see QTime::toString()).
+
     If \a format is an empty string, an empty string is returned.
 
-    \sa QTime::toString()
+    \sa dateFormat(), QTime::toString()
 */
 
 QString QLocale::toString(QTime time, const QString &format) const
@@ -2346,22 +2344,20 @@ QString QLocale::toString(QTime time, const QString &format) const
 /*!
     \since 4.4
     \fn QString QLocale::toString(const QDateTime &dateTime, const QString &format) const
-
-    Returns a localized string representation of the given \a dateTime according
-    to the specified \a format.
-    If \a format is an empty string, an empty string is returned.
-
-    \sa QDateTime::toString(), QDate::toString(), QTime::toString()
+    \overload
 */
 
 /*!
     \since 5.14
+    \overload
 
     Returns a localized string representation of the given \a date in the
-    specified \a format, optionally for a specified calendar \a cal.
+    specified \a format (see QDate::toString()), optionally for a specified
+    calendar \a cal.
+
     If \a format is an empty string, an empty string is returned.
 
-    \sa QDate::toString()
+    \sa dateFormat(), QDate::toString()
 */
 QString QLocale::toString(QDate date, QStringView format, QCalendar cal) const
 {
@@ -2380,12 +2376,12 @@ QString QLocale::toString(QDate date, QStringView format) const
 /*!
     \since 5.14
 
-    Returns a localized string representation of the given \a date according
-    to the specified \a format (see dateFormat()), optionally for a specified
+    Returns a localized string representation of the given \a date according to
+    the specified \a format (see dateFormat()), optionally for a specified
     calendar \a cal.
 
     \note Some locales may use formats that limit the range of years they can
-    represent.
+    represent. Some locales' use of two-digit years may lead to ambiguity.
 */
 QString QLocale::toString(QDate date, FormatType format, QCalendar cal) const
 {
@@ -2450,12 +2446,7 @@ static bool timeFormatContainsAP(QStringView format)
 
 /*!
     \since 4.5
-
-    Returns a localized string representation of the given \a time according
-    to the specified \a format.
-    If \a format is an empty string, an empty string is returned.
-
-    \sa QTime::toString()
+    \overload
 */
 QString QLocale::toString(QTime time, QStringView format) const
 {
@@ -2466,7 +2457,9 @@ QString QLocale::toString(QTime time, QStringView format) const
     \since 5.14
 
     Returns a localized string representation of the given \a dateTime according
-    to the specified \a format, optionally for a specified calendar \a cal.
+    to the specified \a format (see QDateTime::toString()), optionally for a
+    specified calendar \a cal.
+
     If \a format is an empty string, an empty string is returned.
 
     \sa QDateTime::toString(), QDate::toString(), QTime::toString()
@@ -2493,7 +2486,7 @@ QString QLocale::toString(const QDateTime &dateTime, QStringView format) const
     specified calendar \a cal.
 
     \note Some locales may use formats that limit the range of years they can
-    represent.
+    represent. Some locales' use of two-digit years may lead to ambiguity.
 */
 QString QLocale::toString(const QDateTime &dateTime, FormatType format, QCalendar cal) const
 {
