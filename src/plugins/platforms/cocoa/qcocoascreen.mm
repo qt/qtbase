@@ -229,6 +229,18 @@ void QCocoaScreen::update(CGDirectDisplayID displayId)
     m_geometry = qt_mac_flip(QRectF::fromCGRect(nsScreen.frame), primaryScreenGeometry).toRect();
     m_availableGeometry = qt_mac_flip(QRectF::fromCGRect(nsScreen.visibleFrame), primaryScreenGeometry).toRect();
 
+    if (QOperatingSystemVersion::current() < QOperatingSystemVersion::MacOSTahoe) {
+        // On macOS versions below 26 the visibleFrame wrongly includes the auto-hidden
+        // menu bar area while in native full screen, even though that area still
+        // intercepts clicks meant for the hidden menu bar. Carve it out ourselves
+        // so we don't report it as available, e.g. for popup placement.
+        if (NSApp.presentationOptions & NSApplicationPresentationFullScreen
+            && m_availableGeometry.height() == m_geometry.height()) {
+            if (auto menuBarHeight = NSApp.mainMenu.menuBarHeight; menuBarHeight > 0)
+                m_availableGeometry.setTop(m_availableGeometry.top() + qRound(menuBarHeight));
+        }
+    }
+
     m_devicePixelRatio = nsScreen.backingScaleFactor;
 
     m_format = QImage::Format_RGB32;
