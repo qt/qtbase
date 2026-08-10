@@ -1175,8 +1175,8 @@ void tst_QGlobal::CXX20_constexpr_dtor()
 static Q_DECL_PURE_FUNCTION int pureFunc() { return 42; }
 static Q_DECL_CONST_FUNCTION int constFunc() { return 42; }
 static Q_DECL_COLD_FUNCTION int coldFunc() { return 42; }
-static int nonblockingFunc() Q_DECL_NONBLOCKING_FUNCTION { return 42; }
-static int nonallocatingFunc() Q_DECL_NONALLOCATING_FUNCTION { return 42; }
+static int nonblockingFunc() noexcept Q_DECL_NONBLOCKING_FUNCTION { return 42; }
+static int nonallocatingFunc() noexcept Q_DECL_NONALLOCATING_FUNCTION { return 42; }
 
 void tst_QGlobal::declFunctionMacros()
 {
