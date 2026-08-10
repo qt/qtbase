@@ -296,7 +296,7 @@ void QGridLayoutRowData::calculateGeometries(int start, int end, qreal targetSiz
                         ultimateSumSizes = ultimateSumSizes * 3 / 2;
 
                         qreal beta = ultimateSumSizes - sumSizes;
-                        if (!beta) {
+                        if (qFuzzyIsNull(beta)) {
                             factors[i] = 1;
                         } else {
                             qreal alpha = qMin(sumCurrentAvailable, beta);
