@@ -80,6 +80,14 @@ function(qt_internal_generate_module_map target)
             continue()
         endif()
 
+        # Not every Qt target we link is a Qt module. Static builds in particular
+        # may pull in plugins, e.g. via qt_import_qml_plugins(), and those don't
+        # have module maps of their own to use.
+        get_target_property(dep_interface_name ${dep} _qt_module_interface_name)
+        if(NOT dep_interface_name)
+            continue()
+        endif()
+
         qt_internal_module_info(dep_module "${dep}")
         string(APPEND module_map_content "    use ${dep_module}\n")
     endforeach()
