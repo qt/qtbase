@@ -102,6 +102,11 @@ private Q_SLOTS:
     void addSecs();
     void addMSecs_data();
     void addMSecs();
+    void durationArithmetic_data() { addMSecs_data(); }
+    // Tests seconds as well as milliseconds, but doesn't get the
+    // seconds-only data because they have to go via milliseconds because that's
+    // the operand of the arithmetic operators and addDuration().
+    void durationArithmetic();
 #if QT_DEPRECATED_SINCE(6, 9)
     void toTimeSpec_data();
     void toTimeSpec();
@@ -232,6 +237,22 @@ private:
 
 Q_DECLARE_METATYPE(Qt::TimeSpec)
 Q_DECLARE_METATYPE(Qt::DateFormat)
+
+// Beyond equality as "same instant in time" - require same representation.
+// Can add extra check code after required parameters.
+#define QDTCOMPARE(actual, expect, ...) \
+    do { \
+        const QDateTime actual_QDT_C = (actual); \
+        const QDateTime expect_QDT_C = (expect); \
+        if (expect_QDT_C.isValid()) { \
+            QCOMPARE(actual_QDT_C, expect_QDT_C); \
+            QCOMPARE(actual_QDT_C.timeRepresentation(), expect_QDT_C.timeRepresentation()); \
+            QCOMPARE(actual_QDT_C.offsetFromUtc(), expect_QDT_C.offsetFromUtc()); \
+            __VA_ARGS__ \
+        } else { \
+            QVERIFY(!actual_QDT_C.isValid()); \
+        } \
+    } while (false) // end QDTCOMPARE()
 
 tst_QDateTime::tst_QDateTime() :
     // UTC starts of January and July in the commented years:
@@ -1745,30 +1766,9 @@ void tst_QDateTime::addSecs()
     QFETCH(const QDateTime, dt);
     QFETCH(const qint64, secondCount);
     QFETCH(const QDateTime, expect);
-    QDateTime test = dt.addSecs(secondCount);
-    QDateTime test2 = dt + std::chrono::seconds(secondCount);
-    QDateTime test3 = dt;
-    test3 += std::chrono::seconds(secondCount);
-    if (!expect.isValid()) {
-        QVERIFY(!test.isValid());
-        QVERIFY(!test2.isValid());
-        QVERIFY(!test3.isValid());
-    } else {
-        QCOMPARE(test, expect);
-        QCOMPARE(test2, expect);
-        QCOMPARE(test3, expect);
-        QCOMPARE(test.timeRepresentation(), expect.timeRepresentation());
-        QCOMPARE(test2.timeRepresentation(), expect.timeRepresentation());
-        QCOMPARE(test3.timeRepresentation(), expect.timeRepresentation());
-        QCOMPARE(test.offsetFromUtc(), expect.offsetFromUtc());
-        QCOMPARE(test2.offsetFromUtc(), expect.offsetFromUtc());
-        QCOMPARE(test3.offsetFromUtc(), expect.offsetFromUtc());
-        QCOMPARE(expect.addSecs(-secondCount), dt);
-        QCOMPARE(expect - std::chrono::seconds(secondCount), dt);
-        test3 -= std::chrono::seconds(secondCount);
-        QCOMPARE(test3, dt);
-        QCOMPARE(dt.secsTo(expect), secondCount);
-    }
+
+    QDTCOMPARE(dt.addSecs(secondCount), expect,
+               QCOMPARE(expect.addSecs(-secondCount), dt););
 }
 
 void tst_QDateTime::addMSecs()
@@ -1777,24 +1777,36 @@ void tst_QDateTime::addMSecs()
     QFETCH(const qint64, secondCount);
     QFETCH(const QDateTime, expect);
 
-    const auto verify = [&](const QDateTime &test) {
-        if (!expect.isValid()) {
-            QVERIFY(!test.isValid());
-        } else {
-            QCOMPARE(test, expect);
-            QCOMPARE(test.timeRepresentation(), expect.timeRepresentation());
-            QCOMPARE(test.offsetFromUtc(), expect.offsetFromUtc());
-            QCOMPARE(expect.addMSecs(-secondCount * 1000), dt);
+    QDTCOMPARE(dt.addMSecs(secondCount * 1000), expect,
+               QCOMPARE(expect.addMSecs(-secondCount * 1000), dt););
+}
+
+void tst_QDateTime::durationArithmetic()
+{
+    QFETCH(const QDateTime, dt);
+    QFETCH(const qint64, secondCount);
+    QFETCH(const QDateTime, expect);
+
+    const auto verify = [&](const auto step) {
+        QDTCOMPARE(dt + step, expect, QCOMPARE(expect - step, dt););
+        QDTCOMPARE(dt.addDuration(step), expect,
+                   QCOMPARE(expect.addDuration(-step), dt););
+
+        {
+            QDateTime test = dt;
+            test += step;
+            QDTCOMPARE(test, expect,
+                       test -= step;
+                       QCOMPARE(test, dt););
         }
     };
-#define VERIFY(datum) \
-    verify(datum); \
+#define VERIFY(step) \
+    verify(step); \
     if (QTest::currentTestFailed()) \
         return
 
-    VERIFY(dt.addMSecs(secondCount * 1000));
-    VERIFY(dt.addDuration(std::chrono::seconds(secondCount)));
-    VERIFY(dt.addDuration(std::chrono::milliseconds(secondCount * 1000)));
+    VERIFY(std::chrono::seconds(secondCount));
+    VERIFY(std::chrono::milliseconds(secondCount * 1000));
 #undef VERIFY
 }
 
