@@ -364,12 +364,7 @@ bool QLockFile::getLockInfo(qint64 *pid, QString *hostname, QString *appname) co
 }
 
 QLockFilePrivate::QLockFilePrivate(const QString &fn)
-    : fileName(fn),
-#ifdef Q_OS_WIN
-      fileHandle(INVALID_HANDLE_VALUE)
-#else
-      fileHandle(-1)
-#endif
+    : fileName(fn)
 {
 }
 
