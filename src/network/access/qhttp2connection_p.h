@@ -190,8 +190,7 @@ private:
     void finishWithError(Http2::Http2Error errorCode, const QString &message);
     void finishWithError(Http2::Http2Error errorCode);
 
-    void streamError(Http2::Http2Error errorCode,
-                     QLatin1StringView message);
+    void streamError(Http2::Http2Error errorCode, const QString &message);
 
     // Keep it const since it never changes after creation
     const quint32 m_streamID = 0;
@@ -303,7 +302,8 @@ private:
     Q_ALWAYS_INLINE
     bool streamIsIgnored(quint32 streamID) const noexcept;
 
-    void connectionError(Http2::Http2Error errorCode, const char *message, bool logAsError = true);
+    void connectionError(Http2::Http2Error errorCode, const QString &message,
+                         bool logAsError = true);
     void setH2Configuration(QHttp2Configuration config);
     void closeSession();
     void registerStreamAsResetLocally(quint32 streamID);
