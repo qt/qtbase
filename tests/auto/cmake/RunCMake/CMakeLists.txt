@@ -7,6 +7,8 @@ qt_internal_add_RunCMake_test(AutomocParser)
 
 qt_internal_add_RunCMake_test(find_package)
 
+qt_internal_add_RunCMake_test(ConfigVersionOverride)
+
 set(extra_run_cmake_args "")
 if(TARGET Qt::Gui)
     list(APPEND extra_run_cmake_args "-DHAS_GUI=TRUE")
