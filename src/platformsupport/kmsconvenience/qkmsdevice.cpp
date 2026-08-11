@@ -34,6 +34,10 @@ int QKmsDevice::crtcForConnector(drmModeResPtr resources, drmModeConnectorPtr co
 {
     int candidate = -1;
 
+    // m_crtc_allocator is a 32 bit mask, so CRTCs past the first 32 cannot be
+    // tracked and are not considered.
+    const int crtcCount = qMin(resources->count_crtcs, 32);
+
     for (int i = 0; i < connector->count_encoders; i++) {
         drmModeEncoderPtr encoder = drmModeGetEncoder(m_dri_fd, connector->encoders[i]);
         if (!encoder) {
@@ -46,9 +50,9 @@ int QKmsDevice::crtcForConnector(drmModeResPtr resources, drmModeConnectorPtr co
         quint32 possibleCrtcs = encoder->possible_crtcs;
         drmModeFreeEncoder(encoder);
 
-        for (int j = 0; j < resources->count_crtcs; j++) {
-            bool isPossible = possibleCrtcs & (1 << j);
-            bool isAvailable = !(m_crtc_allocator & (1 << j));
+        for (int j = 0; j < crtcCount; j++) {
+            bool isPossible = possibleCrtcs & (1u << j);
+            bool isAvailable = !(m_crtc_allocator & (1u << j));
             // Preserve the existing CRTC -> encoder -> connector routing if
             // any. It makes the initialization faster, and may be better
             // since we have a very dumb picking algorithm.
@@ -461,7 +465,7 @@ bool QKmsDevice::createScreenInfoForConnector(drmModeResPtr resources,
 
     QString planeListStr;
     for (QKmsPlane &plane : m_planes) {
-        if (plane.possibleCrtcs & (1 << output.crtc_index)) {
+        if (plane.possibleCrtcs & (1u << output.crtc_index)) {
             output.available_planes.append(plane);
             planeListStr.append(QString::number(plane.id));
             planeListStr.append(u' ');
@@ -538,7 +542,7 @@ bool QKmsDevice::createScreenInfoForConnector(drmModeResPtr resources,
     }
 #endif
 
-    m_crtc_allocator |= (1 << output.crtc_index);
+    m_crtc_allocator |= (1u << output.crtc_index);
 
     vinfo.output = output;
     return true;
@@ -681,7 +685,7 @@ void QKmsDevice::checkConnectedScreens()
 
         // Clear crtc allocator bit for screen
         const int crtcIdx = orderedScreen.vinfo.output.crtc_index;
-        m_crtc_allocator &= ~(1 << crtcIdx);
+        m_crtc_allocator &= ~(1u << crtcIdx);
 
         const int ret = drmModeSetCrtc(m_dri_fd, crtcId, 0, 0, 0, nullptr, 0, nullptr);
 
@@ -758,7 +762,7 @@ void QKmsDevice::updateScreens()
 
             // 1) crtc_allocator for the crtc
             const int crtcIdx = os.vinfo.output.crtc_index;
-            m_crtc_allocator &= ~(1 << crtcIdx);
+            m_crtc_allocator &= ~(1u << crtcIdx);
 
             // 2) the plane itself
             if (os.vinfo.output.eglfs_plane)
