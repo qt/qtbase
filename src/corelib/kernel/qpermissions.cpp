@@ -74,7 +74,7 @@ Q_LOGGING_CATEGORY(lcPermissions, "qt.permissions", QtWarningMsg);
     why we can not record voice memos at this time (if the permission was denied),
     or proceed to using the microphone (if permission was granted).
 
-    \note On \macOS and iOS permissions can currently only be requested for
+    \note On \macos and iOS permissions can currently only be requested for
     GUI applications.
 
     \section2 Declaring Permissions
