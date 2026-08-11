@@ -6,8 +6,8 @@ qt_policy(SET QTP0007 NEW)
 qt_add_executable(app MACOSX_BUNDLE main.cpp)
 target_link_libraries(app PRIVATE Qt6::Core)
 
-# Use the 'qt6_'-prefixed command, because the versionless macro re-parses ${ARGV},
-# which discards one level of backslashes.
+# Use the 'qt6_'-prefixed command, because the version-less one might forward through a macro
+# which re-parses ${ARGV}, and discards one level of backslashes.
 qt6_generate_deploy_app_script(
     TARGET app
     OUTPUT_SCRIPT deploy_script

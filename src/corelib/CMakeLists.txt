@@ -389,6 +389,7 @@ qt_internal_add_module(Core
         QTP0002
         QTP0003
         QTP0007
+        QTP0008
     ATTRIBUTION_FILE_DIR_PATHS
         text
         global
