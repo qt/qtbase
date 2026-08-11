@@ -1,0 +1,34 @@
+[
+    {
+        "Id": "sbom-test-parent",
+        "QtParts": [ "tests" ],
+        "Name": "Sbom Test Parent",
+        "QtUsage": "Used for testing SBOM attribution handling.",
+        "Description": "First attribution entry, has a PURL and a CPE.",
+        "Homepage": "https://qt-project.org/SbomTest/parent",
+        "Version": "1.2.3",
+        "License": "MIT License",
+        "LicenseId": "MIT",
+        "Copyright": [
+            "Copyright (C) 2026 Sbom Test Parent Authors",
+            "Copyright (C) 2026 Sbom Test Parent Contributors"
+        ],
+        "PURL": [
+            "pkg:github/sbomtest/parent@$<VERSION>",
+            "pkg:generic/sbomtest/parent@$<VERSION>"
+        ],
+        "CPE": "cpe:2.3:a:sbomtest:parent:$<VERSION>:*:*:*:*:*:*:*"
+    },
+    {
+        "Id": "sbom-test-child",
+        "QtParts": [ "tests" ],
+        "Name": "Sbom Test Child",
+        "QtUsage": "Used for testing SBOM attribution handling.",
+        "Description": "Second attribution entry, has neither a PURL nor a CPE.",
+        "Homepage": "https://qt-project.org/SbomTest/child",
+        "Version": "9.9.9",
+        "License": "BSD 3-Clause New or Revised License",
+        "LicenseId": "BSD-3-Clause",
+        "Copyright": "Copyright (C) 2026 Sbom Test Child Authors"
+    }
+]
