@@ -17,6 +17,7 @@
 #include <QPushButton>
 #include <QScrollBar>
 #include <QScroller>
+#include <QScrollerProperties>
 #include <QSignalSpy>
 #include <QSortFilterProxyModel>
 #include <QSpinBox>
@@ -28,6 +29,7 @@
 #include <QTreeWidget>
 #include <QTest>
 #include <QVBoxLayout>
+#include <QtMath>
 #include <QtTest/private/qtesthelpers_p.h>
 #include <private/qabstractitemview_p.h>
 #include <QtWidgets/private/qapplication_p.h>
@@ -3223,11 +3225,19 @@ void tst_QAbstractItemView::scrollerSmoothScroll()
     if (!(QTest::qWaitFor([&]{ return view.currentItem() == pressItem; })))
         QSKIP("Current item didn't change on press, skipping test");
 
+    const QScroller *scroller = QScroller::scroller(view.viewport());
+    const qreal dragStartDistanceInMeters = scroller->scrollerProperties()
+            .scrollMetric(QScrollerProperties::DragStartDistance).toReal();
+    const int firstPixelPastDragStart =
+            qFloor(dragStartDistanceInMeters * scroller->pixelPerMeter().y()) + 1;
+    constexpr int minimumDragStepInPixels = 10;
+    const int pixelsPerMove = qMax(minimumDragStepInPixels, firstPixelPastDragStart);
+
     // QAIV will reset the current item when the scroller changes state to Dragging
     for (int y = 0; y < QApplication::startDragDistance() * 2; ++y) {
         // gesture recognizer needs some throttling
         QTest::qWait(10);
-        dragPosition -= QPoint(0, 10);
+        dragPosition -= QPoint(0, pixelsPerMove);
         const QPoint globalPos = view.viewport()->mapToGlobal(dragPosition);
         QMouseEvent mouseMoveEvent(QEvent::MouseMove, dragPosition, dragPosition, globalPos,
                                     Qt::NoButton, Qt::LeftButton, Qt::NoModifier);
