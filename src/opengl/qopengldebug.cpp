@@ -848,7 +848,7 @@ QOpenGLDebugMessage &QOpenGLDebugMessage::operator=(const QOpenGLDebugMessage &d
 
 /*!
     \fn void QOpenGLDebugMessage::swap(QOpenGLDebugMessage &other)
-    \memberswap{message]
+    \memberswap{message}
 */
 
 /*!
