@@ -743,7 +743,7 @@ void QHttp2ProtocolHandler::connectionError(Http2::Http2Error errorCode, const Q
     qCCritical(QT_HTTP2) << "connection error:" << message;
 
     const auto error = qt_error(errorCode);
-    m_channel->emitFinishedWithError(error, qPrintable(message));
+    m_channel->emitFinishedWithError(error, message);
 
     closeSession();
 }
