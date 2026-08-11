@@ -55,6 +55,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 // ### merge into qt_safe_write?
 static qint64 qt_write_loop(int fd, const char *data, qint64 len)
 {
@@ -133,6 +135,33 @@ static bool setNativeLocks(int fd)
     return true;
 }
 
+static bool releaseLockFile(int fileHandle, const QByteArray &fileName)
+{
+    // first we try to unlink the file while it's locked
+    int ret = unlink(fileName);
+    int savedErrno = ret == 0 ? 0 : errno;
+    qt_safe_close(fileHandle);
+
+    switch (savedErrno) {
+        // we have observed on some systems we can't unlink a file with an
+        // active lock, so we must close it first, then unlink
+    case EBUSY:     // observed with some NFS servers
+    case ETXTBSY:   // not observed, just defensive
+    case EPERM:     // probably can't unlink() an open file (independent of locks)
+        ret = unlink(fileName.data());
+        savedErrno = ret == 0 ? 0 : errno;
+    }
+
+    if (savedErrno == 0 || savedErrno == ENOENT || savedErrno == ENOTDIR)
+        return true;        // file is gone
+
+    qWarning("Could not remove our own lock file %s: %ls (maybe permissions changed meanwhile?)",
+             fileName.cbegin(), qUtf16Printable(qt_error_string(savedErrno)));
+    // This is bad because other users of this lock file will now have to wait for the stale-lock-timeout...
+
+    return false;
+}
+
 QLockFile::LockError QLockFilePrivate::tryLock_sys()
 {
     const QByteArray lockFileName = QFile::encodeName(fileName);
@@ -183,9 +212,14 @@ bool QLockFilePrivate::removeStaleLock()
     if (fd < 0) // gone already?
         return errno == ENOENT;
 
-    bool success = setNativeLocks(fd) && (::unlink(lockFileName) == 0);
-    close(fd);
-    return success;
+    if (setNativeLocks(fd)) {
+        // if we applied native locks, the file was stale; do delete it
+        return releaseLockFile(fd, lockFileName);
+    }
+
+    // there was a lock, so it's not stale
+    qt_safe_close(fd);
+    return false;
 }
 
 bool QLockFilePrivate::isProcessRunning(qint64 pid, const QString &appname)
@@ -310,14 +344,7 @@ void QLockFile::unlock()
         return;
 
     const QByteArray lockFileName = QFile::encodeName(d->fileName);
-    int ret = unlink(lockFileName);
-    if (ret != 0 && errno != ENOENT && errno != ENOTDIR) {
-        qWarning("Could not remove our own lock file %s: %ls (maybe permissions changed meanwhile?)",
-                 lockFileName.constBegin(), qUtf16Printable(qt_error_string()));
-        // This is bad because other users of this lock file will now have to wait for the stale-lock-timeout...
-    }
-
-    close(d->fileHandle);
+    releaseLockFile(d->fileHandle, lockFileName);
     d->fileHandle = -1;
     d->lockError = QLockFile::NoError;
     d->isLocked = false;
