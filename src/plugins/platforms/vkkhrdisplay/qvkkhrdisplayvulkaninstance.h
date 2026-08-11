@@ -18,10 +18,13 @@
 
 #include <QtGui/private/qbasicvulkanplatforminstance_p.h>
 #include <QtCore/qsize.h>
+#include <QtCore/qloggingcategory.h>
 
 #include <climits> // For UINT_MAX
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(qLcVkKhrDisplay)
 
 class QVkKhrDisplayVulkanInstance : public QBasicPlatformVulkanInstance
 {
