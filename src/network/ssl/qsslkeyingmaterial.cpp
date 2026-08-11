@@ -111,7 +111,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QByteArray QSslKeyingMaterial::label() const noexcept
+    \fn QByteArray QSslKeyingMaterial::label() const
 
     Returns the exporter label used for deriving the keying material.
 
@@ -122,7 +122,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QByteArray QSslKeyingMaterial::context() const noexcept
+    \fn QByteArray QSslKeyingMaterial::context() const
 
     Returns the optional context value used for deriving the keying material.
 
@@ -137,7 +137,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QByteArray QSslKeyingMaterial::value() const noexcept
+    \fn QByteArray QSslKeyingMaterial::value() const
 
     Returns the exported keying material.
 
