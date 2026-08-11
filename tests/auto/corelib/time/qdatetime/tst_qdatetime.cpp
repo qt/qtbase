@@ -1757,9 +1757,9 @@ void tst_QDateTime::addSecs()
         QCOMPARE(test, expect);
         QCOMPARE(test2, expect);
         QCOMPARE(test3, expect);
-        QCOMPARE(test.timeSpec(), dt.timeSpec());
-        QCOMPARE(test2.timeSpec(), dt.timeSpec());
-        QCOMPARE(test3.timeSpec(), dt.timeSpec());
+        QCOMPARE(test.timeRepresentation(), expect.timeRepresentation());
+        QCOMPARE(test2.timeRepresentation(), expect.timeRepresentation());
+        QCOMPARE(test3.timeRepresentation(), expect.timeRepresentation());
         QCOMPARE(test.offsetFromUtc(), expect.offsetFromUtc());
         QCOMPARE(test2.offsetFromUtc(), expect.offsetFromUtc());
         QCOMPARE(test3.offsetFromUtc(), expect.offsetFromUtc());
@@ -1782,7 +1782,7 @@ void tst_QDateTime::addMSecs()
             QVERIFY(!test.isValid());
         } else {
             QCOMPARE(test, expect);
-            QCOMPARE(test.timeSpec(), dt.timeSpec());
+            QCOMPARE(test.timeRepresentation(), expect.timeRepresentation());
             QCOMPARE(test.offsetFromUtc(), expect.offsetFromUtc());
             QCOMPARE(expect.addMSecs(-secondCount * 1000), dt);
         }
