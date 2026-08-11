@@ -449,6 +449,14 @@ void QOhosWindowProxy::setSize(const QSize &size)
                 taskPromise();
                 return;
             }
+
+            const auto currentSize = getWindowPropertiesFromJsWindow(
+                m_jsScopeData->jsWindowRef->jsObject()).windowRect.size();
+            if (currentSize == size) {
+                taskPromise();
+                return;
+            }
+
             auto promise = m_jsScopeData->jsWindowRef->evalToPromiseOrRejectOnThrow(
                 "resizeAsync(*)", {size.width(), size.height()});
             promise.onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
