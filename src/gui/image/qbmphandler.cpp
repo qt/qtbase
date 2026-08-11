@@ -299,6 +299,7 @@ static bool read_dib_body(QDataStream &s, const BMP_INFOHDR &bi, qint64 datapos,
 
     if (!QImageIOHandler::allocateImage(QSize(w, h), format, &image))
         return false;
+    image.fill(0);
     if (ncols > 0) {                                // read color table
         image.setColorCount(ncols);
         uchar rgb[4];
@@ -400,7 +401,7 @@ static bool read_dib_body(QDataStream &s, const BMP_INFOHDR &bi, qint64 datapos,
                             break;
                         case 2:                        // delta (jump)
                         {
-                            quint8 tmp;
+                            quint8 tmp = 0;
                             d->getChar((char *)&tmp);
                             x += tmp;
                             d->getChar((char *)&tmp);
@@ -427,7 +428,7 @@ static bool read_dib_body(QDataStream &s, const BMP_INFOHDR &bi, qint64 datapos,
                                 *p++ = b & 0x0f;
                             }
                             if (c & 1) {
-                                unsigned char tmp;
+                                unsigned char tmp = 0;
                                 d->getChar((char *)&tmp);
                                 *p++ = tmp >> 4;
                             }
@@ -452,7 +453,6 @@ static bool read_dib_body(QDataStream &s, const BMP_INFOHDR &bi, qint64 datapos,
                 }
             }
         } else if (comp == BMP_RGB) {                // no compression
-            memset(data, 0, h*bpl);
             while (--h >= 0) {
                 if (d->read((char*)buf,buflen) != buflen)
                     break;
@@ -489,7 +489,7 @@ static bool read_dib_body(QDataStream &s, const BMP_INFOHDR &bi, qint64 datapos,
                             break;
                         case 2:                        // delta (jump)
                             {
-                                quint8 tmp;
+                                quint8 tmp = 0;
                                 d->getChar((char *)&tmp);
                                 x += tmp;
                                 d->getChar((char *)&tmp);
@@ -521,7 +521,7 @@ static bool read_dib_body(QDataStream &s, const BMP_INFOHDR &bi, qint64 datapos,
                     if (p + b > endp)
                         b = endp-p;
 
-                    char tmp;
+                    char tmp = 0;
                     d->getChar(&tmp);
                     memset(p, tmp, b); // repeat pixel
                     x += b;
@@ -540,7 +540,7 @@ static bool read_dib_body(QDataStream &s, const BMP_INFOHDR &bi, qint64 datapos,
         QRgb *p;
         QRgb  *end;
         uchar *buf24 = new uchar[bpl];
-        int    bpl24 = ((w*nbits+31)/32)*4;
+        qint64 bpl24 = ((qint64(w)*nbits+31)/32)*4;
         uchar *b;
         int c;
 
