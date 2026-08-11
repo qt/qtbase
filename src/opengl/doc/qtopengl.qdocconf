@@ -71,7 +71,6 @@ qhp.QtOpenGL.subprojects.examples.sortPages = true
 
 navigation.landingpage = "Qt OpenGL"
 navigation.cppclassespage = "Qt OpenGL C++ Classes"
-navigation.examplespage = "Qt OpenGL Examples"
 
 # Enforce zero documentation warnings
 warninglimit = 0
