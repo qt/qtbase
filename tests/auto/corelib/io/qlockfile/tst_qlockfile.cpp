@@ -313,6 +313,7 @@ void tst_QLockFile::staleShortLockFromBusyProcess()
     QLockFile secondLock(fileName);
     QVERIFY(!secondLock.tryLock()); // held by other process
     QCOMPARE(int(secondLock.error()), int(QLockFile::LockFailedError));
+    QVERIFY2(QFile::exists(fileName), "Lock file disappeared!");
     qint64 pid;
     QString hostname, appname;
     QTRY_VERIFY(secondLock.getLockInfo(&pid, &hostname, &appname));
@@ -325,6 +326,7 @@ void tst_QLockFile::staleShortLockFromBusyProcess()
     // We can't "steal" (delete+recreate) a lock file from a running process
     // until the file descriptor is closed.
     QVERIFY(!secondLock.tryLock());
+    QVERIFY2(QFile::exists(fileName), "Lock file disappeared!");
 
     proc.waitForFinished();
     QVERIFY(secondLock.tryLock());
@@ -347,12 +349,14 @@ void tst_QLockFile::staleLongLockFromBusyProcess()
     secondLock.setStaleLockTime(0ms);
     QVERIFY(!secondLock.tryLock(100ms)); // never stale
     QCOMPARE(int(secondLock.error()), int(QLockFile::LockFailedError));
+    QVERIFY2(QFile::exists(fileName), "Lock file disappeared!");
     qint64 pid;
     QTRY_VERIFY(secondLock.getLockInfo(&pid, NULL, NULL));
     QVERIFY(pid > 0);
 
     // As long as the other process is running, we can't remove the lock file
     QVERIFY(!secondLock.removeStaleLockFile());
+    QVERIFY2(QFile::exists(fileName), "Lock file disappeared!");
 
     proc.waitForFinished();
 #endif // QT_CONFIG(process)
