@@ -113,6 +113,7 @@ public:
 #endif
     // to emit the signal for all in-flight replies:
     void emitFinishedWithError(QNetworkReply::NetworkError error, const char *message);
+    void emitFinishedWithError(QNetworkReply::NetworkError error, const QString &message);
 
     // HTTP pipelining -> http://en.wikipedia.org/wiki/Http_pipelining
     enum PipeliningSupport {

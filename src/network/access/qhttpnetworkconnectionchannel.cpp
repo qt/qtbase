@@ -1231,13 +1231,19 @@ void QHttpNetworkConnectionChannel::_q_uploadDataReadyRead()
 void QHttpNetworkConnectionChannel::emitFinishedWithError(QNetworkReply::NetworkError error,
                                                           const char *message)
 {
+    emitFinishedWithError(error, QHttpNetworkConnectionChannel::tr(message));
+}
+
+void QHttpNetworkConnectionChannel::emitFinishedWithError(QNetworkReply::NetworkError error,
+                                                          const QString &message)
+{
     if (reply)
-        emit reply->finishedWithError(error, QHttpNetworkConnectionChannel::tr(message));
+        emit reply->finishedWithError(error, message);
     const auto h2RequestsToSendCopy = h2RequestsToSend;
     for (const auto &httpMessagePair : h2RequestsToSendCopy) {
         QHttpNetworkReply *currentReply = httpMessagePair.second;
         Q_ASSERT(currentReply);
-        emit currentReply->finishedWithError(error, QHttpNetworkConnectionChannel::tr(message));
+        emit currentReply->finishedWithError(error, message);
     }
 }
 
