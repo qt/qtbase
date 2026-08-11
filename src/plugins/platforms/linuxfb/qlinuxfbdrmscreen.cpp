@@ -83,8 +83,14 @@ private:
     QList<Output> m_outputs;
 };
 
+static QString drmDevicePath(QKmsScreenConfig *screenConfig)
+{
+    const QString path = screenConfig->devicePath();
+    return path.isEmpty() ? QStringLiteral("/dev/dri/card0") : path;
+}
+
 QLinuxFbDevice::QLinuxFbDevice(QKmsScreenConfig *screenConfig)
-    : QKmsDevice(screenConfig, QStringLiteral("/dev/dri/card0"))
+    : QKmsDevice(screenConfig, drmDevicePath(screenConfig))
 {
 }
 
