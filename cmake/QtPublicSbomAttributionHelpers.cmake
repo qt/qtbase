@@ -309,6 +309,78 @@ function(_qt_internal_sbom_handle_qt_attribution_files out_prefix_outer)
     endif()
 endfunction()
 
+# Returns the qt_attribution.json keys that are read when GET_DEFAULT_KEYS is passed to
+# _qt_internal_sbom_read_qt_attribution.
+# Each entry is a "<JsonKey>|<variable_name>|<IS_MULTI_VALUE>" string, where the last field is
+# either empty, or IS_MULTI_VALUE if the key holds an array of values.
+function(_qt_internal_sbom_get_attribution_default_keys out_var)
+    set(${out_var}
+        "Id|attribution_id|"
+        "LicenseId|license_id|"
+        "License|license|"
+        "LicenseFile|license_file|"
+        "Version|version|"
+        "Homepage|homepage|"
+        "Name|attribution_name|"
+        "Description|description|"
+        "QtUsage|qt_usage|"
+        "DownloadLocation|download_location|"
+        "Copyright|copyrights|IS_MULTI_VALUE"
+        "CopyrightFile|copyright_file|"
+        "PURL|purls|IS_MULTI_VALUE"
+        "CPE|cpes|IS_MULTI_VALUE"
+        PARENT_SCOPE
+    )
+endfunction()
+
+# Splits an entry returned by _qt_internal_sbom_get_attribution_default_keys into its fields.
+function(_qt_internal_sbom_split_attribution_default_key
+        default_key out_json_key out_variable_name out_is_multi_value)
+    string(REPLACE "|" ";" fields "${default_key}")
+    list(GET fields 0 json_key)
+    list(GET fields 1 variable_name)
+    list(GET fields 2 is_multi_value)
+
+    set(${out_json_key} "${json_key}" PARENT_SCOPE)
+    set(${out_variable_name} "${variable_name}" PARENT_SCOPE)
+    set(${out_is_multi_value} "${is_multi_value}" PARENT_SCOPE)
+endfunction()
+
+# Returns the names of the variables that _qt_internal_sbom_handle_qt_attribution_files sets in its
+# caller's scope, without the out_prefix.
+function(_qt_internal_sbom_get_attribution_variable_names out_var)
+    _qt_internal_sbom_get_attribution_default_keys(default_keys)
+
+    set(variable_names "")
+    foreach(default_key IN LISTS default_keys)
+        _qt_internal_sbom_split_attribution_default_key("${default_key}"
+            json_key variable_name is_multi_value)
+        list(APPEND variable_names "${variable_name}")
+    endforeach()
+
+    # Not read from a json key, but set by _qt_internal_sbom_handle_qt_attribution_files itself.
+    list(APPEND variable_names
+        chosen_attribution_file_path
+        chosen_attribution_entry_index
+    )
+
+    set(${out_var} "${variable_names}" PARENT_SCOPE)
+endfunction()
+
+# Unsets the attribution variables in the calling scope.
+#
+# Attribution values are only propagated for the keys that an attribution entry actually contains.
+# Because a nested sbom target is created for each additional attribution entry, and CMake
+# functions inherit variables from their calling scope, an entry without a certain key would see
+# the stale value of a parent entry. Make sure to unset all variables to avoid this.
+function(_qt_internal_sbom_reset_attribution_variables out_prefix)
+    _qt_internal_sbom_get_attribution_variable_names(variable_names)
+
+    foreach(variable_name IN LISTS variable_names)
+        unset(${out_prefix}_${variable_name} PARENT_SCOPE)
+    endforeach()
+endfunction()
+
 # Helper to parse a qt_attribution.json file and do various operations:
 # - GET_DEFAULT_KEYS extracts the license id, copyrights, version, etc.
 # - GET_KEY extracts a single given json key's value, as specified with KEY and saved into
@@ -425,20 +497,13 @@ function(_qt_internal_sbom_read_qt_attribution out_prefix)
     endif()
 
     if(arg_GET_DEFAULT_KEYS)
-        _qt_internal_sbom_get_attribution_key(Id attribution_id "${out_prefix}")
-        _qt_internal_sbom_get_attribution_key(LicenseId license_id "${out_prefix}")
-        _qt_internal_sbom_get_attribution_key(License license "${out_prefix}")
-        _qt_internal_sbom_get_attribution_key(LicenseFile license_file "${out_prefix}")
-        _qt_internal_sbom_get_attribution_key(Version version "${out_prefix}")
-        _qt_internal_sbom_get_attribution_key(Homepage homepage "${out_prefix}")
-        _qt_internal_sbom_get_attribution_key(Name attribution_name "${out_prefix}")
-        _qt_internal_sbom_get_attribution_key(Description description "${out_prefix}")
-        _qt_internal_sbom_get_attribution_key(QtUsage qt_usage "${out_prefix}")
-        _qt_internal_sbom_get_attribution_key(DownloadLocation download_location "${out_prefix}")
-        _qt_internal_sbom_get_attribution_key(Copyright copyrights "${out_prefix}" IS_MULTI_VALUE)
-        _qt_internal_sbom_get_attribution_key(CopyrightFile copyright_file "${out_prefix}")
-        _qt_internal_sbom_get_attribution_key(PURL purls "${out_prefix}" IS_MULTI_VALUE)
-        _qt_internal_sbom_get_attribution_key(CPE cpes "${out_prefix}" IS_MULTI_VALUE)
+        _qt_internal_sbom_get_attribution_default_keys(default_keys)
+        foreach(default_key IN LISTS default_keys)
+            _qt_internal_sbom_split_attribution_default_key("${default_key}"
+                json_key variable_name is_multi_value)
+            _qt_internal_sbom_get_attribution_key(
+                "${json_key}" "${variable_name}" "${out_prefix}" ${is_multi_value})
+        endforeach()
 
         # Some attribution files contain a copyright file that contains the actual list of
         # copyrights. Read it and use it.

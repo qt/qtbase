@@ -1227,6 +1227,10 @@ function(_qt_internal_sbom_add_target target)
 
     _qt_internal_sbom_get_spdx_id_for_target("${target}" package_spdx_id)
 
+    # This function is called recursively while handling attribution entries, so make sure not to
+    # inherit the attribution values of an unrelated parent entry.
+    _qt_internal_sbom_reset_attribution_variables(qa)
+
     if(arg_USE_ATTRIBUTION_FILES)
         set(attribution_args
             ATTRIBUTION_PARENT_TARGET "${target}"
