@@ -20,6 +20,28 @@ function(add_assert_str_not_exists_in_spdx_v2_3_doc needle)
     set_property(GLOBAL APPEND PROPERTY _sbom_test_doc_${doc_id}_spdx_absent_needles "${needle}")
 endfunction()
 
+# Records a string that is expected to exist in the current CycloneDX v1.6 document.
+function(add_assert_str_exists_in_cydx_v1_6_doc needle)
+    # Only add when a document is actually generated.
+    if(NOT QT_GENERATE_SBOM OR NOT QT_SBOM_GENERATE_CYDX_V1_6)
+        return()
+    endif()
+
+    sbom_test_current_doc_id_or_error(doc_id)
+    set_property(GLOBAL APPEND PROPERTY _sbom_test_doc_${doc_id}_cydx_needles "${needle}")
+endfunction()
+
+# Records a string that is expected NOT to exist in the current CycloneDX v1.6 document.
+function(add_assert_str_not_exists_in_cydx_v1_6_doc needle)
+    # Only add when a document is actually generated.
+    if(NOT QT_GENERATE_SBOM OR NOT QT_SBOM_GENERATE_CYDX_V1_6)
+        return()
+    endif()
+
+    sbom_test_current_doc_id_or_error(doc_id)
+    set_property(GLOBAL APPEND PROPERTY _sbom_test_doc_${doc_id}_cydx_absent_needles "${needle}")
+endfunction()
+
 # Records a target, its spdx id and category in global properties for the current document.
 # Used by the check.cmake infrastructure to do checks.
 function(add_known_target target)
@@ -263,6 +285,8 @@ set(SBOM_DOCUMENT_IDS \"${doc_ids}\")
         absent
         spdx_needles
         spdx_absent_needles
+        cydx_needles
+        cydx_absent_needles
         known_targets
     )
 

@@ -18,39 +18,63 @@ function(check_not_exists file)
     set(RunCMake_TEST_FAILED "${RunCMake_TEST_FAILED}" PARENT_SCOPE)
 endfunction()
 
-# Asserts needle exists in the SPDX v2.3 document at path doc_path.
-function(sbom_assert_needle_in_spdx doc_path needle)
+# Asserts needle exists in the document at path doc_path, or that it does not exist if ABSENT is
+# passed. format_name is the document format shown in the failure message.
+function(sbom_assert_needle_in_document doc_path needle format_name)
+    set(opt_args
+        ABSENT
+    )
+    set(single_args "")
+    set(multi_args "")
+    cmake_parse_arguments(PARSE_ARGV 3 arg "${opt_args}" "${single_args}" "${multi_args}")
+
+    if(arg_ABSENT)
+        set(check_kind "needle absence")
+    else()
+        set(check_kind "needle")
+    endif()
+
     if(NOT EXISTS "${doc_path}")
         string(APPEND RunCMake_TEST_FAILED
-            "Cannot check needle; SPDX document '${doc_path}' does not exist.\n")
+            "Cannot check ${check_kind}; ${format_name} document '${doc_path}' does not exist.\n")
         set(RunCMake_TEST_FAILED "${RunCMake_TEST_FAILED}" PARENT_SCOPE)
         return()
     endif()
 
     file(READ "${doc_path}" doc_contents)
-    if(NOT doc_contents MATCHES "${needle}")
+    if(arg_ABSENT AND doc_contents MATCHES "${needle}")
         string(APPEND RunCMake_TEST_FAILED
-            "Expected to find '${needle}' in SPDX v2.3 document '${doc_path}', "
+            "Expected NOT to find '${needle}' in ${format_name} document '${doc_path}', "
+            "but it was found.\n")
+    elseif(NOT arg_ABSENT AND NOT doc_contents MATCHES "${needle}")
+        string(APPEND RunCMake_TEST_FAILED
+            "Expected to find '${needle}' in ${format_name} document '${doc_path}', "
             "but it was not found.\n")
     endif()
     set(RunCMake_TEST_FAILED "${RunCMake_TEST_FAILED}" PARENT_SCOPE)
 endfunction()
 
+# Asserts needle exists in the SPDX v2.3 document at path doc_path.
+function(sbom_assert_needle_in_spdx doc_path needle)
+    sbom_assert_needle_in_document("${doc_path}" "${needle}" "SPDX v2.3")
+    set(RunCMake_TEST_FAILED "${RunCMake_TEST_FAILED}" PARENT_SCOPE)
+endfunction()
+
 # Asserts needle does NOT exist in the SPDX v2.3 document at path doc_path.
 function(sbom_assert_needle_not_in_spdx doc_path needle)
-    if(NOT EXISTS "${doc_path}")
-        string(APPEND RunCMake_TEST_FAILED
-            "Cannot check needle absence; SPDX document '${doc_path}' does not exist.\n")
-        set(RunCMake_TEST_FAILED "${RunCMake_TEST_FAILED}" PARENT_SCOPE)
-        return()
-    endif()
+    sbom_assert_needle_in_document("${doc_path}" "${needle}" "SPDX v2.3" ABSENT)
+    set(RunCMake_TEST_FAILED "${RunCMake_TEST_FAILED}" PARENT_SCOPE)
+endfunction()
 
-    file(READ "${doc_path}" doc_contents)
-    if(doc_contents MATCHES "${needle}")
-        string(APPEND RunCMake_TEST_FAILED
-            "Expected NOT to find '${needle}' in SPDX v2.3 document '${doc_path}', "
-            "but it was found.\n")
-    endif()
+# Asserts needle exists in the CycloneDX v1.6 document at path doc_path.
+function(sbom_assert_needle_in_cydx doc_path needle)
+    sbom_assert_needle_in_document("${doc_path}" "${needle}" "CycloneDX v1.6")
+    set(RunCMake_TEST_FAILED "${RunCMake_TEST_FAILED}" PARENT_SCOPE)
+endfunction()
+
+# Asserts needle does NOT exist in the CycloneDX v1.6 document at path doc_path.
+function(sbom_assert_needle_not_in_cydx doc_path needle)
+    sbom_assert_needle_in_document("${doc_path}" "${needle}" "CycloneDX v1.6" ABSENT)
     set(RunCMake_TEST_FAILED "${RunCMake_TEST_FAILED}" PARENT_SCOPE)
 endfunction()
 
@@ -185,6 +209,14 @@ function(sbom_check_documents)
 
         foreach(needle IN LISTS SBOM_DOC_${doc_id}_SPDX_ABSENT_NEEDLES)
             sbom_assert_needle_not_in_spdx("${SBOM_DOC_${doc_id}_SPDX}" "${needle}")
+        endforeach()
+
+        foreach(needle IN LISTS SBOM_DOC_${doc_id}_CYDX_NEEDLES)
+            sbom_assert_needle_in_cydx("${SBOM_DOC_${doc_id}_CYDX}" "${needle}")
+        endforeach()
+
+        foreach(needle IN LISTS SBOM_DOC_${doc_id}_CYDX_ABSENT_NEEDLES)
+            sbom_assert_needle_not_in_cydx("${SBOM_DOC_${doc_id}_CYDX}" "${needle}")
         endforeach()
 
         sbom_check_cydx_deps_for_document("${SBOM_DOC_${doc_id}_CYDX}" "${doc_id}")
