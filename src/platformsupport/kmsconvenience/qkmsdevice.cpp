@@ -105,11 +105,10 @@ static bool parseModeline(const QByteArray &text, drmModeModeInfoPtr mode)
     char vsync[16];
     float fclock;
 
+    // Zero everything, not just the fields set below: the mode is handed to the
+    // kernel as a property blob, name included.
+    memset(mode, 0, sizeof(*mode));
     mode->type = DRM_MODE_TYPE_USERDEF;
-    mode->hskew = 0;
-    mode->vscan = 0;
-    mode->vrefresh = 0;
-    mode->flags = 0;
 
     if (sscanf(text.constData(), "%f %hu %hu %hu %hu %hu %hu %hu %hu %15s %15s",
                &fclock,
