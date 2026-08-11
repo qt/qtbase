@@ -1760,11 +1760,9 @@ void tst_QDateTime::addSecs()
         QCOMPARE(test.timeSpec(), dt.timeSpec());
         QCOMPARE(test2.timeSpec(), dt.timeSpec());
         QCOMPARE(test3.timeSpec(), dt.timeSpec());
-        if (test.timeSpec() == Qt::OffsetFromUTC) {
-            QCOMPARE(test.offsetFromUtc(), dt.offsetFromUtc());
-            QCOMPARE(test2.offsetFromUtc(), dt.offsetFromUtc());
-            QCOMPARE(test3.offsetFromUtc(), dt.offsetFromUtc());
-        }
+        QCOMPARE(test.offsetFromUtc(), expect.offsetFromUtc());
+        QCOMPARE(test2.offsetFromUtc(), expect.offsetFromUtc());
+        QCOMPARE(test3.offsetFromUtc(), expect.offsetFromUtc());
         QCOMPARE(expect.addSecs(-secondCount), dt);
         QCOMPARE(expect - std::chrono::seconds(secondCount), dt);
         test3 -= std::chrono::seconds(secondCount);
@@ -1785,8 +1783,7 @@ void tst_QDateTime::addMSecs()
         } else {
             QCOMPARE(test, expect);
             QCOMPARE(test.timeSpec(), dt.timeSpec());
-            if (test.timeSpec() == Qt::OffsetFromUTC)
-                QCOMPARE(test.offsetFromUtc(), dt.offsetFromUtc());
+            QCOMPARE(test.offsetFromUtc(), expect.offsetFromUtc());
             QCOMPARE(expect.addMSecs(-secondCount * 1000), dt);
         }
     };
