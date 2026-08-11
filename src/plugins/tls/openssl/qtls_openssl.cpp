@@ -773,10 +773,10 @@ void TlsCryptographOpenSSL::exportKeyingMaterial()
          */
         const auto context = entry.context();
         const auto label = entry.label();
-        if (QByteArray output(entry.keyingValueSize, Qt::Uninitialized);
+        if (QByteArray output(entry.requestedSize(), Qt::Uninitialized);
             q_SSL_export_keying_material(ssl,
                                          reinterpret_cast<unsigned char*>(output.data_ptr().data()),
-                                         entry.keyingValueSize,
+                                         entry.requestedSize(),
                                          label.data(),
                                          label.size(),
                                          reinterpret_cast<const unsigned char*>(context.data()),
