@@ -950,7 +950,7 @@ qint64 QCalendarBackend::matchCenturyToWeekday(const QCalendar::YearMonthDay &pa
 */
 
 /*!
-    \fn QString QCalendarBackend::standaloneMonthName(const QLocale &locale, int month, int year
+    \fn QString QCalendarBackend::standaloneMonthName(const QLocale &locale, int month, int year,
                                                       QLocale::FormatType format) const
 
     Returns the standalone name of the specified \a month in the chosen \a

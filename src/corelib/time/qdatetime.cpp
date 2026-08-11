@@ -1156,7 +1156,7 @@ QDateTime QDate::endOfDay() const
 /*!
     \since 5.14
     \overload endOfDay()
-    \deprecated [6.9] Use \c{endOfDay(const QTimeZone &) instead.
+    \deprecated [6.9] Use \c{endOfDay(const QTimeZone &)} instead.
 
     Returns the end-moment of the day.
 

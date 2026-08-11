@@ -1902,7 +1902,7 @@ bool QDir::isRoot() const
 */
 
 /*!
-   \fn bool QDir::isAbsolutePath(const QString &)
+   \fn bool QDir::isAbsolutePath(const QString &path)
 
     Returns \c true if \a path is absolute; returns \c false if it is
     relative.
