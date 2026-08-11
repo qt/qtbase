@@ -54,9 +54,9 @@ public:
     static int openNewFileDescriptor(const QString &fileName);
 
 #ifdef Q_OS_WIN
-    Qt::HANDLE fileHandle;
+    Qt::HANDLE fileHandle = Qt::HANDLE(-1); // INVALID_HANDLE_VALUE
 #else
-    int fileHandle;
+    int fileHandle = -1;
 #endif
 
     std::chrono::milliseconds staleLockTime = std::chrono::seconds{30};
