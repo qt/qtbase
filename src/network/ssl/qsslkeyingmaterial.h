@@ -42,7 +42,7 @@ public:
 
     bool isValid() const noexcept
     {
-        return !label().isEmpty() && requestedSize() > 0;
+        return !keyingLabel.isEmpty() && requestedSize() > 0;
     }
 
     QByteArray label() const noexcept
