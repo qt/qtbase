@@ -82,10 +82,10 @@ private:
     friend bool comparesEqual(const QSslKeyingMaterial &lhs,
                               const QSslKeyingMaterial &rhs) noexcept
     {
-        return lhs.keyingLabel == rhs.keyingLabel
+        return lhs.keyingValueSize == rhs.keyingValueSize
+               && lhs.keyingLabel == rhs.keyingLabel
                && lhs.keyingContext == rhs.keyingContext
-               && lhs.keyingValue == rhs.keyingValue
-               && lhs.keyingValueSize == rhs.keyingValueSize;
+               && lhs.keyingValue == rhs.keyingValue;
     }
     Q_DECLARE_EQUALITY_COMPARABLE(QSslKeyingMaterial)
 
