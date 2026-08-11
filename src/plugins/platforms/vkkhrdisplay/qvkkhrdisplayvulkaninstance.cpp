@@ -214,7 +214,7 @@ bool QVkKhrDisplayVulkanInstance::chooseDisplay()
                 caps.maxDstExtent.width, caps.maxDstExtent.height);
 
         // if the plane is not in use and supports our chosen display, use that plane
-        if (supportedDisplays.contains(m_display)
+        if (m_planeIndex == UINT_MAX && supportedDisplays.contains(m_display)
             && (planeProps[i].currentDisplay == VK_NULL_HANDLE || planeProps[i].currentDisplay == m_display))
         {
             m_planeIndex = i;
