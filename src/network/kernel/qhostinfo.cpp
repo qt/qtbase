@@ -1098,6 +1098,7 @@ void qt_qhostinfo_clear_cache()
 
 /*!
     \fn void QHostInfo::clearCache()
+    \threadsafe
 
     Clears the internal DNS cache used by lookupHost() and fromName().
 
