@@ -27,65 +27,65 @@ class QSslKeyingMaterial
 public:
     QSslKeyingMaterial() = default;
     explicit QSslKeyingMaterial(const QByteArray &label, qsizetype size)
-        : keyingLabel(label)
-        , keyingValueSize(size)
+        : m_label(label)
+        , m_requestedSize(size)
     {
     }
     explicit QSslKeyingMaterial(const QByteArray &label,
                                 qsizetype size,
                                 const QByteArray &context)
-        : keyingLabel(label)
-        , keyingContext(context)
-        , keyingValueSize(size)
+        : m_label(label)
+        , m_context(context)
+        , m_requestedSize(size)
     {
     }
 
     bool isValid() const noexcept
     {
-        return !keyingLabel.isEmpty() && requestedSize() > 0;
+        return !m_label.isEmpty() && requestedSize() > 0;
     }
 
     QByteArray label() const noexcept
     {
-        return keyingLabel;
+        return m_label;
     }
 
     QByteArray context() const noexcept
     {
-        return keyingContext;
+        return m_context;
     }
 
     QByteArray value() const noexcept
     {
-        return keyingValue;
+        return m_value;
     }
 
     qsizetype requestedSize() const noexcept
     {
-        return keyingValueSize;
+        return m_requestedSize;
     }
 
     void swap(QSslKeyingMaterial &other) noexcept
     {
-        keyingLabel.swap(other.keyingLabel);
-        keyingContext.swap(other.keyingContext);
-        keyingValue.swap(other.keyingValue);
-        std::swap(keyingValueSize, other.keyingValueSize);
+        m_label.swap(other.m_label);
+        m_context.swap(other.m_context);
+        m_value.swap(other.m_value);
+        std::swap(m_requestedSize, other.m_requestedSize);
     }
 
 private:
-    QByteArray keyingLabel;
-    QByteArray keyingContext;
-    QByteArray keyingValue;
-    qsizetype keyingValueSize = 0;
+    QByteArray m_label;
+    QByteArray m_context;
+    QByteArray m_value;
+    qsizetype m_requestedSize = 0;
 
     friend bool comparesEqual(const QSslKeyingMaterial &lhs,
                               const QSslKeyingMaterial &rhs) noexcept
     {
-        return lhs.keyingValueSize == rhs.keyingValueSize
-               && lhs.keyingLabel == rhs.keyingLabel
-               && lhs.keyingContext == rhs.keyingContext
-               && lhs.keyingValue == rhs.keyingValue;
+        return lhs.m_requestedSize == rhs.m_requestedSize
+               && lhs.m_label == rhs.m_label
+               && lhs.m_context == rhs.m_context
+               && lhs.m_value == rhs.m_value;
     }
     Q_DECLARE_EQUALITY_COMPARABLE(QSslKeyingMaterial)
 
