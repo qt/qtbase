@@ -53,7 +53,7 @@ exampledirs += ../../../examples/qtestlib \
 
 excludedirs += ../../../examples/widgets/doc
 
-imagedirs   += images
+# imagedirs   += images
 
 defines     += QT_FEATURE_batch_test_support
 
