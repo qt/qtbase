@@ -223,7 +223,7 @@
     If an entire test program is inapplicable for a specific platform or unless
     a particular feature is enabled, the best approach is to use the parent
     directory's build configuration to avoid building the test. For example, if
-    the \c tests/auto/gui/someclass test is not valid for \macOS, wrap its
+    the \c tests/auto/gui/someclass test is not valid for \macos, wrap its
     inclusion as a subdirectory in \c{tests/auto/gui/CMakeLists.txt} in a
     platform check:
 
@@ -511,7 +511,7 @@
     causing unreproducible failures.
 
     Examples of typical problems include online update notification dialogs
-    on macOS, false alarms from virus scanners, scheduled tasks such as virus
+    on \macos, false alarms from virus scanners, scheduled tasks such as virus
     signature updates, software updates pushed out to workstations, and chat
     programs popping up windows on top of the stack.
 
