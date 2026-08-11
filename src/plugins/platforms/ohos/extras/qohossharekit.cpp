@@ -346,10 +346,19 @@ std::vector<QOhosShareKit::SharedRecord> convertToShareKitSharedRecords(
     \class QtHarmonyExtras::ShareKit::SharedRecord
     \inmodule QtHarmonyExtras
     \since 5.12.12
-    \brief The SharedRecord class represents a record to be shared with other application. A record can be created using
-    \sa QtHarmonyExtras::ShareKit::createContentRecord(), QtHarmonyExtras::ShareKit::createFileRecord() or QtHarmonyExtras::ShareKit::createUrlRecord().
+    \brief The SharedRecord class encapsulates the content and metadata to be shared with another application.
+
+    A SharedRecord holds the data to be shared (text content, a file, or a URL) along with
+    optional metadata such as a title, label, description, and thumbnail. Instances are created
+    using QtHarmonyExtras::ShareKit::createContentRecord(),
+    QtHarmonyExtras::ShareKit::createFileRecord(), or QtHarmonyExtras::ShareKit::createUrlRecord(),
+    and are then passed to the share controller to be shared with other applications.
+
     See \l {https://developer.huawei.com/consumer/en/doc/harmonyos-references/share-system-share#section20696483813}
     {SharedRecord}.
+
+    \sa QtHarmonyExtras::ShareKit::createContentRecord(), QtHarmonyExtras::ShareKit::createFileRecord(),
+        QtHarmonyExtras::ShareKit::createUrlRecord()
 */
 
 /*!
