@@ -1,5 +1,6 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+// Qt-Security score:significant reason:default
 
 // Experimental DRM dumb buffer backend.
 //
@@ -8,7 +9,6 @@
 // Find card via devicediscovery like in eglfs_kms.
 // Mode restore like QEglFSKmsInterruptHandler.
 // grabWindow
-// Qt-Security score:significant reason:default
 
 #include "qlinuxfbdrmscreen.h"
 #include <QLoggingCategory>
