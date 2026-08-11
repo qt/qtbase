@@ -197,6 +197,7 @@ static int nextId()
 }
 
 /*!
+    \threadsafe
     Looks up the IP address(es) associated with host name \a name, and
     returns an ID for the lookup. When the result of the lookup is
     ready, the slot or signal \a member in \a receiver is called with
@@ -257,6 +258,7 @@ int QHostInfo::lookupHost(const QString &name, const QObject *receiver, const ch
 
 /*!
     \fn template<typename Functor> int QHostInfo::lookupHost(const QString &name, Functor &&functor)
+    \threadsafe
 
     \since 5.9
 
@@ -279,6 +281,7 @@ int QHostInfo::lookupHost(const QString &name, const QObject *receiver, const ch
 
 /*!
     \fn template<typename Functor> int QHostInfo::lookupHost(const QString &name, const QObject *context, Functor functor)
+    \threadsafe
 
     \since 5.9
 
@@ -312,6 +315,7 @@ int QHostInfo::lookupHost(const QString &name, const QObject *receiver, const ch
 */
 
 /*!
+    \threadsafe
     Aborts the host lookup with the ID \a id, as returned by lookupHost().
 
     \sa lookupHost(), lookupId()
@@ -322,6 +326,7 @@ void QHostInfo::abortHostLookup(int id)
 }
 
 /*!
+    \threadsafe
     Looks up the IP address(es) for the given host \a name. The
     function blocks during the lookup which means that execution of
     the program is suspended until the results of the lookup are
@@ -695,6 +700,7 @@ void QHostInfo::setErrorString(const QString &str)
 
 /*!
     \fn QString QHostInfo::localHostName()
+    \threadsafe
 
     Returns this machine's host name, if one is configured. Note that hostnames
     are not guaranteed to be globally unique, especially if they were
@@ -715,6 +721,7 @@ QString QHostInfo::localHostName()
 
 /*!
     \fn QString QHostInfo::localDomainName()
+    \threadsafe
 
     Returns the DNS domain of this machine.
 
