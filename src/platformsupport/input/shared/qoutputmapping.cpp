@@ -81,7 +81,15 @@ bool QDefaultOutputMapping::load()
         }
         QFileInfo deviceNode(output.value(QStringLiteral("touchDevice")).toString());
         const QString &screenName = output.value(QStringLiteral("name")).toString();
-        m_screenTable.insert(deviceNode.canonicalFilePath(), screenName);
+        // Key on the canonical path so that a symlinked node, e.g. one under
+        // /dev/input/by-id, matches the node the input handler was given.
+        QString key = deviceNode.canonicalFilePath();
+        if (key.isEmpty()) {
+            qWarning("touch input support: Cannot resolve touchDevice %ls of output %ls",
+                     qUtf16Printable(deviceNode.filePath()), qUtf16Printable(screenName));
+            key = deviceNode.filePath();
+        }
+        m_screenTable.insert(key, screenName);
     }
 
     return true;
@@ -89,6 +97,12 @@ bool QDefaultOutputMapping::load()
 
 QString QDefaultOutputMapping::screenNameForDeviceNode(const QString &deviceNode)
 {
+    const QString canonical = QFileInfo(deviceNode).canonicalFilePath();
+    if (!canonical.isEmpty()) {
+        auto it = m_screenTable.constFind(canonical);
+        if (it != m_screenTable.constEnd())
+            return *it;
+    }
     return m_screenTable.value(deviceNode);
 }
 
