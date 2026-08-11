@@ -783,7 +783,7 @@ void TlsCryptographOpenSSL::exportKeyingMaterial()
                                          context.size(),
                                          context.isNull() ? 0 : 1))
         {
-            entry.keyingValue = std::move(output);
+            entry.m_value = std::move(output);
 #ifdef QSSLSOCKET_DEBUG
         } else {
             qCDebug(lcTlsBackend) << "cannot export keying material:" << entry;

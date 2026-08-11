@@ -178,8 +178,8 @@ QT_BEGIN_NAMESPACE
 */
 size_t qHash(const QSslKeyingMaterial &material, size_t seed) noexcept
 {
-    return qHashMulti(seed, material.keyingLabel, material.keyingContext, material.keyingValue,
-                      material.keyingValueSize);
+    return qHashMulti(seed, material.m_label, material.m_context, material.m_value,
+                      material.m_requestedSize);
 }
 
 #ifndef QT_NO_DEBUG_STREAM
