@@ -297,7 +297,8 @@ void QLockFile::unlock()
         return;
 
     const QByteArray lockFileName = QFile::encodeName(d->fileName);
-    if (unlink(lockFileName) != 0) {
+    int ret = unlink(lockFileName);
+    if (ret != 0 && errno != ENOENT && errno != ENOTDIR) {
         qWarning("Could not remove our own lock file %s: %ls (maybe permissions changed meanwhile?)",
                  lockFileName.constBegin(), qUtf16Printable(qt_error_string()));
         // This is bad because other users of this lock file will now have to wait for the stale-lock-timeout...
