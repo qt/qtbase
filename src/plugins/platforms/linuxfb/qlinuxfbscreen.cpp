@@ -342,6 +342,12 @@ bool QLinuxFbScreen::initialize()
     QRect geometry = determineGeometry(vinfo, userGeometry);
     mGeometry = QRect(QPoint(0, 0), geometry.size());
     mFormat = determineFormat(vinfo, mDepth);
+    if (mFormat == QImage::Format_Invalid) {
+        qWarning("Unsupported framebuffer format: depth %d, RGB offset/length %u/%u %u/%u %u/%u",
+                 mDepth, vinfo.red.offset, vinfo.red.length, vinfo.green.offset, vinfo.green.length,
+                 vinfo.blue.offset, vinfo.blue.length);
+        return false;
+    }
     mPhysicalSize = determinePhysicalSize(vinfo, userMmSize, geometry.size());
 
     // mmap the framebuffer
