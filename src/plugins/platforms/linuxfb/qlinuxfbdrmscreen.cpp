@@ -370,6 +370,10 @@ bool QLinuxFbDrmScreen::initialize()
 
     // Discover outputs. Calls back Device::createScreen().
     m_device->createScreens();
+    if (m_device->outputCount() == 0) {
+        qWarning("linuxfb: No usable DRM output found");
+        return false;
+    }
     // Now off to dumb buffer specifics.
     m_device->createFramebuffers();
     // Do the modesetting.
