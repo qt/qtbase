@@ -3936,14 +3936,100 @@ function(_qt_internal_format_deploy_script_arguments out_var prefix)
     set(${out_var} "${result}" PARENT_SCOPE)
 endfunction()
 
+# Helper macro to forward args for deploy script generation when QTP0008 is set to OLD.
+macro(_qt_internal_forward_deploy_script_args_through_macro)
+    set(__qt_forwarded_deploy_args ${ARGV})
+endmacro()
+
+# Helper to check if a value contains a backslash sequence that would error out when
+# forwarded via a macro.
+function(_qt_internal_deploy_value_is_safe_to_forward out_var value)
+    set(${out_var} TRUE PARENT_SCOPE)
+
+    # Collect every backslash together with the character after it.
+    string(REGEX MATCHALL "\\\\." escapes "${value}")
+    foreach(escape IN LISTS escapes)
+        string(SUBSTRING "${escape}" 1 1 escaped_char)
+
+        # cmake accepts a backslash in front of punctuation or a space, and the encoded
+        # escapes \\n, \\r and \\t. A backslash in front of any other letter or digit,
+        # like the \\b of a windows path, is rejected.
+        if(escaped_char MATCHES "^[A-Za-z0-9]$" AND NOT escaped_char MATCHES "^[nrt]$")
+            set(${out_var} FALSE PARENT_SCOPE)
+            return()
+        endif()
+    endforeach()
+endfunction()
+
+# Helper that decides how to forward arguments, via a function or macro, depending on the
+# QTP0008 policy.
+# When the policy is set to NEW, arguments are forwarded unchanged via a function
+# When the policy is set to OLD, they are forwarded via a macro
+# Warns if policy is unset and arguments contain problematic characters.
+# Arguments are taken via ARGN.
+# out_var - the outer scope variable name that will contain the arguments to forward
+# command - the name of the version-less command for message.
+function(_qt_internal_resolve_deploy_script_args out_var command)
+    # Short circuit if the policy is set to NEW, as we don't need to check the arguments.
+    qt6_policy(GET QTP0008 __qt_qtp0008_value)
+    if(__qt_qtp0008_value STREQUAL "NEW")
+        set(${out_var} "${ARGN}" PARENT_SCOPE)
+        return()
+    endif()
+
+    foreach(value IN LISTS ARGN)
+        _qt_internal_deploy_value_is_safe_to_forward(is_safe "${value}")
+        if(NOT is_safe)
+            message(AUTHOR_WARNING
+                "The value\n  ${value}\npassed to ${command}() has a backslash that "
+                "macro forwarding can't represent, so the call below is about to "
+                "fail. Set qt_policy(SET QTP0008 NEW) to have the values forwarded "
+                "unchanged. Check "
+                "https://doc.qt.io/qt-6/qt-cmake-policy-qtp0008.html for policy details."
+            )
+        endif()
+    endforeach()
+
+    _qt_internal_forward_deploy_script_args_through_macro(${ARGN})
+
+    if("${__qt_forwarded_deploy_args}" STREQUAL "${ARGN}")
+        # The OLD policy makes no difference for these values, so don't show a warning.
+        set(${out_var} "${ARGN}" PARENT_SCOPE)
+        return()
+    endif()
+
+    string(CONCAT policy_explanation
+        "${command}() forwards its arguments via an intermediate macro, which "
+        "re-evaluates escape sequences and \${} references in the values. That turns\n"
+        "  ${ARGN}\ninto\n  ${__qt_forwarded_deploy_args}\n"
+        "Remove the extra escaping from the values and set qt_policy(SET QTP0008 NEW) to "
+        "have them forwarded unchanged. Check "
+        "https://doc.qt.io/qt-6/qt-cmake-policy-qtp0008.html for policy details."
+    )
+    __qt_internal_setup_policy(QTP0008 "6.12.0" "${policy_explanation}")
+    # Query again, because __qt_internal_setup_policy() can set the policy to NEW if the
+    # version passed to qt_standard_project_setup(REQUIRES) is high enough.
+    qt6_policy(GET QTP0008 __qt_qtp0008_value)
+    if(__qt_qtp0008_value STREQUAL "NEW")
+        set(${out_var} "${ARGN}" PARENT_SCOPE)
+    else()
+        set(${out_var} "${__qt_forwarded_deploy_args}" PARENT_SCOPE)
+    endif()
+endfunction()
+
 if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
-    macro(qt_generate_deploy_script)
-        if(QT_DEFAULT_MAJOR_VERSION EQUAL 6)
-            qt6_generate_deploy_script(${ARGV})
-        else()
+    function(qt_generate_deploy_script)
+        if(NOT QT_DEFAULT_MAJOR_VERSION EQUAL 6)
             message(FATAL_ERROR "qt_generate_deploy_script() is only available in Qt 6.")
         endif()
-    endmacro()
+        _qt_internal_resolve_deploy_script_args(forwarded_args
+            qt_generate_deploy_script ${ARGV})
+        qt6_generate_deploy_script(${forwarded_args})
+        cmake_parse_arguments(PARSE_ARGV 0 arg "" "OUTPUT_SCRIPT" "")
+        if(arg_OUTPUT_SCRIPT)
+            set(${arg_OUTPUT_SCRIPT} "${${arg_OUTPUT_SCRIPT}}" PARENT_SCOPE)
+        endif()
+    endfunction()
 endif()
 
 function(qt6_generate_deploy_app_script)
@@ -4130,7 +4216,13 @@ ${common_deploy_args})
 endfunction()
 
 if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
-    macro(qt_generate_deploy_app_script)
-        qt6_generate_deploy_app_script(${ARGV})
-    endmacro()
+    function(qt_generate_deploy_app_script)
+        _qt_internal_resolve_deploy_script_args(forwarded_args
+            qt_generate_deploy_app_script ${ARGV})
+        qt6_generate_deploy_app_script(${forwarded_args})
+        cmake_parse_arguments(PARSE_ARGV 0 arg "" "OUTPUT_SCRIPT" "")
+        if(arg_OUTPUT_SCRIPT)
+            set(${arg_OUTPUT_SCRIPT} "${${arg_OUTPUT_SCRIPT}}" PARENT_SCOPE)
+        endif()
+    endfunction()
 endif()

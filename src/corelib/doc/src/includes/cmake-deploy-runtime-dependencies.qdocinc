@@ -5,6 +5,10 @@ project(MyThings)
 find_package(Qt6 REQUIRED COMPONENTS Core)
 qt_standard_project_setup()
 
+# Keep the QT_DEPLOY_* references below for the generated script to expand,
+# see \l {QTP0008}.
+qt_policy(SET QTP0008 NEW)
+
 qt_add_executable(MyApp main.cpp)
 
 set_target_properties(MyApp PROPERTIES

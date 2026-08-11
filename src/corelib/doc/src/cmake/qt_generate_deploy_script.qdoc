@@ -49,6 +49,14 @@ custom if neither \c NAME nor \c TARGET are given.
 The \c CONTENT argument specifies the code that is written to the deployment
 script. The content may contain generator expressions.
 
+\note When using the version-less \l qt_generate_deploy_script command,
+escape sequences and \c{${var}} references in the content only reach the
+generated script unchanged if \l {QTP0008} is set to \c NEW. With the \c OLD
+behavior they are evaluated at the call site while the arguments are forwarded,
+so a \c{QT_DEPLOY_*} reference that is meant to be expanded when the script runs,
+instead gets expanded at configure time, leading to an empty value.
+Calling \c qt6_generate_deploy_script() directly avoids this issue.
+
 This command is intended for generating custom deployment scripts that
 directly call functions of Qt's deployment API. For less complex
 deployment purposes, it is more convenient to use
@@ -56,7 +64,8 @@ deployment purposes, it is more convenient to use
 \l qt_generate_deploy_qml_app_script().
 
 \sa qt_generate_deploy_app_script(),
-    qt_generate_deploy_qml_app_script()
+    qt_generate_deploy_qml_app_script(),
+    {QTP0008}
 
 \section1 Example
 

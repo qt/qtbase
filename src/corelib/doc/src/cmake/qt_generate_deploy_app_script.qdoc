@@ -90,6 +90,14 @@ behavior, such a value is written to the generated script unquoted and gets spli
 at whitespace, which projects used to work around by adding another level of
 quoting. Remove that extra quoting when setting the policy to \c NEW.
 
+\note The version-less \c qt_generate_deploy_app_script() forwards its arguments
+through either a function or a macro depending on the value of \l {QTP0008}.
+With the \c OLD behavior a value that contains a backslash or a \c{${var}}
+reference is evaluated at macro expansion time, so a regex like
+\c{foo\\.dylib} loses a level of escaping.
+This affects \c{DEPLOY_TOOL_OPTIONS} and the regex and file list arguments.
+Calling \c qt6_generate_deploy_app_script() directly avoids this issue.
+
 For deploying a QML application, use
 \l qt_generate_deploy_qml_app_script()
 instead.
@@ -113,7 +121,8 @@ You can turn off plugin deployment altogether with the \c NO_PLUGINS option.
 \sa qt_standard_project_setup(),
     qt_generate_deploy_script(),
     qt_generate_deploy_qml_app_script(),
-    {QTP0007}
+    {QTP0007},
+    {QTP0008}
 
 \section1 Example
 
