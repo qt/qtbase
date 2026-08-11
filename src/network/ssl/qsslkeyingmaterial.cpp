@@ -62,14 +62,15 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QSslKeyingMaterial::QSslKeyingMaterial()
-
     Default-constructs an instance of QSslKeyingMaterial.
 
     A default instance is never valid.
 
     \sa isValid()
 */
+
+QSslKeyingMaterial::QSslKeyingMaterial()
+    = default;
 
 /*!
     \fn explicit QSslKeyingMaterial::QSslKeyingMaterial(const QByteArray &label, qsizetype size)
@@ -98,9 +99,29 @@ QT_BEGIN_NAMESPACE
     \sa isValid(), label(), context(), value()
 */
 
-/*!
-    \fn bool QSslKeyingMaterial::isValid() const noexcept
+QSslKeyingMaterial::QSslKeyingMaterial(const QByteArray &label, qsizetype size)
+    : m_label(label),
+      m_requestedSize(size)
+{
+}
 
+QSslKeyingMaterial::QSslKeyingMaterial(const QByteArray &label, qsizetype size, const QByteArray &context)
+    : m_label(label),
+      m_context(context),
+      m_requestedSize(size)
+{
+}
+
+QSslKeyingMaterial::QSslKeyingMaterial(const QSslKeyingMaterial &other)
+    = default;
+
+QSslKeyingMaterial &QSslKeyingMaterial::operator=(const QSslKeyingMaterial &other)
+    = default;
+
+QSslKeyingMaterial::~QSslKeyingMaterial()
+    = default;
+
+/*!
     Returns true if this QSslKeyingMaterial object describes a valid
     exporter request.
 
@@ -109,6 +130,11 @@ QT_BEGIN_NAMESPACE
 
     \sa label(), value()
 */
+
+bool QSslKeyingMaterial::isValid() const noexcept
+{
+    return !m_label.isEmpty() && requestedSize() > 0;
+}
 
 /*!
     \fn QByteArray QSslKeyingMaterial::label() const
@@ -180,6 +206,15 @@ size_t qHash(const QSslKeyingMaterial &material, size_t seed) noexcept
 {
     return qHashMulti(seed, material.m_label, material.m_context, material.m_value,
                       material.m_requestedSize);
+}
+
+// friend
+bool comparesEqual(const QSslKeyingMaterial &lhs, const QSslKeyingMaterial &rhs) noexcept
+{
+    return lhs.m_requestedSize == rhs.m_requestedSize
+        && lhs.m_label == rhs.m_label
+        && lhs.m_context == rhs.m_context
+        && lhs.m_value == rhs.m_value;
 }
 
 #ifndef QT_NO_DEBUG_STREAM

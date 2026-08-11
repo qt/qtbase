@@ -9,6 +9,8 @@
 
 #include <QtCore/qbytearray.h>
 #include <QtCore/qcompare.h>
+#include <QtCore/qswap.h>
+#include <QtCore/qtclasshelpermacros.h>
 #include <QtCore/qtypes.h>
 
 QT_REQUIRE_CONFIG(ssl);
@@ -25,25 +27,23 @@ class QDebug;
 class QSslKeyingMaterial
 {
 public:
-    QSslKeyingMaterial() = default;
-    explicit QSslKeyingMaterial(const QByteArray &label, qsizetype size)
-        : m_label(label)
-        , m_requestedSize(size)
-    {
-    }
-    explicit QSslKeyingMaterial(const QByteArray &label,
-                                qsizetype size,
-                                const QByteArray &context)
-        : m_label(label)
-        , m_context(context)
-        , m_requestedSize(size)
-    {
-    }
+    Q_NETWORK_EXPORT QSslKeyingMaterial();
+    Q_NETWORK_EXPORT explicit QSslKeyingMaterial(const QByteArray &label, qsizetype size);
+    Q_NETWORK_EXPORT explicit QSslKeyingMaterial(const QByteArray &label, qsizetype size,
+                                                 const QByteArray &context);
+    Q_NETWORK_EXPORT QSslKeyingMaterial(const QSslKeyingMaterial &other);
+    Q_NETWORK_EXPORT QSslKeyingMaterial &operator=(const QSslKeyingMaterial &other);
+    QSslKeyingMaterial(QSslKeyingMaterial &&other) noexcept
+        : m_label(std::move(other.m_label)),
+          m_context(std::move(other.m_context)),
+          m_value(std::move(other.m_value)),
+          m_requestedSize(other.m_requestedSize),
+          m_reserved{std::exchange(other.m_reserved, nullptr)}
+    {}
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QSslKeyingMaterial)
+    Q_NETWORK_EXPORT ~QSslKeyingMaterial();
 
-    bool isValid() const noexcept
-    {
-        return !m_label.isEmpty() && requestedSize() > 0;
-    }
+    Q_NETWORK_EXPORT bool isValid() const noexcept;
 
     QByteArray label() const
     {
@@ -71,6 +71,7 @@ public:
         m_context.swap(other.m_context);
         m_value.swap(other.m_value);
         std::swap(m_requestedSize, other.m_requestedSize);
+        qt_ptr_swap(m_reserved, other.m_reserved);
     }
 
 private:
@@ -78,15 +79,10 @@ private:
     QByteArray m_context;
     QByteArray m_value;
     qsizetype m_requestedSize = 0;
+    Q_DECL_UNUSED_MEMBER void *m_reserved = nullptr;
 
-    friend bool comparesEqual(const QSslKeyingMaterial &lhs,
-                              const QSslKeyingMaterial &rhs) noexcept
-    {
-        return lhs.m_requestedSize == rhs.m_requestedSize
-               && lhs.m_label == rhs.m_label
-               && lhs.m_context == rhs.m_context
-               && lhs.m_value == rhs.m_value;
-    }
+    friend Q_NETWORK_EXPORT bool comparesEqual(const QSslKeyingMaterial &lhs,
+                                               const QSslKeyingMaterial &rhs) noexcept;
     Q_DECLARE_EQUALITY_COMPARABLE(QSslKeyingMaterial)
 
     friend size_t qHash(const QSslKeyingMaterial &material) noexcept
