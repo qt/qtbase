@@ -105,6 +105,8 @@ QStringList QDeviceDiscoveryUDev::scanConnectedDevices()
     udev_list_entry_foreach (entry, udev_enumerate_get_list_entry(ue)) {
         const char *syspath = udev_list_entry_get_name(entry);
         udev_device *udevice = udev_device_new_from_syspath(m_udev, syspath);
+        if (!udevice)
+            continue;
         QString candidate = QString::fromUtf8(udev_device_get_devnode(udevice));
         if ((m_types & Device_InputMask) && candidate.startsWith(QT_EVDEV_DEVICE ""_L1))
             devices << candidate;
