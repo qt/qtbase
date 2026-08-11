@@ -172,6 +172,12 @@ Since Qt 6.7, you can use \c{DEPLOY_TOOL_OPTIONS} to pass additional options to
 the underlying deployment tool. This only has an effect if the underlying
 deployment tool is either macdeployqt or windeployqt.
 
+\note When this command is called from the \c {CONTENT} of
+\l qt_generate_deploy_script(), the values of \c{DEPLOY_TOOL_OPTIONS} should
+be wrapped into a single quoted string so that whitespace is preserved in the
+generated deployment script. Additionally, each value that contains a space,
+like a code signing identity, should be wrapped in backslash escaped quotes.
+
 On Linux, deploying runtime dependencies is based on CMake's
 \c{file(GET_RUNTIME_DEPENDENCIES)} command. The options \c{PRE_INCLUDE_REGEXES},
 \c{PRE_EXCLUDE_REGEXES}, \c{POST_INCLUDE_REGEXES}, \c{POST_EXCLUDE_REGEXES},
@@ -188,7 +194,8 @@ The default value of \c{POST_EXCLUDE_REGEXES} is constructed from the value of
 
 \sa qt_generate_deploy_app_script(),
     qt_deploy_qt_conf(),
-    qt_deploy_qml_imports()
+    qt_deploy_qml_imports(),
+    {QTP0007}
 
 \section1 Controlling deployment of Qt plugins
 

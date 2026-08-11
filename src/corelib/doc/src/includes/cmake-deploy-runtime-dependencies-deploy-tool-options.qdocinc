@@ -1,9 +1,12 @@
 \badcode
 set(deploy_tool_options_arg "")
 if(APPLE)
+    # The CONTENT below is parsed when the generated script runs.
+    # To preserve the code signing identity, it needs to be wrapped in escaped quotes.
+    # In addition, all the options need to be wrapped into a single quoted string,
+    # so that CMake doesn't replace each space with a semicolon in the generated text.
     set(deploy_tool_options_arg
-        -hardened-runtime
-        "\"-codesign=Developer ID Application: Joe Developer (1234567890)\""
+        "-hardened-runtime \"-codesign=Developer ID Application: Joe Developer (1234567890)\""
     )
 elseif(WIN32)
     set(deploy_tool_options_arg --no-compiler-runtime)
@@ -16,7 +19,7 @@ qt_generate_deploy_script(
     CONTENT "
 qt_deploy_runtime_dependencies(
     EXECUTABLE \"${executable_path}\"
-    DEPLOY_TOOL_OPTIONS "${deploy_tool_options_arg}"
+    DEPLOY_TOOL_OPTIONS ${deploy_tool_options_arg}
     GENERATE_QT_CONF
     VERBOSE
 )")
