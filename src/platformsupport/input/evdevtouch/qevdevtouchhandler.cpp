@@ -962,8 +962,10 @@ void QEvdevTouchScreenData::reportPoints()
             const QList<QWindowSystemInterface::TouchPoint> &points = it.value();
 
             QPointingDevice *device = getDeviceForToolType(toolType);
+            if (!device)
+                continue;
             qCDebug(qLcEvdevTouch, "evdevtouch: device %ls, pointerType %ls, points %lld", qUtf16Printable(device->name()), qUtf16Printable(QVariant::fromValue(device->pointerType()).toString()), qlonglong{points.size()});
-            if (device && !points.isEmpty()) {
+            if (!points.isEmpty()) {
                 if (m_filtered)
                     emit q->touchPointsUpdated();
                 else
