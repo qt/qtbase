@@ -45,17 +45,17 @@ public:
 
     Q_NETWORK_EXPORT bool isValid() const noexcept;
 
-    QByteArray label() const noexcept
+    QByteArray label() const
     {
         return m_label;
     }
 
-    QByteArray context() const noexcept
+    QByteArray context() const
     {
         return m_context;
     }
 
-    QByteArray value() const noexcept
+    QByteArray value() const
     {
         return m_value;
     }
