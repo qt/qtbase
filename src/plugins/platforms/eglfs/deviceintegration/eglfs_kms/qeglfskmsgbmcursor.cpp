@@ -259,8 +259,12 @@ void QEglFSKmsGbmCursor::initCursorAtlas()
     QString atlas = object.value("image"_L1).toString();
     Q_ASSERT(!atlas.isEmpty());
 
-    const int cursorsPerRow = object.value("cursorsPerRow"_L1).toDouble();
-    Q_ASSERT(cursorsPerRow);
+    const int cursorsPerRow = object.value("cursorsPerRow"_L1).toInt();
+    if (cursorsPerRow <= 0 || cursorsPerRow > Qt::LastCursor + 1) {
+        qWarning("Invalid cursorsPerRow in cursor atlas %s", json.constData());
+        m_state = CursorDisabled;
+        return;
+    }
     m_cursorAtlas.cursorsPerRow = cursorsPerRow;
 
     const QJsonArray hotSpots = object.value("hotSpots"_L1).toArray();
