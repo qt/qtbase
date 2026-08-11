@@ -302,7 +302,7 @@ QFontEngine *QPlatformFontDatabase::fontEngine(const QFontDef &fontDef, void *ha
 
 /*!
     Returns the font engine that will be used to back a QRawFont,
-    based on the given \fontData, \a pixelSize, and \a hintingPreference.
+    based on the given \a fontData, \a pixelSize, and \a hintingPreference.
 
     This function is called by QRawFont, and does not play a part in
     the normal operations of QFontDatabase.
