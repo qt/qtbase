@@ -6,6 +6,8 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_LOGGING_CATEGORY(qLcVkKhrDisplay, "qt.qpa.vkkhrdisplay")
+
 QVkKhrDisplayVulkanInstance::QVkKhrDisplayVulkanInstance(QVulkanInstance *instance)
     : m_instance(instance)
 {
@@ -14,7 +16,7 @@ QVkKhrDisplayVulkanInstance::QVkKhrDisplayVulkanInstance(QVulkanInstance *instan
 
 void QVkKhrDisplayVulkanInstance::createOrAdoptInstance()
 {
-    qDebug("Creating Vulkan instance for VK_KHR_display");
+    qCDebug(qLcVkKhrDisplay, "Creating Vulkan instance for VK_KHR_display");
 
     const QByteArray extName = QByteArrayLiteral("VK_KHR_display");
     initInstance(m_instance, { extName });
@@ -104,7 +106,7 @@ bool QVkKhrDisplayVulkanInstance::chooseDisplay()
         return false;
     }
 
-    qDebug("Display count: %u", displayCount);
+    qCDebug(qLcVkKhrDisplay, "Display count: %u", displayCount);
 
     QVarLengthArray<VkDisplayPropertiesKHR, 4> displayProps(displayCount);
     m_getPhysicalDeviceDisplayPropertiesKHR(m_physDev, &displayCount, displayProps.data());
@@ -122,10 +124,11 @@ bool QVkKhrDisplayVulkanInstance::chooseDisplay()
 
     for (uint32_t i = 0; i < displayCount; ++i) {
         const VkDisplayPropertiesKHR &disp(displayProps[i]);
-        qDebug("Display #%u:\n  display: %p\n  name: %s\n  dimensions: %ux%u\n  resolution: %ux%u",
-               i, (void *) disp.display, disp.displayName,
-               disp.physicalDimensions.width, disp.physicalDimensions.height,
-               disp.physicalResolution.width, disp.physicalResolution.height);
+        qCDebug(qLcVkKhrDisplay,
+                "Display #%u:\n  display: %p\n  name: %s\n  dimensions: %ux%u\n  resolution: %ux%u",
+                i, (void *) disp.display, disp.displayName,
+                disp.physicalDimensions.width, disp.physicalDimensions.height,
+                disp.physicalResolution.width, disp.physicalResolution.height);
 
         if (i == wantedDisplayIndex)
             m_display = disp.display;
@@ -139,10 +142,11 @@ bool QVkKhrDisplayVulkanInstance::chooseDisplay()
         m_getDisplayModePropertiesKHR(m_physDev, disp.display, &modeCount, modeProps.data());
         for (uint32_t j = 0; j < modeCount; ++j) {
             const VkDisplayModePropertiesKHR &mode(modeProps[j]);
-            qDebug("  Mode #%u:\n    mode: %p\n    visibleRegion: %ux%u\n    refreshRate: %u",
-                   j, (void *) mode.displayMode,
-                   mode.parameters.visibleRegion.width, mode.parameters.visibleRegion.height,
-                   mode.parameters.refreshRate);
+            qCDebug(qLcVkKhrDisplay,
+                    "  Mode #%u:\n    mode: %p\n    visibleRegion: %ux%u\n    refreshRate: %u",
+                    j, (void *) mode.displayMode,
+                    mode.parameters.visibleRegion.width, mode.parameters.visibleRegion.height,
+                    mode.parameters.refreshRate);
             if (j == wantedModeIndex && i == wantedDisplayIndex) {
                 m_displayMode = mode.displayMode;
                 m_width = mode.parameters.visibleRegion.width;
@@ -156,7 +160,8 @@ bool QVkKhrDisplayVulkanInstance::chooseDisplay()
         return false;
     }
 
-    qDebug("Using display #%u with mode #%u", wantedDisplayIndex, wantedModeIndex);
+    qCDebug(qLcVkKhrDisplay, "Using display #%u with mode #%u",
+            wantedDisplayIndex, wantedModeIndex);
 
     uint32_t planeCount = 0;
     err = m_getPhysicalDeviceDisplayPlanePropertiesKHR(m_physDev, &planeCount, nullptr);
@@ -165,7 +170,7 @@ bool QVkKhrDisplayVulkanInstance::chooseDisplay()
         return false;
     }
 
-    qDebug("Plane count: %u", planeCount);
+    qCDebug(qLcVkKhrDisplay, "Plane count: %u", planeCount);
 
     QVarLengthArray<VkDisplayPlanePropertiesKHR, 4> planeProps(planeCount);
     m_getPhysicalDeviceDisplayPlanePropertiesKHR(m_physDev, &planeCount, planeProps.data());
@@ -181,8 +186,8 @@ bool QVkKhrDisplayVulkanInstance::chooseDisplay()
 
         QVarLengthArray<VkDisplayKHR, 4> supportedDisplays(supportedDisplayCount);
         m_getDisplayPlaneSupportedDisplaysKHR(m_physDev, i, &supportedDisplayCount, supportedDisplays.data());
-        qDebug("Plane #%u supports %u displays, currently bound to display %p",
-               i, supportedDisplayCount, (void *) planeProps[i].currentDisplay);
+        qCDebug(qLcVkKhrDisplay, "Plane #%u supports %u displays, currently bound to display %p",
+                i, supportedDisplayCount, (void *) planeProps[i].currentDisplay);
 
         VkDisplayPlaneCapabilitiesKHR caps;
         err = m_getDisplayPlaneCapabilitiesKHR(m_physDev, m_displayMode, i, &caps);
@@ -191,16 +196,21 @@ bool QVkKhrDisplayVulkanInstance::chooseDisplay()
             return false;
         }
 
-        qDebug("  supportedAlpha: %d (1=no, 2=global, 4=per pixel, 8=per pixel premul)\n"
-               "  minSrc=%d, %d %ux%u\n"
-               "  maxSrc=%d, %d %ux%u\n"
-               "  minDst=%d, %d %ux%u\n"
-               "  maxDst=%d, %d %ux%u",
-               int(caps.supportedAlpha),
-               caps.minSrcPosition.x, caps.minSrcPosition.y, caps.minSrcExtent.width, caps.minSrcExtent.height,
-               caps.maxSrcPosition.x, caps.maxSrcPosition.y, caps.maxSrcExtent.width, caps.maxSrcExtent.height,
-               caps.minDstPosition.x, caps.minDstPosition.y, caps.minDstExtent.width, caps.minDstExtent.height,
-               caps.maxDstPosition.x, caps.maxDstPosition.y, caps.maxDstExtent.width, caps.maxDstExtent.height);
+        qCDebug(qLcVkKhrDisplay,
+                "  supportedAlpha: %d (1=no, 2=global, 4=per pixel, 8=per pixel premul)\n"
+                "  minSrc=%d, %d %ux%u\n"
+                "  maxSrc=%d, %d %ux%u\n"
+                "  minDst=%d, %d %ux%u\n"
+                "  maxDst=%d, %d %ux%u",
+                int(caps.supportedAlpha),
+                caps.minSrcPosition.x, caps.minSrcPosition.y,
+                caps.minSrcExtent.width, caps.minSrcExtent.height,
+                caps.maxSrcPosition.x, caps.maxSrcPosition.y,
+                caps.maxSrcExtent.width, caps.maxSrcExtent.height,
+                caps.minDstPosition.x, caps.minDstPosition.y,
+                caps.minDstExtent.width, caps.minDstExtent.height,
+                caps.maxDstPosition.x, caps.maxDstPosition.y,
+                caps.maxDstExtent.width, caps.maxDstExtent.height);
 
         // if the plane is not in use and supports our chosen display, use that plane
         if (supportedDisplays.contains(m_display)
@@ -216,7 +226,7 @@ bool QVkKhrDisplayVulkanInstance::chooseDisplay()
         return false;
     }
 
-    qDebug("Using plane #%u", m_planeIndex);
+    qCDebug(qLcVkKhrDisplay, "Using plane #%u", m_planeIndex);
     return true;
 #else
     return false;
@@ -226,7 +236,8 @@ bool QVkKhrDisplayVulkanInstance::chooseDisplay()
 VkSurfaceKHR QVkKhrDisplayVulkanInstance::createSurface(QWindow *window)
 {
 #if VK_KHR_display
-    qDebug("Creating VkSurfaceKHR via VK_KHR_display for window %p", (void *) window);
+    qCDebug(qLcVkKhrDisplay, "Creating VkSurfaceKHR via VK_KHR_display for window %p",
+            (void *) window);
 
     if (!m_physDev) {
         qWarning("No physical device, cannot create surface");
@@ -254,7 +265,7 @@ VkSurfaceKHR QVkKhrDisplayVulkanInstance::createSurface(QWindow *window)
         return VK_NULL_HANDLE;
     }
 
-    qDebug("Created surface %p", (void *) surface);
+    qCDebug(qLcVkKhrDisplay, "Created surface %p", (void *) surface);
 
     return surface;
 #else

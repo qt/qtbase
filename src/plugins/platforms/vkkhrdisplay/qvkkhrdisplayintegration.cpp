@@ -57,7 +57,7 @@ void QVkKhrDisplayScreen::setVk(QVkKhrDisplayVulkanInstance *inst)
     m_vk = inst;
     m_geometry = QRect(QPoint(0, 0), m_vk->displaySize());
     QWindowSystemInterface::handleScreenGeometryChange(screen(), m_geometry, m_geometry);
-    qDebug() << "Screen will report geometry" << m_geometry;
+    qCDebug(qLcVkKhrDisplay) << "Screen will report geometry" << m_geometry;
 
     // Thanks to this deferred screen setup, a QWindow with a size based on the
     // dummy screen size may already exist. Try to resize it.
