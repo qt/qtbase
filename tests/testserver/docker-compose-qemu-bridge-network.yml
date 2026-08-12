@@ -21,8 +21,8 @@ version: '2.1'
 
 #
 # Configuration in this file is used solely to configure Docker properly
-# when running test on QNX qemu as that requires explicitly exposing
-# ports so that qemu and services in docker container can actually
+# when running test on QNX or VxWorks qemu as that requires explicitly
+# exposing ports so that qemu and services in docker container can actually
 # communicate.
 #
 # !!! KEEP THIS FILE IN SYNC WITH GENERAL DOCKER CONFIGURATION FILE!!!
@@ -37,8 +37,8 @@ services:
         container_name: qt-test-server-apache2
         hostname: ${HOST_NAME:-apache2}
         ports:
-            - "172.31.1.1:80:80"
-            - "172.31.1.1:443:443"
+            - "${QT_QEMU_SERVICE_IP:-172.31.1.1}:80:80"
+            - "${QT_QEMU_SERVICE_IP:-172.31.1.1}:443:443"
         build:
             context: .
             args:
@@ -55,9 +55,9 @@ services:
         container_name: qt-test-server-squid
         hostname: ${HOST_NAME:-squid}
         ports:
-            - "172.31.1.1:3128:3128"
-            - "172.31.1.1:3129:3129"
-            - "172.31.1.1:3130:3130"
+            - "${QT_QEMU_SERVICE_IP:-172.31.1.1}:3128:3128"
+            - "${QT_QEMU_SERVICE_IP:-172.31.1.1}:3129:3129"
+            - "${QT_QEMU_SERVICE_IP:-172.31.1.1}:3130:3130"
         depends_on:
             - apache2
         external_links:
@@ -82,8 +82,8 @@ services:
         container_name: qt-test-server-vsftpd
         hostname: ${HOST_NAME:-vsftpd}
         ports:
-            - "172.31.1.1:20:20"
-            - "172.31.1.1:21:21"
+            - "${QT_QEMU_SERVICE_IP:-172.31.1.1}:20:20"
+            - "${QT_QEMU_SERVICE_IP:-172.31.1.1}:21:21"
         build:
             context: .
             args:
@@ -100,7 +100,7 @@ services:
         container_name: qt-test-server-ftp-proxy
         hostname: ${HOST_NAME:-ftp-proxy}
         ports:
-            - "172.31.1.1:2121:2121"
+            - "${QT_QEMU_SERVICE_IP:-172.31.1.1}:2121:2121"
         depends_on:
             - vsftpd
         external_links:
@@ -121,8 +121,8 @@ services:
         container_name: qt-test-server-danted
         hostname: ${HOST_NAME:-danted}
         ports:
-            - "172.31.1.1:1080:1080"
-            - "172.31.1.1:1081:1081"
+            - "${QT_QEMU_SERVICE_IP:-172.31.1.1}:1080:1080"
+            - "${QT_QEMU_SERVICE_IP:-172.31.1.1}:1081:1081"
         depends_on:
             - apache2
             - vsftpd
@@ -149,8 +149,8 @@ services:
         container_name: qt-test-server-cyrus
         hostname: ${HOST_NAME:-cyrus}
         ports:
-            - "172.31.1.1:143:143"
-            - "172.31.1.1:993:993"
+            - "${QT_QEMU_SERVICE_IP:-172.31.1.1}:143:143"
+            - "${QT_QEMU_SERVICE_IP:-172.31.1.1}:993:993"
         build:
             context: .
             args:
@@ -167,7 +167,7 @@ services:
         container_name: qt-test-server-iptables
         hostname: ${HOST_NAME:-iptables}
         ports:
-            - "172.31.1.1:1357:1357"
+            - "${QT_QEMU_SERVICE_IP:-172.31.1.1}:1357:1357"
         build:
             context: .
             args:
@@ -187,9 +187,9 @@ services:
         container_name: qt-test-server-echo
         hostname: ${HOST_NAME:-echo}
         ports:
-            - "172.31.1.1:13:13"
-            - "172.31.1.1:7:7"
-            - "172.31.1.1:7:7/udp"
+            - "${QT_QEMU_SERVICE_IP:-172.31.1.1}:13:13"
+            - "${QT_QEMU_SERVICE_IP:-172.31.1.1}:7:7"
+            - "${QT_QEMU_SERVICE_IP:-172.31.1.1}:7:7/udp"
         build:
             context: .
             args:

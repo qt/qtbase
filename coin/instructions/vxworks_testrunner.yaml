@@ -16,6 +16,7 @@ instructions:
       # (probe==RUNNING), so a shorter budget reclaims ~400s per stuck occurrence without killing
       # healthy tests.
       MAX_WAIT_TIME=300
+      ALIVE_WAIT_TIME=600
 
       # The test executable (guest path) is the first argument, passed by ctest.
       # Everything below keys off it -- 'rtp exec' launches it and
@@ -31,6 +32,22 @@ instructions:
       fi
 
       quoted_args=`python3 -c 'import sys, shlex; print(shlex.join(sys.argv[2:]))' "$@"`
+
+      # The XML log grows on the NFS share while the test runs; a closing
+      # </TestCase> is the one reliable finished signal (used to veto FINISHED).
+      XML_LOG=""
+      prev=""
+      for a in "$@"; do
+          if [[ "$prev" == "-o" && "$a" == *.xml,xml ]]; then
+              XML_LOG="${a%,xml}"
+              break
+          fi
+          prev="$a"
+      done
+
+      xml_complete() {
+          [[ -n "$XML_LOG" ]] && /usr/bin/grep -qs '</TestCase>' "$XML_LOG"
+      }
 
       # Acquire a free emulator slot. ctest runs this script once per test with
       # up to VXWORKS_QEMU_INSTANCES jobs in parallel; each job takes exclusive
@@ -112,7 +129,9 @@ instructions:
       # returns and the MAX_WAIT_TIME watchdog below can never fire. That is
       # exactly how a stuck test could deadlock the whole ctest run until the
       # 4h CI ceiling.
-      LD_LIBRARY_PATH=/usr/lib timeout -k 5 20 ssh -n -q -T \
+      # Clean library path: ctest's environment carries the provisioned OpenSSL,
+      # which the system ssh refuses to load ("OpenSSL version mismatch").
+      env -u LD_LIBRARY_PATH timeout -k 5 20 ssh -n -q -T \
           -o BatchMode=yes -o ConnectTimeout=1 \
           -o ServerAliveInterval=3 -o ServerAliveCountMax=2 \
           -o HostKeyAlgorithms=+ssh-rsa \
@@ -123,6 +142,9 @@ instructions:
 
       ssh_probe_status() {
           # Returns one of: FINISHED | RUNNING | UNRESPONSIVE
+          # FINISHED is not authoritative: 'rtp list' may truncate long launch
+          # paths or return partial output; callers corroborate with
+          # xml_complete().
           local out
           out="$(ssh_cmd 'cmd rtp list; exit' 2>&1 || true)"
           # If we don't see the normal SSH epilogue ("Au revoir!"), treat as UNRESPONSIVE
@@ -189,7 +211,14 @@ instructions:
           mkfifo "$GUEST_IN" "$GUEST_OUT"
           # Close the slot lock fd for the spawned processes so the long-lived
           # emulator does not inherit and hold this job's slot lock.
-          /bin/bash /home/qt/vxworks_qemu_launcher.sh "$VXWORKS_EMULATOR_TYPE" "$SLOT" {slot_fd}>&-
+          # Non-zero exit: the relaunched guest's SSH never came up. Fail the
+          # attempt so qt-testrunner retries on a clean slot. (Older launchers
+          # always exit 0.)
+          if ! /bin/bash /home/qt/vxworks_qemu_launcher.sh "$VXWORKS_EMULATOR_TYPE" "$SLOT" {slot_fd}>&-; then
+              echo "Relaunch of emulator for slot ${SLOT} failed"
+              kill_qemu
+              exit 1
+          fi
           sleep 1
           # If the relaunched QEMU died at startup, the new FIFOs have no
           # reader and every serial write below would block forever.
@@ -242,15 +271,41 @@ instructions:
 
               probe="$(ssh_probe_status)"
               last_probe_result="$probe"
+              wait_budget=$MAX_WAIT_TIME
               if [[ "$probe" == "UNRESPONSIVE" ]]; then
+                  # Unresponsive guest that never created its XML log wedged at
+                  # launch and won't recover; give a few probes for NFS/SSH
+                  # lag, then give up.
+                  if [[ -n "$XML_LOG" && ! -e "$XML_LOG" ]] && (( silent_seconds >= 3 * EMPTY_READ_GRACE )); then
+                      echo "SSH unresponsive and XML log never created after ${silent_seconds}s: guest wedged at launch"
+                      kill_qemu
+                      exit 1
+                  fi
                   echo "system is under heavy load after ${silent_seconds}s of silence (SSH unresponsive)"
               elif [[ "$probe" == "FINISHED" ]]; then
-                  echo "RTP finished after ${silent_seconds}s of silence, ending"
-                  exit 0
+                  if [[ -z "$XML_LOG" ]] || xml_complete; then
+                      echo "RTP finished after ${silent_seconds}s of silence, ending"
+                      exit 0
+                  fi
+                  if [[ ! -e "$XML_LOG" ]]; then
+                      # Not listed and no XML log: launch failed (a running
+                      # silent test has an XML file from QTest startup). One
+                      # repeat probe rides out NFS lag.
+                      if (( silent_seconds >= 2 * EMPTY_READ_GRACE )); then
+                          echo "RTP not running and XML log never created after ${silent_seconds}s: launch failed"
+                          kill_qemu
+                          exit 1
+                      fi
+                      echo "probe reports FINISHED after ${silent_seconds}s of silence and XML log not created yet - waiting for launch"
+                  else
+                      echo "probe reports FINISHED after ${silent_seconds}s of silence, but XML log is incomplete - still waiting"
+                      wait_budget=$ALIVE_WAIT_TIME
+                  fi
+              else
+                  wait_budget=$ALIVE_WAIT_TIME
               fi
-              # RUNNING or UNRESPONSIVE - keep waiting
-              if (( silent_seconds >= MAX_WAIT_TIME )); then
-                  echo "Timeout: no output for ${MAX_WAIT_TIME}s (last SSH probe: ${last_probe_result})"
+              if (( silent_seconds >= wait_budget )); then
+                  echo "Timeout: no output for ${silent_seconds}s (last SSH probe: ${last_probe_result})"
                   # Tear down this slot's wedged emulator now rather than leaving it
                   # burning host CPU (TCG) until the next test's health check finds
                   # it; the next run relaunches a fresh instance.

@@ -20,9 +20,6 @@ instructions:
       condition: property
       property: target.arch
       equals_value: X86_64
-  # Number of QEMU emulator instances to run the autotests against in parallel.
-  # ARM runs under TCG and mirrors the 2x2 setup (2 instances, 2 cores each);
-  # Intel runs under KVM with 4 instances (4 cores / 4G each).
   - type: EnvironmentVariable
     variableName: VXWORKS_QEMU_INSTANCES
     variableValue: "2"
@@ -38,15 +35,15 @@ instructions:
       property: target.arch
       equals_value: X86_64
   # Run ctest with one job per emulator instance so tests are distributed
-  # across the parallel emulators. --timeout is the last-resort safety net:
-  # if a runner ever blocks on a path its own bounds do not cover, ctest
-  # kills it and records a Timeout after 20 min instead of the whole run
-  # idling at the 4h CI ceiling. The longest healthy test
-  # (tst_qnetworkreply, ~440s on ARM TCG) stays well under it. Per-test
-  # TIMEOUT properties, where set, take precedence.
+  # across the parallel emulators. --timeout is the last-resort safety net
   - type: AppendToEnvironmentVariable
     variableName: CTEST_ARGS
     variableValue: " -j {{.Env.VXWORKS_QEMU_INSTANCES}} --timeout 1200"
+  # br0 address the docker test servers publish on (compose file + guest hosts);
+  # not 172.31.1.1, whose docker port-NAT churn blackholes the guests' NFS.
+  - type: EnvironmentVariable
+    variableName: QT_QEMU_SERVICE_IP
+    variableValue: "172.31.1.2"
   - type: WriteFile
     filename: "{{.AgentWorkingDir}}/coin_vxworks_vars.sh"
     fileMode: 493
@@ -58,18 +55,20 @@ instructions:
       VXSH="/tmp/guest${INSTANCE}.in"
 
       sleep 10
+      # Exported by the instructions; abort rather than guess an address.
+      SERVICE_IP="${QT_QEMU_SERVICE_IP:?QT_QEMU_SERVICE_IP is not set}"
       declare -A hosts
-      hosts["qt-test-server"]="172.31.1.1"
-      hosts["qt-test-server.qt-test-net"]="172.31.1.1"
-      hosts["qt-test-server.test-net.qt.local"]="172.31.1.1"
-      hosts["vsftpd.test-net.qt.local"]="172.31.1.1"
-      hosts["apache2.test-net.qt.local"]="172.31.1.1"
-      hosts["squid.test-net.qt.local"]="172.31.1.1"
-      hosts["danted.test-net.qt.local"]="172.31.1.1"
-      hosts["ftp-proxy.test-net.qt.local"]="172.31.1.1"
-      hosts["echo.test-net.qt.local"]="172.31.1.1"
-      hosts["cyrus.test-net.qt.local"]="172.31.1.1"
-      hosts["iptables.test-net.qt.local"]="172.31.1.1"
+      hosts["qt-test-server"]="${SERVICE_IP}"
+      hosts["qt-test-server.qt-test-net"]="${SERVICE_IP}"
+      hosts["qt-test-server.test-net.qt.local"]="${SERVICE_IP}"
+      hosts["vsftpd.test-net.qt.local"]="${SERVICE_IP}"
+      hosts["apache2.test-net.qt.local"]="${SERVICE_IP}"
+      hosts["squid.test-net.qt.local"]="${SERVICE_IP}"
+      hosts["danted.test-net.qt.local"]="${SERVICE_IP}"
+      hosts["ftp-proxy.test-net.qt.local"]="${SERVICE_IP}"
+      hosts["echo.test-net.qt.local"]="${SERVICE_IP}"
+      hosts["cyrus.test-net.qt.local"]="${SERVICE_IP}"
+      hosts["iptables.test-net.qt.local"]="${SERVICE_IP}"
 
       declare -A env_vars
       env_vars["LD_LIBRARY_PATH"]="$VXWORKS_TEST_LIBS_PATH"
@@ -113,8 +112,6 @@ instructions:
       AGENT_WORK="{{.AgentWorkingDir}}"
 
       for i in $(seq 0 $((N - 1))); do
-          # Per-instance guest HOME (avoids QSettings write races between the
-          # parallel emulators sharing the NFS-exported working directory).
           mkdir -p "${AGENT_WORK}/vxworkshome${i}"
           sudo chown 2001:100 "${AGENT_WORK}/vxworkshome${i}"
 
@@ -124,6 +121,13 @@ instructions:
 
           "${HOME}/vxworks_qemu_launcher.sh" "${VXWORKS_EMULATOR_TYPE}" "${i}"
       done
+
+      # Make sure the service address the docker fixture publishes on exists
+      # on the bridge (the launcher only configures 172.31.1.1).
+      SERVICE_IP="${QT_QEMU_SERVICE_IP:?QT_QEMU_SERVICE_IP is not set}"
+      if ! ip addr show br0 | grep -qF " ${SERVICE_IP}/"; then
+          sudo ip addr add "${SERVICE_IP}/24" dev br0
+      fi
 
       # Configure every booted instance.
       for i in $(seq 0 $((N - 1))); do
