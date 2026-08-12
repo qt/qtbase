@@ -9,8 +9,6 @@ add_library(gui_snippets_code OBJECT
     src_gui_image_qpixmap.cpp
     src_gui_image_qpixmapcache.cpp
     src_gui_kernel_qguiapplication_x11.cpp
-    src_gui_kernel_qshortcut.cpp
-    src_gui_kernel_qshortcutmap.cpp
     src_gui_math3d_qquaternion.cpp
     src_gui_painting_qbrush.cpp
     src_gui_painting_qcolor.cpp
@@ -41,6 +39,13 @@ if(QT_FEATURE_wheelevent)
     )
 endif()
 
+if(QT_FEATURE_shortcut)
+    target_sources(gui_snippets_code PRIVATE
+        src_gui_kernel_qshortcut.cpp
+        src_gui_kernel_qshortcutmap.cpp
+    )
+endif()
+
 if(QT_FEATURE_widgets)
     target_link_libraries(gui_snippets_code PRIVATE
         Qt::Widgets
@@ -54,10 +59,14 @@ if(QT_FEATURE_widgets)
         src_gui_kernel_qaction.cpp
         src_gui_kernel_qapplication.cpp
         src_gui_kernel_qguiapplication.cpp
-        src_gui_kernel_qkeysequence.cpp
         src_gui_text_qsyntaxhighlighter.cpp
         src_gui_util_qvalidator.cpp
     )
+if(QT_FEATURE_shortcut)
+    target_sources(gui_snippets_code PRIVATE
+        src_gui_kernel_qkeysequence.cpp
+    )
+endif()
 if(QT_FEATURE_opengl)
     target_sources(gui_snippets PRIVATE
         src_gui_opengl_qopenglfunctions.cpp
