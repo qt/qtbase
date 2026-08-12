@@ -1426,6 +1426,27 @@ void tst_QGuiApplication::topLevelAt()
     top.raise();
     QTRY_COMPARE(app.topLevelAt(QPoint(300, 300)), &top);
 
+    // A window that is transparent for input is still "a top level window at pos":
+    // topLevelAt() answers where the windows are, not where input would go. Callers that
+    // want the latter filter the flag themselves -- QSimpleDrag, QNSView's dragging code
+    // and the Windows pointer handler all do. Pinned here because the QShapedPixmapWindow
+    // that QBasicDrag drags along under the cursor carries this flag, so anything that
+    // starts filtering it in topLevelAt() changes drag and drop. Restricted to offscreen
+    // because that is the platform using the base QPlatformScreen::topLevelAt(); the
+    // native implementations differ and are not all contractually bound to agree.
+    if (QGuiApplication::platformName() == QLatin1String("offscreen")) {
+        QWindow transparent;
+        transparent.setObjectName("TransparentForInput");
+        transparent.setFlag(Qt::FramelessWindowHint);
+        transparent.setFlag(Qt::WindowTransparentForInput);
+        transparent.setGeometry(200, 200, 200, 200);
+        transparent.showNormal();
+        QVERIFY(QTest::qWaitForWindowExposed(&transparent));
+        transparent.raise();
+        QTRY_COMPARE(app.topLevelAt(QPoint(300, 300)), &transparent);
+    }
+    QTRY_COMPARE(app.topLevelAt(QPoint(300, 300)), &top);
+
     if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowMasks))
         QSKIP("QWindow::setMask() is not supported.");
 
