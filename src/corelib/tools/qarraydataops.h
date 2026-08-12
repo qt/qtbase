@@ -520,6 +520,7 @@ public:
 
     void insert(qsizetype i, qsizetype n, parameter_type t)
     {
+        Q_DECL_UNINITIALIZED
         T copy(t);
 
         const bool growsAtBegin = that()->size != 0 && i == 0;
@@ -559,6 +560,7 @@ public:
                 return;
             }
         }
+        Q_DECL_UNINITIALIZED
         T tmp(std::forward<Args>(args)...);
         const bool growsAtBegin = that()->size != 0 && i == 0;
         const auto pos = growsAtBegin ? Data::GrowsAtBeginning : Data::GrowsAtEnd;
@@ -744,6 +746,7 @@ public:
 
     void insert(qsizetype i, qsizetype n, parameter_type t)
     {
+        Q_DECL_UNINITIALIZED
         T copy(t);
 
         const bool growsAtBegin = that()->size != 0 && i == 0;
@@ -783,6 +786,7 @@ public:
                 return;
             }
         }
+        Q_DECL_UNINITIALIZED
         T tmp(std::forward<Args>(args)...);
         const bool growsAtBegin = that()->size != 0 && i == 0;
         const auto pos = growsAtBegin ? Data::GrowsAtBeginning : Data::GrowsAtEnd;
