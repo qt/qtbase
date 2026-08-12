@@ -258,6 +258,11 @@ void  QBasicDrag::exitDndEventLoop()
 
 void QBasicDrag::updateCursor(Qt::DropAction action)
 {
+    // In case QDrag is destroyed from a drag event handler, cancel() has
+    // already restored the cursor: nothing left to do.
+    if (!m_drag)
+        return;
+
 #ifndef QT_NO_CURSOR
     Qt::CursorShape cursorShape = Qt::ForbiddenCursor;
     if (canDrop()) {
@@ -381,6 +386,9 @@ void QSimpleDrag::cancel()
 void QSimpleDrag::move(const QPoint &nativeGlobalPos, Qt::MouseButtons buttons,
                        Qt::KeyboardModifiers modifiers)
 {
+    if (!drag())
+        return;
+
     QPoint globalPos = fromNativeGlobalPixels(nativeGlobalPos);
     moveShapedPixmapWindow(globalPos);
     QWindow *window = topLevelAt(globalPos);
@@ -409,6 +417,9 @@ void QSimpleDrag::move(const QPoint &nativeGlobalPos, Qt::MouseButtons buttons,
 void QSimpleDrag::drop(const QPoint &nativeGlobalPos, Qt::MouseButtons buttons,
                        Qt::KeyboardModifiers modifiers)
 {
+    if (!drag())
+        return;
+
     QPoint globalPos = fromNativeGlobalPixels(nativeGlobalPos);
 
     QBasicDrag::drop(nativeGlobalPos, buttons, modifiers);

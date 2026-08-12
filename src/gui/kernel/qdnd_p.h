@@ -76,6 +76,7 @@ private:
     QPlatformDrag *m_platformDrag;
     QPointer<QDrag> m_object;
 
+    friend class QDrag;
     static QDragManager *m_instance;
     Q_DISABLE_COPY_MOVE(QDragManager)
 };
