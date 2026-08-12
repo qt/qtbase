@@ -118,7 +118,7 @@ using namespace QtCbor;
     Returns a map iterator pointing to the first key-value pair of this map. If
     this map is empty, the returned iterator will be the same as constEnd().
 
-    \sa begin(), constEnd()
+    \sa cbegin(), constEnd()
  */
 
 /*!

@@ -2310,7 +2310,7 @@ QAbstractItemModel *QComboBox::model() const
     \note If the combobox is editable, then the \a model will also be
     set on the completer of the line edit.
 
-    \sa clear() setCompleter()
+    \sa clear(), setCompleter()
 */
 void QComboBox::setModel(QAbstractItemModel *model)
 {

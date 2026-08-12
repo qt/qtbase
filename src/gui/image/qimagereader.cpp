@@ -784,7 +784,7 @@ QString QImageReader::fileName() const
     the "jpeg" format supports a quality range from 0 (low visual quality) to
     100 (high visual quality).
 
-    \sa quality() setScaledSize()
+    \sa quality(), setScaledSize()
 */
 void QImageReader::setQuality(int quality)
 {

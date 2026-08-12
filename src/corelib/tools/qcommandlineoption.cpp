@@ -316,7 +316,7 @@ QString QCommandLineOption::description() const
 
     If \a defaultValue is empty, the option has no default values.
 
-    \sa defaultValues() setDefaultValues()
+    \sa defaultValues(), setDefaultValues()
  */
 void QCommandLineOption::setDefaultValue(const QString &defaultValue)
 {
@@ -335,7 +335,7 @@ void QCommandLineOption::setDefaultValue(const QString &defaultValue)
     The default values are used if the user of the application does not specify
     the option on the command line.
 
-    \sa defaultValues() setDefaultValue()
+    \sa defaultValues(), setDefaultValue()
  */
 void QCommandLineOption::setDefaultValues(const QStringList &defaultValues)
 {
