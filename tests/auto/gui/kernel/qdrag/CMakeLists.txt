@@ -15,5 +15,18 @@ qt_internal_add_test(tst_qdrag
     SOURCES
         tst_qdrag.cpp
     LIBRARIES
-        Qt::Gui
+        Qt::GuiPrivate
 )
+
+# On most platforms, QDrag::exec() runs a nested event loop that only a real
+# user can terminate. The offscreen plugin uses the in-process QSimpleDrag and
+# implements QCursor::setPos() synchronously, so synthetic input works
+# deterministically. The tests that need this QSKIP on other platforms.
+set_property(TEST tst_qdrag APPEND PROPERTY ENVIRONMENT
+    "QT_QPA_PLATFORM=offscreen"
+)
+
+# Prioritize building the offscreen plugin before tst_qdrag, if possible.
+if(TARGET QOffscreenIntegrationPlugin)
+    add_dependencies(tst_qdrag QOffscreenIntegrationPlugin)
+endif()
