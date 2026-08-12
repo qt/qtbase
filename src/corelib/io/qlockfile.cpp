@@ -266,6 +266,10 @@ QString QLockFile::fileName() const
     meanwhile, so one way to detect a stale lock file is by the fact that
     it has been around for a long time.
 
+    Setting this value to 0 or negative will disable the verification of
+    timestamps on lock files. QLockFile will still detect a stale lock if its
+    contents show that the locking process is no longer running.
+
     \sa staleLockTime()
 */
 void QLockFile::setStaleLockTime(std::chrono::milliseconds staleLockTime)
