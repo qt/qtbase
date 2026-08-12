@@ -143,6 +143,7 @@ struct QTypedArrayData
     allocate(qsizetype capacity, AllocationOption option = QArrayData::KeepSize)
     {
         static_assert(sizeof(QTypedArrayData) == sizeof(QArrayData));
+        Q_DECL_UNINITIALIZED
         QArrayData *d;
         void *result;
         if constexpr (sizeof(T) == 1) {
