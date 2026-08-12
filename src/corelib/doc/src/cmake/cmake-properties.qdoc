@@ -984,7 +984,7 @@ the property value overrides the runtime path where the resource file is found.
 \title QT_DISCARD_FILE_CONTENTS
 \target cmake-source-file-property-QT_DISCARD_FILE_CONTENTS
 
-\summary {Specifies that the given files should be empty in the resource file system}
+\summary {Specifies that the given files should be empty in the resource file system.}
 
 \cmakepropertysince 6.6
 \preliminarycmakeproperty
@@ -1289,7 +1289,7 @@ effect.
 \title QT_IOS_LAUNCH_SCREEN
 \target cmake-target-property-QT_IOS_LAUNCH_SCREEN
 
-\summary {Path to iOS launch screen storyboard}
+\summary {Path to iOS launch screen storyboard.}
 
 \cmakepropertysince 6.4
 \preliminarycmakeproperty

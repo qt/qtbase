@@ -7,7 +7,7 @@
     \startpage index.html Qt Reference Documentation
     \ingroup qt-gui-concepts
 
-    \brief An overview of Qt support for Gesture programming
+    \brief An overview of Qt support for Gesture programming.
 
     Qt includes a framework for gesture programming that has the ability
     to form gestures from a series of events, independently of the input methods

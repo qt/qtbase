@@ -4,7 +4,7 @@
 /*!
     \group qtconcurrentexamples
     \title Qt Concurrent Examples
-    \brief Examples for the Qt Concurrent module
+    \brief Examples for the Qt Concurrent module.
     \ingroup qtconcurrent
 
     The list of \l {Qt Concurrent} examples demonstrating how to use

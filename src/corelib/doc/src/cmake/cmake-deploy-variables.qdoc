@@ -285,7 +285,7 @@ This variable is not meaningful when deploying on macOS or Windows.
 \title QT_DEPLOY_IGNORED_LIB_DIRS
 \target cmake-variable-QT_DEPLOY_IGNORED_LIB_DIRS
 
-\summary {Directories that are excluded from runtime dependencies search}
+\summary {Directories that are excluded from runtime dependencies search.}
 
 \include cmake-deploy-var-usage.qdocinc
 
