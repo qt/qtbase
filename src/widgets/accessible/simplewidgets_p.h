@@ -194,6 +194,7 @@ public:
 
 private:
     QWindowContainer *container() const;
+    QAccessibleInterface *accessibleRoot() const;
 };
 
 #if QT_CONFIG(messagebox)

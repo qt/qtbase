@@ -930,28 +930,52 @@ QString QAccessibleWindowContainer::text(QAccessible::Text) const
 
 int QAccessibleWindowContainer::childCount() const
 {
-    if (container()->containedWindow() && QAccessible::queryAccessibleInterface(container()->containedWindow()))
-        return 1;
-    return 0;
+    return accessibleRoot() ? 1 : 0;
 }
 
 int QAccessibleWindowContainer::indexOfChild(const QAccessibleInterface *child) const
 {
-    if (child->object() == container()->containedWindow())
-        return 0;
+    if (!child)
+        return -1;
+
+    // The root is not necessarily an interface for the contained window
+    // itself. For a hosted widget window it's the interface of the widget.
+    if (QAccessibleInterface *root = accessibleRoot()) {
+        if (root->object() == child->object())
+            return 0;
+    }
+
     return -1;
 }
 
 QAccessibleInterface *QAccessibleWindowContainer::child(int i) const
 {
     if (i == 0)
-        return QAccessible::queryAccessibleInterface(container()->containedWindow());
+        return accessibleRoot();
     return nullptr;
 }
 
 QWindowContainer *QAccessibleWindowContainer::container() const
 {
     return static_cast<QWindowContainer *>(widget());
+}
+
+/*
+    Resolves the accessibility interface of the contained window.
+
+    Goes via accessibleRoot(), rather than querying an interface for the
+    window itself, as the latter is driven by the window's class name,
+    and not all QWindow subclasses may have one. Going via the root is
+    also the entry point the platform bridges use.
+*/
+QAccessibleInterface *QAccessibleWindowContainer::accessibleRoot() const
+{
+    if (QWindowContainer *windowContainer = container()) {
+        if (QWindow *window = windowContainer->containedWindow())
+            return window->accessibleRoot();
+    }
+
+    return nullptr;
 }
 
 #if QT_CONFIG(messagebox)
