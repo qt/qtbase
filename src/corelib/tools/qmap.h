@@ -1297,7 +1297,7 @@ public:
             return T();
 
 #ifdef __cpp_lib_node_extract
-        return d->m.extract(i).mapped();
+        return std::move(d->m.extract(i).mapped());
 #else
         // ### breaks RVO on most compilers (but only on old-fashioned ones, so who cares?)
         T result(std::move(i->second));
