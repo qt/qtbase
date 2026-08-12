@@ -374,7 +374,7 @@ int QStyleHints::keyboardInputInterval() const
     \property QStyleHints::keyboardAutoRepeatRate
     \brief the rate, in events per second,  in which additional repeated key
     presses will automatically be generated if a key is being held down.
-    \deprecated [6.5] Use keyboardAutoRepeatRateF() instead
+    \deprecated [6.5] Use keyboardAutoRepeatRateF() instead.
 */
 int QStyleHints::keyboardAutoRepeatRate() const
 {

@@ -2211,7 +2211,7 @@ void QTest::qCaught(const char *expected, const char *file, int line)
 #if QT_DEPRECATED_SINCE(6, 3)
 /*!
   \internal
-  \deprecated [6.3] Use qWarning() instead
+  \deprecated [6.3] Use qWarning() instead.
 */
 void QTest::qWarn(const char *message, const char *file, int line)
 {

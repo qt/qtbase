@@ -3825,7 +3825,7 @@ Q_IMPL_EVENT_COMMON(QFileOpenEvent)
 #if QT_DEPRECATED_SINCE(6, 6)
 /*!
     \fn bool QFileOpenEvent::openFile(QFile &file, QIODevice::OpenMode flags) const
-    \deprecated [6.6] interpret the string returned by file()
+    \deprecated [6.6] interpret the string returned by file().
 
     Opens a QFile on the \a file referenced by this event in the mode specified
     by \a flags. Returns \c true if successful; otherwise returns \c false.
@@ -3892,7 +3892,7 @@ Q_IMPL_EVENT_COMMON(QToolBarChangeEvent)
     Constructs a shortcut event for the given \a key press,
     associated with the QShortcut ID \a id.
 
-    \deprecated use the other constructor
+    \deprecated use the other constructor.
 
     \a ambiguous specifies whether there is more than one QShortcut
     for the same key sequence.

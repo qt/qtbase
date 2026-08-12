@@ -6974,7 +6974,7 @@ int QString::localeAwareCompare_helper(const QChar *data1, qsizetype length1,
 
 /*!
     \fn const ushort *QString::utf16() const
-    \obsolete [6.11] Use nullTerminate() and cast data() to \c{const char16_t *}
+    \obsolete [6.11] Use nullTerminate() and cast data() to \c{const char16_t *}.
 
     Returns the QString as a '\\0\'-terminated array of unsigned
     shorts. The result remains valid until the string is modified.
