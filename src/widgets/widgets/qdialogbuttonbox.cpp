@@ -904,6 +904,7 @@ QString QDialogButtonBox::standardButtonText(StandardButton button)
     return QGuiApplicationPrivate::platformTheme()->standardButtonText(button);
 }
 
+#if QT_CONFIG(shortcut)
 /*!
     Returns the keyboard shortcut for the standard \a button. The shortcut
     is platform-dependent. Returns an empty \l QKeySequence if \a button has
@@ -916,6 +917,7 @@ QKeySequence QDialogButtonBox::standardButtonShortcut(StandardButton button)
 {
     return QGuiApplicationPrivate::platformTheme()->standardButtonShortcut(button);
 }
+#endif
 
 void QDialogButtonBoxPrivate::handleButtonClicked()
 {
