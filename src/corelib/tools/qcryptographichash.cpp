@@ -925,6 +925,7 @@ bool QCryptographicHashPrivate::addData(QIODevice *device)
     if (!device->isOpen())
         return false;
 
+    Q_DECL_UNINITIALIZED
     char buffer[1024];
     qint64 length;
 
@@ -1185,6 +1186,7 @@ QByteArrayView QCryptographicHash::hashInto(QSpan<std::byte> buffer,
     if (buffer.size() < hashLengthInternal(method))
         return {}; // buffer too small
 
+    Q_DECL_UNINITIALIZED
     QCryptographicHashPrivate hash(method);
     for (QByteArrayView part : data)
         hash.addData(part);
@@ -1388,6 +1390,8 @@ static HashBlock xored(const HashBlock &block, quint8 val) noexcept
     Q_ASSERT(block.size() >= minHashBlockSize());
     Q_ASSERT(block.size() <= maxHashBlockSize());
     Q_ASSERT(block.size() % gcdHashBlockSize() == 0);
+
+    Q_DECL_UNINITIALIZED
     HashBlock result;
     result.resizeForOverwrite(block.size());
     for (qsizetype i = 0; i < block.size(); ++i)
@@ -1727,6 +1731,7 @@ QByteArrayView QMessageAuthenticationCode::hashInto(QSpan<std::byte> buffer,
                                                     QByteArrayView key,
                                                     QCryptographicHash::Algorithm method) noexcept
 {
+    Q_DECL_UNINITIALIZED
     QMessageAuthenticationCodePrivate mac(method);
     mac.setKey(key);
     for (QByteArrayView part : messageParts)
