@@ -105,6 +105,11 @@ static QString msgInvalidPixmapFunction(const QString &name)
     return "Invalid pixmap function name: \""_L1 + name + u'"';
 }
 
+static QString msgInvalidAddPageMethod(const QString &name)
+{
+    return "Invalid add page method name: \""_L1 + name + u'"';
+}
+
 static void checkProperties(const QList<DomProperty *> &properties, QStringList *errors)
 {
     for (const DomProperty *p : properties) {
@@ -144,6 +149,9 @@ void Validator::acceptUI(DomUI *node)
         if (!pixmapFunction.isEmpty() && !checkClassName(pixmapFunction))
             m_errors.append(msgInvalidPixmapFunction(node->elementPixmapFunction()));
     }
+
+    if (node->hasElementCustomWidgets())
+        acceptCustomWidgets(node->elementCustomWidgets());
 }
 
 void Validator::acceptWidget(DomWidget *node)
@@ -190,6 +198,15 @@ void Validator::acceptAction(DomAction *node)
     checkProperties(node->elementProperty(), &m_errors);
 
     TreeWalker::acceptAction(node);
+}
+
+void Validator::acceptCustomWidget(DomCustomWidget *customWidget)
+{
+    if (customWidget->hasElementAddPageMethod()
+        && !checkPropertyName(customWidget->elementAddPageMethod())) {
+        m_errors.append(msgInvalidAddPageMethod(customWidget->elementAddPageMethod()));
+    }
+    TreeWalker::acceptCustomWidget(customWidget);
 }
 
 QT_END_NAMESPACE
