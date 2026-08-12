@@ -503,9 +503,11 @@ bool QLockFilePrivate::getLockInfo_helper(const QString &fileName, LockFileInfo 
         return false;
     }
 
+    bool ok;
     QByteArray pidLine = reader.readLine();
     pidLine.chop(1);
-    if (pidLine.isEmpty())
+    qint64 pid = pidLine.toLongLong(&ok);
+    if (!ok || pid <= 0)
         return false;
     QByteArray appNameLine = reader.readLine();
     appNameLine.chop(1);
@@ -518,13 +520,12 @@ bool QLockFilePrivate::getLockInfo_helper(const QString &fileName, LockFileInfo 
     QByteArray bootId = reader.readLine();
     bootId.chop(1);
 
-    bool ok;
     info->appname = QString::fromUtf8(appNameLine);
     info->hostname = QString::fromUtf8(hostNameLine);
     info->hostid = std::move(hostId);
     info->bootid = std::move(bootId);
-    info->pid = pidLine.toLongLong(&ok);
-    return ok && info->pid > 0;
+    info->pid = pid;
+    return true;
 }
 
 bool QLockFilePrivate::isApparentlyStale() const
