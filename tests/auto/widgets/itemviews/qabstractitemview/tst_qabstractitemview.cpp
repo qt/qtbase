@@ -1306,6 +1306,11 @@ void tst_QAbstractItemView::ctrlRubberbandSelection()
     // contain a function for mouse moves with buttons pressed.
     QPoint pressPos = view.visualRect(index1).topLeft() - QPoint(1, 1);
     QPoint releasePos = view.visualRect(index2).bottomRight() + QPoint(1, 1);
+    // Must press on empty space: QListView::setViewMode(IconMode) implies
+    // setDragEnabled(true), so pressing on an item and then moving would start a real
+    // drag instead of a rubber band -- and QDrag::exec() would block in a nested event
+    // loop that the release below, being outside it, could never terminate.
+    QVERIFY(!view.indexAt(pressPos).isValid());
     QTest::mousePress(view.viewport(), Qt::LeftButton, Qt::ControlModifier, pressPos);
     QMouseEvent moveEvent(QEvent::MouseMove, releasePos, view.viewport()->mapToGlobal(releasePos),
                           Qt::NoButton, Qt::LeftButton, Qt::ControlModifier);
@@ -2463,6 +2468,11 @@ public:
     DragRecorderView()
     { view = this; }
 protected:
+    // Deliberately does NOT call ViewClass::startDrag(): that would run QDrag::exec(),
+    // which on any platform with an in-process QPlatformDrag (offscreen, minimal, xcb,
+    // qnx) enters a nested event loop that only a mouse release delivered from inside
+    // that loop can terminate. The tests using this class deliver their release
+    // afterwards, so calling the base implementation would hang them.
     void startDrag(Qt::DropActions) override
     {
         draggedIndexes = ViewClass::selectedIndexes();
@@ -3221,6 +3231,12 @@ void tst_QAbstractItemView::selectionAutoScrolling()
         dragPoint.ry() += 50;
     }
 
+    // The bulk item deletion above is what makes this a rubber band rather than a real
+    // drag: IconMode implies setDragEnabled(true), so if the press landed on an item,
+    // the move below would call QAbstractItemView::startDrag() and block in
+    // QDrag::exec()'s nested event loop, which the release at the end of this function
+    // could never terminate.
+    QVERIFY(!listview.indexAt(pressPoint).isValid());
     QTest::mousePress(listview.viewport(), Qt::LeftButton, Qt::NoModifier, pressPoint);
     QMouseEvent mmEvent(QEvent::MouseMove, dragPoint, listview.viewport()->mapToGlobal(dragPoint),
                         Qt::NoButton, Qt::LeftButton, Qt::NoModifier);
