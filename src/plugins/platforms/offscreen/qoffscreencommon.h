@@ -52,6 +52,10 @@ public:
 };
 
 #if QT_CONFIG(draganddrop)
+// Stub drag implementation, selected by QT_QPA_OFFSCREEN_NO_DND or "-platform
+// offscreen:nodnd". Returns immediately instead of running QBasicDrag's nested event
+// loop, for code that starts a drag it cannot terminate. The default is QSimpleDrag;
+// see QOffscreenIntegration::QOffscreenIntegration().
 class QOffscreenDrag : public QPlatformDrag
 {
 public:

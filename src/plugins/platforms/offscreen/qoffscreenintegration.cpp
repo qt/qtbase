@@ -26,6 +26,9 @@
 #include <QtCore/qjsonvalue.h>
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <QtGui/private/qguiapplication_p.h>
+#if QT_CONFIG(draganddrop)
+#include <QtGui/private/qsimpledrag_p.h>
+#endif
 #include <qpa/qplatforminputcontextfactory_p.h>
 #include <qpa/qplatforminputcontext.h>
 #include <qpa/qplatformtheme.h>
@@ -73,7 +76,19 @@ QOffscreenIntegration::QOffscreenIntegration(const QStringList& paramList)
 #endif
 
 #if QT_CONFIG(draganddrop)
-    m_drag.reset(new QOffscreenDrag);
+    // Use the in-process QSimpleDrag, so that QDrag::exec() behaves as it does on a
+    // real platform: it enters a nested event loop and delivers drag events through
+    // QWindowSystemInterface. That makes drag and drop testable headlessly, because
+    // QOffscreenCursor implements QCursor::setPos() -- which QSimpleDrag::startDrag()
+    // needs to find the source window -- and synthetic mouse events can then drive and
+    // terminate the loop. QT_QPA_OFFSCREEN_NO_DND restores the old stub, which returns
+    // Qt::IgnoreAction immediately, for anything that cannot terminate the loop.
+    if (qEnvironmentVariableIsSet("QT_QPA_OFFSCREEN_NO_DND")
+        || paramList.contains("nodnd"_L1)) {
+        m_drag.reset(new QOffscreenDrag);
+    } else {
+        m_drag.reset(new QSimpleDrag);
+    }
 #endif
 
     QJsonObject config = resolveConfigFileConfiguration(paramList).value_or(defaultConfiguration());
