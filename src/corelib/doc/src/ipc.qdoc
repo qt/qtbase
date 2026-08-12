@@ -9,7 +9,7 @@
     \keyword ipc
     \ingroup explanations-networkingandconnectivity
 
-    \brief An overview of Qt's inter-process communication functionality
+    \brief An overview of Qt's inter-process communication functionality.
 
     Qt supports many ways of communicating with other processes running in the
     same system or in different systems. There are basically three types of
@@ -207,7 +207,7 @@
     \keyword shared memory
     \keyword system semaphore
 
-    \brief An overview of keys for QSharedMemory and QSystemSemaphore
+    \brief An overview of keys for QSharedMemory and QSystemSemaphore.
 
     The \l QSharedMemory and \l QSystemSemaphore classes identify their
     resource using a system-wide identifier known as a "key". The low-level key

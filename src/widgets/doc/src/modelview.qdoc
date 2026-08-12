@@ -7,7 +7,7 @@
     \startpage {index.html}{Qt Reference Documentation}
 
     \title Model/View Tutorial
-    \brief An introduction to ModelView programming
+    \brief An introduction to ModelView programming.
 
     Every UI developer should know about ModelView programming and the goal of
     this tutorial is to provide you with an easily understandable introduction

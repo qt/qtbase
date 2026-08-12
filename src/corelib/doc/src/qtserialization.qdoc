@@ -4,7 +4,7 @@
 /*!
     \page qtserialization.html
     \title Qt Serialization
-    \brief Serializations provided by Qt API
+    \brief Serializations provided by Qt API.
 
     The purpose of serialization is to save the state of an object to be able to
     recreate it when needed. It allows you to perform actions like:

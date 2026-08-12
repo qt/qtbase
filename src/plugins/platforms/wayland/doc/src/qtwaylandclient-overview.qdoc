@@ -14,7 +14,7 @@
 /*!
   \page qtwaylandclient-index.html
   \title Qt Wayland Client
-  \brief Library to enable connecting to a Wayland compositor as a client
+  \brief Library to enable connecting to a Wayland compositor as a client.
 
   The Qt Wayland Client library provides the necessary functions for an application to act
   as a \l {https://wayland.freedesktop.org/}{Wayland} client and connect to a Wayland compositor.

@@ -4,9 +4,10 @@
 /*!
     \group qtconcurrentexamples
     \title Qt Concurrent Examples
-    \brief Examples for the Qt Concurrent module
-    \ingroup all-examples
+    \brief Examples for the Qt Concurrent module.
+
     \ingroup qtconcurrent
+    \ingroup all-examples
 
     The list of \l {Qt Concurrent} examples demonstrating how to use
     Qt Concurrent API from C++.

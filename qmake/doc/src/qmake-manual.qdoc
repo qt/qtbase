@@ -5693,7 +5693,7 @@
 /*!
     \page qmake-third-party-libraries.html
     \title Using Third-Party Libraries
-    \brief A guide to using third party libraries with Qt and qmake
+    \brief A guide to using third party libraries with Qt and qmake.
 
     qmake allows you to use third-party libraries with Qt. Suppose you know
     of a cross-platform library that accepts audio samples of a cat's meows and
