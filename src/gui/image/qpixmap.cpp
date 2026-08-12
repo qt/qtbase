@@ -199,7 +199,7 @@ QPixmap::QPixmap(const QPixmap &pixmap)
 /*! \fn QPixmap::QPixmap(QPixmap &&other)
     Move-constructs a QPixmap instance from \a other.
 
-    \sa swap() operator=(QPixmap&&)
+    \sa swap(), operator=(QPixmap&&)
 */
 
 QT_DEFINE_QESDP_SPECIALIZATION_DTOR(QPlatformPixmap)
