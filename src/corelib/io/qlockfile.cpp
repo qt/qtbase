@@ -542,6 +542,15 @@ std::optional<QLockFilePrivate::LockFileInfo> QLockFilePrivate::getLockInfo_help
 
 bool QLockFilePrivate::isApparentlyStale(const LockFileInfo &current) const
 {
+    // check the file's mtime first (cheaper)
+    using namespace std::chrono;
+    if (staleLockTime > 0ms) {
+        const QDateTime lastMod = QFileInfo(fileName).lastModified(QTimeZone::UTC);
+        const milliseconds age{lastMod.msecsTo(QDateTime::currentDateTimeUtc())};
+        if (abs(age) > staleLockTime)
+            return true;
+    }
+
     if (std::optional opt = getLockInfo_helper(fileName)) {
         LockFileInfo &info = *opt;
         bool sameHost = info.hostname.isEmpty() || info.hostname == current.hostname;
@@ -562,13 +571,9 @@ bool QLockFilePrivate::isApparentlyStale(const LockFileInfo &current) const
         }
     }
 
-    const QDateTime lastMod = QFileInfo(fileName).lastModified(QTimeZone::UTC);
-    using namespace std::chrono;
-    const milliseconds age{lastMod.msecsTo(QDateTime::currentDateTimeUtc())};
-    return staleLockTime > 0ms && abs(age) > staleLockTime;
+    // not stale
+    return false;
 }
-
-
 
 /*!
     Attempts to forcefully remove an existing lock file.
