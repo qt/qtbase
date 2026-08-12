@@ -655,6 +655,9 @@ void tst_QGuiApplication::modalWindow()
 {
     int argc = 0;
     QGuiApplication app(argc, nullptr);
+
+    SKIP_IF_TWO_TOP_LEVEL_WINDOWS_UNSUPPORTED();
+
     const QRect screenGeometry = QGuiApplication::primaryScreen()->availableVirtualGeometry();
 
     int x = screenGeometry.left() + spacing;
