@@ -181,7 +181,8 @@ bool QLockFilePrivate::removeStaleLock()
     const QByteArray lockFileName = QFile::encodeName(fileName);
     const int fd = qt_safe_open(lockFileName.constData(), O_WRONLY, 0666);
     if (fd < 0) // gone already?
-        return false;
+        return errno == ENOENT;
+
     bool success = setNativeLocks(fd) && (::unlink(lockFileName) == 0);
     close(fd);
     return success;
