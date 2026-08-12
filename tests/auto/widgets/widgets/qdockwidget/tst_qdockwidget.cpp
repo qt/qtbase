@@ -1462,7 +1462,7 @@ void tst_QDockWidget::unplugAndResize(QMainWindow* mainWindow, QDockWidget* dw, 
     QPoint pos1 = dw->mapToGlobal(dw->rect().center());
     pos1.rx() += mx;
     pos1.ry() += my;
-    moveDockWidget(dw, pos1, dw->mapToGlobal(dw->rect().center()), MoveDockWidgetRule::Drop);
+    moveDockWidget(dw, pos1, QPoint(), MoveDockWidgetRule::Drop);
     QTRY_VERIFY(dw->isFloating());
 
     // Unplugged object's size may differ max. by 2x frame size
