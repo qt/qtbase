@@ -225,7 +225,7 @@ enum { MaximumParamCount = 11 }; // up to 10 arguments + 1 return value
 #if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
 /*!
     \since 4.5
-    \obsolete [6.5] Please use the variadic overload of this function
+    \obsolete [6.5] Please use the variadic overload of this function.
 
     Constructs a new instance of this class. You can pass up to ten arguments
     (\a val0, \a val1, \a val2, \a val3, \a val4, \a val5, \a val6, \a val7,
@@ -1614,7 +1614,7 @@ printMethodNotFoundWarning(const QMetaObject *meta, QByteArrayView name, qsizety
 /*!
     \threadsafe
     \overload
-    \obsolete [6.5] Please use the variadic overload of this function
+    \obsolete [6.5] Please use the variadic overload of this function.
 
     Invokes the \a member (a signal or a slot name) on the object \a
     obj. Returns \c true if the member could be invoked. Returns \c false
@@ -2640,7 +2640,7 @@ QMetaMethod QMetaMethod::fromSignalImpl(const QMetaObject *metaObject, void **si
 */
 
 /*!
-    \obsolete [6.5] Please use the variadic overload of this function
+    \obsolete [6.5] Please use the variadic overload of this function.
 
     Invokes this method on the object \a object. Returns \c true if the member could be invoked.
     Returns \c false if there is no such member or the parameters did not match.
@@ -2955,7 +2955,7 @@ auto QMetaMethodInvoker::invokeImpl(QMetaMethod self, void *target,
                                  QGenericArgument val7 = QGenericArgument(),
                                  QGenericArgument val8 = QGenericArgument(),
                                  QGenericArgument val9 = QGenericArgument()) const
-    \obsolete [6.5] Please use the variadic overload of this function
+    \obsolete [6.5] Please use the variadic overload of this function.
     \overload invoke()
 
     This overload always invokes this method using the connection type Qt::AutoConnection.
@@ -2973,7 +2973,7 @@ auto QMetaMethodInvoker::invokeImpl(QMetaMethod self, void *target,
                                  QGenericArgument val7 = QGenericArgument(),
                                  QGenericArgument val8 = QGenericArgument(),
                                  QGenericArgument val9 = QGenericArgument()) const
-    \obsolete [6.5] Please use the variadic overload of this function
+    \obsolete [6.5] Please use the variadic overload of this function.
     \overload invoke()
 
     This overload can be used if the return value of the member is of no interest.
@@ -2991,7 +2991,7 @@ auto QMetaMethodInvoker::invokeImpl(QMetaMethod self, void *target,
                                  QGenericArgument val7 = QGenericArgument(),
                                  QGenericArgument val8 = QGenericArgument(),
                                  QGenericArgument val9 = QGenericArgument()) const
-    \obsolete [6.5] Please use the variadic overload of this function
+    \obsolete [6.5] Please use the variadic overload of this function.
     \overload invoke()
 
     This overload invokes this method using the
@@ -3025,7 +3025,7 @@ auto QMetaMethodInvoker::invokeImpl(QMetaMethod self, void *target,
 
 /*!
     \since 5.5
-    \obsolete [6.5] Please use the variadic overload of this function
+    \obsolete [6.5] Please use the variadic overload of this function.
 
     Invokes this method on a Q_GADGET. Returns \c true if the member could be invoked.
     Returns \c false if there is no such member or the parameters did not match.
@@ -3136,7 +3136,7 @@ bool QMetaMethod::invokeOnGadget(void *gadget,
                                          QGenericArgument val9 = QGenericArgument()) const
 
     \overload
-    \obsolete [6.5] Please use the variadic overload of this function
+    \obsolete [6.5] Please use the variadic overload of this function.
     \since 5.5
 
     This overload invokes this method for a \a gadget and ignores return values.
