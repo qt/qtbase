@@ -43,23 +43,26 @@ if(QT_FEATURE_widgets)
         scribe-overview/main.cpp
         separations/finalwidget.cpp
         textblock-formats/main.cpp
-        textdocument-blocks/mainwindow.cpp
         textdocument-charformats/main.cpp
         textdocument-css/main.cpp
         textdocument-cursors/main.cpp
         textdocument-find/main.cpp
-        textdocument-frames/mainwindow.cpp
         textdocument-imageformat/main.cpp
         textdocument-images/main.cpp
-        textdocument-listitems/mainwindow.cpp
-        textdocument-listitemstyles/mainwindow.cpp
         textdocument-lists/mainwindow.cpp
         textdocument-resources/main.cpp
-        textdocument-selections/mainwindow.cpp
-        textdocument-tables/mainwindow.cpp
-        textdocument-tables/mainwindow.cpp
         transform/main.cpp
     )
+    if(QT_FEATURE_shortcut)
+        target_sources(gui_snippets PRIVATE
+            textdocument-blocks/mainwindow.cpp
+            textdocument-frames/mainwindow.cpp
+            textdocument-listitems/mainwindow.cpp
+            textdocument-listitemstyles/mainwindow.cpp
+            textdocument-selections/mainwindow.cpp
+            textdocument-tables/mainwindow.cpp
+        )
+    endif()
 endif()
 
 
@@ -76,9 +79,11 @@ if(QT_FEATURE_printsupport)
     target_link_libraries(gui_snippets PRIVATE
         Qt::PrintSupport
     )
-    target_sources(gui_snippets PRIVATE
-        textdocument-printing/mainwindow.cpp
-    )
+    if(QT_FEATURE_shortcut)
+        target_sources(gui_snippets PRIVATE
+            textdocument-printing/mainwindow.cpp
+        )
+    endif()
 endif()
 
 if(QT_FEATURE_widgets AND QT_FEATURE_clipboard)
