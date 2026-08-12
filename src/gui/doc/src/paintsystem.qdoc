@@ -22,7 +22,7 @@
 /*!
     \page paintsystem.html
     \title Paint System
-    \brief A system for painting on the screen or on print devices using the same API
+    \brief A system for painting on the screen or on print devices using the same API.
     \ingroup qt-graphics
     \ingroup frameworks-technologies
     \ingroup qt-basic-concepts

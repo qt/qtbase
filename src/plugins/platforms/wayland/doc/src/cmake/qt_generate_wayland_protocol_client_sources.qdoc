@@ -8,7 +8,7 @@
 \title qt_generate_wayland_protocol_client_sources
 \keyword qt_generate_wayland_protocol_client_sources()
 
-\summary {Generates client-side C++ bindings for a Wayland protocol .XML file}
+\summary {Generates client-side C++ bindings for a Wayland protocol .XML file.}
 
 The command is defined in the \c WaylandClient component of the \c Qt6 package, which
 can be loaded like so:

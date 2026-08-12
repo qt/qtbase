@@ -187,6 +187,6 @@
 /*!
   \group printing
   \title Printer and Printing APIs
-  \brief Classes for producing printed output
+  \brief Classes for producing printed output.
   \ingroup groups
 */

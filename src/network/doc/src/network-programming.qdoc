@@ -4,7 +4,7 @@
 /*!
     \group network
     \title Network Programming API
-    \brief Classes for Network Programming
+    \brief Classes for Network Programming.
 
     \ingroup groups
 */
@@ -12,7 +12,7 @@
 /*!
     \page qtnetwork-programming.html
     \title Network Programming with Qt
-    \brief Programming applications with networking capabilities
+    \brief Programming applications with networking capabilities.
 
     The Qt Network module offers classes that allow you to write TCP/IP clients
     and servers. It offers lower-level classes such as QTcpSocket,

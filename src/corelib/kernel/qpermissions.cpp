@@ -16,7 +16,7 @@ Q_LOGGING_CATEGORY(lcPermissions, "qt.permissions", QtWarningMsg);
 /*!
     \page permissions.html
     \title Application Permissions
-    \brief Managing application permissions
+    \brief Managing application permissions.
 
     Many features of today's devices and operating systems can have
     significant privacy, security, and performance implications if

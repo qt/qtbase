@@ -4,7 +4,7 @@
 /*!
     \page qtnetwork-index.html
     \title Qt Network
-    \brief Provides networking capabilities
+    \brief Provides networking capabilities.
 
     The Qt Network module provides a set of APIs for programming
     applications that use TCP/IP. Operations such as requests, cookies, and

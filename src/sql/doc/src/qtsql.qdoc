@@ -3,8 +3,8 @@
 /*!
     \page qtsql-index.html
     \title Qt SQL
-    \brief Provides a driver layer, SQL API layer, and a user
-    interface layer for SQL databases
+    \brief Provides a driver layer, SQL API layer, and a user interface layer
+    for SQL databases.
 
     The Qt SQL module provides support for SQL databases. Qt SQL's APIs are
     divided into different layers:
