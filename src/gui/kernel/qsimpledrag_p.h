@@ -88,6 +88,7 @@ private:
     QEventLoop *m_eventLoop = nullptr;
     Qt::DropAction m_executed_drop_action = Qt::IgnoreAction;
     bool m_can_drop = false;
+    bool m_dragEndRequested = false;
     QPointer<QDrag> m_drag;
     QShapedPixmapWindow *m_drag_icon_window = nullptr;
     bool m_useCompositing = true;

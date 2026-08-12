@@ -172,9 +172,19 @@ Qt::DropAction QBasicDrag::drag(QDrag *o)
     m_executed_drop_action = Qt::IgnoreAction;
     m_can_drop = false;
 
-    startDrag();
+    // Create the loop before starting the drag. startDrag() installs the event filter
+    // and delivers the first drag events, so the drag can already be cancelled,
+    // dropped or destroyed before we get here, and exitDndEventLoop() and cancelDrag()
+    // both no-op while m_eventLoop is null. QEventLoop::exec() clears any pending exit
+    // when it starts, so we need a flag to avoid losing track of an early exit.
+    m_dragEndRequested = false;
     m_eventLoop = new QEventLoop;
-    m_eventLoop->exec();
+    startDrag();
+    qCDebug(lcDnd) << "entering drag event loop; drag" << m_drag
+                   << "already ended?" << m_dragEndRequested;
+    if (m_drag && !m_dragEndRequested)
+        m_eventLoop->exec();
+    qCDebug(lcDnd) << "left drag event loop; action" << m_executed_drop_action;
     delete m_eventLoop;
     m_eventLoop = nullptr;
     m_drag = nullptr;
@@ -185,8 +195,10 @@ Qt::DropAction QBasicDrag::drag(QDrag *o)
 
 void QBasicDrag::cancelDrag()
 {
+    qCDebug(lcDnd) << "cancelling drag";
     if (m_eventLoop) {
         cancel();
+        m_dragEndRequested = true;
         m_eventLoop->quit();
     }
 }
@@ -229,7 +241,10 @@ void QBasicDrag::cancel()
 {
     disableEventFilter();
     restoreCursor();
-    m_drag_icon_window->setVisible(false);
+    // Can be reached before startDrag() has created the icon window, now that the event
+    // loop exists for the duration of startDrag() too.
+    if (m_drag_icon_window)
+        m_drag_icon_window->setVisible(false);
 }
 
 /*!
@@ -252,6 +267,9 @@ void QBasicDrag::drop(const QPoint &, Qt::MouseButtons, Qt::KeyboardModifiers)
 
 void  QBasicDrag::exitDndEventLoop()
 {
+    m_dragEndRequested = true;
+    qCDebug(lcDnd) << "ending drag event loop; running?"
+                   << (m_eventLoop && m_eventLoop->isRunning());
     if (m_eventLoop && m_eventLoop->isRunning())
         m_eventLoop->exit();
 }
