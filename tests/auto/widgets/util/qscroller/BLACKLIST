@@ -9,4 +9,4 @@ android
 
 [overshoot_segments]
 macos #QTBUG-134105
-windows #QTBUG-134105
+windows-10 #QTBUG-134105
