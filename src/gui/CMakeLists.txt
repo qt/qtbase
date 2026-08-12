@@ -269,6 +269,7 @@ qt_internal_add_module(Gui
         util/qastchandler.cpp util/qastchandler_p.h
         util/qdesktopservices.cpp util/qdesktopservices.h
         util/qgridlayoutengine.cpp util/qgridlayoutengine_p.h
+        util/qguisvg.cpp util/qguisvg_p.h
         util/qhexstring_p.h
         util/qktxhandler.cpp util/qktxhandler_p.h
         util/qlayoutpolicy.cpp util/qlayoutpolicy_p.h
