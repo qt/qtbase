@@ -31,6 +31,7 @@ struct Validator : public TreeWalker
     void acceptAction(DomAction *node) override;
 
     void acceptCustomWidget(DomCustomWidget *customWidget) override;
+    void acceptInclude(DomInclude *incl) override;
 
     const QStringList &errors() const { return m_errors; }
 

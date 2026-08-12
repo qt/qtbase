@@ -85,6 +85,17 @@ static bool checkClassName(QStringView name)
             && std::all_of(name.cbegin() + 1, name.cend(), isClassNameContinuation);
 }
 
+// Sanity check: A coarse check for any characters that would allow a code injection (C++/Python)
+static bool isValidHeaderChar(QChar c)
+{
+    return !"<>\"'\n\t;#"_L1.contains(c);
+}
+
+static bool sanityCheck(QStringView name)
+{
+    return !name.isEmpty() && std::all_of(name.cbegin(), name.cend(), isValidHeaderChar);
+}
+
 static QString msgInvalidValue(const QString &name, const QString &value)
 {
     return "Invalid property value: \""_L1 + name + "\": \""_L1 + value + u'"';
@@ -108,6 +119,11 @@ static QString msgInvalidPixmapFunction(const QString &name)
 static QString msgInvalidAddPageMethod(const QString &name)
 {
     return "Invalid add page method name: \""_L1 + name + u'"';
+}
+
+static QString msgInvalidHeader(const QString &name)
+{
+    return "Invalid header: \""_L1 + name + u'"';
 }
 
 static void checkProperties(const QList<DomProperty *> &properties, QStringList *errors)
@@ -152,6 +168,8 @@ void Validator::acceptUI(DomUI *node)
 
     if (node->hasElementCustomWidgets())
         acceptCustomWidgets(node->elementCustomWidgets());
+    if (node->hasElementIncludes())
+        acceptIncludes(node->elementIncludes());
 }
 
 void Validator::acceptWidget(DomWidget *node)
@@ -206,7 +224,19 @@ void Validator::acceptCustomWidget(DomCustomWidget *customWidget)
         && !checkPropertyName(customWidget->elementAddPageMethod())) {
         m_errors.append(msgInvalidAddPageMethod(customWidget->elementAddPageMethod()));
     }
+    if (customWidget->hasElementHeader())  {
+        const QString &header = customWidget->elementHeader()->text();
+        if (!sanityCheck(header))
+            m_errors.append(msgInvalidHeader(header));
+    }
     TreeWalker::acceptCustomWidget(customWidget);
+}
+
+void Validator::acceptInclude(DomInclude *incl)
+{
+    if (!sanityCheck(incl->text()))
+        m_errors.append(msgInvalidHeader(incl->text()));
+    TreeWalker::acceptInclude(incl);
 }
 
 QT_END_NAMESPACE
