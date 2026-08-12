@@ -108,8 +108,6 @@ public:
     parseDigestAuthenticationChallenge(QByteArrayView challenge);
 
     void parseHttpResponse(const QHttpHeaders &headers, bool isProxy);
-    void parseHttpResponse(const QHttpHeaders &headers, bool isProxy, QStringView /*host*/)
-    { parseHttpResponse(headers, isProxy); }
     void updateCredentials();
 
     static bool isMethodSupported(QByteArrayView method);

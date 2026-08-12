@@ -77,7 +77,7 @@ void tst_QAuthenticator::basicAuth()
 
     QHttpHeaders headers;
     headers.append(QByteArray("WWW-Authenticate"), "Basic " + data.toUtf8());
-    priv->parseHttpResponse(headers, /*isProxy = */ false, {});
+    priv->parseHttpResponse(headers, /*isProxy = */ false);
 
     QCOMPARE(auth.realm(), realm);
     QCOMPARE(auth.option("realm").toString(), realm);
@@ -125,7 +125,7 @@ void tst_QAuthenticator::ntlmAuth()
     // Current implementation uses flags:
     //  NTLMSSP_NEGOTIATE_UNICODE | NTLMSSP_NEGOTIATE_NTLM | NTLMSSP_REQUEST_TARGET
     headers.append(QByteArrayLiteral("WWW-Authenticate"), QByteArrayLiteral("NTLM"));
-    priv->parseHttpResponse(headers, /*isProxy = */ false, {});
+    priv->parseHttpResponse(headers, /*isProxy = */ false);
     if (sso)
         QVERIFY(priv->calculateResponse("GET", "/", u"").startsWith("NTLM "));
     else
@@ -134,7 +134,7 @@ void tst_QAuthenticator::ntlmAuth()
     // NTLM phase 2: challenge
     headers.clear();
     headers.append(QByteArray("WWW-Authenticate"), "NTLM " + data.toUtf8());
-    priv->parseHttpResponse(headers, /*isProxy = */ false, {});
+    priv->parseHttpResponse(headers, /*isProxy = */ false);
 
     QEXPECT_FAIL("with-realm", "NTLM authentication code doesn't extract the realm", Continue);
     QEXPECT_FAIL("with-realm-sso", "NTLM authentication code doesn't extract the realm", Continue);
@@ -162,7 +162,7 @@ void tst_QAuthenticator::sha256AndMd5Digest()
     // Put sha256 first, so that its parsed first...
     headers.append("WWW-Authenticate", sha256);
     headers.append("WWW-Authenticate", md5);
-    priv->parseHttpResponse(headers, false, QString());
+    priv->parseHttpResponse(headers, false);
 
     QByteArray response = priv->calculateResponse("GET", "/index", {});
     QCOMPARE(priv->phase, QAuthenticatorPrivate::Done);
@@ -330,14 +330,14 @@ void tst_QAuthenticator::ntlmV2KnownVectors()
     // --- Phase 1: negotiate ---
     QHttpHeaders headers;
     headers.append(QByteArrayLiteral("WWW-Authenticate"), QByteArrayLiteral("NTLM"));
-    priv->parseHttpResponse(headers, /*isProxy=*/false, {});
+    priv->parseHttpResponse(headers, /*isProxy=*/false);
     priv->calculateResponse("GET", "/", u""); // discard — only needed to advance state
 
     // --- Phase 2: challenge ---
     headers.clear();
     headers.append(QByteArray("WWW-Authenticate"),
                    "NTLM " + phase2blob.toBase64());
-    priv->parseHttpResponse(headers, /*isProxy=*/false, {});
+    priv->parseHttpResponse(headers, /*isProxy=*/false);
 
     // --- Phase 3: authenticate ---
     QByteArray response = priv->calculateResponse("GET", "/", u"");
@@ -468,13 +468,13 @@ void tst_QAuthenticator::ntlmMalformedTargetInfo()
     // Phase 1: negotiate
     QHttpHeaders headers;
     headers.append(QByteArrayLiteral("WWW-Authenticate"), QByteArrayLiteral("NTLM"));
-    priv->parseHttpResponse(headers, false, {});
+    priv->parseHttpResponse(headers, false);
     priv->calculateResponse("GET", "/", u"");
 
     // Phase 2: challenge with malformed targetInfo
     headers.clear();
     headers.append(QByteArray("WWW-Authenticate"), "NTLM " + phase2.toBase64());
-    priv->parseHttpResponse(headers, false, {});
+    priv->parseHttpResponse(headers, false);
 
     // Phase 3: authenticate — must not crash, must produce a response
     QByteArray response = priv->calculateResponse("GET", "/", u"");
@@ -499,7 +499,7 @@ void tst_QAuthenticator::methodPinningRefusesDowngrade()
     // Phase 1: server offers NTLM, we select it
     QHttpHeaders headers;
     headers.append(QByteArrayLiteral("WWW-Authenticate"), QByteArrayLiteral("NTLM"));
-    priv->parseHttpResponse(headers, /*isProxy=*/false, {});
+    priv->parseHttpResponse(headers, /*isProxy=*/false);
     QCOMPARE(priv->method, QAuthenticatorPrivate::Ntlm);
 
     // calculateResponse sends the negotiate token and advances to Phase2
@@ -515,7 +515,7 @@ void tst_QAuthenticator::methodPinningRefusesDowngrade()
     QTest::ignoreMessage(QtWarningMsg,
         QRegularExpression(".*downgrade from NTLM to Basic refused.*"));
 
-    priv->parseHttpResponse(headers, /*isProxy=*/false, {});
+    priv->parseHttpResponse(headers, /*isProxy=*/false);
 
     // Authentication must be aborted, not downgraded
     QCOMPARE(priv->method, QAuthenticatorPrivate::None);
@@ -541,7 +541,7 @@ void tst_QAuthenticator::methodPinningAllowsNormalReauth()
     headers.append(QByteArrayLiteral("WWW-Authenticate"),
         QByteArrayLiteral("Digest realm=\"test\", nonce=\"abc123\", "
                           "algorithm=MD5, qop=\"auth\""));
-    priv->parseHttpResponse(headers, /*isProxy=*/false, {});
+    priv->parseHttpResponse(headers, /*isProxy=*/false);
     QCOMPARE(priv->method, QAuthenticatorPrivate::DigestMd5);
 
     priv->calculateResponse("GET", "/", u"");
@@ -552,7 +552,7 @@ void tst_QAuthenticator::methodPinningAllowsNormalReauth()
     headers.clear();
     headers.append(QByteArrayLiteral("WWW-Authenticate"),
                    QByteArrayLiteral("Basic realm=\"test\""));
-    priv->parseHttpResponse(headers, /*isProxy=*/false, {});
+    priv->parseHttpResponse(headers, /*isProxy=*/false);
 
     QCOMPARE(priv->method, QAuthenticatorPrivate::Basic);
     QVERIFY(!priv->hasFailed);
@@ -619,7 +619,7 @@ void tst_QAuthenticator::methodSelectionPriority()
     for (const QByteArray &header : headers)
         httpHeaders.append(QByteArrayLiteral("WWW-Authenticate"), header);
 
-    priv->parseHttpResponse(httpHeaders, /*isProxy=*/false, {});
+    priv->parseHttpResponse(httpHeaders, /*isProxy=*/false);
     QCOMPARE(int(priv->method), expectedMethod);
 }
 
