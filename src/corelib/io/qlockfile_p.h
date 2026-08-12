@@ -20,6 +20,8 @@
 #include <QtCore/qlockfile.h>
 #include <QtCore/qfile.h>
 
+#include <optional>
+
 QT_BEGIN_NAMESPACE
 
 class QLockFilePrivate
@@ -54,7 +56,7 @@ public:
 
     QString fileName;
 
-    static bool getLockInfo_helper(const QString &fileName, LockFileInfo *info);
+    static std::optional<LockFileInfo> getLockInfo_helper(const QString &fileName);
     static int openNewFileDescriptor(const QString &fileName);
 
 #ifdef Q_OS_WIN

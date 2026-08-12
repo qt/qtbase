@@ -462,9 +462,10 @@ bool QLockFile::tryLock(std::chrono::milliseconds timeout)
 bool QLockFile::getLockInfo(qint64 *pid, QString *hostname, QString *appname) const
 {
     Q_D(const QLockFile);
-    QLockFilePrivate::LockFileInfo info;
-    if (!QLockFilePrivate::getLockInfo_helper(d->fileName, &info))
+    std::optional opt = QLockFilePrivate::getLockInfo_helper(d->fileName);
+    if (!opt)
         return false;
+    QLockFilePrivate::LockFileInfo &info = *opt;
     if (pid)
         *pid = info.pid;
     if (hostname)
@@ -501,15 +502,16 @@ QLockFilePrivate::LockFileInfo::LockFileInfo(Current)
 {
 }
 
-bool QLockFilePrivate::getLockInfo_helper(const QString &fileName, LockFileInfo *info)
+std::optional<QLockFilePrivate::LockFileInfo> QLockFilePrivate::getLockInfo_helper(const QString &fileName)
 {
+    std::optional<QLockFilePrivate::LockFileInfo> info;
     int fd = openNewFileDescriptor(fileName);
     if (fd < 0)
-        return false;
+        return info;
     QFile reader;
     if (!reader.open(fd, QFile::ReadOnly | QFile::Text, QFile::AutoCloseHandle)) {
         QT_CLOSE(fd);
-        return false;
+        return info;
     }
 
     bool ok;
@@ -517,7 +519,7 @@ bool QLockFilePrivate::getLockInfo_helper(const QString &fileName, LockFileInfo 
     pidLine.chop(1);
     qint64 pid = pidLine.toLongLong(&ok);
     if (!ok || pid <= 0)
-        return false;
+        return info;
     QByteArray appNameLine = reader.readLine();
     appNameLine.chop(1);
     QByteArray hostNameLine = reader.readLine();
@@ -529,18 +531,19 @@ bool QLockFilePrivate::getLockInfo_helper(const QString &fileName, LockFileInfo 
     QByteArray bootId = reader.readLine();
     bootId.chop(1);
 
+    info.emplace();
     info->appname = QString::fromUtf8(appNameLine);
     info->hostname = QString::fromUtf8(hostNameLine);
     info->hostid = std::move(hostId);
     info->bootid = std::move(bootId);
     info->pid = pid;
-    return true;
+    return info;
 }
 
 bool QLockFilePrivate::isApparentlyStale(const LockFileInfo &current) const
 {
-    LockFileInfo info;
-    if (getLockInfo_helper(fileName, &info)) {
+    if (std::optional opt = getLockInfo_helper(fileName)) {
+        LockFileInfo &info = *opt;
         bool sameHost = info.hostname.isEmpty() || info.hostname == current.hostname;
         if (!info.hostid.isEmpty()) {
             // Override with the host ID, if we know it.
