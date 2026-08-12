@@ -153,7 +153,7 @@ namespace QtHarmonyExtras {
     {systemShare.getSharedData}.
 
     \sa QtHarmonyExtras::AbilityContext::newWantInfoReceived(std::shared_ptr<QtHarmonyExtras::WantInfo> wantInfo)
-    \sa std::shared_ptr<QtHarmonyExtras::WantInfo> QtHarmonyExtras::AppContext::appLaunchWantInfo()
+    \sa std::shared_ptr<QtHarmonyExtras::WantInfo>, QtHarmonyExtras::AppContext::appLaunchWantInfo()
 */
 
 /*!
@@ -165,7 +165,7 @@ namespace QtHarmonyExtras {
     {systemShare.getContactInfo}.
 
     \sa QtHarmonyExtras::AbilityContext::newWantInfoReceived(std::shared_ptr<QtHarmonyExtras::WantInfo> wantInfo)
-    \sa std::shared_ptr<QtHarmonyExtras::WantInfo> QtHarmonyExtras::AppContext::appLaunchWantInfo()
+    \sa std::shared_ptr<QtHarmonyExtras::WantInfo>, QtHarmonyExtras::AppContext::appLaunchWantInfo()
 */
 
 WantInfo::WantInfo() = default;

@@ -1334,7 +1334,7 @@ void QThread::requestInterruption()
     \note This can only be called within the thread itself, i.e. when
     it is the current thread.
 
-    \sa currentThread() requestInterruption()
+    \sa currentThread(), requestInterruption()
 */
 bool QThread::isInterruptionRequested() const
 {
