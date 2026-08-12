@@ -395,8 +395,14 @@ static void sendDragLeave(QWindow *window)
 void QSimpleDrag::cancel()
 {
     QBasicDrag::cancel();
-    if (drag() && m_sourceWindow) {
-        sendDragLeave(m_sourceWindow);
+    if (drag()) {
+        // Leave the window the drag is currently over, which is only the window it
+        // started from until the first move() onto another window. Leaving
+        // m_sourceWindow instead would send it a second QDragLeaveEvent and leave the
+        // window actually under the cursor believing a drag is still in progress.
+        if (m_windowUnderCursor)
+            sendDragLeave(m_windowUnderCursor);
+        m_windowUnderCursor = nullptr;
         m_sourceWindow = nullptr;
     }
 }
