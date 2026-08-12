@@ -7,11 +7,13 @@
 #include "qlockfile.h"
 #include "qlockfile_p.h"
 
-#include <QtCore/qthread.h>
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qdeadlinetimer.h>
 #include <QtCore/qdatetime.h>
 #include <QtCore/qfileinfo.h>
+#include <QtCore/private/qfilesystemengine_p.h>
+#include <QtCore/qthread.h>
+#include <QtCore/private/quniquehandle_types_p.h>
 
 #include <qplatformdefs.h>
 
@@ -502,12 +504,9 @@ QLockFilePrivate::LockFileInfo::LockFileInfo(Current)
 {
 }
 
-std::optional<QLockFilePrivate::LockFileInfo> QLockFilePrivate::getLockInfo_helper(const QString &fileName)
+static std::optional<QLockFilePrivate::LockFileInfo> getLockInfo(int fd)
 {
     std::optional<QLockFilePrivate::LockFileInfo> info;
-    int fd = openNewFileDescriptor(fileName);
-    if (fd < 0)
-        return info;
     QFile reader;
     if (!reader.open(fd, QFile::ReadOnly | QFile::Text, QFile::AutoCloseHandle)) {
         QT_CLOSE(fd);
@@ -540,18 +539,30 @@ std::optional<QLockFilePrivate::LockFileInfo> QLockFilePrivate::getLockInfo_help
     return info;
 }
 
+std::optional<QLockFilePrivate::LockFileInfo> QLockFilePrivate::getLockInfo_helper(const QString &fileName)
+{
+    int fd = openNewFileDescriptor(fileName);
+    return fd < 0 ? std::nullopt : getLockInfo(fd);
+}
+
 bool QLockFilePrivate::isApparentlyStale(const LockFileInfo &current) const
 {
+    QUniqueFileDescriptorHandle fd(openNewFileDescriptor(fileName));
+    if (!fd.isValid())
+        return false;           // file has disappeared (or become inaccessible)
+
     // check the file's mtime first (cheaper)
     using namespace std::chrono;
     if (staleLockTime > 0ms) {
-        const QDateTime lastMod = QFileInfo(fileName).lastModified(QTimeZone::UTC);
+        QFileSystemMetaData md;
+        std::ignore = QFileSystemEngine::fillMetaData(fd.get(), md);
+        const QDateTime lastMod = md.fileTime(QFile::FileModificationTime);
         const milliseconds age{lastMod.msecsTo(QDateTime::currentDateTimeUtc())};
         if (abs(age) > staleLockTime)
             return true;
     }
 
-    if (std::optional opt = getLockInfo_helper(fileName)) {
+    if (std::optional opt = getLockInfo(fd.release())) {
         LockFileInfo &info = *opt;
         bool sameHost = info.hostname.isEmpty() || info.hostname == current.hostname;
         if (!info.hostid.isEmpty()) {

@@ -125,7 +125,7 @@ public:
     static QFileSystemEntry junctionTarget(const QFileSystemEntry &link, QFileSystemMetaData &data);
     static bool uncListSharesOnServer(const QString &server, QStringList *list); //Used also by QFSFileEngineIterator::hasNext()
     static bool fillMetaData(int fd, QFileSystemMetaData &data,
-                             QFileSystemMetaData::MetaDataFlags what);
+                             QFileSystemMetaData::MetaDataFlags what = QFileSystemMetaData::WinStatFlags);
     static bool fillMetaData(HANDLE fHandle, QFileSystemMetaData &data,
                              QFileSystemMetaData::MetaDataFlags what);
     static bool fillPermissions(const QFileSystemEntry &entry, QFileSystemMetaData &data,
