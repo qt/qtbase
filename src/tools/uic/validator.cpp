@@ -126,6 +126,13 @@ static QString msgInvalidHeader(const QString &name)
     return "Invalid header: \""_L1 + name + u'"';
 }
 
+static QString msgInvalidConnection(const DomConnection *connection)
+{
+    return "Invalid connection: \""_L1 + connection->elementSender() + "::"_L1
+            + connection->elementSignal() + " -> "_L1 + connection->elementReceiver() + "::"_L1
+            + connection->elementSlot() + u'"';
+}
+
 static void checkProperties(const QList<DomProperty *> &properties, QStringList *errors)
 {
     for (const DomProperty *p : properties) {
@@ -170,6 +177,8 @@ void Validator::acceptUI(DomUI *node)
         acceptCustomWidgets(node->elementCustomWidgets());
     if (node->hasElementIncludes())
         acceptIncludes(node->elementIncludes());
+    if (node->hasElementConnections())
+        acceptConnections(node->elementConnections());
 }
 
 void Validator::acceptWidget(DomWidget *node)
@@ -237,6 +246,15 @@ void Validator::acceptInclude(DomInclude *incl)
     if (!sanityCheck(incl->text()))
         m_errors.append(msgInvalidHeader(incl->text()));
     TreeWalker::acceptInclude(incl);
+}
+
+void Validator::acceptConnection(DomConnection *connection)
+{
+    if (!sanityCheck(connection->elementSender()) || !sanityCheck(connection->elementSignal())
+        || !sanityCheck(connection->elementReceiver()) || !sanityCheck(connection->elementSlot())) {
+        m_errors.append(msgInvalidConnection(connection));
+    }
+    TreeWalker::acceptConnection(connection);
 }
 
 QT_END_NAMESPACE

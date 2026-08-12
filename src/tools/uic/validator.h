@@ -33,6 +33,8 @@ struct Validator : public TreeWalker
     void acceptCustomWidget(DomCustomWidget *customWidget) override;
     void acceptInclude(DomInclude *incl) override;
 
+    void acceptConnection(DomConnection *connection) override;
+
     const QStringList &errors() const { return m_errors; }
 
 private:
