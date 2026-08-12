@@ -92,6 +92,12 @@ QDrag::QDrag(QObject *dragSource)
 QDrag::~QDrag()
 {
     Q_D(QDrag);
+
+    // As a QObject child of the dragSource, QDrag can be destroyed while
+    // exec() is still blocked in the platform's nested event loop.
+    // End the drag while still in existence, to avoid use-after-free later on.
+    if (QDragManager::m_instance && QDragManager::m_instance->object() == this)
+        cancel();
     delete d->data;
 }
 

@@ -21,6 +21,7 @@
 
 #include <QtCore/QObject>
 #include <QtCore/QPointer>
+#include <QtGui/qdrag.h>
 #include <QtGui/QWindow>
 
 QT_REQUIRE_CONFIG(draganddrop);
@@ -87,7 +88,7 @@ private:
     QEventLoop *m_eventLoop = nullptr;
     Qt::DropAction m_executed_drop_action = Qt::IgnoreAction;
     bool m_can_drop = false;
-    QDrag *m_drag = nullptr;
+    QPointer<QDrag> m_drag;
     QShapedPixmapWindow *m_drag_icon_window = nullptr;
     bool m_useCompositing = true;
     QScreen *m_screen = nullptr;
