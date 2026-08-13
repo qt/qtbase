@@ -65,16 +65,18 @@ struct Options
     // HarmonyOS permissions injected via qt_add_harmonyos_permission
     QJsonArray permissions;
 
-    // App-level metadata from qt_set_harmonyos_app_metadata. Empty/zero means
-    // "user did not set this", so harmonydeployqt leaves the template default in place.
+    // App-level metadata from the QT_HARMONYOS_APP_* target properties.
+    // Empty/zero means "user did not set this", so harmonydeployqt leaves the
+    // template default in place.
     QString harmonyOsAppVendor;
     int harmonyOsAppVersionCode = 0;
     QString harmonyOsAppVersionName;
     QString harmonyOsAppLabel;
     QString harmonyOsAppIcon;
 
-    // SDK versions from qt_set_harmonyos_app_metadata. Substituted into
-    // entry/build-profile.json5. Empty means "leave template default".
+    // SDK versions from the QT_HARMONYOS_*_SDK_VERSION target properties.
+    // Substituted into entry/build-profile.json5. Empty means "leave template
+    // default".
     QString harmonyOsCompatibleSdkVersion;
     QString harmonyOsTargetSdkVersion;
     QString harmonyOsCompileSdkVersion;
@@ -82,7 +84,8 @@ struct Options
     // Additional plugin .so files from QT_HARMONYOS_EXTRA_PLUGINS.
     QStringList extraPlugins;
 
-    // Module-level metadata from qt_set_harmonyos_module_metadata.
+    // Module-level metadata from the QT_HARMONYOS_MODULE_* and
+    // QT_HARMONYOS_ABILITY_* target properties.
     QString harmonyOsModuleDescription;
     QStringList harmonyOsModuleDeviceTypes;
     QString harmonyOsAbilityOrientation;
@@ -319,7 +322,7 @@ static bool readInputConfiguration(Options *options)
     // Parse HarmonyOS permissions injected via qt_add_harmonyos_permission
     options->permissions = obj["permissions"_L1].toArray();
 
-    // App-level metadata injected via qt_set_harmonyos_app_metadata.
+    // App-level metadata injected via the QT_HARMONYOS_APP_* target properties.
     options->harmonyOsAppVendor = obj["harmonyos-app-vendor"_L1].toString();
     options->harmonyOsAppVersionCode = obj["harmonyos-app-version-code"_L1].toInt();
     options->harmonyOsAppVersionName = obj["harmonyos-app-version-name"_L1].toString();
@@ -346,7 +349,8 @@ static bool readInputConfiguration(Options *options)
         }
     }
 
-    // Module-level metadata injected via qt_set_harmonyos_module_metadata.
+    // Module-level metadata injected via the QT_HARMONYOS_MODULE_* and
+    // QT_HARMONYOS_ABILITY_* target properties.
     options->harmonyOsModuleDescription = obj["harmonyos-module-description"_L1].toString();
     const QJsonArray deviceTypesArray = obj["harmonyos-module-device-types"_L1].toArray();
     for (const QJsonValue &value : deviceTypesArray)
@@ -1007,7 +1011,7 @@ static bool customizeTemplate(const Options &options)
         moduleJsonFile.close();
 
         // Substitute the module description sentinel. The user's value (if set
-        // via qt_set_harmonyos_module_metadata DESCRIPTION) takes precedence;
+        // via QT_HARMONYOS_MODULE_DESCRIPTION) takes precedence;
         // otherwise fall back to the template's $string:module_desc reference,
         // which resolves via the entry/.../resources/.../string.json file.
         const QString descriptionSentinel = "%%INSERT_MODULE_DESCRIPTION%%"_L1;
@@ -1050,7 +1054,7 @@ static bool customizeTemplate(const Options &options)
         }
         content.replace(orientationSentinelLine, orientationReplacement);
 
-        // Override the ability/launcher icon so qt_set_harmonyos_app_metadata(ICON ...)
+        // Override the ability/launcher icon so QT_HARMONYOS_APP_ICON
         // is reflected on the device home screen, not just in Settings. The
         // template ships "$media:layered_image" -- only replace that specific
         // value so user-customized icons in subsequent runs aren't clobbered.

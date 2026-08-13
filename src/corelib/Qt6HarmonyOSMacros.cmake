@@ -352,8 +352,16 @@ function(_qt_internal_harmonyos_generate_deployment_settings target)
         list(GET prop_kv 2 _type)
         get_target_property(_value ${target} ${_prop})
         if(_value)
-            if(_type STREQUAL "path")
+            # A `$media:<name>` value is a resource reference, not a path. It must
+            # not go through file(TO_CMAKE_PATH), which turns the `:` into a list
+            # separator on non-Windows hosts.
+            if(_type STREQUAL "path" AND NOT _value MATCHES "^\\$media:")
                 file(TO_CMAKE_PATH "${_value}" _value)
+                get_target_property(_target_source_dir ${target} SOURCE_DIR)
+                cmake_path(ABSOLUTE_PATH _value
+                    BASE_DIRECTORY "${_target_source_dir}"
+                    NORMALIZE
+                )
             endif()
             _qt_internal_json_escape_content("${_value}" _value)
             set_target_properties(${target} PROPERTIES ${_mirror} "${_value}")
@@ -392,10 +400,10 @@ function(_qt_internal_harmonyos_generate_deployment_settings target)
     string(APPEND JSON_CONTENT "    \"harmonyos-app-bundle-name\": \"${bundle_name}\",\n")
     string(APPEND JSON_CONTENT "    \"harmonyos-target-arch\": [${TARGET_ARCHS_JSON}]")
 
-    # App-level metadata set via qt_set_harmonyos_app_metadata. Properties are
-    # read via $<TARGET_PROPERTY:> genex so transitively-set values (e.g. from
-    # linked targets) reach the JSON; absent entries leave the template
-    # default in place.
+    # App-level metadata set via the QT_HARMONYOS_APP_* target properties.
+    # Properties are read via $<TARGET_PROPERTY:> genex so transitively-set
+    # values (e.g. from linked targets) reach the JSON; absent entries leave
+    # the template default in place.
     _qt_internal_harmonyos_add_deployment_property(JSON_CONTENT
         "harmonyos-app-vendor" ${target} _qt_harmonyos_app_vendor)
     _qt_internal_harmonyos_add_deployment_int_property(JSON_CONTENT
@@ -702,165 +710,6 @@ endfunction()
 if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
     function(qt_add_harmonyos_permission target)
         qt6_add_harmonyos_permission(${ARGV})
-    endfunction()
-endif()
-
-# Set HarmonyOS app-level metadata that lands in AppScope/app.json5.
-# These values are conceptually app-scoped (one app = one bundle); on a target
-# that builds the app's main module they get baked into the deployment-settings
-# JSON and consumed by harmonydeployqt at HAP build time.
-#
-# Synopsis
-#   qt_set_harmonyos_app_metadata(target
-#       [VENDOR <string>]
-#       [VERSION_CODE <integer>]
-#       [VERSION_NAME <string>]
-#       [LABEL <string-or-$string:ref>]
-#       [ICON <path-or-$media:ref>]
-#       [COMPATIBLE_SDK_VERSION <string>]
-#       [TARGET_SDK_VERSION <string>]
-#       [COMPILE_SDK_VERSION <string>]
-#   )
-#
-# ICON accepts either a host filesystem path (deploy tool copies the image into
-# AppScope/resources/base/media/ and emits a $media: reference) or a $media:
-# reference (passed through verbatim). Relative paths resolve against the
-# call site's CMAKE_CURRENT_SOURCE_DIR.
-#
-# The *_SDK_VERSION options land in entry/build-profile.json5. Values are
-# substituted verbatim, so the user is responsible for the format expected by
-# the HarmonyOS toolchain (e.g. COMPATIBLE_SDK_VERSION "5.0.0(12)",
-# TARGET_SDK_VERSION "14"). Absent options leave the template default in place.
-function(_qt_internal_set_harmonyos_app_metadata target)
-    if(NOT TARGET ${target})
-        message(FATAL_ERROR
-            "Empty or invalid target for setting HarmonyOS app metadata: (${target})")
-    endif()
-
-    set(no_value_options "")
-    set(single_value_options
-        VENDOR
-        VERSION_CODE
-        VERSION_NAME
-        LABEL
-        ICON
-        COMPATIBLE_SDK_VERSION
-        TARGET_SDK_VERSION
-        COMPILE_SDK_VERSION
-    )
-    set(multi_value_options "")
-    cmake_parse_arguments(PARSE_ARGV 1 arg
-        "${no_value_options}" "${single_value_options}" "${multi_value_options}"
-    )
-
-    if(DEFINED arg_VENDOR)
-        set_target_properties(${target} PROPERTIES QT_HARMONYOS_APP_VENDOR "${arg_VENDOR}")
-    endif()
-    if(DEFINED arg_VERSION_CODE)
-        set_target_properties(${target} PROPERTIES
-            QT_HARMONYOS_APP_VERSION_CODE "${arg_VERSION_CODE}")
-    endif()
-    if(DEFINED arg_VERSION_NAME)
-        set_target_properties(${target} PROPERTIES
-            QT_HARMONYOS_APP_VERSION_NAME "${arg_VERSION_NAME}")
-    endif()
-    if(DEFINED arg_LABEL)
-        set_target_properties(${target} PROPERTIES QT_HARMONYOS_APP_LABEL "${arg_LABEL}")
-    endif()
-    if(DEFINED arg_COMPATIBLE_SDK_VERSION)
-        set_target_properties(${target} PROPERTIES
-            QT_HARMONYOS_COMPATIBLE_SDK_VERSION "${arg_COMPATIBLE_SDK_VERSION}")
-    endif()
-    if(DEFINED arg_TARGET_SDK_VERSION)
-        set_target_properties(${target} PROPERTIES
-            QT_HARMONYOS_TARGET_SDK_VERSION "${arg_TARGET_SDK_VERSION}")
-    endif()
-    if(DEFINED arg_COMPILE_SDK_VERSION)
-        set_target_properties(${target} PROPERTIES
-            QT_HARMONYOS_COMPILE_SDK_VERSION "${arg_COMPILE_SDK_VERSION}")
-    endif()
-    if(DEFINED arg_ICON)
-        set(icon_value "${arg_ICON}")
-        if(NOT icon_value MATCHES "^\\$media:")
-            if(NOT IS_ABSOLUTE "${icon_value}")
-                set(icon_value "${CMAKE_CURRENT_SOURCE_DIR}/${icon_value}")
-            endif()
-        endif()
-        set_target_properties(${target} PROPERTIES QT_HARMONYOS_APP_ICON "${icon_value}")
-    endif()
-endfunction()
-
-function(qt6_set_harmonyos_app_metadata target)
-    _qt_internal_set_harmonyos_app_metadata(${ARGV})
-endfunction()
-
-if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
-    function(qt_set_harmonyos_app_metadata target)
-        qt6_set_harmonyos_app_metadata(${ARGV})
-    endfunction()
-endif()
-
-# Set HarmonyOS module-level metadata that lands in entry/src/main/module.json5.
-#
-# Synopsis
-#   qt_set_harmonyos_module_metadata(target
-#       [DESCRIPTION <string-or-$string:ref>]
-#       [DEVICE_TYPES <type> [<type>...]]
-#       [ORIENTATION <orientation>]
-#   )
-#
-# DESCRIPTION accepts a literal string (appears verbatim in the manifest and
-# is not localizable) or a $string:<ref> resource reference (localizable via
-# the user's string.json files).
-#
-# DEVICE_TYPES is a list of HarmonyOS device-type identifiers (e.g. tablet,
-# 2in1, phone). When unset, harmonydeployqt picks the Qt default. Note that
-# 'phone' is intentionally excluded from the default because of QTFOROH-1076
-# (main window does not restore itself to the desired state after being
-# minimized on phone); revisit once that is fixed.
-#
-# ORIENTATION sets the QAbility's screen-orientation policy. When unset, the
-# generated module.json5 omits the field entirely, which makes the system
-# default ("unspecified", effectively portrait-locked on phones) apply.
-# Accepted values are the strings defined by the HarmonyOS module.json5
-# schema, including "auto_rotation", "auto_rotation_restricted", "landscape",
-# "portrait", "auto_rotation_landscape", "auto_rotation_portrait", and
-# "locked". harmonydeployqt validates the value at HAP build time and warns
-# (rather than aborts) on an unrecognised string.
-function(_qt_internal_set_harmonyos_module_metadata target)
-    if(NOT TARGET ${target})
-        message(FATAL_ERROR
-            "Empty or invalid target for setting HarmonyOS module metadata: (${target})")
-    endif()
-
-    set(no_value_options "")
-    set(single_value_options DESCRIPTION ORIENTATION)
-    set(multi_value_options DEVICE_TYPES)
-    cmake_parse_arguments(PARSE_ARGV 1 arg
-        "${no_value_options}" "${single_value_options}" "${multi_value_options}"
-    )
-
-    if(DEFINED arg_DESCRIPTION)
-        set_target_properties(${target} PROPERTIES
-            QT_HARMONYOS_MODULE_DESCRIPTION "${arg_DESCRIPTION}")
-    endif()
-    if(arg_DEVICE_TYPES)
-        set_target_properties(${target} PROPERTIES
-            QT_HARMONYOS_MODULE_DEVICE_TYPES "${arg_DEVICE_TYPES}")
-    endif()
-    if(DEFINED arg_ORIENTATION)
-        set_target_properties(${target} PROPERTIES
-            QT_HARMONYOS_ABILITY_ORIENTATION "${arg_ORIENTATION}")
-    endif()
-endfunction()
-
-function(qt6_set_harmonyos_module_metadata target)
-    _qt_internal_set_harmonyos_module_metadata(${ARGV})
-endfunction()
-
-if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
-    function(qt_set_harmonyos_module_metadata target)
-        qt6_set_harmonyos_module_metadata(${ARGV})
     endfunction()
 endif()
 

@@ -107,27 +107,6 @@ qt_add_android_permission(myapp
 )
 #! [qt_add_android_permission]
 
-#! [qt_set_harmonyos_app_metadata]
-qt_add_executable(myapp
-    // ...
-)
-qt_set_harmonyos_app_metadata(myapp
-    VENDOR "Example Inc."
-    VERSION_CODE 1
-    VERSION_NAME "1.0.0"
-    LABEL "My Application"
-    ICON "${CMAKE_CURRENT_SOURCE_DIR}/icon.png"
-)
-#! [qt_set_harmonyos_app_metadata]
-
-#! [qt_set_harmonyos_module_metadata]
-qt_set_harmonyos_module_metadata(myapp
-    DESCRIPTION "My Application module"
-    DEVICE_TYPES tablet 2in1
-    ORIENTATION landscape
-)
-#! [qt_set_harmonyos_module_metadata]
-
 #! [qt_add_harmonyos_permission]
 qt_add_harmonyos_permission(myapp
     NAME ohos.permission.CAMERA
