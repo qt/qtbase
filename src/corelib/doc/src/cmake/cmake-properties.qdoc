@@ -780,6 +780,249 @@ set_target_properties(myapp PROPERTIES
 */
 
 /*!
+\page cmake-target-property-qt-harmonyos-app-vendor.html
+\ingroup cmake-properties-qtcore
+\ingroup cmake-target-properties-qtcore
+\ingroup cmake-harmonyos-build-properties
+
+\title QT_HARMONYOS_APP_VENDOR
+\target cmake-target-property-QT_HARMONYOS_APP_VENDOR
+
+\summary {The HarmonyOS application's vendor.}
+
+\cmakepropertysince 6.12
+\preliminarycmakeproperty
+\cmakepropertyharmonyosonly
+
+Specifies the name of the application vendor. The value is written to
+\c {AppScope/app.json5} when the HAP package is built.
+
+If this property is not set, the value defined by the package template is kept.
+
+\badcode
+set_target_properties(myapp PROPERTIES
+    QT_HARMONYOS_APP_VENDOR "Example Inc."
+)
+\endcode
+*/
+
+/*!
+\page cmake-target-property-qt-harmonyos-app-version-code.html
+\ingroup cmake-properties-qtcore
+\ingroup cmake-target-properties-qtcore
+\ingroup cmake-harmonyos-build-properties
+
+\title QT_HARMONYOS_APP_VERSION_CODE
+\target cmake-target-property-QT_HARMONYOS_APP_VERSION_CODE
+
+\summary {The HarmonyOS application's version code.}
+
+\cmakepropertysince 6.12
+\preliminarycmakeproperty
+\cmakepropertyharmonyosonly
+
+Specifies the integer version code of the application. It is an internal
+version number that is not shown to the user. The value is written to
+\c {AppScope/app.json5} when the HAP package is built.
+
+If this property is not set, the value defined by the package template is kept.
+
+\badcode
+set_target_properties(myapp PROPERTIES
+    QT_HARMONYOS_APP_VERSION_CODE 1
+)
+\endcode
+
+\sa{cmake-target-property-QT_HARMONYOS_APP_VERSION_NAME}{QT_HARMONYOS_APP_VERSION_NAME}
+*/
+
+/*!
+\page cmake-target-property-qt-harmonyos-app-version-name.html
+\ingroup cmake-properties-qtcore
+\ingroup cmake-target-properties-qtcore
+\ingroup cmake-harmonyos-build-properties
+
+\title QT_HARMONYOS_APP_VERSION_NAME
+\target cmake-target-property-QT_HARMONYOS_APP_VERSION_NAME
+
+\summary {The HarmonyOS application's version name.}
+
+\cmakepropertysince 6.12
+\preliminarycmakeproperty
+\cmakepropertyharmonyosonly
+
+Specifies the human-readable version string of the application, for example
+\c {1.0.0}. The value is written to \c {AppScope/app.json5} when the HAP
+package is built.
+
+If this property is not set, the value defined by the package template is kept.
+
+\badcode
+set_target_properties(myapp PROPERTIES
+    QT_HARMONYOS_APP_VERSION_NAME "1.0.0"
+)
+\endcode
+
+\sa{cmake-target-property-QT_HARMONYOS_APP_VERSION_CODE}{QT_HARMONYOS_APP_VERSION_CODE}
+*/
+
+/*!
+\page cmake-target-property-qt-harmonyos-app-label.html
+\ingroup cmake-properties-qtcore
+\ingroup cmake-target-properties-qtcore
+\ingroup cmake-harmonyos-build-properties
+
+\title QT_HARMONYOS_APP_LABEL
+\target cmake-target-property-QT_HARMONYOS_APP_LABEL
+
+\summary {The HarmonyOS application's label.}
+
+\cmakepropertysince 6.12
+\preliminarycmakeproperty
+\cmakepropertyharmonyosonly
+
+Specifies the application name shown to the user. It accepts either a literal
+string or a \c {$string:<name>} resource reference that resolves to a localized
+string from the application's resource files. The value is written to
+\c {AppScope/app.json5} when the HAP package is built.
+
+If this property is not set, the value defined by the package template is kept.
+
+\badcode
+set_target_properties(myapp PROPERTIES
+    QT_HARMONYOS_APP_LABEL "My Application"
+)
+\endcode
+*/
+
+/*!
+\page cmake-target-property-qt-harmonyos-app-icon.html
+\ingroup cmake-properties-qtcore
+\ingroup cmake-target-properties-qtcore
+\ingroup cmake-harmonyos-build-properties
+
+\title QT_HARMONYOS_APP_ICON
+\target cmake-target-property-QT_HARMONYOS_APP_ICON
+
+\summary {The HarmonyOS application's icon.}
+
+\cmakepropertysince 6.12
+\preliminarycmakeproperty
+\cmakepropertyharmonyosonly
+
+Specifies the application icon. The value must be either a path to an image file
+or a \c {$media:<name>} resource reference. A relative path is resolved against
+the source directory of the target. When a file path is given, the image is
+copied into the bundle's media resources and a \c {$media:} reference is
+generated for it. The icon is written to \c {AppScope/app.json5} when the HAP
+package is built.
+
+If this property is not set, the value defined by the package template is kept.
+
+\badcode
+set_target_properties(myapp PROPERTIES
+    QT_HARMONYOS_APP_ICON "${CMAKE_CURRENT_SOURCE_DIR}/icon.png"
+)
+\endcode
+*/
+
+/*!
+\page cmake-target-property-qt-harmonyos-compatible-sdk-version.html
+\ingroup cmake-properties-qtcore
+\ingroup cmake-target-properties-qtcore
+\ingroup cmake-harmonyos-build-properties
+
+\title QT_HARMONYOS_COMPATIBLE_SDK_VERSION
+\target cmake-target-property-QT_HARMONYOS_COMPATIBLE_SDK_VERSION
+
+\summary {The HarmonyOS application's compatible SDK version.}
+
+\cmakepropertysince 6.12
+\preliminarycmakeproperty
+\cmakepropertyharmonyosonly
+
+Specifies the compatible SDK version field written to
+\c {entry/build-profile.json5} when the HAP package is built. The value is
+substituted verbatim, so it must use the format expected by the HarmonyOS
+toolchain, for example \c {5.0.0(12)}.
+
+If this property is not set, the value defined by the package template is kept.
+
+\badcode
+set_target_properties(myapp PROPERTIES
+    QT_HARMONYOS_COMPATIBLE_SDK_VERSION "5.0.0(12)"
+)
+\endcode
+
+\sa{cmake-target-property-QT_HARMONYOS_TARGET_SDK_VERSION}{QT_HARMONYOS_TARGET_SDK_VERSION},
+    {cmake-target-property-QT_HARMONYOS_COMPILE_SDK_VERSION}{QT_HARMONYOS_COMPILE_SDK_VERSION}
+*/
+
+/*!
+\page cmake-target-property-qt-harmonyos-target-sdk-version.html
+\ingroup cmake-properties-qtcore
+\ingroup cmake-target-properties-qtcore
+\ingroup cmake-harmonyos-build-properties
+
+\title QT_HARMONYOS_TARGET_SDK_VERSION
+\target cmake-target-property-QT_HARMONYOS_TARGET_SDK_VERSION
+
+\summary {The HarmonyOS application's target SDK version.}
+
+\cmakepropertysince 6.12
+\preliminarycmakeproperty
+\cmakepropertyharmonyosonly
+
+Specifies the target SDK version field written to
+\c {entry/build-profile.json5} when the HAP package is built. The value is
+substituted verbatim, so it must use the format expected by the HarmonyOS
+toolchain, for example \c {14}.
+
+If this property is not set, the value defined by the package template is kept.
+
+\badcode
+set_target_properties(myapp PROPERTIES
+    QT_HARMONYOS_TARGET_SDK_VERSION "14"
+)
+\endcode
+
+\sa{cmake-target-property-QT_HARMONYOS_COMPATIBLE_SDK_VERSION}{QT_HARMONYOS_COMPATIBLE_SDK_VERSION},
+    {cmake-target-property-QT_HARMONYOS_COMPILE_SDK_VERSION}{QT_HARMONYOS_COMPILE_SDK_VERSION}
+*/
+
+/*!
+\page cmake-target-property-qt-harmonyos-compile-sdk-version.html
+\ingroup cmake-properties-qtcore
+\ingroup cmake-target-properties-qtcore
+\ingroup cmake-harmonyos-build-properties
+
+\title QT_HARMONYOS_COMPILE_SDK_VERSION
+\target cmake-target-property-QT_HARMONYOS_COMPILE_SDK_VERSION
+
+\summary {The HarmonyOS application's compile SDK version.}
+
+\cmakepropertysince 6.12
+\preliminarycmakeproperty
+\cmakepropertyharmonyosonly
+
+Specifies the compile SDK version field written to
+\c {entry/build-profile.json5} when the HAP package is built. The value is
+substituted verbatim, so it must use the format expected by the HarmonyOS
+toolchain.
+
+If this property is not set, the value defined by the package template is kept.
+
+\badcode
+set_target_properties(myapp PROPERTIES
+    QT_HARMONYOS_COMPILE_SDK_VERSION "5.0.0(12)"
+)
+\endcode
+
+\sa{cmake-target-property-QT_HARMONYOS_COMPATIBLE_SDK_VERSION}{QT_HARMONYOS_COMPATIBLE_SDK_VERSION},
+    {cmake-target-property-QT_HARMONYOS_TARGET_SDK_VERSION}{QT_HARMONYOS_TARGET_SDK_VERSION}
+*/
+
+/*!
 \page cmake-target-property-qt-harmonyos-target-archs.html
 \ingroup cmake-properties-qtcore
 \ingroup cmake-target-properties-qtcore
@@ -927,6 +1170,97 @@ configuration of the generated HAP.
 \badcode
 set_target_properties(myapp PROPERTIES
     QT_HARMONYOS_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/harmonyos"
+)
+\endcode
+*/
+
+/*!
+\page cmake-target-property-qt-harmonyos-module-description.html
+\ingroup cmake-properties-qtcore
+\ingroup cmake-target-properties-qtcore
+\ingroup cmake-harmonyos-build-properties
+
+\title QT_HARMONYOS_MODULE_DESCRIPTION
+\target cmake-target-property-QT_HARMONYOS_MODULE_DESCRIPTION
+
+\summary {The HarmonyOS module's description.}
+
+\cmakepropertysince 6.12
+\preliminarycmakeproperty
+\cmakepropertyharmonyosonly
+
+Specifies the module description. It accepts either a literal string (which
+appears verbatim in the manifest and is not localizable) or a
+\c {$string:<name>} resource reference that resolves to a localized string from
+the application's resource files. The value is written to
+\c {entry/src/main/module.json5} when the HAP package is built.
+
+If this property is not set, the value defined by the package template is kept.
+
+\badcode
+set_target_properties(myapp PROPERTIES
+    QT_HARMONYOS_MODULE_DESCRIPTION "My Application module"
+)
+\endcode
+*/
+
+/*!
+\page cmake-target-property-qt-harmonyos-module-device-types.html
+\ingroup cmake-properties-qtcore
+\ingroup cmake-target-properties-qtcore
+\ingroup cmake-harmonyos-build-properties
+
+\title QT_HARMONYOS_MODULE_DEVICE_TYPES
+\target cmake-target-property-QT_HARMONYOS_MODULE_DEVICE_TYPES
+
+\summary {The device types supported by the HarmonyOS module.}
+
+\cmakepropertysince 6.12
+\preliminarycmakeproperty
+\cmakepropertyharmonyosonly
+
+Specifies the list of HarmonyOS device-type identifiers that the module
+supports, for example \c tablet, \c {2in1}, or \c phone. The value is written
+to \c {entry/src/main/module.json5} when the HAP package is built.
+
+If this property is not set, the default \c {phone;tablet;2in1} is used.
+
+\badcode
+set_target_properties(myapp PROPERTIES
+    QT_HARMONYOS_MODULE_DEVICE_TYPES "tablet;2in1"
+)
+\endcode
+*/
+
+/*!
+\page cmake-target-property-qt-harmonyos-ability-orientation.html
+\ingroup cmake-properties-qtcore
+\ingroup cmake-target-properties-qtcore
+\ingroup cmake-harmonyos-build-properties
+
+\title QT_HARMONYOS_ABILITY_ORIENTATION
+\target cmake-target-property-QT_HARMONYOS_ABILITY_ORIENTATION
+
+\summary {The screen-orientation policy of the HarmonyOS ability.}
+
+\cmakepropertysince 6.12
+\preliminarycmakeproperty
+\cmakepropertyharmonyosonly
+
+Specifies the screen-orientation policy of the application's ability. The value
+is written to \c {entry/src/main/module.json5} when the HAP package is built.
+The accepted values are the orientation strings defined by the HarmonyOS
+\c {module.json5} schema, including \c auto_rotation,
+\c auto_rotation_restricted, \c landscape, \c portrait,
+\c auto_rotation_landscape, \c auto_rotation_portrait, and \c locked. An
+unrecognized value is ignored with a warning at HAP build time.
+
+If this property is not set, the field is omitted from the manifest and the
+system default applies.
+
+\badcode
+set_target_properties(myapp PROPERTIES
+    QT_HARMONYOS_ABILITY_ORIENTATION "landscape"
 )
 \endcode
 */

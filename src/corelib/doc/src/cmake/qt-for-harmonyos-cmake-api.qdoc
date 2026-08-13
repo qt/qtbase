@@ -23,17 +23,19 @@ HAP and the metadata written into the HarmonyOS manifest files.
 A HarmonyOS application bundle is described by two kinds of manifest: the
 application-level \c {app.json5}, which holds metadata that applies to the whole
 bundle, and the module-level \c {module.json5}, which describes a single HAP
-module within that bundle. The metadata commands below mirror this split, so
-there is one command for each scope.
+module within that bundle. The target properties below mirror this split: the
+\c QT_HARMONYOS_APP_* properties set application-level metadata, such as the
+\l{cmake-target-property-QT_HARMONYOS_APP_VENDOR}{vendor}, version, label, and
+icon, while properties such as
+\l{cmake-target-property-QT_HARMONYOS_MODULE_DESCRIPTION}{QT_HARMONYOS_MODULE_DESCRIPTION}
+and
+\l{cmake-target-property-QT_HARMONYOS_ABILITY_ORIENTATION}{QT_HARMONYOS_ABILITY_ORIENTATION}
+set module-level metadata. See the Target Properties section below for the full
+list.
 
 \section1 Commands
 
 \list
-\li \l qt_set_harmonyos_app_metadata() sets
-    application-level metadata, such as the vendor, version, label, and icon.
-\li \l qt_set_harmonyos_module_metadata()
-    sets module-level metadata, such as the description, device types, and
-    orientation.
 \li \l qt_add_harmonyos_permission() adds a
     HarmonyOS permission to the application.
 \endlist
