@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 # Add the specific HarmonyOS permission to the target. The permission is stored
-# in the QT_HARMONYOS_PERMISSIONS property (the property is not a public API)
+# in the _qt_harmonyos_permissions property (the property is not a public API)
 # as a CMake list, where each element is a JSON object string built with
 # string(JSON SET) of the following shape:
 #
@@ -100,5 +100,5 @@ function(_qt_internal_add_harmonyos_permission target)
     # The string is multi-line (string(JSON SET) emits pretty-printed output);
     # JSON is whitespace-insensitive so consumers happily parse either form.
     set_property(TARGET ${target} APPEND PROPERTY
-        QT_HARMONYOS_PERMISSIONS "${permission_entry}")
+        _qt_harmonyos_permissions "${permission_entry}")
 endfunction()
