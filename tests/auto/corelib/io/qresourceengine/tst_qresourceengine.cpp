@@ -7,16 +7,8 @@
 #include <QtPlugin>
 #include <QtCore/QCoreApplication>
 #include <QtCore/QScopeGuard>
+#include <QtCore/QStandardPaths>
 #include <QtCore/private/qglobal_p.h>
-
-#if defined(Q_OS_HARMONY)
-// TODO: Replace with QStandardPaths-based path once the appropriate mapping
-// for QOhosAppContext::Type::resourceDir is determined.
-// See: https://jira.qtgroup.qt.io/browse/QT6HAROS-309
-static const QString ohosResourceRcc = QStringLiteral(
-    "/data/storage/el1/bundle/entry/resources/resfile"
-    "/tests/auto/corelib/io/qresourceengine/runtime_resource.rcc");
-#endif
 
 class tst_QResourceEngine: public QObject
 {
@@ -24,12 +16,10 @@ class tst_QResourceEngine: public QObject
 
 public:
     tst_QResourceEngine()
-#if defined(Q_OS_ANDROID)
+#if defined(Q_OS_ANDROID) || defined(Q_OS_HARMONY)
         : m_runtimeResourceRcc(
             QFileInfo(QStandardPaths::writableLocation(QStandardPaths::CacheLocation)
                       + QStringLiteral("/runtime_resource.rcc")).absoluteFilePath())
-#elif defined(Q_OS_HARMONY)
-        : m_runtimeResourceRcc(ohosResourceRcc)
 #else
         : m_runtimeResourceRcc(QFINDTESTDATA("runtime_resource.rcc"))
 #endif
@@ -63,7 +53,16 @@ private:
 
 void tst_QResourceEngine::initTestCase()
 {
-#ifdef Q_OS_ANDROID
+#if defined(Q_OS_HARMONY)
+    const QString dataPath(QStandardPaths::writableLocation(QStandardPaths::CacheLocation));
+    QVERIFY(QDir().mkpath(dataPath));
+    if (!QFileInfo::exists(m_runtimeResourceRcc)) {
+        const QString source = QStringLiteral(":/nestedrcc/runtime_resource.rcc");
+        QVERIFY(QFile::copy(source, m_runtimeResourceRcc));
+    }
+
+    QVERIFY(QDir::setCurrent(dataPath));
+#elif defined(Q_OS_ANDROID)
     QString sourcePath(QStringLiteral(":/android_testdata/"));
     QString dataPath(QStandardPaths::writableLocation(QStandardPaths::CacheLocation));
 
@@ -582,11 +581,7 @@ void tst_QResourceEngine::checkUnregisterResource_data()
     QTest::addColumn<int>("size");
 
     QTest::newRow("currentdir.txt")
-#if defined(Q_OS_HARMONY)
-        << ohosResourceRcc
-#else
         << QFINDTESTDATA("runtime_resource.rcc")
-#endif
         << QString("/check_unregister/")
         << QString(":/check_unregister/runtime_resource/test/abc/123/+++/currentdir.txt")
         << (int)QFileInfo(QFINDTESTDATA("testqrc/currentdir.txt")).size();
