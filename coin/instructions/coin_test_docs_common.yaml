@@ -3,9 +3,15 @@ instructions:
   - type: EnvironmentVariable
     variableName: QDOC_NOLINKERRORS
     variableValue: 1
-  - type: EnvironmentVariable
-    variableName: QDOC_ENABLE_WARNINGLIMIT
-    variableValue: 1
+
+# Note: For documentation testing CI uses the latest QDoc from dev,
+# which reports warnings on 6.10 where docs are no longer maintained.
+# Disable the warning limit, so that warnings are listed but not considered
+# as blocking.
+
+#  - type: EnvironmentVariable
+#    variableName: QDOC_ENABLE_WARNINGLIMIT
+#    variableValue: 1
   - type: SetBuildDirectory
     directory: "{{.SourceDir}}"
   - type: ChangeDirectory
