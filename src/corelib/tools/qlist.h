@@ -13,6 +13,7 @@
 #include <QtCore/qiterator.h>
 #include <QtCore/qcontainertools_impl.h>
 #include <QtCore/qnamespace.h>
+#include <QtCore/qscopeguard.h>
 #include <QtCore/qttypetraits.h>
 
 #include <functional>
@@ -633,8 +634,18 @@ public:
     void remove(qsizetype i, qsizetype n = 1);
     void removeFirst() noexcept;
     void removeLast() noexcept;
-    value_type takeFirst() { Q_ASSERT(!isEmpty()); value_type v = std::move(first()); d->eraseFirst(); return v; }
-    value_type takeLast() { Q_ASSERT(!isEmpty()); value_type v = std::move(last()); d->eraseLast(); return v; }
+    value_type takeFirst()
+    {
+        Q_ASSERT(!isEmpty());
+        const auto eraser = qScopeGuard([&] { d->eraseFirst(); });
+        return std::move(first());
+    }
+    value_type takeLast()
+    {
+        Q_ASSERT(!isEmpty());
+        const auto eraser = qScopeGuard([&] { d->eraseLast(); });
+        return std::move(last());
+    }
 
     QList<T> &fill(parameter_type t, qsizetype size = -1);
 
@@ -676,7 +687,13 @@ public:
         return QtPrivate::sequential_erase_if(*this, pred);
     }
 
-    T takeAt(qsizetype i) { T t = std::move((*this)[i]); remove(i); return t; }
+    T takeAt(qsizetype i)
+    {
+        T &t = (*this)[i]; // trigger assert, if any
+        const auto remover = qScopeGuard([&] { remove(i); });
+        return std::move(t);
+    }
+
     void move(qsizetype from, qsizetype to)
     {
         Q_ASSERT_X(from >= 0 && from < size(), "QList::move(qsizetype, qsizetype)", "'from' is out-of-range");
