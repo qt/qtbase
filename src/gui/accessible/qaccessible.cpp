@@ -280,7 +280,7 @@ Q_STATIC_LOGGING_CATEGORY(lcAccessibilityCore, "qt.accessibility.core");
 
     \value AlertMessage     An object that is used to alert the user.
     \value Animation        An object that displays an animation.
-    \value Application      The application's main window.
+    \value Application      An object that represents the application
     \value Assistant        An object that provides interactive help.
     \value [since 6.9] BlockQuote       A section of content that is quoted from another source.
     \value Border           An object that represents a border.
