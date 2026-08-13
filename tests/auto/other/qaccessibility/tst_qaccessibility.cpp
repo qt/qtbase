@@ -3293,11 +3293,22 @@ void tst_QAccessibility::treeTest()
     QVERIFY(!(cell2->state().expanded));
     QCOMPARE(table2->columnDescription(1), QString("Work"));
 
+#ifdef Q_OS_ANDROID
+    // The Java side may have turned accessibility off while we processed
+    // events above. Turn it back on, as expandAll() only sends the model
+    // reset that drops the tree's cached cells if accessibility is active.
+    initAccessibility();
+#endif
+
     treeView->expandAll();
 
     // Need this for indexOfchild to work.
     QCoreApplication::processEvents();
     QTest::qWait(100);
+
+    // Query again, as table updates might invalidate and delete interfaces
+    iface = QAccessible::queryAccessibleInterface(treeView.get());
+    table2 = iface->tableInterface();
 
     QCOMPARE(table2->columnCount(), 2);
     QCOMPARE(table2->rowCount(), 5);
