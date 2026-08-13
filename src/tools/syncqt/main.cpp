@@ -693,19 +693,17 @@ public:
         // In the scan all mode we ingore the list of header files that is specified in the
         // '-headers' argument, and collect header files from the source directory tree.
         if (m_commandLineArgs->scanAllMode()) {
-            for (auto const &entry :
-                 std::filesystem::recursive_directory_iterator(m_commandLineArgs->sourceDir())) {
+            enum class HeaderOrigin { SourceTree, Generated };
+            const auto scanHeaderFile = [this, &error](const std::filesystem::path &path,
+                                                       bool isRegularFile, HeaderOrigin origin) {
+                const std::string filePath = path.generic_string();
+                const bool isHeaderFlag = isHeader(path);
+                const bool isDocFileHeuristicFlag = isDocFileHeuristic(filePath);
+                const bool isGenerated = origin == HeaderOrigin::Generated;
 
-                const bool isRegularFile = entry.is_regular_file();
-                const bool isHeaderFlag = isHeader(entry);
-                const bool isDocFileHeuristicFlag =
-                    isDocFileHeuristic(entry.path().generic_string());
-                const bool shouldProcessHeader =
-                    isRegularFile && isHeaderFlag && !isDocFileHeuristicFlag;
-                const std::string filePath = entry.path().generic_string();
-
-                if (shouldProcessHeader) {
-                    scannerDebug() << "Processing header: " << filePath << std::endl;
+                if (isRegularFile && isHeaderFlag && !isDocFileHeuristicFlag) {
+                    scannerDebug() << "Processing header: " << filePath
+                                   << " isGenerated: " << isGenerated << std::endl;
                     if (!processHeader(makeHeaderAbsolute(filePath)))
                         error = SyncFailed;
                 } else {
@@ -714,8 +712,25 @@ public:
                         << " isRegularFile: " << isRegularFile
                         << " isHeaderFlag: " << isHeaderFlag
                         << " isDocFileHeuristicFlag: " << isDocFileHeuristicFlag
+                        << " isGenerated: " << isGenerated
                         << std::endl;
                 }
+            };
+
+            for (auto const &entry :
+                 std::filesystem::recursive_directory_iterator(m_commandLineArgs->sourceDir())) {
+                scanHeaderFile(entry.path(), entry.is_regular_file(),
+                               HeaderOrigin::SourceTree);
+            }
+
+            // Headers that are generated into the build directory are not covered by the source
+            // directory scan above, so process them explicitly.
+            for (const auto &header : m_commandLineArgs->generatedHeaders()) {
+                if (header.empty())
+                    continue;
+                const auto headerPath = makeHeaderAbsolute(header);
+                scanHeaderFile(headerPath, std::filesystem::is_regular_file(headerPath),
+                               HeaderOrigin::Generated);
             }
         } else {
             // Since the list of header file is quite big syncqt supports response files to avoid
