@@ -467,33 +467,6 @@ To disable this behavior, set this variable to \c TRUE.
 */
 
 /*!
-\page cmake-variable-qt-harmonyos-hvigor.html
-\ingroup cmake-variables-qtcore
-\ingroup cmake-harmonyos-build-variables
-
-\title QT_HARMONYOS_HVIGOR
-\target cmake-variable-QT_HARMONYOS_HVIGOR
-
-\summary {Path to the hvigor wrapper used to build HAP packages.}
-
-\cmakevariablesince 6.12
-\preliminarycmakevariable
-\cmakevariableharmonyosonly
-
-Specifies the path to the \c hvigor wrapper script (\c hvigorw) that is invoked
-to build HAP packages.
-
-The
-\l{cmake-target-property-QT_HARMONYOS_HVIGOR}{QT_HARMONYOS_HVIGOR target
-property} takes precedence over this variable. If neither is set, the
-\c QT_HARMONYOS_HVIGOR environment variable is consulted when the HAP is built.
-As a last resort, the \c hvigorw script that is part of the generated package
-is used.
-
-\sa{cmake-target-property-QT_HARMONYOS_HVIGOR}{QT_HARMONYOS_HVIGOR}
-*/
-
-/*!
 \page cmake-variable-qt-host-path.html
 \ingroup cmake-variables-qtcore
 

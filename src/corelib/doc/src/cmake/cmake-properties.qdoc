@@ -932,40 +932,6 @@ set_target_properties(myapp PROPERTIES
 */
 
 /*!
-\page cmake-target-property-qt-harmonyos-hvigor.html
-\ingroup cmake-properties-qtcore
-\ingroup cmake-target-properties-qtcore
-\ingroup cmake-harmonyos-build-properties
-
-\title QT_HARMONYOS_HVIGOR
-\target cmake-target-property-QT_HARMONYOS_HVIGOR
-
-\summary {Path to the hvigor wrapper used to build the HAP.}
-
-\cmakepropertysince 6.12
-\preliminarycmakeproperty
-\cmakepropertyharmonyosonly
-
-Specifies the path to the \c hvigor wrapper script (\c hvigorw) that is invoked
-to build the HAP package for the target.
-
-This property takes precedence over the
-\l{cmake-variable-QT_HARMONYOS_HVIGOR}{QT_HARMONYOS_HVIGOR CMake variable},
-which in turn falls back to the \c QT_HARMONYOS_HVIGOR environment variable. If
-none of them is set, the \c hvigorw script that is part of the generated
-package is used. Set the property to use a different \c hvigor for a specific
-target.
-
-\badcode
-set_target_properties(myapp PROPERTIES
-    QT_HARMONYOS_HVIGOR "/path/to/command-line-tools/bin/hvigorw"
-)
-\endcode
-
-\sa{cmake-variable-QT_HARMONYOS_HVIGOR}{QT_HARMONYOS_HVIGOR}
-*/
-
-/*!
 \group cmake-source-file-properties-qtcore
 \title CMake Source File Properties in Qt6 Core
 \brief Lists CMake file properties used in Qt6::Core.

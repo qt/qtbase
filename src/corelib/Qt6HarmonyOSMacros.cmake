@@ -611,18 +611,13 @@ function(_qt_internal_harmonyos_add_hap_target target)
             "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}/${QT6_HOST_INFO_BINDIR}/harmonydeployqt")
     endif()
 
-    # Check for hvigor path: target property takes precedence over global variable
-    get_target_property(_hvigor_path ${target} QT_HARMONYOS_HVIGOR)
-    if(NOT _hvigor_path OR _hvigor_path STREQUAL "_hvigor_path-NOTFOUND")
-        if(DEFINED QT_HARMONYOS_HVIGOR)
-            set(_hvigor_path "${QT_HARMONYOS_HVIGOR}")
-        else()
-            set(_hvigor_path "")
-        endif()
-    endif()
-
-    if(_hvigor_path)
-        set(_hvigor_args --hvigor "${_hvigor_path}")
+    # hvigor tool path override. HARMONYOS_HVIGOR is an internal cache variable,
+    # also populated from the QT_HARMONYOS_HVIGOR environment variable above. The
+    # hvigorw wrapper is part of the build toolchain, not per-target metadata.
+    # When unset, harmonydeployqt auto-detects the hvigorw script inside the
+    # generated package.
+    if(HARMONYOS_HVIGOR)
+        set(_hvigor_args --hvigor "${HARMONYOS_HVIGOR}")
     else()
         set(_hvigor_args "")
     endif()
