@@ -2005,7 +2005,9 @@ public:
         MaxUniformBufferRange,
         MaxVertexInputs,
         MaxVertexOutputs,
-        ShadingRateImageTileSize
+        ShadingRateImageTileSize,
+        MaxVertexStorageBuffers,
+        MaxFragmentStorageBuffers
     };
 
     ~QRhi();

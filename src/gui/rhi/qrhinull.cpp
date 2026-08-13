@@ -148,6 +148,9 @@ int QRhiNull::resourceLimit(QRhi::ResourceLimit limit) const
         return 32;
     case QRhi::MaxVertexOutputs:
         return 32;
+    case QRhi::MaxVertexStorageBuffers:
+    case QRhi::MaxFragmentStorageBuffers:
+        return 32;
     case QRhi::ShadingRateImageTileSize:
         return 0;
     }

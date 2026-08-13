@@ -1264,6 +1264,30 @@ Q_LOGGING_CATEGORY(QRHI_LOG_RUB, "qt.rhi.rub")
     Otherwise a value such as 16, indicating, for example, a tile size of 16x16.
     Each byte in the (R8UI) shading rate texture defines then the shading rate
     for a tile of 16x16 pixels. See \l QRhiShadingRateMap for details.
+
+    \value [since 6.13] MaxVertexStorageBuffers The maximum number of
+    storage buffers that can be bound for reading (bufferLoad) in the
+    vertex stage. Can legitimately be 0: OpenGL ES makes vertex-stage
+    storage blocks optional even on 3.1 and newer, and many mobile
+    drivers report 0 while supporting them via Vulkan on the same GPU;
+    Direct 3D 11 has no vertex-stage storage buffer support at all.
+    Clients reading storage buffers in the vertex shader must therefore
+    check this even when QRhi::Compute is supported. Write access can be
+    more restricted than this value suggests: with Vulkan it additionally
+    requires the vertexPipelineStoresAndAtomics device feature, and with
+    Direct 3D 12 unordered access has lower, resource-binding-tier
+    dependent limits. With Metal the value is the size of the buffer
+    argument table, which is shared with vertex inputs and uniform
+    buffers, so the full count is not available in combination with them.
+
+    \value [since 6.13] MaxFragmentStorageBuffers The maximum number of
+    storage buffers that can be bound for reading (bufferLoad) in the
+    fragment stage. Like the vertex stage, this is optional in OpenGL ES
+    (only compute-stage storage blocks are mandatory), so 0 is a
+    legitimate value. The write access and Metal argument table notes
+    from MaxVertexStorageBuffers apply here as well; with Direct 3D 11
+    the value reflects the unordered access view slots, which are shared
+    with render target outputs.
  */
 
 /*!

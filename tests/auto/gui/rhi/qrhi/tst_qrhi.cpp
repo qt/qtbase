@@ -478,6 +478,8 @@ void tst_QRhi::create()
         const int uniBufRangeMax = rhi->resourceLimit(QRhi::MaxUniformBufferRange);
         const int maxVertexInputs = rhi->resourceLimit(QRhi::MaxVertexInputs);
         const int maxVertexOutputs = rhi->resourceLimit(QRhi::MaxVertexOutputs);
+        const int maxVertexStorageBuffers = rhi->resourceLimit(QRhi::MaxVertexStorageBuffers);
+        const int maxFragmentStorageBuffers = rhi->resourceLimit(QRhi::MaxFragmentStorageBuffers);
 
         QVERIFY(texMin >= 1);
         QVERIFY(texMax >= texMin);
@@ -488,6 +490,10 @@ void tst_QRhi::create()
         QVERIFY(uniBufRangeMax >= 224 * 4 * 4);
         QVERIFY(maxVertexInputs >= 8);
         QVERIFY(maxVertexOutputs >= 8);
+        // 0 is legitimate (optional per stage in OpenGL ES, no vertex-stage
+        // support in the D3D11 backend), negative is not.
+        QVERIFY(maxVertexStorageBuffers >= 0);
+        QVERIFY(maxFragmentStorageBuffers >= 0);
 
         QVERIFY(rhi->nativeHandles());
 

@@ -962,6 +962,9 @@ int QRhiMetal::resourceLimit(QRhi::ResourceLimit limit) const
         return 31;
     case QRhi::MaxVertexOutputs:
         return 15; // use the minimum from MTLGPUFamily1/2/3
+    case QRhi::MaxVertexStorageBuffers:
+    case QRhi::MaxFragmentStorageBuffers:
+        return 31;
     case QRhi::ShadingRateImageTileSize:
         return 0;
     default:

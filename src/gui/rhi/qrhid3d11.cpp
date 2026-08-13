@@ -760,6 +760,11 @@ int QRhiD3D11::resourceLimit(QRhi::ResourceLimit limit) const
         return D3D11_VS_INPUT_REGISTER_COUNT;
     case QRhi::MaxVertexOutputs:
         return D3D11_VS_OUTPUT_REGISTER_COUNT;
+    case QRhi::MaxVertexStorageBuffers:
+        return 0;
+    case QRhi::MaxFragmentStorageBuffers:
+        return featureLevel >= D3D_FEATURE_LEVEL_11_1
+                ? D3D11_1_UAV_SLOT_COUNT : D3D11_PS_CS_UAV_REGISTER_COUNT;
     case QRhi::ShadingRateImageTileSize:
         return 0;
     default:

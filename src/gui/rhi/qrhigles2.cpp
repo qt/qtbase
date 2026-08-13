@@ -438,6 +438,18 @@ QT_BEGIN_NAMESPACE
 #define GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS 0x90EB
 #endif
 
+#ifndef GL_MAX_VERTEX_SHADER_STORAGE_BLOCKS
+#define GL_MAX_VERTEX_SHADER_STORAGE_BLOCKS 0x90D6
+#endif
+
+#ifndef GL_MAX_FRAGMENT_SHADER_STORAGE_BLOCKS
+#define GL_MAX_FRAGMENT_SHADER_STORAGE_BLOCKS 0x90DA
+#endif
+
+#ifndef GL_MAX_SHADER_STORAGE_BUFFER_BINDINGS
+#define GL_MAX_SHADER_STORAGE_BUFFER_BINDINGS 0x90DD
+#endif
+
 #ifndef GL_MAX_COMPUTE_WORK_GROUP_COUNT
 #define GL_MAX_COMPUTE_WORK_GROUP_COUNT   0x91BE
 #endif
@@ -1036,6 +1048,14 @@ bool QRhiGles2::create(QRhi::Flags flags)
         caps.compute = caps.ctxMajor > 4 || (caps.ctxMajor == 4 && caps.ctxMinor >= 3); // 4.3
 
     if (caps.compute) {
+        GLint ssboBindings = 0;
+        f->glGetIntegerv(GL_MAX_SHADER_STORAGE_BUFFER_BINDINGS, &ssboBindings);
+        GLint blocks = 0;
+        f->glGetIntegerv(GL_MAX_VERTEX_SHADER_STORAGE_BLOCKS, &blocks);
+        caps.maxVertexStorageBuffers = qMin(blocks, ssboBindings);
+        blocks = 0;
+        f->glGetIntegerv(GL_MAX_FRAGMENT_SHADER_STORAGE_BLOCKS, &blocks);
+        caps.maxFragmentStorageBuffers = qMin(blocks, ssboBindings);
         f->glGetIntegerv(GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS, &caps.maxThreadsPerThreadGroup);
         GLint tgPerDim[3];
         f->glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0, &tgPerDim[0]);
@@ -1780,6 +1800,10 @@ int QRhiGles2::resourceLimit(QRhi::ResourceLimit limit) const
         return caps.maxVertexInputs;
     case QRhi::MaxVertexOutputs:
         return caps.maxVertexOutputs;
+    case QRhi::MaxVertexStorageBuffers:
+        return caps.maxVertexStorageBuffers;
+    case QRhi::MaxFragmentStorageBuffers:
+        return caps.maxFragmentStorageBuffers;
     case QRhi::ShadingRateImageTileSize:
         return 0;
     default:

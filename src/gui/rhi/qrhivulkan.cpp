@@ -5683,6 +5683,9 @@ int QRhiVulkan::resourceLimit(QRhi::ResourceLimit limit) const
         return physDevProperties.limits.maxVertexInputAttributes;
     case QRhi::MaxVertexOutputs:
         return physDevProperties.limits.maxVertexOutputComponents / 4;
+    case QRhi::MaxVertexStorageBuffers:
+    case QRhi::MaxFragmentStorageBuffers:
+        return int(physDevProperties.limits.maxPerStageDescriptorStorageBuffers);
     case QRhi::ShadingRateImageTileSize:
         return caps.imageBasedShadingRateTileSize;
     default:
