@@ -406,17 +406,9 @@ void QDxgiVSyncService::registerWindow(QWindow *window)
     // find any IDXGIOutput for the window when moving it to a different screen.
     // Add a delay by going through the event loop.
 
-    // registerWindow()/unregisterWindow() are meant to be called symmetrically
-    // by the QRhi D3D backends' swapchain create()/destroy(), but swapchain
-    // teardown happens on the QRhi's thread and is not guaranteed to run before
-    // the QWindow itself gets destroyed on the GUI thread (this has been
-    // observed together with "QSGThreadedRenderLoop cleanup ... swapchain ...
-    // still alive" warnings). Without this, a missed unregisterWindow() leaves
-    // a dangling QWindow* in the map above, which refAdapter()/beginFrame()
-    // would later dereference via updateWindowData()/outputForWindow(),
-    // crashing. Eagerly drop the registration as soon as the QWindow starts
-    // destructing; unregisterWindow() only ever uses the pointer as an opaque
-    // hash key, so this is safe to call even though the QWindow part of the
+    // Ensure a missed unregisterWindow() does not leave a dangling QWindow pointer
+    // behind. unregisterWindow() only ever uses the pointer as an opaque hash key, so
+    // this is safe to call on QObject::destroyed even though the QWindow part of the
     // object has already been destroyed by this point.
     QObject::connect(window, &QObject::destroyed, window, [this, window](QObject *) {
         qCDebug(lcQpaScreenUpdates)
