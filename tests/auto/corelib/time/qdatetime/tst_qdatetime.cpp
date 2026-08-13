@@ -2455,10 +2455,13 @@ void tst_QDateTime::springForward()
 
     QDateTime direct = QDateTime(day.addDays(-step), time, zone).addDays(step);
     QVERIFY(direct.isValid());
-    const auto maybeExpectFail = [](const char *rowId) {
+    const auto maybeExpectFail = [&zone](const char *rowId) {
 # ifdef Q_OS_QNX
-        // Has pre-2022g zone info, at least until we get a more recent QNX release:
-        QEXPECT_FAIL(rowId, "QTBUG-145768: we need a post-2022 QNX", Abort);
+        // QNX 7.1 and 8.0 both ship outdated zone data, but either can be given
+        // a newer IANA release, so key off the data, not the OS: Singapore is
+        // +08:00 at this instant once the 1981 transition is known.
+        if (zone.offsetFromUtc(QDateTime(QDate(1981, 12, 31), QTime(16, 0), UTC)) != 8 * 3600)
+            QEXPECT_FAIL(rowId, "QTBUG-145768: zone data lacks the 1981 transition", Abort);
 # elif defined(USING_WIN_TZ)
         QEXPECT_FAIL(rowId, "QTBUG-145768: system historical zone data is limited", Abort);
 # elif defined(INADEQUATE_TZ_DATA) && Q_PROCESSOR_WORDSIZE < 8
