@@ -624,6 +624,19 @@ static bool copyTemplate(const Options &options)
         return false;
     }
 
+    // The module manifest is mandatory; without it hvigor cannot build the HAP and
+    // customizeTemplate() would silently skip every substitution, producing a broken
+    // package. Fail early with a targeted message instead.
+    const QString moduleManifest =
+            options.harmonyOsPackageSourceDirectory + "/entry/src/main/module.json5"_L1;
+    if (!QFile::exists(moduleManifest)) {
+        fprintf(stderr,
+                "'%s' is not a valid HarmonyOS package template: missing "
+                "entry/src/main/module.json5\n",
+                qPrintable(options.harmonyOsPackageSourceDirectory));
+        return false;
+    }
+
     // Create output directory
     QDir outputDir(options.outputDirectory);
     if (outputDir.exists()) {
