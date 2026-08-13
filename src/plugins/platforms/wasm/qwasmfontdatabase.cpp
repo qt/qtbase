@@ -6,6 +6,7 @@
 #include "qwasmintegration.h"
 
 #include <QtCore/qfile.h>
+#include <QtCore/qdir.h>
 #include <QtCore/private/qstdweb_p.h>
 #include <QtCore/private/qeventdispatcher_wasm_p.h>
 #include <QtGui/private/qguiapplication_p.h>
@@ -274,6 +275,23 @@ void QWasmFontDatabase::populateFontDatabase()
             break;
 
         QFreeTypeFontDatabase::addTTFile(theFont.readAll(), fontFileName.toLatin1());
+    }
+
+    // Load font files from the platform font directory. On wasm this is a
+    // location in the in-memory file system, which applications can populate
+    // using the wasm preload mechanism without writing any code.
+    const QDir fontDirectory(fontDir());
+    if (fontDirectory.exists()) {
+        static const QString nameFilters[] = { u"*.ttf"_s, u"*.otf"_s, u"*.ttc"_s };
+        const auto entries = fontDirectory.entryInfoList(
+                QStringList::fromReadOnlyData(nameFilters), QDir::Files);
+        qCDebug(lcQpaFonts) << "Loading" << entries.count() << "font files from" << fontDir();
+        for (const QFileInfo &entry : entries) {
+            QFreeTypeFontDatabase::addTTFile(QByteArray(),
+                                             QFile::encodeName(entry.absoluteFilePath()));
+        }
+    } else {
+        qCDebug(lcQpaFonts) << "Font directory" << fontDir() << "does not exist";
     }
 
     // Get config options for controlling local fonts usage
