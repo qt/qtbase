@@ -125,7 +125,6 @@ function(qt_internal_target_sync_headers target
         -qpaIncludeDir "${module_build_interface_qpa_include_dir}"
         -rhiIncludeDir "${module_build_interface_rhi_include_dir}"
         -ssgIncludeDir "${module_build_interface_ssg_include_dir}"
-        -generatedHeaders ${module_headers_generated}
         ${qpa_filter_argument}
         ${rhi_filter_argument}
         ${ssg_filter_argument}
@@ -155,10 +154,14 @@ function(qt_internal_target_sync_headers target
         "(.+/(ui_)[^/]+\\.h|${CMAKE_CURRENT_SOURCE_DIR}(/.+)?/doc/+\\.h)")
 
     # Filter out all headers that should be excluded from documentation generation.
-    # Documentation generation shouldn't depend on headers like the dbus-generated ones.
+    # Documentation generation shouldn't depend on headers like the dbus-generated ones or any
+    # others that invoke tooling to be created.
+    # But it's okay for them to contain file(GENERATE)'d headers which involve no tool calls.
     set(module_headers_for_docs "${module_headers}")
+    set(module_headers_generated_for_docs "${module_headers_generated}")
     if(module_headers_exclude_from_docs)
         list(REMOVE_ITEM module_headers_for_docs ${module_headers_exclude_from_docs})
+        list(REMOVE_ITEM module_headers_generated_for_docs ${module_headers_exclude_from_docs})
     endif()
 
     set(syncqt_staging_dir "${module_build_interface_include_dir}/.syncqt_staging")
@@ -168,6 +171,7 @@ function(qt_internal_target_sync_headers target
         -headers ${module_headers}
         -stagingDir "${syncqt_staging_dir}"
         -knownModules ${known_modules}
+        -generatedHeaders ${module_headers_generated}
         ${version_script_args}
     )
     list(JOIN syncqt_args "\n" syncqt_args_string)
@@ -227,10 +231,13 @@ function(qt_internal_target_sync_headers target
         add_dependencies(thirdparty_sync_headers ${target}_sync_headers)
     endif()
     # This target is required when building docs, to make all header files and their aliases
-    # available for qdoc.
-    # ${target}_sync_headers is added as dependency to make sure that
-    # ${target}_sync_all_public_headers is running after ${target}_sync_headers, when building docs.
+    # available for qdoc, including generated headers that are not created by tools.
     set(syncqt_all_args "${common_syncqt_arguments};-all")
+    if(module_headers_generated_for_docs)
+        list(APPEND syncqt_all_args
+            -generatedHeaders ${module_headers_generated_for_docs}
+        )
+    endif()
     list(JOIN syncqt_all_args "\n" syncqt_all_args_string)
     set(syncqt_all_args_rsp "${binary_dir_real}/${target}_syncqt_all_args")
     qt_configure_file(OUTPUT "${syncqt_all_args_rsp}" CONTENT "${syncqt_all_args_string}")
@@ -248,6 +255,7 @@ function(qt_internal_target_sync_headers target
             # not happen, but it ends up happening, we will have to implement some kind of lock
             # file mechanism.
             ${module_headers_for_docs}
+            ${module_headers_generated_for_docs}
             ${syncqt_all_args_rsp}
             ${QT_CMAKE_EXPORT_NAMESPACE}::syncqt
         VERBATIM
