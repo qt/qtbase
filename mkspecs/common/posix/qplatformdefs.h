@@ -26,6 +26,7 @@
 #define QT_OPEN                 ::open64
 #define QT_LSEEK                ::lseek64
 #define QT_FSTAT                ::fstat64
+#define QT_FSTATAT              ::fstatat64
 #define QT_FTRUNCATE            ::ftruncate64
 
 // Standard C89
@@ -51,6 +52,7 @@
 #define QT_OPEN                 ::open
 #define QT_LSEEK                ::lseek
 #define QT_FSTAT                ::fstat
+#define QT_FSTATAT              ::fstatat
 #define QT_FTRUNCATE            ::ftruncate
 
 // Posix extensions to C89

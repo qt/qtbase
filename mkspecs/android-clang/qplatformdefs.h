@@ -44,6 +44,7 @@
 #define QT_STATBUF4TSTAT        struct stat64
 #define QT_STAT                 ::stat64
 #define QT_FSTAT                ::fstat64
+#define QT_FSTATAT              ::fstatat64
 #define QT_LSTAT                ::lstat64
 #define QT_OPEN                 ::open64
 #define QT_TRUNCATE             ::truncate64
@@ -54,6 +55,7 @@
 #define QT_STATBUF4TSTAT        struct stat
 #define QT_STAT                 ::stat
 #define QT_FSTAT                ::fstat
+#define QT_FSTATAT              ::fstatat
 #define QT_LSTAT                ::lstat
 #define QT_OPEN                 ::open
 #define QT_TRUNCATE             ::truncate

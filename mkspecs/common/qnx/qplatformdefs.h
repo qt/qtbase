@@ -47,6 +47,8 @@
 #endif
 #include "../posix/qplatformdefs.h"
 
+#undef QT_FSTATAT
+
 #define QT_SNPRINTF ::snprintf
 #define QT_VSNPRINTF ::vsnprintf
 

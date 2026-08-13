@@ -57,6 +57,7 @@ public:
     Qt::HANDLE fileHandle = Qt::HANDLE(-1); // INVALID_HANDLE_VALUE
 #else
     int fileHandle = -1;
+    int dirHandle = -1;     // the directory where the file is located
 #endif
 
     std::chrono::milliseconds staleLockTime = std::chrono::seconds{30};

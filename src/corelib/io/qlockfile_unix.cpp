@@ -47,6 +47,13 @@
 # endif
 #endif
 
+#ifndef O_DIRECTORY
+#  define O_DIRECTORY   0
+#endif
+#ifndef O_PATH
+#  define O_PATH        0
+#endif
+
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
@@ -190,10 +197,37 @@ static NativeLocking setNativeLocks(int fd)
     return NativeLocking::UnknownError;
 }
 
-static bool releaseLockFile(int fileHandle, const QByteArray &fileName)
+static QByteArrayView baseName(const QByteArray &fileName)
 {
+    // assert that the incoming string is null-terminated
+    Q_ASSERT(fileName.data()[fileName.size()] == '\0');
+
+    // find the last separator
+    qsizetype sep = fileName.lastIndexOf('/');
+    if (sep < 0)
+        return fileName;        // relative path is *just* the file name
+    return QByteArrayView(fileName).sliced(sep + 1);
+}
+
+static bool releaseLockFile(int fileHandle, int dirfd, const QByteArray &fullFileName)
+{
+#ifdef AT_FDCWD
+    if (dirfd < 0)
+        dirfd = AT_FDCWD;
+#else
+    // fake it
+    auto unlinkat = [](int fd, const char *name, int /*flags*/) {
+        Q_ASSERT(fd < 0);
+        return unlink(name);
+    };
+#endif
+
+    QByteArrayView fileName = fullFileName;
+    if (dirfd >= 0)
+        fileName = baseName(fullFileName);
+
     // first we try to unlink the file while it's locked
-    int ret = unlink(fileName);
+    int ret = unlinkat(dirfd, fileName.data(), 0);
     int savedErrno = ret == 0 ? 0 : errno;
     qt_safe_close(fileHandle);
 
@@ -203,7 +237,7 @@ static bool releaseLockFile(int fileHandle, const QByteArray &fileName)
     case EBUSY:     // observed with some NFS servers
     case ETXTBSY:   // not observed, just defensive
     case EPERM:     // probably can't unlink() an open file (independent of locks)
-        ret = unlink(fileName.data());
+        ret = unlinkat(dirfd, fileName.data(), 0);
         savedErrno = ret == 0 ? 0 : errno;
     }
 
@@ -224,7 +258,30 @@ QLockFile::LockError QLockFilePrivate::tryLock_sys()
 {
     constexpr int OpenFlags = QT_OPEN_RDWR | QT_OPEN_CREAT | QT_OPEN_EXCL;
     const QByteArray lockFileName = QFile::encodeName(fileName);
-    QUniqueFileDescriptorHandle fd(qt_safe_open(lockFileName.constData(), OpenFlags, 0666));
+    QUniqueFileDescriptorHandle dirfd, fd;
+
+#ifdef AT_FDCWD
+    QByteArrayView base = baseName(lockFileName);
+    {
+        // attempt to open the directory where the file name will be
+        constexpr int DirOpenFlags = QT_OPEN_RDONLY | O_DIRECTORY | O_PATH | O_CLOEXEC;
+        QByteArray dirName;
+        if (qsizetype dirNameLen = lockFileName.size() - base.size())
+            dirName = lockFileName.first(dirNameLen); // including slash
+        else
+            dirName = "."_ba;
+
+        dirfd.reset(qt_safe_open(dirName.constBegin(), DirOpenFlags));
+        if (dirfd.get() >= 0) {
+            int ret;
+            QT_EINTR_LOOP(ret, openat(dirfd.get(), base.begin(), OpenFlags | O_CLOEXEC, 0666));
+            fd.reset(ret);      // may be -1
+        }
+    }
+#endif
+
+    if (dirfd.get() < 0)
+        fd.reset(qt_safe_open(lockFileName.constBegin(), OpenFlags, 0666));
     if (fd.get() < 0) {
         switch (errno) {
         case EEXIST:
@@ -247,13 +304,19 @@ QLockFile::LockError QLockFilePrivate::tryLock_sys()
 
     QByteArray fileData = lockFileContents();
     if (qt_write_loop(fd.get(), fileData.constData(), fileData.size()) < fileData.size()) {
-        releaseLockFile(fd.release(), lockFileName);
+        releaseLockFile(fd.release(), dirfd.get(), lockFileName);
         return QLockFile::UnknownError; // partition full
     }
 
     // Confirm the lock file is our file.
-    QT_STATBUF fromFs, fromFd = {};
-    if (QT_STAT(lockFileName.constData(), &fromFs) < 0) {
+    QT_STATBUF fromFs = {}, fromFd = {};
+#if defined(AT_FDCWD) && defined(QT_FSTATAT)
+    if (dirfd.get() >= 0 && QT_FSTATAT(dirfd.get(), base.begin(), &fromFs, 0) < 0) {
+        // probably ENOENT, meaning the file has disappeared
+        return QLockFile::LockFailedError;
+    }
+#endif
+    if (fromFs.st_dev == 0 && QT_STAT(lockFileName.constData(), &fromFs) < 0) {
         // probably ENOENT, meaning the file has disappeared
         return QLockFile::LockFailedError;
     }
@@ -265,6 +328,7 @@ QLockFile::LockError QLockFilePrivate::tryLock_sys()
 
     // We hold the lock, continue.
     fileHandle = fd.release();
+    dirHandle = dirfd.release();
 
     // Sync to disk if possible. Ignore errors (e.g. not supported).
 #if defined(_POSIX_SYNCHRONIZED_IO) && _POSIX_SYNCHRONIZED_IO > 0
@@ -285,7 +349,7 @@ bool QLockFilePrivate::removeStaleLock()
 
     if (setNativeLocks(fd) != NativeLocking::Failed) {
         // if we applied native locks, the file was stale; do delete it
-        return releaseLockFile(fd, lockFileName);
+        return releaseLockFile(fd, -1, lockFileName);
     }
 
     // there was a lock, so it's not stale
@@ -415,8 +479,11 @@ void QLockFile::unlock()
         return;
 
     const QByteArray lockFileName = QFile::encodeName(d->fileName);
-    releaseLockFile(d->fileHandle, lockFileName);
+    releaseLockFile(d->fileHandle, d->dirHandle, lockFileName);
+    if (d->dirHandle != -1)
+        close(d->dirHandle);
     d->fileHandle = -1;
+    d->dirHandle = -1;
     d->lockError = QLockFile::NoError;
     d->isLocked = false;
 }

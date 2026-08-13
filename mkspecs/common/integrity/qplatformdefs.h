@@ -60,6 +60,7 @@ inline uid_t getuid(void)
 }
 
 #include "../posix/qplatformdefs.h"
+#undef QT_FSTATAT
 #undef QT_OPEN_LARGEFILE
 #define QT_OPEN_LARGEFILE 0
 #define PATH_MAX 1024

@@ -24,6 +24,7 @@
 
 #include "../common/posix/qplatformdefs.h"
 
+#undef QT_FSTATAT
 #undef QT_OPEN_LARGEFILE
 
 #define O_LARGEFILE         0
