@@ -248,6 +248,9 @@ Q_DECLARE_METATYPE(Qt::DateFormat)
             QCOMPARE(actual_QDT_C, expect_QDT_C); \
             QCOMPARE(actual_QDT_C.timeRepresentation(), expect_QDT_C.timeRepresentation()); \
             QCOMPARE(actual_QDT_C.offsetFromUtc(), expect_QDT_C.offsetFromUtc()); \
+            QCOMPARE(actual_QDT_C.toMSecsSinceEpoch(), expect_QDT_C.toMSecsSinceEpoch()); \
+            QCOMPARE(actual_QDT_C.date(), expect_QDT_C.date()); \
+            QCOMPARE(actual_QDT_C.time(), expect_QDT_C.time()); \
             __VA_ARGS__ \
         } else { \
             QVERIFY(!actual_QDT_C.isValid()); \
@@ -818,33 +821,11 @@ void tst_QDateTime::setMSecsSinceEpoch()
     dt.setTimeZone(UTC);
     dt.setMSecsSinceEpoch(msecs);
 
-    QCOMPARE(dt, utc);
-    QCOMPARE(dt.date(), utc.date());
-    QCOMPARE(dt.time(), utc.time());
-    QCOMPARE(dt.timeSpec(), Qt::UTC);
-
-    {
-        QDateTime dt1 = QDateTime::fromMSecsSinceEpoch(msecs, UTC);
-        QCOMPARE(dt1, utc);
-        QCOMPARE(dt1.date(), utc.date());
-        QCOMPARE(dt1.time(), utc.time());
-        QCOMPARE(dt1.timeSpec(), Qt::UTC);
-    }
-    {
-        QDateTime dt1(utc.date(), utc.time(), UTC);
-        QCOMPARE(dt1, utc);
-        QCOMPARE(dt1.date(), utc.date());
-        QCOMPARE(dt1.time(), utc.time());
-        QCOMPARE(dt1.timeSpec(), Qt::UTC);
-    }
-    {
-        // used to fail to clear the ShortData bit, causing corruption
-        QDateTime dt1 = dt.addDays(0);
-        QCOMPARE(dt1, utc);
-        QCOMPARE(dt1.date(), utc.date());
-        QCOMPARE(dt1.time(), utc.time());
-        QCOMPARE(dt1.timeSpec(), Qt::UTC);
-    }
+    QDTCOMPARE(dt, utc);
+    QDTCOMPARE(QDateTime::fromMSecsSinceEpoch(msecs, UTC), utc);
+    QCOMPARE(QDateTime(utc.date(), utc.time(), UTC), utc);
+    // Used to fail to clear the ShortData bit, causing corruption:
+    QDTCOMPARE(dt.addDays(0), utc);
 
     if (zoneIsCET && (msecs == Bound::max()
                       // LocalTime will also overflow for min in a CET zone west
@@ -1092,20 +1073,13 @@ void tst_QDateTime::toString_isoDate()
     const QString result = datetime.toString(format);
     QCOMPARE(result, expected);
 
-    const QDateTime resultDatetime = QDateTime::fromString(result, format);
-    if (QByteArrayView(QTest::currentDataTag()) == "invalid") {
-        QCOMPARE(resultDatetime, QDateTime());
-    } else {
-        const QDateTime when =
-            QByteArrayView(QTest::currentDataTag()) == "without-ms"
-            ? datetime.addMSecs(-datetime.time().msec()) : datetime;
-        QCOMPARE(resultDatetime.toMSecsSinceEpoch(), when.toMSecsSinceEpoch());
-        QCOMPARE(resultDatetime, when);
-        QCOMPARE(resultDatetime.date(), when.date());
-        QCOMPARE(resultDatetime.time(), when.time());
-        QCOMPARE(resultDatetime.timeSpec(), when.timeSpec());
-        QCOMPARE(resultDatetime.offsetFromUtc(), when.offsetFromUtc());
-    }
+    QByteArrayView tag = QByteArrayView(QTest::currentDataTag());
+    QDTCOMPARE(QDateTime::fromString(result, format),
+               tag == "invalid"
+                   ? QDateTime()
+                   : tag == "without-ms"
+                       ? datetime.addMSecs(-datetime.time().msec())
+                       : datetime);
 }
 
 void tst_QDateTime::toString_isoDate_extra()
@@ -1162,12 +1136,7 @@ void tst_QDateTime::toString_textDate()
     QCOMPARE(result, expected);
 
 #if QT_CONFIG(datetimeparser)
-    QDateTime resultDatetime = QDateTime::fromString(result, Qt::TextDate);
-    QCOMPARE(resultDatetime, datetime);
-    QCOMPARE(resultDatetime.date(), datetime.date());
-    QCOMPARE(resultDatetime.time(), datetime.time());
-    QCOMPARE(resultDatetime.timeSpec(), datetime.timeSpec());
-    QCOMPARE(resultDatetime.offsetFromUtc(), datetime.offsetFromUtc());
+    QDTCOMPARE(QDateTime::fromString(result, Qt::TextDate), datetime);
 #endif
 }
 
@@ -1885,6 +1854,11 @@ void tst_QDateTime::toTimeSpec()
 {
     QFETCH(QDateTime, fromUtc);
     QFETCH(QDateTime, fromLocal);
+    // Precondition on well-formed data row: they represent the same instant in
+    // time, one in UTC, the other in local time:
+    QCOMPARE(fromLocal, fromUtc);
+    QCOMPARE(fromUtc.timeSpec(), Qt::UTC);
+    QCOMPARE(fromLocal.timeSpec(), Qt::LocalTime);
 
     QDateTime utcToUtc = fromUtc.toTimeSpec(Qt::UTC);
     QDateTime localToLocal = fromLocal.toTimeSpec(Qt::LocalTime);
@@ -1893,49 +1867,19 @@ void tst_QDateTime::toTimeSpec()
     QDateTime utcToOffset = fromUtc.toTimeSpec(Qt::OffsetFromUTC);
     QDateTime localToOffset = fromLocal.toTimeSpec(Qt::OffsetFromUTC);
 
-    QCOMPARE(utcToUtc, fromUtc);
-    QCOMPARE(utcToUtc.date(), fromUtc.date());
-    QCOMPARE(utcToUtc.time(), fromUtc.time());
-    QCOMPARE(utcToUtc.timeSpec(), Qt::UTC);
-
-    QCOMPARE(localToLocal, fromLocal);
-    QCOMPARE(localToLocal.date(), fromLocal.date());
-    QCOMPARE(localToLocal.time(), fromLocal.time());
-    QCOMPARE(localToLocal.timeSpec(), Qt::LocalTime);
-
-    QCOMPARE(utcToLocal, fromLocal);
-    QCOMPARE(utcToLocal.date(), fromLocal.date());
-    QCOMPARE(utcToLocal.time(), fromLocal.time());
-    QCOMPARE(utcToLocal.timeSpec(), Qt::LocalTime);
+    QDTCOMPARE(localToLocal, fromLocal);
+    QDTCOMPARE(utcToLocal, fromLocal);
     QCOMPARE(utcToLocal.toTimeSpec(Qt::UTC), fromUtc);
 
-    QCOMPARE(localToUtc, fromUtc);
-    QCOMPARE(localToUtc.date(), fromUtc.date());
-    QCOMPARE(localToUtc.time(), fromUtc.time());
-    QCOMPARE(localToUtc.timeSpec(), Qt::UTC);
+    QDTCOMPARE(utcToUtc, fromUtc);
+    QDTCOMPARE(localToUtc, fromUtc);
     QCOMPARE(localToUtc.toTimeSpec(Qt::LocalTime), fromLocal);
 
-    QCOMPARE(utcToUtc, localToUtc);
-    QCOMPARE(utcToUtc.date(), localToUtc.date());
-    QCOMPARE(utcToUtc.time(), localToUtc.time());
-    QCOMPARE(utcToUtc.timeSpec(), Qt::UTC);
-
-    QCOMPARE(utcToLocal, localToLocal);
-    QCOMPARE(utcToLocal.date(), localToLocal.date());
-    QCOMPARE(utcToLocal.time(), localToLocal.time());
-    QCOMPARE(utcToLocal.timeSpec(), Qt::LocalTime);
-
-    // OffsetToUTC becomes UTC
-    QCOMPARE(utcToOffset, fromUtc);
-    QCOMPARE(utcToOffset.date(), fromUtc.date());
-    QCOMPARE(utcToOffset.time(), fromUtc.time());
-    QCOMPARE(utcToOffset.timeSpec(), Qt::UTC);
+    // OffsetToUTC is actually just UTC, unchanged (no offset was given):
+    QDTCOMPARE(utcToOffset, fromUtc);
     QCOMPARE(utcToOffset.toTimeSpec(Qt::UTC), fromUtc);
 
-    QCOMPARE(localToOffset, fromUtc);
-    QCOMPARE(localToOffset.date(), fromUtc.date());
-    QCOMPARE(localToOffset.time(), fromUtc.time());
-    QCOMPARE(localToOffset.timeSpec(), Qt::UTC);
+    QDTCOMPARE(localToOffset, fromUtc);
     QCOMPARE(localToOffset.toTimeSpec(Qt::LocalTime), fromLocal);
 }
 
