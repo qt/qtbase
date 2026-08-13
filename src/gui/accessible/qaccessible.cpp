@@ -1995,22 +1995,21 @@ const char *qAccessibleEventString(QAccessible::Event event)
 }
 
 #ifndef QT_NO_DEBUG_STREAM
-/*! \internal */
-Q_GUI_EXPORT QDebug operator<<(QDebug d, const QAccessibleInterface *iface)
+static void qAccessiblePrintInterface(QDebug d, const QAccessibleInterface *iface)
 {
-    QDebugStateSaver saver(d);
-    if (!iface)
-        return d << "QAccessibleInterface(0x0)";
+    if (!iface) {
+        d << "QAccessibleInterface(0x0)";
+        return;
+    }
 
-    d.nospace();
     d << "QAccessibleInterface(" << Qt::hex << (const void *) iface << Qt::dec;
     if (iface->isValid()) {
-        d << " name=" << iface->text(QAccessible::Name) << ' ';
-        d << "role=" << qAccessibleRoleString(iface->role()) << ' ';
+        d << " name=" << iface->text(QAccessible::Name);
+        d << " role=" << qAccessibleRoleString(iface->role());
         if (iface->childCount())
-            d << "childc=" << iface->childCount() << ' ';
+            d << " childc=" << iface->childCount();
         if (iface->object()) {
-            d << "obj=" << iface->object();
+            d << " obj=" << iface->object();
         }
         QStringList stateStrings;
         QAccessible::State st = iface->state();
@@ -2024,15 +2023,46 @@ Q_GUI_EXPORT QDebug operator<<(QDebug d, const QAccessibleInterface *iface)
             stateStrings << u"invisible"_s;
 
         if (!stateStrings.isEmpty())
-            d << stateStrings.join(u'|');
+            d << ' ' << qUtf8Printable(stateStrings.join(u'|'));
 
         if (!st.invisible)
-            d << "rect=" << iface->rect();
+            d << " rect=" << iface->rect();
 
     } else {
         d << " invalid";
     }
     d << ')';
+}
+
+static void qAccessiblePrintInterface(QDebug d, const QAccessibleInterface *iface,
+                                      const QByteArray &prefix)
+{
+    qAccessiblePrintInterface(d, iface);
+
+    if (d.verbosity() <= QDebug::DefaultVerbosity || !iface || !iface->isValid())
+        return;
+
+    const int childCount = iface->childCount();
+    for (int i = 0; i < childCount; ++i) {
+        const bool isLastChild = i == childCount - 1;
+        d << '\n' << prefix.constData() << (isLastChild ? "└─ " : "├─ ");
+        qAccessiblePrintInterface(d, iface->child(i),
+                                  prefix + (isLastChild ? "   " : "│  "));
+    }
+}
+
+/*!
+    \internal
+
+    Streams \a iface as a single line. At a verbosity above
+    QDebug::DefaultVerbosity the accessible subtree below \a iface
+    is streamed as well, one line per node, connected up as a tree.
+*/
+Q_GUI_EXPORT QDebug operator<<(QDebug d, const QAccessibleInterface *iface)
+{
+    QDebugStateSaver saver(d);
+    d.nospace();
+    qAccessiblePrintInterface(d, iface, QByteArray());
     return d;
 }
 
