@@ -15,6 +15,7 @@
 
 #include "private/qcore_unix_p.h" // qt_safe_open
 #include "private/qfilesystementry_p.h"
+#include "private/quniquehandle_types_p.h"
 
 #if !defined(Q_OS_INTEGRITY)
 #include <sys/file.h>  // flock
@@ -156,11 +157,15 @@ static bool releaseLockFile(int fileHandle, const QByteArray &fileName)
     return false;
 }
 
+// This function is designed to deal with race conditions coming from two (or
+// more) threads/processes accessing the lock file at the same time, either in
+// tryLock_sys() itself or removeStaleLock() - both called by tryLock().
 QLockFile::LockError QLockFilePrivate::tryLock_sys()
 {
+    constexpr int OpenFlags = QT_OPEN_RDWR | QT_OPEN_CREAT | QT_OPEN_EXCL;
     const QByteArray lockFileName = QFile::encodeName(fileName);
-    const int fd = qt_safe_open(lockFileName.constData(), O_RDWR | O_CREAT | O_EXCL, 0666);
-    if (fd < 0) {
+    QUniqueFileDescriptorHandle fd(qt_safe_open(lockFileName.constData(), OpenFlags, 0666));
+    if (fd.get() < 0) {
         switch (errno) {
         case EEXIST:
             return QLockFile::LockFailedError;
@@ -172,22 +177,19 @@ QLockFile::LockError QLockFilePrivate::tryLock_sys()
         }
     }
     // Ensure nobody else can delete the file while we have it
-    if (!setNativeLocks(fd)) {
+    if (!setNativeLocks(fd.get())) {
         const int errnoSaved = errno;
         qWarning() << "setNativeLocks failed:" << qt_error_string(errnoSaved);
     }
 
     QByteArray fileData = lockFileContents();
-    if (qt_write_loop(fd, fileData.constData(), fileData.size()) < fileData.size()) {
-        qt_safe_close(fd);
-        if (unlink(lockFileName) != 0)
-            qWarning("QLockFile: Could not remove our own lock file %s: %ls.",
-                     lockFileName.constBegin(), qUtf16Printable(qt_error_string()));
+    if (qt_write_loop(fd.get(), fileData.constData(), fileData.size()) < fileData.size()) {
+        releaseLockFile(fd.release(), lockFileName);
         return QLockFile::UnknownError; // partition full
     }
 
     // We hold the lock, continue.
-    fileHandle = fd;
+    fileHandle = fd.release();
 
     // Sync to disk if possible. Ignore errors (e.g. not supported).
 #if defined(_POSIX_SYNCHRONIZED_IO) && _POSIX_SYNCHRONIZED_IO > 0
