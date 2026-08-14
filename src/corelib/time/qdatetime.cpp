@@ -3841,6 +3841,10 @@ QDateTime::Data QDateTimePrivate::create(QDate toDate, QTime toTime, const QTime
     \value First The later parts of this year are representable
     \value Last The earlier parts of this year are representable
 
+    The exact first and last representable datetimes fall within these years and
+    depend on the \l timeRepresentation() used. They can be determined by
+    passing suitable values to \l fromMSecsSinceEpoch().
+
     All dates strictly between these two years are also representable.
     Note, however, that the Gregorian Calendar has no year zero.
 
