@@ -4467,18 +4467,22 @@ static inline qint64 qrhi_std140_read_size(QShaderDescription::VariableType type
     switch (type) {
     case QShaderDescription::Float:
     case QShaderDescription::Int:
+    case QShaderDescription::Uint:
         elemSize = 4;
         break;
     case QShaderDescription::Vec2:
     case QShaderDescription::Int2:
+    case QShaderDescription::Uint2:
         elemSize = 8;
         break;
     case QShaderDescription::Vec3:
     case QShaderDescription::Int3:
+    case QShaderDescription::Uint3:
         elemSize = 12;
         break;
     case QShaderDescription::Vec4:
     case QShaderDescription::Int4:
+    case QShaderDescription::Uint4:
         elemSize = 16;
         break;
     case QShaderDescription::Mat3:
@@ -4492,16 +4496,12 @@ static inline qint64 qrhi_std140_read_size(QShaderDescription::VariableType type
         break;
     case QShaderDescription::Mat2:
         return 16;
-    case QShaderDescription::Uint:
     case QShaderDescription::Bool:
         return 4;
-    case QShaderDescription::Uint2:
     case QShaderDescription::Bool2:
         return 8;
-    case QShaderDescription::Uint3:
     case QShaderDescription::Bool3:
         return 12;
-    case QShaderDescription::Uint4:
     case QShaderDescription::Bool4:
         return 16;
     default:
@@ -4621,12 +4621,16 @@ void QRhiGles2::bindShaderResources(QGles2CommandBuffer *cbD,
                             && uniform.type != QShaderDescription::Int2
                             && uniform.type != QShaderDescription::Int3
                             && uniform.type != QShaderDescription::Int4
+                            && uniform.type != QShaderDescription::Uint
+                            && uniform.type != QShaderDescription::Uint2
+                            && uniform.type != QShaderDescription::Uint3
+                            && uniform.type != QShaderDescription::Uint4
                             && uniform.type != QShaderDescription::Mat3
                             && uniform.type != QShaderDescription::Mat4)
                     {
                         qWarning("Uniform with buffer binding %d, buffer offset %d, type %d is an array, "
                                  "but arrays are only supported for float, vec2, vec3, vec4, int, "
-                                 "ivec2, ivec3, ivec4, mat3 and mat4. "
+                                 "ivec2, ivec3, ivec4, uint, uvec2, uvec3, uvec4, mat3 and mat4. "
                                  "Only the first element will be set.",
                                  uniform.binding, uniform.offset, uniform.type);
                     }
@@ -4808,16 +4812,43 @@ void QRhiGles2::bindShaderResources(QGles2CommandBuffer *cbD,
                         f->glUniform4iv(uniform.glslLocation, qMax(1, uniform.arrayDim), reinterpret_cast<const qint32 *>(src));
                         break;
                     case QShaderDescription::Uint:
-                        f->glUniform1ui(uniform.glslLocation, *reinterpret_cast<const quint32 *>(src));
+                    {
+                        const int elemCount = uniform.arrayDim;
+                        if (elemCount < 1) {
+                            f->glUniform1ui(uniform.glslLocation, *reinterpret_cast<const quint32 *>(src));
+                        } else {
+                            m_scratch.packedArray.resize(elemCount);
+                            qrhi_std140_to_packed(&m_scratch.packedArray.data()->u, 1, elemCount, src);
+                            f->glUniform1uiv(uniform.glslLocation, elemCount, &m_scratch.packedArray.constData()->u);
+                        }
+                    }
                         break;
                     case QShaderDescription::Uint2:
-                        f->glUniform2uiv(uniform.glslLocation, 1, reinterpret_cast<const quint32 *>(src));
+                    {
+                        const int elemCount = uniform.arrayDim;
+                        if (elemCount < 1) {
+                            f->glUniform2uiv(uniform.glslLocation, 1, reinterpret_cast<const quint32 *>(src));
+                        } else {
+                            m_scratch.packedArray.resize(elemCount * 2);
+                            qrhi_std140_to_packed(&m_scratch.packedArray.data()->u, 2, elemCount, src);
+                            f->glUniform2uiv(uniform.glslLocation, elemCount, &m_scratch.packedArray.constData()->u);
+                        }
+                    }
                         break;
                     case QShaderDescription::Uint3:
-                        f->glUniform3uiv(uniform.glslLocation, 1, reinterpret_cast<const quint32 *>(src));
+                    {
+                        const int elemCount = uniform.arrayDim;
+                        if (elemCount < 1) {
+                            f->glUniform3uiv(uniform.glslLocation, 1, reinterpret_cast<const quint32 *>(src));
+                        } else {
+                            m_scratch.packedArray.resize(elemCount * 3);
+                            qrhi_std140_to_packed(&m_scratch.packedArray.data()->u, 3, elemCount, src);
+                            f->glUniform3uiv(uniform.glslLocation, elemCount, &m_scratch.packedArray.constData()->u);
+                        }
+                    }
                         break;
                     case QShaderDescription::Uint4:
-                        f->glUniform4uiv(uniform.glslLocation, 1, reinterpret_cast<const quint32 *>(src));
+                        f->glUniform4uiv(uniform.glslLocation, qMax(1, uniform.arrayDim), reinterpret_cast<const quint32 *>(src));
                         break;
                     case QShaderDescription::Bool: // a glsl bool is 4 bytes, like (u)int
                         f->glUniform1i(uniform.glslLocation, *reinterpret_cast<const qint32 *>(src));

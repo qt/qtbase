@@ -1193,6 +1193,7 @@ public:
         union data32_t {
             float f;
             qint32 i;
+            quint32 u;
         };
         QVarLengthArray<data32_t, 128> packedArray;
         struct SeparateTexture {
