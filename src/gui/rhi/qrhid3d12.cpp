@@ -2734,7 +2734,7 @@ void QRhiD3D12::endPass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resource
             // complains. Only the subresources that are about to be overwritten
             // by the resolve are discarded, and only once each.
             const UINT resolveCount = colorAtt.multiViewCount() >= 2 ? colorAtt.multiViewCount() : 1;
-            QBitArray &initialized(dstTexD->resolveDestInitialized);
+            QBitArray &initialized(dstTexD->subresourceInitialized);
             QVarLengthArray<UINT, 4> dstSubresources;
             QVarLengthArray<UINT, 4> subresourcesToDiscard;
             for (UINT resolveIdx = 0; resolveIdx < resolveCount; ++resolveIdx) {
@@ -4707,6 +4707,43 @@ void QRhiD3D12::enqueueResourceUpdates(QD3D12CommandBuffer *cbD, QRhiResourceUpd
         } else if (u.type == QRhiResourceUpdateBatchPrivate::TextureOp::GenMips) {
             QD3D12Texture *texD = QRHI_RES(QD3D12Texture, u.dst);
             Q_ASSERT(texD->flags().testFlag(QRhiTexture::UsedWithGenerateMips));
+
+            // Writing the levels above 0 with unordered access views does not
+            // initialize the subresources of a placed resource, so discard
+            // those levels upfront, otherwise the debug layer complains once
+            // they get sampled. Level 0 must be left alone, it has content.
+            QD3D12Resource *res = resourcePool.lookupRef(texD->handle);
+            if (res && texD->mipLevelCount >= 2
+                    && (res->desc.Flags & D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET))
+            {
+                const bool is3D = res->desc.Dimension == D3D12_RESOURCE_DIMENSION_TEXTURE3D;
+                const UINT layerCount = is3D ? 1u : UINT(res->desc.DepthOrArraySize);
+                QBitArray &initialized(texD->subresourceInitialized);
+                QVarLengthArray<UINT, 16> subresourcesToDiscard;
+                for (UINT layer = 0; layer < layerCount; ++layer) {
+                    for (UINT level = 1; level < texD->mipLevelCount; ++level) {
+                        const UINT subresource = calcSubresource(level, layer, texD->mipLevelCount);
+                        if (int(subresource) >= initialized.size())
+                            initialized.resize(int(subresource) + 1);
+                        if (!initialized.testBit(int(subresource))) {
+                            initialized.setBit(int(subresource));
+                            subresourcesToDiscard.append(subresource);
+                        }
+                    }
+                }
+                if (!subresourcesToDiscard.isEmpty()) {
+                    // Discarding needs the RENDER_TARGET state.
+                    barrierGen.addTransitionBarrier(texD->handle, D3D12_RESOURCE_STATE_RENDER_TARGET);
+                    barrierGen.enqueueBufferedTransitionBarriers(cbD);
+                    for (UINT subresource : subresourcesToDiscard) {
+                        D3D12_DISCARD_REGION region = {};
+                        region.FirstSubresource = subresource;
+                        region.NumSubresources = 1;
+                        cbD->cmdList->DiscardResource(res->resource, &region);
+                    }
+                }
+            }
+
             if (texD->flags().testFlag(QRhiTexture::ThreeDimensional))
                 mipmapGen3D.generate(cbD, texD->handle);
             else
@@ -5298,7 +5335,7 @@ void QD3D12Texture::destroy()
 
     handle = {};
     srv = {};
-    resolveDestInitialized.clear();
+    subresourceInitialized.clear();
 
     if (rhiD)
         rhiD->unregisterResource(this);
