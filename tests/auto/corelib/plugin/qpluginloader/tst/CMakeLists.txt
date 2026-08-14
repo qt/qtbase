@@ -47,3 +47,14 @@ if(ANDROID)
         QT_ANDROID_EXTRA_LIBS "${extra_libs}"
     )
 endif()
+
+if(OHOS)
+    set(extra_libs
+        theplugin
+        theoldplugin
+        tst_qpluginloaderlib
+    )
+    set_target_properties(tst_qpluginloader PROPERTIES
+        QT_HARMONYOS_EXTRA_LIBS "${extra_libs}"
+    )
+endif()

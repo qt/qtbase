@@ -181,6 +181,17 @@ static QString sys_qualifiedLibraryName(const QString &fileName)
                                                  ANDROID_ARCH, SUFFIX);
     }
     return fileName;
+#elif defined(Q_OS_HARMONY)
+    // On HarmonyOS all the libraries are bundled flat into the HAP's libs subdir,
+    // which is one of the library paths
+    const QString name = QLatin1String(PREFIX) + fileName + QLatin1String(SUFFIX);
+    const QStringList paths = QCoreApplication::libraryPaths();
+    for (const QString &path : paths) {
+        const QFileInfo fi(path + u'/' + name);
+        if (fi.exists())
+            return fi.canonicalFilePath();
+    }
+    return fileName;
 #else
     QString name = QLatin1String("bin/") + QLatin1String(PREFIX) + fileName + QLatin1String(SUFFIX);
     const QString libname = QFINDTESTDATA(name);
@@ -963,6 +974,10 @@ void tst_QPluginLoader::relativePath()
     // already set.
     // But we need to use ARCH suffix in pulgin name
     const QString pluginName("theplugin_" ANDROID_ARCH SUFFIX);
+#elif defined(Q_OS_HARMONY)
+    // On HarmonyOS we do not need to explicitly set library paths either, as the
+    // plugins are bundled flat into a directory that is already one of them.
+    const QString pluginName("theplugin" SUFFIX);
 #else
     // Windows binaries run from release and debug subdirs, so we can't rely on the current dir.
     const QString binDir = QFINDTESTDATA("bin");
@@ -990,6 +1005,13 @@ void tst_QPluginLoader::absolutePath()
     QVERIFY(!libraryPaths.isEmpty());
     QCoreApplication::setLibraryPaths(QStringList());
     const QString pluginPath(libraryPaths.first() + "/" PREFIX "theplugin_" ANDROID_ARCH SUFFIX);
+#elif defined(Q_OS_HARMONY)
+    // On HarmonyOS we need to clear library paths too, but the plugin has to be
+    // located before that, as it lives in one of them
+    const QStringList libraryPaths = QCoreApplication::libraryPaths();
+    QVERIFY(!libraryPaths.isEmpty());
+    const QString pluginPath = sys_qualifiedLibraryName("theplugin");
+    QCoreApplication::setLibraryPaths(QStringList());
 #else
     // Windows binaries run from release and debug subdirs, so we can't rely on the current dir.
     const QString binDir = QFINDTESTDATA("bin");
@@ -1000,7 +1022,7 @@ void tst_QPluginLoader::absolutePath()
     QPluginLoader loader(pluginPath);
     loader.load(); // not recommended, instance() should do the job.
     PluginInterface *instance = qobject_cast<PluginInterface*>(loader.instance());
-#ifdef Q_OS_ANDROID
+#if defined(Q_OS_ANDROID) || defined(Q_OS_HARMONY)
     // Restore library paths
     QCoreApplication::setLibraryPaths(libraryPaths);
 #endif
