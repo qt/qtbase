@@ -50,7 +50,7 @@ static bool deleteFile(const QString &fileName)
     return success;
 }
 
-QLockFile::LockError QLockFilePrivate::tryLock_sys()
+QLockFile::LockError QLockFilePrivate::tryLock_sys(const QLockFilePrivate::LockFileInfo &current)
 {
     const QFileSystemEntry fileEntry(fileName);
     // When writing, allow others to read.
@@ -89,7 +89,7 @@ QLockFile::LockError QLockFilePrivate::tryLock_sys()
 
     // We hold the lock, continue.
     fileHandle = fh;
-    QByteArray fileData = lockFileContents();
+    QByteArray fileData = current.asFileContents();
     DWORD bytesWritten = 0;
     QLockFile::LockError error = QLockFile::NoError;
     if (!WriteFile(fh, fileData.constData(), fileData.size(), &bytesWritten, NULL) || !FlushFileBuffers(fh))
