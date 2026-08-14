@@ -4603,9 +4603,9 @@ void tst_QLocale::systemLocaleDayAndMonthNames()
     const TransientLocale tested(LC_ALL, locale.constData());
 
     QLocale sys = QLocale::system();
-#if !QT_CONFIG(icu)
-    // setlocale() does not really change locale on Windows and macOS, we
-    // need to actually set the locale manually to run the test
+#if !QT_CONFIG(icu) || defined(Q_OS_HARMONY)
+    // setlocale() does not really change locale on Windows, macOS and
+    // HarmonyOS, we need to actually set the locale manually to run the test
     if (!locale.startsWith(sys.name().toUtf8()))
         QSKIP(("Set locale to " + locale + " manually to run this test.").constData());
 #endif
