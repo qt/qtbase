@@ -34,4 +34,5 @@ qt_internal_copy_at_build_time(TARGET Qt${QtBase_VERSION_MAJOR}HarmonyOSTemplate
 )
 
 qt_path_join(destination ${QT_INSTALL_DIR} ${INSTALL_DATADIR} "src/harmonyos/templates")
-qt_install(DIRECTORY "${build_dir_destination}/" DESTINATION "${destination}")
+qt_install(FILES ${template_files} DESTINATION "${destination}")
+qt_install(DIRECTORY ${template_directories} DESTINATION "${destination}")
