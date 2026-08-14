@@ -850,6 +850,14 @@ dependency so that the library is available before the target is deployed:
 \badcode
 add_dependencies(myapp MyService)
 \endcode
+
+This property is for plain shared libraries. The libraries are placed in the
+HAP's library directory and resolved by the dynamic linker. To deploy Qt
+plugins, which are placed into their category directory and loaded by Qt's
+plugin system, use \l{cmake-target-property-QT_HARMONYOS_EXTRA_PLUGINS}
+{QT_HARMONYOS_EXTRA_PLUGINS} instead.
+
+\sa{cmake-target-property-QT_HARMONYOS_EXTRA_PLUGINS}{QT_HARMONYOS_EXTRA_PLUGINS}
 */
 
 /*!
@@ -882,6 +890,14 @@ set_target_properties(myapp PROPERTIES
         "${CMAKE_CURRENT_BINARY_DIR}/imageformats/libqcustomimg.so"
 )
 \endcode
+
+This property is for Qt plugins, which are placed into their category directory
+and loaded by Qt's plugin system. To deploy plain shared libraries, which are
+placed in the HAP's library directory and resolved by the dynamic linker, use
+\l{cmake-target-property-QT_HARMONYOS_EXTRA_LIBS}{QT_HARMONYOS_EXTRA_LIBS}
+instead.
+
+\sa{cmake-target-property-QT_HARMONYOS_EXTRA_LIBS}{QT_HARMONYOS_EXTRA_LIBS}
 */
 
 /*!
