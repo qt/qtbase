@@ -108,9 +108,35 @@ static qint64 qt_write_loop(int fd, const char *data, qint64 len)
  * As a result, on Android, we use POSIX fcntl(F_SETLK) to handle file locking.
  * fcntl is better integrated with Android’s underlying system, avoiding
  * the limitations of flock.
+ *
+ * Race conditions and mitigations:
+ *
+ * 1) Concurrent creation of the lock file
+ * Creation of the lock file requires O_EXCL flag, which causes the OS to
+ * arbitrate. Only the thread that succeeded creating the lock file with this
+ * flag can claim to have locked.
+ *
+ * 2) Concurrent setNativeLocks()
+ * (Assuming an implementation that works, see main class docs for known
+ * limitations)
+ * This is applicable to tryLock_sys() and removeStaleLock() concurrency, as
+ * tryLock_sys() will only attempt to lock if open(O_EXCL) succeeded. The OS
+ * arbitrates and ensures only one thread at a time can lock the file's
+ * contents. QLockFile success implies the native lock either succeeded too or
+ * wasn't supported (definitely did not fail to lock).
+ *
  */
 
-static bool setNativeLocks(int fd)
+namespace {
+enum class NativeLocking {
+    UnknownError = -2,
+    NotSupported = -1,
+    Failed = 0,
+    Locked = 1,
+};
+}
+
+static NativeLocking setNativeLocks(int fd)
 {
     int ret;
 #if defined(Q_OS_ANDROID)
@@ -125,9 +151,35 @@ static bool setNativeLocks(int fd)
     QT_EINTR_LOOP(ret, flock(fd, LOCK_EX | LOCK_NB));
 #else
     Q_UNUSED(fd);
-    ret = 0;
+    ret = -1;
+    errno = ENOTSUP;
 #endif
-    return ret >= 0;
+
+    if (ret == 0)
+        return NativeLocking::Locked;
+
+    // failed to lock, but why?
+    switch (errno) {
+    case EWOULDBLOCK:   // flock() documented to use this
+#if EAGAIN != EWOULDBLOCK
+    case EAGAIN:        // F_SETLK documented to use this
+#endif
+    case EACCES:        // F_SETLK documented to possibly use this too
+        return NativeLocking::Failed;
+
+    case ENOLCK:
+        // This can be both a resource error (lock table is full) and locking
+        // is not possible (e.g., rpc.lockd unable to lock). We err on the side
+        // of the permanence (more likely).
+        return NativeLocking::NotSupported;
+
+    case EINVAL:
+    case ENOTSUP:
+    case ENOSYS:
+        return NativeLocking::NotSupported;
+    }
+
+    return NativeLocking::UnknownError;
 }
 
 static bool releaseLockFile(int fileHandle, const QByteArray &fileName)
@@ -177,7 +229,10 @@ QLockFile::LockError QLockFilePrivate::tryLock_sys()
         }
     }
     // Ensure nobody else can delete the file while we have it
-    if (!setNativeLocks(fd.get())) {
+    if (NativeLocking r = setNativeLocks(fd.get()); r == NativeLocking::Failed) {
+        // someone holds this lock
+        return QLockFile::LockFailedError;
+    } else if (r == NativeLocking::UnknownError) {
         const int errnoSaved = errno;
         qWarning() << "setNativeLocks failed:" << qt_error_string(errnoSaved);
     }
@@ -208,7 +263,7 @@ bool QLockFilePrivate::removeStaleLock()
     if (fd < 0) // gone already?
         return errno == ENOENT;
 
-    if (setNativeLocks(fd)) {
+    if (setNativeLocks(fd) != NativeLocking::Failed) {
         // if we applied native locks, the file was stale; do delete it
         return releaseLockFile(fd, lockFileName);
     }
