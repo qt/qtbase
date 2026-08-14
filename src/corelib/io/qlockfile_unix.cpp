@@ -125,6 +125,14 @@ static qint64 qt_write_loop(int fd, const char *data, qint64 len)
  * contents. QLockFile success implies the native lock either succeeded too or
  * wasn't supported (definitely did not fail to lock).
  *
+ * 3) Lock creation and unlink() race
+ * This is also applicable to tryLock_sys() and removeStaleLock() concurrency:
+ * following from the last case, removeStaleLock() may have natively-locked the
+ * file, unlinked it, then unlocked, all before tryLock_sys() reached
+ * setNativeLocks(). At this point, the lock file no longer exists in the
+ * directory but setNativeLocks() may yet succeed. This race is unavoidable, so
+ * we re-verify at the end whether the lock file is ours: if it is, then it has
+ * the lock and shouldn't get stolen.
  */
 
 namespace {
@@ -241,6 +249,18 @@ QLockFile::LockError QLockFilePrivate::tryLock_sys()
     if (qt_write_loop(fd.get(), fileData.constData(), fileData.size()) < fileData.size()) {
         releaseLockFile(fd.release(), lockFileName);
         return QLockFile::UnknownError; // partition full
+    }
+
+    // Confirm the lock file is our file.
+    QT_STATBUF fromFs, fromFd = {};
+    if (QT_STAT(lockFileName.constData(), &fromFs) < 0) {
+        // probably ENOENT, meaning the file has disappeared
+        return QLockFile::LockFailedError;
+    }
+    std::ignore = QT_FSTAT(fd.get(), &fromFd);
+    if (fromFd.st_dev != fromFs.st_dev || fromFd.st_ino != fromFs.st_ino) {
+        // lock file was replaced, stolen from under us
+        return QLockFile::LockFailedError;
     }
 
     // We hold the lock, continue.
