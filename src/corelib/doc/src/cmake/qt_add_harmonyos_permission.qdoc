@@ -60,6 +60,10 @@ are \c inuse (the permission is used only while the application is in the
 foreground) and \c always (the permission is also used in the background). If
 omitted while a \c usedScene block is emitted, it defaults to \c inuse.
 
+The \c USED_SCENE_ABILITIES and \c USED_SCENE_WHEN keywords map directly to the
+\c abilities and \c when fields of the permission's \c usedScene object in the
+generated \c module.json5.
+
 \section1 Example
 
 \snippet cmake-macros/examples.cmake qt_add_harmonyos_permission
