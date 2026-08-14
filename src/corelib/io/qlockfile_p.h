@@ -32,17 +32,21 @@ public:
         QString hostname;
         QByteArray hostid;
         QByteArray bootid;
+
+        QT_DEFINE_TAG_STRUCT(Current);
+        LockFileInfo() = default;
+        LockFileInfo(Current);
+        QByteArray asFileContents() const;
     };
 
     explicit QLockFilePrivate(const QString &fn);
     ~QLockFilePrivate();
 
-    QLockFile::LockError tryLock_sys();
+    QLockFile::LockError tryLock_sys(const LockFileInfo &current);
     bool removeStaleLock();
-    QByteArray lockFileContents() const;
     // Returns \c true if the lock belongs to dead PID, or is old.
     // The attempt to delete it will tell us if it was really stale or not, though.
-    bool isApparentlyStale() const;
+    bool isApparentlyStale(const LockFileInfo &current) const;
 
     // used in dbusmenu
     Q_CORE_EXPORT static QString processNameByPid(qint64 pid);

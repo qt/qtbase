@@ -254,7 +254,7 @@ static bool releaseLockFile(int fileHandle, int dirfd, const QByteArray &fullFil
 // This function is designed to deal with race conditions coming from two (or
 // more) threads/processes accessing the lock file at the same time, either in
 // tryLock_sys() itself or removeStaleLock() - both called by tryLock().
-QLockFile::LockError QLockFilePrivate::tryLock_sys()
+QLockFile::LockError QLockFilePrivate::tryLock_sys(const QLockFilePrivate::LockFileInfo &current)
 {
     constexpr int OpenFlags = QT_OPEN_RDWR | QT_OPEN_CREAT | QT_OPEN_EXCL;
     const QByteArray lockFileName = QFile::encodeName(fileName);
@@ -302,8 +302,8 @@ QLockFile::LockError QLockFilePrivate::tryLock_sys()
         qWarning() << "setNativeLocks failed:" << qt_error_string(errnoSaved);
     }
 
-    QByteArray fileData = lockFileContents();
-    if (qt_write_loop(fd.get(), fileData.constData(), fileData.size()) < fileData.size()) {
+    if (QByteArray fileData = current.asFileContents();
+            qt_write_loop(fd.get(), fileData.constData(), fileData.size()) < fileData.size()) {
         releaseLockFile(fd.release(), dirfd.get(), lockFileName);
         return QLockFile::UnknownError; // partition full
     }

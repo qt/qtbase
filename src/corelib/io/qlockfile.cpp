@@ -381,12 +381,13 @@ bool QLockFile::tryLock(std::chrono::milliseconds timeout)
     using Msec = std::chrono::milliseconds;
 
     Q_D(QLockFile);
+    QLockFilePrivate::LockFileInfo current(QLockFilePrivate::LockFileInfo::Current{});
 
     QDeadlineTimer timer(timeout < 0ms ? Msec::max() : timeout);
 
     Msec sleepTime = 100ms;
     while (true) {
-        d->lockError = d->tryLock_sys();
+        d->lockError = d->tryLock_sys(current);
         switch (d->lockError) {
         case NoError:
             d->isLocked = true;
@@ -395,14 +396,14 @@ bool QLockFile::tryLock(std::chrono::milliseconds timeout)
         case UnknownError:
             return false;
         case LockFailedError:
-            if (!d->isLocked && d->isApparentlyStale()) {
+            if (!d->isLocked && d->isApparentlyStale(current)) {
                 if (Q_UNLIKELY(QFileInfo(d->fileName).lastModified(QTimeZone::UTC) > QDateTime::currentDateTimeUtc()))
                     qInfo("QLockFile: Lock file '%ls' has a modification time in the future", qUtf16Printable(d->fileName));
                 // Stale lock from another thread/process
                 // Ensure two processes don't remove it at the same time
                 QLockFile rmlock(d->fileName + ".rmlock"_L1);
                 if (rmlock.tryLock()) {
-                    if (d->isApparentlyStale() && d->removeStaleLock())
+                    if (d->isApparentlyStale(current) && d->removeStaleLock())
                         continue;
                 }
             }
@@ -481,15 +482,23 @@ QLockFilePrivate::QLockFilePrivate(const QString &fn)
 QLockFilePrivate::~QLockFilePrivate()
     = default;
 
-QByteArray QLockFilePrivate::lockFileContents() const
+QByteArray QLockFilePrivate::LockFileInfo::asFileContents() const
 {
     // Use operator% from the fast builder to avoid multiple memory allocations.
-    qint64 pid = QCoreApplication::applicationPid();
     return QByteArray::number(pid) % '\n'
-            % processNameByPid(pid).toUtf8() % '\n'
-            % machineName().toUtf8() % '\n'
-            % QSysInfo::machineUniqueId() % '\n'
-            % QSysInfo::bootUniqueId() % '\n';
+            % appname.toUtf8() % '\n'
+            % hostname.toUtf8() % '\n'
+            % hostid % '\n'
+            % bootid % '\n';
+}
+
+QLockFilePrivate::LockFileInfo::LockFileInfo(Current)
+    : pid(QCoreApplication::applicationPid()),
+      appname(processNameByPid(pid)),
+      hostname(machineName()),
+      hostid(QSysInfo::machineUniqueId()),
+      bootid(QSysInfo::bootUniqueId())
+{
 }
 
 bool QLockFilePrivate::getLockInfo_helper(const QString &fileName, LockFileInfo *info)
@@ -527,22 +536,21 @@ bool QLockFilePrivate::getLockInfo_helper(const QString &fileName, LockFileInfo 
     return ok && info->pid > 0;
 }
 
-bool QLockFilePrivate::isApparentlyStale() const
+bool QLockFilePrivate::isApparentlyStale(const LockFileInfo &current) const
 {
     LockFileInfo info;
     if (getLockInfo_helper(fileName, &info)) {
-        bool sameHost = info.hostname.isEmpty() || info.hostname == machineName();
+        bool sameHost = info.hostname.isEmpty() || info.hostname == current.hostname;
         if (!info.hostid.isEmpty()) {
             // Override with the host ID, if we know it.
-            QByteArray ourHostId = QSysInfo::machineUniqueId();
-            if (!ourHostId.isEmpty())
-                sameHost = (ourHostId == info.hostid);
+            if (!current.hostid.isEmpty())
+                sameHost = (current.hostid == info.hostid);
         }
 
         if (sameHost) {
             if (!info.bootid.isEmpty()) {
                 // If we've rebooted, then the lock is definitely stale.
-                if (info.bootid != QSysInfo::bootUniqueId())
+                if (info.bootid != current.bootid)
                     return true;
             }
             if (!isProcessRunning(info.pid, info.appname))
