@@ -743,7 +743,7 @@ bool QAbstractFileEngine::atEnd() const
     \since 4.4
 
     Maps \a size bytes of the file into memory starting at \a offset.
-    Returns a pointer to the memory if successful; otherwise returns \c false
+    Returns a pointer to the memory if successful; otherwise returns \c nullptr
     if, for example, an error occurs.
 
     This function bases its behavior on calling extension() with
