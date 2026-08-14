@@ -223,6 +223,7 @@ static void __stdcall qd3d12_message_callback(D3D12_MESSAGE_CATEGORY category,
     if (severity == D3D12_MESSAGE_SEVERITY_INFO)
         return;
     if (id == D3D12_MESSAGE_ID_CLEARRENDERTARGETVIEW_MISMATCHINGCLEARVALUE
+            || id == D3D12_MESSAGE_ID_CLEARDEPTHSTENCILVIEW_MISMATCHINGCLEARVALUE
             || id == D3D12_MESSAGE_ID_DRAW_EMPTY_SCISSOR_RECTANGLE)
     {
         return;
@@ -391,13 +392,15 @@ bool QRhiD3D12::create(QRhi::Flags flags)
                 infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, true);
             }
             D3D12_INFO_QUEUE_FILTER filter = {};
-            D3D12_MESSAGE_ID suppressedMessages[2] = {
+            D3D12_MESSAGE_ID suppressedMessages[3] = {
                 // there is no way of knowing the clear color upfront
                 D3D12_MESSAGE_ID_CLEARRENDERTARGETVIEW_MISMATCHINGCLEARVALUE,
+                // same for the depth-stencil clear values
+                D3D12_MESSAGE_ID_CLEARDEPTHSTENCILVIEW_MISMATCHINGCLEARVALUE,
                 // we have no control over viewport and scissor rects
                 D3D12_MESSAGE_ID_DRAW_EMPTY_SCISSOR_RECTANGLE
             };
-            filter.DenyList.NumIDs = 2;
+            filter.DenyList.NumIDs = 3;
             filter.DenyList.pIDList = suppressedMessages;
             // Setting the filter would enable Info messages (e.g. about
             // resource creation) which we don't need.
