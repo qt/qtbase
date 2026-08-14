@@ -6,22 +6,15 @@
 
 #include "private/qlockfile_p.h"
 
-#include "QtCore/qtemporaryfile.h"
-#include "QtCore/qfileinfo.h"
 #include "QtCore/qdebug.h"
 #include "QtCore/qdatetime.h"
 #include "QtCore/qfileinfo.h"
-#include "QtCore/qcache.h"
-#include "QtCore/qglobalstatic.h"
-#include "QtCore/qmutex.h"
 #if defined(Q_OS_HARMONY)
 #include "QtCore/qcoreapplication.h"
 #endif
 
 #include "private/qcore_unix_p.h" // qt_safe_open
-#include "private/qabstractfileengine_p.h"
 #include "private/qfilesystementry_p.h"
-#include "private/qtemporaryfile_p.h"
 
 #if !defined(Q_OS_INTEGRITY)
 #include <sys/file.h>  // flock
