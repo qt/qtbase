@@ -115,21 +115,22 @@ static qint64 qt_write_loop(int fd, const char *data, qint64 len)
 
 static bool setNativeLocks(int fd)
 {
+    int ret;
 #if defined(Q_OS_ANDROID)
     struct flock fl;
     fl.l_type = F_WRLCK;
     fl.l_whence = SEEK_SET;
     fl.l_start = 0;
     fl.l_len = 0;
-    if (fcntl(fd, F_SETLK, &fl) == -1)
-        return false;
+    QT_EINTR_LOOP(ret, fcntl(fd, F_SETLK, &fl));
 #elif defined(LOCK_EX) && defined(LOCK_NB)
-    if (flock(fd, LOCK_EX | LOCK_NB) == -1) // other threads, and other processes on a local fs
-        return false;
+    // applies to other threads, and other processes on a local fs
+    QT_EINTR_LOOP(ret, flock(fd, LOCK_EX | LOCK_NB));
 #else
     Q_UNUSED(fd);
+    ret = 0;
 #endif
-    return true;
+    return ret >= 0;
 }
 
 static bool releaseLockFile(int fileHandle, const QByteArray &fileName)
