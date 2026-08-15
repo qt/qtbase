@@ -84,14 +84,9 @@ QList<QNetworkProxy> QNetworkProxyFactory::systemProxyForQuery(const QNetworkPro
     if (!proxy_env.isEmpty()) {
         QUrl url = QUrl(QString::fromLocal8Bit(proxy_env));
         const QString scheme = url.scheme();
-        if (scheme == "socks5"_L1) {
+        if (scheme == "socks5"_L1 || scheme == "socks5h"_L1) {
             QNetworkProxy proxy(QNetworkProxy::Socks5Proxy, url.host(),
                     url.port() ? url.port() : 1080, url.userName(), url.password());
-            proxyList << proxy;
-        } else if (scheme == "socks5h"_L1) {
-            QNetworkProxy proxy(QNetworkProxy::Socks5Proxy, url.host(),
-                    url.port() ? url.port() : 1080, url.userName(), url.password());
-            proxy.setCapabilities(QNetworkProxy::HostNameLookupCapability);
             proxyList << proxy;
         } else if ((scheme.isEmpty() || scheme == "http"_L1)
                   && query.queryType() != QNetworkProxyQuery::UdpSocket
