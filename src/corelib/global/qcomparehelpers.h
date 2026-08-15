@@ -1142,9 +1142,9 @@ private:
     MAKE_RELOP(auto, <=>, compare_three_way)
 #endif
 #undef MAKE_RELOP
-    friend void qt_ptr_swap(totally_ordered_wrapper &lhs, totally_ordered_wrapper &rhs) noexcept
+    friend constexpr void qt_ptr_swap(totally_ordered_wrapper &lhs, totally_ordered_wrapper &rhs) noexcept
     { qt_ptr_swap(lhs.ptr, rhs.ptr); }
-    friend void swap(totally_ordered_wrapper &lhs, totally_ordered_wrapper &rhs) noexcept
+    friend constexpr void swap(totally_ordered_wrapper &lhs, totally_ordered_wrapper &rhs) noexcept
     { qt_ptr_swap(lhs, rhs); }
     friend size_t qHash(totally_ordered_wrapper key, size_t seed = 0) noexcept
     { return qHash(key.ptr, seed); }

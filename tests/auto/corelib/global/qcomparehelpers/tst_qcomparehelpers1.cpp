@@ -3,6 +3,8 @@
 
 #include "tst_qcomparehelpers.h"
 
+#include <algorithm>
+
 using namespace Qt::StringLiterals;
 
 #define DECLARE_TYPE(Name, Type, RetType, Constexpr, Noex, Suffix, ...) \
@@ -152,6 +154,37 @@ void tst_QCompareHelpers::totallyOrderedWrapperBasics()
     QCOMPARE_EQ(*intWrp, 20);
     QCOMPARE_EQ(val, 20);
 }
+
+namespace TotallyOrderedWrapperConstexpr {
+
+static constexpr int i = 42;
+static constexpr int j = 1;
+
+constexpr bool swapsAreConstexpr()
+{
+    auto pi = Qt::totally_ordered_wrapper(&i);
+    auto pj = Qt::totally_ordered_wrapper(&j);
+
+    swap(pi, pj); // hidden friend
+    if (pi != &j || pj != &i) // swapped once
+        return false;
+
+    qt_ptr_swap(pi, pj); // hidden friend
+    if (pi != &i || pj != &j) // swapped twice
+        return false;
+
+#ifdef __cpp_lib_constexpr_algorithms // std::iter_swap() is constexpr only from C++20
+    std::iter_swap(&pi, &pj);
+    if (pi != &j || pj != &i) // swapped thrice
+        return false;
+#endif
+
+    return true;
+}
+
+static_assert(swapsAreConstexpr());
+
+} // namespace TotallyOrderedWrapperConstexpr
 
 template <typename T>
 class AutoComparisonTester
