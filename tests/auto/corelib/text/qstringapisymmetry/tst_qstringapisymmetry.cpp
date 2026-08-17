@@ -1768,7 +1768,7 @@ void tst_QStringApiSymmetry::localeAwareCompare_data()
     QTest::addColumn<QString>("s2");
     QTest::addColumn<int>("result");
 
-#if defined(Q_OS_WIN) || defined(Q_OS_DARWIN) || QT_CONFIG(icu)
+#if defined(Q_OS_WIN) || defined(Q_OS_DARWIN) || defined(Q_OS_ANDROID) || QT_CONFIG(icu)
     // Pull out current system locale's collation locale using Qt APIs,
     // so that we go though the relevant system backend, that will match
     // the system collation logic in QString::localeAwareCompare_helper.
