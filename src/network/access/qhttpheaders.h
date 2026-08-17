@@ -8,12 +8,14 @@
 #include <QtNetwork/qtnetworkglobal.h>
 
 #include <QtCore/qdatetime.h>
+#include <QtCore/qhashfunctions.h>
 #include <QtCore/qmetaobject.h>
 #include <QtCore/qobjectdefs.h>
 #include <QtCore/qshareddata.h>
 #include <QtCore/qcontainerfwd.h>
 #include <QtCore/qspan.h>
 #include <QtCore/qcomparehelpers.h>
+
 #include <optional>
 
 QT_BEGIN_NAMESPACE
@@ -53,7 +55,7 @@ private:
 
     friend size_t qHash(QHttpHeaderRange range, size_t seed = 0) noexcept
     {
-        return qHashMulti(seed, range.start.value_or(0), range.end.value_or(0));
+        return qHashMulti(seed, range.start, range.end);
     }
 };
 
