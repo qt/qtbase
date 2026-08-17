@@ -1218,7 +1218,9 @@ endfunction()
 #
 # Only applicable when Qt was built as shared libraries, with Xcode generator.
 #
-# Set the QT_NO_XCODE_EMBED_FRAMEWORKS target property to opt out.
+# Set the QT_NO_XCODE_EMBED_FRAMEWORKS target property on the app to opt out
+# entirely, or QT_NO_XCODE_EMBED_FRAMEWORK_IN_CONSUMERS on a dependency to
+# exclude just that dependency.
 function(_qt_internal_xcode_embed_frameworks target)
     get_target_property(opt_out "${target}" QT_NO_XCODE_EMBED_FRAMEWORKS)
     if(opt_out)
@@ -1266,7 +1268,7 @@ function(_qt_internal_xcode_embed_frameworks target)
             continue()
         endif()
 
-        get_target_property(dep_opt_out ${dep} QT_NO_XCODE_EMBED_FRAMEWORK)
+        get_target_property(dep_opt_out ${dep} QT_NO_XCODE_EMBED_FRAMEWORK_IN_CONSUMERS)
         if(dep_opt_out)
             continue()
         endif()
