@@ -1169,7 +1169,7 @@ For more information, see the \l{https://github.com/emscripten-core/emscripten/b
 
 \summary {Assembly identity name in the generated Windows application manifest.}
 
-\cmakepropertysince 6.12
+\cmakepropertysince 6.11.1
 \cmakepropertywindowsonly
 
 Sets the \c name attribute of the \c assemblyIdentity element in the
@@ -1205,7 +1205,7 @@ set_target_properties(myapp PROPERTIES
 
 \summary {UAC execution level in the generated Windows application manifest.}
 
-\cmakepropertysince 6.12
+\cmakepropertysince 6.11.1
 \cmakepropertywindowsonly
 
 Sets the \c level attribute of the \c requestedExecutionLevel element in
