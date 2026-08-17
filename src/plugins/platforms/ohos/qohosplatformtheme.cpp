@@ -693,13 +693,13 @@ QPalette makeLabelPalette(const AllPalletesColors &palettesColors)
 {
     return makePalette(
         {
-            {QPalette::Active, QPalette::WindowText, palettesColors.palettes.highlighted},
-            {QPalette::Inactive, QPalette::WindowText, palettesColors.palettes.inactiveText},
-            {QPalette::Disabled, QPalette::WindowText, palettesColors.palettes.inactiveHighlighted},
+            {QPalette::Active, QPalette::WindowText, palettesColors.palettes.textPrimary},
+            {QPalette::Disabled, QPalette::WindowText, palettesColors.palettes.disabledTextPrimary},
+            {QPalette::Inactive, QPalette::WindowText, palettesColors.palettes.inactiveTextPrimary},
 
-            {QPalette::Active, QPalette::Text, palettesColors.palettes.highlighted},
-            {QPalette::Disabled, QPalette::Text, palettesColors.palettes.inactiveText},
-            {QPalette::Inactive, QPalette::Text, palettesColors.palettes.inactiveHighlighted},
+            {QPalette::Active, QPalette::Text, palettesColors.palettes.textPrimary},
+            {QPalette::Disabled, QPalette::Text, palettesColors.palettes.disabledTextPrimary},
+            {QPalette::Inactive, QPalette::Text, palettesColors.palettes.inactiveTextPrimary},
         });
 }
 
