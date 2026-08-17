@@ -56,7 +56,7 @@ private:
     {
         return lhs.m_start == rhs.m_start && lhs.m_end == rhs.m_end;
     }
-    Q_DECLARE_EQUALITY_COMPARABLE(QHttpHeaderRange)
+    Q_DECLARE_EQUALITY_COMPARABLE_LITERAL_TYPE(QHttpHeaderRange)
 
     friend size_t qHash(QHttpHeaderRange range, size_t seed = 0) noexcept
     {
