@@ -993,6 +993,12 @@ private:
 
 
 #ifdef __has_include
+// The argument of __has_include() is macro expanded unless it already is a
+// header-name; a header-name in angle brackets is not expanded.
+#  define TST_MOC_ANGLE_WRAP(x) <x>
+#  define TST_MOC_VECTOR vector
+#  define TST_MOC_WRAPPED_VECTOR TST_MOC_ANGLE_WRAP(TST_MOC_VECTOR)
+#  define TST_MOC_QUOTED_LOCAL "using-namespaces.h"
 class HasIncludeTest {
     Q_GADGET
 #  if __has_include(<vector>)
@@ -1000,6 +1006,18 @@ class HasIncludeTest {
 #  endif
 #  if __has_include("using-namespaces.h")
     Q_INVOKABLE void couldFindLocal() {}
+#  endif
+#  if __has_include(TST_MOC_WRAPPED_VECTOR)
+    Q_INVOKABLE void couldFindVectorThroughMacro() {}
+#  endif
+#  if __has_include(TST_MOC_ANGLE_WRAP(TST_MOC_VECTOR))
+    Q_INVOKABLE void couldFindVectorThroughFunctionLikeMacro() {}
+#  endif
+#  if __has_include(TST_MOC_QUOTED_LOCAL)
+    Q_INVOKABLE void couldFindLocalThroughMacro() {}
+#  endif
+#  if !__has_include(<TST_MOC_VECTOR>)
+    Q_INVOKABLE void didNotExpandInsideAngleBrackets() {}
 #  endif
 };
 #endif
@@ -1046,6 +1064,10 @@ void tst_Moc::hasIncludeSupport()
     QVERIFY(hasIncludeTestMo->className());
     QVERIFY(hasIncludeTestMo->indexOfMethod("couldFindVector()") != -1);
     QVERIFY(hasIncludeTestMo->indexOfMethod("couldFindLocal()") != -1);
+    QVERIFY(hasIncludeTestMo->indexOfMethod("couldFindVectorThroughMacro()") != -1);
+    QVERIFY(hasIncludeTestMo->indexOfMethod("couldFindVectorThroughFunctionLikeMacro()") != -1);
+    QVERIFY(hasIncludeTestMo->indexOfMethod("couldFindLocalThroughMacro()") != -1);
+    QVERIFY(hasIncludeTestMo->indexOfMethod("didNotExpandInsideAngleBrackets()") != -1);
 }
 
 void tst_Moc::dontStripNamespaces()
@@ -1922,8 +1944,14 @@ void tst_Moc::hasIncludeNext()
              "__has_include_next did not find the header in a later directory");
     QVERIFY2(mocOut.contains("nonexistent_no_next"),
              "__has_include_next reported a nonexistent header as present");
+    QVERIFY2(mocOut.contains("wrapped_has_next"),
+             "__has_include_next did not expand a macro argument");
+    QVERIFY2(mocOut.contains("funcmacro_has_next"),
+             "__has_include_next did not expand a function-like macro argument");
     QVERIFY(!mocOut.contains("probe_no_next"));
     QVERIFY(!mocOut.contains("nonexistent_has_next"));
+    QVERIFY(!mocOut.contains("wrapped_no_next"));
+    QVERIFY(!mocOut.contains("funcmacro_no_next"));
 #else
     QSKIP("Only tested/relevant on unixy platforms");
 #endif
@@ -2873,6 +2901,36 @@ void tst_Moc::warnings_data()
         << 1
         << QString("IGNORE_ALL_STDOUT")
         << QString(":2:1: error: Macro invoked with too few parameters for a use of '#'");
+
+    // The argument of __has_include() has to form a header-name, either as it
+    // stands or after being macro expanded once.
+    QTest::newRow("__has_include: not a header-name")
+        << QByteArray("#if __has_include(123)\n#endif\nclass X : public QObject { Q_OBJECT };")
+        << QStringList()
+        << 1
+        << QString()
+        << QString(":1:1: error: Invalid argument to __has_include");
+
+    QTest::newRow("__has_include: does not expand to a header-name")
+        << QByteArray("#if __has_include(NOT_A_HEADER_NAME)\n#endif\nclass X : public QObject { Q_OBJECT };")
+        << QStringList()
+        << 1
+        << QString()
+        << QString(":1:1: error: Invalid argument to __has_include");
+
+    QTest::newRow("__has_include: unterminated argument")
+        << QByteArray("#if __has_include(<a.h>\n#endif\nclass X : public QObject { Q_OBJECT };")
+        << QStringList()
+        << 1
+        << QString()
+        << QString(":1:1: error: missing ')' in __has_include");
+
+    QTest::newRow("__has_include_next: not a header-name")
+        << QByteArray("#if __has_include_next(123)\n#endif\nclass X : public QObject { Q_OBJECT };")
+        << QStringList()
+        << 1
+        << QString()
+        << QString(":1:1: error: Invalid argument to __has_include_next");
 
     QTest::newRow("QTBUG-54609: crash on invalid input")
         << QByteArray::fromBase64("EAkJCQkJbGFzcyBjbGFzcyBiYWkcV2kgTUEKcGYjZGVmaW5lIE1BKFEs/4D/FoQ=")
