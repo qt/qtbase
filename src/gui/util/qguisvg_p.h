@@ -49,7 +49,7 @@ Q_GUI_EXPORT std::optional<QPainterPath> parsePath(QStringView dataStr, bool lim
 Q_GUI_EXPORT void pathArc(QPainterPath &path, qreal rx, qreal ry, qreal x_axis_rotation,
                           int large_arc_flag, int sweep_flag, qreal x, qreal y, qreal curx,
                           qreal cury);
-
+Q_GUI_EXPORT QStringView trimmed(QStringView sv, bool tiny12FeaturesOnly);
 }
 
 QT_END_NAMESPACE
