@@ -43,6 +43,9 @@ static void liLogHandler(libinput *libinput, libinput_log_priority priority, con
     char buf[512];
     int n = vsnprintf(buf, sizeof(buf), format, args);
     if (n > 0) {
+        // vsnprintf() returns the length the output would have had, not the
+        // length written, so clamp before indexing to strip a trailing newline.
+        n = qMin(n, int(sizeof(buf)) - 1);
         if (buf[n - 1] == '\n')
             buf[n - 1] = '\0';
         qCDebug(qLcLibInput, "libinput: %s", buf);
