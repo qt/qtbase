@@ -46,60 +46,25 @@ Q_STATIC_LOGGING_CATEGORY(lcQHttpHeaders, "qt.network.http.headers");
 */
 
 /*!
-    \fn QHttpHeaderRange::QHttpHeaderRange() noexcept
+    \variable std::optional<qint64> QHttpHeaderRange::start
 
-    Constructs a default-initialized range. Both \l start() and \l end()
-    will be \c{std::nullopt}. The resulting range is not valid
-    according to \l isValid().
-*/
-
-/*!
-    \fn QHttpHeaderRange::QHttpHeaderRange(std::optional<qint64> start,
-                                           std::optional<qint64> end) noexcept
-
-    Constructs a range with \a start and \a end byte offsets.
-    Either or both may be \c{std::nullopt} to represent an open-ended
-    range; see \l isValid() for the constraints.
-*/
-
-/*!
-    \fn std::optional<qint64> QHttpHeaderRange::start() const noexcept
-
-    Returns the start byte offset of the range, or \c{std::nullopt}
+    Contains the start byte offset of the range, or \c{std::nullopt}
     if no start was set. A range without a start but with an end
     (e.g., \c{bytes=-500}) represents the last \e N bytes of the
     resource.
 
-    \sa setStart(), end()
+    \sa end
 */
 
 /*!
-    \fn std::optional<qint64> QHttpHeaderRange::end() const noexcept
+    \variable std::optional<qint64> QHttpHeaderRange::end
 
-    Returns the end byte offset of the range, or \c{std::nullopt}
+    Contains the end byte offset of the range, or \c{std::nullopt}
     if no end was set. A range with a start but without an end
     (e.g., \c{bytes=500-}) requests all bytes from the given offset
     to the end of the resource.
 
-    \sa setEnd(), start()
-*/
-
-/*!
-    \fn void QHttpHeaderRange::setStart(std::optional<qint64> start) noexcept
-
-    Sets the start byte offset to \a start. Pass \c{std::nullopt}
-    to clear the start.
-
-    \sa start(), setEnd()
-*/
-
-/*!
-    \fn void QHttpHeaderRange::setEnd(std::optional<qint64> end) noexcept
-
-    Sets the end byte offset to \a end. Pass \c{std::nullopt}
-    to clear the end.
-
-    \sa end(), setStart()
+    \sa start
 */
 
 /*!
@@ -1870,7 +1835,7 @@ QList<QHttpHeaderRange> QHttpHeaders::rangeValues(bool *ok) const
                 break;
             }
 
-            QHttpHeaderRange range(start, end);
+            QHttpHeaderRange range{start, end};
             if (!range.isValid()) {
                 invalidHeaderEncountered = true;
                 break;
@@ -1922,11 +1887,11 @@ void QHttpHeaders::setRangeValues(QSpan<const QHttpHeaderRange> ranges)
         if (i > 0)
             result += ", "_ba;
 
-        if (range.start())
-            result += QByteArray::number(*range.start());
+        if (range.start)
+            result += QByteArray::number(*range.start);
         result += "-"_ba;
-        if (range.end())
-            result += QByteArray::number(*range.end());
+        if (range.end)
+            result += QByteArray::number(*range.end);
     }
 
     replaceOrAppend(WellKnownHeader::Range, result);
@@ -2041,11 +2006,11 @@ QDebug operator<<(QDebug debug, const QHttpHeaderRange &range)
     QDebugStateSaver saver(debug);
     debug.nospace();
     debug << "QHttpHeaderRange(bytes=";
-    if (range.start())
-        debug << *range.start();
+    if (range.start)
+        debug << *range.start;
     debug << '-';
-    if (range.end())
-        debug << *range.end();
+    if (range.end)
+        debug << *range.end;
     debug << ')';
     return debug;
 }
