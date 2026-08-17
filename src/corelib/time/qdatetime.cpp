@@ -5118,10 +5118,10 @@ qint64 QDateTime::msecsTo(const QDateTime &other) const
     \fn std::chrono::milliseconds QDateTime::operator-(const QDateTime &lhs, const QDateTime &rhs)
     \since 6.4
 
-    Returns the number of milliseconds between \a lhs and \a rhs.
+    Returns the time in milliseconds between \a lhs and \a rhs.
     If \a lhs is earlier than \a rhs, the result will be negative.
 
-    Returns 0 if either datetime is invalid.
+    Returns 0ms if either datetime is invalid.
 
     \sa msecsTo()
 */
