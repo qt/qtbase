@@ -3529,27 +3529,6 @@ function(_qt_internal_should_skip_deployment_api out_var out_var_reason)
     set(${out_var_reason} "${reason}" PARENT_SCOPE)
 endfunction()
 
-function(_qt_internal_should_skip_post_build_deployment_api out_var out_var_reason)
-    set(skip_deployment FALSE)
-    set(deployment_supported TRUE)
-
-    # Allow opting out of deployment, so that we can add deployment api to all our examples,
-    # but only run it in the CI for a select few, to avoid the overhead of deploying all examples.
-    if(QT_INTERNAL_SKIP_DEPLOYMENT OR (NOT deployment_supported))
-        set(skip_deployment TRUE)
-    endif()
-
-    set(reason "")
-    if(NOT deployment_supported)
-        set(reason "REASON_UNSPECIFIED")
-    elseif(QT_INTERNAL_SKIP_DEPLOYMENT)
-        set(reason "SKIP_REQUESTED")
-    endif()
-
-    set(${out_var} "${skip_deployment}" PARENT_SCOPE)
-    set(${out_var_reason} "${reason}" PARENT_SCOPE)
-endfunction()
-
 # Generate a deploy script that does nothing aside from showing a warning message.
 # The warning can be hidden by setting the QT_INTERNAL_HIDE_NO_OP_DEPLOYMENT_WARNING variable.
 function(_qt_internal_generate_no_op_deploy_script)
