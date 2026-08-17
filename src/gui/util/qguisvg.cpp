@@ -6,12 +6,15 @@
 #include "qguisvg_p.h"
 #include <cmath>
 #include <QtCore/qpoint.h>
+#include <QtCore/qregularexpression.h>
 #include <QtCore/qvarlengtharray.h>
 #include <QtGui/private/qmath_p.h>
 
 QT_BEGIN_NAMESPACE
 
 namespace {
+
+using namespace Qt::StringLiterals;
 
 static void pathArcSegment(QPainterPath &path,
                            qreal xc, qreal yc,
@@ -711,6 +714,33 @@ void pathArc(QPainterPath &path, qreal rx, qreal ry,
     }
 }
 
+namespace {
+namespace svgChars {
+constexpr auto spaces = " \\t\\n\\r\\f"_L1;
+constexpr auto spacesTiny = " \\t\\n\\r"_L1;
+} // namespace svgChars
+} // namespace
+
+static const QRegularExpression &reNoSpace(bool tiny12FeaturesOnly)
+{
+    if (tiny12FeaturesOnly) {
+        static QRegularExpression reTiny(QLatin1String("[^") + svgChars::spacesTiny + "]");
+        return reTiny;
+    } else {
+        static QRegularExpression re(QLatin1String("[^") + svgChars::spaces + "]");
+        return re;
+    }
+}
+
+QStringView trimmed(QStringView sv, bool tiny12FeaturesOnly)
+{
+    const QRegularExpression &re = reNoSpace(tiny12FeaturesOnly);
+    const qsizetype first = sv.indexOf(re);
+    if (first == -1) // implies last
+        return sv.first(0);
+    else
+        return sv.sliced(first, sv.lastIndexOf(re) - first + 1);
+}
 }
 
 QT_END_NAMESPACE

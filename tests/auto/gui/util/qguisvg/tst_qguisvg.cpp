@@ -22,9 +22,53 @@ public:
     virtual ~tst_QGuiSvg() = default;
 
 private slots:
+    void trimmed_data();
+    void trimmed();
     void testToDouble_data();
     void testToDouble();
 };
+
+void tst_QGuiSvg::trimmed_data()
+{
+    QTest::addColumn<QString>("in");
+    QTest::addColumn<QString>("out");
+    QTest::addColumn<QString>("outTiny");
+
+    QTest::newRow("empty") << "" << "" << "";
+    QTest::newRow("space") << " " << "" << "";
+    QTest::newRow("0-0") << "a" << "a" << "a";
+    QTest::newRow("0-1") << "a " << "a" << "a";
+    QTest::newRow("0-2") << "a  " << "a" << "a";
+    QTest::newRow("1-0") << " a" << "a" << "a";
+    QTest::newRow("1-1") << " a " << "a" << "a";
+    QTest::newRow("1-2") << " a  " << "a" << "a";
+    QTest::newRow("2-0") << "  a" << "a" << "a";
+    QTest::newRow("2-1") << "  a " << "a" << "a";
+    QTest::newRow("2-2") << "  a  " << "a" << "a";
+    QTest::newRow("mid") << "x y" << "x y" << "x y";
+
+    // spaces according to SVG
+    QTest::newRow("ht") << "\tb\t" << "b" << "b";
+    QTest::newRow("lf") << "\nb\n" << "b" << "b";
+    QTest::newRow("ff") << "\fb\f" << "b" << "\fb\f";
+    QTest::newRow("cr") << "\rb\r" << "b" << "b";
+    QTest::newRow("sp") << " b " << "b" << "b";
+
+    // spaces according to QChar but not SVG
+    QTest::newRow("vt") << "\va\v" << "\va\v" << "\va\v";
+    QTest::newRow("nel") << "\u0085a\u0085" << "\u0085a\u0085" << "\u0085a\u0085";
+    QTest::newRow("nbsp") << "\u00A0a\u00A0" << "\u00A0a\u00A0" << "\u00A0a\u00A0";
+}
+
+void tst_QGuiSvg::trimmed()
+{
+    QFETCH(QString, in);
+    QFETCH(QString, out);
+    QFETCH(QString, outTiny);
+
+    QCOMPARE(QGuiSvg::trimmed(in, false), out);
+    QCOMPARE(QGuiSvg::trimmed(in, true), outTiny);
+}
 
 void tst_QGuiSvg::testToDouble_data()
 {
