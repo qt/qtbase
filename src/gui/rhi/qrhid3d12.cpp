@@ -2179,7 +2179,7 @@ void QRhiD3D12::endExternal(QRhiCommandBuffer *cb)
         QD3D12RenderTargetData *rtD = rtData(cbD->currentTarget);
         cbD->cmdList->OMSetRenderTargets(UINT(rtD->colorAttCount),
                                          rtD->rtv,
-                                         TRUE,
+                                         FALSE,
                                          rtD->dsAttCount ? &rtD->dsv : nullptr);
     }
 }
@@ -2623,7 +2623,7 @@ void QRhiD3D12::beginPass(QRhiCommandBuffer *cb,
 
     cbD->cmdList->OMSetRenderTargets(UINT(rtD->colorAttCount),
                                      rtD->rtv,
-                                     TRUE,
+                                     FALSE,
                                      rtD->dsAttCount ? &rtD->dsv : nullptr);
 
     if (rtD->colorAttCount && wantsColorClear) {
