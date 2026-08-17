@@ -374,7 +374,7 @@ if (GCC AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "9.2")
     target_compile_options(PlatformCommonInternal INTERFACE $<$<COMPILE_LANGUAGE:CXX>:-Wsuggest-override>)
 endif()
 
-if(QT_FEATURE_stdlib_libcpp)
+if(QT_FEATURE_stdlib_libcpp OR APPLE)
     # Disable transitive C++ inclusions when using libc++, on all
     # language versions. See
     # https://libcxx.llvm.org/DesignDocs/HeaderRemovalPolicy.html
