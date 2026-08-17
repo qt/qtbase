@@ -267,6 +267,7 @@ private slots:
     void tabbedview_activesecond();
     void tabbedview_activethird();
     void tabbedview_closeInactive();
+    void tabbedview_middleClickClosesOneSubWindow();
 
 private:
     QMdiSubWindow *activeWindow;
@@ -2793,6 +2794,41 @@ void tst_QMdiArea::tabbedview_closeInactive()
 
     QTRY_COMPARE(mdiArea.subWindowList().size() , 1);
     QTRY_VERIFY(!mdi1);
+}
+
+void tst_QMdiArea::tabbedview_middleClickClosesOneSubWindow()
+{
+    QMdiArea mdiArea;
+    QList<QPointer<QMdiSubWindow>> subWindows;
+    mdiArea.setViewMode(QMdiArea::TabbedView);
+
+    for (int i = 1; i <= 3; ++i) {
+        QMdiSubWindow *subWindow = new QMdiSubWindow;
+        subWindow->setAttribute(Qt::WA_DeleteOnClose);
+        subWindow->setWindowTitle(u"Sub%1"_s.arg(i));
+        mdiArea.addSubWindow(subWindow);
+        subWindow->show();
+        subWindows.append(subWindow);
+    }
+
+    mdiArea.resize(800, 600);
+    mdiArea.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&mdiArea));
+
+    QTabBar *tabBar = mdiArea.findChild<QTabBar *>();
+    QVERIFY(tabBar);
+    QCOMPARE(tabBar->count(), 3);
+
+    QSignalSpy closeRequestedSpy(tabBar, &QTabBar::tabCloseRequested);
+
+    const QPoint tabCenter = tabBar->tabRect(0).center();
+    QTest::mousePress(tabBar, Qt::MiddleButton, {}, tabCenter);
+
+    QTRY_VERIFY(!subWindows.at(0));
+    QCOMPARE(tabBar->count(), 2);
+
+    QTest::mouseRelease(tabBar, Qt::MiddleButton, {}, tabCenter);
+    QCOMPARE(closeRequestedSpy.size(), 0);
 }
 
 QTEST_MAIN(tst_QMdiArea)

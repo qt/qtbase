@@ -522,6 +522,7 @@ public:
 
 protected:
     void mousePressEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
 #ifndef QT_NO_CONTEXTMENU
     void contextMenuEvent(QContextMenuEvent *event) override;
 #endif
@@ -547,6 +548,16 @@ void QMdiAreaTabBar::mousePressEvent(QMouseEvent *event)
     }
 
     subWindow->close();
+}
+
+/*!
+    \internal
+*/
+void QMdiAreaTabBar::mouseReleaseEvent(QMouseEvent *event)
+{
+    if (event->button() != Qt::MiddleButton) {
+        QTabBar::mouseReleaseEvent(event);
+    }
 }
 
 #ifndef QT_NO_CONTEXTMENU
