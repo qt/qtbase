@@ -736,42 +736,67 @@ void Preprocessor::substituteUntilNewline(Symbols &substituted)
             break;
         } else if (token == PP_HAS_INCLUDE || token == PP_HAS_INCLUDE_NEXT) {
             const bool isIncludeNext = (token == PP_HAS_INCLUDE_NEXT);
+            const Symbol hasIncludeSymbol = symbol();
             next(LPAREN);
-            Token tok = next(); // quote or LANGLE
-            bool usesAngleInclude = false;
-            QByteArray includeAsString;
-            Symbols innerSymbols;
-            if (tok == PP_LANGLE) {
-                usesAngleInclude = true;
-                next();
-                do {
-                    Symbol currentSymbol  = symbol();
-                    includeAsString += currentSymbol.lexem();
-                    if (currentSymbol.token == PP_IDENTIFIER)
-                        macroExpand(&innerSymbols, this, symbols, index, symbol().lineNum, true);
-                    else
-                        innerSymbols.append(currentSymbol);
-                } while (next() != PP_RANGLE);
-            } else {
-                includeAsString = unquotedLexem();
+
+            // Collect the argument, that is everything up to the matching ')'.
+            Symbols argument;
+            int nesting = 0;
+            for (;;) {
+                const Token tok = next();
+                if (tok == PP_RPAREN && nesting == 0)
+                    break;
+                if (tok == PP_NEWLINE || tok == NOTOKEN) {
+                    const QByteArray msg = "missing ')' in " + hasIncludeSymbol.lexemView();
+                    error(hasIncludeSymbol, msg.constData());
+                }
+                if (tok == PP_LPAREN)
+                    ++nesting;
+                else if (tok == PP_RPAREN)
+                    --nesting;
+                argument += symbol();
             }
-            next(RPAREN);
-            const qsizetype startIndex = isIncludeNext ? includeNextStartIndex() : 0;
-            const auto exists = [&](const QByteArray &include) {
-                if (isIncludeNext)
-                    return !resolveIncludeNext(include, startIndex).isNull();
-                const QByteArray &relative = usesAngleInclude ? QByteArray() : currentFilenames.top();
-                return !resolveInclude(include, relative).isNull();
+
+            // an argument that already is a header-name is taken as it stands,
+            // anything else is macro expanded once, and the result then has to
+            // form a header-name.
+            const auto isHeaderName = [](const Symbols &syms) {
+                if (syms.size() == 1)
+                    return syms.constFirst().token == PP_STRING_LITERAL;
+                return syms.size() > 2 && syms.constFirst().token == PP_LANGLE
+                        && syms.constLast().token == PP_RANGLE;
             };
-            bool result = exists(includeAsString);
-            if (usesAngleInclude && !result) {
-                // try with expansion
-                includeAsString = {};
-                for (const auto &innerSymbol: innerSymbols)
-                    includeAsString.append(innerSymbol.lexem());
-                result = exists(includeAsString);
+
+            if (!isHeaderName(argument)) {
+                Symbols expanded;
+                qsizetype pos = 1;
+                macroExpand(&expanded, this, argument, pos, hasIncludeSymbol.lineNum, false);
+                // A macro body may carry whitespace, a header-name may not.
+                expanded.removeIf([](const Symbol &s) { return s.token == PP_WHITESPACE; });
+                argument = expanded;
+                if (!isHeaderName(argument)) {
+                    const QByteArray msg = "Invalid argument to " + hasIncludeSymbol.lexemView();
+                    error(hasIncludeSymbol, msg.constData());
+                }
             }
-            Symbol definedOrNotDefined = symbol();
+
+            const bool usesAngleInclude = argument.constFirst().token == PP_LANGLE;
+            QByteArray includeAsString;
+            if (usesAngleInclude) {
+                for (qsizetype i = 1; i < argument.size() - 1; ++i)
+                    includeAsString += argument.at(i).lexem();
+            } else {
+                includeAsString = argument.constFirst().unquotedLexem();
+            }
+
+            bool result;
+            if (isIncludeNext) {
+                result = !resolveIncludeNext(includeAsString, includeNextStartIndex()).isNull();
+            } else {
+                const QByteArray relative = usesAngleInclude ? QByteArray() : currentFilenames.top();
+                result = !resolveInclude(includeAsString, relative).isNull();
+            }
+            Symbol definedOrNotDefined = hasIncludeSymbol;
             definedOrNotDefined.token = result ? PP_MOC_TRUE : PP_MOC_FALSE;
             substituted += definedOrNotDefined;
         } else  {
