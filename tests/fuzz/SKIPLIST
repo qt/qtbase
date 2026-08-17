@@ -5,6 +5,7 @@
 [All]
 QEasingCurve skip # cubicBezier() no longer exists in installed headers
 QFile skip # copy() overloads with std::optional parameters cause codegen errors
+QDir skip  # QDir::removeRecursively / rmdir can wipe data
 QJsonObject skip # cbegin()/cend() removed in Qt 6
 QMetaType skip # rawId() not available in installed Qt headers
 # QPA classes — Q_GUI_EXPORT but no installed <ClassName> header; require platform backend
