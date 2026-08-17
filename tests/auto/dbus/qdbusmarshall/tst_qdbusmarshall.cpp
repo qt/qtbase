@@ -8,9 +8,19 @@
 
 #include "common.h"
 #include <limits>
+#include <vector>
+#ifdef Q_OS_UNIX
+#include <unistd.h>
+#include <fcntl.h>
+#endif
+
+#include <QtDBus/QDBusVirtualObject>
+#include <QAtomicInt>
+#include <QtCore/private/quniquehandle_types_p.h>
 
 #include <QtDBus/private/qdbusutil_p.h>
 #include <QtDBus/private/qdbusconnection_p.h>
+#include <QtDBus/private/qdbusmessage_p.h>
 #include <QtDBus/private/qdbus_symbols_p.h>
 
 #ifndef DBUS_TYPE_UNIX_FD
@@ -21,6 +31,52 @@
 static const char serviceName[] = "org.qtproject.autotests.qpong";
 static const char objectPath[] = "/org/qtproject/qpong";
 static const char *interfaceName = serviceName;
+
+// Relay object for crossMarshallingWithInvalidFd: it receives a message and sends a fresh one
+// carrying the received arguments, which re-marshals a contained unix fd through
+// appendCrossMarshalling. Exhausts the fd table first so the dup() fails, and records send()'s
+// result for the test to assert on.
+class FdRelayObject : public QDBusVirtualObject
+{
+    Q_OBJECT
+public:
+    FdRelayObject(QObject *parent = nullptr) : QDBusVirtualObject(parent) {}
+    bool handleMessage(const QDBusMessage &message, const QDBusConnection &connection) override
+    {
+#ifdef Q_OS_UNIX
+        // Exhaust the fd table so the dup() performed while re-marshalling the unix fd below
+        // is guaranteed to fail. The descriptors are owned so they are released on any early return.
+        std::vector<QUniqueFileDescriptorHandle> held;
+        for (;;) {
+            QUniqueFileDescriptorHandle fd(::open("/dev/null", O_RDONLY));
+            if (!fd.isValid())
+                break;
+            held.push_back(std::move(fd));
+        }
+#endif
+        // Send a fresh message with the received (still undemarshalled) arguments; libdbus dup()s
+        // the fd while re-marshalling it via appendCrossMarshalling, which fails with the fd table exhausted.
+        QDBusMessage out = QDBusMessage::createSignal(message.path(), message.interface(),
+                                                     "relay");
+        out.setArguments(message.arguments());
+        const bool ok = connection.send(out);
+        m_sendResult = ok;
+        m_delivered = true;
+        emit done();
+        return ok;
+    }
+    QString introspect(const QString &) const override { return QString(); }
+
+    bool delivered() const { return m_delivered; }
+    bool sendResult() const { return m_sendResult; }
+
+signals:
+    void done();
+
+private:
+    bool m_delivered = false;
+    bool m_sendResult = false;
+};
 
 class tst_QDBusMarshall: public QObject
 {
@@ -61,6 +117,8 @@ private slots:
 
     void receiveUnknownType_data();
     void receiveUnknownType();
+
+    void crossMarshallingWithInvalidFd();
 
     void demarshallPrimitives_data();
     void demarshallPrimitives();
@@ -1543,6 +1601,57 @@ void tst_QDBusMarshall::demarshallInvalidByteArray()
 
     receiveArg.endStructure();
     QVERIFY(receiveArg.atEnd());
+}
+
+void tst_QDBusMarshall::crossMarshallingWithInvalidFd()
+{
+#ifdef Q_OS_UNIX
+    // Re-marshalling a unix fd internally dup()s it; if that dup() fails (e.g. EMFILE, fd table
+    // exhausted) the old code ignored the error and emitted a corrupt message (or aborted). The
+    // FdRelayObject receives a message whose argument is a container carrying a unix fd and sends a
+    // fresh message carrying those same arguments, forcing Qt to re-marshal the fd. We exhaust
+    // the fd table first so the dup() is guaranteed to fail.
+    QDBusConnection con = QDBusConnection::sessionBus();
+    QVERIFY(con.isConnected());
+
+    if (!(con.connectionCapabilities() & QDBusConnection::UnixFileDescriptorPassing))
+        QSKIP("Session bus does not support Unix file descriptor passing");
+
+    FdRelayObject relay;
+    const QString relayPath = "/fdRelay";
+    QVERIFY(con.registerVirtualObject(relayPath, &relay));
+
+    // Put the fd inside a container so re-marshalling exercises appendCrossMarshalling.
+    QTemporaryFile tf;
+    tf.setFileTemplate(QDir::tempPath() + "/qdbusmarshallfdXXXXXX.tmp");
+    QVERIFY(tf.open());
+    QDBusUnixFileDescriptor desc(tf.handle());
+    QList<QDBusUnixFileDescriptor> list;
+    list.append(desc);
+    QDBusMessage msg = QDBusMessage::createMethodCall(con.baseService(), relayPath,
+                                                      interfaceName, "ping");
+    msg.setArguments(QVariantList() << QVariant::fromValue(list));
+    tf.close();
+
+    QObject::connect(&relay, &FdRelayObject::done, &QTestEventLoop::instance(),
+                     &QTestEventLoop::exitLoop);
+    QVERIFY(con.send(msg));
+
+    // handleMessage() is normally run from the event loop, but may also be invoked
+    // synchronously by send(); only enter the loop if it hasn't run yet.
+    if (!relay.delivered()) {
+        QTestEventLoop::instance().enterLoop(2);
+        QVERIFY(!QTestEventLoop::instance().timeout());
+    }
+
+    // With the fix the failed dup() is reported and send() returns false instead of emitting
+    // a corrupt message (or aborting on stricter libdbus builds).
+    QVERIFY(!relay.sendResult());
+
+    con.unregisterObject(relayPath);
+#else
+    QSKIP("Unix-only test");
+#endif
 }
 
 QTEST_MAIN(tst_QDBusMarshall)
