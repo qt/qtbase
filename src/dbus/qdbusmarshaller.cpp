@@ -328,7 +328,9 @@ void QDBusMarshaller::close()
     if (ba) {
         if (!skipSignature && closeCode)
             *ba += closeCode;
-    } else if (parent) {
+    } else if (parent && ok) {
+        // On error the whole message is discarded anyway (see toDBusMessage);
+        // closing a partially-written container would make libdbus abort.
         q_dbus_message_iter_close_container(&parent->iterator, &iterator);
     }
 }
@@ -370,7 +372,10 @@ bool QDBusMarshaller::appendVariantInternal(const QVariant &arg)
                 return false;   // error!
         }
 
-        return appendCrossMarshalling(&demarshaller);
+        bool ok = appendCrossMarshalling(&demarshaller);
+        if (!ok)
+            error("Failed to cross-marshal argument"_L1);
+        return ok;
     }
 
     const char *signature = QDBusMetaType::typeToSignature(id);
@@ -499,7 +504,21 @@ bool QDBusMarshaller::appendCrossMarshalling(QDBusDemarshaller *demarshaller)
         qlonglong value;
         q_dbus_message_iter_get_basic(&demarshaller->iterator, &value);
         q_dbus_message_iter_next(&demarshaller->iterator);
-        q_dbus_message_iter_append_basic(&iterator, code, &value);
+
+        if (code == DBUS_TYPE_UNIX_FD) {
+            // An fd is not a plain value: libdbus dups() it and can fail for
+            // a stale descriptor, leaving the writer without its typecode.
+            // Propagate the failure instead of crashing later in close().
+            int fd = int(value);
+            if (!q_dbus_message_iter_append_basic(&iterator, DBUS_TYPE_UNIX_FD, &fd)) {
+                qWarning("QDBusMarshaller: cannot append unix file descriptor %d "
+                         "while cross-marshalling; discarding the message", fd);
+                error("Failed to append unix file descriptor"_L1);
+                return false;
+            }
+        } else {
+            q_dbus_message_iter_append_basic(&iterator, code, &value);
+        }
         return true;
     }
 
