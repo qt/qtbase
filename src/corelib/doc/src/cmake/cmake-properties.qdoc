@@ -1256,3 +1256,70 @@ Specifies the path to an iOS launch screen storyboard file.
 
 \sa {Launch Screens and Launch Images}
 */
+
+/*!
+\page cmake-target-property-qt-no-xcode-embed-frameworks.html
+\ingroup cmake-properties-qtcore
+\ingroup cmake-target-properties-qtcore
+
+\title QT_NO_XCODE_EMBED_FRAMEWORKS
+\target cmake-target-property-QT_NO_XCODE_EMBED_FRAMEWORKS
+
+\summary {Opts an application out of automatic embedding of its shared library dependencies.}
+
+\cmakepropertysince 6.12
+\cmakepropertyiosonly
+
+Boolean property that disables the automatic embedding of shared library
+dependencies into the application bundle, as described in
+\l{apple-embed-shared-library-dependencies}{qt_finalize_target()}.
+
+Set it on the application target if you want to deploy the Qt frameworks and
+other shared libraries yourself:
+
+\badcode
+set_target_properties(myapp PROPERTIES
+    QT_NO_XCODE_EMBED_FRAMEWORKS ON
+)
+\endcode
+
+To exclude only individual dependencies instead of all of them, use
+\l{cmake-target-property-QT_NO_XCODE_EMBED_FRAMEWORK_IN_CONSUMERS}
+{QT_NO_XCODE_EMBED_FRAMEWORK_IN_CONSUMERS}.
+
+\sa qt_finalize_target(), QT_NO_XCODE_EMBED_FRAMEWORK_IN_CONSUMERS
+*/
+
+/*!
+\page cmake-target-property-qt-no-xcode-embed-framework-in-consumers.html
+\ingroup cmake-properties-qtcore
+\ingroup cmake-target-properties-qtcore
+
+\title QT_NO_XCODE_EMBED_FRAMEWORK_IN_CONSUMERS
+\target cmake-target-property-QT_NO_XCODE_EMBED_FRAMEWORK_IN_CONSUMERS
+
+\summary {Excludes a shared library from being embedded into the application bundles that use it.}
+
+\cmakepropertysince 6.12
+\cmakepropertyiosonly
+
+Boolean property that excludes a shared library from automatic embedding
+into application bundles, as described in
+\l{apple-embed-shared-library-dependencies}{qt_finalize_target()}.
+
+Unlike
+\l{cmake-target-property-QT_NO_XCODE_EMBED_FRAMEWORKS}
+{QT_NO_XCODE_EMBED_FRAMEWORKS}, which is set on the application target and
+disables embedding altogether, this property is set on the library target that
+should not be embedded.
+
+Every application that links against the library, will leave it out of its bundle:
+
+\badcode
+set_target_properties(mylib PROPERTIES
+    QT_NO_XCODE_EMBED_FRAMEWORK_IN_CONSUMERS ON
+)
+\endcode
+
+\sa qt_finalize_target(), QT_NO_XCODE_EMBED_FRAMEWORKS
+*/

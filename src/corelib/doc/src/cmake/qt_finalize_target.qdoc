@@ -80,6 +80,40 @@ disable setting \c XCODE_ATTRIBUTE_DEVELOPMENT_TEAM, and the
 \l QT_NO_SET_XCODE_BUNDLE_IDENTIFIER variable can be used to disable setting
 \c XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER and \c MACOSX_BUNDLE_GUI_IDENTIFIER.
 
+\section3 Embedding Shared Library Dependencies
+\target apple-embed-shared-library-dependencies
+
+An application that depends on shared libraries can only launch if the
+shared libraries it links against are part of its bundle.
+
+Since Qt 6.12, the build system collects the shared libraries the
+application links against, and adds them to the application's
+\c XCODE_EMBED_FRAMEWORKS build phase, with \c CODE_SIGN_ON_COPY enabled.
+Both framework bundles and plain \c dylib libraries are handled.
+
+Embedding is only done if all of the following apply:
+
+\list
+\li Qt was built in a shared library configuration.
+\li The Xcode generator is used.
+\li Qt was not built with both a debug and a release configuration, because
+    \c XCODE_EMBED_FRAMEWORKS holds a single path per library and can therefore
+    not describe both configurations.
+\li The target is an application bundle, and not a child bundle like an app
+    extension. Child bundles are expected to use the frameworks of their
+    parent application.
+\li The \c XCODE_EMBED_FRAMEWORKS property is not already set on the target,
+    which is taken as a sign that the project handles embedding itself.
+\endlist
+
+To deploy the shared libraries yourself, set the
+\l{cmake-target-property-QT_NO_XCODE_EMBED_FRAMEWORKS}
+{QT_NO_XCODE_EMBED_FRAMEWORKS} property on the application target.
+
+To leave out individual libraries, set the
+\l{cmake-target-property-QT_NO_XCODE_EMBED_FRAMEWORK_IN_CONSUMERS}
+{QT_NO_XCODE_EMBED_FRAMEWORK_IN_CONSUMERS} property on those libraries.
+
 \section1 Library Targets
 
 As of this Qt version, finalization for library targets does not perform any
