@@ -471,6 +471,8 @@ QVariant QCocoaTheme::themeHint(ThemeHint hint) const
         return false;
     case QPlatformTheme::MnemonicsEnabled:
         return false;
+    case QPlatformTheme::UnderlineShortcut:
+        return false;
     default:
         break;
     }

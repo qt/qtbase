@@ -2938,9 +2938,6 @@ int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
 #endif
         ret = Qt::AlignCenter;
         } break;
-    case SH_UnderlineShortcut:
-        ret = false;
-        break;
     case SH_ToolTipLabel_Opacity:
         ret = 242; // About 95%
         break;
