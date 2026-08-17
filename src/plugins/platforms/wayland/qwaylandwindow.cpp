@@ -790,7 +790,7 @@ void QWaylandWindow::safeCommit(QWaylandBuffer *buffer, const QRegion &damage)
 {
     if (isExposed()) {
         commit(buffer, damage);
-    } else {
+    } else if (!buffer->committed()) {
         buffer->setBusy(false);
     }
 }
