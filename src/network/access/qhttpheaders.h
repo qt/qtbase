@@ -21,27 +21,20 @@ QT_BEGIN_NAMESPACE
 class QDataStream;
 class QDebug;
 
-class QHttpHeaderRange
+struct QHttpHeaderRange
 {
-public:
-    constexpr QHttpHeaderRange() noexcept = default;
-    constexpr QHttpHeaderRange(std::optional<qint64> start, std::optional<qint64> end) noexcept
-        : m_start(start), m_end(end) {}
-
-    constexpr std::optional<qint64> start() const noexcept { return m_start; }
-    constexpr std::optional<qint64> end() const noexcept { return m_end; }
-    constexpr void setStart(std::optional<qint64> start) noexcept { m_start = start; }
-    constexpr void setEnd(std::optional<qint64> end) noexcept { m_end = end; }
+    std::optional<qint64> start;
+    std::optional<qint64> end;
 
     constexpr bool isValid() const noexcept
     {
-        if (!m_start && !m_end)
+        if (!start && !end)
             return false;
-        if (m_start && m_start < 0)
+        if (start && start < 0)
             return false;
-        if (m_end && m_end < 0)
+        if (end && end < 0)
             return false;
-        if (m_start && m_end && *m_start > *m_end)
+        if (start && end && *start > *end)
             return false;
         return true;
     }
@@ -54,17 +47,14 @@ private:
     friend constexpr bool comparesEqual(const QHttpHeaderRange &lhs,
                                         const QHttpHeaderRange &rhs) noexcept
     {
-        return lhs.m_start == rhs.m_start && lhs.m_end == rhs.m_end;
+        return lhs.start == rhs.start && lhs.end == rhs.end;
     }
     Q_DECLARE_EQUALITY_COMPARABLE_LITERAL_TYPE(QHttpHeaderRange)
 
     friend size_t qHash(QHttpHeaderRange range, size_t seed = 0) noexcept
     {
-        return qHashMulti(seed, range.start().value_or(0), range.end().value_or(0));
+        return qHashMulti(seed, range.start.value_or(0), range.end.value_or(0));
     }
-
-    std::optional<qint64> m_start;
-    std::optional<qint64> m_end;
 };
 
 class QHttpHeadersPrivate;
