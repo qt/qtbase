@@ -12,6 +12,7 @@
 #include <QtCore/qdatetime.h>
 #include <QtCore/qfileinfo.h>
 #include <QtCore/private/qfilesystemengine_p.h>
+#include <QtCore/qrandom.h>
 #include <QtCore/qthread.h>
 #include <QtCore/private/quniquehandle_types_p.h>
 
@@ -380,14 +381,20 @@ bool QLockFile::lock()
 bool QLockFile::tryLock(std::chrono::milliseconds timeout)
 {
     using namespace std::chrono_literals;
+    constexpr int Perturbation = 4096 * 1024;   // ns
     using Msec = std::chrono::milliseconds;
 
     Q_D(QLockFile);
     QLockFilePrivate::LockFileInfo current(QLockFilePrivate::LockFileInfo::Current{});
 
+    // Don't convert \a timeout to a different duration type!
     QDeadlineTimer timer(timeout < 0ms ? Msec::max() : timeout);
 
-    Msec sleepTime = 100ms;
+    // Add a small perturbation to the sleep time, just in case two or more
+    // processes/threads are getting woken up together.
+    auto sleepTime = 100ms +
+            QRandomGenerator::global()->bounded(-Perturbation, Perturbation) * 1ns;
+
     while (true) {
         d->lockError = d->tryLock_sys(current);
         switch (d->lockError) {
@@ -412,7 +419,7 @@ bool QLockFile::tryLock(std::chrono::milliseconds timeout)
             break;
         }
 
-        auto remainingTime = std::chrono::duration_cast<Msec>(timer.remainingTimeAsDuration());
+        auto remainingTime = timer.remainingTimeAsDuration();
         if (remainingTime == 0ms)
             return false;
 
