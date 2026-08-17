@@ -2,10 +2,11 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 #####################################################################
-## HarmonyExtras Module:
+## HarmonyExtrasPrivate Module:
 #####################################################################
 
-qt_internal_add_module(HarmonyExtras
+qt_internal_add_module(HarmonyExtrasPrivate
+    INTERNAL_MODULE
     EXCEPTIONS
     SOURCES
         qohosabilitycontext.cpp qohosabilitycontext_p.h
