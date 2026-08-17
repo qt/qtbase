@@ -136,6 +136,8 @@ private slots:
     void debugOutput();
     void testlibFormatting_data();
     void testlibFormatting();
+
+    void deeplyNestedContainerDoesNotCrash();
 };
 
 namespace SimpleEncodeToCbor {
@@ -3507,6 +3509,34 @@ void tst_QCborValue::testlibFormatting()
     QScopedArrayPointer<char> hold(QTest::toString(v));
     QString actual = hold.get();
     QCOMPARE(actual, expected);
+}
+
+void tst_QCborValue::deeplyNestedContainerDoesNotCrash()
+{
+    // Check that deeply nested container does not crash with SO in the d-tor
+
+    constexpr int depth = 200000;
+
+    // array
+    {
+        QCborArray array;
+        for (int i = 0; i < depth; ++i) {
+            QCborArray tmp;
+            tmp.append(array);
+            array = std::move(tmp);
+        }
+    }
+    // map
+    {
+        QCborMap map;
+        map.insert("a"_L1, QCborValue(0));
+        for (int i = 0; i < depth; ++i) {
+            QCborMap tmp;
+            tmp.insert("a"_L1, QCborValue(std::move(map)));
+            tmp.insert("b"_L1, QCborValue(u"Hello, world"_s));
+            map = std::move(tmp);
+        }
+    }
 }
 
 QTEST_MAIN(tst_QCborValue)

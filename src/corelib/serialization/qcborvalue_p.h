@@ -111,7 +111,10 @@ public:
 
     enum ContainerDisposition { CopyContainer, MoveContainer };
 
-    QByteArray::size_type usedData = 0;
+    union {
+        QByteArray::size_type usedData = 0;
+        QCborContainerPrivate *nextToDelete; // only used in d-tor
+    };
     QByteArray data;
     QList<QtCbor::Element> elements;
 

@@ -917,10 +917,61 @@ static inline int typeOrder(QCborValue::Type e1, QCborValue::Type  e2)
 
 QCborContainerPrivate::~QCborContainerPrivate()
 {
-    // delete our elements
-    for (Element &e : elements) {
-        if (e.flags & Element::IsContainer)
-            e.container->deref();
+    // Do the depth-first search of all containers, and delete them
+    // bottom-to-top, so that the d-tor never recurses.
+    // We cannot use an approach with storing the elements to be removed in
+    // a container, because the container itself may throw on reallocation, and
+    // we do not want it in the d-tor.
+    // So, use the nextToDelete member of QCborContainerPrivate to first create
+    // a linked list of containers to be checked, and then build another linked
+    // list of the elements to be removed.
+    QCborContainerPrivate *pendingContainers = nullptr;
+    QCborContainerPrivate *toBeDeleted = nullptr;
+
+    auto appendNestedContainers = [&pendingContainers](QCborContainerPrivate *priv) {
+        for (const Element &e : std::as_const(priv->elements)) {
+            // only append if it actually has to be deleted
+            if ((e.flags & Element::IsContainer) == 0)
+                continue; // not a container
+            if (e.container->ref.deref())
+                continue; // still referenced
+            if (e.container->elements.isEmpty()) {
+                // empty container - delete immediately
+                delete e.container;
+            } else {
+                e.container->nextToDelete = pendingContainers;
+                pendingContainers = e.container;
+            }
+        }
+    };
+
+    // first, add our nested containers
+    appendNestedContainers(this);
+
+    // then try do descend deeper into the tree
+    while (pendingContainers) {
+        QCborContainerPrivate *priv = pendingContainers;
+        pendingContainers = priv->nextToDelete;
+
+        // Move priv into the list of containers that can now be deleted.
+        priv->nextToDelete = toBeDeleted;
+        toBeDeleted = priv;
+
+        // collect priv's children
+        appendNestedContainers(priv);
+    }
+
+    // Now actually delete everything
+    while (toBeDeleted) {
+        QCborContainerPrivate *priv = toBeDeleted;
+        toBeDeleted = priv->nextToDelete;
+
+        // Clear the elements, so that we do not recurse again.
+        // We cannot use QList::clear(), because it might allocate.
+        // Use move-assignment instead.
+        priv->elements = QList<Element>();
+
+        delete priv;
     }
 }
 
