@@ -148,25 +148,35 @@ void QEglFSCursor::initCursorAtlas()
     QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
     QJsonObject object = doc.object();
 
-    QString atlas = object.value("image"_L1).toString();
-    Q_ASSERT(!atlas.isEmpty());
-
+    const QString atlas = object.value("image"_L1).toString();
     const int cursorsPerRow = object.value("cursorsPerRow"_L1).toInt();
-    if (cursorsPerRow <= 0 || cursorsPerRow > Qt::LastCursor + 1) {
-        qWarning("Invalid cursorsPerRow in cursor atlas %s", json.constData());
+    const QJsonArray hotSpots = object.value("hotSpots"_L1).toArray();
+
+    if (atlas.isEmpty() || cursorsPerRow <= 0 || cursorsPerRow > Qt::LastCursor + 1
+        || hotSpots.count() != Qt::LastCursor + 1)
+    {
+        qWarning("Invalid cursor atlas '%s', disabling the cursor. Expected a non-empty "
+                 "'image', a 'cursorsPerRow' between 1 and %d, and %d 'hotSpots' entries.",
+                 json.constData(), Qt::LastCursor + 1, Qt::LastCursor + 1);
         m_visible = false;
         return;
     }
+
     m_cursorAtlas.cursorsPerRow = cursorsPerRow;
 
-    const QJsonArray hotSpots = object.value("hotSpots"_L1).toArray();
-    Q_ASSERT(hotSpots.count() == Qt::LastCursor + 1);
     for (int i = 0; i < hotSpots.count(); i++) {
         QPoint hotSpot(hotSpots[i].toArray()[0].toDouble(), hotSpots[i].toArray()[1].toDouble());
         m_cursorAtlas.hotSpots << hotSpot;
     }
 
     QImage image = QImage(atlas).convertToFormat(QImage::Format_ARGB32_Premultiplied);
+    if (image.isNull()) {
+        qWarning("Failed to load cursor atlas image '%s', disabling the cursor",
+                 qPrintable(atlas));
+        m_visible = false;
+        return;
+    }
+
     m_cursorAtlas.cursorWidth = image.width() / m_cursorAtlas.cursorsPerRow;
     m_cursorAtlas.cursorHeight = image.height() / ((Qt::LastCursor + cursorsPerRow) / cursorsPerRow);
     m_cursorAtlas.width = image.width();
