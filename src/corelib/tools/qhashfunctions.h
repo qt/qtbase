@@ -15,7 +15,7 @@
 
 #include <numeric> // for std::accumulate
 #include <functional> // for std::hash
-#include <utility> // For std::pair
+#include <optional>
 
 #if 0
 #pragma qt_class(QHashFunctions)
@@ -94,6 +94,10 @@ Q_CORE_EXPORT Q_DECL_PURE_FUNCTION size_t qHashBits(const void *p, size_t size, 
 // implementation below qHashMulti
 template <typename T1, typename T2> inline size_t qHash(const std::pair<T1, T2> &key, size_t seed = 0)
     noexcept(QHashPrivate::noexceptPairHash<T1, T2>());
+
+constexpr size_t qHash(std::nullopt_t, size_t seed = 0) noexcept;
+template <typename T> constexpr size_t qHash(const std::optional<T> &key, size_t seed = 0)
+    noexcept(QHashPrivate::noexceptPairHash<T, T>());
 
 // C++ builtin types
 #define QT_MK_QHASH_COMPAT(X) \
@@ -454,6 +458,22 @@ template <typename T1, typename T2> inline constexpr bool noexceptPairHash()
     return noexcept(qHash(std::declval<T1>(), seed)) && noexcept(qHash(std::declval<T2>(), seed));
 }
 } // QHashPrivate
+
+constexpr size_t qHash(std::nullopt_t, size_t seed) noexcept
+{
+    // Hash nullopt to something that's unlikely to occur elsewehre, and cheap
+    // to move-immediate.
+    // Choice: smallest prime within RISC-V addi 12-bit signed range
+    // (not optimal for Thumb/RISC-V compressed, but ±32 is really too small):
+    constexpr int NoValueHash = -2039;
+    return qHash(NoValueHash, seed);
+}
+
+template <typename T> constexpr size_t qHash(const std::optional<T> &key, size_t seed)
+    noexcept(QHashPrivate::noexceptPairHash<T, T>())
+{
+    return key ? qHash(*key, seed) : qHash(std::nullopt, seed);
+}
 
 template <typename T1, typename T2> inline size_t qHash(const std::pair<T1, T2> &key, size_t seed)
     noexcept(QHashPrivate::noexceptPairHash<T1, T2>())

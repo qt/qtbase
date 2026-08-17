@@ -17,6 +17,8 @@
 
 #include <unordered_set>
 
+using namespace Qt::StringLiterals;
+
 static size_t seed = 0;
 class tst_QHashFunctions : public QObject
 {
@@ -45,6 +47,7 @@ private Q_SLOTS:
     void floatingPointConsistency();
     void stringConsistency_data();
     void stringConsistency();
+    void optionalConsistency();
     void qhash();
     void qhash_of_empty_and_null_qstring();
     void qhash_of_empty_and_null_qbytearray();
@@ -399,6 +402,53 @@ void tst_QHashFunctions::stringConsistency()
         if (value == l1sv)
             QCOMPARE(qHash(l1sv, seed), qHash(value, seed));
 #endif
+    }
+}
+
+void tst_QHashFunctions::optionalConsistency()
+{
+    // guarantee #1: an engaged optional<T> hashes the same as its value()
+    {
+        for (int v : {0, 1, -47}) {
+            std::optional o(v);
+            QCOMPARE(qHash(o, seed), qHash(v, seed));
+            QCOMPARE(qHash(o, seed), qHash(*o, seed));
+        }
+    }
+    {
+        for (qint64 v : {Q_INT64_C(0), Q_INT64_C(-1), LLONG_MAX}) {
+            std::optional o(v);
+            QCOMPARE(qHash(o, seed), qHash(v, seed));
+            QCOMPARE(qHash(o, seed), qHash(*o, seed));
+        }
+    }
+    {
+        for (double v : {0.0, 1.0, -3.5}) {
+            std::optional o(v);
+            QCOMPARE(qHash(o, seed), qHash(v, seed));
+            QCOMPARE(qHash(o, seed), qHash(*o, seed));
+        }
+    }
+    {
+        for (const QString &v : {QString(), u"Hello"_s, u"World"_s}) {
+            std::optional o(v);
+            QCOMPARE(qHash(o, seed), qHash(v, seed));
+            QCOMPARE(qHash(o, seed), qHash(*o, seed));
+        }
+    }
+
+    // guarantee #2: all disengaged optionals, of any T, hash to the same value
+    {
+        std::optional<int> oi;
+        std::optional<qint64> oi64;
+        std::optional<double> od;
+        std::optional<QString> os;
+
+        const auto h = qHash(std::nullopt, seed);
+        QCOMPARE(qHash(oi, seed), h);
+        QCOMPARE(qHash(oi64, seed), h);
+        QCOMPARE(qHash(od, seed), h);
+        QCOMPARE(qHash(os, seed), h);
     }
 }
 
