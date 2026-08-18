@@ -23,3 +23,7 @@ qt_build_tests()
 if(FEATURE_squish_test)
     add_subdirectory(squish)
 endif()
+
+if(QT_FEATURE_test_fuzz)
+    add_subdirectory(libfuzzer)
+endif()
