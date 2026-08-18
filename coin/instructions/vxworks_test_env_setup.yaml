@@ -32,7 +32,7 @@ instructions:
       equals_value: ARMV7
   - type: EnvironmentVariable
     variableName: VXWORKS_QEMU_INSTANCES
-    variableValue: "4"
+    variableValue: "3"
     enable_if:
       condition: property
       property: target.arch
@@ -74,10 +74,8 @@ instructions:
       declare -A env_vars
       env_vars["LD_LIBRARY_PATH"]="$VXWORKS_TEST_LIBS_PATH"
       env_vars["ICU_DATA"]="$WIND_CC_SYSROOT/3pp/ICU/icu/source/data/in/icudt73l.dat"
-      env_vars["TMPDIR"]="/tmp"
       env_vars["QT_QPA_FONTDIR"]="$WIND_CC_SYSROOT/fonts"
       env_vars["VXWORKS_CERTS_DIR"]="$WIND_CC_SYSROOT/certs"
-      env_vars["HOME"]="/home/qt/work/vxworkshome${INSTANCE}"
       env_vars["QML_LOADERTHREAD_STACK_SIZE"]="131072"
       env_vars["QTEST_FUNCTION_TIMEOUT"]="1000000"
       env_vars["QT_PLUGIN_PATH"]="/home/qt/work/install/target/plugins"
