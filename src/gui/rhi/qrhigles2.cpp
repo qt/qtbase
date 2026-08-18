@@ -1270,6 +1270,34 @@ bool QRhiGles2::create(QRhi::Flags flags)
     if (ctx->hasExtension(QByteArrayLiteral("GL_ARB_draw_indirect")))
         caps.drawIndirect = true;
 
+    // glDraw*BaseInstance: core in 4.2+, ARB on older desktop. Not enabled on
+    // GLES even when GL_EXT_base_instance is present, for lack of testing.
+    // Requires instancing as well: the ARB extension can be advertised on
+    // contexts below 3.3, where the instanced draw path, including the
+    // attribute divisors, is not taken at all.
+    if (caps.gles) {
+        caps.baseInstance = false;
+    } else {
+        caps.baseInstance = caps.instancing
+                && (caps.ctxMajor > 4 || (caps.ctxMajor == 4 && caps.ctxMinor >= 2)
+                    || ctx->hasExtension(QByteArrayLiteral("GL_ARB_base_instance")));
+    }
+
+    if (caps.baseInstance) {
+        glDrawArraysInstancedBaseInstance = reinterpret_cast<decltype(glDrawArraysInstancedBaseInstance)>(
+                    ctx->getProcAddress(QByteArrayLiteral("glDrawArraysInstancedBaseInstance")));
+        glDrawElementsInstancedBaseInstance = reinterpret_cast<decltype(glDrawElementsInstancedBaseInstance)>(
+                    ctx->getProcAddress(QByteArrayLiteral("glDrawElementsInstancedBaseInstance")));
+        glDrawElementsInstancedBaseVertexBaseInstance = reinterpret_cast<decltype(glDrawElementsInstancedBaseVertexBaseInstance)>(
+                    ctx->getProcAddress(QByteArrayLiteral("glDrawElementsInstancedBaseVertexBaseInstance")));
+        if (!glDrawArraysInstancedBaseInstance
+            || !glDrawElementsInstancedBaseInstance
+            || !glDrawElementsInstancedBaseVertexBaseInstance) {
+            qWarning("Failed to resolve glDraw{Arrays,Elements}InstancedBaseInstance{,BaseVertex}; disabling base instance support.");
+            caps.baseInstance = false;
+        }
+    }
+
     if (caps.gles)
         caps.drawIndirectMulti = false;
     else
@@ -1723,12 +1751,10 @@ bool QRhiGles2::isFeatureSupported(QRhi::Feature feature) const
     case QRhi::BaseVertex:
         return caps.baseVertex;
     case QRhi::BaseInstance:
-        // The glDraw*BaseInstance variants of draw calls are not in GLES 3.2,
-        // so won't bother, even though they would be available in GL 4.2+.
-        // Furthermore, not supporting this avoids having to deal with the
-        // gl_InstanceID vs gl_InstanceIndex mess in shaders and in the shader
-        // transpiling pipeline.
-        return false;
+        // gl_InstanceID on GL starts at 0 regardless of baseInstance, unlike
+        // Vulkan's gl_InstanceIndex. QRhi::InstanceIndexIncludesBaseInstance
+        // stays false on GL.
+        return caps.baseInstance;
     case QRhi::TriangleFanTopology:
         return true;
     case QRhi::ReadBackNonUniformBuffer:
@@ -1791,7 +1817,7 @@ bool QRhiGles2::isFeatureSupported(QRhi::Feature feature) const
     case QRhi::SampleVariables:
         return caps.sampleVariables;
     case QRhi::InstanceIndexIncludesBaseInstance:
-        return false; // because BaseInstance is always false
+        return false; // gl_InstanceID always starts at 0 on GL
     case QRhi::DepthClamp:
         return caps.depthClamp;
     case QRhi::DrawIndirect:
@@ -3777,8 +3803,19 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
         {
             QGles2GraphicsPipeline *psD = QRHI_RES(QGles2GraphicsPipeline, cmd.args.draw.ps);
             if (psD) {
-                if (cmd.args.draw.instanceCount == 1 || !caps.instancing) {
+                const bool useBaseInstance = (cmd.args.draw.baseInstance != 0 && caps.baseInstance);
+                // Same rationale as DrawIndexed below.
+                const bool needsInstancedPath = caps.instancing
+                        && (cmd.args.draw.instanceCount != 1 || useBaseInstance);
+
+                if (!needsInstancedPath) {
                     f->glDrawArrays(psD->drawMode, GLint(cmd.args.draw.firstVertex), GLsizei(cmd.args.draw.vertexCount));
+                } else if (useBaseInstance) {
+                    glDrawArraysInstancedBaseInstance(psD->drawMode,
+                                                      GLint(cmd.args.draw.firstVertex),
+                                                      GLsizei(cmd.args.draw.vertexCount),
+                                                      GLsizei(cmd.args.draw.instanceCount),
+                                                      cmd.args.draw.baseInstance);
                 } else {
                     f->glDrawArraysInstanced(psD->drawMode, GLint(cmd.args.draw.firstVertex), GLsizei(cmd.args.draw.vertexCount),
                                              GLsizei(cmd.args.draw.instanceCount));
@@ -3794,8 +3831,16 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
             if (psD) {
                 const GLvoid *ofs = reinterpret_cast<const GLvoid *>(
                             quintptr(cmd.args.drawIndexed.firstIndex * state.indexStride + state.indexOffset));
-                if (cmd.args.drawIndexed.instanceCount == 1 || !caps.instancing) {
-                    if (cmd.args.drawIndexed.baseVertex != 0 && caps.baseVertex) {
+                const bool useBaseVertex   = (cmd.args.drawIndexed.baseVertex   != 0 && caps.baseVertex);
+                const bool useBaseInstance = (cmd.args.drawIndexed.baseInstance != 0 && caps.baseInstance);
+                // Take the *Instanced path with a non-zero baseInstance even
+                // when instanceCount is 1: only those calls fetch per-instance
+                // attributes at the base instance offset.
+                const bool needsInstancedPath = caps.instancing
+                        && (cmd.args.drawIndexed.instanceCount != 1 || useBaseInstance);
+
+                if (!needsInstancedPath) {
+                    if (useBaseVertex) {
                         f->glDrawElementsBaseVertex(psD->drawMode,
                                                     GLsizei(cmd.args.drawIndexed.indexCount),
                                                     state.indexType,
@@ -3807,21 +3852,34 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
                                           state.indexType,
                                           ofs);
                     }
+                } else if (useBaseInstance && useBaseVertex) {
+                    glDrawElementsInstancedBaseVertexBaseInstance(psD->drawMode,
+                                                                  GLsizei(cmd.args.drawIndexed.indexCount),
+                                                                  state.indexType,
+                                                                  ofs,
+                                                                  GLsizei(cmd.args.drawIndexed.instanceCount),
+                                                                  cmd.args.drawIndexed.baseVertex,
+                                                                  cmd.args.drawIndexed.baseInstance);
+                } else if (useBaseInstance) {
+                    glDrawElementsInstancedBaseInstance(psD->drawMode,
+                                                        GLsizei(cmd.args.drawIndexed.indexCount),
+                                                        state.indexType,
+                                                        ofs,
+                                                        GLsizei(cmd.args.drawIndexed.instanceCount),
+                                                        cmd.args.drawIndexed.baseInstance);
+                } else if (useBaseVertex) {
+                    f->glDrawElementsInstancedBaseVertex(psD->drawMode,
+                                                         GLsizei(cmd.args.drawIndexed.indexCount),
+                                                         state.indexType,
+                                                         ofs,
+                                                         GLsizei(cmd.args.drawIndexed.instanceCount),
+                                                         cmd.args.drawIndexed.baseVertex);
                 } else {
-                    if (cmd.args.drawIndexed.baseVertex != 0 && caps.baseVertex) {
-                        f->glDrawElementsInstancedBaseVertex(psD->drawMode,
-                                                             GLsizei(cmd.args.drawIndexed.indexCount),
-                                                             state.indexType,
-                                                             ofs,
-                                                             GLsizei(cmd.args.drawIndexed.instanceCount),
-                                                             cmd.args.drawIndexed.baseVertex);
-                    } else {
-                        f->glDrawElementsInstanced(psD->drawMode,
-                                                   GLsizei(cmd.args.drawIndexed.indexCount),
-                                                   state.indexType,
-                                                   ofs,
-                                                   GLsizei(cmd.args.drawIndexed.instanceCount));
-                    }
+                    f->glDrawElementsInstanced(psD->drawMode,
+                                               GLsizei(cmd.args.drawIndexed.indexCount),
+                                               state.indexType,
+                                               ofs,
+                                               GLsizei(cmd.args.drawIndexed.instanceCount));
                 }
             } else {
                 qWarning("No graphics pipeline active for drawIndexed; ignored");

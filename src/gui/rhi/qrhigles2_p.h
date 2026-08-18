@@ -1039,6 +1039,10 @@ public:
     void (QOPENGLF_APIENTRYP glMultiDrawElementsIndirect)(GLenum, GLenum, const void *, GLsizei, GLsizei) = nullptr;
     void (QOPENGLF_APIENTRYP glMultiDrawArraysIndirectCount)(GLenum, const void *, GLintptr, GLsizei, GLsizei) = nullptr;
     void (QOPENGLF_APIENTRYP glMultiDrawElementsIndirectCount)(GLenum, GLenum, const void *, GLintptr, GLsizei, GLsizei) = nullptr;
+    // Resolved when caps.baseInstance is true, left null otherwise.
+    void (QOPENGLF_APIENTRYP glDrawArraysInstancedBaseInstance)(GLenum, GLint, GLsizei, GLsizei, GLuint) = nullptr;
+    void (QOPENGLF_APIENTRYP glDrawElementsInstancedBaseInstance)(GLenum, GLsizei, GLenum, const void *, GLsizei, GLuint) = nullptr;
+    void (QOPENGLF_APIENTRYP glDrawElementsInstancedBaseVertexBaseInstance)(GLenum, GLsizei, GLenum, const void *, GLsizei, GLint, GLuint) = nullptr;
     uint vao = 0;
     struct Caps {
         Caps()
@@ -1082,6 +1086,7 @@ public:
               rgba8Format(false),
               instancing(false),
               baseVertex(false),
+              baseInstance(false),
               compute(false),
               textureCompareMode(false),
               depthClamp(false),
@@ -1149,6 +1154,7 @@ public:
         uint rgba8Format : 1;
         uint instancing : 1;
         uint baseVertex : 1;
+        uint baseInstance : 1;
         uint compute : 1;
         uint textureCompareMode : 1;
         uint depthClamp : 1;

@@ -841,12 +841,10 @@ Q_LOGGING_CATEGORY(QRHI_LOG_RUB, "qt.rhi.rub")
     firstInstance argument. When reported as not supported, the firstInstance
     value is ignored and the instance ID starts from 0. In practice this feature
     will be unsupported with Metal on older iOS devices, including the iOS
-    Simulator, and all versions of OpenGL. The latter is due to OpenGL ES not
-    supporting draw calls with a base instance at all. Currently QRhi's OpenGL
-    backend does not implement the functionality for OpenGL (non-ES) either,
-    because portable applications cannot rely on a non-zero base instance in
-    practice due to GLES. If the application still chooses to do so, it should
-    be aware of the InstanceIndexIncludesBaseInstance feature as well.
+    Simulator, and with OpenGL ES, which has no support for draw calls with a
+    base instance at all. With OpenGL it needs version 4.2 or newer, or
+    \c GL_ARB_base_instance. Applications relying on a non-zero base instance
+    should be aware of the InstanceIndexIncludesBaseInstance feature as well.
 
     \value TriangleFanTopology Indicates that QRhiGraphicsPipeline::setTopology()
     supports QRhiGraphicsPipeline::TriangleFan. In practice this feature will be
@@ -10703,8 +10701,8 @@ void QRhiCommandBuffer::setShadingRate(const QSize &coarsePixelSize)
     \note \a firstInstance may not be supported, and is ignored when the
     QRhi::BaseInstance feature is reported as not supported. The first instance
     ID is always 0 in that case. QRhi::BaseInstance is never supported with
-    OpenGL at the moment, mainly due to OpenGL ES limitations, and therefore
-    portable applications should not be designed to rely on this argument.
+    OpenGL ES, and therefore portable applications should not be designed to
+    rely on this argument.
 
     \note Shaders that need to access the index of the current vertex or
     instance must use \c gl_VertexIndex and \c gl_InstanceIndex, i.e., the
@@ -10754,8 +10752,8 @@ void QRhiCommandBuffer::draw(quint32 vertexCount,
     \note \a firstInstance may not be supported, and is ignored when the
     QRhi::BaseInstance feature is reported as not supported. The first instance
     ID is always 0 in that case. QRhi::BaseInstance is never supported with
-    OpenGL at the moment, mainly due to OpenGL ES limitations, and therefore
-    portable applications should not be designed to rely on this argument.
+    OpenGL ES, and therefore portable applications should not be designed to
+    rely on this argument.
 
     \note Shaders that need to access the index of the current vertex or
     instance must use \c gl_VertexIndex and \c gl_InstanceIndex, i.e., the

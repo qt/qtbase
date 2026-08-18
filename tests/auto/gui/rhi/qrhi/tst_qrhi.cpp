@@ -174,6 +174,8 @@ private slots:
     void indexedIndirectDrawCountCustomStride();
     void indirectDrawCountCustomStride_data();
     void indirectDrawCountCustomStride();
+    void baseInstanceDraw_data();
+    void baseInstanceDraw();
 
     void pipelineCache_data();
     void pipelineCache();
@@ -7683,6 +7685,194 @@ void tst_QRhi::indirectDrawCountCustomStride()
     QCOMPARE(redCount,   64); // Left red quad, from the first command
     QCOMPARE(greenCount, 64); // Right green quad, only reachable via the stride
     QCOMPARE(blueCount,   0); // No background left visible
+}
+
+void tst_QRhi::baseInstanceDraw_data()
+{
+    rhiTestData();
+}
+
+// Draws with instanceCount 1 and a non-zero firstInstance, with the color fed
+// from a per-instance vertex buffer. The base instance must be taken into
+// account when fetching the per-instance attribute, so the color at the base
+// instance, not the first one, is expected in the result.
+//
+// Three draws into three separate vertical bands, one per code path: indexed,
+// non-indexed, and indexed with a non-zero base vertex. On OpenGL these map to
+// glDrawElementsInstancedBaseInstance, glDrawArraysInstancedBaseInstance and
+// glDrawElementsInstancedBaseVertexBaseInstance, respectively.
+void tst_QRhi::baseInstanceDraw()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QRhi *rhi = sharedRhi(impl, initParams);
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing baseInstanceDraw");
+    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi))
+        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
+    if (!rhi->isFeatureSupported(QRhi::BaseInstance))
+        QSKIP("Base instance not supported on this backend");
+
+    const bool baseVertexSupported = rhi->isFeatureSupported(QRhi::BaseVertex);
+
+    // Two triangle lists: vertices 0-5 are a fullscreen quad, vertices 6-11
+    // cover the left half only. A base vertex of 6 therefore has a visible
+    // effect, and is not just a different way of drawing the same thing.
+    static constexpr float QuadVertices[] = {
+        -1.f, -1.f, 0.f,
+         1.f, -1.f, 0.f,
+         1.f,  1.f, 0.f,
+        -1.f, -1.f, 0.f,
+         1.f,  1.f, 0.f,
+        -1.f,  1.f, 0.f,
+
+        -1.f, -1.f, 0.f,
+         0.f, -1.f, 0.f,
+         0.f,  1.f, 0.f,
+        -1.f, -1.f, 0.f,
+         0.f,  1.f, 0.f,
+        -1.f,  1.f, 0.f,
+    };
+    // Identity, so that the base vertex alone selects the vertex block.
+    static constexpr quint16 QuadIndices[] = { 0, 1, 2, 3, 4, 5 };
+    // Instance 0 is green and is never expected to show up: every draw below
+    // passes a firstInstance of 1 or 2.
+    static constexpr float InstanceColors[] = {
+        0.f, 1.f, 0.f, 1.f,
+        1.f, 0.f, 0.f, 1.f,
+        1.f, 1.f, 0.f, 1.f,
+    };
+
+    const QSize outputSize(96, 64);
+    const int bandWidth = outputSize.width() / 3;
+    std::unique_ptr<QRhiTexture> texture(
+                rhi->newTexture(QRhiTexture::RGBA8, outputSize, 1,
+                                QRhiTexture::RenderTarget | QRhiTexture::UsedAsTransferSource));
+    QVERIFY(texture->create());
+
+    std::unique_ptr<QRhiTextureRenderTarget> rt(rhi->newTextureRenderTarget({ texture.get() }));
+    std::unique_ptr<QRhiRenderPassDescriptor> rpDesc(rt->newCompatibleRenderPassDescriptor());
+    rt->setRenderPassDescriptor(rpDesc.get());
+    QVERIFY(rt->create());
+
+    QRhiCommandBuffer *cb = nullptr;
+    QVERIFY(rhi->beginOffscreenFrame(&cb) == QRhi::FrameOpSuccess);
+    QVERIFY(cb);
+    OffscreenFrameGuard frameGuard(rhi);
+
+    QRhiResourceUpdateBatch *u = rhi->nextResourceUpdateBatch();
+
+    std::unique_ptr<QRhiBuffer> vb(rhi->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer,
+                                                  sizeof(QuadVertices)));
+    QVERIFY(vb->create());
+    u->uploadStaticBuffer(vb.get(), QuadVertices);
+
+    std::unique_ptr<QRhiBuffer> instBuf(rhi->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer,
+                                                       sizeof(InstanceColors)));
+    QVERIFY(instBuf->create());
+    u->uploadStaticBuffer(instBuf.get(), InstanceColors);
+
+    std::unique_ptr<QRhiBuffer> ib(rhi->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::IndexBuffer,
+                                                  sizeof(QuadIndices)));
+    QVERIFY(ib->create());
+    u->uploadStaticBuffer(ib.get(), QuadIndices);
+
+    std::unique_ptr<QRhiBuffer> ubuf(rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, 64));
+    QVERIFY(ubuf->create());
+    const QMatrix4x4 mvp = rhi->clipSpaceCorrMatrix();
+    u->updateDynamicBuffer(ubuf.get(), 0, 64, mvp.constData());
+
+    std::unique_ptr<QRhiShaderResourceBindings> srb(rhi->newShaderResourceBindings());
+    srb->setBindings({ QRhiShaderResourceBinding::uniformBuffer(0, QRhiShaderResourceBinding::VertexStage, ubuf.get()) });
+    QVERIFY(srb->create());
+
+    std::unique_ptr<QRhiGraphicsPipeline> ps(rhi->newGraphicsPipeline());
+    const QShader vs = loadShader(":/data/colored.vert.qsb");
+    QVERIFY(vs.isValid());
+    const QShader fs = loadShader(":/data/colored.frag.qsb");
+    QVERIFY(fs.isValid());
+    ps->setShaderStages({ { QRhiShaderStage::Vertex, vs }, { QRhiShaderStage::Fragment, fs } });
+
+    QRhiVertexInputLayout vlayout;
+    vlayout.setBindings({
+                            { 3 * sizeof(float) },
+                            { 4 * sizeof(float), QRhiVertexInputBinding::PerInstance }
+                        });
+    vlayout.setAttributes({
+                              { 0, 0, QRhiVertexInputAttribute::Float3, 0 },
+                              { 1, 1, QRhiVertexInputAttribute::Float4, 0 },
+                          });
+    ps->setVertexInputLayout(vlayout);
+    ps->setShaderResourceBindings(srb.get());
+    ps->setRenderPassDescriptor(rpDesc.get());
+    QVERIFY(ps->create());
+
+    cb->beginPass(rt.get(), Qt::blue, { 1.0f, 0 }, u);
+    cb->setGraphicsPipeline(ps.get());
+    cb->setShaderResources(srb.get());
+
+    const QRhiCommandBuffer::VertexInput vinputs[] = { { vb.get(), 0 }, { instBuf.get(), 0 } };
+    cb->setVertexInput(0, 2, vinputs, ib.get(), 0, QRhiCommandBuffer::IndexUInt16);
+
+    // Band 0: indexed, base instance 1 -> red, filling the band.
+    cb->setViewport({ 0, 0, float(bandWidth), float(outputSize.height()) });
+    cb->drawIndexed(6, 1, 0, 0, 1);
+
+    // Band 1: non-indexed, base instance 2 -> yellow, filling the band.
+    cb->setViewport({ float(bandWidth), 0, float(bandWidth), float(outputSize.height()) });
+    cb->draw(6, 1, 0, 2);
+
+    // Band 2: indexed with base vertex 6, base instance 1 -> red, but only in
+    // the left half of the band, that being the extent of the second block.
+    if (baseVertexSupported) {
+        cb->setViewport({ float(2 * bandWidth), 0, float(bandWidth), float(outputSize.height()) });
+        cb->drawIndexed(6, 1, 0, 6, 1);
+    }
+
+    QRhiReadbackResult rb;
+    QImage result;
+    rb.completed = [&] {
+        result = QImage(reinterpret_cast<const uchar *>(rb.data.constData()),
+                        rb.pixelSize.width(), rb.pixelSize.height(),
+                        QImage::Format_RGBA8888_Premultiplied);
+    };
+    QRhiResourceUpdateBatch *u2 = rhi->nextResourceUpdateBatch();
+    u2->readBackTexture({ texture.get() }, &rb);
+    cb->endPass(u2);
+
+    frameGuard.endFrame();
+
+    if (impl == QRhi::Null)
+        return;
+
+    result.convertTo(QImage::Format_ARGB32);
+    QCOMPARE(result.size(), texture->pixelSize());
+
+    const int y = outputSize.height() / 2;
+
+    const QRgb indexedColor = result.pixel(bandWidth / 2, y);
+    QCOMPARE(qRed(indexedColor), 255);
+    QCOMPARE(qGreen(indexedColor), 0);
+    QCOMPARE(qBlue(indexedColor), 0);
+
+    const QRgb nonIndexedColor = result.pixel(bandWidth + bandWidth / 2, y);
+    QCOMPARE(qRed(nonIndexedColor), 255);
+    QCOMPARE(qGreen(nonIndexedColor), 255);
+    QCOMPARE(qBlue(nonIndexedColor), 0);
+
+    if (baseVertexSupported) {
+        const QRgb baseVertexColor = result.pixel(2 * bandWidth + bandWidth / 4, y);
+        QCOMPARE(qRed(baseVertexColor), 255);
+        QCOMPARE(qGreen(baseVertexColor), 0);
+        QCOMPARE(qBlue(baseVertexColor), 0);
+
+        // The right half of the band is not covered by the second vertex block.
+        const QRgb untouched = result.pixel(2 * bandWidth + 3 * bandWidth / 4, y);
+        QCOMPARE(qRed(untouched), 0);
+        QCOMPARE(qGreen(untouched), 0);
+        QCOMPARE(qBlue(untouched), 255);
+    }
 }
 
 void tst_QRhi::srbLayoutCompatibility_data()
