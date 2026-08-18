@@ -158,6 +158,10 @@ private slots:
     void indexedIndirectMultiDrawHighDrawCount();
     void indexedIndirectMultiDrawHighDrawCountViewport_data();
     void indexedIndirectMultiDrawHighDrawCountViewport();
+    void indexedIndirectMultiDrawHighDrawCountMultisample_data();
+    void indexedIndirectMultiDrawHighDrawCountMultisample();
+    void indexedIndirectMultiDrawHighDrawCountMultisampleDepthResolve_data();
+    void indexedIndirectMultiDrawHighDrawCountMultisampleDepthResolve();
     void indexedIndirectMultiDrawShaderDrawParams_data();
     void indexedIndirectMultiDrawShaderDrawParams();
 
@@ -6332,6 +6336,346 @@ void tst_QRhi::indexedIndirectMultiDrawHighDrawCountViewport()
     QCOMPARE(redCount, 32);
     QCOMPARE(greenCount, 32);
     QCOMPARE(blueCount, 64);
+}
+
+void tst_QRhi::indexedIndirectMultiDrawHighDrawCountMultisample_data()
+{
+    rhiTestData();
+}
+
+// Draws into a multisample render target, first with a normal draw call and then
+// with a high draw count indirect draw. On Metal the latter takes the ICB path,
+// which interrupts and restarts the render pass; that must not discard what the
+// first draw put into the multisample attachment.
+void tst_QRhi::indexedIndirectMultiDrawHighDrawCountMultisample()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QRhi *rhi = sharedRhi(impl, initParams);
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing "
+              "indexedIndirectMultiDrawHighDrawCountMultisample");
+    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi))
+        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
+    if (!rhi->isFeatureSupported(QRhi::DrawIndirect))
+        QSKIP("Indirect draw not supported on this backend");
+    if (!rhi->isFeatureSupported(QRhi::BaseVertex))
+        QSKIP("Base vertex not supported on this backend");
+    if (!rhi->isFeatureSupported(QRhi::MultisampleRenderBuffer))
+        QSKIP("Multisample renderbuffer not supported on this backend");
+
+    const int sampleCount = 4;
+    static constexpr int DrawCount = 130; // above the Metal ICB threshold of 128
+    QRhiIndexedIndirectDrawCommand cmds[DrawCount];
+    for (int i = 0; i < DrawCount; ++i)
+        cmds[i] = { 6, 1, 0, 4, 0 }; // right quad (green)
+
+    const QSize outputSize(128, 64);
+    std::unique_ptr<QRhiRenderBuffer> msaaBuf(rhi->newRenderBuffer(QRhiRenderBuffer::Color, outputSize, sampleCount));
+    QVERIFY(msaaBuf->create());
+
+    std::unique_ptr<QRhiTexture> resolveTex(
+                rhi->newTexture(QRhiTexture::RGBA8, outputSize, 1,
+                                QRhiTexture::RenderTarget | QRhiTexture::UsedAsTransferSource));
+    QVERIFY(resolveTex->create());
+
+    QRhiColorAttachment colorAtt(msaaBuf.get());
+    colorAtt.setResolveTexture(resolveTex.get());
+    std::unique_ptr<QRhiTextureRenderTarget> rt(rhi->newTextureRenderTarget({ colorAtt }));
+    std::unique_ptr<QRhiRenderPassDescriptor> rpDesc(rt->newCompatibleRenderPassDescriptor());
+    rt->setRenderPassDescriptor(rpDesc.get());
+    QVERIFY(rt->create());
+
+    QRhiCommandBuffer *cb = nullptr;
+    QVERIFY(rhi->beginOffscreenFrame(&cb) == QRhi::FrameOpSuccess);
+    QVERIFY(cb);
+    OffscreenFrameGuard frameGuard(rhi);
+
+    QRhiResourceUpdateBatch *u = rhi->nextResourceUpdateBatch();
+
+    std::unique_ptr<QRhiBuffer> vb(rhi->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, sizeof(IndirectTestVertices)));
+    QVERIFY(vb->create());
+    u->uploadStaticBuffer(vb.get(), IndirectTestVertices);
+
+    std::unique_ptr<QRhiBuffer> ib(rhi->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::IndexBuffer, sizeof(IndirectTestIndices)));
+    QVERIFY(ib->create());
+    u->uploadStaticBuffer(ib.get(), IndirectTestIndices);
+
+    std::unique_ptr<QRhiBuffer> ubuf(rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, 64));
+    QVERIFY(ubuf->create());
+    const QMatrix4x4 mvp = rhi->clipSpaceCorrMatrix();
+    u->updateDynamicBuffer(ubuf.get(), 0, 64, mvp.constData());
+
+    std::unique_ptr<QRhiShaderResourceBindings> srb(rhi->newShaderResourceBindings());
+    srb->setBindings({ QRhiShaderResourceBinding::uniformBuffer(0, QRhiShaderResourceBinding::VertexStage, ubuf.get()) });
+    QVERIFY(srb->create());
+
+    std::unique_ptr<QRhiGraphicsPipeline> ps(rhi->newGraphicsPipeline());
+    const QShader vs = loadShader(":/data/colored.vert.qsb");
+    QVERIFY(vs.isValid());
+    const QShader fs = loadShader(":/data/colored.frag.qsb");
+    QVERIFY(fs.isValid());
+    ps->setShaderStages({ { QRhiShaderStage::Vertex, vs }, { QRhiShaderStage::Fragment, fs } });
+
+    QRhiVertexInputLayout vlayout;
+    vlayout.setBindings({ { sizeof(IndirectTestVertex) } });
+    vlayout.setAttributes({
+        { 0, 0, QRhiVertexInputAttribute::Float3, offsetof(IndirectTestVertex, x) },
+        { 0, 1, QRhiVertexInputAttribute::Float4, offsetof(IndirectTestVertex, r) },
+    });
+    ps->setVertexInputLayout(vlayout);
+    ps->setFlags(QRhiGraphicsPipeline::UsesIndirectDraws);
+    ps->setSampleCount(sampleCount);
+    ps->setShaderResourceBindings(srb.get());
+    ps->setRenderPassDescriptor(rpDesc.get());
+    QVERIFY(ps->create());
+
+    std::unique_ptr<QRhiBuffer> db(rhi->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::IndirectBuffer, sizeof(cmds)));
+    QVERIFY(db->create());
+    u->uploadStaticBuffer(db.get(), cmds);
+
+    cb->beginPass(rt.get(), Qt::blue, { 1.0f, 0 }, u);
+    cb->setGraphicsPipeline(ps.get());
+    cb->setShaderResources(srb.get());
+    cb->setViewport({ 0, 0, float(outputSize.width()), float(outputSize.height()) });
+
+    const QRhiCommandBuffer::VertexInput vinput(vb.get(), 0);
+    cb->setVertexInput(0, 1, &vinput, ib.get(), 0, QRhiCommandBuffer::IndexUInt16);
+
+    // Left (red) quad with a normal draw call, before any pass interruption.
+    cb->drawIndexed(6);
+
+    // Right (green) quad, with enough draws to trigger the ICB path on Metal.
+    cb->drawIndexedIndirect(db.get(), 0, DrawCount);
+
+    QRhiReadbackResult rb;
+    QImage result;
+    rb.completed = [&] {
+        result = QImage(reinterpret_cast<const uchar *>(rb.data.constData()),
+                        rb.pixelSize.width(), rb.pixelSize.height(),
+                        QImage::Format_RGBA8888_Premultiplied);
+    };
+    QRhiResourceUpdateBatch *u2 = rhi->nextResourceUpdateBatch();
+    u2->readBackTexture({ resolveTex.get() }, &rb);
+    cb->endPass(u2);
+
+    frameGuard.endFrame();
+
+    if (impl == QRhi::Null)
+        return;
+
+    if (rhi->isYUpInFramebuffer() != rhi->isYUpInNDC())
+        result.flip();
+
+    result.convertTo(QImage::Format_ARGB32);
+    QCOMPARE(result.size(), resolveTex->pixelSize());
+
+    const int y = result.height() / 2;
+    const quint32 *p = reinterpret_cast<const quint32 *>(result.constScanLine(y));
+
+    int redCount = 0, greenCount = 0, otherCount = 0;
+    const int maxFuzz = 1;
+    for (int x = 0; x < result.width(); ++x) {
+        const QRgb c(p[x]);
+        if (qRed(c) >= (255 - maxFuzz) && qGreen(c) == 0 && qBlue(c) == 0)
+            ++redCount;
+        else if (qRed(c) == 0 && qGreen(c) >= (255 - maxFuzz) && qBlue(c) == 0)
+            ++greenCount;
+        else
+            ++otherCount;
+    }
+
+    // The red quad was drawn before the interruption, the green one after it.
+    QCOMPARE(redCount, 64);
+    QCOMPARE(greenCount, 64);
+    QCOMPARE(otherCount, 0);
+}
+
+void tst_QRhi::indexedIndirectMultiDrawHighDrawCountMultisampleDepthResolve_data()
+{
+    rhiTestData();
+}
+
+// Same idea as indexedIndirectMultiDrawHighDrawCountMultisample, but the
+// interruption has to preserve the multisample depth buffer, not the color one.
+// A near quad is drawn normally, then a farther, full width quad with a high
+// draw count indirect draw. The near quad has to win the depth test, which it
+// can only do if the depth contents survived the interruption. The depth
+// attachment has a resolve texture, so its store action only resolves.
+void tst_QRhi::indexedIndirectMultiDrawHighDrawCountMultisampleDepthResolve()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QRhi *rhi = sharedRhi(impl, initParams);
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing "
+              "indexedIndirectMultiDrawHighDrawCountMultisampleDepthResolve");
+    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi))
+        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
+    if (!rhi->isFeatureSupported(QRhi::DrawIndirect))
+        QSKIP("Indirect draw not supported on this backend");
+    if (!rhi->isFeatureSupported(QRhi::BaseVertex))
+        QSKIP("Base vertex not supported on this backend");
+    if (!rhi->isFeatureSupported(QRhi::MultisampleTexture))
+        QSKIP("Multisample texture not supported on this backend");
+    if (!rhi->isFeatureSupported(QRhi::ResolveDepthStencil))
+        QSKIP("Depth-stencil resolve not supported on this backend");
+
+    const int sampleCount = 4;
+    // Near quad on the left, then a farther quad covering everything.
+    static constexpr IndirectTestVertex Vertices[] = {
+        { -1.f, -1.f, -0.5f,  1.f, 0.f, 0.f, 1.f },
+        {  0.f, -1.f, -0.5f,  1.f, 0.f, 0.f, 1.f },
+        {  0.f,  1.f, -0.5f,  1.f, 0.f, 0.f, 1.f },
+        { -1.f,  1.f, -0.5f,  1.f, 0.f, 0.f, 1.f },
+        { -1.f, -1.f,  0.5f,  0.f, 1.f, 0.f, 1.f },
+        {  1.f, -1.f,  0.5f,  0.f, 1.f, 0.f, 1.f },
+        {  1.f,  1.f,  0.5f,  0.f, 1.f, 0.f, 1.f },
+        { -1.f,  1.f,  0.5f,  0.f, 1.f, 0.f, 1.f },
+    };
+
+    static constexpr int DrawCount = 130; // above the Metal ICB threshold of 128
+    QRhiIndexedIndirectDrawCommand cmds[DrawCount];
+    for (int i = 0; i < DrawCount; ++i)
+        cmds[i] = { 6, 1, 0, 4, 0 }; // the far quad
+
+    const QSize outputSize(128, 64);
+    std::unique_ptr<QRhiTexture> msaaTex(
+                rhi->newTexture(QRhiTexture::RGBA8, outputSize, sampleCount,
+                                QRhiTexture::RenderTarget));
+    QVERIFY(msaaTex->create());
+    std::unique_ptr<QRhiTexture> resolveTex(
+                rhi->newTexture(QRhiTexture::RGBA8, outputSize, 1,
+                                QRhiTexture::RenderTarget | QRhiTexture::UsedAsTransferSource));
+    QVERIFY(resolveTex->create());
+
+    std::unique_ptr<QRhiTexture> msaaDepthTex(
+                rhi->newTexture(QRhiTexture::D32F, outputSize, sampleCount,
+                                QRhiTexture::RenderTarget));
+    QVERIFY(msaaDepthTex->create());
+    std::unique_ptr<QRhiTexture> depthResolveTex(
+                rhi->newTexture(QRhiTexture::D32F, outputSize, 1, QRhiTexture::RenderTarget));
+    QVERIFY(depthResolveTex->create());
+
+    QRhiColorAttachment colorAtt(msaaTex.get());
+    colorAtt.setResolveTexture(resolveTex.get());
+    QRhiTextureRenderTargetDescription rtDesc(colorAtt);
+    rtDesc.setDepthTexture(msaaDepthTex.get());
+    rtDesc.setDepthResolveTexture(depthResolveTex.get());
+
+    std::unique_ptr<QRhiTextureRenderTarget> rt(rhi->newTextureRenderTarget(rtDesc));
+    std::unique_ptr<QRhiRenderPassDescriptor> rpDesc(rt->newCompatibleRenderPassDescriptor());
+    rt->setRenderPassDescriptor(rpDesc.get());
+    QVERIFY(rt->create());
+
+    QRhiCommandBuffer *cb = nullptr;
+    QVERIFY(rhi->beginOffscreenFrame(&cb) == QRhi::FrameOpSuccess);
+    QVERIFY(cb);
+    OffscreenFrameGuard frameGuard(rhi);
+
+    QRhiResourceUpdateBatch *u = rhi->nextResourceUpdateBatch();
+
+    std::unique_ptr<QRhiBuffer> vb(rhi->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, sizeof(Vertices)));
+    QVERIFY(vb->create());
+    u->uploadStaticBuffer(vb.get(), Vertices);
+
+    std::unique_ptr<QRhiBuffer> ib(rhi->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::IndexBuffer, sizeof(IndirectTestIndices)));
+    QVERIFY(ib->create());
+    u->uploadStaticBuffer(ib.get(), IndirectTestIndices);
+
+    std::unique_ptr<QRhiBuffer> ubuf(rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, 64));
+    QVERIFY(ubuf->create());
+    const QMatrix4x4 mvp = rhi->clipSpaceCorrMatrix();
+    u->updateDynamicBuffer(ubuf.get(), 0, 64, mvp.constData());
+
+    std::unique_ptr<QRhiShaderResourceBindings> srb(rhi->newShaderResourceBindings());
+    srb->setBindings({ QRhiShaderResourceBinding::uniformBuffer(0, QRhiShaderResourceBinding::VertexStage, ubuf.get()) });
+    QVERIFY(srb->create());
+
+    std::unique_ptr<QRhiGraphicsPipeline> ps(rhi->newGraphicsPipeline());
+    const QShader vs = loadShader(":/data/colored.vert.qsb");
+    QVERIFY(vs.isValid());
+    const QShader fs = loadShader(":/data/colored.frag.qsb");
+    QVERIFY(fs.isValid());
+    ps->setShaderStages({ { QRhiShaderStage::Vertex, vs }, { QRhiShaderStage::Fragment, fs } });
+
+    QRhiVertexInputLayout vlayout;
+    vlayout.setBindings({ { sizeof(IndirectTestVertex) } });
+    vlayout.setAttributes({
+        { 0, 0, QRhiVertexInputAttribute::Float3, offsetof(IndirectTestVertex, x) },
+        { 0, 1, QRhiVertexInputAttribute::Float4, offsetof(IndirectTestVertex, r) },
+    });
+    ps->setVertexInputLayout(vlayout);
+    ps->setFlags(QRhiGraphicsPipeline::UsesIndirectDraws);
+    ps->setSampleCount(sampleCount);
+    ps->setDepthTest(true);
+    ps->setDepthWrite(true);
+    ps->setDepthOp(QRhiGraphicsPipeline::Less);
+    ps->setShaderResourceBindings(srb.get());
+    ps->setRenderPassDescriptor(rpDesc.get());
+    QVERIFY(ps->create());
+
+    std::unique_ptr<QRhiBuffer> db(rhi->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::IndirectBuffer, sizeof(cmds)));
+    QVERIFY(db->create());
+    u->uploadStaticBuffer(db.get(), cmds);
+
+    cb->beginPass(rt.get(), Qt::blue, { 1.0f, 0 }, u);
+    cb->setGraphicsPipeline(ps.get());
+    cb->setShaderResources(srb.get());
+    cb->setViewport({ 0, 0, float(outputSize.width()), float(outputSize.height()) });
+
+    const QRhiCommandBuffer::VertexInput vinput(vb.get(), 0);
+    cb->setVertexInput(0, 1, &vinput, ib.get(), 0, QRhiCommandBuffer::IndexUInt16);
+
+    // Near quad on the left, writing depth, before the interruption.
+    cb->drawIndexed(6);
+
+    // Farther, full width quad. Must be rejected where the near quad already is.
+    cb->drawIndexedIndirect(db.get(), 0, DrawCount);
+
+    QRhiReadbackResult rb;
+    QImage result;
+    rb.completed = [&] {
+        result = QImage(reinterpret_cast<const uchar *>(rb.data.constData()),
+                        rb.pixelSize.width(), rb.pixelSize.height(),
+                        QImage::Format_RGBA8888_Premultiplied);
+    };
+    QRhiResourceUpdateBatch *u2 = rhi->nextResourceUpdateBatch();
+    u2->readBackTexture({ resolveTex.get() }, &rb);
+    cb->endPass(u2);
+
+    frameGuard.endFrame();
+
+    if (impl == QRhi::Null)
+        return;
+
+    if (rhi->isYUpInFramebuffer() != rhi->isYUpInNDC())
+        result.flip();
+
+    result.convertTo(QImage::Format_ARGB32);
+    QCOMPARE(result.size(), resolveTex->pixelSize());
+
+    const int y = result.height() / 2;
+    const quint32 *p = reinterpret_cast<const quint32 *>(result.constScanLine(y));
+
+    int redCount = 0, greenCount = 0, otherCount = 0;
+    const int maxFuzz = 1;
+    for (int x = 0; x < result.width(); ++x) {
+        const QRgb c(p[x]);
+        if (qRed(c) >= (255 - maxFuzz) && qGreen(c) == 0 && qBlue(c) == 0)
+            ++redCount;
+        else if (qRed(c) == 0 && qGreen(c) >= (255 - maxFuzz) && qBlue(c) == 0)
+            ++greenCount;
+        else
+            ++otherCount;
+    }
+
+    // Left half kept by the near quad, right half taken by the farther one.
+    QCOMPARE(redCount, 64);
+    QCOMPARE(greenCount, 64);
+    QCOMPARE(otherCount, 0);
 }
 
 void tst_QRhi::indexedIndirectMultiDrawShaderDrawParams_data()

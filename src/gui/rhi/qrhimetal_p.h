@@ -488,6 +488,8 @@ public:
     void enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates);
     void executeBufferHostWritesForSlot(QMetalBuffer *bufD, int slot);
     void executeBufferHostWritesForCurrentFrame(QMetalBuffer *bufD);
+    void finalizeDeferredStoreActions(QMetalCommandBuffer *cbD, bool passIsEnding);
+    void interruptRenderPass(QMetalCommandBuffer *cbD);
     static const int SUPPORTED_STAGES = 5;
     void enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD,
                                        QMetalCommandBuffer *cbD,
