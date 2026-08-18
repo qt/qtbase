@@ -349,19 +349,14 @@ QIntValidator::~QIntValidator()
     By default, the \a pos parameter is not used by this validator.
 */
 
-static int numDigits(qlonglong n)
+static bool hasMoreIntegerDigits(double value, double bound)
 {
-    if (n == 0)
-        return 1;
-    return (int)std::log10(double(n)) + 1;
-}
-
-static qlonglong pow10(int exp)
-{
-    qlonglong result = 1;
-    for (int i = 0; i < exp; ++i)
-        result *= 10;
-    return result;
+    if (value <= bound)
+        return false;
+    double factor = 10;
+    while (bound >= factor)
+        factor *= 10;
+    return value >= factor;
 }
 
 template <typename T> static inline
@@ -679,25 +674,9 @@ QValidator::State QDoubleValidatorPrivate::validateWithLocale(QString &input, QL
         return QValidator::Acceptable;
 
     if (notation == QDoubleValidator::StandardNotation) {
-        double max = qMax(qAbs(q->b), qAbs(q->t));
-        qlonglong v;
-        // convertDoubleTo() requires a whole value. Round the positive bound down
-        // to preserve its number of integer digits; rounding up could cross a power
-        // of ten. Keeping the result as a double lets convertDoubleTo() safely reject
-        // infinities and values outside qlonglong's range.
-        if (convertDoubleTo(std::floor(max), &v)) {
-            qlonglong n = pow10(numDigits(v));
-            // In order to get the highest possible number in the intermediate
-            // range we need to get 10 to the power of the number of digits
-            // after the decimal's and subtract that from the top number.
-            //
-            // For example, where q->dec == 2 and with a range of 0.0 - 9.0
-            // then the minimum possible number is 0.00 and the maximum
-            // possible is 9.99. Therefore 9.999 and 10.0 should be seen as
-            // invalid.
-            if (qAbs(i) > (n - std::pow(10, -q->dec)))
-                return QValidator::Invalid;
-        }
+        const double max = qMax(qAbs(q->b), qAbs(q->t));
+        if (hasMoreIntegerDigits(qAbs(i), max))
+            return QValidator::Invalid;
     }
 
     return QValidator::Intermediate;
