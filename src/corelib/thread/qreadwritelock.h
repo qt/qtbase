@@ -191,7 +191,7 @@ private:
 
     QT7_ONLY(Q_CORE_EXPORT) static void *initRecursiveHelper();
     QT7_ONLY(Q_CORE_EXPORT) static void destroyRecursiveHelper(void *) noexcept;
-    static QReadWriteLockPrivate *initRecursive2()
+    static QReadWriteLockPrivate *initRecursiveInline()
     {
         auto d = static_cast<QReadWriteLockPrivate *>(initRecursiveHelper());
         Q_PRESUME(quintptr(d) > StateMask);
@@ -204,7 +204,7 @@ private:
 #endif
         return d;
     }
-    static void destroyRecursive2(QReadWriteLockPrivate *d)
+    static void destroyRecursiveInline(QReadWriteLockPrivate *d)
     {
 #ifdef QT_BUILDING_UNDER_TSAN
         unsigned flags = 0;
@@ -216,14 +216,14 @@ private:
 
 #if QT_CORE_INLINE_IMPL_SINCE(6, 6)
 QReadWriteLock::QReadWriteLock(RecursionMode recursionMode)
-    : QBasicReadWriteLock(recursionMode == Recursive ? initRecursive2() : nullptr)
+    : QBasicReadWriteLock(recursionMode == Recursive ? initRecursiveInline() : nullptr)
 {
 }
 
 QReadWriteLock::~QReadWriteLock()
 {
     if (auto d = d_ptr.loadAcquire())
-        destroyRecursive2(d);
+        destroyRecursiveInline(d);
 }
 
 bool QReadWriteLock::tryLockForRead(int timeout)
