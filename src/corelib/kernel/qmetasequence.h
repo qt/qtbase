@@ -239,14 +239,55 @@ public:
         Unspecified, AtBegin, AtEnd
     };
 
+    QT_DEPRECATED_VERSION_X_6_11("Use append() or prepend() instead.")
     void addValue(const QVariant &value, Position position = Unspecified)
-            Q_DECL_EQ_DELETE_X("Use append() or prepend() instead.");
+    {
+        const QMetaSequence meta = metaContainer();
+        QtPrivate::QVariantTypeCoercer coercer;
+        const void *valuePtr = coercer.coerce(value, meta.valueMetaType());
 
+        switch (position) {
+        case AtBegin:
+            if (meta.canAddValueAtBegin())
+                meta.addValueAtBegin(mutableIterable(), valuePtr);
+            break;
+        case AtEnd:
+            if (meta.canAddValueAtEnd())
+                meta.addValueAtEnd(mutableIterable(), valuePtr);
+            break;
+        case Unspecified:
+            if (meta.canAddValue())
+                meta.addValue(mutableIterable(), valuePtr);
+            break;
+        }
+    }
+
+    QT_DEPRECATED_VERSION_X_6_11("Use removeLast() or removeFirst() instead.")
     void removeValue(Position position = Unspecified)
-            Q_DECL_EQ_DELETE_X("Use removeLast() or removeFirst() instead.");
+    {
+        const QMetaSequence meta = metaContainer();
 
+        switch (position) {
+        case AtBegin:
+            if (meta.canRemoveValueAtBegin())
+                meta.removeValueAtBegin(mutableIterable());
+            break;
+        case AtEnd:
+            if (meta.canRemoveValueAtEnd())
+                meta.removeValueAtEnd(mutableIterable());
+            break;
+        case Unspecified:
+            if (meta.canRemoveValue())
+                meta.removeValue(mutableIterable());
+            break;
+        }
+    }
+
+    QT_DEPRECATED_VERSION_X_6_11("Use QMetaSequence::valueMetaType() instead.")
     QMetaType valueMetaType() const
-            Q_DECL_EQ_DELETE_X("Use QMetaSequence::valueMetaType() instead.");
+    {
+        return metaContainer().valueMetaType();
+    }
 
     void set(qsizetype idx, const QVariant &value)
             Q_DECL_EQ_DELETE_X("Use setAt() instead.");
