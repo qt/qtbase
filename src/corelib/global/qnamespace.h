@@ -1701,7 +1701,7 @@ namespace Qt {
 #endif // QT_NO_GESTURES
 
 #if QT_DEPRECATED_SINCE(6, 12)
-    enum NavigationMode
+    enum Q_DECL_DEPRECATED_X("This enumeration has no effect since Qt 6.") NavigationMode
     {
         NavigationModeNone,
         NavigationModeKeypadTabOrder,
