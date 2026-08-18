@@ -815,6 +815,7 @@ bool QTestResult::report3WayResult(bool success,
                                    const char *expectedExpression,
                                    const char *file, int line)
 {
+    Q_DECL_UNINITIALIZED
     char msg[maxMsgLen];
     msg[0] = '\0';
 
