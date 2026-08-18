@@ -173,6 +173,8 @@ QVariant QSystemLocale::query(QueryType type, QVariant &&in) const
         return QVariant::fromValue(static_cast<int>(info.territory));
     case ScriptId:
         return QVariant::fromValue(static_cast<int>(info.script));
+    case Collation:
+        return QLocale(info.language, info.script, info.territory).name();
     case TimeFormatShort:
         return info.timeFormatShort;
     case TimeFormatLong:
