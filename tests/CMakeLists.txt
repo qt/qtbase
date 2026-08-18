@@ -27,4 +27,5 @@ endif()
 
 if(QT_FEATURE_test_fuzz)
     add_subdirectory(fuzz)
+    add_subdirectory(libfuzzer)
 endif()
