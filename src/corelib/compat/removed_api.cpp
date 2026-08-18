@@ -1581,12 +1581,12 @@ bool QBasicReadWriteLock::isContendedLockForRead(const void *dd)
 
 QReadWriteLockPrivate *QReadWriteLock::initRecursive()
 {
-    return initRecursive2();
+    return initRecursiveInline();
 }
 
 void QReadWriteLock::destroyRecursive(QReadWriteLockPrivate *d)
 {
-    destroyRecursive2(d);
+    destroyRecursiveInline(d);
 }
 #endif
 
