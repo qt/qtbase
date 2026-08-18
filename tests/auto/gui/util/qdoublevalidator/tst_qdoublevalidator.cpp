@@ -7,6 +7,8 @@
 
 #include <qvalidator.h>
 
+#include <cmath>
+
 class tst_QDoubleValidator : public QObject
 {
     Q_OBJECT
@@ -204,6 +206,39 @@ void tst_QDoubleValidator::validate_data()
             << "C" << 1.0 << HUGE_VAL << -1 << QString("0") << ITM << ITM;
     QTest::newRow("above-range-with-infinite-bottom")
             << "C" << -HUGE_VAL << -1.0 << -1 << QString("0") << ITM << ITM;
+    QTest::newRow("below-range-with-bound-beyond-int")
+            << "C" << 1e10 << 2e10 << 0 << QString("999999999999") << ITM << INV;
+    QTest::newRow("fraction-bound-same-digits")
+            << "C" << 0.01 << 0.09 << 2 << QString("1") << ITM << ITM;
+    QTest::newRow("fraction-bound-more-digits")
+            << "C" << 0.01 << 0.09 << 2 << QString("10") << ITM << INV;
+    QTest::newRow("widest-value-in-bound-digits")
+            << "C" << 0.0 << 9.0 << 2 << QString("9.99") << ITM << ITM;
+    QTest::newRow("first-value-beyond-bound-digits")
+            << "C" << 0.0 << 9.0 << 2 << QString("10.00") << ITM << INV;
+    // 9.995 would round up to 10.00, which needs a digit the bound has not got.
+    QTest::newRow("value-between-takes-more-decimals")
+            << "C" << 0.0 << 9.0 << 2 << QString("9.995") << INV << INV;
+    // Bounds past the point where a double can hold a fractional part.
+    QTest::newRow("bound-beyond-mantissa-digits-fit")
+            << "C" << 1e18 << 2e18 << 0 << QString("0") << ITM << ITM;
+    QTest::newRow("bound-beyond-mantissa-digits-fit-wide")
+            << "C" << 1e18 << 2e18 << 0 << QString("3000000000000000000") << ITM << ITM;
+    QTest::newRow("bound-beyond-mantissa-too-many-digits")
+            << "C" << 1e18 << 2e18 << 0 << QString("10000000000000000000") << ITM << INV;
+    QTest::newRow("bound-just-below-power-of-ten")
+            << "C" << 1e17 << std::nextafter(1e18, 0.0) << 0
+            << QString("1") << ITM << ITM;
+    QTest::newRow("bound-just-below-power-of-ten-too-many-digits")
+            << "C" << 1e17 << std::nextafter(1e18, 0.0) << 0
+            << QString("1000000000000000000") << ITM << INV;
+    QTest::newRow("bound-just-below-power-of-ten-within-mantissa")
+            << "C" << 1e14 << std::nextafter(1e15, 0.0) << 0
+            << QString("1000000000000000") << ITM << INV;
+    QTest::newRow("below-range-unlimited-decimals")
+            << "C" << 5.0 << 9.0 << -1 << QString("1") << ITM << ITM;
+    QTest::newRow("below-range-unlimited-decimals-too-many-digits")
+            << "C" << 5.0 << 9.0 << -1 << QString("11") << ITM << INV;
 
     // using default QDoubleValidator parameters for initialization
     QTest::newRow("inf") << "C" << -HUGE_VAL << HUGE_VAL << 1000 << QString("inf") << INV << INV;
