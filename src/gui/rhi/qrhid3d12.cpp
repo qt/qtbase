@@ -751,6 +751,14 @@ void QRhiD3D12::destroy()
         dispatchCommandSignature = nullptr;
     }
 
+    for (ID3D12CommandSignature *sig : std::as_const(drawCommandSignaturesByStride))
+        sig->Release();
+    drawCommandSignaturesByStride.clear();
+
+    for (ID3D12CommandSignature *sig : std::as_const(drawIndexedCommandSignaturesByStride))
+        sig->Release();
+    drawIndexedCommandSignaturesByStride.clear();
+
     destroyPipelineLibrary();
 }
 
@@ -1006,6 +1014,9 @@ bool QRhiD3D12::isFeatureSupported(QRhi::Feature feature) const
         return false;
     case QRhi::DispatchIndirect:
         return dispatchCommandSignature != nullptr;
+    case QRhi::DrawIndirectCount:
+        // ExecuteIndirect natively supports a GPU-supplied count buffer.
+        return drawCommandSignature != nullptr && drawIndexedCommandSignature != nullptr;
     }
     return false;
 }
@@ -2863,6 +2874,124 @@ void QRhiD3D12::dispatch(QRhiCommandBuffer *cb, int x, int y, int z)
     QD3D12CommandBuffer *cbD = QRHI_RES(QD3D12CommandBuffer, cb);
     Q_ASSERT(cbD->recordingPass == QD3D12CommandBuffer::ComputePass);
     cbD->cmdList->Dispatch(UINT(x), UINT(y), UINT(z));
+}
+
+// ByteStride is a property of the command signature, so a non-canonical stride
+// needs its own. Cannot loop with MaxCommandCount 1 like drawIndirect() does,
+// because ExecuteIndirect executes min(MaxCommandCount, *countBuffer) commands.
+ID3D12CommandSignature *QRhiD3D12::indirectDrawCommandSignature(bool indexed, quint32 stride)
+{
+    const quint32 canonicalStride = indexed ? sizeof(QRhiIndexedIndirectDrawCommand)
+                                            : sizeof(QRhiIndirectDrawCommand);
+    if (stride == canonicalStride)
+        return indexed ? drawIndexedCommandSignature : drawCommandSignature;
+
+    QHash<quint32, ID3D12CommandSignature *> &cache(indexed ? drawIndexedCommandSignaturesByStride
+                                                            : drawCommandSignaturesByStride);
+    auto it = cache.constFind(stride);
+    if (it != cache.constEnd())
+        return *it;
+
+    D3D12_INDIRECT_ARGUMENT_DESC arg = {};
+    arg.Type = indexed ? D3D12_INDIRECT_ARGUMENT_TYPE_DRAW_INDEXED : D3D12_INDIRECT_ARGUMENT_TYPE_DRAW;
+
+    D3D12_COMMAND_SIGNATURE_DESC sigDesc = {};
+    sigDesc.ByteStride = stride;
+    sigDesc.NumArgumentDescs = 1;
+    sigDesc.pArgumentDescs = &arg;
+
+    ID3D12CommandSignature *sig = nullptr;
+    HRESULT hr = dev->CreateCommandSignature(&sigDesc, nullptr, IID_PPV_ARGS(&sig));
+    if (FAILED(hr)) {
+        qWarning("Failed to create indirect draw command signature with stride %u: %s",
+                 stride, qPrintable(QSystemError::windowsComString(hr)));
+        return nullptr;
+    }
+
+    cache.insert(stride, sig);
+    return sig;
+}
+
+void QRhiD3D12::drawIndirectCount(QRhiCommandBuffer *cb,
+                                  QRhiBuffer *indirectBuffer, quint32 indirectBufferOffset,
+                                  QRhiBuffer *countBuffer, quint32 countBufferOffset,
+                                  quint32 maxDrawCount, quint32 stride)
+{
+    QD3D12CommandBuffer *cbD = QRHI_RES(QD3D12CommandBuffer, cb);
+    Q_ASSERT(cbD->recordingPass == QD3D12CommandBuffer::RenderPass);
+
+    ID3D12CommandSignature *sig = indirectDrawCommandSignature(false, stride);
+    if (!sig)
+        return;
+
+    QD3D12Buffer *indirectBufferD = QRHI_RES(QD3D12Buffer, indirectBuffer);
+    const bool indirectIsDynamic = indirectBufferD->m_type == QRhiBuffer::Dynamic;
+    const QD3D12ObjectHandle indirectHandle = indirectBufferD->handles[indirectIsDynamic ? currentFrameSlot : 0];
+    if (indirectIsDynamic)
+        indirectBufferD->executeHostWritesForFrameSlot(currentFrameSlot);
+    else
+        barrierGen.addTransitionBarrier(indirectHandle, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
+
+    QD3D12Buffer *countBufferD = QRHI_RES(QD3D12Buffer, countBuffer);
+    const bool countIsDynamic = countBufferD->m_type == QRhiBuffer::Dynamic;
+    const QD3D12ObjectHandle countHandle = countBufferD->handles[countIsDynamic ? currentFrameSlot : 0];
+    if (countIsDynamic)
+        countBufferD->executeHostWritesForFrameSlot(currentFrameSlot);
+    else
+        barrierGen.addTransitionBarrier(countHandle, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
+
+    if (!indirectIsDynamic || !countIsDynamic)
+        barrierGen.enqueueBufferedTransitionBarriers(cbD);
+
+    QD3D12Resource *indirectRes = resourcePool.lookupRef(indirectHandle);
+    QD3D12Resource *countRes = resourcePool.lookupRef(countHandle);
+    if (!indirectRes || !countRes)
+        return;
+
+    cbD->cmdList->ExecuteIndirect(sig, maxDrawCount,
+                                  indirectRes->resource, indirectBufferOffset,
+                                  countRes->resource, countBufferOffset);
+}
+
+void QRhiD3D12::drawIndexedIndirectCount(QRhiCommandBuffer *cb,
+                                         QRhiBuffer *indirectBuffer, quint32 indirectBufferOffset,
+                                         QRhiBuffer *countBuffer, quint32 countBufferOffset,
+                                         quint32 maxDrawCount, quint32 stride)
+{
+    QD3D12CommandBuffer *cbD = QRHI_RES(QD3D12CommandBuffer, cb);
+    Q_ASSERT(cbD->recordingPass == QD3D12CommandBuffer::RenderPass);
+
+    ID3D12CommandSignature *sig = indirectDrawCommandSignature(true, stride);
+    if (!sig)
+        return;
+
+    QD3D12Buffer *indirectBufferD = QRHI_RES(QD3D12Buffer, indirectBuffer);
+    const bool indirectIsDynamic = indirectBufferD->m_type == QRhiBuffer::Dynamic;
+    const QD3D12ObjectHandle indirectHandle = indirectBufferD->handles[indirectIsDynamic ? currentFrameSlot : 0];
+    if (indirectIsDynamic)
+        indirectBufferD->executeHostWritesForFrameSlot(currentFrameSlot);
+    else
+        barrierGen.addTransitionBarrier(indirectHandle, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
+
+    QD3D12Buffer *countBufferD = QRHI_RES(QD3D12Buffer, countBuffer);
+    const bool countIsDynamic = countBufferD->m_type == QRhiBuffer::Dynamic;
+    const QD3D12ObjectHandle countHandle = countBufferD->handles[countIsDynamic ? currentFrameSlot : 0];
+    if (countIsDynamic)
+        countBufferD->executeHostWritesForFrameSlot(currentFrameSlot);
+    else
+        barrierGen.addTransitionBarrier(countHandle, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
+
+    if (!indirectIsDynamic || !countIsDynamic)
+        barrierGen.enqueueBufferedTransitionBarriers(cbD);
+
+    QD3D12Resource *indirectRes = resourcePool.lookupRef(indirectHandle);
+    QD3D12Resource *countRes = resourcePool.lookupRef(countHandle);
+    if (!indirectRes || !countRes)
+        return;
+
+    cbD->cmdList->ExecuteIndirect(sig, maxDrawCount,
+                                  indirectRes->resource, indirectBufferOffset,
+                                  countRes->resource, countBufferOffset);
 }
 
 void QRhiD3D12::dispatchIndirect(QRhiCommandBuffer *cb, QRhiBuffer *indirectBuffer,

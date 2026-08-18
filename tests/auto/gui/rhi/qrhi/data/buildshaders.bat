@@ -47,3 +47,4 @@ qsb --glsl "420,430,460" -o indirect_multi_draw_sdp.frag.qsb indirect_multi_draw
 qsb --glsl "310 es,430" --hlsl 50 --msl 12 -o dispatch_indirect_args.comp.qsb dispatch_indirect_args.comp
 qsb --glsl "310 es,430" --hlsl 50 --msl 12 -o dispatch_indirect_consume.comp.qsb dispatch_indirect_consume.comp
 qsb --glsl "310 es,430" --hlsl 50 --msl 12 -o dispatch_indirect_consume_readargs.comp.qsb dispatch_indirect_consume_readargs.comp
+qsb --glsl 430 --hlsl 50 --msl 12 -o indirect_draw_count.comp.qsb indirect_draw_count.comp

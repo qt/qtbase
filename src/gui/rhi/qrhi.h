@@ -1793,6 +1793,20 @@ public:
                              quint32 drawCount,
                              quint32 stride = sizeof(QRhiIndexedIndirectDrawCommand));
 
+    void drawIndirectCount(QRhiBuffer *indirectBuffer,
+                           quint32 indirectBufferOffset,
+                           QRhiBuffer *countBuffer,
+                           quint32 countBufferOffset,
+                           quint32 maxDrawCount,
+                           quint32 stride = sizeof(QRhiIndirectDrawCommand));
+
+    void drawIndexedIndirectCount(QRhiBuffer *indirectBuffer,
+                                  quint32 indirectBufferOffset,
+                                  QRhiBuffer *countBuffer,
+                                  quint32 countBufferOffset,
+                                  quint32 maxDrawCount,
+                                  quint32 stride = sizeof(QRhiIndexedIndirectDrawCommand));
+
     void debugMarkBegin(const QByteArray &name);
     void debugMarkEnd();
     void debugMarkMsg(const QByteArray &msg);
@@ -1990,6 +2004,7 @@ public:
         DrawIndirectMulti,
         ShaderDrawParameters,
         DispatchIndirect,
+        DrawIndirectCount,
     };
 
     enum BeginFrameFlag {

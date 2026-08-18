@@ -116,6 +116,14 @@ public:
                               quint32 offset, quint32 drawCount, quint32 stride) = 0;
     virtual void drawIndexedIndirect(QRhiCommandBuffer *cb, QRhiBuffer *indirectBuffer,
                                      quint32 offset, quint32 drawCount, quint32 stride) = 0;
+    virtual void drawIndirectCount(QRhiCommandBuffer *cb,
+                                   QRhiBuffer *indirectBuffer, quint32 indirectBufferOffset,
+                                   QRhiBuffer *countBuffer, quint32 countBufferOffset,
+                                   quint32 maxDrawCount, quint32 stride) = 0;
+    virtual void drawIndexedIndirectCount(QRhiCommandBuffer *cb,
+                                          QRhiBuffer *indirectBuffer, quint32 indirectBufferOffset,
+                                          QRhiBuffer *countBuffer, quint32 countBufferOffset,
+                                          quint32 maxDrawCount, quint32 stride) = 0;
 
     virtual void debugMarkBegin(QRhiCommandBuffer *cb, const QByteArray &name) = 0;
     virtual void debugMarkEnd(QRhiCommandBuffer *cb) = 0;

@@ -1357,6 +1357,16 @@ public:
     void dispatchIndirect(QRhiCommandBuffer *cb, QRhiBuffer *indirectBuffer,
                           quint32 indirectBufferOffset) override;
 
+    void drawIndirectCount(QRhiCommandBuffer *cb,
+                           QRhiBuffer *indirectBuffer, quint32 indirectBufferOffset,
+                           QRhiBuffer *countBuffer, quint32 countBufferOffset,
+                           quint32 maxDrawCount, quint32 stride) override;
+    void drawIndexedIndirectCount(QRhiCommandBuffer *cb,
+                                  QRhiBuffer *indirectBuffer, quint32 indirectBufferOffset,
+                                  QRhiBuffer *countBuffer, quint32 countBufferOffset,
+                                  quint32 maxDrawCount, quint32 stride) override;
+    ID3D12CommandSignature *indirectDrawCommandSignature(bool indexed, quint32 stride);
+
     const QRhiNativeHandles *nativeHandles(QRhiCommandBuffer *cb) override;
     void beginExternal(QRhiCommandBuffer *cb) override;
     void endExternal(QRhiCommandBuffer *cb) override;
@@ -1477,6 +1487,8 @@ public:
     // StorePipeline() fails if the name is taken already.
     QSet<QByteArray> pipelineLibraryNames;
 #endif
+    QHash<quint32, ID3D12CommandSignature *> drawCommandSignaturesByStride;
+    QHash<quint32, ID3D12CommandSignature *> drawIndexedCommandSignaturesByStride;
 
     struct {
         bool multiView = false;

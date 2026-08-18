@@ -924,6 +924,7 @@ bool QRhiMetal::isFeatureSupported(QRhi::Feature feature) const
         return true;
     case QRhi::DrawIndirectMulti:
     case QRhi::ShaderDrawParameters:
+    case QRhi::DrawIndirectCount:
         return false;
     case QRhi::DispatchIndirect:
         return true;
@@ -3616,6 +3617,44 @@ void QRhiMetal::dispatchIndirect(QRhiCommandBuffer *cb, QRhiBuffer *indirectBuff
             dispatchThreadgroupsWithIndirectBuffer: indirectBufMtl
                               indirectBufferOffset: indirectBufferOffset
                              threadsPerThreadgroup: psD->d->localSize];
+}
+
+void QRhiMetal::drawIndirectCount(QRhiCommandBuffer *cb,
+                                  QRhiBuffer *indirectBuffer, quint32 indirectBufferOffset,
+                                  QRhiBuffer *countBuffer, quint32 countBufferOffset,
+                                  quint32 maxDrawCount, quint32 stride)
+{
+    Q_UNUSED(cb);
+    Q_UNUSED(indirectBuffer);
+    Q_UNUSED(indirectBufferOffset);
+    Q_UNUSED(countBuffer);
+    Q_UNUSED(countBufferOffset);
+    Q_UNUSED(maxDrawCount);
+    Q_UNUSED(stride);
+    static bool warned = false;
+    if (!warned) {
+        warned = true;
+        qWarning("drawIndirectCount is not supported by the Metal backend");
+    }
+}
+
+void QRhiMetal::drawIndexedIndirectCount(QRhiCommandBuffer *cb,
+                                         QRhiBuffer *indirectBuffer, quint32 indirectBufferOffset,
+                                         QRhiBuffer *countBuffer, quint32 countBufferOffset,
+                                         quint32 maxDrawCount, quint32 stride)
+{
+    Q_UNUSED(cb);
+    Q_UNUSED(indirectBuffer);
+    Q_UNUSED(indirectBufferOffset);
+    Q_UNUSED(countBuffer);
+    Q_UNUSED(countBufferOffset);
+    Q_UNUSED(maxDrawCount);
+    Q_UNUSED(stride);
+    static bool warned = false;
+    if (!warned) {
+        warned = true;
+        qWarning("drawIndexedIndirectCount is not supported by the Metal backend");
+    }
 }
 
 static void qrhimtl_releaseBuffer(const QRhiMetalData::DeferredReleaseEntry &e)

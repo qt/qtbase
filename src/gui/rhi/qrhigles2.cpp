@@ -618,6 +618,10 @@ QT_BEGIN_NAMESPACE
 #define GL_DISPATCH_INDIRECT_BUFFER       0x90EE
 #endif
 
+#ifndef GL_PARAMETER_BUFFER
+#define GL_PARAMETER_BUFFER               0x80EE
+#endif
+
 /*!
     Constructs a new QRhiGles2InitParams.
 
@@ -1308,6 +1312,32 @@ bool QRhiGles2::create(QRhi::Flags flags)
     // caps.compute. The function pointer is exposed by QOpenGLExtraFunctions.
     caps.dispatchIndirect = caps.compute;
 
+    // glMultiDraw*IndirectCount: core in 4.6, ARB on older desktop.
+    // No counterpart in OpenGL ES.
+    if (caps.gles)
+        caps.drawIndirectCount = false;
+    else
+        caps.drawIndirectCount = caps.ctxMajor > 4 || (caps.ctxMajor == 4 && caps.ctxMinor >= 6);
+    if (ctx->hasExtension(QByteArrayLiteral("GL_ARB_indirect_parameters")))
+        caps.drawIndirectCount = true;
+
+    if (caps.drawIndirectCount) {
+        glMultiDrawArraysIndirectCount = reinterpret_cast<decltype(glMultiDrawArraysIndirectCount)>(
+                    ctx->getProcAddress(QByteArrayLiteral("glMultiDrawArraysIndirectCount")));
+        if (!glMultiDrawArraysIndirectCount)
+            glMultiDrawArraysIndirectCount = reinterpret_cast<decltype(glMultiDrawArraysIndirectCount)>(
+                        ctx->getProcAddress(QByteArrayLiteral("glMultiDrawArraysIndirectCountARB")));
+        glMultiDrawElementsIndirectCount = reinterpret_cast<decltype(glMultiDrawElementsIndirectCount)>(
+                    ctx->getProcAddress(QByteArrayLiteral("glMultiDrawElementsIndirectCount")));
+        if (!glMultiDrawElementsIndirectCount)
+            glMultiDrawElementsIndirectCount = reinterpret_cast<decltype(glMultiDrawElementsIndirectCount)>(
+                        ctx->getProcAddress(QByteArrayLiteral("glMultiDrawElementsIndirectCountARB")));
+        if (!glMultiDrawArraysIndirectCount || !glMultiDrawElementsIndirectCount) {
+            qWarning("Failed to resolve glMultiDrawArraysIndirectCount or glMultiDrawElementsIndirectCount.");
+            caps.drawIndirectCount = false;
+        }
+    }
+
     nativeHandlesStruct.context = ctx;
 
     contextLost = false;
@@ -1772,6 +1802,8 @@ bool QRhiGles2::isFeatureSupported(QRhi::Feature feature) const
         return caps.shaderDrawParameters;
     case QRhi::DispatchIndirect:
         return caps.dispatchIndirect;
+    case QRhi::DrawIndirectCount:
+        return caps.drawIndirectCount;
     default:
         Q_UNREACHABLE_RETURN(false);
     }
@@ -2388,6 +2420,80 @@ void QRhiGles2::drawIndexedIndirect(QRhiCommandBuffer *cb, QRhiBuffer *indirectB
     cmd.args.drawIndexedIndirect.offset = indirectBufferOffset;
     cmd.args.drawIndexedIndirect.drawCount = drawCount;
     cmd.args.drawIndexedIndirect.stride = stride;
+}
+
+void QRhiGles2::drawIndirectCount(QRhiCommandBuffer *cb,
+                                  QRhiBuffer *indirectBuffer, quint32 indirectBufferOffset,
+                                  QRhiBuffer *countBuffer, quint32 countBufferOffset,
+                                  quint32 maxDrawCount, quint32 stride)
+{
+    if (!caps.drawIndirectCount) {
+        qWarning("drawIndirectCount called but the DrawIndirectCount feature is not supported");
+        return;
+    }
+
+    QGles2CommandBuffer *cbD = QRHI_RES(QGles2CommandBuffer, cb);
+    Q_ASSERT(cbD->recordingPass == QGles2CommandBuffer::RenderPass);
+
+    QGles2Buffer *indirectBufD = QRHI_RES(QGles2Buffer, indirectBuffer);
+    QGles2Buffer *countBufD = QRHI_RES(QGles2Buffer, countBuffer);
+
+    if (cbD->passNeedsResourceTracking) {
+        QRhiPassResourceTracker &passResTracker(cbD->passResTrackers[cbD->currentPassResTrackerIndex]);
+        trackedRegisterBuffer(&passResTracker, indirectBufD,
+                              QRhiPassResourceTracker::BufIndirectDraw,
+                              QRhiPassResourceTracker::BufIndirectDrawStage);
+        trackedRegisterBuffer(&passResTracker, countBufD,
+                              QRhiPassResourceTracker::BufIndirectDraw,
+                              QRhiPassResourceTracker::BufIndirectDrawStage);
+    }
+
+    QGles2CommandBuffer::Command &cmd(cbD->commands.get());
+    cmd.cmd = QGles2CommandBuffer::Command::DrawIndirectCount;
+    cmd.args.drawIndirectCount.ps = cbD->currentGraphicsPipeline;
+    cmd.args.drawIndirectCount.buffer = indirectBufD->buffer;
+    cmd.args.drawIndirectCount.offset = indirectBufferOffset;
+    cmd.args.drawIndirectCount.countBuffer = countBufD->buffer;
+    cmd.args.drawIndirectCount.countOffset = countBufferOffset;
+    cmd.args.drawIndirectCount.maxDrawCount = maxDrawCount;
+    cmd.args.drawIndirectCount.stride = stride;
+}
+
+void QRhiGles2::drawIndexedIndirectCount(QRhiCommandBuffer *cb,
+                                         QRhiBuffer *indirectBuffer, quint32 indirectBufferOffset,
+                                         QRhiBuffer *countBuffer, quint32 countBufferOffset,
+                                         quint32 maxDrawCount, quint32 stride)
+{
+    if (!caps.drawIndirectCount) {
+        qWarning("drawIndexedIndirectCount called but the DrawIndirectCount feature is not supported");
+        return;
+    }
+
+    QGles2CommandBuffer *cbD = QRHI_RES(QGles2CommandBuffer, cb);
+    Q_ASSERT(cbD->recordingPass == QGles2CommandBuffer::RenderPass);
+
+    QGles2Buffer *indirectBufD = QRHI_RES(QGles2Buffer, indirectBuffer);
+    QGles2Buffer *countBufD = QRHI_RES(QGles2Buffer, countBuffer);
+
+    if (cbD->passNeedsResourceTracking) {
+        QRhiPassResourceTracker &passResTracker(cbD->passResTrackers[cbD->currentPassResTrackerIndex]);
+        trackedRegisterBuffer(&passResTracker, indirectBufD,
+                              QRhiPassResourceTracker::BufIndirectDraw,
+                              QRhiPassResourceTracker::BufIndirectDrawStage);
+        trackedRegisterBuffer(&passResTracker, countBufD,
+                              QRhiPassResourceTracker::BufIndirectDraw,
+                              QRhiPassResourceTracker::BufIndirectDrawStage);
+    }
+
+    QGles2CommandBuffer::Command &cmd(cbD->commands.get());
+    cmd.cmd = QGles2CommandBuffer::Command::DrawIndexedIndirectCount;
+    cmd.args.drawIndexedIndirectCount.ps = cbD->currentGraphicsPipeline;
+    cmd.args.drawIndexedIndirectCount.buffer = indirectBufD->buffer;
+    cmd.args.drawIndexedIndirectCount.offset = indirectBufferOffset;
+    cmd.args.drawIndexedIndirectCount.countBuffer = countBufD->buffer;
+    cmd.args.drawIndexedIndirectCount.countOffset = countBufferOffset;
+    cmd.args.drawIndexedIndirectCount.maxDrawCount = maxDrawCount;
+    cmd.args.drawIndexedIndirectCount.stride = stride;
 }
 
 void QRhiGles2::debugMarkBegin(QRhiCommandBuffer *cb, const QByteArray &name)
@@ -3775,6 +3881,47 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
                 f->glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
             } else {
                 qWarning("No graphics pipeline active for drawIndexedIndirect; ignored");
+            }
+        }
+            break;
+        case QGles2CommandBuffer::Command::DrawIndirectCount:
+        {
+            QGles2GraphicsPipeline *psD = QRHI_RES(QGles2GraphicsPipeline, cmd.args.drawIndirectCount.ps);
+            if (psD && glMultiDrawArraysIndirectCount) {
+                f->glBindBuffer(GL_DRAW_INDIRECT_BUFFER, cmd.args.drawIndirectCount.buffer);
+                f->glBindBuffer(GL_PARAMETER_BUFFER, cmd.args.drawIndirectCount.countBuffer);
+                const GLvoid *ofs = reinterpret_cast<const GLvoid *>(
+                            quintptr(cmd.args.drawIndirectCount.offset));
+                glMultiDrawArraysIndirectCount(psD->drawMode,
+                                               ofs,
+                                               GLintptr(cmd.args.drawIndirectCount.countOffset),
+                                               cmd.args.drawIndirectCount.maxDrawCount,
+                                               cmd.args.drawIndirectCount.stride);
+                f->glBindBuffer(GL_PARAMETER_BUFFER, 0);
+                f->glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
+            } else {
+                qWarning("No graphics pipeline active or glMultiDrawArraysIndirectCount unavailable; ignored");
+            }
+        }
+            break;
+        case QGles2CommandBuffer::Command::DrawIndexedIndirectCount:
+        {
+            QGles2GraphicsPipeline *psD = QRHI_RES(QGles2GraphicsPipeline, cmd.args.drawIndexedIndirectCount.ps);
+            if (psD && glMultiDrawElementsIndirectCount) {
+                f->glBindBuffer(GL_DRAW_INDIRECT_BUFFER, cmd.args.drawIndexedIndirectCount.buffer);
+                f->glBindBuffer(GL_PARAMETER_BUFFER, cmd.args.drawIndexedIndirectCount.countBuffer);
+                const GLvoid *ofs = reinterpret_cast<const GLvoid *>(
+                            quintptr(cmd.args.drawIndexedIndirectCount.offset));
+                glMultiDrawElementsIndirectCount(psD->drawMode,
+                                                 state.indexType,
+                                                 ofs,
+                                                 GLintptr(cmd.args.drawIndexedIndirectCount.countOffset),
+                                                 cmd.args.drawIndexedIndirectCount.maxDrawCount,
+                                                 cmd.args.drawIndexedIndirectCount.stride);
+                f->glBindBuffer(GL_PARAMETER_BUFFER, 0);
+                f->glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
+            } else {
+                qWarning("No graphics pipeline active or glMultiDrawElementsIndirectCount unavailable; ignored");
             }
         }
             break;

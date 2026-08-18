@@ -450,6 +450,15 @@ public:
     void dispatchIndirect(QRhiCommandBuffer *cb, QRhiBuffer *indirectBuffer,
                           quint32 indirectBufferOffset) override;
 
+    void drawIndirectCount(QRhiCommandBuffer *cb,
+                           QRhiBuffer *indirectBuffer, quint32 indirectBufferOffset,
+                           QRhiBuffer *countBuffer, quint32 countBufferOffset,
+                           quint32 maxDrawCount, quint32 stride) override;
+    void drawIndexedIndirectCount(QRhiCommandBuffer *cb,
+                                  QRhiBuffer *indirectBuffer, quint32 indirectBufferOffset,
+                                  QRhiBuffer *countBuffer, quint32 countBufferOffset,
+                                  quint32 maxDrawCount, quint32 stride) override;
+
     const QRhiNativeHandles *nativeHandles(QRhiCommandBuffer *cb) override;
     void beginExternal(QRhiCommandBuffer *cb) override;
     void endExternal(QRhiCommandBuffer *cb) override;

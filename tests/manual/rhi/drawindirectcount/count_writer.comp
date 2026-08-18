@@ -1,0 +1,24 @@
+#version 440
+
+// One-thread compute shader that writes the GPU-side draw count for the
+// upcoming drawIndexedIndirectCount() call. The chosen count value comes
+// from a uniform that the host updates every frame, so we exercise the path
+// where the count is genuinely sourced from GPU memory rather than baked in
+// CPU-side.
+
+layout (local_size_x = 1) in;
+
+layout(std430, binding = 0) buffer CountBuf
+{
+    uint count;
+} buf;
+
+layout(std140, binding = 1) uniform CountIn
+{
+    uint value;
+} ubuf;
+
+void main()
+{
+    buf.count = ubuf.value;
+}

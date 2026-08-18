@@ -433,6 +433,8 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
             DrawIndexed,
             DrawIndirect,
             DrawIndexedIndirect,
+            DrawIndirectCount,
+            DrawIndexedIndirectCount,
             DebugMarkerBegin,
             DebugMarkerEnd,
             DebugMarkerInsert,
@@ -572,6 +574,22 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
                 uint32_t drawCount;
                 uint32_t stride;
             } drawIndexedIndirect;
+            struct {
+                VkBuffer indirectBuffer;
+                VkDeviceSize indirectBufferOffset;
+                VkBuffer countBuffer;
+                VkDeviceSize countBufferOffset;
+                uint32_t maxDrawCount;
+                uint32_t stride;
+            } drawIndirectCount;
+            struct {
+                VkBuffer indirectBuffer;
+                VkDeviceSize indirectBufferOffset;
+                VkBuffer countBuffer;
+                VkDeviceSize countBufferOffset;
+                uint32_t maxDrawCount;
+                uint32_t stride;
+            } drawIndexedIndirectCount;
             struct {
 #ifdef VK_EXT_debug_utils
                 VkDebugUtilsLabelEXT label;
@@ -815,6 +833,15 @@ public:
     void drawIndexedIndirect(QRhiCommandBuffer *cb, QRhiBuffer *indirectBuffer,
                              quint32 indirectBufferOffset, quint32 drawCount, quint32 stride) override;
 
+    void drawIndirectCount(QRhiCommandBuffer *cb,
+                           QRhiBuffer *indirectBuffer, quint32 indirectBufferOffset,
+                           QRhiBuffer *countBuffer, quint32 countBufferOffset,
+                           quint32 maxDrawCount, quint32 stride) override;
+    void drawIndexedIndirectCount(QRhiCommandBuffer *cb,
+                                  QRhiBuffer *indirectBuffer, quint32 indirectBufferOffset,
+                                  QRhiBuffer *countBuffer, quint32 countBufferOffset,
+                                  quint32 maxDrawCount, quint32 stride) override;
+
     void dispatchIndirect(QRhiCommandBuffer *cb, QRhiBuffer *indirectBuffer,
                           quint32 indirectBufferOffset) override;
 
@@ -1005,6 +1032,12 @@ public:
     PFN_vkCreateRenderPass2KHR vkCreateRenderPass2KHR = nullptr;
 #endif
 
+#ifdef VK_VERSION_1_2
+    // Vulkan 1.2 core, not in QVulkanDeviceFunctions, so resolved manually.
+    PFN_vkCmdDrawIndirectCount vkCmdDrawIndirectCount = nullptr;
+    PFN_vkCmdDrawIndexedIndirectCount vkCmdDrawIndexedIndirectCount = nullptr;
+#endif
+
 #ifdef VK_EXT_device_fault
     PFN_vkGetDeviceFaultInfoEXT vkGetDeviceFaultInfoEXT = nullptr;
 #endif
@@ -1029,6 +1062,7 @@ public:
         int imageBasedShadingRateTileSize = 0;
         bool drawIndirectMulti = false;
         bool shaderDrawParameters = false;
+        bool drawIndirectCount = false;
     } caps;
 
     VkPipelineCache pipelineCache = VK_NULL_HANDLE;

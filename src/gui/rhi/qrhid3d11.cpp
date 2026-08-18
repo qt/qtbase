@@ -718,6 +718,7 @@ bool QRhiD3D11::isFeatureSupported(QRhi::Feature feature) const
         return featureLevel >= D3D_FEATURE_LEVEL_11_0;
     case QRhi::DrawIndirectMulti:
     case QRhi::ShaderDrawParameters:
+    case QRhi::DrawIndirectCount:
         return false;
     case QRhi::DispatchIndirect:
         return featureLevel >= D3D_FEATURE_LEVEL_11_0;
@@ -2433,6 +2434,36 @@ void QRhiD3D11::dispatchIndirect(QRhiCommandBuffer *cb, QRhiBuffer *indirectBuff
     cmd.cmd = QD3D11CommandBuffer::Command::DispatchIndirect;
     cmd.args.dispatchIndirect.indirectBuffer = QRHI_RES(QD3D11Buffer, indirectBuffer)->buffer;
     cmd.args.dispatchIndirect.indirectBufferOffset = indirectBufferOffset;
+}
+
+void QRhiD3D11::drawIndirectCount(QRhiCommandBuffer *cb,
+                                  QRhiBuffer *indirectBuffer, quint32 indirectBufferOffset,
+                                  QRhiBuffer *countBuffer, quint32 countBufferOffset,
+                                  quint32 maxDrawCount, quint32 stride)
+{
+    Q_UNUSED(cb);
+    Q_UNUSED(indirectBuffer);
+    Q_UNUSED(indirectBufferOffset);
+    Q_UNUSED(countBuffer);
+    Q_UNUSED(countBufferOffset);
+    Q_UNUSED(maxDrawCount);
+    Q_UNUSED(stride);
+    qWarning("drawIndirectCount is not supported by the D3D11 backend");
+}
+
+void QRhiD3D11::drawIndexedIndirectCount(QRhiCommandBuffer *cb,
+                                         QRhiBuffer *indirectBuffer, quint32 indirectBufferOffset,
+                                         QRhiBuffer *countBuffer, quint32 countBufferOffset,
+                                         quint32 maxDrawCount, quint32 stride)
+{
+    Q_UNUSED(cb);
+    Q_UNUSED(indirectBuffer);
+    Q_UNUSED(indirectBufferOffset);
+    Q_UNUSED(countBuffer);
+    Q_UNUSED(countBufferOffset);
+    Q_UNUSED(maxDrawCount);
+    Q_UNUSED(stride);
+    qWarning("drawIndexedIndirectCount is not supported by the D3D11 backend");
 }
 
 static inline std::pair<int, int> mapBinding(int binding,

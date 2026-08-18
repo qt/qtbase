@@ -1,0 +1,7 @@
+<!DOCTYPE RCC><RCC version="1.0">
+  <qresource>
+    <file>quads.vert.qsb</file>
+    <file>quads.frag.qsb</file>
+    <file>count_writer.comp.qsb</file>
+</qresource>
+</RCC>

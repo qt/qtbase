@@ -1158,6 +1158,21 @@ Q_LOGGING_CATEGORY(QRHI_LOG_RUB, "qt.rhi.rub")
     \l QRhiBuffer at execution time. In practice this can be expected to be
     supported wherever the \l Compute feature is reported as supported, that is,
     on Vulkan, OpenGL 4.3+ / OpenGL ES 3.1+, Direct3D 11/12, and Metal.
+
+    \value [since 6.13] DrawIndirectCount Indicates that the
+    \l{QRhiCommandBuffer::drawIndirectCount()}{drawIndirectCount()} and
+    \l{QRhiCommandBuffer::drawIndexedIndirectCount()}{drawIndexedIndirectCount()}
+    functions are available. These are GPU-driven multi-draw variants where the
+    actual draw count is read from a buffer at execution time, capped to a
+    CPU-supplied \c maxDrawCount. In practice this can be expected to be
+    supported with Vulkan 1.2 and newer, when both the \c drawIndirectCount and
+    \c multiDrawIndirect device features are present, with OpenGL 4.6 or when
+    \c GL_ARB_indirect_parameters is available, and with Direct3D 12. Direct3D
+    11 and Metal do not expose an equivalent entry point. Note that with Vulkan
+    the two device features are queried from the physical device. When importing
+    an existing VkDevice, the application must make sure the features were
+    enabled when that device was created, because this cannot be queried
+    afterwards.
  */
 
 /*!
@@ -10845,6 +10860,82 @@ void QRhiCommandBuffer::drawIndexedIndirect(QRhiBuffer *indirectBuffer,
 }
 
 /*!
+    Records a non-indexed, indirect draw, with the draw count itself read
+    from a buffer at execution time.
+
+    Draw parameters are read from \a indirectBuffer at byte offset
+    \a indirectBufferOffset as an array of QRhiIndirectDrawCommand entries
+    spaced \a stride bytes apart. The number of draws issued is the 32-bit
+    unsigned integer stored at \a countBufferOffset in \a countBuffer, clamped
+    to \a maxDrawCount.
+
+    Both buffers must have QRhiBuffer::IndirectBuffer usage. Offsets must be
+    4-byte aligned; \a stride must be 4-byte aligned and at least
+    sizeof(QRhiIndirectDrawCommand).
+
+    Only available when \l QRhi::DrawIndirectCount is reported as supported.
+    On other backends this is a no-op and a warning is logged.
+
+    \note The value in \a countBuffer is read as a \e signed 32-bit integer by
+    OpenGL, unlike the other backends. Counts above \c INT_MAX are therefore
+    not portable, and neither is relying on any particular behavior for a count
+    that exceeds \a maxDrawCount, beyond the clamping described above.
+
+    \note Only valid inside a render pass.
+
+    \since 6.13
+ */
+void QRhiCommandBuffer::drawIndirectCount(QRhiBuffer *indirectBuffer,
+                                          quint32 indirectBufferOffset,
+                                          QRhiBuffer *countBuffer,
+                                          quint32 countBufferOffset,
+                                          quint32 maxDrawCount,
+                                          quint32 stride)
+{
+    Q_ASSERT(indirectBuffer);
+    Q_ASSERT(countBuffer);
+    Q_ASSERT(indirectBuffer->usage().testFlag(QRhiBuffer::IndirectBuffer));
+    Q_ASSERT(countBuffer->usage().testFlag(QRhiBuffer::IndirectBuffer));
+    Q_ASSERT_X((indirectBufferOffset & 3u) == 0u, Q_FUNC_INFO, "indirectBufferOffset must be a multiple of 4");
+    Q_ASSERT_X((countBufferOffset & 3u) == 0u, Q_FUNC_INFO, "countBufferOffset must be a multiple of 4");
+    Q_ASSERT(stride >= sizeof(QRhiIndirectDrawCommand));
+    Q_ASSERT_X((stride & 3u) == 0u, Q_FUNC_INFO, "stride must be a multiple of 4");
+    m_rhi->drawIndirectCount(this, indirectBuffer, indirectBufferOffset,
+                             countBuffer, countBufferOffset, maxDrawCount, stride);
+}
+
+/*!
+    Indexed variant of drawIndirectCount(). \a indirectBuffer contains, at byte
+    offset \a indirectBufferOffset, QRhiIndexedIndirectDrawCommand entries,
+    spaced \a stride bytes apart, and \a stride must be at least
+    sizeof(QRhiIndexedIndirectDrawCommand). All other requirements, including
+    how \a countBuffer, \a countBufferOffset and \a maxDrawCount are
+    interpreted, are as described for drawIndirectCount().
+
+    \note Only valid inside a render pass.
+
+    \since 6.13
+ */
+void QRhiCommandBuffer::drawIndexedIndirectCount(QRhiBuffer *indirectBuffer,
+                                                 quint32 indirectBufferOffset,
+                                                 QRhiBuffer *countBuffer,
+                                                 quint32 countBufferOffset,
+                                                 quint32 maxDrawCount,
+                                                 quint32 stride)
+{
+    Q_ASSERT(indirectBuffer);
+    Q_ASSERT(countBuffer);
+    Q_ASSERT(indirectBuffer->usage().testFlag(QRhiBuffer::IndirectBuffer));
+    Q_ASSERT(countBuffer->usage().testFlag(QRhiBuffer::IndirectBuffer));
+    Q_ASSERT_X((indirectBufferOffset & 3u) == 0u, Q_FUNC_INFO, "indirectBufferOffset must be a multiple of 4");
+    Q_ASSERT_X((countBufferOffset & 3u) == 0u, Q_FUNC_INFO, "countBufferOffset must be a multiple of 4");
+    Q_ASSERT(stride >= sizeof(QRhiIndexedIndirectDrawCommand));
+    Q_ASSERT_X((stride & 3u) == 0u, Q_FUNC_INFO, "stride must be a multiple of 4");
+    m_rhi->drawIndexedIndirectCount(this, indirectBuffer, indirectBufferOffset,
+                                    countBuffer, countBufferOffset, maxDrawCount, stride);
+}
+
+/*!
     Records a named debug group on the command buffer with the specified \a
     name. This is shown in graphics debugging tools such as
     \l{https://renderdoc.org/}{RenderDoc} and
@@ -10969,24 +11060,15 @@ void QRhiCommandBuffer::dispatch(int x, int y, int z)
 /*!
     Records an indirect compute dispatch.
 
-    The work group counts (\c x, \c y, \c z) are read by the device from
-    \a indirectBuffer at byte \a indirectBufferOffset. The data at that
-    location must be a single QRhiDispatchIndirectCommand structure. This
-    allows the dispatch arguments to be produced on the GPU, typically by
-    a previous compute pass that wrote into the same buffer when it was
-    bound as a storage buffer.
+    The work group counts are read by the device from \a indirectBuffer at
+    \a indirectBufferOffset, as a single QRhiDispatchIndirectCommand.
+    \a indirectBuffer must have QRhiBuffer::IndirectBuffer usage and
+    \a indirectBufferOffset must be 4-byte aligned.
 
-    \a indirectBuffer must have been created with the
-    QRhiBuffer::IndirectBuffer usage flag, and \a indirectBufferOffset must be a
-    multiple of 4.
+    Only one dispatch per call; no native multi-dispatch variant exists.
+    Requires \l QRhi::DispatchIndirect.
 
-    Indirect compute dispatch is only available when the
-    \l QRhi::DispatchIndirect feature is reported as supported. Unlike
-    drawIndirect(), there is no native multi-dispatch variant on any of the
-    underlying graphics APIs, so only one dispatch can be issued per call.
-
-    \note This function can only be called inside a compute pass, meaning
-    between a beginComputePass() and endComputePass() call.
+    \note Only valid inside a compute pass.
 
     \since 6.13
  */

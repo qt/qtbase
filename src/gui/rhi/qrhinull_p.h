@@ -255,6 +255,14 @@ public:
 
     void drawIndexedIndirect(QRhiCommandBuffer *cb, QRhiBuffer *indirectBuffer,
                              quint32 indirectBufferOffset, quint32 drawCount, quint32 stride) override;
+    void drawIndirectCount(QRhiCommandBuffer *cb,
+                           QRhiBuffer *indirectBuffer, quint32 indirectBufferOffset,
+                           QRhiBuffer *countBuffer, quint32 countBufferOffset,
+                           quint32 maxDrawCount, quint32 stride) override;
+    void drawIndexedIndirectCount(QRhiCommandBuffer *cb,
+                                  QRhiBuffer *indirectBuffer, quint32 indirectBufferOffset,
+                                  QRhiBuffer *countBuffer, quint32 countBufferOffset,
+                                  quint32 maxDrawCount, quint32 stride) override;
 
     void debugMarkBegin(QRhiCommandBuffer *cb, const QByteArray &name) override;
     void debugMarkEnd(QRhiCommandBuffer *cb) override;

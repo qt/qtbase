@@ -329,6 +329,8 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
             DrawIndexed,
             DrawIndirect,
             DrawIndexedIndirect,
+            DrawIndirectCount,
+            DrawIndexedIndirectCount,
             BindGraphicsPipeline,
             BindShaderResources,
             BindFramebuffer,
@@ -415,6 +417,24 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
                 quint32 drawCount;
                 quint32 stride;
             } drawIndexedIndirect;
+            struct {
+                QRhiGraphicsPipeline *ps;
+                GLuint buffer;
+                quint32 offset;
+                GLuint countBuffer;
+                quint32 countOffset;
+                quint32 maxDrawCount;
+                quint32 stride;
+            } drawIndirectCount;
+            struct {
+                QRhiGraphicsPipeline *ps;
+                GLuint buffer;
+                quint32 offset;
+                GLuint countBuffer;
+                quint32 countOffset;
+                quint32 maxDrawCount;
+                quint32 stride;
+            } drawIndexedIndirectCount;
             struct {
                 QRhiGraphicsPipeline *ps;
             } bindGraphicsPipeline;
@@ -874,6 +894,15 @@ public:
     void drawIndexedIndirect(QRhiCommandBuffer *cb, QRhiBuffer *indirectBuffer,
                              quint32 indirectBufferOffset, quint32 drawCount, quint32 stride) override;
 
+    void drawIndirectCount(QRhiCommandBuffer *cb,
+                           QRhiBuffer *indirectBuffer, quint32 indirectBufferOffset,
+                           QRhiBuffer *countBuffer, quint32 countBufferOffset,
+                           quint32 maxDrawCount, quint32 stride) override;
+    void drawIndexedIndirectCount(QRhiCommandBuffer *cb,
+                                  QRhiBuffer *indirectBuffer, quint32 indirectBufferOffset,
+                                  QRhiBuffer *countBuffer, quint32 countBufferOffset,
+                                  quint32 maxDrawCount, quint32 stride) override;
+
     void dispatchIndirect(QRhiCommandBuffer *cb, QRhiBuffer *indirectBuffer,
                           quint32 indirectBufferOffset) override;
 
@@ -1008,6 +1037,8 @@ public:
     void (QOPENGLF_APIENTRYP glRenderbufferStorageMultisampleEXT)(GLenum, GLsizei, GLenum, GLsizei, GLsizei) = nullptr;
     void (QOPENGLF_APIENTRYP glMultiDrawArraysIndirect)(GLenum, const void *, GLsizei, GLsizei) = nullptr;
     void (QOPENGLF_APIENTRYP glMultiDrawElementsIndirect)(GLenum, GLenum, const void *, GLsizei, GLsizei) = nullptr;
+    void (QOPENGLF_APIENTRYP glMultiDrawArraysIndirectCount)(GLenum, const void *, GLintptr, GLsizei, GLsizei) = nullptr;
+    void (QOPENGLF_APIENTRYP glMultiDrawElementsIndirectCount)(GLenum, GLenum, const void *, GLintptr, GLsizei, GLsizei) = nullptr;
     uint vao = 0;
     struct Caps {
         Caps()
@@ -1073,7 +1104,8 @@ public:
               glesMultiviewMultisampleRenderToTexture(false),
               unpackRowLength(false),
               perRenderTargetBlending(false),
-              dispatchIndirect(false)
+              dispatchIndirect(false),
+              drawIndirectCount(false)
         { }
         int ctxMajor;
         int ctxMinor;
@@ -1145,6 +1177,7 @@ public:
         uint shaderDrawParameters : 1;
         uint imageLoadStore : 1;
         uint dispatchIndirect : 1;
+        uint drawIndirectCount : 1;
     } caps;
     QGles2SwapChain *currentSwapChain = nullptr;
     QSet<GLint> supportedCompressedFormats;
