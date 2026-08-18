@@ -96,7 +96,7 @@ void QWaylandClientExtension::initialize()
    Constructs the client extension and sets its version to \a ver and makes the extension a
    child of \a parent.
 */
-QWaylandClientExtension::QWaylandClientExtension(const int ver, QObject *parent)
+QWaylandClientExtension::QWaylandClientExtension(int ver, QObject *parent)
     : QObject(*new QWaylandClientExtensionPrivate(), parent)
 {
     Q_D(QWaylandClientExtension);
