@@ -127,6 +127,7 @@ inline bool qCompare(QIcon const &t1, QIcon const &t2, const char *actual, const
 inline bool qCompare(QImage const &t1, QImage const &t2,
                      const char *actual, const char *expected, const char *file, int line)
 {
+    Q_DECL_UNINITIALIZED
     char msg[1024];
     msg[0] = '\0';
     const bool t1Null = t1.isNull();
@@ -169,6 +170,7 @@ inline bool qCompare(QImage const &t1, QImage const &t2,
 inline bool qCompare(QPixmap const &t1, QPixmap const &t2, const char *actual, const char *expected,
                     const char *file, int line)
 {
+    Q_DECL_UNINITIALIZED
     char msg[1024];
     msg[0] = '\0';
     const bool t1Null = t1.isNull();
