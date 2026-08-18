@@ -76,7 +76,7 @@ public:
 
     qreal valueForProgress(qreal progress) const;
 
-    static QEasingCurve cubicBezier(const QPointF &c1, const QPointF &c2);
+    static QEasingCurve fromCubicBezier(QPointF c1, QPointF c2);
 
 private:
     QEasingCurvePrivate *d_ptr;
