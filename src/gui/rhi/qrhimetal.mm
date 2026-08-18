@@ -1531,6 +1531,12 @@ void QMetalGraphicsPipeline::makeActiveForCurrentRenderPassEncoder(QMetalCommand
 {
     QRHI_RES_RHI(QRhiMetal);
 
+    // Also update the tracked state, so that the callers that reactivate a
+    // pipeline on a new encoder after interrupting the pass do not have to.
+    cbD->currentGraphicsPipeline = this;
+    cbD->currentComputePipeline = nullptr;
+    cbD->currentPipelineGeneration = generation;
+
     [cbD->d->currentRenderPassEncoder setRenderPipelineState: d->ps];
 
     if (cbD->d->currentDepthStencilState != d->ds) {
@@ -2036,6 +2042,7 @@ void QRhiMetal::setScissor(QRhiCommandBuffer *cb, const QRhiScissor &scissor)
     [cbD->d->currentRenderPassEncoder setScissorRect: s];
 
     cbD->hasCustomScissorSet = true;
+    cbD->currentScissor = scissor;
 }
 
 void QRhiMetal::setBlendConstants(QRhiCommandBuffer *cb, const QColor &c)
@@ -2045,6 +2052,9 @@ void QRhiMetal::setBlendConstants(QRhiCommandBuffer *cb, const QColor &c)
 
     [cbD->d->currentRenderPassEncoder setBlendColorRed: c.redF()
       green: c.greenF() blue: c.blueF() alpha: c.alphaF()];
+
+    cbD->hasBlendConstantsSet = true;
+    cbD->currentBlendConstants = c;
 }
 
 void QRhiMetal::setStencilRef(QRhiCommandBuffer *cb, quint32 refValue)
@@ -2053,6 +2063,9 @@ void QRhiMetal::setStencilRef(QRhiCommandBuffer *cb, quint32 refValue)
     Q_ASSERT(cbD->recordingPass == QMetalCommandBuffer::RenderPass);
 
     [cbD->d->currentRenderPassEncoder setStencilReferenceValue: refValue];
+
+    cbD->hasStencilRefSet = true;
+    cbD->currentStencilRef = refValue;
 }
 
 void QRhiMetal::setShadingRate(QRhiCommandBuffer *cb, const QSize &coarsePixelSize)
@@ -2075,7 +2088,7 @@ tempComputeEncoder(QMetalCommandBuffer *cbD, id<MTLComputeCommandEncoder> maybeC
     return maybeComputeEncoder;
 }
 
-static void endTempComputeEncoding(QMetalCommandBuffer *cbD,
+static void endTempComputeEncoding(QRhiMetal *rhiD, QMetalCommandBuffer *cbD,
                                    id<MTLComputeCommandEncoder> computeEncoder)
 {
     if (computeEncoder) {
@@ -2117,8 +2130,39 @@ static void endTempComputeEncoding(QMetalCommandBuffer *cbD,
             cbD->d->currentPassRpDesc.stencilAttachment.loadAction = MTLLoadActionLoad;
     }
 
+    // The state below is not tied to the pipeline, so it is not restored by the
+    // callers when they reactivate it on the new encoder. Preserve it here,
+    // otherwise the pass would silently continue with a full-target viewport,
+    // no scissor, and default blend constants and stencil reference.
+    const QRhiViewport prevViewport = cbD->currentViewport;
+    const bool prevHasScissor = cbD->hasCustomScissorSet;
+    const QRhiScissor prevScissor = cbD->currentScissor;
+    const bool prevHasBlendConstants = cbD->hasBlendConstantsSet;
+    const QColor prevBlendConstants = cbD->currentBlendConstants;
+    const bool prevHasStencilRef = cbD->hasStencilRefSet;
+    const quint32 prevStencilRef = cbD->currentStencilRef;
+    // Whether the pipeline was relying on the viewport-derived default scissor,
+    // which setViewport() below cannot reapply on its own: it only does so when
+    // a pipeline is already current, and there is none at that point.
+    const bool prevHasDefaultScissor = cbD->currentGraphicsPipeline
+            && !cbD->currentGraphicsPipeline->flags().testFlag(QRhiGraphicsPipeline::UsesScissor);
+
     cbD->d->currentRenderPassEncoder = [cbD->d->cb renderCommandEncoderWithDescriptor: cbD->d->currentPassRpDesc];
     cbD->resetPerPassCachedState();
+
+    // Must come before the callers reactivate the pipeline: setScissor()
+    // expects no pipeline to be current yet, and setDefaultScissor() consults
+    // the viewport.
+    if (!qFuzzyIsNull(prevViewport.viewport()[2]) || !qFuzzyIsNull(prevViewport.viewport()[3]))
+        rhiD->setViewport(cbD, prevViewport);
+    if (prevHasScissor)
+        rhiD->setScissor(cbD, prevScissor);
+    else if (prevHasDefaultScissor)
+        rhiD->setDefaultScissor(cbD);
+    if (prevHasBlendConstants)
+        rhiD->setBlendConstants(cbD, prevBlendConstants);
+    if (prevHasStencilRef)
+        rhiD->setStencilRef(cbD, prevStencilRef);
 
     for (uint i = 0; i < uint(rtD->colorAttCount); ++i) {
         cbD->d->currentPassRpDesc.colorAttachments[i].loadAction = oldColorLoad[i];
@@ -2280,7 +2324,7 @@ void QRhiMetal::tessellatedDraw(const TessDrawArgs &args)
     // starting to walk over the srb again)
     const QMetalShaderResourceBindingsData resourceBindings = cbD->d->currentShaderResourceBindingState;
 
-    endTempComputeEncoding(cbD, cbD->d->tessellationComputeEncoder);
+    endTempComputeEncoding(this, cbD, cbD->d->tessellationComputeEncoder);
     cbD->d->tessellationComputeEncoder = nil;
 
     // Step 3: tessellation evaluation (as vertex) + fragment shader
@@ -2614,7 +2658,7 @@ void QRhiMetal::drawIndexedIndirect(QRhiCommandBuffer *cb, QRhiBuffer *indirectB
             }
 
             // Restart the render pass with Load actions to preserve existing content.
-            endTempComputeEncoding(cbD, computeEncoder);
+            endTempComputeEncoding(this, cbD, computeEncoder);
 
             // Restore pipeline, shader resources, and vertex bindings on the new encoder.
             savedPipeline->makeActiveForCurrentRenderPassEncoder(cbD);
@@ -6685,7 +6729,12 @@ void QMetalCommandBuffer::resetPerPassCachedState()
     currentFrontFaceWinding = -1;
     currentDepthBiasValues = { 0.0f, 0.0f };
     hasCustomScissorSet = false;
+    currentScissor = {};
     currentViewport = {};
+    hasBlendConstantsSet = false;
+    currentBlendConstants = {};
+    hasStencilRefSet = false;
+    currentStencilRef = 0;
 
     d->currentShaderResourceBindingState = {};
     d->currentDepthStencilState = nil;

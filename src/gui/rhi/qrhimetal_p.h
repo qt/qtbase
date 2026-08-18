@@ -304,7 +304,12 @@ struct QMetalCommandBuffer : public QRhiCommandBuffer
     int currentFrontFaceWinding;
     std::pair<float, float> currentDepthBiasValues;
     bool hasCustomScissorSet;
+    QRhiScissor currentScissor;
     QRhiViewport currentViewport;
+    bool hasBlendConstantsSet;
+    QColor currentBlendConstants;
+    bool hasStencilRefSet;
+    quint32 currentStencilRef;
 
     const QRhiNativeHandles *nativeHandles();
     void resetState(double lastGpuTime = 0);
