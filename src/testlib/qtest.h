@@ -48,6 +48,7 @@ bool _q_compareSequence(ActualIterator actualIt, ActualIterator actualEnd,
                         const char *actual, const char *expected,
                         const char *file, int line)
 {
+    Q_DECL_UNINITIALIZED
     char msg[1024];
     msg[0] = '\0';
 

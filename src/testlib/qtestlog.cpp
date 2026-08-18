@@ -272,7 +272,8 @@ namespace QTest {
             }
 
             const size_t maxMsgLen = 1024;
-            char msg[maxMsgLen] = {'\0'};
+            Q_DECL_UNINITIALIZED char msg[maxMsgLen];
+            msg[0] = '\0';
             std::snprintf(msg, maxMsgLen, "Received a warning that resulted in a failure:\n%s",
                           qPrintable(message));
             QTestResult::addFailure(msg, context.file, context.line);

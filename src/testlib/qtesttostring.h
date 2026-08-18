@@ -199,6 +199,7 @@ template<> inline char *toString(const QChar &c)
 {
     const ushort uc = c.unicode();
     if (uc < 128) {
+        Q_DECL_UNINITIALIZED
         char msg[32];
         std::snprintf(msg, sizeof(msg), "QChar: '%c' (0x%x)", char(uc), unsigned(uc));
         return qstrdup(msg);
@@ -209,6 +210,7 @@ template<> inline char *toString(const QChar &c)
 #if QT_CONFIG(itemmodel)
 template<> inline char *toString(const QModelIndex &idx)
 {
+    Q_DECL_UNINITIALIZED
     char msg[128];
     std::snprintf(msg, sizeof(msg), "QModelIndex(%d,%d,%p,%p)",
                   idx.row(), idx.column(), idx.internalPointer(),
@@ -219,6 +221,7 @@ template<> inline char *toString(const QModelIndex &idx)
 
 template<> inline char *toString(const QPoint &p)
 {
+    Q_DECL_UNINITIALIZED
     char msg[128];
     std::snprintf(msg, sizeof(msg), "QPoint(%d,%d)", p.x(), p.y());
     return qstrdup(msg);
@@ -226,6 +229,7 @@ template<> inline char *toString(const QPoint &p)
 
 template<> inline char *toString(const QSize &s)
 {
+    Q_DECL_UNINITIALIZED
     char msg[128];
     std::snprintf(msg, sizeof(msg), "QSize(%dx%d)", s.width(), s.height());
     return qstrdup(msg);
@@ -233,6 +237,7 @@ template<> inline char *toString(const QSize &s)
 
 template<> inline char *toString(const QRect &s)
 {
+    Q_DECL_UNINITIALIZED
     char msg[256];
     std::snprintf(msg, sizeof(msg), "QRect(%d,%d %dx%d) (bottomright %d,%d)",
               s.left(), s.top(), s.width(), s.height(), s.right(), s.bottom());
@@ -241,6 +246,7 @@ template<> inline char *toString(const QRect &s)
 
 template<> inline char *toString(const QPointF &p)
 {
+    Q_DECL_UNINITIALIZED
     char msg[64];
     std::snprintf(msg, sizeof(msg), "QPointF(%g,%g)", p.x(), p.y());
     return qstrdup(msg);
@@ -248,6 +254,7 @@ template<> inline char *toString(const QPointF &p)
 
 template<> inline char *toString(const QSizeF &s)
 {
+    Q_DECL_UNINITIALIZED
     char msg[64];
     std::snprintf(msg, sizeof(msg), "QSizeF(%gx%g)", s.width(), s.height());
     return qstrdup(msg);
@@ -255,6 +262,7 @@ template<> inline char *toString(const QSizeF &s)
 
 template<> inline char *toString(const QRectF &s)
 {
+    Q_DECL_UNINITIALIZED
     char msg[256];
     std::snprintf(msg, sizeof(msg), "QRectF(%g,%g %gx%g) (bottomright %g,%g)",
                   s.left(), s.top(), s.width(), s.height(), s.right(), s.bottom());
