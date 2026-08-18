@@ -282,11 +282,18 @@ struct QRhiMetalData
     // Indirect Command Buffer (ICB) infrastructure for GPU-driven multi-draw
     id<MTLIndirectCommandBuffer> icb = nil;
     NSUInteger icbCapacity = 0;
+    id<MTLComputePipelineState> icbEncodePipeline = nil;
     id<MTLComputePipelineState> icbEncodePipelineU32 = nil;
     id<MTLComputePipelineState> icbEncodePipelineU16 = nil;
+    id<MTLFunction> icbEncodeFunction = nil;
     id<MTLFunction> icbEncodeFunctionU32 = nil;
     id<MTLFunction> icbEncodeFunctionU16 = nil;
     id<MTLBuffer> icbArgumentBuffer = nil;
+    // Written by the encode kernel, consumed by executeCommandsInBuffer.
+    id<MTLBuffer> icbRangeBuffer = nil;
+    // Holds 0xFFFFFFFF, stands in for the count buffer when there is none.
+    id<MTLBuffer> icbNoCountBuffer = nil;
+    bool icbSetupFailed = false;
 
     static const int TEXBUF_ALIGN = 256; // probably not accurate
 
@@ -710,11 +717,23 @@ void QRhiMetal::destroy()
     [d->icbArgumentBuffer release];
     d->icbArgumentBuffer = nil;
 
+    [d->icbRangeBuffer release];
+    d->icbRangeBuffer = nil;
+
+    [d->icbNoCountBuffer release];
+    d->icbNoCountBuffer = nil;
+
+    [d->icbEncodeFunction release];
+    d->icbEncodeFunction = nil;
+
     [d->icbEncodeFunctionU32 release];
     d->icbEncodeFunctionU32 = nil;
 
     [d->icbEncodeFunctionU16 release];
     d->icbEncodeFunctionU16 = nil;
+
+    [d->icbEncodePipeline release];
+    d->icbEncodePipeline = nil;
 
     [d->icbEncodePipelineU32 release];
     d->icbEncodePipelineU32 = nil;
@@ -726,6 +745,7 @@ void QRhiMetal::destroy()
     d->icb = nil;
 
     d->icbCapacity = 0;
+    d->icbSetupFailed = false;
 
     [d->binArch release];
     d->binArch = nil;
@@ -929,9 +949,11 @@ bool QRhiMetal::isFeatureSupported(QRhi::Feature feature) const
     case QRhi::DrawIndirect:
         return true;
     case QRhi::DrawIndirectMulti:
+        return caps.indirectCommandBuffers;
     case QRhi::ShaderDrawParameters:
-    case QRhi::DrawIndirectCount:
         return false;
+    case QRhi::DrawIndirectCount:
+        return caps.indirectCommandBuffers;
     case QRhi::DispatchIndirect:
         return true;
     default:
@@ -2099,29 +2121,35 @@ static inline bool canStoreAttachment(id<MTLTexture> tex)
     return tex && tex.storageMode != MTLStorageModeMemoryless;
 }
 
-// Store actions are deferred (MTLStoreActionUnknown) for attachments that have
-// a resolve texture, so they have to be finalized before the encoder ends.
+// When the pass continues on a new encoder afterwards, the contents have to be
+// stored, not just resolved or discarded. An attachment with a resolve texture
+// can only use the resolving store actions.
+static inline MTLStoreAction interruptionStoreAction(MTLStoreAction finalAction, bool passIsEnding)
+{
+    if (passIsEnding)
+        return finalAction;
+    return finalAction == MTLStoreActionDontCare ? MTLStoreActionStore
+                                                 : MTLStoreActionStoreAndMultisampleResolve;
+}
+
+// Store actions are deferred (MTLStoreActionUnknown) for attachments whose
+// contents may need to outlive the encoder, so they have to be finalized before
+// the encoder ends.
 // Store actions cannot be mutated otherwise, and for a resolve attachment the
 // only legal choices are the two resolving ones.
 void QRhiMetal::finalizeDeferredStoreActions(QMetalCommandBuffer *cbD, bool passIsEnding)
 {
-    for (const auto &[index, finalAction] : std::as_const(cbD->d->deferredColorStoreActions)) {
-        // Also store, not just resolve, when the pass continues on a new
-        // encoder afterwards: the multisample contents are needed there.
-        const MTLStoreAction action = passIsEnding ? finalAction
-                                                   : MTLStoreActionStoreAndMultisampleResolve;
-        [cbD->d->currentRenderPassEncoder setColorStoreAction: action atIndex: index];
-    }
+    for (const auto &[index, finalAction] : std::as_const(cbD->d->deferredColorStoreActions))
+        [cbD->d->currentRenderPassEncoder setColorStoreAction:
+            interruptionStoreAction(finalAction, passIsEnding) atIndex: index];
 
     if (cbD->d->deferredDepthStoreAction != MTLStoreActionUnknown) {
-        const MTLStoreAction action = passIsEnding ? cbD->d->deferredDepthStoreAction
-                                                   : MTLStoreActionStoreAndMultisampleResolve;
-        [cbD->d->currentRenderPassEncoder setDepthStoreAction: action];
+        [cbD->d->currentRenderPassEncoder setDepthStoreAction:
+            interruptionStoreAction(cbD->d->deferredDepthStoreAction, passIsEnding)];
     }
     if (cbD->d->deferredStencilStoreAction != MTLStoreActionUnknown) {
-        const MTLStoreAction action = passIsEnding ? cbD->d->deferredStencilStoreAction
-                                                   : MTLStoreActionStoreAndMultisampleResolve;
-        [cbD->d->currentRenderPassEncoder setStencilStoreAction: action];
+        [cbD->d->currentRenderPassEncoder setStencilStoreAction:
+            interruptionStoreAction(cbD->d->deferredStencilStoreAction, passIsEnding)];
     }
 }
 
@@ -2524,6 +2552,254 @@ void QRhiMetal::drawIndexed(QRhiCommandBuffer *cb, quint32 indexCount,
     }
 }
 
+// Returns null when the ICB path is usable, otherwise the reason why not.
+const char *QRhiMetal::icbUnavailableReason(QMetalCommandBuffer *cbD) const
+{
+    if (!caps.indirectCommandBuffers)
+        return "indirect command buffers are not supported on this device";
+    if (!cbD->currentGraphicsPipeline
+        || !cbD->currentGraphicsPipeline->m_flags.testFlag(QRhiGraphicsPipeline::UsesIndirectDraws))
+    {
+        return "the current graphics pipeline was not created with UsesIndirectDraws";
+    }
+    return nullptr;
+}
+
+// Compiles the encode kernels and (re)creates the shared ICB and its helper
+// buffers on demand. The ICB grows when needed but never shrinks. Old ICB
+// resources go through the deferred release queue because a previous frame's
+// compute pass may still be in flight (the command buffer is created with
+// unretained references).
+bool QRhiMetal::prepareIcb(quint32 maxDrawCount)
+{
+    if (d->icbSetupFailed)
+        return false;
+
+    if (!d->icbEncodePipeline) {
+        NSError *err = nil;
+        NSString *src = [NSString stringWithUTF8String:s_icbEncodeMsl];
+        MTLCompileOptions *opts = [MTLCompileOptions new];
+        opts.languageVersion = MTLLanguageVersion2_1;
+        id<MTLLibrary> lib = [d->dev newLibraryWithSource:src options:opts error:&err];
+        [opts release];
+        if (!lib) {
+            qWarning("Failed to compile ICB encode kernel: %s",
+                     qPrintable(QString::fromNSString(err.localizedDescription)));
+            d->icbSetupFailed = true;
+            return false;
+        }
+        d->icbEncodeFunction = [lib newFunctionWithName:@"encode_icb"];
+        d->icbEncodeFunctionU32 = [lib newFunctionWithName:@"encode_icb_indexed_u32"];
+        d->icbEncodeFunctionU16 = [lib newFunctionWithName:@"encode_icb_indexed_u16"];
+        [lib release];
+        if (!d->icbEncodeFunction || !d->icbEncodeFunctionU32 || !d->icbEncodeFunctionU16) {
+            qWarning("ICB encode kernel functions not found");
+            d->icbSetupFailed = true;
+            return false;
+        }
+        NSError *errU32 = nil;
+        NSError *errU16 = nil;
+        d->icbEncodePipeline = [d->dev newComputePipelineStateWithFunction:d->icbEncodeFunction error:&err];
+        d->icbEncodePipelineU32 = [d->dev newComputePipelineStateWithFunction:d->icbEncodeFunctionU32 error:&errU32];
+        d->icbEncodePipelineU16 = [d->dev newComputePipelineStateWithFunction:d->icbEncodeFunctionU16 error:&errU16];
+        if (!d->icbEncodePipeline || !d->icbEncodePipelineU32 || !d->icbEncodePipelineU16) {
+            NSError *firstErr = !d->icbEncodePipeline ? err
+                                                     : (!d->icbEncodePipelineU32 ? errU32 : errU16);
+            qWarning("Failed to create ICB encode compute pipeline: %s",
+                     qPrintable(QString::fromNSString(firstErr.localizedDescription)));
+            d->icbSetupFailed = true;
+            return false;
+        }
+    }
+
+    if (!d->icbRangeBuffer) {
+        d->icbRangeBuffer = [d->dev newBufferWithLength:sizeof(MTLIndirectCommandBufferExecutionRange)
+                                               options:MTLResourceStorageModePrivate];
+        static constexpr quint32 noCount = 0xFFFFFFFFu;
+        d->icbNoCountBuffer = [d->dev newBufferWithBytes:&noCount
+                                                 length:sizeof(noCount)
+                                                options:MTLResourceStorageModeShared];
+        if (!d->icbRangeBuffer || !d->icbNoCountBuffer) {
+            qWarning("Failed to create ICB helper buffers");
+            d->icbSetupFailed = true;
+            return false;
+        }
+    }
+
+    if (!d->icb || d->icbCapacity < maxDrawCount) {
+        if (d->icb) {
+            QRhiMetalData::DeferredReleaseEntry e;
+            e.type = QRhiMetalData::DeferredReleaseEntry::StagingIcbBuffer;
+            e.lastActiveFrameSlot = currentFrameSlot;
+            e.stagingIcbBuffer.icb = d->icb;
+            e.stagingIcbBuffer.argBuffer = d->icbArgumentBuffer;
+            d->releaseQueue.append(e);
+        }
+        d->icb = nil;
+        d->icbArgumentBuffer = nil;
+
+        MTLIndirectCommandBufferDescriptor *icbDesc = [MTLIndirectCommandBufferDescriptor new];
+        icbDesc.commandTypes = MTLIndirectCommandTypeDraw | MTLIndirectCommandTypeDrawIndexed;
+        icbDesc.inheritPipelineState = YES;
+        icbDesc.inheritBuffers = YES;
+        icbDesc.maxVertexBufferBindCount = 0;
+        icbDesc.maxFragmentBufferBindCount = 0;
+        d->icb = [d->dev newIndirectCommandBufferWithDescriptor:icbDesc
+                                                maxCommandCount:maxDrawCount
+                                                        options:MTLResourceStorageModePrivate];
+        [icbDesc release];
+        if (!d->icb) {
+            qWarning("Failed to create MTLIndirectCommandBuffer");
+            d->icbCapacity = 0;
+            return false;
+        }
+        d->icbCapacity = maxDrawCount;
+
+        id<MTLArgumentEncoder> argEnc = [d->icbEncodeFunction newArgumentEncoderWithBufferIndex:1];
+        d->icbArgumentBuffer = [d->dev newBufferWithLength:argEnc.encodedLength
+                                                  options:MTLResourceStorageModeShared];
+        [argEnc setArgumentBuffer:d->icbArgumentBuffer offset:0];
+        [argEnc setIndirectCommandBuffer:d->icb atIndex:0];
+        [argEnc release];
+    }
+
+    return true;
+}
+
+// Encodes up to maxDrawCount commands into the shared ICB with a compute
+// dispatch, then executes them on the render encoder. countBufMtl is optional:
+// when null, all maxDrawCount commands are executed, otherwise the number of
+// draws is min(maxDrawCount, <uint32 at countBufferOffset>), computed on the
+// GPU. Returns false when the ICB could not be set up, in which case nothing
+// was recorded and the pass is left untouched.
+bool QRhiMetal::icbDraw(QMetalCommandBuffer *cbD, bool indexed,
+                        QMetalBuffer *indirectBufD, quint32 indirectBufferOffset,
+                        QMetalBuffer *countBufD, quint32 countBufferOffset,
+                        quint32 maxDrawCount, quint32 stride)
+{
+    if (!maxDrawCount)
+        return true;
+
+    QMetalBuffer *indexBufD = cbD->currentIndexBuffer;
+    if (indexed && !indexBufD)
+        return false;
+
+    if (!prepareIcb(maxDrawCount))
+        return false;
+
+    executeBufferHostWritesForCurrentFrame(indirectBufD);
+    indirectBufD->lastActiveFrameSlot = currentFrameSlot;
+    id<MTLBuffer> indirectBufMtl = indirectBufD->d->buf[indirectBufD->d->slotted ? currentFrameSlot : 0];
+
+    id<MTLBuffer> countBufMtl = nil;
+    if (countBufD) {
+        executeBufferHostWritesForCurrentFrame(countBufD);
+        countBufD->lastActiveFrameSlot = currentFrameSlot;
+        countBufMtl = countBufD->d->buf[countBufD->d->slotted ? currentFrameSlot : 0];
+    }
+
+    // Everything below survives the interruption only if saved and restored.
+    QMetalGraphicsPipeline *savedPipeline = cbD->currentGraphicsPipeline;
+    const QMetalShaderResourceBindingsData savedResourceBindings = cbD->d->currentShaderResourceBindingState;
+    const int savedFirstVertexBinding = cbD->d->currentFirstVertexBinding;
+    const auto savedVertexBuffers = cbD->d->currentVertexInputsBuffers;
+    const auto savedVertexOffsets = cbD->d->currentVertexInputOffsets;
+    const quint32 savedIndexOffset = cbD->currentIndexOffset;
+    const QRhiCommandBuffer::IndexFormat savedIndexFormat = cbD->currentIndexFormat;
+    id<MTLBuffer> indexBufMtl = indexed
+            ? indexBufD->d->buf[indexBufD->d->slotted ? currentFrameSlot : 0] : nil;
+
+    // End the current render encoder to make room for the compute pass.
+    interruptRenderPass(cbD);
+
+    id<MTLComputeCommandEncoder> computeEncoder = [cbD->d->cb computeCommandEncoder];
+    {
+        id<MTLComputePipelineState> computePipeline = d->icbEncodePipeline;
+        if (indexed) {
+            computePipeline = savedIndexFormat == QRhiCommandBuffer::IndexUInt16
+                    ? d->icbEncodePipelineU16 : d->icbEncodePipelineU32;
+        }
+        uint32_t maxDrawCountVal = maxDrawCount;
+        uint32_t metalPrimType = uint32_t(savedPipeline->d->primitiveType);
+        uint32_t strideVal = stride;
+
+        [computeEncoder setComputePipelineState:computePipeline];
+        [computeEncoder setBuffer:indirectBufMtl offset:indirectBufferOffset atIndex:0];
+        [computeEncoder setBuffer:d->icbArgumentBuffer offset:0 atIndex:1];
+        [computeEncoder setBytes:&maxDrawCountVal length:sizeof(uint32_t) atIndex:2];
+        if (indexed)
+            [computeEncoder setBuffer:indexBufMtl offset:savedIndexOffset atIndex:3];
+        [computeEncoder setBytes:&metalPrimType length:sizeof(uint32_t) atIndex:4];
+        [computeEncoder setBytes:&strideVal length:sizeof(uint32_t) atIndex:5];
+        [computeEncoder setBuffer:countBufMtl ? countBufMtl : d->icbNoCountBuffer
+                           offset:countBufMtl ? countBufferOffset : 0
+                          atIndex:6];
+        [computeEncoder setBuffer:d->icbRangeBuffer offset:0 atIndex:7];
+        [computeEncoder useResource:d->icb usage:MTLResourceUsageWrite];
+        [computeEncoder useResource:indirectBufMtl usage:MTLResourceUsageRead];
+        if (indexed)
+            [computeEncoder useResource:indexBufMtl usage:MTLResourceUsageRead];
+
+        NSUInteger tw = computePipeline.threadExecutionWidth;
+        [computeEncoder dispatchThreads:MTLSizeMake(maxDrawCount, 1, 1)
+                  threadsPerThreadgroup:MTLSizeMake(tw, 1, 1)];
+    }
+
+    // Restart the render pass with Load actions to preserve existing content.
+    endTempComputeEncoding(this, cbD, computeEncoder);
+
+    // Restore pipeline, shader resources, and vertex bindings on the new encoder.
+    savedPipeline->makeActiveForCurrentRenderPassEncoder(cbD);
+    rebindShaderResources(cbD, QMetalShaderResourceBindingsData::VERTEX,
+                          QMetalShaderResourceBindingsData::VERTEX, &savedResourceBindings);
+    rebindShaderResources(cbD, QMetalShaderResourceBindingsData::FRAGMENT,
+                          QMetalShaderResourceBindingsData::FRAGMENT, &savedResourceBindings);
+
+    if (savedFirstVertexBinding >= 0) {
+        cbD->d->currentFirstVertexBinding = savedFirstVertexBinding;
+        cbD->d->currentVertexInputsBuffers = savedVertexBuffers;
+        cbD->d->currentVertexInputOffsets = savedVertexOffsets;
+        for (int i = 0, ie = savedVertexBuffers.batches.count(); i != ie; ++i) {
+            const auto &bufferBatch(savedVertexBuffers.batches[i]);
+            const auto &offsetBatch(savedVertexOffsets.batches[i]);
+            [cbD->d->currentRenderPassEncoder setVertexBuffers:
+                bufferBatch.resources.constData()
+              offsets: offsetBatch.resources.constData()
+              withRange: NSMakeRange(uint(savedFirstVertexBinding) + bufferBatch.startBinding,
+                                     NSUInteger(bufferBatch.resources.count()))];
+        }
+    }
+
+    if (indexed) {
+        cbD->currentIndexBuffer = indexBufD;
+        cbD->currentIndexOffset = savedIndexOffset;
+        cbD->currentIndexFormat = savedIndexFormat;
+    }
+
+    // Declare buffer dependencies and execute the GPU-encoded ICB. The range to
+    // execute is read from icbRangeBuffer, which the kernel just wrote.
+    [cbD->d->currentRenderPassEncoder useResource:indirectBufMtl
+                                            usage:MTLResourceUsageRead
+                                           stages:MTLRenderStageVertex | MTLRenderStageFragment];
+    if (indexed) {
+        [cbD->d->currentRenderPassEncoder useResource:indexBufMtl
+                                                usage:MTLResourceUsageRead
+                                               stages:MTLRenderStageVertex | MTLRenderStageFragment];
+    }
+    [cbD->d->currentRenderPassEncoder executeCommandsInBuffer:d->icb
+                                              indirectBuffer:d->icbRangeBuffer
+                                        indirectBufferOffset:0];
+    return true;
+}
+
+// The ICB (Indirect Command Buffer) path encodes the draw commands on the GPU
+// and executes them with a single executeCommandsInBuffer, which removes the
+// per-draw CPU overhead. The encoding needs a compute pass, so the render pass
+// has to be interrupted and restarted: that costs about 100-150 microseconds,
+// whereas an individual indirect draw call takes 1-2. Hence only taking this
+// path for large batches.
+static constexpr quint32 ICB_DRAW_COUNT_THRESHOLD = 128;
+
 void QRhiMetal::drawIndirect(QRhiCommandBuffer *cb, QRhiBuffer *indirectBuffer,
                              quint32 indirectBufferOffset, quint32 drawCount, quint32 stride)
 {
@@ -2535,6 +2811,13 @@ void QRhiMetal::drawIndirect(QRhiCommandBuffer *cb, QRhiBuffer *indirectBuffer,
     indirectBufD->lastActiveFrameSlot = currentFrameSlot;
     id<MTLBuffer> indirectBufMtl = indirectBufD->d->buf[indirectBufD->d->slotted ? currentFrameSlot : 0];
 
+    if (drawCount > ICB_DRAW_COUNT_THRESHOLD && !icbUnavailableReason(cbD)
+            && icbDraw(cbD, false, indirectBufD, indirectBufferOffset, nullptr, 0, drawCount, stride))
+    {
+        return;
+    }
+
+    // CPU-side for-loop fallback: used when ICB is not applicable or setup failed.
     NSUInteger offset = indirectBufferOffset;
     for (quint32 i = 0; i < drawCount; ++i) {
         [cbD->d->currentRenderPassEncoder drawPrimitives: cbD->currentGraphicsPipeline->d->primitiveType
@@ -2561,188 +2844,10 @@ void QRhiMetal::drawIndexedIndirect(QRhiCommandBuffer *cb, QRhiBuffer *indirectB
     indirectBufD->lastActiveFrameSlot = currentFrameSlot;
     id<MTLBuffer> indirectBufMtl = indirectBufD->d->buf[indirectBufD->d->slotted ? currentFrameSlot : 0];
 
-    // ICB (Indirect Command Buffer) path: uses a GPU compute kernel to encode
-    // draw commands into an MTLIndirectCommandBuffer, then executes them in a
-    // single executeCommandsInBuffer call. This eliminates per-draw CPU overhead
-    // for large batch counts. Requires the pipeline to declare UsesIndirectDraws
-    // (which enables supportIndirectCommandBuffers on the Metal pipeline descriptor).
-
-    // The ICB encoding overhead (compute pass + render pass restart)
-    // can be around 100-150 microseconds, whereas an individual drawIndexedPrimitives call
-    // typically takes 1-2 microseconds. A default threshold of 128 is intended to strike a
-    // reasonable crossover balance, aiming to utilize the GPU-driven approach
-    // when it is most likely to outweigh the fixed setup cost.
-    static const quint32 ICB_DRAW_COUNT_THRESHOLD = 128;
-    const bool useIcb = cbD->currentGraphicsPipeline
-            && caps.indirectCommandBuffers
-            && cbD->currentGraphicsPipeline->m_flags.testFlag(QRhiGraphicsPipeline::UsesIndirectDraws)
-            && drawCount > ICB_DRAW_COUNT_THRESHOLD;
-
-    if (useIcb) {
-        bool icbOk = true;
-
-        // Lazy-compile MSL compute kernels for ICB encoding (once per QRhi lifetime)
-        if (!d->icbEncodePipelineU32) {
-            NSError *err = nil;
-            NSString *src = [NSString stringWithUTF8String:s_icbEncodeMsl];
-            MTLCompileOptions *opts = [MTLCompileOptions new];
-            opts.languageVersion = MTLLanguageVersion2_1;
-            id<MTLLibrary> lib = [d->dev newLibraryWithSource:src options:opts error:&err];
-            [opts release];
-            if (!lib) {
-                qWarning("Failed to compile ICB encode kernel: %s",
-                         qPrintable(QString::fromNSString(err.localizedDescription)));
-                icbOk = false;
-            }
-            if (icbOk) {
-                d->icbEncodeFunctionU32 = [lib newFunctionWithName:@"encode_icb_indexed_u32"];
-                d->icbEncodeFunctionU16 = [lib newFunctionWithName:@"encode_icb_indexed_u16"];
-                [lib release];
-                if (!d->icbEncodeFunctionU32 || !d->icbEncodeFunctionU16) {
-                    qWarning("ICB encode kernel functions not found");
-                    icbOk = false;
-                }
-            }
-            if (icbOk) {
-                d->icbEncodePipelineU32 = [d->dev newComputePipelineStateWithFunction:d->icbEncodeFunctionU32 error:&err];
-                if (!d->icbEncodePipelineU32) {
-                    qWarning("Failed to create ICB encode compute pipeline (u32): %s",
-                             qPrintable(QString::fromNSString(err.localizedDescription)));
-                    icbOk = false;
-                }
-            }
-            if (icbOk) {
-                d->icbEncodePipelineU16 = [d->dev newComputePipelineStateWithFunction:d->icbEncodeFunctionU16 error:&err];
-                if (!d->icbEncodePipelineU16) {
-                    qWarning("Failed to create ICB encode compute pipeline (u16): %s",
-                             qPrintable(QString::fromNSString(err.localizedDescription)));
-                    icbOk = false;
-                }
-            }
-        }
-
-        // Ensure ICB has enough capacity (grows on demand, never shrinks).
-        // Old ICB resources are deferred-released to avoid use-after-free when
-        // a previous frame's compute pass is still in flight (the command buffer
-        // uses commandBufferWithUnretainedReferences).
-        if (icbOk && (!d->icb || d->icbCapacity < drawCount)) {
-            if (d->icb) {
-                QRhiMetalData::DeferredReleaseEntry e;
-                e.type = QRhiMetalData::DeferredReleaseEntry::StagingIcbBuffer;
-                e.lastActiveFrameSlot = currentFrameSlot;
-                e.stagingIcbBuffer.icb = d->icb;
-                e.stagingIcbBuffer.argBuffer = d->icbArgumentBuffer;
-                d->releaseQueue.append(e);
-            }
-            d->icb = nil;
-            d->icbArgumentBuffer = nil;
-
-            MTLIndirectCommandBufferDescriptor *icbDesc = [MTLIndirectCommandBufferDescriptor new];
-            icbDesc.commandTypes = MTLIndirectCommandTypeDrawIndexed;
-            icbDesc.inheritPipelineState = YES;
-            icbDesc.inheritBuffers = YES;
-            icbDesc.maxVertexBufferBindCount = 0;
-            icbDesc.maxFragmentBufferBindCount = 0;
-            d->icb = [d->dev newIndirectCommandBufferWithDescriptor:icbDesc
-                                                    maxCommandCount:drawCount
-                                                            options:MTLResourceStorageModePrivate];
-            [icbDesc release];
-            if (!d->icb) {
-                qWarning("Failed to create MTLIndirectCommandBuffer");
-                d->icbCapacity = 0;
-                icbOk = false;
-            } else {
-                d->icbCapacity = drawCount;
-
-                id<MTLArgumentEncoder> argEnc = [d->icbEncodeFunctionU32 newArgumentEncoderWithBufferIndex:1];
-                d->icbArgumentBuffer = [d->dev newBufferWithLength:argEnc.encodedLength
-                                                           options:MTLResourceStorageModeShared];
-                [argEnc setArgumentBuffer:d->icbArgumentBuffer offset:0];
-                [argEnc setIndirectCommandBuffer:d->icb atIndex:0];
-                [argEnc release];
-            }
-        }
-
-        if (icbOk) {
-            // Save state before render pass interruption (following tessellation pattern).
-            QMetalGraphicsPipeline *savedPipeline = cbD->currentGraphicsPipeline;
-            const QMetalShaderResourceBindingsData savedResourceBindings = cbD->d->currentShaderResourceBindingState;
-            const int savedFirstVertexBinding = cbD->d->currentFirstVertexBinding;
-            const auto savedVertexBuffers = cbD->d->currentVertexInputsBuffers;
-            const auto savedVertexOffsets = cbD->d->currentVertexInputOffsets;
-            const quint32 savedIndexOffset = cbD->currentIndexOffset;
-            const QRhiCommandBuffer::IndexFormat savedIndexFormat = cbD->currentIndexFormat;
-
-            // End the current render encoder to make room for the compute pass.
-            interruptRenderPass(cbD);
-
-            // Dispatch compute kernel to encode draw commands into the ICB.
-            id<MTLComputeCommandEncoder> computeEncoder;
-            {
-                const bool useU16 = (savedIndexFormat == QRhiCommandBuffer::IndexUInt16);
-                id<MTLComputePipelineState> computePipeline = useU16 ? d->icbEncodePipelineU16 : d->icbEncodePipelineU32;
-
-                computeEncoder = [cbD->d->cb computeCommandEncoder];
-                uint32_t drawCountVal = drawCount;
-                uint32_t metalPrimType = uint32_t(savedPipeline->d->primitiveType);
-                uint32_t strideVal = stride;
-
-                [computeEncoder setComputePipelineState:computePipeline];
-                [computeEncoder setBuffer:indirectBufMtl offset:indirectBufferOffset atIndex:0];
-                [computeEncoder setBuffer:d->icbArgumentBuffer offset:0 atIndex:1];
-                [computeEncoder setBytes:&drawCountVal length:sizeof(uint32_t) atIndex:2];
-                [computeEncoder setBuffer:indexBufMtl offset:savedIndexOffset atIndex:3];
-                [computeEncoder setBytes:&metalPrimType length:sizeof(uint32_t) atIndex:4];
-                [computeEncoder setBytes:&strideVal length:sizeof(uint32_t) atIndex:5];
-                [computeEncoder useResource:d->icb usage:MTLResourceUsageWrite];
-                [computeEncoder useResource:indirectBufMtl usage:MTLResourceUsageRead];
-                [computeEncoder useResource:indexBufMtl usage:MTLResourceUsageRead];
-
-                NSUInteger tw = computePipeline.threadExecutionWidth;
-                [computeEncoder dispatchThreads:MTLSizeMake(drawCount, 1, 1)
-                          threadsPerThreadgroup:MTLSizeMake(tw, 1, 1)];
-            }
-
-            // Restart the render pass with Load actions to preserve existing content.
-            endTempComputeEncoding(this, cbD, computeEncoder);
-
-            // Restore pipeline, shader resources, and vertex bindings on the new encoder.
-            savedPipeline->makeActiveForCurrentRenderPassEncoder(cbD);
-            rebindShaderResources(cbD, QMetalShaderResourceBindingsData::VERTEX,
-                                  QMetalShaderResourceBindingsData::VERTEX, &savedResourceBindings);
-            rebindShaderResources(cbD, QMetalShaderResourceBindingsData::FRAGMENT,
-                                  QMetalShaderResourceBindingsData::FRAGMENT, &savedResourceBindings);
-
-            if (savedFirstVertexBinding >= 0) {
-                cbD->d->currentFirstVertexBinding = savedFirstVertexBinding;
-                cbD->d->currentVertexInputsBuffers = savedVertexBuffers;
-                cbD->d->currentVertexInputOffsets = savedVertexOffsets;
-                for (int i = 0, ie = savedVertexBuffers.batches.count(); i != ie; ++i) {
-                    const auto &bufferBatch(savedVertexBuffers.batches[i]);
-                    const auto &offsetBatch(savedVertexOffsets.batches[i]);
-                    [cbD->d->currentRenderPassEncoder setVertexBuffers:
-                        bufferBatch.resources.constData()
-                      offsets: offsetBatch.resources.constData()
-                      withRange: NSMakeRange(uint(savedFirstVertexBinding) + bufferBatch.startBinding,
-                                             NSUInteger(bufferBatch.resources.count()))];
-                }
-            }
-
-            cbD->currentIndexBuffer = indexBufD;
-            cbD->currentIndexOffset = savedIndexOffset;
-            cbD->currentIndexFormat = savedIndexFormat;
-
-            // Declare buffer dependencies and execute the GPU-encoded ICB.
-            [cbD->d->currentRenderPassEncoder useResource:indirectBufMtl
-                                                    usage:MTLResourceUsageRead
-                                                   stages:MTLRenderStageVertex | MTLRenderStageFragment];
-            [cbD->d->currentRenderPassEncoder useResource:indexBufMtl
-                                                    usage:MTLResourceUsageRead
-                                                   stages:MTLRenderStageVertex | MTLRenderStageFragment];
-            [cbD->d->currentRenderPassEncoder executeCommandsInBuffer:d->icb
-                                                            withRange:NSMakeRange(0, drawCount)];
-            return;
-        }
+    if (drawCount > ICB_DRAW_COUNT_THRESHOLD && !icbUnavailableReason(cbD)
+            && icbDraw(cbD, true, indirectBufD, indirectBufferOffset, nullptr, 0, drawCount, stride))
+    {
+        return;
     }
 
     // CPU-side for-loop fallback: used when ICB is not applicable or setup failed.
@@ -3605,8 +3710,19 @@ void QRhiMetal::beginPass(QRhiCommandBuffer *cb,
         Q_ASSERT(rtD->fb.dsTex);
         cbD->d->currentPassRpDesc.depthAttachment.texture = rtD->fb.dsTex;
         cbD->d->currentPassRpDesc.stencilAttachment.texture = rtD->fb.hasStencil ? rtD->fb.dsTex : nil;
-        if (rtD->fb.depthNeedsStore) // Depth/Stencil is set to DontCare by default, override if  needed
+        if (rtD->fb.depthNeedsStore) { // Depth/Stencil is set to DontCare by default, override if  needed
             cbD->d->currentPassRpDesc.depthAttachment.storeAction = MTLStoreActionStore;
+        } else if (canStoreAttachment(rtD->fb.dsTex)) {
+            // Would be discarded at the end of the pass, but an interruption in
+            // the middle of it still has to be able to keep the contents. Defer,
+            // so that nothing is stored unless that actually happens.
+            cbD->d->currentPassRpDesc.depthAttachment.storeAction = MTLStoreActionUnknown;
+            cbD->d->deferredDepthStoreAction = MTLStoreActionDontCare;
+            if (rtD->fb.hasStencil) {
+                cbD->d->currentPassRpDesc.stencilAttachment.storeAction = MTLStoreActionUnknown;
+                cbD->d->deferredStencilStoreAction = MTLStoreActionDontCare;
+            }
+        }
         if (rtD->fb.dsResolveTex) {
             const MTLStoreAction dsStoreAction = rtD->fb.depthNeedsStore ? MTLStoreActionStoreAndMultisampleResolve
                                                                          : MTLStoreActionMultisampleResolve;
@@ -3736,18 +3852,18 @@ void QRhiMetal::drawIndirectCount(QRhiCommandBuffer *cb,
                                   QRhiBuffer *countBuffer, quint32 countBufferOffset,
                                   quint32 maxDrawCount, quint32 stride)
 {
-    Q_UNUSED(cb);
-    Q_UNUSED(indirectBuffer);
-    Q_UNUSED(indirectBufferOffset);
-    Q_UNUSED(countBuffer);
-    Q_UNUSED(countBufferOffset);
-    Q_UNUSED(maxDrawCount);
-    Q_UNUSED(stride);
-    static bool warned = false;
-    if (!warned) {
-        warned = true;
-        qWarning("drawIndirectCount is not supported by the Metal backend");
+    QMetalCommandBuffer *cbD = QRHI_RES(QMetalCommandBuffer, cb);
+    Q_ASSERT(cbD->recordingPass == QMetalCommandBuffer::RenderPass);
+
+    // Implemented on top of indirect command buffers. There can be no CPU-side
+    // fallback, the count is only known to the device.
+    if (const char *reason = icbUnavailableReason(cbD)) {
+        qWarning("drawIndirectCount is not available because %s; skipping", reason);
+        return;
     }
+
+    icbDraw(cbD, false, QRHI_RES(QMetalBuffer, indirectBuffer), indirectBufferOffset,
+            QRHI_RES(QMetalBuffer, countBuffer), countBufferOffset, maxDrawCount, stride);
 }
 
 void QRhiMetal::drawIndexedIndirectCount(QRhiCommandBuffer *cb,
@@ -3755,18 +3871,23 @@ void QRhiMetal::drawIndexedIndirectCount(QRhiCommandBuffer *cb,
                                          QRhiBuffer *countBuffer, quint32 countBufferOffset,
                                          quint32 maxDrawCount, quint32 stride)
 {
-    Q_UNUSED(cb);
-    Q_UNUSED(indirectBuffer);
-    Q_UNUSED(indirectBufferOffset);
-    Q_UNUSED(countBuffer);
-    Q_UNUSED(countBufferOffset);
-    Q_UNUSED(maxDrawCount);
-    Q_UNUSED(stride);
-    static bool warned = false;
-    if (!warned) {
-        warned = true;
-        qWarning("drawIndexedIndirectCount is not supported by the Metal backend");
+    QMetalCommandBuffer *cbD = QRHI_RES(QMetalCommandBuffer, cb);
+    Q_ASSERT(cbD->recordingPass == QMetalCommandBuffer::RenderPass);
+
+    // Implemented on top of indirect command buffers. There can be no CPU-side
+    // fallback, the count is only known to the device.
+    if (const char *reason = icbUnavailableReason(cbD)) {
+        qWarning("drawIndexedIndirectCount is not available because %s; skipping", reason);
+        return;
     }
+
+    if (!cbD->currentIndexBuffer) {
+        qWarning("drawIndexedIndirectCount called without an index buffer bound; skipping");
+        return;
+    }
+
+    icbDraw(cbD, true, QRHI_RES(QMetalBuffer, indirectBuffer), indirectBufferOffset,
+            QRHI_RES(QMetalBuffer, countBuffer), countBufferOffset, maxDrawCount, stride);
 }
 
 static void qrhimtl_releaseBuffer(const QRhiMetalData::DeferredReleaseEntry &e)
@@ -4304,10 +4425,15 @@ bool QMetalRenderBuffer::create()
     desc.resourceOptions = MTLResourceStorageModePrivate;
     desc.usage = MTLTextureUsageRenderTarget;
 
+    // Memoryless contents cannot survive the render pass getting interrupted and
+    // continued on another command encoder, which is what NoTransientBacking is
+    // there to avoid.
+    const bool canBeMemoryless = !m_flags.testFlag(QRhiRenderBuffer::NoTransientBacking);
+
     switch (m_type) {
     case DepthStencil:
 #ifdef Q_OS_MACOS
-        if (rhiD->caps.isAppleGPU) {
+        if (rhiD->caps.isAppleGPU && canBeMemoryless) {
             desc.storageMode = MTLStorageModeMemoryless;
             d->format = MTLPixelFormatDepth32Float_Stencil8;
         } else {
@@ -4316,7 +4442,7 @@ bool QMetalRenderBuffer::create()
                     ? MTLPixelFormatDepth24Unorm_Stencil8 : MTLPixelFormatDepth32Float_Stencil8;
         }
 #else
-        desc.storageMode = MTLStorageModeMemoryless;
+        desc.storageMode = canBeMemoryless ? MTLStorageModeMemoryless : MTLStorageModePrivate;
         d->format = MTLPixelFormatDepth32Float_Stencil8;
 #endif
         desc.pixelFormat = d->format;

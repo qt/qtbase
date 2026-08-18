@@ -75,6 +75,7 @@ QString graphicsApiName()
 
 QRhi::Flags rhiFlags = QRhi::EnableDebugMarkers | QRhi::EnableTimestamps;
 int sampleCount = 1;
+QRhiRenderBuffer::Flags dsFlags;
 QRhiSwapChain::Flags scFlags;
 QRhi::BeginFrameFlags beginFrameFlags;
 QRhi::EndFrameFlags endFrameFlags;
@@ -291,7 +292,7 @@ void Window::init()
     m_ds = m_r->newRenderBuffer(QRhiRenderBuffer::DepthStencil,
                                 QSize(), // no need to set the size here, due to UsedWithSwapChainOnly
                                 sampleCount,
-                                QRhiRenderBuffer::UsedWithSwapChainOnly);
+                                QRhiRenderBuffer::UsedWithSwapChainOnly | dsFlags);
     m_sc->setWindow(this);
     m_sc->setDepthStencil(m_ds);
     m_sc->setSampleCount(sampleCount);

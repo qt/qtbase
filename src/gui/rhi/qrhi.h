@@ -1128,7 +1128,8 @@ public:
     };
 
     enum Flag {
-        UsedWithSwapChainOnly = 1 << 0
+        UsedWithSwapChainOnly = 1 << 0,
+        NoTransientBacking = 1 << 1
     };
     Q_DECLARE_FLAGS(Flags, Flag)
 

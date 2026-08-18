@@ -464,6 +464,13 @@ public:
                                   QRhiBuffer *countBuffer, quint32 countBufferOffset,
                                   quint32 maxDrawCount, quint32 stride) override;
 
+    const char *icbUnavailableReason(QMetalCommandBuffer *cbD) const;
+    bool prepareIcb(quint32 maxDrawCount);
+    bool icbDraw(QMetalCommandBuffer *cbD, bool indexed,
+                 QMetalBuffer *indirectBufD, quint32 indirectBufferOffset,
+                 QMetalBuffer *countBufD, quint32 countBufferOffset,
+                 quint32 maxDrawCount, quint32 stride);
+
     const QRhiNativeHandles *nativeHandles(QRhiCommandBuffer *cb) override;
     void beginExternal(QRhiCommandBuffer *cb) override;
     void endExternal(QRhiCommandBuffer *cb) override;

@@ -1142,8 +1142,8 @@ Q_LOGGING_CATEGORY(QRHI_LOG_RUB, "qt.rhi.rub")
     supported by the backend in \l{QRhiCommandBuffer::drawIndirect()}{drawIndirect()}
     and \l{QRhiCommandBuffer::drawIndexedIndirect()}{drawIndexedIndirect()}.
     Otherwise, multiple draw calls are issued on the CPU by the RHI.
-    In practice this can be expected to be supported on Vulkan 1.1+, OpenGL 4.3+
-    and D3D12.
+    In practice this can be expected to be supported on Vulkan 1.1+, OpenGL
+    4.3+, D3D12, and Metal.
 
     \value [since 6.12] ShaderDrawParameters Indicates that the \c{gl_BaseInstance},
     \c{gl_BaseVertex} and \c{gl_DrawID} built-in variables are available in shaders.
@@ -1165,12 +1165,16 @@ Q_LOGGING_CATEGORY(QRHI_LOG_RUB, "qt.rhi.rub")
     CPU-supplied \c maxDrawCount. In practice this can be expected to be
     supported with Vulkan 1.2 and newer, when both the \c drawIndirectCount and
     \c multiDrawIndirect device features are present, with OpenGL 4.6 or when
-    \c GL_ARB_indirect_parameters is available, and with Direct3D 12. Direct3D
-    11 and Metal do not expose an equivalent entry point. Note that with Vulkan
-    the two device features are queried from the physical device. When importing
-    an existing VkDevice, the application must make sure the features were
-    enabled when that device was created, because this cannot be queried
-    afterwards.
+    \c GL_ARB_indirect_parameters is available, with Direct3D 12, and with Metal
+    on devices supporting Metal 3 and indirect command buffers. Direct3D 11 does
+    not expose an equivalent entry point. Note that with Vulkan the two device
+    features are queried from the physical device. When importing an existing
+    VkDevice, the application must make sure the features were enabled when that
+    device was created, because this cannot be queried afterwards. With Metal
+    there is a further requirement that this feature flag cannot reflect: the
+    graphics pipeline must have
+    \l{QRhiGraphicsPipeline::UsesIndirectDraws}{UsesIndirectDraws} set, without
+    which the draw is skipped with a warning.
  */
 
 /*!
@@ -4299,12 +4303,17 @@ void QRhiBuffer::fullDynamicBufferUpdateForCurrentFrame(const void *data, quint3
     That transient nature has a consequence: the contents of a \l DepthStencil
     renderbuffer are not guaranteed to survive if a backend has to interrupt and
     restart a render pass internally. With Metal this happens when a draw call
-    is implemented via indirect command buffers, which is the case for a high
-    draw count
+    is implemented via indirect command buffers, which is the case for
+    \l{QRhiCommandBuffer::drawIndirectCount()}{drawIndirectCount()} and its
+    indexed variant, for a high draw count
+    \l{QRhiCommandBuffer::drawIndirect()}{drawIndirect()} or
     \l{QRhiCommandBuffer::drawIndexedIndirect()}{drawIndexedIndirect()}, and
     also when tessellation is used. Draws recorded after such a call then
     depth-test against a depth buffer that lost its contents. When this matters,
-    attach a depth or depth-stencil QRhiTexture with
+    set the \l NoTransientBacking flag, which makes the contents preservable at
+    the cost of the memory and bandwidth that the transient backing was saving.
+    Alternatively, where a QRhiTextureRenderTarget is used anyway, attach a depth
+    or depth-stencil QRhiTexture with
     \l{QRhiTextureRenderTargetDescription::setDepthTexture()}{setDepthTexture()}
     instead of a renderbuffer: that is preserved across an interruption, unless
     QRhiTextureRenderTarget::DoNotStoreDepthStencilContents is set.
@@ -4367,6 +4376,15 @@ void QRhiBuffer::fullDynamicBufferUpdateForCurrentFrame(const void *data, quint3
     as it avoids creating any actual renderbuffer resource as there is already
     a windowing system provided depth/stencil buffer as requested by
     QSurfaceFormat.
+
+    \value [since 6.13] NoTransientBacking Requests that the renderbuffer is not
+    backed by transient, lazily allocated memory. Only relevant for
+    \l DepthStencil renderbuffers, and only with backends that would otherwise
+    choose such storage, which in practice means Metal on Apple GPUs. Set this
+    when the contents have to survive a render pass being interrupted and
+    continued internally by a backend, as described in the
+    \l{QRhiRenderBuffer}{class documentation}. It costs actual memory and
+    bandwidth for the depth/stencil buffer, so do not set it when not needed.
  */
 
 /*!
@@ -6985,8 +7003,14 @@ QDebug operator<<(QDebug dbg, const QRhiShaderResourceBindings &srb)
     Metal backend to use Indirect Command Buffers (ICB) for GPU-driven
     rendering, which significantly reduces CPU overhead for large draw counts.
     Not setting this flag when using indirect draws is still functional but may
-    result in less optimal performance on Metal. This flag has no effect on
-    other backends.
+    result in less optimal performance on Metal: QRhi::DrawIndirectMulti reports
+    what the device can do, without knowing about individual pipelines, so a
+    pipeline without this flag falls back to CPU-side looping even when that
+    feature is reported as supported. The exception is
+    QRhiCommandBuffer::drawIndirectCount() and
+    QRhiCommandBuffer::drawIndexedIndirectCount(), for which the flag is
+    mandatory on Metal because there is no non-ICB implementation of those. This
+    flag has no effect on other backends.
  */
 
 /*!
@@ -10813,10 +10837,15 @@ void QRhiCommandBuffer::drawIndexed(quint32 indexCount,
     Otherwise, this function emulates multi-draw by recording multiple draw calls,
     offering no performance benefit over repeated draw() calls.
 
+    \note The render pass interruption and the render target consequences and
+    limitations described for drawIndexedIndirect() apply here as well.
+
     \note This function can only be called inside a render pass, meaning
     between a beginPass() and endPass() call.
 
     \since 6.12
+
+    \sa drawIndexedIndirect(), drawIndirectCount(), drawIndexedIndirectCount()
  */
 void QRhiCommandBuffer::drawIndirect(QRhiBuffer *indirectBuffer,
                                      quint32 indirectBufferOffset,
@@ -10852,10 +10881,23 @@ void QRhiCommandBuffer::drawIndirect(QRhiBuffer *indirectBuffer,
     Otherwise, this function emulates multi-draw by recording multiple draw calls,
     offering no performance benefit over repeated drawIndexed() calls.
 
+    \note With some backends a large \a drawCount is implemented by interrupting
+    and then restarting the render pass internally due to launching a compute
+    kernel to encode commands into an indirect command buffer. With Metal this
+    happens above a certain \a drawCount (e.g., 128). This has consequences for
+    the render targets: color attachment contents are preserved automatically,
+    but a QRhiRenderBuffer serving as the depth-stencil buffer only keeps its
+    contents if it was created with QRhiRenderBuffer::NoTransientBacking, which
+    means that, with Metal, rendering errors may occur if the depth-stencil
+    buffer is a QRhiRenderBuffer without the NoTransientBacking flag and the \a
+    drawCount is above the threshold.
+
     \note This function can only be called inside a render pass, meaning
     between a beginPass() and endPass() call.
 
     \since 6.12
+
+    \sa drawIndirect(), drawIndirectCount(), drawIndexedIndirectCount()
  */
 void QRhiCommandBuffer::drawIndexedIndirect(QRhiBuffer *indirectBuffer,
                                             quint32 indirectBufferOffset,
@@ -10885,16 +10927,32 @@ void QRhiCommandBuffer::drawIndexedIndirect(QRhiBuffer *indirectBuffer,
     sizeof(QRhiIndirectDrawCommand).
 
     Only available when \l QRhi::DrawIndirectCount is reported as supported.
-    On other backends this is a no-op and a warning is logged.
+    On other backends this is a no-op and a warning is logged. With Metal there
+    are additional requirements, see QRhi::DrawIndirectCount.
 
     \note The value in \a countBuffer is read as a \e signed 32-bit integer by
     OpenGL, unlike the other backends. Counts above \c INT_MAX are therefore
     not portable, and neither is relying on any particular behavior for a count
     that exceeds \a maxDrawCount, beyond the clamping described above.
 
+    \note With some backends, Metal in particular, the render pass is always
+    interrupted and restarted internally because the draw commands have to be
+    encoded on the GPU. Color attachment contents are preserved automatically,
+    but a QRhiRenderBuffer serving as the depth-stencil buffer only keeps its
+    contents if it was created with QRhiRenderBuffer::NoTransientBacking.
+
+    \note \a maxDrawCount is not a free upper bound. With Metal it sizes the
+    indirect command buffer that the draw commands are encoded into, and that
+    buffer is shared, grows on demand, and is never shrunk again for the
+    lifetime of the QRhi. It also determines how many encoding threads are
+    dispatched every time. Passing the capacity of \a indirectBuffer instead of
+    a realistic upper bound therefore has a real cost.
+
     \note Only valid inside a render pass.
 
     \since 6.13
+
+    \sa drawIndirect(), drawIndexedIndirect(), drawIndexedIndirectCount()
  */
 void QRhiCommandBuffer::drawIndirectCount(QRhiBuffer *indirectBuffer,
                                           quint32 indirectBufferOffset,
@@ -10923,9 +10981,14 @@ void QRhiCommandBuffer::drawIndirectCount(QRhiBuffer *indirectBuffer,
     how \a countBuffer, \a countBufferOffset and \a maxDrawCount are
     interpreted, are as described for drawIndirectCount().
 
+    \note The render pass interruption described for drawIndirectCount() applies
+    here as well.
+
     \note Only valid inside a render pass.
 
     \since 6.13
+
+    \sa drawIndirect(), drawIndexedIndirect(), drawIndirectCount()
  */
 void QRhiCommandBuffer::drawIndexedIndirectCount(QRhiBuffer *indirectBuffer,
                                                  quint32 indirectBufferOffset,
