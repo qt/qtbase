@@ -405,6 +405,7 @@ public:
 
     // A detach for holding an already shared copy, until calling function
     // is done using references to keys or values that might reference it.
+    [[nodiscard]]
     QMap referenceHoldingDetach()
     {
         if (!d) {
@@ -418,6 +419,7 @@ public:
     }
 
     // Specialized version of referenceHoldingDetach(), which will not copy key, if copying
+    [[nodiscard]]
     QMap referenceHoldingDetachExcept(const Key &key)
     {
         if (!d) {
