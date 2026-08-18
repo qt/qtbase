@@ -374,6 +374,20 @@ static int aligned(int v, int a)
     return (v + a - 1) & ~(a - 1);
 }
 
+// MoltenVK cannot be told apart from other Vulkan implementations based on
+// QRhi::driverInfo(), it reports the Metal device name as the device name, so
+// just assume Vulkan+Apple=MoltenVK for now, even though this will not
+// necessarily be true in the future (KosmicKrisp).
+static bool isMoltenVk(QRhi *rhi)
+{
+#ifdef Q_OS_DARWIN
+    return rhi->backend() == QRhi::Vulkan;
+#else
+    Q_UNUSED(rhi);
+    return false;
+#endif
+}
+
 void tst_QRhi::create()
 {
     // Merely attempting to create a QRhi should survive, with an error when
@@ -6102,6 +6116,10 @@ void tst_QRhi::indexedIndirectMultiDrawShaderDrawParams()
         QSKIP("Indirect multi-draw is not supported, skipping test");
     if (!rhi->isFeatureSupported(QRhi::ShaderDrawParameters))
         QSKIP("gl_DrawID is not supported, skipping test");
+    // the Vulkan implementation advertises VK_KHR_shader_draw_parameters, but
+    // the SPIR-V DrawIndex builtin cannot be translated to MSL
+    if (isMoltenVk(rhi))
+        QSKIP("gl_DrawID is not supported by MoltenVK, skipping test");
 
     static constexpr float quadVertices[] {
         -1.0f, -1.0f, 0.0f, // Bottom-left
