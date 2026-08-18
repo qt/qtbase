@@ -377,6 +377,12 @@ struct QMetalCommandBufferData
     QRhiBatchedBindings<NSUInteger> currentVertexInputOffsets;
     id<MTLDepthStencilState> currentDepthStencilState;
     QMetalShaderResourceBindingsData currentShaderResourceBindingState;
+    // Intended final store actions for the attachments whose store action is
+    // deferred. MTLStoreActionUnknown for depth and stencil means not deferred.
+    // See beginPass().
+    QVarLengthArray<std::pair<uint, MTLStoreAction>, 4> deferredColorStoreActions;
+    MTLStoreAction deferredDepthStoreAction;
+    MTLStoreAction deferredStencilStoreAction;
 };
 
 struct QMetalRenderTargetData
@@ -2074,13 +2080,66 @@ void QRhiMetal::setShadingRate(QRhiCommandBuffer *cb, const QSize &coarsePixelSi
     Q_UNUSED(coarsePixelSize);
 }
 
-static id<MTLComputeCommandEncoder>
-tempComputeEncoder(QMetalCommandBuffer *cbD, id<MTLComputeCommandEncoder> maybeComputeEncoder)
+static QMetalRenderTargetData *currentRenderTargetData(QMetalCommandBuffer *cbD)
 {
-    if (cbD->d->currentRenderPassEncoder) {
-        [cbD->d->currentRenderPassEncoder endEncoding];
-        cbD->d->currentRenderPassEncoder = nil;
+    switch (cbD->currentTarget->resourceType()) {
+    case QRhiResource::SwapChainRenderTarget:
+        return QRHI_RES(QMetalSwapChainRenderTarget, cbD->currentTarget)->d;
+    case QRhiResource::TextureRenderTarget:
+        return QRHI_RES(QMetalTextureRenderTarget, cbD->currentTarget)->d;
+    default:
+        return nullptr;
     }
+}
+
+// Memoryless attachments only exist for the duration of a single encoder, there
+// is nowhere to store them to.
+static inline bool canStoreAttachment(id<MTLTexture> tex)
+{
+    return tex && tex.storageMode != MTLStorageModeMemoryless;
+}
+
+// Store actions are deferred (MTLStoreActionUnknown) for attachments that have
+// a resolve texture, so they have to be finalized before the encoder ends.
+// Store actions cannot be mutated otherwise, and for a resolve attachment the
+// only legal choices are the two resolving ones.
+void QRhiMetal::finalizeDeferredStoreActions(QMetalCommandBuffer *cbD, bool passIsEnding)
+{
+    for (const auto &[index, finalAction] : std::as_const(cbD->d->deferredColorStoreActions)) {
+        // Also store, not just resolve, when the pass continues on a new
+        // encoder afterwards: the multisample contents are needed there.
+        const MTLStoreAction action = passIsEnding ? finalAction
+                                                   : MTLStoreActionStoreAndMultisampleResolve;
+        [cbD->d->currentRenderPassEncoder setColorStoreAction: action atIndex: index];
+    }
+
+    if (cbD->d->deferredDepthStoreAction != MTLStoreActionUnknown) {
+        const MTLStoreAction action = passIsEnding ? cbD->d->deferredDepthStoreAction
+                                                   : MTLStoreActionStoreAndMultisampleResolve;
+        [cbD->d->currentRenderPassEncoder setDepthStoreAction: action];
+    }
+    if (cbD->d->deferredStencilStoreAction != MTLStoreActionUnknown) {
+        const MTLStoreAction action = passIsEnding ? cbD->d->deferredStencilStoreAction
+                                                   : MTLStoreActionStoreAndMultisampleResolve;
+        [cbD->d->currentRenderPassEncoder setStencilStoreAction: action];
+    }
+}
+
+// Ends the render command encoder such that the pass can be continued on a new
+// encoder afterwards.
+void QRhiMetal::interruptRenderPass(QMetalCommandBuffer *cbD)
+{
+    finalizeDeferredStoreActions(cbD, false);
+    [cbD->d->currentRenderPassEncoder endEncoding];
+    cbD->d->currentRenderPassEncoder = nil;
+}
+
+static id<MTLComputeCommandEncoder>
+tempComputeEncoder(QRhiMetal *rhiD, QMetalCommandBuffer *cbD,
+                   id<MTLComputeCommandEncoder> maybeComputeEncoder)
+{
+    if (cbD->d->currentRenderPassEncoder)
+        rhiD->interruptRenderPass(cbD);
 
     if (!maybeComputeEncoder)
         maybeComputeEncoder = [cbD->d->cb computeCommandEncoder];
@@ -2096,19 +2155,7 @@ static void endTempComputeEncoding(QRhiMetal *rhiD, QMetalCommandBuffer *cbD,
         computeEncoder = nil;
     }
 
-    QMetalRenderTargetData * rtD = nullptr;
-
-    switch (cbD->currentTarget->resourceType()) {
-    case QRhiResource::SwapChainRenderTarget:
-        rtD = QRHI_RES(QMetalSwapChainRenderTarget, cbD->currentTarget)->d;
-        break;
-    case QRhiResource::TextureRenderTarget:
-        rtD = QRHI_RES(QMetalTextureRenderTarget, cbD->currentTarget)->d;
-        break;
-    default:
-        break;
-    }
-
+    QMetalRenderTargetData *rtD = currentRenderTargetData(cbD);
     Q_ASSERT(rtD);
 
     QVarLengthArray<MTLLoadAction, 4> oldColorLoad;
@@ -2195,7 +2242,7 @@ void QRhiMetal::tessellatedDraw(const TessDrawArgs &args)
     QMetalBuffer *tescFactorBuf = nullptr;
     QMetalBuffer *tescParamsBuf = nullptr;
     id<MTLComputeCommandEncoder> vertTescComputeEncoder
-            = tempComputeEncoder(cbD, cbD->d->tessellationComputeEncoder);
+            = tempComputeEncoder(this, cbD, cbD->d->tessellationComputeEncoder);
     cbD->d->tessellationComputeEncoder = vertTescComputeEncoder;
 
     // Step 1: vertex shader (as compute)
@@ -2627,8 +2674,7 @@ void QRhiMetal::drawIndexedIndirect(QRhiCommandBuffer *cb, QRhiBuffer *indirectB
             const QRhiCommandBuffer::IndexFormat savedIndexFormat = cbD->currentIndexFormat;
 
             // End the current render encoder to make room for the compute pass.
-            [cbD->d->currentRenderPassEncoder endEncoding];
-            cbD->d->currentRenderPassEncoder = nil;
+            interruptRenderPass(cbD);
 
             // Dispatch compute kernel to encode draw commands into the ICB.
             id<MTLComputeCommandEncoder> computeEncoder;
@@ -3533,14 +3579,22 @@ void QRhiMetal::beginPass(QRhiCommandBuffer *cb,
         break;
     }
 
+    cbD->d->deferredColorStoreActions.clear();
+    cbD->d->deferredDepthStoreAction = MTLStoreActionUnknown;
+    cbD->d->deferredStencilStoreAction = MTLStoreActionUnknown;
     for (uint i = 0; i < uint(rtD->colorAttCount); ++i) {
         cbD->d->currentPassRpDesc.colorAttachments[i].texture = rtD->fb.colorAtt[i].tex;
         cbD->d->currentPassRpDesc.colorAttachments[i].slice = NSUInteger(rtD->fb.colorAtt[i].arrayLayer);
         cbD->d->currentPassRpDesc.colorAttachments[i].depthPlane = NSUInteger(rtD->fb.colorAtt[i].slice);
         cbD->d->currentPassRpDesc.colorAttachments[i].level = NSUInteger(rtD->fb.colorAtt[i].level);
         if (rtD->fb.colorAtt[i].resolveTex) {
-            cbD->d->currentPassRpDesc.colorAttachments[i].storeAction = rtD->fb.preserveColor ? MTLStoreActionStoreAndMultisampleResolve
-                                                                                              : MTLStoreActionMultisampleResolve;
+            const MTLStoreAction storeAction = rtD->fb.preserveColor ? MTLStoreActionStoreAndMultisampleResolve
+                                                                     : MTLStoreActionMultisampleResolve;
+            // Defer, so that the multisample contents can be kept if the pass
+            // ends up being interrupted. finalizeDeferredStoreActions() sets the
+            // real action before the encoder ends.
+            cbD->d->currentPassRpDesc.colorAttachments[i].storeAction = MTLStoreActionUnknown;
+            cbD->d->deferredColorStoreActions.append({ i, storeAction });
             cbD->d->currentPassRpDesc.colorAttachments[i].resolveTexture = rtD->fb.colorAtt[i].resolveTex;
             cbD->d->currentPassRpDesc.colorAttachments[i].resolveSlice = NSUInteger(rtD->fb.colorAtt[i].resolveLayer);
             cbD->d->currentPassRpDesc.colorAttachments[i].resolveLevel = NSUInteger(rtD->fb.colorAtt[i].resolveLevel);
@@ -3554,12 +3608,25 @@ void QRhiMetal::beginPass(QRhiCommandBuffer *cb,
         if (rtD->fb.depthNeedsStore) // Depth/Stencil is set to DontCare by default, override if  needed
             cbD->d->currentPassRpDesc.depthAttachment.storeAction = MTLStoreActionStore;
         if (rtD->fb.dsResolveTex) {
-            cbD->d->currentPassRpDesc.depthAttachment.storeAction = rtD->fb.depthNeedsStore ? MTLStoreActionStoreAndMultisampleResolve
-                                                                                            : MTLStoreActionMultisampleResolve;
+            const MTLStoreAction dsStoreAction = rtD->fb.depthNeedsStore ? MTLStoreActionStoreAndMultisampleResolve
+                                                                         : MTLStoreActionMultisampleResolve;
+            // Deferred for the same reason as the color attachments above, but
+            // only when there is something to defer to: a memoryless
+            // depth-stencil buffer, which is what a QRhiRenderBuffer is on Apple
+            // GPUs, cannot be stored at all, and rejects the store-and-resolve
+            // action that an interruption would need.
+            const bool deferrable = canStoreAttachment(rtD->fb.dsTex);
+            cbD->d->currentPassRpDesc.depthAttachment.storeAction = deferrable ? MTLStoreActionUnknown
+                                                                              : dsStoreAction;
+            if (deferrable)
+                cbD->d->deferredDepthStoreAction = dsStoreAction;
             cbD->d->currentPassRpDesc.depthAttachment.resolveTexture = rtD->fb.dsResolveTex;
             if (rtD->fb.hasStencil) {
                 cbD->d->currentPassRpDesc.stencilAttachment.resolveTexture = rtD->fb.dsResolveTex;
-                cbD->d->currentPassRpDesc.stencilAttachment.storeAction = cbD->d->currentPassRpDesc.depthAttachment.storeAction;
+                cbD->d->currentPassRpDesc.stencilAttachment.storeAction = deferrable ? MTLStoreActionUnknown
+                                                                                    : dsStoreAction;
+                if (deferrable)
+                    cbD->d->deferredStencilStoreAction = dsStoreAction;
             }
         }
     }
@@ -3577,6 +3644,7 @@ void QRhiMetal::endPass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resource
     QMetalCommandBuffer *cbD = QRHI_RES(QMetalCommandBuffer, cb);
     Q_ASSERT(cbD->recordingPass == QMetalCommandBuffer::RenderPass);
 
+    finalizeDeferredStoreActions(cbD, true);
     [cbD->d->currentRenderPassEncoder endEncoding];
 
     cbD->recordingPass = QMetalCommandBuffer::NoPass;

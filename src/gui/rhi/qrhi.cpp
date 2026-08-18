@@ -4296,6 +4296,19 @@ void QRhiBuffer::fullDynamicBufferUpdateForCurrentFrame(const void *data, quint3
     transient memory with some APIs. On some platforms this may mean the
     depth/stencil buffer uses no physical backing at all.
 
+    That transient nature has a consequence: the contents of a \l DepthStencil
+    renderbuffer are not guaranteed to survive if a backend has to interrupt and
+    restart a render pass internally. With Metal this happens when a draw call
+    is implemented via indirect command buffers, which is the case for a high
+    draw count
+    \l{QRhiCommandBuffer::drawIndexedIndirect()}{drawIndexedIndirect()}, and
+    also when tessellation is used. Draws recorded after such a call then
+    depth-test against a depth buffer that lost its contents. When this matters,
+    attach a depth or depth-stencil QRhiTexture with
+    \l{QRhiTextureRenderTargetDescription::setDepthTexture()}{setDepthTexture()}
+    instead of a renderbuffer: that is preserved across an interruption, unless
+    QRhiTextureRenderTarget::DoNotStoreDepthStencilContents is set.
+
     \l Color renderbuffers are useful since QRhi::MultisampleRenderBuffer may be
     supported even when QRhi::MultisampleTexture is not.
 
