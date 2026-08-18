@@ -1272,6 +1272,8 @@ void QEasingCurve::setOvershoot(qreal overshoot)
     be a valid easing curve.
     \a c1 and \a c2 are the control points used for drawing the curve.
     \a endPoint is the endpoint of the curve.
+
+    \sa fromCubicBezier()
  */
 void QEasingCurve::addCubicBezierSegment(const QPointF & c1, const QPointF & c2, const QPointF & endPoint)
 {
@@ -1492,7 +1494,7 @@ qreal QEasingCurve::valueForProgress(qreal progress) const
     \sa addCubicBezierSegment()
     \since 6.12
 */
-QEasingCurve QEasingCurve::cubicBezier(const QPointF &c1, const QPointF &c2)
+QEasingCurve QEasingCurve::fromCubicBezier(QPointF c1, QPointF c2)
 {
     QEasingCurve easingCurve(QEasingCurve::BezierSpline);
     easingCurve.addCubicBezierSegment(c1, c2, QPointF(1, 1));
