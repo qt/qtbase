@@ -40,9 +40,10 @@ enum LengthType {
 Q_GUI_EXPORT bool isDigit(ushort ch);
 Q_GUI_EXPORT qreal toDouble(QStringView *str);
 Q_GUI_EXPORT qreal toDouble(QStringView str, bool *ok = NULL);
-Q_GUI_EXPORT qreal parseLength(QStringView str, LengthType *type, bool *ok = NULL);
+Q_GUI_EXPORT qreal parseLength(QStringView str, LengthType *type, bool *ok = NULL,
+                               bool tiny12FeaturesOnly = false);
 Q_GUI_EXPORT qreal convertToPixels(qreal len, bool , LengthType type);
-Q_GUI_EXPORT std::optional<qreal> parseAngle(QStringView str);
+Q_GUI_EXPORT std::optional<qreal> parseAngle(QStringView str, bool tiny12FeaturesOnly = false);
 Q_GUI_EXPORT void parseNumbersArray(QStringView *str, QVarLengthArray<qreal, 8> &points,
                                     const char *pattern = nullptr);
 Q_GUI_EXPORT std::optional<QPainterPath> parsePath(QStringView dataStr, bool limitLength = true);

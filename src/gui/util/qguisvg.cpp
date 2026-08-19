@@ -148,9 +148,9 @@ qreal toDouble(QStringView str, bool *ok)
     return res;
 }
 
-qreal parseLength(QStringView str, LengthType *type, bool *ok)
+qreal parseLength(QStringView str, LengthType *type, bool *ok, bool tiny12FeaturesOnly)
 {
-    QStringView numStr = str.trimmed();
+    QStringView numStr = QGuiSvg::trimmed(str, tiny12FeaturesOnly);
 
     if (numStr.isEmpty()) {
         if (ok)
@@ -222,9 +222,9 @@ qreal convertToPixels(qreal len, bool , LengthType type)
 // Parses the angle from a string and convert it to degrees.
 // In CSS, units are not optional so if a non-zero value is defined,
 // without a unit it should be treated as invalid.
-std::optional<qreal> parseAngle(QStringView str)
+std::optional<qreal> parseAngle(QStringView str, bool tiny12FeaturesOnly)
 {
-    QStringView numStr = str.trimmed();
+    QStringView numStr = QGuiSvg::trimmed(str, tiny12FeaturesOnly);
 
     if (numStr.isEmpty())
         return std::nullopt;
