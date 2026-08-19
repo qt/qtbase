@@ -159,6 +159,7 @@ private slots:
     void filterRegularExpressionBinding();
 
     void filterChangeEmitsModelChangedSignals();
+    void filterChangeInProxyChainEmitsModelChangedSignals();
 
     void dataChangeRelevanceFlags();
 
