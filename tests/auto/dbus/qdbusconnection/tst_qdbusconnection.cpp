@@ -1370,6 +1370,39 @@ void tst_QDBusConnection::callVirtualObjectLocal()
     QVERIFY_HOOKCALLED();
 }
 
+#if QT_CONFIG(process)
+struct DisconnectingConnection : public QDBusConnection
+{
+    DisconnectingConnection() : QDBusConnection(QString()) {}
+    ~DisconnectingConnection() { disconnectFromBus(name()); }
+    Q_DISABLE_COPY_MOVE(DisconnectingConnection)
+
+    DisconnectingConnection &operator=(QDBusConnection &&newConnection)
+    {
+        Q_ASSERT(name().isEmpty());
+        QDBusConnection::operator=(std::move(newConnection));
+        return *this;
+    }
+};
+static void startStandaloneSessionBus(QProcess &daemon, DisconnectingConnection &con)
+{
+    daemon.start("dbus-daemon", QStringList() << "--session" << "--nofork" << "--print-address");
+    QVERIFY2(daemon.waitForReadyRead(2000),
+             "Daemon didn't print its address in time; error: \"" + daemon.errorString().toLocal8Bit() +
+             "\"; stderr:\n" + daemon.readAllStandardError());
+
+    QString address = QString::fromLocal8Bit(daemon.readAll().trimmed());
+    QString connName = QTest::currentTestFunction();
+    if (const char *tag = QTest::currentDataTag())
+        connName += tag;
+    con = QDBusConnection::connectToBus(address, connName);
+    QVERIFY2(con.isConnected(), (con.lastError().name() + ": " + con.lastError().message()).toLocal8Bit());
+
+    // confirm we're connected and we're alone in this bus
+    QCOMPARE(con.baseService(), QString(":1.0"));
+}
+#endif
+
 void tst_QDBusConnection::pendingCallWhenDisconnected()
 {
 #if !QT_CONFIG(process)
@@ -1379,17 +1412,10 @@ void tst_QDBusConnection::pendingCallWhenDisconnected()
         QSKIP("Test requires a QCoreApplication");
 
     QProcess daemon;
-    daemon.start("dbus-daemon", QStringList() << "--session" << "--nofork" << "--print-address");
-    QVERIFY2(daemon.waitForReadyRead(2000),
-             "Daemon didn't print its address in time; error: \"" + daemon.errorString().toLocal8Bit() +
-             "\"; stderr:\n" + daemon.readAllStandardError());
-
-    QString address = QString::fromLocal8Bit(daemon.readAll().trimmed());
-    QDBusConnection con = QDBusConnection::connectToBus(address, "disconnect");
-    QVERIFY2(con.isConnected(), (con.lastError().name() + ": " + con.lastError().message()).toLocal8Bit());
-
-    // confirm we're connected and we're alone in this bus
-    QCOMPARE(con.baseService(), QString(":1.0"));
+    DisconnectingConnection con;
+    startStandaloneSessionBus(daemon, con);
+    if (QTest::currentTestFailed())
+        return;
 
     // kill the bus
     daemon.terminate();
@@ -1404,6 +1430,34 @@ void tst_QDBusConnection::pendingCallWhenDisconnected()
     QVERIFY(reply.isFinished());
     QVERIFY(reply.isError());
     QCOMPARE(reply.error().type(), QDBusError::Disconnected);
+#endif
+}
+
+void tst_QDBusConnection::connectRelayWhenDisconnected()
+{
+#if !QT_CONFIG(process)
+    QSKIP("Test requires QProcess");
+#else
+    if (!QCoreApplication::instance())
+        QSKIP("Test requires a QCoreApplication");
+
+    QProcess daemon;
+    DisconnectingConnection con;
+    startStandaloneSessionBus(daemon, con);
+    if (QTest::currentTestFailed())
+        return;
+
+    // kill the bus
+    daemon.terminate();
+    daemon.waitForFinished();
+
+    // Attempt to connect a few things: this mustn't crash (QTBUG-149316).
+    // ### We do not get a false return.
+    QObject dummyReceiver;
+    QVERIFY(con.connect(QString(), QString(), "org.example.Interface", "SignalName",
+                        &dummyReceiver, SLOT(deleteLater())));
+    QVERIFY(con.connect("org.example.Service", "/path", "org.example.Interface", "SignalName",
+                        &dummyReceiver, SLOT(deleteLater())));
 #endif
 }
 

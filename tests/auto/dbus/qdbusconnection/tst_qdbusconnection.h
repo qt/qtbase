@@ -120,6 +120,7 @@ private slots:
     void callVirtualObject();
     void callVirtualObjectLocal();
     void pendingCallWhenDisconnected();
+    void connectRelayWhenDisconnected();
     void connectionLimit();
 
     void emptyServerAddress();
