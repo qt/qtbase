@@ -59,23 +59,23 @@ struct QMimeBinaryProvider::CacheFile
     bool isValid() const { return m_valid; }
     inline quint16 getUint16(int offset) const
     {
-        return qFromBigEndian(*reinterpret_cast<quint16 *>(data + offset));
+        return qFromBigEndian(*reinterpret_cast<quint16 *>(m_data + offset));
     }
     inline quint32 getUint32(int offset) const
     {
-        return qFromBigEndian(*reinterpret_cast<quint32 *>(data + offset));
+        return qFromBigEndian(*reinterpret_cast<quint32 *>(m_data + offset));
     }
     inline const char *getCharStar(int offset) const
     {
-        return reinterpret_cast<const char *>(data + offset);
+        return reinterpret_cast<const char *>(m_data + offset);
     }
     bool load();
     bool reload();
 
-    QFile file;
-    uchar *data;
+    QFile m_file;
+    uchar *m_data = nullptr;
     QDateTime m_mtime;
-    bool m_valid;
+    bool m_valid = false;
 };
 
 static inline void appendIfNew(QStringList &list, const QString &str)
@@ -116,7 +116,7 @@ QMimeBinaryProvider::QMimeBinaryProvider(QMimeDatabasePrivate *db, const QString
 }
 
 QMimeBinaryProvider::CacheFile::CacheFile(const QString &fileName)
-    : file(fileName), m_valid(false)
+    : m_file(fileName)
 {
     load();
 }
@@ -127,25 +127,25 @@ QMimeBinaryProvider::CacheFile::~CacheFile()
 
 bool QMimeBinaryProvider::CacheFile::load()
 {
-    if (!file.open(QIODevice::ReadOnly))
+    if (!m_file.open(QIODevice::ReadOnly))
         return false;
-    data = file.map(0, file.size());
-    if (data) {
+    m_data = m_file.map(0, m_file.size());
+    if (m_data) {
         const int major = getUint16(0);
         const int minor = getUint16(2);
         m_valid = (major == 1 && minor >= 1 && minor <= 2);
     }
-    m_mtime = QFileInfo(file).lastModified(QTimeZone::UTC);
+    m_mtime = QFileInfo(m_file).lastModified(QTimeZone::UTC);
     return m_valid;
 }
 
 bool QMimeBinaryProvider::CacheFile::reload()
 {
     m_valid = false;
-    if (file.isOpen()) {
-        file.close();
+    if (m_file.isOpen()) {
+        m_file.close();
     }
-    data = nullptr;
+    m_data = nullptr;
     return load();
 }
 
@@ -176,7 +176,7 @@ enum {
 
 bool QMimeBinaryProvider::checkCacheChanged()
 {
-    QFileInfo fileInfo(m_cacheFile->file);
+    QFileInfo fileInfo(m_cacheFile->m_file);
     if (fileInfo.lastModified(QTimeZone::UTC) > m_cacheFile->m_mtime) {
         // Deletion can't happen by just running update-mime-database.
         // But the user could use rm -rf :-)
