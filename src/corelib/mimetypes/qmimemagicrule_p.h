@@ -64,8 +64,8 @@ public:
     static Type type(const QByteArray &type);
     static QByteArray typeName(Type type);
 
-    static bool matchSubstring(const char *dataPtr, qsizetype dataSize, int rangeStart,
-                               int rangeLength, qsizetype valueLength, const char *valueData,
+    static bool matchSubstring(const char *dataPtr, qsizetype dataSize, quint64 rangeStart,
+                               quint64 rangeLength, quint64 valueLength, const char *valueData,
                                const char *mask);
 
 private:
