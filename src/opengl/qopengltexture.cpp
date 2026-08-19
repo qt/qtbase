@@ -665,6 +665,12 @@ static QOpenGLTexture::PixelFormat pixelFormatCompatibleWithInternalFormat(QOpen
     case QOpenGLTexture::S8:
         return QOpenGLTexture::Stencil;
 
+    case QOpenGLTexture::SRGB8:
+        return QOpenGLTexture::RGB;
+
+    case QOpenGLTexture::SRGB8_Alpha8:
+        return QOpenGLTexture::RGBA;
+
     case QOpenGLTexture::RGB_DXT1:
     case QOpenGLTexture::RGBA_DXT1:
     case QOpenGLTexture::RGBA_DXT3:
@@ -676,8 +682,6 @@ static QOpenGLTexture::PixelFormat pixelFormatCompatibleWithInternalFormat(QOpen
     case QOpenGLTexture::RGB_BP_UNSIGNED_FLOAT:
     case QOpenGLTexture::RGB_BP_SIGNED_FLOAT:
     case QOpenGLTexture::RGB_BP_UNorm:
-    case QOpenGLTexture::SRGB8:
-    case QOpenGLTexture::SRGB8_Alpha8:
     case QOpenGLTexture::SRGB_DXT1:
     case QOpenGLTexture::SRGB_Alpha_DXT1:
     case QOpenGLTexture::SRGB_Alpha_DXT3:
@@ -1007,6 +1011,11 @@ static bool isCompressedFormat(QOpenGLTexture::TextureFormat internalFormat)
     case QOpenGLTexture::D32FS8X24:
 
     case QOpenGLTexture::S8:
+
+    // GL_SRGB8 and GL_SRGB8_ALPHA8 are uncompressed, unlike the rest of
+    // the sRGB section of the enum.
+    case QOpenGLTexture::SRGB8:
+    case QOpenGLTexture::SRGB8_Alpha8:
         return false;
 
     case QOpenGLTexture::RGB_DXT1:
@@ -1020,8 +1029,6 @@ static bool isCompressedFormat(QOpenGLTexture::TextureFormat internalFormat)
     case QOpenGLTexture::RGB_BP_UNSIGNED_FLOAT:
     case QOpenGLTexture::RGB_BP_SIGNED_FLOAT:
     case QOpenGLTexture::RGB_BP_UNorm:
-    case QOpenGLTexture::SRGB8:
-    case QOpenGLTexture::SRGB8_Alpha8:
     case QOpenGLTexture::SRGB_DXT1:
     case QOpenGLTexture::SRGB_Alpha_DXT1:
     case QOpenGLTexture::SRGB_Alpha_DXT3:
