@@ -1,0 +1,14 @@
+{
+    "Id": "xsvg",
+    "Name": "XSVG",
+    "QDocModule": "qtsvg",
+    "QtUsage": "Used in the Qt GUI library.",
+    "Files": "qguisvg.cpp",
+
+    "Description": "Some code for arc handling is derived from code from the XSVG project.",
+    "License": "Historical Permission Notice and Disclaimer - sell variant",
+    "LicenseId": "HPND-sell-variant",
+    "Comment": "No relevant PURL or CPE set, because the dependency is a single file",
+    "LicenseFile": "LICENSE.XSVG.txt",
+    "Copyright": "Copyright 2002 USC/Information Sciences Institute"
+}
