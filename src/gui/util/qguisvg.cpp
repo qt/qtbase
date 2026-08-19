@@ -625,11 +625,21 @@ void pathArc(QPainterPath &path, qreal rx, qreal ry,
              int sweep_flag, qreal x, qreal y,
              qreal curx, qreal cury)
 {
+    // Check if the start point is equal to the end point.
+    if (QPointF(curx, cury) == QPointF(x, y))
+        return;
+
     const qreal Pr1 = rx * rx;
     const qreal Pr2 = ry * ry;
 
-    if (!Pr1 || !Pr2)
+    // Avoid nans and division by zero.
+    if (qFuzzyIsNull(Pr1) || qFuzzyIsNull(Pr2)) {
+        // https://www.w3.org/TR/SVG/paths.html#ArcOutOfRangeParameters says:
+        // "If either rx or ry is 0, then this arc is treated as a straight line
+        // segment (a "lineto") joining the endpoints."
+        path.lineTo(x, y);
         return;
+    }
 
     qreal sin_th, cos_th;
     qreal a00, a01, a10, a11;
