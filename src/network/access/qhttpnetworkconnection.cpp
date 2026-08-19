@@ -1102,28 +1102,29 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
     }
     case QHttpNetworkConnection::ConnectionTypeHTTP2Direct:
     case QHttpNetworkConnection::ConnectionTypeHTTP2: {
-        if (channels[0].h2RequestsToSend.isEmpty() && !channels[0].reply
+        auto &channel = channels[0];
+        if (channel.h2RequestsToSend.isEmpty() && !channel.reply
             && highPriorityQueue.isEmpty() && lowPriorityQueue.isEmpty()) {
             return;
         }
 
         if (networkLayerState == IPv4)
-            channels[0].networkLayerPreference = QAbstractSocket::IPv4Protocol;
+            channel.networkLayerPreference = QAbstractSocket::IPv4Protocol;
         else if (networkLayerState == IPv6)
-            channels[0].networkLayerPreference = QAbstractSocket::IPv6Protocol;
-        channels[0].ensureConnection();
-        if (auto *s = channels[0].socket; s
+            channel.networkLayerPreference = QAbstractSocket::IPv6Protocol;
+        channel.ensureConnection();
+        if (auto *s = channel.socket; s
             && QSocketAbstraction::socketState(s) == QAbstractSocket::ConnectedState
-            && !channels[0].pendingEncrypt) {
-            if (channels[0].h2RequestsToSend.size()) {
-                channels[0].sendRequest();
-            } else if (!channels[0].reply && !channels[0].switchedToHttp2) {
+            && !channel.pendingEncrypt) {
+            if (channel.h2RequestsToSend.size()) {
+                channel.sendRequest();
+            } else if (!channel.reply && !channel.switchedToHttp2) {
                 // This covers an edge-case where we're already connected and the "connected"
                 // signal was already sent, but we didn't have any request available at the time,
                 // so it was missed. As such we need to dequeue a request and send it now that we
                 // have one.
-                dequeueRequest(channels[0].socket);
-                channels[0].sendRequest();
+                dequeueRequest(channel.socket);
+                channel.sendRequest();
             }
         }
         break;
