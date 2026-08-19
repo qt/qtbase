@@ -103,15 +103,17 @@ public:
 
 private:
     struct CacheFile;
+    class RecordList;
 
-    int matchGlobList(QMimeGlobMatchResult &result, CacheFile *cacheFile, int offset,
-                      const QString &fileName);
+    quint32 matchGlobList(QMimeGlobMatchResult &result, CacheFile *cacheFile,
+                          const RecordList &globs, const QString &fileName);
     bool matchSuffixTree(QMimeGlobMatchResult &result, CacheFile *cacheFile, int numEntries,
                          int firstOffset, const QString &fileName, qsizetype charPos,
                          bool caseSensitiveCheck);
     bool matchMagicRule(CacheFile *cacheFile, int numMatchlets, int firstOffset,
                         const QByteArray &data);
-    QLatin1StringView iconForMime(CacheFile *cacheFile, int posListOffset, QStringView inputMime);
+    QLatin1StringView iconForMime(CacheFile *cacheFile, const RecordList &icons,
+                                  QStringView inputMime);
     void loadMimeTypeList();
     bool checkCacheChanged();
 
