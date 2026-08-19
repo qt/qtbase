@@ -100,7 +100,7 @@ private:
                             QPointer<QDockWidget> &d1, QPointer<QDockWidget> &d2,
                             QList<int> &path1, QList<int> &path2) const;
 
-#if defined(Q_OS_DARWIN) || defined(Q_OS_ANDROID) || defined(Q_OS_QNX)
+#if defined(Q_OS_DARWIN) || defined(Q_OS_ANDROID) || defined(Q_OS_QNX) || defined(Q_OS_HARMONY)
 #define qCreateFloatingTabs(mainWindow, centralWidget, d1, d2, path1, path2)\
     mainWindow = nullptr;\
     Q_UNUSED(path1);\
