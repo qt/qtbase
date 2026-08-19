@@ -107,10 +107,10 @@ private:
 
     quint32 matchGlobList(QMimeGlobMatchResult &result, CacheFile *cacheFile,
                           const RecordList &globs, const QString &fileName);
-    bool matchSuffixTree(QMimeGlobMatchResult &result, CacheFile *cacheFile, int numEntries,
-                         int firstOffset, const QString &fileName, qsizetype charPos,
+    bool matchSuffixTree(QMimeGlobMatchResult &result, CacheFile *cacheFile, quint32 numEntries,
+                         quint64 firstOffset, const QString &fileName, qsizetype charPos,
                          bool caseSensitiveCheck);
-    bool matchMagicRule(CacheFile *cacheFile, int numMatchlets, int firstOffset,
+    bool matchMagicRule(CacheFile *cacheFile, quint32 numMatchlets, quint64 firstOffset,
                         const QByteArray &data);
     QLatin1StringView iconForMime(CacheFile *cacheFile, const RecordList &icons,
                                   QStringView inputMime);
