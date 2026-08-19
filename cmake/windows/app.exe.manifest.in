@@ -13,9 +13,9 @@
        <ws2:longPathAware>true</ws2:longPathAware>
 @QT_WINDOWS_APP_SEGMENT_HEAP_ELEMENT@     </asmv3:windowsSettings>
    </asmv3:application>
-   <trustInfo xmlns="urn:schemas-microsoft-com:asm.v2">
+   <trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
      <security>
-       <requestedPrivileges xmlns="urn:schemas-microsoft-com:asm.v3">
+       <requestedPrivileges>
          <requestedExecutionLevel level="@QT_WINDOWS_APP_PROJECT_EXECUTION_LEVEL@" uiAccess="false" />
        </requestedPrivileges>
      </security>
