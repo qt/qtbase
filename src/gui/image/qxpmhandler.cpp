@@ -46,8 +46,6 @@ static quint64 xpmHash(char *str)
     return hashValue;
 }
 
-static const int xpmRgbTblSize = 657;
-
 static constexpr struct XPMRGBData {
     QRgb  value;
     const char name[21];
@@ -718,9 +716,10 @@ inline bool operator<(const XPMRGBData &data, const char *name)
 
 static inline std::optional<QRgb> qt_get_named_xpm_rgb(const char *name_no_space)
 {
-    const XPMRGBData *r = std::lower_bound(xpmRgbTbl, xpmRgbTbl + xpmRgbTblSize, name_no_space);
-    if ((r != xpmRgbTbl + xpmRgbTblSize) && !(name_no_space < *r))
-        return r->value;
+    const auto end = std::end(xpmRgbTbl);
+    const auto it = std::lower_bound(std::begin(xpmRgbTbl), end, name_no_space);
+    if (it != end && !(name_no_space < *it))
+        return it->value;
     return {};
 }
 

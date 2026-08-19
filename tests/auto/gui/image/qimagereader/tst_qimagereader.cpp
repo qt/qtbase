@@ -681,6 +681,7 @@ void tst_QImageReader::multiWordNamedColorXPM()
     QCOMPARE(image.pixel(0, 0), qRgb(102, 139, 139)); // pale turquoise 4
     QCOMPARE(image.pixel(0, 1), qRgb(250, 250, 210)); // light golden rod yellow
     QCOMPARE(image.pixel(0, 2), qRgb(255, 250, 205)); // lemon chiffon
+    QCOMPARE(image.pixel(0, 3), qRgb(  0,   0,   0)); // pale turquoise 5 (invalid color name)
 }
 
 namespace {
