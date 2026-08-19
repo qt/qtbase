@@ -2606,12 +2606,14 @@ QString QDBusConnectionPrivate::getNameOwnerNoCache(const QString &serviceName)
     msg << serviceName;
 
     QDBusPendingCallPrivate *pcall = sendWithReplyAsync(msg, nullptr, nullptr, nullptr);
-    if (thread() == QThread::currentThread()) {
-        // this function may be called in our own thread and
-        // QDBusPendingCallPrivate::waitForFinished() would deadlock there
-        q_dbus_pending_call_block(pcall->pending);
+    if (pcall->replyMessage.type() == QDBusMessage::InvalidMessage) {
+        if (thread() == QThread::currentThread()) {
+            // this function may be called in our own thread and
+            // QDBusPendingCallPrivate::waitForFinished() would deadlock there
+            q_dbus_pending_call_block(pcall->pending);
+        }
+        pcall->waitForFinished();
     }
-    pcall->waitForFinished();
     msg = pcall->replyMessage;
 
     if (!pcall->ref.deref())
