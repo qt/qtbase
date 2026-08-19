@@ -125,7 +125,10 @@ function(_qt_internal_finalize_windows_app target)
 
     target_sources("${target}" PRIVATE "${manifest_out}")
     if(MSVC)
-        target_link_options(${target} PRIVATE "/MANIFEST:NO")
+        # /MANIFEST:NO alone is not sufficient. On the non-incremental MSVC link path, CMake appends
+        # /MANIFEST:EMBED,ID=1 /MANIFESTINPUT:<manifest> after our flags, which re-enables manifest
+        # generation, so /MANIFESTUAC:NO is needed to suppress the linker's own trustInfo block.
+        target_link_options(${target} PRIVATE "/MANIFEST:NO" "/MANIFESTUAC:NO")
     endif()
 endfunction()
 
