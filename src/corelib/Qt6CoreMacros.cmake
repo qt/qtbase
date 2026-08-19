@@ -1923,9 +1923,9 @@ function(_qt_internal_generate_win32_rc_file_and_manifest target)
 
     set(mn_contents [=[<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
-<trustInfo xmlns="urn:schemas-microsoft-com:asm.v2">
+<trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
     <security>
-        <requestedPrivileges xmlns="urn:schemas-microsoft-com:asm.v3">
+        <requestedPrivileges>
             <requestedExecutionLevel level="asInvoker" uiAccess="false" />
         </requestedPrivileges>
     </security>
