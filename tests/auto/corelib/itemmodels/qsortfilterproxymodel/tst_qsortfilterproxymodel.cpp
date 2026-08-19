@@ -5700,6 +5700,69 @@ void tst_QSortFilterProxyModel::filterChangeEmitsModelChangedSignals()
     QCOMPARE(rowsRemovedSpy.count(), 1);
 }
 
+void tst_QSortFilterProxyModel::filterChangeInProxyChainEmitsModelChangedSignals() // QTBUG-135605
+{
+    QStringListModel model({"1", "2", "3", "4", "5"});
+
+    class FilterModel : public QSortFilterProxyModel
+    {
+        QString m_matchString;
+    public:
+        void setFilter(const QString &s)
+        {
+            if (m_matchString == s)
+                return;
+
+            beginFilterChange();
+            m_matchString = s;
+            endFilterChange();
+        }
+
+        bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const override
+        {
+            const auto index = sourceModel()->index(sourceRow, 0, sourceParent);
+            if (!index.isValid())
+                return false;
+
+            return index.data().value<QString>() == m_matchString;
+        }
+    };
+
+    FilterModel proxy;
+    // Reject all source data at the start
+    proxy.setFilter("X");
+    // Trigger an evaluation
+    proxy.sort(0, Qt::AscendingOrder);
+    proxy.setSourceModel(&model);
+
+    FilterModel chainedProxy;
+    chainedProxy.setFilter("3");
+    chainedProxy.setSourceModel(&proxy);
+
+    proxy.invalidate();
+
+    QSignalSpy rowsInsertedSpy(&proxy, &QSortFilterProxyModel::rowsInserted);
+    QSignalSpy rowsRemovedSpy(&proxy, &QSortFilterProxyModel::rowsRemoved);
+    QSignalSpy chainedRowsInsertedSpy(&chainedProxy, &QSortFilterProxyModel::rowsInserted);
+    QSignalSpy chainedRowsRemovedSpy(&chainedProxy, &QSortFilterProxyModel::rowsRemoved);
+
+    proxy.setFilter("3");
+    QCOMPARE(proxy.rowCount(), 1);
+    QCOMPARE(rowsInsertedSpy.count(), 1);
+    QCOMPARE(chainedProxy.rowCount(), 1);
+    QCOMPARE(chainedRowsInsertedSpy.count(), 1);
+    rowsInsertedSpy.clear();
+    chainedRowsInsertedSpy.clear();
+
+    proxy.invalidate();
+
+    proxy.setFilter("X");
+    QCOMPARE(proxy.rowCount(), 0);
+    QCOMPARE(rowsRemovedSpy.count(), 1);
+    QCOMPARE(chainedRowsRemovedSpy.count(), 1);
+    QCOMPARE(chainedProxy.rowCount(), 0);
+}
+
 class ChangeIgnoringFilterModel : public QSortFilterProxyModel
 {
     Q_OBJECT

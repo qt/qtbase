@@ -1833,6 +1833,11 @@ void QSortFilterProxyModelPrivate::_q_sourceRowsAboutToBeRemoved(
     const QModelIndex &source_parent, int start, int end)
 {
     itemsBeingRemoved = QRowsRemoval(source_parent, start, end);
+    //Force the creation of a mapping now, even if it's empty.
+    //Otherwise the removal isn't signaled when the mapping was cleared,
+    //e.g. by invalidate() in a chain of proxy models (QTBUG-135605).
+    if (can_create_mapping(source_parent))
+        create_mapping(source_parent);
     source_items_about_to_be_removed(source_parent, start, end,
                                      Direction::Rows);
 }
@@ -1925,6 +1930,11 @@ void QSortFilterProxyModelPrivate::_q_sourceColumnsInserted(
 void QSortFilterProxyModelPrivate::_q_sourceColumnsAboutToBeRemoved(
     const QModelIndex &source_parent, int start, int end)
 {
+    //Force the creation of a mapping now, even if it's empty.
+    //Otherwise the removal isn't signaled when the mapping was cleared,
+    //e.g. by invalidate() in a chain of proxy models (QTBUG-135605).
+    if (can_create_mapping(source_parent))
+        create_mapping(source_parent);
     source_items_about_to_be_removed(source_parent, start, end,
                                      Direction::Columns);
 }
