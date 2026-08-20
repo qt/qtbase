@@ -1,6 +1,8 @@
 // Copyright (C) 2026 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
+#include "hdc.h"
+
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qcommandlineparser.h>
 #include <QtCore/qdatetime.h>
@@ -33,39 +35,11 @@ static constexpr int EXIT_NOEXITCODE = 253;
 static constexpr int EXIT_CRASH = 252;
 static constexpr int EXIT_TIMEOUT = 251;
 
-// --device / QT_HARMONYOS_DEVICE, prepended as `-t <key>` to every hdc call.
-static QString g_hdcConnectKey;
-
 static QString shellSingleQuote(const QString &value)
 {
     QString escaped = value;
     escaped.replace(u"'"_s, uR"('\'')"_s);
     return u"'"_s + escaped + u"'"_s;
-}
-
-static QString runHdc(const QString &hdcPath, const QStringList &args,
-                      bool printOnFailure = false)
-{
-    QProcess proc;
-    QStringList allArgs;
-    if (!g_hdcConnectKey.isEmpty())
-        allArgs << u"-t"_s << g_hdcConnectKey;
-    allArgs += args;
-    proc.start(hdcPath, allArgs);
-    if (!proc.waitForStarted(5000)) {
-        if (printOnFailure)
-            fprintf(stderr, "harmonyostestrunner: failed to start hdc: %s\n",
-                    qPrintable(hdcPath));
-        return {};
-    }
-    proc.waitForFinished(30000);
-    if (printOnFailure) {
-        const QByteArray err = proc.readAllStandardError();
-        if (!err.isEmpty())
-            fprintf(stderr, "hdc %s stderr: %s\n", qPrintable(allArgs.join(u' ')),
-                    err.constData());
-    }
-    return QString::fromUtf8(proc.readAllStandardOutput());
 }
 
 #if QT_CONFIG(systemsemaphore)
@@ -133,14 +107,14 @@ static void sigHandler(int sig)
     g_interrupted.store(true);
 }
 
-static bool isProcessAlive(const QString &hdc, const QString &bundleName)
+static bool isProcessAlive(const Hdc &hdc, const QString &bundleName)
 {
-    return !runHdc(hdc, {u"shell"_s, u"pidof"_s, bundleName}).trimmed().isEmpty();
+    return !hdc.run({u"shell"_s, u"pidof"_s, bundleName}).trimmed().isEmpty();
 }
 
 // Without this, OHOS may deliver the new test's Want to the still-dying
 // previous process via onNewWant instead of creating a fresh one.
-static void waitForProcessDeath(const QString &hdc, const QString &bundleName,
+static void waitForProcessDeath(const Hdc &hdc, const QString &bundleName,
                                 int timeoutSecs = 15)
 {
     const int pollMs = 200;
@@ -156,7 +130,7 @@ static void waitForProcessDeath(const QString &hdc, const QString &bundleName,
             "force-stop wait — proceeding anyway\n", timeoutSecs);
 }
 
-static bool waitForProcessStart(const QString &hdc, const QString &bundleName,
+static bool waitForProcessStart(const Hdc &hdc, const QString &bundleName,
                                 const QString &shellExitCodePath, int timeoutSecs = 30)
 {
     const int pollMs = 250;
@@ -167,7 +141,7 @@ static bool waitForProcessStart(const QString &hdc, const QString &bundleName,
         if (isProcessAlive(hdc, bundleName))
             return true;
         // Fast test may have finished before pidof could see it.
-        const QString exitContent = runHdc(hdc, {u"shell"_s, u"cat"_s, shellExitCodePath});
+        const QString exitContent = hdc.run({u"shell"_s, u"cat"_s, shellExitCodePath});
         bool ok = false;
         exitContent.trimmed().toInt(&ok);
         if (ok)
@@ -177,7 +151,7 @@ static bool waitForProcessStart(const QString &hdc, const QString &bundleName,
     return false;
 }
 
-static bool waitForStdoutFile(const QString &hdc, const QString &shellStdoutPath,
+static bool waitForStdoutFile(const Hdc &hdc, const QString &shellStdoutPath,
                               int timeoutSecs = 10)
 {
     const int pollMs = 100;
@@ -185,7 +159,7 @@ static bool waitForStdoutFile(const QString &hdc, const QString &shellStdoutPath
     for (int i = 0; i < maxIterations; ++i) {
         if (g_interrupted.load())
             return false;
-        const QString out = runHdc(hdc, {u"shell"_s, u"cat"_s, shellStdoutPath});
+        const QString out = hdc.run({u"shell"_s, u"cat"_s, shellStdoutPath});
         if (!out.contains(u"No such file or directory"_s))
             return true;
         QThread::msleep(pollMs);
@@ -196,7 +170,7 @@ static bool waitForStdoutFile(const QString &hdc, const QString &shellStdoutPath
 // wc -c + tail -c +N runs device-side; both use plain read() syscalls (SELinux
 // permits, unlike inotify), and one persistent hdc connection avoids per-poll
 // reconnect overhead.
-static bool setupStdoutLogger(QProcess &stdoutLogger, const QString &hdc,
+static bool setupStdoutLogger(QProcess &stdoutLogger, const Hdc &hdc,
                               const QString &shellStdoutPath)
 {
     const QString loop =
@@ -209,11 +183,7 @@ static bool setupStdoutLogger(QProcess &stdoutLogger, const QString &hdc,
 
     // SeparateChannels so we can scan stdout for PASS/FAIL while forwarding it.
     stdoutLogger.setProcessChannelMode(QProcess::SeparateChannels);
-    QStringList args;
-    if (!g_hdcConnectKey.isEmpty())
-        args << u"-t"_s << g_hdcConnectKey;
-    args << u"shell"_s << loop;
-    stdoutLogger.start(hdc, args);
+    stdoutLogger.start(hdc.program(), hdc.arguments({u"shell"_s, loop}));
     return stdoutLogger.waitForStarted(5000);
 }
 
@@ -282,7 +252,6 @@ int main(int argc, char *argv[])
 
     parser.process(app);
 
-    g_hdcConnectKey = parser.value(deviceOpt);
 
     const QStringList positional = parser.positionalArguments();
     if (positional.isEmpty()) {
@@ -296,7 +265,7 @@ int main(int argc, char *argv[])
     const QStringList testArgs = positional.mid(1);
     const QString bundleName = parser.value(bundleNameOpt);
     const QString abilityName = parser.value(abilityNameOpt);
-    const QString hdc = parser.value(hdcOpt);
+    const Hdc hdc(parser.value(hdcOpt), parser.value(deviceOpt));
     const int timeoutSecs = parser.value(timeoutOpt).toInt();
     const int noProgressTimeoutSecs = parser.value(noProgressTimeoutOpt).toInt();
 
@@ -313,7 +282,7 @@ int main(int argc, char *argv[])
     const QString shellExitCodePath = shellBase + u"/qt_exitcode_"_s + runId + u".txt"_s;
 
     const QString bundleCheckOutput =
-        runHdc(hdc, {u"shell"_s, u"bm"_s, u"dump"_s, u"-n"_s, bundleName});
+        hdc.run({u"shell"_s, u"bm"_s, u"dump"_s, u"-n"_s, bundleName});
     if (bundleCheckOutput.contains(u"error"_s, Qt::CaseInsensitive)
         || bundleCheckOutput.trimmed().isEmpty()) {
         fprintf(stderr,
@@ -325,12 +294,12 @@ int main(int argc, char *argv[])
     }
 
 #if QT_CONFIG(systemsemaphore)
-    TestRunnerSystemSemaphore runnerLock(runnerLockKey(g_hdcConnectKey, bundleName));
+    TestRunnerSystemSemaphore runnerLock(runnerLockKey(hdc.connectKey(), bundleName));
     g_runnerLock = &runnerLock;
     runnerLock.acquire();
 #endif
 
-    runHdc(hdc, {u"shell"_s, u"aa"_s, u"force-stop"_s, bundleName});
+    hdc.run({u"shell"_s, u"aa"_s, u"force-stop"_s, bundleName});
     waitForProcessDeath(hdc, bundleName);
 
     // --ps for string want.parameters, --pb for boolean. Do NOT use -e: that
@@ -359,7 +328,7 @@ int main(int argc, char *argv[])
 
     // aa start prints errors (screen locked, ability not found, ...) to stdout.
     {
-        const QString aaOut = runHdc(hdc, aaStartArgs, /*printOnFailure=*/true);
+        const QString aaOut = hdc.run(aaStartArgs, /*printOnFailure=*/true);
         if (aaOut.contains(u"error"_s, Qt::CaseInsensitive)
             || aaOut.contains(u"failed"_s, Qt::CaseInsensitive)) {
             fprintf(stderr, "harmonyostestrunner: aa start: %s\n", qPrintable(aaOut.trimmed()));
@@ -416,7 +385,7 @@ int main(int argc, char *argv[])
         // Primary completion signal: exit-code file becomes parseable as int.
         {
             const QString exitContent =
-                runHdc(hdc, {u"shell"_s, u"cat"_s, shellExitCodePath});
+                hdc.run({u"shell"_s, u"cat"_s, shellExitCodePath});
             bool ok = false;
             const int code = exitContent.trimmed().toInt(&ok);
             if (ok) {
@@ -430,7 +399,7 @@ int main(int argc, char *argv[])
         // race where the process exits cleanly between checks.
         if (++aliveCheckCounter % 3 == 0 && !isProcessAlive(hdc, bundleName)) {
             const QString exitContent =
-                runHdc(hdc, {u"shell"_s, u"cat"_s, shellExitCodePath});
+                hdc.run({u"shell"_s, u"cat"_s, shellExitCodePath});
             bool ok = false;
             const int code = exitContent.trimmed().toInt(&ok);
             if (ok) {
@@ -454,7 +423,7 @@ int main(int argc, char *argv[])
                     "harmonyostestrunner: %s: no test case progress for %d seconds "
                     "— main thread likely deadlocked, force-stopping\n",
                     qPrintable(testLibName), noProgressTimeoutSecs);
-            runHdc(hdc, {u"shell"_s, u"aa"_s, u"force-stop"_s, bundleName});
+            hdc.run({u"shell"_s, u"aa"_s, u"force-stop"_s, bundleName});
             testExitCode = EXIT_CRASH;
             completed = true;
             break;
@@ -496,7 +465,7 @@ int main(int argc, char *argv[])
 
     if (!completed) {
         if (g_interrupted.load()) {
-            runHdc(hdc, {u"shell"_s, u"aa"_s, u"force-stop"_s, bundleName});
+            hdc.run({u"shell"_s, u"aa"_s, u"force-stop"_s, bundleName});
 #if QT_CONFIG(systemsemaphore)
             runnerLock.release();
 #endif
@@ -505,7 +474,7 @@ int main(int argc, char *argv[])
         fprintf(stderr,
                 "harmonyostestrunner: TIMEOUT — %s did not complete within %d seconds\n",
                 qPrintable(testLibName), timeoutSecs);
-        runHdc(hdc, {u"shell"_s, u"aa"_s, u"force-stop"_s, bundleName});
+        hdc.run({u"shell"_s, u"aa"_s, u"force-stop"_s, bundleName});
 #if QT_CONFIG(systemsemaphore)
         runnerLock.release();
 #endif
