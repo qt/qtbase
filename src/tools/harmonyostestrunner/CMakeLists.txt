@@ -11,6 +11,7 @@ qt_internal_add_tool(${target_name}
     TOOLS_TARGET Core
     SOURCES
         hdc.cpp hdc.h
+        shellhelpers.cpp shellhelpers.h
         main.cpp
     DEFINES
         QT_NO_CAST_FROM_ASCII
