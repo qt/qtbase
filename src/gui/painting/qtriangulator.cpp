@@ -21,7 +21,17 @@ QT_BEGIN_NAMESPACE
 
 //#define Q_TRIANGULATOR_DEBUG
 
+// We assume 21 bits for the absolute value of vertices
+#define QTRIANGULATOR_MAX (1 << 21)
 #define Q_FIXED_POINT_SCALE 32
+#define QTRIANGULATOR_FIXED_POINT_MAX ((qreal(QTRIANGULATOR_MAX - 1)) / qreal(Q_FIXED_POINT_SCALE))
+
+static inline int qToClampedFixedPoint(qreal c)
+{
+    int ret = qRound(std::clamp(c, -QTRIANGULATOR_FIXED_POINT_MAX, QTRIANGULATOR_FIXED_POINT_MAX) * Q_FIXED_POINT_SCALE);
+    Q_ASSERT(qAbs(ret) < QTRIANGULATOR_MAX);
+    return ret;
+}
 
 template<typename T>
 struct QVertexSet
@@ -743,8 +753,8 @@ template <typename T>
 QVertexSet<T> QTriangulator<T>::triangulate()
 {
     for (int i = 0; i < m_vertices.size(); ++i) {
-        Q_ASSERT(qAbs(m_vertices.at(i).x) < (1 << 21));
-        Q_ASSERT(qAbs(m_vertices.at(i).y) < (1 << 21));
+        Q_ASSERT(qAbs(m_vertices.at(i).x) < QTRIANGULATOR_MAX);
+        Q_ASSERT(qAbs(m_vertices.at(i).y) < QTRIANGULATOR_MAX);
     }
 
     if (!(m_hint & (QVectorPath::OddEvenFill | QVectorPath::WindingFill)))
@@ -773,8 +783,8 @@ template <typename T>
 QVertexSet<T> QTriangulator<T>::polyline()
 {
     for (int i = 0; i < m_vertices.size(); ++i) {
-        Q_ASSERT(qAbs(m_vertices.at(i).x) < (1 << 21));
-        Q_ASSERT(qAbs(m_vertices.at(i).y) < (1 << 21));
+        Q_ASSERT(qAbs(m_vertices.at(i).x) < QTRIANGULATOR_MAX);
+        Q_ASSERT(qAbs(m_vertices.at(i).y) < QTRIANGULATOR_MAX);
     }
 
     if (!(m_hint & (QVectorPath::OddEvenFill | QVectorPath::WindingFill)))
@@ -804,8 +814,8 @@ void QTriangulator<T>::initialize(const qreal *polygon, int count, uint hint, co
     for (int i = 0; i < count; ++i) {
         qreal x, y;
         matrix.map(polygon[2 * i + 0], polygon[2 * i + 1], &x, &y);
-        m_vertices.at(i).x = qRound(x * Q_FIXED_POINT_SCALE);
-        m_vertices.at(i).y = qRound(y * Q_FIXED_POINT_SCALE);
+        m_vertices.at(i).x = qToClampedFixedPoint(x);
+        m_vertices.at(i).y = qToClampedFixedPoint(y);
         m_indices[i] = i;
     }
     m_indices[count] = T(-1); //Q_TRIANGULATE_END_OF_POLYGON
@@ -832,8 +842,8 @@ void QTriangulator<T>::initialize(const QVectorPath &path, const QTransform &mat
                 m_vertices.resize(m_vertices.size() + 1);
                 qreal x, y;
                 matrix.map(p[0], p[1], &x, &y);
-                m_vertices.last().x = qRound(x * Q_FIXED_POINT_SCALE);
-                m_vertices.last().y = qRound(y * Q_FIXED_POINT_SCALE);
+                m_vertices.last().x = qToClampedFixedPoint(x);
+                m_vertices.last().y = qToClampedFixedPoint(y);
                 break;
             case QPainterPath::CurveToElement:
                 {
@@ -848,8 +858,8 @@ void QTriangulator<T>::initialize(const QVectorPath &path, const QTransform &mat
                     for (int j = 1; j < poly.size(); ++j) {
                         m_indices.push_back(T(m_vertices.size()));
                         m_vertices.resize(m_vertices.size() + 1);
-                        m_vertices.last().x = qRound(poly.at(j).x() * Q_FIXED_POINT_SCALE / lod);
-                        m_vertices.last().y = qRound(poly.at(j).y() * Q_FIXED_POINT_SCALE / lod);
+                        m_vertices.last().x = qToClampedFixedPoint(poly.at(j).x() / lod);
+                        m_vertices.last().y = qToClampedFixedPoint(poly.at(j).y() / lod);
                     }
                 }
                 i += 2;
@@ -867,8 +877,8 @@ void QTriangulator<T>::initialize(const QVectorPath &path, const QTransform &mat
             m_vertices.resize(m_vertices.size() + 1);
             qreal x, y;
             matrix.map(p[0], p[1], &x, &y);
-            m_vertices.last().x = qRound(x * Q_FIXED_POINT_SCALE);
-            m_vertices.last().y = qRound(y * Q_FIXED_POINT_SCALE);
+            m_vertices.last().x = qToClampedFixedPoint(x);
+            m_vertices.last().y = qToClampedFixedPoint(y);
         }
     }
     m_indices.push_back(T(-1)); // Q_TRIANGULATE_END_OF_POLYGON
