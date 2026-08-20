@@ -7,6 +7,11 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
+void forceStopBundle(const Hdc &hdc, const QString &bundleName)
+{
+    hdc.shell({ u"aa"_s, u"force-stop"_s, bundleName });
+}
+
 bool isProcessAlive(const Hdc &hdc, const QString &bundleName)
 {
     return !hdc.shell({u"pidof"_s, bundleName}).trimmed().isEmpty();
