@@ -21,6 +21,7 @@
 #include <atomic>
 #include <csignal>
 #include <cstdio>
+#include <memory>
 
 using namespace Qt::StringLiterals;
 
@@ -322,9 +323,9 @@ int main(int argc, char *argv[])
 
     waitForStdoutFile(hdc, shellStdoutPath);
 
-    QProcess stdoutLogger;
-    const bool hasStdoutLogger = setupStdoutLogger(stdoutLogger, hdc, shellStdoutPath);
-    if (!hasStdoutLogger) {
+    const std::unique_ptr<QProcess> stdoutLogger =
+        streamDeviceFileWhileAppRuns(hdc, shellStdoutPath, bundleName);
+    if (!stdoutLogger) {
         fprintf(stderr, "harmonyostestrunner: warning: failed to start stdout logger, "
                 "output may be delayed\n");
     }
@@ -344,8 +345,8 @@ int main(int argc, char *argv[])
     while (!g_interrupted.load()
            && elapsed.elapsed() < qint64(timeoutSecs) * 1000)
     {
-        if (hasStdoutLogger) {
-            const QByteArray chunk = stdoutLogger.readAllStandardOutput();
+        if (stdoutLogger) {
+            const QByteArray chunk = stdoutLogger->readAllStandardOutput();
             if (!chunk.isEmpty()) {
                 fwrite(chunk.constData(), 1, static_cast<size_t>(chunk.size()), stdout);
                 fflush(stdout);
@@ -412,53 +413,46 @@ int main(int argc, char *argv[])
             lastHeartbeatSecs = elapsedSecs;
         }
 
-        if (hasStdoutLogger)
-            stdoutLogger.waitForReadyRead(pollIntervalMs);
+        if (stdoutLogger)
+            stdoutLogger->waitForReadyRead(pollIntervalMs);
         else
             QThread::msleep(pollIntervalMs);
     }
 
-    if (hasStdoutLogger) {
-        if (stdoutLogger.state() != QProcess::NotRunning) {
+    const bool interrupted = g_interrupted.load();
+
+    if (!completed) {
+        if (!interrupted) {
+            fprintf(stderr,
+                    "harmonyostestrunner: TIMEOUT — %s did not complete within %d seconds\n",
+                    qPrintable(testLibName), timeoutSecs);
+        }
+        forceStopBundle(hdc, bundleName);
+    }
+
+    if (stdoutLogger) {
+        if (stdoutLogger->state() != QProcess::NotRunning) {
             // Drain bytes still in flight after the test finished — the 100 ms
             // device-side loop and hdc transport both add latency.
-            while (stdoutLogger.waitForReadyRead(200)) {
-                const QByteArray chunk = stdoutLogger.readAllStandardOutput();
+            while (stdoutLogger->waitForReadyRead(200)) {
+                const QByteArray chunk = stdoutLogger->readAllStandardOutput();
                 if (chunk.isEmpty())
                     break;
                 fwrite(chunk.constData(), 1, static_cast<size_t>(chunk.size()), stdout);
                 fflush(stdout);
             }
-            stdoutLogger.terminate();
-            stdoutLogger.waitForFinished(5000);
         }
-        const QByteArray finalChunk = stdoutLogger.readAllStandardOutput();
+        const QByteArray finalChunk = stdoutLogger->readAllStandardOutput();
         if (!finalChunk.isEmpty()) {
             fwrite(finalChunk.constData(), 1, static_cast<size_t>(finalChunk.size()), stdout);
             fflush(stdout);
         }
     }
 
-    if (!completed) {
-        if (g_interrupted.load()) {
-            forceStopBundle(hdc, bundleName);
-#if QT_CONFIG(systemsemaphore)
-            runnerLock.release();
-#endif
-            return EXIT_ERROR;
-        }
-        fprintf(stderr,
-                "harmonyostestrunner: TIMEOUT — %s did not complete within %d seconds\n",
-                qPrintable(testLibName), timeoutSecs);
-        forceStopBundle(hdc, bundleName);
-#if QT_CONFIG(systemsemaphore)
-        runnerLock.release();
-#endif
-        return EXIT_TIMEOUT;
-    }
-
 #if QT_CONFIG(systemsemaphore)
     runnerLock.release();
 #endif
-    return testExitCode;
+
+    return completed ? testExitCode
+        : interrupted ? EXIT_ERROR : EXIT_TIMEOUT;
 }
