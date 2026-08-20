@@ -249,6 +249,7 @@ macro(qt_internal_qtbase_build_repo)
         if(OHOS)
             include(src/corelib/Qt6HarmonyOSMacros.cmake)
             include(src/corelib/Qt6HarmonyOSPermissionHelpers.cmake)
+            include(src/corelib/Qt6HarmonyOSBlockingTestDialogHelpers.cmake)
         endif()
 
         # Needed when building for WebAssembly.
