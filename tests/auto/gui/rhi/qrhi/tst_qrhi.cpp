@@ -135,6 +135,8 @@ private slots:
     void renderToTextureSameSrbDifferentShaders();
     void renderToTextureScissorChange_data();
     void renderToTextureScissorChange();
+    void renderToTextureAllUniformTypes_data();
+    void renderToTextureAllUniformTypes();
     void renderToWindowSimple_data();
     void renderToWindowSimple();
     void continuousReadbackFromWindow_data();
@@ -4644,6 +4646,212 @@ void tst_QRhi::renderToTextureScissorChange()
     }
 
     rhi->endOffscreenFrame();
+}
+
+void tst_QRhi::renderToTextureAllUniformTypes_data()
+{
+    rhiTestData();
+}
+
+// covers the whole viewport when used with simple.vert
+static const float fullscreenTriangleVertices[] = {
+    -1.0f, -1.0f,
+    3.0f, -1.0f,
+    -1.0f, 3.0f
+};
+
+void tst_QRhi::renderToTextureAllUniformTypes()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QRhi *rhi = sharedRhi(impl, initParams);
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing rendering");
+
+    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi))
+        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
+
+    // Sets *result to 0 when all uniforms had the expected value, or to the
+    // 1-based index of the first failing check in the shader. Left untouched
+    // when something goes wrong before that.
+    // (there is no coverage for bool, bvec2, bvec3 and bvec4 because SPIR-V
+    // does not allow booleans in uniform blocks; such members come out of the
+    // shader conditioning pipeline as uint and uvecN)
+    auto runCase = [rhi, impl](const char *fragShaderName, const QByteArray &ubufData, int *result)
+    {
+        const QSize outputSize(64, 64);
+        std::unique_ptr<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGBA8, outputSize, 1,
+                                                             QRhiTexture::RenderTarget | QRhiTexture::UsedAsTransferSource));
+        QVERIFY(texture->create());
+
+        std::unique_ptr<QRhiTextureRenderTarget> rt(rhi->newTextureRenderTarget({ texture.get() }));
+        std::unique_ptr<QRhiRenderPassDescriptor> rpDesc(rt->newCompatibleRenderPassDescriptor());
+        rt->setRenderPassDescriptor(rpDesc.get());
+        QVERIFY(rt->create());
+
+        QRhiCommandBuffer *cb = nullptr;
+        QVERIFY(rhi->beginOffscreenFrame(&cb) == QRhi::FrameOpSuccess);
+        QVERIFY(cb);
+        OffscreenFrameGuard frameGuard(rhi);
+
+        QRhiResourceUpdateBatch *updates = rhi->nextResourceUpdateBatch();
+
+        std::unique_ptr<QRhiBuffer> vbuf(rhi->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer,
+                                                        sizeof(fullscreenTriangleVertices)));
+        QVERIFY(vbuf->create());
+        updates->uploadStaticBuffer(vbuf.get(), fullscreenTriangleVertices);
+
+        std::unique_ptr<QRhiBuffer> ubuf(rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer,
+                                                        ubufData.size()));
+        QVERIFY(ubuf->create());
+        updates->updateDynamicBuffer(ubuf.get(), 0, ubufData.size(), ubufData.constData());
+
+        std::unique_ptr<QRhiShaderResourceBindings> srb(rhi->newShaderResourceBindings());
+        srb->setBindings({
+            QRhiShaderResourceBinding::uniformBuffer(0, QRhiShaderResourceBinding::FragmentStage, ubuf.get())
+        });
+        QVERIFY(srb->create());
+
+        QShader vs = loadShader(":/data/simple.vert.qsb");
+        QVERIFY(vs.isValid());
+        QShader fs = loadShader(fragShaderName);
+        QVERIFY(fs.isValid());
+
+        std::unique_ptr<QRhiGraphicsPipeline> pipeline(rhi->newGraphicsPipeline());
+        pipeline->setShaderStages({ { QRhiShaderStage::Vertex, vs }, { QRhiShaderStage::Fragment, fs } });
+        QRhiVertexInputLayout inputLayout;
+        inputLayout.setBindings({ { 2 * sizeof(float) } });
+        inputLayout.setAttributes({ { 0, 0, QRhiVertexInputAttribute::Float2, 0 } });
+        pipeline->setVertexInputLayout(inputLayout);
+        pipeline->setShaderResourceBindings(srb.get());
+        pipeline->setRenderPassDescriptor(rpDesc.get());
+        QVERIFY(pipeline->create());
+
+        cb->beginPass(rt.get(), Qt::white, { 1.0f, 0 }, updates);
+        cb->setGraphicsPipeline(pipeline.get());
+        cb->setViewport({ 0, 0, float(outputSize.width()), float(outputSize.height()) });
+        cb->setShaderResources();
+        QRhiCommandBuffer::VertexInput vbindings(vbuf.get(), 0);
+        cb->setVertexInput(0, 1, &vbindings);
+        cb->draw(3);
+
+        QRhiReadbackResult readResult;
+        QImage image;
+        readResult.completed = [&readResult, &image] {
+            image = QImage(reinterpret_cast<const uchar *>(readResult.data.constData()),
+                           readResult.pixelSize.width(), readResult.pixelSize.height(),
+                           QImage::Format_RGBA8888);
+        };
+        QRhiResourceUpdateBatch *readbackBatch = rhi->nextResourceUpdateBatch();
+        readbackBatch->readBackTexture({ texture.get() }, &readResult);
+        cb->endPass(readbackBatch);
+
+        frameGuard.endFrame();
+
+        if (impl == QRhi::Null) {
+            *result = 0;
+            return;
+        }
+
+        QCOMPARE(image.size(), outputSize);
+        const QRgb c = image.pixel(outputSize.width() / 2, outputSize.height() / 2);
+        QCOMPARE(qGreen(c), 0);
+        QCOMPARE(qBlue(c), 0);
+        *result = qRed(c);
+    };
+
+    QByteArray ubufData;
+    float nextFloat = 1.5f;
+    qint32 nextInt = -1;
+    quint32 nextUint = 1;
+
+    auto putFloats = [&ubufData, &nextFloat](int offset, int count) {
+        for (int i = 0; i < count; ++i, nextFloat += 1.0f)
+            memcpy(ubufData.data() + offset + i * 4, &nextFloat, 4);
+    };
+    auto putInts = [&ubufData, &nextInt](int offset, int count) {
+        for (int i = 0; i < count; ++i, --nextInt)
+            memcpy(ubufData.data() + offset + i * 4, &nextInt, 4);
+    };
+    auto putUints = [&ubufData, &nextUint](int offset, int count) {
+        for (int i = 0; i < count; ++i, ++nextUint)
+            memcpy(ubufData.data() + offset + i * 4, &nextUint, 4);
+    };
+    // matrices are column-major with every column padded to 16 bytes
+    auto putMatrix = [&putFloats](int offset, int cols, int rows) {
+        for (int c = 0; c < cols; ++c)
+            putFloats(offset + c * 16, rows);
+    };
+    // elements of an array of scalars or vectors are padded to 16 bytes
+    auto putArray = [](auto put, int offset, int comps, int elemCount) {
+        for (int e = 0; e < elemCount; ++e)
+            put(offset + e * 16, comps);
+    };
+    auto putMatrixArray = [&putMatrix](int offset, int cols, int rows, int elemCount) {
+        for (int e = 0; e < elemCount; ++e)
+            putMatrix(offset + e * cols * 16, cols, rows);
+    };
+
+    ubufData = QByteArray(784, 0);
+    putFloats(0, 1);                    // float f
+    putFloats(8, 2);                    // vec2 v2
+    putFloats(16, 3);                   // vec3 v3
+    putFloats(32, 4);                   // vec4 v4
+    putMatrix(96, 2, 2);                // mat2 m2
+    putMatrix(128, 3, 3);               // mat3 m3
+    putMatrix(176, 4, 4);               // mat4 m4
+    putArray(putFloats, 240, 1, 2);     // float fArr[2]
+    putArray(putFloats, 272, 2, 2);     // vec2 v2Arr[2]
+    putArray(putFloats, 304, 3, 2);     // vec3 v3Arr[2]
+    putArray(putFloats, 336, 4, 2);     // vec4 v4Arr[2]
+    putMatrixArray(496, 2, 2, 2);       // mat2 m2Arr[2]
+    putMatrixArray(560, 3, 3, 2);       // mat3 m3Arr[2]
+    putMatrixArray(656, 4, 4, 2);       // mat4 m4Arr[2]
+    putInts(48, 1);                     // int i1
+    putInts(56, 2);                     // ivec2 i2
+    putInts(64, 3);                     // ivec3 i3
+    putInts(80, 4);                     // ivec4 i4
+    putArray(putInts, 368, 1, 2);       // int i1Arr[2]
+    putArray(putInts, 400, 2, 2);       // ivec2 i2Arr[2]
+    putArray(putInts, 432, 3, 2);       // ivec3 i3Arr[2]
+    putArray(putInts, 464, 4, 2);       // ivec4 i4Arr[2]
+
+    int failedCheck = -1;
+    runCase(":/data/uniformtypes.frag.qsb", ubufData, &failedCheck);
+    if (QTest::currentTestFailed())
+        return;
+    if (failedCheck != 0)
+        qWarning("Check %d in uniformtypes.frag failed", failedCheck);
+    QCOMPARE(failedCheck, 0);
+
+#ifdef TST_GL
+    if (impl == QRhi::OpenGLES2) {
+        rhi->makeThreadLocalNativeContextCurrent();
+        QOpenGLContext *ctx = QOpenGLContext::currentContext();
+        // uint and uvecN need GLSL 1.30 / 3.00 es and glUniform*ui()
+        if (!ctx || ctx->format().majorVersion() < 3)
+            QSKIP("Unsigned integer uniforms need at least OpenGL 3.0 or OpenGL ES 3.0, skipping the rest");
+    }
+#endif
+
+    ubufData = QByteArray(176, 0);
+    putUints(0, 1);                     // uint u1
+    putUints(8, 2);                     // uvec2 u2
+    putUints(16, 3);                    // uvec3 u3
+    putUints(32, 4);                    // uvec4 u4
+    putArray(putUints, 48, 1, 2);       // uint u1Arr[2]
+    putArray(putUints, 80, 2, 2);       // uvec2 u2Arr[2]
+    putArray(putUints, 112, 3, 2);      // uvec3 u3Arr[2]
+    putArray(putUints, 144, 4, 2);      // uvec4 u4Arr[2]
+
+    failedCheck = -1;
+    runCase(":/data/uniformtypes_uint.frag.qsb", ubufData, &failedCheck);
+    if (QTest::currentTestFailed())
+        return;
+    if (failedCheck != 0)
+        qWarning("Check %d in uniformtypes_uint.frag failed", failedCheck);
+    QCOMPARE(failedCheck, 0);
 }
 
 void tst_QRhi::renderToWindowSimple_data()
