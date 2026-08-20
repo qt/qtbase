@@ -33,12 +33,13 @@ function(qt6_generate_wayland_protocol_client_sources target)
     elseif(arg_PUBLIC_CODE)
         set(wayland_scanner_code_option "public-code")
     else()
-        __qt_internal_setup_policy(QTP0006 "6.12.0"
+        string(CONCAT policy_explanation
             "qt_generate_wayland_protocol_client_sources called without PRIVATE_CODE or PUBLIC_CODE. "
             "Defaulting to PUBLIC_CODE for backwards compatibility. Pass PRIVATE_CODE explicitly, "
             "or set qt_policy(SET QTP0006 NEW) to use PRIVATE_CODE by default. "
             "Check https://doc.qt.io/qt-6/qt-cmake-policy-qtp0006.html for policy details."
         )
+        __qt_internal_setup_policy(QTP0006 "6.12.0" "${policy_explanation}")
         qt6_policy(GET QTP0006 _qtp0006_value)
         if(_qtp0006_value STREQUAL "NEW")
             set(wayland_scanner_code_option "private-code")
