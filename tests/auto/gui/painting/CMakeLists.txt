@@ -18,6 +18,7 @@ add_subdirectory(qpen)
 add_subdirectory(qpaintengine)
 add_subdirectory(qtransform)
 add_subdirectory(qpolygon)
+add_subdirectory(qtriangulator)
 
 # QTBUG-87669
 if(NOT ANDROID)
