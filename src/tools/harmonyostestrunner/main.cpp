@@ -109,7 +109,7 @@ static void sigHandler(int sig)
 
 static bool isProcessAlive(const Hdc &hdc, const QString &bundleName)
 {
-    return !hdc.run({u"shell"_s, u"pidof"_s, bundleName}).trimmed().isEmpty();
+    return !hdc.shell({u"pidof"_s, bundleName}).trimmed().isEmpty();
 }
 
 // Without this, OHOS may deliver the new test's Want to the still-dying
@@ -141,7 +141,7 @@ static bool waitForProcessStart(const Hdc &hdc, const QString &bundleName,
         if (isProcessAlive(hdc, bundleName))
             return true;
         // Fast test may have finished before pidof could see it.
-        const QString exitContent = hdc.run({u"shell"_s, u"cat"_s, shellExitCodePath});
+        const QString exitContent = hdc.shell({u"cat"_s, shellExitCodePath});
         bool ok = false;
         exitContent.trimmed().toInt(&ok);
         if (ok)
@@ -159,7 +159,7 @@ static bool waitForStdoutFile(const Hdc &hdc, const QString &shellStdoutPath,
     for (int i = 0; i < maxIterations; ++i) {
         if (g_interrupted.load())
             return false;
-        const QString out = hdc.run({u"shell"_s, u"cat"_s, shellStdoutPath});
+        const QString out = hdc.shell({u"cat"_s, shellStdoutPath});
         if (!out.contains(u"No such file or directory"_s))
             return true;
         QThread::msleep(pollMs);
@@ -183,7 +183,7 @@ static bool setupStdoutLogger(QProcess &stdoutLogger, const Hdc &hdc,
 
     // SeparateChannels so we can scan stdout for PASS/FAIL while forwarding it.
     stdoutLogger.setProcessChannelMode(QProcess::SeparateChannels);
-    stdoutLogger.start(hdc.program(), hdc.arguments({u"shell"_s, loop}));
+    stdoutLogger.start(hdc.program(), hdc.shellArguments({loop}));
     return stdoutLogger.waitForStarted(5000);
 }
 
@@ -282,7 +282,7 @@ int main(int argc, char *argv[])
     const QString shellExitCodePath = shellBase + u"/qt_exitcode_"_s + runId + u".txt"_s;
 
     const QString bundleCheckOutput =
-        hdc.run({u"shell"_s, u"bm"_s, u"dump"_s, u"-n"_s, bundleName});
+        hdc.shell({u"bm"_s, u"dump"_s, u"-n"_s, bundleName});
     if (bundleCheckOutput.contains(u"error"_s, Qt::CaseInsensitive)
         || bundleCheckOutput.trimmed().isEmpty()) {
         fprintf(stderr,
@@ -299,13 +299,13 @@ int main(int argc, char *argv[])
     runnerLock.acquire();
 #endif
 
-    hdc.run({u"shell"_s, u"aa"_s, u"force-stop"_s, bundleName});
+    hdc.shell({u"aa"_s, u"force-stop"_s, bundleName});
     waitForProcessDeath(hdc, bundleName);
 
     // --ps for string want.parameters, --pb for boolean. Do NOT use -e: that
     // adds entities (no values) and makes QTest see an empty argv[1].
-    QStringList aaStartArgs = {
-        u"shell"_s, u"aa"_s, u"start"_s,
+    QStringList aaStartCommand = {
+        u"aa"_s, u"start"_s,
         u"-b"_s, bundleName,
         u"-a"_s, abilityName,
         u"--ps"_s, u"io.qt.appSharedLibNameOverride"_s, testLibName,
@@ -318,17 +318,17 @@ int main(int argc, char *argv[])
         u"--pb"_s, u"io.qt.useDefaultUiAbilityInstanceInQt"_s, u"false"_s,
     };
 
-    aaStartArgs << u"--pb"_s << u"io.qt.watchdogEnabled"_s << u"false"_s;
+    aaStartCommand << u"--pb"_s << u"io.qt.watchdogEnabled"_s << u"false"_s;
 
     if (!testArgs.isEmpty()) {
         const QString json = QString::fromUtf8(
             QJsonDocument(QJsonArray::fromStringList(testArgs)).toJson(QJsonDocument::Compact));
-        aaStartArgs += {u"--ps"_s, u"io.qt.appArgsJson"_s, shellSingleQuote(json)};
+        aaStartCommand += {u"--ps"_s, u"io.qt.appArgsJson"_s, shellSingleQuote(json)};
     }
 
     // aa start prints errors (screen locked, ability not found, ...) to stdout.
     {
-        const QString aaOut = hdc.run(aaStartArgs, /*printOnFailure=*/true);
+        const QString aaOut = hdc.shell(aaStartCommand, /*printOnFailure=*/true);
         if (aaOut.contains(u"error"_s, Qt::CaseInsensitive)
             || aaOut.contains(u"failed"_s, Qt::CaseInsensitive)) {
             fprintf(stderr, "harmonyostestrunner: aa start: %s\n", qPrintable(aaOut.trimmed()));
@@ -385,7 +385,7 @@ int main(int argc, char *argv[])
         // Primary completion signal: exit-code file becomes parseable as int.
         {
             const QString exitContent =
-                hdc.run({u"shell"_s, u"cat"_s, shellExitCodePath});
+                hdc.shell({u"cat"_s, shellExitCodePath});
             bool ok = false;
             const int code = exitContent.trimmed().toInt(&ok);
             if (ok) {
@@ -399,7 +399,7 @@ int main(int argc, char *argv[])
         // race where the process exits cleanly between checks.
         if (++aliveCheckCounter % 3 == 0 && !isProcessAlive(hdc, bundleName)) {
             const QString exitContent =
-                hdc.run({u"shell"_s, u"cat"_s, shellExitCodePath});
+                hdc.shell({u"cat"_s, shellExitCodePath});
             bool ok = false;
             const int code = exitContent.trimmed().toInt(&ok);
             if (ok) {
@@ -423,7 +423,7 @@ int main(int argc, char *argv[])
                     "harmonyostestrunner: %s: no test case progress for %d seconds "
                     "— main thread likely deadlocked, force-stopping\n",
                     qPrintable(testLibName), noProgressTimeoutSecs);
-            hdc.run({u"shell"_s, u"aa"_s, u"force-stop"_s, bundleName});
+            hdc.shell({u"aa"_s, u"force-stop"_s, bundleName});
             testExitCode = EXIT_CRASH;
             completed = true;
             break;
@@ -465,7 +465,7 @@ int main(int argc, char *argv[])
 
     if (!completed) {
         if (g_interrupted.load()) {
-            hdc.run({u"shell"_s, u"aa"_s, u"force-stop"_s, bundleName});
+            hdc.shell({u"aa"_s, u"force-stop"_s, bundleName});
 #if QT_CONFIG(systemsemaphore)
             runnerLock.release();
 #endif
@@ -474,7 +474,7 @@ int main(int argc, char *argv[])
         fprintf(stderr,
                 "harmonyostestrunner: TIMEOUT — %s did not complete within %d seconds\n",
                 qPrintable(testLibName), timeoutSecs);
-        hdc.run({u"shell"_s, u"aa"_s, u"force-stop"_s, bundleName});
+        hdc.shell({u"aa"_s, u"force-stop"_s, bundleName});
 #if QT_CONFIG(systemsemaphore)
         runnerLock.release();
 #endif
