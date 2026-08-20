@@ -17,6 +17,9 @@ function(_qt_internal_harmonyos_test_runner_arguments out_test_runner out_runner
     set(runner "${host_bin_dir}/harmonyostestrunner")
     set(runner_args "--bundle-name" "org.qtproject.autotests")
 
+    _qt_internal_harmonyos_test_bundle_settings_file(test_bundle_settings)
+    list(APPEND runner_args "--test-config" "${test_bundle_settings}")
+
     if(DEFINED HARMONYOS_HDC)
         list(APPEND runner_args "--hdc" "${HARMONYOS_HDC}")
     endif()

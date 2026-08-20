@@ -25,6 +25,7 @@ if(ANDROID)
 endif()
 if(OHOS)
     set(corelib_extra_cmake_files
+        "${CMAKE_CURRENT_SOURCE_DIR}/${QT_CMAKE_EXPORT_NAMESPACE}HarmonyOSBlockingTestDialogHelpers.cmake"
         "${CMAKE_CURRENT_SOURCE_DIR}/${QT_CMAKE_EXPORT_NAMESPACE}HarmonyOSMacros.cmake"
         "${CMAKE_CURRENT_SOURCE_DIR}/${QT_CMAKE_EXPORT_NAMESPACE}HarmonyOSPermissionHelpers.cmake"
     )
