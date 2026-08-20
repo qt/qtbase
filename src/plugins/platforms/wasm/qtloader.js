@@ -131,6 +131,27 @@ async function qtLoad(config)
         return response.json();
     }
     const filesToPreload = (await Promise.all(config.qt.preload.map(preloadFetchHelper))).flat();
+
+    // Side modules must be instantiated identically on every thread. Emscripten's
+    // preload plugin instantiates each preloaded .so on the calling thread only,
+    // which leaves pthread workers with a shorter function table, so any cross
+    // thread indirect call traps with "table index is out of bounds". Route the
+    // shared objects through dynamicLibraries instead, which every thread loads
+    // at startup and which workers take from the main thread's compiled modules,
+    // and keep the plain files in the filesystem so plugin metadata scans still
+    // find them.
+    const preloadedSharedObjects = new Map();
+    for (const file of filesToPreload) {
+        if (file.destination.endsWith(".so"))
+            preloadedSharedObjects.set(file.destination,
+                file.source.replace("$QTDIR", config.qt.qtdir));
+    }
+    if (preloadedSharedObjects.size > 0) {
+        config.noWasmDecoding = true;
+        config.dynamicLibraries =
+            [...preloadedSharedObjects.keys()].concat(config.dynamicLibraries ?? []);
+    }
+
     const qtPreRun = (instance) => {
         // Copy qt.environment to instance.ENV
         throwIfEnvUsedButNotExported(instance, config);
@@ -188,6 +209,12 @@ async function qtLoad(config)
     }
 
     config.locateFile ??= (filename, prefix) => {
+        // Preloaded shared objects are named by their in memory destination, map
+        // them back to the url they are served from.
+        const preloadSource = preloadedSharedObjects.get(filename);
+        if (preloadSource)
+            return (prefix ?? '') + preloadSource;
+
         // dynamic linking: locate Qt libraries at qtdir location
         // wasmdeployqt relies on this behavior, update both in case of change
         if (filename.startsWith('libQt6'))
