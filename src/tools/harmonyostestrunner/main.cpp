@@ -1,6 +1,7 @@
 // Copyright (C) 2026 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
+#include "blockingtestdialogs.h"
 #include "hdc.h"
 #include "shellhelpers.h"
 
@@ -19,11 +20,13 @@
 #endif
 
 #include <atomic>
+#include <chrono>
 #include <csignal>
 #include <cstdio>
 #include <memory>
 
 using namespace Qt::StringLiterals;
+using namespace std::chrono_literals;
 
 // HarmonyOS sandbox: the app's writable /data/storage/el2/base/files/ maps to
 // /data/app/el2/100/base/<bundleName>/files/ in the hdc shell namespace, which
@@ -43,6 +46,10 @@ static QString shellSingleQuote(const QString &value)
     escaped.replace(u"'"_s, uR"('\'')"_s);
     return u"'"_s + escaped + u"'"_s;
 }
+
+static constexpr auto quietBeforeDialogCheck = 3s;
+static constexpr auto quietBeforeDialogCheckWhileStarting = 1s;
+static constexpr auto dialogsExpectedWhileStarting = 10s;
 
 #if QT_CONFIG(systemsemaphore)
 struct TestRunnerSystemSemaphore
@@ -164,6 +171,25 @@ static bool waitForStdoutFile(const Hdc &hdc, const QString &shellStdoutPath,
     return false;
 }
 
+static void answerBlockingDialogsIfStalled(BlockingTestDialogs &blockingTestDialogs,
+    const QElapsedTimer &elapsed, std::chrono::nanoseconds lastOutputAt)
+{
+    static std::chrono::nanoseconds lastDialogCheckAt {};
+
+    if (blockingTestDialogs.isEmpty())
+        return;
+
+    const std::chrono::nanoseconds now = elapsed.durationElapsed();
+    const auto quietRequired = now < dialogsExpectedWhileStarting
+        ? quietBeforeDialogCheckWhileStarting
+        : quietBeforeDialogCheck;
+    if (now - lastOutputAt < quietRequired || now - lastDialogCheckAt < quietRequired)
+        return;
+
+    blockingTestDialogs.answerVisibleDialog();
+    lastDialogCheckAt = now;
+}
+
 int main(int argc, char *argv[])
 {
     std::signal(SIGINT,  sigHandler);
@@ -226,6 +252,14 @@ int main(int argc, char *argv[])
         u"key"_s,
         qEnvironmentVariable("QT_HARMONYOS_DEVICE"));
     parser.addOption(deviceOpt);
+
+    QCommandLineOption testConfigOpt(
+        u"test-config"_s,
+        u"Generated test bundle deployment settings, read for the system dialogs the runner has "
+        u"to answer (env: QT_HARMONYOS_TEST_CONFIG)"_s,
+        u"path"_s,
+        qEnvironmentVariable("QT_HARMONYOS_TEST_CONFIG"));
+    parser.addOption(testConfigOpt);
 
     parser.process(app);
 
@@ -341,6 +375,8 @@ int main(int argc, char *argv[])
     int aliveCheckCounter = 0;
     qint64 lastTestProgressAt = -1;
     qint64 lastHeartbeatSecs = 0;
+    BlockingTestDialogs blockingTestDialogs(parser.value(testConfigOpt), hdc);
+    std::chrono::nanoseconds lastOutputAt {};
 
     while (!g_interrupted.load()
            && elapsed.elapsed() < qint64(timeoutSecs) * 1000)
@@ -353,6 +389,7 @@ int main(int argc, char *argv[])
                 // Markers match QPlainTestLogger output in qtestlog.cpp. If
                 // QTest's format ever changes, the no-progress watchdog silently
                 // stops firing — hung tests only trip the overall timeout.
+                lastOutputAt = elapsed.durationElapsed();
                 if (chunk.contains("PASS   :") || chunk.contains("FAIL!  :")
                     || chunk.contains("Totals:"))
                     lastTestProgressAt = elapsed.elapsed();
@@ -371,6 +408,8 @@ int main(int argc, char *argv[])
                 break;
             }
         }
+
+        answerBlockingDialogsIfStalled(blockingTestDialogs, elapsed, lastOutputAt);
 
         // Liveness check every ~1.5 s. Re-read the exit-code file to cover the
         // race where the process exits cleanly between checks.
