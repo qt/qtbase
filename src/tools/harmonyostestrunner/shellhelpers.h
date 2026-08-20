@@ -9,12 +9,15 @@
 #include <QtCore/qprocess.h>
 #include <QtCore/qstring.h>
 
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 
 void forceStopBundle(const Hdc &hdc, const QString &bundleName);
 bool isProcessAlive(const Hdc &hdc, const QString &bundleName);
 QString readDeviceFile(const Hdc &hdc, const QString &devicePath);
-bool setupStdoutLogger(QProcess &stdoutLogger, const Hdc &hdc, const QString &shellStdoutPath);
+std::unique_ptr<QProcess> streamDeviceFileWhileAppRuns(
+    const Hdc &hdc, const QString &devicePath, const QString &bundleName);
 
 QT_END_NAMESPACE
 
