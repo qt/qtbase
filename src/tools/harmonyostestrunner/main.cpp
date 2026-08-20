@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
 #include "hdc.h"
+#include "shellhelpers.h"
 
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qcommandlineparser.h>
@@ -107,11 +108,6 @@ static void sigHandler(int sig)
     g_interrupted.store(true);
 }
 
-static bool isProcessAlive(const Hdc &hdc, const QString &bundleName)
-{
-    return !hdc.shell({u"pidof"_s, bundleName}).trimmed().isEmpty();
-}
-
 // Without this, OHOS may deliver the new test's Want to the still-dying
 // previous process via onNewWant instead of creating a fresh one.
 static void waitForProcessDeath(const Hdc &hdc, const QString &bundleName,
@@ -165,26 +161,6 @@ static bool waitForStdoutFile(const Hdc &hdc, const QString &shellStdoutPath,
         QThread::msleep(pollMs);
     }
     return false;
-}
-
-// wc -c + tail -c +N runs device-side; both use plain read() syscalls (SELinux
-// permits, unlike inotify), and one persistent hdc connection avoids per-poll
-// reconnect overhead.
-static bool setupStdoutLogger(QProcess &stdoutLogger, const Hdc &hdc,
-                              const QString &shellStdoutPath)
-{
-    const QString loop =
-        u"sz=0; f='"_s + shellStdoutPath
-        + u"'; while true; do"
-           " new=$(wc -c < \"$f\" 2>/dev/null);"
-           " if [ \"${new:-0}\" -gt \"$sz\" ]; then"
-           " tail -c +$((sz+1)) \"$f\" 2>/dev/null; sz=$new;"
-           " fi; sleep 0.1; done"_s;
-
-    // SeparateChannels so we can scan stdout for PASS/FAIL while forwarding it.
-    stdoutLogger.setProcessChannelMode(QProcess::SeparateChannels);
-    stdoutLogger.start(hdc.program(), hdc.shellArguments({loop}));
-    return stdoutLogger.waitForStarted(5000);
 }
 
 int main(int argc, char *argv[])
