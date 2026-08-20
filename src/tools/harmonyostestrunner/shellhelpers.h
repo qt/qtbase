@@ -11,6 +11,7 @@
 
 QT_BEGIN_NAMESPACE
 
+void forceStopBundle(const Hdc &hdc, const QString &bundleName);
 bool isProcessAlive(const Hdc &hdc, const QString &bundleName);
 QString readDeviceFile(const Hdc &hdc, const QString &devicePath);
 bool setupStdoutLogger(QProcess &stdoutLogger, const Hdc &hdc, const QString &shellStdoutPath);

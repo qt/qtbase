@@ -275,7 +275,7 @@ int main(int argc, char *argv[])
     runnerLock.acquire();
 #endif
 
-    hdc.shell({u"aa"_s, u"force-stop"_s, bundleName});
+    forceStopBundle(hdc, bundleName);
     waitForProcessDeath(hdc, bundleName);
 
     // --ps for string want.parameters, --pb for boolean. Do NOT use -e: that
@@ -399,7 +399,7 @@ int main(int argc, char *argv[])
                     "harmonyostestrunner: %s: no test case progress for %d seconds "
                     "— main thread likely deadlocked, force-stopping\n",
                     qPrintable(testLibName), noProgressTimeoutSecs);
-            hdc.shell({u"aa"_s, u"force-stop"_s, bundleName});
+            forceStopBundle(hdc, bundleName);
             testExitCode = EXIT_CRASH;
             completed = true;
             break;
@@ -441,7 +441,7 @@ int main(int argc, char *argv[])
 
     if (!completed) {
         if (g_interrupted.load()) {
-            hdc.shell({u"aa"_s, u"force-stop"_s, bundleName});
+            forceStopBundle(hdc, bundleName);
 #if QT_CONFIG(systemsemaphore)
             runnerLock.release();
 #endif
@@ -450,7 +450,7 @@ int main(int argc, char *argv[])
         fprintf(stderr,
                 "harmonyostestrunner: TIMEOUT — %s did not complete within %d seconds\n",
                 qPrintable(testLibName), timeoutSecs);
-        hdc.shell({u"aa"_s, u"force-stop"_s, bundleName});
+        forceStopBundle(hdc, bundleName);
 #if QT_CONFIG(systemsemaphore)
         runnerLock.release();
 #endif
