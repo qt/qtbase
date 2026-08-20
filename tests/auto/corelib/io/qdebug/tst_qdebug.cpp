@@ -27,9 +27,24 @@ namespace pmr = std::pmr;
 namespace pmr = std;
 #endif
 #include <set>
+#include <system_error>
 #include <tuple>
 #include <unordered_map>
 #include <unordered_set>
+
+namespace {
+struct TestErrorCategory : std::error_category
+{
+    const char *name() const noexcept override { return "test_category"; }
+    std::string message(int ev) const override
+    { return ev == 1 ? "custom error" : "unknown error"; }
+};
+const std::error_category &testCategory()
+{
+    static TestErrorCategory instance;
+    return instance;
+}
+} // unnamed namespace
 
 using namespace std::chrono;
 using namespace q20::chrono;
@@ -114,6 +129,7 @@ private slots:
     void qDebugStdChrono_data() const;
     void qDebugStdChrono() const;
     void qDebugStdOptional() const;
+    void qDebugStdErrorCode() const;
     void qDebugStdOrdering() const;
     void textStreamModifiers() const;
     void resetFormat() const;
@@ -1572,6 +1588,26 @@ void tst_QDebug::qDebugStdOptional() const
         d << opt;
     }
     QCOMPARE(s_msg, R"(nullopt std::optional(nullopt) std::optional(std::optional(42)))"_L1);
+}
+
+void tst_QDebug::qDebugStdErrorCode() const
+{
+    QLatin1StringView file, function;
+    MessageHandlerSetter mhs(myMessageHandler);
+    {
+        QDebug d = qDebug();
+        d << std::error_code(1, testCategory())
+          << std::error_condition(1, testCategory());
+    }
+#ifndef QT_NO_MESSAGELOGCONTEXT
+    file = QLatin1StringView(__FILE__);
+    function = QLatin1StringView(Q_FUNC_INFO);
+#endif
+    const auto cmpStr = R"(std::error_code(test_category, 1, "custom error") std::error_condition(test_category, 1, "custom error"))"_L1;
+    QCOMPARE(s_msgType, QtDebugMsg);
+    QCOMPARE(s_msg, cmpStr);
+    QCOMPARE(QLatin1StringView(s_file), file);
+    QCOMPARE(QLatin1StringView(s_function), function);
 }
 
 void tst_QDebug::qDebugStdOrdering() const

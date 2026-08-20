@@ -30,6 +30,7 @@
 #include <string>
 #include <string_view>
 #include <set>
+#include <system_error>
 #include <tuple>
 #include <QtCore/q20type_traits.h>
 #include <utility>
@@ -322,6 +323,9 @@ private:
         debug.putQtOrdering(QtOrderingPrivate::orderingFlagsFor(t), Qt::partial_ordering(t));
         return debug;
     }
+
+    Q_CORE_EXPORT friend QDebug operator<<(QDebug debug, const std::error_code &code);
+    Q_CORE_EXPORT friend QDebug operator<<(QDebug debug, const std::error_condition &condition);
 
 #ifdef Q_OS_DARWIN
     Q_CORE_EXPORT friend QDebug operator<<(QDebug, const NSString *);

@@ -575,6 +575,36 @@ void QDebug::putQtOrdering(QtOrderingPrivate::QtOrderingTypeFlag flags, Qt::part
 }
 
 /*!
+    \fn QDebug operator<<(QDebug debug, const std::error_code &code)
+    \relates QDebug
+    \since 6.13
+
+    Writes \a code to \a debug.
+*/
+QDebug operator<<(QDebug debug, const std::error_code &code)
+{
+    const QDebugStateSaver saver(debug);
+    debug.nospace() << "std::error_code(" << code.category().name() << ", "
+                    << code.value() << ", " << code.message() << ')';
+    return debug;
+}
+
+/*!
+    \fn QDebug operator<<(QDebug debug, const std::error_condition &condition)
+    \relates QDebug
+    \since 6.13
+
+    Writes \a condition to \a debug.
+*/
+QDebug operator<<(QDebug debug, const std::error_condition &condition)
+{
+    const QDebugStateSaver saver(debug);
+    debug.nospace() << "std::error_condition(" << condition.category().name() << ", "
+                    << condition.value() << ", " << condition.message() << ')';
+    return debug;
+}
+
+/*!
     \fn QDebug::swap(QDebug &other)
     \since 5.0
     \memberswap{debug stream instance}
