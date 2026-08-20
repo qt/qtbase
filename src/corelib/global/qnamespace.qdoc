@@ -706,9 +706,9 @@
     matched and the unwanted parts are ignored. In particular, note that a time
     is not recognized without an accompanying date.
 
-    \note For \c ISODate formats, each \c y, \c M and \c d represents a single
-    digit of the year, month, and day used to specify the date. Each \c H, \c m,
-    and \c s represents a single digit of the hour (up to 24), minute and second
+    For \c ISODate formats, each \c y, \c M and \c d represents a single digit
+    of the year, month, and day used to specify the date. Each \c H, \c m, and
+    \c s represents a single digit of the hour (up to 24), minute and second
     used to specify the time. An hour of 24, with zero for all other time
     fields, is understood as the start of the next day. A \c{.zzz} stands for a
     fractional part suffix on the preceding field, which may be separated from
