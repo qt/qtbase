@@ -83,7 +83,7 @@ instructions:
 
   # Test network integrity on Linux
   - type: ExecuteCommand
-    command: [ "sh", "-c", "if [ -f /opt/CiNetworkTest/bin/CiNetworkTest ]; then LD_LIBRARY_PATH=/opt/icu/lib64 /opt/CiNetworkTest/bin/CiNetworkTest -d 2; fi " ]
+    command: [ "sh", "-c", "if [ -f /opt/CiNetworkTest/bin/CiNetworkTest ]; then LD_LIBRARY_PATH=/opt/icu/lib64 /opt/CiNetworkTest/bin/CiNetworkTest -d 2 --dt 11000 --ml 1; fi " ]
     resetOnFailure: true
     maxTimeInSeconds: 60
     maxTimeBetweenOutput: 60
@@ -95,7 +95,7 @@ instructions:
 
   # Test network integrity on Windows
   - type: ExecuteCommand
-    command: [ "cmd", "/k", "if exist %ProgramFiles%\\CiNetworkTest.exe call %ProgramFiles%\\CiNetworkTest.exe -d 2" ]
+    command: ["powershell.exe", "-Command", "if(test-path \"C:/Program Files/CiNetworkTest.exe\") { & \"C:/Program Files/CiNetworkTest.exe\" -d 2 --dt 11000 --ml 1}"]
     resetOnFailure: true
     maxTimeInSeconds: 60
     maxTimeBetweenOutput: 60
