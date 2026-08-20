@@ -10,6 +10,7 @@ qt_internal_add_tool(${target_name}
     TARGET_DESCRIPTION "Qt HarmonyOS Test Runner Tool"
     TOOLS_TARGET Core
     SOURCES
+        blockingtestdialogs.cpp blockingtestdialogs.h
         hdc.cpp hdc.h
         shellhelpers.cpp shellhelpers.h
         main.cpp
