@@ -14,14 +14,17 @@ class Hdc
 public:
     Hdc(QString hdcPath, QString connectKey);
 
-    QString run(const QStringList &args, bool printOnFailure = false) const;
+    QString shell(const QStringList &command, bool printOnFailure = false) const;
 
     QString program() const;
-    QStringList arguments(const QStringList &args) const;
+    QStringList shellArguments(const QStringList &command) const;
 
     QString connectKey() const;
 
 private:
+    QString run(const QStringList &args, bool printOnFailure) const;
+    QStringList arguments(const QStringList &args) const;
+
     QString m_hdcPath;
     QString m_connectKey;
 };

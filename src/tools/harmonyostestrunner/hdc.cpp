@@ -14,6 +14,11 @@ using namespace Qt::StringLiterals;
 static constexpr int startTimeoutMs = 5000;
 static constexpr int finishTimeoutMs = 30000;
 
+static QStringList shellCommandArgs(const QStringList &command)
+{
+    return QStringList{ u"shell"_s } + command;
+}
+
 Hdc::Hdc(QString hdcPath, QString connectKey)
     : m_hdcPath(std::move(hdcPath)), m_connectKey(std::move(connectKey))
 {
@@ -58,6 +63,16 @@ QString Hdc::run(const QStringList &args, bool printOnFailure) const
         }
     }
     return QString::fromUtf8(process.readAllStandardOutput());
+}
+
+QString Hdc::shell(const QStringList &command, bool printOnFailure) const
+{
+    return run(shellCommandArgs(command), printOnFailure);
+}
+
+QStringList Hdc::shellArguments(const QStringList &command) const
+{
+    return arguments(shellCommandArgs(command));
 }
 
 QT_END_NAMESPACE
