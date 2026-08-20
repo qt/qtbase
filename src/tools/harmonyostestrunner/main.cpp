@@ -137,7 +137,7 @@ static bool waitForProcessStart(const Hdc &hdc, const QString &bundleName,
         if (isProcessAlive(hdc, bundleName))
             return true;
         // Fast test may have finished before pidof could see it.
-        const QString exitContent = hdc.shell({u"cat"_s, shellExitCodePath});
+        const QString exitContent = readDeviceFile(hdc, shellExitCodePath);
         bool ok = false;
         exitContent.trimmed().toInt(&ok);
         if (ok)
@@ -155,7 +155,7 @@ static bool waitForStdoutFile(const Hdc &hdc, const QString &shellStdoutPath,
     for (int i = 0; i < maxIterations; ++i) {
         if (g_interrupted.load())
             return false;
-        const QString out = hdc.shell({u"cat"_s, shellStdoutPath});
+        const QString out = readDeviceFile(hdc, shellStdoutPath);
         if (!out.contains(u"No such file or directory"_s))
             return true;
         QThread::msleep(pollMs);
@@ -361,7 +361,7 @@ int main(int argc, char *argv[])
         // Primary completion signal: exit-code file becomes parseable as int.
         {
             const QString exitContent =
-                hdc.shell({u"cat"_s, shellExitCodePath});
+                readDeviceFile(hdc, shellExitCodePath);
             bool ok = false;
             const int code = exitContent.trimmed().toInt(&ok);
             if (ok) {
@@ -375,7 +375,7 @@ int main(int argc, char *argv[])
         // race where the process exits cleanly between checks.
         if (++aliveCheckCounter % 3 == 0 && !isProcessAlive(hdc, bundleName)) {
             const QString exitContent =
-                hdc.shell({u"cat"_s, shellExitCodePath});
+                readDeviceFile(hdc, shellExitCodePath);
             bool ok = false;
             const int code = exitContent.trimmed().toInt(&ok);
             if (ok) {

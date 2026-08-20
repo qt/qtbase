@@ -32,4 +32,9 @@ bool setupStdoutLogger(QProcess &stdoutLogger, const Hdc &hdc,
     return stdoutLogger.waitForStarted(5000);
 }
 
+QString readDeviceFile(const Hdc &hdc, const QString &devicePath)
+{
+    return hdc.shell({ u"cat"_s, devicePath });
+}
+
 QT_END_NAMESPACE
