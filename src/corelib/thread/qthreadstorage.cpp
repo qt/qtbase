@@ -212,6 +212,10 @@ void QThreadStoragePrivate::finish(QList<void *> *tls, bool suppressWarnings)
 
     \list
 
+    \li Calling hasLocalData(), localData() or setLocalData() during thread or
+    program shutdown may re-create the thread-local storage for the current
+    thread with nothing left to destroy it afterwards.
+
     \li The QThreadStorage destructor does not delete per-thread data.
     QThreadStorage only deletes per-thread data when the thread exits
     or when setLocalData() is called multiple times.
