@@ -64,8 +64,9 @@ else()
         CMAKE_FLAGS
             -DCMAKE_CXX_STANDARD_REQUIRED:BOOL=TRUE
             -DCMAKE_CXX_STANDARD:STRING=17
-            # std::filesystem API is only available in macOS 10.15+
-            -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=10.15
+            # The nested CMake build does not read .cmake.conf, so pass on the
+            # deployment target that the rest of Qt uses.
+            "-DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=${QT_SUPPORTED_MIN_MACOS_VERSION}"
             "${osx_architectures}"
             "${osx_sysroot}"
         SOURCES
