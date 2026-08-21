@@ -871,6 +871,33 @@ QString QTimeZonePrivate::isoOffsetFormat(int offsetFromUtc, QTimeZone::NameType
     return result;
 }
 
+QList<QByteArray> QTimeZonePrivate::getCanonicalZonesThenAliases()
+{
+    static const QList<QByteArray> canonicalZonesThenAliases = []() {
+        QList<QByteArray> avail = QTimeZone::availableTimeZoneIds();
+        const auto isCanonical = [](const QByteArray &name) {
+            // Canonical <=> not an alias
+            return QTimeZonePrivate::aliasToIana(name).isEmpty();
+        };
+        [[maybe_unused]] const QList<QByteArray>::const_iterator
+                     firstAlias = std::partition(avail.begin(), avail.end(), isCanonical);
+        // Everything before firstAlias is canonical; everything after is an alias.
+        // Some available IDs may be aliases for IANA IDs not in the list.
+        Q_ASSERT(std::all_of(firstAlias, avail.constEnd(), // Every alias ...
+                             [from = avail.constBegin(), to = firstAlias,
+                              avail](const QByteArray &alias) {
+                                 // ... maps to a canonical name:
+                                 QByteArrayView iana = QTimeZonePrivate::aliasToIana(alias);
+                                 return std::find_if(from, to, [iana](const QByteArray &zone) {
+                                     return zone == iana;
+                                 }) != to || !avail.contains(iana);
+                                 // ... which might not be available.
+                             }));
+        return avail;
+    }();
+    return canonicalZonesThenAliases;
+}
+
 #if QT_CONFIG(icu) || !QT_CONFIG(timezone_locale)
 static QTimeZonePrivate::NamePrefixMatch
 findUtcOffsetPrefix(QStringView text, const QLocale &locale)
@@ -1041,29 +1068,7 @@ QTimeZonePrivate::findLongNamePrefix(QStringView text, const QLocale &locale,
         return matched;
     };
 
-    const QList<QByteArray> allZones = []() {
-        QList<QByteArray> avail = QTimeZone::availableTimeZoneIds();
-        const auto isCanonical = [](const QByteArray &name) {
-            // Canonical <=> not an alias
-            return QTimeZonePrivate::aliasToIana(name).isEmpty();
-        };
-        [[maybe_unused]] const QList<QByteArray>::const_iterator
-            firstAlias = std::partition(avail.begin(), avail.end(), isCanonical);
-        // Everything before firstAlias is canonical; everything after is an alias.
-        // Some available IDs may be aliases for IANA IDs not in the list.
-        Q_ASSERT(std::all_of(firstAlias, avail.constEnd(), // Every alias ...
-                             [from = avail.constBegin(), to = firstAlias,
-                              avail](const QByteArray &alias) {
-                                 // ... maps to a canonical name:
-                                 QByteArrayView iana = QTimeZonePrivate::aliasToIana(alias);
-                                 return std::find_if(from, to, [iana](const QByteArray &zone) {
-                                     return zone == iana;
-                                 }) != to || !avail.contains(iana);
-                                 // ... which might not be available.
-                             }));
-        return avail;
-    }();
-
+    const QList<QByteArray> allZones = getCanonicalZonesThenAliases();
     for (const QByteArray &iana : allZones) {
         // If we have a match for all of text, we can't get any better:
         if (tryZone(iana) && best.nameLength >= text.size())
