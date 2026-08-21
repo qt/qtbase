@@ -17,6 +17,8 @@
 #include <qdir.h>
 #include <qfileinfo.h>
 
+#include <array>
+
 #ifdef Q_OS_UNIX
 #include <pthread.h>
 #endif
@@ -24,6 +26,8 @@
 #  include <process.h>
 #  include <qt_windows.h>
 #endif
+
+using namespace std::chrono_literals;
 
 class tst_QThreadStorage : public QObject
 {
@@ -41,6 +45,7 @@ private slots:
     void leakInDestructor();
     void resetInDestructor();
     void valueBased();
+    void otherStorageInDestructor();
 };
 
 class Pointer
@@ -496,6 +501,72 @@ void tst_QThreadStorage::valueBased()
 
 }
 
+
+// ---------------------------------------------------------------------
+// QThreadStorage reentrancy contracts.
+//
+// The destructor of the previous payload runs from within setLocalData():
+//
+//  - otherStorageInDestructor(): the destructor may use other
+//    QThreadStorage objects, including ones the current thread has never
+//    used before.
+//
+// Running these under ASan/LSan additionally verifies the memory safety
+// of the above (no use-after-free, no leaks).
+// ---------------------------------------------------------------------
+
+namespace {
+
+// A payload whose destructor makes first use of a different QThreadStorage
+// (with a much higher id) on the current thread:
+class OtherStorageUsingPayload
+{
+public:
+    explicit OtherStorageUsingPayload(QThreadStorage<int> *other) : other(other) {}
+    ~OtherStorageUsingPayload() { other->setLocalData(42); }
+
+private:
+    QThreadStorage<int> *other;
+};
+
+} // unnamed namespace
+
+void tst_QThreadStorage::otherStorageInDestructor()
+{
+    struct Thread : public QThread // clazy:exclude=missing-qobject-macro
+    {
+        QThreadStorage<OtherStorageUsingPayload *> &primary;
+        QThreadStorage<int> &other;
+
+        explicit Thread(QThreadStorage<OtherStorageUsingPayload *> &p, QThreadStorage<int> &o)
+            : primary(p), other(o)
+        { }
+
+        void run() override
+        {
+            primary.setLocalData(new OtherStorageUsingPayload(&other));
+            QVERIFY(!other.hasLocalData());
+            primary.setLocalData(nullptr);
+            // the destructor made first use of `other` on this thread:
+            QVERIFY(!primary.hasLocalData());
+            QVERIFY(other.hasLocalData());
+            QCOMPARE(other.localData(), 42);
+        }
+    };
+
+    QThreadStorage<OtherStorageUsingPayload *> primary;
+
+    // Burn through a large block of ids, so `other`'s id is far higher
+    // than `primary`'s, and higher than anything a freshly-started thread
+    // has used; its first use, from within the payload's destructor, then
+    // grows the thread's storage while setLocalData(nullptr) is still
+    // executing.
+    std::array<QThreadStorage<int>, 256> others;
+
+    Thread t(primary, others.back());
+    t.start();
+    QVERIFY(t.wait(10s));
+}
 
 QTEST_MAIN(tst_QThreadStorage)
 #include "tst_qthreadstorage.moc"

@@ -101,12 +101,12 @@ void **QThreadStorageData::set(void *p)
     if (tls.size() <= id)
         tls.resize(id + 1);
 
-    void *&value = tls[id];
+    void* *ptr = &tls[id];
     // delete any previous data
-    if (value != nullptr) {
+    if (*ptr != nullptr) {
         DEBUG_MSG("QThreadStorageData: Deleting previous storage %d, data %p, for thread %p",
                 id,
-                value,
+                *ptr,
                 data->thread.loadRelaxed());
 
         QMutexLocker locker(&destructorsMutex);
@@ -114,17 +114,18 @@ void **QThreadStorageData::set(void *p)
         void (*destructor)(void *) = destr ? destr->value(id) : nullptr;
         locker.unlock();
 
-        void *q = value;
-        value = nullptr;
-
-        if (destructor)
+        if (destructor) {
+            void *q = std::exchange(*ptr, nullptr);
             destructor(q);
+            // `destructor` may have re-entered and grown `tls`; re-seat `ptr`:
+            ptr = &tls[id];
+        }
     }
 
     // store new data
-    value = p;
+    *ptr = p;
     DEBUG_MSG("QThreadStorageData: Set storage %d for thread %p to %p", id, data->thread.loadRelaxed(), p);
-    return &value;
+    return ptr;
 }
 
 void QThreadStoragePrivate::init()
