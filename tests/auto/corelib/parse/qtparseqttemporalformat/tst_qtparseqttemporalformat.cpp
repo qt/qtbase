@@ -63,6 +63,8 @@ static QByteArray fieldString(const QtTemporalPattern::TemporalField &field)
             showCase(Year);
             // showCase(Era);
 #undef showCase
+        case TemporalFieldCategory::EndCategories:
+            Q_UNREACHABLE();
         }
         return u"<unknown category>"_s;
     };
