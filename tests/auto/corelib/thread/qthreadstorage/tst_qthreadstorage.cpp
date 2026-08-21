@@ -27,6 +27,10 @@
 #  include <qt_windows.h>
 #endif
 
+#ifdef QTEST_THROW_ON_FAIL
+# error QVERIFY/QCOMPARE in QThread::run()
+#endif
+
 using namespace std::chrono_literals;
 
 class tst_QThreadStorage : public QObject
