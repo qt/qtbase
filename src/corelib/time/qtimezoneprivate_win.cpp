@@ -448,9 +448,10 @@ QLocale::Territory userTerritory()
                        : QLocale::AnyTerritory;
 }
 
-// Index of last rule in rules with .startYear <= year, or 0 if none satisfies that:
+// Index of last rule in rules with .startYear <= year, or 0 if all > year.
 int ruleIndexForYear(const QList<QWinTimeZonePrivate::QWinTransitionRule> &rules, int year)
 {
+    Q_ASSERT(!rules.isEmpty()); // Ensured by caller's isValid().
     if (rules.last().startYear <= year)
         return rules.count() - 1;
     // We don't have a rule for before the first, but the first is the best we can offer:
@@ -574,7 +575,7 @@ void QWinTimeZonePrivate::init(const QByteArray &ianaId)
     }
 
     // If there are no rules then we failed to find a windowsId or any tzi info
-    if (m_tranRules.size() == 0) {
+    if (m_tranRules.isEmpty()) {
         m_id.clear();
         m_windowsId.clear();
         m_displayName.clear();
@@ -639,6 +640,7 @@ bool QWinTimeZonePrivate::isDaylightTime(qint64 atMSecsSinceEpoch) const
 
 QTimeZonePrivate::Data QWinTimeZonePrivate::data(qint64 forMSecsSinceEpoch) const
 {
+    Q_ASSERT(isValid()); // => !m_tranRules.isEmpty()
     int year = msecsToDate(forMSecsSinceEpoch).year();
     for (int ruleIndex = ruleIndexForYear(m_tranRules, year);
          ruleIndex >= 0; --ruleIndex) {
@@ -694,6 +696,7 @@ bool QWinTimeZonePrivate::hasTransitions() const
 
 QTimeZonePrivate::Data QWinTimeZonePrivate::nextTransition(qint64 afterMSecsSinceEpoch) const
 {
+    Q_ASSERT(isValid()); // => !m_tranRules.isEmpty()
     int year = msecsToDate(afterMSecsSinceEpoch).year();
     int newYearOffset = invalidSeconds();
     for (int ruleIndex = ruleIndexForYear(m_tranRules, year);
@@ -767,6 +770,7 @@ QTimeZonePrivate::Data QWinTimeZonePrivate::nextTransition(qint64 afterMSecsSinc
 
 QTimeZonePrivate::Data QWinTimeZonePrivate::previousTransition(qint64 beforeMSecsSinceEpoch) const
 {
+    Q_ASSERT(isValid()); // => !m_tranRules.isEmpty()
     if (beforeMSecsSinceEpoch <= minMSecs())
         return {};
 
