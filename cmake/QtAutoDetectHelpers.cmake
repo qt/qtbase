@@ -801,6 +801,16 @@ function(qt_auto_detect_cmake_build_type)
     set(__qt_auto_detect_cmake_build_type_before_project_call "${CMAKE_BUILD_TYPE}" PARENT_SCOPE)
 endfunction()
 
+# Set pthread preference flag globally in the root directory scope, to avoid accidental full
+# rebuilds when reconfiguring a top-level build.
+# Only affects platforms with glibc < 2.34.
+# See QTBUG-115209.
+function(qt_auto_detect_threads_pthread_flag)
+    if(NOT QT_NO_THREADS_PREFER_PTHREAD_FLAG)
+        set(THREADS_PREFER_PTHREAD_FLAG TRUE PARENT_SCOPE)
+    endif()
+endfunction()
+
 macro(qt_internal_setup_autodetect)
     # This needs to be here because QtAutoDetect loads before any other modules
     option(QT_USE_VCPKG "Enable the use of vcpkg" OFF)
@@ -815,6 +825,7 @@ macro(qt_internal_setup_autodetect)
         list(PREPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/platforms")
     endif()
 
+    qt_auto_detect_threads_pthread_flag()
     qt_auto_detect_cyclic_toolchain()
     qt_auto_detect_cmake_config()
     qt_auto_detect_apple()
