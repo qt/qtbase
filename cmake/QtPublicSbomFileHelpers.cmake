@@ -200,7 +200,7 @@ function(_qt_internal_sbom_handle_target_binary_files target)
             OR arg_SBOM_ENTITY_TYPE STREQUAL "LIBRARY"
             OR arg_SBOM_ENTITY_TYPE STREQUAL "THIRD_PARTY_LIBRARY_WITH_FILES"
         )
-        if(WIN32 AND target_type STREQUAL "SHARED_LIBRARY")
+        if((WIN32 OR CYGWIN) AND target_type STREQUAL "SHARED_LIBRARY")
             _qt_internal_sbom_handle_multi_config_target_binary_file(${target}
                 PATH_KIND RUNTIME_PATH
                 PATH_SUFFIX "${path_suffix}"
