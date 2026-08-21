@@ -170,6 +170,19 @@ function(qt_copy_framework_headers target)
         set_property(TARGET ${target} APPEND PROPERTY ADDITIONAL_CLEAN_FILES
             "${output_dir}/${fw_dir}/Versions/${fw_version}/Headers"
         )
+
+        if(QT_FEATURE_clang_module_maps)
+            # Clang only looks for the module map at the bundle root, so link it
+            # to the Versions directory the module map is written to.
+            file(MAKE_DIRECTORY "${output_dir}/${fw_dir}/Versions/${fw_version}/Modules")
+            file(CREATE_LINK "Versions/Current/Modules"
+                "${output_dir}/${fw_dir}/Modules" SYMBOLIC)
+
+            # Make "ninja clean" work.
+            set_property(TARGET ${target} APPEND PROPERTY ADDITIONAL_CLEAN_FILES
+                "${output_dir}/${fw_dir}/Versions/${fw_version}/Modules"
+            )
+        endif()
     endif()
 
     if(CMAKE_GENERATOR MATCHES "^Ninja")

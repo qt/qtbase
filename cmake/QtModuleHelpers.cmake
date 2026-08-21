@@ -1654,16 +1654,38 @@ the different base name for the module info variables.")
         # is the bundle's 'Modules' directory; otherwise it's the module's
         # include directory, where Clang looks up the module map alongside the
         # headers.
+        #
+        # A versioned framework bundle keeps its 'Modules' directory under
+        # Versions, as a real directory at the top level makes codesign refuse
+        # the framework:
+        #
+        #   QtCore.framework: unsealed contents present in the root directory of
+        #   an embedded framework
+        #
+        # Clang only ever looks for the module map at the bundle root, reaching
+        # it through the symlink qt_copy_framework_headers() puts there, so
+        # anything we pass to a compiler needs that spelling instead. UIKit
+        # bundles are flat and have no Versions, so there the two are the same.
         get_target_property(is_framework ${target} FRAMEWORK)
         if(is_framework)
-            set("${result}_clang_modules_dir"
-                "${QT_BUILD_DIR}/${INSTALL_LIBDIR}/${module}.framework/Modules")
+            set(framework_dir "${QT_BUILD_DIR}/${INSTALL_LIBDIR}/${module}.framework")
+            set("${result}_clang_modules_lookup_dir" "${framework_dir}/Modules")
+            if(UIKIT)
+                set("${result}_clang_modules_dir"
+                    "${${result}_clang_modules_lookup_dir}")
+            else()
+                get_target_property(framework_version ${target} FRAMEWORK_VERSION)
+                set("${result}_clang_modules_dir"
+                    "${framework_dir}/Versions/${framework_version}/Modules")
+            endif()
             # The Swift overlay ships next to the module map inside the bundle.
             set("${result}_swiftmodule_dir"
                 "${${result}_clang_modules_dir}/${module}.swiftmodule")
         else()
             set("${result}_clang_modules_dir"
                 "${${result}_build_interface_include_dir}")
+            set("${result}_clang_modules_lookup_dir"
+                "${${result}_clang_modules_dir}")
             # Unlike Clang, Swift only looks up ModuleName.swiftmodule directly
             # in an import search directory, not in a per-module subdirectory, so
             # it goes in the top-level include directory, not next to the module
@@ -1732,6 +1754,8 @@ the different base name for the module info variables.")
             "${${result}_modulemap_intermediate_path}" PARENT_SCOPE)
         set("${result}_clang_modules_dir"
             "${${result}_clang_modules_dir}" PARENT_SCOPE)
+        set("${result}_clang_modules_lookup_dir"
+            "${${result}_clang_modules_lookup_dir}" PARENT_SCOPE)
         set("${result}_swiftmodule_dir"
             "${${result}_swiftmodule_dir}" PARENT_SCOPE)
     endif()
