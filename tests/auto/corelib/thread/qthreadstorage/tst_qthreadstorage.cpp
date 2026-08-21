@@ -145,7 +145,7 @@ void tst_QThreadStorage::autoDelete()
 }
 
 static bool threadStorageOk;
-void testAdoptedThreadStorageWin(void *p)
+void testAdoptedThreadStorage(void *p)
 {
     QThreadStorage<Pointer *>  *pointers = reinterpret_cast<QThreadStorage<Pointer *> *>(p);
     if (pointers->hasLocalData()) {
@@ -167,11 +167,6 @@ void testAdoptedThreadStorageWin(void *p)
     }
     QObject::connect(QThread::currentThread(), SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
 }
-void *testAdoptedThreadStorageUnix(void *pointers)
-{
-    testAdoptedThreadStorageWin(pointers);
-    return nullptr;
-}
 void tst_QThreadStorage::adoptedThreads()
 {
     QTestEventLoop::instance(); // Make sure the instance is created in this thread.
@@ -180,13 +175,17 @@ void tst_QThreadStorage::adoptedThreads()
     threadStorageOk = true;
     {
 #ifdef Q_OS_UNIX
+        const auto returnValueAdded = [](void *pointers) -> void* {
+            testAdoptedThreadStorage(pointers);
+            return nullptr; // pthread wants a void* return
+        };
         pthread_t thread;
-        const int state = pthread_create(&thread, nullptr, testAdoptedThreadStorageUnix, &pointers);
+        const int state = pthread_create(&thread, nullptr, returnValueAdded, &pointers);
         QCOMPARE(state, 0);
         pthread_join(thread, nullptr);
 #elif defined Q_OS_WIN
         HANDLE thread;
-        thread = (HANDLE)_beginthread(testAdoptedThreadStorageWin, 0, &pointers);
+        thread = (HANDLE)_beginthread(testAdoptedThreadStorage, 0, &pointers);
         QVERIFY(thread);
         WaitForSingleObject(thread, INFINITE);
 #endif
