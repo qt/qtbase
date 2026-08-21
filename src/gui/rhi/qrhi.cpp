@@ -10833,9 +10833,18 @@ void QRhiCommandBuffer::drawIndexed(quint32 indexCount,
     The value must be a multiple of 4 and greater than or equal to sizeof(QRhiIndirectDrawCommand).
 
     \note A \a drawCount value greater than 1 is only natively supported if the
-    QRhi::DrawIndirectMulti feature is reported as supported and stride is the default.
+    QRhi::DrawIndirectMulti feature is reported as supported.
     Otherwise, this function emulates multi-draw by recording multiple draw calls,
     offering no performance benefit over repeated draw() calls.
+
+    \note Leaving \a stride at its default is recommended whenever performance
+    matters. With Direct 3D 12 a non-default stride prevents issuing a single
+    native multi-draw, forcing the backend to record one command per draw
+    instead. For a large \a drawCount this can be an order of magnitude slower,
+    which defeats the purpose of the indirect draw. Vulkan, OpenGL, and Metal
+    pass the stride on to their native multi-draw entry points and are not
+    affected. Rather than interleaving custom data between the commands, keep
+    that data in a separate buffer and index into it.
 
     \note The render pass interruption and the render target consequences and
     limitations described for drawIndexedIndirect() apply here as well.
@@ -10877,9 +10886,18 @@ void QRhiCommandBuffer::drawIndirect(QRhiBuffer *indirectBuffer,
     The value must be a multiple of 4 and greater than or equal to sizeof(QRhiIndexedIndirectDrawCommand).
 
     \note A \a drawCount value greater than 1 is only natively supported if the
-    QRhi::DrawIndirectMulti feature is reported as supported and stride is the default.
+    QRhi::DrawIndirectMulti feature is reported as supported.
     Otherwise, this function emulates multi-draw by recording multiple draw calls,
     offering no performance benefit over repeated drawIndexed() calls.
+
+    \note Leaving \a stride at its default is recommended whenever performance
+    matters. With Direct 3D 12 a non-default stride prevents issuing a single
+    native multi-draw, forcing the backend to record one command per draw
+    instead. For a large \a drawCount this can be an order of magnitude slower,
+    which defeats the purpose of the indirect draw. Vulkan, OpenGL, and Metal
+    pass the stride on to their native multi-draw entry points and are not
+    affected. Rather than interleaving custom data between the commands, keep
+    that data in a separate buffer and index into it.
 
     \note With some backends a large \a drawCount is implemented by interrupting
     and then restarting the render pass internally due to launching a compute
@@ -10929,6 +10947,11 @@ void QRhiCommandBuffer::drawIndexedIndirect(QRhiBuffer *indirectBuffer,
     Only available when \l QRhi::DrawIndirectCount is reported as supported.
     On other backends this is a no-op and a warning is logged. With Metal there
     are additional requirements, see QRhi::DrawIndirectCount.
+
+    \note Unlike with drawIndirect(), a non-default \a stride does not prevent
+    the use of a single native multi-draw here. With Direct 3D 12 it does mean
+    that an additional command signature is created and cached for each
+    distinct stride value, so sticking to one stride is still preferable.
 
     \note The value in \a countBuffer is read as a \e signed 32-bit integer by
     OpenGL, unlike the other backends. Counts above \c INT_MAX are therefore
