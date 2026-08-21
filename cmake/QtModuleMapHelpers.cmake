@@ -155,7 +155,7 @@ endfunction()
 # again, without affecting the module maps of any other library, or those of the
 # platform SDK.
 #
-# The overlay is propagated to consumers that enable QT_DISABLE_CLANG_MODULE_MAPS,
+# The overlay is propagated to consumers that enable QT_NO_CLANG_MODULE_MAPS,
 # which _qt_internal_finalize_clang_module_maps does automatically on detecting
 # that the consuming target builds with C++ Clang modules.
 function(qt_internal_generate_module_map_disable_overlay target overlay_path lookup_path)
@@ -188,7 +188,7 @@ function(qt_internal_generate_module_map_disable_overlay target overlay_path loo
     # relative to the install prefix, for both framework and non-framework builds.
     file(RELATIVE_PATH relative_overlay_path "${QT_BUILD_DIR}" "${lookup_path}")
 
-    set(is_disabled "$<BOOL:$<TARGET_PROPERTY:QT_DISABLE_CLANG_MODULE_MAPS>>")
+    set(is_disabled "$<BOOL:$<TARGET_PROPERTY:QT_NO_CLANG_MODULE_MAPS>>")
     target_compile_options(${target} INTERFACE
         "$<BUILD_INTERFACE:$<${is_disabled}:-ivfsoverlay${lookup_path}>>"
         "$<INSTALL_INTERFACE:$<${is_disabled}:-ivfsoverlay$<INSTALL_PREFIX>/${relative_overlay_path}>>"
