@@ -79,8 +79,13 @@ void tst_QThreadStorage::hasLocalData()
 void tst_QThreadStorage::localData()
 {
     QThreadStorage<Pointer*> pointers;
+    {
+        // the mere creation of a Pointer doesn't cause localData() to spring into existence:
+        QVERIFY(!pointers.hasLocalData());
+        [[maybe_unused]] Pointer p;
+        QVERIFY(!pointers.hasLocalData());
+    }
     Pointer *p = new Pointer;
-    QVERIFY(!pointers.hasLocalData());
     pointers.setLocalData(p);
     QVERIFY(pointers.hasLocalData());
     QCOMPARE(pointers.localData(), p);
@@ -93,8 +98,8 @@ void tst_QThreadStorage::localData_const()
 {
     QThreadStorage<Pointer *> pointers;
     const QThreadStorage<Pointer *> &const_pointers = pointers;
-    Pointer *p = new Pointer;
     QVERIFY(!pointers.hasLocalData());
+    Pointer *p = new Pointer;
     pointers.setLocalData(p);
     QVERIFY(pointers.hasLocalData());
     QCOMPARE(const_pointers.localData(), p);
