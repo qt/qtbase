@@ -36,6 +36,16 @@ QColor makeInactiveOrDisabledFromColor(const QColor &color)
     return disabledColor;
 }
 
+QColor makeOverlayCompositedOnSurface(const QColor &overlay, const QColor &surface)
+{
+    const auto alpha = overlay.alphaF();
+
+    return QColor::fromRgbF(
+        overlay.redF() * alpha + surface.redF() * (1.0 - alpha),
+        overlay.greenF() * alpha + surface.greenF() * (1.0 - alpha),
+        overlay.blueF() * alpha + surface.blueF() * (1.0 - alpha));
+}
+
 struct PalettesColors
 {
     QColor activeWindow;
@@ -427,14 +437,33 @@ QPalette makePalette(
     return palette;
 }
 
-QPalette makePalette(std::initializer_list<std::tuple<QPalette::ColorGroup, QPalette::ColorRole, const QColor &>> brushEntries)
+QPalette makeBasePalette(const AllPalletesColors &palettesColors)
 {
-    return makePalette(QPalette(), brushEntries);
+    const auto &colors = palettesColors.palettes;
+    const auto button = makeOverlayCompositedOnSurface(
+        palettesColors.button.activeButton, colors.activeWindow);
+
+    QPalette palette(button, colors.activeWindow);
+
+    const auto textVersions = {
+        std::make_pair(QPalette::Active, colors.textPrimary),
+        std::make_pair(QPalette::Inactive, colors.inactiveTextPrimary),
+        std::make_pair(QPalette::Disabled, colors.disabledTextPrimary)};
+
+    for (const auto &groupAndText : textVersions) {
+        palette.setColor(groupAndText.first, QPalette::WindowText, groupAndText.second);
+        palette.setColor(groupAndText.first, QPalette::Text, groupAndText.second);
+        palette.setColor(groupAndText.first, QPalette::ButtonText, groupAndText.second);
+    }
+    palette.setColor(QPalette::BrightText, colors.foregroundContrary);
+
+    return palette;
 }
 
 QPalette makeButtonPalette(const AllPalletesColors &palettesColors)
 {
     return makePalette(
+        makeBasePalette(palettesColors),
         {
             {QPalette::Active, QPalette::AlternateBase, palettesColors.palettes.componentActivated},
 
@@ -468,6 +497,7 @@ QPalette makeToolButtonPalette(const AllPalletesColors &palettesColors)
 QPalette makeSystemPalette(const AllPalletesColors &palettesColors)
 {
     return makePalette(
+        makeBasePalette(palettesColors),
         {
             {QPalette::Active, QPalette::Window, palettesColors.palettes.activeWindow},
             {QPalette::Disabled, QPalette::Window, palettesColors.palettes.inactiveWindow},
@@ -501,6 +531,7 @@ QPalette makeSystemPalette(const AllPalletesColors &palettesColors)
 QPalette makeCheckBoxOrRadioButtonPalette(const AllPalletesColors &palettesColors)
 {
     return makePalette(
+        makeBasePalette(palettesColors),
         {
             {QPalette::Inactive, QPalette::Base, palettesColors.palettes.switchBgOff},
             {QPalette::Inactive, QPalette::Button, palettesColors.palettes.switchOutlineOff},
@@ -516,6 +547,7 @@ QPalette makeCheckBoxOrRadioButtonPalette(const AllPalletesColors &palettesColor
 QPalette makeComboBoxPalette(const AllPalletesColors &palettesColors)
 {
     return makePalette(
+        makeBasePalette(palettesColors),
         {
             {QPalette::Active, QPalette::AlternateBase, palettesColors.palettes.componentActivated},
             {QPalette::All, QPalette::Base, palettesColors.palettes.window},
@@ -532,6 +564,7 @@ QPalette makeComboBoxPalette(const AllPalletesColors &palettesColors)
 QPalette makeMenuPalette(const AllPalletesColors &palettesColors)
 {
     return makePalette(
+        makeBasePalette(palettesColors),
         {
             {QPalette::Active, QPalette::Window, palettesColors.palettes.activeWindow},
             {QPalette::Inactive, QPalette::Base, palettesColors.palettes.switchBgOff},
@@ -552,6 +585,7 @@ QPalette makeMenuPalette(const AllPalletesColors &palettesColors)
 QPalette makeMenuBarPalette(const AllPalletesColors &palettesColors)
 {
     return makePalette(
+        makeBasePalette(palettesColors),
         {
             {QPalette::Active, QPalette::ButtonText, palettesColors.palettes.textPrimary},
             {QPalette::Disabled, QPalette::ButtonText, palettesColors.menu.inactiveText},
@@ -562,6 +596,7 @@ QPalette makeMenuBarPalette(const AllPalletesColors &palettesColors)
 QPalette makeTabBarPalette(const AllPalletesColors &palettesColors)
 {
     return makePalette(
+        makeBasePalette(palettesColors),
         {
             {QPalette::Active, QPalette::WindowText, palettesColors.tabBar.activeWindowText},
             {QPalette::Inactive, QPalette::WindowText, palettesColors.tabBar.inactiveWindowText},
@@ -602,6 +637,7 @@ QPalette makeTextEditPalette(const AllPalletesColors &palettesColors)
 QPalette makeGroupBoxPalette(const AllPalletesColors &palettesColors)
 {
     return makePalette(
+        makeBasePalette(palettesColors),
         {
             {QPalette::Active, QPalette::Button, palettesColors.palettes.highlighted},
             {QPalette::Inactive, QPalette::Button, palettesColors.palettes.switchOutlineOff},
@@ -630,6 +666,7 @@ QPalette makeGroupBoxPalette(const AllPalletesColors &palettesColors)
 QPalette makeHeaderPalette(const AllPalletesColors &palettesColors)
 {
     return makePalette(
+        makeBasePalette(palettesColors),
         {
             {QPalette::Active, QPalette::Button, palettesColors.header.activeButton},
             {QPalette::Inactive, QPalette::Button, palettesColors.header.activeButton},
@@ -645,6 +682,7 @@ QPalette makeHeaderPalette(const AllPalletesColors &palettesColors)
 QPalette makeItemViewPalette(const AllPalletesColors &palettesColors)
 {
     return makePalette(
+        makeBasePalette(palettesColors),
         {
             {QPalette::Active, QPalette::Base, palettesColors.palettes.window},
             {QPalette::Inactive, QPalette::Base, palettesColors.palettes.window},
@@ -692,6 +730,7 @@ QPalette makeItemViewPalette(const AllPalletesColors &palettesColors)
 QPalette makeLabelPalette(const AllPalletesColors &palettesColors)
 {
     return makePalette(
+        makeBasePalette(palettesColors),
         {
             {QPalette::Active, QPalette::WindowText, palettesColors.palettes.textPrimary},
             {QPalette::Disabled, QPalette::WindowText, palettesColors.palettes.disabledTextPrimary},
@@ -706,6 +745,7 @@ QPalette makeLabelPalette(const AllPalletesColors &palettesColors)
 QPalette makeToolTipPalette(const AllPalletesColors &palettesColors)
 {
     return makePalette(
+        makeBasePalette(palettesColors),
         {
             {QPalette::All, QPalette::Base, palettesColors.toolTip.toolTipBorder},
             {QPalette::All, QPalette::ToolTipBase, palettesColors.toolTip.toolTipBase},
