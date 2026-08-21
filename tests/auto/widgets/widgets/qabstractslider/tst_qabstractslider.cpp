@@ -1816,8 +1816,7 @@ void tst_QAbstractSlider::sliderPressedReleased()
     if (qApp->style()->styleHint(QStyle::SH_ScrollBar_LeftClickAbsolutePosition))
         QSKIP("The result depends on system setting on mac");
 
-    QTest::mousePress(slider, Qt::LeftButton, {},
-                      QPoint(rect.center().x() + 2, rect.center().y() + 2));
+    QTest::mousePress(slider, Qt::LeftButton, {}, rect.center());
     QCOMPARE(spy1.size(), expectedCount);
     QTest::mouseRelease(slider, Qt::LeftButton, {}, rect.center());
     QCOMPARE(spy2.size(), expectedCount);
