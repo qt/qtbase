@@ -16,6 +16,7 @@ class tst_QCoreApplication: public QObject
 private slots:
     void sendEventsOnProcessEvents(); // this must be the first test
     void getSetCheck();
+    void applicationVersionChangedSignal();
     void qAppName();
     void qAppVersion();
     void argc();
