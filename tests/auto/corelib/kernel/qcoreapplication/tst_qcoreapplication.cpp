@@ -6,6 +6,7 @@
 
 #include <QtCore/QtCore>
 #include <QTest>
+#include <QSignalSpy>
 
 #include <private/qabstracteventdispatcher_p.h> // for qGlobalPostedEventsCount()
 #include <private/qcoreapplication_p.h>
@@ -101,6 +102,29 @@ void tst_QCoreApplication::getSetCheck()
     v = QString();
     QCoreApplication::setApplicationVersion(v);
     QCOMPARE(QCoreApplication::applicationVersion(), v);
+}
+
+void tst_QCoreApplication::applicationVersionChangedSignal()
+{
+    {
+        int argc = 1;
+        char *argv[] = { const_cast<char*>(QTest::currentAppName()) };
+        TestApplication app(argc, argv);
+
+        QSignalSpy spy(&app, &QCoreApplication::applicationVersionChanged);
+
+        QCoreApplication::setApplicationVersion(QLatin1String("1.0"));
+        spy.clear();
+
+        QCoreApplication::setApplicationVersion(QLatin1String("1.0"));
+        QCOMPARE(spy.count(), 0);
+
+        QCoreApplication::setApplicationVersion(QLatin1String("2.0"));
+        QCOMPARE(spy.count(), 1);
+    }
+
+    QCoreApplication::setApplicationVersion(QString());
+    QCOMPARE(QCoreApplication::applicationVersion(), QString());
 }
 
 void tst_QCoreApplication::qAppName()
