@@ -33,6 +33,7 @@
 #endif
 
 using namespace std::chrono_literals;
+using namespace Qt::StringLiterals;
 
 class Pointer
 {
@@ -46,7 +47,7 @@ int Pointer::count = 0;
 class tst_QThreadStorage : public QObject
 {
     Q_OBJECT
-private slots:
+private Q_SLOTS:
     void hasLocalData();
     void localData();
     void localData_const();
@@ -125,6 +126,7 @@ void tst_QThreadStorage::setLocalData()
 
 class Thread : public QThread
 {
+    Q_OBJECT
 public:
     QThreadStorage<Pointer *> &pointers;
 
@@ -263,7 +265,7 @@ int Second::order = -1;
 
 void tst_QThreadStorage::ensureCleanupOrder()
 {
-    class Thread : public QThread
+    class Thread : public QThread // clazy:exclude=missing-qobject-macro
     {
     public:
         QThreadStorage<First *> &first;
@@ -323,16 +325,16 @@ static inline bool runCrashOnExit(const QString &binary, QString *errorMessage)
     QProcess process;
     process.start(binary);
     if (!process.waitForStarted()) {
-        *errorMessage = QString::fromLatin1("Could not start '%1': %2").arg(binary, process.errorString());
+        *errorMessage = "Could not start '%1': %2"_L1.arg(binary, process.errorString());
         return false;
     }
     if (!process.waitForFinished(timeout)) {
         process.kill();
-        *errorMessage = QString::fromLatin1("Timeout (%1ms) waiting for %2.").arg(timeout).arg(binary);
+        *errorMessage = u"Timeout (%1ms) waiting for %2."_s.arg(timeout).arg(binary);
         return false;
     }
     if (process.exitStatus() != QProcess::NormalExit) {
-        *errorMessage = binary + QStringLiteral(" crashed.");
+        *errorMessage = binary + " crashed."_L1;
         return false;
     }
     return true;
@@ -348,7 +350,7 @@ void tst_QThreadStorage::crashOnExit()
     QSKIP("No qprocess support");
 #else
     QString errorMessage;
-    QVERIFY2(runCrashOnExit("./crashOnExit_helper", &errorMessage),
+    QVERIFY2(runCrashOnExit(u"./crashOnExit_helper"_s, &errorMessage),
              qPrintable(errorMessage));
 #endif
 }
@@ -384,7 +386,7 @@ public:
 
 void tst_QThreadStorage::leakInDestructor()
 {
-    class Thread : public QThread
+    class Thread : public QThread // clazy:exclude=missing-qobject-macro
     {
     public:
         QThreadStorage<ThreadStorageLocalDataTester *> &tls;
@@ -440,7 +442,7 @@ ThreadStorageResetLocalDataTester::~ThreadStorageResetLocalDataTester() {
 
 void tst_QThreadStorage::resetInDestructor()
 {
-    class Thread : public QThread
+    class Thread : public QThread // clazy:exclude=missing-qobject-macro
     {
     public:
         void run() override
@@ -469,7 +471,8 @@ void tst_QThreadStorage::resetInDestructor()
 
 void tst_QThreadStorage::valueBased()
 {
-    struct Thread : QThread {
+    struct Thread : QThread // clazy:exclude=missing-qobject-macro
+    {
         QThreadStorage<SPointer> &tlsSPointer;
         QThreadStorage<QString> &tlsString;
         QThreadStorage<int> &tlsInt;
@@ -540,9 +543,9 @@ void tst_QThreadStorage::valueBased()
     t1.someNumber = 42;
     t2.someNumber = -128;
     t3.someNumber = 78;
-    t1.someString = "hello";
-    t2.someString = "australia";
-    t3.someString = "nokia";
+    t1.someString = u"hello"_s;
+    t2.someString = u"australia"_s;
+    t3.someString = u"nokia"_s;
 
     t1.start();
     t2.start();
