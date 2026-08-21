@@ -1318,7 +1318,7 @@ QTimeZone::OffsetData QTimeZone::nextTransition(const QDateTime &afterDateTime) 
             Q_UNREACHABLE();
             break;
         }
-    } else if (hasTransitions()) {
+    } else if (isValid() && hasTransitions()) {
         return QTimeZonePrivate::toOffsetData(d->nextTransition(afterDateTime.toMSecsSinceEpoch()));
     }
 
@@ -1353,7 +1353,7 @@ QTimeZone::OffsetData QTimeZone::previousTransition(const QDateTime &beforeDateT
             Q_UNREACHABLE();
             break;
         }
-    } else if (hasTransitions()) {
+    } else if (isValid() && hasTransitions()) {
         return QTimeZonePrivate::toOffsetData(
             d->previousTransition(beforeDateTime.toMSecsSinceEpoch()));
     }
@@ -1388,7 +1388,7 @@ QTimeZone::OffsetDataList QTimeZone::transitions(const QDateTime &fromDateTime,
             Q_UNREACHABLE();
             break;
         }
-    } else if (hasTransitions()) {
+    } else if (isValid() && hasTransitions()) {
         const QTimeZonePrivate::DataList plist = d->transitions(fromDateTime.toMSecsSinceEpoch(),
                                                                 toDateTime.toMSecsSinceEpoch());
         list.reserve(plist.size());
