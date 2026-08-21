@@ -61,3 +61,6 @@ wayland
 wayland
 [winIdChangeEvent]
 wayland
+# QTBUG-149950
+[renderRTL]
+macos ci

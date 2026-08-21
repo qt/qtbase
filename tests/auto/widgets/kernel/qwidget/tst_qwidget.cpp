@@ -8539,7 +8539,12 @@ void tst_QWidget::renderRTL()
     QFont f;
     f.setStyleStrategy(QFont::NoAntialias);
 
-    QMenu menu;
+    // Give the menu a parent so it is created as a child/transient window
+    // rather than a standalone top-level, which some platforms would
+    // decorate. This does not affect what the test checks (LTR vs RTL
+    // rendering).
+    QWidget parent;
+    QMenu menu(&parent);
     menu.setMinimumWidth(200);
     menu.setFont(f);
     menu.setStyle(deterministicStyle());
