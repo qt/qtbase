@@ -67,6 +67,8 @@ private:
     void adoptedThreads_impl(qxp::function_ref<void(QThreadStorage<Pointer *> &) const>);
 };
 
+constexpr auto WaitTimeout = 10s;
+
 void tst_QThreadStorage::hasLocalData()
 {
     QThreadStorage<Pointer *> pointers;
@@ -143,7 +145,7 @@ public:
 
         QMutexLocker locker(&mutex);
         cond.wakeOne();
-        cond.wait(&mutex);
+        cond.wait(&mutex, WaitTimeout / 2);
     }
 };
 
@@ -157,11 +159,11 @@ void tst_QThreadStorage::autoDelete()
     {
         QMutexLocker locker(&thread.mutex);
         thread.start();
-        thread.cond.wait(&thread.mutex);
+        thread.cond.wait(&thread.mutex, WaitTimeout / 2);
         // QCOMPARE(Pointer::count, c + 1);
         thread.cond.wakeOne();
     }
-    thread.wait();
+    QVERIFY(thread.wait(WaitTimeout));
     QCOMPARE(Pointer::count, c);
 }
 
@@ -290,7 +292,7 @@ void tst_QThreadStorage::ensureCleanupOrder()
     QThreadStorage<First *> first;
     Thread thread(first, second);
     thread.start();
-    thread.wait();
+    QVERIFY(thread.wait(WaitTimeout));
 
     QVERIFY(First::order < Second::order);
 }
@@ -419,9 +421,9 @@ void tst_QThreadStorage::leakInDestructor()
     t2.start();
     t3.start();
 
-    QVERIFY(t1.wait());
-    QVERIFY(t2.wait());
-    QVERIFY(t3.wait());
+    QVERIFY(t1.wait(WaitTimeout));
+    QVERIFY(t2.wait(WaitTimeout / 2));
+    QVERIFY(t3.wait(WaitTimeout / 4));
 
     //check all the constructed things have been destructed
     QCOMPARE(int(SPointer::count.loadRelaxed()), c);
@@ -460,9 +462,9 @@ void tst_QThreadStorage::resetInDestructor()
     t1.start();
     t2.start();
     t3.start();
-    QVERIFY(t1.wait());
-    QVERIFY(t2.wait());
-    QVERIFY(t3.wait());
+    QVERIFY(t1.wait(WaitTimeout));
+    QVERIFY(t2.wait(WaitTimeout / 2));
+    QVERIFY(t3.wait(WaitTimeout / 4));
 
     //check all the constructed things have been destructed
     QCOMPARE(int(SPointer::count.loadRelaxed()), c);
@@ -551,9 +553,9 @@ void tst_QThreadStorage::valueBased()
     t2.start();
     t3.start();
 
-    QVERIFY(t1.wait());
-    QVERIFY(t2.wait());
-    QVERIFY(t3.wait());
+    QVERIFY(t1.wait(WaitTimeout));
+    QVERIFY(t2.wait(WaitTimeout / 2));
+    QVERIFY(t3.wait(WaitTimeout / 4));
 
     QCOMPARE(c, int(SPointer::count.loadRelaxed()));
 
@@ -623,7 +625,7 @@ void tst_QThreadStorage::otherStorageInDestructor()
 
     Thread t(primary, others.back());
     t.start();
-    QVERIFY(t.wait(10s));
+    QVERIFY(t.wait(WaitTimeout));
 }
 
 QTEST_MAIN(tst_QThreadStorage)
