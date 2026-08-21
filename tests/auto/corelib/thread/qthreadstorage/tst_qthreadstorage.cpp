@@ -13,12 +13,14 @@
 #include <qmutex.h>
 #include <qthread.h>
 #include <qwaitcondition.h>
+#include <QtCore/qscopedvaluerollback.h>
 #include <qthreadstorage.h>
 #include <qdir.h>
 #include <qfileinfo.h>
 
 #include <array>
 #include <QtCore/qxpfunctional.h>
+#include <thread>
 
 #ifdef Q_OS_UNIX
 #include <pthread.h>
@@ -55,6 +57,7 @@ private Q_SLOTS:
     void autoDelete();
     void adoptedPThreads();
     void adoptedWinThreads();
+    void adoptedStdThreads();
     void ensureCleanupOrder();
     void noWarningOnExitForQGlobalStatic();
     void crashOnExit();
@@ -191,6 +194,7 @@ void testAdoptedThreadStorage(void *p)
     QObject::connect(QThread::currentThread(), SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
 }
 
+static bool QTBUG_149456 = false;
 void tst_QThreadStorage::adoptedThreads_impl(qxp::function_ref<void(QThreadStorage<Pointer *> &) const> run)
 {
     QTestEventLoop::instance(); // Make sure the instance is created in this thread.
@@ -203,6 +207,8 @@ void tst_QThreadStorage::adoptedThreads_impl(qxp::function_ref<void(QThreadStora
     QVERIFY(threadStorageOk);
 
     QTestEventLoop::instance().enterLoop(2);
+    if (QTBUG_149456)
+        QEXPECT_FAIL("", "QTBUG-149456", Abort);
     QVERIFY(!QTestEventLoop::instance().timeout());
 
     QTRY_COMPARE(Pointer::count, c);
@@ -238,7 +244,18 @@ void tst_QThreadStorage::adoptedWinThreads()
 #else
     QSKIP("This is a Windows test.");
 #endif
+}
 
+void tst_QThreadStorage::adoptedStdThreads()
+{
+#if defined(Q_CC_MINGW) && !defined(Q_CC_CLANG)
+    const QScopedValueRollback guard(QTBUG_149456, true);
+#endif
+    adoptedThreads_impl([] (QThreadStorage<Pointer *> &pointers) {
+        auto thread = std::thread{&testAdoptedThreadStorage, &pointers};
+        QVERIFY(thread.joinable());
+        thread.join();
+    });
 }
 
 static QBasicAtomicInt cleanupOrder = Q_BASIC_ATOMIC_INITIALIZER(0);
