@@ -18,6 +18,7 @@
 #include <qfileinfo.h>
 
 #include <array>
+#include <QtCore/qxpfunctional.h>
 
 #ifdef Q_OS_UNIX
 #include <pthread.h>
@@ -33,6 +34,15 @@
 
 using namespace std::chrono_literals;
 
+class Pointer
+{
+public:
+    static int count;
+    inline Pointer() { ++count; }
+    inline ~Pointer() { --count; }
+};
+int Pointer::count = 0;
+
 class tst_QThreadStorage : public QObject
 {
     Q_OBJECT
@@ -42,7 +52,8 @@ private slots:
     void localData_const();
     void setLocalData();
     void autoDelete();
-    void adoptedThreads();
+    void adoptedPThreads();
+    void adoptedWinThreads();
     void ensureCleanupOrder();
     void noWarningOnExitForQGlobalStatic();
     void crashOnExit();
@@ -50,16 +61,10 @@ private slots:
     void resetInDestructor();
     void valueBased();
     void otherStorageInDestructor();
-};
 
-class Pointer
-{
-public:
-    static int count;
-    inline Pointer() { ++count; }
-    inline ~Pointer() { --count; }
+private:
+    void adoptedThreads_impl(qxp::function_ref<void(QThreadStorage<Pointer *> &) const>);
 };
-int Pointer::count = 0;
 
 void tst_QThreadStorage::hasLocalData()
 {
@@ -171,14 +176,28 @@ void testAdoptedThreadStorage(void *p)
     }
     QObject::connect(QThread::currentThread(), SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
 }
-void tst_QThreadStorage::adoptedThreads()
+
+void tst_QThreadStorage::adoptedThreads_impl(qxp::function_ref<void(QThreadStorage<Pointer *> &) const> run)
 {
     QTestEventLoop::instance(); // Make sure the instance is created in this thread.
     QThreadStorage<Pointer *> pointers;
     int c = Pointer::count;
     threadStorageOk = true;
-    {
+    run(pointers);
+    if (QTest::currentTestResolved())
+        return;
+    QVERIFY(threadStorageOk);
+
+    QTestEventLoop::instance().enterLoop(2);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    QTRY_COMPARE(Pointer::count, c);
+}
+
+void tst_QThreadStorage::adoptedPThreads()
+{
 #ifdef Q_OS_UNIX
+    adoptedThreads_impl([] (QThreadStorage<Pointer *> &pointers) {
         const auto returnValueAdded = [](void *pointers) -> void* {
             testAdoptedThreadStorage(pointers);
             return nullptr; // pthread wants a void* return
@@ -187,19 +206,25 @@ void tst_QThreadStorage::adoptedThreads()
         const int state = pthread_create(&thread, nullptr, returnValueAdded, &pointers);
         QCOMPARE(state, 0);
         pthread_join(thread, nullptr);
-#elif defined Q_OS_WIN
+    });
+#else
+    QSKIP("This is a Unix test");
+#endif
+}
+
+void tst_QThreadStorage::adoptedWinThreads()
+{
+#ifdef Q_OS_WIN
+    adoptedThreads_impl([] (QThreadStorage<Pointer *> &pointers) {
         HANDLE thread;
         thread = (HANDLE)_beginthread(testAdoptedThreadStorage, 0, &pointers);
         QVERIFY(thread);
         WaitForSingleObject(thread, INFINITE);
+    });
+#else
+    QSKIP("This is a Windows test.");
 #endif
-    }
-    QVERIFY(threadStorageOk);
 
-    QTestEventLoop::instance().enterLoop(2);
-    QVERIFY(!QTestEventLoop::instance().timeout());
-
-    QTRY_COMPARE(Pointer::count, c);
 }
 
 static QBasicAtomicInt cleanupOrder = Q_BASIC_ATOMIC_INITIALIZER(0);
