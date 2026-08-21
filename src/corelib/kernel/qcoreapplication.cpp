@@ -76,6 +76,12 @@
 #include <QtCore/qjniobject.h>
 #endif
 
+#if defined(Q_OS_HARMONY) && !defined(QT_BOOTSTRAPPED)
+#include <QtCore/private/qcore_ohos_p.h>
+#include <QtCore/private/qnapi_p.h>
+#include <QtCore/private/qohoslogger_p.h>
+#endif
+
 #ifdef Q_OS_DARWIN
 #  include "qcore_mac_p.h"
 #endif
@@ -219,6 +225,24 @@ QString QCoreApplicationPrivate::appVersion() const
             }
         }
     }
+#elif defined(Q_OS_HARMONY) && !defined(QT_BOOTSTRAPPED)
+    applicationVersion = QOhosJsThreadGateway::eval(
+        [](QOhosJsState &jsState) -> QString {
+            try {
+                const auto flag = jsState.eval<QNapi::Number>(
+                    "@ohos.bundle.bundleManager.BundleFlag.GET_BUNDLE_INFO_WITH_APPLICATION");
+                return QString::fromStdString(
+                    jsState.eval<QNapi::String>(
+                        "@ohos.bundle.bundleManager.getBundleInfoForSelfSync(*).versionName",
+                        {flag}));
+            } catch (const Napi::Error &error) {
+                qOhosPrintfError(
+                    "%s: failed to read bundle versionName: %s",
+                    Q_FUNC_INFO, error.what());
+                return QString();
+            }
+        },
+        Q_FUNC_INFO);
 #endif
     return applicationVersion;
 }
@@ -2790,6 +2814,9 @@ QString QCoreApplication::applicationName()
     \row
         \li Android
         \li android:versionName property of the AndroidManifest.xml manifest element
+    \row
+        \li HarmonyOS
+        \li versionName field of the app.json5 configuration file
     \endtable
 
     On other platforms, the default is the empty string.

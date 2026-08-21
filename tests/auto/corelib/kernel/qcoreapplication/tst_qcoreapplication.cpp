@@ -169,6 +169,17 @@ void tst_QCoreApplication::qAppVersion()
     const char appVersion[] = "1.2.3.4";
 #elif defined(Q_OS_DARWIN) || defined(Q_OS_ANDROID)
     const char appVersion[] = "1.2.3";
+#elif defined(Q_OS_HARMONY)
+    // On HarmonyOS all autotests are packaged into a single shared bundle
+    // (org.qtproject.autotests) because the number of app-bundle signings is
+    // limited, so a per-test versionName cannot be injected as on the other
+    // platforms above. This is the versionName the shared bundle inherits
+    // from the app.json5 template (src/harmonyos/templates/AppScope/app.json5).
+    // TODO: once tests can be packaged as individual apps, drop this branch
+    // and set QT_HARMONYOS_APP_VERSION_NAME on the tst_qcoreapplication target
+    // in CMakeLists.txt (like QT_ANDROID_VERSION_NAME) so the test controls
+    // its own version.
+    const char appVersion[] = "1.0.0";
 #else
     const char appVersion[] = "";
 #endif
