@@ -57,6 +57,37 @@
 #define StyleId_Heading9    70009
 #endif
 
+#ifndef HeadingLevel_None
+#define HeadingLevel_None   80050
+#endif
+#ifndef HeadingLevel1
+#define HeadingLevel1       80051
+#endif
+#ifndef HeadingLevel2
+#define HeadingLevel2       80052
+#endif
+#ifndef HeadingLevel3
+#define HeadingLevel3       80053
+#endif
+#ifndef HeadingLevel4
+#define HeadingLevel4       80054
+#endif
+#ifndef HeadingLevel5
+#define HeadingLevel5       80055
+#endif
+#ifndef HeadingLevel6
+#define HeadingLevel6       80056
+#endif
+#ifndef HeadingLevel7
+#define HeadingLevel7       80057
+#endif
+#ifndef HeadingLevel8
+#define HeadingLevel8       80058
+#endif
+#ifndef HeadingLevel9
+#define HeadingLevel9       80059
+#endif
+
 #if !defined(UIA_SelectionPattern2Id)
 #define UIA_SelectionPattern2Id                  10034
 

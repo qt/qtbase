@@ -491,6 +491,32 @@ void QWindowsUiaMainProvider::setIntAttribute(QAccessibleInterface *accessible,
     *pRetVal = QComVariant{ long(valueVariant.toInt()) }.release();
 }
 
+void QWindowsUiaMainProvider::setHeadingLevel(QAccessibleInterface *accessible, VARIANT *pRetVal)
+{
+    Q_ASSERT(accessible);
+
+    if (accessible->role() != QAccessible::Heading)
+        return;
+
+    static constexpr long levels[] = { HeadingLevel1, HeadingLevel2, HeadingLevel3,
+                                       HeadingLevel4, HeadingLevel5, HeadingLevel6,
+                                       HeadingLevel7, HeadingLevel8, HeadingLevel9 };
+
+    long headingLevel = HeadingLevel_None;
+    if (QAccessibleAttributesInterface *attributesIface = accessible->attributesInterface()) {
+        const QVariant levelVariant =
+                attributesIface->attributeValue(QAccessible::Attribute::Level);
+        if (levelVariant.isValid()) {
+            Q_ASSERT(levelVariant.canConvert<int>());
+            const int level = levelVariant.toInt();
+            if (level <= 9 && level > 0) {
+                headingLevel = levels[level - 1];
+            }
+        }
+    }
+    *pRetVal = QComVariant{ headingLevel }.release();
+}
+
 void QWindowsUiaMainProvider::setStyle(QAccessibleInterface *accessible, VARIANT *pRetVal)
 {
     Q_ASSERT(accessible);
@@ -677,6 +703,9 @@ HRESULT QWindowsUiaMainProvider::GetPropertyValue(PROPERTYID idProp, VARIANT *pR
             *pRetVal = QComVariant{ wt == Qt::Popup || wt == Qt::ToolTip || wt == Qt::SplashScreen }
                                .release();
         }
+        break;
+    case UIA_HeadingLevelPropertyId:
+        setHeadingLevel(accessible, pRetVal);
         break;
     case UIA_IsDialogPropertyId:
         *pRetVal = QComVariant{ accessible->role() == QAccessible::Dialog
