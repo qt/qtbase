@@ -28,6 +28,8 @@ chronoForEpochMillis(qint64 millis)
 static std::optional<std::chrono::sys_info>
 infoAtEpochMillis(const std::chrono::time_zone *zone, qint64 millis)
 {
+    if (!zone)
+        return std::nullopt;
     EXCEPTION_CHECKED(return zone->get_info(chronoForEpochMillis(millis)), return std::nullopt);
 }
 
