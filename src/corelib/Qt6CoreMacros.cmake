@@ -1066,7 +1066,7 @@ endfunction()
 # modules enabled, so that including a Qt header doesn't implicitly turn into an
 # @import of the corresponding Qt module, and a build of that module.
 #
-# An explicitly set QT_DISABLE_CLANG_MODULE_MAPS target property or variable takes
+# An explicitly set QT_NO_CLANG_MODULE_MAPS target property or variable takes
 # precedence, and allows opting out of the automatic detection, or into masking the
 # module maps for a target that enables Clang modules in a way we can't detect,
 # for example via a generator expression.
@@ -1091,14 +1091,14 @@ function(_qt_internal_finalize_clang_module_maps target)
         return()
     endif()
 
-    get_target_property(disable_module_maps "${target}" QT_DISABLE_CLANG_MODULE_MAPS)
+    get_target_property(disable_module_maps "${target}" QT_NO_CLANG_MODULE_MAPS)
     if(NOT disable_module_maps MATCHES "-NOTFOUND$")
         return()
     endif()
 
-    if(DEFINED QT_DISABLE_CLANG_MODULE_MAPS)
+    if(DEFINED QT_NO_CLANG_MODULE_MAPS)
         set_property(TARGET "${target}" PROPERTY
-            QT_DISABLE_CLANG_MODULE_MAPS "${QT_DISABLE_CLANG_MODULE_MAPS}")
+            QT_NO_CLANG_MODULE_MAPS "${QT_NO_CLANG_MODULE_MAPS}")
         return()
     endif()
 
@@ -1121,7 +1121,7 @@ function(_qt_internal_finalize_clang_module_maps target)
 
     # Note that -fmodules-cache-path and friends should not count as enabling modules.
     if("${flags}" MATCHES "(^|[; ])-fcxx-modules([; ]|$)")
-        set_property(TARGET "${target}" PROPERTY QT_DISABLE_CLANG_MODULE_MAPS TRUE)
+        set_property(TARGET "${target}" PROPERTY QT_NO_CLANG_MODULE_MAPS TRUE)
     endif()
 endfunction()
 
