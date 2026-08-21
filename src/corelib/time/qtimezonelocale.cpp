@@ -971,6 +971,7 @@ QTimeZonePrivate::findLongNamePrefix(QStringView text, const QLocale &locale,
     // ianaIdIndex from CLDR-derived tables: and the active backend may know
     // some zones newer than our latest CLDR.
     NamePrefixMatch found;
+    const QList<QByteArray> allZones = getCanonicalZonesThenAliases();
     for (const qsizetype locInd : indices) {
         const LocaleZoneData &locData = localeZoneData[locInd];
         const LocaleZoneData &nextData = localeZoneData[locInd + 1];
@@ -1015,7 +1016,6 @@ QTimeZonePrivate::findLongNamePrefix(QStringView text, const QLocale &locale,
                 }
             }
             // In localeName() we fall back to the last part of the IANA ID:
-            const QList<QByteArray> allZones = QTimeZone::availableTimeZoneIds();
             for (const auto &iana : allZones) {
                 Q_ASSERT(!iana.isEmpty());
                 qsizetype slash = iana.lastIndexOf('/');

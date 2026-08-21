@@ -176,6 +176,7 @@ public:
                                             QtTemporalPattern::TemporalFieldFlags flags = {});
     // Match the unlocalized long form of QUtcTimeZonePrivate:
     static NamePrefixMatch findLongUtcPrefix(QStringView text);
+    static QList<QByteArray> getCanonicalZonesThenAliases();
 
     // returns "UTC" QString and QByteArray
     [[nodiscard]] static inline QString utcQString()
