@@ -743,8 +743,8 @@ void QPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
             // the glyph's own bearings.
             const glyph_metrics_t metrics = ti.fontEngine->alphaMapBoundingBox(
                 glyphs[i], QFixedPoint(), QTransform(), QFontEngine::Format_ARGB);
-            painter()->drawImage(positions[i].x.toReal() + metrics.x.toReal(),
-                                 positions[i].y.toReal() + metrics.y.toReal(),
+            painter()->drawImage(QPointF(positions[i].x.toReal() + metrics.x.toReal(),
+                                         positions[i].y.toReal() + metrics.y.toReal()),
                                  glyph);
         }
         painter()->restore();
