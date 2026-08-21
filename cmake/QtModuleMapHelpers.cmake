@@ -112,7 +112,12 @@ function(qt_internal_generate_module_map target)
     set(module_map_path "${module_clang_modules_dir}/module.modulemap")
     set(module_map_disable_path "${module_map_path}.disable.yaml")
 
-    qt_internal_generate_module_map_disable_overlay("${target}" "${module_map_disable_path}")
+    # Clang reaches a framework's module map through the symlink at the bundle
+    # root, so that's the spelling to hand out, not the one we write to.
+    set(module_map_lookup_path "${module_clang_modules_lookup_dir}/module.modulemap")
+
+    qt_internal_generate_module_map_disable_overlay("${target}"
+        "${module_map_disable_path}" "${module_map_lookup_path}.disable.yaml")
 
     get_target_property(is_framework ${target} FRAMEWORK)
     if(NOT is_framework)
@@ -123,7 +128,7 @@ function(qt_internal_generate_module_map target)
     set_target_properties(${target} PROPERTIES _qt_module_map_build_path "${module_map_path}")
 
     # Exported as a path relative to QT_BUILD_DIR so it stays valid for a relocated Qt.
-    file(RELATIVE_PATH relative_module_map_path "${QT_BUILD_DIR}" "${module_map_path}")
+    file(RELATIVE_PATH relative_module_map_path "${QT_BUILD_DIR}" "${module_map_lookup_path}")
     set_target_properties(${target} PROPERTIES _qt_module_map "${relative_module_map_path}")
     set_property(TARGET "${target}" APPEND PROPERTY EXPORT_PROPERTIES "_qt_module_map")
 
@@ -153,7 +158,7 @@ endfunction()
 # The overlay is propagated to consumers that enable QT_DISABLE_CLANG_MODULE_MAPS,
 # which _qt_internal_finalize_clang_module_maps does automatically on detecting
 # that the consuming target builds with C++ Clang modules.
-function(qt_internal_generate_module_map_disable_overlay target overlay_path)
+function(qt_internal_generate_module_map_disable_overlay target overlay_path lookup_path)
     # Redirecting to a file that doesn't exist makes Clang report the module map
     # as missing, which is explicitly supported, and is what we want. Redirecting
     # to an empty file would still leave a module map for Clang to load. Both the
@@ -174,13 +179,18 @@ function(qt_internal_generate_module_map_disable_overlay target overlay_path)
 
     qt_configure_file(OUTPUT "${overlay_path}" CONTENT "${overlay_content}")
 
+    # Clang matches the masked module map by string, against the path it looked
+    # the module map up by, and 'root-relative: overlay-dir' resolves it against
+    # the overlay's own directory as spelled on the command line. So the overlay
+    # has to be passed by its lookup path for the masking to take effect.
+    #
     # The overlay sits at the same location relative to the build dir as it does
     # relative to the install prefix, for both framework and non-framework builds.
-    file(RELATIVE_PATH relative_overlay_path "${QT_BUILD_DIR}" "${overlay_path}")
+    file(RELATIVE_PATH relative_overlay_path "${QT_BUILD_DIR}" "${lookup_path}")
 
     set(is_disabled "$<BOOL:$<TARGET_PROPERTY:QT_DISABLE_CLANG_MODULE_MAPS>>")
     target_compile_options(${target} INTERFACE
-        "$<BUILD_INTERFACE:$<${is_disabled}:-ivfsoverlay${overlay_path}>>"
+        "$<BUILD_INTERFACE:$<${is_disabled}:-ivfsoverlay${lookup_path}>>"
         "$<INSTALL_INTERFACE:$<${is_disabled}:-ivfsoverlay$<INSTALL_PREFIX>/${relative_overlay_path}>>"
     )
 endfunction()
