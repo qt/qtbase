@@ -89,7 +89,8 @@ function(qt_internal_extend_target target)
                     BASENAME
                     FLAGS
             )
-            qt_create_qdbusxml2cpp_command("${target}" "${adaptor}" ADAPTOR ${forwarded_args})
+            qt_internal_create_qdbusxml2cpp_command("${target}" "${adaptor}"
+                ADAPTOR ${forwarded_args})
             list(APPEND dbus_sources "${adaptor}")
         endforeach()
 
@@ -101,7 +102,8 @@ function(qt_internal_extend_target target)
                     BASENAME
                     FLAGS
             )
-            qt_create_qdbusxml2cpp_command("${target}" "${interface}" INTERFACE ${forwarded_args})
+            qt_internal_create_qdbusxml2cpp_command("${target}" "${interface}"
+                INTERFACE ${forwarded_args})
             list(APPEND dbus_sources "${interface}")
         endforeach()
 
