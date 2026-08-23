@@ -226,6 +226,8 @@ struct QRhiMetalData
                 id<MTLTexture> texture;
                 id<MTLBuffer> stagingBuffers[QMTL_FRAMES_IN_FLIGHT];
                 id<MTLTexture> views[QRhi::MAX_MIP_LEVELS];
+                id<MTLTexture> samplingView;
+                id<MTLTexture> writeView;
             } texture;
             struct {
                 id<MTLSamplerState> samplerState;
@@ -344,10 +346,18 @@ struct QMetalTextureData
 
     QMetalTexture *q;
     MTLPixelFormat format;
+    MTLPixelFormat viewFormat = MTLPixelFormatInvalid;
+    MTLPixelFormat viewFormatForSampling = MTLPixelFormatInvalid;
     id<MTLTexture> tex = nil;
+    id<MTLTexture> samplingView = nil;
+    id<MTLTexture> writeView = nil;
     id<MTLBuffer> stagingBuf[QMTL_FRAMES_IN_FLIGHT];
     bool owns = true;
     id<MTLTexture> perLevelViews[QRhi::MAX_MIP_LEVELS];
+
+    id<MTLTexture> textureForSampling() const { return samplingView ? samplingView : tex; }
+    id<MTLTexture> textureForWrite() const { return writeView ? writeView : tex; }
+    bool createViews();
 
     id<MTLTexture> viewForLevel(int level);
 };
@@ -945,7 +955,7 @@ bool QRhiMetal::isFeatureSupported(QRhi::Feature feature) const
     case QRhi::GeometryShader:
         return false;
     case QRhi::TextureArrayRange:
-        return false;
+        return true;
     case QRhi::NonFillPolygonMode:
         return true;
     case QRhi::OneDimensionalTextures:
@@ -961,7 +971,7 @@ bool QRhiMetal::isFeatureSupported(QRhi::Feature feature) const
     case QRhi::MultiView:
         return caps.multiView;
     case QRhi::TextureViewFormat:
-        return false;
+        return true;
     case QRhi::ResolveDepthStencil:
         return true;
     case QRhi::VariableRateShading:
@@ -1493,7 +1503,7 @@ void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD
                         const int samplerBinding = texD && samplerD ? mapBinding(b->binding, stage, nativeResourceBindingMaps, BindingType::Sampler)
                                                                     : (samplerD ? mapBinding(b->binding, stage, nativeResourceBindingMaps, BindingType::Texture) : -1);
                         if (textureBinding >= 0 && texD)
-                            bindingData.res[stage].textures.append({ textureBinding + elem, texD->d->tex, MTLResourceUsageRead });
+                            bindingData.res[stage].textures.append({ textureBinding + elem, texD->d->textureForSampling(), MTLResourceUsageRead });
                         if (samplerBinding >= 0)
                             bindingData.res[stage].samplers.append({ samplerBinding + elem, samplerD->d->samplerState });
                     }
@@ -4628,6 +4638,8 @@ static void qrhimtl_releaseTexture(const QRhiMetalData::DeferredReleaseEntry &e)
         [e.texture.stagingBuffers[i] release];
     for (int i = 0; i < QRhi::MAX_MIP_LEVELS; ++i)
         [e.texture.views[i] release];
+    [e.texture.samplingView release];
+    [e.texture.writeView release];
 }
 
 static void qrhimtl_releaseSampler(const QRhiMetalData::DeferredReleaseEntry &e)
@@ -5241,6 +5253,11 @@ void QMetalTexture::destroy()
         d->perLevelViews[i] = nil;
     }
 
+    e.texture.samplingView = d->samplingView;
+    d->samplingView = nil;
+    e.texture.writeView = d->writeView;
+    d->writeView = nil;
+
     QRHI_RES_RHI(QRhiMetal);
     if (rhiD) {
         rhiD->d->releaseQueue.append(e);
@@ -5264,6 +5281,18 @@ bool QMetalTexture::prepareCreate(QSize *adjustedSize)
 
     QRHI_RES_RHI(QRhiMetal);
     d->format = toMetalTextureFormat(m_format, m_flags, rhiD);
+    if (m_writeViewFormat.format != UnknownFormat) {
+        d->viewFormat = toMetalTextureFormat(m_writeViewFormat.format,
+                                            m_writeViewFormat.srgb ? sRGB : Flags(), rhiD);
+    } else {
+        d->viewFormat = d->format;
+    }
+    if (m_readViewFormat.format != UnknownFormat) {
+        d->viewFormatForSampling = toMetalTextureFormat(m_readViewFormat.format,
+                                                        m_readViewFormat.srgb ? sRGB : Flags(), rhiD);
+    } else {
+        d->viewFormatForSampling = d->format;
+    }
     mipLevelCount = hasMipMaps ? rhiD->q->mipLevelsForSize(size) : 1;
     samples = rhiD->effectiveSampleCount(m_sampleCount);
     if (samples > 1) {
@@ -5358,6 +5387,17 @@ bool QMetalTexture::create()
     if (m_flags.testFlag(UsedWithLoadStore))
         desc.usage |= MTLTextureUsageShaderWrite;
 
+    // Metal requires this only when the view changes the component layout, and
+    // explicitly says not to set it for linear <-> sRGB views. A view of the
+    // same QRhi format with a different sRGB setting, or over an array slice
+    // range, therefore does not need it.
+    const bool writeViewChangesFormat = m_writeViewFormat.format != UnknownFormat
+            && m_writeViewFormat.format != m_format;
+    const bool readViewChangesFormat = m_readViewFormat.format != UnknownFormat
+            && m_readViewFormat.format != m_format;
+    if (writeViewChangesFormat || readViewChangesFormat)
+        desc.usage |= MTLTextureUsagePixelFormatView;
+
     QRHI_RES_RHI(QRhiMetal);
     d->tex = [rhiD->d->dev newTextureWithDescriptor: desc];
     [desc release];
@@ -5366,6 +5406,9 @@ bool QMetalTexture::create()
         d->tex.label = [NSString stringWithUTF8String: m_objectName.constData()];
 
     d->owns = true;
+
+    if (!d->createViews())
+        return false;
 
     lastActiveFrameSlot = -1;
     generation += 1;
@@ -5386,6 +5429,9 @@ bool QMetalTexture::createFrom(QRhiTexture::NativeTexture src)
 
     d->owns = false;
 
+    if (!d->createViews())
+        return false;
+
     lastActiveFrameSlot = -1;
     generation += 1;
     QRHI_RES_RHI(QRhiMetal);
@@ -5398,6 +5444,48 @@ QRhiTexture::NativeTexture QMetalTexture::nativeTexture()
     return {quint64(d->tex), 0};
 }
 
+bool QMetalTextureData::createViews()
+{
+    Q_ASSERT(!samplingView && !writeView);
+
+    const bool isCube = q->m_flags.testFlag(QRhiTexture::CubeMap);
+    const bool isArray = q->m_flags.testFlag(QRhiTexture::TextureArray);
+    const bool hasArrayRange = isArray && q->m_arrayRangeStart >= 0 && q->m_arrayRangeLength >= 0;
+    const NSUInteger sliceCount = isCube ? 6 : (isArray ? NSUInteger(qMax(0, q->m_arraySize)) : 1);
+    const NSRange levels = NSMakeRange(0, NSUInteger(q->mipLevelCount));
+    const MTLTextureType type = [tex textureType];
+
+    id<MTLTexture> newSamplingView = nil;
+    id<MTLTexture> newWriteView = nil;
+
+    if (viewFormatForSampling != format || hasArrayRange) {
+        const NSRange slices = hasArrayRange
+                ? NSMakeRange(NSUInteger(q->m_arrayRangeStart), NSUInteger(q->m_arrayRangeLength))
+                : NSMakeRange(0, sliceCount);
+        newSamplingView = [tex newTextureViewWithPixelFormat: viewFormatForSampling
+                textureType: type levels: levels slices: slices];
+        if (!newSamplingView) {
+            qWarning("QRhiMetal: Failed to create texture view used for sampling");
+            return false;
+        }
+    }
+
+    if (viewFormat != format) {
+        newWriteView = [tex newTextureViewWithPixelFormat: viewFormat
+                textureType: type levels: levels
+                slices: NSMakeRange(0, sliceCount)];
+        if (!newWriteView) {
+            qWarning("QRhiMetal: Failed to create texture view used for rendering");
+            [newSamplingView release];
+            return false;
+        }
+    }
+
+    samplingView = newSamplingView;
+    writeView = newWriteView;
+    return true;
+}
+
 id<MTLTexture> QMetalTextureData::viewForLevel(int level)
 {
     Q_ASSERT(level >= 0 && level < int(q->mipLevelCount));
@@ -5407,7 +5495,7 @@ id<MTLTexture> QMetalTextureData::viewForLevel(int level)
     const MTLTextureType type = [tex textureType];
     const bool isCube = q->m_flags.testFlag(QRhiTexture::CubeMap);
     const bool isArray = q->m_flags.testFlag(QRhiTexture::TextureArray);
-    id<MTLTexture> view = [tex newTextureViewWithPixelFormat: format textureType: type
+    id<MTLTexture> view = [tex newTextureViewWithPixelFormat: viewFormat textureType: type
             levels: NSMakeRange(NSUInteger(level), 1)
             slices: NSMakeRange(0, isCube ? 6 : (isArray ? qMax(0, q->m_arraySize) : 1))];
 
@@ -5748,11 +5836,11 @@ QRhiRenderPassDescriptor *QMetalTextureRenderTarget::newCompatibleRenderPassDesc
         const QRhiColorAttachment *colorAtt = m_desc.colorAttachmentAt(i);
         QMetalTexture *texD = QRHI_RES(QMetalTexture, colorAtt->texture());
         QMetalRenderBuffer *rbD = QRHI_RES(QMetalRenderBuffer, colorAtt->renderBuffer());
-        rpD->colorFormat[i] = int(texD ? texD->d->format : rbD->d->format);
+        rpD->colorFormat[i] = int(texD ? texD->d->viewFormat : rbD->d->format);
     }
 
     if (m_desc.depthTexture())
-        rpD->dsFormat = int(QRHI_RES(QMetalTexture, m_desc.depthTexture())->d->format);
+        rpD->dsFormat = int(QRHI_RES(QMetalTexture, m_desc.depthTexture())->d->viewFormat);
     else if (m_desc.depthStencilBuffer())
         rpD->dsFormat = int(QRHI_RES(QMetalRenderBuffer, m_desc.depthStencilBuffer())->d->format);
 
@@ -5782,7 +5870,7 @@ bool QMetalTextureRenderTarget::create()
         id<MTLTexture> dst = nil;
         bool is3D = false;
         if (texD) {
-            dst = texD->d->tex;
+            dst = texD->d->textureForWrite();
             if (attIndex == 0) {
                 d->pixelSize = rhiD->q->sizeForMipLevel(it->level(), texD->pixelSize());
                 d->sampleCount = texD->samples;
@@ -5801,7 +5889,7 @@ bool QMetalTextureRenderTarget::create()
         colorAtt.slice = is3D ? it->layer() : 0;
         colorAtt.level = it->level();
         QMetalTexture *resTexD = QRHI_RES(QMetalTexture, it->resolveTexture());
-        colorAtt.resolveTex = resTexD ? resTexD->d->tex : nil;
+        colorAtt.resolveTex = resTexD ? resTexD->d->textureForWrite() : nil;
         colorAtt.resolveLayer = it->resolveLayer();
         colorAtt.resolveLevel = it->resolveLevel();
         d->fb.colorAtt[attIndex] = colorAtt;
@@ -5811,7 +5899,7 @@ bool QMetalTextureRenderTarget::create()
     if (hasDepthStencil) {
         if (m_desc.depthTexture()) {
             QMetalTexture *depthTexD = QRHI_RES(QMetalTexture, m_desc.depthTexture());
-            d->fb.dsTex = depthTexD->d->tex;
+            d->fb.dsTex = depthTexD->d->textureForWrite();
             d->fb.hasStencil = rhiD->isStencilSupportingFormat(depthTexD->format());
             d->fb.depthNeedsStore = !m_flags.testFlag(DoNotStoreDepthStencilContents) && !m_desc.depthResolveTexture();
             d->fb.preserveDs = m_flags.testFlag(QRhiTextureRenderTarget::PreserveDepthStencilContents);
@@ -5832,7 +5920,7 @@ bool QMetalTextureRenderTarget::create()
         }
         if (m_desc.depthResolveTexture()) {
             QMetalTexture *depthResolveTexD = QRHI_RES(QMetalTexture, m_desc.depthResolveTexture());
-            d->fb.dsResolveTex = depthResolveTexD->d->tex;
+            d->fb.dsResolveTex = depthResolveTexD->d->textureForWrite();
         }
         d->dsAttCount = 1;
     } else {

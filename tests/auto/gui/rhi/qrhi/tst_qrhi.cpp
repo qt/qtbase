@@ -243,6 +243,11 @@ private slots:
     void graphicsPipelineMixedGlslVersions_data();
     void graphicsPipelineMixedGlslVersions();
 
+    void textureViewFormat_data();
+    void textureViewFormat();
+    void textureArrayRange_data();
+    void textureArrayRange();
+
     // Make this the last, in case the leaked Vk object test confuses the Vulkan
     // validation or some third-party implicitly loaded layer.
     void leakedResourceDestroy_data();
@@ -13440,6 +13445,275 @@ void tst_QRhi::halfPrecisionAttributes()
     else
         QCOMPARE_GT(redCount, blueCount);
 
+}
+
+void tst_QRhi::textureViewFormat_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::textureViewFormat()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing texture view formats");
+
+    if (!rhi->isFeatureSupported(QRhi::TextureViewFormat))
+        QSKIP("Setting a texture view format is not supported, skipping test");
+
+    const QSize outputSize(64, 64);
+
+    auto renderAndReadBack = [&rhi, outputSize](QRhiTexture *texture, const char *fragShader,
+                                                auto setupSrb, auto setupUpdates)
+    {
+        QImage result;
+
+        std::unique_ptr<QRhiTextureRenderTarget> rt(rhi->newTextureRenderTarget({ texture }));
+        std::unique_ptr<QRhiRenderPassDescriptor> rpDesc(rt->newCompatibleRenderPassDescriptor());
+        rt->setRenderPassDescriptor(rpDesc.get());
+        if (!rt->create())
+            return result;
+
+        QRhiCommandBuffer *cb = nullptr;
+        if (rhi->beginOffscreenFrame(&cb) != QRhi::FrameOpSuccess)
+            return result;
+
+        QRhiResourceUpdateBatch *updates = rhi->nextResourceUpdateBatch();
+        setupUpdates(updates);
+
+        std::unique_ptr<QRhiShaderResourceBindings> srb(rhi->newShaderResourceBindings());
+        setupSrb(srb.get());
+        if (!srb->create()) {
+            rhi->endOffscreenFrame();
+            return result;
+        }
+
+        std::unique_ptr<QRhiGraphicsPipeline> pipeline(rhi->newGraphicsPipeline());
+        pipeline->setShaderStages({ { QRhiShaderStage::Vertex, loadShader(":/data/fullscreenquad.vert.qsb") },
+                                    { QRhiShaderStage::Fragment, loadShader(fragShader) } });
+        pipeline->setShaderResourceBindings(srb.get());
+        pipeline->setRenderPassDescriptor(rpDesc.get());
+        if (!pipeline->create()) {
+            rhi->endOffscreenFrame();
+            return result;
+        }
+
+        cb->beginPass(rt.get(), Qt::black, { 1.0f, 0 }, updates);
+        cb->setGraphicsPipeline(pipeline.get());
+        cb->setViewport({ 0, 0, float(outputSize.width()), float(outputSize.height()) });
+        cb->setShaderResources();
+        cb->draw(3);
+        cb->endPass();
+
+        QRhiReadbackResult readResult;
+        readResult.completed = [&readResult, &result] {
+            result = QImage(reinterpret_cast<const uchar *>(readResult.data.constData()),
+                            readResult.pixelSize.width(), readResult.pixelSize.height(),
+                            QImage::Format_RGBA8888_Premultiplied).copy();
+        };
+        QRhiResourceUpdateBatch *readbackBatch = rhi->nextResourceUpdateBatch();
+        readbackBatch->readBackTexture({ texture }, &readResult);
+        cb->resourceUpdate(readbackBatch);
+        rhi->endOffscreenFrame();
+
+        return result;
+    };
+
+    // Part 1, write view format. Render the same known, linear color into two
+    // sRGB textures. The second one has a non-sRGB write view format, which
+    // must switch off the implicit linear->sRGB conversion the hardware
+    // performs on shader writes. Reading back gives the stored bytes in both
+    // cases, so the results must differ, and the second one must match what
+    // the fragment shader wrote.
+    const QRhiTexture::Flags texFlags = QRhiTexture::RenderTarget | QRhiTexture::UsedAsTransferSource | QRhiTexture::sRGB;
+
+    std::unique_ptr<QRhiTexture> srgbTex(rhi->newTexture(QRhiTexture::RGBA8, outputSize, 1, texFlags));
+    QVERIFY(srgbTex->create());
+
+    std::unique_ptr<QRhiTexture> castTex(rhi->newTexture(QRhiTexture::RGBA8, outputSize, 1, texFlags));
+    castTex->setWriteViewFormat({ QRhiTexture::RGBA8, false });
+    QVERIFY(castTex->create());
+
+    std::unique_ptr<QRhiBuffer> ubuf(rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, 16));
+    QVERIFY(ubuf->create());
+    const QVector4D color = { 0.5f, 0.5f, 0.5f, 1.0f };
+
+    auto setupColorSrb = [&ubuf](QRhiShaderResourceBindings *srb) {
+        srb->setBindings({
+            QRhiShaderResourceBinding::uniformBuffer(0, QRhiShaderResourceBinding::FragmentStage, ubuf.get())
+        });
+    };
+    auto uploadColor = [&ubuf, &color](QRhiResourceUpdateBatch *u) {
+        u->updateDynamicBuffer(ubuf.get(), 0, 16, &color);
+    };
+
+    const QImage srgbResult = renderAndReadBack(srgbTex.get(), ":/data/fullscreenquad_color.frag.qsb",
+                                                setupColorSrb, uploadColor);
+    QCOMPARE(srgbResult.size(), outputSize);
+
+    const QImage castResult = renderAndReadBack(castTex.get(), ":/data/fullscreenquad_color.frag.qsb",
+                                                setupColorSrb, uploadColor);
+    QCOMPARE(castResult.size(), outputSize);
+
+    // Part 2, read view format. Sample a plain, non-sRGB texture holding a
+    // known byte value, once as-is and once through an sRGB read view. The
+    // latter makes the hardware decode sRGB->linear when sampling, so the
+    // value that ends up in the (non-sRGB) render target is lower.
+    const int srcValue = 188;
+    QImage srcImage(outputSize, QImage::Format_RGBA8888);
+    srcImage.fill(QColor(srcValue, srcValue, srcValue));
+
+    std::unique_ptr<QRhiTexture> plainSrc(rhi->newTexture(QRhiTexture::RGBA8, outputSize));
+    QVERIFY(plainSrc->create());
+
+    std::unique_ptr<QRhiTexture> srgbViewSrc(rhi->newTexture(QRhiTexture::RGBA8, outputSize));
+    srgbViewSrc->setReadViewFormat({ QRhiTexture::RGBA8, true });
+    QVERIFY(srgbViewSrc->create());
+
+    std::unique_ptr<QRhiSampler> sampler(rhi->newSampler(QRhiSampler::Nearest, QRhiSampler::Nearest, QRhiSampler::None,
+                                                         QRhiSampler::ClampToEdge, QRhiSampler::ClampToEdge));
+    QVERIFY(sampler->create());
+
+    std::unique_ptr<QRhiTexture> outTex(rhi->newTexture(QRhiTexture::RGBA8, outputSize, 1,
+                                                        QRhiTexture::RenderTarget | QRhiTexture::UsedAsTransferSource));
+    QVERIFY(outTex->create());
+
+    auto sampleFrom = [&](QRhiTexture *src) {
+        return renderAndReadBack(outTex.get(), ":/data/fullscreenquad_texture.frag.qsb",
+                                 [&](QRhiShaderResourceBindings *srb) {
+                                     srb->setBindings({
+                                         QRhiShaderResourceBinding::sampledTexture(0, QRhiShaderResourceBinding::FragmentStage,
+                                                                                   src, sampler.get())
+                                     });
+                                 },
+                                 [&](QRhiResourceUpdateBatch *u) { u->uploadTexture(src, srcImage); });
+    };
+
+    const QImage plainSampled = sampleFrom(plainSrc.get());
+    QCOMPARE(plainSampled.size(), outputSize);
+
+    const QImage srgbSampled = sampleFrom(srgbViewSrc.get());
+    QCOMPARE(srgbSampled.size(), outputSize);
+
+    if (impl == QRhi::Null)
+        return;
+
+    const int maxFuzz = 2;
+
+    // Part 1. Casting to non-sRGB must have suppressed the conversion, so the
+    // stored value is the one the shader wrote. Without the cast hardware encoded
+    // to sRGB, so the stored value is visibly higher.
+    QVERIFY(qAbs(qRed(castResult.pixel(32, 32)) - 128) <= maxFuzz);
+    QVERIFY(qRed(srgbResult.pixel(32, 32)) > qRed(castResult.pixel(32, 32)) + 32);
+
+    // Part 2. Without a read view format the sampled value passes through
+    // unchanged. With the sRGB read view, 188/255 is decoded as sRGB, giving ~0.5 linear
+    QVERIFY(qAbs(qRed(plainSampled.pixel(32, 32)) - srcValue) <= maxFuzz);
+    QVERIFY(qAbs(qRed(srgbSampled.pixel(32, 32)) - 128) <= maxFuzz);
+}
+
+void tst_QRhi::textureArrayRange_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::textureArrayRange()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing texture array ranges");
+
+    if (!rhi->isFeatureSupported(QRhi::TextureArrays))
+        QSKIP("Texture arrays are not supported, skipping test");
+
+    if (!rhi->isFeatureSupported(QRhi::TextureArrayRange))
+        QSKIP("Selecting a texture array range is not supported, skipping test");
+
+    const QSize layerSize(64, 64);
+    const QColor layerColors[3] = { Qt::red, Qt::green, Qt::blue };
+
+    std::unique_ptr<QRhiTexture> texArray(rhi->newTextureArray(QRhiTexture::RGBA8, 3, layerSize));
+    texArray->setArrayRange(1, 1);
+    QVERIFY(texArray->create());
+
+    std::unique_ptr<QRhiTexture> outTex(rhi->newTexture(QRhiTexture::RGBA8, layerSize, 1,
+                                                        QRhiTexture::RenderTarget | QRhiTexture::UsedAsTransferSource));
+    QVERIFY(outTex->create());
+
+    std::unique_ptr<QRhiTextureRenderTarget> rt(rhi->newTextureRenderTarget({ outTex.get() }));
+    std::unique_ptr<QRhiRenderPassDescriptor> rpDesc(rt->newCompatibleRenderPassDescriptor());
+    rt->setRenderPassDescriptor(rpDesc.get());
+    QVERIFY(rt->create());
+
+    QRhiCommandBuffer *cb = nullptr;
+    QVERIFY(rhi->beginOffscreenFrame(&cb) == QRhi::FrameOpSuccess);
+    QVERIFY(cb);
+
+    QRhiResourceUpdateBatch *updates = rhi->nextResourceUpdateBatch();
+    for (int layer = 0; layer < 3; ++layer) {
+        QImage img(layerSize, QImage::Format_RGBA8888);
+        img.fill(layerColors[layer]);
+        QRhiTextureSubresourceUploadDescription subresDesc(img);
+        QRhiTextureUploadEntry entry(layer, 0, subresDesc);
+        updates->uploadTexture(texArray.get(), QRhiTextureUploadDescription({ entry }));
+    }
+
+    std::unique_ptr<QRhiSampler> sampler(rhi->newSampler(QRhiSampler::Nearest, QRhiSampler::Nearest, QRhiSampler::None,
+                                                         QRhiSampler::ClampToEdge, QRhiSampler::ClampToEdge));
+    QVERIFY(sampler->create());
+
+    std::unique_ptr<QRhiShaderResourceBindings> srb(rhi->newShaderResourceBindings());
+    srb->setBindings({QRhiShaderResourceBinding::sampledTexture(0, QRhiShaderResourceBinding::FragmentStage,
+                                                  texArray.get(), sampler.get())
+    });
+    QVERIFY(srb->create());
+
+    std::unique_ptr<QRhiGraphicsPipeline> pipeline(rhi->newGraphicsPipeline());
+    QShader vs = loadShader(":/data/fullscreenquad.vert.qsb");
+    QVERIFY(vs.isValid());
+    QShader fs = loadShader(":/data/sampletexturearraylayer0.frag.qsb");
+    QVERIFY(fs.isValid());
+    pipeline->setShaderStages({ { QRhiShaderStage::Vertex, vs }, { QRhiShaderStage::Fragment, fs } });
+    pipeline->setShaderResourceBindings(srb.get());
+    pipeline->setRenderPassDescriptor(rpDesc.get());
+    QVERIFY(pipeline->create());
+
+    cb->beginPass(rt.get(), Qt::black, { 1.0f, 0 }, updates);
+    cb->setGraphicsPipeline(pipeline.get());
+    cb->setViewport({ 0, 0, float(layerSize.width()), float(layerSize.height()) });
+    cb->setShaderResources();
+    cb->draw(3);
+    cb->endPass();
+
+    QRhiReadbackResult readResult;
+    QImage result;
+    readResult.completed = [&readResult, &result] {
+        result = QImage(reinterpret_cast<const uchar *>(readResult.data.constData()),
+                        readResult.pixelSize.width(), readResult.pixelSize.height(),
+                        QImage::Format_RGBA8888_Premultiplied).copy();
+    };
+    QRhiResourceUpdateBatch *readbackBatch = rhi->nextResourceUpdateBatch();
+    readbackBatch->readBackTexture({ outTex.get() }, &readResult);
+    cb->resourceUpdate(readbackBatch);
+
+    rhi->endOffscreenFrame();
+    QCOMPARE(result.size(), layerSize);
+
+    if (impl == QRhi::Null)
+        return;
+
+    // Layer 0 of the range is layer 1 of the array, which is green.
+    const QRgb c = result.pixel(32, 32);
+    const int maxFuzz = 1;
+    QVERIFY(qRed(c) <= maxFuzz);
+    QVERIFY(qGreen(c) >= 255 - maxFuzz);
+    QVERIFY(qBlue(c) <= maxFuzz);
 }
 
 #include <tst_qrhi.moc>

@@ -7975,6 +7975,8 @@ bool QVkTexture::create()
     imageInfo.flags = 0;
     if (isCube)
         imageInfo.flags |= VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
+    if (viewFormat != vkformat || viewFormatForSampling != vkformat)
+        imageInfo.flags |= VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT;
 
     if (is3D && isRenderTarget) {
         // This relies on a Vulkan 1.1 constant. For guaranteed proper behavior

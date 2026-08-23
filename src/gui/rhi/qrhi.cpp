@@ -984,7 +984,7 @@ Q_LOGGING_CATEGORY(QRHI_LOG_RUB, "qt.rhi.rub")
     with image load/store. This feature is only available with some backends as
     it does not map well to all graphics APIs, and it is only meant to provide
     support for special cases anyhow. In practice the feature can be expected to
-    be supported with Direct3D 11/12 and Vulkan.
+    be supported with Direct3D 11/12, Vulkan and Metal.
 
     \value NonFillPolygonMode Indicates that setting a PolygonMode other than
     the default Fill is supported for QRhiGraphicsPipeline. A common use case
@@ -1053,7 +1053,7 @@ Q_LOGGING_CATEGORY(QRHI_LOG_RUB, "qt.rhi.rub")
     sRGB format to non-sRGB to avoid the unwanted linear->sRGB conversion on
     shader writes. Other types of casting may or may not be functional,
     depending on the underlying API. Currently implemented for Vulkan and Direct
-    3D 12. With D3D12 the feature is available only if
+    3D 12 and Metal. With D3D12 the feature is available only if
     \c CastingFullyTypedFormatSupported is supported, see
     \l{https://microsoft.github.io/DirectX-Specs/d3d/RelaxedCasting.html} (and
     note that QRhi always uses fully typed formats for textures.) This enum

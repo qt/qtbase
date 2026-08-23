@@ -54,3 +54,5 @@ qsb --glsl "150,120,100 es" --hlsl 50 -c --msl 12,21 --msl-argument-buffers -o c
 :: the two stages share 100 es but not their best GLSL ES version.
 qsb --glsl "100 es,300 es,120,150" --hlsl 50 --msl 12 -o glslversionmix.vert.qsb simple.vert
 qsb --glsl "100 es,120,150" --hlsl 50 --msl 12 -o glslversionmix.frag.qsb simple.frag
+qsb --glsl "150,130,300 es" --hlsl 50 --msl 12 -o fullscreenquad_texture.frag.qsb fullscreenquad_texture.frag
+qsb --glsl "150,130,300 es" --hlsl 50 --msl 12 -o sampletexturearraylayer0.frag.qsb sampletexturearraylayer0.frag
