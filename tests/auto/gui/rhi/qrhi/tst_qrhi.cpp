@@ -1774,7 +1774,7 @@ void tst_QRhi::resourceUpdateBatchTextureInvalidSizeAndStride()
     };
 
     // Rows [0, changedRows) are expected to hold NEW, the rest must still hold BASE.
-    auto verifyRows = [BASE, NEW](const QImage &image, int firstChangedRow, int lastChangedRow) -> bool {
+    auto verifyRows = [&](const QImage &image, int firstChangedRow, int lastChangedRow) -> bool {
         for (int y = 0; y < image.height(); ++y) {
             const bool changed = y >= firstChangedRow && y < lastChangedRow;
             const uchar expected = uchar(changed ? NEW : BASE);
