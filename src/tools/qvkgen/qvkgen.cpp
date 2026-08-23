@@ -343,7 +343,7 @@ bool genVulkanFunctionsH(const QList<VkSpecParser::Command> &commands,
 "\n"
 "#include <QtGui/qtguiglobal.h>\n"
 "\n"
-"#if QT_CONFIG(vulkan) || defined(Q_QDOC)\n"
+"#if (QT_CONFIG(vulkan) && __has_include(<vulkan/vulkan.h>)) || defined(Q_QDOC)\n"
 "\n"
 "#ifndef VK_NO_PROTOTYPES\n"
 "#define VK_NO_PROTOTYPES\n"
@@ -388,7 +388,7 @@ bool genVulkanFunctionsH(const QList<VkSpecParser::Command> &commands,
 "\n"
 "QT_END_NAMESPACE\n"
 "\n"
-"#endif // QT_CONFIG(vulkan) || defined(Q_QDOC)\n"
+"#endif // QT_CONFIG(vulkan) && __has_include(<vulkan/vulkan.h>)\n"
 "\n"
 "#endif // QVULKANFUNCTIONS_H\n";
 
@@ -447,6 +447,8 @@ bool genVulkanFunctionsPH(const QList<VkSpecParser::Command> &commands,
 "\n"
 "#include \"qvulkanfunctions.h\"\n"
 "\n"
+"#if QT_CONFIG(vulkan) && __has_include(<vulkan/vulkan.h>)\n"
+"\n"
 "QT_BEGIN_NAMESPACE\n"
 "\n"
 "class QVulkanInstance;\n"
@@ -468,6 +470,8 @@ bool genVulkanFunctionsPH(const QList<VkSpecParser::Command> &commands,
 "};\n"
 "\n"
 "QT_END_NAMESPACE\n"
+"\n"
+"#endif // QT_CONFIG(vulkan) && __has_include(<vulkan/vulkan.h>)\n"
 "\n"
 "#endif // QVULKANFUNCTIONS_P_H\n";
 
