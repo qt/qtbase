@@ -6,7 +6,7 @@
 
 #include <QtGui/private/qtguiglobal_p.h>
 
-#if QT_CONFIG(vulkan) || defined(Q_QDOC)
+#if (QT_CONFIG(vulkan) && __has_include(<vulkan/vulkan.h>)) || defined(Q_QDOC)
 
 #include "qvulkaninstance.h"
 #include <private/qvulkanfunctions_p.h>
@@ -55,6 +55,6 @@ public:
 
 QT_END_NAMESPACE
 
-#endif // QT_CONFIG(vulkan)
+#endif // QT_CONFIG(vulkan) && __has_include(<vulkan/vulkan.h>)
 
 #endif // QVULKANINSTANCE_P_H
