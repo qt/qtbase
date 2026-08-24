@@ -12,6 +12,7 @@
 #include <private/wcharhelpers_win_p.h>
 
 #include <algorithm>
+#include <optional>
 
 #include <private/qwinregistry_p.h>
 
@@ -148,20 +149,31 @@ TIME_ZONE_INFORMATION getRegistryTzi(const QByteArray &windowsId, bool *ok)
     *ok = false;
     TIME_ZONE_INFORMATION tzi;
     REG_TZI_FORMAT regTzi;
-    DWORD regTziSize = sizeof(regTzi);
     const QString tziKeyPath = QString::fromWCharArray(tzRegPath) + u'\\'
                                + QString::fromUtf8(windowsId);
 
     QWinRegistryKey key(HKEY_LOCAL_MACHINE, tziKeyPath);
     if (key.isValid()) {
-        DWORD size = sizeof(tzi.DaylightName);
-        RegQueryValueEx(key, L"Dlt", nullptr, nullptr, reinterpret_cast<LPBYTE>(tzi.DaylightName), &size);
-
-        size = sizeof(tzi.StandardName);
-        RegQueryValueEx(key, L"Std", nullptr, nullptr, reinterpret_cast<LPBYTE>(tzi.StandardName), &size);
-
-        if (RegQueryValueEx(key, L"TZI", nullptr, nullptr, reinterpret_cast<BYTE *>(&regTzi), &regTziSize)
-            == ERROR_SUCCESS) {
+        auto regQuery = [&key](const wchar_t *entry, auto buffer, size_t space) {
+            std::optional<size_t> res;
+            DWORD size = space;
+            if (RegQueryValueEx(key, entry, nullptr, nullptr,
+                                reinterpret_cast<LPBYTE>(buffer), &size) == ERROR_SUCCESS) {
+                res = size_t(size);
+            }
+            return res;
+        };
+        auto regStrQuery = [&regQuery](const wchar_t *entry, auto buffer, size_t space) {
+            // TODO: MS docs say RegGetValue() would be better for string values.
+            if (auto res = regQuery(entry, buffer, space); !res)
+                buffer[0] = L'\0';
+            else if (*res >= space) // ensure '\0' termination, albeit by truncation:
+                buffer[space / sizeof(buffer[0]) - 1] = L'\0';
+        };
+        regStrQuery(L"Dlt", tzi.DaylightName, sizeof(tzi.DaylightName));
+        regStrQuery(L"Std", tzi.StandardName, sizeof(tzi.StandardName));
+        if (auto res = regQuery(L"TZI", &regTzi, sizeof(regTzi))) {
+            Q_ASSERT(*res == sizeof(regTzi));
             tzi.Bias = regTzi.Bias;
             tzi.StandardBias = regTzi.StandardBias;
             tzi.DaylightBias = regTzi.DaylightBias;
