@@ -11,6 +11,7 @@
 #include "qloggingcategory.h"
 #include "qmutex.h"
 #include <private/quniquehandle_types_p.h>
+#include <private/qwin32ticks_p.h>
 
 #include <qt_windows.h>
 
@@ -347,9 +348,7 @@ void QThread::sleep(std::chrono::nanoseconds nsecs)
         if (waitableTimerHandle) {
             using namespace std::chrono_literals;
             // SetWaitableTimerEx's uses intervals of 100ns (0.1µs)
-            using hundredsOfNano = std::ratio<1, 10'000'000>;
-            using hundredsOfNanoseconds = std::chrono::duration<long long, hundredsOfNano>;
-            const auto ticks100ns = duration_cast<hundredsOfNanoseconds>(nsecs);
+            const auto ticks100ns = duration_cast<QtPrivate::win32_ticks>(nsecs);
             LARGE_INTEGER i;
             // Negate to make it a relative timeout:
             i.QuadPart = std::min(-(ticks100ns.count()), -1ll);
