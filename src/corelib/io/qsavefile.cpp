@@ -91,8 +91,12 @@ bool QSaveFilePrivate::open(QIODevice::OpenMode mode)
     finalFileName = fileName;
     if (priorFile.isSymLink()) {
         int maxDepth = 128;
-        while (--maxDepth && priorFile.isSymLink())
-            priorFile.setFile(priorFile.symLinkTarget());
+        for (QString target; maxDepth; --maxDepth) {
+            target = priorFile.symLinkTarget();
+            if (target.isEmpty())
+                break;
+            priorFile.setFile(target);
+        }
         if (maxDepth > 0)
             finalFileName = priorFile.filePath();
     }
