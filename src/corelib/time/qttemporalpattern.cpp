@@ -232,18 +232,26 @@ namespace QtTemporalPattern {
     presence of zero minute and second offsets following the hour field.
 
     Where a text to be matched (for example, a literal or the name of a month or
-    day of the week) contains spaces, by default the spaces must match exactly.
-    Since users commonly treat anything that looks like a space the same, it is
-    usually desirable to match spaces flexibly. Where the text to be parsed is
-    taken from a larger text, it's also possible that this larger text has been
-    flowed, as a paragraph, which may have turned some spaces into line breaks,
-    possibly with added indentation. Coping with such cases is supported by the
-    option
+    day of the week) contains spaces, by default plain space (ASCII SPACE,
+    U+0020) and the various Unicode spacing characters outside the ASCII range
+    (of various widths, some of them non-breaking) are all accepted as matches
+    for one another, while the number and placement of such short horizontal
+    spaces must match. Other spacing characters (newline, tab, etc.) must match
+    exactly.  Since users commonly do not distinguish the short horizontal
+    spaces, this default usually suffices. In some cases, there may be reason to
+    insist on exact matching of spaces, without treating short horizontal spaces
+    as equivalent. Where the text to be parsed is taken from a larger text,
+    however, it's also possible that this larger text has been flowed, as a
+    paragraph, which may have turned some spaces into line breaks, possibly with
+    added indentation, or the text may be split across a page boundary. Coping
+    with such cases is supported by the options
 
     \value FlexSpace Where a field to be matched contains spacing characters, or
                      a run of them, any spacing character or run of them will be
                      accepted as matching. A character is deemed to be a spacing
                      character if \l QChar::isSpace() is true for it.
+    \value StrictSpace Spacing characters must be matched exactly.
+                       Ignored if FlexSpace is also set.
 
     The following options are only relevant to Verbal and Standalone
     fields. They are not treated as a group or descrbed by a mask, as the locale
