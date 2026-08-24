@@ -102,6 +102,9 @@ void **QThreadStorageData::set(void *p)
         tls.resize(id + 1);
 
     void* *ptr = &tls[id];
+    if (*ptr == p) // pointer-based setLocalData(localData()) → must be no-op
+        return ptr;
+
     // delete any previous data
     if (*ptr != nullptr) {
         DEBUG_MSG("QThreadStorageData: Deleting previous storage %d, data %p, for thread %p",

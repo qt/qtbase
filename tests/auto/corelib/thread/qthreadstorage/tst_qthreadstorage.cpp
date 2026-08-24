@@ -114,6 +114,11 @@ void tst_QThreadStorage::setLocalData()
     QVERIFY(!pointers.hasLocalData());
     pointers.setLocalData(new Pointer);
     QVERIFY(pointers.hasLocalData());
+
+    const int c = Pointer::count;
+    pointers.setLocalData(pointers.localData()); // self-referential: must be a no-op
+    QCOMPARE(Pointer::count, c);
+
     pointers.setLocalData(nullptr);
     QVERIFY(!pointers.hasLocalData());
 }
