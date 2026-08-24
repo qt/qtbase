@@ -22,7 +22,7 @@
 #include <QtCore/qxpfunctional.h>
 #include <thread>
 
-#ifdef Q_OS_UNIX
+#if __has_include(<pthread.h>) // Unix and MinGW w/winpthreads
 #include <pthread.h>
 #endif
 #ifdef Q_OS_WIN
@@ -216,7 +216,10 @@ void tst_QThreadStorage::adoptedThreads_impl(qxp::function_ref<void(QThreadStora
 
 void tst_QThreadStorage::adoptedPThreads()
 {
-#ifdef Q_OS_UNIX
+#if __has_include(<pthread.h>)
+#  if defined(Q_CC_MINGW) && !defined(Q_CC_CLANG)
+    const QScopedValueRollback guard(QTBUG_149456, true);
+#  endif
     adoptedThreads_impl([] (QThreadStorage<Pointer *> &pointers) {
         const auto returnValueAdded = [](void *pointers) -> void* {
             testAdoptedThreadStorage(pointers);
@@ -228,7 +231,7 @@ void tst_QThreadStorage::adoptedPThreads()
         pthread_join(thread, nullptr);
     });
 #else
-    QSKIP("This is a Unix test");
+    QSKIP("This test requires pthread support enabled in the standard library.");
 #endif
 }
 
