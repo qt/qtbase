@@ -96,7 +96,8 @@ public:
     Q_ENUM(Type)
 
     QCborValue() {}
-    QCborValue(Type t_) : t(t_) {}
+    QCborValue(Type t_) : t(t_)
+    { if (isTag_helper(t_)) adjustDefaultConstructedExtendedType(); }
     QCborValue(std::nullptr_t) : t(Null) {}
     QCborValue(bool b_) : t(b_ ? True : False) {}
 #ifndef Q_QDOC
@@ -277,6 +278,7 @@ private:
     Type t = Undefined;
 
     void dispose();
+    void adjustDefaultConstructedExtendedType();
     qint64 value_helper() const
     {
         return n;

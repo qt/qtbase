@@ -311,7 +311,8 @@ public:
     static QCborValue makeValue(QCborValue::Type type, qint64 n, QCborContainerPrivate *d = nullptr,
                                 ContainerDisposition disp = CopyContainer)
     {
-        QCborValue result(type);
+        QCborValue result;
+        result.t = type;
         result.n = n;
         result.container = d;
         if (d && disp == CopyContainer)
