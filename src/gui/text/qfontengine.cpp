@@ -827,6 +827,9 @@ QImage QFontEngine::alphaMapForGlyph(glyph_t glyph, const QFixedPoint &/*subPixe
 
 QImage QFontEngine::alphaMapForGlyph(glyph_t glyph, const QTransform &t)
 {
+    if (t.type() > QTransform::TxTranslate && glyphTransformExceedsLimit(glyph, t))
+        return QImage();
+
     QImage i = alphaMapForGlyph(glyph);
     if (t.type() > QTransform::TxTranslate)
         i = i.transformed(t).convertToFormat(QImage::Format_Alpha8);
@@ -839,6 +842,9 @@ QImage QFontEngine::alphaMapForGlyph(glyph_t glyph, const QFixedPoint &subPixelP
 {
     if (!supportsHorizontalSubPixelPositions() && !supportsVerticalSubPixelPositions())
         return alphaMapForGlyph(glyph, t);
+
+    if (t.type() > QTransform::TxTranslate && glyphTransformExceedsLimit(glyph, t))
+        return QImage();
 
     QImage i = alphaMapForGlyph(glyph, subPixelPosition);
     if (t.type() > QTransform::TxTranslate)
@@ -986,6 +992,73 @@ glyph_t QFontEngine::findGlyph(QLatin1StringView name) const
     return result;
 }
 
+// Maximum glyph size (in pixels per side) we are willing to rasterize. Defaults
+// to 4096; overridable via QT_MAX_GLYPH_SIZE, where a value <= 0 disables the check.
+static int maxGlyphSize()
+{
+    static const int size = []() {
+        bool ok = false;
+        const int value = qEnvironmentVariableIntValue("QT_MAX_GLYPH_SIZE", &ok);
+        return ok ? value : 4096;
+    }();
+    return size;
+}
+
+qreal QFontEngine::effectivePixelSizeSquared(const QTransform &transform) const
+{
+    return fontDef.pixelSize * fontDef.pixelSize * qAbs(transform.determinant());
+}
+
+bool QFontEngine::glyphBoundingBoxExceedsLimit(qreal glyphWidth,
+                                               qreal glyphHeight,
+                                               qreal effectivePixelSizeSquared)
+{
+    const int limit = maxGlyphSize();
+    if (limit <= 0) // the check is disabled
+        return false;
+
+    const qreal limitSquared = qreal(limit) * limit;
+
+    // The font size itself is beyond what we are willing to rasterize.
+    bool hasExceeded = (effectivePixelSizeSquared > limitSquared);
+
+    if (!hasExceeded) {
+        // Otherwise a glyph may extend up to 16x the effective pixel size. We never reject sizes less
+        // than 256 pixels on this basis (to leave room for oversized glyphs at small sizes). This
+        // leaves space for glyphs that stretch outside the em square while still protecting against
+        // dramatically malformed glyphs.
+        constexpr qreal glyphSizeFactorSquared = 16 * 16;
+        constexpr qreal glyphSizeFloorSquared = 256 * 256;
+        const qreal maxDimensionSquared =
+                qMin(limitSquared,
+                     qMax(glyphSizeFloorSquared, glyphSizeFactorSquared * effectivePixelSizeSquared));
+
+        hasExceeded = glyphWidth * glyphWidth > maxDimensionSquared
+                    || glyphHeight * glyphHeight > maxDimensionSquared;
+    }
+
+    if (hasExceeded) {
+        static bool warned = false;
+        if (!warned) {
+            warned = true;
+            qCWarning(lcFontMatch,
+                      "Glyph with bounding box (%.0fx%.0f pixels) and requested effective pixel "
+                      "size of %.0f is too large for rasterizer. Set QT_MAX_GLYPH_SIZE=0 to "
+                      "disable the limit.",
+                      glyphWidth, glyphHeight, sqrt(effectivePixelSizeSquared));
+        }
+    }
+
+    return hasExceeded;
+}
+
+bool QFontEngine::glyphTransformExceedsLimit(glyph_t glyph, const QTransform &transform)
+{
+    const glyph_metrics_t gm = boundingBox(glyph, transform);
+    return glyphBoundingBoxExceedsLimit(gm.width.toReal(), gm.height.toReal(),
+                                        effectivePixelSizeSquared(transform));
+}
+
 QImage QFontEngine::renderedPathForGlyph(glyph_t glyph, const QColor &color)
 {
     glyph_metrics_t gm = boundingBox(glyph);
@@ -994,8 +1067,14 @@ QImage QFontEngine::renderedPathForGlyph(glyph_t glyph, const QColor &color)
     int glyph_width = qCeil((gm.x + gm.width).toReal()) -  glyph_x;
     int glyph_height = qCeil((gm.y + gm.height).toReal()) - glyph_y;
 
-    if (glyph_width <= 0 || glyph_height <= 0)
+    if (glyph_width <= 0
+        || glyph_height <= 0
+        || glyphBoundingBoxExceedsLimit(glyph_width,
+                                        glyph_height,
+                                        fontDef.pixelSize * fontDef.pixelSize)) {
         return QImage();
+    }
+
     QFixedPoint pt;
     pt.x = -glyph_x;
     pt.y = -glyph_y; // the baseline

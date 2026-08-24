@@ -959,6 +959,9 @@ QWindowsNativeImage *QWindowsFontEngine::drawGDIGlyph(HFONT font, glyph_t glyph,
         xform.eDy += tgm.gmptGlyphOrigin.y;
     }
 
+    if (glyphBoundingBoxExceedsLimit(iw, ih, effectivePixelSizeSquared(t)))
+        return nullptr;
+
     // The padding here needs to be kept in sync with the values in alphaMapBoundingBox.
     QWindowsNativeImage *ni = new QWindowsNativeImage(iw + 2 * margin,
                                                       ih + 2 * margin,

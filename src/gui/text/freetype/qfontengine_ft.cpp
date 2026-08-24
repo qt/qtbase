@@ -1936,6 +1936,20 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
         return g;
     }
 
+    if (slot->format == FT_GLYPH_FORMAT_OUTLINE) {
+        const QTransform xform(matrix.xx / 65536.0, matrix.xy / 65536.0,
+                               matrix.yx / 65536.0, matrix.yy / 65536.0, 0, 0);
+        FT_BBox cbox;
+        FT_Outline_Get_CBox(&slot->outline, &cbox);
+        const qreal glyphWidth = qreal((cbox.xMax - cbox.xMin) >> 6);
+        const qreal glyphHeight = qreal((cbox.yMax - cbox.yMin) >> 6);
+        if (glyphBoundingBoxExceedsLimit(glyphWidth, glyphHeight, effectivePixelSizeSquared(xform))) {
+            if (set)
+                set->setGlyphMissing(glyph);
+            return &emptyGlyph;
+        }
+    }
+
     int glyph_buffer_size = 0;
     std::unique_ptr<uchar[]> glyph_buffer;
     FT_Render_Mode renderMode = (default_hint_style == HintLight) ? FT_RENDER_MODE_LIGHT : FT_RENDER_MODE_NORMAL;

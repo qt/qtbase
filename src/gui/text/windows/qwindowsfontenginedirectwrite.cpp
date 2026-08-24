@@ -1659,6 +1659,12 @@ QImage QWindowsFontEngineDirectWrite::imageForGlyph(glyph_t t,
             return QImage();
         }
 
+        if (glyphBoundingBoxExceedsLimit(rect.width(),
+                                         rect.height(),
+                                         effectivePixelSizeSquared(xform))) {
+            return QImage();
+        }
+
         QRect boundingRect = rect.adjusted(-margin, -margin, margin, margin);
 
         QImage image;
@@ -1807,6 +1813,9 @@ QImage QWindowsFontEngineDirectWrite::alphaRGBMapForGlyph(glyph_t t,
                                 xform);
 
     if (mask.isNull()) {
+        if (xform.type() > QTransform::TxTranslate && glyphTransformExceedsLimit(t, xform))
+            return QImage();
+
         mask = QFontEngine::renderedPathForGlyph(t, Qt::white);
         if (!xform.isIdentity())
             mask = mask.transformed(xform);

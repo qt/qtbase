@@ -771,6 +771,12 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, const QFixedPoint &subP
 {
     glyph_metrics_t br = alphaMapBoundingBox(glyph, subPixelPosition, matrix, glyphFormat);
 
+    if (glyphBoundingBoxExceedsLimit(br.width.toReal(),
+                                     br.height.toReal(),
+                                     effectivePixelSizeSquared(matrix))) {
+        return QImage();
+    }
+
     QImage::Format imageFormat = hasColorGlyphs() ? QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32;
     QImage im(br.width.ceil().toInt(), br.height.ceil().toInt(), imageFormat);
     if (!im.width() || !im.height())
