@@ -99,7 +99,7 @@ void tst_QtParseQtTemporalFormat::prefix_data()
     constexpr Flags FullZoneName
         = Flag::LocalizedZone | Flag::Verbal | Flag::Standalone | Flag::Wide | Flag::Short
         | Flag::LocalTimeName;
-    constexpr Flags TextCommon = Flag::IgnoreCase | Flag::FlexSpace;
+    constexpr Flags TextCommon = Flag::IgnoreCase;
 
     QTest::addColumn<QString>("text");
     QTest::addColumn<Parts>("form");
@@ -111,108 +111,108 @@ void tst_QtParseQtTemporalFormat::prefix_data()
     QTest::addRow("empty/none") << u""_s << Parts{} << 0 << Fields{};
     QTest::addRow("literal/none")
         << u"literal"_s << Parts{} << 7
-        << Fields{ Field{u"literal"_s, 0, Flag::FlexSpace, Cat::Literal} };
+        << Fields{ Field{u"literal"_s, 0, Flags{}, Cat::Literal} };
     QTest::addRow("quotey-literal/none")
         // Incidentally check a lone unquoted y is treated as literal, not year-field:
         << u"''li''y't'''eral''"_s << Parts{} << 18
-        << Fields{ Field{u"'li'yt'eral'"_s, 0, Flag::FlexSpace, Cat::Literal} };
+        << Fields{ Field{u"'li'yt'eral'"_s, 0, Flags{}, Cat::Literal} };
     QTest::addRow("hh':'mm' 'aP'unclosed/time")
         << u"hh':'mm' 'aP'unclosed"_s << Parts{Part::Time} << 12
         << Fields{ Field{QString(), 2, Flag::Numeric | Flag::ZeroPad, Cat::HourMod12},
-            Field{u":"_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field{u":"_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 2, Flag::Numeric | Flag::ZeroPad, Cat::Minute},
-            Field{u" "_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field{u" "_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 0, TextCommon, Cat::PeriodInDay} };
     QTest::addRow("hh':'mm' 'ss.zz'partially''unclosed/time")
         << u"hh':'mm' 'ss.zz'partially''unclosed"_s << Parts{Part::Time} << 26
         << Fields{ Field{QString(), 2, Flag::Numeric | Flag::ZeroPad, Cat::Hour},
             // The absence of a PeriodInDay field has coerced the HourMod12 to an Hour.
-            Field{u":"_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field{u":"_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 2, Flag::Numeric | Flag::ZeroPad, Cat::Minute},
-            Field{u" "_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field{u" "_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 2, Flag::Numeric | Flag::ZeroPad, Cat::Second},
-            Field{u"."_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field{u"."_s, 0, Flags{}, Cat::Literal},
             // Although we used zz format, it counts as width 1:
             Field{QString(), 1, Flag::Numeric, Cat::SecondFraction},
-            Field{u"partially"_s, 0, Flag::FlexSpace, Cat::Literal} };
+            Field{u"partially"_s, 0, Flags{}, Cat::Literal} };
 
     // Variation in the parts to include:
     QTest::addRow("yyyy-MM-dd HH:mm:ss tttt/none")
         << u"yyyy-MM-dd HH:mm:ss tttt"_s << Parts{} << 24
-        << Fields{ Field{u"yyyy-MM-dd HH:mm:ss tttt"_s, 0, Flag::FlexSpace, Cat::Literal} };
+        << Fields{ Field{u"yyyy-MM-dd HH:mm:ss tttt"_s, 0, Flags{}, Cat::Literal} };
     QTest::addRow("yyyy-MM-dd HH:mm:ss tttt/zone")
         << u"yyyy-MM-dd HH:mm:ss tttt"_s << Parts{Part::Zone} << 24
-        << Fields{ Field{u"yyyy-MM-dd HH:mm:ss "_s, 0, Flag::FlexSpace, Cat::Literal},
+        << Fields{ Field{u"yyyy-MM-dd HH:mm:ss "_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 4, FullZoneName, Cat::TimeZone} };
     QTest::addRow("yyyy-MM-dd HH:mm:s tttt/time")
         << u"yyyy-MM-dd HH:mm:s tttt"_s << Parts{Part::Time} << 23
-        << Fields{ Field{u"yyyy-MM-dd "_s, 0, Flag::FlexSpace, Cat::Literal},
+        << Fields{ Field{u"yyyy-MM-dd "_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 2, Flag::Numeric | Flag::ZeroPad, Cat::Hour},
-            Field{u":"_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field{u":"_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 2, Flag::Numeric | Flag::ZeroPad, Cat::Minute},
-            Field{u":"_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field{u":"_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 1, Flag::Numeric, Cat::Second},
-            Field{u" tttt"_s, 0, Flag::FlexSpace, Cat::Literal} };
+            Field{u" tttt"_s, 0, Flags{}, Cat::Literal} };
     QTest::addRow("yyyy-MM-dd HH:m:s ttt/time+zone")
         << u"yyyy-MM-dd HH:m:s ttt"_s << Parts{Part::Time | Part::Zone} << 21
-        << Fields{ Field{u"yyyy-MM-dd "_s, 0, Flag::FlexSpace, Cat::Literal},
+        << Fields{ Field{u"yyyy-MM-dd "_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 2, Flag::Numeric | Flag::ZeroPad, Cat::Hour},
-            Field{u":"_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field{u":"_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 1, Flag::Numeric, Cat::Minute},
-            Field{u":"_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field{u":"_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 1, Flag::Numeric, Cat::Second},
-            Field{u" "_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field{u" "_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 3, Flag::Verbal | Flag::Iso8601 | Flag::ZeroPad, Cat::TimeZone} };
     QTest::addRow("yyyy-MM-dd HH:mm:ss tttt/date")
         << u"yyyy-MM-dd HH:mm:ss tttt"_s << Parts{Part::Date} << 24
         << Fields{ Field{QString(), 4,
                          Flag::Numeric | Flag::ZeroPad | Flag::YearSignIso8601, Cat::Year},
-            Field{u"-"_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field{u"-"_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 2, Flag::Numeric | Flag::ZeroPad, Cat::Month},
-            Field{u"-"_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field{u"-"_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 2, Flag::Numeric | Flag::ZeroPad, Cat::DayOfMonth},
-            Field{u" HH:mm:ss tttt"_s, 0, Flag::FlexSpace, Cat::Literal} };
+            Field{u" HH:mm:ss tttt"_s, 0, Flags{}, Cat::Literal} };
     QTest::addRow("yyyyy-M-dd HH:mm:ss tt/date+zone")
         << u"yyyyy-M-dd HH:mm:ss tt"_s << Parts{Part::Date | Part::Zone} << 22
         << Fields{ Field{QString(), 4,
                          Flag::Numeric | Flag::ZeroPad | Flag::YearSignIso8601, Cat::Year},
             // The fifth 'y' is not a format character, so becomes part of a literal:
-            Field{u"y-"_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field{u"y-"_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 1, Flag::Numeric, Cat::Month},
-            Field{u"-"_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field{u"-"_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 2, Flag::Numeric | Flag::ZeroPad, Cat::DayOfMonth},
-            Field{u" HH:mm:ss "_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field{u" HH:mm:ss "_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 2, Flag::Numeric | Flag::Iso8601 | Flag::ZeroPad, Cat::TimeZone} };
     QTest::addRow("yyyy-MM-d HH:mm:ss tttt/date+time")
         << u"yyyy-MM-d HH:mm:ss tttt"_s << Parts{Part::Date | Part::Time} << 23
         << Fields{ Field{QString(), 4,
                          Flag::Numeric | Flag::ZeroPad | Flag::YearSignIso8601, Cat::Year},
-            Field{u"-"_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field{u"-"_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 2, Flag::Numeric | Flag::ZeroPad, Cat::Month},
-            Field{u"-"_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field{u"-"_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 1, Flag::Numeric, Cat::DayOfMonth},
-            Field{u" "_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field{u" "_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 2, Flag::Numeric | Flag::ZeroPad, Cat::Hour},
-            Field{u":"_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field{u":"_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 2, Flag::Numeric | Flag::ZeroPad, Cat::Minute},
-            Field{u":"_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field{u":"_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 2, Flag::Numeric | Flag::ZeroPad, Cat::Second},
-            Field{u" tttt"_s, 0, Flag::FlexSpace, Cat::Literal} };
+            Field{u" tttt"_s, 0, Flags{}, Cat::Literal} };
     QTest::addRow("yyyy-M-d HH:m:ss t/date+time+zone")
         << u"yyyy-M-d HH:m:ss t"_s << AllParts << 18
         << Fields{ Field{QString(), 4,
                          Flag::Numeric | Flag::ZeroPad | Flag::YearSignIso8601, Cat::Year},
-            Field{u"-"_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field{u"-"_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 1, Flag::Numeric, Cat::Month},
-            Field{u"-"_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field{u"-"_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 1, Flag::Numeric, Cat::DayOfMonth},
-            Field{u" "_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field{u" "_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 2, Flag::Numeric | Flag::ZeroPad, Cat::Hour},
-            Field{u":"_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field{u":"_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 1, Flag::Numeric, Cat::Minute},
-            Field{u":"_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field{u":"_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 2, Flag::Numeric | Flag::ZeroPad, Cat::Second},
-            Field{u" "_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field{u" "_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 1, Flag::AllowZSuffix | Flag::LocalTimeName, Cat::TimeZone} };
     // 3 parts => 8 variants.
     // Those have also varied field-length of minute, second, numeric month and day.
@@ -221,52 +221,52 @@ void tst_QtParseQtTemporalFormat::prefix_data()
         << u"ddd, dd MMM yyyy HH:mm:ss tt"_s << AllParts << 28
         << Fields{ Field{QString(), 3,
                          Flag::Verbal | Flag::Abbreviated | TextCommon, Cat::DayOfWeek},
-            Field{u", "_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field{u", "_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 2, Flag::Numeric | Flag::ZeroPad, Cat::DayOfMonth},
-            Field{u" "_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field{u" "_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 3, Flag::Verbal | Flag::Abbreviated | TextCommon, Cat::Month},
-            Field{u" "_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field{u" "_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 4, Flag::Numeric | Flag::ZeroPad | Flag::YearSignIso8601, Cat::Year},
-            Field{u" "_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field{u" "_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 2, Flag::Numeric | Flag::ZeroPad, Cat::Hour},
-            Field{u":"_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field{u":"_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 2, Flag::Numeric | Flag::ZeroPad, Cat::Minute},
-            Field{u":"_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field{u":"_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 2, Flag::Numeric | Flag::ZeroPad, Cat::Second},
-            Field{u" "_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field{u" "_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 2, Flag::Numeric | Flag::Iso8601 | Flag::ZeroPad, Cat::TimeZone} };
     QTest::addRow("RFC-permissive/full")
         << u"ddd MMM dd HH:mm:ss yyyy tt"_s << AllParts << 27
         << Fields { Field{QString(), 3,
                           Flag::Verbal | Flag::Abbreviated | TextCommon, Cat::DayOfWeek},
-            Field{u" "_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field{u" "_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 3, Flag::Verbal | Flag::Abbreviated | TextCommon, Cat::Month},
-            Field{u" "_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field{u" "_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 2, Flag::Numeric | Flag::ZeroPad, Cat::DayOfMonth},
-            Field{u" "_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field{u" "_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 2, Flag::Numeric | Flag::ZeroPad, Cat::Hour},
-            Field{u":"_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field{u":"_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 2, Flag::Numeric | Flag::ZeroPad, Cat::Minute},
-            Field{u":"_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field{u":"_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 2, Flag::Numeric | Flag::ZeroPad, Cat::Second},
-            Field{u" "_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field{u" "_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 4, Flag::Numeric | Flag::ZeroPad | Flag::YearSignIso8601, Cat::Year},
-            Field{u" "_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field{u" "_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 2, Flag::Numeric | Flag::Iso8601 | Flag::ZeroPad, Cat::TimeZone} };
 
     QTest::addRow("ISO-standard/full")
         << u"yyyy-MM-ddTHH:mm:ssttt"_s << AllParts << 22
         << Fields{ Field{QString(), 4,
                          Flag::Numeric | Flag::ZeroPad | Flag::YearSignIso8601, Cat::Year},
-            Field{u"-"_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field{u"-"_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 2, Flag::Numeric | Flag::ZeroPad, Cat::Month},
-            Field{u"-"_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field{u"-"_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 2, Flag::Numeric | Flag::ZeroPad, Cat::DayOfMonth},
-            Field{u"T"_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field{u"T"_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 2, Flag::Numeric | Flag::ZeroPad, Cat::Hour},
-            Field{u":"_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field{u":"_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 2, Flag::Numeric | Flag::ZeroPad, Cat::Minute},
-            Field{u":"_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field{u":"_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 2, Flag::Numeric | Flag::ZeroPad, Cat::Second},
             Field{QString(), 3, Flag::Verbal | Flag::Iso8601 | Flag::ZeroPad, Cat::TimeZone} };
 
@@ -274,56 +274,56 @@ void tst_QtParseQtTemporalFormat::prefix_data()
     QTest::addRow("C-short/full")
         << u"d MM yyyy HH:mm t"_s << AllParts << 17
         << Fields{ Field{QString(), 1, Flag::Numeric, Cat::DayOfMonth},
-            Field {u" "_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field {u" "_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 2, Flag::Numeric | Flag::ZeroPad, Cat::Month},
-            Field {u" "_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field {u" "_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 4, Flag::Numeric | Flag::ZeroPad | Flag::YearSignIso8601, Cat::Year},
-            Field {u" "_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field {u" "_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 2, Flag::Numeric | Flag::ZeroPad, Cat::Hour},
-            Field{u":"_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field{u":"_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 2, Flag::Numeric | Flag::ZeroPad, Cat::Minute},
-            Field {u" "_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field {u" "_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 1, Flag::AllowZSuffix | Flag::LocalTimeName, Cat::TimeZone} };
     QTest::addRow("C-long/full")
         // Incidentally also test quirk: absent a/A field, h = H:
         << u"dddd, d MMMM yyyy hh:mm:ss tttt"_s << AllParts << 31
         << Fields{ Field{QString(), 4,
                          Flag::Verbal | Flag::Wide | TextCommon, Cat::DayOfWeek},
-            Field {u", "_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field {u", "_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 1, Flag::Numeric, Cat::DayOfMonth},
-            Field {u" "_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field {u" "_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 4, Flag::Verbal | Flag::Wide | TextCommon, Cat::Month},
-            Field {u" "_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field {u" "_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 4, Flag::Numeric | Flag::ZeroPad | Flag::YearSignIso8601, Cat::Year},
-            Field {u" "_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field {u" "_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 2, Flag::Numeric | Flag::ZeroPad, Cat::Hour},
-            Field{u":"_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field{u":"_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 2, Flag::Numeric | Flag::ZeroPad, Cat::Minute},
-            Field{u":"_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field{u":"_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 2, Flag::Numeric | Flag::ZeroPad, Cat::Second},
-            Field {u" "_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field {u" "_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 4, FullZoneName, Cat::TimeZone} };
 
     QTest::addRow("quirky/full")
         << u"ddd, MMM yyy h:m:s.zzz Ap t"_s << AllParts << 27
         << Fields{ Field{QString(), 3,
                          Flag::Verbal | Flag::Abbreviated | TextCommon, Cat::DayOfWeek},
-            Field {u", "_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field {u", "_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 3, Flag::Verbal | Flag::Abbreviated | TextCommon, Cat::Month},
-            Field {u" "_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field {u" "_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 2, Flag::Numeric | Flag::ZeroPad, Cat::YearWithinCentury},
             // "yyy" is read as "yy" followed by literal "y".
-            Field {u"y "_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field {u"y "_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 1, Flag::Numeric, Cat::HourMod12},
-            Field{u":"_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field{u":"_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 1, Flag::Numeric, Cat::Minute},
-            Field{u":"_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field{u":"_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 1, Flag::Numeric, Cat::Second},
-            Field{u"."_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field{u"."_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 3, Flag::Numeric | Flag::ZeroPad, Cat::SecondFraction},
-            Field {u" "_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field {u" "_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 0, TextCommon, Cat::PeriodInDay},
-            Field {u" "_s, 0, Flag::FlexSpace, Cat::Literal},
+            Field {u" "_s, 0, Flags{}, Cat::Literal},
             Field{QString(), 1, Flag::AllowZSuffix | Flag::LocalTimeName, Cat::TimeZone} };
 }
 

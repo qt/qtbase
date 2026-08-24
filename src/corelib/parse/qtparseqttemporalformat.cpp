@@ -86,7 +86,7 @@ ParsedDateTimeFormat prefix(QStringView pattern, QtTemporalPattern::DateTimePart
     };
     constexpr auto formatFlags = [](uchar ch, int count) -> TemporalFieldFlags {
         using F = TemporalFieldFlag;
-        constexpr TemporalFieldFlags TextCommon = F::IgnoreCase | F::FlexSpace;
+        constexpr TemporalFieldFlags TextCommon = F::IgnoreCase;
         switch (ch) {
         case 'A': // case 'P':
             return count ? F::UpperCase | TextCommon : TextCommon;
@@ -298,10 +298,9 @@ ParsedDateTimeFormat prefix(QStringView pattern, QtTemporalPattern::DateTimePart
         }
         // Even if we truncated due to an unclosed quote, we have a literal to
         // include in the prefix we can parse as a pattern:
-        if (!literal.isEmpty()) {
-            store(std::move(literal), 0,
-                  TemporalFieldFlag::FlexSpace, TemporalFieldCategory::Literal);
-        }
+        if (!literal.isEmpty())
+            store(std::move(literal), 0, {}, TemporalFieldCategory::Literal);
+
         // If we're in an unclosed quote, we cleared pending or marked it invalid:
         Q_ASSERT(quote.isNull() || !pending || pending > QChar::LastValidCodePoint);
     }

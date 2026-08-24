@@ -66,7 +66,7 @@ namespace QtTemporalPattern {
         Numeric = 1, Verbal = 2, Standalone = 4,
         Narrow = 0x10, Abbreviated = 0x20, Short = 0x40, Wide = 0x80,
         ZeroPad = 0x0100, // For TimeZone, ZeroPad applies only to hour fields.
-        SpacePad = 0x0200, FlexSpace = 0x0400,
+        SpacePad = 0x0200, FlexSpace = 0x0400, StrictSpace = 0x0800,
         // Qt used to impose case on am/pm fields:
         LowerCase = 0x1000, UpperCase = 0x2000, // Otherwise follow locale-supplied case.
         IgnoreCase = 0x4000, // Parsing Literal or Verbal: match case insensitively
