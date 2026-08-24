@@ -3285,6 +3285,7 @@ static inline QGles2Texture::Access toGlAccess(QRhiPassResourceTracker::TextureA
     case QRhiPassResourceTracker::TexColorOutput:
         return QGles2Texture::AccessFramebuffer;
     case QRhiPassResourceTracker::TexDepthOutput:
+    case QRhiPassResourceTracker::TexDepthResolveOutput:
         return QGles2Texture::AccessFramebuffer;
     case QRhiPassResourceTracker::TexStorageLoad:
         return QGles2Texture::AccessStorageRead;

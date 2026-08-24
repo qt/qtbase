@@ -724,6 +724,7 @@ public:
         TexSample,
         TexColorOutput,
         TexDepthOutput,
+        TexDepthResolveOutput,
         TexStorageLoad,
         TexStorageStore,
         TexStorageLoadStore,
