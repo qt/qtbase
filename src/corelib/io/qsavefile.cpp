@@ -50,26 +50,41 @@ bool QSaveFilePrivate::open(QIODevice::OpenMode mode)
         return false;
     }
 
-    // Check if existing file is writable:
     QFileInfo priorFile(fileName);
-    if (!priorFile.isWritable() && priorFile.exists()) {
+
+    // If the file exists, get its permissions. This is one of the more
+    // comprehensive queries we have to make, allowing QFileInfo to cache as
+    // much as possible early on. On Unix, this is both access() and stat().
+    bool exists = false;
+    QFile::Permissions perms = priorFile.permissions();
+    if (perms) {
+        // if it has permissions, it exists
+        exists = true;
+
+        // If we haven't already been given other permissions to use, save
+        // these. For new files, see below.
+        // These may be overridden later by setPermissions(), of course.
+        if (!finalPermissions)
+            finalPermissions = perms;
+    } else {
+        exists = priorFile.exists();
+        // if exists = true, we exit below with "is not writable"
+    }
+
+    // Check if existing file is writable:
+    if (exists && !perms.testAnyFlag(QFile::WriteUser)) {
         setError(QFileDevice::WriteError,
                  QSaveFile::tr("Existing file %1 is not writable").arg(fileName));
         writeError = QFileDevice::WriteError;
         return false;
     }
 
+    // Check if it is a directory.
     if (priorFile.isDir()) {
         setError(QFileDevice::WriteError, QSaveFile::tr("Filename refers to a directory"));
         writeError = QFileDevice::WriteError;
         return false;
     }
-    // If the target file exists, and we haven't already been given other
-    // permissions to use, save the existing permissions. For new files, see
-    // below.
-    if (!finalPermissions && priorFile.exists())
-        finalPermissions = priorFile.permissions();
-    // These may be overridden later by setPermissions(), of course.
 
     // Resolve symlinks. Don't use QFileInfo::canonicalFilePath so it still give
     // the expected target even if the file does not exist
