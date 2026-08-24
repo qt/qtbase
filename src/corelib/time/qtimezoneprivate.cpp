@@ -591,7 +591,7 @@ QTimeZonePrivate::DataList QTimeZonePrivate::transitions(qint64 fromMSecsSinceEp
     DataList list;
     if (toMSecsSinceEpoch >= fromMSecsSinceEpoch) {
         // fromMSecsSinceEpoch is inclusive but nextTransitionTime() is exclusive so go back 1 msec
-        Data next = nextTransition(fromMSecsSinceEpoch - 1);
+        Data next = nextTransition(qMax(fromMSecsSinceEpoch, minMSecs()) - 1);
         while (next.atMSecsSinceEpoch != invalidMSecs()
                && next.atMSecsSinceEpoch <= toMSecsSinceEpoch) {
             list.append(next);
