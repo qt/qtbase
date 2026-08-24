@@ -3332,8 +3332,8 @@ void QRhiVulkan::activateTextureRenderTarget(QVkCommandBuffer *cbD, QVkTextureRe
     if (rtD->m_desc.depthResolveTexture()) {
         QVkTexture *depthResolveTexD = QRHI_RES(QVkTexture, rtD->m_desc.depthResolveTexture());
         trackedRegisterTexture(&passResTracker, depthResolveTexD,
-                               QRhiPassResourceTracker::TexDepthOutput,
-                               QRhiPassResourceTracker::TexDepthOutputStage);
+                               QRhiPassResourceTracker::TexDepthResolveOutput,
+                               QRhiPassResourceTracker::TexColorOutputStage);
         depthResolveTexD->lastActiveFrameSlot = currentFrameSlot;
     }
     if (rtD->m_desc.shadingRateMap()) {
@@ -5549,6 +5549,7 @@ static inline VkImageLayout toVkLayout(QRhiPassResourceTracker::TextureAccess ac
     case QRhiPassResourceTracker::TexColorOutput:
         return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     case QRhiPassResourceTracker::TexDepthOutput:
+    case QRhiPassResourceTracker::TexDepthResolveOutput:
         return VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
     case QRhiPassResourceTracker::TexStorageLoad:
     case QRhiPassResourceTracker::TexStorageStore:
@@ -5576,6 +5577,10 @@ static inline VkAccessFlags toVkAccess(QRhiPassResourceTracker::TextureAccess ac
         return VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
     case QRhiPassResourceTracker::TexDepthOutput:
         return VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+    case QRhiPassResourceTracker::TexDepthResolveOutput:
+        // a multisample resolve, even for depth-stencil, is a color attachment
+        // write as far as synchronization is concerned
+        return VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
     case QRhiPassResourceTracker::TexStorageLoad:
         return VK_ACCESS_SHADER_READ_BIT;
     case QRhiPassResourceTracker::TexStorageStore:
