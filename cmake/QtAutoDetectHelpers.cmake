@@ -196,13 +196,25 @@ function(qt_auto_detect_android)
 endfunction()
 
 function(qt_auto_detect_ohos)
+    # Handle the OHOS_SDK_ROOT environment variable.
+    if("${OHOS_SDK_ROOT}" STREQUAL "" AND DEFINED ENV{OHOS_SDK_ROOT})
+        set(OHOS_SDK_ROOT $ENV{OHOS_SDK_ROOT})
+    endif()
+
+    set(ohos_detected FALSE)
     if(DEFINED OHOS_SDK_ROOT
             OR DEFINED OHOS_NDK_ROOT
             OR DEFINED OHOS_ARCH
-            OR DEFINED OHOS_NATIVE_ABI_LEVEL)
+            OR DEFINED OHOS_NATIVE_ABI_LEVEL
+            OR QT_AUTODETECT_OHOS)
         set(ohos_detected TRUE)
-    else()
-        set(ohos_detected FALSE)
+    elseif(NOT DEFINED QT_AUTODETECT_OHOS AND EXISTS "${CMAKE_TOOLCHAIN_FILE}")
+        # Peek into the toolchain file and check if it looks like an OHOS one.
+        file(READ "${CMAKE_TOOLCHAIN_FILE}" toolchain_file_content OFFSET 0 LIMIT 80)
+        string(FIND "${toolchain_file_content}" "Huawei Device Co., Ltd" find_result REVERSE)
+        if(NOT find_result EQUAL -1)
+            set(ohos_detected TRUE)
+        endif()
     endif()
 
     # Native on-device HarmonyOS build: the user requested no OHOS SDK/toolchain
@@ -220,6 +232,11 @@ function(qt_auto_detect_ohos)
         set(OHOS ON CACHE BOOL "Build for OpenHarmony (HarmonyOS)")
     endif()
 
+    # Everything below applies to cross builds against an OHOS SDK only.
+    if(NOT ohos_detected)
+        return()
+    endif()
+
     # Auto-detect NDK root
     if(NOT DEFINED OHOS_NDK_ROOT AND DEFINED OHOS_SDK_ROOT)
         set(ndk_root "${OHOS_SDK_ROOT}/native")
@@ -233,60 +250,40 @@ function(qt_auto_detect_ohos)
     endif()
 
     # Auto-detect toolchain file
-    if(NOT DEFINED CMAKE_TOOLCHAIN_FILE AND DEFINED OHOS_NDK_ROOT)
-        set(toolchain_file "${OHOS_NDK_ROOT}/build/cmake/ohos.toolchain.cmake")
-        if(EXISTS "${toolchain_file}")
-            message(STATUS "OHOS toolchain file within NDK detected: ${toolchain_file}")
-            set(CMAKE_TOOLCHAIN_FILE "${toolchain_file}" CACHE STRING "")
-        else()
-            message(FATAL_ERROR "Cannot find the toolchain file '${toolchain_file}'. "
-                "Please specify the toolchain file with -DCMAKE_TOOLCHAIN_FILE=<file>.")
-        endif()
+    if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+        __qt_internal_detect_ohos_toolchain_file(CMAKE_TOOLCHAIN_FILE "")
+    endif()
+    if("${CMAKE_TOOLCHAIN_FILE}" STREQUAL "" OR NOT EXISTS "${CMAKE_TOOLCHAIN_FILE}")
+        __qt_internal_show_error_no_ohos_toolchain_file_found_when_building_qt()
     endif()
 
-    if(NOT DEFINED CMAKE_TOOLCHAIN_FILE AND ohos_detected)
-        message(FATAL_ERROR "An OHOS build was requested, but no OHOS toolchain file was "
-            "specified nor detected.")
-    endif()
-
-    if(DEFINED CMAKE_TOOLCHAIN_FILE AND NOT DEFINED QT_AUTODETECT_OHOS)
-        # Peek into the toolchain file and check if it looks like an OHOS one.
-        if(NOT ohos_detected)
-            file(READ ${CMAKE_TOOLCHAIN_FILE} toolchain_file_content OFFSET 0 LIMIT 80)
-            string(FIND "${toolchain_file_content}" "Huawei Device Co., Ltd"
-                find_result REVERSE)
-            if(NOT ${find_result} EQUAL -1)
-                set(ohos_detected TRUE)
-            endif()
+    if(NOT DEFINED QT_AUTODETECT_OHOS)
+        message(STATUS "OHOS build detected, checking configuration defaults...")
+        if(NOT DEFINED OHOS_PLATFORM)
+            set(OHOS_PLATFORM "OHOS" CACHE STRING "")
+        endif()
+        if(NOT DEFINED OHOS_STL)
+            set(OHOS_STL "c++_shared" CACHE STRING "")
         endif()
 
-        if(ohos_detected)
-            message(STATUS "OHOS build detected, checking configuration defaults...")
-            if(NOT DEFINED OHOS_PLATFORM)
-                set(OHOS_PLATFORM "OHOS" CACHE STRING "")
-            endif()
-            if(NOT DEFINED OHOS_STL)
-                set(OHOS_STL "c++_shared" CACHE STRING "")
-            endif()
+        # Wrap the OHOS SDK toolchain file so that QtOHOSToolchainFixes.cmake
+        # is applied after it loads.  The wrapper is used as CMAKE_TOOLCHAIN_FILE
+        # for the Qt build itself; CMake propagates CMAKE_TOOLCHAIN_FILE to every
+        # try_compile invocation, so the fixes also apply inside those.
+        #
+        # A Platform/OHOS-Initialize.cmake entry on CMAKE_MODULE_PATH would be
+        # the natural hook here, but CMake policy CMP0017 causes CMake's own
+        # module files (including CMakeSystemSpecificInitialize.cmake) to prefer
+        # CMake's built-in Platform/*-Initialize.cmake over CMAKE_MODULE_PATH
+        # entries.  CMake already ships such a file for every other supported
+        # platform, and OHOS will eventually get one too.
+        get_filename_component(ohos_real_toolchain "${CMAKE_TOOLCHAIN_FILE}" ABSOLUTE)
+        set(QT_OHOS_REAL_TOOLCHAIN_FILE "${ohos_real_toolchain}" CACHE STRING "" FORCE)
+        set(CMAKE_TOOLCHAIN_FILE
+            "${CMAKE_BINARY_DIR}/qt_ohos_toolchain_wrapper.cmake" CACHE STRING "" FORCE)
 
-            # Wrap the OHOS SDK toolchain file so that QtOHOSToolchainFixes.cmake
-            # is applied after it loads.  The wrapper is used as CMAKE_TOOLCHAIN_FILE
-            # for the Qt build itself; CMake propagates CMAKE_TOOLCHAIN_FILE to every
-            # try_compile invocation, so the fixes also apply inside those.
-            #
-            # A Platform/OHOS-Initialize.cmake entry on CMAKE_MODULE_PATH would be
-            # the natural hook here, but CMake policy CMP0017 causes CMake's own
-            # module files (including CMakeSystemSpecificInitialize.cmake) to prefer
-            # CMake's built-in Platform/*-Initialize.cmake over CMAKE_MODULE_PATH
-            # entries.  CMake already ships such a file for every other supported
-            # platform, and OHOS will eventually get one too.
-            get_filename_component(ohos_real_toolchain "${CMAKE_TOOLCHAIN_FILE}" ABSOLUTE)
-            set(QT_OHOS_REAL_TOOLCHAIN_FILE "${ohos_real_toolchain}" CACHE STRING "" FORCE)
-            set(CMAKE_TOOLCHAIN_FILE
-                "${CMAKE_BINARY_DIR}/qt_ohos_toolchain_wrapper.cmake" CACHE STRING "" FORCE)
-        endif()
-        set(QT_AUTODETECT_OHOS ${ohos_detected} CACHE STRING "")
-    elseif (QT_AUTODETECT_OHOS)
+        set(QT_AUTODETECT_OHOS TRUE CACHE STRING "")
+    else()
         message(STATUS "OHOS build detected")
     endif()
 
@@ -816,6 +813,7 @@ macro(qt_internal_setup_autodetect)
     option(QT_USE_VCPKG "Enable the use of vcpkg" OFF)
 
     include("${CMAKE_CURRENT_LIST_DIR}/QtPublicAppleHelpers.cmake")
+    include("${CMAKE_CURRENT_LIST_DIR}/QtPublicHarmonyOSToolchainHelpers.cmake")
     include("${CMAKE_CURRENT_LIST_DIR}/QtPublicWasmToolchainHelpers.cmake")
     include("${CMAKE_CURRENT_LIST_DIR}/QtPublicWinArm64ECHelpers.cmake")
 
