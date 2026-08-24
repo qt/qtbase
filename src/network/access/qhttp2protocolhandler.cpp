@@ -632,7 +632,7 @@ QHttp2Stream *QHttp2ProtocolHandler::createNewStream(const HttpMessagePair &mess
         qCDebug(QT_HTTP2) << "failed to create new stream:" << streamResult.error();
         auto *reply = message.second;
         const char *cstr = "Failed to initialize HTTP/2 stream with errorcode: %1";
-        const QString errorString = QCoreApplication::tr("QHttp", cstr)
+        const QString errorString = QCoreApplication::translate("QHttp", cstr)
                                             .arg(QDebug::toString(streamResult.error()));
         emit reply->finishedWithError(QNetworkReply::ProtocolFailure, errorString);
         return nullptr;
