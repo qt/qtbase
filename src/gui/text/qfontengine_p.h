@@ -193,6 +193,13 @@ public:
     virtual QImage alphaRGBMapForGlyph(glyph_t, const QFixedPoint &subPixelPosition, const QTransform &t);
     virtual QImage bitmapForGlyph(glyph_t, const QFixedPoint &subPixelPosition, const QTransform &t, const QColor &color = QColor());
     QImage renderedPathForGlyph(glyph_t glyph, const QColor &color);
+
+    qreal effectivePixelSizeSquared(const QTransform &transform) const;
+    static bool glyphBoundingBoxExceedsLimit(qreal glyphWidth,
+                                             qreal glyphHeight,
+                                             qreal effectivePixelSizeSquared);
+    bool glyphTransformExceedsLimit(glyph_t glyph, const QTransform &transform);
+
     virtual Glyph *glyphData(glyph_t glyph, const QFixedPoint &subPixelPosition, GlyphFormat neededFormat, const QTransform &t);
     virtual bool hasInternalCaching() const { return false; }
 

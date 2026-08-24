@@ -3,6 +3,7 @@
 
 #include <QTest>
 
+#include <QtCore/qscopeguard.h>
 #include <QtGui/qfont.h>
 #include <QtGui/qfontdatabase.h>
 #include <QtGui/qfontinfo.h>
@@ -70,6 +71,10 @@ private slots:
     void glyphName();
     void findGlyph_data() { data(); }
     void findGlyph();
+
+#if !defined(QFONTENGINE_BENCHMARK)
+    void glyphSizeLimit();
+#endif
 
 private:
     void setupApplication();
@@ -293,6 +298,59 @@ void tst_QFontEngine::findGlyph()
     QCOMPARE(fontEngine->findGlyph(candidate.glyphName()), candidate.expectedGlyphIndex);
 
     QCOMPARE(fontEngine->findGlyph("No such glyph"_L1), 0);
+}
+
+void tst_QFontEngine::glyphSizeLimit()
+{
+    QFETCH_GLOBAL(const QFontEngine::Type, engineType);
+
+    const int fontId = QFontDatabase::addApplicationFont(QFINDTESTDATA("testfont_glyphsize.ttf"));
+    QVERIFY(fontId >= 0);
+    const auto cleanup = qScopeGuard([&] { QFontDatabase::removeApplicationFont(fontId); });
+    const QStringList families = QFontDatabase::applicationFontFamilies(fontId);
+    QVERIFY(!families.isEmpty());
+
+    QFont font(families.constFirst());
+    font.setStyleStrategy(QFont::NoFontMerging);
+    font.setPixelSize(24); // glyph size limit becomes max(256, 16 * 24) = 384 px per side
+
+    QFontEngine *fontEngine = QFontPrivate::get(font)->engineForScript(QChar::Script_Common);
+    QVERIFY(fontEngine != nullptr);
+    QCOMPARE(fontEngine->type(), engineType);
+
+    const glyph_t normalGlyph = fontEngine->glyphIndex('A');    // roughly em-sized
+    const glyph_t oversizedGlyph = fontEngine->glyphIndex('B'); // ~32x the em square
+    QVERIFY(normalGlyph != 0);
+    QVERIFY(oversizedGlyph != 0);
+
+    // A normally sized glyph is rasterized as usual.
+    QVERIFY(!fontEngine->alphaMapForGlyph(normalGlyph).isNull());
+
+    // A glyph whose bounding box is far larger than the font size must be refused
+    // through every entry point that would otherwise allocate a bitmap for it, so
+    // that a malformed font cannot trigger an excessive allocation. A refused glyph
+    // yields a null image. The exception is the GDI engine: GDI's own scaler
+    // refuses the malformed glyph outline and reports a degenerate 1x1 bounding box
+    // for it.
+    const auto isRefused = [engineType](const QImage &image) {
+        if (image.isNull())
+            return true;
+        return engineType == QFontEngine::Win
+                && image.width() <= 384 && image.height() <= 384;
+    };
+    QVERIFY(isRefused(fontEngine->alphaMapForGlyph(oversizedGlyph)));
+    QVERIFY(isRefused(fontEngine->alphaMapForGlyph(oversizedGlyph, QFixedPoint())));
+    QVERIFY(isRefused(fontEngine->alphaMapForGlyph(oversizedGlyph, QTransform())));
+    QVERIFY(isRefused(fontEngine->alphaMapForGlyph(oversizedGlyph, QFixedPoint(), QTransform())));
+    QVERIFY(isRefused(fontEngine->alphaRGBMapForGlyph(oversizedGlyph, QFixedPoint(), QTransform())));
+
+    // A regular-sized glyph combined with a very large scale must be refused too:
+    // the transform would otherwise turn it into an enormous bitmap. Here the
+    // effective pixel size (24 * 500) is well beyond the limit.
+    const QTransform largeScale = QTransform::fromScale(500, 500);
+    QVERIFY(fontEngine->alphaMapForGlyph(normalGlyph, largeScale).isNull());
+    QVERIFY(fontEngine->alphaMapForGlyph(normalGlyph, QFixedPoint(), largeScale).isNull());
+    QVERIFY(fontEngine->alphaRGBMapForGlyph(normalGlyph, QFixedPoint(), largeScale).isNull());
 }
 
 #endif // !define(QFONTENGINE_BENCHMARK)
