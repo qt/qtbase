@@ -2184,6 +2184,40 @@ void tst_QCborValue::sorting_data()
     // which shows all doubles sorted after integrals
     addRow(vint2, vdouble1, Qt::strong_ordering::less);
 
+    // QTBUG-149398: a value constructed from a type's enumerator must compare
+    // equal to one holding the default-constructed underlying value, as the
+    // documentation for QCborValue(Type) promises.
+    addRow(QCborValue(QCborValue::Undefined), QCborValue(),
+           Qt::strong_ordering::equal);
+    addRow(QCborValue(QCborValue::Null), QCborValue(nullptr),
+           Qt::strong_ordering::equal);
+    addRow(QCborValue(QCborValue::False), QCborValue(false),
+           Qt::strong_ordering::equal);
+    addRow(QCborValue(QCborValue::True), QCborValue(true),
+           Qt::strong_ordering::equal);
+    addRow(QCborValue(QCborValue::Integer), QCborValue(qint64(0)),
+           Qt::strong_ordering::equal);
+    addRow(QCborValue(QCborValue::Double), QCborValue(0.0),
+           Qt::strong_ordering::equal);
+    addRow(QCborValue(QCborValue::ByteArray), QCborValue(QByteArray()),
+           Qt::strong_ordering::equal);
+    addRow(QCborValue(QCborValue::String), QCborValue(QString()),
+           Qt::strong_ordering::equal);
+    addRow(QCborValue(QCborValue::Array), QCborValue(QCborArray()),
+           Qt::strong_ordering::equal);
+    addRow(QCborValue(QCborValue::Map), QCborValue(QCborMap()),
+           Qt::strong_ordering::equal);
+    addRow(QCborValue(QCborValue::DateTime), QCborValue(QDateTime()),
+           Qt::strong_ordering::equal);
+    addRow(QCborValue(QCborValue::Url), QCborValue(QUrl()),
+           Qt::strong_ordering::equal);
+    addRow(QCborValue(QCborValue::RegularExpression), QCborValue(QRegularExpression()),
+           Qt::strong_ordering::equal);
+    addRow(QCborValue(QCborValue::Uuid), QCborValue(QUuid()),
+           Qt::strong_ordering::equal);
+    addRow(QCborValue(QCborValue::Tag), QCborValue(QCborTag(-1), QCborValue()),
+           Qt::strong_ordering::equal);
+
     // Add some non-US-ASCII strings. In the current implementation, QCborValue
     // can store a string as either US-ASCII, UTF-8, or UTF-16, so let's exercise
     // those comparisons.

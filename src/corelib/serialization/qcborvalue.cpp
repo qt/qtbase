@@ -2181,6 +2181,59 @@ QCborValue::QCborValue(const QUuid &uuid)
 }
 #endif
 
+/*!
+    \internal
+
+    Completes construction of a QCborValue whose Type constructor requested a
+    tagged or extended type (see isTag_helper()). Such types keep their value in
+    a container holding the tag and the tagged value, so a bare QCborValue(Type)
+    would otherwise be an empty, container-less object that does not compare
+    equal to one built from a default-constructed value (QTBUG-149398).
+ */
+void QCborValue::adjustDefaultConstructedExtendedType()
+{
+    switch (t) {
+    case Tag:
+        *this = QCborValue(QCborTag(-1), QCborValue());
+        return;
+    case DateTime:
+        // same as:
+        //*this = QCborValue(QDateTime());
+        *this = QCborValue(QCborKnownTags::DateTimeString, QString());
+        return;
+    case Url:
+        // same as:
+        //*this = QCborValue(QUrl());
+        *this = QCborValue(QCborKnownTags::Url, QString());
+        return;
+    case RegularExpression:
+        // same as:
+        //*this = QCborValue(QRegularExpression());
+        *this = QCborValue(QCborKnownTags::RegularExpression, QString());
+        return;
+    case Uuid:
+        // same as:
+        //*this = QCborValue(QUuid());
+        *this = QCborValue(QCborKnownTags::Uuid, QByteArray(sizeof(QUuid), '\0'));
+        return;
+
+    // not extended types:
+    case Integer:
+    case ByteArray:
+    case String:
+    case Array:
+    case Map:
+    case SimpleType:
+    case False:
+    case True:
+    case Null:
+    case Undefined:
+    case Double:
+    case Invalid:
+        Q_UNREACHABLE();
+    }
+}
+
 // destructor
 void QCborValue::dispose()
 {
