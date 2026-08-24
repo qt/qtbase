@@ -661,6 +661,7 @@ qt_internal_extend_target(Core CONDITION WIN32
         ipc/qsharedmemory_win.cpp
         ipc/qsystemsemaphore_win.cpp
         kernel/qwineventnotifier.cpp kernel/qwineventnotifier.h kernel/qwineventnotifier_p.h
+        kernel/qwin32ticks_p.h
         kernel/qwinregistry.cpp kernel/qwinregistry_p.h
         plugin/qsystemlibrary.cpp plugin/qsystemlibrary_p.h
         text/qlocale_win.cpp
