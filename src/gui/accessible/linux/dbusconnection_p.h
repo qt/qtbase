@@ -23,8 +23,8 @@
 #include <QtCore/private/qglobal_p.h>
 Q_MOC_INCLUDE(<QtDBus/QDBusError>)
 
-#include "bus_interface.h"
-#include "properties_interface.h"
+#include "bus_interface_p.h"
+#include "properties_interface_p.h"
 
 QT_BEGIN_NAMESPACE
 

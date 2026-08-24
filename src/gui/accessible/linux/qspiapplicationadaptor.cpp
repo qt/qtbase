@@ -9,7 +9,7 @@
 #include <qdebug.h>
 
 #if QT_CONFIG(accessibility)
-#include "deviceeventcontroller_adaptor.h"
+#include "deviceeventcontroller_adaptor_p.h"
 #include "atspi/atspi-constants.h"
 
 #if __has_include(<xcb/xproto.h>)

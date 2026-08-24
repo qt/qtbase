@@ -14,7 +14,7 @@
 #include <QtCore/qtversion.h>
 
 #if QT_CONFIG(accessibility)
-#include "socket_interface.h"
+#include "socket_interface_p.h"
 #include "qspi_constant_mappings_p.h"
 #include <QtCore/private/qstringiterator_p.h>
 #include <QtGui/private/qaccessiblebridgeutils_p.h>

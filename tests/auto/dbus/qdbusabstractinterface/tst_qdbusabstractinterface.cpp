@@ -15,7 +15,7 @@
 #include <QDBusInterface>
 
 #include "interface.h"
-#include "pinger_interface.h"
+#include "pinger_interface_p.h"
 
 static const char serviceName[] = "org.qtproject.autotests.qpinger";
 static const char objectPath[] = "/org/qtproject/qpinger";

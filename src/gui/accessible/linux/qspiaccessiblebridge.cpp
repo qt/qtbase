@@ -17,7 +17,7 @@
 #include "qspi_struct_marshallers_p.h"
 
 #if QT_CONFIG(accessibility)
-#include "deviceeventcontroller_adaptor.h"
+#include "deviceeventcontroller_adaptor_p.h"
 
 QT_BEGIN_NAMESPACE
 

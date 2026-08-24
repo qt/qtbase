@@ -6,7 +6,7 @@
 #include "qspiaccessiblebridge_p.h"
 
 #if QT_CONFIG(accessibility)
-#include "cache_adaptor.h"
+#include "cache_adaptor_p.h"
 
 #define QSPI_OBJECT_PATH_CACHE "/org/a11y/atspi/cache"
 
