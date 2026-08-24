@@ -138,6 +138,7 @@ public:
     FetchContext *m_fetchContext;
     void setReplyFinished();
     void setCanceled();
+    void closeFetch();
 
     Q_DECLARE_PUBLIC(QNetworkReplyWasmImpl)
 };

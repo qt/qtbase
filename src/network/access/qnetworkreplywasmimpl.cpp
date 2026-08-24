@@ -130,7 +130,7 @@ void QNetworkReplyWasmImpl::close()
 
     if (!d->m_fetch)
         return;
-    emscripten_fetch_close(d->m_fetch);
+    d->closeFetch();
     if (d->state != QNetworkReplyPrivate::Aborted &&
         d->state != QNetworkReplyPrivate::Finished &&
         d->state != QNetworkReplyPrivate::Idle) {
@@ -138,7 +138,6 @@ void QNetworkReplyWasmImpl::close()
             d->setCanceled();
     }
     QNetworkReply::close();
-    d->m_fetch = nullptr;
 }
 
 void QNetworkReplyWasmImpl::abort()
@@ -164,16 +163,29 @@ void QNetworkReplyWasmImplPrivate::setCanceled()
         }
     }
 
+    closeFetch();
     emitReplyError(QNetworkReply::OperationCanceledError, QStringLiteral("Operation canceled"));
     q->setFinished(true);
     emit q->finished();
+}
+
+void QNetworkReplyWasmImplPrivate::closeFetch()
+{
+    emscripten_fetch_t *fetch = m_fetch;
+    if (!fetch)
+        return;
+    m_fetch = nullptr;
+    // The fetch is created on and owned by the main thread (see doSendRequest),
+    // so it must be closed there. Closing it from a worker thread cannot find the
+    // XHR handle and frees the fetch struct while the main thread still uses it.
+    qwasmglobal::runOnMainThreadAsync([fetch]() { emscripten_fetch_close(fetch); });
 }
 
 qint64 QNetworkReplyWasmImpl::bytesAvailable() const
 {
     Q_D(const QNetworkReplyWasmImpl);
 
-    return QNetworkReply::bytesAvailable() + d->downloadBufferCurrentSize - d->downloadBufferReadPosition;
+    return QNetworkReply::bytesAvailable() + d->downloadBuffer.size() - d->downloadBufferReadPosition;
 }
 
 bool QNetworkReplyWasmImpl::isSequential() const
@@ -194,8 +206,15 @@ qint64 QNetworkReplyWasmImpl::readData(char *data, qint64 maxlen)
     Q_D(QNetworkReplyWasmImpl);
 
     qint64 howMuch = qMin(maxlen, (d->downloadBuffer.size() - d->downloadBufferReadPosition));
+    if (howMuch <= 0)
+        return 0;
     memcpy(data, d->downloadBuffer.constData() + d->downloadBufferReadPosition, howMuch);
     d->downloadBufferReadPosition += howMuch;
+
+    // Drop the bytes already handed out so the streamed buffer does not grow
+    // unbounded over the lifetime of the transfer.
+    d->downloadBuffer.remove(0, d->downloadBufferReadPosition);
+    d->downloadBufferReadPosition = 0;
 
     return howMuch;
 }
@@ -256,7 +275,7 @@ void QNetworkReplyWasmImplPrivate::doSendRequest()
     emscripten_fetch_attr_init(&attr);
     qstrncpy(attr.requestMethod, q->methodName().constData(), 32);  // requestMethod is char[32] in emscripten
 
-    attr.attributes = EMSCRIPTEN_FETCH_LOAD_TO_MEMORY;
+    attr.attributes = EMSCRIPTEN_FETCH_LOAD_TO_MEMORY | EMSCRIPTEN_FETCH_STREAM_DATA;
 
     QNetworkRequest::CacheLoadControl CacheLoadControlAttribute =
         (QNetworkRequest::CacheLoadControl)request.attribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferNetwork).toInt();
@@ -362,16 +381,12 @@ void QNetworkReplyWasmImplPrivate::dataReceived(const QByteArray &buffer)
     Q_Q(QNetworkReplyWasmImpl);
 
     const qsizetype bufferSize = buffer.size();
-    if (bufferSize > 0)
-        q->setReadBufferSize(bufferSize);
+    if (bufferSize == 0)
+        return;
 
-    bytesDownloaded = bufferSize;
-
-    if (percentFinished != 100)
-        downloadBufferCurrentSize += bufferSize;
-    else
-        downloadBufferCurrentSize = bufferSize;
-
+    // Called once per streamed chunk, so accumulate rather than overwrite.
+    bytesDownloaded += bufferSize;
+    downloadBufferCurrentSize += bufferSize;
     totalDownloadSize = downloadBufferCurrentSize;
 
     downloadBuffer.append(buffer);
@@ -528,14 +543,19 @@ void QNetworkReplyWasmImplPrivate::downloadSucceeded(emscripten_fetch_t *fetch)
     } else if (fetchContext->state == FetchContext::State::SENT) {
         const auto reply = fetchContext->reply;
         if (reply->state != QNetworkReplyPrivate::Aborted) {
+            int status = fetch->status;
             QByteArray statusText(fetch->statusText);
-            reply->setStatusCode(fetch->status, statusText);
-            QByteArray buffer(fetch->data, fetch->numBytes);
-            reply->dataReceived(buffer);
-            reply->setReplyFinished();
+            // With EMSCRIPTEN_FETCH_STREAM_DATA the body has already been handed
+            // over chunk by chunk in downloadProgress, so nothing is read here.
+            // Finish on the reply's own thread, callbacks run on the main thread.
+            QMetaObject::invokeMethod(reply->q_func(), [reply, status, statusText]() {
+                reply->setStatusCode(status, statusText);
+                reply->setReplyFinished();
+            }, Qt::QueuedConnection);
         }
         reply->m_fetch = nullptr;
         fetchContext->state = FetchContext::State::FINISHED;
+        emscripten_fetch_close(fetch); // free the fetch struct and its data buffer
     }
 }
 
@@ -557,31 +577,54 @@ void QNetworkReplyWasmImplPrivate::setStatusCode(int status, const QByteArray &s
 
 void QNetworkReplyWasmImplPrivate::stateChange(emscripten_fetch_t *fetch)
 {
-    const auto fetchContext = static_cast<FetchContext*>(fetch->userData);
+    auto fetchContext = static_cast<FetchContext*>(fetch->userData);
+    std::scoped_lock lock{ fetchContext->mutex };
     const auto reply = fetchContext->reply;
-    if (reply && reply->state != QNetworkReplyPrivate::Aborted) {
-        if (fetch->readyState == /*HEADERS_RECEIVED*/ 2) {
-            size_t headerLength = emscripten_fetch_get_response_headers_length(fetch);
-            QByteArray str(headerLength, Qt::Uninitialized);
-            emscripten_fetch_get_response_headers(fetch, str.data(), str.size());
-            reply->headersReceived(str);
-        }
+    if (!reply || fetchContext->state != FetchContext::State::SENT
+        || reply->state == QNetworkReplyPrivate::Aborted) {
+        return;
     }
+    if (fetch->readyState != /*HEADERS_RECEIVED*/ 2)
+        return;
+
+    size_t headerLength = emscripten_fetch_get_response_headers_length(fetch);
+    QByteArray str(headerLength, Qt::Uninitialized);
+    emscripten_fetch_get_response_headers(fetch, str.data(), str.size());
+    // Deliver headers on the reply's own thread, callbacks run on the main thread.
+    QMetaObject::invokeMethod(reply->q_func(), [reply, str]() {
+        reply->headersReceived(str);
+    }, Qt::QueuedConnection);
 }
 
 void QNetworkReplyWasmImplPrivate::downloadProgress(emscripten_fetch_t *fetch)
 {
-    const auto fetchContext = static_cast<FetchContext*>(fetch->userData);
+    auto fetchContext = static_cast<FetchContext*>(fetch->userData);
+    std::scoped_lock lock{ fetchContext->mutex };
     const auto reply = fetchContext->reply;
-    if (reply && reply->state != QNetworkReplyPrivate::Aborted) {
-        if (fetch->status < 400) {
-            uint64_t bytes = fetch->dataOffset + fetch->numBytes;
-            uint64_t tBytes = fetch->totalBytes; // totalBytes can be 0 if server not reporting content length
-            if (tBytes == 0)
-                tBytes = bytes;
-            reply->emitDataReadProgress(bytes, tBytes);
-        }
+    if (!reply || fetchContext->state != FetchContext::State::SENT
+        || reply->state == QNetworkReplyPrivate::Aborted) {
+        return;
     }
+    if (fetch->status >= 400)
+        return;
+
+    uint64_t bytes = fetch->dataOffset + fetch->numBytes;
+    uint64_t tBytes = fetch->totalBytes; // totalBytes can be 0 if server not reporting content length
+    if (tBytes == 0)
+        tBytes = bytes;
+    // With EMSCRIPTEN_FETCH_STREAM_DATA fetch->data points at the newest chunk of
+    // length numBytes, copy it out now as the pointer is only valid for this call.
+    QByteArray chunk;
+    if (fetch->data && fetch->numBytes > 0)
+        chunk = QByteArray(fetch->data, fetch->numBytes);
+
+    // Fetch callbacks run on the main thread while the reply may live on another
+    // thread, so deliver the chunk and progress on the reply's own thread.
+    QMetaObject::invokeMethod(reply->q_func(), [reply, chunk, bytes, tBytes]() {
+        if (!chunk.isEmpty())
+            reply->dataReceived(chunk);
+        reply->emitDataReadProgress(bytes, tBytes);
+    }, Qt::QueuedConnection);
 }
 
 void QNetworkReplyWasmImplPrivate::downloadFailed(emscripten_fetch_t *fetch)
@@ -599,21 +642,27 @@ void QNetworkReplyWasmImplPrivate::downloadFailed(emscripten_fetch_t *fetch)
     } else if (fetchContext->state == FetchContext::State::SENT) {
         const auto reply = fetchContext->reply;
         if (reply->state != QNetworkReplyPrivate::Aborted) {
+            int status = fetch->status;
             QString reasonStr;
-            if (fetch->status > 600)
+            if (status > 600)
                 reasonStr = QStringLiteral("Operation canceled");
             else
                 reasonStr = QString::fromUtf8(fetch->statusText);
             QByteArray statusText(fetch->statusText);
-            reply->setStatusCode(fetch->status, statusText);
-            QByteArray buffer(fetch->data, fetch->numBytes);
-            reply->dataReceived(buffer);
-            reply->emitReplyError(reply->statusCodeFromHttp(fetch->status, reply->request.url()),
-                                  reasonStr);
-            reply->setReplyFinished();
+            QNetworkReply::NetworkError error =
+                reply->statusCodeFromHttp(status, reply->request.url());
+            // Any error body was already streamed in via downloadProgress. Finish
+            // on the reply's own thread, callbacks run on the main thread.
+            QMetaObject::invokeMethod(reply->q_func(),
+                                      [reply, status, statusText, error, reasonStr]() {
+                reply->setStatusCode(status, statusText);
+                reply->emitReplyError(error, reasonStr);
+                reply->setReplyFinished();
+            }, Qt::QueuedConnection);
         }
         reply->m_fetch = nullptr;
         fetchContext->state = FetchContext::State::FINISHED;
+        emscripten_fetch_close(fetch); // free the fetch struct and its data buffer
     }
 }
 

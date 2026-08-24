@@ -41,7 +41,7 @@ function (qt_internal_setup_wasm_target_properties wasmTarget)
         endif()
     endif()
 
-    set(executable_link_flags "-sFETCH")
+    set(executable_link_flags "-sFETCH" "-sFETCH_STREAMING=1")
 
     ## wasm64
     if (WASM64)
