@@ -233,12 +233,13 @@ QByteArray windowsSystemZoneId()
     // On XP we have to iterate over the zones until we find a match on
     // names/offsets with the current data
     TIME_ZONE_INFORMATION sysTzi;
-    GetTimeZoneInformation(&sysTzi);
-    bool ok = false;
-    const auto winIds = availableWindowsIds();
-    for (const QByteArray &winId : winIds) {
-        if (equalTzi(getRegistryTzi(winId, &ok), sysTzi))
-            return winId;
+    if (GetTimeZoneInformation(&sysTzi) != TIME_ZONE_ID_INVALID) {
+        bool ok = false;
+        const auto winIds = availableWindowsIds();
+        for (const QByteArray &winId : winIds) {
+            if (equalTzi(getRegistryTzi(winId, &ok), sysTzi) && ok)
+                return winId;
+        }
     }
 
     // If we can't determine the current ID use UTC
