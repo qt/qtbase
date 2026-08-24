@@ -132,7 +132,7 @@ bool QSaveFilePrivate::open(QIODevice::OpenMode mode)
     // the operating system (Unix's umask(), for example) that we don't want to
     // second guess, so let open() do its thing and then read what it's done
     // before closing and reopening with 0600 for the real writing.
-    if (!finalPermissions) {
+    if (!finalPermissions && QTemporaryFileEngine::CreatesWithFileMode) {
         Q_ASSERT(!priorFile.exists());
         // Dry-run of what follows, but with different permissions.
         static_cast<QTemporaryFileEngine *>(fileEngine.get())->initialize(finalFileName, 0666);
