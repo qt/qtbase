@@ -151,8 +151,7 @@ QString QIconLoader::themeName() const
         return m_userTheme;
 
     if (m_systemTheme.isEmpty()) {
-        const QString &themeName = systemThemeName();
-        m_systemTheme = !themeName.isEmpty() ? themeName : fallbackThemeName();
+        m_systemTheme = systemThemeName();
     }
     return m_systemTheme;
 }
