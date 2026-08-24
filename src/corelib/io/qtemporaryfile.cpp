@@ -181,6 +181,7 @@ static bool createFileFromTemplate(NativeFileHandle &file, QTemporaryFileName &t
         const QFileSystemEntry::NativePath &path = templ.generateNext();
 
 #if defined(Q_OS_WIN)
+        // QTemporaryFileEngine::CreatesWithFileMode is false because of this.
         Q_UNUSED(mode);
         const DWORD shareMode = (flags & QTemporaryFileEngine::Win32NonShared)
                                 ? 0u : (FILE_SHARE_READ | FILE_SHARE_WRITE);

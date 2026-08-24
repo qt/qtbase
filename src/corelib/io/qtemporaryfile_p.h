@@ -96,6 +96,12 @@ public:
     }
     ~QTemporaryFileEngine();
 
+#ifdef Q_OS_WIN
+    static constexpr bool CreatesWithFileMode = false;
+#else
+    static constexpr bool CreatesWithFileMode = true;
+#endif
+
     bool isReallyOpen() const;
     void setFileName(const QString &file) override;
 
