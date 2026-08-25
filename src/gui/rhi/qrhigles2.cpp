@@ -1040,7 +1040,7 @@ bool QRhiGles2::create(QRhi::Flags flags)
         caps.uniformBuffers = caps.ctxMajor > 3 || (caps.ctxMajor == 3 && caps.ctxMinor >= 1); // 3.1
 
     caps.elementIndexUint = f->hasOpenGLExtension(QOpenGLExtensions::ElementIndexUint);
-    caps.depth24 = f->hasOpenGLExtension(QOpenGLExtensions::Depth24);
+    caps.depth24 = !caps.gles || f->hasOpenGLExtension(QOpenGLExtensions::Depth24);
     caps.rgba8Format = f->hasOpenGLExtension(QOpenGLExtensions::Sized8Formats);
 
     if (caps.gles)
@@ -4306,6 +4306,11 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
                                             cmd.args.blitFromRenderbuffer.dstTexture, cmd.args.blitFromRenderbuffer.dstLevel);
                 }
             }
+            if (ds && !caps.gles) {
+                f->glReadBuffer(GL_NONE);
+                const GLenum noBuf = GL_NONE;
+                f->glDrawBuffers(1, &noBuf);
+            }
             f->glBlitFramebuffer(0, 0, cmd.args.blitFromRenderbuffer.w, cmd.args.blitFromRenderbuffer.h,
                                  0, 0, cmd.args.blitFromRenderbuffer.w, cmd.args.blitFromRenderbuffer.h,
                                  ds ? GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT : GL_COLOR_BUFFER_BIT,
@@ -4378,6 +4383,11 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
                     f->glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, cmd.args.blitFromTexture.dstTarget,
                                               cmd.args.blitFromTexture.dstTexture, cmd.args.blitFromTexture.dstLevel);
                 }
+            }
+            if (ds && !caps.gles) {
+                f->glReadBuffer(GL_NONE);
+                const GLenum noBuf = GL_NONE;
+                f->glDrawBuffers(1, &noBuf);
             }
             f->glBlitFramebuffer(0, 0, cmd.args.blitFromTexture.w, cmd.args.blitFromTexture.h,
                                  0, 0, cmd.args.blitFromTexture.w, cmd.args.blitFromTexture.h,
