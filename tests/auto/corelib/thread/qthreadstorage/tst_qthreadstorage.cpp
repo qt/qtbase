@@ -494,8 +494,7 @@ void tst_QThreadStorage::valueBased()
             int* const someIntPtr = [&] {
                 auto up = std::make_unique<int>(someNumber);
                 auto p = up.get();
-                // tlsUniquePtr.setLocalData(std::move(up)); // QTBUG-149463
-                tlsUniquePtr.localData() = std::move(up);
+                tlsUniquePtr.setLocalData(std::move(up));
                 return p;
             }();
 
