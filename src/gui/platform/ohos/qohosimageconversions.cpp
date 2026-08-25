@@ -115,6 +115,9 @@ std::optional<::PIXEL_FORMAT> tryMapQtPixelFormatToOhosPixelFormat(QImage::Forma
 
 std::shared_ptr<::OH_PixelmapNative> makeOhosNativePixelMapFromQImage(QImage qImage)
 {
+    if (qImage.isNull())
+        return makeEmptyOhosNativePixelMap();
+
     ::OH_PixelmapNative *pixelMap {};
 
     QImage effectiveImage =
