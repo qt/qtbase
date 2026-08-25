@@ -959,8 +959,9 @@ void QTextOdfWriter::writeTableCellFormat(QXmlStreamWriter &writer,
                                           const QList<QTextFormat> &styles) const
 {
     // check if cell is in a table with border
-    if (m_cellFormatsInTablesWithBorders.contains(formatIndex)) {
-        const QList<int> tableIdVector = m_cellFormatsInTablesWithBorders.value(formatIndex);
+    auto it = m_cellFormatsInTablesWithBorders.find(formatIndex);
+    if (it != m_cellFormatsInTablesWithBorders.end()) {
+        const QList<int> &tableIdVector = *it;
         for (const auto &tableId : tableIdVector) {
             const auto &tmpStyle = styles.at(tableId);
             if (tmpStyle.isTableFormat()) {
@@ -1135,12 +1136,14 @@ bool QTextOdfWriter::writeAll()
                     for (int rowindex = 0; rowindex < tableobject->rows(); ++rowindex) {
                         for (int colindex = 0; colindex < tableobject->columns(); ++colindex) {
                             const int cellFormatID = tableobject->cellAt(rowindex, colindex).tableCellFormatIndex();
-                            QList<int> tableIdsTmp;
-                            if (m_cellFormatsInTablesWithBorders.contains(cellFormatID))
-                                tableIdsTmp = m_cellFormatsInTablesWithBorders.value(cellFormatID);
-                            if (!tableIdsTmp.contains(tableID))
-                                tableIdsTmp.append(tableID);
-                            m_cellFormatsInTablesWithBorders.insert(cellFormatID, tableIdsTmp);
+                            auto it = m_cellFormatsInTablesWithBorders.find(cellFormatID);
+                            if (it == m_cellFormatsInTablesWithBorders.end()) {
+                                m_cellFormatsInTablesWithBorders.insert(cellFormatID, { tableID });
+                            } else {
+                                auto &val = *it;
+                                if (!val.contains(tableID))
+                                    val.append(tableID);
+                            }
                         }
                     }
                 }
