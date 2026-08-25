@@ -9,6 +9,7 @@
 #include <QTextTable>
 #include <QBuffer>
 #include <QDebug>
+#include <QXmlStreamWriter>
 
 #include <private/qtextodfwriter_p.h>
 
