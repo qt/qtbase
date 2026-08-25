@@ -905,8 +905,11 @@ function(qt_generate_global_device_pri_file)
 
     # Write OHOS specific device info.
     if(OHOS)
-        file(TO_CMAKE_PATH ${OHOS_NDK_ROOT} ndk_root)
-        string(APPEND content "DEFAULT_OHOS_NDK_ROOT = ${ndk_root}\n")
+        _qt_internal_harmonyos_get_sdk_ndk_paths(unused_sdk_root ohos_ndk_root)
+        if(ohos_ndk_root)
+            file(TO_CMAKE_PATH "${ohos_ndk_root}" ohos_ndk_root)
+            string(APPEND content "DEFAULT_OHOS_NDK_ROOT = ${ohos_ndk_root}\n")
+        endif()
         string(APPEND content "DEFAULT_OHOS_TARGET_ARCH = ${OHOS_ARCH}\n")
     endif()
 

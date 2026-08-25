@@ -196,6 +196,14 @@ function(qt_auto_detect_android)
 endfunction()
 
 function(qt_auto_detect_ohos)
+    # Catch setups that still pass the removed OHOS_NDK_ROOT. Without this they would
+    # silently configure a host build, because nothing else keys off that variable.
+    if(DEFINED OHOS_NDK_ROOT)
+        message(FATAL_ERROR "The OHOS_NDK_ROOT variable is no longer supported. Point "
+            "OHOS_SDK_ROOT, or the -ohos-sdk configure argument, at the HarmonyOS SDK "
+            "instead.")
+    endif()
+
     # Handle the OHOS_SDK_ROOT environment variable.
     if("${OHOS_SDK_ROOT}" STREQUAL "" AND DEFINED ENV{OHOS_SDK_ROOT})
         set(OHOS_SDK_ROOT $ENV{OHOS_SDK_ROOT})
@@ -203,7 +211,6 @@ function(qt_auto_detect_ohos)
 
     set(ohos_detected FALSE)
     if(DEFINED OHOS_SDK_ROOT
-            OR DEFINED OHOS_NDK_ROOT
             OR DEFINED OHOS_ARCH
             OR DEFINED OHOS_NATIVE_ABI_LEVEL
             OR QT_AUTODETECT_OHOS)
@@ -235,18 +242,6 @@ function(qt_auto_detect_ohos)
     # Everything below applies to cross builds against an OHOS SDK only.
     if(NOT ohos_detected)
         return()
-    endif()
-
-    # Auto-detect NDK root
-    if(NOT DEFINED OHOS_NDK_ROOT AND DEFINED OHOS_SDK_ROOT)
-        set(ndk_root "${OHOS_SDK_ROOT}/native")
-        if(NOT IS_DIRECTORY "${ndk_root}")
-            unset(ndk_root)
-        endif()
-        if(DEFINED ndk_root)
-            message(STATUS "OHOS NDK detected: ${ndk_root}")
-            set(OHOS_NDK_ROOT "${ndk_root}" CACHE STRING "")
-        endif()
     endif()
 
     # Auto-detect toolchain file
