@@ -1586,7 +1586,7 @@ public:
         }
 
         // try customization
-        std::optional<Qt::ItemFlags> customFlags;
+        std::optional<Qt::ItemFlags> customFlags = std::nullopt;
         if constexpr (QRangeModelDetails::hasRowFlags<wrapped_row_type>) {
             const_row_reference row = rowData(index);
             if (QRangeModelDetails::isValid(row)) {
