@@ -2383,9 +2383,22 @@ void TlsCryptographSchannel::initializeCertificateStores()
             localCertificateStore =
                     createStoreFromCertificateChain(configuration.localCertificateChain(), {});
             if (localCertificateStore) {
+                // The store holds the whole chain, we need to find the leaf:
+                // Search using configuration.localCertificate() because it always holds the leaf.
+                const QByteArray leafDer = configuration.localCertificate().toDer();
+                const QPCCertContextPointer leafTemplate(CertCreateCertificateContext(
+                        X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
+                        reinterpret_cast<const BYTE *>(leafDer.constData()),
+                        DWORD(leafDer.size())));
+                if (!leafTemplate) {
+                    qCDebug(lcTlsBackendSchannel,
+                            "Failed to create local certificate, will look for leaf certificate in "
+                            "chain without a reference");
+                }
                 const CERT_CONTEXT *certificateContext = CertFindCertificateInStore(
                         localCertificateStore.get(), X509_ASN_ENCODING | PKCS_7_ASN_ENCODING, 0,
-                        CERT_FIND_ANY, nullptr, nullptr);
+                        leafTemplate ? CERT_FIND_EXISTING : CERT_FIND_ANY, leafTemplate.get(),
+                        nullptr);
                 if (certificateContext) {
                     // Keep an independent reference to the certificate (and thus its private
                     // key) that outlives the certificate store: Schannel may still use the key
