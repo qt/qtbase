@@ -1024,6 +1024,10 @@ namespace QRangeModelDetails {
             {
                 return lhs.m_row == rhs.m_row && lhs.m_column == rhs.m_column;
             }
+            friend bool operator!=(const Cell &lhs, const Cell &rhs) noexcept
+            {
+                return !(lhs == rhs);
+            }
         };
 
         // implicit conversion from and to entry is intentional
