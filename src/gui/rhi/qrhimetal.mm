@@ -430,6 +430,7 @@ struct QMetalGraphicsPipelineData
     QMetalGraphicsPipeline *q = nullptr;
     id<MTLRenderPipelineState> ps = nil;
     id<MTLDepthStencilState> ds = nil;
+    bool icbCapable = false;
     MTLPrimitiveType primitiveType;
     MTLWinding winding;
     MTLCullMode cullMode;
@@ -2561,6 +2562,10 @@ const char *QRhiMetal::icbUnavailableReason(QMetalCommandBuffer *cbD) const
         || !cbD->currentGraphicsPipeline->m_flags.testFlag(QRhiGraphicsPipeline::UsesIndirectDraws))
     {
         return "the current graphics pipeline was not created with UsesIndirectDraws";
+    }
+    if (!cbD->currentGraphicsPipeline->d->icbCapable) {
+        return "the current graphics pipeline uses textures, which Metal does not "
+               "allow in a pipeline that supports indirect command buffers";
     }
     return nullptr;
 }
@@ -5212,6 +5217,8 @@ void QMetalGraphicsPipeline::destroy()
     d->vs.destroy();
     d->fs.destroy();
 
+    d->icbCapable = false;
+
     d->tess.compVs[0].destroy();
     d->tess.compVs[1].destroy();
     d->tess.compVs[2].destroy();
@@ -5782,6 +5789,13 @@ void QRhiMetalData::addRenderPipelineToBinaryArchive(MTLRenderPipelineDescriptor
     }
 }
 
+static inline bool usesTextures(const QShaderDescription &desc)
+{
+    return !desc.combinedImageSamplers().isEmpty()
+            || !desc.separateImages().isEmpty()
+            || !desc.storageImages().isEmpty();
+}
+
 bool QMetalGraphicsPipeline::createVertexFragmentPipeline()
 {
     QRHI_RES_RHI(QRhiMetal);
@@ -5874,7 +5888,18 @@ bool QMetalGraphicsPipeline::createVertexFragmentPipeline()
     QMetalRenderPassDescriptor *rpD = QRHI_RES(QMetalRenderPassDescriptor, m_renderPassDesc);
     setupAttachmentsInMetalRenderPassDescriptor(rpDesc, rpD);
 
-    if (m_flags.testFlag(UsesIndirectDraws) && rhiD->caps.indirectCommandBuffers)
+    // Metal refuses to create a render pipeline state that both declares
+    // supportIndirectCommandBuffers and has a texture bound directly to one of
+    // its functions. Only textures are affected; buffers and samplers are fine.
+    // We do not use argument buffers atm. So a pipeline that samples textures
+    // is simply not ICB-capable: the indirect draws fall back to the CPU-side
+    // loop, and the count variants, which have no such fallback, report the
+    // reason and skip.
+    d->icbCapable = m_flags.testFlag(UsesIndirectDraws)
+            && rhiD->caps.indirectCommandBuffers
+            && !usesTextures(d->vs.desc)
+            && !usesTextures(d->fs.desc);
+    if (d->icbCapable)
         rpDesc.supportIndirectCommandBuffers = YES;
 
     if (m_multiViewCount >= 2)
