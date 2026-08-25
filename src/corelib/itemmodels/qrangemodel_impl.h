@@ -1343,8 +1343,8 @@ protected:
     inline void beginLayoutChange();
     inline void endLayoutChange();
     inline AutoConnectPolicy autoConnectPolicy() const;
-    inline static Qt::partial_ordering compareData(const QVariant &lhs, const QVariant &rhs,
-                                                   const QCollator *collator);
+    inline static Qt::weak_ordering compareData(const QVariant &lhs, const QVariant &rhs,
+                                                const QCollator *collator);
 
 public:
     inline QAbstractItemModel &itemModel();
