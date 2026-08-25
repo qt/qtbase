@@ -240,7 +240,8 @@ void TreeWalker::acceptConnections(DomConnections *connections)
 
 void TreeWalker::acceptConnection(DomConnection *connection)
 {
-    acceptConnectionHints(connection->elementHints());
+    if (connection->hasElementHints())
+        acceptConnectionHints(connection->elementHints());
 }
 
 void TreeWalker::acceptConnectionHints(DomConnectionHints *connectionHints)
