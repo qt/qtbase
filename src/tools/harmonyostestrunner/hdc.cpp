@@ -11,9 +11,6 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-static constexpr int startTimeoutMs = 5000;
-static constexpr int finishTimeoutMs = 30000;
-
 static QStringList shellCommandArgs(const QStringList &command)
 {
     return QStringList{ u"shell"_s } + command;
@@ -44,6 +41,9 @@ QStringList Hdc::arguments(const QStringList &args) const
 
 QString Hdc::run(const QStringList &args, bool printOnFailure) const
 {
+    static constexpr int startTimeoutMs = 5000;
+    static constexpr int finishTimeoutMs = 30000;
+
     QProcess process;
     const QStringList allArgs = arguments(args);
     process.start(m_hdcPath, allArgs);

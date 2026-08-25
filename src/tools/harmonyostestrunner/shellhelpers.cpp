@@ -7,8 +7,6 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-static constexpr int startTimeoutMs = 5000;
-
 void forceStopBundle(const Hdc &hdc, const QString &bundleName)
 {
     hdc.shell({ u"aa"_s, u"force-stop"_s, bundleName });
@@ -25,6 +23,8 @@ bool isProcessAlive(const Hdc &hdc, const QString &bundleName)
 std::unique_ptr<QProcess> streamDeviceFileWhileAppRuns(
     const Hdc &hdc, const QString &devicePath, const QString &bundleName)
 {
+    static constexpr int startTimeoutMs = 5000;
+
     const QString followFileFromStart = u"sz=0; f='"_s + devicePath + u"';"_s;
     const QString definePrintNewBytes =
         u" dump() { new=$(wc -c < \"$f\" 2>/dev/null);"
