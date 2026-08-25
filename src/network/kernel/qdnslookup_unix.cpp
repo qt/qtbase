@@ -327,18 +327,11 @@ bool qt_androidDnsResolverAvailable()
 }
 
 static int sendStandardDns(QDnsLookupReply *reply, QSpan<unsigned char> qbuffer,
-                           ReplyBuffer &buffer, const QHostAddress &nameserver)
+                           ReplyBuffer &buffer)
 {
     if (!qt_androidDnsResolverAvailable()) {
         reply->setError(QDnsLookup::ResolverError,
                         QDnsLookup::tr("DNS lookups require Android 10 or later"));
-        return -1;
-    }
-
-    // the DnsResolver only queries the name servers of the network we're bound to
-    if (!nameserver.isNull()) {
-        reply->setError(QDnsLookup::ResolverError,
-                        QDnsLookup::tr("Setting a nameserver is currently not supported on this OS"));
         return -1;
     }
 
@@ -368,11 +361,6 @@ static int sendStandardDns(QDnsLookupReply *reply, QSpan<unsigned char> qbuffer,
         return -1;
     }
 
-    // We can't tell whether the system resolver validated the reply, so don't
-    // pass on the AD bit (see the RES_TRUSTAD handling above).
-    if (responseLength >= int(sizeof(HEADER)))
-        reinterpret_cast<HEADER *>(buffer.data())->ad = false;
-
     return responseLength;
 }
 
@@ -391,7 +379,17 @@ void QDnsLookupRunnable::query(QDnsLookupReply *reply)
     int responseLength = -1;
     switch (protocol) {
     case QDnsLookup::Standard:
-        responseLength = sendStandardDns(reply, query, buffer, nameserver);
+        if (!nameserver.isNull()) {
+            reply->setError(QDnsLookup::ResolverError,
+                            QDnsLookup::tr("Setting a nameserver is currently not supported on this OS"));
+            return;
+        }
+        responseLength = sendStandardDns(reply, query, buffer);
+
+        // We can't tell whether the system resolver validated the reply, so don't
+        // pass on the AD bit (see the RES_TRUSTAD handling above).
+        if (responseLength >= int(sizeof(HEADER)))
+            reinterpret_cast<HEADER *>(buffer.data())->ad = false;
         break;
     case QDnsLookup::DnsOverTls:
         if (!sendDnsOverTls(reply, query, buffer))
