@@ -894,28 +894,27 @@ void QTextOdfWriter::writeTableFormat(QXmlStreamWriter &writer, const QTextTable
     }
     writer.writeEndElement();
     // start writing table-column style element
-    if (format.columnWidthConstraints().size()) {
+    const auto &columnWidthConstraints = format.columnWidthConstraints();
+    if (!columnWidthConstraints.empty()) {
         // write table-column-properties for columns with constraints
         m_tableFormatsWithColWidthConstraints.insert(formatIndex); // needed for linking of columns to styles
-        for (int colit = 0; colit < format.columnWidthConstraints().size(); ++colit) {
+        for (qsizetype colit = 0; colit < columnWidthConstraints.size(); ++colit) {
+            const auto &constraint = columnWidthConstraints.at(colit);
             writer.writeStartElement(styleNS, QString::fromLatin1("style"));
             writer.writeAttribute(styleNS, QString::fromLatin1("name"),
                                   QString::fromLatin1("Table%1.%2").arg(formatIndex).arg(colit));
             writer.writeAttribute(styleNS, QString::fromLatin1("family"), QString::fromLatin1("table-column"));
             writer.writeEmptyElement(styleNS, QString::fromLatin1("table-column-properties"));
-            QString columnWidth;
-            if (format.columnWidthConstraints().at(colit).type() == QTextLength::PercentageLength) {
-                columnWidth = QString::number(format.columnWidthConstraints().at(colit).rawValue())
-                        + "%"_L1;
-            } else if (format.columnWidthConstraints().at(colit).type() == QTextLength::FixedLength) {
-                columnWidth = QString::number(format.columnWidthConstraints().at(colit).rawValue())
-                        + "pt"_L1;
+            QByteArray columnWidth;
+            if (constraint.type() == QTextLength::PercentageLength) {
+                columnWidth = QByteArray::number(constraint.rawValue()) + "%";
+            } else if (constraint.type() == QTextLength::FixedLength) {
+                columnWidth = QByteArray::number(constraint.rawValue()) + "pt";
             } else {
                 //!! HARD-CODING variableWidth Constraints to 100% / nr constraints
-                columnWidth = QString::number(100 / format.columnWidthConstraints().size())
-                                      + "%"_L1;
+                columnWidth = QByteArray::number(100 / columnWidthConstraints.size()) + "%";
             }
-            writer.writeAttribute(styleNS, QString::fromLatin1("column-width"), columnWidth);
+            writer.writeAttribute(styleNS, "column-width", columnWidth);
             writer.writeEndElement();
         }
     }
