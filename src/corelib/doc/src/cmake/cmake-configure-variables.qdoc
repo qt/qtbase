@@ -123,6 +123,70 @@ use, for example, library files referenced from a Qt installation.
 */
 
 /*!
+\page cmake-variable-qt-android-gradle-multi-module.html
+\ingroup cmake-variables-qtcore
+\ingroup cmake-android-build-properties
+
+\title QT_ANDROID_GRADLE_MULTI_MODULE
+\target cmake-variable-QT_ANDROID_GRADLE_MULTI_MODULE
+
+\summary {Builds the Android package from a multi-module Gradle project.}
+
+\cmakevariablesince 6.12
+\preliminarycmakevariable
+\cmakevariableandroidonly
+
+Set this variable to \c TRUE to package an application from a Gradle project
+that has one module per Android artifact, an \c app module for the application
+and one module for each dynamic feature:
+
+\badcode
+<build>/android-build-<target>/
+    app/                    # the application module
+    <feature_1_target>/     # Dynamic feature 1
+    <feature_2_target>/     # Dynamic feature 2
+    settings.gradle         # includes app and other dynamic features
+\endcode
+
+Feature modules are what \l{Android: Android Feature Delivery Documentation}
+{Play Feature Delivery} builds on, so \c qt_add_android_dynamic_features()
+requires this variable, see \l qt_add_android_dynamic_feature_java_source_dirs.
+For a complete project that uses it, see \l{Using Play Feature Delivery}.
+
+\note Using Dynamic features doesn't support multi-ABI yet.
+
+Set the variable when configuring the project:
+
+\badcode
+qt-cmake -S <source_dir> -B <build_dir> -DQT_ANDROID_GRADLE_MULTI_MODULE=ON
+\endcode
+
+ or early on before \l qt_add_executable() so that it is known before the
+ executable is created:
+
+\badcode
+set(QT_ANDROID_GRADLE_MULTI_MODULE ON)
+\endcode
+
+The variable also decides what builds the package. By default, CMake writes a
+deployment settings file and hands the rest to \l androiddeployqt, which
+resolves the Qt dependencies, copies them into the build directory, and runs
+Gradle from there. With the variable enabled, CMake deploys the dependencies
+itself as regular build steps and generates the Gradle files of every module.
+The \c apk and \c aab targets then run Gradle directly, and androiddeployqt
+isn't involved at all. The application is packaged from
+\c {android-build-<target>/app}, and the deployed files are build dependencies
+of the package. This option is generally faster and simpler since it relies on
+the CMake build graph and doesn't rely on additional deplyoment tools.
+
+The variable is available since Qt 6.11 as \c QT_USE_ANDROID_MODERN_BUNDLE.
+That name is deprecated since Qt 6.12, but is still honored if set.
+
+\sa QT_USE_TARGET_ANDROID_BUILD_DIR
+\sa qt_add_android_dynamic_feature_java_source_dirs()
+*/
+
+/*!
 \page cmake-variable-qt-android-deployment-type.html
 \ingroup cmake-variables-qtcore
 \ingroup cmake-android-build-properties
