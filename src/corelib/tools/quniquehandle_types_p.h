@@ -69,12 +69,7 @@ using QUniqueWin32NullHandle = QUniqueHandle<QtUniqueHandleTraits::NullHandleTra
 
 #endif
 
-#ifdef Q_OS_UNIX
-
 using QUniqueFileDescriptorHandle = QUniqueHandle<QtUniqueHandleTraits::FileDescriptorHandleTraits>;
-
-#endif
-
 using QUniqueFILEHandle = QUniqueHandle<QtUniqueHandleTraits::FILEHandleTraits>;
 
 QT_END_NAMESPACE
