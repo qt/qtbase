@@ -23,7 +23,6 @@
 #include <QtCore/qlist.h>
 #include <QtCore/qset.h>
 #include <QtCore/qstack.h>
-#include <QtCore/QXmlStreamWriter>
 
 #include "qtextdocument_p.h"
 #include "qtextdocumentwriter.h"
@@ -40,6 +39,7 @@ class QTextTableCellFormat;
 class QTextFrame;
 class QTextFragment;
 class QOutputStrategy;
+class QXmlStreamWriter;
 
 class Q_AUTOTEST_EXPORT QTextOdfWriter {
 public:

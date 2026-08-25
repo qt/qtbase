@@ -13,6 +13,7 @@
 #include <QTextList>
 #include <QBuffer>
 #include <QUrl>
+#include <QtCore/QXmlStreamWriter>
 
 #include "qtextdocument_p.h"
 #include "qtexttable.h"
