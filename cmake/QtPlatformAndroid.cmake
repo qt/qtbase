@@ -142,13 +142,13 @@ function(qt_internal_android_test_runner_arguments target out_test_runner out_te
         "--ndk-stack" "${ANDROID_NDK_ROOT}/ndk-stack"
     )
 
-    if(QT_USE_ANDROID_MODERN_BUNDLE)
+    if(QT_ANDROID_GRADLE_MULTI_MODULE)
         _qt_internal_android_get_target_deployment_dir(target_deployment_dir ${target})
         list(APPEND test_arguments
             "--manifest" "${target_deployment_dir}/AndroidManifest.xml")
     endif()
 
-    if(EXISTS "${Bundletool_EXECUTABLE}" AND QT_USE_ANDROID_MODERN_BUNDLE)
+    if(EXISTS "${Bundletool_EXECUTABLE}" AND QT_ANDROID_GRADLE_MULTI_MODULE)
         list(APPEND test_arguments
             "--make" "\"${CMAKE_COMMAND}\" --build ${CMAKE_BINARY_DIR} --target ${target}_make_aab"
             "--aab" "${android_build_dir}/${target}.aab"

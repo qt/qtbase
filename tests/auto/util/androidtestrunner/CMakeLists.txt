@@ -41,7 +41,7 @@ if(_testapp_wrapper)
     list(APPEND _args "--testapp-wrapper" "${_testapp_wrapper}")
 endif()
 
-if(QT_USE_ANDROID_MODERN_BUNDLE AND EXISTS "${Bundletool_EXECUTABLE}")
+if(QT_ANDROID_GRADLE_MULTI_MODULE AND EXISTS "${Bundletool_EXECUTABLE}")
     list(APPEND _args "--bundletool" "${Bundletool_EXECUTABLE}")
     list(APPEND _args "--testapp-aab" "${_testapp_aab}")
 endif()
