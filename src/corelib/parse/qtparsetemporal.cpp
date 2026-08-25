@@ -156,17 +156,24 @@ QtParseCommon::ParsedText matchesAt(QStringView text, qsizetype from, const QStr
         (QStringView view, QStringView target, Qt::CaseSensitivity cs = Qt::CaseSensitive) {
         // Technical hitch: case-insensitive comparison may match a string of
         // different length. Roll a brute-force length-determining version:
-        const auto matchFront = [cs](QStringView view, QStringView target) {
+        const auto matchFront = [cs](QStringView view, QStringView target) -> qsizetype {
+            if (target.isEmpty()) // Only empty matches empty.
+                return 0;
             if (view.startsWith(target, cs)) {
                 qsizetype length = target.size();
+                // Non-empty target can't be matched by view.first(0) so length
+                // == 1 won't satisfy this loop condition and, as length is
+                // initially > 0, we don't need to bounds-check this:
                 while (view.first(length - 1).startsWith(target, cs))
                     --length;
+                // We know view as a whole does start with target, so this won't
+                // run past length == view.size():
                 while (!view.first(length).startsWith(target, cs))
                     ++length;
                 Q_ASSERT(length > 0);
                 return length;
             }
-            return qsizetype(-1);
+            return -1;
         };
         const auto spaceForward = [](QStringIterator &iter) {
             // Steps iter past next non-space, returns index at which it appeared.
@@ -183,7 +190,7 @@ QtParseCommon::ParsedText matchesAt(QStringView text, qsizetype from, const QStr
             while (iter.hasNext()) {
                 qsizetype head = iter.index();
                 if (QChar::isSpace(iter.next())) {
-                    qsizetype same = head > 0 ? matchFront(view, target.first(head)) : 0;
+                    qsizetype same = matchFront(view, target.first(head));
                     if (same < 0)
                         return failed;
                     QStringIterator viter(view, same);
@@ -198,7 +205,7 @@ QtParseCommon::ParsedText matchesAt(QStringView text, qsizetype from, const QStr
                 }
             }
         }
-        const qsizetype tail = target.isEmpty() ? 0 : matchFront(view, target);
+        const qsizetype tail = matchFront(view, target);
         if (tail < 0)
             return failed;
         return matched + tail;
