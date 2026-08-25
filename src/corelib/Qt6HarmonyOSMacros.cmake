@@ -25,7 +25,9 @@ if(NOT DEFINED HARMONYOS_HVIGOR
 endif()
 
 # Detect the HarmonyOS SDK and NDK root directories from environment, CMake variables,
-# or the compiler path, and set the output variables in the caller's scope.
+# the toolchain file or the compiler path, and set the output variables in the caller's
+# scope. Either output may end up empty, most notably in a native on-device build, where
+# there is no SDK and no NDK.
 function(_qt_internal_harmonyos_get_sdk_ndk_paths sdk_root_var ndk_root_var)
     set(sdk_root "")
     set(ndk_root "")
@@ -42,8 +44,11 @@ function(_qt_internal_harmonyos_get_sdk_ndk_paths sdk_root_var ndk_root_var)
         get_filename_component(sdk_root "${_native_dir}" DIRECTORY)
     endif()
 
-    if(DEFINED OHOS_NDK_ROOT)
-        set(ndk_root "${OHOS_NDK_ROOT}")
+    if(DEFINED OHOS_SDK_NATIVE)
+        # Set by the SDK's ohos.toolchain.cmake.
+        set(ndk_root "${OHOS_SDK_NATIVE}")
+    elseif(sdk_root AND IS_DIRECTORY "${sdk_root}/native")
+        set(ndk_root "${sdk_root}/native")
     elseif(CMAKE_SYSTEM_NAME STREQUAL "OHOS" AND CMAKE_CXX_COMPILER)
         # Derive from compiler path: .../native/llvm/bin/clang++
         get_filename_component(_compiler_dir "${CMAKE_CXX_COMPILER}" DIRECTORY)
