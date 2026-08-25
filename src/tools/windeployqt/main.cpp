@@ -1898,12 +1898,18 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
     } // optQuickImports
 
     if (options.translations) {
-        if (!createDirectory(options.translationsDirectory, errorMessage, options.dryRun))
-            return result;
-        if (!deployTranslations(qtpathsVariables.value(QStringLiteral("QT_INSTALL_TRANSLATIONS")),
-                                result.deployedQtLibraries, options.translationsDirectory, options,
-                                errorMessage)) {
-            return result;
+        const QString &catalogsError = qtModuleEntries.translationCatalogsError();
+        if (catalogsError.isEmpty()) {
+            if (!createDirectory(options.translationsDirectory, errorMessage, options.dryRun))
+                return result;
+            if (!deployTranslations(qtpathsVariables.value(QStringLiteral("QT_INSTALL_TRANSLATIONS")),
+                                    result.deployedQtLibraries, options.translationsDirectory,
+                                    options, errorMessage)) {
+                return result;
+            }
+        } else {
+            std::wcerr << "Warning: Translations will not be deployed due to the following error."
+                       << std::endl << catalogsError << std::endl;
         }
     }
 

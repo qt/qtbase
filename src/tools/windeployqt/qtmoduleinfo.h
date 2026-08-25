@@ -44,8 +44,13 @@ public:
     const QtModule &moduleById(size_t id) const;
     size_t moduleIdForPluginType(const QString &pluginType) const;
 
+    // Assigned if no translation catalogs are found. In that case no module has a translation
+    // catalog assigned and translations cannot be deployed.
+    const QString &translationCatalogsError() const { return catalogsError; }
+
 private:
     std::vector<QtModule> modules;
+    QString catalogsError;
 };
 
 #endif
