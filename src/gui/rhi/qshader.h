@@ -107,6 +107,7 @@ public:
         UInt32IndexedVertexAsComputeShader,
         NonIndexedVertexAsComputeShader,
         HdrCapableFragmentShader,
+        ArgumentBufferShader
     };
 
     enum class SerializedFormatVersion {

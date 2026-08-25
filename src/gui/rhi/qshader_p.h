@@ -45,7 +45,8 @@ struct Q_GUI_EXPORT QShaderPrivate
         MslTessTescParamsBufferBinding,
         MslTessTescInputBufferBinding,
         MslBufferSizeBufferBinding,
-        MslMultiViewMaskBufferBinding
+        MslMultiViewMaskBufferBinding,
+        MslArgumentBufferBinding
     };
 
     QShaderPrivate()

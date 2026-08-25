@@ -220,6 +220,9 @@ QT_BEGIN_NAMESPACE
 
     \value [since 6.10] HdrCapableFragmentShader A fragment shader rewritten to support high
     dynamic range rendering in a Qt Quick scenegraph.
+
+    \value [since 6.13] ArgumentBufferShader Metal-only. A variant that consumes
+    some or all resources via argument buffers.
  */
 
 /*!
