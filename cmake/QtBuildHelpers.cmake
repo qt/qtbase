@@ -18,6 +18,25 @@ function(qt_internal_validate_cmake_generator)
     endif()
 endfunction()
 
+# Error out when CMAKE_CONFIGURATION_TYPES is provided for a single-config generator.
+# Otherwise the build might fail in weird ways.
+# This can happen when passing -G Ninja Multi-Config without quotes.
+function(qt_internal_validate_cmake_configuration_types)
+    get_property(is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+    if(is_multi_config OR NOT CMAKE_CONFIGURATION_TYPES)
+        return()
+    endif()
+
+    message(FATAL_ERROR
+        "CMAKE_CONFIGURATION_TYPES is set to '${CMAKE_CONFIGURATION_TYPES}', but "
+        "'${CMAKE_GENERATOR}' is a single-configuration generator that ignores it.\n"
+        "To build multiple configurations, use a multi-config generator, making sure to quote "
+        "generator names that contain spaces, for example -G \"Ninja Multi-Config\".\n"
+        "To build a single configuration, remove CMAKE_CONFIGURATION_TYPES from the command line "
+        "and use -DCMAKE_BUILD_TYPE=<config> instead.\n"
+    )
+endfunction()
+
 macro(qt_internal_set_qt_building_qt)
     # Set the QT_BUILDING_QT variable so we can verify whether we are building
     # Qt from source.
