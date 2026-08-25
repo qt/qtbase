@@ -899,7 +899,11 @@ bool QRhiMetal::isFeatureSupported(QRhi::Feature feature) const
     case QRhi::ReadBackAnyTextureFormat:
         return true;
     case QRhi::PipelineCacheDataLoadSave:
+#ifdef QRHI_METAL_DISABLE_BINARY_ARCHIVE
+        return false;
+#else
         return true;
+#endif
     case QRhi::ImageDataStride:
         return true;
     case QRhi::RenderBufferImport:
