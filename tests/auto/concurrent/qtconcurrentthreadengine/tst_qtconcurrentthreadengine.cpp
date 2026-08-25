@@ -7,8 +7,11 @@
 #include <qexception.h>
 #include <QThread>
 #include <QElapsedTimer>
+#include <QScopeGuard>
 #include <QTest>
 #include <QSet>
+
+#include <chrono>
 
 using namespace QtConcurrent;
 
@@ -25,6 +28,7 @@ private slots:
     void multipleResults();
     void stresstest();
     void cancelQueuedSlowUser();
+    void suspendOnCustomThreadPool();
 #ifndef QT_NO_EXCEPTIONS
     void exceptions();
 #endif
@@ -423,6 +427,71 @@ void tst_QtConcurrentThreadEngine::exceptions()
 }
 
 #endif
+
+class SuspendingUser : public ThreadEngine<void>
+{
+public:
+    explicit SuspendingUser(QThreadPool *pool) : ThreadEngine<void>(pool) {}
+
+    bool shouldStartThread() override { return false; }
+
+    ThreadFunctionResult threadFunction() override
+    {
+        constexpr int maxIterations = 60;
+        constexpr int sleepTime = 20;
+
+        while (iterations.loadRelaxed() < maxIterations && !cancel.loadRelaxed()) {
+            waitForResume();
+
+            iterations.fetchAndAddRelaxed(1);
+            QThread::currentThread()->sleep(std::chrono::milliseconds{sleepTime});
+
+            if (shouldThrottleThread())
+                return ThrottleThread;
+        }
+        return ThreadFinished;
+    }
+
+    static QAtomicInt cancel;
+    static QAtomicInt iterations;
+};
+
+QAtomicInt SuspendingUser::cancel;
+QAtomicInt SuspendingUser::iterations;
+
+// QTBUG-149503: ensure a suspended operation releases a thread
+// on the pool it runs on, not on the global one
+void tst_QtConcurrentThreadEngine::suspendOnCustomThreadPool()
+{
+    QThreadPool pool;
+    pool.setMaxThreadCount(1);
+    QCOMPARE(pool.activeThreadCount(), 0);
+
+    SuspendingUser::cancel.storeRelaxed(false);
+    SuspendingUser::iterations.storeRelaxed(0);
+
+    SuspendingUser *engine = new SuspendingUser(&pool);
+    QFuture<void> future = engine->startAsynchronously();
+    QCOMPARE(pool.activeThreadCount(), 1);
+
+    {
+        // without this, the worker thread stays blocked forever if the test fails
+        const auto cleanup = qScopeGuard([&] {
+            SuspendingUser::cancel.storeRelaxed(true);
+            future.resume();
+            future.waitForFinished();
+        });
+
+        QTRY_VERIFY(SuspendingUser::iterations.loadRelaxed() > 0);
+
+        future.suspend();
+        QTRY_VERIFY(future.isSuspended());
+        QTRY_COMPARE(pool.activeThreadCount(), 0);
+    }
+
+    QVERIFY(future.isFinished());
+    QTRY_COMPARE(pool.activeThreadCount(), 0);
+}
 
 QTEST_MAIN(tst_QtConcurrentThreadEngine)
 
