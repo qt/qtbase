@@ -82,7 +82,7 @@ QMap<::ArkUI_KeyCode, Qt::Key> ohosNativeNodeQtKeyMap = {
     {::ArkUI_KeyCode::ARKUI_KEYCODE_COMMA, Qt::Key_Comma},
     {::ArkUI_KeyCode::ARKUI_KEYCODE_PERIOD, Qt::Key_Period},
     {::ArkUI_KeyCode::ARKUI_KEYCODE_ALT_LEFT, Qt::Key_Alt},
-    {::ArkUI_KeyCode::ARKUI_KEYCODE_ALT_RIGHT, Qt::Key_AltGr},
+    {::ArkUI_KeyCode::ARKUI_KEYCODE_ALT_RIGHT, Qt::Key_Alt},
     {::ArkUI_KeyCode::ARKUI_KEYCODE_SHIFT_LEFT, Qt::Key_Shift},
     {::ArkUI_KeyCode::ARKUI_KEYCODE_SHIFT_RIGHT, Qt::Key_Shift},
     {::ArkUI_KeyCode::ARKUI_KEYCODE_TAB, Qt::Key_Tab},
