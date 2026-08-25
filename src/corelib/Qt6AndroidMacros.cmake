@@ -219,7 +219,7 @@ function(_qt_internal_android_include_openssl target out_found)
     set_property(TARGET ${target} APPEND PROPERTY QT_ANDROID_EXTRA_LIBS ${openssl_libs})
 endfunction()
 
-# Include found OpenSSL libraries into ${target} if any plugin declares QT_ANDROID_OPENSSL_NEEDED.
+# Bundle OpenSSL into ${target} if any plugin sets _qt_internal_android_openssl_needed.
 function(_qt_internal_android_include_openssl_if_needed target)
     # Prefer the fully resolved plugin set _qt_android_qt_plugins after qmlimportscanner run.
     get_target_property(plugin_targets ${target} _qt_android_qt_plugins)
@@ -233,7 +233,7 @@ function(_qt_internal_android_include_openssl_if_needed target)
         if(NOT TARGET "${plugin}")
             continue()
         endif()
-        get_target_property(needs_openssl ${plugin} QT_ANDROID_OPENSSL_NEEDED)
+        get_target_property(needs_openssl ${plugin} _qt_internal_android_openssl_needed)
         if(needs_openssl)
             _qt_internal_android_include_openssl(${target} openssl_found)
             return()
