@@ -85,9 +85,26 @@ function(_qt_internal_add_tool_to_android_deployment_settings out_var tool json_
     set(${out_var} "${${out_var}}" PARENT_SCOPE)
 endfunction()
 
+# Honors the deprecated QT_USE_ANDROID_MODERN_BUNDLE, also when it is set after find_package().
+function(_qt_internal_android_resolve_gradle_multi_module)
+    if(DEFINED QT_USE_ANDROID_MODERN_BUNDLE AND NOT DEFINED QT_ANDROID_GRADLE_MULTI_MODULE)
+        set(QT_ANDROID_GRADLE_MULTI_MODULE "${QT_USE_ANDROID_MODERN_BUNDLE}" PARENT_SCOPE)
+        get_property(reported GLOBAL PROPERTY _qt_internal_android_modern_bundle_reported)
+        if(NOT reported)
+            set_property(GLOBAL PROPERTY _qt_internal_android_modern_bundle_reported TRUE)
+            message(DEPRECATION
+                "QT_USE_ANDROID_MODERN_BUNDLE is deprecated since Qt 6.12."
+                " Use QT_ANDROID_GRADLE_MULTI_MODULE instead.")
+        endif()
+    endif()
+endfunction()
+
+_qt_internal_android_resolve_gradle_multi_module()
+
 # Add the specific dynamic library as the dynamic feature for the Android application target.
 function(qt6_add_android_dynamic_features target)
     cmake_parse_arguments(PARSE_ARGV 1 arg "" "" "FEATURE_TARGETS")
+    _qt_internal_android_resolve_gradle_multi_module()
     if(NOT QT_ANDROID_GRADLE_MULTI_MODULE)
         message(FATAL_ERROR "qt6_add_android_dynamic_features is only supported with"
             " 'QT_ANDROID_GRADLE_MULTI_MODULE' enabled.")
@@ -1802,6 +1819,7 @@ endfunction()
 # package for the executable 'target'. The function is added to the finalizer list of the Core
 # module and is executed implicitly when configuring user projects.
 function(_qt_internal_android_executable_finalizer target)
+    _qt_internal_android_resolve_gradle_multi_module()
 
     set_property(TARGET ${target} PROPERTY _qt_android_executable_finalizer_called TRUE)
     set_property(TARGET ${target} PROPERTY _qt_android_in_finalizer "EXECUTABLE")
