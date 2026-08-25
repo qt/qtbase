@@ -88,7 +88,7 @@ T qThreadStorage_localData_const(const QThreadStorageData &d, T *)
 template <typename T>
 inline
 void qThreadStorage_setLocalData(QThreadStorageData &d, T *t)
-{ (void) d.set(new T(*t)); }
+{ (void) d.set(new T(std::move(*t))); }
 
 template <typename T>
 inline
