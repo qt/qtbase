@@ -844,8 +844,10 @@ void QWindow::setParent(QWindow *parent)
 
     QEvent parentChangedEvent(QEvent::ParentWindowChange);
     QCoreApplication::sendEvent(this, &parentChangedEvent);
+
 #if QT_CONFIG(accessibility)
-    if (QGuiApplicationPrivate::is_app_running && !QGuiApplicationPrivate::is_app_closing) {
+    if (!d->accessibleParent
+        && QGuiApplicationPrivate::is_app_running && !QGuiApplicationPrivate::is_app_closing) {
         QAccessibleEvent qaEvent(this, QAccessible::ParentChanged);
         QAccessible::updateAccessibility(&qaEvent);
     }
@@ -2320,6 +2322,32 @@ QAccessibleInterface *QWindow::accessibleRoot() const
 {
     return nullptr;
 }
+
+#if QT_CONFIG(accessibility)
+/*!
+    \internal
+
+    Sets the accessible parent of the window to \a parent.
+
+    A window container represents the window it hosts as a child in its
+    accessibility interface, so the window has to point back to the container
+    as well.
+*/
+void QWindowPrivate::setAccessibleParent(QObject *parent)
+{
+    Q_Q(QWindow);
+
+    if (accessibleParent == parent)
+        return;
+
+    accessibleParent = parent;
+
+    if (QGuiApplicationPrivate::is_app_running && !QGuiApplicationPrivate::is_app_closing) {
+        QAccessibleEvent event(q, QAccessible::ParentChanged);
+        QAccessible::updateAccessibility(&event);
+    }
+}
+#endif
 
 /*!
     \fn QWindow::focusObjectChanged(QObject *object)

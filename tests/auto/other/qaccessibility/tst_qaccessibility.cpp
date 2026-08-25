@@ -24,6 +24,7 @@
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qhighdpiscaling_p.h>
 #include <QtGui/private/qaccessiblecache_p.h>
+#include <QtGui/private/qwindow_p.h>
 
 #include <QtWidgets/private/qapplication_p.h>
 #include <QtWidgets/private/qdialog_p.h>
@@ -238,6 +239,7 @@ private slots:
     void widgetLocaleTest();
     void noInterfacesBeforeSetActive();
     void parentChangedEvent();
+    void windowContainerParent();
     void itemViewEmittingDataChangeNoSegFault_data();
     void itemViewEmittingDataChangeNoSegFault();
 
@@ -5055,6 +5057,82 @@ void tst_QAccessibility::parentChangedEvent()
         QAccessibleEvent parentChangedEvent(&w, QAccessible::ParentChanged);
         QVERIFY(QTestAccessibility::containsEvent(&parentChangedEvent));
     }
+}
+
+void tst_QAccessibility::windowContainerParent()
+{
+    auto accessibleParent = [](QWindow *window) {
+        return QWindowPrivate::get(window)->accessibleParent.data();
+    };
+
+    auto parentChangedCount = [](QObject *object) {
+        const auto events = QTestAccessibility::events();
+        return std::count_if(events.begin(), events.end(), [object](QAccessibleEvent *event) {
+            return event->object() == object && event->type() == QAccessible::ParentChanged;
+        });
+    };
+
+    {
+        QWidget host;
+        host.resize(200, 200);
+        QWindow *embedded = new QWindow;
+
+        QTestAccessibility::clearEvents();
+        QWidget *container = QWidget::createWindowContainer(embedded, &host);
+        QCOMPARE(parentChangedCount(embedded), 1);
+        QCOMPARE(accessibleParent(embedded), static_cast<QObject *>(container));
+
+        // Showing the host hands the window from the container's fake parent
+        // to the top level's window, which is not a change of a11y parent
+        QTestAccessibility::clearEvents();
+        host.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&host));
+        QCOMPARE(embedded->parent(), host.windowHandle());
+        QCOMPARE(parentChangedCount(embedded), 0);
+        QCOMPARE(accessibleParent(embedded), static_cast<QObject *>(container));
+
+        // Nor is moving the container to another top level
+        QWidget otherHost;
+        otherHost.resize(200, 200);
+        QTestAccessibility::clearEvents();
+        container->setParent(&otherHost);
+        QCOMPARE(embedded->parent(), otherHost.windowHandle());
+        QCOMPARE(parentChangedCount(embedded), 0);
+        QCOMPARE(accessibleParent(embedded), static_cast<QObject *>(container));
+
+        // Taking the window out of the container gives up the a11y parent.
+        // The container clears it as it sees the window leave, and the
+        // reparent then announces for itself, no longer holding back.
+        QTestAccessibility::clearEvents();
+        embedded->setParent(nullptr);
+        QCOMPARE(parentChangedCount(embedded), 2);
+        QCOMPARE(accessibleParent(embedded), nullptr);
+        delete embedded;
+    }
+    QTestAccessibility::clearEvents();
+
+    // A hosted QWidgetWindow should report the container as the accessible parent of
+    // its widget, instead of the application. But since a QWindowContainer refuses to
+    // host a QWidgetWindow, so we have to claim the window manually.
+    {
+        QWidget host;
+        QWidget hosted;
+        hosted.winId();
+        QVERIFY(hosted.windowHandle());
+
+        QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(&hosted);
+        QVERIFY(iface);
+        QCOMPARE(iface->parent()->object(), static_cast<QObject *>(qApp));
+
+        QTestAccessibility::clearEvents();
+        QWindowPrivate::get(hosted.windowHandle())->setAccessibleParent(&host);
+        QCOMPARE(parentChangedCount(hosted.windowHandle()), 1);
+
+        iface = QAccessible::queryAccessibleInterface(&hosted);
+        QVERIFY(iface);
+        QCOMPARE(iface->parent()->object(), static_cast<QObject *>(&host));
+    }
+    QTestAccessibility::clearEvents();
 }
 
 void tst_QAccessibility::itemViewEmittingDataChangeNoSegFault_data()

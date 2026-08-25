@@ -217,6 +217,12 @@ QWindowContainer::QWindowContainer(QWindow *embeddedWindow, QWidget *parent, Qt:
     d->window = embeddedWindow;
     d->window->installEventFilter(this);
 
+#if QT_CONFIG(accessibility)
+    // Claim the window before the setParent() below, so that the reparent finds
+    // an a11y parent in place and holds back its own QAccessible::ParentChanged
+    QWindowPrivate::get(d->window)->setAccessibleParent(this);
+#endif
+
     QString windowName = d->window->objectName();
     if (windowName.isEmpty())
         windowName = QString::fromUtf8(d->window->metaObject()->className());
@@ -273,6 +279,11 @@ bool QWindowContainer::eventFilter(QObject *o, QEvent *e)
         if (ce->child() == d->window) {
             o->removeEventFilter(this);
             d->window->removeEventFilter(this);
+#if QT_CONFIG(accessibility)
+            auto *windowPrivate = QWindowPrivate::get(d->window);
+            if (windowPrivate->accessibleParent == this)
+                windowPrivate->setAccessibleParent(nullptr);
+#endif
             d->window = nullptr;
         }
     } else if (e->type() == QEvent::FocusIn) {

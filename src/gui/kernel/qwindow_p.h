@@ -78,6 +78,10 @@ public:
     QScreen *screenForGeometry(const QRect &rect) const;
     void setTransientParent(QWindow *parent);
 
+#if QT_CONFIG(accessibility)
+    void setAccessibleParent(QObject *parent);
+#endif
+
     virtual void clearFocusObject();
 
     enum class FocusTarget {
@@ -154,6 +158,10 @@ public:
 
     QPointer<QWindow> transientParent;
     QPointer<QScreen> topLevelScreen;
+
+#if QT_CONFIG(accessibility)
+    QPointer<QObject> accessibleParent;
+#endif
 
 #ifndef QT_NO_CURSOR
     QCursor cursor = {Qt::ArrowCursor};

@@ -30,6 +30,7 @@
 #include <QMenu>
 #endif
 #include <QtGui/private/qaccessiblehelper_p.h>
+#include <QtGui/private/qwindow_p.h>
 #include <QtWidgets/private/qwidget_p.h>
 
 #include <qpa/qplatformwindow.h>
@@ -173,14 +174,27 @@ QWidget *QAccessibleWidget::widget() const
 
 /*!
     Returns the associated widget's parent object, which is either the
-    parent widget, or qApp for top-level widgets.
+    parent widget, the object hosting the widget's window, or qApp for
+    top-level widgets.
 */
 QObject *QAccessibleWidget::parentObject() const
 {
     QWidget *w = widget();
-    if (!w || w->isWindow() || !w->parentWidget())
+    if (!w)
         return qApp;
-    return w->parent();
+
+    if (!w->isWindow()) {
+        if (QWidget *parent = w->parentWidget())
+            return parent;
+    }
+
+    if (QWindow *window = w->windowHandle()) {
+        // A widget window hosted in a window container needs to reflect the container
+        if (QObject *a11yParent = QWindowPrivate::get(window)->accessibleParent)
+            return a11yParent;
+    }
+
+    return qApp;
 }
 
 /*! \reimp */
