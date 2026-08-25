@@ -1031,6 +1031,11 @@ QTextOdfWriter::QTextOdfWriter(const QTextDocument &document, QIODevice *device)
 
 bool QTextOdfWriter::writeAll()
 {
+    const auto reset = qScopeGuard([this] {
+        delete m_strategy;
+        m_strategy = nullptr;
+    });
+
     if (m_createArchive)
         m_strategy = new QZipStreamStrategy(m_device);
     else
@@ -1114,8 +1119,6 @@ bool QTextOdfWriter::writeAll()
     writer.writeEndElement(); // body
     writer.writeEndElement(); // document-content
     writer.writeEndDocument();
-    delete m_strategy;
-    m_strategy = nullptr;
 
     return true;
 }
