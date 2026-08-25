@@ -102,7 +102,7 @@ QWasmScreen::~QWasmScreen()
     m_intermediateContainer.call<void>("remove");
 
     m_shadowContainer.set(m_canvasResizeObserverCallbackContextPropertyName,
-                          emscripten::val(intptr_t(0)));
+                          emscripten::val(uintptr_t(0)));
 }
 
 void QWasmScreen::deleteScreen()
@@ -286,7 +286,7 @@ void QWasmScreen::canvasResizeObserverCallback(emscripten::val entries, emscript
         return;
     emscripten::val entry = entries[0];
     QWasmScreen *screen = reinterpret_cast<QWasmScreen *>(
-            entry["target"][m_canvasResizeObserverCallbackContextPropertyName].as<intptr_t>());
+            entry["target"][m_canvasResizeObserverCallbackContextPropertyName].as<uintptr_t>());
     if (!screen) {
         qWarning() << "QWasmScreen::canvasResizeObserverCallback: missing screen pointer";
         return;
@@ -314,7 +314,7 @@ void QWasmScreen::installCanvasResizeObserver()
     // We need to get back to this instance from the (static) resize callback;
     // set a "data-" property on the canvas element.
     m_shadowContainer.set(m_canvasResizeObserverCallbackContextPropertyName,
-                          emscripten::val(intptr_t(this)));
+                          emscripten::val(uintptr_t(this)));
 
     resizeObserver.call<void>("observe", m_shadowContainer);
 }
