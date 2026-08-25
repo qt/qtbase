@@ -121,6 +121,7 @@ public:
     QFuture<T> startAsynchronously()
     {
         futureInterface = new QFutureInterface<T>();
+        futureInterface->setThreadPool(threadPool);
 
         // reportStart() must be called before starting threads, otherwise the
         // user algorithm might finish while reportStart() is running, which
