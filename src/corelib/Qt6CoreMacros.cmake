@@ -769,7 +769,7 @@ function(_qt_internal_create_executable target)
             )
 
             qt6_android_apply_arch_suffix("${target}")
-            if(QT_USE_ANDROID_MODERN_BUNDLE)
+            if(QT_ANDROID_GRADLE_MULTI_MODULE)
                 _qt_internal_set_android_application_gradle_defaults(${target})
             endif()
         endif()

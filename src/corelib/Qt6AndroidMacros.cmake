@@ -88,9 +88,9 @@ endfunction()
 # Add the specific dynamic library as the dynamic feature for the Android application target.
 function(qt6_add_android_dynamic_features target)
     cmake_parse_arguments(PARSE_ARGV 1 arg "" "" "FEATURE_TARGETS")
-    if(NOT QT_USE_ANDROID_MODERN_BUNDLE)
+    if(NOT QT_ANDROID_GRADLE_MULTI_MODULE)
         message(FATAL_ERROR "qt6_add_android_dynamic_features is only supported with"
-            " 'QT_USE_ANDROID_MODERN_BUNDLE' enabled.")
+            " 'QT_ANDROID_GRADLE_MULTI_MODULE' enabled.")
     endif()
     if(NOT TARGET ${target})
         message(FATAL_ERROR "${target} is not a target. Cannot add the dynamic features.")
@@ -1710,7 +1710,7 @@ function(_qt_internal_configure_android_multiabi_target target)
                     "-DCMAKE_TOOLCHAIN_FILE=${qt_abi_toolchain_path}"
                     "-DQT_HOST_PATH=${QT_HOST_PATH}"
                     "-DQT_IS_ANDROID_MULTI_ABI_EXTERNAL_PROJECT=ON"
-                    "-DQT_USE_ANDROID_MODERN_BUNDLE=${QT_USE_ANDROID_MODERN_BUNDLE}"
+                    "-DQT_ANDROID_GRADLE_MULTI_MODULE=${QT_ANDROID_GRADLE_MULTI_MODULE}"
                     "-DQT_USE_ANDROID_TARGET_BUILD_DIR=${QT_USE_ANDROID_TARGET_BUILD_DIR}"
                     "-DQT_INTERNAL_ANDROID_MULTI_ABI_BINARY_DIR=${CMAKE_BINARY_DIR}"
                     "${config_arg}"
@@ -1743,7 +1743,7 @@ function(_qt_internal_configure_android_multiabi_target target)
 
         # List a secondary ABI's deploy files to give gradle file-level deps on them.
         set(abi_deploy_files "")
-        if(QT_USE_ANDROID_MODERN_BUNDLE)
+        if(QT_ANDROID_GRADLE_MULTI_MODULE)
             _qt_internal_android_get_abi_deploy_files(abi_deploy_files ${target} ${abi})
         endif()
 
@@ -1802,13 +1802,14 @@ endfunction()
 # package for the executable 'target'. The function is added to the finalizer list of the Core
 # module and is executed implicitly when configuring user projects.
 function(_qt_internal_android_executable_finalizer target)
+
     set_property(TARGET ${target} PROPERTY _qt_android_executable_finalizer_called TRUE)
     set_property(TARGET ${target} PROPERTY _qt_android_in_finalizer "EXECUTABLE")
 
     _qt_internal_expose_android_package_source_dir_to_ide(${target})
 
     _qt_internal_configure_android_multiabi_target("${target}")
-    if(QT_USE_ANDROID_MODERN_BUNDLE)
+    if(QT_ANDROID_GRADLE_MULTI_MODULE)
         _qt_internal_android_generate_dynamic_feature_names("${target}")
         _qt_internal_android_add_dynamic_feature_deployment("${target}")
 
@@ -1922,7 +1923,7 @@ function(_qt_internal_android_get_target_android_build_dir out_build_dir target)
     get_target_property(target_binary_dir ${target} BINARY_DIR)
 
     # Use the main ABI's build dir for multi-ABI external projects to avoid a collection step later.
-    if(QT_USE_ANDROID_MODERN_BUNDLE AND QT_IS_ANDROID_MULTI_ABI_EXTERNAL_PROJECT)
+    if(QT_ANDROID_GRADLE_MULTI_MODULE AND QT_IS_ANDROID_MULTI_ABI_EXTERNAL_PROJECT)
         file(RELATIVE_PATH relative_binary_dir "${CMAKE_BINARY_DIR}" "${target_binary_dir}")
         set(target_binary_dir "${QT_INTERNAL_ANDROID_MULTI_ABI_BINARY_DIR}/${relative_binary_dir}")
     endif()
@@ -1936,7 +1937,7 @@ endfunction()
 
 function(_qt_internal_android_get_target_deployment_dir out_deploy_dir target)
     _qt_internal_android_get_target_android_build_dir(build_dir ${target})
-    if(QT_USE_ANDROID_MODERN_BUNDLE)
+    if(QT_ANDROID_GRADLE_MULTI_MODULE)
         set(${out_deploy_dir} "${build_dir}/app" PARENT_SCOPE)
     else()
         set(${out_deploy_dir} "${build_dir}" PARENT_SCOPE)

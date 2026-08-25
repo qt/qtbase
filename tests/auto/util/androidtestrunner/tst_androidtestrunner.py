@@ -11,8 +11,8 @@
 #
 #   --runner-bin     path to the host androidtestrunner
 #   --testapp-apk    path to the built testapp APK
-#   --testapp-aab    path to the built testapp AAB (empty when modern
-#                    bundle is not configured)
+#   --testapp-aab    path to the built testapp AAB (empty when the gradle
+#                    multi-module build is not configured)
 #   --testapp-dir    android-build-tst_androidtestrunner_testapp directory
 #   --testapp-wrapper  runner wrapper script CMake generated for the testapp
 #   --cmake          path to the host cmake binary
@@ -987,7 +987,7 @@ class DeviceRunTests(unittest.TestCase):
 
     @unittest.skipUnless(
         ARGS.testapp_aab and ARGS.bundletool,
-        "modern bundle build (-DQT_USE_ANDROID_MODERN_BUNDLE=ON + bundletool) not configured")
+        "multi-module build (-DQT_ANDROID_GRADLE_MULTI_MODULE=ON + bundletool) not configured")
     def test_aab_install_and_run(self):
         # bundletool builds a .apks, install-apks pushes it, then am start runs the testapp.
         argv = self._argv(use_aab=True) + ["--", "alwaysPasses"]

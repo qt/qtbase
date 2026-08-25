@@ -47,7 +47,7 @@ target_link_libraries(test_android_signing PRIVATE
 
 _qt_internal_android_get_target_deployment_dir(android_build test_android_signing)
 
-if(QT_USE_ANDROID_MODERN_BUNDLE)
+if(QT_ANDROID_GRADLE_MULTI_MODULE)
     set(output_package_basename "app-release-signed")
 else()
     get_filename_component(build_dir_name ${android_build} NAME)
