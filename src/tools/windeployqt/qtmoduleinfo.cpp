@@ -118,8 +118,9 @@ bool QtModuleInfoStore::populate(const QString &modulesDir, const QString &trans
     const TranslationCatalogs catalogs = readTranslationsCatalogs(translationsDir, verbose,
                                                                   errorString);
     if (!errorString->isEmpty()) {
-        std::wcerr << "Warning: Translations will not be available due to the following error."
-                   << std::endl << *errorString << std::endl;
+        // Defer handling of that until later in deployment because it only becomes relevant during
+        // translation handling.
+        catalogsError = *errorString;
         errorString->clear();
     }
     std::unordered_map<QString, QString> moduleToCatalogMap;
