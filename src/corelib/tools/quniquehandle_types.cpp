@@ -46,10 +46,4 @@ bool FILEHandleTraits::close(Type handle)
 
 } // namespace QtUniqueHandleTraits
 
-#ifdef Q_OS_UNIX
-
-using QUniqueFileDescriptorHandle = QUniqueHandle<QtUniqueHandleTraits::FileDescriptorHandleTraits>;
-
-#endif
-
 QT_END_NAMESPACE
