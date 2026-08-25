@@ -2,7 +2,5 @@
 # https://clang.llvm.org/docs/APINotes.html
 Name: QtCore
 Functions:
-  # Hide the raw C function (renames it to __qVersion) so Swift consumers only
-  # see the idiomatic qtVersion() -> String wrapper from the overlay.
   - Name: qVersion
-    SwiftPrivate: true
+    SwiftName: "qtVersion()"
