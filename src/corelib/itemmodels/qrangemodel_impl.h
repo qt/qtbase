@@ -1005,30 +1005,35 @@ struct tuple_element<1, QT_PREPEND_NAMESPACE(QRangeModelDetails::MimeDataEntry<T
 QT_BEGIN_NAMESPACE
 
 namespace QRangeModelDetails {
-    // A helper type for drop-support. Client code populates a sequence of
+    // Helper types for drop-support. Client code populates a sequence of
     // dropped things via an insertion iterator, and those get wrapped in a
     // DroppedEntry, which allows user code to also specify the position of the
     // thing in the target model.
+
+    struct DroppedEntryCell {
+        int m_row;
+        int m_column;
+
+        // implicit conversion from a single int is intentional
+        Q_IMPLICIT DroppedEntryCell() noexcept : m_row(-1), m_column(-1)  {}
+        Q_IMPLICIT DroppedEntryCell(int row, int column = 0) noexcept
+            : m_row(row), m_column(column)
+        {}
+
+        friend bool operator==(const DroppedEntryCell &lhs, const DroppedEntryCell &rhs) noexcept
+        {
+            return lhs.m_row == rhs.m_row && lhs.m_column == rhs.m_column;
+        }
+        friend bool operator!=(const DroppedEntryCell &lhs, const DroppedEntryCell &rhs) noexcept
+        {
+            return !(lhs == rhs);
+        }
+    };
+
     template <typename Entry>
     struct DroppedEntry
     {
-        struct Cell {
-            int m_row;
-            int m_column;
-
-            // implicit conversion is intentional
-            Q_IMPLICIT Cell() noexcept : m_row(-1), m_column(-1)  {}
-            Q_IMPLICIT Cell(int row, int column = 0) noexcept : m_row(row), m_column(column) {}
-
-            friend bool operator==(const Cell &lhs, const Cell &rhs) noexcept
-            {
-                return lhs.m_row == rhs.m_row && lhs.m_column == rhs.m_column;
-            }
-            friend bool operator!=(const Cell &lhs, const Cell &rhs) noexcept
-            {
-                return !(lhs == rhs);
-            }
-        };
+        using Cell = DroppedEntryCell;
 
         // implicit conversion from and to entry is intentional
         Q_IMPLICIT DroppedEntry(Entry &&entry)
