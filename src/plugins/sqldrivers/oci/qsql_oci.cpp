@@ -177,6 +177,7 @@ QDateTime QOCIDateTime::fromOCIDateTime(OCIEnv *env, OCIError *err, OCIDateTime 
 struct TempStorage {
     QList<QByteArray> rawData;
     QList<QOCIDateTime *> dateTimes;
+    QList<QString> stringData;
 };
 
 typedef QSharedDataPointer<QOCIRowId> QOCIRowIdPointer;
@@ -382,7 +383,9 @@ int QOCIResultPrivate::bindValue(OCIStmt *stmtp, OCIBind **hbnd, OCIError *err, 
                           SQLT_FLT, indPtr, 0, 0, 0, 0, OCI_DEFAULT);
         break;
     case QMetaType::QString: {
-        const QString s = val.toString();
+        // make sure the string is \0-terminated and QString::utf16() does not detach
+        const QString s = val.toString().nullTerminated();
+        tmpStorage.stringData.append(s);
         if (isBinaryValue(pos)) {
             r = OCIBindByPos2(stmtp, hbnd, err,
                               pos + 1,
@@ -433,10 +436,11 @@ int QOCIResultPrivate::bindValue(OCIStmt *stmtp, OCIBind **hbnd, OCIError *err, 
                 r = OCI_ERROR;
             }
         } else {
-            const QString s = val.toString();
-            // create a deep-copy
-            QByteArray ba(reinterpret_cast<const char *>(s.utf16()), (s.length() + 1) * sizeof(QChar));
+            const QString s = val.toString().nullTerminated();
             if (isOutValue(pos)) {
+                // create a deep-copy
+                QByteArray ba(reinterpret_cast<const char *>(s.utf16()),
+                              (s.length() + 1) * sizeof(QChar));
                 ba.reserve((s.capacity() + 1) * sizeof(QChar));
                 *tmpSize = ba.size();
                 r = OCIBindByPos2(stmtp, hbnd, err,
@@ -444,16 +448,17 @@ int QOCIResultPrivate::bindValue(OCIStmt *stmtp, OCIBind **hbnd, OCIError *err, 
                                   ba.data(),
                                   ba.capacity(),
                                   SQLT_STR, indPtr, tmpSize, 0, 0, 0, OCI_DEFAULT);
+                tmpStorage.rawData.append(ba);
             } else {
+                tmpStorage.stringData.append(s);
                 r = OCIBindByPos2(stmtp, hbnd, err,
                                   pos + 1,
-                                  ba.data(),
-                                  ba.size(),
+                                  const_cast<ushort *>(s.utf16()),
+                                  (s.length() + 1) * sizeof(QChar),
                                   SQLT_STR, indPtr, 0, 0, 0, 0, OCI_DEFAULT);
             }
             if (r == OCI_SUCCESS)
                 setCharset(*hbnd, OCI_HTYPE_BIND);
-            tmpStorage.rawData.append(ba);
         }
         break;
     } // default case
