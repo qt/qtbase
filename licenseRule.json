@@ -375,11 +375,6 @@
                 "file type": "module and plugin",
                 "spdx": ["LicenseRef-Qt-Commercial OR BSD-3-Clause"]
             },
-            "src/.*/platform/swift/.*\\.swift": {
-                "comment": "Swift overlay, compiled into the app",
-                "file type": "module and plugin",
-                "spdx": ["BSD-3-Clause"]
-            },
             "qmake/": {
                 "comment": "Default",
                 "file type": "tools and utils",

@@ -1338,117 +1338,6 @@ function(qt_internal_apply_swift_apinotes target)
         COMMENT "Copying Swift API notes for ${target}"
     )
     target_sources(${target} PRIVATE "${apinotes_output}")
-    set_target_properties(${target} PROPERTIES
-        _qt_swift_apinotes_build_path "${apinotes_output}")
-endfunction()
-
-# Builds the given .swift file into a .swiftinterface, shipped with the target,
-# for providing Swift overlays to make C++ APIs more Swift idiomatic.
-function(qt_internal_apply_swift_overlay target)
-    get_target_property(overlay ${target} _qt_swift_overlay)
-    if(NOT overlay)
-        return()
-    endif()
-
-    if(NOT QT_FEATURE_swift_interop)
-        return()
-    endif()
-
-    # Resolve swiftc once for the whole build, warning a single time if it's
-    # missing rather than repeating the warning for every module.
-    if(NOT DEFINED CACHE{QT_INTERNAL_SWIFTC})
-        _qt_internal_execute_xcrun(swiftc XCRUN_ARGS -f swiftc)
-        string(STRIP "${swiftc}" swiftc)
-        set(QT_INTERNAL_SWIFTC "${swiftc}" CACHE INTERNAL
-            "Path to the swiftc compiler used to build Swift overlays")
-        if(NOT QT_INTERNAL_SWIFTC)
-            message(WARNING "Can't find swiftc; Swift overlays will not be built")
-        endif()
-    endif()
-    if(NOT QT_INTERNAL_SWIFTC)
-        return()
-    endif()
-    set(swiftc "${QT_INTERNAL_SWIFTC}")
-
-    get_filename_component(overlay "${overlay}" ABSOLUTE)
-    qt_internal_module_info(module "${target}")
-    get_target_property(target_bin_dir ${target} BINARY_DIR)
-
-    # The overlay ships as textual interface(s) in a ModuleName.swiftmodule
-    # directory, which Swift looks up by target module triple. swiftc reaches
-    # the underlying module the same way a consumer does: through the framework
-    # (-F) or the include directory (-I).
-    set(swiftmodule_dir "${module_swiftmodule_dir}")
-    get_target_property(is_framework ${target} FRAMEWORK)
-    if(is_framework)
-        get_target_property(output_dir ${target} LIBRARY_OUTPUT_DIRECTORY)
-        set(module_search_flag -F "${output_dir}")
-    else()
-        set(module_search_flag -I "${repo_build_interface_include_dir}")
-        qt_install(DIRECTORY "${swiftmodule_dir}"
-            DESTINATION "${repo_install_interface_include_dir}")
-    endif()
-
-    # Generate into an intermediate directory and copy only the public interface
-    # into place, so the .private.swiftinterface (which swiftc emits alongside it
-    # and can't be suppressed) is never shipped.
-    set(intermediate_dir "${target_bin_dir}/${module}.swiftoverlay")
-
-    # A universal build compiles for more than one architecture; emit one
-    # interface per slice, as Swift resolves the interface per module triple.
-    set(archs ${CMAKE_OSX_ARCHITECTURES})
-    if(NOT archs)
-        set(archs "${CMAKE_SYSTEM_PROCESSOR}")
-    endif()
-
-    set(overlay_deps "${overlay}")
-    get_target_property(module_map_path ${target} _qt_module_map_build_path)
-    if(module_map_path)
-        list(APPEND overlay_deps "${module_map_path}")
-    endif()
-    get_target_property(apinotes_path ${target} _qt_swift_apinotes_build_path)
-    if(apinotes_path)
-        list(APPEND overlay_deps "${apinotes_path}")
-    endif()
-
-    set(overlay_outputs "")
-    foreach(arch IN LISTS archs)
-        set(target_triple "${arch}-apple-macos${CMAKE_OSX_DEPLOYMENT_TARGET}")
-        # The interface file is named by the module triple (target triple with
-        # the OS version stripped), which is what Swift matches against.
-        set(interface_name "${arch}-apple-macos.swiftinterface")
-        set(intermediate_interface "${intermediate_dir}/${interface_name}")
-        set(overlay_output "${swiftmodule_dir}/${interface_name}")
-
-        add_custom_command(
-            OUTPUT "${overlay_output}"
-            DEPENDS ${overlay_deps}
-            COMMAND ${CMAKE_COMMAND} -E make_directory "${intermediate_dir}"
-            COMMAND "${swiftc}" -typecheck
-                -module-name ${module}
-                -import-underlying-module
-                -enable-library-evolution
-                -swift-version 5
-                -cxx-interoperability-mode=default
-                -target ${target_triple}
-                -sdk "${CMAKE_OSX_SYSROOT}"
-                ${module_search_flag}
-                -module-cache-path "${intermediate_dir}/ModuleCache"
-                -emit-module-interface-path "${intermediate_interface}"
-                "${overlay}"
-            COMMAND ${CMAKE_COMMAND} -E make_directory "${swiftmodule_dir}"
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "${intermediate_interface}" "${overlay_output}"
-            VERBATIM
-            COMMENT "Generating Swift overlay interface (${arch}) for ${target}"
-        )
-        list(APPEND overlay_outputs "${overlay_output}")
-    endforeach()
-
-    # The overlay is compiled against the finished module (synced headers,
-    # module map and API notes), so it must build after the module, not before.
-    add_custom_target(${target}_swift_overlay ALL DEPENDS ${overlay_outputs})
-    add_dependencies(${target}_swift_overlay ${target})
 endfunction()
 
 function(qt_finalize_module target)
@@ -1523,7 +1412,6 @@ function(qt_finalize_module target)
 
     qt_internal_apply_apple_privacy_manifest(${target})
     qt_internal_apply_swift_apinotes(${target})
-    qt_internal_apply_swift_overlay(${target})
 
     _qt_internal_finalize_sbom(${target})
 endfunction()
@@ -1680,20 +1568,11 @@ the different base name for the module info variables.")
                 set("${result}_clang_modules_dir"
                     "${framework_dir}/Versions/${framework_version}/Modules")
             endif()
-            # The Swift overlay ships next to the module map inside the bundle.
-            set("${result}_swiftmodule_dir"
-                "${${result}_clang_modules_dir}/${module}.swiftmodule")
         else()
             set("${result}_clang_modules_dir"
                 "${${result}_build_interface_include_dir}")
             set("${result}_clang_modules_lookup_dir"
                 "${${result}_clang_modules_dir}")
-            # Unlike Clang, Swift only looks up ModuleName.swiftmodule directly
-            # in an import search directory, not in a per-module subdirectory, so
-            # it goes in the top-level include directory, not next to the module
-            # map.
-            set("${result}_swiftmodule_dir"
-                "${repo_build_interface_include_dir}/${module}.swiftmodule")
         endif()
     endif()
 
@@ -1758,8 +1637,6 @@ the different base name for the module info variables.")
             "${${result}_clang_modules_dir}" PARENT_SCOPE)
         set("${result}_clang_modules_lookup_dir"
             "${${result}_clang_modules_lookup_dir}" PARENT_SCOPE)
-        set("${result}_swiftmodule_dir"
-            "${${result}_swiftmodule_dir}" PARENT_SCOPE)
     endif()
 
     # Setting module install interface directories in parent scope
