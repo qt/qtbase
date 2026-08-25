@@ -322,8 +322,8 @@ QRangeModelImplBase::AutoConnectPolicy QRangeModelImplBase::autoConnectPolicy() 
     return QRangeModelImplBase::AutoConnectPolicy(m_rangeModel->autoConnectPolicy());
 }
 
-Qt::partial_ordering QRangeModelImplBase::compareData(const QVariant &lhs, const QVariant &rhs,
-                                                      const QCollator *collator)
+Qt::weak_ordering QRangeModelImplBase::compareData(const QVariant &lhs, const QVariant &rhs,
+                                                   const QCollator *collator)
 {
     return QRangeModel::compareData(lhs, rhs, collator);
 }
