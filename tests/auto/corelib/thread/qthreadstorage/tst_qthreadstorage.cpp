@@ -471,11 +471,13 @@ void tst_QThreadStorage::valueBased()
         QThreadStorage<SPointer> &tlsSPointer;
         QThreadStorage<QString> &tlsString;
         QThreadStorage<int> &tlsInt;
+        QThreadStorage<std::unique_ptr<int>> &tlsUniquePtr;
 
         int someNumber;
         QString someString;
-        Thread(QThreadStorage<SPointer> &t1, QThreadStorage<QString> &t2, QThreadStorage<int> &t3)
-        : tlsSPointer(t1), tlsString(t2), tlsInt(t3) { }
+        explicit Thread(QThreadStorage<SPointer> &t1, QThreadStorage<QString> &t2,
+                        QThreadStorage<int> &t3, QThreadStorage<std::unique_ptr<int>> &t4)
+            : tlsSPointer(t1), tlsString(t2), tlsInt(t3), tlsUniquePtr(t4) { }
 
         void run()  override
         {
@@ -487,37 +489,53 @@ void tst_QThreadStorage::valueBased()
             //Default constructed values
             QVERIFY(tlsString.localData().isNull());
             QCOMPARE(tlsInt.localData(), 0);
+            QCOMPARE_EQ(tlsUniquePtr.localData(), nullptr);
 
             //setting
             tlsString.setLocalData(someString);
             tlsInt.setLocalData(someNumber);
+            int* const someIntPtr = [&] {
+                auto up = std::make_unique<int>(someNumber);
+                auto p = up.get();
+                // tlsUniquePtr.setLocalData(std::move(up)); // QTBUG-149463
+                tlsUniquePtr.localData() = std::move(up);
+                return p;
+            }();
 
             QCOMPARE(tlsString.localData(), someString);
             QCOMPARE(tlsInt.localData(), someNumber);
+            QCOMPARE_EQ(tlsUniquePtr.localData().get(), someIntPtr);
 
             //changing
             tlsSPointer.setLocalData(SPointer());
             tlsInt.localData() += 42;
             tlsString.localData().append(QLatin1String(" world"));
+            tlsUniquePtr.localData().reset(new int{someNumber + 42});
 
             QCOMPARE(tlsString.localData(), (someString + QLatin1String(" world")));
             QCOMPARE(tlsInt.localData(), (someNumber + 42));
+            QCOMPARE_NE(tlsUniquePtr.localData(), nullptr);
+            QCOMPARE(*tlsUniquePtr.localData(), someNumber + 42);
 
             // operator=
             tlsString.localData() = QString::number(someNumber);
             QCOMPARE(tlsString.localData().toInt(), someNumber);
+            tlsUniquePtr.localData() = std::make_unique<int>(someNumber);
+            QCOMPARE_NE(tlsUniquePtr.localData(), nullptr);
+            QCOMPARE_EQ(*tlsUniquePtr.localData(), someNumber);
         }
     };
 
     QThreadStorage<SPointer> tlsSPointer;
     QThreadStorage<QString> tlsString;
     QThreadStorage<int> tlsInt;
+    QThreadStorage<std::unique_ptr<int>> tlsUniquePtr;
 
     int c = SPointer::count.loadRelaxed();
 
-    Thread t1(tlsSPointer, tlsString, tlsInt);
-    Thread t2(tlsSPointer, tlsString, tlsInt);
-    Thread t3(tlsSPointer, tlsString, tlsInt);
+    Thread t1(tlsSPointer, tlsString, tlsInt, tlsUniquePtr);
+    Thread t2(tlsSPointer, tlsString, tlsInt, tlsUniquePtr);
+    Thread t3(tlsSPointer, tlsString, tlsInt, tlsUniquePtr);
     t1.someNumber = 42;
     t2.someNumber = -128;
     t3.someNumber = 78;
