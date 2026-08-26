@@ -38,16 +38,16 @@ class ExtendedCallbackFuncWrapper
 {
 public:
     template<typename Func>
-    ExtendedCallbackFuncWrapper(Func &&callbackFunc, std::enable_if_t<std::is_void<std::result_of_t<Func(const Napi::CallbackInfo &, ExtraArgs...)>>::value, char *> = nullptr);
+    ExtendedCallbackFuncWrapper(Func &&callbackFunc, std::enable_if_t<std::is_void<std::invoke_result_t<Func, const Napi::CallbackInfo &, ExtraArgs...>>::value, char *> = nullptr);
 
     template<typename Func>
-    ExtendedCallbackFuncWrapper(Func &&callbackFunc, std::enable_if_t<std::is_base_of<Napi::Value, std::result_of_t<Func(const Napi::CallbackInfo &, ExtraArgs...)>>::value, short *> = nullptr);
+    ExtendedCallbackFuncWrapper(Func &&callbackFunc, std::enable_if_t<std::is_base_of<Napi::Value, std::invoke_result_t<Func, const Napi::CallbackInfo &, ExtraArgs...>>::value, short *> = nullptr);
 
     template<typename Func>
-    ExtendedCallbackFuncWrapper(Func &&callbackFunc, std::enable_if_t<std::is_void<std::result_of_t<Func(ExtraArgs...)>>::value, int *> = nullptr);
+    ExtendedCallbackFuncWrapper(Func &&callbackFunc, std::enable_if_t<std::is_void<std::invoke_result_t<Func, ExtraArgs...>>::value, int *> = nullptr);
 
     template<typename Func>
-    ExtendedCallbackFuncWrapper(Func &&callbackFunc, std::enable_if_t<std::is_base_of<Napi::Value, std::result_of_t<Func(ExtraArgs...)>>::value, long *> = nullptr);
+    ExtendedCallbackFuncWrapper(Func &&callbackFunc, std::enable_if_t<std::is_base_of<Napi::Value, std::invoke_result_t<Func, ExtraArgs...>>::value, long *> = nullptr);
 
     std::function<Napi::Value(const Napi::CallbackInfo &, ExtraArgs...)> &callbackFunc();
 
@@ -811,7 +811,7 @@ inline Napi::Value ValueWrapper::mapToValue(napi_env env) const
 template<typename... ExtraArgs>
 template<typename Func>
 ExtendedCallbackFuncWrapper<ExtraArgs...>::ExtendedCallbackFuncWrapper(
-    Func &&callbackFunc, std::enable_if_t<std::is_void<std::result_of_t<Func(const Napi::CallbackInfo &, ExtraArgs...)>>::value, char *>)
+    Func &&callbackFunc, std::enable_if_t<std::is_void<std::invoke_result_t<Func, const Napi::CallbackInfo &, ExtraArgs...>>::value, char *>)
     : m_callbackFunc(
         [callbackFunc = std::make_shared<std::decay_t<Func>>(std::move(callbackFunc))](const Napi::CallbackInfo &cbInfo, ExtraArgs... extraArgs) {
             (*callbackFunc)(cbInfo, extraArgs...);
@@ -824,7 +824,7 @@ ExtendedCallbackFuncWrapper<ExtraArgs...>::ExtendedCallbackFuncWrapper(
 template<typename... ExtraArgs>
 template<typename Func>
 ExtendedCallbackFuncWrapper<ExtraArgs...>::ExtendedCallbackFuncWrapper(
-    Func &&callbackFunc, std::enable_if_t<std::is_base_of<Napi::Value, std::result_of_t<Func(const Napi::CallbackInfo &, ExtraArgs...)>>::value, short *>)
+    Func &&callbackFunc, std::enable_if_t<std::is_base_of<Napi::Value, std::invoke_result_t<Func, const Napi::CallbackInfo &, ExtraArgs...>>::value, short *>)
     : m_callbackFunc(
         [callbackFunc = std::make_shared<std::decay_t<Func>>(std::move(callbackFunc))](const Napi::CallbackInfo &cbInfo, ExtraArgs... extraArgs) {
             return (*callbackFunc)(cbInfo, extraArgs...);
@@ -835,7 +835,7 @@ ExtendedCallbackFuncWrapper<ExtraArgs...>::ExtendedCallbackFuncWrapper(
 
 template<typename... ExtraArgs>
 template<typename Func>
-ExtendedCallbackFuncWrapper<ExtraArgs...>::ExtendedCallbackFuncWrapper(Func &&callbackFunc, std::enable_if_t<std::is_void<std::result_of_t<Func(ExtraArgs...)>>::value, int *>)
+ExtendedCallbackFuncWrapper<ExtraArgs...>::ExtendedCallbackFuncWrapper(Func &&callbackFunc, std::enable_if_t<std::is_void<std::invoke_result_t<Func, ExtraArgs...>>::value, int *>)
     : m_callbackFunc(
         [callbackFunc = std::make_shared<std::decay_t<Func>>(std::move(callbackFunc))](const Napi::CallbackInfo &, ExtraArgs... extraArgs) {
             (*callbackFunc)(extraArgs...);
@@ -848,7 +848,7 @@ ExtendedCallbackFuncWrapper<ExtraArgs...>::ExtendedCallbackFuncWrapper(Func &&ca
 template<typename... ExtraArgs>
 template<typename Func>
 ExtendedCallbackFuncWrapper<ExtraArgs...>::ExtendedCallbackFuncWrapper(
-    Func &&callbackFunc, std::enable_if_t<std::is_base_of<Napi::Value, std::result_of_t<Func(ExtraArgs...)>>::value, long *>)
+    Func &&callbackFunc, std::enable_if_t<std::is_base_of<Napi::Value, std::invoke_result_t<Func, ExtraArgs...>>::value, long *>)
     : m_callbackFunc(
         [callbackFunc = std::make_shared<std::decay_t<Func>>(std::move(callbackFunc))](const Napi::CallbackInfo &, ExtraArgs... extraArgs) {
             return (*callbackFunc)(extraArgs...);
