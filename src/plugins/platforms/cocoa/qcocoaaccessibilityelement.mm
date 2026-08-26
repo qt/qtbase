@@ -833,13 +833,21 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
 
 - (NSArray *)accessibilityAttributeNames {
     NSMutableArray *attributes = [[NSMutableArray new] autorelease];
+    QAccessibleInterface *iface = self.qtInterface;
 
 #if QT_APPLE_SDK_EQUAL_OR_ABOVE(MACOS(26))
-    if (@available(macOS 26, *))
+    if (@available(macOS 26, *)) {
         [attributes addObject:NSAccessibilityLanguageAttribute];
+
+        if (iface && iface->role() == QAccessible::Heading) {
+            QAccessibleAttributesInterface *attributesIface = iface->attributesInterface();
+            if (attributesIface
+                && attributesIface->attributeKeys().contains(QAccessible::Attribute::Level))
+                [attributes addObject:NSAccessibilityHeadingLevelAttribute];
+        }
+    }
 #endif
 
-    QAccessibleInterface *iface = self.qtInterface;
     if (iface && iface->state().expandable)
         [attributes addObject:NSAccessibilityExpandedAttribute];
 
@@ -864,6 +872,26 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
             const auto &localeVariant =
                     attributesIface->attributeValue(QAccessible::Attribute::Locale);
             return localeVariant.toLocale().bcp47Name().toNSString();
+        }
+
+        if ([attribute isEqualToString:NSAccessibilityHeadingLevelAttribute]) {
+            if (iface->role() != QAccessible::Heading)
+                return @(0);
+
+            auto attributesIface = iface->attributesInterface();
+            if (!attributesIface)
+                return @(0);
+
+            const QVariant levelVariant =
+                    attributesIface->attributeValue(QAccessible::Attribute::Level);
+            if (!levelVariant.isValid() || !levelVariant.canConvert<int>())
+                return @(0);
+
+            const int level = levelVariant.toInt();
+            if (level < 1)
+                return @(0);
+
+            return @(level);
         }
     }
 #endif
