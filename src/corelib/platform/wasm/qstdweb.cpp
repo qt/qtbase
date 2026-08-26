@@ -92,18 +92,10 @@ private:
     File file;
 };
 
-#if defined(QT_STATIC)
-
 EM_JS(bool, jsHaveAsyncify, (), { return typeof Asyncify !== "undefined"; });
 EM_JS(bool, jsHaveJspi, (),
       { return typeof Asyncify !== "undefined" && !!Asyncify.makeAsyncFunction && (!!WebAssembly.Function || !!WebAssembly.Suspending); });
 
-#else
-
-bool jsHaveAsyncify() { return false; }
-bool jsHaveJspi() { return false; }
-
-#endif
 } // namespace
 
 ArrayBuffer::ArrayBuffer(uint32_t size)

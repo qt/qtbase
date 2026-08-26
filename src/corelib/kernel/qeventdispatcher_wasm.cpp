@@ -28,23 +28,10 @@ Q_LOGGING_CATEGORY(lcEventDispatcherTimers, "qt.eventdispatcher.timers");
 #define LOCK_GUARD(M)
 #endif
 
-#if defined(QT_STATIC)
-
 static bool useAsyncify()
 {
     return qstdweb::haveAsyncify();
 }
-
-#else
-
-// EM_JS is not supported for side modules; disable asyncify
-
-static bool useAsyncify()
-{
-    return false;
-}
-
-#endif // defined(QT_STATIC)
 
 Q_CONSTINIT QEventDispatcherWasm *QEventDispatcherWasm::g_mainThreadEventDispatcher = nullptr;
 Q_CONSTINIT std::shared_ptr<QWasmSuspendResumeControl> QEventDispatcherWasm::g_customMainThreadSuspendResumeControl;
