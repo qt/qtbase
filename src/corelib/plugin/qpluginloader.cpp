@@ -177,8 +177,13 @@ bool QPluginLoader::load()
         return false;
     if (did_load)
         return d->pHnd && d->instanceFactory.loadAcquire();
+#if !defined(Q_OS_WASM)
+    // On wasm, plugins are fetched over HTTP by emscripten_dlopen() and may
+    // not exist on the file system. Skip the isPlugin() check which probes the
+    // filesystem; the metadata is read from the loaded module instead.
     if (!d->isPlugin())
         return false;
+#endif
     did_load = true;
     return d->loadPlugin();
 }
@@ -221,6 +226,15 @@ bool QPluginLoader::isLoaded() const
 }
 
 #if defined(QT_SHARED)
+#  if defined(Q_OS_WASM)
+// On wasm, plugins are fetched over HTTP by emscripten_dlopen() and may not exist
+// on the file system, so there is nothing to locate: pass the file name through
+// and let the loader resolve it.
+static QString locatePlugin(const QString &fileName)
+{
+    return fileName;
+}
+#  else
 static QString locatePlugin(const QString& fileName)
 {
     const bool isAbsolute = QDir::isAbsolutePath(fileName);
@@ -268,7 +282,8 @@ static QString locatePlugin(const QString& fileName)
     qCDebug(qt_lcDebugPlugins) << fileName << "not found";
     return QString();
 }
-#endif
+#  endif // Q_OS_WASM
+#endif // QT_SHARED
 
 /*!
     \property QPluginLoader::fileName
