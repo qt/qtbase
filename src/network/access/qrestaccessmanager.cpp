@@ -179,6 +179,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
                     const QNetworkRequest &request,
                     const ContextTypeForFunctor<Functor> *context,
                     Functor &&callback)
+    \fn QNetworkReply *QRestAccessManager::get(const QNetworkRequest &request)
 
     Issues an \c {HTTP GET} based on \a request.
 
@@ -199,6 +200,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
                     const QNetworkRequest &request, const QByteArray &data,
                     const ContextTypeForFunctor<Functor> *context,
                     Functor &&callback)
+    \fn QNetworkReply *QRestAccessManager::get(const QNetworkRequest &request, const QByteArray &data)
 
     Issues an \c {HTTP GET} based on \a request and provided \a data.
 
@@ -219,6 +221,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
                     const QNetworkRequest &request, const QJsonDocument &data,
                     const ContextTypeForFunctor<Functor> *context,
                     Functor &&callback)
+    \fn QNetworkReply *QRestAccessManager::get(const QNetworkRequest &request, const QJsonDocument &data)
 
     \overload
 */
@@ -228,6 +231,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
                     const QNetworkRequest &request, QIODevice *data,
                     const ContextTypeForFunctor<Functor> *context,
                     Functor &&callback)
+    \fn QNetworkReply *QRestAccessManager::get(const QNetworkRequest &request, QIODevice *data)
 
     \overload
 */
@@ -237,6 +241,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
                     const QNetworkRequest &request, const QJsonDocument &data,
                     const ContextTypeForFunctor<Functor> *context,
                     Functor &&callback)
+    \fn QNetworkReply *QRestAccessManager::post(const QNetworkRequest &request, const QJsonDocument &data)
 
     Issues an \c {HTTP POST} based on \a request.
 
@@ -273,6 +278,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
                     const QNetworkRequest &request, const QVariantMap &data,
                     const ContextTypeForFunctor<Functor> *context,
                     Functor &&callback)
+    \fn QNetworkReply *QRestAccessManager::post(const QNetworkRequest &request, const QVariantMap &data)
 
     \overload
 */
@@ -282,6 +288,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
                     const QNetworkRequest &request, const QByteArray &data,
                     const ContextTypeForFunctor<Functor> *context,
                     Functor &&callback)
+    \fn QNetworkReply *QRestAccessManager::post(const QNetworkRequest &request, const QByteArray &data)
 
     \overload
 */
@@ -291,6 +298,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
                     const QNetworkRequest &request, QHttpMultiPart *data,
                     const ContextTypeForFunctor<Functor> *context,
                     Functor &&callback)
+    \fn QNetworkReply *QRestAccessManager::post(const QNetworkRequest &request, QHttpMultiPart *data)
 
     \overload
 */
@@ -300,6 +308,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
                     const QNetworkRequest &request, QIODevice *data,
                     const ContextTypeForFunctor<Functor> *context,
                     Functor &&callback)
+    \fn QNetworkReply *QRestAccessManager::post(const QNetworkRequest &request, QIODevice *data)
 
     \overload
 */
@@ -309,6 +318,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
                     const QNetworkRequest &request, const QJsonDocument &data,
                     const ContextTypeForFunctor<Functor> *context,
                     Functor &&callback)
+    \fn QNetworkReply *QRestAccessManager::put(const QNetworkRequest &request, const QJsonDocument &data)
 
     Issues an \c {HTTP PUT} based on \a request.
 
@@ -344,6 +354,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
                     const QNetworkRequest &request, const QVariantMap &data,
                     const ContextTypeForFunctor<Functor> *context,
                     Functor &&callback)
+    \fn QNetworkReply *QRestAccessManager::put(const QNetworkRequest &request, const QVariantMap &data)
 
     \overload
 */
@@ -353,6 +364,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
                     const QNetworkRequest &request, const QByteArray &data,
                     const ContextTypeForFunctor<Functor> *context,
                     Functor &&callback)
+    \fn QNetworkReply *QRestAccessManager::put(const QNetworkRequest &request, const QByteArray &data)
 
     \overload
 */
@@ -362,6 +374,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
                     const QNetworkRequest &request, QHttpMultiPart *data,
                     const ContextTypeForFunctor<Functor> *context,
                     Functor &&callback)
+    \fn QNetworkReply *QRestAccessManager::put(const QNetworkRequest &request, QHttpMultiPart *data)
 
     \overload
 */
@@ -371,6 +384,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
                     const QNetworkRequest &request, QIODevice *data,
                     const ContextTypeForFunctor<Functor> *context,
                     Functor &&callback)
+    \fn QNetworkReply *QRestAccessManager::put(const QNetworkRequest &request, QIODevice *data)
 
     \overload
 */
@@ -380,6 +394,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
                     const QNetworkRequest &request, const QJsonDocument &data,
                     const ContextTypeForFunctor<Functor> *context,
                     Functor &&callback)
+    \fn QNetworkReply *QRestAccessManager::patch(const QNetworkRequest &request, const QJsonDocument &data)
 
     Issues an \c {HTTP PATCH} based on \a request.
 
@@ -414,6 +429,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
                     const QNetworkRequest &request, const QVariantMap &data,
                     const ContextTypeForFunctor<Functor> *context,
                     Functor &&callback)
+    \fn QNetworkReply *QRestAccessManager::patch(const QNetworkRequest &request, const QVariantMap &data)
 
     \overload
 */
@@ -423,6 +439,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
                     const QNetworkRequest &request, const QByteArray &data,
                     const ContextTypeForFunctor<Functor> *context,
                     Functor &&callback)
+    \fn QNetworkReply *QRestAccessManager::patch(const QNetworkRequest &request, const QByteArray &data)
 
     \overload
 */
@@ -432,6 +449,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
                     const QNetworkRequest &request, QIODevice *data,
                     const ContextTypeForFunctor<Functor> *context,
                     Functor &&callback)
+    \fn QNetworkReply *QRestAccessManager::patch(const QNetworkRequest &request, QIODevice *data)
 
     \overload
 */
@@ -441,6 +459,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
                     const QNetworkRequest &request,
                     const ContextTypeForFunctor<Functor> *context,
                     Functor &&callback)
+    \fn QNetworkReply *QRestAccessManager::head(const QNetworkRequest &request)
 
     Issues an \c {HTTP HEAD} based on \a request.
 
@@ -463,6 +482,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
                     const QNetworkRequest &request,
                     const ContextTypeForFunctor<Functor> *context,
                     Functor &&callback)
+    \fn QNetworkReply *QRestAccessManager::deleteResource(const QNetworkRequest &request)
 
     Issues an \c {HTTP DELETE} based on \a request.
 
@@ -485,6 +505,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
             const QNetworkRequest& request, const QByteArray &method, const QByteArray &data,
             const ContextTypeForFunctor<Functor> *context,
             Functor &&callback)
+    \fn QNetworkReply *QRestAccessManager::sendCustomRequest(const QNetworkRequest &request, const QByteArray &method, const QByteArray &data)
 
     Issues \a request based HTTP request with custom \a method and the
     provided \a data.
@@ -505,6 +526,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
             const QNetworkRequest& request, const QByteArray &method, QIODevice *data,
             const ContextTypeForFunctor<Functor> *context,
             Functor &&callback)
+    \fn QNetworkReply *QRestAccessManager::sendCustomRequest(const QNetworkRequest &request, const QByteArray &method, QIODevice *data)
 
     \overload
 */
@@ -514,6 +536,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
             const QNetworkRequest& request, const QByteArray &method, QHttpMultiPart *data,
             const ContextTypeForFunctor<Functor> *context,
             Functor &&callback)
+    \fn QNetworkReply *QRestAccessManager::sendCustomRequest(const QNetworkRequest &request, const QByteArray &method, QHttpMultiPart *data)
 
     \overload
 */
