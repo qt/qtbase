@@ -1013,7 +1013,7 @@ void invokeInJsThreadAndWaitForContinue(
                     settleOuterTaskPromise({});
                 },
                 [funcInfo, callerContextName]() {
-                    if (!std::uncaught_exception()) {
+                    if (std::uncaught_exceptions() == 0) {
                         qOhosReportFatalErrorAndAbort(
                             "%s: promise destroyed without notifying the caller: %s",
                             funcInfo, callerContextName.c_str());
