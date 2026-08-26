@@ -1022,7 +1022,7 @@ void QOhosStyle::drawPrimitive(
         }
         break;
     case PE_FrameFocusRect:
-        if (const QStyleOptionFocusRect *fropt = qstyleoption_cast<const QStyleOptionFocusRect *>(option)) {
+        if (qstyleoption_cast<const QStyleOptionFocusRect *>(option)) {
             if (qobjectIsInstanceOf<QPushButton>(widget)) {
                 drawPushButtonFocus(*painter, *option);
             } else if (qobjectIsInstanceOf<QToolButton>(widget)) {
