@@ -250,6 +250,12 @@ QPlatformBackingStore *QOhosPlatformIntegration::createPlatformBackingStore(QWin
 {
     std::unique_ptr<QPlatformBackingStore> result;
     switch (window->surfaceType()) {
+#if QT_DEPRECATED_SINCE(6, 11)
+QT_IGNORE_DEPRECATIONS(
+    case QSurface::RasterGLSurface:
+        break;
+)
+#endif
     case QSurface::RasterSurface:
         // NOTE - This is temporary change done so that tests can be performed
         // on the new implementation - if there are no problems
