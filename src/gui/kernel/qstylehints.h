@@ -63,6 +63,8 @@ class Q_GUI_EXPORT QStyleHints : public QObject
     Q_PROPERTY(const QAccessibilityHints* accessibility READ accessibility CONSTANT FINAL REVISION(6, 10))
     Q_PROPERTY(std::chrono::milliseconds toolTipWakeUpDelay READ toolTipWakeUpDelay
                WRITE setToolTipWakeUpDelay NOTIFY toolTipWakeUpDelayChanged FINAL REVISION(6, 12))
+    Q_PROPERTY(int toolTipWakeUpDelayAsMSec READ toolTipWakeUpDelayAsMSec NOTIFY toolTipWakeUpDelayAsMSecChanged
+               FINAL REVISION(6, 12))
 
 public:
     void setMouseDoubleClickInterval(int mouseDoubleClickInterval);
@@ -112,6 +114,7 @@ public:
     const QAccessibilityHints* accessibility() const;
     std::chrono::milliseconds toolTipWakeUpDelay() const;
     void setToolTipWakeUpDelay(std::chrono::milliseconds toolTipWakeUpDelay);
+    int toolTipWakeUpDelayAsMSec() const;
 
 Q_SIGNALS:
     void cursorFlashTimeChanged(int cursorFlashTime);
@@ -128,6 +131,7 @@ Q_SIGNALS:
     void mouseQuickSelectionThresholdChanged(int threshold);
     void colorSchemeChanged(Qt::ColorScheme colorScheme);
     Q_REVISION(6, 12) void toolTipWakeUpDelayChanged(std::chrono::milliseconds toolTipWakeUpDelay);
+    Q_REVISION(6, 12) void toolTipWakeUpDelayAsMSecChanged(int toolTipWakeUpDelay);
 
 private:
     friend class QGuiApplication;
