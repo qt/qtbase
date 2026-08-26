@@ -348,7 +348,7 @@ void QThread::sleep(std::chrono::nanoseconds nsecs)
         if (waitableTimerHandle) {
             using namespace std::chrono_literals;
             // SetWaitableTimerEx's uses intervals of 100ns (0.1µs)
-            const auto ticks100ns = duration_cast<QtPrivate::win32_ticks>(nsecs);
+            const auto ticks100ns = ceil<QtPrivate::win32_ticks>(nsecs);
             LARGE_INTEGER i;
             // Negate to make it a relative timeout:
             i.QuadPart = std::min(-(ticks100ns.count()), -1ll);
@@ -366,7 +366,7 @@ void QThread::sleep(std::chrono::nanoseconds nsecs)
         }
     }
     // Fallback:
-    ::Sleep(DWORD(duration_cast<milliseconds>(nsecs).count()));
+    ::Sleep(DWORD(ceil<milliseconds>(nsecs).count()));
 }
 
 void QThread::sleep(unsigned long secs)
