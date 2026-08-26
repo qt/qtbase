@@ -3651,6 +3651,13 @@ void QRhiMetal::enqueueSubresUpload(QMetalTexture *texD, void *mp, void *blitEnc
             h = subresDesc.sourceSize().height();
         }
 
+        const QSize clamped = clampedCompressedSubResourceUploadSizeForSourceData(texD->m_format,
+                                                                                 QSize(w, h),
+                                                                                 rawData.size());
+        if (clamped.height() == 0)
+            return;
+        h = clamped.height();
+
         quint32 bpl = 0;
         QSize blockDim;
         compressedFormatInfo(texD->m_format, QSize(w, h), &bpl, nullptr, &blockDim);

@@ -4472,6 +4472,10 @@ void QRhiVulkan::prepareUploadSubres(QVkTexture *texD, int layer, int level,
         const int subresh = size.height();
         if (!subresDesc.sourceSize().isEmpty())
             size = subresDesc.sourceSize();
+        size = clampedCompressedSubResourceUploadSizeForSourceData(texD->m_format, size,
+                                                                  rawData.size());
+        if (size.height() == 0)
+            return;
         const int w = size.width();
         const int h = size.height();
         QSize blockDim;

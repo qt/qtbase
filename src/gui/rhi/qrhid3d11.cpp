@@ -2026,8 +2026,14 @@ void QRhiD3D11::enqueueSubresUpload(QD3D11Texture *texD, QD3D11CommandBuffer *cb
         cmd.args.updateSubRes.dstBox = box;
         cmd.args.updateSubRes.srcRowPitch = UINT(bpl);
     } else if (!subresDesc.data().isEmpty() && isCompressedFormat(texD->m_format)) {
-        const QSize size = subresDesc.sourceSize().isEmpty() ? q->sizeForMipLevel(level, texD->m_pixelSize)
-                                                             : subresDesc.sourceSize();
+        QSize size = subresDesc.sourceSize().isEmpty() ? q->sizeForMipLevel(level, texD->m_pixelSize)
+                                                       : subresDesc.sourceSize();
+        size = clampedCompressedSubResourceUploadSizeForSourceData(texD->m_format, size,
+                                                                  subresDesc.data().size());
+        if (size.height() == 0) {
+            cbD->commands.unget();
+            return;
+        }
         quint32 bpl = 0;
         QSize blockDim;
         compressedFormatInfo(texD->m_format, size, &bpl, nullptr, &blockDim);

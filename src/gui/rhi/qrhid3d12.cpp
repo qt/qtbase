@@ -4696,17 +4696,19 @@ void QRhiD3D12::enqueueResourceUpdates(QD3D12CommandBuffer *cbD, QRhiResourceUpd
                 const QPoint srcPos = subresDesc.sourceTopLeft();
                 QPoint dstPos = subresDesc.destinationTopLeft();
 
-                if (subresDesc.image().isNull()
-                    && !subresDesc.data().isEmpty()
-                    && !isCompressedFormat(texD->m_format))
-                {
-                    subresSize = clampedSubResourceUploadSize(subresSize, dstPos, level, texD->m_pixelSize);
-                    quint32 bytesPerPixel = 0;
-                    textureFormatInfo(texD->m_format, subresSize, nullptr, nullptr, &bytesPerPixel);
-                    subresSize = clampedSubResourceUploadSizeForSourceData(subresSize,
-                                                                           subresDesc.dataStride(),
-                                                                           bytesPerPixel,
-                                                                           subresDesc.data().size());
+                if (subresDesc.image().isNull() && !subresDesc.data().isEmpty()) {
+                    if (isCompressedFormat(texD->m_format)) {
+                        subresSize = clampedCompressedSubResourceUploadSizeForSourceData(
+                                    texD->m_format, subresSize, subresDesc.data().size());
+                    } else {
+                        subresSize = clampedSubResourceUploadSize(subresSize, dstPos, level, texD->m_pixelSize);
+                        quint32 bytesPerPixel = 0;
+                        textureFormatInfo(texD->m_format, subresSize, nullptr, nullptr, &bytesPerPixel);
+                        subresSize = clampedSubResourceUploadSizeForSourceData(subresSize,
+                                                                               subresDesc.dataStride(),
+                                                                               bytesPerPixel,
+                                                                               subresDesc.data().size());
+                    }
                     if (subresSize.isEmpty())
                         continue;
                 }

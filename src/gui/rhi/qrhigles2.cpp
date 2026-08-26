@@ -3148,6 +3148,18 @@ void QRhiGles2::enqueueSubresUpload(QGles2Texture *texD, QGles2CommandBuffer *cb
         }
 
         if (texD->isLevelAllocated(face, level)) {
+            const QSize clampedSize = clampedCompressedSubResourceUploadSizeForSourceData(texD->m_format,
+                                                                                         size,
+                                                                                         rawData.size());
+            if (clampedSize.height() == 0)
+                return;
+            qsizetype imageSize = rawData.size();
+            if (clampedSize != size) {
+                quint32 byteSize = 0;
+                compressedFormatInfo(texD->m_format, clampedSize, nullptr, &byteSize, nullptr);
+                imageSize = byteSize;
+                size = clampedSize;
+            }
             QGles2CommandBuffer::Command &cmd(cbD->commands.get());
             cmd.cmd = QGles2CommandBuffer::Command::CompressedSubImage;
             cmd.args.compressedSubImage.target = texD->target;
@@ -3160,10 +3172,19 @@ void QRhiGles2::enqueueSubresUpload(QGles2Texture *texD, QGles2CommandBuffer *cb
             cmd.args.compressedSubImage.w = size.width();
             cmd.args.compressedSubImage.h = size.height();
             cmd.args.compressedSubImage.glintformat = texD->glintformat;
-            cmd.args.compressedSubImage.size = rawData.size();
+            cmd.args.compressedSubImage.size = int(imageSize);
             cmd.args.compressedSubImage.data = cbD->retainData(rawData);
         } else {
-            // Allocate the level and upload the real data in one go.
+            // Allocate the level and upload the real data in one go. This
+            // defines the level, so it cannot be shrunk to fit the data.
+            quint32 byteSize = 0;
+            compressedFormatInfo(texD->m_format, size, nullptr, &byteSize, nullptr);
+            if (rawData.size() < qsizetype(byteSize)) {
+                qWarning("Invalid compressed texture upload issued; %lld bytes of data cannot back "
+                         "the initial %dx%d upload (needs %u bytes); skipping",
+                         qint64(rawData.size()), size.width(), size.height(), byteSize);
+                return;
+            }
             QGles2CommandBuffer::Command &cmd(cbD->commands.get());
             cmd.cmd = QGles2CommandBuffer::Command::CompressedImage;
             cmd.args.compressedImage.target = texD->target;

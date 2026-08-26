@@ -107,6 +107,8 @@ private slots:
     void resourceUpdateBatchTextureRawDataStride();
     void resourceUpdateBatchTextureInvalidSizeAndStride_data();
     void resourceUpdateBatchTextureInvalidSizeAndStride();
+    void resourceUpdateBatchCompressedTextureTruncatedData_data();
+    void resourceUpdateBatchCompressedTextureTruncatedData();
     void resourceUpdateBatchLotsOfResources_data();
     void resourceUpdateBatchLotsOfResources();
     void resourceUpdateBatchBetweenFrames_data();
@@ -2653,6 +2655,83 @@ void tst_QRhi::resourceUpdateBatchTextureInvalidSizeAndStride()
             QVERIFY(verifyRows(result, 0, 0));
         }
     }
+}
+
+void tst_QRhi::resourceUpdateBatchCompressedTextureTruncatedData_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::resourceUpdateBatchCompressedTextureTruncatedData()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    if (impl == QRhi::Null)
+        QSKIP("Compressed texture uploads are not performed by the Null backend");
+
+    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing texture resource updates");
+
+    // A compressed texture whose payload is smaller than the declared size needs
+    // is invalid usage: the copy region derives from the size, so the upload would
+    // read past the data. Expect a warning and a clamped or skipped upload, never
+    // a crash or an out-of-bounds access.
+
+    // 64x64 with 4x4 blocks is 16x16 = 256 blocks.
+    const QSize size(64, 64);
+    QRhiTexture::Format format = QRhiTexture::UnknownFormat;
+    int blockBytes = 0;
+    if (rhi->isTextureFormatSupported(QRhiTexture::BC1)) {
+        format = QRhiTexture::BC1;
+        blockBytes = 8;
+    } else if (rhi->isTextureFormatSupported(QRhiTexture::ASTC_4x4)) {
+        format = QRhiTexture::ASTC_4x4;
+        blockBytes = 16;
+    } else if (impl != QRhi::OpenGLES2 && rhi->isTextureFormatSupported(QRhiTexture::ETC2_RGB8)) {
+        // Mesa llvmpipe's emulated ETC2 uploads crash intermittently
+        format = QRhiTexture::ETC2_RGB8;
+        blockBytes = 8;
+    } else {
+        QSKIP("No suitable compressed texture format supported, skipping");
+    }
+
+    const int fullSize = 16 * 16 * blockBytes;
+
+    auto upload = [&](QRhiTexture *texture, const QByteArray &data) {
+        QRhiResourceUpdateBatch *batch = rhi->nextResourceUpdateBatch();
+        QRhiTextureSubresourceUploadDescription desc(data.constData(), quint32(data.size()));
+        batch->uploadTexture(texture, QRhiTextureUploadDescription(QRhiTextureUploadEntry(0, 0, desc)));
+        return submitResourceUpdates(rhi.data(), batch);
+    };
+
+    QScopedPointer<QRhiTexture> texture(rhi->newTexture(format, size));
+    QVERIFY(texture->create());
+
+    // A correctly sized payload must upload without complaint.
+    QVERIFY(upload(texture.data(), QByteArray(fullSize, 'a')));
+
+    // Far too little data: not even one row of blocks, so the upload is skipped.
+    QTest::ignoreMessage(QtWarningMsg,
+                         QRegularExpression(QLatin1String("Invalid compressed texture upload issued.*"
+                                                          "cannot back a 64x64 upload")));
+    QVERIFY(upload(texture.data(), QByteArray(blockBytes, 'a')));
+
+    // Enough for four rows of blocks out of sixteen, so the height is clamped.
+    QTest::ignoreMessage(QtWarningMsg,
+                         QRegularExpression(QLatin1String("Invalid compressed texture upload issued.*"
+                                                          "height will be clamped to 16")));
+    QVERIFY(upload(texture.data(), QByteArray(16 * 4 * blockBytes, 'a')));
+
+    // A truncated first upload. OpenGL skips it since that upload defines the
+    // level, the other backends clamp it.
+    QScopedPointer<QRhiTexture> freshTexture(rhi->newTexture(format, size));
+    QVERIFY(freshTexture->create());
+    QTest::ignoreMessage(QtWarningMsg,
+                         QRegularExpression(QLatin1String("Invalid compressed texture upload issued.*"
+                                                          "cannot back")));
+    QVERIFY(upload(freshTexture.data(), QByteArray(16 * 4 * blockBytes, 'a')));
 }
 
 void tst_QRhi::resourceUpdateBatchLotsOfResources_data()

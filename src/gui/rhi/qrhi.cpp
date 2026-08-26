@@ -13844,4 +13844,37 @@ QSize QRhiImplementation::clampedSubResourceUploadSizeForSourceData(QSize size, 
     return QSize(size.width(), rows);
 }
 
+// The compressed counterpart of clampedSubResourceUploadSizeForSourceData().
+// Clamps to whole rows of blocks; a height of 0 means not even one row can be
+// satisfied and the caller is expected to skip the copy.
+QSize QRhiImplementation::clampedCompressedSubResourceUploadSizeForSourceData(QRhiTexture::Format format,
+                                                                             QSize size,
+                                                                             qsizetype dataSize,
+                                                                             bool warn)
+{
+    if (size.isEmpty())
+        return size;
+
+    quint32 bpl = 0;
+    quint32 byteSize = 0;
+    QSize blockDim;
+    if (!compressedFormatInfo(format, size, &bpl, &byteSize, &blockDim) || !bpl)
+        return size;
+
+    if (quint64(dataSize) >= byteSize)
+        return size;
+
+    // Each row of blocks needs bpl bytes and covers blockDim.height() pixels.
+    const quint32 blockRows = quint32(quint64(dataSize) / quint64(bpl));
+    const int height = qMin(size.height(), int(blockRows * quint32(blockDim.height())));
+
+    if (warn) {
+        qWarning("Invalid compressed texture upload issued; %lld bytes of data cannot back a "
+                 "%dx%d upload (needs %u bytes); height will be clamped to %d",
+                 qint64(dataSize), size.width(), size.height(), byteSize, height);
+    }
+
+    return QSize(size.width(), height);
+}
+
 QT_END_NAMESPACE
