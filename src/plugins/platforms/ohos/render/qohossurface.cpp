@@ -87,6 +87,7 @@ bool waitForFdReadyForReadOrTimeout(int fd, const char *fdName, ch::milliseconds
         {
             .fd = fd,
             .events = POLLIN,
+            .revents = {},
         },
     }};
 

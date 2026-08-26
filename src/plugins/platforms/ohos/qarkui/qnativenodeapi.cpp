@@ -97,6 +97,8 @@ void setNodeAttributeOrFail(
     ::ArkUI_AttributeItem item = {
         .value = values.begin(),
         .size = static_cast<std::int32_t>(values.size()),
+        .string = {},
+        .object = {},
     };
     setNodeAttributeOrFail(node, attribute, {item});
 }
@@ -167,7 +169,10 @@ void Node::setAttributeOrFail(
     ::ArkUI_NodeAttributeType attributeType, const std::string &value)
 {
     ::ArkUI_AttributeItem item = {
+        .value = {},
+        .size = {},
         .string = value.data(),
+        .object = {},
     };
     setNodeAttributeOrFail(handle(), attributeType, {item});
 }
@@ -266,6 +271,8 @@ void Node::setAttributeOrFail(
     ::ArkUI_AttributeItem item = {
         .value = numbers,
         .size = static_cast<std::int32_t>(numberCount),
+        .string = {},
+        .object = {},
     };
 
     setNodeAttributeOrFail(handle(), attributeType, {item});

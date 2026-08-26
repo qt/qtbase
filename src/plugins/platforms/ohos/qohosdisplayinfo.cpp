@@ -32,6 +32,8 @@ QOhosDisplayInfo QOhosDisplayInfo::makeFromOhosDisplayObject(QtOhos::JsState &js
             displayObject.get<QNapi::Number>("width"),
             displayObject.get<QNapi::Number>("height")),
         .densityDPI = displayObject.get<QNapi::Number>("densityDPI"),
+        .densityPixels = {},
+        .densityScaled = {},
         .refreshRate = displayObject.get<QNapi::Number>("refreshRate"),
         .dpi = QDpi(
             displayObject.get<QNapi::Number>("xDPI"),

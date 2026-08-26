@@ -507,6 +507,7 @@ void QOhosInputMethodEventHandler::onNonClientAreaMouseEvents(
             .globalPosition = mouseEvent.displayPosition,
             .button = mouseEvent.button,
             .eventType = mouseEvent.action,
+            .modifiers = {},
             .deviceType = QInputDevice::DeviceType::TouchPad,
         };
 
@@ -554,6 +555,7 @@ void QOhosInputMethodEventHandler::onNonClientAreaTouchEvents(
             .globalPosition = touchEvent.displayPosition,
             .button = Qt::LeftButton,
             .eventType = touchEvent.action,
+            .modifiers = {},
             .deviceType = QInputDevice::DeviceType::TouchScreen,
         };
 

@@ -154,6 +154,7 @@ std::optional<KeyEvent> KeyEvent::createFromNativeEvent(const ::Input_KeyEvent *
 
     KeyEvent keyEvent = {
         .jsWindowId = jsWindowId,
+        .jsDisplayId = {},
         .actionTime = std::chrono::microseconds(::OH_Input_GetKeyEventActionTime(event)),
         .action = optMappedAction.value(),
         .keyCode = ::OH_Input_GetKeyEventKeyCode(event),

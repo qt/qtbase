@@ -1456,6 +1456,9 @@ std::shared_ptr<void> QOhosWindowProxy::JsScopeData::registerEventListener(
             ((*self).*handleFunction)(cbInfo);
         },
         {
+            .optEventSourceAliveCheckFunc = {},
+            .extraOnArg = {},
+            .extraOffArg = {},
             .optOnCallExceptionHandler = [&](const Napi::Error &error) {
                 constexpr std::uint32_t capabilityNotSupportedErrorCode = 801;
                 constexpr std::uint32_t windowStateIsAbnormalErrorCode = 1300002;

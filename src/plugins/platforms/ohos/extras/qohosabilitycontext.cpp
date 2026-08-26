@@ -251,6 +251,7 @@ void QOhosOnContinueContextImpl::sendAgreeResponse(const QByteArray &responseDat
                 QString::fromUtf8(responseData.toBase64())
             },
         },
+        .exitAppOnSourceDeviceAfterMigration = {},
     };
 }
 
@@ -269,6 +270,7 @@ void QOhosOnContinueContextImpl::sendRejectResponse()
     m_baseResponse = AbilityOnContinueResponse{
         .status = AbilityOnContinueResponseStatus::Reject,
         .wantObjectParams = {},
+        .exitAppOnSourceDeviceAfterMigration = {},
     };
 }
 
@@ -288,6 +290,7 @@ void QOhosOnContinueContextImpl::sendMismatchResponse()
     m_baseResponse = AbilityOnContinueResponse{
         .status = AbilityOnContinueResponseStatus::Mismatch,
         .wantObjectParams = {},
+        .exitAppOnSourceDeviceAfterMigration = {},
     };
 }
 
