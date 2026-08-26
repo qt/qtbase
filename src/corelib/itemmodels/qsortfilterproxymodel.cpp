@@ -3358,7 +3358,7 @@ bool QSortFilterProxyModel::lessThan(const QModelIndex &source_left, const QMode
     Q_D(const QSortFilterProxyModel);
     const QVariant l = source_left.data(d->sort_role);
     const QVariant r = source_right.data(d->sort_role);
-    return QAbstractItemModel::compareData(l, r, &d->sort_collator) < 0;
+    return QAbstractItemModel::compareData(l, r, d->sort_collator) < 0;
 }
 
 /*!

@@ -318,7 +318,8 @@ QRangeModelImplBase::AutoConnectPolicy QRangeModelImplBase::autoConnectPolicy() 
 Qt::weak_ordering QRangeModelImplBase::compareData(const QVariant &lhs, const QVariant &rhs,
                                                    const QCollator *collator)
 {
-    return QRangeModel::compareData(lhs, rhs, collator);
+    return collator ? QRangeModel::compareData(lhs, rhs, *collator)
+                    : QRangeModel::compareData(lhs, rhs);
 }
 
 // Helper templates that we can forward declare in the _impl header,

@@ -759,6 +759,8 @@ const QHash<int,QByteArray> &QAbstractItemModelPrivate::defaultRoleNames()
 }
 
 /*!
+    \fn Qt::weak_ordering QAbstractItemModel::compareData(const QVariant &left, const QVariant &right)
+    \fn Qt::weak_ordering QAbstractItemModel::compareData(const QVariant &left, const QVariant &right, const QCollator &collator)
     \since 6.12
 
     Compares the \a left QVariant with the \a right QVariant, and returns
@@ -807,8 +809,8 @@ const QHash<int,QByteArray> &QAbstractItemModelPrivate::defaultRoleNames()
 
     \sa {three-way comparison}, sort(), QVariant::compare, QSortFilterProxyModel
 */
-Qt::weak_ordering QAbstractItemModel::compareData(const QVariant &left, const QVariant &right,
-                                                     const QCollator *collator)
+Qt::weak_ordering QAbstractItemModel::compareDataImpl(const QVariant &left, const QVariant &right,
+                                                      const QCollator *collator)
 {
     // invalid is greater than everything, except another invalid variant
     if (!left.isValid()) {
