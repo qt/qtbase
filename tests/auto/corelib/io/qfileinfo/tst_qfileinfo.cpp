@@ -2507,11 +2507,9 @@ static void stateCheck(const QFileInfo &info, const QString &dirname, const QStr
     QVERIFY(info.isRelative());
     QCOMPARE(info.path(), path);
     QCOMPARE(info.absolutePath(), dirname);
+    QCOMPARE(info.canonicalPath(), QString());
     QCOMPARE(info.dir().path(), ".");
-
-    // these don't look right
-    QCOMPARE(info.canonicalPath(), path);
-    QCOMPARE(info.absoluteDir().path(), dirname.isEmpty() ? "." : dirname);
+    QCOMPARE(info.absoluteDir().path(), QDir(dirname).path());
 
     QVERIFY(!info.isReadable());
     QVERIFY(!info.isWritable());

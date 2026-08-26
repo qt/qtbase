@@ -18,6 +18,20 @@ QT_DEFINE_QSDP_SPECIALIZATION_DTOR(QFileInfoPrivate)
 
 QString QFileInfoPrivate::getFileName(QAbstractFileEngine::FileName name) const
 {
+    auto maybeCacheEntry = [this, name](const QFileSystemEntry &entry, QAbstractFileEngine::FileName filename) {
+        int pathname = int(filename + 1);
+        if (entry.isEmpty())
+            return QString();
+
+        QString filePath = entry.filePath();
+        QString path = entry.path();
+        if (cache_enabled) {
+            // be smart and store both
+            fileNames[filename] = filePath;
+            fileNames[pathname] = path;
+        }
+        return name == pathname ? path : filePath;
+    };
     if (cache_enabled && !fileNames[(int)name].isNull())
         return fileNames[(int)name];
 
@@ -26,15 +40,9 @@ QString QFileInfoPrivate::getFileName(QAbstractFileEngine::FileName name) const
         switch (name) {
             case QAbstractFileEngine::CanonicalName:
             case QAbstractFileEngine::CanonicalPathName: {
+                static_assert(int(QAbstractFileEngine::CanonicalName) + 1 == int(QAbstractFileEngine::CanonicalPathName));
                 QFileSystemEntry entry = QFileSystemEngine::canonicalName(fileEntry, metaData);
-                if (cache_enabled) { // be smart and store both
-                    fileNames[QAbstractFileEngine::CanonicalName] = entry.filePath();
-                    fileNames[QAbstractFileEngine::CanonicalPathName] = entry.path();
-                }
-                if (name == QAbstractFileEngine::CanonicalName)
-                    ret = entry.filePath();
-                else
-                    ret = entry.path();
+                ret = maybeCacheEntry(entry, QAbstractFileEngine::CanonicalName);
                 break;
             }
             case QAbstractFileEngine::AbsoluteLinkTarget:
@@ -51,15 +59,9 @@ QString QFileInfoPrivate::getFileName(QAbstractFileEngine::FileName name) const
                 break;
             case QAbstractFileEngine::AbsoluteName:
             case QAbstractFileEngine::AbsolutePathName: {
+                static_assert(int(QAbstractFileEngine::AbsoluteName) + 1 == int(QAbstractFileEngine::AbsolutePathName));
                 QFileSystemEntry entry = QFileSystemEngine::absoluteName(fileEntry);
-                if (cache_enabled) { // be smart and store both
-                    fileNames[QAbstractFileEngine::AbsoluteName] = entry.filePath();
-                    fileNames[QAbstractFileEngine::AbsolutePathName] = entry.path();
-                }
-                if (name == QAbstractFileEngine::AbsoluteName)
-                    ret = entry.filePath();
-                else
-                    ret = entry.path();
+                ret = maybeCacheEntry(entry, QAbstractFileEngine::AbsoluteName);
                 break;
             }
             default: break;
