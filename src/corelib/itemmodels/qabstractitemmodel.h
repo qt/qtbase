@@ -424,12 +424,24 @@ protected:
     void changePersistentIndexList(const QModelIndexList &from, const QModelIndexList &to);
     QModelIndexList persistentIndexList() const;
 
-    static Qt::weak_ordering compareData(const QVariant &lhs, const QVariant &rhs,
-                                         const QCollator *collator = nullptr);
+
+    static Qt::weak_ordering compareData(const QVariant &left, const QVariant &right)
+    {
+        return compareDataImpl(left, right, nullptr);
+    }
+
+    static Qt::weak_ordering compareData(const QVariant &left, const QVariant &right,
+                                         const QCollator &collator)
+    {
+        return compareDataImpl(left, right, &collator);
+    }
 
 private:
     Q_DECLARE_PRIVATE(QAbstractItemModel)
     Q_DISABLE_COPY(QAbstractItemModel)
+
+    static Qt::weak_ordering compareDataImpl(const QVariant &left, const QVariant &right,
+                                             const QCollator *collator);
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QAbstractItemModel::CheckIndexOptions)

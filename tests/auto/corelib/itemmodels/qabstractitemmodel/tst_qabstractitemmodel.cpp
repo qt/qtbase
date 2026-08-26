@@ -2753,7 +2753,7 @@ void tst_QAbstractItemModel::compareData()
     QFETCH(bool, expected);
     QFETCH(QCollator, collator);
 
-    bool lessThan = OrderingModel::compareData(lhs, rhs, &collator) < 0;
+    bool lessThan = OrderingModel::compareData(lhs, rhs, collator) < 0;
 
     QEXPECT_FAIL("today<now:true", "Comparing QDate with QDateTime compares only QDate", Continue);
     QCOMPARE(lessThan, expected);
