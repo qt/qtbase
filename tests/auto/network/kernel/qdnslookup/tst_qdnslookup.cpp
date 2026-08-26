@@ -542,6 +542,11 @@ void tst_QDnsLookup::lookupNxDomain()
         return;
     QCOMPARE(lookup->name(), domainName(domain));
     QCOMPARE(lookup->type(), type);
+#ifdef Q_OS_HARMONY
+    if (type == QDnsLookup::ANY && lookup->error() == QDnsLookup::NoError
+            && formatReply(lookup.get()).isEmpty())
+        QSKIP("HarmonyOS answers ANY with a minimal reply (RFC 8482), not with NXDOMAIN");
+#endif
     QCOMPARE(lookup->error(), QDnsLookup::NotFoundError);
 }
 
@@ -713,6 +718,8 @@ void tst_QDnsLookup::setNameserverLoopback()
 {
 #ifdef Q_OS_ANDROID
     QSKIP("Android's DnsResolver can only query the system's nameservers");
+#elif defined(Q_OS_HARMONY)
+    QSKIP("HarmonyOS' resolver can only query the system's nameservers");
 #endif
 #if !QT_CONFIG(udpsocket)
     QSKIP("UDP socket not enabled");
@@ -779,10 +786,10 @@ static void setNameserver_data_helper(const QByteArray &protoName)
     if (!QDnsLookup::isProtocolSupported(Protocol))
         QSKIP(protoName + " not supported");
 
-#ifdef Q_OS_ANDROID
+#if defined(Q_OS_ANDROID) || defined(Q_OS_HARMONY)
     // DNS-over-TLS is ours, so it can still be pointed at a specific server
     if (Protocol == QDnsLookup::Standard)
-        QSKIP("Android's DnsResolver can only query the system's nameservers");
+        QSKIP("the system resolver can only query the system's nameservers");
 #endif
 
     static QList<QHostAddress> servers = systemNameservers(Protocol)
