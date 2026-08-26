@@ -204,7 +204,7 @@ const QAccessibilityHints *QStyleHints::accessibility() const
 
 /*!
     \property QStyleHints::toolTipWakeUpDelay
-    \brief The delay in milliseconds before tool tips should be shown.
+    \brief The delay before tool tips should be shown.
     \since 6.12
     \sa QWidget::toolTip, {QtQuick.Controls::ToolTip::delay}
 */
@@ -221,6 +221,19 @@ void QStyleHints::setToolTipWakeUpDelay(std::chrono::milliseconds toolTipWakeUpD
         return;
     d->m_toolTipWakeUpDelay = toolTipWakeUpDelay;
     emit toolTipWakeUpDelayChanged(toolTipWakeUpDelay);
+    emit toolTipWakeUpDelayAsMSecChanged(toolTipWakeUpDelayAsMSec());
+}
+
+/*!
+    \property QStyleHints::toolTipWakeUpDelayAsMSec
+    \brief The delay, in milliseconds, before tool tips should be shown.
+    \since 6.12
+    \sa toolTipWakeUpDelay, {QtQuick.Controls::ToolTip::delay}
+*/
+int QStyleHints::toolTipWakeUpDelayAsMSec() const
+{
+    Q_D(const QStyleHints);
+    return q26::saturating_cast<int>(d->m_toolTipWakeUpDelay.count());
 }
 
 /*!
