@@ -347,6 +347,8 @@ QUiAbilityPeerImpl::QUiAbilityPeerImpl(
                         && qAbilityValue.IsObject()
                         && !QNapi::checkedCast<QNapi::Object>(qAbilityValue).eval<QNapi::Boolean>("context.isTerminating()");
                 },
+            .extraOnArg = {},
+            .extraOffArg = {},
             .optOnCallExceptionHandler = [](const Napi::Error &error) {
                 constexpr auto capabilityNotSupportedErrorCode = 801;
                 QtOhos::rethrowUnlessJsBusinessErrorIs(

@@ -378,7 +378,9 @@ QStringList QOhosPlatformIntegration::themeNames() const
 
 WId QOhosPlatformIntegration::windowHandle(ArkUI_NodeHandle content)
 {
-    return reinterpret_cast<WId>(new QtOhos::WindowIdStruct{.content = content});
+    auto *windowIdStruct = new QtOhos::WindowIdStruct{};
+    windowIdStruct->content = content;
+    return reinterpret_cast<WId>(windowIdStruct);
 }
 
 QOhosSystemLocale *QOhosPlatformIntegration::systemLocale()

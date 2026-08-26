@@ -306,11 +306,10 @@ std::vector<QOhosShareKit::SharedRecord> convertToShareKitSharedRecords(
     for (const auto &sharedRecord : dataToShare) {
         const auto *sharedRecordImpl = static_cast<const SharedRecordImpl *>(sharedRecord.get());
 
-        auto shareKitSharedRecord = QOhosShareKit::SharedRecord{
-            .mimeType = !sharedRecordImpl->isUrlContent()
-                ? sharedRecordImpl->mimeType().name().toStdString()
-                : std::string(mimeTextUriList),
-        };
+        auto shareKitSharedRecord = QOhosShareKit::SharedRecord{};
+        shareKitSharedRecord.mimeType = !sharedRecordImpl->isUrlContent()
+            ? sharedRecordImpl->mimeType().name().toStdString()
+            : std::string(mimeTextUriList);
 
         if (!sharedRecordImpl->content().isNull()) {
             shareKitSharedRecord.content = sharedRecordImpl->content().toStdString();

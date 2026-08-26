@@ -105,6 +105,7 @@ void QOhosNativeNodeMouseInputHandler::handleMouseEvent(QArkUi::NativeNodeMouseE
     }
 
     QOhosMouseEvent mouseEvent = {
+        .targetWindow = {},
         .timestampMs = nativeNodeMouseEvent.timestampMs,
         .localPosition = nativeNodeMouseEvent.localPosition,
         .globalPosition = nativeNodeMouseEvent.globalPosition,
