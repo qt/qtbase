@@ -243,6 +243,10 @@ qt_feature("android_dnsresolver" PRIVATE
     LABEL "Android DnsResolver"
     CONDITION ANDROID AND NOT QT_FEATURE_libresolv
 )
+qt_feature("harmony_dnsresolver" PRIVATE
+    LABEL "HarmonyOS stateless resolver"
+    CONDITION OHOS AND NOT QT_FEATURE_libresolv
+)
 qt_feature("libproxy" PRIVATE
     LABEL "libproxy"
     AUTODETECT OFF

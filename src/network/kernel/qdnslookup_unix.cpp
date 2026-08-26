@@ -14,10 +14,13 @@
 #include <private/qnativesocketengine_p.h>      // for setSockAddr
 #include <private/qtnetwork-config_p.h>
 
-// Two backends: libresolv on Unix and Android's DnsResolver (bionic has no
-// libresolv). They share everything but the transport.
-static_assert(QT_CONFIG(libresolv) || QT_CONFIG(android_dnsresolver),
-              "This file requires either libresolv or Android's DnsResolver");
+// Three backends: libresolv on Unix, Android's DnsResolver (bionic has no
+// libresolv) and HarmonyOS' stateless resolver (musl has no res_n* functions).
+// They share everything but the transport.
+static_assert(QT_CONFIG(libresolv) || QT_CONFIG(android_dnsresolver)
+              || QT_CONFIG(harmony_dnsresolver),
+              "This file requires libresolv, Android's DnsResolver or the "
+              "HarmonyOS stateless resolver");
 
 #include <sys/types.h>
 #include <netinet/in.h>
@@ -280,9 +283,10 @@ void QDnsLookupRunnable::query(QDnsLookupReply *reply)
     parseResponse(reply, buffer, responseLength);
 }
 
-#else // QT_CONFIG(libresolv), that is: Q_OS_ANDROID
+#elif QT_CONFIG(android_dnsresolver) || QT_CONFIG(harmony_dnsresolver)
 
-// Bionic does not export res_nmkquery(), so we assemble the query ourselves.
+// Neither bionic nor musl exports res_nmkquery(), so we assemble the query
+// ourselves.
 // See https://www.rfc-editor.org/rfc/rfc1035#section-4.1.
 static int prepareQueryBuffer(QueryBuffer &buffer, const char *label, ns_type type)
 {
@@ -313,6 +317,7 @@ static int prepareQueryBuffer(QueryBuffer &buffer, const char *label, ns_type ty
     return ptr - buffer.data();
 }
 
+#if QT_CONFIG(android_dnsresolver)
 // These are API level 29, while Qt still supports 28, where the NDK headers
 // mark them unavailable; weakrefs are resolved to null if they are missing.
 static int local_res_nsend(net_handle_t network, const uint8_t *msg, size_t msglen, uint32_t flags)
@@ -364,6 +369,48 @@ static int sendStandardDns(QDnsLookupReply *reply, QSpan<unsigned char> qbuffer,
     return responseLength;
 }
 
+#endif // QT_CONFIG(android_dnsresolver)
+
+#if QT_CONFIG(harmony_dnsresolver)
+
+static int sendStandardDns(QDnsLookupReply *reply, QSpan<unsigned char> qbuffer,
+                           ReplyBuffer &buffer)
+{
+    auto attemptToSend = [&]() {
+        std::memset(buffer.data(), 0, HFIXEDSZ);
+        int responseLength = res_send(qbuffer.data(), qbuffer.size(), buffer.data(), buffer.size());
+        if (responseLength >= 0)
+            return responseLength;
+
+        if (errno == ECONNREFUSED)
+            reply->setError(QDnsLookup::ServerRefusedError, qt_error_string());
+        else if (errno != EAGAIN && errno != ETIMEDOUT)
+            reply->makeResolverSystemError();
+
+        auto query = reinterpret_cast<const HEADER *>(qbuffer.data());
+        auto header = reinterpret_cast<const HEADER *>(buffer.data());
+        if (query->id == header->id && header->qr)
+            reply->makeDnsRcodeError(header->rcode);
+        else
+            reply->makeTimeoutError();
+        return -1;
+    };
+
+    int responseLength = attemptToSend();
+    if (responseLength > buffer.size()) {
+        buffer.resize(std::numeric_limits<quint16>::max());
+        responseLength = attemptToSend();
+        if (Q_UNLIKELY(responseLength > buffer.size())) {
+            reply->setError(QDnsLookup::ResolverError, QDnsLookup::tr("Reply was too large"));
+            return -1;
+        }
+    }
+
+    return responseLength;
+}
+
+#endif // QT_CONFIG(harmony_dnsresolver)
+
 void QDnsLookupRunnable::query(QDnsLookupReply *reply)
 {
     // Prepare the DNS query.
@@ -404,7 +451,7 @@ void QDnsLookupRunnable::query(QDnsLookupReply *reply)
     parseResponse(reply, buffer, responseLength);
 }
 
-#endif // QT_CONFIG(libresolv)
+#endif // resolver backend selection
 
 void QDnsLookupRunnable::parseResponse(QDnsLookupReply *reply, ReplyBuffer &buffer,
                                        int responseLength)

@@ -288,7 +288,8 @@ static void qt_qdnsservicerecord_sort(QList<QDnsServiceRecord> &records)
 */
 bool QDnsLookup::isProtocolSupported(Protocol protocol)
 {
-#if QT_CONFIG(libresolv) || QT_CONFIG(android_dnsresolver) || defined(Q_OS_WIN)
+#if QT_CONFIG(libresolv) || QT_CONFIG(android_dnsresolver) \
+        || QT_CONFIG(harmony_dnsresolver) || defined(Q_OS_WIN)
     switch (protocol) {
     case QDnsLookup::Standard:
 #  if QT_CONFIG(android_dnsresolver)

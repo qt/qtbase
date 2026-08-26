@@ -251,6 +251,11 @@ qt_internal_extend_target(Network CONDITION QT_FEATURE_dnslookup AND QT_FEATURE_
         android
 )
 
+qt_internal_extend_target(Network CONDITION QT_FEATURE_dnslookup AND QT_FEATURE_harmony_dnsresolver
+    SOURCES
+        kernel/qdnslookup_unix.cpp
+)
+
 qt_internal_extend_target(Network CONDITION QT_FEATURE_dnslookup AND WIN32
     SOURCES
         kernel/qdnslookup_win.cpp
@@ -258,7 +263,8 @@ qt_internal_extend_target(Network CONDITION QT_FEATURE_dnslookup AND WIN32
 
 qt_internal_extend_target(Network
     CONDITION QT_FEATURE_dnslookup AND NOT QT_FEATURE_libresolv
-              AND NOT QT_FEATURE_android_dnsresolver AND NOT WIN32
+              AND NOT QT_FEATURE_android_dnsresolver AND NOT QT_FEATURE_harmony_dnsresolver
+              AND NOT WIN32
     SOURCES
         kernel/qdnslookup_dummy.cpp
 )

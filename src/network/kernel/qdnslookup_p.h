@@ -227,8 +227,8 @@ private:
         return qt_ACE_do(encodedLabel.toString(), NormalizeAce, ForbidLeadingDot);
     }
     void query(QDnsLookupReply *reply);
-#if QT_CONFIG(libresolv) || QT_CONFIG(android_dnsresolver)
-    // implemented in qdnslookup_unix.cpp, shared by both backends there
+#if QT_CONFIG(libresolv) || QT_CONFIG(android_dnsresolver) || QT_CONFIG(harmony_dnsresolver)
+    // implemented in qdnslookup_unix.cpp, shared by all backends there
     void parseResponse(QDnsLookupReply *reply, ReplyBuffer &buffer, int responseLength);
 #endif
 
