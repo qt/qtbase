@@ -2667,7 +2667,7 @@ static bool PointInRegion(QRegionPrivate *pRegion, int x, int y)
     if (!pRegion->extents.contains(x, y))
         return false;
     if (pRegion->numRects == 1)
-        return pRegion->extents.contains(x, y);
+        return true; // extents already contains(x,y)
     if (pRegion->innerRect.contains(x, y))
         return true;
     for (i = 0; i < pRegion->numRects; ++i) {
