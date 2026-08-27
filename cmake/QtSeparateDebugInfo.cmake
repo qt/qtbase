@@ -286,7 +286,15 @@ function(qt_enable_separate_debug_info target installDestination)
             set(BUNDLE_ID ${target})
         endif()
 
-        get_target_property(is_bundle ${target} MACOSX_BUNDLE)
+        # Each bundle type has its own property. CMake turns MACOSX_BUNDLE on
+        # by default for iOS and friends, so only trust it for executables.
+        if(target_type STREQUAL "EXECUTABLE")
+            get_target_property(is_bundle ${target} MACOSX_BUNDLE)
+        elseif(target_type STREQUAL "MODULE_LIBRARY")
+            get_target_property(is_bundle ${target} BUNDLE)
+        else()
+            set(is_bundle FALSE)
+        endif()
 
         if (NOT "x${arg_DSYM_OUTPUT_DIR}" STREQUAL "x")
             set(debug_info_bundle_dir "${arg_DSYM_OUTPUT_DIR}/${target}")
