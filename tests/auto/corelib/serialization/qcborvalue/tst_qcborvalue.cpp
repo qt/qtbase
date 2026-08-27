@@ -2417,6 +2417,9 @@ static void addCommonCborData()
     QTest::newRow("String:Unicode") << QCborValue(QStringLiteral(u"éś α €"))
                                      << raw("\x6b\xc3\xa9\xc5\x9b \xce\xb1 \xe2\x82\xac") << noxfrm;
 
+    QTest::newRow("DateTime:Empty") << QCborValue(QDateTime())
+                                    << raw("\xc0\x60")
+                                    << noxfrm;
     QTest::newRow("DateTime") << QCborValue(dt)             // this is UTC
                               << "\xc0\x78\x18" + dt.toString(Qt::ISODateWithMs).toLatin1()
                               << noxfrm;
@@ -2771,7 +2774,7 @@ void tst_QCborValue::extendedTypeValidation_data()
     QTest::addColumn<QCborValue>("expected");
 
     // QDateTime currently stores time in milliseconds, so make sure
-    // we don't overflow
+    // we don't overflow and therefore keep the QCborValue as UnixTime_t.
     {
         quint64 limit = std::numeric_limits<quint64>::max() / 1000;
         QTest::newRow("UnixTime_t:integer-overflow-positive")
