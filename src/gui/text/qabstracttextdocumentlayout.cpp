@@ -628,11 +628,19 @@ QTextBlock QAbstractTextDocumentLayout::blockWithMarkerAt(const QPointF &pos) co
         if (block.blockFormat().marker() != QTextBlockFormat::MarkerType::NoMarker) {
             QRectF blockBr = blockBoundingRect(block);
             QTextBlockFormat blockFmt = block.blockFormat();
-            QFontMetrics fm(block.charFormat().font());
+            QFontMetrics fm(block.charFormat().font(), paintDevice());
             qreal totalIndent = blockFmt.indent() + blockFmt.leftMargin() + blockFmt.textIndent();
             if (block.textList())
                 totalIndent += block.textList()->format().indent() * 40;
-            QRectF adjustedBr = blockBr.adjusted(totalIndent - fm.height(), 0, totalIndent - blockBr.width(), fm.height() - blockBr.height());
+            // The marker is painted on the first line's baseline, which is lower than
+            // the top of the block when that line is taller than the marker's own font.
+            // Look for it where QTextDocumentLayoutPrivate::drawListItem() puts it.
+            qreal markerOffset = 0;
+            if (!blockBr.isNull() && block.layout()->lineCount() > 0)
+                markerOffset = qRound(block.layout()->lineAt(0).ascent()) - fm.ascent();
+            QRectF adjustedBr = blockBr.adjusted(totalIndent - fm.height(), markerOffset,
+                                                 totalIndent - blockBr.width(),
+                                                 markerOffset + fm.height() - blockBr.height());
             if (adjustedBr.contains(pos)) {
                 //qDebug() << "hit block" << block.text() << blockBr << adjustedBr << "marker" << block.blockFormat().marker()
                 //         << "font" << block.charFormat().font() << "adj" << lineHeight << totalIndent;
