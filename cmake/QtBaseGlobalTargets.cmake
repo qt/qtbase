@@ -434,12 +434,20 @@ if(APPLE)
         set(platform_shortname "visionos")
     endif()
 
-    # Info.plist
+    # Info.plist for applications
     qt_copy_or_install(FILES "cmake/${platform_shortname}/Info.plist.app.in"
         DESTINATION "${__GlobalConfig_install_dir}/${platform_shortname}"
     )
     # For examples built as part of prefix build before install
     file(COPY "cmake/${platform_shortname}/Info.plist.app.in"
+        DESTINATION "${__GlobalConfig_build_dir}/${platform_shortname}"
+    )
+
+    # Info.plist for frameworks
+    qt_copy_or_install(FILES "cmake/${platform_shortname}/Info.plist.framework.in"
+        DESTINATION "${__GlobalConfig_install_dir}/${platform_shortname}"
+    )
+    file(COPY "cmake/${platform_shortname}/Info.plist.framework.in"
         DESTINATION "${__GlobalConfig_build_dir}/${platform_shortname}"
     )
 

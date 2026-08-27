@@ -329,6 +329,8 @@ function(qt_internal_add_module target)
             MACOSX_FRAMEWORK_IDENTIFIER org.qt-project.${module}
             MACOSX_FRAMEWORK_BUNDLE_VERSION ${PROJECT_VERSION}
             MACOSX_FRAMEWORK_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
+            MACOSX_FRAMEWORK_INFO_PLIST
+                "${__qt_internal_cmake_apple_support_files_path}/Info.plist.framework.in"
         )
         qt_internal_get_framework_info(fw ${target})
     endif()
