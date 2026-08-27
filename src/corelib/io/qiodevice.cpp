@@ -2232,11 +2232,15 @@ qint64 QIODevice::skipData(qint64 maxSize)
     return d_func()->skipByReading(maxSize);
 }
 
+// ### Qt7: when qdoc fails with the definition below, move the "reimplement
+// this function" block
 /*!
+    \fn bool QIODevice::waitForReadyRead(int msecs)
     Blocks until new data is available for reading and the readyRead()
     signal has been emitted, or until \a msecs milliseconds have
     passed. If msecs is -1, this function will not time out.
 
+//! [wait-for-ready-read-common]
     Returns \c true if new data is available for reading; otherwise returns
     false (if the operation timed out or if an error occurred).
 
@@ -2246,6 +2250,7 @@ qint64 QIODevice::skipData(qint64 maxSize)
 
     If called from within a slot connected to the readyRead() signal,
     readyRead() will not be reemitted.
+//! [wait-for-ready-read-common]
 
     Reimplement this function to provide a blocking API for a custom
     device. The default implementation does nothing, and returns \c false.
@@ -2255,19 +2260,48 @@ qint64 QIODevice::skipData(qint64 maxSize)
 
     \sa waitForBytesWritten()
 */
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) && !defined(QT_BOOTSTRAPPED)
 bool QIODevice::waitForReadyRead(int msecs)
 {
     Q_UNUSED(msecs);
     return false;
 }
+#endif
 
 /*!
+    \fn bool QIODevice::waitForReadyRead(QDeadlineTimer deadline)
+    \since 6.13
+    Blocks until new data is available for reading and the readyRead()
+    signal has been emitted, or until \a deadline has expired.
+
+    \include qiodevice.cpp wait-for-ready-read-common
+
+    \warning Calling this function from the main (GUI) thread
+    might cause your user interface to freeze.
+
+    \sa waitForBytesWritten()
+*/
+bool QIODevice::waitForReadyRead(QDeadlineTimer deadline)
+{
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) && !defined(QT_BOOTSTRAPPED)
+    return waitForReadyRead(q26::saturating_cast<int>(deadline.remainingTime()));
+#else
+    Q_UNUSED(deadline);
+    return false;
+#endif
+}
+
+// ### Qt7: when qdoc fails with the definition below, move the "reimplement
+// this function" block
+/*!
+    \fn bool QIODevice::waitForBytesWritten(int msecs)
     For buffered devices, this function waits until a payload of
     buffered written data has been written to the device and the
     bytesWritten() signal has been emitted, or until \a msecs
     milliseconds have passed. If msecs is -1, this function will
     not time out. For unbuffered devices, it returns immediately.
 
+//! [wait-for-bytes-written-common]
     Returns \c true if a payload of data was written to the device;
     otherwise returns \c false (i.e. if the operation timed out, or if an
     error occurred).
@@ -2278,6 +2312,7 @@ bool QIODevice::waitForReadyRead(int msecs)
 
     If called from within a slot connected to the bytesWritten() signal,
     bytesWritten() will not be reemitted.
+//! [wait-for-bytes-written-common]
 
     Reimplement this function to provide a blocking API for a custom
     device. The default implementation does nothing, and returns \c false.
@@ -2287,10 +2322,35 @@ bool QIODevice::waitForReadyRead(int msecs)
 
     \sa waitForReadyRead()
 */
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) && !defined(QT_BOOTSTRAPPED)
 bool QIODevice::waitForBytesWritten(int msecs)
 {
     Q_UNUSED(msecs);
     return false;
+}
+#endif
+
+/*!
+    For buffered devices, this function waits until a payload of
+    buffered written data has been written to the device and the
+    bytesWritten() signal has been emitted, or until \a deadline
+    has expired. For unbuffered devices, it returns immediately.
+
+    \include qiodevice.cpp wait-for-bytes-written-common
+
+    \warning Calling this function from the main (GUI) thread
+    might cause your user interface to freeze.
+
+    \sa waitForReadyRead()
+*/
+bool QIODevice::waitForBytesWritten(QDeadlineTimer deadline)
+{
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) && !defined(QT_BOOTSTRAPPED)
+    return waitForBytesWritten(q26::saturating_cast<int>(deadline.remainingTime()));
+#else
+    Q_UNUSED(deadline);
+    return false;
+#endif
 }
 
 /*!

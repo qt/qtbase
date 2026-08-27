@@ -5,7 +5,7 @@
 #ifndef QIODEVICE_H
 #define QIODEVICE_H
 
-#include <QtCore/qglobal.h>
+#include <QtCore/qdeadlinetimer.h>
 #include <QtCore/qiodevicebase.h>
 #ifndef QT_NO_QOBJECT
 #include <QtCore/qobject.h>
@@ -39,6 +39,14 @@ class Q_CORE_EXPORT QIODevice
 #ifndef QT_NO_QOBJECT
     Q_OBJECT
 #endif
+protected:
+    struct WaitForVirtualParametersChanged {
+        bool value;
+        Q_IMPLICIT constexpr WaitForVirtualParametersChanged(bool b) : value(b) {}
+        constexpr Q_IMPLICIT operator bool() const noexcept { return value; }
+        constexpr bool operator!() const noexcept { return !value; }
+    };
+
 public:
     QIODevice();
 #ifndef QT_NO_QOBJECT
@@ -105,8 +113,17 @@ public:
     QByteArray peek(qint64 maxlen);
     qint64 skip(qint64 maxSize);
 
+    QT7_ONLY(virtual) bool waitForReadyRead(QDeadlineTimer deadline);
+    QT7_ONLY(virtual) bool waitForBytesWritten(QDeadlineTimer deadline);
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) && !defined(QT_BOOTSTRAPPED)
     virtual bool waitForReadyRead(int msecs);
     virtual bool waitForBytesWritten(int msecs);
+#else
+    WaitForVirtualParametersChanged waitForReadyRead(int msecs)
+    { return waitForReadyRead(QDeadlineTimer(msecs)); }
+    WaitForVirtualParametersChanged waitForBytesWritten(int msecs)
+    { return waitForBytesWritten(QDeadlineTimer(msecs)); }
+#endif
 
     void ungetChar(char c);
     bool putChar(char c);

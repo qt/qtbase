@@ -71,8 +71,13 @@ public:
     bool seek(qint64 pos) override { return wrapped->seek(pos); }
     bool canReadLine() const override { return wrapped->canReadLine() || QIODevice::canReadLine(); }
     qint64 bytesAvailable() const override { return wrapped->bytesAvailable() + QIODevice::bytesAvailable(); }
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
     bool waitForReadyRead(int msecs) override { return wrapped->waitForReadyRead(msecs); }
     bool waitForBytesWritten(int msecs) override { return wrapped->waitForBytesWritten(msecs); }
+#else
+    bool waitForReadyRead(QDeadlineTimer deadline) override { return wrapped->waitForReadyRead(deadline); }
+    bool waitForBytesWritten(QDeadlineTimer deadline) override { return wrapped->waitForBytesWritten(deadline); }
+#endif
 
 protected:
     qint64 readData(char *data, qint64 maxSize) override
