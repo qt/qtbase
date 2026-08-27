@@ -1175,6 +1175,8 @@ void QHttp2Connection::handleReadyRead()
         return;
 
     QIODevice *socket = getSocket();
+    if (!socket->isOpen())
+        return;
 
     qCDebug(qHttp2ConnectionLog, "[%p] Receiving data, %lld bytes available", this,
             socket->bytesAvailable());
@@ -1183,7 +1185,7 @@ void QHttp2Connection::handleReadyRead()
     if (!m_prefaceSent)
         return;
 
-    while (!m_connectionAborted) {
+    while (!m_connectionAborted && socket->isOpen()) {
         const auto result = frameReader.read(*socket);
         if (result != FrameStatus::goodFrame)
             qCDebug(qHttp2ConnectionLog, "[%p] Tried to read frame, got %d", this, int(result));
