@@ -17,6 +17,7 @@ android
 android
 [scrollBarRanges]
 android
+xcb ubuntu-24.04 # QTBUG-149402
 [moveItemWhileScrolling]
 android
 [exposeRegion]
