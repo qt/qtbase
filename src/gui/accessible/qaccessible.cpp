@@ -463,6 +463,17 @@ Q_STATIC_LOGGING_CATEGORY(lcAccessibilityCore, "qt.accessibility.core");
     \value [since 6.11] Orientation value type: \a Qt::Orientation
                                 Orientation of the element. This attribute conceptually matches
                                 the "aria-orientation" property in ARIA.
+    \value [since 6.13] PositionInSet value type: \a int
+                                1-based position of the element within the set of elements it
+                                belongs to, e.g. the position of an item in a list or of a radio
+                                button in its group. Together with \a SizeOfSet, this lets
+                                assistive technologies announce e.g. "item 2 of 10". This
+                                attribute conceptually matches the "aria-posinset" property
+                                in ARIA.
+    \value [since 6.13] SizeOfSet value type: \a int
+                                Number of elements in the set of elements the element belongs
+                                to. This attribute conceptually matches the "aria-setsize"
+                                property in ARIA.
 
     \sa QAccessibleAttributesInterface
 */

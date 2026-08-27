@@ -472,12 +472,38 @@ void QWindowsUiaMainProvider::setAriaProperties(QAccessibleInterface *accessible
             Q_ASSERT(value.canConvert<int>());
             ariaString += QStringLiteral("level=") + QString::number(value.toInt());
             break;
+        case QAccessible::Attribute::PositionInSet:
+            Q_ASSERT(value.canConvert<int>());
+            ariaString += QStringLiteral("posinset=") + QString::number(value.toInt());
+            break;
+        case QAccessible::Attribute::SizeOfSet:
+            Q_ASSERT(value.canConvert<int>());
+            ariaString += QStringLiteral("setsize=") + QString::number(value.toInt());
+            break;
         default:
             break;
         }
     }
 
     *pRetVal = QComVariant{ ariaString }.release();
+}
+
+void QWindowsUiaMainProvider::setIntAttribute(QAccessibleInterface *accessible,
+                                              QAccessible::Attribute attribute,
+                                              VARIANT *pRetVal)
+{
+    Q_ASSERT(accessible);
+
+    QAccessibleAttributesInterface *attributesIface = accessible->attributesInterface();
+    if (!attributesIface)
+        return;
+
+    const QVariant valueVariant = attributesIface->attributeValue(attribute);
+    if (!valueVariant.isValid())
+        return;
+
+    Q_ASSERT(valueVariant.canConvert<int>());
+    *pRetVal = QComVariant{ long(valueVariant.toInt()) }.release();
 }
 
 void QWindowsUiaMainProvider::setStyle(QAccessibleInterface *accessible, VARIANT *pRetVal)
@@ -581,6 +607,19 @@ HRESULT QWindowsUiaMainProvider::GetPropertyValue(PROPERTYID idProp, VARIANT *pR
         *pRetVal = QComVariant{ long(lcid) }.release();
         break;
     }
+    case UIA_LevelPropertyId:
+        // Structural depth, e.g. of an item in a tree. Headings convey
+        // their level through the heading text style and the "level"
+        // ARIA property instead.
+        if (accessible->role() != QAccessible::Role::Heading)
+            setIntAttribute(accessible, QAccessible::Attribute::Level, pRetVal);
+        break;
+    case UIA_PositionInSetPropertyId:
+        setIntAttribute(accessible, QAccessible::Attribute::PositionInSet, pRetVal);
+        break;
+    case UIA_SizeOfSetPropertyId:
+        setIntAttribute(accessible, QAccessible::Attribute::SizeOfSet, pRetVal);
+        break;
     case UIA_DescribedByPropertyId:
         fillVariantArrayForRelation(accessible, QAccessible::DescriptionFor, pRetVal);
         break;

@@ -385,6 +385,8 @@ public:
         Level,
         Locale,
         Orientation,
+        PositionInSet,
+        SizeOfSet,
     };
     Q_ENUM(Attribute)
 
