@@ -57,7 +57,7 @@ QT_BEGIN_NAMESPACE
 
     // Both client and server will obtain the same 'derived' bytes
     // even though they each performed the derivation independently.
-    qDebug() << "Derived keying material:" << derived;
+    use(derived);
     \endcode
 */
 
