@@ -2770,27 +2770,73 @@ void tst_QCborValue::validation()
 
 void tst_QCborValue::extendedTypeValidation_data()
 {
-    QTest::addColumn<QByteArray>("data");
-    QTest::addColumn<QCborValue>("expected");
+    QTest::addColumn<QCborKnownTags>("tag");
+    QTest::addColumn<QCborValue>("tagged");
+    QTest::addColumn<QByteArray>("encodedTag");
+    QTest::addColumn<QByteArray>("encodedPayload");
+
+    // UnixTime_t only enriches Integer or Double payloads
+    {
+        QTest::addRow("UnixTime_t:String")
+                << QCborKnownTags::UnixTime_t
+                << QCborValue(QLatin1StringView("2026-08-27T16:19:04.304Z"))
+                << raw("\xc1") << raw("\x78\x18" "2026-08-27T16:19:04.304Z");
+        QTest::addRow("UnixTime_t:ByteArray")
+                << QCborKnownTags::UnixTime_t
+                << QCborValue(QByteArray("hello"))
+                << raw("\xc1") << raw("\x45" "hello");
+    }
 
     // QDateTime currently stores time in milliseconds, so make sure
     // we don't overflow and therefore keep the QCborValue as UnixTime_t.
     {
         quint64 limit = std::numeric_limits<quint64>::max() / 1000;
-        QTest::newRow("UnixTime_t:integer-overflow-positive")
-                << encode(0xc1, 0x1b, limit + 1)
-                << QCborValue(QCborKnownTags::UnixTime_t, qint64(limit) + 1);
-        QTest::newRow("UnixTime_t:integer-overflow-negative")
-                << encode(0xc1, 0x3b, limit)
-                << QCborValue(QCborKnownTags::UnixTime_t, -qint64(limit) - 1);
+        QTest::newRow("UnixTime_t:integer-positive-overflow-by-1")
+                << QCborKnownTags::UnixTime_t
+                << QCborValue(qint64(limit) + 1)
+                << raw("\xc1") << encode(0x1b, limit + 1);
+        QTest::addRow("UnixTime_t:integer-positive-int64max")
+                << QCborKnownTags::UnixTime_t
+                << QCborValue(std::numeric_limits<qint64>::max())
+                << raw("\xc1") << encode(0x1b, quint64(std::numeric_limits<qint64>::max()));
+        QTest::newRow("UnixTime_t:integer-negative-underflow-by-1")
+                << QCborKnownTags::UnixTime_t
+                << QCborValue(-qint64(limit) - 1)
+                << raw("\xc1") << encode(0x3b, limit);
+        QTest::newRow("UnixTime_t:integer-negative-int64max")
+                << QCborKnownTags::UnixTime_t
+                << QCborValue(std::numeric_limits<qint64>::min())
+                << raw("\xc1") << encode(0x3b, quint64(std::numeric_limits<qint64>::max()));
 
         double fplimit = std::numeric_limits<qint64>::min() / (-1000.); // 2^63 ms
-        QTest::newRow("UnixTime_t:fp-overflow-positive")
-                << encode(0xc1, 0xfb, fplimit)
-                << QCborValue(QCborKnownTags::UnixTime_t, fplimit);
-        QTest::newRow("UnixTime_t:fp-overflow-negative")
-                << encode(0xc1, 0xfb, -fplimit)
-                << QCborValue(QCborKnownTags::UnixTime_t, -fplimit);
+        QTest::newRow("UnixTime_t:fp-positive-just-overflow")
+                << QCborKnownTags::UnixTime_t << QCborValue(fplimit)
+                << raw("\xc1") << encode(0xfb, fplimit);
+        QTest::newRow("UnixTime_t:fp-positive-overflow-by-2x")
+                << QCborKnownTags::UnixTime_t << QCborValue(0x1p64)
+                << raw("\xc1") << encode(0xfb, 0x1p64);
+        QTest::newRow("UnixTime_t:fp-negative-just-underflow")
+                << QCborKnownTags::UnixTime_t << QCborValue(-fplimit)
+                << raw("\xc1") << encode(0xfb, -fplimit);
+        QTest::newRow("UnixTime_t:fp-negative-underflow-by-2x")
+                << QCborKnownTags::UnixTime_t << QCborValue(-0x1p64)
+                << raw("\xc1") << encode(0xfb, -0x1p64);
+        QTest::newRow("UnixTime_t:fp-infinity")
+                << QCborKnownTags::UnixTime_t << QCborValue(qInf())
+                << raw("\xc1") << encode(0xfb, qInf());
+        QTest::newRow("UnixTime_t:fp-nan")
+                << QCborKnownTags::UnixTime_t << QCborValue(qQNaN())
+                << raw("\xc1") << encode(0xfb, qQNaN());
+
+        // out-of-range integers become floating point (with loss of precision)
+        QTest::addRow("UnixTime_t:integer-out-of-range-positive")
+                << QCborKnownTags::UnixTime_t
+                << QCborValue(0x3p62)
+                << raw("\xc1") << encode(0x1b, Q_UINT64_C(3) << 62);
+        QTest::newRow("UnixTime_t:integer-out-of-range-negative")
+                << QCborKnownTags::UnixTime_t
+                << QCborValue(-0x3p62)
+                << raw("\xc1") << encode(0x3b, Q_UINT64_C(3) << 62);
     }
 
     // But in fact, QCborValue stores date/times as their ISO textual
@@ -2799,13 +2845,29 @@ void tst_QCborValue::extendedTypeValidation_data()
     {
         QDateTime dt(QDate(-1, 1, 1), QTime(0, 0), QTimeZone::UTC);
         QTest::newRow("UnixTime_t:negative-year")
-                << encode(0xc1, 0x3b, quint64(-dt.toSecsSinceEpoch()) - 1)
-                << QCborValue(QCborKnownTags::UnixTime_t, dt.toSecsSinceEpoch());
+                << QCborKnownTags::UnixTime_t << QCborValue(dt.toSecsSinceEpoch())
+                << raw("\xc1") << encode(0x3b, quint64(-dt.toSecsSinceEpoch()) - 1);
 
         dt.setDate(QDate(10000, 1, 1));
         QTest::newRow("UnixTime_t:year10k")
-                << encode(0xc1, 0x1b, quint64(dt.toSecsSinceEpoch()))
-                << QCborValue(QCborKnownTags::UnixTime_t, dt.toSecsSinceEpoch());
+                << QCborKnownTags::UnixTime_t << QCborValue(dt.toSecsSinceEpoch())
+                << raw("\xc1") << encode(0x1b, quint64(dt.toSecsSinceEpoch()));
+    }
+
+    // DateTimeString only enriches String payloads
+    {
+        QTest::addRow("DateTimeString:ByteArray:Empty")
+                << QCborKnownTags::DateTimeString
+                << QCborValue(QByteArray())
+                << raw("\xc0") << raw("\x40");
+        QTest::addRow("DateTimeString:ByteArray")
+                << QCborKnownTags::DateTimeString
+                << QCborValue(QByteArray("2026-08-27T16:19:04.304Z"))
+                << raw("\xc0") << raw("\x58\x18" "2026-08-27T16:19:04.304Z");
+        QTest::addRow("DateTimeString:Integer")
+                << QCborKnownTags::DateTimeString
+                << QCborValue(1787847544)
+                << raw("\xc0") << encode(0x1a, 1787847544U);
     }
 
     // Invalid ISO date/time strings
@@ -2813,13 +2875,16 @@ void tst_QCborValue::extendedTypeValidation_data()
         auto add = [](const char *tag, const char *str) {
             QByteArray raw;
             if (strlen(str) < 0x18)
-                raw = encode(0xc0, 0x60 + int(strlen(str)), str);
+                raw = encode(0x60 + int(strlen(str)), str);
             else
-                raw = encode(0xc0, 0x78, quint8(strlen(str)), str);
+                raw = encode(0x78, quint8(strlen(str)), str);
             QTest::addRow("DateTime:%s", tag)
-                    << raw << QCborValue(QCborKnownTags::DateTimeString, QString(str));
+                    << QCborKnownTags::DateTimeString
+                    << QCborValue(QString(str))
+                    << "\xc0"_ba << raw;
         };
         // tst_QDateTime::fromStringDateFormat has more tests
+        add("empty", "");
         add("junk", "jjj");
         add("zoned-date-only", "2020-04-15Z");
         add("month-13", "2020-13-01T00:00:00Z");
@@ -2845,39 +2910,121 @@ void tst_QCborValue::extendedTypeValidation_data()
             char c = '\0';
             qSwap(c, dt[i]);
             QTest::addRow("DateTime:Null-at-%d", i)
-                    << encode(0xc0, 0x78, len) + QByteArray(dt, len)
-                    << QCborValue(QCborKnownTags::DateTimeString, QLatin1String(dt, len));
+                    << QCborKnownTags::DateTimeString << QCborValue(QLatin1String(dt, len))
+                    << raw("\xc0") << encode(0x78, len) + QByteArray(dt, len);
             qSwap(c, dt[i]);
         }
     }
 
+    // Url only enriches String payloads
+    {
+        QTest::addRow("Url:Integer")
+                << QCborKnownTags::Url
+                << QCborValue(0)
+                << raw("\xd8\x20") << raw("\x00");
+        QTest::addRow("Url:ByteArray")
+                << QCborKnownTags::Url
+                << QCborValue(QByteArray("http://example.com"))
+                << raw("\xd8\x20") << raw("\x52" "http://example.com");
+    }
+
+#if 0
     // Improperly-encoded URLs
+    // We use QUrl::TolerantMode, so there's no such thing as an invalid URL
     {
         const char badurl[] = "%zz";
         QTest::newRow("Url:Invalid")
-                << encode(0xd8, int(QCborKnownTags::Url), 0x60 + int(strlen(badurl)), badurl)
-                << QCborValue(QCborKnownTags::Url, QLatin1String(badurl));
+                << QCborKnownTags::Url << QCborValue(QLatin1String(badurl))
+                << encode(0xd8, int(QCborKnownTags::Url))
+                << encode(0x60 + int(strlen(badurl)), badurl);
     }
+#endif
+
+    // RegularExpression only enriches String payloads
+    {
+        QTest::addRow("RegularExpression:Integer")
+                << QCborKnownTags::RegularExpression
+                << QCborValue(0)
+                << raw("\xd8\x23") << raw("\x00");
+        QTest::addRow("RegularExpression:ByteArray")
+                << QCborKnownTags::RegularExpression
+                << QCborValue(QByteArray("hello"))
+                << raw("\xd8\x23") << raw("\x45" "hello");
+    }
+
+    // Uuid only enriches ByteArray payloads
+    {
+        QTest::addRow("Uuid:String")
+                << QCborKnownTags::Uuid
+                << QCborValue(QLatin1StringView("hello"))
+                << raw("\xd8\x25") << raw("\x65" "hello");
+        QTest::addRow("Uuid:Integer")
+                << QCborKnownTags::Uuid
+                << QCborValue(0)
+                << raw("\xd8\x25") << raw("\x00");
+        QTest::addRow("Uuid:Array")
+                << QCborKnownTags::Uuid
+                << QCborValue(QCborArray{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15})
+                << raw("\xd8\x25")
+                << raw("\x90\x00\x01\x02\x03\x04\x05\x06\x07"
+                       "\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f");
+    }
+
+    // Double-tagging: the inner tag *is* enriched to its extended type, but the
+    // outer tag then wraps that extended type, which stays un-enriched.
+    {
+        QTest::addRow("DateTimeString:DateTime")
+                << QCborKnownTags::DateTimeString
+                << QCborValue(QDateTime::fromString("2026-08-27T16:19:04.304Z", Qt::ISODateWithMs))
+                << raw("\xc0") << raw("\xc0\x78\x18" "2026-08-27T16:19:04.304Z");
+        QTest::addRow("UnixTime_t:DateTime")
+                << QCborKnownTags::UnixTime_t
+                << QCborValue(QDateTime::fromMSecsSinceEpoch(Q_INT64_C(1787847544) * 1000,
+                                                             QTimeZone::UTC))
+                << raw("\xc1") << raw("\xc1\x1a\x6a\x90\x63\x78");
+        QTest::addRow("Url:Url")
+                << QCborKnownTags::Url
+                << QCborValue(QUrl("http://example.com"))
+                << raw("\xd8\x20") << raw("\xd8\x20\x72" "http://example.com");
+        QTest::addRow("RegularExpression:RegularExpression")
+                << QCborKnownTags::RegularExpression
+                << QCborValue(QRegularExpression("^.*$"))
+                << raw("\xd8\x23") << raw("\xd8\x23\x64" "^.*$");
+        QTest::addRow("Uuid:Uuid")
+                << QCborKnownTags::Uuid
+                << QCborValue(QUuid("123e4567-e89b-12d3-a456-426614174000"))
+                << raw("\xd8\x25")
+                << raw("\xd8\x25\x50\x12\x3e\x45\x67\xe8\x9b\x12\xd3\xa4\x56\x42\x66\x14\x17\x40\x00");
+     }
 }
 
 void tst_QCborValue::extendedTypeValidation()
 {
-    QFETCH(QByteArray, data);
-    QFETCH(QCborValue, expected);
+    QFETCH(QCborKnownTags, tag);
+    QFETCH(QCborValue, tagged);
+    QFETCH(QByteArray, encodedTag);
+    QFETCH(QByteArray, encodedPayload);
 
+    // the constructor must *not* convert to an extended type
+    QCborValue expected(tag, tagged);
+    QCOMPARE(expected.type(), QCborValue::Tag);
+    QCOMPARE(expected.tag(), QCborTag(tag));
+    QCOMPARE(expected.taggedValue(), tagged);
+
+    QByteArray input = encodedTag + encodedPayload;
     QCborParserError error;
-    QCborValue decoded = QCborValue::fromCbor(data, &error);
+    QCborValue decoded = QCborValue::fromCbor(input, &error);
     QVERIFY2(error.error == QCborError(), qPrintable(error.errorString()));
-    QCOMPARE(error.offset, data.size());
+    QCOMPARE(error.offset, input.size());
+    QCOMPARE(decoded, expected);
     QT_TEST_EQUALITY_OPS(decoded, expected, true);
 
 #if QT_CONFIG(cborstreamwriter)
-    QByteArray encoded = decoded.toCbor();
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    // behavior change, see qdatetime.cpp:fromIsoTimeString
-    QEXPECT_FAIL("DateTime:Null-at-19", "QDateTime parsing fixed, but only in 6.0", Abort);
-#endif
-    QCOMPARE(encoded, data);
+    // Check it gets encoded correctly, unchanged
+    // (payload may change: float → double, time_t to date string, etc.)
+    QByteArray encoded = expected.toCbor();
+    QByteArray expectedEncoding = encodedTag + tagged.toCbor();
+    QCOMPARE(encoded, expectedEncoding);
 #endif
 }
 
