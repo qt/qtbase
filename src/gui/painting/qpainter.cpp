@@ -2372,6 +2372,10 @@ void QPainter::setCompositionMode(CompositionMode mode)
         qWarning("QPainter::setCompositionMode: Painter not active");
         return;
     }
+    if (mode < 0 || mode >= CompositionMode::NCompositionModes) {
+        qWarning("QPainter::setCompositionMode: Invalid mode");
+        return;
+    }
     if (d->state->composition_mode == mode)
         return;
     if (d->extended) {
