@@ -436,7 +436,7 @@ std::vector<std::string> getQtAppArgsFromWant(QNapi::Object want)
 {
     using namespace std::string_literals;
 
-    const auto *qtUseUriAsArgPropName = "io.qt.useUriAsArg";
+    const auto *qtObsoleteUseUriAsArgPropName = "io.qt.useUriAsArg";
     const auto *qtAppArgsPropName = "io.qt.appArgs";
     const auto *qtAppArgsJsonPropName = "io.qt.appArgsJson";
 
@@ -444,13 +444,12 @@ std::vector<std::string> getQtAppArgsFromWant(QNapi::Object want)
 
     std::vector<std::string> result;
 
-    auto optQtUseUriAsArg = getWantParamOrEmptyIfNotPresent<QNapi::Boolean>(want, qtUseUriAsArgPropName);
-    if (optQtUseUriAsArg.IsEmpty() || optQtUseUriAsArg.Value()) {
-        auto uri = QNapi::getPropOrUndefined(want, "uri");
-        result.push_back(
-            uri.IsString()
-                ? QNapi::checkedCast<QNapi::String>(uri)
-                : std::string());
+    auto optWantParams = QNapi::getOptionalPropOrEmpty<QNapi::Object>(want, "parameters");
+    if (!optWantParams.IsEmpty() && optWantParams.Has(qtObsoleteUseUriAsArgPropName)) {
+        qOhosPrintfWarning(
+            "Qt: Want parameter '%s' is obsolete and is ignored. The ability launch URI is no "
+            "longer passed as an application argument.",
+            qtObsoleteUseUriAsArgPropName);
     }
 
     auto optQtAppArgs = getWantParamOrEmptyIfNotPresent<QNapi::Array>(want, qtAppArgsPropName);

@@ -313,8 +313,7 @@ int main(int argc, char *argv[])
     forceStopBundle(hdc, bundleName);
     waitForProcessDeath(hdc, bundleName);
 
-    // --ps for string want.parameters, --pb for boolean. Do NOT use -e: that
-    // adds entities (no values) and makes QTest see an empty argv[1].
+    // --ps for string want.parameters, --pb for boolean.
     QStringList aaStartCommand = {
         u"aa"_s, u"start"_s,
         u"-b"_s, bundleName,
@@ -322,9 +321,6 @@ int main(int argc, char *argv[])
         u"--ps"_s, u"io.qt.appSharedLibNameOverride"_s, testLibName,
         u"--ps"_s, u"io.qt.debug.redirectedStdoutPath"_s, appStdoutPath,
         u"--ps"_s, u"io.qt.debug.exitCodePath"_s, appExitCodePath,
-        // Without this the platform pushes an empty argv[1], which QTest reads
-        // as a test function name and fails with "Function not found: ".
-        u"--pb"_s, u"io.qt.useUriAsArg"_s, u"false"_s,
         // Keep main alive across window destroy/create for visual tests.
         u"--pb"_s, u"io.qt.useDefaultUiAbilityInstanceInQt"_s, u"false"_s,
     };

@@ -26,13 +26,12 @@ When integrating Qt manually instead of running `harmonydeployqt`:
 The HarmonyOS platform plugin reads Want parameters when the ability is launched. In DevEco Studio's run configuration, extra flags can be passed using `--pb` for boolean values and `--ps` for string values, for example:
 
 ```
---pb io.qt.useUriAsArg false --pb io.qt.useDefaultUiAbilityInstanceInQt false --ps io.qt.appSharedLibNameOverride libmyapp.so
+--pb io.qt.useDefaultUiAbilityInstanceInQt false --ps io.qt.appSharedLibNameOverride libmyapp.so
 ```
 
 Commonly used flags:
 
 | Flag | Type | Description |
 |------|------|-------------|
-| `io.qt.useUriAsArg` | bool | Whether the ability launch URI is forwarded as the first argument (default: true). |
 | `io.qt.useDefaultUiAbilityInstanceInQt` | bool | Reuse the existing UI ability instance instead of creating a new one. |
 | `io.qt.appSharedLibNameOverride` | string | Overrides `APP_LIBRARY_NAME` at launch time without modifying `QtAppConstants.ets`. |
