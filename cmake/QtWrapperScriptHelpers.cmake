@@ -132,10 +132,10 @@ export CMAKE_GENERATOR=Xcode
     unset(__relative_path_to_cmake_scripts_dir)
 
     # Provide a private convenience wrapper to configure and build one or more standalone tests.
-    # Calling CMake directly on a Qt test project won't work because the project does not call
-    # find_package(Qt...) to get all dependencies like examples do.
-    # Instead a template CMakeLists.txt project is used which sets up all the necessary private bits
-    # and then calls add_subdirectory on the provided project path.
+    # It invokes cmake directly on the test source directory. The test's CMakeLists.txt calls
+    # find_package(Qt6BuildInternals COMPONENTS STANDALONE_TEST) which sets up Qt's private
+    # build infrastructure (Main.cmake) when neither QT_BUILD_STANDALONE_TESTS nor
+    # QT_BUILDING_QT is set.
     set(__qt_cmake_standalone_test_name "qt-cmake-standalone-test")
     if(generate_unix)
         set(__qt_cmake_standalone_test_libexec_path
@@ -163,17 +163,6 @@ export CMAKE_GENERATOR=Xcode
         endif()
     endif()
 
-    set(__qt_cmake_standalone_test_path
-        "${__build_internals_install_dir}/${__build_internals_standalone_test_template_dir}")
-
-    if(QT_WILL_INSTALL)
-        # Need to prepend the staging prefix when doing prefix builds, because the build internals
-        # install dir is relative in that case..
-        qt_path_join(__qt_cmake_standalone_test_path
-                    "${QT_STAGING_PREFIX}"
-                    "${__qt_cmake_standalone_test_path}")
-    endif()
-
     if(generate_unix)
         get_filename_component(rel_base_path
             "${QT_STAGING_PREFIX}/${__qt_cmake_standalone_test_libexec_path}"
@@ -181,14 +170,11 @@ export CMAKE_GENERATOR=Xcode
 
         file(RELATIVE_PATH __qt_cmake_private_relpath "${rel_base_path}"
             "${__qt_cmake_private_path}")
-        file(RELATIVE_PATH __qt_cmake_standalone_test_relpath "${rel_base_path}"
-            "${__qt_cmake_standalone_test_path}")
 
         set(__qt_cmake_standalone_test_os_prelude "#!/bin/sh")
         set(__qt_cmake_standalone_test_script_relpath "SCRIPT_DIR=`dirname $0`")
         string(PREPEND __qt_cmake_private_relpath "exec $SCRIPT_DIR/")
-        string(PREPEND __qt_cmake_standalone_test_relpath "$SCRIPT_DIR/")
-        set(__qt_cmake_standalone_passed_args "\"$@\" -DPWD=\"$PWD\"")
+        set(__qt_cmake_standalone_passed_args "\"$@\"")
 
         configure_file("${CMAKE_CURRENT_SOURCE_DIR}/bin/qt-cmake-standalone-test.in"
             "${QT_BUILD_DIR}/${__qt_cmake_standalone_test_libexec_path}"
@@ -203,16 +189,13 @@ export CMAKE_GENERATOR=Xcode
 
         file(RELATIVE_PATH __qt_cmake_private_relpath "${rel_base_path}"
             "${__qt_cmake_private_path}")
-        file(RELATIVE_PATH __qt_cmake_standalone_test_relpath "${rel_base_path}"
-            "${__qt_cmake_standalone_test_path}")
 
         set(__qt_cmake_standalone_test_os_prelude "@echo off")
         set(__qt_cmake_standalone_test_script_relpath "set SCRIPT_DIR=%~dp0")
         string(APPEND __qt_cmake_standalone_test_bin_path ".bat")
         string(APPEND __qt_cmake_private_relpath ".bat")
         string(PREPEND __qt_cmake_private_relpath "%SCRIPT_DIR%")
-        string(PREPEND __qt_cmake_standalone_test_relpath "%SCRIPT_DIR%")
-        set(__qt_cmake_standalone_passed_args "%* -DPWD=\"%CD%\"")
+        set(__qt_cmake_standalone_passed_args "%*")
 
         configure_file("${CMAKE_CURRENT_SOURCE_DIR}/bin/qt-cmake-standalone-test.in"
             "${QT_BUILD_DIR}/${__qt_cmake_standalone_test_bin_path}"

@@ -512,7 +512,7 @@ function(qt_internal_add_test name)
 
     set(batch_current_test FALSE)
     if(QT_BUILD_TESTS_BATCHED AND NOT arg_NO_BATCH AND NOT arg_QMLTEST AND NOT arg_MANUAL
-            AND ("${QT_STANDALONE_TEST_PATH}" STREQUAL ""
+            AND (NOT QT_INTERNAL_IS_STANDALONE_TEST
                  OR DEFINED ENV{QT_BATCH_STANDALONE_TESTS}))
         set(batch_current_test TRUE)
     endif()

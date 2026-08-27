@@ -86,7 +86,7 @@ if(QT_WILL_INSTALL)
 endif()
 
 _qt_internal_append_cmake_configure_depends(
-    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/QtBuildInternals/${__build_internals_standalone_test_template_dir}/CMakeLists.txt"
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/QtBuildInternals/${__build_internals_standalone_test_template_dir}/Main.cmake"
     ${__build_internals_extra_files}
 )
 
