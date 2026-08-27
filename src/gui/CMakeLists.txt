@@ -862,7 +862,7 @@ qt_internal_extend_target(Gui CONDITION QT_FEATURE_fontconfig AND QT_FEATURE_fre
         text/unix/qfontconfigdatabase.cpp text/unix/qfontconfigdatabase_p.h
         text/unix/qfontenginemultifontconfig.cpp text/unix/qfontenginemultifontconfig_p.h
     LIBRARIES
-        Fontconfig::Fontconfig
+        WrapFontconfig::WrapFontconfig
 )
 
 qt_internal_extend_target(Gui CONDITION APPLE AND NOT MACOS

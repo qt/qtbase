@@ -50,7 +50,7 @@ qt_find_package(WrapSystemFreetype 2.2.0 MODULE
 if(QT_FEATURE_system_zlib)
     qt_add_qmake_lib_dependency(freetype zlib)
 endif()
-qt_find_package(Fontconfig PROVIDED_TARGETS Fontconfig::Fontconfig MODULE_NAME gui
+qt_find_package(WrapFontconfig PROVIDED_TARGETS WrapFontconfig::WrapFontconfig MODULE_NAME gui
     QMAKE_LIB fontconfig
     VCPKG_PORT fontconfig
     VCPKG_ADD_TO_FEATURE fontconfig
@@ -981,7 +981,7 @@ qt_feature("system-freetype" PRIVATE SYSTEM_LIBRARY
 qt_feature("fontconfig" PUBLIC PRIVATE
     LABEL "Fontconfig"
     AUTODETECT NOT APPLE
-    CONDITION NOT APPLE AND NOT WIN32 AND QT_FEATURE_freetype AND Fontconfig_FOUND
+    CONDITION NOT APPLE AND NOT WIN32 AND QT_FEATURE_freetype AND WrapFontconfig_FOUND
 )
 qt_feature_definition("fontconfig" "QT_NO_FONTCONFIG" NEGATE VALUE "1")
 qt_feature("gbm"

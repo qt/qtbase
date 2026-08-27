@@ -120,7 +120,7 @@ qt_internal_add_plugin(QOhosPlatformIntegrationPlugin
         Qt::GuiPrivate
         Qt::OpenGL
         Qt::OpenGLPrivate
-        Fontconfig::Fontconfig
+        WrapFontconfig::WrapFontconfig
         EGL::EGL
         ace_napi.z
         ace_ndk.z
