@@ -161,6 +161,8 @@ struct QMetalShader
     QShaderDescription desc;
     QShader::NativeResourceBindingMap nativeResourceBindingMap;
     QShader::NativeShaderInfo nativeShaderInfo;
+    id<MTLArgumentEncoder> argumentEncoder = nil;
+    int argumentBufferIndex = -1;
 
     void destroy() {
         nativeResourceBindingMap.clear();
@@ -168,6 +170,9 @@ struct QMetalShader
         lib = nil;
         [func release];
         func = nil;
+        [argumentEncoder release];
+        argumentEncoder = nil;
+        argumentBufferIndex = -1;
     }
 };
 
@@ -187,6 +192,7 @@ struct QRhiMetalData
                                                      int colorAttCount,
                                                      QRhiShadingRateMap *shadingRateMap);
     id<MTLLibrary> createMetalLib(const QShader &shader, QShader::Variant shaderVariant,
+                                  bool preferArgumentBuffers,
                                   QString *error, QByteArray *entryPoint, QShaderKey *activeKey);
     id<MTLFunction> createMSLShaderFunction(id<MTLLibrary> lib, const QByteArray &entryPoint);
     bool setupBinaryArchive(NSURL *sourceFileUrl = nil);
@@ -297,7 +303,15 @@ struct QRhiMetalData
 
     static const int TEXBUF_ALIGN = 256; // probably not accurate
 
-    QHash<QRhiShaderStage, QMetalShader> shaderCache;
+    using ShaderCacheKey = std::pair<QRhiShaderStage, bool>; // stage, argument_buffers
+    QHash<ShaderCacheKey, QMetalShader> shaderCache;
+
+    struct {
+        id<MTLBuffer> buf = nil;
+        quint32 offset = 0;
+        quint32 capacity = 0;
+    } argBufPool[QMTL_FRAMES_IN_FLIGHT];
+    id<MTLBuffer> allocArgumentBuffer(quint32 size, quint32 alignment, int frameSlot, quint32 *offset);
 };
 
 Q_DECLARE_TYPEINFO(QRhiMetalData::DeferredReleaseEntry, Q_RELOCATABLE_TYPE);
@@ -355,6 +369,7 @@ struct QMetalShaderResourceBindingsData {
         struct Texture {
             int nativeBinding;
             id<MTLTexture> mtltex;
+            MTLResourceUsage usage;
         };
         struct Sampler {
             int nativeBinding;
@@ -367,6 +382,7 @@ struct QMetalShaderResourceBindingsData {
         QRhiBatchedBindings<NSUInteger> bufferOffsetBatches;
         QRhiBatchedBindings<id<MTLTexture> > textureBatches;
         QRhiBatchedBindings<id<MTLSamplerState> > samplerBatches;
+        bool usesArgumentBuffer = false; // relevant for textures
     } res[QRhiMetal::SUPPORTED_STAGES];
     enum { VERTEX = 0, FRAGMENT = 1, COMPUTE = 2, TESSCTRL = 3, TESSEVAL = 4 };
 };
@@ -714,6 +730,13 @@ void QRhiMetal::destroy()
 
     [d->captureScope release];
     d->captureScope = nil;
+
+    for (auto &pool : d->argBufPool) {
+        [pool.buf release];
+        pool.buf = nil;
+        pool.capacity = 0;
+        pool.offset = 0;
+    }
 
     [d->icbArgumentBuffer release];
     d->icbArgumentBuffer = nil;
@@ -1247,6 +1270,39 @@ static inline int mapBinding(int binding,
     return -1;
 }
 
+static inline MTLResourceUsage storageImageUsage(QRhiShaderResourceBinding::Type type)
+{
+    switch (type) {
+    case QRhiShaderResourceBinding::ImageLoad:
+        return MTLResourceUsageRead;
+    case QRhiShaderResourceBinding::ImageStore:
+        return MTLResourceUsageWrite;
+    default:
+        return MTLResourceUsageRead | MTLResourceUsageWrite;
+    }
+}
+
+static inline void declareStageArgumentBufferResources(QMetalCommandBuffer *cbD,
+                                                       int encoderStage,
+                                                       const QMetalShaderResourceBindingsData::Stage &res)
+{
+    for (const QMetalShaderResourceBindingsData::Stage::Texture &t : res.textures) {
+        switch (encoderStage) {
+        case QMetalShaderResourceBindingsData::VERTEX:
+            [cbD->d->currentRenderPassEncoder useResource: t.mtltex usage: t.usage stages: MTLRenderStageVertex];
+            break;
+        case QMetalShaderResourceBindingsData::FRAGMENT:
+            [cbD->d->currentRenderPassEncoder useResource: t.mtltex usage: t.usage stages: MTLRenderStageFragment];
+            break;
+        case QMetalShaderResourceBindingsData::COMPUTE:
+            [cbD->d->currentComputePassEncoder useResource: t.mtltex usage: t.usage];
+            break;
+        default:
+            break;
+        }
+    }
+}
+
 static inline void bindStageBuffers(QMetalCommandBuffer *cbD,
                                     int stage,
                                     const QRhiBatchedBindings<id<MTLBuffer>>::Batch &bufferBatch,
@@ -1357,6 +1413,9 @@ static inline void rebindShaderResources(QMetalCommandBuffer *cbD, int resourceS
         const auto &batch(bindingData->res[resourceStage].samplerBatches.batches[i]);
         bindStageSamplers(cbD, encoderStage, batch);
     }
+
+    if (bindingData->res[resourceStage].usesArgumentBuffer)
+        declareStageArgumentBufferResources(cbD, encoderStage, bindingData->res[resourceStage]);
 }
 
 static inline QRhiShaderResourceBinding::StageFlag toRhiSrbStage(int stage)
@@ -1382,7 +1441,8 @@ void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD
                                               int dynamicOffsetCount,
                                               const QRhiCommandBuffer::DynamicOffset *dynamicOffsets,
                                               bool offsetOnlyChange,
-                                              const QShader::NativeResourceBindingMap *nativeResourceBindingMaps[SUPPORTED_STAGES])
+                                              const QShader::NativeResourceBindingMap *nativeResourceBindingMaps[SUPPORTED_STAGES],
+                                              const QMetalShader *shaders[SUPPORTED_STAGES])
 {
     QMetalShaderResourceBindingsData bindingData;
 
@@ -1430,7 +1490,7 @@ void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD
                         const int samplerBinding = texD && samplerD ? mapBinding(b->binding, stage, nativeResourceBindingMaps, BindingType::Sampler)
                                                                     : (samplerD ? mapBinding(b->binding, stage, nativeResourceBindingMaps, BindingType::Texture) : -1);
                         if (textureBinding >= 0 && texD)
-                            bindingData.res[stage].textures.append({ textureBinding + elem, texD->d->tex });
+                            bindingData.res[stage].textures.append({ textureBinding + elem, texD->d->tex, MTLResourceUsageRead });
                         if (samplerBinding >= 0)
                             bindingData.res[stage].samplers.append({ samplerBinding + elem, samplerD->d->samplerState });
                     }
@@ -1449,7 +1509,7 @@ void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD
                 if (b->stage.testFlag(toRhiSrbStage(stage))) {
                     const int nativeBinding = mapBinding(b->binding, stage, nativeResourceBindingMaps, BindingType::Texture);
                     if (nativeBinding >= 0)
-                        bindingData.res[stage].textures.append({ nativeBinding, t });
+                        bindingData.res[stage].textures.append({ nativeBinding, t, storageImageUsage(b->type) });
                 }
             }
         }
@@ -1474,6 +1534,64 @@ void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD
             Q_UNREACHABLE();
             break;
         }
+    }
+
+    // With the argument buffer shader variant the texture and sampler values
+    // collected above are ids within the argument buffer, so encode them into
+    // one and bind that instead of binding them individually.
+    for (int stage = 0; stage < SUPPORTED_STAGES; ++stage) {
+        const QMetalShader *shader = shaders[stage];
+        if (!shader || !shader->argumentEncoder)
+            continue;
+        QMetalShaderResourceBindingsData::Stage &res(bindingData.res[stage]);
+
+        // offsetOnlyChange means same srb, same pipeline, and no resource
+        // changed, so what is in the argument buffer cannot have changed
+        // either. Carry the encoded one over instead of building it again.
+        if (offsetOnlyChange) {
+            const QMetalShaderResourceBindingsData::Stage &prev(
+                        cbD->d->currentShaderResourceBindingState.res[stage]);
+            if (prev.usesArgumentBuffer) {
+                for (const QMetalShaderResourceBindingsData::Stage::Buffer &b : prev.buffers) {
+                    if (b.nativeBinding == shader->argumentBufferIndex) {
+                        res.samplers.clear();
+                        res.buffers.append(b);
+                        res.usesArgumentBuffer = true;
+                        break;
+                    }
+                }
+                if (res.usesArgumentBuffer)
+                    continue;
+            }
+        }
+
+        // The argument buffer is in the constant address space, and it is bound
+        // like any other buffer, so the offset must satisfy the same 256 byte
+        // requirement on macOS that makes ubufAlignment() 256. The encoder's
+        // own alignment is typically well below that.
+        const quint32 argBufAlignment = qMax(quint32(shader->argumentEncoder.alignment),
+                                             quint32(ubufAlignment()));
+        quint32 argBufOffset = 0;
+        id<MTLBuffer> argBuf = d->allocArgumentBuffer(quint32(shader->argumentEncoder.encodedLength),
+                                                      argBufAlignment, currentFrameSlot, &argBufOffset);
+        if (!argBuf) {
+            // Nothing gets bound at the argument buffer's index then, so the
+            // shader will dereference garbage. Acceptable: failing to
+            // sub-allocate from a small shared memory buffer means the process
+            // is out of memory anyway.
+            qWarning("Failed to allocate Metal argument buffer");
+            res.textures.clear();
+            res.samplers.clear();
+            continue;
+        }
+        [shader->argumentEncoder setArgumentBuffer: argBuf offset: argBufOffset];
+        for (const QMetalShaderResourceBindingsData::Stage::Texture &t : std::as_const(res.textures))
+            [shader->argumentEncoder setTexture: t.mtltex atIndex: NSUInteger(t.nativeBinding)];
+        for (const QMetalShaderResourceBindingsData::Stage::Sampler &sm : std::as_const(res.samplers))
+            [shader->argumentEncoder setSamplerState: sm.mtlsampler atIndex: NSUInteger(sm.nativeBinding)];
+        res.samplers.clear();
+        res.buffers.append({ shader->argumentBufferIndex, argBuf, argBufOffset });
+        res.usesArgumentBuffer = true;
     }
 
     for (int stage = 0; stage < SUPPORTED_STAGES; ++stage) {
@@ -1516,6 +1634,11 @@ void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD
 
         if (offsetOnlyChange)
             continue;
+
+        if (bindingData.res[stage].usesArgumentBuffer) {
+            declareStageArgumentBufferResources(cbD, stage, bindingData.res[stage]);
+            continue;
+        }
 
         std::sort(bindingData.res[stage].textures.begin(), bindingData.res[stage].textures.end(), [](const QMetalShaderResourceBindingsData::Stage::Texture &a, const QMetalShaderResourceBindingsData::Stage::Texture &b) {
             return a.nativeBinding < b.nativeBinding;
@@ -1896,6 +2019,7 @@ void QRhiMetal::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
     // dynamic uniform buffer offsets always trigger a rebind
     if (hasDynamicOffsetInSrb || resNeedsRebind || srbChanged || srbRebuilt || pipelineChanged) {
         const QShader::NativeResourceBindingMap *resBindMaps[SUPPORTED_STAGES] = { nullptr, nullptr, nullptr, nullptr, nullptr };
+        const QMetalShader *shaders[SUPPORTED_STAGES] = { nullptr, nullptr, nullptr, nullptr, nullptr };
         if (gfxPsD) {
             cbD->currentGraphicsSrb = srbD;
             cbD->currentComputeSrb = nullptr;
@@ -1909,19 +2033,23 @@ void QRhiMetal::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
                 resBindMaps[QMetalShaderResourceBindingsData::TESSEVAL] = &gfxPsD->d->tess.vertTese.nativeResourceBindingMap;
             } else {
                 resBindMaps[QMetalShaderResourceBindingsData::VERTEX] = &gfxPsD->d->vs.nativeResourceBindingMap;
+                shaders[QMetalShaderResourceBindingsData::VERTEX] = &gfxPsD->d->vs;
             }
             resBindMaps[QMetalShaderResourceBindingsData::FRAGMENT] = &gfxPsD->d->fs.nativeResourceBindingMap;
+            shaders[QMetalShaderResourceBindingsData::FRAGMENT] = &gfxPsD->d->fs;
         } else {
             cbD->currentGraphicsSrb = nullptr;
             cbD->currentComputeSrb = srbD;
             resBindMaps[QMetalShaderResourceBindingsData::COMPUTE] = &compPsD->d->cs.nativeResourceBindingMap;
+            shaders[QMetalShaderResourceBindingsData::COMPUTE] = &compPsD->d->cs;
         }
         cbD->currentSrbGeneration = srbD->generation;
         cbD->currentResSlot = resSlot;
 
         const bool offsetOnlyChange = hasDynamicOffsetInSrb && !resNeedsRebind
                 && !srbChanged && !srbRebuilt && !pipelineChanged;
-        enqueueShaderResourceBindings(srbD, cbD, dynamicOffsetCount, dynamicOffsets, offsetOnlyChange, resBindMaps);
+        enqueueShaderResourceBindings(srbD, cbD, dynamicOffsetCount, dynamicOffsets, offsetOnlyChange,
+                                      resBindMaps, shaders);
     }
 }
 
@@ -2567,9 +2695,13 @@ const char *QRhiMetal::icbUnavailableReason(QMetalCommandBuffer *cbD) const
     {
         return "the current graphics pipeline was not created with UsesIndirectDraws";
     }
+    if (cbD->currentGraphicsPipeline->d->tess.enabled)
+        return "the current graphics pipeline uses tessellation";
     if (!cbD->currentGraphicsPipeline->d->icbCapable) {
-        return "the current graphics pipeline uses textures, which Metal does not "
-               "allow in a pipeline that supports indirect command buffers";
+        return "the shaders of the current graphics pipeline sample textures but have no "
+               "argument buffer variant, which Metal requires for a pipeline that supports "
+               "indirect command buffers; rebuild them with qsb --msl-argument-buffers "
+               "(or use MSLARGUMENTBUFFERS with qt_add_shaders)";
     }
     return nullptr;
 }
@@ -2974,6 +3106,8 @@ QRhi::FrameOpResult QRhiMetal::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginF
     if (swapChainD->ds)
         swapChainD->ds->lastActiveFrameSlot = currentFrameSlot;
 
+    d->argBufPool[currentFrameSlot].offset = 0;
+
     executeDeferredReleases();
     swapChainD->cbWrapper.resetState(swapChainD->d->lastGpuTime[currentFrameSlot]);
     swapChainD->d->lastGpuTime[currentFrameSlot] = 0;
@@ -3095,6 +3229,8 @@ QRhi::FrameOpResult QRhiMetal::beginOffscreenFrame(QRhiCommandBuffer **cb, QRhi:
     d->ofr.active = true;
     *cb = &d->ofr.cbWrapper;
     d->ofr.cbWrapper.d->cb = d->newCommandBuffer();
+
+    d->argBufPool[currentFrameSlot].offset = 0;
 
     executeDeferredReleases();
     d->ofr.cbWrapper.resetState(d->ofr.lastGpuTime);
@@ -4816,10 +4952,23 @@ bool QMetalSampler::create()
     desc.tAddressMode = toMetalAddressMode(m_addressV);
     desc.rAddressMode = toMetalAddressMode(m_addressW);
     desc.compareFunction = toMetalTextureCompareFunction(m_compareOp);
-
     QRHI_RES_RHI(QRhiMetal);
+    // Whether this sampler ends up in an argument buffer is not known here, and
+    // a sampler state cannot be changed afterwards. Metal gives no warning when
+    // one without this is used with an argument buffer, it just faults the GPU.
+    // So set it always as long as ICBs are supported.
+    desc.supportArgumentBuffers = rhiD->caps.indirectCommandBuffers ? YES : NO;
     d->samplerState = [rhiD->d->dev newSamplerStateWithDescriptor: desc];
     [desc release];
+    if (!d->samplerState) {
+        // Sampler states with supportArgumentBuffers set draw on a per-process
+        // quota (MTLDevice.maxArgumentBufferSamplerCount), so mention that as
+        // the likely reason for a failure that is otherwise hard to explain.
+        qWarning("Failed to create Metal sampler state. The number of unique sampler "
+                 "states with argument buffer support may have exceeded the limit of %u.",
+                 uint(rhiD->d->dev.maxArgumentBufferSamplerCount));
+        return false;
+    }
 
     lastActiveFrameSlot = -1;
     generation += 1;
@@ -5556,24 +5705,75 @@ static inline MTLLanguageVersion toMetalLanguageVersion(const QShaderVersion &ve
     return MTLLanguageVersion(((v / 10) << 16) + (v % 10));
 }
 
+id<MTLBuffer> QRhiMetalData::allocArgumentBuffer(quint32 size, quint32 alignment, int frameSlot, quint32 *offset)
+{
+    auto &pool(argBufPool[frameSlot]);
+    const quint32 alignedSize = aligned<quint32>(size, alignment);
+    if (pool.offset + alignedSize > pool.capacity) {
+        if (pool.buf) {
+            // Reusing the StagingBuffer entry type: the handler just releases
+            // the buffer. lastActiveFrameSlot = frameSlot is what keeps the old
+            // buffer alive for the rest of this frame, since
+            // executeDeferredReleases() only gets to this slot after the
+            // semaphore wait in the next beginFrame() for it.
+            QRhiMetalData::DeferredReleaseEntry e;
+            e.type = QRhiMetalData::DeferredReleaseEntry::StagingBuffer;
+            e.lastActiveFrameSlot = frameSlot;
+            e.stagingBuffer.buffer = pool.buf;
+            releaseQueue.append(e);
+        }
+        pool.capacity = qMax(pool.capacity * 2, qMax(alignedSize, quint32(16384)));
+        pool.buf = [dev newBufferWithLength: pool.capacity options: MTLResourceStorageModeShared];
+        pool.offset = 0;
+        if (!pool.buf) {
+            pool.capacity = 0;
+            return nil;
+        }
+    }
+    *offset = pool.offset;
+    pool.offset += alignedSize;
+    return pool.buf;
+}
+
 id<MTLLibrary> QRhiMetalData::createMetalLib(const QShader &shader, QShader::Variant shaderVariant,
+                                             bool preferArgumentBuffers,
                                              QString *error, QByteArray *entryPoint, QShaderKey *activeKey)
 {
     QVarLengthArray<int, 8> versions;
     versions << 30 << 24 << 23 << 22 << 21 << 20 << 12;
 
+    // preferArgumentBuffers overrides whatever variant is set in the QShader.
+    // This is by design, since we cannot expect the client to start specifying
+    // the ArgumentBuffer variant that is only relevant for Metal. Also not
+    // compatible with BatchableVertexShader and other variants since
+    // ArgumentBufferShader is expected to be the argument-buffers version of
+    // StandardShader, and it cannot be a combination of multiple variants. That
+    // limitation should be fine for now.
+
+    QVarLengthArray<QShader::Variant, 2> variants;
+    if (preferArgumentBuffers)
+        variants << QShader::ArgumentBufferShader;
+    variants << shaderVariant;
+
     const QList<QShaderKey> shaders = shader.availableShaders();
+
+    auto findKey = [&shaders, &versions, &variants](QShader::Source source, QShaderKey *result) {
+        for (const QShader::Variant &variant : variants) {
+            for (const int &version : versions) {
+                const QShaderKey key = { source, version, variant };
+                if (shaders.contains(key)) {
+                    *result = key;
+                    return true;
+                }
+            }
+        }
+        return false;
+    };
 
     QShaderKey key;
 
-    for (const int &version : versions) {
-        key = { QShader::Source::MetalLibShader, version, shaderVariant };
-        if (shaders.contains(key))
-            break;
-    }
-
-    QShaderCode mtllib = shader.shader(key);
-    if (!mtllib.shader().isEmpty()) {
+    if (findKey(QShader::Source::MetalLibShader, &key)) {
+        QShaderCode mtllib = shader.shader(key);
         dispatch_data_t data = dispatch_data_create(mtllib.shader().constData(),
                                                     size_t(mtllib.shader().size()),
                                                     dispatch_get_global_queue(0, 0),
@@ -5591,17 +5791,12 @@ id<MTLLibrary> QRhiMetalData::createMetalLib(const QShader &shader, QShader::Var
         }
     }
 
-    for (const int &version : versions) {
-        key = { QShader::Source::MslShader, version, shaderVariant };
-        if (shaders.contains(key))
-            break;
+    if (!findKey(QShader::Source::MslShader, &key)) {
+        qWarning() << "No MSL code found in baked shader" << shader;
+        return nil;
     }
 
     QShaderCode mslSource = shader.shader(key);
-    if (mslSource.shader().isEmpty()) {
-        qWarning() << "No MSL 2.0 or 1.2 code found in baked shader" << shader;
-        return nil;
-    }
 
     NSString *src = [NSString stringWithUTF8String: mslSource.shader().constData()];
     MTLCompileOptions *opts = [[MTLCompileOptions alloc] init];
@@ -5800,9 +5995,32 @@ static inline bool usesTextures(const QShaderDescription &desc)
             || !desc.storageImages().isEmpty();
 }
 
+static bool hasArgumentBufferVariant(const QShader &shader)
+{
+    for (const QShaderKey &k : shader.availableShaders()) {
+        if (k.sourceVariant() == QShader::ArgumentBufferShader)
+            return true;
+    }
+    return false;
+}
+
+static void setupArgumentBufferEncoder(QMetalShader *shader)
+{
+    const int index = shader->nativeShaderInfo.extraBufferBindings.value(QShaderPrivate::MslArgumentBufferBinding, -1);
+    if (index >= 0) {
+        shader->argumentBufferIndex = index;
+        shader->argumentEncoder = [shader->func newArgumentEncoderWithBufferIndex: NSUInteger(index)];
+    }
+}
+
 bool QMetalGraphicsPipeline::createVertexFragmentPipeline()
 {
     QRHI_RES_RHI(QRhiMetal);
+
+    // A pipeline that supports indirect command buffers cannot have textures
+    // bound directly to its functions, so prefer the shader variant that
+    // reaches them through an argument buffer.
+    const bool wantArgumentBuffers = m_flags.testFlag(UsesIndirectDraws) && rhiD->caps.indirectCommandBuffers;
 
     MTLVertexDescriptor *vertexDesc = [MTLVertexDescriptor vertexDescriptor];
     d->setupVertexInputDescriptor(vertexDesc);
@@ -5817,30 +6035,34 @@ bool QMetalGraphicsPipeline::createVertexFragmentPipeline()
     // rpDesc.vertex/fragmentBuffers at the defaults.
 
     for (const QRhiShaderStage &shaderStage : std::as_const(m_shaderStages)) {
-        auto cacheIt = rhiD->d->shaderCache.constFind(shaderStage);
+        const QShader shader = shaderStage.shader();
+        const bool argumentBufferBuild = wantArgumentBuffers && hasArgumentBufferVariant(shader);
+        auto cacheIt = rhiD->d->shaderCache.constFind({ shaderStage, argumentBufferBuild });
         if (cacheIt != rhiD->d->shaderCache.constEnd()) {
             switch (shaderStage.type()) {
             case QRhiShaderStage::Vertex:
                 d->vs = *cacheIt;
                 [d->vs.lib retain];
                 [d->vs.func retain];
+                [d->vs.argumentEncoder retain];
                 rpDesc.vertexFunction = d->vs.func;
                 break;
             case QRhiShaderStage::Fragment:
                 d->fs = *cacheIt;
                 [d->fs.lib retain];
                 [d->fs.func retain];
+                [d->fs.argumentEncoder retain];
                 rpDesc.fragmentFunction = d->fs.func;
                 break;
             default:
                 break;
             }
         } else {
-            const QShader shader = shaderStage.shader();
             QString error;
             QByteArray entryPoint;
             QShaderKey activeKey;
             id<MTLLibrary> lib = rhiD->d->createMetalLib(shader, shaderStage.shaderVariant(),
+                                                         argumentBufferBuild,
                                                          &error, &entryPoint, &activeKey);
             if (!lib) {
                 qWarning("MSL shader compilation failed: %s", qPrintable(error));
@@ -5865,9 +6087,11 @@ bool QMetalGraphicsPipeline::createVertexFragmentPipeline()
                 d->vs.nativeResourceBindingMap = shader.nativeResourceBindingMap(activeKey);
                 d->vs.desc = shader.description();
                 d->vs.nativeShaderInfo = shader.nativeShaderInfo(activeKey);
-                rhiD->d->shaderCache.insert(shaderStage, d->vs);
+                setupArgumentBufferEncoder(&d->vs);
+                rhiD->d->shaderCache.insert({ shaderStage, argumentBufferBuild }, d->vs);
                 [d->vs.lib retain];
                 [d->vs.func retain];
+                [d->vs.argumentEncoder retain];
                 rpDesc.vertexFunction = func;
                 break;
             case QRhiShaderStage::Fragment:
@@ -5876,9 +6100,11 @@ bool QMetalGraphicsPipeline::createVertexFragmentPipeline()
                 d->fs.nativeResourceBindingMap = shader.nativeResourceBindingMap(activeKey);
                 d->fs.desc = shader.description();
                 d->fs.nativeShaderInfo = shader.nativeShaderInfo(activeKey);
-                rhiD->d->shaderCache.insert(shaderStage, d->fs);
+                setupArgumentBufferEncoder(&d->fs);
+                rhiD->d->shaderCache.insert({ shaderStage, argumentBufferBuild }, d->fs);
                 [d->fs.lib retain];
                 [d->fs.func retain];
+                [d->fs.argumentEncoder retain];
                 rpDesc.fragmentFunction = func;
                 break;
             default:
@@ -5892,17 +6118,12 @@ bool QMetalGraphicsPipeline::createVertexFragmentPipeline()
     QMetalRenderPassDescriptor *rpD = QRHI_RES(QMetalRenderPassDescriptor, m_renderPassDesc);
     setupAttachmentsInMetalRenderPassDescriptor(rpDesc, rpD);
 
-    // Metal refuses to create a render pipeline state that both declares
-    // supportIndirectCommandBuffers and has a texture bound directly to one of
-    // its functions. Only textures are affected; buffers and samplers are fine.
-    // We do not use argument buffers atm. So a pipeline that samples textures
-    // is simply not ICB-capable: the indirect draws fall back to the CPU-side
-    // loop, and the count variants, which have no such fallback, report the
-    // reason and skip.
-    d->icbCapable = m_flags.testFlag(UsesIndirectDraws)
-            && rhiD->caps.indirectCommandBuffers
-            && !usesTextures(d->vs.desc)
-            && !usesTextures(d->fs.desc);
+    // Safe for an indirect command buffer if the stage has no textures at all,
+    // or reaches them through an argument buffer.
+    const auto icbSafe = [](const QMetalShader &s) {
+        return !usesTextures(s.desc) || s.argumentBufferIndex >= 0;
+    };
+    d->icbCapable = wantArgumentBuffers && icbSafe(d->vs) && icbSafe(d->fs);
     if (d->icbCapable)
         rpDesc.supportIndirectCommandBuffers = YES;
 
@@ -6538,7 +6759,7 @@ bool QMetalGraphicsPipeline::createTessellationPipelines(const QShader &tessVert
          QShader::UInt32IndexedVertexAsComputeShader,
          QShader::UInt16IndexedVertexAsComputeShader })
     {
-        id<MTLLibrary> lib = rhiD->d->createMetalLib(tessVert, variant, &error, &entryPoint, &activeKey);
+        id<MTLLibrary> lib = rhiD->d->createMetalLib(tessVert, variant, false, &error, &entryPoint, &activeKey);
         if (!lib) {
             qWarning("MSL shader compilation failed for vertex-as-compute shader %d: %s", int(variant), qPrintable(error));
             d->tess.enabled = false;
@@ -6572,7 +6793,7 @@ bool QMetalGraphicsPipeline::createTessellationPipelines(const QShader &tessVert
     }
 
     // Pipeline #2 is a compute that runs the tessellation control (compute) shader
-    id<MTLLibrary> tessControlLib = rhiD->d->createMetalLib(tesc, QShader::StandardShader, &error, &entryPoint, &activeKey);
+    id<MTLLibrary> tessControlLib = rhiD->d->createMetalLib(tesc, QShader::StandardShader, false, &error, &entryPoint, &activeKey);
     if (!tessControlLib) {
         qWarning("MSL shader compilation failed for tessellation control compute shader: %s", qPrintable(error));
         d->tess.enabled = false;
@@ -6600,7 +6821,7 @@ bool QMetalGraphicsPipeline::createTessellationPipelines(const QShader &tessVert
     }
 
     // Pipeline #3 is a render pipeline with the tessellation evaluation (vertex) + the fragment shader
-    id<MTLLibrary> tessEvalLib = rhiD->d->createMetalLib(tese, QShader::StandardShader, &error, &entryPoint, &activeKey);
+    id<MTLLibrary> tessEvalLib = rhiD->d->createMetalLib(tese, QShader::StandardShader, false, &error, &entryPoint, &activeKey);
     if (!tessEvalLib) {
         qWarning("MSL shader compilation failed for tessellation evaluation vertex shader: %s", qPrintable(error));
         d->tess.enabled = false;
@@ -6621,7 +6842,7 @@ bool QMetalGraphicsPipeline::createTessellationPipelines(const QShader &tessVert
     d->tess.vertTese.nativeResourceBindingMap = tese.nativeResourceBindingMap(activeKey);
     d->tess.vertTese.nativeShaderInfo = tese.nativeShaderInfo(activeKey);
 
-    id<MTLLibrary> fragLib = rhiD->d->createMetalLib(tessFrag, QShader::StandardShader, &error, &entryPoint, &activeKey);
+    id<MTLLibrary> fragLib = rhiD->d->createMetalLib(tessFrag, QShader::StandardShader, false, &error, &entryPoint, &activeKey);
     if (!fragLib) {
         qWarning("MSL shader compilation failed for fragment shader: %s", qPrintable(error));
         d->tess.enabled = false;
@@ -6804,7 +7025,7 @@ bool QMetalComputePipeline::create()
     QRHI_RES_RHI(QRhiMetal);
     rhiD->pipelineCreationStart();
 
-    auto cacheIt = rhiD->d->shaderCache.constFind(m_shaderStage);
+    auto cacheIt = rhiD->d->shaderCache.constFind({ m_shaderStage, false });
     if (cacheIt != rhiD->d->shaderCache.constEnd()) {
         d->cs = *cacheIt;
     } else {
@@ -6812,7 +7033,7 @@ bool QMetalComputePipeline::create()
         QString error;
         QByteArray entryPoint;
         QShaderKey activeKey;
-        id<MTLLibrary> lib = rhiD->d->createMetalLib(shader, m_shaderStage.shaderVariant(),
+        id<MTLLibrary> lib = rhiD->d->createMetalLib(shader, m_shaderStage.shaderVariant(), false,
                                                      &error, &entryPoint, &activeKey);
         if (!lib) {
             qWarning("MSL shader compilation failed: %s", qPrintable(error));
@@ -6831,6 +7052,13 @@ bool QMetalComputePipeline::create()
         d->cs.desc = shader.description();
         d->cs.nativeShaderInfo = shader.nativeShaderInfo(activeKey);
 
+        // Compute never needs argument buffers on its own (they are there for
+        // indirect command buffers, which are graphics-only), hence not asking
+        // for that shader variant above. It can still be requested explicitly
+        // via the QRhiShaderStage, in which case the textures and samplers have
+        // to go through an argument buffer here as well.
+        setupArgumentBufferEncoder(&d->cs);
+
         // SPIRV-Cross buffer size buffers
         if (d->cs.nativeShaderInfo.extraBufferBindings.contains(QShaderPrivate::MslBufferSizeBufferBinding)) {
             const int binding = d->cs.nativeShaderInfo.extraBufferBindings[QShaderPrivate::MslBufferSizeBufferBinding];
@@ -6842,11 +7070,20 @@ bool QMetalComputePipeline::create()
                 s.destroy();
             rhiD->d->shaderCache.clear();
         }
-        rhiD->d->shaderCache.insert(m_shaderStage, d->cs);
+        rhiD->d->shaderCache.insert({ m_shaderStage, false }, d->cs);
     }
 
     [d->cs.lib retain];
     [d->cs.func retain];
+    [d->cs.argumentEncoder retain];
+
+    if (d->cs.argumentBufferIndex >= 0 && !rhiD->caps.indirectCommandBuffers) {
+        // Sampler states are created with supportArgumentBuffers only when this
+        // cap is present, and Metal faults the GPU without any warning when one
+        // that lacks it is used with an argument buffer.
+        qWarning("The ArgumentBufferShader variant of a compute shader cannot be used on this device");
+        return false;
+    }
 
     d->localSize = MTLSizeMake(d->cs.localSize[0], d->cs.localSize[1], d->cs.localSize[2]);
 

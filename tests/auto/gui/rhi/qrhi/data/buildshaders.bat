@@ -48,3 +48,5 @@ qsb --glsl "310 es,430" --hlsl 50 --msl 12 -o dispatch_indirect_args.comp.qsb di
 qsb --glsl "310 es,430" --hlsl 50 --msl 12 -o dispatch_indirect_consume.comp.qsb dispatch_indirect_consume.comp
 qsb --glsl "310 es,430" --hlsl 50 --msl 12 -o dispatch_indirect_consume_readargs.comp.qsb dispatch_indirect_consume_readargs.comp
 qsb --glsl 430 --hlsl 50 --msl 12 -o indirect_draw_count.comp.qsb indirect_draw_count.comp
+qsb --glsl "150,120,100 es" --hlsl 50 -c --msl 12,21 --msl-argument-buffers -o colored_texture.vert.qsb colored_texture.vert
+qsb --glsl "150,120,100 es" --hlsl 50 -c --msl 12,21 --msl-argument-buffers -o colored_texture.frag.qsb colored_texture.frag

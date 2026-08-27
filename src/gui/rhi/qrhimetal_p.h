@@ -229,6 +229,7 @@ struct QMetalShaderResourceBindings : public QRhiShaderResourceBindings
 
 struct QMetalGraphicsPipelineData;
 struct QMetalCommandBuffer;
+struct QMetalShader;
 
 struct QMetalGraphicsPipeline : public QRhiGraphicsPipeline
 {
@@ -514,7 +515,8 @@ public:
                                        int dynamicOffsetCount,
                                        const QRhiCommandBuffer::DynamicOffset *dynamicOffsets,
                                        bool offsetOnlyChange,
-                                       const QShader::NativeResourceBindingMap *nativeResourceBindingMaps[SUPPORTED_STAGES]);
+                                       const QShader::NativeResourceBindingMap *nativeResourceBindingMaps[SUPPORTED_STAGES],
+                                       const QMetalShader *shaders[SUPPORTED_STAGES]);
     void setDefaultScissor(QMetalCommandBuffer *cbD);
 
     struct TessDrawArgs {

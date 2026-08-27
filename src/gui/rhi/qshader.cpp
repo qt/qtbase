@@ -221,7 +221,9 @@ QT_BEGIN_NAMESPACE
     \omitvalue HdrCapableFragmentShader
 
     \value [since 6.13] ArgumentBufferShader Metal-only. A variant that consumes
-    some or all resources via argument buffers.
+    some or all resources via argument buffers. Relevant for the vertex,
+    fragment, and compute stages. It is generated for tessellation stages as
+    well when asked for, but is never chosen for a pipeline with tessellation.
  */
 
 /*!
