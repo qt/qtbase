@@ -69,6 +69,14 @@ public:
         return theFuture;
     }
 
+    ~RunFunctionTaskBase() override
+    {
+        if (!promise.isFinished()) {
+            promise.reportCanceled();
+            promise.reportFinished();
+        }
+    }
+
     // For backward compatibility
     QFuture<T> start(QThreadPool *pool) { return start({pool, 0});  }
 

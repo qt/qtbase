@@ -9,6 +9,7 @@
 #include <QTest>
 #include <QTimer>
 #include <QFutureSynchronizer>
+#include <QSemaphore>
 
 #include <QtTest/private/qemulationdetector_p.h>
 
@@ -45,6 +46,7 @@ private slots:
     void nonDefaultConstructibleValue();
     void nullThreadPool();
     void nullThreadPoolNoLeak();
+    void clearQueuedTask();
 };
 
 void light()
@@ -1628,6 +1630,31 @@ void tst_QtConcurrentRun::nullThreadPoolNoLeak()
         future.waitForFinished();
     }
     QCOMPARE(LifetimeChecker::count, 0);
+}
+
+// QTBUG-149511: clearing the pool must finish the future of a queued task
+void tst_QtConcurrentRun::clearQueuedTask()
+{
+    QThreadPool pool;
+    pool.setMaxThreadCount(1);
+
+    QSemaphore blocker(0);
+    pool.start([&blocker] { blocker.acquire(); });
+
+    bool cancelExecuted = false;
+    QFuture<void> future = run(&pool, [] {});
+    const auto resultFuture = future.onCanceled([&cancelExecuted]() { cancelExecuted = true; });
+    QVERIFY(!future.isFinished());
+
+    pool.clear();
+
+    blocker.release(1);
+    QVERIFY(pool.waitForDone());
+
+    QVERIFY(resultFuture.isFinished());
+    QVERIFY(future.isFinished());
+    QVERIFY(future.isCanceled());
+    QVERIFY(cancelExecuted);
 }
 
 QTEST_MAIN(tst_QtConcurrentRun)
