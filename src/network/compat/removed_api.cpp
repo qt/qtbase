@@ -125,6 +125,10 @@ QDebug operator<<(QDebug debug, QLocalSocket::LocalSocketState state)
 
 #include "qabstractsocket.h"        // inline API
 
+#if QT_CONFIG(localserver)
+#include "qlocalsocket.h"           // inline API
+#endif
+
 // #include "qotherheader.h"
 // // implement removed functions from qotherheader.h
 // order sections alphabetically

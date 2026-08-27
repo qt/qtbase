@@ -521,10 +521,10 @@ void QLocalSocket::close()
     d->fullServerName.clear();
 }
 
-bool QLocalSocket::waitForBytesWritten(int msecs)
+bool QLocalSocket::waitForBytesWritten(QDeadlineTimer deadline)
 {
     Q_D(QLocalSocket);
-    return d->unixSocket.waitForBytesWritten(msecs);
+    return d->unixSocket.waitForBytesWritten(deadline);
 }
 
 bool QLocalSocket::flush()
@@ -590,7 +590,7 @@ void QLocalSocket::setReadBufferSize(qint64 size)
     d->unixSocket.setReadBufferSize(size);
 }
 
-bool QLocalSocket::waitForConnected(int msec)
+bool QLocalSocket::waitForConnected(QDeadlineTimer deadline)
 {
     Q_D(QLocalSocket);
 
@@ -599,7 +599,6 @@ bool QLocalSocket::waitForConnected(int msec)
 
     pollfd pfd = qt_make_pollfd(d->connectingSocket, POLLIN);
 
-    QDeadlineTimer deadline{msec};
     auto remainingTime = deadline.remainingTimeAsDuration();
 
     do {
@@ -615,22 +614,22 @@ bool QLocalSocket::waitForConnected(int msec)
     return (state() == ConnectedState);
 }
 
-bool QLocalSocket::waitForDisconnected(int msecs)
+bool QLocalSocket::waitForDisconnected(QDeadlineTimer deadline)
 {
     Q_D(QLocalSocket);
     if (state() == UnconnectedState) {
         qWarning("QLocalSocket::waitForDisconnected() is not allowed in UnconnectedState");
         return false;
     }
-    return (d->unixSocket.waitForDisconnected(msecs));
+    return (d->unixSocket.waitForDisconnected(deadline));
 }
 
-bool QLocalSocket::waitForReadyRead(int msecs)
+bool QLocalSocket::waitForReadyRead(QDeadlineTimer deadline)
 {
     Q_D(QLocalSocket);
     if (state() == QLocalSocket::UnconnectedState)
         return false;
-    return (d->unixSocket.waitForReadyRead(msecs));
+    return (d->unixSocket.waitForReadyRead(deadline));
 }
 
 QT_END_NAMESPACE

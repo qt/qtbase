@@ -453,13 +453,13 @@ void QLocalSocket::setReadBufferSize(qint64 size)
     d->pipeReader->setMaxReadBufferSize(size);
 }
 
-bool QLocalSocket::waitForConnected(int msecs)
+bool QLocalSocket::waitForConnected(QDeadlineTimer deadline)
 {
-    Q_UNUSED(msecs);
+    Q_UNUSED(deadline);
     return (state() == ConnectedState);
 }
 
-bool QLocalSocket::waitForDisconnected(int msecs)
+bool QLocalSocket::waitForDisconnected(QDeadlineTimer deadline)
 {
     Q_D(QLocalSocket);
     if (state() == UnconnectedState) {
@@ -467,7 +467,6 @@ bool QLocalSocket::waitForDisconnected(int msecs)
         return false;
     }
 
-    QDeadlineTimer deadline(msecs);
     bool wasChecked = false;
     while (!d->pipeReader->isPipeClosed()) {
         if (wasChecked && deadline.hasExpired())
@@ -506,14 +505,13 @@ bool QLocalSocket::isValid() const
     return d->handle != INVALID_HANDLE_VALUE;
 }
 
-bool QLocalSocket::waitForReadyRead(int msecs)
+bool QLocalSocket::waitForReadyRead(QDeadlineTimer deadline)
 {
     Q_D(QLocalSocket);
 
     if (d->state != QLocalSocket::ConnectedState)
         return false;
 
-    QDeadlineTimer deadline(msecs);
     while (!d->pipeReader->isPipeClosed()) {
         QSocketPoller poller(*d);
         if (poller.waitForClose || !poller.poll(deadline))
@@ -529,14 +527,13 @@ bool QLocalSocket::waitForReadyRead(int msecs)
     return false;
 }
 
-bool QLocalSocket::waitForBytesWritten(int msecs)
+bool QLocalSocket::waitForBytesWritten(QDeadlineTimer deadline)
 {
     Q_D(QLocalSocket);
 
     if (d->state == QLocalSocket::UnconnectedState)
         return false;
 
-    QDeadlineTimer deadline(msecs);
     bool wasChecked = false;
     while (!d->pipeReader->isPipeClosed()) {
         if (wasChecked && deadline.hasExpired())

@@ -190,6 +190,12 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn bool QLocalSocket::waitForBytesWritten(QDeadlineTimer deadline)
+    \since 6.13
+    \overload
+*/
+
+/*!
     \fn bool QLocalSocket::flush()
 
     This function writes as much as possible from the internal write buffer
@@ -285,6 +291,19 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn bool QLocalSocket::waitForConnected(QDeadlineTimer deadline)
+    \since 6.13
+    \overload
+
+    Waits until the socket is connected, or until \a deadline expires. If the
+    connection has been established, this function returns \c true; otherwise
+    it returns \c false. In the case where it returns \c false, you can call
+    error() to determine the cause of the error.
+
+    \sa connectToServer(), connected()
+*/
+
+/*!
     \fn bool QLocalSocket::waitForDisconnected(int msecs)
 
     Waits until the socket has disconnected, up to \a msecs milliseconds. If the
@@ -305,12 +324,44 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn bool QLocalSocket::waitForDisconnected(QDeadlineTimer deadline)
+    \since 6.13
+    \overload
+
+    Waits until the socket has disconnected, or until \a deadline expires. If the
+    connection was successfully disconnected, this function returns \c true;
+    otherwise it returns \c false (if the operation timed out, if an error
+    occurred, or if this QLocalSocket is already disconnected). In the case
+    where it returns \c false, you can call error() to determine the cause of
+    the error.
+
+    \sa disconnectFromServer(), close()
+*/
+
+/*!
     \fn bool QLocalSocket::waitForReadyRead(int msecs)
 
     This function blocks until data is available for reading and the
     \l{QIODevice::}{readyRead()} signal has been emitted. The function
     will timeout after \a msecs milliseconds; the default timeout is
     30000 milliseconds.
+
+    The function returns \c true if data is available for reading;
+    otherwise it returns \c false (if an error occurred or the
+    operation timed out).
+
+    \sa waitForBytesWritten()
+*/
+
+/*!
+    \fn bool QLocalSocket::waitForReadyRead(QDeadlineTimer deadline)
+    \since 6.13
+    \overload
+
+    This function blocks until data is available for reading and the
+    \l{QIODevice::}{readyRead()} signal has been emitted. The function
+    will timeout when \a deadline expires; the default deadline is
+    30000 milliseconds from the moment the function is called.
 
     The function returns \c true if data is available for reading;
     otherwise it returns \c false (if an error occurred or the

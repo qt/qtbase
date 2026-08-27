@@ -90,10 +90,26 @@ public:
     QBindable<SocketOptions> bindableSocketOptions();
 
     LocalSocketState state() const;
-    bool waitForBytesWritten(int msecs = 30000) override;
-    bool waitForConnected(int msecs = 30000);
-    bool waitForDisconnected(int msecs = 30000);
-    bool waitForReadyRead(int msecs = 30000) override;
+
+    using QIODevice::waitForBytesWritten;
+    using QIODevice::waitForReadyRead;
+    bool waitForBytesWritten(QDeadlineTimer deadline = std::chrono::seconds(30)) QT7_ONLY(override);
+    bool waitForConnected(QDeadlineTimer deadline = std::chrono::seconds(30));
+    bool waitForDisconnected(QDeadlineTimer deadline = std::chrono::seconds(30));
+    bool waitForReadyRead(QDeadlineTimer deadline = std::chrono::seconds(30)) QT7_ONLY(override);
+
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+    QT_NETWORK_INLINE_SINCE(6, 13)
+    bool waitForBytesWritten(int msecs) override;
+#endif
+    QT_NETWORK_INLINE_SINCE(6, 13)
+    bool waitForConnected(int msecs);
+    QT_NETWORK_INLINE_SINCE(6, 13)
+    bool waitForDisconnected(int msecs);
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+    QT_NETWORK_INLINE_SINCE(6, 13)
+    bool waitForReadyRead(int msecs) override;
+#endif
 
 Q_SIGNALS:
     void connected();
@@ -131,6 +147,19 @@ Q_NETWORK_EXPORT QDebug operator<<(QDebug, QLocalSocket::LocalSocketState);
 #endif // QT_NETWORK_REMOVED_SINCE(6, 12)
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QLocalSocket::SocketOptions)
+
+#if QT_NETWORK_INLINE_IMPL_SINCE(6, 13)
+bool QLocalSocket::waitForConnected(int msecs)
+{ return waitForConnected(QDeadlineTimer(msecs)); }
+bool QLocalSocket::waitForDisconnected(int msecs)
+{ return waitForDisconnected(QDeadlineTimer(msecs)); }
+#endif
+#if QT_NETWORK_INLINE_IMPL_SINCE(6, 13) && QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+bool QLocalSocket::waitForBytesWritten(int msecs)
+{ return waitForBytesWritten(QDeadlineTimer(msecs)); }
+bool QLocalSocket::waitForReadyRead(int msecs)
+{ return waitForReadyRead(QDeadlineTimer(msecs)); }
+#endif
 
 QT_END_NAMESPACE
 
