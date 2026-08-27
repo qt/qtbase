@@ -218,8 +218,7 @@ QT_BEGIN_NAMESPACE
     usage in the draw calls (e.g. if the shader is using gl_VertexIndex), hence
     the need for three dedicated variants.
 
-    \value [since 6.10] HdrCapableFragmentShader A fragment shader rewritten to support high
-    dynamic range rendering in a Qt Quick scenegraph.
+    \omitvalue HdrCapableFragmentShader
 
     \value [since 6.13] ArgumentBufferShader Metal-only. A variant that consumes
     some or all resources via argument buffers.
