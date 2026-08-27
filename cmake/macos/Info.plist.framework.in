@@ -18,5 +18,7 @@
 	<string>${MACOSX_FRAMEWORK_BUNDLE_VERSION}</string>
 	<key>CFBundleShortVersionString</key>
 	<string>${MACOSX_FRAMEWORK_SHORT_VERSION_STRING}</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>${CMAKE_OSX_DEPLOYMENT_TARGET}</string>
 </dict>
 </plist>
