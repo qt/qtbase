@@ -3182,6 +3182,31 @@ QWindow *QWindowPrivate::topLevelWindow(QWindow::AncestorMode mode) const
     return window;
 }
 
+/*
+    \internal
+    \class QForeignWindow
+
+    QForeignWindow represents a native window handle created by another
+    UI toolkit, wrapped via QWindow::fromWinId().
+*/
+class QForeignWindow : public QWindow
+{
+    Q_OBJECT
+public:
+#if QT_CONFIG(accessibility)
+    /*
+        Represent the foreign window as itself in the accessibility tree, so
+        that the accessibility bridges can substitute it for the underlying
+        native handle if needed, or otherwise represent it as an opaque node
+        with possible child windows.
+    */
+    QAccessibleInterface *accessibleRoot() const override
+    {
+        return QAccessible::queryAccessibleInterface(const_cast<QForeignWindow *>(this));
+    }
+#endif
+};
+
 /*!
     Creates a local representation of a window created by another process or by
     using native libraries below Qt.
@@ -3210,7 +3235,7 @@ QWindow *QWindow::fromWinId(WId id)
         return nullptr;
     }
 
-    QWindow *window = new QWindow;
+    QWindow *window = new QForeignWindow;
 
     // Persist the winId in a private property so that we
     // can recreate the window after being destroyed.
@@ -3444,3 +3469,4 @@ QVulkanInstance *QWindow::vulkanInstance() const
 QT_END_NAMESPACE
 
 #include "moc_qwindow.cpp"
+#include "qwindow.moc"

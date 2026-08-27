@@ -37,6 +37,7 @@
 #include <QtDebug>
 #if QT_CONFIG(accessibility)
 #include "qaccessible.h"
+#include <QtGui/private/qaccessiblewindow_p.h>
 #endif
 #include <qpalette.h>
 #include <qscreen.h>
@@ -1772,6 +1773,15 @@ void Q_TRACE_INSTRUMENT(qtgui) QGuiApplicationPrivate::init()
 #endif
 
     QWindowSystemInterfacePrivate::eventTime.start();
+
+#if QT_CONFIG(accessibility)
+    QAccessible::installFactory([](const QString &classname, QObject *object)
+        -> QAccessibleInterface * {
+            if (classname == "QForeignWindow"_L1)
+                return new QAccessibleWindow(static_cast<QWindow *>(object));
+            return nullptr;
+        });
+#endif
 
     is_app_running = true;
     init_plugins(pluginList);

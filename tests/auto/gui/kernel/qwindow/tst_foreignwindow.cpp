@@ -6,6 +6,9 @@
 #include <QtCore/qloggingcategory.h>
 #include <private/qguiapplication_p.h>
 #include <qpa/qplatformintegration.h>
+#if QT_CONFIG(accessibility)
+#include <QtGui/qaccessible.h>
+#endif
 
 #include "nativewindow.h"
 
@@ -29,6 +32,9 @@ private slots:
 
     void destroyExplicitly();
     void destroyWhenParentIsDestroyed();
+
+    void accessibleRoot();
+    void accessibleChildWindows();
 };
 
 void tst_ForeignWindow::fromWinId()
@@ -190,6 +196,131 @@ void tst_ForeignWindow::destroyWhenParentIsDestroyed()
 
     parentWindow.show();
     QVERIFY(QTest::qWaitForWindowExposed(&parentWindow));
+}
+
+void tst_ForeignWindow::accessibleRoot()
+{
+#if !QT_CONFIG(accessibility)
+    QSKIP("This test requires accessibility support");
+#else
+    const QRect initialGeometry(123, 456, 321, 654);
+
+    NativeWindow nativeWindow;
+    QVERIFY(nativeWindow);
+    nativeWindow.setGeometry(initialGeometry);
+    QTRY_COMPARE(nativeWindow.geometry(), initialGeometry);
+
+    std::unique_ptr<QWindow> foreignWindow(QWindow::fromWinId(nativeWindow));
+    QVERIFY(foreignWindow);
+
+    // A foreign window is the one window class that puts itself in the
+    // accessibility tree, as nothing else can stand in for its content
+    QAccessibleInterface *iface = foreignWindow->accessibleRoot();
+    QVERIFY(iface);
+    QVERIFY(iface->isValid());
+
+    // The interface is owned by the cache, so every call gives the same one
+    QCOMPARE(foreignWindow->accessibleRoot(), iface);
+    QCOMPARE(QAccessible::queryAccessibleInterface(foreignWindow.get()), iface);
+
+    // A platform bridge reads window() to find the native handle it
+    // substitutes for this node
+    QCOMPARE(iface->object(), foreignWindow.get());
+    QCOMPARE(iface->window(), foreignWindow.get());
+
+    QCOMPARE(iface->role(), QAccessible::Window);
+    QCOMPARE(iface->parent(), QAccessible::queryAccessibleInterface(qApp));
+
+    // Only the size, as the position needs QWindow::mapToGlobal(), which
+    // the platform can not answer for a native window that has not been
+    // placed on screen yet
+    QCOMPARE(iface->rect().size(), initialGeometry.size());
+
+    // Qt does not know the native window's title
+    QVERIFY(iface->text(QAccessible::Name).isEmpty());
+
+    // Nor can it see the native children
+    QCOMPARE(iface->childCount(), 0);
+    QCOMPARE(iface->child(0), nullptr);
+    QCOMPARE(iface->indexOfChild(iface), -1);
+
+    // An ordinary window stays out of the tree
+    QWindow ordinaryWindow;
+    QCOMPARE(ordinaryWindow.accessibleRoot(), nullptr);
+    QCOMPARE(QAccessible::queryAccessibleInterface(&ordinaryWindow), nullptr);
+#endif
+}
+
+void tst_ForeignWindow::accessibleChildWindows()
+{
+#if !QT_CONFIG(accessibility)
+    QSKIP("This test requires accessibility support");
+#else
+    NativeWindow nativeWindow;
+    QVERIFY(nativeWindow);
+
+    std::unique_ptr<QWindow> foreignWindow(QWindow::fromWinId(nativeWindow));
+    QVERIFY(foreignWindow);
+
+    QAccessibleInterface *iface = foreignWindow->accessibleRoot();
+    QVERIFY(iface);
+    QCOMPARE(iface->childCount(), 0);
+
+    // A child that has not put itself in the tree contributes nothing
+    QWindow ordinaryChild(foreignWindow.get());
+    QCOMPARE(iface->childCount(), 0);
+
+    // One that has is reported, so Qt content embedded in a native window
+    // is reachable even on a bridge that cannot see the native children
+    NativeWindow firstNativeChild;
+    QVERIFY(firstNativeChild);
+    std::unique_ptr<QWindow> firstChild(QWindow::fromWinId(firstNativeChild));
+    QVERIFY(firstChild);
+    firstChild->setParent(foreignWindow.get());
+
+    NativeWindow secondNativeChild;
+    QVERIFY(secondNativeChild);
+    std::unique_ptr<QWindow> secondChild(QWindow::fromWinId(secondNativeChild));
+    QVERIFY(secondChild);
+    secondChild->setParent(foreignWindow.get());
+
+    QAccessibleInterface *firstIface = firstChild->accessibleRoot();
+    QAccessibleInterface *secondIface = secondChild->accessibleRoot();
+    QVERIFY(firstIface);
+    QVERIFY(secondIface);
+
+    QCOMPARE(iface->childCount(), 2);
+    QCOMPARE(iface->child(0), firstIface);
+    QCOMPARE(iface->child(1), secondIface);
+    QCOMPARE(iface->child(2), nullptr);
+    QCOMPARE(iface->child(-1), nullptr);
+    QCOMPARE(iface->indexOfChild(firstIface), 0);
+    QCOMPARE(iface->indexOfChild(secondIface), 1);
+
+    // A window that is not top level presents a client area rather than a
+    // window of its own, and stays nameless for the host to name
+    QCOMPARE(firstIface->role(), QAccessible::Client);
+    QCOMPARE(firstIface->text(QAccessible::Name), QString());
+
+    // The parent is the window it is a child of
+    QCOMPARE(firstIface->parent(), iface);
+
+    // The children come out in stacking order, bottom first
+    firstChild->raise();
+    QCOMPARE(iface->child(0), secondIface);
+    QCOMPARE(iface->child(1), firstIface);
+    QCOMPARE(iface->indexOfChild(firstIface), 1);
+
+    // A child that leaves stops being reported
+    secondChild->setParent(nullptr);
+    QCOMPARE(iface->childCount(), 1);
+    QCOMPARE(iface->child(0), firstIface);
+    QCOMPARE(iface->indexOfChild(secondIface), -1);
+
+    // And is top level again, so it is a Window
+    QCOMPARE(secondIface->role(), QAccessible::Window);
+    QCOMPARE(secondIface->parent(), QAccessible::queryAccessibleInterface(qApp));
+#endif
 }
 
 #include <tst_foreignwindow.moc>
