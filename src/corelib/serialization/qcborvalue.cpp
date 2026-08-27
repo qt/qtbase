@@ -791,16 +791,7 @@ static QCborValue::Type convertToExtendedType(QCborContainerPrivate *d)
             qint64 msecs;
             bool ok = false;
             if (e.type == QCborValue::Integer) {
-#if QT_POINTER_SIZE == 8
-                // we don't have a fast 64-bit qMulOverflow implementation on
-                // 32-bit architectures.
-                ok = !qMulOverflow(e.value, qint64(1000), &msecs);
-#else
-                static const qint64 Limit = std::numeric_limits<qint64>::max() / 1000;
-                ok = (e.value > -Limit && e.value < Limit);
-                if (ok)
-                    msecs = e.value * 1000;
-#endif
+                ok = !qMulOverflow<1000>(e.value, &msecs);
             } else if (e.type == QCborValue::Double) {
                 ok = convertDoubleTo(round(e.fpvalue() * 1000), &msecs);
             }
