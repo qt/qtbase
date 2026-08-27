@@ -2069,6 +2069,7 @@ QVariant QAbstractSocket::socketOption(QAbstractSocket::SocketOption option)
 }
 
 /*!
+    \fn bool QAbstractSocket::waitForConnected(int msecs)
     Waits until the socket is connected, up to \a msecs
     milliseconds. If the connection has been established, this
     function returns \c true; otherwise it returns \c false. In the case
@@ -2093,82 +2094,112 @@ QVariant QAbstractSocket::socketOption(QAbstractSocket::SocketOption option)
 
     \sa connectToHost(), connected()
 */
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
 bool QAbstractSocket::waitForConnected(int msecs)
 {
     Q_D(QAbstractSocket);
-#if defined (QABSTRACTSOCKET_DEBUG)
-    qDebug("QAbstractSocket::waitForConnected(%i)", msecs);
+    return d->waitForConnected(QDeadlineTimer(msecs));
+}
 #endif
 
-    if (state() == ConnectedState) {
+/*!
+    \since 6.13
+    \overload
+
+    Waits until the socket is connected, or until \a deadline has expired. If the
+    connection has been established, this function returns \c true; otherwise
+    it returns \c false. In the case where it returns \c false, you can call
+    error() to determine the cause of the error.
+
+    \sa connectToHost(), connected()
+*/
+bool QAbstractSocket::waitForConnected(QDeadlineTimer deadline)
+{
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+    return waitForConnected(q26::saturating_cast<int>(deadline.remainingTime())); // virtual
+#else
+    Q_D(QAbstractSocket);
+    return d->waitForConnected(deadline);
+#endif
+}
+
+bool QAbstractSocketPrivate::waitForConnected(QDeadlineTimer deadline)
+{
+    Q_Q(QAbstractSocket);
 #if defined (QABSTRACTSOCKET_DEBUG)
-        qDebug("QAbstractSocket::waitForConnected(%i) already connected", msecs);
+    qDebug("QAbstractSocket::waitForConnected(%i)", deadline.remainingTime());
+#endif
+
+    if (state == QAbstractSocket::ConnectedState) {
+#if defined (QABSTRACTSOCKET_DEBUG)
+        qDebug("QAbstractSocket::waitForConnected(%i) already connected", deadline.remainingTime());
 #endif
         return true;
     }
 
-    bool wasPendingClose = d->pendingClose;
-    d->pendingClose = false;
-    QDeadlineTimer deadline{msecs};
+    bool wasPendingClose = pendingClose;
+    pendingClose = false;
 
-    if (d->state == HostLookupState) {
+    if (state == QAbstractSocket::HostLookupState) {
 #if defined (QABSTRACTSOCKET_DEBUG)
-        qDebug("QAbstractSocket::waitForConnected(%i) doing host name lookup", msecs);
+        qDebug("QAbstractSocket::waitForConnected(%i) doing host name lookup", deadline.remainingTime());
 #endif
-        QHostInfo::abortHostLookup(d->hostLookupId);
-        d->hostLookupId = -1;
+        QHostInfo::abortHostLookup(hostLookupId);
+        hostLookupId = -1;
         QHostAddress temp;
-        if (temp.setAddress(d->hostName)) {
+        if (temp.setAddress(hostName)) {
             QHostInfo info;
             info.setAddresses(QList<QHostAddress>() << temp);
-            d->_q_startConnecting(info);
+            _q_startConnecting(info);
         } else {
-            d->_q_startConnecting(QHostInfo::fromName(d->hostName));
+            _q_startConnecting(QHostInfo::fromName(hostName));
         }
     }
-    if (state() == UnconnectedState)
+    if (state == QAbstractSocket::UnconnectedState)
         return false; // connect not im progress anymore!
 
     bool timedOut = true;
 #if defined (QABSTRACTSOCKET_DEBUG)
     int attempt = 1;
 #endif
-    while (state() == ConnectingState && !deadline.hasExpired()) {
+    while (state == QAbstractSocket::ConnectingState && !deadline.hasExpired()) {
         QDeadlineTimer timer = deadline;
         if (!deadline.isForever() && deadline.remainingTimeAsDuration() > DefaultConnectTimeout)
             timer = QDeadlineTimer(DefaultConnectTimeout);
 #if defined (QABSTRACTSOCKET_DEBUG)
         qDebug("QAbstractSocket::waitForConnected(%i) waiting %.2f secs for connection attempt #%i",
-               msecs, timer.remainingTime() / 1000.0, attempt++);
+               deadline.remainingTime(), timer.remainingTime() / 1000.0, attempt++);
 #endif
         timedOut = false;
 
-        if (d->socketEngine && d->socketEngine->waitForWrite(timer, &timedOut) && !timedOut) {
-            d->_q_testConnection();
+        if (socketEngine && socketEngine->waitForWrite(timer, &timedOut) && !timedOut) {
+            _q_testConnection();
         } else {
-            d->_q_connectToNextAddress();
+            _q_connectToNextAddress();
         }
     }
 
-    if ((timedOut && state() != ConnectedState) || state() == ConnectingState) {
-        d->setError(SocketTimeoutError, tr("Socket operation timed out"));
-        d->state = UnconnectedState;
-        emit stateChanged(d->state);
-        d->resetSocketLayer();
+    if ((timedOut && state != QAbstractSocket::ConnectedState) ||
+            state == QAbstractSocket::ConnectingState) {
+        setError(QAbstractSocket::SocketTimeoutError, q->tr("Socket operation timed out"));
+        state = QAbstractSocket::UnconnectedState;
+        emit q->stateChanged(state);
+        resetSocketLayer();
     }
 
 #if defined (QABSTRACTSOCKET_DEBUG)
-    qDebug("QAbstractSocket::waitForConnected(%i) == %s", msecs,
+    qDebug("QAbstractSocket::waitForConnected(%i) == %s", deadline.remainingTime(),
            state() == ConnectedState ? "true" : "false");
 #endif
-    if (state() != ConnectedState)
+    if (state != QAbstractSocket::ConnectedState)
         return false;
     if (wasPendingClose)
-        disconnectFromHost();
+        q->disconnectFromHost();
     return true;
 }
 
 /*!
+    \fn bool QAbstractSocket::waitForReadyRead(int msecs)
     This function blocks until new data is available for reading and the
     \l{QIODevice::}{readyRead()} signal has been emitted. The function
     will timeout after \a msecs milliseconds; the default timeout is
@@ -2183,60 +2214,87 @@ bool QAbstractSocket::waitForConnected(int msecs)
 
     \sa waitForBytesWritten()
 */
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
 bool QAbstractSocket::waitForReadyRead(int msecs)
 {
     Q_D(QAbstractSocket);
+    return d->waitForReadyRead(QDeadlineTimer(msecs));
+}
+#endif
+
+/*!
+    \since 6.13
+    \overload
+    This function blocks until new data is available for reading and the
+    \l{QIODevice::}{readyRead()} signal has been emitted. The function
+    will timeout if the \a deadline expires; the default timeout is
+    30000 milliseconds.
+
+    \sa waitForBytesWritten()
+*/
+bool QAbstractSocket::waitForReadyRead(QDeadlineTimer deadline)
+{
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+    return waitForReadyRead(q26::saturating_cast<int>(deadline.remainingTime())); // virtual
+#else
+    Q_D(QAbstractSocket);
+    return d->waitForReadyRead(deadline);
+#endif
+}
+
+bool QAbstractSocketPrivate::waitForReadyRead(QDeadlineTimer deadline)
+{
+    Q_Q(QAbstractSocket);
 #if defined (QABSTRACTSOCKET_DEBUG)
-    qDebug("QAbstractSocket::waitForReadyRead(%i)", msecs);
+    qDebug("QAbstractSocket::waitForReadyRead(%i)", deadline.remainingTime());
 #endif
 
     // require calling connectToHost() before waitForReadyRead()
-    if (state() == UnconnectedState) {
+    if (state == QAbstractSocket::UnconnectedState) {
         /* If all you have is a QIODevice pointer to an abstractsocket, you cannot check
            this, so you cannot avoid this warning. */
 //        qWarning("QAbstractSocket::waitForReadyRead() is not allowed in UnconnectedState");
         return false;
     }
 
-    QDeadlineTimer deadline{msecs};
-
     // handle a socket in connecting state
-    if (state() == HostLookupState || state() == ConnectingState) {
-        if (!waitForConnected(msecs))
+    if (state == QAbstractSocket::HostLookupState || state == QAbstractSocket::ConnectingState) {
+        if (!q->waitForConnected(deadline))
             return false;
     }
 
     do {
-        if (state() != ConnectedState && state() != BoundState)
+        if (state != QAbstractSocket::ConnectedState && state != QAbstractSocket::BoundState)
             return false;
-        Q_ASSERT(d->socketEngine);
+        Q_ASSERT(socketEngine);
 
         bool readyToRead = false;
         bool readyToWrite = false;
-        if (!d->socketEngine->waitForReadOrWrite(&readyToRead, &readyToWrite, true, !d->writeBuffer.isEmpty(),
-                                                 deadline)) {
+        if (!socketEngine->waitForReadOrWrite(&readyToRead, &readyToWrite, true, !writeBuffer.isEmpty(),
+                                              deadline)) {
 #if defined (QABSTRACTSOCKET_DEBUG)
             qDebug("QAbstractSocket::waitForReadyRead(%i) failed (%i, %s)",
-                   msecs, d->socketEngine->error(), d->socketEngine->errorString().toLatin1().constData());
+                   deadline.remainingTime(), socketEngine->error(), socketEngine->errorString().toLatin1().constData());
 #endif
-            d->setErrorAndEmit(d->socketEngine->error(), d->socketEngine->errorString());
-            if (d->socketError != SocketTimeoutError)
-                close();
+            setErrorAndEmit(socketEngine->error(), socketEngine->errorString());
+            if (socketError != QAbstractSocket::SocketTimeoutError)
+                q->close();
             return false;
         }
 
         if (readyToRead) {
-            if (d->canReadNotification())
+            if (canReadNotification())
                 return true;
         }
 
         if (readyToWrite)
-            d->canWriteNotification();
+            canWriteNotification();
     } while (!deadline.hasExpired());
     return false;
 }
 
 /*! \reimp
+    \fn bool QAbstractSocket::waitForBytesWritten(int msecs)
 
     This function blocks until at least one byte has been written on the socket
     and the \l{QIODevice::}{bytesWritten()} signal has been emitted. The
@@ -2252,46 +2310,70 @@ bool QAbstractSocket::waitForReadyRead(int msecs)
 
     \sa waitForReadyRead()
  */
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
 bool QAbstractSocket::waitForBytesWritten(int msecs)
 {
     Q_D(QAbstractSocket);
+    return d->waitForBytesWritten(QDeadlineTimer(msecs));
+}
+#endif
+
+/*! \since 6.13
+    \overload
+
+    This function blocks until at least one byte has been written on the socket
+    and the \l{QIODevice::}{bytesWritten()} signal has been emitted. The
+    function will timeout when \a deadline expires; the default timeout is
+    30000 milliseconds.
+*/
+bool QAbstractSocket::waitForBytesWritten(QDeadlineTimer deadline)
+{
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+    return waitForBytesWritten(q26::saturating_cast<int>(deadline.remainingTime())); // virtual
+#else
+    Q_D(QAbstractSocket);
+    return d->waitForBytesWritten(deadline);
+#endif
+}
+
+bool QAbstractSocketPrivate::waitForBytesWritten(QDeadlineTimer deadline)
+{
+    Q_Q(QAbstractSocket);
 #if defined (QABSTRACTSOCKET_DEBUG)
-    qDebug("QAbstractSocket::waitForBytesWritten(%i)", msecs);
+    qDebug("QAbstractSocket::waitForBytesWritten(%i)", deadline.remainingTime());
 #endif
 
     // require calling connectToHost() before waitForBytesWritten()
-    if (state() == UnconnectedState) {
+    if (state == QAbstractSocket::UnconnectedState) {
         qWarning("QAbstractSocket::waitForBytesWritten() is not allowed in UnconnectedState");
         return false;
     }
 
-    if (d->writeBuffer.isEmpty())
+    if (writeBuffer.isEmpty())
         return false;
 
-    const quint32 bwEmissionCountAtEntry = d->bytesWrittenEmissionCount;
-
-    QDeadlineTimer deadline{msecs};
+    const quint32 bwEmissionCountAtEntry = bytesWrittenEmissionCount;
 
     // handle a socket in connecting state
-    if (state() == HostLookupState || state() == ConnectingState) {
-        if (!waitForConnected(msecs))
+    if (state == QAbstractSocket::HostLookupState || state == QAbstractSocket::ConnectingState) {
+        if (!q->waitForConnected(deadline))
             return false;
     }
 
     for (;;) {
         bool readyToRead = false;
         bool readyToWrite = false;
-        if (!d->socketEngine->waitForReadOrWrite(&readyToRead, &readyToWrite,
-                                  !d->readBufferMaxSize || d->buffer.size() < d->readBufferMaxSize,
-                                  !d->writeBuffer.isEmpty(),
+        if (!socketEngine->waitForReadOrWrite(&readyToRead, &readyToWrite,
+                                  !readBufferMaxSize || buffer.size() < readBufferMaxSize,
+                                  !writeBuffer.isEmpty(),
                                   deadline)) {
 #if defined (QABSTRACTSOCKET_DEBUG)
             qDebug("QAbstractSocket::waitForBytesWritten(%i) failed (%i, %s)",
-                   msecs, d->socketEngine->error(), d->socketEngine->errorString().toLatin1().constData());
+                   deadline.remainingTime(), socketEngine->error(), socketEngine->errorString().toLatin1().constData());
 #endif
-            d->setErrorAndEmit(d->socketEngine->error(), d->socketEngine->errorString());
-            if (d->socketError != SocketTimeoutError)
-                close();
+            setErrorAndEmit(socketEngine->error(), socketEngine->errorString());
+            if (socketError != QAbstractSocket::SocketTimeoutError)
+                q->close();
             return false;
         }
 
@@ -2299,17 +2381,17 @@ bool QAbstractSocket::waitForBytesWritten(int msecs)
 #if defined (QABSTRACTSOCKET_DEBUG)
             qDebug("QAbstractSocket::waitForBytesWritten calls canReadNotification");
 #endif
-            d->canReadNotification();
+            canReadNotification();
         }
 
 
         if (readyToWrite) {
-            if (d->canWriteNotification()) {
+            if (canWriteNotification()) {
 #if defined (QABSTRACTSOCKET_DEBUG)
                 qDebug("QAbstractSocket::waitForBytesWritten returns true");
 #endif
                 return true;
-            } else if (d->bytesWrittenEmissionCount != bwEmissionCountAtEntry) {
+            } else if (bytesWrittenEmissionCount != bwEmissionCountAtEntry) {
                 // A slot connected to any signal emitted by this method has written data, which
                 // fulfills the condition to return true that at least one byte has been written.
 #if defined (QABSTRACTSOCKET_DEBUG)
@@ -2319,13 +2401,15 @@ bool QAbstractSocket::waitForBytesWritten(int msecs)
             }
         }
 
-        if (state() != ConnectedState)
+        if (state != QAbstractSocket::ConnectedState)
             return false;
     }
     return false;
 }
 
 /*!
+    \fn bool QAbstractSocket::waitForDisconnected(int msecs)
+
     Waits until the socket has disconnected, up to \a msecs milliseconds. If the
     connection was successfully disconnected, this function returns \c true;
     otherwise it returns \c false (if the operation timed out, if an error
@@ -2345,48 +2429,78 @@ bool QAbstractSocket::waitForBytesWritten(int msecs)
 
     \sa disconnectFromHost(), close()
 */
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
 bool QAbstractSocket::waitForDisconnected(int msecs)
 {
     Q_D(QAbstractSocket);
+    return d->waitForDisconnected(QDeadlineTimer(msecs));
+}
+#endif
+
+/*!
+    \since 6.13
+    \overload
+
+    Waits until the socket has disconnected, up until \a deadline expires. If the
+    connection was successfully disconnected, this function returns \c true;
+    otherwise it returns \c false (if the operation timed out, if an error
+    occurred, or if this QAbstractSocket is already disconnected). In the case
+    where it returns \c false, you can call error() to determine the cause of
+    the error.
+
+    \sa disconnectFromHost(), close()
+*/
+bool QAbstractSocket::waitForDisconnected(QDeadlineTimer deadline)
+{
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+    return waitForDisconnected(q26::saturating_cast<int>(deadline.remainingTime())); // virtual
+#else
+    Q_D(QAbstractSocket);
+    return d->waitForDisconnected(deadline);
+#endif
+}
+
+bool QAbstractSocketPrivate::waitForDisconnected(QDeadlineTimer deadline)
+{
+    Q_Q(QAbstractSocket);
 
     // require calling connectToHost() before waitForDisconnected()
-    if (state() == UnconnectedState) {
+    if (state == QAbstractSocket::UnconnectedState) {
         qWarning("QAbstractSocket::waitForDisconnected() is not allowed in UnconnectedState");
         return false;
     }
 
-    QDeadlineTimer deadline{msecs};
-
     // handle a socket in connecting state
-    if (state() == HostLookupState || state() == ConnectingState) {
-        if (!waitForConnected(msecs))
+    if (state == QAbstractSocket::HostLookupState || state == QAbstractSocket::ConnectingState) {
+        if (!q->waitForConnected(deadline))
             return false;
-        if (state() == UnconnectedState)
+        if (state == QAbstractSocket::UnconnectedState)
             return true;
     }
 
     for (;;) {
         bool readyToRead = false;
         bool readyToWrite = false;
-        if (!d->socketEngine->waitForReadOrWrite(&readyToRead, &readyToWrite, state() == ConnectedState,
-                                               !d->writeBuffer.isEmpty(),
-                                               deadline)) {
+        if (!socketEngine->waitForReadOrWrite(&readyToRead, &readyToWrite,
+                                              state == QAbstractSocket::ConnectedState,
+                                              !writeBuffer.isEmpty(),
+                                              deadline)) {
 #if defined (QABSTRACTSOCKET_DEBUG)
             qDebug("QAbstractSocket::waitForReadyRead(%i) failed (%i, %s)",
-                   msecs, d->socketEngine->error(), d->socketEngine->errorString().toLatin1().constData());
+                   deadline.remainingTime(), socketEngine->error(), socketEngine->errorString().toLatin1().constData());
 #endif
-            d->setErrorAndEmit(d->socketEngine->error(), d->socketEngine->errorString());
-            if (d->socketError != SocketTimeoutError)
-                close();
+            setErrorAndEmit(socketEngine->error(), socketEngine->errorString());
+            if (socketError != QAbstractSocket::SocketTimeoutError)
+                q->close();
             return false;
         }
 
         if (readyToRead)
-            d->canReadNotification();
+            canReadNotification();
         if (readyToWrite)
-            d->canWriteNotification();
+            canWriteNotification();
 
-        if (state() == UnconnectedState)
+        if (state == QAbstractSocket::UnconnectedState)
             return true;
     }
     return false;

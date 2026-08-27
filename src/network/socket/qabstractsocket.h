@@ -170,10 +170,24 @@ public:
     bool flush();
 
     // for synchronous access
-    virtual bool waitForConnected(int msecs = 30000);
-    bool waitForReadyRead(int msecs = 30000) override;
-    bool waitForBytesWritten(int msecs = 30000) override;
-    virtual bool waitForDisconnected(int msecs = 30000);
+    using QIODevice::waitForBytesWritten;
+    using QIODevice::waitForReadyRead;
+    QT7_ONLY(virtual) bool waitForConnected(QDeadlineTimer timer = std::chrono::seconds(30));
+    bool waitForReadyRead(QDeadlineTimer timer = std::chrono::seconds(30)) QT7_ONLY(override);
+    bool waitForBytesWritten(QDeadlineTimer timer = std::chrono::seconds(30)) QT7_ONLY(override);
+    QT7_ONLY(virtual) bool waitForDisconnected(QDeadlineTimer timer = std::chrono::seconds(30));
+
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+    virtual bool waitForConnected(int msecs);
+    bool waitForReadyRead(int msecs) override;
+    bool waitForBytesWritten(int msecs) override;
+    virtual bool waitForDisconnected(int msecs);
+#else
+    WaitForVirtualParametersChanged waitForConnected(int msecs)
+    { return waitForConnected(QDeadlineTimer(msecs)); }
+    WaitForVirtualParametersChanged waitForDisconnected(int msecs)
+    { return waitForDisconnected(QDeadlineTimer(msecs)); }
+#endif
 
 #ifndef QT_NO_NETWORKPROXY
     void setProxy(const QNetworkProxy &networkProxy);

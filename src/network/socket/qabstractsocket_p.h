@@ -54,6 +54,10 @@ public:
 
     virtual bool bind(const QHostAddress &address, quint16 port, QAbstractSocket::BindMode mode,
                       const QNetworkInterface *iface = nullptr);
+    bool waitForConnected(QDeadlineTimer timer);
+    bool waitForReadyRead(QDeadlineTimer timer);
+    bool waitForBytesWritten(QDeadlineTimer timer);
+    bool waitForDisconnected(QDeadlineTimer timer);
 
     virtual bool canReadNotification();
     bool canWriteNotification();

@@ -119,9 +119,14 @@ QDebug operator<<(QDebug debug, QLocalSocket::LocalSocketState state)
 #endif // !QT_NO_DEBUG_STREAM
 #endif // QT_CONFIG(localserver)
 
+#endif // QT_NETWORK_REMOVED_SINCE(6, 12)
+
+#if QT_NETWORK_REMOVED_SINCE(6, 13)
+
+#include "qabstractsocket.h"        // inline API
 
 // #include "qotherheader.h"
 // // implement removed functions from qotherheader.h
 // order sections alphabetically
 
-#endif // QT_NETWORK_REMOVED_SINCE(6, 12)
+#endif // QT_NETWORK_REMOVED_SINCE(6, 13)
