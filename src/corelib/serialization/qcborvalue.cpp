@@ -752,6 +752,7 @@ Q_DECL_UNUSED static constexpr quint64 MaximumPreallocatedElementCount =
  */
 
 using namespace QtCbor;
+static QCborValue::Type setToExtendedDateTimeType(QCborContainerPrivate *d, QStringView dtString);
 
 static QCborContainerPrivate *assignContainer(QCborContainerPrivate *&d, QCborContainerPrivate *x)
 {
@@ -798,15 +799,8 @@ static QCborValue::Type convertToExtendedType(QCborContainerPrivate *d)
             if (ok)
                 dt = QDateTime::fromMSecsSinceEpoch(msecs, QTimeZone::UTC);
         }
-        if (dt.isValid()) {
-            QByteArray text = dt.toString(Qt::ISODateWithMs).toLatin1();
-            if (!text.isEmpty()) {
-                replaceByteData(text, text.size(), Element::StringIsAscii);
-                e.type = QCborValue::String;
-                d->elements[0].value = qint64(QCborKnownTags::DateTimeString);
-                return QCborValue::DateTime;
-            }
-        }
+        if (QString dtString = dt.toString(Qt::ISODateWithMs); !dtString.isEmpty())
+            return setToExtendedDateTimeType(d, dtString);
         break;
     }
 #endif
@@ -2086,6 +2080,18 @@ QCborValue::QCborValue(const QCborValue &other) noexcept
 }
 
 #if QT_CONFIG(datestring)
+static QCborValue::Type setToExtendedDateTimeType(QCborContainerPrivate *d, QStringView text)
+{
+    // when called from convertToExtendedType(), *d isn't pristine
+    d->data.resize(0);
+    d->elements.resize(0);
+    d->elements.reserve(2);
+
+    d->append(QCborTag(QCborKnownTags::DateTimeString));
+    d->appendAsciiString(text);
+    return text.isEmpty() ? QCborValue::Tag : QCborValue::DateTime;
+}
+
 /*!
     Creates a QCborValue object of the date/time extended type and containing
     the value represented by \a dt. The value can later be retrieved using
@@ -2100,11 +2106,10 @@ QCborValue::QCborValue(const QCborValue &other) noexcept
     \sa toDateTime(), isDateTime(), taggedValue()
  */
 QCborValue::QCborValue(const QDateTime &dt)
-    : QCborValue(QCborKnownTags::DateTimeString, dt.toString(Qt::ISODateWithMs).toLatin1())
+    : n(-1), container(new QCborContainerPrivate),
+      t(setToExtendedDateTimeType(container, dt.toString(Qt::ISODateWithMs)))
 {
-    // change types
-    t = DateTime;
-    container->elements[1].type = String;
+    container->ref.storeRelaxed(1);
 }
 #endif
 
