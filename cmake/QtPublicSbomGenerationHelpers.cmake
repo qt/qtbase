@@ -981,6 +981,10 @@ endfunction()
 
 # Adds a cmake include file to the sbom generation process at a specific step.
 # INCLUDE_PATH - path to the cmake file to include.
+#
+# SBOM_FORMAT - which format's generation process to apply the inclusion to.
+# One of SPDX_V2, CYDX_V1_6. Optional, defaults to SPDX_V2.
+#
 # STEP - one of
 #        BEGIN
 #        END
@@ -1008,6 +1012,7 @@ function(_qt_internal_sbom_add_cmake_include_step)
     set(opt_args "")
     set(single_args
         STEP
+        SBOM_FORMAT
         INCLUDE_PATH
     )
     set(multi_args "")
@@ -1021,7 +1026,16 @@ function(_qt_internal_sbom_add_cmake_include_step)
         message(FATAL_ERROR "INCLUDE_PATH is required")
     endif()
 
+    if(arg_SBOM_FORMAT STREQUAL "SPDX_V2")
+        set(suffix "")
+    elseif(arg_SBOM_FORMAT STREQUAL "CYDX_V1_6")
+        set(suffix "_cydx")
+    else()
+        message(FATAL_ERROR "Unknown SBOM_FORMAT: ${arg_SBOM_FORMAT}")
+    endif()
+
     set(step "${arg_STEP}")
+
 
     if(step STREQUAL "BEGIN")
         set(property "_qt_sbom_cmake_include_files")
@@ -1039,7 +1053,7 @@ function(_qt_internal_sbom_add_cmake_include_step)
         message(FATAL_ERROR "Invalid SBOM cmake include step name: ${step}")
     endif()
 
-    set_property(GLOBAL APPEND PROPERTY "${property}" "${arg_INCLUDE_PATH}")
+    set_property(GLOBAL APPEND PROPERTY "${property}${suffix}" "${arg_INCLUDE_PATH}")
 endfunction()
 
 # Helper to add a license text from a file or text into the sbom document.
