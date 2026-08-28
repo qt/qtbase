@@ -156,7 +156,7 @@ TIME_ZONE_INFORMATION getRegistryTzi(const QByteArray &windowsId, bool *ok)
     if (key.isValid()) {
         auto regQuery = [&key](const wchar_t *entry, auto buffer, size_t space) {
             std::optional<size_t> res;
-            DWORD size = space;
+            DWORD size = DWORD(space);
             if (RegQueryValueEx(key, entry, nullptr, nullptr,
                                 reinterpret_cast<LPBYTE>(buffer), &size) == ERROR_SUCCESS) {
                 res = size_t(size);
