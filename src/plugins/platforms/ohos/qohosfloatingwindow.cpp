@@ -39,6 +39,11 @@ bool shouldClearQtFocusOnSystemFocusLoss(QWindow *windowLosingSystemFocus)
                 QGuiApplicationPrivate::focus_window).testFlag(Qt::WindowDoesNotAcceptFocus));
 }
 
+bool anyQtWindowHoldsSystemFocus()
+{
+    return !QWindowProxyRegistry::instance().queryWindowsWithSystemWindowAndFocus().empty();
+}
+
 }
 
 QOhosFloatingWindow::QOhosFloatingWindow(QWindow *window)
@@ -305,7 +310,7 @@ void QOhosFloatingWindow::handleWindowEvent(QOhosWindowProxy::WindowEvent evt)
     case QOhosWindowProxy::WindowEventType::WINDOW_INACTIVE:
         if (!windowAcceptsFocusAndInput)
             break;
-        if (shouldClearQtFocusOnSystemFocusLoss(qWindow))
+        if (shouldClearQtFocusOnSystemFocusLoss(qWindow) && !anyQtWindowHoldsSystemFocus())
             QWindowSystemInterface::handleFocusWindowChanged(nullptr, Qt::ActiveWindowFocusReason);
         notifyInputSystemsWindowActiveStatusChanged(false);
         break;
