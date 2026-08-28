@@ -433,40 +433,35 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
 #if QT_CONFIG(spinbox)
     case CC_SpinBox:
         if (const QStyleOptionSpinBox *sb = qstyleoption_cast<const QStyleOptionSpinBox *>(option)) {
-            QCachedPainter cp(painter, QLatin1StringView("win11_spinbox") % HexString<uint8_t>(colorSchemeIndex),
-                              sb, sb->rect.size());
-            if (cp.needsPainting()) {
-                const auto frameRect = QRectF(option->rect).marginsRemoved(QMarginsF(1.5, 1.5, 1.5, 1.5));
-                drawRoundedRect(cp.painter(), frameRect, Qt::NoPen, inputFillBrush(option, widget));
+            const auto frameRect = QRectF(option->rect).marginsRemoved(QMarginsF(1.5, 1.5, 1.5, 1.5));
+            drawRoundedRect(painter, frameRect, Qt::NoPen, inputFillBrush(option, widget));
 
-                if (sb->frame && (sub & SC_SpinBoxFrame))
-                    drawLineEditFrame(cp.painter(), frameRect, option);
+            if (sb->frame && (sub & SC_SpinBoxFrame))
+                drawLineEditFrame(painter, frameRect, option);
 
-                const auto drawUpDown = [&](QStyle::SubControl sc,
-                                            QAbstractSpinBox::StepEnabledFlag flag) {
-                    const bool isEnabled =
-                            state.testFlag(QStyle::State_Enabled) && sb->stepEnabled.testFlag(flag);
-                    const bool isUp = sc == SC_SpinBoxUp;
-                    const QRect rect = proxy()->subControlRect(CC_SpinBox, option, sc, widget);
-                    if (isEnabled && sb->activeSubControls & sc)
-                        drawRoundedRect(cp.painter(), rect.adjusted(1, 1, -1, -2), Qt::NoPen,
-                                        winUI3Color(subtleHighlightColor));
-
-                    cp->setFont(d->assetFont);
-                    cp->setPen(sb->palette.color(isEnabled ? QPalette::Active : QPalette::Disabled,
-                                                 QPalette::ButtonText));
-                    cp->setBrush(Qt::NoBrush);
-                    cp->drawText(rect, Qt::AlignCenter, fluentIcon(isUp ? Icon::ChevronUp : Icon::ChevronDown));
-                };
-                if (sub & SC_SpinBoxUp)
-                    drawUpDown(SC_SpinBoxUp, QAbstractSpinBox::StepUpEnabled);
-                if (sub & SC_SpinBoxDown)
-                    drawUpDown(SC_SpinBoxDown, QAbstractSpinBox::StepDownEnabled);
-                if (state & State_KeyboardFocusChange && state & State_HasFocus) {
-                    QStyleOptionFocusRect fropt;
-                    fropt.QStyleOption::operator=(*option);
-                    proxy()->drawPrimitive(PE_FrameFocusRect, &fropt, cp.painter(), widget);
-                }
+            const auto drawUpDown = [&](QStyle::SubControl sc,
+                                        QAbstractSpinBox::StepEnabledFlag flag) {
+                const bool isEnabled =
+                        state.testFlag(QStyle::State_Enabled) && sb->stepEnabled.testFlag(flag);
+                const bool isUp = sc == SC_SpinBoxUp;
+                const QRect rect = proxy()->subControlRect(CC_SpinBox, option, sc, widget);
+                if (isEnabled && sb->activeSubControls & sc)
+                    drawRoundedRect(painter, rect.adjusted(1, 1, -1, -2), Qt::NoPen,
+                                    winUI3Color(subtleHighlightColor));
+                painter->setFont(d->assetFont);
+                painter->setPen(sb->palette.color(isEnabled ? QPalette::Active : QPalette::Disabled,
+                                                  QPalette::ButtonText));
+                painter->setBrush(Qt::NoBrush);
+                painter->drawText(rect, Qt::AlignCenter, fluentIcon(isUp ? Icon::ChevronUp : Icon::ChevronDown));
+            };
+            if (sub & SC_SpinBoxUp)
+                drawUpDown(SC_SpinBoxUp, QAbstractSpinBox::StepUpEnabled);
+            if (sub & SC_SpinBoxDown)
+                drawUpDown(SC_SpinBoxDown, QAbstractSpinBox::StepDownEnabled);
+            if (state & State_KeyboardFocusChange && state & State_HasFocus) {
+                QStyleOptionFocusRect fropt;
+                fropt.QStyleOption::operator=(*option);
+                proxy()->drawPrimitive(PE_FrameFocusRect, &fropt, painter, widget);
             }
         }
         break;
@@ -2233,27 +2228,33 @@ QRect QWindows11Style::subControlRect(ComplexControl control, const QStyleOption
             const int fw = spinbox->frame
                     ? proxy()->pixelMetric(PM_SpinBoxFrameWidth, spinbox, widget)
                     : 0;
-            const int buttonHeight = hasButtons
-                    ? qMin(spinbox->rect.height() - 3 * fw, spinbox->fontMetrics.height() * 5 / 4)
-                    : 0;
-            const QSize buttonSize(buttonHeight * 6 / 5, buttonHeight);
-            const int textFieldLength = spinbox->rect.width() - 2 * fw - 2 * buttonSize.width();
+            int textFieldLength = spinbox->rect.width() - 2 * fw;
+            int buttonHeight = 0;
+            int buttonWidth = 0;
+            if (hasButtons) {
+                const QWidget *w = qobject_cast<QWidget *>(spinbox->styleObject);
+                buttonWidth = w
+                        ? widthFromChar(w->font(), Icon::ChevronUp, m_fontPoint2ChevronUpWidth)
+                        : spinbox->fontMetrics.horizontalAdvance(fluentIcon(Icon::ChevronUp));
+                buttonHeight = spinbox->rect.height() - 4 * fw; // 4 * fw - some more space around the buttons
+                textFieldLength -= 2 * (buttonWidth + fw) + 2 * fw;
+            }
             const QPoint topLeft(spinbox->rect.topLeft() + QPoint(fw, fw));
             switch (subControl) {
             case SC_SpinBoxUp:
             case SC_SpinBoxDown: {
                 if (!hasButtons)
                     return QRect();
-                const int yOfs = ((spinbox->rect.height() - 2 * fw) - buttonSize.height()) / 2;
-                ret = QRect(topLeft.x() + textFieldLength, topLeft.y() + yOfs, buttonSize.width(),
-                            buttonSize.height());
+                const int yOfs = ((spinbox->rect.height() - 2 * fw) - buttonHeight) / 2;
+                ret = QRect(topLeft.x() + textFieldLength + fw, topLeft.y() + yOfs, buttonWidth,
+                            buttonHeight);
                 if (subControl == SC_SpinBoxDown)
-                    ret.moveRight(ret.right() + buttonSize.width());
+                    ret.moveRight(ret.right() + buttonWidth + fw);
                 break;
             }
             case SC_SpinBoxEditField:
                 ret = QRect(topLeft,
-                            spinbox->rect.bottomRight() - QPoint(fw + 2 * buttonSize.width(), fw));
+                            QPoint(topLeft.x() + textFieldLength, spinbox->rect.bottom() - fw));
                 break;
             case SC_SpinBoxFrame:
                 ret = spinbox->rect;
@@ -2492,12 +2493,17 @@ QSize QWindows11Style::sizeFromContents(ContentsType type, const QStyleOption *o
 #endif // QT_CONFIG(menu)
 #if QT_CONFIG(spinbox)
     case CT_SpinBox: {
-        if (const auto *spinBoxOpt = qstyleoption_cast<const QStyleOptionSpinBox *>(option)) {
+        if (const auto *spinbox = qstyleoption_cast<const QStyleOptionSpinBox *>(option)) {
             // Add button + frame widths
-            const bool hasButtons = (spinBoxOpt->buttonSymbols != QAbstractSpinBox::NoButtons);
-            const int margins = 8;
-            const int buttonWidth = hasButtons ? 16 + contentItemHMargin : 0;
-            const int frameWidth = spinBoxOpt->frame
+            const bool hasButtons = (spinbox->buttonSymbols != QAbstractSpinBox::NoButtons);
+            const int margins = 0;
+            int buttonWidth = 0;
+            if (hasButtons) {
+                buttonWidth = widget
+                        ? widthFromChar(widget->font(), Icon::ChevronUp, m_fontPoint2ChevronUpWidth)
+                        : spinbox->fontMetrics.horizontalAdvance(fluentIcon(Icon::ChevronUp));
+            }
+            const int frameWidth = spinbox->frame
                     ? proxy()->pixelMetric(PM_SpinBoxFrameWidth, option, widget)
                     : 0;
 
@@ -3203,6 +3209,24 @@ void QWindows11Style::drawLineEditFrame(QPainter *p, const QRectF &rect, const Q
 QColor QWindows11Style::winUI3Color(enum WINUI3Color col) const
 {
     return WINUI3Colors[colorSchemeIndex][col];
+}
+
+template <typename C>
+int QWindows11Style::widthFromChar(const QFont &widgetFont, Icon icon, C &cacheContainer) const
+{
+    Q_D(const QWindows11Style);
+    int fontSize = widgetFont.pointSize();
+    if (fontSize <= 0)
+        fontSize = widgetFont.pixelSize() * -1;
+    auto it = cacheContainer.find(fontSize);
+    if (it == cacheContainer.end()) {
+        QFont f(d->assetFont);
+        QFontMetrics fm(f.resolve(widgetFont));
+        const auto width = fm.horizontalAdvance(fluentIcon(icon));
+        cacheContainer.insert(fontSize, width);
+        return width;
+    }
+    return it.value();
 }
 
 #undef SET_IF_UNRESOLVED
