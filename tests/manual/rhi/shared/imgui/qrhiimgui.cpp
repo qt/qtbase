@@ -243,6 +243,11 @@ void QRhiImguiRenderer::render()
 
     m_cb->setGraphicsPipeline(m_ps.get());
 
+    // The pipeline is created with UsesShadingRate, so a rate has to be set
+    // before drawing with it. Always full rate: the GUI must stay legible
+    // whatever coarse rate the application left set.
+    m_cb->setShadingRate(QSize(1, 1));
+
     const QSize viewportSize = m_rt->pixelSize();
     bool needsViewport = true;
 
