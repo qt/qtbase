@@ -41,6 +41,8 @@ class QRhiResourceUpdateBatch;
 class QRhiResourceUpdateBatchPrivate;
 class QRhiSwapChain;
 class QRhiShadingRateMap;
+class QRhiIndirectCommandBuffer;
+struct QRhiIndirectCommandBufferBuildInfo;
 
 class Q_GUI_EXPORT QRhiDepthStencilClearValue
 {
@@ -830,7 +832,8 @@ public:
         SwapChain,
         ComputePipeline,
         CommandBuffer,
-        ShadingRateMap
+        ShadingRateMap,
+        IndirectCommandBuffer
     };
 
     virtual ~QRhiResource();
@@ -1732,6 +1735,46 @@ static_assert(sizeof(QRhiIndirectDrawCommand) == 16);
 static_assert(sizeof(QRhiIndexedIndirectDrawCommand) == 20);
 static_assert(sizeof(QRhiDispatchIndirectCommand) == 12);
 
+class Q_GUI_EXPORT QRhiIndirectCommandBuffer : public QRhiResource
+{
+public:
+    enum Type {
+        Draws,
+        IndexedDraws
+    };
+
+    QRhiResource::Type resourceType() const override;
+
+    Type type() const { return m_type; }
+    void setType(Type t) { m_type = t; }
+
+    quint32 maxCommandCount() const { return m_maxCommandCount; }
+    void setMaxCommandCount(quint32 count) { m_maxCommandCount = count; }
+
+    virtual bool create() = 0;
+
+    void clear();
+    void draw(quint32 vertexCount, quint32 instanceCount = 1,
+              quint32 firstVertex = 0, quint32 firstInstance = 0);
+    void drawIndexed(quint32 indexCount, quint32 instanceCount = 1, quint32 firstIndex = 0,
+                     qint32 vertexOffset = 0, quint32 firstInstance = 0);
+
+    quint32 recordedCommandCount() const { return m_commandCount; }
+    bool isGpuBuilt() const { return m_gpuBuilt; }
+    quint32 commandCount() const { return m_gpuBuilt ? m_gpuBuiltCommandCount : m_commandCount; }
+
+protected:
+    QRhiIndirectCommandBuffer(QRhiImplementation *rhi, Type type_, quint32 maxCommandCount_);
+
+    Type m_type;
+    quint32 m_maxCommandCount;
+    QByteArray m_data;
+    quint32 m_commandCount = 0;
+    quint64 m_generation = 0;
+    bool m_gpuBuilt = false;
+    quint32 m_gpuBuiltCommandCount = 0;
+};
+
 class Q_GUI_EXPORT QRhiCommandBuffer : public QRhiResource
 {
 public:
@@ -1808,6 +1851,13 @@ public:
                                   quint32 maxDrawCount,
                                   quint32 stride = sizeof(QRhiIndexedIndirectDrawCommand));
 
+    void buildIndirect(QRhiIndirectCommandBuffer *icb,
+                       const QRhiIndirectCommandBufferBuildInfo &info);
+
+    void executeIndirect(QRhiIndirectCommandBuffer *icb,
+                         quint32 firstCommand = 0,
+                         quint32 commandCount = 0xFFFFFFFFu);
+
     void debugMarkBegin(const QByteArray &name);
     void debugMarkEnd();
     void debugMarkMsg(const QByteArray &msg);
@@ -1830,6 +1880,20 @@ protected:
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QRhiCommandBuffer::BeginPassFlags)
+
+struct QRhiIndirectCommandBufferBuildInfo
+{
+    QRhiGraphicsPipeline::Topology topology = QRhiGraphicsPipeline::Triangles;
+    QRhiBuffer *sourceBuffer = nullptr;
+    quint32 sourceBufferOffset = 0;
+    quint32 commandCount = 0;
+    quint32 stride = 0;
+    QRhiBuffer *countBuffer = nullptr;
+    quint32 countBufferOffset = 0;
+    QRhiBuffer *indexBuffer = nullptr;
+    quint32 indexBufferOffset = 0;
+    QRhiCommandBuffer::IndexFormat indexFormat = QRhiCommandBuffer::IndexUInt16;
+};
 
 struct Q_GUI_EXPORT QRhiReadbackResult
 {
@@ -1861,6 +1925,7 @@ public:
     void copyTexture(QRhiTexture *dst, QRhiTexture *src, const QRhiTextureCopyDescription &desc = QRhiTextureCopyDescription());
     void readBackTexture(const QRhiReadbackDescription &rb, QRhiReadbackResult *result);
     void generateMips(QRhiTexture *tex);
+    void commitIndirectCommandBuffer(QRhiIndirectCommandBuffer *icb);
 
 private:
     QRhiResourceUpdateBatch(QRhiImplementation *rhi);
@@ -2103,6 +2168,9 @@ public:
                             QRhiSampler::AddressMode addressW = QRhiSampler::Repeat);
 
     QRhiShadingRateMap *newShadingRateMap();
+
+    QRhiIndirectCommandBuffer *newIndirectCommandBuffer(QRhiIndirectCommandBuffer::Type type,
+                                                        quint32 maxCommandCount);
 
     QRhiTextureRenderTarget *newTextureRenderTarget(const QRhiTextureRenderTargetDescription &desc,
                                                     QRhiTextureRenderTarget::Flags flags = {});

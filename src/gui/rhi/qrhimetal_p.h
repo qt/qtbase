@@ -121,6 +121,30 @@ struct QMetalShadingRateMap : public QRhiShadingRateMap
     friend class QRhiMetal;
 };
 
+struct QMetalIndirectCommandBufferData;
+
+struct QMetalIndirectCommandBuffer : public QRhiIndirectCommandBuffer
+{
+    QMetalIndirectCommandBuffer(QRhiImplementation *rhi, Type type, quint32 maxCommandCount);
+    ~QMetalIndirectCommandBuffer();
+    void destroy() override;
+    bool create() override;
+
+    const QRhiIndirectDrawCommand *drawCommands() const
+    {
+        return reinterpret_cast<const QRhiIndirectDrawCommand *>(m_data.constData());
+    }
+    const QRhiIndexedIndirectDrawCommand *indexedDrawCommands() const
+    {
+        return reinterpret_cast<const QRhiIndexedIndirectDrawCommand *>(m_data.constData());
+    }
+    quint64 contentsGeneration() const { return m_generation; }
+
+    QMetalIndirectCommandBufferData *d;
+    int lastActiveFrameSlot = -1;
+    friend class QRhiMetal;
+};
+
 struct QMetalRenderPassDescriptor : public QRhiRenderPassDescriptor
 {
     QMetalRenderPassDescriptor(QRhiImplementation *rhi);
@@ -394,6 +418,15 @@ public:
 
     QRhiShadingRateMap *createShadingRateMap() override;
 
+    QRhiIndirectCommandBuffer *createIndirectCommandBuffer(QRhiIndirectCommandBuffer::Type type,
+                                                           quint32 maxCommandCount) override;
+    void buildIndirect(QRhiCommandBuffer *cb, QRhiIndirectCommandBuffer *icb,
+                       const QRhiIndirectCommandBufferBuildInfo &info) override;
+    void executeIndirect(QRhiCommandBuffer *cb, QRhiIndirectCommandBuffer *icb,
+                         quint32 firstCommand, quint32 commandCount) override;
+    void commitIndirectCommandBuffer(QRhiResourceUpdateBatch *u,
+                                     QRhiIndirectCommandBuffer *icb) override;
+
     QRhiSwapChain *createSwapChain() override;
     QRhi::FrameOpResult beginFrame(QRhiSwapChain *swapChain, QRhi::BeginFrameFlags flags) override;
     QRhi::FrameOpResult endFrame(QRhiSwapChain *swapChain, QRhi::EndFrameFlags flags) override;
@@ -466,6 +499,7 @@ public:
                                   quint32 maxDrawCount, quint32 stride) override;
 
     const char *icbUnavailableReason(QMetalCommandBuffer *cbD) const;
+    bool prepareIcbKernels();
     bool prepareIcb(quint32 maxDrawCount);
     bool icbDraw(QMetalCommandBuffer *cbD, bool indexed,
                  QMetalBuffer *indirectBufD, quint32 indirectBufferOffset,

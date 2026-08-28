@@ -71,6 +71,15 @@ public:
 
     virtual QRhiShadingRateMap *createShadingRateMap() = 0;
 
+    virtual QRhiIndirectCommandBuffer *createIndirectCommandBuffer(QRhiIndirectCommandBuffer::Type type,
+                                                                   quint32 maxCommandCount);
+    virtual void buildIndirect(QRhiCommandBuffer *cb, QRhiIndirectCommandBuffer *icb,
+                               const QRhiIndirectCommandBufferBuildInfo &info);
+    virtual void executeIndirect(QRhiCommandBuffer *cb, QRhiIndirectCommandBuffer *icb,
+                                 quint32 firstCommand, quint32 commandCount);
+    virtual void commitIndirectCommandBuffer(QRhiResourceUpdateBatch *u,
+                                             QRhiIndirectCommandBuffer *icb);
+
     virtual QRhiSwapChain *createSwapChain() = 0;
     virtual QRhi::FrameOpResult beginFrame(QRhiSwapChain *swapChain, QRhi::BeginFrameFlags flags) = 0;
     virtual QRhi::FrameOpResult endFrame(QRhiSwapChain *swapChain, QRhi::EndFrameFlags flags) = 0;
@@ -290,6 +299,27 @@ private:
     friend class QRhi;
     friend class QRhiResourceUpdateBatchPrivate;
     friend class QRhiBufferData;
+};
+
+class QRhiBufferBackedIndirectCommandBuffer : public QRhiIndirectCommandBuffer
+{
+public:
+    QRhiBufferBackedIndirectCommandBuffer(QRhiImplementation *rhi, Type type, quint32 maxCommandCount);
+    ~QRhiBufferBackedIndirectCommandBuffer();
+
+    void destroy() override;
+    bool create() override;
+
+    // no-op if uploadedGeneration matches the current one, so safe to call regularly
+    void enqueueUpload(QRhiResourceUpdateBatch *u);
+
+    void execute(QRhiCommandBuffer *cb, quint32 firstCommand, quint32 commandCount);
+    void build(const QRhiIndirectCommandBufferBuildInfo &info);
+
+    bool valid = false;
+    QRhiBuffer *buffer = nullptr;
+    quint64 uploadedGeneration = 0;
+    QRhiIndirectCommandBufferBuildInfo buildInfo;
 };
 
 enum QRhiTargetRectBoundMode

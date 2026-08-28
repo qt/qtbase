@@ -3729,6 +3729,7 @@ QRhiReadbackDescription::QRhiReadbackDescription(QRhiTexture *texture)
     \value ComputePipeline
     \value CommandBuffer
     \value ShadingRateMap
+    \value [since 6.13] IndirectCommandBuffer
  */
 
 /*!
@@ -4318,6 +4319,13 @@ void QRhiBuffer::fullDynamicBufferUpdateForCurrentFrame(const void *data, quint3
     instead of a renderbuffer: that is preserved across an interruption, unless
     QRhiTextureRenderTarget::DoNotStoreDepthStencilContents is set.
 
+    Note that the indirect drawing cases above are avoidable. A
+    QRhiIndirectCommandBuffer executed with
+    \l{QRhiCommandBuffer::executeIndirect()}{executeIndirect()} is prepared
+    before the render pass begins, so it never interrupts the pass however many
+    commands it holds, and none of this applies to it. Only tessellation then
+    remains as a reason to consider \l NoTransientBacking.
+
     \l Color renderbuffers are useful since QRhi::MultisampleRenderBuffer may be
     supported even when QRhi::MultisampleTexture is not.
 
@@ -4385,6 +4393,9 @@ void QRhiBuffer::fullDynamicBufferUpdateForCurrentFrame(const void *data, quint3
     continued internally by a backend, as described in the
     \l{QRhiRenderBuffer}{class documentation}. It costs actual memory and
     bandwidth for the depth/stencil buffer, so do not set it when not needed.
+    In particular it is not needed on account of
+    \l{QRhiCommandBuffer::executeIndirect()}{executeIndirect()}, which never
+    interrupts the pass.
  */
 
 /*!
@@ -8596,6 +8607,667 @@ QRhiComputePipeline::QRhiComputePipeline(QRhiImplementation *rhi)
 */
 
 /*!
+    \class QRhiIndirectCommandBuffer
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
+    \since 6.13
+    \brief A prerecorded batch of indirect draw commands.
+
+    A QRhiIndirectCommandBuffer holds a number of draw commands that are
+    recorded once and can then be replayed any number of times with a single
+    QRhiCommandBuffer::executeIndirect() call. It is an alternative to the
+    buffer-based QRhiCommandBuffer::drawIndirect() family of functions. Under
+    the hood, it may do exactly the same as does (typical with Vulkan, Direct
+    3D, and OpenGL), or may be implemented differently (Metal).
+
+    Create one with QRhi::newIndirectCommandBuffer(), passing in the type and
+    the maximum number of commands, and call create(). The (maximum) command
+    count is mandatory, whichever way the commands are going to be provided: it
+    is the capacity of the object, and create() fails when it is 0.
+
+    \badcode
+        icb = rhi->newIndirectCommandBuffer(QRhiIndirectCommandBuffer::IndexedDraws, 1024);
+        if (!icb->create()) { error(); }
+    \endcode
+
+    Record commands with draw() or drawIndexed(), then hand the object to a
+    resource update batch so that the recorded contents reach the GPU.
+    commitIndirectCommandBuffer() has to be called after recording and before
+    the pass that executes the commands. It is a no-op when nothing changed
+    since the last time, so calling it every frame is cheap.
+
+    Executing happens inside a render pass:
+
+    \badcode
+        icb->clear();
+        for (const Item &item : items)
+            icb->drawIndexed(item.indexCount, 1, item.firstIndex, item.vertexOffset);
+
+        QRhiResourceUpdateBatch *u = rhi->nextResourceUpdateBatch();
+        u->commitIndirectCommandBuffer(icb);
+
+        cb->beginPass(rt, Qt::black, { 1.0f, 0 }, u);
+        cb->setGraphicsPipeline(ps);
+        cb->setVertexInput(0, 1, &vbufBinding, ibuf, 0, QRhiCommandBuffer::IndexUInt16);
+        cb->setShaderResources();
+        cb->executeIndirect(icb);
+        cb->endPass();
+    \endcode
+
+    The commands can also be generated on the GPU instead of being recorded on
+    the CPU. In that case fill a buffer with QRhiIndirectDrawCommand or
+    QRhiIndexedIndirectDrawCommand entries from a compute shader, and call
+    QRhiCommandBuffer::buildIndirect() with that buffer. That call must happen
+    outside of any pass. The CPU-side recording functions of
+    QRhiIndirectCommandBuffer are not used in this case.
+
+    \badcode
+        cb->beginComputePass();
+        ... // a cb->dispatch() to invoke a compute shader that writes to indirectBuf
+        cb->endComputePass();
+
+        QRhiIndirectCommandBufferBuildInfo buildInfo;
+        buildInfo.topology = ps->topology();
+        buildInfo.sourceBuffer = indirectBuf;
+        buildInfo.commandCount = itemCount; // as many as the compute shader wrote
+        buildInfo.indexBuffer = indexBuffer;
+        buildInfo.indexFormat = QRhiCommandBuffer::IndexUInt16;
+        cb->buildIndirect(icb, buildInfo);
+
+        cb->beginPass(rt, Qt::black, { 1.0f, 0 });
+        cb->setGraphicsPipeline(ps);
+        cb->setVertexInput(0, 1, &vbufBinding, ibuf, 0, QRhiCommandBuffer::IndexUInt16);
+        cb->setShaderResources();
+        cb->executeIndirect(icb);
+        cb->endPass();
+    \endcode
+
+    When the number of commands is itself decided on the device, set
+    QRhiIndirectCommandBufferBuildInfo::countBuffer instead of working out
+    \c itemCount on the CPU. See \l{Command counts} below.
+
+    \section2 Command counts
+
+    Three counts are involved, and they are not the same thing:
+
+    \list
+
+    \li maxCommandCount() is the capacity. It is fixed at create() time and
+    sizes whatever native object the backend needs. Neither of the two ways of
+    providing commands can exceed it; attempting to does not grow the object.
+
+    \li recordedCommandCount() is how many draw() or drawIndexed() calls were
+    made since the last clear(). It only concerns the CPU-recorded case.
+
+    \li commandCount() is how many commands QRhiCommandBuffer::executeIndirect()
+    issues by default. For a CPU-recorded indirect command buffer that is
+    recordedCommandCount(). Once QRhiCommandBuffer::buildIndirect() has been
+    called, isGpuBuilt() returns true and commandCount() is the count resolved
+    from QRhiIndirectCommandBufferBuildInfo::commandCount instead (but note that
+    that value is the actual command count only when no
+    \l{QRhiIndirectCommandBufferBuildInfo::}countBuffer is set, is just a
+    maximum with a counter buffer present).
+
+    \endlist
+
+    The size of QRhiIndirectCommandBufferBuildInfo::sourceBuffer plays no part
+    in any of this: no count is ever derived from it. The buffer is written by
+    the GPU and is free to be larger than the number of commands actually in
+    it, so leaving QRhiIndirectCommandBufferBuildInfo::commandCount at 0 does
+    not mean "as many as fit", it means maxCommandCount().
+
+    A device-side count, via QRhiIndirectCommandBufferBuildInfo::countBuffer,
+    narrows the count further when the commands are executed, and can only
+    reduce it: the value in the count buffer is clamped to what
+    commandCount() returns.
+
+    Either way, the indirect command buffer is fully prepared before the render
+    pass begins. That is what separates it from the buffer-based
+    QRhiCommandBuffer::drawIndirect() family, where some backends (Metal above a
+    certain draw count, and always for the count variants) have to interrupt and
+    restart the render pass in order to encode the commands. Such an
+    interruption costs a QRhiRenderBuffer depth-stencil buffer its contents
+    unless QRhiRenderBuffer::NoTransientBacking was set, and may also be degrading
+    performance due to having to reload the color buffer values. With
+    executeIndirect() the question does not arise.
+
+    For Metal, the buffer-based API implies (ahove a certain draw count, or
+    whhen using the count variants) having to run a compute kernel to create an
+    MTLIndirectCommandBuffer from the Vulkan/Direct 3D/OpenGL style indirect
+    buffer. With QRhiIndirectCommandBuffer this is not always necessary, because
+    now, at least when the commands are generated on the CPU side, an
+    MTLIndirectCommandBuffer can be created and set up normally, by calling
+    MTLIndirectCommandBuffer's Objective-C API, instead of having to inject a
+    compute pass. When generating the commands on the GPU, the extra compute
+    pass is still necessary, but at least it will not interrupt the render pass,
+    by design, unlike with the direct buffer-based API. Note however that using
+    MTLIndirectCommandBuffer natively from C++/Objective-C to perform repeated
+    CPU-side draw call generation can prove to be quite expensive (when
+    frequently re-recording a larger set of draw commands), compared to the
+    GPU-side draw command generation, even though that involves an extra encoding
+    compute pass to "convert" the Vulkan/Direct 3D/OpenGL style indirect buffer
+    to what Metal prefers. See the next section.
+
+    \section2 Recording on the CPU or building on the GPU
+
+    The two ways of populating an indirect command buffer are not equivalent in
+    cost, and the difference grows with the number of commands.
+
+    Recording with draw() or drawIndexed() is work proportional to the number of
+    commands, and it is repeated whenever the contents change. Where that work
+    lands depends on the backend: those that keep the commands in a buffer
+    upload it from QRhiResourceUpdateBatch::commitIndirectCommandBuffer(),
+    whereas Metal encodes each command individually into a native
+    \c MTLIndirectCommandBuffer, one native call per command, and does so from
+    QRhiCommandBuffer::executeIndirect().
+
+    Either way the result is cached and keyed on the recorded contents, so an
+    indirect command buffer that is recorded once and then executed unchanged
+    frame after frame costs nothing beyond the first few frames. That is the
+    case CPU recording is meant for: a command set that is stable, or changes
+    rarely, relative to how often it is executed.
+
+    The opposite case - many commands, cleared and re-recorded every frame - is
+    the one to avoid. Regenerating tens of thousands of commands per frame that
+    way can be an order of magnitude more expensive on Apple platforms than
+    filling a QRhiBuffer and calling QRhiCommandBuffer::drawIndexedIndirect() on
+    it, because of the per-command native encoding. When the command set is both
+    large and regenerated every frame, generate it on the GPU and use
+    QRhiCommandBuffer::buildIndirect(); the alternative is to stay with the
+    buffer-based drawIndirect() family and accept the render pass interruption
+    it may cause (which is still not recommended, even if it would perform
+    better).
+
+    A given QRhiIndirectCommandBuffer holds one kind of command: either
+    non-indexed draws (\c Draws) or indexed draws (\c IndexedDraws), never a
+    mix of the two. This mirrors what the underlying APIs can express: a single
+    indirect draw call always has one command type and one stride.
+
+    The requirements are the same as for the indirect draws this stands in for:
+    QRhi::DrawIndirect has to be supported, the graphics pipeline should be
+    created with \l{QRhiGraphicsPipeline::UsesIndirectDraws}{UsesIndirectDraws},
+    and a count buffer additionally needs QRhi::DrawIndirectCount to be
+    supported.
+
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
+    for details.
+
+    \sa QRhiCommandBuffer::executeIndirect(), QRhiCommandBuffer::drawIndirect()
+ */
+
+/*!
+    \enum QRhiIndirectCommandBuffer::Type
+    Specifies the kind of commands an indirect command buffer holds.
+
+    \value Draws Non-indexed draw commands, recorded with draw().
+    \value IndexedDraws Indexed draw commands, recorded with drawIndexed().
+ */
+
+/*!
+    \fn QRhiIndirectCommandBuffer::Type QRhiIndirectCommandBuffer::type() const
+    \return the type of commands this indirect command buffer holds.
+ */
+
+/*!
+    \fn void QRhiIndirectCommandBuffer::setType(Type t)
+
+    Sets the command type \a t. The type is normally specified in
+    QRhi::newIndirectCommandBuffer(), so this function is only used when it has
+    to be changed. As with other setters, it only takes effect when calling
+    create().
+ */
+
+/*!
+    \fn quint32 QRhiIndirectCommandBuffer::maxCommandCount() const
+    \return the capacity, i.e. the maximum number of commands.
+ */
+
+/*!
+    \fn void QRhiIndirectCommandBuffer::setMaxCommandCount(quint32 count)
+
+    Sets the capacity, the maximum number of commands, to \a count. The
+    capacity is normally specified in QRhi::newIndirectCommandBuffer(), so this
+    function is only used when it has to be changed. As with other setters, it
+    only takes effect when calling create(), which fails when \a count is 0.
+
+    The capacity applies regardless of how the commands are going to be
+    provided: recording them with draw() and drawIndexed() and building them
+    with QRhiCommandBuffer::buildIndirect() are both bounded by it.
+
+    draw() and drawIndexed() ignore, with a warning, any command past the first
+    \a count ones. QRhiCommandBuffer::buildIndirect() clamps, also with a
+    warning, when QRhiIndirectCommandBufferBuildInfo::commandCount is larger.
+
+    \sa commandCount(), recordedCommandCount()
+ */
+
+/*!
+    \fn quint32 QRhiIndirectCommandBuffer::recordedCommandCount() const
+
+    \return the number of commands recorded with draw() or drawIndexed() since
+    the last clear().
+
+    This is unaffected by QRhiCommandBuffer::buildIndirect(): once the commands
+    come from the GPU, whatever was recorded on the CPU is ignored. Use
+    commandCount() to get the number of commands that will actually be
+    executed.
+ */
+
+/*!
+    \fn bool QRhiIndirectCommandBuffer::isGpuBuilt() const
+
+    \return \c true when QRhiCommandBuffer::buildIndirect() has been called on
+    this indirect command buffer, meaning its contents come from a QRhiBuffer
+    instead of from draw() and drawIndexed().
+
+    Once true, this stays true until the next create().
+ */
+
+/*!
+    \fn quint32 QRhiIndirectCommandBuffer::commandCount() const
+
+    \return the number of commands QRhiCommandBuffer::executeIndirect() issues
+    by default.
+
+    This is recordedCommandCount() for a CPU-recorded indirect command buffer,
+    and the count resolved from
+    QRhiIndirectCommandBufferBuildInfo::commandCount once
+    QRhiCommandBuffer::buildIndirect() has been called.
+
+    A count buffer, if there is one, can reduce the number of draws further at
+    execution time. This function does not, and cannot, account for that.
+ */
+
+/*!
+    \fn virtual bool QRhiIndirectCommandBuffer::create() = 0
+
+    Creates the corresponding native objects.
+
+    Fails when maxCommandCount() is 0.
+
+    A given QRhiIndirectCommandBuffer takes its commands either from draw() and
+    drawIndexed() followed by
+    QRhiResourceUpdateBatch::commitIndirectCommandBuffer(), or from
+    QRhiCommandBuffer::buildIndirect(), but not from both. Moving to the latter
+    is one-way: clear() does not undo it, and neither does a subsequent
+    commitIndirectCommandBuffer(); isGpuBuilt() stays true and the commands keep
+    coming from the buffer. Call create() again to get an indirect command
+    buffer that is populated from the CPU once more.
+
+    \note Like with every other QRhi resource, destroy() gives up the contents,
+    and so create() starts from an empty indirect command buffer:
+    recordedCommandCount() is 0 afterwards. Setting a different type() or
+    maxCommandCount() and calling create() again therefore needs the commands
+    to be recorded again as well.
+
+    \return \c true when successful, \c false when a graphics operation failed.
+ */
+
+/*!
+    \internal
+ */
+QRhiIndirectCommandBuffer::QRhiIndirectCommandBuffer(QRhiImplementation *rhi, Type type_,
+                                                     quint32 maxCommandCount_)
+    : QRhiResource(rhi),
+      m_type(type_), m_maxCommandCount(maxCommandCount_)
+{
+}
+
+/*!
+    \return the resource type.
+ */
+QRhiResource::Type QRhiIndirectCommandBuffer::resourceType() const
+{
+    return IndirectCommandBuffer;
+}
+
+/*!
+    Discards all commands recorded so far.
+
+    Can be called at any time, also before create(). The recorded contents only
+    become visible to the GPU once the object is passed to
+    QRhiResourceUpdateBatch::commitIndirectCommandBuffer().
+
+    This resets recordedCommandCount() to 0. It does not undo a
+    QRhiCommandBuffer::buildIndirect(): an indirect command buffer that gets
+    its commands from the GPU keeps doing so, and commandCount() is unchanged.
+
+    \note Clearing and re-recording invalidates whatever the backend cached for
+    the previous contents, so the per-command cost of recording is paid again.
+    Call this only when the commands actually have to change. See
+    \l{Recording on the CPU or building on the GPU} for why that matters at high
+    command counts.
+ */
+void QRhiIndirectCommandBuffer::clear()
+{
+    m_data.clear();
+    m_commandCount = 0;
+    m_generation += 1;
+}
+
+/*!
+    Records a non-indexed draw command with \a vertexCount, \a instanceCount,
+    \a firstVertex, and \a firstInstance.
+
+    The semantics are the same as QRhiCommandBuffer::draw().
+
+    \note Only valid on an indirect command buffer of type Draws.
+ */
+void QRhiIndirectCommandBuffer::draw(quint32 vertexCount, quint32 instanceCount,
+                                     quint32 firstVertex, quint32 firstInstance)
+{
+    if (m_type != Draws) {
+        qWarning("QRhiIndirectCommandBuffer: draw() on an IndexedDraws indirect command buffer; ignored");
+        return;
+    }
+    if (m_commandCount == m_maxCommandCount) {
+        qWarning("QRhiIndirectCommandBuffer: maxCommandCount (%u) reached; command ignored",
+                 m_maxCommandCount);
+        return;
+    }
+    const QRhiIndirectDrawCommand cmd = { vertexCount, instanceCount, firstVertex, firstInstance };
+    m_data.append(reinterpret_cast<const char *>(&cmd), sizeof(cmd));
+    m_commandCount += 1;
+    m_generation += 1;
+}
+
+/*!
+    Records an indexed draw command with \a indexCount, \a instanceCount, \a
+    firstIndex, \a vertexOffset, and \a firstInstance.
+
+    The semantics are the same as QRhiCommandBuffer::drawIndexed().
+
+    \note Only valid on an indirect command buffer of type IndexedDraws.
+ */
+void QRhiIndirectCommandBuffer::drawIndexed(quint32 indexCount, quint32 instanceCount,
+                                            quint32 firstIndex, qint32 vertexOffset,
+                                            quint32 firstInstance)
+{
+    if (m_type != IndexedDraws) {
+        qWarning("QRhiIndirectCommandBuffer: drawIndexed() on a Draws indirect command buffer; ignored");
+        return;
+    }
+    if (m_commandCount == m_maxCommandCount) {
+        qWarning("QRhiIndirectCommandBuffer: maxCommandCount (%u) reached; command ignored",
+                 m_maxCommandCount);
+        return;
+    }
+    const QRhiIndexedIndirectDrawCommand cmd = { indexCount, instanceCount, firstIndex,
+                                                 vertexOffset, firstInstance };
+    m_data.append(reinterpret_cast<const char *>(&cmd), sizeof(cmd));
+    m_commandCount += 1;
+    m_generation += 1;
+}
+
+/*!
+    \struct QRhiIndirectCommandBufferBuildInfo
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
+    \since 6.13
+    \brief Describes how to build an indirect command buffer from a QRhiBuffer.
+
+    \sa QRhiCommandBuffer::buildIndirect()
+
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
+    for details.
+ */
+
+/*!
+    \variable QRhiIndirectCommandBufferBuildInfo::topology
+
+    The topology the commands will be drawn with. Must match the topology of the
+    graphics pipeline that is set when QRhiCommandBuffer::executeIndirect() is
+    called. Some backends need it in order to build their native indirect
+    command buffer, and it is not available to them outside of a render pass.
+*/
+
+/*!
+    \variable QRhiIndirectCommandBufferBuildInfo::sourceBuffer
+
+    The buffer holding the QRhiIndirectDrawCommand or
+    QRhiIndexedIndirectDrawCommand entries. Must have IndirectBuffer usage.
+
+    Its size is not used to work out how many commands there are, see
+    commandCount.
+*/
+
+/*!
+    \variable QRhiIndirectCommandBufferBuildInfo::sourceBufferOffset
+*/
+
+/*!
+    \variable QRhiIndirectCommandBufferBuildInfo::commandCount
+
+    The number of commands to take from sourceBuffer. This is what
+    QRhiIndirectCommandBuffer::commandCount() reports afterwards, and so how
+    many draws QRhiCommandBuffer::executeIndirect() issues by default.
+
+    0 means QRhiIndirectCommandBuffer::maxCommandCount(). It does not mean "as
+    many as fit in sourceBuffer": a buffer written by the GPU can be larger
+    than the number of commands in it, so no count is ever derived from its
+    size. A value above QRhiIndirectCommandBuffer::maxCommandCount() is clamped
+    to it, with a warning.
+
+    \note Specifying countBuffer changes what this value means: it stops being
+    the number of commands and becomes the \e maximum number of commands, with
+    the device-side count in countBuffer deciding the actual number. Without a
+    countBuffer, exactly this many commands are executed.
+*/
+
+/*!
+    \variable QRhiIndirectCommandBufferBuildInfo::stride
+
+    The byte distance between two commands in sourceBuffer. 0 means the size of
+    the corresponding command struct.
+*/
+
+/*!
+    \variable QRhiIndirectCommandBufferBuildInfo::countBuffer
+
+    An optional buffer whose first quint32 holds the number of commands to
+    execute. Requires QRhi::DrawIndirectCount.
+
+    \note Setting this turns commandCount into an upper bound. The device-side
+    value is clamped to it, so a count buffer can only ever reduce the number
+    of draws, never raise it.
+*/
+
+/*!
+    \variable QRhiIndirectCommandBufferBuildInfo::countBufferOffset
+*/
+
+/*!
+    \variable QRhiIndirectCommandBufferBuildInfo::indexBuffer
+
+    The index buffer the commands index into. Required for IndexedDraws.
+*/
+
+/*!
+    \variable QRhiIndirectCommandBufferBuildInfo::indexBufferOffset
+*/
+
+/*!
+    \variable QRhiIndirectCommandBufferBuildInfo::indexFormat
+*/
+
+QRhiBufferBackedIndirectCommandBuffer::QRhiBufferBackedIndirectCommandBuffer(QRhiImplementation *rhi,
+                                                                             Type type,
+                                                                             quint32 maxCommandCount)
+    : QRhiIndirectCommandBuffer(rhi, type, maxCommandCount)
+{
+}
+
+QRhiBufferBackedIndirectCommandBuffer::~QRhiBufferBackedIndirectCommandBuffer()
+{
+    destroy();
+}
+
+void QRhiBufferBackedIndirectCommandBuffer::destroy()
+{
+    // Unconditionally, also when there is nothing else to do: like with every
+    // other resource, destroy() gives up the contents. Carrying a recording
+    // over into the next create() would not survive a changed maxCommandCount
+    // or type.
+    clear();
+
+    if (!valid)
+        return;
+
+    delete buffer;
+    buffer = nullptr;
+    uploadedGeneration = 0;
+    buildInfo = {};
+    m_gpuBuilt = false;
+    m_gpuBuiltCommandCount = 0;
+    valid = false;
+
+    if (m_rhi)
+        m_rhi->unregisterResource(this);
+}
+
+bool QRhiBufferBackedIndirectCommandBuffer::create()
+{
+    // Either way the recorded commands go: they may not fit maxCommandCount()
+    // or match type() anymore.
+    if (valid)
+        destroy();
+    else
+        clear();
+
+    if (!m_maxCommandCount) {
+        qWarning("QRhiIndirectCommandBuffer: maxCommandCount is 0");
+        return false;
+    }
+
+    valid = true;
+    m_rhi->registerResource(this);
+    return true;
+}
+
+void QRhiBufferBackedIndirectCommandBuffer::enqueueUpload(QRhiResourceUpdateBatch *u)
+{
+    // m_gpuBuilt: the commands come from the source buffer from now on, so
+    // there is nothing to upload, as documented for commitIndirectCommandBuffer().
+    if (!valid || m_gpuBuilt || m_data.isEmpty() || uploadedGeneration == m_generation)
+        return;
+
+    if (!buffer) {
+        const quint32 commandSize = m_type == IndexedDraws ? sizeof(QRhiIndexedIndirectDrawCommand)
+                                                           : sizeof(QRhiIndirectDrawCommand);
+        buffer = m_rhi->createBuffer(QRhiBuffer::Static, QRhiBuffer::IndirectBuffer,
+                                     m_maxCommandCount * commandSize);
+        if (!buffer || !buffer->create()) {
+            delete buffer;
+            buffer = nullptr;
+            return;
+        }
+    }
+
+    u->uploadStaticBuffer(buffer, 0, quint32(m_data.size()), m_data.constData());
+    uploadedGeneration = m_generation;
+}
+
+void QRhiBufferBackedIndirectCommandBuffer::build(const QRhiIndirectCommandBufferBuildInfo &info)
+{
+    buildInfo = info;
+    quint32 count = info.commandCount ? info.commandCount : m_maxCommandCount;
+    if (count > m_maxCommandCount) {
+        qWarning("QRhiIndirectCommandBuffer: buildIndirect() with commandCount %u exceeds "
+                 "maxCommandCount %u; clamping", count, m_maxCommandCount);
+        count = m_maxCommandCount;
+    }
+    m_gpuBuilt = true;
+    m_gpuBuiltCommandCount = count;
+}
+
+void QRhiBufferBackedIndirectCommandBuffer::execute(QRhiCommandBuffer *cb,
+                                                    quint32 firstCommand,
+                                                    quint32 commandCount)
+{
+    const bool indexed = m_type == IndexedDraws;
+    const quint32 canonicalStride = m_type == IndexedDraws ? sizeof(QRhiIndexedIndirectDrawCommand)
+                                                           : sizeof(QRhiIndirectDrawCommand);
+
+    if (m_gpuBuilt) {
+        const quint32 stride = buildInfo.stride ? buildInfo.stride : canonicalStride;
+        const quint32 available = m_gpuBuiltCommandCount > firstCommand
+                ? m_gpuBuiltCommandCount - firstCommand : 0;
+        const quint32 count = qMin(commandCount, available);
+        if (!count)
+            return;
+        const quint32 offset = buildInfo.sourceBufferOffset + firstCommand * stride;
+        if (buildInfo.countBuffer) {
+            // Note that a non-zero firstCommand shifts the window, but the
+            // device-side count is still relative to the start of that window.
+            if (indexed) {
+                cb->drawIndexedIndirectCount(buildInfo.sourceBuffer, offset,
+                                             buildInfo.countBuffer, buildInfo.countBufferOffset,
+                                             count, stride);
+            } else {
+                cb->drawIndirectCount(buildInfo.sourceBuffer, offset,
+                                      buildInfo.countBuffer, buildInfo.countBufferOffset,
+                                      count, stride);
+            }
+        } else {
+            if (indexed)
+                cb->drawIndexedIndirect(buildInfo.sourceBuffer, offset, count, stride);
+            else
+                cb->drawIndirect(buildInfo.sourceBuffer, offset, count, stride);
+        }
+        return;
+    }
+
+    if (!buffer) {
+        // Metal encodes on the spot in executeIndirect() and so needs no
+        // commit. Everywhere else a missing one means drawing nothing.
+        if (m_commandCount) {
+            qWarning("QRhiIndirectCommandBuffer: %u command(s) recorded but never flushed with "
+                     "QRhiResourceUpdateBatch::commitIndirectCommandBuffer(); nothing to draw",
+                     m_commandCount);
+        }
+        return;
+    }
+    if (!m_commandCount)
+        return;
+
+    const quint32 available = m_commandCount > firstCommand ? m_commandCount - firstCommand : 0;
+    const quint32 count = qMin(commandCount, available);
+    if (!count)
+        return;
+
+    const quint32 offset = firstCommand * canonicalStride;
+    if (indexed)
+        cb->drawIndexedIndirect(buffer, offset, count, canonicalStride);
+    else
+        cb->drawIndirect(buffer, offset, count, canonicalStride);
+}
+
+QRhiIndirectCommandBuffer *QRhiImplementation::createIndirectCommandBuffer(QRhiIndirectCommandBuffer::Type type,
+                                                                           quint32 maxCommandCount)
+{
+    return new QRhiBufferBackedIndirectCommandBuffer(this, type, maxCommandCount);
+}
+
+void QRhiImplementation::buildIndirect(QRhiCommandBuffer *cb, QRhiIndirectCommandBuffer *icb,
+                                       const QRhiIndirectCommandBufferBuildInfo &info)
+{
+    Q_UNUSED(cb);
+    static_cast<QRhiBufferBackedIndirectCommandBuffer *>(icb)->build(info);
+}
+
+void QRhiImplementation::executeIndirect(QRhiCommandBuffer *cb, QRhiIndirectCommandBuffer *icb,
+                                         quint32 firstCommand, quint32 commandCount)
+{
+    static_cast<QRhiBufferBackedIndirectCommandBuffer *>(icb)->execute(cb, firstCommand, commandCount);
+}
+
+void QRhiImplementation::commitIndirectCommandBuffer(QRhiResourceUpdateBatch *u,
+                                                     QRhiIndirectCommandBuffer *icb)
+{
+    static_cast<QRhiBufferBackedIndirectCommandBuffer *>(icb)->enqueueUpload(u);
+}
+
+/*!
     \class QRhiCommandBuffer
     \inmodule QtGuiPrivate
     \inheaderfile rhi/qrhi.h
@@ -8698,6 +9370,8 @@ static const char *resourceTypeStr(const QRhiResource *res)
         return "CommandBuffer";
     case QRhiResource::ShadingRateMap:
         return "ShadingRateMap";
+    case QRhiResource::IndirectCommandBuffer:
+        return "IndirectCommandBuffer";
     }
 
     Q_UNREACHABLE_RETURN("");
@@ -10216,6 +10890,34 @@ void QRhiResourceUpdateBatch::generateMips(QRhiTexture *tex)
 }
 
 /*!
+    Enqueues updating the contents of the indirect command buffer \a icb from
+    the commands recorded on it with QRhiIndirectCommandBuffer::draw() or
+    QRhiIndirectCommandBuffer::drawIndexed().
+
+    Has to be called after recording and before the render pass that executes
+    the commands. Does nothing when nothing changed since the last time, so
+    calling it once per frame is inexpensive.
+
+    Has no effect on an indirect command buffer that was populated with
+    QRhiCommandBuffer::buildIndirect() instead.
+
+    \note This is where backends that keep the commands in a buffer perform the
+    upload, but it is not necessarily where the cost of a CPU-recorded indirect
+    command buffer is: Metal has nothing to upload here and does its per-command
+    encoding in QRhiCommandBuffer::executeIndirect() instead. An inexpensive
+    commitIndirectCommandBuffer() therefore does not by itself mean that
+    recording the commands was inexpensive. See \l QRhiIndirectCommandBuffer for
+    how the cost of CPU recording scales.
+
+    \since 6.13
+ */
+void QRhiResourceUpdateBatch::commitIndirectCommandBuffer(QRhiIndirectCommandBuffer *icb)
+{
+    Q_ASSERT(icb);
+    d->rhi->commitIndirectCommandBuffer(this, icb);
+}
+
+/*!
    \return an available, empty batch to which copy type of operations can be
    recorded.
 
@@ -10849,6 +11551,10 @@ void QRhiCommandBuffer::drawIndexed(quint32 indexCount,
     \note The render pass interruption and the render target consequences and
     limitations described for drawIndexedIndirect() apply here as well.
 
+    \note Therefore, portable applications should consider always using
+    QRhiIndirectCommandBuffer and executeIndirect() instead of the
+    draw*Indirect*() family of functions.
+
     \note This function can only be called inside a render pass, meaning
     between a beginPass() and endPass() call.
 
@@ -10908,7 +11614,13 @@ void QRhiCommandBuffer::drawIndirect(QRhiBuffer *indirectBuffer,
     contents if it was created with QRhiRenderBuffer::NoTransientBacking, which
     means that, with Metal, rendering errors may occur if the depth-stencil
     buffer is a QRhiRenderBuffer without the NoTransientBacking flag and the \a
-    drawCount is above the threshold.
+    drawCount is above the threshold. Recording the same commands into a
+    QRhiIndirectCommandBuffer and issuing them with executeIndirect() avoids
+    this altogether: that never interrupts the pass.
+
+    \note Therefore, portable applications should consider always using
+    QRhiIndirectCommandBuffer and executeIndirect() instead of the
+    draw*Indirect*() family of functions.
 
     \note This function can only be called inside a render pass, meaning
     between a beginPass() and endPass() call.
@@ -10963,6 +11675,14 @@ void QRhiCommandBuffer::drawIndexedIndirect(QRhiBuffer *indirectBuffer,
     encoded on the GPU. Color attachment contents are preserved automatically,
     but a QRhiRenderBuffer serving as the depth-stencil buffer only keeps its
     contents if it was created with QRhiRenderBuffer::NoTransientBacking.
+    Building a QRhiIndirectCommandBuffer with buildIndirect(),
+    which happens before the pass begins, and issuing it with
+    executeIndirect() avoids this: that never interrupts the pass, and supports
+    a device-side count just the same.
+
+    \note Therefore, portable applications should consider always using
+    QRhiIndirectCommandBuffer and executeIndirect() instead of the
+    draw*Indirect*() family of functions.
 
     \note \a maxDrawCount is not a free upper bound. With Metal it sizes the
     indirect command buffer that the draw commands are encoded into, and that
@@ -11007,6 +11727,10 @@ void QRhiCommandBuffer::drawIndirectCount(QRhiBuffer *indirectBuffer,
     \note The render pass interruption described for drawIndirectCount() applies
     here as well.
 
+    \note Therefore, portable applications should consider always using
+    QRhiIndirectCommandBuffer and executeIndirect() instead of the
+    draw*Indirect*() family of functions.
+
     \note Only valid inside a render pass.
 
     \since 6.13
@@ -11030,6 +11754,122 @@ void QRhiCommandBuffer::drawIndexedIndirectCount(QRhiBuffer *indirectBuffer,
     Q_ASSERT_X((stride & 3u) == 0u, Q_FUNC_INFO, "stride must be a multiple of 4");
     m_rhi->drawIndexedIndirectCount(this, indirectBuffer, indirectBufferOffset,
                                     countBuffer, countBufferOffset, maxDrawCount, stride);
+}
+
+/*!
+    Records populating the indirect command buffer \a icb from the buffer and
+    parameters described by \a info.
+
+    This is the GPU-driven counterpart of recording draw() or drawIndexed()
+    calls on the QRhiIndirectCommandBuffer: the commands come from
+    \c{info.sourceBuffer}, which is typically written by a compute shader
+    earlier in the frame. Any commands recorded on the CPU side are ignored
+    from this point on.
+
+    \c{info.topology} and, for an indirect command buffer of type
+    QRhiIndirectCommandBuffer::IndexedDraws, \c{info.indexBuffer} have to be
+    specified because some backends need them in order to build their native
+    indirect command buffer object, and neither is available outside of a
+    render pass. They must match what is set on the command buffer when
+    executeIndirect() is called.
+
+    \c{info.commandCount} is the number of commands to take from
+    \c{info.sourceBuffer}, and becomes what
+    QRhiIndirectCommandBuffer::commandCount() reports from here on. Leaving it
+    at 0 means \a{icb}'s QRhiIndirectCommandBuffer::maxCommandCount(); a larger
+    value is clamped to that, with a warning. The size of
+    \c{info.sourceBuffer} is not consulted. When \c{info.countBuffer} is set,
+    \c{info.commandCount} becomes an upper bound instead, with the device-side
+    count deciding how many commands are executed.
+
+    \note This function must be called outside of any pass. That is the entire
+    point: it gives backends that need to run a compute shader in order to
+    build their native indirect command buffer a place to do so without having
+    to interrupt and restart the render pass.
+
+    \sa executeIndirect(), QRhiIndirectCommandBuffer
+ */
+void QRhiCommandBuffer::buildIndirect(QRhiIndirectCommandBuffer *icb,
+                                      const QRhiIndirectCommandBufferBuildInfo &info)
+{
+    Q_ASSERT(icb);
+    Q_ASSERT(info.sourceBuffer);
+    Q_ASSERT(info.sourceBuffer->usage().testFlag(QRhiBuffer::IndirectBuffer));
+    Q_ASSERT_X((info.sourceBufferOffset & 3u) == 0u, Q_FUNC_INFO,
+               "sourceBufferOffset must be a multiple of 4");
+    Q_ASSERT_X((info.stride & 3u) == 0u, Q_FUNC_INFO, "stride must be a multiple of 4");
+    Q_ASSERT(!info.countBuffer || info.countBuffer->usage().testFlag(QRhiBuffer::IndirectBuffer));
+    Q_ASSERT_X((info.countBufferOffset & 3u) == 0u, Q_FUNC_INFO,
+               "countBufferOffset must be a multiple of 4");
+    m_rhi->buildIndirect(this, icb, info);
+}
+
+/*!
+    Records executing the commands held by the indirect command buffer \a icb,
+    starting at \a firstCommand and executing at most \a commandCount of them.
+    By default all commands are executed.
+
+    Everything else - the graphics pipeline, the vertex and index buffers, the
+    shader resources, the viewport, the scissor - is taken from the current
+    state of the command buffer, exactly like with drawIndirect().
+
+    The number of draws issued is \c{qMin(commandCount, icb->commandCount() -
+    firstCommand)}, so leaving \a commandCount at its default executes
+    everything from \a firstCommand onwards. What
+    QRhiIndirectCommandBuffer::commandCount() means depends on how \a icb was
+    populated: it is the number of draw() and drawIndexed() calls recorded on
+    it, or, after a buildIndirect(), the count resolved from
+    QRhiIndirectCommandBufferBuildInfo::commandCount. Nothing is drawn when \a
+    firstCommand is at or past that count.
+
+    When \a icb was populated by recording draw() or drawIndexed() calls on it,
+    the recorded contents must have been flushed with
+    QRhiResourceUpdateBatch::commitIndirectCommandBuffer() beforehand. When it
+    was populated with buildIndirect(), and a count buffer was specified there,
+    the device-side count reduces the number of draws further: the number
+    actually executed is the smallest of that, \a commandCount, and what is
+    left in \a icb after \a firstCommand.
+
+    \warning With a count buffer some backends, Metal in particular, cannot combine
+    the device-side count with a subrange. \a firstCommand and \a commandCount
+    are then ignored, printing a warning, and all commands up to the device-side
+    count are executed.
+
+    \note An indirect command buffer that was populated by recording draw() or
+    drawIndexed() calls on it can be executed any number of times, but within
+    one frame all those executions must use the same topology, index buffer,
+    index buffer offset and index format: some backends bake these into their
+    native indirect command buffer at the first executeIndirect() of the frame.
+    A mismatch is reported with a warning, and handled by falling back to
+    ordinary draw calls.
+
+    \note Unlike drawIndirect(), drawIndexedIndirect(), drawIndirectCount() and
+    drawIndexedIndirectCount(), this never causes the render pass to be
+    interrupted and restarted internally, whatever the number of commands.
+    Commands built with buildIndirect() were prepared before the pass began, and
+    CPU-recorded ones need no compute work to encode. The consequences described
+    for those functions therefore do not apply here. Color attachment contents
+    are not at risk, and a QRhiRenderBuffer serving as the depth-stencil buffer
+    keeps its contents without needing QRhiRenderBuffer::NoTransientBacking.
+
+    \note The CPU cost of this call is not constant for a CPU-recorded indirect
+    command buffer. When the recorded contents changed since the last execution,
+    some backends do their per-command native encoding here rather than in
+    QRhiResourceUpdateBatch::commitIndirectCommandBuffer(), which for a large
+    command set re-recorded every frame can dominate the time spent between
+    beginPass() and endPass(). See \l QRhiIndirectCommandBuffer for how the cost
+    of CPU recording scales.
+
+    \note This function can only be called inside a render pass.
+
+    \sa buildIndirect(), drawIndirect(), QRhiIndirectCommandBuffer
+ */
+void QRhiCommandBuffer::executeIndirect(QRhiIndirectCommandBuffer *icb,
+                                        quint32 firstCommand,
+                                        quint32 commandCount)
+{
+    Q_ASSERT(icb);
+    m_rhi->executeIndirect(this, icb, firstCommand, commandCount);
 }
 
 /*!
@@ -12025,6 +12865,28 @@ QRhiSampler *QRhi::newSampler(QRhiSampler::Filter magFilter,
 QRhiShadingRateMap *QRhi::newShadingRateMap()
 {
     return d->createShadingRateMap();
+}
+
+/*!
+    \return a new indirect command buffer that holds commands of the specified
+    \a type, with room for \a maxCommandCount of them.
+
+    \a maxCommandCount cannot be 0, otherwise create() fails. It is the upper
+    bound for both ways of providing commands: recording them with
+    QRhiIndirectCommandBuffer::draw() or
+    QRhiIndirectCommandBuffer::drawIndexed(), and generating them on the GPU
+    and calling QRhiCommandBuffer::buildIndirect(). Backends allocate their
+    native objects, and the QRhiBuffer holding the recorded commands, based on
+    it, which is why it is fixed up front instead of growing on demand.
+
+    \sa QRhiIndirectCommandBuffer::setMaxCommandCount(), QRhiIndirectCommandBuffer
+
+    \since 6.13
+ */
+QRhiIndirectCommandBuffer *QRhi::newIndirectCommandBuffer(QRhiIndirectCommandBuffer::Type type,
+                                                          quint32 maxCommandCount)
+{
+    return d->createIndirectCommandBuffer(type, maxCommandCount);
 }
 
 /*!

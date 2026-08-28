@@ -312,6 +312,10 @@ struct QRhiMetalData
         quint32 capacity = 0;
     } argBufPool[QMTL_FRAMES_IN_FLIGHT];
     id<MTLBuffer> allocArgumentBuffer(quint32 size, quint32 alignment, int frameSlot, quint32 *offset);
+
+    // Counts both swapchain and offscreen frames. Never 0 once a frame started,
+    // so that a default-initialized "used in frame" cannot match.
+    quint64 globalFrameId = 0;
 };
 
 Q_DECLARE_TYPEINFO(QRhiMetalData::DeferredReleaseEntry, Q_RELOCATABLE_TYPE);
@@ -2706,12 +2710,7 @@ const char *QRhiMetal::icbUnavailableReason(QMetalCommandBuffer *cbD) const
     return nullptr;
 }
 
-// Compiles the encode kernels and (re)creates the shared ICB and its helper
-// buffers on demand. The ICB grows when needed but never shrinks. Old ICB
-// resources go through the deferred release queue because a previous frame's
-// compute pass may still be in flight (the command buffer is created with
-// unretained references).
-bool QRhiMetal::prepareIcb(quint32 maxDrawCount)
+bool QRhiMetal::prepareIcbKernels()
 {
     if (d->icbSetupFailed)
         return false;
@@ -2767,6 +2766,14 @@ bool QRhiMetal::prepareIcb(quint32 maxDrawCount)
         }
     }
 
+    return true;
+}
+
+bool QRhiMetal::prepareIcb(quint32 maxDrawCount)
+{
+    if (!prepareIcbKernels())
+        return false;
+
     if (!d->icb || d->icbCapacity < maxDrawCount) {
         if (d->icb) {
             QRhiMetalData::DeferredReleaseEntry e;
@@ -2805,6 +2812,53 @@ bool QRhiMetal::prepareIcb(quint32 maxDrawCount)
     }
 
     return true;
+}
+
+// Encodes maxDrawCount entries of indirectBufMtl into targetIcb on an already
+// open compute encoder, writing the encoded count to targetRangeBuffer.
+// countBufMtl is optional: when null all maxDrawCount commands are encoded.
+static void encodeIcbWithCompute(QRhiMetalData *d,
+                                 id<MTLComputeCommandEncoder> computeEncoder,
+                                 id<MTLIndirectCommandBuffer> targetIcb,
+                                 id<MTLBuffer> targetArgBuffer,
+                                 id<MTLBuffer> targetRangeBuffer,
+                                 bool indexed,
+                                 QRhiCommandBuffer::IndexFormat indexFormat,
+                                 MTLPrimitiveType primitiveType,
+                                 id<MTLBuffer> indirectBufMtl, quint32 indirectBufferOffset,
+                                 id<MTLBuffer> indexBufMtl, quint32 indexBufferOffset,
+                                 id<MTLBuffer> countBufMtl, quint32 countBufferOffset,
+                                 quint32 maxDrawCount, quint32 stride)
+{
+    id<MTLComputePipelineState> computePipeline = d->icbEncodePipeline;
+    if (indexed) {
+        computePipeline = indexFormat == QRhiCommandBuffer::IndexUInt16
+                ? d->icbEncodePipelineU16 : d->icbEncodePipelineU32;
+    }
+    uint32_t maxDrawCountVal = maxDrawCount;
+    uint32_t metalPrimType = uint32_t(primitiveType);
+    uint32_t strideVal = stride;
+
+    [computeEncoder setComputePipelineState:computePipeline];
+    [computeEncoder setBuffer:indirectBufMtl offset:indirectBufferOffset atIndex:0];
+    [computeEncoder setBuffer:targetArgBuffer offset:0 atIndex:1];
+    [computeEncoder setBytes:&maxDrawCountVal length:sizeof(uint32_t) atIndex:2];
+    if (indexed)
+        [computeEncoder setBuffer:indexBufMtl offset:indexBufferOffset atIndex:3];
+    [computeEncoder setBytes:&metalPrimType length:sizeof(uint32_t) atIndex:4];
+    [computeEncoder setBytes:&strideVal length:sizeof(uint32_t) atIndex:5];
+    [computeEncoder setBuffer:countBufMtl ? countBufMtl : d->icbNoCountBuffer
+                       offset:countBufMtl ? countBufferOffset : 0
+                      atIndex:6];
+    [computeEncoder setBuffer:targetRangeBuffer offset:0 atIndex:7];
+    [computeEncoder useResource:targetIcb usage:MTLResourceUsageWrite];
+    [computeEncoder useResource:indirectBufMtl usage:MTLResourceUsageRead];
+    if (indexed)
+        [computeEncoder useResource:indexBufMtl usage:MTLResourceUsageRead];
+
+    NSUInteger tw = computePipeline.threadExecutionWidth;
+    [computeEncoder dispatchThreads:MTLSizeMake(maxDrawCount, 1, 1)
+              threadsPerThreadgroup:MTLSizeMake(tw, 1, 1)];
 }
 
 // Encodes up to maxDrawCount commands into the shared ICB with a compute
@@ -2854,37 +2908,12 @@ bool QRhiMetal::icbDraw(QMetalCommandBuffer *cbD, bool indexed,
     interruptRenderPass(cbD);
 
     id<MTLComputeCommandEncoder> computeEncoder = [cbD->d->cb computeCommandEncoder];
-    {
-        id<MTLComputePipelineState> computePipeline = d->icbEncodePipeline;
-        if (indexed) {
-            computePipeline = savedIndexFormat == QRhiCommandBuffer::IndexUInt16
-                    ? d->icbEncodePipelineU16 : d->icbEncodePipelineU32;
-        }
-        uint32_t maxDrawCountVal = maxDrawCount;
-        uint32_t metalPrimType = uint32_t(savedPipeline->d->primitiveType);
-        uint32_t strideVal = stride;
-
-        [computeEncoder setComputePipelineState:computePipeline];
-        [computeEncoder setBuffer:indirectBufMtl offset:indirectBufferOffset atIndex:0];
-        [computeEncoder setBuffer:d->icbArgumentBuffer offset:0 atIndex:1];
-        [computeEncoder setBytes:&maxDrawCountVal length:sizeof(uint32_t) atIndex:2];
-        if (indexed)
-            [computeEncoder setBuffer:indexBufMtl offset:savedIndexOffset atIndex:3];
-        [computeEncoder setBytes:&metalPrimType length:sizeof(uint32_t) atIndex:4];
-        [computeEncoder setBytes:&strideVal length:sizeof(uint32_t) atIndex:5];
-        [computeEncoder setBuffer:countBufMtl ? countBufMtl : d->icbNoCountBuffer
-                           offset:countBufMtl ? countBufferOffset : 0
-                          atIndex:6];
-        [computeEncoder setBuffer:d->icbRangeBuffer offset:0 atIndex:7];
-        [computeEncoder useResource:d->icb usage:MTLResourceUsageWrite];
-        [computeEncoder useResource:indirectBufMtl usage:MTLResourceUsageRead];
-        if (indexed)
-            [computeEncoder useResource:indexBufMtl usage:MTLResourceUsageRead];
-
-        NSUInteger tw = computePipeline.threadExecutionWidth;
-        [computeEncoder dispatchThreads:MTLSizeMake(maxDrawCount, 1, 1)
-                  threadsPerThreadgroup:MTLSizeMake(tw, 1, 1)];
-    }
+    encodeIcbWithCompute(d, computeEncoder, d->icb, d->icbArgumentBuffer, d->icbRangeBuffer,
+                         indexed, savedIndexFormat, savedPipeline->d->primitiveType,
+                         indirectBufMtl, indirectBufferOffset,
+                         indexBufMtl, savedIndexOffset,
+                         countBufMtl, countBufferOffset,
+                         maxDrawCount, stride);
 
     // Restart the render pass with Load actions to preserve existing content.
     endTempComputeEncoding(this, cbD, computeEncoder);
@@ -3107,6 +3136,7 @@ QRhi::FrameOpResult QRhiMetal::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginF
         swapChainD->ds->lastActiveFrameSlot = currentFrameSlot;
 
     d->argBufPool[currentFrameSlot].offset = 0;
+    d->globalFrameId += 1;
 
     executeDeferredReleases();
     swapChainD->cbWrapper.resetState(swapChainD->d->lastGpuTime[currentFrameSlot]);
@@ -3231,6 +3261,7 @@ QRhi::FrameOpResult QRhiMetal::beginOffscreenFrame(QRhiCommandBuffer **cb, QRhi:
     d->ofr.cbWrapper.d->cb = d->newCommandBuffer();
 
     d->argBufPool[currentFrameSlot].offset = 0;
+    d->globalFrameId += 1;
 
     executeDeferredReleases();
     d->ofr.cbWrapper.resetState(d->ofr.lastGpuTime);
@@ -4033,6 +4064,543 @@ void QRhiMetal::drawIndexedIndirectCount(QRhiCommandBuffer *cb,
 
     icbDraw(cbD, true, QRHI_RES(QMetalBuffer, indirectBuffer), indirectBufferOffset,
             QRHI_RES(QMetalBuffer, countBuffer), countBufferOffset, maxDrawCount, stride);
+}
+
+static inline MTLPrimitiveType toMetalPrimitiveType(QRhiGraphicsPipeline::Topology t);
+
+struct QMetalIndirectCommandBufferData
+{
+    struct Slot {
+        id<MTLIndirectCommandBuffer> icb = nil;
+        id<MTLBuffer> argBuffer = nil;
+        id<MTLBuffer> rangeBuffer = nil;
+        quint64 generation = 0; // unchanged contents should not be re-encoded every frame
+        MTLPrimitiveType primitiveType = MTLPrimitiveTypeTriangle;
+        id<MTLBuffer> indexBuf = nil;
+        quint32 indexOffset = 0;
+        QRhiCommandBuffer::IndexFormat indexFormat = QRhiCommandBuffer::IndexUInt16;
+        bool encoded = false;
+        quint64 usedInFrameId = 0;
+    };
+    Slot frameSlots[QMTL_FRAMES_IN_FLIGHT];
+
+    enum class Fill { None, Cpu, Gpu };
+    Fill fill = Fill::None;
+    bool slotSetupFailed = false;
+    bool created = false;
+
+    // Set by buildIndirect(), which makes the CPU-side recording irrelevant:
+    // gpuFilled means the kernel encoded into frameSlots[builtSlot], fallbackBuild
+    // that there was no ICB to encode into and executeIndirect() has to use the
+    // plain indirect draw entry points.
+    bool gpuFilled = false;
+    bool fallbackBuild = false;
+    QRhiIndirectCommandBufferBuildInfo buildInfo;
+    int builtSlot = -1;
+};
+
+static void qrhimtl_releaseIcbSlots(QRhiMetal *rhiD, QMetalIndirectCommandBuffer *icbD)
+{
+    for (int i = 0; i < QMTL_FRAMES_IN_FLIGHT; ++i) {
+        QMetalIndirectCommandBufferData::Slot &slot(icbD->d->frameSlots[i]);
+        if (slot.icb) {
+            QRhiMetalData::DeferredReleaseEntry e;
+            e.type = QRhiMetalData::DeferredReleaseEntry::StagingIcbBuffer;
+            e.lastActiveFrameSlot = icbD->lastActiveFrameSlot;
+            e.stagingIcbBuffer.icb = slot.icb;
+            e.stagingIcbBuffer.argBuffer = slot.argBuffer;
+            rhiD->d->releaseQueue.append(e);
+        }
+        if (slot.rangeBuffer) {
+            QRhiMetalData::DeferredReleaseEntry e;
+            e.type = QRhiMetalData::DeferredReleaseEntry::StagingBuffer;
+            e.lastActiveFrameSlot = icbD->lastActiveFrameSlot;
+            e.stagingBuffer.buffer = slot.rangeBuffer;
+            rhiD->d->releaseQueue.append(e);
+        }
+        slot = {};
+    }
+    icbD->d->fill = QMetalIndirectCommandBufferData::Fill::None;
+}
+
+static bool qrhimtl_ensureIcbSlots(QRhiMetal *rhiD, QMetalIndirectCommandBuffer *icbD,
+                                   QMetalIndirectCommandBufferData::Fill fill)
+{
+    Q_ASSERT(fill != QMetalIndirectCommandBufferData::Fill::None);
+
+    if (icbD->d->slotSetupFailed)
+        return false;
+
+    if (icbD->d->fill == fill)
+        return icbD->d->frameSlots[0].icb != nil;
+
+    if (icbD->d->fill != QMetalIndirectCommandBufferData::Fill::None) {
+        qrhimtl_releaseIcbSlots(rhiD, icbD);
+        icbD->d->gpuFilled = false;
+        icbD->d->builtSlot = -1;
+    }
+
+    if (!rhiD->caps.indirectCommandBuffers)
+        return false;
+
+    const bool gpu = fill == QMetalIndirectCommandBufferData::Fill::Gpu;
+    if (gpu && !rhiD->prepareIcbKernels())
+        return false;
+
+    MTLIndirectCommandBufferDescriptor *icbDesc = [MTLIndirectCommandBufferDescriptor new];
+    icbDesc.commandTypes = icbD->type() == QRhiIndirectCommandBuffer::IndexedDraws
+            ? MTLIndirectCommandTypeDrawIndexed : MTLIndirectCommandTypeDraw;
+    // All state except the primitive type and the index buffer is inherited.
+    icbDesc.inheritPipelineState = YES;
+    icbDesc.inheritBuffers = YES;
+    icbDesc.maxVertexBufferBindCount = 0;
+    icbDesc.maxFragmentBufferBindCount = 0;
+
+    bool ok = true;
+    for (int i = 0; i < QMTL_FRAMES_IN_FLIGHT && ok; ++i) {
+        QMetalIndirectCommandBufferData::Slot &slot(icbD->d->frameSlots[i]);
+        slot.icb = [rhiD->d->dev newIndirectCommandBufferWithDescriptor:icbDesc
+                                                       maxCommandCount:icbD->maxCommandCount()
+                                                               options:gpu ? MTLResourceStorageModePrivate
+                                                                           : MTLResourceStorageModeShared];
+        if (!slot.icb) {
+            qWarning("Failed to create MTLIndirectCommandBuffer");
+            ok = false;
+            break;
+        }
+        if (gpu) {
+            slot.rangeBuffer = [rhiD->d->dev newBufferWithLength:sizeof(MTLIndirectCommandBufferExecutionRange)
+                                                         options:MTLResourceStorageModePrivate];
+            id<MTLArgumentEncoder> argEnc = [rhiD->d->icbEncodeFunction newArgumentEncoderWithBufferIndex:1];
+            slot.argBuffer = [rhiD->d->dev newBufferWithLength:argEnc.encodedLength
+                                                       options:MTLResourceStorageModeShared];
+            if (slot.rangeBuffer && slot.argBuffer) {
+                [argEnc setArgumentBuffer:slot.argBuffer offset:0];
+                [argEnc setIndirectCommandBuffer:slot.icb atIndex:0];
+            } else {
+                qWarning("Failed to create MTLIndirectCommandBuffer helper buffers");
+                ok = false;
+            }
+            [argEnc release];
+            if (!ok)
+                break;
+        }
+    }
+    [icbDesc release];
+
+    if (!ok) {
+        for (int i = 0; i < QMTL_FRAMES_IN_FLIGHT; ++i) {
+            [icbD->d->frameSlots[i].icb release];
+            [icbD->d->frameSlots[i].rangeBuffer release];
+            [icbD->d->frameSlots[i].argBuffer release];
+            icbD->d->frameSlots[i] = {};
+        }
+        icbD->d->slotSetupFailed = true;
+        return false;
+    }
+
+    icbD->d->fill = fill;
+    return true;
+}
+
+QMetalIndirectCommandBuffer::QMetalIndirectCommandBuffer(QRhiImplementation *rhi, Type type,
+                                                         quint32 maxCommandCount)
+    : QRhiIndirectCommandBuffer(rhi, type, maxCommandCount),
+      d(new QMetalIndirectCommandBufferData)
+{
+}
+
+QMetalIndirectCommandBuffer::~QMetalIndirectCommandBuffer()
+{
+    destroy();
+    delete d;
+}
+
+void QMetalIndirectCommandBuffer::destroy()
+{
+    clear();
+
+    if (!d->created)
+        return;
+
+    d->slotSetupFailed = false;
+    d->gpuFilled = false;
+    d->fallbackBuild = false;
+    d->buildInfo = {};
+    d->builtSlot = -1;
+    d->created = false;
+    m_gpuBuilt = false;
+    m_gpuBuiltCommandCount = 0;
+
+    QRHI_RES_RHI(QRhiMetal);
+    if (rhiD) {
+        qrhimtl_releaseIcbSlots(rhiD, this);
+        rhiD->unregisterResource(this);
+    }
+}
+
+bool QMetalIndirectCommandBuffer::create()
+{
+    if (d->created)
+        destroy();
+    else
+        clear();
+
+    if (!m_maxCommandCount) {
+        qWarning("QRhiIndirectCommandBuffer: maxCommandCount is 0");
+        return false;
+    }
+
+    QRHI_RES_RHI(QRhiMetal);
+    lastActiveFrameSlot = -1;
+    d->created = true;
+    rhiD->registerResource(this);
+    return true;
+}
+
+QRhiIndirectCommandBuffer *QRhiMetal::createIndirectCommandBuffer(QRhiIndirectCommandBuffer::Type type,
+                                                                  quint32 maxCommandCount)
+{
+    return new QMetalIndirectCommandBuffer(this, type, maxCommandCount);
+}
+
+void QRhiMetal::commitIndirectCommandBuffer(QRhiResourceUpdateBatch *u,
+                                            QRhiIndirectCommandBuffer *icb)
+{
+    // Nothing to upload: executeIndirect() encodes straight into the ICB, and
+    // only there are the primitive type and index buffer known.
+    Q_UNUSED(u);
+    Q_UNUSED(icb);
+}
+
+// True when the slot holds an encoding that is already good for these
+// contents and this state, and so does not need to be re-encoded.
+static bool qrhimtl_icbSlotMatches(const QMetalIndirectCommandBuffer *icbD,
+                                   const QMetalIndirectCommandBufferData::Slot &slot,
+                                   MTLPrimitiveType primitiveType,
+                                   id<MTLBuffer> indexBufMtl, quint32 indexOffset,
+                                   QRhiCommandBuffer::IndexFormat indexFormat)
+{
+    const bool indexed = icbD->type() == QRhiIndirectCommandBuffer::IndexedDraws;
+
+    return slot.encoded
+            && slot.generation == icbD->contentsGeneration()
+            && slot.primitiveType == primitiveType
+            && (!indexed || (slot.indexBuf == indexBufMtl
+                             && slot.indexOffset == indexOffset
+                             && slot.indexFormat == indexFormat));
+}
+
+// Re-encodes the CPU-recorded commands unless the slot already matches.
+static void qrhimtl_encodeIcbFromCpu(QMetalIndirectCommandBuffer *icbD,
+                                     QMetalIndirectCommandBufferData::Slot &slot,
+                                     MTLPrimitiveType primitiveType,
+                                     id<MTLBuffer> indexBufMtl, quint32 indexOffset,
+                                     QRhiCommandBuffer::IndexFormat indexFormat)
+{
+    const bool indexed = icbD->type() == QRhiIndirectCommandBuffer::IndexedDraws;
+
+    if (qrhimtl_icbSlotMatches(icbD, slot, primitiveType, indexBufMtl, indexOffset, indexFormat))
+        return;
+
+    const quint32 count = icbD->recordedCommandCount();
+    if (indexed) {
+        const MTLIndexType indexType = indexFormat == QRhiCommandBuffer::IndexUInt16
+                ? MTLIndexTypeUInt16 : MTLIndexTypeUInt32;
+        const quint32 indexSize = indexFormat == QRhiCommandBuffer::IndexUInt16 ? 2 : 4;
+        const QRhiIndexedIndirectDrawCommand *cmds = icbD->indexedDrawCommands();
+        for (quint32 i = 0; i < count; ++i) {
+            const QRhiIndexedIndirectDrawCommand &c(cmds[i]);
+            id<MTLIndirectRenderCommand> rc = [slot.icb indirectRenderCommandAtIndex:i];
+            [rc drawIndexedPrimitives:primitiveType
+                           indexCount:c.indexCount
+                            indexType:indexType
+                          indexBuffer:indexBufMtl
+                    indexBufferOffset:indexOffset + c.firstIndex * indexSize
+                        instanceCount:c.instanceCount
+                           baseVertex:c.vertexOffset
+                         baseInstance:c.firstInstance];
+        }
+    } else {
+        const QRhiIndirectDrawCommand *cmds = icbD->drawCommands();
+        for (quint32 i = 0; i < count; ++i) {
+            const QRhiIndirectDrawCommand &c(cmds[i]);
+            id<MTLIndirectRenderCommand> rc = [slot.icb indirectRenderCommandAtIndex:i];
+            [rc drawPrimitives:primitiveType
+                   vertexStart:c.firstVertex
+                   vertexCount:c.vertexCount
+                 instanceCount:c.instanceCount
+                  baseInstance:c.firstInstance];
+        }
+    }
+
+    // Commands past the current count may be left over from a longer batch.
+    if (count < icbD->maxCommandCount())
+        [slot.icb resetWithRange:NSMakeRange(count, icbD->maxCommandCount() - count)];
+
+    slot.generation = icbD->contentsGeneration();
+    slot.primitiveType = primitiveType;
+    slot.indexBuf = indexBufMtl;
+    slot.indexOffset = indexOffset;
+    slot.indexFormat = indexFormat;
+    slot.encoded = true;
+}
+
+// Fallback for when there is no usable ICB.
+static void qrhimtl_replayIcbOnCpu(QMetalCommandBuffer *cbD, QMetalIndirectCommandBuffer *icbD,
+                                   quint32 firstCommand, quint32 count,
+                                   int currentFrameSlot)
+{
+    const MTLPrimitiveType primitiveType = cbD->currentGraphicsPipeline->d->primitiveType;
+
+    if (icbD->type() == QRhiIndirectCommandBuffer::IndexedDraws) {
+        QMetalBuffer *indexBufD = cbD->currentIndexBuffer;
+        if (!indexBufD)
+            return;
+        id<MTLBuffer> indexBufMtl = indexBufD->d->buf[indexBufD->d->slotted ? currentFrameSlot : 0];
+        const MTLIndexType indexType = cbD->currentIndexFormat == QRhiCommandBuffer::IndexUInt16
+                ? MTLIndexTypeUInt16 : MTLIndexTypeUInt32;
+        const quint32 indexSize = cbD->currentIndexFormat == QRhiCommandBuffer::IndexUInt16 ? 2 : 4;
+        const QRhiIndexedIndirectDrawCommand *cmds = icbD->indexedDrawCommands();
+        for (quint32 i = 0; i < count; ++i) {
+            const QRhiIndexedIndirectDrawCommand &c(cmds[firstCommand + i]);
+            [cbD->d->currentRenderPassEncoder drawIndexedPrimitives: primitiveType
+              indexCount: c.indexCount
+              indexType: indexType
+              indexBuffer: indexBufMtl
+              indexBufferOffset: cbD->currentIndexOffset + c.firstIndex * indexSize
+              instanceCount: c.instanceCount
+              baseVertex: c.vertexOffset
+              baseInstance: c.firstInstance];
+        }
+    } else {
+        const QRhiIndirectDrawCommand *cmds = icbD->drawCommands();
+        for (quint32 i = 0; i < count; ++i) {
+            const QRhiIndirectDrawCommand &c(cmds[firstCommand + i]);
+            [cbD->d->currentRenderPassEncoder drawPrimitives: primitiveType
+              vertexStart: c.firstVertex
+              vertexCount: c.vertexCount
+              instanceCount: c.instanceCount
+              baseInstance: c.firstInstance];
+        }
+    }
+}
+
+void QRhiMetal::executeIndirect(QRhiCommandBuffer *cb, QRhiIndirectCommandBuffer *icb,
+                                quint32 firstCommand, quint32 commandCount)
+{
+    QMetalCommandBuffer *cbD = QRHI_RES(QMetalCommandBuffer, cb);
+    Q_ASSERT(cbD->recordingPass == QMetalCommandBuffer::RenderPass);
+
+    QMetalIndirectCommandBuffer *icbD = QRHI_RES(QMetalIndirectCommandBuffer, icb);
+    icbD->lastActiveFrameSlot = currentFrameSlot;
+
+    const bool indexed = icb->type() == QRhiIndirectCommandBuffer::IndexedDraws;
+
+    if (icbD->d->gpuFilled) {
+        if (icbD->d->buildInfo.topology != cbD->currentGraphicsPipeline->topology()) {
+            qWarning("executeIndirect: the indirect command buffer was built for a different "
+                     "topology than the current graphics pipeline uses; skipping");
+            return;
+        }
+        QMetalIndirectCommandBufferData::Slot &slot(icbD->d->frameSlots[icbD->d->builtSlot]);
+
+        const quint32 total = icbD->commandCount();
+        const bool deviceCount = icbD->d->buildInfo.countBuffer != nullptr;
+        NSRange range = NSMakeRange(0, total);
+        if (deviceCount) {
+            // The count is only known to the device, and applying it is what
+            // the compute kernel-written range is for. That form of
+            // executeCommandsInBuffer takes no CPU-side range, so a subrange
+            // and a device-side count cannot be combined.
+            if (firstCommand != 0 || commandCount < total) {
+                qWarning("executeIndirect: firstCommand and commandCount cannot be honoured "
+                         "together with a device-side count; executing all %u command(s)", total);
+            }
+        } else {
+            if (firstCommand >= total)
+                return;
+            const quint32 count = qMin(commandCount, total - firstCommand);
+            if (!count)
+                return;
+            range = NSMakeRange(firstCommand, count);
+        }
+
+        if (indexed && icbD->d->buildInfo.indexBuffer) {
+            QMetalBuffer *indexBufD = QRHI_RES(QMetalBuffer, icbD->d->buildInfo.indexBuffer);
+            id<MTLBuffer> indexBufMtl = indexBufD->d->buf[indexBufD->d->slotted ? currentFrameSlot : 0];
+            [cbD->d->currentRenderPassEncoder useResource:indexBufMtl
+                                                    usage:MTLResourceUsageRead
+                                                   stages:MTLRenderStageVertex | MTLRenderStageFragment];
+        }
+        if (deviceCount) {
+            [cbD->d->currentRenderPassEncoder executeCommandsInBuffer:slot.icb
+                                                      indirectBuffer:slot.rangeBuffer
+                                                indirectBufferOffset:0];
+        } else {
+            [cbD->d->currentRenderPassEncoder executeCommandsInBuffer:slot.icb withRange:range];
+        }
+        return;
+    }
+
+    if (icbD->d->fallbackBuild) {
+        const QRhiIndirectCommandBufferBuildInfo &info(icbD->d->buildInfo);
+        if (info.countBuffer) {
+            qWarning("executeIndirect: a device-side count needs an indirect command buffer, "
+                     "which is not available here; skipping");
+            return;
+        }
+        const quint32 canonicalStride = indexed ? sizeof(QRhiIndexedIndirectDrawCommand)
+                                                : sizeof(QRhiIndirectDrawCommand);
+        const quint32 stride = info.stride ? info.stride : canonicalStride;
+        const quint32 total = icbD->commandCount();
+        if (firstCommand >= total)
+            return;
+        const quint32 count = qMin(commandCount, total - firstCommand);
+        if (!count)
+            return;
+        const quint32 offset = info.sourceBufferOffset + firstCommand * stride;
+        if (indexed)
+            drawIndexedIndirect(cb, info.sourceBuffer, offset, count, stride);
+        else
+            drawIndirect(cb, info.sourceBuffer, offset, count, stride);
+        return;
+    }
+
+    const quint32 total = icbD->recordedCommandCount();
+    if (firstCommand >= total)
+        return;
+    const quint32 count = qMin(commandCount, total - firstCommand);
+    if (!count)
+        return;
+
+    if (icbUnavailableReason(cbD)
+        || !qrhimtl_ensureIcbSlots(this, icbD, QMetalIndirectCommandBufferData::Fill::Cpu))
+    {
+        qrhimtl_replayIcbOnCpu(cbD, icbD, firstCommand, count, currentFrameSlot);
+        return;
+    }
+    QMetalIndirectCommandBufferData::Slot &slot(icbD->d->frameSlots[currentFrameSlot]);
+
+    id<MTLBuffer> indexBufMtl = nil;
+    quint32 indexOffset = 0;
+    if (indexed) {
+        QMetalBuffer *indexBufD = cbD->currentIndexBuffer;
+        if (!indexBufD)
+            return;
+        indexBufD->lastActiveFrameSlot = currentFrameSlot;
+        indexBufMtl = indexBufD->d->buf[indexBufD->d->slotted ? currentFrameSlot : 0];
+        indexOffset = cbD->currentIndexOffset;
+    }
+
+    const MTLPrimitiveType primitiveType = cbD->currentGraphicsPipeline->d->primitiveType;
+    if (slot.usedInFrameId == d->globalFrameId
+            && !qrhimtl_icbSlotMatches(icbD, slot, primitiveType, indexBufMtl, indexOffset,
+                                       cbD->currentIndexFormat))
+    {
+        // An executeCommandsInBuffer recorded earlier in this frame references
+        // this slot, and re-encoding it now would change what that one executes
+        // once submitted. Replaying as ordinary draws keeps both correct.
+        qWarning("executeIndirect: the same indirect command buffer is executed more than once "
+                 "in a frame, with different contents, topology or index buffer state; "
+                 "falling back to individual draw calls");
+        qrhimtl_replayIcbOnCpu(cbD, icbD, firstCommand, count, currentFrameSlot);
+        return;
+    }
+
+    qrhimtl_encodeIcbFromCpu(icbD, slot, primitiveType,
+                             indexBufMtl, indexOffset, cbD->currentIndexFormat);
+
+    if (indexed) {
+        // Index buffer is not inherited from the encoder, and the ICB commands reference it directly,
+        // so it needs the useResource.
+        [cbD->d->currentRenderPassEncoder useResource:indexBufMtl
+                                          usage:MTLResourceUsageRead
+                                          stages:MTLRenderStageVertex | MTLRenderStageFragment];
+    }
+    [cbD->d->currentRenderPassEncoder executeCommandsInBuffer:slot.icb
+                                                    withRange:NSMakeRange(firstCommand, count)];
+    slot.usedInFrameId = d->globalFrameId;
+}
+
+void QRhiMetal::buildIndirect(QRhiCommandBuffer *cb, QRhiIndirectCommandBuffer *icb,
+                              const QRhiIndirectCommandBufferBuildInfo &info)
+{
+    QMetalCommandBuffer *cbD = QRHI_RES(QMetalCommandBuffer, cb);
+    Q_ASSERT(cbD->recordingPass == QMetalCommandBuffer::NoPass);
+
+    QMetalIndirectCommandBuffer *icbD = QRHI_RES(QMetalIndirectCommandBuffer, icb);
+    icbD->lastActiveFrameSlot = currentFrameSlot;
+
+    const bool indexed = icb->type() == QRhiIndirectCommandBuffer::IndexedDraws;
+
+    if (indexed && !info.indexBuffer) {
+        qWarning("buildIndirect: an IndexedDraws indirect command buffer needs an "
+                 "index buffer in QRhiIndirectCommandBufferBuildInfo; skipping");
+        return;
+    }
+
+    quint32 count = info.commandCount ? info.commandCount : icbD->m_maxCommandCount;
+    if (count > icbD->m_maxCommandCount) {
+        qWarning("QRhiIndirectCommandBuffer: buildIndirect() with commandCount %u exceeds "
+                 "maxCommandCount %u; clamping", count, icbD->m_maxCommandCount);
+        count = icbD->m_maxCommandCount;
+    }
+    icbD->m_gpuBuilt = true;
+    icbD->m_gpuBuiltCommandCount = count;
+
+    if (!qrhimtl_ensureIcbSlots(this, icbD, QMetalIndirectCommandBufferData::Fill::Gpu)) {
+        icbD->d->gpuFilled = false;
+        icbD->d->fallbackBuild = true;
+        icbD->d->buildInfo = info;
+        icbD->d->builtSlot = -1;
+        return;
+    }
+
+    QMetalIndirectCommandBufferData::Slot &slot(icbD->d->frameSlots[currentFrameSlot]);
+
+    QMetalBuffer *srcBufD = QRHI_RES(QMetalBuffer, info.sourceBuffer);
+    executeBufferHostWritesForCurrentFrame(srcBufD);
+    srcBufD->lastActiveFrameSlot = currentFrameSlot;
+    id<MTLBuffer> srcBufMtl = srcBufD->d->buf[srcBufD->d->slotted ? currentFrameSlot : 0];
+
+    id<MTLBuffer> indexBufMtl = nil;
+    if (indexed) {
+        QMetalBuffer *indexBufD = QRHI_RES(QMetalBuffer, info.indexBuffer);
+        indexBufD->lastActiveFrameSlot = currentFrameSlot;
+        indexBufMtl = indexBufD->d->buf[indexBufD->d->slotted ? currentFrameSlot : 0];
+    }
+
+    id<MTLBuffer> countBufMtl = nil;
+    if (info.countBuffer) {
+        QMetalBuffer *countBufD = QRHI_RES(QMetalBuffer, info.countBuffer);
+        executeBufferHostWritesForCurrentFrame(countBufD);
+        countBufD->lastActiveFrameSlot = currentFrameSlot;
+        countBufMtl = countBufD->d->buf[countBufD->d->slotted ? currentFrameSlot : 0];
+    }
+
+    const quint32 stride = info.stride ? info.stride
+                                       : (indexed ? sizeof(QRhiIndexedIndirectDrawCommand)
+                                                  : sizeof(QRhiIndirectDrawCommand));
+
+    // Outside a render pass, so the compute encoder costs no interruption, no
+    // store action juggling and no per-pass state to restore.
+    id<MTLComputeCommandEncoder> computeEncoder = [cbD->d->cb computeCommandEncoder];
+    encodeIcbWithCompute(d, computeEncoder, slot.icb, slot.argBuffer, slot.rangeBuffer,
+                         indexed, info.indexFormat,
+                         toMetalPrimitiveType(info.topology),
+                         srcBufMtl, info.sourceBufferOffset,
+                         indexBufMtl, info.indexBufferOffset,
+                         countBufMtl, info.countBufferOffset,
+                         icbD->commandCount(), stride);
+    [computeEncoder endEncoding];
+
+    icbD->d->gpuFilled = true;
+    icbD->d->fallbackBuild = false;
+    icbD->d->buildInfo = info;
+    icbD->d->builtSlot = currentFrameSlot;
+    // The CPU-encoded contents of this slot, if any, are gone now.
+    slot.encoded = false;
 }
 
 static void qrhimtl_releaseBuffer(const QRhiMetalData::DeferredReleaseEntry &e)

@@ -38,8 +38,14 @@
 // so they cannot avoid this at all.
 //
 // Set QT_RHI_TEST_PRESERVABLE_DS=1 in the environment to create the depth-stencil
-// buffer with QRhiRenderBuffer::NoTransientBacking, which is how this is meant to
-// be solved. Both draw counts then give the correct result.
+// buffer with QRhiRenderBuffer::NoTransientBacking, which is one way to solve
+// this. Both draw counts then give the correct result.
+//
+// The other way is not to interrupt the pass in the first place: record the
+// draws into a QRhiIndirectCommandBuffer and issue them with executeIndirect().
+// See the indirectcommandbuffer manual test, which is this same scene done that
+// way, and stays correct at both draw counts with a transient depth-stencil
+// buffer.
 
 static const quint32 SAFE_DRAW_COUNT = 128;   // at or below the Metal ICB threshold
 static const quint32 BROKEN_DRAW_COUNT = 130; // above it
