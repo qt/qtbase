@@ -195,6 +195,12 @@ void tst_QSslKeyingMaterial::exporterProducesSameMaterialOnBothSides()
     QCOMPARE_NE(data1_6.value(), data1_5.value());
     QCOMPARE_NE(data1_6.value(), data1_5_ctx1.value());
     QCOMPARE_NE(data1_5.value(), data1_5_ctx1.value());
+
+    // And finally, make sure it is cleared on socket re-use:
+    client.disconnectFromHost();
+    QTRY_COMPARE(client.state(), QAbstractSocket::UnconnectedState);
+    client.connectToHost(QHostAddress::LocalHost, server.serverPort());
+    QVERIFY(client.sslConfiguration().keyingMaterial().front().value().isEmpty());
 }
 
 #endif // Feature 'ssl'.
