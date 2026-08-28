@@ -4956,16 +4956,35 @@ void tst_QLineEdit::testQuickSelectionWithMouse()
 
     lineEdit.show();
 
-    // Test sends mouse press events on center position of the lineEdit.
-    // We need to make sure that the text does not already ended before center position,
+    // Test sends mouse press events on the middle glyph of the text of the lineEdit.
+    // We need to make sure that the press position does not end up after the text ended,
     // We are adding some extra pixels to make sure text that will not move when selecting
     QFontMetrics metrics(lineEdit.font());
     const int widthForWholeText =  metrics.horizontalAdvance(lineEdit.text());
     lineEdit.setFixedWidth(widthForWholeText + 40);
 
-    const QPoint center = lineEdit.contentsRect().center();
-    const QPoint dragRight = center + QPoint(20, 0);
-    const QPoint dragLeft = center + QPoint(-20, 0);
+    const auto cursorRectAtPosition = [&](int position) {
+        lineEdit.setCursorPosition(position);
+        return lineEdit.cursorRect();
+    };
+
+    const auto centerOfMiddleGlyph = [&]() {
+        const QRect glyphStart = cursorRectAtPosition(text.size() / 2);
+        const QRect glyphEnd = cursorRectAtPosition(text.size() / 2 + 1);
+        const int glyphCenterX = (glyphStart.center().x() + glyphEnd.center().x()) / 2;
+        return QPoint(glyphCenterX, lineEdit.contentsRect().center().y());
+    };
+
+    QPoint center;
+    QPoint dragRight;
+    QPoint dragLeft;
+    const auto measureDragPoints = [&]() {
+        center = centerOfMiddleGlyph();
+        dragRight = center + QPoint(20, 0);
+        dragLeft = center + QPoint(-20, 0);
+    };
+    measureDragPoints();
+
     const int quickSelectionThreshold =
             QGuiApplication::styleHints()->mouseQuickSelectionThreshold();
     const QPoint belowQuickSelectionThreshold(0, quickSelectionThreshold / 2);
@@ -5033,6 +5052,7 @@ void tst_QLineEdit::testQuickSelectionWithMouse()
     mouseReleaseIfNeeded(dragRight);
 
     lineEdit.setLayoutDirection(Qt::RightToLeft);
+    measureDragPoints();
 
     // Select the whole left half (RTL layout).
     QTest::mousePress(lineEdit.windowHandle(), Qt::LeftButton, Qt::NoModifier, center);
