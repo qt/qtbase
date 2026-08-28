@@ -30,27 +30,24 @@ instructions:
                 fi
             done
 
+            # Wait for a login that works, not for something answering on
+            # port 22. sshd boots with /system/etc/ssh/sshd_config, which
+            # permits no login; post_startup.sh later swaps in
+            # /system/data/etc/ssh/sshd_config with AuthenticationMethods
+            # none. The old check probed with no user and took the resulting
+            # "Permission denied" as readiness, so it never waited.
             while :; do
                 echo "Waiting QEMU SSH coming up"
-                status=$(ssh -o PreferredAuthentications=publickey -o BatchMode=yes -o ConnectTimeout=1 ${QEMUIPADDR} echo ok 2>&1)
-                RESULT=$?
-                if [ $RESULT -eq 0 ]; then
-                    echo "QEMU SSH Connected ok"
+                if ssh -o BatchMode=yes -o ConnectTimeout=2 \
+                       -o StrictHostKeyChecking=no ${QNX_QEMU_SSH} true 2>&1; then
+                    echo "QEMU SSH login ok"
+                    RESULT=0
                     break
-                fi
-                if [ $RESULT -eq 255 ]; then
-                    # connection refused also gets you here
-                    if [[ $status == *"Permission denied"* ]] ; then
-                        # permission denied indicates the ssh link is okay
-                        echo "QEMU SSH server up"
-                        RESULT=0
-                        break
-                    fi
                 fi
                 TIMEOUT=$((TIMEOUT-1))
                 if [ $TIMEOUT -eq 0 ]; then
                     echo "QEMU SSH timed out"
-                    exit $RESULT
+                    exit 1
                 fi
                 sleep 1
             done
