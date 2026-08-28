@@ -134,6 +134,7 @@ QWinTimeZonePrivate::QWinTransitionRule readRegistryRule(const HKEY &key,
     DWORD tziSize = sizeof(tzi);
     if (RegQueryValueEx(key, value, nullptr, nullptr, reinterpret_cast<BYTE *>(&tzi), &tziSize)
         == ERROR_SUCCESS) {
+        Q_ASSERT(tziSize == sizeof(tzi));
         rule.startYear = 0;
         rule.standardTimeBias = tzi.Bias + tzi.StandardBias;
         rule.daylightTimeBias = tzi.Bias + tzi.DaylightBias - rule.standardTimeBias;
@@ -548,9 +549,13 @@ void QWinTimeZonePrivate::init(const QByteArray &ianaId)
             const QString dynamicKeyPath = baseKeyPath + "\\Dynamic DST"_L1;
             QWinRegistryKey dynamicKey(HKEY_LOCAL_MACHINE, dynamicKeyPath);
             if (dynamicKey.isValid()) {
+                // See QLocalTime::computeSystemMillisRange():
+                constexpr int YearBoundMin = 1970, YearBoundMax = 3000;
                 // Find out the start and end years stored, then iterate over them
-                const int startYear = dynamicKey.value<int>(L"FirstEntry").value_or(0);
-                const int endYear = dynamicKey.value<int>(L"LastEntry").value_or(0);
+                const int startYear = dynamicKey.value<int>(L"FirstEntry").value_or(YearBoundMin);
+                Q_ASSERT(startYear >= YearBoundMin);
+                const int endYear = dynamicKey.value<int>(L"LastEntry").value_or(YearBoundMax);
+                Q_ASSERT(endYear <= YearBoundMax);
                 for (int year = startYear; year <= endYear; ++year) {
                     bool ruleOk;
                     QWinTransitionRule rule = readRegistryRule(dynamicKey,
