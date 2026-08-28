@@ -91,14 +91,19 @@ private Q_SLOTS:
     void linkHoverLeave();
 
 private:
-    QLabel *testWidget;
-    QPointer<Widget> test_box;
-    QPointer<QLabel> test_label;
+    QPointer<QLabel> testWidget;
 };
 
 // Testing get/set functions
 void tst_QLabel::getSetCheck()
 {
+    QPointer<QWidget> var2;
+    QPointer<QMovie> var3;
+    const auto cleanup = qScopeGuard([&] {
+        delete var2;
+        delete var3;
+    });
+
     QLabel obj1;
     obj1.setWordWrap(false);
     QVERIFY(!obj1.wordWrap());
@@ -106,19 +111,19 @@ void tst_QLabel::getSetCheck()
     QVERIFY(obj1.wordWrap());
 
 #if QT_CONFIG(shortcut)
-    QWidget *var2 = new QWidget();
+    var2 = new QWidget();
     obj1.setBuddy(var2);
     QCOMPARE(var2, obj1.buddy());
-    obj1.setBuddy((QWidget *)0);
-    QCOMPARE((QWidget *)0, obj1.buddy());
+    obj1.setBuddy(nullptr);
+    QCOMPARE(nullptr, obj1.buddy());
     delete var2;
 #endif // QT_CONFIG(shortcut)
 
-    QMovie *var3 = new QMovie;
+    var3 = new QMovie;
     obj1.setMovie(var3);
     QCOMPARE(var3, obj1.movie());
-    obj1.setMovie((QMovie *)0);
-    QCOMPARE((QMovie *)0, obj1.movie());
+    obj1.setMovie(nullptr);
+    QCOMPARE(nullptr, obj1.movie());
     delete var3;
 }
 
@@ -133,9 +138,7 @@ void tst_QLabel::initTestCase()
 void tst_QLabel::cleanupTestCase()
 {
     delete testWidget;
-    testWidget = 0;
-    delete test_box;
-
+    testWidget = nullptr;
     const QPoint safeCursorPos = QGuiApplication::primaryScreen()->availableGeometry().bottomRight() - QPoint(40, 40);
     QCursor::setPos(safeCursorPos);
 }
@@ -153,11 +156,8 @@ void tst_QLabel::init()
 
 void tst_QLabel::cleanup()
 {
-    if (QTest::currentTestFunction() == QLatin1String("setBuddy")) {
+    if (testWidget->isHidden())
         testWidget->show();
-
-        delete test_box; // this should delete tst_labl and test_edit as well.
-    }
 }
 
 // Set buddy doesn't make much sense on OS X
@@ -166,8 +166,12 @@ void tst_QLabel::setBuddy()
 {
     testWidget->hide();
 
-    test_box = new Widget;
-    test_label= new QLabel( test_box );
+    QPointer<Widget> test_box = new Widget;
+    const auto cleanup = qScopeGuard([&] {
+        delete test_box;
+    });
+
+    auto test_label = new QLabel(test_box);
     test_label->setText( "&Test with a buddy" );
     QWidget *test_edit = new QLineEdit( test_box );
     QWidget *test_edit2 = new QLineEdit( test_box );
@@ -177,7 +181,7 @@ void tst_QLabel::setBuddy()
     layout->addWidget(test_edit2);
     test_box->show();
     QApplicationPrivate::setActiveWindow(test_box);
-    QVERIFY(test_box->isActiveWindow());
+    QVERIFY(QTest::qWaitForWindowActive(test_box));
 
     test_label->setBuddy( test_edit );
     test_label->setFocus();
@@ -203,16 +207,11 @@ void tst_QLabel::setText_data()
     QTest::addColumn<QString>("txt");
     QTest::addColumn<QString>("font");
 
-    QString prefix = "";
-#ifdef Q_OS_WIN32
-    prefix = "win32_";
-#endif
-
-    QTest::newRow( QString(prefix + "data0").toLatin1() ) << QString("This is a single line") << QString("Helvetica");
-    QTest::newRow( QString(prefix + "data1").toLatin1() ) << QString("This is the first line\nThis is the second line") << QString("Courier");
-    QTest::newRow( QString(prefix + "data2").toLatin1() ) << QString("This is the first line\nThis is the second line\nThis is the third line") << QString("Helvetica");
-    QTest::newRow( QString(prefix + "data3").toLatin1() ) << QString("This is <b>bold</b> richtext") << QString("Courier");
-    QTest::newRow( QString(prefix + "data4").toLatin1() ) << QString("I Have a &shortcut") << QString("Helvetica");
+    QTest::newRow("data0") << QString("This is a single line") << QString("Helvetica");
+    QTest::newRow("data1") << QString("This is the first line\nThis is the second line") << QString("Courier");
+    QTest::newRow("data2") << QString("This is the first line\nThis is the second line\nThis is the third line") << QString("Helvetica");
+    QTest::newRow("data3") << QString("This is <b>bold</b> richtext") << QString("Courier");
+    QTest::newRow("data4") << QString("I Have a &shortcut") << QString("Helvetica");
 }
 
 void tst_QLabel::setText()
@@ -228,14 +227,10 @@ void tst_QLabel::setText()
 void tst_QLabel::setTextFormat()
 {
     // lets' start with the simple stuff...
-    testWidget->setTextFormat( Qt::PlainText );
-    QVERIFY( testWidget->textFormat() == Qt::PlainText );
-
-    testWidget->setTextFormat( Qt::RichText );
-    QVERIFY( testWidget->textFormat() == Qt::RichText );
-
-    testWidget->setTextFormat( Qt::AutoText );
-    QVERIFY( testWidget->textFormat() == Qt::AutoText );
+    for (const auto fmt : { Qt::PlainText, Qt::RichText, Qt::AutoText}) {
+        testWidget->setTextFormat(fmt);
+        QCOMPARE(testWidget->textFormat(), fmt);
+    }
 }
 
 void tst_QLabel::setNum()
@@ -291,46 +286,48 @@ void tst_QLabel::wordWrap()
 void tst_QLabel::eventPropagation_data()
 {
     QTest::addColumn<QString>("text");
-    QTest::addColumn<int>("textInteractionFlags");
-    QTest::addColumn<int>("focusPolicy");
+    QTest::addColumn<Qt::TextInteractionFlag>("textInteractionFlags");
+    QTest::addColumn<Qt::FocusPolicy>("focusPolicy");
     QTest::addColumn<bool>("propagation");
 
-    QTest::newRow("plain text1") << QString("plain text") << int(Qt::LinksAccessibleByMouse) << int(Qt::NoFocus) << true;
-    QTest::newRow("plain text2") << QString("plain text") << (int)Qt::TextSelectableByKeyboard << (int)Qt::ClickFocus << true;
-    QTest::newRow("plain text3") << QString("plain text") << (int)Qt::TextSelectableByMouse << (int)Qt::ClickFocus << false;
-    QTest::newRow("plain text4") << QString("plain text") << (int)Qt::NoTextInteraction << (int)Qt::NoFocus << true;
-    QTest::newRow("rich text1") << QString("<b>rich text</b>") << (int)Qt::LinksAccessibleByMouse << (int)Qt::NoFocus << true;
-    QTest::newRow("rich text2") << QString("<b>rich text</b>") << (int)Qt::TextSelectableByKeyboard << (int)Qt::ClickFocus << true;
-    QTest::newRow("rich text3") << QString("<b>rich text</b>") << (int)Qt::TextSelectableByMouse << (int)Qt::ClickFocus << false;
-    QTest::newRow("rich text4") << QString("<b>rich text</b>") << (int)Qt::NoTextInteraction << (int)Qt::NoFocus << true;
-    QTest::newRow("rich text5") << QString("<b>rich text</b>") << (int)Qt::LinksAccessibleByKeyboard << (int)Qt::StrongFocus << true;
-
-    if (!test_box)
-        test_box = new Widget;
-    if (!test_label)
-        test_label = new QLabel(test_box);
+    QTest::newRow("plain text1") << QString("plain text") << Qt::LinksAccessibleByMouse << Qt::NoFocus << true;
+    QTest::newRow("plain text2") << QString("plain text") << Qt::TextSelectableByKeyboard << Qt::ClickFocus << true;
+    QTest::newRow("plain text3") << QString("plain text") << Qt::TextSelectableByMouse << Qt::ClickFocus << false;
+    QTest::newRow("plain text4") << QString("plain text") << Qt::NoTextInteraction << Qt::NoFocus << true;
+    QTest::newRow("rich text1") << QString("<b>rich text</b>") << Qt::LinksAccessibleByMouse << Qt::NoFocus << true;
+    QTest::newRow("rich text2") << QString("<b>rich text</b>") << Qt::TextSelectableByKeyboard << Qt::ClickFocus << true;
+    QTest::newRow("rich text3") << QString("<b>rich text</b>") << Qt::TextSelectableByMouse << Qt::ClickFocus << false;
+    QTest::newRow("rich text4") << QString("<b>rich text</b>") << Qt::NoTextInteraction << Qt::NoFocus << true;
+    QTest::newRow("rich text5") << QString("<b>rich text</b>") << Qt::LinksAccessibleByKeyboard << Qt::StrongFocus << true;
 }
 
 void tst_QLabel::eventPropagation()
 {
     QFETCH(QString, text);
-    QFETCH(int, textInteractionFlags);
-    QFETCH(int, focusPolicy);
+    QFETCH(Qt::TextInteractionFlag, textInteractionFlags);
+    QFETCH(Qt::FocusPolicy, focusPolicy);
     QFETCH(bool, propagation);
 
+    auto *test_box = new Widget;
+    const auto cleanup = qScopeGuard([&] {
+        delete test_box;
+    });
+    auto test_label = new QLabel(test_box);
     // plain text (accepts mouse event _only_ when label selectable by mouse)
     test_label->setText(text);
     test_box->events.clear();
-    test_label->setTextInteractionFlags(Qt::TextInteractionFlags(textInteractionFlags));
-    QCOMPARE(int(test_label->focusPolicy()), focusPolicy);
+    test_label->setTextInteractionFlags(textInteractionFlags);
+    QCOMPARE(test_label->focusPolicy(), focusPolicy);
     QTest::mousePress(test_label, Qt::LeftButton);
-    QVERIFY(test_box->events.contains(QEvent::MouseButtonPress) == propagation); // should have propagated!
+    QCOMPARE(test_box->events.contains(QEvent::MouseButtonPress), propagation); // should have propagated!
 }
 
 void tst_QLabel::focusPolicy()
 {
-    delete test_label;
-    test_label = new QLabel;
+    auto *test_label = new QLabel;
+    const auto cleanup = qScopeGuard([&] {
+        delete test_label;
+    });
     QCOMPARE(test_label->focusPolicy(), Qt::NoFocus); // default
     test_label->setFocusPolicy(Qt::StrongFocus);
     test_label->setText("Whatever"); // setting text should not change the focus policy
@@ -345,7 +342,6 @@ void tst_QLabel::focusPolicy()
     test_label->setFocusPolicy(Qt::StrongFocus);
     test_label->setTextInteractionFlags(Qt::NoTextInteraction);
     QCOMPARE(test_label->focusPolicy(), Qt::StrongFocus); // is not touched since value didn't change
-    delete test_label;
 }
 
 void tst_QLabel::task190318_sizes()
@@ -476,7 +472,6 @@ void tst_QLabel::unicodeText()
     frame.show();
     QVERIFY(QTest::qWaitForWindowExposed(&frame));
     QVERIFY(frame.isVisible());  // was successfully sized and shown
-    testWidget->show();
 }
 
 #if QT_CONFIG(shortcut)
