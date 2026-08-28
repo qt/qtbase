@@ -308,7 +308,7 @@ public:
     Q_NETWORK_EXPORT void setDateTimeValue(QAnyStringView name, const QDateTime &dateTime);
     Q_NETWORK_EXPORT void setDateTimeValue(WellKnownHeader name, const QDateTime &dateTime);
 
-    Q_NETWORK_EXPORT QList<QHttpHeaderRange> rangeValues(bool *ok = nullptr) const;
+    Q_NETWORK_EXPORT std::optional<QList<QHttpHeaderRange>> rangeValues() const;
     Q_NETWORK_EXPORT void setRangeValues(QSpan<const QHttpHeaderRange> ranges);
 
     Q_NETWORK_EXPORT qsizetype size() const noexcept;

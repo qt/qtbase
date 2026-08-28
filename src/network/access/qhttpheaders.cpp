@@ -1761,7 +1761,7 @@ std::optional<QDateTime> QHttpHeaders::dateTimeValueAt(qsizetype i) const
     \since 6.12
 
     Returns the values of the \c Range HTTP header field, parsed as a list of
-    QHttpHeaderRange objects.
+    QHttpHeaderRange objects, or \c std::nullopt if parsing failed.
 
     Each range represents a byte range. According to RFC 9110:
     \list
@@ -1774,27 +1774,24 @@ std::optional<QDateTime> QHttpHeaders::dateTimeValueAt(qsizetype i) const
             have \c{start=0} and \c{end=499}.
     \endlist
 
-    If \a ok is not \nullptr, it is used to report the success or failure of the
-    parsing process:
+    Parsing behaves as follows:
     \list
-        \li If no \c Range header is present, \a ok is set to \c true and an empty
-            list is returned.
+        \li If no \c Range header is present, an empty list is returned.
         \li According to RFC 9110 Section 14.2, any \c Range header containing a
             unit other than "bytes" (e.g., "seconds=1-2") is ignored. These ignored
-            headers do not cause the parsing to fail; \a ok remains \c true.
+            headers do not cause the parsing to fail.
         \li If a \c Range header uses the "bytes" unit but is malformed (e.g.,
             missing the hyphen, containing invalid characters, or invalid numbers),
-            the function returns an empty list and sets \a ok to \c false.
+            the function returns \c std::nullopt.
     \endlist
 
     \sa setRangeValues, WellKnownHeader::Range
 */
-QList<QHttpHeaderRange> QHttpHeaders::rangeValues(bool *ok) const
+std::optional<QList<QHttpHeaderRange>> QHttpHeaders::rangeValues() const
 {
     QList<QHttpHeaderRange> results;
 
     const QList<QByteArray> rangesVals = values(WellKnownHeader::Range);
-    bool invalidHeaderEncountered = false;
 
     for (QByteArrayView rangesVal : rangesVals) {
         if (!rangesVal.startsWith("bytes="_ba))
@@ -1803,11 +1800,9 @@ QList<QHttpHeaderRange> QHttpHeaders::rangeValues(bool *ok) const
         rangesVal = rangesVal.slice(6);
 
         for (QLatin1StringView part : qTokenize(QLatin1StringView(rangesVal), u',')) {
-            int dashPos = part.indexOf(u'-');
-            if (dashPos == -1) {
-                invalidHeaderEncountered = true;
-                break;
-            }
+            const qsizetype dashPos = part.indexOf(u'-');
+            if (dashPos == -1)
+                return std::nullopt;
 
             const QLatin1StringView startStr = part.sliced(0, dashPos).trimmed();
             const QLatin1StringView endStr = part.sliced(dashPos + 1).trimmed();
@@ -1830,25 +1825,18 @@ QList<QHttpHeaderRange> QHttpHeaders::rangeValues(bool *ok) const
                     end = endVal;
             }
 
-            if ((!startStr.isEmpty() && !okStart) || (!endStr.isEmpty() && !okEnd)) {
-                invalidHeaderEncountered = true;
-                break;
-            }
+            if ((!startStr.isEmpty() && !okStart) || (!endStr.isEmpty() && !okEnd))
+                return std::nullopt;
 
             QHttpHeaderRange range{start, end};
-            if (!range.isValid()) {
-                invalidHeaderEncountered = true;
-                break;
-            }
+            if (!range.isValid())
+                return std::nullopt;
 
             results.append(range);
         }
     }
 
-    if (ok)
-        *ok = !invalidHeaderEncountered;
-
-    return invalidHeaderEncountered ? QList<QHttpHeaderRange>{} : results;
+    return results;
 }
 
 /*!
