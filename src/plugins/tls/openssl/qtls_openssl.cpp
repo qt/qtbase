@@ -752,6 +752,8 @@ void TlsCryptographOpenSSL::cancelCAFetch()
 
 void TlsCryptographOpenSSL::exportKeyingMaterial()
 {
+    if (d->configuration.keyingMaterial.isEmpty())
+        return; // Avoid deep-copy and store
     auto sslCfg = q->sslConfiguration();
     auto list = sslCfg.keyingMaterial();
 
