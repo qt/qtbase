@@ -76,6 +76,8 @@ private slots:
 
     void propertiesForStyleName();
 
+    void brokenSTAT();
+
 private:
     QString m_ledFont;
     QString m_testFont;
@@ -895,6 +897,60 @@ void tst_QFontDatabase::propertiesForStyleName()
     QCOMPARE(fi.style(), QFont::StyleItalic);
     QCOMPARE(fi.italic(), true);
     QCOMPARE(fi.bold(), true);
+}
+
+void tst_QFontDatabase::brokenSTAT()
+{
+    {
+        QPlatformFontDatabase *pfdb = QGuiApplicationPrivate::platformIntegration()->fontDatabase();
+        if (!pfdb->supportsVariableApplicationFonts())
+            QSKIP("Variable application fonts not supported on this platform");
+    }
+
+    int id = -1;
+    auto cleanup = qScopeGuard([&id] {
+        if (id >= 0)
+            QFontDatabase::removeApplicationFont(id);
+    });
+
+    id = QFontDatabase::addApplicationFont(QFINDTESTDATA("testfont_brokenSTAT.ttf"));
+    if (id == -1)
+        QSKIP("Skip the test since app fonts are not supported on this system");
+
+    QVERIFY(!QFontDatabase::applicationFontFamilies(id).isEmpty());
+
+    const QString familyName = QFontDatabase::applicationFontFamilies(id).first();
+
+    auto weights = { QFont::Thin, QFont::Light, QFont::Normal, QFont::Medium, QFont::Bold, QFont::Black };
+    for (QFont::Weight weight : weights) {
+        QFont fontByWeight;
+        fontByWeight.setWeight(weight);
+        fontByWeight.setFamily(familyName);
+
+        QImage fontByWeightImg;
+        {
+            QRawFont rawFont = QRawFont::fromFont(fontByWeight);
+            auto glyphIndexes = rawFont.glyphIndexesForString(QStringLiteral("A"));
+            QVERIFY(!glyphIndexes.isEmpty());
+
+            fontByWeightImg = rawFont.alphaMapForGlyph(glyphIndexes.first());
+        }
+
+        QFont fontByWght;
+        fontByWght.setVariableAxis("wght", weight);
+        fontByWght.setFamily(familyName);
+
+        QImage fontByWghtImg;
+        {
+            QRawFont rawFont = QRawFont::fromFont(fontByWght);
+            auto glyphIndexes = rawFont.glyphIndexesForString(QStringLiteral("A"));
+            QVERIFY(!glyphIndexes.isEmpty());
+
+            fontByWghtImg = rawFont.alphaMapForGlyph(glyphIndexes.first());
+        }
+
+        QCOMPARE(fontByWeightImg, fontByWghtImg);
+    }
 }
 
 QTEST_MAIN(tst_QFontDatabase)

@@ -400,7 +400,7 @@ template<typename T>
 void QWindowsDirectWriteFontDatabase::collectAdditionalNames(T *font,
                                                              wchar_t *defaultLocale,
                                                              wchar_t *englishLocale,
-                                                             std::function<void(const std::pair<QString, QString> &)> registerFamily)
+                                                             std::function<void(const QString &, const QString &)> registerFamily)
 {
     BOOL ok;
     QString defaultLocaleGdiCompatibleFamilyName;
@@ -444,29 +444,47 @@ void QWindowsDirectWriteFontDatabase::collectAdditionalNames(T *font,
         names->Release();
     }
 
-    {
-        const auto key = std::make_pair(englishLocaleGdiCompatibleFamilyName, englishLocaleGdiCompatibleStyleName);
-        if (!englishLocaleGdiCompatibleFamilyName.isEmpty())
-            registerFamily(key);
-    }
+    if (!englishLocaleGdiCompatibleFamilyName.isEmpty())
+        registerFamily(englishLocaleGdiCompatibleFamilyName, englishLocaleGdiCompatibleStyleName);
 
-    {
-        const auto key = std::make_pair(defaultLocaleGdiCompatibleFamilyName, defaultLocaleGdiCompatibleStyleName);
-        if (!defaultLocaleGdiCompatibleFamilyName.isEmpty())
-            registerFamily(key);
-    }
+    if (!defaultLocaleGdiCompatibleFamilyName.isEmpty())
+        registerFamily(defaultLocaleGdiCompatibleFamilyName, defaultLocaleGdiCompatibleStyleName);
 
-    {
-        const auto key = std::make_pair(englishLocaleTypographicFamilyName, englishLocaleTypographicStyleName);
-        if (!englishLocaleTypographicFamilyName.isEmpty())
-            registerFamily(key);
-    }
+    if (!englishLocaleTypographicFamilyName.isEmpty())
+        registerFamily(englishLocaleTypographicFamilyName, englishLocaleTypographicStyleName);
 
-    {
-        const auto key = std::make_pair(defaultLocaleTypographicFamilyName, defaultLocaleTypographicStyleName);
-        if (!defaultLocaleTypographicFamilyName.isEmpty())
-            registerFamily(key);
-    }
+    if (!defaultLocaleTypographicFamilyName.isEmpty())
+        registerFamily(defaultLocaleTypographicFamilyName, defaultLocaleTypographicStyleName);
+}
+
+namespace {
+    struct FontInfo {
+        QFont::Stretch stretch;
+        QFont::Style style;
+        QFont::Weight weight;
+        QString familyName;
+        QString styleName;
+
+        bool operator==(const FontInfo &other) const
+        {
+            return stretch == other.stretch
+                       && style == other.style
+                       && weight == other.weight
+                       && familyName == other.familyName
+                       && styleName == other.styleName;
+        }
+
+        friend size_t qHash(const FontInfo &key, size_t seed = 0) noexcept
+        {
+            return qHashMulti(seed,
+                              key.stretch,
+                              key.style,
+                              key.weight,
+                              key.familyName,
+                              key.styleName);
+        }
+    };
+
 }
 
 QStringList QWindowsDirectWriteFontDatabase::addApplicationFont(const QByteArray &fontData, const QString &fileName, QFontDatabasePrivate::ApplicationFont *applicationFont)
@@ -489,7 +507,7 @@ QStringList QWindowsDirectWriteFontDatabase::addApplicationFont(const QByteArray
         return QStringList();
     }
 
-    QSet<std::pair<QString, QString> > registeredFonts;
+    QSet<FontInfo> registeredFonts;
     QSet<QString> ret;
     for (int i = 0; i < faces.size(); ++i) {
         IDWriteFontFace *face = faces.at(i);
@@ -513,26 +531,46 @@ QStringList QWindowsDirectWriteFontDatabase::addApplicationFont(const QByteArray
             bool fixed = face3->IsMonospacedFont();
             bool color = face3->IsColorFont();
 
-            auto registerFamilyAndStyle = [&](const std::pair<QString, QString> &familyAndStyle)
+            auto registerFamilyAndStyle = [&registeredFonts,
+                                           &ret,
+                                           applicationFont,
+                                           face,
+                                           writingSystems,
+                                           stretch,
+                                           style,
+                                           weight,
+                                           fixed,
+                                           size,
+                                           antialias,
+                                           scalable,
+                                           color](const QString &familyName,
+                                                  const QString &styleName)
             {
-                if (registeredFonts.contains(familyAndStyle))
+                FontInfo fontInfo = { stretch, style, weight, familyName, styleName };
+                if (registeredFonts.contains(fontInfo))
                     return;
-                registeredFonts.insert(familyAndStyle);
-                ret.insert(familyAndStyle.first);
+                registeredFonts.insert(fontInfo);
+                ret.insert(familyName);
 
-                qCDebug(lcQpaFonts) << "\tRegistering alternative:" << familyAndStyle.first
-                                    << ":" << familyAndStyle.second;
+                qCDebug(lcQpaFonts) << "\tRegistering alternative:" << familyName
+                                    << ":" << styleName
+                                    << ", stretch =" << stretch
+                                    << ", style =" << style
+                                    << ", weight =" << weight
+                                    << ", fixed =" << fixed
+                                    << ", color =" << color;
                 if (applicationFont != nullptr) {
                     QFontDatabasePrivate::ApplicationFont::Properties properties;
                     properties.style = style;
                     properties.weight = weight;
-                    properties.familyName = familyAndStyle.first;
-                    properties.styleName = familyAndStyle.second;
+                    properties.familyName = familyName;
+                    properties.styleName = styleName;
+                    properties.stretch = stretch;
                     applicationFont->properties.append(properties);
                 }
 
-                QPlatformFontDatabase::registerFont(familyAndStyle.first,
-                                                    familyAndStyle.second,
+                QPlatformFontDatabase::registerFont(familyName,
+                                                    styleName,
                                                     QString(),
                                                     weight,
                                                     style,
@@ -543,7 +581,7 @@ QStringList QWindowsDirectWriteFontDatabase::addApplicationFont(const QByteArray
                                                     fixed,
                                                     color,
                                                     writingSystems,
-                                                    new FontHandle(face, familyAndStyle.first));
+                                                    new FontHandle(face, familyName));
             };
 
             QString defaultLocaleFamilyName;
@@ -573,17 +611,11 @@ QStringList QWindowsDirectWriteFontDatabase::addApplicationFont(const QByteArray
                                 << ", weight:" << weight
                                 << ", fixed:" << fixed;
 
-            {
-                const auto key = std::make_pair(englishLocaleFamilyName, englishLocaleStyleName);
-                if (!englishLocaleFamilyName.isEmpty())
-                    registerFamilyAndStyle(key);
-            }
+            if (!englishLocaleFamilyName.isEmpty())
+                registerFamilyAndStyle(englishLocaleFamilyName, englishLocaleStyleName);
 
-            {
-                const auto key = std::make_pair(defaultLocaleFamilyName, defaultLocaleStyleName);
-                if (!defaultLocaleFamilyName.isEmpty())
-                    registerFamilyAndStyle(key);
-            }
+            if (!defaultLocaleFamilyName.isEmpty())
+                registerFamilyAndStyle(defaultLocaleFamilyName, defaultLocaleStyleName);
 
             collectAdditionalNames(*face3,
                                    hasDefaultLocale ? defaultLocale : nullptr,
@@ -653,21 +685,21 @@ void QWindowsDirectWriteFontDatabase::populateFontDatabase()
         for (uint i = 0; i < fontCollection->GetFontFamilyCount(); ++i) {
             DirectWriteScope<IDWriteFontFamily2> fontFamily;
             if (SUCCEEDED(fontCollection->GetFontFamily(i, &fontFamily))) {
-                auto registerFamily = [&](const std::pair<QString, QString> &familyAndStyle) {
-                    const QString registeredFamily = familyAndStyle.first;
-                    if (registeredFamilies.contains(registeredFamily))
+                auto registerFamily = [&](const QString &familyName, const QString &styleName) {
+                    Q_UNUSED(styleName);
+                    if (registeredFamilies.contains(familyName))
                         return;
-                    registeredFamilies.insert(registeredFamily);
+                    registeredFamilies.insert(familyName);
 
-                    qCDebug(lcQpaFonts) << "Registering font family" << registeredFamily;
-                    registerFontFamily(registeredFamily);
-                    m_populatedFonts.insert(registeredFamily, *fontFamily);
+                    qCDebug(lcQpaFonts) << "Registering font family" << familyName;
+                    registerFontFamily(familyName);
+                    m_populatedFonts.insert(familyName, *fontFamily);
                     fontFamily->AddRef();
 
-                    if (registeredFamily == defaultFontName
+                    if (familyName == defaultFontName
                         && defaultFontName != systemDefaultFontName) {
                         qCDebug(lcQpaFonts) << "Adding default font" << systemDefaultFontName
-                                            << "as alternative to" << registeredFamily;
+                                            << "as alternative to" << familyName;
 
                         m_populatedFonts.insert(systemDefaultFontName, *fontFamily);
                         fontFamily->AddRef();
@@ -684,15 +716,13 @@ void QWindowsDirectWriteFontDatabase::populateFontDatabase()
                 }
 
                 {
-                    const auto key = std::make_pair(defaultLocaleName, QString{});
                     if (!defaultLocaleName.isEmpty())
-                        registerFamily(key);
+                        registerFamily(defaultLocaleName, QString{});
                 }
 
                 {
-                    const auto key = std::make_pair(englishLocaleName, QString{});
                     if (!englishLocaleName.isEmpty())
-                        registerFamily(key);
+                        registerFamily(englishLocaleName, QString{});
                 }
 
                 for (uint j = 0; j < fontFamily->GetFontCount(); ++j) {
