@@ -255,12 +255,14 @@ QDate calculateTransitionLocalDate(const SYSTEMTIME &rule, int year)
 
     // Interpret SYSTEMTIME according to the slightly quirky rules in:
     // https://msdn.microsoft.com/en-us/library/windows/desktop/ms725481(v=vs.85).aspx
+    Q_ASSERT(rule.wMonth > 0 && rule.wMonth <= 12);
 
     // If the year is set, the rule gives an absolute date:
     if (rule.wYear)
         return QDate(rule.wYear, rule.wMonth, rule.wDay);
 
     // Otherwise, the rule date is annual and relative:
+    Q_ASSERT(rule.wDayOfWeek >= 0 && rule.wDayOfWeek < 7);
     const int dayOfWeek = rule.wDayOfWeek == 0 ? 7 : rule.wDayOfWeek;
     QDate date(year, rule.wMonth, 1);
     Q_ASSERT(date.isValid());
