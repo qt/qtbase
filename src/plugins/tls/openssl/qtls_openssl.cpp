@@ -781,7 +781,7 @@ void TlsCryptographOpenSSL::exportKeyingMaterial()
                                          label.size(),
                                          reinterpret_cast<const unsigned char*>(context.data()),
                                          context.size(),
-                                         context.isNull() ? 0 : 1))
+                                         context.isNull() ? 0 : 1) > 0)
         {
             entry.m_value = std::move(output);
 #ifdef QSSLSOCKET_DEBUG
