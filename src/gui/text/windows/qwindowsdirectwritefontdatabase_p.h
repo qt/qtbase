@@ -72,7 +72,7 @@ private:
     static void collectAdditionalNames(T *fontFace,
                                        wchar_t *defaultLocale,
                                        wchar_t *englishLocale,
-                                       std::function<void(const std::pair<QString, QString> &)> registerFamily);
+                                       std::function<void(const QString &, const QString &)> registerFamily);
 
     QSupportedWritingSystems supportedWritingSystems(IDWriteFontFace *face) const;
 
