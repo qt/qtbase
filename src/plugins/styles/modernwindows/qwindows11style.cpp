@@ -1035,13 +1035,13 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
                 const auto *animation =
                         qobject_cast<QNumberStyleAnimation *>(d->animation(option->styleObject));
                 const qreal clipWidth = animation ? animation->currentValue() : 1.0;
-                const QString str = fluentIcon(Icon::AcceptMedium);
+                const QChar ico = fluentIcon(Icon::AcceptMedium);
                 QFontMetrics fm(d->assetFont);
-                QRectF clipRect = fm.boundingRect(str);
+                QRectF clipRect = fm.boundingRect(ico);
                 clipRect.moveCenter(center);
                 clipRect.setLeft(rect.x() + (rect.width() - clipRect.width()) / 2.0 + 0.5);
                 clipRect.setWidth(clipWidth * clipRect.width());
-                painter->drawText(clipRect, Qt::AlignVCenter | Qt::AlignLeft, str);
+                painter->drawText(clipRect, Qt::AlignVCenter | Qt::AlignLeft, ico);
             } else if (isPartial) {
                 QFont f(d->assetFont);
                 f.setPointSize(6);
