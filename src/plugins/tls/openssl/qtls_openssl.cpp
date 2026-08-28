@@ -498,6 +498,10 @@ void TlsCryptographOpenSSL::init(QSslSocket *qObj, QSslSocketPrivate *dObj)
 
     fetchAuthorityInformation = false;
     caToFetch.reset();
+
+    auto &sslCfg = d->configuration;
+    for (auto &entry : sslCfg.keyingMaterial)
+        entry.m_value = {};
 }
 
 void TlsCryptographOpenSSL::checkSettingSslContext(std::shared_ptr<QSslContext> tlsContext)
