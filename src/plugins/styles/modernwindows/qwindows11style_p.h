@@ -143,6 +143,8 @@ private:
     void drawLineEditFrame(QPainter *p, const QRectF &rect, const QStyleOption *o, bool isEditable = true) const;
     inline QColor winUI3Color(enum WINUI3Color col) const;
     static inline QChar fluentIcon(Icon i) { return QChar(ushort(i)); }
+    template <typename C>
+    int widthFromChar(const QFont &widgetFont, Icon icon, C &cacheContainer) const;
 
 private:
     Q_DISABLE_COPY_MOVE(QWindows11Style)
@@ -153,6 +155,7 @@ private:
     int colorSchemeIndex = 0;
 
     mutable QVarLengthFlatMap<int, int, 8> m_fontPoint2ChevronDownMedWidth;
+    mutable QVarLengthFlatMap<int, int, 8> m_fontPoint2ChevronUpWidth;
 };
 
 class QWindows11StylePrivate : public QWindowsVistaStylePrivate {
