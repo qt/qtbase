@@ -1028,7 +1028,9 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
                             controlFillBrush(option, ControlType::ControlAlt));
 
             if (isOn) {
-                painter->setFont(d->assetFont);
+                QFont f(d->assetFont);
+                f.setPointSize(8);
+                painter->setFont(f);
                 painter->setPen(controlTextColor(option));
                 const auto *animation =
                         qobject_cast<QNumberStyleAnimation *>(d->animation(option->styleObject));
