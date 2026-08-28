@@ -142,7 +142,7 @@ private:
     QColor controlTextColor(const QStyleOption *option, bool ignoreIsChecked = false) const;
     void drawLineEditFrame(QPainter *p, const QRectF &rect, const QStyleOption *o, bool isEditable = true) const;
     inline QColor winUI3Color(enum WINUI3Color col) const;
-    static inline QString fluentIcon(Icon i) { return QChar(ushort(i)); }
+    static inline QChar fluentIcon(Icon i) { return QChar(ushort(i)); }
 
 private:
     Q_DISABLE_COPY_MOVE(QWindows11Style)
