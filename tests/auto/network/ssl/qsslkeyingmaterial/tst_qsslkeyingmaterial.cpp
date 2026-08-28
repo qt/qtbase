@@ -151,13 +151,18 @@ void tst_QSslKeyingMaterial::exporterProducesSameMaterialOnBothSides()
     QObject::connect(&client, &QSslSocket::sslErrors, &client, [&client]{
         client.ignoreSslErrors();
     });
+    QList<QSslKeyingMaterial> keyingMaterialOnEncrypted;
+    QObject::connect(&client, &QSslSocket::encrypted, &client, [&client, &keyingMaterialOnEncrypted]{
+        keyingMaterialOnEncrypted = client.sslConfiguration().keyingMaterial();
+    });
 
-    QSignalSpy clientConnectedSpy(&client, &QSslSocket::encrypted);
     client.connectToHostEncrypted(QHostAddress(QHostAddress::LocalHost).toString(), server.serverPort());
     QTRY_VERIFY(client.isEncrypted());
     QCOMPARE(client.sslConfiguration().keyingMaterial().size(), 3);
     QCOMPARE(client.sslConfiguration().keyingMaterial().first().value().size(), 5);
     QCOMPARE(client.sslConfiguration().keyingMaterial().last().value().size(), 5);
+    // Make sure that what is available immediately on 'encrypted' signal matches what we have now:
+    QCOMPARE(client.sslConfiguration().keyingMaterial(), keyingMaterialOnEncrypted);
 
     QTRY_VERIFY(server.hasPendingConnections());
     QTcpSocket *pending = server.nextPendingConnection();

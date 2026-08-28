@@ -347,6 +347,15 @@ void qt_AlertInfoCallback(const SSL *connection, int from, int value)
         return;
     }
 
+    // Note: CB_HANDSHAKE_DONE is also raised when the handshake is paused to exchange early data,
+    // and SSL_in_init() cannot tell the two apart (OpenSSL clears it before invoking us). We never
+    // enable early data; if we ever do, this needs a guard.
+    if (from & SSL_CB_HANDSHAKE_DONE) {
+        // Handshake is done, get keying material:
+        crypto->exportKeyingMaterial();
+        return;
+    }
+
     if (!(from & SSL_CB_ALERT)) {
         // We only want to know about alerts (at least for now).
         return;
@@ -894,8 +903,6 @@ void TlsCryptographOpenSSL::continueHandshake()
         if (q_SSL_get_server_tmp_key(ssl, &key))
             QTlsBackend::setEphemeralKey(d, QSslKey(key, QSsl::PublicKey));
     }
-
-    exportKeyingMaterial();
 
     d->setEncrypted(true);
     emit q->encrypted();
