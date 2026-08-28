@@ -214,6 +214,7 @@ bool comparesEqual(const QSslKeyingMaterial &lhs, const QSslKeyingMaterial &rhs)
 {
     return lhs.m_requestedSize == rhs.m_requestedSize
         && lhs.m_label == rhs.m_label
+        && lhs.m_context.isNull() == rhs.m_context.isNull()
         && lhs.m_context == rhs.m_context
         && lhs.m_value == rhs.m_value;
 }

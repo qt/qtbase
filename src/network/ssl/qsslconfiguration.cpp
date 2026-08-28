@@ -1305,6 +1305,8 @@ QSslConfiguration::keyingMaterial(const QSslKeyingMaterial &material) const
 {
     for (const auto &entry : std::as_const(d->keyingMaterial)) {
         if (entry.label() == material.label() &&
+            // "" and null are equal, so test explicitly:
+            entry.context().isNull() == material.context().isNull() &&
             entry.context() == material.context() &&
             entry.requestedSize() == material.requestedSize()) {
             return entry;
