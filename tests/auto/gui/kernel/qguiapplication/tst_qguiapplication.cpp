@@ -1415,6 +1415,8 @@ void tst_QGuiApplication::topLevelAt()
     if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
         QSKIP("QGuiApplication::topLevelAt() is not Wayland compliant, see also QTBUG-121015");
 
+    SKIP_IF_TWO_TOP_LEVEL_WINDOWS_UNSUPPORTED();
+
     QWindow bottom;
     bottom.setObjectName("Bottom");
     bottom.setFlag(Qt::FramelessWindowHint);
