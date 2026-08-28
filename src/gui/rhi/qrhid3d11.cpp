@@ -3316,7 +3316,13 @@ bool QD3D11Buffer::create()
     }
 
     const quint32 nonZeroSize = m_size <= 0 ? 256 : m_size;
-    const quint32 roundedSize = aligned(nonZeroSize, m_usage.testFlag(QRhiBuffer::UniformBuffer) ? 256u : 4u);
+    // D3D11 refuses to create a DRAWINDIRECT_ARGS buffer that could not hold
+    // even the smallest indirect argument struct, the 3 uints of
+    // DispatchIndirect. A count buffer for drawIndirectCount() is a single
+    // quint32 and would hit this, so pad instead of failing.
+    const quint32 minSize = m_usage.testFlag(QRhiBuffer::IndirectBuffer) ? 12u : 1u;
+    const quint32 roundedSize = aligned(qMax(nonZeroSize, minSize),
+                                        m_usage.testFlag(QRhiBuffer::UniformBuffer) ? 256u : 4u);
 
     D3D11_BUFFER_DESC desc = {};
     desc.ByteWidth = roundedSize;
