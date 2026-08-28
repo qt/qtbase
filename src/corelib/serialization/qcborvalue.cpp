@@ -798,6 +798,8 @@ static QCborValue::Type convertToExtendedType(QCborContainerPrivate *d)
             }
             if (ok)
                 dt = QDateTime::fromMSecsSinceEpoch(msecs, QTimeZone::UTC);
+            else
+                break;
         }
         if (QString dtString = dt.toString(Qt::ISODateWithMs); !dtString.isEmpty())
             return setToExtendedDateTimeType(d, dtString);
