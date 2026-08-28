@@ -83,6 +83,16 @@ void tst_QSslKeyingMaterial::construction()
     QCOMPARE(entry, entry2);
     entry2 = QSslKeyingMaterial(QByteArray("dummy"), 0, QByteArray("ctx"));
     QCOMPARE_NE(entry, entry2);
+
+    QSslKeyingMaterial empty("mylabel", 10, "");
+    empty.m_value = "payload";
+
+    QSslKeyingMaterial null("mylabel", 10, {});
+    null.m_value = "wrong";
+
+    QSslConfiguration conf;
+    conf.setKeyingMaterial({ null, empty });
+    QCOMPARE(conf.keyingMaterial(empty), empty);
 }
 
 #if QT_CONFIG(ssl)

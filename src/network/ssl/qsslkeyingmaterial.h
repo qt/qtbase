@@ -15,6 +15,7 @@
 
 QT_REQUIRE_CONFIG(ssl);
 
+class tst_QSslKeyingMaterial;
 
 QT_BEGIN_NAMESPACE
 
@@ -94,6 +95,7 @@ private:
 #endif // QT_NO_DEBUG_STREAM
 
     friend class QTlsPrivate::TlsCryptographOpenSSL;
+    friend class ::tst_QSslKeyingMaterial;
 };
 
 Q_DECLARE_SHARED(QSslKeyingMaterial)
