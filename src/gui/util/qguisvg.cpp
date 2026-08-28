@@ -724,10 +724,10 @@ constexpr auto spacesTiny = " \\t\\n\\r"_L1;
 static const QRegularExpression &reNoSpace(bool tiny12FeaturesOnly)
 {
     if (tiny12FeaturesOnly) {
-        static QRegularExpression reTiny(QLatin1String("[^") + svgChars::spacesTiny + "]");
+        static QRegularExpression reTiny("[^"_L1 + svgChars::spacesTiny + "]"_L1);
         return reTiny;
     } else {
-        static QRegularExpression re(QLatin1String("[^") + svgChars::spaces + "]");
+        static QRegularExpression re("[^"_L1 + svgChars::spaces + "]"_L1);
         return re;
     }
 }
