@@ -628,6 +628,19 @@ void tst_QMetaType::typeName_data()
     QTest::newRow("QList<int>") << ::qMetaTypeId<QList<int>>() << QString::fromLatin1("QList<int>");
     QTest::newRow("QList<QList<int>>") << ::qMetaTypeId<QList<QList<int>>>() << QString::fromLatin1("QList<QList<int>>");
 
+    QTest::newRow("std::pair<int,int>")
+            << ::qMetaTypeId<std::pair<int, int>>()
+            << QString::fromLatin1("std::pair<int,int>");
+    QTest::newRow("std::pair<int,std::pair<int,int>>")
+            << ::qMetaTypeId<std::pair<int, std::pair<int, int>>>()
+            << QString::fromLatin1("std::pair<int,std::pair<int,int>>");
+    QTest::newRow("std::pair<std::pair<int,int>,int>")
+            << ::qMetaTypeId<std::pair<std::pair<int, int>, int>>()
+            << QString::fromLatin1("std::pair<std::pair<int,int>,int>");
+    QTest::newRow("std::pair<std::pair<int,int>,std::pair<int,int>>")
+            << ::qMetaTypeId<std::pair<std::pair<int, int>, std::pair<int, int>>>()
+            << QString::fromLatin1("std::pair<std::pair<int,int>,std::pair<int,int>>");
+
     QTest::newRow("CustomQObject*") << ::qMetaTypeId<CustomQObject*>() << QString::fromLatin1("CustomQObject*");
     QTest::newRow("CustomGadget") << ::qMetaTypeId<CustomGadget>() << QString::fromLatin1("CustomGadget");
     QTest::newRow("CustomGadget*") << ::qMetaTypeId<CustomGadget*>() << QString::fromLatin1("CustomGadget*");
