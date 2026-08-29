@@ -1235,6 +1235,97 @@ void tst_QCoreApplication::QTBUG31606_QEventDestructorDeadLock()
     QVERIFY(spy.recordedEvents.contains(QEvent::User + 2));
 }
 
+// The pending events used to be destroyed while QThreadData::postEventList.mutex was
+// held, so an event destructor that posts self-deadlocked on that non-recursive mutex.
+void tst_QCoreApplication::eventDestructorDeadLockAtAppDestruction()
+{
+    static int liveEvents = 0;
+
+    class RepostingEvent : public QEvent
+    {
+    public:
+        explicit RepostingEvent(QObject *receiver, int depth)
+            : QEvent(QEvent::Type(QEvent::User + 1)), m_receiver(receiver), m_depth(depth)
+        {
+            ++liveEvents;
+        }
+
+        ~RepostingEvent() override
+        {
+            --liveEvents;
+            if (m_depth > 0 && m_receiver)
+                QCoreApplication::postEvent(m_receiver,
+                                            new RepostingEvent(m_receiver, m_depth - 1));
+        }
+
+        RepostingEvent *clone() const override { Q_UNREACHABLE_RETURN(nullptr); }
+
+    private:
+        const QPointer<QObject> m_receiver;
+        const int m_depth;
+    };
+
+    QObject receiver; // must outlive the application
+    {
+        int argc = 1;
+        char *argv[] = { const_cast<char *>(QTest::currentAppName()) };
+        TestApplication app(argc, argv);
+
+        QCoreApplication::postEvent(&receiver, new RepostingEvent(&receiver, 2));
+        QCOMPARE(liveEvents, 1);
+    }
+
+    // not just the original event: the ones its destructor posted must be gone too
+    QCOMPARE(liveEvents, 0);
+#ifdef QT_BUILD_INTERNAL
+    QCOMPARE(qGlobalPostedEventsCount(), 0);
+#endif
+}
+
+// same, with the deleteLater() that a QObject tied to a refcount would use
+void tst_QCoreApplication::eventDestructorDeleteLaterAtAppDestruction()
+{
+    class DeleteLaterEvent : public QEvent
+    {
+    public:
+        explicit DeleteLaterEvent(QObject *target)
+            : QEvent(QEvent::Type(QEvent::User + 1)), m_target(target)
+        {
+        }
+
+        ~DeleteLaterEvent() override
+        {
+            if (m_target)
+                m_target->deleteLater();
+        }
+
+        DeleteLaterEvent *clone() const override { Q_UNREACHABLE_RETURN(nullptr); }
+
+    private:
+        const QPointer<QObject> m_target;
+    };
+
+    QObject receiver; // must outlive the application
+    QPointer victim = new QObject; // owned by nothing: see the QVERIFY below
+    auto cleanup = qScopeGuard([&]{
+        delete victim;
+    });
+
+    {
+        int argc = 1;
+        char *argv[] = { const_cast<char *>(QTest::currentAppName()) };
+        TestApplication app(argc, argv);
+
+        QCoreApplication::postEvent(&receiver, new DeleteLaterEvent(victim));
+    }
+
+#ifdef QT_BUILD_INTERNAL
+    QCOMPARE(qGlobalPostedEventsCount(), 0);
+#endif
+    // deferred deletes are destroyed, not delivered, at application destruction
+    QVERIFY(victim);
+}
+
 // this is almost identical to sendEventsOnProcessEvents
 void tst_QCoreApplication::applicationEventFilters_mainThread()
 {

@@ -101,6 +101,10 @@ private slots:
     void exitFromThreadedEventLoop() { QCoreApplicationTestHelper::run(); }
     void exitWithPlugins() { QCoreApplicationTestHelper::run(); }
     void mainAppInAThread() { QCoreApplicationTestHelper::run(); }
+    void deleteLaterFromEventDestructor() { QCoreApplicationTestHelper::run(); }
+    void deleteLaterFromEventDestructorInThread() { QCoreApplicationTestHelper::run(); }
+    void destroyAppFromEventHandler() { QCoreApplicationTestHelper::run(); }
+    void deleteReceiverFromEventDestructor() { QCoreApplicationTestHelper::run(); }
 
     void thread();
     void desktopSettingsAware();

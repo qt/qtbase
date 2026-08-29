@@ -46,6 +46,8 @@ private slots:
     void customEventDispatcher();
     void testQuitLock();
     void QTBUG31606_QEventDestructorDeadLock();
+    void eventDestructorDeadLockAtAppDestruction();
+    void eventDestructorDeleteLaterAtAppDestruction();
     void applicationEventFilters_mainThread();
     void applicationEventFilters_auxThread();
     void threadedEventDelivery_data();
@@ -57,6 +59,10 @@ private slots:
     void exitFromThreadedEventLoop() { QCoreApplicationTestHelper::run(); }
     void exitWithPlugins() { QCoreApplicationTestHelper::run(); }
     void mainAppInAThread() { QCoreApplicationTestHelper::run(); }
+    void deleteLaterFromEventDestructor() { QCoreApplicationTestHelper::run(); }
+    void deleteLaterFromEventDestructorInThread() { QCoreApplicationTestHelper::run(); }
+    void destroyAppFromEventHandler() { QCoreApplicationTestHelper::run(); }
+    void deleteReceiverFromEventDestructor() { QCoreApplicationTestHelper::run(); }
 
     void testTrWithPercantegeAtTheEnd();
 #if QT_CONFIG(library)

@@ -73,14 +73,41 @@ QThreadData::~QThreadData()
 
 void QThreadData::clearEvents()
 {
-    for (const auto &pe : std::as_const(postEventList)) {
-        if (pe.event) {
+    // ~QEvent() may run arbitrary code, including code that posts new events, so drain in
+    // passes; cap them so a destructor that always posts cannot loop forever.
+    constexpr int MaxPasses = 16;
+
+    QList<QPostEvent> pending;
+    for (int pass = 0;; ++pass) {
+        {
+            const auto locker = qt_scoped_lock(postEventList.mutex);
+            if (postEventList.isEmpty())
+                return;
+            pending.swap(static_cast<QList<QPostEvent> &>(postEventList));
+            postEventList.startOffset = 0;
+            postEventList.insertionOffset = 0;
+        }
+
+        // unpost them all first: ~QObject and ~QEvent would otherwise come looking for
+        // these events in the list we have already swapped out
+        for (const QPostEvent &pe : std::as_const(pending)) {
+            if (!pe.event) // already dispatched: pe.receiver may be dangling
+                continue;
             pe.receiver->d_func()->postedEvents.fetchAndSubRelaxed(1);
             pe.event->m_posted = false;
-            delete pe.event;
         }
+
+        if (pass == MaxPasses) {
+            qWarning("QThreadData::clearEvents: giving up after %d passes, leaking %lld event(s)",
+                     MaxPasses, qlonglong(pending.size()));
+            return;
+        }
+
+        // may run arbitrary code (virtual ~QEvent()), so do it last:
+        for (const QPostEvent &pe : std::as_const(pending))
+            delete pe.event;
+        pending.clear();
     }
-    postEventList.clear();
 }
 
 QAbstractEventDispatcher *QThreadData::createEventDispatcher()
