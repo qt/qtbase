@@ -87,9 +87,6 @@ endif()
 if(QT_FEATURE_egl AND QT_FEATURE_opengl)
     # add_subdirectory(qopenglcontext) # TODO: broken in dev
 endif()
-if(QT_FEATURE_vulkan)
-    add_subdirectory(qvulkaninstance)
-endif()
 
 if(ANDROID)
     add_subdirectory(android/contenturis)
