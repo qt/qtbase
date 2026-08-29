@@ -2273,7 +2273,7 @@ constexpr auto typenameHelper()
         } else {
             t2Name = typenameHelper<T2>();
         }
-        constexpr auto nonTypeDependentLen = sizeof("std::pair<,>");
+        constexpr size_t nonTypeDependentLen = sizeof("std::pair<,>") - 1;
         constexpr auto t1Len = t1Name.size() - 1;
         constexpr auto t2Len = t2Name.size() - 1;
         constexpr auto length = nonTypeDependentLen + t1Len + t2Len;
