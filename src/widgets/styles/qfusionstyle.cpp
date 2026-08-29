@@ -1691,20 +1691,19 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
     const QColor outline = d->outline(option->palette);
     switch (control) {
     case CC_GroupBox:
-        painter->save();
         if (const QStyleOptionGroupBox *groupBox = qstyleoption_cast<const QStyleOptionGroupBox *>(option)) {
             // Draw frame
             QRect textRect = proxy()->subControlRect(CC_GroupBox, option, SC_GroupBoxLabel, widget);
             QRect checkBoxRect = proxy()->subControlRect(CC_GroupBox, option, SC_GroupBoxCheckBox, widget);
 
             if (groupBox->subControls & QStyle::SC_GroupBoxFrame) {
+                QPainterStateGuard psg(painter);
                 QStyleOptionFrame frame;
                 frame.QStyleOption::operator=(*groupBox);
                 frame.features = groupBox->features;
                 frame.lineWidth = groupBox->lineWidth;
                 frame.midLineWidth = groupBox->midLineWidth;
                 frame.rect = proxy()->subControlRect(CC_GroupBox, option, SC_GroupBoxFrame, widget);
-                painter->save();
                 QRegion region(groupBox->rect);
                 if (!groupBox->text.isEmpty()) {
                     bool ltr = groupBox->direction == Qt::LeftToRight;
@@ -1726,7 +1725,6 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                 } else {
                     proxy()->drawPrimitive(PE_FrameGroupBox, &frame, painter, widget);
                 }
-                painter->restore();
             }
 
             // Draw title
@@ -1756,7 +1754,6 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                 proxy()->drawPrimitive(PE_IndicatorCheckBox, &box, painter, widget);
             }
         }
-        painter->restore();
         break;
 #if QT_CONFIG(spinbox)
     case CC_SpinBox:
@@ -1898,8 +1895,8 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
         break;
 #endif // QT_CONFIG(spinbox)
     case CC_TitleBar:
-        painter->save();
         if (const QStyleOptionTitleBar *titleBar = qstyleoption_cast<const QStyleOptionTitleBar *>(option)) {
+            QPainterStateGuard psg(painter);
             constexpr auto buttonMargins = QMargins(5, 5, 5, 5);
             const bool active = (titleBar->titleBarState & State_Active);
             const QRect &fullRect = titleBar->rect;
@@ -2104,14 +2101,11 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                         QPixmap pm = proxy()->standardIcon(SP_TitleBarMenuButton, &tool, widget)
                                         .pixmap(QSize(16, 16), QStyleHelper::getDpr(painter));
                         tool.rect = iconRect;
-                        painter->save();
                         proxy()->drawItemPixmap(painter, iconRect, Qt::AlignCenter, pm);
-                        painter->restore();
                     }
                 }
             }
         }
-        painter->restore();
         break;
 #if QT_CONFIG(slider)
     case CC_ScrollBar:
@@ -2247,8 +2241,8 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
         break;
 #endif // QT_CONFIG(slider)
     case CC_ComboBox:
-        painter->save();
         if (const QStyleOptionComboBox *comboBox = qstyleoption_cast<const QStyleOptionComboBox *>(option)) {
+            QPainterStateGuard psg(painter);
             bool hasFocus = option->state & State_HasFocus && option->state & State_KeyboardFocusChange;
             bool sunken = comboBox->state & State_On; // play dead, if combobox has no items
             bool isEnabled = (comboBox->state & State_Enabled);
@@ -2338,7 +2332,6 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                 }
             }
         }
-        painter->restore();
         break;
 #if QT_CONFIG(slider)
     case CC_Slider:
