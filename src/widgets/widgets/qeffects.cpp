@@ -333,6 +333,8 @@ private slots:
 private:
     QPointer<QWidget> widget;
 
+    double originalOpacity = 1.0;
+
     int currentHeight;
     int currentWidth;
     int totalHeight;
@@ -444,9 +446,9 @@ void QRollEffect::run(int time)
     move(widget->geometry().x(),widget->geometry().y());
     resize(qMin(currentWidth, totalWidth), qMin(currentHeight, totalHeight));
 
-    //This is roughly equivalent to calling setVisible(true) without actually showing the widget
-    widget->setAttribute(Qt::WA_WState_ExplicitShowHide, true);
-    widget->setAttribute(Qt::WA_WState_Hidden, false);
+    originalOpacity = widget->windowOpacity();
+    widget->setVisible(true);
+    widget->setWindowOpacity(0.0);
 
     show();
     setEnabled(false);
@@ -516,12 +518,9 @@ void QRollEffect::scroll()
 #endif
                 widget->hide();
             } else {
-                //Since we are faking the visibility of the widget
-                //we need to unset the hidden state on it before calling show
-                widget->setAttribute(Qt::WA_WState_Hidden, true);
-                widget->show();
                 lower();
             }
+            widget->setWindowOpacity(originalOpacity);
         }
         q_roll.reset();
     }
