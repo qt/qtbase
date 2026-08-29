@@ -527,16 +527,7 @@ void QCoreApplicationPrivate::cleanupThreadData()
 #endif
 
         // need to clear the state of the mainData, just in case a new QCoreApplication comes along.
-        const auto locker = qt_scoped_lock(thisThreadData->postEventList.mutex);
-        for (const QPostEvent &pe : std::as_const(thisThreadData->postEventList)) {
-            if (pe.event) {
-                pe.receiver->d_func()->postedEvents.fetchAndSubAcquire(1);
-                pe.event->m_posted = false;
-                delete pe.event;
-            }
-        }
-        thisThreadData->postEventList.clear();
-        thisThreadData->postEventList.recursion = 0;
+        thisThreadData->clearEvents();
         thisThreadData->quitNow = false;
         threadData_clean = true;
     }

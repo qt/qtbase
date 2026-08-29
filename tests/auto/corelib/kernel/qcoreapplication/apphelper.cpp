@@ -3,6 +3,7 @@
 
 #include <private/qcoreapplication_p.h>
 #include <qplatformdefs.h>
+#include <qpointer.h>
 #include <qthread.h>
 #include <qtimer.h>
 
@@ -10,7 +11,9 @@
 #  include <qpluginloader.h>
 #endif
 
+#include <chrono>
 #include <string_view>
+#include <utility>
 #include <thread>
 
 #include <stdlib.h>
@@ -39,6 +42,8 @@ using TestApplication = QCoreApplication;
 #endif
 
 #include "maybeshow.h"
+
+using namespace std::chrono_literals;
 
 static int exitFromEventLoop(int argc, char **argv)
 {
@@ -181,6 +186,152 @@ static int mainAppInAThread(int argc, char **argv)
     return EXIT_SUCCESS;
 }
 
+// Its destructor re-enters the post event list mutex, which used to be held while the
+// pending events were destroyed at application or thread teardown.
+class DeleteLaterEvent : public QEvent
+{
+public:
+    static inline int liveCount = 0;
+
+    explicit DeleteLaterEvent(QObject *receiver, QObject *victim, int depth)
+        : QEvent(QEvent::User), m_receiver(receiver), m_victim(victim), m_depth(depth)
+    {
+        ++liveCount;
+    }
+
+    ~DeleteLaterEvent() override
+    {
+        --liveCount;
+        if (m_victim)
+            m_victim->deleteLater();
+        if (m_depth > 0 && m_receiver) {
+            QCoreApplication::postEvent(m_receiver,
+                                        new DeleteLaterEvent(m_receiver, nullptr, m_depth - 1));
+        }
+    }
+
+    DeleteLaterEvent *clone() const override { Q_UNREACHABLE_RETURN(nullptr); }
+
+private:
+    const QPointer<QObject> m_receiver;
+    const QPointer<QObject> m_victim;
+    const int m_depth;
+};
+
+static int deleteLaterFromEventDestructor(int argc, char **argv)
+{
+    // the post event list refers to the receiver, so both must outlive the application
+    QObject receiver;
+    QObject victim;
+
+    {
+        TestApplication app(argc, argv);
+        [[maybe_unused]] auto w = maybeShowSomething();
+        QCoreApplication::postEvent(&receiver, new DeleteLaterEvent(&receiver, &victim, 2));
+    }
+
+    if (DeleteLaterEvent::liveCount != 0) {
+        fprintf(stderr, "%d event(s) leaked by ~QCoreApplication\n", DeleteLaterEvent::liveCount);
+        return EXIT_FAILURE;
+    }
+
+    return EXIT_SUCCESS;
+}
+
+// same, but for QThreadData::clearEvents() reached through ~QThreadPrivate
+static int deleteLaterFromEventDestructorInThread(int argc, char **argv)
+{
+    TestApplication app(argc, argv);
+    [[maybe_unused]] auto w = maybeShowSomething();
+
+    QObject receiver;
+    QObject victim;
+
+    {
+        QThread thread;
+        thread.start();
+        receiver.moveToThread(&thread);
+        victim.moveToThread(&thread);
+
+        thread.quit();
+        if (!thread.wait(5s)) {
+            fprintf(stderr, "thread did not finish\n");
+            return EXIT_FAILURE;
+        }
+
+        // the thread is gone, so nothing will dispatch this
+        QCoreApplication::postEvent(&receiver, new DeleteLaterEvent(&receiver, &victim, 2));
+    }
+
+    if (DeleteLaterEvent::liveCount != 0) {
+        fprintf(stderr, "%d event(s) leaked by ~QThread\n", DeleteLaterEvent::liveCount);
+        return EXIT_FAILURE;
+    }
+
+    return EXIT_SUCCESS;
+}
+
+// Unposting the whole batch must finish before the first delete: deleting this event
+// destroys a receiver that still has another event queued.
+class DeleteReceiverEvent : public QEvent
+{
+public:
+    explicit DeleteReceiverEvent(QObject *receiver) : QEvent(QEvent::User), m_receiver(receiver) { }
+
+    ~DeleteReceiverEvent() override { delete m_receiver; }
+
+    DeleteReceiverEvent *clone() const override { Q_UNREACHABLE_RETURN(nullptr); }
+
+private:
+    QObject *const m_receiver;
+};
+
+static int deleteReceiverFromEventDestructor(int argc, char **argv)
+{
+    TestApplication app(argc, argv);
+    [[maybe_unused]] auto w = maybeShowSomething();
+
+    auto *receiver = new QObject; // deleted by the event below
+    QCoreApplication::postEvent(receiver, new DeleteReceiverEvent(receiver));
+    QCoreApplication::postEvent(receiver, new QEvent(QEvent::User));
+
+    return EXIT_SUCCESS;
+}
+
+// Dropping the pending events must leave the post event list offsets consistent for the
+// sendPostedEvents() frame that resumes once the application is gone.
+static int destroyAppFromEventHandler(int argc, char **argv)
+{
+    class Destroyer : public QObject
+    {
+    public:
+        TestApplication *app = nullptr;
+        bool event(QEvent *e) override
+        {
+            if (e->type() == QEvent::User && app) {
+                delete std::exchange(app, nullptr);
+                return true;
+            }
+            return QObject::event(e);
+        }
+    };
+
+    Destroyer destroyer;
+    destroyer.app = new TestApplication(argc, argv);
+
+    // several events, so that startOffset is non-zero when the application goes away
+    QCoreApplication::postEvent(&destroyer, new QEvent(QEvent::Type(QEvent::User + 1)));
+    QCoreApplication::postEvent(&destroyer, new QEvent(QEvent::User));
+    QCoreApplication::postEvent(&destroyer, new QEvent(QEvent::Type(QEvent::User + 1)));
+
+    // processEvents() would leave the platform dispatcher, which ~QCoreApplication
+    // destroys, running underneath us
+    QCoreApplication::sendPostedEvents();
+
+    delete destroyer.app;
+    return EXIT_SUCCESS;
+}
+
 static int usage(const char *name)
 {
     printf("%s <subtest>\n", name);
@@ -216,6 +367,14 @@ int main(int argc, char **argv)
         return exitWithPlugins(argc - 1, argv + 1);
     if (subtest == "mainAppInAThread")
         return mainAppInAThread(argc - 1, argv + 1);
+    if (subtest == "deleteLaterFromEventDestructor")
+        return deleteLaterFromEventDestructor(argc - 1, argv + 1);
+    if (subtest == "deleteLaterFromEventDestructorInThread")
+        return deleteLaterFromEventDestructorInThread(argc - 1, argv + 1);
+    if (subtest == "destroyAppFromEventHandler")
+        return destroyAppFromEventHandler(argc - 1, argv + 1);
+    if (subtest == "deleteReceiverFromEventDestructor")
+        return deleteReceiverFromEventDestructor(argc - 1, argv + 1);
 
     fprintf(stderr, "%s: unknown test %s\n", argv[0], argv[1]);
     return EXIT_FAILURE;

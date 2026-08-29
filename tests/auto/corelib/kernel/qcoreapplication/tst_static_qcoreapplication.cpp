@@ -34,6 +34,16 @@ void tst_Static_QCoreApplication::staticApplication()
     const char *argv[] = { staticMetaObject.className(), nullptr };
     static App app(argc, const_cast<char **>(argv));
     [[maybe_unused]] static auto w = maybeShowSomething();
+
+    // left pending, so that the application destructor has to destroy it inside exit();
+    // the owned QObject makes a leaked event visible to HookManager below
+    struct OwningEvent : QEvent
+    {
+        OwningEvent() : QEvent(QEvent::User) {}
+        OwningEvent *clone() const override { Q_UNREACHABLE_RETURN(nullptr); }
+        QObject obj;
+    };
+    QCoreApplication::postEvent(&app, new OwningEvent);
 }
 
 struct HookManager
