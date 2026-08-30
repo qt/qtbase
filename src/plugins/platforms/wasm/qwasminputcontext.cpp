@@ -55,7 +55,11 @@ void QWasmInputContext::inputCallback(emscripten::val event)
 
     qCDebug(qLcQpaWasmInputContext) << Q_FUNC_INFO << "inputType : " << inputTypeString;
 
-    if (!inputTypeString.compare("deleteContentBackward")) {
+    if (!inputTypeString.compare("deleteContentBackward")
+            || !inputTypeString.compare("deleteContent")) {
+        // deleteContent is direction-agnostic. WebKit emits it for generic
+        // editing deletions, and embedded virtual keyboards drive backspace
+        // this way, so treat it as a backward delete.
         const ResolvedRange resolved = resolveRange(getFirstRange());
 
         const int deleteFrom = resolved.replaceFrom <= 0 ? resolved.replaceFrom : -1;
@@ -63,6 +67,18 @@ void QWasmInputContext::inputCallback(emscripten::val event)
     } else if (!inputTypeString.compare("deleteContentForward")) {
         QWindowSystemInterface::handleKeyEvent(0, QEvent::KeyPress, Qt::Key_Delete, Qt::NoModifier);
         QWindowSystemInterface::handleKeyEvent(0, QEvent::KeyRelease, Qt::Key_Delete, Qt::NoModifier);
+    } else if (!inputTypeString.compare("deleteWordBackward")) {
+        QWindowSystemInterface::handleKeyEvent(0, QEvent::KeyPress, Qt::Key_Backspace, Qt::ControlModifier);
+        QWindowSystemInterface::handleKeyEvent(0, QEvent::KeyRelease, Qt::Key_Backspace, Qt::ControlModifier);
+    } else if (!inputTypeString.compare("deleteWordForward")) {
+        QWindowSystemInterface::handleKeyEvent(0, QEvent::KeyPress, Qt::Key_Delete, Qt::ControlModifier);
+        QWindowSystemInterface::handleKeyEvent(0, QEvent::KeyRelease, Qt::Key_Delete, Qt::ControlModifier);
+    } else if (!inputTypeString.compare("insertParagraph")) {
+        QWindowSystemInterface::handleKeyEvent(0, QEvent::KeyPress, Qt::Key_Return, Qt::NoModifier);
+        QWindowSystemInterface::handleKeyEvent(0, QEvent::KeyRelease, Qt::Key_Return, Qt::NoModifier);
+    } else if (!inputTypeString.compare("insertLineBreak")) {
+        QWindowSystemInterface::handleKeyEvent(0, QEvent::KeyPress, Qt::Key_Return, Qt::ShiftModifier);
+        QWindowSystemInterface::handleKeyEvent(0, QEvent::KeyRelease, Qt::Key_Return, Qt::ShiftModifier);
     } else if (!inputTypeString.compare("insertCompositionText")) {
 
         qCDebug(qLcQpaWasmInputContext) << "insertCompositionText : " << inputStr;
