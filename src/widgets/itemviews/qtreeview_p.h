@@ -53,6 +53,8 @@ class Q_WIDGETS_EXPORT QTreeViewPrivate : public QAbstractItemViewPrivate
 {
     Q_DECLARE_PUBLIC(QTreeView)
 public:
+    enum class ExpandItems { AllLevels, RootOnly };
+    enum class InitializeNewItems { Initialize, DontInitialize };
 
     QTreeViewPrivate()
         : QAbstractItemViewPrivate(),
@@ -107,7 +109,8 @@ public:
     void modelDestroyed() override;
     QRect intersectedRect(const QRect rect, const QModelIndex &topLeft, const QModelIndex &bottomRight) const override;
 
-    void layout(int item, bool recusiveExpanding = false, bool afterIsUninitialized = false);
+    void layout(int item, ExpandItems expandItems, InitializeNewItems initializeNewItems);
+    void doItemsLayout(ExpandItems expandItems, InitializeNewItems initializeNewItems);
 
     int pageUp(int item) const;
     int pageDown(int item) const;
