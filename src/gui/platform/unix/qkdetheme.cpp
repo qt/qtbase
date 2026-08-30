@@ -642,7 +642,7 @@ QVariant QKdeTheme::themeHint(QPlatformTheme::ThemeHint hint) const
     case QPlatformTheme::CursorFlashTime:
         return QVariant(d->cursorBlinkRate);
     case QPlatformTheme::UiEffects:
-        return QVariant(int(HoverEffect));
+        return QVariant(int(GeneralUiEffect|FadeMenuUiEffect|AnimateComboUiEffect|FadeTooltipUiEffect|AnimateToolBoxUiEffect|HoverEffect));
     case QPlatformTheme::MouseCursorTheme:
         return QVariant(mouseCursorTheme());
     case QPlatformTheme::MouseCursorSize:
