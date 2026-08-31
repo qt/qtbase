@@ -840,7 +840,9 @@ QString quint128toBasicLatin(qinternaluint128 number, int base)
             int i = 0;
             for (i = 0; v * base > v; ++i)
                 v *= base;
-            digits[base - 2] = i;
+            // v == divider == base^(i + 1), so a chunk (< divider) has up to
+            // i + 1 digits, all of which must be kept when zero-padding.
+            digits[base - 2] = i + 1;
         }
         return digits;
     }();
@@ -853,9 +855,14 @@ QString quint128toBasicLatin(qinternaluint128 number, int base)
     // special base cases:
     constexpr int Width = -1;
     if (base == 2 || base == 4 || base == 16) {
-        // 2^64 is a power of 2, 4 and 16
-        result = dd->unsLongLongToString(quint64(number), 64, base, Width, flags);
-        result.prepend(dd->unsLongLongToString(quint64(number >> 64), -1, base, Width, flags));
+        // 2^64 is a power of 2, 4 and 16, taking 64, 32 and 16 digits
+        const int digitsPerWord = base == 2 ? 64 : base == 4 ? 32 : 16;
+        if (const quint64 high = quint64(number >> 64)) {
+            result = dd->unsLongLongToString(quint64(number), digitsPerWord, base, Width, flags);
+            result.prepend(dd->unsLongLongToString(high, -1, base, Width, flags));
+        } else {
+            result = dd->unsLongLongToString(quint64(number), -1, base, Width, flags);
+        }
     } else {
         int digitCount = digitCounts[base - 2];
         quint64 divider = dividers[base - 2];
@@ -874,9 +881,12 @@ QString quint128toBasicLatin(qinternaluint128 number, int base)
 QString qint128toBasicLatin(qinternalint128 number, int base)
 {
     const bool negative = number < 0;
+    // Take the magnitude in the unsigned type: negating the minimum value in
+    // the signed one would overflow.
+    qinternaluint128 magnitude = qinternaluint128(number);
     if (negative)
-        number *= -1;
-    QString result = quint128toBasicLatin(qinternaluint128(number), base);
+        magnitude = qinternaluint128(0) - magnitude;
+    QString result = quint128toBasicLatin(magnitude, base);
     if (negative)
         result.prepend(u'-');
     return result;
