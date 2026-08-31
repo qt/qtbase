@@ -267,6 +267,8 @@ private slots:
     void ibaseTimeStampTzArray();
     void ibaseInt128_data() { firebirdFamily_data(); }
     void ibaseInt128();
+    void ibaseInt128Exact_data() { firebirdFamily_data(); }
+    void ibaseInt128Exact();
 
     void firebirdNumericArray_data() { generic_data("QFIREBIRD"); }
     void firebirdNumericArray();
@@ -5257,6 +5259,118 @@ void tst_QSqlQuery::ibaseInt128()
         QVERIFY_SQL(q2, next());
         QCOMPARE(q2.value(0).metaType().id(), QMetaType::QString);
         QCOMPARE(q2.value(0).toString(), "52346.8023");
+    }
+    {
+        QSqlQuery q2(db);
+        q2.setNumericalPrecisionPolicy(QSql::LowPrecisionInt64);
+        QVERIFY_SQL(q2, exec("SELECT price FROM " + ts.tableName() + " ORDER BY id"));
+        QVERIFY_SQL(q2, next());
+        QCOMPARE(q2.value(0).metaType().id(), QMetaType::LongLong);
+        QCOMPARE(q2.value(0).toLongLong(), Q_INT64_C(40001));
+        QVERIFY_SQL(q2, next());
+        QCOMPARE(q2.value("price").metaType().id(), QMetaType::LongLong);
+        QCOMPARE(q2.value("price").toLongLong(), Q_INT64_C(12345));
+        QVERIFY_SQL(q2, exec("SELECT sum(price) FROM " + ts.tableName()));
+        QVERIFY_SQL(q2, next());
+        QCOMPARE(q2.value(0).toLongLong(), Q_INT64_C(52346));
+    }
+    {
+        QSqlQuery q2(db);
+        q2.setNumericalPrecisionPolicy(QSql::LowPrecisionInt32);
+        QVERIFY_SQL(q2, exec("SELECT price FROM " + ts.tableName() + " ORDER BY id"));
+        QVERIFY_SQL(q2, next());
+        QCOMPARE(q2.value(0).metaType().id(), QMetaType::Int);
+        QCOMPARE(q2.value(0).toInt(), 40001);
+    }
+}
+
+// Exactness of the INT128 codec beyond the double range: wide values bound as
+// strings must round-trip digit for digit, the INT128 extremes must be
+// representable, an integer part that does not fit a LowPrecisionInt policy
+// comes back as a double (with a warning), and malformed input must fail the
+// exec() instead of binding a wrong value.
+void tst_QSqlQuery::ibaseInt128Exact()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    db.setNumericalPrecisionPolicy(QSql::HighPrecision);
+
+    {
+        TableScope ts(db, "int128wide", __FILE__);
+        QSqlQuery q(db);
+        if (!q.exec("CREATE TABLE " + ts.tableName() + " (id INT PRIMARY KEY, val NUMERIC(30, 2))"))
+            QSKIP("Need at least Firebird 4 for this test - skipping");
+        QVERIFY_SQL(q, prepare("INSERT INTO " + ts.tableName() + "(id,val) values(:id,:val)"));
+        q.bindValue(":id", 1);
+        q.bindValue(":val", QString("123456789012345678901234.56"));
+        QVERIFY_SQL(q, exec());
+        q.bindValue(":id", 2);
+        q.bindValue(":val", QString("-123456789012345678901234.56"));
+        QVERIFY_SQL(q, exec());
+
+        QVERIFY_SQL(q, exec("SELECT val FROM " + ts.tableName() + " ORDER BY id"));
+        QVERIFY_SQL(q, next());
+        QCOMPARE(q.value(0).metaType().id(), QMetaType::QString);
+        QCOMPARE(q.value(0).toString(), "123456789012345678901234.56");
+        QVERIFY_SQL(q, next());
+        QCOMPARE(q.value(0).toString(), "-123456789012345678901234.56");
+
+        // Malformed input must be a bind error, not a zero
+        QSqlQuery bad(db);
+        QVERIFY_SQL(bad, prepare("INSERT INTO " + ts.tableName() + "(id,val) values(3,:val)"));
+        bad.bindValue(":val", QString("1e5"));
+        QVERIFY(!bad.exec());
+        QVERIFY(bad.lastError().isValid());
+    }
+
+    {
+        // The INT128 extremes round-trip on a plain INT128 column
+        TableScope ts(db, "int128minmax", __FILE__);
+        QSqlQuery q(db);
+        if (!q.exec("CREATE TABLE " + ts.tableName() + " (id INT PRIMARY KEY, val INT128)"))
+            QSKIP("Need at least Firebird 4 for this test - skipping");
+        const QString minVal = QStringLiteral("-170141183460469231731687303715884105728");
+        const QString maxVal = QStringLiteral("170141183460469231731687303715884105727");
+        QVERIFY_SQL(q, prepare("INSERT INTO " + ts.tableName() + "(id,val) values(:id,:val)"));
+        q.bindValue(":id", 1);
+        q.bindValue(":val", minVal);
+        QVERIFY_SQL(q, exec());
+        q.bindValue(":id", 2);
+        q.bindValue(":val", maxVal);
+        QVERIFY_SQL(q, exec());
+
+        QVERIFY_SQL(q, exec("SELECT val FROM " + ts.tableName() + " ORDER BY id"));
+        QVERIFY_SQL(q, next());
+        QCOMPARE(q.value(0).toString(), minVal);
+        QVERIFY_SQL(q, next());
+        QCOMPARE(q.value(0).toString(), maxVal);
+    }
+
+    {
+        // Integer part beyond qint64 under LowPrecisionInt64: double + warning
+        TableScope ts(db, "int128oor", __FILE__);
+        QSqlQuery q(db);
+        if (!q.exec("CREATE TABLE " + ts.tableName() + " (val NUMERIC(25, 2))"))
+            QSKIP("Need at least Firebird 4 for this test - skipping");
+        QVERIFY_SQL(q, exec("INSERT INTO " + ts.tableName() + " values(123456789012345678901.50)"));
+
+        QSqlQuery q2(db);
+        q2.setNumericalPrecisionPolicy(QSql::LowPrecisionInt64);
+        QVERIFY_SQL(q2, exec("SELECT val FROM " + ts.tableName()));
+        QTest::ignoreMessage(QtWarningMsg,
+                             QRegularExpression("exceeds the LowPrecisionInt64 range"));
+        QVERIFY_SQL(q2, next());
+        const QVariant value = q2.value(0);
+        QCOMPARE(value.metaType().id(), QMetaType::Double);
+        QCOMPARE(value.toDouble(), 123456789012345678901.50);
+        // Reading the cell again must not repeat the warning (QFIREBIRD decodes
+        // on every access, QIBASE once per row). ignoreMessage() is consumed by
+        // the first one; from here on a repeat fails the test.
+        QTest::failOnWarning(QRegularExpression("exceeds the LowPrecisionInt64 range"));
+        QCOMPARE(q2.value(0).toDouble(), 123456789012345678901.50);
+        QCOMPARE(q2.record().value(0).toDouble(), 123456789012345678901.50);
     }
 }
 

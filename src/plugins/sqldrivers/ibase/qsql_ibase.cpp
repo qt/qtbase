@@ -10,7 +10,6 @@
 #include <QtCore/qdeadlinetimer.h>
 #include <QtCore/qdebug.h>
 #include <QtCore/qlist.h>
-#include <QtCore/private/qlocale_tools_p.h>
 #include <QtCore/qloggingcategory.h>
 #include <QtCore/qmap.h>
 #include <QtCore/qmutex.h>
@@ -22,9 +21,9 @@
 #include <QtSql/qsqlquery.h>
 #include <QtSql/private/qsqlcachedresult_p.h>
 #include <QtSql/private/qsqldriver_p.h>
+#include <QtSql/private/qsqlnumeric_p.h>
 #include <stdlib.h>
 #include <limits.h>
-#include <math.h>
 #include <mutex>
 
 QT_BEGIN_NAMESPACE
@@ -44,7 +43,8 @@ using namespace Qt::StringLiterals;
 #define blr_boolean_dtype blr_bool
 #endif
 
-#if (defined(QT_SUPPORTS_INT128) || defined(QT_USE_MSVC_INT128)) && (FB_API_VER >= 40)
+// The 128-bit half of the gate comes from QtSql/private/qsqlnumeric_p.h
+#if defined(QSQL_HAS_INT128) && (FB_API_VER >= 40)
 #define IBASE_INT128_SUPPORTED
 #endif
 
@@ -405,74 +405,33 @@ protected:
     int numRowsAffected() override;
     QSqlRecord record() const override;
 
+    // Encode a bound value as the scaled integer of type T into the XSQLVAR
+    // data slot (exactly - see QtPrivate::sqlScaledFromVariant); on failure
+    // set lastError so exec() can abort instead of binding a wrong value.
     template<typename T>
-    static QString numberToHighPrecision(T val, int scale)
+    bool bindScaled(const QVariant &val, int scale, char *data, qsizetype paramIndex)
     {
-        const bool negative = val < 0;
-        QString number;
+        T v = 0;
+        QString detail;
+        if (!QtPrivate::sqlScaledFromVariant(val, scale, &v, &detail)) {
+            setLastError(QSqlError(QCoreApplication::translate("QIBaseResult",
+                                       "Unable to bind parameter %1")
+                                       .arg(paramIndex + 1),
+                                   detail, QSqlError::StatementError));
+            return false;
+        }
 #ifdef IBASE_INT128_SUPPORTED
-        if constexpr (std::is_same_v<qinternalint128, T>) {
-            number = negative ? qint128toBasicLatin(val * -1)
-                              : qint128toBasicLatin(val);
-        } else
+        if constexpr (std::is_same_v<T, qinternalint128>) {
+            // The slot holds two 64-bit words, low first, whatever the host's byte order
+            quint64 low = 0, high = 0;
+            QtPrivate::sqlInt128ToWords(v, &low, &high);
+            qToUnaligned(low, data);
+            qToUnaligned(high, data + sizeof(quint64));
+            return true;
+        }
 #endif
-            number = negative ? QString::number(qAbs(val))
-                              : QString::number(val);
-        auto len = number.size();
-        scale *= -1;
-        if (scale >= len) {
-            number = QString(scale - len + 1, u'0') + number;
-            len = number.size();
-        }
-        const auto sepPos = len - scale;
-        number = number.left(sepPos) + u'.' + number.mid(sepPos);
-        if (negative)
-            number = u'-' + number;
-        return number;
-    }
-
-    template<typename T>
-    QVariant applyScale(T val, int scale) const
-    {
-        if (scale >= 0)
-            return QVariant(val);
-
-        switch (numericalPrecisionPolicy()) {
-        case QSql::LowPrecisionInt32:
-            return QVariant(qint32(val * pow(10.0, scale)));
-        case QSql::LowPrecisionInt64:
-            return QVariant(qint64(val * pow(10.0, scale)));
-        case QSql::LowPrecisionDouble:
-            return QVariant(double(val * pow(10.0, scale)));
-        case QSql::HighPrecision:
-            return QVariant(numberToHighPrecision(val, scale));
-        }
-        return QVariant(val);
-    }
-
-    template<typename T>
-    void setWithScale(const QVariant &val, int scale, char *data)
-    {
-        auto ptr = reinterpret_cast<T *>(data);
-        if (scale < 0) {
-            double d = floor(0.5 + val.toDouble() * pow(10.0, scale * -1));
-#ifdef IBASE_INT128_SUPPORTED
-            if constexpr (std::is_same_v<qinternalint128, T>) {
-                quint64 lower = quint64(d);
-                quint64 tmp = quint64(std::numeric_limits<quint32>::max()) + 1;
-                d /= tmp;
-                d /= tmp;
-                quint64 higher = quint64(d);
-                qinternalint128 result = higher;
-                result <<= 64;
-                result += lower;
-                *ptr = static_cast<T>(result);
-            } else
-#endif
-                *ptr = static_cast<T>(d);
-        }
-        else
-            *ptr = val.value<T>();
+        qToUnaligned(v, data);
+        return true;
     }
 };
 
@@ -1142,22 +1101,27 @@ bool QIBaseResult::exec()
             const auto sqltype = sqlvar.sqltype & ~1;
             switch (sqltype) {
             case SQL_INT64:
-                setWithScale<qint64>(val, sqlvar.sqlscale, sqlvar.sqldata);
+                if (!bindScaled<qint64>(val, sqlvar.sqlscale, sqlvar.sqldata, para))
+                    return false;
                 break;
 #ifdef IBASE_INT128_SUPPORTED
             case SQL_INT128:
-                setWithScale<qinternalint128>(val, sqlvar.sqlscale,
-                                              sqlvar.sqldata);
+                if (!bindScaled<qinternalint128>(val, sqlvar.sqlscale, sqlvar.sqldata, para))
+                    return false;
                 break;
 #endif
             case SQL_LONG:
-                if (sqlvar.sqllen == 4)
-                    setWithScale<qint32>(val, sqlvar.sqlscale, sqlvar.sqldata);
-                else
-                    setWithScale<qint64>(val, 0, sqlvar.sqldata);
+                if (sqlvar.sqllen == 4) {
+                    if (!bindScaled<qint32>(val, sqlvar.sqlscale, sqlvar.sqldata, para))
+                        return false;
+                } else {
+                    if (!bindScaled<qint64>(val, 0, sqlvar.sqldata, para))
+                        return false;
+                }
                 break;
             case SQL_SHORT:
-                setWithScale<qint16>(val, sqlvar.sqlscale, sqlvar.sqldata);
+                if (!bindScaled<qint16>(val, sqlvar.sqlscale, sqlvar.sqldata, para))
+                    return false;
                 break;
             case SQL_FLOAT:
                 *((float*)sqlvar.sqldata) = val.toFloat();
@@ -1312,17 +1276,24 @@ bool QIBaseResult::gotoNext(QSqlCachedResult::ValueCache& row, int rowIdx)
             Q_ASSERT(sqlvar.sqllen == sizeof(qint64));
             const auto val = *(qint64 *)buf;
             const auto scale = sqlvar.sqlscale;
-            row[idx] = applyScale(val, scale);
+            row[idx] = QtPrivate::sqlApplyScale(val, scale, numericalPrecisionPolicy());
             break;
         }
 #ifdef IBASE_INT128_SUPPORTED
         case SQL_INT128: {
             Q_ASSERT(sqlvar.sqllen == sizeof(qinternalint128));
-            const qinternalint128 val128 = qFromUnaligned<qinternalint128>(buf);
+            const qinternalint128 val128 = QtPrivate::sqlInt128FromWords(
+                qFromUnaligned<quint64>(buf), qFromUnaligned<quint64>(buf + sizeof(quint64)));
             const auto scale = sqlvar.sqlscale;
-            row[idx] = numberToHighPrecision(val128, scale);
-            if (numericalPrecisionPolicy() != QSql::HighPrecision)
-                row[idx] = applyScale(row[idx].toDouble(), 0);
+            const auto policy = numericalPrecisionPolicy();
+            bool overflow = false;
+            row[idx] = QtPrivate::sqlApplyScale(val128, scale, policy, &overflow);
+            // A double beats a wrapped or zero value; rows are decoded once, so
+            // this says so once per value.
+            if (overflow) {
+                QtPrivate::sqlWarnLowPrecisionOverflow(
+                    lcIbase, QtPrivate::sqlScaledToString(val128, scale), policy);
+            }
             break;
         }
 #endif
@@ -1330,14 +1301,14 @@ bool QIBaseResult::gotoNext(QSqlCachedResult::ValueCache& row, int rowIdx)
             if (sqlvar.sqllen == 4) {
                 const auto val = *(qint32 *)buf;
                 const auto scale = sqlvar.sqlscale;
-                row[idx] = applyScale(val, scale);
+                row[idx] = QtPrivate::sqlApplyScale(val, scale, numericalPrecisionPolicy());
             } else
                 row[idx] = QVariant(*(qint64*)buf);
             break;
         case SQL_SHORT: {
             const auto val = *(short *)buf;
             const auto scale = sqlvar.sqlscale;
-            row[idx] = applyScale(val, scale);
+            row[idx] = QtPrivate::sqlApplyScale(val, scale, numericalPrecisionPolicy());
             break;
         }
         case SQL_FLOAT:
