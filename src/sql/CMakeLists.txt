@@ -17,6 +17,7 @@ qt_internal_add_module(Sql
         kernel/qsqlfield.cpp kernel/qsqlfield.h
         kernel/qsqlindex.cpp kernel/qsqlindex.h
         kernel/qsqlnulldriver_p.h
+        kernel/qsqlnumeric_p.h
         kernel/qsqlquery.cpp kernel/qsqlquery.h
         kernel/qsqlrecord.cpp kernel/qsqlrecord.h
         kernel/qsqlresult.cpp kernel/qsqlresult.h kernel/qsqlresult_p.h
