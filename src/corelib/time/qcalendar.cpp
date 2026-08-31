@@ -388,8 +388,8 @@ const QCalendarBackend *QCalendarRegistry::fromIndex(size_t index)
 */
 const QCalendarBackend *QCalendarRegistry::fromEnum(QCalendar::System system)
 {
-    Q_ASSERT(system <= QCalendar::System::Last);
     auto index = size_t(system);
+    Q_ASSERT(index <= size_t(QCalendar::System::Last));
 
     {
         QReadLocker locker(&lock);
@@ -1090,7 +1090,9 @@ const QCalendarBackend *QCalendarBackend::fromId(QCalendar::SystemId id)
 */
 const QCalendarBackend *QCalendarBackend::fromEnum(QCalendar::System system)
 {
-    if (Q_UNLIKELY(calendarRegistry.isDestroyed() || system == QCalendar::System::User))
+    if (Q_UNLIKELY(calendarRegistry.isDestroyed()))
+        return nullptr;
+    if (size_t(system) > size_t(QCalendar::System::Last)) // User, at -1, casts to > Last.
         return nullptr;
 
     return calendarRegistry->fromEnum(system);
