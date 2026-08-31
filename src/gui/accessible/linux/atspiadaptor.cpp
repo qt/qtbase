@@ -2486,6 +2486,14 @@ QSpiAttributeSet AtSpiAdaptor::getAttributes(QAccessibleInterface *interface)
             Q_ASSERT(value.canConvert<int>());
             set.insert(QStringLiteral("level"), QString::number(value.toInt()));
             break;
+        case QAccessible::Attribute::PositionInSet:
+            Q_ASSERT(value.canConvert<int>());
+            set.insert(QStringLiteral("posinset"), QString::number(value.toInt()));
+            break;
+        case QAccessible::Attribute::SizeOfSet:
+            Q_ASSERT(value.canConvert<int>());
+            set.insert(QStringLiteral("setsize"), QString::number(value.toInt()));
+            break;
         default:
             break;
         }
