@@ -747,6 +747,28 @@ private:
     QVarLengthArray<QRhiTextureUploadEntry, 16> m_entries;
 };
 
+class Q_GUI_EXPORT QRhiBufferCopyDescription
+{
+public:
+    QRhiBufferCopyDescription() = default;
+
+    quint32 size() const { return m_size; }
+    void setSize(quint32 sz) { m_size = sz; }
+
+    quint32 sourceOffset() const { return m_sourceOffset; }
+    void setSourceOffset(quint32 offset) { m_sourceOffset = offset; }
+
+    quint32 destinationOffset() const { return m_destinationOffset; }
+    void setDestinationOffset(quint32 offset) { m_destinationOffset = offset; }
+
+private:
+    quint32 m_size = 0;
+    quint32 m_sourceOffset = 0;
+    quint32 m_destinationOffset = 0;
+};
+
+Q_DECLARE_TYPEINFO(QRhiBufferCopyDescription, Q_RELOCATABLE_TYPE);
+
 class Q_GUI_EXPORT QRhiTextureCopyDescription
 {
 public:
@@ -1920,6 +1942,7 @@ public:
     void uploadStaticBuffer(QRhiBuffer *buf, const void *data);
     void uploadStaticBuffer(QRhiBuffer *buf, QByteArray data);
     void readBackBuffer(QRhiBuffer *buf, quint32 offset, quint32 size, QRhiReadbackResult *result);
+    void copyBuffer(QRhiBuffer *dst, QRhiBuffer *src, const QRhiBufferCopyDescription &desc = QRhiBufferCopyDescription());
     void uploadTexture(QRhiTexture *tex, const QRhiTextureUploadDescription &desc);
     void uploadTexture(QRhiTexture *tex, const QImage &image);
     void copyTexture(QRhiTexture *dst, QRhiTexture *src, const QRhiTextureCopyDescription &desc = QRhiTextureCopyDescription());
@@ -2071,6 +2094,7 @@ public:
         ShaderDrawParameters,
         DispatchIndirect,
         DrawIndirectCount,
+        BufferToBufferCopy,
     };
 
     enum BeginFrameFlag {

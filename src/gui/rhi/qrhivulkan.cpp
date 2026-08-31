@@ -4674,6 +4674,26 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
 
                 activeBufferReadbacks.append(readback);
             }
+        } else if (u.type == QRhiResourceUpdateBatchPrivate::BufferOp::Copy) {
+            QVkBuffer *dstD = QRHI_RES(QVkBuffer, u.buf);
+            QVkBuffer *srcD = QRHI_RES(QVkBuffer, u.src);
+            Q_ASSERT(dstD->m_type != QRhiBuffer::Dynamic && srcD->m_type != QRhiBuffer::Dynamic);
+
+            trackedBufferBarrier(cbD, srcD, 0, VK_ACCESS_TRANSFER_READ_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
+            trackedBufferBarrier(cbD, dstD, 0, VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
+
+            VkBufferCopy copyInfo = {};
+            copyInfo.srcOffset = u.srcOffset;
+            copyInfo.dstOffset = u.offset;
+            copyInfo.size = u.readSize;
+
+            QVkCommandBuffer::Command &cmd(cbD->commands.get());
+            cmd.cmd = QVkCommandBuffer::Command::CopyBuffer;
+            cmd.args.copyBuffer.src = srcD->buffers[0];
+            cmd.args.copyBuffer.dst = dstD->buffers[0];
+            cmd.args.copyBuffer.desc = copyInfo;
+
+            srcD->lastActiveFrameSlot = dstD->lastActiveFrameSlot = currentFrameSlot;
         }
     }
 
@@ -5916,6 +5936,8 @@ bool QRhiVulkan::isFeatureSupported(QRhi::Feature feature) const
         return true; // available in Vulkan 1.0
     case QRhi::DrawIndirectCount:
         return caps.drawIndirectCount;
+    case QRhi::BufferToBufferCopy:
+        return true;
     default:
         Q_UNREACHABLE_RETURN(false);
     }

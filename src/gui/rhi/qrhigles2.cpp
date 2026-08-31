@@ -346,6 +346,14 @@ QT_BEGIN_NAMESPACE
 #define GL_SHADER_STORAGE_BUFFER          0x90D2
 #endif
 
+#ifndef GL_COPY_READ_BUFFER
+#define GL_COPY_READ_BUFFER               0x8F36
+#endif
+
+#ifndef GL_COPY_WRITE_BUFFER
+#define GL_COPY_WRITE_BUFFER              0x8F37
+#endif
+
 #ifndef GL_READ_ONLY
 #define GL_READ_ONLY                      0x88B8
 #endif
@@ -1371,6 +1379,17 @@ bool QRhiGles2::create(QRhi::Flags flags)
     // caps.compute. The function pointer is exposed by QOpenGLExtraFunctions.
     caps.dispatchIndirect = caps.compute;
 
+    // glCopyBufferSubData is core in OpenGL 3.1 and OpenGL ES 3.0, and is
+    // available via GL_ARB_copy_buffer on older desktop versions. Either way
+    // the function pointer is exposed by QOpenGLExtraFunctions, but only when
+    // it can actually be resolved.
+    if (caps.gles)
+        caps.copyBuffer = caps.ctxMajor >= 3;
+    else
+        caps.copyBuffer = caps.ctxMajor > 3 || (caps.ctxMajor == 3 && caps.ctxMinor >= 1);
+    if (!caps.copyBuffer && ctx->hasExtension(QByteArrayLiteral("GL_ARB_copy_buffer")))
+        caps.copyBuffer = ctx->getProcAddress(QByteArrayLiteral("glCopyBufferSubData")) != nullptr;
+
     // glMultiDraw*IndirectCount: core in 4.6, ARB on older desktop.
     // No counterpart in OpenGL ES.
     if (caps.gles)
@@ -1877,6 +1896,8 @@ bool QRhiGles2::isFeatureSupported(QRhi::Feature feature) const
         return caps.dispatchIndirect;
     case QRhi::DrawIndirectCount:
         return caps.drawIndirectCount;
+    case QRhi::BufferToBufferCopy:
+        return caps.copyBuffer;
     default:
         Q_UNREACHABLE_RETURN(false);
     }
@@ -3099,6 +3120,24 @@ void QRhiGles2::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
                 cmd.args.getBufferSubData.offset = u.offset;
                 cmd.args.getBufferSubData.size = u.readSize;
             }
+        } else if (u.type == QRhiResourceUpdateBatchPrivate::BufferOp::Copy) {
+            if (!caps.copyBuffer)
+                continue;
+
+            QGles2Buffer *dstD = QRHI_RES(QGles2Buffer, u.buf);
+            QGles2Buffer *srcD = QRHI_RES(QGles2Buffer, u.src);
+            Q_ASSERT(dstD->buffer && srcD->buffer);
+
+            trackedBufferBarrier(cbD, srcD, QGles2Buffer::AccessUpdate);
+            trackedBufferBarrier(cbD, dstD, QGles2Buffer::AccessUpdate);
+
+            QGles2CommandBuffer::Command &cmd(cbD->commands.get());
+            cmd.cmd = QGles2CommandBuffer::Command::CopyBuf;
+            cmd.args.copyBuf.srcBuffer = srcD->buffer;
+            cmd.args.copyBuf.dstBuffer = dstD->buffer;
+            cmd.args.copyBuf.srcOffset = u.srcOffset;
+            cmd.args.copyBuf.dstOffset = u.offset;
+            cmd.args.copyBuf.size = u.readSize;
         }
     }
 
@@ -4120,6 +4159,15 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
             if (result->completed)
                 result->completed();
         }
+            break;
+        case QGles2CommandBuffer::Command::CopyBuf:
+            f->glBindBuffer(GL_COPY_READ_BUFFER, cmd.args.copyBuf.srcBuffer);
+            f->glBindBuffer(GL_COPY_WRITE_BUFFER, cmd.args.copyBuf.dstBuffer);
+            f->glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER,
+                                   cmd.args.copyBuf.srcOffset, cmd.args.copyBuf.dstOffset,
+                                   cmd.args.copyBuf.size);
+            f->glBindBuffer(GL_COPY_READ_BUFFER, 0);
+            f->glBindBuffer(GL_COPY_WRITE_BUFFER, 0);
             break;
         case QGles2CommandBuffer::Command::CopyTex:
         {

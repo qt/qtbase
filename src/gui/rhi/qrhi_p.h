@@ -481,14 +481,17 @@ public:
         enum Type {
             DynamicUpdate,
             StaticUpload,
-            Read
+            Read,
+            Copy
         };
         Type type;
         QRhiBuffer *buf;
         quint32 offset;
         QRhiBufferData data;
-        quint32 readSize;
+        quint32 readSize; // also the number of bytes to copy with Copy
         QRhiReadbackResult *result;
+        QRhiBuffer *src;
+        quint32 srcOffset;
 
         static BufferOp dynamicUpdate(QRhiBuffer *buf, quint32 offset, quint32 size, const void *data)
         {
@@ -560,6 +563,19 @@ public:
             op.offset = offset;
             op.readSize = size;
             op.result = result;
+            return op;
+        }
+
+        static BufferOp copy(QRhiBuffer *dst, QRhiBuffer *src, quint32 dstOffset,
+                             quint32 srcOffset, quint32 size)
+        {
+            BufferOp op = {};
+            op.type = Copy;
+            op.buf = dst;
+            op.offset = dstOffset;
+            op.readSize = size;
+            op.src = src;
+            op.srcOffset = srcOffset;
             return op;
         }
     };

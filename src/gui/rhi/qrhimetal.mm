@@ -997,6 +997,8 @@ bool QRhiMetal::isFeatureSupported(QRhi::Feature feature) const
         return caps.indirectCommandBuffers;
     case QRhi::DispatchIndirect:
         return true;
+    case QRhi::BufferToBufferCopy:
+        return true;
     default:
         Q_UNREACHABLE();
         return false;
@@ -3594,6 +3596,34 @@ void QRhiMetal::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
 
                 d->activeBufferReadbacks.append(readback);
             }
+        } else if (u.type == QRhiResourceUpdateBatchPrivate::BufferOp::Copy) {
+            QMetalBuffer *dstD = QRHI_RES(QMetalBuffer, u.buf);
+            QMetalBuffer *srcD = QRHI_RES(QMetalBuffer, u.src);
+            Q_ASSERT(dstD->m_type != QRhiBuffer::Dynamic && srcD->m_type != QRhiBuffer::Dynamic);
+
+            executeBufferHostWritesForCurrentFrame(srcD);
+            const int srcIdx = srcD->d->slotted ? currentFrameSlot : 0;
+            const int dstSlotCount = dstD->d->slotted ? QMTL_FRAMES_IN_FLIGHT : 1;
+            // Unlike everywhere else, flush every slot, not just the current
+            // one: a partial copy cannot discard the pending writes outside the
+            // copied range, and leaving them queued would let them land on top
+            // of the copy in a later frame. Writing the slot that is not the
+            // current one races a still in-flight frame reading it, which is
+            // why mixing uploadStaticBuffer() and copyBuffer() on one buffer
+            // within a frame is documented as unsupported.
+            for (int i = 0; i != dstSlotCount; ++i)
+                executeBufferHostWritesForSlot(dstD, i);
+
+            ensureBlit();
+            for (int i = 0; i != dstSlotCount; ++i) {
+                [blitEnc copyFromBuffer: srcD->d->buf[srcIdx]
+                                         sourceOffset: u.srcOffset
+                                         toBuffer: dstD->d->buf[i]
+                                         destinationOffset: u.offset
+                                         size: u.readSize];
+            }
+
+            srcD->lastActiveFrameSlot = dstD->lastActiveFrameSlot = currentFrameSlot;
         }
     }
 

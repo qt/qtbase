@@ -70,6 +70,10 @@ private slots:
     void nativeBuffer();
     void resourceUpdateBatchBuffer_data();
     void resourceUpdateBatchBuffer();
+    void resourceUpdateBatchBufferCopy_data();
+    void resourceUpdateBatchBufferCopy();
+    void resourceUpdateBatchBufferCopyInvalid_data();
+    void resourceUpdateBatchBufferCopyInvalid();
     void resourceUpdateBatchRGBATextureUpload_data();
     void resourceUpdateBatchRGBATextureUpload();
     void resourceUpdateBatchRGBATextureCopy_data();
@@ -1319,6 +1323,184 @@ void tst_QRhi::resourceUpdateBatchBuffer()
             qDebug("Skipping verifying buffer contents because readback is not supported");
         }
     }
+}
+
+void tst_QRhi::resourceUpdateBatchBufferCopy_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::resourceUpdateBatchBufferCopy()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing buffer-to-buffer copy");
+
+    if (!rhi->isFeatureSupported(QRhi::BufferToBufferCopy))
+        QSKIP("Buffer-to-buffer copy is not supported on this backend");
+
+    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi.get()))
+        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
+
+    const int bufferSize = 32;
+    const QByteArray a(bufferSize, 'A');
+    const QByteArray b(bufferSize, 'B');
+
+    const bool canReadBack = rhi->isFeatureSupported(QRhi::ReadBackNonUniformBuffer);
+    if (!canReadBack)
+        qDebug("Skipping verification of buffer data as ReadBackNonUniformBuffer is not supported");
+
+    // full copy
+    {
+        QScopedPointer<QRhiBuffer> src(rhi->newBuffer(QRhiBuffer::Static, QRhiBuffer::VertexBuffer, bufferSize));
+        QVERIFY(src->create());
+        QScopedPointer<QRhiBuffer> dst(rhi->newBuffer(QRhiBuffer::Static, QRhiBuffer::VertexBuffer, bufferSize));
+        QVERIFY(dst->create());
+
+        QRhiResourceUpdateBatch *batch = rhi->nextResourceUpdateBatch();
+        QVERIFY(batch);
+        batch->uploadStaticBuffer(src.data(), 0, bufferSize, a.constData());
+        batch->uploadStaticBuffer(dst.data(), 0, bufferSize, b.constData());
+        QVERIFY(submitResourceUpdates(rhi.data(), batch));
+
+        batch = rhi->nextResourceUpdateBatch();
+        QVERIFY(batch);
+        batch->copyBuffer(dst.data(), src.data());
+
+        QRhiReadbackResult readResult;
+        bool readCompleted = false;
+        readResult.completed = [&readCompleted] { readCompleted = true; };
+        if (canReadBack)
+            batch->readBackBuffer(dst.data(), 0, bufferSize, &readResult);
+
+        QVERIFY(submitResourceUpdates(rhi.data(), batch));
+
+        if (canReadBack && impl != QRhi::Null) {
+            QVERIFY(readCompleted);
+            QCOMPARE(readResult.data.size(), bufferSize);
+            QCOMPARE(readResult.data, a);
+        }
+    }
+
+    // partial copy: 8 bytes from the middle of src to the middle of dst
+    {
+        QScopedPointer<QRhiBuffer> src(rhi->newBuffer(QRhiBuffer::Static, QRhiBuffer::VertexBuffer, bufferSize));
+        QVERIFY(src->create());
+        QScopedPointer<QRhiBuffer> dst(rhi->newBuffer(QRhiBuffer::Static, QRhiBuffer::VertexBuffer, bufferSize));
+        QVERIFY(dst->create());
+
+        QRhiResourceUpdateBatch *batch = rhi->nextResourceUpdateBatch();
+        QVERIFY(batch);
+        batch->uploadStaticBuffer(src.data(), 0, bufferSize, a.constData());
+        batch->uploadStaticBuffer(dst.data(), 0, bufferSize, b.constData());
+        QVERIFY(submitResourceUpdates(rhi.data(), batch));
+
+        batch = rhi->nextResourceUpdateBatch();
+        QVERIFY(batch);
+        QRhiBufferCopyDescription desc;
+        desc.setSize(8);
+        desc.setSourceOffset(4);
+        desc.setDestinationOffset(12);
+        batch->copyBuffer(dst.data(), src.data(), desc);
+
+        QRhiReadbackResult readResult;
+        bool readCompleted = false;
+        readResult.completed = [&readCompleted] { readCompleted = true; };
+        if (canReadBack)
+            batch->readBackBuffer(dst.data(), 0, bufferSize, &readResult);
+
+        QVERIFY(submitResourceUpdates(rhi.data(), batch));
+
+        if (canReadBack && impl != QRhi::Null) {
+            QVERIFY(readCompleted);
+            QCOMPARE(readResult.data.size(), bufferSize);
+            QByteArray expected = b;
+            expected.replace(12, 8, QByteArray(8, 'A'));
+            QCOMPARE(readResult.data, expected);
+        }
+    }
+}
+
+void tst_QRhi::resourceUpdateBatchBufferCopyInvalid_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::resourceUpdateBatchBufferCopyInvalid()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing invalid buffer-to-buffer copies");
+
+    // The rejections all happen in the front-end, before the backend ever sees
+    // the operation, so this does not depend on BufferToBufferCopy support.
+
+    const int bufferSize = 32;
+    QScopedPointer<QRhiBuffer> buf(rhi->newBuffer(QRhiBuffer::Static, QRhiBuffer::VertexBuffer, bufferSize));
+    QVERIFY(buf->create());
+    QScopedPointer<QRhiBuffer> buf2(rhi->newBuffer(QRhiBuffer::Static, QRhiBuffer::VertexBuffer, bufferSize));
+    QVERIFY(buf2->create());
+    QScopedPointer<QRhiBuffer> dynamicBuf(rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::VertexBuffer, bufferSize));
+    QVERIFY(dynamicBuf->create());
+    // Dynamic, because a non-Dynamic uniform buffer cannot be created at all
+    // with some backends (NonDynamicUniformBuffers). copyBuffer() checks the
+    // UniformBuffer usage before the buffer type, so this still exercises the
+    // UniformBuffer rejection and not the Dynamic one.
+    QScopedPointer<QRhiBuffer> ubuf(rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, bufferSize));
+    QVERIFY(ubuf->create());
+
+    QRhiResourceUpdateBatch *batch = rhi->nextResourceUpdateBatch();
+    QVERIFY(batch);
+
+    QTest::ignoreMessage(QtWarningMsg, "Buffer copy with a null source or destination is not supported");
+    batch->copyBuffer(buf.data(), nullptr);
+    QTest::ignoreMessage(QtWarningMsg, "Buffer copy with a null source or destination is not supported");
+    batch->copyBuffer(nullptr, buf.data());
+
+    QTest::ignoreMessage(QtWarningMsg, "Buffer copy with matching source and destination is not supported");
+    batch->copyBuffer(buf.data(), buf.data());
+
+    QTest::ignoreMessage(QtWarningMsg, "Buffer copy is not supported for Dynamic buffers");
+    batch->copyBuffer(buf.data(), dynamicBuf.data());
+    QTest::ignoreMessage(QtWarningMsg, "Buffer copy is not supported for Dynamic buffers");
+    batch->copyBuffer(dynamicBuf.data(), buf.data());
+
+    QTest::ignoreMessage(QtWarningMsg, "Buffer copy is not supported for buffers with UniformBuffer usage");
+    batch->copyBuffer(buf.data(), ubuf.data());
+    QTest::ignoreMessage(QtWarningMsg, "Buffer copy is not supported for buffers with UniformBuffer usage");
+    batch->copyBuffer(ubuf.data(), buf.data());
+
+    // Does not fit the source.
+    QRhiBufferCopyDescription desc;
+    desc.setSize(bufferSize);
+    desc.setSourceOffset(4);
+    QTest::ignoreMessage(QtWarningMsg, "Buffer copy of 32 bytes (source offset 4, destination offset 0) "
+                                       "does not fit the source (32 bytes) or destination (32 bytes) buffer");
+    batch->copyBuffer(buf2.data(), buf.data(), desc);
+
+    // Does not fit the destination.
+    desc.setSourceOffset(0);
+    desc.setDestinationOffset(4);
+    QTest::ignoreMessage(QtWarningMsg, "Buffer copy of 32 bytes (source offset 0, destination offset 4) "
+                                       "does not fit the source (32 bytes) or destination (32 bytes) buffer");
+    batch->copyBuffer(buf2.data(), buf.data(), desc);
+
+    // A zero sized copy is a no-op, not a warning. Cannot be expressed with a
+    // size of 0 in the description, because that means the whole source buffer,
+    // so use a zero sized source.
+    QScopedPointer<QRhiBuffer> emptyBuf(rhi->newBuffer(QRhiBuffer::Static, QRhiBuffer::VertexBuffer, 0));
+    QVERIFY(emptyBuf->create());
+    QCOMPARE(emptyBuf->size(), 0u);
+    batch->copyBuffer(buf.data(), emptyBuf.data());
+
+    // Nothing should have been recorded.
+    QVERIFY(submitResourceUpdates(rhi.data(), batch));
 }
 
 inline bool imageRGBAEquals(const QImage &a, const QImage &b, int maxFuzz = 1)

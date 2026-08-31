@@ -1177,6 +1177,16 @@ Q_CONSTINIT QRhiDebugHooks qrhiDebugHooks;
     graphics pipeline must have
     \l{QRhiGraphicsPipeline::UsesIndirectDraws}{UsesIndirectDraws} set, without
     which the draw is skipped with a warning.
+
+    \value [since 6.13] BufferToBufferCopy Indicates that the
+    \l{QRhiResourceUpdateBatch::copyBuffer()}{copyBuffer()} function is
+    available, allowing the contents of a QRhiBuffer to be copied into another
+    QRhiBuffer on the GPU, without a readback to the CPU. In practice this can
+    be expected to be supported everywhere except with OpenGL ES 2.0 and
+    desktop OpenGL versions before 3.1 without \c GL_ARB_copy_buffer, which
+    have no \c glCopyBufferSubData. There is no fallback on such systems
+    because OpenGL ES 2.0 provides no way of reading back the contents of a
+    buffer either.
  */
 
 /*!
@@ -3418,6 +3428,74 @@ QRhiTextureUploadDescription::QRhiTextureUploadDescription(std::initializer_list
 /*!
     \fn qsizetype QRhiTextureUploadDescription::entryCount() const
     \return the number of entries.
+ */
+
+/*!
+    \class QRhiBufferCopyDescription
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
+    \since 6.13
+    \brief Describes a buffer-to-buffer copy operation.
+
+    A size() of 0 indicates that the entire source buffer is to be copied. A
+    default constructed copy description therefore leads to copying the whole
+    of the source buffer to the beginning of the destination buffer.
+
+    \note The copied region must fit both the source and the destination
+    buffer. When it does not, QRhiResourceUpdateBatch::copyBuffer() prints a
+    warning and drops the operation.
+
+    \note size(), sourceOffset(), and destinationOffset() should all be
+    multiples of 4. This is a requirement of the blit encoder in Metal, and it
+    applies on macOS on Intel-based devices. Other platforms and 3D APIs,
+    including Metal on Apple Silicon and on iOS, have no such restriction, but
+    portable code has to assume the strictest of these. Note that a size() of 0
+    implies the full size of the source buffer, which is not necessarily a
+    multiple of 4 either.
+
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
+    for details.
+
+    \sa QRhiResourceUpdateBatch::copyBuffer()
+ */
+
+/*!
+    \fn QRhiBufferCopyDescription::QRhiBufferCopyDescription()
+
+    Constructs an empty buffer copy description.
+ */
+
+/*!
+    \fn quint32 QRhiBufferCopyDescription::size() const
+    \return the number of bytes to copy.
+
+    \note A size() of 0 indicates that the entire source buffer is to be
+    copied.
+ */
+
+/*!
+    \fn void QRhiBufferCopyDescription::setSize(quint32 sz)
+    Sets the number of bytes to copy to \a sz.
+ */
+
+/*!
+    \fn quint32 QRhiBufferCopyDescription::sourceOffset() const
+    \return the offset in bytes into the source buffer. Defaults to 0.
+ */
+
+/*!
+    \fn void QRhiBufferCopyDescription::setSourceOffset(quint32 offset)
+    Sets the source \a offset in bytes.
+ */
+
+/*!
+    \fn quint32 QRhiBufferCopyDescription::destinationOffset() const
+    \return the offset in bytes into the destination buffer. Defaults to 0.
+ */
+
+/*!
+    \fn void QRhiBufferCopyDescription::setDestinationOffset(quint32 offset)
+    Sets the destination \a offset in bytes.
  */
 
 /*!
@@ -10744,6 +10822,90 @@ void QRhiResourceUpdateBatch::readBackBuffer(QRhiBuffer *buf, quint32 offset, qu
         d->bufferOps[idx] = QRhiResourceUpdateBatchPrivate::BufferOp::read(buf, offset, size, result);
     else
         d->bufferOps.append(QRhiResourceUpdateBatchPrivate::BufferOp::read(buf, offset, size, result));
+}
+
+/*!
+   Enqueues a buffer-to-buffer copy operation from \a src into \a dst as
+   described by \a desc.
+
+   The copy is performed on the GPU, without involving the CPU. This is the
+   preferred way of moving data between two non-Dynamic QRhiBuffer objects.
+
+   Availability is indicated by the \l QRhi::BufferToBufferCopy feature. When
+   that is reported as not supported, which in practice means OpenGL ES 2.0 and
+   old desktop OpenGL versions, calling this function has no effect.
+
+   A \l{QRhiBufferCopyDescription::size()}{size} of 0 in \a desc, which is what
+   a default constructed description has, means the entire \a src buffer. Watch
+   out for this when \a dst is smaller than \a src, because the copy then does
+   not fit and gets dropped, as described below.
+
+   \note Neither buffer can be of the type QRhiBuffer::Dynamic, and neither can
+   have QRhiBuffer::UniformBuffer usage. With some of the underlying 3D APIs
+   such buffers are backed by host visible memory, or are not real GPU buffers
+   at all, and so cannot take part in a GPU-side copy.
+
+   \note The size and offsets in \a desc should all be multiples of 4. This is a
+   requirement of the blit encoder in Metal, and it applies on macOS on
+   Intel-based devices. Other platforms and 3D APIs, including Metal on Apple
+   Silicon and on iOS, have no such restriction, but portable code has to assume
+   the strictest of these. Keep in mind that a
+   \l{QRhiBufferCopyDescription::size()}{size} of 0 leads to using the full size
+   of \a src, which is not necessarily a multiple of 4 either.
+
+   \warning Mixing GPU-side copies with host-side updates
+   (\l{QRhiResourceUpdateBatch::uploadStaticBuffer()}{uploadStaticBuffer()}) on
+   the same buffer within the same frame should be avoided, because some
+   backends, Metal in particular, implement buffer uploads by writing to host
+   visible memory, in which case the ordering between the two kinds of updates
+   is not defined. This restriction might be lifted in the future, but for now
+   this pattern needs to be avoided in portable applications.
+
+   \since 6.13
+   \sa copyTexture(), QRhi::isFeatureSupported()
+ */
+void QRhiResourceUpdateBatch::copyBuffer(QRhiBuffer *dst, QRhiBuffer *src, const QRhiBufferCopyDescription &desc)
+{
+    if (!dst || !src) {
+        qWarning("Buffer copy with a null source or destination is not supported");
+        return;
+    }
+    if (dst == src) {
+        qWarning("Buffer copy with matching source and destination is not supported");
+        return;
+    }
+    // Dynamic buffers are host visible, or shadowed on the CPU, with some of
+    // the backends, and so cannot be the source or the destination of a
+    // GPU-side copy. UniformBuffer is not necessarily backed by a real GPU
+    // buffer either.
+    if (dst->usage().testFlag(QRhiBuffer::UniformBuffer) || src->usage().testFlag(QRhiBuffer::UniformBuffer)) {
+        qWarning("Buffer copy is not supported for buffers with UniformBuffer usage");
+        return;
+    }
+    if (dst->type() == QRhiBuffer::Dynamic || src->type() == QRhiBuffer::Dynamic) {
+        qWarning("Buffer copy is not supported for Dynamic buffers");
+        return;
+    }
+
+    const quint32 size = desc.size() ? desc.size() : src->size();
+    if (!size)
+        return;
+    if (quint64(desc.sourceOffset()) + size > src->size() || quint64(desc.destinationOffset()) + size > dst->size()) {
+        qWarning("Buffer copy of %u bytes (source offset %u, destination offset %u) "
+                 "does not fit the source (%u bytes) or destination (%u bytes) buffer",
+                 size, desc.sourceOffset(), desc.destinationOffset(),
+                 src->size(), dst->size());
+        return;
+    }
+
+    const int idx = d->activeBufferOpCount++;
+    const QRhiResourceUpdateBatchPrivate::BufferOp op = QRhiResourceUpdateBatchPrivate::BufferOp::copy(dst, src,
+        desc.destinationOffset(), desc.sourceOffset(), size);
+
+    if (idx < d->bufferOps.size())
+        d->bufferOps[idx] = op;
+    else
+        d->bufferOps.append(op);
 }
 
 /*!

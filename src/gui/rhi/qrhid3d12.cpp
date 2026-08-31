@@ -1017,6 +1017,8 @@ bool QRhiD3D12::isFeatureSupported(QRhi::Feature feature) const
     case QRhi::DrawIndirectCount:
         // ExecuteIndirect natively supports a GPU-supplied count buffer.
         return drawCommandSignature != nullptr && drawIndexedCommandSignature != nullptr;
+    case QRhi::BufferToBufferCopy:
+        return true;
     }
     return false;
 }
@@ -4539,6 +4541,23 @@ void QRhiD3D12::enqueueResourceUpdates(QD3D12CommandBuffer *cbD, QRhiResourceUpd
                         u.result->completed();
                 }
             }
+        } else if (u.type == QRhiResourceUpdateBatchPrivate::BufferOp::Copy) {
+            QD3D12Buffer *dstD = QRHI_RES(QD3D12Buffer, u.buf);
+            QD3D12Buffer *srcD = QRHI_RES(QD3D12Buffer, u.src);
+            Q_ASSERT(dstD->m_type != QRhiBuffer::Dynamic && srcD->m_type != QRhiBuffer::Dynamic);
+
+            QD3D12Resource *dstRes = resourcePool.lookupRef(dstD->handles[0]);
+            QD3D12Resource *srcRes = resourcePool.lookupRef(srcD->handles[0]);
+            if (!dstRes || !srcRes)
+                continue;
+
+            barrierGen.addTransitionBarrier(srcD->handles[0], D3D12_RESOURCE_STATE_COPY_SOURCE);
+            barrierGen.addTransitionBarrier(dstD->handles[0], D3D12_RESOURCE_STATE_COPY_DEST);
+            barrierGen.enqueueBufferedTransitionBarriers(cbD);
+
+            cbD->cmdList->CopyBufferRegion(dstRes->resource, u.offset,
+                                           srcRes->resource, u.srcOffset,
+                                           u.readSize);
         }
     }
 

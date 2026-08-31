@@ -722,6 +722,8 @@ bool QRhiD3D11::isFeatureSupported(QRhi::Feature feature) const
         return false;
     case QRhi::DispatchIndirect:
         return featureLevel >= D3D_FEATURE_LEVEL_11_0;
+    case QRhi::BufferToBufferCopy:
+        return true;
     default:
         Q_UNREACHABLE();
         return false;
@@ -2012,6 +2014,27 @@ void QRhiD3D11::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
 
                 activeBufferReadbacks.append(readback);
             }
+        } else if (u.type == QRhiResourceUpdateBatchPrivate::BufferOp::Copy) {
+            QD3D11Buffer *dstD = QRHI_RES(QD3D11Buffer, u.buf);
+            QD3D11Buffer *srcD = QRHI_RES(QD3D11Buffer, u.src);
+            Q_ASSERT(dstD->m_type != QRhiBuffer::Dynamic && srcD->m_type != QRhiBuffer::Dynamic);
+
+            QD3D11CommandBuffer::Command &cmd(cbD->commands.get());
+            cmd.cmd = QD3D11CommandBuffer::Command::CopySubRes;
+            cmd.args.copySubRes.dst = dstD->buffer;
+            cmd.args.copySubRes.dstSubRes = 0;
+            cmd.args.copySubRes.dstX = u.offset;
+            cmd.args.copySubRes.dstY = 0;
+            cmd.args.copySubRes.dstZ = 0;
+            cmd.args.copySubRes.src = srcD->buffer;
+            cmd.args.copySubRes.srcSubRes = 0;
+            cmd.args.copySubRes.hasSrcBox = true;
+            D3D11_BOX box;
+            box.left = u.srcOffset;
+            box.top = box.front = 0;
+            box.back = box.bottom = 1;
+            box.right = u.srcOffset + u.readSize;
+            cmd.args.copySubRes.srcBox = box;
         }
     }
     for (int opIdx = 0; opIdx < ud->activeTextureOpCount; ++opIdx) {

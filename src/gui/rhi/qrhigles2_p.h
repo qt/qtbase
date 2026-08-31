@@ -337,6 +337,7 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
             Clear,
             BufferSubData,
             GetBufferSubData,
+            CopyBuf,
             CopyTex,
             ReadPixels,
             SubImage,
@@ -472,6 +473,13 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
                 int offset;
                 int size;
             } getBufferSubData;
+            struct {
+                GLuint srcBuffer;
+                GLuint dstBuffer;
+                int srcOffset;
+                int dstOffset;
+                int size;
+            } copyBuf;
             struct {
                 GLenum srcTarget;
                 GLenum srcFaceTarget;
@@ -1121,7 +1129,8 @@ public:
               unpackRowLength(false),
               perRenderTargetBlending(false),
               dispatchIndirect(false),
-              drawIndirectCount(false)
+              drawIndirectCount(false),
+              copyBuffer(false)
         { }
         int ctxMajor;
         int ctxMinor;
@@ -1198,6 +1207,7 @@ public:
         uint imageLoadStore : 1;
         uint dispatchIndirect : 1;
         uint drawIndirectCount : 1;
+        uint copyBuffer : 1;
     } caps;
     QGles2SwapChain *currentSwapChain = nullptr;
     QSet<GLint> supportedCompressedFormats;

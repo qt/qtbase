@@ -1,0 +1,41 @@
+#version 440
+
+layout (local_size_x = 256) in;
+
+struct Data
+{
+    vec2 pos;
+    float dir;
+};
+
+layout(std140, binding = 0) buffer StorageBuffer
+{
+    Data d[];
+} buf;
+
+layout(std140, binding = 1) uniform UniformBuffer
+{
+    float step;
+    uint count;
+} ubuf;
+
+void main()
+{
+    uint index = gl_GlobalInvocationID.x;
+    if (index < ubuf.count) {
+        vec2 p = buf.d[index].pos;
+        float dir = buf.d[index].dir;
+
+        p.x += dir * ubuf.step * 0.01;
+        if (p.x > 1.0) {
+            p.x = 1.0;
+            buf.d[index].dir *= -1.0;
+        }
+        if (p.x < -1.0) {
+            p.x = -1.0;
+            buf.d[index].dir *= -1.0;
+        }
+
+        buf.d[index].pos = p;
+    }
+}
