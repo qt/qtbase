@@ -96,7 +96,7 @@ class QCalendarRegistry
     QAtomicInt status = Unpopulated;
 
     void ensurePopulated();
-    QCalendarBackend *registerSystemBackendLockHeld(QCalendar::System system);
+    const QCalendarBackend *registerSystemBackendLockHeld(QCalendar::System system);
     void registerBackendLockHeld(QCalendarBackend *backend, const QStringList &names,
                                  QCalendar::System system);
 
@@ -221,7 +221,7 @@ void QCalendarRegistry::ensurePopulated()
 
     \sa registerSystemBackend
 */
-QCalendarBackend *QCalendarRegistry::registerSystemBackendLockHeld(QCalendar::System system)
+const QCalendarBackend *QCalendarRegistry::registerSystemBackendLockHeld(QCalendar::System system)
 {
     Q_ASSERT(system != QCalendar::System::User);
 
