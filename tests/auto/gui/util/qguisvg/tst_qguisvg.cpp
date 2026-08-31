@@ -13,6 +13,8 @@
 #include <limits>
 #include <utility>
 
+using namespace Qt::Literals::StringLiterals;
+
 class tst_QGuiSvg : public QObject
 {
     Q_OBJECT
@@ -26,6 +28,9 @@ private slots:
     void trimmed();
     void testToDouble_data();
     void testToDouble();
+
+    void testParsePath_data();
+    void testParsePath();
 };
 
 void tst_QGuiSvg::trimmed_data()
@@ -171,6 +176,505 @@ void tst_QGuiSvg::testToDouble()
     QCOMPARE(ok, !std::isnan(value));
     if (ok)
         QCOMPARE(actual, value);
+}
+
+void tst_QGuiSvg::testParsePath_data()
+{
+    // Test data for SVG path specification as defined by the Path Data page
+    // https://www.w3.org/TR/SVG/paths.html#PathData
+    // This means :
+    // - An extra pair of coordinates after a moveto are treated as lineto
+    // - Parsing a path stops at the first invalid command reached, and the
+    //   path before this command is considered valid.
+    // - Extra parameters of a command are dropped and parsing stops.
+
+    QTest::addColumn<QString>("pathString");
+    QTest::addColumn<QPainterPath>("refPath");
+
+    {
+        QString path = "Q 10 20 30 40"_L1;
+        QPainterPath refPath;
+        refPath.quadTo(QPointF(10, 20), QPointF(30, 40));
+
+        QTest::newRow("Q1") << path << refPath;
+    }
+
+    {
+        QString path = "Q 10 20 30 40 50 60"_L1;
+        QPainterPath refPath;
+        refPath.quadTo(QPointF(10, 20), QPointF(30, 40));
+
+        QTest::newRow("Q2") << path << refPath;
+    }
+
+    {
+        QString path = "M 10 20 30 40"_L1;
+        QPainterPath refPath;
+        refPath.moveTo(10, 20);
+        refPath.lineTo(30, 40);
+
+        QTest::newRow("M1") << path << refPath;
+    }
+
+    {
+        QString path = "M 10 20 30 40 50"_L1;
+        QPainterPath refPath;
+        refPath.moveTo(10, 20);
+        refPath.lineTo(30, 40);
+
+        QTest::newRow("M2") << path << refPath;
+    }
+
+    {
+        QString path = "m 10 20 30 40"_L1;
+        QPainterPath refPath;
+        refPath.moveTo(10, 20);
+        refPath.lineTo(40, 60);
+
+        QTest::newRow("m1") << path << refPath;
+    }
+
+    {
+        QString path = "m 10 20 30 40 50"_L1;
+        QPainterPath refPath;
+        refPath.moveTo(10, 20);
+        refPath.lineTo(40, 60);
+
+        QTest::newRow("m2") << path << refPath;
+    }
+
+    {
+        QString path = "M 10 20 L 30 40"_L1;
+        QPainterPath refPath;
+        refPath.moveTo(10, 20);
+        refPath.lineTo(30, 40);
+
+        QTest::newRow("L1") << path << refPath;
+    }
+
+    {
+        QString path = "M 10 20 L 30 40 50"_L1;
+        QPainterPath refPath;
+        refPath.moveTo(10, 20);
+        refPath.lineTo(30, 40);
+
+        QTest::newRow("L2") << path << refPath;
+    }
+
+    {
+        QString path = "M 10 20 l 30 40"_L1;
+        QPainterPath refPath;
+        refPath.moveTo(10, 20);
+        refPath.lineTo(40, 60);
+
+        QTest::newRow("l1") << path << refPath;
+    }
+
+    {
+        QString path = "M 10 20 l 30 40 50"_L1;
+        QPainterPath refPath;
+        refPath.moveTo(10, 20);
+        refPath.lineTo(40, 60);
+
+        QTest::newRow("l2") << path << refPath;
+    }
+
+    {
+        QString path = "M 10 20 H 30"_L1;
+        QPainterPath refPath;
+        refPath.moveTo(10, 20);
+        refPath.lineTo(30, 20);
+
+        QTest::newRow("H1") << path << refPath;
+    }
+
+    {
+        QString path = "M 10 20 H 30 40"_L1;
+        QPainterPath refPath;
+        refPath.moveTo(10, 20);
+        refPath.lineTo(30, 20);
+        refPath.lineTo(40, 20);
+
+        QTest::newRow("H2") << path << refPath;
+    }
+
+    {
+        QString path = "M 10 20 h 30"_L1;
+        QPainterPath refPath;
+        refPath.moveTo(10, 20);
+        refPath.lineTo(40, 20);
+
+        QTest::newRow("h1") << path << refPath;
+    }
+
+    {
+        QString path = "M 10 20 h 30 40"_L1;
+        QPainterPath refPath;
+        refPath.moveTo(10, 20);
+        refPath.lineTo(40, 20);
+        refPath.lineTo(80, 20);
+
+        QTest::newRow("h2") << path << refPath;
+    }
+
+    {
+        QString path = "M 10 20 V 30"_L1;
+        QPainterPath refPath;
+        refPath.moveTo(10, 20);
+        refPath.lineTo(10, 30);
+
+        QTest::newRow("V1") << path << refPath;
+    }
+
+    {
+        QString path = "M 10 20 V 30 40"_L1;
+        QPainterPath refPath;
+        refPath.moveTo(10, 20);
+        refPath.lineTo(10, 30);
+        refPath.lineTo(10, 40);
+
+        QTest::newRow("V2") << path << refPath;
+    }
+
+    {
+        QString path = "M 10 20 v 30"_L1;
+        QPainterPath refPath;
+        refPath.moveTo(10, 20);
+        refPath.lineTo(10, 50);
+
+        QTest::newRow("v1") << path << refPath;
+    }
+
+    {
+        QString path = "M 10 20 v 30 40"_L1;
+        QPainterPath refPath;
+        refPath.moveTo(10, 20);
+        refPath.lineTo(10, 50);
+        refPath.lineTo(10, 90);
+
+        QTest::newRow("v2") << path << refPath;
+    }
+
+    {
+        QString path = "C 10 20 30 40 50 60"_L1;
+        QPainterPath refPath;
+        refPath.cubicTo(QPointF(10, 20), QPointF(30, 40), QPointF(50, 60));
+
+        QTest::newRow("C1") << path << refPath;
+    }
+
+    {
+        QString path = "C 10 20 30 40 50 60 70 80"_L1;
+        QPainterPath refPath;
+        refPath.cubicTo(QPointF(10, 20), QPointF(30, 40), QPointF(50, 60));
+
+        QTest::newRow("C2") << path << refPath;
+    }
+
+    {
+        QString path = "M 5 5 c 10 20 30 40 50 60"_L1;
+        QPainterPath refPath;
+        refPath.moveTo(5, 5);
+        refPath.cubicTo(QPointF(15, 25), QPointF(35, 45), QPointF(55, 65));
+
+        QTest::newRow("c1") << path << refPath;
+    }
+
+    {
+        QString path = "M 5 5 c 10 20 30 40 50 60 70 80"_L1;
+        QPainterPath refPath;
+        refPath.moveTo(5, 5);
+        refPath.cubicTo(QPointF(15, 25), QPointF(35, 45), QPointF(55, 65));
+
+        QTest::newRow("c2") << path << refPath;
+    }
+
+    {
+        QString path = "M 5 5 S 30 40 50 60"_L1;
+        QPainterPath refPath;
+        refPath.moveTo(5, 5);
+        refPath.cubicTo(QPointF(5, 5), QPointF(30, 40), QPointF(50, 60));
+
+        QTest::newRow("S1") << path << refPath;
+    }
+
+    {
+        QString path = "M 5 5 S 30 40 50 60 70"_L1;
+        QPainterPath refPath;
+        refPath.moveTo(5, 5);
+        refPath.cubicTo(QPointF(5, 5), QPointF(30, 40), QPointF(50, 60));
+
+        QTest::newRow("S2") << path << refPath;
+    }
+
+    {
+        QString path = "M 5 5 s 30 40 50 60"_L1;
+        QPainterPath refPath;
+        refPath.moveTo(5, 5);
+        refPath.cubicTo(QPointF(5, 5), QPointF(35, 45), QPointF(55, 65));
+
+        QTest::newRow("s1") << path << refPath;
+    }
+
+    {
+        QString path = "M 5 5 s 30 40 50 60 70"_L1;
+        QPainterPath refPath;
+        refPath.moveTo(5, 5);
+        refPath.cubicTo(QPointF(5, 5), QPointF(35, 45), QPointF(55, 65));
+
+        QTest::newRow("s2") << path << refPath;
+    }
+
+    {
+        QString path = "M 5 5 q 10 20 30 40"_L1;
+        QPainterPath refPath;
+        refPath.moveTo(5, 5);
+        refPath.quadTo(QPointF(15, 25), QPointF(35, 45));
+
+        QTest::newRow("q1") << path << refPath;
+    }
+
+    {
+        QString path = "M 5 5 q 10 20 30 40 50"_L1;
+        QPainterPath refPath;
+        refPath.moveTo(5, 5);
+        refPath.quadTo(QPointF(15, 25), QPointF(35, 45));
+
+        QTest::newRow("q2") << path << refPath;
+    }
+
+    {
+        QString path = "M 5 5 T 10 20"_L1;
+        QPainterPath refPath;
+        refPath.moveTo(5, 5);
+        refPath.quadTo(QPointF(5, 5), QPointF(10, 20));
+
+        QTest::newRow("T1") << path << refPath;
+    }
+
+    {
+        QString path = "M 5 5 T 10 20 30"_L1;
+        QPainterPath refPath;
+        refPath.moveTo(5, 5);
+        refPath.quadTo(QPointF(5, 5), QPointF(10, 20));
+
+        QTest::newRow("T2") << path << refPath;
+    }
+
+    {
+        QString path = "M 5 5 t 10 20"_L1;
+        QPainterPath refPath;
+        refPath.moveTo(5, 5);
+        refPath.quadTo(QPointF(5, 5), QPointF(15, 25));
+
+        QTest::newRow("t1") << path << refPath;
+    }
+
+    {
+        QString path = "M 5 5 t 10 20 30"_L1;
+        QPainterPath refPath;
+        refPath.moveTo(5, 5);
+        refPath.quadTo(QPointF(5, 5), QPointF(15, 25));
+
+        QTest::newRow("t2") << path << refPath;
+    }
+
+    // A zero radius turns the arc into a straight line segment, see
+    // https://www.w3.org/TR/SVG/paths.html#ArcOutOfRangeParameters
+    {
+        QString path = "M 10 20 A 0 0 0 0 0 30 40"_L1;
+        QPainterPath refPath;
+        refPath.moveTo(10, 20);
+        refPath.lineTo(30, 40);
+
+        QTest::newRow("A1") << path << refPath;
+    }
+
+    {
+        QString path = "M 10 20 A 0 0 0 0 0 30 40 50"_L1;
+        QPainterPath refPath;
+        refPath.moveTo(10, 20);
+        refPath.lineTo(30, 40);
+
+        QTest::newRow("A2") << path << refPath;
+    }
+
+    {
+        QString path = "M 10 20 a 0 0 0 0 0 30 40"_L1;
+        QPainterPath refPath;
+        refPath.moveTo(10, 20);
+        refPath.lineTo(40, 60);
+
+        QTest::newRow("a1") << path << refPath;
+    }
+
+    {
+        QString path = "M 10 20 a 0 0 0 0 0 30 40 50"_L1;
+        QPainterPath refPath;
+        refPath.moveTo(10, 20);
+        refPath.lineTo(40, 60);
+
+        QTest::newRow("a2") << path << refPath;
+    }
+
+    {
+        QString path = "M 10 20 L 30 40 Z"_L1;
+        QPainterPath refPath;
+        refPath.moveTo(10, 20);
+        refPath.lineTo(30, 40);
+        refPath.closeSubpath();
+
+        QTest::newRow("Z1") << path << refPath;
+    }
+
+    {
+        QString path = "M 10 20 L 30 40 Z 50"_L1;
+        QPainterPath refPath;
+        refPath.moveTo(10, 20);
+        refPath.lineTo(30, 40);
+        refPath.closeSubpath();
+
+        QTest::newRow("Z2") << path << refPath;
+    }
+
+    {
+        QString path = "M 10"_L1;
+        QPainterPath refPath;
+
+        QTest::newRow("M3") << path << refPath;
+    }
+
+    {
+        QString path = "m 10"_L1;
+        QPainterPath refPath;
+
+        QTest::newRow("m3") << path << refPath;
+    }
+
+    {
+        QString path = "L 10"_L1;
+        QPainterPath refPath;
+
+        QTest::newRow("L3") << path << refPath;
+    }
+
+    {
+        QString path = "C 10 20 30 40 50"_L1;
+        QPainterPath refPath;
+
+        QTest::newRow("C3") << path << refPath;
+    }
+
+    {
+        QString path = "S 10 20 30"_L1;
+        QPainterPath refPath;
+
+        QTest::newRow("S3") << path << refPath;
+    }
+
+    {
+        QString path = "Q 10 20 30"_L1;
+        QPainterPath refPath;
+
+        QTest::newRow("Q3") << path << refPath;
+    }
+
+    {
+        QString path = "T 10"_L1;
+        QPainterPath refPath;
+
+        QTest::newRow("T3") << path << refPath;
+    }
+
+    {
+        QString path = "A 0 0 0 0 0 30"_L1;
+        QPainterPath refPath;
+
+        QTest::newRow("A3") << path << refPath;
+    }
+
+    {
+        QString path = "M 10 20 30 L 50 60"_L1;
+        QPainterPath refPath;
+        refPath.moveTo(10, 20);
+
+        QTest::newRow("M4") << path << refPath;
+    }
+
+    {
+        QString path = "M 10 20 L 30 L 50 60"_L1;
+        QPainterPath refPath;
+        refPath.moveTo(10, 20);
+
+        QTest::newRow("L4") << path << refPath;
+    }
+
+    {
+        QString path = "M 10 20 l 30 l 50 60"_L1;
+        QPainterPath refPath;
+        refPath.moveTo(10, 20);
+
+        QTest::newRow("l4") << path << refPath;
+    }
+
+    {
+        QString path = "M 0 0 L 10 10 30 L 50 60"_L1;
+        QPainterPath refPath;
+        refPath.moveTo(0, 0);
+        refPath.lineTo(10, 10);
+
+        QTest::newRow("L5") << path << refPath;
+    }
+
+    {
+        QString path = "M 10 20 C 1 2 3 4 5 L 50 60"_L1;
+        QPainterPath refPath;
+        refPath.moveTo(10, 20);
+
+        QTest::newRow("C4") << path << refPath;
+    }
+
+    {
+        QString path = "M 10 20 S 1 2 3 L 50 60"_L1;
+        QPainterPath refPath;
+        refPath.moveTo(10, 20);
+
+        QTest::newRow("S4") << path << refPath;
+    }
+
+    {
+        QString path = "M 10 20 Q 1 2 3 L 50 60"_L1;
+        QPainterPath refPath;
+        refPath.moveTo(10, 20);
+
+        QTest::newRow("Q4") << path << refPath;
+    }
+
+    {
+        QString path = "M 10 20 T 1 L 50 60"_L1;
+        QPainterPath refPath;
+        refPath.moveTo(10, 20);
+
+        QTest::newRow("T4") << path << refPath;
+    }
+
+    {
+        QString path = "M 10 20 A 0 0 0 0 0 30 L 50 60"_L1;
+        QPainterPath refPath;
+        refPath.moveTo(10, 20);
+
+        QTest::newRow("A4") << path << refPath;
+    }
+}
+
+void tst_QGuiSvg::testParsePath()
+{
+    QFETCH(QString, pathString);
+    QFETCH(const QPainterPath, refPath);
+
+    auto path = QGuiSvg::parsePath(pathString);
+
+    QCOMPARE(path.value(), refPath);
 }
 
 QTEST_MAIN(tst_QGuiSvg)
