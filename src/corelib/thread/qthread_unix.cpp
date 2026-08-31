@@ -818,6 +818,23 @@ void QThread::start(Priority priority)
                 break;
             }
 
+            // QNX's sched_param has more members than sched_priority
+            sched_param sp = {};
+
+#if defined(Q_OS_QNX) && !defined(SCHED_NOCHANGE)
+#  error "SCHED_NOCHANGE is expected on QNX; it is behind __EXT_QNX, so build with -std=gnu++NN"
+#endif
+#ifdef SCHED_NOCHANGE
+            // QNX since 8.0.5: pthread_attr_init() leaves the policy for the
+            // kernel to resolve; calculateUnixPriority() can't use that sentinel
+            if (sched_policy == SCHED_NOCHANGE) {
+                if (int code = pthread_getschedparam(pthread_self(), &sched_policy, &sp)) {
+                    qErrnoWarning(code, "QThread::start: Cannot resolve inherited scheduler policy");
+                    break;
+                }
+            }
+#endif // SCHED_NOCHANGE
+
             int prio;
             if (!calculateUnixPriority(priority, &sched_policy, &prio)) {
                 // failed to get the scheduling parameters, don't
@@ -826,7 +843,6 @@ void QThread::start(Priority priority)
                 break;
             }
 
-            sched_param sp;
             sp.sched_priority = prio;
 
             if (pthread_attr_setinheritsched(&attr, PTHREAD_EXPLICIT_SCHED) != 0
