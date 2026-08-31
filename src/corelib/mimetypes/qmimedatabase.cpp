@@ -268,9 +268,6 @@ QString QMimeDatabasePrivate::icon(const QString &name)
 QString QMimeDatabasePrivate::fallbackParent(const QString &mimeTypeName) const
 {
     const QStringView myGroup = QStringView{mimeTypeName}.left(mimeTypeName.indexOf(u'/'));
-    // All text/* types are subclasses of text/plain.
-    if (myGroup == "text"_L1 && mimeTypeName != plainTextMimeType())
-        return plainTextMimeType();
     // All real-file mimetypes implicitly derive from application/octet-stream
     if (myGroup != "inode"_L1 &&
         // ignore non-file extensions
@@ -295,6 +292,15 @@ QStringList QMimeDatabasePrivate::parents(const QString &mimeName)
     QStringList result;
     for (const auto &provider : providers())
         provider->addParents(mimeName, result);
+
+    // Implicit rule from the spec: all text/* types are subclasses of text/plain. It holds even
+    // for types that declare other parents, and shared-mime-info >= 2.5 relies on that rather
+    // than listing text/plain (e.g. text/x-shellscript only declares application/x-executable).
+    if (mimeName.startsWith("text/"_L1) && mimeName != plainTextMimeType()
+        && !result.contains(plainTextMimeType())) {
+        result.append(plainTextMimeType());
+    }
+
     if (result.isEmpty()) {
         const QString parent = fallbackParent(mimeName);
         if (!parent.isEmpty())
