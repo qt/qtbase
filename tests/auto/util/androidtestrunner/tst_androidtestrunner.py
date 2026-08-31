@@ -976,6 +976,15 @@ class DeviceRunTests(unittest.TestCase):
         self.assertEqual(proc.returncode, EXIT_NOEXITCODE,
             f"got {proc.returncode}\n{proc.stdout}{proc.stderr}")
 
+    def test_scenario_fork_child(self):
+        # A test that fork()s briefly gives the package two pids. Android 9's toybox
+        # ignores "pidof -s" and lists both, which must not read as "the test process exited".
+        proc = self.invoke(scenario="fork_child", test_args=["runScenario"])
+        out = proc.stdout + proc.stderr
+        self.assertEqual(proc.returncode, 0, out)
+        # Assert the test actually ran to completion.
+        self.assertRegex(out, r"PASS\s*:\s*tst_AndroidTestRunnerTestApp::runScenario")
+
     def test_test_arg_with_space_stays_one_argument(self):
         # qt-testrunner re-runs a failing data row as a single argument, e.g.
         # "parseFile:from_file:extended multiplexing". The quoting has to survive

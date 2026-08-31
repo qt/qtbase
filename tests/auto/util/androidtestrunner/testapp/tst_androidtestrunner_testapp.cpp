@@ -11,7 +11,9 @@
 
 #include <chrono>
 #include <cstdlib>
+#include <sys/wait.h>
 #include <thread>
+#include <unistd.h>
 
 using namespace Qt::StringLiterals;
 
@@ -178,6 +180,19 @@ void tst_AndroidTestRunnerTestApp::runScenario()
     if (mode == "drop_exit_code") {
         // Unlink qtest_last_exit_code at atexit so testExitCode() fails.
         std::atexit([]() { QFile::remove("qtest_last_exit_code"_L1); });
+        return;
+    }
+    if (mode == "fork_child") {
+        // Keep a forked child alive long enough for the package to own two pids
+        // across a liveness poll.
+        const pid_t pid = fork();
+        QVERIFY2(pid >= 0, "fork failed");
+        if (pid == 0) {
+            ::sleep(3);
+            _exit(0);
+        }
+        ::sleep(3);
+        waitpid(pid, nullptr, 0);
         return;
     }
     QFAIL(qPrintable("Unknown scenario: "_L1 + QString::fromUtf8(mode)));

@@ -676,7 +676,8 @@ static int getPid(const QString &package)
         return -1;
 
     bool ok = false;
-    const int pid = output.simplified().toInt(&ok);
+    // Android 9's toybox ignores -s and lists every match; a fork()ing test has two.
+    const int pid = output.simplified().split(' ').constFirst().toInt(&ok);
     return ok && pid > 0 ? pid : -1;
 }
 
@@ -712,20 +713,15 @@ static bool isRunning() {
     if (g_testInfo.deviceGone.load())
         return false;
 
-    const QStringList pidofArgs = { "shell"_L1, "pidof"_L1, "-s"_L1, g_options.package };
-    const QByteArray output = execAdbCommand(pidofArgs, false);
+    if (getPid(g_options.package) > 0)
+        return true;
 
-    // pidof exits 1 (with empty stdout) when the process is gone, but adb
-    // itself failing also looks like that; check the device list to tell
-    // them apart and flag a disconnect when warranted.
-    if (output.isNull()) {
-        if (!g_options.serial.isEmpty() && deviceDisconnected())
-            g_testInfo.deviceGone.store(true);
-        return false;
-    }
+    // No pid means the test exited, but adb failing looks the same; check the
+    // device list to tell them apart and flag a disconnect when warranted.
+    if (!g_options.serial.isEmpty() && deviceDisconnected())
+        g_testInfo.deviceGone.store(true);
 
-    bool ok = false;
-    return output.simplified().toInt(&ok) > 0 && ok;
+    return false;
 }
 
 static bool pollUntil(qxp::function_ref<bool() const> predicate,
