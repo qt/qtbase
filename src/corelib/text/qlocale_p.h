@@ -452,11 +452,10 @@ public:
     struct DigitSequence
     {
         QByteArray digits; // ASCII digits
-        // Index just before start of first digit.
-        qsizetype digitStart;
-        // digits.sliced(n, m), comes from
-        // text.sliced(digitStart + n * digitWidth, m * digitWidth)
-        qint8 digitWidth; // Width within text of each digit.
+        // Indices of (starts of) digits and the index just after the last digit:
+        QList<qsizetype> digitBounds;
+        // digits.sliced(n, m), a.k.a. digits.first(n+m).sliced(n), comes from
+        // text.first(digitBounds(n+m)).sliced(digitBounds[n])
         char sign = '\0'; // '\0' for unspecified, or '-' or '+' if specified.
 
         enum class Option {
@@ -478,7 +477,7 @@ public:
         // Where in text did the parse end:
         qsizetype endIndex() const
         {
-            return digitStart + digits.size() * digitWidth;
+            return digitBounds.back();
         }
 
         // How many ASCII characters the sequence transcribes to:
@@ -506,7 +505,7 @@ public:
             Q_PRE(count <= size());
             const qsizetype n = hasSign() ? count - 1 : count;
             // Stop at end of last included (sign or) digit:
-            return { digits.first(n), digitStart, digitWidth, count ? sign : '\0' };
+            return { digits.first(n), digitBounds.first(n + 1), count ? sign : '\0' };
         }
         DigitSequence last(qsizetype count) const
         { return sliced(size() - count); }
@@ -516,8 +515,7 @@ public:
             Q_PRE(from <= size());
             const qsizetype n = hasSign() ? from - 1 : from;
             Q_ASSERT(n <= digits.size());
-            return { digits.sliced(n), digitStart + digitWidth * n,
-                     digitWidth, from ? '\0' : sign };
+            return { digits.sliced(n), digitBounds.sliced(n), from ? '\0' : sign };
         }
         DigitSequence sliced(qsizetype from, qsizetype count) const
         { return sliced(from).first(count); }
@@ -526,12 +524,12 @@ public:
         [[nodiscard]] QStringView used(const QStringView text, qsizetype from) const
         { return text.first(endIndex()).sliced(from); }
         [[nodiscard]] QStringView used(const QStringView text) const // digits-only:
-        { return text.sliced(digitStart, digits.size() * digitWidth); }
+        { return text.first(digitBounds.back()).sliced(digitBounds.front()); }
         // (can apply to the first()/last()/sliced() of the result of parsing)
     private:
         // Used by first(), sliced():
-        DigitSequence(QByteArray &&digs, qsizetype dStart, qint8 dWidth, char sgn)
-            : digits(std::move(digs)), digitStart(dStart), digitWidth(dWidth), sign(sgn)
+        DigitSequence(QByteArray &&digs, QList<qsizetype> &&bounds, char sgn)
+            : digits(std::move(digs)), digitBounds(std::move(bounds)), sign(sgn)
         {
         }
     };

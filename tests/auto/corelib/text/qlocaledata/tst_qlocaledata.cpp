@@ -795,8 +795,9 @@ void tst_QLocaleData::digitSequence_data()
 void tst_QLocaleData::digitSubSequence_data()
 {
     using QSZ = qsizetype;
+    using QSL = QList<QSZ>;
     QTest::addColumn<const QLocaleData *>("data");
-    QTest::addColumn<int>("digitWidth");
+    QTest::addColumn<QSL>("digitBounds");
     QTest::addColumn<QString>("offsetStr"); // "-143017" with some dangling cruft
     QTest::addColumn<QSZ>("offSignEnd");
     QTest::addColumn<QSZ>("offHrEnd");
@@ -811,14 +812,14 @@ void tst_QLocaleData::digitSubSequence_data()
     QTest::addColumn<QSZ>("asnEnd");
 
     QTest::newRow("C")
-        << QLocaleData::c() << 1
+        << QLocaleData::c() << QSL{ 1, 2, 3, 4, 5, 6, 7 }
         << u"-143017ignored"_s << QSZ(1) << QSZ(3) << QSZ(5) << QSZ(7)
         // From QTBUG-129287 test-case for tst_QDateTime::fromStringStringFormat():
         << u"99991231235959Z"_s
         << QSZ(4) << QSZ(6) << QSZ(8) << QSZ(10) << QSZ(12) << QSZ(14);
 
     QTest::newRow("ar-EG") // Sign has leading marker:
-        << LOCALE_DATA_PTR(Arabic, ArabicScript, Egypt) << 1
+        << LOCALE_DATA_PTR(Arabic, ArabicScript, Egypt) << QSL{ 2, 3, 4, 5, 6, 7, 8 }
         << u"\u061C-\u0661\u0664\u0663\u0660\u0661\u0667"
             /* dangling cruft: "al-jabr" */ "\u0627\u0644\u062c\u0628\u0631"_s
         << QSZ(2) << QSZ(4) << QSZ(6) << QSZ(8)
@@ -828,13 +829,22 @@ void tst_QLocaleData::digitSubSequence_data()
         << QSZ(4) << QSZ(6) << QSZ(8) << QSZ(10) << QSZ(12) << QSZ(14);
 
     QTest::newRow("ff-Adlm-GN") // non-BMP digits
-        << LOCALE_DATA_PTR(Fulah, AdlamScript, Guinea) << 2
+        << LOCALE_DATA_PTR(Fulah, AdlamScript, Guinea) << QSL{ 1, 3, 5, 7, 9, 11, 13 }
         << u"-\U0001E951\U0001E954\U0001E953\U0001E950\U0001E951\U0001E957"_s
         << QSZ(1) << QSZ(5) << QSZ(9) << QSZ(13)
         << u"\U0001E959\U0001E959\U0001E959\U0001E959\U0001E951\U0001E952\U0001E953\U0001E951"
             "\U0001E952\U0001E953\U0001E955\U0001E959\U0001E955\U0001E959"
             /* danglng cruft: */ "+\U0001E951\U0001E950"_s
         << QSZ(8) << QSZ(12) << QSZ(16) << QSZ(20) << QSZ(24) << QSZ(28);
+
+    QTest::newRow("ff-Adlm-GN-mixed") // non-BMP digits mixed with ASCII digits
+        << LOCALE_DATA_PTR(Fulah, AdlamScript, Guinea) << QSL{ 1, 3, 4, 6, 8, 9, 11 }
+        << u"-\U0001E951" "4\U0001E953\U0001E950" "1\U0001E957"_s
+        << QSZ(1) << QSZ(4) << QSZ(8) << QSZ(11)
+        << u"\U0001E959" "9\U0001E959\U0001E959" "1\U0001E952" "3\U0001E951"
+            "2\U0001E953" "5\U0001E959" "5\U0001E959"
+            /* danglng cruft: */ "+\U0001E951\U0001E950"_s
+        << QSZ(7) << QSZ(10) << QSZ(13) << QSZ(16) << QSZ(19) << QSZ(22);
 }
 #undef LOCALE_DATA_PTR
 
@@ -870,23 +880,24 @@ void tst_QLocaleData::digitSubSequence()
     {
         QFETCH(const QString, offsetStr);
         const Ds offset = data->digitSequence(offsetStr, Ds::Option::AllowSign);
-        QTEST(int(offset.digitWidth), "digitWidth");
-        QTEST(offset.digitStart, "offSignEnd");
+        QVERIFY(!offset.digitBounds.isEmpty());
+        QTEST(offset.digitBounds, "digitBounds");
+        QTEST(offset.digitBounds.front(), "offSignEnd");
         QCOMPARE(offset.sign, '-');
         QCOMPARE(offset.digits, "143017");
         QTEST(offset.endIndex(), "offsetEnd");
         const Ds hour = offset.first(3);
         const Ds minute = offset.sliced(3, 2);
         const Ds second = offset.last(2);
-        QTEST(hour.digitStart, "offSignEnd");
+        QTEST(hour.digitBounds.front(), "offSignEnd");
         QCOMPARE(hour.sign, '-');
         QCOMPARE(hour.digits, "14");
         QTEST(hour.endIndex(), "offHrEnd");
-        QTEST(minute.digitStart, "offHrEnd");
+        QTEST(minute.digitBounds.front(), "offHrEnd");
         QCOMPARE(minute.sign, '\0');
         QCOMPARE(minute.digits, "30");
         QTEST(minute.endIndex(), "offMinEnd");
-        QTEST(second.digitStart, "offMinEnd");
+        QTEST(second.digitBounds.front(), "offMinEnd");
         QCOMPARE(second.sign, '\0');
         QCOMPARE(second.digits, "17");
         QTEST(second.endIndex(), "offsetEnd");
@@ -895,8 +906,8 @@ void tst_QLocaleData::digitSubSequence()
     {
         QFETCH(const QString, ans1maxStr);
         const Ds asn1max = data->digitSequence(ans1maxStr, Ds::Option::AllowSign);
-        QTEST(int(asn1max.digitWidth), "digitWidth");
-        QCOMPARE(asn1max.digitStart, 0);
+        QVERIFY(!asn1max.digitBounds.isEmpty());
+        QCOMPARE(asn1max.digitBounds.front(), 0);
         QCOMPARE(asn1max.sign, '\0');
         QCOMPARE(asn1max.digits, "99991231235959");
         QTEST(asn1max.endIndex(), "asnEnd");
@@ -906,27 +917,27 @@ void tst_QLocaleData::digitSubSequence()
         const Ds hour = asn1max.first(10).sliced(8); // Same as sliced(8, 2)
         const Ds minute = asn1max.last(4).first(2); // Same as sliced(10, 2)
         const Ds second = asn1max.sliced(12); // Same as last(2)
-        QCOMPARE(year.digitStart, 0);
+        QCOMPARE(year.digitBounds.front(), 0);
         QCOMPARE(year.sign, '\0');
         QCOMPARE(year.digits, "9999");
         QTEST(year.endIndex(), "asnYearEnd");
-        QTEST(month.digitStart, "asnYearEnd");
+        QTEST(month.digitBounds.front(), "asnYearEnd");
         QCOMPARE(month.sign, '\0');
         QCOMPARE(month.digits, "12");
         QTEST(month.endIndex(), "asnMonEnd");
-        QTEST(dom.digitStart, "asnMonEnd");
+        QTEST(dom.digitBounds.front(), "asnMonEnd");
         QCOMPARE(dom.sign, '\0');
         QCOMPARE(dom.digits, "31");
         QTEST(dom.endIndex(), "asnDomEnd");
-        QTEST(hour.digitStart, "asnDomEnd");
+        QTEST(hour.digitBounds.front(), "asnDomEnd");
         QCOMPARE(hour.sign, '\0');
         QCOMPARE(hour.digits, "23");
         QTEST(hour.endIndex(), "asnHrEnd");
-        QTEST(minute.digitStart, "asnHrEnd");
+        QTEST(minute.digitBounds.front(), "asnHrEnd");
         QCOMPARE(minute.sign, '\0');
         QCOMPARE(minute.digits, "59");
         QTEST(minute.endIndex(), "asnMinEnd");
-        QTEST(second.digitStart, "asnMinEnd");
+        QTEST(second.digitBounds.front(), "asnMinEnd");
         QCOMPARE(second.sign, '\0');
         QCOMPARE(second.digits, "59");
         QTEST(second.endIndex(), "asnEnd");

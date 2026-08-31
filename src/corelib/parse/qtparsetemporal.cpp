@@ -620,7 +620,7 @@ TemporalFieldMatcher::numericExtend(const PartialParse &base, QStringView text,
             target = value;
         else if (target != value) // Conflicts with earlier field: skip this reading.
             continue;
-        grow.results.endIndex = parsed.digitStart + digits.size() * parsed.digitWidth;
+        grow.results.endIndex = parsed.digitBounds[digits.size()];
 
         if (!zeroPad && digits.size() > qMax(1, config.width)
             && (config.roundAfter < 0 ? digits.startsWith('0') : digits.endsWith('0'))) {
