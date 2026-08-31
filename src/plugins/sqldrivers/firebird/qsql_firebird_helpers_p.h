@@ -24,10 +24,11 @@
 #include <QtSql/qtsqlglobal.h>
 #include <QtSql/qsqlerror.h>
 
+// Scaled-numeric / INT128 codec shared with QIBASE; see the INT128 slot adapters below.
+#include <QtSql/private/qsqlnumeric_p.h>
+
 #include <ibase.h>               // SQL type constants (SQL_TEXT, SQL_BLOB, …)
 #include <firebird/Interface.h>
-
-#include <cmath>
 
 QT_BEGIN_NAMESPACE
 
@@ -145,82 +146,43 @@ QMetaType::Type blrTypeToQt(unsigned char blrType, bool hasScale);
 void encodeTextValue(char *data, int fbType, qsizetype length, const QByteArray &bytes);
 
 //  Numeric codecs
-
-// 10^n as a 64-bit integer (n >= 0) — see qsql_firebird_helpers.cpp.
-qint64 pow10i(int n);
-
-/*! \internal
-    Format a scaled integer as a high-precision decimal string.
-    e.g. val=12345, scale=-2 → "123.45"; val=12, scale=2 → "1200"
-*/
-template<typename T>
-static QString numberToHighPrecision(T val, int scale)
-{
-    if (scale == 0)
-        return QString::number(static_cast<qint64>(val));
-    if (scale > 0) {
-        // actual = stored * 10^scale → an integer with `scale` trailing zeros
-        return QString::number(static_cast<qint64>(val)) + QString(scale, u'0');
-    }
-    const bool negative = val < 0;
-    QString number = QString::number(negative ? -static_cast<qint64>(val)
-                                              : static_cast<qint64>(val));
-    const int absScale = -scale;
-    if (absScale >= number.size())
-        number = QString(absScale - number.size() + 1, u'0') + number;
-    const int sepPos = number.size() - absScale;
-    number = number.left(sepPos) + u'.' + number.mid(sepPos);
-    if (negative)
-        number = u'-' + number;
-    return number;
-}
-
-
-// Return a scaled integer value as the type dictated by numericalPrecisionPolicy.
-template<typename T>
-static QVariant applyScale(T val, int scale, QSql::NumericalPrecisionPolicy policy)
-{
-    if (scale == 0)
-        return QVariant(static_cast<qint64>(val));
-    switch (policy) {
-    case QSql::LowPrecisionInt32:
-    case QSql::LowPrecisionInt64: {
-        /* actual = stored * 10^scale. Scale with integer arithmetic so large
-           INT64-backed values keep full precision — a double multiply would
-           drop bits above 2^53. */
-        const qint64 iv = static_cast<qint64>(val);
-        const qint64 scaled = scale < 0 ? iv / pow10i(-scale) : iv * pow10i(scale);
-        return policy == QSql::LowPrecisionInt32 ? QVariant(static_cast<qint32>(scaled))
-                                                 : QVariant(scaled);
-    }
-    case QSql::LowPrecisionDouble:
-        return QVariant(static_cast<double>(val) * std::pow(10.0, scale));
-    case QSql::HighPrecision:
-        return QVariant(numberToHighPrecision(val, scale));
-    }
-    return QVariant(static_cast<double>(val) * std::pow(10.0, scale));
-}
+//
+//  The policy-aware scaling, exact decimal parsing/formatting and the 128-bit
+//  word helpers are the generic QtPrivate::sql* functions in QtSql's private
+//  qsqlnumeric_p.h; only the Firebird-specific adapters live here.
 
 QMetaType::Type fbTypeToQt(int fbType, int scale);
-QByteArray numericInputString(const QVariant &val);
-bool decimalToScaledInt64(const QByteArray &decimal, int scale, qint64 *out);
 
 /*! \internal
-    ---- INT128 / DECFLOAT string conversion helpers ----
+    INT128 slot adapters
 
-    Firebird's IInt128/IDecFloat interfaces convert to and from a canonical
-    decimal string via a fixed-size caller buffer. These wrappers own the buffer
-    (64 chars is ample for INT128's 39 digits and DECFLOAT's 34) so the value
-    conversions read as one line at each call site.
+    The two adapters own the single native/fallback switch for a 16-byte INT128
+    message slot (scale 0 for a plain INT128 parameter or array element), so the
+    scalar paths and the array codec cannot diverge. With a 128-bit integer type
+    (QSQL_HAS_INT128 from qsqlnumeric_p.h: qint128 on GCC/Clang, std::_Signed128
+    on MSVC via Qt's private qinternalint128 alias) the slot is packed and
+    unpacked word-wise and converted with the QtPrivate::sql* helpers; without
+    one, Firebird's IInt128 interface converts to and from the same canonical
+    decimal string. Behaviour is identical either way.
+
+    Encoding reports a failure through errorText/false in both builds — never as
+    FbException; callers wrap errorText with their own context. Decoding applies
+    the numerical precision policy; when an integer part does not fit a
+    LowPrecisionInt target it returns a double instead and, if overflowText is
+    given, stores the value's decimal text there so the caller can warn at the
+    rate it sees fit (QFirebirdResult::data() runs on every access of a cell).
 */
-
-
-QString int128ToString(Firebird::IUtil *util, Firebird::ThrowStatusWrapper &st,
-                       const FB_I128 *value, int scale);
+bool encodeInt128Slot(const QVariant &val, int scale, char *slot,
+                      Firebird::IMaster *master, Firebird::IStatus *status,
+                      QString &errorText);
+QVariant decodeInt128Slot(const char *slot, int scale, QSql::NumericalPrecisionPolicy policy,
+                          Firebird::IMaster *master, Firebird::IStatus *status,
+                          QString *overflowText = nullptr);
 
 /*! \internal
     IDecFloat16 and IDecFloat34 share identical toString()/fromString() shapes;
-    templated on the interface so one helper serves both DECFLOAT widths.
+    templated on the interface so one helper serves both DECFLOAT widths. The
+    64-char caller buffer is ample for DECFLOAT's 34 digits.
 */
 template <typename Iface, typename Raw>
 static QString decFloatToString(Iface *iface, Firebird::ThrowStatusWrapper &st, const Raw *value)

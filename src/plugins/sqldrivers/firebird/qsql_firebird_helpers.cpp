@@ -134,19 +134,6 @@ QMetaType::Type blrTypeToQt(unsigned char blrType, bool hasScale)
 
 //  Numeric codecs
 
-/*! \internal
-    10^n as a 64-bit integer (n >= 0). Firebird numeric scale magnitudes are
-    small (NUMERIC/DECIMAL precision <= 38, INT64 <= 18), so this never overflows
-    for the integer-backed types it is used with.
-*/
-qint64 pow10i(int n)
-{
-    qint64 r = 1;
-    for (int i = 0; i < n; ++i)
-        r *= 10;
-    return r;
-}
-
 QMetaType::Type fbTypeToQt(int fbType, int scale)
 {
     if (scale != 0) {
@@ -160,7 +147,7 @@ QMetaType::Type fbTypeToQt(int fbType, int scale)
     case SQL_SHORT:
     case SQL_LONG:       return QMetaType::Int;
     case SQL_INT64:      return QMetaType::LongLong;
-    case SQL_INT128:     return QMetaType::QString; // 128-bit; no native Qt integer type
+    case SQL_INT128:     return QMetaType::QString; // 128-bit; QVariant has no such type — exact decimal string
     case SQL_FLOAT:      return QMetaType::Double;
     case SQL_DOUBLE:     return QMetaType::Double;
     case SQL_DEC16:
@@ -181,115 +168,115 @@ QMetaType::Type fbTypeToQt(int fbType, int scale)
     }
 }
 
-/*! \internal
-    Canonical decimal string for binding a value to an INT128/DECFLOAT parameter
-    via Firebird's fromString(). Integer and string variants are already plain
-    C-locale decimals; floating-point variants are reformatted only when
-    QVariant::toByteArray() yields exponential notation (e.g. a large double),
-    which IInt128::fromString does not accept.
-*/
-QByteArray numericInputString(const QVariant &val)
+//  INT128 codec — see the header for the design
+
+#ifndef QSQL_HAS_INT128
+
+// Firebird's IInt128 converts via a caller buffer; 64 chars covers INT128's 39 digits.
+static QString int128SlotToString(const char *slot, int scale, IMaster *master, IStatus *status)
 {
-    QByteArray s = val.toByteArray();
-    const int t = val.typeId();
-    if ((t == QMetaType::Double || t == QMetaType::Float)
-        && (s.contains('e') || s.contains('E'))) {
-        s = QByteArray::number(val.toDouble(), 'f', 18);
-        if (s.contains('.')) {
-            while (s.endsWith('0'))
-                s.chop(1);
-            if (s.endsWith('.'))
-                s.chop(1);
-        }
-    }
-    return s;
-}
-
-/*! \internal
-    Convert a plain decimal string (as produced by numericInputString) into the
-    scaled integer Firebird stores for a NUMERIC/DECIMAL column: shift the
-    decimal point by -scale digits (right for the usual negative scale), round
-    half away from zero, and detect qint64 overflow. Works on the digit string,
-    never through double — a double round-trip silently drops digits above 2^53
-    and an out-of-range double-to-integer cast is undefined behaviour. The read
-    path (applyScale) avoids double for the same reason. Exponent notation is
-    rejected, matching IInt128::fromString on the INT128 path.
-*/
-bool decimalToScaledInt64(const QByteArray &decimal, int scale, qint64 *out)
-{
-    const QByteArray s = decimal.trimmed();
-    qsizetype pos = 0;
-    bool negative = false;
-    if (pos < s.size() && (s[pos] == '+' || s[pos] == '-'))
-        negative = (s[pos++] == '-');
-
-    QByteArray intPart, fracPart;
-    bool dot = false, anyDigit = false;
-    for (; pos < s.size(); ++pos) {
-        const char c = s[pos];
-        if (c == '.') {
-            if (dot)
-                return false;
-            dot = true;
-        } else if (c >= '0' && c <= '9') {
-            (dot ? fracPart : intPart).append(c);
-            anyDigit = true;
-        } else {
-            return false;
-        }
-    }
-    if (!anyDigit)
-        return false;
-
-    // Shift the decimal point right by -scale digits (left for positive scale).
-    const int shift = -scale;
-    if (shift >= 0) {
-        while (fracPart.size() < shift)
-            fracPart.append('0');
-        intPart += fracPart.left(shift);
-        fracPart.remove(0, shift);
-    } else {
-        const qsizetype k = -shift;
-        while (intPart.size() < k)
-            intPart.prepend('0');
-        fracPart.prepend(intPart.right(k));
-        intPart.chop(k);
-    }
-
-    // Round half away from zero on the first remaining fractional digit.
-    const bool roundUp = !fracPart.isEmpty() && fracPart[0] >= '5';
-
-    constexpr quint64 maxPos = quint64((std::numeric_limits<qint64>::max)());
-    const quint64 limit = negative ? maxPos + 1 : maxPos;
-    quint64 magnitude = 0;
-    for (const char c : intPart) {
-        const unsigned d = unsigned(c - '0');
-        if (magnitude > (limit - d) / 10)
-            return false; // overflow
-        magnitude = magnitude * 10 + d;
-    }
-    if (roundUp) {
-        if (magnitude == limit)
-            return false; // overflow
-        ++magnitude;
-    }
-
-    if (negative) {
-        *out = (magnitude == maxPos + 1)
-                   ? (std::numeric_limits<qint64>::min)()
-                   : -static_cast<qint64>(magnitude);
-    } else {
-        *out = static_cast<qint64>(magnitude);
-    }
-    return true;
-}
-
-QString int128ToString(IUtil *util, ThrowStatusWrapper &st,
-                       const FB_I128 *value, int scale)
-{
+    ThrowStatusWrapper st(status);
     char buf[64];
-    util->getInt128(&st)->toString(&st, value, scale, sizeof(buf), buf);
+    master->getUtilInterface()->getInt128(&st)->toString(
+        &st, reinterpret_cast<const FB_I128 *>(slot), scale, sizeof(buf), buf);
     return QString::fromLatin1(buf);
+}
+
+#endif // QSQL_HAS_INT128
+
+bool encodeInt128Slot(const QVariant &val, int scale, char *slot,
+                      IMaster *master, IStatus *status, QString &errorText)
+{
+#ifdef QSQL_HAS_INT128
+    Q_UNUSED(master);
+    Q_UNUSED(status);
+    qinternalint128 v = 0;
+    if (!QtPrivate::sqlScaledFromVariant(val, scale, &v, &errorText))
+        return false;
+    /* FB_I128 is two 64-bit words, fb_data[0] low and fb_data[1] high, at
+       8-byte alignment in the message buffer: copy the words, never dereference
+       a 16-byte-aligned type in place. */
+    static_assert(std::is_same_v<ISC_UINT64, quint64>,
+                  "the FB_I128 words are written through quint64 pointers");
+    FB_I128 raw;
+    QtPrivate::sqlInt128ToWords(v, &raw.fb_data[0], &raw.fb_data[1]);
+    std::memcpy(slot, &raw, sizeof(raw));
+    return true;
+#else
+    /* No 128-bit integer type: let IInt128::fromString scale the decimal
+       string. It would also accept exponent notation, so pre-validate with
+       the exact codec's grammar (the same canonical text, so a Bool is "1" here
+       too), and report its out-of-range exception with the exact codec's
+       wording - "out of range" for an integral input, "cannot encode" for text.
+       Both builds then accept the same values and fail with the same message. */
+    const QByteArray strVal = QtPrivate::sqlNumericInputString(val);
+    if (!QtPrivate::sqlIsPlainDecimal(strVal)) {
+        errorText = QtPrivate::sqlCannotEncodeError(strVal, scale);
+        return false;
+    }
+    try {
+        ThrowStatusWrapper st(status);
+        master->getUtilInterface()->getInt128(&st)->fromString(
+            &st, scale, strVal.constData(), reinterpret_cast<FB_I128 *>(slot));
+        return true;
+    } catch (const FbException &) {
+        status->init();
+        errorText = QtPrivate::sqlIsIntegralVariant(val.typeId())
+                    ? QtPrivate::sqlOutOfRangeError(val, scale)
+                    : QtPrivate::sqlCannotEncodeError(strVal, scale);
+        return false;
+    }
+#endif
+}
+
+QVariant decodeInt128Slot(const char *slot, int scale, QSql::NumericalPrecisionPolicy policy,
+                          IMaster *master, IStatus *status, QString *overflowText)
+{
+#ifdef QSQL_HAS_INT128
+    Q_UNUSED(master);
+    Q_UNUSED(status);
+    // Copy the FB_I128 words out of the slot (see encodeInt128Slot for the layout)
+    FB_I128 raw;
+    std::memcpy(&raw, slot, sizeof(raw));
+    const qinternalint128 value = QtPrivate::sqlInt128FromWords(raw.fb_data[0], raw.fb_data[1]);
+    bool overflow = false;
+    const QVariant result = QtPrivate::sqlApplyScale(value, scale, policy, &overflow);
+    // A double beats a wrapped or zero value; the caller decides when to say so.
+    if (overflow && overflowText)
+        *overflowText = QtPrivate::sqlScaledToString(value, scale);
+    return result;
+#else
+    const QString str = int128SlotToString(slot, scale, master, status);
+    switch (policy) {
+    case QSql::HighPrecision:
+        return str;
+    case QSql::LowPrecisionDouble:
+        return QVariant(str.toDouble());
+    case QSql::LowPrecisionInt32:
+    case QSql::LowPrecisionInt64: {
+        /* Take the integer part straight from the decimal string (truncating
+           toward zero) rather than via double, so 128-bit values keep full
+           integer precision up to the target type's range. */
+        const qsizetype dot = str.indexOf(u'.');
+        const QStringView intPart = dot < 0 ? QStringView(str) : QStringView(str).first(dot);
+        bool ok = false;
+        if (policy == QSql::LowPrecisionInt32) {
+            const int v = intPart.toInt(&ok);
+            if (ok)
+                return QVariant(v);
+        } else {
+            const qint64 v = intPart.toLongLong(&ok);
+            if (ok)
+                return QVariant(v);
+        }
+        // Same fallback as the native codec: a double beats a wrapped or zero value.
+        if (overflowText)
+            *overflowText = str;
+        return QVariant(str.toDouble());
+    }
+    }
+    return QVariant(str.toDouble());
+#endif
 }
 
 // ---- Date/time encode helpers ----

@@ -22,6 +22,7 @@
 #include <QtCore/qbytearray.h>
 #include <QtCore/qhash.h>
 #include <QtCore/qlist.h>
+#include <QtCore/qset.h>
 #include <QtSql/qsqlrecord.h>
 #include <QtSql/private/qsqlresult_p.h>
 
@@ -29,6 +30,7 @@
 #include <firebird/Interface.h>
 
 #include <functional>
+#include <limits>
 
 QT_BEGIN_NAMESPACE
 
@@ -172,8 +174,9 @@ public:
         Per-value encoders, factored out of fillInputBuffer so it stays focused
         on parameter iteration and NULL handling. Both may throw FbException,
         which exec()/execBatch translate into a QSqlError.
-        encodeScaledNumeric returns false (with errorText set) for values that
-        cannot be represented exactly in the column's range.
+        encodeScaledNumeric handles every scaled NUMERIC/DECIMAL parameter and
+        plain INT128 (scale 0); it returns false (with errorText set) for values
+        that cannot be represented exactly in the column's range.
     */
     bool encodeScaledNumeric(char *data, int fbType, int scale, const QVariant &val,
                              QString &errorText);
@@ -238,6 +241,24 @@ public:
         May throw FbException (callers wrap in try/catch as elsewhere).
     */
     bool ensureCachedRow(int index);
+
+    /*! \internal
+        data() decodes from outBuffer on every call, so the LowPrecisionInt
+        overflow warning for an INT128 cell would repeat on each access of the
+        same value. Remember the fields already reported for the current row.
+        Every exec() and cleanup() starts afresh (resetOverflowWarnings), for
+        SELECTs and EXECUTE PROCEDURE alike. NoWarnedRow lies below every
+        position data() can be called at: the procedure output row is read at
+        QSql::BeforeFirstRow (-1) by writeOutValues() and at 0 after next().
+        mutable, like arrayDescCache: data() reads through a const private
+        pointer and this is bookkeeping about what it has reported, not state
+        that changes what it returns.
+    */
+    static constexpr int NoWarnedRow = (std::numeric_limits<int>::min)();
+    mutable int overflowWarnedRow = NoWarnedRow;
+    mutable QSet<int> overflowWarnedFields;
+    void resetOverflowWarnings() const;
+    bool firstOverflowWarning(int row, int field) const;
 
     /*! \internal
         QSqlRecord is derived solely from the (immutable-after-prepare) column

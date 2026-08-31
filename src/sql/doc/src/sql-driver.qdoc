@@ -1020,12 +1020,21 @@
     \table
     \header \li Firebird type \li Qt type \li Notes
     \row \li \c INT128 \li QString
-         \li Surfaced as an exact decimal string (Qt has no 128-bit integer type).
+         \li Surfaced as an exact decimal string (Qt has no 128-bit integer
+            type), converted with exact 128-bit integer arithmetic (or
+            Firebird's exact string interface on toolchains without a 128-bit
+            integer type). Binding a string or integer value is exact; a
+            floating-point value binds from its shortest round-trip decimal
+            form, rounded to the column's scale. Out-of-range values are
+            reported as errors.
     \row \li \c{DECFLOAT(16)} / \c{DECFLOAT(34)} \li QString
          \li IEEE 754 decimal floating point, surfaced as an exact decimal string.
     \row \li \c NUMERIC / \c DECIMAL \li policy-dependent
          \li Honors \l{QSqlQuery::setNumericalPrecisionPolicy()}; values wider
-            than 64 bits are INT128-backed and surfaced as strings.
+            than 64 bits are INT128-backed and surfaced as strings. Under
+            \c LowPrecisionInt32/\c Int64 a value whose integer part does not
+            fit the target type is returned as a \c double rather than wrapped
+            (INT128 columns log a \c{qt.sql.firebird} warning).
     \row \li \c{TIMESTAMP WITH TIME ZONE} \li QDateTime \li The time zone is preserved.
     \row \li \c{TIME WITH TIME ZONE} \li QDateTime
          \li Surfaced as a QDateTime carrying the stored time and zone.

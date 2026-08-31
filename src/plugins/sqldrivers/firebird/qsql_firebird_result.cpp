@@ -139,6 +139,25 @@ void QFirebirdResultPrivate::cleanup()
     useRowCache     = false;
     cacheComplete   = false;
     rowCache.clear();
+    resetOverflowWarnings();
+}
+
+void QFirebirdResultPrivate::resetOverflowWarnings() const
+{
+    overflowWarnedRow = NoWarnedRow;
+    overflowWarnedFields.clear();
+}
+
+bool QFirebirdResultPrivate::firstOverflowWarning(int row, int field) const
+{
+    if (row != overflowWarnedRow) {
+        overflowWarnedRow = row;
+        overflowWarnedFields.clear();
+    }
+    if (overflowWarnedFields.contains(field))
+        return false;
+    overflowWarnedFields.insert(field);
+    return true;
 }
 
 void QFirebirdResultPrivate::closeCursor()
@@ -330,79 +349,25 @@ bool QFirebirdResultPrivate::buildInputMessage(QString &errorText)
 bool QFirebirdResultPrivate::encodeScaledNumeric(char *data, int fbType, int scale,
                                                  const QVariant &val, QString &errorText)
 {
-    /* Numeric/decimal — store as INT64 scaled (or INT128 for very wide types).
-       actual = stored * 10^scale, so stored = value / 10^scale. The scaled
-       integer is derived exactly from the value's decimal-string form (see
-       decimalToScaledInt64); out-of-range values are reported instead of
-       silently wrapped. */
-    if (fbBaseType(fbType) == SQL_INT128) {
-        // Scale the string representation via IInt128::fromString with scale
-        const QByteArray strVal = numericInputString(val);
-        ThrowStatusWrapper innerSt(status());
-        master()->getUtilInterface()->getInt128(&innerSt)->fromString(
-            &innerSt, scale, strVal.constData(),
-            reinterpret_cast<FB_I128 *>(data));
-        return true;
-    }
-
-    const auto outOfRange = [&]() {
-        errorText = u"Value '%1' out of range for NUMERIC/DECIMAL with scale %2"_s
-                        .arg(val.toString(), QString::number(scale));
-        return false;
-    };
-
-    qint64 iv = 0;
-    const int t = val.typeId();
-    if (scale < 0 && -scale < 19
-        && (t == QMetaType::Int || t == QMetaType::UInt || t == QMetaType::LongLong)) {
-        /* Fast path: an integral input scales with one checked multiply — no
-           string round trip on the per-row bind path. */
-        const qint64 v = val.toLongLong();
-        const qint64 factor = pow10i(-scale);
-        if (v == (std::numeric_limits<qint64>::min)()
-            || qAbs(v) > (std::numeric_limits<qint64>::max)() / factor) {
-            return outOfRange();
-        }
-        iv = v * factor;
-    } else {
-        const QByteArray strVal = numericInputString(val);
-        if (!decimalToScaledInt64(strVal, scale, &iv)) {
-            errorText = u"Cannot encode '%1' as NUMERIC/DECIMAL with scale %2"_s
-                            .arg(QString::fromLatin1(strVal), QString::number(scale));
-            return false;
-        }
-    }
-
-    // One range check for the narrower targets, then a width-dispatched store.
-    qint64 lo = (std::numeric_limits<qint64>::min)();
-    qint64 hi = (std::numeric_limits<qint64>::max)();
+    /* Numeric/decimal — stored as a scaled integer of the column's width
+       (actual = stored * 10^scale, so stored = value / 10^scale); plain INT128
+       parameters come through here with scale 0. The scaled integer is derived
+       exactly from the value and range-checked for the target width by
+       QtPrivate::sqlScaledFromVariant, which writes the slot only on success;
+       out-of-range values are reported instead of silently wrapped. */
     switch (fbBaseType(fbType)) {
+    case SQL_INT128:
+        return encodeInt128Slot(val, scale, data, master(), status(), errorText);
     case SQL_SHORT:
-        lo = (std::numeric_limits<qint16>::min)();
-        hi = (std::numeric_limits<qint16>::max)();
-        break;
+        return QtPrivate::sqlScaledFromVariant(val, scale, reinterpret_cast<qint16 *>(data),
+                                               &errorText);
     case SQL_LONG:
-        lo = (std::numeric_limits<qint32>::min)();
-        hi = (std::numeric_limits<qint32>::max)();
-        break;
+        return QtPrivate::sqlScaledFromVariant(val, scale, reinterpret_cast<qint32 *>(data),
+                                               &errorText);
     default:
-        break;
+        return QtPrivate::sqlScaledFromVariant(val, scale, reinterpret_cast<qint64 *>(data),
+                                               &errorText);
     }
-    if (iv < lo || iv > hi)
-        return outOfRange();
-
-    switch (fbBaseType(fbType)) {
-    case SQL_SHORT:
-        *reinterpret_cast<qint16 *>(data) = static_cast<qint16>(iv);
-        break;
-    case SQL_LONG:
-        *reinterpret_cast<qint32 *>(data) = static_cast<qint32>(iv);
-        break;
-    default:
-        *reinterpret_cast<qint64 *>(data) = iv;
-        break;
-    }
-    return true;
 }
 
 void QFirebirdResultPrivate::writeInlineBlob(ISC_QUAD &blobId, const QByteArray &blobData)
@@ -500,7 +465,8 @@ bool QFirebirdResultPrivate::fillInputBuffer(const QList<QVariant> &vals,
 
         char *data = inBuffer.data() + ci.offset;
 
-        if (ci.scale != 0) {
+        // Scaled numerics and INT128 share one exact encoder (INT128 = scale 0).
+        if (ci.scale != 0 || fbBaseType(ci.fbType) == SQL_INT128) {
             QString numError;
             if (!encodeScaledNumeric(data, ci.fbType, ci.scale, val, numError)) {
                 errorText = u"Parameter %1: %2"_s.arg(QString::number(i + 1), numError);
@@ -519,15 +485,6 @@ bool QFirebirdResultPrivate::fillInputBuffer(const QList<QVariant> &vals,
         case SQL_INT64:
             *reinterpret_cast<qint64 *>(data) = val.toLongLong();
             break;
-        case SQL_INT128: {
-            // Accept string or numeric; use IInt128::fromString
-            const QByteArray strVal = numericInputString(val);
-            ThrowStatusWrapper innerSt(status());
-            master()->getUtilInterface()->getInt128(&innerSt)->fromString(
-                &innerSt, 0, strVal.constData(),
-                reinterpret_cast<FB_I128 *>(data));
-            break;
-        }
         case SQL_FLOAT:
             *reinterpret_cast<float *>(data) = static_cast<float>(val.toDouble());
             break;
@@ -537,13 +494,13 @@ bool QFirebirdResultPrivate::fillInputBuffer(const QList<QVariant> &vals,
         case SQL_DEC16: {
             ThrowStatusWrapper innerSt(status());
             decFloatFromString(master()->getUtilInterface()->getDecFloat16(&innerSt), innerSt,
-                               numericInputString(val), reinterpret_cast<FB_DEC16 *>(data));
+                               QtPrivate::sqlNumericInputString(val), reinterpret_cast<FB_DEC16 *>(data));
             break;
         }
         case SQL_DEC34: {
             ThrowStatusWrapper innerSt(status());
             decFloatFromString(master()->getUtilInterface()->getDecFloat34(&innerSt), innerSt,
-                               numericInputString(val), reinterpret_cast<FB_DEC34 *>(data));
+                               QtPrivate::sqlNumericInputString(val), reinterpret_cast<FB_DEC34 *>(data));
             break;
         }
         case SQL_BOOLEAN:
@@ -697,6 +654,7 @@ bool QFirebirdResult::exec()
     // Close any open cursor from a previous execution
     d->closeCursor();
     d->affectedRows = -1;
+    d->resetOverflowWarnings(); // new result set, whatever the statement kind
 
     try {
         ThrowStatusWrapper st(d->status());
@@ -785,6 +743,7 @@ bool QFirebirdResult::execBatch(bool arrayBind)
     // Close any open cursor from a previous execution
     d->closeCursor();
     d->affectedRows = -1;
+    d->resetOverflowWarnings(); // new result set, whatever the statement kind
 
     IUtil *utl = d->master()->getUtilInterface();
 
@@ -1194,31 +1153,24 @@ QVariant QFirebirdResult::data(int field)
         if (ci.scale != 0) {
             const auto policy = numericalPrecisionPolicy();
             switch (fbBaseType(ci.fbType)) {
-            case SQL_SHORT:   return applyScale(*reinterpret_cast<const qint16 *>(ptr), ci.scale, policy);
-            case SQL_LONG:    return applyScale(*reinterpret_cast<const qint32 *>(ptr), ci.scale, policy);
+            case SQL_SHORT:
+                return QtPrivate::sqlApplyScale(*reinterpret_cast<const qint16 *>(ptr), ci.scale, policy);
+            case SQL_LONG:
+                return QtPrivate::sqlApplyScale(*reinterpret_cast<const qint32 *>(ptr), ci.scale, policy);
             case SQL_INT128: {
-                // Use Firebird's IInt128 interface to format, then apply policy
-                ThrowStatusWrapper st(d->status());
-                const QString str = int128ToString(d->master()->getUtilInterface(), st,
-                                                    reinterpret_cast<const FB_I128 *>(ptr),
-                                                    ci.scale);
-                if (policy == QSql::HighPrecision)
-                    return str;
-                if (policy == QSql::LowPrecisionDouble)
-                    return QVariant(str.toDouble());
-                /* LowPrecisionInt32/Int64: take the integer part straight from
-                   the decimal string (truncating toward zero) rather than via
-                   double, so 128-bit values keep full integer precision up to
-                   the target type's range — a double round-trip would drop bits
-                   above 2^53. */
-                const qsizetype dot = str.indexOf(u'.');
-                const QStringView intPart =
-                    dot < 0 ? QStringView(str) : QStringView(str).first(dot);
-                if (policy == QSql::LowPrecisionInt32)
-                    return QVariant(intPart.toInt());
-                return QVariant(intPart.toLongLong());
+                QString overflowText;
+                const QVariant value = decodeInt128Slot(ptr, ci.scale, policy, d->master(),
+                                                        d->status(), &overflowText);
+                // data() runs on every access of the cell: warn once per row and field.
+                // The single EXECUTE PROCEDURE output row is read at BeforeFirstRow by
+                // writeOutValues() and at 0 after next(); key it as one row.
+                const int row = d->isProcExec ? 0 : at();
+                if (!overflowText.isEmpty() && d->firstOverflowWarning(row, field))
+                    QtPrivate::sqlWarnLowPrecisionOverflow(lcFirebird, overflowText, policy);
+                return value;
             }
-            default:          return applyScale(*reinterpret_cast<const qint64 *>(ptr), ci.scale, policy);
+            default:
+                return QtPrivate::sqlApplyScale(*reinterpret_cast<const qint64 *>(ptr), ci.scale, policy);
             }
         }
 
@@ -1229,12 +1181,9 @@ QVariant QFirebirdResult::data(int field)
             return static_cast<int>(*reinterpret_cast<const qint32 *>(ptr));
         case SQL_INT64:
             return *reinterpret_cast<const qint64 *>(ptr);
-        case SQL_INT128: {
-            // 128-bit integer: use Firebird's IInt128 to convert to decimal string
-            ThrowStatusWrapper st(d->status());
-            return int128ToString(d->master()->getUtilInterface(), st,
-                                  reinterpret_cast<const FB_I128 *>(ptr), 0);
-        }
+        case SQL_INT128:
+            // 128-bit integer → exact decimal string (QVariant has no 128-bit type)
+            return decodeInt128Slot(ptr, 0, QSql::HighPrecision, d->master(), d->status());
         case SQL_FLOAT:
             return static_cast<double>(*reinterpret_cast<const float *>(ptr));
         case SQL_DOUBLE:

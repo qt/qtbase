@@ -174,6 +174,30 @@ static bool cachedArrayDesc(IAttachment *att, ITransaction *tra, IStatus *iStatu
 }
 
 /*! \internal
+    Byte width the array codecs read and write per element of a fixed-width
+    BLR type; 0 for the text types, whose stride is the descriptor's own
+    length, and for types the codecs do not handle.
+*/
+static unsigned fixedElementSize(unsigned char dtype)
+{
+    switch (dtype) {
+    case blr_short:        return sizeof(qint16);
+    case blr_long:         return sizeof(qint32);
+    case blr_int64:        return sizeof(qint64);
+    case blr_int128:       return sizeof(FB_I128);
+    case blr_float:        return sizeof(float);
+    case blr_double:
+    case blr_d_float:      return sizeof(double);
+    case blr_sql_date:     return sizeof(ISC_DATE);
+    case blr_sql_time:     return sizeof(ISC_TIME);
+    case blr_timestamp:    return sizeof(ISC_TIMESTAMP);
+    case blr_timestamp_tz: return sizeof(ISC_TIMESTAMP_TZ);
+    case blr_bool:         return sizeof(FB_BOOLEAN);
+    default:               return 0;
+    }
+}
+
+/*! \internal
     Validate the descriptor's dimension bounds and compute the per-dimension
     element counts and the total slice byte length in 64-bit: bounds come from
     system tables, and a wrapped or non-positive total would otherwise allocate
@@ -200,6 +224,17 @@ static bool arraySliceSize(const ISC_ARRAY_DESC &desc, const char *who,
         if (numElements)
             (*numElements)[i] = sub;
         arraySize *= sub;
+    }
+    /* The codecs read and write sizeof(<element type>) bytes per element of a
+       fixed-width type, while the buffer is sized from the metadata-supplied
+       element length: reject a descriptor where the two disagree (corrupt or
+       hostile database), or the element loops would overrun the slice buffer. */
+    if (const unsigned fixed = fixedElementSize(desc.array_desc_dtype);
+        fixed != 0 && desc.array_desc_length != fixed) {
+        qCWarning(lcFirebird, "%s: element length %d of %s.%s does not match its type (%u bytes)",
+                  who, int(desc.array_desc_length), relName.constData(), fldName.constData(),
+                  fixed);
+        return false;
     }
     *bufLen = qint64(desc.array_desc_length) * arraySize;
     if (*bufLen <= 0 || *bufLen > (std::numeric_limits<int>::max)()) {
@@ -244,22 +279,38 @@ static const char *readArrayBuffer(QList<QVariant> &list, const char *buffer,
             }
             break;
         }
+        /* Integer elements; a scaled one (NUMERIC/DECIMAL array) surfaces as the
+           double blrTypeToQt reports for it, an unscaled one as the integer. */
         case blr_short:
             for (int i = 0; i < numElements[curDim]; ++i) {
-                list.append(static_cast<int>(*reinterpret_cast<const short *>(buffer)));
-                buffer += sizeof(short);
+                const auto v = *reinterpret_cast<const qint16 *>(buffer);
+                list.append(QtPrivate::sqlApplyScale(v, desc->array_desc_scale,
+                                                     QSql::LowPrecisionDouble));
+                buffer += sizeof(qint16);
             }
             break;
         case blr_long:
             for (int i = 0; i < numElements[curDim]; ++i) {
-                list.append(*reinterpret_cast<const int *>(buffer));
-                buffer += sizeof(int);
+                const auto v = *reinterpret_cast<const qint32 *>(buffer);
+                list.append(QtPrivate::sqlApplyScale(v, desc->array_desc_scale,
+                                                     QSql::LowPrecisionDouble));
+                buffer += sizeof(qint32);
             }
             break;
         case blr_int64:
             for (int i = 0; i < numElements[curDim]; ++i) {
-                list.append(*reinterpret_cast<const qint64 *>(buffer));
+                const auto v = *reinterpret_cast<const qint64 *>(buffer);
+                list.append(QtPrivate::sqlApplyScale(v, desc->array_desc_scale,
+                                                     QSql::LowPrecisionDouble));
                 buffer += sizeof(qint64);
+            }
+            break;
+        case blr_int128:
+            // Exact decimal strings, scaled like the column (see INT128 codec)
+            for (int i = 0; i < numElements[curDim]; ++i) {
+                list.append(decodeInt128Slot(buffer, desc->array_desc_scale,
+                                             QSql::HighPrecision, master, iStatus));
+                buffer += sizeof(FB_I128);
             }
             break;
         case blr_float:
@@ -347,6 +398,34 @@ static char *createArrayBuffer(char *buffer, const QList<QVariant> &list,
                 return nullptr;
         }
     } else {
+        /* Scaled SMALLINT/INTEGER/BIGINT elements (NUMERIC/DECIMAL arrays) map
+           to QMetaType::Double, but the slice holds the backing integer at its
+           own width. Encode each element exactly at that width, like the INT128
+           branch below, so the stride matches the descriptor; the Double case
+           would write 8 bytes into 2- or 4-byte slots. */
+        const unsigned char dtype = desc->array_desc_dtype;
+        const int scale = desc->array_desc_scale;
+        if (scale != 0 && (dtype == blr_short || dtype == blr_long || dtype == blr_int64)) {
+            for (const auto &v : list) {
+                bool ok = false;
+                if (dtype == blr_short) {
+                    ok = QtPrivate::sqlScaledFromVariant(v, scale, reinterpret_cast<qint16 *>(buffer),
+                                                         &error);
+                    buffer += sizeof(qint16);
+                } else if (dtype == blr_long) {
+                    ok = QtPrivate::sqlScaledFromVariant(v, scale, reinterpret_cast<qint32 *>(buffer),
+                                                         &error);
+                    buffer += sizeof(qint32);
+                } else {
+                    ok = QtPrivate::sqlScaledFromVariant(v, scale, reinterpret_cast<qint64 *>(buffer),
+                                                         &error);
+                    buffer += sizeof(qint64);
+                }
+                if (!ok)
+                    return nullptr;
+            }
+            return buffer;
+        }
         switch (type) {
         case QMetaType::Short:
         case QMetaType::UShort:
@@ -354,13 +433,13 @@ static char *createArrayBuffer(char *buffer, const QList<QVariant> &list,
         case QMetaType::UInt:
             if (desc->array_desc_dtype == blr_short) {
                 for (const auto &v : list) {
-                    *reinterpret_cast<short *>(buffer) = static_cast<short>(v.toInt());
-                    buffer += sizeof(short);
+                    *reinterpret_cast<qint16 *>(buffer) = static_cast<qint16>(v.toInt());
+                    buffer += sizeof(qint16);
                 }
             } else {
                 for (const auto &v : list) {
-                    *reinterpret_cast<int *>(buffer) = v.toInt();
-                    buffer += sizeof(int);
+                    *reinterpret_cast<qint32 *>(buffer) = v.toInt();
+                    buffer += sizeof(qint32);
                 }
             }
             break;
@@ -386,16 +465,29 @@ static char *createArrayBuffer(char *buffer, const QList<QVariant> &list,
             break;
         case QMetaType::QString:
             for (const auto &v : list) {
+                if (desc->array_desc_dtype == blr_int128) {
+                    // INT128 elements arrive as strings or numbers; encode exactly
+                    if (!encodeInt128Slot(v, desc->array_desc_scale, buffer,
+                                          master, iStatus, error)) {
+                        return nullptr;
+                    }
+                    buffer += sizeof(FB_I128);
+                    continue;
+                }
+                if (desc->array_desc_dtype != blr_varying && desc->array_desc_dtype != blr_text) {
+                    // Never silently skip: a non-advanced slot misaligns every later element.
+                    error = QString::fromLatin1("Unsupported array element type %1 for string values")
+                                .arg(static_cast<int>(desc->array_desc_dtype));
+                    return nullptr;
+                }
                 const QByteArray utf8 = v.toString().toUtf8();
                 unsigned short len = desc->array_desc_length;
-                if (desc->array_desc_dtype == blr_varying || desc->array_desc_dtype == blr_text) {
-                    // Both varying and text use blr_text format in SDL: raw data, space-padded
-                    int copyLen = std::min(static_cast<int>(utf8.size()), static_cast<int>(len));
-                    std::memcpy(buffer, utf8.constData(), copyLen);
-                    if (copyLen < static_cast<int>(len))
-                        std::memset(buffer + copyLen, ' ', len - copyLen);
-                    buffer += len;
-                }
+                // Both varying and text use blr_text format in SDL: raw data, space-padded
+                int copyLen = (std::min)(static_cast<int>(utf8.size()), static_cast<int>(len));
+                std::memcpy(buffer, utf8.constData(), copyLen);
+                if (copyLen < static_cast<int>(len))
+                    std::memset(buffer + copyLen, ' ', len - copyLen);
+                buffer += len;
             }
             break;
         case QMetaType::QDate:

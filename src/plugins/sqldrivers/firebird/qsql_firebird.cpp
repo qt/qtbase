@@ -406,6 +406,12 @@ bool QFirebirdDriver::open(const QString &db,
     setOpen(true);
     setOpenError(false);
 
+#ifdef QSQL_HAS_INT128
+    qCDebug(lcFirebird, "QFirebirdDriver: INT128 codec: native 128-bit integer");
+#else
+    qCDebug(lcFirebird, "QFirebirdDriver: INT128 codec: IInt128 string interface");
+#endif
+
     return true;
 }
 

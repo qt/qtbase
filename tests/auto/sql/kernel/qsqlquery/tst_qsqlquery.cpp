@@ -268,6 +268,8 @@ private slots:
     void ibaseInt128_data() { firebirdFamily_data(); }
     void ibaseInt128();
 
+    void firebirdNumericArray_data() { generic_data("QFIREBIRD"); }
+    void firebirdNumericArray();
     void firebirdTimeWithTimeZone_data() { generic_data("QFIREBIRD"); }
     void firebirdTimeWithTimeZone();
     void firebirdScrollableCache_data() { generic_data("QFIREBIRD"); }
@@ -5256,6 +5258,43 @@ void tst_QSqlQuery::ibaseInt128()
         QCOMPARE(q2.value(0).metaType().id(), QMetaType::QString);
         QCOMPARE(q2.value(0).toString(), "52346.8023");
     }
+}
+
+// Scaled NUMERIC/DECIMAL arrays are SMALLINT/INTEGER/BIGINT slices with a
+// scale. Elements must be encoded exactly at the backing width (the Double
+// element type would write 8 bytes into 2- and 4-byte slots) and decoded with
+// the scale applied; out-of-range elements fail the exec() instead of wrapping.
+void tst_QSqlQuery::firebirdNumericArray()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    TableScope ts(db, "fbnumarray", __FILE__);
+    QSqlQuery q(db);
+    QVERIFY_SQL(q, exec(QLatin1String("create table %1 (small NUMERIC(4,2)[3], "
+                                      "medium NUMERIC(9,3)[3], wide NUMERIC(18,4)[3])")
+                            .arg(ts.tableName())));
+    QVERIFY_SQL(q, prepare(QLatin1String("insert into %1 (small, medium, wide) values(?, ?, ?)")
+                               .arg(ts.tableName())));
+    const QVariantList values{1.25, -0.5, 99.99};
+    q.bindValue(0, QVariant(values));
+    q.bindValue(1, QVariant(values));
+    // Strings and integers bind exactly too, and read back as doubles
+    q.bindValue(2, QVariant(QVariantList{u"1234567890.1234"_s, 2, -3.5}));
+    QVERIFY_SQL(q, exec());
+
+    QVERIFY_SQL(q, exec("select small, medium, wide from " + ts.tableName()));
+    QVERIFY_SQL(q, next());
+    QCOMPARE(q.value(0).toList(), values);
+    QCOMPARE(q.value(1).toList(), values);
+    QCOMPARE(q.value(2).toList(), (QVariantList{1234567890.1234, 2.0, -3.5}));
+
+    // 1000.00 does not fit the SMALLINT behind NUMERIC(4,2)
+    QVERIFY_SQL(q, prepare(QLatin1String("insert into %1 (small) values(?)").arg(ts.tableName())));
+    q.bindValue(0, QVariant(QVariantList{1000.0, 0, 0}));
+    QVERIFY(!q.exec());
+    QVERIFY(q.lastError().isValid());
 }
 
 // TIME WITH TIME ZONE round-trip. Unlike QIBASE, QFIREBIRD supports this type,
