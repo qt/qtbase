@@ -1227,7 +1227,7 @@ void QRhiVulkan::destroy()
         return;
 
     if (!deviceLost)
-        df->vkDeviceWaitIdle(dev);
+        df->vkQueueWaitIdle(gfxQueue);
 
     executeDeferredReleases(true);
     finishActiveReadbacks(true);
@@ -2348,7 +2348,8 @@ bool QRhiVulkan::recreateSwapChain(QRhiSwapChain *swapChain)
         return false;
     }
 
-    df->vkDeviceWaitIdle(dev);
+    if (!deviceLost)
+        df->vkQueueWaitIdle(gfxQueue);
 
     if (!vkCreateSwapchainKHR) {
         vkCreateSwapchainKHR = reinterpret_cast<PFN_vkCreateSwapchainKHR>(f->vkGetDeviceProcAddr(dev, "vkCreateSwapchainKHR"));
@@ -2642,7 +2643,7 @@ void QRhiVulkan::releaseSwapChainResources(QRhiSwapChain *swapChain)
         return;
 
     if (!deviceLost)
-        df->vkDeviceWaitIdle(dev);
+        df->vkQueueWaitIdle(gfxQueue);
 
     for (int i = 0; i < QVK_FRAMES_IN_FLIGHT; ++i) {
         QVkSwapChain::FrameResources &frame(swapChainD->frameRes[i]);
