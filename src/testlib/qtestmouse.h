@@ -84,7 +84,7 @@ namespace QTest
 
         stateKey &= Qt::KeyboardModifierMask;
 
-        QPointF global = window->mapToGlobal(pos);
+        QPointF global = window->mapToGlobal(QPointF(pos));
         QPointer<QWindow> w(window);
 
         using namespace QTestPrivate;
