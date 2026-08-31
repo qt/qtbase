@@ -1593,6 +1593,7 @@ QDate QDate::addYears(int nyears) const
 /*!
     Returns the number of days from this date to \a d.
 
+    This is equivalent to \c{d.toJulianDay() - toJulianDay()}.
     The result is negative if \a d is earlier than this date.
     Returns 0 if either date is invalid.
 
