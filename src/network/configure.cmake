@@ -239,6 +239,10 @@ qt_feature("libresolv" PRIVATE
     CONDITION WrapResolv_FOUND
     AUTODETECT UNIX
 )
+qt_feature("harmony_dnsresolver" PRIVATE
+    LABEL "HarmonyOS stateless resolver"
+    CONDITION OHOS AND NOT QT_FEATURE_libresolv
+)
 qt_feature("libproxy" PRIVATE
     LABEL "libproxy"
     AUTODETECT OFF

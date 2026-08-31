@@ -6,13 +6,18 @@
 #include "qdnslookup_p.h"
 
 #include <qendian.h>
+#include <qrandom.h>
 #include <qspan.h>
 #include <qurl.h>
 #include <qvarlengtharray.h>
 #include <private/qnativesocketengine_p.h>      // for setSockAddr
 #include <private/qtnetwork-config_p.h>
 
-QT_REQUIRE_CONFIG(libresolv);
+// Two backends: libresolv on Unix and HarmonyOS' stateless resolver (musl has
+// no res_n* functions). They share everything but the transport.
+#if !QT_CONFIG(libresolv) && !QT_CONFIG(harmony_dnsresolver)
+#  error "This file requires libresolv or the HarmonyOS stateless resolver"
+#endif
 
 #include <sys/types.h>
 #include <netinet/in.h>
@@ -62,6 +67,7 @@ struct QDnsCachedName
 Q_DECLARE_TYPEINFO(QDnsCachedName, Q_RELOCATABLE_TYPE);
 using Cache = QList<QDnsCachedName>;    // QHash or QMap are overkill
 
+#if QT_CONFIG(libresolv)
 #if QT_CONFIG(res_setservers)
 // https://www.ibm.com/docs/en/i/7.3?topic=ssw_ibm_i_73/apis/ressetservers.html
 // https://docs.oracle.com/cd/E86824_01/html/E54774/res-setservers-3resolv.html
@@ -267,6 +273,123 @@ void QDnsLookupRunnable::query(QDnsLookupReply *reply)
     if (responseLength < 0)
         return;
 
+    parseResponse(reply, buffer, responseLength);
+}
+
+#elif QT_CONFIG(harmony_dnsresolver)
+
+// musl does not export res_nmkquery(), so we assemble the query ourselves.
+// See https://www.rfc-editor.org/rfc/rfc1035#section-4.1.
+static int prepareQueryBuffer(QueryBuffer &buffer, const char *label, ns_type type)
+{
+    std::memset(buffer.data(), 0, HFIXEDSZ);
+    auto header = new (buffer.data()) HEADER;
+    header->id = QRandomGenerator::system()->generate();
+    header->opcode = QUERY;
+    header->rd = true;                  // recursion desired
+    header->qdcount = qToBigEndian<quint16>(1);
+    header->arcount = qToBigEndian<quint16>(1); // EDNS0 record
+
+    // the question: QNAME, QTYPE, QCLASS; a single-question query has nothing
+    // to compress against, so dn_comp() gets no compression pointers
+    unsigned char *ptr = buffer.data() + HFIXEDSZ;
+    int labelLength = dn_comp(label, ptr,
+                              int(buffer.size() - HFIXEDSZ - QFIXEDSZ - sizeof(Edns0Record)),
+                              nullptr, nullptr);
+    if (Q_UNLIKELY(labelLength < 0))
+        return labelLength;
+    ptr += labelLength;
+    qToBigEndian<quint16>(type, ptr);
+    qToBigEndian<quint16>(C_IN, ptr + sizeof(quint16));
+    ptr += QFIXEDSZ;
+
+    Q_ASSERT(ptr + sizeof(Edns0Record) <= buffer.data() + buffer.size());
+    ptr = std::copy_n(std::begin(Edns0Record), sizeof(Edns0Record), ptr);
+
+    return ptr - buffer.data();
+}
+
+static int sendStandardDns(QDnsLookupReply *reply, QSpan<unsigned char> qbuffer,
+                           ReplyBuffer &buffer)
+{
+    auto attemptToSend = [&]() {
+        std::memset(buffer.data(), 0, HFIXEDSZ);
+        int responseLength = res_send(qbuffer.data(), qbuffer.size(), buffer.data(), buffer.size());
+        if (responseLength >= 0)
+            return responseLength;
+
+        if (errno == ECONNREFUSED)
+            reply->setError(QDnsLookup::ServerRefusedError, qt_error_string());
+        else if (errno != EAGAIN && errno != ETIMEDOUT)
+            reply->makeResolverSystemError();
+
+        auto query = reinterpret_cast<const HEADER *>(qbuffer.data());
+        auto header = reinterpret_cast<const HEADER *>(buffer.data());
+        if (query->id == header->id && header->qr)
+            reply->makeDnsRcodeError(header->rcode);
+        else
+            reply->makeTimeoutError();
+        return -1;
+    };
+
+    int responseLength = attemptToSend();
+    if (responseLength > buffer.size()) {
+        buffer.resize(std::numeric_limits<quint16>::max());
+        responseLength = attemptToSend();
+        if (Q_UNLIKELY(responseLength > buffer.size())) {
+            reply->setError(QDnsLookup::ResolverError, QDnsLookup::tr("Reply was too large"));
+            return -1;
+        }
+    }
+
+    return responseLength;
+}
+
+void QDnsLookupRunnable::query(QDnsLookupReply *reply)
+{
+    // Prepare the DNS query.
+    QueryBuffer qbuffer;
+    int queryLength = prepareQueryBuffer(qbuffer, requestName.constData(), ns_type(requestType));
+    if (Q_UNLIKELY(queryLength < 0))
+        return reply->setError(QDnsLookup::InvalidRequestError,
+                               QDnsLookup::tr("Invalid domain name"));
+
+    // Perform DNS query.
+    QSpan query(qbuffer.data(), queryLength);
+    ReplyBuffer buffer(ReplyBufferSize);
+    int responseLength = -1;
+    switch (protocol) {
+    case QDnsLookup::Standard:
+        if (!nameserver.isNull()) {
+            reply->setError(QDnsLookup::ResolverError,
+                            QDnsLookup::tr("Setting a nameserver is currently not supported on this OS"));
+            return;
+        }
+        responseLength = sendStandardDns(reply, query, buffer);
+
+        // We can't tell whether the system resolver validated the reply, so don't
+        // pass on the AD bit (see the RES_TRUSTAD handling above).
+        if (responseLength >= int(sizeof(HEADER)))
+            reinterpret_cast<HEADER *>(buffer.data())->ad = false;
+        break;
+    case QDnsLookup::DnsOverTls:
+        if (!sendDnsOverTls(reply, query, buffer))
+            return;
+        responseLength = buffer.size();
+        break;
+    }
+
+    if (responseLength < 0)
+        return;
+
+    parseResponse(reply, buffer, responseLength);
+}
+
+#endif // resolver backend selection
+
+void QDnsLookupRunnable::parseResponse(QDnsLookupReply *reply, ReplyBuffer &buffer,
+                                       int responseLength)
+{
     // Check the reply is valid.
     if (responseLength < int(sizeof(HEADER)))
         return reply->makeInvalidReplyError();
