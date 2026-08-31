@@ -1591,9 +1591,9 @@ QDate QDate::addYears(int nyears) const
 }
 
 /*!
-    Returns the number of days from this date to \a d (which is
-    negative if \a d is earlier than this date).
+    Returns the number of days from this date to \a d.
 
+    The result is negative if \a d is earlier than this date.
     Returns 0 if either date is invalid.
 
     Example:
@@ -5054,14 +5054,14 @@ QDateTime QDateTime::addMSecs(qint64 msecs) const
 */
 
 /*!
-    Returns the number of days from this datetime to the \a other
-    datetime. The number of days is counted as the number of times
-    midnight is reached between this datetime to the \a other
-    datetime. This means that a 10 minute difference from 23:55 to
-    0:05 the next day counts as one day.
+    Returns the number of days from this datetime to the \a other datetime.
 
-    If the \a other datetime is earlier than this datetime,
-    the value returned is negative.
+    The number of days is counted as the number of times midnight is reached
+    between this datetime and the \a other datetime. This means that a 10 minute
+    difference from 23:55 to 0:05 the next day counts as one day.
+
+    If the \a other datetime is earlier than this datetime, the value returned
+    is negative. If either datetime is invalid, the value is 0.
 
     Example:
     \snippet code/src_corelib_time_qdatetime.cpp 15
@@ -5075,15 +5075,14 @@ qint64 QDateTime::daysTo(const QDateTime &other) const
 }
 
 /*!
-    Returns the number of seconds from this datetime to the \a other
-    datetime. If the \a other datetime is earlier than this datetime,
-    the value returned is negative.
+    Returns the number of seconds from this datetime to the \a other datetime.
 
     Before performing the comparison, the two datetimes are converted
     to Qt::UTC to ensure that the result is correct if daylight-saving
     (DST) applies to one of the two datetimes but not the other.
 
-    Returns 0 if either datetime is invalid.
+    If the \a other datetime is earlier than this datetime, the value returned
+    is negative. Returns 0 if either datetime is invalid.
 
     Example:
     \snippet code/src_corelib_time_qdatetime.cpp 11
@@ -5098,14 +5097,14 @@ qint64 QDateTime::secsTo(const QDateTime &other) const
 
 /*!
     Returns the number of milliseconds from this datetime to the \a other
-    datetime. If the \a other datetime is earlier than this datetime,
-    the value returned is negative.
+    datetime.
 
     Before performing the comparison, the two datetimes are converted
     to Qt::UTC to ensure that the result is correct if daylight-saving
     (DST) applies to one of the two datetimes and but not the other.
 
-    Returns 0 if either datetime is invalid.
+    If the \a other datetime is earlier than this datetime, the value returned
+    is negative. Returns 0 if either datetime is invalid.
 
     \sa addMSecs(), daysTo(), QTime::msecsTo()
 */
@@ -5122,9 +5121,9 @@ qint64 QDateTime::msecsTo(const QDateTime &other) const
     \fn std::chrono::milliseconds QDateTime::operator-(const QDateTime &lhs, const QDateTime &rhs)
     \since 6.4
 
-    Returns the time in milliseconds between \a lhs and \a rhs.
-    If \a lhs is earlier than \a rhs, the result will be negative.
+    Returns the time in milliseconds from \a lhs to \a rhs.
 
+    If \a lhs is earlier than \a rhs, the result will be negative.
     Returns 0ms if either datetime is invalid.
 
     \sa msecsTo()
@@ -5149,12 +5148,11 @@ qint64 QDateTime::msecsTo(const QDateTime &other) const
     \since 6.4
 
     Modifies this datetime object by adding the given \a duration.
-    The updated object will be later if \a duration is positive,
-    or earlier if it is negative.
+
+    The updated object will be later if \a duration is positive, or earlier if
+    it is negative. Returns a reference to this datetime object.
 
     If this datetime is invalid, this function has no effect.
-
-    Returns a reference to this datetime object.
 
     \sa addMSecs()
 */
@@ -5177,12 +5175,11 @@ qint64 QDateTime::msecsTo(const QDateTime &other) const
     \since 6.4
 
     Modifies this datetime object by subtracting the given \a duration.
-    The updated object will be earlier if \a duration is positive,
-    or later if it is negative.
+
+    The updated object will be earlier if \a duration is positive, or later if
+    it is negative. Returns a reference to this datetime object.
 
     If this datetime is invalid, this function has no effect.
-
-    Returns a reference to this datetime object.
 
     \sa addMSecs
 */
