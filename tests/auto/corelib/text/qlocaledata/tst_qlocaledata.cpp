@@ -794,21 +794,21 @@ void tst_QLocaleData::digitSequence_data()
 
 void tst_QLocaleData::digitSubSequence_data()
 {
+    using QSZ = qsizetype;
     QTest::addColumn<const QLocaleData *>("data");
     QTest::addColumn<int>("digitWidth");
     QTest::addColumn<QString>("offsetStr"); // "-143017" with some dangling cruft
-    QTest::addColumn<qsizetype>("offSignEnd");
-    QTest::addColumn<qsizetype>("offHrEnd");
-    QTest::addColumn<qsizetype>("offMinEnd");
-    QTest::addColumn<qsizetype>("offsetEnd");
+    QTest::addColumn<QSZ>("offSignEnd");
+    QTest::addColumn<QSZ>("offHrEnd");
+    QTest::addColumn<QSZ>("offMinEnd");
+    QTest::addColumn<QSZ>("offsetEnd");
     QTest::addColumn<QString>("ans1maxStr"); // "99991231235959" with some dangling cruft
-    QTest::addColumn<qsizetype>("asnYearEnd");
-    QTest::addColumn<qsizetype>("asnMonEnd");
-    QTest::addColumn<qsizetype>("asnDomEnd");
-    QTest::addColumn<qsizetype>("asnHrEnd");
-    QTest::addColumn<qsizetype>("asnMinEnd");
-    QTest::addColumn<qsizetype>("asnEnd");
-    using QSZ = qsizetype;
+    QTest::addColumn<QSZ>("asnYearEnd");
+    QTest::addColumn<QSZ>("asnMonEnd");
+    QTest::addColumn<QSZ>("asnDomEnd");
+    QTest::addColumn<QSZ>("asnHrEnd");
+    QTest::addColumn<QSZ>("asnMinEnd");
+    QTest::addColumn<QSZ>("asnEnd");
 
     QTest::newRow("C")
         << QLocaleData::c() << 1
