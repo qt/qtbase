@@ -37,6 +37,16 @@ QPpdPrintDevice::QPpdPrintDevice(const QString &id)
         m_cupsDest = cupsGetNamedDest(CUPS_HTTP_DEFAULT, m_cupsName, m_cupsInstance.isNull() ? nullptr : m_cupsInstance.constData());
         if (m_cupsDest) {
             const char *ppdFile = cupsGetPPD(m_cupsName);
+            if (ppdFile == nullptr) {
+                // For auto-discovered IPP printers without a local CUPS queue, CUPS doesn't have a PPD yet.
+                // Request supported values/capabilities, which could be used to read capabilities (IPP attributes) directly.
+                // But for now, we call it only for the useful side-effect that CUPS creates a temp queue
+                // and a PPD file from the IPP attributes for this queue that can be retrieved then.
+                if (cups_dinfo_t *destInfo = cupsCopyDestInfo(CUPS_HTTP_DEFAULT, m_cupsDest)) {
+                    cupsFreeDestInfo(destInfo);
+                    ppdFile = cupsGetPPD(m_cupsName);
+                }
+            }
             if (ppdFile) {
                 m_ppd = ppdOpenFile(ppdFile);
                 unlink(ppdFile);
