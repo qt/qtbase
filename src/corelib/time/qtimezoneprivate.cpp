@@ -1637,8 +1637,7 @@ auto PatternAligner::match(QStringView str, const QList<qsizetype> &strPat,
             }
 
             // Consume what we matched; ignore the rest as dangling cruft.
-            txtPos += asciiParse.digitStart
-                + (asciiParse.digits.size() - spare) * asciiParse.digitWidth;
+            txtPos += asciiParse.digitBounds[asciiParse.digits.size() - spare];
             break;
         }
 

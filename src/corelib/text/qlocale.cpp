@@ -4775,21 +4775,25 @@ char NumericTokenizer::nextToken()
 
     The resulting \l {QLocaleData::}{DigitSequence} contains the parsed digit
     sequence, \c digits, describes the positions of digits within \a text, by \c
-    digitStart and \c digitWidth, and (where allowed) reports any sign.
+    digitBounds, and (where allowed) reports any sign. Differences between
+    entries in digitBounds are the UTF-16 lengths of the successive digits in
+    the source text. These may be any mixture of locale-appropriate digits and
+    the C locale's ASCII digits.
 
-    When \c digits is empty, \c digitStart is the end of the text parsed: this
-    is either where the sign ended, when \c hasSign(), or the value of \c from
-    passed to the constructor. Otherwise, each \c{digits[i]} represents
-    \c{text.sliced(digitStart + i * digitWidth, digitWidth)} and the whole text
-    parsed is \c{text.first(digitStart + digits.size() *
-    digitWidth).sliced(from)}. Either way, if \c hasSign(), it represents
-    \c{text.first(endIndex()).sliced(from)}.
+    The end of the text parsed is always \c {digitBounds.back()}. When \c digits
+    is empty, this is \c digitBounds[0]: this is either where the sign ended,
+    when \c hasSign(), or the value of \c from passed to the
+    constructor. Otherwise, each \c{digits[i]} represents
+    \c{text.first(digitBounds[i+1]).sliced(digitBounds[i])} and the whole text
+    parsed is \c{text.first(digitBounds.back()).sliced(from)}. Either way, if \c
+    hasSign(), its \c sign represents
+    \c{text.first(digitBounds.front()).sliced(from)}.
 
     \sa {QLocaleData::DigitSequence::}{used()}
 */
 QLocaleData::DigitSequence::DigitSequence(QStringView text, NumericData &&numeric,
                                           Options flags, qsizetype from)
-    : digitStart(from), digitWidth(numeric.zeroWidth())
+    : digitBounds({ from })
 {
     NumericTokenizer tokens(text, std::move(numeric), IntegerMode, from);
     if (tokens.done())
@@ -4802,7 +4806,7 @@ QLocaleData::DigitSequence::DigitSequence(QStringView text, NumericData &&numeri
     if (currentToken == '+' || currentToken == '-') {
         if (!flags.testFlag(Option::AllowSign))
             return;
-        digitStart = tokens.index();
+        digitBounds[0] = tokens.index();
         sign = currentToken;
         currentToken = '\0';
     }
@@ -4819,8 +4823,10 @@ QLocaleData::DigitSequence::DigitSequence(QStringView text, NumericData &&numeri
 
         // We have a digit.
         digits.push_back(currentToken);
+        digitBounds.push_back(tokens.index());
         currentToken = '\0';
     }
+    Q_ASSERT(digitBounds.size() == digits.size() + 1); // Class invariant.
 }
 
 /*!
