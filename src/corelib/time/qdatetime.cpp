@@ -1285,8 +1285,10 @@ QString QDate::toString(Qt::DateFormat format) const
     \row \li MMM \li The abbreviated month name ('Jan' to 'Dec').
     \row \li MMMM \li The long month name ('January' to 'December').
     \row \li yy \li The year as a two digit number (00 to 99)
-    \row \li yyyy \li The year as a four digit number. If the year is negative,
-            a minus sign is prepended, making five characters.
+    \row \li yyyy \li The full year as a number, padded if necessary to at least
+             four digits. If the year is negative, a minus sign is prepended. If
+             a positive year needs more than four digits, a plus sign is
+             prepended.
     \endtable
 
 //! [to-string-single-quote]
@@ -1750,8 +1752,10 @@ QDate QDate::fromString(QStringView string, Qt::DateFormat format)
     \row \li MMM \li The abbreviated month name ('Jan' to 'Dec').
     \row \li MMMM \li The long month name ('January' to 'December').
     \row \li yy \li The year as a two digit number (00 to 99)
-    \row \li yyyy \li The year as a four digit number, possibly plus a leading
-             minus sign for negative years.
+    \row \li yyyy \li The year as a number, zero-padded if necessary to at least
+             four digits. A leading minus sign is accepted to represent a
+             negative year. A plus sign is required when more than four digits
+             are given.
     \endtable
 
     \note Day and month names must be given in English (C locale). If localized
