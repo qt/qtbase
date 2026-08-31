@@ -29,6 +29,7 @@
 #include "qmenu_p.h"
 #include "qmenubar_p.h"
 #include <private/qscreen_p.h>
+#include <private/qstyle_p.h>
 #include "qdebug.h"
 
 QT_BEGIN_NAMESPACE
@@ -299,7 +300,9 @@ void QMenuBarPrivate::popupAction(QAction *action, bool activateFirst)
         // multiple screens with different scale factors.
         QPoint pos(q->mapToGlobal(popupPos).x(), screenTestPos.y());
 
-        QRect screenRect = popupScreen->geometry();
+        QRect screenRect = QStylePrivate::useFullScreenForPopup()
+            ? popupScreen->geometry()
+            : popupScreen->availableGeometry();
         pos = QPoint(qMax(pos.x(), screenRect.x()), qMax(pos.y(), screenRect.y()));
         const bool fitUp = (pos.y() - popup_size.height() >= screenRect.top());
         const bool fitDown = (pos.y() + popup_size.height() <= screenRect.bottom());
