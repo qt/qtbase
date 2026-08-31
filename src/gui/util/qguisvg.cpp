@@ -291,6 +291,7 @@ std::optional<QPainterPath> parsePath(QStringView dataStr, bool limitLength)
     if (dataStr.isEmpty())
         return std::nullopt;
 
+    bool done = false;
     const int maxElementCount = 0x7fff; // Assume file corruption if more path elements than this
     qreal x0 = 0, y0 = 0;              // starting point
     qreal x = 0, y = 0;                // current point
@@ -298,7 +299,7 @@ std::optional<QPainterPath> parsePath(QStringView dataStr, bool limitLength)
     QPointF ctrlPt;
 
     QPainterPath path;
-    while (!dataStr.isEmpty()) {
+    while (!dataStr.isEmpty() && !done) {
         while (dataStr.first().isSpace() && dataStr.length() > 1)
             dataStr.slice(1);
         QChar pathElem = dataStr.first();
@@ -317,8 +318,11 @@ std::optional<QPainterPath> parsePath(QStringView dataStr, bool limitLength)
             qreal offsetY = y;        // for relative commands
             switch (pathElem.unicode()) {
             case 'm': {
-                if (count < 2)
-                    return std::nullopt;
+                if (count < 2) {
+                    count--;
+                    done = true;
+                    break;
+                }
                 x = x0 = num[0] + offsetX;
                 y = y0 = num[1] + offsetY;
                 num += 2;
@@ -332,8 +336,11 @@ std::optional<QPainterPath> parsePath(QStringView dataStr, bool limitLength)
             }
             break;
             case 'M': {
-                if (count < 2)
-                    return std::nullopt;
+                if (count < 2) {
+                    count--;
+                    done = true;
+                    break;
+                }
 
                 x = x0 = num[0];
                 y = y0 = num[1];
@@ -357,8 +364,11 @@ std::optional<QPainterPath> parsePath(QStringView dataStr, bool limitLength)
             }
             break;
             case 'l': {
-                if (count < 2)
-                    return std::nullopt;
+                if (count < 2) {
+                    count--;
+                    done = true;
+                    break;
+                }
 
                 x = num[0] + offsetX;
                 y = num[1] + offsetY;
@@ -369,8 +379,11 @@ std::optional<QPainterPath> parsePath(QStringView dataStr, bool limitLength)
             }
             break;
             case 'L': {
-                if (count < 2)
-                    return std::nullopt;
+                if (count < 2) {
+                    count--;
+                    done = true;
+                    break;
+                }
 
                 x = num[0];
                 y = num[1];
@@ -408,8 +421,11 @@ std::optional<QPainterPath> parsePath(QStringView dataStr, bool limitLength)
             }
             break;
             case 'c': {
-                if (count < 6)
-                    return std::nullopt;
+                if (count < 6) {
+                    count = 0;
+                    done = true;
+                    break;
+                }
 
                 QPointF c1(num[0] + offsetX, num[1] + offsetY);
                 QPointF c2(num[2] + offsetX, num[3] + offsetY);
@@ -423,8 +439,11 @@ std::optional<QPainterPath> parsePath(QStringView dataStr, bool limitLength)
                 break;
             }
             case 'C': {
-                if (count < 6)
-                    return std::nullopt;
+                if (count < 6) {
+                    count = 0;
+                    done = true;
+                    break;
+                }
 
                 QPointF c1(num[0], num[1]);
                 QPointF c2(num[2], num[3]);
@@ -438,8 +457,11 @@ std::optional<QPainterPath> parsePath(QStringView dataStr, bool limitLength)
                 break;
             }
             case 's': {
-                if (count < 4)
-                    return std::nullopt;
+                if (count < 4) {
+                    count = 0;
+                    done = true;
+                    break;
+                }
 
                 QPointF c1;
                 if (lastMode == 'c' || lastMode == 'C' ||
@@ -458,8 +480,11 @@ std::optional<QPainterPath> parsePath(QStringView dataStr, bool limitLength)
                 break;
             }
             case 'S': {
-                if (count < 4)
-                    return std::nullopt;
+                if (count < 4) {
+                    count = 0;
+                    done = true;
+                    break;
+                }
 
                 QPointF c1;
                 if (lastMode == 'c' || lastMode == 'C' ||
@@ -478,8 +503,11 @@ std::optional<QPainterPath> parsePath(QStringView dataStr, bool limitLength)
                 break;
             }
             case 'q': {
-                if (count < 4)
-                    return std::nullopt;
+                if (count < 4) {
+                    count = 0;
+                    done = true;
+                    break;
+                }
 
                 QPointF c(num[0] + offsetX, num[1] + offsetY);
                 QPointF e(num[2] + offsetX, num[3] + offsetY);
@@ -492,8 +520,11 @@ std::optional<QPainterPath> parsePath(QStringView dataStr, bool limitLength)
                 break;
             }
             case 'Q': {
-                if (count < 4)
-                    return std::nullopt;
+                if (count < 4) {
+                    count = 0;
+                    done = true;
+                    break;
+                }
 
                 QPointF c(num[0], num[1]);
                 QPointF e(num[2], num[3]);
@@ -506,8 +537,11 @@ std::optional<QPainterPath> parsePath(QStringView dataStr, bool limitLength)
                 break;
             }
             case 't': {
-                if (count < 2)
-                    return std::nullopt;
+                if (count < 2) {
+                    count = 0;
+                    done = true;
+                    break;
+                }
 
                 QPointF e(num[0] + offsetX, num[1] + offsetY);
                 num += 2;
@@ -525,8 +559,11 @@ std::optional<QPainterPath> parsePath(QStringView dataStr, bool limitLength)
                 break;
             }
             case 'T': {
-                if (count < 2)
-                    return std::nullopt;
+                if (count < 2) {
+                    count = 0;
+                    done = true;
+                    break;
+                }
 
                 QPointF e(num[0], num[1]);
                 num += 2;
@@ -544,8 +581,11 @@ std::optional<QPainterPath> parsePath(QStringView dataStr, bool limitLength)
                 break;
             }
             case 'a': {
-                if (count < 7)
-                    return std::nullopt;
+                if (count < 7) {
+                    count = 0;
+                    done = true;
+                    break;
+                }
 
                 qreal rx = (*num++);
                 qreal ry = (*num++);
@@ -565,8 +605,11 @@ std::optional<QPainterPath> parsePath(QStringView dataStr, bool limitLength)
             }
             break;
             case 'A': {
-                if (count < 7)
-                    return std::nullopt;
+                if (count < 7) {
+                    count = 0;
+                    done = true;
+                    break;
+                }
 
                 qreal rx = (*num++);
                 qreal ry = (*num++);
