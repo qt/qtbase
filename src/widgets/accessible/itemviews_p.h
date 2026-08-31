@@ -162,7 +162,10 @@ public:
 };
 #endif
 
-class QAccessibleTableCell: public QAccessibleInterface, public QAccessibleTableCellInterface, public QAccessibleActionInterface
+class QAccessibleTableCell : public QAccessibleInterface,
+                             public QAccessibleTableCellInterface,
+                             public QAccessibleActionInterface,
+                             public QAccessibleAttributesInterface
 {
 public:
     QAccessibleTableCell(QAbstractItemView *view, const QModelIndex &m_index, QAccessible::Role role);
@@ -198,6 +201,10 @@ public:
     virtual QStringList actionNames() const override;
     virtual void doAction(const QString &actionName) override;
     virtual QStringList keyBindingsForAction(const QString &actionName) const override;
+
+    // attributes interface
+    QList<QAccessible::Attribute> attributeKeys() const override;
+    QVariant attributeValue(QAccessible::Attribute key) const override;
 
 private:
     QHeaderView *verticalHeader() const;

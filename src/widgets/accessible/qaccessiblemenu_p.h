@@ -64,7 +64,8 @@ protected:
 #endif // QT_CONFIG(menubar)
 
 
-class QAccessibleMenuItem : public QAccessibleInterface, public QAccessibleActionInterface
+class QAccessibleMenuItem : public QAccessibleInterface, public QAccessibleActionInterface,
+                            public QAccessibleAttributesInterface
 {
 public:
     explicit QAccessibleMenuItem(QWidget *owner, QAction *w);
@@ -92,6 +93,10 @@ public:
     QStringList actionNames() const override;
     void doAction(const QString &actionName) override;
     QStringList keyBindingsForAction(const QString &actionName) const override;
+
+    // QAccessibleAttributesInterface
+    QList<QAccessible::Attribute> attributeKeys() const override;
+    QVariant attributeValue(QAccessible::Attribute key) const override;
 
     QWidget *owner() const;
 protected:

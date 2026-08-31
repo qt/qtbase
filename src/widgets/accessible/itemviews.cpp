@@ -1057,7 +1057,46 @@ void *QAccessibleTableCell::interface_cast(QAccessible::InterfaceType t)
         return static_cast<QAccessibleTableCellInterface*>(this);
     if (t == QAccessible::ActionInterface)
         return static_cast<QAccessibleActionInterface*>(this);
+    // Only the items of a list or a tree form a set of siblings; a table
+    // cell is located by its row and column through the cell interface.
+    if (t == QAccessible::AttributesInterface
+        && (m_role == QAccessible::ListItem || m_role == QAccessible::TreeItem)) {
+        return static_cast<QAccessibleAttributesInterface *>(this);
+    }
     return nullptr;
+}
+
+QList<QAccessible::Attribute> QAccessibleTableCell::attributeKeys() const
+{
+    QList<QAccessible::Attribute> keys = { QAccessible::Attribute::PositionInSet,
+                                           QAccessible::Attribute::SizeOfSet };
+    if (m_role == QAccessible::TreeItem)
+        keys.append(QAccessible::Attribute::Level);
+    return keys;
+}
+
+QVariant QAccessibleTableCell::attributeValue(QAccessible::Attribute key) const
+{
+    switch (key) {
+    case QAccessible::Attribute::PositionInSet:
+        return m_index.row() + 1;
+    case QAccessible::Attribute::SizeOfSet:
+        return m_index.model()->rowCount(m_index.parent());
+    case QAccessible::Attribute::Level: {
+        if (m_role != QAccessible::TreeItem)
+            return QVariant();
+        // The depth below the root of the view, top level items being at level 1.
+        int level = 1;
+        const QModelIndex root = view->rootIndex();
+        for (QModelIndex parent = m_index.parent(); parent.isValid() && parent != root;
+             parent = parent.parent()) {
+            ++level;
+        }
+        return level;
+    }
+    default:
+        return QVariant();
+    }
 }
 
 int QAccessibleTableCell::columnExtent() const { return 1; }

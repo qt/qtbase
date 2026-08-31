@@ -56,7 +56,8 @@ QString qt_accHotKey(const QString &text);
   \ingroup accessibility
 */
 
-class QAccessibleTabButton: public QAccessibleInterface, public QAccessibleActionInterface
+class QAccessibleTabButton: public QAccessibleInterface, public QAccessibleActionInterface,
+                            public QAccessibleAttributesInterface
 {
 public:
     QAccessibleTabButton(QTabBar *parent, int index)
@@ -67,6 +68,8 @@ public:
         if (t == QAccessible::ActionInterface) {
             return static_cast<QAccessibleActionInterface*>(this);
         }
+        if (t == QAccessible::AttributesInterface)
+            return static_cast<QAccessibleAttributesInterface *>(this);
         return nullptr;
     }
 
@@ -160,6 +163,21 @@ public:
     QStringList keyBindingsForAction(const QString &) const override
     {
         return QStringList();
+    }
+
+    // attributes interface
+    QList<QAccessible::Attribute> attributeKeys() const override
+    {
+        return { QAccessible::Attribute::PositionInSet, QAccessible::Attribute::SizeOfSet };
+    }
+
+    QVariant attributeValue(QAccessible::Attribute key) const override
+    {
+        if (key == QAccessible::Attribute::PositionInSet)
+            return m_index + 1;
+        if (key == QAccessible::Attribute::SizeOfSet)
+            return m_parent->count();
+        return QVariant();
     }
 
     int index() const { return m_index; }

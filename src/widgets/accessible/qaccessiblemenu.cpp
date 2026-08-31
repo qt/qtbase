@@ -204,7 +204,34 @@ void *QAccessibleMenuItem::interface_cast(QAccessible::InterfaceType t)
 {
     if (t == QAccessible::ActionInterface)
         return static_cast<QAccessibleActionInterface*>(this);
+    // A separator is not one of the items of the menu.
+    if (t == QAccessible::AttributesInterface && m_action && !m_action->isSeparator())
+        return static_cast<QAccessibleAttributesInterface *>(this);
     return nullptr;
+}
+
+QList<QAccessible::Attribute> QAccessibleMenuItem::attributeKeys() const
+{
+    return { QAccessible::Attribute::PositionInSet, QAccessible::Attribute::SizeOfSet };
+}
+
+QVariant QAccessibleMenuItem::attributeValue(QAccessible::Attribute key) const
+{
+    if (key != QAccessible::Attribute::PositionInSet && key != QAccessible::Attribute::SizeOfSet)
+        return QVariant();
+
+    // The set is what the user sees: the visible items of the menu, without
+    // its separators.
+    int size = 0;
+    const auto actions = owner()->actions();
+    for (QAction *action : actions) {
+        if (action->isSeparator() || !action->isVisible())
+            continue;
+        ++size;
+        if (key == QAccessible::Attribute::PositionInSet && action == m_action)
+            return size;
+    }
+    return (key == QAccessible::Attribute::SizeOfSet) ? QVariant(size) : QVariant();
 }
 
 QObject *QAccessibleMenuItem::object() const

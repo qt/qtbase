@@ -215,6 +215,7 @@ private slots:
     void scrollAreaTest();
 
     void listTest();
+    void listPositionTest();
     void treeTest();
     void tableTest();
     void rootIndexView();
@@ -1416,6 +1417,15 @@ void tst_QAccessibility::tabTest()
     QVERIFY(child2);
     QCOMPARE(child2->role(), QAccessible::PageTab);
 
+    // the tabs report their position within the tab bar
+    QVERIFY(child1->attributesInterface());
+    QVERIFY(child1->attributesInterface()->attributeKeys().contains(QAccessible::Attribute::PositionInSet));
+    QCOMPARE(child1->attributesInterface()->attributeValue(QAccessible::Attribute::PositionInSet).toInt(), 1);
+    QCOMPARE(child1->attributesInterface()->attributeValue(QAccessible::Attribute::SizeOfSet).toInt(), tabBar->count());
+    QVERIFY(child2->attributesInterface());
+    QCOMPARE(child2->attributesInterface()->attributeValue(QAccessible::Attribute::PositionInSet).toInt(), 2);
+    QCOMPARE(child2->attributesInterface()->attributeValue(QAccessible::Attribute::SizeOfSet).toInt(), tabBar->count());
+
     QCOMPARE(child1->text(QAccessible::Name), QLatin1String("Foo"));
     QCOMPARE(child1->text(QAccessible::Description), QLatin1String("Cool tool tip"));
     QCOMPARE(child1->text(QAccessible::Help), QLatin1String("I don't know"));
@@ -1607,6 +1617,17 @@ void tst_QAccessibility::menuTest()
     QCOMPARE(iSeparator->role(), QAccessible::Separator);
     QCOMPARE(iHelp->role(), QAccessible::MenuItem);
     QCOMPARE(iAction->role(), QAccessible::MenuItem);
+
+    // the items report their position among the items of the menu bar,
+    // the separator is not one of them
+    QVERIFY(!iSeparator->attributesInterface());
+    QVERIFY(iFile->attributesInterface());
+    QVERIFY(iFile->attributesInterface()->attributeKeys().contains(QAccessible::Attribute::PositionInSet));
+    QCOMPARE(iFile->attributesInterface()->attributeValue(QAccessible::Attribute::PositionInSet).toInt(), 1);
+    QCOMPARE(iEdit->attributesInterface()->attributeValue(QAccessible::Attribute::PositionInSet).toInt(), 2);
+    QCOMPARE(iHelp->attributesInterface()->attributeValue(QAccessible::Attribute::PositionInSet).toInt(), 3);
+    QCOMPARE(iAction->attributesInterface()->attributeValue(QAccessible::Attribute::PositionInSet).toInt(), 4);
+    QCOMPARE(iAction->attributesInterface()->attributeValue(QAccessible::Attribute::SizeOfSet).toInt(), 5);
 #ifndef Q_OS_MACOS
     QCOMPARE(mw.mapFromGlobal(interface->rect().topLeft()), mw.menuBar()->geometry().topLeft());
     QCOMPARE(interface->rect().size(), mw.menuBar()->size());
@@ -1676,6 +1697,10 @@ void tst_QAccessibility::menuTest()
     QCOMPARE(iFileSave->role(), QAccessible::MenuItem);
     QCOMPARE(iFileSeparator->role(), QAccessible::Separator);
     QCOMPARE(iFileExit->role(), QAccessible::MenuItem);
+    QVERIFY(!iFileSeparator->attributesInterface());
+    QVERIFY(iFileExit->attributesInterface());
+    QCOMPARE(iFileExit->attributesInterface()->attributeValue(QAccessible::Attribute::PositionInSet).toInt(), 4);
+    QCOMPARE(iFileExit->attributesInterface()->attributeValue(QAccessible::Attribute::SizeOfSet).toInt(), 4);
     QCOMPARE(iFileNew->actionInterface()->actionNames(), QStringList() << QAccessibleActionInterface::showMenuAction());
     QCOMPARE(iFileOpen->actionInterface()->actionNames(), QStringList() << QAccessibleActionInterface::pressAction());
     QCOMPARE(iFileSave->actionInterface()->actionNames(), QStringList() << QAccessibleActionInterface::pressAction());
@@ -3260,6 +3285,13 @@ void tst_QAccessibility::treeTest()
     QCOMPARE(iface->indexOfChild(child2), 4);
     QCOMPARE(child2->text(QAccessible::Name), QString("Austria"));
 
+    // tree items report their position among their siblings and their level
+    QVERIFY(child2->attributesInterface());
+    QVERIFY(child2->attributesInterface()->attributeKeys().contains(QAccessible::Attribute::Level));
+    QCOMPARE(child2->attributesInterface()->attributeValue(QAccessible::Attribute::PositionInSet).toInt(), 2);
+    QCOMPARE(child2->attributesInterface()->attributeValue(QAccessible::Attribute::SizeOfSet).toInt(), 2);
+    QCOMPARE(child2->attributesInterface()->attributeValue(QAccessible::Attribute::Level).toInt(), 1);
+
     bool headerHidden = true;
     do {
         treeView->setHeaderHidden(headerHidden);
@@ -3329,6 +3361,14 @@ void tst_QAccessibility::treeTest()
     QCOMPARE(cell2->tableCellInterface()->columnIndex(), 0);
     QVERIFY(!(cell2->state().expandable));
     QCOMPARE(iface->indexOfChild(cell2), 10);
+
+    // Picasso is the first of the two children of Spain, Klimt the only child of Austria
+    QCOMPARE(cell1->attributesInterface()->attributeValue(QAccessible::Attribute::PositionInSet).toInt(), 1);
+    QCOMPARE(cell1->attributesInterface()->attributeValue(QAccessible::Attribute::SizeOfSet).toInt(), 2);
+    QCOMPARE(cell1->attributesInterface()->attributeValue(QAccessible::Attribute::Level).toInt(), 2);
+    QCOMPARE(cell2->attributesInterface()->attributeValue(QAccessible::Attribute::PositionInSet).toInt(), 1);
+    QCOMPARE(cell2->attributesInterface()->attributeValue(QAccessible::Attribute::SizeOfSet).toInt(), 1);
+    QCOMPARE(cell2->attributesInterface()->attributeValue(QAccessible::Attribute::Level).toInt(), 2);
 
     QPoint pos = treeView->mapToGlobal(QPoint(0,0));
     QModelIndex index = treeView->model()->index(0, 0, treeView->model()->index(1, 0));
@@ -3441,6 +3481,11 @@ void tst_QAccessibility::tableTest()
     QAccessibleTableCellInterface *cell10Iface = child10->tableCellInterface();
     QCOMPARE(cell10Iface->rowIndex(), 1);
     QCOMPARE(cell10Iface->columnIndex(), 1);
+    // a table cell is located by row and column, it is not one of a set
+    if (QAccessibleAttributesInterface *attributes = child10->attributesInterface()) {
+        QVERIFY(!attributes->attributeKeys().contains(QAccessible::Attribute::PositionInSet));
+        QVERIFY(!attributes->attributeKeys().contains(QAccessible::Attribute::SizeOfSet));
+    }
     QPoint pos = tableView->mapToGlobal(QPoint(0,0));
     pos += tableView->visualRect(tableView->model()->index(1, 1)).center();
     pos += QPoint(tableView->verticalHeader()->width(), tableView->horizontalHeader()->height());
@@ -3719,6 +3764,34 @@ void tst_QAccessibility::tableTest()
     }
     tvHolder.reset();
     QVERIFY(!QAccessible::accessibleInterface(id00));
+    QTestAccessibility::clearEvents();
+}
+
+void tst_QAccessibility::listPositionTest()
+{
+    QStandardItemModel model;
+    model.appendRow(new QStandardItem("Oslo"));
+    model.appendRow(new QStandardItem("Berlin"));
+    model.appendRow(new QStandardItem("Brisbane"));
+    QListView listView;
+    listView.setModel(&model);
+    listView.resize(400, 400);
+    listView.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&listView));
+
+    QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(&listView);
+    QVERIFY(iface);
+    QAccessibleInterface *child2 = iface->child(1);
+    QVERIFY(child2);
+    QCOMPARE(child2->text(QAccessible::Name), QString("Berlin"));
+
+    // list items report their position within the list, but no level
+    QVERIFY(child2->attributesInterface());
+    QVERIFY(child2->attributesInterface()->attributeKeys().contains(QAccessible::Attribute::PositionInSet));
+    QVERIFY(!child2->attributesInterface()->attributeKeys().contains(QAccessible::Attribute::Level));
+    QCOMPARE(child2->attributesInterface()->attributeValue(QAccessible::Attribute::PositionInSet).toInt(), 2);
+    QCOMPARE(child2->attributesInterface()->attributeValue(QAccessible::Attribute::SizeOfSet).toInt(), 3);
+
     QTestAccessibility::clearEvents();
 }
 
