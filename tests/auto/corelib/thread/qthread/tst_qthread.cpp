@@ -13,6 +13,7 @@
 #include <qcoreapplication.h>
 #include <qelapsedtimer.h>
 #include <qmutex.h>
+#include <qregularexpression.h>
 #include <qthread.h>
 #include <qtimer.h>
 #include <qwaitcondition.h>
@@ -42,6 +43,7 @@
 #include <QtTest/private/qemulationdetector_p.h>
 
 using namespace std::chrono_literals;
+using namespace Qt::StringLiterals;
 
 class tst_QThread : public QObject
 {
@@ -466,6 +468,9 @@ void tst_QThread::start()
         QThread::InheritPriority
     };
     const int prio_count = sizeof(priorities) / sizeof(QThread::Priority);
+
+    // fail if start() emits a warning
+    QTest::failOnWarning(QRegularExpression{u"^QThread::start:"_s});
 
     for (int i = 0; i < prio_count; ++i) {
         Simple_Thread thread;
