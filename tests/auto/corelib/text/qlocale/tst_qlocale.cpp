@@ -17,6 +17,7 @@
 #include <QTimeZone>
 
 #include <private/qlocale_p.h>
+#include <private/qlocale_tools_p.h>
 #include "../../../../shared/localechange.h"
 
 #include <float.h>
@@ -76,6 +77,8 @@ private slots:
     void longlongToString();
     void qulonglongToString_data();
     void qulonglongToString();
+    void int128ToBasicLatin_data();
+    void int128ToBasicLatin();
     void long_long_conversion_data();
     void long_long_conversion();
     void long_long_conversion_extra();
@@ -1239,6 +1242,67 @@ void tst_QLocale::stringToFloat()
         }
     }
 #undef MY_FLOAT_EPSILON
+}
+
+void tst_QLocale::int128ToBasicLatin_data()
+{
+    QTest::addColumn<quint64>("low");
+    QTest::addColumn<quint64>("high");
+    QTest::addColumn<int>("base");
+    QTest::addColumn<QString>("expected");
+
+    QTest::newRow("zero") << Q_UINT64_C(0) << Q_UINT64_C(0) << 10 << u"0"_s;
+    QTest::newRow("small") << Q_UINT64_C(42) << Q_UINT64_C(0) << 10 << u"42"_s;
+    // 10^19 exceeds 2^63 within the low word; its lower base-10^19 chunk is 0
+    // and must keep all 19 zeros when padded (chunks used to get only 18)
+    QTest::newRow("10^19") << Q_UINT64_C(10000000000000000000) << Q_UINT64_C(0) << 10
+                           << u"10000000000000000000"_s;
+    QTest::newRow("2^64") << Q_UINT64_C(0) << Q_UINT64_C(1) << 10
+                          << u"18446744073709551616"_s;
+    QTest::newRow("all ones") << ~Q_UINT64_C(0) << ~Q_UINT64_C(0) << 10
+                              << u"340282366920938463463374607431768211455"_s;
+    // The power-of-two bases pad the low word per base (16/32/64 digits), and
+    // a zero high word must not leave padding or a leading zero behind
+    QTest::newRow("hex small") << Q_UINT64_C(0xabc) << Q_UINT64_C(0) << 16 << u"abc"_s;
+    QTest::newRow("hex wide") << Q_UINT64_C(0xabc) << Q_UINT64_C(1) << 16
+                              << u"10000000000000abc"_s;
+    QTest::newRow("binary wide") << Q_UINT64_C(1) << Q_UINT64_C(1) << 2
+                                 << (u"1"_s + QString(63, u'0') + u'1');
+    QTest::newRow("base4 wide") << Q_UINT64_C(3) << Q_UINT64_C(2) << 4
+                                << (u"2"_s + QString(31, u'0') + u'3');
+}
+
+void tst_QLocale::int128ToBasicLatin()
+{
+#if defined(QT_SUPPORTS_INT128) || defined(QT_USE_MSVC_INT128)
+    QFETCH(quint64, low);
+    QFETCH(quint64, high);
+    QFETCH(int, base);
+    QFETCH(QString, expected);
+
+    qinternaluint128 u = high;
+    u <<= 64;
+    u |= low;
+    QCOMPARE(quint128toBasicLatin(u, base), expected);
+
+    // Values in the positive signed range format identically, and their
+    // negations gain exactly the sign
+    if ((high >> 63) == 0) {
+        const qinternalint128 s = qinternalint128(u);
+        QCOMPARE(qint128toBasicLatin(s, base), expected);
+        if (low != 0 || high != 0)
+            QCOMPARE(qint128toBasicLatin(-s, base), u'-' + expected);
+    }
+
+    // The minimum has no positive counterpart; format it once per base
+    if (qstrcmp(QTest::currentDataTag(), "zero") == 0) {
+        const auto minVal = qinternalint128(qinternaluint128(1) << 127);
+        QCOMPARE(qint128toBasicLatin(minVal, 10),
+                 u"-170141183460469231731687303715884105728"_s);
+    }
+#else
+    QSKIP("No 128-bit integer type on this toolchain");
+#endif
 }
 
 void tst_QLocale::doubleToString_data()
