@@ -209,10 +209,13 @@ function(_qt_internal_android_generate_target_build_gradle target)
     _qt_internal_android_get_target_sdk_build_tools_revision(ANDROID_BUILD_TOOLS_VERSION
         ${target})
 
-    _qt_internal_detect_latest_android_platform(ANDROID_COMPILE_SDK_VERSION)
+    get_target_property(ANDROID_COMPILE_SDK_VERSION ${target} QT_ANDROID_COMPILE_SDK_VERSION)
     if(NOT ANDROID_COMPILE_SDK_VERSION)
-        message(FATAL_ERROR "Unable to detect the android platform in ${ANDROID_SDK_ROOT}. "
-            "Please check your Android SDK installation.")
+        _qt_internal_detect_latest_android_platform(ANDROID_COMPILE_SDK_VERSION)
+        if(NOT ANDROID_COMPILE_SDK_VERSION)
+            message(FATAL_ERROR "Unable to detect the android platform in ${ANDROID_SDK_ROOT}. "
+                "Please check your Android SDK installation.")
+        endif()
     endif()
 
     set(ANDROID_COMPILE_SDK_RELEASE "")
