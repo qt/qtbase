@@ -81,9 +81,16 @@ void requestAppPermissionFromUser(
     QtOhos::JsState &jsState, const std::string &permissionName,
     QOhosConsumer<QtOhos::JsState &, bool> resultConsumer)
 {
-    return requestAppPermissionFromUser(
-        jsState, jsState.defaultQAbilityPeer(), permissionName,
-        std::move(resultConsumer));
+    auto defaultQAbilityPeer = jsState.defaultQAbilityPeer();
+    if (defaultQAbilityPeer->qAbility().IsEmpty()) {
+        qOhosPrintfError(
+            "Cannot request permission: '%s': no default QAbility.", permissionName.c_str());
+        resultConsumer(jsState, false);
+        return;
+    }
+
+    requestAppPermissionFromUser(
+        jsState, defaultQAbilityPeer, permissionName, std::move(resultConsumer));
 }
 
 void requestAppPermissionFromUser(
@@ -102,9 +109,22 @@ void requestAppPermissionsFromUserWithResult(
     QtOhos::JsState &jsState, const std::vector<std::string> &permissionNames,
     QOhosConsumer<QtOhos::JsState &, std::vector<AppPermissionResult>> resultConsumer)
 {
+    auto defaultQAbilityPeer = jsState.defaultQAbilityPeer();
+    if (defaultQAbilityPeer->qAbility().IsEmpty()) {
+        qOhosPrintfError("Cannot request permissions from user: no default QAbility.");
+        resultConsumer(
+            jsState,
+            std::vector<AppPermissionResult>(
+                permissionNames.size(),
+                AppPermissionResult {
+                    .permissionGranted = false,
+                    .dialogShown = false
+                }));
+        return;
+    }
+
     requestAppPermissionsFromUserWithResult(
-        jsState, jsState.defaultQAbilityPeer(), permissionNames,
-        std::move(resultConsumer));
+        jsState, defaultQAbilityPeer, permissionNames, std::move(resultConsumer));
 }
 
 void requestAppPermissionsFromUserWithResult(
@@ -179,8 +199,15 @@ void requestAppPermissionsOnSetting(
     QtOhos::JsState &jsState, const std::vector<std::string> &permissionNames,
     QOhosConsumer<QtOhos::JsState &, std::vector<bool>> resultConsumer)
 {
+    auto defaultQAbilityPeer = jsState.defaultQAbilityPeer();
+    if (defaultQAbilityPeer->qAbility().IsEmpty()) {
+        qOhosPrintfError("Cannot request permissions on setting: no default QAbility.");
+        resultConsumer(jsState, std::vector<bool>(permissionNames.size(), false));
+        return;
+    }
+
     requestAppPermissionsOnSetting(
-        jsState, jsState.defaultQAbilityPeer(), permissionNames, std::move(resultConsumer));
+        jsState, defaultQAbilityPeer, permissionNames, std::move(resultConsumer));
 }
 
 void requestAppPermissionsOnSetting(
