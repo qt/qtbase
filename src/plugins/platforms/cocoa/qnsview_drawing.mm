@@ -113,7 +113,11 @@
         if ([MTLCreateSystemDefaultDevice() autorelease]) {
             static bool allowPresentsWithTransaction =
                 !qEnvironmentVariableIsSet("QT_MTL_NO_TRANSACTION");
-            return allowPresentsWithTransaction ?
+            // Vulkan emulations on top of Metal, such as MoltenVK, are not
+            // prepared for Qt's way of handling Metal presentation.
+            const bool isVulkanSurface =
+                m_platformWindow->window()->surfaceType() == QSurface::VulkanSurface;
+            return allowPresentsWithTransaction && !isVulkanSurface ?
                 [QMetalLayer layer] : [CAMetalLayer layer];
         } else {
             qCWarning(lcQpaDrawing) << "Failed to create QWindow::MetalSurface."
