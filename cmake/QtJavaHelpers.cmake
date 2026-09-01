@@ -79,6 +79,7 @@ function(qt_internal_add_jar target)
     # Android SDK versions
     set(compile_sdk "${QT_ANDROID_API_USED_FOR_JAVA}")
     string(REGEX REPLACE "^android-" "" compile_sdk "${compile_sdk}")
+    string(REGEX REPLACE "\\.[0-9]+$" "" compile_sdk "${compile_sdk}")
     set(min_sdk "${ANDROID_PLATFORM}")
     string(REGEX REPLACE "^android-" "" min_sdk "${min_sdk}")
 
