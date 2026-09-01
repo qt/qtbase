@@ -28,6 +28,7 @@
 
 #include "hb-gpu.h"
 #include "hb-gpu-paint.hh"
+#include "hb-gpu-draw.hh"
 #include "hb-draw.hh"
 #include "hb-machinery.hh"
 #include "hb-paint.hh"
@@ -155,6 +156,8 @@ hb_gpu_paint_push_clip_path_end (hb_paint_funcs_t *funcs HB_UNUSED,
     return;
   c->pending_clip_path = false;
 
+  c->work_left -= 1 + (int64_t) c->scratch_draw->num_curves;
+
   hb_glyph_extents_t ext;
   hb_blob_t *blob = hb_gpu_draw_encode (c->scratch_draw, &ext);
   if (unlikely (!blob || !c->sub_blobs.push_or_fail (blob)))
@@ -173,9 +176,9 @@ hb_gpu_paint_push_clip_path_end (hb_paint_funcs_t *funcs HB_UNUSED,
   }
 
   int x0 = ext.x_bearing;
-  int x1 = (int) ((int64_t) ext.x_bearing + ext.width);
+  int x1 = hb_saturate_add (ext.x_bearing, ext.width);
   int y0 = ext.y_bearing;
-  int y1 = (int) ((int64_t) ext.y_bearing + ext.height);
+  int y1 = hb_saturate_add (ext.y_bearing, ext.height);
 
   c->clip_stack[c->clip_depth] = {
     HB_CODEPOINT_INVALID, nullptr,
@@ -288,6 +291,7 @@ clamp_i16 (float v)
 {
   if (v <= -32768.f) return -32768;
   if (v >=  32767.f) return  32767;
+  if (unlikely (std::isnan (v))) return 0;
   return (int16_t) v;
 }
 
@@ -444,6 +448,15 @@ emit_clip_sub_blob (hb_gpu_paint_t *c,
     return -1;
   }
 
+  /* Out of budget: skip the glyph-outline extraction entirely, so
+   * per-glyph outline limits cannot multiply with the caller's
+   * paint-graph traversal limits. */
+  if (unlikely (c->work_left <= 0))
+  {
+    c->unsupported = true;
+    return -1;
+  }
+
   if (unlikely (!c->scratch_draw))
   {
     c->scratch_draw = hb_gpu_draw_create_or_fail ();
@@ -484,6 +497,7 @@ emit_clip_sub_blob (hb_gpu_paint_t *c,
      * hb_font_draw_glyph_or_fail only closes via our pen's state. */
     pen.dfuncs->close_path (pen.data, pen.down_st);
   }
+  c->work_left -= 1 + (int64_t) c->scratch_draw->num_curves;
   if (!ok)
     return -1;  /* Clip glyph has no outline -- skip. */
 
@@ -499,9 +513,9 @@ emit_clip_sub_blob (hb_gpu_paint_t *c,
   /* Accumulate extents: x_bearing/y_bearing are top-left, width
    * positive, height negative (growing down). */
   int x0 = ext.x_bearing;
-  int x1 = (int) ((int64_t) ext.x_bearing + ext.width);
+  int x1 = hb_saturate_add (ext.x_bearing, ext.width);
   int y0 = ext.y_bearing;
-  int y1 = (int) ((int64_t) ext.y_bearing + ext.height);
+  int y1 = hb_saturate_add (ext.y_bearing, ext.height);
   c->ext_min_x = hb_min (c->ext_min_x, hb_min (x0, x1));
   c->ext_max_x = hb_max (c->ext_max_x, hb_max (x0, x1));
   c->ext_min_y = hb_min (c->ext_min_y, hb_min (y0, y1));
@@ -1514,8 +1528,8 @@ hb_gpu_paint_encode (hb_gpu_paint_t     *paint,
   {
     extents->x_bearing = paint->ext_min_x;
     extents->y_bearing = paint->ext_max_y;
-    extents->width     = (int) ((int64_t) paint->ext_max_x - paint->ext_min_x);
-    extents->height    = (int) ((int64_t) paint->ext_min_y - paint->ext_max_y);
+    extents->width     = hb_saturate_sub (paint->ext_max_x, paint->ext_min_x);
+    extents->height    = hb_saturate_sub (paint->ext_min_y, paint->ext_max_y);
   }
 
   hb_blob_t *recycled = paint->recycled_blob;
@@ -1549,6 +1563,7 @@ hb_gpu_paint_clear (hb_gpu_paint_t *paint)
   paint->clip_depth = 0;
   paint->pending_clip_path = false;
   paint->unsupported = false;
+  paint->work_left = HB_GPU_PAINT_MAX_WORK;
   paint->cur_transform = {1, 0, 0, 1, 0, 0};
   paint->transform_stack.reset ();
   paint->ext_min_x =  0x7fffffff;
