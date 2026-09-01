@@ -576,7 +576,7 @@
         ignoring any other .qmake.cache files found.
     \li \c {-spec spec} \BR
         qmake will use \c spec as a path to platform and compiler information,
-        and ignore the value of \l{QMAKESPEC}.
+        and ignore the value of \l{Configuring qmake#QMAKESPEC}{QMAKESPEC}.
     \endlist
 
     You may also pass qmake assignments on the command line. They are processed
@@ -4751,7 +4751,8 @@
         For example:
         \c{$QMAKEPATH/mkspecs/<features>}.
     \li In a features directory residing beneath the directory provided by the
-        \l{QMAKESPEC} environment variable. For example: \c{$QMAKESPEC/<features>}.
+        \l{Configuring qmake#QMAKESPEC}{QMAKESPEC} environment variable.
+        For example: \c{$QMAKESPEC/<features>}.
     \li In a features directory residing in the \c data_install/mkspecs directory.
         For example: \c{data_install/mkspecs/<features>}.
     \li In a features directory that exists as a sibling of the directory
