@@ -54,6 +54,13 @@ void startOhosFilePicker(
 {
     auto sharedResultConsumer = QtOhos::moveToSharedPtr(std::move(resultConsumer));
 
+    if (qAbilityPeer->qAbility().IsEmpty()) {
+        qOhosPrintfError(
+            "Cannot call DocumentViewPicker.%s(): no UIAbility to use", pickerActionName.c_str());
+        (*sharedResultConsumer)(std::nullopt);
+        return;
+    }
+
     qOhosPrintfDebug(
         "Calling DocumentViewPicker.%s() with options: %s",
         pickerActionName.c_str(), QNapi::toJsonString(pickerActionOptions).c_str());
