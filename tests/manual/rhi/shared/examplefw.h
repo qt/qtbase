@@ -3,7 +3,8 @@
 
 // Adapted from hellominimalcrossgfxtriangle with the frame rendering stripped out.
 // Include this file and implement Window::customInit, release and render.
-// Debug/validation layer is enabled for D3D and Vulkan.
+// Debug/validation layer is enabled for D3D and Vulkan, unless --no-debug-layer
+// is given.
 
 #include <QGuiApplication>
 #include <QCommandLineParser>
@@ -482,8 +483,15 @@ int main(int argc, char **argv)
     // Allow testing having a semi-transparent window.
     QCommandLineOption transparentOption(QLatin1String("transparent"), QLatin1String("Make background transparent"));
     cmdLineParser.addOption(transparentOption);
+    QCommandLineOption noDebugLayerOption(QLatin1String("no-debug-layer"),
+                                          QLatin1String("Disable the graphics API's debug or validation layer. "
+                                                        "These are enabled by default here, so turn them off "
+                                                        "when measuring performance or memory usage."));
+    cmdLineParser.addOption(noDebugLayerOption);
 
     cmdLineParser.process(app);
+    if (cmdLineParser.isSet(noDebugLayerOption))
+        debugLayer = false;
     if (cmdLineParser.isSet(nullOption))
         graphicsApi = Null;
     if (cmdLineParser.isSet(glOption))
