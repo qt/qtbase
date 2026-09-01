@@ -5,6 +5,7 @@
 #include <QtCore/private/qohoslogger_p.h>
 #include <QtCore/private/qohospathutils_p.h>
 #include <QtCore/qspan.h>
+#include <QtCore/qstringlist.h>
 #include <QtCore/qurl.h>
 #include <QtGui/private/qohosimageconversions_p.h>
 #include <QtGui/qimage.h>
@@ -278,6 +279,21 @@ void addMimeDataSuppliersForUrlLikeEntriesFromRecords(
                 urlsVariants.append(url);
 
             return QVariant(urlsVariants);
+        });
+
+    if (!hasMatchingTypeEntryInRecords<::OH_UdsHyperlink>(inputRecords))
+        return;
+
+   outMimeDataSuppliers.emplace(
+        QString::fromUtf8(mimeTextPlain),
+        [context, inputRecords]() {
+            QStringList urlStrings;
+            tryProcessEntriesOfTypeInRecords<::OH_UdsHyperlink>(
+                inputRecords,
+                [&](auto udsEntry) {
+                    urlStrings.append(QString::fromStdString(udsEntry.getContent()));
+                });
+            return QVariant(urlStrings.join(QChar(u'\n')));
         });
 }
 
@@ -811,6 +827,9 @@ QOhosSupplier<std::unique_ptr<QMimeData>> makeDummyQMimeDataFactoryFromUdmfDataT
                 mimeData->setImageData(QImage(1, 1, QImage::Format::Format_RGBA8888));
             } else if (type == QOhosUdsMeta<::OH_UdsFileUri>::udmfMetaId || isUdmfMetaFileType(type)) {
                 mimeData->setUrls({});
+            } else if (type == QOhosUdsMeta<::OH_UdsHyperlink>::udmfMetaId) {
+                mimeData->setUrls({});
+                mimeData->setText(dummyText);
             }
         }
 
