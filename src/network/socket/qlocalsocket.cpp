@@ -334,11 +334,7 @@ QT_BEGIN_NAMESPACE
     This signal is emitted after an error occurred. The \a socketError
     parameter describes the type of error that occurred.
 
-    QLocalSocket::LocalSocketError is not a registered metatype, so for queued
-    connections, you will have to register it with Q_DECLARE_METATYPE() and
-    qRegisterMetaType().
-
-    \sa error(), errorString(), {Creating Custom Qt Types}
+    \sa error(), errorString()
 */
 
 /*!
@@ -347,11 +343,7 @@ QT_BEGIN_NAMESPACE
     This signal is emitted whenever QLocalSocket's state changes.
     The \a socketState parameter is the new state.
 
-    QLocalSocket::SocketState is not a registered metatype, so for queued
-    connections, you will have to register it with Q_DECLARE_METATYPE() and
-    qRegisterMetaType().
-
-    \sa state(), {Creating Custom Qt Types}
+    \sa state()
 */
 
 /*!
