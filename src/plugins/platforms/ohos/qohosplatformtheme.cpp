@@ -827,6 +827,11 @@ void setOhosConfigColorMode(OhosConfigurationColorMode colorMode)
     QtOhos::runInJsThreadAndWait(
         [&](QtOhos::JsState &jsState) {
             auto qAbility = jsState.defaultQAbilityPeer()->qAbility();
+            if (qAbility.IsEmpty()) {
+                qCWarning(QtForOhos, "%s: cannot set a color mode without a UIAbility", Q_FUNC_INFO);
+                return;
+            }
+
             const auto jsColorMode = jsState.mapOhosEnumToJs(colorMode);
             qAbility.eval("context.getApplicationContext().setColorMode(*)", {jsColorMode});
         },
@@ -838,8 +843,11 @@ QOhosSupplier<OhosConfigurationColorMode> makeOhosConfigColorModeDataSource(
 {
     return QtOhos::makeOhosConfigValueDataSource<OhosConfigurationColorMode>(
         [](QtOhos::JsState &jsState) {
-            return mapOhosConfigurationColorModeFromJs(
-                jsState, jsState.defaultQAbilityPeer()->qAbility().eval<QNapi::Number>("context.config.colorMode"));
+            auto qAbility = jsState.defaultQAbilityPeer()->qAbility();
+            return !qAbility.IsEmpty()
+                ? mapOhosConfigurationColorModeFromJs(
+                    jsState, qAbility.eval<QNapi::Number>("context.config.colorMode"))
+                : OhosConfigurationColorMode::COLOR_MODE_NOT_SET;
         },
         [](QtOhos::JsState &jsState, const QNapi::Object &config) {
             return mapOhosConfigurationColorModeFromJs(jsState, config.get<QNapi::Number>("colorMode"));
