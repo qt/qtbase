@@ -18,6 +18,25 @@
 
 QT_BEGIN_NAMESPACE
 
+static QNSView *inputViewForWindow(QWindow *focusWindow)
+{
+    if (!focusWindow)
+        return nil;
+
+    auto *platformWindow = focusWindow->handle();
+    if (!platformWindow)
+        return nil;
+
+    auto *cocoaWindow = static_cast<QCocoaWindow *>(platformWindow);
+    // AppKit sends setMarkedText to the first responder, so a child QNSView
+    // can own the active composition. Prefer that view, but fall back to the
+    // platform window's view if the first responder is not a QNSView.
+    NSView *firstResponder = qt_objc_cast<NSView *>(cocoaWindow->nativeWindow().firstResponder);
+    if (QNSView *view = qnsview_cast(firstResponder))
+        return view;
+    return qnsview_cast(cocoaWindow->view());
+}
+
 /*!
     \class QCocoaInputContext
     \brief Cocoa Input context implementation
@@ -69,15 +88,7 @@ void QCocoaInputContext::commit()
 {
     qCDebug(lcQpaInputMethods) << "Committing composition";
 
-    if (!m_focusWindow)
-        return;
-
-    auto *platformWindow = m_focusWindow->handle();
-    if (!platformWindow)
-        return;
-
-    auto *cocoaWindow = static_cast<QCocoaWindow *>(platformWindow);
-    QNSView *view = qnsview_cast(cocoaWindow->view());
+    QNSView *view = inputViewForWindow(m_focusWindow);
     if (!view)
         return;
 
@@ -101,11 +112,7 @@ void QCocoaInputContext::reset()
 {
     qCDebug(lcQpaInputMethods) << "Resetting input method";
 
-    if (!m_focusWindow)
-        return;
-
-    QCocoaWindow *window = static_cast<QCocoaWindow *>(m_focusWindow->handle());
-    QNSView *view = qnsview_cast(window->view());
+    QNSView *view = inputViewForWindow(m_focusWindow);
     if (!view)
         return;
 
@@ -123,10 +130,7 @@ void QCocoaInputContext::setFocusObject(QObject *focusObject)
         if (!m_focusWindow)
             return;
 
-        QCocoaWindow *window = static_cast<QCocoaWindow *>(m_focusWindow->handle());
-        if (!window)
-            return;
-        QNSView *view = qnsview_cast(window->view());
+        QNSView *view = inputViewForWindow(m_focusWindow);
         if (!view)
             return;
 

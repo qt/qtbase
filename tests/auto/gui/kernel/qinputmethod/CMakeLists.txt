@@ -11,6 +11,11 @@ if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)
     find_package(Qt6BuildInternals REQUIRED COMPONENTS STANDALONE_TEST)
 endif()
 
+if(APPLE)
+    enable_language(OBJCXX)
+    set_source_files_properties(tst_qinputmethod.cpp PROPERTIES LANGUAGE OBJCXX)
+endif()
+
 qt_internal_add_test(tst_qinputmethod
     SOURCES
         tst_qinputmethod.cpp
