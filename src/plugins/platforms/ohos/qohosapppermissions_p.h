@@ -36,8 +36,7 @@ Q_CORE_EXPORT void requestAppPermissionFromUser(
     QOhosConsumer<QtOhos::JsState &, bool> resultConsumer);
 
 Q_CORE_EXPORT void requestAppPermissionFromUser(
-    QtOhos::JsState &jsState, std::shared_ptr<QtOhos::QAbilityPeer> abilityPeer,
-    const std::string &permissionName,
+    QtOhos::JsState &jsState, QNapi::Object qAbility, const std::string &permissionName,
     QOhosConsumer<QtOhos::JsState &, bool> resultConsumer);
 
 Q_CORE_EXPORT void requestAppPermissionsFromUserWithResult(
@@ -45,7 +44,7 @@ Q_CORE_EXPORT void requestAppPermissionsFromUserWithResult(
     QOhosConsumer<QtOhos::JsState &, std::vector<AppPermissionResult>> resultConsumer);
 
 Q_CORE_EXPORT void requestAppPermissionsFromUserWithResult(
-    QtOhos::JsState &jsState, std::shared_ptr<QtOhos::QAbilityPeer> abilityPeer,
+    QtOhos::JsState &jsState, QNapi::Object qAbility,
     const std::vector<std::string> &permissionNames,
     QOhosConsumer<QtOhos::JsState &, std::vector<AppPermissionResult>> resultConsumer);
 
@@ -54,7 +53,7 @@ Q_CORE_EXPORT void requestAppPermissionsOnSetting(
     QOhosConsumer<QtOhos::JsState &, std::vector<bool>> resultConsumer);
 
 Q_CORE_EXPORT void requestAppPermissionsOnSetting(
-    QtOhos::JsState &jsState, std::shared_ptr<QtOhos::QAbilityPeer> abilityPeer,
+    QtOhos::JsState &jsState, QNapi::Object qAbility,
     const std::vector<std::string> &permissionNames,
     QOhosConsumer<QtOhos::JsState &, std::vector<bool>> resultConsumer);
 
