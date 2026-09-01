@@ -2789,11 +2789,17 @@ static QDomDocument makeNested(size_t depth)
 
     // Need to build it bottom-up (QTBUG-147190)...
 
-    QDomElement a = doc.createElement("a");
-    for (size_t i = 1; i < depth; ++i) {
-        QDomElement parent = doc.createElement("a");
+    const QDomElement proto = [&] {
+        QDomElement e = doc.createElement(u"a"_s);
+        return e;
+    }();
+
+    QDomElement a;
+    size_t i = 0;
+    do {
+        QDomElement parent = proto.cloneNode().toElement();
         parent.appendChild(std::exchange(a, parent));
-    }
+    } while (++i < depth);
 
     doc.appendChild(a); // only now associate it with the doc (QTBUG-147190)
 
