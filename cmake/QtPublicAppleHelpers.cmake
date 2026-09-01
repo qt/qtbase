@@ -837,8 +837,6 @@ endfunction()
 # or CMAKE_OSX_SYSROOT, or return the default approximated value, based on what CMake does
 # internally.
 #
-# TODO: Handle case when CMAKE_OSX_SYSROOT is set to an sdk path, from which we need to retrieve the
-# sdk name.
 function(_qt_internal_get_apple_sdk_name out_var)
     if(NOT APPLE)
         set(${out_var} "" PARENT_SCOPE)
@@ -852,6 +850,14 @@ function(_qt_internal_get_apple_sdk_name out_var)
         set(explicit_sdk_name "${CMAKE_OSX_SYSROOT}")
     else()
         set(explicit_sdk_name "")
+    endif()
+
+    # CMake resolves CMAKE_OSX_SYSROOT to an absolute SDK path even for short names, e.g.
+    # iPhoneSimulator18.0.sdk -> iphonesimulator; map it back to the SDK name.
+    if(explicit_sdk_name MATCHES "/")
+        get_filename_component(explicit_sdk_name "${explicit_sdk_name}" NAME)
+        string(TOLOWER "${explicit_sdk_name}" explicit_sdk_name)
+        string(REGEX REPLACE "[0-9.]*\\.sdk$" "" explicit_sdk_name "${explicit_sdk_name}")
     endif()
 
     set(output_sdk_name "")
