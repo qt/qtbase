@@ -7,6 +7,7 @@
 #define QPROCESS_H
 
 #include <QtCore/qcompare.h>
+#include <QtCore/qdeadlinetimer.h>
 #include <QtCore/qiodevice.h>
 #include <QtCore/qstringlist.h>
 #include <QtCore/qshareddata.h>
@@ -220,10 +221,25 @@ public:
 
     qint64 processId() const;
 
-    bool waitForStarted(int msecs = 30000);
-    bool waitForReadyRead(int msecs = 30000) override;
-    bool waitForBytesWritten(int msecs = 30000) override;
-    bool waitForFinished(int msecs = 30000);
+    using QIODevice::waitForBytesWritten;
+    using QIODevice::waitForReadyRead;
+    bool waitForBytesWritten(QDeadlineTimer deadline = std::chrono::seconds(30)) QT7_ONLY(override);
+    bool waitForStarted(QDeadlineTimer deadline = std::chrono::seconds(30));
+    bool waitForFinished(QDeadlineTimer deadline = std::chrono::seconds(30));
+    bool waitForReadyRead(QDeadlineTimer deadline = std::chrono::seconds(30)) QT7_ONLY(override);
+
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+    QT_CORE_INLINE_SINCE(6, 13)
+    bool waitForBytesWritten(int msecs) override;
+#endif
+    QT_CORE_INLINE_SINCE(6, 13)
+    bool waitForStarted(int msecs);
+    QT_CORE_INLINE_SINCE(6, 13)
+    bool waitForFinished(int msecs);
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+    QT_CORE_INLINE_SINCE(6, 13)
+    bool waitForReadyRead(int msecs) override;
+#endif
 
     QByteArray readAllStandardOutput();
     QByteArray readAllStandardError();
@@ -282,6 +298,29 @@ private:
 
 #ifdef Q_OS_UNIX
 Q_DECLARE_OPERATORS_FOR_FLAGS(QProcess::UnixProcessFlags)
+#endif
+
+#if QT_CORE_INLINE_IMPL_SINCE(6, 13)
+bool QProcess::waitForStarted(int msecs)
+{
+    return waitForStarted(QDeadlineTimer(msecs));
+}
+
+bool QProcess::waitForFinished(int msecs)
+{
+    return waitForFinished(QDeadlineTimer(msecs));
+}
+#endif
+#if QT_CORE_INLINE_IMPL_SINCE(6, 13) && QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+bool QProcess::waitForBytesWritten(int msecs)
+{
+    return waitForBytesWritten(QDeadlineTimer(msecs));
+}
+
+bool QProcess::waitForReadyRead(int msecs)
+{
+    return waitForReadyRead(QDeadlineTimer(msecs));
+}
 #endif
 
 #else // !QT_CONFIG(process)

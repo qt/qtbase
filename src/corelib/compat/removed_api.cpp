@@ -1603,16 +1603,16 @@ bool QTimeZone::isTimeZoneIdAvailable(const QByteArray &ianaId)
 
 #include "qurlquery.h"      // uses QT_CORE_INLINE_SINCE
 
-// #include "qotherheader.h"
-// // implement removed functions from qotherheader.h
-// order sections alphabetically to reduce chances of merge conflicts
-
 #endif // QT_CORE_REMOVED_SINCE(6, 12)
 
 #if QT_CORE_REMOVED_SINCE(6, 13)
 
 #include "qbytearray.h" // uses QT_CORE_CONSTEXPR_DTOR_INLINE_SINCE
 #include "qstring.h"    // uses QT_CORE_CONSTEXPR_DTOR_INLINE_SINCE
+
+#if QT_CONFIG(process)
+#include "qprocess.h"   // inline API
+#endif
 
 // #include "qotherheader.h"
 // // implement removed functions from qotherheader.h

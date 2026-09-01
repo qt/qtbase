@@ -16,8 +16,11 @@
 #include <QtCore/QDebug>
 #include <QtCore/QMetaType>
 #include <QtCore/QScopeGuard>
+#include <QtCore/QDeadlineTimer>
 #include <QtCore/qoperatingsystemversion.h>
 #include <QtNetwork/QHostInfo>
+
+#include <chrono>
 
 #include <qplatformdefs.h>
 #ifdef Q_OS_UNIX
@@ -89,6 +92,8 @@ private slots:
     void atEnd();
     void atEnd2();
     void waitForFinishedWithTimeout();
+    void waitForFinishedWithTimeoutChrono();
+    void waitForStartedWithoutStartChrono();
     void waitForReadyReadInAReadyReadSlot();
     void waitForBytesWrittenInABytesWrittenSlot();
     void setEnvironment_data();
@@ -1353,6 +1358,32 @@ void tst_QProcess::waitForFinishedWithTimeout()
     QVERIFY(process.waitForFinished());
 }
 
+void tst_QProcess::waitForFinishedWithTimeoutChrono()
+{
+    using namespace std::chrono_literals;
+
+    QProcess process;
+
+    process.start("testProcessEcho/testProcessEcho");
+
+    QVERIFY(process.waitForStarted(5000ms));
+    QVERIFY(!process.waitForFinished(1ms));
+    QVERIFY(!process.waitForFinished(QDeadlineTimer(1ms)));
+
+    process.write("", 1);
+
+    QVERIFY(process.waitForFinished(30s));
+}
+
+void tst_QProcess::waitForStartedWithoutStartChrono()
+{
+    using namespace std::chrono_literals;
+
+    QProcess process;
+    QVERIFY(!process.waitForStarted(5000ms));
+    QVERIFY(!process.waitForStarted(QDeadlineTimer(5000ms)));
+}
+
 void tst_QProcess::waitForReadyReadInAReadyReadSlot()
 {
     QProcess process;
@@ -1384,7 +1415,7 @@ void tst_QProcess::waitForReadyReadInAReadyReadSlotSlot()
     QVERIFY(process);
     bytesAvailable = process->bytesAvailable();
     process->write("bar", 4);
-    QVERIFY(process->waitForReadyRead(5000));
+    QVERIFY(process->waitForReadyRead(std::chrono::milliseconds(5000)));
     QVERIFY(process->bytesAvailable() > bytesAvailable);
     bytesAvailable = process->bytesAvailable();
     QTestEventLoop::instance().exitLoop();
@@ -1418,7 +1449,7 @@ void tst_QProcess::waitForBytesWrittenInABytesWrittenSlotSlot()
     QProcess *process = qobject_cast<QProcess *>(sender());
     QVERIFY(process);
     process->write("b");
-    QVERIFY(process->waitForBytesWritten(5000));
+    QVERIFY(process->waitForBytesWritten(std::chrono::milliseconds(5000)));
     QTestEventLoop::instance().exitLoop();
 }
 

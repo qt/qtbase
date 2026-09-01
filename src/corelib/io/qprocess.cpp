@@ -2064,9 +2064,23 @@ QProcessEnvironment QProcess::processEnvironment() const
 }
 
 /*!
-    Blocks until the process has started and the started() signal has
-    been emitted, or until \a msecs milliseconds have passed.
+    \fn bool QProcess::waitForStarted(int msecs)
 
+    Blocks until the process has started and the started() signal has
+    been emitted, or until \a msecs milliseconds have passed. If msecs is
+    -1, this function will not time out.
+
+    \include qprocess.cpp wait-for-started-common
+*/
+
+/*!
+    \since 6.13
+    \overload
+
+    Blocks until the process has started and the started() signal has
+    been emitted, or until \a deadline has expired.
+
+//! [wait-for-started-common]
     Returns \c true if the process was started successfully; otherwise
     returns \c false (if the operation timed out or if an error
     occurred). If the process had already started successfully before this
@@ -2079,22 +2093,28 @@ QProcessEnvironment QProcess::processEnvironment() const
     \warning Calling this function from the main (GUI) thread
     might cause your user interface to freeze.
 
-    If msecs is -1, this function will not time out.
-
     \sa started(), waitForReadyRead(), waitForBytesWritten(), waitForFinished()
+//! [wait-for-started-common]
 */
-bool QProcess::waitForStarted(int msecs)
+bool QProcess::waitForStarted(QDeadlineTimer deadline)
 {
     Q_D(QProcess);
     if (d->processState == QProcess::Starting)
-        return d->waitForStarted(QDeadlineTimer(msecs));
+        return d->waitForStarted(deadline);
 
     return d->processState == QProcess::Running;
 }
 
-/*! \reimp
+/*!
+    \fn bool QProcess::waitForReadyRead(int msecs)
+    \reimp
 */
-bool QProcess::waitForReadyRead(int msecs)
+
+/*!
+    \since 6.13
+    \overload
+*/
+bool QProcess::waitForReadyRead(QDeadlineTimer deadline)
 {
     Q_D(QProcess);
 
@@ -2105,7 +2125,6 @@ bool QProcess::waitForReadyRead(int msecs)
     if (d->currentReadChannel == QProcess::StandardError && d->stderrChannel.closed)
         return false;
 
-    QDeadlineTimer deadline(msecs);
     if (d->processState == QProcess::Starting) {
         bool started = d->waitForStarted(deadline);
         if (!started)
@@ -2115,15 +2134,21 @@ bool QProcess::waitForReadyRead(int msecs)
     return d->waitForReadyRead(deadline);
 }
 
-/*! \reimp
+/*!
+    \fn bool QProcess::waitForBytesWritten(int msecs)
+    \reimp
 */
-bool QProcess::waitForBytesWritten(int msecs)
+
+/*!
+    \since 6.13
+    \overload
+*/
+bool QProcess::waitForBytesWritten(QDeadlineTimer deadline)
 {
     Q_D(QProcess);
     if (d->processState == QProcess::NotRunning)
         return false;
 
-    QDeadlineTimer deadline(msecs);
     if (d->processState == QProcess::Starting) {
         bool started = d->waitForStarted(deadline);
         if (!started)
@@ -2134,9 +2159,23 @@ bool QProcess::waitForBytesWritten(int msecs)
 }
 
 /*!
-    Blocks until the process has finished and the finished() signal
-    has been emitted, or until \a msecs milliseconds have passed.
+    \fn bool QProcess::waitForFinished(int msecs)
 
+    Blocks until the process has finished and the finished() signal
+    has been emitted, or until \a msecs milliseconds have passed. If msecs
+    is -1, this function will not time out.
+
+    \include qprocess.cpp wait-for-finished-common
+*/
+
+/*!
+    \since 6.13
+    \overload
+
+    Blocks until the process has finished and the finished() signal
+    has been emitted, or until \a deadline has expired.
+
+//! [wait-for-finished-common]
     Returns \c true if the process finished; otherwise returns \c false (if
     the operation timed out, if an error occurred, or if this QProcess
     is already finished).
@@ -2148,17 +2187,15 @@ bool QProcess::waitForBytesWritten(int msecs)
     \warning Calling this function from the main (GUI) thread
     might cause your user interface to freeze.
 
-    If msecs is -1, this function will not time out.
-
     \sa finished(), waitForStarted(), waitForReadyRead(), waitForBytesWritten()
+//! [wait-for-finished-common]
 */
-bool QProcess::waitForFinished(int msecs)
+bool QProcess::waitForFinished(QDeadlineTimer deadline)
 {
     Q_D(QProcess);
     if (d->processState == QProcess::NotRunning)
         return false;
 
-    QDeadlineTimer deadline(msecs);
     if (d->processState == QProcess::Starting) {
         bool started = d->waitForStarted(deadline);
         if (!started)
