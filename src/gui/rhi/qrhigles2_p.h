@@ -972,8 +972,12 @@ public:
     QGles2RenderTargetData *enqueueBindFramebuffer(QRhiRenderTarget *rt, QGles2CommandBuffer *cbD,
                                                    bool *wantsColorClear = nullptr, bool *wantsDsClear = nullptr);
     void enqueueBarriersForPass(QGles2CommandBuffer *cbD);
-    QByteArray shaderSource(const QRhiShaderStage &shaderStage, QShaderVersion *shaderVersion);
-    bool compileShader(GLuint program, const QRhiShaderStage &shaderStage, QShaderVersion *shaderVersion);
+    QList<QShaderVersion> glslVersionsToTry() const;
+    std::optional<QShaderVersion> commonGlslEsVersion(const QRhiShaderStage *stages, int stageCount) const;
+    QByteArray shaderSource(const QRhiShaderStage &shaderStage, QShaderVersion *shaderVersion,
+                            std::optional<QShaderVersion> commonVersion = std::nullopt);
+    bool compileShader(GLuint program, const QRhiShaderStage &shaderStage, QShaderVersion *shaderVersion,
+                       std::optional<QShaderVersion> commonVersion = std::nullopt);
     bool linkProgram(GLuint program);
     using ActiveUniformLocationTracker = QDuplicateTracker<int, 32>;
     void registerUniformIfActive(const QShaderDescription::BlockVariable &var,
@@ -1000,7 +1004,8 @@ public:
                                                       int stageCount,
                                                       GLuint program,
                                                       const QVector<QShaderDescription::InOutVariable> &inputVars,
-                                                      QByteArray *cacheKey);
+                                                      QByteArray *cacheKey,
+                                                      std::optional<QShaderVersion> commonVersion = std::nullopt);
     void trySaveToDiskCache(GLuint program, const QByteArray &cacheKey);
     void trySaveToPipelineCache(GLuint program, const QByteArray &cacheKey, bool force = false);
 
@@ -1231,7 +1236,8 @@ public:
         GLuint tsQueries[2] = {};
     } ofr;
 
-    QHash<QRhiShaderStage, uint> m_shaderCache;
+    // Keyed by version too: it depends on the other stages of the program.
+    QHash<std::pair<QRhiShaderStage, QShaderVersion>, uint> m_shaderCache;
 
     struct PipelineCacheData {
         quint32 format;

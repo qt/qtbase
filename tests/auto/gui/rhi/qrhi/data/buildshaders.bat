@@ -50,3 +50,7 @@ qsb --glsl "310 es,430" --hlsl 50 --msl 12 -o dispatch_indirect_consume_readargs
 qsb --glsl 430 --hlsl 50 --msl 12 -o indirect_draw_count.comp.qsb indirect_draw_count.comp
 qsb --glsl "150,120,100 es" --hlsl 50 -c --msl 12,21 --msl-argument-buffers -o colored_texture.vert.qsb colored_texture.vert
 qsb --glsl "150,120,100 es" --hlsl 50 -c --msl 12,21 --msl-argument-buffers -o colored_texture.frag.qsb colored_texture.frag
+:: Same sources as simple.vert/frag; only the vertex gets a 300 es variant, so
+:: the two stages share 100 es but not their best GLSL ES version.
+qsb --glsl "100 es,300 es,120,150" --hlsl 50 --msl 12 -o glslversionmix.vert.qsb simple.vert
+qsb --glsl "100 es,120,150" --hlsl 50 --msl 12 -o glslversionmix.frag.qsb simple.frag
