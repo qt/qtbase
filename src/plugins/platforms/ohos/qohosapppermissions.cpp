@@ -81,8 +81,8 @@ void requestAppPermissionFromUser(
     QtOhos::JsState &jsState, const std::string &permissionName,
     QOhosConsumer<QtOhos::JsState &, bool> resultConsumer)
 {
-    auto defaultQAbilityPeer = jsState.defaultQAbilityPeer();
-    if (defaultQAbilityPeer->qAbility().IsEmpty()) {
+    auto optQAbility = jsState.defaultQAbility();
+    if (!optQAbility) {
         qOhosPrintfError(
             "Cannot request permission: '%s': no default QAbility.", permissionName.c_str());
         resultConsumer(jsState, false);
@@ -90,16 +90,15 @@ void requestAppPermissionFromUser(
     }
 
     requestAppPermissionFromUser(
-        jsState, defaultQAbilityPeer, permissionName, std::move(resultConsumer));
+        jsState, optQAbility.value(), permissionName, std::move(resultConsumer));
 }
 
 void requestAppPermissionFromUser(
-    QtOhos::JsState &jsState, std::shared_ptr<QtOhos::QAbilityPeer> abilityPeer,
-    const std::string &permissionName,
+    QtOhos::JsState &jsState, QNapi::Object qAbility, const std::string &permissionName,
     QOhosConsumer<QtOhos::JsState &, bool> resultConsumer)
 {
     requestAppPermissionsFromUserWithResult(
-        jsState, abilityPeer, {permissionName},
+        jsState, qAbility, {permissionName},
         [resultConsumer = std::move(resultConsumer)](QtOhos::JsState &jsState, std::vector<QOhosAppPermissions::AppPermissionResult> result) {
             resultConsumer(jsState, result.size() == 1 && result.front().permissionGranted);
         });
@@ -109,8 +108,8 @@ void requestAppPermissionsFromUserWithResult(
     QtOhos::JsState &jsState, const std::vector<std::string> &permissionNames,
     QOhosConsumer<QtOhos::JsState &, std::vector<AppPermissionResult>> resultConsumer)
 {
-    auto defaultQAbilityPeer = jsState.defaultQAbilityPeer();
-    if (defaultQAbilityPeer->qAbility().IsEmpty()) {
+    auto optQAbility = jsState.defaultQAbility();
+    if (!optQAbility) {
         qOhosPrintfError("Cannot request permissions from user: no default QAbility.");
         resultConsumer(
             jsState,
@@ -124,18 +123,18 @@ void requestAppPermissionsFromUserWithResult(
     }
 
     requestAppPermissionsFromUserWithResult(
-        jsState, defaultQAbilityPeer, permissionNames, std::move(resultConsumer));
+        jsState, optQAbility.value(), permissionNames, std::move(resultConsumer));
 }
 
 void requestAppPermissionsFromUserWithResult(
-    QtOhos::JsState &jsState, std::shared_ptr<QtOhos::QAbilityPeer> abilityPeer,
+    QtOhos::JsState &jsState, QNapi::Object qAbility,
     const std::vector<std::string> &permissionNames,
     QOhosConsumer<QtOhos::JsState &, std::vector<AppPermissionResult>> resultConsumer)
 {
     jsState.evalToPromiseOrRejectOnThrow(
         "@ohos.abilityAccessCtrl.createAtManager().requestPermissionsFromUser(*)",
         {
-            abilityPeer->qAbility().eval<QNapi::Object>("context"),
+            qAbility.eval<QNapi::Object>("context"),
             QNapi::makeArray(
                 jsState.env(),
                 std::vector<QNapi::ValueWrapper>(permissionNames.begin(), permissionNames.end()))
@@ -199,26 +198,26 @@ void requestAppPermissionsOnSetting(
     QtOhos::JsState &jsState, const std::vector<std::string> &permissionNames,
     QOhosConsumer<QtOhos::JsState &, std::vector<bool>> resultConsumer)
 {
-    auto defaultQAbilityPeer = jsState.defaultQAbilityPeer();
-    if (defaultQAbilityPeer->qAbility().IsEmpty()) {
+    auto optQAbility = jsState.defaultQAbility();
+    if (!optQAbility) {
         qOhosPrintfError("Cannot request permissions on setting: no default QAbility.");
         resultConsumer(jsState, std::vector<bool>(permissionNames.size(), false));
         return;
     }
 
     requestAppPermissionsOnSetting(
-        jsState, defaultQAbilityPeer, permissionNames, std::move(resultConsumer));
+        jsState, optQAbility.value(), permissionNames, std::move(resultConsumer));
 }
 
 void requestAppPermissionsOnSetting(
-    QtOhos::JsState &jsState, std::shared_ptr<QtOhos::QAbilityPeer> abilityPeer,
+    QtOhos::JsState &jsState, QNapi::Object qAbility,
     const std::vector<std::string> &permissionNames,
     QOhosConsumer<QtOhos::JsState &, std::vector<bool>> resultConsumer)
 {
     jsState.evalToPromiseOrRejectOnThrow(
         "@ohos.abilityAccessCtrl.createAtManager().requestPermissionOnSetting(*)",
         {
-            abilityPeer->qAbility().eval<QNapi::Object>("context"),
+            qAbility.eval<QNapi::Object>("context"),
             QNapi::makeArray(
                 jsState.env(),
                 std::vector<QNapi::ValueWrapper>(permissionNames.begin(), permissionNames.end()))
