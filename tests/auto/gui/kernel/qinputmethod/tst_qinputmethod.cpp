@@ -3,11 +3,28 @@
 
 #include <QTest>
 #include <QSignalSpy>
+#include <QScopedValueRollback>
 
 #include <private/qguiapplication_p.h>
 #include <private/qinputmethod_p.h>
 #include <qpa/qplatforminputcontext.h>
+#include <qpa/qwindowsysteminterface.h>
 #include "../../../shared/platforminputcontext.h"
+
+#if defined(Q_OS_MACOS)
+#  include <AppKit/AppKit.h>
+#  include <QtCore/private/qcore_mac_p.h>
+
+static void setNativeMarkedText(QWindow *inputWindow, const QString &text)
+{
+    auto *view = reinterpret_cast<NSView<NSTextInputClient> *>(inputWindow->winId());
+    Q_ASSERT(view);
+    [view.window makeFirstResponder:view];
+    [view setMarkedText:text.toNSString()
+          selectedRange:NSMakeRange(text.size(), 0)
+       replacementRange:NSMakeRange(NSNotFound, 0)];
+}
+#endif
 
 class InputItem : public QObject
 {
@@ -29,6 +46,12 @@ public:
             query->accept();
             return true;
         }
+        if (event->type() == QEvent::InputMethod) {
+            auto *inputMethodEvent = static_cast<QInputMethodEvent *>(event);
+            preeditText = inputMethodEvent->preeditString();
+            committedText += inputMethodEvent->commitString();
+            return true;
+        }
         return false;
     }
 
@@ -42,6 +65,8 @@ public:
     QRectF cursorRectangle;
     Qt::InputMethodQueries m_lastQueries;
     bool m_enabled;
+    QString preeditText;
+    QString committedText;
 };
 
 
@@ -85,6 +110,9 @@ private slots:
     void query();
     void inputDirection();
     void inputMethodAccepted();
+#if defined(Q_OS_MACOS)
+    void commitUsesFirstResponder();
+#endif
 
 private:
     InputItem m_inputItem;
@@ -286,6 +314,45 @@ void tst_qinputmethod::inputMethodAccepted()
     window.setFocusObject(&m_inputItem);
     QCOMPARE(m_platformInputContext.inputMethodAccepted(), true);
 }
+
+#if defined(Q_OS_MACOS)
+void tst_qinputmethod::commitUsesFirstResponder()
+{
+    if (QGuiApplication::platformName().compare(QLatin1String("cocoa"), Qt::CaseInsensitive))
+        QSKIP("This test requires the Cocoa platform plugin.");
+
+    QInputMethodPrivate *inputMethodPrivate = QInputMethodPrivate::get(qApp->inputMethod());
+    QScopedValueRollback inputContextGuard(inputMethodPrivate->testContext,
+                                            static_cast<QPlatformInputContext *>(nullptr));
+
+    InputItem composingItem;
+    DummyWindow window;
+    DummyWindow inputWindow;
+    inputWindow.setParent(&window);
+    window.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+    inputWindow.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&inputWindow));
+    window.requestActivate();
+    QTRY_COMPARE(qApp->focusWindow(), &window);
+    inputWindow.setFocusObject(&composingItem);
+
+    const QString markedText = QString::fromUtf8("\xed\x8a\xb8");
+    setNativeMarkedText(&inputWindow, markedText);
+    QTRY_COMPARE(qApp->focusWindow(), &inputWindow);
+    QCOMPARE(composingItem.preeditText, markedText);
+
+    // QWidgetWindow's QNSView reports its top-level window as Qt's focus window,
+    // while AppKit keeps the child view as the native first responder.
+    QWindowSystemInterface::handleFocusWindowChanged<
+            QWindowSystemInterface::SynchronousDelivery>(&window, Qt::ActiveWindowFocusReason);
+    QCOMPARE(qApp->focusWindow(), &window);
+
+    qApp->inputMethod()->commit();
+
+    QCOMPARE(composingItem.committedText, markedText);
+}
+#endif
 
 QTEST_MAIN(tst_qinputmethod)
 #include "tst_qinputmethod.moc"
