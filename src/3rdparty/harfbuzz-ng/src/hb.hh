@@ -329,6 +329,14 @@
 #endif
 #endif
 
+#ifndef HB_NEVER_INLINE
+#if defined(_MSC_VER)
+#define HB_NEVER_INLINE __declspec(noinline)
+#else
+#define HB_NEVER_INLINE __attribute__((noinline))
+#endif
+#endif
+
 #ifndef HB_HOT
 #define HB_HOT __attribute__((hot))
 #endif
@@ -376,16 +384,6 @@
 #else
 #  define HB_NODISCARD
 #endif
-
-/* https://github.com/harfbuzz/harfbuzz/issues/1852 */
-#if defined(__clang__) && !(defined(_AIX) && (defined(__IBMCPP__) || defined(__ibmxl__)))
-/* Disable certain sanitizer errors. */
-/* https://github.com/harfbuzz/harfbuzz/issues/1247 */
-#define HB_NO_SANITIZE_SIGNED_INTEGER_OVERFLOW __attribute__((no_sanitize("signed-integer-overflow")))
-#else
-#define HB_NO_SANITIZE_SIGNED_INTEGER_OVERFLOW
-#endif
-
 
 #ifdef _WIN32
    /* We need Windows Vista for both Uniscribe backend and for
