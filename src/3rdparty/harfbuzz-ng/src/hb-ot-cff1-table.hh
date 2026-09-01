@@ -327,7 +327,7 @@ struct Charset0
 
   void collect_glyph_to_sid_map (glyph_to_sid_map_t *mapping, unsigned int num_glyphs) const
   {
-    mapping->resize_dirty  (num_glyphs);
+    if (!mapping->resize_dirty  (num_glyphs)) return;
     for (hb_codepoint_t gid = 1; gid < num_glyphs; gid++)
       mapping->arrayZ[gid] = {sids[gid - 1], gid};
   }
@@ -427,10 +427,12 @@ struct Charset1_2 {
 
   void collect_glyph_to_sid_map (glyph_to_sid_map_t *mapping, unsigned int num_glyphs) const
   {
-    mapping->resize_dirty  (num_glyphs);
+    if (!mapping->resize_dirty  (num_glyphs)) return;
+
     hb_codepoint_t gid = 1;
     if (gid >= num_glyphs)
       return;
+
     for (unsigned i = 0;; i++)
     {
       hb_codepoint_t sid = ranges[i].first;
@@ -771,8 +773,7 @@ struct cff1_top_dict_opset_t : top_dict_opset_t<cff1_top_dict_val_t>
 {
   static void process_op (op_code_t op, cff1_top_dict_interp_env_t& env, cff1_top_dict_values_t& dictval)
   {
-    cff1_top_dict_val_t  val;
-    val.last_arg_offset = (env.last_offset-1) - dictval.opStart;  /* offset to the last argument */
+    cff1_top_dict_val_t  val {};
 
     switch (op) {
       case OpCode_version:
@@ -816,6 +817,9 @@ struct cff1_top_dict_opset_t : top_dict_opset_t<cff1_top_dict_val_t>
 	dictval.nameSIDs[name_dict_values_t::ordering] = env.argStack.pop_uint ();
 	dictval.nameSIDs[name_dict_values_t::registry] = env.argStack.pop_uint ();
 	env.clear_args ();
+	if (unlikely (env.in_error ())) return;
+	assert (env.last_offset > dictval.opStart);
+	val.last_arg_offset = (env.last_offset - 1) - dictval.opStart;  /* offset to the last argument */
 	break;
 
       case OpCode_Encoding:
@@ -1464,8 +1468,8 @@ struct cff1
       return true;
     }
 
-    HB_INTERNAL bool get_extents (hb_font_t *font, hb_codepoint_t glyph, hb_glyph_extents_t *extents) const;
-    HB_INTERNAL bool get_path (hb_font_t *font, hb_codepoint_t glyph, hb_draw_session_t &draw_session) const;
+    HB_INTERNAL bool get_extents (hb_font_t *font, hb_codepoint_t glyph, hb_glyph_extents_t *extents, int64_t *budget = nullptr) const;
+    HB_INTERNAL bool get_path (hb_font_t *font, hb_codepoint_t glyph, hb_draw_session_t &draw_session, int64_t *budget = nullptr) const;
 
     private:
     struct gname_t
