@@ -95,8 +95,8 @@ bool QOhosPlatformServices::openUrl(const QUrl &url)
 {
     return QtOhos::evalInJsThreadWithPromise<bool>(
         [&](QtOhos::JsState &jsState, QOhosTaskPromise<bool> evalPromise) {
-            auto mainUiAbility = jsState.defaultQAbilityPeer()->qAbility();
-            if (mainUiAbility.IsEmpty()) {
+            auto optMainUiAbility = jsState.defaultQAbility();
+            if (!optMainUiAbility) {
                 evalPromise(false);
                 return;
             }
@@ -136,7 +136,7 @@ bool QOhosPlatformServices::openUrl(const QUrl &url)
                                     | jsState.mapOhosEnumToJs(QOhosWantConstantFlags::FLAG_AUTH_WRITE_URI_PERMISSION).Int32Value()
                                 },
                             });
-            callStartAbility(mainUiAbility, want, std::move(evalPromise));
+            callStartAbility(optMainUiAbility.value(), want, std::move(evalPromise));
         },
         Q_FUNC_INFO);
 }
