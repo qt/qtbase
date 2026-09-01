@@ -427,6 +427,9 @@ void makeWindowProxyDataForFloatWindowInJsThread(
     auto xComponentId = QXComponentId::createForNativeNodeFloatWindow(createInfo.internalWindowId);
     auto qAbilityPeer = jsState.defaultQAbilityPeer();
 
+    if (qAbilityPeer->qAbility().IsEmpty())
+        qOhosReportFatalErrorAndAbort("%s: can't create window without the default Ability instance", Q_FUNC_INFO);
+
     auto configurationObject = QNapi::makeObject(
         jsState.env(),
         {
