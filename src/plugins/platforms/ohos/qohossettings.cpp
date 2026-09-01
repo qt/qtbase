@@ -24,8 +24,8 @@ std::optional<std::string> tryGetDataItemValue(const std::string &name, const st
 {
     return QtOhos::evalInJsThreadWithPromise<std::optional<std::string>>(
         [&](QtOhos::JsState &jsState, auto evalPromise) {
-        auto defaultQAbility = jsState.defaultQAbilityPeer()->qAbility();
-        if (defaultQAbility.IsEmpty()) {
+        auto optDefaultQAbility = jsState.defaultQAbility();
+        if (!optDefaultQAbility) {
             evalPromise({});
             return;
         }
@@ -33,7 +33,7 @@ std::optional<std::string> tryGetDataItemValue(const std::string &name, const st
         auto thenCatchPromises = std::move(evalPromise).makeThenCatchBranches(Q_FUNC_INFO);
         jsState.evalToPromiseOrRejectOnThrow(
             "@ohos.settings.getValue(*)",
-            {defaultQAbility.get("context"), name, domainName})
+            {optDefaultQAbility->get("context"), name, domainName})
         .onThen([thenPromise = std::move(thenCatchPromises.first)](const QtOhos::CallbackInfo &cbInfo) {
             std::string result = cbInfo.getFirstArg<QNapi::String>(Q_FUNC_INFO);
             thenPromise(result);
@@ -81,9 +81,12 @@ std::string settingsUserPropertyDomainName(QtOhos::JsState &jsState)
     return jsState.eval<QNapi::String>("@ohos.settings.domainName.USER_PROPERTY");
 }
 
-QNapi::Object settingsContext(QtOhos::JsState &jsState)
+std::optional<QNapi::Object> settingsContext(QtOhos::JsState &jsState)
 {
-    return jsState.defaultQAbilityPeer()->qAbility().eval<QNapi::Object>("context");
+    auto optQAbility = jsState.defaultQAbility();
+    return optQAbility
+        ? std::optional(optQAbility->eval<QNapi::Object>("context"))
+        : std::nullopt;
 }
 
 std::string readSettingValue(
@@ -132,10 +135,11 @@ std::shared_ptr<void> registerSettingsKeyObserver(
 
 bool readWindowPcModeEnabled(QtOhos::JsState &jsState)
 {
-    if (jsState.defaultQAbilityPeer()->qAbility().IsEmpty())
+    auto optContext = settingsContext(jsState);
+    if (!optContext)
         return false;
 
-    return readSettingValue(jsState, settingsContext(jsState), windowPcModeSwitchStatusPropertyName) == "true";
+    return readSettingValue(jsState, optContext.value(), windowPcModeSwitchStatusPropertyName) == "true";
 }
 
 QOhosSupplier<bool> makeWindowPcModeEnabledSupplier()
@@ -153,11 +157,12 @@ QOhosSupplier<bool> makeWindowPcModeEnabledSupplier()
             // observer. The orphaned observer keeps firing (verified on device), so
             // the cached value stays correct. Revisit when the platform exposes
             // settings observation on the application context.
-            if (jsState.defaultQAbilityPeer()->qAbility().IsEmpty())
+            auto optContext = settingsContext(jsState);
+            if (!optContext)
                 return nullptr;
 
             return registerSettingsKeyObserver(
-                jsState, settingsContext(jsState), windowPcModeSwitchStatusPropertyName,
+                jsState, optContext.value(), windowPcModeSwitchStatusPropertyName,
                 [valueChangedConsumer = std::move(valueChangedConsumer)](QtOhos::JsState &jsState) {
                     valueChangedConsumer(readWindowPcModeEnabled(jsState));
                 });

@@ -1047,10 +1047,10 @@ void tryDetectBrokenWant(JsState &jsState, QNapi::Object want)
 {
     Napi::HandleScope checkScope(want.Env());
 
-    auto defaultQAbility = jsState.defaultQAbilityPeer()->qAbility();
+    auto optDefaultQAbility = jsState.defaultQAbility();
 
-    if (!defaultQAbility.IsEmpty()) {
-        bool fromThisApp = getQAbilityInstancesManager().isWantFromThisApp(defaultQAbility, want);
+    if (optDefaultQAbility) {
+        bool fromThisApp = getQAbilityInstancesManager().isWantFromThisApp(optDefaultQAbility.value(), want);
         auto optCallerPid = getWantParamOrEmptyIfNotPresent<QNapi::Number>(want, callerPidWantArgName);
         if (fromThisApp && !optCallerPid.IsEmpty() && ::kill(optCallerPid.Int64Value(), 0) != 0) {
             qOhosPrintfError(
@@ -1461,7 +1461,7 @@ QNapi::Value handleAbilityOnDestroy(const CallbackInfo &cbInfo)
 
             QtOhos::removeMatchingJsQAbilityPeer(qAbilityPeer->qAbility());
 
-            if (cbInfo.jsState().defaultQAbilityPeer()->qAbility().IsEmpty()) {
+            if (!cbInfo.jsState().defaultQAbility()) {
                 QtOhos::quitApplicationFromJsThread();
 
                 qOhosPrintfInfo("Qt: requested Qt app quit, waiting for the main() function to return");

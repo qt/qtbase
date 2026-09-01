@@ -642,10 +642,10 @@ void JsStateImpl::startAppProcess(
     const std::string &processId, QNapi::Object requestWant,
     QNapi::Object optStartOptions, std::function<void(QOhosJsState &)> continueFunc)
 {
-    auto baseQAbility = defaultQAbilityPeer()->qAbility();
-    if (!baseQAbility.IsEmpty()) {
+    auto optBaseQAbility = defaultQAbility();
+    if (optBaseQAbility) {
         m_appFunctions->startAppProcess(
-            baseQAbility, processId, requestWant, optStartOptions, std::move(continueFunc));
+            optBaseQAbility.value(), processId, requestWant, optStartOptions, std::move(continueFunc));
     } else {
         invokeTask(std::move(continueFunc));
     }
