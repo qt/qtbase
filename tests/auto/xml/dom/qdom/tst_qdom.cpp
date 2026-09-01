@@ -131,6 +131,7 @@ private slots:
     void noCrashOnDeepNesting() const;
     void noCrashOnDeepNestingDtor() const { noCrashOnDeepNesting_impl(DeepNestingOp::Dtor); }
     void noCrashOnDeepNestingClear() const { noCrashOnDeepNesting_impl(DeepNestingOp::Clear); }
+    void noCrashOnDeepNestingElementText() const { noCrashOnDeepNesting_impl(DeepNestingOp::ElementText); }
 
     void cleanupTestCase() const;
 
@@ -146,6 +147,7 @@ private:
     enum class DeepNestingOp {
         Dtor,
         Clear,
+        ElementText,
     };
     static constexpr size_t DeepNestingDepth = 250'000;
     static void noCrashOnDeepNesting_impl(DeepNestingOp op);
@@ -2791,6 +2793,7 @@ static QDomDocument makeNested(size_t depth)
 
     const QDomElement proto = [&] {
         QDomElement e = doc.createElement(u"a"_s);
+        e.appendChild(doc.createTextNode(u"0123456789"_s));
         return e;
     }();
 
@@ -2847,6 +2850,10 @@ void tst_QDom::noCrashOnDeepNesting_impl(DeepNestingOp op)
     case DeepNestingOp::Clear:
         operation = "cleared";
         doc->clear();
+        break;
+    case DeepNestingOp::ElementText:
+        operation = "text()";
+        (void)doc->firstChildElement().text();
         break;
     }
     print(timer, operation);
