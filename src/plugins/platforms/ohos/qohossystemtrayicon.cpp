@@ -44,11 +44,11 @@ std::function<QNapi::Array(QtOhos::JsState &)> makeEmptyJsArrayFactory()
 
 QNapi::Object getContextForStatusBarManager(QtOhos::JsState &jsState)
 {
-    auto qUiAbilityPeer = QtOhos::QUiAbilityPeer::tryCastFromQAbilityPeerOrNull(jsState.defaultQAbilityPeer());
-    if (!qUiAbilityPeer)
-        qOhosReportFatalErrorAndAbort("%s: Default QAbilityPeer is not a QUiAbilityPeer", Q_FUNC_INFO);
+    auto optQAbility = jsState.defaultQAbility();
+    if (!optQAbility)
+        qOhosReportFatalErrorAndAbort("%s: no default Ability instance", Q_FUNC_INFO);
 
-    return qUiAbilityPeer->qAbility().eval<QNapi::Object>("context");
+    return optQAbility->eval<QNapi::Object>("context");
 }
 
 std::shared_ptr<void> registerOhosIconLeftClickListener(
