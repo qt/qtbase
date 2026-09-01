@@ -275,7 +275,6 @@ struct QRhiMetalData
     {
         int activeFrameSlot = -1;
         QRhiReadbackResult *result;
-        quint32 offset;
         quint32 readSize;
         id<MTLBuffer> buf;
     };
@@ -3562,20 +3561,28 @@ void QRhiMetal::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
                 if (u.result->completed)
                     u.result->completed();
             } else {
+                // Copy into a dedicated staging buffer, here and now, instead
+                // of holding on to the buffer and reading it when the readback
+                // completes. The contents have to be the ones at this point in
+                // the command stream: a buffer that is not slotted - which is
+                // every buffer with StorageBuffer usage - has one native buffer
+                // shared by all frames, so by the time the readback completes a
+                // later frame may well be writing it.
                 QRhiMetalData::BufferReadback readback;
-                readback.activeFrameSlot = idx;
-                readback.buf = bufD->d->buf[idx];
-                readback.offset = u.offset;
+                readback.activeFrameSlot = currentFrameSlot;
                 readback.readSize = u.readSize;
                 readback.result = u.result;
+                readback.buf = [d->dev newBufferWithLength: u.readSize
+                                                   options: MTLResourceStorageModeShared];
+
+                ensureBlit();
+                [blitEnc copyFromBuffer: bufD->d->buf[idx]
+                           sourceOffset: u.offset
+                               toBuffer: readback.buf
+                      destinationOffset: 0
+                                   size: u.readSize];
+
                 d->activeBufferReadbacks.append(readback);
-#ifdef Q_OS_MACOS
-                if (bufD->d->managed) {
-                    // On non-Apple Silicon, manually synchronize memory from GPU to CPU
-                    ensureBlit();
-                    [blitEnc synchronizeResource:readback.buf];
-                }
-#endif
             }
         }
     }
@@ -4703,7 +4710,8 @@ void QRhiMetal::finishActiveReadbacks(bool forced)
             readback.result->data.resize(readback.readSize);
             char *p = reinterpret_cast<char *>([readback.buf contents]);
             Q_ASSERT(p);
-            memcpy(readback.result->data.data(), p + readback.offset, size_t(readback.readSize));
+            memcpy(readback.result->data.data(), p, size_t(readback.readSize));
+            [readback.buf release];
 
             if (readback.result->completed)
                 completedCallbacks.append(readback.result->completed);

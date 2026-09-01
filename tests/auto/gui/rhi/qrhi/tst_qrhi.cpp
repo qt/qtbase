@@ -178,6 +178,8 @@ private slots:
     void dispatchIndirectFromComputeSamePass();
     void dispatchIndirectConsumerReadsArgs_data();
     void dispatchIndirectConsumerReadsArgs();
+    void bufferReadbackIsSnapshot_data();
+    void bufferReadbackIsSnapshot();
     void indexedIndirectMultiDrawShaderDrawParams_data();
     void indexedIndirectMultiDrawShaderDrawParams();
     void indexedIndirectDrawCountFromCompute_data();
@@ -9093,6 +9095,124 @@ void tst_QRhi::dispatchIndirectFromCompute()
             }
         }
     }
+}
+
+void tst_QRhi::bufferReadbackIsSnapshot_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::bufferReadbackIsSnapshot()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing bufferReadbackIsSnapshot");
+    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi.data()))
+        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
+    if (!rhi->isFeatureSupported(QRhi::Compute))
+        QSKIP("Compute not supported on this backend");
+    if (!rhi->isFeatureSupported(QRhi::ReadBackNonUniformBuffer))
+        QSKIP("Reading buffers with non-uniform usage is not supported on this backend");
+
+    // readBackBuffer() must capture the contents the buffer has at the point
+    // the batch is executed, not whatever happens to be in it when the
+    // asynchronous readback completes. Two compute passes write different
+    // values into the same buffer, with the readback enqueued in between; the
+    // result has to be the first value.
+    //
+    // A StorageBuffer is deliberately used: backends are free to keep one
+    // native buffer per frame slot for other usages, and it is the single,
+    // shared native buffer that makes a deferred read observe later writes.
+    struct ArgsUbuf {
+        quint32 x;
+        quint32 y;
+        quint32 z;
+        quint32 _pad;
+    };
+    static constexpr ArgsUbuf firstData = { 11u, 22u, 33u, 0u };
+    static constexpr ArgsUbuf secondData = { 44u, 55u, 66u, 0u };
+    static constexpr quint32 OutSize = 3 * sizeof(quint32);
+
+    QRhiCommandBuffer *cb = nullptr;
+    QVERIFY(rhi->beginOffscreenFrame(&cb) == QRhi::FrameOpSuccess);
+    QVERIFY(cb);
+    OffscreenFrameGuard frameGuard(rhi.data());
+
+    QRhiResourceUpdateBatch *u = rhi->nextResourceUpdateBatch();
+
+    std::unique_ptr<QRhiBuffer> outBuf(rhi->newBuffer(QRhiBuffer::Static, QRhiBuffer::StorageBuffer,
+                                                      OutSize));
+    QVERIFY(outBuf->create());
+    const QByteArray zeros(int(OutSize), 0);
+    u->uploadStaticBuffer(outBuf.get(), 0, OutSize, zeros.constData());
+
+    std::unique_ptr<QRhiBuffer> firstUbuf(rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer,
+                                                         sizeof(ArgsUbuf)));
+    QVERIFY(firstUbuf->create());
+    u->updateDynamicBuffer(firstUbuf.get(), 0, sizeof(ArgsUbuf), &firstData);
+
+    std::unique_ptr<QRhiBuffer> secondUbuf(rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer,
+                                                          sizeof(ArgsUbuf)));
+    QVERIFY(secondUbuf->create());
+    u->updateDynamicBuffer(secondUbuf.get(), 0, sizeof(ArgsUbuf), &secondData);
+
+    // The shader writes three uints taken from a uniform buffer, so the same
+    // pipeline can produce either value depending on the bindings used.
+    std::unique_ptr<QRhiShaderResourceBindings> firstSrb(rhi->newShaderResourceBindings());
+    firstSrb->setBindings({
+        QRhiShaderResourceBinding::bufferLoadStore(0, QRhiShaderResourceBinding::ComputeStage, outBuf.get()),
+        QRhiShaderResourceBinding::uniformBuffer(1, QRhiShaderResourceBinding::ComputeStage, firstUbuf.get())
+    });
+    QVERIFY(firstSrb->create());
+
+    std::unique_ptr<QRhiShaderResourceBindings> secondSrb(rhi->newShaderResourceBindings());
+    secondSrb->setBindings({
+        QRhiShaderResourceBinding::bufferLoadStore(0, QRhiShaderResourceBinding::ComputeStage, outBuf.get()),
+        QRhiShaderResourceBinding::uniformBuffer(1, QRhiShaderResourceBinding::ComputeStage, secondUbuf.get())
+    });
+    QVERIFY(secondSrb->create());
+
+    std::unique_ptr<QRhiComputePipeline> ps(rhi->newComputePipeline());
+    const QShader cs = loadShader(":/data/dispatch_indirect_args.comp.qsb");
+    QVERIFY(cs.isValid());
+    ps->setShaderStage({ QRhiShaderStage::Compute, cs });
+    ps->setShaderResourceBindings(firstSrb.get());
+    QVERIFY(ps->create());
+
+    cb->beginComputePass(u);
+    cb->setComputePipeline(ps.get());
+    cb->setShaderResources(firstSrb.get());
+    cb->dispatch(1, 1, 1);
+    cb->endComputePass();
+
+    QRhiReadbackResult rb;
+    QByteArray result;
+    rb.completed = [&] { result = rb.data; };
+    QRhiResourceUpdateBatch *u2 = rhi->nextResourceUpdateBatch();
+    u2->readBackBuffer(outBuf.get(), 0, OutSize, &rb);
+    cb->resourceUpdate(u2);
+
+    // Overwrites the buffer after the readback was enqueued. A backend that
+    // defers the copy to completion time reports these values instead.
+    cb->beginComputePass();
+    cb->setComputePipeline(ps.get());
+    cb->setShaderResources(secondSrb.get());
+    cb->dispatch(1, 1, 1);
+    cb->endComputePass();
+
+    frameGuard.endFrame();
+
+    if (impl == QRhi::Null)
+        return;
+
+    QCOMPARE(quint32(result.size()), OutSize);
+    const quint32 *p = reinterpret_cast<const quint32 *>(result.constData());
+    QCOMPARE(p[0], firstData.x);
+    QCOMPARE(p[1], firstData.y);
+    QCOMPARE(p[2], firstData.z);
 }
 
 void tst_QRhi::dispatchIndirectFromComputeSamePass_data()
