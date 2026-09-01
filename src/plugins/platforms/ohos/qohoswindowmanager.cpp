@@ -25,20 +25,20 @@ struct FilePickerResult
     int selectedIndex;
 };
 
-std::shared_ptr<QtOhos::QAbilityPeer> getQAbilityPeerForQWindow(
+std::optional<QNapi::Object> tryGetQAbilityForQWindow(
     QtOhos::JsState &jsState, QtOhos::QObjectThreadSafeRef qWindowRef)
 {
-    auto qAbilityPeer = jsState.tryGetQAbilityPeerByQWindow(qWindowRef);
-    return qAbilityPeer ? qAbilityPeer : jsState.defaultQAbilityPeer();
+    auto optQAbility = jsState.tryGetQAbilityByQWindow(qWindowRef);
+    return optQAbility ? optQAbility : jsState.defaultQAbility();
 }
 
 QNapi::Object makeDocumentViewPicker(
-    QtOhos::JsState &jsState, std::shared_ptr<QtOhos::QAbilityPeer> qAbilityPeer,
+    QtOhos::JsState &jsState, QNapi::Object qAbility,
     QtOhos::QObjectThreadSafeRef contextWindowRef)
 {
     auto optContextJsWindow = jsState.tryGetJsWindowByQWindow(contextWindowRef);
 
-    std::vector<QNapi::ValueWrapper> constructorParams = {qAbilityPeer->qAbility().get("context")};
+    std::vector<QNapi::ValueWrapper> constructorParams = {qAbility.get("context")};
     if (optContextJsWindow)
         constructorParams.push_back(optContextJsWindow.value());
 
@@ -47,14 +47,14 @@ QNapi::Object makeDocumentViewPicker(
 }
 
 void startOhosFilePicker(
-    QtOhos::JsState &jsState, std::shared_ptr<QtOhos::QAbilityPeer> qAbilityPeer,
-    QtOhos::QObjectThreadSafeRef contextWindowRef,
+    QtOhos::JsState &jsState, QtOhos::QObjectThreadSafeRef contextWindowRef,
     const std::string &pickerActionName, QNapi::Object pickerActionOptions,
     QOhosConsumer<std::optional<FilePickerResult>> resultConsumer)
 {
     auto sharedResultConsumer = QtOhos::moveToSharedPtr(std::move(resultConsumer));
 
-    if (qAbilityPeer->qAbility().IsEmpty()) {
+    auto optQAbility = tryGetQAbilityForQWindow(jsState, contextWindowRef);
+    if (!optQAbility) {
         qOhosPrintfError(
             "Cannot call DocumentViewPicker.%s(): no UIAbility to use", pickerActionName.c_str());
         (*sharedResultConsumer)(std::nullopt);
@@ -66,7 +66,7 @@ void startOhosFilePicker(
         pickerActionName.c_str(), QNapi::toJsonString(pickerActionOptions).c_str());
     auto documentViewPicker = QtOhos::moveToSharedPtr(
         QNapi::Reference<>::makePersistentFrom(
-            makeDocumentViewPicker(jsState, qAbilityPeer, contextWindowRef)));
+            makeDocumentViewPicker(jsState, optQAbility.value(), contextWindowRef)));
     documentViewPicker->evalToPromiseOrRejectOnThrow(pickerActionName + "(*)", {pickerActionOptions}).onThen(
         [documentViewPicker, pickerActionName, sharedResultConsumer](const QtOhos::CallbackInfo &cbInfo) {
             auto actionResult = cbInfo.getFirstArg<QNapi::Array>(Q_FUNC_INFO);
@@ -134,8 +134,7 @@ void showFileDialogOpen(
                 });
 
             startOhosFilePicker(
-                jsState, getQAbilityPeerForQWindow(jsState, contextWindowRef), contextWindowRef,
-                "select", documentSelectOptions,
+                jsState, contextWindowRef, "select", documentSelectOptions,
                 [sharedResultCallback](auto optResult) {
                     auto optQtOpenResult = qTransform(
                         optResult,
@@ -172,8 +171,7 @@ void showFileDialogSave(
             documentSaveOptions.Set("autoCreateEmptyFile", false);
 
             startOhosFilePicker(
-                jsState, getQAbilityPeerForQWindow(jsState, contextWindowRef), contextWindowRef,
-                "save", documentSaveOptions,
+                jsState, contextWindowRef, "save", documentSaveOptions,
                 [sharedResultCallback](auto optResult) {
                     auto optQtSaveResult = qTransform(
                         optResult,
