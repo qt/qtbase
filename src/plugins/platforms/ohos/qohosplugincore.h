@@ -152,7 +152,7 @@ public:
     virtual void visitEachQAbilityPeer(const std::function<void(std::shared_ptr<QAbilityPeer>)> &visitor) = 0;
 
     virtual void startNewQAbilityInstance(
-        std::shared_ptr<QAbilityPeer> baseQAbilityPeer, QObjectThreadSafeRef qwindow,
+        QNapi::Object baseQAbility, QObjectThreadSafeRef qwindow,
         QNapi::Object optStartOptions,
         std::function<void(JsState &, std::shared_ptr<QAbilityPeer>)> startupNotifyFunc) = 0;
 

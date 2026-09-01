@@ -260,6 +260,10 @@ void makeWindowProxyDataForMainWindowInJsThread(
     const QOhosWindowProxyMainWindowCreateInfo &createInfo,
     QOhosConsumer<QtOhos::JsState &, QOhosWindowProxyData> resultConsumer)
 {
+    auto optBaseQAbility = jsState.defaultQAbility();
+    if (!optBaseQAbility)
+        qOhosReportFatalErrorAndAbort("%s: can't create window without the default Ability instance", Q_FUNC_INFO);
+
     auto abilityStartupOptions =
         QNapi::makeObject(
             jsState.env(),
@@ -277,7 +281,7 @@ void makeWindowProxyDataForMainWindowInJsThread(
     }
 
     jsState.startNewQAbilityInstance(
-        jsState.defaultQAbilityPeer(), createInfo.qWindowRef,
+        optBaseQAbility.value(), createInfo.qWindowRef,
         abilityStartupOptions,
         [qWindowRef = createInfo.qWindowRef,
             windowId = createInfo.windowId,

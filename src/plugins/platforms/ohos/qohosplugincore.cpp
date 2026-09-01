@@ -311,7 +311,7 @@ public:
     void visitEachQAbilityPeer(const std::function<void(std::shared_ptr<QAbilityPeer>)> &visitor) override;
 
     void startNewQAbilityInstance(
-        std::shared_ptr<QAbilityPeer> baseQAbilityPeer, QObjectThreadSafeRef qwindow,
+        QNapi::Object baseQAbility, QObjectThreadSafeRef qwindow,
         QNapi::Object optStartOptions,
         std::function<void(JsState &, std::shared_ptr<QAbilityPeer>)> startupNotifyFunc) override;
 
@@ -630,15 +630,12 @@ void JsStateImpl::visitEachQAbilityPeer(const std::function<void(std::shared_ptr
 }
 
 void JsStateImpl::startNewQAbilityInstance(
-    std::shared_ptr<QAbilityPeer> baseQAbilityPeer, QObjectThreadSafeRef qwindow,
+    QNapi::Object baseQAbility, QObjectThreadSafeRef qwindow,
     QNapi::Object optStartOptions,
     std::function<void(JsState &, std::shared_ptr<QAbilityPeer>)> startupNotifyFunc)
 {
-    auto baseQAbility = baseQAbilityPeer->qAbility();
-    if (!baseQAbility.IsEmpty()) {
-        m_appFunctions->startQAbilityInstance(
-            baseQAbility, qwindow, optStartOptions, std::move(startupNotifyFunc));
-    }
+    m_appFunctions->startQAbilityInstance(
+        baseQAbility, qwindow, optStartOptions, std::move(startupNotifyFunc));
 }
 
 void JsStateImpl::startAppProcess(
