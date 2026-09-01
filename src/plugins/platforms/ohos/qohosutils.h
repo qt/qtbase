@@ -94,7 +94,7 @@ std::string printfToString(const char *format, ...) Q_ATTRIBUTE_FORMAT_PRINTF(1,
 
 const char *mapBoolToTrueFalseStr(bool value);
 
-std::shared_ptr<QtOhos::QAbilityPeer> tryMapOptMainWindowToAbilityPeer(
+std::optional<QNapi::Object> tryMapOptMainWindowToQAbility(
     QtOhos::JsState &jsState, std::optional<QtOhos::QObjectThreadSafeRef> optInstanceMainWindowRef);
 
 template<typename ForwardIt, typename Predicate>
