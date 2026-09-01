@@ -136,8 +136,8 @@ void QOhosPermissionsHelperImpl::requestPermissionsFromUserIfNeeded(
 
     QtOhos::invokeInJsThread(
         [context, permissionNames, optInstanceMainWindowRef](QtOhos::JsState &jsState) {
-            auto optAbilityPeer = QtOhos::tryMapOptMainWindowToAbilityPeer(jsState, optInstanceMainWindowRef);
-            if (!optAbilityPeer) {
+            auto optQAbility = QtOhos::tryMapOptMainWindowToQAbility(jsState, optInstanceMainWindowRef);
+            if (!optQAbility) {
                 context->resultConsumerQtContextRef.visitInQtThreadIfAlive(
                     [context, permissionNames](auto &) {
                         const size_t totalPermissions = permissionNames.size();
@@ -152,7 +152,7 @@ void QOhosPermissionsHelperImpl::requestPermissionsFromUserIfNeeded(
                 return;
             }
             QOhosAppPermissions::requestAppPermissionsFromUserWithResult(
-                jsState, optAbilityPeer->qAbility(), permissionNames,
+                jsState, optQAbility.value(), permissionNames,
                 [context](QtOhos::JsState &, std::vector<QOhosPermissionsHelper::PermissionRequestResult> result) {
                     context->resultConsumerQtContextRef.visitInQtThreadIfAlive(
                         [context, appPermissionResults = result](auto &) {
@@ -197,8 +197,8 @@ void QOhosPermissionsHelperImpl::requestPermissionsOnSettingIfNeeded(
 
     QtOhos::invokeInJsThread(
         [context, permissionNames, optInstanceMainWindowRef](auto &jsState) {
-            auto optAbilityPeer = QtOhos::tryMapOptMainWindowToAbilityPeer(jsState, optInstanceMainWindowRef);
-            if (!optAbilityPeer) {
+            auto optQAbility = QtOhos::tryMapOptMainWindowToQAbility(jsState, optInstanceMainWindowRef);
+            if (!optQAbility) {
                 context->resultConsumerQtContextRef.visitInQtThreadIfAlive(
                     [context, permissionNames](auto &) {
                         QList<bool> settingPermissionResults(permissionNames.size(), false);
@@ -207,7 +207,7 @@ void QOhosPermissionsHelperImpl::requestPermissionsOnSettingIfNeeded(
                 return;
             }
             QOhosAppPermissions::requestAppPermissionsOnSetting(
-                jsState, optAbilityPeer->qAbility(), permissionNames,
+                jsState, optQAbility.value(), permissionNames,
                 [context](QtOhos::JsState &, std::vector<bool> permissionsGranted) {
                     context->resultConsumerQtContextRef.visitInQtThreadIfAlive(
                         [context, permissionsGranted](auto &) {

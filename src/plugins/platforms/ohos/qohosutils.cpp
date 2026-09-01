@@ -73,22 +73,20 @@ const char *mapBoolToTrueFalseStr(bool value)
     return value ? "true" : "false";
 }
 
-std::shared_ptr<QtOhos::QAbilityPeer> tryMapOptMainWindowToAbilityPeer(
+std::optional<QNapi::Object> tryMapOptMainWindowToQAbility(
     QtOhos::JsState &jsState, std::optional<QtOhos::QObjectThreadSafeRef> optInstanceMainWindowRef)
 {
-    if (!optInstanceMainWindowRef.has_value()) {
-        auto defaultQAbilityPeer = jsState.defaultQAbilityPeer();
-        return !defaultQAbilityPeer->qAbility().IsEmpty() ? defaultQAbilityPeer : nullptr;
-    }
+    if (!optInstanceMainWindowRef.has_value())
+        return jsState.defaultQAbility();
 
-    auto optAbilityPeer = jsState.tryGetQAbilityPeerByQWindow(optInstanceMainWindowRef.value());
-    if (!optAbilityPeer) {
+    auto optQAbility = jsState.tryGetQAbilityByQWindow(optInstanceMainWindowRef.value());
+    if (!optQAbility) {
         qCWarning(
-            QtForOhos, "%s: QAbilityPeer for window '%s' no longer exists",
+            QtForOhos, "%s: QAbility for window '%s' no longer exists",
             Q_FUNC_INFO, optInstanceMainWindowRef.value().refName().c_str());
     }
 
-    return optAbilityPeer;
+    return optQAbility;
 }
 
 }
