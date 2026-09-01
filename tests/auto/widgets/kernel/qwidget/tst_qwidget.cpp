@@ -12124,19 +12124,22 @@ void tst_QWidget::grab()
         widget.setPalette(pal);
         widget.resize(128, 128);
 
-        QPixmap expected(64, 64);
+        QPixmap actual = widget.grab(QRect(64, 64, 64, 64));
+
+        QPixmap expected(actual.size());
+        expected.setDevicePixelRatio(actual.devicePixelRatio());
         if (!opaque)
             expected.fill(Qt::transparent);
 
         QPainter p(&expected);
+        p.setRenderHint(QPainter::SmoothPixmapTransform);
         p.translate(-64, -64);
         p.drawTiledPixmap(0, 0, 128, 128, pal.brush(QPalette::Window).texture(), 0, 0);
         p.end();
 
-        QPixmap actual = grabFromWidget(&widget, QRect(64, 64, 64, 64));
         QVERIFY(lenientCompare(actual, expected));
 
-        actual = grabFromWidget(&widget, QRect(64, 64, -1, -1));
+        actual = widget.grab(QRect(64, 64, -1, -1));
         QVERIFY(lenientCompare(actual, expected));
 
         // Make sure a widget that is not yet shown is grabbed correctly.
