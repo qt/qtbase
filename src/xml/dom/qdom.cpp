@@ -4172,15 +4172,25 @@ QString QDomElementPrivate::text() const
 {
     QString t(u""_s);
 
-    QDomNodePrivate* p = first;
-    while (p) {
-        if (p->isText() || p->isCDATASection())
-            t += p->nodeValue();
-        else if (p->isElement())
-            t += static_cast<QDomElementPrivate *>(p)->text();
-        p = p->next;
-    }
+    // pre-order depth-first-search; visitation is t += nodeValue()
+    if (QDomNodePrivate* p = first) {
+        while (true) {
+            if (p->isText() || p->isCDATASection()) {
+                t += p->nodeValue();
+            } else if (p->isElement() && p->first) {
+                p = p->first;    // descend into Elements
+                continue;
+            }
 
+            while (!p->next) {
+                p = p->parent(); // ascend into visited parent (pre-order DFS)
+                if (p == this)
+                    return t; // done
+            }
+
+            p = p->next;
+        }
+    }
     return t;
 }
 
