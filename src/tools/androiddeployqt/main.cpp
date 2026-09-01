@@ -707,13 +707,15 @@ Optional arguments:
 // gives the natural order.
 bool quasiLexicographicalReverseLessThan(const QFileInfo &fi1, const QFileInfo &fi2)
 {
+    // baseName() drops the minor, so sort by API level, then by minor.
     QString s1 = fi1.baseName();
     QString s2 = fi2.baseName();
 
-    if (s1.size() == s2.size())
-        return s1 > s2;
-    else
+    if (s1.size() != s2.size())
         return s1.size() > s2.size();
+    if (s1 != s2)
+        return s1 > s2;
+    return fi1.fileName() > fi2.fileName();
 }
 
 // Files which contain templates that need to be overwritten by build data should be overwritten every
@@ -913,8 +915,11 @@ QString detectLatestAndroidPlatform(const QString &sdkPath)
 
     std::sort(fileInfos.begin(), fileInfos.end(), quasiLexicographicalReverseLessThan);
 
+    // Prefer the plain name any AGP understands, else the minor revision.
     const QFileInfo& latestPlatform = fileInfos.constFirst();
-    return latestPlatform.baseName();
+    if (dir.exists(latestPlatform.baseName()))
+        return latestPlatform.baseName();
+    return latestPlatform.fileName();
 }
 
 QString extractPackageName(Options *options)
@@ -3116,7 +3121,16 @@ bool buildAndroidProject(const Options &options)
     // Provide the integer version only if build.gradle explicitly converts to Integer,
     // to avoid regression to existing projects that build for sdk platform of form android-xx.
     if (gradleConfigs.usesIntegerCompileSdkVersion) {
-        const QByteArray tmp = options.androidPlatform.split(u'-').last().toLocal8Bit();
+        // An integer holds no minor, and Gradle resolves it to android-xx.0.
+        const QStringList platformParts = options.androidPlatform.split(u'-').last().split(u'.');
+        const QString apiLevel = platformParts.constFirst();
+        if (platformParts.size() > 1 && platformParts.at(1) != "0"_L1) {
+            fprintf(stderr,
+                "Warning: build.gradle takes an integer compile SDK version, "
+                "building against API level %s instead of platform %s.\n",
+                qPrintable(apiLevel), qPrintable(options.androidPlatform));
+        }
+        const QByteArray tmp = apiLevel.toLocal8Bit();
         bool ok;
         tmp.toInt(&ok);
         if (ok) {
