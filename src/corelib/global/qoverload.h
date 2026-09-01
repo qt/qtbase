@@ -6,6 +6,7 @@
 #define QOVERLOAD_H
 
 #include <QtCore/qtconfigmacros.h>
+#include <QtCore/qtpreprocessorsupport.h>
 
 #if 0
 #pragma qt_class(QOverload)
@@ -68,13 +69,6 @@ template <typename... Args> constexpr inline QConstOverload<Args...> qConstOverl
 template <typename... Args> constexpr inline QNonConstOverload<Args...> qNonConstOverload = {};
 
 #endif // Q_QDOC
-
-#define QT_VA_ARGS_CHOOSE(_1, _2, _3, _4, _5, _6, _7, _8, _9, N, ...) N
-#define QT_VA_ARGS_EXPAND(...) __VA_ARGS__ // Needed for MSVC
-#define QT_VA_ARGS_COUNT(...) QT_VA_ARGS_EXPAND(QT_VA_ARGS_CHOOSE(__VA_ARGS__, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0))
-#define QT_OVERLOADED_MACRO_EXPAND(MACRO, ARGC) MACRO##_##ARGC
-#define QT_OVERLOADED_MACRO_IMP(MACRO, ARGC) QT_OVERLOADED_MACRO_EXPAND(MACRO, ARGC)
-#define QT_OVERLOADED_MACRO(MACRO, ...) QT_VA_ARGS_EXPAND(QT_OVERLOADED_MACRO_IMP(MACRO, QT_VA_ARGS_COUNT(__VA_ARGS__))(__VA_ARGS__))
 
 QT_END_NAMESPACE
 
