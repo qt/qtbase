@@ -196,6 +196,9 @@ private slots:
     void halfPrecisionAttributes_data();
     void halfPrecisionAttributes();
 
+    void graphicsPipelineMixedGlslVersions_data();
+    void graphicsPipelineMixedGlslVersions();
+
     // Make this the last, in case the leaked Vk object test confuses the Vulkan
     // validation or some third-party implicitly loaded layer.
     void leakedResourceDestroy_data();
@@ -8500,6 +8503,50 @@ void tst_QRhi::oneDimTexture()
         referenceImage.fill(QColor::fromRgb(254, 0, 0));
         QVERIFY(imageRGBAEquals(result, referenceImage));
     }
+}
+
+void tst_QRhi::graphicsPipelineMixedGlslVersions_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::graphicsPipelineMixedGlslVersions()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QRhi *rhi = sharedRhi(impl, initParams);
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing graphics pipelines");
+
+    // Only the vertex shader has a 300 es variant, so 100 es is the only GLSL ES
+    // version both stages provide and the backend has to settle on it. Only
+    // OpenGL ES contexts discriminate: the desktop targets are the same for both.
+    QShader vs = loadShader(":/data/glslversionmix.vert.qsb");
+    QVERIFY(vs.isValid());
+    QShader fs = loadShader(":/data/glslversionmix.frag.qsb");
+    QVERIFY(fs.isValid());
+
+    QScopedPointer<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGBA8, QSize(256, 256), 1,
+                                                        QRhiTexture::RenderTarget));
+    QVERIFY(texture->create());
+    QScopedPointer<QRhiTextureRenderTarget> rt(rhi->newTextureRenderTarget({ texture.data() }));
+    QScopedPointer<QRhiRenderPassDescriptor> rpDesc(rt->newCompatibleRenderPassDescriptor());
+    rt->setRenderPassDescriptor(rpDesc.data());
+    QVERIFY(rt->create());
+
+    QScopedPointer<QRhiShaderResourceBindings> srb(rhi->newShaderResourceBindings());
+    QVERIFY(srb->create());
+
+    QScopedPointer<QRhiGraphicsPipeline> pipeline(rhi->newGraphicsPipeline());
+    pipeline->setShaderStages({ { QRhiShaderStage::Vertex, vs }, { QRhiShaderStage::Fragment, fs } });
+    QRhiVertexInputLayout inputLayout;
+    inputLayout.setBindings({ { 4 * sizeof(float) } });
+    inputLayout.setAttributes({ { 0, 0, QRhiVertexInputAttribute::Float4, 0 } });
+    pipeline->setVertexInputLayout(inputLayout);
+    pipeline->setShaderResourceBindings(srb.data());
+    pipeline->setRenderPassDescriptor(rpDesc.data());
+    QVERIFY(pipeline->create());
 }
 
 void tst_QRhi::leakedResourceDestroy_data()

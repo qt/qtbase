@@ -5405,11 +5405,19 @@ static inline GLenum toGlShaderType(QRhiShaderStage::Type type)
     }
 }
 
-QByteArray QRhiGles2::shaderSource(const QRhiShaderStage &shaderStage, QShaderVersion *shaderVersion)
+static inline bool isGraphicsStage(const QRhiShaderStage &shaderStage)
 {
-    const QShader bakedShader = shaderStage.shader();
+    const QRhiShaderStage::Type t = shaderStage.type();
+    return t == QRhiShaderStage::Vertex
+            || t == QRhiShaderStage::TessellationControl
+            || t == QRhiShaderStage::TessellationEvaluation
+            || t == QRhiShaderStage::Geometry
+            || t == QRhiShaderStage::Fragment;
+}
+
+QList<QShaderVersion> QRhiGles2::glslVersionsToTry() const
+{
     QList<int> versionsToTry;
-    QByteArray source;
     if (caps.gles) {
         if (caps.ctxMajor > 3 || (caps.ctxMajor == 3 && caps.ctxMinor >= 2)) {
             versionsToTry << 320 << 310 << 300 << 100;
@@ -5419,15 +5427,6 @@ QByteArray QRhiGles2::shaderSource(const QRhiShaderStage &shaderStage, QShaderVe
             versionsToTry << 300 << 100;
         } else {
             versionsToTry << 100;
-        }
-        for (int v : std::as_const(versionsToTry)) {
-            QShaderVersion ver(v, QShaderVersion::GlslEs);
-            source = bakedShader.shader({ QShader::GlslShader, ver, shaderStage.shaderVariant() }).shader();
-            if (!source.isEmpty()) {
-                if (shaderVersion)
-                    *shaderVersion = ver;
-                break;
-            }
         }
     } else {
         if (caps.ctxMajor > 4 || (caps.ctxMajor == 4 && caps.ctxMinor >= 6)) {
@@ -5455,13 +5454,60 @@ QByteArray QRhiGles2::shaderSource(const QRhiShaderStage &shaderStage, QShaderVe
         }
         if (!caps.coreProfile)
             versionsToTry << 120;
-        for (int v : std::as_const(versionsToTry)) {
-            source = bakedShader.shader({ QShader::GlslShader, v, shaderStage.shaderVariant() }).shader();
-            if (!source.isEmpty()) {
-                if (shaderVersion)
-                    *shaderVersion = v;
+    }
+
+    const QShaderVersion::Flags flags = caps.gles ? QShaderVersion::GlslEs : QShaderVersion::Flags();
+    QList<QShaderVersion> versions;
+    versions.reserve(versionsToTry.size());
+    for (int v : std::as_const(versionsToTry))
+        versions.append(QShaderVersion(v, flags));
+    return versions;
+}
+
+/*
+    Returns the highest GLSL ES version all graphics stages in stages have code
+    for, or nothing when they share none. GLSL ES cannot link shaders of
+    different versions; non-es GLSL can, hence the caps.gles check.
+*/
+std::optional<QShaderVersion> QRhiGles2::commonGlslEsVersion(const QRhiShaderStage *stages,
+                                                             int stageCount) const
+{
+    if (!caps.gles)
+        return std::nullopt;
+
+    for (const QShaderVersion &ver : glslVersionsToTry()) {
+        bool allStagesHaveIt = true;
+        for (int i = 0; i < stageCount; ++i) {
+            const QRhiShaderStage &stage(stages[i]);
+            if (!isGraphicsStage(stage))
+                continue;
+            const QShaderKey key(QShader::GlslShader, ver, stage.shaderVariant());
+            if (stage.shader().shader(key).shader().isEmpty()) {
+                allStagesHaveIt = false;
                 break;
             }
+        }
+        if (allStagesHaveIt)
+            return ver;
+    }
+    return std::nullopt;
+}
+
+QByteArray QRhiGles2::shaderSource(const QRhiShaderStage &shaderStage, QShaderVersion *shaderVersion,
+                                   std::optional<QShaderVersion> commonVersion)
+{
+    const QShader bakedShader = shaderStage.shader();
+    const QList<QShaderVersion> versionsToTry = commonVersion
+            ? QList<QShaderVersion>{ *commonVersion }
+            : glslVersionsToTry();
+
+    QByteArray source;
+    for (const QShaderVersion &ver : versionsToTry) {
+        source = bakedShader.shader({ QShader::GlslShader, ver, shaderStage.shaderVariant() }).shader();
+        if (!source.isEmpty()) {
+            if (shaderVersion)
+                *shaderVersion = ver;
+            break;
         }
     }
     if (source.isEmpty()) {
@@ -5471,14 +5517,19 @@ QByteArray QRhiGles2::shaderSource(const QRhiShaderStage &shaderStage, QShaderVe
     return source;
 }
 
-bool QRhiGles2::compileShader(GLuint program, const QRhiShaderStage &shaderStage, QShaderVersion *shaderVersion)
+bool QRhiGles2::compileShader(GLuint program, const QRhiShaderStage &shaderStage, QShaderVersion *shaderVersion,
+                              std::optional<QShaderVersion> commonVersion)
 {
-    const QByteArray source = shaderSource(shaderStage, shaderVersion);
+    QShaderVersion actualVersion;
+    const QByteArray source = shaderSource(shaderStage, &actualVersion, commonVersion);
     if (source.isEmpty())
         return false;
+    if (shaderVersion)
+        *shaderVersion = actualVersion;
 
     GLuint shader;
-    auto cacheIt = m_shaderCache.constFind(shaderStage);
+    const auto cacheKey = std::make_pair(shaderStage, actualVersion);
+    auto cacheIt = m_shaderCache.constFind(cacheKey);
     if (cacheIt != m_shaderCache.constEnd()) {
         shader = *cacheIt;
     } else {
@@ -5507,7 +5558,7 @@ bool QRhiGles2::compileShader(GLuint program, const QRhiShaderStage &shaderStage
                 f->glDeleteShader(shader); // does not actually get released yet when attached to a not-yet-released program
             m_shaderCache.clear();
         }
-        m_shaderCache.insert(shaderStage, shader);
+        m_shaderCache.insert(cacheKey, shader);
     }
 
     f->glAttachShader(program, shader);
@@ -5698,7 +5749,8 @@ QRhiGles2::ProgramCacheResult QRhiGles2::tryLoadFromDiskOrPipelineCache(const QR
                                                                         int stageCount,
                                                                         GLuint program,
                                                                         const QVector<QShaderDescription::InOutVariable> &inputVars,
-                                                                        QByteArray *cacheKey)
+                                                                        QByteArray *cacheKey,
+                                                                        std::optional<QShaderVersion> commonVersion)
 {
     Q_ASSERT(cacheKey);
 
@@ -5713,7 +5765,9 @@ QRhiGles2::ProgramCacheResult QRhiGles2::tryLoadFromDiskOrPipelineCache(const QR
         QOpenGLProgramBinaryCache::ProgramDesc binaryProgram;
         for (int i = 0; i < stageCount; ++i) {
             const QRhiShaderStage &stage(stages[i]);
-            QByteArray source = shaderSource(stage, nullptr);
+            // commonVersion covers the graphics stages only.
+            QByteArray source = shaderSource(stage, nullptr,
+                                             isGraphicsStage(stage) ? commonVersion : std::nullopt);
             if (source.isEmpty())
                 return QRhiGles2::ProgramCacheError;
 
@@ -6878,16 +6932,6 @@ void QGles2GraphicsPipeline::destroy()
     }
 }
 
-static inline bool isGraphicsStage(const QRhiShaderStage &shaderStage)
-{
-    const QRhiShaderStage::Type t = shaderStage.type();
-    return t == QRhiShaderStage::Vertex
-            || t == QRhiShaderStage::TessellationControl
-            || t == QRhiShaderStage::TessellationEvaluation
-            || t == QRhiShaderStage::Geometry
-            || t == QRhiShaderStage::Fragment;
-}
-
 bool QGles2GraphicsPipeline::create()
 {
     QRHI_RES_RHI(QRhiGles2);
@@ -6931,6 +6975,9 @@ bool QGles2GraphicsPipeline::create()
         }
         Q_UNREACHABLE_RETURN(VtxIdx);
     };
+    const std::optional<QShaderVersion> commonVersion =
+            rhiD->commonGlslEsVersion(m_shaderStages.constData(), m_shaderStages.size());
+
     QShaderDescription desc[LastIdx];
     QShader::SeparateToCombinedImageSamplerMappingList samplerMappingList[LastIdx];
     bool vertexFragmentOnly = true;
@@ -6942,7 +6989,7 @@ bool QGles2GraphicsPipeline::create()
             QShader shader = shaderStage.shader();
             QShaderVersion shaderVersion;
             desc[idx] = shader.description();
-            if (!rhiD->shaderSource(shaderStage, &shaderVersion).isEmpty()) {
+            if (!rhiD->shaderSource(shaderStage, &shaderVersion, commonVersion).isEmpty()) {
                 samplerMappingList[idx] = shader.separateToCombinedImageSamplerMappingList(
                             { QShader::GlslShader, shaderVersion, shaderStage.shaderVariant() });
             }
@@ -6954,14 +7001,19 @@ bool QGles2GraphicsPipeline::create()
                                                                                      m_shaderStages.size(),
                                                                                      program,
                                                                                      desc[VtxIdx].inputVariables(),
-                                                                                     &cacheKey);
+                                                                                     &cacheKey,
+                                                                                     commonVersion);
     if (cacheResult == QRhiGles2::ProgramCacheError)
         return false;
 
     if (cacheResult == QRhiGles2::ProgramCacheMiss) {
+        if (rhiD->caps.gles && !commonVersion) {
+            qWarning("The shader stages of this pipeline have no GLSL ES version in common; "
+                     "linking the program will fail");
+        }
         for (const QRhiShaderStage &shaderStage : std::as_const(m_shaderStages)) {
             if (isGraphicsStage(shaderStage)) {
-                if (!rhiD->compileShader(program, shaderStage, nullptr))
+                if (!rhiD->compileShader(program, shaderStage, nullptr, commonVersion))
                     return false;
             }
         }

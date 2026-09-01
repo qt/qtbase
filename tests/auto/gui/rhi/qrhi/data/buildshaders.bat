@@ -42,3 +42,7 @@ qsb --glsl "150,130,300 es" --hlsl 50 --msl 12 -o fullscreenquad.vert.qsb fullsc
 qsb --glsl "150,130,300 es" --hlsl 50 --msl 12 -o fullscreenquad_color.frag.qsb fullscreenquad_color.frag
 qsb --glsl "420,430,460" -o indirect_multi_draw_sdp.vert.qsb indirect_multi_draw_sdp.vert
 qsb --glsl "420,430,460" -o indirect_multi_draw_sdp.frag.qsb indirect_multi_draw_sdp.frag
+:: Same sources as simple.vert/frag; only the vertex gets a 300 es variant, so
+:: the two stages share 100 es but not their best GLSL ES version.
+qsb --glsl "100 es,300 es,120,150" --hlsl 50 --msl 12 -o glslversionmix.vert.qsb simple.vert
+qsb --glsl "100 es,120,150" --hlsl 50 --msl 12 -o glslversionmix.frag.qsb simple.frag
