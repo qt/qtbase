@@ -751,6 +751,7 @@ public:
     }
 
     template<typename Functor>
+    [[nodiscard]]
     QPropertyChangeHandler<Functor> onValueChanged(Functor f)
     {
         static_assert(std::is_invocable_v<Functor>, "Functor callback must be callable without any parameters");
@@ -758,6 +759,7 @@ public:
     }
 
     template<typename Functor>
+    [[nodiscard]]
     QPropertyChangeHandler<Functor> subscribe(Functor f)
     {
         static_assert(std::is_invocable_v<Functor>, "Functor callback must be callable without any parameters");
@@ -766,6 +768,7 @@ public:
     }
 
     template<typename Functor>
+    [[nodiscard]]
     QPropertyNotifier addNotifier(Functor f)
     {
         static_assert(std::is_invocable_v<Functor>, "Functor callback must be callable without any parameters");
