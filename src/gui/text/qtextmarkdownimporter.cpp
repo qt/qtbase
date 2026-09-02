@@ -671,6 +671,9 @@ void QTextMarkdownImporter::insertBlock()
     }
     m_needsInsertList = false;
     m_needsInsertBlock = false;
+    // Any further blocks in a list item (e.g. a fenced code block) are
+    // continuations, even if it's a tight list and MD4C doesn't emit MD_BLOCK_P.
+    m_listItem = false;
 }
 
 QT_END_NAMESPACE
