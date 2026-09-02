@@ -65,6 +65,7 @@ public:
     void startDrag(
         const std::vector<QImage> &images, const QPointF &hotspot,
         const QMimeData &mimeData, QOhosConsumer<Qt::DropAction> dropActionConsumer);
+    void enableDropDisallowedBadge();
     void setNodeAreaChangeHandler(QOhosConsumer<QArkUi::QQtEmbeddedWindowNode::NodeAreaInfo> areaChangeEventConsumer);
     void setNodeFocusChangeHandler(QOhosConsumer<bool> focusedChangedConsumer);
     void setNodeVisibilityChangeHandler(QOhosConsumer<bool> visibilityChangedConsumer);

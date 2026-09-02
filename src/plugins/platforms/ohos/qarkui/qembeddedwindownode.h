@@ -111,6 +111,7 @@ public:
     std::shared_ptr<void> startDrag(
         std::vector<std::shared_ptr<::OH_PixelmapNative>> pixelMaps, const QPointF &hotspot,
         QOhosUdmfData udmfData, std::function<void(::ArkUI_DragAndDropInfo *)> statusListener);
+    void enableDropDisallowedBadge();
 
     void raise();
     void lower();
