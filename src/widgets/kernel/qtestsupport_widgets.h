@@ -40,7 +40,7 @@ public:
 private:
     QTouchEventWidgetSequence(QWidget *widget, QPointingDevice *aDevice, bool autoCommit);
 
-    QPoint mapToScreen(QWidget *widget, const QPoint &pt);
+    QPointF mapToScreen(QWidget *widget, const QPoint &pt);
 
     QWidget *targetWidget = nullptr;
 
