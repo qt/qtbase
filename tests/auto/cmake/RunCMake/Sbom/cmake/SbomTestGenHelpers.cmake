@@ -293,6 +293,12 @@ set(SBOM_DOCUMENT_IDS \"${doc_ids}\")
     foreach(doc_id IN LISTS doc_ids)
         foreach(suffix IN LISTS prop_suffixes)
             get_property(val GLOBAL PROPERTY _sbom_test_doc_${doc_id}_${suffix})
+
+            # Escape backslashes and quotes, so that values containing them survive in the result
+            # file.
+            string(REPLACE "\\" "\\\\" val "${val}")
+            string(REPLACE "\"" "\\\"" val "${val}")
+
             string(TOUPPER "${suffix}" suffix_upper)
             string(APPEND content "set(SBOM_DOC_${doc_id}_${suffix_upper} \"${val}\")\n")
         endforeach()
