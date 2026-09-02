@@ -442,6 +442,13 @@ void tst_QTextMarkdownImporter::nestedSpans()
         QCOMPARE(fmt.isAnchor(), expectedFormat.testFlag(Link));
         QCOMPARE(fmt.fontFixedPitch(), expectedFormat.testFlag(Mono));
         QCOMPARE(fmt.hasProperty(QTextFormat::FontFixedPitch), expectedFormat.testFlag(Mono));
+        if (expectedFormat.testFlag(Mono)) {
+            // QTBUG-97041: a code span must not bake in an absolute font size:
+            // the size is inherited from the document's default font, so that
+            // inline code scales with the surrounding text like the other spans.
+            QVERIFY(!fmt.hasProperty(QTextFormat::FontPointSize));
+            QVERIFY(!fmt.hasProperty(QTextFormat::FontPixelSize));
+        }
         ++iterator;
     }
 }
