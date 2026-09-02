@@ -180,10 +180,6 @@ void QTextMarkdownImporter::import(const QString &markdown)
     const auto defaultFont = doc->defaultFont();
     m_paragraphMargin = defaultFont.pointSize() * 2 / 3;
     doc->clear();
-    if (defaultFont.pointSize() != -1)
-        m_monoFont.setPointSize(defaultFont.pointSize());
-    else
-        m_monoFont.setPixelSize(defaultFont.pixelSize());
     qCDebug(lcMD) << "default font" << defaultFont << "mono font" << m_monoFont;
     QStringView md = markdown;
 
@@ -454,6 +450,9 @@ int QTextMarkdownImporter::cbEnterSpan(int spanType, void *det)
     }
     case MD_SPAN_CODE:
         charFmt.setFont(m_monoFont);
+        // Let font size be inherited from the document's default font
+        charFmt.clearProperty(QTextFormat::FontPointSize);
+        charFmt.clearProperty(QTextFormat::FontPixelSize);
         charFmt.setFontFixedPitch(true);
         break;
     case MD_SPAN_DEL:
@@ -644,6 +643,9 @@ void QTextMarkdownImporter::insertBlock()
             blockFormat.setProperty(QTextFormat::BlockCodeFence, QString(QLatin1Char(m_blockCodeFence)));
         }
         charFormat.setFont(m_monoFont);
+        // Let font size be inherited from the document's default font
+        charFormat.clearProperty(QTextFormat::FontPointSize);
+        charFormat.clearProperty(QTextFormat::FontPixelSize);
     } else {
         blockFormat.clearProperty(QTextFormat::BlockCodeLanguage);
         blockFormat.clearProperty(QTextFormat::BlockCodeFence);
