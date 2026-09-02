@@ -587,6 +587,11 @@ void tst_QTextMarkdownImporter::fencedCodeBlocks_data()
             << "~~~pseudocode\nprint('hello world\\n')\n~~~\n"
             << 1 << 0 << "pseudocode" << "~"
             << "~~~pseudocode\nprint('hello world\\n')\n~~~\n\n";
+    QTest::newRow("fence inside a list item")
+            << "- item:\n\n  ```pseudocode\n  print('hello world\\n')\n  ```\n\n  after the fence\n"
+            << 1 << 2 << "pseudocode" << "`"
+            << "- item:\n\n  ```pseudocode\n  print('hello world\\n')\n  ```\n  after the "
+               "fence\n\n";
     QTest::newRow("embedded backticks")
             << "```\nnone `one` ``two``\n```\nplain\n```\n```three``` ````four````\n```\nplain\n"
             << 2 << 2 << QString() << "`"

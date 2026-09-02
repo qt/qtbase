@@ -643,6 +643,9 @@ void QTextMarkdownImporter::insertBlock()
         }
         charFormat.setFont(m_monoFont);
     } else {
+        blockFormat.clearProperty(QTextFormat::BlockCodeLanguage);
+        blockFormat.clearProperty(QTextFormat::BlockCodeFence);
+        blockFormat.setNonBreakableLines(false);
         blockFormat.setTopMargin(m_paragraphMargin);
         blockFormat.setBottomMargin(m_paragraphMargin);
     }
