@@ -572,6 +572,18 @@ std::shared_ptr<void> QEmbeddedWindowNode::startDrag(
     return dragAction;
 }
 
+void QEmbeddedWindowNode::enableDropDisallowedBadge()
+{
+    auto *optUiContext = QArkUi::callArkUi(
+        Q_OHOS_NAMED_FUNC(::OH_ArkUI_GetContextByNode), m_contentNode->handle());
+
+    if (optUiContext) {
+        constexpr bool enable = true;
+        QArkUi::callArkUiOrFailOnErrorResult(
+            Q_OHOS_NAMED_FUNC(::OH_ArkUI_EnableDropDisallowedBadge), optUiContext, enable);
+    }
+}
+
 QEmbeddedWindowNode::~QEmbeddedWindowNode() = default;
 
 Node &QEmbeddedWindowNode::contentNode()

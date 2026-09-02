@@ -978,6 +978,9 @@ void QOhosView::showImmediate()
 
         m_viewType = currentViewTypeInfo.viewType;
         setOrResetWindowProxy(qOhosWindowProxy, currentViewTypeInfo.optLogicalParent);
+#if QT_CONFIG(draganddrop)
+        m_nativeNode->enableDropDisallowedBadge();
+#endif
     } else {
         syncWindowStateImmediate();
     }

@@ -474,6 +474,14 @@ void QNativeNode::startDrag(
     Q_FUNC_INFO);
 }
 
+void QNativeNode::enableDropDisallowedBadge()
+{
+    QtOhos::runInJsThreadAndWait([&](QtOhos::JsState &) {
+        m_jsStateData->embeddedWindow->enableDropDisallowedBadge();
+    },
+    Q_FUNC_INFO);
+}
+
 void QNativeNode::addForeignWindowChild(QOhosForeignWindow *foreignWindow)
 {
     QtOhos::runInJsThreadAndWait([&](QtOhos::JsState &) {
