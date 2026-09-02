@@ -51,8 +51,13 @@ void tst_QCborValue_Json::toVariant_data()
                 return QTest::addRow("Double:%g", exp.toDouble());
             if (v.type() == QCborValue::ByteArray || v.type() == QCborValue::String)
                 return QTest::addRow("%s:%zd", typeString, size_t(exp.toString().size()));
-            if (v.type() >= 0x10000)
+            if (v.type() == QCborValue::Uuid)
                 return QTest::newRow(exp.typeName());
+            if (v.type() >= 0x10000) {
+                // all others are based on string
+                return QTest::addRow("%s:%zd", exp.typeName(),
+                                     size_t(v.taggedValue().toString().size()));
+            }
             return QTest::newRow(typeString);
         };
         addRow() << v << exp << json;
@@ -75,10 +80,15 @@ void tst_QCborValue_Json::toVariant_data()
     add(std::numeric_limits<qint64>::min(), std::numeric_limits<qint64>::min(), std::numeric_limits<qint64>::min());
 
     // converts to string in JSON:
+    add(QByteArray(), QByteArray(), QString());
     add(QByteArray("Hello"), QByteArray("Hello"), "SGVsbG8");
+    // Invalid datetimes are not QCborValue::DateTime
+    //add(QCborValue(QDateTime()), QString(), QString());
     add(QCborValue(dt), dt, dt.toString(Qt::ISODateWithMs));
+    add(QCborValue(QUrl()), QUrl(), QString());
     add(QCborValue(QUrl("http://example.com/{q}")), QUrl("http://example.com/{q}"),
         "http://example.com/%7Bq%7D");      // note the encoded form in JSON
+    add(QCborValue(QRegularExpression()), QRegularExpression(), QString());
     add(QCborValue(QRegularExpression(".")), QRegularExpression("."), ".");
     add(QCborValue(uuid), uuid, uuid.toString(QUuid::WithoutBraces));
 
@@ -116,12 +126,19 @@ void tst_QCborValue_Json::toVariant()
     }
 
     QCOMPARE(v.toVariant(), variant);
+
     if (variant.isValid()) {
         QVariant variant2 = QVariant::fromValue(v);
         QVERIFY(variant2.canConvert(variant.metaType()));
         QVERIFY(variant2.convert(variant.metaType()));
         QCOMPARE(variant2, variant);
     }
+
+#if QT_CONFIG(cborstreamreader) && QT_CONFIG(cborstreamwriter)
+    // repeat after a round-trip through CBOR encoding, which exercises the
+    // decoding paths in QCborValue::fromCbor()
+    QCOMPARE(QCborValue::fromCbor(v.toCbor()).toVariant(), variant);
+#endif
 
     // tags get ignored:
     QCOMPARE(QCborValue(QCborKnownTags::Signature, v).toVariant(), variant);
@@ -146,6 +163,12 @@ void tst_QCborValue_Json::toJson()
 
     QCOMPARE(v.toJsonValue(), json);
     QCOMPARE(QVariant::fromValue(v).toJsonValue(), json);
+
+#if QT_CONFIG(cborstreamreader) && QT_CONFIG(cborstreamwriter)
+    // repeat after a round-trip through CBOR encoding, which exercises the
+    // decoding paths in QCborValue::fromCbor()
+    QCOMPARE(QCborValue::fromCbor(v.toCbor()).toJsonValue(), json);
+#endif
 
     // most tags get ignored:
     QCOMPARE(QCborValue(QCborKnownTags::Signature, v).toJsonValue(), json);
