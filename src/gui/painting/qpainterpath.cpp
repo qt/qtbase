@@ -224,6 +224,35 @@ static void qt_debug_path(const QPainterPath &path)
     using the fillRule() function, and altered using the setFillRule()
     function.
 
+    \section1 Arcs and Ellipses
+
+    The angle arguments of \l{arcTo()}, \l{arcMoveTo()},
+    \l{QPainter::drawArc()}, \l{QPainter::drawPie()}, and
+    \l{QPainter::drawChord()} are \e{eccentric} angles. An eccentric
+    angle parameterizes the ellipse that fits into the bounding
+    rectangle; it does not measure the direction from the center of that
+    rectangle to the resulting point. In general the two coincide only
+    when the bounding rectangle is square. On a 400 by 100 rectangle, for
+    example, an angle of 45 degrees yields a point that lies roughly 14
+    degrees above the horizontal as seen from the center.
+
+    To place a point at a given direction from the center instead,
+    compute that point yourself and pass it to \l{moveTo()} or
+    \l{lineTo()}. Alternatively, keep using these functions and convert
+    the direction: on a bounding rectangle of the given \c width and
+    \c height, the direction \c theta, in radians, corresponds to the
+    eccentric angle
+    \c{qRadiansToDegrees(qAtan2(width * qSin(theta), height * qCos(theta)))}.
+
+    Because a painter path stores only lines and Bezier segments, Qt
+    approximates arcs and ellipses with cubic Bezier curves instead of
+    evaluating them trigonometrically. For a circle, the approximation
+    places points less than 0.1% of the radius away from their true
+    positions. Code that compares a point from \l{arcMoveTo()} against
+    one computed with \l{<QtMath>::}{qSin()} and \l{<QtMath>::}{qCos()}
+    must therefore allow for a tolerance instead of testing for
+    equality.
+
     \section1 QPainterPath Information
 
     The QPainterPath class provides a collection of functions that
@@ -894,7 +923,10 @@ void QPainterPath::quadTo(const QPointF &c, const QPointF &e)
     counter-clockwise.
 
     Angles are specified in degrees. Clockwise arcs can be specified
-    using negative angles.
+    using negative angles. If \a rectangle is not square, the angles are
+    eccentric angles and do not measure the direction from the center of
+    the rectangle, as described in \l{QPainterPath#Arcs and
+    Ellipses}{Arcs and Ellipses}.
 
     Note that this function connects the starting point of the arc to
     the current position if they are not already connected. After the
@@ -966,9 +998,13 @@ void QPainterPath::arcTo(const QRectF &rect, qreal startAngle, qreal sweepLength
     rectangle at \a angle.
 
     Angles are specified in degrees. Clockwise arcs can be specified
-    using negative angles.
+    using negative angles. If \a rectangle is not square, \a angle is an
+    eccentric angle and does not measure the direction from the center of
+    the rectangle, as described in \l{QPainterPath#Arcs and
+    Ellipses}{Arcs and Ellipses}.
 
-    \sa moveTo(), arcTo()
+    \sa moveTo(), arcTo(), {QPainterPath#Arcs and Ellipses}{Arcs and
+    Ellipses}
 */
 
 void QPainterPath::arcMoveTo(const QRectF &rect, qreal angle)
@@ -1101,7 +1137,10 @@ void QPainterPath::addPolygon(const QPolygonF &polygon)
     and adds it to the painter path as a closed subpath.
 
     The ellipse is composed of a clockwise curve, starting and
-    finishing at zero degrees (the 3 o'clock position).
+    finishing at zero degrees (the 3 o'clock position). The curve is a
+    cubic Bezier approximation of the ellipse, not an exact
+    representation of it, as described in \l{QPainterPath#Arcs and
+    Ellipses}{Arcs and Ellipses}.
 
     \table 100%
     \row
