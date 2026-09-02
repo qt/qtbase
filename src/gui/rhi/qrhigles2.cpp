@@ -4030,11 +4030,18 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
             f->glGenFramebuffers(2, fbo);
             f->glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo[0]);
             const bool ds = cmd.args.blitFromRenderbuffer.isDepthStencil;
+            const bool hasStencil = ds && cmd.args.blitFromRenderbuffer.hasStencil;
             if (ds) {
                 f->glFramebufferRenderbuffer(GL_READ_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
                                              GL_RENDERBUFFER, cmd.args.blitFromRenderbuffer.renderbuffer);
-                f->glFramebufferRenderbuffer(GL_READ_FRAMEBUFFER, GL_STENCIL_ATTACHMENT,
-                                             GL_RENDERBUFFER, cmd.args.blitFromRenderbuffer.renderbuffer);
+                if (hasStencil) {
+                    // With a packed depth-stencil renderbuffer stencilRenderbuffer is 0.
+                    const GLuint srcStencilRb = cmd.args.blitFromRenderbuffer.stencilRenderbuffer
+                            ? cmd.args.blitFromRenderbuffer.stencilRenderbuffer
+                            : cmd.args.blitFromRenderbuffer.renderbuffer;
+                    f->glFramebufferRenderbuffer(GL_READ_FRAMEBUFFER, GL_STENCIL_ATTACHMENT,
+                                                 GL_RENDERBUFFER, srcStencilRb);
+                }
             } else {
                 f->glFramebufferRenderbuffer(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                                              GL_RENDERBUFFER, cmd.args.blitFromRenderbuffer.renderbuffer);
@@ -4046,10 +4053,12 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
                                                 cmd.args.blitFromRenderbuffer.dstTexture,
                                                 cmd.args.blitFromRenderbuffer.dstLevel,
                                                 cmd.args.blitFromRenderbuffer.dstLayer);
-                    f->glFramebufferTextureLayer(GL_DRAW_FRAMEBUFFER, GL_STENCIL_ATTACHMENT,
-                                                cmd.args.blitFromRenderbuffer.dstTexture,
-                                                cmd.args.blitFromRenderbuffer.dstLevel,
-                                                cmd.args.blitFromRenderbuffer.dstLayer);
+                    if (hasStencil) {
+                        f->glFramebufferTextureLayer(GL_DRAW_FRAMEBUFFER, GL_STENCIL_ATTACHMENT,
+                                                    cmd.args.blitFromRenderbuffer.dstTexture,
+                                                    cmd.args.blitFromRenderbuffer.dstLevel,
+                                                    cmd.args.blitFromRenderbuffer.dstLayer);
+                    }
                 } else {
                     f->glFramebufferTextureLayer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                                                 cmd.args.blitFromRenderbuffer.dstTexture,
@@ -4060,8 +4069,10 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
                 if (ds) {
                     f->glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, cmd.args.blitFromRenderbuffer.target,
                                             cmd.args.blitFromRenderbuffer.dstTexture, cmd.args.blitFromRenderbuffer.dstLevel);
-                    f->glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, cmd.args.blitFromRenderbuffer.target,
-                                            cmd.args.blitFromRenderbuffer.dstTexture, cmd.args.blitFromRenderbuffer.dstLevel);
+                    if (hasStencil) {
+                        f->glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, cmd.args.blitFromRenderbuffer.target,
+                                                cmd.args.blitFromRenderbuffer.dstTexture, cmd.args.blitFromRenderbuffer.dstLevel);
+                    }
                 } else {
                     f->glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, cmd.args.blitFromRenderbuffer.target,
                                             cmd.args.blitFromRenderbuffer.dstTexture, cmd.args.blitFromRenderbuffer.dstLevel);
@@ -4072,9 +4083,11 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
                 const GLenum noBuf = GL_NONE;
                 f->glDrawBuffers(1, &noBuf);
             }
+            const GLbitfield rbBlitMask = ds ? (GL_DEPTH_BUFFER_BIT | (hasStencil ? GL_STENCIL_BUFFER_BIT : 0))
+                                             : GL_COLOR_BUFFER_BIT;
             f->glBlitFramebuffer(0, 0, cmd.args.blitFromRenderbuffer.w, cmd.args.blitFromRenderbuffer.h,
                                  0, 0, cmd.args.blitFromRenderbuffer.w, cmd.args.blitFromRenderbuffer.h,
-                                 ds ? GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT : GL_COLOR_BUFFER_BIT,
+                                 rbBlitMask,
                                  GL_NEAREST); // Qt 5 used Nearest when resolving samples, stick to that
             f->glBindFramebuffer(GL_FRAMEBUFFER, ctx->defaultFramebufferObject());
             f->glDeleteFramebuffers(2, fbo);
@@ -4090,16 +4103,19 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
             f->glGenFramebuffers(2, fbo);
             f->glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo[0]);
             const bool ds = cmd.args.blitFromTexture.isDepthStencil;
+            const bool hasStencil = ds && cmd.args.blitFromTexture.hasStencil;
             if (cmd.args.blitFromTexture.srcTarget == GL_TEXTURE_2D_MULTISAMPLE_ARRAY) {
                 if (ds) {
                     f->glFramebufferTextureLayer(GL_READ_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
                                                  cmd.args.blitFromTexture.srcTexture,
                                                  cmd.args.blitFromTexture.srcLevel,
                                                  cmd.args.blitFromTexture.srcLayer);
-                    f->glFramebufferTextureLayer(GL_READ_FRAMEBUFFER, GL_STENCIL_ATTACHMENT,
-                                                 cmd.args.blitFromTexture.srcTexture,
-                                                 cmd.args.blitFromTexture.srcLevel,
-                                                 cmd.args.blitFromTexture.srcLayer);
+                    if (hasStencil) {
+                        f->glFramebufferTextureLayer(GL_READ_FRAMEBUFFER, GL_STENCIL_ATTACHMENT,
+                                                     cmd.args.blitFromTexture.srcTexture,
+                                                     cmd.args.blitFromTexture.srcLevel,
+                                                     cmd.args.blitFromTexture.srcLayer);
+                    }
                 } else {
                     f->glFramebufferTextureLayer(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                                                  cmd.args.blitFromTexture.srcTexture,
@@ -4110,8 +4126,10 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
                 if (ds) {
                     f->glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, cmd.args.blitFromTexture.srcTarget,
                                               cmd.args.blitFromTexture.srcTexture, cmd.args.blitFromTexture.srcLevel);
-                    f->glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, cmd.args.blitFromTexture.srcTarget,
-                                              cmd.args.blitFromTexture.srcTexture, cmd.args.blitFromTexture.srcLevel);
+                    if (hasStencil) {
+                        f->glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, cmd.args.blitFromTexture.srcTarget,
+                                                  cmd.args.blitFromTexture.srcTexture, cmd.args.blitFromTexture.srcLevel);
+                    }
                 } else {
                     f->glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, cmd.args.blitFromTexture.srcTarget,
                                               cmd.args.blitFromTexture.srcTexture, cmd.args.blitFromTexture.srcLevel);
@@ -4124,10 +4142,12 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
                                                  cmd.args.blitFromTexture.dstTexture,
                                                  cmd.args.blitFromTexture.dstLevel,
                                                  cmd.args.blitFromTexture.dstLayer);
-                    f->glFramebufferTextureLayer(GL_DRAW_FRAMEBUFFER, GL_STENCIL_ATTACHMENT,
-                                                 cmd.args.blitFromTexture.dstTexture,
-                                                 cmd.args.blitFromTexture.dstLevel,
-                                                 cmd.args.blitFromTexture.dstLayer);
+                    if (hasStencil) {
+                        f->glFramebufferTextureLayer(GL_DRAW_FRAMEBUFFER, GL_STENCIL_ATTACHMENT,
+                                                     cmd.args.blitFromTexture.dstTexture,
+                                                     cmd.args.blitFromTexture.dstLevel,
+                                                     cmd.args.blitFromTexture.dstLayer);
+                    }
                 } else {
                     f->glFramebufferTextureLayer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                                                  cmd.args.blitFromTexture.dstTexture,
@@ -4138,8 +4158,10 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
                 if (ds) {
                     f->glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, cmd.args.blitFromTexture.dstTarget,
                                               cmd.args.blitFromTexture.dstTexture, cmd.args.blitFromTexture.dstLevel);
-                    f->glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, cmd.args.blitFromTexture.dstTarget,
-                                              cmd.args.blitFromTexture.dstTexture, cmd.args.blitFromTexture.dstLevel);
+                    if (hasStencil) {
+                        f->glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, cmd.args.blitFromTexture.dstTarget,
+                                                  cmd.args.blitFromTexture.dstTexture, cmd.args.blitFromTexture.dstLevel);
+                    }
                 } else {
                     f->glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, cmd.args.blitFromTexture.dstTarget,
                                               cmd.args.blitFromTexture.dstTexture, cmd.args.blitFromTexture.dstLevel);
@@ -4150,9 +4172,11 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
                 const GLenum noBuf = GL_NONE;
                 f->glDrawBuffers(1, &noBuf);
             }
+            const GLbitfield texBlitMask = ds ? (GL_DEPTH_BUFFER_BIT | (hasStencil ? GL_STENCIL_BUFFER_BIT : 0))
+                                              : GL_COLOR_BUFFER_BIT;
             f->glBlitFramebuffer(0, 0, cmd.args.blitFromTexture.w, cmd.args.blitFromTexture.h,
                                  0, 0, cmd.args.blitFromTexture.w, cmd.args.blitFromTexture.h,
-                                 ds ? GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT : GL_COLOR_BUFFER_BIT,
+                                 texBlitMask,
                                  GL_NEAREST); // Qt 5 used Nearest when resolving samples, stick to that
             f->glBindFramebuffer(GL_FRAMEBUFFER, ctx->defaultFramebufferObject());
             f->glDeleteFramebuffers(2, fbo);
@@ -5120,6 +5144,7 @@ void QRhiGles2::endPass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resource
                     QGles2CommandBuffer::Command &cmd(cbD->commands.get());
                     cmd.cmd = QGles2CommandBuffer::Command::BlitFromRenderbuffer;
                     cmd.args.blitFromRenderbuffer.renderbuffer = rbD->renderbuffer;
+                    cmd.args.blitFromRenderbuffer.stencilRenderbuffer = 0;
                     cmd.args.blitFromRenderbuffer.w = size.width();
                     cmd.args.blitFromRenderbuffer.h = size.height();
                     if (resolveTexD->m_flags.testFlag(QRhiTexture::CubeMap))
@@ -5132,6 +5157,7 @@ void QRhiGles2::endPass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resource
                         || resolveTexD->m_flags.testFlag(QRhiTexture::TextureArray);
                     cmd.args.blitFromRenderbuffer.dstLayer = hasZ ? colorAtt.resolveLayer() : 0;
                     cmd.args.blitFromRenderbuffer.isDepthStencil = false;
+                    cmd.args.blitFromRenderbuffer.hasStencil = false;
                 }
             } else if (caps.glesMultisampleRenderToTexture) {
                 // Nothing to do, resolving into colorAtt.resolveTexture() is automatic,
@@ -5170,6 +5196,7 @@ void QRhiGles2::endPass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resource
                     if (resolveTexD->m_flags.testFlag(QRhiTexture::ThreeDimensional) || resolveTexD->m_flags.testFlag(QRhiTexture::TextureArray))
                         cmd.args.blitFromTexture.dstLayer = dstLayer;
                     cmd.args.blitFromTexture.isDepthStencil = false;
+                    cmd.args.blitFromTexture.hasStencil = false;
                 }
             }
         }
@@ -5182,6 +5209,7 @@ void QRhiGles2::endPass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resource
                 QGles2CommandBuffer::Command &cmd(cbD->commands.get());
                 cmd.cmd = QGles2CommandBuffer::Command::BlitFromRenderbuffer;
                 cmd.args.blitFromRenderbuffer.renderbuffer = rbD->renderbuffer;
+                cmd.args.blitFromRenderbuffer.stencilRenderbuffer = rbD->stencilRenderbuffer;
                 cmd.args.blitFromRenderbuffer.w = size.width();
                 cmd.args.blitFromRenderbuffer.h = size.height();
                 cmd.args.blitFromRenderbuffer.target = depthResolveTexD->target;
@@ -5189,10 +5217,16 @@ void QRhiGles2::endPass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resource
                 cmd.args.blitFromRenderbuffer.dstLevel = 0;
                 cmd.args.blitFromRenderbuffer.dstLayer = 0;
                 cmd.args.blitFromRenderbuffer.isDepthStencil = true;
+                // The renderbuffer always has stencil, but the destination may
+                // be depth-only, in which case attaching it to
+                // GL_STENCIL_ATTACHMENT would make the framebuffer incomplete.
+                cmd.args.blitFromRenderbuffer.hasStencil = isStencilSupportingFormat(depthResolveTexD->format());
             } else if (caps.glesMultisampleRenderToTexture) {
                 // Nothing to do, resolving into depthResolveTexture() is automatic.
             } else {
                 QGles2Texture *depthTexD = QRHI_RES(QGles2Texture, rtTex->m_desc.depthTexture());
+                // Only involve the stencil when both sides actually have it.
+                const bool hasStencil = isStencilSupportingFormat(depthTexD->format()) && isStencilSupportingFormat(depthResolveTexD->format());
                 const int resolveCount = depthTexD->arraySize() >= 2 ? depthTexD->arraySize() : 1;
                 for (int resolveIdx = 0; resolveIdx < resolveCount; ++resolveIdx) {
                     QGles2CommandBuffer::Command &cmd(cbD->commands.get());
@@ -5208,6 +5242,7 @@ void QRhiGles2::endPass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resource
                     cmd.args.blitFromTexture.dstLevel = 0;
                     cmd.args.blitFromTexture.dstLayer = resolveIdx;
                     cmd.args.blitFromTexture.isDepthStencil = true;
+                    cmd.args.blitFromTexture.hasStencil = hasStencil;
                 }
             }
         }
