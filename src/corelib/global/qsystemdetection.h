@@ -217,6 +217,8 @@
 #  define QT_WATCHOS_DEPLOYMENT_TARGET_BELOW(watchos) \
       QT_DARWIN_DEPLOYMENT_TARGET_BELOW(__MAC_NA, __IPHONE_NA, __TVOS_NA, watchos)
 
+#  pragma clang deprecated(QT_DARWIN_DEPLOYMENT_TARGET_BELOW, "Use @available instead")
+
 #else // !Q_OS_DARWIN
 
 #define QT_DARWIN_PLATFORM_SDK_EQUAL_OR_ABOVE(macos, ios, tvos, watchos) (0)
