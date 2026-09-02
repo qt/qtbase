@@ -1307,6 +1307,14 @@ void QPainterPrivate::updateState(QPainterState *newState)
     Another workaround is to convert the paths to polygons first and then draw the
     polygons instead.
 
+    Qt likewise approximates arcs and ellipses with cubic Bezier curves instead
+    of evaluating them trigonometrically, so points on an arc are slightly off
+    their true positions. Related to this, the angles that \l{drawArc()},
+    \l{drawPie()}, and \l{drawChord()} take are eccentric angles: they measure
+    the direction from the center of the bounding rectangle only when that
+    rectangle is square. See \l{QPainterPath#Arcs and Ellipses}{Arcs and
+    Ellipses} for details on both.
+
     \section1 Performance
 
     QPainter is a rich framework that allows developers to do a great
@@ -4170,7 +4178,10 @@ void QPainter::drawEllipse(const QRect &r)
     a degree, i.e. a full circle equals 5760 (16 * 360). Positive
     values for the angles mean counter-clockwise while negative values
     mean the clockwise direction. Zero degrees is at the 3 o'clock
-    position.
+    position. If \a rectangle is not square, the angles are eccentric
+    angles and do not measure the direction from the center of the
+    rectangle, as described in \l{QPainterPath#Arcs and Ellipses}{Arcs
+    and Ellipses}.
 
     \table 100%
     \row
@@ -4235,7 +4246,10 @@ void QPainter::drawArc(const QRectF &r, int a, int alen)
     degree, i.e. a full circle equals 5760 (16 * 360). Positive values
     for the angles mean counter-clockwise while negative values mean
     the clockwise direction. Zero degrees is at the 3 o'clock
-    position.
+    position. If \a rectangle is not square, the angles are eccentric
+    angles and do not measure the direction from the center of the
+    rectangle, as described in \l{QPainterPath#Arcs and Ellipses}{Arcs
+    and Ellipses}.
 
     \table 100%
     \row
@@ -4306,7 +4320,10 @@ void QPainter::drawPie(const QRectF &r, int a, int alen)
     degree, i.e. a full circle equals 5760 (16 * 360). Positive values
     for the angles mean counter-clockwise while negative values mean
     the clockwise direction. Zero degrees is at the 3 o'clock
-    position.
+    position. If \a rectangle is not square, the angles are eccentric
+    angles and do not measure the direction from the center of the
+    rectangle, as described in \l{QPainterPath#Arcs and Ellipses}{Arcs
+    and Ellipses}.
 
     \table 100%
     \row
