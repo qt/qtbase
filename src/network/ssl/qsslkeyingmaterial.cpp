@@ -14,6 +14,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QSslKeyingMaterial
     \since 6.12
+    \preliminary
 
     \brief Describes exported keying material derived from a TLS session.
 

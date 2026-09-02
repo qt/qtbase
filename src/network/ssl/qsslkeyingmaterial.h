@@ -24,7 +24,7 @@ class TlsCryptographOpenSSL;
 
 class QDebug;
 
-class QSslKeyingMaterial
+class QT_TECH_PREVIEW_API QSslKeyingMaterial
 {
 public:
     Q_NETWORK_EXPORT QSslKeyingMaterial();
