@@ -91,7 +91,10 @@ bool QAndroidPlatformMessageDialogHelper::show(Qt::WindowFlags windowFlags,
         ++currentLayout;
     }
 
-    m_javaMessageDialog.callMethod<void>("show", "(J)V", jlong(static_cast<QObject*>(this)));
+    const bool hasEscapeButton = opt->escapeButton() != QPlatformDialogHelper::NoButton;
+    m_javaMessageDialog.callMethod<void>("show", "(JZ)V",
+                                         jlong(static_cast<QObject*>(this)),
+                                         jboolean(hasEscapeButton));
     m_shown = true;
     return true;
 }
