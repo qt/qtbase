@@ -43,20 +43,20 @@ bundle_id=$(/usr/libexec/PlistBuddy -c "Print:CFBundleIdentifier" \
     "$bundle/Info.plist" 2>/dev/null) \
     || die "⚠️ Failed to read CFBundleIdentifier from $bundle/Info.plist"
 
-platform=$(/usr/libexec/PlistBuddy -c "Print:DTPlatformName" \
-    "$bundle/Info.plist" 2>/dev/null)
+platform=$(vtool -show-build "$app" 2>/dev/null \
+    | awk '/^ *platform /{print $2; exit}')
 
 case "$platform" in
-    *simulator) target_type=simulator ;;
+    *SIMULATOR) target_type=simulator ;;
     *)          target_type=device ;;
 esac
 
 case "$platform" in
-    iphone*)    runtime="iOS" ;;
-    appletv*)   runtime="tvOS" ;;
-    watch*)     runtime="watchOS" ;;
-    xr*)        runtime="xrOS" ;;
-    *)          runtime="" ;;
+    IOS*)     runtime="iOS" ;;
+    TVOS*)    runtime="tvOS" ;;
+    WATCHOS*) runtime="watchOS" ;;
+    XROS*)    runtime="xrOS" ;;
+    *)        runtime="" ;;
 esac
 
 # Resolve the target the action will operate on. All actions need this.
