@@ -155,7 +155,7 @@ NSCursor *QCocoaCursor::convertCursor(QCursor *cursor)
     case Qt::SizeHorCursor:
     case Qt::SizeBDiagCursor:
     case Qt::SizeFDiagCursor: {
-#if QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(150000)
+#if QT_APPLE_SDK_EQUAL_OR_ABOVE(MACOS(15))
         if (@available(macOS 15, *)) {
             auto position = [newShape]{
                 switch (newShape) {
