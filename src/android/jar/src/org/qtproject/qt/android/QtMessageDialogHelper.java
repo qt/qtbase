@@ -133,7 +133,7 @@ class QtMessageDialogHelper
     }
 
     @UsedFromNativeCode
-    void show(long handler)
+    void show(long handler, boolean hasEscapeButton)
     {
         m_handler = handler;
         m_activity.runOnUiThread(() -> {
@@ -150,7 +150,7 @@ class QtMessageDialogHelper
             if (m_title != null)
                 m_dialog.setTitle(m_title);
             m_dialog.setOnCancelListener(dialogInterface -> QtNativeDialogHelper.dialogResult(handler(), -1));
-            m_dialog.setCancelable(m_buttonsList == null);
+            m_dialog.setCancelable(hasEscapeButton || m_buttonsList == null);
             m_dialog.setCanceledOnTouchOutside(m_buttonsList == null);
             m_dialog.setIcon(getIconDrawable());
             ScrollView scrollView = new ScrollView(m_activity);
