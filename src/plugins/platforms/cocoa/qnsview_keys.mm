@@ -254,7 +254,7 @@ static bool sendAsShortcut(const KeyEvent &keyEvent, QWindow *window)
     }
 }
 
-#if QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(150000)
+#if QT_APPLE_SDK_EQUAL_OR_ABOVE(MACOS(15))
 - (void)contextMenuKeyDown:(NSEvent *)nsevent
 {
     qCDebug(lcQpaKeys) << "Handling context menu key down for" << nsevent;

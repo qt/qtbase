@@ -820,7 +820,7 @@ bool TlsCryptographSecureTransport::setSessionCertificate(QString &errorDescript
         const void *values[2] = { password };
         CFIndex nKeys = 1;
 #ifdef Q_OS_MACOS
-#if QT_MACOS_IOS_PLATFORM_SDK_EQUAL_OR_ABOVE(150000, 180000)
+#if QT_APPLE_SDK_EQUAL_OR_ABOVE(MACOS(15), IOS(18))
         // Starting from macOS 15 our temporary keychain is ignored.
         // We have to use kSecImportToMemoryOnly/kCFBooleanTrue key/value
         // instead. This key is "memory" but looks like Security framework

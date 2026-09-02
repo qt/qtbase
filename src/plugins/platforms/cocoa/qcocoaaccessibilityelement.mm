@@ -836,7 +836,7 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
 - (NSArray *)accessibilityAttributeNames {
     NSMutableArray *attributes = [[NSMutableArray new] autorelease];
 
-#if QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(260000)
+#if QT_APPLE_SDK_EQUAL_OR_ABOVE(MACOS(26))
     if (@available(macOS 26, *))
         [attributes addObject:NSAccessibilityLanguageAttribute];
 #endif
@@ -855,7 +855,7 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
         return nil;
     }
 
-#if QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(260000)
+#if QT_APPLE_SDK_EQUAL_OR_ABOVE(MACOS(26))
     if (@available(macOS 26, *)) {
         if ([attribute isEqualToString:NSAccessibilityLanguageAttribute]) {
             QAccessibleAttributesInterface *attributesIface = iface->attributesInterface();

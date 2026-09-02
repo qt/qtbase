@@ -40,7 +40,7 @@
     return [super supplementalTargetForAction:action sender:sender];
 }
 
-#if QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(150000)
+#if QT_APPLE_SDK_EQUAL_OR_ABOVE(MACOS(15))
 - (void)showContextMenuForSelection:(id)sender
 {
     QPointF windowPoint;

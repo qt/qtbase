@@ -142,7 +142,7 @@ inline bool isSecureTransportBlockingTest()
 #ifdef Q_OS_MACOS
 #if QT_CONFIG(ssl)
     if (QSslSocket::activeBackend() == QLatin1String("securetransport")) {
-#if QT_MACOS_IOS_PLATFORM_SDK_EQUAL_OR_ABOVE(150000, 180000)
+#if QT_APPLE_SDK_EQUAL_OR_ABOVE(MACOS(15), IOS(18))
         // Starting from macOS 15 our temporary keychain is ignored.
         // We have to use kSecImportToMemoryOnly/kCFBooleanTrue key/value
         // instead. This way we don't have to use QT_SSL_USE_TEMPORARY_KEYCHAIN anymore.
