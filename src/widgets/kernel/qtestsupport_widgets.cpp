@@ -225,11 +225,11 @@ QTest::QTouchEventWidgetSequence::QTouchEventWidgetSequence(QWidget *widget, QPo
 {
 }
 
-QPoint QTouchEventWidgetSequence::mapToScreen(QWidget *widget, const QPoint &pt)
+QPointF QTouchEventWidgetSequence::mapToScreen(QWidget *widget, const QPoint &pt)
 {
     if (widget)
-        return widget->mapToGlobal(pt);
-    return targetWidget ? targetWidget->mapToGlobal(pt) : pt;
+        return widget->mapToGlobal(QPointF(pt));
+    return targetWidget ? targetWidget->mapToGlobal(QPointF(pt)) : QPointF(pt);
 }
 
 } // namespace QTest
