@@ -17,10 +17,10 @@
 // Three backends: libresolv on Unix, Android's DnsResolver (bionic has no
 // libresolv) and HarmonyOS' stateless resolver (musl has no res_n* functions).
 // They share everything but the transport.
-static_assert(QT_CONFIG(libresolv) || QT_CONFIG(android_dnsresolver)
-              || QT_CONFIG(harmony_dnsresolver),
-              "This file requires libresolv, Android's DnsResolver or the "
-              "HarmonyOS stateless resolver");
+#if !QT_CONFIG(libresolv) && !QT_CONFIG(android_dnsresolver) \
+    && !QT_CONFIG(harmony_dnsresolver)
+#  error "This file requires libresolv, Android's DnsResolver or the HarmonyOS stateless resolver"
+#endif
 
 #include <sys/types.h>
 #include <netinet/in.h>
