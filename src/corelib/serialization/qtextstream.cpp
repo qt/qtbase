@@ -2179,8 +2179,12 @@ QTextStream &QTextStream::operator>>(QByteArray &array)
     return *this;
 }
 
+#if QT_REMOVAL_QT7_DEPRECATED_SINCE(6, 12)
 /*!
     \overload
+
+    \deprecated [6.12] Use the QByteArray overload. This function canot be used
+    safely. This function will be removed in Qt 7.
 
     Converts the word to UTF-8 and stores it in \a c, terminated by a '\\0'
     character. If no word is available, only the '\\0' character is stored.
@@ -2214,6 +2218,7 @@ QTextStream &QTextStream::operator>>(char *c)
     d->consumeLastToken();
     return *this;
 }
+#endif // QT_REMOVAL_QT7_DEPRECATED_SINCE(6, 12)
 
 /*!
     \internal

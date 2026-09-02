@@ -156,7 +156,10 @@ public:
     QTextStream &operator>>(double &f);
     QTextStream &operator>>(QString &s);
     QTextStream &operator>>(QByteArray &array);
+#if QT_REMOVAL_QT7_DEPRECATED_SINCE(6, 12)
+    QT_DEPRECATED_VERSION_X_6_12("Use the QByteArray overload: this function cannot be used safely.")
     QTextStream &operator>>(char *c);
+#endif
 
     QTextStream &operator<<(QChar ch);
     QTextStream &operator<<(char ch);
