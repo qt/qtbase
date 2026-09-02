@@ -1506,8 +1506,9 @@ bool QObject::event(QEvent *e)
 
     case QEvent::DisconnectNotify: {
         // Posted by disconnectNotifySender(), now that we are in our own thread
+        const QMetaObject *mo = metaObject();
         const int signalIndex = static_cast<QDisconnectNotifyEvent *>(e)->signalIndex();
-        disconnectNotify(QMetaObjectPrivate::signal(metaObject(), signalIndex));
+        disconnectNotify(QMetaObjectPrivate::signal(mo, signalIndex));
         break;
     }
 
