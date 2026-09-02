@@ -166,8 +166,8 @@ Q_NEVER_INLINE static QString makeString(const QCborContainerPrivate *d, qsizety
     return simpleTypeString(e.type);
 }
 
-QJsonValue qt_convertToJson(QCborContainerPrivate *d, qsizetype idx,
-                            ConversionMode mode = ConversionMode::FromRaw);
+static QJsonValue convertToJson(QCborContainerPrivate *d, qsizetype idx,
+                                ConversionMode mode = ConversionMode::FromRaw);
 
 static QJsonValue convertExtendedTypeToJson(QCborContainerPrivate *d)
 {
@@ -197,7 +197,7 @@ static QJsonValue convertExtendedTypeToJson(QCborContainerPrivate *d)
     }
 
     // for all other tags, ignore it and return the converted tagged item
-    return qt_convertToJson(d, 1);
+    return convertToJson(d, 1);
 }
 
 // We need to do this because sub-objects may need conversion.
@@ -207,7 +207,7 @@ static QJsonArray convertToJsonArray(QCborContainerPrivate *d,
     QJsonArray a;
     if (d) {
         for (qsizetype idx = 0; idx < d->elements.size(); ++idx)
-            a.append(qt_convertToJson(d, idx, mode));
+            a.append(convertToJson(d, idx, mode));
     }
     return a;
 }
@@ -220,12 +220,12 @@ static QJsonObject convertToJsonObject(QCborContainerPrivate *d,
     QJsonObject o;
     if (d) {
         for (qsizetype idx = 0; idx < d->elements.size(); idx += 2)
-            o.insert(makeString(d, idx), qt_convertToJson(d, idx + 1, mode));
+            o.insert(makeString(d, idx), convertToJson(d, idx + 1, mode));
     }
     return o;
 }
 
-QJsonValue qt_convertToJson(QCborContainerPrivate *d, qsizetype idx, ConversionMode mode)
+QJsonValue convertToJson(QCborContainerPrivate *d, qsizetype idx, ConversionMode mode)
 {
     // encoding the container itself
     if (idx == -QCborValue::Array)
@@ -266,7 +266,7 @@ QJsonValue qt_convertToJson(QCborContainerPrivate *d, qsizetype idx, ConversionM
     case QCborValue::Url:
     case QCborValue::Uuid:
         // recurse
-        return qt_convertToJson(e.flags & Element::IsContainer ? e.container : nullptr, -e.type,
+        return convertToJson(e.flags & Element::IsContainer ? e.container : nullptr, -e.type,
                                 mode);
 
     case QCborValue::Null:
@@ -349,7 +349,7 @@ QJsonValue qt_convertToJson(QCborContainerPrivate *d, qsizetype idx, ConversionM
 QJsonValue QCborValue::toJsonValue() const
 {
     if (container)
-        return qt_convertToJson(container, n < 0 ? -type() : n);
+        return convertToJson(container, n < 0 ? -type() : n);
 
     // simple values
     switch (type()) {
@@ -401,7 +401,7 @@ QJsonValue QCborValue::toJsonValue() const
 #if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) && !defined(QT_BOOTSTRAPPED)
 QJsonValue QCborValueRef::toJsonValue() const
 {
-    return qt_convertToJson(d, i);
+    return convertToJson(d, i);
 }
 #endif
 
