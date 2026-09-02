@@ -546,6 +546,7 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
             } compressedSubImage;
             struct {
                 GLuint renderbuffer;
+                GLuint stencilRenderbuffer;
                 int w;
                 int h;
                 GLenum target;
@@ -553,6 +554,7 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
                 int dstLevel;
                 int dstLayer;
                 bool isDepthStencil;
+                bool hasStencil;
             } blitFromRenderbuffer;
             struct {
                 GLenum srcTarget;
@@ -566,6 +568,7 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
                 int dstLevel;
                 int dstLayer;
                 bool isDepthStencil;
+                bool hasStencil;
             } blitFromTexture;
             struct {
                 GLenum target;
