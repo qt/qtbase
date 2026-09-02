@@ -23,6 +23,19 @@ instructions:
     variableName: REMOTE_WORKING_DIR
     variableValue: "/Users/qt/work/{{.Env.TESTED_MODULE_COIN}}_{{.Env.TESTED_MODULE_BRANCH_COIN}}_{{.Env.COIN_UNIQUE_JOB_ID}}"
 
+  # Linux and macOS extracts the VM bins into same dir
+  - type: EnvironmentVariable
+    variableName: REMOTE_BUNDLE_ROOT_DIR
+    variableValue: "{{.Env.REMOTE_WORKING_DIR}}"
+  # But with macOS we use ctest to run the test from qt/<module>_standalone_tests dir
+  - type: EnvironmentVariable
+    variableName: REMOTE_WORKING_DIR
+    variableValue: "/Users/qt/work/{{.Env.TESTED_MODULE_COIN}}_{{.Env.TESTED_MODULE_BRANCH_COIN}}_{{.Env.COIN_UNIQUE_JOB_ID}}/qt/{{.Env.TESTED_MODULE_COIN}}_standalone_tests"
+    enable_if:
+      condition: property
+      property: host.os
+      equals_value: "MacOS"
+
   # At the moment test runner uses relative path
   - type: EnvironmentVariable
     variableName: REMOTE_RESULTS_DIR
@@ -34,8 +47,6 @@ instructions:
     variableName: REMOTE_RESULT_FILE
     variableValue: "{{.Env.TESTED_MODULE_COIN}}_{{.Env.TESTED_MODULE_BRANCH_COIN}}_RESULT.TXT"
 
-  - type: ChangeDirectory
-    directory: "{{.InstallDir}}/"
   - type: MakeDirectory
     directory: "{{.InstallDir}}/tests"
   - type: InstallTestBinaryArchive
@@ -45,45 +56,96 @@ instructions:
     maxTimeBetweenOutput: 1200
     userMessageOnFailure: >
       Failed to install tests archive.
+    enable_if:
+      condition: property
+      property: host.os
+      equals_value: "Linux"
+  - type: MakeDirectory
+    directory: "{{.SourceDir}}_standalone_tests"
+  - type: InstallTestBinaryArchive
+    relativeStoragePath: "{{.Env.MODULE_ARTIFACTS_RELATIVE_STORAGE_PATH}}/tests.tar.gz"
+    directory: "{{.SourceDir}}_standalone_tests"
+    maxTimeInSeconds: 1200
+    maxTimeBetweenOutput: 1200
+    userMessageOnFailure: >
+      Failed to install tests archive.
+    enable_if:
+      condition: property
+      property: host.os
+      equals_value: "MacOS"
+
+  # With Linux we iterate tst binaries one by one and all we need is the test-bundle
   - type: ChangeDirectory
     directory: "{{.InstallDir}}/tests"
-
   - type: ExecuteCommand
     command: "tar czf bundle.tar.gz harmonyos-tests-bundle"
     maxTimeInSeconds: 14400
     maxTimeBetweenOutput: 14400
     userMessageOnFailure: >
       Failed to pack tests.
+    enable_if:
+      condition: property
+      property: host.os
+      equals_value: "Linux"
+
+  # With macOS we need full directory struct for ctest
+  - type: ChangeDirectory
+    directory: "{{.AgentWorkingDir}}/"
+    enable_if:
+      condition: property
+      property: host.os
+      equals_value: "MacOS"
   - type: ExecuteCommand
-    command: ["ssh", "qt@{{.Env.HARMONY_BROKER}}", "rm -rf {{.Env.REMOTE_WORKING_DIR}}"]
+    command: "tar czf bundle.tar.gz install qt"
+    maxTimeInSeconds: 14400
+    maxTimeBetweenOutput: 14400
+    userMessageOnFailure: >
+      Failed to pack tests.
+    enable_if:
+      condition: property
+      property: host.os
+      equals_value: "MacOS"
+
+  - type: ExecuteCommand
+    command: ["ssh", "qt@{{.Env.HARMONY_BROKER}}", "rm -rf {{.Env.REMOTE_BUNDLE_ROOT_DIR}}"]
     maxTimeInSeconds: 60
     maxTimeBetweenOutput: 60
     userMessageOnFailure: "Removing work dir failed!"
   - type: ExecuteCommand
-    command: ["ssh", "qt@{{.Env.HARMONY_BROKER}}", "mkdir -p {{.Env.REMOTE_WORKING_DIR}}"]
+    command: ["ssh", "qt@{{.Env.HARMONY_BROKER}}", "mkdir -p {{.Env.REMOTE_BUNDLE_ROOT_DIR}}"]
     maxTimeInSeconds: 60
     maxTimeBetweenOutput: 60
     userMessageOnFailure: "Creating work dir failed!"
   - type: ExecuteCommand
-    command: ["scp", "bundle.tar.gz", "qt@{{.Env.HARMONY_BROKER}}:{{.Env.REMOTE_WORKING_DIR}}"]
+    command: ["scp", "bundle.tar.gz", "qt@{{.Env.HARMONY_BROKER}}:{{.Env.REMOTE_BUNDLE_ROOT_DIR}}"]
     maxTimeInSeconds: 14400
     maxTimeBetweenOutput: 14400
     userMessageOnFailure: >
       Failed to copy tests.
+
   - type: ExecuteCommand
     command: ["scp", "{{.InstallDir}}/tests/all_tests_hap.d", "qt@{{.Env.HARMONY_BROKER}}:{{.Env.REMOTE_WORKING_DIR}}"]
     maxTimeInSeconds: 14400
     maxTimeBetweenOutput: 14400
     userMessageOnFailure: >
       Failed to copy testlib list.
+    enable_if:
+      condition: property
+      property: host.os
+      equals_value: "Linux"
   - type: ExecuteCommand
     command: ["ssh", "qt@{{.Env.HARMONY_BROKER}}", "utils/list_tests.sh {{.Env.REMOTE_WORKING_DIR}}/all_tests_hap.d {{.Env.REMOTE_WORKING_DIR}}/all_tests.txt"]
     maxTimeInSeconds: 14400
     maxTimeBetweenOutput: 14400
     userMessageOnFailure: >
       Failed to fix testlib list.
+    enable_if:
+      condition: property
+      property: host.os
+      equals_value: "Linux"
+
   - type: ExecuteCommand
-    command: ["ssh", "qt@{{.Env.HARMONY_BROKER}}", "tar xzf {{.Env.REMOTE_WORKING_DIR}}/bundle.tar.gz -C {{.Env.REMOTE_WORKING_DIR}}"]
+    command: ["ssh", "qt@{{.Env.HARMONY_BROKER}}", "tar xzf {{.Env.REMOTE_BUNDLE_ROOT_DIR}}/bundle.tar.gz -C {{.Env.REMOTE_BUNDLE_ROOT_DIR}}"]
     maxTimeInSeconds: 600
     maxTimeBetweenOutput: 600
     userMessageOnFailure: "Extracting test failed!"
@@ -92,21 +154,58 @@ instructions:
     maxTimeInSeconds: 60
     maxTimeBetweenOutput: 60
     userMessageOnFailure: "Copying build-profile failed!"
+
   - type: ExecuteCommand
-    command: ["ssh", "qt@{{.Env.HARMONY_BROKER}}", "cd {{.Env.REMOTE_WORKING_DIR}}/harmonyos-tests-bundle && {{.Env.REMOTE_NODE}} {{.Env.REMOTE_HVIGOR}} --mode module -p product=default assembleHap --analyze=normal --parallel --incremental --no-daemon"]
+    command: ["ssh", "qt@{{.Env.HARMONY_BROKER}}", "cd {{.Env.REMOTE_WORKING_DIR}}/harmonyos-tests-bundle/ && {{.Env.REMOTE_NODE}} {{.Env.REMOTE_HVIGOR}} --mode module -p product=default assembleHap --analyze=normal --parallel --incremental --no-daemon"]
     maxTimeInSeconds: 600
     maxTimeBetweenOutput: 600
     userMessageOnFailure: "Re-assembling hap failed!"
+  # While the broker may be running multiple test runs at the same time, there is additional
+  # directory in /Users/qt/work/ to differentiate each build. To make ctest to find all
+  # binaries, we are using sed to fix the paths '/Users/qt/work -> /Users/qt/work/{{.Env.TESTED_MODULE_COIN}}_{{.Env.TESTED_MODULE_BRANCH_COIN}}_{{.Env.COIN_UNIQUE_JOB_ID}}'
+  - type: ExecuteCommand
+    command: ["ssh", "qt@{{.Env.HARMONY_BROKER}}", "cp /Users/qt/utils/fix_paths.sh {{.Env.REMOTE_WORKING_DIR}}/../../fix_paths.sh"]
+    maxTimeInSeconds: 600
+    maxTimeBetweenOutput: 600
+    userMessageOnFailure: "Copying sed script failed!"
+    enable_if:
+      condition: property
+      property: host.os
+      equals_value: "MacOS"
+  - type: ExecuteCommand
+    command: ["ssh", "qt@{{.Env.HARMONY_BROKER}}", "cd {{.Env.REMOTE_WORKING_DIR}}/../../ && ./fix_paths.sh"]
+    maxTimeInSeconds: 21600
+    maxTimeBetweenOutput: 3600
+    userMessageOnFailure: "Fixing paths failed!"
+    enable_if:
+      condition: property
+      property: host.os
+      equals_value: "MacOS"
+
+  - type: ExecuteCommand
+    command: ["ssh", "qt@{{.Env.HARMONY_BROKER}}", "cp /Users/qt/utils/run_all_test_mac_ctest.sh {{.Env.REMOTE_WORKING_DIR}}/run_all_test.sh"]
+    maxTimeInSeconds: 600
+    maxTimeBetweenOutput: 600
+    userMessageOnFailure: "Copying runner script failed!"
+    enable_if:
+      condition: property
+      property: host.os
+      equals_value: "MacOS"
   - type: ExecuteCommand
     command: ["ssh", "qt@{{.Env.HARMONY_BROKER}}", "cp /Users/qt/utils/run_all_test.sh {{.Env.REMOTE_WORKING_DIR}}/run_all_test.sh"]
     maxTimeInSeconds: 600
     maxTimeBetweenOutput: 600
     userMessageOnFailure: "Copying runner script failed!"
+    enable_if:
+      condition: property
+      property: host.os
+      equals_value: "Linux"
+
   - type: ExecuteCommand
-    command: ["ssh", "qt@{{.Env.HARMONY_BROKER}}", "cd {{.Env.REMOTE_WORKING_DIR}} && ./run_all_test.sh"]
+    command: ["ssh", "qt@{{.Env.HARMONY_BROKER}}", "cd {{.Env.REMOTE_WORKING_DIR}}/ && ./run_all_test.sh {{.Env.TESTED_MODULE_REVISION_COIN}}"]
     maxTimeInSeconds: 21600
-    maxTimeBetweenOutput: 1800
-    userMessageOnFailure: "Running hap failed!"
+    maxTimeBetweenOutput: 3600
+    userMessageOnFailure: "Running test failed!"
   - type: MakeDirectory
     directory: "/home/qt/work/testresults"
   - type: ChangeDirectory
@@ -117,18 +216,26 @@ instructions:
     maxTimeBetweenOutput: 14400
     userMessageOnFailure: >
       Failed to copy testresults.
+    enable_if:
+      condition: property
+      property: host.os
+      equals_value: "Linux"
   - type: ExecuteCommand
     command: ["tar", "-xzf", "{{.Env.COIN_CTEST_RESULTSDIR}}/testresults.tar.gz","-C", "{{.Env.COIN_CTEST_RESULTSDIR}}/"]
     maxTimeInSeconds: 600
     maxTimeBetweenOutput: 600
     userMessageOnFailure: "Extracting testresults failed!"
+    enable_if:
+      condition: property
+      property: host.os
+      equals_value: "Linux"
   - type: ExecuteCommand
     command: ["rm", "-f", "{{.Env.COIN_CTEST_RESULTSDIR}}/testresults.tar.gz"]
     maxTimeInSeconds: 600
     maxTimeBetweenOutput: 600
     userMessageOnFailure: "Removing results archive failed!"
   - type: ExecuteCommand
-    command: ["ssh", "qt@{{.Env.HARMONY_BROKER}}", "rm -rf {{.Env.REMOTE_WORKING_DIR}}"]
+    command: ["ssh", "qt@{{.Env.HARMONY_BROKER}}", "rm -rf {{.Env.REMOTE_BUNDLE_ROOT_DIR}}"]
     executeOn: always
     maxTimeInSeconds: 60
     maxTimeBetweenOutput: 60
