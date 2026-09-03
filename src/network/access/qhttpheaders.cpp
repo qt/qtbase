@@ -31,19 +31,20 @@ using namespace Qt::StringLiterals;
 Q_STATIC_LOGGING_CATEGORY(lcQHttpHeaders, "qt.network.http.headers");
 
 /*!
-    \class QHttpHeaderRange
+    \class QHttpHeaderRangeSpec
     \since 6.12
     \inmodule QtNetwork
     \compares equality
 
-    \brief QHttpHeaderRange represents a single byte range as used in
-    the HTTP \c{Range} and \c{Content-Range} headers.
+    \brief QHttpHeaderRangeSpec represents a single byte range as used in
+    the HTTP \c{Range} and \c{Content-Range} headers, which RFC 9110 calls
+    a \e{range-spec}.
 
-    A range has an optional start and an optional end, both expressed
+    A range spec has an optional start and an optional end, both expressed
     as byte offsets. A missing start or end is represented as
     \c{std::nullopt}.
 
-    Use \l isValid() to check whether a range is well-formed before
+    Use \l isValid() to check whether a range spec is well-formed before
     passing it to \l QHttpHeaders::setRangeValues().
 
     \sa QHttpHeaderRangeSet
@@ -51,7 +52,7 @@ Q_STATIC_LOGGING_CATEGORY(lcQHttpHeaders, "qt.network.http.headers");
 */
 
 /*!
-    \variable std::optional<qint64> QHttpHeaderRange::start
+    \variable std::optional<qint64> QHttpHeaderRangeSpec::start
 
     Contains the start byte offset of the range, or \c{std::nullopt}
     if no start was set. A range without a start but with an end
@@ -62,7 +63,7 @@ Q_STATIC_LOGGING_CATEGORY(lcQHttpHeaders, "qt.network.http.headers");
 */
 
 /*!
-    \variable std::optional<qint64> QHttpHeaderRange::end
+    \variable std::optional<qint64> QHttpHeaderRangeSpec::end
 
     Contains the end byte offset of the range, or \c{std::nullopt}
     if no end was set. A range with a start but without an end
@@ -73,11 +74,11 @@ Q_STATIC_LOGGING_CATEGORY(lcQHttpHeaders, "qt.network.http.headers");
 */
 
 /*!
-    \fn bool QHttpHeaderRange::isValid() const noexcept
+    \fn bool QHttpHeaderRangeSpec::isValid() const noexcept
 
-    Returns \c true if the range is well-formed, \c false otherwise.
+    Returns \c true if the range spec is well-formed, \c false otherwise.
 
-    A range is considered invalid if:
+    A range spec is considered invalid if:
     \list
         \li Both start and end are \c{std::nullopt}.
         \li The start value is negative.
@@ -87,8 +88,8 @@ Q_STATIC_LOGGING_CATEGORY(lcQHttpHeaders, "qt.network.http.headers");
 */
 
 /*!
-    \fn size_t qHash(QHttpHeaderRange key, size_t seed) noexcept
-    \qhashold{QHttpHeaderRange}
+    \fn size_t qHash(QHttpHeaderRangeSpec key, size_t seed) noexcept
+    \qhashold{QHttpHeaderRangeSpec}
     \since 6.12
 */
 
@@ -139,14 +140,14 @@ class QHttpHeaderRangeSetPrivate : public QSharedData
 public:
     static constexpr size_t InlineCapacity =
             (std::max)(size_t(2), // e.g. "bytes=0-99, -100"
-                       sizeof(std::vector<QHttpHeaderRange>) / sizeof(QHttpHeaderRange));
+                       sizeof(std::vector<QHttpHeaderRangeSpec>) / sizeof(QHttpHeaderRangeSpec));
 
-    using InlineBuffer = SmallVector<QHttpHeaderRange, InlineCapacity>;
-    using HeapBuffer = std::vector<QHttpHeaderRange>;
+    using InlineBuffer = SmallVector<QHttpHeaderRangeSpec, InlineCapacity>;
+    using HeapBuffer = std::vector<QHttpHeaderRangeSpec>;
     static_assert(std::is_trivially_destructible_v<InlineBuffer>,
                   "add explicit ~InlineBuffer() calls");
 
-    explicit QHttpHeaderRangeSetPrivate(QSpan<const QHttpHeaderRange> rs)
+    explicit QHttpHeaderRangeSetPrivate(QSpan<const QHttpHeaderRangeSpec> rs)
         : m_inlineBuffer{}, m_onHeap(false)
     {
         setRanges(rs);
@@ -160,14 +161,14 @@ public:
 
     bool isShared() const { return ref.loadRelaxed() != 1; }
 
-    QSpan<const QHttpHeaderRange> ranges() const
+    QSpan<const QHttpHeaderRangeSpec> ranges() const
     {
         if (m_onHeap)
             return m_heapBuffer;
         return m_inlineBuffer;
     }
 
-    void setRanges(QSpan<const QHttpHeaderRange> rs)
+    void setRanges(QSpan<const QHttpHeaderRangeSpec> rs)
     {
         // Remember: `rs` may point into ranges()!
         const auto rs_size = size_t(rs.size()); // cannot overflow!
@@ -211,7 +212,7 @@ QT_DEFINE_QESDP_SPECIALIZATION_DTOR(QHttpHeaderRangeSetPrivate)
     \brief QHttpHeaderRangeSet represents the byte ranges of an HTTP
     \c{Range} header.
 
-    QHttpHeaderRangeSet holds a sequence of QHttpHeaderRange objects, as they
+    QHttpHeaderRangeSet holds a sequence of QHttpHeaderRangeSpec objects, as they
     appear in such a header, which RFC 9110 calls a \e{range-set}.
 
     The ranges are kept in the order in which they were given, because that
@@ -224,15 +225,15 @@ QT_DEFINE_QESDP_SPECIALIZATION_DTOR(QHttpHeaderRangeSetPrivate)
     Section 14.1.1}:
     \list
         \li If the start is specified but the end is not (e.g., "bytes=500-"),
-            the QHttpHeaderRange will have \c{start=500} and \c{end=std::nullopt}.
+            the QHttpHeaderRangeSpec will have \c{start=500} and \c{end=std::nullopt}.
         \li If the end is specified but the start is not (e.g., "bytes=-500"),
-            the QHttpHeaderRange will have \c{start=std::nullopt} and \c{end=500},
+            the QHttpHeaderRangeSpec will have \c{start=std::nullopt} and \c{end=500},
             representing the last 500 bytes.
-        \li If both are specified (e.g., "bytes=0-499"), the QHttpHeaderRange will
+        \li If both are specified (e.g., "bytes=0-499"), the QHttpHeaderRangeSpec will
             have \c{start=0} and \c{end=499}.
     \endlist
 
-    \sa QHttpHeaderRange, QHttpHeaders::rangeValues(),
+    \sa QHttpHeaderRangeSpec, QHttpHeaders::rangeValues(),
         QHttpHeaders::setRangeValues()
 */
 
@@ -247,13 +248,13 @@ QHttpHeaderRangeSet::QHttpHeaderRangeSet()
 
     \sa setRanges()
 */
-QHttpHeaderRangeSet::QHttpHeaderRangeSet(QSpan<const QHttpHeaderRange> r)
+QHttpHeaderRangeSet::QHttpHeaderRangeSet(QSpan<const QHttpHeaderRangeSpec> r)
     : d_ptr(r.isEmpty() ? nullptr : new QHttpHeaderRangeSetPrivate(r))
 {
 }
 
 /*!
-    \fn QHttpHeaderRangeSet::QHttpHeaderRangeSet(std::initializer_list<QHttpHeaderRange> r)
+    \fn QHttpHeaderRangeSet::QHttpHeaderRangeSet(std::initializer_list<QHttpHeaderRangeSpec> r)
     \overload
 
     Constructs a QHttpHeaderRangeSet object holding the ranges in \a r, in the
@@ -303,9 +304,9 @@ QHttpHeaderRangeSet::~QHttpHeaderRangeSet()
 
     \sa setRanges()
 */
-QSpan<const QHttpHeaderRange> QHttpHeaderRangeSet::ranges() const noexcept
+QSpan<const QHttpHeaderRangeSpec> QHttpHeaderRangeSet::ranges() const noexcept
 {
-    return d_ptr ? d_ptr->ranges() : QSpan<const QHttpHeaderRange>{};
+    return d_ptr ? d_ptr->ranges() : QSpan<const QHttpHeaderRangeSpec>{};
 }
 
 /*!
@@ -313,7 +314,7 @@ QSpan<const QHttpHeaderRange> QHttpHeaderRangeSet::ranges() const noexcept
 
     \sa ranges()
 */
-void QHttpHeaderRangeSet::setRanges(QSpan<const QHttpHeaderRange> r)
+void QHttpHeaderRangeSet::setRanges(QSpan<const QHttpHeaderRangeSpec> r)
 {
     if (d_ptr && !d_ptr->isShared())
         d_ptr->setRanges(r); // reuse the buffer we already have
@@ -2039,11 +2040,11 @@ std::optional<QDateTime> QHttpHeaders::dateTimeValueAt(qsizetype i) const
     Each range represents a byte range. According to RFC 9110:
     \list
         \li If the start is specified but the end is not (e.g., "bytes=500-"),
-            the QHttpHeaderRange will have \c{start=500} and \c{end=std::nullopt}.
+            the QHttpHeaderRangeSpec will have \c{start=500} and \c{end=std::nullopt}.
         \li If the end is specified but the start is not (e.g., "bytes=-500"),
-            the QHttpHeaderRange will have \c{start=std::nullopt} and \c{end=500},
+            the QHttpHeaderRangeSpec will have \c{start=std::nullopt} and \c{end=500},
             representing the last 500 bytes.
-        \li If both are specified (e.g., "bytes=0-499"), the QHttpHeaderRange will
+        \li If both are specified (e.g., "bytes=0-499"), the QHttpHeaderRangeSpec will
             have \c{start=0} and \c{end=499}.
     \endlist
 
@@ -2064,7 +2065,7 @@ std::optional<QDateTime> QHttpHeaders::dateTimeValueAt(qsizetype i) const
 */
 std::optional<QHttpHeaderRangeSet> QHttpHeaders::rangeValues() const
 {
-    QList<QHttpHeaderRange> results;
+    QList<QHttpHeaderRangeSpec> results;
 
     const QList<QByteArray> rangesVals = values(WellKnownHeader::Range);
 
@@ -2103,7 +2104,7 @@ std::optional<QHttpHeaderRangeSet> QHttpHeaders::rangeValues() const
             if ((!startStr.isEmpty() && !okStart) || (!endStr.isEmpty() && !okEnd))
                 return std::nullopt;
 
-            QHttpHeaderRange range{start, end};
+            QHttpHeaderRangeSpec range{start, end};
             if (!range.isValid())
                 return std::nullopt;
 
@@ -2120,13 +2121,13 @@ std::optional<QHttpHeaderRangeSet> QHttpHeaders::rangeValues() const
     Sets the \c Range HTTP header field to the specified list of \a ranges.
 
     The ranges are formatted using the "bytes" unit, in the order in which
-    \a ranges holds them. For each QHttpHeaderRange:
+    \a ranges holds them. For each QHttpHeaderRangeSpec:
     \list
-        \li A range with only a start (e.g., QHttpHeaderRange(500, std::nullopt))
+        \li A range with only a start (e.g., QHttpHeaderRangeSpec(500, std::nullopt))
             is formatted as \c "500-".
-        \li A range with only an end (e.g., QHttpHeaderRange(std::nullopt, 500))
+        \li A range with only an end (e.g., QHttpHeaderRangeSpec(std::nullopt, 500))
             is formatted as \c "-500", representing the last 500 bytes.
-        \li A range with both start and end (e.g., QHttpHeaderRange(0, 499))
+        \li A range with both start and end (e.g., QHttpHeaderRangeSpec(0, 499))
             is formatted as \c "0-499".
     \endlist
 
@@ -2139,7 +2140,7 @@ std::optional<QHttpHeaderRangeSet> QHttpHeaders::rangeValues() const
 */
 void QHttpHeaders::setRangeValues(const QHttpHeaderRangeSet &ranges)
 {
-    const QSpan<const QHttpHeaderRange> rs = ranges.ranges();
+    const QSpan<const QHttpHeaderRangeSpec> rs = ranges.ranges();
     if (rs.isEmpty()) {
         removeAll(WellKnownHeader::Range);
         return;
@@ -2147,7 +2148,7 @@ void QHttpHeaders::setRangeValues(const QHttpHeaderRangeSet &ranges)
 
     QByteArray result("bytes=");
     for (qsizetype i = 0; i < rs.size(); ++i) {
-        const QHttpHeaderRange &range = rs[i];
+        const QHttpHeaderRangeSpec &range = rs[i];
 
         if (i > 0)
             result += ", "_ba;
@@ -2260,17 +2261,17 @@ void QHttpHeaders::clear()
 
 #ifndef QT_NO_DEBUG_STREAM
 /*!
-    \fn QDebug operator<<(QDebug debug, const QHttpHeaderRange &range)
+    \fn QDebug operator<<(QDebug debug, const QHttpHeaderRangeSpec &range)
     \since 6.12
-    \relates QHttpHeaderRange
+    \relates QHttpHeaderRangeSpec
 
     Writes \a range to the \a debug stream.
 */
-QDebug operator<<(QDebug debug, const QHttpHeaderRange &range)
+QDebug operator<<(QDebug debug, const QHttpHeaderRangeSpec &range)
 {
     QDebugStateSaver saver(debug);
     debug.nospace();
-    debug << "QHttpHeaderRange(bytes=";
+    debug << "QHttpHeaderRangeSpec(bytes=";
     if (range.start)
         debug << *range.start;
     debug << '-';
@@ -2293,7 +2294,7 @@ QDebug operator<<(QDebug debug, const QHttpHeaderRangeSet &ranges)
     debug.nospace();
     debug << "QHttpHeaderRangeSet(bytes=";
     const char *separator = "";
-    for (QHttpHeaderRange range : ranges.ranges()) {
+    for (QHttpHeaderRangeSpec range : ranges.ranges()) {
         debug << separator;
         if (range.start)
             debug << *range.start;
