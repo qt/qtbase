@@ -1,0 +1,161 @@
+// Copyright (C) 2026 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page style-checkbox-walkthrough.html
+    \title Styling a Checkbox: A Walkthrough
+    \brief How a QCheckBox is drawn, from its paint event through QCommonStyle
+    to a custom indicator in a proxy style.
+
+    This page follows a checkbox from the moment it receives a paint event to
+    the moment the style finishes painting. It shows how the widget builds its
+    style option, how \l QCommonStyle breaks the element into parts, and how a
+    \l QProxyStyle replaces one of those parts. Most widgets follow the same
+    structure, so the same reading strategy works for them: find the style
+    option the widget builds, find the elements it draws, and read the
+    \l QCommonStyle implementation of those elements.
+
+    \section1 The widget builds a style option
+
+    \l QCheckBox uses \l QStyleOptionButton. Its \c initStyleOption() function
+    fills the option out like this, slightly simplified:
+
+    \snippet code/doc_src_styles.cpp 0
+
+    \l QStyleOption::initFrom() sets the information that every widget shares.
+    Its implementation amounts to this:
+
+    \snippet code/doc_src_styles.cpp 1
+
+    \c State_Enabled is set when the widget is enabled, \c State_HasFocus when
+    it has focus, \c State_KeyboardFocusChange when the user last changed focus
+    with the keyboard, and \c State_Active when the widget's window is the
+    active window. \c State_MouseOver is set while the mouse cursor is over the
+    widget. In addition to the state, \c initFrom() stores the layout direction,
+    the widget's rectangle, its palette, and its font metrics in the option.
+
+    \l QCheckBox then adds its own state. \c State_Sunken is set while the user
+    presses the box, whether it's checked or not. \c State_NoChange is set for a
+    partially checked tristate box; otherwise \c State_On or \c State_Off
+    reflects the check state. The option also carries the text, the icon, and
+    the icon size. \l QCheckBox keeps \c State_MouseOver only while the widget
+    has the \l{Qt::}{WA_Hover} attribute, which a style typically sets in
+    \l{QStyle::}{polish()}.
+
+    Suppose the user presses the checked checkbox in the following screenshot
+    with the mouse while it has focus. The screenshot also shows a radio button,
+    which uses the same structure with \c PE_IndicatorRadioButton and
+    \c CE_RadioButtonLabel:
+
+    \image styles/checkbox.webp
+           {Checkbox and radio button with their indicator, label, and focus
+           rectangles outlined and named in a legend}
+
+    At that moment, its option has these state flags:
+
+    \table 90%
+    \header
+        \li State flag
+        \li Set
+    \row
+        \li \c State_Sunken
+        \li Yes
+    \row
+        \li \c State_NoChange
+        \li No
+    \row
+        \li \c State_On
+        \li Yes
+    \row
+        \li \c State_Off
+        \li No
+    \row
+        \li \c State_MouseOver
+        \li Yes
+    \row
+        \li \c State_Enabled
+        \li Yes
+    \row
+        \li \c State_HasFocus
+        \li Yes
+    \row
+        \li \c State_KeyboardFocusChange
+        \li No
+    \row
+        \li \c State_Active
+        \li Yes
+    \endtable
+
+    \section1 The widget asks the style to draw
+
+    \l QCheckBox paints itself in \l{QWidget::}{paintEvent()} with a
+    \l QStylePainter, which wraps the drawing functions of \l QStyle:
+
+    \snippet code/doc_src_styles.cpp 2
+
+    That's all the widget does. Everything else happens in the style.
+
+    \section1 QCommonStyle breaks the element into parts
+
+    \l QCommonStyle handles \c CE_CheckBox by asking for the rectangles of its
+    two subelements, \c SE_CheckBoxIndicator and \c SE_CheckBoxContents, and
+    drawing an element into each. If the checkbox has focus, it also draws the
+    focus frame:
+
+    \snippet code/doc_src_styles.cpp 3
+
+    Note the \c proxy() calls. A style always draws its child elements through
+    \l{QStyle::}{proxy()} so that a \l QProxyStyle wrapped around it gets the
+    chance to override them.
+
+    \c CE_CheckBoxLabel is also implemented in \l QCommonStyle:
+
+    \snippet code/doc_src_styles.cpp 4
+
+    \l{QStyle::}{visualAlignment()} adjusts the alignment for the layout
+    direction. The style draws the icon, if there is one, and shrinks the
+    remaining text rectangle accordingly. \l{QStyle::}{drawItemText()} draws the
+    text with the alignment, the layout direction, and the mnemonic taken into
+    account, and it uses the palette to pick the text color. Drawing a label
+    involves many details, and the base class handles them well, so a custom
+    style rarely needs to reimplement it.
+
+    \section1 A proxy style replaces the indicator
+
+    The indicator, \c PE_IndicatorCheckBox, is where styles differ, so it's the
+    part to replace. The following \l QProxyStyle subclass draws a rounded
+    indicator from the palette colors in the option and forwards every other
+    element to the base style:
+
+    \snippet customstyle/checkboxstyle.cpp 0
+
+    \snippet customstyle/checkboxstyle.cpp 1
+
+    The implementation reads all of its information from the option. It picks
+    the color group from \c State_Enabled and \c State_Active, highlights the
+    frame while \c State_MouseOver is set, darkens the background while
+    \c State_Sunken is set, and draws a check mark for \c State_On or a filled
+    square for \c State_NoChange. Because every color comes from the palette,
+    the indicator follows the application palette and works in both light and
+    dark color schemes. It also saves and restores the painter, so the base
+    class finds the painter in the state it expects.
+
+    The same indicator appears wherever the style draws \c PE_IndicatorCheckBox:
+    in checkboxes, in checkable group boxes, and in item views that use it for
+    check marks. That reuse is the reason primitive elements exist.
+
+    To use the style, install it before the application creates its widgets:
+
+    \snippet customstyle/checkboxstyle.cpp 2
+
+    \section1 Apply the same reading to other widgets
+
+    To learn how a widget is drawn, you don't have to read all of the code. It's
+    usually enough to know which style elements the widget draws, which states
+    it sets, and what its style option contains. The widget builds an option and
+    calls the style one or more times; the style draws the elements the widget
+    asks for. \l{Widget Style Reference} lists exactly that for each widget.
+
+    \sa {How a Style Draws a Widget}, {Widget Style Reference}, QProxyStyle,
+        QStyleOptionButton
+*/

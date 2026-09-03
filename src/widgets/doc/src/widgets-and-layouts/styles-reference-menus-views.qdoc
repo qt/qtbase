@@ -1,0 +1,365 @@
+// Copyright (C) 2026 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page style-reference-menus-views.html
+    \title Styling Menus and Item Views
+    \brief The style elements, states, and options of menus, menu bars, item
+    view headers, tree branch indicators, and item view items.
+
+    This page is part of the \l{Widget Style Reference}. For an explanation
+    of the element trees, screenshots, and tables, see that page. The common
+    state flags and members that every widget sets are listed in
+    \l{How a Style Draws a Widget#Common state flags and members}{How a Style
+    Draws a Widget}.
+
+    \section1 Menus
+
+    \l QMenu keeps a list of actions and draws each as a menu item. On a paint
+    event, it draws the panel of the menu, then each item with \c CE_MenuItem
+    and a \l QStyleOptionMenuItem, and the frame last. Menu items have no
+    separate label element, so \c CE_MenuItem draws the check mark, icon, text,
+    shortcut, and submenu arrow.
+
+    \list
+    \li \c PE_PanelMenu, the background
+    \li \c CE_MenuItem, once per action (\c PM_SmallIconSize)
+        \list
+        \li \c PE_IndicatorMenuCheckMark, for a checked item. Many styles use
+            \c PE_IndicatorCheckBox and \c PE_IndicatorRadioButton instead.
+        \li \c PE_IndicatorArrowRight or \c PE_IndicatorArrowLeft, for an item
+            that opens a submenu
+        \endlist
+    \li \c CE_MenuScroller (\c PM_MenuScrollerHeight), when the menu is too tall
+        for the screen and \c SH_Menu_Scrollable is set
+    \li \c CE_MenuTearoff (\c PM_MenuTearoffHeight), for a
+        \l{QMenu::tearOffEnabled}{tear-off} menu
+    \li \c PE_FrameMenu (\c PM_MenuPanelWidth), the frame, with a
+        \l QStyleOptionFrame whose \c lineWidth is \c PM_MenuPanelWidth
+    \li \c CE_MenuEmptyArea, for the space not covered by items or frame
+    \endlist
+
+    \l QMenu lays out the items itself, using \c PM_MenuHMargin,
+    \c PM_MenuVMargin, \c PM_MenuPanelWidth, and \c PM_MenuDesktopFrameWidth. It
+    also consults many \c SH_Menu_ hints, such as \c SH_Menu_SubMenuPopupDelay,
+    \c SH_Menu_MouseTracking, and \c SH_Menu_Mask.
+
+    \image styles/menu.webp
+           {Menu with an icon item, a checked item, a submenu item, a disabled
+           item, and a plain item, with each item outlined}
+
+    \l QMenu resets the state after calling \l{QStyleOption::}{initFrom()}, so
+    the items carry only \c State_Enabled, \c State_Active, and the flags in
+    this table:
+
+    \table 90%
+        \header
+            \li State
+            \li Set when
+        \row
+            \li \c State_Selected
+            \li The item is highlighted and isn't a separator.
+        \row
+            \li \c State_Sunken
+            \li The item is pressed.
+        \row
+            \li \c State_DownArrow
+            \li The item is a scroller that scrolls the menu down.
+        \row
+            \li \c State_Enabled
+            \li The action is enabled. Disabled actions clear this flag even
+                when the menu is enabled.
+    \endtable
+
+    The members of \l QStyleOptionMenuItem are:
+
+    \table 90%
+        \header
+            \li Member
+            \li Description
+        \row
+            \li menuItemType
+            \li A \l{QStyleOptionMenuItem::}{MenuItemType} value: a normal item,
+                the default item, a separator, a submenu, a scroller, a
+                tear-off, a margin, or an empty area.
+        \row
+            \li checkType
+            \li A \l{QStyleOptionMenuItem::}{CheckType} value: not checkable,
+                exclusive, or non-exclusive.
+        \row
+            \li checked
+            \li Whether the item is checked.
+        \row
+            \li menuHasCheckableItems
+            \li Whether at least one item in the menu is checkable, so that the
+                style can reserve space for check marks.
+        \row
+            \li menuRect
+            \li The rectangle of the whole menu.
+        \row
+            \li text
+            \li The item text. A tab character separates the text from the
+                shortcut.
+        \row
+            \li icon
+            \li The item icon.
+        \row
+            \li maxIconWidth
+            \li The width of the widest icon in the menu.
+        \row
+            \li reservedShortcutWidth
+            \li The width reserved for the shortcut column.
+        \row
+            \li font
+            \li The font of the item text.
+    \endtable
+
+    For \c CE_MenuScroller and \c CE_MenuTearoff, the menu sets only
+    \c menuItemType, \c checkType, \c maxIconWidth, and
+    \c reservedShortcutWidth. \c CE_MenuEmptyArea also sets \c menuRect.
+
+    \section1 Menu bars
+
+    \l QMenuBar draws each menu title with \c CE_MenuBarItem and a
+    \l QStyleOptionMenuItemV2, the space after the last title with
+    \c CE_MenuBarEmptyArea, and its panel with \c PE_PanelMenuBar and a
+    \l QStyleOptionFrame. The drop-down menus are \l{QMenu}s; see \l{Menus}.
+
+    \list
+    \li \c CE_MenuBarItem, once per menu (\c PM_SmallIconSize)
+    \li \c PE_PanelMenuBar (\c PM_MenuBarPanelWidth)
+    \li \c CE_MenuBarEmptyArea
+    \endlist
+
+    The menu bar lays out the items with \c PM_MenuBarItemSpacing,
+    \c PM_MenuBarHMargin, and \c PM_MenuBarVMargin, and sizes them with
+    \c CT_MenuBarItem. The painter that \l QMenuBar passes for the panel is
+    clipped to the four border strips, each \c PM_MenuBarPanelWidth wide, so the
+    panel can only paint the border. The painter for the empty area is clipped
+    to what the items and the border leave over. The bar consults
+    \c SH_MenuBar_MouseTracking, \c SH_MenuBar_AltKeyNavigation, and
+    \c SH_DrawMenuBarSeparator.
+
+    On \macos, \l QMenuBar uses the native menu bar by default and doesn't draw
+    anything. Call \l{QMenuBar::setNativeMenuBar()} to make it use the style.
+
+    \image styles/menubar.webp
+           {Menu bar with the menus File, Edit, View, and Help, with each item
+           and the empty area outlined}
+
+    \l QMenuBar fills in the option itself rather than calling
+    \l{QStyleOption::}{initFrom()}. It sets \c State_Enabled when the bar is
+    enabled, and these flags on the items:
+
+    \table 90%
+        \header
+            \li State
+            \li Set when
+        \row
+            \li \c State_Selected
+            \li The item is highlighted.
+        \row
+            \li \c State_Sunken
+            \li The item's menu is open.
+        \row
+            \li \c State_HasFocus
+            \li The menu bar has focus or has a current item.
+        \row
+            \li \c State_MouseOver
+            \li The mouse is over the item.
+    \endtable
+
+    The menu bar uses these members of \l QStyleOptionMenuItem:
+
+    \table 90%
+        \header
+            \li Member
+            \li Description
+        \row
+            \li menuRect
+            \li The rectangle of the whole menu bar.
+        \row
+            \li text
+            \li The title of the menu.
+        \row
+            \li icon
+            \li The icon of the menu. Few styles draw it.
+    \endtable
+
+    For the panel, \l QStyleOptionFrame::lineWidth is set to
+    \c PM_MenuBarPanelWidth and \l{QStyleOptionFrame::}{midLineWidth} to 0.
+
+    \section1 Item view headers
+
+    \l QHeaderView draws each header section with \c CE_Header and a
+    \l QStyleOptionHeaderV2. \l QCommonStyle splits it into the section
+    background, the label, and the sort indicator:
+
+    \list
+    \li \c CE_Header, once per section (\c PM_HeaderMargin)
+        \list
+        \li \c CE_HeaderSection
+        \li \c CE_HeaderLabel (\c SE_HeaderLabel)
+        \li \c PE_IndicatorHeaderArrow (\c SE_HeaderArrow,
+            \c PM_HeaderMarkSize), for the sorted section
+        \endlist
+    \li \c CE_HeaderEmptyArea, for the space after the last section
+    \endlist
+
+    The header view sizes its sections with \c CT_HeaderSection and uses
+    \c PM_HeaderGripMargin for the area in which the user can drag a section
+    boundary. \l QTableView draws the button in the upper-left corner, where the
+    two headers meet, as a \c CE_Header. The hint \c SH_Header_ArrowAlignment
+    places the sort indicator.
+
+    \image styles/header.webp
+           {Table with the header sections Name, Size, and Modified, with the
+           sections, labels, and the sort indicator outlined}
+
+    The header sets these state flags on a section:
+
+    \table 90%
+        \header
+            \li State
+            \li Set when
+        \row
+            \li \c State_Raised
+            \li Always. The header sets it for every section.
+        \row
+            \li \c State_Horizontal
+            \li This is the horizontal header above the view.
+        \row
+            \li \c State_Sunken
+            \li The section is pressed, or the section is selected and
+                \l{QHeaderView::highlightSections}{highlightSections} is on.
+        \row
+            \li \c State_On
+            \li An item in the section is selected and
+                \l{QHeaderView::highlightSections}{highlightSections} is on.
+        \row
+            \li \c State_MouseOver
+            \li The mouse is over the section. Set only when
+                \l{QHeaderView::sectionsClickable}{sectionsClickable} is on.
+    \endtable
+
+    The members of \l QStyleOptionHeader are:
+
+    \table 90%
+        \header
+            \li Member
+            \li Description
+        \row
+            \li section
+            \li The logical index of the section.
+        \row
+            \li text
+            \li The section text.
+        \row
+            \li textAlignment
+            \li The alignment of the text in the section.
+        \row
+            \li icon
+            \li The section icon.
+        \row
+            \li iconAlignment
+            \li The alignment of the icon in the section.
+        \row
+            \li position
+            \li A \l{QStyleOptionHeader::}{SectionPosition} value: the section's
+                position relative to the other sections.
+        \row
+            \li selectedPosition
+            \li A \l{QStyleOptionHeader::}{SelectedPosition} value: the position
+                of the selected section relative to this one.
+        \row
+            \li sortIndicator
+            \li A \l{QStyleOptionHeader::}{SortIndicator} value: no indicator,
+                or the direction of the sort arrow.
+        \row
+            \li orientation
+            \li Whether this is the horizontal header above the view or the
+                vertical header beside it.
+    \endtable
+
+    \l QStyleOptionHeaderV2 adds \c textElideMode, the elide mode for text that
+    doesn't fit, and \c isSectionDragTarget, which is set on the section that a
+    dragged section is about to be dropped on.
+
+    \section1 Tree branch indicators
+
+    \l QTreeView draws the branch indicators, the lines and arrows that show the
+    relationship between the nodes, with \c PE_IndicatorBranch. It draws one
+    indicator per indentation level in front of each item, so a deeply nested
+    item has several. The tree also draws the background of each row with
+    \c PE_PanelItemViewRow and indents the levels by \c PM_TreeViewIndentation.
+
+    Both elements take a \l QStyleOptionViewItem, so a style can also read the
+    row's palette, font, and alternate-row feature flag. The kind of branch is
+    encoded in the state flags:
+
+    \table 90%
+        \header
+            \li State
+            \li Set when
+        \row
+            \li \c State_Item
+            \li The indicator belongs to the item in this row, rather than to an
+                ancestor. Draw the horizontal connector here.
+        \row
+            \li \c State_Children
+            \li The item has children, so the indicator shows an expand or
+                collapse arrow.
+        \row
+            \li \c State_Open
+            \li The item is expanded.
+        \row
+            \li \c State_Sibling
+            \li The node at this level has a sibling below, so a vertical line
+                continues downward.
+    \endtable
+
+    An indicator with none of these flags is drawn for a level whose node has no
+    sibling below; the style draws nothing there.
+
+    \image styles/branchindicator.webp
+           {Tree view with expanded and collapsed folders, with the branch
+           indicator cells outlined and labeled by their state flags}
+
+    \section1 Item view items
+
+    Delegates paint the items in item views. Qt's default delegate,
+    \l QStyledItemDelegate, draws \c CE_ItemViewItem with a
+    \l QStyleOptionViewItem and calculates the item size with
+    \c CT_ItemViewItem, so a style controls how items look without an
+    accompanying delegate. \l QCommonStyle splits the element into the
+    background, the check indicator, the decoration, the text, and the focus
+    frame:
+
+    \list
+    \li \c CE_ItemViewItem
+        \list
+        \li \c PE_PanelItemViewItem
+        \li \c PE_IndicatorItemViewItemCheck (\c SE_ItemViewItemCheckIndicator)
+        \li The decoration, drawn with \l{QIcon::}{paint()}
+            (\c SE_ItemViewItemDecoration)
+        \li The text, laid out and drawn by \l QCommonStyle with eliding and
+            wrapping (\c SE_ItemViewItemText)
+        \li \c PE_FrameFocusRect (\c SE_ItemViewItemFocusRect)
+        \endlist
+    \endlist
+
+    The views consult item view hints such as
+    \c SH_ItemView_ShowDecorationSelected,
+    \c SH_ItemView_ActivateItemOnSingleClick, and
+    \c SH_ItemView_ArrowKeysNavigateIntoChildren. To support data types or roles
+    that \l QStyledItemDelegate doesn't handle, write a custom delegate; see
+    \l{Model/View Programming}.
+
+    The state flags and members of \l QStyleOptionViewItem are described in its
+    class documentation; the most important are \c State_Selected,
+    \c State_HasFocus, \c checkState, \c decorationPosition,
+    \c displayAlignment, \c features, \c icon, \c text, and \c viewItemPosition.
+
+    \sa {Widget Style Reference}, {Styling Buttons and Input Widgets},
+        {Styling Containers and Windows}, QStyledItemDelegate
+*/

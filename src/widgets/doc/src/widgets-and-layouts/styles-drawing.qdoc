@@ -1,0 +1,401 @@
+// Copyright (C) 2026 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page style-drawing.html
+    \title How a Style Draws a Widget
+    \brief The style elements, style options, and QStyle functions that turn a
+    widget into pixels.
+
+    The \l QStyle API has three kinds of functions: functions that draw the
+    widgets, static helpers for common and difficult tasks such as calculating
+    the position of a slider handle, and functions for the calculations that
+    widgets need while drawing, for example, to compute their size hints. The
+    style also helps some widgets lay out their contents, and it can adjust the
+    \l QPalette that the widgets draw with.
+
+    This page describes the building blocks that a style implementation works
+    with. \l{Widget Style Reference} lists which of them each widget uses.
+
+    \section1 Style elements
+
+    \l QStyle draws graphical elements. An element is a widget or a widget part,
+    such as a push button bevel, a window frame, or a scroll bar. Most drawing
+    functions take four arguments:
+
+    \list
+    \li An enum value that specifies which graphical element to draw.
+    \li A \l QStyleOption that specifies how and where to render that element.
+    \li A \l QPainter to draw the element with.
+    \li The \l QWidget that the drawing is performed on. This argument is
+        optional.
+    \endlist
+
+    When a widget asks a style to draw an element, it provides the style with a
+    \l QStyleOption, a class that contains the information necessary for
+    drawing. Because the option carries everything the style needs, the style
+    can draw widgets without linking any widget code. You can draw a combo box
+    on any paint device, not only on a \l QComboBox.
+
+    The widget is passed as the last argument in case the style needs it for
+    special effects, such as animated default buttons on \macos, but the style
+    can't rely on it. Widgets that draw several elements themselves pass
+    themselves, and so does \l QStylePainter. Code that draws directly on a
+    paint device may pass \nullptr.
+
+    A widget consists of a hierarchy, or tree, of style elements. For instance,
+    when a style receives a request to draw a push button, it draws a label
+    (text and icon), a button bevel, and a focus frame. The button bevel in turn
+    consists of a frame around the bevel and the panel. The following conceptual
+    tree shows the push button elements in drawing order, with nested elements
+    drawn by the element above them:
+
+    \list
+    \li Push button
+        \list
+        \li Button bevel
+            \list
+            \li Default button frame
+            \li Button panel
+            \endlist
+        \li Label (icon and text)
+        \li Focus frame
+        \endlist
+    \endlist
+
+    \l{Styling Buttons and Input Widgets#Push buttons}{Push buttons} in the
+    reference shows the actual tree for \l QPushButton, with the element names.
+
+    Widgets don't necessarily ask the style to draw only one element. A widget
+    can make several calls to the style to draw different elements. An example
+    is \l QTabWidget, which draws its tabs and frame individually.
+
+    There are three element types: primitive elements, control elements, and
+    complex control elements. The \l{QStyle::}{PrimitiveElement},
+    \l{QStyle::}{ControlElement}, and \l{QStyle::}{ComplexControl} enums define
+    them. The values of each enum have a prefix that identifies their type:
+    \c{PE_} for primitive elements, \c{CE_} for control elements, and \c{CC_}
+    for complex controls. The \l QStyle class documentation lists these elements
+    and their roles in styling widgets.
+
+    \section2 Primitive elements
+
+    Primitive elements are GUI elements that are common and often used by
+    several widgets. Examples are frames, button bevels, and arrows for spin
+    boxes, scroll bars, and combo boxes. Primitive elements can't exist on their
+    own; they are always part of a larger construct. They take no part in the
+    interaction with the user but are passive decorations in the GUI.
+
+    \section2 Control elements
+
+    A control element performs an action or displays information to the user.
+    Examples of control elements are push buttons, checkboxes, and header
+    sections in tables and tree views. A control element isn't always a complete
+    widget such as a push button; it can also be a widget part such as a tab bar
+    tab or a scroll bar slider. Control elements differ from primitive elements
+    in that they aren't passive: they take part in the interaction with the
+    user.
+
+    Controls that consist of several elements often use the style to calculate
+    the bounding rectangles of the elements. The \l{QStyle::}{SubElement} enum
+    defines the available subelements. This enum is only used for calculating
+    bounding rectangles. Subelements aren't graphical elements to be drawn like
+    primitive, control, and complex elements.
+
+    \section2 Complex control elements
+
+    Complex control elements contain subcontrols. Complex controls behave
+    differently depending on where the user handles them with the mouse and
+    which keyboard keys are pressed. This depends on which subcontrol, if any,
+    the mouse is over or pressed on. Examples of complex controls are scroll
+    bars and combo boxes. With a scroll bar, you can use the mouse to move the
+    slider and press the line up and line down buttons. The
+    \l{QStyle::}{SubControl} enum defines the available subcontrols.
+
+    In addition to drawing, the style tells the widgets which subcontrol, if
+    any, the user pressed. For instance, a \l QScrollBar needs to know whether
+    the user pressed the slider, the slider groove, or one of the buttons.
+
+    Subcontrols aren't the same as control elements. You can't use the style to
+    draw a subcontrol; the style only calculates the bounding rectangle in which
+    the subcontrol should be drawn. It's common, though, for complex elements to
+    use control and primitive elements to draw their subcontrols. Qt's built-in
+    styles do this frequently. For instance, \l QCommonStyle uses
+    \c PE_IndicatorCheckBox to draw the checkbox in group boxes, which is a sub
+    control of \c CC_GroupBox. Some subcontrols have an equivalent control
+    element, for example, the scroll bar slider (\c SC_ScrollBarSlider and
+    \c CE_ScrollBarSlider).
+
+    \section1 Subelements, subcontrols, and pixel metrics
+
+    The style elements and the widgets use the style to calculate the bounding
+    rectangles of subelements and subcontrols. Pixel metrics, which are
+    style-dependent sizes in screen pixels, are also used for measurements when
+    drawing. Three enums in \l QStyle represent the available rectangles and
+    pixel metrics: \l{QStyle::}{SubElement}, \l{QStyle::}{SubControl}, and
+    \l{QStyle::}{PixelMetric}. Their values start with \c{SE_}, \c{SC_}, and
+    \c{PM_}.
+
+    \section1 Style hints
+
+    The style also answers a set of style hints, represented by the values of
+    the \l{QStyle::}{StyleHint} enum. Not all widgets have the same
+    functionality and look in the different styles. For instance, when the menu
+    items in a menu don't fit in a single column on the screen, some styles
+    support scrolling while others draw more than one column to fit all items.
+    Widgets query hints with \l{QStyle::}{styleHint()}.
+
+    \section1 Standard icons
+
+    A style usually has a set of standard icons, such as warning, question, and
+    error images, for message boxes, file dialogs, and title bar buttons. The
+    \l{QStyle::}{StandardPixmap} enum names them, and
+    \l{QStyle::}{standardIcon()} returns the \l QIcon for a value. Qt's widgets
+    use these icons, so when you implement a style, supply them.
+
+    \section1 Layout spacing
+
+    The style calculates the spacing between widgets in layouts. There are two
+    ways to handle these calculations. You can return the spacing from
+    \l{QStyle::}{pixelMetric()} for \c PM_LayoutHorizontalSpacing and
+    \c PM_LayoutVerticalSpacing, which \l QCommonStyle does. Alternatively, you
+    can reimplement \l{QStyle::}{layoutSpacing()} if you need more control. In
+    that function, you can calculate the spacing based on the control types
+    (\l{QSizePolicy::ControlType}) of the two adjacent widgets, their size
+    policies (\l{QSizePolicy::Policy}), and the style option for the widget in
+    question.
+
+    \section1 Style options
+
+    The subclasses of \l QStyleOption contain all information necessary to style
+    the individual elements. The caller of the \l QStyle function instantiates a
+    style option, usually on the stack, and fills it out. Depending on what is
+    drawn, the style expects a different style option class. For example, the
+    \c PE_FrameFocusRect element expects a \l QStyleOptionFocusRect argument.
+    You can also create your own subclasses for a custom style to use. The style
+    options keep public variables for performance reasons.
+
+    Widgets can be in a number of different states, defined by the
+    \l{QStyle::}{State} enum. Some of the state flags have different meanings
+    depending on the widget, but others are common for all widgets, such as
+    \c State_Enabled. \l QStyleOption::initFrom() sets the common states; the
+    individual widgets set the rest.
+
+    Most notably, the style options contain the palette and bounding rectangle
+    of the widget to be drawn. Most widgets have specialized style options.
+    \l QPushButton and \l QCheckBox, for instance, use \l QStyleOptionButton,
+    which contains the text, the icon, and the size of the icon.
+    \l{Widget Style Reference} describes the exact contents of each option.
+
+    When you reimplement \l QStyle functions that take a \l QStyleOption
+    parameter, you often need to cast the option to a subclass, such as
+    \l QStyleOptionFocusRect. Use qstyleoption_cast() to ensure that the pointer
+    type is correct. If the object isn't of the right type, qstyleoption_cast()
+    returns \nullptr:
+
+    \snippet code/doc_src_qt4-styles.cpp 0
+
+    \section2 Common state flags and members
+
+    Some states and variables are common for all widgets. Widgets set them with
+    \l QStyleOption::initFrom(). Not all elements use this function. The widgets
+    create the style options, and for some elements the information from
+    \l{QStyleOption::}{initFrom()} isn't necessary.
+
+    \table 90%
+        \header
+            \li State
+            \li Set when
+        \row
+            \li \c State_Enabled
+            \li The widget isn't disabled (see \l{QWidget::isEnabled()}).
+        \row
+            \li \c State_HasFocus
+            \li The widget has focus (see \l{QWidget::hasFocus()}).
+        \row
+            \li \c State_KeyboardFocusChange
+            \li The user changed focus with the keyboard (see
+                \l{Qt::}{WA_KeyboardFocusChange}).
+        \row
+            \li \c State_MouseOver
+            \li The mouse cursor is over the widget.
+        \row
+            \li \c State_Active
+            \li The widget is a child of the active window.
+    \endtable
+
+    The other common members are:
+
+    \table 90%
+        \header
+            \li Member
+            \li Description
+        \row
+            \li \l{QStyleOption::}{rect}
+            \li The bounding rectangle of the element to draw. \c initFrom()
+                sets it to the widget's bounding rectangle
+                (\l{QWidget::rect()}).
+        \row
+            \li \l{QStyleOption::}{direction}
+            \li The layout direction, a value of the \l{Qt::LayoutDirection}
+                enum.
+        \row
+            \li \l{QStyleOption::}{palette}
+            \li The \l QPalette to use when drawing the element. \c initFrom()
+                sets it to the widget's palette (\l{QWidget::palette()}).
+        \row
+            \li \l{QStyleOption::}{fontMetrics}
+            \li The \l QFontMetrics to use when drawing text on the widget.
+        \row
+            \li \l{QStyleOption::}{styleObject}
+            \li The object that the option describes, usually the widget. Styles
+                use it to store animation state.
+    \endtable
+
+    The complex style options (classes that inherit \l{QStyleOptionComplex})
+    share two more variables: \l{QStyleOptionComplex::}{subControls} and
+    \l{QStyleOptionComplex::}{activeSubControls}. Both are OR combinations of
+    \l QStyle::SubControl values. They indicate which subcontrols the complex
+    control consists of and which of them are currently active.
+
+    \section1 QStyle functions
+
+    \l QStyle defines three functions for drawing the primitive, control, and
+    complex elements: \l{QStyle::}{drawPrimitive()},
+    \l{QStyle::}{drawControl()}, and \l{QStyle::}{drawComplexControl()}. They
+    take the arguments listed under \l{Style elements}.
+
+    Not all widgets pass a pointer to themselves. If the style option sent to
+    the function doesn't contain the information you need, check the widget
+    implementation to see whether it passes itself.
+
+    QStyle also provides helper functions for drawing elements.
+    \l{QStyle::}{drawItemText()} draws text within a specified rectangle, taking
+    a \l QPalette as a parameter. \l{QStyle::}{drawItemPixmap()} aligns a pixmap
+    within a specified bounding rectangle.
+
+    Other QStyle functions do calculations for the drawing functions. The
+    widgets also use them to calculate size hints and bounding rectangles when
+    they draw several style elements themselves. These functions typically take
+    the same arguments as the drawing functions.
+
+    \list
+    \li \l{QStyle::}{subElementRect()} takes a \l{QStyle::}{SubElement} value
+        and calculates the bounding rectangle of a subelement. The style uses
+        this function to know where to draw the different parts of an element.
+        If you create a new style, you can reuse the subelement positions of the
+        base class.
+    \li \l{QStyle::}{subControlRect()} calculates the bounding rectangles of the
+        subcontrols in complex controls. When you implement a new style,
+        reimplement it for the rectangles that differ from the base class.
+    \li \l{QStyle::}{pixelMetric()} returns a pixel metric, a style-dependent
+        size given in screen pixels. It takes a value of the
+        \l{QStyle::}{PixelMetric} enum. Pixel metrics don't have to be static
+        measurements; you can calculate them from the style option.
+    \li \l{QStyle::}{sizeFromContents()} returns the size of a widget for a
+        given contents size. Widgets use it to calculate their size hints.
+    \li \l{QStyle::}{hitTestComplexControl()} returns the subcontrol that the
+        mouse pointer is over in a complex control. Usually, this is a matter of
+        using \l{QStyle::}{subControlRect()} to get the bounding rectangles of
+        the subcontrols and finding the one that contains the position of the
+        cursor.
+    \endlist
+
+    QStyle also has the functions \l{QStyle::}{polish()} and
+    \l{QStyle::}{unpolish()}. Qt polishes every widget before it's shown for the
+    first time and again when the style changes, and unpolishes it when the
+    style changes or the widget is destroyed. Use these functions to set
+    attributes on the widgets or to do other work that your style requires. For
+    instance, if you need to know when the mouse is hovering over a widget, set
+    the \l{Qt::}{WA_Hover} widget attribute in \c polish(). The widget then sets
+    \c State_MouseOver in its style options. Overloads of \c polish() also let
+    the style prepare the \l QApplication and adjust the application palette;
+    see \l{The palette}.
+
+    Finally, QStyle has static helper functions for common and difficult tasks.
+    \l{QStyle::}{sliderPositionFromValue()} and
+    \l{QStyle::}{sliderValueFromPosition()} convert between slider values and
+    pixel positions. \l{QStyle::}{visualRect()}, \l{QStyle::}{visualPos()}, and
+    \l{QStyle::}{visualAlignment()} translate logical coordinates and alignments
+    to their mirrored counterparts in right-to-left layouts, and
+    \l{QStyle::}{alignedRect()} aligns a rectangle for the current direction.
+    For details, see \l{QStyle#Right-to-Left Desktops}{Right-to-Left Desktops}
+    in the \l QStyle class documentation.
+
+    When you reimplement QStyle virtual functions, handle the elements that
+    differ from the base class and call the base class implementation for
+    everything else.
+
+    \section1 The palette
+
+    Each style draws with a palette of brushes, provided by \l QPalette. There
+    is one set of colors, a \l QPalette::ColorGroup, for each widget state:
+    active for widgets in the window that has keyboard focus, inactive for
+    widgets in other windows, and disabled for widgets that are disabled. The
+    \c State_Active and \c State_Enabled state flags tell you which group to
+    use. Each group contains the color roles that \l QPalette::ColorRole
+    defines. The roles describe the situations the colors are meant for, such as
+    painting widget backgrounds, text, or buttons.
+
+    Each style decides how to use the color roles. For instance, if the style
+    uses gradients, it can take a palette color and make it darker or lighter
+    with \l QColor::darker() and \l QColor::lighter() to create the gradient. In
+    general, if you need a brush that the palette doesn't provide, derive it
+    from one that it does.
+
+    When you set a style on the application, Qt builds the application palette
+    from the style's \l{QStyle::}{standardPalette()}, lets the platform theme
+    override the roles it provides, and passes the result to
+    \l{QStyle::polish(QPalette &)}{QStyle::polish()}. Reimplement that overload
+    to adjust the colors your style needs. Qt doesn't override a palette that
+    the application set explicitly with \l QApplication::setPalette().
+
+    Don't hard-code colors. Applications and individual widgets can set their
+    own palette, and a style that draws from the palette follows them. It also
+    gets a light and a dark variant from two palettes, without any extra code.
+    Qt's Fusion style works this way:
+
+    \table
+    \row
+    \li \image styles/gallery-fusion-light.webp {Form with text field, combo
+        box, spin box, slider, checkbox, progress bar, and buttons in the Fusion
+        style with a light palette}
+    \li \image styles/gallery-fusion-dark.webp {Form with text field, combo box,
+        spin box, slider, checkbox, progress bar, and buttons in the Fusion
+        style with a dark palette}
+    \endtable
+
+    A style doesn't have to look good with every conceivable palette, but it
+    should honor the palette it's given.
+
+    \section1 Item views
+
+    Delegates paint the items in item views. Qt's default delegate,
+    \l QStyledItemDelegate, draws \c CE_ItemViewItem and calculates item sizes
+    with \c CT_ItemViewItem, so a style controls how items look without an
+    accompanying delegate. The style draws the item view headers, the tree
+    branch indicators, and the row backgrounds directly. To support new data
+    types or item data roles, you need a custom delegate; see
+    \l{Model/View Programming}.
+
+    \section1 Implementation advice
+
+    When you implement a style, read the code of the widgets and of the base
+    class. The widgets use the style in different ways, and the base class
+    implementation can affect the state of the drawing, for example, by altering
+    the \l QPainter state without restoring it, or by drawing some elements
+    without using the appropriate pixel metrics and subelements.
+
+    Don't change the proposed size of widgets in
+    \l{QStyle::}{sizeFromContents()} unless you have to; let the \l QCommonStyle
+    implementation handle it. If you make changes, keep them small. Application
+    development is difficult when the layout of widgets differs considerably
+    between styles.
+
+    Test your style with the \c -reverse command-line option, or with
+    \l QGuiApplication::setLayoutDirection(), so that asymmetric elements also
+    look correct in a right-to-left layout.
+
+    \sa QStyle, QStyleOption, QStylePainter, {Widget Style Reference},
+        {Styling a Checkbox: A Walkthrough}
+*/

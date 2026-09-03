@@ -24,6 +24,15 @@
     \li \l {Styles and Style Aware Widgets}
         \list
             \li \l{Styling Approaches for Qt Widgets}
+            \li \l{How a Style Draws a Widget}
+            \li \l{Writing Style-Aware Widgets}
+            \li \l{Styling a Checkbox: A Walkthrough}
+            \li \l{Widget Style Reference}
+                \list
+                    \li \l{Styling Buttons and Input Widgets}
+                    \li \l{Styling Containers and Windows}
+                    \li \l{Styling Menus and Item Views}
+                \endlist
             \li \l{Styling}
         \endlist
     \li \l {Qt Style Sheets}
