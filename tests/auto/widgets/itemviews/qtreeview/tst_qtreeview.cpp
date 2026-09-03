@@ -5057,19 +5057,23 @@ void tst_QTreeView::taskQTBUG_61476()
     }
     tv.setModel(&model);
     tv.expandAll();
-    // We need it to be this size so that the effect of the collapsing will
-    // cause the parent item to move to be under the cursor
-    tv.resize(200, 200);
+    const QModelIndex mi = lastTopLevel->child(0)->index();
+    constexpr int lastSubtreeRowCount = 5;
+    const int treeHeight = lastSubtreeRowCount * tv.rowHeight(mi)
+                         + tv.header()->sizeHint().height() + 2 * tv.frameWidth();
+    tv.resize(200, treeHeight);
     tv.show();
     QVERIFY(QTest::qWaitForWindowActive(&tv));
+    QCOMPARE_GE(tv.viewport()->height(),
+                lastSubtreeRowCount * tv.rowHeight(mi));
     tv.verticalScrollBar()->setValue(tv.verticalScrollBar()->maximum());
 
     // We want to press specifically right around where a checkbox for the
     // parent item could be when collapsing
     QTreeViewPrivate *priv = static_cast<QTreeViewPrivate*>(qt_widget_private(&tv));
-    const QModelIndex mi = lastTopLevel->child(0)->index();
     const QRect rect = priv->itemDecorationRect(mi);
     const QPoint pos = rect.center();
+    QVERIFY(tv.viewport()->rect().contains(pos));
 
     QTest::mousePress(tv.viewport(), Qt::LeftButton, {}, pos);
     const bool expandsOnPress =
