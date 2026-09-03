@@ -71,8 +71,10 @@ namespace QtTemporalPattern {
         // Qt used to impose case on am/pm fields:
         LowerCase = 0x1000, UpperCase = 0x2000, // Otherwise follow locale-supplied case.
         IgnoreCase = 0x4000, // Parsing Literal or Verbal: match case insensitively
+        // (0x8000 free)
         // Special cases:
-        // (0x8000, 0x01'0000, 0x02'0000, 0x04'0000 free)
+        RoundFraction = 0x01'0000, // Fractional part accepts extra digits, rounding suitably
+        // (0x02'0000, 0x04'0000 free)
         YearSignIso8601 = 0x08'0000, // Require sign when excess digits
         // Zone-specific:
         LocalizedZone = 0x10'0000, // Localized forms, various.

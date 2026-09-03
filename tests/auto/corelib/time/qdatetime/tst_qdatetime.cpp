@@ -3240,6 +3240,9 @@ void tst_QDateTime::fromStringStringFormat_data()
     QTest::newRow("zulu-time-with-zzz-centisec")
             << u"2005-06-28T07:57:30.01Z"_s << u"yyyy-MM-ddThh:mm:ss.zzzt"_s << 1900 << greg
             << QDateTime(); // Invalid because too few digits for zzz
+    QTest::newRow("zulu-time-with-zzz-decimillisec")
+            << u"2005-06-28T07:57:30.0123Z"_s << u"yyyy-MM-ddThh:mm:ss.zzzt"_s << 1900 << greg
+            << QDateTime(); // Invalid because too many digits for zzz
     QTest::newRow("zulu-time-with-z-millisec")
             << u"2005-06-28T07:57:30.001Z"_s << u"yyyy-MM-ddThh:mm:ss.zt"_s << 1900 << greg
             << QDateTime(QDate(2005, 06, 28), QTime(07, 57, 30, 1), UTC);
