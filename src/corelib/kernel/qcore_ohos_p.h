@@ -73,8 +73,9 @@ public:
 
     virtual void startNoUiChildProcess(const std::string &libraryName, const std::vector<std::string> &args) = 0;
 
+    // wantConsumer's parameters: jsState, qAbility, want, launchParam
     virtual void addNewWantConsumer(
-        QOhosConsumer<QOhosJsState &, QNapi::Object, QNapi::Object> wantConsumer) = 0;
+        QOhosConsumer<QOhosJsState &, QNapi::Object, QNapi::Object, QNapi::Object> wantConsumer) = 0;
 
     // requestsHandler's parameters: jsState, wantParams, resultConsumer
     virtual void setOnContinueRequestsHandler(

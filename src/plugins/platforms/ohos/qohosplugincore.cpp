@@ -287,7 +287,7 @@ public:
     void addQAbilityPeerInJsThread(std::shared_ptr<QAbilityPeer> qAbilityPeer);
     void removeMatchingQAbilityPeerInJsThread(QNapi::Object qAbility);
 
-    void dispatchNewWantInJsThread(QNapi::Object want, QNapi::Object launchParam);
+    void dispatchNewWantInJsThread(QNapi::Object qAbility, QNapi::Object want, QNapi::Object launchParam);
 
     void invokeTask(std::function<void(JsState &)> &&task);
 
@@ -318,7 +318,8 @@ public:
         const std::string &processId, QNapi::Object requestWant,
         QNapi::Object optStartOptions, std::function<void(QOhosJsState &)> continueFunc) override;
 
-    void addNewWantConsumer(QOhosConsumer<QOhosJsState &, QNapi::Object, QNapi::Object> wantConsumer) override;
+    void addNewWantConsumer(
+        QOhosConsumer<QOhosJsState &, QNapi::Object, QNapi::Object, QNapi::Object> wantConsumer) override;
 
     void setOnContinueRequestsHandler(
         QNapi::Object qAbility,
@@ -358,7 +359,7 @@ private:
     std::map<std::string, std::function<QNapi::Object(JsState &)>> m_jsModulesFactories;
     std::shared_ptr<AppFunctions> m_appFunctions;
     PreQueuingJsTasksExecutor m_tasksExecutor;
-    std::vector<QOhosConsumer<JsState &, QNapi::Object, QNapi::Object>> m_newWantConsumers;
+    std::vector<QOhosConsumer<QOhosJsState &, QNapi::Object, QNapi::Object, QNapi::Object>> m_newWantConsumers;
     std::map<std::type_index, std::vector<std::pair<int, double>>> m_ohosEnumsEnumerators;
     std::map<std::type_index, QNapi::Reference<QNapi::Symbol>> m_jsSymbolsRefs;
     QtRunMode m_qtRunMode;
@@ -457,11 +458,12 @@ void JsStateImpl::removeMatchingQAbilityPeerInJsThread(QNapi::Object qAbility)
     }
 }
 
-void JsStateImpl::dispatchNewWantInJsThread(QNapi::Object want, QNapi::Object launchParam)
+void JsStateImpl::dispatchNewWantInJsThread(
+    QNapi::Object qAbility, QNapi::Object want, QNapi::Object launchParam)
 {
     const auto consumersCount = m_newWantConsumers.size();
     for (std::size_t i = 0; i < consumersCount; ++i)
-        m_newWantConsumers[i](*this, want, launchParam);
+        m_newWantConsumers[i](*this, qAbility, want, launchParam);
 }
 
 void JsStateImpl::invokeTask(std::function<void(JsState &)> &&task)
@@ -644,7 +646,8 @@ void JsStateImpl::startAppProcess(
     }
 }
 
-void JsStateImpl::addNewWantConsumer(QOhosConsumer<QOhosJsState &, QNapi::Object, QNapi::Object> wantConsumer)
+void JsStateImpl::addNewWantConsumer(
+    QOhosConsumer<QOhosJsState &, QNapi::Object, QNapi::Object, QNapi::Object> wantConsumer)
 {
     m_newWantConsumers.push_back(std::move(wantConsumer));
 }
@@ -956,9 +959,9 @@ void removeMatchingJsQAbilityPeer(QNapi::Object qAbility)
     getJsStateImpl().removeMatchingQAbilityPeerInJsThread(qAbility);
 }
 
-void dispatchNewWant(QNapi::Object want, QNapi::Object launchParam)
+void dispatchNewWant(QNapi::Object qAbility, QNapi::Object want, QNapi::Object launchParam)
 {
-    getJsStateImpl().dispatchNewWantInJsThread(want, launchParam);
+    getJsStateImpl().dispatchNewWantInJsThread(qAbility, want, launchParam);
 }
 
 void invokeInJsThread(std::function<void(JsState &)> task)

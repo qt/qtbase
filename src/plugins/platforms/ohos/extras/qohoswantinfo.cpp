@@ -323,7 +323,7 @@ void addNewWantConsumer(
     QOhosJsThreadGateway::runAndWait(
         [&](QOhosJsState &jsState) {
             jsState.addNewWantConsumer(
-                [contextRef, sharedWantConsumer](QOhosJsState &jsState, QNapi::Object napiWant, QNapi::Object launchParam) {
+                [contextRef, sharedWantConsumer](QOhosJsState &jsState, QNapi::Object, QNapi::Object napiWant, QNapi::Object launchParam) {
                     auto launchReason = mapJsLaunchReasonToWantInfoEnumWithFallback(
                         jsState, launchParam.get<QNapi::Number>("launchReason"));
                     auto wantInfo = QSharedPointer<WantInfoImpl>::create(napiWant, launchReason);
