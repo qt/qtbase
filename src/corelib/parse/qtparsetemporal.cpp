@@ -140,7 +140,7 @@ std::vector<PartialParse> spacePadExtend(std::vector<PartialParse> matched, QStr
     return matched;
 }
 
-QtParseCommon::ParsedText matchesAt(QStringView text, qsizetype from, const QString &sought,
+QtParseCommon::ParsedText matchedAt(QStringView text, qsizetype from, const QString &sought,
                                     TemporalFieldFlags flags)
 {
     using F = TemporalFieldFlag;
@@ -665,8 +665,8 @@ TemporalFieldMatcher::monthNameExtend(const PartialParse &base, QStringView text
         Q_ASSERT(!base.results.month || base.results.month == month);
         if (name.isEmpty()) // Locale doesn't know this month's name.
             return;
-        // If matchesAt(), add to matches:
-        auto match = matchesAt(text, base.results.endIndex, name, flags);
+        // If matchedAt(), add to matches:
+        auto match = matchedAt(text, base.results.endIndex, name, flags);
         if (match) {
             matches.emplace_back(base, match).results.month = month;
             if (flags.testFlag(Flag::SpacePad))
@@ -728,8 +728,8 @@ TemporalFieldMatcher::dayNameExtend(const PartialParse &base, QStringView text,
         Q_ASSERT(!base.results.dayOfWeek || base.results.dayOfWeek == dow);
         if (name.isEmpty()) // Locale doesn't know this day of the week's name.
             return;
-        // If matchesAt(), add to matches:
-        auto match = matchesAt(text, base.results.endIndex, name, flags);
+        // If matchedAt(), add to matches:
+        auto match = matchedAt(text, base.results.endIndex, name, flags);
         if (match) {
             matches.emplace_back(base, match).results.dayOfWeek = dow;
             if (flags.testFlag(Flag::SpacePad))
@@ -777,7 +777,7 @@ TemporalFieldMatcher::dayPeriodPrefix(const PartialParse &base, QStringView text
         if (base.periodInDay >= 0 && base.periodInDay != i)
             continue;
         if (const QString token = i ? locale.pmText() : locale.amText(); !token.isEmpty()) {
-            if (auto match = matchesAt(text, base.results.endIndex, token, flags);
+            if (auto match = matchedAt(text, base.results.endIndex, token, flags);
                 match.endIndex > result.first) {
                 result = { match.endIndex, i };
             }
@@ -834,7 +834,7 @@ TemporalFieldMatcher::continuations(const PartialParse &base, QStringView text,
     case Cat::EndCategories:
         Q_UNREACHABLE();
     case Cat::Literal:
-        if (auto match = matchesAt(text, textPos, field.literal, field.options)) {
+        if (auto match = matchedAt(text, textPos, field.literal, field.options)) {
             matches.emplace_back(base, match);
             if (field.options.testFlag(Flag::SpacePad))
                 matches = spacePadExtend(std::move(matches), text);
