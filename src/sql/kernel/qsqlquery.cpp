@@ -94,6 +94,16 @@ QSqlQueryPrivate::~QSqlQueryPrivate()
     \l{QSqlDatabase::}{rollback()}, the commit or rollback will
     fail. See isActive() for details.
 
+    Before executing a query, take care to verify that the results likely to be
+    returned can be managed by the system receiving them. When accessing a
+    sufficiently large database, it may be possible that the data returned by a
+    query is larger than the receiving system can hold in memory.
+
+    Large queries, or queries to slow remote databases, may also be very
+    time-consuming. If the driver's \c {hasFeature(CancelQuery)} is \c false,
+    this may lead to the thread from which a query is executed blocking
+    indefinitely.
+
     \target QSqlQuery examples
 
     Navigating records is performed with the following functions:
