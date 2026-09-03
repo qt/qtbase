@@ -1295,7 +1295,7 @@ void handleAbilityOnNewWant(const CallbackInfo &cbInfo)
     tryDetectBrokenWant(cbInfo.jsState(), want);
 
     if (!QAbilityInstancesManager::isQtInternalWantFromThisProcess(want))
-        dispatchNewWant(want, launchParam);
+        dispatchNewWant(qAbility, want, launchParam);
     else
         qOhosPrintfDebug("%s: received qt-internal Want from current process, nothing to do", Q_FUNC_INFO);
 }
