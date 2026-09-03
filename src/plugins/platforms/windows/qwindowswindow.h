@@ -117,7 +117,7 @@ public:
 
     using QPlatformWindow::screenForGeometry;
 
-    virtual HWND handle() const = 0;
+    HWND handle() const override = 0;
     virtual bool isTopLevel() const { return isTopLevel_sys(); }
 
     unsigned style() const   { return GetWindowLongPtr(handle(), GWL_STYLE); }

@@ -9,7 +9,7 @@
 #include <private/qprintengine_win_p.h>
 #include "qpagesetupdialog_p.h"
 #include "qprinter.h"
-#include <qpa/qplatformnativeinterface.h>
+#include <qpa/qplatformwindow_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -65,9 +65,10 @@ int QPageSetupDialog::exec()
     Q_ASSERT(!parent ||parent->testAttribute(Qt::WA_WState_Created));
 
     QWindow *parentWindow = parent ? parent->windowHandle() : nullptr;
-    psd.hwndOwner = parentWindow
-        ? HWND(QGuiApplication::platformNativeInterface()->nativeResourceForWindow("handle", parentWindow))
+    auto *windowInterface = parentWindow
+        ? parentWindow->nativeInterface<QNativeInterface::Private::QWindowsWindow>()
         : nullptr;
+    psd.hwndOwner = windowInterface ? windowInterface->handle() : nullptr;
     psd.Flags = PSD_MARGINS;
     QPageLayout layout = d->printer->pageLayout();
     switch (layout.units()) {

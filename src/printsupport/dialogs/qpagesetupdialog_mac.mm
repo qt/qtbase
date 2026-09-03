@@ -9,6 +9,7 @@
 #include "qpagesetupdialog_p.h"
 
 #include <qpa/qplatformnativeinterface.h>
+#include <qpa/qplatformwindow_p.h>
 #include <QtPrintSupport/qprintengine.h>
 
 #include <QtPrintSupport/private/qprintengine_mac_p.h>
@@ -101,7 +102,8 @@ void QMacPageSetupDialogPrivate::openCocoaPageLayout(Qt::WindowModality modality
     } else {
         Q_ASSERT(q->parentWidget());
         QWindow *parentWindow = q->parentWidget()->windowHandle();
-        NSWindow *window = static_cast<NSWindow *>(qApp->platformNativeInterface()->nativeResourceForWindow("nswindow", parentWindow));
+        auto *cocoaWindow = parentWindow->nativeInterface<QNativeInterface::Private::QCocoaWindow>();
+        NSWindow *window = cocoaWindow ? cocoaWindow->view().window : nil;
         [pageLayout beginSheetWithPrintInfo:printInfo
                              modalForWindow:window
                                    delegate:delegate

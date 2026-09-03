@@ -119,7 +119,7 @@ public:
     WId winId() const override;
     void setParent(const QPlatformWindow *window) override;
 
-    NSView *view() const;
+    NSView *view() const override;
     NSWindow *nativeWindow() const;
 
     Q_NOTIFICATION_HANDLER(NSViewFrameDidChangeNotification) void viewDidChangeFrame();

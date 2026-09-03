@@ -28,6 +28,7 @@
 #include <QtGui/private/qappleiconengine_p.h>
 #include <QtGui/qpa/qplatformfontdatabase.h>
 #include <QtGui/qpa/qplatformtheme.h>
+#include <QtGui/qpa/qplatformwindow_p.h>
 
 #include <QtWidgets/private/qstyleanimation_p.h>
 #include <QtWidgets/private/qmainwindowlayout_p.h>
@@ -752,8 +753,8 @@ static QString qt_mac_removeMnemonics(const QString &original)
 static bool qt_macWindowMainWindow(const QWidget *window)
 {
     if (QWindow *w = window->windowHandle()) {
-        if (w->handle()) {
-            if (NSWindow *nswindow = static_cast<NSWindow*>(QGuiApplication::platformNativeInterface()->nativeResourceForWindow(QByteArrayLiteral("nswindow"), w))) {
+        if (auto *cocoaWindow = w->nativeInterface<QNativeInterface::Private::QCocoaWindow>()) {
+            if (NSWindow *nswindow = cocoaWindow->view().window) {
                 return [nswindow isMainWindow];
             }
         }

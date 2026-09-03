@@ -38,7 +38,7 @@
 
 #ifdef Q_OS_WIN
 #    include <QtCore/qt_windows.h>
-#include <qpa/qplatformnativeinterface.h>
+#include <qpa/qplatformwindow_p.h>
 #endif
 
 #include <optional>
@@ -51,8 +51,8 @@ using namespace Qt::StringLiterals;
 HMENU qt_getWindowsSystemMenu(const QWidget *w)
 {
     if (QWindow *window = QApplicationPrivate::windowForWidget(w))
-        if (void *handle = QGuiApplication::platformNativeInterface()->nativeResourceForWindow("handle", window))
-            return GetSystemMenu(reinterpret_cast<HWND>(handle), false);
+        if (auto *windowInterface = window->nativeInterface<QNativeInterface::Private::QWindowsWindow>())
+            return GetSystemMenu(windowInterface->handle(), false);
     return 0;
 }
 #endif
