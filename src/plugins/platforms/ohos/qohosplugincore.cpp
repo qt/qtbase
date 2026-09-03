@@ -292,7 +292,7 @@ public:
     void invokeTask(std::function<void(JsState &)> &&task);
 
     napi_env env() override;
-    QNapi::Object getModule(const std::string &moduleName) override;
+    QNapi::Object getModule(const std::string &moduleName);
 
     QNapi::Object appLaunchWant() override;
     std::optional<QNapi::Object> optAppLaunchParam() override;

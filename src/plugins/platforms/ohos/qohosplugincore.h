@@ -142,8 +142,6 @@ public:
 
     ~JsState() override;
 
-    QT_DEPRECATED virtual QNapi::Object getModule(const std::string &moduleName) = 0;
-
     virtual std::shared_ptr<QAbilityPeer> defaultQAbilityPeer() = 0;
     virtual std::shared_ptr<QAbilityPeer> tryGetQAbilityPeerByInstanceId(const std::string &instanceId) = 0;
     virtual std::shared_ptr<QAbilityPeer> tryGetQAbilityPeerByInstance(QNapi::Object qAbility) = 0;
