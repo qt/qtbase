@@ -198,6 +198,15 @@ while(NOT "${configure_args}" STREQUAL "")
         warn_in_per_repo_build("${arg}")
         list(POP_FRONT configure_args submodules)
         is_non_empty_valid_arg("${arg}" "${submodules}")
+
+        # Turn the requested submodules explicitly on, the same way -skip turns them off. A
+        # previous -skip leaves BUILD_<module>=OFF in the cache, which would otherwise win over
+        # QT_BUILD_SUBMODULES.
+        string(REPLACE "," ";" qtrepos "${submodules}")
+        foreach(qtrepo IN LISTS qtrepos)
+            push("-DBUILD_${qtrepo}=ON")
+        endforeach()
+
         list(TRANSFORM submodules REPLACE "," "[[;]]")
         push("-DQT_BUILD_SUBMODULES=${submodules}")
     elseif(arg STREQUAL "-qt-host-path")
