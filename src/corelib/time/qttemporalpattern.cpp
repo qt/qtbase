@@ -98,19 +98,23 @@ namespace QtTemporalPattern {
 
     As QTime and QDateTime only handle times to millisecond precision, normally
     their allowed range of values runs from 0 to 999 and no more than three
-    digits are accepted, or the field width if greater. (If fewer than three
-    digits are parsed, the value is implicitly extended on the right with zeros
-    to obtain milliseconds precision. Whether such a field is accepted will
-    depend on the setting of the \c width of the field and the absence of \l
+    digits are accepted, or the field width if greater. If the \l
+    {QtTemporalPattern::TemporalFieldFlag} {RoundFraction} flag is passed,
+    digits beyond this are accepted and will affect the result only via
+    appropriate rounding. (If fewer than three digits are parsed, the value is
+    implicitly extended on the right with zeros to obtain milliseconds
+    precision. Whether such a field is accepted will depend on the setting of
+    the \c width of the field and the absence of \l
     {QtTemporalPattern::TemporalFieldFlag} {ZeroPad} from its \l
     {QtTemporalPattern::TemporalField} {\c options}, in the usual ways.)
 
-    Where a SecondFraction field accepts more than three digits, the resulting
-    fractional part is rounded to three significant digits. If rounding would
-    require increasing the Second field, however, the Second field is retained
-    unchanged and the fractional part is rounded to 999 milliseconds.  For
-    example, 29.9997 seconds is rounded to 29.999 seconds, to preserve the fact
-    that the time is strictly before the 30 second mark.
+    Where a SecondFraction field accepts more than three digits (either because
+    its field width exceeds three or because the RoundFraction flag is
+    specified), the resulting fractional part is rounded to three significant
+    digits. If rounding would require increasing the Second field, however, the
+    Second field is retained unchanged and the fractional part is rounded to 999
+    milliseconds.  For example, 29.9997 seconds is rounded to 29.999 seconds, to
+    preserve the fact that the time is strictly before the 30 second mark.
 
     \note For negative years, the YearWithinCentury will be understood as the
     number of completed years since the start of the most recent year that is a
@@ -290,11 +294,18 @@ namespace QtTemporalPattern {
 
     \section2 Extended fields
 
-    The following option modifies the handling of the year field, where there is
-    no intrinsic limit to the number of significant digits in a valid value. It
-    is described in more detail below.
+    The following options modify the handling of specific fields where there is
+    no intrinsic limit to the number of significant digits in a valid value.
+    They are described in more detail below.
 
+    \value RoundFraction Allows excess precision in a fractional part.
     \value YearSignIso8601 Requires a sign if there are extra digits in a year.
+
+    By default a \l {QtTemporalPattern::TemporalFieldCategory} {SecondFraction}
+    field only accepts up to three digits or as many digits as its field width
+    specifies. The RoundFraction modifies the field to allow more digits than
+    this, using the excess precision only to resolve rounding to the appropriate
+    precision, as described above for the SecondFraction field.
 
     Modern revisions of ISO 8601 permit years outside the range from 0 through
     9999 but require that they have a sign. By default a + sign on a positive

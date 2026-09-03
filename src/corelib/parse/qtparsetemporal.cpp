@@ -315,6 +315,7 @@ class TemporalFieldMatcher
         qsizetype maxDigits = 0; // <= 0 means unbounded
         // If unbounded, beyond max(width, roundAfter, -maxDigits) prefer fewer digits to more.
         qsizetype roundAfter = -1; // >= 0: is fractional part: round to this many digits
+        // (Values with fewer than roundAfter digits will also be *=10'd up to match.)
         bool allowSign = false;
     };
     // For use as FieldConfig::target:
@@ -856,8 +857,11 @@ TemporalFieldMatcher::continuations(const PartialParse &base, QStringView text,
 
         // case Cat::MillisecondInDay: break;
     case Cat::SecondFraction:
+        // QTime, QDateTime only support millisecond precision, so use 3 as roundAfter.
+        // That's also maxDigits, unless RoundFraction => unlimited.
         matches = numericExtend(base, text, field.options,
-                                {millisTarget, 999, -1, field.width, 0, 3});
+                                {millisTarget, 999, -1, field.width,
+                                 field.options.testFlag(Flag::RoundFraction) ? 0 : 3, 3});
         break;
     case Cat::Second:
         matches = numericExtend(base, text, field.options, {secondTarget, 59, -1, field.width, 2});
