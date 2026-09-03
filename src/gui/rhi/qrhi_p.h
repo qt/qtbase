@@ -278,10 +278,12 @@ public:
     static const int MAX_SHADER_CACHE_ENTRIES = 128;
 
     bool debugMarkers = false;
+    bool timestamps = false;
     int currentFrameSlot = 0; // for vk, mtl, and similar. unused by gl and d3d11.
     bool inFrame = false;
-
+    QRhiCommandBuffer *currentOffscreenCb = nullptr;
     QRhiAdapter *requestedRhiAdapter = nullptr;
+    QHash<QRhiResource *, bool> resources;
 
 private:
     QRhi::Implementation implType;
@@ -289,7 +291,6 @@ private:
     QVarLengthArray<QRhiResourceUpdateBatch *, 4> resUpdPool;
     quint64 resUpdPoolMap = 0;
     int lastResUpdIdx = -1;
-    QHash<QRhiResource *, bool> resources;
     QSet<QRhiResource *> pendingDeleteResources;
     QVarLengthArray<QRhi::CleanupCallback, 4> cleanupCallbacks;
     QHash<const void *, QRhi::CleanupCallback> keyedCleanupCallbacks;
@@ -300,6 +301,14 @@ private:
     friend class QRhiResourceUpdateBatchPrivate;
     friend class QRhiBufferData;
 };
+
+struct QRhiDebugHooks
+{
+    void (*frameEnd)(QRhiImplementation *d, QRhiSwapChain *swapChain, QRhiCommandBuffer *cb) = nullptr;
+    void (*rhiAboutToBeDestroyed)(QRhiImplementation *d) = nullptr;
+};
+
+Q_GUI_EXPORT extern QRhiDebugHooks qrhiDebugHooks;
 
 class QRhiBufferBackedIndirectCommandBuffer : public QRhiIndirectCommandBuffer
 {

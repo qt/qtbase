@@ -34,6 +34,8 @@ Q_LOGGING_CATEGORY_WITH_ENV_OVERRIDE(QRHI_LOG_INFO, "QSG_INFO", "qt.rhi.general"
 
 Q_LOGGING_CATEGORY(QRHI_LOG_RUB, "qt.rhi.rub")
 
+Q_CONSTINIT QRhiDebugHooks qrhiDebugHooks;
+
 /*!
     \class QRhi
     \ingroup painting-3D
@@ -9869,6 +9871,9 @@ QRhi::~QRhi()
     if (!d)
         return;
 
+    if (qrhiDebugHooks.rhiAboutToBeDestroyed)
+        qrhiDebugHooks.rhiAboutToBeDestroyed(d);
+
     d->runCleanup();
 
     qDeleteAll(d->pendingDeleteResources);
@@ -9950,6 +9955,7 @@ void QRhiImplementation::prepareForCreate(QRhi *rhi, QRhi::Implementation impl, 
     q = rhi;
 
     debugMarkers = flags.testFlag(QRhi::EnableDebugMarkers);
+    timestamps = flags.testFlag(QRhi::EnableTimestamps);
 
     implType = impl;
     implThread = QThread::currentThread();
@@ -12998,15 +13004,22 @@ QRhi::FrameOpResult QRhi::beginFrame(QRhiSwapChain *swapChain, BeginFrameFlags f
  */
 QRhi::FrameOpResult QRhi::endFrame(QRhiSwapChain *swapChain, EndFrameFlags flags)
 {
-    if (!d->inFrame)
+    const bool wasInFrame = d->inFrame;
+    if (!wasInFrame)
         qWarning("Attempted to call endFrame() without an active frame; ignored");
 
-    QRhi::FrameOpResult r = d->inFrame ? d->endFrame(swapChain, flags) : FrameOpSuccess;
+    QRhi::FrameOpResult r = wasInFrame ? d->endFrame(swapChain, flags) : FrameOpSuccess;
     d->inFrame = false;
     // deleteLater is a high level QRhi concept the backends know
     // nothing about - handle it here.
     qDeleteAll(d->pendingDeleteResources);
     d->pendingDeleteResources.clear();
+
+    if (wasInFrame && qrhiDebugHooks.frameEnd) {
+        QRhiCommandBuffer *cb = (r == FrameOpSuccess && swapChain)
+                ? swapChain->currentFrameCommandBuffer() : nullptr;
+        qrhiDebugHooks.frameEnd(d, swapChain, cb);
+    }
 
     return r;
 }
@@ -13112,14 +13125,18 @@ int QRhi::currentFrameSlot() const
  */
 QRhi::FrameOpResult QRhi::beginOffscreenFrame(QRhiCommandBuffer **cb, BeginFrameFlags flags)
 {
-    if (d->inFrame)
+    const bool wasInFrame = d->inFrame;
+    if (wasInFrame)
         qWarning("Attempted to call beginOffscreenFrame() within a still active frame; ignored");
 
     qCDebug(QRHI_LOG_RUB) << "[rub] new offscreen frame";
 
-    QRhi::FrameOpResult r = !d->inFrame ? d->beginOffscreenFrame(cb, flags) : FrameOpSuccess;
-    if (r == FrameOpSuccess)
+    QRhi::FrameOpResult r = !wasInFrame ? d->beginOffscreenFrame(cb, flags) : FrameOpSuccess;
+    if (r == FrameOpSuccess) {
         d->inFrame = true;
+        if (!wasInFrame)
+            d->currentOffscreenCb = *cb;
+    }
 
     return r;
 }
@@ -13136,13 +13153,20 @@ QRhi::FrameOpResult QRhi::beginOffscreenFrame(QRhiCommandBuffer **cb, BeginFrame
  */
 QRhi::FrameOpResult QRhi::endOffscreenFrame(EndFrameFlags flags)
 {
-    if (!d->inFrame)
+    const bool wasInFrame = d->inFrame;
+    if (!wasInFrame)
         qWarning("Attempted to call endOffscreenFrame() without an active frame; ignored");
 
-    QRhi::FrameOpResult r = d->inFrame ? d->endOffscreenFrame(flags) : FrameOpSuccess;
+    QRhi::FrameOpResult r = wasInFrame ? d->endOffscreenFrame(flags) : FrameOpSuccess;
     d->inFrame = false;
     qDeleteAll(d->pendingDeleteResources);
     d->pendingDeleteResources.clear();
+
+    if (wasInFrame && qrhiDebugHooks.frameEnd) {
+        QRhiCommandBuffer *cb = r == FrameOpSuccess ? d->currentOffscreenCb : nullptr;
+        qrhiDebugHooks.frameEnd(d, nullptr, cb);
+    }
+    d->currentOffscreenCb = nullptr;
 
     return r;
 }
