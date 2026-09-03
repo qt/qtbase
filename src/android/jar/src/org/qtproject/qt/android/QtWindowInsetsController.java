@@ -4,6 +4,7 @@
 package org.qtproject.qt.android;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.os.Build;
@@ -20,15 +21,31 @@ import android.content.res.Resources.Theme;
 class QtWindowInsetsController
 {
     /*
-    * Convenience method to call deprecated API prior to Android R (30).
+    * Convenience method to call the API deprecated in Android V (35),
+    * a no-op when the system enforces edge-to-edge for this app.
     */
     @SuppressWarnings ("deprecation")
     private static void setDecorFitsSystemWindows(Window window, boolean enable)
     {
-        final int sdk = Build.VERSION.SDK_INT;
-        if (sdk < Build.VERSION_CODES.R || sdk > Build.VERSION_CODES.VANILLA_ICE_CREAM)
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R)
+            return;
+        if (isEdgeToEdgeEnforced(window.getContext()))
             return;
         window.setDecorFitsSystemWindows(enable);
+    }
+
+    /**
+    * The app's theme declares the cutout mode wanted outside Qt's expanded modes.
+    */
+    private static int themeCutoutMode(Context context)
+    {
+        int[] attrs = new int[] { android.R.attr.windowLayoutInDisplayCutoutMode };
+        TypedArray ta = context.getTheme().obtainStyledAttributes(attrs);
+        try {
+            return ta.getInt(0, WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT);
+        } finally {
+            ta.recycle();
+        }
     }
 
     private static void useCutoutShortEdges(Window window, boolean enabled)
@@ -40,7 +57,7 @@ class QtWindowInsetsController
             WindowManager.LayoutParams layoutParams = window.getAttributes();
             layoutParams.layoutInDisplayCutoutMode = enabled
                     ? WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
-                    : WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_NEVER;
+                    : themeCutoutMode(window.getContext());
             window.setAttributes(layoutParams);
         }
     }
@@ -82,7 +99,7 @@ class QtWindowInsetsController
         if (window == null)
             return;
 
-        if (edgeToEdgeEnabled(activity))
+        if (isEdgeToEdgeEnforced(activity))
             return;
 
         // These are needed to operate on system bar colors
@@ -177,13 +194,23 @@ class QtWindowInsetsController
         decor.post(() -> decor.requestApplyInsets());
     }
 
-    private static boolean edgeToEdgeEnabled(Activity activity) {
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.VANILLA_ICE_CREAM)
-            return true;
+    /*
+    * The system enforces edge-to-edge only for apps targeting Android V (35)
+    * or later, regardless of the version the device runs.
+    */
+    private static boolean isEdgeToEdgeEnforced(Context context) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.VANILLA_ICE_CREAM)
             return false;
+
+        final int targetSdk = context.getApplicationInfo().targetSdkVersion;
+        if (targetSdk < Build.VERSION_CODES.VANILLA_ICE_CREAM)
+            return false;
+        if (targetSdk > Build.VERSION_CODES.VANILLA_ICE_CREAM)
+            return true;
+
+        // Apps targeting exactly Android V (35) can still opt out
         int[] attrs = new int[] { android.R.attr.windowOptOutEdgeToEdgeEnforcement };
-        TypedArray ta = activity.getTheme().obtainStyledAttributes(attrs);
+        TypedArray ta = context.getTheme().obtainStyledAttributes(attrs);
         try {
             return !ta.getBoolean(0, false);
         } finally {
@@ -221,8 +248,8 @@ class QtWindowInsetsController
 
     static boolean isExpandedClientArea(Activity activity)
     {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM)
-            return edgeToEdgeEnabled(activity);
+        if (isEdgeToEdgeEnforced(activity))
+            return true;
 
         @SuppressWarnings("deprecation")
         int statusBarColor = activity.getWindow().getStatusBarColor();
@@ -329,7 +356,7 @@ class QtWindowInsetsController
     @SuppressWarnings("deprecation")
     static int getThemeDefaultStatusBarColor(Activity activity)
     {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM)
+        if (isEdgeToEdgeEnforced(activity))
             return -1;
         return resolveColorAttribute(activity, android.R.attr.statusBarColor);
     }
@@ -337,7 +364,7 @@ class QtWindowInsetsController
     @SuppressWarnings("deprecation")
     static int getThemeDefaultNavigationBarColor(Activity activity)
     {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM)
+        if (isEdgeToEdgeEnforced(activity))
             return -1;
         return resolveColorAttribute(activity, android.R.attr.navigationBarColor);
     }
@@ -355,7 +382,7 @@ class QtWindowInsetsController
     @SuppressWarnings("deprecation")
     static void setStatusBarColor(Window window, int color)
     {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM)
+        if (isEdgeToEdgeEnforced(window.getContext()))
             return;
         window.setStatusBarColor(color);
     }
@@ -363,7 +390,7 @@ class QtWindowInsetsController
     @SuppressWarnings("deprecation")
     static void setNavigationBarColor(Window window, int color)
     {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM)
+        if (isEdgeToEdgeEnforced(window.getContext()))
             return;
         window.setNavigationBarColor(color);
     }
