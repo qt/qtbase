@@ -26,6 +26,7 @@
 #include "QtGui/qwindow.h"
 #include "qwidget.h"
 #include <qpa/qplatformnativeinterface.h>
+#include <qpa/qplatformwindow_p.h>
 #include "QtCore/qmutex.h"
 #include "QtCore/qtranslator.h"
 #include "QtCore/qbasictimer.h"
@@ -180,9 +181,8 @@ public:
     static HWND getHWNDForWidget(const QWidget *widget)
     {
         if (QWindow *window = windowForWidget(widget))
-            if (window->handle() && QGuiApplication::platformNativeInterface())
-                return static_cast<HWND> (QGuiApplication::platformNativeInterface()->
-                                          nativeResourceForWindow(QByteArrayLiteral("handle"), window));
+            if (auto *windowInterface = window->nativeInterface<QNativeInterface::Private::QWindowsWindow>())
+                return windowInterface->handle();
         return 0;
     }
 #endif

@@ -12,6 +12,7 @@
 #include <QtPrintSupport/qprinter.h>
 #include <QtPrintSupport/qprintengine.h>
 #include <qpa/qplatformprintdevice.h>
+#include <qpa/qplatformwindow_p.h>
 
 #include <QtPrintSupport/private/qprintengine_mac_p.h>
 
@@ -240,7 +241,8 @@ void QPrintDialogPrivate::openCocoaPrintPanel(Qt::WindowModality modality)
     } else {
         Q_ASSERT(q->window());
         QWindow *parentWindow = q->window()->windowHandle();
-        NSWindow *window = static_cast<NSWindow *>(qApp->platformNativeInterface()->nativeResourceForWindow("nswindow", parentWindow));
+        auto *cocoaWindow = parentWindow->nativeInterface<QNativeInterface::Private::QCocoaWindow>();
+        NSWindow *window = cocoaWindow ? cocoaWindow->view().window : nil;
         [printPanel beginSheetWithPrintInfo:printInfo
                              modalForWindow:window
                                    delegate:delegate

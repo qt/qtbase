@@ -30,11 +30,16 @@ struct wl_surface;
 #endif
 
 #if defined(Q_OS_MACOS)
+Q_FORWARD_DECLARE_OBJC_CLASS(NSView);
 Q_FORWARD_DECLARE_OBJC_CLASS(CALayer);
 typedef long NSInteger;
 enum NSVisualEffectMaterial : NSInteger;
 enum NSVisualEffectBlendingMode : NSInteger;
 enum NSVisualEffectState: NSInteger;
+#endif
+
+#if defined(Q_OS_WIN)
+#include <QtGui/qwindowdefs_win.h>
 #endif
 
 #if defined(Q_OS_HARMONY)
@@ -71,7 +76,8 @@ struct Q_GUI_EXPORT QWasmWindow
 #if defined(Q_OS_MACOS) || defined(Q_QDOC)
 struct Q_GUI_EXPORT QCocoaWindow
 {
-    QT_DECLARE_NATIVE_INTERFACE(QCocoaWindow, 3, QWindow)
+    QT_DECLARE_NATIVE_INTERFACE(QCocoaWindow, 4, QWindow)
+    virtual NSView *view() const = 0;
     virtual QPoint bottomLeftClippedByNSWindowOffset() const = 0;
     virtual CALayer *contentLayer() const = 0;
     virtual void manageVisualEffectArea(quintptr identifier, const QRect &rect,
@@ -115,7 +121,9 @@ struct Q_GUI_EXPORT QXcbWindow
 #if defined(Q_OS_WIN) || defined(Q_QDOC)
 struct Q_GUI_EXPORT QWindowsWindow
 {
-    QT_DECLARE_NATIVE_INTERFACE(QWindowsWindow, 1, QWindow)
+    QT_DECLARE_NATIVE_INTERFACE(QWindowsWindow, 2, QWindow)
+
+    virtual HWND handle() const = 0;
 
     virtual void setHasBorderInFullScreen(bool border) = 0;
     virtual bool hasBorderInFullScreen() const = 0;

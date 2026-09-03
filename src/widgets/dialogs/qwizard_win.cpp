@@ -502,9 +502,8 @@ HWND QVistaHelper::wizardHWND() const
     // Do not use winId() as this enforces native children of the parent
     // widget when called before show() as happens when calling setWizardStyle().
     if (QWindow *window = wizard->windowHandle())
-        if (window->handle())
-            if (void *vHwnd = QGuiApplication::platformNativeInterface()->nativeResourceForWindow(QByteArrayLiteral("handle"), window))
-                return static_cast<HWND>(vHwnd);
+        if (auto *windowInterface = window->nativeInterface<QNativeInterface::Private::QWindowsWindow>())
+            return windowInterface->handle();
     qWarning().nospace() << "Failed to obtain HWND for wizard.";
     return 0;
 }
