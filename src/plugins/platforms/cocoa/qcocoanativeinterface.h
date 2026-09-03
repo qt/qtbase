@@ -28,9 +28,6 @@ public:
 
     NativeResourceForIntegrationFunction nativeResourceFunctionForIntegration(const QByteArray &resource) override;
 
-public Q_SLOTS:
-    void onAppFocusWindowChanged(QWindow *window);
-
 private:
     Q_INVOKABLE void clearCurrentThreadCocoaEventDispatcherInterruptFlag();
 
