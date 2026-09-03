@@ -4158,17 +4158,17 @@ QDomAttrPrivate* QDomElementPrivate::removeAttributeNode(QDomAttrPrivate* oldAtt
     return static_cast<QDomAttrPrivate *>(m_attr->removeNamedItem(oldAttr->nodeName()));
 }
 
-bool QDomElementPrivate::hasAttribute(const QString& aname)
+bool QDomElementPrivate::hasAttribute(const QString& aname) const
 {
     return m_attr->contains(aname);
 }
 
-bool QDomElementPrivate::hasAttributeNS(const QString& nsURI, const QString& localName)
+bool QDomElementPrivate::hasAttributeNS(const QString& nsURI, const QString& localName) const
 {
     return m_attr->containsNS(nsURI, localName);
 }
 
-QString QDomElementPrivate::text()
+QString QDomElementPrivate::text() const
 {
     QString t(u""_s);
 
