@@ -979,9 +979,6 @@ QStyle *QApplication::style()
     QApplication, will cause the application to use QStyle::standardPalette()
     for the palette.
 
-    \warning Qt style sheets are currently not supported for custom QStyle
-    subclasses. We plan to address this in some future release.
-
     \sa style(), QStyle, setPalette(), desktopSettingsAware()
 */
 void QApplication::setStyle(QStyle *style)
