@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 add_subdirectory(qbytedatabuffer)
+add_subdirectory(qhttpheaderrangeset)
 add_subdirectory(qhttpheaders)
 if(QT_FEATURE_networkdiskcache)
     add_subdirectory(qnetworkdiskcache)

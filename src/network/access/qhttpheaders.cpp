@@ -17,8 +17,12 @@
 #include <QtCore/qxpfunctional.h>
 
 #include <q20algorithm.h>
+#include <array>
+#include <limits>
+#include <q20memory.h>
 #include <string_view>
 #include <variant>
+#include <vector>
 
 QT_BEGIN_NAMESPACE
 
@@ -42,6 +46,7 @@ Q_STATIC_LOGGING_CATEGORY(lcQHttpHeaders, "qt.network.http.headers");
     Use \l isValid() to check whether a range is well-formed before
     passing it to \l QHttpHeaders::setRangeValues().
 
+    \sa QHttpHeaderRangeSet
     \sa QHttpHeaders::rangeValues(), QHttpHeaders::setRangeValues()
 */
 
@@ -86,6 +91,274 @@ Q_STATIC_LOGGING_CATEGORY(lcQHttpHeaders, "qt.network.http.headers");
     \qhashold{QHttpHeaderRange}
     \since 6.12
 */
+
+namespace {
+
+// ### replace with QSmallVector (QTBUG-131379) once available
+template <typename T, size_t N>
+class SmallVector
+{
+    std::array<T, N> m_data;
+    static_assert(N <= (std::numeric_limits<quint8>::max)());
+    quint8 m_size = 0;
+public:
+    SmallVector() = default;
+    // Rule Of Zero applies!
+
+    constexpr void resizeForOverwrite(qsizetype n)
+    {
+        Q_PRE(size_t(n) <= N);
+        m_size = quint8(n);
+    }
+
+    constexpr void assign(QSpan<const T> other)
+    {
+        Q_PRE(size_t(other.size()) <= N);
+        if (other.begin() != begin()) // the _one_ thing std::copy doesn't deal with is a no-op
+            q20::copy(other.begin(), other.end(), data());
+        else
+            Q_PRE(other.size() <= size()); // anything else would be UB
+        resizeForOverwrite(other.size());
+    }
+
+    constexpr T *data() noexcept { return m_data.data(); }
+    constexpr const T *data() const noexcept { return m_data.data(); }
+    constexpr qsizetype size() const noexcept { return qsizetype{m_size}; }
+
+    constexpr auto begin() noexcept { return data(); }
+    constexpr auto begin() const noexcept { return data(); }
+    constexpr auto end() noexcept { return data() + size(); }
+    constexpr auto end() const noexcept { return data() + size(); }
+};
+
+} // unnamed namespace
+
+class QHttpHeaderRangeSetPrivate : public QSharedData
+{
+    Q_DISABLE_COPY_MOVE(QHttpHeaderRangeSetPrivate)
+public:
+    static constexpr size_t InlineCapacity =
+            (std::max)(size_t(2), // e.g. "bytes=0-99, -100"
+                       sizeof(std::vector<QHttpHeaderRange>) / sizeof(QHttpHeaderRange));
+
+    using InlineBuffer = SmallVector<QHttpHeaderRange, InlineCapacity>;
+    using HeapBuffer = std::vector<QHttpHeaderRange>;
+    static_assert(std::is_trivially_destructible_v<InlineBuffer>,
+                  "add explicit ~InlineBuffer() calls");
+
+    explicit QHttpHeaderRangeSetPrivate(QSpan<const QHttpHeaderRange> rs)
+        : m_inlineBuffer{}, m_onHeap(false)
+    {
+        setRanges(rs);
+    }
+
+    ~QHttpHeaderRangeSetPrivate()
+    {
+        if (m_onHeap)
+            std::destroy_at(&m_heapBuffer);
+    }
+
+    bool isShared() const { return ref.loadRelaxed() != 1; }
+
+    QSpan<const QHttpHeaderRange> ranges() const
+    {
+        if (m_onHeap)
+            return m_heapBuffer;
+        return m_inlineBuffer;
+    }
+
+    void setRanges(QSpan<const QHttpHeaderRange> rs)
+    {
+        // Remember: `rs` may point into ranges()!
+        const auto rs_size = size_t(rs.size()); // cannot overflow!
+        if (m_onHeap) {
+            if (rs_size <= m_heapBuffer.size()) {
+                if (rs.begin() != m_heapBuffer.data()) // std::copy() would be UB (no-op, though)
+                    std::copy(rs.begin(), rs.end(), m_heapBuffer.begin());
+                m_heapBuffer.resize(rs_size);
+            } else {
+                // rs is too large to point into ranges(), so assign() is not UB:
+                m_heapBuffer.assign(rs.begin(), rs.end());
+            }
+        } else {
+            if (rs_size <= InlineCapacity) {
+                m_inlineBuffer.assign(rs); // robust under self-assignment
+            } else {
+                // rs is too large to point into ranges(), so this won't kill its backing store:
+                q20::construct_at(&m_heapBuffer, rs.begin(), rs.end());
+                m_onHeap = true;
+            }
+        }
+    }
+
+private:
+    union {
+        InlineBuffer m_inlineBuffer;
+        HeapBuffer m_heapBuffer;
+    };
+    bool m_onHeap;
+};
+
+QT_DEFINE_QESDP_SPECIALIZATION_DTOR(QHttpHeaderRangeSetPrivate)
+
+/*!
+    \class QHttpHeaderRangeSet
+    \since 6.12
+    \inmodule QtNetwork
+    \preliminary
+    \compares equality
+
+    \brief QHttpHeaderRangeSet represents the byte ranges of an HTTP
+    \c{Range} header.
+
+    QHttpHeaderRangeSet holds a sequence of QHttpHeaderRange objects, as they
+    appear in such a header, which RFC 9110 calls a \e{range-set}.
+
+    The ranges are kept in the order in which they were given, because that
+    is the order in which a server is asked to send them. The class does not
+    interpret them: neither overlapping nor invalid ranges are rejected or
+    merged.
+
+    Each range is a byte range, as defined in
+    \l{https://datatracker.ietf.org/doc/html/rfc9110#section-14.1.1}{RFC 9110
+    Section 14.1.1}:
+    \list
+        \li If the start is specified but the end is not (e.g., "bytes=500-"),
+            the QHttpHeaderRange will have \c{start=500} and \c{end=std::nullopt}.
+        \li If the end is specified but the start is not (e.g., "bytes=-500"),
+            the QHttpHeaderRange will have \c{start=std::nullopt} and \c{end=500},
+            representing the last 500 bytes.
+        \li If both are specified (e.g., "bytes=0-499"), the QHttpHeaderRange will
+            have \c{start=0} and \c{end=499}.
+    \endlist
+
+    \sa QHttpHeaderRange, QHttpHeaders::rangeValues(),
+        QHttpHeaders::setRangeValues()
+*/
+
+/*!
+    Constructs a QHttpHeaderRangeSet object with no ranges.
+*/
+QHttpHeaderRangeSet::QHttpHeaderRangeSet()
+    = default;
+
+/*!
+    Constructs a QHttpHeaderRangeSet object holding \a r, in the given order.
+
+    \sa setRanges()
+*/
+QHttpHeaderRangeSet::QHttpHeaderRangeSet(QSpan<const QHttpHeaderRange> r)
+    : d_ptr(r.isEmpty() ? nullptr : new QHttpHeaderRangeSetPrivate(r))
+{
+}
+
+/*!
+    \fn QHttpHeaderRangeSet::QHttpHeaderRangeSet(std::initializer_list<QHttpHeaderRange> r)
+    \overload
+
+    Constructs a QHttpHeaderRangeSet object holding the ranges in \a r, in the
+    given order.
+*/
+
+/*!
+    Creates a copy of \a other.
+*/
+QHttpHeaderRangeSet::QHttpHeaderRangeSet(const QHttpHeaderRangeSet &other)
+    = default;
+
+/*!
+    Assigns the contents of \a other and returns a reference to this object.
+*/
+QHttpHeaderRangeSet &QHttpHeaderRangeSet::operator=(const QHttpHeaderRangeSet &other)
+    = default;
+
+/*!
+    Destroys the object.
+*/
+QHttpHeaderRangeSet::~QHttpHeaderRangeSet()
+    = default;
+
+/*!
+    \fn QHttpHeaderRangeSet::QHttpHeaderRangeSet(QHttpHeaderRangeSet &&other)
+
+    Move-constructs the object from \a other, which is left with no ranges.
+*/
+
+/*!
+    \fn QHttpHeaderRangeSet &QHttpHeaderRangeSet::operator=(QHttpHeaderRangeSet &&other)
+
+    Move-assigns \a other to this object and returns a reference to this
+    object. \a other is left with no ranges.
+*/
+
+/*!
+    \fn void QHttpHeaderRangeSet::swap(QHttpHeaderRangeSet &other)
+    \memberswap{ranges object}
+*/
+
+/*!
+    Returns a view of the ranges held by this object.
+
+    The returned view is valid until this object is modified or destroyed.
+
+    \sa setRanges()
+*/
+QSpan<const QHttpHeaderRange> QHttpHeaderRangeSet::ranges() const noexcept
+{
+    return d_ptr ? d_ptr->ranges() : QSpan<const QHttpHeaderRange>{};
+}
+
+/*!
+    Sets the ranges held by this object to \a r. Preserves the order of \a r.
+
+    \sa ranges()
+*/
+void QHttpHeaderRangeSet::setRanges(QSpan<const QHttpHeaderRange> r)
+{
+    if (d_ptr && !d_ptr->isShared())
+        d_ptr->setRanges(r); // reuse the buffer we already have
+    else
+        QHttpHeaderRangeSet(r).swap(*this);
+}
+
+/*!
+    \fn bool QHttpHeaderRangeSet::operator==(const QHttpHeaderRangeSet &lhs, const QHttpHeaderRangeSet &rhs)
+
+    Returns whether \a lhs and \a rhs hold the same ranges in the same order.
+
+    Like for other sequence containers, the ranges are compared element by
+    element, so objects that denote the same set of bytes, but hold different
+    ranges, or hold them in a different order, do not compare equal.
+
+    \sa operator!=()
+*/
+
+/*!
+    \fn bool QHttpHeaderRangeSet::operator!=(const QHttpHeaderRangeSet &lhs, const QHttpHeaderRangeSet &rhs)
+
+    Returns whether \a lhs and \a rhs hold different ranges, or hold them in a
+    different order.
+
+    \sa operator==()
+*/
+
+bool comparesEqual(const QHttpHeaderRangeSet &lhs, const QHttpHeaderRangeSet &rhs) noexcept
+{
+    if (lhs.d_ptr == rhs.d_ptr)
+        return true;
+    const auto l = lhs.ranges(), r = rhs.ranges();
+    return std::equal(l.begin(), l.end(), r.begin(), r.end());
+}
+
+/*!
+    \fn size_t QHttpHeaderRangeSet::qHash(const QHttpHeaderRangeSet &key, size_t seed)
+    \qhash{QHttpHeaderRangeSet}
+*/
+size_t qHash(const QHttpHeaderRangeSet &key, size_t seed) noexcept
+{
+    const auto ranges = key.ranges();
+    return qHashRange(ranges.begin(), ranges.end(), seed);
+}
 
 /*!
     \class QHttpHeaders
@@ -1760,8 +2033,8 @@ std::optional<QDateTime> QHttpHeaders::dateTimeValueAt(qsizetype i) const
 /*!
     \since 6.12
 
-    Returns the values of the \c Range HTTP header field, parsed as a list of
-    QHttpHeaderRange objects, or \c std::nullopt if parsing failed.
+    Returns the ranges of the \c Range HTTP header fields, or \c std::nullopt
+    if parsing failed.
 
     Each range represents a byte range. According to RFC 9110:
     \list
@@ -1774,9 +2047,11 @@ std::optional<QDateTime> QHttpHeaders::dateTimeValueAt(qsizetype i) const
             have \c{start=0} and \c{end=499}.
     \endlist
 
+    The ranges are returned in the order in which they appear in the headers.
+
     Parsing behaves as follows:
     \list
-        \li If no \c Range header is present, an empty list is returned.
+        \li If no \c Range header is present, an empty range set is returned.
         \li According to RFC 9110 Section 14.2, any \c Range header containing a
             unit other than "bytes" (e.g., "seconds=1-2") is ignored. These ignored
             headers do not cause the parsing to fail.
@@ -1787,7 +2062,7 @@ std::optional<QDateTime> QHttpHeaders::dateTimeValueAt(qsizetype i) const
 
     \sa setRangeValues, WellKnownHeader::Range
 */
-std::optional<QList<QHttpHeaderRange>> QHttpHeaders::rangeValues() const
+std::optional<QHttpHeaderRangeSet> QHttpHeaders::rangeValues() const
 {
     QList<QHttpHeaderRange> results;
 
@@ -1836,7 +2111,7 @@ std::optional<QList<QHttpHeaderRange>> QHttpHeaders::rangeValues() const
         }
     }
 
-    return results;
+    return QHttpHeaderRangeSet(results);
 }
 
 /*!
@@ -1844,7 +2119,8 @@ std::optional<QList<QHttpHeaderRange>> QHttpHeaders::rangeValues() const
 
     Sets the \c Range HTTP header field to the specified list of \a ranges.
 
-    The ranges are formatted using the "bytes" unit. For each QHttpHeaderRange in the list:
+    The ranges are formatted using the "bytes" unit, in the order in which
+    \a ranges holds them. For each QHttpHeaderRange:
     \list
         \li A range with only a start (e.g., QHttpHeaderRange(500, std::nullopt))
             is formatted as \c "500-".
@@ -1861,16 +2137,17 @@ std::optional<QList<QHttpHeaderRange>> QHttpHeaders::rangeValues() const
 
     \sa rangeValues(), WellKnownHeader::Range
 */
-void QHttpHeaders::setRangeValues(QSpan<const QHttpHeaderRange> ranges)
+void QHttpHeaders::setRangeValues(const QHttpHeaderRangeSet &ranges)
 {
-    if (ranges.isEmpty()) {
+    const QSpan<const QHttpHeaderRange> rs = ranges.ranges();
+    if (rs.isEmpty()) {
         removeAll(WellKnownHeader::Range);
         return;
     }
 
     QByteArray result("bytes=");
-    for (qsizetype i = 0; i < ranges.size(); ++i) {
-        const QHttpHeaderRange &range = ranges[i];
+    for (qsizetype i = 0; i < rs.size(); ++i) {
+        const QHttpHeaderRange &range = rs[i];
 
         if (i > 0)
             result += ", "_ba;
@@ -1999,6 +2276,32 @@ QDebug operator<<(QDebug debug, const QHttpHeaderRange &range)
     debug << '-';
     if (range.end)
         debug << *range.end;
+    debug << ')';
+    return debug;
+}
+
+/*!
+    \fn QDebug operator<<(QDebug debug, const QHttpHeaderRangeSet &ranges)
+    \since 6.12
+    \relates QHttpHeaderRangeSet
+
+    Writes \a ranges to the stream \a debug.
+*/
+QDebug operator<<(QDebug debug, const QHttpHeaderRangeSet &ranges)
+{
+    QDebugStateSaver saver(debug);
+    debug.nospace();
+    debug << "QHttpHeaderRangeSet(bytes=";
+    const char *separator = "";
+    for (QHttpHeaderRange range : ranges.ranges()) {
+        debug << separator;
+        if (range.start)
+            debug << *range.start;
+        debug << '-';
+        if (range.end)
+            debug << *range.end;
+        separator = ", ";
+    }
     debug << ')';
     return debug;
 }
