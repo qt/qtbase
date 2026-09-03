@@ -840,10 +840,28 @@ bool QApplicationPrivate::compressEvent(QEvent *event, QObject *receiver, QPostE
     \brief the application style sheet
     \since 4.2
 
-    By default, this property returns an empty string unless the user specifies
-    the \c{-stylesheet} option on the command line when running the application.
+    The application style sheet applies to all widgets in the application, in
+    addition to any style sheet set on individual widgets. See
+    \l{Qt Style Sheets} for the cascading rules.
 
-    \sa QWidget::setStyle(), {Qt Style Sheets}
+    Setting this property replaces the application style with a style sheet
+    style that wraps the current \l{style()}{style}, and every later change
+    repolishes all widgets in the application. Set the style sheet once,
+    before the first window is shown, and do not use it to switch themes at
+    runtime. For when to use style sheets at all, see
+    \l{Styling Approaches for Qt Widgets}.
+
+    If the value is a \c{file:///} URL, Qt loads the style sheet from the named
+    file and resolves relative URLs inside it, such as image references, against
+    that file's directory. Only the application style sheet accepts a
+    \c{file:///} URL; \l QWidget::styleSheet does not.
+
+    By default, this property is an empty string unless the user specifies the
+    \c{-stylesheet} option on the command line when running the application;
+    that option sets this property to a \c{file:///} URL for the given file.
+
+    \sa QWidget::styleSheet, setStyle(), {Qt Style Sheets},
+        {Styling Approaches for Qt Widgets}
 */
 
 /*!

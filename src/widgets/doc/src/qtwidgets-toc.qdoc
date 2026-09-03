@@ -23,6 +23,7 @@
         \endlist
     \li \l {Styles and Style Aware Widgets}
         \list
+            \li \l{Styling Approaches for Qt Widgets}
             \li \l{Styling}
         \endlist
     \li \l {Qt Style Sheets}
