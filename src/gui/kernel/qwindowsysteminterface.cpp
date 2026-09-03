@@ -622,7 +622,7 @@ QList<QEventPoint>
     QList<QWindowSystemInterface::TouchPoint>::const_iterator point = points.constBegin();
     QList<QWindowSystemInterface::TouchPoint>::const_iterator end = points.constEnd();
     while (point != end) {
-        QPointF globalPos = QHighDpi::fromNativePixels(point->area.center(), window);
+        QPointF globalPos = QHighDpi::fromNativeGlobalPosition(point->area.center(), window);
         QEventPoint p(point->id, point->state, globalPos, globalPos);
         states |= point->state;
         if (point->uniqueId >= 0)
