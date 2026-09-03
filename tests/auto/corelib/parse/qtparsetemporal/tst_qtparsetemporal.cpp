@@ -131,7 +131,42 @@ void tst_QtParseTemporal::prefix_data()
                           0, Flags{ Flag::LowerCase }, Cat::Literal } }
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
         << 46 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
-    // Space-padding:
+    // Space-matching (default matches SPACE and non-ASCII spaces to each other):
+    QTest::newRow("Space has&nnbsp;many&thinsp;forms&nnbsp;in&numsp;Unicode./literal/C/greg/0")
+        << u"Space has\u202Fmany\u2009forms\u00A0in\u2007Unicode."_s
+        << Fields{ Field{ u"Space has\u00A0many forms in\u202FUnicode."_s,
+                          0, Flags{}, Cat::Literal } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 32 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("Space has&nbsp;many forms in&nnbsp;Unicode./literal+flex/C/greg/0")
+        << u"Space has\u202Fmany forms\u00A0in Unicode."_s
+        << Fields{ Field{ u"Space has\u00A0many forms in\u202FUnicode."_s,
+                          0, Flags{}, Cat::Literal } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 32 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    // ... but number of spaces must match:
+    QTest::newRow("Space has  many  forms in Unicode./literal/C/greg/0")
+        << u"Space has  many  forms in Unicode."_s
+        << Fields{ Field{ u"Space has many forms in Unicode."_s,
+                          0, Flags{}, Cat::Literal } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    // Strict and Flex variants:
+    QTest::newRow("Space has&nnbsp;many forms in&nbsp;Unicode./literal+strict/C/greg/0")
+        << u"Space has\u202Fmany forms\u00A0in Unicode."_s
+        << Fields{ Field{ u"Space has\u00A0many forms in\u202FUnicode."_s,
+                          0, Flags{ Flag::StrictSpace }, Cat::Literal } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 0 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("Space<CR><LF><FF><VT><HT>has so many forms"
+                  "&nbsp;&numsp;&thinsp;&nnbsp;in Unicode./literal+flex/C/greg/0")
+        << u"Space\r\n\f\v\thas so many forms\u00A0\u2007\u2009\u202Fin Unicode."_s
+        << Fields{ Field{ u"Space has\tso\u202F\u2009\u2007\u00A0"
+                           "many  forms in\r\n\f\v\tUnicode."_s,
+                          0, Flags{ Flag::FlexSpace }, Cat::Literal } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 42 << wall << -1 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    // Space-padding: leading and trailing space isn't accepted except with SpacePad.
     QTest::newRow(" The quick brown fox jumped over the lazy dogs. /literal/C/greg/0")
         << u" The quick brown fox jumped over the lazy dogs. "_s
         << Fields{ Field{ u"The quick brown fox jumped over the lazy dogs."_s,
