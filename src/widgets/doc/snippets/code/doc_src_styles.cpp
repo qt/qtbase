@@ -26,7 +26,7 @@ public:
 void CheckBox::examples()
 {
     {
-        QWidget *q;
+        QCheckBox *q = this;
         QStyleOptionButton opt;
         bool down, tristate, noChange, checked, hovering;
         const QString text;
@@ -48,7 +48,7 @@ void CheckBox::examples()
         }
         opt.text = text;
         opt.icon = icon;
-        opt.iconSize = q->size();
+        opt.iconSize = q->iconSize();
     //! [0]
     }
 
@@ -102,14 +102,14 @@ void CommonStyle::examples()
     //! [3]
         QStyleOptionButton subopt = *btn;
         subopt.rect = subElementRect(QStyle::SE_CheckBoxIndicator, btn, widget);
-        drawPrimitive(QStyle::PE_IndicatorCheckBox, &subopt, p, widget);
+        proxy()->drawPrimitive(QStyle::PE_IndicatorCheckBox, &subopt, p, widget);
         subopt.rect = subElementRect(QStyle::SE_CheckBoxContents, btn, widget);
-        drawControl(QStyle::CE_CheckBoxLabel, &subopt, p, widget);
+        proxy()->drawControl(QStyle::CE_CheckBoxLabel, &subopt, p, widget);
         if (btn->state & State_HasFocus) {
             QStyleOptionFocusRect fropt;
             fropt.QStyleOption::operator=(*btn);
             fropt.rect = subElementRect(QStyle::SE_CheckBoxFocusRect, btn, widget);
-            drawPrimitive(QStyle::PE_FrameFocusRect, &fropt, p, widget);
+            proxy()->drawPrimitive(QStyle::PE_FrameFocusRect, &fropt, p, widget);
         }
     //! [3]
     }
@@ -122,7 +122,7 @@ void CommonStyle::examples()
     //! [4]
         const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(opt);
         uint alignment = visualAlignment(btn->direction, Qt::AlignLeft | Qt::AlignVCenter);
-        if (!styleHint(SH_UnderlineShortcut, btn, widget))
+        if (!proxy()->styleHint(SH_UnderlineShortcut, btn, widget))
             alignment |= Qt::TextHideMnemonic;
         QPixmap pix;
         QRect textRect = btn->rect;
@@ -130,14 +130,14 @@ void CommonStyle::examples()
             const auto dpr = p->device()->devicePixelRatio();
             pix = btn->icon.pixmap(btn->iconSize, dpr,
                                     btn->state & State_Enabled ? QIcon::Normal : QIcon::Disabled);
-            drawItemPixmap(p, btn->rect, alignment, pix);
+            proxy()->drawItemPixmap(p, btn->rect, alignment, pix);
             if (btn->direction == Qt::RightToLeft)
                 textRect.setRight(textRect.right() - btn->iconSize.width() - 4);
             else
                 textRect.setLeft(textRect.left() + btn->iconSize.width() + 4);
         }
         if (!btn->text.isEmpty()){
-            drawItemText(p, textRect, alignment | Qt::TextShowMnemonic,
+            proxy()->drawItemText(p, textRect, alignment | Qt::TextShowMnemonic,
                 btn->palette, btn->state & State_Enabled, btn->text, QPalette::WindowText);
         }
     //! [4]
