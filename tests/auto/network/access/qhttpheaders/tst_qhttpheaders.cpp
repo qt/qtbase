@@ -730,14 +730,14 @@ void tst_QHttpHeaders::rangeValues()
     QCOMPARE(h1.rangeValues(), std::nullopt);
 
     // Test isValid() method
-    const QHttpHeaderRange valid1{0, 499};
-    const QHttpHeaderRange valid2{500, std::nullopt};
-    const QHttpHeaderRange valid3{std::nullopt, 100};
-    const QHttpHeaderRange invalid1{std::nullopt, std::nullopt};
-    const QHttpHeaderRange invalid2{500, 400};
-    const QHttpHeaderRange invalid3{-100, std::nullopt};
-    const QHttpHeaderRange invalid4{std::nullopt, -100};
-    const QHttpHeaderRange invalid5{-100, -1};
+    const QHttpHeaderRangeSpec valid1{0, 499};
+    const QHttpHeaderRangeSpec valid2{500, std::nullopt};
+    const QHttpHeaderRangeSpec valid3{std::nullopt, 100};
+    const QHttpHeaderRangeSpec invalid1{std::nullopt, std::nullopt};
+    const QHttpHeaderRangeSpec invalid2{500, 400};
+    const QHttpHeaderRangeSpec invalid3{-100, std::nullopt};
+    const QHttpHeaderRangeSpec invalid4{std::nullopt, -100};
+    const QHttpHeaderRangeSpec invalid5{-100, -1};
 
     QVERIFY(valid1.isValid());
     QVERIFY(valid2.isValid());

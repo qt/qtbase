@@ -9,29 +9,29 @@
 
 using namespace Qt::StringLiterals;
 
-using Ranges = QList<QHttpHeaderRange>;
+using Ranges = QList<QHttpHeaderRangeSpec>;
 
-static constexpr QHttpHeaderRange range(qint64 start, qint64 end) noexcept
+static constexpr QHttpHeaderRangeSpec range(qint64 start, qint64 end) noexcept
 {
     return {start, end};
 }
 
-static constexpr QHttpHeaderRange from(qint64 start) noexcept
+static constexpr QHttpHeaderRangeSpec from(qint64 start) noexcept
 {
     return {start, std::nullopt};
 }
 
-static constexpr QHttpHeaderRange last(qint64 n) noexcept
+static constexpr QHttpHeaderRangeSpec last(qint64 n) noexcept
 {
     return {std::nullopt, n};
 }
 
-static constexpr QHttpHeaderRange invalid() noexcept
+static constexpr QHttpHeaderRangeSpec invalid() noexcept
 {
     return {std::nullopt, std::nullopt};
 }
 
-static Ranges toList(QSpan<const QHttpHeaderRange> ranges)
+static Ranges toList(QSpan<const QHttpHeaderRangeSpec> ranges)
 {
     return Ranges(ranges.begin(), ranges.end());
 }

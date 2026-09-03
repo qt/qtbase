@@ -24,7 +24,7 @@ QT_BEGIN_NAMESPACE
 class QDataStream;
 class QDebug;
 
-struct QHttpHeaderRange
+struct QHttpHeaderRangeSpec
 {
     std::optional<qint64> start;
     std::optional<qint64> end;
@@ -43,18 +43,18 @@ struct QHttpHeaderRange
     }
 
 #ifndef QT_NO_DEBUG_STREAM
-    friend Q_NETWORK_EXPORT QDebug operator<<(QDebug debug, const QHttpHeaderRange &range);
+    friend Q_NETWORK_EXPORT QDebug operator<<(QDebug debug, const QHttpHeaderRangeSpec &range);
 #endif
 
 private:
-    friend constexpr bool comparesEqual(const QHttpHeaderRange &lhs,
-                                        const QHttpHeaderRange &rhs) noexcept
+    friend constexpr bool comparesEqual(const QHttpHeaderRangeSpec &lhs,
+                                        const QHttpHeaderRangeSpec &rhs) noexcept
     {
         return lhs.start == rhs.start && lhs.end == rhs.end;
     }
-    Q_DECLARE_EQUALITY_COMPARABLE_LITERAL_TYPE(QHttpHeaderRange)
+    Q_DECLARE_EQUALITY_COMPARABLE_LITERAL_TYPE(QHttpHeaderRangeSpec)
 
-    friend size_t qHash(QHttpHeaderRange range, size_t seed = 0) noexcept
+    friend size_t qHash(QHttpHeaderRangeSpec range, size_t seed = 0) noexcept
     {
         return qHashMulti(seed, range.start, range.end);
     }
@@ -70,17 +70,17 @@ public:
     Q_NETWORK_EXPORT QHttpHeaderRangeSet();
     Q_NETWORK_EXPORT QHttpHeaderRangeSet(const QHttpHeaderRangeSet &other);
     QHttpHeaderRangeSet(QHttpHeaderRangeSet &&) = default;
-    Q_NETWORK_EXPORT Q_IMPLICIT QHttpHeaderRangeSet(QSpan<const QHttpHeaderRange> r);
-    Q_IMPLICIT QHttpHeaderRangeSet(std::initializer_list<QHttpHeaderRange> r)
-        : QHttpHeaderRangeSet(QSpan<const QHttpHeaderRange>{r}) {}
+    Q_NETWORK_EXPORT Q_IMPLICIT QHttpHeaderRangeSet(QSpan<const QHttpHeaderRangeSpec> r);
+    Q_IMPLICIT QHttpHeaderRangeSet(std::initializer_list<QHttpHeaderRangeSpec> r)
+        : QHttpHeaderRangeSet(QSpan<const QHttpHeaderRangeSpec>{r}) {}
     Q_NETWORK_EXPORT QHttpHeaderRangeSet &operator=(const QHttpHeaderRangeSet &other);
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QHttpHeaderRangeSet)
     Q_NETWORK_EXPORT ~QHttpHeaderRangeSet();
 
     void swap(QHttpHeaderRangeSet &other) noexcept { d_ptr.swap(other.d_ptr); }
 
-    Q_NETWORK_EXPORT QSpan<const QHttpHeaderRange> ranges() const noexcept;
-    Q_NETWORK_EXPORT void setRanges(QSpan<const QHttpHeaderRange> r);
+    Q_NETWORK_EXPORT QSpan<const QHttpHeaderRangeSpec> ranges() const noexcept;
+    Q_NETWORK_EXPORT void setRanges(QSpan<const QHttpHeaderRangeSpec> r);
 
     // ### normalization (a canonical form of sorted, non-overlapping ranges)
     // and the set functions on top of it to be added in 6.13:
