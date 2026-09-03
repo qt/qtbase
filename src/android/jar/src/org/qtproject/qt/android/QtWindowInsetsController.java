@@ -198,8 +198,14 @@ class QtWindowInsetsController
             return false;
 
         final View decor = window.getDecorView();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            WindowInsets insets = activity.getWindow().getDecorView().getRootWindowInsets();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            WindowInsetsController controller = window.getInsetsController();
+            if (controller != null) {
+                final int behavior = controller.getSystemBarsBehavior();
+                return behavior == WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE;
+            }
+        } else if (Build.VERSION.SDK_INT == Build.VERSION_CODES.R) {
+            WindowInsets insets = decor.getRootWindowInsets();
             if (insets != null)
                 return !insets.isVisible(WindowInsets.Type.statusBars());
         } else {
