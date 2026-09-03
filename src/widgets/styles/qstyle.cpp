@@ -55,11 +55,13 @@ static int unpackControlTypes(QSizePolicy::ControlTypes controls, QSizePolicy::C
     the widgets look exactly like the equivalent native widgets or to
     give the widgets a custom look.
 
-    Qt provides a set of QStyle subclasses that emulate the native
-    look of the different platforms supported by Qt (QWindowsStyle,
-    QMacStyle, etc.). These styles are built into the
-    Qt GUI module, other styles can be made available using Qt's
-    plugin mechanism.
+    Qt provides a set of QStyle implementations that match the native
+    look of the platforms it supports. The \c windows and \c fusion
+    styles are built into the Qt Widgets module; the platform styles,
+    such as \c windows11 and \c macos, are loaded as plugins.
+    QStyleFactory lists the styles that are available at runtime.
+    Applications can also provide their own styles, either linked in or
+    as plugins.
 
     Most functions for drawing style elements take four arguments:
 
@@ -112,7 +114,6 @@ static int unpackControlTypes(QSizePolicy::ControlTypes controls, QSizePolicy::C
     \l{Styling Approaches for Qt Widgets}.
 */
 
-
 /*!
     \class QStyle
     \brief The QStyle class is an abstract base class that encapsulates the look and feel of a GUI.
@@ -120,20 +121,49 @@ static int unpackControlTypes(QSizePolicy::ControlTypes controls, QSizePolicy::C
     \ingroup appearance
     \inmodule QtWidgets
 
-    Qt contains a set of QStyle subclasses that emulate the styles of
-    the different platforms supported by Qt (QWindowsStyle,
-    QMacStyle etc.). By default, these styles are built
-    into the Qt GUI module. Styles can also be made available as
-    plugins.
+    Qt contains a set of QStyle implementations that match the look of
+    the platforms it supports. The \c windows and \c fusion styles are
+    built into the Qt Widgets module. The platform styles are style
+    plugins: \c windows11, which follows the Windows 11 Fluent design, and
+    \c windowsvista on Windows, \c macos on \macos, and \c android on
+    Android. QStyleFactory lists the styles that are available at runtime
+    and creates them by name.
 
     Qt's built-in widgets use QStyle to perform nearly all of their
     drawing, ensuring that they look exactly like the equivalent
-    native widgets. The diagram below shows a QComboBox in nine
-    different styles.
+    native widgets. The following images show the same form in the
+    \c windows11, \c windowsvista, and \c windows styles on Windows, and in
+    the \c fusion and \c macos styles.
 
-    \image qstyle-comboboxes.png {Nine combo boxes showing different styles}
-
-    Topics:
+    \table
+    \row
+    \li \image styles/gallery-windows11.webp
+               {Form with text field, combo box, spin box, slider,
+                checkbox, progress bar, and buttons in the Windows 11 style}
+        \caption Windows 11
+    \li \image styles/gallery-windowsvista.webp
+               {Form with text field, combo box, spin box, slider,
+                checkbox, progress bar, and buttons in the Windows Vista style}
+        \caption Windows Vista
+    \li \image styles/gallery-windows.webp
+               {Form with text field, combo box, spin box, slider,
+                checkbox, progress bar, and buttons in the Windows style}
+        \caption Windows
+    \row
+    \li \image styles/gallery-fusion-light.webp
+               {Form with text field, combo box, spin box, slider,
+                checkbox, progress bar, and buttons in the Fusion style}
+        \caption Fusion
+    \li \image styles/gallery-fusion-dark.webp
+               {Form with text field, combo box, spin box, slider,
+                checkbox, progress bar, and buttons in the Fusion style with a
+                dark palette}
+        \caption Fusion with a dark palette
+    \li \image styles/gallery-macos.webp
+               {Form with text field, combo box, spin box, slider,
+                checkbox, progress bar, and buttons in the macOS style}
+        \caption macOS
+    \endtable
 
     \section1 Setting a Style
 
@@ -216,25 +246,20 @@ static int unpackControlTypes(QSizePolicy::ControlTypes controls, QSizePolicy::C
     \section1 Creating a Custom Style
 
     You can create a custom look and feel for your application by
-    creating a custom style. There are two approaches to creating a
-    custom style. In the static approach, you either choose an
-    existing QStyle class, subclass it, and reimplement virtual
-    functions to provide the custom behavior, or you create an entire
-    QStyle class from scratch. In the dynamic approach, you modify the
-    behavior of your system style at runtime. The static approach is
-    described below. The dynamic approach is described in QProxyStyle.
-
-    The first step in the static approach is to pick one of the styles
-    provided by Qt from which you will build your custom style. Your
-    choice of QStyle class will depend on which style resembles your
-    desired style the most. The most general class that you can use as
-    a base is QCommonStyle (not QStyle). This is because Qt requires
-    its styles to be \l{QCommonStyle}s.
+    creating a custom style. There are two approaches. To change
+    selected aspects of an existing style, subclass QProxyStyle and
+    reimplement the virtual functions that draw or measure the elements
+    you want to change; the proxy forwards everything else to the style
+    it wraps, by default the platform style. To implement a complete
+    look, subclass QCommonStyle, which implements the behavior that all
+    of Qt's styles share and leaves the drawing to you. Qt's built-in
+    styles are not part of the public API and cannot serve as base
+    classes; wrap them with QProxyStyle instead.
 
     Depending on which parts of the base style you want to change,
     you must reimplement the functions that are used to draw those
     parts of the interface. To illustrate this, we will modify the
-    look of the spin box arrows drawn by QWindowsStyle. The arrows
+    look of the spin box arrows drawn by the platform style. The arrows
     are \e{primitive elements} that are drawn by the drawPrimitive()
     function, so we need to reimplement that function. We need the
     following class declaration:
@@ -249,7 +274,7 @@ static int unpackControlTypes(QSizePolicy::ControlTypes controls, QSizePolicy::C
     \snippet customstyle/customstyle.cpp 2
 
     Notice that we don't use the \c widget argument, except to pass it
-    on to the QWindowStyle::drawPrimitive() function. As mentioned
+    on to the QProxyStyle::drawPrimitive() function. As mentioned
     earlier, the information about what is to be drawn and how it
     should be drawn is specified by a QStyleOption object, so there is
     no need to ask the widget.
@@ -263,10 +288,6 @@ static int unpackControlTypes(QSizePolicy::ControlTypes controls, QSizePolicy::C
     When implementing a custom style, you cannot assume that the
     widget is a QSpinBox just because the enum value is called
     PE_IndicatorSpinUp or PE_IndicatorSpinDown.
-
-    \warning Qt style sheets are currently not supported for custom QStyle
-    subclasses. We plan to address this in some future release.
-
 
     \section1 Using a Custom Style
 
@@ -1219,7 +1240,7 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
 
     \value SC_GroupBoxFrame The frame of a group box.
     \value SC_GroupBoxLabel The title of a group box.
-    \value SC_GroupBoxCheckBox The optional check box of a group box.
+    \value SC_GroupBoxCheckBox The optional checkbox of a group box.
     \value SC_GroupBoxContents The group box contents.
 
     \value SC_MdiNormalButton The normal button for a MDI
@@ -1441,7 +1462,7 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
 
     \value PM_TitleBarHeight  Height of the title bar.
 
-    \value PM_IndicatorWidth  Width of a check box indicator.
+    \value PM_IndicatorWidth  Width of a checkbox indicator.
     \value PM_IndicatorHeight  Height of a checkbox indicator.
     \value PM_ExclusiveIndicatorWidth  Width of a radio button indicator.
     \value PM_ExclusiveIndicatorHeight  Height of a radio button indicator.
@@ -1472,7 +1493,7 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     \value PM_ListViewIconSize The default size for icons in a list view.
 
     \value PM_ToolTipLabelFrameWidth The frame width for a tool tip label.
-    \value PM_CheckBoxLabelSpacing The spacing between a check box indicator and its label.
+    \value PM_CheckBoxLabelSpacing The spacing between a checkbox indicator and its label.
     \value PM_RadioButtonLabelSpacing The spacing between a radio button indicator and its label.
     \value PM_TabBarIconSize The default icon size for a tab bar.
     \value PM_SizeGripSize The size of a size grip.
@@ -1547,7 +1568,7 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     This enum describes the available contents types. These are used to
     calculate sizes for the contents of various widgets.
 
-    \value CT_CheckBox A check box, like QCheckBox.
+    \value CT_CheckBox A checkbox, like QCheckBox.
     \value CT_ComboBox A combo box, like QComboBox.
     \omitvalue CT_DialogButtons
     \value CT_HeaderSection A header section, like QHeader.

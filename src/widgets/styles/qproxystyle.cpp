@@ -38,7 +38,7 @@ using namespace Qt::StringLiterals;
     Warning: The \l {QCommonStyle} {common styles} provided by Qt will
     respect this hint, because they call QStyle::proxy(), but there is
     no guarantee that QStyle::proxy() will be called for user defined
-    or system controlled styles. It would not work on a Mac, for
+    or system controlled styles. It would not work on \macos, for
     example, where menus are handled by the operating system.
 
     When a proxy style should be set on a specific widget only, you have

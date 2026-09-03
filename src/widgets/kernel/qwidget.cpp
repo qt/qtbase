@@ -2621,9 +2621,6 @@ QStyle *QWidget::style() const
     applications should avoid it and use one consistent GUI style
     instead.
 
-    \warning Qt style sheets are currently not supported for custom QStyle
-    subclasses. We plan to address this in some future release.
-
     \sa style(), QStyle, QApplication::style(), QApplication::setStyle()
 */
 
