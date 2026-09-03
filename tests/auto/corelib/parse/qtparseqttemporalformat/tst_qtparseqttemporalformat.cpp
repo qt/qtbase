@@ -29,7 +29,7 @@ static QByteArray fieldString(const QtTemporalPattern::TemporalField &field)
         showFlag(Narrow); showFlag(Abbreviated); showFlag(Short); showFlag(Wide);
         showFlag(ZeroPad); showFlag(SpacePad); showFlag(FlexSpace); showFlag(StrictSpace);
         showFlag(LowerCase); showFlag(UpperCase); showFlag(IgnoreCase);
-        showFlag(YearSignIso8601);
+        showFlag(RoundFraction); showFlag(YearSignIso8601);
         showFlag(LocalizedZone); showFlag(Iso8601);
         showFlag(AcceptUtcPrefix); showFlag(NeedNoUtcPrefix);
         showFlag(AllowZSuffix);

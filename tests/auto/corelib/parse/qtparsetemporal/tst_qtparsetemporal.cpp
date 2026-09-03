@@ -189,12 +189,20 @@ void tst_QtParseTemporal::prefix_data()
         << u"999"_s << Fields{ Field{ empty, 3, Flags{}, Cat::SecondFraction } }
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
         << 3 << wall << 999 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("999/millis+round:3/C/greg/0")
+        << u"999"_s << Fields{ Field{ empty, 3, Flag::RoundFraction, Cat::SecondFraction } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 3 << wall << 999 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
     QTest::newRow("999/millis+num:3/C/greg/0")
         << u"999"_s << Fields{ Field{ empty, 3, Flag::Numeric, Cat::SecondFraction } }
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
         << 3 << wall << 999 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
     QTest::newRow("99/centis:2/C/greg/0")
         << u"99"_s << Fields{ Field{ empty, 2, Flags{}, Cat::SecondFraction } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 2 << wall << 990 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("99/centis+round:2/C/greg/0")
+        << u"99"_s << Fields{ Field{ empty, 2, Flag::RoundFraction, Cat::SecondFraction } }
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
         << 2 << wall << 990 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
     QTest::newRow("99/centis+num:2/C/greg/0")
@@ -217,6 +225,26 @@ void tst_QtParseTemporal::prefix_data()
         << u"9"_s << Fields{ Field{ empty, 2, Flags{}, Cat::SecondFraction } }
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
         << 1 << wall << 900 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("999/decis:2/C/greg/0")
+        << u"999"_s << Fields{ Field{ empty, 2, Flags{}, Cat::SecondFraction } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 3 << wall << 999 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("999/decis+round:2/C/greg/0")
+        << u"999"_s << Fields{ Field{ empty, 2, Flag::RoundFraction, Cat::SecondFraction } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 3 << wall << 999 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("9999/decis:2/C/greg/0") // Excludes 4th digit:
+        << u"9999"_s << Fields{ Field{ empty, 2, Flags{}, Cat::SecondFraction } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 3 << wall << 999 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("9999/decis+round:2/C/greg/0") // Accept all, round down due to bound:
+        << u"9999"_s << Fields{ Field{ empty, 2, Flag::RoundFraction, Cat::SecondFraction } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 4 << wall << 999 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
+    QTest::newRow("8888/decis+round:2/C/greg/0") // Accept all, round up:
+        << u"8888"_s << Fields{ Field{ empty, 2, Flag::RoundFraction, Cat::SecondFraction } }
+        << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
+        << 4 << wall << 889 << -1 << -1 << -1 << 0 << 0 << 0 << 0;
     QTest::newRow("9/decis+0pad:1/C/greg/0")
         << u"9"_s << Fields{ Field{ empty, 1, Flag::ZeroPad, Cat::SecondFraction } }
         << QLocale::c() << QCalendar::System::Gregorian << 0 << 0
