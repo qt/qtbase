@@ -85,8 +85,8 @@
 
     \list
     \li We have made a request that cannot be satisfied using the
-       native styles alone (e.g., the Windows Vista theme engine doesn't
-       let us specify the background color of a button).
+       native styles alone (for example, the native Windows theme engine
+       doesn't let us specify the background color of a button).
     \li Therefore, the button is rendered using style sheets.
     \li We haven't specified any values for
        \l{Qt Style Sheets Reference#border-width-prop}{border-width} and
@@ -447,7 +447,7 @@
     The tear indicator and the scroll buttons can be further customized as follows:
     \snippet code/doc_src_stylesheet.qdoc 148
 
-    Since Qt 4.6 the close button can be customized as follow:
+    You can customize the close button as follows:
     \snippet code/doc_src_stylesheet.qdoc 159
 
     \section2 Customizing QTableView
