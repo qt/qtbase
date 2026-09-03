@@ -556,7 +556,7 @@
 
     \image stylesheet-treeview.png {Tree view with styled branches}
 
-    \sa {Supported HTML Subset}, QStyle
+    \sa {Styling Approaches for Qt Widgets}, {Supported HTML Subset}, QStyle
 
 
     \section1 Common Mistakes

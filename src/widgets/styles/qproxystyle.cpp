@@ -27,6 +27,8 @@ using namespace Qt::StringLiterals;
 
     A QProxyStyle wraps a QStyle (usually the default system style) for the
     purpose of dynamically overriding painting or other specific style behavior.
+    It is the recommended way to adjust the platform style in a production
+    application; see \l{Styling Approaches for Qt Widgets}.
 
     The following example shows how to override the shortcut underline
     behavior on any platform:
