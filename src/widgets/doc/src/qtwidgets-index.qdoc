@@ -49,10 +49,9 @@ interfaces.
     \li \image macos-tabwidget.png {macOS style tab widgets}
     \endtable
 
-    \l{Qt Style Sheets} are a powerful mechanism that lets you customize
-    the appearance of widgets, in addition to what is already possible by
-    subclassing QStyle.
-
+    \l{Qt Style Sheets} customize the appearance of widgets with CSS-like
+    rules. \l{Styling Approaches for Qt Widgets} explains when to use a
+    style, \l{Qt Labs StyleKit}{StyleKit}, or a style sheet.
 
     \section1 Layouts
 
@@ -137,6 +136,7 @@ interfaces.
         \li \l{\QC: Tutorial: Qt Widgets application}
         \li \l{\QVSC: Tutorial: Qt Widgets application}
         \li \l{Model/View Tutorial}
+        \li \l{Styling Approaches for Qt Widgets}
     \endlist
 
     \section1 Examples

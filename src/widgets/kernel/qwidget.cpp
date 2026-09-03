@@ -2537,12 +2537,12 @@ void QWidget::setScreen(QScreen *screen)
     The style sheet contains a textual description of customizations to the
     widget's style, as described in the \l{Qt Style Sheets} document.
 
-    Since Qt 4.5, Qt style sheets fully supports \macos.
+    Setting a style sheet on a widget makes the widget and its children use a
+    style sheet style that wraps the current \l{style()}{style}. For when to
+    use style sheets, see \l{Styling Approaches for Qt Widgets}.
 
-    \warning Qt style sheets are currently not supported for custom QStyle
-    subclasses. We plan to address this in some future release.
-
-    \sa setStyle(), QApplication::styleSheet, {Qt Style Sheets}
+    \sa setStyle(), QApplication::styleSheet, {Qt Style Sheets},
+        {Styling Approaches for Qt Widgets}
 */
 QString QWidget::styleSheet() const
 {

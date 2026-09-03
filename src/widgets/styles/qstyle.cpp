@@ -107,8 +107,9 @@ static int unpackControlTypes(QSizePolicy::ControlTypes controls, QSizePolicy::C
 
     \endtable
 
-    For more information about widget styling and appearance, see the
-    \l{Styles and Style Aware Widgets}.
+    For more information about widget styling and appearance, see
+    \l{Styles and Style Aware Widgets} and
+    \l{Styling Approaches for Qt Widgets}.
 */
 
 
@@ -147,6 +148,21 @@ static int unpackControlTypes(QSizePolicy::ControlTypes controls, QSizePolicy::C
 
     A style can also be set on an individual widget using the
     QWidget::setStyle() function.
+
+    \section1 Choosing a Styling Approach
+
+    Choose the mechanism that matches how much you want to change:
+
+    \list
+    \li To adjust the platform style, subclass QProxyStyle.
+    \li To implement a complete custom look, subclass QCommonStyle.
+    \li To describe the design declaratively and share it with Qt Quick
+        Controls, use \l{Qt Labs StyleKit}{StyleKit} and its
+        \l QStyleKitStyle.
+    \endlist
+
+    \l{Styling Approaches for Qt Widgets} compares these options with
+    \l{Qt Style Sheets} and explains when each is appropriate.
 
     \section1 Developing Style-Aware Custom Widgets
 
@@ -348,8 +364,8 @@ static int unpackControlTypes(QSizePolicy::ControlTypes controls, QSizePolicy::C
     The drawing of item view headers is also done by the style, giving
     control over size of header items and row and column sizes.
 
-    \sa QStyleOption, QStylePainter,
-        {Styles and Style Aware Widgets}, QStyledItemDelegate, {Styling}
+    \sa QStyleOption, QStylePainter, {Styles and Style Aware Widgets},
+        {Styling Approaches for Qt Widgets}, QStyledItemDelegate, {Styling}
 */
 
 /*!

@@ -45,6 +45,7 @@ depends += \
     qtsvg \
     qtlinguist \
     qthelp \
+    qtlabsstylekit \
     qtopengl \
     qtshadertools \
     qttestlib

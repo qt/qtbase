@@ -16,12 +16,16 @@
     \keyword style sheet
     \keyword stylesheet
 
-    Qt Style Sheets are a powerful mechanism that allows you to
-    customize the appearance of widgets, in addition to what is
-    already possible by subclassing QStyle. The concepts,
-    terminology, and syntax of Qt Style Sheets are heavily inspired
-    by HTML \l{http://www.w3.org/Style/CSS/}{Cascading Style Sheets
-    (CSS)} but adapted to the world of widgets.
+    Qt Style Sheets let you customize the appearance of widgets with textual
+    rules, in addition to what is possible by subclassing \l QStyle. The
+    concepts, terminology, and syntax of Qt Style Sheets are heavily inspired by
+    HTML \l{http://www.w3.org/Style/CSS/}{Cascading Style Sheets (CSS)} but
+    adapted to the world of widgets.
+
+    Style sheets are a tool for prototyping and for small, local adjustments;
+    for the production look of an application, implement a \l QStyle or use
+    \l{Qt Labs StyleKit}{StyleKit}. \l{Styling Approaches for Qt Widgets}
+    explains the costs of style sheets and compares the approaches.
 
     Topics:
 
@@ -43,11 +47,16 @@
     \section1 Overview
 
     Styles sheets are textual specifications that can be set on the
-    whole application using QApplication::setStyleSheet() or on a
+    whole application using \l QApplication::setStyleSheet() or on a
     specific widget (and its children) using
-    QWidget::setStyleSheet(). If several style sheets are set at
+    \l QWidget::setStyleSheet(). If several style sheets are set at
     different levels, Qt derives the effective style sheet from all
     of those that are set. This is called cascading.
+
+    Set the application style sheet once, before the first window is shown.
+    Changing the style sheet at runtime can lead to inconsistent results where
+    only some parts of the previous style sheet are reverted by the new style sheet.
+    Don't use this function to switch themes at runtime.
 
     For example, the following style sheet specifies that all
     \l{QLineEdit}s should use yellow as their background color, and
@@ -79,21 +88,15 @@
     provides style sheet integration, making it easy to view the effects
     of a style sheet in different \l{QStyle}{widget styles}.
 
-    In addition, style sheets can be used to provide a distinctive
-    look and feel for your application, without having to subclass
-    QStyle. For example, you can specify arbitrary images for radio
-    buttons and check boxes to make them stand out. Using this
-    technique, you can also achieve minor customizations that would
-    normally require subclassing several style classes, such as
-    specifying a \l{QStyle::styleHint()}{style hint}.
+    Style sheets can also give a prototype a distinctive look without
+    subclassing \l QStyle, for example, by specifying images for radio buttons and checkboxes.
 
-    When a style sheet is active, the QStyle returned by QWidget::style()
+    When a style sheet is active, the \l QStyle returned by \l QWidget::style()
     is a wrapper "style sheet" style, \e not the platform-specific style. The
     wrapper style ensures that any active style sheet is respected and
     otherwise forwards the drawing operations to the underlying,
-    platform-specific style (e.g., QWindowsVistaStyle on Windows).
-
-    Since Qt 4.5, Qt style sheets fully supports \macos.
+    platform-specific style (for example, the \c windows11 style on Windows, or
+    the \c macos style on \macos; see \l{QStyleFactory}).
 
     \section1 Security Considerations
 

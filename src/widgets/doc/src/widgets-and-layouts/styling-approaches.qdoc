@@ -1,0 +1,227 @@
+// Copyright (C) 2026 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page qtwidgets-styling-approaches.html
+    \title Styling Approaches for Qt Widgets
+    \brief How to choose between a QStyle, StyleKit, and style sheets when
+    styling a Qt Widgets application.
+    \ingroup best-practices
+
+    Qt Widgets offers three ways to change how widgets look:
+
+    \list
+    \li A \l{QStyle}{style} draws every widget. Subclass \l QProxyStyle to
+        adjust the platform style, or \l QCommonStyle to implement a complete
+        custom look. This is the mechanism that Qt's own styles use, and the one
+        to use in production applications.
+    \li \l{Qt Labs StyleKit}{StyleKit} describes a design declaratively in QML
+        and applies it to widgets through \l QStyleKitStyle, a \l QStyle
+        implementation. The same style file also styles Qt Quick Controls.
+    \li \l{Qt Style Sheets}{Style sheets} override individual visual properties
+        with CSS-like rules. They are a tool for prototyping and for small,
+        local adjustments, not for the production look of an application.
+    \endlist
+
+    This page explains what each approach costs and when to choose it.
+
+    \section1 Choose an approach
+
+    The following table maps a styling goal to the mechanism that fits it.
+
+    \table
+    \header
+        \li Goal
+        \li Approach
+    \row
+        \li Keep the native look but change a few details, such as a metric, a
+            color, or a style hint
+        \li A \l QProxyStyle subclass
+    \row
+        \li Give the application its own look, independent of the platform
+            style, for example, on an embedded device
+        \li A \l QCommonStyle subclass or a StyleKit style
+    \row
+        \li Share one design between Qt Widgets and Qt Quick Controls
+        \li A StyleKit style
+    \row
+        \li Offer light and dark variants of the same design
+        \li A different \l QPalette for the same style, or a StyleKit theme
+    \row
+        \li Try out colors, borders, and spacing quickly, or restyle a single
+            widget during development
+        \li A style sheet
+    \endtable
+
+    \section1 Implement a style for production applications
+
+    A \l QStyle subclass draws widgets directly with \l QPainter, using the
+    information in the \l QStyleOption that each widget passes to the style. A
+    style has full control over every element, from a button bevel to the
+    branches of a tree view, and it exercises that control at the cost of an
+    ordinary paint operation: there are no rules to match and no per-widget
+    state to recompute.
+
+    Choose the base class according to how much you want to change:
+
+    \list
+    \li \l QProxyStyle wraps another style, by default the platform style, and
+        lets you override selected functions such as
+        \l{QStyle::drawPrimitive()}{drawPrimitive()},
+        \l{QStyle::pixelMetric()}{pixelMetric()}, or
+        \l{QStyle::styleHint()}{styleHint()}. Everything you don't override
+        keeps the native look and behavior. Use it to adjust the platform style.
+    \li \l QCommonStyle implements the behavior that all of Qt's styles share
+        and leaves the drawing to you. Use it as the base for a complete custom
+        look. \l{Styles and Style Aware Widgets} walks through the style
+        elements and shows how each widget is drawn.
+    \endlist
+
+    Set the style once, before the application creates its windows:
+
+    \snippet customstyle/main.cpp using a custom style
+
+    Draw with the colors from the \l QPalette in the style option rather than
+    with hard-coded colors. The same style then produces a light and a dark
+    variant of the design from two palettes, without switching styles. Qt's
+    Fusion style works this way.
+
+    To let users select the style from the command line with the \c -style
+    option, or to share it between applications, build the style as a plugin.
+    See \l QStylePlugin and \l{How to Create Qt Plugins}.
+
+    \section1 Describe the design in QML with StyleKit
+
+    \l{Qt Labs StyleKit}{StyleKit} is a declarative styling system. A style is a
+    QML file whose root object is a \c Style, which sets colors, sizes, radii,
+    borders, and state-dependent variations for each control type. Properties
+    propagate through a control hierarchy, so a value set once on
+    \c abstractButton applies to every kind of button, and a style can define
+    several named themes.
+
+    \l QStyleKitStyle is a \l QStyle implementation that reads such a style and
+    paints widgets with \l QPainter. Qt Quick takes no part in the rendering.
+    The same \c Style file also styles Qt Quick Controls, so an application that
+    uses both toolkits maintains one design definition. Themes defined in the
+    style are selected with \l{QStyleKitStyle::setThemeName()}{setThemeName()}.
+
+    \code
+    auto *style = new QStyleKitStyle(QStringLiteral(":/styles/MyStyle.qml"));
+    QApplication::setStyle(style);
+    \endcode
+
+    \l QStyleKitStyle is available since Qt 6.12. StyleKit is a Qt Labs module,
+    and its API may change between Qt releases. The \l{StyleKit Widgets Example}
+    shows a widget application with several StyleKit styles and themes.
+
+    \section1 Use style sheets for prototyping
+
+    \l{Qt Style Sheets} change the appearance of widgets through rules in a
+    CSS-like syntax, without writing C++. They are convenient for trying out a
+    design: edit a \c{.qss} file and restart the application, or pass the file
+    with the \c -stylesheet command-line option, and
+    \l{Qt Widgets Designer Integration}{Qt Widgets Designer} previews the same
+    rules. They are also the quickest way to mark a single widget, such as a
+    mandatory field with a yellow background.
+
+    Style sheets have costs that make them unsuitable as the styling mechanism
+    of a production application:
+
+    \list
+    \li \b{Every affected widget is drawn through the style sheet engine.} When
+        a style sheet is set, \l QWidget::style() returns a style sheet style
+        that wraps the underlying \l{QStyle}{style}. For each widget it matches
+        the selectors against the widget's class, object name, properties, and
+        state, computes the rendering rules, and caches them per widget. The
+        memory and processing cost grows with the number of widgets and rules.
+    \li \b{Changing a style sheet repolishes everything it applies to.} Each
+        call to \l QApplication::setStyleSheet() discards the caches and
+        repolishes every widget in the application, which recomputes fonts,
+        palettes, geometry, and size hints and can visibly flicker. Don't build
+        theme switching on style sheets.
+    \li \b{A partial rule discards the native look.} When a rule requests
+        something the native style cannot honor, such as a background color for
+        a \l QPushButton, the style sheet engine draws the whole element itself,
+        without the native decoration. You then have to specify borders,
+        padding, and every state yourself, and a small adjustment grows into a
+        complete description of the look. See
+        \l{Customizing Qt Widgets Using Style Sheets}.
+    \li \b{Selectors couple the design to implementation details.} Rules match
+        class names, object names, and property values. Renaming an object or
+        replacing a widget class silently stops the rule from matching. Rules
+        don't affect custom widgets that paint without the style.
+    \li \b{Style sheets win over programmatic settings.} A style sheet overrides
+        fonts, palettes, and item colors set with functions such as
+        \l QWidget::setFont() or \l QTreeWidgetItem::setBackground(), so the
+        styling of a widget is no longer visible in one place.
+    \endlist
+
+    For a side-by-side comparison of style sheets and \l QStyle subclasses, see
+    the KDAB article \l {https://www.kdab.com/say-no-to-qt-style-sheets/}
+    {Say No to Qt Style Sheets}.
+
+    \section2 If you use style sheets anyway
+
+    For a prototype, or for the few local adjustments that a production
+    application needs, keep the style sheet manageable:
+
+    \list
+    \li \b{Keep the rules in a \c{.qss} file}, bundled with
+        \l{The Qt Resource System}{the Qt resource system}. Set it once on the
+        application with \l QApplication::setStyleSheet(), before the first
+        window is shown, and leave it in place. Reserve
+        \l QWidget::setStyleSheet() for adjustments that are truly local to one
+        widget and its children.
+    \li \b{Don't assemble style sheets from C++ strings.} A style sheet set on a
+        widget is parsed once for every widget it's set on, not once for every
+        string, and each call to \l QWidget::setStyleSheet() repolishes the
+        widget and all its children, even when the string didn't change. A
+        string built with \l QString::arg() to reflect data, such as a red
+        border for an invalid value, repolishes the widget on every update.
+        Instead, express the difference with a
+        \l{The Style Sheet Syntax}{selector} on an object name or a Qt property
+        in the one style sheet, and re-evaluate it as described in
+        \l{Customizing Using Dynamic Properties}.
+    \li \b{Don't hard-code colors.} A literal color such as \c{#ffffff} fits one
+        theme. Use \c{palette(window)}, \c{palette(text)}, and the other
+        \l{PaletteRole}{palette roles} so that the style sheet follows the
+        application palette, including a dark color scheme.
+    \li \b{Don't size everything in pixels.} A \c px value scales with the
+        display but not with the user's font. Use \c em and \c ex
+        \l{Length}{lengths} for paddings, margins, and sizes that should follow
+        the font, and \c pt for font sizes.
+    \endlist
+
+    \section2 Move from a style sheet to a style
+
+    When a prototype turns into a product, transfer the design to a style. Most
+    style sheet constructs have a direct counterpart:
+
+    \table
+    \header
+        \li Style sheet
+        \li QStyle
+        \li StyleKit
+    \row
+        \li Colors
+        \li \l QPalette roles, read from \l QStyleOption::palette
+        \li Color properties of the control, or a theme
+    \row
+        \li \c border, \c padding, \c margin
+        \li \l{QStyle::pixelMetric()}{pixelMetric()} and
+            \l{QStyle::subElementRect()}{subElementRect()}
+        \li Border and size properties of the control
+    \row
+        \li Pseudo-states such as \c{:hover} and \c{:pressed}
+        \li \l QStyle::State flags in \l QStyleOption::state
+        \li State groups such as \c hovered and \c pressed
+    \row
+        \li Subcontrols such as \c{::indicator}
+        \li \l{QStyle::drawPrimitive()}{drawPrimitive()} and
+            \l{QStyle::drawControl()}{drawControl()} for the element
+        \li Delegate properties such as \c indicator
+    \endtable
+
+    \sa {Styles and Style Aware Widgets}, QStyle, QProxyStyle, QCommonStyle,
+        {Qt Labs StyleKit}, {Qt Style Sheets}
+*/
