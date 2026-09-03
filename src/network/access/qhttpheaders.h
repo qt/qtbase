@@ -16,6 +16,7 @@
 #include <QtCore/qspan.h>
 #include <QtCore/qcomparehelpers.h>
 
+#include <initializer_list>
 #include <optional>
 
 QT_BEGIN_NAMESPACE
@@ -58,6 +59,51 @@ private:
         return qHashMulti(seed, range.start, range.end);
     }
 };
+
+class QHttpHeaderRangeSetPrivate;
+QT_DECLARE_QESDP_SPECIALIZATION_DTOR(QHttpHeaderRangeSetPrivate)
+class QT_TECH_PREVIEW_API QHttpHeaderRangeSet // ### TP: only does bytes=, but sounds like it could also do seconds=
+{
+    QExplicitlySharedDataPointer<QHttpHeaderRangeSetPrivate> d_ptr;
+    Q_DECLARE_PRIVATE(QHttpHeaderRangeSet)
+public:
+    Q_NETWORK_EXPORT QHttpHeaderRangeSet();
+    Q_NETWORK_EXPORT QHttpHeaderRangeSet(const QHttpHeaderRangeSet &other);
+    QHttpHeaderRangeSet(QHttpHeaderRangeSet &&) = default;
+    Q_NETWORK_EXPORT Q_IMPLICIT QHttpHeaderRangeSet(QSpan<const QHttpHeaderRange> r);
+    Q_IMPLICIT QHttpHeaderRangeSet(std::initializer_list<QHttpHeaderRange> r)
+        : QHttpHeaderRangeSet(QSpan<const QHttpHeaderRange>{r}) {}
+    Q_NETWORK_EXPORT QHttpHeaderRangeSet &operator=(const QHttpHeaderRangeSet &other);
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QHttpHeaderRangeSet)
+    Q_NETWORK_EXPORT ~QHttpHeaderRangeSet();
+
+    void swap(QHttpHeaderRangeSet &other) noexcept { d_ptr.swap(other.d_ptr); }
+
+    Q_NETWORK_EXPORT QSpan<const QHttpHeaderRange> ranges() const noexcept;
+    Q_NETWORK_EXPORT void setRanges(QSpan<const QHttpHeaderRange> r);
+
+    // ### normalization (a canonical form of sorted, non-overlapping ranges)
+    // and the set functions on top of it to be added in 6.13:
+    // - normalize/normalized/isNormalized
+    // - contains
+    // - unite
+    // - intersect
+    // ...
+
+private:
+#ifndef QT_NO_DEBUG_STREAM
+    friend Q_NETWORK_EXPORT QDebug operator<<(QDebug debug, const QHttpHeaderRangeSet &ranges);
+#endif
+
+    Q_NETWORK_EXPORT friend bool comparesEqual(const QHttpHeaderRangeSet &lhs,
+                                               const QHttpHeaderRangeSet &rhs) noexcept;
+    Q_DECLARE_EQUALITY_COMPARABLE(QHttpHeaderRangeSet)
+
+    Q_NETWORK_EXPORT friend size_t qHash(const QHttpHeaderRangeSet &key, size_t seed) noexcept;
+    friend size_t qHash(const QHttpHeaderRangeSet &key) noexcept { return qHash(key, size_t{0}); }
+};
+
+Q_DECLARE_SHARED(QHttpHeaderRangeSet)
 
 class QHttpHeadersPrivate;
 QT_DECLARE_QESDP_SPECIALIZATION_DTOR_WITH_EXPORT(QHttpHeadersPrivate, Q_NETWORK_EXPORT)
@@ -308,8 +354,8 @@ public:
     Q_NETWORK_EXPORT void setDateTimeValue(QAnyStringView name, const QDateTime &dateTime);
     Q_NETWORK_EXPORT void setDateTimeValue(WellKnownHeader name, const QDateTime &dateTime);
 
-    Q_NETWORK_EXPORT std::optional<QList<QHttpHeaderRange>> rangeValues() const;
-    Q_NETWORK_EXPORT void setRangeValues(QSpan<const QHttpHeaderRange> ranges);
+    Q_NETWORK_EXPORT std::optional<QHttpHeaderRangeSet> rangeValues() const;
+    Q_NETWORK_EXPORT void setRangeValues(const QHttpHeaderRangeSet &ranges);
 
     Q_NETWORK_EXPORT qsizetype size() const noexcept;
     Q_NETWORK_EXPORT void reserve(qsizetype size);
