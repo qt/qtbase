@@ -1,0 +1,64 @@
+// Copyright (C) 2026 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page style-widget-reference.html
+    \title Widget Style Reference
+    \brief The style elements, state flags, and style options that each Qt
+    widget uses.
+
+    This reference describes how Qt's widgets use the style. Use it when you
+    implement a style, to see which elements you need to draw and which
+    information the widgets pass to you, or when you write a style-aware widget
+    or a delegate, to draw the same elements that Qt's widgets draw.
+
+    The reference is split into three pages:
+
+    \list
+    \li \l{Styling Buttons and Input Widgets}: push buttons, checkboxes and
+        radio buttons, tool buttons, combo boxes, spin boxes, sliders, scroll
+        bars, and progress bars.
+    \li \l{Styling Containers and Windows}: tab widgets, group boxes, splitters,
+        toolboxes, toolbars, dock widgets, title bars, size grips, and rubber
+        bands.
+    \li \l{Styling Menus and Item Views}: menus, menu bars, item view headers,
+        tree branch indicators, and item view items.
+    \endlist
+
+    \section1 What the reference lists for each widget
+
+    \list
+    \li \b{The element tree.} The style elements that the widget draws, in
+        drawing order. A nested element is drawn by the element above it in
+        \l QCommonStyle. Next to each element, the reference names the sub
+        element rectangles, subcontrols, and pixel metrics that \l QCommonStyle
+        uses when it draws that element. Your own style can structure its
+        drawing differently; only the elements the widget calls are fixed.
+    \li \b{A screenshot.} The widget in the Fusion style, with the bounding
+        rectangles of the elements outlined. The colors only tell the rectangles
+        apart. Rectangles that coincide are drawn one pixel inside each other.
+    \li \b{The state flags.} The \l QStyle::StateFlag values that the widget
+        sets on its style option, in addition to the common flags that
+        \l QStyleOption::initFrom() sets.
+    \li \b{The style option members.} The members of the widget's
+        \l QStyleOption subclass and what the widget stores in them.
+    \endlist
+
+    The common state flags and members are described in
+    \l{How a Style Draws a Widget#Common state flags and members}{How a Style
+    Draws a Widget}.
+
+    \section1 What the reference leaves out
+
+    The widgets also use the style for calculations that aren't part of drawing.
+    They ask for their size hints with \l{QStyle::}{sizeFromContents()}, for
+    their frame widths and margins with \l{QStyle::}{pixelMetric()}, and for the
+    position of their subelements with \l{QStyle::}{subElementRect()}. The
+    reference names the contents types and the pixel metrics that each widget
+    queries but doesn't describe how the built-in styles calculate them. How a
+    style performs those calculations is up to the style. Qt doesn't impose a
+    structure. When in doubt, read the \l QCommonStyle implementation.
+
+    \sa {Styles and Style Aware Widgets}, {How a Style Draws a Widget}, QStyle,
+        QStyleOption
+*/

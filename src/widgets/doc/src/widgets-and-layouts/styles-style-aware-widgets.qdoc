@@ -1,0 +1,89 @@
+// Copyright (C) 2026 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page style-aware-widgets.html
+    \title Writing Style-Aware Widgets
+    \brief How to paint a custom widget through the current style so that it
+    looks right in every style.
+
+    A style-aware widget conforms to the style in which it's drawn. Instead of
+    painting frames, buttons, and indicators itself, it asks the current style
+    to draw them, and it asks the style for the metrics it needs to lay out its
+    contents. The widget then looks native on every platform, follows the
+    application palette, and picks up a custom style or a style sheet like Qt's
+    own widgets do.
+
+    \section1 Build a style option
+
+    The style draws from the information in a \l QStyleOption, so the first step
+    in a paint event is to fill one out. Pick the option class that matches the
+    element you want to draw, call \l QStyleOption::initFrom() to set the state
+    flags, rectangle, palette, and font metrics that every widget shares, and
+    then set the members that are specific to your element.
+
+    Qt's widgets do this in a protected virtual \c initStyleOption() function,
+    so that subclasses can adjust the option. Follow the same pattern in your
+    widget.
+
+    \section1 Draw through the style
+
+    Draw the elements with the drawing functions of \l QStyle, passing the
+    option, a \l QPainter, and the widget itself:
+
+    \snippet styles/styles.cpp 2
+    \dots
+    \snippet styles/styles.cpp 3
+
+    \l QStylePainter combines a \l QStyle, a \l QPainter, and a \l QWidget. Its
+    drawing functions take the element and the option only, which makes the code
+    shorter:
+
+    \snippet styles/styles.cpp 5
+    \dots
+    \snippet styles/styles.cpp 7
+
+    \image paintsystem-stylepainter.png
+           {Diagram showing QStylePainter inherits from QPainter}
+
+    Use the palette in the option, or \l QWidget::palette(), for any color you
+    draw yourself, so that the widget follows the application palette and works
+    in both light and dark color schemes.
+
+    \section1 Ask the style for sizes
+
+    Base your \l{QWidget::}{sizeHint()} and \l{QWidget::}{minimumSizeHint()} on
+    the style. \l{QStyle::}{sizeFromContents()} turns the size of your contents
+    into the size of the widget for a given contents type, and
+    \l{QStyle::}{pixelMetric()} returns the style's frame widths, margins, and
+    indicator sizes. Use \l{QStyle::}{subElementRect()} to find out where the
+    style places the parts of an element, instead of computing the positions
+    yourself.
+
+    \section1 Report the widget's state
+
+    The style draws hover and focus effects only if the state flags are set. Set
+    the \l{Qt::}{WA_Hover} attribute on your widget to receive hover events, and
+    add \c State_MouseOver to the option while the mouse is over the element.
+    Set \c State_Sunken while the widget is pressed, and \c State_On,
+    \c State_Off, or \c State_NoChange for checkable elements.
+    \l{Widget Style Reference} lists the flags that each element expects.
+
+    \section1 Follow style and palette changes
+
+    When the application style or palette changes, the widget receives a
+    \l QEvent::StyleChange or \l QEvent::PaletteChange event in
+    \l{QWidget::}{changeEvent()}. Invalidate any cached metrics there and call
+    \l{QWidget::}{updateGeometry()} if your size hint depends on the style.
+
+    \section1 Support right-to-left layouts
+
+    In a right-to-left layout, the style mirrors asymmetric elements. Use
+    \l{QStyle::}{visualRect()} to convert a rectangle from logical to screen
+    coordinates and \l{QStyle::}{visualAlignment()} to mirror an alignment, and
+    pass the option's \c direction through to the style. Test with the
+    \c -reverse command-line option.
+
+    \sa QStyle, QStylePainter, QStyleOption, {How a Style Draws a Widget},
+        {Widget Style Reference}
+*/
