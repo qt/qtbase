@@ -4,7 +4,6 @@
 #include "qohoswantinfo_p.h"
 
 #include <QtHarmonyExtras/private/qohosharmonyextrasenums_p.h>
-#include <QtHarmonyExtras/private/qohosjsenv_p.h>
 
 #include <QtCore/qbytearray.h>
 #include <QtCore/qjsonobject.h>
@@ -14,6 +13,7 @@
 #include <QtCore/private/qcore_ohos_p.h>
 #include <QtCore/private/qnapi_p.h>
 #include <QtCore/private/qohoscommon_p.h>
+#include <QtCore/private/qohosjsonconversions_p.h>
 #include <QtCore/private/qohoslogger_p.h>
 
 #include <cstddef>
@@ -92,7 +92,7 @@ std::optional<detail::SharedRecord> tryConvertNapiObjectToSharedRecord(QNapi::Ob
     auto tryGetOptionalJsonObjectProp = [](const QNapi::Object &object, const std::string &propName) -> std::optional<QJsonObject> {
         auto optProp = getOptionalProperty<QNapi::Object>(object, propName);
         return optProp.has_value()
-            ? std::make_optional(QOhosJsEnv::fromNapiValue<QJsonObject>(optProp.value()))
+            ? std::make_optional(QtOhos::mapNapiObjectToJsonObject(optProp.value()))
             : std::nullopt;
     };
 
@@ -204,7 +204,7 @@ WantInfoImpl::WantInfoImpl(QNapi::Object want, LaunchReason launchReason)
                 JsScopeData {
                     .want = QNapi::Reference<>::makePersistentFrom(want),
                 })))
-    , m_jsonObject(QOhosJsEnv::fromNapiValue<QJsonObject>(want))
+    , m_jsonObject(QtOhos::mapNapiObjectToJsonObject(want))
     , m_launchReason(launchReason)
 {
 }

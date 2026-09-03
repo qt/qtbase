@@ -3,7 +3,6 @@
 
 #include "qohosegl.h"
 #include <QtCore/private/qohoscommon_p.h>
-#include <qohosjsenv_p.h>
 
 #include <QtCore/qmap.h>
 

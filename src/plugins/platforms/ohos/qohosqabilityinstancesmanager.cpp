@@ -3,7 +3,6 @@
 
 #include "qohosqabilityinstancesmanager.h"
 #include <QtCore/private/qnapi_p.h>
-#include <qohosjsenv_p.h>
 #include <QtCore/private/qohoslogger_p.h>
 #include <QtCore/qcryptographichash.h>
 #include <QtGui/qwindow.h>

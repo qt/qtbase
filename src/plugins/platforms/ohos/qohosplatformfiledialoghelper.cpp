@@ -5,7 +5,6 @@
 #include "qohosplatformintegration.h"
 #include <QtCore/qeventloop.h>
 #include <QtCore/qfileinfo.h>
-#include <qohosjsenv_p.h>
 #include <QtGui/qguiapplication.h>
 #include <QtGui/qwindow.h>
 #include <algorithm>

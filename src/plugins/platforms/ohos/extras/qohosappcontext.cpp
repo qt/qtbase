@@ -5,13 +5,13 @@
 
 #include <QtHarmonyExtras/private/qohosabilitycontext_p.h>
 #include <QtHarmonyExtras/private/qohosappbundleinfo_p.h>
-#include <QtHarmonyExtras/private/qohosjsenv_p.h>
 #include <QtHarmonyExtras/private/qohoswantinfo_p.h>
 #include <QtHarmonyExtras/private/qohoswantutils_p.h>
 
 #include <QtCore/private/qcore_ohos_p.h>
 #include <QtCore/private/qnapi_p.h>
 #include <QtCore/private/qohoscommon_p.h>
+#include <QtCore/private/qohosjsonconversions_p.h>
 #include <QtCore/private/qohosjstools_p.h>
 #include <QtCore/private/qohoslogger_p.h>
 
@@ -81,7 +81,7 @@ Q_NORETURN void restartAppImpl(std::optional<QJsonObject> want)
     QOhosJsThreadGateway::runAndWait(
         [&](QOhosJsState &jsState) {
             auto napiWant = want.has_value()
-                ? QNapi::checkedCast<QNapi::Object>(QOhosJsEnv::toNapiValue(jsState.env(), want.value()))
+                ? QtOhos::mapJsonObjectToNapiObject(jsState.env(), want.value())
                 : jsState.appLaunchWant();
 
             constexpr auto sleepTimeBeforeRetry = std::chrono::seconds(3);

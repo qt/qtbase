@@ -6,7 +6,6 @@
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qset.h>
 #include <QtCore/private/qnapi_p.h>
-#include <qohosjsenv_p.h>
 #include <QtCore/qscopeguard.h>
 #include <QtGui/private/qohosimageconversions_p.h>
 #include <QtGui/qguiapplication.h>
