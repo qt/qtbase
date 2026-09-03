@@ -655,10 +655,15 @@ void QOhosWindowProxy::showWindow(const ShowWindowOptions &options)
 void QOhosWindowProxy::recover()
 {
     qCDebug(QtForOhos, "%s", Q_FUNC_INFO);
-    QtOhos::runInJsThreadAndWait([&](QtOhos::JsState &) {
-        if (m_jsScopeData->isWindowClosing())
+    QtOhos::invokeInJsThreadAndWaitForContinue([&](QtOhos::JsState &, QOhosTaskPromise<> taskPromise) {
+        if (m_jsScopeData->isWindowClosing()) {
+            taskPromise();
             return;
-        m_jsScopeData->jsWindowRef->eval("recover()");
+        }
+
+        m_jsScopeData->jsWindowRef->evalToPromiseOrRejectOnThrow("recover()")
+        .onCatch(QtOhos::makeErrorLoggingJsCallback("recover()"))
+        .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
     },
     Q_FUNC_INFO);
 }
@@ -698,12 +703,19 @@ void QOhosWindowProxy::maximize(MaximizePresentation maximizePresentation)
         return;
     }
 
-    QtOhos::runInJsThreadAndWait([&](QtOhos::JsState &jsState) {
-        if (m_jsScopeData->isWindowClosing())
-            return;
-        m_jsScopeData->jsWindowRef->eval("maximize(*)", {jsState.mapOhosEnumToJs(maximizePresentation)});
-    },
-    Q_FUNC_INFO);
+    QtOhos::invokeInJsThreadAndWaitForContinue(
+        [&](QtOhos::JsState &jsState, QOhosTaskPromise<> taskPromise) {
+            if (m_jsScopeData->isWindowClosing()) {
+                taskPromise();
+                return;
+            }
+
+            m_jsScopeData->jsWindowRef->evalToPromiseOrRejectOnThrow(
+                "maximize(*)", {jsState.mapOhosEnumToJs(maximizePresentation)})
+            .onCatch(QtOhos::makeErrorLoggingJsCallback("maximize()"))
+            .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
+        },
+        Q_FUNC_INFO);
 }
 
 void QOhosWindowProxy::setWindowLayoutFullScreen(bool isLayoutFullScreen)
@@ -814,10 +826,15 @@ void QOhosWindowProxy::setWindowPrivacyMode(bool privacyMode)
 void QOhosWindowProxy::setWindowFocusable(bool focusable)
 {
     qCDebug(QtForOhos, "%s: %s", Q_FUNC_INFO, focusable ? "true" : "false");
-    QtOhos::runInJsThreadAndWait([&](QtOhos::JsState &) {
-        if (m_jsScopeData->isWindowClosing())
+    QtOhos::invokeInJsThreadAndWaitForContinue([&](QtOhos::JsState &, QOhosTaskPromise<> taskPromise) {
+        if (m_jsScopeData->isWindowClosing()) {
+            taskPromise();
             return;
-        m_jsScopeData->jsWindowRef->eval("setWindowFocusable(*)", {focusable});
+        }
+
+        m_jsScopeData->jsWindowRef->evalToPromiseOrRejectOnThrow("setWindowFocusable(*)", {focusable})
+        .onCatch(QtOhos::makeErrorLoggingJsCallback("setWindowFocusable()"))
+        .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
     },
     Q_FUNC_INFO);
 }
@@ -825,10 +842,15 @@ void QOhosWindowProxy::setWindowFocusable(bool focusable)
 void QOhosWindowProxy::setWindowTouchable(bool touchable)
 {
     qCDebug(QtForOhos, "%s: %s", Q_FUNC_INFO, touchable ? "true" : "false");
-    QtOhos::runInJsThreadAndWait([&](QtOhos::JsState &) {
-        if (m_jsScopeData->isWindowClosing())
+    QtOhos::invokeInJsThreadAndWaitForContinue([&](QtOhos::JsState &, QOhosTaskPromise<> taskPromise) {
+        if (m_jsScopeData->isWindowClosing()) {
+            taskPromise();
             return;
-        m_jsScopeData->jsWindowRef->eval("setWindowTouchable(*)", {touchable});
+        }
+
+        m_jsScopeData->jsWindowRef->evalToPromiseOrRejectOnThrow("setWindowTouchable(*)", {touchable})
+        .onCatch(QtOhos::makeErrorLoggingJsCallback("setWindowTouchable()"))
+        .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
     },
     Q_FUNC_INFO);
 }
