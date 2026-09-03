@@ -1,0 +1,104 @@
+// Copyright (C) 2019 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page stylesheet-customizing.html
+    \previouspage Qt Widgets Designer Integration
+    \nextpage Qt Style Sheets Reference
+    \title Customizing Qt Widgets Using Style Sheets
+
+    When using style sheets, every widget is treated as a box with four
+    concentric rectangles: the margin rectangle, the border rectangle, the
+    padding rectangle, and the content rectangle. The box model describes
+    this in further detail.
+
+    \target box model
+    \section1 The Box Model
+
+    The four concentric rectangles appear conceptually as below:
+
+    \image stylesheet-boxmodel.png
+           {Diagram of the CSS box model for layout design}
+
+    \list
+    \li The margin falls outside the border.
+    \li The border is drawn between the margin and the padding.
+    \li The padding falls inside the border, between the border and
+       the actual contents.
+    \li The content is what is left from the original widget or
+       subcontrol once we have removed the margin, the border, and
+       the padding.
+    \endlist
+
+    The \l{Qt Style Sheets Reference#margin-prop}{margin},
+    \l{Qt Style Sheets Reference#border-width-prop}
+    {border-width}, and
+    \l{Qt Style Sheets Reference#padding-prop}{padding}
+    properties all default to zero. In that case, all four rectangles
+    (\c margin, \c border, \c padding, and \c content) coincide exactly.
+
+    You can specify a background for the widget using the
+    \l{Qt Style Sheets Reference#background-image-prop}{background-image}
+    property. By default, the background-image is drawn only for the area
+    inside the border. This can be changed using the
+    \l{Qt Style Sheets Reference#background-clip-prop}{background-clip}
+    property. You can use
+    \l{Qt Style Sheets Reference#background-repeat-prop}{background-repeat}
+    and
+    \l{Qt Style Sheets Reference#background-origin-prop}{background-origin}
+    to control the repetition and origin of the background image.
+
+    A background-image does not scale with the size of the widget. To provide
+    a "skin" or background that scales along with the widget size, one must
+    use
+    \l{Qt Style Sheets Reference#border-image-prop}{border-image}. Since the
+    border-image property provides an alternate background, it is not required
+    to specify a background-image when border-image is specified. In the case,
+    when both of them are specified, the border-image draws over the
+    background-image.
+
+    In addition, the \l{Qt Style Sheets Reference#image-prop}{image} property
+    may be used to draw an image over the border-image. The image specified does
+    not tile or stretch and when its size does not match the size of the widget,
+    its alignment is specified using the
+    \l{Qt Style Sheets Reference#image-position-prop}{image-position}
+    property. Unlike background-image and border-image, one may specify a
+    SVG in the image property, in which case the image is scaled automatically
+    according to the widget size.
+
+    The steps to render a rule are as follows:
+        \list
+        \li Set clip for entire rendering operation (border-radius)
+        \li Draw the background (background-image)
+        \li Draw the border (border-image, border)
+        \li Draw overlay image (image)
+        \endlist
+
+    \target sub controls
+    \section1 Sub-controls
+
+    A widget is considered as a hierarchy (tree) of subcontrols drawn on top
+    of each other. For example, the QComboBox draws the drop-down sub-control
+    followed by the down-arrow sub-control. A QComboBox is thus rendered as
+    follows:
+        \list
+        \li Render the QComboBox { } rule
+        \li Render the QComboBox::drop-down { } rule
+        \li Render the QComboBox::down-arrow { } rule
+        \endlist
+
+    Sub-controls share a parent-child relationship. In the case of QComboBox,
+    the parent of down-arrow is the drop-down and the parent of drop-down is
+    the widget itself. Sub-controls are positioned within their parent using
+    the \l{Qt Style Sheets Reference#subcontrol-position-prop}
+    {subcontrol-position} and
+    \l{Qt Style Sheets Reference#subcontrol-origin-prop}{subcontrol-origin}
+    properties.
+
+    Once positioned, sub-controls can be styled using the \l{box model}.
+
+    \note With complex widgets such as QComboBox and QScrollBar, if one
+    property or sub-control is customized, \b{all} the other properties or
+    sub-controls must be customized as well.
+
+*/

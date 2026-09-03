@@ -1,0 +1,431 @@
+// Copyright (C) 2019 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page stylesheet-syntax.html
+    \previouspage Qt Style Sheets
+    \nextpage Qt Widgets Designer Integration
+    \title The Style Sheet Syntax
+
+    Qt Style Sheet terminology and syntactic rules are almost
+    identical to those of HTML CSS. If you already know CSS, you can
+    probably skim quickly through this section.
+
+    \section1 Style Rules
+
+    Style sheets consist of a sequence of style rules. A \e{style
+    rule} is made up of a selector and a declaration. The
+    \e{selector} specifies which widgets are affected by the rule;
+    the \e{declaration} specifies which properties should be set on
+    the widget. For example:
+
+    \snippet code/doc_src_stylesheet.qdoc 1
+
+    In the above style rule, \c QPushButton is the selector and \c{{
+    color: red }} is the declaration. The rule specifies that
+    QPushButton and its subclasses (e.g., \c MyPushButton) should use
+    red as their foreground color.
+
+    Qt Style Sheet is generally case insensitive (i.e., \c color,
+    \c Color, \c COLOR, and \c cOloR refer to the same property).
+    The only exceptions are class names,
+    \l{QObject::setObjectName()}{object names}, and Qt property
+    names, which are case sensitive.
+
+    Several selectors can be specified for the same declaration,
+    using commas (\c{,}) to separate the selectors. For example,
+    the rule
+
+    \snippet code/doc_src_stylesheet.qdoc 2
+
+    is equivalent to this sequence of three rules:
+
+    \snippet code/doc_src_stylesheet.qdoc 3
+
+    The declaration part of a style rule is a list of
+    \tt{\e{property}: \e{value}} pairs, enclosed in braces (\c{{}})
+    and separated with semicolons. For example:
+
+    \snippet code/doc_src_stylesheet.qdoc 4
+
+    See the \l{List of Properties} section below for the list of
+    properties provided by Qt widgets.
+
+    \section1 Selector Types
+
+    All the examples so far used the simplest type of selector, the
+    Type Selector. Qt Style Sheets support all the
+    \l{http://www.w3.org/TR/REC-CSS2/selector.html#q1}{selectors
+    defined in CSS2}. The table below summarizes the most useful
+    types of selectors.
+
+    \table 100%
+    \header
+        \li Selector
+        \li Example
+        \li Explanation
+
+    \row
+        \li Universal Selector
+        \li \c *
+        \li Matches all widgets.
+
+    \row
+        \li Type Selector
+        \li \c QPushButton
+        \li Matches instances of QPushButton and of its subclasses.
+
+    \row
+        \li Property Selector
+        \li \c{QPushButton[flat="false"]}
+        \li Matches instances of QPushButton that are not
+           \l{QPushButton::}{flat}. You may use this selector to test
+           for any Qt \l{Qt's Property System}{property} that supports
+           QVariant::toString() (see the \l{QVariant::}{toString()}
+           function documentation for details). In addition, the
+           special \c class property is supported, for the name of the
+           class.
+
+           This selector may also be used to test dynamic properties.
+           For more information on customization using dynamic properties,
+           refer to \l{Customizing Using Dynamic Properties}.
+
+           Instead of \c =, you can also use \c ~= to test whether a
+           Qt property of type QStringList contains a given QString.
+
+           \warning If the value of the Qt property changes after the
+           style sheet has been set, it might be necessary to force a
+           style sheet recomputation. One way to achieve this is to
+           unset the style sheet and set it again.
+
+    \row
+        \li Class Selector
+        \li \c .QPushButton
+        \li Matches instances of QPushButton, but not of its subclasses.
+
+           This is equivalent to \c{*[class~="QPushButton"]}.
+
+    \row
+        \li ID \target ID Selector
+           Selector
+        \li \c{QPushButton#okButton}
+        \li Matches all QPushButton instances whose
+           \l{QObject::objectName}{object name} is \c okButton.
+
+    \row
+        \li Descendant Selector
+        \li \c{QDialog QPushButton}
+        \li Matches all instances of QPushButton that are descendants
+           (children, grandchildren, etc.) of a QDialog.
+
+    \row
+        \li Child Selector
+        \li \c{QDialog > QPushButton}
+        \li Matches all instances of QPushButton that are direct
+           children of a QDialog.
+    \endtable
+
+    \section1 Sub-Controls
+
+    For styling complex widgets, it is necessary to access subcontrols of the
+    widget, such as the drop-down button of a QComboBox or the up and down
+    arrows of a QSpinBox. Selectors may contain \e{subcontrols} that make it
+    possible to restrict the application of a rule to specific widget
+    subcontrols. For example:
+
+    \snippet code/doc_src_stylesheet.qdoc 5
+
+    The above rule styles the drop-down button of all \l{QComboBox}es.
+    Although the double-colon (\c{::}) syntax is reminiscent of CSS3
+    Pseudo-Elements, Qt Sub-Controls differ conceptually from these and have
+    different cascading semantics.
+
+    Sub-controls are always positioned with respect to another element - a
+    reference element. This reference element could be the widget or another
+    Sub-control. For example, the \l{Qt Style Sheets Reference#drop-down-sub}
+    {::drop-down} of a QComboBox is placed, by default, in the top right corner
+    of the Padding rectangle of the QComboBox. The
+    \l{Qt Style Sheets Reference#drop-down-sub}{::drop-down} is placed,
+    by default, in the Center of the Contents rectangle of the
+    \l{Qt Style Sheets Reference#drop-down-sub}{::drop-down} Sub-control. See
+    the \l{List of Stylable Widgets} below for the Sub-controls to use to
+    style a widget and their default positions.
+
+    The origin rectangle to be used can be changed using the
+    \l{Qt Style Sheets Reference#subcontrol-origin-prop}{subcontrol-origin}
+    property. For example, if we want to place the drop-down in the margin
+    rectangle of the QComboBox instead of the default Padding rectangle, we
+    can specify:
+
+    \snippet code/doc_src_stylesheet.qdoc 6
+
+    The alignment of the drop-down within the Margin rectangle is changed
+    using \l{Qt Style Sheets Reference#subcontrol-position-prop}
+    {subcontrol-position} property.
+
+    The \l{Qt Style Sheets Reference#width-prop}{width} and
+    \l{Qt Style Sheets Reference#height-prop}{height} properties can be used
+    to control the size of the Sub-control. Note that setting a
+    \l{Qt Style Sheets Reference#image-prop}{image} implicitly sets the size
+    of a Sub-control.
+
+    The relative positioning scheme
+    (\l{Qt Style Sheets Reference#position-prop}{position} : relative),
+    allows the position of the Sub-Control to be offset from its initial
+    position. For example, when the QComboBox's drop-down button is
+    pressed, we might like the arrow inside to be offset to give a
+    "pressed" effect. To achieve this, we can specify:
+
+    \snippet code/doc_src_stylesheet.qdoc 7
+
+    The absolute positioning scheme
+    (\l{Qt Style Sheets Reference#position-prop}{position} : absolute),
+    allows the position and size of the Sub-control to be changed with
+    respect to the reference element.
+
+    Once positioned, they are treated the same as widgets and can be styled
+    using the \l{box model}.
+
+    See the \l{List of Sub-Controls} below for a list of supported
+    sub-controls, and \l{Customizing the QPushButton's Menu Indicator
+    Sub-Control} for a realistic example.
+
+    \note With complex widgets such as QComboBox and QScrollBar, if one
+    property or sub-control is customized, \b{all} the other properties or
+    sub-controls must be customized as well.
+
+    \section1 Pseudo-States
+
+    Selectors may contain \e{pseudo-states} that denote that restrict
+    the application of the rule based on the widget's state.
+    Pseudo-states appear at the end of the selector, with a colon
+    (\c{:}) in between. For example, the following rule applies when
+    the mouse hovers over a QPushButton:
+
+    \snippet code/doc_src_stylesheet.qdoc 8
+
+    Pseudo-states can be negated using the exclamation operator. For
+    example, the following rule applies when the mouse does not hover
+    over a QRadioButton:
+
+    \snippet code/doc_src_stylesheet.qdoc 9
+
+    Pseudo-states can be chained, in which case a logical AND is
+    implied. For example, the following rule applies to when the
+    mouse hovers over a checked QCheckBox:
+
+    \snippet code/doc_src_stylesheet.qdoc 10
+
+    Negated Pseudo-states may appear in Pseudo-state chains. For example,
+    the following rule applies when the mouse hovers over a QPushButton
+    that is not pressed:
+
+    \snippet code/doc_src_stylesheet.qdoc 11
+
+    If needed, logical OR can be expressed using the comma operator:
+
+    \snippet code/doc_src_stylesheet.qdoc 12
+
+    Pseudo-states can appear in combination with subcontrols. For
+    example:
+
+    \snippet code/doc_src_stylesheet.qdoc 13
+
+    See the \l{List of Pseudo-States} section below for the list of
+    pseudo-states provided by Qt widgets.
+
+    \section1 Conflict Resolution
+
+    Conflicts arise when several style rules specify the same
+    properties with different values. Consider the following style
+    sheet:
+
+    \snippet code/doc_src_stylesheet.qdoc 14
+
+    Both rules match QPushButton instances called \c okButton and
+    there is a conflict for the \c color property. To resolve this
+    conflict, we must take into account the \e specificity of the
+    selectors. In the above example, \c{QPushButton#okButton} is
+    considered more specific than \c QPushButton, because it
+    (usually) refers to a single object, not to all instances of a
+    class.
+
+    Similarly, selectors with pseudo-states are more specific than
+    ones that do not specify pseudo-states. Thus, the following style
+    sheet specifies that a \l{QPushButton} should have white text
+    when the mouse is hovering over it, otherwise red text:
+
+    \snippet code/doc_src_stylesheet.qdoc 15
+
+    Here's a tricky one:
+
+    \snippet code/doc_src_stylesheet.qdoc 16
+
+    Here, both selectors have the same specificity, so if the mouse
+    hovers over the button while it is enabled, the second rule takes
+    precedence. If we want the text to be white in that case, we can
+    reorder the rules like this:
+
+    \snippet code/doc_src_stylesheet.qdoc 17
+
+    Alternatively, we can make the first rule more specific:
+
+    \snippet code/doc_src_stylesheet.qdoc 18
+
+    A similar issue arises in conjunction with Type Selectors.
+    Consider the following example:
+
+    \snippet code/doc_src_stylesheet.qdoc 19
+
+    Both rules apply to QPushButton instances (since QPushButton
+    inherits QAbstractButton) and there is a conflict for the
+    \l{Qt Style Sheets Reference#color-prop}{color} property. Because QPushButton
+    inherits QAbstractButton, it might be tempting to assume that
+    \c QPushButton is more specific than \c QAbstractButton. However,
+    for style sheet computations, all Type Selectors have the same
+    specificity, and the rule that appears last takes precedence. In
+    other words, \l{Qt Style Sheets Reference#color-prop}{color} is set to \c gray
+    for all \l{QAbstractButton}s, including \l{QPushButton}s. If we really
+    want \l{QPushButton}s to have red text, we can always reorder the
+    rules.
+
+    For determining the specificity of a rule, Qt Style Sheets follow
+    the
+    \l{http://www.w3.org/TR/REC-CSS2/cascade.html#specificity}{CSS2
+    Specification}:
+
+    \quotation
+    \e{A selector's specificity is calculated as follows:}
+
+    \list
+    \li \e{count the number of ID attributes in the selector (= a)}
+    \li \e{count the number of other attributes and pseudo-classes in the selector (= b)}
+    \li \e{count the number of element names in the selector (= c)}
+    \li \e{ignore pseudo-elements [i.e., \l{subcontrols}].}
+    \endlist
+
+    \e{Concatenating the three numbers a-b-c (in a number system with a
+    large base) gives the specificity.}
+
+    \e{Some examples:}
+
+    \snippet code/doc_src_stylesheet.qdoc 20
+    \endquotation
+
+    \section1 Cascading
+
+    Style sheets can be set on the QApplication, on parent widgets,
+    and on child widgets. An arbitrary widget's effective style sheet
+    is obtained by merging the style sheets set on the widget's
+    ancestors (parent, grandparent, etc.), as well as any style sheet
+    set on the QApplication.
+
+    When conflicts arise, the widget's own style sheet is always
+    preferred to any inherited style sheet, irrespective of the
+    specificity of the conflicting rules. Likewise, the parent
+    widget's style sheet is preferred to the grandparent's, etc.
+
+    One consequence of this is that setting a style rule on a widget
+    automatically gives it precedence over other rules specified in
+    the ancestor widgets' style sheets or the QApplication style
+    sheet. Consider the following example. First, we set a style
+    sheet on the QApplication:
+
+    \snippet code/doc_src_stylesheet.cpp 21
+
+    Then we set a style sheet on a QPushButton object:
+
+    \snippet code/doc_src_stylesheet.cpp 22
+
+    The style sheet on the QPushButton forces the QPushButton (and
+    any child widget) to have blue text, in spite of the more
+    specific rule set provided by the application-wide style sheet.
+
+    The result would have been the same if we had written
+
+    \snippet code/doc_src_stylesheet.cpp 23
+
+    except that if the QPushButton had children (which is unlikely),
+    the style sheet would have no impact on them.
+
+    Style sheet cascading is a complex topic. Refer to the
+    \l{http://www.w3.org/TR/CSS2/cascade.html#cascade}{CSS2
+    Specification} for the gory details. Be aware that Qt currently
+    doesn't implement \c{!important}.
+
+    \section1 Inheritance
+
+    In classic CSS, when font and color of an item is not explicitly set,
+    it gets automatically inherited from the parent. By default, when using
+    Qt Style Sheets, a widget does \b{not} automatically inherit its font
+    and color setting from its parent widget.
+
+    For example, consider a QPushButton inside a QGroupBox:
+
+    \snippet code/doc_src_stylesheet.cpp 24
+
+    The QPushButton does not have an explicit color set. Hence, instead
+    of inheriting color of its parent QGroupBox, it has the system color.
+    If we want to set the color on a QGroupBox and its children,
+    we can write:
+
+    \snippet code/doc_src_stylesheet.cpp 25
+
+    In contrast, setting a font and palette using QWidget::setFont() and
+    QWidget::setPalette() propagates to child widgets.
+
+    If you would prefer that the font and palette propagate to child widgets,
+    you can set the Qt::AA_UseStyleSheetPropagationInWidgetStyles flag, like
+    this:
+
+    Usage:
+    \snippet code/doc_src_stylesheet.cpp 96
+
+    When the widget-style font and palette propagation is enabled, font and
+    palette changes made through Qt Style Sheets will behave as if the user
+    had manually called the corresponding QWidget::setPalette() and
+    QWidget::setFont() methods on all of the QWidgets targeted by the style
+    sheet.
+
+    \list
+    \li Changes made by a style sheet are propagated.
+    They are pushed to all widgets matching the style sheet once, at the time
+    the change is made.
+    \li Changes made by calling QWidget::setPalette() or QWidget::setFont() are
+    inherited.
+    They are inherited by all existing and future children, where the respective
+    brush or font hasn't been explicitly set.
+    \endlist
+
+    \section1 Widgets Inside C++ Namespaces
+
+    The Type Selector can be used to style widgets of a particular type. For
+    example,
+
+    \snippet code/doc_src_stylesheet.cpp 26
+
+    Qt Style Sheet uses QObject::className() of the widget to determine
+    when to apply the Type Selector. When custom widgets are inside namespaces,
+    the QObject::className() returns <namespace>::<classname>. This conflicts
+    with the syntax for \l{Sub-Controls}. To overcome this problem,
+    when using the Type Selector for widgets inside namespaces, we must
+    replace the \c{::} with \c{--}. For example,
+
+    \snippet code/doc_src_stylesheet.cpp 27
+
+    \section1 Setting QObject Properties
+
+    From 4.3 and above, any designable Q_PROPERTY
+    can be set using the qproperty-<property name> syntax.
+
+    For example,
+    \snippet code/doc_src_stylesheet.qdoc 28
+
+    If the property references an enum declared with Q_ENUM, you should
+    reference its constants by name, not their numeric value.
+
+    \note Use the qproperty syntax with care, as it modifies the
+    widget that is being painted. Also, the qproperty syntax is evaluated only
+    once, which is when the widget is polished by the style. This means that any
+    attempt to use them in pseudo-states such as QPushButton:hover, will not work.
+*/

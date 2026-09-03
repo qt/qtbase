@@ -1,0 +1,29 @@
+// Copyright (C) 2019 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page stylesheet-designer.html
+    \previouspage The Style Sheet Syntax
+    \nextpage Customizing Qt Widgets Using Style Sheets
+    \title Qt Widgets Designer Integration
+
+    \l{Qt Widgets Designer Manual}{\QD} is an excellent tool
+    to preview style sheets. You can right-click on any widget in Designer
+    and select \uicontrol{Change styleSheet...} to set the style sheet.
+
+    \image designer-stylesheet-options.webp
+           {Editing a form in Qt Widgets Designer}
+
+    \QD also includes a style sheet syntax highlighter and validator. The
+    validator indicates if the syntax is valid or invalid, at the bottom left
+    of the \uicontrol{Edit Style Sheet} dialog.
+
+    \image designer-validator-highlighter.webp
+           {Editing and validating a stylesheet}
+
+    When you click \uicontrol{OK} or \uicontrol{Apply}, \QD will automatically display
+    the widget with its new stylesheet.
+
+    \image designer-stylesheet-usage.webp
+           {Preview of a form with the new stylesheet}
+    */
