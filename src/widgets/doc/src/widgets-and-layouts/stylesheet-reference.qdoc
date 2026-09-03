@@ -587,8 +587,8 @@
            \l{#tab-bar-sub}{::tab-bar} subcontrol.
         \br
         \br
-           By default, the subcontrols have positions of a QTabWidget in
-           the QWindowsStyle. To place the QTabBar in the center, set the
+           By default, the subcontrols have positions of a \l QTabWidget in the
+           \c windows style. To place the \l QTabBar in the center, set the
            subcontrol-position of the tab-bar subcontrol.
         \br
         \br
@@ -1577,9 +1577,8 @@
            Setting the image property on sub controls implicitly sets the
            width and height of the sub-control (unless the image in a SVG).
 
-           In Qt 4.3 and later, the alignment of the
-           image within the rectangle can be specified using
-           \l{image-position-prop}{image-position}.
+           Use \l{image-position-prop}{image-position} to align the image
+           within the rectangle.
 
            This property is for subcontrols only--we don't support it for
            other elements.
@@ -1597,8 +1596,8 @@
       \row \li \b Type \li \l{#Alignment}{alignment}
     \endtable
 
-           In Qt 4.3 and later, the alignment of the image image's position can be specified
-           using relative or absolute position.
+           The alignment of the image's position can be specified using relative
+           or absolute position.
 
     \section2 left
     \target left-prop
