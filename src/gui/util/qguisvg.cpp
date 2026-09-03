@@ -9,8 +9,11 @@
 #include <QtCore/qregularexpression.h>
 #include <QtCore/qvarlengtharray.h>
 #include <QtGui/private/qmath_p.h>
+#include <array>
 
 QT_BEGIN_NAMESPACE
+
+using namespace Qt::Literals::StringLiterals;
 
 namespace {
 
@@ -291,350 +294,151 @@ std::optional<QPainterPath> parsePath(QStringView dataStr, bool limitLength)
     if (dataStr.isEmpty())
         return std::nullopt;
 
-    bool done = false;
-    const int maxElementCount = 0x7fff; // Assume file corruption if more path elements than this
-    qreal x0 = 0, y0 = 0;              // starting point
-    qreal x = 0, y = 0;                // current point
+    // Max QPainterPath element count when limitLength is set to true.
+    constexpr int maxElementCount = 0x7fff;
+    constexpr QLatin1StringView cmds = "mzlhvcsqta"_L1;
+    constexpr std::array cmdsParamCount = {2, 0, 2, 1, 1, 6, 4, 4, 2, 7};
+    static_assert(cmds.length() == cmdsParamCount.size());
+
+    QPointF startPoint;
+    QPointF currPoint;
+    QPointF ctrlPoint;
     char lastMode = 0;
-    QPointF ctrlPt;
 
     QPainterPath path;
-    while (!dataStr.isEmpty() && !done) {
+    while (!dataStr.isEmpty()) {
         while (dataStr.first().isSpace() && dataStr.length() > 1)
             dataStr.slice(1);
-        QChar pathElem = dataStr.first();
+
+        QChar cmd = dataStr.first().toLower();
+        if (!cmds.contains(cmd))
+            break;
+
+        const bool isRelative = dataStr.first().isLower();
         dataStr.slice(1);
         const char *pattern = nullptr;
-        if (pathElem == QLatin1Char('a') || pathElem == QLatin1Char('A'))
+        if (cmd == QLatin1Char('a'))
             pattern = "rrrffrr";
         QVarLengthArray<qreal, 8> arg;
         parseNumbersArray(&dataStr, arg, pattern);
-        if (pathElem == QLatin1Char('z') || pathElem == QLatin1Char('Z'))
-            arg.append(0);//dummy
         const qreal *num = arg.constData();
         int count = arg.size();
-        while (count > 0) {
-            qreal offsetX = x;        // correction offsets
-            qreal offsetY = y;        // for relative commands
-            switch (pathElem.unicode()) {
+
+        qsizetype countPos = cmds.indexOf(cmd);
+        int paramCount = cmdsParamCount[countPos];
+
+        do {
+            if (count < paramCount)
+                return path;
+
+            QPointF offset = isRelative ? currPoint : QPointF {0., 0.};
+            switch (cmd.unicode()) {
             case 'm': {
-                if (count < 2) {
-                    count--;
-                    done = true;
-                    break;
-                }
-                x = x0 = num[0] + offsetX;
-                y = y0 = num[1] + offsetY;
-                num += 2;
-                count -= 2;
-                path.moveTo(x0, y0);
+                currPoint = startPoint = QPointF {num[0], num[1]} + offset;
+                path.moveTo(startPoint);
 
                 // As per 1.2  spec 8.3.2 The "moveto" commands
                 // If a 'moveto' is followed by multiple pairs of coordinates without explicit commands,
                 // the subsequent pairs shall be treated as implicit 'lineto' commands.
-                pathElem = QLatin1Char('l');
+                cmd = QLatin1Char('l');
             }
             break;
-            case 'M': {
-                if (count < 2) {
-                    count--;
-                    done = true;
-                    break;
-                }
-
-                x = x0 = num[0];
-                y = y0 = num[1];
-                num += 2;
-                count -= 2;
-                path.moveTo(x0, y0);
-
-                // As per 1.2  spec 8.3.2 The "moveto" commands
-                // If a 'moveto' is followed by multiple pairs of coordinates without explicit commands,
-                // the subsequent pairs shall be treated as implicit 'lineto' commands.
-                pathElem = QLatin1Char('L');
-            }
-            break;
-            case 'z':
-            case 'Z': {
-                x = x0;
-                y = y0;
-                count--; // skip dummy
-                num++;
+            case 'z': {
+                currPoint = startPoint;
                 path.closeSubpath();
             }
             break;
             case 'l': {
-                if (count < 2) {
-                    count--;
-                    done = true;
-                    break;
-                }
-
-                x = num[0] + offsetX;
-                y = num[1] + offsetY;
-                num += 2;
-                count -= 2;
-                path.lineTo(x, y);
-
-            }
-            break;
-            case 'L': {
-                if (count < 2) {
-                    count--;
-                    done = true;
-                    break;
-                }
-
-                x = num[0];
-                y = num[1];
-                num += 2;
-                count -= 2;
-                path.lineTo(x, y);
+                currPoint = QPointF {num[0], num[1]} + offset;
+                path.lineTo(currPoint);
             }
             break;
             case 'h': {
-                x = num[0] + offsetX;
-                num++;
-                count--;
-                path.lineTo(x, y);
-            }
-            break;
-            case 'H': {
-                x = num[0];
-                num++;
-                count--;
-                path.lineTo(x, y);
+                currPoint.setX(num[0] + offset.x());
+                path.lineTo(currPoint);
             }
             break;
             case 'v': {
-                y = num[0] + offsetY;
-                num++;
-                count--;
-                path.lineTo(x, y);
-            }
-            break;
-            case 'V': {
-                y = num[0];
-                num++;
-                count--;
-                path.lineTo(x, y);
+                currPoint.setY(num[0] + offset.y());
+                path.lineTo(currPoint);
             }
             break;
             case 'c': {
-                if (count < 6) {
-                    count = 0;
-                    done = true;
-                    break;
-                }
-
-                QPointF c1(num[0] + offsetX, num[1] + offsetY);
-                QPointF c2(num[2] + offsetX, num[3] + offsetY);
-                QPointF e(num[4] + offsetX, num[5] + offsetY);
-                num += 6;
-                count -= 6;
+                QPointF c1 = QPointF {num[0], num[1]} + offset;
+                QPointF c2 = QPointF {num[2], num[3]} + offset;
+                QPointF e = QPointF {num[4], num[5]} + offset;
                 path.cubicTo(c1, c2, e);
-                ctrlPt = c2;
-                x = e.x();
-                y = e.y();
-                break;
-            }
-            case 'C': {
-                if (count < 6) {
-                    count = 0;
-                    done = true;
-                    break;
-                }
-
-                QPointF c1(num[0], num[1]);
-                QPointF c2(num[2], num[3]);
-                QPointF e(num[4], num[5]);
-                num += 6;
-                count -= 6;
-                path.cubicTo(c1, c2, e);
-                ctrlPt = c2;
-                x = e.x();
-                y = e.y();
+                ctrlPoint = c2;
+                currPoint = e;
                 break;
             }
             case 's': {
-                if (count < 4) {
-                    count = 0;
-                    done = true;
-                    break;
-                }
-
                 QPointF c1;
-                if (lastMode == 'c' || lastMode == 'C' ||
-                    lastMode == 's' || lastMode == 'S')
-                    c1 = QPointF(2*x-ctrlPt.x(), 2*y-ctrlPt.y());
+                if (lastMode == 'c' || lastMode == 's')
+                    c1 = 2 * currPoint - ctrlPoint;
                 else
-                    c1 = QPointF(x, y);
-                QPointF c2(num[0] + offsetX, num[1] + offsetY);
-                QPointF e(num[2] + offsetX, num[3] + offsetY);
-                num += 4;
-                count -= 4;
-                path.cubicTo(c1, c2, e);
-                ctrlPt = c2;
-                x = e.x();
-                y = e.y();
-                break;
-            }
-            case 'S': {
-                if (count < 4) {
-                    count = 0;
-                    done = true;
-                    break;
-                }
+                    c1 = currPoint;
+                QPointF c2 = QPointF {num[0], num[1]} + offset;
+                QPointF e = QPointF {num[2], num[3]} + offset;
 
-                QPointF c1;
-                if (lastMode == 'c' || lastMode == 'C' ||
-                    lastMode == 's' || lastMode == 'S')
-                    c1 = QPointF(2*x-ctrlPt.x(), 2*y-ctrlPt.y());
-                else
-                    c1 = QPointF(x, y);
-                QPointF c2(num[0], num[1]);
-                QPointF e(num[2], num[3]);
-                num += 4;
-                count -= 4;
                 path.cubicTo(c1, c2, e);
-                ctrlPt = c2;
-                x = e.x();
-                y = e.y();
+                ctrlPoint = c2;
+                currPoint = e;
                 break;
             }
             case 'q': {
-                if (count < 4) {
-                    count = 0;
-                    done = true;
-                    break;
-                }
-
-                QPointF c(num[0] + offsetX, num[1] + offsetY);
-                QPointF e(num[2] + offsetX, num[3] + offsetY);
-                num += 4;
-                count -= 4;
+                QPointF c = QPointF {num[0], num[1]} + offset;
+                QPointF e = QPointF {num[2], num[3]} + offset;
                 path.quadTo(c, e);
-                ctrlPt = c;
-                x = e.x();
-                y = e.y();
-                break;
-            }
-            case 'Q': {
-                if (count < 4) {
-                    count = 0;
-                    done = true;
-                    break;
-                }
-
-                QPointF c(num[0], num[1]);
-                QPointF e(num[2], num[3]);
-                num += 4;
-                count -= 4;
-                path.quadTo(c, e);
-                ctrlPt = c;
-                x = e.x();
-                y = e.y();
+                ctrlPoint = c;
+                currPoint = e;
                 break;
             }
             case 't': {
-                if (count < 2) {
-                    count = 0;
-                    done = true;
-                    break;
-                }
-
-                QPointF e(num[0] + offsetX, num[1] + offsetY);
-                num += 2;
-                count -= 2;
+                QPointF e = QPointF {num[0], num[1]} + offset;
                 QPointF c;
-                if (lastMode == 'q' || lastMode == 'Q' ||
-                    lastMode == 't' || lastMode == 'T')
-                    c = QPointF(2*x-ctrlPt.x(), 2*y-ctrlPt.y());
+                if (lastMode == 'q' || lastMode == 't')
+                    c = 2 * currPoint - ctrlPoint;
                 else
-                    c = QPointF(x, y);
+                    c = currPoint;
                 path.quadTo(c, e);
-                ctrlPt = c;
-                x = e.x();
-                y = e.y();
-                break;
-            }
-            case 'T': {
-                if (count < 2) {
-                    count = 0;
-                    done = true;
-                    break;
-                }
-
-                QPointF e(num[0], num[1]);
-                num += 2;
-                count -= 2;
-                QPointF c;
-                if (lastMode == 'q' || lastMode == 'Q' ||
-                    lastMode == 't' || lastMode == 'T')
-                    c = QPointF(2*x-ctrlPt.x(), 2*y-ctrlPt.y());
-                else
-                    c = QPointF(x, y);
-                path.quadTo(c, e);
-                ctrlPt = c;
-                x = e.x();
-                y = e.y();
+                ctrlPoint = c;
+                currPoint = e;
                 break;
             }
             case 'a': {
-                if (count < 7) {
-                    count = 0;
-                    done = true;
-                    break;
-                }
-
-                qreal rx = (*num++);
-                qreal ry = (*num++);
-                qreal xAxisRotation = (*num++);
-                qreal largeArcFlag  = (*num++);
-                qreal sweepFlag = (*num++);
-                qreal ex = (*num++) + offsetX;
-                qreal ey = (*num++) + offsetY;
-                count -= 7;
-                qreal curx = x;
-                qreal cury = y;
+                qreal rx = num[0];
+                qreal ry = num[1];
+                qreal xAxisRotation = num[2];
+                qreal largeArcFlag  = num[3];
+                qreal sweepFlag = num[4];
+                qreal ex = num[5] + offset.x();
+                qreal ey = num[6] + offset.y();
+                qreal curx = currPoint.x();
+                qreal cury = currPoint.y();
                 pathArc(path, rx, ry, xAxisRotation, int(largeArcFlag),
                         int(sweepFlag), ex, ey, curx, cury);
 
-                x = ex;
-                y = ey;
-            }
-            break;
-            case 'A': {
-                if (count < 7) {
-                    count = 0;
-                    done = true;
-                    break;
-                }
-
-                qreal rx = (*num++);
-                qreal ry = (*num++);
-                qreal xAxisRotation = (*num++);
-                qreal largeArcFlag  = (*num++);
-                qreal sweepFlag = (*num++);
-                qreal ex = (*num++);
-                qreal ey = (*num++);
-                count -= 7;
-                qreal curx = x;
-                qreal cury = y;
-                pathArc(path, rx, ry, xAxisRotation, int(largeArcFlag),
-                        int(sweepFlag), ex, ey, curx, cury);
-
-                x = ex;
-                y = ey;
+                currPoint = QPointF {ex, ey};
             }
             break;
             default:
+                Q_ASSERT_X(false, "parsePath", "command table out of sync with switch");
                 return std::nullopt;
             }
-            lastMode = pathElem.toLatin1();
+
+            lastMode = cmd.toLatin1();
             if (limitLength && path.elementCount() > maxElementCount)
                 return std::nullopt;
-        }
+
+            // the z/Z command should have no arguments. Otherwise,
+            // the remaining part of the path is invalid.
+            if (cmd == QLatin1Char('z') && count != 0)
+                return path;
+
+            count -= paramCount;
+            num += paramCount;
+        } while (count > 0);
     }
 
     return path;
