@@ -424,9 +424,7 @@ void QWaylandInputDevice::seat_capabilities(uint32_t caps)
                     MaxTouchPoints, 0, mSeatName, QPointingDeviceUniqueId(), this);
             QWindowSystemInterface::registerInputDevice(mTouchPadDevice);
             mPointerGesturePinch.reset(pointerGestures->createPointerGesturePinch(this));
-            mPointerGesturePinch->init(pointerGestures->get_pinch_gesture(mPointer->object()));
             mPointerGestureSwipe.reset(pointerGestures->createPointerGestureSwipe(this));
-            mPointerGestureSwipe->init(pointerGestures->get_swipe_gesture(mPointer->object()));
         }
     } else if (!(mCaps & WL_SEAT_CAPABILITY_POINTER) && mPointer) {
         mPointer.reset();

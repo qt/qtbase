@@ -50,7 +50,7 @@ class Q_WAYLANDCLIENT_EXPORT QWaylandPointerGestureSwipe :
         public QtWayland::zwp_pointer_gesture_swipe_v1
 {
 public:
-    QWaylandPointerGestureSwipe(QWaylandInputDevice *p);
+    QWaylandPointerGestureSwipe(QWaylandInputDevice *p, ::zwp_pointer_gesture_swipe_v1 *object);
     ~QWaylandPointerGestureSwipe() override;
 
     void zwp_pointer_gesture_swipe_v1_begin(uint32_t serial,
@@ -83,7 +83,7 @@ class Q_WAYLANDCLIENT_EXPORT QWaylandPointerGesturePinch :
         public QtWayland::zwp_pointer_gesture_pinch_v1
 {
 public:
-    QWaylandPointerGesturePinch(QWaylandInputDevice *p);
+    QWaylandPointerGesturePinch(QWaylandInputDevice *p, ::zwp_pointer_gesture_pinch_v1 *object);
     ~QWaylandPointerGesturePinch() override;
 
     void zwp_pointer_gesture_pinch_v1_begin(uint32_t serial,

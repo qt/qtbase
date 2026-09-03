@@ -27,17 +27,18 @@ QWaylandPointerGestures::~QWaylandPointerGestures() noexcept
 QWaylandPointerGestureSwipe *
     QWaylandPointerGestures::createPointerGestureSwipe(QWaylandInputDevice *device)
 {
-    return new QWaylandPointerGestureSwipe(device);
+    return new QWaylandPointerGestureSwipe(device, get_swipe_gesture(device->pointer()->wl_pointer()));
 }
 
 QWaylandPointerGesturePinch *
     QWaylandPointerGestures::createPointerGesturePinch(QWaylandInputDevice *device)
 {
-    return new QWaylandPointerGesturePinch(device);
+    return new QWaylandPointerGesturePinch(device, get_pinch_gesture(device->pointer()->wl_pointer()));
 }
 
-QWaylandPointerGestureSwipe::QWaylandPointerGestureSwipe(QWaylandInputDevice *p)
-    : mParent(p)
+QWaylandPointerGestureSwipe::QWaylandPointerGestureSwipe(QWaylandInputDevice *p, ::zwp_pointer_gesture_swipe_v1 *object)
+    : QtWayland::zwp_pointer_gesture_swipe_v1(object)
+    , mParent(p)
 {
 }
 
@@ -117,8 +118,9 @@ void QWaylandPointerGestureSwipe::zwp_pointer_gesture_swipe_v1_end(uint32_t seri
 #endif
 }
 
-QWaylandPointerGesturePinch::QWaylandPointerGesturePinch(QWaylandInputDevice *p)
-    : mParent(p)
+QWaylandPointerGesturePinch::QWaylandPointerGesturePinch(QWaylandInputDevice *p, ::zwp_pointer_gesture_pinch_v1 *object)
+    : QtWayland::zwp_pointer_gesture_pinch_v1(object)
+    , mParent(p)
 {
 }
 
