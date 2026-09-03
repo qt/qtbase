@@ -27,10 +27,13 @@ static QByteArray fieldString(const QtTemporalPattern::TemporalField &field)
         } while (false) // end showFlag()
         showFlag(Numeric); showFlag(Verbal); showFlag(Standalone);
         showFlag(Narrow); showFlag(Abbreviated); showFlag(Short); showFlag(Wide);
-        showFlag(ZeroPad); showFlag(SpacePad); showFlag(FlexSpace);
+        showFlag(ZeroPad); showFlag(SpacePad); showFlag(FlexSpace); showFlag(StrictSpace);
         showFlag(LowerCase); showFlag(UpperCase); showFlag(IgnoreCase);
+        showFlag(YearSignIso8601);
+        showFlag(LocalizedZone); showFlag(Iso8601);
+        showFlag(AcceptUtcPrefix); showFlag(NeedNoUtcPrefix);
+        showFlag(AllowZSuffix);
         showFlag(GenericTime); showFlag(StandardTime); showFlag(DaylightSavingTime);
-        showFlag(Iso8601); showFlag(AllowZSuffix);
         showFlag(LocalTimeName);
 #undef showFlag
         if (flags)
@@ -44,13 +47,12 @@ static QByteArray fieldString(const QtTemporalPattern::TemporalField &field)
             showCase(TimeZone);
             showCase(SecondFraction);
             showCase(Second);
-            // showCase(SecondFraction);
-            showCase(Minute);
             // showCase(MinuteFraction);
-            showCase(PeriodInDay);
+            showCase(Minute);
+            // showCase(HourFraction);
             showCase(HourMod12);
             showCase(Hour);
-            // showCase(HourFraction);
+            showCase(PeriodInDay);
             showCase(DayOfWeek);
             showCase(DayOfMonth);
             // showCase(DayOfYear); showCase(JulianDay);

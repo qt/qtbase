@@ -45,8 +45,8 @@ namespace QtTemporalPattern {
         // MillisecondInDay = 17,
         Second = 20, SecondFraction = 21,
         Minute = 24, // MinuteFraction = 25,
-        PeriodInDay = 30, // am/pm; LDML also has noon, midnight, "at night" and others.
-        HourMod12 = 31, Hour = 32, // HourFraction = 33,
+        HourMod12 = 30, Hour = 31, // HourFraction = 32,
+        PeriodInDay = 33, // am/pm; LDML also has noon, midnight, "at night" and others.
 
         // Date:
         DayOfWeek = 64, DayOfMonth = 65, // DayOfYear = 68, JulianDay = 69,
@@ -60,7 +60,8 @@ namespace QtTemporalPattern {
 
         EndCategories
     };
-    constexpr inline auto EndTemporalFieldCategories = qToUnderlying(TemporalFieldCategory::EndCategories);
+    constexpr inline
+    auto EndTemporalFieldCategories = qToUnderlying(TemporalFieldCategory::EndCategories);
 
     enum class TemporalFieldFlag : quint32 {
         Numeric = 1, Verbal = 2, Standalone = 4,
@@ -70,15 +71,17 @@ namespace QtTemporalPattern {
         // Qt used to impose case on am/pm fields:
         LowerCase = 0x1000, UpperCase = 0x2000, // Otherwise follow locale-supplied case.
         IgnoreCase = 0x4000, // Parsing Literal or Verbal: match case insensitively
-        // Year-specific:
-        YearSignIso8601 = 0x8000,
+        // Special cases:
+        // (0x8000, 0x01'0000, 0x02'0000, 0x04'0000 free)
+        YearSignIso8601 = 0x08'0000, // Require sign when excess digits
         // Zone-specific:
-        LocalizedZone = 0x01'0000, // Localized forms, various.
-        Iso8601 = 0x02'0000, // Non-localized standard offset forms.
-        AcceptUtcPrefix = 0x04'0000, NeedNoUtcPrefix = 0x08'0000, // On offsets
-        AllowZSuffix = 0x10'0000, // Iso8601 zero-offset may be indicated by Z.
+        LocalizedZone = 0x10'0000, // Localized forms, various.
+        Iso8601 = 0x20'0000, // Non-localized standard offset forms.
+        AcceptUtcPrefix = 0x40'0000, NeedNoUtcPrefix = 0x80'0000, // On offsets
+        AllowZSuffix = 0x0100'0000, // Iso8601 zero-offset may be indicated by Z.
         // Time-types (if none specified, infer time type from date/time fields):
-        GenericTime = 0x20'0000, StandardTime = 0x40'0000, DaylightSavingTime = 0x80'0000,
+        GenericTime = 0x0200'0000, StandardTime = 0x0400'0000, DaylightSavingTime = 0x0800'0000,
+        // (0x1000'0000, 0x2000'0000, 0x4000'0000 free)
         // Local time from system info:
         LocalTimeName = 0x8000'0000 // That's the last bit available to us.
     };
