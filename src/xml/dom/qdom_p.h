@@ -327,14 +327,14 @@ public:
     QDomAttrPrivate *setAttributeNode(QDomAttrPrivate *newAttr);
     QDomAttrPrivate *setAttributeNodeNS(QDomAttrPrivate *newAttr);
     QDomAttrPrivate *removeAttributeNode(QDomAttrPrivate *oldAttr);
-    bool hasAttribute(const QString &name);
-    bool hasAttributeNS(const QString &nsURI, const QString &localName);
+    bool hasAttribute(const QString &name) const;
+    bool hasAttributeNS(const QString &nsURI, const QString &localName) const;
 
-    QString text();
+    QString text() const;
 
     // Reimplemented from QDomNodePrivate
     QDomNamedNodeMapPrivate *attributes() { return m_attr; }
-    bool hasAttributes() { return (m_attr->length() > 0); }
+    bool hasAttributes() const { return (m_attr->length() > 0); }
     QDomNode::NodeType nodeType() const override { return QDomNode::ElementNode; }
     QDomNodePrivate *cloneNode(bool deep = true) override;
     virtual void save(QTextStream &s, int, int) const override;
