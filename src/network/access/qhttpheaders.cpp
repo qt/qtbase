@@ -90,7 +90,7 @@ Q_STATIC_LOGGING_CATEGORY(lcQHttpHeaders, "qt.network.http.headers");
 
 /*!
     \fn size_t qHash(QHttpHeaderRangeSpec key, size_t seed) noexcept
-    \qhashold{QHttpHeaderRangeSpec}
+    \qhash{QHttpHeaderRangeSpec}
     \since 6.12
 */
 
