@@ -354,6 +354,11 @@ void QDnsLookupRunnable::query(const int requestType, const QByteArray &requestN
             record.d->timeToLive = ttl;
             reply->mailExchangeRecords.append(record);
         } else if (type == QDnsLookup::SRV) {
+            if (size < 7) {
+                reply->error = QDnsLookup::InvalidReplyError;
+                reply->errorString = tr("Invalid service record");
+                return;
+            }
             const quint16 priority = (p[0] << 8) | p[1];
             const quint16 weight = (p[2] << 8) | p[3];
             const quint16 port = (p[4] << 8) | p[5];

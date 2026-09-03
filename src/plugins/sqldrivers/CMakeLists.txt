@@ -16,7 +16,7 @@ if (NOT CMAKE_PROJECT_NAME STREQUAL "QtBase" AND NOT CMAKE_PROJECT_NAME STREQUAL
         VERSION "${QT_REPO_MODULE_VERSION}"
         DESCRIPTION "Qt6 SQL driver plugins"
         HOMEPAGE_URL "https://qt.io/"
-        LANGUAGES CXX C ASM
+        LANGUAGES CXX C
     )
     find_package(Qt6 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS
         BuildInternals

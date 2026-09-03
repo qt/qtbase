@@ -239,7 +239,7 @@ static inline bool convertDoubleTo(double v, T *value, bool allow_precision_upgr
         if (*value == Tmax) {
             // no double can have an exact value of quint64(-1), but they can
             // quint32(-1), so we need to compare for that
-            if (TypeIsLarger || _mm_ucomieq_sd(mv, _mm_set_sd(Tmax)))
+            if (TypeIsLarger || _mm_ucomieq_sd(mv, _mm_set_sd(double(Tmax))))
                 return false;
         }
 

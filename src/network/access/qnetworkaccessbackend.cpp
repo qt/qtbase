@@ -258,7 +258,10 @@ QNetworkAccessBackend::QNetworkAccessBackend(TargetTypes targetTypes, IOFeatures
 /*!
     Destructs the QNetworkAccessBackend base class.
 */
-QNetworkAccessBackend::~QNetworkAccessBackend() { }
+QNetworkAccessBackend::~QNetworkAccessBackend()
+{
+    delete d_func()->wrappedUploadByteDevice;
+}
 
 /*!
     Returns the security related features that the backend claims to

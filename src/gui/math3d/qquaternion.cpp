@@ -336,6 +336,9 @@ QVector3D QQuaternion::rotatedVector(const QVector3D& vector) const
     Extracts a 3D axis \a axis and a rotating angle \a angle (in degrees)
     that corresponds to this quaternion.
 
+    Both \a axis and \a angle must be valid, non-\nullptr pointers,
+    otherwise the behavior is undefined.
+
     \sa fromAxisAndAngle()
 */
 
@@ -365,6 +368,9 @@ QQuaternion QQuaternion::fromAxisAndAngle(const QVector3D& axis, float angle)
 
     Extracts a 3D axis (\a x, \a y, \a z) and a rotating angle \a angle (in degrees)
     that corresponds to this quaternion.
+
+    All of \a x, \a y, \a z, and \a angle must be valid, non-\nullptr pointers,
+    otherwise the behavior is undefined.
 
     \sa fromAxisAndAngle()
 */
@@ -419,22 +425,22 @@ QQuaternion QQuaternion::fromAxisAndAngle
 /*!
     \fn QVector3D QQuaternion::toEulerAngles() const
     \since 5.5
-    \overload
 
     Calculates roll, pitch, and yaw Euler angles (in degrees)
-    that corresponds to this quaternion.
+    that correspond to this quaternion.
 
     \sa fromEulerAngles()
 */
 
 /*!
-    \fn QQuaternion QQuaternion::fromEulerAngles(const QVector3D &eulerAngles)
+    \fn QQuaternion QQuaternion::fromEulerAngles(const QVector3D &angles)
     \since 5.5
     \overload
 
-    Creates a quaternion that corresponds to a rotation of \a eulerAngles:
-    eulerAngles.z() degrees around the z axis, eulerAngles.x() degrees around the x axis,
-    and eulerAngles.y() degrees around the y axis (in that order).
+    Creates a quaternion that corresponds to a rotation of \a angles:
+    angles.\l{QVector3D::}{z()} degrees around the z axis,
+    angles.\l{QVector3D::}{x()} degrees around the x axis, and
+    angles.\l{QVector3D::}{y()} degrees around the y axis (in that order).
 
     \sa toEulerAngles()
 */
@@ -446,6 +452,9 @@ QQuaternion QQuaternion::fromAxisAndAngle
 
     Calculates \a roll, \a pitch, and \a yaw Euler angles (in degrees)
     that corresponds to this quaternion.
+
+    All of \a pitch, \a yaw, and \a roll must be valid, non-\nullptr pointers,
+    otherwise the behavior is undefined.
 
     \sa fromEulerAngles()
 */
@@ -586,9 +595,9 @@ QMatrix3x3 QQuaternion::toRotationMatrix() const
 /*!
     \since 5.5
 
-    Creates a quaternion that corresponds to a rotation matrix \a rot3x3.
+    Creates a quaternion that corresponds to the rotation matrix \a rot3x3.
 
-    \note If a given rotation matrix is not normalized,
+    \note If the given rotation matrix is not normalized,
     the resulting quaternion will contain scaling information.
 
     \sa toRotationMatrix(), fromAxes()
@@ -609,7 +618,7 @@ QQuaternion QQuaternion::fromRotationMatrix(const QMatrix3x3 &rot3x3)
         axis[1] = (rot3x3(0, 2) - rot3x3(2, 0)) / s;
         axis[2] = (rot3x3(1, 0) - rot3x3(0, 1)) / s;
     } else {
-        static int s_next[3] = { 1, 2, 0 };
+        constexpr int s_next[3] = { 1, 2, 0 };
         int i = 0;
         if (rot3x3(1, 1) > rot3x3(0, 0))
             i = 1;
@@ -634,6 +643,9 @@ QQuaternion QQuaternion::fromRotationMatrix(const QMatrix3x3 &rot3x3)
     \since 5.5
 
     Returns the 3 orthonormal axes (\a xAxis, \a yAxis, \a zAxis) defining the quaternion.
+
+    All of \a xAxis, \a yAxis, and \a zAxis must be valid, non-\nullptr pointers,
+    otherwise the behavior is undefined.
 
     \sa fromAxes(), toRotationMatrix()
 */

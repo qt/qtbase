@@ -91,7 +91,10 @@
 #ifdef HB_MINI
 #define HB_NO_AAT
 #define HB_NO_LEGACY
-#define HB_NO_BORING_EXPANSION
+#define HB_NO_BEYOND_64K
+#define HB_NO_CUBIC_GLYF
+#define HB_NO_VAR_COMPOSITES
+#define HB_NO_VAR_HVF
 #endif
 
 #ifdef __OPTIMIZE_SIZE__
@@ -108,12 +111,6 @@
 #endif
 
 /* Closure of options. */
-
-#ifdef HB_NO_BORING_EXPANSION
-#define HB_NO_BEYOND_64K
-#define HB_NO_CUBIC_GLYF
-#define HB_NO_VAR_COMPOSITES
-#endif
 
 #ifdef HB_NO_VAR
 #define HB_NO_VAR_COMPOSITES

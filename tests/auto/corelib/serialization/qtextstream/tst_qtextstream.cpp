@@ -23,6 +23,8 @@
 #include "../../../network-settings.h"
 #include <QtTest/private/qemulationdetector_p.h>
 
+using namespace Qt::StringLiterals;
+
 QT_BEGIN_NAMESPACE
 template<> struct QMetaTypeId<QIODevice::OpenModeFlag>
 { enum { Defined = 1 }; static inline int qt_metatype_id() { return QMetaType::Int; } };
@@ -1402,17 +1404,14 @@ void tst_QTextStream::pos2()
 // ------------------------------------------------------------------------------
 void tst_QTextStream::pos3LargeFile()
 {
-    if (QTestPrivate::isRunningArmOnX86())
-        QSKIP("Running QTextStream::pos() in tight loop is too slow on emulator");
-
+    // NOTE: The unusual spacing is to ensure non-1-character whitespace.
+    constexpr auto lineString = " 0  1  2\t3  4\t \t5  6  7  8   9 \n"_L1;
     {
         QFile file(testFileName);
         file.open(QIODevice::WriteOnly | QIODevice::Text);
         QTextStream out( &file );
-        // NOTE: The unusual spacing is to ensure non-1-character whitespace.
-        QString lineString = " 0  1  2\t3  4\t \t5  6  7  8   9 \n";
-        // Approximate 50kb text file
-        const int NbLines = (50*1024) / lineString.size() + 1;
+        // Approximately 5kb text file (more is too slow (QTBUG-138435))
+        const int NbLines = (5 * 1024) / lineString.size() + 1;
         for (int line = 0; line < NbLines; ++line)
             out << lineString;
         // File is automatically flushed and closed on destruction.
@@ -1420,11 +1419,18 @@ void tst_QTextStream::pos3LargeFile()
     QFile file(testFileName);
     file.open(QIODevice::ReadOnly | QIODevice::Text);
     QTextStream in( &file );
-    const int testValues[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-    int value;
+    constexpr int testValues[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+    qint64 expectedLineEnd = 0;
+#ifdef Q_OS_WIN // CRLF platform
+    constexpr int crlfAdjustment = 1;
+#else
+    constexpr int crlfAdjustment = 0;
+#endif
+    const auto expectedLineLength = lineString.size() + crlfAdjustment;
+    QCOMPARE(in.pos(), 0);
     while (true) {
-        in.pos();
-        for ( int i = 0; i < 10; ++i ) {
+        for (size_t i = 0; i < std::size(testValues); ++i) {
+            int value = -42;
             in >> value;
             if (in.status() != QTextStream::Ok) {
                 // End case, i == 0 && eof reached.
@@ -1434,6 +1440,9 @@ void tst_QTextStream::pos3LargeFile()
             }
             QCOMPARE(value, testValues[i]);
         }
+        expectedLineEnd += expectedLineLength;
+        // Final space and newline are not consumed until next read.
+        QCOMPARE(in.pos(), expectedLineEnd - 2 - crlfAdjustment);
     }
 }
 
@@ -3030,14 +3039,41 @@ void tst_QTextStream::int_write_with_locale_data()
     QTest::addColumn<int>("numberFlags");
     QTest::addColumn<int>("input");
     QTest::addColumn<QString>("output");
+    QTest::addColumn<int>("fieldWidth");
+    QTest::addColumn<QTextStream::FieldAlignment>("fieldAlignment");
 
-    QTest::newRow("C -123") << QString("C") << 0 << -123 << QString("-123");
-    QTest::newRow("C +123") << QString("C") << (int)QTextStream::ForceSign << 123 << QString("+123");
-    QTest::newRow("C 12345") << QString("C") << 0 << 12345 << QString("12345");
+    const auto alignDefault = QTextStream().fieldAlignment();
+    constexpr int forceSign = QTextStream::ForceSign;
 
-    QTest::newRow("de_DE -123") << QString("de_DE") << 0 << -123 << QString("-123");
-    QTest::newRow("de_DE +123") << QString("de_DE") << (int)QTextStream::ForceSign << 123 << QString("+123");
-    QTest::newRow("de_DE 12345") << QString("de_DE") << 0 << 12345 << QString("12.345");
+    QTest::newRow("C -123") << u"C"_s << 0 << -123 << u"-123"_s << 0 << alignDefault;
+    QTest::newRow("C +123") << u"C"_s << forceSign << 123 << u"+123"_s << 0 << alignDefault;
+    QTest::newRow("C 12345") << u"C"_s << 0 << 12345 << u"12345"_s << 0 << alignDefault;
+
+    QTest::newRow("de_DE -123") << u"de_DE"_s << 0 << -123 << u"-123"_s << 0 << alignDefault;
+    QTest::newRow("de_DE +123") << u"de_DE"_s << forceSign << 123 << u"+123"_s << 0 << alignDefault;
+    QTest::newRow("de_DE 12345") << u"de_DE"_s << 0 << 12345 << u"12.345"_s << 0 << alignDefault;
+
+    constexpr auto alignAccountingStyle = QTextStream::FieldAlignment::AlignAccountingStyle;
+
+    {
+        const QLocale loc("ar_EG"_L1);
+        // Arabic as spoken in Egypt has a two-code-point negativeSign():
+        const auto minus = loc.negativeSign();
+        QCOMPARE(minus.size(), 2);
+        // ditto positiveSign():
+        const auto plus = loc.positiveSign();
+        QCOMPARE(plus.size(), 2);
+
+        QTest::addRow("ar_EG -123") << u"ar_EG"_s << 0 << -123
+                                    << (minus + u"     ١٢٣"_s)
+                                    << 10 << alignAccountingStyle;
+        QTest::newRow("ar_EG +123") << u"ar_EG"_s << forceSign << 123
+                                    << (plus + u"     ١٢٣"_s)
+                                    << 10 << alignAccountingStyle;
+        QTest::newRow("ar_EG 12345") << u"ar_EG"_s << 0 << 12345
+                                     << u"    ١٢٬٣٤٥"_s
+                                     << 10 << alignAccountingStyle;
+    }
 }
 
 void tst_QTextStream::int_write_with_locale()
@@ -3046,12 +3082,18 @@ void tst_QTextStream::int_write_with_locale()
     QFETCH(int, numberFlags);
     QFETCH(int, input);
     QFETCH(QString, output);
+    QFETCH(const int, fieldWidth);
+    QFETCH(const QTextStream::FieldAlignment, fieldAlignment);
 
     QString result;
     QTextStream stream(&result);
     stream.setLocale(QLocale(locale));
+    stream.setFieldAlignment(fieldAlignment);
     if (numberFlags)
         stream.setNumberFlags(QTextStream::NumberFlags(numberFlags));
+    if (fieldWidth)
+        stream.setFieldWidth(fieldWidth);
+
     stream << input;
     QCOMPARE(result, output);
 }

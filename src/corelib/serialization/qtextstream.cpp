@@ -681,13 +681,14 @@ inline void QTextStreamPrivate::restoreToSavedConverterState()
 /*!
     \internal
 */
-void QTextStreamPrivate::write(const QChar *data, qsizetype len)
+template <typename Appendable>
+void QTextStreamPrivate::writeImpl(Appendable s)
 {
     if (string) {
         // ### What about seek()??
-        string->append(data, len);
+        string->append(s);
     } else {
-        writeBuffer.append(data, len);
+        writeBuffer.append(s);
         if (writeBuffer.size() > QTEXTSTREAM_BUFFERSIZE)
             flushWriteBuffer();
     }
@@ -696,16 +697,17 @@ void QTextStreamPrivate::write(const QChar *data, qsizetype len)
 /*!
     \internal
 */
-inline void QTextStreamPrivate::write(QChar ch)
+void QTextStreamPrivate::write(QStringView s)
 {
-    if (string) {
-        // ### What about seek()??
-        string->append(ch);
-    } else {
-        writeBuffer += ch;
-        if (writeBuffer.size() > QTEXTSTREAM_BUFFERSIZE)
-            flushWriteBuffer();
-    }
+    writeImpl(s);
+}
+
+/*!
+    \internal
+*/
+void QTextStreamPrivate::write(QChar ch)
+{
+    writeImpl(ch);
 }
 
 /*!
@@ -713,14 +715,7 @@ inline void QTextStreamPrivate::write(QChar ch)
 */
 void QTextStreamPrivate::write(QLatin1StringView data)
 {
-    if (string) {
-        // ### What about seek()??
-        string->append(data);
-    } else {
-        writeBuffer += data;
-        if (writeBuffer.size() > QTEXTSTREAM_BUFFERSIZE)
-            flushWriteBuffer();
-    }
+    writeImpl(data);
 }
 
 /*!
@@ -782,7 +777,7 @@ inline void QTextStreamPrivate::ungetChar(QChar ch)
 inline void QTextStreamPrivate::putChar(QChar ch)
 {
     if (params.fieldWidth > 0)
-        putString(&ch, 1);
+        putString(QStringView{&ch, 1});
     else
         write(ch);
 }
@@ -815,52 +810,42 @@ QTextStreamPrivate::PaddingResult QTextStreamPrivate::padding(qsizetype len) con
     return { left, right };
 }
 
-/*!
-    \internal
-*/
-void QTextStreamPrivate::putString(const QChar *data, qsizetype len, bool number)
+namespace {
+template <typename StringView>
+auto parseSign(StringView data, const QLocale &loc)
 {
-    if (Q_UNLIKELY(params.fieldWidth > len)) {
-
-        // handle padding:
-
-        const PaddingResult pad = padding(len);
-
-        if (params.fieldAlignment == QTextStream::AlignAccountingStyle && number) {
-            const QChar sign = len > 0 ? data[0] : QChar();
-            if (sign == locale.negativeSign() || sign == locale.positiveSign()) {
-                // write the sign before the padding, then skip it later
-                write(&sign, 1);
-                ++data;
-                --len;
-            }
-        }
-
-        writePadding(pad.left);
-        write(data, len);
-        writePadding(pad.right);
-    } else {
-        write(data, len);
-    }
+    struct R {
+        StringView sign, rest;
+        explicit operator bool() const noexcept { return !sign.isEmpty(); }
+    };
+    // This assumes that the size in UTF-16 (return value of QLocale functions)
+    // and StringView is the same; in particular, it doesn't work for UTF-8!
+    if (const QString sign = loc.negativeSign(); data.startsWith(sign))
+        return R{data.first(sign.size()), data.sliced(sign.size())};
+    if (const QString sign = loc.positiveSign(); data.startsWith(sign))
+        return R{data.first(sign.size()), data.sliced(sign.size())};
+    return R{nullptr, data};
 }
+} // unnamed namespace
 
 /*!
     \internal
 */
-void QTextStreamPrivate::putString(QLatin1StringView data, bool number)
+template <typename StringView>
+void QTextStreamPrivate::putStringImpl(StringView data, PutStringMode mode)
 {
+    const bool number = mode == PutStringMode::Number;
     if (Q_UNLIKELY(params.fieldWidth > data.size())) {
 
-        // handle padding
+        // handle padding:
 
         const PaddingResult pad = padding(data.size());
 
         if (params.fieldAlignment == QTextStream::AlignAccountingStyle && number) {
-            const QChar sign = data.size() > 0 ? QLatin1Char(*data.data()) : QChar();
-            if (sign == locale.negativeSign() || sign == locale.positiveSign()) {
+            if (const auto r = parseSign(data, locale)) {
                 // write the sign before the padding, then skip it later
-                write(&sign, 1);
-                data = QLatin1StringView(data.data() + 1, data.size() - 1);
+                write(r.sign);
+                data = r.rest;
             }
         }
 
@@ -872,9 +857,28 @@ void QTextStreamPrivate::putString(QLatin1StringView data, bool number)
     }
 }
 
-void QTextStreamPrivate::putString(QUtf8StringView data, bool number)
+/*!
+    \internal
+*/
+void QTextStreamPrivate::putString(QLatin1StringView data, PutStringMode mode)
 {
-    putString(data.toString(), number);
+    putStringImpl(data, mode);
+}
+
+/*!
+    \internal
+*/
+void QTextStreamPrivate::putString(QStringView data, PutStringMode mode)
+{
+    putStringImpl(data, mode);
+}
+
+/*!
+    \internal
+*/
+void QTextStreamPrivate::putString(QUtf8StringView data, PutStringMode mode)
+{
+    putString(data.toString(), mode);
 }
 
 /*!
@@ -2225,7 +2229,7 @@ void QTextStreamPrivate::putNumber(qulonglong number, bool negative)
         // a zero.
         result.prepend(u'0');
     }
-    putString(result, true);
+    putString(result, PutStringMode::Number);
 }
 
 /*!
@@ -2435,7 +2439,7 @@ QTextStream &QTextStream::operator<<(double f)
 
     const QLocaleData *dd = d->locale.d->m_data;
     QString num = dd->doubleToString(f, d->params.realNumberPrecision, form, -1, flags);
-    d->putString(num, true);
+    d->putString(num, QTextStreamPrivate::PutStringMode::Number);
     return *this;
 }
 
@@ -2465,7 +2469,7 @@ QTextStream &QTextStream::operator<<(QStringView string)
 {
     Q_D(QTextStream);
     CHECK_VALID_STREAM(*this);
-    d->putString(string.cbegin(), int(string.size()));
+    d->putString(string);
     return *this;
 }
 
@@ -2493,7 +2497,7 @@ QTextStream &QTextStream::operator<<(const QByteArray &array)
 {
     Q_D(QTextStream);
     CHECK_VALID_STREAM(*this);
-    d->putString(QString::fromUtf8(array.constData(), array.size()));
+    d->putString(QUtf8StringView{array});
     return *this;
 }
 

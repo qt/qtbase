@@ -91,6 +91,9 @@ struct Symbol
     Token token = NOTOKEN;
     inline QByteArray lexem() const { return lex.mid(from, len); }
     inline QByteArray unquotedLexem() const { return lex.mid(from+1, len-2); }
+    inline QByteArrayView lexemView() const { return QByteArrayView{lex}.mid(from, len); }
+    inline QByteArrayView unquotedLexemView() const { return QByteArrayView{lex}.mid(from+1, len-2); }
+    void mergeStringLiteral(const Symbol &next);
     inline operator SubArray() const { return SubArray(lex, from, len); }
     bool operator==(const Symbol& o) const
     {

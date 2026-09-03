@@ -134,7 +134,7 @@ static QByteArray _q_PKCS12_certBag(const QSslCertificate &cert)
     return ba;
 }
 
-static QAsn1Element _q_PKCS12_key(const QSslKey &key)
+QAsn1Element _q_PKCS12_key(const QSslKey &key)
 {
     Q_ASSERT(key.algorithm() == QSsl::Rsa || key.algorithm() == QSsl::Dsa);
 

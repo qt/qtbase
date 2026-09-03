@@ -542,6 +542,18 @@ QDBusMessage::~QDBusMessage()
 }
 
 /*!
+    \fn QDBusMessage &QDBusMessage::operator=(QDBusMessage &&other)
+
+    Move-assigns \a other into this object.
+
+//! [partially-formed]
+    \note The moved-from object \a other is placed in a partially-formed state,
+    in which the only valid operations are destruction and assignment of a new
+    value.
+//! [partially-formed]
+*/
+
+/*!
     Copies the contents of the object given by \a other.
 
     Note: QDBusMessage objects are shared. Modifications made to the

@@ -28,12 +28,21 @@ void tst_QDataUrl::decode_data()
     };
 
     row("nonData", "http://test.com", false);
+    row("malformed-host", "data://test.com", false);
+    row("malformed-host2", "data://text/plain;charset=ISO-8859-1", false);
+    row("malformed-host3", "data://test.com/,", false);
     row("emptyData", "data:text/plain", true,
         "text/plain;charset=US-ASCII"_L1);
+    row("emptyData-default-mimetype", "data:,", true,
+        "text/plain;charset=US-ASCII"_L1, "");
+    row("emptyData-only-charset", "data:charset=ISO-8859-1,", true,
+        "text/plain;charset=ISO-8859-1"_L1, "");
     row("alreadyPercentageEncoded", "data:text/plain,%E2%88%9A", true,
         "text/plain"_L1, QByteArray::fromPercentEncoding("%E2%88%9A"));
     row("everythingIsCaseInsensitive", "Data:texT/PlaiN;charSet=iSo-8859-1;Base64,SGVsbG8=", true,
         "texT/PlaiN;charSet=iSo-8859-1"_L1, QByteArrayLiteral("Hello"));
+    row("spacesAroundCharset", "data:%20charset%20%20=%20UTF-8,Hello", true,
+        "text/plain;charset  = UTF-8"_L1, QByteArrayLiteral("Hello"));
     row("prematureCharsetEnd", "data:charset,", true,
         "charset", ""); // nonsense result, but don't crash
 }

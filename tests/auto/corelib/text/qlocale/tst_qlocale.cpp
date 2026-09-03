@@ -137,6 +137,8 @@ private slots:
 
     void lcsToCode();
     void codeToLcs();
+    void codeToLang_data();
+    void codeToLang();
 
     // *** ORDER-DEPENDENCY *** (This Is Bad.)
     // Test order is determined by order of declaration here: *all* tests that
@@ -147,6 +149,8 @@ private slots:
     void unixLocaleName();
     void testNames_data();
     void testNames();
+    void signsNeverCompareEqualToNullCharacter_data() { testNames_data(); }
+    void signsNeverCompareEqualToNullCharacter();
     // DO NOT add tests here unless they QLocale::setDefault(); see above.
 private:
     QString m_decimal, m_thousand, m_sdate, m_ldate, m_time;
@@ -1652,6 +1656,19 @@ void tst_QLocale::negativeZero()
     QCOMPARE(locale.toString(std::copysign(0.0, -1.0)), expect);
 }
 
+void tst_QLocale::signsNeverCompareEqualToNullCharacter() // otherwise QTextStream has a problem
+{
+    QFETCH(QLocale::Language, language);
+    QFETCH(const QLocale::Territory, country);
+
+    if (language == QLocale::AnyLanguage && country == QLocale::AnyTerritory)
+        language = QLocale::C;
+
+    const QLocale loc(language, country);
+    QCOMPARE_NE(loc.negativeSign(), QChar());
+    QCOMPARE_NE(loc.positiveSign(), QChar());
+}
+
 void tst_QLocale::dayOfWeek_data()
 {
     QTest::addColumn<QDate>("date");
@@ -2952,6 +2969,26 @@ void tst_QLocale::dayName_data()
         << QString("ru_RU") << QString::fromUtf8("\320\262\321\201") << 7 << QLocale::ShortFormat;
     QTest::newRow("ru_RU narrow")
         << QString("ru_RU") << u"\u0412"_s << 7 << QLocale::NarrowFormat;
+
+    QTest::newRow("ga_IE/Mon") << QString("ga_IE") << QString("Luan") << 1 << QLocale::ShortFormat;
+    QTest::newRow("ga_IE/Sun") << QString("ga_IE") << QString("Domh") << 7 << QLocale::ShortFormat;
+    QTest::newRow("el_GR/Tue")
+        << QString("el_GR") << QString::fromUtf8("\316\244\317\201\316\257")
+        << 2 << QLocale::ShortFormat;
+    QTest::newRow("el_GR/Thu")
+        << QString("el_GR") << QString::fromUtf8("\316\240\316\255\316\274")
+        << 4 << QLocale::ShortFormat;
+    QTest::newRow("el_GR/Sat")
+        << QString("el_GR") << QString::fromUtf8("\316\243\316\254\316\262")
+        << 6 << QLocale::ShortFormat;
+
+    // Main concern is that short != narrow, for the benefit of QTBUG-10506, QTBUG-84877.
+    QTest::newRow("zh long")
+        << QString("zh") << QString::fromUtf8("\u661F\u671F\u56DB") << 4 << QLocale::LongFormat;
+    QTest::newRow("zh short")
+        << QString("zh") << QString::fromUtf8("\u5468\u56DB") << 4 << QLocale::ShortFormat;
+    QTest::newRow("zh narrow")
+        << QString("zh") << QString::fromUtf8("\u56DB") << 4 << QLocale::NarrowFormat;
 }
 
 void tst_QLocale::dayName()
@@ -2963,15 +3000,6 @@ void tst_QLocale::dayName()
 
     QLocale l(locale_name);
     QCOMPARE(l.dayName(day, format), dayName);
-
-    QLocale ir("ga_IE");
-    QCOMPARE(ir.dayName(1, QLocale::ShortFormat), QLatin1String("Luan"));
-    QCOMPARE(ir.dayName(7, QLocale::ShortFormat), QLatin1String("Domh"));
-
-    QLocale gr("el_GR");
-    QCOMPARE(gr.dayName(2, QLocale::ShortFormat), QString::fromUtf8("\316\244\317\201\316\257"));
-    QCOMPARE(gr.dayName(4, QLocale::ShortFormat), QString::fromUtf8("\316\240\316\255\316\274"));
-    QCOMPARE(gr.dayName(6, QLocale::ShortFormat), QString::fromUtf8("\316\243\316\254\316\262"));
 }
 
 void tst_QLocale::standaloneDayName_data()
@@ -3005,6 +3033,14 @@ void tst_QLocale::standaloneDayName_data()
         << QString("ru_RU") << QString::fromUtf8("\320\262\321\201") << 7 << QLocale::ShortFormat;
     QTest::newRow("ru_RU narrow")
         << QString("ru_RU") << QString::fromUtf8("\320\222") << 7 << QLocale::NarrowFormat;
+
+    // Main concern is that short != narrow, for the benefit of QTBUG-10506, QTBUG-84877.
+    QTest::newRow("zh long")
+        << QString("zh") << QString::fromUtf8("\u661F\u671F\u56DB") << 4 << QLocale::LongFormat;
+    QTest::newRow("zh short")
+        << QString("zh") << QString::fromUtf8("\u5468\u56DB") << 4 << QLocale::ShortFormat;
+    QTest::newRow("zh narrow")
+        << QString("zh") << QString::fromUtf8("\u56DB") << 4 << QLocale::NarrowFormat;
 }
 
 void tst_QLocale::standaloneDayName()
@@ -3221,6 +3257,14 @@ void tst_QLocale::monthName()
     const QLocale cz("cs_CZ");
     QCOMPARE(cz.monthName(1, QLocale::ShortFormat), QLatin1String("led"));
     QCOMPARE(cz.monthName(12, QLocale::ShortFormat), QLatin1String("pro"));
+
+    // For the benefit of QTBUG-10506, QTBUG-84877.
+    const QLocale cn(QLocale::Chinese);
+    QCOMPARE_NE(cn.monthName(3, QLocale::NarrowFormat), cn.monthName(3, QLocale::ShortFormat));
+    if (sys.language() == QLocale::Chinese) {
+        QCOMPARE_NE(sys.monthName(3, QLocale::NarrowFormat),
+                    sys.monthName(3, QLocale::ShortFormat));
+    }
 }
 
 void tst_QLocale::standaloneMonthName()
@@ -3251,6 +3295,16 @@ void tst_QLocale::standaloneMonthName()
     QCOMPARE(ru.standaloneMonthName(1, QLocale::ShortFormat),
              QString::fromUtf8("\xd1\x8f\xd0\xbd\xd0\xb2."));
     QCOMPARE(ru.standaloneMonthName(1, QLocale::NarrowFormat), QString::fromUtf8("\xd0\xaf"));
+
+    // For the benefit of QTBUG-10506, QTBUG-84877.
+    const QLocale cn(QLocale::Chinese);
+    QCOMPARE_NE(cn.standaloneMonthName(3, QLocale::NarrowFormat),
+                cn.standaloneMonthName(3, QLocale::ShortFormat));
+    const auto sys = QLocale::system();
+    if (sys.language() == QLocale::Chinese) {
+        QCOMPARE_NE(sys.standaloneMonthName(3, QLocale::NarrowFormat),
+                    sys.standaloneMonthName(3, QLocale::ShortFormat));
+    }
 }
 
 void tst_QLocale::currency()
@@ -4245,37 +4299,138 @@ void tst_QLocale::lcsToCode()
     QCOMPARE(QLocale::scriptToCode(QLocale::SimplifiedHanScript), QString("Hans"));
 }
 
-void tst_QLocale::codeToLcs()
-{
-    QCOMPARE(QLocale::codeToLanguage(QString()), QLocale::AnyLanguage);
-    QCOMPARE(QLocale::codeToLanguage(QString(" ")), QLocale::AnyLanguage);
-    QCOMPARE(QLocale::codeToLanguage(QString("und")), QLocale::AnyLanguage);
-    QCOMPARE(QLocale::codeToLanguage(QString("e")), QLocale::AnyLanguage);
-    QCOMPARE(QLocale::codeToLanguage(QString("en")), QLocale::English);
-    QCOMPARE(QLocale::codeToLanguage(QString("EN")), QLocale::English);
-    QCOMPARE(QLocale::codeToLanguage(QString("eng")), QLocale::English);
-    QCOMPARE(QLocale::codeToLanguage(QString("ha")), QLocale::Hausa);
-    QCOMPARE(QLocale::codeToLanguage(QString("ha"), QLocale::ISO639Alpha3), QLocale::AnyLanguage);
-    QCOMPARE(QLocale::codeToLanguage(QString("haw")), QLocale::Hawaiian);
-    QCOMPARE(QLocale::codeToLanguage(QString("haw"), QLocale::ISO639Alpha2), QLocale::AnyLanguage);
+static constexpr auto AnyLanguageCode = QLocale::LanguageCodeType::AnyLanguageCode;
 
-    QCOMPARE(QLocale::codeToLanguage(u"sq"), QLocale::Albanian);
-    QCOMPARE(QLocale::codeToLanguage(u"alb"), QLocale::Albanian);
-    QCOMPARE(QLocale::codeToLanguage(u"sqi"), QLocale::Albanian);
-    QCOMPARE(QLocale::codeToLanguage(u"sq", QLocale::ISO639Part1), QLocale::Albanian);
-    QCOMPARE(QLocale::codeToLanguage(u"sq", QLocale::ISO639Part3), QLocale::AnyLanguage);
-    QCOMPARE(QLocale::codeToLanguage(u"alb", QLocale::ISO639Part2B), QLocale::Albanian);
-    QCOMPARE(QLocale::codeToLanguage(u"alb", QLocale::ISO639Part2T | QLocale::ISO639Part3),
-             QLocale::AnyLanguage);
-    QCOMPARE(QLocale::codeToLanguage(u"sqi", QLocale::ISO639Part2T), QLocale::Albanian);
-    QCOMPARE(QLocale::codeToLanguage(u"sqi", QLocale::ISO639Part3), QLocale::Albanian);
-    QCOMPARE(QLocale::codeToLanguage(u"sqi", QLocale::ISO639Part1 | QLocale::ISO639Part2B),
-             QLocale::AnyLanguage);
+void tst_QLocale::codeToLang_data()
+{
+    QTest::addColumn<QStringView>("input");
+    QTest::addColumn<QLocale::LanguageCodeTypes>("options");
+    QTest::addColumn<QLocale::Language>("expected");
+
+    auto row = [](const char *tag, QStringView in, QLocale::Language expected,
+                  QLocale::LanguageCodeTypes options = AnyLanguageCode)
+    {
+        QTest::addRow("%s", tag) << in << options << expected;
+    };
+    auto invalid = [](const char *tag, QStringView in,
+                      QLocale::LanguageCodeTypes options = AnyLanguageCode)
+    {
+        constexpr auto InvalidScript = QLocale::Language::AnyLanguage;
+        QTest::addRow("invalid:%s", tag) << in << options << InvalidScript;
+    };
+
+    constexpr bool QTBUG_138562 = QT_VERSION >= QT_VERSION_CHECK(6,6,0);
+    // (introduced by 3dcd6b7ec98b2edf9654bcefdb83134c4c3d2a38, to be precise)
+
+    invalid("null", nullptr);
+    invalid("empty", u"");
+    invalid("1*SP", u" ");
+    if constexpr (!QTBUG_138562) {
+    invalid("2*SP", u"  ");
+    invalid("3*SP", u"   ");
+    }
+    invalid("4*SP", u"    ");
+    invalid("und", u"und"); // does not exist
+    invalid("e", u"e");     // too short
+    row("en", u"en", QLocale::English);
+    row("eN", u"eN", QLocale::English);
+    row("EN", u"EN", QLocale::English);
+    row("En", u"En", QLocale::English);
+    row("eng", u"eng", QLocale::English);
+    row("Eng", u"Eng", QLocale::English);
+    row("eNg", u"eNg", QLocale::English);
+    row("enG", u"enG", QLocale::English);
+    row("ha", u"ha", QLocale::Hausa);
+    invalid("ha/alpha3", u"ha", QLocale::ISO639Alpha3);
+    row("haw", u"haw", QLocale::Hawaiian);
+    invalid("haw/alpha2", u"haw", QLocale::ISO639Alpha2);
+
+    row("sq", u"sq", QLocale::Albanian);
+    row("alb", u"alb", QLocale::Albanian);
+    row("sqi", u"sqi", QLocale::Albanian);
+    row("sq/part1", u"sq", QLocale::Albanian, QLocale::ISO639Part1);
+    invalid("sq/part3", u"sq", QLocale::ISO639Part3);
+    row("alb/part2b", u"alb", QLocale::Albanian, QLocale::ISO639Part2B);
+    invalid("alb/part2t/part3", u"alb", QLocale::ISO639Part2T | QLocale::ISO639Part3);
+    row("sqi/part2t", u"sqi", QLocale::Albanian, QLocale::ISO639Part2T);
+    row("sqi/part3", u"sqi", QLocale::Albanian, QLocale::ISO639Part3);
+    invalid("sqi/part1/part2b", u"sqi", QLocale::ISO639Part1 | QLocale::ISO639Part2B);
 
     // Legacy code
-    QCOMPARE(QLocale::codeToLanguage(u"no"), QLocale::NorwegianBokmal);
-    QCOMPARE(QLocale::codeToLanguage(u"no", QLocale::ISO639Part1), QLocale::AnyLanguage);
+    row("no", u"no", QLocale::NorwegianBokmal);
+    invalid("no (part 1)", u"no", QLocale::ISO639Part1);
 
+    invalid("aaaa", u"aaaa"); // too long
+    invalid("2*NUL", QStringView(u"\0\0", 2));
+    invalid("3*NUL", QStringView(u"\0\0\0", 3));
+
+    // Codes with invalid characters:
+
+    invalid("1", u"1"); // numeric
+    if constexpr (!QTBUG_138562) {
+    invalid("11", u"11");
+    invalid("111", u"111");
+    }
+    invalid("1111", u"1111");
+    if constexpr (!QTBUG_138562) {
+    invalid("a1", u"a1");
+    invalid("aa1", u"aa1");
+    }
+    invalid("aaa1", u"aaa1");
+
+    invalid("1*AUML", u"ä"); // non-ASCII
+    if constexpr (!QTBUG_138562) {
+    invalid("2*AUML", u"ää");
+    invalid("3*AUML", u"äää");
+    }
+    invalid("4*AUML", u"ääää");
+    if constexpr (!QTBUG_138562) {
+    invalid("1*a+AUML", u"aä");
+    invalid("2*a+AUML", u"aaä");
+    }
+    invalid("3*a+AUML", u"aaaä");
+
+    invalid("ar_1", u"١"); // Arabic 1...1234 (non-L1)
+    if constexpr (!QTBUG_138562) {
+    invalid("ar_12", u"١٢");
+    invalid("ar_123", u"١٢٣");
+    }
+    invalid("ar_1234", u"١٢٣٤");
+    if constexpr (!QTBUG_138562) {
+    invalid("ar_a1", u"a١"); // a...aaa + Arabic 1
+    invalid("ar_aa1", u"aa١");
+    }
+    invalid("ar_aaa1", u"aaa١");
+
+    if constexpr (!QTBUG_138562) {
+    invalid("hier-A042", u"𓀰"); // EGYPTIAN HIEROGLYPH A042 U13030 (non-BMP)
+    invalid("a+hier-A042", u"a𓀰");
+    }
+
+    // valid codes with invalid characters at the end should not match valid codes:
+
+    invalid("de+null", QStringView(u"de\0", 3));
+    invalid("de+space", u"de ");     // character below [A-z]
+    invalid("de1", u"de1");          // numeric character
+    invalid("de^", u"de^");          // character between [A-Z] and [a-z]
+    invalid("de~", u"de~");          // character above [A-z]
+    invalid("de+0x80", u"de\u0080"); // negative character (if char is signed)
+    invalid("de+0xff", u"de\u00ff"); // UCHAR_MAX (if char is signed)
+    invalid("de+non-L1", u"de١");      // Arabic 1
+}
+
+void tst_QLocale::codeToLang()
+{
+    QFETCH(const QStringView, input);
+    QFETCH(const QLocale::LanguageCodeTypes, options);
+    QFETCH(const QLocale::Language, expected);
+
+    QEXPECT_FAIL("invalid:de+null", "This should probably be rejected, too", Abort);
+    QCOMPARE(QLocale::codeToLanguage(input, options), expected);
+}
+
+void tst_QLocale::codeToLcs()
+{
     QCOMPARE(QLocale::codeToTerritory(QString()), QLocale::AnyTerritory);
     QCOMPARE(QLocale::codeToTerritory(QString("ZZ")), QLocale::AnyTerritory);
     QCOMPARE(QLocale::codeToTerritory(QString("US")), QLocale::UnitedStates);
@@ -4288,6 +4443,9 @@ void tst_QLocale::codeToLcs()
     QCOMPARE(QLocale::codeToScript(QString()), QLocale::AnyScript);
     QCOMPARE(QLocale::codeToScript(QString("Zzzz")), QLocale::AnyScript);
     QCOMPARE(QLocale::codeToScript(QString("Hans")), QLocale::SimplifiedHanScript);
+    // ensure we can find the last script, too:
+    QCOMPARE(QLocale::codeToScript(QLocale::scriptToCode(QLocale::LastScript)),
+             QLocale::LastScript);
 }
 
 QTEST_MAIN(tst_QLocale)

@@ -18,6 +18,98 @@ function(__qt_internal_strip_target_directory_scope_token target out_var)
     set("${out_var}" "${target}" PARENT_SCOPE)
 endfunction()
 
+# Work around AUTOGEN issue when a library is added as a dependency more than once, and the autogen
+# library dependency results in being discarded. To mitigate that, add all autogen dependencies
+# manually, based on the passed in dependencies.
+# CMake 4.0+ has a fix, so we don't need the extra logic.
+# See https://gitlab.kitware.com/cmake/cmake/-/issues/26700
+function(_qt_internal_work_around_autogen_discarded_dependencies target)
+    if(CMAKE_VERSION VERSION_GREATER_EQUAL 4.0
+            OR QT_NO_AUTOGEN_DISCARDED_DEPENDENCIES_WORKAROUND)
+        return()
+    endif()
+
+    get_target_property(type "${target}" TYPE)
+    if(type STREQUAL "INTERFACE_LIBRARY")
+        return()
+    endif()
+
+    set(libraries ${ARGN})
+    set(final_libraries "")
+
+    foreach(lib IN LISTS libraries)
+        # Skip non-target dependencies.
+        if(NOT TARGET "${lib}")
+            continue()
+        endif()
+
+        # Resolve alias targets, because AUTOGEN_TARGET_DEPENDS doesn't seem to handle them.
+        get_target_property(aliased_target "${lib}" ALIASED_TARGET)
+        if(aliased_target)
+            set(lib "${aliased_target}")
+        endif()
+
+        # Skip imported targets, they don't have sync_headers targets.
+        get_target_property(imported "${lib}" IMPORTED)
+        if(imported)
+            continue()
+        endif()
+
+        # Resolve Qt private modules to their public counterparts.
+        get_target_property(is_private_module "${lib}" _qt_is_private_module)
+        get_target_property(public_module_target "${lib}" _qt_public_module_target_name)
+
+        if(is_private_module AND public_module_target)
+            set(lib "${public_module_target}")
+        endif()
+
+        # Another TARGET check, just in case.
+        if(TARGET "${lib}")
+            list(APPEND final_libraries "${lib}")
+        endif()
+    endforeach()
+    if(final_libraries)
+        get_target_property(autogen_target_depends "${target}" AUTOGEN_TARGET_DEPENDS)
+        if(NOT autogen_target_depends)
+            set(autogen_target_depends "")
+        endif()
+        list(APPEND autogen_target_depends ${final_libraries})
+        list(REMOVE_DUPLICATES autogen_target_depends)
+        set_property(TARGET "${target}"
+            PROPERTY AUTOGEN_TARGET_DEPENDS "${autogen_target_depends}")
+    endif()
+endfunction()
+
+# This function is similar to _qt_internal_work_around_autogen_discarded_dependencies
+# but it instead queries the libs to process from the target's LINK_LIBRARIES and
+# INTERFACE_LINK_LIBRARIES.
+# It only applies the logic while building Qt itself.
+# It's meant to be used in public API like qt_finalize_target, so that the workaround is applied
+# to examples that are built as part of the qt build tree.
+function(_qt_internal_work_around_autogen_discarded_dependencies_from_target_libs target)
+    if(NOT QT_BUILDING_QT)
+        return()
+    endif()
+
+    set(libraries "")
+
+    get_target_property(link_libs "${target}" LINK_LIBRARIES)
+    if(link_libs)
+        list(APPEND libraries "${link_libs}")
+    endif()
+    get_target_property(interface_link_libs "${target}" INTERFACE_LINK_LIBRARIES)
+
+    if(interface_link_libs)
+        list(APPEND libraries "${interface_link_libs}")
+    endif()
+
+    if(NOT libraries)
+        return()
+    endif()
+
+    _qt_internal_work_around_autogen_discarded_dependencies("${target}" ${libraries})
+endfunction()
+
 # Tests if linker could resolve circular dependencies between object files and static libraries.
 function(__qt_internal_static_link_order_public_test result)
     # We could trust iOS linker

@@ -547,8 +547,8 @@ public:
     void setDocumentMode(bool enabled);
 
     QTabBar *getTabBar();
+    void unuseTabBar(QTabBar *bar);
     QSet<QTabBar*> usedTabBars;
-    QList<QTabBar*> unusedTabBars;
     bool verticalTabsEnabled;
 
     QWidget *getSeparatorWidget();

@@ -1160,9 +1160,22 @@ void tst_QTimeZone::utcTest()
     QCOMPARE(tzp.hasTransitions(), false);
 #endif // QT_BUILD_INTERNAL
 
+    // Test UTC accessor
+    const QDateTime now = QDateTime::currentDateTime();
+    auto tz = QTimeZone::utc();
+    QCOMPARE(tz.isValid(), true);
+    QCOMPARE(tz.id(), QByteArrayLiteral("UTC"));
+    QCOMPARE(tz.territory(), QLocale::AnyTerritory);
+    QCOMPARE(tz.abbreviation(now), QStringLiteral("UTC"));
+    QCOMPARE(tz.displayName(QTimeZone::StandardTime, QTimeZone::LongName, QLocale()), QStringLiteral("UTC"));
+    QCOMPARE(tz.offsetFromUtc(now), 0);
+    QCOMPARE(tz.standardTimeOffset(now), 0);
+    QCOMPARE(tz.daylightTimeOffset(now), 0);
+    QCOMPARE(tz.hasDaylightTime(), false);
+    QCOMPARE(tz.hasTransitions(), false);
+
     // Test create from UTC Offset (uses minimal id, skipping minutes if 0)
-    QDateTime now = QDateTime::currentDateTime();
-    QTimeZone tz(36000);
+    tz = QTimeZone(36000);
     QVERIFY(tz.isValid());
     QCOMPARE(tz.id(), QByteArray("UTC+10"));
     QCOMPARE(tz.offsetFromUtc(now), 36000);
@@ -1217,7 +1230,9 @@ void tst_QTimeZone::icuTest()
     QIcuTimeZonePrivate tzpd;
     QVERIFY(tzpd.isValid());
 
-    // Test invalid constructor
+    // Test invalid is not available:
+    QVERIFY(!tzpd.isTimeZoneIdAvailable("Gondwana/Erewhon"));
+    // and construction gives an invalid result:
     QIcuTimeZonePrivate tzpi("Gondwana/Erewhon");
     QCOMPARE(tzpi.isValid(), false);
 

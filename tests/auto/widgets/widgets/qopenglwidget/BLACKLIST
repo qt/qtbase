@@ -1,7 +1,6 @@
 # Temporary solution COIN-966
 ubuntu
 rhel
-opensuse-leap
 
 [stackWidgetOpaqueChildIsVisible]
 windows-10 msvc-2017

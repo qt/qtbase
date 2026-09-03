@@ -58,11 +58,12 @@
 
 #if QT_CONFIG(accessibility)
 
+#include <QtGui/private/qaccessiblehelper_p.h>
+
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-QString qt_accStripAmp(const QString &text);
 QString qt_accHotKey(const QString &text);
 
 QWidgetList _q_ac_childWidgets(const QWidget *widget)

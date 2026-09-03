@@ -1,4 +1,4 @@
 <?xml version='1.0' encoding='utf-8'?>
-<resources>
-    <string name="fatal_error_msg">Wystąpił błąd krytyczny. Aplikacja zostanie zamknięta.</string>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="fatal_error_msg" tools:ignore="UnusedResources">Wystąpił błąd krytyczny. Aplikacja zostanie zamknięta.</string>
 </resources>

@@ -4,6 +4,8 @@
 #include <QTest>
 #include <QtCore/QScopedPointer>
 
+#include <QtCore/qstdlibdetection.h>
+
 /*!
  \class tst_QScopedPointer
  \internal
@@ -22,6 +24,7 @@ private Q_SLOTS:
     void dataOnValue();
     void dataSignature();
     void reset();
+    void resetDeleteOrdering();
     void dereferenceOperator();
     void dereferenceOperatorSignature();
     void pointerOperator();
@@ -124,6 +127,85 @@ void tst_QScopedPointer::reset()
         p.reset(value);
         QCOMPARE(*p.data(), 9);
         QCOMPARE(*p.get(), 9);
+    }
+}
+
+void tst_QScopedPointer::resetDeleteOrdering()
+{
+    {
+        struct CheckingDeleter;
+        using SP = QScopedPointer<int, CheckingDeleter>;
+        static const SP *instance = nullptr; // QScopedPointer does not handle stateful deleters
+        static const int *expected = nullptr;
+
+        struct CheckingDeleter {
+            static void cleanup(int *p)
+            {
+                const auto *value = instance->get();
+                std::unique_ptr<int> deleter(p);
+                QT_TRY { QCOMPARE(value, expected); } QT_CATCH(...) {} // eat QTest failure exception, if any
+            }
+            void operator()(int *p) { cleanup(p); }
+        };
+
+        // reset()
+        {
+            SP p(new int{42});
+            instance = &p;
+            expected = nullptr;
+            p.reset();
+        }
+        if (QTest::currentTestFailed())
+            return;
+        // destructor
+        {
+            SP p(new int{48});
+            instance = &p;
+            expected = p.get(); // inconsistent with reset(), but consistent with unique_ptr
+        }
+        if (QTest::currentTestFailed())
+            return;
+    }
+
+    // comparison with unique_ptr:
+    {
+        struct CheckingDeleter;
+        using UP = std::unique_ptr<int, CheckingDeleter>;
+        // unique_ptr handles stateful deleters, but be consistent with QScopedPointer test
+        static const UP *instance = nullptr;
+        static const int *expected = nullptr;
+
+        struct CheckingDeleter {
+            void operator()(int *p) const
+            {
+                const auto *value = instance->get();
+                std::unique_ptr<int> deleter(p);
+                QT_TRY { QCOMPARE(value, expected); } QT_CATCH(...) {} // eat QTest failure exception, if any
+            }
+        };
+
+        // reset()
+        {
+            UP p(new int{42});
+            instance = &p;
+            expected = nullptr; // https://eel.is/c++draft/unique.ptr#single.modifiers-3 ... 5
+            p.reset();
+        }
+        if (QTest::currentTestFailed())
+            return;
+        // destructor
+#ifdef Q_STL_LIBCPP
+        // This would fail on libc++ https://github.com/llvm/llvm-project/issues/108149
+        if (false)
+#endif
+        {
+            UP p(new int{48});
+            instance = &p;
+            expected = p.get(); // https://eel.is/c++draft/unique.ptr#single.dtor
+        }
+        if (QTest::currentTestFailed())
+            return;
+
     }
 }
 

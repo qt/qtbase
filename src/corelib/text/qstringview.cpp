@@ -689,7 +689,7 @@ QT_BEGIN_NAMESPACE
 
     \note The behavior is undefined when \a length < 0 or \a length > size().
 
-    \sa mid(), left(), right(), chop(), truncate()
+    \sa sliced(), left(), right(), chop(), truncate()
 */
 
 /*!
@@ -701,7 +701,7 @@ QT_BEGIN_NAMESPACE
 
     \note The behavior is undefined when \a length < 0 or \a length > size().
 
-    \sa mid(), left(), right(), chopped(), chop()
+    \sa sliced(), left(), right(), chopped(), chop()
 */
 
 /*!
@@ -713,7 +713,7 @@ QT_BEGIN_NAMESPACE
 
     \note The behavior is undefined when \a length < 0 or \a length > size().
 
-    \sa mid(), left(), right(), chopped(), truncate()
+    \sa sliced(), left(), right(), chopped(), truncate()
 */
 
 /*!
@@ -730,8 +730,9 @@ QT_BEGIN_NAMESPACE
     \fn int QStringView::compare(QStringView str, Qt::CaseSensitivity cs) const
     \since 5.12
 
-    Returns an integer that compares to zero as this string view compares to the
-    string view \a str.
+    Compares this string view with string view \a str and returns a negative integer if
+    this string view is less than \a str, a positive integer if it is greater than
+    \a str, and zero if they are equal.
 
     \include qstring.qdocinc {search-comparison-case-sensitivity} {comparison}
 
@@ -742,8 +743,9 @@ QT_BEGIN_NAMESPACE
     \fn int QStringView::compare(QUtf8StringView str, Qt::CaseSensitivity cs) const
     \since 6.5
 
-    Returns an integer that compares to zero as this string view compares to the
-    string view \a str.
+    Compares this string view with QUtf8StringView \a str and returns a negative integer if
+    this string view is less than \a str, a positive integer if it is greater than
+    \a str, and zero if they are equal.
 
     \include qstring.qdocinc {search-comparison-case-sensitivity} {comparison}
 
@@ -756,8 +758,9 @@ QT_BEGIN_NAMESPACE
     \fn int QStringView::compare(QChar ch, Qt::CaseSensitivity cs) const
     \since 5.15
 
-    Returns an integer that compares to zero as this string view compares to the
-    Latin-1 string viewed by \a l1, or the character \a ch, respectively.
+    Compares this string view to the Latin-1 string view \a l1, or the character \a ch.
+    Returns a negative integer if this string view is less than \a l1 or \a ch,
+    a positive integer if it is greater than \a l1 or \a ch, and zero if they are equal.
 
     \include qstring.qdocinc {search-comparison-case-sensitivity} {comparison}
 
@@ -1379,8 +1382,9 @@ or the character \a ch
     \fn int QLatin1StringView::compare(QUtf8StringView str, Qt::CaseSensitivity cs) const
     \since 6.5
 
-    Returns an integer that compares to zero as this string view compares to the
-    string view \a str.
+    Compares this string view with \a str and returns a negative integer if
+    this string view is less than \a str, a positive integer if it is greater than
+    \a str, and zero if they are equal.
 
     \include qstring.qdocinc {search-comparison-case-sensitivity} {comparison}
 

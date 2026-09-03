@@ -36,8 +36,8 @@ public:
     Qt::HANDLE handle() const override;
 
     static QSslCertificate QSslCertificate_from_CERT_CONTEXT(const CERT_CONTEXT *certificateContext);
-private:
-    const CERT_CONTEXT *certificateContext = nullptr;
+
+    QPCCertContextPointer certificateContext;
 
     Q_DISABLE_COPY_MOVE(X509CertificateSchannel);
 };

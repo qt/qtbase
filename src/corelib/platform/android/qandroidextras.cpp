@@ -1165,6 +1165,8 @@ requestPermissionsInternal(const QStringList &permissions)
         env->DeleteLocalRef(array);
     });
 
+    QtAndroidPrivate::releaseAndroidDeadlockProtector();
+
     return future;
 }
 

@@ -66,7 +66,7 @@ QStorageInfo::QStorageInfo()
     \sa setPath()
 */
 QStorageInfo::QStorageInfo(const QString &path)
-    : d(new QStorageInfoPrivate)
+    : QStorageInfo()
 {
     setPath(path);
 }
@@ -76,39 +76,34 @@ QStorageInfo::QStorageInfo(const QString &path)
     containing the \a dir folder.
 */
 QStorageInfo::QStorageInfo(const QDir &dir)
-    : d(new QStorageInfoPrivate)
+    : QStorageInfo(dir.absolutePath())
 {
-    setPath(dir.absolutePath());
 }
 
 /*!
     Constructs a new QStorageInfo object that is a copy of the \a other QStorageInfo object.
 */
 QStorageInfo::QStorageInfo(const QStorageInfo &other)
-    : d(other.d)
-{
-}
+    = default;
 
 /*!
     Destroys the QStorageInfo object and frees its resources.
 */
 QStorageInfo::~QStorageInfo()
-{
-}
+    = default;
 
 /*!
     Makes a copy of the QStorageInfo object \a other and assigns it to this QStorageInfo object.
 */
 QStorageInfo &QStorageInfo::operator=(const QStorageInfo &other)
-{
-    d = other.d;
-    return *this;
-}
+    = default;
 
 /*!
     \fn QStorageInfo &QStorageInfo::operator=(QStorageInfo &&other)
 
-    Assigns \a other to this QStorageInfo instance.
+    Move-assigns \a other to this QStorageInfo instance.
+
+    The moved-from object \a other is placed in a valid, but unspecified state.
 */
 
 /*!

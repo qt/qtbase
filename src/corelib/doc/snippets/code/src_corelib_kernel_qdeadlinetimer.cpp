@@ -1,6 +1,8 @@
 // Copyright (C) 2018 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
+using namespace std::chrono_literals;
+
 //! [0]
     void executeOperation(int msecs)
     {
@@ -14,30 +16,23 @@
 //! [0]
 
 //! [1]
-    using namespace std::chrono;
-    using namespace std::chrono_literals;
-
     QDeadlineTimer deadline(30s);
     device->waitForReadyRead(deadline);
-    if (deadline.remainingTime<nanoseconds>() > 300ms)
+    if (deadline.remainingTime<std::chrono::nanoseconds>() > 300ms)
         cleanup();
 //! [1]
 
 //! [2]
-    using namespace std::chrono;
-    using namespace std::chrono_literals;
-    auto now = steady_clock::now();
+    auto now = std::chrono::steady_clock::now();
     QDeadlineTimer deadline(now + 1s);
     Q_ASSERT(deadline == now + 1s);
 //! [2]
 
 //! [3]
-    using namespace std::chrono_literals;
     QDeadlineTimer deadline(250ms);
 //! [3]
 
 //! [4]
-    using namespace std::chrono_literals;
     deadline.setRemainingTime(250ms);
 //! [4]
 

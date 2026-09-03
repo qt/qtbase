@@ -68,6 +68,7 @@ macro.QUL                 = "Qt Quick Ultralite"
 macro.QtAA                = "Qt for Android Automotive"
 macro.QOI                 = "Qt Online Installer"
 macro.QMT                 = "Qt Maintenance Tool"
+macro.Q4A                 = "Qt for Android"
 
 # The following macros are used for various Android docs. The purpose is to keep
 # it as simple as updating these instead of updating multiple lines in scattered locations.
@@ -83,7 +84,7 @@ macro.AndroidMaxVer       = "15"
 macro.AndroidPlatformVer  = "35"
 macro.AndroidBuildToolsVer = "35.0.1"
 macro.GradleVer           = "8.10"
-macro.AGPVer              = "8.5.2"
+macro.AGPVer              = "8.6.0"
 
 macro.beginfloatleft.HTML   = "<div style=\"float: left; margin-right: 2em\">"
 macro.beginfloatright.HTML  = "<div style=\"float: right; margin-left: 2em\">"

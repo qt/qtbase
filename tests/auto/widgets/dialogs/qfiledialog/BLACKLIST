@@ -8,3 +8,5 @@ android # QTBUG-101194
 android # QTBUG-108329
 [completer]
 android # QTBUG-101194
+[clearLineEdit]
+vxworks # QTBUG-135966

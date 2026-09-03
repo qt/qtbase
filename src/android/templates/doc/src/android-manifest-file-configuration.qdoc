@@ -3,7 +3,7 @@
 
 /*!
 \page android-manifest-file-configuration.html
-\title Qt Android Manifest File Configuration
+\title \Q4A Manifest File Configuration
 \ingroup androidplatform
 \brief Provides details on the AndroidManifest.xml configuration.
 \previouspage android-openssl-support.html
@@ -14,7 +14,7 @@ app configuration for different settings and features that the app use, as well
 as details on the app itself, such as, package name, app name, version, etc.
 Permissions and hardware features can also be set from the manifest.
 
-Qt for Android maintains a version of \c {AndroidManifest.xml} with default
+\Q4A maintains a version of \c {AndroidManifest.xml} with default
 configuration that include features, permissions and other configuration
 used by the build system which are needed for building and running Qt apps
 on Android.
@@ -122,8 +122,16 @@ Qt sets the following manifest configuration by default:
     \li android:exported
     \li Sets whether the activity can be launched by components of other applications.
         The default value is \c true.
+\row
+    \li android:theme
+    \li Sets the theme name used for this activity. The default value is \c {@style/NormalTheme}.
+        \note Qt 6.8 doesn't have the public Safe Area Margins API which help manage
+        Edge-to-edge mode properly, thus this theme disables that mode by setting
+        the flag \c {android:windowOptOutEdgeToEdgeEnforcement}. Remove this flag
+        or theme if you want to avoid that behavior.
 \endtable
 
+\target android-manifest-qt-specific-metadata
 \section1 Qt Specific Meta-data
 
 In addition to the default manifest configuration that Qt sets, Qt defines

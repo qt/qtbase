@@ -67,6 +67,8 @@ private slots:
     void synchronousSimpleTypes();
 
     void errors();
+
+    void getResultFromAnotherInstance();
 };
 
 class TypesInterface: public QDBusAbstractAdaptor
@@ -559,6 +561,53 @@ void tst_QDBusPendingReply::errors()
     VERIFY_ERROR(error);
     QString dummystring = rstring;
     QCOMPARE(dummystring, QString());
+}
+
+void tst_QDBusPendingReply::getResultFromAnotherInstance()
+{
+    // void
+    {
+        QDBusPendingReply<> r = iface->asyncCall("retrieveVoid");
+
+        QDBusPendingReply<> other = r;
+        other.waitForFinished();
+
+        QVERIFY(other.isFinished());
+        QVERIFY(!other.isError());
+        QCOMPARE_EQ(other.count(), 0);
+    }
+
+    // multiple parameters
+    {
+        QDBusPendingReply<int, int> r = iface->asyncCall("retrieveIntInt");
+
+        QDBusPendingReply<int, int> other = r;
+        other.waitForFinished();
+
+        QVERIFY(other.isFinished());
+        QVERIFY(!other.isError());
+        QCOMPARE(other.count(), 2);
+
+        int i1 = 0;
+        int i2 = 0;
+        adaptor->retrieveIntInt(i1, i2);
+
+        QCOMPARE_EQ(other.argumentAt<0>(), i1);
+        QCOMPARE_EQ(other.argumentAt<1>(), i2);
+    }
+
+    // complex types
+    {
+        QDBusPendingReply<IntStringMap> r = iface->asyncCall("retrieveIntStringMap");
+
+        QDBusPendingReply<IntStringMap> other = r;
+        other.waitForFinished();
+
+        QVERIFY(other.isFinished());
+        QVERIFY(!other.isError());
+        QCOMPARE_EQ(other.count(), 1);
+        QCOMPARE_EQ(other.value(), adaptor->retrieveIntStringMap());
+    }
 }
 
 QTEST_MAIN(tst_QDBusPendingReply)

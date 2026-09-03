@@ -19,30 +19,14 @@
 #include <QtCore/qlockfile.h>
 #include <QtCore/qfile.h>
 
-#include <qplatformdefs.h>
-
-#ifdef Q_OS_WIN
-#include <io.h>
-#include <qt_windows.h>
-#endif
-
 QT_BEGIN_NAMESPACE
 
 class QLockFilePrivate
 {
 public:
-    QLockFilePrivate(const QString &fn)
-        : fileName(fn),
-#ifdef Q_OS_WIN
-          fileHandle(INVALID_HANDLE_VALUE),
-#else
-          fileHandle(-1),
-#endif
-          staleLockTime(30 * 1000), // 30 seconds
-          lockError(QLockFile::NoError),
-          isLocked(false)
-    {
-    }
+    explicit QLockFilePrivate(const QString &fn);
+    ~QLockFilePrivate();
+
     QLockFile::LockError tryLock_sys();
     bool removeStaleLock();
     QByteArray lockFileContents() const;
@@ -64,18 +48,8 @@ public:
     QLockFile::LockError lockError;
     bool isLocked;
 
-    static int getLockFileHandle(QLockFile *f)
-    {
-        int fd;
-#ifdef Q_OS_WIN
-        // Use of this function on Windows WILL leak a file descriptor.
-        fd = _open_osfhandle(intptr_t(f->d_func()->fileHandle), 0);
-#else
-        fd = f->d_func()->fileHandle;
-#endif
-        QT_LSEEK(fd, 0, SEEK_SET);
-        return fd;
-    }
+    // used in tst_QLockFile:
+    Q_CORE_EXPORT static int getLockFileHandle(QLockFile *f);
 };
 
 QT_END_NAMESPACE

@@ -1,5 +1,5 @@
-libpng 1.6.48 - April 30, 2025
-==============================
+libpng 1.6.50 - July 1, 2025
+============================
 
 This is a public release of libpng, intended for use in production code.
 
@@ -9,13 +9,13 @@ Files available for download
 
 Source files with LF line endings (for Unix/Linux):
 
- * libpng-1.6.48.tar.xz (LZMA-compressed, recommended)
- * libpng-1.6.48.tar.gz (deflate-compressed)
+ * libpng-1.6.50.tar.xz (LZMA-compressed, recommended)
+ * libpng-1.6.50.tar.gz (deflate-compressed)
 
 Source files with CRLF line endings (for Windows):
 
- * lpng1648.7z (LZMA-compressed, recommended)
- * lpng1648.zip (deflate-compressed)
+ * lpng1650.7z (LZMA-compressed, recommended)
+ * lpng1650.zip (deflate-compressed)
 
 Other information:
 
@@ -25,17 +25,18 @@ Other information:
  * TRADEMARK.md
 
 
-Changes from version 1.6.47 to version 1.6.48
+Changes from version 1.6.49 to version 1.6.50
 ---------------------------------------------
 
- * Fixed the floating-point version of the mDCv setter `png_set_mDCv`.
-   (Reported by Mohit Bakshi; fixed by John Bowler)
- * Added #error directives to discourage the inclusion of private
-   libpng implementation header files in PNG-supporting applications.
- * Added the CMake build option `PNG_LIBCONF_HEADER`, to be used as an
-   alternative to `DFA_XTRA`.
- * Removed the Travis CI configuration files, with heartfelt thanks for
-   their generous support of our project over the past five years!
+ * Improved the detection of the RVV Extension on the RISC-V platform.
+   (Contributed by Filip Wasil)
+ * Replaced inline ASM with C intrinsics in the RVV code.
+   (Contributed by Filip Wasil)
+ * Fixed a decoder defect in which unknown chunks trailing IDAT, set
+   to go through the unknown chunk handler, incorrectly triggered
+   out-of-place IEND errors.
+   (Contributed by John Bowler)
+ * Fixed the CMake file for cross-platform builds that require `libm`.
 
 
 Send comments/corrections/commendations to png-mng-implement at lists.sf.net.

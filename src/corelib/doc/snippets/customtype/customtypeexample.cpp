@@ -39,6 +39,7 @@ QDebug operator<<(QDebug dbg, const Message &message);
 //! [custom type streaming operator]
 QDebug operator<<(QDebug dbg, const Message &message)
 {
+    QDebugStateSaver saver(dbg);
     const QList<QStringView> pieces = message.body().split(u"\r\n", Qt::SkipEmptyParts);
     if (pieces.isEmpty())
         dbg.nospace() << "Message()";

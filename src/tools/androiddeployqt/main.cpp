@@ -959,9 +959,13 @@ bool readInputFile(Options *options)
     }
     dependenciesForDepfile << options->inputFileName;
 
-    QJsonDocument jsonDocument = QJsonDocument::fromJson(file.readAll());
+    QJsonParseError jsonParseError;
+    QJsonDocument jsonDocument = QJsonDocument::fromJson(file.readAll(), &jsonParseError);
     if (jsonDocument.isNull()) {
-        fprintf(stderr, "Invalid json file: %s\n", qPrintable(options->inputFileName));
+        fprintf(stderr, "Invalid json file: %s. Reason: %s at offset %i.\n",
+            qPrintable(options->inputFileName),
+            qPrintable(jsonParseError.errorString()),
+            jsonParseError.offset);
         return false;
     }
 
@@ -1348,6 +1352,10 @@ bool copyFiles(const QDir &sourceDirectory, const QDir &destinationDirectory, co
     for (const QFileInfo &entry : entries) {
         if (entry.isDir()) {
             QDir dir(entry.absoluteFilePath());
+            const bool destinationInCopyDir = destinationDirectory.absolutePath().startsWith(dir.absolutePath());
+            if (sourceDirectory == options.androidSourceDirectory && destinationInCopyDir)
+                continue;
+
             if (!destinationDirectory.mkpath(dir.dirName())) {
                 fprintf(stderr, "Cannot make directory %s in %s\n", qPrintable(dir.dirName()), qPrintable(destinationDirectory.path()));
                 return false;
