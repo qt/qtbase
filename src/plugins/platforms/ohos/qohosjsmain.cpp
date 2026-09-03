@@ -10,6 +10,7 @@
 #include <hilog/log.h>
 #include <pthread.h>
 #include <qos/qos.h>
+#include <QtCore/qbytearray.h>
 #include <QtCore/qdebug.h>
 #include <QtCore/qglobal.h>
 #include <QtCore/qjsonarray.h>
@@ -423,6 +424,33 @@ std::optional<std::vector<std::string>> tryMapJsonArrayToStrings(const std::stri
     return result;
 }
 
+std::optional<std::vector<std::pair<std::string, std::string>>>
+tryMapJsonObjectToStringPairs(const std::string &inputJson)
+{
+    auto doc = QJsonDocument::fromJson(QByteArray::fromStdString(inputJson));
+    if (doc.isNull()) {
+        qOhosPrintfWarning("%s: input is not valid JSON string", Q_FUNC_INFO);
+        return std::nullopt;
+    }
+    if (!doc.isObject()) {
+        qOhosPrintfWarning("%s: input JSON does not contain an object", Q_FUNC_INFO);
+        return std::nullopt;
+    }
+
+    const auto inputObject = doc.object();
+
+    std::vector<std::pair<std::string, std::string>> result;
+    for (auto it = inputObject.constBegin(); it != inputObject.constEnd(); ++it) {
+        if (!it->isString()) {
+            qOhosPrintfWarning("%s: input object's value is not a string", Q_FUNC_INFO);
+            return std::nullopt;
+        }
+        result.emplace_back(it.key().toStdString(), it->toString().toStdString());
+    }
+
+    return result;
+}
+
 template<typename T>
 std::enable_if_t<std::is_base_of<QNapi::Value, T>::value, T>
 getWantParamOrEmptyIfNotPresent(QNapi::Object want, const std::string &paramName)
@@ -512,6 +540,7 @@ struct AppProcessLaunchOptions
     QNapi::String autoRequestPermissions;
     QNapi::Boolean enableNativeNodeApiKeyEvents;
     QNapi::Boolean enableNativeNodeApiMouseEvents;
+    QNapi::String envVarsJson;
 };
 
 AppProcessLaunchOptions getProcessLaunchOptionsFromWant(QNapi::Object launchWant)
@@ -559,6 +588,9 @@ AppProcessLaunchOptions getProcessLaunchOptionsFromWant(QNapi::Object launchWant
     assignWantParamIfPresent(
         launchOpts.enableNativeNodeApiMouseEvents,
         "io.qt.experimental.enableNativeNodeApiMouseEvents");
+    assignWantParamIfPresent(
+        launchOpts.envVarsJson,
+        "io.qt.envVarsJson");
 
     return launchOpts;
 }
@@ -587,6 +619,14 @@ void setGlobalFlagsFromAppProcessLaunchOptions(const AppProcessLaunchOptions &la
 
     if (!launchOpts.enableNativeNodeApiMouseEvents.IsEmpty())
         enableNativeNodeApiMouseEvents = launchOpts.enableNativeNodeApiMouseEvents.Value();
+
+    if (!launchOpts.envVarsJson.IsEmpty()) {
+        auto optEnvVars = tryMapJsonObjectToStringPairs(launchOpts.envVarsJson.Utf8Value());
+        if (optEnvVars) {
+            for (const auto &[name, value] : *optEnvVars)
+                qputenv(name.c_str(), QByteArray::fromStdString(value));
+        }
+    }
 }
 
 void terminateAllAbilityInstances(JsState &jsState, const char *logContext)

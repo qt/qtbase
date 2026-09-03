@@ -14,6 +14,7 @@
 #include <QtCore/qelapsedtimer.h>
 #include <QtCore/qjsonarray.h>
 #include <QtCore/qjsondocument.h>
+#include <QtCore/qjsonobject.h>
 #if QT_CONFIG(systemsemaphore)
 #  include <QtCore/qsystemsemaphore.h>
 #  include <QtCore/qtipccommon.h>
@@ -261,6 +262,14 @@ int main(int argc, char *argv[])
         qEnvironmentVariable("QT_HARMONYOS_TEST_CONFIG"));
     parser.addOption(testConfigOpt);
 
+    QCommandLineOption testEnvOpt(
+        u"test-env"_s,
+        u"Semicolon-separated NAME=VALUE pairs to set in the test environment "
+        u"(env: QT_HARMONYOS_TEST_ENV)"_s,
+        u"vars"_s,
+        qEnvironmentVariable("QT_HARMONYOS_TEST_ENV"));
+    parser.addOption(testEnvOpt);
+
     parser.process(app);
 
 
@@ -331,6 +340,23 @@ int main(int argc, char *argv[])
         const QString json = QString::fromUtf8(
             QJsonDocument(QJsonArray::fromStringList(testArgs)).toJson(QJsonDocument::Compact));
         aaStartCommand += {u"--ps"_s, u"io.qt.appArgsJson"_s, shellSingleQuote(json)};
+    }
+
+    const QString testEnv = parser.value(testEnvOpt);
+    if (!testEnv.isEmpty()) {
+        QJsonObject envVarsObject;
+        for (const QString &pair : testEnv.split(u';', Qt::SkipEmptyParts)) {
+            const qsizetype eq = pair.indexOf(u'=');
+            if (eq < 0) {
+                fprintf(stderr, "harmonyostestrunner: ignoring malformed --test-env entry "
+                        "(expected NAME=VALUE): %s\n", qPrintable(pair));
+                continue;
+            }
+            envVarsObject.insert(pair.left(eq), pair.mid(eq + 1));
+        }
+        const QString json = QString::fromUtf8(
+            QJsonDocument(envVarsObject).toJson(QJsonDocument::Compact));
+        aaStartCommand += {u"--ps"_s, u"io.qt.envVarsJson"_s, shellSingleQuote(json)};
     }
 
     // aa start prints errors (screen locked, ability not found, ...) to stdout.
