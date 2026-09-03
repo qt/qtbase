@@ -655,7 +655,10 @@ function(qt_internal_register_target_dependencies target)
         set(target_is_shared TRUE)
     elseif(target_type STREQUAL "STATIC_LIBRARY")
         set(target_is_static TRUE)
-    elseif(target_type STREQUAL "MODULE_LIBRARY")
+    elseif(target_type STREQUAL "MODULE_LIBRARY" AND ANDROID)
+        # Only Android deployment queries the Qt modules of plugins via CMake targets. Recording
+        # them for other platforms costs every project a find_package() call per plugin at
+        # configure time. See QTBUG-149668.
         set(target_is_module TRUE)
     endif()
 
@@ -693,7 +696,7 @@ function(qt_internal_register_target_dependencies target)
     # MODULE (i.e. plugin) library dependencies are recorded and will be used to
     # generate _qt_internal_find_qt_dependencies() calls in the plugin's
     # ${target}Dependencies.cmake, because we need to query those targets
-    # for (Android) deployment reasons.
+    # for Android deployment reasons. target_is_module is only TRUE for Android builds.
     #
     # We filter out static libraries and common platform targets, but include both SHARED and
     # INTERFACE libraries. INTERFACE libraries in most cases will be FooPrivate libraries.
