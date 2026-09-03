@@ -1,0 +1,609 @@
+// Copyright (C) 2019 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page stylesheet-examples.html
+    \previouspage Qt Style Sheets Reference
+    \title Qt Style Sheets Examples
+
+    We will now see a few examples to get started with using Qt Style Sheets.
+
+    \section1 Style Sheet Usage
+
+    \section2 Customizing the Foreground and Background Colors
+
+    Let's start by setting yellow as the background color of all
+    \l{QLineEdit}s in an application. This could be achieved like
+    this:
+
+    \snippet code/doc_src_stylesheet.cpp 88
+
+    If we want the property to apply only to the \l{QLineEdit}s that are
+    children (or grandchildren or grand-grandchildren) of a specific dialog,
+    we would rather do this:
+
+    \snippet code/doc_src_stylesheet.cpp 89
+
+    If we want the property to apply only to one specific QLineEdit,
+    we can give it a name using QObject::setObjectName() and use an
+    ID Selector to refer to it:
+
+    \snippet code/doc_src_stylesheet.cpp 90
+
+    Alternatively, we can set the
+    \l{Qt Style Sheets Reference#background-prop}{background-color} property directly on the
+    QLineEdit, omitting the selector:
+
+    \snippet code/doc_src_stylesheet.cpp 91
+
+    To ensure a good contrast, we should also specify a suitable
+    color for the text:
+
+    \snippet code/doc_src_stylesheet.cpp 92
+
+    It might be a good idea to change the colors used for selected
+    text as well:
+
+    \snippet code/doc_src_stylesheet.cpp 93
+
+
+    \section2 Customizing Using Dynamic Properties
+
+    There are many situations where we need to present a form that
+    has mandatory fields. To indicate to the user that the field is
+    mandatory, one effective (albeit esthetically dubious) solution
+    is to use yellow as the background color for those fields. It
+    turns out this is very easy to implement using Qt Style Sheets.
+    First, we would use the following application-wide style sheet:
+
+    \snippet code/doc_src_stylesheet.qdoc 94
+
+    This means that every widget whose \c mandatoryField Qt property
+    is set to true would have a yellow background.
+
+    Then, for each mandatory field widget, we would simply create a
+    \c mandatoryField property on the fly and set it to true. For
+    example:
+
+    \snippet code/doc_src_stylesheet.cpp 95
+
+    \section2 Customizing a QPushButton Using the Box Model
+
+    This time, we will show how to create a red QPushButton. This
+    QPushButton would presumably be connected to a very destructive
+    piece of code.
+
+    First, we are tempted to use this style sheet:
+
+    \snippet code/doc_src_stylesheet.qdoc 96
+
+    However, the result is a boring, flat button with no borders:
+
+    \image stylesheet-redbutton1.png {Flat red button}
+
+    What happened is this:
+
+    \list
+    \li We have made a request that cannot be satisfied using the
+       native styles alone (e.g., the Windows Vista theme engine doesn't
+       let us specify the background color of a button).
+    \li Therefore, the button is rendered using style sheets.
+    \li We haven't specified any values for
+       \l{Qt Style Sheets Reference#border-width-prop}{border-width} and
+       \l{Qt Style Sheets Reference#border-style-prop}{border-style}, so by default we obtain
+       a 0-pixel wide border of style \c none.
+    \endlist
+
+    Let's improve the situation by specifying a border:
+
+    \snippet code/doc_src_stylesheet.qdoc 97
+
+    \image stylesheet-redbutton2.png {Red button with a beige border}
+
+    Things look already a lot better. But the button looks a bit
+    cramped. Let's specify some spacing between the border and the
+    text using the \l{Qt Style Sheets Reference#padding-prop}{padding}. Additionally, we will
+    enforce a minimum width, round the corners, and specify a larger
+    font to make the button look nicer:
+
+    \snippet code/doc_src_stylesheet.qdoc 98
+
+    \image stylesheet-redbutton3.png
+           {Red button with a round beige border and big, bold text}
+
+    The only issue remaining is that the button doesn't react when we
+    press it. We can fix this by specifying a slightly different
+    background color and use a different border style.
+
+    \snippet code/doc_src_stylesheet.qdoc 99
+
+    \section2 Customizing the QPushButton's Menu Indicator Sub-Control
+
+    Subcontrols give access to the sub-elements of a widget. For
+    example, a QPushButton associated with a menu (using
+    QPushButton::setMenu()) has a menu indicator. Let's customize
+    the menu indicator for the red push button:
+
+    \snippet code/doc_src_stylesheet.qdoc 100
+
+    By default, the menu indicator is located at the bottom-right
+    corner of the padding rectangle. We can change this by specifying
+    \l{Qt Style Sheets Reference#subcontrol-position-prop}{subcontrol-position} and
+    \l{Qt Style Sheets Reference#subcontrol-origin-prop}{subcontrol-origin} to anchor the
+    indicator differently. We can also use \l{Qt Style Sheets Reference#top-prop}{top} and
+    \l{Qt Style Sheets Reference#left-prop}{left} to move the indicator by a few pixels. For
+    example:
+
+    \snippet code/doc_src_stylesheet.qdoc 101
+
+    This positions the \c myindicator.png to the center right of the
+    QPushButton's \l{Qt Style Sheets Reference#padding-prop}{padding} rectangle (see
+    \l{Qt Style Sheets Reference#subcontrol-origin-prop}{subcontrol-origin} for more
+    information).
+
+    \section2 Complex Selector Example
+
+    Since red seems to be our favorite color, let's make the text in
+    QLineEdit red by setting the following application-wide
+    stylesheet:
+
+    \snippet code/doc_src_stylesheet.qdoc 102
+
+    However, we would like to give a visual indication that a
+    QLineEdit is read-only by making it appear gray:
+
+    \snippet code/doc_src_stylesheet.qdoc 103
+
+    At some point, our design team comes with the requirement that
+    all \l{QLineEdit}s in the registration form (with the
+    \l{QObject::objectName}{object name} \c registrationDialog) to be
+    brown:
+
+    \snippet code/doc_src_stylesheet.qdoc 104
+
+    A few UI design meetings later, we decide that all our
+    \l{QDialog}s should have brown colored \l{QLineEdit}s:
+
+    \snippet code/doc_src_stylesheet.qdoc 105
+
+    Quiz: What happens if we have a read-only QLineEdit in a QDialog?
+    [Hint: The \l{The Style Sheet Syntax#Conflict Resolution}{Conflict Resolution} section above explains
+    what happens in cases like this.]
+
+    \section1 Customizing Specific Widgets
+
+    This section provides examples to customize specific widgets using Style Sheets.
+
+    \section2 Customizing QAbstractScrollArea
+
+    The background of any QAbstractScrollArea (Item views, QTextEdit
+    and QTextBrowser) can be set using the background properties. For example,
+    to set a background-image that scrolls with the scroll bar:
+    \snippet code/doc_src_stylesheet.qdoc 106
+
+    If the background-image is to be fixed with the viewport:
+    \snippet code/doc_src_stylesheet.qdoc 107
+
+    \section2 Customizing QCheckBox
+
+    Styling of a QCheckBox is almost identical to styling a QRadioButton. The
+    main difference is that a tristate QCheckBox has an indeterminate state.
+
+    \snippet code/doc_src_stylesheet.qdoc 108
+
+    \section2 Customizing QComboBox
+
+    We will look at an example where the drop down button of a QComboBox
+    appears "merged" with the combo box frame.
+
+    \snippet code/doc_src_stylesheet.qdoc 109
+
+    The pop-up of the QComboBox is a QAbstractItemView and is styled using
+    the descendant selector:
+    \snippet code/doc_src_stylesheet.qdoc 110
+
+    \section2 Customizing QDockWidget
+
+    The title bar and the buttons of a QDockWidget can be customized as
+    follows:
+
+    \snippet code/doc_src_stylesheet.qdoc 111
+
+    If one desires to move the dock widget buttons to the left, the following
+    style sheet can be used:
+
+    \snippet code/doc_src_stylesheet.qdoc 112
+
+    \note To customize the separator (resize handle) of a QDockWidget,
+    use QMainWindow::separator.
+
+    \section2 Customizing QFrame
+
+    A QFrame is styled using the \l{The Box Model}.
+
+    \snippet code/doc_src_stylesheet.qdoc 113
+
+    \section2 Customizing QGroupBox
+
+    Let us look at an example that moves the QGroupBox's title to
+    the center.
+
+    \snippet code/doc_src_stylesheet.qdoc 114
+
+    For a checkable QGroupBox, use the \{#indicator-sub}{::indicator} subcontrol
+    and style it exactly like a QCheckBox (i.e)
+
+    \snippet code/doc_src_stylesheet.qdoc 115
+
+    \section2 Customizing QHeaderView
+
+    QHeaderView is customized as follows:
+
+    \snippet code/doc_src_stylesheet.qdoc 116
+
+    \section2 Customizing QLineEdit
+
+    The frame of a QLineEdit is styled using the \l{The Box Model}. To
+    create a line edit with rounded corners, we can set:
+    \snippet code/doc_src_stylesheet.qdoc 117
+
+    The password character of line edits that have QLineEdit::Password
+    echo mode can be set using:
+    \snippet code/doc_src_stylesheet.qdoc 118
+
+    The background of a read only QLineEdit can be modified as below:
+    \snippet code/doc_src_stylesheet.qdoc 119
+
+    \section2 Customizing QListView
+
+    The background color of alternating rows can be customized using the following
+    style sheet:
+
+    \snippet code/doc_src_stylesheet.qdoc 120
+
+    To provide a special background when you hover over items, we can use the
+    \l{item-sub}{::item} subcontrol. For example,
+
+    \snippet code/doc_src_stylesheet.qdoc 121
+
+    \section2 Customizing QMainWindow
+
+    The separator of a QMainWindow can be styled as follows:
+
+    \snippet code/doc_src_stylesheet.qdoc 122
+
+    \section2 Customizing QMenu
+
+    Individual items of a QMenu are styled using the 'item' subcontrol as
+    follows:
+
+    \snippet code/doc_src_stylesheet.qdoc 123
+
+    For a more advanced customization, use a style sheet as follows:
+
+    \snippet code/doc_src_stylesheet.qdoc 124
+
+    \section2 Customizing QMenuBar
+
+    QMenuBar is styled as follows:
+
+    \snippet code/doc_src_stylesheet.qdoc 125
+
+    \section2 Customizing QProgressBar
+
+    The QProgressBar's \l{stylesheet-reference.html#border-prop}{border},
+    \l{stylesheet-reference.html#chunk-sub}{chunk}, and
+    \l{stylesheet-reference.html#text-align-prop}{text-align} can be customized using
+    style sheets. However, if one property or sub-control is customized,
+    all the other properties or sub-controls must be customized as well.
+
+    \image progressBar-stylesheet.png {Progress bar showing 30%}
+
+    For example, we change the \l{stylesheet-reference.html#border-prop}
+    {border} to grey and the \l{stylesheet-reference.html#chunk-sub}{chunk}
+    to cerulean.
+
+    \snippet code/doc_src_stylesheet.qdoc 126
+
+    This leaves the \l{stylesheet-reference.html#text-align-prop}
+    {text-align}, which we customize by positioning the text in the center of
+    the progress bar.
+
+    \snippet code/doc_src_stylesheet.qdoc 127
+
+    A \l{stylesheet-reference.html#margin-prop}{margin} can be included to
+    obtain more visible chunks.
+
+    \image progressBar2-stylesheet.png {Notched progress bar}
+
+    In the screenshot above, we use a
+    \l{stylesheet-reference.html#margin-prop}{margin} of 0.5 pixels.
+
+    \snippet code/doc_src_stylesheet.qdoc 128
+
+    \section2 Customizing QPushButton
+
+    A QPushButton is styled as follows:
+    \snippet code/doc_src_stylesheet.qdoc 129
+
+    For a QPushButton with a menu, use the
+    \l{Qt Style Sheets Reference#menu-indicator-sub}{::menu-indicator}
+    subcontrol.
+
+    \snippet code/doc_src_stylesheet.qdoc 130
+
+    Checkable QPushButton have the \l{Qt Style Sheets Reference#checked-ps}
+    {:checked} pseudo state set.
+
+    \section2 Customizing QRadioButton
+
+    The indicator of a QRadioButton can be changed using:
+    \snippet code/doc_src_stylesheet.qdoc 131
+
+    \section2 Customizing QScrollBar
+
+    The QScrollBar can be styled using its subcontrols like
+    \l{stylesheet-reference.html#handle-sub}{handle},
+    \l{stylesheet-reference.html#add-line-sub}{add-line},
+    \l{stylesheet-reference.html#sub-line-sub}{sub-line}, and so on. Note that
+    if one property or sub-control is customized, all the other properties or
+    sub-controls must be customized as well.
+
+    \image stylesheet-scrollbar1.png {Green stylized scroll bar}
+
+    The scroll bar above has been styled in aquamarine with a solid grey
+    border.
+
+    \snippet code/doc_src_stylesheet.qdoc 132
+
+    \snippet code/doc_src_stylesheet.qdoc 133
+
+    \snippet code/doc_src_stylesheet.qdoc 134
+
+    The \l{stylesheet-reference.html#left-arrow-sub}{left-arrow} and
+    \l{stylesheet-reference.html#right-arrow-sub}{right-arrow} have a solid grey
+    border with a white background. As an alternative, you could also embed the
+    image of an arrow.
+
+    \snippet code/doc_src_stylesheet.qdoc 135
+
+    If you want the scroll buttons of the scroll bar to be placed together
+    (instead of the edges) like on \macos, you can use the following
+    stylesheet:
+    \snippet code/doc_src_stylesheet.qdoc 136
+
+    The scroll bar using the above stylesheet looks like this:
+        \image stylesheet-scrollbar2.png {Colorized scroll bar}
+
+
+    To customize a vertical scroll bar use a style sheet similar to the following:
+    \snippet code/doc_src_stylesheet.qdoc 137
+
+    \section2 Customizing QSizeGrip
+
+    QSizeGrip is usually styled by just setting an image.
+
+    \snippet code/doc_src_stylesheet.qdoc 138
+
+    \section2 Customizing QSlider
+
+    You can style horizontal slider as below:
+    \snippet code/doc_src_stylesheet.qdoc 139
+
+    If you want to change the color of the slider parts before and after the handle, you can use the add-page
+    and sub-page subcontrols. For example, for a vertical slider:
+
+    \snippet code/doc_src_stylesheet.qdoc 140
+
+    \section2 Customizing QSpinBox
+
+    QSpinBox can be completely customized as below (the style sheet has commentary inline):
+
+    \snippet code/doc_src_stylesheet.qdoc 141
+
+
+    \section2 Customizing QSplitter
+
+    A QSplitter derives from a QFrame and hence can be styled like a QFrame.
+    The grip or the handle is customized using the
+    \l{Qt Style Sheets Reference#handle-sub}{::handle} subcontrol.
+
+    \snippet code/doc_src_stylesheet.qdoc 142
+
+    \section2 Customizing QStatusBar
+
+    We can provide a background for the status bar and a border for items
+    inside the status bar as follows:
+    \snippet code/doc_src_stylesheet.qdoc 143
+
+    Note that widgets that have been added to the QStatusBar can be styled
+    using the descendant declaration (i.e)
+    \snippet code/doc_src_stylesheet.qdoc 144
+
+    \section2 Customizing QTabWidget and QTabBar
+
+    \image tabWidget-stylesheet1.png {Image of several tabs}
+
+    For the screenshot above, we need a stylesheet as follows:
+
+    \snippet code/doc_src_stylesheet.qdoc 145
+
+    Often we require the tabs to overlap to look like below:
+    \image tabWidget-stylesheet2.png {Image of overlapped tabs}
+
+    For a tab widget that looks like above, we make use of
+    \l{https://doc.qt.io/qt-5/stylesheet-customizing.html#the-box-model}
+    {negative margins}. Negative values draw the element closer to its
+    neighbors than it would be by default. The resulting stylesheet
+    looks like this:
+
+    \snippet code/doc_src_stylesheet.qdoc 146
+
+    To move the tab bar to the center (as below), we require the following stylesheet:
+    \image tabWidget-stylesheet3.png {Several tabs centered in the widget}
+
+    \snippet code/doc_src_stylesheet.qdoc 147
+
+    The tear indicator and the scroll buttons can be further customized as follows:
+    \snippet code/doc_src_stylesheet.qdoc 148
+
+    Since Qt 4.6 the close button can be customized as follow:
+    \snippet code/doc_src_stylesheet.qdoc 159
+
+    \section2 Customizing QTableView
+
+    Suppose we'd like our selected item in QTableView to have bubblegum pink
+    fade to white as its background.
+
+    \image tableWidget-stylesheet.png {Table view with custom style}
+
+    This is possible with the
+    \l{stylesheet-reference.html#selection-background-color-prop}
+    {selection-background-color} property and the syntax required is:
+
+    \snippet code/doc_src_stylesheet.qdoc 149
+
+    The corner widget can be customized using the following style sheet
+
+    \snippet code/doc_src_stylesheet.qdoc 150
+
+    The QTableView's checkbox indicator can also be customized. In the
+    following snippet the indicator \c background-color in unchecked state is
+    customized:
+
+    \snippet code/doc_src_stylesheet.qdoc 161
+
+    \section2 Customizing QToolBar
+
+    The background and the handle of a QToolBar is customized as below:
+    \snippet code/doc_src_stylesheet.qdoc 151
+
+    \section2 Customizing QToolBox
+
+    The tabs of the QToolBox are customized using the 'tab' subcontrol.
+
+    \snippet code/doc_src_stylesheet.qdoc 152
+
+    \section2 Customizing QToolButton
+
+    There are three types of QToolButtons.
+    \list
+       \li The QToolButton has no menu. In this case, the QToolButton is styled
+          exactly like QPushButton.  See
+          \l{#Customizing QPushButton}{Customizing QPushButton} for an
+          example.
+
+       \li The QToolButton has a menu and has the QToolButton::popupMode set to
+          QToolButton::DelayedPopup or QToolButton::InstantPopup. In this case,
+          the QToolButton is styled exactly like a QPushButton with a menu.
+          See \l{#Customizing QPushButton}{Customizing QPushButton} for an
+          example of the usage of the menu-indicator pseudo state.
+
+        \li The QToolButton has its QToolButton::popupMode set to
+           QToolButton::MenuButtonPopup. In this case, we style it as follows:
+    \endlist
+
+    \snippet code/doc_src_stylesheet.qdoc 153
+
+
+    \section2 Customizing QToolTip
+
+    QToolTip is customized exactly like a QLabel. In addition, for platforms
+    that support it, the opacity property may be set to adjust the opacity.
+
+    For example,
+    \snippet code/doc_src_stylesheet.qdoc 154
+
+    \section2 Customizing QTreeView
+
+    The background color of alternating rows can be customized using the following
+    style sheet:
+
+    \snippet code/doc_src_stylesheet.qdoc 155
+
+    To provide a special background when you hover over items, we can use the
+    \l{item-sub}{::item} subcontrol. For example,
+    \snippet code/doc_src_stylesheet.qdoc 156
+
+    The branches of a QTreeView are styled using the
+    \l{Qt Style Sheets Reference#branch-sub}{::branch} subcontrol. The
+    following stylesheet color codes the various states when drawing
+    a branch.
+
+    \snippet code/doc_src_stylesheet.qdoc 157
+
+    Colorful, though it is, a more useful example can be made using the
+    following images:
+
+    \table
+    \row
+    \li \inlineimage stylesheet-vline.png {Vertical line}
+    \li \inlineimage stylesheet-branch-more.png {Junction line for lists}
+    \li \inlineimage stylesheet-branch-end.png {Line for terminating the list}
+    \li \inlineimage stylesheet-branch-closed.png {Arrow pointing right}
+    \li \inlineimage stylesheet-branch-open.png {Arrow pointing down}
+    \row
+    \li vline.png
+    \li branch-more.png
+    \li branch-end.png
+    \li branch-closed.png
+    \li branch-open.png
+    \endtable
+
+    \snippet code/doc_src_stylesheet.qdoc 158
+
+    The resulting tree view looks like this:
+
+    \image stylesheet-treeview.png {Tree view with styled branches}
+
+    \sa {Supported HTML Subset}, QStyle
+
+
+    \section1 Common Mistakes
+
+    This section lists some common mistakes when using stylesheets.
+
+    \section2 QPushButton and images
+
+    When styling a QPushButton, it is often desirable to use an image as the
+    button graphic. It is common to try the
+    \l{Qt Style Sheets Reference#background-image-prop}{background-image}
+    property,
+    but this has a number of drawbacks: For instance, the background will
+    often appear hidden behind the button decoration, because it is not
+    considered a background. In addition, if the button is resized, the
+    entire background will be stretched or tiled, which does not
+    always look good.
+
+    It is better to use the
+    \l{Qt Style Sheets Reference#border-image-prop}{border-image}
+    property, as it will always display the image,
+    regardless of the background (you can combine it with a background if it
+    has alpha values in it), and it has special settings to deal with button
+    resizing.
+
+    Consider the following snippet:
+
+    \snippet stylesheet/common-mistakes.cpp 1
+
+    This will produce a button looking like this:
+
+    \image stylesheet-border-image-normal.png {Button with a background}
+
+    The numbers after the url gives the top, right, bottom and left number of
+    pixels, respectively. These numbers correspond to the border and should not
+    stretch when the size changes.
+    Whenever you resize the button, the middle part of the image will stretch
+    in both directions, while the pixels specified in the stylesheet
+    will not. This makes the borders of the button look more natural, like
+    this:
+
+    \image stylesheet-border-image-stretched.png
+           {Button with specified border sizes}
+    \caption With borders
+
+    \image stylesheet-border-image-wrong.png
+           {Button without specified border sizes}
+    \caption Without borders
+
+    */
