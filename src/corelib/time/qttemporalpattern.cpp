@@ -82,20 +82,35 @@ namespace QtTemporalPattern {
 
     Fields identified as numbers, along with hour, minute, second and fraction
     of second, are always given in numeric form (regardless of Numeric, Verbal
-    or Standalone flags).
+    or Standalone flags). Where a field is given in numeric form, its field
+    width is the smallest number of digits that can match it. Further digits are
+    accepted, up to the greatest number of significant digits that can appear in
+    a valid value for it. (If the field width exceeds this, fields of this width
+    are accepted, provided the numeric value is valid. This may require
+    zero-padding.)
 
     The SecondFraction field describes the digits immediately following the
-    fractional-part separator. Leading zeros are significant and not considered
-    to be padding: trailing zeros are understood as padding. QTime and QDateTime
-    only handle times to millisecond precision, so if more than three digits are
-    found when parsing a SecondFraction field, the excess are used only to round
-    to the nearest millisecond. (If fewer than three digits are parsed, the
-    value is implicitly extended on the right with zeros to obtain milliseconds
-    precision. Whether such a field is accepted will depend on the setting of
-    the \c width of the field and the absence of \c ZeroPad from its
-    \c{options}, in the usual ways.) If more than three digits are specified
-    when serializing, the digits after the first three shall all be zeros (and
-    are omitted if the \c ZeroPad option is not specified).
+    fractional-part separator in a decimal representation of the seconds with
+    fractional part. It is up to the format to position it suitably in relation
+    to a Second field and a Literal field for the separator. Leading zeros are
+    significant and not considered to be padding: trailing zeros are understood
+    as padding.
+
+    As QTime and QDateTime only handle times to millisecond precision, normally
+    their allowed range of values runs from 0 to 999 and no more than three
+    digits are accepted, or the field width if greater. (If fewer than three
+    digits are parsed, the value is implicitly extended on the right with zeros
+    to obtain milliseconds precision. Whether such a field is accepted will
+    depend on the setting of the \c width of the field and the absence of \l
+    {QtTemporalPattern::TemporalFieldFlag} {ZeroPad} from its \l
+    {QtTemporalPattern::TemporalField} {\c options}, in the usual ways.)
+
+    Where a SecondFraction field accepts more than three digits, the resulting
+    fractional part is rounded to three significant digits. If rounding would
+    require increasing the Second field, however, the Second field is retained
+    unchanged and the fractional part is rounded to 999 milliseconds.  For
+    example, 29.9997 seconds is rounded to 29.999 seconds, to preserve the fact
+    that the time is strictly before the 30 second mark.
 
     \note For negative years, the YearWithinCentury will be understood as the
     number of completed years since the start of the most recent year that is a
@@ -211,6 +226,8 @@ namespace QtTemporalPattern {
     \value Short Use a short form of the field.
     \value Wide Use a wide form of the field.
 
+    \section2 Padding
+
     Where a \c width is specified for a field but the field's value is naturally
     shorter, it is necessary to indicate how to pad it to the desired width.
     These two options are mutually exclusive and grouped together as the \l
@@ -230,6 +247,8 @@ namespace QtTemporalPattern {
     (see below) using an offset form, SpacePad is ignored and ZeroPad or its
     absence only has its usual meaning for hour fields, while controlling the
     presence of zero minute and second offsets following the hour field.
+
+    \section2 Space
 
     Where a text to be matched (for example, a literal or the name of a month or
     day of the week) contains spaces, by default plain space (ASCII SPACE,
@@ -253,6 +272,8 @@ namespace QtTemporalPattern {
     \value StrictSpace Spacing characters must be matched exactly.
                        Ignored if FlexSpace is also set.
 
+    \section2 Letter case
+
     The following options are only relevant to Verbal and Standalone
     fields. They are not treated as a group or descrbed by a mask, as the locale
     provides relevant fields with the appropriate (possibly mixed) case for the
@@ -266,6 +287,14 @@ namespace QtTemporalPattern {
     \value LowerCase When serializing, force lower-case.
     \value UpperCase When serializing, force upper-case.
     \value IgnoreCase When parsing, match the field case-insensitively.
+
+    \section2 Extended fields
+
+    The following option modifies the handling of the year field, where there is
+    no intrinsic limit to the number of significant digits in a valid value. It
+    is described in more detail below.
+
+    \value YearSignIso8601 Requires a sign if there are extra digits in a year.
 
     Modern revisions of ISO 8601 permit years outside the range from 0 through
     9999 but require that they have a sign. By default a + sign on a positive
