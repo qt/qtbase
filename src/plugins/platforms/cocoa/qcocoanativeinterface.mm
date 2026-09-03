@@ -72,12 +72,6 @@ void QCocoaNativeInterface::clearCurrentThreadCocoaEventDispatcherInterruptFlag(
     QCocoaEventDispatcher::clearCurrentThreadCocoaEventDispatcherInterruptFlag();
 }
 
-void QCocoaNativeInterface::onAppFocusWindowChanged(QWindow *window)
-{
-    Q_UNUSED(window);
-    QCocoaMenuBar::updateMenuBarImmediately();
-}
-
 void QCocoaNativeInterface::registerDraggedTypes(const QStringList &types)
 {
     QMacMimeRegistry::registerDraggedTypes(types);

@@ -13,6 +13,7 @@
 #include "qcocoamenu.h"
 #include "qcocoamenubar.h"
 #include "qcocoahelpers.h"
+#include "qcocoaintegration.h"
 
 #include <QtCore/qfileinfo.h>
 #include <QtCore/qstandardpaths.h>
@@ -561,9 +562,10 @@ QPlatformMenuBar *QCocoaTheme::createPlatformMenuBar() const
     static bool haveMenubar = false;
     if (!haveMenubar) {
         haveMenubar = true;
-        QObject::connect(qGuiApp, SIGNAL(focusWindowChanged(QWindow*)),
-            QGuiApplicationPrivate::platformIntegration()->nativeInterface(),
-                SLOT(onAppFocusWindowChanged(QWindow*)));
+        QObject::connect(qGuiApp, &QGuiApplication::focusWindowChanged,
+            QCocoaIntegration::instance(), []{
+                QCocoaMenuBar::updateMenuBarImmediately();
+            });
     }
 
     auto *menuBar = new QCocoaMenuBar();
