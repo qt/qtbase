@@ -20,9 +20,14 @@ include(${CMAKE_CURRENT_LIST_DIR}/QtBuildInformation.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/QtVcpkgManifestHelpers.cmake)
 
 set(cmake_args "")
-macro(push)
+
+# Deliberately a function and not a macro: macro arguments are substituted textually and the
+# result is parsed as CMake code again, which turns any backslash that isn't a valid escape into
+# a syntax error. That made arguments like CMAKE_INSTALL_PREFIX=D:\some\path fail.
+function(push)
     list(APPEND cmake_args ${ARGN})
-endmacro()
+    set(cmake_args "${cmake_args}" PARENT_SCOPE)
+endfunction()
 
 macro(pop_path_argument)
     list(POP_FRONT configure_args path)
