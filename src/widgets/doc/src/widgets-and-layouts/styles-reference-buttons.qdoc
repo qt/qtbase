@@ -1,0 +1,613 @@
+// Copyright (C) 2026 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page style-reference-buttons.html
+    \title Styling Buttons and Input Widgets
+    \brief The style elements, states, and options of push buttons, checkboxes,
+    radio buttons, tool buttons, combo boxes, spin boxes, sliders, scroll bars,
+    and progress bars.
+
+    This page is part of the \l{Widget Style Reference}. For an explanation
+    of the element trees, screenshots, and tables, see that page. The common
+    state flags and members that every widget sets are listed in
+    \l{How a Style Draws a Widget#Common state flags and members}{How a Style
+    Draws a Widget}.
+
+    \section1 Push buttons
+
+    \l QPushButton draws a single control element, \c CE_PushButton, with a
+    \l QStyleOptionButton. \l QCommonStyle splits it into the bevel, the label,
+    and the focus frame:
+
+    \list
+    \li \c CE_PushButton
+        \list
+        \li \c CE_PushButtonBevel (\c PM_ButtonDefaultIndicator,
+            \c PM_MenuButtonIndicator)
+            \list
+            \li \c PE_FrameDefaultButton, for the default button
+            \li \c PE_PanelButtonCommand
+            \li \c PE_IndicatorArrowDown, for a button with a menu
+            \endlist
+        \li \c CE_PushButtonLabel (\c SE_PushButtonContents,
+            \c PM_ButtonShiftHorizontal, \c PM_ButtonShiftVertical,
+            \c PM_ButtonIconSize)
+        \li \c PE_FrameFocusRect (\c SE_PushButtonFocusRect)
+        \endlist
+    \endlist
+
+    The button calculates its size hint with \c CT_PushButton and
+    \c PM_ButtonMargin. Element bounds vary between styles. In \l QCommonStyle,
+    \c PE_FrameDefaultButton gets the whole bevel rectangle, and so does
+    \c PE_PanelButtonCommand, except on an auto-default button, where the panel
+    shrinks by \c PM_ButtonDefaultIndicator on each side.
+
+    \image styles/pushbutton.webp
+           {Two push buttons with the bevel, label, and focus rectangle
+           outlined}
+
+    \l QPushButton sets these state flags:
+
+    \table 90%
+        \header
+            \li State
+            \li Set when
+        \row
+            \li \c State_Sunken
+            \li The button is pressed, or its menu is shown.
+        \row
+            \li \c State_On
+            \li The button is checked.
+        \row
+            \li \c State_Raised
+            \li The button isn't flat and isn't pressed.
+    \endtable
+
+    The other members of \l QStyleOptionButton are:
+
+    \table 90%
+        \header
+            \li Member
+            \li Description
+        \row
+            \li features
+            \li Flags of the \l QStyleOptionButton::ButtonFeature enum that
+                describe the button: flat, default, auto-default, with a menu,
+                or a command link button.
+        \row
+            \li icon
+            \li The button's \l QIcon, if any.
+        \row
+            \li iconSize
+            \li The size of the icon.
+        \row
+            \li text
+            \li The button text.
+    \endtable
+
+    \section1 Checkboxes and radio buttons
+
+    \l QCheckBox and \l QRadioButton have identical structures. Both use
+    \l QStyleOptionButton and draw one control element, \c CE_CheckBox or
+    \c CE_RadioButton. \l QCommonStyle draws the indicator, the label, and the
+    focus frame:
+
+    \list
+    \li \c CE_CheckBox
+        \list
+        \li \c PE_IndicatorCheckBox (\c SE_CheckBoxIndicator,
+            \c PM_IndicatorWidth, \c PM_IndicatorHeight)
+        \li \c CE_CheckBoxLabel (\c SE_CheckBoxContents,
+            \c PM_CheckBoxLabelSpacing)
+        \li \c PE_FrameFocusRect (\c SE_CheckBoxFocusRect)
+        \endlist
+    \li \c CE_RadioButton
+        \list
+        \li \c PE_IndicatorRadioButton (\c SE_RadioButtonIndicator,
+            \c PM_ExclusiveIndicatorWidth, \c PM_ExclusiveIndicatorHeight)
+        \li \c CE_RadioButtonLabel (\c SE_RadioButtonContents,
+            \c PM_RadioButtonLabelSpacing)
+        \li \c PE_FrameFocusRect (\c SE_RadioButtonFocusRect)
+        \endlist
+    \endlist
+
+    The size hints use \c CT_CheckBox and \c CT_RadioButton.
+    \l{Styling a Checkbox: A Walkthrough} traces the drawing of a checkbox
+    through the widget and \l QCommonStyle code.
+
+    \image styles/checkbox.webp
+           {Checkbox and radio button with the indicator, label, and focus
+           rectangle outlined}
+
+    The buttons set these state flags:
+
+    \table 90%
+        \header
+            \li State
+            \li Set when
+        \row
+            \li \c State_Sunken
+            \li The button is pressed. The clickable area is
+                \c SE_CheckBoxClickRect or \c SE_RadioButtonClickRect, which in
+                \l QCommonStyle covers the label as well as the indicator.
+        \row
+            \li \c State_NoChange
+            \li The checkbox is partially checked (a tristate checkbox).
+        \row
+            \li \c State_On
+            \li The button is checked.
+        \row
+            \li \c State_Off
+            \li The button is unchecked.
+    \endtable
+
+    The other members of \l QStyleOptionButton are listed under
+    \l{Push buttons}.
+
+    \section1 Tool buttons
+
+    \l QToolButton draws one complex control, \c CC_ToolButton, with a
+    \l QStyleOptionToolButton. It has two subcontrols: the button itself and,
+    for a button with \l{QToolButton::MenuButtonPopup}{a menu button}, the menu
+    indicator.
+
+    \list
+    \li \c CC_ToolButton
+        \list
+        \li \c SC_ToolButton
+            \list
+            \li \c PE_PanelButtonTool (\c PM_DefaultFrameWidth)
+            \li \c PE_FrameFocusRect
+            \li \c CE_ToolButtonLabel (\c PM_ButtonShiftHorizontal,
+                \c PM_ButtonShiftVertical)
+            \endlist
+        \li \c SC_ToolButtonMenu (\c PM_MenuButtonIndicator)
+            \list
+            \li \c PE_IndicatorButtonDropDown
+            \li \c PE_IndicatorArrowDown
+            \endlist
+        \endlist
+    \endlist
+
+    For \l{QToolButton::InstantPopup}{instant} and
+    \l{QToolButton::DelayedPopup}{delayed} popups there is no menu subcontrol,
+    so \l QCommonStyle draws \c PE_IndicatorArrowDown in the corner of the
+    button rectangle instead. The size hint uses \c CT_ToolButton, and the
+    button consults \c SH_ToolButton_PopupDelay and \c SH_ToolButtonStyle. Tool
+    buttons in a toolbar take their icon size from the toolbar. Standalone
+    buttons use \c PM_ButtonIconSize.
+
+    \image styles/toolbutton.webp
+           {Tool button with an icon, text, and menu indicator, with the button
+           and the menu subcontrol outlined}
+
+    \l QToolButton sets these state flags:
+
+    \table 90%
+        \header
+            \li State
+            \li Set when
+        \row
+            \li \c State_AutoRaise
+            \li The \l{QToolButton::autoRaise}{autoRaise} property is set.
+        \row
+            \li \c State_Raised
+            \li The button isn't checked or pressed. \l QCommonStyle then clears
+                the flag again if \c State_AutoRaise is set and the mouse isn't
+                over the button.
+        \row
+            \li \c State_Sunken
+            \li The button is pressed, or its menu is shown.
+        \row
+            \li \c State_On
+            \li The button is checkable and checked.
+    \endtable
+
+    The other members of \l QStyleOptionToolButton are:
+
+    \table 90%
+        \header
+            \li Member
+            \li Description
+        \row
+            \li arrowType
+            \li A \l{Qt::ArrowType} value that gives the direction of the arrow
+                drawn instead of an icon, if any.
+        \row
+            \li features
+            \li Flags of the \l QStyleOptionToolButton::ToolButtonFeature enum:
+                whether the button shows an arrow, has a menu button, or has a
+                delayed popup.
+        \row
+            \li font
+            \li The \l QFont of the button label.
+        \row
+            \li icon
+            \li The \l QIcon of the button.
+        \row
+            \li iconSize
+            \li The size of the icon.
+        \row
+            \li pos
+            \li The position of the button, as given by \l QWidget::pos().
+        \row
+            \li text
+            \li The button text.
+        \row
+            \li toolButtonStyle
+            \li A \l{Qt::ToolButtonStyle} value that decides whether the button
+                shows the icon, the text, or both.
+    \endtable
+
+    \section1 Combo boxes
+
+    \l QComboBox draws the button and the label with \c CC_ComboBox and
+    \c CE_ComboBoxLabel, both with a \l QStyleOptionComboBox. \l QCommonStyle
+    omits the text of the label for an editable box, where the \l QLineEdit
+    child draws it. The popup list is an item view drawn by a
+    \l{Delegate Classes}{delegate}, but the style controls its size and position
+    with \c SC_ComboBoxListBoxPopup. For an editable box, the style decides
+    where the line edit goes with \c SC_ComboBoxEditField; the field itself is a
+    \l QLineEdit child.
+
+    \list
+    \li \c CC_ComboBox (\c PM_ComboBoxFrameWidth)
+        \list
+        \li \c SC_ComboBoxFrame
+        \li \c SC_ComboBoxArrow (\c PE_IndicatorArrowDown)
+        \li \c SC_ComboBoxEditField
+        \li \c SC_ComboBoxListBoxPopup, for positioning the popup
+        \endlist
+    \li \c CE_ComboBoxLabel (\c SC_ComboBoxEditField)
+    \endlist
+
+    The size hint uses \c CT_ComboBox. Style hints such as \c SH_ComboBox_Popup,
+    \c SH_ComboBox_PopupFrameStyle, and \c SH_ComboBox_UseNativePopup decide how
+    the popup looks and behaves.
+
+    \image styles/combobox.webp
+           {Combo box with the frame, edit field, and arrow subcontrols
+           outlined}
+
+    \l QComboBox sets these state flags:
+
+    \table 90%
+        \header
+            \li State
+            \li Set when
+        \row
+            \li \c State_Selected
+            \li The box isn't editable and has focus.
+        \row
+            \li \c State_Sunken
+            \li \c SC_ComboBoxArrow is active.
+        \row
+            \li \c State_On
+            \li The popup list is visible.
+    \endtable
+
+    The other members of \l QStyleOptionComboBox are:
+
+    \table 90%
+        \header
+            \li Member
+            \li Description
+        \row
+            \li currentIcon
+            \li The icon of the current item.
+        \row
+            \li currentText
+            \li The text of the current item.
+        \row
+            \li editable
+            \li Whether the combo box is editable.
+        \row
+            \li frame
+            \li Whether the combo box has a frame.
+        \row
+            \li iconSize
+            \li The size of the current item's icon.
+        \row
+            \li popupRect
+            \li The bounding rectangle of the popup list.
+        \row
+            \li textAlignment
+            \li The alignment of the text in the label.
+    \endtable
+
+    \section1 Spin boxes
+
+    \l QSpinBox, \l QDoubleSpinBox, and \l QDateTimeEdit draw \c CC_SpinBox with
+    a \l QStyleOptionSpinBox. The edit field is a \l QLineEdit child whose
+    geometry the style returns for \c SC_SpinBoxEditField.
+
+    \list
+    \li \c CC_SpinBox (\c PM_SpinBoxFrameWidth)
+        \list
+        \li \c SC_SpinBoxFrame
+        \li \c SC_SpinBoxUp
+            \list
+            \li \c PE_PanelButtonBevel
+            \li \c PE_IndicatorSpinUp or \c PE_IndicatorSpinPlus, depending on
+                \l{QAbstractSpinBox::buttonSymbols}{buttonSymbols}
+            \endlist
+        \li \c SC_SpinBoxDown
+            \list
+            \li \c PE_PanelButtonBevel
+            \li \c PE_IndicatorSpinDown or \c PE_IndicatorSpinMinus
+            \endlist
+        \li \c SC_SpinBoxEditField
+        \endlist
+    \endlist
+
+    A style doesn't have to draw the button panels with \c PE_PanelButtonBevel.
+    The size hint uses \c CT_SpinBox, and the widget consults hints such as
+    \c SH_SpinBox_ButtonsInsideFrame, \c SH_SpinBox_StepModifier, and
+    \c SH_SpinControls_DisableOnBounds.
+
+    \image styles/spinbox.webp
+           {Spin box with the frame, edit field, up button, and down button sub
+           controls outlined}
+
+    The spin box sets this state flag:
+
+    \table 90%
+        \header
+            \li State
+            \li Set when
+        \row
+            \li \c State_Sunken
+            \li The \c SC_SpinBoxUp or \c SC_SpinBoxDown subcontrol is pressed.
+    \endtable
+
+    The other members of \l QStyleOptionSpinBox are:
+
+    \table 90%
+        \header
+            \li Member
+            \li Description
+        \row
+            \li frame
+            \li Whether the spin box draws a frame.
+        \row
+            \li buttonSymbols
+            \li A \l QAbstractSpinBox::ButtonSymbols value that selects the
+                symbols on the buttons: arrows, plus and minus, or none.
+        \row
+            \li stepEnabled
+            \li \l QAbstractSpinBox::StepEnabled flags that tell which of the
+                buttons can step the value. A button that can't step is drawn
+                disabled.
+    \endtable
+
+    \section1 Sliders
+
+    \l QSlider draws \c CC_Slider with a \l QStyleOptionSlider. It calculates
+    its size hint from \c PM_SliderThickness and \c CT_Slider, and its minimum
+    size hint from \c PM_SliderLength.
+
+    \list
+    \li \c CC_Slider (\c PM_SliderLength, \c PM_SliderControlThickness,
+        \c PM_SliderTickmarkOffset, \c PM_SliderSpaceAvailable)
+        \list
+        \li \c SC_SliderGroove
+        \li \c SC_SliderHandle
+        \li \c SC_SliderTickmarks
+        \endlist
+    \endlist
+
+    \l QCommonStyle draws only the tick marks; the groove and the handle are
+    always style specific. Styles don't have to return a rectangle for
+    \c SC_SliderTickmarks. Fusion returns an empty one and draws the ticks below
+    the handle, in the area outlined in the screenshot. The widget consults
+    \c SH_Slider_AbsoluteSetButtons, \c SH_Slider_PageSetButtons, and
+    \c SH_Slider_SnapToValue.
+
+    \image styles/slider.webp
+           {Horizontal slider with tick marks, with the groove, handle, and tick
+           mark subcontrols outlined}
+
+    \l QDial uses the same option and draws \c CC_Dial with the subcontrols
+    \c SC_DialGroove, \c SC_DialHandle, and \c SC_DialTickmarks.
+
+    \l QSlider sets these state flags:
+
+    \table 90%
+        \header
+            \li State
+            \li Set when
+        \row
+            \li \c State_Horizontal
+            \li The slider is horizontal.
+        \row
+            \li \c State_Sunken
+            \li Any subcontrol is pressed, including the groove.
+                \c activeSubControls tells which one.
+    \endtable
+
+    \l QStyleOptionSlider serves all \l{QAbstractSlider}s. Its members are:
+
+    \table 90%
+        \header
+            \li Member
+            \li Description
+        \row
+            \li orientation
+            \li A \l{Qt::Orientation} value: vertical or horizontal.
+        \row
+            \li minimum
+            \li The minimum value.
+        \row
+            \li maximum
+            \li The maximum value.
+        \row
+            \li tickPosition
+            \li A \l QSlider::TickPosition value that tells where the tick marks
+                are drawn.
+        \row
+            \li tickInterval
+            \li The distance between tick marks, in slider values.
+        \row
+            \li upsideDown
+            \li The direction in which the value increases. All abstract sliders
+                use this member instead of \l QStyleOption::direction.
+        \row
+            \li sliderPosition
+            \li The position of the handle, as a slider value. It equals
+                \c sliderValue while \l{QAbstractSlider::tracking}{tracking} is
+                on; otherwise the value only updates when the handle is
+                released.
+        \row
+            \li sliderValue
+            \li The current value.
+        \row
+            \li singleStep
+            \li The amount the value changes on a single step, such as an arrow
+                key press.
+        \row
+            \li pageStep
+            \li The amount the value changes on a page step, such as a click in
+                the groove.
+        \row
+            \li notchTarget
+            \li The preferred distance between notches, in pixels. Used by
+                \l QDial.
+        \row
+            \li dialWrapping
+            \li Whether the dial wraps around. Used by \l QDial.
+        \row
+            \li keyboardModifiers
+            \li The modifier keys that were held during the last mouse event,
+                for styles that let modifiers change the drag behavior.
+    \endtable
+
+    \section1 Scroll bars
+
+    \l QScrollBar draws \c CC_ScrollBar with a \l QStyleOptionSlider. While the
+    user drags the slider, the bar snaps the value back if the pointer moves
+    farther than \c PM_MaximumDragDistance outside the bar.
+
+    \list
+    \li \c CC_ScrollBar (\c PM_ScrollBarExtent, \c PM_ScrollBarSliderMin)
+        \list
+        \li \c SC_ScrollBarGroove
+        \li \c SC_ScrollBarSubLine (\c CE_ScrollBarSubLine)
+        \li \c SC_ScrollBarAddLine (\c CE_ScrollBarAddLine)
+        \li \c SC_ScrollBarSubPage (\c CE_ScrollBarSubPage)
+        \li \c SC_ScrollBarAddPage (\c CE_ScrollBarAddPage)
+        \li \c SC_ScrollBarFirst (\c CE_ScrollBarFirst)
+        \li \c SC_ScrollBarLast (\c CE_ScrollBarLast)
+        \li \c SC_ScrollBarSlider (\c CE_ScrollBarSlider)
+        \li \c PE_FrameFocusRect
+        \endlist
+    \endlist
+
+    \l QCommonStyle draws each subcontrol with the control element of the same
+    name. Some styles draw the line indicators with \c PE_IndicatorArrowUp and
+    the other arrow primitives, and the page areas with \c PE_PanelButtonBevel;
+    that is up to the individual style. \c SC_ScrollBarFirst and
+    \c SC_ScrollBarLast are optional buttons that jump to the ends; most styles
+    return an empty rectangle for them. The size hint uses \c CT_ScrollBar, and
+    behavior hints include \c SH_ScrollBar_LeftClickAbsolutePosition,
+    \c SH_ScrollBar_ContextMenu, and \c SH_ScrollBar_Transient.
+
+    \image styles/scrollbar.webp
+           {Horizontal scroll bar with the groove, line buttons, page areas, and
+           slider subcontrols outlined}
+
+    \l QScrollBar sets these state flags:
+
+    \table 90%
+        \header
+            \li State
+            \li Set when
+        \row
+            \li \c State_Horizontal
+            \li The scroll bar is horizontal.
+        \row
+            \li \c State_Sunken
+            \li A subcontrol is pressed and the pointer hasn't left it.
+        \row
+            \li \c State_On
+            \li The bar is a transient scroll bar that is currently shown.
+    \endtable
+
+    The members of \l QStyleOptionSlider are listed under \l{Sliders}.
+    \c sliderPosition, \c sliderValue, \c pageStep, and \c upsideDown decide the
+    size and position of the handle.
+
+    \section1 Progress bars
+
+    \l QProgressBar draws one control element, \c CE_ProgressBar, with a
+    \l QStyleOptionProgressBar. \l QCommonStyle splits it into the groove, the
+    contents, and the label:
+
+    \list
+    \li \c CE_ProgressBar
+        \list
+        \li \c CE_ProgressBarGroove (\c SE_ProgressBarGroove)
+        \li \c CE_ProgressBarContents (\c SE_ProgressBarContents,
+            \c PM_ProgressBarChunkWidth)
+        \li \c CE_ProgressBarLabel (\c SE_ProgressBarLabel)
+        \endlist
+    \endlist
+
+    Styles that draw the contents as a row of chunks use
+    \c PE_IndicatorProgressChunk. In \l QCommonStyle and Fusion, the groove, the
+    contents, and the label all get the whole bar; the label is centered text
+    drawn over the contents, so its rectangle isn't a separate area. The size
+    hint uses \c CT_ProgressBar. A busy indicator, a bar whose minimum and
+    maximum are both zero, is animated by the style.
+
+    \image styles/progressbar.webp
+           {Progress bar at 40% with the groove, contents, and label outlined}
+
+    \l QProgressBar sets this state flag:
+
+    \table 90%
+        \header
+            \li State
+            \li Set when
+        \row
+            \li \c State_Horizontal
+            \li The bar is horizontal.
+    \endtable
+
+    The other members of \l QStyleOptionProgressBar are:
+
+    \table 90%
+        \header
+            \li Member
+            \li Description
+        \row
+            \li minimum
+            \li The minimum value.
+        \row
+            \li maximum
+            \li The maximum value.
+        \row
+            \li progress
+            \li The current value.
+        \row
+            \li text
+            \li The label text.
+        \row
+            \li textAlignment
+            \li The alignment of the text in the label.
+        \row
+            \li textVisible
+            \li Whether the label is drawn.
+        \row
+            \li invertedAppearance
+            \li Whether the bar fills from the opposite end, for example, from
+                right to left in a horizontal bar.
+        \row
+            \li bottomToTop
+            \li Whether the label of a vertical bar is rotated to read from
+                bottom to top.
+    \endtable
+
+    \sa {Widget Style Reference}, {Styling Containers and Windows},
+        {Styling Menus and Item Views}
+*/

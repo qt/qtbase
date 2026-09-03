@@ -1,0 +1,569 @@
+// Copyright (C) 2026 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page style-reference-containers.html
+    \title Styling Containers and Windows
+    \brief The style elements, states, and options of tab widgets, group boxes,
+    splitters, toolboxes, toolbars, dock widgets, title bars, size grips, and
+    rubber bands.
+
+    This page is part of the \l{Widget Style Reference}. For an explanation
+    of the element trees, screenshots, and tables, see that page. The common
+    state flags and members that every widget sets are listed in
+    \l{How a Style Draws a Widget#Common state flags and members}{How a Style
+    Draws a Widget}.
+
+    \section1 Tab widgets and tab bars
+
+    \l QTabBar draws its tabs through the style. A tab bar is either part of a
+    \l QTabWidget or standalone. A standalone bar draws its own base line. In a
+    tab widget, the widget draws the frame around the pane and the bar sits on
+    top of it.
+
+    \l QTabWidget draws \c PE_FrameTabWidget with a
+    \l QStyleOptionTabWidgetFrame. It asks the style where to put the tab bar,
+    the pane, the contents, and the corner widgets with \c SE_TabWidgetTabPane,
+    \c SE_TabWidgetTabContents, \c SE_TabWidgetTabBar,
+    \c SE_TabWidgetLeftCorner, and \c SE_TabWidgetRightCorner, and it overlaps
+    the bar and the pane by \c PM_TabBarBaseOverlap.
+
+    \l QTabBar lays out the tabs itself, so the style has no control over tab
+    placement. While laying out, the bar asks for \c CT_TabBarTab, which
+    includes \c PM_TabBarTabHSpace and \c PM_TabBarTabVSpace, the extra width
+    and height around the label. It then draws each tab with \c CE_TabBarTab and
+    a \l QStyleOptionTab. The selected tab is drawn last so that a style can
+    draw it over its neighbors.
+
+    \list
+    \li \c PE_FrameTabBarBase (\c PM_TabBarBaseHeight, \c PM_TabBarBaseOverlap),
+        for a standalone bar, with a \l QStyleOptionTabBarBase
+    \li \c CE_TabBarTab, once per tab
+        \list
+        \li \c CE_TabBarTabShape (\c PM_TabBarTabOverlap)
+        \li \c CE_TabBarTabLabel (\c SE_TabBarTabText,
+            \c SE_TabBarTabLeftButton, \c SE_TabBarTabRightButton,
+            \c PM_TabBarTabShiftHorizontal, \c PM_TabBarTabShiftVertical,
+            \c PM_TabBarIconSize)
+        \endlist
+    \li \c PE_IndicatorTabClose, drawn by the close button of a closable tab
+        (\c SH_TabBar_CloseButtonPosition, \c PM_TabCloseIndicatorWidth,
+        \c PM_TabCloseIndicatorHeight)
+    \li \c PE_IndicatorTabTearLeft and \c PE_IndicatorTabTearRight, where tabs
+        are cut off by the scroll buttons (\c SE_TabBarTearIndicatorLeft,
+        \c SE_TabBarTearIndicatorRight)
+    \endlist
+
+    The scroll buttons that appear when the tabs don't fit are
+    \l{QToolButton}{tool buttons}; the style places them with
+    \c SE_TabBarScrollLeftButton and \c SE_TabBarScrollRightButton and sizes
+    them with \c PM_TabBarScrollButtonWidth. The bar also consults
+    \c SH_TabBar_Alignment, \c SH_TabBar_ElideMode, and
+    \c SH_TabBar_PreferNoArrows.
+
+    \image styles/tabwidget.webp
+           {Tab widget with three tabs and a corner button, with the pane,
+           contents, tab bar, corner, tab, and tab label rectangles outlined}
+
+    \l QTabBar sets these state flags on each tab:
+
+    \table 90%
+        \header
+            \li State
+            \li Set when
+        \row
+            \li \c State_Sunken
+            \li The tab is pressed.
+        \row
+            \li \c State_Selected
+            \li The tab is the current tab.
+        \row
+            \li \c State_HasFocus
+            \li The tab bar has focus and the tab is selected.
+        \row
+            \li \c State_MouseOver
+            \li The mouse is over the tab.
+    \endtable
+
+    Individual tabs can be disabled even when the tab bar is enabled. The tab is
+    active when the tab bar is active. The members of \l QStyleOptionTab are:
+
+    \table 90%
+        \header
+            \li Member
+            \li Description
+        \row
+            \li shape
+            \li A \l QTabBar::Shape value: rounded or triangular tabs, and the
+                side of the widget the bar is on.
+        \row
+            \li text
+            \li The tab text.
+        \row
+            \li icon
+            \li The tab icon.
+        \row
+            \li iconSize
+            \li The size of the icon.
+        \row
+            \li row
+            \li The row the tab is in. Qt's tab bars have one row.
+        \row
+            \li position
+            \li A \l{QStyleOptionTab::}{TabPosition} value: the tab's position
+                relative to the other tabs, or \c Moving while the user drags
+                it.
+        \row
+            \li selectedPosition
+            \li A \l{QStyleOptionTab::}{SelectedPosition} value that tells
+                whether the selected tab is next to this tab, and on which side.
+        \row
+            \li cornerWidgets
+            \li Flags of the \l{QStyleOptionTab::}{CornerWidget} enum that tell
+                which corner widgets the tab bar has.
+        \row
+            \li documentMode
+            \li Whether the tab bar is in
+                \l{QTabBar::documentMode}{document mode}.
+        \row
+            \li leftButtonSize, rightButtonSize
+            \li The sizes of the buttons on the left and right side of the tab,
+                such as the close button.
+        \row
+            \li features
+            \li Flags of the \l{QStyleOptionTab::}{TabFeature} enum: whether the
+                tab has a frame and whether it uses its minimum size hint.
+        \row
+            \li tabIndex
+            \li The index of the tab in the bar.
+    \endtable
+
+    The members of \l QStyleOptionTabWidgetFrame are:
+
+    \table 90%
+        \header
+            \li Member
+            \li Description
+        \row
+            \li lineWidth
+            \li The line width for drawing the panel.
+        \row
+            \li midLineWidth
+            \li Always 0.
+        \row
+            \li shape
+            \li The shape of the tabs on the tab bar.
+        \row
+            \li tabBarSize
+            \li The size of the tab bar.
+        \row
+            \li tabBarRect
+            \li The rectangle of the tab bar.
+        \row
+            \li selectedTabRect
+            \li The rectangle of the selected tab, so that the frame can connect
+                to it.
+        \row
+            \li leftCornerWidgetSize, rightCornerWidgetSize
+            \li The sizes of the corner widgets, if any.
+    \endtable
+
+    \l QStyleOptionTabBarBase, used for \c PE_FrameTabBarBase, has the members
+    \c shape, \c tabBarRect, \c selectedTabRect, and \c documentMode with the
+    same meaning.
+
+    \section1 Group boxes
+
+    \l QGroupBox draws one complex control, \c CC_GroupBox, with a
+    \l QStyleOptionGroupBox. It calculates its size hint from
+    \c PM_IndicatorWidth, \c PM_IndicatorHeight, and \c PM_CheckBoxLabelSpacing.
+
+    \list
+    \li \c CC_GroupBox
+        \list
+        \li \c SC_GroupBoxFrame (\c PE_FrameGroupBox)
+        \li \c SC_GroupBoxLabel, drawn with \l{QStyle::}{drawItemText()}, plus
+            \c PE_FrameFocusRect when the box has focus
+        \li \c SC_GroupBoxCheckBox (\c PE_IndicatorCheckBox), for a checkable
+            box
+        \li \c SC_GroupBoxContents, the area for the child widgets
+        \endlist
+    \endlist
+
+    The style hints \c SH_GroupBox_TextLabelVerticalAlignment and
+    \c SH_GroupBox_TextLabelColor control the title. Qt doesn't dictate how the
+    checkbox is drawn; \l QCommonStyle uses \c PE_IndicatorCheckBox, so the
+    element tree under
+    \l{Styling Buttons and Input Widgets#Checkboxes and radio buttons}
+    {Checkboxes and radio buttons} applies.
+
+    \image styles/groupbox.webp
+           {Checkable group box with two checkboxes inside, with the frame,
+           checkbox, label, and contents subcontrols outlined}
+
+    \l QGroupBox sets these state flags:
+
+    \table 90%
+        \header
+            \li State
+            \li Set when
+        \row
+            \li \c State_On
+            \li The checkbox is checked.
+        \row
+            \li \c State_Off
+            \li The checkbox is unchecked. A group box that isn't checkable sets
+                neither \c State_On nor \c State_Off.
+        \row
+            \li \c State_Sunken
+            \li The checkbox or the title label is pressed.
+    \endtable
+
+    The other members of \l QStyleOptionGroupBox are:
+
+    \table 90%
+        \header
+            \li Member
+            \li Description
+        \row
+            \li features
+            \li \l QStyleOptionFrame::FrameFeatures flags that describe the
+                frame, such as \c Flat for a flat group box.
+        \row
+            \li lineWidth
+            \li The line width of the frame. Always 1.
+        \row
+            \li midLineWidth
+            \li Always 0.
+        \row
+            \li text
+            \li The title.
+        \row
+            \li textAlignment
+            \li The alignment of the title.
+        \row
+            \li textColor
+            \li The \c SH_GroupBox_TextLabelColor value. The group box only
+                fills it in when the application hasn't set a \c WindowText
+                brush in the palette; otherwise it stays invalid and
+                \l QCommonStyle uses the palette instead.
+    \endtable
+
+    \section1 Splitters
+
+    \l QSplitterHandle draws one control element, \c CE_Splitter, with a plain
+    \l QStyleOption. The splitter sizes its handles with \c CT_Splitter and
+    \c PM_SplitterWidth and asks for \c SH_Splitter_OpaqueResize to decide
+    whether to resize the children while the user drags.
+
+    \image styles/splitter.webp
+           {Splitter with three text panes and the two handles outlined}
+
+    The handle fills in the option itself rather than calling
+    \l{QStyleOption::}{initFrom()}. It sets these state flags:
+
+    \table 90%
+        \header
+            \li State
+            \li Set when
+        \row
+            \li \c State_Horizontal
+            \li The splitter is horizontal, so the handle is vertical.
+        \row
+            \li \c State_MouseOver
+            \li The mouse is over the handle.
+        \row
+            \li \c State_Sunken
+            \li The handle is pressed.
+        \row
+            \li \c State_Enabled
+            \li The handle is enabled.
+    \endtable
+
+    \section1 Toolboxes
+
+    \l QToolBox keeps a collection of widgets and shows one at a time, with one
+    tab button per widget in a vertical layout. Each button draws
+    \c CE_ToolBoxTab with a \l QStyleOptionToolBox, and the buttons use
+    \c PM_SmallIconSize for their icons.
+
+    \list
+    \li \c CE_ToolBoxTab, once per page
+        \list
+        \li \c CE_ToolBoxTabShape
+        \li \c CE_ToolBoxTabLabel (\c SE_ToolBoxTabContents)
+        \endlist
+    \endlist
+
+    \image styles/toolbox.webp
+           {Toolbox with three tabs and the first page open, with the tabs and
+           the current page outlined}
+
+    The tab button sets these state flags:
+
+    \table 90%
+        \header
+            \li State
+            \li Set when
+        \row
+            \li \c State_Selected
+            \li The tab is the current tab.
+        \row
+            \li \c State_Sunken
+            \li The tab is pressed.
+    \endtable
+
+    The other members of \l QStyleOptionToolBox are:
+
+    \table 90%
+        \header
+            \li Member
+            \li Description
+        \row
+            \li icon
+            \li The icon on the tab.
+        \row
+            \li text
+            \li The text on the tab.
+        \row
+            \li position
+            \li A \l{QStyleOptionToolBox::}{TabPosition} value: the tab's
+                position relative to the other tabs.
+        \row
+            \li selectedPosition
+            \li A \l{QStyleOptionToolBox::}{SelectedPosition} value that tells
+                whether the selected tab is next to this tab, and on which side.
+    \endtable
+
+    \section1 Toolbars
+
+    Toolbars are part of the \l{QMainWindow}{main window framework}. A main
+    window has four toolbar areas, one along each side, and each area can hold
+    several lines of toolbars. \l QMainWindow positions the toolbars and fills
+    in the position members of their style option.
+
+    \l QToolBar draws \c CE_ToolBar with a \l QStyleOptionToolBar. When the
+    toolbar floats in its own window, it also draws \c PE_FrameMenu around it. A
+    movable toolbar draws its handle, and the separators between actions are
+    small widgets that draw \c PE_IndicatorToolBarSeparator.
+
+    \list
+    \li \c CE_ToolBar (\c PM_ToolBarFrameWidth, \c PM_ToolBarItemMargin,
+        \c PM_ToolBarItemSpacing)
+        \list
+        \li \c PE_PanelToolBar
+        \endlist
+    \li \c PE_FrameMenu, for a floating toolbar
+    \li \c PE_IndicatorToolBarHandle (\c SE_ToolBarHandle,
+        \c PM_ToolBarHandleExtent)
+    \li \c PE_IndicatorToolBarSeparator (\c PM_ToolBarSeparatorExtent), drawn by
+        each separator
+    \endlist
+
+    The tool buttons in the bar draw \c CC_ToolButton; see
+    \l{Styling Buttons and Input Widgets#Tool buttons}{Tool buttons}. Their icon
+    size defaults to \c PM_ToolBarIconSize. When the actions don't fit, the bar
+    shows an extension button with the \c SP_ToolBarHorizontalExtensionButton or
+    \c SP_ToolBarVerticalExtensionButton icon, sized by
+    \c PM_ToolBarExtensionExtent.
+
+    \image styles/toolbar.webp
+           {Toolbar with a handle, three tool buttons, and a separator, with
+           each element outlined}
+
+    \l QToolBar sets this state flag:
+
+    \table 90%
+        \header
+            \li State
+            \li Set when
+        \row
+            \li \c State_Horizontal
+            \li The toolbar is horizontal, that is, in the top or bottom toolbar
+                area.
+    \endtable
+
+    The separators use a plain \l QStyleOption with \c State_Horizontal set when
+    the toolbar is horizontal. The other members of \l QStyleOptionToolBar are:
+
+    \table 90%
+        \header
+            \li Member
+            \li Description
+        \row
+            \li features
+            \li \l{QStyleOptionToolBar::}{ToolBarFeature} flags: \c Movable if
+                the toolbar can be moved.
+        \row
+            \li lineWidth
+            \li The width of the toolbar frame.
+        \row
+            \li midLineWidth
+            \li Always 0.
+        \row
+            \li positionOfLine
+            \li A \l{QStyleOptionToolBar::}{ToolBarPosition} value: the position
+                of the toolbar's line within its toolbar area.
+        \row
+            \li positionWithinLine
+            \li A \l{QStyleOptionToolBar::}{ToolBarPosition} value: the position
+                of the toolbar within its line.
+        \row
+            \li toolBarArea
+            \li The \l{Qt::ToolBarArea} the toolbar is in.
+    \endtable
+
+    \section1 Dock widgets
+
+    \l QDockWidget draws its title bar with \c CE_DockWidgetTitle and a
+    \l QStyleOptionDockWidget, unless the application installed a custom title
+    bar widget or the dock widget floats with native window decorations. A
+    floating dock widget without native decorations also draws
+    \c PE_FrameDockWidget. The float and close buttons are tool buttons that
+    draw \c PE_PanelButtonTool and show the \c SP_TitleBarNormalButton and
+    \c SP_TitleBarCloseButton icons.
+
+    \list
+    \li \c PE_FrameDockWidget (\c PM_DockWidgetFrameWidth), when floating
+    \li \c CE_DockWidgetTitle (\c SE_DockWidgetTitleBarText,
+        \c SE_DockWidgetIcon, \c PM_DockWidgetTitleMargin)
+    \li \c SE_DockWidgetFloatButton and \c SE_DockWidgetCloseButton
+        (\c PM_DockWidgetTitleBarButtonMargin), the button positions
+    \endlist
+
+    \l QMainWindow draws the separators between docked widgets with
+    \c PE_IndicatorDockWidgetResizeHandle, sized by
+    \c PM_DockWidgetSeparatorExtent. The hint \c SH_DockWidget_ButtonsHaveFrame
+    decides whether the title bar buttons have a frame.
+
+    \image styles/dockwidget.webp
+           {Main window with a dock widget on the right, with the title bar,
+           title text, float and close buttons, and the separator outlined}
+
+    The title bar option sets no state flags beyond the common ones. The members
+    of \l QStyleOptionDockWidget are:
+
+    \table 90%
+        \header
+            \li Member
+            \li Description
+        \row
+            \li title
+            \li The title text.
+        \row
+            \li closable
+            \li Whether the dock widget can be closed.
+        \row
+            \li movable
+            \li Whether the dock widget can be moved to another area.
+        \row
+            \li floatable
+            \li Whether the dock widget can float, that is, detach from its main
+                window.
+        \row
+            \li verticalTitleBar
+            \li Whether the title bar is drawn vertically along the left side.
+    \endtable
+
+    \section1 Title bars
+
+    The title bar complex control, \c CC_TitleBar, draws the title bars of the
+    subwindows in a \l QMdiArea. It consists of a window title and the system
+    menu, minimize, maximize, and close buttons. Some styles also provide
+    buttons for shading the window and for context-sensitive help.
+
+    \list
+    \li \c CC_TitleBar (\c PM_TitleBarHeight, \c PM_TitleBarButtonSize,
+        \c PM_TitleBarButtonIconSize)
+        \list
+        \li \c SC_TitleBarSysMenu
+        \li \c SC_TitleBarLabel
+        \li \c SC_TitleBarMinButton, \c SC_TitleBarMaxButton,
+            \c SC_TitleBarCloseButton, \c SC_TitleBarNormalButton
+        \li \c SC_TitleBarShadeButton, \c SC_TitleBarUnshadeButton,
+            \c SC_TitleBarContextHelpButton
+        \endlist
+    \endlist
+
+    \l QCommonStyle draws each button with \c PE_PanelButtonTool and the
+    matching standard icon, from \c SP_TitleBarMenuButton to
+    \c SP_TitleBarContextHelpButton. When a subwindow is maximized,
+    \l QMdiSubWindow moves its buttons into the menu bar of the main window and
+    draws them with \c CC_MdiControls and the subcontrols \c SC_MdiMinButton,
+    \c SC_MdiNormalButton, and \c SC_MdiCloseButton.
+
+    \image styles/titlebar.webp
+           {Title bar with an icon, the text Sub window, and minimize, maximize,
+           and close buttons, with each subcontrol outlined}
+
+    The members of \l QStyleOptionTitleBar are:
+
+    \table 90%
+        \header
+            \li Member
+            \li Description
+        \row
+            \li text
+            \li The title text.
+        \row
+            \li icon
+            \li The window icon.
+        \row
+            \li titleBarFlags
+            \li \l{Qt::WindowFlags} that tell which buttons the title bar has.
+        \row
+            \li titleBarState
+            \li The \l QWidget::windowState() of the window, which decides
+                whether the maximize or the restore button is shown.
+    \endtable
+
+    \section1 Size grips
+
+    \l QSizeGrip draws one control element, \c CE_SizeGrip, with a
+    \l QStyleOptionSizeGrip, and calculates its size hint with \c CT_SizeGrip.
+    \l QStatusBar shows a size grip in its corner by default.
+
+    \image styles/sizegrip.webp
+           {Status bar with the message Ready and the size grip in the corner
+           outlined}
+
+    The size grip sets no state flags beyond the common ones.
+    \l QStyleOptionSizeGrip has one member of its own:
+
+    \table 90%
+        \header
+            \li Member
+            \li Description
+        \row
+            \li corner
+            \li A \l{Qt::Corner} value: the corner of the window the grip is in.
+    \endtable
+
+    \section1 Rubber bands
+
+    \l QRubberBand draws one control element, \c CE_RubberBand, with a
+    \l QStyleOptionRubberBand. The style can shape the band through the
+    \c SH_RubberBand_Mask style hint.
+
+    \image styles/rubberband.webp
+           {List view with a translucent rubber band selection rectangle
+           outlined}
+
+    The band sets no state flags beyond the common ones. The members of
+    \l QStyleOptionRubberBand are:
+
+    \table 90%
+        \header
+            \li Member
+            \li Description
+        \row
+            \li shape
+            \li A \l QRubberBand::Shape value: a rectangle or a line.
+        \row
+            \li opaque
+            \li Whether the band must be drawn opaquely.
+    \endtable
+
+    \sa {Widget Style Reference}, {Styling Buttons and Input Widgets},
+        {Styling Menus and Item Views}
+*/

@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
 add_library(widgets_snippets OBJECT
+    customstyle/checkboxstyle.cpp
     customstyle/customstyle.cpp
     customstyle/main.cpp
     customviewstyle/customviewstyle.cpp
