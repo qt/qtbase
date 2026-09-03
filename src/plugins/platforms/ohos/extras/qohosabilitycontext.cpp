@@ -4,7 +4,6 @@
 #include "qohosabilitycontext_p.h"
 
 #include <QtHarmonyExtras/private/qohosharmonyextrasenums_p.h>
-#include <QtHarmonyExtras/private/qohosjsenv_p.h>
 #include <QtHarmonyExtras/private/qohosoperationstatus_p.h>
 #include <QtHarmonyExtras/private/qohossharekit_p.h>
 #include <QtHarmonyExtras/private/qohosstartoptions_p.h>
@@ -23,6 +22,7 @@
 #include <QtCore/qsharedpointer.h>
 #include <QtCore/private/qcore_ohos_p.h>
 #include <QtCore/private/qohoscommon_p.h>
+#include <QtCore/private/qohosjsonconversions_p.h>
 #include <QtCore/private/qohoslogger_p.h>
 
 #include <array>
@@ -425,7 +425,7 @@ QNapi::Object makeJsCompletionHandler(
             QNapi::String messageValue;
             cbInfo.getLeadingArgs(Q_FUNC_INFO, elementNameObj, messageValue);
 
-            const QJsonObject elementName = QOhosJsEnv::fromNapiValue<QJsonObject>(elementNameObj);
+            const QJsonObject elementName = QtOhos::mapNapiObjectToJsonObject(elementNameObj);
             const QString message = QString::fromStdString(messageValue);
 
             QtOhos::invokeInQtThread(
@@ -572,7 +572,7 @@ void requestStartAbilityForResult(
                 return;
             }
 
-            auto arguments = std::vector<QNapi::ValueWrapper>{QOhosJsEnv::toNapiValue(jsState.env(), wantJson)};
+            auto arguments = std::vector<QNapi::ValueWrapper>{QtOhos::mapJsonObjectToNapiObject(jsState.env(), wantJson)};
             if (options.has_value())
                 arguments.push_back(convertStartOptionsToNapiObject(jsState, options.value()));
 
@@ -584,7 +584,7 @@ void requestStartAbilityForResult(
 
                     auto wantOrEmpty = QNapi::getOptionalPropOrEmpty<QNapi::Object>(abilityResult, "want");
                     auto jsonWant = !wantOrEmpty.IsEmpty()
-                        ? std::optional<QJsonObject>(QOhosJsEnv::fromNapiValue<QJsonObject>(wantOrEmpty))
+                        ? std::optional<QJsonObject>(QtOhos::mapNapiObjectToJsonObject(wantOrEmpty))
                         : std::nullopt;
 
                     context->resultConsumerQtContextRef.visitInQtThreadIfAlive(
@@ -782,7 +782,7 @@ bool startAbilityByTypeImpl(const QString &appType, const QJsonObject &wantParam
                 "context.startAbilityByType(*)",
                 {
                     appType.toStdString(),
-                    QOhosJsEnv::toNapiValue(jsState.env(), wantParameters),
+                    QtOhos::mapJsonObjectToNapiObject(jsState.env(), wantParameters),
                     QNapi::makeObject(
                         jsState.env(),
                         {
@@ -1034,7 +1034,7 @@ std::shared_ptr<OperationStatus> startAbilityImpl(
             if (mainUiAbility.IsEmpty())
                 return false;
 
-            auto arguments = std::vector<QNapi::ValueWrapper>{QOhosJsEnv::toNapiValue(jsState.env(), wantJson)};
+            auto arguments = std::vector<QNapi::ValueWrapper>{QtOhos::mapJsonObjectToNapiObject(jsState.env(), wantJson)};
             if (qpaStartOptions.has_value())
                 arguments.push_back(convertStartOptionsToNapiObject(jsState, qpaStartOptions.value()));
 
@@ -1063,8 +1063,7 @@ void startAppProcessImpl(
             auto sharedTaskPromise = QtOhos::moveToSharedPtr(std::move(taskPromise).makeChained(Q_FUNC_INFO));
             jsState.startAppProcess(
                 processId.toStdString(),
-                QNapi::checkedCast<QNapi::Object>(
-                    QOhosJsEnv::toNapiValue(jsState.env(), requestWantJson)),
+                QtOhos::mapJsonObjectToNapiObject(jsState.env(), requestWantJson),
                 startOptions,
                 [sharedTaskPromise](QOhosJsState &) {
                     (*sharedTaskPromise)();

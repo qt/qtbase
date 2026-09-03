@@ -7,7 +7,6 @@
 #include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/private/qohoslogger_p.h>
 #include <QtCore/private/qohospathutils_p.h>
-#include <qohosjsenv_p.h>
 #include <qohosplugincore.h>
 #include <QtCore/qurl.h>
 #include <algorithm>

@@ -5,7 +5,6 @@
 #include "qohosplatformclipboard.h"
 #include "qohosplatformintegration.h"
 #include "qohosplatformwindow.h"
-#include <qohosjsenv_p.h>
 
 #if QT_CONFIG(vulkan)
 #include "render/qohossurface.h"
