@@ -320,20 +320,27 @@ void addNewWantConsumer(
 {
     auto contextRef = QtOhos::makeQThreadSafeRef(context);
     auto sharedWantConsumer = QtOhos::moveToSharedPtr(std::move(wantConsumer));
-    QOhosJsThreadGateway::runAndWait(
+    auto consumerHandle = QOhosJsThreadGateway::eval(
         [&](QOhosJsState &jsState) {
-            jsState.addNewWantConsumer(
-                [contextRef, sharedWantConsumer](QOhosJsState &jsState, QNapi::Object, QNapi::Object napiWant, QNapi::Object launchParam) {
-                    auto launchReason = mapJsLaunchReasonToWantInfoEnumWithFallback(
-                        jsState, launchParam.get<QNapi::Number>("launchReason"));
-                    auto wantInfo = QSharedPointer<WantInfoImpl>::create(napiWant, launchReason);
-                    contextRef.visitInQtThreadIfAlive(
-                        [sharedWantConsumer, wantInfo](auto &) {
-                            (*sharedWantConsumer)(wantInfo);
-                        });
-                });
+            return QtOhos::makeProxyWithJsThreadDeleter(
+                jsState.registerNewWantConsumer(
+                    [contextRef, sharedWantConsumer](QOhosJsState &jsState, QNapi::Object, QNapi::Object napiWant, QNapi::Object launchParam) {
+                        auto launchReason = mapJsLaunchReasonToWantInfoEnumWithFallback(
+                            jsState, launchParam.get<QNapi::Number>("launchReason"));
+                        auto wantInfo = QSharedPointer<WantInfoImpl>::create(napiWant, launchReason);
+                        contextRef.visitInQtThreadIfAlive(
+                            [sharedWantConsumer, wantInfo](auto &) {
+                                (*sharedWantConsumer)(wantInfo);
+                            });
+                    }));
         },
         Q_FUNC_INFO);
+
+    QObject::connect(
+        context, &QObject::destroyed,
+        [consumerHandle = std::move(consumerHandle)]() mutable {
+            consumerHandle.reset();
+        });
 }
 
 }

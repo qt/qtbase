@@ -7,9 +7,11 @@
 #include <QtCore/private/qohoslogger_p.h>
 #include <QtCore/private/qohosmemoizingjsthreadfetcher_p.h>
 #include <algorithm>
+#include <cstdint>
 #include <deque>
 #include <exception>
 #include <future>
+#include <map>
 #include <mutex>
 #include <napi.h>
 #include <napi/native_api.h>
@@ -319,7 +321,7 @@ public:
         const std::string &processId, QNapi::Object requestWant,
         QNapi::Object optStartOptions, std::function<void(QOhosJsState &)> continueFunc) override;
 
-    void addNewWantConsumer(
+    std::shared_ptr<void> registerNewWantConsumer(
         QOhosConsumer<QOhosJsState &, QNapi::Object, QNapi::Object, QNapi::Object> wantConsumer) override;
 
     void setOnContinueRequestsHandler(
@@ -360,7 +362,8 @@ private:
     std::map<std::string, std::function<QNapi::Object(JsState &)>> m_jsModulesFactories;
     std::shared_ptr<AppFunctions> m_appFunctions;
     PreQueuingJsTasksExecutor m_tasksExecutor;
-    std::vector<QOhosConsumer<QOhosJsState &, QNapi::Object, QNapi::Object, QNapi::Object>> m_newWantConsumers;
+    std::map<std::uint64_t, std::shared_ptr<QOhosConsumer<QOhosJsState &, QNapi::Object, QNapi::Object, QNapi::Object>>> m_newWantConsumers;
+    std::uint64_t m_nextNewWantConsumerId = 1;
     std::map<std::type_index, std::vector<std::pair<int, double>>> m_ohosEnumsEnumerators;
     std::map<std::type_index, QNapi::Reference<QNapi::Symbol>> m_jsSymbolsRefs;
     QtRunMode m_qtRunMode;
@@ -462,9 +465,17 @@ void JsStateImpl::removeMatchingQAbilityPeerInJsThread(QNapi::Object qAbility)
 void JsStateImpl::dispatchNewWantInJsThread(
     QNapi::Object qAbility, QNapi::Object want, QNapi::Object launchParam)
 {
-    const auto consumersCount = m_newWantConsumers.size();
-    for (std::size_t i = 0; i < consumersCount; ++i)
-        m_newWantConsumers[i](*this, qAbility, want, launchParam);
+    std::vector<std::uint64_t> consumersIds;
+    for (const auto &consumerEntry : m_newWantConsumers)
+        consumersIds.push_back(consumerEntry.first);
+
+    for (auto consumerId : consumersIds) {
+        auto consumerIter = m_newWantConsumers.find(consumerId);
+        if (consumerIter != m_newWantConsumers.end()) {
+            auto consumer = consumerIter->second;
+            (*consumer)(*this, qAbility, want, launchParam);
+        }
+    }
 }
 
 void JsStateImpl::invokeTask(std::function<void(JsState &)> &&task)
@@ -647,10 +658,15 @@ void JsStateImpl::startAppProcess(
     }
 }
 
-void JsStateImpl::addNewWantConsumer(
+std::shared_ptr<void> JsStateImpl::registerNewWantConsumer(
     QOhosConsumer<QOhosJsState &, QNapi::Object, QNapi::Object, QNapi::Object> wantConsumer)
 {
-    m_newWantConsumers.push_back(std::move(wantConsumer));
+    const auto consumerId = m_nextNewWantConsumerId++;
+    m_newWantConsumers.emplace(consumerId, moveToSharedPtr(std::move(wantConsumer)));
+    return makeDestroyNotifier(
+        [this, consumerId]() {
+            m_newWantConsumers.erase(consumerId);
+        });
 }
 
 void JsStateImpl::startNoUiChildProcess(const std::string &libraryName, const std::vector<std::string> &args)
