@@ -202,11 +202,12 @@ QtParseCommon::ParsedText matchedAt(QStringView text, qsizetype from, const QStr
             while (iter.hasNext()) {
                 qsizetype head = iter.index();
                 if (const char32_t tgt = iter.next(); QChar::isSpace(tgt)) {
-                    qsizetype same = matchFront(view, target.first(head));
+                    // Match any non-space stepped over since start or last space:
+                    qsizetype same = head ? matchFront(view, target.first(head)) : 0;
                     if (same < 0)
                         return failed;
                     QStringIterator viter(view, same);
-                    // Require at least one spacing character in view to match those in target:
+                    // Require at least one spacing character in view to match target's:
                     if (!viter.hasNext())
                         return failed;
                     if (const char32_t got = viter.next(); !QChar::isSpace(got))
@@ -221,6 +222,8 @@ QtParseCommon::ParsedText matchedAt(QStringView text, qsizetype from, const QStr
                     view = view.sliced(same);
                     target = target.sliced(flex ? spacingForward(iter) : iter.index());
                     iter = QStringIterator(target);
+                    // In the flex case, the next iteration will step over a non-space:
+                    Q_ASSERT(!flex || !iter.hasNext() || !QChar::isSpace(iter.peekNext()));
                 }
             }
             // If target isn't empty, it's a spacing-free tail, to be checked
