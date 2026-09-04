@@ -515,34 +515,35 @@ void QTextOdfWriter::writeFormats(QXmlStreamWriter &writer, const QSet<int> &for
 
 void QTextOdfWriter::writeBlockFormat(QXmlStreamWriter &writer, const QTextBlockFormat &format, int formatIndex) const
 {
-    writer.writeStartElement(styleNS, QString::fromLatin1("style"));
-    writer.writeAttribute(styleNS, QString::fromLatin1("name"), QString::fromLatin1("p%1").arg(formatIndex));
-    writer.writeAttribute(styleNS, QString::fromLatin1("family"), QString::fromLatin1("paragraph"));
-    writer.writeStartElement(styleNS, QString::fromLatin1("paragraph-properties"));
+    writer.writeStartElement(styleNS, u"style");
+    writer.writeAttribute(styleNS, u"name", QString::fromLatin1("p%1").arg(formatIndex));
+    writer.writeAttribute(styleNS, u"family", u"paragraph");
+    writer.writeStartElement(styleNS, u"paragraph-properties");
 
     if (format.hasProperty(QTextBlockFormat::LineHeightType)) {
         const int blockLineHeightType = format.lineHeightType();
         const qreal blockLineHeight = format.lineHeight();
-        QString type, value;
+        QStringView type;
+        QString value;
         switch (blockLineHeightType) {
         case QTextBlockFormat::SingleHeight:
-            type = QString::fromLatin1("line-height");
-            value = QString::fromLatin1("100%");
+            type = u"line-height";
+            value = u"100%"_s;
             break;
         case QTextBlockFormat::ProportionalHeight:
-            type = QString::fromLatin1("line-height");
-            value = QString::number(blockLineHeight) + QString::fromLatin1("%");
+            type = u"line-height";
+            value = QString::number(blockLineHeight) + u"%";
             break;
         case QTextBlockFormat::FixedHeight:
-            type = QString::fromLatin1("line-height");
+            type = u"line-height";
             value = pixelToPoint(qMax(qreal(0.), blockLineHeight));
             break;
         case QTextBlockFormat::MinimumHeight:
-            type = QString::fromLatin1("line-height-at-least");
+            type = u"line-height-at-least";
             value = pixelToPoint(qMax(qreal(0.), blockLineHeight));
             break;
         case QTextBlockFormat::LineDistanceHeight:
-            type = QString::fromLatin1("line-spacing");
+            type = u"line-spacing";
             value = pixelToPoint(qMax(qreal(0.), blockLineHeight));
         }
 
@@ -552,67 +553,75 @@ void QTextOdfWriter::writeBlockFormat(QXmlStreamWriter &writer, const QTextBlock
 
     if (format.hasProperty(QTextFormat::BlockAlignment)) {
         const Qt::Alignment alignment = format.alignment() & Qt::AlignHorizontal_Mask;
-        QString value;
-        if (alignment == Qt::AlignLeading)
-            value = QString::fromLatin1("start");
-        else if (alignment == Qt::AlignTrailing)
-            value = QString::fromLatin1("end");
-        else if (alignment == (Qt::AlignLeft | Qt::AlignAbsolute))
-            value = QString::fromLatin1("left");
-        else if (alignment == (Qt::AlignRight | Qt::AlignAbsolute))
-            value = QString::fromLatin1("right");
-        else if (alignment == Qt::AlignHCenter)
-            value = QString::fromLatin1("center");
-        else if (alignment == Qt::AlignJustify)
-            value = QString::fromLatin1("justify");
-        else
+        QStringView value;
+        switch (alignment) {
+        case Qt::AlignLeading:
+            value = u"start";
+            break;
+        case Qt::AlignTrailing:
+            value = u"end";
+            break;
+        case Qt::AlignLeft | Qt::AlignAbsolute:
+            value = u"left";
+            break;
+        case Qt::AlignRight | Qt::AlignAbsolute:
+            value = u"right";
+            break;
+        case Qt::AlignHCenter:
+            value = u"center";
+            break;
+        case Qt::AlignJustify:
+            value = u"justify";
+            break;
+        default:
             qWarning() << "QTextOdfWriter: unsupported paragraph alignment; " << format.alignment();
-        if (! value.isNull())
-            writer.writeAttribute(foNS, QString::fromLatin1("text-align"), value);
+            break;
+        }
+        if (!value.isNull())
+            writer.writeAttribute(foNS, u"text-align", value);
     }
 
     if (format.hasProperty(QTextFormat::BlockTopMargin))
-        writer.writeAttribute(foNS, QString::fromLatin1("margin-top"), pixelToPoint(qMax(qreal(0.), format.topMargin())) );
+        writer.writeAttribute(foNS, u"margin-top", pixelToPoint(qMax(qreal(0.), format.topMargin())) );
     if (format.hasProperty(QTextFormat::BlockBottomMargin))
-        writer.writeAttribute(foNS, QString::fromLatin1("margin-bottom"), pixelToPoint(qMax(qreal(0.), format.bottomMargin())) );
+        writer.writeAttribute(foNS, u"margin-bottom", pixelToPoint(qMax(qreal(0.), format.bottomMargin())) );
     if (format.hasProperty(QTextFormat::BlockLeftMargin) || format.hasProperty(QTextFormat::BlockIndent))
-        writer.writeAttribute(foNS, QString::fromLatin1("margin-left"), pixelToPoint(qMax(qreal(0.),
+        writer.writeAttribute(foNS, u"margin-left", pixelToPoint(qMax(qreal(0.),
             format.leftMargin() + format.indent())));
     if (format.hasProperty(QTextFormat::BlockRightMargin))
-        writer.writeAttribute(foNS, QString::fromLatin1("margin-right"), pixelToPoint(qMax(qreal(0.), format.rightMargin())) );
+        writer.writeAttribute(foNS, u"margin-right", pixelToPoint(qMax(qreal(0.), format.rightMargin())) );
     if (format.hasProperty(QTextFormat::TextIndent))
-        writer.writeAttribute(foNS, QString::fromLatin1("text-indent"), pixelToPoint(format.textIndent()));
+        writer.writeAttribute(foNS, u"text-indent", pixelToPoint(format.textIndent()));
     if (format.hasProperty(QTextFormat::PageBreakPolicy)) {
         if (format.pageBreakPolicy() & QTextFormat::PageBreak_AlwaysBefore)
-            writer.writeAttribute(foNS, QString::fromLatin1("break-before"), QString::fromLatin1("page"));
+            writer.writeAttribute(foNS, u"break-before", u"page");
         if (format.pageBreakPolicy() & QTextFormat::PageBreak_AlwaysAfter)
-            writer.writeAttribute(foNS, QString::fromLatin1("break-after"), QString::fromLatin1("page"));
+            writer.writeAttribute(foNS, u"break-after", u"page");
     }
     if (format.hasProperty(QTextFormat::BackgroundBrush)) {
         QBrush brush = format.background();
-        writer.writeAttribute(foNS, QString::fromLatin1("background-color"), brush.color().name());
+        writer.writeAttribute(foNS, u"background-color", brush.color().name());
     }
     if (format.hasProperty(QTextFormat::BlockNonBreakableLines))
-        writer.writeAttribute(foNS, QString::fromLatin1("keep-together"),
-                format.nonBreakableLines() ? QString::fromLatin1("true") : QString::fromLatin1("false"));
+        writer.writeAttribute(foNS, u"keep-together",
+                              format.nonBreakableLines() ? u"true" : u"false");
     if (format.hasProperty(QTextFormat::TabPositions)) {
-        QList<QTextOption::Tab> tabs = format.tabPositions();
-        writer.writeStartElement(styleNS, QString::fromLatin1("tab-stops"));
-        QList<QTextOption::Tab>::Iterator iterator = tabs.begin();
-        while(iterator != tabs.end()) {
-            writer.writeEmptyElement(styleNS, QString::fromLatin1("tab-stop"));
-            writer.writeAttribute(styleNS, QString::fromLatin1("position"), pixelToPoint(iterator->position) );
-            QString type;
-            switch(iterator->type) {
-            case QTextOption::DelimiterTab: type = QString::fromLatin1("char"); break;
-            case QTextOption::LeftTab: type = QString::fromLatin1("left"); break;
-            case QTextOption::RightTab: type = QString::fromLatin1("right"); break;
-            case QTextOption::CenterTab: type = QString::fromLatin1("center"); break;
+        const QList<QTextOption::Tab> tabs = format.tabPositions();
+        writer.writeStartElement(styleNS, u"tab-stops");
+        for (const auto &tab : tabs) {
+            writer.writeEmptyElement(styleNS, u"tab-stop");
+            writer.writeAttribute(styleNS, u"position", pixelToPoint(tab.position) );
+            QStringView type;
+            switch (tab.type) {
+            case QTextOption::DelimiterTab: type = u"char"; break;
+            case QTextOption::LeftTab: type = u"left"; break;
+            case QTextOption::RightTab: type = u"right"; break;
+            case QTextOption::CenterTab: type = u"center"; break;
             }
-            writer.writeAttribute(styleNS, QString::fromLatin1("type"), type);
-            if (!iterator->delimiter.isNull())
-                writer.writeAttribute(styleNS, QString::fromLatin1("char"), iterator->delimiter);
-            ++iterator;
+            if (!type.isEmpty())
+                writer.writeAttribute(styleNS, u"type", type);
+            if (!tab.delimiter.isNull())
+                writer.writeAttribute(styleNS, u"char", tab.delimiter);
         }
 
         writer.writeEndElement(); // tab-stops
@@ -624,10 +633,10 @@ void QTextOdfWriter::writeBlockFormat(QXmlStreamWriter &writer, const QTextBlock
 
 void QTextOdfWriter::writeCharacterFormat(QXmlStreamWriter &writer, const QTextCharFormat &format, int formatIndex) const
 {
-    writer.writeStartElement(styleNS, QString::fromLatin1("style"));
-    writer.writeAttribute(styleNS, QString::fromLatin1("name"), QString::fromLatin1("c%1").arg(formatIndex));
-    writer.writeAttribute(styleNS, QString::fromLatin1("family"), QString::fromLatin1("text"));
-    writer.writeEmptyElement(styleNS, QString::fromLatin1("text-properties"));
+    writer.writeStartElement(styleNS, u"style");
+    writer.writeAttribute(styleNS, u"name", QString::fromLatin1("c%1").arg(formatIndex));
+    writer.writeAttribute(styleNS, u"family", u"text");
+    writer.writeEmptyElement(styleNS, u"text-properties");
 
     const QFont defaultFont = m_document->defaultFont();
     const uint defaultFontResolveMask = defaultFont.resolveMask();
@@ -636,7 +645,7 @@ void QTextOdfWriter::writeCharacterFormat(QXmlStreamWriter &writer, const QTextC
         || (defaultFontResolveMask & QFont::StyleResolved)) {
         const bool italic = format.hasProperty(QTextFormat::FontItalic) ? format.fontItalic() : defaultFont.italic();
         if (italic)
-            writer.writeAttribute(foNS, QString::fromLatin1("font-style"), QString::fromLatin1("italic"));
+            writer.writeAttribute(foNS, u"font-style", u"italic");
     }
 
     if (format.hasProperty(QTextFormat::FontWeight)
@@ -646,12 +655,8 @@ void QTextOdfWriter::writeCharacterFormat(QXmlStreamWriter &writer, const QTextC
                          : defaultFont.weight();
 
         if (weight != QFont::Normal) {
-            QString value;
-            if (weight == QFont::Bold)
-                value = QString::fromLatin1("bold");
-            else
-                value = QString::number(weight);
-            writer.writeAttribute(foNS, QString::fromLatin1("font-weight"), value);
+            const QString value = weight == QFont::Bold ? u"bold"_s : QString::number(weight);
+            writer.writeAttribute(foNS, u"font-weight", value);
         }
     }
 
@@ -662,9 +667,9 @@ void QTextOdfWriter::writeCharacterFormat(QXmlStreamWriter &writer, const QTextC
                                     || format.hasProperty(QTextFormat::FontFamilies))
                                         ? format.fontFamilies().toStringList().value(0, QString())
                                         : defaultFont.family();
-        writer.writeAttribute(foNS, QString::fromLatin1("font-family"), fontFamily);
+        writer.writeAttribute(foNS, u"font-family", fontFamily);
     } else {
-        writer.writeAttribute(foNS, QString::fromLatin1("font-family"), QString::fromLatin1("Sans")); // Qt default
+        writer.writeAttribute(foNS, u"font-family", u"Sans"); // Qt default
     }
 
     if (format.hasProperty(QTextFormat::FontPointSize)
@@ -672,7 +677,7 @@ void QTextOdfWriter::writeCharacterFormat(QXmlStreamWriter &writer, const QTextC
         const qreal pointSize = format.hasProperty(QTextFormat::FontPointSize)
                                     ? format.fontPointSize()
                                     : defaultFont.pointSizeF();
-        writer.writeAttribute(foNS, QString::fromLatin1("font-size"), QString::fromLatin1("%1pt").arg(pointSize));
+        writer.writeAttribute(foNS, u"font-size", QString::fromLatin1("%1pt").arg(pointSize));
     }
 
     if (format.hasProperty(QTextFormat::FontCapitalization)
@@ -682,15 +687,15 @@ void QTextOdfWriter::writeCharacterFormat(QXmlStreamWriter &writer, const QTextC
                                                    : defaultFont.capitalization();
         switch(capitalization) {
         case QFont::MixedCase:
-            writer.writeAttribute(foNS, QString::fromLatin1("text-transform"), QString::fromLatin1("none")); break;
+            writer.writeAttribute(foNS, u"text-transform", u"none"); break;
         case QFont::AllUppercase:
-            writer.writeAttribute(foNS, QString::fromLatin1("text-transform"), QString::fromLatin1("uppercase")); break;
+            writer.writeAttribute(foNS, u"text-transform", u"uppercase"); break;
         case QFont::AllLowercase:
-            writer.writeAttribute(foNS, QString::fromLatin1("text-transform"), QString::fromLatin1("lowercase")); break;
+            writer.writeAttribute(foNS, u"text-transform", u"lowercase"); break;
         case QFont::Capitalize:
-            writer.writeAttribute(foNS, QString::fromLatin1("text-transform"), QString::fromLatin1("capitalize")); break;
+            writer.writeAttribute(foNS, u"text-transform", u"capitalize"); break;
         case QFont::SmallCaps:
-            writer.writeAttribute(foNS, QString::fromLatin1("font-variant"), QString::fromLatin1("small-caps")); break;
+            writer.writeAttribute(foNS, u"font-variant", u"small-caps"); break;
         }
     }
 
@@ -699,7 +704,7 @@ void QTextOdfWriter::writeCharacterFormat(QXmlStreamWriter &writer, const QTextC
         const qreal letterSpacing = format.hasProperty(QTextFormat::FontLetterSpacing)
                                         ? format.fontLetterSpacing()
                                         : defaultFont.letterSpacing();
-        writer.writeAttribute(foNS, QString::fromLatin1("letter-spacing"), pixelToPoint(letterSpacing));
+        writer.writeAttribute(foNS, u"letter-spacing", pixelToPoint(letterSpacing));
     }
 
     if (format.hasProperty(QTextFormat::FontWordSpacing)
@@ -708,7 +713,7 @@ void QTextOdfWriter::writeCharacterFormat(QXmlStreamWriter &writer, const QTextC
                                       ? format.fontWordSpacing()
                                       : defaultFont.wordSpacing();
         if (wordSpacing != 0)
-            writer.writeAttribute(foNS, QString::fromLatin1("word-spacing"), pixelToPoint(wordSpacing));
+            writer.writeAttribute(foNS, u"word-spacing", pixelToPoint(wordSpacing));
     }
 
     if (format.hasProperty(QTextFormat::FontUnderline)
@@ -717,8 +722,7 @@ void QTextOdfWriter::writeCharacterFormat(QXmlStreamWriter &writer, const QTextC
         const bool underline = format.hasProperty(QTextFormat::FontUnderline)
                                    ? format.fontUnderline()
                                    : defaultFont.underline();
-        writer.writeAttribute(styleNS, QString::fromLatin1("text-underline-type"),
-                underline ? QString::fromLatin1("single") : QString::fromLatin1("none"));
+        writer.writeAttribute(styleNS, u"text-underline-type", underline ? u"single" : u"none");
     }
 
     if (format.hasProperty(QTextFormat::FontOverline)) {
@@ -730,44 +734,45 @@ void QTextOdfWriter::writeCharacterFormat(QXmlStreamWriter &writer, const QTextC
         const bool strikeOut = format.hasProperty(QTextFormat::FontStrikeOut)
                                    ? format.fontStrikeOut()
                                    : defaultFont.strikeOut();
-        writer.writeAttribute(styleNS,QString::fromLatin1( "text-line-through-type"),
-                strikeOut ? QString::fromLatin1("single") : QString::fromLatin1("none"));
+        writer.writeAttribute(styleNS, u"text-line-through-type", strikeOut ? u"single" : u"none");
     }
 
     if (format.hasProperty(QTextFormat::TextUnderlineColor))
-        writer.writeAttribute(styleNS, QString::fromLatin1("text-underline-color"), format.underlineColor().name());
+        writer.writeAttribute(styleNS, u"text-underline-color", format.underlineColor().name());
     if (format.hasProperty(QTextFormat::FontFixedPitch)) {
         //   bool   fontFixedPitch () const  TODO
     }
     if (format.hasProperty(QTextFormat::TextUnderlineStyle)) {
-        QString value;
+        QStringView value;
         switch (format.underlineStyle()) {
-        case QTextCharFormat::NoUnderline: value = QString::fromLatin1("none"); break;
-        case QTextCharFormat::SingleUnderline: value = QString::fromLatin1("solid"); break;
-        case QTextCharFormat::DashUnderline: value = QString::fromLatin1("dash"); break;
-        case QTextCharFormat::DotLine: value = QString::fromLatin1("dotted"); break;
-        case QTextCharFormat::DashDotLine: value = QString::fromLatin1("dash-dot"); break;
-        case QTextCharFormat::DashDotDotLine: value = QString::fromLatin1("dot-dot-dash"); break;
-        case QTextCharFormat::WaveUnderline: value = QString::fromLatin1("wave"); break;
-        case QTextCharFormat::SpellCheckUnderline: value = QString::fromLatin1("none"); break;
+        case QTextCharFormat::NoUnderline: value = u"none"; break;
+        case QTextCharFormat::SingleUnderline: value = u"solid"; break;
+        case QTextCharFormat::DashUnderline: value = u"dash"; break;
+        case QTextCharFormat::DotLine: value = u"dotted"; break;
+        case QTextCharFormat::DashDotLine: value = u"dash-dot"; break;
+        case QTextCharFormat::DashDotDotLine: value = u"dot-dot-dash"; break;
+        case QTextCharFormat::WaveUnderline: value = u"wave"; break;
+        case QTextCharFormat::SpellCheckUnderline: value = u"none"; break;
         }
-        writer.writeAttribute(styleNS, QString::fromLatin1("text-underline-style"), value);
+        if (!value.isEmpty())
+            writer.writeAttribute(styleNS, u"text-underline-style", value);
     }
     if (format.hasProperty(QTextFormat::TextVerticalAlignment)) {
-        QString value;
+        QStringView value;
         switch (format.verticalAlignment()) {
         case QTextCharFormat::AlignMiddle:
-        case QTextCharFormat::AlignNormal: value = QString::fromLatin1("0%"); break;
-        case QTextCharFormat::AlignSuperScript: value = QString::fromLatin1("super"); break;
-        case QTextCharFormat::AlignSubScript: value = QString::fromLatin1("sub"); break;
-        case QTextCharFormat::AlignTop: value = QString::fromLatin1("100%"); break;
-        case QTextCharFormat::AlignBottom : value = QString::fromLatin1("-100%"); break;
+        case QTextCharFormat::AlignNormal: value = u"0%"; break;
+        case QTextCharFormat::AlignSuperScript: value = u"super"; break;
+        case QTextCharFormat::AlignSubScript: value = u"sub"; break;
+        case QTextCharFormat::AlignTop: value = u"100%"; break;
+        case QTextCharFormat::AlignBottom : value = u"-100%"; break;
         case QTextCharFormat::AlignBaseline: break;
         }
-        writer.writeAttribute(styleNS, QString::fromLatin1("text-position"), value);
+        if (!value.isEmpty())
+            writer.writeAttribute(styleNS, u"text-position", value);
     }
     if (format.hasProperty(QTextFormat::TextOutline))
-        writer.writeAttribute(styleNS, QString::fromLatin1("text-outline"), QString::fromLatin1("true"));
+        writer.writeAttribute(styleNS, u"text-outline", u"true");
     if (format.hasProperty(QTextFormat::TextToolTip)) {
         //   QString   toolTip () const  TODO
     }
@@ -782,11 +787,11 @@ void QTextOdfWriter::writeCharacterFormat(QXmlStreamWriter &writer, const QTextC
     }
     if (format.hasProperty(QTextFormat::ForegroundBrush)) {
         QBrush brush = format.foreground();
-        writer.writeAttribute(foNS, QString::fromLatin1("color"), brush.color().name());
+        writer.writeAttribute(foNS, u"color", brush.color().name());
     }
     if (format.hasProperty(QTextFormat::BackgroundBrush)) {
         QBrush brush = format.background();
-        writer.writeAttribute(foNS, QString::fromLatin1("background-color"), brush.color().name());
+        writer.writeAttribute(foNS, u"background-color", brush.color().name());
     }
 
     writer.writeEndElement(); // style
@@ -794,36 +799,36 @@ void QTextOdfWriter::writeCharacterFormat(QXmlStreamWriter &writer, const QTextC
 
 void QTextOdfWriter::writeListFormat(QXmlStreamWriter &writer, const QTextListFormat &format, int formatIndex) const
 {
-    writer.writeStartElement(textNS, QString::fromLatin1("list-style"));
-    writer.writeAttribute(styleNS, QString::fromLatin1("name"), QString::fromLatin1("L%1").arg(formatIndex));
+    writer.writeStartElement(textNS, u"list-style");
+    writer.writeAttribute(styleNS, u"name", QString::fromLatin1("L%1").arg(formatIndex));
 
     QTextListFormat::Style style = format.style();
     if (style == QTextListFormat::ListDecimal || style == QTextListFormat::ListLowerAlpha
             || style == QTextListFormat::ListUpperAlpha
             || style == QTextListFormat::ListLowerRoman
             || style == QTextListFormat::ListUpperRoman) {
-        writer.writeStartElement(textNS, QString::fromLatin1("list-level-style-number"));
-        writer.writeAttribute(styleNS, QString::fromLatin1("num-format"), bulletChar(style));
+        writer.writeStartElement(textNS, u"list-level-style-number");
+        writer.writeAttribute(styleNS, u"num-format", bulletChar(style));
 
         if (format.hasProperty(QTextFormat::ListNumberSuffix))
-            writer.writeAttribute(styleNS, QString::fromLatin1("num-suffix"), format.numberSuffix());
+            writer.writeAttribute(styleNS, u"num-suffix", format.numberSuffix());
         else
-            writer.writeAttribute(styleNS, QString::fromLatin1("num-suffix"), QString::fromLatin1("."));
+            writer.writeAttribute(styleNS, u"num-suffix", u".");
 
         if (format.hasProperty(QTextFormat::ListNumberPrefix))
-            writer.writeAttribute(styleNS, QString::fromLatin1("num-prefix"), format.numberPrefix());
+            writer.writeAttribute(styleNS, u"num-prefix", format.numberPrefix());
 
     } else {
-        writer.writeStartElement(textNS, QString::fromLatin1("list-level-style-bullet"));
-        writer.writeAttribute(textNS, QString::fromLatin1("bullet-char"), bulletChar(style));
+        writer.writeStartElement(textNS, u"list-level-style-bullet");
+        writer.writeAttribute(textNS, u"bullet-char", bulletChar(style));
     }
 
-    writer.writeAttribute(textNS, QString::fromLatin1("level"), QString::number(format.indent()));
-    writer.writeEmptyElement(styleNS, QString::fromLatin1("list-level-properties"));
-    writer.writeAttribute(foNS, QString::fromLatin1("text-align"), QString::fromLatin1("start"));
+    writer.writeAttribute(textNS, u"level", QString::number(format.indent()));
+    writer.writeEmptyElement(styleNS, u"list-level-properties");
+    writer.writeAttribute(foNS, u"text-align", u"start");
     QString spacing = QString::fromLatin1("%1mm").arg(format.indent() * 8);
-    writer.writeAttribute(textNS, QString::fromLatin1("space-before"), spacing);
-    //writer.writeAttribute(textNS, QString::fromLatin1("min-label-width"), spacing);
+    writer.writeAttribute(textNS, u"space-before", spacing);
+    //writer.writeAttribute(textNS, u"min-label-width", spacing);
 
     writer.writeEndElement(); // list-level-style-*
     writer.writeEndElement(); // list-style
@@ -831,18 +836,18 @@ void QTextOdfWriter::writeListFormat(QXmlStreamWriter &writer, const QTextListFo
 
 void QTextOdfWriter::writeFrameFormat(QXmlStreamWriter &writer, const QTextFrameFormat &format, int formatIndex) const
 {
-    writer.writeStartElement(styleNS, QString::fromLatin1("style"));
-    writer.writeAttribute(styleNS, QString::fromLatin1("name"), QString::fromLatin1("s%1").arg(formatIndex));
-    writer.writeAttribute(styleNS, QString::fromLatin1("family"), QString::fromLatin1("section"));
-    writer.writeEmptyElement(styleNS, QString::fromLatin1("section-properties"));
+    writer.writeStartElement(styleNS, u"style");
+    writer.writeAttribute(styleNS, u"name", QString::fromLatin1("s%1").arg(formatIndex));
+    writer.writeAttribute(styleNS, u"family", u"section");
+    writer.writeEmptyElement(styleNS, u"section-properties");
     if (format.hasProperty(QTextFormat::FrameTopMargin))
-        writer.writeAttribute(foNS, QString::fromLatin1("margin-top"), pixelToPoint(qMax(qreal(0.), format.topMargin())) );
+        writer.writeAttribute(foNS, u"margin-top", pixelToPoint(qMax(qreal(0.), format.topMargin())) );
     if (format.hasProperty(QTextFormat::FrameBottomMargin))
-        writer.writeAttribute(foNS, QString::fromLatin1("margin-bottom"), pixelToPoint(qMax(qreal(0.), format.bottomMargin())) );
+        writer.writeAttribute(foNS, u"margin-bottom", pixelToPoint(qMax(qreal(0.), format.bottomMargin())) );
     if (format.hasProperty(QTextFormat::FrameLeftMargin))
-        writer.writeAttribute(foNS, QString::fromLatin1("margin-left"), pixelToPoint(qMax(qreal(0.), format.leftMargin())) );
+        writer.writeAttribute(foNS, u"margin-left", pixelToPoint(qMax(qreal(0.), format.leftMargin())) );
     if (format.hasProperty(QTextFormat::FrameRightMargin))
-        writer.writeAttribute(foNS, QString::fromLatin1("margin-right"), pixelToPoint(qMax(qreal(0.), format.rightMargin())) );
+        writer.writeAttribute(foNS, u"margin-right", pixelToPoint(qMax(qreal(0.), format.rightMargin())) );
 
     writer.writeEndElement(); // style
 
@@ -860,35 +865,34 @@ void QTextOdfWriter::writeFrameFormat(QXmlStreamWriter &writer, const QTextFrame
 void QTextOdfWriter::writeTableFormat(QXmlStreamWriter &writer, const QTextTableFormat &format, int formatIndex) const
 {
     // start writing table style element
-    writer.writeStartElement(styleNS, QString::fromLatin1("style"));
-    writer.writeAttribute(styleNS, QString::fromLatin1("name"),
-                          QString::fromLatin1("Table%1").arg(formatIndex));
-    writer.writeAttribute(styleNS, QString::fromLatin1("family"), QString::fromLatin1("table"));
-    writer.writeEmptyElement(styleNS, QString::fromLatin1("table-properties"));
+    writer.writeStartElement(styleNS, u"style");
+    writer.writeAttribute(styleNS, u"name", QString::fromLatin1("Table%1").arg(formatIndex));
+    writer.writeAttribute(styleNS, u"family", u"table");
+    writer.writeEmptyElement(styleNS, u"table-properties");
 
     if (m_tableFormatsWithBorders.contains(formatIndex))
         writer.writeAttribute(tableNS, u"border-model",
                               format.borderCollapse() ? u"collapsing" : u"separating");
 
-    const char* align = nullptr;
+    QStringView align;
     switch (format.alignment()) {
     case Qt::AlignLeft:
-        align = "left";
+        align = u"left";
         break;
     case Qt::AlignRight:
-        align = "right";
+        align = u"right";
         break;
     case Qt::AlignHCenter:
-        align = "center";
+        align = u"center";
         break;
     case Qt::AlignJustify:
-        align = "margins";
+        align = u"margins";
         break;
     }
-    if (align)
-       writer.writeAttribute(tableNS, QString::fromLatin1("align"), QString::fromLatin1(align));
+    if (!align.isNull())
+       writer.writeAttribute(tableNS, u"align", align);
     if (format.width().rawValue()) {
-        writer.writeAttribute(styleNS, QString::fromLatin1("width"),
+        writer.writeAttribute(styleNS, u"width",
                               QString::number(format.width().rawValue()) + "pt"_L1);
     }
     writer.writeEndElement();
@@ -899,11 +903,11 @@ void QTextOdfWriter::writeTableFormat(QXmlStreamWriter &writer, const QTextTable
         m_tableFormatsWithColWidthConstraints.insert(formatIndex); // needed for linking of columns to styles
         for (qsizetype colit = 0; colit < columnWidthConstraints.size(); ++colit) {
             const auto &constraint = columnWidthConstraints.at(colit);
-            writer.writeStartElement(styleNS, QString::fromLatin1("style"));
-            writer.writeAttribute(styleNS, QString::fromLatin1("name"),
+            writer.writeStartElement(styleNS, u"style");
+            writer.writeAttribute(styleNS, u"name",
                                   QString::fromLatin1("Table%1.%2").arg(formatIndex).arg(colit));
-            writer.writeAttribute(styleNS, QString::fromLatin1("family"), QString::fromLatin1("table-column"));
-            writer.writeEmptyElement(styleNS, QString::fromLatin1("table-column-properties"));
+            writer.writeAttribute(styleNS, u"family", u"table-column");
+            writer.writeEmptyElement(styleNS, u"table-column-properties");
             QByteArray columnWidth;
             if (constraint.type() == QTextLength::PercentageLength) {
                 columnWidth = QByteArray::number(constraint.rawValue()) + "%";
@@ -913,7 +917,7 @@ void QTextOdfWriter::writeTableFormat(QXmlStreamWriter &writer, const QTextTable
                 //!! HARD-CODING variableWidth Constraints to 100% / nr constraints
                 columnWidth = QByteArray::number(100 / columnWidthConstraints.size()) + "%";
             }
-            writer.writeAttribute(styleNS, "column-width", columnWidth);
+            writer.writeAttribute(styleNS, u"column-width", columnWidth);
             writer.writeEndElement();
         }
     }
