@@ -681,9 +681,9 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QTextTableCellFormat &
     \value FontKerning          Specifies whether the font has kerning turned on.
     \value FontHintingPreference Controls the use of hinting according to values
                                  of the QFont::HintingPreference enum.
-    \value FontFeatures [since 6.11] Assigns integer numbers to typographical features. See
+    \value [since 6.11] FontFeatures Assigns integer numbers to typographical features. See
            \l{QFont::setFeature()} for additional information.
-    \value FontVariableAxes [since 6.11] Assigns floating point numbers to variable axes in variable
+    \value [since 6.11] FontVariableAxes Assigns floating point numbers to variable axes in variable
            fonts. See \l{QFont::setVariableAxis()} for additional information.
 
     \omitvalue FirstFontProperty
