@@ -28,12 +28,8 @@ QNetworkReplyFileImplPrivate::QNetworkReplyFileImplPrivate()
 QNetworkReplyFileImpl::~QNetworkReplyFileImpl()
 {
     QNetworkReplyFileImplPrivate *d = (QNetworkReplyFileImplPrivate*) d_func();
-    if (d->realFile) {
-        if (d->realFile->thread() == QThread::currentThread())
-            delete d->realFile;
-        else
-            QMetaObject::invokeMethod(d->realFile, "deleteLater", Qt::QueuedConnection);
-    }
+    if (d->realFile)
+        QObjectPrivate::deleteInOwnThread(d->realFile);
 }
 
 QNetworkReplyFileImpl::QNetworkReplyFileImpl(QNetworkAccessManager *manager, const QNetworkRequest &req, const QNetworkAccessManager::Operation op)
