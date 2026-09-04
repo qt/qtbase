@@ -1535,7 +1535,7 @@ void QTextHtmlParserNode::applyForegroundImage(qint64 searchKey, const QTextDocu
             if (brush.style() == Qt::TexturePattern) {
                 const bool isPixmap = qHasPixmapTexture(brush);
 
-                if (isPixmap && QCoreApplication::instance()->thread() != QThread::currentThread()) {
+                if (isPixmap && !QThread::isMainThread()) {
                     qWarning("Can't apply QPixmap outside of GUI thread");
                     return;
                 }
@@ -1561,7 +1561,7 @@ void QTextHtmlParserNode::applyBackgroundImage(const QString &url, const QTextDo
     if (!url.isEmpty() && resourceProvider) {
         QVariant val = resourceProvider->resource(QTextDocument::ImageResource, QUrl{url});
 
-        if (QCoreApplication::instance()->thread() != QThread::currentThread()) {
+        if (!QThread::isMainThread()) {
             // must use images in non-GUI threads
             if (val.userType() == QMetaType::QImage) {
                 QImage image = qvariant_cast<QImage>(val);

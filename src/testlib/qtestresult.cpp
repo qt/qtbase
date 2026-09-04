@@ -669,7 +669,7 @@ bool QTestResult::compare(bool success, const char *failureMsg,
 void QTestResult::addFailure(const char *message, const char *file, int line)
 {
     clearExpectFail();
-    if (qApp && QThread::currentThread() == qApp->thread())
+    if (qApp && QThread::isMainThread())
         QTestEventLoop::instance().exitLoop();
 
     if (QTest::blacklistCurrentTest)

@@ -376,7 +376,7 @@ void QTimer::singleShotImpl(std::chrono::nanoseconds ns, Qt::TimerType timerType
         // itself. And QThread::currentThread() is among the few QObjects we know that will
         // most certainly be there. Note that one can actually call singleShot before the
         // QApplication is created!
-        if (!receiver && QThread::currentThread() == QCoreApplicationPrivate::mainThread()) {
+        if (!receiver && QThread::isMainThread()) {
             // reuse main thread as context object
             receiver = QThread::currentThread();
         } else if (!receiver) {

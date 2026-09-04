@@ -3450,8 +3450,7 @@ Q_CONSTINIT static QBasicAtomicInt font_cache_id = Q_BASIC_ATOMIC_INITIALIZER(0)
 QFontCache::QFontCache()
     : QObject(), total_cost(0), max_cost(min_cost),
       current_timestamp(0), fast(false),
-      autoClean(QGuiApplication::instance()
-                && (QGuiApplication::instance()->thread() == QThread::currentThread())),
+      autoClean(QThread::isMainThread() && QGuiApplication::instance()),
       m_id(font_cache_id.fetchAndAddRelaxed(1) + 1)
 {
 }

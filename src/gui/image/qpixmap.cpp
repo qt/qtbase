@@ -709,7 +709,7 @@ bool QPixmap::load(const QString &fileName, const char *format, Qt::ImageConvers
         // Note: If no extension is provided, we try to match the
         // file against known plugin extensions
         if (info.completeSuffix().isEmpty() || info.exists()) {
-            const bool inGuiThread = qApp->thread() == QThread::currentThread();
+            const bool inGuiThread = QThread::isMainThread();
 
             QString key = "qt_pixmap"_L1
                     % info.absoluteFilePath()

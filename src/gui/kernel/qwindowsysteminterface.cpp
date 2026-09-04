@@ -1071,7 +1071,7 @@ bool QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ProcessEventsFl
         QWindowSystemInterfacePrivate::windowSystemEventQueue.clear();
         return false;
     }
-    if (QThread::currentThread() != QGuiApplication::instance()->thread()) {
+    if (!QThread::isMainThread()) {
         // Post a FlushEvents event which will trigger a call back to
         // deferredFlushWindowSystemEvents from the Gui thread.
         QMutexLocker locker(&QWindowSystemInterfacePrivate::flushEventMutex);
@@ -1085,7 +1085,7 @@ bool QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ProcessEventsFl
 
 void QWindowSystemInterface::deferredFlushWindowSystemEvents(QEventLoop::ProcessEventsFlags flags)
 {
-    Q_ASSERT(QThread::currentThread() == QGuiApplication::instance()->thread());
+    Q_ASSERT(QThread::isMainThread());
 
     QMutexLocker locker(&QWindowSystemInterfacePrivate::flushEventMutex);
     sendWindowSystemEvents(flags);

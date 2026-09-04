@@ -277,7 +277,7 @@ QEventDispatcherGlibPrivate::QEventDispatcherGlibPrivate(GMainContext *context)
         g_main_context_ref(mainContext);
     } else {
         QCoreApplication *app = QCoreApplication::instance();
-        if (app && QThread::currentThread() == app->thread()) {
+        if (app && QThread::isMainThread()) {
             mainContext = g_main_context_default();
             g_main_context_ref(mainContext);
         } else {
