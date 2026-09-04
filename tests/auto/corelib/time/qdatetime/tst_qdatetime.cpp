@@ -3489,6 +3489,25 @@ void tst_QDateTime::fromStringStringFormat_data()
             << u"2008-10-13 +03:00 11.50"_s << u"yyyy-MM-dd tttt hh.mm"_s
             << 1900 << greg << QDateTime(); // Offset not valid when zone name expected.
 
+    if (zoneIsCET) {
+        QTest::newRow("CET-by-name")
+            << u"2024-01-01 12:00 CET"_s << u"yyyy-MM-dd HH:mm t"_s
+            << 2000 << greg << QDateTime(QDate(2024, 1, 1), QTime(12, 0), QTimeZone::LocalTime);
+#if QT_CONFIG(timezone)
+    } else if (QTimeZone cet("CET"); cet.isValid()) {
+        QTest::newRow("CET-by-name") // Uses LocalTime when that's CET, otherwise cet.
+            << u"2024-01-01 12:00 CET"_s << u"yyyy-MM-dd HH:mm t"_s
+            << 2000 << greg << QDateTime(QDate(2024, 1, 1), QTime(12, 0), cet);
+#endif
+    }
+    QTest::newRow("UTC-by-name") // QTBUG-149288: got QUtcTZP backend zone
+        << u"2024-01-01 12:00 UTC"_s << u"yyyy-MM-dd HH:mm t"_s
+        << 2000 << greg << QDateTime(QDate(2024, 1, 1), QTime(12, 0), UTC);
+    QTest::newRow("offset-is+5") // New in 6.12
+        << u"2001-09-15T09:33:01+5"_s << u"yyyy-MM-ddTHH:mm:sst"_s
+        << 2000 << greg << QDateTime(QDate(2001, 9, 15), QTime(9, 33, 1),
+                                     QTimeZone::fromSecondsAheadOfUtc(18000));
+
     // Found to fail in some benchmarks, when first added:
     QTest::newRow("H:m:s.zz ddd d-MMM-yyyy/Gregorian")
             << u"7:1:4.78 Sun 1-Sep-2024"_s << u"H:m:s.zz ddd d-MMM-yyyy"_s

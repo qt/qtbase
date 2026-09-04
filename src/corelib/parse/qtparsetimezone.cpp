@@ -231,8 +231,11 @@ QList<SizeOffset> matchIso8601(QStringView text, QtTemporalPattern::TemporalFiel
         return matches;
     }
     const bool negate = tail.startsWith(u'-');
-    if (!negate && !tail.startsWith(u'+'))
+    if (!negate && !tail.startsWith(u'+')) {
+        if (used) // Starts with "UTC", which is a match:
+            matches.emplace_back(used, 0);
         return matches;
+    }
     ++used;
     tail = tail.sliced(1);
 
