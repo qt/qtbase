@@ -58,7 +58,7 @@ public:
 
     void propagateSizeHints() override;
     void requestActivateWindow() override;
-    void updateSystemUiVisibility(Qt::WindowStates states, Qt::WindowFlags flags);
+    void applySystemUi(Qt::WindowStates states, Qt::WindowFlags flags);
     void updateFocusedEditText();
     inline bool isRaster() const { return m_isRaster; }
     bool isExposed() const override;
@@ -112,6 +112,8 @@ private:
     Q_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE(windowFocusChanged)
     static void safeAreaMarginsChanged(JNIEnv *env, jobject obj, QtJniTypes::Insets insets, jint  id);
     Q_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE(safeAreaMarginsChanged)
+    static void applySystemUiNative(JNIEnv *env, jobject obj);
+    Q_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE(applySystemUiNative)
 
     [[nodiscard]] QMutexLocker<QMutex> destructionGuard();
 };

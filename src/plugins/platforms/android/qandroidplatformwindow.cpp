@@ -14,6 +14,8 @@
 #include <private/qhighdpiscaling_p.h>
 #include <private/qjnihelpers_p.h>
 
+#include <optional>
+
 QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcQpaWindow, "qt.qpa.window")
@@ -120,7 +122,7 @@ void QAndroidPlatformWindow::raise()
         m_nativeParentQtWindow.callMethod<void>("bringChildToFront", nativeViewId());
         return;
     }
-    updateSystemUiVisibility(window()->windowStates(), window()->flags());
+    applySystemUi(window()->windowStates(), window()->flags());
     platformScreen()->raise(this);
 }
 
@@ -166,7 +168,7 @@ void QAndroidPlatformWindow::setVisible(bool visible)
         } else {
             const Qt::WindowStates states = window()->windowStates();
             const Qt::WindowFlags flags = window()->flags();
-            updateSystemUiVisibility(states, flags);
+            applySystemUi(states, flags);
             if (states & Qt::WindowFullScreen || flags & Qt::ExpandedClientAreaHint)
                 setGeometry(platformScreen()->geometry());
             else if (states & Qt::WindowMaximized)
@@ -188,7 +190,7 @@ void QAndroidPlatformWindow::setWindowState(Qt::WindowStates state)
     QPlatformWindow::setWindowState(state);
 
     if (window()->isVisible())
-        updateSystemUiVisibility(state, window()->flags());
+        applySystemUi(state, window()->flags());
 }
 
 void QAndroidPlatformWindow::setWindowFlags(Qt::WindowFlags flags)
@@ -196,7 +198,7 @@ void QAndroidPlatformWindow::setWindowFlags(Qt::WindowFlags flags)
     QPlatformWindow::setWindowFlags(flags);
 
     if (window()->isVisible())
-        updateSystemUiVisibility(window()->windowStates(), flags);
+        applySystemUi(window()->windowStates(), flags);
 }
 
 void QAndroidPlatformWindow::setParent(const QPlatformWindow *window)
@@ -247,22 +249,68 @@ void QAndroidPlatformWindow::requestActivateWindow()
         QWindowSystemInterface::handleFocusWindowChanged(window(), Qt::ActiveWindowFocusReason);
 }
 
-void QAndroidPlatformWindow::updateSystemUiVisibility(Qt::WindowStates states, Qt::WindowFlags flags)
+namespace {
+// The extended system UI modes Qt can take ownership of. Plain "normal" is not
+// a mode Qt owns, it is the absence of ownership, represented by an empty
+// optional, so window state the app manages itself is never touched by Qt.
+enum class SystemUiMode { Expanded, FullScreen };
+
+std::optional<SystemUiMode> systemUiModeFor(Qt::WindowStates states, Qt::WindowFlags flags)
+{
+    if (states & Qt::WindowFullScreen)
+        return SystemUiMode::FullScreen;
+    if (flags & Qt::ExpandedClientAreaHint)
+        return SystemUiMode::Expanded;
+    return std::nullopt;
+}
+
+// The mode Qt currently owns for the activity window, only ever touched on the
+// gui thread. Empty means Qt owns nothing and leaves the system UI to the app.
+std::optional<SystemUiMode> g_ownedSystemUiMode;
+
+void applySystemUiMode(std::optional<SystemUiMode> mode)
+{
+    g_ownedSystemUiMode = mode;
+
+    auto iface = qGuiApp->nativeInterface<QNativeInterface::QAndroidApplication>();
+    iface->runOnAndroidMainThread([mode, iface]() {
+        using namespace QtJniTypes;
+        auto activity = iface->context().object<Activity>();
+        if (mode == SystemUiMode::FullScreen)
+            QtWindowInsetsController::callStaticMethod("showFullScreen", activity);
+        else if (mode == SystemUiMode::Expanded)
+            QtWindowInsetsController::callStaticMethod("showExpanded", activity);
+        else
+            QtWindowInsetsController::callStaticMethod("showNormal", activity);
+    });
+}
+} // unnamed namespace
+
+void QAndroidPlatformWindow::applySystemUi(Qt::WindowStates states, Qt::WindowFlags flags)
 {
     const bool isNonRegularWindow = flags & (Qt::Popup | Qt::Dialog | Qt::Sheet) & ~Qt::Window;
-    if (!isNonRegularWindow) {
-        auto iface = qGuiApp->nativeInterface<QNativeInterface::QAndroidApplication>();
-        iface->runOnAndroidMainThread([=]() {
-            using namespace QtJniTypes;
-            auto activity = iface->context().object<Activity>();
-            if (states & Qt::WindowFullScreen)
-                QtWindowInsetsController::callStaticMethod("showFullScreen", activity);
-            else if (flags & Qt::ExpandedClientAreaHint)
-                QtWindowInsetsController::callStaticMethod("showExpanded", activity);
-            else
-                QtWindowInsetsController::callStaticMethod("showNormal", activity);
-        });
-    }
+    if (isNonRegularWindow)
+        return;
+
+    const std::optional<SystemUiMode> mode = systemUiModeFor(states, flags);
+    if (mode != g_ownedSystemUiMode)
+        applySystemUiMode(mode);
+}
+
+void QAndroidPlatformWindow::applySystemUiNative(JNIEnv *env, jobject object)
+{
+    Q_UNUSED(env)
+    Q_UNUSED(object)
+
+    if (!qGuiApp)
+        return;
+
+    // Some lifecycle events reset window state on the OS side. Re-assert the
+    // mode Qt owns, if any. When Qt owns nothing the app keeps its own state.
+    QMetaObject::invokeMethod(qGuiApp, [] {
+        if (g_ownedSystemUiMode)
+            applySystemUiMode(g_ownedSystemUiMode);
+    });
 }
 
 void QAndroidPlatformWindow::updateFocusedEditText()
@@ -501,6 +549,16 @@ bool QAndroidPlatformWindow::registerNatives(QJniEnvironment &env)
             })) {
         qCCritical(lcQpaWindow) << "RegisterNatives failed for"
                                 << QtJniTypes::Traits<QtJniTypes::QtWindow>::className();
+        return false;
+    }
+
+    if (!env.registerNativeMethods(
+            QtJniTypes::Traits<QtJniTypes::QtWindowInsetsController>::className(),
+            {
+                Q_JNI_NATIVE_SCOPED_METHOD(applySystemUiNative, QAndroidPlatformWindow)
+            })) {
+        qCCritical(lcQpaWindow) << "RegisterNatives failed for"
+                << QtJniTypes::Traits<QtJniTypes::QtWindowInsetsController>::className();
         return false;
     }
     return true;
