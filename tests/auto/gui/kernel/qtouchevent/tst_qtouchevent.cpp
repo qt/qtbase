@@ -21,6 +21,7 @@
 #include <qpa/qplatformintegration.h>
 
 #include <QtCore/qpointer.h>
+#include <QtCore/qscopeguard.h>
 
 Q_LOGGING_CATEGORY(lcTests, "qt.gui.tests")
 
@@ -275,6 +276,7 @@ private slots:
     void touchBeginWithGraphicsWidget();
     void testQGuiAppDelivery();
     void touchCancel();
+    void touchEventAcceptance();
     void testMultiDevice();
     void grabbers_data();
     void grabbers();
@@ -1879,6 +1881,79 @@ void tst_QTouchEvent::touchCancel()
     QCOMPARE(filter.d.value(touchScreenDevice).lastSeenType, QEvent::TouchCancel);
     // and the cancelled points must not linger in the device's active points.
     QCOMPARE(devPriv->activePoints.count(), 0);
+}
+
+struct TouchAcceptanceWindow : public QWindow
+{
+    bool acceptTouch = true;
+    bool acceptMouse = false;
+
+    void touchEvent(QTouchEvent *ev) override
+    {
+        ev->setAccepted(acceptTouch);
+    }
+    void mousePressEvent(QMouseEvent *ev) override
+    {
+        ev->setAccepted(acceptMouse);
+    }
+    void mouseReleaseEvent(QMouseEvent *ev) override
+    {
+        ev->setAccepted(acceptMouse);
+    }
+};
+
+void tst_QTouchEvent::touchEventAcceptance()
+{
+    // Keep mouse synthesis off while checking the acceptance of the touch event
+    // itself; restore whatever an earlier test may have left set.
+    const bool synthMouse = QCoreApplication::testAttribute(Qt::AA_SynthesizeMouseForUnhandledTouchEvents);
+    QCoreApplication::setAttribute(Qt::AA_SynthesizeMouseForUnhandledTouchEvents, false);
+    const auto restoreSynthMouse = qScopeGuard([synthMouse] {
+        QCoreApplication::setAttribute(Qt::AA_SynthesizeMouseForUnhandledTouchEvents, synthMouse);
+    });
+
+    TouchAcceptanceWindow w;
+    w.setGeometry(100, 100, 100, 100);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+
+    QPointingDevicePrivate::get(touchScreenDevice)->activePoints.clear(); // clear any dangling state
+
+    const QPoint pos(20, 20);
+    const QPoint movedPos(30, 30);
+
+    // A window that accepts the touch reports acceptance for every phase.
+    w.acceptTouch = true;
+    {
+        auto seq = QTest::touchEvent(&w, touchScreenDevice, false);
+        QVERIFY(seq.press(0, pos).commit());        // TouchBegin
+        QVERIFY(seq.move(0, movedPos).commit());    // TouchUpdate
+        QVERIFY(seq.cancel());                      // TouchCancel
+        QVERIFY(seq.press(0, pos).commit());        // TouchBegin
+        QVERIFY(seq.release(0, pos).commit());      // TouchEnd
+    }
+
+    // A window that ignores the touch reports non-acceptance for every phase.
+    w.acceptTouch = false;
+    {
+        auto seq = QTest::touchEvent(&w, touchScreenDevice, false);
+        QVERIFY(!seq.press(0, pos).commit());
+        QVERIFY(!seq.move(0, movedPos).commit());
+        QVERIFY(!seq.cancel());
+        QVERIFY(!seq.press(0, pos).commit());
+        QVERIFY(!seq.release(0, pos).commit());
+    }
+
+    // An unhandled touch that produces an accepted synthesized mouse event is
+    // reported as accepted.
+    QCoreApplication::setAttribute(Qt::AA_SynthesizeMouseForUnhandledTouchEvents, true);
+    w.acceptTouch = false;
+    w.acceptMouse = true;
+    {
+        auto seq = QTest::touchEvent(&w, touchScreenDevice, false);
+        QVERIFY(seq.press(0, pos).commit());
+        seq.release(0, pos).commit();
+    }
 }
 
 void tst_QTouchEvent::testMultiDevice()
