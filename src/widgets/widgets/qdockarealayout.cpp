@@ -3276,7 +3276,7 @@ void QDockAreaLayout::resizeDocks(const QList<QDockWidget *> &docks,
         qWarning("QMainWidget::resizeDocks: size of the lists are not the same");
         return;
     }
-    int count = docks.size();
+    const int count = docks.size();
     fallbackToSizeHints = false;
     for (int i = 0; i < count; ++i) {
         QList<int> path = indexOf(docks[i]);
@@ -3310,7 +3310,8 @@ void QDockAreaLayout::resizeDocks(const QList<QDockWidget *> &docks,
         }
 
         const int dockNum = path.constFirst();
-        Q_ASSERT(dockNum < docks.size());
+        const int numberDocks = this->docks.size();
+        Q_ASSERT(dockNum < numberDocks);
         QRect &r = this->docks[dockNum].rect;
         QSize s = r.size();
         rpick(o, s) = size;
