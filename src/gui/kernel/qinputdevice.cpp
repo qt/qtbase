@@ -59,7 +59,7 @@ using namespace Qt::StringLiterals;
 
     \value NormalizedPosition
            Indicates that the normalized position is available, meaning that
-           QEventPoint::globalPosition() returns a valid value.
+           QEventPoint::normalizedPosition() returns a valid value.
 
     \value MouseEmulation
            Indicates that the device synthesizes mouse events.
