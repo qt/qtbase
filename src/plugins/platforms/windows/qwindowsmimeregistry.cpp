@@ -646,12 +646,14 @@ QVariant QWindowsMimeURI::convertToMime(const QString &mimeType, LPDATAOBJECT pD
             QList<QVariant> urls;
 
             QByteArray data = getData(CF_HDROP, pDataObj);
-            if (data.isEmpty())
+            if (data.size() < qsizetype(sizeof(DROPFILES)))
                 return QVariant();
 
-            const auto *hdrop = reinterpret_cast<const DROPFILES *>(data.constData());
+            // Don't use constData. It falls back to the one-byte QByteArray::_empty for a null
+            // array, which makes MinGW report the DROPFILES access as out of bounds.
+            const auto *hdrop = reinterpret_cast<const DROPFILES *>(data.cbegin());
             if (hdrop->fWide) {
-                const auto *filesw = reinterpret_cast<const wchar_t *>(data.constData() + hdrop->pFiles);
+                const auto *filesw = reinterpret_cast<const wchar_t *>(data.cbegin() + hdrop->pFiles);
                 int i = 0;
                 while (filesw[i]) {
                     QString fileurl = QString::fromWCharArray(filesw + i);
@@ -659,7 +661,7 @@ QVariant QWindowsMimeURI::convertToMime(const QString &mimeType, LPDATAOBJECT pD
                     i += fileurl.length()+1;
                 }
             } else {
-                const char* files = reinterpret_cast<const char *>(data.constData() + hdrop->pFiles);
+                const char* files = reinterpret_cast<const char *>(data.cbegin() + hdrop->pFiles);
                 int i=0;
                 while (files[i]) {
                     urls += QUrl::fromLocalFile(QString::fromLocal8Bit(files+i));
