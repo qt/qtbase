@@ -79,7 +79,7 @@ void QIOSIntegration::initialize()
     // Depends on a primary screen being present
     m_inputContext = new QIOSInputContext;
 
-    QPointingDevice::Capabilities touchCapabilities = QPointingDevice::Capability::Position | QPointingDevice::Capability::NormalizedPosition;
+    QPointingDevice::Capabilities touchCapabilities = QPointingDevice::Capability::Position;
 #if !defined(Q_OS_VISIONOS)
     if (UIScreen.mainScreen.traitCollection.forceTouchCapability == UIForceTouchCapabilityAvailable)
         touchCapabilities |= QPointingDevice::Capability::Pressure;
