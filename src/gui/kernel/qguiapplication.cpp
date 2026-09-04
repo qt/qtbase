@@ -3117,6 +3117,13 @@ void QGuiApplicationPrivate::processContextMenuEvent(QWindowSystemInterfacePriva
 
 void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::TouchEvent *e)
 {
+    // The QPA side might need to know whether the touch event was accepted on
+    // Qt side. In the flow below we might send multiple QTouchEvents, with
+    // multiple QTouchPoints, and even synthesize mouse events if the touch
+    // was not handled. Lacking a more granular reporting structure we treat
+    // a single event acceptance as the QWSI event being accepted.
+    e->eventAccepted = false;
+
     if (!QInputDevicePrivate::isRegistered(e->device))
         return;
 
@@ -3139,8 +3146,10 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
                 windowsNeedingCancel.insert(w);
         }
 
-        for (QWindow *w : windowsNeedingCancel)
+        for (QWindow *w : windowsNeedingCancel) {
             QGuiApplication::sendSpontaneousEvent(w, &touchEvent);
+            e->eventAccepted |= touchEvent.isAccepted();
+        }
 
         if (!guiAppPrivate->synthesizedMousePoints.isEmpty() && !e->synthetic()) {
             for (QHash<QWindow *, SynthesizedMouseData>::const_iterator synthIt = guiAppPrivate->synthesizedMousePoints.constBegin(),
@@ -3292,6 +3301,7 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
         // changed to reflect the local position inside the last (random) widget it tried
         // to deliver the touch event to, and will therefore be invalid afterwards.
         QGuiApplication::sendSpontaneousEvent(window, &touchEvent);
+        e->eventAccepted |= touchEvent.isAccepted();
 
         if (!e->synthetic() && !touchEvent.isAccepted() && qApp->testAttribute(Qt::AA_SynthesizeMouseForUnhandledTouchEvents)) {
             // exclude devices which generate their own mouse events
@@ -3343,6 +3353,7 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
                                                                        touchPoint->id());
                         fake.flags |= QWindowSystemInterfacePrivate::WindowSystemEvent::Synthetic;
                         processMouseEvent(&fake);
+                        e->eventAccepted |= fake.eventAccepted;
                     }
                 }
                 if (eventType == QEvent::TouchEnd)
