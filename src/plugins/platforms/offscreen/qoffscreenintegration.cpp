@@ -242,6 +242,15 @@ void QOffscreenIntegration::setConfiguration(const QJsonObject &configuration)
         return QRect(config["x"].toInt(0), config["y"].toInt(0), config["width"].toInt(640), config["height"].toInt(480));
     };
 
+    auto availableGeometryFromConfig = [](const QJsonObject &config, QRect geometry) -> QRect {
+        const QJsonValue value = config["availableGeometry"];
+        if (!value.isObject())
+            return geometry;
+        const QJsonObject a = value.toObject();
+        return QRect(a["x"].toInt(geometry.x()), a["y"].toInt(geometry.y()),
+                     a["width"].toInt(geometry.width()), a["height"].toInt(geometry.height()));
+    };
+
     // Remove removed screens
     for (const QString &remove : std::as_const(removed)) {
         QOffscreenScreen *screen = platformScreenByName(remove, m_screens);
@@ -260,6 +269,7 @@ void QOffscreenIntegration::setConfiguration(const QJsonObject &configuration)
         QOffscreenScreen *offscreenScreen = new QOffscreenScreen(this);
         offscreenScreen->m_name = config["name"].toString();
         offscreenScreen->m_geometry = geometryFromConfig(config);
+        offscreenScreen->m_availableGeometry = availableGeometryFromConfig(config, offscreenScreen->m_geometry);
         offscreenScreen->m_logicalDpi = config["logicalDpi"].toInt(96);
         offscreenScreen->m_logicalBaseDpi = config["logicalBaseDpi"].toInt(96);
         offscreenScreen->m_dpr = config["dpr"].toDouble(1.0);

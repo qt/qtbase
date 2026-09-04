@@ -28,6 +28,8 @@ public:
     QOffscreenScreen(const QOffscreenIntegration *integration);
 
     QRect geometry() const override { return m_geometry; }
+    QRect availableGeometry() const override
+    { return m_availableGeometry.isEmpty() ? m_geometry : m_availableGeometry; }
     int depth() const override { return 32; }
     QImage::Format format() const override { return QImage::Format_RGB32; }
     QDpi logicalDpi() const override { return QDpi(m_logicalDpi, m_logicalDpi); }
@@ -44,6 +46,7 @@ public:
 public:
     QString m_name;
     QRect m_geometry;
+    QRect m_availableGeometry;
     int m_logicalDpi = 96;
     int m_logicalBaseDpi= 96;
     qreal m_dpr = 1;
