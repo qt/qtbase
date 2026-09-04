@@ -24,6 +24,7 @@
 #include "QtCore/qtranslator.h"
 #ifndef QT_NO_QOBJECT
 #include "private/qobject_p.h"
+#include "QtCore/qthread.h"
 #include "private/qlocking_p.h"
 #endif
 
@@ -110,7 +111,22 @@ public:
 
     static void sendPostedEvents(QObject *receiver, int event_type, QThreadData *data);
 
-    static void checkReceiverThread(QObject *receiver);
+    static void checkReceiverThread(QObject *receiver, const char *caller)
+    {
+#  ifndef QT_NO_DEBUG
+        QThread *currentThread = QThread::currentThread();
+        QThread *thr = receiver->thread();
+        Q_ASSERT_X(currentThread == thr || !thr, caller,
+                   qPrintable(QString::fromLatin1("Cannot send events to objects owned by a different thread. "
+                   "Current thread %1. Receiver '%2' was created in thread %3").arg(
+                   QDebug::toString(currentThread), QDebug::toString(receiver), QDebug::toString(thr))));
+        Q_UNUSED(currentThread);
+        Q_UNUSED(thr);
+#  else
+        Q_UNUSED(receiver);
+#  endif
+        Q_UNUSED(caller);
+    }
     void cleanupThreadData();
 
     struct QPostEventListLocker
