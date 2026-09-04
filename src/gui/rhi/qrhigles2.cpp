@@ -6716,6 +6716,22 @@ bool QGles2TextureRenderTarget::create()
         }
     }
 
+    if (hasDepthStencil && m_desc.depthResolveTexture()) {
+        const QRhiTexture::Format dstFormat = m_desc.depthResolveTexture()->format();
+        QRhiTexture::Format srcFormat = QRhiTexture::UnknownFormat;
+        if (m_desc.depthStencilBuffer())
+            srcFormat = QRhiTexture::D24S8;
+        else if (!rhiD->caps.glesMultisampleRenderToTexture)
+            srcFormat = m_desc.depthTexture()->format();
+        // else resolving is automatic
+        if (srcFormat != QRhiTexture::UnknownFormat && srcFormat != dstFormat) {
+            qWarning("Multisample depth-stencil source format %d does not match the "
+                     "depthResolveTexture format %d. OpenGL cannot blit between different depth formats; "
+                     "the depth contents will not be resolved.",
+                     int(srcFormat), int(dstFormat));
+        }
+    }
+
     if (hasDepthStencil) {
         if (m_desc.depthStencilBuffer()) {
             QGles2RenderBuffer *depthRbD = QRHI_RES(QGles2RenderBuffer, m_desc.depthStencilBuffer());
