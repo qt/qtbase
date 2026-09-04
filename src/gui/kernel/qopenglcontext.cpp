@@ -1118,12 +1118,8 @@ void QOpenGLContextGroupPrivate::removeContext(QOpenGLContext *ctx)
         }
     }
 
-    if (deleteObject) {
-        if (q->thread() == QThread::currentThread())
-            delete q; // Delete directly to prevent leak, refer to QTBUG-29056
-        else
-            q->deleteLater();
-    }
+    if (deleteObject)
+        QObjectPrivate::deleteInOwnThread(q);
 }
 
 void QOpenGLContextGroupPrivate::cleanup()
