@@ -399,7 +399,7 @@ void QEventDispatcherUNIX::unregisterSocketNotifier(QSocketNotifier *notifier)
                 sockfd,
                 notifier->thread() ? notifier->thread()->metaObject()->className() : "QThread", notifier->thread(),
                 thread() ? thread()->metaObject()->className() : "QThread", thread(),
-                QThread::currentThread() ? QThread::currentThread()->metaObject()->className() : "QThread", QThread::currentThread());
+                QThread::currentThread()->metaObject()->className(), QThread::currentThread());
         return;
     }
 #endif
