@@ -560,6 +560,7 @@ int runMoc(int argc, char **argv)
             }
         }
     }
+    moc.firstSourceSymbolIndex = moc.symbols.size();
     moc.symbols += pp.preprocessed(moc.filename, &in);
 
     if (!pp.preprocessOnly) {

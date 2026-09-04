@@ -1000,11 +1000,14 @@ void Moc::parse()
                     } else {
                         // Since "module" is a legal identifier in most contexts, we
                         // must be careful about false positives.
-                        const bool precededByBareModuleFragment = afterModule == 3
+                        const qsizetype afterModuleInSource =
+                                afterModule - firstSourceSymbolIndex;
+                        const bool precededByBareModuleFragment =
+                                afterModuleInSource == 3
                                 && symbols.at(afterModule - 2).token == SEMIC
                                 && symbols.at(afterModule - 3).token == IDENTIFIER
                                 && symbols.at(afterModule - 3).lexem() == "module";
-                        const bool isModuleCandidate = afterModule < 2
+                        const bool isModuleCandidate = afterModuleInSource < 2
                                 || precededByBareModuleFragment
                                 || (hasGlobalModuleFragment
                                     && symbols.at(afterModule - 2).token == MOC_INCLUDE_END);

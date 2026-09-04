@@ -261,6 +261,11 @@ public:
     bool inPrivateModuleFragment = false;
     bool hasGlobalModuleFragment = false;
 
+    // Index of the first symbol of the main source, i.e. past any files prepended via
+    // --include (e.g. the compiler predefines). Module-declaration detection is relative
+    // to this so prepended includes don't shift it out of a module-declaration position.
+    qsizetype firstSourceSymbolIndex = 0;
+
     // The direct #includes seen in the file's global module fragment (i.e. before the
     // module-declaration), to be replayed into the generated code's own global module
     // fragment: The types used in Q_OBJECT signal/slot/property signatures that come from such

@@ -914,6 +914,7 @@ private slots:
     void qObjectInModulePrimaryInterface();
     void qObjectInModuleInterfacePartition();
     void qObjectInModuleInternalPartition();
+    void qObjectInModuleInternalPartitionWithPrependedInclude();
     void qObjectInModuleImplementationUnit();
     void moduleJsonMarkerPrimaryInterface();
     void moduleJsonMarkerInterfacePartition();
@@ -4480,6 +4481,28 @@ void tst_Moc::qObjectInModuleInternalPartition()
     // The generated code must itself be a unit of the same module, and, unlike an
     // (exported) interface partition, an internal partition is never implicitly
     // reachable, so the generated code also needs to import it explicitly.
+    QVERIFY(mocOut.contains("module Module.InternalPartitionQObject;"));
+    QVERIFY(mocOut.contains("import :Part;"));
+#else
+    QSKIP("Requires QProcess");
+#endif
+}
+
+void tst_Moc::qObjectInModuleInternalPartitionWithPrependedInclude()
+{
+#ifdef MOC_CROSS_COMPILED
+    QSKIP("Not tested when cross-compiled");
+#endif
+#if QT_CONFIG(process)
+    // A file prepended via --include (as AUTOMOC does with the compiler predefines)
+    // must not shift the module-declaration out of the position where moc detects it.
+    QProcess proc;
+    proc.start(m_moc,
+               QStringList{ "--include", m_sourceDirectory + "/subdir/extradefines.h"_L1,
+                            m_sourceDirectory + "/module-internal-partition-qobject.cppm"_L1 });
+    QVERIFY(proc.waitForFinished());
+    QCOMPARE(proc.exitCode(), EXIT_SUCCESS);
+    const QByteArray mocOut = proc.readAllStandardOutput();
     QVERIFY(mocOut.contains("module Module.InternalPartitionQObject;"));
     QVERIFY(mocOut.contains("import :Part;"));
 #else
