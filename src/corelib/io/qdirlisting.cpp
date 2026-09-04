@@ -78,7 +78,7 @@
         links to directories will be excluded too.
 
     \omitvalue ExcludeSpecial
-    \value ExcludeOther [since 6.10]
+    \value [since 6.10] ExcludeOther
         Don't list file system entries that are \e not directories, regular files,
         or symbolic links.
         \list
@@ -97,7 +97,7 @@
         to include them.
         This flag is ignored on operating systems that don't support symbolic links.
 
-    \value IncludeBrokenSymlinks [since 6.11]
+    \value [since 6.11] IncludeBrokenSymlinks
         Lists broken symbolic links, where the target doesn't exist, regardless
         of the status of the ResolveSymlinks flag.
         This flag is ignored on operating systems that don't support symbolic links.
