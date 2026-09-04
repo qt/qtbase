@@ -866,11 +866,10 @@ void QTextOdfWriter::writeTableFormat(QXmlStreamWriter &writer, const QTextTable
     writer.writeAttribute(styleNS, QString::fromLatin1("family"), QString::fromLatin1("table"));
     writer.writeEmptyElement(styleNS, QString::fromLatin1("table-properties"));
 
-    if (m_tableFormatsWithBorders.contains(formatIndex)) {
-        // write border format collapsing to table style
-        writer.writeAttribute(tableNS, QString::fromLatin1("border-model"),
-                              QString::fromLatin1("collapsing"));
-    }
+    if (m_tableFormatsWithBorders.contains(formatIndex))
+        writer.writeAttribute(tableNS, u"border-model",
+                              format.borderCollapse() ? u"collapsing" : u"separating");
+
     const char* align = nullptr;
     switch (format.alignment()) {
     case Qt::AlignLeft:

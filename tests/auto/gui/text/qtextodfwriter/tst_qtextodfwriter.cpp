@@ -40,6 +40,8 @@ private slots:
     void testWriteAll();
     void testWriteSection();
     void testWriteTable();
+    void testWriteTable2_data();
+    void testWriteTable2();
     void testWriteFrameFormat();
     void testWriteTableFormat();
     void testWriteTableFormat2();
@@ -535,6 +537,38 @@ void tst_QTextOdfWriter::testWriteTable()
         "<text:p text:style-name=\"p1\"/>");
 
     QCOMPARE(getContentFromXml(), xml);
+}
+
+void tst_QTextOdfWriter::testWriteTable2_data()
+{
+    QTest::addColumn<bool>("collapsing");
+    QTest::addColumn<QString>("borderString");
+
+    QTest::newRow("collapsing") << true
+                                << R"(<style:table-properties table:border-model="collapsing"/>)";
+    QTest::newRow("separating") << false
+                                << R"(<style:table-properties table:border-model="separating"/>)";
+}
+
+void tst_QTextOdfWriter::testWriteTable2()
+{
+    QFETCH(bool, collapsing);
+    QFETCH(QString, borderString);
+
+    // create table with merged cells
+    QTextCursor cursor(document);
+    QTextTable *table = cursor.insertTable(3, 3);
+
+    QTextTableFormat ttf;
+    ttf.setBorderStyle(QTextFrameFormat::BorderStyle_Dotted);
+    ttf.setBorderCollapse(collapsing);
+    table->setFormat(ttf);
+    QTextOdfWriter writer(*document, buffer);
+    writer.setCreateArchive(false);
+    writer.writeAll();
+
+    const QString result = getContentFromXml();
+    QVERIFY(result.indexOf(borderString) >= 0);
 }
 
 void tst_QTextOdfWriter::testWriteFrameFormat()
