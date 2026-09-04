@@ -2721,12 +2721,12 @@
 
     \value ImhNoEditMenu             Do not use built-in edit menu. This flag was introduced in Qt 5.11.
     \value ImhNoTextHandles          Do not use built-in text cursor and selection handles. This flag was introduced in Qt 5.11.
-    \value ImhNoFullscreen           [since 6.12] Do not use fullscreen input method.
+    \value [since 6.12] ImhNoFullscreen Do not use fullscreen input method.
 
     Flags that restrict input (exclusive flags):
 
     \value ImhDigitsOnly             Only digits are allowed.
-    \value ImhDecimalNumbersOnly     [since 6.12] Only number input is allowed. This includes decimal point, but not negative numbers.
+    \value [since 6.12] ImhDecimalNumbersOnly Only number input is allowed. This includes decimal point, but not negative numbers.
     \value ImhFormattedNumbersOnly   Only number input is allowed. This includes decimal point and minus sign.
     \value ImhUppercaseOnly          Only upper case letter input is allowed.
     \value ImhLowercaseOnly          Only lower case letter input is allowed.
