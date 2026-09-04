@@ -42,7 +42,7 @@ QT_BEGIN_NAMESPACE
     \endlist
 
     The actual keying material is derived by the TLS backend after a
-    successful handshake and can be retrieved via value().
+    successful handshake and can be read with value().
 
     QSslKeyingMaterial objects are typically configured via
     QSslConfiguration::setKeyingMaterial() before initiating a TLS
@@ -54,7 +54,7 @@ QT_BEGIN_NAMESPACE
     QSslKeyingMaterial keying("session-label", 32, "app-specific-context");
 
     // After the TLS handshake completes get data from QSslConfiguration.
-    QByteArray derived = sslConfiguration().keyingMaterial(keying)->value();
+    QByteArray derived = sslConfiguration().takeKeyingMaterial(keying)->value();
 
     // Both client and server will obtain the same 'derived' bytes
     // even though they each performed the derivation independently.
@@ -162,6 +162,21 @@ bool QSslKeyingMaterial::isValid() const noexcept
 
     \sa label(), value()
 */
+
+/*!
+    Returns a copy of this keying material request, without its value().
+
+    The returned object carries the exporter label(), context() and
+    requestedSize(), so it can be used to request the same keying material
+    again, but its value() is empty. Use it to initialize a copy, or to
+    reset an entry, without carrying the value along.
+
+    \sa value()
+*/
+QSslKeyingMaterial QSslKeyingMaterial::clone() const
+{
+    return QSslKeyingMaterial(m_label, m_requestedSize, m_context);
+}
 
 /*!
     \fn QByteArray QSslKeyingMaterial::value() const

@@ -501,7 +501,7 @@ void TlsCryptographOpenSSL::init(QSslSocket *qObj, QSslSocketPrivate *dObj)
 
     auto &sslCfg = d->configuration;
     for (auto &entry : sslCfg.keyingMaterial)
-        entry.m_value = {};
+        entry = entry.clone();
 }
 
 void TlsCryptographOpenSSL::checkSettingSslContext(std::shared_ptr<QSslContext> tlsContext)
@@ -768,7 +768,7 @@ void TlsCryptographOpenSSL::exportKeyingMaterial()
     if (d->configuration.keyingMaterial.isEmpty())
         return; // Avoid deep-copy and store
     auto sslCfg = q->sslConfiguration();
-    auto list = sslCfg.keyingMaterial();
+    auto list = sslCfg.takeKeyingMaterial();
 
     for (auto &entry : list) {
         if (!entry.isValid()) {
