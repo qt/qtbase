@@ -830,7 +830,7 @@ void Q_TRACE_INSTRUMENT(qtcore) QCoreApplicationPrivate::init()
     if (!coreappdata()->applicationVersionSet)
         coreappdata()->applicationVersion = appVersion();
 
-#if defined(Q_OS_ANDROID) && !defined(QT_BOOTSTRAPPED)
+#if (defined(Q_OS_ANDROID) || defined(Q_OS_HARMONY)) && !defined(QT_BOOTSTRAPPED)
     // We've deferred initializing the logging registry due to not being
     // able to guarantee that logging happened on the same thread as the
     // Qt main thread, but now that the Qt main thread is set up, we can
