@@ -1042,8 +1042,8 @@ bool QThreadPrivate::wait(QMutexLocker<QMutex> &locker, QDeadlineTimer deadline)
 
 void QThread::setTerminationEnabled(bool enabled)
 {
-    QThread *thr = currentThread();
-    Q_ASSERT_X(thr != nullptr, "QThread::setTerminationEnabled()",
+    QThreadData *thr = QThreadData::currentThreadData();
+    Q_ASSERT_X(thr && !thr->isAdopted, "QThread::setTerminationEnabled()",
                "Current thread was not started with QThread.");
 
     Q_UNUSED(thr);
