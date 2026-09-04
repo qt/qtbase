@@ -191,10 +191,14 @@ void QOhosInputContext::commit()
 {
     auto __dbg = make_QCScopedDebug("QOhosInputContext::commit");
 
-    auto preeditText = std::exchange(m_pendingPreeditText, {});
+    const QString phrase = std::exchange(m_pendingPreeditText, {});
+    const auto replaceRange = std::exchange(m_previewReplaceRange, {});
+
+    if (phrase.isEmpty())
+        return;
 
     QInputMethodEvent event;
-    event.setCommitString(preeditText);
+    event.setCommitString(phrase, replaceRange.from, replaceRange.length);
     sendFocusObjectInputMethodEvent(&event);
 }
 
@@ -346,9 +350,9 @@ bool QOhosInputContext::attachToInputMethodController()
             m_inputContext.sendInsertedTextToQt(std::move(text));
         }
 
-        void onInsertPreviewText(std::string previewText) override
+        void onInsertPreviewText(std::string previewText, int start, int end) override
         {
-            m_inputContext.sendInsertedPreviewTextToQt(std::move(previewText));
+            m_inputContext.sendInsertedPreviewTextToQt(std::move(previewText), start, end);
         }
 
         void onFinishPreviewText() override
@@ -598,13 +602,14 @@ void QOhosInputContext::sendInsertedTextToQt(const std::string &textToInsert)
     }
 
     m_pendingPreeditText.clear();
+    m_previewReplaceRange = {};
 
     QInputMethodEvent event;
     event.setCommitString(QString::fromStdString(textToInsert));
     sendFocusObjectInputMethodEvent(&event);
 }
 
-void QOhosInputContext::sendInsertedPreviewTextToQt(std::string previewText)
+void QOhosInputContext::sendInsertedPreviewTextToQt(std::string previewText, int start, int end)
 {
     auto query = tryQueryFocusObjectInputMethod(Qt::ImEnabled);
     if (query.isNull())
@@ -613,6 +618,14 @@ void QOhosInputContext::sendInsertedPreviewTextToQt(std::string previewText)
     if (!query->value(Qt::ImEnabled).toBool()) {
         qOhosPrintfDebug("%s: focus object is not able to handle InputMethod", Q_FUNC_INFO);
         return;
+    }
+
+    m_previewReplaceRange = {};
+    const auto cursor = tryQueryCursorPosition();
+    if (cursor && !(start < 0 && end < 0)) {
+        const int from = qMin(start, end);
+        const int to = qMax(start, end);
+        m_previewReplaceRange = { from - *cursor, to - from };
     }
 
     const QString previewString = QString::fromStdString(previewText);

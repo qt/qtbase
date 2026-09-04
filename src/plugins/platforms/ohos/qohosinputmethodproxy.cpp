@@ -315,11 +315,11 @@ std::shared_ptr<void> QOhosInputMethodProxy::registerCallbacks(
         registerTextEditorProxyCallback(
             textEditorProxy.get(),
             Q_OHOS_NAMED_FUNC(::OH_TextEditorProxy_SetSetPreviewTextFunc),
-            [weakClientCallbacks](const char16_t *text, std::size_t length, std::int32_t, std::int32_t) {
+            [weakClientCallbacks](const char16_t *text, std::size_t length, std::int32_t start, std::int32_t end) {
                 std::u16string utf16Text(text, length);
                 callInQtThread(
                     weakClientCallbacks, &QOhosInputMethodProxy::ClientCallbacks::onInsertPreviewText,
-                    convertUtf16ToUtf8(utf16Text));
+                    convertUtf16ToUtf8(utf16Text), start, end);
                 return 0;
             }));
 
