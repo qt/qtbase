@@ -30,6 +30,9 @@ class Q_CORE_EXPORT QThread : public QObject
     Q_OBJECT
 public:
     Q_DECL_PURE_FUNCTION static Qt::HANDLE currentThreadId() noexcept;
+#ifdef Q_CC_GNU
+    __attribute__((returns_nonnull))
+#endif
     static QThread *currentThread();
     static bool isMainThread() noexcept;
     static int idealThreadCount() noexcept;

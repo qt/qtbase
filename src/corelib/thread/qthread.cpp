@@ -413,7 +413,7 @@ QThreadPrivate::~QThreadPrivate()
 
 /*!
     Returns a pointer to a QThread which manages the currently
-    executing thread.
+    executing thread. This function never returns a null pointer.
 */
 QThread *QThread::currentThread()
 {
