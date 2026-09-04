@@ -137,7 +137,7 @@ static bool qt_painter_thread_test(int devType, int engineType, const char *what
         // can be drawn onto these devices safely from any thread
         break;
     default:
-        if (QThread::currentThread() != qApp->thread()
+        if (!QThread::isMainThread()
                 // pixmaps cannot be targets unless threaded pixmaps are supported
                 && (devType != QInternal::Pixmap || !platformIntegration->hasCapability(QPlatformIntegration::ThreadedPixmaps))
                 // framebuffer objects and such cannot be targets unless threaded GL is supported
