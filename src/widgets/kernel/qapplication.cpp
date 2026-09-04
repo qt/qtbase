@@ -2566,9 +2566,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         return true;
     }
 
-#ifndef QT_NO_DEBUG
-    QCoreApplicationPrivate::checkReceiverThread(receiver);
-#endif
+    QCoreApplicationPrivate::checkReceiverThread(receiver, "QApplication::notify");
 
     const bool isWindowType = receiver->isWindowType();
     const bool isWidgetType = receiver->isWidgetType();

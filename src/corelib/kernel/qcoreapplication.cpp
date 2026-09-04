@@ -563,19 +563,6 @@ QThread *QCoreApplicationPrivate::mainThread()
     return theMainThread.loadRelaxed();
 }
 
-void QCoreApplicationPrivate::checkReceiverThread(QObject *receiver)
-{
-    QThread *currentThread = QThread::currentThread();
-    QThread *thr = receiver->thread();
-    Q_ASSERT_X(currentThread == thr || !thr,
-               "QCoreApplication::sendEvent",
-               qPrintable(QString::fromLatin1("Cannot send events to objects owned by a different thread. "
-               "Current thread %1. Receiver '%2' was created in thread %3").arg(
-               QDebug::toString(currentThread), QDebug::toString(receiver), QDebug::toString(thr))));
-    Q_UNUSED(currentThread);
-    Q_UNUSED(thr);
-}
-
 #endif // QT_NO_QOBJECT
 
 QString qAppName()
@@ -1247,9 +1234,7 @@ static bool doNotify(QObject *receiver, QEvent *event)
         return true;
     }
 
-#ifndef QT_NO_DEBUG
-    QCoreApplicationPrivate::checkReceiverThread(receiver);
-#endif
+    QCoreApplicationPrivate::checkReceiverThread(receiver, "QCoreApplication::notify");
 
     return receiver->isWidgetType() ? false : QCoreApplicationPrivate::notify_helper(receiver, event);
 }
