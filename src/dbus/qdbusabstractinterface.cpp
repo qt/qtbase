@@ -495,7 +495,7 @@ QDBusMessage QDBusAbstractInterface::callWithArgumentList(QDBus::CallMode mode,
     msg.setArguments(args);
 
     QDBusMessage reply = d->connection.call(msg, mode, d->timeout);
-    if (thread() == QThread::currentThread())
+    if (QThread *thr = thread(); !thr || thr->isCurrentThread())
         d->lastError = QDBusError(reply);       // will clear if reply isn't an error
 
     // ensure that there is at least one element

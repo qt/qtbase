@@ -1071,11 +1071,12 @@ QDBusConnectionPrivate::QDBusConnectionPrivate()
 
 QDBusConnectionPrivate::~QDBusConnectionPrivate()
 {
-    if (thread() && thread() != QThread::currentThread())
+    if (QThread *thr = thread(); thr && !thr->isCurrentThread()) {
         qCWarning(dbusIntegration,
                   "QDBusConnection(name=\"%s\")'s last reference in not in its creation thread! "
                   "Timer and socket errors will follow and the program will probably crash",
                   qPrintable(name));
+    }
 
     auto lastMode = mode; // reset on connection close
     closeConnection();
@@ -1579,7 +1580,7 @@ void QDBusConnectionPrivate::handleObjectCall(const QDBusMessage &msg)
                               new QDBusActivateObjectEvent(QDBusConnection(this), this, result,
                                                            usedLength, msg));
             return;
-        } else if (objThread != QThread::currentThread()) {
+        } else if (!objThread->isCurrentThread()) {
             // looped-back message, targeting another thread:
             // synchronize with it
             postEventToThread(HandleObjectCallPostEventAction, result.obj,
@@ -2607,7 +2608,7 @@ QString QDBusConnectionPrivate::getNameOwnerNoCache(const QString &serviceName)
 
     QDBusPendingCallPrivate *pcall = sendWithReplyAsync(msg, nullptr, nullptr, nullptr);
     if (pcall->replyMessage.type() == QDBusMessage::InvalidMessage) {
-        if (thread() == QThread::currentThread()) {
+        if (QThread *thr = thread(); thr && thr->isCurrentThread()) {
             // this function may be called in our own thread and
             // QDBusPendingCallPrivate::waitForFinished() would deadlock there
             q_dbus_pending_call_block(pcall->pending);

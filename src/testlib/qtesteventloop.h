@@ -80,8 +80,7 @@ inline void QTestEventLoop::enterLoop(std::chrono::milliseconds msecs)
 
 inline void QTestEventLoop::exitLoop()
 {
-    if (thread() != QThread::currentThread())
-    {
+    if (QThread *thr = thread(); thr && !thr->isCurrentThread()) {
         QMetaObject::invokeMethod(this, "exitLoop", Qt::QueuedConnection);
         return;
     }
