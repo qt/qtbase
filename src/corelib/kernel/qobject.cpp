@@ -220,7 +220,7 @@ QObjectPrivate::~QObjectPrivate()
 {
     auto thisThreadData = threadData.loadRelaxed();
     if (extraData && !extraData->runningTimers.isEmpty()) {
-        if (Q_LIKELY(thisThreadData->thread.loadAcquire() == QThread::currentThread())) {
+        if (thisThreadData->threadId.loadRelaxed() == QThread::currentThreadId()) {
             // unregister pending timers
             if (thisThreadData->hasEventDispatcher())
                 thisThreadData->eventDispatcher.loadRelaxed()->unregisterTimers(q_ptr);
@@ -2036,7 +2036,8 @@ void QObject::killTimer(int id)
 void QObject::killTimer(Qt::TimerId id)
 {
     Q_D(QObject);
-    if (Q_UNLIKELY(thread() != QThread::currentThread())) {
+    auto thisThreadData = d->threadData.loadRelaxed();
+    if (thisThreadData->threadId.loadRelaxed() != QThread::currentThreadId()) {
         qWarning("QObject::killTimer: Timers cannot be stopped from another thread");
         return;
     }
@@ -2052,7 +2053,6 @@ void QObject::killTimer(Qt::TimerId id)
             return;
         }
 
-        auto thisThreadData = d->threadData.loadRelaxed();
         if (thisThreadData->hasEventDispatcher())
             thisThreadData->eventDispatcher.loadRelaxed()->unregisterTimer(id);
 
