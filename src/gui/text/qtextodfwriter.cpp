@@ -1101,27 +1101,20 @@ bool QTextOdfWriter::writeAll()
     writer.writeStartElement(officeNS, QString::fromLatin1("document-content"));
     writer.writeAttribute(officeNS, QString::fromLatin1("version"), QString::fromLatin1("1.2"));
 
-    // add fragments. (for character formats)
-    QTextDocumentPrivate::FragmentIterator fragIt = QTextDocumentPrivate::get(m_document)->begin();
     QSet<int> formats;
-    while (fragIt != QTextDocumentPrivate::get(m_document)->end()) {
-        const QTextFragmentData * const frag = fragIt.value();
-        formats << frag->format;
-        ++fragIt;
-    }
+    // add fragments. (for character formats)
+    const QTextDocumentPrivate::FragmentMap &fragments = QTextDocumentPrivate::get(m_document)->fragmentMap();
+    for (const auto *fragment : fragments)
+        formats << fragment->format;
 
     // add blocks (for blockFormats)
-    QTextDocumentPrivate::BlockMap &blocks = const_cast<QTextDocumentPrivate *>(QTextDocumentPrivate::get(m_document))->blockMap();
-    QTextDocumentPrivate::BlockMap::Iterator blockIt = blocks.begin();
-    while (blockIt != blocks.end()) {
-        const QTextBlockData * const block = blockIt.value();
+    const QTextDocumentPrivate::BlockMap &blocks = QTextDocumentPrivate::get(m_document)->blockMap();
+    for (const auto *block : blocks)
         formats << block->format;
-        ++blockIt;
-    }
 
     // add objects for lists, frames and tables
     const QList<QTextFormat> allFormats = m_document->allFormats();
-    const QList<int> copy = formats.values();
+    const QSet<int> copy = formats;
     for (auto index : copy) {
         QTextObject *object = m_document->objectForFormat(allFormats[index]);
         if (object) {
