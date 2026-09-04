@@ -2120,6 +2120,9 @@ public:
 
 void tst_QAbstractItemView::QTBUG46785_mouseout_hover_state()
 {
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::MouseCursorPositioning))
+        QSKIP("Platform does not support cursor positioning");
+
     HoverItemDelegate delegate;
 
     QTableWidget table(5, 5);
