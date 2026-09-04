@@ -357,7 +357,7 @@ QSocks5BindData *QSocks5BindStore::retrieve(qintptr socketDescriptor)
     QSocks5BindData *bindData = it.value();
     store.erase(it);
     if (bindData) {
-        if (bindData->controlSocket->thread() != QThread::currentThread()) {
+        if (QThread *thr = bindData->controlSocket->thread(); thr && !thr->isCurrentThread()) {
             qWarning("Cannot access socks5 bind data from different thread");
             return nullptr;
         }

@@ -813,7 +813,7 @@ QNetworkReply *QRestAccessManagerPrivate::createActiveRequest(QNetworkReply *rep
 void QRestAccessManagerPrivate::verifyThreadAffinity(const QObject *contextObject)
 {
     Q_Q(QRestAccessManager);
-    if (QThread::currentThread() != q->thread()) {
+    if (QThread *thr = q->thread(); thr && !thr->isCurrentThread()) {
         qCWarning(lcQrest, "QRestAccessManager can only be called in the thread it belongs to");
         Q_ASSERT(false);
     }

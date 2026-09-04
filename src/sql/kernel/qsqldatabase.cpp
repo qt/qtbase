@@ -183,7 +183,7 @@ QSqlDatabase QSqlDatabasePrivate::database(const QString& name, bool open)
     QSqlDatabase db = s_sqlGlobals()->connection(name);
     if (!db.isValid())
         return db;
-    if (db.driver()->thread() != QThread::currentThread()) {
+    if (QThread *thr = db.driver()->thread(); thr && !thr->isCurrentThread()) {
         qCWarning(lcSqlDb, "QSqlDatabasePrivate::database: requested database does not belong to the calling thread.");
         return QSqlDatabase();
     }

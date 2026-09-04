@@ -211,7 +211,7 @@ protected:
 private:
     bool waitForReading()
     {
-        Q_ASSERT(QThread::currentThread() == this);
+        Q_ASSERT(isCurrentThread());
 
         m_reading.storeRelease(false);
 

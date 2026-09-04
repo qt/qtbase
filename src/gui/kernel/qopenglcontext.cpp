@@ -690,9 +690,10 @@ bool QOpenGLContext::makeCurrent(QSurface *surface)
     if (!isValid())
         return false;
 
-    if (Q_UNLIKELY(!qApp->testAttribute(Qt::AA_DontCheckOpenGLContextThreadAffinity)
-                   && thread() != QThread::currentThread())) {
-        qFatal("Cannot make QOpenGLContext current in a different thread");
+    if (Q_UNLIKELY(!qApp->testAttribute(Qt::AA_DontCheckOpenGLContextThreadAffinity))) {
+        QThread *thr = thread();
+        if (thr && !thr->isCurrentThread())
+            qFatal("Cannot make QOpenGLContext current in a different thread");
     }
 
     if (!surface) {
