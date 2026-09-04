@@ -49,6 +49,8 @@ private slots:
     void screenAt();
     void screenGeometry_data();
     void screenGeometry();
+    void screenAvailableGeometry_data();
+    void screenAvailableGeometry();
     void windowGeometry_data();
     void windowGeometry();
     void spanningWindows_data();
@@ -572,6 +574,59 @@ void tst_QHighDpi::screenGeometry()
         QPoint offScreenBack = QHighDpi::fromNativePixels(offScreenNative, screen);
         QCOMPARE(offScreenBack, offScreenBack);
     }
+}
+
+void tst_QHighDpi::screenAvailableGeometry_data()
+{
+    QTest::addColumn<qreal>("scaleFactor");
+    QTest::newRow("1.0") << 1.0;
+    QTest::newRow("1.25") << 1.25;
+    QTest::newRow("2.0") << 2.0;
+    QTest::newRow("4.0") << 4.0;
+}
+
+void tst_QHighDpi::screenAvailableGeometry()
+{
+    QFETCH(qreal, scaleFactor);
+    const int logicalDpi = qRound(standardBaseDpi * scaleFactor);
+
+    // Create two screens: one whose available geometry is inset from the full
+    // geometry by a top "menu bar" (40) and a bottom "dock" (40), and one with
+    // no inset (availableGeometry == geometry).
+    const QJsonArray screens = {
+        QJsonObject {
+            {"name", "inset"},
+            {"x", 0}, {"y", 0}, {"width", 800}, {"height", 800},
+            {"availableGeometry", QJsonObject{{"x", 0}, {"y", 40}, {"width", 800}, {"height", 720}}},
+            {"logicalDpi", logicalDpi}, {"logicalBaseDpi", standardBaseDpi}, {"dpr", 1}
+        },
+        QJsonObject {
+            {"name", "noinset"},
+            {"x", 800}, {"y", 0}, {"width", 800}, {"height", 800},
+            {"logicalDpi", logicalDpi}, {"logicalBaseDpi", standardBaseDpi}, {"dpr", 1}
+        }
+    };
+    std::unique_ptr<QGuiApplication> app(createStandardOffscreenApp(screens));
+
+    const QList<QScreen *> screenList = app->screens();
+    QScreen *inset = screenList.at(0);
+    QScreen *noinset = screenList.at(1);
+    QCOMPARE(inset->name(), QStringLiteral("inset"));
+    QCOMPARE(noinset->name(), QStringLiteral("noinset"));
+
+    // Verify that the inset (menu bar / dock) scales together with the
+    // geometry, so availableGeometry stays within geometry.
+    const QRect geometry = inset->geometry();
+    const QRect available = inset->availableGeometry();
+    QVERIFY2(geometry.contains(available),
+             qPrintable(QStringLiteral("geometry %1 does not contain availableGeometry %2")
+                            .arg(QDebug::toString(geometry), QDebug::toString(available))));
+    QCOMPARE(available.top() - geometry.top(), qRound(40 / scaleFactor));
+    QCOMPARE(geometry.bottom() - available.bottom(), qRound(40 / scaleFactor));
+
+    // Verify that availableGeometry remains equal to geometry for
+    // the non-inset case.
+    QCOMPARE(noinset->availableGeometry(), noinset->geometry());
 }
 
 void tst_QHighDpi::windowGeometry_data()
