@@ -61,6 +61,12 @@ private:
         std::shared_ptr<void> imControllerCallbacksHandle;
     };
 
+    struct PreviewReplaceRange
+    {
+        int from = 0;
+        int length = 0;
+    };
+
     void setImConnectionState(ImConnectionState requestedState);
     void setImConnectionStateImpl(ImConnectionState requestedState);
     void dispatchRequestedImStateChange(ImConnectionState requestedState);
@@ -78,7 +84,7 @@ private:
     void handleFocusInEvent(QObject *obj, QFocusEvent *event);
 
     void sendInsertedTextToQt(const std::string &textToInsert);
-    void sendInsertedPreviewTextToQt(std::string previewText);
+    void sendInsertedPreviewTextToQt(std::string previewText, int start, int end);
     void sendFocusObjectInputMethodEvent(QInputMethodEvent *event);
     void sendCursorMoveToQt(QOhosInputContext::Direction direction);
     void sendFocusObjectFunctionalKeyEvent(Qt::Key key, const QString &keyText = {}, int repeatCount = 1);
@@ -110,6 +116,7 @@ private:
 
     QPointer<QObject> m_focusObject;
     QString m_pendingPreeditText;
+    PreviewReplaceRange m_previewReplaceRange;
 };
 
 QT_END_NAMESPACE
