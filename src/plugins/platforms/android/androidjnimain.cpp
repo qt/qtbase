@@ -602,7 +602,7 @@ static void handleLayoutSizeChanged(JNIEnv * /*env*/, jclass /*clazz*/,
     const QRect availableGeometry(0, 0, availableWidth, availableHeight);
     if (m_androidPlatformIntegration)
         m_androidPlatformIntegration->setAvailableGeometry(availableGeometry);
-    else if (QAndroidPlatformScreen::defaultAvailableGeometry().isNull())
+    else
         QAndroidPlatformScreen::defaultAvailableGeometry() = availableGeometry;
 }
 Q_DECLARE_JNI_NATIVE_METHOD(handleLayoutSizeChanged)
