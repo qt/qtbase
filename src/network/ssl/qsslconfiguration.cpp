@@ -1270,6 +1270,12 @@ void QSslConfiguration::setHandshakeMustInterruptOnError(bool interrupt)
     If no keying material configuration was set, this function returns
     an empty list.
 
+    The values are handed over instead of being shared: the entries left
+    behind in this configuration are valueless
+    \l{QSslKeyingMaterial::clone()}{clones}, so they can still be used to
+    request the same keying material again. Only the returned entries carry
+    the derived values.
+
     \note The availability of keying material depends on the TLS
           backend. Currently, this feature is supported only when using
           OpenSSL.
@@ -1280,9 +1286,14 @@ void QSslConfiguration::setHandshakeMustInterruptOnError(bool interrupt)
 
     \sa setKeyingMaterial()
 */
-QList<QSslKeyingMaterial> QSslConfiguration::keyingMaterial() const
+QList<QSslKeyingMaterial> QSslConfiguration::takeKeyingMaterial()
 {
-    return d->keyingMaterial;
+    QList<QSslKeyingMaterial> requests;
+    requests.reserve(d->keyingMaterial.size());
+    for (const auto &entry : std::as_const(d->keyingMaterial))
+        requests.append(entry.clone());
+
+    return std::exchange(d->keyingMaterial, std::move(requests));
 }
 
 /*!
@@ -1298,18 +1309,22 @@ QList<QSslKeyingMaterial> QSslConfiguration::keyingMaterial() const
     successfully, the returned object's \l{QSslKeyingMaterial::value()}
     contains the derived keying material.
 
-    \sa keyingMaterial(), setKeyingMaterial()
+    The value can only be taken once: the entry left behind is a valueless
+    \l{QSslKeyingMaterial::clone()}{clone}, which still matches \a material.
+
+    \sa takeKeyingMaterial(), setKeyingMaterial()
 */
 std::optional<QSslKeyingMaterial>
-QSslConfiguration::keyingMaterial(const QSslKeyingMaterial &material) const
+QSslConfiguration::takeKeyingMaterial(const QSslKeyingMaterial &material)
 {
-    for (const auto &entry : std::as_const(d->keyingMaterial)) {
+    for (auto &entry : d->keyingMaterial) {
         if (entry.label() == material.label() &&
             // "" and null are equal, so test explicitly:
             entry.context().isNull() == material.context().isNull() &&
             entry.context() == material.context() &&
             entry.requestedSize() == material.requestedSize()) {
-            return entry;
+            // Hand the value over instead of sharing it, leaving the request behind:
+            return std::exchange(entry, entry.clone());
         }
     }
 
@@ -1347,7 +1362,7 @@ QSslConfiguration::keyingMaterial(const QSslKeyingMaterial &material) const
              contexts across different purposes may lead to subtle
              security vulnerabilities.
 
-    \sa keyingMaterial()
+    \sa takeKeyingMaterial()
 */
 void QSslConfiguration::setKeyingMaterial(const QList<QSslKeyingMaterial> &keyMaterial)
 {

@@ -66,6 +66,8 @@ public:
         return m_requestedSize;
     }
 
+    [[nodiscard]] Q_NETWORK_EXPORT QSslKeyingMaterial clone() const;
+
     void swap(QSslKeyingMaterial &other) noexcept
     {
         m_label.swap(other.m_label);

@@ -976,7 +976,8 @@ void QSslSocket::setSslConfiguration(const QSslConfiguration &configuration)
     d->configuration.nextAllowedProtocols = configuration.allowedNextProtocols();
     d->configuration.nextNegotiatedProtocol = configuration.nextNegotiatedProtocol();
     d->configuration.nextProtocolNegotiationStatus = configuration.nextProtocolNegotiationStatus();
-    d->configuration.keyingMaterial = configuration.keyingMaterial();
+    // The getter is non-const, it hands the values over, so read the private:
+    d->configuration.keyingMaterial = configuration.d->keyingMaterial;
 #if QT_CONFIG(ocsp)
     d->configuration.ocspStaplingEnabled = configuration.ocspStaplingEnabled();
 #endif
