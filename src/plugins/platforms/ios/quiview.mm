@@ -436,12 +436,6 @@ inline ulong getTimeStamp(UIEvent *event)
             QPoint globalScreenPosition = self.platformWindow->mapToGlobal(localViewPosition);
 
             touchPoint.area = QRectF(globalScreenPosition, QSize(0, 0));
-
-            // FIXME: Do we really need to support QPointingDevice::Capability::NormalizedPosition?
-            QSize screenSize = self.platformWindow->screen()->geometry().size();
-            touchPoint.normalPosition = QPointF(globalScreenPosition.x() / screenSize.width(),
-                                                globalScreenPosition.y() / screenSize.height());
-
             touchPoint.pressure = [self pressureForTouch:uiTouch];
         }
     }
