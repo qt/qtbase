@@ -49,7 +49,7 @@ abstract class QtActivityDelegateBase
         QtNative.setActivity(m_activity);
         m_displayManager = new QtDisplayManager(m_activity);
         m_inputDelegate = new QtInputDelegate(() -> {
-            QtWindowInsetsController.restoreFullScreenVisibility(m_activity);
+            QtWindowInsetsController.applySystemUi();
         });
         m_accessibilityDelegate = new QtAccessibilityDelegate();
     }

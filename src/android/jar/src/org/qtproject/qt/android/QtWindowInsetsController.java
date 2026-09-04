@@ -237,10 +237,16 @@ class QtWindowInsetsController
         return !isFullScreen(activity) && !isExpandedClientArea(activity);
     }
 
-    static void restoreFullScreenVisibility(Activity activity)
+    private static native void applySystemUiNative();
+
+    /*
+    * Some lifecycle events reset window state on the OS side, let the
+    * Qt side re-assert the mode it owns, if any beyond the default.
+    */
+    static void applySystemUi()
     {
-        if (isFullScreen(activity))
-            showFullScreen(activity);
+        if (QtNative.getStateDetails().isStarted)
+            applySystemUiNative();
     }
 
     /*
