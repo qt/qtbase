@@ -4,6 +4,7 @@
 // Qt-Security score:significant reason:default
 
 #include "qandroidplatformintegration.h"
+#include "androidjniinput.h"
 
 #if QT_CONFIG(accessibility)
 #include "androidjniaccessibility.h"
@@ -534,8 +535,14 @@ void QAndroidPlatformIntegration::setScreenOrientation(Qt::ScreenOrientation cur
 
 void QAndroidPlatformIntegration::flushPendingUpdates()
 {
-    if (m_primaryScreen)
-        m_primaryScreen->setAvailableGeometry(m_primaryScreen->availableGeometry());
+    if (!m_primaryScreen)
+        return;
+
+    // Apply the latest layout size, it may have changed since the screen
+    // snapshotted it at construction, e.g. an app enabling edge-to-edge.
+    const QRect availableDefault = QAndroidPlatformScreen::defaultAvailableGeometry();
+    m_primaryScreen->setAvailableGeometry(availableDefault.isNull() ?
+        m_primaryScreen->availableGeometry() : availableDefault);
 }
 
 #if QT_CONFIG(accessibility)
