@@ -52,7 +52,7 @@ QT_BEGIN_NAMESPACE
 
     \value YUV The color model is YUV.
 
-    \value Alpha [since 5.5] There is no color model, only alpha is used.
+    \value [since 5.5] Alpha There is no color model, only alpha is used.
 */
 
 /*!
