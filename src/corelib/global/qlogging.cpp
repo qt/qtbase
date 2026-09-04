@@ -1753,7 +1753,7 @@ static QString formatLogMessage(QtMsgType type, const QMessageLogContext &contex
                 message.append(QString::number(qt_gettid())); // fallback to the TID
         } else if (token == qthreadptrTokenC) {
             message.append("0x"_L1);
-            message.append(QString::number(qlonglong(QThread::currentThread()->currentThread()), 16));
+            message.append(QString::number(qlonglong(QThread::currentThread()), 16));
 #ifdef QLOGGING_HAVE_BACKTRACE
         } else if (token == backtraceTokenC) {
             if (fullBacktrace.isEmpty())
