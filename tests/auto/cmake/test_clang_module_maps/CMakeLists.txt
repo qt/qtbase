@@ -69,7 +69,7 @@ foreach(module_target IN LISTS QT_ALL_MODULES_VERSIONED_FOUND_VIA_FIND_PACKAGE)
 
     add_test(NAME test_clang_module_maps_${module_lower}
         COMMAND ${CMAKE_COMMAND} -E env bash -c
-            "${module_compile_command} <(echo '@import ${module};')"
+            "echo '@import ${module};' | ${module_compile_command} -"
     )
     set_tests_properties(test_clang_module_maps_${module_lower}
         PROPERTIES FIXTURES_REQUIRED module_maps_test)
