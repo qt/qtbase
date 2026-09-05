@@ -62,9 +62,10 @@ class EditorDateEdit : public QDateTimeEdit
 {
     Q_OBJECT
 public:
-    EditorDateEdit(QWidget *parent = nullptr) : QDateTimeEdit(parent) {}
-    QLineEdit *lineEdit() { return QDateTimeEdit::lineEdit(); }
-    friend class tst_QDateTimeEdit;
+    using QDateTimeEdit::QDateTimeEdit;
+    using QDateTimeEdit::lineEdit;
+    using QDateTimeEdit::initStyleOption;
+    using QDateTimeEdit::focusNextPrevChild;
 };
 
 class PressAndHoldStyle : public QProxyStyle
@@ -294,19 +295,14 @@ static QLatin1String modifierToName(Qt::KeyboardModifier modifier)
     switch (modifier) {
     case Qt::NoModifier:
         return QLatin1String("No");
-        break;
     case Qt::ControlModifier:
         return QLatin1String("Ctrl");
-        break;
     case Qt::ShiftModifier:
         return QLatin1String("Shift");
-        break;
     case Qt::AltModifier:
         return QLatin1String("Alt");
-        break;
     case Qt::MetaModifier:
         return QLatin1String("Meta");
-        break;
     default:
         qFatal("Unexpected keyboard modifier");
         return QLatin1String();
@@ -2374,7 +2370,7 @@ void tst_QDateTimeEdit::mousePress()
 
     // Ask the SC_SpinBoxUp button location from style
     QStyleOptionSpinBox so;
-    so.rect = testWidget->rect();
+    testWidget->initStyleOption(&so);
     QRect rectUp = testWidget->style()->subControlRect(QStyle::CC_SpinBox, &so, QStyle::SC_SpinBoxUp, testWidget);
 
     // Send mouseClick to center of SC_SpinBoxUp
