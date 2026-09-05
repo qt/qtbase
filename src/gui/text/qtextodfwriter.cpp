@@ -29,7 +29,7 @@ QT_BEGIN_NAMESPACE
 using namespace Qt::StringLiterals;
 
 /// Convert pixels to postscript point units
-static QString pixelToPoint(qreal pixels)
+static inline QString pixelToPoint(qreal pixels)
 {
     // we hardcode 96 DPI, we do the same in the ODF importer to have a perfect roundtrip.
     return QString::number(pixels * 72 / 96) + "pt"_L1;
@@ -127,7 +127,7 @@ private:
     QString manifestNS;
 };
 
-static QStringView bullet_char(QTextListFormat::Style style)
+static inline QStringView bulletChar(QTextListFormat::Style style)
 {
     static_assert(int(QTextListFormat::ListDisc) == -1);
     static_assert(int(QTextListFormat::ListUpperRoman) == -8);
@@ -150,38 +150,33 @@ static QStringView bullet_char(QTextListFormat::Style style)
         return {chars + idx, 1};
 }
 
-static QString bulletChar(QTextListFormat::Style style)
-{
-    return bullet_char(style).toString();
-}
-
-static QString borderStyleName(QTextFrameFormat::BorderStyle style)
+static inline QStringView borderStyleName(QTextFrameFormat::BorderStyle style)
 {
     switch (style) {
     case QTextFrameFormat::BorderStyle_None:
-        return QString::fromLatin1("none");
+        return u"none";
     case QTextFrameFormat::BorderStyle_Dotted:
-        return QString::fromLatin1("dotted");
+        return u"dotted";
     case QTextFrameFormat::BorderStyle_Dashed:
-        return QString::fromLatin1("dashed");
+        return u"dashed";
     case QTextFrameFormat::BorderStyle_Solid:
-        return QString::fromLatin1("solid");
+        return u"solid";
     case QTextFrameFormat::BorderStyle_Double:
-        return QString::fromLatin1("double");
+        return u"double";
     case QTextFrameFormat::BorderStyle_DotDash:
-        return QString::fromLatin1("dashed");
+        return u"dashed";
     case QTextFrameFormat::BorderStyle_DotDotDash:
-        return QString::fromLatin1("dotted");
+        return u"dotted";
     case QTextFrameFormat::BorderStyle_Groove:
-        return QString::fromLatin1("groove");
+        return u"groove";
     case QTextFrameFormat::BorderStyle_Ridge:
-        return QString::fromLatin1("ridge");
+        return u"ridge";
     case QTextFrameFormat::BorderStyle_Inset:
-        return QString::fromLatin1("inset");
+        return u"inset";
     case QTextFrameFormat::BorderStyle_Outset:
-        return QString::fromLatin1("outset");
+        return u"outset";
     }
-    return QString::fromLatin1("");
+    return u"";
 }
 
 void QTextOdfWriter::writeFrame(QXmlStreamWriter &writer, const QTextFrame *frame)
