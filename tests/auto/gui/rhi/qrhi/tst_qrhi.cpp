@@ -1811,6 +1811,9 @@ void tst_QRhi::resourceUpdateBatchTextureInvalidSizeAndStride()
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing texture resource updates");
 
+    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi.get()))
+        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
+
     // Raw data uploads where sourceSize() or dataStride() describe more data than
     // was actually provided, or where the destination region runs outside the
     // subresource. All of these are invalid usage and are expected to produce a
