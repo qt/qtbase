@@ -111,7 +111,6 @@ void XdgSurface::xdg_surface_get_toplevel(Resource *resource, uint32_t id)
 
 void XdgSurface::xdg_surface_get_popup(Resource *resource, uint32_t id, wl_resource *parent, wl_resource *positioner)
 {
-    Q_UNUSED(positioner);
     QVERIFY(!m_toplevel);
     QVERIFY(!m_popup);
     if (!m_surface->m_role) {
@@ -121,7 +120,10 @@ void XdgSurface::xdg_surface_get_popup(Resource *resource, uint32_t id, wl_resou
         return;
     }
     auto *p = fromResource<XdgSurface>(parent);
-    m_popup = new XdgPopup(this, p, id, resource->version());
+    XdgPositionerState positionerState;
+    if (auto *pos = fromResource<XdgPositioner>(positioner))
+        positionerState = pos->m_state;
+    m_popup = new XdgPopup(this, p, positionerState, id, resource->version());
 }
 
 void XdgSurface::xdg_surface_destroy_resource(Resource *resource)
@@ -197,10 +199,82 @@ void XdgToplevel::xdg_toplevel_set_min_size(Resource *resource, int32_t width, i
     m_pending.minSize = size;
 }
 
-XdgPopup::XdgPopup(XdgSurface *xdgSurface, XdgSurface *parent, int id, int version)
+QPoint XdgPositionerState::unconstrainedPosition() const
+{
+    int x = 0;
+    switch (anchor) {
+    case QtWaylandServer::xdg_positioner::anchor_left:
+    case QtWaylandServer::xdg_positioner::anchor_top_left:
+    case QtWaylandServer::xdg_positioner::anchor_bottom_left:
+        x = anchorRect.x();
+        break;
+    case QtWaylandServer::xdg_positioner::anchor_right:
+    case QtWaylandServer::xdg_positioner::anchor_top_right:
+    case QtWaylandServer::xdg_positioner::anchor_bottom_right:
+        x = anchorRect.x() + anchorRect.width();
+        break;
+    default:
+        x = anchorRect.x() + anchorRect.width() / 2;
+        break;
+    }
+
+    int y = 0;
+    switch (anchor) {
+    case QtWaylandServer::xdg_positioner::anchor_top:
+    case QtWaylandServer::xdg_positioner::anchor_top_left:
+    case QtWaylandServer::xdg_positioner::anchor_top_right:
+        y = anchorRect.y();
+        break;
+    case QtWaylandServer::xdg_positioner::anchor_bottom:
+    case QtWaylandServer::xdg_positioner::anchor_bottom_left:
+    case QtWaylandServer::xdg_positioner::anchor_bottom_right:
+        y = anchorRect.y() + anchorRect.height();
+        break;
+    default:
+        y = anchorRect.y() + anchorRect.height() / 2;
+        break;
+    }
+
+    // The gravity says in which direction the popup grows away from the anchor point.
+    switch (gravity) {
+    case QtWaylandServer::xdg_positioner::gravity_left:
+    case QtWaylandServer::xdg_positioner::gravity_top_left:
+    case QtWaylandServer::xdg_positioner::gravity_bottom_left:
+        x -= size.width();
+        break;
+    case QtWaylandServer::xdg_positioner::gravity_right:
+    case QtWaylandServer::xdg_positioner::gravity_top_right:
+    case QtWaylandServer::xdg_positioner::gravity_bottom_right:
+        break;
+    default:
+        x -= size.width() / 2;
+        break;
+    }
+
+    switch (gravity) {
+    case QtWaylandServer::xdg_positioner::gravity_top:
+    case QtWaylandServer::xdg_positioner::gravity_top_left:
+    case QtWaylandServer::xdg_positioner::gravity_top_right:
+        y -= size.height();
+        break;
+    case QtWaylandServer::xdg_positioner::gravity_bottom:
+    case QtWaylandServer::xdg_positioner::gravity_bottom_left:
+    case QtWaylandServer::xdg_positioner::gravity_bottom_right:
+        break;
+    default:
+        y -= size.height() / 2;
+        break;
+    }
+
+    return QPoint(x, y) + offset;
+}
+
+XdgPopup::XdgPopup(XdgSurface *xdgSurface, XdgSurface *parent, const XdgPositionerState &positioner,
+                   int id, int version)
     : QtWaylandServer::xdg_popup(xdgSurface->resource()->client(), id, version)
     , m_xdgSurface(xdgSurface)
     , m_parentXdgSurface(parent)
+    , m_positioner(positioner)
 {
     Q_ASSERT(m_xdgSurface);
     Q_ASSERT(m_parentXdgSurface);
@@ -227,6 +301,15 @@ void XdgPopup::xdg_popup_grab(QtWaylandServer::xdg_popup::Resource *resource, wl
     m_xdgSurface->m_xdgWmBase->m_topmostGrabbingPopup = this;
     m_grabbed = true;
     m_grabSerial = serial;
+}
+
+void XdgPopup::xdg_popup_reposition(Resource *resource, wl_resource *positioner, uint32_t token)
+{
+    Q_UNUSED(resource);
+    if (auto *pos = fromResource<XdgPositioner>(positioner))
+        m_positioner = pos->m_state;
+    m_repositionToken = token;
+    emit repositioned();
 }
 
 void XdgPopup::xdg_popup_destroy(Resource *resource) {
