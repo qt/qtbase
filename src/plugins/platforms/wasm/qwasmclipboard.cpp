@@ -68,8 +68,26 @@ void QWasmClipboard::copy(val event)
     commonCopyEvent(event);
 }
 
+// Returns true if the event targets an element in a Qt window.
+static bool eventTargetsQtWindow(val event)
+{
+    val target = event["target"];
+    if (target.isNull() || target.isUndefined() || target["closest"].isUndefined())
+        return false;
+    return !target.call<val>("closest", val(".qt-window")).isNull();
+}
+
 void QWasmClipboard::paste(val event)
 {
+    // The document-level handler sees paste events for the whole page. Leave
+    // events for non-Qt elements to the browser.
+    if (!eventTargetsQtWindow(event))
+        return;
+
+    // sendClipboardData() delivers the data via a synthetic Ctrl+V. Cancel the default
+    // action, which would insert it again as an "insertFromPaste" input event.
+    event.call<void>("preventDefault");
+
     QWasmIntegration::get()->getWasmClipboard()->sendClipboardData(event);
 }
 
