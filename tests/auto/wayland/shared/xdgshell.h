@@ -12,7 +12,71 @@ namespace MockCompositor {
 class XdgSurface;
 class XdgToplevel;
 class XdgPopup;
-using XdgPositioner = QtWaylandServer::xdg_positioner;
+// The state an xdg_positioner carries. It is kept as a value, so a popup still has it after the
+// positioner object it came from has been destroyed.
+struct XdgPositionerState
+{
+    QRect anchorRect;
+    QSize size;
+    uint anchor = QtWaylandServer::xdg_positioner::anchor_none;
+    uint gravity = QtWaylandServer::xdg_positioner::gravity_none;
+    uint constraintAdjustment = QtWaylandServer::xdg_positioner::constraint_adjustment_none;
+    QPoint offset;
+
+    // The position the popup takes relative to the window geometry of its parent, with the anchor
+    // rectangle, the anchor edge, the gravity and the offset applied, and no constraint solving.
+    QPoint unconstrainedPosition() const;
+};
+
+class XdgPositioner : public QtWaylandServer::xdg_positioner
+{
+public:
+    XdgPositioner(::wl_client *client, int id, int version)
+        : QtWaylandServer::xdg_positioner(client, id, version)
+    {
+    }
+    XdgPositionerState m_state;
+
+protected:
+    void xdg_positioner_destroy(Resource *resource) override { wl_resource_destroy(resource->handle); }
+    void xdg_positioner_destroy_resource(Resource *resource) override
+    {
+        Q_UNUSED(resource);
+        delete this;
+    }
+    void xdg_positioner_set_size(Resource *resource, int32_t width, int32_t height) override
+    {
+        Q_UNUSED(resource);
+        m_state.size = QSize(width, height);
+    }
+    void xdg_positioner_set_anchor_rect(Resource *resource, int32_t x, int32_t y, int32_t width,
+                                        int32_t height) override
+    {
+        Q_UNUSED(resource);
+        m_state.anchorRect = QRect(x, y, width, height);
+    }
+    void xdg_positioner_set_anchor(Resource *resource, uint32_t anchor) override
+    {
+        Q_UNUSED(resource);
+        m_state.anchor = anchor;
+    }
+    void xdg_positioner_set_gravity(Resource *resource, uint32_t gravity) override
+    {
+        Q_UNUSED(resource);
+        m_state.gravity = gravity;
+    }
+    void xdg_positioner_set_constraint_adjustment(Resource *resource,
+                                                  uint32_t constraintAdjustment) override
+    {
+        Q_UNUSED(resource);
+        m_state.constraintAdjustment = constraintAdjustment;
+    }
+    void xdg_positioner_set_offset(Resource *resource, int32_t x, int32_t y) override
+    {
+        Q_UNUSED(resource);
+        m_state.offset = QPoint(x, y);
+    }
+};
 
 class XdgWmBase : public Global, public QtWaylandServer::xdg_wm_base
 {
@@ -120,7 +184,8 @@ class XdgPopup : public QObject, public QtWaylandServer::xdg_popup
 {
     Q_OBJECT
 public:
-    explicit XdgPopup(XdgSurface *xdgSurface, XdgSurface *parent, int id, int version = 1);
+    explicit XdgPopup(XdgSurface *xdgSurface, XdgSurface *parent,
+                      const XdgPositionerState &positioner, int id, int version = 1);
     void sendConfigure(const QRect &geometry);
     uint sendCompleteConfigure(const QRect &geometry);
     Surface *surface() { return m_xdgSurface->m_surface; }
@@ -128,10 +193,14 @@ public:
     XdgSurface *m_parentXdgSurface = nullptr;
     bool m_grabbed = false;
     uint m_grabSerial = 0;
+    XdgPositionerState m_positioner;
+    uint m_repositionToken = 0;
 signals:
     void destroyRequested();
+    void repositioned();
 protected:
     void xdg_popup_grab(Resource *resource, ::wl_resource *seat, uint32_t serial) override;
+    void xdg_popup_reposition(Resource *resource, ::wl_resource *positioner, uint32_t token) override;
     void xdg_popup_destroy(Resource *resource) override;
 };
 

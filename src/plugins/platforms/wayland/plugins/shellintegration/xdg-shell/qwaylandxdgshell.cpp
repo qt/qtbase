@@ -785,7 +785,7 @@ std::unique_ptr<QWaylandXdgSurface::Positioner> QWaylandXdgSurface::createPositi
 
     // Default case, map the guessed global position to a relative position
     QRect placementAnchor = QRect(m_window->geometry().topLeft() - parent->geometry().topLeft(), QSize(1,1));
-    Qt::Edges anchor = Qt::TopEdge | Qt::RightEdge;
+    Qt::Edges anchor = Qt::TopEdge | Qt::LeftEdge;
     Qt::Edges gravity = Qt::BottomEdge | Qt::RightEdge;
     uint32_t constraintAdjustment = QtWayland::xdg_positioner::constraint_adjustment_slide_x | QtWayland::xdg_positioner::constraint_adjustment_slide_y;
     QPoint offset;

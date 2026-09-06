@@ -24,6 +24,7 @@ private slots:
     void configureStates();
     void configureBounds();
     void popup();
+    void popupKeepsItsPositionWhenResized();
     void tooltipOnPopup();
     void tooltipAndSiblingPopup();
     void windowTypeChanges();
@@ -310,6 +311,51 @@ void tst_xdgshell::popup()
         QVERIFY(buffer);
         QCOMPARE(buffer->size(), popup->frameGeometry().size());
     });
+}
+
+void tst_xdgshell::popupKeepsItsPositionWhenResized()
+{
+    QRasterWindow window;
+    window.resize(200, 200);
+    window.show();
+
+    QCOMPOSITOR_TRY_VERIFY(xdgToplevel());
+    QSignalSpy toplevelConfigureSpy(exec([&] { return xdgSurface(); }), &XdgSurface::configureCommitted);
+    exec([&] { xdgToplevel()->sendCompleteConfigure(); });
+    QTRY_COMPARE(toplevelConfigureSpy.size(), 1);
+
+    QRasterWindow popup;
+    popup.setTransientParent(&window);
+    popup.setFlags(Qt::ToolTip);
+    const QRect requestedGeometry(120, 80, 100, 100);
+    popup.setGeometry(requestedGeometry);
+    popup.show();
+
+    QCOMPOSITOR_TRY_VERIFY(xdgPopup());
+    const QPoint positionInParent = requestedGeometry.topLeft() - window.geometry().topLeft();
+
+    // The popup asks to be placed at the position it was given.
+    QCOMPARE(exec([&] { return xdgPopup()->m_positioner.unconstrainedPosition(); }), positionInParent);
+
+    exec([&] { xdgPopup()->sendCompleteConfigure(QRect(positionInParent, requestedGeometry.size())); });
+    QTRY_VERIFY(popup.isExposed());
+    QCOMPARE(popup.geometry(), requestedGeometry);
+
+    // Growing the popup makes it ask for a place again. It has to ask for the same position, or a
+    // popup that is resized repeatedly walks away from where it started.
+    QSignalSpy repositionSpy(exec([&] { return xdgPopup(); }), &XdgPopup::repositioned);
+    const QSize grownSize(150, 100);
+    popup.resize(grownSize);
+    QTRY_COMPARE(repositionSpy.size(), 1);
+
+    QCOMPARE(exec([&] { return xdgPopup()->m_positioner.size; }), grownSize);
+    QCOMPARE(exec([&] { return xdgPopup()->m_positioner.unconstrainedPosition(); }), positionInParent);
+
+    exec([&] {
+        xdgPopup()->send_repositioned(xdgPopup()->m_repositionToken);
+        xdgPopup()->sendCompleteConfigure(QRect(positionInParent, grownSize));
+    });
+    QTRY_COMPARE(popup.geometry(), QRect(requestedGeometry.topLeft(), grownSize));
 }
 
 void tst_xdgshell::tooltipOnPopup()
