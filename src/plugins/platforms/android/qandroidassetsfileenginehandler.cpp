@@ -8,6 +8,7 @@
 #include <optional>
 
 #include <QCoreApplication>
+#include <QDir>
 #include <QList>
 #include <QtCore/QJniEnvironment>
 #include <QtCore/QJniObject>
@@ -23,11 +24,11 @@ static inline QString cleanedAssetPath(QString file)
 {
     if (file.startsWith(assetsPrefix))
         file.remove(0, prefixSize);
-    file.replace("//"_L1, "/"_L1);
+    file = QDir::cleanPath(file);
     if (file.startsWith(u'/'))
         file.remove(0, 1);
-    if (file.endsWith(u'/'))
-        file.chop(1);
+    if (file == u'.')
+        file.clear();
     return file;
 }
 
@@ -309,10 +310,11 @@ public:
 
     void setFileName(const QString &file) override
     {
-        if (m_fileName == cleanedAssetPath(file))
+        const QString cleanedFile = cleanedAssetPath(file);
+        if (m_fileName == cleanedFile)
             return;
         close();
-        m_fileName = cleanedAssetPath(file);
+        m_fileName = cleanedFile;
 
         {
             QMutexLocker lock(&m_assetsInfoCacheMutex);
@@ -389,13 +391,7 @@ AndroidAssetsFileEngineHandler::create(const QString &fileName) const
     if (!fileName.startsWith(assetsPrefix))
         return {};
 
-    QString path = fileName.mid(prefixSize);
-    path.replace("//"_L1, "/"_L1);
-    if (path.startsWith(u'/'))
-        path.remove(0, 1);
-    if (path.endsWith(u'/'))
-        path.chop(1);
-    return std::make_unique<AndroidAbstractFileEngine>(m_assetManager, path);
+    return std::make_unique<AndroidAbstractFileEngine>(m_assetManager, fileName);
 }
 
 QT_END_NAMESPACE
