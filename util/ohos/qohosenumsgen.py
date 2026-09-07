@@ -70,7 +70,6 @@ class OhosEnum:
 class CommonArgumentDefaults:
     enums_header: str
     api_ver: int
-    copyright_year: int
 
 
 def read_text_file(path: str) -> str:
@@ -432,8 +431,9 @@ def add_common_arguments(
         help='target API version (default: %(default)s); enums and enumerators '
              'introduced in a later API are considered non-existent')
     command_parser.add_argument(
-        '--copyright-year', default=defaults.copyright_year, type=int,
-        help='copyright year for the generated header (default: %(default)s)')
+        '--copyright-year', type=int,
+        help='copyright year for the generated header '
+             '(default: the year from the header\'s copyright line)')
 
 
 def parse_arguments(defaults: CommonArgumentDefaults) -> argparse.Namespace:
@@ -472,11 +472,12 @@ def main() -> None:
         enums_header=default_enums_header,
         api_ver=read_min_supported_api_version(
             os.path.join(qpa_plugin_dir, 'qohosjsmain.cpp'),
-            'minSupportedOhosSdkApiVersion'),
-        copyright_year=read_copyright_year(default_enums_header))
+            'minSupportedOhosSdkApiVersion'))
     arguments = parse_arguments(defaults)
     if not os.path.isdir(arguments.sdk_dir):
         raise Exception('SDK directory not found: ' + arguments.sdk_dir)
+    if arguments.copyright_year is None:
+        arguments.copyright_year = read_copyright_year(arguments.enums_header)
     arguments.handler(arguments)
 
 
