@@ -71,7 +71,8 @@ void tst_QFileSelector::basicTest_data()
     expectedPlatform2File = QString(":/platforms/test2");
 #else
     QString distributionName;
-#  if (defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID)) || defined(Q_OS_FREEBSD)
+#  if (defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID) && !defined(Q_OS_HARMONY)) \
+      || defined(Q_OS_FREEBSD)
     distributionName = QSysInfo::productType();
 #  endif
     const auto platformSelectors = QFileSelectorPrivate::platformSelectors();

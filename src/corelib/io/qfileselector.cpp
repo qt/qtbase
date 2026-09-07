@@ -87,9 +87,9 @@ QFileSelectorPrivate::QFileSelectorPrivate()
     Selectors normally available are
     \list
     \li platform, any of the following strings which match the platform the application is running
-        on (list not exhaustive): android, ios, osx, darwin, mac, macos, linux, qnx, unix, windows.
-        On Linux, if it can be determined, the name of the distribution too, like debian,
-        fedora or opensuse.
+        on (list not exhaustive): android, harmonyos, ios, osx, darwin, mac, macos, linux, qnx,
+        unix, windows. On Linux, if it can be determined, the name of the distribution too, like
+        debian, fedora or opensuse.
     \li locale, same as QLocale().name().
     \endlist
 
@@ -319,9 +319,10 @@ QStringList QFileSelectorPrivate::platformSelectors()
     ret << QSysInfo::kernelType();  // "winnt"
 #elif defined(Q_OS_UNIX)
     ret << QStringLiteral("unix");
-#  if !defined(Q_OS_ANDROID) && !defined(Q_OS_QNX) && !defined(Q_OS_VXWORKS)
-    // we don't want "linux" for Android or two instances of "qnx" for QNX
-    // or two instances of "vxworks" for vxworks
+#  if !defined(Q_OS_ANDROID) && !defined(Q_OS_QNX) && !defined(Q_OS_VXWORKS) \
+      && !defined(Q_OS_HARMONY)
+    // we don't want "linux" for Android, or a second instance of the product
+    // type for QNX, VxWorks and HarmonyOS
     ret << QSysInfo::kernelType();
 #  endif
     QString productName = QSysInfo::productType();
