@@ -8,10 +8,9 @@ qt_internal_add_plugin(QOhosNetworkInformationPlugin
     DEFAULT_IF OHOS
     EXCEPTIONS
     SOURCES
+        qohosenums.h
         qohosnetworkinformationbackend.cpp
         qohosnetconnection.cpp qohosnetconnection_p.h
-    INCLUDE_DIRECTORIES
-        ${CMAKE_CURRENT_SOURCE_DIR}/../../platforms/ohos
     LIBRARIES
         Qt::NetworkPrivate
         Qt::CorePrivate
