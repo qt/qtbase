@@ -45,6 +45,8 @@ private slots:
     void assetsRead();
     void assetsNotWritable();
     void assetsIterating();
+    void assetsDotSegments_data();
+    void assetsDotSegments();
     void testAndroidSdkVersion();
     void testAndroidActivity();
     void testRunOnAndroidMainThread();
@@ -103,6 +105,42 @@ void tst_Android::assetsIterating()
     auto entryList = QDir{"assets:/"_L1}.entryList(QStringList{"*.txt"_L1});
     QCOMPARE(entryList.size(), 1);
     QCOMPARE(entryList[0], "test.txt"_L1);
+}
+
+void tst_Android::assetsDotSegments_data()
+{
+    QTest::addColumn<QString>("path");
+    QTest::addColumn<QString>("cleanPath");
+    QTest::addColumn<bool>("isDir");
+
+    QTest::newRow("dot in root") << "assets:/./test.txt" << "assets:/test.txt" << false;
+    QTest::newRow("dot in subdir") << "assets:/top_level_dir/./file_in_top_dir.txt"
+                                   << "assets:/top_level_dir/file_in_top_dir.txt" << false;
+    QTest::newRow("dotdot") << "assets:/top_level_dir/sub_dir/../file_in_top_dir.txt"
+                            << "assets:/top_level_dir/file_in_top_dir.txt" << false;
+    QTest::newRow("dot before dir") << "assets:/top_level_dir/./sub_dir/"
+                                    << "assets:/top_level_dir/sub_dir" << true;
+    QTest::newRow("root dot") << "assets:/." << "assets:/" << true;
+}
+
+void tst_Android::assetsDotSegments()
+{
+    QFETCH(QString, path);
+    QFETCH(QString, cleanPath);
+    QFETCH(bool, isDir);
+
+    const QFileInfo info(path);
+    QVERIFY(info.exists());
+    QCOMPARE(info.isDir(), isDir);
+    QCOMPARE(info.absoluteFilePath(), cleanPath);
+    if (isDir)
+        return;
+
+    QFile file(path);
+    QVERIFY(file.open(QIODevice::ReadOnly));
+    QFile cleanFile(cleanPath);
+    QVERIFY(cleanFile.open(QIODevice::ReadOnly));
+    QCOMPARE(file.readAll(), cleanFile.readAll());
 }
 
 void tst_Android::gracefullyFailLoadingMissingLibrary()
