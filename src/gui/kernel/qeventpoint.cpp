@@ -427,7 +427,8 @@ QPointF QEventPoint::normalizedPosition() const
     auto geom = d->device->availableVirtualGeometry();
     if (geom.isNull())
         return QPointF();
-    return (globalPosition() - geom.topLeft()) / geom.width();
+    const QPointF p = globalPosition() - geom.topLeft();
+    return QPointF(p.x() / geom.width(), p.y() / geom.height());
 }
 
 #if QT_DEPRECATED_SINCE(6, 0)
@@ -444,7 +445,8 @@ QPointF QEventPoint::startNormalizedPos() const
     auto geom = d->device->availableVirtualGeometry();
     if (geom.isNull())
         return QPointF();
-    return (globalPressPosition() - geom.topLeft()) / geom.width();
+    const QPointF p = globalPressPosition() - geom.topLeft();
+    return QPointF(p.x() / geom.width(), p.y() / geom.height());
 }
 
 /*!
@@ -466,7 +468,8 @@ QPointF QEventPoint::lastNormalizedPos() const
     auto geom = d->device->availableVirtualGeometry();
     if (geom.isNull())
         return QPointF();
-    return (globalLastPosition() - geom.topLeft()) / geom.width();
+    const QPointF p = globalLastPosition() - geom.topLeft();
+    return QPointF(p.x() / geom.width(), p.y() / geom.height());
 }
 #endif // QT_DEPRECATED_SINCE(6, 0)
 

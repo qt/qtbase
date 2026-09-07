@@ -278,6 +278,7 @@ private slots:
     void grabbers_data();
     void grabbers();
     void velocity();
+    void normalizedPosition();
 
 private:
     QPointingDevice *touchScreenDevice;
@@ -1996,6 +1997,29 @@ void tst_QTouchEvent::velocity()
     QTest::touchEvent(&w, touchScreenDevice).release(0, pos, &w);
     QVERIFY(w.velocity.x() > 0);
     QVERIFY(w.velocity.y() > 0);
+}
+
+void tst_QTouchEvent::normalizedPosition()
+{
+    // Non-square virtual geometry, so that normalizing y by the height
+    // (rather than by the width) actually makes a difference.
+    QPointingDevice device(QStringLiteral("test touchscreen"), 1, QInputDevice::DeviceType::TouchScreen,
+                           QPointingDevice::PointerType::Finger,
+                           QPointingDevice::Capability::Position, 10, 0);
+    QInputDevicePrivate::get(&device)->setAvailableVirtualGeometry(QRect(100, 200, 1000, 500));
+
+    QEventPoint p(1, &device);
+    QMutableEventPoint::setGlobalPosition(p, QPointF(350, 450));
+    QMutableEventPoint::setGlobalPressPosition(p, QPointF(600, 325));
+    QMutableEventPoint::setGlobalLastPosition(p, QPointF(1100, 700));
+
+    QCOMPARE(p.normalizedPosition(), QPointF(0.25, 0.5));
+
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
+    QCOMPARE(p.startNormalizedPos(), QPointF(0.5, 0.25));
+    QCOMPARE(p.lastNormalizedPos(), QPointF(1.0, 1.0));
+QT_WARNING_POP
 }
 
 QTEST_MAIN(tst_QTouchEvent)
