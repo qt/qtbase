@@ -100,7 +100,7 @@ private:
                             QPointer<QDockWidget> &d1, QPointer<QDockWidget> &d2,
                             QList<int> &path1, QList<int> &path2) const;
 
-#if defined(Q_OS_DARWIN) || defined(Q_OS_ANDROID) || defined(Q_OS_QNX) || defined(Q_OS_HARMONY)
+#if defined(Q_OS_DARWIN) || defined(Q_OS_ANDROID) || defined(Q_OS_QNX)
 #define qCreateFloatingTabs(mainWindow, centralWidget, d1, d2, path1, path2)\
     mainWindow = nullptr;\
     Q_UNUSED(path1);\
@@ -1364,6 +1364,18 @@ void tst_QDockWidget::createTestWidgets(QMainWindow* &mainWindow, QPointer<QWidg
     d2->setObjectName("D2");
     d2->setFeatures(QDockWidget::DockWidgetFeatureMask);
     d2->setAllowedAreas(Qt::DockWidgetArea::RightDockWidgetArea);
+
+#if defined(Q_OS_HARMONY)
+    auto installCustomTitleBar = [minWidth](QDockWidget *dockWidget) {
+        auto *titleBar = new QLabel(dockWidget->windowTitle(), dockWidget);
+        titleBar->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+        titleBar->setMinimumHeight(minWidth);
+        titleBar->setMaximumHeight(minWidth);
+        dockWidget->setTitleBarWidget(titleBar);
+    };
+    installCustomTitleBar(d1);
+    installCustomTitleBar(d2);
+#endif
 
     mainWindow->addDockWidget(Qt::DockWidgetArea::LeftDockWidgetArea, d1);
     mainWindow->addDockWidget(Qt::DockWidgetArea::RightDockWidgetArea, d2);
