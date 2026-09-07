@@ -55,8 +55,10 @@ private:
 #if QT_CONFIG(dbus)
     QPointer<QDBusPendingCallWatcher> m_watcher = nullptr;
     std::unique_ptr<QDBusServiceWatcher> m_portalWatcher;
-#endif
     bool m_hasNoPortal = false;
+#else
+    static constexpr bool m_hasNoPortal = true;  // even if we did, we can't talk to it
+#endif
     bool m_hasScreenshotPortalWithColorPicking = false;
 
     inline bool launchProcess(LaunchType type, const QUrl &url, const QString &xdgActivationToken);
