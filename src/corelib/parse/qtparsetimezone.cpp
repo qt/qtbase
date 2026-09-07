@@ -222,6 +222,9 @@ QList<SizeOffset> matchIso8601(QStringView text, QtTemporalPattern::TemporalFiel
     ++used;
     tail = tail.sliced(1);
 
+    if (tail.isEmpty())
+        return matches;
+
     const auto extend = [&matches, negate](qsizetype length, int secondsEast) {
         if (negate)
             secondsEast = -secondsEast;

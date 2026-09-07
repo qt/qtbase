@@ -3557,6 +3557,19 @@ void tst_QDateTime::fromStringStringFormat_data()
             << u"2/2/-214748329"_s << u"M/d/yyyy"_s
             << 1900 << farsi << QDate(-214748329, 2, 2, farsi).startOfDay();
 #endif
+    // Invalid because the sign is not followed by any digits
+    QTest::newRow("offset-from-utc:bare+")
+            << u"2001-09-13T07:33:01.001 +"_s << u"yyyy-MM-ddThh:mm:ss.z t"_s << 1900 << greg
+            << QDateTime();
+    QTest::newRow("offset-from-utc:bare-")
+            << u"2001-09-13T07:33:01.001 -"_s << u"yyyy-MM-ddThh:mm:ss.z t"_s << 1900 << greg
+            << QDateTime();
+    QTest::newRow("offset-from-utc:bare-UTC+")
+            << u"2001-09-13T07:33:01.001 UTC+"_s << u"yyyy-MM-ddThh:mm:ss.z t"_s << 1900 << greg
+            << QDateTime();
+    QTest::newRow("offset-from-utc:bare-UTC-")
+            << u"2001-09-13T07:33:01.001 UTC-"_s << u"yyyy-MM-ddThh:mm:ss.z t"_s << 1900 << greg
+            << QDateTime();
 }
 
 void tst_QDateTime::fromStringStringFormat()
