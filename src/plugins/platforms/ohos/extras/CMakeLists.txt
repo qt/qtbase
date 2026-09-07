@@ -13,9 +13,9 @@ qt_internal_add_module(HarmonyExtrasPrivate
         qohosappbundleinfo.cpp qohosappbundleinfo_p.h
         qohosappcontext.cpp qohosappcontext_p.h
         qohosbundlemanager_p.h
-        qohosenums_p.h
         qohosfileshare.cpp qohosfileshare_p.h
         qohosfileutils.cpp qohosfileutils_p.h
+        qohosharmonyextrasenums_p.h
         qohosjsenv_p.h
         qohosoperationstatus.cpp qohosoperationstatus_p.h
         qohospasteboard.cpp qohospasteboard_p.h

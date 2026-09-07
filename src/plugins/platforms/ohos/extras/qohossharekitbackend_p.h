@@ -15,7 +15,7 @@
 // We mean it.
 //
 
-#include <QtHarmonyExtras/private/qohosenums_p.h>
+#include <QtHarmonyExtras/private/qohosharmonyextrasenums_p.h>
 
 #include <QtGui/qwindow.h>
 
@@ -60,11 +60,11 @@ struct ShareControllerAnchor
     std::optional<QSize> size;
 };
 
-using SelectionMode = QtOhos::enums::kit::ShareKit::systemShare::SelectionMode;
+using SelectionMode = QtOhosHarmonyExtras::enums::kit::ShareKit::systemShare::SelectionMode;
 
-using SharePreviewMode = QtOhos::enums::kit::ShareKit::systemShare::SharePreviewMode;
+using SharePreviewMode = QtOhosHarmonyExtras::enums::kit::ShareKit::systemShare::SharePreviewMode;
 
-using ShareAbilityType = QtOhos::enums::kit::ShareKit::systemShare::ShareAbilityType;
+using ShareAbilityType = QtOhosHarmonyExtras::enums::kit::ShareKit::systemShare::ShareAbilityType;
 
 struct ControllerOptions
 {

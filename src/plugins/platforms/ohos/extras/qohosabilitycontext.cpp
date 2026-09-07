@@ -3,7 +3,7 @@
 
 #include "qohosabilitycontext_p.h"
 
-#include <QtHarmonyExtras/private/qohosenums_p.h>
+#include <QtHarmonyExtras/private/qohosharmonyextrasenums_p.h>
 #include <QtHarmonyExtras/private/qohosjsenv_p.h>
 #include <QtHarmonyExtras/private/qohosoperationstatus_p.h>
 #include <QtHarmonyExtras/private/qohossharekit_p.h>
@@ -77,7 +77,7 @@ std::optional<bool> QOhosOpenLinkOptionsImpl::appLinkingOnly() const
     return m_appLinkingOnly;
 }
 
-using OnContinueResult = QtOhos::enums::ohos::app::ability::AbilityConstant::OnContinueResult;
+using OnContinueResult = QtOhosHarmonyExtras::enums::ohos::app::ability::AbilityConstant::OnContinueResult;
 
 enum class AbilityOnContinueResponseStatus
 {
@@ -326,10 +326,10 @@ int QOhosOnContinueContextImpl::sourceApplicationVersionCode() const
     return m_sourceApplicationVersionCode;
 }
 
-std::optional<QtOhos::enums::ohos::app::ability::AbilityConstant::WindowMode> tryMapWindowModeToOhosOrLogWarning(
+std::optional<QtOhosHarmonyExtras::enums::ohos::app::ability::AbilityConstant::WindowMode> tryMapWindowModeToOhosOrLogWarning(
     QOhosStartOptionsData::WindowMode windowMode)
 {
-    namespace AbilityConstant = QtOhos::enums::ohos::app::ability::AbilityConstant;
+    namespace AbilityConstant = QtOhosHarmonyExtras::enums::ohos::app::ability::AbilityConstant;
     using OptionsData = QOhosStartOptionsData;
 
     switch (windowMode) {
@@ -346,10 +346,10 @@ std::optional<QtOhos::enums::ohos::app::ability::AbilityConstant::WindowMode> tr
     return {};
 }
 
-std::optional<QtOhos::enums::ohos::app::ability::contextConstant::ProcessMode> tryMapProcessModeToOhosOrLogWarning(
+std::optional<QtOhosHarmonyExtras::enums::ohos::app::ability::contextConstant::ProcessMode> tryMapProcessModeToOhosOrLogWarning(
     QOhosStartOptionsData::ProcessMode processMode)
 {
-    namespace contextConstant = QtOhos::enums::ohos::app::ability::contextConstant;
+    namespace contextConstant = QtOhosHarmonyExtras::enums::ohos::app::ability::contextConstant;
     using OptionsData = QOhosStartOptionsData;
 
     switch (processMode) {
@@ -364,10 +364,10 @@ std::optional<QtOhos::enums::ohos::app::ability::contextConstant::ProcessMode> t
     return {};
 }
 
-std::optional<QtOhos::enums::ohos::app::ability::contextConstant::StartupVisibility> tryMapStartupVisibilityToOhosOrLogWarning(
+std::optional<QtOhosHarmonyExtras::enums::ohos::app::ability::contextConstant::StartupVisibility> tryMapStartupVisibilityToOhosOrLogWarning(
     QOhosStartOptionsData::StartupVisibility startupVisibility)
 {
-    namespace contextConstant = QtOhos::enums::ohos::app::ability::contextConstant;
+    namespace contextConstant = QtOhosHarmonyExtras::enums::ohos::app::ability::contextConstant;
     using OptionsData = QOhosStartOptionsData;
 
     switch (startupVisibility) {
@@ -382,10 +382,10 @@ std::optional<QtOhos::enums::ohos::app::ability::contextConstant::StartupVisibil
     return {};
 }
 
-std::optional<QtOhos::enums::ohos::bundle::bundleManager::SupportWindowMode> tryMapSupportWindowModeToOhosOrLogWarning(
+std::optional<QtOhosHarmonyExtras::enums::ohos::bundle::bundleManager::SupportWindowMode> tryMapSupportWindowModeToOhosOrLogWarning(
     QOhosStartOptionsData::SupportWindowMode supportWindowMode)
 {
-    namespace bundleManager = QtOhos::enums::ohos::bundle::bundleManager;
+    namespace bundleManager = QtOhosHarmonyExtras::enums::ohos::bundle::bundleManager;
     using OptionsData = QOhosStartOptionsData;
 
     switch (supportWindowMode) {
@@ -513,7 +513,7 @@ QNapi::Object convertStartOptionsToNapiObject(
                         {
                             "type",
                             jsState.mapOhosEnumToJs(
-                                QtOhos::enums::ohos::window::AnimationType::FADE_IN_OUT),
+                                QtOhosHarmonyExtras::enums::ohos::window::AnimationType::FADE_IN_OUT),
                         }
                     }));
         }
@@ -855,7 +855,7 @@ bool tryOpenLinkImpl(QObject *optInstanceMainWindow, const QString &link, std::o
 
 void setContinuationActiveImpl(QObject *optInstanceMainWindow, bool continuationActive)
 {
-    using ContinueState = QtOhos::enums::ohos::app::ability::AbilityConstant::ContinueState;
+    using ContinueState = QtOhosHarmonyExtras::enums::ohos::app::ability::AbilityConstant::ContinueState;
 
     auto optInstanceMainWindowRef = optInstanceMainWindow != nullptr
         ? std::make_optional(QtOhos::QObjectThreadSafeRef(optInstanceMainWindow))
