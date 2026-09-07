@@ -13,9 +13,6 @@
 #include <QtCore/QString>
 #include <QtCore/QHash>
 #include <QtCore/QDebug>
-#ifdef Q_OS_HARMONY
-#include <qpa/qwindowsysteminterface.h>
-#endif
 #include <memory>
 
 Q_LOGGING_CATEGORY(lcTests, "qt.widgets.tests")
@@ -225,11 +222,7 @@ void tst_QGestureRecognizer::pinchGesture_data()
 {
     QTest::addColumn<int>("pinchSubTest");
     QTest::addColumn<bool>("gestureExpected");
-#ifdef Q_OS_HARMONY
-    QTest::newRow("NativeGesture") << int(StandardPinchSubTest) << true;
-#else
     QTest::newRow("Standard") << int(StandardPinchSubTest) << true;
-#endif
 }
 
 void tst_QGestureRecognizer::pinchGesture()
@@ -246,31 +239,6 @@ void tst_QGestureRecognizer::pinchGesture()
     QVERIFY(QTest::qWaitForWindowExposed(&widget));
     QTRY_VERIFY(QApplication::topLevelAt(widget.geometry().center()));
 
-#ifdef Q_OS_HARMONY
-    // QOhosPinchGestureRecognizer::recognize() only handles QNativeGestureEvent
-    // (event->type() == QEvent::NativeGesture); it returns Ignore for
-    // TouchBegin/Update/End, which QTest::touchEvent sends.
-    // Simulate the ArkUI-style pinch sequence using QNativeGestureEvents directly.
-    QWindow *window = widget.windowHandle();
-    const QPointF localPos = widget.rect().center();
-    const QPointF screenPos = widget.mapToGlobal(widget.rect().center());
-    ulong timestamp = 0;
-
-    QWindowSystemInterface::handleGestureEventWithRealValue(
-        window, timestamp++, m_touchDevice.get(),
-        Qt::BeginNativeGesture, 1.0, localPos, screenPos);
-
-    for (int s = 0; s < 5; ++s) {
-        QWindowSystemInterface::handleGestureEventWithRealValue(
-            window, timestamp++, m_touchDevice.get(),
-            Qt::ZoomNativeGesture, 1.0 + (s + 1) * 0.3, localPos, screenPos);
-    }
-
-    QWindowSystemInterface::handleGestureEventWithRealValue(
-        window, timestamp++, m_touchDevice.get(),
-        Qt::EndNativeGesture, 1.0, localPos, screenPos);
-    QWindowSystemInterface::flushWindowSystemEvents();
-#else
     QList<QPoint> points;
     points.append(widget.rect().center());
     points.append(points.front() + QPoint(0, 20));
@@ -287,7 +255,6 @@ void tst_QGestureRecognizer::pinchGesture()
     }
 
     releaseSequence(pinchSequence, points, &widget);
-#endif
 
     if (gestureExpected) {
         QTRY_VERIFY(widget.gestureReceived(gestureType));
