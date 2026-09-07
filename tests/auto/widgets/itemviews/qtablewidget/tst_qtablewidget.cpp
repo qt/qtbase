@@ -1602,24 +1602,24 @@ void tst_QTableWidget::sizeHint()
         QTRY_COMPARE(view.size(), viewSize);
     }
 
-    QApplication::processEvents(); // execute delayed layouts
+    view.doItemsLayout(); // execute delayed layouts
     auto sizeHint = view.sizeHint();
     view.hide();
-    QCOMPARE(view.sizeHint(), sizeHint);
+    QTRY_COMPARE(view.sizeHint(), sizeHint);
 
     view.horizontalHeader()->hide();
     view.show();
-    QApplication::processEvents(); // execute delayed layouts
+    view.doItemsLayout(); // execute delayed layouts
     sizeHint = view.sizeHint();
     view.hide();
-    QCOMPARE(view.sizeHint(), sizeHint);
+    QTRY_COMPARE(view.sizeHint(), sizeHint);
 
     view.verticalHeader()->hide();
     view.show();
-    QApplication::processEvents(); // execute delayed layouts
+    view.doItemsLayout(); // execute delayed layouts
     sizeHint = view.sizeHint();
     view.hide();
-    QCOMPARE(view.sizeHint(), sizeHint);
+    QTRY_COMPARE(view.sizeHint(), sizeHint);
 }
 
 void tst_QTableWidget::task231094()
