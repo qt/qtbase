@@ -6,7 +6,7 @@
 #include <QtCore/private/qohoslogger_p.h>
 #include <optional>
 #include <qohosapppermissions_p.h>
-#include <qohosenums.h>
+#include <qohosqpaenums.h>
 #include <qohosutils.h>
 #include <render/qwindowproxyregistry.h>
 
@@ -23,9 +23,9 @@ QWindow *getFocusedWindowOrNull()
 }
 
 std::optional<Qt::PermissionStatus> tryMapPermissionStatusFromOhos(
-    QtOhos::enums::ohos::abilityAccessCtrl::PermissionStatus ohosPermissionStatus)
+    QtOhosQpa::enums::ohos::abilityAccessCtrl::PermissionStatus ohosPermissionStatus)
 {
-    using OhosPermissionStatus = QtOhos::enums::ohos::abilityAccessCtrl::PermissionStatus;
+    using OhosPermissionStatus = QtOhosQpa::enums::ohos::abilityAccessCtrl::PermissionStatus;
 
     switch (ohosPermissionStatus) {
     case OhosPermissionStatus::GRANTED:
@@ -41,10 +41,10 @@ std::optional<Qt::PermissionStatus> tryMapPermissionStatusFromOhos(
     return {};
 }
 
-std::optional<QtOhos::enums::ohos::abilityAccessCtrl::PermissionStatus> tryGetSelfPermissionStatus(
+std::optional<QtOhosQpa::enums::ohos::abilityAccessCtrl::PermissionStatus> tryGetSelfPermissionStatus(
     QtOhos::JsState &jsState, const std::string &permissionName)
 {
-    using OhosPermissionStatus = QtOhos::enums::ohos::abilityAccessCtrl::PermissionStatus;
+    using OhosPermissionStatus = QtOhosQpa::enums::ohos::abilityAccessCtrl::PermissionStatus;
 
     std::optional<QNapi::Number> optJsPermissionStatusValue;
     try {

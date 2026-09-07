@@ -39,9 +39,9 @@
 #include <map>
 #include <qohosapppermissions_p.h>
 #include <qohosdeviceinfo_p.h>
-#include <qohosenums.h>
 #include <qohospermissionshelperimpl.h>
 #include <qohosplugincore.h>
+#include <qohosqpaenums.h>
 #include <signal.h>
 #include <string>
 #include <sys/resource.h>
@@ -101,7 +101,7 @@ constexpr const char *qtMainThreadStackSizeEnvVariableName = "IO__QT__OHOS__QT_M
 constexpr std::size_t defaultQtThreadStackSize = 8 * 1024 * 1024;
 
 constexpr auto minSupportedOhosSdkApiVersion = 23;
-constexpr auto defaultColorMode = enums::ohos::app::ability::ConfigurationConstant::ColorMode::COLOR_MODE_NOT_SET;
+constexpr auto defaultColorMode = QtOhosQpa::enums::ohos::app::ability::ConfigurationConstant::ColorMode::COLOR_MODE_NOT_SET;
 
 std::atomic<bool> experimentalEnableGlBackinStore{false};
 std::atomic<bool> debugUseBasicStyleAndTheme{false};

@@ -33,7 +33,6 @@ qt_internal_add_plugin(QOhosPlatformIntegrationPlugin
         qohosdeviceinfo.cpp qohosdeviceinfo_p.h
         qohosdisplayinfo.cpp qohosdisplayinfo.h
         qohoseglplatformcontext.cpp qohoseglplatformcontext.h
-        qohosenums.h
         qohoseventdispatcher.cpp qohoseventdispatcher.h
         qohosfloatingwindow.cpp qohosfloatingwindow.h
         qohosforeignwindow.cpp qohosforeignwindow.h
@@ -71,6 +70,7 @@ qt_internal_add_plugin(QOhosPlatformIntegrationPlugin
         qohosplatformwindow.cpp qohosplatformwindow.h
         qohosplugincore.cpp qohosplugincore.h
         qohosqabilityinstancesmanager.cpp qohosqabilityinstancesmanager.h
+        qohosqpaenums.h
         qohosqpafunctionsimpl.cpp qohosqpafunctions_p.h
         qohosruntimedevicetypeandmode.cpp qohosruntimedevicetypeandmode.h
         qohosscreenmanager.cpp qohosscreenmanager.h

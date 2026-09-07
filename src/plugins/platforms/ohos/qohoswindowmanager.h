@@ -9,8 +9,8 @@
 #include <QtCore/qrect.h>
 #include <QtCore/qstringlist.h>
 #include <QtCore/qstring.h>
-#include <qohosenums.h>
 #include <qohosplugincore.h>
+#include <qohosqpaenums.h>
 #include <functional>
 #include <optional>
 
@@ -19,7 +19,7 @@ QT_BEGIN_NAMESPACE
 namespace QOhosWindowManager
 {
 
-using DocumentSelectMode = QtOhos::enums::ohos::file::picker::DocumentSelectMode;
+using DocumentSelectMode = QtOhosQpa::enums::ohos::file::picker::DocumentSelectMode;
 
 enum class ResultMultiplicity {
     SINGLE,

@@ -8,12 +8,12 @@
 #include <QtCore/private/qohospathutils_p.h>
 #include <QtCore/qfileinfo.h>
 #include <QtGui/qcolor.h>
-#include <qohosenums.h>
 #include <qohosplugincore.h>
+#include <qohosqpaenums.h>
 
 QT_BEGIN_NAMESPACE
 
-using QOhosWantConstantFlags = QtOhos::enums::ohos::app::ability::wantConstant::Flags;
+using QOhosWantConstantFlags = QtOhosQpa::enums::ohos::app::ability::wantConstant::Flags;
 
 namespace {
 

@@ -11,12 +11,12 @@
 #include <info/application_target_sdk_version.h>
 #include <memory>
 #include <qohosapppermissions_p.h>
-#include <qohosenums.h>
 #include <qohosplatformclipboard.h>
 #include <qohosplatformintegration.h>
 #include <qohosplatformservices.h>
 #include <qohosplatformwindow.h>
 #include <qohosplugincore.h>
+#include <qohosqpaenums.h>
 #include <qohosqpafunctions_p.h>
 #include <qohosutils.h>
 #include <qohoswindowproperty.h>
