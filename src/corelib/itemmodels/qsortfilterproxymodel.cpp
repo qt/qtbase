@@ -2067,9 +2067,10 @@ void QSortFilterProxyModelPrivate::_q_sourceColumnsMoved(
     shown.
 
     A common use case is to let the user specify the filter regular expression,
-    wildcard pattern, or fixed string in a QLineEdit and to connect the
-    \l{QLineEdit::textChanged()}{textChanged()} signal to setFilterRegularExpression(),
-    setFilterWildcard(), or setFilterFixedString() to reapply the filter.
+    wildcard pattern, or fixed string in a QLineEdit. To do this, connect the
+    \l{QLineEdit::textChanged()} or \l{QLineEdit::}{textEdited()}
+    signal to either setFilterRegularExpression(),
+    setFilterWildcard(), or setFilterFixedString().
 
     Custom filtering behavior can be achieved by reimplementing the
     filterAcceptsRow() and filterAcceptsColumn() functions. For
