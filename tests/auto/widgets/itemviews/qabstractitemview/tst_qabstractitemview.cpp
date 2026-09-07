@@ -3150,42 +3150,62 @@ void tst_QAbstractItemView::selectionAutoScrolling()
 
     // remove all visible items so that we don't select any items at the edges, as that
     // would scroll the view already
-    for (int x = 0; x < listview.viewport()->width(); x += 5) {
-        for (int y = 0; y < listview.viewport()->height(); y += 5) {
-            const QModelIndex index = listview.indexAt(QPoint(x, y));
-            if (index.isValid())
-                delete listModel->itemFromIndex(index);
+    {
+        QList<QStandardItem *> itemsToRemove;
+        for (int x = 0; x < listview.viewport()->width(); x += 5) {
+            for (int y = 0; y < listview.viewport()->height(); y += 5) {
+                const QModelIndex index = listview.indexAt(QPoint(x, y));
+                if (index.isValid()) {
+                    QStandardItem *item = listModel->itemFromIndex(index);
+                    if (!itemsToRemove.contains(item))
+                        itemsToRemove.append(item);
+                }
+            }
         }
+        qDeleteAll(itemsToRemove);
     }
     // remove all items around the edges of the model
     QRect topLeftRect = listview.visualRect(listModel->index(0, 0));
     const QPoint topLeftCenter(topLeftRect.center());
     QPoint bottomRightCenter;
-    for (int x = 0; x < listview.horizontalScrollBar()->maximum() + listview.viewport()->width(); x += 5) {
-        const QModelIndex index = listview.indexAt(topLeftCenter + QPoint(x, 0));
-        if (index.isValid()) {
-            delete listModel->itemFromIndex(index);
-            bottomRightCenter.rx() = x;
+    {
+        QList<QStandardItem *> itemsToRemove;
+        for (int x = 0; x < listview.horizontalScrollBar()->maximum() + listview.viewport()->width(); x += 5) {
+            const QModelIndex index = listview.indexAt(topLeftCenter + QPoint(x, 0));
+            if (index.isValid()) {
+                QStandardItem *item = listModel->itemFromIndex(index);
+                if (!itemsToRemove.contains(item))
+                    itemsToRemove.append(item);
+                bottomRightCenter.rx() = x;
+            }
         }
-    }
-    for (int y = 0; y < listview.verticalScrollBar()->maximum() + listview.viewport()->height(); y += 5) {
-        const QModelIndex index = listview.indexAt(topLeftCenter + QPoint(0, y));
-        if (index.isValid()) {
-            delete listModel->itemFromIndex(index);
-            bottomRightCenter.ry() = y;
+        for (int y = 0; y < listview.verticalScrollBar()->maximum() + listview.viewport()->height(); y += 5) {
+            const QModelIndex index = listview.indexAt(topLeftCenter + QPoint(0, y));
+            if (index.isValid()) {
+                QStandardItem *item = listModel->itemFromIndex(index);
+                if (!itemsToRemove.contains(item))
+                    itemsToRemove.append(item);
+                bottomRightCenter.ry() = y;
+            }
         }
+        for (int x = 0; x < bottomRightCenter.x(); x += 5) {
+            const QModelIndex index = listview.indexAt(topLeftCenter + QPoint(x, bottomRightCenter.y()));
+            if (index.isValid()) {
+                QStandardItem *item = listModel->itemFromIndex(index);
+                if (!itemsToRemove.contains(item))
+                    itemsToRemove.append(item);
+            }
+        }
+        for (int y = 0; y < bottomRightCenter.y(); y += 5) {
+            const QModelIndex index = listview.indexAt(topLeftCenter + QPoint(bottomRightCenter.x(), y));
+            if (index.isValid()) {
+                QStandardItem *item = listModel->itemFromIndex(index);
+                if (!itemsToRemove.contains(item))
+                    itemsToRemove.append(item);
+            }
+        }
+        qDeleteAll(itemsToRemove);
     }
-    for (int x = 0; x < bottomRightCenter.x(); x += 5) {
-        const QModelIndex index = listview.indexAt(topLeftCenter + QPoint(x, bottomRightCenter.y()));
-        if (index.isValid())
-            delete listModel->itemFromIndex(index);
-    }
-    for (int y = 0; y < bottomRightCenter.y(); y += 5) {
-        const QModelIndex index = listview.indexAt(topLeftCenter + QPoint(bottomRightCenter.x(), y));
-        if (index.isValid())
-            delete listModel->itemFromIndex(index);
-    }
-
 
     // Simulate multiple select behavior; start in the middle, drag to the edge
     const QPoint pressPoint(listview.viewport()->width() / 2, listview.viewport()->height() / 2);
