@@ -3,7 +3,7 @@
 
 #include "qohoswantinfo_p.h"
 
-#include <QtHarmonyExtras/private/qohosenums_p.h>
+#include <QtHarmonyExtras/private/qohosharmonyextrasenums_p.h>
 #include <QtHarmonyExtras/private/qohosjsenv_p.h>
 
 #include <QtCore/qbytearray.h>
@@ -134,9 +134,9 @@ std::optional<detail::SharedRecord> tryConvertNapiObjectToSharedRecord(QNapi::Ob
 }
 
 std::optional<detail::WantInfoPriv::LaunchReason> tryMapOhosLaunchReasonToWantInfoEnum(
-    QtOhos::enums::ohos::app::ability::AbilityConstant::LaunchReason ohosLaunchReason)
+    QtOhosHarmonyExtras::enums::ohos::app::ability::AbilityConstant::LaunchReason ohosLaunchReason)
 {
-    using OhosLaunchReason = QtOhos::enums::ohos::app::ability::AbilityConstant::LaunchReason;
+    using OhosLaunchReason = QtOhosHarmonyExtras::enums::ohos::app::ability::AbilityConstant::LaunchReason;
     using WantInfoPriv = detail::WantInfoPriv;
 
     switch (ohosLaunchReason) {
@@ -164,7 +164,7 @@ detail::WantInfoPriv::LaunchReason mapJsLaunchReasonToWantInfoEnumWithFallback(
     QOhosJsState &jsState, QNapi::Number jsLaunchReason)
 {
     auto optLaunchReasonJsEnum =
-        jsState.tryMapOhosEnumFromJs<QtOhos::enums::ohos::app::ability::AbilityConstant::LaunchReason>(jsLaunchReason);
+        jsState.tryMapOhosEnumFromJs<QtOhosHarmonyExtras::enums::ohos::app::ability::AbilityConstant::LaunchReason>(jsLaunchReason);
     auto optLaunchReason =
         optLaunchReasonJsEnum.has_value()
             ? tryMapOhosLaunchReasonToWantInfoEnum(optLaunchReasonJsEnum.value())

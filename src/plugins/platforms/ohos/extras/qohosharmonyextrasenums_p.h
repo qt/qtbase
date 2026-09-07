@@ -1,8 +1,8 @@
 // Copyright (C) 2026 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#ifndef QOHOSENUMS_P_H
-#define QOHOSENUMS_P_H
+#ifndef QOHOSHARMONYEXTRASENUMS_P_H
+#define QOHOSHARMONYEXTRASENUMS_P_H
 
 //
 //  W A R N I N G
@@ -22,7 +22,7 @@
 
 QT_BEGIN_NAMESPACE
 
-namespace QtOhos {
+namespace QtOhosHarmonyExtras {
 
 namespace enums {
 
@@ -151,13 +151,17 @@ enum class AnimationType {
 
 }
 
+}
+
+namespace QtOhos {
+
 template<typename Enum>
 struct OhosEnumMeta;
 
 template<>
-struct OhosEnumMeta<enums::kit::ShareKit::systemShare::SelectionMode>
+struct OhosEnumMeta<QtOhosHarmonyExtras::enums::kit::ShareKit::systemShare::SelectionMode>
 {
-    using Enum = enums::kit::ShareKit::systemShare::SelectionMode;
+    using Enum = QtOhosHarmonyExtras::enums::kit::ShareKit::systemShare::SelectionMode;
     static constexpr const char *fullTypeName = "@kit.ShareKit.systemShare.SelectionMode";
     static constexpr std::array<std::pair<Enum, const char *>, 2> enumeratorsNames = {{
         {Enum::BATCH, "BATCH"},
@@ -166,9 +170,9 @@ struct OhosEnumMeta<enums::kit::ShareKit::systemShare::SelectionMode>
 };
 
 template<>
-struct OhosEnumMeta<enums::kit::ShareKit::systemShare::ShareAbilityType>
+struct OhosEnumMeta<QtOhosHarmonyExtras::enums::kit::ShareKit::systemShare::ShareAbilityType>
 {
-    using Enum = enums::kit::ShareKit::systemShare::ShareAbilityType;
+    using Enum = QtOhosHarmonyExtras::enums::kit::ShareKit::systemShare::ShareAbilityType;
     static constexpr const char *fullTypeName = "@kit.ShareKit.systemShare.ShareAbilityType";
     static constexpr std::array<std::pair<Enum, const char *>, 5> enumeratorsNames = {{
         {Enum::COPY_TO_PASTEBOARD, "COPY_TO_PASTEBOARD"},
@@ -180,9 +184,9 @@ struct OhosEnumMeta<enums::kit::ShareKit::systemShare::ShareAbilityType>
 };
 
 template<>
-struct OhosEnumMeta<enums::kit::ShareKit::systemShare::SharePreviewMode>
+struct OhosEnumMeta<QtOhosHarmonyExtras::enums::kit::ShareKit::systemShare::SharePreviewMode>
 {
-    using Enum = enums::kit::ShareKit::systemShare::SharePreviewMode;
+    using Enum = QtOhosHarmonyExtras::enums::kit::ShareKit::systemShare::SharePreviewMode;
     static constexpr const char *fullTypeName = "@kit.ShareKit.systemShare.SharePreviewMode";
     static constexpr std::array<std::pair<Enum, const char *>, 2> enumeratorsNames = {{
         {Enum::DEFAULT, "DEFAULT"},
@@ -191,9 +195,9 @@ struct OhosEnumMeta<enums::kit::ShareKit::systemShare::SharePreviewMode>
 };
 
 template<>
-struct OhosEnumMeta<enums::ohos::app::ability::AbilityConstant::ContinueState>
+struct OhosEnumMeta<QtOhosHarmonyExtras::enums::ohos::app::ability::AbilityConstant::ContinueState>
 {
-    using Enum = enums::ohos::app::ability::AbilityConstant::ContinueState;
+    using Enum = QtOhosHarmonyExtras::enums::ohos::app::ability::AbilityConstant::ContinueState;
     static constexpr const char *fullTypeName = "@ohos.app.ability.AbilityConstant.ContinueState";
     static constexpr std::array<std::pair<Enum, const char *>, 2> enumeratorsNames = {{
         {Enum::ACTIVE, "ACTIVE"},
@@ -202,9 +206,9 @@ struct OhosEnumMeta<enums::ohos::app::ability::AbilityConstant::ContinueState>
 };
 
 template<>
-struct OhosEnumMeta<enums::ohos::app::ability::AbilityConstant::LaunchReason>
+struct OhosEnumMeta<QtOhosHarmonyExtras::enums::ohos::app::ability::AbilityConstant::LaunchReason>
 {
-    using Enum = enums::ohos::app::ability::AbilityConstant::LaunchReason;
+    using Enum = QtOhosHarmonyExtras::enums::ohos::app::ability::AbilityConstant::LaunchReason;
     static constexpr const char *fullTypeName = "@ohos.app.ability.AbilityConstant.LaunchReason";
     static constexpr std::array<std::pair<Enum, const char *>, 10> enumeratorsNames = {{
         {Enum::APP_RECOVERY, "APP_RECOVERY"},
@@ -221,9 +225,9 @@ struct OhosEnumMeta<enums::ohos::app::ability::AbilityConstant::LaunchReason>
 };
 
 template<>
-struct OhosEnumMeta<enums::ohos::app::ability::AbilityConstant::OnContinueResult>
+struct OhosEnumMeta<QtOhosHarmonyExtras::enums::ohos::app::ability::AbilityConstant::OnContinueResult>
 {
-    using Enum = enums::ohos::app::ability::AbilityConstant::OnContinueResult;
+    using Enum = QtOhosHarmonyExtras::enums::ohos::app::ability::AbilityConstant::OnContinueResult;
     static constexpr const char *fullTypeName = "@ohos.app.ability.AbilityConstant.OnContinueResult";
     static constexpr std::array<std::pair<Enum, const char *>, 3> enumeratorsNames = {{
         {Enum::AGREE, "AGREE"},
@@ -233,9 +237,9 @@ struct OhosEnumMeta<enums::ohos::app::ability::AbilityConstant::OnContinueResult
 };
 
 template<>
-struct OhosEnumMeta<enums::ohos::app::ability::AbilityConstant::WindowMode>
+struct OhosEnumMeta<QtOhosHarmonyExtras::enums::ohos::app::ability::AbilityConstant::WindowMode>
 {
-    using Enum = enums::ohos::app::ability::AbilityConstant::WindowMode;
+    using Enum = QtOhosHarmonyExtras::enums::ohos::app::ability::AbilityConstant::WindowMode;
     static constexpr const char *fullTypeName = "@ohos.app.ability.AbilityConstant.WindowMode";
     static constexpr std::array<std::pair<Enum, const char *>, 3> enumeratorsNames = {{
         {Enum::WINDOW_MODE_FULLSCREEN, "WINDOW_MODE_FULLSCREEN"},
@@ -245,9 +249,9 @@ struct OhosEnumMeta<enums::ohos::app::ability::AbilityConstant::WindowMode>
 };
 
 template<>
-struct OhosEnumMeta<enums::ohos::app::ability::ConfigurationConstant::ColorMode>
+struct OhosEnumMeta<QtOhosHarmonyExtras::enums::ohos::app::ability::ConfigurationConstant::ColorMode>
 {
-    using Enum = enums::ohos::app::ability::ConfigurationConstant::ColorMode;
+    using Enum = QtOhosHarmonyExtras::enums::ohos::app::ability::ConfigurationConstant::ColorMode;
     static constexpr const char *fullTypeName = "@ohos.app.ability.ConfigurationConstant.ColorMode";
     static constexpr std::array<std::pair<Enum, const char *>, 3> enumeratorsNames = {{
         {Enum::COLOR_MODE_DARK, "COLOR_MODE_DARK"},
@@ -257,9 +261,9 @@ struct OhosEnumMeta<enums::ohos::app::ability::ConfigurationConstant::ColorMode>
 };
 
 template<>
-struct OhosEnumMeta<enums::ohos::app::ability::contextConstant::ProcessMode>
+struct OhosEnumMeta<QtOhosHarmonyExtras::enums::ohos::app::ability::contextConstant::ProcessMode>
 {
-    using Enum = enums::ohos::app::ability::contextConstant::ProcessMode;
+    using Enum = QtOhosHarmonyExtras::enums::ohos::app::ability::contextConstant::ProcessMode;
     static constexpr const char *fullTypeName = "@ohos.app.ability.contextConstant.ProcessMode";
     static constexpr std::array<std::pair<Enum, const char *>, 3> enumeratorsNames = {{
         {Enum::ATTACH_TO_STATUS_BAR_ITEM, "ATTACH_TO_STATUS_BAR_ITEM"},
@@ -269,9 +273,9 @@ struct OhosEnumMeta<enums::ohos::app::ability::contextConstant::ProcessMode>
 };
 
 template<>
-struct OhosEnumMeta<enums::ohos::app::ability::contextConstant::StartupVisibility>
+struct OhosEnumMeta<QtOhosHarmonyExtras::enums::ohos::app::ability::contextConstant::StartupVisibility>
 {
-    using Enum = enums::ohos::app::ability::contextConstant::StartupVisibility;
+    using Enum = QtOhosHarmonyExtras::enums::ohos::app::ability::contextConstant::StartupVisibility;
     static constexpr const char *fullTypeName = "@ohos.app.ability.contextConstant.StartupVisibility";
     static constexpr std::array<std::pair<Enum, const char *>, 2> enumeratorsNames = {{
         {Enum::STARTUP_HIDE, "STARTUP_HIDE"},
@@ -280,9 +284,9 @@ struct OhosEnumMeta<enums::ohos::app::ability::contextConstant::StartupVisibilit
 };
 
 template<>
-struct OhosEnumMeta<enums::ohos::bundle::bundleManager::SupportWindowMode>
+struct OhosEnumMeta<QtOhosHarmonyExtras::enums::ohos::bundle::bundleManager::SupportWindowMode>
 {
-    using Enum = enums::ohos::bundle::bundleManager::SupportWindowMode;
+    using Enum = QtOhosHarmonyExtras::enums::ohos::bundle::bundleManager::SupportWindowMode;
     static constexpr const char *fullTypeName = "@ohos.bundle.bundleManager.SupportWindowMode";
     static constexpr std::array<std::pair<Enum, const char *>, 3> enumeratorsNames = {{
         {Enum::FLOATING, "FLOATING"},
@@ -292,9 +296,9 @@ struct OhosEnumMeta<enums::ohos::bundle::bundleManager::SupportWindowMode>
 };
 
 template<>
-struct OhosEnumMeta<enums::ohos::window::AnimationType>
+struct OhosEnumMeta<QtOhosHarmonyExtras::enums::ohos::window::AnimationType>
 {
-    using Enum = enums::ohos::window::AnimationType;
+    using Enum = QtOhosHarmonyExtras::enums::ohos::window::AnimationType;
     static constexpr const char *fullTypeName = "@ohos.window.AnimationType";
     static constexpr std::array<std::pair<Enum, const char *>, 1> enumeratorsNames = {{
         {Enum::FADE_IN_OUT, "FADE_IN_OUT"},
@@ -305,17 +309,17 @@ struct OhosEnumMeta<enums::ohos::window::AnimationType>
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::kit::ShareKit::systemShare::SelectionMode));
-Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::kit::ShareKit::systemShare::ShareAbilityType));
-Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::kit::ShareKit::systemShare::SharePreviewMode));
-Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::app::ability::AbilityConstant::ContinueState));
-Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::app::ability::AbilityConstant::LaunchReason));
-Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::app::ability::AbilityConstant::OnContinueResult));
-Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::app::ability::AbilityConstant::WindowMode));
-Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::app::ability::ConfigurationConstant::ColorMode));
-Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::app::ability::contextConstant::ProcessMode));
-Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::app::ability::contextConstant::StartupVisibility));
-Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::bundle::bundleManager::SupportWindowMode));
-Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::window::AnimationType));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhosHarmonyExtras::enums::kit::ShareKit::systemShare::SelectionMode));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhosHarmonyExtras::enums::kit::ShareKit::systemShare::ShareAbilityType));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhosHarmonyExtras::enums::kit::ShareKit::systemShare::SharePreviewMode));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhosHarmonyExtras::enums::ohos::app::ability::AbilityConstant::ContinueState));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhosHarmonyExtras::enums::ohos::app::ability::AbilityConstant::LaunchReason));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhosHarmonyExtras::enums::ohos::app::ability::AbilityConstant::OnContinueResult));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhosHarmonyExtras::enums::ohos::app::ability::AbilityConstant::WindowMode));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhosHarmonyExtras::enums::ohos::app::ability::ConfigurationConstant::ColorMode));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhosHarmonyExtras::enums::ohos::app::ability::contextConstant::ProcessMode));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhosHarmonyExtras::enums::ohos::app::ability::contextConstant::StartupVisibility));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhosHarmonyExtras::enums::ohos::bundle::bundleManager::SupportWindowMode));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhosHarmonyExtras::enums::ohos::window::AnimationType));
 
 #endif
