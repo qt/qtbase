@@ -1,8 +1,8 @@
 // Copyright (C) 2026 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#ifndef QOHOSENUMS_H
-#define QOHOSENUMS_H
+#ifndef QOHOSNETWORKINFORMATIONENUMS_H
+#define QOHOSNETWORKINFORMATIONENUMS_H
 
 #include <QtCore/qglobal.h>
 #include <QtCore/qmetatype.h>
@@ -11,7 +11,7 @@
 
 QT_BEGIN_NAMESPACE
 
-namespace QtOhos {
+namespace QtOhosNetworkInformation {
 
 namespace enums {
 
@@ -47,13 +47,17 @@ enum class NetCap {
 
 }
 
+}
+
+namespace QtOhos {
+
 template<typename Enum>
 struct OhosEnumMeta;
 
 template<>
-struct OhosEnumMeta<enums::ohos::net::connection::NetBearType>
+struct OhosEnumMeta<QtOhosNetworkInformation::enums::ohos::net::connection::NetBearType>
 {
-    using Enum = enums::ohos::net::connection::NetBearType;
+    using Enum = QtOhosNetworkInformation::enums::ohos::net::connection::NetBearType;
     static constexpr const char *fullTypeName = "@ohos.net.connection.NetBearType";
     static constexpr std::array<std::pair<Enum, const char *>, 5> enumeratorsNames = {{
         {Enum::BEARER_BLUETOOTH, "BEARER_BLUETOOTH"},
@@ -65,9 +69,9 @@ struct OhosEnumMeta<enums::ohos::net::connection::NetBearType>
 };
 
 template<>
-struct OhosEnumMeta<enums::ohos::net::connection::NetCap>
+struct OhosEnumMeta<QtOhosNetworkInformation::enums::ohos::net::connection::NetCap>
 {
-    using Enum = enums::ohos::net::connection::NetCap;
+    using Enum = QtOhosNetworkInformation::enums::ohos::net::connection::NetCap;
     static constexpr const char *fullTypeName = "@ohos.net.connection.NetCap";
     static constexpr std::array<std::pair<Enum, const char *>, 7> enumeratorsNames = {{
         {Enum::NET_CAPABILITY_CHECKING_CONNECTIVITY, "NET_CAPABILITY_CHECKING_CONNECTIVITY"},
@@ -84,7 +88,7 @@ struct OhosEnumMeta<enums::ohos::net::connection::NetCap>
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::net::connection::NetBearType));
-Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::net::connection::NetCap));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhosNetworkInformation::enums::ohos::net::connection::NetBearType));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhosNetworkInformation::enums::ohos::net::connection::NetCap));
 
 #endif
