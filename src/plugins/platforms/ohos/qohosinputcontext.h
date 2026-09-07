@@ -5,9 +5,9 @@
 #define QOHOSINPUTCONTEXT_H
 
 #include <optional>
-#include <qohosenums.h>
 #include <qohosinputmethodproxy.h>
 #include <qohosplugincore.h>
+#include <qohosqpaenums.h>
 #include <qpa/qplatforminputcontext.h>
 #include <qpa/qwindowsysteminterface.h>
 #include <QtCore/private/qohoscommon_p.h>
@@ -22,13 +22,13 @@ class QOhosInputContext: public QPlatformInputContext
     Q_OBJECT
 
 public:
-    using RequestKeyboardReason = QtOhos::enums::ohos::inputMethod::RequestKeyboardReason;
+    using RequestKeyboardReason = QtOhosQpa::enums::ohos::inputMethod::RequestKeyboardReason;
 
-    using TextInputType = QtOhos::enums::ohos::inputMethod::TextInputType;
+    using TextInputType = QtOhosQpa::enums::ohos::inputMethod::TextInputType;
 
-    using EnterKeyType = QtOhos::enums::ohos::inputMethod::EnterKeyType;
+    using EnterKeyType = QtOhosQpa::enums::ohos::inputMethod::EnterKeyType;
 
-    using Direction = QtOhos::enums::ohos::inputMethod::Direction;
+    using Direction = QtOhosQpa::enums::ohos::inputMethod::Direction;
 
     QOhosInputContext();
     ~QOhosInputContext();

@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qohossystemtrayicon.h"
-#include "qohosenums.h"
 #include "qohosjsutils.h"
 #include "qohospixelmapconversions.h"
+#include "qohosqpaenums.h"
 #include "qohosstatusbarmenu.h"
 #include <QtCore/qdatetime.h>
 #include <QtCore/qobject.h>
@@ -193,7 +193,7 @@ QNapi::Object makeJsStatusBarIcon(QtOhos::JsState &jsState, const QIcon &icon)
 QNapi::Object makeJsNotificationContent(
     QtOhos::JsState &jsState, const std::string &title, const std::string &text)
 {
-    using ContentType = QtOhos::enums::ohos::notificationManager::ContentType;
+    using ContentType = QtOhosQpa::enums::ohos::notificationManager::ContentType;
 
     return QNapi::makeObject(
         jsState.env(),

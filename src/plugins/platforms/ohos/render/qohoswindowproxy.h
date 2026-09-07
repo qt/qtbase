@@ -23,8 +23,8 @@
 #include <qarkui/input.h>
 #include <qarkui/window.h>
 #include <qohosdisplayinfo.h>
-#include <qohosenums.h>
 #include <qohosplugincore.h>
+#include <qohosqpaenums.h>
 #include <qohosutils.h>
 #include <render/qohoswindowproxydatafactory.h>
 #include <render/qxcomponent.h>
@@ -35,17 +35,17 @@ QT_BEGIN_NAMESPACE
 class QOhosWindowProxy final
 {
 public:
-    using WindowEventType = QtOhos::enums::ohos::window::WindowEventType;
+    using WindowEventType = QtOhosQpa::enums::ohos::window::WindowEventType;
 
-    using WindowStatusType = QtOhos::enums::ohos::window::WindowStatusType;
+    using WindowStatusType = QtOhosQpa::enums::ohos::window::WindowStatusType;
 
-    using AvoidAreaType = QtOhos::enums::ohos::window::AvoidAreaType;
+    using AvoidAreaType = QtOhosQpa::enums::ohos::window::AvoidAreaType;
 
-    using RectChangeReason = QtOhos::enums::ohos::window::RectChangeReason;
+    using RectChangeReason = QtOhosQpa::enums::ohos::window::RectChangeReason;
 
-    using MaximizePresentation = QtOhos::enums::ohos::window::MaximizePresentation;
+    using MaximizePresentation = QtOhosQpa::enums::ohos::window::MaximizePresentation;
 
-    using ModalityType = QtOhos::enums::ohos::window::ModalityType;
+    using ModalityType = QtOhosQpa::enums::ohos::window::ModalityType;
 
     struct WindowEvent
     {
@@ -115,7 +115,7 @@ public:
         std::optional<bool> focusOnShow;
     };
 
-    using SupportWindowMode = QtOhos::enums::ohos::bundle::bundleManager::SupportWindowMode;
+    using SupportWindowMode = QtOhosQpa::enums::ohos::bundle::bundleManager::SupportWindowMode;
 
     struct WindowCallbacks
     {

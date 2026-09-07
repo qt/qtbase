@@ -9,8 +9,8 @@
 #include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/qstring.h>
 #include <optional>
-#include <qohosenums.h>
 #include <qohosplugincore.h>
+#include <qohosqpaenums.h>
 #include <qohosutils.h>
 #include <qpa/qplatformscreen.h>
 
@@ -18,9 +18,9 @@ QT_BEGIN_NAMESPACE
 
 struct QOhosDisplayInfo
 {
-    using JsDisplayOrientation = QtOhos::enums::ohos::display::Orientation;
+    using JsDisplayOrientation = QtOhosQpa::enums::ohos::display::Orientation;
 
-    using DisplaySourceMode = QtOhos::enums::ohos::display::DisplaySourceMode;
+    using DisplaySourceMode = QtOhosQpa::enums::ohos::display::DisplaySourceMode;
 
     using JsDisplayId = QtOhos::TypedId<double, struct JsDisplayIdTag>;
 

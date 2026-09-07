@@ -1,8 +1,8 @@
 // Copyright (C) 2025 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#ifndef QOHOSENUMS_H
-#define QOHOSENUMS_H
+#ifndef QOHOSQPAENUMS_H
+#define QOHOSQPAENUMS_H
 
 #include <QtCore/qglobal.h>
 #include <QtCore/qmetatype.h>
@@ -11,7 +11,7 @@
 
 QT_BEGIN_NAMESPACE
 
-namespace QtOhos {
+namespace QtOhosQpa {
 
 namespace enums {
 
@@ -371,13 +371,17 @@ enum class WindowStatusType {
 
 }
 
+}
+
+namespace QtOhos {
+
 template<typename Enum>
 struct OhosEnumMeta;
 
 template<>
-struct OhosEnumMeta<enums::kit::ShareKit::systemShare::SelectionMode>
+struct OhosEnumMeta<QtOhosQpa::enums::kit::ShareKit::systemShare::SelectionMode>
 {
-    using Enum = enums::kit::ShareKit::systemShare::SelectionMode;
+    using Enum = QtOhosQpa::enums::kit::ShareKit::systemShare::SelectionMode;
     static constexpr const char *fullTypeName = "@kit.ShareKit.systemShare.SelectionMode";
     static constexpr std::array<std::pair<Enum, const char *>, 2> enumeratorsNames = {{
         {Enum::BATCH, "BATCH"},
@@ -386,9 +390,9 @@ struct OhosEnumMeta<enums::kit::ShareKit::systemShare::SelectionMode>
 };
 
 template<>
-struct OhosEnumMeta<enums::kit::ShareKit::systemShare::ShareAbilityType>
+struct OhosEnumMeta<QtOhosQpa::enums::kit::ShareKit::systemShare::ShareAbilityType>
 {
-    using Enum = enums::kit::ShareKit::systemShare::ShareAbilityType;
+    using Enum = QtOhosQpa::enums::kit::ShareKit::systemShare::ShareAbilityType;
     static constexpr const char *fullTypeName = "@kit.ShareKit.systemShare.ShareAbilityType";
     static constexpr std::array<std::pair<Enum, const char *>, 5> enumeratorsNames = {{
         {Enum::COPY_TO_PASTEBOARD, "COPY_TO_PASTEBOARD"},
@@ -400,9 +404,9 @@ struct OhosEnumMeta<enums::kit::ShareKit::systemShare::ShareAbilityType>
 };
 
 template<>
-struct OhosEnumMeta<enums::kit::ShareKit::systemShare::SharePreviewMode>
+struct OhosEnumMeta<QtOhosQpa::enums::kit::ShareKit::systemShare::SharePreviewMode>
 {
-    using Enum = enums::kit::ShareKit::systemShare::SharePreviewMode;
+    using Enum = QtOhosQpa::enums::kit::ShareKit::systemShare::SharePreviewMode;
     static constexpr const char *fullTypeName = "@kit.ShareKit.systemShare.SharePreviewMode";
     static constexpr std::array<std::pair<Enum, const char *>, 2> enumeratorsNames = {{
         {Enum::DEFAULT, "DEFAULT"},
@@ -411,9 +415,9 @@ struct OhosEnumMeta<enums::kit::ShareKit::systemShare::SharePreviewMode>
 };
 
 template<>
-struct OhosEnumMeta<enums::ohos::abilityAccessCtrl::PermissionStatus>
+struct OhosEnumMeta<QtOhosQpa::enums::ohos::abilityAccessCtrl::PermissionStatus>
 {
-    using Enum = enums::ohos::abilityAccessCtrl::PermissionStatus;
+    using Enum = QtOhosQpa::enums::ohos::abilityAccessCtrl::PermissionStatus;
     static constexpr const char *fullTypeName = "@ohos.abilityAccessCtrl.PermissionStatus";
     static constexpr std::array<std::pair<Enum, const char *>, 5> enumeratorsNames = {{
         {Enum::DENIED, "DENIED"},
@@ -425,9 +429,9 @@ struct OhosEnumMeta<enums::ohos::abilityAccessCtrl::PermissionStatus>
 };
 
 template<>
-struct OhosEnumMeta<enums::ohos::app::ability::AbilityConstant::ContinueState>
+struct OhosEnumMeta<QtOhosQpa::enums::ohos::app::ability::AbilityConstant::ContinueState>
 {
-    using Enum = enums::ohos::app::ability::AbilityConstant::ContinueState;
+    using Enum = QtOhosQpa::enums::ohos::app::ability::AbilityConstant::ContinueState;
     static constexpr const char *fullTypeName = "@ohos.app.ability.AbilityConstant.ContinueState";
     static constexpr std::array<std::pair<Enum, const char *>, 2> enumeratorsNames = {{
         {Enum::ACTIVE, "ACTIVE"},
@@ -436,9 +440,9 @@ struct OhosEnumMeta<enums::ohos::app::ability::AbilityConstant::ContinueState>
 };
 
 template<>
-struct OhosEnumMeta<enums::ohos::app::ability::AbilityConstant::LaunchReason>
+struct OhosEnumMeta<QtOhosQpa::enums::ohos::app::ability::AbilityConstant::LaunchReason>
 {
-    using Enum = enums::ohos::app::ability::AbilityConstant::LaunchReason;
+    using Enum = QtOhosQpa::enums::ohos::app::ability::AbilityConstant::LaunchReason;
     static constexpr const char *fullTypeName = "@ohos.app.ability.AbilityConstant.LaunchReason";
     static constexpr std::array<std::pair<Enum, const char *>, 10> enumeratorsNames = {{
         {Enum::APP_RECOVERY, "APP_RECOVERY"},
@@ -455,9 +459,9 @@ struct OhosEnumMeta<enums::ohos::app::ability::AbilityConstant::LaunchReason>
 };
 
 template<>
-struct OhosEnumMeta<enums::ohos::app::ability::AbilityConstant::OnContinueResult>
+struct OhosEnumMeta<QtOhosQpa::enums::ohos::app::ability::AbilityConstant::OnContinueResult>
 {
-    using Enum = enums::ohos::app::ability::AbilityConstant::OnContinueResult;
+    using Enum = QtOhosQpa::enums::ohos::app::ability::AbilityConstant::OnContinueResult;
     static constexpr const char *fullTypeName = "@ohos.app.ability.AbilityConstant.OnContinueResult";
     static constexpr std::array<std::pair<Enum, const char *>, 3> enumeratorsNames = {{
         {Enum::AGREE, "AGREE"},
@@ -467,9 +471,9 @@ struct OhosEnumMeta<enums::ohos::app::ability::AbilityConstant::OnContinueResult
 };
 
 template<>
-struct OhosEnumMeta<enums::ohos::app::ability::AbilityConstant::WindowMode>
+struct OhosEnumMeta<QtOhosQpa::enums::ohos::app::ability::AbilityConstant::WindowMode>
 {
-    using Enum = enums::ohos::app::ability::AbilityConstant::WindowMode;
+    using Enum = QtOhosQpa::enums::ohos::app::ability::AbilityConstant::WindowMode;
     static constexpr const char *fullTypeName = "@ohos.app.ability.AbilityConstant.WindowMode";
     static constexpr std::array<std::pair<Enum, const char *>, 3> enumeratorsNames = {{
         {Enum::WINDOW_MODE_FULLSCREEN, "WINDOW_MODE_FULLSCREEN"},
@@ -479,9 +483,9 @@ struct OhosEnumMeta<enums::ohos::app::ability::AbilityConstant::WindowMode>
 };
 
 template<>
-struct OhosEnumMeta<enums::ohos::app::ability::ConfigurationConstant::ColorMode>
+struct OhosEnumMeta<QtOhosQpa::enums::ohos::app::ability::ConfigurationConstant::ColorMode>
 {
-    using Enum = enums::ohos::app::ability::ConfigurationConstant::ColorMode;
+    using Enum = QtOhosQpa::enums::ohos::app::ability::ConfigurationConstant::ColorMode;
     static constexpr const char *fullTypeName = "@ohos.app.ability.ConfigurationConstant.ColorMode";
     static constexpr std::array<std::pair<Enum, const char *>, 3> enumeratorsNames = {{
         {Enum::COLOR_MODE_DARK, "COLOR_MODE_DARK"},
@@ -491,9 +495,9 @@ struct OhosEnumMeta<enums::ohos::app::ability::ConfigurationConstant::ColorMode>
 };
 
 template<>
-struct OhosEnumMeta<enums::ohos::app::ability::contextConstant::ProcessMode>
+struct OhosEnumMeta<QtOhosQpa::enums::ohos::app::ability::contextConstant::ProcessMode>
 {
-    using Enum = enums::ohos::app::ability::contextConstant::ProcessMode;
+    using Enum = QtOhosQpa::enums::ohos::app::ability::contextConstant::ProcessMode;
     static constexpr const char *fullTypeName = "@ohos.app.ability.contextConstant.ProcessMode";
     static constexpr std::array<std::pair<Enum, const char *>, 3> enumeratorsNames = {{
         {Enum::ATTACH_TO_STATUS_BAR_ITEM, "ATTACH_TO_STATUS_BAR_ITEM"},
@@ -503,9 +507,9 @@ struct OhosEnumMeta<enums::ohos::app::ability::contextConstant::ProcessMode>
 };
 
 template<>
-struct OhosEnumMeta<enums::ohos::app::ability::contextConstant::StartupVisibility>
+struct OhosEnumMeta<QtOhosQpa::enums::ohos::app::ability::contextConstant::StartupVisibility>
 {
-    using Enum = enums::ohos::app::ability::contextConstant::StartupVisibility;
+    using Enum = QtOhosQpa::enums::ohos::app::ability::contextConstant::StartupVisibility;
     static constexpr const char *fullTypeName = "@ohos.app.ability.contextConstant.StartupVisibility";
     static constexpr std::array<std::pair<Enum, const char *>, 2> enumeratorsNames = {{
         {Enum::STARTUP_HIDE, "STARTUP_HIDE"},
@@ -514,9 +518,9 @@ struct OhosEnumMeta<enums::ohos::app::ability::contextConstant::StartupVisibilit
 };
 
 template<>
-struct OhosEnumMeta<enums::ohos::app::ability::wantConstant::Flags>
+struct OhosEnumMeta<QtOhosQpa::enums::ohos::app::ability::wantConstant::Flags>
 {
-    using Enum = enums::ohos::app::ability::wantConstant::Flags;
+    using Enum = QtOhosQpa::enums::ohos::app::ability::wantConstant::Flags;
     static constexpr const char *fullTypeName = "@ohos.app.ability.wantConstant.Flags";
     static constexpr std::array<std::pair<Enum, const char *>, 6> enumeratorsNames = {{
         {Enum::FLAG_ABILITY_ON_COLLABORATE, "FLAG_ABILITY_ON_COLLABORATE"},
@@ -529,9 +533,9 @@ struct OhosEnumMeta<enums::ohos::app::ability::wantConstant::Flags>
 };
 
 template<>
-struct OhosEnumMeta<enums::ohos::bundle::bundleManager::SupportWindowMode>
+struct OhosEnumMeta<QtOhosQpa::enums::ohos::bundle::bundleManager::SupportWindowMode>
 {
-    using Enum = enums::ohos::bundle::bundleManager::SupportWindowMode;
+    using Enum = QtOhosQpa::enums::ohos::bundle::bundleManager::SupportWindowMode;
     static constexpr const char *fullTypeName = "@ohos.bundle.bundleManager.SupportWindowMode";
     static constexpr std::array<std::pair<Enum, const char *>, 3> enumeratorsNames = {{
         {Enum::FLOATING, "FLOATING"},
@@ -541,9 +545,9 @@ struct OhosEnumMeta<enums::ohos::bundle::bundleManager::SupportWindowMode>
 };
 
 template<>
-struct OhosEnumMeta<enums::ohos::display::DisplaySourceMode>
+struct OhosEnumMeta<QtOhosQpa::enums::ohos::display::DisplaySourceMode>
 {
-    using Enum = enums::ohos::display::DisplaySourceMode;
+    using Enum = QtOhosQpa::enums::ohos::display::DisplaySourceMode;
     static constexpr const char *fullTypeName = "@ohos.display.DisplaySourceMode";
     static constexpr std::array<std::pair<Enum, const char *>, 5> enumeratorsNames = {{
         {Enum::ALONE, "ALONE"},
@@ -555,9 +559,9 @@ struct OhosEnumMeta<enums::ohos::display::DisplaySourceMode>
 };
 
 template<>
-struct OhosEnumMeta<enums::ohos::display::Orientation>
+struct OhosEnumMeta<QtOhosQpa::enums::ohos::display::Orientation>
 {
-    using Enum = enums::ohos::display::Orientation;
+    using Enum = QtOhosQpa::enums::ohos::display::Orientation;
     static constexpr const char *fullTypeName = "@ohos.display.Orientation";
     static constexpr std::array<std::pair<Enum, const char *>, 4> enumeratorsNames = {{
         {Enum::LANDSCAPE, "LANDSCAPE"},
@@ -568,9 +572,9 @@ struct OhosEnumMeta<enums::ohos::display::Orientation>
 };
 
 template<>
-struct OhosEnumMeta<enums::ohos::file::picker::DocumentSelectMode>
+struct OhosEnumMeta<QtOhosQpa::enums::ohos::file::picker::DocumentSelectMode>
 {
-    using Enum = enums::ohos::file::picker::DocumentSelectMode;
+    using Enum = QtOhosQpa::enums::ohos::file::picker::DocumentSelectMode;
     static constexpr const char *fullTypeName = "@ohos.file.picker.DocumentSelectMode";
     static constexpr std::array<std::pair<Enum, const char *>, 3> enumeratorsNames = {{
         {Enum::FILE, "FILE"},
@@ -580,9 +584,9 @@ struct OhosEnumMeta<enums::ohos::file::picker::DocumentSelectMode>
 };
 
 template<>
-struct OhosEnumMeta<enums::ohos::inputMethod::Direction>
+struct OhosEnumMeta<QtOhosQpa::enums::ohos::inputMethod::Direction>
 {
-    using Enum = enums::ohos::inputMethod::Direction;
+    using Enum = QtOhosQpa::enums::ohos::inputMethod::Direction;
     static constexpr const char *fullTypeName = "@ohos.inputMethod.Direction";
     static constexpr std::array<std::pair<Enum, const char *>, 4> enumeratorsNames = {{
         {Enum::CURSOR_DOWN, "CURSOR_DOWN"},
@@ -593,9 +597,9 @@ struct OhosEnumMeta<enums::ohos::inputMethod::Direction>
 };
 
 template<>
-struct OhosEnumMeta<enums::ohos::inputMethod::EnterKeyType>
+struct OhosEnumMeta<QtOhosQpa::enums::ohos::inputMethod::EnterKeyType>
 {
-    using Enum = enums::ohos::inputMethod::EnterKeyType;
+    using Enum = QtOhosQpa::enums::ohos::inputMethod::EnterKeyType;
     static constexpr const char *fullTypeName = "@ohos.inputMethod.EnterKeyType";
     static constexpr std::array<std::pair<Enum, const char *>, 9> enumeratorsNames = {{
         {Enum::DONE, "DONE"},
@@ -611,9 +615,9 @@ struct OhosEnumMeta<enums::ohos::inputMethod::EnterKeyType>
 };
 
 template<>
-struct OhosEnumMeta<enums::ohos::inputMethod::RequestKeyboardReason>
+struct OhosEnumMeta<QtOhosQpa::enums::ohos::inputMethod::RequestKeyboardReason>
 {
-    using Enum = enums::ohos::inputMethod::RequestKeyboardReason;
+    using Enum = QtOhosQpa::enums::ohos::inputMethod::RequestKeyboardReason;
     static constexpr const char *fullTypeName = "@ohos.inputMethod.RequestKeyboardReason";
     static constexpr std::array<std::pair<Enum, const char *>, 4> enumeratorsNames = {{
         {Enum::MOUSE, "MOUSE"},
@@ -624,9 +628,9 @@ struct OhosEnumMeta<enums::ohos::inputMethod::RequestKeyboardReason>
 };
 
 template<>
-struct OhosEnumMeta<enums::ohos::inputMethod::TextInputType>
+struct OhosEnumMeta<QtOhosQpa::enums::ohos::inputMethod::TextInputType>
 {
-    using Enum = enums::ohos::inputMethod::TextInputType;
+    using Enum = QtOhosQpa::enums::ohos::inputMethod::TextInputType;
     static constexpr const char *fullTypeName = "@ohos.inputMethod.TextInputType";
     static constexpr std::array<std::pair<Enum, const char *>, 15> enumeratorsNames = {{
         {Enum::DATETIME, "DATETIME"},
@@ -648,9 +652,9 @@ struct OhosEnumMeta<enums::ohos::inputMethod::TextInputType>
 };
 
 template<>
-struct OhosEnumMeta<enums::ohos::multimodalInput::pointer::PointerStyle>
+struct OhosEnumMeta<QtOhosQpa::enums::ohos::multimodalInput::pointer::PointerStyle>
 {
-    using Enum = enums::ohos::multimodalInput::pointer::PointerStyle;
+    using Enum = QtOhosQpa::enums::ohos::multimodalInput::pointer::PointerStyle;
     static constexpr const char *fullTypeName = "@ohos.multimodalInput.pointer.PointerStyle";
     static constexpr std::array<std::pair<Enum, const char *>, 53> enumeratorsNames = {{
         {Enum::AECH_DEVELOPER_DEFINED_ICON, "AECH_DEVELOPER_DEFINED_ICON"},
@@ -710,9 +714,9 @@ struct OhosEnumMeta<enums::ohos::multimodalInput::pointer::PointerStyle>
 };
 
 template<>
-struct OhosEnumMeta<enums::ohos::notificationManager::ContentType>
+struct OhosEnumMeta<QtOhosQpa::enums::ohos::notificationManager::ContentType>
 {
-    using Enum = enums::ohos::notificationManager::ContentType;
+    using Enum = QtOhosQpa::enums::ohos::notificationManager::ContentType;
     static constexpr const char *fullTypeName = "@ohos.notificationManager.ContentType";
     static constexpr std::array<std::pair<Enum, const char *>, 7> enumeratorsNames = {{
         {Enum::NOTIFICATION_CONTENT_BASIC_TEXT, "NOTIFICATION_CONTENT_BASIC_TEXT"},
@@ -726,9 +730,9 @@ struct OhosEnumMeta<enums::ohos::notificationManager::ContentType>
 };
 
 template<>
-struct OhosEnumMeta<enums::ohos::window::AnimationType>
+struct OhosEnumMeta<QtOhosQpa::enums::ohos::window::AnimationType>
 {
-    using Enum = enums::ohos::window::AnimationType;
+    using Enum = QtOhosQpa::enums::ohos::window::AnimationType;
     static constexpr const char *fullTypeName = "@ohos.window.AnimationType";
     static constexpr std::array<std::pair<Enum, const char *>, 1> enumeratorsNames = {{
         {Enum::FADE_IN_OUT, "FADE_IN_OUT"},
@@ -736,9 +740,9 @@ struct OhosEnumMeta<enums::ohos::window::AnimationType>
 };
 
 template<>
-struct OhosEnumMeta<enums::ohos::window::AvoidAreaType>
+struct OhosEnumMeta<QtOhosQpa::enums::ohos::window::AvoidAreaType>
 {
-    using Enum = enums::ohos::window::AvoidAreaType;
+    using Enum = QtOhosQpa::enums::ohos::window::AvoidAreaType;
     static constexpr const char *fullTypeName = "@ohos.window.AvoidAreaType";
     static constexpr std::array<std::pair<Enum, const char *>, 5> enumeratorsNames = {{
         {Enum::TYPE_CUTOUT, "TYPE_CUTOUT"},
@@ -750,9 +754,9 @@ struct OhosEnumMeta<enums::ohos::window::AvoidAreaType>
 };
 
 template<>
-struct OhosEnumMeta<enums::ohos::window::MaximizePresentation>
+struct OhosEnumMeta<QtOhosQpa::enums::ohos::window::MaximizePresentation>
 {
-    using Enum = enums::ohos::window::MaximizePresentation;
+    using Enum = QtOhosQpa::enums::ohos::window::MaximizePresentation;
     static constexpr const char *fullTypeName = "@ohos.window.MaximizePresentation";
     static constexpr std::array<std::pair<Enum, const char *>, 4> enumeratorsNames = {{
         {Enum::ENTER_IMMERSIVE, "ENTER_IMMERSIVE"},
@@ -763,9 +767,9 @@ struct OhosEnumMeta<enums::ohos::window::MaximizePresentation>
 };
 
 template<>
-struct OhosEnumMeta<enums::ohos::window::ModalityType>
+struct OhosEnumMeta<QtOhosQpa::enums::ohos::window::ModalityType>
 {
-    using Enum = enums::ohos::window::ModalityType;
+    using Enum = QtOhosQpa::enums::ohos::window::ModalityType;
     static constexpr const char *fullTypeName = "@ohos.window.ModalityType";
     static constexpr std::array<std::pair<Enum, const char *>, 2> enumeratorsNames = {{
         {Enum::APPLICATION_MODALITY, "APPLICATION_MODALITY"},
@@ -774,9 +778,9 @@ struct OhosEnumMeta<enums::ohos::window::ModalityType>
 };
 
 template<>
-struct OhosEnumMeta<enums::ohos::window::RectChangeReason>
+struct OhosEnumMeta<QtOhosQpa::enums::ohos::window::RectChangeReason>
 {
-    using Enum = enums::ohos::window::RectChangeReason;
+    using Enum = QtOhosQpa::enums::ohos::window::RectChangeReason;
     static constexpr const char *fullTypeName = "@ohos.window.RectChangeReason";
     static constexpr std::array<std::pair<Enum, const char *>, 7> enumeratorsNames = {{
         {Enum::DRAG, "DRAG"},
@@ -790,9 +794,9 @@ struct OhosEnumMeta<enums::ohos::window::RectChangeReason>
 };
 
 template<>
-struct OhosEnumMeta<enums::ohos::window::WindowEventType>
+struct OhosEnumMeta<QtOhosQpa::enums::ohos::window::WindowEventType>
 {
-    using Enum = enums::ohos::window::WindowEventType;
+    using Enum = QtOhosQpa::enums::ohos::window::WindowEventType;
     static constexpr const char *fullTypeName = "@ohos.window.WindowEventType";
     static constexpr std::array<std::pair<Enum, const char *>, 5> enumeratorsNames = {{
         {Enum::WINDOW_ACTIVE, "WINDOW_ACTIVE"},
@@ -804,9 +808,9 @@ struct OhosEnumMeta<enums::ohos::window::WindowEventType>
 };
 
 template<>
-struct OhosEnumMeta<enums::ohos::window::WindowStatusType>
+struct OhosEnumMeta<QtOhosQpa::enums::ohos::window::WindowStatusType>
 {
-    using Enum = enums::ohos::window::WindowStatusType;
+    using Enum = QtOhosQpa::enums::ohos::window::WindowStatusType;
     static constexpr const char *fullTypeName = "@ohos.window.WindowStatusType";
     static constexpr std::array<std::pair<Enum, const char *>, 6> enumeratorsNames = {{
         {Enum::FLOATING, "FLOATING"},
@@ -822,34 +826,34 @@ struct OhosEnumMeta<enums::ohos::window::WindowStatusType>
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::kit::ShareKit::systemShare::SelectionMode));
-Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::kit::ShareKit::systemShare::ShareAbilityType));
-Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::kit::ShareKit::systemShare::SharePreviewMode));
-Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::abilityAccessCtrl::PermissionStatus));
-Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::app::ability::AbilityConstant::ContinueState));
-Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::app::ability::AbilityConstant::LaunchReason));
-Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::app::ability::AbilityConstant::OnContinueResult));
-Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::app::ability::AbilityConstant::WindowMode));
-Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::app::ability::ConfigurationConstant::ColorMode));
-Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::app::ability::contextConstant::ProcessMode));
-Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::app::ability::contextConstant::StartupVisibility));
-Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::app::ability::wantConstant::Flags));
-Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::bundle::bundleManager::SupportWindowMode));
-Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::display::DisplaySourceMode));
-Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::display::Orientation));
-Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::file::picker::DocumentSelectMode));
-Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::inputMethod::Direction));
-Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::inputMethod::EnterKeyType));
-Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::inputMethod::RequestKeyboardReason));
-Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::inputMethod::TextInputType));
-Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::multimodalInput::pointer::PointerStyle));
-Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::notificationManager::ContentType));
-Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::window::AnimationType));
-Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::window::AvoidAreaType));
-Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::window::MaximizePresentation));
-Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::window::ModalityType));
-Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::window::RectChangeReason));
-Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::window::WindowEventType));
-Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::window::WindowStatusType));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhosQpa::enums::kit::ShareKit::systemShare::SelectionMode));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhosQpa::enums::kit::ShareKit::systemShare::ShareAbilityType));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhosQpa::enums::kit::ShareKit::systemShare::SharePreviewMode));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhosQpa::enums::ohos::abilityAccessCtrl::PermissionStatus));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhosQpa::enums::ohos::app::ability::AbilityConstant::ContinueState));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhosQpa::enums::ohos::app::ability::AbilityConstant::LaunchReason));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhosQpa::enums::ohos::app::ability::AbilityConstant::OnContinueResult));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhosQpa::enums::ohos::app::ability::AbilityConstant::WindowMode));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhosQpa::enums::ohos::app::ability::ConfigurationConstant::ColorMode));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhosQpa::enums::ohos::app::ability::contextConstant::ProcessMode));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhosQpa::enums::ohos::app::ability::contextConstant::StartupVisibility));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhosQpa::enums::ohos::app::ability::wantConstant::Flags));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhosQpa::enums::ohos::bundle::bundleManager::SupportWindowMode));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhosQpa::enums::ohos::display::DisplaySourceMode));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhosQpa::enums::ohos::display::Orientation));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhosQpa::enums::ohos::file::picker::DocumentSelectMode));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhosQpa::enums::ohos::inputMethod::Direction));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhosQpa::enums::ohos::inputMethod::EnterKeyType));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhosQpa::enums::ohos::inputMethod::RequestKeyboardReason));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhosQpa::enums::ohos::inputMethod::TextInputType));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhosQpa::enums::ohos::multimodalInput::pointer::PointerStyle));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhosQpa::enums::ohos::notificationManager::ContentType));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhosQpa::enums::ohos::window::AnimationType));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhosQpa::enums::ohos::window::AvoidAreaType));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhosQpa::enums::ohos::window::MaximizePresentation));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhosQpa::enums::ohos::window::ModalityType));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhosQpa::enums::ohos::window::RectChangeReason));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhosQpa::enums::ohos::window::WindowEventType));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhosQpa::enums::ohos::window::WindowStatusType));
 
 #endif

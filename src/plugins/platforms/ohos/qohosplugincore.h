@@ -15,7 +15,7 @@
 #include <map>
 #include <memory>
 #include <optional>
-#include <qohosenums.h>
+#include <qohosqpaenums.h>
 #include <string>
 #include <type_traits>
 #include <typeinfo>
@@ -172,7 +172,7 @@ private:
     virtual QNapi::Symbol getJsSymbolForType(const std::type_info &typeInfo) = 0;
 };
 
-using QOhosAbilityOnContinueResult = enums::ohos::app::ability::AbilityConstant::OnContinueResult;
+using QOhosAbilityOnContinueResult = QtOhosQpa::enums::ohos::app::ability::AbilityConstant::OnContinueResult;
 
 class QUiAbilityPeer : public virtual QAbilityPeer, public std::enable_shared_from_this<QUiAbilityPeer>
 {

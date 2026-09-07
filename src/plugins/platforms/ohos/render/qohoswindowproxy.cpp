@@ -22,10 +22,10 @@
 #include <qarkui/window_manager.h>
 #include <qohosdeviceinfo_p.h>
 #include <qohosdisplayinfo.h>
-#include <qohosenums.h>
 #include <qohosjsutils.h>
 #include <qohospixelmapconversions.h>
 #include <qohosplugincore.h>
+#include <qohosqpaenums.h>
 #include <qohossettings.h>
 #include <qohosutils.h>
 #include <render/qohosbatchingrequestshandler.h>
@@ -39,7 +39,7 @@ QT_BEGIN_NAMESPACE
 namespace
 {
 
-using QOhosPointerStyle = QtOhos::enums::ohos::multimodalInput::pointer::PointerStyle;
+using QOhosPointerStyle = QtOhosQpa::enums::ohos::multimodalInput::pointer::PointerStyle;
 
 QRect ohosWindowRectToQRect(const QNapi::Object &ohosWindowRect)
 {

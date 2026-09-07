@@ -15,9 +15,9 @@
 #include <QtGui/private/qhighdpiscaling_p.h>
 #include <QtGui/private/qabstractfileiconengine_p.h>
 #include <initializer_list>
-#include <qohosenums.h>
 #include <qohosjsmain.h>
 #include <qohosjsutils.h>
+#include <qohosqpaenums.h>
 #include <qohosutils.h>
 #include <qpa/qplatformfontdatabase.h>
 #include <qpa/qplatformintegration.h>
@@ -808,7 +808,7 @@ Qt::ColorScheme mapOhosThemeToColorScheme(
     }
 }
 
-using OhosConfigurationColorMode = QtOhos::enums::ohos::app::ability::ConfigurationConstant::ColorMode;
+using OhosConfigurationColorMode = QtOhosQpa::enums::ohos::app::ability::ConfigurationConstant::ColorMode;
 
 OhosConfigurationColorMode mapOhosConfigurationColorModeFromJs(QtOhos::JsState &jsState, QNapi::Number colorModeJsEnum)
 {
