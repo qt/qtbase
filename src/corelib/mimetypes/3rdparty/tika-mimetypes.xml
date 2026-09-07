@@ -272,7 +272,7 @@
   <mime-type type="application/epub+zip">
     <acronym>EPUB</acronym>
     <comment>Electronic Publication</comment>
-    <magic priority="50">
+    <magic priority="49"> <!-- priority lowered by Qt -->
       <match value="PK\003\004" type="string" offset="0">
         <match value="mimetypeapplication/epub+zip" type="string" offset="30"/>
       </match>
@@ -289,7 +289,7 @@
     <acronym>FITS</acronym>
     <comment>Flexible Image Transport System</comment>
     <tika:link>http://www.digitalpreservation.gov/formats/fdd/fdd000317.shtml</tika:link>
-    <magic priority="50">
+    <magic priority="49"> <!-- priority lowered by Qt -->
       <match value="SIMPLE  =                    T" type="string" offset="0"/>
       <match value="SIMPLE  =                T" type="string" offset="0"/>
     </magic>
@@ -575,7 +575,7 @@
     <glob pattern="*.mb"/>
     <!-- Note - there is no Unique Magic for Mathematica files! -->
     <!-- Check for a Mathematica-style opening comment as our best hope... -->
-    <magic priority="50">
+    <magic priority="49"> <!-- priority lowered by Qt -->
       <match value="(**" type="string" offset="0"/>
       <match value="(* " type="string" offset="0"/>
     </magic>
@@ -3151,7 +3151,7 @@
     <comment>WordPerfect - Corel Word Processing</comment>
     <tika:link>http://en.wikipedia.org/wiki/WordPerfect</tika:link>
     <tika:uti>com.corel.wordperfect.doc</tika:uti>
-    <magic priority="50">
+    <magic priority="49"> <!-- priority lowered by Qt -->
       <match value="application/vnd.wordperfect;" type="string" offset="0"/>
     </magic>
     <magic priority="40">
@@ -3586,7 +3586,7 @@
   </mime-type>
 
   <mime-type type="application/x-bzip">
-    <magic priority="40">
+    <magic priority="39"> <!-- priority lowered by Qt -->
       <match value="BZ0" type="string" offset="0"/>
     </magic>
     <glob pattern="*.bz"/>
@@ -3728,7 +3728,7 @@
   </mime-type>
 
   <mime-type type="application/x-elf">
-    <magic priority="50">
+    <magic priority="48"> <!-- priority lowered by Qt -->
       <match value="\177ELF" type="string" offset="0" />
     </magic>
   </mime-type>
@@ -3806,7 +3806,7 @@
   </mime-type>
   <mime-type type="application/x-executable">
     <sub-class-of type="application/x-elf"/>
-    <magic priority="50">
+    <magic priority="49"> <!-- priority lowered by Qt -->
       <match value="\177ELF" type="string" offset="0">
         <match value="\x02\x00" type="string" offset="16"/>
         <match value="\x00\x02" type="string" offset="16"/>
@@ -5088,7 +5088,7 @@
   <mime-type type="application/x-tex">
     <comment>TeX Source</comment>
     <alias type="text/x-tex"/>
-    <magic priority="50">
+    <magic priority="49"> <!-- priority lowered by Qt -->
       <match value="\\input" type="string" offset="0"/>
       <match value="\\section" type="string" offset="0"/>
       <match value="\\setlength" type="string" offset="0"/>
@@ -5315,7 +5315,7 @@
     <tika:uti>public.xml</tika:uti>
     <alias type="text/xml"/>
     <alias type="application/x-xml"/>
-    <magic priority="50">
+    <magic priority="49"> <!-- priority lowered by Qt -->
       <match value="&lt;?xml" type="string" offset="0"/>
       <match value="&lt;?XML" type="string" offset="0"/>
       <!-- UTF-8 BOM -->
@@ -5392,7 +5392,7 @@
     <tika:link>http://en.wikipedia.org/wiki/ZIP_(file_format)</tika:link>
     <tika:uti>com.pkware.zip-archive</tika:uti>
     <alias type="application/x-zip-compressed"/>
-    <magic priority="50">
+    <magic priority="49"> <!-- priority lowered by Qt -->
       <match value="PK\003\004" type="string" offset="0"/>
       <match value="PK\005\006" type="string" offset="0"/>
       <match value="PK\x07\x08" type="string" offset="0"/>
@@ -5440,7 +5440,7 @@
       <!-- AC3 Syncword -->
       <match value="\x0b\x77" type="string" offset="0"/>
     </magic>
-    <magic priority="50">
+    <magic priority="49"> <!-- priority lowered by Qt -->
       <match value="\x0b\x77" type="string" offset="0">
          <!-- BSID 0-8 = AC3, BSID=byte5>>3 -->
          <match value="\x00" type="string" mask="0xF8" offset="5"/>
@@ -6172,7 +6172,7 @@
     <comment>HEIF - High Efficiency Image File</comment>
     <acronym>HEIF</acronym>
     <tika:link>https://en.wikipedia.org/wiki/High_Efficiency_Image_File_Format</tika:link>
-    <magic priority="60">
+    <magic priority="59"> <!-- priority lowered by Qt -->
       <match value="ftypmif1" type="string" offset="4"/>
     </magic>
     <glob pattern="*.heif"/>
@@ -6180,7 +6180,7 @@
   </mime-type>
   <mime-type type="image/heif-sequence">
     <comment>HEIF Sequence - High Efficiency Image Sequence</comment>
-    <magic priority="60">
+    <magic priority="59"> <!-- priority lowered by Qt -->
       <match value="ftypmsf1" type="string" offset="4"/>
     </magic>
     <sub-class-of type="video/quicktime" />
@@ -6631,7 +6631,7 @@
 
   <mime-type type="image/x-jp2-container">
     <comment>JPEG 2000 Container Format</comment>
-    <magic priority="50">
+    <magic priority="49"> <!-- priority lowered by Qt -->
       <match value="\x00\x00\x00\x0C\x6A\x50\x20\x20\x0D\x0A\x87\x0A" type="string" offset="0"/>
     </magic>
   </mime-type>
@@ -7398,7 +7398,7 @@
   <mime-type type="text/parityfec"/>
 
   <mime-type type="text/plain">
-    <magic priority="20">
+    <magic priority="19"> <!-- priority lowered by Qt -->
       <match value="This is TeX," type="string" offset="0"/>
       <match value="This is METAFONT," type="string" offset="0"/>
       <match value="/*" type="string" offset="0"/>
@@ -8251,7 +8251,7 @@
   <mime-type type="video/mp2t"/>
 
   <mime-type type="video/mp4">
-    <magic priority="60">
+    <magic priority="59"> <!-- priority lowered by Qt -->
       <match value="ftypmp41" type="string" offset="4"/>
       <match value="ftypmp42" type="string" offset="4"/>
     </magic>
@@ -8471,7 +8471,7 @@
 
   <mime-type type="video/x-ms-asf">
     <glob pattern="*.asf"/>
-    <magic>
+    <magic priority="49"> <!-- priority lowered by Qt -->
        <match value="0x3026b275" type="big32" offset="0" />
     </magic>
   </mime-type>
