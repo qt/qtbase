@@ -34,6 +34,7 @@ Q_STATIC_LOGGING_CATEGORY(lcQHttpHeaders, "qt.network.http.headers");
     \class QHttpHeaderRangeSpec
     \since 6.12
     \inmodule QtNetwork
+    \preliminary
     \compares equality
 
     \brief QHttpHeaderRangeSpec represents a single byte range as used in
