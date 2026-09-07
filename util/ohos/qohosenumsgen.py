@@ -25,9 +25,7 @@ CPP_HEADER_PREAMBLE_TEMPLATE = '''\
 #include <array>
 #include <info/application_target_sdk_version.h>
 
-QT_BEGIN_NAMESPACE
-
-namespace QtOhos {'''
+QT_BEGIN_NAMESPACE'''
 # REUSE-IgnoreEnd
 
 CPP_PRIVATE_HEADER_WARNING = '''
@@ -44,8 +42,12 @@ CPP_PRIVATE_HEADER_WARNING = '''
 '''
 
 
-def cpp_namespace_path(full_type_name: str) -> list[str]:
-    return ['enums'] + full_type_name.lstrip('@').split('.')[:-1]
+def cpp_namespace_root(qt_module: str) -> str:
+    return 'QtOhos' + qt_module
+
+
+def cpp_namespace_path(qt_module: str, full_type_name: str) -> list[str]:
+    return [cpp_namespace_root(qt_module), 'enums'] + full_type_name.lstrip('@').split('.')[:-1]
 
 
 @dataclass(frozen=True)
@@ -57,8 +59,9 @@ class OhosEnum:
     enumerators: list[str]
 
     @staticmethod
-    def build_from_full_type_name(full_type_name: str, enumerators: list[str]) -> OhosEnum:
-        namespace_path = cpp_namespace_path(full_type_name)
+    def build_from_full_type_name(
+            qt_module: str, full_type_name: str, enumerators: list[str]) -> OhosEnum:
+        namespace_path = cpp_namespace_path(qt_module, full_type_name)
         type_name = full_type_name.split('.')[-1]
         cpp_qualified_name = '::'.join(namespace_path + [type_name])
         return OhosEnum(
@@ -68,7 +71,6 @@ class OhosEnum:
 
 @dataclass(frozen=True)
 class CommonArgumentDefaults:
-    enums_header: str
     api_ver: int
 
 
@@ -264,6 +266,17 @@ def read_copyright_year(enums_header_path: str) -> int:
     return int(match.group(1))
 
 
+def validate_qt_module_and_header(qt_module: str, header_path: str) -> None:
+    if not re.fullmatch(r'[A-Z][A-Za-z0-9]*', qt_module):
+        raise Exception('Qt module name must be a CamelCase identifier: ' + qt_module)
+    expected_stem = 'qohos%senums' % qt_module.lower()
+    header_file_name = os.path.basename(header_path)
+    if header_file_name not in (expected_stem + '.h', expected_stem + '_p.h'):
+        raise Exception(
+            'the header of Qt module %s must be named %s.h or %s_p.h, not %s'
+            % (qt_module, expected_stem, expected_stem, header_file_name))
+
+
 def cpp_include_guard(header_path: str) -> str:
     return re.sub(r'[^A-Za-z0-9]', '_', os.path.basename(header_path)).upper()
 
@@ -319,7 +332,7 @@ def render_cpp_enum_metadata(ohos_enum: OhosEnum) -> str:
 
 
 def render_cpp_metatype_declaration(ohos_enum: OhosEnum) -> str:
-    return 'Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::%s));' % ohos_enum.cpp_qualified_name
+    return 'Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(%s));' % ohos_enum.cpp_qualified_name
 
 
 def render_cpp_header(ohos_enums: list[OhosEnum], header_path: str, year: int) -> str:
@@ -332,6 +345,7 @@ def render_cpp_header(ohos_enums: list[OhosEnum], header_path: str, year: int) -
     return '\n'.join([
         preamble, '',
         render_cpp_enum_definitions(ohos_enums), '',
+        'namespace QtOhos {', '',
         'template<typename Enum>', 'struct OhosEnumMeta;', '',
         '\n\n'.join(render_cpp_enum_metadata(ohos_enum) for ohos_enum in ohos_enums), '',
         '}', '',
@@ -342,7 +356,7 @@ def render_cpp_header(ohos_enums: list[OhosEnum], header_path: str, year: int) -
 
 
 def resolve_ohos_enums(
-        ets_file_by_module: dict[str, str], full_type_names: list[str],
+        ets_file_by_module: dict[str, str], qt_module: str, full_type_names: list[str],
         api_ver: int) -> list[OhosEnum]:
     ohos_enums: list[OhosEnum] = []
     unresolved: list[str] = []
@@ -352,7 +366,8 @@ def resolve_ohos_enums(
         except Exception as exception:
             unresolved.append('%s: %s' % (full_type_name, exception))
             continue
-        ohos_enums.append(OhosEnum.build_from_full_type_name(full_type_name, enumerators))
+        ohos_enums.append(
+            OhosEnum.build_from_full_type_name(qt_module, full_type_name, enumerators))
     if unresolved:
         raise Exception(
             '%d enum(s) could not be resolved, first failure: %s'
@@ -361,10 +376,10 @@ def resolve_ohos_enums(
 
 
 def generate_enums_header_text(
-        ets_file_by_module: dict[str, str], header_path: str, full_type_names: list[str],
-        api_ver: int, year: int) -> str:
+        ets_file_by_module: dict[str, str], qt_module: str, header_path: str,
+        full_type_names: list[str], api_ver: int, year: int) -> str:
     ohos_enums = sorted(
-        resolve_ohos_enums(ets_file_by_module, full_type_names, api_ver),
+        resolve_ohos_enums(ets_file_by_module, qt_module, full_type_names, api_ver),
         key=lambda ohos_enum: ohos_enum.namespace_path + [ohos_enum.type_name])
     return render_cpp_header(ohos_enums, header_path, year) + '\n'
 
@@ -375,7 +390,7 @@ def command_update_enums_header(arguments: argparse.Namespace) -> None:
     write_text_file(
         arguments.enums_header,
         generate_enums_header_text(
-            ets_file_by_module, arguments.enums_header, full_type_names,
+            ets_file_by_module, arguments.qt_module, arguments.enums_header, full_type_names,
             arguments.api_ver, arguments.copyright_year))
 
 
@@ -384,7 +399,7 @@ def command_print_enums_diff(arguments: argparse.Namespace) -> None:
     full_type_names = read_full_type_names_from_enums_header(arguments.enums_header)
     current_text = read_text_file(arguments.enums_header)
     generated_text = generate_enums_header_text(
-        ets_file_by_module, arguments.enums_header, full_type_names,
+        ets_file_by_module, arguments.qt_module, arguments.enums_header, full_type_names,
         arguments.api_ver, arguments.copyright_year)
     if generated_text != current_text:
         sys.stdout.write(
@@ -401,7 +416,7 @@ def command_add_enums_to_header(arguments: argparse.Namespace) -> None:
     ets_file_by_module = index_ets_files_by_module(arguments.sdk_dir)
     full_type_names = read_full_type_names_from_enums_header(arguments.enums_header)
     enums_header_text = generate_enums_header_text(
-        ets_file_by_module, arguments.enums_header, full_type_names,
+        ets_file_by_module, arguments.qt_module, arguments.enums_header, full_type_names,
         arguments.api_ver, arguments.copyright_year)
     if enums_header_text != read_text_file(arguments.enums_header):
         raise Exception(
@@ -414,15 +429,20 @@ def command_add_enums_to_header(arguments: argparse.Namespace) -> None:
     write_text_file(
         arguments.enums_header,
         generate_enums_header_text(
-            ets_file_by_module, arguments.enums_header, full_type_names,
+            ets_file_by_module, arguments.qt_module, arguments.enums_header, full_type_names,
             arguments.api_ver, arguments.copyright_year))
 
 
 def add_common_arguments(
         command_parser: argparse.ArgumentParser, defaults: CommonArgumentDefaults) -> None:
     command_parser.add_argument(
-        '--enums-header', default=defaults.enums_header,
-        help='qohosenums.h to read/update (default: %(default)s)')
+        '--qt-module', required=True,
+        help='name of the Qt module or plugin owning the header, e.g. Bluetooth; the enums '
+             'are generated into the QtOhos<Module>::enums namespace and the header must '
+             'be named qohos<module>enums.h or qohos<module>enums_p.h')
+    command_parser.add_argument(
+        '--enums-header', required=True,
+        help='header to read/update')
     command_parser.add_argument(
         '--sdk-dir', required=True,
         help='SDK directory to search for .d.ts enum declarations')
@@ -438,7 +458,8 @@ def add_common_arguments(
 
 def parse_arguments(defaults: CommonArgumentDefaults) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description='Generate qohosenums.h from the OHOS/HMS SDK enum declarations.')
+        description='Generate a qohos<module>enums.h header from the OHOS/HMS SDK enum '
+                    'declarations.')
     subcommands = parser.add_subparsers(dest='mode', required=True)
 
     update_command = subcommands.add_parser(
@@ -467,13 +488,12 @@ def main() -> None:
         os.path.join(
             os.path.dirname(__file__),
             '..', '..', 'src', 'plugins', 'platforms', 'ohos'))
-    default_enums_header = os.path.join(qpa_plugin_dir, 'qohosenums.h')
     defaults = CommonArgumentDefaults(
-        enums_header=default_enums_header,
         api_ver=read_min_supported_api_version(
             os.path.join(qpa_plugin_dir, 'qohosjsmain.cpp'),
             'minSupportedOhosSdkApiVersion'))
     arguments = parse_arguments(defaults)
+    validate_qt_module_and_header(arguments.qt_module, arguments.enums_header)
     if not os.path.isdir(arguments.sdk_dir):
         raise Exception('SDK directory not found: ' + arguments.sdk_dir)
     if arguments.copyright_year is None:
