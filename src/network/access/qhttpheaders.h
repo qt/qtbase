@@ -24,7 +24,7 @@ QT_BEGIN_NAMESPACE
 class QDataStream;
 class QDebug;
 
-struct QHttpHeaderRangeSpec
+struct QT_TECH_PREVIEW_API QHttpHeaderRangeSpec // ### TP: what about non-integral ranges?
 {
     std::optional<qint64> start;
     std::optional<qint64> end;
