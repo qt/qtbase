@@ -135,17 +135,19 @@ static QString msgInvalidConnection(const DomConnection *connection)
 
 static void checkProperties(const QList<DomProperty *> &properties, QStringList *errors)
 {
-    for (const DomProperty *p : properties) {
+    for (DomProperty *p : properties) {
         const bool isDynamicProperty = p->hasAttributeStdset() && p->attributeStdset() == 0;
         const QString &name = p->attributeName();
         if (!isDynamicProperty && !checkPropertyName(name))
             errors->append(msgInvalidPropertyName(name));
         switch (p->kind()) {
         case DomProperty::Set:
+            p->setElementSet(p->elementSet().trimmed());
             if (!checkEnumValue(p->elementSet()))
                 errors->append(msgInvalidValue(name, p->elementSet()));
             break;
         case DomProperty::Enum:
+            p->setElementEnum(p->elementEnum().trimmed());
             if (!checkEnumValue(p->elementEnum()))
                 errors->append(msgInvalidValue(name, p->elementEnum()));
         default:
