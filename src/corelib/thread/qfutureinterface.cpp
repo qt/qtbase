@@ -9,6 +9,7 @@
 #include <QtCore/qatomic.h>
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qloggingcategory.h>
+#include <QtCore/qscopeguard.h>
 #include <QtCore/qthread.h>
 #include <QtCore/qvarlengtharray.h>
 #include <private/qthreadpool_p.h>
@@ -1037,17 +1038,33 @@ void QFutureInterfaceBase::cleanContinuation()
 
 void QFutureInterfaceBase::runContinuation() const
 {
-    QMutexLocker lock(&d->continuationMutex);
-    if (d->continuation && !d->continuationExecuted) {
+    // fn(*this) below runs arbitrary user code, which may (directly, or indirectly by
+    // destrying the QFuture/QPromise whose runContinuation() is executing) - destroy
+    // `this`.
+    // So cache `d` in a local before calling fn(), and never touch `this` (or the
+    // member `d`) again afterwards.
+    bool ownsExtraRef = false;
+    QFutureInterfaceBasePrivate *dd = d;
+    const auto derefGuard = qScopeGuard([&] {
+        if (ownsExtraRef && !dd->refCount.deref())
+            delete dd;
+    });
+
+    QMutexLocker lock(&dd->continuationMutex);
+    if (dd->continuation && !dd->continuationExecuted) {
         // If we run the next continuation, then this future is concluded, so
         // we wouldn't need to revisit it in the cancelChain()
-        if (d->continuationData)
-            d->continuationData->nonConcludedParent = nullptr;
+        if (dd->continuationData)
+            dd->continuationData->nonConcludedParent = nullptr;
         // Save the continuation in a local function, to avoid calling
         // a null std::function below, in case cleanContinuation() is
         // called from some other thread right after unlock() below.
-        d->continuationExecuted = true;
-        auto fn = std::move(d->continuation);
+        dd->continuationExecuted = true;
+        auto fn = std::move(dd->continuation);
+
+        dd->refCount.ref();
+        ownsExtraRef = true;
+
         lock.unlock();
         fn(*this);
 
@@ -1055,8 +1072,8 @@ void QFutureInterfaceBase::runContinuation() const
         // Unless the continuation has been cleaned earlier, we have to
         // store the move-only continuation, to guarantee that the associated
         // future's data stays alive.
-        if (d->continuationState != QFutureInterfaceBasePrivate::Cleaned)
-            d->continuation = std::move(fn);
+        if (dd->continuationState != QFutureInterfaceBasePrivate::Cleaned)
+            dd->continuation = std::move(fn);
     }
 }
 
