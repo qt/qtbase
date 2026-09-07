@@ -274,6 +274,7 @@ private slots:
     void crashInQGraphicsSceneAfterNotHandlingTouchBegin();
     void touchBeginWithGraphicsWidget();
     void testQGuiAppDelivery();
+    void touchCancel();
     void testMultiDevice();
     void grabbers_data();
     void grabbers();
@@ -1789,7 +1790,8 @@ bool WindowTouchEventFilter::eventFilter(QObject *, QEvent *event)
 {
     if (event->type() == QEvent::TouchBegin
             || event->type() == QEvent::TouchUpdate
-            || event->type() == QEvent::TouchEnd) {
+            || event->type() == QEvent::TouchEnd
+            || event->type() == QEvent::TouchCancel) {
         QTouchEvent *te = static_cast<QTouchEvent *>(event);
         TouchInfo &td = d[te->pointingDevice()];
         if (event->type() == QEvent::TouchBegin)
@@ -1851,6 +1853,32 @@ void tst_QTouchEvent::testQGuiAppDelivery()
     QCOMPARE(filter.d.contains(touchScreenDevice), true);
     QCOMPARE(filter.d.value(touchScreenDevice).points.size(), 3);
     QCOMPARE(filter.d.value(touchScreenDevice).lastSeenType, QEvent::TouchEnd);
+}
+
+void tst_QTouchEvent::touchCancel()
+{
+    QWindow w;
+    w.setGeometry(100, 100, 100, 100);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+
+    WindowTouchEventFilter filter;
+    w.installEventFilter(&filter);
+
+    auto devPriv = QPointingDevicePrivate::get(touchScreenDevice);
+    devPriv->activePoints.clear(); // in case other tests left dangling state
+
+    auto seq = QTest::touchEvent(&w, touchScreenDevice, false);
+    seq.press(0, QPoint(30, 30)).commit(); // TouchBegin
+    QCOMPARE(filter.d.value(touchScreenDevice).lastSeenType, QEvent::TouchBegin);
+    QCOMPARE(devPriv->activePoints.count(), 1);
+
+    seq.cancel();
+
+    // The window with active touches must be told the sequence was cancelled,
+    QCOMPARE(filter.d.value(touchScreenDevice).lastSeenType, QEvent::TouchCancel);
+    // and the cancelled points must not linger in the device's active points.
+    QCOMPARE(devPriv->activePoints.count(), 0);
 }
 
 void tst_QTouchEvent::testMultiDevice()

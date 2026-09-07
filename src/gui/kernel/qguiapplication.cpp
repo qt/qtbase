@@ -3173,7 +3173,9 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
             }
             guiAppPrivate->synthesizedMousePoints.clear();
         }
+
         guiAppPrivate->lastTouchType = e->touchType;
+        devPriv->activePoints.clear();
         return;
     }
 
