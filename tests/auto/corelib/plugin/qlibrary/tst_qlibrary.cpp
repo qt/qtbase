@@ -123,7 +123,7 @@ typedef int (*VersionFunction)(void);
 
 void tst_QLibrary::initTestCase()
 {
-#ifdef Q_OS_ANDROID
+#if defined(Q_OS_ANDROID) || defined(Q_OS_HARMONY)
     const QStringList paths = QCoreApplication::libraryPaths();
     QVERIFY(!paths.isEmpty());
     directory = paths.first();
