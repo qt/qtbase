@@ -197,7 +197,7 @@ namespace {
     // This can no longer be handled by the code as we have 'setIcon(QIcon())' as well as 'QIcon icon'
     static bool checkProperty(const CustomWidgetsInfo *customWidgetsInfo,
                               const QString &fileName, const QString &className,
-                              const DomProperty *p) {
+                              DomProperty *p) {
 
         const QString &name = p->attributeName();
         const bool isDynamicProperty = p->hasAttributeStdset() && p->attributeStdset() == 0;
@@ -209,6 +209,7 @@ namespace {
         switch (p->kind()) {
         // ### fixme Qt 7 remove this: Exclude deprecated properties of Qt 5.
         case DomProperty::Set:
+            p->setElementSet(p->elementSet().trimmed());
             if (!checkEnumValue(p->elementSet())) {
                 qWarning("%s", qPrintable(msgInvalidValue(name, p->elementSet())));
                 return false;
@@ -222,6 +223,7 @@ namespace {
             }
             break;
         case DomProperty::Enum:
+            p->setElementEnum(p->elementEnum().trimmed());
             if (!checkEnumValue(p->elementEnum())) {
                 qWarning("%s", qPrintable(msgInvalidValue(name, p->elementEnum())));
                 return false;
@@ -1331,7 +1333,7 @@ void WriteInitialization::writeProperties(const QString &varName,
     int bottomMargin = -1;
     bool frameShadowEncountered = false;
 
-    for (const DomProperty *p : lst) {
+    for (DomProperty *p : lst) {
         if (!checkProperty(m_uic->customWidgetsInfo(), m_option.inputFile, className, p))
             continue;
         QString propertyName = p->attributeName();

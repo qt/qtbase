@@ -246,9 +246,11 @@ void WriteImports::acceptProperty(DomProperty *node)
 {
     switch (node->kind()) {
     case DomProperty::Enum:
+        node->setElementEnum(node->elementEnum().trimmed());
         addEnumBaseClass(node->elementEnum());
         break;
     case DomProperty::Set:
+        node->setElementSet(node->elementSet().trimmed());
         addEnumBaseClass(node->elementSet());
         break;
     default:
