@@ -1,8 +1,8 @@
 // Copyright (C) 2026 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#ifndef QOHOSENUMS_H
-#define QOHOSENUMS_H
+#ifndef QOHOSENUMS_P_H
+#define QOHOSENUMS_P_H
 
 //
 //  W A R N I N G
@@ -16,14 +16,45 @@
 //
 
 #include <QtCore/qglobal.h>
-
+#include <QtCore/qmetatype.h>
 #include <array>
+#include <info/application_target_sdk_version.h>
 
 QT_BEGIN_NAMESPACE
 
 namespace QtOhos {
 
 namespace enums {
+
+namespace kit {
+
+namespace ShareKit {
+
+namespace systemShare {
+
+enum class SelectionMode {
+    BATCH,
+    SINGLE,
+};
+
+enum class ShareAbilityType {
+    COPY_TO_PASTEBOARD,
+    PRINT,
+    SAVE_AS_FILE,
+    SAVE_TO_MEDIA_ASSET,
+    SAVE_TO_SUPERHUB,
+};
+
+enum class SharePreviewMode {
+    DEFAULT,
+    DETAIL,
+};
+
+}
+
+}
+
+}
 
 namespace ohos {
 
@@ -36,18 +67,6 @@ namespace AbilityConstant {
 enum class ContinueState {
     ACTIVE,
     INACTIVE,
-};
-
-enum class OnContinueResult {
-    AGREE,
-    MISMATCH,
-    REJECT,
-};
-
-enum class WindowMode {
-    WINDOW_MODE_FULLSCREEN,
-    WINDOW_MODE_SPLIT_PRIMARY,
-    WINDOW_MODE_SPLIT_SECONDARY,
 };
 
 enum class LaunchReason {
@@ -63,14 +82,26 @@ enum class LaunchReason {
     UNKNOWN,
 };
 
+enum class OnContinueResult {
+    AGREE,
+    MISMATCH,
+    REJECT,
+};
+
+enum class WindowMode {
+    WINDOW_MODE_FULLSCREEN,
+    WINDOW_MODE_SPLIT_PRIMARY,
+    WINDOW_MODE_SPLIT_SECONDARY,
+};
+
 }
 
 namespace ConfigurationConstant {
 
 enum class ColorMode {
-    COLOR_MODE_NOT_SET,
     COLOR_MODE_DARK,
     COLOR_MODE_LIGHT,
+    COLOR_MODE_NOT_SET,
 };
 
 }
@@ -118,75 +149,10 @@ enum class AnimationType {
 
 }
 
-namespace kit {
-
-namespace ShareKit {
-
-namespace systemShare {
-
-enum class SelectionMode {
-    BATCH,
-    SINGLE,
-};
-
-enum class ShareAbilityType {
-    COPY_TO_PASTEBOARD,
-    PRINT,
-    SAVE_AS_FILE,
-    SAVE_TO_MEDIA_ASSET,
-    SAVE_TO_SUPERHUB,
-};
-
-enum class SharePreviewMode {
-    DEFAULT,
-    DETAIL,
-};
-
-}
-
-}
-
-}
-
 }
 
 template<typename Enum>
 struct OhosEnumMeta;
-
-template<>
-struct OhosEnumMeta<enums::ohos::app::ability::AbilityConstant::ContinueState>
-{
-    using Enum = enums::ohos::app::ability::AbilityConstant::ContinueState;
-    static constexpr const char *fullTypeName = "@ohos.app.ability.AbilityConstant.ContinueState";
-    static constexpr std::array<std::pair<Enum, const char *>, 2> enumeratorsNames = {{
-        {Enum::ACTIVE, "ACTIVE"},
-        {Enum::INACTIVE, "INACTIVE"},
-    }};
-};
-
-template<>
-struct OhosEnumMeta<enums::ohos::app::ability::AbilityConstant::OnContinueResult>
-{
-    using Enum = enums::ohos::app::ability::AbilityConstant::OnContinueResult;
-    static constexpr const char *fullTypeName = "@ohos.app.ability.AbilityConstant.OnContinueResult";
-    static constexpr std::array<std::pair<Enum, const char *>, 3> enumeratorsNames = {{
-        {Enum::AGREE, "AGREE"},
-        {Enum::MISMATCH, "MISMATCH"},
-        {Enum::REJECT, "REJECT"},
-    }};
-};
-
-template<>
-struct OhosEnumMeta<enums::ohos::app::ability::ConfigurationConstant::ColorMode>
-{
-    using Enum = enums::ohos::app::ability::ConfigurationConstant::ColorMode;
-    static constexpr const char *fullTypeName = "@ohos.app.ability.ConfigurationConstant.ColorMode";
-    static constexpr std::array<std::pair<Enum, const char *>, 3> enumeratorsNames = {{
-        {Enum::COLOR_MODE_NOT_SET, "COLOR_MODE_NOT_SET"},
-        {Enum::COLOR_MODE_DARK, "COLOR_MODE_DARK"},
-        {Enum::COLOR_MODE_LIGHT, "COLOR_MODE_LIGHT"},
-    }};
-};
 
 template<>
 struct OhosEnumMeta<enums::kit::ShareKit::systemShare::SelectionMode>
@@ -225,14 +191,13 @@ struct OhosEnumMeta<enums::kit::ShareKit::systemShare::SharePreviewMode>
 };
 
 template<>
-struct OhosEnumMeta<enums::ohos::app::ability::AbilityConstant::WindowMode>
+struct OhosEnumMeta<enums::ohos::app::ability::AbilityConstant::ContinueState>
 {
-    using Enum = enums::ohos::app::ability::AbilityConstant::WindowMode;
-    static constexpr const char *fullTypeName = "@ohos.app.ability.AbilityConstant.WindowMode";
-    static constexpr std::array<std::pair<Enum, const char *>, 3> enumeratorsNames = {{
-        {Enum::WINDOW_MODE_FULLSCREEN, "WINDOW_MODE_FULLSCREEN"},
-        {Enum::WINDOW_MODE_SPLIT_PRIMARY, "WINDOW_MODE_SPLIT_PRIMARY"},
-        {Enum::WINDOW_MODE_SPLIT_SECONDARY, "WINDOW_MODE_SPLIT_SECONDARY"},
+    using Enum = enums::ohos::app::ability::AbilityConstant::ContinueState;
+    static constexpr const char *fullTypeName = "@ohos.app.ability.AbilityConstant.ContinueState";
+    static constexpr std::array<std::pair<Enum, const char *>, 2> enumeratorsNames = {{
+        {Enum::ACTIVE, "ACTIVE"},
+        {Enum::INACTIVE, "INACTIVE"},
     }};
 };
 
@@ -252,6 +217,42 @@ struct OhosEnumMeta<enums::ohos::app::ability::AbilityConstant::LaunchReason>
         {Enum::SHARE, "SHARE"},
         {Enum::START_ABILITY, "START_ABILITY"},
         {Enum::UNKNOWN, "UNKNOWN"},
+    }};
+};
+
+template<>
+struct OhosEnumMeta<enums::ohos::app::ability::AbilityConstant::OnContinueResult>
+{
+    using Enum = enums::ohos::app::ability::AbilityConstant::OnContinueResult;
+    static constexpr const char *fullTypeName = "@ohos.app.ability.AbilityConstant.OnContinueResult";
+    static constexpr std::array<std::pair<Enum, const char *>, 3> enumeratorsNames = {{
+        {Enum::AGREE, "AGREE"},
+        {Enum::MISMATCH, "MISMATCH"},
+        {Enum::REJECT, "REJECT"},
+    }};
+};
+
+template<>
+struct OhosEnumMeta<enums::ohos::app::ability::AbilityConstant::WindowMode>
+{
+    using Enum = enums::ohos::app::ability::AbilityConstant::WindowMode;
+    static constexpr const char *fullTypeName = "@ohos.app.ability.AbilityConstant.WindowMode";
+    static constexpr std::array<std::pair<Enum, const char *>, 3> enumeratorsNames = {{
+        {Enum::WINDOW_MODE_FULLSCREEN, "WINDOW_MODE_FULLSCREEN"},
+        {Enum::WINDOW_MODE_SPLIT_PRIMARY, "WINDOW_MODE_SPLIT_PRIMARY"},
+        {Enum::WINDOW_MODE_SPLIT_SECONDARY, "WINDOW_MODE_SPLIT_SECONDARY"},
+    }};
+};
+
+template<>
+struct OhosEnumMeta<enums::ohos::app::ability::ConfigurationConstant::ColorMode>
+{
+    using Enum = enums::ohos::app::ability::ConfigurationConstant::ColorMode;
+    static constexpr const char *fullTypeName = "@ohos.app.ability.ConfigurationConstant.ColorMode";
+    static constexpr std::array<std::pair<Enum, const char *>, 3> enumeratorsNames = {{
+        {Enum::COLOR_MODE_DARK, "COLOR_MODE_DARK"},
+        {Enum::COLOR_MODE_LIGHT, "COLOR_MODE_LIGHT"},
+        {Enum::COLOR_MODE_NOT_SET, "COLOR_MODE_NOT_SET"},
     }};
 };
 
@@ -303,5 +304,18 @@ struct OhosEnumMeta<enums::ohos::window::AnimationType>
 }
 
 QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::kit::ShareKit::systemShare::SelectionMode));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::kit::ShareKit::systemShare::ShareAbilityType));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::kit::ShareKit::systemShare::SharePreviewMode));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::app::ability::AbilityConstant::ContinueState));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::app::ability::AbilityConstant::LaunchReason));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::app::ability::AbilityConstant::OnContinueResult));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::app::ability::AbilityConstant::WindowMode));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::app::ability::ConfigurationConstant::ColorMode));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::app::ability::contextConstant::ProcessMode));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::app::ability::contextConstant::StartupVisibility));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::bundle::bundleManager::SupportWindowMode));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::enums::ohos::window::AnimationType));
 
 #endif
