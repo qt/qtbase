@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <comment>
+* Copyright (C) 2026 The Qt Company Ltd.
+* SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
+</comment>
+ <class>QtBug149632</class>
+ <widget class="QWidget" name="QtBug149632">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>200</width>
+    <height>120</height>
+   </rect>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QLabel" name="wrappedSet">
+     <property name="alignment">
+      <set>
+       Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter
+      </set>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="wrappedEnum">
+     <property name="frameShape">
+      <enum>
+       QFrame::Shape::Box
+      </enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="paddedSet">
+     <property name="alignment">
+      <set>   Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop   </set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
