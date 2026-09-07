@@ -281,8 +281,7 @@ QAndroidPlatformIntegration::QAndroidPlatformIntegration(const QStringList &para
                                                 QPointingDevice::PointerType::Finger,
                                                 QPointingDevice::Capability::Position
                                                     | QPointingDevice::Capability::Area
-                                                    | QPointingDevice::Capability::Pressure
-                                                    | QPointingDevice::Capability::NormalizedPosition,
+                                                    | QPointingDevice::Capability::Pressure,
                                                 maxTouchPoints,
                                                 0);
             QWindowSystemInterface::registerInputDevice(m_touchDevice);
