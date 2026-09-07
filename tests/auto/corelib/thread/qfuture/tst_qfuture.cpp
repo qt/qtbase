@@ -260,6 +260,8 @@ private slots:
     void cancelChainWithContext();
     void cancelChainOnAnOverwrittenFuture();
 
+    void continuationMayDestroyItsOwnPromise();
+
 private:
     using size_type = std::vector<int>::size_type;
 
@@ -5963,6 +5965,31 @@ void tst_QFuture::cancelChainOnAnOverwrittenFuture()
 
     QCOMPARE_EQ(thenCnt, 4);
     QCOMPARE_EQ(onCancelCnt, 0);
+}
+
+// Regression test for a use-after-free in QFutureInterfaceBase::runContinuation():
+// if the continuation destroys the QPromise it is running on, `this` is a dangling
+// pointer once fn(*this) returns. Only detectable under a sanitizer or a debug
+// allocator that poisons freed memory; the test passes by virtue of not crashing.
+void tst_QFuture::continuationMayDestroyItsOwnPromise()
+{
+    auto *promise = new QPromise<int>();
+    QObject context;
+    bool continuationRan = false;
+
+    promise->future().then(&context, [&](int) {
+        delete promise;
+        promise = nullptr;
+        continuationRan = true;
+    });
+
+    QTimer::singleShot(0, &context, [&promise] {
+        promise->start();
+        promise->addResult(1);
+        promise->finish();
+    });
+
+    QTRY_VERIFY(continuationRan);
 }
 
 QTEST_MAIN(tst_QFuture)
