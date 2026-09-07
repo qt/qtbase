@@ -14,12 +14,12 @@ from dataclasses import dataclass
 
 # REUSE-IgnoreStart
 CPP_HEADER_PREAMBLE_TEMPLATE = '''\
-// Copyright (C) %d The Qt Company Ltd.
+// Copyright (C) %(copyright_year)d The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#ifndef QOHOSENUMS_H
-#define QOHOSENUMS_H
-
+#ifndef %(include_guard)s
+#define %(include_guard)s
+%(private_header_warning)s
 #include <QtCore/qglobal.h>
 #include <QtCore/qmetatype.h>
 #include <array>
@@ -29,6 +29,19 @@ QT_BEGIN_NAMESPACE
 
 namespace QtOhos {'''
 # REUSE-IgnoreEnd
+
+CPP_PRIVATE_HEADER_WARNING = '''
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+'''
 
 
 def cpp_namespace_path(full_type_name: str) -> list[str]:
@@ -251,6 +264,14 @@ def read_copyright_year(enums_header_path: str) -> int:
     return int(match.group(1))
 
 
+def cpp_include_guard(header_path: str) -> str:
+    return re.sub(r'[^A-Za-z0-9]', '_', os.path.basename(header_path)).upper()
+
+
+def is_private_header(header_path: str) -> bool:
+    return header_path.endswith('_p.h')
+
+
 def render_cpp_enum_definitions(ohos_enums: list[OhosEnum]) -> str:
     lines: list[str] = []
     open_namespaces: list[str] = []
@@ -301,9 +322,15 @@ def render_cpp_metatype_declaration(ohos_enum: OhosEnum) -> str:
     return 'Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhos::%s));' % ohos_enum.cpp_qualified_name
 
 
-def render_cpp_header(ohos_enums: list[OhosEnum], year: int) -> str:
+def render_cpp_header(ohos_enums: list[OhosEnum], header_path: str, year: int) -> str:
+    preamble = CPP_HEADER_PREAMBLE_TEMPLATE % {
+        'copyright_year': year,
+        'include_guard': cpp_include_guard(header_path),
+        'private_header_warning':
+            CPP_PRIVATE_HEADER_WARNING if is_private_header(header_path) else '',
+    }
     return '\n'.join([
-        CPP_HEADER_PREAMBLE_TEMPLATE % year, '',
+        preamble, '',
         render_cpp_enum_definitions(ohos_enums), '',
         'template<typename Enum>', 'struct OhosEnumMeta;', '',
         '\n\n'.join(render_cpp_enum_metadata(ohos_enum) for ohos_enum in ohos_enums), '',
@@ -334,12 +361,12 @@ def resolve_ohos_enums(
 
 
 def generate_enums_header_text(
-        ets_file_by_module: dict[str, str], full_type_names: list[str],
+        ets_file_by_module: dict[str, str], header_path: str, full_type_names: list[str],
         api_ver: int, year: int) -> str:
     ohos_enums = sorted(
         resolve_ohos_enums(ets_file_by_module, full_type_names, api_ver),
         key=lambda ohos_enum: ohos_enum.namespace_path + [ohos_enum.type_name])
-    return render_cpp_header(ohos_enums, year) + '\n'
+    return render_cpp_header(ohos_enums, header_path, year) + '\n'
 
 
 def command_update_enums_header(arguments: argparse.Namespace) -> None:
@@ -348,7 +375,8 @@ def command_update_enums_header(arguments: argparse.Namespace) -> None:
     write_text_file(
         arguments.enums_header,
         generate_enums_header_text(
-            ets_file_by_module, full_type_names, arguments.api_ver, arguments.copyright_year))
+            ets_file_by_module, arguments.enums_header, full_type_names,
+            arguments.api_ver, arguments.copyright_year))
 
 
 def command_print_enums_diff(arguments: argparse.Namespace) -> None:
@@ -356,7 +384,8 @@ def command_print_enums_diff(arguments: argparse.Namespace) -> None:
     full_type_names = read_full_type_names_from_enums_header(arguments.enums_header)
     current_text = read_text_file(arguments.enums_header)
     generated_text = generate_enums_header_text(
-        ets_file_by_module, full_type_names, arguments.api_ver, arguments.copyright_year)
+        ets_file_by_module, arguments.enums_header, full_type_names,
+        arguments.api_ver, arguments.copyright_year)
     if generated_text != current_text:
         sys.stdout.write(
             ''.join(
@@ -372,7 +401,8 @@ def command_add_enums_to_header(arguments: argparse.Namespace) -> None:
     ets_file_by_module = index_ets_files_by_module(arguments.sdk_dir)
     full_type_names = read_full_type_names_from_enums_header(arguments.enums_header)
     enums_header_text = generate_enums_header_text(
-        ets_file_by_module, full_type_names, arguments.api_ver, arguments.copyright_year)
+        ets_file_by_module, arguments.enums_header, full_type_names,
+        arguments.api_ver, arguments.copyright_year)
     if enums_header_text != read_text_file(arguments.enums_header):
         raise Exception(
             'refusing to add: %s is out of sync with the SDK; run "update" first'
@@ -384,7 +414,8 @@ def command_add_enums_to_header(arguments: argparse.Namespace) -> None:
     write_text_file(
         arguments.enums_header,
         generate_enums_header_text(
-            ets_file_by_module, full_type_names, arguments.api_ver, arguments.copyright_year))
+            ets_file_by_module, arguments.enums_header, full_type_names,
+            arguments.api_ver, arguments.copyright_year))
 
 
 def add_common_arguments(
