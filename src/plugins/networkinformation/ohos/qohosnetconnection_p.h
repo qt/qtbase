@@ -7,14 +7,14 @@
 #include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/qglobal.h>
 #include <optional>
-#include <qohosenums.h>
+#include <qohosnetworkinformationenums.h>
 
 QT_BEGIN_NAMESPACE
 
 namespace QtOhosNetConnection {
 
-using NetBearType = QtOhos::enums::ohos::net::connection::NetBearType;
-using NetCap = QtOhos::enums::ohos::net::connection::NetCap;
+using NetBearType = QtOhosNetworkInformation::enums::ohos::net::connection::NetBearType;
+using NetCap = QtOhosNetworkInformation::enums::ohos::net::connection::NetCap;
 
 enum class NetworkReachability
 {

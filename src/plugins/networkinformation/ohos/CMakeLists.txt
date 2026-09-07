@@ -8,7 +8,7 @@ qt_internal_add_plugin(QOhosNetworkInformationPlugin
     DEFAULT_IF OHOS
     EXCEPTIONS
     SOURCES
-        qohosenums.h
+        qohosnetworkinformationenums.h
         qohosnetworkinformationbackend.cpp
         qohosnetconnection.cpp qohosnetconnection_p.h
     LIBRARIES
