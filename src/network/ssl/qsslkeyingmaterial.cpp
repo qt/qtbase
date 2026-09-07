@@ -60,6 +60,58 @@ QT_BEGIN_NAMESPACE
     // even though they each performed the derivation independently.
     use(derived);
     \endcode
+
+    \section1 Security Considerations
+
+    Exported keying material is a secret. QByteArray is a copy-on-write
+    container, so every QSslKeyingMaterial object holding a value shares one
+    buffer, and the secret remains in memory for as long as any of those
+    objects lives. An application that needs to guarantee it holds the only
+    remaining reference must release the Qt-internal ones explicitly.
+
+    After a successful handshake the value lives in exactly one place inside
+    Qt: the QSslKeyingMaterial entry in the socket's internal
+    QSslConfiguration. Each QSslConfiguration returned by
+    QSslSocket::sslConfiguration() is an independent copy of that
+    configuration, sharing the value's buffer with it.
+
+    Both QSslConfiguration::takeKeyingMaterial() overloads hand the values over
+    instead of sharing them: what they return holds the only reference to the
+    value, and the entries they leave behind in the configuration they were
+    called on are valueless \l{clone()}{clones}. Copy the value out of the
+    returned object with \l value() and let the object itself go out of scope,
+    then write the configuration back to the socket: that overwrites the
+    socket's entry with the valueless one, dropping the last reference Qt
+    holds.
+
+    \code
+    QSslConfiguration config = socket->sslConfiguration();
+
+    // Copy the value out of the temporary that owns it, and let it die:
+    QByteArray secret = config.takeKeyingMaterial(request)->value();
+
+    // Overwrite the socket's copy with the entry left behind, which has no value:
+    socket->setSslConfiguration(config);
+    \endcode
+
+    The following copies are outside the socket's control and must be dealt
+    with separately:
+    \list
+        \li Any other QSslConfiguration copy the application still holds,
+            including one stored in a QNetworkRequest or installed with
+            QSslConfiguration::setDefaultConfiguration(). Taking the value
+            from one copy does not affect the others.
+        \li A configuration that was never written back to the socket. Taking
+            the values out of a QSslConfiguration only strips that copy of the
+            configuration; the socket keeps its own until it is given the
+            valueless entries.
+        \li Any QSslKeyingMaterial copy the application made itself. Use
+            \l clone() when a copy of a request is needed without its value.
+    \endlist
+
+    The socket also drops the values when it starts a new handshake, because
+    its entries are reset to valueless clones then, and when it is destroyed.
+    Neither replaces the explicit step above for a socket that stays alive.
 */
 
 /*!
@@ -176,7 +228,10 @@ bool QSslKeyingMaterial::isValid() const noexcept
     empty value.
 
     \note The contents of the returned keying material are
-          security-sensitive and must be handled with care.
+          security-sensitive and must be handled with care. See
+          \l{QSslKeyingMaterial#Security Considerations}{Security
+          Considerations} for how to keep the returned QByteArray the
+          only copy of it.
 
     \sa label(), context(), requestedSize()
 */
