@@ -449,8 +449,8 @@ public:
     }
 
     // qlalr parser
-    int tos;
-    int stack_size;
+    qsizetype tos;
+    qsizetype stack_size;
     struct Value {
         qsizetype pos;  // offset into textBuffer
         qsizetype len;  // length incl. prefix (if any)

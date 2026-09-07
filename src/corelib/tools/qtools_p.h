@@ -20,8 +20,11 @@
 
 // toAsciiLower, isAsciiUpper and caseCompareAscii are now moved here:
 #include <QtCore/qbytearrayalgorithms.h>
+#include <QtCore/private/qnumeric_p.h>
 
+#include <cerrno>
 #include <chrono>
+#include <cstdlib>
 #include <limits.h>
 #include <time.h>
 
@@ -104,6 +107,17 @@ using QtPrivate::caseCompareAscii;
            /* else */  -1 ;
 }
 } // namespace QtMiscUtils
+
+// Like POSIX 2024 reallocarray()
+// https://pubs.opengroup.org/onlinepubs/9799919799/functions/realloc.html
+inline void *qt_reallocarray(void *p, size_t n, size_t s)
+{
+    if (Q_UNLIKELY(mul_overflow(n, s, &n))) {
+        errno = ENOMEM;
+        return nullptr;
+    }
+    return std::realloc(p, n);
+}
 
 struct CalculateGrowingBlockSizeResult
 {

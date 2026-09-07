@@ -384,8 +384,9 @@ bool QXmlStreamReaderPrivate::parse()
             state_stack[tos] = 0;
             return true;
         } else if (act > 0) {
-            if (++tos >= stack_size-1)
+            if (tos + 1 >= stack_size - 1)
                 reallocateStack();
+            ++tos;
 
             Value &val = sym_stack[tos];
             val.c = token_char;

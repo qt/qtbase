@@ -1133,13 +1133,20 @@ void QXmlStreamReaderPrivate::parseEntity(const QString &value)
 
 inline void QXmlStreamReaderPrivate::reallocateStack()
 {
-    stack_size <<= 1;
-    void *p = realloc(sym_stack, stack_size * sizeof(Value));
+    // The multiplication cannot overflow (we would have alloc'ed more than
+    // half of the address space using the realloc()s below, before that
+    // happens):
+    const auto newStackSize = stack_size * 2;
+
+    void *p = qt_reallocarray(sym_stack, size_t(newStackSize), sizeof(Value));
     Q_CHECK_PTR(p);
     sym_stack = static_cast<Value*>(p);
-    p = realloc(state_stack, stack_size * sizeof(int));
+    p = qt_reallocarray(state_stack, size_t(newStackSize), sizeof(int));
     Q_CHECK_PTR(p);
     state_stack = static_cast<int*>(p);
+
+    // only update this after _both_ allocations succeeded:
+    stack_size = newStackSize;
 }
 
 
