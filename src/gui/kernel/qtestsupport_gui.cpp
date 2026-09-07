@@ -6,6 +6,7 @@
 #include <private/qeventpoint_p.h>
 
 #include <qpa/qplatformintegration.h>
+#include <qpa/qwindowsysteminterface.h>
 
 #include "qtestsupport_gui.h"
 #include "qwindow.h"
@@ -198,6 +199,22 @@ QTouchEventSequence& QTouchEventSequence::stationary(int touchId)
     auto &p = pointOrPreviousPoint(touchId);
     QMutableEventPoint::setState(p, QEventPoint::State::Stationary);
     return *this;
+}
+
+bool QTouchEventSequence::cancel(bool processEvents)
+{
+    bool ret = false;
+    if (targetWindow) {
+        QThread::sleep(std::chrono::milliseconds{1});
+        ret = QWindowSystemInterface::handleTouchCancelEvent<
+            QWindowSystemInterface::SynchronousDelivery>(targetWindow, device);
+        if (processEvents)
+            QCoreApplication::processEvents();
+    }
+    // A TouchCancel can only be followed by a TouchBegin, so start over.
+    previousPoints.clear();
+    points.clear();
+    return ret;
 }
 
 bool QTouchEventSequence::commit(bool processEvents)

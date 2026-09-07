@@ -1827,6 +1827,19 @@
 */
 
 /*!
+    \fn bool QTest::QTouchEventSequence::cancel(bool processEvents)
+    \since 6.12
+
+    Delivers a touch cancel for the sequence's device and returns whether it was
+    accepted. If \a processEvents is \c true (the default), the event loop is spun
+    afterwards.
+
+    Simulates that the touch sequence was canceled, for example by the compositor.
+    Any points staged but not yet committed are discarded, and since a cancel can
+    only be followed by a new press, remembered points are forgotten too.
+*/
+
+/*!
     \fn QTouchEventSequence QTest::touchEvent(QWindow *window, QPointingDevice *device, bool autoCommit)
     \since 5.0
 

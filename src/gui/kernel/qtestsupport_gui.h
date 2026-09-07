@@ -48,6 +48,7 @@ public:
     virtual QTouchEventSequence& stationary(int touchId);
 
     virtual bool commit(bool processEvents = true);
+    bool cancel(bool processEvents = true);
 
 protected:
     QTouchEventSequence(QWindow *window, QPointingDevice *aDevice, bool autoCommit);
