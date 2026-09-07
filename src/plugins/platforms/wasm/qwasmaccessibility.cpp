@@ -1484,6 +1484,7 @@ void QWasmAccessibility::handleUpdateByInterfaceRole(QAccessibleEvent *event)
     case QAccessible::ToolBar:
     case QAccessible::ButtonMenu:
        handleToolUpdate(event);
+    break;
     case QAccessible::RadioButton:
         handleRadioButtonUpdate(event);
     break;
