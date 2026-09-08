@@ -902,6 +902,32 @@ function(_qt_internal_harmonyos_generate_test_bundle_deployment_settings)
             ",\n    \"blockingTestDialogs\": [\n        ${_dialogs_joined}\n    ]")
     endif()
 
+    # Collect QT_HARMONYOS_EXTRA_PLUGINS from every test target.
+    set(_all_extra_plugins "")
+    foreach(_test IN LISTS _test_targets)
+        if(NOT TARGET "${_test}")
+            continue()
+        endif()
+        get_target_property(_extra_plugins "${_test}" QT_HARMONYOS_EXTRA_PLUGINS)
+        if(NOT _extra_plugins OR _extra_plugins STREQUAL "_extra_plugins-NOTFOUND")
+            continue()
+        endif()
+        foreach(_item IN LISTS _extra_plugins)
+            if(TARGET "${_item}")
+                list(APPEND _all_extra_plugins "$<TARGET_FILE:${_item}>")
+            else()
+                list(APPEND _all_extra_plugins "${_item}")
+            endif()
+        endforeach()
+    endforeach()
+    list(REMOVE_DUPLICATES _all_extra_plugins)
+
+    if(_all_extra_plugins)
+        list(JOIN _all_extra_plugins "\", \"" _extra_plugins_joined)
+        string(APPEND JSON_CONTENT
+            ",\n    \"harmonyos-extra-plugins\": [\"${_extra_plugins_joined}\"]")
+    endif()
+
     string(APPEND JSON_CONTENT "\n}\n")
 
     file(GENERATE OUTPUT "${CONFIG_FILE}" CONTENT "${JSON_CONTENT}")
