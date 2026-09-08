@@ -2661,6 +2661,11 @@ void tst_QUrl::strictParser_data()
     QTest::newRow("invalid-hostname-leading-dot") << "http://.co.uk" << "Invalid hostname (contains invalid characters)";
     QTest::newRow("invalid-hostname-double-dot") << "http://co..uk" << "Invalid hostname (contains invalid characters)";
     QTest::newRow("invalid-hostname-non-LDH") << "http://foo,bar.example.com" << "Invalid hostname (contains invalid characters)";
+    // a backslash is not an authority delimiter, so it lands in the host
+    QTest::newRow("invalid-hostname-backslash") << "http://foo\\bar" << "Invalid hostname (contains invalid characters)";
+    QTest::newRow("invalid-hostname-encoded-slash") << "http://foo%2Fbar" << "Invalid hostname (contains invalid characters)";
+    QTest::newRow("invalid-hostname-encoded-backslash") << "http://foo%5Cbar" << "Invalid hostname (contains invalid characters)";
+    QTest::newRow("invalid-hostname-encoded-nul") << "http://foo%00bar" << "Invalid hostname (contains invalid characters)";
     QTest::newRow("idn-prohibited-char-space") << "http:// " << "Invalid hostname (contains invalid characters)";
     QTest::newRow("idn-prohibited-char-nbsp") << "http://\xc2\xa0" << "Invalid hostname (contains invalid characters)";
     QTest::newRow("idn-prohibited-char-control-1f") << "http://\x1f" << "Invalid hostname (contains invalid characters)";
@@ -4078,6 +4083,15 @@ void tst_QUrl::setComponents_data()
                                     << PrettyDecoded << QString() << QString();
     QTest::newRow("invalid-host-2") << QUrl("http://example.com")
                                     << int(Host) << "%31%30.%30.%30.%31" << Strict << false
+                                    << PrettyDecoded << QString() << QString();
+    QTest::newRow("invalid-host-slash") << QUrl("http://example.com")
+                                    << int(Host) << "foo/bar" << Tolerant << false
+                                    << PrettyDecoded << QString() << QString();
+    QTest::newRow("invalid-host-backslash") << QUrl("http://example.com")
+                                    << int(Host) << "foo\\bar" << Tolerant << false
+                                    << PrettyDecoded << QString() << QString();
+    QTest::newRow("invalid-host-nul") << QUrl("http://example.com")
+                                    << int(Host) << u"foo\0bar"_s << Tolerant << false
                                     << PrettyDecoded << QString() << QString();
     QTest::newRow("invalid-authority-1") << QUrl("http://example.com")
                                          << int(Authority) << "-not-valid-" << Tolerant << false
