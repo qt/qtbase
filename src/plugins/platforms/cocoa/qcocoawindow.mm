@@ -2170,7 +2170,17 @@ void QCocoaWindow::setWindowCursor(NSCursor *cursor)
     }
 }
 
-void QCocoaWindow::registerTouch(bool enable)
+/*!
+    Register if a window should generate trackpad touch events.
+
+    Enabling trackpad touch events has implications for delivery
+    of other events, for example by causing scrolling event lag.
+
+    The registration is ref-counted: multiple clients can enable
+    touch events, which then will be delivered until all clients
+    deregister.
+*/
+void QCocoaWindow::enableTrackpadTouchDelivery(bool enable)
 {
     m_registerTouchCount += enable ? 1 : -1;
     if (enable && m_registerTouchCount == 1)

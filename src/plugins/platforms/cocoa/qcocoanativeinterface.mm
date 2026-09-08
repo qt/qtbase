@@ -62,8 +62,6 @@ QPlatformNativeInterface::NativeResourceForIntegrationFunction QCocoaNativeInter
 {
     if (resource.toLower() == "registerdraggedtypes")
         return NativeResourceForIntegrationFunction(QFunctionPointer(QCocoaNativeInterface::registerDraggedTypes));
-    if (resource.toLower() == "registertouchwindow")
-        return NativeResourceForIntegrationFunction(QFunctionPointer(QCocoaNativeInterface::registerTouchWindow));
     return nullptr;
 }
 
@@ -75,16 +73,6 @@ void QCocoaNativeInterface::clearCurrentThreadCocoaEventDispatcherInterruptFlag(
 void QCocoaNativeInterface::registerDraggedTypes(const QStringList &types)
 {
     QMacMimeRegistry::registerDraggedTypes(types);
-}
-
-void QCocoaNativeInterface::registerTouchWindow(QWindow *window,  bool enable)
-{
-    if (!window)
-        return;
-
-    QCocoaWindow *cocoaWindow = static_cast<QCocoaWindow *>(window->handle());
-    if (cocoaWindow)
-        cocoaWindow->registerTouch(enable);
 }
 
 QT_END_NAMESPACE

@@ -79,6 +79,7 @@
 #include "qdatetime.h"
 
 #include <qpa/qplatformwindow.h>
+#include <qpa/qplatformwindow_p.h>
 
 #include <qtwidgets_tracepoints_p.h>
 
@@ -3199,22 +3200,13 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
 #endif // QT_NO_GESTURES
 #ifdef Q_OS_MACOS
         // Enable touch events on enter, disable on leave.
-        typedef void (*RegisterTouchWindowFn)(QWindow *,  bool);
         case QEvent::Enter:
-            if (w->testAttribute(Qt::WA_AcceptTouchEvents)) {
-                RegisterTouchWindowFn registerTouchWindow = reinterpret_cast<RegisterTouchWindowFn>(
-                    QFunctionPointer(platformNativeInterface()->nativeResourceFunctionForIntegration("registertouchwindow")));
-                if (registerTouchWindow)
-                    registerTouchWindow(w->window()->windowHandle(), true);
-            }
-            res = d->notify_helper(receiver, e);
-            break;
         case QEvent::Leave:
             if (w->testAttribute(Qt::WA_AcceptTouchEvents)) {
-                RegisterTouchWindowFn registerTouchWindow = reinterpret_cast<RegisterTouchWindowFn>(
-                        QFunctionPointer(platformNativeInterface()->nativeResourceFunctionForIntegration("registertouchwindow")));
-                if (registerTouchWindow)
-                    registerTouchWindow(w->window()->windowHandle(), false);
+                if (QWindow *window = w->window()->windowHandle()) {
+                    if (auto *cocoaWindow = window->nativeInterface<QNativeInterface::Private::QCocoaWindow>())
+                        cocoaWindow->enableTrackpadTouchDelivery(e->type() == QEvent::Enter);
+                }
             }
             res = d->notify_helper(receiver, e);
             break;

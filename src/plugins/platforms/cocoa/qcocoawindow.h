@@ -166,7 +166,7 @@ public:
 
     void setWindowCursor(NSCursor *cursor);
 
-    void registerTouch(bool enable);
+    void enableTrackpadTouchDelivery(bool enable) override;
 
     qreal devicePixelRatio() const override;
     QWindow *childWindowAt(QPoint windowPoint);
