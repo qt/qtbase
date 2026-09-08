@@ -165,7 +165,11 @@ bool VulkanRenderer::createTextureImage(const QSize &size, VkImage *image, VkDev
     imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
     imageInfo.tiling = tiling;
     imageInfo.usage = usage;
-    imageInfo.initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED;
+    // PREINITIALIZED is only allowed with linear tiling. (and only makes sense
+    // for an image the host writes to directly)
+    imageInfo.initialLayout = tiling == VK_IMAGE_TILING_LINEAR
+            ? VK_IMAGE_LAYOUT_PREINITIALIZED
+            : VK_IMAGE_LAYOUT_UNDEFINED;
 
     VkResult err = m_devFuncs->vkCreateImage(dev, &imageInfo, nullptr, image);
     if (err != VK_SUCCESS) {
@@ -280,7 +284,7 @@ void VulkanRenderer::ensureTexture()
                                 0, 0, nullptr, 0, nullptr,
                                 1, &barrier);
 
-        barrier.oldLayout = VK_IMAGE_LAYOUT_PREINITIALIZED;
+        barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
         barrier.srcAccessMask = 0;
         barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
