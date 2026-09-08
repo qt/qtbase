@@ -138,8 +138,6 @@ private:
 
 }
 
-using namespace QtPrivate;
-
 template <typename T> class QXmlStreamSimpleStack
 {
     Q_DISABLE_COPY_MOVE(QXmlStreamSimpleStack)
@@ -205,6 +203,7 @@ class QXmlStream
 
 class QXmlStreamPrivateTagStack {
     Q_DISABLE_COPY_MOVE(QXmlStreamPrivateTagStack)
+    using XmlStringRef = QtPrivate::XmlStringRef;
 public:
     struct NamespaceDeclaration
     {
@@ -264,6 +263,7 @@ class QXmlStreamReaderPrivate : public QXmlStreamGrammar, public QXmlStreamPriva
 {
     QXmlStreamReader *q_ptr;
     Q_DECLARE_PUBLIC(QXmlStreamReader)
+    using XmlStringRef = QtPrivate::XmlStringRef;
 public:
     QXmlStreamReaderPrivate(QXmlStreamReader *q);
     ~QXmlStreamReaderPrivate();
