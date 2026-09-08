@@ -1202,6 +1202,24 @@ Q_CONSTINIT QRhiDebugHooks qrhiDebugHooks;
     feature is reported as supported but does not apply: with Metal the push
     constants do not reach the shaders of a pipeline that uses tessellation,
     because those stages are run as compute there.
+
+    \value [since 6.13] StaticBuffersOnGpuTimeline Indicates that updates of
+    QRhiBuffer objects with a type of QRhiBuffer::Immutable or
+    QRhiBuffer::Static are recorded into the command stream, and so are
+    executed on the GPU timeline, in the order they were recorded in. In
+    particular this means that
+    \l{QRhiResourceUpdateBatch::uploadStaticBuffer()}{uploadStaticBuffer()} and
+    \l{QRhiResourceUpdateBatch::copyBuffer()}{copyBuffer()} targeting the same
+    buffer within one \l QRhiResourceUpdateBatch take effect in the recorded
+    order. When this is reported as not supported, uploads are implemented by
+    writing to host visible memory on an unrelated timeline, and the ordering
+    between the two kinds of updates is undefined. In practice this is only
+    relevant with Metal: the feature is not supported there when the Metal
+    device does not report an Apple GPU, which is the case on Intel-based Macs,
+    and also in virtual machines where the paravirtualized device does not
+    advertise an Apple GPU family. Note that this says nothing about when the
+    contents become visible to the CPU or to subsequent draw calls, which is
+    always taken care of by QRhi.
  */
 
 /*!
@@ -10746,6 +10764,14 @@ void QRhiResourceUpdateBatch::updateDynamicBuffer(QRhiBuffer *buf, quint32 offse
 
     \a data is copied and can safely be destroyed or changed once this function
     returns.
+
+    \note Whether the upload is performed on the GPU timeline, and so is ordered
+    against the other operations recorded in the same batch, is indicated by the
+    \l QRhi::StaticBuffersOnGpuTimeline feature. This only matters when
+    combining uploads with
+    \l{QRhiResourceUpdateBatch::copyBuffer()}{copyBuffer()} on the same buffer.
+
+    \sa copyBuffer()
  */
 void QRhiResourceUpdateBatch::uploadStaticBuffer(QRhiBuffer *buf, quint32 offset, quint32 size, const void *data)
 {
@@ -10879,13 +10905,16 @@ void QRhiResourceUpdateBatch::readBackBuffer(QRhiBuffer *buf, quint32 offset, qu
    \l{QRhiBufferCopyDescription::size()}{size} of 0 leads to using the full size
    of \a src, which is not necessarily a multiple of 4 either.
 
-   \warning Mixing GPU-side copies with host-side updates
+   \note Mixing GPU-side copies with host-side updates
    (\l{QRhiResourceUpdateBatch::uploadStaticBuffer()}{uploadStaticBuffer()}) on
-   the same buffer within the same frame should be avoided, because some
-   backends, Metal in particular, implement buffer uploads by writing to host
-   visible memory, in which case the ordering between the two kinds of updates
-   is not defined. This restriction might be lifted in the future, but for now
-   this pattern needs to be avoided in portable applications.
+   the same buffer within the same frame follows the order in which the
+   operations were recorded in the batch, but only when the
+   \l QRhi::StaticBuffersOnGpuTimeline feature is reported as supported. Where
+   it is not, which in practice means Metal on macOS on devices without an
+   Apple GPU, buffer uploads are implemented by writing to host visible memory,
+   and so the ordering between the two kinds of updates is not defined.
+   Portable applications need to either avoid the pattern or check the feature
+   flag.
 
    \since 6.13
    \sa copyTexture(), QRhi::isFeatureSupported()

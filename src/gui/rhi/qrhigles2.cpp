@@ -1901,6 +1901,8 @@ bool QRhiGles2::isFeatureSupported(QRhi::Feature feature) const
         return caps.drawIndirectCount;
     case QRhi::BufferToBufferCopy:
         return caps.copyBuffer;
+    case QRhi::StaticBuffersOnGpuTimeline:
+        return true;
     default:
         Q_UNREACHABLE_RETURN(false);
     }

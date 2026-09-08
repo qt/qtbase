@@ -733,6 +733,8 @@ bool QRhiD3D11::isFeatureSupported(QRhi::Feature feature) const
         return featureLevel >= D3D_FEATURE_LEVEL_11_0;
     case QRhi::BufferToBufferCopy:
         return true;
+    case QRhi::StaticBuffersOnGpuTimeline:
+        return true;
     default:
         Q_UNREACHABLE();
         return false;

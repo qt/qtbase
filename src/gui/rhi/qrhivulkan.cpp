@@ -5948,6 +5948,8 @@ bool QRhiVulkan::isFeatureSupported(QRhi::Feature feature) const
         return caps.drawIndirectCount;
     case QRhi::BufferToBufferCopy:
         return true;
+    case QRhi::StaticBuffersOnGpuTimeline:
+        return true;
     default:
         Q_UNREACHABLE_RETURN(false);
     }

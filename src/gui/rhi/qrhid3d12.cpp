@@ -1022,6 +1022,8 @@ bool QRhiD3D12::isFeatureSupported(QRhi::Feature feature) const
         return drawCommandSignature != nullptr && drawIndexedCommandSignature != nullptr;
     case QRhi::BufferToBufferCopy:
         return true;
+    case QRhi::StaticBuffersOnGpuTimeline:
+        return true;
     }
     return false;
 }

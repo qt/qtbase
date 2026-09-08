@@ -2097,6 +2097,7 @@ public:
         DrawIndirectCount,
         BufferToBufferCopy,
         PushConstants,
+        StaticBuffersOnGpuTimeline
     };
 
     enum BeginFrameFlag {

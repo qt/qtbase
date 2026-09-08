@@ -42,7 +42,13 @@ struct QMetalBuffer : public QRhiBuffer
     friend class QRhiMetal;
     friend struct QMetalShaderResourceBindings;
 
+    // Internal usage flags. Buffers created with any of these are not visible
+    // to the application and bypass QRhi::newBuffer(), so they are free to use
+    // bits outside of QRhiBuffer::UsageFlag.
     static constexpr int WorkBufPoolUsage = 1 << 8;
+    // Marks internal buffers that must keep being written by the CPU, and so
+    // can never be backed by device private memory.
+    static constexpr int InternalHostWritable = 1 << 9;
     static_assert(WorkBufPoolUsage > QRhiBuffer::StorageBuffer);
 };
 
@@ -599,6 +605,13 @@ public:
         bool baseVertexAndInstance = true;
         QVector<int> supportedSampleCounts;
         bool isAppleGPU = false;
+        // Immutable and Static buffers are backed by a single, device private
+        // MTLBuffer, with uploads going through a staging buffer and a blit.
+        // Requires an Apple GPU because MTLBlitCommandEncoder's
+        // buffer-to-buffer copy has a 4 byte alignment requirement on
+        // non-Apple GPUs, whereas uploadStaticBuffer() allows any offset and
+        // size.
+        bool usePrivateStaticBuffers = false;
         int maxThreadGroupSize = 512;
         bool multiView = false;
         bool indirectCommandBuffers = false;

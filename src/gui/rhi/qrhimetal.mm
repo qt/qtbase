@@ -307,12 +307,31 @@ struct QRhiMetalData
     using ShaderCacheKey = std::pair<QRhiShaderStage, bool>; // stage, argument_buffers
     QHash<ShaderCacheKey, QMetalShader> shaderCache;
 
-    struct {
+    struct StagingArea {
         id<MTLBuffer> buf = nil;
         quint32 offset = 0;
         quint32 capacity = 0;
-    } argBufPool[QMTL_FRAMES_IN_FLIGHT];
+        quint32 bytesNeeded = 0;
+        int lowDemandFrames = 0;
+        int highDemandFrames = 0;
+    };
+    StagingArea argBufPool[QMTL_FRAMES_IN_FLIGHT];
+    StagingArea bufStagingPool[QMTL_FRAMES_IN_FLIGHT];
+    id<MTLBuffer> allocFromStagingArea(StagingArea *area, quint32 size, quint32 alignment,
+                                       int frameSlot, quint32 minBlockSize, quint32 *offset);
     id<MTLBuffer> allocArgumentBuffer(quint32 size, quint32 alignment, int frameSlot, quint32 *offset);
+    id<MTLBuffer> allocBufferStaging(quint32 size, int frameSlot, quint32 *offset);
+    id<MTLBuffer> newOneShotStagingBuffer(quint32 size, int frameSlot);
+    void resetAndResizeBufferStagingArea(int frameSlot);
+
+    // Uploads larger than this always get their own one-shot MTLBuffer and do
+    // not count towards the area's size, so that a one-off large upload cannot
+    // inflate it.
+    static constexpr quint32 LARGE_STAGING_ALLOC = 512 * 1024;
+    static constexpr quint32 STAGING_AREA_MIN = 64 * 1024;
+    static constexpr quint32 STAGING_AREA_MAX = 16 * 1024 * 1024;
+    static constexpr int STAGING_AREA_LOW_DEMAND_FRAMES = 60;
+    static constexpr int STAGING_AREA_HIGH_DEMAND_FRAMES = 3;
 
     // Counts both swapchain and offscreen frames. Never 0 once a frame started,
     // so that a default-initialized "used in frame" cannot match.
@@ -324,8 +343,9 @@ Q_DECLARE_TYPEINFO(QRhiMetalData::TextureReadback, Q_RELOCATABLE_TYPE);
 
 struct QMetalBufferData
 {
-    bool managed;
-    bool slotted;
+    bool managed = false;
+    bool slotted = false;
+    bool isDeviceLocal = false; // true = MTLResourceStorageModePrivate buf[0], no slotting, non-host visible
     id<MTLBuffer> buf[QMTL_FRAMES_IN_FLIGHT];
     struct BufferUpdate {
         quint32 offset;
@@ -706,6 +726,13 @@ bool QRhiMetal::create(QRhi::Flags flags)
         caps.multiView = true;
 #endif
 
+    // MTLBlitCommandEncoder's buffer-to-buffer copy requires 4 byte aligned
+    // offsets and size on non-Apple GPUs, whereas uploadStaticBuffer() takes
+    // any offset and size. Keep the legacy host-write path there.
+    caps.usePrivateStaticBuffers = caps.isAppleGPU;
+    if (qEnvironmentVariableIntValue("QT_METAL_NO_PRIVATE_STATIC_BUFFERS"))
+        caps.usePrivateStaticBuffers = false;
+
     caps.supportedSampleCounts = { 1 };
     for (int sampleCount : { 2, 4, 8 }) {
         if ([d->dev supportsTextureSampleCount: sampleCount])
@@ -744,11 +771,13 @@ void QRhiMetal::destroy()
     [d->captureScope release];
     d->captureScope = nil;
 
-    for (auto &pool : d->argBufPool) {
-        [pool.buf release];
-        pool.buf = nil;
-        pool.capacity = 0;
-        pool.offset = 0;
+    for (auto *pools : { d->argBufPool, d->bufStagingPool }) {
+        for (int i = 0; i < QMTL_FRAMES_IN_FLIGHT; ++i) {
+            [pools[i].buf release];
+            pools[i].buf = nil;
+            pools[i].capacity = 0;
+            pools[i].offset = 0;
+        }
     }
 
     [d->icbArgumentBuffer release];
@@ -1001,6 +1030,8 @@ bool QRhiMetal::isFeatureSupported(QRhi::Feature feature) const
         return true;
     case QRhi::BufferToBufferCopy:
         return true;
+    case QRhi::StaticBuffersOnGpuTimeline:
+        return caps.usePrivateStaticBuffers;
     default:
         Q_UNREACHABLE();
         return false;
@@ -1538,7 +1569,7 @@ void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD
         case QRhiShaderResourceBinding::BufferLoadStore:
         {
             QMetalBuffer *bufD = QRHI_RES(QMetalBuffer, b->u.sbuf.buf);
-            id<MTLBuffer> mtlbuf = bufD->d->buf[0];
+            id<MTLBuffer> mtlbuf = bufD->d->buf[bufD->d->slotted ? currentFrameSlot : 0];
             quint32 offset = b->u.sbuf.offset;
             for (int stage = 0; stage < SUPPORTED_STAGES; ++stage) {
                 if (b->stage.testFlag(toRhiSrbStage(stage))) {
@@ -3210,6 +3241,7 @@ QRhi::FrameOpResult QRhiMetal::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginF
         swapChainD->ds->lastActiveFrameSlot = currentFrameSlot;
 
     d->argBufPool[currentFrameSlot].offset = 0;
+    d->resetAndResizeBufferStagingArea(currentFrameSlot);
     d->globalFrameId += 1;
 
     executeDeferredReleases();
@@ -3335,6 +3367,7 @@ QRhi::FrameOpResult QRhiMetal::beginOffscreenFrame(QRhiCommandBuffer **cb, QRhi:
     d->ofr.cbWrapper.d->cb = d->newCommandBuffer();
 
     d->argBufPool[currentFrameSlot].offset = 0;
+    d->resetAndResizeBufferStagingArea(currentFrameSlot);
     d->globalFrameId += 1;
 
     executeDeferredReleases();
@@ -3601,7 +3634,7 @@ void QRhiMetal::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
         if (!blitEnc) {
             blitEnc = [cbD->d->cb blitCommandEncoder];
             if (debugMarkers)
-                [blitEnc pushDebugGroup: @"Texture upload/copy"];
+                [blitEnc pushDebugGroup: @"Resource updates"];
         }
     };
 
@@ -3610,19 +3643,38 @@ void QRhiMetal::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
         if (u.type == QRhiResourceUpdateBatchPrivate::BufferOp::DynamicUpdate) {
             QMetalBuffer *bufD = QRHI_RES(QMetalBuffer, u.buf);
             Q_ASSERT(bufD->m_type == QRhiBuffer::Dynamic);
-            for (int i = 0; i < QMTL_FRAMES_IN_FLIGHT; ++i) {
+            for (int i = 0, ie = bufD->d->slotted ? QMTL_FRAMES_IN_FLIGHT : 1; i != ie; ++i) {
                 if (u.offset == 0 && u.data.size() == bufD->m_size)
                     bufD->d->pendingUpdates[i].clear();
                 bufD->d->pendingUpdates[i].append({ u.offset, u.data });
             }
         } else if (u.type == QRhiResourceUpdateBatchPrivate::BufferOp::StaticUpload) {
-            // Due to the Metal API the handling of static and dynamic buffers is
-            // basically the same. So go through the same pendingUpdates machinery.
             QMetalBuffer *bufD = QRHI_RES(QMetalBuffer, u.buf);
             Q_ASSERT(bufD->m_type != QRhiBuffer::Dynamic);
             Q_ASSERT(u.offset + u.data.size() <= bufD->m_size);
-            for (int i = 0, ie = bufD->d->slotted ? QMTL_FRAMES_IN_FLIGHT : 1; i != ie; ++i)
-                bufD->d->pendingUpdates[i].append({ u.offset, u.data });
+            if (bufD->d->isDeviceLocal) {
+                const quint32 size = quint32(u.data.size());
+                if (size) { // a zero size blit is invalid
+                    quint32 stagingOffset = 0;
+                    id<MTLBuffer> stagingBuf = d->allocBufferStaging(size, currentFrameSlot, &stagingOffset);
+                    if (stagingBuf) {
+                        char *p = reinterpret_cast<char *>([stagingBuf contents]);
+                        memcpy(p + stagingOffset, u.data.constData(), size);
+                        ensureBlit();
+                        [blitEnc copyFromBuffer: stagingBuf
+                                 sourceOffset: stagingOffset
+                                 toBuffer: bufD->d->buf[0]
+                                 destinationOffset: u.offset
+                                 size: size];
+                    } else {
+                        qWarning("Failed to allocate staging buffer of size %u for buffer upload", size);
+                    }
+                }
+                bufD->lastActiveFrameSlot = currentFrameSlot;
+            } else {
+                for (int i = 0, ie = bufD->d->slotted ? QMTL_FRAMES_IN_FLIGHT : 1; i != ie; ++i)
+                    bufD->d->pendingUpdates[i].append({ u.offset, u.data });
+            }
         } else if (u.type == QRhiResourceUpdateBatchPrivate::BufferOp::Read) {
             QMetalBuffer *bufD = QRHI_RES(QMetalBuffer, u.buf);
             executeBufferHostWritesForCurrentFrame(bufD);
@@ -3658,6 +3710,7 @@ void QRhiMetal::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
                                    size: u.readSize];
 
                 d->activeBufferReadbacks.append(readback);
+                bufD->lastActiveFrameSlot = currentFrameSlot;
             }
         } else if (u.type == QRhiResourceUpdateBatchPrivate::BufferOp::Copy) {
             QMetalBuffer *dstD = QRHI_RES(QMetalBuffer, u.buf);
@@ -3667,13 +3720,15 @@ void QRhiMetal::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
             executeBufferHostWritesForCurrentFrame(srcD);
             const int srcIdx = srcD->d->slotted ? currentFrameSlot : 0;
             const int dstSlotCount = dstD->d->slotted ? QMTL_FRAMES_IN_FLIGHT : 1;
-            // Unlike everywhere else, flush every slot, not just the current
+            // With device private buffers dstSlotCount is 1 and there are no
+            // pending host writes at all, so this is a no-op. On the host
+            // visible path every slot has to be flushed, not just the current
             // one: a partial copy cannot discard the pending writes outside the
             // copied range, and leaving them queued would let them land on top
             // of the copy in a later frame. Writing the slot that is not the
             // current one races a still in-flight frame reading it, which is
             // why mixing uploadStaticBuffer() and copyBuffer() on one buffer
-            // within a frame is documented as unsupported.
+            // within a frame stays unsupported there.
             for (int i = 0; i != dstSlotCount; ++i)
                 executeBufferHostWritesForSlot(dstD, i);
 
@@ -3825,6 +3880,8 @@ void QRhiMetal::executeBufferHostWritesForSlot(QMetalBuffer *bufD, int slot)
 {
     if (bufD->d->pendingUpdates[slot].isEmpty())
         return;
+
+    Q_ASSERT(!bufD->d->isDeviceLocal);
 
     void *p = [bufD->d->buf[slot] contents];
     quint32 changeBegin = UINT32_MAX;
@@ -4879,24 +4936,30 @@ bool QMetalBuffer::create()
     const quint32 roundedSize = m_usage.testFlag(QRhiBuffer::UniformBuffer) ? aligned(nonZeroSize, 256u) : nonZeroSize;
 
     d->managed = false;
+    d->isDeviceLocal = false;
     MTLResourceOptions opts = MTLResourceStorageModeShared;
 
     QRHI_RES_RHI(QRhiMetal);
-#ifdef Q_OS_MACOS
-    if (!rhiD->caps.isAppleGPU && m_type != Dynamic) {
-        opts = MTLResourceStorageModeManaged;
-        d->managed = true;
-    }
-#endif
 
-    // Have QMTL_FRAMES_IN_FLIGHT versions regardless of the type, for now.
-    // This is because writing to a Managed buffer (which is what Immutable and
-    // Static maps to on macOS) is not safe when another frame reading from the
-    // same buffer is still in flight.
-    d->slotted = !m_usage.testFlag(QRhiBuffer::StorageBuffer); // except for SSBOs written in the shader
-    // and a special case for internal work buffers
-    if (int(m_usage) == WorkBufPoolUsage)
+    const bool internalHostWritable = (int(m_usage) & (WorkBufPoolUsage | InternalHostWritable)) != 0;
+
+    if (m_type != Dynamic && !internalHostWritable && rhiD->caps.usePrivateStaticBuffers) {
+        opts = MTLResourceStorageModePrivate;
+        d->isDeviceLocal = true;
         d->slotted = false;
+    } else {
+#ifdef Q_OS_MACOS
+        if (!rhiD->caps.isAppleGPU && m_type != Dynamic) {
+            opts = MTLResourceStorageModeManaged;
+            d->managed = true;
+        }
+#endif
+        // Have QMTL_FRAMES_IN_FLIGHT versions regardless of the type. This is
+        // because writing to a host visible buffer is not safe when another
+        // frame reading from the same buffer is still in flight.
+        d->slotted = !m_usage.testFlag(QRhiBuffer::StorageBuffer) // except for SSBOs written in the shader
+                && !internalHostWritable; // and the internal buffers
+    }
 
     for (int i = 0; i < QMTL_FRAMES_IN_FLIGHT; ++i) {
         if (i == 0 || d->slotted) {
@@ -4931,6 +4994,10 @@ QRhiBuffer::NativeBuffer QMetalBuffer::nativeBuffer()
         b.slotCount = QMTL_FRAMES_IN_FLIGHT;
         return b;
     }
+    if (!d->isDeviceLocal) {
+        QRHI_RES_RHI(QRhiMetal);
+        rhiD->executeBufferHostWritesForSlot(this, 0);
+    }
     return { { &d->buf[0] }, 1 };
 }
 
@@ -4942,22 +5009,18 @@ char *QMetalBuffer::beginFullDynamicBufferUpdateForCurrentFrame()
     // buffer, but provides a fast path for dynamic buffers that have all their
     // content changed in every frame.
     Q_ASSERT(m_type == Dynamic);
+    Q_ASSERT(!d->isDeviceLocal);
     QRHI_RES_RHI(QRhiMetal);
     Q_ASSERT(rhiD->inFrame);
-    const int slot = rhiD->currentFrameSlot;
+    const int slot = d->slotted ? rhiD->currentFrameSlot : 0;
     void *p = [d->buf[slot] contents];
     return static_cast<char *>(p);
 }
 
 void QMetalBuffer::endFullDynamicBufferUpdateForCurrentFrame()
 {
-#ifdef Q_OS_MACOS
-    if (d->managed) {
-        QRHI_RES_RHI(QRhiMetal);
-        const int slot = rhiD->currentFrameSlot;
-        [d->buf[slot] didModifyRange: NSMakeRange(0, NSUInteger(m_size))];
-    }
-#endif
+    // Nothing to do: managed is never set for Dynamic buffers, and so there is
+    // no didModifyRange: to issue.
 }
 
 static inline MTLPixelFormat toMetalTextureFormat(QRhiTexture::Format format, QRhiTexture::Flags flags, const QRhiMetal *d)
@@ -6462,9 +6525,10 @@ static inline MTLLanguageVersion toMetalLanguageVersion(const QShaderVersion &ve
     return MTLLanguageVersion(((v / 10) << 16) + (v % 10));
 }
 
-id<MTLBuffer> QRhiMetalData::allocArgumentBuffer(quint32 size, quint32 alignment, int frameSlot, quint32 *offset)
+id<MTLBuffer> QRhiMetalData::allocFromStagingArea(StagingArea *area, quint32 size, quint32 alignment,
+                                                 int frameSlot, quint32 minBlockSize, quint32 *offset)
 {
-    auto &pool(argBufPool[frameSlot]);
+    auto &pool(*area);
     const quint32 alignedSize = aligned<quint32>(size, alignment);
     if (pool.offset + alignedSize > pool.capacity) {
         if (pool.buf) {
@@ -6479,7 +6543,7 @@ id<MTLBuffer> QRhiMetalData::allocArgumentBuffer(quint32 size, quint32 alignment
             e.stagingBuffer.buffer = pool.buf;
             releaseQueue.append(e);
         }
-        pool.capacity = qMax(pool.capacity * 2, qMax(alignedSize, quint32(16384)));
+        pool.capacity = qMax(pool.capacity * 2, qMax(alignedSize, minBlockSize));
         pool.buf = [dev newBufferWithLength: pool.capacity options: MTLResourceStorageModeShared];
         pool.offset = 0;
         if (!pool.buf) {
@@ -6490,6 +6554,97 @@ id<MTLBuffer> QRhiMetalData::allocArgumentBuffer(quint32 size, quint32 alignment
     *offset = pool.offset;
     pool.offset += alignedSize;
     return pool.buf;
+}
+
+id<MTLBuffer> QRhiMetalData::allocArgumentBuffer(quint32 size, quint32 alignment, int frameSlot, quint32 *offset)
+{
+    return allocFromStagingArea(&argBufPool[frameSlot], size, alignment, frameSlot, 16384, offset);
+}
+
+id<MTLBuffer> QRhiMetalData::newOneShotStagingBuffer(quint32 size, int frameSlot)
+{
+    id<MTLBuffer> buf = [dev newBufferWithLength: size options: MTLResourceStorageModeShared];
+    if (!buf)
+        return nil;
+    QRhiMetalData::DeferredReleaseEntry e;
+    e.type = QRhiMetalData::DeferredReleaseEntry::StagingBuffer;
+    e.lastActiveFrameSlot = frameSlot;
+    e.stagingBuffer.buffer = buf;
+    releaseQueue.append(e);
+    return buf;
+}
+
+id<MTLBuffer> QRhiMetalData::allocBufferStaging(quint32 size, int frameSlot, quint32 *offset)
+{
+    if (size > LARGE_STAGING_ALLOC) {
+        *offset = 0;
+        return newOneShotStagingBuffer(size, frameSlot);
+    }
+
+    StagingArea &area(bufStagingPool[frameSlot]);
+    // 4 byte alignment is what MTLBlitCommandEncoder wants on non-Apple GPUs.
+    const quint32 alignedSize = aligned<quint32>(size, 4u);
+    area.bytesNeeded += alignedSize;
+
+    if (area.offset + alignedSize > area.capacity) {
+        *offset = 0;
+        return newOneShotStagingBuffer(size, frameSlot);
+    }
+
+    *offset = area.offset;
+    area.offset += alignedSize;
+    return area.buf;
+}
+
+void QRhiMetalData::resetAndResizeBufferStagingArea(int frameSlot)
+{
+    StagingArea &area(bufStagingPool[frameSlot]);
+    const quint32 needed = area.bytesNeeded;
+    area.bytesNeeded = 0;
+    area.offset = 0;
+
+    bool resize = false;
+    quint32 newCapacity = 0;
+    if (needed > area.capacity) {
+        // Fell back to one-shot buffers last time. Only grow once the demand
+        // has proven to be recurring: a one-time burst, which is what loading a
+        // scene looks like, would otherwise size the area permanently right at
+        // the point where it is not needed any more.
+        area.lowDemandFrames = 0;
+        if (++area.highDemandFrames >= STAGING_AREA_HIGH_DEMAND_FRAMES) {
+            newCapacity = qMin(qNextPowerOfTwo(needed), STAGING_AREA_MAX);
+            resize = true;
+        }
+    } else if (needed <= area.capacity / 4 && area.capacity > 0) {
+        area.highDemandFrames = 0;
+        if (++area.lowDemandFrames >= STAGING_AREA_LOW_DEMAND_FRAMES) {
+            area.lowDemandFrames = 0;
+            // Nothing at all for a while, e.g. an app that only uploads during
+            // startup: give the memory back entirely.
+            newCapacity = needed ? qMax(area.capacity / 2, STAGING_AREA_MIN) : 0;
+            resize = true;
+        }
+    } else {
+        area.lowDemandFrames = 0;
+        area.highDemandFrames = 0;
+    }
+
+    if (resize && newCapacity != area.capacity) {
+        if (area.buf) {
+            QRhiMetalData::DeferredReleaseEntry e;
+            e.type = QRhiMetalData::DeferredReleaseEntry::StagingBuffer;
+            e.lastActiveFrameSlot = frameSlot;
+            e.stagingBuffer.buffer = area.buf;
+            releaseQueue.append(e);
+            area.buf = nil;
+        }
+        area.capacity = 0;
+        if (newCapacity) {
+            area.buf = [dev newBufferWithLength: newCapacity options: MTLResourceStorageModeShared];
+            if (area.buf)
+                area.capacity = newCapacity;
+        }
+    }
 }
 
 id<MTLLibrary> QRhiMetalData::createMetalLib(const QShader &shader, QShader::Variant shaderVariant,
@@ -7707,7 +7862,10 @@ bool QMetalGraphicsPipeline::create()
 
     if (buffers) {
         if (!d->bufferSizeBuffer)
-            d->bufferSizeBuffer = new QMetalBuffer(rhiD, QRhiBuffer::Static, QRhiBuffer::StorageBuffer, buffers * sizeof(int));
+            d->bufferSizeBuffer = new QMetalBuffer(rhiD, QRhiBuffer::Static,
+                                                  QRhiBuffer::UsageFlags(int(QRhiBuffer::StorageBuffer)
+                                                                         | QMetalBuffer::InternalHostWritable),
+                                                  buffers * sizeof(int));
 
         d->bufferSizeBuffer->setSize(buffers * sizeof(int));
         d->bufferSizeBuffer->create();
@@ -7873,7 +8031,10 @@ bool QMetalComputePipeline::create()
         buffers += 1;
 
         if (!d->bufferSizeBuffer)
-            d->bufferSizeBuffer = new QMetalBuffer(rhiD, QRhiBuffer::Static, QRhiBuffer::StorageBuffer, buffers * sizeof(int));
+            d->bufferSizeBuffer = new QMetalBuffer(rhiD, QRhiBuffer::Static,
+                                                  QRhiBuffer::UsageFlags(int(QRhiBuffer::StorageBuffer)
+                                                                         | QMetalBuffer::InternalHostWritable),
+                                                  buffers * sizeof(int));
 
         d->bufferSizeBuffer->setSize(buffers * sizeof(int));
         d->bufferSizeBuffer->create();

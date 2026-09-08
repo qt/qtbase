@@ -74,6 +74,10 @@ private slots:
     void resourceUpdateBatchBufferCopy();
     void resourceUpdateBatchBufferCopyInvalid_data();
     void resourceUpdateBatchBufferCopyInvalid();
+    void resourceUpdateBatchBufferCopyAndUploadOrder_data();
+    void resourceUpdateBatchBufferCopyAndUploadOrder();
+    void resourceUpdateBatchStaticBufferUploadEdgeCases_data();
+    void resourceUpdateBatchStaticBufferUploadEdgeCases();
     void resourceUpdateBatchRGBATextureUpload_data();
     void resourceUpdateBatchRGBATextureUpload();
     void resourceUpdateBatchR8TextureUpload_data();
@@ -1516,6 +1520,199 @@ void tst_QRhi::resourceUpdateBatchBufferCopyInvalid()
 
     // Nothing should have been recorded.
     QVERIFY(submitResourceUpdates(rhi.data(), batch));
+}
+
+void tst_QRhi::resourceUpdateBatchBufferCopyAndUploadOrder_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::resourceUpdateBatchBufferCopyAndUploadOrder()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing buffer copy and upload ordering");
+
+    if (!rhi->isFeatureSupported(QRhi::BufferToBufferCopy))
+        QSKIP("Buffer-to-buffer copy is not supported on this backend");
+
+    if (!rhi->isFeatureSupported(QRhi::ReadBackNonUniformBuffer))
+        QSKIP("Reading buffers with non-uniform usage is not supported on this backend");
+
+    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi.get()))
+        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
+
+    if (impl == QRhi::Null)
+        QSKIP("The Null backend does not have real buffer contents");
+
+    // Where buffer uploads are host writes instead of commands in the stream
+    // their ordering against GPU-side copies is undefined, as documented for
+    // copyBuffer(). In practice this is Metal on macOS on devices that do not
+    // report an Apple GPU.
+    if (!rhi->isFeatureSupported(QRhi::StaticBuffersOnGpuTimeline))
+        QSKIP("Buffer upload and GPU-side copy ordering is undefined on this backend");
+
+    // A GPU-side copy and a host-side upload targeting the same buffer within
+    // one batch must take effect in the order they were recorded in. This
+    // requires the backend to put the upload into the command stream instead of
+    // performing it as a host write on an unrelated timeline.
+
+    const int bufferSize = 32;
+    const QByteArray a(bufferSize, 'A');
+    const QByteArray b(bufferSize, 'B');
+
+    // The readback is deliberately part of the same batch. Backends that keep
+    // the upload on the CPU timeline apply it lazily, when the buffer is next
+    // used - which the readback in a later batch would happen to get right by
+    // accident. Within one batch there is nowhere to hide.
+    auto runInOneBatch = [&rhi, &a](bool copyFirst, quint32 uploadOffset,
+                                    const QByteArray &uploadData) {
+        QScopedPointer<QRhiBuffer> src(rhi->newBuffer(QRhiBuffer::Static, QRhiBuffer::VertexBuffer, bufferSize));
+        if (!src->create())
+            return QByteArray();
+        QScopedPointer<QRhiBuffer> dst(rhi->newBuffer(QRhiBuffer::Static, QRhiBuffer::VertexBuffer, bufferSize));
+        if (!dst->create())
+            return QByteArray();
+
+        QRhiResourceUpdateBatch *batch = rhi->nextResourceUpdateBatch();
+        batch->uploadStaticBuffer(src.data(), 0, bufferSize, a.constData());
+        if (!submitResourceUpdates(rhi.data(), batch))
+            return QByteArray();
+
+        batch = rhi->nextResourceUpdateBatch();
+        if (copyFirst) {
+            batch->copyBuffer(dst.data(), src.data());
+            batch->uploadStaticBuffer(dst.data(), uploadOffset, uploadData.size(), uploadData.constData());
+        } else {
+            batch->uploadStaticBuffer(dst.data(), uploadOffset, uploadData.size(), uploadData.constData());
+            batch->copyBuffer(dst.data(), src.data());
+        }
+
+        QRhiReadbackResult readResult;
+        bool readCompleted = false;
+        readResult.completed = [&readCompleted] { readCompleted = true; };
+        batch->readBackBuffer(dst.data(), 0, bufferSize, &readResult);
+
+        // Offscreen frames are synchronous, so this completes here and now.
+        if (!submitResourceUpdates(rhi.data(), batch) || !readCompleted)
+            return QByteArray();
+        return readResult.data;
+    };
+
+    // copy, then upload: the upload has to win
+    QCOMPARE(runInOneBatch(true, 0, b), b);
+
+    // upload, then copy: the copy has to win
+    QCOMPARE(runInOneBatch(false, 0, b), a);
+
+    // partial upload after a full copy
+    {
+        QByteArray expected = a;
+        expected.replace(8, 8, QByteArray(8, 'B'));
+        QCOMPARE(runInOneBatch(true, 8, QByteArray(8, 'B')), expected);
+    }
+}
+
+void tst_QRhi::resourceUpdateBatchStaticBufferUploadEdgeCases_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::resourceUpdateBatchStaticBufferUploadEdgeCases()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing static buffer upload edge cases");
+
+    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi.get()))
+        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
+
+    const bool canReadBack = rhi->isFeatureSupported(QRhi::ReadBackNonUniformBuffer) && impl != QRhi::Null;
+
+    // Uploading and then destroying as soon as the frame is submitted, without
+    // ever binding the buffer. Backends that record the upload as a copy
+    // command must keep the native buffer alive until the frame has been
+    // executed. (destroying any earlier, while the frame is still being
+    // recorded, is not allowed by QRhi)
+    {
+        QRhiCommandBuffer *cb = nullptr;
+        QCOMPARE(rhi->beginOffscreenFrame(&cb), QRhi::FrameOpSuccess);
+        QRhiResourceUpdateBatch *batch = rhi->nextResourceUpdateBatch();
+        QScopedPointer<QRhiBuffer> buf(rhi->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, 256));
+        QVERIFY(buf->create());
+        const QByteArray data(256, 'X');
+        batch->uploadStaticBuffer(buf.data(), 0, 256, data.constData());
+        cb->resourceUpdate(batch);
+        rhi->endOffscreenFrame();
+        buf.reset();
+    }
+
+    // Several partial uploads to disjoint ranges of one buffer in one batch.
+    {
+        const int bufferSize = 64;
+        QScopedPointer<QRhiBuffer> buf(rhi->newBuffer(QRhiBuffer::Static, QRhiBuffer::VertexBuffer, bufferSize));
+        QVERIFY(buf->create());
+
+        QRhiResourceUpdateBatch *batch = rhi->nextResourceUpdateBatch();
+        const QByteArray zero(bufferSize, '0');
+        batch->uploadStaticBuffer(buf.data(), 0, bufferSize, zero.constData());
+        const QByteArray a(8, 'A');
+        const QByteArray b(8, 'B');
+        const QByteArray c(8, 'C');
+        batch->uploadStaticBuffer(buf.data(), 0, 8, a.constData());
+        batch->uploadStaticBuffer(buf.data(), 24, 8, b.constData());
+        batch->uploadStaticBuffer(buf.data(), 56, 8, c.constData());
+
+        QRhiReadbackResult readResult;
+        bool readCompleted = false;
+        readResult.completed = [&readCompleted] { readCompleted = true; };
+        if (canReadBack)
+            batch->readBackBuffer(buf.data(), 0, bufferSize, &readResult);
+
+        QVERIFY(submitResourceUpdates(rhi.data(), batch));
+
+        if (canReadBack) {
+            QVERIFY(readCompleted);
+            QByteArray expected = zero;
+            expected.replace(0, 8, a);
+            expected.replace(24, 8, b);
+            expected.replace(56, 8, c);
+            QCOMPARE(readResult.data, expected);
+        }
+    }
+
+    // A large upload, exercising backends that sub-allocate staging memory from
+    // a per-frame area and need a separate path above some size.
+    {
+        const int bufferSize = 4 * 1024 * 1024;
+        QScopedPointer<QRhiBuffer> buf(rhi->newBuffer(QRhiBuffer::Static, QRhiBuffer::VertexBuffer, bufferSize));
+        QVERIFY(buf->create());
+
+        QByteArray data(bufferSize, 'L');
+        data.replace(bufferSize - 4, 4, QByteArrayLiteral("End!"));
+
+        QRhiResourceUpdateBatch *batch = rhi->nextResourceUpdateBatch();
+        batch->uploadStaticBuffer(buf.data(), 0, bufferSize, data.constData());
+
+        QRhiReadbackResult readResult;
+        bool readCompleted = false;
+        readResult.completed = [&readCompleted] { readCompleted = true; };
+        if (canReadBack)
+            batch->readBackBuffer(buf.data(), bufferSize - 16, 16, &readResult);
+
+        QVERIFY(submitResourceUpdates(rhi.data(), batch));
+
+        if (canReadBack) {
+            QVERIFY(readCompleted);
+            QCOMPARE(readResult.data, data.right(16));
+        }
+    }
 }
 
 inline bool imageRGBAEquals(const QImage &a, const QImage &b, int maxFuzz = 1)
