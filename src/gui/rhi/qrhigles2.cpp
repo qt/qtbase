@@ -3260,6 +3260,7 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
             } else {
                 f->glBindVertexArray(0);
             }
+            f->glBindFramebuffer(GL_FRAMEBUFFER, ctx->defaultFramebufferObject());
             if (cmd.args.endFrame.timestampQuery)
                 glQueryCounter(cmd.args.endFrame.timestampQuery, GL_TIMESTAMP);
             break;
