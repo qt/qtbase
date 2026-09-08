@@ -76,13 +76,14 @@ struct Q_GUI_EXPORT QWasmWindow
 #if defined(Q_OS_MACOS) || defined(Q_QDOC)
 struct Q_GUI_EXPORT QCocoaWindow
 {
-    QT_DECLARE_NATIVE_INTERFACE(QCocoaWindow, 4, QWindow)
+    QT_DECLARE_NATIVE_INTERFACE(QCocoaWindow, 5, QWindow)
     virtual NSView *view() const = 0;
     virtual QPoint bottomLeftClippedByNSWindowOffset() const = 0;
     virtual CALayer *contentLayer() const = 0;
     virtual void manageVisualEffectArea(quintptr identifier, const QRect &rect,
         NSVisualEffectMaterial material, NSVisualEffectBlendingMode blendMode,
         NSVisualEffectState activationState) = 0;
+    virtual void enableTrackpadTouchDelivery(bool enable) = 0;
 };
 #endif
 
