@@ -49,7 +49,6 @@ bool sm_waitingForInteraction;
 bool sm_isshutdown;
 bool sm_phase2;
 bool sm_in_phase2;
-bool qt_sm_blockUserInput = false;
 
 QSmSocketReceiver* sm_receiver = nullptr;
 
@@ -71,7 +70,6 @@ void resetSmState()
     sm_interactionActive = false;
     sm_interactStyle = SmInteractStyleNone;
     sm_smActive = false;
-    qt_sm_blockUserInput = false;
     sm_isshutdown = false;
     sm_phase2 = false;
     sm_in_phase2 = false;
@@ -156,9 +154,6 @@ void sm_saveYourselfCallback(SmcConn smcConn, SmPointer clientData,
 
 void sm_performSaveYourself(QXcbSessionManager *sm)
 {
-    if (sm_isshutdown)
-        qt_sm_blockUserInput = true;
-
     // generate a new session key
     timeval tv;
     gettimeofday(&tv, nullptr);
@@ -224,7 +219,6 @@ void sm_performSaveYourself(QXcbSessionManager *sm)
 
     if (sm_phase2 && !sm_in_phase2) {
         SmcRequestSaveYourselfPhase2(smcConnection, sm_saveYourselfPhase2Callback, (SmPointer*) sm);
-        qt_sm_blockUserInput = false;
     } else {
         // close eventual interaction monitors and cancel the
         // shutdown, if required. Note that we can only cancel when
@@ -385,7 +379,6 @@ bool QXcbSessionManager::allowsInteraction()
         sm_waitingForInteraction = false;
         if (sm_smActive) { // not cancelled
             sm_interactionActive = true;
-            qt_sm_blockUserInput = false;
             return true;
         }
     }
@@ -415,7 +408,6 @@ bool QXcbSessionManager::allowsErrorInteraction()
         sm_waitingForInteraction = false;
         if (sm_smActive) { // not cancelled
             sm_interactionActive = true;
-            qt_sm_blockUserInput = false;
             return true;
         }
     }
@@ -427,8 +419,6 @@ void QXcbSessionManager::release()
     if (sm_interactionActive) {
         SmcInteractDone(smcConnection, False);
         sm_interactionActive = false;
-        if (sm_smActive && sm_isshutdown)
-            qt_sm_blockUserInput = true;
     }
 }
 
