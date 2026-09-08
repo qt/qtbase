@@ -7,6 +7,36 @@ cmake_minimum_required(VERSION @min_new_policy_version@...@max_new_policy_versio
 
 include(CMakeFindDependencyMacro)
 
+# The files below use helper functions from the @INSTALL_CMAKE_NAMESPACE@ package. Include the
+# file that provides them, unless they are available already.
+if(NOT COMMAND _qt_internal_should_include_targets)
+    set(__qt_@target@_helpers_file_name "@INSTALL_CMAKE_NAMESPACE@PublicHelpers.cmake")
+    unset(__qt_@target@_helpers_file)
+    foreach(__qt_@target@_dir IN ITEMS
+            "${CMAKE_CURRENT_LIST_DIR}/../@INSTALL_CMAKE_NAMESPACE@"
+            "${QT_TOOLCHAIN_RELOCATABLE_CMAKE_DIR}/@INSTALL_CMAKE_NAMESPACE@")
+        if(EXISTS "${__qt_@target@_dir}/${__qt_@target@_helpers_file_name}")
+            set(__qt_@target@_helpers_file
+                "${__qt_@target@_dir}/${__qt_@target@_helpers_file_name}")
+            break()
+        endif()
+    endforeach()
+
+    if(NOT DEFINED __qt_@target@_helpers_file)
+        set(${CMAKE_FIND_PACKAGE_NAME}_FOUND FALSE)
+        set(${CMAKE_FIND_PACKAGE_NAME}_NOT_FOUND_MESSAGE
+"${CMAKE_FIND_PACKAGE_NAME} could not be found because \
+${__qt_@target@_helpers_file_name} of the @INSTALL_CMAKE_NAMESPACE@ package was not found. Call \
+find_package(@INSTALL_CMAKE_NAMESPACE@) before find_package(${CMAKE_FIND_PACKAGE_NAME}).")
+        return()
+    endif()
+
+    include("${__qt_@target@_helpers_file}")
+
+    unset(__qt_@target@_helpers_file)
+    unset(__qt_@target@_helpers_file_name)
+endif()
+
 # Find required dependencies, if any.
 if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@@target@Dependencies.cmake")
     include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@@target@Dependencies.cmake")

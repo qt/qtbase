@@ -204,6 +204,12 @@ qt_internal_get_max_new_policy_cmake_version(max_new_policy_version)
 qt_internal_get_qt_build_public_helpers(__qt_cmake_public_helpers)
 list(JOIN __qt_cmake_public_helpers "\n    " QT_PUBLIC_FILES_TO_INCLUDE)
 
+configure_file(
+    "${PROJECT_SOURCE_DIR}/cmake/QtPublicHelpers.cmake.in"
+    "${__GlobalConfig_build_dir}/${INSTALL_CMAKE_NAMESPACE}PublicHelpers.cmake"
+    @ONLY
+)
+
 set(__qt_cmake_extra_code_before_dependencies "")
 if(ANDROID)
     list(APPEND __qt_cmake_extra_code_before_dependencies
@@ -282,6 +288,7 @@ qt_install(FILES
     "${__GlobalConfig_build_dir}/${INSTALL_CMAKE_NAMESPACE}ConfigExtras.cmake"
     "${__GlobalConfig_build_dir}/${INSTALL_CMAKE_NAMESPACE}ConfigVersion.cmake"
     "${__GlobalConfig_build_dir}/${INSTALL_CMAKE_NAMESPACE}ConfigVersionImpl.cmake"
+    "${__GlobalConfig_build_dir}/${INSTALL_CMAKE_NAMESPACE}PublicHelpers.cmake"
     "${__GlobalConfig_build_dir}/${INSTALL_CMAKE_NAMESPACE}TargetsPrecheck.cmake"
     "${__GlobalConfig_build_dir}/QtInstallPaths.cmake"
     DESTINATION "${__GlobalConfig_install_dir}"
