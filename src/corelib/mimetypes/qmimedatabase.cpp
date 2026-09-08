@@ -367,6 +367,19 @@ QMimeType QMimeDatabasePrivate::findByData(const QByteArray &data, int *accuracy
     return mimeTypeForName(defaultMimeType());
 }
 
+// Whether the mimetype has magic rules, none of which match the data
+bool QMimeDatabasePrivate::magicRulesReject(const QString &mime, const QByteArray &data)
+{
+    bool hasRules = false;
+    for (const auto &provider : providers()) {
+        const QMimeMagicCheckResult result = provider->checkMagicRules(mime, data);
+        if (result.matched)
+            return false;
+        hasRules = hasRules || result.hasRules;
+    }
+    return hasRules;
+}
+
 QMimeType QMimeDatabasePrivate::mimeTypeForFileNameAndData(const QString &fileName, QIODevice *device)
 {
     // First, glob patterns are evaluated. If there is a match with max weight,
@@ -416,6 +429,20 @@ QMimeType QMimeDatabasePrivate::mimeTypeForFileNameAndData(const QString &fileNa
                     // No glob, use magic
                     return candidateByData;
                 }
+            }
+
+            // Several globs match and magic didn't settle it. Drop the candidates
+            // whose own magic rules fail on this data, e.g. text/x-matlab for a *.m
+            // file that doesn't look like matlab. Unless that leaves nothing.
+            QStringList &candidates = candidatesByName.m_matchingMimeTypes;
+            if (candidates.size() > 1) {
+                QStringList remaining;
+                for (const QString &m : std::as_const(candidates)) {
+                    if (!magicRulesReject(m, data))
+                        remaining.append(m);
+                }
+                if (!remaining.isEmpty())
+                    candidates = std::move(remaining);
             }
         }
 

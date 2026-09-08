@@ -37,6 +37,7 @@ static const std::array additionalGlobalMimeFiles = {
     "qml-again.xml",
     "magic-and-hierarchy.xml",
     "hex-escape-magic.xml",
+    "magic-tie-break.xml",
 };
 
 static const std::array additionalLocalMimeFiles = {
@@ -1243,6 +1244,38 @@ void tst_QMimeDatabase::installNewGlobalMimeType()
     // Hex escapes in a magic value: one digit, no digit, two digits in either case
     QCOMPARE(db.mimeTypeForData("\n\0\0\0HEX"_ba).name(), "application/x-hex-escape"_L1);
     QCOMPARE(db.mimeTypeForData("xZJJ\4\nHEX2"_ba).name(), "application/x-hex-escape"_L1);
+
+    // Magic rules of equal priority: the alphabetically first mimetype wins, in both providers
+    QCOMPARE(db.mimeTypeForData("TIEBREAK-ORDER"_ba).name(), "application/x-tiebreak-order-a"_L1);
+
+    // Two mimetypes for *.tiebreak, and magic finds an unrelated mimetype:
+    // the candidate whose own magic doesn't match the data loses
+    {
+        QTemporaryFile tieBreakFile(QDir::tempPath() + "/tst_QMimeDatabase_XXXXXX.tiebreak"_L1);
+        QVERIFY(tieBreakFile.open());
+        tieBreakFile.write("TIEBREAK-OTHER");
+        tieBreakFile.close();
+        QCOMPARE(db.mimeTypeForFile(tieBreakFile.fileName()).name(),
+                 "application/x-tiebreak-glob-b"_L1);
+    }
+    // ... while matching magic wins directly
+    {
+        QTemporaryFile tieBreakFile(QDir::tempPath() + "/tst_QMimeDatabase_XXXXXX.tiebreak"_L1);
+        QVERIFY(tieBreakFile.open());
+        tieBreakFile.write("TIEBREAK-GLOB");
+        tieBreakFile.close();
+        QCOMPARE(db.mimeTypeForFile(tieBreakFile.fileName()).name(),
+                 "application/x-tiebreak-glob-a"_L1);
+    }
+    // ... and when the magic of every candidate fails, the alphabetically first one wins
+    {
+        QTemporaryFile tieBreakFile(QDir::tempPath() + "/tst_QMimeDatabase_XXXXXX.tiebreak2"_L1);
+        QVERIFY(tieBreakFile.open());
+        tieBreakFile.write("TIEBREAK-OTHER");
+        tieBreakFile.close();
+        QCOMPARE(db.mimeTypeForFile(tieBreakFile.fileName()).name(),
+                 "application/x-tiebreak-both-a"_L1);
+    }
 
     // Test if we can use the default comment
     {
