@@ -4234,7 +4234,7 @@ void QRhiVulkan::trackedImageBarrier(QVkCommandBuffer *cbD, QVkTexture *texD,
     barrier.subresourceRange.levelCount = VK_REMAINING_MIP_LEVELS;
     barrier.subresourceRange.baseArrayLayer = 0;
     barrier.subresourceRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
-    barrier.oldLayout = s.layout; // new textures have this set to PREINITIALIZED
+    barrier.oldLayout = s.layout; // new textures have this set to UNDEFINED
     barrier.newLayout = layout;
     barrier.srcAccessMask = s.access; // may be 0 but that's fine
     barrier.dstAccessMask = access;
@@ -5713,7 +5713,7 @@ void QRhiVulkan::recordTransitionPassResources(QVkCommandBuffer *cbD, const QRhi
         barrier.subresourceRange.levelCount = VK_REMAINING_MIP_LEVELS;
         barrier.subresourceRange.baseArrayLayer = 0;
         barrier.subresourceRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
-        barrier.oldLayout = s.layout; // new textures have this set to PREINITIALIZED
+        barrier.oldLayout = s.layout; // new textures have this set to UNDEFINED
         barrier.newLayout = layout;
         barrier.srcAccessMask = s.access; // may be 0 but that's fine
         barrier.dstAccessMask = access;
@@ -7896,7 +7896,7 @@ bool QVkTexture::prepareCreate(QSize *adjustedSize)
         return false;
     }
 
-    usageState.layout = VK_IMAGE_LAYOUT_PREINITIALIZED;
+    usageState.layout = VK_IMAGE_LAYOUT_UNDEFINED;
     usageState.access = 0;
     usageState.stage = 0;
 
@@ -8002,7 +8002,9 @@ bool QVkTexture::create()
     imageInfo.arrayLayers = isCube ? 6 : (isArray ? qMax(0, m_arraySize) : 1);
     imageInfo.samples = samples;
     imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-    imageInfo.initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED;
+    // Must be UNDEFINED (and not PREINITIALIZED) with optimal tiling. The
+    // image is device local and is never written by the host anyway.
+    imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
     imageInfo.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
     if (isRenderTarget) {
