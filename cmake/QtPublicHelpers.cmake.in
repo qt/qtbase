@@ -1,0 +1,17 @@
+# Copyright (C) 2026 The Qt Company Ltd.
+# SPDX-License-Identifier: BSD-3-Clause
+
+# Includes Qt's public CMake helper files. Packages that are usable without the
+# @INSTALL_CMAKE_NAMESPACE@ package, like the Tools packages, include this file directly.
+
+# Provides the include guard macro that the helper files use.
+include("${CMAKE_CURRENT_LIST_DIR}/QtPublicCMakeIncludeGuardHelpers.cmake")
+
+set(__qt_public_files_to_include
+    @QT_PUBLIC_FILES_TO_INCLUDE@
+)
+foreach(__qt_public_file_to_include IN LISTS __qt_public_files_to_include)
+    include("${CMAKE_CURRENT_LIST_DIR}/${__qt_public_file_to_include}.cmake")
+endforeach()
+
+unset(__qt_public_files_to_include)

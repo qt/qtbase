@@ -296,6 +296,12 @@ if (NOT NO_DBUS)
     _qt_internal_test_expect_pass(test_dbus_module)
 endif()
 _qt_internal_test_expect_pass(test_multiple_find_package)
+if(NOT NO_GUI)
+    # Qt6GuiTools depends on Qt6CoreTools, which exercises the Tools package dependency lookup.
+    set(standalone_tools_packages_options -DTEST_GUI_TOOLS=ON)
+endif()
+_qt_internal_test_expect_pass(test_standalone_tools_packages
+    BUILD_OPTIONS ${standalone_tools_packages_options})
 _qt_internal_test_expect_pass(test_add_resources_delayed_file)
 _qt_internal_test_expect_pass(test_add_binary_resources_delayed_file BINARY test_add_binary_resources_delayed_file)
 _qt_internal_test_expect_pass(test_qt_add_resources_rebuild)
