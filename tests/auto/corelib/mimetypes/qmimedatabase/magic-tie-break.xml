@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns='http://www.freedesktop.org/standards/shared-mime-info'>
+    <!-- Two magic rules of equal priority for the same data, defined in reverse
+         alphabetical order. The alphabetically first mimetype must win, like in mime.cache. -->
+    <mime-type type="application/x-tiebreak-order-b">
+        <comment>Tie break by name, B</comment>
+        <magic>
+            <match type="string" value="TIEBREAK-ORDER" offset="0"/>
+        </magic>
+    </mime-type>
+    <mime-type type="application/x-tiebreak-order-a">
+        <comment>Tie break by name, A</comment>
+        <magic>
+            <match type="string" value="TIEBREAK-ORDER" offset="0"/>
+        </magic>
+    </mime-type>
+
+    <!-- Two mimetypes for the same extension, only the first one has magic. -->
+    <mime-type type="application/x-tiebreak-glob-a">
+        <comment>Tie break by glob, with magic</comment>
+        <glob pattern="*.tiebreak"/>
+        <magic>
+            <match type="string" value="TIEBREAK-GLOB" offset="0"/>
+        </magic>
+    </mime-type>
+    <mime-type type="application/x-tiebreak-glob-b">
+        <comment>Tie break by glob, without magic</comment>
+        <glob pattern="*.tiebreak"/>
+    </mime-type>
+    <!-- Two mimetypes for the same extension, both with magic. -->
+    <mime-type type="application/x-tiebreak-both-a">
+        <comment>Tie break by glob, with magic, A</comment>
+        <glob pattern="*.tiebreak2"/>
+        <magic>
+            <match type="string" value="TIEBREAK-BOTH-A" offset="0"/>
+        </magic>
+    </mime-type>
+    <mime-type type="application/x-tiebreak-both-b">
+        <comment>Tie break by glob, with magic, B</comment>
+        <glob pattern="*.tiebreak2"/>
+        <magic>
+            <match type="string" value="TIEBREAK-BOTH-B" offset="0"/>
+        </magic>
+    </mime-type>
+    <mime-type type="application/x-tiebreak-other">
+        <comment>Unrelated to the *.tiebreak mimetypes</comment>
+        <magic>
+            <match type="string" value="TIEBREAK-OTHER" offset="0"/>
+        </magic>
+    </mime-type>
+</mime-info>

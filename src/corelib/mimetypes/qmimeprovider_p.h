@@ -41,6 +41,13 @@ struct QMimeMagicResult
     int accuracy = 0;
 };
 
+// Outcome of checking the magic rules of one mimetype against some data
+struct QMimeMagicCheckResult
+{
+    bool hasRules = false;
+    bool matched = false;
+};
+
 class QMimeProviderBase
 {
     Q_DISABLE_COPY(QMimeProviderBase)
@@ -57,6 +64,8 @@ public:
     virtual QString resolveAlias(const QString &name) = 0;
     virtual void addAliases(const QString &name, QStringList &result) = 0;
     virtual void findByMagic(const QByteArray &data, QMimeMagicResult &result) = 0;
+    virtual QMimeMagicCheckResult checkMagicRules(const QString &mime,
+                                                 const QByteArray &data) const = 0;
     virtual void addAllMimeTypes(QList<QMimeType> &result) = 0;
     virtual QMimeTypePrivate::LocaleHash localeComments(const QString &name) = 0;
     virtual bool hasGlobDeleteAll(const QString &name) = 0;
@@ -93,6 +102,8 @@ public:
     QString resolveAlias(const QString &name) override;
     void addAliases(const QString &name, QStringList &result) override;
     void findByMagic(const QByteArray &data, QMimeMagicResult &result) override;
+    QMimeMagicCheckResult checkMagicRules(const QString &mime,
+                                         const QByteArray &data) const override;
     void addAllMimeTypes(QList<QMimeType> &result) override;
     QMimeTypePrivate::LocaleHash localeComments(const QString &name) override;
     bool hasGlobDeleteAll(const QString &name) override;
@@ -110,8 +121,9 @@ private:
     bool matchSuffixTree(QMimeGlobMatchResult &result, CacheFile *cacheFile, quint32 numEntries,
                          quint64 firstOffset, const QString &fileName, qsizetype charPos,
                          bool caseSensitiveCheck);
-    bool matchMagicRule(CacheFile *cacheFile, quint32 numMatchlets, quint64 firstOffset,
-                        const QByteArray &data);
+    static bool matchMagicRule(CacheFile *cacheFile, quint32 numMatchlets, quint64 firstOffset,
+                               const QByteArray &data);
+    bool magicRecordMatches(quint32 index, const QByteArray &data) const;
     QLatin1StringView iconForMime(CacheFile *cacheFile, const RecordList &icons,
                                   QStringView inputMime);
     void loadMimeTypeList();
@@ -157,6 +169,8 @@ public:
     QString resolveAlias(const QString &name) override;
     void addAliases(const QString &name, QStringList &result) override;
     void findByMagic(const QByteArray &data, QMimeMagicResult &result) override;
+    QMimeMagicCheckResult checkMagicRules(const QString &mime,
+                                         const QByteArray &data) const override;
     void addAllMimeTypes(QList<QMimeType> &result) override;
     void ensureLoaded() override;
     QMimeTypePrivate::LocaleHash localeComments(const QString &name) override;
@@ -177,6 +191,7 @@ public:
 private:
     void load(const QString &fileName);
     void load(const char *data, qsizetype len);
+    void sortMagicMatchers();
 
     typedef QHash<QString, QMimeTypeXMLData> NameMimeTypeMap;
     NameMimeTypeMap m_nameMimeTypeMap;

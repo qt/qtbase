@@ -37,6 +37,7 @@ set(testdata_resource_files
     "../magic-and-hierarchy.foo"
     "../magic-and-hierarchy.xml"
     "../magic-and-hierarchy2.foo"
+    "../magic-tie-break.xml"
     "../qml-again.xml"
     "../test.qml"
     "../text-x-objcsrc.xml"
