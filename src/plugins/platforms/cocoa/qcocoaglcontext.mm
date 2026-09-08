@@ -169,7 +169,7 @@ NSOpenGLPixelFormat *QCocoaGLContext::pixelFormatForSurfaceFormat(const QSurface
         attrs << NSOpenGLPFAColorSize << colorSize << NSOpenGLPFAMinimumPolicy;
     }
 
-    if (format.samples() > 0) {
+    if (format.samples() > 1) {
         attrs << NSOpenGLPFAMultisample
               << NSOpenGLPFASampleBuffers << NSOpenGLPixelFormatAttribute(1)
               << NSOpenGLPFASamples << NSOpenGLPixelFormatAttribute(format.samples());

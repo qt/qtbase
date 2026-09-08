@@ -66,10 +66,10 @@ QList<EGLint> q_createConfigAttributesFromFormat(const QSurfaceFormat &format)
     configAttributes.append(alphaSize > 0 ? alphaSize : 0);
 
     configAttributes.append(EGL_SAMPLES);
-    configAttributes.append(sampleCount > 0 ? sampleCount : 0);
+    configAttributes.append(sampleCount > 1 ? sampleCount : 0);
 
     configAttributes.append(EGL_SAMPLE_BUFFERS);
-    configAttributes.append(sampleCount > 0);
+    configAttributes.append(sampleCount > 1);
 
     if (format.renderableType() != QSurfaceFormat::OpenVG) {
         configAttributes.append(EGL_DEPTH_SIZE);
