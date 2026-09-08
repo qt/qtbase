@@ -152,7 +152,8 @@ void tst_QFactoryLoader::extraSearchPath()
 
 void tst_QFactoryLoader::multiplePaths()
 {
-#if !QT_CONFIG(library) || !(defined(Q_OS_UNIX) && !defined(Q_OS_DARWIN)) || defined(Q_OS_ANDROID)
+#if !QT_CONFIG(library) || !(defined(Q_OS_UNIX) && !defined(Q_OS_DARWIN)) \
+    || defined(Q_OS_ANDROID) || defined(Q_OS_HARMONY)
     QSKIP("Test not applicable in this configuration.");
 #else
     QTemporaryDir dir;
