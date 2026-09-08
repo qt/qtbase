@@ -19,6 +19,7 @@
 #include "qxmlstreamgrammar_p.h"
 #include <QtCore/qhash.h>
 #include <QCoreApplication> // Q_DECLARE_TR_FUNCTIONS
+#include <QtCore/private/qtools_p.h>
 
 
 #include <memory>
@@ -142,9 +143,10 @@ using namespace QtPrivate;
 template <typename T> class QXmlStreamSimpleStack
 {
     Q_DISABLE_COPY_MOVE(QXmlStreamSimpleStack)
+    static_assert(sizeof(T) > 1, "some operations may overflow with such small types");
 
     T *data;
-    qsizetype tos, cap;
+    qsizetype tos, cap; // class invariants: cap ≥ 0, tos < cap
 public:
     inline QXmlStreamSimpleStack()
         : data(nullptr), tos(-1), cap(0)
@@ -159,11 +161,18 @@ public:
 
     inline void reserve(qsizetype extraCapacity)
     {
-        if (tos + extraCapacity + 1 > cap) {
-            cap = qMax(tos + extraCapacity + 1, cap << 1 );
-            void *ptr = realloc(static_cast<void *>(data), cap * sizeof(T));
+        auto needed = extraCapacity;
+        if (add_overflow(needed, tos + 1, &needed)) // tos + 1 is <= cap, so doesn't overflow!
+            qBadAlloc();
+        if (needed > cap) {
+            // The following multiplication cannot overflow or we would have
+            // allocated at least half the address space successfully before
+            // (for sizeof(T) > 1, which we assert):
+            needed = (std::max)(needed, cap * 2);
+            void *ptr = qt_reallocarray(static_cast<void *>(data), needed, sizeof(T));
             Q_CHECK_PTR(ptr);
             data = reinterpret_cast<T *>(ptr);
+            cap = needed;
         }
     }
 
