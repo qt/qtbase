@@ -532,6 +532,27 @@ void tst_QTimeZoneBackend::tzTest()
     QVERIFY(tzBrazil.isValid());
     QCOMPARE(tzBrazil.offsetFromUtc(QDateTime(QDate(1111, 11, 11).startOfDay())), -10800);
 
+    // An empty date sub-token must be rejected, not asserted on (QTBUG-149952):
+    QVERIFY(!QTimeZone::isTimeZoneIdAvailable("EST5EDT,/2,M11.1.0"));
+    QTimeZone emptyStartDate("EST5EDT,/2,M11.1.0");
+    QVERIFY(!emptyStartDate.isValid());
+    QTimeZone emptyEndDate("EST5EDT,M3.2.0,/2");
+    QVERIFY(!emptyEndDate.isValid());
+    QTimeZone emptyBothDates("EST5EDT,/,/");
+    QVERIFY(!emptyBothDates.isValid());
+    // A malformed but non-empty date rule must also be rejected:
+    QTimeZone unparsedDateRule("EST5EDT,Xyzzy,M11.1.0");
+    QVERIFY(!unparsedDateRule.isValid());
+    QTimeZone monthOutOfRange("EST5EDT,M99.9.9,M11.1.0");
+    QVERIFY(!monthOutOfRange.isValid());
+    QTimeZone dayOfYearOutOfRange("EST5EDT,M3.2.0,J999");
+    QVERIFY(!dayOfYearOutOfRange.isValid());
+
+    // The time-of-day sub-token, however, is valid and must keep working:
+    QTimeZone withTimeOfDay("EST5EDT,M3.2.0/2,M11.1.0/2");
+    QVERIFY(withTimeOfDay.isValid());
+    QVERIFY(withTimeOfDay.hasDaylightTime());
+
     // Test display names by type, either ICU or abbreviation only
     QLocale enUS(u"en_US");
     // Only test names in debug mode, names used can vary by ICU version installed
