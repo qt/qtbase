@@ -177,19 +177,19 @@ bool hasSerialPortAccessRightJsImpl(QOhosJsState &jsState, std::uint32_t serialP
 void requestSerialPortAccessRightJsImpl(
     QOhosJsState &jsState, std::uint32_t serialPortId, QOhosConsumer<bool> resultConsumer)
 {
+    auto sharedResultConsumer = QtOhos::moveToSharedPtr(std::move(resultConsumer));
     jsState.evalToPromiseOrRejectOnThrow(
         "@ohos.usbManager.serial.requestSerialRight(*)", {serialPortId})
-    .withContext(std::move(resultConsumer))
-    .onThenWithContext(
-        [](const QOhosCallbackInfo &cbInfo, auto &resultConsumer) {
+    .onThen(
+        [sharedResultConsumer](const QOhosCallbackInfo &cbInfo) {
             bool granted = cbInfo.getFirstArg<QNapi::Boolean>(Q_FUNC_INFO);
-            resultConsumer(granted);
+            (*sharedResultConsumer)(granted);
         })
-    .onCatchWithContext(
-        [](const QOhosCallbackInfo &cbInfo, auto &resultConsumer) {
+    .onCatch(
+        [sharedResultConsumer](const QOhosCallbackInfo &cbInfo) {
             QtOhos::logJsCallbackError(
                 cbInfo, "@ohos.usbManager.serial.requestSerialRight() failed");
-            resultConsumer(false);
+            (*sharedResultConsumer)(false);
         });
 }
 
