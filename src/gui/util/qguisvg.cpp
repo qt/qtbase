@@ -296,43 +296,54 @@ std::optional<QPainterPath> parsePath(QStringView dataStr, bool limitLength)
 
     // Max QPainterPath element count when limitLength is set to true.
     constexpr int maxElementCount = 0x7fff;
-    constexpr QLatin1StringView cmds = "mzlhvcsqta"_L1;
-    constexpr std::array cmdsParamCount = {2, 0, 2, 1, 1, 6, 4, 4, 2, 7};
-    static_assert(cmds.length() == cmdsParamCount.size());
+
+    // Return parameters count for the command or -1 for invalid commands.
+    constexpr auto paramCountFor = [](char16_t c) {
+        switch (c) {
+        case 'm': case 'l': case 't': return 2;
+        case 'z':                     return 0;
+        case 'h': case 'v':           return 1;
+        case 's': case 'q':           return 4;
+        case 'c':                     return 6;
+        case 'a':                     return 7;
+        }
+        return -1;
+    };
 
     QPointF startPoint;
     QPointF currPoint;
     QPointF ctrlPoint;
-    char lastMode = 0;
+    char16_t lastMode = 0;
 
     QPainterPath path;
     while (!dataStr.isEmpty()) {
         while (dataStr.first().isSpace() && dataStr.length() > 1)
             dataStr.slice(1);
 
-        QChar cmd = dataStr.first().toLower();
-        if (!cmds.contains(cmd))
-            break;
+        const char16_t rawCmd = dataStr.first().unicode();
+        char16_t cmd = rawCmd | 0x20; // ASCII-lowercase
 
-        const bool isRelative = dataStr.first().isLower();
+        int paramCount = paramCountFor(cmd);
+        if (paramCount == -1)
+            break;
+        // If the raw command is lowercase -> it is relative.
+        const bool isRelative = rawCmd >= 'a' && rawCmd <= 'z';
+
         dataStr.slice(1);
         const char *pattern = nullptr;
-        if (cmd == QLatin1Char('a'))
+        if (cmd == 'a')
             pattern = "rrrffrr";
         QVarLengthArray<qreal, 8> arg;
         parseNumbersArray(&dataStr, arg, pattern);
         const qreal *num = arg.constData();
         int count = arg.size();
 
-        qsizetype countPos = cmds.indexOf(cmd);
-        int paramCount = cmdsParamCount[countPos];
-
         do {
             if (count < paramCount)
                 return path;
 
             QPointF offset = isRelative ? currPoint : QPointF {0., 0.};
-            switch (cmd.unicode()) {
+            switch (cmd) {
             case 'm': {
                 currPoint = startPoint = QPointF {num[0], num[1]} + offset;
                 path.moveTo(startPoint);
@@ -340,7 +351,7 @@ std::optional<QPainterPath> parsePath(QStringView dataStr, bool limitLength)
                 // As per 1.2  spec 8.3.2 The "moveto" commands
                 // If a 'moveto' is followed by multiple pairs of coordinates without explicit commands,
                 // the subsequent pairs shall be treated as implicit 'lineto' commands.
-                cmd = QLatin1Char('l');
+                cmd = 'l';
             }
             break;
             case 'z': {
@@ -427,13 +438,13 @@ std::optional<QPainterPath> parsePath(QStringView dataStr, bool limitLength)
                 return std::nullopt;
             }
 
-            lastMode = cmd.toLatin1();
+            lastMode = cmd;
             if (limitLength && path.elementCount() > maxElementCount)
                 return std::nullopt;
 
             // the z/Z command should have no arguments. Otherwise,
             // the remaining part of the path is invalid.
-            if (cmd == QLatin1Char('z') && count != 0)
+            if (cmd == 'z' && count != 0)
                 return path;
 
             count -= paramCount;
