@@ -1013,8 +1013,9 @@ void tst_QRhi::nativeTexture()
     {
         auto image = VkImage(nativeTex.object);
         QVERIFY(image);
-        QCOMPARE_GE(nativeTex.layout, 1); // VK_IMAGE_LAYOUT_GENERAL
-        QCOMPARE_LE(nativeTex.layout, 8); // VK_IMAGE_LAYOUT_PREINITIALIZED
+        // A texture that has not been used in any way yet is still in the
+        // initial, UNDEFINED layout.
+        QCOMPARE(nativeTex.layout, int(VK_IMAGE_LAYOUT_UNDEFINED));
     }
         break;
 #endif
