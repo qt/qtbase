@@ -3606,10 +3606,9 @@ void tst_QDateTime::fromStringStringFormat()
     QCOMPARE(dt, expected);
 
     if (expected.isValid()) {
-        QCOMPARE(dt.timeSpec(), expected.timeSpec());
-        QCOMPARE(dt.timeRepresentation(), dt.timeRepresentation());
+        QCOMPARE(dt.timeRepresentation(), expected.timeRepresentation());
     } else {
-        QCOMPARE(dt.isValid(), expected.isValid());
+        QVERIFY(!dt.isValid());
         QCOMPARE(dt.toMSecsSinceEpoch(), expected.toMSecsSinceEpoch());
     }
 }
