@@ -21,11 +21,11 @@ namespace {
 
 bool tryDeleteToTrash(const QString &filePath)
 {
-    return QOhosJsThreadGateway::evalWithConsumer<bool>(
-        [&](QOhosJsState &jsState, QOhosConsumer<bool> resultConsumer) {
+    return QOhosJsThreadGateway::evalWithPromise<bool>(
+        [&](QOhosJsState &jsState, QOhosTaskPromise<bool> resultPromise) {
             auto optFileOhosUri = tryMapPathToOhosFileUri(filePath.toStdString());
             if (!optFileOhosUri.has_value()) {
-                resultConsumer(false);
+                resultPromise(false);
                 return;
             }
 
@@ -41,23 +41,24 @@ bool tryDeleteToTrash(const QString &filePath)
             }
 
             if (deletePromiseOrValue.IsPromise()) {
+                auto thenCatchPromises = std::move(resultPromise).makeThenCatchBranches(Q_FUNC_INFO);
                 QNapi::checkedCast<QNapi::Promise>(deletePromiseOrValue)
-                .withContext(std::move(resultConsumer))
-                .onThenWithContext(
-                    [](const QOhosCallbackInfo &cbInfo, auto &resultConsumer) {
+                .onThen(
+                    [thenPromise = std::move(thenCatchPromises.first)](const QOhosCallbackInfo &cbInfo) {
                         std::string deletedPath = cbInfo.getFirstArg<QNapi::String>(Q_FUNC_INFO);
-                        resultConsumer(!deletedPath.empty());
+                        thenPromise(!deletedPath.empty());
                     })
-                .onCatchWithContext(
-                    [](const QOhosCallbackInfo &cbInfo, auto &resultConsumer) {
+                .onCatch(
+                    [catchPromise = std::move(thenCatchPromises.second)](const QOhosCallbackInfo &cbInfo) {
                         QtOhos::logJsCallbackError(cbInfo, "Got error from deleteToTrash()");
-                        resultConsumer(false);
+                        catchPromise(false);
                     });
             } else {
                 qOhosPrintfWarning("Got non-Promise from deleteToTrash()");
-                resultConsumer(false);
+                resultPromise(false);
             }
-        });
+        },
+        Q_FUNC_INFO);
 }
 
 }
