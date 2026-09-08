@@ -17,21 +17,21 @@ using QOhosWantConstantFlags = QtOhosQpa::enums::ohos::app::ability::wantConstan
 
 namespace {
 
-void callStartAbility(QNapi::Object baseQAbility, QNapi::Object want, QOhosConsumer<bool> resultConsumer)
+void callStartAbility(QNapi::Object baseQAbility, QNapi::Object want, QOhosTaskPromise<bool> resultPromise)
 {
     qOhosPrintfDebug("Calling startAbility() with Want '%s'", QNapi::toJsonString(want).c_str());
 
+    auto thenCatchPromises = std::move(resultPromise).makeThenCatchBranches(Q_FUNC_INFO);
     baseQAbility.evalToPromiseOrRejectOnThrow("context.startAbility(*)", {want})
-    .withContext(std::move(resultConsumer))
-    .onThenWithContext(
-        [](const QtOhos::CallbackInfo &, auto &resultConsumer) {
+    .onThen(
+        [thenPromise = std::move(thenCatchPromises.first)](const QtOhos::CallbackInfo &) {
             qOhosPrintfDebug("Got success from startAbility()");
-            resultConsumer(true);
+            thenPromise(true);
         })
-    .onCatchWithContext(
-        [](const QtOhos::CallbackInfo &cbInfo, auto &resultConsumer) {
+    .onCatch(
+        [catchPromise = std::move(thenCatchPromises.second)](const QtOhos::CallbackInfo &cbInfo) {
             QtOhos::logJsCallbackError(cbInfo, "Got error from startAbility()");
-            resultConsumer(false);
+            catchPromise(false);
         });
 }
 

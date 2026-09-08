@@ -205,20 +205,20 @@ void shareDataImpl(
     QOhosJsState &jsState, QNapi::Object uiAbility,
     const std::vector<SharedRecord> &recordsToShare, ControllerOptions controllerOptions,
     std::function<void()> panelClosedCallback, QOhosConsumer<ShareOperationResult> shareCompletedCallback,
-    QOhosConsumer<std::shared_ptr<void>> resultConsumer)
+    QOhosTaskPromise<std::shared_ptr<void>> resultPromise)
 {
     qOhosPrintfDebug("%s: sharing %lu records through ShareKit", Q_FUNC_INFO, recordsToShare.size());
 
     if (recordsToShare.empty()) {
         qOhosPrintfWarning("%s: No records to share. Skipping...", Q_FUNC_INFO);
-        resultConsumer(nullptr);
+        resultPromise(nullptr);
         return;
     }
 
     auto firstRecord = tryMakeShareKitSharedDataRecordObject(jsState, recordsToShare.front());
     if (!firstRecord.has_value()) {
         qOhosPrintfWarning("%s: Failed to create the very first record, skip sharing", Q_FUNC_INFO);
-        resultConsumer(nullptr);
+        resultPromise(nullptr);
         return;
     }
     qOhosPrintfDebug(
@@ -250,21 +250,21 @@ void shareDataImpl(
             registerOnOffShareCompletedEventHandler(controller, std::move(shareCompletedCallback)),
         });
 
+    auto thenCatchPromises = std::move(resultPromise).makeThenCatchBranches(Q_FUNC_INFO);
     controller.evalToPromiseOrRejectOnThrow(
         "show(*)",
         {
             uiAbility.get<QNapi::Object>("context"),
             makeShareKitControllerOptionsObject(jsState, controllerOptions),
         })
-    .withContext(std::move(resultConsumer))
-    .onThenWithContext(
-        [callbacksHandle](auto &resultConsumer) {
-            resultConsumer(callbacksHandle);
+    .onThen(
+        [callbacksHandle, thenPromise = std::move(thenCatchPromises.first)]() {
+            thenPromise(callbacksHandle);
         })
-    .onCatchWithContext(
-        [](const QOhosCallbackInfo &cbInfo, auto &resultConsumer) {
+    .onCatch(
+        [catchPromise = std::move(thenCatchPromises.second)](const QOhosCallbackInfo &cbInfo) {
             QtOhos::logJsCallbackError(cbInfo, "ShareController.show()");
-            resultConsumer(nullptr);
+            catchPromise(nullptr);
         });
 }
 
