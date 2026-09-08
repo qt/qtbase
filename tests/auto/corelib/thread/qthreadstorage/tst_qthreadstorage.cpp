@@ -319,8 +319,8 @@ void tst_QThreadStorage::ensureCleanupOrder()
 
 void tst_QThreadStorage::noWarningOnExitForQGlobalStatic()
 {
-#ifdef Q_OS_ANDROID
-    QSKIP("Can't start QProcess to run a custom user binary on Android");
+#if defined(Q_OS_ANDROID) || defined(Q_OS_HARMONY)
+    QSKIP("Can't start QProcess to run a custom user binary on this platform");
 #endif
 #if !QT_CONFIG(process)
     QSKIP("No QProcess support");
