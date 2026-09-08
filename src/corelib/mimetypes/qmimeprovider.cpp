@@ -554,13 +554,19 @@ bool QMimeBinaryProvider::matchMagicRule(QMimeBinaryProvider::CacheFile *cacheFi
     return false;
 }
 
+bool QMimeBinaryProvider::magicRecordMatches(quint32 index, const QByteArray &data) const
+{
+    const RecordList &matches = m_cacheFile->m_magicMatches;
+    const quint32 numMatchlets = m_cacheFile->recordUint32(matches, index, 8);
+    const quint32 firstMatchletOffset = m_cacheFile->recordUint32(matches, index, 12);
+    return matchMagicRule(m_cacheFile.get(), numMatchlets, firstMatchletOffset, data);
+}
+
 void QMimeBinaryProvider::findByMagic(const QByteArray &data, QMimeMagicResult &result)
 {
     const RecordList &matches = m_cacheFile->m_magicMatches;
     for (quint32 i = 0; i < matches.count(); ++i) {
-        const quint32 numMatchlets = m_cacheFile->recordUint32(matches, i, 8);
-        const quint32 firstMatchletOffset = m_cacheFile->recordUint32(matches, i, 12);
-        if (matchMagicRule(m_cacheFile.get(), numMatchlets, firstMatchletOffset, data)) {
+        if (magicRecordMatches(i, data)) {
             const int accuracy = static_cast<int>(m_cacheFile->recordUint32(matches, i, 0));
             if (accuracy > result.accuracy) {
                 const quint32 mimeTypeOffset = m_cacheFile->recordUint32(matches, i, 4);
@@ -574,6 +580,24 @@ void QMimeBinaryProvider::findByMagic(const QByteArray &data, QMimeMagicResult &
             }
         }
     }
+}
+
+QMimeMagicCheckResult
+QMimeBinaryProvider::checkMagicRules(const QString &mime, const QByteArray &data) const
+{
+    QMimeMagicCheckResult result;
+    const RecordList &matches = m_cacheFile->m_magicMatches;
+    for (quint32 i = 0; i < matches.count(); ++i) {
+        const quint32 mimeTypeOffset = m_cacheFile->recordUint32(matches, i, 4);
+        if (m_cacheFile->getLatin1String(mimeTypeOffset) != mime)
+            continue;
+        result.hasRules = true;
+        if (magicRecordMatches(i, data)) {
+            result.matched = true;
+            break;
+        }
+    }
+    return result;
 }
 
 void QMimeBinaryProvider::addParents(const QString &mime, QStringList &result)
@@ -891,6 +915,7 @@ QMimeXMLProvider::QMimeXMLProvider(QMimeDatabasePrivate *db, InternalDatabaseEnu
 #endif
 
     load(data, size);
+    sortMagicMatchers();
 }
 #else // !QT_CONFIG(mimetype_database)
 // never called in release mode, but some debug builds may need
@@ -952,6 +977,22 @@ void QMimeXMLProvider::findByMagic(const QByteArray &data, QMimeMagicResult &res
     }
 }
 
+QMimeMagicCheckResult
+QMimeXMLProvider::checkMagicRules(const QString &mime, const QByteArray &data) const
+{
+    QMimeMagicCheckResult result;
+    for (const QMimeMagicRuleMatcher &matcher : m_magicMatchers) {
+        if (matcher.mimetype() != mime)
+            continue;
+        result.hasRules = true;
+        if (matcher.matches(data)) {
+            result.matched = true;
+            break;
+        }
+    }
+    return result;
+}
+
 void QMimeXMLProvider::ensureLoaded()
 {
     QStringList allFiles;
@@ -974,6 +1015,19 @@ void QMimeXMLProvider::ensureLoaded()
 
     for (const QString &file : std::as_const(allFiles))
         load(file);
+    sortMagicMatchers();
+}
+
+// Same order as in mime.cache: highest priority first, then by mimetype name,
+// so that both providers pick the same mimetype when several rules match.
+void QMimeXMLProvider::sortMagicMatchers()
+{
+    std::stable_sort(m_magicMatchers.begin(), m_magicMatchers.end(),
+                     [](const QMimeMagicRuleMatcher &a, const QMimeMagicRuleMatcher &b) {
+                         if (a.priority() != b.priority())
+                             return a.priority() > b.priority();
+                         return a.mimetype() < b.mimetype();
+                     });
 }
 
 QMimeTypePrivate::LocaleHash QMimeXMLProvider::localeComments(const QString &name)
