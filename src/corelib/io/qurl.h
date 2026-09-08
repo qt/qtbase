@@ -126,6 +126,7 @@ public:
         EncodeReserved = 0x1000000,
         DecodeReserved = 0x2000000,
         // 0x4000000 used to indicate full-decode mode
+        // 0x8000000 is QUrlDecodeForLocalFile (see qurl_p.h)
 
         FullyEncoded = EncodeSpaces | EncodeUnicode | EncodeDelimiters | EncodeReserved,
         FullyDecoded = FullyEncoded | DecodeReserved | 0x4000000

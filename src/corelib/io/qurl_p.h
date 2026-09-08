@@ -22,6 +22,11 @@
 
 QT_BEGIN_NAMESPACE
 
+// With FullyDecoded, makes qt_urlRecode() fail (return < 0) instead of
+// producing a path that is unsafe to use as a local file.
+inline constexpr QUrl::ComponentFormattingOptions QUrlDecodeForLocalFile =
+        QUrl::FullyDecoded | QUrl::ComponentFormattingOption(0x8000000);
+
 // in qurlrecode.cpp
 extern Q_AUTOTEST_EXPORT qsizetype qt_urlRecode(QString &appendTo, QStringView url,
                                                 QUrl::ComponentFormattingOptions encoding,

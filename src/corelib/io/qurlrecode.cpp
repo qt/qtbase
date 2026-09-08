@@ -3,6 +3,7 @@
 // Qt-Security score:critical reason:data-parser
 
 #include "qurl.h"
+#include "private/qurl_p.h"
 #include "private/qstringconverter_p.h"
 #include "private/qtools_p.h"
 #include "private/qsimd_p.h"
@@ -522,13 +523,30 @@ static bool simdCheckNonEncoded(...)
 }
 #endif
 
+// Returns whether the percent-decoded octet \a byte (0x00 to 0xFF) is unsafe
+// to appear in a local-file path. Valid UTF-8 has already been folded to
+// UTF-16 by the time we get here, so any byte >= 0x80 comes from an invalid
+// sequence.
+static bool isUnsafeForLocalFile(uchar byte)
+{
+    if (byte == 0 || byte >= 0x80 || byte == '/')
+        return true;
+#ifdef Q_OS_WIN
+    if (byte == '\\')
+        return true;
+#endif
+    return false;
+}
+
 /*!
     \since 5.0
     \internal
 
     This function decodes a percent-encoded string located in \a in
     by appending each character to \a appendTo. It returns the number of
-    characters appended. Each percent-encoded sequence is decoded as follows:
+    characters appended. When the \a encoding mode is QUrl::FullyDecoded (the
+    mode used for most functions), each percent-encoded sequence is decoded as
+    follows:
 
     \list
       \li from %00 to %7F: the exact decoded value is appended;
@@ -542,11 +560,31 @@ static bool simdCheckNonEncoded(...)
 
     The input should also be a valid percent-encoded sequence (the output of
     qt_urlRecode is always valid).
+
+    With QUrlDecodeForLocalFile in \a encoding, the function instead returns -1
+    when it would decode a byte that is unsafe in a local-file path. The \a
+    appendTo string is truncated back to its original size, but always returns
+    null if the original was empty.
+
+    If no decoding error happened, this function returns the number of
+    characters added to \a appendTo. That might be 0 if there was nothing to
+    decode (see qt_urlRecode() below for the reason).
 */
-static qsizetype decode(QString &appendTo, QStringView in)
+static qsizetype decode(QString &appendTo, QStringView in,
+                        QUrl::ComponentFormattingOptions encoding)
 {
+    const bool forLocalFile = encoding.testFlags(QUrlDecodeForLocalFile);
     const char16_t *begin = in.utf16();
     const char16_t *end = begin + in.size();
+
+#ifdef Q_OS_WIN
+    // precheck for backslashes on Windows (they are stored in decoded form)
+    if (forLocalFile && in.contains(u'\\')) {
+        if (appendTo.isEmpty())
+            appendTo = QString();   // make null
+        return -1;
+    }
+#endif
 
     // fast check whether there's anything to be decoded in the first place
     const char16_t *input = QtPrivate::qustrchr(in, '%');
@@ -574,8 +612,16 @@ static qsizetype decode(QString &appendTo, QStringView in)
         }
 
         ++input;
-        *output++ = QChar::fromUcs2(decodeNibble(input[0]) << 4 | decodeNibble(input[1]));
-        if (output[-1].unicode() >= 0x80)
+        uchar byte = decodeNibble(input[0]) << 4 | decodeNibble(input[1]);
+        *output++ = QChar::fromUcs2(byte);
+        if (forLocalFile && Q_UNLIKELY(isUnsafeForLocalFile(byte))) {
+            if (origSize == 0)
+                appendTo = QString();   // make null
+            else
+                appendTo.truncate(origSize);
+            return -1;
+        }
+        if (byte >= 0x80)
             output[-1] = QChar::ReplacementCharacter;
         input += 2;
 
@@ -623,6 +669,8 @@ static void maskTable(uchar (&table)[N], const uchar (&mask)[N])
                             In this mode, the behaviour is undefined if the input string
                             contains any percent-encoding sequences above %80.
                             Also, the function will not correct bad % sequences.
+    \li QUrlDecodeForLocalFile: if set, this performs the FullyDecoded mode with error checking
+                            suitable for local file paths. See decode() above for details.
     \endlist
 
     Other flags are ignored (including QUrl::EncodeReserved).
@@ -634,7 +682,15 @@ static void maskTable(uchar (&table)[N], const uchar (&mask)[N])
     EncodeCharacter, \c LeaveCharacter or \c DecodeCharacter.
 
     This function corrects percent-encoded errors by interpreting every '%' as
-    meaning "%25" (all percents in the same content).
+    meaning "%25" (all percents in the same content), except in Decoded modes.
+
+    On success, this function returns the number of characters added to \a
+    appendTo, or -1 on error (errors are currently only detected if \a encoding
+    is QUrlDecodeForLocalFile). A return value of 0 means this function
+    had no percent-encoded transformations to perform, so the caller must
+    append the \a in input to \a appendTo. This lets the caller return a
+    shallow copy of the original QString (avoiding allocation) and keep control
+    of its null-vs-empty state.
  */
 
 Q_AUTOTEST_EXPORT qsizetype
@@ -643,7 +699,7 @@ qt_urlRecode(QString &appendTo, QStringView in,
 {
     uchar actionTable[sizeof defaultActionTable];
     if ((encoding & QUrl::FullyDecoded) == QUrl::FullyDecoded) {
-        return decode(appendTo, in);
+        return decode(appendTo, in, encoding);
     }
 
     memcpy(actionTable, defaultActionTable, sizeof actionTable);

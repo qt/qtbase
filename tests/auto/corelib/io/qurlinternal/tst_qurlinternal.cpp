@@ -57,6 +57,8 @@ private Q_SLOTS:
     void encodingRecode();
     void encodingRecodeInvalidUtf8_data();
     void encodingRecodeInvalidUtf8();
+    void decodeForLocalFile_data();
+    void decodeForLocalFile();
 
     void tldRestrictions_data();
     void tldRestrictions();
@@ -728,6 +730,70 @@ void tst_QUrlInternal::encodingRecodeInvalidUtf8()
         QVERIFY2(output.at(i).unicode() < 0x80 || output.at(i) == QChar::ReplacementCharacter,
                  qPrintable(QString("Character at i == %1 was U+%2").arg(i)
                             .arg(ushort{output.at(i).unicode()}, 4, 16, u'0')));
+    }
+}
+
+void tst_QUrlInternal::decodeForLocalFile_data()
+{
+    QTest::addColumn<QString>("input");
+    QTest::addColumn<bool>("accepted");
+    QTest::addColumn<QString>("decoded"); // only meaningful when accepted
+
+    // Nothing to decode: qt_urlRecode returns 0 and leaves the input alone
+    QTest::newRow("plain") << "/home/user/file.txt" << true << "/home/user/file.txt";
+
+    // Literal separators and dot-dot are ordinary path data, not decoded bytes
+    QTest::newRow("literal-slash") << "/a/b" << true << "/a/b";
+    QTest::newRow("literal-dotdot") << "/a/../b" << true << "/a/../b";
+
+    // Safe percent sequences still decode
+    QTest::newRow("space") << "a%20b" << true << "a b";
+    QTest::newRow("percent") << "a%25b" << true << "a%b";
+    QTest::newRow("tilde") << "%7Euser" << true << "~user";
+
+    // Unsafe on every platform
+    QTest::newRow("nul") << "a%00b" << false << QString();
+    QTest::newRow("slash") << "a%2Fb" << false << QString();
+    QTest::newRow("slash-lowercase") << "a%2fb" << false << QString();
+    QTest::newRow("invalid-utf8-80") << "a%80b" << false << QString();
+    QTest::newRow("invalid-utf8-e1") << "%E1" << false << QString();
+    QTest::newRow("invalid-utf8-ff") << "%FF" << false << QString();
+
+    // A backslash is a separator only on Windows
+    // (and encoded vs literals are equivalent in URLs anyway)
+#ifdef Q_OS_WIN
+    QTest::newRow("backslash") << "a%5Cb" << false << QString();
+    QTest::newRow("literal-backslash") << "a\\b" << false << QString();
+#else
+    QTest::newRow("backslash") << "a%5Cb" << true << "a\\b";
+    QTest::newRow("literal-backslash") << "a\\b" << true << "a\\b";
+#endif
+}
+
+void tst_QUrlInternal::decodeForLocalFile()
+{
+    QFETCH(QString, input);
+    QFETCH(bool, accepted);
+    QFETCH(QString, decoded);
+
+    // prepend some data to be sure it's preserved, even when we fail
+    const QString prefix = QTest::currentDataTag();
+    QString output = prefix;
+    qsizetype n = qt_urlRecode(output, input, QUrlDecodeForLocalFile);
+
+    if (accepted) {
+        QCOMPARE_GE(n, 0);
+        if (n == 0)
+            output += input; // nothing needed decoding
+        QCOMPARE(output, prefix + decoded);
+    } else {
+        QCOMPARE_LT(n, 0);
+        QCOMPARE(output, prefix); // left unchanged
+
+        // check that it leaves empties as null
+        output = u""_s;
+        qt_urlRecode(output, input, QUrlDecodeForLocalFile);
+        QVERIFY(output.isNull());
     }
 }
 
