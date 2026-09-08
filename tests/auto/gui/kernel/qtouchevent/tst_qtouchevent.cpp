@@ -269,6 +269,7 @@ private slots:
     void basicRawEventTranslationOfIds();
     void multiPointRawEventTranslationOnTouchScreen();
     void multiPointRawEventTranslationOnTouchPad();
+    void touchPadReleaseAfterAcceptedTouchBegin();
     void touchOnMultipleTouchscreens();
     void deleteInEventHandler();
     void deleteInRawEventTranslation();
@@ -1367,6 +1368,57 @@ void tst_QTouchEvent::multiPointRawEventTranslationOnTouchPad()
         QCOMPARE(rightTouchPoint.ellipseDiameters(), QSizeF(0, 0));
         QCOMPARE(rightTouchPoint.pressure(), 0);
     }
+}
+
+void tst_QTouchEvent::touchPadReleaseAfterAcceptedTouchBegin()
+{
+    // In widgets without WA_TouchPadAcceptSingleTouchEvents set (the default),
+    // a lone touch point is suppressed on macOS. Once a second touch point is
+    // pressed they are both delivered. At that point the moves, ends, and cancellations
+    // of both touch points, including the first one that was initially supressed,
+    // needs to be delivered, even if we fall down to only a single active point,
+    // as otherwise the widget will get a stuck point that never ends.
+
+#if !defined(Q_OS_MACOS)
+    QSKIP("Single-touch supression in widgets is only enabled on macOS");
+#endif
+
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("QWindow::requestActivate() is not supported.");
+
+    tst_QTouchEventWidget touchWidget;
+    touchWidget.setObjectName("touchWidget");
+    touchWidget.setWindowTitle(QTest::currentTestFunction());
+    touchWidget.setAttribute(Qt::WA_AcceptTouchEvents);
+    touchWidget.setGeometry(100, 100, 400, 300);
+    QVERIFY(!touchWidget.testAttribute(Qt::WA_TouchPadAcceptSingleTouchEvents));
+
+    touchWidget.show();
+    QVERIFY(QTest::qWaitForWindowActive(&touchWidget));
+
+    QPointingDevicePrivate::get(touchPadDevice)->activePoints.clear(); // in case other tests left dangling state
+
+    const QPoint pos = touchWidget.rect().center();
+    auto seq = QTest::touchEvent(&touchWidget, touchPadDevice, false);
+
+    // Two points press together, so the sequence is not suppressed and the
+    // widget accepts the TouchBegin.
+    seq.press(0, pos).press(1, pos).commit();
+    QVERIFY(touchWidget.seenTouchBegin);
+    QVERIFY(!touchWidget.seenTouchEnd);
+
+    // Release the first point while the second stays down. Two points remain in
+    // the event, so this is delivered as a TouchUpdate.
+    seq.release(0, pos).stationary(1).commit();
+    QVERIFY(touchWidget.seenTouchUpdate);
+    QVERIFY(!touchWidget.seenTouchEnd);
+
+    // Release the last remaining point on its own. It arrives as a single touch
+    // point, which is only delivered because the widget accepted the TouchBegin.
+    seq.release(1, pos).commit();
+    QVERIFY(touchWidget.seenTouchEnd);
+    QCOMPARE(touchWidget.touchEndPoints.size(), 1);
+    QCOMPARE(touchWidget.touchEndPoints.first().id(), 1);
 }
 
 void tst_QTouchEvent::basicRawEventTranslationOfIds()
