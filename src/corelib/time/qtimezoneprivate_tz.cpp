@@ -410,7 +410,8 @@ static QDate calculateDowDate(int year, int month, int dayOfWeek, int week)
 
 static QDate calculatePosixDate(QLatin1StringView dateRule, int year)
 {
-    Q_ASSERT(!dateRule.isEmpty());
+    if (dateRule.isEmpty())
+        return QDate();
     bool ok;
     // Can start with M, J, or a digit
     if (dateRule.at(0) == 'M') {
