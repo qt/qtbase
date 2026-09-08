@@ -30,10 +30,14 @@ using namespace Qt::StringLiterals;
 
 using AutoGenHeaderMap = QMap<QString, QString>;
 using AutoGenSourcesList = QList<QString>;
+// C++ module unit path -> location of the moc file generated for it, relative to the autogen
+// include dir.
+using AutoGenModuleUnitMap = QMap<QString, QString>;
 
 static bool readAutogenInfoJson(AutoGenHeaderMap &headers, AutoGenSourcesList &sources,
-                                QStringList &headerExts, QStringList &mocIncludePaths,
-                                const QString &config, const QString &autoGenInfoJsonPath)
+                                AutoGenModuleUnitMap &moduleUnits, QStringList &headerExts,
+                                QStringList &mocIncludePaths, const QString &config,
+                                const QString &autoGenInfoJsonPath)
 {
     QFile file(autoGenInfoJsonPath);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -84,6 +88,17 @@ static bool readAutogenInfoJson(AutoGenHeaderMap &headers, AutoGenSourcesList &s
         QJsonArray entry_array = value.toArray();
         if (entry_array.size() > 1) {
             sources.push_back(entry_array[0].toString());
+        }
+    }
+
+    // CXX_MODULE_UNITS is absent for CMake versions that do not run moc on C++ module units,
+    // hence no hard error if it is missing.
+    for (const QJsonValue value : rootObject.value("CXX_MODULE_UNITS"_L1).toArray()) {
+        QJsonArray entry_array = value.toArray();
+        if (entry_array.size() > 3) {
+            // Array[0] : module unit path
+            // Array[3] : Location of the generated moc file for this module unit
+            moduleUnits.insert(entry_array[0].toString(), entry_array[3].toString());
         }
     }
 
@@ -323,6 +338,7 @@ int main(int argc, char **argv)
     // Read source files from AutogenInfo.json
     AutoGenHeaderMap autoGenHeaders;
     AutoGenSourcesList autoGenSources;
+    AutoGenModuleUnitMap autoGenModuleUnits;
     QStringList headerExtList;
     QStringList mocIncludePaths;
     const QString cmakeAutogenInfoFile = parser.value(cmakeAutogenInfoFileOption);
@@ -331,8 +347,8 @@ int main(int argc, char **argv)
 
     if (debug)
         fprintf(stderr, "Parsing %s\n", qUtf8Printable(cmakeAutogenInfoFile));
-    if (!readAutogenInfoJson(autoGenHeaders, autoGenSources, headerExtList, mocIncludePaths,
-                             config, cmakeAutogenInfoFile)) {
+    if (!readAutogenInfoJson(autoGenHeaders, autoGenSources, autoGenModuleUnits, headerExtList,
+                             mocIncludePaths, config, cmakeAutogenInfoFile)) {
         if (debug)
             fprintf(stderr, "Failed to read AutogenInfo.json file: %s\n",
                     qUtf8Printable(cmakeAutogenInfoFile));
@@ -363,6 +379,11 @@ int main(int argc, char **argv)
                 static_cast<long long>(autoGenSources.size()));
         for (const auto &source : autoGenSources)
             fprintf(stderr, "    %s\n", qUtf8Printable(source));
+        fprintf(stderr, "%lld C++ module unit(s) from AutogenInfo.json (path -> moc file "
+                        "location):\n",
+                static_cast<long long>(autoGenModuleUnits.size()));
+        for (auto it = autoGenModuleUnits.cbegin(); it != autoGenModuleUnits.cend(); ++it)
+            fprintf(stderr, "    %s -> %s\n", qUtf8Printable(it.key()), qUtf8Printable(it.value()));
         fprintf(stderr, "config: %s\n",
                 config.isEmpty() ? "<none>" : qUtf8Printable(config));
         fprintf(stderr, "%lld moc include path(s) from AutogenInfo.json:\n",
@@ -380,6 +401,8 @@ int main(int argc, char **argv)
     //   If found, add moc_<base>.cpp.json to the output, and remove the <base>.h header from
     //   AutoGenHeaders so it does not get a standalone moc_<base>.cpp.json entry in step 2.
     // 2) For every header still left in AutoGenHeaders, add the .json file for its standalone moc
+    //   file, using the location recorded in AutogenInfo.json.
+    // 3) For every C++ module unit that has a parse cache entry, add the .json file for its moc
     //   file, using the location recorded in AutogenInfo.json.
 
     QList<QString> jsonFileList;
@@ -513,6 +536,26 @@ int main(int argc, char **argv)
         const QString jsonPath = dir.filePath(pathPrefix + mapIt.value() + ".json"_L1);
         if (debug)
             fprintf(stderr, "  header %s:\n    adding %s\n", qUtf8Printable(mapIt.key()),
+                    qUtf8Printable(jsonPath));
+        jsonFileList.push_back(jsonPath);
+    }
+
+    // 3) Process C++ module units.  Their moc output is a module implementation unit that is
+    // compiled on its own and always lives in the autogen include dir, so unlike for headers no
+    // "../" prefix is needed in the single-config case.
+    if (debug)
+        fprintf(stderr, "Processing %lld C++ module unit(s)\n",
+                static_cast<long long>(autoGenModuleUnits.size()));
+    for (auto mapIt = autoGenModuleUnits.cbegin(); mapIt != autoGenModuleUnits.cend(); ++mapIt) {
+        if (!parseCacheEntries.contains(mapIt.key())) {
+            if (debug)
+                fprintf(stderr, "  module unit %s: no parse cache entry, skipping\n",
+                        qUtf8Printable(mapIt.key()));
+            continue;
+        }
+        const QString jsonPath = dir.filePath(mapIt.value() + ".json"_L1);
+        if (debug)
+            fprintf(stderr, "  module unit %s:\n    adding %s\n", qUtf8Printable(mapIt.key()),
                     qUtf8Printable(jsonPath));
         jsonFileList.push_back(jsonPath);
     }
