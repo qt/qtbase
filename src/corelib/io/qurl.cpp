@@ -244,7 +244,9 @@
             The trailing '/' is kept, unless StripTrailingSlash is set.
             Only valid if RemovePath is not set.
     \value PreferLocalFile If the URL is a local file according to isLocalFile()
-     and contains no query or fragment, a local file path is returned.
+     and contains no query or fragment, a local file path is returned. If the
+     path cannot be represented as a local file path, the full URL is returned
+     instead.
     \value StripTrailingSlash  The trailing slash is removed from the path, if one is present.
     \value NormalizePathSegments  Modifies the path to remove redundant directory separators,
              and to resolve "."s and ".."s (as far as possible). For non-local paths, adjacent
@@ -547,7 +549,7 @@ public:
     void appendUserName(QString &appendTo, QUrl::FormattingOptions options) const;
     void appendPassword(QString &appendTo, QUrl::FormattingOptions options) const;
     void appendHost(QString &appendTo, QUrl::FormattingOptions options) const;
-    void appendPath(QString &appendTo, QUrl::FormattingOptions options, Section appendingTo) const;
+    bool appendPath(QString &appendTo, QUrl::FormattingOptions options, Section appendingTo) const;
     void appendQuery(QString &appendTo, QUrl::FormattingOptions options, Section appendingTo) const;
     void appendFragment(QString &appendTo, QUrl::FormattingOptions options, Section appendingTo) const;
 
@@ -887,19 +889,26 @@ recodeFromUser(QString &output, QStringView input, const ushort *actions, QUrl::
 
 // appendXXXX functions: copy from the internal form to the external, user form.
 // the internal value is stored in its PrettyDecoded form, so that case is easy.
-static inline void appendToUser(QString &appendTo, QStringView value, QUrl::FormattingOptions options,
+static inline bool appendToUser(QString &appendTo, QStringView value, QUrl::FormattingOptions options,
                                 const ushort *actions)
 {
     // The stored value is already QUrl::PrettyDecoded, so there's nothing to
     // do if that's what the user asked for (test only
     // ComponentFormattingOptions, ignore FormattingOptions).
-    if ((options & 0xFFFF0000) == QUrl::PrettyDecoded ||
-            !qt_urlRecode(appendTo, value, options, actions))
+    if ((options & 0xFFFF0000) == QUrl::PrettyDecoded) {
         appendTo += value;
+    } else {
+        qsizetype recoded = qt_urlRecode(appendTo, value, options, actions);
+        if (recoded < 0)
+            return false;
+        if (recoded == 0)
+            appendTo += value;
+    }
 
     // copy nullness, if necessary, because QString::operator+=(QStringView) doesn't
     if (appendTo.isNull() && !value.isNull())
         appendTo.detach();
+    return true;
 }
 
 inline void QUrlPrivate::appendAuthority(QString &appendTo, QUrl::FormattingOptions options, Section appendingTo) const
@@ -977,7 +986,7 @@ inline void QUrlPrivate::appendPassword(QString &appendTo, QUrl::FormattingOptio
                  options & QUrl::EncodeDelimiters ? passwordInUrl : passwordInIsolation);
 }
 
-inline void QUrlPrivate::appendPath(QString &appendTo, QUrl::FormattingOptions options, Section appendingTo) const
+inline bool QUrlPrivate::appendPath(QString &appendTo, QUrl::FormattingOptions options, Section appendingTo) const
 {
     QString thePath = path;
     if (options & QUrl::NormalizePathSegments)
@@ -987,7 +996,7 @@ inline void QUrlPrivate::appendPath(QString &appendTo, QUrl::FormattingOptions o
     if (options & QUrl::RemoveFilename) {
         const qsizetype slash = thePathView.lastIndexOf(u'/');
         if (slash == -1)
-            return;
+            return true;
         thePathView = thePathView.left(slash + 1);
     }
     // check if we need to remove trailing slashes
@@ -996,8 +1005,9 @@ inline void QUrlPrivate::appendPath(QString &appendTo, QUrl::FormattingOptions o
             thePathView.chop(1);
     }
 
-    appendToUser(appendTo, thePathView, options,
-                 appendingTo == FullUrl || options & QUrl::EncodeDelimiters ? pathInUrl : pathInIsolation);
+    const ushort *actions = appendingTo == FullUrl || options & QUrl::EncodeDelimiters
+            ? pathInUrl : pathInIsolation;
+    return appendToUser(appendTo, thePathView, options, actions);
 }
 
 inline void QUrlPrivate::appendFragment(QString &appendTo, QUrl::FormattingOptions options, Section appendingTo) const
@@ -1551,7 +1561,8 @@ QString QUrlPrivate::toLocalFile(QUrl::FormattingOptions options) const
 {
     QString tmp;
     QString ourPath;
-    appendPath(ourPath, options, QUrlPrivate::Path);
+    if (!appendPath(ourPath, options | QUrlDecodeForLocalFile, QUrlPrivate::Path))
+        return QString();   // the path is unsafe to use as a local file
 
     // magic for shared drive on windows
     if (!host.isEmpty()) {
@@ -2846,7 +2857,11 @@ QString QUrl::toString(FormattingOptions options) const
             && (!d->hasFragment() || options.testFlag(QUrl::RemoveFragment))
             && isLocalFile()) {
         url = d->toLocalFile(options | QUrl::FullyDecoded);
-        return url;
+        if (!url.isNull() || !d->hasPath())
+            return url;
+        // The path is present but unsafe to use as a local file (for example it
+        // contains a percent-encoded separator or a NUL). Fall through and
+        // reconstruct the full file: URL instead of returning a null string.
     }
 
     // for the full URL, we consider that the reserved characters are prettier if encoded
@@ -3437,11 +3452,12 @@ QUrl QUrl::fromLocalFile(const QString &localFile)
 
     This function fully decodes the percent-encoded path, so it is lossy:
     two distinct URLs may map to the same local file, and passing the result
-    to fromLocalFile() is not guaranteed to reproduce this URL. The returned
-    string may also contain embedded NUL characters if the path did.
+    to fromLocalFile() is not guaranteed to reproduce this URL.
 
-    Note: if the path component of this URL contains a non-UTF-8 binary
-    sequence (such as %80), the behaviour of this function is undefined.
+    If the path cannot be represented as a local file path (for example
+    because decoding it would produce a byte that is invalid in a file path),
+    the conversion fails and this function returns a null QString(). This can
+    happen even when isLocalFile() returns \c true.
 
     For these reasons, any verification or authorization decision about the
     file being accessed must be made using the string returned by this
@@ -3468,6 +3484,10 @@ QString QUrl::toLocalFile() const
     QFile::open().
 
     \include qurl.cpp local-file-meaning
+
+    This function returning \c true does not guarantee that toLocalFile()
+    will succeed: the latter may still return a null QString() if the URL's
+    path cannot be represented as a local file path.
 
     \sa fromLocalFile(), toLocalFile()
 */

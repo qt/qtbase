@@ -57,6 +57,8 @@ private slots:
     void isParentOf();
     void toLocalFile_data();
     void toLocalFile();
+    void toLocalFileUnsafe_data();
+    void toLocalFileUnsafe();
     void fromLocalFile_data();
     void fromLocalFile();
     void fromLocalFileNormalize_data();
@@ -1504,6 +1506,67 @@ void tst_QUrl::toLocalFile()
     url.setPath(url.path());
     QCOMPARE(url.toLocalFile(), theFile);
     QCOMPARE(url.isLocalFile(), !theFile.isEmpty());
+}
+
+void tst_QUrl::toLocalFileUnsafe_data()
+{
+    QTest::addColumn<QString>("theUrl");
+    QTest::addColumn<QString>("theFile");
+    QTest::addColumn<bool>("unsafe");
+
+    // Safe: toLocalFile() decodes without loss and returns theFile.
+    QTest::newRow("plain") << u"file:///a.txt"_s << u"/a.txt"_s << false;
+    QTest::newRow("space") << u"file:///a%20b.txt"_s << u"/a b.txt"_s << false;
+    QTest::newRow("percent") << u"file:///a%25.txt"_s << u"/a%.txt"_s << false;
+    // No normalization happens in toLocalFile(), so "../" survives verbatim.
+    QTest::newRow("literal-dotdot") << u"file:///a/../b.txt"_s << u"/a/../b.txt"_s << false;
+    QTest::newRow("encoded-dot") << u"file:///a/%252E.txt"_s << u"/a/%2E.txt"_s << false;
+    QTest::newRow("valid-utf8") << u"file:///a%C3%A9.txt"_s << u"/a\u00e9.txt"_s << false;
+    // Empty path: local file, but toLocalFile() is the empty (not null) string.
+    QTest::newRow("empty-path") << u"file:"_s << QString() << false;
+
+    // Unsafe: the fully-decoded path would contain a byte that is dangerous for
+    // a local-file path, so toLocalFile() must return a null QString().
+    QTest::newRow("nul") << u"file:///a%00b.txt"_s << QString() << true;
+    QTest::newRow("encoded-slash") << u"file:///a%2Fb.txt"_s << QString() << true;
+    QTest::newRow("encoded-slash-lower") << u"file:///a%2fb.txt"_s << QString() << true;
+    QTest::newRow("invalid-utf8-80") << u"file:///a%80b.txt"_s << QString() << true;
+    QTest::newRow("invalid-utf8-e1") << u"file:///a%E1b.txt"_s << QString() << true;
+    QTest::newRow("encoded-slash-dotdot") << u"file:///a/%2F..%2F/b"_s << QString() << true;
+#ifdef Q_OS_WIN
+    // A backslash is a directory separator on Windows only.
+    QTest::newRow("encoded-backslash") << u"file:///a%5Cb.txt"_s << QString() << true;
+#endif
+}
+
+void tst_QUrl::toLocalFileUnsafe()
+{
+    QFETCH(QString, theUrl);
+    QFETCH(QString, theFile);
+    QFETCH(bool, unsafe);
+
+    QUrl url(theUrl);
+    QVERIFY(url.isValid());
+    QVERIFY(url.isLocalFile());
+
+    const QString localFile = url.toLocalFile();
+    if (unsafe) {
+        // toLocalFile() refuses to produce a lossy/dangerous path.
+        QVERIFY(localFile.isNull());
+
+        // path() and normalization must NOT fail: they keep the percent-encoding
+        // and are still usable for inspection.
+        QVERIFY(!url.path(QUrl::FullyDecoded).isEmpty());
+        QVERIFY(!url.path(QUrl::NormalizePathSegments | QUrl::FullyDecoded).isEmpty());
+
+        // toString(PreferLocalFile) can't produce a local path either, so it
+        // falls back to a full "file:" URL.
+        QVERIFY(url.toString(QUrl::PreferLocalFile).startsWith("file:"_L1));
+    } else {
+        QCOMPARE(localFile, theFile);
+        // toString(PreferLocalFile) produces the same local path.
+        QCOMPARE(url.toString(QUrl::PreferLocalFile), localFile);
+    }
 }
 
 void tst_QUrl::fromLocalFile_data()
