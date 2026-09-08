@@ -518,6 +518,12 @@ static inline bool asciiIsLetter(char ch)
     return ch >= 'a' && ch <= 'z';
 }
 
+// The characters POSIX allows in a <>-quoted zone name:
+static inline bool asciiIsQuotedNameChar(char ch)
+{
+    return asciiIsLetter(ch) || (ch >= '0' && ch <= '9') || ch == '+' || ch == '-';
+}
+
 namespace {
 
 struct PosixZone // TODO: QTBUG-112006 - make this cross-platform.
@@ -559,11 +565,9 @@ PosixZone PosixZone::parse(const char *&pos, const char *end)
     if (*pos == '<') {
         ++nameBegin;    // skip the '<'
         nameEnd = nameBegin;
-        while (nameEnd < end && *nameEnd != '>') {
-            // POSIX says only alphanumeric, but we allow anything
+        while (nameEnd < end && asciiIsQuotedNameChar(*nameEnd))
             ++nameEnd;
-        }
-        if (nameEnd == end) {
+        if (nameEnd == end || *nameEnd != '>') {
             // Unterminated '<':
             pos = end;
             return {};
