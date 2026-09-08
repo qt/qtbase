@@ -22,7 +22,6 @@ class tst_QSslKeyingMaterial : public QObject
 private Q_SLOTS:
     void construction();
     void cloning();
-    void sharedConfigurationPrivate();
 #if QT_CONFIG(ssl)
     void initTestCase();
     void exporterProducesSameMaterialOnBothSides();
@@ -86,15 +85,25 @@ void tst_QSslKeyingMaterial::construction()
     entry2 = QSslKeyingMaterial(QByteArray("dummy"), 0, QByteArray("ctx"));
     QCOMPARE_NE(entry, entry2);
 
-    QSslKeyingMaterial empty("mylabel", 10, "");
-    empty.m_value = "payload";
-
-    QSslKeyingMaterial null("mylabel", 10, {});
-    null.m_value = "wrong";
+    const QSslKeyingMaterial empty("mylabel", 10, "");
+    const QSslKeyingMaterial null("mylabel", 10, {});
 
     QSslConfiguration conf;
     conf.setKeyingMaterial({ null, empty });
-    QCOMPARE(conf.takeKeyingMaterial(empty), empty);
+    // Check the context of what comes back, not equality with the request:
+    // comparesEqual() makes the very null/empty distinction under test here.
+    const auto emptyMatch = conf.takeKeyingMaterial(empty);
+    QVERIFY(emptyMatch);
+    QCOMPARE(emptyMatch->label(), QByteArray("mylabel"));
+    QCOMPARE(emptyMatch->requestedSize(), 10);
+    QVERIFY(!emptyMatch->context().isNull());
+    QVERIFY(emptyMatch->context().isEmpty());
+
+    const auto nullMatch = conf.takeKeyingMaterial(null);
+    QVERIFY(nullMatch);
+    QCOMPARE(nullMatch->label(), QByteArray("mylabel"));
+    QCOMPARE(nullMatch->requestedSize(), 10);
+    QVERIFY(nullMatch->context().isNull());
 }
 
 void tst_QSslKeyingMaterial::cloning()
@@ -134,36 +143,6 @@ void tst_QSslKeyingMaterial::cloning()
     QVERIFY(reused.value().isNull());
     // ... and with the value gone, an entry and its clone are indistinguishable:
     QCOMPARE(reused.clone(), reused);
-}
-
-// Taking the values is a mutation, so it detaches a QSslConfiguration that
-// shares its private with another one, rather than reaching into the other:
-void tst_QSslKeyingMaterial::sharedConfigurationPrivate()
-{
-    QSslKeyingMaterial entry("mylabel", 7, "ctx");
-    entry.m_value = "payload";
-
-    QSslConfiguration first;
-    first.setKeyingMaterial({ entry });
-    QSslConfiguration second = first;
-
-    const auto taken = first.takeKeyingMaterial();
-    QCOMPARE(taken.size(), 1);
-    QCOMPARE(taken.first().value(), QByteArray("payload"));
-    QVERIFY(first.takeKeyingMaterial().first().value().isNull());
-    // 'second' was left with the original private, values and all:
-    QCOMPARE(second.takeKeyingMaterial().first().value(), QByteArray("payload"));
-
-    // The same for the single-request overload:
-    QSslConfiguration third;
-    third.setKeyingMaterial({ entry });
-    QSslConfiguration fourth = third;
-
-    const auto match = third.takeKeyingMaterial(entry.clone());
-    QVERIFY(match);
-    QCOMPARE(match->value(), QByteArray("payload"));
-    QVERIFY(third.takeKeyingMaterial(entry.clone())->value().isNull());
-    QCOMPARE(fourth.takeKeyingMaterial(entry.clone())->value(), QByteArray("payload"));
 }
 
 #if QT_CONFIG(ssl)
@@ -266,6 +245,15 @@ void tst_QSslKeyingMaterial::exporterProducesSameMaterialOnBothSides()
     QCOMPARE_NE(data1_6.value(), data1_5.value());
     QCOMPARE_NE(data1_6.value(), data1_5_ctx1.value());
     QCOMPARE_NE(data1_5.value(), data1_5_ctx1.value());
+
+    // Taking the values is a mutation, so it detaches a configuration that
+    // shares its private with another one, rather than reaching into the other:
+    QSslConfiguration shared = client.sslConfiguration();
+    QSslConfiguration sharing = shared;
+    QCOMPARE(shared.takeKeyingMaterial(label1_5)->value().size(), 5);
+    // ... and taken only once, while 'sharing' keeps the original private:
+    QVERIFY(shared.takeKeyingMaterial(label1_5)->value().isEmpty());
+    QCOMPARE(sharing.takeKeyingMaterial(label1_5)->value().size(), 5);
 
     // The list overload hands the values over as well, leaving the requests:
     QSslConfiguration exported = client.sslConfiguration();
