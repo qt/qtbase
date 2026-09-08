@@ -575,7 +575,7 @@ void tst_QTextOdfWriter::testWriteTableFormat2()
 {
     QTextCursor tc(document);
     QTextTableFormat ttf;
-    QTextTable *table = tc.insertTable(10, 10, ttf);
+    tc.insertTable(10, 10, ttf);
 
     const auto formats = document->allFormats();
     int formatIdToExport = -1;
