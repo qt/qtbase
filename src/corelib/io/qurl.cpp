@@ -3422,14 +3422,30 @@ QUrl QUrl::fromLocalFile(const QString &localFile)
     returned will use forward slashes, even if it was originally created
     from one with backslashes.
 
+//! [local-file-meaning]
+    Here, "local file" means a path that can be accessed using QFile or the
+    operating system's file APIs; it does not imply that the file is stored
+    on the local machine. The returned path may still refer to a networked
+    file, for example one reached over SMB or a mounted NFS share.
+//! [local-file-meaning]
+
     If this URL contains a non-empty hostname, it will be encoded in the
     returned value in the form found on SMB networks (for example,
     "//servername/path/to/file.txt").
 
     \snippet code/src_corelib_io_qurl.cpp 20
 
+    This function fully decodes the percent-encoded path, so it is lossy:
+    two distinct URLs may map to the same local file, and passing the result
+    to fromLocalFile() is not guaranteed to reproduce this URL. The returned
+    string may also contain embedded NUL characters if the path did.
+
     Note: if the path component of this URL contains a non-UTF-8 binary
     sequence (such as %80), the behaviour of this function is undefined.
+
+    For these reasons, any verification or authorization decision about the
+    file being accessed must be made using the string returned by this
+    function, not path() or toString().
 
     \sa fromLocalFile(), isLocalFile()
 */
@@ -3450,6 +3466,8 @@ QString QUrl::toLocalFile() const
     Note that this function considers URLs with hostnames to be local file
     paths, even if the eventual file path cannot be opened with
     QFile::open().
+
+    \include qurl.cpp local-file-meaning
 
     \sa fromLocalFile(), toLocalFile()
 */
