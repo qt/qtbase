@@ -1362,10 +1362,20 @@ QSslConfiguration::takeKeyingMaterial(const QSslKeyingMaterial &material)
              contexts across different purposes may lead to subtle
              security vulnerabilities.
 
+    The entries must not carry a value(); that is a programming error and
+    terminates the program.
+
     \sa takeKeyingMaterial()
 */
 void QSslConfiguration::setKeyingMaterial(const QList<QSslKeyingMaterial> &keyMaterial)
 {
+    for (const auto &entry : keyMaterial) {
+        if (!entry.value().isEmpty()) {
+            qFatal("QSslConfiguration::setKeyingMaterial: keying material values are "
+                   "derived by the TLS backend and cannot be set by the application");
+        }
+    }
+
     d->keyingMaterial = keyMaterial;
 }
 

@@ -766,11 +766,9 @@ void TlsCryptographOpenSSL::cancelCAFetch()
 void TlsCryptographOpenSSL::exportKeyingMaterial()
 {
     if (d->configuration.keyingMaterial.isEmpty())
-        return; // Avoid deep-copy and store
-    auto sslCfg = q->sslConfiguration();
-    auto list = sslCfg.takeKeyingMaterial();
+        return;
 
-    for (auto &entry : list) {
+    for (auto &entry : d->configuration.keyingMaterial) {
         if (!entry.isValid()) {
 #ifdef QSSLSOCKET_DEBUG
             qCDebug(lcTlsBackend) << "keying material request is invalid:" << entry;
@@ -805,9 +803,6 @@ void TlsCryptographOpenSSL::exportKeyingMaterial()
 #endif
         }
     }
-
-    sslCfg.setKeyingMaterial(list);
-    q->setSslConfiguration(sslCfg);
 }
 
 void TlsCryptographOpenSSL::continueHandshake()
