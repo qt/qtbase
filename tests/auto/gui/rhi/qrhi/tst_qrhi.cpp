@@ -101,6 +101,8 @@ private slots:
 
     void renderToTextureSimple_data();
     void renderToTextureSimple();
+    void frameEndBindsDefaultFramebuffer_data();
+    void frameEndBindsDefaultFramebuffer();
     void renderToTextureMip_data();
     void renderToTextureMip();
     void renderToTextureCubemapFace_data();
@@ -2225,6 +2227,56 @@ void tst_QRhi::renderToTextureSimple()
         QCOMPARE_LT(redCount, blueCount);
     else
         QCOMPARE_GT(redCount, blueCount);
+}
+
+void tst_QRhi::frameEndBindsDefaultFramebuffer_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::frameEndBindsDefaultFramebuffer()
+{
+    // A frame must not leave a non-default framebuffer bound: on OpenGL the
+    // leftover binding leaks into the present and into the next frame, which
+    // crashes the GL-on-Metal renderer on macOS when an offscreen frame's
+    // target lingers into a swapchain present (QTBUG-149985).
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing rendering");
+
+    const QSize outputSize(256, 256);
+    QScopedPointer<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGBA8, outputSize, 1,
+                                                        QRhiTexture::RenderTarget));
+    QVERIFY(texture->create());
+
+    QScopedPointer<QRhiTextureRenderTarget> rt(rhi->newTextureRenderTarget({ texture.data() }));
+    QScopedPointer<QRhiRenderPassDescriptor> rpDesc(rt->newCompatibleRenderPassDescriptor());
+    rt->setRenderPassDescriptor(rpDesc.data());
+    QVERIFY(rt->create());
+
+    // A pass that ends without a readback or resolve leaves its own framebuffer
+    // bound as the last framebuffer operation; only the end-of-frame handling
+    // restores the default one.
+    QRhiCommandBuffer *cb = nullptr;
+    QVERIFY(rhi->beginOffscreenFrame(&cb) == QRhi::FrameOpSuccess);
+    QVERIFY(cb);
+    cb->beginPass(rt.data(), Qt::blue, { 1.0f, 0 });
+    cb->endPass();
+    rhi->endOffscreenFrame();
+
+#ifdef TST_GL
+    if (impl == QRhi::OpenGLES2) {
+        QVERIFY(rhi->makeThreadLocalNativeContextCurrent());
+        QOpenGLContext *ctx = QOpenGLContext::currentContext();
+        QVERIFY(ctx);
+        GLint boundFbo = -1;
+        ctx->functions()->glGetIntegerv(GL_FRAMEBUFFER_BINDING, &boundFbo);
+        QCOMPARE(GLuint(boundFbo), ctx->defaultFramebufferObject());
+    }
+#endif
 }
 
 void tst_QRhi::renderToTextureMip_data()
