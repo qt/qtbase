@@ -561,6 +561,18 @@ void tst_QTimeZoneBackend::tzTest()
     QTimeZone loneOpenBracket("<");
     QVERIFY(!loneOpenBracket.isValid());
 
+    // A quoted name is limited to what POSIX allows (QTBUG-149958):
+    QTimeZone newlineInName("<AB\nC>5");
+    QVERIFY(!newlineInName.isValid());
+    QTimeZone tabInName("<AB\tC>5");
+    QVERIFY(!tabInName.isValid());
+    QTimeZone escapeInName("<AB\x1b" "C>5");
+    QVERIFY(!escapeInName.isValid());
+    QTimeZone spaceInName("<AB C>5");
+    QVERIFY(!spaceInName.isValid());
+    QTimeZone nulInName(QByteArray("<AB\0C>5", 7));
+    QVERIFY(!nulInName.isValid());
+
     // Properly quoted names keep working:
     QTimeZone quotedNames("<ABC>5<DEF>4,M3.2.0,M11.1.0");
     QVERIFY(quotedNames.isValid());
