@@ -21,6 +21,8 @@
 #include <QtCore/private/qcore_mac_p.h>
 #include <qwindow.h>
 #include <private/qwindow_p.h>
+#include <QtGui/private/qpointingdevice_p.h>
+#include <QtGui/private/qeventpoint_p.h>
 #include <qpa/qwindowsysteminterface.h>
 #include <qpa/qplatformscreen.h>
 #include <QtGui/private/qcoregraphics_p.h>
@@ -2182,11 +2184,34 @@ void QCocoaWindow::setWindowCursor(NSCursor *cursor)
 */
 void QCocoaWindow::enableTrackpadTouchDelivery(bool enable)
 {
-    m_registerTouchCount += enable ? 1 : -1;
-    if (enable && m_registerTouchCount == 1)
+    m_registeredTrackpadTouchConsumers += enable ? 1 : -1;
+    updateAllowedTouchTypes();
+}
+
+void QCocoaWindow::updateAllowedTouchTypes()
+{
+    bool allowingTrackpadTouch = m_view.allowedTouchTypes & NSTouchTypeMaskIndirect;
+    if (m_registeredTrackpadTouchConsumers > 0 && !allowingTrackpadTouch) {
+        qCDebug(lcQpaTouch) << "Enabling trackpad touches for" << m_view;
         m_view.allowedTouchTypes |= NSTouchTypeMaskIndirect;
-    else if (m_registerTouchCount == 0)
+    } else if (!m_registeredTrackpadTouchConsumers && allowingTrackpadTouch) {
+        const auto devices = QInputDevice::devices();
+        for (const auto *device : devices) {
+            if (device->type() != QInputDevice::DeviceType::TouchPad)
+                continue;
+            const auto *pointingDevice = static_cast<const QPointingDevice *>(device);
+            const auto *devicePriv = QPointingDevicePrivate::get(pointingDevice);
+            for (const auto &[pointId, point] : std::as_const(devicePriv->activePoints)) {
+                if (QMutableEventPoint::window(point.eventPoint) == window()) {
+                    qCDebug(lcQpaTouch) << "Deferring allowed touch type update for"
+                            << m_view << "due to still active" << point.eventPoint;
+                    return;
+                }
+            }
+        }
+        qCDebug(lcQpaTouch) << "Disabling trackpad touches for" << m_view;
         m_view.allowedTouchTypes &= ~NSTouchTypeMaskIndirect;
+    }
 }
 
 qreal QCocoaWindow::devicePixelRatio() const

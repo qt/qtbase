@@ -4,8 +4,6 @@
 
 // This file is included from qnsview.mm, and only used to organize the code
 
-Q_STATIC_LOGGING_CATEGORY(lcQpaTouch, "qt.qpa.input.touch")
-
 @implementation QNSView (Touch)
 
 - (bool)shouldSendSingleTouch
@@ -66,6 +64,8 @@ Q_STATIC_LOGGING_CATEGORY(lcQpaTouch, "qt.qpa.input.touch")
         m_platformWindow->window(), timestamp * 1000,
         QCocoaTouch::getTouchDevice(QInputDevice::DeviceType::TouchPad, [event deviceID]),
         points);
+
+    m_platformWindow->updateAllowedTouchTypes();
 }
 
 - (void)touchesCancelledWithEvent:(NSEvent *)event
@@ -84,6 +84,8 @@ Q_STATIC_LOGGING_CATEGORY(lcQpaTouch, "qt.qpa.input.touch")
         m_platformWindow->window(), timestamp * 1000,
         QCocoaTouch::getTouchDevice(QInputDevice::DeviceType::TouchPad, [event deviceID]),
         points);
+
+    m_platformWindow->updateAllowedTouchTypes();
 }
 
 @end

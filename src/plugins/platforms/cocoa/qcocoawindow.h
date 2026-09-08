@@ -167,6 +167,7 @@ public:
     void setWindowCursor(NSCursor *cursor);
 
     void enableTrackpadTouchDelivery(bool enable) override;
+    void updateAllowedTouchTypes();
 
     qreal devicePixelRatio() const override;
     QWindow *childWindowAt(QPoint windowPoint);
@@ -249,7 +250,7 @@ public: // for QNSView
     bool m_frameStrutEventsEnabled = false;
     QRect m_exposedRect;
     QRect m_normalGeometry;
-    int m_registerTouchCount = 0;
+    int m_registeredTrackpadTouchConsumers = 0;
     bool m_resizableTransientParent = false;
 
     QMacKeyValueObserver m_safeAreaInsetsObserver;
