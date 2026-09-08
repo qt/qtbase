@@ -37,15 +37,15 @@ class QCocoaTouch
 
     private:
         static QHash<quint64, QPointingDevice*> _touchDevices;
-        static QHash<qint64, QCocoaTouch*> _currentTouches;
+        static NSMutableDictionary<NSObject<NSCopying> *, NSValue *> *_currentTouches;
         static QPointF _screenReferencePos;
         static QPointF _trackpadReferencePos;
         static int _idAssignmentCount;
-        static int _touchCount;
+        static NSUInteger _touchCount;
         static bool _updateInternalStateOnly;
 
         QWindowSystemInterface::TouchPoint _touchPoint;
-        qint64 _identity;
+        NSObject<NSCopying> *_identity;
 
         QCocoaTouch(NSTouch *nstouch);
         ~QCocoaTouch();

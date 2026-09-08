@@ -13,29 +13,30 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-Q_CONSTINIT QHash<qint64, QCocoaTouch*> QCocoaTouch::_currentTouches;
+NSMutableDictionary<NSObject<NSCopying> *, NSValue *> *QCocoaTouch::_currentTouches = [NSMutableDictionary new];
 Q_CONSTINIT QHash<quint64, QPointingDevice*> QCocoaTouch::_touchDevices;
 Q_CONSTINIT QPointF QCocoaTouch::_screenReferencePos;
 Q_CONSTINIT QPointF QCocoaTouch::_trackpadReferencePos;
 int QCocoaTouch::_idAssignmentCount = 0;
-int QCocoaTouch::_touchCount = 0;
+NSUInteger QCocoaTouch::_touchCount = 0;
 bool QCocoaTouch::_updateInternalStateOnly = true;
 
 QCocoaTouch::QCocoaTouch(NSTouch *nstouch)
 {
-    if (_currentTouches.size() == 0)
+    if (_currentTouches.count == 0)
         _idAssignmentCount = 0;
 
     _touchPoint.id = _idAssignmentCount++;
     _touchPoint.pressure = 1.0;
-    _identity = qint64([nstouch identity]);
-    _currentTouches.insert(_identity, this);
+    _identity = [nstouch.identity retain];
+    _currentTouches[_identity] = [NSValue valueWithPointer:this];
     updateTouchData(nstouch, NSTouchPhaseBegan);
 }
 
 QCocoaTouch::~QCocoaTouch()
 {
-    _currentTouches.remove(_identity);
+    [_currentTouches removeObjectForKey:_identity];
+    [_identity release];
 }
 
 void QCocoaTouch::updateTouchData(NSTouch *nstouch, NSTouchPhase phase)
@@ -70,9 +71,8 @@ void QCocoaTouch::updateTouchData(NSTouch *nstouch, NSTouchPhase phase)
 
 QCocoaTouch *QCocoaTouch::findQCocoaTouch(NSTouch *nstouch)
 {
-    qint64 identity = qint64([nstouch identity]);
-    if (_currentTouches.contains(identity))
-        return _currentTouches.value(identity);
+    if (NSValue *touch = _currentTouches[nstouch.identity])
+        return static_cast<QCocoaTouch *>(touch.pointerValue);
     return nullptr;
 }
 
@@ -147,20 +147,21 @@ QCocoaTouch::getCurrentTouchPointList(NSEvent *event, bool acceptSingleTouch)
     // sync with cocoa. This is typically not the case after a system
     // gesture happened (like a four-finger-swipe to show expose).
 
-    if (_touchCount != _currentTouches.size()) {
+    if (_touchCount != _currentTouches.count) {
         // Remove all instances, and basically start from scratch:
         touchPoints.clear();
         // Deleting touch points will remove them from current touches,
         // so we make a copy of the touches before iterating them.
-        const auto currentTouchesSnapshot = _currentTouches;
-        for (QCocoaTouch *qcocoaTouch : currentTouchesSnapshot) {
+        NSArray<NSValue *> *currentTouchesSnapshot = _currentTouches.allValues;
+        for (NSValue *touch in currentTouchesSnapshot) {
+            QCocoaTouch *qcocoaTouch = static_cast<QCocoaTouch *>(touch.pointerValue);
             if (!_updateInternalStateOnly) {
                 qcocoaTouch->_touchPoint.state = QEventPoint::State::Released;
                 touchPoints.insert(qcocoaTouch->_touchPoint.id, qcocoaTouch->_touchPoint);
             }
             delete qcocoaTouch;
         }
-        _currentTouches.clear();
+        [_currentTouches removeAllObjects];
         _updateInternalStateOnly = !acceptSingleTouch;
         return touchPoints.values();
     }
@@ -169,8 +170,8 @@ QCocoaTouch::getCurrentTouchPointList(NSEvent *event, bool acceptSingleTouch)
     // touches, we need to fake a release for the remaining
     // touch now (and refake a begin for it later, if needed).
 
-    if (_updateInternalStateOnly && !wasUpdateInternalStateOnly && !_currentTouches.isEmpty()) {
-        QCocoaTouch *qcocoaTouch = _currentTouches.cbegin().value();
+    if (_updateInternalStateOnly && !wasUpdateInternalStateOnly && _currentTouches.count > 0) {
+        QCocoaTouch *qcocoaTouch = static_cast<QCocoaTouch *>(_currentTouches.allValues.firstObject.pointerValue);
         qcocoaTouch->_touchPoint.state = QEventPoint::State::Released;
         touchPoints.insert(qcocoaTouch->_touchPoint.id, qcocoaTouch->_touchPoint);
         // Since this last touch also will end up being the first
