@@ -280,21 +280,6 @@ void addMimeDataSuppliersForUrlLikeEntriesFromRecords(
 
             return QVariant(urlsVariants);
         });
-
-    if (!hasMatchingTypeEntryInRecords<::OH_UdsHyperlink>(inputRecords))
-        return;
-
-   outMimeDataSuppliers.emplace(
-        QString::fromUtf8(mimeTextPlain),
-        [context, inputRecords]() {
-            QStringList urlStrings;
-            tryProcessEntriesOfTypeInRecords<::OH_UdsHyperlink>(
-                inputRecords,
-                [&](auto udsEntry) {
-                    urlStrings.append(QString::fromStdString(udsEntry.getContent()));
-                });
-            return QVariant(urlStrings.join(QChar(u'\n')));
-        });
 }
 
 void addMimeDataSuppliersForGeneralEntriesFromRecords(
@@ -825,11 +810,10 @@ QOhosSupplier<std::unique_ptr<QMimeData>> makeDummyQMimeDataFactoryFromUdmfDataT
                 mimeData->setHtml(dummyText);
             } else if (type == QOhosUdsMeta<::OH_UdsPixelMap>::udmfMetaId) {
                 mimeData->setImageData(QImage(1, 1, QImage::Format::Format_RGBA8888));
-            } else if (type == QOhosUdsMeta<::OH_UdsFileUri>::udmfMetaId || isUdmfMetaFileType(type)) {
+            } else if (type == QOhosUdsMeta<::OH_UdsFileUri>::udmfMetaId
+                       || type == QOhosUdsMeta<::OH_UdsHyperlink>::udmfMetaId
+                       || isUdmfMetaFileType(type)) {
                 mimeData->setUrls({});
-            } else if (type == QOhosUdsMeta<::OH_UdsHyperlink>::udmfMetaId) {
-                mimeData->setUrls({});
-                mimeData->setText(dummyText);
             }
         }
 
