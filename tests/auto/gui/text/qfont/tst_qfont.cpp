@@ -593,7 +593,7 @@ void tst_QFont::defaultFamily_data()
     QTest::newRow("monospace") << QFont::Monospace << (QStringList() << "Courier New" << "Monaco" << "Menlo" << "Droid Sans Mono" << getPlatformGenericFont("monospace").split(","));
     QTest::newRow("cursive") << QFont::Cursive << (QStringList() << "Comic Sans MS" << "Apple Chancery" << "Roboto" << "Droid Sans" << getPlatformGenericFont("cursive").split(","));
     QTest::newRow("fantasy") << QFont::Fantasy << (QStringList() << "Impact" << "Zapfino"  << "Roboto" << "Droid Sans" << getPlatformGenericFont("fantasy").split(","));
-    QTest::newRow("sans-serif") << QFont::SansSerif << (QStringList() << "Arial" << "Lucida Grande" << "Helvetica" << "Roboto" << "Droid Sans" << "Segoe UI" << "HarmonyOS Sans" << getPlatformGenericFont("sans-serif").split(","));
+    QTest::newRow("sans-serif") << QFont::SansSerif << (QStringList() << "Arial" << "Lucida Grande" << "Helvetica" << "Roboto" << "Droid Sans" << "Segoe UI" << "HarmonyOS Sans" << "HarmonyOS Sans SC" << getPlatformGenericFont("sans-serif").split(","));
 }
 
 void tst_QFont::defaultFamily()
@@ -630,7 +630,7 @@ void tst_QFont::defaultFamily()
 #endif
 #ifdef Q_OS_HARMONY
     if (styleHint != QFont::SansSerif)
-        QSKIP("OHOS currently falls back to HarmonyOS Sans for all styles");
+        QSKIP(qPrintable(QStringLiteral("OHOS currently returns '%1' for this style hints").arg(familyForHint)));
 #endif
     QVERIFY2(isAcceptable, msgNotAcceptableFont(familyForHint, acceptableFamilies));
 }
