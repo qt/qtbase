@@ -36,6 +36,7 @@ static const std::array additionalGlobalMimeFiles = {
     "yast2-metapackage-handler-mimetypes.xml",
     "qml-again.xml",
     "magic-and-hierarchy.xml",
+    "hex-escape-magic.xml",
 };
 
 static const std::array additionalLocalMimeFiles = {
@@ -1234,6 +1235,10 @@ void tst_QMimeDatabase::installNewGlobalMimeType()
 
     const QString fooTestFile2 = s_additionalFilesResourcePrefix + "magic-and-hierarchy2.foo"_L1;
     QCOMPARE(db.mimeTypeForFile(fooTestFile2).name(), QString::fromLatin1("application/vnd.qnx.bar-descriptor"));
+
+    // Hex escapes in a magic value: one digit, no digit, two digits in either case
+    QCOMPARE(db.mimeTypeForData("\n\0\0\0HEX"_ba).name(), "application/x-hex-escape"_L1);
+    QCOMPARE(db.mimeTypeForData("xZJJ\4\nHEX2"_ba).name(), "application/x-hex-escape"_L1);
 
     // Test if we can use the default comment
     {
