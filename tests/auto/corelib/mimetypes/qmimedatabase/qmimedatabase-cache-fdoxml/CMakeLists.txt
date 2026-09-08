@@ -32,6 +32,7 @@ set(mimetypes_resource_files
 set(testdata_resource_files
     "../add-extension.xml"
     "../circular-inheritance.xml"
+    "../hex-escape-magic.xml"
     "../invalid-magic1.xml"
     "../invalid-magic2.xml"
     "../invalid-magic3.xml"

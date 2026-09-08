@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns='http://www.freedesktop.org/standards/shared-mime-info'>
+    <mime-type type="application/x-hex-escape">
+        <comment>Magic value with single-digit hex escapes</comment>
+        <magic>
+            <match type="string" value="\xa\x0\x0\x0HEX" offset="0"/>
+            <!-- \x without hex digit is a literal x, like in update-mime-database -->
+            <match type="string" value="\xZ\x4A\x4a\x4\nHEX2" offset="0"/>
+        </magic>
+    </mime-type>
+</mime-info>

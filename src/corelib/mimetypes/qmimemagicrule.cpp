@@ -157,14 +157,14 @@ static inline QByteArray makePattern(const QByteArray &value)
     const char *e = p + value.size();
     for ( ; p < e; ++p) {
         if (*p == '\\' && ++p < e) {
-            if (*p == 'x') { // hex (\\xff)
-                char c = 0;
+            if (*p == 'x') { // hex (\\xff), up to 2 digits; a literal 'x' if none
+                char c = 'x';
                 for (int i = 0; i < 2 && p + 1 < e; ++i) {
+                    const int h = fromHex(p[1]);
+                    if (h == -1)
+                        break;
                     ++p;
-                    if (const int h = fromHex(*p); h != -1)
-                        c = (c << 4) + h;
-                    else
-                        continue;
+                    c = i == 0 ? char(h) : char((c << 4) + h);
                 }
                 *data++ = c;
             } else if (isOctalDigit(*p)) { // oct (\\7, or \\77, or \\377)
