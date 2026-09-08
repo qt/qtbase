@@ -68,7 +68,7 @@ void initializeLang()
 
 static inline QString testSuiteWarning()
 {
-    const auto smiVersion = "2.4"_L1;
+    const auto smiVersion = "2.5.1"_L1;
     QString result;
     QTextStream str(&result);
     str << "\nCannot find the shared-mime-info test suite\nin the parent of: "
@@ -802,7 +802,7 @@ void tst_QMimeDatabase::allMimeTypes()
 
     // Hardcoding this is the only way to check both providers find the same number of mimetypes.
     if (m_hasFreedesktopOrg)
-        QCOMPARE(lst.size(), 908);
+        QCOMPARE(lst.size(), 1038);
     else
         QCOMPARE(lst.size(), 1653); // interestingly, tika has more mimetypes (but many are empty)
 
