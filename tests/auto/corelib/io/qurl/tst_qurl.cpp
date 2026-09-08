@@ -3047,6 +3047,12 @@ void tst_QUrl::stripTrailingSlash_data()
     QTest::newRow("file_root_manyslashes") << "file://///" << "file:///" << "file://///" << "file:///";
     QTest::newRow("no path") << "remote://" << "remote://" << "remote://" << "remote://";
     QTest::newRow("no authority") << "/root/test/../foo/bar" << "/root/test/../foo/bar" << "/root/test/../foo/" << "/root/test/../foo";
+
+    // The URL spec distinguishes literal slashes from their counterparts
+    // encoded as %2F: the former are path separators, the latter aren't.
+    QTest::newRow("ftp encoded-slash") << "ftp://kde.org/dir%2F" << "ftp://kde.org/dir%2F" << "ftp://kde.org/" << "ftp://kde.org/";
+    QTest::newRow("ftp encoded-slash then slash") << "ftp://kde.org/dir%2F/" << "ftp://kde.org/dir%2F" << "ftp://kde.org/dir%2F/" << "ftp://kde.org/dir%2F";
+    QTest::newRow("file encoded-slash") << "file:///dir%2F" << "file:///dir%2F" << "file:///" << "file:///";
 }
 
 void tst_QUrl::stripTrailingSlash()
@@ -3954,6 +3960,8 @@ void tst_QUrl::setComponents_data()
     const int Decoded = QUrl::DecodedMode;
     const int PrettyDecoded = QUrl::PrettyDecoded;
     const int FullyDecoded = QUrl::FullyDecoded;
+    const int Normalized = QUrl::PrettyDecoded | QUrl::NormalizePathSegments;
+    const int NoFilename = QUrl::PrettyDecoded | QUrl::RemoveFilename;
 
     // -- test empty vs null --
     // there's no empty-but-present scheme or path
@@ -3971,6 +3979,19 @@ void tst_QUrl::setComponents_data()
     QTest::newRow("path-empty") << QUrl("http://example.com/path")
                                 << int(Path) << "" << Tolerant << true
                                 << PrettyDecoded << "" << "http://example.com";
+    QTest::newRow("path-encoded-slash-pretty")
+            << QUrl("http://example.com/")
+            << int(Path) << "/a%2Fb" << Tolerant << true
+            << PrettyDecoded << "/a%2Fb" << "http://example.com/a%2Fb";
+    QTest::newRow("path-encoded-slash-fully") << QUrl("http://example.com/")
+                                              << int(Path) << "/a%2Fb" << Tolerant << true
+                                              << FullyDecoded << "/a/b" << "http://example.com/a%2Fb";
+    QTest::newRow("path-nul-pretty") << QUrl("http://example.com/")
+                                     << int(Path) << u"/a\0b"_s << Decoded << true
+                                     << PrettyDecoded << "/a%00b" << "http://example.com/a%00b";
+    QTest::newRow("path-nul-fully") << QUrl("http://example.com/")
+                                    << int(Path) << u"/a\0b"_s << Decoded << true
+                                    << FullyDecoded << u"/a\0b"_s << "http://example.com/a%00b";
     // If the %3A gets decoded to ":", the URL becomes invalid;
     // see test path-invalid-1 below
     QTest::newRow("path-%3A-before-slash") << QUrl()
@@ -3982,6 +4003,23 @@ void tst_QUrl::setComponents_data()
     QTest::newRow("path-withdotdot") << QUrl("file:///tmp")
                                       << int(Path) << "//tmp/..///root/." << Tolerant << true
                                       << PrettyDecoded << "//tmp/..///root/." << "file:////tmp/..///root/.";
+    // Normalization and RemoveFilename treat an encoded slash as a literal
+    // character, not a separator, so "%2F..%2F" is not a traversal.
+    QTest::newRow("path-normalize-dotdot") << QUrl("http://example.com/")
+                                           << int(Path) << "/a/../b" << Tolerant << true
+                                           << Normalized << "/b" << "http://example.com/a/../b";
+    QTest::newRow("path-normalize-encoded-slash-dotdot")
+            << QUrl("http://example.com/")
+            << int(Path) << "/a/%2F..%2F/b" << Tolerant << true
+            << Normalized << "/a/%2F..%2F/b" << "http://example.com/a/%2F..%2F/b";
+    QTest::newRow("path-removefilename-encoded-slash")
+            << QUrl("http://example.com/")
+            << int(Path) << "/a/b%2Fc" << Tolerant << true
+            << NoFilename << "/a/" << "http://example.com/a/b%2Fc";
+    QTest::newRow("path-removefilename-encoded-slash-name")
+            << QUrl("http://example.com/")
+            << int(Path) << "/a%2Fb/c" << Tolerant << true
+            << NoFilename << "/a%2Fb/" << "http://example.com/a%2Fb/c";
 
     // the other fields can be present and be empty
     // that is, their delimiters would be present, but there would be nothing to one side
@@ -4544,6 +4582,21 @@ void tst_QUrl::normalizeRemotePaths_data()
     QTest::newRow("slash-dotdot-slash-tail") << QUrl("http://qt-project.org/stem/path//..//tail")
                                              << "http://qt-project.org/stem/path//tail"
                                              << "http://qt-project.org/stem/path//";
+
+    // An encoded slash (%2F) is not a path separator: it is part of the segment
+    // it appears in and must survive normalization untouched.
+    QTest::newRow("encoded-slash-in-prev") << QUrl("http://qt-project.org/some%2Fdir/../path")
+                                           << "http://qt-project.org/path"
+                                           << "http://qt-project.org/";
+    QTest::newRow("encoded-slash-in-filename") << QUrl("http://qt-project.org/some/../file%2Fname")
+                                               << "http://qt-project.org/file%2Fname"
+                                               << "http://qt-project.org/";
+    QTest::newRow("encoded-slash-in-both") << QUrl("http://qt-project.org/pre%2Fvious/path/../file%2Fname")
+                                           << "http://qt-project.org/pre%2Fvious/file%2Fname"
+                                           << "http://qt-project.org/pre%2Fvious/";
+    QTest::newRow("encoded-slash-dotdot") << QUrl("http://qt-project.org/some/%2F..%2F/path")
+                                          << "http://qt-project.org/some/%2F..%2F/path"
+                                          << "http://qt-project.org/some/%2F..%2F/";
 }
 
 void tst_QUrl::normalizeRemotePaths()
