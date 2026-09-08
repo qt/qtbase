@@ -237,20 +237,22 @@ QNapi::Promise onWindowCreatedLoadWindowContents(
         std::string contentPagePath;
     };
 
-    return !context.disableWindowFocusableBeforeLoadContentHack
-        ? loadWindowContents(windowObject, context.localStorage, context.contentPagePath)
-        : windowObject.evalToPromiseOrRejectOnThrow("setWindowFocusable(*)", {false})
-            .withContext(LoadWindowContentsArgs {
-                .window = Napi::Persistent(windowObject),
-                .localStorage = Napi::Persistent(context.localStorage),
-                .contentPagePath = context.contentPagePath,
-            })
-            .onThenWithContext([](LoadWindowContentsArgs &windowLocalStoragePair) {
-                return loadWindowContents(
-                    windowLocalStoragePair.window.Value(),
-                    windowLocalStoragePair.localStorage.Value(),
-                    windowLocalStoragePair.contentPagePath);
-            });
+    if (!context.disableWindowFocusableBeforeLoadContentHack)
+        return loadWindowContents(windowObject, context.localStorage, context.contentPagePath);
+
+    auto loadWindowContentsArgs = LoadWindowContentsArgs {
+        .window = Napi::Persistent(windowObject),
+        .localStorage = Napi::Persistent(context.localStorage),
+        .contentPagePath = context.contentPagePath,
+    };
+
+    return windowObject.evalToPromiseOrRejectOnThrow("setWindowFocusable(*)", {false})
+        .onThen([loadWindowContentsArgs = std::move(loadWindowContentsArgs)]() {
+            return loadWindowContents(
+                loadWindowContentsArgs.window.Value(),
+                loadWindowContentsArgs.localStorage.Value(),
+                loadWindowContentsArgs.contentPagePath);
+        });
 }
 
 }
@@ -387,14 +389,15 @@ void makeWindowProxyDataForSubWindowInJsThread(
             });
     }();
 
+    auto context = Context {
+        .disableWindowFocusableBeforeLoadContentHack = createInfo.disableWindowFocusableBeforeLoadContentHack,
+        .xComponentId = xComponentId,
+        .qAbilityPeer = qAbilityPeer,
+        .owningQWindowRef = createInfo.window,
+    };
+
     subWindowCreationPromise
-        .withContext(Context {
-            .disableWindowFocusableBeforeLoadContentHack = createInfo.disableWindowFocusableBeforeLoadContentHack,
-            .xComponentId = xComponentId,
-            .qAbilityPeer = qAbilityPeer,
-            .owningQWindowRef = createInfo.window,
-        })
-        .onThenWithContext([resultConsumer = std::move(resultConsumer)](const QtOhos::CallbackInfo &cbInfo, Context &context) mutable {
+        .onThen([resultConsumer = std::move(resultConsumer), context = std::move(context)](const QtOhos::CallbackInfo &cbInfo) mutable {
             auto windowObject = cbInfo.getFirstArg<QNapi::Object>(Q_FUNC_INFO);
 
             auto localStorage = makeLocalStorageForWindow(
@@ -450,14 +453,15 @@ void makeWindowProxyDataForFloatWindowInJsThread(
         QtOhos::QObjectThreadSafeRef owningQWindowRef;
     };
 
+    auto context = Context {
+        .xComponentId = xComponentId,
+        .qAbilityPeer = qAbilityPeer,
+        .owningQWindowRef = createInfo.qWindowRef,
+    };
+
     jsState
         .evalToPromiseOrRejectOnThrow("@ohos.window.createWindow(*)", {configurationObject})
-        .withContext(Context {
-            .xComponentId = xComponentId,
-            .qAbilityPeer = qAbilityPeer,
-            .owningQWindowRef = createInfo.qWindowRef,
-        })
-        .onThenWithContext([resultConsumer = std::move(resultConsumer)](const QtOhos::CallbackInfo &cbInfo, Context &context) mutable {
+        .onThen([resultConsumer = std::move(resultConsumer), context = std::move(context)](const QtOhos::CallbackInfo &cbInfo) mutable {
             auto windowObject = cbInfo.getFirstArg<QNapi::Object>(Q_FUNC_INFO);
 
             auto localStorage = makeLocalStorageForWindow(
