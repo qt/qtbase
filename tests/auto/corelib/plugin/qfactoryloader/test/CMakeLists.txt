@@ -30,3 +30,10 @@ if(ANDROID)
         QT_ANDROID_EXTRA_PLUGINS "${CMAKE_CURRENT_BINARY_DIR}/../bin"
     )
 endif()
+
+if(OHOS)
+    set_target_properties(tst_qfactoryloader PROPERTIES
+        QT_HARMONYOS_EXTRA_PLUGINS
+            "tst_qfactoryloader_plugin1;tst_qfactoryloader_plugin2"
+    )
+endif()
