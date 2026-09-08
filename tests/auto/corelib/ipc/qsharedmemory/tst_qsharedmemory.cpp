@@ -946,9 +946,12 @@ QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 void tst_QSharedMemory::createWithSameKey()
 {
-    const QString key = u"legacy_key"_s;
+    const QString key = mangleKey(u"legacy_key");
     const qsizetype sz = 100;
     QSharedMemory mem1(key);
+    // The POSIX backend does not unlink the segment on detach, so the segment
+    // must be removed explicitly or the next run will fail to create it.
+    keys.append(mem1.nativeIpcKey());
     QVERIFY(mem1.create(sz));
 
     {
