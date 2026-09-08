@@ -553,6 +553,19 @@ void tst_QTimeZoneBackend::tzTest()
     QVERIFY(withTimeOfDay.isValid());
     QVERIFY(withTimeOfDay.hasDaylightTime());
 
+    // An unterminated '<' must be rejected (QTBUG-149959):
+    QTimeZone unterminatedDstName("<ABC>5<DEF,M3.2.0,M11.1.0");
+    QVERIFY(!unterminatedDstName.isValid());
+    QTimeZone unterminatedName("<ABC");
+    QVERIFY(!unterminatedName.isValid());
+    QTimeZone loneOpenBracket("<");
+    QVERIFY(!loneOpenBracket.isValid());
+
+    // Properly quoted names keep working:
+    QTimeZone quotedNames("<ABC>5<DEF>4,M3.2.0,M11.1.0");
+    QVERIFY(quotedNames.isValid());
+    QVERIFY(quotedNames.hasDaylightTime());
+
     // Test display names by type, either ICU or abbreviation only
     QLocale enUS(u"en_US");
     // Only test names in debug mode, names used can vary by ICU version installed

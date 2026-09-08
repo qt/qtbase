@@ -563,6 +563,11 @@ PosixZone PosixZone::parse(const char *&pos, const char *end)
             // POSIX says only alphanumeric, but we allow anything
             ++nameEnd;
         }
+        if (nameEnd == end) {
+            // Unterminated '<':
+            pos = end;
+            return {};
+        }
         pos = nameEnd + 1;      // skip the '>'
     } else {
         nameEnd = nameBegin;
