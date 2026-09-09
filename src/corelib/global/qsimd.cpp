@@ -641,7 +641,7 @@ uint64_t QT_MANGLE_NAMESPACE(qDetectCpuFeatures)()
 
     // Intentionally NOT qgetenv (this code runs too early)
     if (char *disable = getenv("QT_NO_CPU_FEATURE"); disable && *disable) {
-#if _POSIX_C_SOURCE >= 200112L
+#if defined(_POSIX_VERSION) && _POSIX_VERSION >= 200112L
         char *saveptr = nullptr;
         auto strtok = [&saveptr](char *str, const char *delim) {
             return ::strtok_r(str, delim, &saveptr);
