@@ -270,6 +270,7 @@ When this property is set, the generated C++ class name is overridden
 with the provided property value.
 
 \sa qt_add_dbus_interface()
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -287,6 +288,7 @@ When this property is set, an #include "path" is added
 to the generated C++ file.
 
 \sa qt_add_dbus_interface()
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -303,5 +305,6 @@ to the generated C++ file.
 When this property is set, the generated C++ class will not contain a namespaced alias.
 
 \sa qt_add_dbus_interface()
+\sa {Setting CMake variables and properties}
 */
 

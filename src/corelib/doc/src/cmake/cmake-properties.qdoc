@@ -42,6 +42,7 @@ provides a way to override the automatic detection entirely, so if a library
 is listed before its dependencies, it will fail to load on some devices.
 
 \sa qt_android_generate_deployment_settings()
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -114,6 +115,7 @@ set_target_properties(MyApp PROPERTIES
 \endcode
 
 \sa qt_android_generate_deployment_settings()
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -145,6 +147,7 @@ The plugins libraries should have the name format
 mangling is applied to the plugin library.
 
 \sa qt_android_generate_deployment_settings()
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -164,6 +167,7 @@ mangling is applied to the plugin library.
 Specifies the minimum Android API level for the target.
 
 \sa qt_android_generate_deployment_settings()
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -197,6 +201,7 @@ instance, you can make a custom \c {AndroidManifest.xml} for your application,
 then place this directly into the directory specified by this variable.
 
 \sa qt_android_generate_deployment_settings()
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -216,6 +221,7 @@ then place this directly into the directory specified by this variable.
 Specifies the target Android API level for the target.
 
 \sa qt_android_generate_deployment_settings()
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -257,6 +263,7 @@ matches no installed platform.
 
 \sa qt_android_generate_deployment_settings()
 \sa QT_ANDROID_TARGET_SDK_VERSION
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -277,6 +284,7 @@ Specifies the Android SDK build tools revision to use. If this is not set then
 CMake will attempt to use the latest installed version.
 
 \sa qt_android_generate_deployment_settings()
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -332,6 +340,7 @@ For more information, see Android's
 \l{Android: Configure the app module}{configure the app module}.
 
 \sa qt_android_generate_deployment_settings()
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -361,6 +370,7 @@ set_target_properties(${target} PROPERTIES
 
 \sa qt_android_generate_deployment_settings()
 \sa {QT_ANDROID_PACKAGE_NAME}
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -406,6 +416,7 @@ set_target_properties(${target} PROPERTIES
 \endcode
 
 \sa qt_android_generate_deployment_settings()
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -437,6 +448,7 @@ set_target_properties(${target} PROPERTIES
 \note Using the Address Sanitizer require this to be set to \c TRUE.
 
 \sa qt_android_generate_deployment_settings()
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -459,6 +471,7 @@ increments monotonically with each release of your project.
 For more information, see \l{Android: App Versioning}{Android App Versioning}.
 
 \sa qt_android_generate_deployment_settings()
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -481,6 +494,7 @@ numbers, separated by dots.
 For more information, see \l{Android: App Versioning}{Android App Versioning}.
 
 \sa qt_android_generate_deployment_settings()
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -504,6 +518,7 @@ The property only affects targets created with
 \l qt_add_executable().
 
 \sa{cmake-variable-QT_ANDROID_ABIS}{QT_ANDROID_ABIS}, {QT_ANDROID_BUILD_ALL_ABIS}
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -525,6 +540,7 @@ for Android. If the property is set, it specifies the path to the application's
 will be used instead.
 
 \sa qt_android_generate_deployment_settings()
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -547,6 +563,7 @@ For application-specific QML imports, use
 \l{cmake-target-property-QT_QML_ROOT_PATH}{QT_QML_ROOT_PATH} instead.
 
 \sa qt_android_generate_deployment_settings()
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -568,6 +585,8 @@ This property will be set by
 \l qt_android_generate_deployment_settings().
 Projects should not try to set this property themselves, as it will be ignored
 and overwritten by that command.
+
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -609,6 +628,7 @@ Projects should not set this property manually.
 
 \sa {QT_ANDROID_DEPLOYMENT_SETTINGS_FILE}
 \sa {cmake-variable-QT_USE_TARGET_ANDROID_BUILD_DIR}{QT_USE_TARGET_ANDROID_BUILD_DIR}
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -627,6 +647,8 @@ Projects should not set this property manually.
 
 This property can be set to provide a path to Qt libraries on the target device,
 when those libraries are installed outside app's native (JNI) library directory.
+
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -650,6 +672,8 @@ to provide a path to where those libraries will be located on the target device
 instead.
 
 \note Only supported when deploying as an APK.
+
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -672,6 +696,8 @@ QT_NO_ENTRYPOINT to inhibit linking against Qt's entrypoint library.
 
 \note Until Qt 6.12.0, this property was named \c qt_no_entrypoint. The old name
 is still recognized for backward compatibility.
+
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -700,6 +726,7 @@ UTF-8 input). Use the \l QT_NO_CAST_FROM_ASCII and
 \c QT_RESTRICTED_CAST_FROM_ASCII macros to help identify such code.
 
 \sa qt_disable_unicode_defines(), qt_allow_non_utf8_sources()
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -717,6 +744,8 @@ UTF-8 input). Use the \l QT_NO_CAST_FROM_ASCII and
 When using \l qt_add_resources() without a \c PREFIX
 argument, then the value of this target property will be used as
 resource prefix.
+
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -751,6 +780,7 @@ set_target_properties(myapp PROPERTIES
 \endcode
 
 \sa{cmake-target-property-QT_HARMONYOS_APP_NAME}{QT_HARMONYOS_APP_NAME}
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -781,6 +811,7 @@ set_target_properties(myapp PROPERTIES
 \endcode
 
 \sa{cmake-target-property-QT_HARMONYOS_APP_BUNDLE_NAME}{QT_HARMONYOS_APP_BUNDLE_NAME}
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -808,6 +839,8 @@ set_target_properties(myapp PROPERTIES
     QT_HARMONYOS_APP_VENDOR "Example Inc."
 )
 \endcode
+
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -838,6 +871,7 @@ set_target_properties(myapp PROPERTIES
 \endcode
 
 \sa{cmake-target-property-QT_HARMONYOS_APP_VERSION_NAME}{QT_HARMONYOS_APP_VERSION_NAME}
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -868,6 +902,7 @@ set_target_properties(myapp PROPERTIES
 \endcode
 
 \sa{cmake-target-property-QT_HARMONYOS_APP_VERSION_CODE}{QT_HARMONYOS_APP_VERSION_CODE}
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -897,6 +932,8 @@ set_target_properties(myapp PROPERTIES
     QT_HARMONYOS_APP_LABEL "My Application"
 )
 \endcode
+
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -928,6 +965,8 @@ set_target_properties(myapp PROPERTIES
     QT_HARMONYOS_APP_ICON "${CMAKE_CURRENT_SOURCE_DIR}/icon.png"
 )
 \endcode
+
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -960,6 +999,8 @@ set_target_properties(myapp PROPERTIES
 
 \sa{cmake-target-property-QT_HARMONYOS_TARGET_SDK_VERSION}{QT_HARMONYOS_TARGET_SDK_VERSION},
     {cmake-target-property-QT_HARMONYOS_COMPILE_SDK_VERSION}{QT_HARMONYOS_COMPILE_SDK_VERSION}
+
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -992,6 +1033,8 @@ set_target_properties(myapp PROPERTIES
 
 \sa{cmake-target-property-QT_HARMONYOS_COMPATIBLE_SDK_VERSION}{QT_HARMONYOS_COMPATIBLE_SDK_VERSION},
     {cmake-target-property-QT_HARMONYOS_COMPILE_SDK_VERSION}{QT_HARMONYOS_COMPILE_SDK_VERSION}
+
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -1024,6 +1067,8 @@ set_target_properties(myapp PROPERTIES
 
 \sa{cmake-target-property-QT_HARMONYOS_COMPATIBLE_SDK_VERSION}{QT_HARMONYOS_COMPATIBLE_SDK_VERSION},
     {cmake-target-property-QT_HARMONYOS_TARGET_SDK_VERSION}{QT_HARMONYOS_TARGET_SDK_VERSION}
+
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -1056,6 +1101,8 @@ set_target_properties(myapp PROPERTIES
     QT_HARMONYOS_TARGET_ARCHS "arm64-v8a"
 )
 \endcode
+
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -1105,6 +1152,7 @@ plugin system, use \l{cmake-target-property-QT_HARMONYOS_EXTRA_PLUGINS}
 {QT_HARMONYOS_EXTRA_PLUGINS} instead.
 
 \sa{cmake-target-property-QT_HARMONYOS_EXTRA_PLUGINS}{QT_HARMONYOS_EXTRA_PLUGINS}
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -1152,6 +1200,7 @@ add_dependencies(myapp qcustomimg)
 \endcode
 
 \sa{cmake-target-property-QT_HARMONYOS_EXTRA_LIBS}{QT_HARMONYOS_EXTRA_LIBS}
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -1183,6 +1232,8 @@ set_target_properties(myapp PROPERTIES
     QT_HARMONYOS_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/harmonyos"
 )
 \endcode
+
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -1213,6 +1264,8 @@ set_target_properties(myapp PROPERTIES
     QT_HARMONYOS_MODULE_DESCRIPTION "My Application module"
 )
 \endcode
+
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -1241,6 +1294,8 @@ set_target_properties(myapp PROPERTIES
     QT_HARMONYOS_MODULE_DEVICE_TYPES "tablet;2in1"
 )
 \endcode
+
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -1274,6 +1329,8 @@ set_target_properties(myapp PROPERTIES
     QT_HARMONYOS_ABILITY_ORIENTATION "landscape"
 )
 \endcode
+
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -1302,6 +1359,7 @@ When using the target-based variant of \l qt_add_resources()
 the property value overrides the runtime path where the resource file is found.
 
 \sa{The Qt Resource System}
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -1329,6 +1387,7 @@ Those are tied to the specific version of Qt they were built with. If you change
 the version of Qt your application uses, they can't be loaded anymore.
 
 \sa{The Qt Resource System}
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -1353,6 +1412,8 @@ and join()s the thread without returning control to the event loop first.
 Translates into the Emscripten compiler setting of PTHREAD_POOL_SIZE.
 
 For more information, see \l{https://emscripten.org/docs/porting/pthreads.html}{Pthreads support}.
+
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -1439,6 +1500,7 @@ qt_add_executable(MyApp main.cpp)
 \endcode
 
 \sa qt_standard_project_setup()
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -1461,6 +1523,8 @@ Emscripten compiler setting of INITIAL_MEMORY.
 QT_WASM_INITIAL_MEMORY must be a multiple of 65536 bytes.
 
 For more information, see \l{https://github.com/emscripten-core/emscripten/blob/main/src/settings.js}{Emscripten compiler settings}.
+
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -1482,6 +1546,8 @@ the Emscripten compiler setting of \c MAXIMUM_MEMORY. The default value
 is 4GB, which is the maximum for 32-bit WebAssembly.
 
 For more information, see the \l{https://github.com/emscripten-core/emscripten/blob/3319a313d3b589624d342b650884caaf8cd9ef30/src/settings.js#L187}{Emscripten compiler settings}.
+
+\sa {Setting CMake variables and properties}
 */
 
 
@@ -1521,6 +1587,8 @@ set_target_properties(myapp PROPERTIES
 
 \sa{Qt for Windows - Deployment}, QT_WINDOWS_APP_PROJECT_EXECUTION_LEVEL,
     QT_WINDOWS_APP_SEGMENT_HEAP
+
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -1565,6 +1633,8 @@ set_target_properties(myapp PROPERTIES
 
 \sa{Qt for Windows - Deployment}, QT_WINDOWS_APP_PROJECT_IDENTIFIER,
     QT_WINDOWS_APP_SEGMENT_HEAP
+
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -1606,6 +1676,8 @@ effect.
 
 \sa{Qt for Windows - Deployment}, QT_WINDOWS_APP_PROJECT_IDENTIFIER,
     QT_WINDOWS_APP_PROJECT_EXECUTION_LEVEL
+
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -1625,6 +1697,7 @@ effect.
 Specifies the path to an iOS launch screen storyboard file.
 
 \sa {Launch Screens and Launch Images}
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -1658,6 +1731,7 @@ To exclude only individual dependencies instead of all of them, use
 {QT_NO_XCODE_EMBED_FRAMEWORK_IN_CONSUMERS}.
 
 \sa qt_finalize_target(), QT_NO_XCODE_EMBED_FRAMEWORK_IN_CONSUMERS
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -1692,4 +1766,5 @@ set_target_properties(mylib PROPERTIES
 \endcode
 
 \sa qt_finalize_target(), QT_NO_XCODE_EMBED_FRAMEWORKS
+\sa {Setting CMake variables and properties}
 */

@@ -51,4 +51,6 @@ variable.
 
 \sa QFINDTESTDATA,
     {cmake-variable-QT_SKIP_DEFAULT_TESTCASE_DIRS}{QT_SKIP_DEFAULT_TESTCASE_DIRS}
+
+\sa {Setting CMake variables and properties}
 */

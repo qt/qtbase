@@ -26,4 +26,6 @@ or set it on a target:
 \snippet cmake-macros/examples.cmake AUTOGEN_BETTER_GRAPH_MULTI_CONFIG_2
 
 See \l{https://cmake.org/cmake/help/latest/prop_tgt/AUTOGEN_BETTER_GRAPH_MULTI_CONFIG.html}{AUTOGEN_BETTER_GRAPH_MULTI_CONFIG} for more information.
+
+\sa {Setting CMake variables and properties}
 */

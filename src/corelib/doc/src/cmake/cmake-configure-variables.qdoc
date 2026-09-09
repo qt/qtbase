@@ -39,6 +39,7 @@ Usually, this variable is set by the Android NDK toolchain file. It is written o
 part of the deployment settings for a target.
 
 \sa qt_android_generate_deployment_settings()
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -58,6 +59,7 @@ Specifies the location of the Android SDK when building for the Android platform
 This variable is written out as part of the deployment settings for a target.
 
 \sa qt_android_generate_deployment_settings().
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -78,6 +80,7 @@ Contains a list of arguments to be passed to Android applications. This variable
 is written out as part of the deployment settings for a target.
 
 \sa qt_android_generate_deployment_settings()
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -99,6 +102,7 @@ clean task to remove build artifacts. This is useful to keep disk space taken
 by Qt for Android projects at a minimal.
 
 \sa qt_android_generate_deployment_settings()
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -120,6 +124,7 @@ copy. This can be useful to avoid projects taking extra space, and instead direc
 use, for example, library files referenced from a Qt installation.
 
 \sa qt_android_generate_deployment_settings()
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -184,6 +189,7 @@ That name is deprecated since Qt 6.12, but is still honored if set.
 
 \sa QT_USE_TARGET_ANDROID_BUILD_DIR
 \sa qt_add_android_dynamic_feature_java_source_dirs()
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -211,6 +217,7 @@ when configuring your project on the command line or in the CMake settings of
 your IDE.
 
 \sa {androiddeployqt}
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -332,6 +339,7 @@ list of CMake variables to forward from the main ABI project to ABI-specific
 subprojects.
 
 \sa{QT_PATH_ANDROID_ABI_<ABI>},{QT_ANDROID_MULTI_ABI_FORWARD_VARS}
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -358,6 +366,7 @@ the corresponding \c{QT_PATH_ANDROID_ABI_<ABI>} variable.
 QT_ANDROID_ABIS logic.
 
 \sa{QT_PATH_ANDROID_ABI_<ABI>}, {QT_ANDROID_BUILD_ALL_ABIS}
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -377,6 +386,7 @@ Each variable can be used to specify the path to \Q4A for the corresponding ABI.
 \include cmake-android-supported-abis.qdocinc
 
 \sa{cmake-variable-QT_ANDROID_ABIS}{QT_ANDROID_ABIS}
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -403,6 +413,7 @@ have to be specified by additional environment variables:
 The mentioned variables are used internally by \l{androiddeployqt}.
 
 \sa{androiddeployqt}
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -429,6 +440,7 @@ have to be specified by additional environment variables:
 The mentioned variables are used internally by \l{androiddeployqt}.
 
 \sa{androiddeployqt}
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -459,6 +471,7 @@ qt_add_qml_module(myapp URI MyModule QML_FILES MyView.qml)
 \endcode
 
 \sa {QT_QML_GENERATE_ANDROID_JAVA_CLASS}, {androiddeployqt}
+\sa {Setting CMake variables and properties}
 */
 /*!
 \page cmake-variable-qt-use-target-android-build-dir.html
@@ -479,6 +492,8 @@ only supported by Qt Creator starting from version 13.
 If a single \c CMakeLists.txt contains more than one Android executable and
 this option is not set, you will see a warning. To disable the warning, set
 \c QT_SKIP_ANDROID_BUILD_DIR_CHECK to \c TRUE.
+
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -502,6 +517,7 @@ To disable this behavior, set this variable to \c TRUE.
 
 \sa qt_finalize_project()
 \sa {cmake-variable-QT_NO_COLLECT_IMPORTED_TARGET_APK_DEPS}{QT_NO_COLLECT_IMPORTED_TARGET_APK_DEPS}
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -528,6 +544,7 @@ To disable this behavior, set this variable to \c TRUE.
 
 \sa qt_finalize_project()
 \sa {cmake-variable-QT_NO_COLLECT_BUILD_TREE_APK_DEPS}{QT_NO_COLLECT_BUILD_TREE_APK_DEPS}
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -547,6 +564,8 @@ platform. It is used to locate tools to be run on the host (\l{moc}, \l{rcc},
 when compiling Qt for host systems too, by using \c QT_HOST_PATH that points to
 a pre-installed host Qt and setting the \c QT_FORCE_FIND_TOOLS to \c ON. The Qt
 versions should match in this case.
+
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -564,6 +583,8 @@ When finalizing an executable target on iOS,
 \l qt_finalize_target() will populate the target's
 \c XCODE_ATTRIBUTE_DEVELOPMENT_TEAM property if it hasn't been set.
 To prevent this, set \c QT_NO_SET_XCODE_DEVELOPMENT_TEAM_ID to \c TRUE.
+
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -582,6 +603,8 @@ When finalizing an executable target on iOS,
 \c XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER and
 \c MACOSX_BUNDLE_GUI_IDENTIFIER properties if they haven't been set.
 To prevent this, set \c QT_NO_SET_XCODE_BUNDLE_IDENTIFIER to \c TRUE.
+
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -601,6 +624,8 @@ internally at build time, usually during target finalization.
 This variable also changes the default verbosity of install-time deployment
 scripts for other platforms (see \l qt_deploy_runtime_dependencies()), but it
 must be set before the first \c{find_package(Qt6)} call to have that effect.
+
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -627,6 +652,7 @@ an application, along with its runtime dependencies:
 \include cmake-deploy-modified-variable-values.qdocinc
 
 \sa qt_deploy_runtime_dependencies(), qt_deploy_qml_imports()
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -650,6 +676,7 @@ via \l{add_subdirectory()}, \l{FetchContent_MakeAvailable()}, or other similar
 methods provided by CMake.
 
 \sa qt_standard_project_setup()
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -681,6 +708,7 @@ By default, translatable strings are considered to be written in \c{en}.
 
 \sa qt_standard_project_setup()
 \sa qt_add_translations()
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -705,6 +733,7 @@ This variable can be conveniently set with the
 
 \sa qt_standard_project_setup()
 \sa qt_add_translations()
+\sa {Setting CMake variables and properties}
 */
 
 /*!
@@ -724,4 +753,5 @@ Specifies the path to an iOS launch screen storyboard file that will be used
 by all targets within a project.
 
 \sa {Launch Screens and Launch Images}
+\sa {Setting CMake variables and properties}
 */

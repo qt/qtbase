@@ -48,4 +48,6 @@ undefined when compiling \c mytest1 and \c mytest2.
 
 \sa QFINDTESTDATA,
     {cmake-target-property-QT_SKIP_DEFAULT_TESTCASE_DIRS}{QT_SKIP_DEFAULT_TESTCASE_DIRS}
+
+\sa {Setting CMake variables and properties}
 */
