@@ -506,12 +506,20 @@ endfunction()
 # Check various internal options to decide which sbom generation operations should be setup.
 # Considered operations are generation of a JSON sbom, validation of the SBOM, NTIA checker, etc.
 function(_qt_internal_sbom_setup_project_ops)
+    _qt_internal_sbom_get_project_ops(options)
+    _qt_internal_sbom_setup_project_ops_generation(${options})
+endfunction()
+
+# Returns in out_var the list of sbom operations that should be set up, based on the public and
+# internal option variables, as well as any set opt outs.
+function(_qt_internal_sbom_get_project_ops out_var)
     set(options "")
 
-    if(QT_SBOM_GENERATE_JSON
+    if((QT_SBOM_GENERATE_JSON
             OR QT_SBOM_GENERATE_SPDX_V2_JSON
             OR QT_INTERNAL_SBOM_GENERATE_JSON
             OR QT_INTERNAL_SBOM_DEFAULT_CHECKS)
+            AND NOT QT_SBOM_NO_GENERATE_SPDX_V2_JSON)
         list(APPEND options GENERATE_JSON)
     endif()
 
@@ -519,78 +527,109 @@ function(_qt_internal_sbom_setup_project_ops)
     # The user can explicitly request to fail the build if dependencies are not found.
     # error out. For internal options that the CI uses, we always want to fail the build if the
     # deps are not found.
-    if(QT_SBOM_REQUIRE_GENERATE_JSON
+    if((QT_SBOM_REQUIRE_GENERATE_JSON
             OR QT_SBOM_REQUIRE_GENERATE_SPDX_V2_JSON
             OR QT_INTERNAL_SBOM_GENERATE_JSON
             OR QT_INTERNAL_SBOM_DEFAULT_CHECKS)
+            AND NOT QT_SBOM_NO_REQUIRE_GENERATE_SPDX_V2_JSON)
         list(APPEND options GENERATE_JSON_REQUIRED)
     endif()
 
-    if(QT_SBOM_VERIFY
+    if((QT_SBOM_VERIFY
             OR QT_SBOM_VERIFY_SPDX_V2
             OR QT_INTERNAL_SBOM_VERIFY
             OR QT_INTERNAL_SBOM_DEFAULT_CHECKS)
+            AND NOT QT_SBOM_NO_VERIFY_SPDX_V2)
         list(APPEND options VERIFY_SBOM)
     endif()
 
     # Do the same requirement check for SBOM verification.
-    if(QT_SBOM_REQUIRE_VERIFY
+    if((QT_SBOM_REQUIRE_VERIFY
             OR QT_SBOM_REQUIRE_VERIFY_SPDX_V2
             OR QT_INTERNAL_SBOM_VERIFY
             OR QT_INTERNAL_SBOM_DEFAULT_CHECKS)
+            AND NOT QT_SBOM_NO_REQUIRE_VERIFY_SPDX_V2)
         list(APPEND options VERIFY_SBOM_REQUIRED)
     endif()
 
-    if(QT_SBOM_GENERATE_CYDX_V1_6)
+    if(QT_SBOM_GENERATE_CYDX_V1_6 AND NOT QT_SBOM_NO_GENERATE_CYDX_V1_6)
         list(APPEND options GENERATE_CYCLONE_DX_V1_6)
     endif()
 
-    if(QT_SBOM_REQUIRE_GENERATE_CYDX_V1_6)
+    if(QT_SBOM_REQUIRE_GENERATE_CYDX_V1_6 AND NOT QT_SBOM_NO_REQUIRE_GENERATE_CYDX_V1_6)
         list(APPEND options GENERATE_CYCLONE_DX_V1_6_REQUIRED)
     endif()
 
-    if(QT_SBOM_VERIFY_CYDX_V1_6)
+    if(QT_SBOM_VERIFY_CYDX_V1_6 AND NOT QT_SBOM_NO_VERIFY_CYDX_V1_6)
         list(APPEND options VERIFY_CYCLONE_DX_V1_6)
     endif()
 
-    if(QT_SBOM_REQUIRE_VERIFY_CYDX_V1_6)
+    if(QT_SBOM_REQUIRE_VERIFY_CYDX_V1_6 AND NOT QT_SBOM_NO_REQUIRE_VERIFY_CYDX_V1_6)
         list(APPEND options VERIFY_CYCLONE_DX_V1_6_REQUIRED)
     endif()
 
-    if(QT_SBOM_VERBOSE_CYDX_V1_6)
+    if(QT_SBOM_VERBOSE_CYDX_V1_6 AND NOT QT_SBOM_NO_VERBOSE_CYDX_V1_6)
         list(APPEND options VERBOSE_CYCLONE_DX_V1_6)
     endif()
 
-    if(QT_SBOM_VERIFY_NTIA_COMPLIANT
-            OR QT_INTERNAL_SBOM_VERIFY_NTIA_COMPLIANT OR QT_INTERNAL_SBOM_DEFAULT_CHECKS)
+    if((QT_SBOM_VERIFY_NTIA_COMPLIANT
+            OR QT_INTERNAL_SBOM_VERIFY_NTIA_COMPLIANT
+            OR QT_INTERNAL_SBOM_DEFAULT_CHECKS)
+            AND NOT QT_SBOM_NO_VERIFY_NTIA_COMPLIANT)
         list(APPEND options VERIFY_NTIA_COMPLIANT)
     endif()
 
-    if(QT_SBOM_SHOW_TABLE OR QT_INTERNAL_SBOM_SHOW_TABLE OR QT_INTERNAL_SBOM_DEFAULT_CHECKS)
+    if((QT_SBOM_SHOW_TABLE
+            OR QT_INTERNAL_SBOM_SHOW_TABLE
+            OR QT_INTERNAL_SBOM_DEFAULT_CHECKS)
+            AND NOT QT_SBOM_NO_SHOW_TABLE)
         list(APPEND options SHOW_TABLE)
     endif()
 
-    if(QT_SBOM_AUDIT OR QT_INTERNAL_SBOM_AUDIT OR QT_INTERNAL_SBOM_AUDIT_NO_ERROR)
+    if((QT_SBOM_AUDIT
+            OR QT_INTERNAL_SBOM_AUDIT
+            OR QT_INTERNAL_SBOM_AUDIT_NO_ERROR)
+            AND NOT QT_SBOM_NO_AUDIT)
         list(APPEND options AUDIT)
     endif()
 
-    if(QT_SBOM_AUDIT_NO_ERROR OR QT_INTERNAL_SBOM_AUDIT_NO_ERROR)
+    if((QT_SBOM_AUDIT_NO_ERROR OR QT_INTERNAL_SBOM_AUDIT_NO_ERROR)
+            AND NOT QT_SBOM_NO_AUDIT_NO_ERROR)
         list(APPEND options AUDIT_NO_ERROR)
     endif()
 
-    if(QT_GENERATE_SOURCE_SBOM)
+    if(QT_GENERATE_SOURCE_SBOM AND NOT QT_SBOM_NO_GENERATE_SOURCE_SBOM)
         list(APPEND options GENERATE_SOURCE_SBOM)
     endif()
 
-    if(QT_LINT_SOURCE_SBOM)
+    if(QT_LINT_SOURCE_SBOM AND NOT QT_SBOM_NO_LINT_SOURCE_SBOM)
         list(APPEND options LINT_SOURCE_SBOM)
     endif()
 
-    if(QT_LINT_SOURCE_SBOM_NO_ERROR OR QT_INTERNAL_LINT_SOURCE_SBOM_NO_ERROR)
+    if((QT_LINT_SOURCE_SBOM_NO_ERROR OR QT_INTERNAL_LINT_SOURCE_SBOM_NO_ERROR)
+            AND NOT QT_SBOM_NO_LINT_SOURCE_SBOM_NO_ERROR)
         list(APPEND options LINT_SOURCE_SBOM_NO_ERROR)
     endif()
 
-    _qt_internal_sbom_setup_project_ops_generation(${options})
+    set(${out_var} "${options}" PARENT_SCOPE)
+endfunction()
+
+# Force disables the sbom option in option_var, if its opt-out variable is enabled, e.g.
+# QT_GENERATE_SBOM is disabled if QT_SBOM_NO_GENERATE_SBOM is enabled.
+# The opt-out variable name is the option variable name with its QT_ or QT_SBOM_ prefix replaced
+# by QT_SBOM_NO_.
+function(_qt_internal_sbom_handle_option_opt_out option_var help_string)
+    string(REGEX REPLACE "^QT_(SBOM_)?" "QT_SBOM_NO_" opt_out_var "${option_var}")
+
+    if(NOT ${opt_out_var} OR NOT ${option_var})
+        return()
+    endif()
+
+    if(NOT QT_NO_SBOM_INFORMATIONAL_MESSAGES)
+        message(STATUS "Disabling ${option_var} because ${opt_out_var} is enabled.")
+    endif()
+
+    set(${option_var} OFF CACHE BOOL "${help_string}" FORCE)
 endfunction()
 
 # Sets up SBOM generation and verification options.
@@ -734,6 +773,10 @@ function(_qt_internal_setup_sbom)
         unset(QT_SBOM_VERIFY_ALL CACHE)
         unset(QT_SBOM_VERIFY_ALL)
     endif()
+
+    _qt_internal_sbom_handle_option_opt_out(QT_GENERATE_SBOM "${sbom_help_string}")
+    _qt_internal_sbom_handle_option_opt_out(QT_SBOM_GENERATE_SPDX_V2 "${spdx_v2_help_string}")
+    _qt_internal_sbom_handle_option_opt_out(QT_SBOM_GENERATE_CYDX_V1_6 "${cydx_help_string}")
 
     # Various sanity checks.
 
