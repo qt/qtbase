@@ -680,9 +680,6 @@ static QByteArray xxflate(ZLibOp op, QArrayDataPointer<char> out, QByteArrayView
         return tooMuchData(op);
 
     case Z_BUF_ERROR:
-        Q_UNREACHABLE(); // cannot happen - we supply a buffer that can hold the result,
-                         // or else error out early
-
     case Z_DATA_ERROR:   // can only happen on decompression
         Q_ASSERT(op == ZLibOp::Decompression);
         return invalidCompressedData();
