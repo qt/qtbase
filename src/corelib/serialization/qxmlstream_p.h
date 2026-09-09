@@ -318,7 +318,7 @@ public:
     };
     QXmlStreamSimpleStack<QEntityReference> entityReferenceStack;
     int entityExpansionLimit = 4096;
-    int entityLength = 0;
+    qsizetype entityLength = 0;
     inline bool referenceEntity(QHash<QStringView, Entity> *hash, Entity &entity)
     {
         Q_ASSERT(hash);
