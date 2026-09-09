@@ -2693,6 +2693,8 @@ void tst_QWindow::modalWithChildWindow()
     tlw_dialog.setFlags(Qt::Dialog);
     tlw_dialog.create();
 
+    QSignalSpy focusSpy(qGuiApp, &QGuiApplication::focusWindowChanged);
+
     QWindow sub_window(&tlw_dialog);
     sub_window.resize(200,300);
     sub_window.show();
@@ -2701,11 +2703,12 @@ void tst_QWindow::modalWithChildWindow()
     QVERIFY(QTest::qWaitForWindowExposed(&tlw_dialog));
     QVERIFY(QTest::qWaitForWindowExposed(&sub_window));
 
+    focusSpy.wait(50);
     QTRY_COMPARE(QGuiApplication::focusWindow(), &tlw_dialog);
 
     sub_window.requestActivate();
-    QGuiApplication::sync();
-    QGuiApplication::processEvents();
+
+    focusSpy.wait(50);
     QTRY_COMPARE(QGuiApplication::focusWindow(), &sub_window);
 }
 
