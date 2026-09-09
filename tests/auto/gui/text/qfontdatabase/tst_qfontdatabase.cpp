@@ -926,6 +926,7 @@ void tst_QFontDatabase::brokenSTAT()
         QFont fontByWeight;
         fontByWeight.setWeight(weight);
         fontByWeight.setFamily(familyName);
+        fontByWeight.setStyleName(QString{}); // Work around QTBUG-150169
 
         QImage fontByWeightImg;
         {
@@ -939,6 +940,7 @@ void tst_QFontDatabase::brokenSTAT()
         QFont fontByWght;
         fontByWght.setVariableAxis("wght", weight);
         fontByWght.setFamily(familyName);
+        fontByWght.setStyleName(QString{}); // Work around QTBUG-150169
 
         QImage fontByWghtImg;
         {
