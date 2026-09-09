@@ -25,6 +25,8 @@
 #include <private/qstringconverter_p.h>
 #include <private/qstringiterator_p.h>
 
+#include <algorithm>
+
 QT_BEGIN_NAMESPACE
 
 using namespace QtPrivate;
@@ -2384,12 +2386,18 @@ int QXmlStreamReader::entityExpansionLimit() const
 
   The default value for this property is 4096 characters.
 
+  The minimum is one (1), to support the built-in XML entities (\c{&lt;} etc).
+
   \sa entityExpansionLimit
 */
 void QXmlStreamReader::setEntityExpansionLimit(int limit)
 {
     Q_D(QXmlStreamReader);
-    d->entityExpansionLimit = limit;
+    if (limit < 1) {
+        qWarning("QXmlStreamReader::setEntityExpansionLimit(): "
+                 "limit %d is out of range [1:INT_MAX], clamping to 1.", limit);
+    }
+    d->entityExpansionLimit = (std::max)(limit, 1);
 }
 
 /*!  If the tokenType() is \l StartElement, this function returns the

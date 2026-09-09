@@ -645,6 +645,7 @@ private slots:
     void test_fastScanName_data() const;
     void test_fastScanName() const;
 
+    void entityExpansionLimitRange() const;
     void entityExpansionLimit() const;
     void entityExpansionLimitExternalResolver() const;
     void externalEntityResolverRecursion() const;
@@ -3018,6 +3019,29 @@ void tst_QXmlStream::test_fastScanName() const
 
     QCOMPARE(tokenType, QXmlStreamReader::Invalid);
     QCOMPARE(reader.error(), errorType);
+}
+
+void tst_QXmlStream::entityExpansionLimitRange() const
+{
+    static const auto warningRX
+            = QRegularExpression(R"(QXmlStreamReader::setEntityExpansionLimit\(\): )"
+                                 R"(limit -?[0-9]+ is out of range \[1:INT_MAX\], clamping to 1.)");
+
+    // rejected:
+    for (int limit : {INT_MIN, -42, -1, 0}) {
+        QXmlStreamReader r;
+        QTest::ignoreMessage(QtWarningMsg, warningRX);
+        r.setEntityExpansionLimit(limit);
+        QCOMPARE(r.entityExpansionLimit(), 1);
+    }
+
+    // accepted:
+    for (int limit : {1, 2, INT_MAX}) {
+        QXmlStreamReader r;
+        QTest::failOnWarning(warningRX);
+        r.setEntityExpansionLimit(limit);
+        QCOMPARE(r.entityExpansionLimit(), limit);
+    }
 }
 
 void tst_QXmlStream::tokenErrorHandling_data() const
