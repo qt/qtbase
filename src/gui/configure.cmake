@@ -702,6 +702,24 @@ int main(int, char **)
 }
 ")
 
+# Direct Manipulation, used for touchpad gestures. Neither the header nor the
+# PT_TOUCHPAD pointer type is present in every MinGW version.
+qt_config_compile_test(directmanipulation
+    LABEL "WINDOWS Direct Manipulation"
+    COMPILE_OPTIONS "-D_WIN32_WINNT=0x0A00 -DWINVER=0x0A00  -D_WIN32_IE=0x0A00"
+    CODE
+"#include <directmanipulation.h>
+
+int main(int, char **)
+{
+    IDirectManipulationManager *manager = nullptr;
+    CoCreateInstance(CLSID_DirectManipulationManager, nullptr, CLSCTX_INPROC_SERVER,
+                     IID_PPV_ARGS(&manager));
+    const POINTER_INPUT_TYPE pointerType = PT_TOUCHPAD;
+    return int(pointerType);
+}
+")
+
 # directwrite3 (not present in MinGW)
 qt_config_compile_test(directwrite3
     LABEL "WINDOWS directwrite3"
@@ -927,6 +945,13 @@ qt_feature("directfb" PRIVATE
     LABEL "DirectFB"
     AUTODETECT OFF
     CONDITION DirectFB_FOUND
+)
+qt_feature("directmanipulation" PRIVATE
+    SECTION "Kernel"
+    LABEL "Direct Manipulation"
+    PURPOSE "Supports touchpad gestures on Windows."
+    CONDITION TEST_directmanipulation
+    EMIT_IF WIN32
 )
 qt_feature("directwrite" PRIVATE
     LABEL "DirectWrite"

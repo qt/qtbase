@@ -110,6 +110,11 @@ qt_internal_extend_target(QWindowsIntegrationPlugin CONDITION MINGW
         qwindowspointerhandler.cpp
 )
 
+qt_internal_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_directmanipulation
+    SOURCES
+        qwindowsdirectmanipulation.cpp qwindowsdirectmanipulation.h
+)
+
 qt_internal_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_systemtrayicon
     SOURCES
         qwindowssystemtrayicon.cpp qwindowssystemtrayicon.h

@@ -26,6 +26,7 @@ Q_DECLARE_LOGGING_CATEGORY(lcQpaInputMethods)
 Q_DECLARE_LOGGING_CATEGORY(lcQpaDialogs)
 Q_DECLARE_LOGGING_CATEGORY(lcQpaMenus)
 Q_DECLARE_LOGGING_CATEGORY(lcQpaTablet)
+Q_DECLARE_LOGGING_CATEGORY(lcQpaGestures)
 Q_DECLARE_LOGGING_CATEGORY(lcQpaAccessibility)
 Q_DECLARE_LOGGING_CATEGORY(lcQpaUiAutomation)
 Q_DECLARE_LOGGING_CATEGORY(lcQpaTrayIcon)
@@ -39,6 +40,7 @@ class QPlatformKeyMapper;
 class QWindowsMenuBar;
 class QWindowsScreenManager;
 class QWindowsTabletSupport;
+class QWindowsDirectManipulation;
 class QWindowsWindow;
 class QWindowsMimeRegistry;
 struct QWindowCreationContext;
@@ -130,6 +132,7 @@ public:
     QWindowsMimeRegistry &mimeConverter() const;
     QWindowsScreenManager &screenManager();
     QWindowsTabletSupport *tabletSupport() const;
+    QWindowsDirectManipulation *directManipulation() const;
 
     bool asyncExpose() const;
     void setAsyncExpose(bool value);

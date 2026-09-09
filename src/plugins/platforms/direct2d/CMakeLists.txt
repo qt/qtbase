@@ -121,6 +121,11 @@ qt_internal_extend_target(QWindowsDirect2DIntegrationPlugin CONDITION QT_FEATURE
         ../windows/qwindowsopenglcontext.h
 )
 
+qt_internal_extend_target(QWindowsDirect2DIntegrationPlugin CONDITION QT_FEATURE_directmanipulation
+    SOURCES
+        ../windows/qwindowsdirectmanipulation.cpp ../windows/qwindowsdirectmanipulation.h
+)
+
 qt_internal_extend_target(QWindowsDirect2DIntegrationPlugin CONDITION QT_FEATURE_systemtrayicon
     SOURCES
         ../windows/qwindowssystemtrayicon.cpp ../windows/qwindowssystemtrayicon.h

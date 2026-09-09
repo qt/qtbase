@@ -9,6 +9,9 @@
 #include "qwindowskeymapper.h"
 #include "qwindowsnativeinterface.h"
 #include "qwindowspointerhandler.h"
+#if QT_CONFIG(directmanipulation)
+#  include "qwindowsdirectmanipulation.h"
+#endif
 #include "qtwindowsglobal.h"
 #include "qwindowsmenu.h"
 #include "qwindowsmimeregistry.h"
@@ -72,6 +75,7 @@ Q_LOGGING_CATEGORY(lcQpaInputMethods, "qt.qpa.input.methods")
 Q_LOGGING_CATEGORY(lcQpaDialogs, "qt.qpa.dialogs")
 Q_LOGGING_CATEGORY(lcQpaMenus, "qt.qpa.menus")
 Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
+Q_LOGGING_CATEGORY(lcQpaGestures, "qt.qpa.input.gestures")
 Q_LOGGING_CATEGORY(lcQpaAccessibility, "qt.qpa.accessibility")
 Q_LOGGING_CATEGORY(lcQpaUiAutomation, "qt.qpa.uiautomation")
 Q_LOGGING_CATEGORY(lcQpaTrayIcon, "qt.qpa.trayicon")
@@ -149,6 +153,9 @@ struct QWindowsContextPrivate {
 #if QT_CONFIG(tabletevent)
     QScopedPointer<QWindowsTabletSupport> m_tabletSupport;
 #endif
+#if QT_CONFIG(directmanipulation)
+    QScopedPointer<QWindowsDirectManipulation> m_directManipulation;
+#endif
     const HRESULT m_oleInitializeResult;
     QWindow *m_lastActiveWindow = nullptr;
     bool m_asyncExpose = false;
@@ -173,6 +180,11 @@ QWindowsContextPrivate::QWindowsContextPrivate()
     if (FAILED(m_oleInitializeResult)) {
        qWarning() << "QWindowsContext: OleInitialize() failed: "
            << QSystemError::windowsComString(m_oleInitializeResult);
+    } else {
+#if QT_CONFIG(directmanipulation)
+        // Needs COM, which OleInitialize() has just set up.
+        m_directManipulation.reset(QWindowsDirectManipulation::create());
+#endif
     }
 }
 
@@ -186,6 +198,9 @@ QWindowsContext::~QWindowsContext()
 {
 #if QT_CONFIG(tabletevent)
     d->m_tabletSupport.reset(); // Destroy internal window before unregistering classes.
+#endif
+#if QT_CONFIG(directmanipulation)
+    d->m_directManipulation.reset(); // Release COM objects before OleUninitialize().
 #endif
 
     if (d->m_powerNotification)
@@ -677,6 +692,15 @@ QWindowsScreenManager &QWindowsContext::screenManager()
     return d->m_screenManager;
 }
 
+QWindowsDirectManipulation *QWindowsContext::directManipulation() const
+{
+#if QT_CONFIG(directmanipulation)
+    return d->m_directManipulation.data();
+#else
+    return nullptr;
+#endif
+}
+
 QWindowsTabletSupport *QWindowsContext::tabletSupport() const
 {
 #if QT_CONFIG(tabletevent)
@@ -882,8 +906,17 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
 
     switch (et) {
     case QtWindows::GestureEvent:
-        // TODO???
+        // Legacy touch screen gestures; touchpads are handled via Direct
+        // Manipulation, and touch screens via QWindowsPointerHandler.
         break;
+    case QtWindows::DirectManipulationHitTestEvent:
+#if QT_CONFIG(directmanipulation)
+        if (auto *dm = d->m_directManipulation.data();
+            dm && !sessionManagerInteractionBlocked()) {
+            dm->handlePointerHitTest(hwnd, wParam);
+        }
+#endif
+        return false;
     case QtWindows::InputMethodOpenCandidateWindowEvent:
     case QtWindows::InputMethodCloseCandidateWindowEvent:
         // TODO: Release/regrab mouse if a popup has mouse grab.

@@ -2859,7 +2859,7 @@ Q_IMPL_POINTER_EVENT(QTabletEvent)
     \row
         \li Qt::ZoomNativeGesture
         \li Magnification delta in percent.
-        \li \macos and Wayland: Two-finger pinch.
+        \li \macos, Wayland, Windows and X11: Two-finger pinch.
     \row
         \li Qt::SmartZoomNativeGesture
         \li Boolean magnification state.

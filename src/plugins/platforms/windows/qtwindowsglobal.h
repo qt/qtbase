@@ -53,6 +53,12 @@
 #  define WM_POINTERHWHEEL   0x024F
 #endif // WM_POINTERUPDATE
 
+// Sent when an interaction starts over a window that has been activated for
+// the Direct Manipulation API (Windows 8 onwards).
+#ifndef DM_POINTERHITTEST
+#  define DM_POINTERHITTEST 0x0250
+#endif
+
 #if !defined(_DPI_AWARENESS_CONTEXTS_)
 #  define DPI_AWARENESS_CONTEXT_UNAWARE              ((HANDLE)-1)
 #  define DPI_AWARENESS_CONTEXT_SYSTEM_AWARE         ((HANDLE)-2)
@@ -147,6 +153,7 @@ enum WindowsEventType // Simplify event types
     ScrollEvent = GenericEventFlag + 1,
     ContextMenu = 123,
     GestureEvent = 124,
+    DirectManipulationHitTestEvent = 125,
     UnknownEvent = 542
 };
 Q_DECLARE_MIXED_ENUM_OPERATORS(bool, WindowsEventTypeFlags, WindowsEventType);
@@ -297,6 +304,8 @@ inline QtWindows::WindowsEventType windowsEventType(UINT message, WPARAM wParamI
 #endif
     case WM_GESTURE:
         return QtWindows::GestureEvent;
+    case DM_POINTERHITTEST:
+        return QtWindows::DirectManipulationHitTestEvent;
     case WM_DEVICECHANGE:
         return QtWindows::DeviceChangeEvent;
     case WM_INITMENU:
