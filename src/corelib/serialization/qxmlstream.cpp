@@ -7,9 +7,11 @@
 #if QT_CONFIG(xmlstream)
 
 #include "qxmlutils_p.h"
+
 #include <qdebug.h>
 #include <qfile.h>
 #include <stdio.h>
+#include <QtCore/qspan.h>
 #include <qstringconverter.h>
 #include <qstack.h>
 #include <qbuffer.h>
@@ -103,6 +105,16 @@ WRAP(contains, char)
 WRAP(contains, QLatin1StringView)
 WRAP(endsWith, char)
 WRAP(indexOf, QLatin1StringView)
+
+// ### begin move someplace central and complete
+template <auto V> struct Value { static constexpr auto value = V; };
+template <typename T> struct EncodingForHelper;
+template <> struct EncodingForHelper<QStringView> : Value<QStringDecoder::Utf16> {};
+template <> struct EncodingForHelper<QLatin1StringView> : Value<QStringDecoder::Latin1> {};
+template <bool B> struct EncodingForHelper<QBasicUtf8StringView<B>> : Value<QStringDecoder::Utf8> {};
+template <typename T>
+constexpr auto encodingFor = EncodingForHelper<T>::value;
+// ### end move someplace central
 
 } // unnamed namespace
 
@@ -539,6 +551,22 @@ void QXmlStreamReaderPrivate::appendDataWithEncoding(const QByteArray &data,
     dataInfo.emplace_back(data, enc);
 }
 
+void QXmlStreamReaderPrivate::appendViewWithEncoding(QByteArrayView data, QStringDecoder::Encoding enc)
+{
+    if (data.isEmpty())
+        return;
+    // Joining the buffers might be useful for a stateful decoder, or when
+    // e == System, meaning that we have to try to guess the decoder
+    if (!dataInfo.empty()) {
+        auto &last = dataInfo.back();
+        if (last.encoding == enc) {
+            last.buffer.append(data);
+            return;
+        }
+    }
+    dataInfo.emplace_back(data.toByteArray(), enc);
+}
+
 /*!
     Creates a new stream reader that reads from \a data.
 
@@ -651,15 +679,7 @@ void QXmlStreamReader::addData(QAnyStringView data)
     if (d->device)
         return warn_addData_with_device();
     data.visit([d](auto data) {
-        if constexpr (std::is_same_v<decltype(data), QStringView>) {
-            d->appendDataWithEncoding(QByteArray(reinterpret_cast<const char *>(data.utf16()),
-                                                 data.size() * 2),
-                                      QStringDecoder::Utf16);
-        } else if constexpr (std::is_same_v<decltype(data), QLatin1StringView>) {
-            d->appendDataWithEncoding(QByteArray(data.data(), data.size()), QStringDecoder::Latin1);
-        } else {
-            d->appendDataWithEncoding(QByteArray(data.data(), data.size()), QStringDecoder::Utf8);
-        }
+        d->appendViewWithEncoding(as_bytes(QSpan(data)), encodingFor<decltype(data)>);
     });
 }
 
