@@ -1799,9 +1799,9 @@ bool QFileSystemEngine::rmdirRecursively(const QFileSystemEntry &entry, QSystemE
     // rewinddir(), or seekdir(), the behavior is undefined".
     // However, on these OSes we can openat() subdirectories using an iterated
     // file descriptor.
-    constexpr bool NeedsSecondFileDescriptor = false;
+    static constexpr bool NeedsSecondFileDescriptor = false;
 #  else
-    constexpr bool NeedsSecondFileDescriptor = true;
+    static constexpr bool NeedsSecondFileDescriptor = true;
 #  endif
     struct DirInfo {
         DIR *dir;
