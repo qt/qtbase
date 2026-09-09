@@ -2876,13 +2876,13 @@ void tst_QXmlStream::entityExpansionLimitImpl(const QString &xml,
         QCOMPARE(reader.error(), QXmlStreamReader::NotWellFormedError);
     }
 
-    // &d; expands to 10k characters, minus the 3 removed (&d;) means it should fail
-    // with a limit of 9996 chars and pass with 9997
+    // &d; expands to 10k characters, so it should fail with a limit of 9999
+    // chars and pass with 10000
     {
         QXmlStreamReader reader(xml);
         if (resolver)
             reader.setEntityResolver(resolver);
-        reader.setEntityExpansionLimit(9996);
+        reader.setEntityExpansionLimit(9999);
         do {
             reader.readNext();
         } while (!reader.atEnd());
@@ -2895,7 +2895,7 @@ void tst_QXmlStream::entityExpansionLimitImpl(const QString &xml,
         QXmlStreamReader reader(xml);
         if (resolver)
             reader.setEntityResolver(resolver);
-        reader.setEntityExpansionLimit(9997);
+        reader.setEntityExpansionLimit(10000);
         do {
             reader.readNext();
         } while (!reader.atEnd());

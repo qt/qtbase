@@ -326,10 +326,11 @@ public:
             raiseWellFormedError(QXmlStream::tr("Self-referencing entity detected."));
             return false;
         }
-        // entityLength represents the amount of additional characters the
-        // entity expands into (can be negative for e.g. &amp;). It's used to
-        // avoid DoS attacks through recursive entity expansions
-        entityLength += entity.value.size() - entity.name.size() - 2;
+        const auto valLen = entity.value.size();
+        const auto refLen = entity.name.size() + 2; // 2 for `&` and `;`
+        // don't count the top-level reference (could turn the entityLength negative):
+        const auto effectiveRefLen = entityReferenceStack.isEmpty() ? 0 : refLen;
+        entityLength += valLen - effectiveRefLen;
         if (entityLength > entityExpansionLimit) {
             raiseWellFormedError(QXmlStream::tr("Entity expands to more characters than the entity expansion limit."));
             return false;
