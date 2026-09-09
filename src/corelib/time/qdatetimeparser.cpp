@@ -1991,9 +1991,15 @@ QDateTimeParser::AmPmFinder QDateTimeParser::findAmPm(QString &str, int sectionI
 
     if (str.startsWith(ampm[amindex], Qt::CaseInsensitive)) {
         str = ampm[amindex];
+        // str might've changed its length
+        if (used)
+            *used = str.size();
         return AM;
     } else if (str.startsWith(ampm[pmindex], Qt::CaseInsensitive)) {
         str = ampm[pmindex];
+        // str might've changed its length
+        if (used)
+            *used = str.size();
         return PM;
     } else if (context == FromString || (str.count(space) == 0 && str.size() >= size)) {
         return Neither;
