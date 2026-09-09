@@ -21,6 +21,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <errno.h>
 #if __has_include(<paths.h>)
@@ -317,7 +318,9 @@ void prepareStackTrace()
             path = p;
         else
             path = _PATH_DEFPATH;
-        for (const char *p = std::strtok(&path[0], ":"); p; p = std::strtok(nullptr, ":")) {
+        char *saveptr = nullptr;
+        for (const char *p = strtok_r(&path[0], ":", &saveptr); p;
+             p = strtok_r(nullptr, ":", &saveptr)) {
             candidate = p;
             candidate += '/';
             candidate += execname;
