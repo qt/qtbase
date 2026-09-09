@@ -1048,17 +1048,21 @@ function(_qt_internal_harmonyos_add_hap_install_fixture hap_signed_file)
         return()
     endif()
 
+    file(TO_CMAKE_PATH "${HARMONYOS_HDC}" hdc_cmake_path)
+    file(TO_CMAKE_PATH "${hap_signed_file}" hap_cmake_path)
+
     set(install_script "${CMAKE_BINARY_DIR}/HarmonyOSInstallHapFixture.cmake")
     file(GENERATE OUTPUT "${install_script}" CONTENT
-"set(hdc \"${HARMONYOS_HDC}\")
-set(hap \"${hap_signed_file}\")
+"set(hdc \"${hdc_cmake_path}\")
+set(hap \"${hap_cmake_path}\")
 set(hdc_args \"\")
 if(DEFINED ENV{QT_HARMONYOS_DEVICE} AND NOT \"\$ENV{QT_HARMONYOS_DEVICE}\" STREQUAL \"\")
     set(hdc_args -t \"\$ENV{QT_HARMONYOS_DEVICE}\")
 endif()
 message(STATUS \"Installing HarmonyOS test HAP: \${hap}\")
+file(TO_NATIVE_PATH \"\${hap}\" hap_native)
 execute_process(
-    COMMAND \"\${hdc}\" \${hdc_args} app install -r \"\${hap}\"
+    COMMAND \"\${hdc}\" \${hdc_args} app install -r \"\${hap_native}\"
     RESULT_VARIABLE result
     OUTPUT_VARIABLE output
     ERROR_VARIABLE output
