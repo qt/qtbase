@@ -17,6 +17,8 @@ public:
     // forward data structures
     using QDateTimeParser::ParsedSection;
     using QDateTimeParser::State;
+    using QDateTimeParser::AM;
+    using QDateTimeParser::PM;
 
     // function to manipulate private internals
     void setText(QString text) { m_text = text; }
@@ -51,6 +53,7 @@ private Q_SLOTS:
     void reparse();
     void parseSection_data();
     void parseSection();
+    void ampmSection();
 
     void intermediateYear_data();
     void intermediateYear();
@@ -172,6 +175,38 @@ void tst_QDateTimeParser::parseSection()
     testParser.setText(input);
     auto result = testParser.parseSection(val, sectionIndex, offset);
     QCOMPARE(result, expected);
+}
+
+void tst_QDateTimeParser::ampmSection()
+{
+    // Bosnian's designators differ in length, so the section is wider than the
+    // shorter of them:
+    const QLocale locale(u"bs_BA"_s);
+    QCOMPARE(locale.amText().size(), 10); // prijepodne
+    QCOMPARE(locale.pmText().size(), 7);  // popodne
+
+    QDTPUnitTestParser testParser;
+    testParser.setDefaultLocale(locale);
+    QVERIFY(testParser.parseFormat(u"hh:mm ap"_s));
+
+    using ParsedSection = QDTPUnitTestParser::ParsedSection;
+    using State = QDTPUnitTestParser::State;
+    const QDateTime val(QDate(1900, 1, 1).startOfDay());
+
+    // The shorter designator is followed by text that is not part of it, so the
+    // section must not use the full width of the field:
+    testParser.setText(u"01:30 popodneXYZ"_s);
+    QCOMPARE(testParser.parseSection(val, 2, 6),
+             ParsedSection(State::Acceptable, QDTPUnitTestParser::PM, 7, 0));
+
+    testParser.setText(u"01:30 popodne"_s);
+    QCOMPARE(testParser.parseSection(val, 2, 6),
+             ParsedSection(State::Acceptable, QDTPUnitTestParser::PM, 7, 0));
+
+    // The longer designator fills the field, so it was never affected:
+    testParser.setText(u"01:30 prijepodne"_s);
+    QCOMPARE(testParser.parseSection(val, 2, 6),
+             ParsedSection(State::Acceptable, QDTPUnitTestParser::AM, 10, 0));
 }
 
 void tst_QDateTimeParser::intermediateYear_data()
