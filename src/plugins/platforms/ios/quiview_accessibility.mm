@@ -88,4 +88,9 @@
     return m_accessibleElements;
 }
 
+- (BOOL)accessibilityViewIsModal
+{
+    return self.qwindow && self.qwindow == QGuiApplication::modalWindow();
+}
+
 @end
