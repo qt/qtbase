@@ -22,37 +22,51 @@ namespace {
 
 QList<QtParseTimeZone::ParsedZone>
 addMatch(QList<QtParseTimeZone::ParsedZone> &&matches,
-         QtParseTimeZone::ParsedZone &&match, [[maybe_unused]] bool gmtStart)
+         QtParseTimeZone::ParsedZone &&match, [[maybe_unused]] QStringView tail)
 {
     // Input matches is sorted with x before y when isBetter(x, y); add our new
-    // entry just after the last that isBetter(than, it).
+    // entry just after the last that isBetter(than, match).
     using namespace QtParseTimeZone;
 
     // How discerning isBetter() can be depends on whether zones can have backends.
     const auto isBetter = [
 #if QT_CONFIG(timezone)
-        // GMT may be recognized as various other things, but if named as such
-        // and supported by our backend, prefer it over others (of the same
-        // length) that aren't, with the exception of LocalTime:
-        newIsBackendGmt = gmtStart && match.size() == 3
-            && match.zone.timeSpec() == Qt::TimeZone && match.zone.id() == "GMT",
+            tail,
 #endif
-        newAddr = &match] (const ParsedZone &left, const ParsedZone &right) {
+            newAddr = &match] (const ParsedZone &left, const ParsedZone &right) {
         Q_ASSERT(left.startIndex == right.startIndex);
         if (left.endIndex > right.endIndex)
             return true;
         if (left.endIndex < right.endIndex)
             return false;
+        // That leaves matches of equal length, which may have interpreted the
+        // same thing in different ways, most likely equivalent. We do have some
+        // preferences among these, though.
+        const auto preferTruer = [](bool goodL, bool goodR) -> std::optional<bool> {
+            if (goodL != goodR)
+                return goodL;
+            return {};
+        };
+        const Qt::TimeSpec leftSpec = left.zone.timeSpec(), rightSpec = right.zone.timeSpec();
+        // UTC and fixed-offset time representations are particularly nice:
+        if (const auto pref = preferTruer(QTimeZone::isUtcOrFixedOffset(leftSpec),
+                                          QTimeZone::isUtcOrFixedOffset(rightSpec))) {
+            return *pref;
+        }
         // For historical reasons (e.g. QTBUG-114575) we prefer local time over
-        // other ways of referring to the same zone:
-        if (left.zone.timeSpec() == Qt::LocalTime && right.zone.timeSpec() != Qt::LocalTime)
-            return true;
-        if (left.zone.timeSpec() != Qt::LocalTime && right.zone.timeSpec() == Qt::LocalTime)
-            return false;
+        // the local zone's representation as a zone:
+        if (const auto pref = preferTruer(leftSpec == Qt::LocalTime, rightSpec == Qt::LocalTime))
+            return *pref;
 #if QT_CONFIG(timezone)
-        if (newIsBackendGmt) // The following is true exactly when left is the same as match:
-            return right.zone.timeSpec() != Qt::TimeZone || right.zone.id() != "GMT";
+        // A zone whose ID is exactly the text matched is also clearly better:
+        if (const auto pref = preferTruer(leftSpec == Qt::TimeZone
+                                          && tail.startsWith(QLatin1String(left.zone.id())),
+                                          rightSpec == Qt::TimeZone
+                                          && tail.startsWith(QLatin1String(right.zone.id())))) {
+            return *pref;
+        }
 #endif
+        // All other things being equal, prefer entries already in the list over match:
         return &right == newAddr;
     };
     const auto pos = std::upper_bound(matches.begin(), matches.end(), match, isBetter);
@@ -422,10 +436,10 @@ QList<ParsedZone> prefix(QStringView text, const QLocale &locale, qsizetype from
         return matches;
 
     QStringView tail = text.sliced(from);
-    const auto includeMatch = [&matches, from, gmtStart = tail.startsWith(u"GMT")]
+    const auto includeMatch = [&matches, from, tail]
         (qsizetype used, QTimeZone &&zone, QDTP::DaylightStatus type) {
         Q_ASSERT(zone.isValid());
-        matches = addMatch(std::move(matches), {{from, from + used}, zone, type}, gmtStart);
+        matches = addMatch(std::move(matches), {{from, from + used}, zone, type}, tail);
     };
 
     using namespace QtTemporalPattern;
