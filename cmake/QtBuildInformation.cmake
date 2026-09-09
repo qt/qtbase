@@ -48,7 +48,9 @@ function(qt_print_feature_summary)
     endif()
 
     # Print an SBOM section for a top-level build, or a single repo.
-    if(NOT QT_NO_SBOM_SUMMARY_INFO)
+    # QT_NO_SBOM_SUMMARY_INFO is the deprecated name of QT_SBOM_NO_SUMMARY_INFO, kept for
+    # compatibility.
+    if(NOT QT_SBOM_NO_SUMMARY_INFO AND NOT QT_NO_SBOM_SUMMARY_INFO)
         qt_internal_add_sbom_summary_info()
     endif()
 
