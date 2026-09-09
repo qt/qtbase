@@ -5346,6 +5346,10 @@ void tst_QWidget::eventsAndAttributesOnDestroy()
     // include those of hiding the widget.
 
     CreateDestroyWidget widget;
+
+    if (m_platform == QStringLiteral("xcb") && qgetenv("XDG_CURRENT_DESKTOP").contains("ubuntu"))
+        widget.setWindowFlag(Qt::FramelessWindowHint);
+
     EventSpy<QWidget> showEventSpy(&widget, QEvent::Show);
     EventSpy<QWidget> hideEventSpy(&widget, QEvent::Hide);
 
