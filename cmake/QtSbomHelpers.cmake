@@ -198,19 +198,48 @@ function(qt_internal_extend_qt_entity_sbom target)
 endfunction()
 
 # Helper function to convert a boolean SBOM option into a "yes" / "no" string.
+# OPT_OUT_VARS takes the names of the option's opt-out variables. The option is reported as
+# disabled if one of them is enabled.
 function(qt_internal_is_sbom_option_enabled var_name out_var)
+    set(opt_args "")
+    set(single_args "")
+    set(multi_args
+        OPT_OUT_VARS
+    )
+    cmake_parse_arguments(PARSE_ARGV 2 arg "${opt_args}" "${single_args}" "${multi_args}")
+    _qt_internal_validate_all_args_are_parsed(arg)
+
+    set(value "no")
+
     if("${${var_name}}")
         set(value "yes")
-    else()
-        set(value "no")
+        foreach(opt_out_var IN LISTS arg_OPT_OUT_VARS)
+            if("${${opt_out_var}}")
+                set(value "no")
+                break()
+            endif()
+        endforeach()
     endif()
+
     set(${out_var} "${value}" PARENT_SCOPE)
 endfunction()
 
 # Helper function to get a summary suffix for SBOM options that are enabled, but might be skipped
 # if their dependencies are missing.
+# OPT_OUT_VARS takes the names of the option's opt-out variables.
 function(qt_internal_get_sbom_option_required_suffix var_name out_var)
-    if("${${var_name}}")
+    set(opt_args "")
+    set(single_args "")
+    set(multi_args
+        OPT_OUT_VARS
+    )
+    cmake_parse_arguments(PARSE_ARGV 2 arg "${opt_args}" "${single_args}" "${multi_args}")
+    _qt_internal_validate_all_args_are_parsed(arg)
+
+    qt_internal_is_sbom_option_enabled("${var_name}" enabled
+        OPT_OUT_VARS ${arg_OPT_OUT_VARS})
+
+    if(enabled STREQUAL "yes")
         set(value "")
     else()
         set(value " (skipped if dependencies are missing)")
@@ -232,23 +261,30 @@ function(qt_internal_add_sbom_summary_info)
         qt_configure_add_summary_entry(ARGS "Generate SPDX v2.3"
             TYPE "message" MESSAGE "${value}")
 
-        qt_internal_is_sbom_option_enabled(QT_SBOM_GENERATE_SPDX_V2_JSON value)
-        qt_internal_get_sbom_option_required_suffix(QT_SBOM_REQUIRE_GENERATE_SPDX_V2_JSON suffix)
+        qt_internal_is_sbom_option_enabled(QT_SBOM_GENERATE_SPDX_V2_JSON value
+            OPT_OUT_VARS QT_SBOM_NO_GENERATE_SPDX_V2_JSON)
+        qt_internal_get_sbom_option_required_suffix(QT_SBOM_REQUIRE_GENERATE_SPDX_V2_JSON suffix
+            OPT_OUT_VARS QT_SBOM_NO_REQUIRE_GENERATE_SPDX_V2_JSON)
         qt_configure_add_summary_entry(ARGS "Generate SPDX v2.3 JSON"
             TYPE "message" MESSAGE "${value}${suffix}")
 
-        qt_internal_is_sbom_option_enabled(QT_SBOM_VERIFY_SPDX_V2 value)
-        qt_internal_get_sbom_option_required_suffix(QT_SBOM_REQUIRE_VERIFY_SPDX_V2 suffix)
+        qt_internal_is_sbom_option_enabled(QT_SBOM_VERIFY_SPDX_V2 value
+            OPT_OUT_VARS QT_SBOM_NO_VERIFY_SPDX_V2)
+        qt_internal_get_sbom_option_required_suffix(QT_SBOM_REQUIRE_VERIFY_SPDX_V2 suffix
+            OPT_OUT_VARS QT_SBOM_NO_REQUIRE_VERIFY_SPDX_V2)
         qt_configure_add_summary_entry(ARGS "Verify   SPDX v2.3 JSON"
             TYPE "message" MESSAGE "${value}${suffix}")
 
         qt_internal_is_sbom_option_enabled(QT_SBOM_GENERATE_CYDX_V1_6 value)
-        qt_internal_get_sbom_option_required_suffix(QT_SBOM_REQUIRE_GENERATE_CYDX_V1_6 suffix)
+        qt_internal_get_sbom_option_required_suffix(QT_SBOM_REQUIRE_GENERATE_CYDX_V1_6 suffix
+            OPT_OUT_VARS QT_SBOM_NO_REQUIRE_GENERATE_CYDX_V1_6)
         qt_configure_add_summary_entry(ARGS "Generate CycloneDX v1.6"
             TYPE "message" MESSAGE "${value}${suffix}")
 
-        qt_internal_is_sbom_option_enabled(QT_SBOM_VERIFY_CYDX_V1_6 value)
-        qt_internal_get_sbom_option_required_suffix(QT_SBOM_REQUIRE_VERIFY_CYDX_V1_6 suffix)
+        qt_internal_is_sbom_option_enabled(QT_SBOM_VERIFY_CYDX_V1_6 value
+            OPT_OUT_VARS QT_SBOM_NO_VERIFY_CYDX_V1_6)
+        qt_internal_get_sbom_option_required_suffix(QT_SBOM_REQUIRE_VERIFY_CYDX_V1_6 suffix
+            OPT_OUT_VARS QT_SBOM_NO_REQUIRE_VERIFY_CYDX_V1_6)
         qt_configure_add_summary_entry(ARGS "Verify   CycloneDX v1.6"
             TYPE "message" MESSAGE "${value}${suffix}")
 
@@ -275,12 +311,14 @@ function(qt_internal_add_sbom_summary_info)
     endif()
 
     # Source SBOM info.
-    qt_internal_is_sbom_option_enabled(QT_GENERATE_SOURCE_SBOM value)
+    qt_internal_is_sbom_option_enabled(QT_GENERATE_SOURCE_SBOM value
+        OPT_OUT_VARS QT_SBOM_NO_GENERATE_SOURCE_SBOM)
     qt_configure_add_summary_entry(ARGS "Generate source SPDX SBOM"
         TYPE "message" MESSAGE "${value}")
 
     if(QT_GENERATE_SOURCE_SBOM)
-        qt_internal_is_sbom_option_enabled(QT_LINT_SOURCE_SBOM value)
+        qt_internal_is_sbom_option_enabled(QT_LINT_SOURCE_SBOM value
+            OPT_OUT_VARS QT_SBOM_NO_LINT_SOURCE_SBOM)
         qt_configure_add_summary_entry(ARGS "Verify   source SPDX SBOM"
             TYPE "message" MESSAGE "${value}")
 
