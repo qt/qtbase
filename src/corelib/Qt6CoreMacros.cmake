@@ -894,6 +894,15 @@ function(qt6_finalize_target target)
         message(FATAL_ERROR "No target '${target}' found in current scope.")
     endif()
 
+    if(NOT QT_CMAKE_EXPORT_NAMESPACE)
+        message(FATAL_ERROR
+            "Cannot finalize target '${target}': Qt was not found in this directory scope. "
+            "Calling find_package(Qt6) inside a function, or in a directory scope other than the "
+            "one that uses Qt, is not supported. Call find_package(Qt6) in every directory scope "
+            "that uses Qt's CMake API, or in the top-level CMakeLists.txt. See "
+            "https://doc.qt.io/qt-6/cmake-making-qt-available.html")
+    endif()
+
     get_target_property(is_finalized "${target}" _qt_is_finalized)
     if(is_finalized)
         message(AUTHOR_WARNING
