@@ -30,6 +30,8 @@
 
 QT_BEGIN_NAMESPACE
 
+class QByteArrayView;
+
 namespace QtPrivate {
 
 class XmlStringRef
@@ -285,6 +287,7 @@ public:
     QList<BufferAndEncoding> dataInfo;
     QStringDecoder chunkDecoder;
     void appendDataWithEncoding(const QByteArray &data, QStringDecoder::Encoding enc);
+    void appendViewWithEncoding(QByteArrayView data, QStringDecoder::Encoding enc);
 
     QByteArray rawReadBuffer;
     qint64 nbytesread;
