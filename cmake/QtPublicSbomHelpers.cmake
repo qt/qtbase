@@ -614,6 +614,17 @@ function(_qt_internal_sbom_get_project_ops out_var)
     set(${out_var} "${options}" PARENT_SCOPE)
 endfunction()
 
+# Returns TRUE in out_var if the informational sbom messages should be shown.
+# QT_NO_SBOM_INFORMATIONAL_MESSAGES is the deprecated name of
+# QT_SBOM_NO_INFORMATIONAL_MESSAGES, kept for compatibility.
+function(_qt_internal_sbom_show_informational_messages out_var)
+    if(QT_SBOM_NO_INFORMATIONAL_MESSAGES OR QT_NO_SBOM_INFORMATIONAL_MESSAGES)
+        set(${out_var} FALSE PARENT_SCOPE)
+    else()
+        set(${out_var} TRUE PARENT_SCOPE)
+    endif()
+endfunction()
+
 # Force disables the sbom option in option_var, if its opt-out variable is enabled, e.g.
 # QT_GENERATE_SBOM is disabled if QT_SBOM_NO_GENERATE_SBOM is enabled.
 # The opt-out variable name is the option variable name with its QT_ or QT_SBOM_ prefix replaced
@@ -625,7 +636,8 @@ function(_qt_internal_sbom_handle_option_opt_out option_var help_string)
         return()
     endif()
 
-    if(NOT QT_NO_SBOM_INFORMATIONAL_MESSAGES)
+    _qt_internal_sbom_show_informational_messages(show_messages)
+    if(show_messages)
         message(STATUS "Disabling ${option_var} because ${opt_out_var} is enabled.")
     endif()
 
@@ -778,13 +790,15 @@ function(_qt_internal_setup_sbom)
     _qt_internal_sbom_handle_option_opt_out(QT_SBOM_GENERATE_SPDX_V2 "${spdx_v2_help_string}")
     _qt_internal_sbom_handle_option_opt_out(QT_SBOM_GENERATE_CYDX_V1_6 "${cydx_help_string}")
 
+    _qt_internal_sbom_show_informational_messages(show_messages)
+
     # Various sanity checks.
 
     # Disable SPDX v2.3 JSON generation if tag:value generation is disabled.
     if(QT_GENERATE_SBOM
             AND QT_SBOM_GENERATE_SPDX_V2_JSON
             AND NOT QT_SBOM_GENERATE_SPDX_V2)
-        if(NOT QT_NO_SBOM_INFORMATIONAL_MESSAGES)
+        if(show_messages)
             message(STATUS
                 "Disabling SPDX v2.3 SBOM JSON generation because tag:value generation is "
                 "disabled and that is a requirement for JSON generation.")
@@ -799,7 +813,7 @@ function(_qt_internal_setup_sbom)
             AND NOT QT_SBOM_REQUIRE_GENERATE_CYDX_V1_6)
         _qt_internal_sbom_find_cydx_dependencies(OUT_VAR_DEPS_FOUND deps_found)
         if(NOT deps_found)
-            if(NOT QT_NO_SBOM_INFORMATIONAL_MESSAGES)
+            if(show_messages)
                 message(STATUS
                     "Disabling Cyclone DX SBOM generation because dependencies were not found, "
                     "and generation was not marked as required.")
@@ -813,7 +827,7 @@ function(_qt_internal_setup_sbom)
     if(QT_GENERATE_SBOM
             AND NOT QT_SBOM_GENERATE_SPDX_V2
             AND NOT QT_SBOM_GENERATE_CYDX_V1_6)
-        if(NOT QT_NO_SBOM_INFORMATIONAL_MESSAGES)
+        if(show_messages)
             message(STATUS
                 "Disabling SBOM generation because none of the supported formats were enabled.")
         endif()
