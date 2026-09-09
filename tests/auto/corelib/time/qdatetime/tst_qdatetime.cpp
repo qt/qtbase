@@ -3630,7 +3630,9 @@ void tst_QDateTime::fromStringStringFormat_localTimeZone_data()
             << u"yyyy-MM-dd ttt hh.mm"_s << 1900 << greg
             << QDateTime(); // Zone name not valid when offset expected
     QTimeZone gmtWithOffset("GMT-0");
-    if (gmtWithOffset.isValid()) {
+    // That may be an alias for "Etc/GMT" on some systems, in which case it
+    // won't be parsed as itself.
+    if (gmtWithOffset.isValid() && gmtWithOffset.id() == "GMT-0") {
         QTest::newRow("local-timezone-with-offset:GMT-0")
                 << "GMT"_ba << u"2008-10-13 GMT-0 11.50"_s
                 << u"yyyy-MM-dd t hh.mm"_s << 1900 << greg
