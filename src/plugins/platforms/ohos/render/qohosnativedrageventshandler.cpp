@@ -7,20 +7,20 @@
 #include <QtGui/private/qdnd_p.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qhighdpiscaling_p.h>
-#include <algorithm>
 #include <arkui/drag_and_drop.h>
 #include <arkui/native_node.h>
 #include <arkui/native_type.h>
 #include <arkui/ui_input_event.h>
 #include <array>
 #include <chrono>
+#include <condition_variable>
 #include <cstdint>
 #include <database/udmf/udmf.h>
-#include <deque>
 #include <functional>
 #include <future>
 #include <info/application_target_sdk_version.h>
 #include <memory>
+#include <mutex>
 #include <optional>
 #include <qarkui/qarkuiutils.h>
 #include <qarkui/qnativenodeapi.h>
@@ -168,52 +168,6 @@ std::optional<Result> tryRunInQtThreadAndGetResult(
             : std::nullopt;
 }
 
-template<typename Context, typename Result>
-std::function<std::optional<Result>(std::function<Result(Context &)>)>
-makeBestEffortQtThreadFunctionsExecutor(
-    QtOhos::QThreadSafeRef<Context> contextRef,
-    QOhosSupplier<ch::nanoseconds> timeoutsSupplier)
-{
-    auto batchUpdater = makeQtOhosBatchingMTRequestsHandler<std::function<void(Context &)>>(
-        [contextRef](std::function<void()> task) {
-            contextRef.visitInQtThreadIfAlive([task = std::move(task)](Context &) {
-                task();
-            });
-        },
-        [contextRef](std::function<void(Context &)> &&request) {
-            request(*contextRef.data());
-        });
-
-    struct ExecutorContext {
-        decltype(batchUpdater) batchUpdater;
-        QOhosSupplier<ch::nanoseconds> timeoutsSupplier;
-    };
-
-    auto executorContext = QtOhos::moveToSharedPtr(
-        ExecutorContext{
-            .batchUpdater = std::move(batchUpdater),
-            .timeoutsSupplier = std::move(timeoutsSupplier),
-        });
-
-    return [executorContext](std::function<Result(Context &)> qtThreadProcessFunc) {
-        const auto maxResultWaitTime = executorContext->timeoutsSupplier();
-
-        auto promise = std::make_shared<std::promise<Result>>();
-        auto future = promise->get_future();
-
-        executorContext->batchUpdater(
-            [&](std::function<void(Context &)> &request) {
-                request = [qtThreadProcessFunc = std::move(qtThreadProcessFunc), promise](Context &context) {
-                    promise->set_value(qtThreadProcessFunc(context));
-                };
-            });
-
-        return future.wait_for(maxResultWaitTime) == std::future_status::ready
-            ? std::optional<Result>(future.get())
-            : std::nullopt;
-    };
-}
-
 QOhosPlatformDrag *getQOhosPlatformDrag()
 {
     return static_cast<QOhosPlatformDrag *>(QGuiApplicationPrivate::platformIntegration()->drag());
@@ -307,30 +261,6 @@ bool tryStartAsyncProcessingOfDropEvent(
     return true;
 }
 
-QOhosSupplier<ch::nanoseconds> makeDragMoveQtThreadWaitTimeoutsSupplier()
-{
-    return [recentWaitTimeouts = std::deque<ch::steady_clock::time_point>()]() mutable -> ch::nanoseconds {
-        constexpr auto waitTimeout = ch::milliseconds(50);
-        constexpr auto noWaitTimeout = ch::milliseconds(0);
-        constexpr auto maxWaitsPerSecond = 10;
-
-        const auto now = ch::steady_clock::now();
-
-        recentWaitTimeouts.erase(
-            recentWaitTimeouts.begin(),
-            std::lower_bound(
-                recentWaitTimeouts.begin(), recentWaitTimeouts.end(),
-                now - ch::seconds(1)));
-
-        if (recentWaitTimeouts.size() < maxWaitsPerSecond) {
-            recentWaitTimeouts.push_back(now);
-            return waitTimeout;
-        } else {
-            return noWaitTimeout;
-        }
-    };
-}
-
 QPoint getDragEventTouchDisplayPosition(::ArkUI_DragEvent *dragEvent)
 {
     return QPoint(
@@ -344,24 +274,47 @@ public:
     explicit DragMoveResponder(QtOhos::QThreadSafeRef<QWindow> qWindowRef);
 
     std::optional<Qt::DropAction> respondToMove(
-        const DragEventInfo &dragEventInfo, QOhosSupplier<std::unique_ptr<QMimeData>> dropDataFactory) const;
+        const DragEventInfo &dragEventInfo, QOhosSupplier<std::unique_ptr<QMimeData>> dropDataFactory);
+
+    void forgetLastDropAction();
 
 private:
-    std::function<std::optional<Qt::DropAction>(std::function<Qt::DropAction(QWindow &)>)> m_qtThreadMoveEventsProcessor;
+    struct DropActionState
+    {
+        std::mutex mutex;
+        std::condition_variable answerCondVar;
+        std::uint64_t answeredRequestId = 0;
+        std::optional<Qt::DropAction> optDropAction;
+    };
+
+    std::shared_ptr<DropActionState> m_sharedDropActionState;
+    QOhosConsumer<std::function<void(std::function<void(QWindow &)> &)>> m_pendingQueryUpdater;
+    std::uint64_t m_lastRequestId = 0;
+    std::optional<ch::steady_clock::time_point> m_optLastFailedWaitTime;
 };
 
 DragMoveResponder::DragMoveResponder(QtOhos::QThreadSafeRef<QWindow> qWindowRef)
-    : m_qtThreadMoveEventsProcessor(
-        makeBestEffortQtThreadFunctionsExecutor<QWindow, Qt::DropAction>(
-            qWindowRef, makeDragMoveQtThreadWaitTimeoutsSupplier()))
+    : m_sharedDropActionState(std::make_shared<DropActionState>())
+    , m_pendingQueryUpdater(
+        makeQtOhosBatchingQtRequestsHandler<std::function<void(QWindow &)>>(
+            qWindowRef.toQObjectThreadSafeRef(),
+            [qWindowRef](std::function<void(QWindow &)> &&query) {
+                query(*qWindowRef.data());
+            }))
 {
 }
 
 std::optional<Qt::DropAction> DragMoveResponder::respondToMove(
-    const DragEventInfo &dragEventInfo, QOhosSupplier<std::unique_ptr<QMimeData>> dropDataFactory) const
+    const DragEventInfo &dragEventInfo, QOhosSupplier<std::unique_ptr<QMimeData>> dropDataFactory)
 {
-    return m_qtThreadMoveEventsProcessor(
-        [dragEventInfo, dropDataFactory = std::move(dropDataFactory)](QWindow &qWindow) {
+    // the timeout outlasts a usual round trip but not a frame, the cooldown keeps a miss rare
+    constexpr auto answerWaitTimeout = ch::milliseconds(5);
+    constexpr auto waitCooldownAfterTimeout = ch::milliseconds(200);
+
+    const auto requestId = ++m_lastRequestId;
+    auto queryFunc =
+        [dragEventInfo, dropDataFactory = std::move(dropDataFactory),
+         sharedDropActionState = m_sharedDropActionState, requestId](QWindow &qWindow) {
             QDrag *currentDrag = QDragManager::self()->object();
             QPlatformDragQtResponse qtResponse = QWindowSystemInterface::handleDrag(
                 &qWindow,
@@ -371,8 +324,50 @@ std::optional<Qt::DropAction> DragMoveResponder::respondToMove(
                 Qt::LeftButton, dragEventInfo.keyboardModifiers);
             if (currentDrag != nullptr && qtResponse.isAccepted() && qtResponse.acceptedAction() != Qt::IgnoreAction)
                 getQOhosPlatformDrag()->updateDropAction(qtResponse.acceptedAction());
-            return qtResponse.acceptedAction();
+
+            {
+                std::lock_guard<std::mutex> stateLock(sharedDropActionState->mutex);
+                if (requestId <= sharedDropActionState->answeredRequestId)
+                    return;
+
+                sharedDropActionState->answeredRequestId = requestId;
+                sharedDropActionState->optDropAction = qtResponse.acceptedAction();
+            }
+            sharedDropActionState->answerCondVar.notify_all();
+        };
+
+    m_pendingQueryUpdater(
+        [&](std::function<void(QWindow &)> &pendingQuery) {
+            pendingQuery = std::move(queryFunc);
         });
+
+    const auto now = ch::steady_clock::now();
+    const bool waitingMakesSense =
+        !m_optLastFailedWaitTime || now - m_optLastFailedWaitTime.value() >= waitCooldownAfterTimeout;
+
+    {
+        std::unique_lock<std::mutex> stateLock(m_sharedDropActionState->mutex);
+        if (waitingMakesSense) {
+            const bool answered = m_sharedDropActionState->answerCondVar.wait_for(
+                stateLock, answerWaitTimeout,
+                [&]() {
+                    return m_sharedDropActionState->answeredRequestId >= requestId;
+                });
+            if (answered)
+                m_optLastFailedWaitTime.reset();
+            else
+                m_optLastFailedWaitTime = now;
+        }
+
+        return m_sharedDropActionState->optDropAction;
+    }
+}
+
+void DragMoveResponder::forgetLastDropAction()
+{
+    std::lock_guard<std::mutex> stateLock(m_sharedDropActionState->mutex);
+    m_sharedDropActionState->answeredRequestId = m_lastRequestId;
+    m_sharedDropActionState->optDropAction.reset();
 }
 
 }
@@ -381,7 +376,7 @@ QOhosConsumer<::ArkUI_NodeEvent *> makeQOhosNativeDragEventsHandler(
     QtOhos::QThreadSafeRef<QWindow> qWindowRef)
 {
     auto eventsHandler = [qWindowRef, dragMoveResponder = DragMoveResponder(qWindowRef)](
-        QtOhos::JsState &jsState, ::ArkUI_NodeEvent *nodeEvent) {
+        QtOhos::JsState &jsState, ::ArkUI_NodeEvent *nodeEvent) mutable {
         auto eventType = QArkUi::callArkUi(Q_OHOS_NAMED_FUNC(OH_ArkUI_NodeEvent_GetEventType), nodeEvent);
         auto *dragEvent = QArkUi::callArkUiOrFailOnNullResult(Q_OHOS_NAMED_FUNC(::OH_ArkUI_NodeEvent_GetDragEvent), nodeEvent);
         auto node = QArkUi::callArkUiOrFailOnNullResult(Q_OHOS_NAMED_FUNC(OH_ArkUI_NodeEvent_GetNodeHandle), nodeEvent);
@@ -400,6 +395,8 @@ QOhosConsumer<::ArkUI_NodeEvent *> makeQOhosNativeDragEventsHandler(
 
         switch (eventType) {
         case ::NODE_ON_DRAG_ENTER:
+            dragMoveResponder.forgetLastDropAction();
+            Q_FALLTHROUGH();
         case ::NODE_ON_DRAG_MOVE:
             {
                 auto qtDropAction = dragMoveResponder.respondToMove(
@@ -460,7 +457,7 @@ QOhosConsumer<::ArkUI_NodeEvent *> makeQOhosNativeDragEventsHandler(
         }
     };
 
-    return [eventsHandler = std::move(eventsHandler)](::ArkUI_NodeEvent *nodeEvent) {
+    return [eventsHandler = std::move(eventsHandler)](::ArkUI_NodeEvent *nodeEvent) mutable {
         QtOhos::runInJsThreadAndWait(
             [&](QtOhos::JsState &jsState) {
                 eventsHandler(jsState, nodeEvent);
