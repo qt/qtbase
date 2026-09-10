@@ -188,12 +188,6 @@ QThreadPrivate::QThreadPrivate(QThreadData *d)
         stackSize = envStackSize;
 #endif
 
-#if defined (Q_OS_WIN)
-    handle = 0;
-    terminationEnabled = true;
-    terminatePending = false;
-#endif
-
     if (!data)
         data = new QThreadData;
 }
