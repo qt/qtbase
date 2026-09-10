@@ -21,7 +21,8 @@ function(_qt_internal_harmonyos_test_runner_arguments out_test_runner out_runner
     list(APPEND runner_args "--test-config" "${test_bundle_settings}")
 
     if(DEFINED HARMONYOS_HDC)
-        list(APPEND runner_args "--hdc" "${HARMONYOS_HDC}")
+        file(TO_CMAKE_PATH "${HARMONYOS_HDC}" hdc_cmake_path)
+        list(APPEND runner_args "--hdc" "${hdc_cmake_path}")
     endif()
 
     set(${out_test_runner} "${runner}" PARENT_SCOPE)
