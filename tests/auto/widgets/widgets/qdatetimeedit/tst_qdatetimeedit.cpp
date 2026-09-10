@@ -4572,8 +4572,6 @@ void tst_QDateTimeEdit::stepModifierPressAndHold()
     // in a transition gap for these zones, if we use Jan 1st; so use Jan 2nd.
     const QDate startDate(2000, 1, 2);
 
-    testWidget->hide();
-
     EditorDateEdit edit;
     edit.setDate(startDate);
 
@@ -4584,8 +4582,6 @@ void tst_QDateTimeEdit::stepModifierPressAndHold()
 
     QSignalSpy spy(&edit, &EditorDateEdit::dateChanged);
 
-    edit.show();
-    QVERIFY(QTest::qWaitForWindowActive(&edit));
     edit.setCurrentSection(QDateTimeEdit::YearSection);
 
     QStyleOptionSpinBox spinBoxStyleOption;
@@ -4594,9 +4590,13 @@ void tst_QDateTimeEdit::stepModifierPressAndHold()
     const QRect buttonRect = edit.style()->subControlRect(
                 QStyle::CC_SpinBox, &spinBoxStyleOption, subControl, &edit);
 
-    QTest::mousePress(&edit, Qt::LeftButton, modifiers, buttonRect.center());
-    QTRY_VERIFY(spy.size() >= 3);
-    QTest::mouseRelease(&edit, Qt::LeftButton, modifiers, buttonRect.center());
+    {
+        const auto releaseMouse = qScopeGuard([&] {
+            QTest::mouseRelease(&edit, Qt::LeftButton, modifiers, buttonRect.center());
+        });
+        QTest::mousePress(&edit, Qt::LeftButton, modifiers, buttonRect.center());
+        QTRY_VERIFY(spy.size() >= 3);
+    }
 
     const auto value = spy.last().at(0);
     QVERIFY(value.userType() == QMetaType::QDate);
