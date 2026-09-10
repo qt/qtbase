@@ -1733,8 +1733,7 @@ QDate QDate::fromString(QStringView string, Qt::DateFormat format)
     \overload primary
     \fn QDate QDate::fromString(const QString &string, const QString &format, int baseYear, QCalendar cal)
 
-    Returns the QDate represented by the \a string, using the \a
-    format given, or an invalid date if the string cannot be parsed.
+    Returns the QDate represented by the \a string, using the \a format given.
 
     Uses \a cal as calendar if supplied, else the Gregorian calendar. Ranges of
     values in the format descriptions below are for the latter; they may be
@@ -1767,14 +1766,15 @@ QDate QDate::fromString(QStringView string, Qt::DateFormat format)
     treated (stripped of the quotes) as text and not be interpreted as
     expressions. Two consecutive single quotes ("''") are read as a single quote
     to be matched by the input, rather than starting or ending a verbatim
-    sequence. All other input characters will be treated as verbatim text to be
-    matched in the input string. For example:
+    sequence. An unmatched single quote renders the format invalid. All other
+    input characters will be treated as verbatim text to be matched in the input
+    string. For example:
 //! [from-string-single-quote]
-
 
     \snippet code/src_corelib_time_qdatetime.cpp 1
 
-    If the format is not satisfied, an invalid QDate is returned.
+    If \a format is invalid or \a string does not match it, an invalid QDate is
+    returned.
 
 //! [from-string-juxtaposed]
     Where numeric fields are juxtaposed, with no separators to break up the
@@ -1890,6 +1890,8 @@ QDate QDate::fromString(const QString &string, QStringView format, int baseYear,
 {
 #if QT_CONFIG(datetimeparser)
     QDatePattern pattern = QDatePattern::fromQtFormat(format);
+    if (pattern.isNull() && !format.isEmpty())
+        return {};
     pattern.setLocale(QLocale::c());
     pattern.setCalendar(cal);
     pattern.setBaseYear(baseYear);
@@ -2635,8 +2637,7 @@ QTime QTime::fromString(QStringView string, Qt::DateFormat format)
     \overload primary
     \fn QTime QTime::fromString(const QString &string, const QString &format)
 
-    Returns the QTime represented by the \a string, using the \a
-    format given, or an invalid time if the string cannot be parsed.
+    Returns the QTime represented by the \a string, using the \a format given.
 
     These expressions may be used for the format:
 
@@ -2677,7 +2678,8 @@ QTime QTime::fromString(QStringView string, Qt::DateFormat format)
 
     \snippet code/src_corelib_time_qdatetime.cpp 6
 
-    If the format is not satisfied, an invalid QTime is returned.
+    If \a format is invalid or \a string does not match it, an invalid QTime is
+    returned.
 
     \include qdatetime.cpp from-string-juxtaposed
 
@@ -2718,6 +2720,8 @@ QTime QTime::fromString(const QString &string, QStringView format)
 {
 #if QT_CONFIG(datetimeparser)
     QTimePattern pattern = QTimePattern::fromQtFormat(format);
+    if (pattern.isNull() && !format.isEmpty())
+        return {};
     pattern.setLocale(QLocale::c());
     if (auto match = pattern.parse(string, QTime(0, 0)); match.size == string.size())
         return std::move(match.payload);
@@ -5950,8 +5954,8 @@ QDateTime QDateTime::fromString(QStringView string, Qt::DateFormat format)
     \overload primary
     \fn QDateTime QDateTime::fromString(const QString &string, const QString &format, int baseYear, QCalendar cal)
 
-    Returns the QDateTime represented by the \a string, using the \a
-    format given, or an invalid datetime if the string cannot be parsed.
+    Returns the QDateTime represented by the \a string, using the \a format
+    given.
 
     Uses the calendar \a cal if supplied, else Gregorian.
 
@@ -5989,7 +5993,8 @@ QDateTime QDateTime::fromString(QStringView string, Qt::DateFormat format)
 
     \snippet code/src_corelib_time_qdatetime.cpp 12
 
-    If the format is not satisfied, an invalid QDateTime is returned.
+    If \a format is invalid or \a string does not match it, an invalid QDateTime
+    is returned.
 
     \include qdatetime.cpp from-string-juxtaposed
 
@@ -6042,6 +6047,8 @@ QDateTime QDateTime::fromString(const QString &string, QStringView format, int b
 {
 #if QT_CONFIG(datetimeparser)
     QDateTimePattern pattern = QDateTimePattern::fromQtFormat(format);
+    if (pattern.isNull() && !format.isEmpty())
+        return {};
     pattern.setLocale(QLocale::c());
     pattern.setCalendar(cal);
     pattern.setBaseYear(baseYear);

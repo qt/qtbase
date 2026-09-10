@@ -422,6 +422,13 @@ void tst_QTime::fromStringFormat_data()
         << u"23:59:59.999"_s << u"hh:mm:ss.z"_s << QTime(23, 59, 59, 999);
     QTest::newRow("ms-0pad") // QTBUG-147354
         << u"090924.000"_s << u"hhmmss.z"_s << QTime(9, 9, 24, 0);
+    // Empty format is matched by empty string, simply regurgitating defaults:
+    QTest::newRow("empty-matches-empty")
+        << u""_s << u""_s << QTime(0, 0);
+    // Unmatched quote is invalid format so nothing matches it:
+    QTest::newRow("lone-quote") << u"10'33"_s << u"h'm"_s << QTime();
+    QTest::newRow("empty-lone-quote") // Regression test against invalid format "matching" empty:
+        << u""_s << u"HH 'zzz.ss mm"_s << QTime();
 
     // Test unicode handling.
     QTest::newRow("emoji in format string 1")
