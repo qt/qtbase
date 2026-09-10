@@ -235,8 +235,9 @@ public:
     static unsigned int __stdcall start(void *) noexcept;
     void finish(bool lockAnyway = true) noexcept;
 
-    Qt::HANDLE handle;
-    bool terminationEnabled, terminatePending;
+    Qt::HANDLE handle = nullptr;
+    bool terminationEnabled = true;
+    bool terminatePending = false;
 #endif // Q_OS_WIN
 #ifdef Q_OS_WASM
     static int idealThreadCount;
