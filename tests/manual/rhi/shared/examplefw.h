@@ -80,6 +80,7 @@ QRhi::BeginFrameFlags beginFrameFlags;
 QRhi::EndFrameFlags endFrameFlags;
 bool transparentBackground = false;
 bool debugLayer = true;
+bool printFps = true;
 QRhiSwapChain::Format swapchainFormat = QRhiSwapChain::SDR;
 float imguiHDRMultiplier = 0.0f;
 
@@ -406,7 +407,8 @@ void Window::render()
 
     m_frameCount += 1;
     if (m_timer.elapsed() > 1000) {
-        qDebug("ca. %d fps", m_frameCount);
+        if (printFps)
+            qDebug("ca. %d fps", m_frameCount);
         m_timer.restart();
         m_frameCount = 0;
     }
@@ -481,8 +483,13 @@ int main(int argc, char **argv)
     // Allow testing having a semi-transparent window.
     QCommandLineOption transparentOption(QLatin1String("transparent"), QLatin1String("Make background transparent"));
     cmdLineParser.addOption(transparentOption);
+    QCommandLineOption noFpsOption(QLatin1String("no-fps"),
+                                   QLatin1String("Do not print the frame rate once per second."));
+    cmdLineParser.addOption(noFpsOption);
 
     cmdLineParser.process(app);
+    if (cmdLineParser.isSet(noFpsOption))
+        printFps = false;
     if (cmdLineParser.isSet(nullOption))
         graphicsApi = Null;
     if (cmdLineParser.isSet(glOption))
