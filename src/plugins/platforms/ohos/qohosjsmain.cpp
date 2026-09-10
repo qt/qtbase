@@ -50,7 +50,6 @@
 #include <optional>
 #include <unordered_map>
 
-#include "private/qohosplatformtheme_p.h"
 #include "qarkui/qxcomponentregistry.h"
 #include "qohoseventdispatcher.h"
 #include "qohosinputcontext.h"
@@ -1689,8 +1688,6 @@ void setupQtApplicationImpl(JsState &jsState, QNapi::Object appStartupObj, QtRun
         std::string value;
     } env_variables[] = {
         {"QT_QPA_PLATFORM_PLUGIN_PATH", s_appSharedLibsDirPath },
-        {"QT_QPA_PLATFORMTHEME", ohosThemeName},
-        {"QT_QPA_PLATFORM", "ohos"},
         {"QML_DISABLE_DISK_CACHE", "1"},
         {"QT_PLUGIN_PATH", s_appSharedLibsDirPath },
         {"QML2_IMPORT_PATH", qmls.join(":").toStdString() },
