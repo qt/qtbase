@@ -1674,8 +1674,6 @@ void setupQtApplicationImpl(JsState &jsState, QNapi::Object appStartupObj, QtRun
     s_appSharedLibsDirPath = appContextDirs.bundleCodeDir + targetLibraryDirectory();
     qOhosPrintfDebug("setupQtApplication() - Shared libraries directory: %s", s_appSharedLibsDirPath.c_str());
 
-    QByteArrayList qmls = { QByteArray::fromStdString(appContextDirs.resourceDir + "/qml") };
-
     auto jsAppArgs = QNapi::getPropOrUndefined(appStartupObj, "appArgs");
     if (jsAppArgs.IsArray()) {
         s_appArgs = std::make_unique<std::vector<std::string>>(
@@ -1690,7 +1688,7 @@ void setupQtApplicationImpl(JsState &jsState, QNapi::Object appStartupObj, QtRun
         {"QT_QPA_PLATFORM_PLUGIN_PATH", s_appSharedLibsDirPath },
         {"QML_DISABLE_DISK_CACHE", "1"},
         {"QT_PLUGIN_PATH", s_appSharedLibsDirPath },
-        {"QML2_IMPORT_PATH", qmls.join(":").toStdString() },
+        {"QML2_IMPORT_PATH", appContextDirs.resourceDir + "/qml" },
         // FIXME: temporary measure for preventing QtQuick2-based apps from crashing
         {"QV4_FORCE_INTERPRETER", "1"},
         {"QT_PRINTER_MODULE", "ohosprintersupport"},
