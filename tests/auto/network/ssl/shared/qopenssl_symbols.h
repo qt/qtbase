@@ -143,7 +143,7 @@ OCSP_SINGLERESP *q_OCSP_basic_add1_status(OCSP_BASICRESP *rsp, OCSP_CERTID *cid,
                                           int status, int reason, ASN1_TIME *revtime,
                                           ASN1_TIME *thisupd, ASN1_TIME *nextupd);
 int q_OCSP_basic_sign(OCSP_BASICRESP *brsp, X509 *signer, EVP_PKEY *key, const EVP_MD *dgst,
-                      const STACK_OF(X509) *certs, unsigned long flags);
+                      STACK_OF(X509) *certs, unsigned long flags);
 OCSP_BASICRESP *q_OCSP_BASICRESP_new();
 void q_OCSP_BASICRESP_free(OCSP_BASICRESP *bs);
 OCSP_CERTID *q_OCSP_cert_to_id(const EVP_MD *dgst, const X509 *subject,
@@ -357,7 +357,7 @@ DEFINEFUNC(void, OCSP_RESPONSE_free, OCSP_RESPONSE *rs, rs, return, DUMMYARG)
 DEFINEFUNC7(OCSP_SINGLERESP *, OCSP_basic_add1_status, OCSP_BASICRESP *r, r, OCSP_CERTID *c, c, int s, s,
             int re, re, ASN1_TIME *rt, rt, ASN1_TIME *t, t, ASN1_TIME *n, n, return nullptr, return)
 DEFINEFUNC6(int, OCSP_basic_sign, OCSP_BASICRESP *br, br, X509 *signer, signer, EVP_PKEY *key, key,
-            const EVP_MD *dg, dg, const STACK_OF(X509) *cs, cs, unsigned long flags, flags, return 0, return)
+            const EVP_MD *dg, dg, STACK_OF(X509) *cs, cs, unsigned long flags, flags, return 0, return)
 DEFINEFUNC(OCSP_BASICRESP *, OCSP_BASICRESP_new, DUMMYARG, DUMMYARG, return nullptr, return)
 DEFINEFUNC(void, OCSP_BASICRESP_free, OCSP_BASICRESP *bs, bs, return, DUMMYARG)
 DEFINEFUNC3(OCSP_CERTID *, OCSP_cert_to_id, const EVP_MD *dgst, dgst,
