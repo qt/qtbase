@@ -246,7 +246,7 @@ static QLibraryScanResult findPatternUnloaded(const QString &library, QLibraryPr
         // It's unknown at this point whether Windows supports LoadLibrary() on
         // files that fail to CreateFileMapping / MapViewOfFile, so we err on
         // the side of doing a regular read into memory (up to 64 MB).
-        data = file.read(64 * 1024 * 1024);
+        data = file.read(qMin(file.size(), Q_INT64_C(64) * 1024 * 1024));
         filedata = data.constData();
         fdlen = data.size();
     }
