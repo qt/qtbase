@@ -102,9 +102,9 @@ macro.QtTAS               = "Qt Tools for Android Studio"
 #   4. Android default templates (src/android/templates*) and under examples and tests.            #
 ####################################################################################################
 macro.AndroidAbis         = "\\c{arm64-v8a}, \\c{x86_64}, \\c{x86}, and \\c{armeabi-v7a}"
-macro.NdkVer              = "r27c"
-macro.NdkFullVer          = "27.2.12479018"
-macro.NdkCompilerVer      = "Clang 17.0.2"
+macro.NdkVer              = "r30"
+macro.NdkFullVer          = "30.0.16248370"
+macro.NdkCompilerVer      = "Clang 21.0.0"
 macro.JdkVer              = "21"
 macro.AndroidMinApiVer    = "28"
 macro.AndroidMaxApiVer    = "37"
