@@ -1026,12 +1026,11 @@ void tst_QGridLayout::styleDependentSpacingsAndMargins()
     layout.setColumnStretch(columns, 1);
     layout.setRowStretch(rows, 1);
     widget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
     widget.adjustSize();
-    QApplication::processEvents();
 
-    for (int pi = 0; pi < expectedpositions.size(); ++pi) {
-        QCOMPARE(sizehinters.at(pi)->pos(), expectedpositions.at(pi));
-    }
+    for (int pi = 0; pi < expectedpositions.size(); ++pi)
+        QTRY_COMPARE(sizehinters.at(pi)->pos(), expectedpositions.at(pi));
 }
 
 void tst_QGridLayout::layoutSpacing_data()
