@@ -971,13 +971,13 @@ void QOhosView::showImmediate()
                 preventSubWindowClose);
         }
 
+        m_viewType = currentViewTypeInfo.viewType;
+        setOrResetWindowProxy(qOhosWindowProxy, currentViewTypeInfo.optLogicalParent);
+
         if (qOhosWindowProxy != nullptr) {
             m_nativeNode->setParent(qOhosWindowProxy->nodeXComponent());
             m_nativeNode->fillToParent();
         }
-
-        m_viewType = currentViewTypeInfo.viewType;
-        setOrResetWindowProxy(qOhosWindowProxy, currentViewTypeInfo.optLogicalParent);
 #if QT_CONFIG(draganddrop)
         m_nativeNode->enableDropDisallowedBadge();
 #endif
