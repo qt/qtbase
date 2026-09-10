@@ -7,10 +7,8 @@
 #include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/qglobal.h>
 #include <QtCore/qlogging.h>
-#include <cstdint>
 #include <cstdlib>
 #include <functional>
-#include <limits>
 #include <memory>
 #include <mutex>
 #include <optional>
@@ -23,12 +21,6 @@ QT_BEGIN_NAMESPACE
 
 namespace QtOhos
 {
-
-namespace qohosutils_details {
-
-std::optional<std::uintmax_t> tryParseStringAsUIntMax(const std::string &inputString);
-
-}
 
 template<typename IdValueType, typename TypeTag>
 class TypedId
@@ -85,10 +77,6 @@ std::enable_if_t<std::is_assignable<QOhosConsumer<Ts...>, BaseConsumer>::value, 
 makeCallOnceConsumerWrapper(BaseConsumer &&baseConsumer);
 
 std::optional<double> tryParseStringAsFiniteDouble(const std::string &inputString);
-
-template<typename T>
-std::enable_if_t<std::is_integral<T>::value && std::is_unsigned<T>::value, std::optional<T>>
-tryParseStringAsUnsignedInteger(const std::string &inputString);
 
 std::string printfToString(const char *format, ...) Q_ATTRIBUTE_FORMAT_PRINTF(1, 2);
 
@@ -232,18 +220,6 @@ makeCallOnceConsumerWrapper(BaseConsumer &&baseConsumer)
             return false;
         }
     };
-}
-
-template<typename T>
-std::enable_if_t<std::is_integral<T>::value && std::is_unsigned<T>::value, std::optional<T>>
-tryParseStringAsUnsignedInteger(const std::string &inputString)
-{
-    auto parsedValue = qohosutils_details::tryParseStringAsUIntMax(inputString);
-    bool valueValidForType = parsedValue.has_value()
-        && parsedValue.value() <= std::numeric_limits<T>::max();
-    return valueValidForType
-        ? std::optional(static_cast<T>(parsedValue.value()))
-        : std::nullopt;
 }
 
 }
