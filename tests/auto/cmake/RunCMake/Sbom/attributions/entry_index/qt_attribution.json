@@ -1,0 +1,41 @@
+[
+    {
+        "Id": "entry-index-first",
+        "QtParts": [ "tests" ],
+        "Name": "Entry Index First",
+        "QtUsage": "Used for testing SBOM ATTRIBUTION_ENTRY_INDEX handling.",
+        "Description": "First attribution entry.",
+        "Homepage": "https://qt-project.org/SbomTest/entry-index-first",
+        "Version": "1.0.0",
+        "License": "MIT License",
+        "LicenseId": "MIT",
+        "Copyright": "Copyright (C) 2026 Entry Index First Authors",
+        "PURL": "pkg:generic/sbomtest/entry-index-first@1.0.0"
+    },
+    {
+        "Id": "entry-index-second",
+        "QtParts": [ "tests" ],
+        "Name": "Entry Index Second",
+        "QtUsage": "Used for testing SBOM ATTRIBUTION_ENTRY_INDEX handling.",
+        "Description": "Second attribution entry.",
+        "Homepage": "https://qt-project.org/SbomTest/entry-index-second",
+        "Version": "2.0.0",
+        "License": "MIT License",
+        "LicenseId": "MIT",
+        "Copyright": "Copyright (C) 2026 Entry Index Second Authors",
+        "PURL": "pkg:generic/sbomtest/entry-index-second@2.0.0"
+    },
+    {
+        "Id": "entry-index-third",
+        "QtParts": [ "tests" ],
+        "Name": "Entry Index Third",
+        "QtUsage": "Used for testing SBOM ATTRIBUTION_ENTRY_INDEX handling.",
+        "Description": "Third attribution entry.",
+        "Homepage": "https://qt-project.org/SbomTest/entry-index-third",
+        "Version": "3.0.0",
+        "License": "MIT License",
+        "LicenseId": "MIT",
+        "Copyright": "Copyright (C) 2026 Entry Index Third Authors",
+        "PURL": "pkg:generic/sbomtest/entry-index-third@3.0.0"
+    }
+]
