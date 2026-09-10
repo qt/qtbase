@@ -2553,6 +2553,23 @@ void tst_QXmlStream::clearReallyResets_data() const
             xml.arg(value2),
             QXmlStreamReader::Error::NoError);
     }
+    {
+        // Ditto entityHash, but for parameterEntityHash:
+
+        constexpr auto xml =
+                R"(<?xml version='1.0'?>)"
+                R"(<!DOCTYPE doc [<!ENTITY % pe "<!ENTITY x '%1'>"> %pe; ]>)"
+                R"(<doc>&x;</doc>)"_L1;
+
+        constexpr auto value1 = "1"_L1;
+        constexpr auto value2 = "2"_L1;
+
+        row("parameter-entities-dont-leak-across-documents",
+            64, // doesn't matter
+            xml.arg(value1),
+            xml.arg(value2),
+            QXmlStreamReader::Error::NoError);
+    }
 }
 
 static QString readAllText(QXmlStreamReader &reader)
@@ -2605,6 +2622,7 @@ void tst_QXmlStream::clearReallyResets() const
     QEXPECT_FAIL("expansion-budget-resets-after-each-entity", "QTBUG-150216", Continue);
     QEXPECT_FAIL("expansion-budget-resets-after-clear", "QTBUG-150215", Continue);
     QEXPECT_FAIL("entities-dont-leak-across-documents", "QTBUG-149980", Continue);
+    QEXPECT_FAIL("parameter-entities-dont-leak-across-documents", "QTBUG-150262", Continue);
     QCOMPARE(readAllText(r), readAllText(fresh));
     QEXPECT_FAIL("expansion-budget-resets-after-each-entity", "QTBUG-150216", Continue);
     QEXPECT_FAIL("expansion-budget-resets-after-clear", "QTBUG-150215", Continue);
