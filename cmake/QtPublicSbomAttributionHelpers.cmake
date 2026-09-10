@@ -109,13 +109,31 @@ function(_qt_internal_sbom_handle_qt_attribution_files out_prefix_outer)
 
         # If a specific entry was specified, we will only process it from the file.
         if(NOT "${arg_ATTRIBUTION_ENTRY_INDEX}" STREQUAL "")
+            # Show an error if the index is out of range, it might be that the entry has moved to
+            # a different file, or was removed.
+            if(NOT "${arg_ATTRIBUTION_ENTRY_INDEX}" MATCHES "^[0-9]+$"
+                    OR NOT "${arg_ATTRIBUTION_ENTRY_INDEX}" LESS
+                        "${${out_prefix_file}_attribution_entry_count}")
+                set(error_message
+                    "Invalid attribution entry index: ${arg_ATTRIBUTION_ENTRY_INDEX}")
+                if(arg_ATTRIBUTION_PARENT_TARGET)
+                    string(APPEND error_message " for target: ${arg_ATTRIBUTION_PARENT_TARGET}")
+                endif()
+                string(APPEND error_message
+                    ". The file ${attribution_file_path} has "
+                    "${${out_prefix_file}_attribution_entry_count} entries.")
+                message(FATAL_ERROR "${error_message}")
+            endif()
+
             set(entry_index ${arg_ATTRIBUTION_ENTRY_INDEX})
+            math(EXPR entry_end_index "${entry_index} + 1")
         else()
             set(entry_index 0)
+            set(entry_end_index "${${out_prefix_file}_attribution_entry_count}")
         endif()
 
-        # Go through each entry in the attribution file.
-        while("${entry_index}" LESS "${${out_prefix_file}_attribution_entry_count}")
+        # Go through each selected entry in the attribution file.
+        while("${entry_index}" LESS "${entry_end_index}")
             # If this is the first entry to be processed, or if CREATE_SBOM_FOR_EACH_ATTRIBUTION
             # is not set, we read the attribution file entry directly, and propagate the values
             # to the parent scope.
@@ -157,10 +175,6 @@ function(_qt_internal_sbom_handle_qt_attribution_files out_prefix_outer)
                     PARENT_SCOPE)
 
                 set(first_attribution_processed TRUE)
-                if(NOT "${arg_ATTRIBUTION_ENTRY_INDEX}" STREQUAL "")
-                    # We had a specific index to process, so break right after processing it.
-                    break()
-                endif()
             else()
                 # We are processing the second or later entry, or CREATE_SBOM_FOR_EACH_ATTRIBUTION
                 # was set. Instead of directly reading all the keys from the attribution file,

@@ -3,37 +3,17 @@ cmake_minimum_required(VERSION 3.16)
 
 include(QtRunCMake)
 
-function(run_cmake_and_build case format_case)
-    set(opt_args "")
-    set(single_args "")
-    set(multi_args
-        SEARCH_CASE_PACKAGES
-    )
-    cmake_parse_arguments(PARSE_ARGV 2 arg "${opt_args}" "${single_args}" "${multi_args}")
-
-    set(include_file "${case}")
-    set(original_case "${case}")
-    set(case "${format_case}-${case}")
-
-    # Set common build directory for configure and build
-    set(RunCMake_TEST_BINARY_DIR ${RunCMake_BINARY_DIR}/${case}-build)
+# Returns the configure options for the given case and format case, and whether sbom generation
+# is guaranteed to be enabled with those options.
+# Expects RunCMake_TEST_BINARY_DIR to be set by the caller.
+function(get_case_options case format_case out_options out_sbom_enabled)
     set(options
         "-DQt6_DIR=${Qt6_DIR}"
         "-DCMAKE_INSTALL_PREFIX=${RunCMake_TEST_BINARY_DIR}/installed"
-        "-DSBOM_INCLUDE_FILE=${include_file}"
+        "-DSBOM_INCLUDE_FILE=${case}"
         "-DFORMAT_CASE=${format_case}"
     )
-
-    set(extra_install_prefixes "")
-    foreach(search_case IN LISTS arg_SEARCH_CASE_PACKAGES)
-        set(case_install_prefix
-            "${RunCMake_BINARY_DIR}/${format_case}-${search_case}-build/installed")
-        list(APPEND extra_install_prefixes "${case_install_prefix}")
-    endforeach()
-
-    if (extra_install_prefixes)
-        list(APPEND options "-DCMAKE_PREFIX_PATH=${extra_install_prefixes}")
-    endif()
+    set(sbom_enabled FALSE)
 
     # Check CI environment variables for SBOM options to ensure we only enabled checks that
     # require additional dependencies on machines that actually have them.
@@ -80,6 +60,7 @@ function(run_cmake_and_build case format_case)
             -DQT_SBOM_GENERATE_CYDX_V1_6=OFF
             -DEXPECTED_QT_SBOM_GENERATE_CYDX_V1_6=OFF
         )
+        set(sbom_enabled TRUE)
         if(require_spdx_json)
             # Require spdx json because because we assume we have the required dependencies from
             # reading the env var.
@@ -114,6 +95,7 @@ function(run_cmake_and_build case format_case)
                 -DQT_SBOM_REQUIRE_GENERATE_CYDX_V1_6=ON
                 -DEXPECTED_QT_SBOM_GENERATE_CYDX_V1_6=ON
             )
+            set(sbom_enabled TRUE)
         endif()
     elseif(format_case STREQUAL "all")
         list(APPEND options
@@ -124,6 +106,7 @@ function(run_cmake_and_build case format_case)
             # Make sure the tag value format is always generated.
             -DEXPECTED_QT_SBOM_GENERATE_SPDX_V2=ON
         )
+        set(sbom_enabled TRUE)
         if(require_spdx_json)
             # Require spdx json because because we assume we have the required dependencies from
             # reading the env var.
@@ -164,6 +147,36 @@ function(run_cmake_and_build case format_case)
         list(APPEND options "-DQT_SBOM_PYTHON_APPS_PATH=${maybe_sbom_python_apps_path}")
     endif()
 
+    set(${out_options} "${options}" PARENT_SCOPE)
+    set(${out_sbom_enabled} "${sbom_enabled}" PARENT_SCOPE)
+endfunction()
+
+function(run_cmake_and_build case format_case)
+    set(opt_args "")
+    set(single_args "")
+    set(multi_args
+        SEARCH_CASE_PACKAGES
+    )
+    cmake_parse_arguments(PARSE_ARGV 2 arg "${opt_args}" "${single_args}" "${multi_args}")
+
+    set(original_case "${case}")
+    set(case "${format_case}-${case}")
+
+    # Set common build directory for configure and build
+    set(RunCMake_TEST_BINARY_DIR ${RunCMake_BINARY_DIR}/${case}-build)
+    get_case_options("${original_case}" "${format_case}" options sbom_enabled)
+
+    set(extra_install_prefixes "")
+    foreach(search_case IN LISTS arg_SEARCH_CASE_PACKAGES)
+        set(case_install_prefix
+            "${RunCMake_BINARY_DIR}/${format_case}-${search_case}-build/installed")
+        list(APPEND extra_install_prefixes "${case_install_prefix}")
+    endforeach()
+
+    if (extra_install_prefixes)
+        list(APPEND options "-DCMAKE_PREFIX_PATH=${extra_install_prefixes}")
+    endif()
+
     run_cmake_with_options(${case} ${options})
 
     # Do not remove the current RunCMake_TEST_BINARY_DIR
@@ -185,6 +198,24 @@ function(run_cmake_and_build case format_case)
 
     run_cmake_command(${case}-install ${CMAKE_COMMAND} --install .)
     unset(RunCMake-check-file)
+endfunction()
+
+# Runs only the configure step of a case that is expected to fail with the given error.
+function(run_cmake_expect_configure_error case format_case expected_error)
+    set(original_case "${case}")
+    set(case "${format_case}-${case}")
+
+    set(RunCMake_TEST_BINARY_DIR ${RunCMake_BINARY_DIR}/${case}-build)
+    get_case_options("${original_case}" "${format_case}" options sbom_enabled)
+
+    # Without sbom generation, the sbom code paths that would error out are skipped.
+    if(NOT sbom_enabled)
+        return()
+    endif()
+
+    set(RunCMake_TEST_EXPECT_RESULT 1)
+    set(RunCMake_TEST_EXPECT_stderr "${expected_error}")
+    run_cmake_with_options(${case} ${options})
 endfunction()
 
 set(format_cases spdx23 cydx16 all none)
@@ -210,5 +241,8 @@ foreach(format_case IN LISTS format_cases)
     run_cmake_and_build(build_tools "${format_case}")
     run_cmake_and_build(recursive_file_inclusion "${format_case}")
     run_cmake_and_build(multiple_project_calls_same_doc "${format_case}")
+
+    run_cmake_expect_configure_error(attribution_entry_index_out_of_range "${format_case}"
+        "Invalid attribution entry index: 3 for target: EntryIndexOutOfRange")
 endforeach()
 
