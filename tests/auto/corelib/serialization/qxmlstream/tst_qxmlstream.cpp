@@ -22,6 +22,8 @@
 
 #include "qc14n.h"
 
+#include <variant>
+
 using namespace Qt::StringLiterals;
 
 Q_DECLARE_METATYPE(QXmlStreamReader::ReadElementTextBehaviour)
@@ -580,6 +582,7 @@ public:
 private slots:
     void initTestCase();
     void cleanupTestCase();
+    void addDataWarnsWhenDeviceIsSet();
     void compareCompiles();
     void runTestSuite();
     void reportFailures() const;
@@ -735,6 +738,68 @@ zipfile.ZipFile(sys.argv[1], "r").extractall(sys.argv[2])
 
 void tst_QXmlStream::cleanupTestCase()
 {
+}
+
+void tst_QXmlStream::addDataWarnsWhenDeviceIsSet()
+{
+    using V = std::variant<
+            QString,
+            QByteArray,
+            QStringView,
+            QLatin1StringView,
+            QUtf8StringView,
+            QByteArrayView,
+            const char *
+        >;
+
+    const QString xml = u"<?xml version=\"1.0\"?><doc/>"_s;
+    const QByteArray raw = xml.toLatin1();
+
+    V inputs[] = {
+        xml,
+        raw,
+        QStringView{xml},
+        QLatin1StringView{raw},
+        QUtf8StringView{raw},
+        QByteArrayView{raw},
+        raw.data(),
+    };
+
+    //
+    // GIVEN: A QXmlStreamReader with a device set
+    //
+
+    QBuffer b;
+    QVERIFY(b.open(QBuffer::OpenModeFlag::ReadOnly));
+    QXmlStreamReader r(&b);
+
+    //
+    // WHEN: Calling addData() with a complete XML document
+    //
+
+    const auto callAddData = [&r](auto &&input) { r.addData(std::forward<decltype(input)>(input)); };
+
+    //
+    // THEN: addData() warns and doesn't add the data
+    //
+
+    constexpr char warning[] = "QXmlStreamReader: addData() with device()";
+
+    // lvalues
+    for (const V &input : inputs) {
+        QTest::ignoreMessage(QtWarningMsg, warning);
+        std::visit(callAddData, input);
+        QCOMPARE(r.readNext(), QXmlStreamReader::TokenType::Invalid);
+        QCOMPARE(r.error(), QXmlStreamReader::Error::PrematureEndOfDocumentError);
+    }
+
+    // rvalues
+    for (V &input : inputs) {
+        QTest::ignoreMessage(QtWarningMsg, warning);
+        std::visit(callAddData, std::move(input));
+        QCOMPARE(r.readNext(), QXmlStreamReader::TokenType::Invalid);
+        QCOMPARE(r.error(), QXmlStreamReader::Error::PrematureEndOfDocumentError);
+    }
 }
 
 void tst_QXmlStream::compareCompiles()
