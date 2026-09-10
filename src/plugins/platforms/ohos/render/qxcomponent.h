@@ -10,7 +10,6 @@
 #include <ace/xcomponent/native_interface_xcomponent.h>
 #include <optional>
 #include <qohosinternalwindowid_p.h>
-#include <qohosplugincore.h>
 #include <string>
 
 QT_BEGIN_NAMESPACE
