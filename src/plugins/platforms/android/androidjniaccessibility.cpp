@@ -74,6 +74,8 @@ namespace QtAndroidAccessibility
 
     static std::atomic<bool> m_accessibilityActivated = false;
 
+    static QList<QAccessible::Id> m_modalInterfaces;
+
     // This object is needed to schedule the execution of the code that
     // deals with accessibility instances to the Qt main thread.
     // Because of that almost every method here is split into two parts.
@@ -134,6 +136,10 @@ namespace QtAndroidAccessibility
 
         QMetaObject::invokeMethod(m_accessibilityContext, [active]() {
             QMutexLocker lock(QtAndroid::platformInterfaceMutex());
+
+            if (!active)
+                m_modalInterfaces.clear();
+
             auto *platformIntegration = QtAndroid::androidPlatformIntegration();
             if (!platformIntegration) {
                 __android_log_print(ANDROID_LOG_DEBUG, m_qtTag,
@@ -166,12 +172,20 @@ namespace QtAndroidAccessibility
 
     void notifyObjectHide(uint accessibilityObjectId)
     {
+        m_modalInterfaces.removeAll(accessibilityObjectId);
+
         const auto parentObjectId = parentId_helper(accessibilityObjectId);
         QtAndroid::notifyObjectHide(accessibilityObjectId, parentObjectId);
     }
 
     void notifyObjectShow(uint accessibilityObjectId)
     {
+        QAccessibleInterface *iface = interfaceFromId(accessibilityObjectId);
+        if (iface && iface->isValid() && iface->state().modal
+            && !m_modalInterfaces.contains(accessibilityObjectId)) {
+            m_modalInterfaces << accessibilityObjectId;
+        }
+
         const auto parentObjectId = parentId_helper(accessibilityObjectId);
         QtAndroid::notifyObjectShow(parentObjectId);
     }
@@ -183,6 +197,7 @@ namespace QtAndroidAccessibility
 
     void notifyObjectDestroyed(uint accessibilityObjectId)
     {
+        m_modalInterfaces.removeAll(accessibilityObjectId);
         QtAndroid::notifyObjectDestroyed(accessibilityObjectId,
                                          parentId_helper(accessibilityObjectId));
     }
@@ -758,6 +773,18 @@ namespace QtAndroidAccessibility
         return env->NewString((jchar*)tag.constData(), (jsize)tag.size());
     }
 
+    static bool childOfModalInterface(QAccessibleInterface *modalInterface,
+                                      QAccessibleInterface *iface)
+    {
+        if (!iface || !modalInterface)
+            return false;
+
+        if (iface == modalInterface)
+            return true;
+
+        return childOfModalInterface(modalInterface, iface->parent());
+    }
+
     struct NodeInfo
     {
         bool valid = false;
@@ -776,6 +803,7 @@ namespace QtAndroidAccessibility
         QVariant maxValue = 0;
         QVariant currentValue = 0;
         QVariant valueStepSize = 0;
+        bool blockedByModal = false;
     };
 
     static NodeInfo populateNode_helper(int objectId)
@@ -810,6 +838,10 @@ namespace QtAndroidAccessibility
                 info.maxValue = valueInterface->maximumValue();
                 info.currentValue = valueInterface->currentValue();
                 info.valueStepSize = valueInterface->minimumStepSize();
+            }
+            if (!m_modalInterfaces.isEmpty()
+                && !childOfModalInterface(interfaceFromId(m_modalInterfaces.last()), iface)) {
+                info.blockedByModal = true;
             }
         }
         return info;
@@ -891,7 +923,8 @@ namespace QtAndroidAccessibility
         env->CallVoidMethod(node, m_setFocusedMethodID, (bool)info.state.focused);
         if (m_setHeadingMethodID)
             env->CallVoidMethod(node, m_setHeadingMethodID, info.role == QAccessible::Heading);
-        env->CallVoidMethod(node, m_setVisibleToUserMethodID, !info.state.invisible);
+        env->CallVoidMethod(node, m_setVisibleToUserMethodID,
+                            !info.state.invisible && !info.blockedByModal);
         env->CallVoidMethod(node, m_setScrollableMethodID,
                             hasIncreaseAction || hasDecreaseAction || scrollableRole);
         env->CallVoidMethod(node, m_setClickableMethodID, hasClickableAction || info.role == QAccessible::Link);
