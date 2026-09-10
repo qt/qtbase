@@ -25,6 +25,12 @@ qt_internal_add_test(tst_qmetaobject
         Qt::CorePrivate
 )
 
+set_tests_properties(
+    tst_qmetaobject
+    PROPERTIES
+        RUN_SERIAL TRUE
+)
+
 qt_internal_add_test(tst_qmetaobject_compat
     SOURCES
         ${tst_qmetaobject_SOURCES}

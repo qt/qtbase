@@ -20,3 +20,9 @@ qt_internal_add_test(tst_qdatetimeedit
         Qt::Widgets
         Qt::WidgetsPrivate
 )
+
+set_tests_properties(
+    tst_qdatetimeedit
+    PROPERTIES
+        RUN_SERIAL TRUE
+)

@@ -20,6 +20,12 @@ qt_internal_add_test(tst_qitemdelegate
         Qt::WidgetsPrivate
 )
 
+set_tests_properties(
+    tst_qitemdelegate
+    PROPERTIES
+        RUN_SERIAL TRUE
+)
+
 ## Scopes:
 #####################################################################
 

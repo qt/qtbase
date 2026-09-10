@@ -31,3 +31,9 @@ qt_internal_add_test(tst_qxmlstream
         ${test_data}
         ${tokenError}
 )
+
+set_tests_properties(
+    tst_qxmlstream
+    PROPERTIES
+        RUN_SERIAL TRUE
+)

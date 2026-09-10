@@ -23,3 +23,9 @@ qt_internal_add_test(tst_qsplitter
         Qt::Widgets
     TESTDATA ${test_data}
 )
+
+set_tests_properties(
+    tst_qsplitter
+    PROPERTIES
+        RUN_SERIAL TRUE
+)

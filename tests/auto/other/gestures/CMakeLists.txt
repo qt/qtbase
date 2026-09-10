@@ -18,3 +18,9 @@ qt_internal_add_test(tst_gestures
         Qt::Gui
         Qt::Widgets
 )
+
+set_tests_properties(
+    tst_gestures
+    PROPERTIES
+        RUN_SERIAL TRUE
+)

@@ -33,3 +33,9 @@ qt_internal_extend_target(tst_qgraphicsview CONDITION QT_FEATURE_opengl
         Qt::OpenGL
         Qt::OpenGLWidgets
 )
+
+set_tests_properties(
+    tst_qgraphicsview
+    PROPERTIES
+        RUN_SERIAL TRUE
+)

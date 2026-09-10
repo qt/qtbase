@@ -535,6 +535,23 @@ if(NOT QNX AND NOT WASM AND NOT (WIN32 AND QT_BUILD_MINIMAL_STATIC_TESTS)
     _qt_internal_test_expect_pass(test_qt_add_ui_9)
     _qt_internal_test_expect_pass(test_qt_add_ui_10)
     _qt_internal_test_expect_pass(test_qt_add_ui_11)
+
+ set_tests_properties(
+        test_qt_add_ui_common
+        test_qt_add_ui_1
+        test_qt_add_ui_2
+        test_qt_add_ui_3
+        test_qt_add_ui_4
+        test_qt_add_ui_5
+        test_qt_add_ui_6
+        test_qt_add_ui_7
+        test_qt_add_ui_8
+        test_qt_add_ui_9
+        test_qt_add_ui_10
+        test_qt_add_ui_11
+        PROPERTIES
+            RUN_SERIAL TRUE
+    )
 endif()
 
 # Valid plugin names
@@ -550,6 +567,11 @@ foreach(plugin_class_name IN LISTS valid_plugin_class_names)
         TESTNAME test_plugin_class_name_${plugin_class_name}
         BUILD_OPTIONS
             -DPLUGIN_CLASS_NAME=${plugin_class_name}
+    )
+     set_tests_properties(
+        test_plugin_class_name_${plugin_class_name}
+        PROPERTIES
+            RUN_SERIAL TRUE
     )
 endforeach()
 

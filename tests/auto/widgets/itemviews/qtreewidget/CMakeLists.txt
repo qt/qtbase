@@ -18,3 +18,10 @@ qt_internal_add_test(tst_qtreewidget
         Qt::Gui
         Qt::Widgets
 )
+
+
+set_tests_properties(
+    tst_qtreewidget
+    PROPERTIES
+        RUN_SERIAL TRUE
+)

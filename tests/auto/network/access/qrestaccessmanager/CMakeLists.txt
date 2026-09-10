@@ -15,3 +15,9 @@ qt_internal_add_test(tst_qrestaccessmanager
         Qt::Network
         Qt::CorePrivate
 )
+
+set_tests_properties(
+    tst_qrestaccessmanager
+    PROPERTIES
+        RUN_SERIAL TRUE
+)

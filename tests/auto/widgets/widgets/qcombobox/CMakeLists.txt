@@ -29,3 +29,9 @@ qt_internal_add_test(tst_qcombobox
         Qt::WidgetsPrivate
     TESTDATA ${test_data}
 )
+
+set_tests_properties(
+    tst_qcombobox
+    PROPERTIES
+        RUN_SERIAL TRUE
+)

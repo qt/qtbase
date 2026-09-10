@@ -58,3 +58,9 @@ qt_internal_add_test(tst_static_qapplication
         Qt::CorePrivate
         Qt::Widgets
 )
+
+set_tests_properties(
+    tst_static_qapplication
+    PROPERTIES
+        RUN_SERIAL TRUE
+)

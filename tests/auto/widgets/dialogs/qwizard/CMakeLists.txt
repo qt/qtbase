@@ -31,3 +31,8 @@ qt_internal_add_test(tst_qwizard
     BUILTIN_TESTDATA
 )
 
+set_tests_properties(
+    tst_qwizard
+    PROPERTIES
+        RUN_SERIAL TRUE
+)

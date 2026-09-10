@@ -21,3 +21,9 @@ qt_internal_add_test(tst_qabstractitemview
         Qt::Widgets
         Qt::WidgetsPrivate
 )
+
+set_tests_properties(
+    tst_qabstractitemview
+    PROPERTIES
+        RUN_SERIAL TRUE
+)

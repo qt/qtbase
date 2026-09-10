@@ -22,3 +22,9 @@ qt_internal_add_test(tst_qwidget_window
         Qt::Widgets
         Qt::WidgetsPrivate
 )
+
+set_tests_properties(
+    tst_qwidget_window
+    PROPERTIES
+        RUN_SERIAL TRUE
+)

@@ -22,6 +22,12 @@ qt_internal_add_test(tst_qapplication
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/.."
 )
 
+set_tests_properties(
+    tst_qapplication
+    PROPERTIES
+        RUN_SERIAL TRUE
+)
+
 ## Scopes:
 #####################################################################
 

@@ -24,3 +24,9 @@ qt_internal_add_test(tst_qgraphicsproxywidget
         Qt::Widgets
         Qt::WidgetsPrivate
 )
+
+set_tests_properties(
+    tst_qgraphicsproxywidget
+    PROPERTIES
+        RUN_SERIAL TRUE
+)

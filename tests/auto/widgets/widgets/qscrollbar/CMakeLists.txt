@@ -19,3 +19,9 @@ qt_internal_add_test(tst_qscrollbar
         Qt::TestPrivate
         Qt::Widgets
 )
+
+set_tests_properties(
+    tst_qscrollbar
+    PROPERTIES
+        RUN_SERIAL TRUE
+)

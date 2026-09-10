@@ -18,3 +18,9 @@ qt_internal_add_test(tst_qwidgetrepaintmanager
         Qt::Widgets
         Qt::WidgetsPrivate
 )
+
+set_tests_properties(
+    tst_qwidgetrepaintmanager
+    PROPERTIES
+        RUN_SERIAL TRUE
+)

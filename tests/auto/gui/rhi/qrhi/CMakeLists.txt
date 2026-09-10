@@ -26,3 +26,9 @@ qt_internal_add_test(tst_qrhi
     TESTDATA ${qrhi_resource_files}
     BUILTIN_TESTDATA
 )
+
+set_tests_properties(
+    tst_qrhi
+    PROPERTIES
+        RUN_SERIAL TRUE
+)
