@@ -92,6 +92,7 @@ private slots:
     void sendSignal();
     void sendSignalToName();
     void sendSignalToOtherName();
+    void sendSignalRequiresInterface();
 
     void registerObject_data();
     void registerObject();

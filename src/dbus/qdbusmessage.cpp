@@ -156,7 +156,7 @@ DBusMessage *QDBusMessagePrivate::toDBusMessage(const QDBusMessage &message, QDB
                 return nullptr;
             if (!QDBusUtil::checkObjectPath(d_ptr->path, QDBusUtil::EmptyNotAllowed, error))
                 return nullptr;
-            if (!QDBusUtil::checkInterfaceName(d_ptr->interface, QDBusUtil::EmptyAllowed, error))
+            if (!QDBusUtil::checkInterfaceName(d_ptr->interface, QDBusUtil::EmptyNotAllowed, error))
                 return nullptr;
             if (!QDBusUtil::checkMemberName(d_ptr->name, QDBusUtil::EmptyNotAllowed, error, "method"))
                 return nullptr;
