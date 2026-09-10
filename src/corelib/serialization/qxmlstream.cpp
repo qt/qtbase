@@ -550,20 +550,7 @@ void QXmlStreamReaderPrivate::appendDataWithEncoding(const QByteArray &data,
 QXmlStreamReader::QXmlStreamReader(QAnyStringView data)
     : d_ptr(new QXmlStreamReaderPrivate(this))
 {
-    Q_D(QXmlStreamReader);
-    data.visit([d](auto data) {
-        if constexpr (std::is_same_v<decltype(data), QStringView>) {
-            d->appendDataWithEncoding(QByteArray(reinterpret_cast<const char *>(data.utf16()),
-                                                 data.size() * 2),
-                                      QStringDecoder::Utf16);
-        } else if constexpr (std::is_same_v<decltype(data), QLatin1StringView>) {
-            d->appendDataWithEncoding(QByteArray(data.data(), data.size()),
-                                      QStringDecoder::Latin1);
-        } else {
-            d->appendDataWithEncoding(QByteArray(data.data(), data.size()),
-                                      QStringDecoder::Utf8);
-        }
-    });
+    addData(data);
 }
 
 /*!
