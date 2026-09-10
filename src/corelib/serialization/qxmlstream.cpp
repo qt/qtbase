@@ -1039,6 +1039,11 @@ QXmlStreamReaderPrivate::QXmlStreamReaderPrivate(QXmlStreamReader *q)
     reallocateStack();
     entityResolver = nullptr;
     init();
+}
+
+void QXmlStreamReaderPrivate::init()
+{
+    entityHash.clear();
 #define ADD_PREDEFINED(n, v) \
     do { \
         Entity e = Entity::createLiteral(n##_L1, v##_L1); \
@@ -1050,10 +1055,6 @@ QXmlStreamReaderPrivate::QXmlStreamReaderPrivate(QXmlStreamReader *q)
     ADD_PREDEFINED("apos", "'");
     ADD_PREDEFINED("quot", "\"");
 #undef ADD_PREDEFINED
-}
-
-void QXmlStreamReaderPrivate::init()
-{
     scanDtd = false;
     lastAttributeIsCData = false;
     token = -1;
