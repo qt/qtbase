@@ -236,7 +236,7 @@ public:
     void finish(bool lockAnyway = true) noexcept;
 
     Qt::HANDLE handle = nullptr;
-    bool terminationEnabled = true;
+    bool terminationEnabled = false;    // enabled after start()
     bool terminatePending = false;
 #endif // Q_OS_WIN
 #ifdef Q_OS_WASM

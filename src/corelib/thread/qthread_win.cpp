@@ -165,8 +165,6 @@ unsigned int __stdcall QT_ENSURE_STACK_ALIGNED_FOR_SSE QThreadPrivate::start(voi
     // If a QThread is restarted, reuse the QBindingStatus, too
     data->reuseBindingStatusForNewNativeThread();
 
-    QThread::setTerminationEnabled(false);
-
     {
         QMutexLocker locker(&thr->d_func()->mutex);
         data->quitNow = thr->d_func()->exited;
