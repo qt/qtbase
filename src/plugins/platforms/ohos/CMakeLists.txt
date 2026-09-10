@@ -112,7 +112,6 @@ qt_internal_add_plugin(QOhosPlatformIntegrationPlugin
         NAPI_CPP_EXCEPTIONS
         QT_NO_CAST_FROM_ASCII
         QT_NO_CAST_TO_ASCII
-        QT_NO_DYNAMIC_CAST
     LIBRARIES
         NodeAddonApi::NodeAddonApi
         Qt::Core
