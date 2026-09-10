@@ -25,16 +25,6 @@ QT_BEGIN_NAMESPACE
 
 namespace qohosplugincore_h_detail {
 
-template<typename A, typename B, typename = void>
-struct HasEqualityComparatorT : std::false_type {};
-
-template<typename A, typename B>
-struct HasEqualityComparatorT<A, B, decltype(void(std::declval<A>() == std::declval<B>()))>
-    : std::true_type {};
-
-template<typename A, typename B>
-constexpr bool hasEqualityComparator = HasEqualityComparatorT<A, B>::value;
-
 template<typename>
 struct IsStdOptional : std::false_type {};
 
