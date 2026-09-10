@@ -1063,6 +1063,7 @@ void QXmlStreamReaderPrivate::init()
     ADD_PREDEFINED("apos", "'");
     ADD_PREDEFINED("quot", "\"");
 #undef ADD_PREDEFINED
+    parameterEntityHash.clear();
     scanDtd = false;
     lastAttributeIsCData = false;
     token = -1;
