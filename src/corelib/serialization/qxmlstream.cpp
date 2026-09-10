@@ -476,6 +476,11 @@ QXmlStreamEntityResolver *QXmlStreamReader::entityResolver() const
   those objects returns an equivalent real QString object.
 */
 
+Q_DECL_COLD_FUNCTION
+static void warn_addData_with_device()
+{
+    qWarning("QXmlStreamReader: addData() with device()");
+}
 
 /*!
   Constructs a stream reader.
@@ -532,15 +537,6 @@ void QXmlStreamReaderPrivate::appendDataWithEncoding(const QByteArray &data,
         }
     }
     dataInfo.emplace_back(data, enc);
-}
-
-void QXmlStreamReaderPrivate::addData(const QByteArray &data, QStringDecoder::Encoding enc)
-{
-    if (device) {
-        qWarning("QXmlStreamReader: addData() with device()");
-        return;
-    }
-    appendDataWithEncoding(data, enc);
 }
 
 /*!
@@ -665,15 +661,17 @@ static bool isDecoderForEncoding(const QStringDecoder &dec, QStringDecoder::Enco
 void QXmlStreamReader::addData(QAnyStringView data)
 {
     Q_D(QXmlStreamReader);
+    if (d->device)
+        return warn_addData_with_device();
     data.visit([d](auto data) {
         if constexpr (std::is_same_v<decltype(data), QStringView>) {
-            d->addData(QByteArray(reinterpret_cast<const char *>(data.utf16()),
-                                  data.size() * 2),
-                       QStringDecoder::Utf16);
+            d->appendDataWithEncoding(QByteArray(reinterpret_cast<const char *>(data.utf16()),
+                                                 data.size() * 2),
+                                      QStringDecoder::Utf16);
         } else if constexpr (std::is_same_v<decltype(data), QLatin1StringView>) {
-            d->addData(QByteArray(data.data(), data.size()), QStringDecoder::Latin1);
+            d->appendDataWithEncoding(QByteArray(data.data(), data.size()), QStringDecoder::Latin1);
         } else {
-            d->addData(QByteArray(data.data(), data.size()), QStringDecoder::Utf8);
+            d->appendDataWithEncoding(QByteArray(data.data(), data.size()), QStringDecoder::Utf8);
         }
     });
 }
@@ -687,7 +685,9 @@ void QXmlStreamReader::addData(QAnyStringView data)
 void QXmlStreamReader::addDataImpl(const QByteArray &data)
 {
     Q_D(QXmlStreamReader);
-    d->addData(data, QStringDecoder::System);
+    if (d->device)
+        return warn_addData_with_device();
+    d->appendDataWithEncoding(data, QStringDecoder::System);
 }
 
 /*!

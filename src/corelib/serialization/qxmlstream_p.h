@@ -285,7 +285,6 @@ public:
     QList<BufferAndEncoding> dataInfo;
     QStringDecoder chunkDecoder;
     void appendDataWithEncoding(const QByteArray &data, QStringDecoder::Encoding enc);
-    void addData(const QByteArray &data, QStringDecoder::Encoding enc);
 
     QByteArray rawReadBuffer;
     qint64 nbytesread;
