@@ -2615,7 +2615,6 @@ void tst_QXmlStream::clearReallyResets() const
 
     r.addData(xml2);
 
-    QEXPECT_FAIL("parameter-entities-dont-leak-across-documents", "QTBUG-150262", Continue);
     QCOMPARE(readAllText(r), readAllText(fresh));
     QCOMPARE(r.error(), fresh.error());
     QCOMPARE(r.errorString(), fresh.errorString());
