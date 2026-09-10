@@ -1212,7 +1212,10 @@ Q_GUI_EXPORT void qt_handleWheelEvent(QWindow *window, const QPointF &local, con
                                       QPoint pixelDelta, QPoint angleDelta, Qt::KeyboardModifiers mods,
                                       Qt::ScrollPhase phase)
 {
-    QWindowSystemInterface::handleWheelEvent(window, local, global, pixelDelta, angleDelta, mods, phase);
+    QPointF nativeLocal = QHighDpi::toNativeLocalPosition(local, window);
+    QPointF nativeGlobal = QHighDpi::toNativeGlobalPosition(global, window);
+    QWindowSystemInterface::handleWheelEvent(window, nativeLocal, nativeGlobal, pixelDelta, angleDelta,
+                                             mods, phase);
 }
 
 namespace QTest
