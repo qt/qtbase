@@ -338,29 +338,41 @@ QPoint getDragEventTouchDisplayPosition(::ArkUI_DragEvent *dragEvent)
         ::OH_ArkUI_DragEvent_GetTouchPointYToDisplay(dragEvent));
 }
 
-std::function<std::optional<Qt::DropAction>(const DragEventInfo &, QOhosSupplier<std::unique_ptr<QMimeData>>)>
-makeDragMoveResponder(QtOhos::QThreadSafeRef<QWindow> qWindowRef)
+class DragMoveResponder
 {
-    auto qtThreadMoveEventsProcessor = makeBestEffortQtThreadFunctionsExecutor<QWindow, Qt::DropAction>(
-        qWindowRef, makeDragMoveQtThreadWaitTimeoutsSupplier());
+public:
+    explicit DragMoveResponder(QtOhos::QThreadSafeRef<QWindow> qWindowRef);
 
-    return [qtThreadMoveEventsProcessor = std::move(qtThreadMoveEventsProcessor)](
-        const DragEventInfo &dragEventInfo,
-        QOhosSupplier<std::unique_ptr<QMimeData>> dropDataFactory) {
-        return qtThreadMoveEventsProcessor(
-            [dragEventInfo, dropDataFactory = std::move(dropDataFactory)](QWindow &qWindow) {
-                QDrag *currentDrag = QDragManager::self()->object();
-                QPlatformDragQtResponse qtResponse = QWindowSystemInterface::handleDrag(
-                    &qWindow,
-                    currentDrag != nullptr ? currentDrag->mimeData() : dropDataFactory().get(),
-                    dragEventInfo.localDropPos,
-                    currentDrag != nullptr ? currentDrag->supportedActions() : dragEventInfo.dropActions,
-                    Qt::LeftButton, dragEventInfo.keyboardModifiers);
-                if (currentDrag != nullptr && qtResponse.isAccepted() && qtResponse.acceptedAction() != Qt::IgnoreAction)
-                    getQOhosPlatformDrag()->updateDropAction(qtResponse.acceptedAction());
-                return qtResponse.acceptedAction();
-            });
-    };
+    std::optional<Qt::DropAction> respondToMove(
+        const DragEventInfo &dragEventInfo, QOhosSupplier<std::unique_ptr<QMimeData>> dropDataFactory) const;
+
+private:
+    std::function<std::optional<Qt::DropAction>(std::function<Qt::DropAction(QWindow &)>)> m_qtThreadMoveEventsProcessor;
+};
+
+DragMoveResponder::DragMoveResponder(QtOhos::QThreadSafeRef<QWindow> qWindowRef)
+    : m_qtThreadMoveEventsProcessor(
+        makeBestEffortQtThreadFunctionsExecutor<QWindow, Qt::DropAction>(
+            qWindowRef, makeDragMoveQtThreadWaitTimeoutsSupplier()))
+{
+}
+
+std::optional<Qt::DropAction> DragMoveResponder::respondToMove(
+    const DragEventInfo &dragEventInfo, QOhosSupplier<std::unique_ptr<QMimeData>> dropDataFactory) const
+{
+    return m_qtThreadMoveEventsProcessor(
+        [dragEventInfo, dropDataFactory = std::move(dropDataFactory)](QWindow &qWindow) {
+            QDrag *currentDrag = QDragManager::self()->object();
+            QPlatformDragQtResponse qtResponse = QWindowSystemInterface::handleDrag(
+                &qWindow,
+                currentDrag != nullptr ? currentDrag->mimeData() : dropDataFactory().get(),
+                dragEventInfo.localDropPos,
+                currentDrag != nullptr ? currentDrag->supportedActions() : dragEventInfo.dropActions,
+                Qt::LeftButton, dragEventInfo.keyboardModifiers);
+            if (currentDrag != nullptr && qtResponse.isAccepted() && qtResponse.acceptedAction() != Qt::IgnoreAction)
+                getQOhosPlatformDrag()->updateDropAction(qtResponse.acceptedAction());
+            return qtResponse.acceptedAction();
+        });
 }
 
 }
@@ -368,7 +380,7 @@ makeDragMoveResponder(QtOhos::QThreadSafeRef<QWindow> qWindowRef)
 QOhosConsumer<::ArkUI_NodeEvent *> makeQOhosNativeDragEventsHandler(
     QtOhos::QThreadSafeRef<QWindow> qWindowRef)
 {
-    auto eventsHandler = [qWindowRef, dragMoveResponder = makeDragMoveResponder(qWindowRef)](
+    auto eventsHandler = [qWindowRef, dragMoveResponder = DragMoveResponder(qWindowRef)](
         QtOhos::JsState &jsState, ::ArkUI_NodeEvent *nodeEvent) {
         auto eventType = QArkUi::callArkUi(Q_OHOS_NAMED_FUNC(OH_ArkUI_NodeEvent_GetEventType), nodeEvent);
         auto *dragEvent = QArkUi::callArkUiOrFailOnNullResult(Q_OHOS_NAMED_FUNC(::OH_ArkUI_NodeEvent_GetDragEvent), nodeEvent);
@@ -390,7 +402,7 @@ QOhosConsumer<::ArkUI_NodeEvent *> makeQOhosNativeDragEventsHandler(
         case ::NODE_ON_DRAG_ENTER:
         case ::NODE_ON_DRAG_MOVE:
             {
-                auto qtDropAction = dragMoveResponder(
+                auto qtDropAction = dragMoveResponder.respondToMove(
                     dragEventInfo,
                     makeDummyQMimeDataFactoryFromUdmfDataTypes(getDragEventDataTypes(dragEvent)));
                 QArkUi::callArkUiOrFailOnErrorResult(
