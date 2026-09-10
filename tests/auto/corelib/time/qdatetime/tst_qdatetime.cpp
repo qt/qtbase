@@ -3223,8 +3223,17 @@ void tst_QDateTime::fromStringStringFormat_data()
     QTest::newRow("secs-conflict") << u"1020"_s << u"sss"_s << 1900 << greg << QDateTime();
     QTest::newRow("secs-split-conflict")
             << u"10hello20"_s << u"ss'hello'ss"_s << 1900 << greg << QDateTime();
-    QTest::newRow("nomatch-quote-twice") << u"10"_s << u"''"_s << 1900 << greg << QDateTime();
-    QTest::newRow("nomatch-quote") << u"10"_s << u"'"_s << 1900 << greg << QDateTime();
+    // When a quote is doubled it stands for a single quote (not an empty
+    // literal) and must be matched.
+    QTest::newRow("nomatch-dd-quotes") << u"10"_s << u"dd''"_s << 1900 << greg << QDateTime();
+    // Empty format is matched by empty string, simply regurgitating defaults:
+    QTest::newRow("empty-matches-empty")
+        << u""_s << u""_s << 2000 << greg << QDate(2000, 1, 1).startOfDay();
+    // Unmatched quote in format is malformed:
+    QTest::newRow("empty-lone-quote") // Regression test against invalid format "matching" empty:
+        << u""_s << u"dd yyyy MM'HH zzz.ss mm"_s << 1900 << greg << QDateTime();
+    // So, even if "matched", does not parse:
+    QTest::newRow("dd-lone-quote") << u"10'"_s << u"dd'"_s << 1900 << greg << QDateTime();
     QTest::newRow("nomatch-am-pm") << u"foo"_s << u"ap"_s << 1900 << greg << QDateTime();
     // Day non-conflict should not hide earlier year conflict (1963-03-01 was a
     // Friday; asking for Thursday moves this, without conflict, to the 7th):

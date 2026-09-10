@@ -2753,7 +2753,8 @@ QDateTime QLocale::toDateTime(const QString &string, FormatType format, QCalenda
     \note Any am/pm indicators used must match \l amText() or \l pmText(),
     ignoring case.
 
-    If the time could not be parsed, returns an invalid time.
+    If \a format is malformed or \a string does not match it, returns an invalid
+    time.
 
     \sa timeFormat(), toDate(), toDateTime(), QTime::fromString()
 */
@@ -2761,6 +2762,8 @@ QTime QLocale::toTime(const QString &string, const QString &format) const
 {
 #if QT_CONFIG(datetimeparser)
     QTimePattern pattern = QTimePattern::fromQtFormat(format);
+    if (pattern.isNull() && !format.isEmpty())
+        return {};
     pattern.setLocale(*this);
     if (auto match = pattern.parse(string, QTime(0, 0)); match.size == string.size())
         return std::move(match.payload);
@@ -2792,7 +2795,8 @@ QTime QLocale::toTime(const QString &string, const QString &format) const
     \note Month and day names, where used, must be given in the locale's
     language.
 
-    If the date could not be parsed, returns an invalid date.
+    If \a format is malformed or \a string does not match it, returns an invalid
+    date.
 
     \sa dateFormat(), toTime(), toDateTime(), QDate::fromString()
 */
@@ -2809,6 +2813,8 @@ QDate QLocale::toDate(const QString &string, const QString &format, QCalendar ca
 {
 #if QT_CONFIG(datetimeparser)
     QDatePattern pattern = QDatePattern::fromQtFormat(format);
+    if (pattern.isNull() && !format.isEmpty())
+        return {};
     pattern.setLocale(*this);
     pattern.setCalendar(cal);
     pattern.setBaseYear(baseYear);
@@ -2839,9 +2845,11 @@ QDate QLocale::toDate(const QString &string, const QString &format, QCalendar ca
     language. Any am/pm indicators used must match \l amText() or \l pmText(),
     ignoring case.
 
-    If the string could not be parsed, returns an invalid QDateTime.  If the
-    string can be parsed and represents an invalid date-time (e.g. in a gap
-    skipped by a time-zone transition), the returned QDateTime represents a
+    If \a format is invalid or \a string does not match it, returns an invalid
+    QDateTime.
+
+    If the string can be parsed and represents an invalid date-time (e.g. in a
+    gap skipped by a time-zone transition), the returned QDateTime represents a
     near-by datetime that is valid (typically differing from it by the width of
     the gap in valid datetimes, e.g. the hour skipped by a transition). Passing
     that to fromMSecsSinceEpoch() will produce a valid date-time that isn't
@@ -2863,6 +2871,8 @@ QDateTime QLocale::toDateTime(const QString &string, const QString &format, QCal
 {
 #if QT_CONFIG(datetimeparser)
     QDateTimePattern pattern = QDateTimePattern::fromQtFormat(format);
+    if (pattern.isNull() && !format.isEmpty())
+        return {};
     pattern.setLocale(*this);
     pattern.setCalendar(cal);
     pattern.setBaseYear(baseYear);

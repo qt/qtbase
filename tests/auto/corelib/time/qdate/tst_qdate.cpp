@@ -1472,6 +1472,13 @@ void tst_QDate::fromStringFormat_data()
             << u"On day 22 of the Gregorian month named April in the Common Era year 2026"_s
             << u"'On day' dd 'of the' 'Gregorian month named' MMMM 'in the' 'Common Era year' yyyy"_s
             << 1900 << QDate(2026, 4, 22);
+    // Empty format is matched by empty string, simply regurgitating defaults:
+    QTest::newRow("empty-matches-empty")
+        << u""_s << u""_s << 2000 << QDate(2000, 1, 1);
+    // An unmatched quote in the format makes it malformed, so parsing fails:
+    QTest::newRow("lone-quote") << u"20-'05-2006"_s << u"dd-'MM-yyyy"_s << 1900 << QDate();
+    QTest::newRow("empty-lone-quote") // Regression test against invalid format "matching" empty:
+        << u""_s << u"dd yyyy' MM"_s << 1900 << QDate();
 
     // Test unicode handling.
     QTest::newRow("Unicode in format string")
