@@ -3,28 +3,12 @@
 
 #include "qohosutils.h"
 #include <cerrno>
-#include <cinttypes>
 #include <cstdarg>
 
 QT_BEGIN_NAMESPACE
 
 namespace QtOhos
 {
-
-namespace qohosutils_details {
-
-std::optional<std::uintmax_t> tryParseStringAsUIntMax(const std::string &inputString)
-{
-    char *endPtr;
-    auto value = std::strtoumax(inputString.c_str(), &endPtr, 10);
-    auto validValue = !inputString.empty() && endPtr == inputString.c_str() + inputString.size();
-
-    return validValue
-        ? std::optional(value)
-        : std::nullopt;
-}
-
-}
 
 std::optional<double> tryParseStringAsFiniteDouble(const std::string &inputString)
 {
