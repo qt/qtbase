@@ -2535,6 +2535,24 @@ void tst_QXmlStream::clearReallyResets_data() const
             xml.arg("e1"_L1, "&unknown;"_L1),
             xml.arg("e2"_L1, "123456789"_L1));
     }
+    {
+        // If entityHash is not reset, the first document overrides the second
+        // document's entity declarations:
+
+        constexpr auto xml =
+                "<?xml version='1.0'?>"
+                "<!DOCTYPE doc [<!ENTITY e '%1'>]>"
+                "<doc>&e;</doc>"_L1;
+
+        constexpr auto value1 = "1"_L1;
+        constexpr auto value2 = "2"_L1;
+
+        row("entities-dont-leak-across-documents",
+            64, // doesn't matter
+            xml.arg(value1),
+            xml.arg(value2),
+            QXmlStreamReader::Error::NoError);
+    }
 }
 
 static QString readAllText(QXmlStreamReader &reader)
@@ -2586,6 +2604,7 @@ void tst_QXmlStream::clearReallyResets() const
 
     QEXPECT_FAIL("expansion-budget-resets-after-each-entity", "QTBUG-150216", Continue);
     QEXPECT_FAIL("expansion-budget-resets-after-clear", "QTBUG-150215", Continue);
+    QEXPECT_FAIL("entities-dont-leak-across-documents", "QTBUG-149980", Continue);
     QCOMPARE(readAllText(r), readAllText(fresh));
     QEXPECT_FAIL("expansion-budget-resets-after-each-entity", "QTBUG-150216", Continue);
     QEXPECT_FAIL("expansion-budget-resets-after-clear", "QTBUG-150215", Continue);
