@@ -43,3 +43,9 @@ qt_internal_extend_target(tst_qtextbrowser CONDITION builtin_testdata
     DEFINES
         BUILTIN_TESTDATA
 )
+
+set_tests_properties(
+    tst_qtextbrowser
+    PROPERTIES
+        RUN_SERIAL TRUE
+)

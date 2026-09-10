@@ -21,6 +21,12 @@ qt_internal_add_test(tst_qwindow
         Qt::TestPrivate
 )
 
+set_tests_properties(
+    tst_qwindow
+    PROPERTIES
+        RUN_SERIAL TRUE
+)
+
 if(APPLE OR WIN32 OR QT_FEATURE_xcb)
     qt_internal_add_test(tst_foreignwindow
         LOWDPI
@@ -31,6 +37,12 @@ if(APPLE OR WIN32 OR QT_FEATURE_xcb)
             Qt::Gui
             Qt::GuiPrivate
     )
+
+set_tests_properties(
+    tst_foreignwindow
+    PROPERTIES
+        RUN_SERIAL TRUE
+)
 
     include(../../../../shared/nativewindow.cmake)
     target_link_libraries(tst_foreignwindow PRIVATE nativewindow)

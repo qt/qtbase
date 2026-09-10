@@ -33,6 +33,12 @@ qt_internal_add_test(tst_qwidget
     BUILTIN_TESTDATA
 )
 
+set_tests_properties(
+    tst_qwidget
+    PROPERTIES
+        RUN_SERIAL TRUE
+)
+
 ## Scopes:
 #####################################################################
 

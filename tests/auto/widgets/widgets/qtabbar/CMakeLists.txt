@@ -19,3 +19,9 @@ qt_internal_add_test(tst_qtabbar
         Qt::Widgets
         Qt::WidgetsPrivate
 )
+
+set_tests_properties(
+    tst_qtabbar
+    PROPERTIES
+        RUN_SERIAL TRUE
+)

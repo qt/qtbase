@@ -18,3 +18,9 @@ qt_internal_add_test(tst_qitemview
         Qt::Gui
         Qt::Widgets
 )
+
+set_tests_properties(
+    tst_qitemview
+    PROPERTIES
+        RUN_SERIAL TRUE
+)

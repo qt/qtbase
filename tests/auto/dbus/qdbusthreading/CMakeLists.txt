@@ -17,3 +17,9 @@ qt_internal_add_test(tst_qdbusthreading
     LIBRARIES
         Qt::DBus
 )
+
+set_tests_properties(
+    tst_qdbusthreading
+    PROPERTIES
+        RUN_SERIAL TRUE
+)

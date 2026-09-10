@@ -33,3 +33,9 @@ qt_internal_extend_target(tst_qrhi CONDITION QT_FEATURE_metal
     LIBRARIES
         ${FWMetal}
 )
+
+set_tests_properties(
+    tst_qrhi
+    PROPERTIES
+        RUN_SERIAL TRUE
+)

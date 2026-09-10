@@ -22,3 +22,9 @@ qt_internal_add_test(tst_qtableview
         Qt::Widgets
         Qt::WidgetsPrivate
 )
+
+set_tests_properties(
+    tst_qtableview
+    PROPERTIES
+        RUN_SERIAL TRUE
+)

@@ -21,3 +21,9 @@ qt_internal_add_test(tst_qfiledialog
         Qt::Widgets
         Qt::WidgetsPrivate
 )
+
+set_tests_properties(
+    tst_qfiledialog
+    PROPERTIES
+        RUN_SERIAL TRUE
+)

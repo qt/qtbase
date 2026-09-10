@@ -30,3 +30,9 @@ qt_internal_extend_target(tst_qlistview CONDITION WIN32
     LIBRARIES
         user32
 )
+
+set_tests_properties(
+    tst_qlistview
+    PROPERTIES
+        RUN_SERIAL TRUE
+)

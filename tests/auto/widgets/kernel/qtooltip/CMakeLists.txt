@@ -19,3 +19,9 @@ qt_internal_add_test(tst_qtooltip
         Qt::Widgets
         Qt::WidgetsPrivate
 )
+
+set_tests_properties(
+    tst_qtooltip
+    PROPERTIES
+        RUN_SERIAL TRUE
+)

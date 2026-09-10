@@ -19,6 +19,12 @@ qt_internal_add_test(tst_qfuture
         Qt::TestPrivate
 )
 
+set_tests_properties(
+  tst_qfuture
+  PROPERTIES
+    RUN_SERIAL TRUE
+)
+
 qt_internal_extend_target(tst_qfuture CONDITION MSVC
     COMPILE_OPTIONS
         /bigobj

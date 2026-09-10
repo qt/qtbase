@@ -30,3 +30,9 @@ qt_internal_extend_target(tst_qmenubar CONDITION MACOS
     LIBRARIES
         ${FWAppKit}
 )
+
+set_tests_properties(
+    tst_qmenubar
+    PROPERTIES
+        RUN_SERIAL TRUE
+)

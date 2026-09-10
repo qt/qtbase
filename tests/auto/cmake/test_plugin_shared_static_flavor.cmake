@@ -25,3 +25,11 @@ _qt_internal_test_expect_pass(test_plugin_shared_static_flavor
                               BUILD_OPTIONS
                               "-DPLUGIN_OPTIONS="
                               "-DEXPECTED_PLUGIN_TARGET_TYPE=${expected_plugin_target_type}")
+
+set_tests_properties(
+    test_plugin_flavor_static
+    test_plugin_flavor_shared
+    test_plugin_flavor_derived_from_qt_type
+    PROPERTIES
+        RESOURCE_LOCK qt_plugin_nested_configure
+)

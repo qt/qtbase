@@ -44,6 +44,12 @@ qt_internal_add_test(tst_selftests
     #   "$$COVERAGE_OPTIONS"
 )
 
+set_tests_properties(
+    tst_selftests
+    PROPERTIES
+        RUN_SERIAL TRUE
+)
+
 qt_internal_apply_testlib_coverage_options(tst_selftests)
 
 # ------------- Sub tests -------------

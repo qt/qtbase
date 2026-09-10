@@ -19,3 +19,9 @@ qt_internal_add_test(tst_qcommandlinkbutton
         Qt::GuiPrivate
         Qt::Widgets
 )
+
+set_tests_properties(
+    tst_qcommandlinkbutton
+    PROPERTIES
+        RUN_SERIAL TRUE
+)

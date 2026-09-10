@@ -42,3 +42,9 @@ qt_internal_extend_target(tst_qaccessibility CONDITION WIN32
         oleaut32
         uuid
 )
+
+set_tests_properties(
+    tst_qaccessibility
+    PROPERTIES
+        RUN_SERIAL TRUE
+)

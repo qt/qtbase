@@ -36,3 +36,9 @@ qt_internal_extend_target(tst_qmenu CONDITION NOT MACOS
     DEFINES
         QTEST_QPA_MOUSE_HANDLING
 )
+
+set_tests_properties(
+    tst_qmenu
+    PROPERTIES
+        RUN_SERIAL TRUE
+)

@@ -20,5 +20,13 @@ instructions:
     - !include "{{qt/qtbase}}/coin_qtbase_build_template_v2.yaml"
 
   Test:
+    - type: AppendToEnvironmentVariable
+      variableName: CTEST_ARGS
+      variableValue: " -j 4"
+      disable_if:
+        condition: property
+        property: target.osVersion
+        in_values: [VxWorks, Android_ANY, QNX_800, QNX_710]
+
     - !include "{{qt/qtbase}}/coin_module_test_template_v3.yaml"
     - !include "{{qt/qtbase}}/coin_qtbase_test_docs.yaml"

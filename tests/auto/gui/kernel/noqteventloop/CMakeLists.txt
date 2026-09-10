@@ -21,6 +21,12 @@ qt_internal_add_test(tst_noqteventloop
         Qt::Network
 )
 
+set_tests_properties(
+    tst_noqteventloop
+    PROPERTIES
+        RUN_SERIAL TRUE
+)
+
 ## Scopes:
 #####################################################################
 

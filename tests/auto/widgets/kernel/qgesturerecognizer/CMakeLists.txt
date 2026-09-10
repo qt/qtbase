@@ -20,3 +20,9 @@ qt_internal_add_test(tst_qgesturerecognizer
         Qt::GuiPrivate
         Qt::Widgets
 )
+
+set_tests_properties(
+    tst_qgesturerecognizer
+    PROPERTIES
+        RUN_SERIAL TRUE
+)

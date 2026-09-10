@@ -15,3 +15,9 @@ qt_internal_add_test(tst_qparallelanimationgroup
     SOURCES
         tst_qparallelanimationgroup.cpp
 )
+
+set_tests_properties(
+    tst_qparallelanimationgroup
+    PROPERTIES
+        RUN_SERIAL TRUE
+)

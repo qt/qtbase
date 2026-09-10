@@ -20,3 +20,9 @@ qt_internal_add_test(tst_qspinbox
         Qt::WidgetsPrivate
         Qt::TestPrivate
 )
+
+set_tests_properties(
+    tst_qspinbox
+    PROPERTIES
+        RUN_SERIAL TRUE
+)

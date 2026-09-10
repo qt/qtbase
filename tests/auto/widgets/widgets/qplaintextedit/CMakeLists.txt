@@ -30,3 +30,9 @@ qt_internal_extend_target(tst_qplaintextedit CONDITION MACOS
     LIBRARIES
         ${FWAppKit}
 )
+
+set_tests_properties(
+    tst_qplaintextedit
+    PROPERTIES
+        RUN_SERIAL TRUE
+)

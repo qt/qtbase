@@ -31,3 +31,9 @@ qt_internal_add_test(tst_qstylesheetstyle
 )
 
 # _REQUIREMENTS = "qtConfig(private_tests)"
+
+set_tests_properties(
+    tst_qstylesheetstyle
+    PROPERTIES
+        RUN_SERIAL TRUE
+)

@@ -31,3 +31,9 @@ qt_internal_add_test(tst_qheaderview
     TESTDATA ${testfonts_resource_files}
     BUILTIN_TESTDATA
 )
+
+set_tests_properties(
+    tst_qheaderview
+    PROPERTIES
+        RUN_SERIAL TRUE
+)

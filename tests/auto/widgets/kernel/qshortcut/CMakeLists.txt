@@ -23,6 +23,12 @@ qt_internal_add_test(tst_qshortcut
         Qt::WidgetsPrivate
 )
 
+set_tests_properties(
+    tst_qshortcut
+    PROPERTIES
+        RUN_SERIAL TRUE
+)
+
 qt_internal_add_test(tst_qguishortcut_with_qapplication
     SOURCES
         ../../../gui/kernel/qshortcut/tst_qshortcut.cpp

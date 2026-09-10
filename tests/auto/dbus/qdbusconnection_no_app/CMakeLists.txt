@@ -20,3 +20,9 @@ qt_internal_add_test(tst_qdbusconnection_no_app
     LIBRARIES
         Qt::DBus
 )
+
+set_tests_properties(
+    tst_qdbusconnection_no_app
+    PROPERTIES
+        RUN_SERIAL TRUE
+)

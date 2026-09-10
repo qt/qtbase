@@ -19,3 +19,9 @@ qt_internal_add_test(tst_qabstractslider
         Qt::TestPrivate
         Qt::Widgets
 )
+
+set_tests_properties(
+    tst_qabstractslider
+    PROPERTIES
+        RUN_SERIAL TRUE
+)

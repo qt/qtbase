@@ -19,3 +19,9 @@ qt_internal_add_test(tst_qbuttongroup
         Qt::Widgets
         Qt::WidgetsPrivate
 )
+
+set_tests_properties(
+    tst_qbuttongroup
+    PROPERTIES
+        RUN_SERIAL TRUE
+)

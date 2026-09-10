@@ -36,3 +36,9 @@ qt_internal_extend_target(tst_qmdiarea CONDITION APPLE
     LIBRARIES
         ${FWSecurity}
 )
+
+set_tests_properties(
+    tst_qmdiarea
+    PROPERTIES
+        RUN_SERIAL TRUE
+)

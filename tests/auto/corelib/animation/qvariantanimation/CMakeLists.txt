@@ -17,3 +17,10 @@ qt_internal_add_test(tst_qvariantanimation
     LIBRARIES
         Qt::TestPrivate
 )
+
+set_tests_properties(
+    tst_qvariantanimation
+    PROPERTIES
+        RUN_SERIAL TRUE
+)
+

@@ -23,3 +23,9 @@ qt_internal_add_test(tst_qtreeview
         Qt::Widgets
         Qt::WidgetsPrivate
 )
+
+set_tests_properties(
+    tst_qtreeview
+    PROPERTIES
+        RUN_SERIAL TRUE
+)

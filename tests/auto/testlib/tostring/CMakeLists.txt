@@ -11,3 +11,9 @@ qt_internal_add_test(tst_tostring
     SOURCES
         tst_tostring.cpp
 )
+
+set_tests_properties(
+    tst_tostring
+    PROPERTIES
+        RUN_SERIAL TRUE
+)

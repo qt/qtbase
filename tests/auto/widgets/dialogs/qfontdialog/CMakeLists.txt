@@ -36,5 +36,11 @@ qt_internal_add_test(tst_qfontdialog
     BUILTIN_TESTDATA
 )
 
+set_tests_properties(
+    tst_qfontdialog
+    PROPERTIES
+        RUN_SERIAL TRUE
+)
+
 ## Scopes:
 #####################################################################
