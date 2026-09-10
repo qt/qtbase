@@ -1991,7 +1991,7 @@ QCocoaNSWindow *QCocoaWindow::createNSWindow()
 
     QScreen *targetScreen = nullptr;
     for (QScreen *screen : QGuiApplication::screens()) {
-        if (screen->geometry().contains(rect.topLeft())) {
+        if (screen->handle()->geometry().contains(rect.topLeft())) {
             targetScreen = screen;
             break;
         }
@@ -2008,8 +2008,8 @@ QCocoaNSWindow *QCocoaWindow::createNSWindow()
         styleMask = NSWindowStyleMaskBorderless;
     }
 
-    rect.translate(-targetScreen->geometry().topLeft());
     auto *targetCocoaScreen = static_cast<QCocoaScreen *>(targetScreen->handle());
+    rect.translate(-targetCocoaScreen->geometry().topLeft());
     NSRect contentRect = QCocoaScreen::mapToNative(rect, targetCocoaScreen);
 
     if (targetScreen->primaryOrientation() == Qt::PortraitOrientation) {
@@ -2017,7 +2017,7 @@ QCocoaNSWindow *QCocoaWindow::createNSWindow()
         // a window to be created within the area of the screen that has a Y coordinate (I quadrant)
         // higher than the height of the screen in its non-rotated state (including a magic padding
         // of 24 points), unless the window is created with the NSWindowStyleMaskBorderless style mask.
-        if (styleMask && (contentRect.origin.y + 24 > targetScreen->geometry().width())) {
+        if (styleMask && (contentRect.origin.y + 24 > targetCocoaScreen->geometry().width())) {
             qCDebug(lcQpaWindow) << "Window positioned on portrait screen."
                 << "Adjusting style mask during creation";
             styleMask = NSWindowStyleMaskBorderless;
