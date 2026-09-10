@@ -317,7 +317,7 @@ void prepareStackTrace()
             path = p;
         else
             path = _PATH_DEFPATH;
-        for (const char *p = std::strtok(&path[0], ":'"); p; p = std::strtok(nullptr, ":")) {
+        for (const char *p = std::strtok(&path[0], ":"); p; p = std::strtok(nullptr, ":")) {
             candidate = p;
             candidate += '/';
             candidate += execname;
