@@ -819,7 +819,7 @@ void QCocoaWindow::setWindowFlags(Qt::WindowFlags flags)
         const bool expandedClientAreaChanged = (
             (newMask & NSWindowStyleMaskFullSizeContentView) !=
             (m_view.window.styleMask & NSWindowStyleMaskFullSizeContentView));
-        const auto frameGeometry = window()->frameGeometry();
+        const QRect frameGeometry = geometry().marginsAdded(frameMargins());
 
         m_view.window.styleMask = newMask;
 
