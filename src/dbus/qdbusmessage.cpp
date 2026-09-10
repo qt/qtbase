@@ -164,6 +164,7 @@ DBusMessage *QDBusMessagePrivate::toDBusMessage(const QDBusMessage &message, QDB
 
         msg = q_dbus_message_new_signal(d_ptr->path.toUtf8(), d_ptr->interface.toUtf8(),
                                         d_ptr->name.toUtf8());
+        q_dbus_message_set_auto_start(msg, d_ptr->autoStartService);
         q_dbus_message_set_destination(msg, data(d_ptr->service.toUtf8()));
         break;
     }
