@@ -137,6 +137,19 @@ void tst_QDBusConnection::sendSignalToOtherName()
     QCOMPARE(spy.args.size(), 0);
 }
 
+void tst_QDBusConnection::sendSignalRequiresInterface()
+{
+    QDBusConnection con = QDBusConnection::sessionBus();
+
+    QVERIFY(con.isConnected());
+
+    QDBusMessage msg = QDBusMessage::createSignal("/org/kde/selftest", QString(),
+                                                  "Ping");
+    msg << QLatin1String("ping");
+
+    QVERIFY(!con.send(msg));
+}
+
 void tst_QDBusConnection::send()
 {
     QDBusConnection con = QDBusConnection::sessionBus();
