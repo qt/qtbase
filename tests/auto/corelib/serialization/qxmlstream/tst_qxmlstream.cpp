@@ -2480,6 +2480,20 @@ void tst_QXmlStream::clearReallyResets_data() const
             xml.arg("e1"_L1, "&na;"_L1),
             xml.arg("e2"_L1, "123456789012345"_L1));
     }
+    {
+        // If the entityLength is leaked, the first entity gets a reduced
+        // expansion limit:
+
+        constexpr auto xml =
+                "<?xml version='1.0'?>"
+                "<!DOCTYPE doc [<!ENTITY %1 '%2'>]>"
+                "<doc>&%1;</doc>"_L1;
+
+        row("expansion-budget-resets-after-clear",
+            9,
+            xml.arg("e1"_L1, "&unknown;"_L1),
+            xml.arg("e2"_L1, "123456789"_L1));
+    }
 }
 
 static QString readAllText(QXmlStreamReader &reader)
@@ -2530,10 +2544,13 @@ void tst_QXmlStream::clearReallyResets() const
     r.addData(xml2);
 
     QEXPECT_FAIL("expansion-budget-resets-after-each-entity", "QTBUG-150216", Continue);
+    QEXPECT_FAIL("expansion-budget-resets-after-clear", "QTBUG-150215", Continue);
     QCOMPARE(readAllText(r), readAllText(fresh));
     QEXPECT_FAIL("expansion-budget-resets-after-each-entity", "QTBUG-150216", Continue);
+    QEXPECT_FAIL("expansion-budget-resets-after-clear", "QTBUG-150215", Continue);
     QCOMPARE(r.error(), fresh.error());
     QEXPECT_FAIL("expansion-budget-resets-after-each-entity", "QTBUG-150216", Continue);
+    QEXPECT_FAIL("expansion-budget-resets-after-clear", "QTBUG-150215", Continue);
     QCOMPARE(r.errorString(), fresh.errorString());
 }
 
