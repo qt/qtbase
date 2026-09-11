@@ -1159,9 +1159,6 @@ void tst_QXmlStream::requestingDeclarationsWithinDTD() const
     //       complete
     //
 
-    if (qstrcmp(QTest::currentDataTag(), "pi-from-parameter-entity") == 0)
-        QSKIP("Q_ASSERT or UB (QTBUG-150266)");
-
     const QByteArray actual = dumpTokenStream(subject, {
             {askAt, [](QXmlStreamReader &r) {
                          (void)r.notationDeclarations();
@@ -1173,7 +1170,6 @@ void tst_QXmlStream::requestingDeclarationsWithinDTD() const
     // THEN: the two token streams don't differ
     //
 
-    QEXPECT_FAIL("", "QTBUG-150266", Continue);
     QCOMPARE(actual, expected);
 }
 

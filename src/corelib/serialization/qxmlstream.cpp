@@ -2300,7 +2300,7 @@ QStringView QXmlStreamReader::text() const
 QXmlStreamNotationDeclarations QXmlStreamReader::notationDeclarations() const
 {
     Q_D(const QXmlStreamReader);
-    if (d->notationDeclarations.size())
+    if (!d->scanDtd && !d->notationDeclarations.isEmpty())
         const_cast<QXmlStreamReaderPrivate *>(d)->resolveDtd();
     return d->publicNotationDeclarations;
 }
@@ -2315,7 +2315,7 @@ QXmlStreamNotationDeclarations QXmlStreamReader::notationDeclarations() const
 QXmlStreamEntityDeclarations QXmlStreamReader::entityDeclarations() const
 {
     Q_D(const QXmlStreamReader);
-    if (d->entityDeclarations.size())
+    if (!d->scanDtd && !d->entityDeclarations.isEmpty())
         const_cast<QXmlStreamReaderPrivate *>(d)->resolveDtd();
     return d->publicEntityDeclarations;
 }
