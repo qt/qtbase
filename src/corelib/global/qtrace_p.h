@@ -44,6 +44,10 @@
  * amounting to a call to TraceLoggingWrite(), whereas Q_TRACE_ENABLED()
  * wraps around TraceLoggingProviderEnabled().
  *
+ * On HiTrace, Q_TRACE() and Q_UNCONDITIONAL_TRACE() are equivalent, each
+ * amounting to an OH_HiTrace_StartTraceEx() and OH_HiTrace_FinishTraceEx()
+ * pair, whereas Q_TRACE_ENABLED() reports whether a capture is running.
+ *
  * A tracepoint provider is defined in a separate file, that follows the
  * following format:
  *
@@ -58,8 +62,8 @@
  *     qcoreapplication_qrect(const QRect &rect)
  *
  * The provider file is then parsed by src/tools/tracegen, which can be
- * switched to output either ETW, CTF or LTTNG tracepoint definitions. The provider
- * name is deduced to be basename(provider_file).
+ * switched to output either ETW, LTTNG, HiTrace or CTF tracepoint definitions.
+ * The provider name is deduced to be basename(provider_file).
  *
  * To use the above (inside qtcore), you need to include
  * <providername_tracepoints_p.h>. After that, the following call becomes
