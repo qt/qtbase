@@ -220,6 +220,7 @@ class QDateTimePattern
         return got ? SupportType::Partial : SupportType::None;
     }
 public:
+    bool isNull() const noexcept { return m_fields.isEmpty(); }
     bool isValid() const noexcept
     {
         return dateTimeSupport() == QtTemporalPattern::SupportType::Clear;
@@ -262,6 +263,7 @@ class QTimePattern
         return supports({DateTimePart::Time}, m_fields);
     }
 public:
+    bool isNull() const noexcept { return m_fields.isEmpty(); }
     bool isValid() const noexcept
     {
         return timeSupport() == QtTemporalPattern::SupportType::Clear;
@@ -300,6 +302,7 @@ class QDatePattern
         return supports({DateTimePart::Date}, m_fields, m_baseYear.has_value());
     }
 public:
+    bool isNull() const noexcept { return m_fields.isEmpty(); }
     bool isValid() const noexcept
     {
         return dateSupport() == QtTemporalPattern::SupportType::Clear;
