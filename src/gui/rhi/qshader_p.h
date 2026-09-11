@@ -37,7 +37,7 @@ struct Q_GUI_EXPORT QShaderPrivate
     static const int QSB_VERSION_WITH_BINARY_JSON = 2;
     static const int QSB_VERSION_WITHOUT_BINDINGS = 1;
 
-    enum MslNativeShaderInfoExtraBufferBindings {
+    enum NativeShaderInfoExtraBufferBindings {
         MslTessVertIndicesBufferBinding = 0,
         MslTessVertTescOutputBufferBinding,
         MslTessTescTessLevelBufferBinding,
@@ -46,7 +46,9 @@ struct Q_GUI_EXPORT QShaderPrivate
         MslTessTescInputBufferBinding,
         MslBufferSizeBufferBinding,
         MslMultiViewMaskBufferBinding,
-        MslArgumentBufferBinding
+        MslArgumentBufferBinding,
+        MslPushConstantBufferBinding,
+        HlslPushConstantBufferBinding
     };
 
     QShaderPrivate()
