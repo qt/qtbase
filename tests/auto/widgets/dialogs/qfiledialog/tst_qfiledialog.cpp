@@ -1167,6 +1167,9 @@ void tst_QFiledialog::focus()
 
 void tst_QFiledialog::historyBack()
 {
+    QTemporaryDir tempDir;
+    QVERIFY(tempDir.isValid());
+
     QFileDialog fd;
     QFileSystemModel *model = fd.findChild<QFileSystemModel*>("qt_filesystem_model");
     QVERIFY(model);
@@ -1177,9 +1180,11 @@ void tst_QFiledialog::historyBack()
 
     QSignalSpy spy(model, SIGNAL(rootPathChanged(QString)));
 
-    QString home = fd.directory().absolutePath();
-    QString desktop = QDir::homePath();
-    QString temp = QDir::tempPath();
+    const QString home = fd.directory().absolutePath();
+    const QString temp = tempDir.filePath("temp");
+    const QString desktop = tempDir.filePath("desktop");
+    QVERIFY(QDir().mkpath(temp));
+    QVERIFY(QDir().mkpath(desktop));
 
     QCOMPARE(backButton->isEnabled(), false);
     QCOMPARE(forwardButton->isEnabled(), false);
@@ -1214,8 +1219,10 @@ void tst_QFiledialog::historyBack()
 
 void tst_QFiledialog::historyForward()
 {
+    QTemporaryDir tempDir;
+    QVERIFY(tempDir.isValid());
+
     QFileDialog fd;
-    fd.setDirectory(QDir::currentPath());
     QToolButton *backButton = fd.findChild<QToolButton*>("backButton");
     QVERIFY(backButton);
     QToolButton *forwardButton = fd.findChild<QToolButton*>("forwardButton");
@@ -1225,10 +1232,11 @@ void tst_QFiledialog::historyForward()
     QVERIFY(model);
     QSignalSpy spy(model, SIGNAL(rootPathChanged(QString)));
 
-    QString home = fd.directory().absolutePath();
-    QString desktop = QDir::homePath();
-    QString temp = QDir::tempPath();
-
+    const QString home = fd.directory().absolutePath();
+    const QString temp = tempDir.filePath("temp");
+    const QString desktop = tempDir.filePath("desktop");
+    QVERIFY(QDir().mkpath(temp));
+    QVERIFY(QDir().mkpath(desktop));
     fd.setDirectory(home);
     fd.setDirectory(temp);
     fd.setDirectory(desktop);
