@@ -1715,9 +1715,8 @@ QDate QDate::fromString(QStringView string, Qt::DateFormat format)
         return QDate(year, month, day);
         }
     case Qt::ISODate:
-        // Semi-strict parsing, must be long enough and have punctuators as separators
-        if (string.size() >= 10 && string[4].isPunct() && string[7].isPunct()
-                && (string.size() == 10 || !string[10].isDigit())) {
+        // Semi-strict parsing: must be exactly "yyyy-MM-dd" and have punctuators as separators
+        if (string.size() == 10 && string[4].isPunct() && string[7].isPunct()) {
             const ParsedInt year = readInt(string.first(4));
             const ParsedInt month = readInt(string.sliced(5, 2));
             const ParsedInt day = readInt(string.sliced(8, 2));

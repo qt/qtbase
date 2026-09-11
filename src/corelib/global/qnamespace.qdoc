@@ -731,6 +731,10 @@
     some GMT-based zones-names, such as \c{Etc/GMT+3}, which use the opposite
     convention).
 
+    \note Qt::ISODate: the parser is lenient about the date-field separators:
+    any punctuation character is accepted in place of the '-' that ISO 8601
+    requires, so "2024/01/02" and "2024.01.02" are also allowed.
+
     \sa QDate::toString(), QTime::toString(), QDateTime::toString(),
         QDate::fromString(), QTime::fromString(), QDateTime::fromString()
 */

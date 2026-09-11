@@ -1288,9 +1288,9 @@ void tst_QDate::fromStringDateFormat_data()
     QTest::newRow("iso3b") << u"0999-01-01"_s << Qt::ISODate << QDate(999, 1, 1);
     QTest::newRow("iso4") << u"2000101101"_s      << Qt::ISODate << QDate();
     QTest::newRow("iso5") << u"2000/01/01"_s      << Qt::ISODate << QDate(2000, 1, 1);
-    QTest::newRow("iso6") << u"2000-01-01 blah"_s << Qt::ISODate << QDate(2000, 1, 1);
+    QTest::newRow("iso6") << u"2000-01-01 blah"_s << Qt::ISODate << QDate();
     QTest::newRow("iso7") << u"2000-01-011blah"_s << Qt::ISODate << QDate();
-    QTest::newRow("iso8") << u"2000-01-01blah"_s  << Qt::ISODate << QDate(2000, 1, 1);
+    QTest::newRow("iso8") << u"2000-01-01blah"_s  << Qt::ISODate << QDate();
     QTest::newRow("iso9") << u"-001-01-01"_s      << Qt::ISODate << QDate();
     QTest::newRow("iso10") << u"99999-01-01"_s    << Qt::ISODate << QDate();
     QTest::newRow("iso-yr-0") << u"0000-01-01"_s  << Qt::ISODate << QDate();
