@@ -855,7 +855,15 @@ SupportType supports(DateTimeParts wanted, QSpan<const TemporalField> range,
 
     The \a format can be used to select how compact or expansive the pattern is.
 
-    \sa fromQtFormat
+    \sa fromQtFormat()
+*/
+
+/*!
+    \fn QDateTimePattern::isNull() const noexcept
+
+    Returns \c true if this pattern has no fields, otherwise \a false.
+
+    \sa fromQtFormat()
 */
 
 /*
@@ -877,6 +885,8 @@ SupportType supports(DateTimeParts wanted, QSpan<const TemporalField> range,
     \include qttemporalpattern.cpp base-year-disambiguates
 
     Timezone abbreviations are ambiguous.
+
+    \sa isNull()
 */
 
 /*!
@@ -975,7 +985,10 @@ QString QDateTimePattern::serialize(const QDateTime &datetime) const
 /*!
     Construct a QDateTimePattern described by the given \a format string.
 
-    \sa forLocale()
+    If the format is empty or malformed, the returned pattern's \c isNull() shall
+    be \c true. Otherwise, \c isNull() shall be \c false.
+
+    \sa forLocale(), isNull()
 */
 
 QDateTimePattern QDateTimePattern::fromQtFormat(QStringView format)
@@ -1001,13 +1014,23 @@ QDateTimePattern QDateTimePattern::fromQtFormat(QStringView format)
 
     The \a format can be used to select how compact or expansive the pattern is.
 
-    \sa fromQtFormat
+    \sa fromQtFormat()
+*/
+
+/*!
+    \fn QTimePattern::isNull() const noexcept
+
+    Returns \c true if this pattern has no fields, otherwise \a false.
+
+    \sa fromQtFormat()
 */
 
 /*!
     \fn QTimePattern::isValid() const noexcept
 
     \include qttemporalpattern.cpp {is-valid} {time}
+
+    \sa isNull()
 */
 
 /*!
@@ -1058,7 +1081,10 @@ QString QTimePattern::serialize(const QTime &time) const
 /*!
     Construct a QTimePattern described by the given \a format string.
 
-    \sa forLocale()
+    If the format is empty or malformed, the returned pattern's \c isNull() shall
+    be \c true. Otherwise, \c isNull() shall be \c false.
+
+    \sa forLocale(), isNull()
 */
 
 QTimePattern QTimePattern::fromQtFormat(QStringView format)
@@ -1084,7 +1110,15 @@ QTimePattern QTimePattern::fromQtFormat(QStringView format)
 
     The \a format can be used to select how compact or expansive the pattern is.
 
-    \sa fromQtFormat
+    \sa fromQtFormat()
+*/
+
+/*!
+    \fn QDatePattern::isNull() const noexcept
+
+    Returns \c true if this pattern has no fields, otherwise \a false.
+
+    \sa fromQtFormat()
 */
 
 /*!
@@ -1097,7 +1131,7 @@ QTimePattern QTimePattern::fromQtFormat(QStringView format)
     years among which to select a matching years.
 //! [base-year-disambiguates]
 
-    \sa setBaseYear()
+    \sa setBaseYear(), isNull()
 */
 
 /*!
@@ -1234,7 +1268,10 @@ QString QDatePattern::serialize(const QDate &date) const
 /*!
     Construct a QDatePattern described by the given \a format string.
 
-    \sa forLocale()
+    If the format is empty or malformed, the returned pattern's \c isNull() shall
+    be \c true. Otherwise, \c isNull() shall be \c false.
+
+    \sa forLocale(), isNull()
 */
 
 QDatePattern QDatePattern::fromQtFormat(QStringView format)
