@@ -1778,14 +1778,14 @@ QDate QDate::fromString(QStringView string, Qt::DateFormat format)
 //! [from-string-juxtaposed]
     Where numeric fields are juxtaposed, with no separators to break up the
     sequences of digits, there may be ambiguity as to whether some fields
-    allowed to be single-digit use two digits (due to the value to represent
-    being more than 9). Where giving such a field two digits would leave too few
-    for other fields, and the single-digit reading is consistent with other
+    allowed to be single-digit use more digits (due to the value to represent
+    being more than 9). Where giving such a field more digits would leave too
+    few for other fields, and the single-digit reading is consistent with other
     fields, this ambiguity can be resolved. Otherwise (where more than one field
     is allowed to have only one digit and there would be spare digits if each
     only got one), a resolution that gives extra digits to earlier fields is
     preferred over one that gives them to later fields, provided the data remain
-    consistent.  For example:
+    consistent. For example:
 //! [from-string-juxtaposed]
 
     \snippet code/src_corelib_time_qdatetime.cpp 2
@@ -5997,22 +5997,13 @@ QDateTime QDateTime::fromString(QStringView string, Qt::DateFormat format)
 
     \include qdatetime.cpp from-string-juxtaposed
 
-    The expressions that don't have leading zeroes (d, M, h, m, s, z) will be
-    greedy. This means that they will use two digits (or three, for z) even if this will
-    put them outside the range and/or leave too few digits for other
-    sections.
-
     \snippet code/src_corelib_time_qdatetime.cpp 13
 
     This could have meant 1 January 00:30.00 but the M will grab
     two digits.
 
-    Incorrectly specified fields of the \a string will cause an invalid
-    QDateTime to be returned. Only datetimes between the local time start of
-    year 100 and end of year 9999 are supported. Note that datetimes near the
-    ends of this range in other time-zones, notably including UTC, may fall
-    outside the range (and thus be treated as invalid) depending on local time
-    zone.
+    Incorrectly specified fields of the \a string will produce an invalid
+    QDateTime. Only years with at most four digits are supported.
 
     \note Day and month names as well as AM/PM indicators must be given in
     English (C locale).  If localized month and day names or localized forms of

@@ -2848,12 +2848,11 @@ QDate QLocale::toDate(const QString &string, const QString &format, QCalendar ca
     If \a format is invalid or \a string does not match it, returns an invalid
     QDateTime.
 
-    If the string can be parsed and represents an invalid date-time (e.g. in a
-    gap skipped by a time-zone transition), the returned QDateTime represents a
-    near-by datetime that is valid (typically differing from it by the width of
-    the gap in valid datetimes, e.g. the hour skipped by a transition). Passing
-    that to fromMSecsSinceEpoch() will produce a valid date-time that isn't
-    faithfully represented by the string parsed.
+    If the string can be parsed and represents an invalid date-time (for
+    example, in a gap skipped by a time-zone transition), the returned QDateTime
+    represents a nearby datetime that is valid (typically differing from it by
+    the width of the gap in valid datetimes - in the example given, the hour
+    skipped by a transition).
 
     \sa dateTimeFormat(), toTime(), toDate(), QDateTime::fromString()
 */
