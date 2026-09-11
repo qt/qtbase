@@ -114,6 +114,7 @@ public:
     virtual void setScissor(QRhiCommandBuffer *cb, const QRhiScissor &scissor) = 0;
     virtual void setBlendConstants(QRhiCommandBuffer *cb, const QColor &c) = 0;
     virtual void setStencilRef(QRhiCommandBuffer *cb, quint32 refValue) = 0;
+    virtual void setPushConstants(QRhiCommandBuffer *cb, quint32 offset, quint32 size, const void *data) = 0;
     virtual void setShadingRate(QRhiCommandBuffer *cb, const QSize &coarsePixelSize) = 0;
 
     virtual void draw(QRhiCommandBuffer *cb, quint32 vertexCount,

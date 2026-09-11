@@ -1187,6 +1187,14 @@ Q_CONSTINIT QRhiDebugHooks qrhiDebugHooks;
     have no \c glCopyBufferSubData. There is no fallback on such systems
     because OpenGL ES 2.0 provides no way of reading back the contents of a
     buffer either.
+
+    \value [since 6.13] PushConstants Indicates that
+    \l{QRhiCommandBuffer::setPushConstants()}{setPushConstants()} is functional,
+    meaning shaders can declare a \c{layout(push_constant)} block and the data
+    for it can be updated between draw calls without involving a
+    QRhiShaderResourceBindings. Currently supported with Vulkan, Metal and Direct3D 12. The
+    maximum size of the block is reported by the
+    \l{QRhi::MaxPushConstantsSize}{MaxPushConstantsSize} resource limit.
  */
 
 /*!
@@ -1324,6 +1332,15 @@ Q_CONSTINIT QRhiDebugHooks qrhiDebugHooks;
     from MaxVertexStorageBuffers apply here as well; with Direct 3D 11
     the value reflects the unordered access view slots, which are shared
     with render target outputs.
+
+    \value [since 6.13] MaxPushConstantsSize The maximum size in bytes of the
+    push constant block a shader can declare. 0 when the
+    \l{QRhi::PushConstants}{PushConstants} feature is not supported.
+    Portable code should stay within 128 bytes: that is what Direct3D 12
+    reports and what Vulkan guarantees, whereas Metal reports 4096. Note
+    that with Direct3D 12 even 128 is optimistic, because a block that size
+    takes 32 of the 64 root signature DWORDs, so with a sufficiently large
+    QRhiShaderResourceBindings the root signature can still fail to build.
  */
 
 /*!
@@ -11572,6 +11589,46 @@ void QRhiCommandBuffer::setBlendConstants(const QColor &c)
 void QRhiCommandBuffer::setStencilRef(quint32 refValue)
 {
     m_rhi->setStencilRef(this, refValue);
+}
+
+/*!
+    Records setting the push constant data for the currently bound graphics or
+    compute pipeline. \a size bytes are taken from \a data and placed at byte
+    offset \a offset within the push constant block. Both \a offset and \a
+    size must be a multiple of 4.
+
+    Push constants are a small, pipeline-layout-resident block of data that can
+    be updated between draw calls without touching any
+    QRhiShaderResourceBindings. This makes them suitable for per-draw values
+    such as an index into a storage buffer, avoiding a setShaderResources()
+    call per draw.
+
+    The shaders declare the block in the usual way, for example:
+
+    \badcode
+        layout(push_constant) uniform PC { uint objectIndex; } pc;
+    \endcode
+
+    QRhi derives the push constant range from the shader reflection data of the
+    pipeline's shader stages, so no extra declaration is needed on the
+    QRhiGraphicsPipeline or QRhiComputePipeline.
+
+    \note This is only functional when the PushConstants feature is reported as
+    supported. The maximum size of the block is reported by the
+    MaxPushConstantsSize resource limit.
+
+    \note Must be called inside a pass, after setGraphicsPipeline() or
+    setComputePipeline().
+
+    \note The data does not persist. It has to be set again in every pass and
+    after every change of pipeline. The backends differ in how much they would
+    otherwise retain, so relying on anything else is not portable.
+
+    \since 6.13
+ */
+void QRhiCommandBuffer::setPushConstants(quint32 offset, quint32 size, const void *data)
+{
+    m_rhi->setPushConstants(this, offset, size, data);
 }
 
 /*!

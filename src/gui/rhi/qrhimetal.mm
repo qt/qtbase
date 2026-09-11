@@ -993,6 +993,8 @@ bool QRhiMetal::isFeatureSupported(QRhi::Feature feature) const
         return caps.indirectCommandBuffers;
     case QRhi::ShaderDrawParameters:
         return false;
+    case QRhi::PushConstants:
+        return true;
     case QRhi::DrawIndirectCount:
         return caps.indirectCommandBuffers;
     case QRhi::DispatchIndirect:
@@ -1036,6 +1038,8 @@ int QRhiMetal::resourceLimit(QRhi::ResourceLimit limit) const
         return 31;
     case QRhi::MaxVertexOutputs:
         return 15; // use the minimum from MTLGPUFamily1/2/3
+    case QRhi::MaxPushConstantsSize:
+        return 4096; // the limit for setVertexBytes() and friends
     case QRhi::MaxVertexStorageBuffers:
     case QRhi::MaxFragmentStorageBuffers:
         return 31;
@@ -2242,6 +2246,65 @@ void QRhiMetal::setStencilRef(QRhiCommandBuffer *cb, quint32 refValue)
 
     cbD->hasStencilRefSet = true;
     cbD->currentStencilRef = refValue;
+}
+
+static inline quint32 mtlPushConstantBlockSize(const QMetalShader &s)
+{
+    const QList<QShaderDescription::PushConstantBlock> blocks = s.desc.pushConstantBlocks();
+    return blocks.isEmpty() ? 0 : quint32(blocks.first().size);
+}
+
+static inline int mtlPushConstantBufferIndex(const QMetalShader &s)
+{
+    return s.nativeShaderInfo.extraBufferBindings.value(QShaderPrivate::MslPushConstantBufferBinding, -1);
+}
+
+void QRhiMetal::setPushConstants(QRhiCommandBuffer *cb, quint32 offset, quint32 size, const void *data)
+{
+    QMetalCommandBuffer *cbD = QRHI_RES(QMetalCommandBuffer, cb);
+    Q_ASSERT(cbD->recordingPass != QMetalCommandBuffer::NoPass);
+
+    // setVertexBytes() and friends take the whole block every time, so a shadow
+    // copy is needed to honour an update of part of it.
+    auto patch = [cbD, offset, size, data](quint32 blockSize) {
+        const quint32 total = qMax(blockSize, offset + size);
+        if (quint32(cbD->pushConstantData.size()) < total)
+            cbD->pushConstantData.resize(int(total), 0);
+        memcpy(cbD->pushConstantData.data() + offset, data, size);
+        return total;
+    };
+
+    if (cbD->recordingPass == QMetalCommandBuffer::ComputePass) {
+        QMetalComputePipeline *psD = cbD->currentComputePipeline;
+        if (!psD)
+            return;
+        const int idx = mtlPushConstantBufferIndex(psD->d->cs);
+        if (idx < 0) {
+            qWarning("No pipeline with a push constant block is active; setPushConstants ignored");
+            return;
+        }
+        const quint32 total = patch(mtlPushConstantBlockSize(psD->d->cs));
+        [cbD->d->currentComputePassEncoder setBytes: cbD->pushConstantData.constData() length: total atIndex: NSUInteger(idx)];
+    } else {
+        QMetalGraphicsPipeline *psD = cbD->currentGraphicsPipeline;
+        if (!psD)
+            return;
+        if (psD->d->tess.enabled) {
+            qWarning("Push constants are not supported with tessellation on Metal");
+            return;
+        }
+        const int vsIdx = mtlPushConstantBufferIndex(psD->d->vs);
+        const int fsIdx = mtlPushConstantBufferIndex(psD->d->fs);
+        if (vsIdx < 0 && fsIdx < 0) {
+            qWarning("No pipeline with a push constant block is active; setPushConstants ignored");
+            return;
+        }
+        const quint32 total = patch(qMax(mtlPushConstantBlockSize(psD->d->vs), mtlPushConstantBlockSize(psD->d->fs)));
+        if (vsIdx >= 0)
+            [cbD->d->currentRenderPassEncoder setVertexBytes: cbD->pushConstantData.constData() length: total atIndex: NSUInteger(vsIdx)];
+        if (fsIdx >= 0)
+            [cbD->d->currentRenderPassEncoder setFragmentBytes: cbD->pushConstantData.constData() length: total atIndex: NSUInteger(fsIdx)];
+    }
 }
 
 void QRhiMetal::setShadingRate(QRhiCommandBuffer *cb, const QSize &coarsePixelSize)
@@ -7870,6 +7933,7 @@ void QMetalCommandBuffer::resetPerPassCachedState()
     currentGraphicsPipeline = nullptr;
     currentComputePipeline = nullptr;
     currentPipelineGeneration = 0;
+    pushConstantData.clear();
     currentGraphicsSrb = nullptr;
     currentComputeSrb = nullptr;
     currentSrbGeneration = 0;

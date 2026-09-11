@@ -1894,6 +1894,8 @@ bool QRhiGles2::isFeatureSupported(QRhi::Feature feature) const
         return caps.shaderDrawParameters;
     case QRhi::DispatchIndirect:
         return caps.dispatchIndirect;
+    case QRhi::PushConstants:
+        return false;
     case QRhi::DrawIndirectCount:
         return caps.drawIndirectCount;
     case QRhi::BufferToBufferCopy:
@@ -1938,6 +1940,8 @@ int QRhiGles2::resourceLimit(QRhi::ResourceLimit limit) const
         return caps.maxVertexOutputs;
     case QRhi::MaxVertexStorageBuffers:
         return caps.maxVertexStorageBuffers;
+    case QRhi::MaxPushConstantsSize:
+        return 0;
     case QRhi::MaxFragmentStorageBuffers:
         return caps.maxFragmentStorageBuffers;
     case QRhi::ShadingRateImageTileSize:
@@ -2423,6 +2427,14 @@ void QRhiGles2::setStencilRef(QRhiCommandBuffer *cb, quint32 refValue)
     cmd.cmd = QGles2CommandBuffer::Command::StencilRef;
     cmd.args.stencilRef.ref = refValue;
     cmd.args.stencilRef.ps = cbD->currentGraphicsPipeline;
+}
+
+void QRhiGles2::setPushConstants(QRhiCommandBuffer *cb, quint32 offset, quint32 size, const void *data)
+{
+    Q_UNUSED(cb);
+    Q_UNUSED(offset);
+    Q_UNUSED(size);
+    Q_UNUSED(data);
 }
 
 void QRhiGles2::setShadingRate(QRhiCommandBuffer *cb, const QSize &coarsePixelSize)

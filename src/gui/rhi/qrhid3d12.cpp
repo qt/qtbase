@@ -3,6 +3,7 @@
 // Qt-Security score:significant reason:default
 
 #include "qrhid3d12_p.h"
+#include "qshader_p.h"
 #include <qmath.h>
 #include <QtCore/private/qsystemerror_p.h>
 #include <QtCore/qcryptographichash.h>
@@ -1014,6 +1015,8 @@ bool QRhiD3D12::isFeatureSupported(QRhi::Feature feature) const
         return false;
     case QRhi::DispatchIndirect:
         return dispatchCommandSignature != nullptr;
+    case QRhi::PushConstants:
+        return true;
     case QRhi::DrawIndirectCount:
         // ExecuteIndirect natively supports a GPU-supplied count buffer.
         return drawCommandSignature != nullptr && drawIndexedCommandSignature != nullptr;
@@ -1054,6 +1057,8 @@ int QRhiD3D12::resourceLimit(QRhi::ResourceLimit limit) const
         return 32;
     case QRhi::MaxVertexOutputs:
         return 32;
+    case QRhi::MaxPushConstantsSize:
+        return 128; // root constants share the root signature budget
     case QRhi::MaxVertexStorageBuffers:
     case QRhi::MaxFragmentStorageBuffers:
         return 128;
@@ -2026,6 +2031,25 @@ void QRhiD3D12::setStencilRef(QRhiCommandBuffer *cb, quint32 refValue)
     QD3D12CommandBuffer *cbD = QRHI_RES(QD3D12CommandBuffer, cb);
     Q_ASSERT(cbD->recordingPass == QD3D12CommandBuffer::RenderPass);
     cbD->cmdList->OMSetStencilRef(refValue);
+}
+
+void QRhiD3D12::setPushConstants(QRhiCommandBuffer *cb, quint32 offset, quint32 size, const void *data)
+{
+    QD3D12CommandBuffer *cbD = QRHI_RES(QD3D12CommandBuffer, cb);
+    Q_ASSERT(cbD->recordingPass != QD3D12CommandBuffer::NoPass);
+
+    const bool compute = cbD->recordingPass == QD3D12CommandBuffer::ComputePass;
+    const int index = compute ? (cbD->currentComputePipeline ? cbD->currentComputePipeline->pushConstantRootParamIndex : -1)
+                              : (cbD->currentGraphicsPipeline ? cbD->currentGraphicsPipeline->pushConstantRootParamIndex : -1);
+    if (index < 0) {
+        qWarning("No pipeline with a push constant block is active; setPushConstants ignored");
+        return;
+    }
+
+    if (compute)
+        cbD->cmdList->SetComputeRoot32BitConstants(UINT(index), size / 4, data, offset / 4);
+    else
+        cbD->cmdList->SetGraphicsRoot32BitConstants(UINT(index), size / 4, data, offset / 4);
 }
 
 static inline D3D12_SHADING_RATE toD3DShadingRate(const QSize &coarsePixelSize)
@@ -6488,6 +6512,16 @@ void QD3D12ShaderResourceBindings::visitStorageImage(QD3D12Stage s,
     }
 }
 
+static void qd3d12_setPushConstantInfo(QD3D12ShaderStageData *sd, const QShader &shader, const QShaderKey &key)
+{
+    const QList<QShaderDescription::PushConstantBlock> blocks = shader.description().pushConstantBlocks();
+    if (blocks.isEmpty())
+        return;
+    sd->pushConstantRegister = shader.nativeShaderInfo(key).extraBufferBindings.value(
+                QShaderPrivate::HlslPushConstantBufferBinding, -1);
+    sd->pushConstantSize = quint32((blocks.first().size + 3) & ~3);
+}
+
 QD3D12ObjectHandle QD3D12ShaderResourceBindings::createRootSignature(const QD3D12ShaderStageData *stageData,
                                                                      int stageCount)
 {
@@ -6560,6 +6594,35 @@ QD3D12ObjectHandle QD3D12ShaderResourceBindings::createRootSignature(const QD3D1
             visitorData.uavTables[s].DescriptorTable.pDescriptorRanges = visitorData.uavRanges[s].constData();
             rootParams.append(visitorData.uavTables[s]);
         }
+    }
+
+    // Root constants go last so that the indices of everything above, which
+    // the draw time code recomputes by walking the same order, are unaffected.
+    pushConstantRootParamIndex = -1;
+    UINT pushConstantReg = 0;
+    quint32 pushConstantSize = 0;
+    int pushConstantStages = 0;
+    D3D12_SHADER_VISIBILITY pushConstantVis = D3D12_SHADER_VISIBILITY_ALL;
+    for (int stageIdx = 0; stageIdx < stageCount; ++stageIdx) {
+        const QD3D12ShaderStageData &sd(stageData[stageIdx]);
+        if (!sd.valid || !sd.pushConstantSize || sd.pushConstantRegister < 0)
+            continue;
+        pushConstantReg = UINT(sd.pushConstantRegister);
+        pushConstantSize = qMax(pushConstantSize, sd.pushConstantSize);
+        pushConstantVis = qd3d12_stageToVisibility(sd.stage);
+        ++pushConstantStages;
+    }
+    if (pushConstantSize) {
+        // Assumes nothing else uses the push constant register (b0 as
+        // reserved by qsb); a stage without a block would get its uniform
+        // block there and root signature creation would fail.
+        D3D12_ROOT_PARAMETER1 param = {};
+        param.ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
+        param.ShaderVisibility = pushConstantStages > 1 ? D3D12_SHADER_VISIBILITY_ALL : pushConstantVis;
+        param.Constants.ShaderRegister = pushConstantReg;
+        param.Constants.Num32BitValues = pushConstantSize / 4;
+        pushConstantRootParamIndex = rootParams.count();
+        rootParams.append(param);
     }
 
     D3D12_VERSIONED_ROOT_SIGNATURE_DESC rsDesc = {};
@@ -7124,6 +7187,8 @@ bool QD3D12GraphicsPipeline::create()
         if (cacheIt != rhiD->shaderBytecodeCache.data.constEnd()) {
             shaderBytecode[d3dStage] = cacheIt->bytecode;
             stageData[d3dStage].nativeResourceBindingMap = cacheIt->nativeResourceBindingMap;
+            stageData[d3dStage].pushConstantRegister = cacheIt->pushConstantRegister;
+            stageData[d3dStage].pushConstantSize = cacheIt->pushConstantSize;
         } else {
             QString error;
             QShaderKey shaderKey;
@@ -7142,14 +7207,18 @@ bool QD3D12GraphicsPipeline::create()
 
             shaderBytecode[d3dStage] = bytecode;
             stageData[d3dStage].nativeResourceBindingMap = shaderStage.shader().nativeResourceBindingMap(shaderKey);
+            qd3d12_setPushConstantInfo(&stageData[d3dStage], shaderStage.shader(), shaderKey);
             rhiD->shaderBytecodeCache.insertWithCapacityLimit(shaderStage,
-                                                              { bytecode, stageData[d3dStage].nativeResourceBindingMap });
+                                                              { bytecode, stageData[d3dStage].nativeResourceBindingMap,
+                                                                stageData[d3dStage].pushConstantRegister,
+                                                                stageData[d3dStage].pushConstantSize });
         }
     }
 
     QD3D12ShaderResourceBindings *srbD = QRHI_RES(QD3D12ShaderResourceBindings, m_shaderResourceBindings);
     if (srbD) {
         rootSigHandle = srbD->createRootSignature(stageData.data(), 5);
+        pushConstantRootParamIndex = srbD->pushConstantRootParamIndex;
         if (rootSigHandle.isNull()) {
             qWarning("Failed to create root signature");
             return false;
@@ -7428,6 +7497,8 @@ bool QD3D12ComputePipeline::create()
     if (cacheIt != rhiD->shaderBytecodeCache.data.constEnd()) {
         shaderBytecode = cacheIt->bytecode;
         stageData.nativeResourceBindingMap = cacheIt->nativeResourceBindingMap;
+        stageData.pushConstantRegister = cacheIt->pushConstantRegister;
+        stageData.pushConstantSize = cacheIt->pushConstantSize;
     } else {
         QString error;
         QShaderKey shaderKey;
@@ -7446,13 +7517,17 @@ bool QD3D12ComputePipeline::create()
 
         shaderBytecode = bytecode;
         stageData.nativeResourceBindingMap = m_shaderStage.shader().nativeResourceBindingMap(shaderKey);
+        qd3d12_setPushConstantInfo(&stageData, m_shaderStage.shader(), shaderKey);
         rhiD->shaderBytecodeCache.insertWithCapacityLimit(m_shaderStage, { bytecode,
-                                                                           stageData.nativeResourceBindingMap });
+                                                                           stageData.nativeResourceBindingMap,
+                                                                           stageData.pushConstantRegister,
+                                                                           stageData.pushConstantSize });
     }
 
     QD3D12ShaderResourceBindings *srbD = QRHI_RES(QD3D12ShaderResourceBindings, m_shaderResourceBindings);
     if (srbD) {
         rootSigHandle = srbD->createRootSignature(&stageData, 1);
+        pushConstantRootParamIndex = srbD->pushConstantRootParamIndex;
         if (rootSigHandle.isNull()) {
             qWarning("Failed to create root signature");
             return false;

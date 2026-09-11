@@ -148,6 +148,8 @@ int QRhiNull::resourceLimit(QRhi::ResourceLimit limit) const
         return 32;
     case QRhi::MaxVertexOutputs:
         return 32;
+    case QRhi::MaxPushConstantsSize:
+        return 128;
     case QRhi::MaxVertexStorageBuffers:
     case QRhi::MaxFragmentStorageBuffers:
         return 32;
@@ -304,6 +306,14 @@ void QRhiNull::setStencilRef(QRhiCommandBuffer *cb, quint32 refValue)
 {
     Q_UNUSED(cb);
     Q_UNUSED(refValue);
+}
+
+void QRhiNull::setPushConstants(QRhiCommandBuffer *cb, quint32 offset, quint32 size, const void *data)
+{
+    Q_UNUSED(cb);
+    Q_UNUSED(offset);
+    Q_UNUSED(size);
+    Q_UNUSED(data);
 }
 
 void QRhiNull::setShadingRate(QRhiCommandBuffer *cb, const QSize &coarsePixelSize)

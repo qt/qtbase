@@ -254,6 +254,12 @@ private slots:
     void textureArrayRange_data();
     void textureArrayRange();
 
+    void pushConstants_data();
+    void pushConstants();
+
+    void pushConstantsCompute_data();
+    void pushConstantsCompute();
+
     // Make this the last, in case the leaked Vk object test confuses the Vulkan
     // validation or some third-party implicitly loaded layer.
     void leakedResourceDestroy_data();
@@ -13970,6 +13976,265 @@ void tst_QRhi::textureArrayRange()
     QVERIFY(qRed(c) <= maxFuzz);
     QVERIFY(qGreen(c) >= 255 - maxFuzz);
     QVERIFY(qBlue(c) <= maxFuzz);
+}
+
+void tst_QRhi::pushConstants_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::pushConstants()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing push constants");
+
+    if (!rhi->isFeatureSupported(QRhi::PushConstants)) {
+        QCOMPARE(rhi->resourceLimit(QRhi::MaxPushConstantsSize), 0);
+        QSKIP("Push constants are not supported with this backend, skipping test");
+    }
+
+    QVERIFY(rhi->resourceLimit(QRhi::MaxPushConstantsSize) >= 128);
+
+    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi.get()))
+        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
+
+    const QSize outputSize(512, 512);
+    QScopedPointer<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGBA8, outputSize, 1,
+                                                        QRhiTexture::RenderTarget | QRhiTexture::UsedAsTransferSource));
+    QVERIFY(texture->create());
+
+    QScopedPointer<QRhiTextureRenderTarget> rt(rhi->newTextureRenderTarget({ texture.data() }));
+    QScopedPointer<QRhiRenderPassDescriptor> rpDesc(rt->newCompatibleRenderPassDescriptor());
+    rt->setRenderPassDescriptor(rpDesc.data());
+    QVERIFY(rt->create());
+
+    QRhiCommandBuffer *cb = nullptr;
+    QVERIFY(rhi->beginOffscreenFrame(&cb) == QRhi::FrameOpSuccess);
+    QVERIFY(cb);
+
+    QRhiResourceUpdateBatch *updates = rhi->nextResourceUpdateBatch();
+
+    QScopedPointer<QRhiBuffer> vbuf(rhi->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, sizeof(triangleVertices)));
+    QVERIFY(vbuf->create());
+    updates->uploadStaticBuffer(vbuf.data(), triangleVertices);
+
+    // A uniform buffer alongside the push constant block: the fragment shader
+    // has both, which with HLSL means the uniform block cannot stay on the
+    // register the push constants take.
+    static const float tint[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+    QScopedPointer<QRhiBuffer> ubuf(rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, sizeof(tint)));
+    QVERIFY(ubuf->create());
+    updates->updateDynamicBuffer(ubuf.data(), 0, sizeof(tint), tint);
+
+    QScopedPointer<QRhiShaderResourceBindings> srb(rhi->newShaderResourceBindings());
+    srb->setBindings({
+        QRhiShaderResourceBinding::uniformBuffer(0, QRhiShaderResourceBinding::FragmentStage, ubuf.data())
+    });
+    QVERIFY(srb->create());
+
+    QShader vs = loadShader(":/data/pushconstants.vert.qsb");
+    QVERIFY(vs.isValid());
+    QShader fs = loadShader(":/data/pushconstants.frag.qsb");
+    QVERIFY(fs.isValid());
+    QCOMPARE(vs.description().pushConstantBlocks().count(), 1);
+    QCOMPARE(vs.description().pushConstantBlocks().first().size, 32);
+
+    QRhiVertexInputLayout inputLayout;
+    inputLayout.setBindings({ { 2 * sizeof(float) } });
+    inputLayout.setAttributes({ { 0, 0, QRhiVertexInputAttribute::Float2, 0 } });
+
+    // Two pipelines from the same shaders, to exercise whatever the backend
+    // caches per shader for the push constant block.
+    QScopedPointer<QRhiGraphicsPipeline> pipeline1(rhi->newGraphicsPipeline());
+    QScopedPointer<QRhiGraphicsPipeline> pipeline2(rhi->newGraphicsPipeline());
+    for (QRhiGraphicsPipeline *p : { pipeline1.data(), pipeline2.data() }) {
+        p->setShaderStages({ { QRhiShaderStage::Vertex, vs }, { QRhiShaderStage::Fragment, fs } });
+        p->setVertexInputLayout(inputLayout);
+        p->setShaderResourceBindings(srb.data());
+        p->setRenderPassDescriptor(rpDesc.data());
+        QVERIFY(p->create());
+    }
+
+    // Two draws differing only in the push constant data: a red triangle in
+    // the left half and a green one in the right half. The two halves of the
+    // block are set separately, so a partial update at a non-zero offset is
+    // covered as well.
+    static const float leftRed[8] = { -0.5f, 0.0f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 1.0f };
+    static const float rightGreen[8] = { 0.5f, 0.0f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 1.0f };
+
+    cb->beginPass(rt.data(), Qt::blue, { 1.0f, 0 }, updates);
+    QRhiCommandBuffer::VertexInput vbindings(vbuf.data(), 0);
+
+    cb->setGraphicsPipeline(pipeline1.data());
+    cb->setViewport({ 0, 0, float(outputSize.width()), float(outputSize.height()) });
+    cb->setShaderResources();
+    cb->setVertexInput(0, 1, &vbindings);
+    cb->setPushConstants(0, 16, leftRed);
+    cb->setPushConstants(16, 16, leftRed + 4);
+    cb->draw(3);
+
+    cb->setGraphicsPipeline(pipeline2.data());
+    cb->setShaderResources();
+    cb->setVertexInput(0, 1, &vbindings);
+    cb->setPushConstants(0, 16, rightGreen);
+    cb->setPushConstants(16, 16, rightGreen + 4);
+    cb->draw(3);
+
+    QRhiReadbackResult readResult;
+    QImage result;
+    readResult.completed = [&readResult, &result] {
+        result = QImage(reinterpret_cast<const uchar *>(readResult.data.constData()),
+                        readResult.pixelSize.width(), readResult.pixelSize.height(),
+                        QImage::Format_RGBA8888_Premultiplied);
+    };
+    QRhiResourceUpdateBatch *readbackBatch = rhi->nextResourceUpdateBatch();
+    readbackBatch->readBackTexture({ texture.data() }, &readResult);
+    cb->endPass(readbackBatch);
+
+    rhi->endOffscreenFrame();
+    QCOMPARE(result.size(), texture->pixelSize());
+
+    if (impl == QRhi::Null)
+        return;
+
+    // The readback is RGBA8888; convert so that qRed() and friends work.
+    const QImage img = result.convertToFormat(QImage::Format_ARGB32);
+
+    int redCount = 0;
+    int greenCount = 0;
+    int blueCount = 0;
+    int redOnRight = 0;
+    int greenOnLeft = 0;
+    for (int y = 0; y < img.height(); ++y) {
+        const QRgb *p = reinterpret_cast<const QRgb *>(img.constScanLine(y));
+        for (int x = 0; x < img.width(); ++x) {
+            const QRgb c(*p++);
+            if (qRed(c) >= 254 && qGreen(c) == 0 && qBlue(c) == 0) {
+                ++redCount;
+                if (x >= img.width() / 2)
+                    ++redOnRight;
+            } else if (qRed(c) == 0 && qGreen(c) >= 254 && qBlue(c) == 0) {
+                ++greenCount;
+                if (x < img.width() / 2)
+                    ++greenOnLeft;
+            } else if (qRed(c) == 0 && qGreen(c) == 0 && qBlue(c) >= 254) {
+                ++blueCount;
+            } else {
+                QFAIL("Encountered a pixel that is neither red, green nor blue");
+            }
+        }
+    }
+
+    // Both triangles must be present and about the same size, the red one in
+    // the left half and the green one in the right half. Any of this failing
+    // means the per-draw push constant data did not reach the shaders. The
+    // colors being exactly saturated also means the uniform buffer was read
+    // from the right place.
+    QVERIFY(redCount > 1000);
+    QVERIFY(greenCount > 1000);
+    QVERIFY(blueCount > 1000);
+    QVERIFY(qAbs(redCount - greenCount) < redCount / 10);
+    QCOMPARE(redOnRight, 0);
+    QCOMPARE(greenOnLeft, 0);
+}
+
+void tst_QRhi::pushConstantsCompute_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::pushConstantsCompute()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing push constants with compute");
+
+    if (!rhi->isFeatureSupported(QRhi::PushConstants))
+        QSKIP("Push constants are not supported with this backend, skipping test");
+    if (!rhi->isFeatureSupported(QRhi::Compute))
+        QSKIP("Compute is not supported with this backend, skipping test");
+
+    static const int ELEM_COUNT = 256;
+    QScopedPointer<QRhiBuffer> outBuf(rhi->newBuffer(QRhiBuffer::Static, QRhiBuffer::StorageBuffer,
+                                                     ELEM_COUNT * sizeof(quint32)));
+    QVERIFY(outBuf->create());
+
+    QScopedPointer<QRhiShaderResourceBindings> srb(rhi->newShaderResourceBindings());
+    srb->setBindings({
+        QRhiShaderResourceBinding::bufferLoadStore(0, QRhiShaderResourceBinding::ComputeStage, outBuf.data())
+    });
+    QVERIFY(srb->create());
+
+    QShader cs = loadShader(":/data/pushconstants.comp.qsb");
+    QVERIFY(cs.isValid());
+
+    // Two pipelines from the same shader: the second one takes whatever the
+    // backend cached for the first, which has to include the push constant
+    // block or its root signature ends up without one.
+    QScopedPointer<QRhiComputePipeline> pipeline1(rhi->newComputePipeline());
+    QScopedPointer<QRhiComputePipeline> pipeline2(rhi->newComputePipeline());
+    for (QRhiComputePipeline *p : { pipeline1.data(), pipeline2.data() }) {
+        p->setShaderStage({ QRhiShaderStage::Compute, cs });
+        p->setShaderResourceBindings(srb.data());
+        QVERIFY(p->create());
+    }
+
+    QRhiCommandBuffer *cb = nullptr;
+    QVERIFY(rhi->beginOffscreenFrame(&cb) == QRhi::FrameOpSuccess);
+    QVERIFY(cb);
+
+    QByteArray zeroes(ELEM_COUNT * sizeof(quint32), 0);
+    QRhiResourceUpdateBatch *updates = rhi->nextResourceUpdateBatch();
+    updates->uploadStaticBuffer(outBuf.data(), zeroes.constData());
+
+    // base and stride are set separately, covering a non-zero offset.
+    const quint32 base = 1000;
+    const quint32 stride = 7;
+
+    cb->beginComputePass(updates);
+    cb->setComputePipeline(pipeline1.data());
+    cb->setShaderResources();
+    cb->setPushConstants(0, sizeof(quint32), &base);
+    cb->setPushConstants(sizeof(quint32), sizeof(quint32), &stride);
+    cb->dispatch(ELEM_COUNT / 16, 1, 1);
+    cb->endComputePass();
+
+    const quint32 base2 = 5;
+    const quint32 stride2 = 0;
+    cb->beginComputePass();
+    cb->setComputePipeline(pipeline2.data());
+    cb->setShaderResources();
+    cb->setPushConstants(0, sizeof(quint32), &base2);
+    cb->setPushConstants(sizeof(quint32), sizeof(quint32), &stride2);
+    cb->dispatch(1, 1, 1);
+    cb->endComputePass();
+
+    QRhiReadbackResult readResult;
+    QByteArray bufferData;
+    readResult.completed = [&readResult, &bufferData] { bufferData = readResult.data; };
+    QRhiResourceUpdateBatch *readbackBatch = rhi->nextResourceUpdateBatch();
+    readbackBatch->readBackBuffer(outBuf.data(), 0, ELEM_COUNT * sizeof(quint32), &readResult);
+    cb->resourceUpdate(readbackBatch);
+
+    rhi->endOffscreenFrame();
+
+    if (impl == QRhi::Null)
+        return;
+
+    QCOMPARE(bufferData.size(), qsizetype(ELEM_COUNT * sizeof(quint32)));
+    const quint32 *p = reinterpret_cast<const quint32 *>(bufferData.constData());
+    // The second dispatch covers the first 16 elements only.
+    for (int i = 0; i < 16; ++i)
+        QCOMPARE(p[i], base2);
+    for (int i = 16; i < ELEM_COUNT; ++i)
+        QCOMPARE(p[i], base + quint32(i) * stride);
 }
 
 #include <tst_qrhi.moc>

@@ -309,6 +309,7 @@ struct QVkGraphicsPipeline : public QRhiGraphicsPipeline
     bool create() override;
 
     VkPipelineLayout layout = VK_NULL_HANDLE;
+    VkShaderStageFlags pushConstantStages = 0;
     VkPipeline pipeline = VK_NULL_HANDLE;
     int lastActiveFrameSlot = -1;
     uint generation = 0;
@@ -323,6 +324,7 @@ struct QVkComputePipeline : public QRhiComputePipeline
     bool create() override;
 
     VkPipelineLayout layout = VK_NULL_HANDLE;
+    VkShaderStageFlags pushConstantStages = 0;
     VkPipeline pipeline = VK_NULL_HANDLE;
     int lastActiveFrameSlot = -1;
     uint generation = 0;
@@ -443,6 +445,7 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
             DispatchIndirect,
             ExecuteSecondary,
             SetShadingRate,
+            SetPushConstants,
             MemoryBarrier
         };
         Cmd cmd;
@@ -621,6 +624,13 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
                 uint32_t w;
                 uint32_t h;
             } setShadingRate;
+            struct {
+                VkPipelineLayout layout;
+                VkShaderStageFlags stages;
+                uint32_t offset;
+                uint32_t size;
+                int dataIndex;
+            } setPushConstants;
         } args;
     };
 
@@ -645,6 +655,7 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
         pools.debugMarkerData.clear();
         pools.imageBarrier.clear();
         pools.bufferBarrier.clear();
+        pools.pushConstantData.clear();
     }
 
     struct {
@@ -656,6 +667,7 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
         QVarLengthArray<QByteArray, 4> debugMarkerData;
         QVarLengthArray<VkImageMemoryBarrier, 8> imageBarrier;
         QVarLengthArray<VkBufferMemoryBarrier, 8> bufferBarrier;
+        QVarLengthArray<quint32, 64> pushConstantData;
     } pools;
 
     friend class QRhiVulkan;
@@ -818,6 +830,7 @@ public:
     void setScissor(QRhiCommandBuffer *cb, const QRhiScissor &scissor) override;
     void setBlendConstants(QRhiCommandBuffer *cb, const QColor &c) override;
     void setStencilRef(QRhiCommandBuffer *cb, quint32 refValue) override;
+    void setPushConstants(QRhiCommandBuffer *cb, quint32 offset, quint32 size, const void *data) override;
     void setShadingRate(QRhiCommandBuffer *cb, const QSize &coarsePixelSize) override;
 
     void draw(QRhiCommandBuffer *cb, quint32 vertexCount,

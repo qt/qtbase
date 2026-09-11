@@ -718,6 +718,8 @@ bool QRhiD3D11::isFeatureSupported(QRhi::Feature feature) const
         return featureLevel >= D3D_FEATURE_LEVEL_11_0;
     case QRhi::DrawIndirectMulti:
     case QRhi::ShaderDrawParameters:
+    case QRhi::PushConstants:
+        return false;
     case QRhi::DrawIndirectCount:
         return false;
     case QRhi::DispatchIndirect:
@@ -766,6 +768,8 @@ int QRhiD3D11::resourceLimit(QRhi::ResourceLimit limit) const
     case QRhi::MaxVertexOutputs:
         return D3D11_VS_OUTPUT_REGISTER_COUNT;
     case QRhi::MaxVertexStorageBuffers:
+        return 0;
+    case QRhi::MaxPushConstantsSize:
         return 0;
     case QRhi::MaxFragmentStorageBuffers:
         return featureLevel >= D3D_FEATURE_LEVEL_11_1
@@ -1340,6 +1344,14 @@ void QRhiD3D11::setStencilRef(QRhiCommandBuffer *cb, quint32 refValue)
     cmd.cmd = QD3D11CommandBuffer::Command::StencilRef;
     cmd.args.stencilRef.dsState = QRHI_RES(QD3D11GraphicsPipeline, cbD->currentGraphicsPipeline)->dsState;
     cmd.args.stencilRef.ref = refValue;
+}
+
+void QRhiD3D11::setPushConstants(QRhiCommandBuffer *cb, quint32 offset, quint32 size, const void *data)
+{
+    Q_UNUSED(cb);
+    Q_UNUSED(offset);
+    Q_UNUSED(size);
+    Q_UNUSED(data);
 }
 
 void QRhiD3D11::setShadingRate(QRhiCommandBuffer *cb, const QSize &coarsePixelSize)

@@ -335,6 +335,7 @@ struct QMetalCommandBuffer : public QRhiCommandBuffer
     QColor currentBlendConstants;
     bool hasStencilRefSet;
     quint32 currentStencilRef;
+    QVarLengthArray<char, 128> pushConstantData;
 
     const QRhiNativeHandles *nativeHandles();
     void resetState(double lastGpuTime = 0);
@@ -461,6 +462,7 @@ public:
     void setScissor(QRhiCommandBuffer *cb, const QRhiScissor &scissor) override;
     void setBlendConstants(QRhiCommandBuffer *cb, const QColor &c) override;
     void setStencilRef(QRhiCommandBuffer *cb, quint32 refValue) override;
+    void setPushConstants(QRhiCommandBuffer *cb, quint32 offset, quint32 size, const void *data) override;
     void setShadingRate(QRhiCommandBuffer *cb, const QSize &coarsePixelSize) override;
 
     void draw(QRhiCommandBuffer *cb, quint32 vertexCount,

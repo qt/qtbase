@@ -5409,6 +5409,14 @@ void QRhiVulkan::recordPrimaryCommandBuffer(QVkCommandBuffer *cbD)
         case QVkCommandBuffer::Command::SetStencilRef:
             df->vkCmdSetStencilReference(cbD->cb, VK_STENCIL_FRONT_AND_BACK, cmd.args.setStencilRef.ref);
             break;
+        case QVkCommandBuffer::Command::SetPushConstants:
+            df->vkCmdPushConstants(cbD->cb,
+                                   cmd.args.setPushConstants.layout,
+                                   cmd.args.setPushConstants.stages,
+                                   cmd.args.setPushConstants.offset,
+                                   cmd.args.setPushConstants.size,
+                                   cbD->pools.pushConstantData.constData() + cmd.args.setPushConstants.dataIndex);
+            break;
         case QVkCommandBuffer::Command::Draw:
             df->vkCmdDraw(cbD->cb, cmd.args.draw.vertexCount, cmd.args.draw.instanceCount,
                           cmd.args.draw.firstVertex, cmd.args.draw.firstInstance);
@@ -5934,6 +5942,8 @@ bool QRhiVulkan::isFeatureSupported(QRhi::Feature feature) const
         return caps.shaderDrawParameters;
     case QRhi::DispatchIndirect:
         return true; // available in Vulkan 1.0
+    case QRhi::PushConstants:
+        return true;
     case QRhi::DrawIndirectCount:
         return caps.drawIndirectCount;
     case QRhi::BufferToBufferCopy:
@@ -5976,6 +5986,8 @@ int QRhiVulkan::resourceLimit(QRhi::ResourceLimit limit) const
         return physDevProperties.limits.maxVertexInputAttributes;
     case QRhi::MaxVertexOutputs:
         return physDevProperties.limits.maxVertexOutputComponents / 4;
+    case QRhi::MaxPushConstantsSize:
+        return int(physDevProperties.limits.maxPushConstantsSize);
     case QRhi::MaxVertexStorageBuffers:
     case QRhi::MaxFragmentStorageBuffers:
         return int(physDevProperties.limits.maxPerStageDescriptorStorageBuffers);
@@ -6740,6 +6752,45 @@ void QRhiVulkan::setStencilRef(QRhiCommandBuffer *cb, quint32 refValue)
         QVkCommandBuffer::Command &cmd(cbD->commands.get());
         cmd.cmd = QVkCommandBuffer::Command::SetStencilRef;
         cmd.args.setStencilRef.ref = refValue;
+    }
+}
+
+void QRhiVulkan::setPushConstants(QRhiCommandBuffer *cb, quint32 offset, quint32 size, const void *data)
+{
+    QVkCommandBuffer *cbD = QRHI_RES(QVkCommandBuffer, cb);
+    Q_ASSERT(cbD->recordingPass != QVkCommandBuffer::NoPass);
+
+    VkPipelineLayout layout = VK_NULL_HANDLE;
+    VkShaderStageFlags stages = 0;
+    if (cbD->recordingPass == QVkCommandBuffer::ComputePass) {
+        if (QVkComputePipeline *psD = QRHI_RES(QVkComputePipeline, cbD->currentComputePipeline)) {
+            layout = psD->layout;
+            stages = psD->pushConstantStages;
+        }
+    } else {
+        if (QVkGraphicsPipeline *psD = QRHI_RES(QVkGraphicsPipeline, cbD->currentGraphicsPipeline)) {
+            layout = psD->layout;
+            stages = psD->pushConstantStages;
+        }
+    }
+    if (!layout || !stages) {
+        qWarning("No pipeline with a push constant block is active; setPushConstants ignored");
+        return;
+    }
+
+    if (cbD->passUsesSecondaryCb) {
+        df->vkCmdPushConstants(cbD->activeSecondaryCbStack.last(), layout, stages, offset, size, data);
+    } else {
+        const int dataIndex = cbD->pools.pushConstantData.size();
+        cbD->pools.pushConstantData.resize(dataIndex + int((size + 3) / 4));
+        memcpy(cbD->pools.pushConstantData.data() + dataIndex, data, size);
+        QVkCommandBuffer::Command &cmd(cbD->commands.get());
+        cmd.cmd = QVkCommandBuffer::Command::SetPushConstants;
+        cmd.args.setPushConstants.layout = layout;
+        cmd.args.setPushConstants.stages = stages;
+        cmd.args.setPushConstants.offset = offset;
+        cmd.args.setPushConstants.size = size;
+        cmd.args.setPushConstants.dataIndex = dataIndex;
     }
 }
 
@@ -9038,6 +9089,18 @@ bool QVkGraphicsPipeline::create()
     QVkShaderResourceBindings *srbD = QRHI_RES(QVkShaderResourceBindings, m_shaderResourceBindings);
     Q_ASSERT(m_shaderResourceBindings && srbD->layout);
     pipelineLayoutInfo.pSetLayouts = &srbD->layout;
+    VkPushConstantRange pushConstantRange = {};
+    for (const QRhiShaderStage &shaderStage : std::as_const(m_shaderStages)) {
+        for (const QShaderDescription::PushConstantBlock &block : shaderStage.shader().description().pushConstantBlocks()) {
+            pushConstantRange.stageFlags |= toVkShaderStage(shaderStage.type());
+            pushConstantRange.size = qMax(pushConstantRange.size, uint32_t((block.size + 3) & ~3));
+        }
+    }
+    if (pushConstantRange.size) {
+        pipelineLayoutInfo.pushConstantRangeCount = 1;
+        pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
+    }
+    pushConstantStages = pushConstantRange.stageFlags;
     VkResult err = rhiD->df->vkCreatePipelineLayout(rhiD->dev, &pipelineLayoutInfo, nullptr, &layout);
     if (err != VK_SUCCESS) {
         qWarning("Failed to create pipeline layout: %d", err);
@@ -9330,6 +9393,16 @@ bool QVkComputePipeline::create()
     QVkShaderResourceBindings *srbD = QRHI_RES(QVkShaderResourceBindings, m_shaderResourceBindings);
     Q_ASSERT(m_shaderResourceBindings && srbD->layout);
     pipelineLayoutInfo.pSetLayouts = &srbD->layout;
+    VkPushConstantRange pushConstantRange = {};
+    for (const QShaderDescription::PushConstantBlock &block : m_shaderStage.shader().description().pushConstantBlocks()) {
+        pushConstantRange.stageFlags |= VK_SHADER_STAGE_COMPUTE_BIT;
+        pushConstantRange.size = qMax(pushConstantRange.size, uint32_t((block.size + 3) & ~3));
+    }
+    if (pushConstantRange.size) {
+        pipelineLayoutInfo.pushConstantRangeCount = 1;
+        pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
+    }
+    pushConstantStages = pushConstantRange.stageFlags;
     VkResult err = rhiD->df->vkCreatePipelineLayout(rhiD->dev, &pipelineLayoutInfo, nullptr, &layout);
     if (err != VK_SUCCESS) {
         qWarning("Failed to create pipeline layout: %d", err);

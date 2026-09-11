@@ -1837,6 +1837,7 @@ public:
     void setBlendConstants(const QColor &c);
     void setStencilRef(quint32 refValue);
     void setShadingRate(const QSize &coarsePixelSize);
+    void setPushConstants(quint32 offset, quint32 size, const void *data);
 
     void draw(quint32 vertexCount,
               quint32 instanceCount = 1,
@@ -2095,6 +2096,7 @@ public:
         DispatchIndirect,
         DrawIndirectCount,
         BufferToBufferCopy,
+        PushConstants,
     };
 
     enum BeginFrameFlag {
@@ -2123,7 +2125,8 @@ public:
         MaxVertexOutputs,
         ShadingRateImageTileSize,
         MaxVertexStorageBuffers,
-        MaxFragmentStorageBuffers
+        MaxFragmentStorageBuffers,
+        MaxPushConstantsSize
     };
 
     ~QRhi();

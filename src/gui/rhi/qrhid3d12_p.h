@@ -468,11 +468,15 @@ struct QD3D12ShaderBytecodeCache
 {
     struct Shader {
         Shader() = default;
-        Shader(const QByteArray &bytecode, const QShader::NativeResourceBindingMap &rbm)
-            : bytecode(bytecode), nativeResourceBindingMap(rbm)
+        Shader(const QByteArray &bytecode, const QShader::NativeResourceBindingMap &rbm,
+               int pushConstantRegister = -1, quint32 pushConstantSize = 0)
+            : bytecode(bytecode), nativeResourceBindingMap(rbm),
+              pushConstantRegister(pushConstantRegister), pushConstantSize(pushConstantSize)
         { }
         QByteArray bytecode;
         QShader::NativeResourceBindingMap nativeResourceBindingMap;
+        int pushConstantRegister = -1;
+        quint32 pushConstantSize = 0;
     };
 
     QHash<QRhiShaderStage, Shader> data;
@@ -646,6 +650,8 @@ struct QD3D12ShaderStageData
     bool valid = false; // to allow simple arrays where unused stages are indicated by !valid
     QD3D12Stage stage = VS;
     QShader::NativeResourceBindingMap nativeResourceBindingMap;
+    int pushConstantRegister = -1;
+    quint32 pushConstantSize = 0;
 };
 
 struct QD3D12ShaderResourceBindings;
@@ -934,6 +940,9 @@ struct QD3D12ShaderResourceBindings : public QRhiShaderResourceBindings
 
     QD3D12ObjectHandle createRootSignature(const QD3D12ShaderStageData *stageData, int stageCount);
 
+    // Set by createRootSignature() for the pipeline that asked for it.
+    int pushConstantRootParamIndex = -1;
+
     struct VisitorData {
         QVarLengthArray<D3D12_ROOT_PARAMETER1, 2> cbParams[6];
 
@@ -1083,6 +1092,7 @@ struct QD3D12GraphicsPipeline : public QRhiGraphicsPipeline
 
     QD3D12ObjectHandle handle;
     QD3D12ObjectHandle rootSigHandle;
+    int pushConstantRootParamIndex = -1;
     std::array<QD3D12ShaderStageData, 5> stageData;
     D3D12_PRIMITIVE_TOPOLOGY topology;
     UINT viewInstanceMask = 0;
@@ -1099,6 +1109,7 @@ struct QD3D12ComputePipeline : public QRhiComputePipeline
 
     QD3D12ObjectHandle handle;
     QD3D12ObjectHandle rootSigHandle;
+    int pushConstantRootParamIndex = -1;
     QD3D12ShaderStageData stageData;
     uint generation = 0;
     friend class QRhiD3D12;
@@ -1329,6 +1340,7 @@ public:
     void setScissor(QRhiCommandBuffer *cb, const QRhiScissor &scissor) override;
     void setBlendConstants(QRhiCommandBuffer *cb, const QColor &c) override;
     void setStencilRef(QRhiCommandBuffer *cb, quint32 refValue) override;
+    void setPushConstants(QRhiCommandBuffer *cb, quint32 offset, quint32 size, const void *data) override;
     void setShadingRate(QRhiCommandBuffer *cb, const QSize &coarsePixelSize) override;
 
     void draw(QRhiCommandBuffer *cb, quint32 vertexCount,
