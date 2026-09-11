@@ -287,6 +287,7 @@ public:
     QList<BufferAndEncoding> dataInfo;
     QStringDecoder chunkDecoder;
     void appendDataWithEncoding(const QByteArray &data, QStringDecoder::Encoding enc);
+    bool tryAppendViewWithEncoding(QByteArrayView data, QStringDecoder::Encoding enc);
     void appendViewWithEncoding(QByteArrayView data, QStringDecoder::Encoding enc);
 
     QByteArray rawReadBuffer;
