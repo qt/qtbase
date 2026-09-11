@@ -641,6 +641,8 @@ private slots:
     void garbageInXMLPrologDefaultCodec() const;
     void garbageInXMLPrologUTF8Explicitly() const;
     void clear() const;
+    void clearReallyResets_data() const;
+    void clearReallyResets() const;
     void checkCommentIndentation() const;
     void checkCommentIndentation_data() const;
     void crashInXmlStreamReader() const;
@@ -2482,6 +2484,98 @@ void tst_QXmlStream::clear() const
         reader.readNext();
     }
     QCOMPARE(reader.tokenType(), QXmlStreamReader::EndDocument);
+}
+
+void tst_QXmlStream::clearReallyResets_data() const
+{
+    QTest::addColumn<int>("limit");
+    // 1st document:
+    QTest::addColumn<QString>("xml1");
+    QTest::addColumn<QXmlStreamReader::Error>("err1");
+    // 2nd document
+    QTest::addColumn<QString>("xml2");
+
+    auto row = [](const char *tag,
+                  int limit,
+                  const QString &xml1,
+                  const QString &xml2,
+                  QXmlStreamReader::Error err1 = QXmlStreamReader::Error::NotWellFormedError)
+    {
+        QTest::addRow("%s", tag) << limit << xml1 << err1 << xml2;
+    };
+
+    {
+        // The 1st document abandons a parse in the middle of an entity
+        // expansion. The 2nd one then expands its own entity twice: each
+        // expansion fits the budget on its own -- a fresh reader parses the
+        // document happily -- but the shared reader charges the two of them to
+        // one budget instead of giving each a full one, and rejects the second:
+
+        constexpr auto xml =
+                "<?xml version='1.0'?>"
+                "<!DOCTYPE doc [<!ENTITY %1 '%2'>]>"
+                "<doc>&%1;&%1;</doc>"_L1;
+
+        row("expansion-budget-resets-after-each-entity",
+            20,
+            xml.arg("e1"_L1, "&na;"_L1),
+            xml.arg("e2"_L1, "123456789012345"_L1));
+    }
+}
+
+static QString readAllText(QXmlStreamReader &reader)
+{
+    QString result;
+    while (!reader.atEnd()) {
+        if (reader.readNext() == QXmlStreamReader::Characters)
+            result += reader.text();
+    }
+    return result;
+}
+
+void tst_QXmlStream::clearReallyResets() const
+{
+    QFETCH(const int, limit);
+    // 1st document
+    QFETCH(const QString, xml1);
+    QFETCH(const QXmlStreamReader::Error, err1);
+    // 2nd document
+    QFETCH(const QString, xml2);
+
+    //
+    // GIVEN: a reader shared between two documents
+    //
+
+    QXmlStreamReader r;
+    r.setEntityExpansionLimit(limit);
+
+    //
+    // WHEN: clear()ing the reader after parsing the first document
+    //
+
+    r.addData(xml1);
+    while (!r.atEnd())
+        r.readNext();
+    QCOMPARE(r.error(), err1);
+
+    r.clear();
+
+    //
+    // THEN: the second document parses like in a fresh reader
+    //
+
+    QXmlStreamReader fresh;
+    fresh.setEntityExpansionLimit(limit);
+    fresh.addData(xml2);
+
+    r.addData(xml2);
+
+    QEXPECT_FAIL("expansion-budget-resets-after-each-entity", "QTBUG-150216", Continue);
+    QCOMPARE(readAllText(r), readAllText(fresh));
+    QEXPECT_FAIL("expansion-budget-resets-after-each-entity", "QTBUG-150216", Continue);
+    QCOMPARE(r.error(), fresh.error());
+    QEXPECT_FAIL("expansion-budget-resets-after-each-entity", "QTBUG-150216", Continue);
+    QCOMPARE(r.errorString(), fresh.errorString());
 }
 
 void tst_QXmlStream::checkCommentIndentation_data() const
