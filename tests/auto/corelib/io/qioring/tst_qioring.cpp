@@ -428,6 +428,43 @@ void tst_QIORing::stat()
     QCOMPARE(size, 11);
 }
 
+static bool canCreateFile(const QString &path, qsizetype size)
+{
+#ifdef Q_OS_WIN
+    HANDLE fd = CreateFileW(path.toStdWString().data(),
+                            GENERIC_WRITE, 0, NULL,
+                            CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL,
+                            NULL);
+    if (fd == INVALID_HANDLE_VALUE)
+        return false;
+
+    auto guard = qScopeGuard([fd, path] {
+        CloseHandle(fd);
+        DeleteFileW(path.toStdWString().c_str());
+    });
+
+    FILE_ALLOCATION_INFO info;
+    info.AllocationSize.QuadPart = size;
+
+    return SetFileInformationByHandle(fd, FileAllocationInfo, &info, sizeof(info));
+#else
+#ifndef QT_LARGEFILE_SUPPORT
+    return false; // we need it for large files
+#endif
+    int fd = QT_OPEN(path.toLocal8Bit().constData(), O_WRONLY | O_CREAT | O_TRUNC);
+    if (fd == -1)
+        return false;
+
+    if (unlink(path.toLocal8Bit().constData()) == -1)
+        return false;
+
+    auto guard = qScopeGuard([fd] { QT_CLOSE(fd); });
+
+    int res = posix_fallocate64(fd, 0, size);
+    return res == 0;
+#endif
+}
+
 void tst_QIORing::fiveGiBReadWrite()
 {
 #if Q_PROCESSOR_WORDSIZE < 8
@@ -441,11 +478,14 @@ void tst_QIORing::fiveGiBReadWrite()
     for (size_t i = 0; i < Size; ++i)
         bytes[i] = std::byte(i % SmallPrime);
 
-    QIORing ring;
-    QVERIFY(ring.ensureInitialized());
-
     QTemporaryDir dir;
     auto path = dir.filePath("largefile");
+
+    if (!canCreateFile(path, Size))
+        QSKIP("Cannot create a file of the requested size.");
+
+    QIORing ring;
+    QVERIFY(ring.ensureInitialized());
 
     auto fd = openHelper(&ring, path, QIODevice::ReadWrite);
     auto cleanup = qScopeGuard([fd]() { closeFile(fd); });
@@ -502,11 +542,14 @@ void tst_QIORing::tenGiBReadWriteVectored()
         QSKIP("Failed to allocate the buffer (not enough memory?)");
     std::fill_n(bytes.get(), Size / Slices, std::byte(242));
 
-    QIORing ring;
-    QVERIFY(ring.ensureInitialized());
-
     QTemporaryDir dir;
     auto path = dir.filePath("largefile");
+
+    if (!canCreateFile(path, Size))
+        QSKIP("Cannot create a file of the requested size.");
+
+    QIORing ring;
+    QVERIFY(ring.ensureInitialized());
 
     auto fd = openHelper(&ring, path, QIODevice::ReadWrite);
     auto cleanup = qScopeGuard([fd]() { closeFile(fd); });
