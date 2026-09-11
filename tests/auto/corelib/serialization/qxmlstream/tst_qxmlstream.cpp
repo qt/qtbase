@@ -592,6 +592,8 @@ private slots:
     void testReader_data() const;
     void reportSuccess() const;
     void reportSuccess_data() const;
+    void requestingDeclarationsWithinDTD_data() const;
+    void requestingDeclarationsWithinDTD() const;
     void writerHangs() const;
     void writerAutoFormattingWithComments() const;
     void writerAutoFormattingWithTabs() const;
@@ -1088,6 +1090,89 @@ void tst_QXmlStream::testReader_data() const
                 << dir.filePath(filename)
                 << dir.filePath(reference);
     }
+}
+
+void tst_QXmlStream::requestingDeclarationsWithinDTD_data() const
+{
+    QTest::addColumn<QString>("xml");
+    QTest::addColumn<QXmlStreamReader::TokenType>("askAt");
+
+    // Two declarations, then a token delivered from inside the still-open
+    // internal subset, then two more. Asking at that token reports the first
+    // two and discards them, so the DTD token reports only the last two.
+    {
+        constexpr auto xml = "<!DOCTYPE doc ["
+                             "<!NOTATION n1 PUBLIC 'p1'>"
+                             "<!ENTITY e1 SYSTEM 's1' NDATA n1>"
+                             "%1"
+                             "<!NOTATION n2 PUBLIC 'p2'>"
+                             "<!ENTITY e2 SYSTEM 's2' NDATA n2>"
+                             "]><doc/>"_L1;
+        QTest::newRow("pi-in-dtd")
+                << xml.arg("<?pi?>"_L1)
+                << QXmlStreamReader::TokenType::ProcessingInstruction;
+        QTest::newRow("comment-in-dtd")
+                << xml.arg("<!-- c -->"_L1)
+                << QXmlStreamReader::TokenType::Comment;
+    }
+
+    // Asking also clears parameterEntityHash, so the %pe; that follows no
+    // longer resolves and the entity it would have declared goes missing:
+    QTest::newRow("parameter-entity-after-pi")
+            << R"(<!DOCTYPE doc [)"
+               R"(<!ENTITY % pe "<!ENTITY x 'X'>">)"
+               R"(<?pi?>)"
+               R"(%pe;)"
+               R"(]><doc>&x;</doc>)"
+            << QXmlStreamReader::TokenType::ProcessingInstruction;
+
+    // Same clear, but here the token we ask at *is* the expansion of %pe;, so
+    // the hash goes away while entityReferenceStack still holds a frame
+    // borrowing from it. The next readNext() then reduces entity_done, looks
+    // the name up in the emptied hash and dereferences the end iterator:
+    // Q_ASSERT(it != reference.hash->end()) in debug builds, undefined
+    // behaviour in release ones.
+    QTest::newRow("pi-from-parameter-entity")
+            << "<!DOCTYPE doc [<!ENTITY % pe '<?pi data?>'> %pe; ]><doc/>)"
+            << QXmlStreamReader::TokenType::ProcessingInstruction;
+}
+
+void tst_QXmlStream::requestingDeclarationsWithinDTD() const
+{
+    QFETCH(const QString, xml);
+    QFETCH(const QXmlStreamReader::TokenType, askAt);
+
+    //
+    // GIVEN: two readers that parse the same XML
+    //
+
+    QXmlStreamReader control, subject;
+    control.addData(xml);
+    subject.addData(xml);
+
+    const QByteArray expected = dumpTokenStream(control);
+
+    //
+    // WHEN: one of them is asked for the DTD's declarations before the DTD is
+    //       complete
+    //
+
+    if (qstrcmp(QTest::currentDataTag(), "pi-from-parameter-entity") == 0)
+        QSKIP("Q_ASSERT or UB (QTBUG-150266)");
+
+    const QByteArray actual = dumpTokenStream(subject, {
+            {askAt, [](QXmlStreamReader &r) {
+                         (void)r.notationDeclarations();
+                         (void)r.entityDeclarations();
+                     }},
+        });
+
+    //
+    // THEN: the two token streams don't differ
+    //
+
+    QEXPECT_FAIL("", "QTBUG-150266", Continue);
+    QCOMPARE(actual, expected);
 }
 
 void tst_QXmlStream::addExtraNamespaceDeclarations()
