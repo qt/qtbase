@@ -1081,6 +1081,8 @@ void QXmlStreamReaderPrivate::init()
     decoder = QStringDecoder();
     attributeStack.clear();
     attributeStack.reserve(16);
+    entityReferenceStack.clear();
+    entityReferenceStack.reserve(16);
     entityParser.reset();
     hasCheckedStartDocument = false;
     normalizeLiterals = false;
