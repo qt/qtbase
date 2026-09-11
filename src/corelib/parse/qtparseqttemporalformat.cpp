@@ -15,6 +15,27 @@ namespace QtParseQtTemporalFormat {
 inline constexpr char timeFormats[] = "Hhmsz"; // Omits [aA][pP]? deliberately.
 inline constexpr char dateFormats[] = "Mdy";
 
+/*!
+    \internal
+    Parse a prefix of \a pattern as a format for the data indicated by \a form.
+
+    Parses the longest prefix of \a pattern that constitutes a valid Qt temporal
+    format string. Only the field indicator characters for data indicated in \a
+    form are recognized as such; everything else (including what other forms
+    might accept as field indicators) is treated as literal text. The only text
+    that can be invalid is thus one containing an odd number of single quote
+    characters; the portion up to the last of these will be parsed, in that
+    case, and the return's \c endIndex will indicate the location of the
+    unmatched single quote. Otherwise, \c endIndex shall equal pattern.size().
+    The return's \c fields is a list of \l {QtTemporalPattern::} {TemporalField}
+    structures representing what was parsed, each with \c options matching the
+    pre-6.12 semantics of the Qt formats for temporal data, with some tweaks to
+    enable desired new features, notably years with (a leading sign and) more
+    than four digits.
+
+    \sa QtTemporalPattern, QDate::fromString(), QTime::fromString(), QDateTime::fromString()
+*/
+
 ParsedDateTimeFormat prefix(QStringView pattern, QtTemporalPattern::DateTimeParts form)
 {
     using namespace QtTemporalPattern;
