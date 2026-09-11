@@ -118,6 +118,8 @@ void tst_QtParseQtTemporalFormat::prefix_data()
         // Incidentally check a lone unquoted y is treated as literal, not year-field:
         << u"''li''y't'''eral''"_s << Parts{} << 18
         << Fields{ Field{u"'li'yt'eral'"_s, 0, Flags{}, Cat::Literal} };
+    // An unmatched single-quote is invalid, so the prefix-parse stops before it:
+    QTest::addRow("lone-quote") << u"'"_s << Parts{} << 0 << Fields{};
     QTest::addRow("hh':'mm' 'aP'unclosed/time")
         << u"hh':'mm' 'aP'unclosed"_s << Parts{Part::Time} << 12
         << Fields{ Field{QString(), 2, Flag::Numeric | Flag::ZeroPad, Cat::HourMod12},
@@ -360,6 +362,11 @@ void tst_QtParseQtTemporalFormat::prefix()
         });
         QCOMPARE(parsed.fields, fields);
         report.dismiss();
+        // Field-indicators for fields not relevant to the requested form are
+        // treated as literals, not field-indicators, so the only failure mode
+        // is unmatched quote:
+        if (parsed.size() < text.size())
+            QCOMPARE(text.at(parsed.endIndex), u'\'');
     } else {
         QVERIFY(parsed.isEmpty());
     }
