@@ -13,6 +13,7 @@ qt_internal_add_tool(${target_name}
     SOURCES
         etw.cpp etw.h
         helpers.cpp helpers.h
+        hitrace.cpp hitrace.h
         ctf.cpp ctf.h
         lttng.cpp lttng.h
         callback.cpp callback.h

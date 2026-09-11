@@ -1279,6 +1279,7 @@ function(qt_internal_create_tracepoints name tracepoints_file)
 
     if(QT_FEATURE_lttng
             OR QT_FEATURE_etw
+            OR QT_FEATURE_hitrace
             OR QT_FEATURE_ctf
             OR QT_FEATURE_tracecallback)
         set(source_path "${CMAKE_CURRENT_BINARY_DIR}/${provider_name}_tracepoints.cpp")
@@ -1294,6 +1295,9 @@ function(qt_internal_create_tracepoints name tracepoints_file)
             target_link_libraries(${name} PRIVATE LTTng::UST)
         elseif(QT_FEATURE_etw)
             set(tracegen_arg "etw")
+        elseif(QT_FEATURE_hitrace)
+            set(tracegen_arg "hitrace")
+            target_link_libraries(${name} PRIVATE hitrace_ndk.z)
         elseif(QT_FEATURE_ctf)
             set(tracegen_arg "ctf")
         elseif(QT_FEATURE_tracecallback)
@@ -1332,6 +1336,7 @@ function(qt_internal_generate_tracepoints name provider)
 
     if(QT_FEATURE_lttng
             OR QT_FEATURE_etw
+            OR QT_FEATURE_hitrace
             OR QT_FEATURE_ctf
             OR QT_FEATURE_tracecallback)
 
@@ -1374,6 +1379,9 @@ function(qt_internal_generate_tracepoints name provider)
             target_link_libraries(${name} PRIVATE LTTng::UST)
         elseif(QT_FEATURE_etw)
             set(tracegen_arg "etw")
+        elseif(QT_FEATURE_hitrace)
+            set(tracegen_arg "hitrace")
+            target_link_libraries(${name} PRIVATE hitrace_ndk.z)
         elseif(QT_FEATURE_ctf)
             set(tracegen_arg "ctf")
         elseif(QT_FEATURE_tracecallback)

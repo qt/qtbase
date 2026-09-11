@@ -1644,6 +1644,11 @@ qt_internal_extend_target(Core CONDITION WASM
         kernel/qeventdispatcher_wasm.cpp kernel/qeventdispatcher_wasm_p.h
 )
 
+qt_internal_extend_target(Core CONDITION QT_FEATURE_hitrace
+    SOURCES
+        tracing/qhitrace.cpp tracing/qhitrace_p.h
+)
+
 qt_internal_extend_target(Core CONDITION QT_FEATURE_ctf
     SOURCES
         tracing/qctf_p.h tracing/qctf.cpp

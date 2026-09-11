@@ -1289,6 +1289,7 @@ qt_feature("lttng" PRIVATE
     ENABLE INPUT_trace STREQUAL 'lttng' OR ( INPUT_trace STREQUAL 'yes' AND LINUX )
     DISABLE INPUT_trace STREQUAL 'etw'
             OR INPUT_trace STREQUAL 'no'
+            OR INPUT_trace STREQUAL 'hitrace'
             OR INPUT_trace STREQUAL 'ctf'
             OR INPUT_trace STREQUAL 'tracecallback'
 )
@@ -1299,6 +1300,18 @@ qt_feature("etw" PRIVATE
     ENABLE INPUT_trace STREQUAL 'etw' OR ( INPUT_trace STREQUAL 'yes' AND WIN32 )
     DISABLE INPUT_trace STREQUAL 'lttng'
             OR INPUT_trace STREQUAL 'no'
+            OR INPUT_trace STREQUAL 'hitrace'
+            OR INPUT_trace STREQUAL 'ctf'
+            OR INPUT_trace STREQUAL 'tracecallback'
+)
+qt_feature("hitrace" PRIVATE
+    LABEL "HiTrace"
+    AUTODETECT OFF
+    CONDITION OHOS
+    ENABLE INPUT_trace STREQUAL 'hitrace' OR ( INPUT_trace STREQUAL 'yes' AND OHOS )
+    DISABLE INPUT_trace STREQUAL 'etw'
+            OR INPUT_trace STREQUAL 'no'
+            OR INPUT_trace STREQUAL 'lttng'
             OR INPUT_trace STREQUAL 'ctf'
             OR INPUT_trace STREQUAL 'tracecallback'
 )
@@ -1309,6 +1322,7 @@ qt_feature("ctf" PRIVATE
     DISABLE INPUT_trace STREQUAL 'etw'
             OR INPUT_trace STREQUAL 'no'
             OR INPUT_trace STREQUAL 'lttng'
+            OR INPUT_trace STREQUAL 'hitrace'
             OR INPUT_trace STREQUAL 'tracecallback'
 )
 qt_feature("tracecallback" PRIVATE
@@ -1318,6 +1332,7 @@ qt_feature("tracecallback" PRIVATE
     DISABLE INPUT_trace STREQUAL 'etw'
             OR INPUT_trace STREQUAL 'no'
             OR INPUT_trace STREQUAL 'lttng'
+            OR INPUT_trace STREQUAL 'hitrace'
             OR INPUT_trace STREQUAL 'ctf'
 )
 qt_feature("forkfd_pidfd" PRIVATE
@@ -1382,7 +1397,7 @@ qt_configure_add_summary_entry(ARGS "permissions")
 qt_configure_add_summary_entry(ARGS "ipc_posix" CONDITION UNIX)
 qt_configure_add_summary_entry(
     TYPE "firstAvailableFeature"
-    ARGS "etw lttng ctf tracecallback"
+    ARGS "etw lttng hitrace ctf tracecallback"
     MESSAGE "Tracing backend"
 )
 qt_configure_add_summary_entry(ARGS "openssl-hash")
