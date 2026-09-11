@@ -107,16 +107,19 @@ QCollatorSortKey QCollator::sortKey(const QString &string) const
 
     auto text = reinterpret_cast<const UniChar *>(string.constData());
     // Documentation recommends having it 5 times as big as the input
-    ret.resizeForOverwrite(string.size() * 5);
+    ret.resizeForOverwrite(string.isEmpty() ? 7 : string.size() * 5);
     ItemCount actualSize;
     int status = UCGetCollationKey(d->collator, text, string.size(),
                                    ret.size(), &actualSize, ret.data());
 
+    if (status == 0 && qsizetype(actualSize) > ret.size())
+        status = kUCOutputBufferTooSmall;   // retry
+
     ret.resize(actualSize + 1);
-    if (status == kUCOutputBufferTooSmall) {
+    if (status == kUCOutputBufferTooSmall || status == kCollateBufferTooSmall) {
         status = UCGetCollationKey(d->collator, text, string.size(),
                                    ret.size(), &actualSize, ret.data());
-        Q_ASSERT(status != kUCOutputBufferTooSmall);
+        Q_ASSERT(status != kUCOutputBufferTooSmall && status != kCollateBufferTooSmall);
         Q_ASSERT(ret.size() == qsizetype(actualSize + 1));
     }
     ret[actualSize] = 0;
