@@ -22,6 +22,8 @@
 
 #include "qc14n.h"
 
+#include <QtCore/qxpfunctional.h>
+#include <map>
 #include <variant>
 
 using namespace Qt::StringLiterals;
@@ -664,7 +666,14 @@ private slots:
     void readElementTextDeepNesting() const;
 
 private:
+    using Actions = std::map<
+            QXmlStreamReader::TokenType,
+            qxp::function_ref<void(QXmlStreamReader &) const>
+        >;
+
     static QByteArray readFile(const QString &filename);
+    static QByteArray dumpTokenStream(QXmlStreamReader &r, Actions actions = {});
+
     void entityExpansionLimitImpl(const QString &xml, QXmlStreamEntityResolver *resolver = nullptr) const;
 
     QTemporaryDir m_tempDir;
@@ -915,6 +924,11 @@ QByteArray tst_QXmlStream::readFile(const QString &filename)
     QXmlStreamReader reader;
 
     reader.setDevice(&file);
+    return dumpTokenStream(reader);
+}
+
+QByteArray tst_QXmlStream::dumpTokenStream(QXmlStreamReader &reader, Actions actions)
+{
     QByteArray outarray;
     QTextStream writer(&outarray);
     // We always want UTF-8, and not what the system picks up.
@@ -922,6 +936,10 @@ QByteArray tst_QXmlStream::readFile(const QString &filename)
 
     while (!reader.atEnd()) {
         const auto tok = reader.readNext();
+
+        if (const auto it = actions.find(tok); it != actions.end())
+            it->second(reader);
+
         writer << reader.tokenString() << '(';
 
         // Accessors shared by several token types; asked after the switch so
