@@ -1091,6 +1091,7 @@ void QXmlStreamReaderPrivate::init()
     attributeStack.reserve(16);
     entityReferenceStack.clear();
     entityReferenceStack.reserve(16);
+    entityLength = 0;
     entityParser.reset();
     hasCheckedStartDocument = false;
     normalizeLiterals = false;
