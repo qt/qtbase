@@ -4,6 +4,10 @@
 #include <private/qhitrace_p.h>
 #include <private/qtools_p.h>
 
+#include <QtCore/qlogging.h>
+
+#include <hitrace/trace.h>
+
 #include <cstdarg>
 #include <cstdio>
 #include <cstring>
@@ -23,6 +27,9 @@ constexpr int escapeDigits = 2 * sizeof(char16_t);
 constexpr int bitsPerHexDigit = 4;
 constexpr qsizetype shortEscapeSize = 2;
 constexpr qsizetype unicodeEscapeSize = 2 + escapeDigits;
+constexpr int32_t unregisteredListener = -1;
+
+Q_CONSTINIT int32_t qtHiTraceListener = unregisteredListener;
 
 bool isSeparator(QChar unit)
 {
@@ -136,6 +143,33 @@ QByteArray elided(QStringView value, qsizetype maximumSize)
     return escaped(value.first(head.count)) + elidedMark + escaped(value.last(tail.count));
 }
 
+void qtHiTraceStatusChanged(bool enabled)
+{
+    qtHiTraceEnabled.storeRelaxed(enabled);
+}
+
+void qtHiTraceWatchStatus()
+{
+    const int32_t listener = OH_HiTrace_RegisterTraceListener(qtHiTraceStatusChanged);
+    if (listener < 0) {
+        qtHiTraceEnabled.storeRelaxed(true);
+        qWarning("Qt tracing: OH_HiTrace_RegisterTraceListener() failed with %d, so tracepoint "
+                 "arguments are rendered whether or not a capture is running",
+                 listener);
+        return;
+    }
+
+    qtHiTraceListener = listener;
+    if (OH_HiTrace_IsTraceEnabled())
+        qtHiTraceEnabled.storeRelaxed(true);
+}
+
+void qtHiTraceUnwatchStatus()
+{
+    if (qtHiTraceListener != unregisteredListener)
+        OH_HiTrace_UnregisterTraceListener(qtHiTraceListener);
+}
+
 } // namespace
 
 QByteArray qtHiTraceArgument(const char *value, qsizetype maximumSize)
@@ -169,5 +203,10 @@ const char *qtHiTraceFormatArguments(int sliceNameSize, const char *format, ...)
     }
     return renderedArguments;
 }
+
+Q_CONSTINIT QBasicAtomicInteger<bool> qtHiTraceEnabled = Q_BASIC_ATOMIC_INITIALIZER(false);
+
+Q_CONSTRUCTOR_FUNCTION(qtHiTraceWatchStatus)
+Q_DESTRUCTOR_FUNCTION(qtHiTraceUnwatchStatus)
 
 QT_END_NAMESPACE

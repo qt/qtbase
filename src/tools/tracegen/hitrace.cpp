@@ -386,7 +386,7 @@ void writeWrapper(QTextStream &stream, const Tracepoint &tracepoint, const Custo
             "OH_HiTrace_StartTraceEx("_L1 + traceLevel + ", "_L1 + sliceIdentifier + ", "_L1;
 
     if (hasCustomArgs) {
-        stream << "    " << startTrace << "OH_HiTrace_IsTraceEnabled() ? " << render << "("
+        stream << "    " << startTrace << "qtHiTraceIsEnabled() ? " << render << "("
                << paramList << ") : \"\");\n";
     } else {
         stream << "    " << startTrace << "\"\");\n";
@@ -400,7 +400,7 @@ void writeWrapper(QTextStream &stream, const Tracepoint &tracepoint, const Custo
 
     stream << "inline bool trace_" << name << "_enabled()\n"
            << "{\n"
-           << "    return OH_HiTrace_IsTraceEnabled();\n"
+           << "    return qtHiTraceIsEnabled();\n"
            << "}\n";
 
     stream << "} // namespace QtPrivate\n"

@@ -16,6 +16,7 @@
 //
 
 #include <QtCore/private/qglobal_p.h>
+#include <QtCore/qbasicatomic.h>
 #include <QtCore/qbytearray.h>
 #include <QtCore/qstring.h>
 
@@ -37,6 +38,13 @@ Q_CORE_EXPORT const char *qtHiTraceFormatArguments(int sliceNameSize, const char
 
 Q_CORE_EXPORT QByteArray qtHiTraceArgument(const char *value, qsizetype maximumSize);
 Q_CORE_EXPORT QByteArray qtHiTraceArgument(const QString &value, qsizetype maximumSize);
+
+Q_CORE_EXPORT extern QBasicAtomicInteger<bool> qtHiTraceEnabled;
+
+inline bool qtHiTraceIsEnabled()
+{
+    return qtHiTraceEnabled.loadRelaxed();
+}
 
 QT_END_NAMESPACE
 

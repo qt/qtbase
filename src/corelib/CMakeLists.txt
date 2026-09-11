@@ -1647,6 +1647,8 @@ qt_internal_extend_target(Core CONDITION WASM
 qt_internal_extend_target(Core CONDITION QT_FEATURE_hitrace
     SOURCES
         tracing/qhitrace.cpp tracing/qhitrace_p.h
+    LIBRARIES
+        hitrace_ndk.z
 )
 
 qt_internal_extend_target(Core CONDITION QT_FEATURE_ctf
