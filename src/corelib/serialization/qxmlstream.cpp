@@ -537,33 +537,31 @@ QXmlStreamReader::QXmlStreamReader(QIODevice *device)
 void QXmlStreamReaderPrivate::appendDataWithEncoding(const QByteArray &data,
                                                      QStringDecoder::Encoding enc)
 {
-    if (data.isEmpty())
+    if (tryAppendViewWithEncoding(data, enc))
         return;
-    // Joining the buffers might be useful for a stateful decoder, or when
-    // e == System, meaning that we have to try to guess the decoder
-    if (!dataInfo.empty()) {
-        auto &last = dataInfo.last();
-        if (last.encoding == enc) {
-            last.buffer.append(data);
-            return;
-        }
-    }
     dataInfo.emplace_back(data, enc);
 }
 
-void QXmlStreamReaderPrivate::appendViewWithEncoding(QByteArrayView data, QStringDecoder::Encoding enc)
+bool QXmlStreamReaderPrivate::tryAppendViewWithEncoding(QByteArrayView data, QStringDecoder::Encoding enc)
 {
     if (data.isEmpty())
-        return;
+        return true;
     // Joining the buffers might be useful for a stateful decoder, or when
     // e == System, meaning that we have to try to guess the decoder
     if (!dataInfo.empty()) {
         auto &last = dataInfo.back();
         if (last.encoding == enc) {
             last.buffer.append(data);
-            return;
+            return true;
         }
     }
+    return false;
+}
+
+void QXmlStreamReaderPrivate::appendViewWithEncoding(QByteArrayView data, QStringDecoder::Encoding enc)
+{
+    if (tryAppendViewWithEncoding(data, enc))
+        return;
     dataInfo.emplace_back(data.toByteArray(), enc);
 }
 
