@@ -16,6 +16,7 @@
 //
 
 #include <QtWaylandClient/private/qwayland-xx-cutouts-v1.h>
+#include <QMargins>
 
 QT_BEGIN_NAMESPACE
 
