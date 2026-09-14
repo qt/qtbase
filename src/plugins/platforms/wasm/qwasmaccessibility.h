@@ -41,8 +41,6 @@ public:
     QWasmAccessibility();
     ~QWasmAccessibility();
 
-    static QWasmAccessibility* get();
-
     static void addAccessibilityEnableButton(QWindow *window);
     static void onShowWindow(QWindow *);
     static void onRemoveWindow(QWindow *);
@@ -50,19 +48,17 @@ public:
     static void enable();
 
 private:
-    void addAccessibilityEnableButtonImpl(QWindow *window);
-    void enableAccessibility();
-    void onShowWindowImpl(QWindow *);
-    void onRemoveWindowImpl(QWindow *);
+    static QWasmAccessibility *instance();
 
-    emscripten::val getA11yContainer(QWindow *window);
-    emscripten::val getA11yContainer(QAccessibleInterface *iface);
+    void addEnableButton(QWindow *window);
+    void enableAccessibility();
+    void removeWindow(QWindow *window);
+
     emscripten::val getDescribedByContainer(QWindow *window);
     emscripten::val getDescribedByContainer(QAccessibleInterface *iface);
     emscripten::val getElementContainer(QWindow *window);
     emscripten::val getElementContainer(QAccessibleInterface *iface);
     emscripten::val getDocument(const emscripten::val &container);
-    emscripten::val getDocument(QAccessibleInterface *iface);
     QWindow *getWindow(QAccessibleInterface *iface);
     bool isWindowNode(QAccessibleInterface *iface);
 
@@ -105,17 +101,13 @@ private:
 
     void populateAccessibilityTree(QAccessibleInterface *iface);
     void createObject(QAccessibleInterface *iface);
-    void removeObject(QAccessibleInterface *iface);
+    void removeObject(QAccessible::Id id);
     void unlinkParentForChildren(QAccessibleInterface *iface);
     void relinkParentForChildren(QAccessibleInterface *iface);
 
     void notifyAccessibilityUpdate(QAccessibleEvent *event) override;
     bool handleUpdateByEventType(QAccessibleEvent *event);
     void handleUpdateByInterfaceRole(QAccessibleEvent *event);
-
-    void setRootObject(QObject *o) override;
-    void initialize() override;
-    void cleanup() override;
 
     void setAttribute(emscripten::val element, const std::string &attr, const std::string &val);
     void setAttribute(emscripten::val element, const std::string &attr, const char *val);
@@ -132,11 +124,8 @@ private:
     void sendEvent(QAccessibleInterface *iface, QAccessible::Event eventType);
 
 private:
-    static QWasmAccessibility *s_instance;
-    QObject *m_rootObject = nullptr;
-    bool m_accessibilityEnabled = false;
     std::map<QWindow *, std::tuple<emscripten::val, std::shared_ptr<qstdweb::EventCallback>>> m_enableButtons;
-    QHash<QAccessibleInterface *, emscripten::val> m_elements;
+    QHash<QAccessible::Id, emscripten::val> m_elements;
     int m_eventHandlerIndex;
 };
 

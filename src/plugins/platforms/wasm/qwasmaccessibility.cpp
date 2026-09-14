@@ -9,8 +9,6 @@
 #include <QtCore/private/qwasmsuspendresumecontrol_p.h>
 #include <QtGui/qwindow.h>
 
-#include <sstream>
-
 void QWasmAccessibilityEnable()
 {
     QWasmAccessibility::enable();
@@ -49,8 +47,6 @@ EM_JS(emscripten::EM_VAL, getActiveElement_js, (emscripten::EM_VAL undefHandle),
 
 QWasmAccessibility::QWasmAccessibility()
 {
-    s_instance = this;
-
     if (qEnvironmentVariableIntValue("QT_WASM_ENABLE_ACCESSIBILITY") == 1)
         enableAccessibility();
 
@@ -67,48 +63,50 @@ QWasmAccessibility::~QWasmAccessibility()
     // Remove accessibility element event handler
     QWasmSuspendResumeControl *suspendResume = QWasmSuspendResumeControl::get();
     suspendResume->removeEventHandler(m_eventHandlerIndex);
-
-    s_instance = nullptr;
 }
 
-QWasmAccessibility *QWasmAccessibility::s_instance = nullptr;
-
-QWasmAccessibility* QWasmAccessibility::get()
+QWasmAccessibility *QWasmAccessibility::instance()
 {
-    return s_instance;
+    QWasmIntegration *integration = QWasmIntegration::get();
+    return integration ? static_cast<QWasmAccessibility *>(integration->accessibility()) : nullptr;
 }
 
 void QWasmAccessibility::addAccessibilityEnableButton(QWindow *window)
 {
-    get()->addAccessibilityEnableButtonImpl(window);
+    if (QWasmAccessibility *accessibility = instance(); accessibility && !accessibility->isActive())
+        accessibility->addEnableButton(window);
 }
 
 void QWasmAccessibility::onShowWindow(QWindow *window)
 {
-    get()->onShowWindowImpl(window);
+    if (QWasmAccessibility *accessibility = instance(); accessibility && accessibility->isActive())
+        accessibility->populateAccessibilityTree(window->accessibleRoot());
 }
 
 void QWasmAccessibility::onRemoveWindow(QWindow *window)
 {
-    get()->onRemoveWindowImpl(window);
+    if (QWasmAccessibility *accessibility = instance())
+        accessibility->removeWindow(window);
 }
 
 bool QWasmAccessibility::isEnabled()
 {
-    return get()->m_accessibilityEnabled;
+    const QWasmAccessibility *accessibility = instance();
+    return accessibility && accessibility->isActive();
 }
+
 void QWasmAccessibility::enable()
 {
-    if (!isEnabled())
-        get()->enableAccessibility();
+    if (QWasmAccessibility *accessibility = instance(); accessibility && !accessibility->isActive())
+        accessibility->enableAccessibility();
 }
 
-void QWasmAccessibility::addAccessibilityEnableButtonImpl(QWindow *window)
+void QWasmAccessibility::addEnableButton(QWindow *window)
 {
-    if (m_accessibilityEnabled)
+    emscripten::val container = getElementContainer(window);
+    if (container.isUndefined())
         return;
 
-    emscripten::val container = getElementContainer(window);
     emscripten::val document = getDocument(container);
     emscripten::val button = document.call<emscripten::val>("createElement", std::string("button"));
     setProperty(button, "innerText", "Enable Screen Reader");
@@ -120,14 +118,7 @@ void QWasmAccessibility::addAccessibilityEnableButtonImpl(QWindow *window)
     m_enableButtons.insert(std::make_pair(window, std::move(enableContext)));
 }
 
-void QWasmAccessibility::onShowWindowImpl(QWindow *window)
-{
-    if (!m_accessibilityEnabled)
-        return;
-    populateAccessibilityTree(window->accessibleRoot());
-}
-
-void QWasmAccessibility::onRemoveWindowImpl(QWindow *window)
+void QWasmAccessibility::removeWindow(QWindow *window)
 {
     {
         const auto it = m_enableButtons.find(window);
@@ -139,12 +130,11 @@ void QWasmAccessibility::onRemoveWindowImpl(QWindow *window)
             m_enableButtons.erase(it);
         }
     }
-    if (!m_accessibilityEnabled)
+    const QWasmWindow *wasmWindow = QWasmWindow::fromWindow(window);
+    if (!isActive() || !wasmWindow)
         return;
 
-    auto a11yContainer = getA11yContainer(window);
-    if (a11yContainer.isUndefined())
-        return;
+    const emscripten::val a11yContainer = wasmWindow->a11yContainer();
 
     // Forget the elements of the window, they go away with its container.
     for (auto it = m_elements.begin(); it != m_elements.end();) {
@@ -162,15 +152,14 @@ void QWasmAccessibility::enableAccessibility()
     // Enable accessibility. Remove all "enable" buttons and populate the
     // accessibility tree for each window.
 
-    Q_ASSERT(!m_accessibilityEnabled);
-    m_accessibilityEnabled = true;
+    Q_ASSERT(!isActive());
     setActive(true);
     for (const auto& [key, value] : m_enableButtons) {
         const auto &[element, callback] = value;
         Q_UNUSED(callback);
         if (auto wasmWindow = QWasmWindow::fromWindow(key))
             wasmWindow->onAccessibilityEnable();
-        onShowWindowImpl(key);
+        populateAccessibilityTree(key->accessibleRoot());
         element["parentElement"].call<void>("removeChild", element);
     }
     m_enableButtons.clear();
@@ -181,48 +170,10 @@ bool QWasmAccessibility::isWindowNode(QAccessibleInterface *iface)
     return (iface && !getWindow(iface->parent()) && getWindow(iface));
 }
 
-emscripten::val QWasmAccessibility::getA11yContainer(QWindow *window)
-{
-    const auto wasmWindow = QWasmWindow::fromWindow(window);
-    if (!wasmWindow)
-        return emscripten::val::undefined();
-
-    auto a11yContainer = wasmWindow->a11yContainer();
-    if (a11yContainer["childElementCount"].as<unsigned>() == 2)
-        return a11yContainer;
-
-    Q_ASSERT(a11yContainer["childElementCount"].as<unsigned>() == 0);
-
-    const auto document = getDocument(a11yContainer);
-    if (document.isUndefined())
-        return emscripten::val::undefined();
-
-    auto elementContainer = document.call<emscripten::val>("createElement", std::string("div"));
-    elementContainer["classList"].call<void>("add", emscripten::val("qt-window-a11y-elements-container"));
-    auto describedByContainer = document.call<emscripten::val>("createElement", std::string("div"));
-    describedByContainer["classList"].call<void>("add", emscripten::val("qt-window-a11y-describedby-container"));
-
-    a11yContainer.call<void>("appendChild", elementContainer);
-    a11yContainer.call<void>("appendChild", describedByContainer);
-
-    return a11yContainer;
-}
-
-emscripten::val QWasmAccessibility::getA11yContainer(QAccessibleInterface *iface)
-{
-    return getA11yContainer(getWindow(iface));
-}
-
 emscripten::val QWasmAccessibility::getDescribedByContainer(QWindow *window)
 {
-    auto a11yContainer = getA11yContainer(window);
-    if (a11yContainer.isUndefined())
-        return emscripten ::val::undefined();
-
-    Q_ASSERT(a11yContainer["childElementCount"].as<unsigned>() == 2);
-    Q_ASSERT(!a11yContainer["children"][1].isUndefined());
-
-    return a11yContainer["children"][1];
+    const QWasmWindow *wasmWindow = QWasmWindow::fromWindow(window);
+    return wasmWindow ? wasmWindow->a11yDescribedByContainer() : emscripten::val::undefined();
 }
 
 emscripten::val QWasmAccessibility::getDescribedByContainer(QAccessibleInterface *iface)
@@ -232,13 +183,8 @@ emscripten::val QWasmAccessibility::getDescribedByContainer(QAccessibleInterface
 
 emscripten::val QWasmAccessibility::getElementContainer(QWindow *window)
 {
-    auto a11yContainer = getA11yContainer(window);
-    if (a11yContainer.isUndefined())
-        return emscripten ::val::undefined();
-
-    Q_ASSERT(a11yContainer["childElementCount"].as<unsigned>() == 2);
-    Q_ASSERT(!a11yContainer["children"][0].isUndefined());
-    return a11yContainer["children"][0];
+    const QWasmWindow *wasmWindow = QWasmWindow::fromWindow(window);
+    return wasmWindow ? wasmWindow->a11yElementContainer() : emscripten::val::undefined();
 }
 
 emscripten::val QWasmAccessibility::getElementContainer(QAccessibleInterface *iface)
@@ -278,11 +224,6 @@ emscripten::val QWasmAccessibility::getDocument(const emscripten::val &container
     if (container.isUndefined())
         return emscripten::val::global("document");
     return container["ownerDocument"];
-}
-
-emscripten::val QWasmAccessibility::getDocument(QAccessibleInterface *iface)
-{
-    return getDocument(getA11yContainer(iface));
 }
 
 void QWasmAccessibility::setAttribute(emscripten::val element, const std::string &attr,
@@ -337,7 +278,7 @@ void QWasmAccessibility::setNamedProperty(QAccessibleInterface *iface, const std
 
 void QWasmAccessibility::addEventListener(QAccessibleInterface *iface, emscripten::val element, const char *eventType)
 {
-    element.set("data-qta11yinterface", reinterpret_cast<size_t>(iface));
+    element.set("qtA11yId", QAccessible::uniqueId(iface));
     element.call<void>("addEventListener", emscripten::val(eventType),
                        QWasmSuspendResumeControl::get()->jsEventHandlerAt(m_eventHandlerIndex),
                        true);
@@ -398,7 +339,7 @@ emscripten::val QWasmAccessibility::createHtmlElement(QAccessibleInterface *ifac
             if (iface->childCount() > 0 || iface->role() == QAccessible::Grouping) {
                 auto label = document.call<emscripten::val>("createElement", std::string("span"));
 
-                const std::string id = QString::asprintf("lbid%p", iface).toStdString();
+                const std::string id = "lbid_" + std::to_string(QAccessible::uniqueId(iface));
                 setAttribute(label, "id", id);
 
                 element = document.call<emscripten::val>("createElement", std::string("div"));
@@ -455,7 +396,7 @@ emscripten::val QWasmAccessibility::createHtmlElement(QAccessibleInterface *ifac
             setAttribute(element, "role", "tablist");
             setHtmlElementOrientation(element, iface);
 
-            m_elements[iface] = element;
+            m_elements[QAccessible::uniqueId(iface)] = element;
 
             for (int i = 0; i < iface->childCount(); ++i)
                 createHtmlElement(iface->child(i));
@@ -519,7 +460,7 @@ emscripten::val QWasmAccessibility::createHtmlElement(QAccessibleInterface *ifac
                          iface->role() == QAccessible::PopupMenu ? "menu" : "menubar");
             setAttribute(element, "title", text.toStdString());
             setHtmlElementOrientation(element, iface);
-            m_elements[iface] = element;
+            m_elements[QAccessible::uniqueId(iface)] = element;
 
             // The items are nested in the menu element, which already expresses
             // ownership. aria-owns takes element ids, not the menu title.
@@ -580,7 +521,7 @@ emscripten::val QWasmAccessibility::createHtmlElement(QAccessibleInterface *ifac
 
     }();
 
-    m_elements[iface] = element;
+    m_elements[QAccessible::uniqueId(iface)] = element;
 
     setHtmlElementGeometry(iface);
     setHtmlElementDisabled(iface);
@@ -607,11 +548,9 @@ void QWasmAccessibility::destroyHtmlElement(QAccessibleInterface *iface)
 
 emscripten::val QWasmAccessibility::getHtmlElement(QAccessibleInterface *iface)
 {
-    auto it = m_elements.find(iface);
-    if (it != m_elements.end())
-        return it.value();
-
-    return emscripten::val::undefined();
+    if (!iface)
+        return emscripten::val::undefined();
+    return m_elements.value(QAccessible::uniqueId(iface), emscripten::val::undefined());
 }
 
 void QWasmAccessibility::repairLinks(QAccessibleInterface *iface)
@@ -846,14 +785,14 @@ void QWasmAccessibility::handleLineEditUpdate(QAccessibleEvent *event)
 
 void QWasmAccessibility::handleEventFromHtmlElement(const emscripten::val event)
 {
-    if (event["target"].isNull() || event["target"].isUndefined())
+    const emscripten::val target = event["target"];
+    if (target.isNull() || target.isUndefined() || target["qtA11yId"].isUndefined())
         return;
 
-    if (event["target"]["data-qta11yinterface"].isNull() || event["target"]["data-qta11yinterface"].isUndefined())
-        return;
-
-    auto iface = reinterpret_cast<QAccessibleInterface *>(event["target"]["data-qta11yinterface"].as<size_t>());
-    if (m_elements.find(iface) == m_elements.end())
+    // Resolve the id, the interface may be gone by the time the event arrives.
+    QAccessibleInterface *iface =
+            QAccessible::accessibleInterface(target["qtA11yId"].as<QAccessible::Id>());
+    if (!iface || !iface->isValid())
         return;
 
     const auto eventType = QString::fromStdString(event["type"].as<std::string>());
@@ -1180,38 +1119,41 @@ void QWasmAccessibility::handleIdentifierUpdate(QAccessibleInterface *iface)
     // The tabs are nested in the tab list element, so they need no aria-owns
     // pointing back at it, which would also be the wrong direction.
     const emscripten::val element = getHtmlElement(iface);
-    const QString id = iface->text(QAccessible::Identifier).replace(" ", "_");
+    // Every element gets an id, so that other elements can refer to it.
+    QString id = iface->text(QAccessible::Identifier).replace(" ", "_");
+    if (id.isEmpty())
+        id = QStringLiteral("qt-a11y-") + QString::number(QAccessible::uniqueId(iface));
     setAttribute(element, "id", id.toStdString());
 }
 
 void QWasmAccessibility::handleDescriptionChanged(QAccessibleInterface *iface)
 {
+    // The element keeps a reference to its description, so that removeObject()
+    // finds it without the interface.
     const auto desc = iface->text(QAccessible::Description).toStdString();
     auto element = getHtmlElement(iface);
     auto container = getDescribedByContainer(iface);
-    if (!container.isUndefined()) {
-        std::ostringstream oss;
-        oss << "dbid_" << (void *)iface;
-        auto id = oss.str();
+    if (element.isUndefined() || container.isUndefined())
+        return;
 
-        auto describedBy = container.call<emscripten::val>("querySelector", "#" + std::string(id));
-        if (desc.empty()) {
-            if (!describedBy.isUndefined() && !describedBy.isNull()) {
-                container.call<void>("removeChild", describedBy);
-            }
-            setAttribute(element, "aria-describedby", "");
-        } else {
-            if (describedBy.isUndefined() || describedBy.isNull()) {
-                auto document = getDocument(container);
-                describedBy = document.call<emscripten::val>("createElement", std::string("p"));
-
-                container.call<void>("appendChild", describedBy);
-            }
-            setAttribute(describedBy, "id", id);
-            setAttribute(describedBy, "inert", true);
-            setAttribute(element, "aria-describedby", id);
-            setProperty(describedBy, "innerText", desc);
+    auto describedBy = element["qtA11yDescribedBy"];
+    if (desc.empty()) {
+        if (!describedBy.isUndefined())
+            describedBy.call<void>("remove");
+        element.set("qtA11yDescribedBy", emscripten::val::undefined());
+        setAttribute(element, "aria-describedby", "");
+    } else {
+        const std::string id = "dbid_" + std::to_string(QAccessible::uniqueId(iface));
+        if (describedBy.isUndefined()) {
+            describedBy = getDocument(container).call<emscripten::val>("createElement",
+                                                                       std::string("p"));
+            container.call<void>("appendChild", describedBy);
+            element.set("qtA11yDescribedBy", describedBy);
         }
+        setAttribute(describedBy, "id", id);
+        setAttribute(describedBy, "inert", true);
+        setAttribute(element, "aria-describedby", id);
+        setProperty(describedBy, "innerText", desc);
     }
 }
 
@@ -1273,30 +1215,20 @@ void QWasmAccessibility::createObject(QAccessibleInterface *iface)
         createHtmlElement(iface);
 }
 
-void QWasmAccessibility::removeObject(QAccessibleInterface *iface)
+void QWasmAccessibility::removeObject(QAccessible::Id id)
 {
-    // Do not dereference the object pointer. it might be invalid.
-    // Do not dereference the iface either, it refers to the object.
-    // Note: we may remove children, making them have parentElement undefined
-    // so we need to check for parentElement here. We do assume that removeObject
-    // is called on all objects, just not in any predefined order.
-    const auto it = m_elements.find(iface);
-    if (it != m_elements.end()) {
-        auto element = it.value();
-        auto container = getDescribedByContainer(iface);
-        if (!container.isUndefined()) {
-            std::ostringstream oss;
-            oss << "dbid_" << (void *)iface;
-            auto id = oss.str();
-            auto describedBy = container.call<emscripten::val>("querySelector", "#" + std::string(id));
-            if (!describedBy.isUndefined() && !describedBy.isNull() &&
-                !describedBy["parentElement"].isUndefined() && !describedBy["parentElement"].isNull())
-                describedBy["parentElement"].call<void>("removeChild", describedBy);
-        }
-        if (!element["parentElement"].isUndefined() && !element["parentElement"].isNull())
-            element["parentElement"].call<void>("removeChild", element);
-        m_elements.erase(it);
-    }
+    // The interface may already be invalid, so work from the id and the element
+    // alone. Objects are removed in no particular order, and remove() copes with
+    // an element that is already detached.
+    const auto it = m_elements.find(id);
+    if (it == m_elements.end())
+        return;
+
+    const emscripten::val element = it.value();
+    if (!element["qtA11yDescribedBy"].isUndefined())
+        element["qtA11yDescribedBy"].call<void>("remove");
+    element.call<void>("remove");
+    m_elements.erase(it);
 }
 
 void QWasmAccessibility::unlinkParentForChildren(QAccessibleInterface *iface)
@@ -1336,7 +1268,7 @@ void QWasmAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *event)
 
 bool QWasmAccessibility::handleUpdateByEventType(QAccessibleEvent *event)
 {
-    if (!m_accessibilityEnabled)
+    if (!isActive())
         return false;
 
     QAccessibleInterface *iface = event->accessibleInterface();
@@ -1353,9 +1285,8 @@ bool QWasmAccessibility::handleUpdateByEventType(QAccessibleEvent *event)
         return false;
 
     case QAccessible::ObjectDestroyed:
-        // The object might  be under destruction, and the interface is not valid
-        // but we can look at the pointer,
-        removeObject(iface);
+        // The object might be under destruction, and the interface not valid.
+        removeObject(event->uniqueId());
         return false;
 
     case QAccessible::ObjectShow: // We do not get ObjectCreated from widgets, we get ObjectShow
@@ -1430,7 +1361,7 @@ bool QWasmAccessibility::handleUpdateByEventType(QAccessibleEvent *event)
 
 void QWasmAccessibility::handleUpdateByInterfaceRole(QAccessibleEvent *event)
 {
-    if (!m_accessibilityEnabled)
+    if (!isActive())
         return;
 
     QAccessibleInterface *iface = event->accessibleInterface();
@@ -1507,21 +1438,6 @@ void QWasmAccessibility::handleUpdateByInterfaceRole(QAccessibleEvent *event)
     default:
         qCDebug(lcQpaAccessibility) << "TODO: implement notifyAccessibilityUpdate for role" << iface->role();
     };
-}
-
-void QWasmAccessibility::setRootObject(QObject *root)
-{
-    m_rootObject = root;
-}
-
-void QWasmAccessibility::initialize()
-{
-
-}
-
-void QWasmAccessibility::cleanup()
-{
-
 }
 
 #endif // QT_CONFIG(accessibility)

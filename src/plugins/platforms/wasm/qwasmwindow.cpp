@@ -53,6 +53,8 @@ QWasmWindow::QWasmWindow(QWindow *w,
       m_decoratedWindow(m_document.call<emscripten::val>("createElement", emscripten::val("div"))),
       m_window(m_document.call<emscripten::val>("createElement", emscripten::val("div"))),
       m_a11yContainer(m_document.call<emscripten::val>("createElement", emscripten::val("div"))),
+      m_a11yElementContainer(m_document.call<emscripten::val>("createElement", emscripten::val("div"))),
+      m_a11yDescribedByContainer(m_document.call<emscripten::val>("createElement", emscripten::val("div"))),
       m_canvas(m_document.call<emscripten::val>("createElement", emscripten::val("canvas"))),
       m_focusHelper(m_document.call<emscripten::val>("createElement", emscripten::val("div"))),
       m_inputElement(m_document.call<emscripten::val>("createElement", emscripten::val("input")))
@@ -131,6 +133,12 @@ QWasmWindow::QWasmWindow(QWindow *w,
     m_window.call<void>("appendChild", m_canvas);
 
     m_a11yContainer["classList"].call<void>("add", emscripten::val("qt-window-a11y-container"));
+    m_a11yElementContainer["classList"].call<void>(
+            "add", emscripten::val("qt-window-a11y-elements-container"));
+    m_a11yDescribedByContainer["classList"].call<void>(
+            "add", emscripten::val("qt-window-a11y-describedby-container"));
+    m_a11yContainer.call<void>("appendChild", m_a11yElementContainer);
+    m_a11yContainer.call<void>("appendChild", m_a11yDescribedByContainer);
     m_window.call<void>("appendChild", m_a11yContainer);
 
     if (QWasmAccessibility::isEnabled())

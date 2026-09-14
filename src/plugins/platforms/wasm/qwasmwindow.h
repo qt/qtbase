@@ -102,6 +102,8 @@ public:
 
     emscripten::val context2d() const { return m_context2d; }
     emscripten::val a11yContainer() const { return m_a11yContainer; }
+    emscripten::val a11yElementContainer() const { return m_a11yElementContainer; }
+    emscripten::val a11yDescribedByContainer() const { return m_a11yDescribedByContainer; }
     emscripten::val inputHandlerElement() const { return m_window; }
     emscripten::val inputElement() const { return m_inputElement; }
 
@@ -173,6 +175,8 @@ private:
     emscripten::val m_decoratedWindow;
     emscripten::val m_window;
     emscripten::val m_a11yContainer;
+    emscripten::val m_a11yElementContainer;
+    emscripten::val m_a11yDescribedByContainer;
     emscripten::val m_canvas;
     emscripten::val m_focusHelper;
     emscripten::val m_inputElement;
