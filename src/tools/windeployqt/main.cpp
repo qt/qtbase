@@ -16,6 +16,7 @@
 #include <QtCore/QJsonArray>
 #include <QtCore/QList>
 #include <QtCore/QOperatingSystemVersion>
+#include <QtCore/QSet>
 #include <QtCore/QSharedPointer>
 #include <QtCore/QXmlStreamWriter>
 #include <QtNetwork/QSslCertificate>
@@ -29,6 +30,7 @@
 #include <QtCore/private/qconfig_p.h>
 
 #include <algorithm>
+#include <array>
 #include <cstdio>
 #include <iostream>
 #include <iterator>
@@ -189,6 +191,7 @@ struct Options {
     bool compilerRunTime = false;
     bool softwareRasterizer = true;
     bool ffmpeg = true;
+    bool thirdPartyLibraries = true;
     PluginSelections pluginSelections;
     Platform platform = WindowsDesktopMsvcIntel;
     ModuleBitset additionalLibraries;
@@ -494,6 +497,12 @@ static inline int parseArguments(const QStringList &arguments, QCommandLineParse
                                       QStringLiteral("Do not deploy the FFmpeg libraries."));
     parser->addOption(noFFmpegOption);
 
+    QCommandLineOption noThirdPartyLibrariesOption(
+            QStringLiteral("no-third-party-libraries"),
+            QStringLiteral("Do not deploy the non-Qt libraries from the Qt binary directory "
+                           "that the deployed binaries link against."));
+    parser->addOption(noThirdPartyLibrariesOption);
+
     QCommandLineOption forceOpenSslOption(QStringLiteral("force-openssl"),
                                       QStringLiteral("Deploy openssl plugin but ignore openssl library dependency"));
     parser->addOption(forceOpenSslOption);
@@ -644,6 +653,9 @@ static inline int parseArguments(const QStringList &arguments, QCommandLineParse
 
     if (parser->isSet(noFFmpegOption))
         options->ffmpeg = false;
+
+    if (parser->isSet(noThirdPartyLibrariesOption))
+        options->thirdPartyLibraries = false;
 
     if (parser->isSet(forceOpenSslOption))
         options->forceOpenSslPlugin = true;
@@ -1251,10 +1263,63 @@ static bool deployTranslations(const QString &sourcePath, const ModuleBitset &us
     return true;
 }
 
+static constexpr std::array ffmpegHints = { "avcodec"_L1, "avformat"_L1, "avutil"_L1,
+                                            "swresample"_L1, "swscale"_L1 };
+
+static bool isFFmpegLibrary(const QString &libraryFileName)
+{
+    return std::any_of(ffmpegHints.cbegin(), ffmpegHints.cend(),
+                       [&libraryFileName](QLatin1StringView hint) {
+                           return libraryFileName.contains(hint, Qt::CaseInsensitive);
+                       });
+}
+
+// Find the non-Qt libraries in the Qt binary directory that the given binaries link against.
+// Qt builds that use system libraries instead of the bundled ones - for instance Qt from a
+// package manager - have those libraries next to the Qt libraries rather than linked into them.
+static bool findThirdPartyDependencies(const QString &qtBinDir, const QStringList &binaries,
+                                       bool excludeFFmpeg, QSet<QString> excludedFileNames,
+                                       QStringList *thirdPartyLibraries, QString *errorMessage)
+{
+    QStringList queue = binaries;
+    QSet<QString> visited;
+    while (!queue.isEmpty()) {
+        const QString binary = queue.takeFirst();
+        // The libraries to deploy are not all guaranteed to exist, for instance the debug
+        // libraries of a release-only Qt. Leave reporting those to updateLibrary().
+        if (!QFileInfo(binary).isFile())
+            continue;
+        const QString key = normalizeFileName(binary).toLower();
+        if (visited.contains(key))
+            continue;
+        visited.insert(key);
+        QStringList dependentLibs;
+        if (!readPeExecutableDependencies(binary, errorMessage, &dependentLibs)) {
+            errorMessage->prepend("Unable to find dependent libraries of "_L1
+                                  + QDir::toNativeSeparators(binary) + " :"_L1);
+            return false;
+        }
+        for (const QString &lib : std::as_const(dependentLibs)) {
+            if (isQtModule(lib))
+                continue;
+            if (excludedFileNames.contains(lib.toLower()))
+                continue;
+            if (excludeFFmpeg && isFFmpegLibrary(lib))
+                continue;
+            const QFileInfo fi(qtBinDir + u'/' + lib);
+            if (!fi.isFile())
+                continue;
+            const QString path = normalizeFileName(fi.absoluteFilePath());
+            excludedFileNames.insert(QFileInfo(path).fileName().toLower());
+            thirdPartyLibraries->append(path);
+            queue.append(path);
+        }
+    }
+    return true;
+}
+
 static QStringList findFFmpegLibs(const QString &qtBinDir, Platform platform)
 {
-    const std::vector<QLatin1StringView> ffmpegHints = { "avcodec"_L1, "avformat"_L1, "avutil"_L1,
-                                                         "swresample"_L1, "swscale"_L1 };
     const QStringList bundledLibs =
             findSharedLibraries(qtBinDir, platform, MatchDebugOrRelease, {});
 
@@ -1476,6 +1541,21 @@ static QStringList compilerRunTimeLibs(const QString &qtBinDir, Platform platfor
         break;
     }
     return result;
+}
+
+// File names of the compiler runtime libraries that sit in the Qt binary directory, which is
+// where the MinGW packages keep them. compilerRunTimeLibs() deploys those, honoring
+// --compiler-runtime, so they must stay out of the third-party library scan.
+static QStringList compilerRunTimeLibsInQtBinDir(const QString &qtBinDir, Platform platform)
+{
+    const QStringList runtimeFilters = minGWRuntimeFilters(platform);
+    if (runtimeFilters.isEmpty())
+        return {};
+    QStringList filters;
+    const QString suffix = u'*' + sharedLibrarySuffix();
+    for (const QString &runtimeFilter : runtimeFilters)
+        filters.append(runtimeFilter + suffix);
+    return QDir(qtBinDir).entryList(filters, QDir::Files);
 }
 
 static inline int qtVersion(const QMap<QString, QString> &qtpathsVariables)
@@ -1806,6 +1886,30 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
     if (options.ffmpeg
         && !plugins.filter(QStringLiteral("ffmpegmediaplugin"), Qt::CaseInsensitive).empty()) {
         deployedQtLibraries.append(findFFmpegLibs(qtBinDir, options.platform));
+    }
+
+    // Add the non-Qt libraries from the Qt binary directory that the deployed binaries link
+    // against. Qt built against system libraries needs those next to the Qt libraries.
+    if (options.thirdPartyLibraries) {
+        QStringList scanned = options.binaries + deployedQtLibraries;
+        if (options.plugins)
+            scanned += plugins;
+        if (options.quickImports)
+            scanned += qmlScanResult.plugins;
+
+        // Libraries that are deployed already, or that another deployment step owns.
+        QSet<QString> excludedFileNames;
+        for (const QString &lib : std::as_const(deployedQtLibraries))
+            excludedFileNames.insert(QFileInfo(lib).fileName().toLower());
+        for (const QString &lib : compilerRunTimeLibsInQtBinDir(qtBinDir, options.platform))
+            excludedFileNames.insert(lib.toLower());
+
+        QStringList thirdPartyLibraries;
+        if (!findThirdPartyDependencies(qtBinDir, scanned, !options.ffmpeg, excludedFileNames,
+                                        &thirdPartyLibraries, errorMessage)) {
+            return result;
+        }
+        deployedQtLibraries += thirdPartyLibraries;
     }
 
     // Update libraries
