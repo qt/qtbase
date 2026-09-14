@@ -18,7 +18,8 @@ function(_qt_internal_sbom_begin_project_generate_cyclone)
     set(single_args
         OUTPUT
         OUTPUT_RELATIVE_PATH
-        LICENSE
+        LICENSE_CONCLUDED
+        LICENSE_DECLARED
         COPYRIGHT
         DOWNLOAD_LOCATION
         PROJECT

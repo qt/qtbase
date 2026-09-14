@@ -73,7 +73,8 @@ function(_qt_internal_sbom_begin_project_generate)
     set(single_args
         OUTPUT
         OUTPUT_RELATIVE_PATH
-        LICENSE
+        LICENSE_CONCLUDED
+        LICENSE_DECLARED
         COPYRIGHT
         DOWNLOAD_LOCATION
         PROJECT
@@ -119,7 +120,8 @@ function(_qt_internal_sbom_begin_project_generate)
 
     _qt_internal_sbom_set_default_option_value(NAMESPACE
         "${arg_SUPPLIER}/spdxdocs/${arg_PROJECT}-${QT_SBOM_GIT_VERSION}")
-    _qt_internal_sbom_set_default_option_value(LICENSE "NOASSERTION")
+    _qt_internal_sbom_set_default_option_value(LICENSE_CONCLUDED "NOASSERTION")
+    _qt_internal_sbom_set_default_option_value(LICENSE_DECLARED "NOASSERTION")
 
     _qt_internal_sbom_set_default_option_value(DOCUMENT_CREATOR_TOOL "Qt Build System")
     if(arg_DOCUMENT_CREATOR_TOOL)
@@ -175,8 +177,8 @@ SPDXID: ${project_spdx_id}${fields}
 ExternalRef: PACKAGE-MANAGER purl pkg:generic/${arg_SUPPLIER}/${arg_PROJECT}@${QT_SBOM_GIT_VERSION}
 PackageSupplier: Organization: ${arg_SUPPLIER}
 PackageDownloadLocation: ${arg_DOWNLOAD_LOCATION}
-PackageLicenseConcluded: ${arg_LICENSE}
-PackageLicenseDeclared: ${arg_LICENSE}
+PackageLicenseConcluded: ${arg_LICENSE_CONCLUDED}
+PackageLicenseDeclared: ${arg_LICENSE_DECLARED}
 PackageCopyrightText: ${arg_COPYRIGHT}
 PackageHomePage: ${arg_SUPPLIER_URL}
 PackageComment: ${project_comment}

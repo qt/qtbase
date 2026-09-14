@@ -17,6 +17,13 @@ __qt_internal_cmake_include_guard(GLOBAL GUARD_KEY "QtPublicSbomHelpers")
 # The default value is "sbom".
 #
 # SUPPLIER, SUPPLIER_URL, DOCUMENT_NAMESPACE, COPYRIGHTS are self-explanatory.
+#
+# PROJECT_LICENSE_CONCLUDED_EXPRESSION and PROJECT_LICENSE_DECLARED_EXPRESSION are the license
+# expressions recorded for the project package.
+# LICENSE_EXPRESSION is a compatibility alias of PROJECT_LICENSE_CONCLUDED_EXPRESSION and is
+# only used if the latter is not set.
+# If neither of the two new options is given, the value of LICENSE_EXPRESSION is recorded in
+# both fields. Setting either of the two disables the mirroring.
 function(_qt_internal_sbom_begin_project)
     # Allow opt out via an internal variable. Will be used in CI for repos like qtqa.
     if(QT_INTERNAL_FORCE_NO_GENERATE_SBOM)
@@ -41,6 +48,8 @@ function(_qt_internal_sbom_begin_project)
         INSTALL_PREFIX
         INSTALL_SBOM_DIR
         LICENSE_EXPRESSION
+        PROJECT_LICENSE_CONCLUDED_EXPRESSION
+        PROJECT_LICENSE_DECLARED_EXPRESSION
         SUPPLIER
         SUPPLIER_URL
         DOWNLOAD_LOCATION
@@ -307,17 +316,34 @@ function(_qt_internal_sbom_begin_project)
     _qt_internal_path_join(repo_spdx_install_path_cydx
         "\$ENV{DESTDIR}${install_prefix}" "${repo_spdx_relative_install_path_cydx}")
 
-    if(arg_LICENSE_EXPRESSION)
-        set(repo_license "${arg_LICENSE_EXPRESSION}")
+    if(arg_PROJECT_LICENSE_CONCLUDED_EXPRESSION)
+        set(repo_license_concluded "${arg_PROJECT_LICENSE_CONCLUDED_EXPRESSION}")
+    elseif(arg_LICENSE_EXPRESSION)
+        set(repo_license_concluded "${arg_LICENSE_EXPRESSION}")
     else()
-        # Default to NOASSERTION for root repo SPDX packages, because we have some repos
+        # Default to NOASSERTION for Qt root repo SPDX packages, because we have some repos
         # with multiple licenses and AND-ing them together will create a giant unreadable list.
         # It's better to rely on the more granular package licenses.
-        set(repo_license "")
+        set(repo_license_concluded "")
     endif()
-    if(repo_license)
-        list(APPEND begin_project_generate_args_spdx LICENSE "${repo_license}")
-        list(APPEND begin_project_generate_args_cydx LICENSE "${repo_license}")
+
+    # Fall back to the concluded license, when neither of the new options are given. Behavior kept
+    # for backwards compatibility with LICENSE_EXPRESSION, which recorded the same value in both
+    # fields.
+    set(repo_license_declared "")
+    if(arg_PROJECT_LICENSE_DECLARED_EXPRESSION)
+        set(repo_license_declared "${arg_PROJECT_LICENSE_DECLARED_EXPRESSION}")
+    elseif(NOT arg_PROJECT_LICENSE_CONCLUDED_EXPRESSION)
+        set(repo_license_declared "${repo_license_concluded}")
+    endif()
+
+    if(repo_license_concluded)
+        list(APPEND begin_project_generate_args_spdx LICENSE_CONCLUDED "${repo_license_concluded}")
+        list(APPEND begin_project_generate_args_cydx LICENSE_CONCLUDED "${repo_license_concluded}")
+    endif()
+    if(repo_license_declared)
+        list(APPEND begin_project_generate_args_spdx LICENSE_DECLARED "${repo_license_declared}")
+        list(APPEND begin_project_generate_args_cydx LICENSE_DECLARED "${repo_license_declared}")
     endif()
 
     if(arg_COPYRIGHTS)
