@@ -463,6 +463,21 @@
     This could result in important failure messages being hidden in a large
     volume of debugging output.
 
+    Where there is a need, on failure, to augment the output of the Qt Test
+    macros such as \l QCOMPARE(), one useful pattern is to have the diagnostic
+    code run by a \l qScopeGuard() instantiated before, and then
+    \l {QScopeGuard::} {dismiss()} the instance after, the check or checks whose
+    failure would be easier to understand with that output. The diagnostic code
+    is then only run when a check, by failing, skips the later \c dismiss()
+    call. For example:
+
+    \snippet code/src_qtestlib_qtestcase.cpp scope-diagnostic
+
+    This augments the \c QCOMPARE() output on failure with a helpfully-formatted
+    representation of the \c actual result, to make it easier to compare it with
+    a test-case's \c expected result (already available in the test's own source
+    code). Other situations may need more complex diagnostics.
+
     \section1 Writing Testable Code
 
     The following sections provide guidelines for writing code that is easy to
