@@ -61,7 +61,7 @@
 
     \list 1
         \li Create a branch for your fix and test:
-            \c {git checkout -b fix-branch 5.14}
+            \c {git checkout -b fix-branch dev}
         \li Write a test and fix the bug.
         \li Build and test with both the fix and the new test, to verify that
             the new test passes with the fix.
@@ -71,19 +71,18 @@
             \c {git commit -m 'Fix bug in QDateTime'}
         \li To verify that the test actually catches something for which you
             needed the fix, checkout the branch you based your own branch on:
-            \c {git checkout 5.14}
-        \li Checkout only the test file to the 5.14 branch:
+            \c {git checkout dev}
+        \li Checkout only the test file from the fix branch:
             \c {git checkout fix-branch -- tests/auto/corelib/time/qdatetime/tst_qdatetime.cpp}
 
-            Only the test is now on the fix-branch. The rest of the source tree
-            is still on 5.14.
-        \li Build and run the test to verify that it fails on 5.14, and
-            therefore does indeed catch a bug.
+            The rest of the source tree stays on dev, without the fix, but with
+            the new test ready to try on it.
+        \li Build and run the test to verify that it fails on dev, and therefore
+            does indeed catch a bug.
         \li You can now return to the fix branch:
             \c {git checkout fix-branch}
         \li Alternatively, you can restore your work tree to a clean state on
-            5.14:
-            \c{git checkout HEAD -- tests/auto/corelib/time/qdatetime/tst_qdatetime.cpp}
+            dev: \c{git checkout HEAD -- tests/auto/corelib/time/qdatetime/tst_qdatetime.cpp}
     \endlist
 
     When you're reviewing a change, you can adapt this workflow to check that
