@@ -4251,26 +4251,16 @@ void tst_QTableView::mouseWheel_data()
 {
     QTest::addColumn<QAbstractItemView::ScrollMode>("scrollMode");
     QTest::addColumn<int>("delta");
-    QTest::addColumn<int>("horizontalPosition");
-    QTest::addColumn<int>("verticalPosition");
 
-    QTest::newRow("scroll up per item")
-            << QAbstractItemView::ScrollPerItem << 120
-            << 10 - QApplication::wheelScrollLines() << 10 - QApplication::wheelScrollLines();
-    QTest::newRow("scroll down per item")
-            << QAbstractItemView::ScrollPerItem << -120
-            << 10 + QApplication::wheelScrollLines() << 10 + QApplication::wheelScrollLines();
-    QTest::newRow("scroll down per pixel")
-            << QAbstractItemView::ScrollPerPixel << -120
-            << 10 + QApplication::wheelScrollLines() * 91 << 10 + QApplication::wheelScrollLines() * 46;
+    QTest::newRow("scroll up per item") << QAbstractItemView::ScrollPerItem << 120;
+    QTest::newRow("scroll down per item") << QAbstractItemView::ScrollPerItem << -120;
+    QTest::newRow("scroll down per pixel") << QAbstractItemView::ScrollPerPixel << -120;
 }
 
 void tst_QTableView::mouseWheel()
 {
     QFETCH(QAbstractItemView::ScrollMode, scrollMode);
     QFETCH(int, delta);
-    QFETCH(int, horizontalPosition);
-    QFETCH(int, verticalPosition);
 
     QtTestTableModel model(100, 100);
     QWidget topLevel;
@@ -4289,8 +4279,20 @@ void tst_QTableView::mouseWheel()
 
     view.setHorizontalScrollMode(scrollMode);
     view.setVerticalScrollMode(scrollMode);
-    view.horizontalScrollBar()->setValue(10);
-    view.verticalScrollBar()->setValue(10);
+
+    constexpr int initialPosition = 10;
+    view.horizontalScrollBar()->setValue(initialPosition);
+    view.verticalScrollBar()->setValue(initialPosition);
+
+    const auto scrolledPosition = [delta](const QScrollBar *scrollBar) {
+        const int steps = qMin(QApplication::wheelScrollLines() * scrollBar->singleStep(),
+                               scrollBar->pageStep());
+        return qBound(scrollBar->minimum(),
+                      initialPosition + (delta > 0 ? -steps : steps),
+                      scrollBar->maximum());
+    };
+    const int horizontalPosition = scrolledPosition(view.horizontalScrollBar());
+    const int verticalPosition = scrolledPosition(view.verticalScrollBar());
 
     QPoint pos = view.viewport()->geometry().center();
     QWheelEvent verticalEvent(pos, view.mapToGlobal(pos), QPoint(), QPoint(0, delta),
@@ -4298,9 +4300,9 @@ void tst_QTableView::mouseWheel()
     QWheelEvent horizontalEvent(pos, view.mapToGlobal(pos), QPoint(), QPoint(delta, 0),
                                 Qt::NoButton, Qt::NoModifier, Qt::NoScrollPhase, false);
     QApplication::sendEvent(view.viewport(), &horizontalEvent);
-    QVERIFY(qAbs(view.horizontalScrollBar()->value() - horizontalPosition) < 15);
+    QCOMPARE(view.horizontalScrollBar()->value(), horizontalPosition);
     QApplication::sendEvent(view.viewport(), &verticalEvent);
-    QVERIFY(qAbs(view.verticalScrollBar()->value() - verticalPosition) < 15);
+    QCOMPARE(view.verticalScrollBar()->value(), verticalPosition);
 }
 #endif // QT_CONFIG(wheelevent)
 
