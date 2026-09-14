@@ -36,6 +36,25 @@ function(assert_package_licenses target)
     add_assert_str_exists_in_spdx_v2_3_doc("${needle}")
 endfunction()
 
+# Asserts the concluded license recorded for the file entry whose name contains name_part.
+function(assert_file_license name_part concluded)
+    if(NOT QT_GENERATE_SBOM OR NOT QT_SBOM_GENERATE_SPDX_V2)
+        return()
+    endif()
+
+    # Match from the file name through the fixed file fields, so the check can't accidentally match
+    # another file's license. The install path is not part of the needle, because it differs
+    # between single and multi config builds.
+    string(CONCAT needle
+        "FileName: [^\n]*${name_part}[^\n]*\n"
+        "SPDXID:[^\n]*\n"
+        "FileType:[^\n]*\n"
+        "FileChecksum:[^\n]*\n"
+        "LicenseConcluded: ${concluded}\n"
+    )
+    add_assert_str_exists_in_spdx_v2_3_doc("${needle}")
+endfunction()
+
 set(SBOM_PROJECT_NAME "Licenses")
 set(SBOM_INSTALL_DIR "sbom_licenses")
 
@@ -158,6 +177,70 @@ add_assert_str_exists_in_spdx_v2_3_doc(
     "LicenseConcluded: X11\nFileCopyrightText:[^\n]*\nLicenseInfoInFile: NOASSERTION\n")
 add_assert_str_not_exists_in_spdx_v2_3_doc("LicenseConcluded: curl")
 add_assert_str_not_exists_in_spdx_v2_3_doc("W3C")
+
+# The binary files of a target can get a different expression than the target package.
+add_library(lic_binary_files STATIC)
+target_sources(lic_binary_files PRIVATE sources/core_helper.cpp)
+install(TARGETS lic_binary_files ARCHIVE DESTINATION lib)
+_qt_internal_add_sbom(lic_binary_files
+    SBOM_ENTITY_TYPE "LIBRARY"
+    RUNTIME_PATH bin
+    ARCHIVE_PATH lib
+    LIBRARY_PATH lib
+    LICENSE_CONCLUDED_EXPRESSION "Sleepycat"
+    BINARY_FILES_LICENSE_CONCLUDED_EXPRESSION "Vim"
+    BINARY_FILES_LICENSE_DECLARED_EXPRESSION "W3C"
+)
+assert_package_licenses(lic_binary_files CONCLUDED "Sleepycat" DECLARED "NOASSERTION")
+assert_file_license("lic_binary_files" "Vim")
+
+# The files of a target can opt out of the package expression entirely.
+add_library(lic_no_files_license STATIC)
+target_sources(lic_no_files_license PRIVATE sources/core_helper.cpp)
+install(TARGETS lic_no_files_license ARCHIVE DESTINATION lib)
+_qt_internal_add_sbom(lic_no_files_license
+    SBOM_ENTITY_TYPE "LIBRARY"
+    RUNTIME_PATH bin
+    ARCHIVE_PATH lib
+    LIBRARY_PATH lib
+    LICENSE_CONCLUDED_EXPRESSION "PostgreSQL"
+    NO_TARGET_LICENSE_EXPRESSION_FOR_FILES
+)
+assert_package_licenses(lic_no_files_license CONCLUDED "PostgreSQL" DECLARED "NOASSERTION")
+assert_file_license("lic_no_files_license" "NOASSERTION")
+add_assert_str_not_exists_in_spdx_v2_3_doc("\nLicenseConcluded: PostgreSQL")
+
+# Custom file sets inherit the package expression, unless they opt out.
+set(license_file_sets_install_path "licfilesets")
+
+_qt_internal_add_sbom(LicenseFileSets
+    SBOM_ENTITY_TYPE "CUSTOM"
+    LICENSE_CONCLUDED_EXPRESSION "Sleepycat"
+)
+_qt_internal_sbom_add_files(LicenseFileSets
+    FILES "custom_files/sources/res1.txt"
+    FILE_TYPE "CUSTOM"
+    INSTALL_PATH "${license_file_sets_install_path}"
+    INSTALL_PATH_DEBUG "${license_file_sets_install_path}/debug"
+    INSTALL_PATH_RELEASE "${license_file_sets_install_path}/release"
+)
+_qt_internal_sbom_add_files(LicenseFileSets
+    FILES "custom_files/sources/res1_source.txt"
+    FILE_TYPE "CUSTOM"
+    INSTALL_PATH "${license_file_sets_install_path}"
+    INSTALL_PATH_DEBUG "${license_file_sets_install_path}/debug"
+    INSTALL_PATH_RELEASE "${license_file_sets_install_path}/release"
+    NO_TARGET_LICENSE_EXPRESSION
+)
+
+install(FILES
+    custom_files/sources/res1.txt
+    custom_files/sources/res1_source.txt
+    DESTINATION "${license_file_sets_install_path}"
+)
+
+assert_file_license("res1\\.txt" "Sleepycat")
+assert_file_license("res1_source\\.txt" "NOASSERTION")
 
 _qt_internal_sbom_end_project()
 
