@@ -33,6 +33,9 @@ Q_CONSTINIT std::atomic<std::chrono::milliseconds> QTest::defaultTryTimeout{5s};
     To access the value, call \c load():
 
     \snippet code/src_qtestlib_qtestcase.cpp get defaultTryTimeout
+
+    It can also be set for a single run with the \c -trytimeout command-line
+    option.
 */
 
 /*!

@@ -699,6 +699,8 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, const char *const argv[], bool 
          "                       repeated forever. This is intended as a developer tool, and\n"
          "                       is only supported with the plain text logger.\n"
          " -skipblacklisted    : Skip blacklisted tests. Useful for measuring test coverage.\n"
+         " -trytimeout ms      : Set default timeout for the QTRY_* macros and the qWaitFor()\n"
+         "                       functions to ms milliseconds.\n"
          "\n"
          " Benchmarking options:\n"
 #if QT_CONFIG(valgrind)
@@ -858,6 +860,14 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, const char *const argv[], bool 
             QTest::Internal::noCrashHandler = true;
         } else if (strcmp(argv[i], "-skipblacklisted") == 0) {
             QTest::skipBlacklisted = true;
+        } else if (strcmp(argv[i], "-trytimeout") == 0) {
+            if (i + 1 >= argc) {
+                std::fprintf(stderr, "-trytimeout needs an extra parameter to indicate the timeout(ms)\n");
+                exit(1);
+            } else {
+                QTest::defaultTryTimeout.store(std::chrono::milliseconds{qToInt(argv[++i])},
+                                               std::memory_order_relaxed);
+            }
 #if QT_CONFIG(valgrind)
         } else if (strcmp(argv[i], "-callgrind") == 0) {
             if (!QBenchmarkValgrindUtils::haveValgrind()) {
