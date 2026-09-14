@@ -979,14 +979,17 @@ void tst_QGraphicsProxyWidget::hoverEnterLeaveEvent()
     scene.addItem(proxy);
     QTRY_VERIFY(!sceneChangedSpy.isEmpty());
 
+    const QPoint outsideProxy(1, 1);
+    const QPoint insideProxy = view.mapFromScene(proxy->sceneBoundingRect().center());
+
     // outside graphics item
-    QTest::mouseMove(&view, QPoint(10, 10));
+    QTest::mouseMove(view.viewport(), outsideProxy);
 
     QVERIFY(!widget->testAttribute(Qt::WA_UnderMouse));
     QCOMPARE(widget->enterCount, 0);
     QCOMPARE(widget->hoverEnter, 0);
     // over graphics item
-    QTest::mouseMove(&view, QPoint(50, 50));
+    QTest::mouseMove(view.viewport(), insideProxy);
     QTRY_COMPARE(widget->testAttribute(Qt::WA_UnderMouse), hasWidget);
     QCOMPARE(widget->enterCount, hasWidget ? 1 : 0);
     QCOMPARE(widget->hoverEnter, (hasWidget && hoverEnabled) ? 1 : 0);
@@ -994,7 +997,7 @@ void tst_QGraphicsProxyWidget::hoverEnterLeaveEvent()
     QTRY_COMPARE(widget->leaveCount, 0);
     QTRY_COMPARE(widget->hoverLeave, 0);
     // outside graphics item
-    QTest::mouseMove(&view, QPoint(10, 10));
+    QTest::mouseMove(view.viewport(), outsideProxy);
     QTRY_VERIFY(!widget->testAttribute(Qt::WA_UnderMouse));
     QTRY_COMPARE(widget->leaveCount, hasWidget ? 1 : 0);
     QTRY_COMPARE(widget->hoverLeave, (hasWidget && hoverEnabled) ? 1 : 0);
