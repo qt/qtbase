@@ -129,6 +129,36 @@ _qt_internal_add_sbom(LicenseAttribution
 assert_package_licenses(LicenseAttribution
     CONCLUDED "\\(ISC\\) AND \\(MIT\\)" DECLARED "\\(ISC\\) AND \\(MIT\\)")
 
+# File level expressions.
+# The declared value is a no-op for now, and the compatibility LICENSE_EXPRESSION option
+# is ignored due to LICENSE_CONCLUDED_EXPRESSION being set.
+set(license_files "custom_files/sources/custom1.txt")
+set(license_files_install_path "licfiles")
+
+_qt_internal_add_sbom(LicenseFiles
+    SBOM_ENTITY_TYPE "CUSTOM"
+)
+_qt_internal_sbom_add_files(LicenseFiles
+    FILES "${license_files}"
+    FILE_TYPE "CUSTOM"
+    INSTALL_PATH "${license_files_install_path}"
+    INSTALL_PATH_DEBUG "${license_files_install_path}/debug"
+    INSTALL_PATH_RELEASE "${license_files_install_path}/release"
+    LICENSE_EXPRESSION "curl"
+    LICENSE_CONCLUDED_EXPRESSION "X11"
+    LICENSE_DECLARED_EXPRESSION "W3C"
+)
+
+install(FILES
+    ${license_files}
+    DESTINATION "${license_files_install_path}"
+)
+
+add_assert_str_exists_in_spdx_v2_3_doc(
+    "LicenseConcluded: X11\nFileCopyrightText:[^\n]*\nLicenseInfoInFile: NOASSERTION\n")
+add_assert_str_not_exists_in_spdx_v2_3_doc("LicenseConcluded: curl")
+add_assert_str_not_exists_in_spdx_v2_3_doc("W3C")
+
 _qt_internal_sbom_end_project()
 
 # All three options, the new concluded one takes precedence over the compatibility alias.

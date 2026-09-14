@@ -1784,7 +1784,10 @@ function(_qt_internal_sbom_add_target target)
 
     set(license_option "")
     if(license_expression)
-        set(license_option LICENSE_EXPRESSION "${license_expression}")
+        list(APPEND license_option LICENSE_CONCLUDED_EXPRESSION "${license_expression}")
+    endif()
+    if(license_declared_expression)
+        list(APPEND license_option LICENSE_DECLARED_EXPRESSION "${license_declared_expression}")
     endif()
 
     if(QT_SBOM_GENERATE_SPDX_V2)

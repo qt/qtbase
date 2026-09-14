@@ -430,7 +430,7 @@ function(_qt_internal_sbom_generate_add_file)
         PARENT_PACKAGE_SPDXID
         SPDXID
         CONFIG
-        LICENSE
+        LICENSE_CONCLUDED
         COPYRIGHT
         INSTALL_PREFIX
     )
@@ -454,7 +454,7 @@ function(_qt_internal_sbom_generate_add_file)
 
     _qt_internal_sbom_set_default_option_value_and_error_if_empty(PARENT_PACKAGE_SPDXID "")
 
-    _qt_internal_sbom_set_default_option_value(LICENSE "NOASSERTION")
+    _qt_internal_sbom_set_default_option_value(LICENSE_CONCLUDED "NOASSERTION")
     _qt_internal_sbom_set_default_option_value(COPYRIGHT "NOASSERTION")
 
     get_property(sbom_project_spdx_id GLOBAL PROPERTY _qt_sbom_project_spdx_id)
@@ -470,9 +470,9 @@ function(_qt_internal_sbom_generate_add_file)
 
     set(fields "")
 
-    if(arg_LICENSE)
+    if(arg_LICENSE_CONCLUDED)
         set(fields "${fields}
-LicenseConcluded: ${arg_LICENSE}"
+LicenseConcluded: ${arg_LICENSE_CONCLUDED}"
         )
     else()
         set(fields "${fields}
