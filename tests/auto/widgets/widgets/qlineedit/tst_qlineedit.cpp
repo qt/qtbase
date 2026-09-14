@@ -3444,29 +3444,32 @@ void tst_QLineEdit::textMargin_data()
     QTest::addColumn<QPoint>("mousePressPos");
     QTest::addColumn<int>("cursorPosition");
 
-    struct TestLineEditWidget : public QLineEdit
-    {
-        QRect cursorRect() const { return QLineEdit::cursorRect(); }
+    QLineEdit testWidget;
+    testWidget.setFrame(false);
+    testWidget.setText("MMM MMM MMM");
+
+    const auto firstXForPosition = [&testWidget](int position) {
+        int x = 0;
+        while (x < testWidget.width() && testWidget.cursorPositionAt(QPoint(x, 0)) < position)
+            ++x;
+        return x;
     };
 
-    TestLineEditWidget testWidget;
-    QFontMetrics metrics(testWidget.font());
-    const QString s = QLatin1String("MMM MMM MMM");
+    const auto clickXForPosition = [&firstXForPosition](int position) {
+        return (firstXForPosition(position) + firstXForPosition(position + 1) - 1) / 2;
+    };
 
-    const int pixelWidthOfM = testWidget.cursorRect().x() + metrics.horizontalAdvance(s, 1);
-    const int pixelWidthOfMMM_MM = testWidget.cursorRect().x() + metrics.horizontalAdvance(s, 6);
-
-    QTest::newRow("default-0") << 0 << 0 << 0 << 0 << QPoint(pixelWidthOfMMM_MM, 0) << 6;
+    QTest::newRow("default-0") << 0 << 0 << 0 << 0 << QPoint(clickXForPosition(6), 0) << 6;
     QTest::newRow("default-1") << 0 << 0 << 0 << 0 << QPoint(1, 1) << 0;
-    QTest::newRow("default-2") << -1 << 0 << -1 << 0 << QPoint(pixelWidthOfMMM_MM, 0) << 6;
-    QTest::newRow("default-3") << 0 << 0 << 0 << 0 << QPoint(pixelWidthOfM, 1) << 1;
+    QTest::newRow("default-2") << -1 << 0 << -1 << 0 << QPoint(clickXForPosition(6), 0) << 6;
+    QTest::newRow("default-3") << 0 << 0 << 0 << 0 << QPoint(clickXForPosition(1), 1) << 1;
 
     QTest::newRow("hor-0") << 10 << 0 << 10 << 0 << QPoint(1, 1) << 0;
     QTest::newRow("hor-1") << 10 << 0 << 10 << 0 << QPoint(10, 1) << 0;
     QTest::newRow("hor-2") << 20 << 0 << 10 << 0 << QPoint(20, 1) << 0;
 
     if (!qApp->style()->inherits("QMacStyle")) { //MacStyle doesn't support verticals margins.
-        QTest::newRow("default-2-ver") << -1 << -1 << -1 << -1 << QPoint(pixelWidthOfMMM_MM, 0) << 6;
+        QTest::newRow("default-2-ver") << -1 << -1 << -1 << -1 << QPoint(clickXForPosition(6), 0) << 6;
         QTest::newRow("ver") << 0 << 10 << 0 << 10 << QPoint(1, 1) << 0;
     }
 }
