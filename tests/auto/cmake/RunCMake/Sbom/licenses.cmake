@@ -20,6 +20,7 @@ _qt_internal_sbom_begin_project(
     SUPPLIER_URL "https://qt-project.org/SbomTest"
     VERSION "1.0.0"
     INSTALL_SBOM_DIR "${SBOM_INSTALL_DIR}"
+    MIRROR_TARGET_LICENSE_DECLARED_EXPRESSION
 )
 sbom_test_record_project()
 
@@ -28,7 +29,7 @@ _qt_internal_add_sbom(LicenseOldOption
     SBOM_ENTITY_TYPE "LIBRARY"
     LICENSE_EXPRESSION "MIT"
 )
-assert_package_licenses(LicenseOldOption CONCLUDED "MIT" DECLARED "NOASSERTION")
+assert_package_licenses(LicenseOldOption CONCLUDED "MIT" DECLARED "MIT")
 add_assert_str_exists_in_cydx_v1_6_doc("\"expression\": \"MIT\"")
 
 # The concluded option wins over the older option.
@@ -37,7 +38,7 @@ _qt_internal_add_sbom(LicenseConcludedOverridesOldOption
     LICENSE_EXPRESSION "curl"
     LICENSE_CONCLUDED_EXPRESSION "ISC"
 )
-assert_package_licenses(LicenseConcludedOverridesOldOption CONCLUDED "ISC" DECLARED "NOASSERTION")
+assert_package_licenses(LicenseConcludedOverridesOldOption CONCLUDED "ISC" DECLARED "ISC")
 add_assert_str_exists_in_cydx_v1_6_doc("\"expression\": \"ISC\"")
 add_assert_str_not_exists_in_cydx_v1_6_doc("\"expression\": \"curl\"")
 
@@ -76,6 +77,17 @@ _qt_internal_add_sbom(LicenseQtEntityExplicit
 )
 assert_package_licenses(LicenseQtEntityExplicit CONCLUDED "MIT" DECLARED "MIT")
 
+# A qt entity can opt out of the mirroring again.
+_qt_internal_add_sbom(LicenseQtEntityNoMirror
+    SBOM_ENTITY_TYPE "QT_MODULE"
+    __QT_INTERNAL_HANDLE_QT_ENTITY_TYPE_LICENSE
+    QT_LICENSE_ID "BSD3"
+    NO_MIRROR_LICENSE_DECLARED_EXPRESSION
+    IMMEDIATE_FINALIZATION
+)
+assert_package_licenses(LicenseQtEntityNoMirror
+    CONCLUDED "\\(BSD-3-Clause\\) AND \\(Xnet\\)" DECLARED "NOASSERTION")
+
 # The compatibility option is AND-ed with them instead.
 _qt_internal_add_sbom(LicenseQtEntityCompat
     SBOM_ENTITY_TYPE "QT_MODULE"
@@ -101,6 +113,22 @@ _qt_internal_add_sbom(LicenseAttribution
 )
 assert_package_licenses(LicenseAttribution
     CONCLUDED "\\(ISC\\) AND \\(MIT\\)" DECLARED "\\(ISC\\) AND \\(MIT\\)")
+
+# The project wide request doesn't reach third party and system entities, we don't know what they
+# declare.
+_qt_internal_add_sbom(LicenseSystemLibrary
+    SBOM_ENTITY_TYPE "SYSTEM_LIBRARY"
+    LICENSE_CONCLUDED_EXPRESSION "IJG"
+)
+assert_package_licenses(LicenseSystemLibrary CONCLUDED "IJG" DECLARED "NOASSERTION")
+
+# Such an entity can still ask for the mirroring itself.
+_qt_internal_add_sbom(LicenseSystemLibraryMirror
+    SBOM_ENTITY_TYPE "SYSTEM_LIBRARY"
+    LICENSE_CONCLUDED_EXPRESSION "libtiff"
+    MIRROR_LICENSE_DECLARED_EXPRESSION
+)
+assert_package_licenses(LicenseSystemLibraryMirror CONCLUDED "libtiff" DECLARED "libtiff")
 
 # File level expressions.
 # The declared value is a no-op for now, and the compatibility LICENSE_EXPRESSION option
@@ -145,7 +173,7 @@ _qt_internal_add_sbom(lic_binary_files
     BINARY_FILES_LICENSE_CONCLUDED_EXPRESSION "Vim"
     BINARY_FILES_LICENSE_DECLARED_EXPRESSION "W3C"
 )
-assert_package_licenses(lic_binary_files CONCLUDED "Sleepycat" DECLARED "NOASSERTION")
+assert_package_licenses(lic_binary_files CONCLUDED "Sleepycat" DECLARED "Sleepycat")
 assert_file_license("lic_binary_files" "Vim")
 
 # The files of a target can opt out of the package expression entirely.
@@ -160,7 +188,7 @@ _qt_internal_add_sbom(lic_no_files_license
     LICENSE_CONCLUDED_EXPRESSION "PostgreSQL"
     NO_TARGET_LICENSE_EXPRESSION_FOR_FILES
 )
-assert_package_licenses(lic_no_files_license CONCLUDED "PostgreSQL" DECLARED "NOASSERTION")
+assert_package_licenses(lic_no_files_license CONCLUDED "PostgreSQL" DECLARED "PostgreSQL")
 assert_file_license("lic_no_files_license" "NOASSERTION")
 add_assert_str_not_exists_in_spdx_v2_3_doc("\nLicenseConcluded: PostgreSQL")
 

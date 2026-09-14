@@ -20,6 +20,16 @@ assert_package_licenses(${PROJECT_NAME}Library
     CONCLUDED "${LICENSE_DEFAULTS_VARIANT_CONCLUDED}"
     DECLARED "${LICENSE_DEFAULTS_VARIANT_DECLARED}")
 
+# Disabling the default expressions doesn't disable the mirroring a target asks for.
+_qt_internal_add_sbom(${PROJECT_NAME}QtEntity
+    SBOM_ENTITY_TYPE "QT_MODULE"
+    __QT_INTERNAL_HANDLE_QT_ENTITY_TYPE_LICENSE
+    QT_LICENSE_ID "BSD3"
+    MIRROR_LICENSE_DECLARED_EXPRESSION
+)
+assert_package_licenses(${PROJECT_NAME}QtEntity
+    CONCLUDED "BSD-3-Clause" DECLARED "BSD-3-Clause")
+
 foreach(needle IN LISTS LICENSE_DEFAULTS_VARIANT_ABSENT_NEEDLES)
     add_assert_str_not_exists_in_spdx_v2_3_doc("${needle}")
 endforeach()

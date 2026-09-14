@@ -24,6 +24,9 @@ __qt_internal_cmake_include_guard(GLOBAL GUARD_KEY "QtPublicSbomHelpers")
 # only used if the latter is not set.
 # If neither of the two new options is given, the value of LICENSE_EXPRESSION is recorded in
 # both fields. Setting either of the two disables the mirroring.
+#
+# MIRROR_TARGET_LICENSE_DECLARED_EXPRESSION records the concluded expression of each target
+# package as its declared one as well, except for third party and system entities.
 function(_qt_internal_sbom_begin_project)
     # Allow opt out via an internal variable. Will be used in CI for repos like qtqa.
     if(QT_INTERNAL_FORCE_NO_GENERATE_SBOM)
@@ -38,6 +41,7 @@ function(_qt_internal_sbom_begin_project)
 
     set(opt_args
         USE_GIT_VERSION
+        MIRROR_TARGET_LICENSE_DECLARED_EXPRESSION
         NO_DEFAULT_TARGET_LICENSE_CONCLUDED_EXPRESSION
         NO_DEFAULT_TARGET_LICENSE_DECLARED_EXPRESSION
         __QT_INTERNAL_HANDLE_QT_REPO
@@ -353,6 +357,14 @@ function(_qt_internal_sbom_begin_project)
             "${arg_DEFAULT_TARGET_LICENSE_DECLARED_EXPRESSION}")
     endif()
 
+    set(mirror_target_license_declared_expression "")
+    if(arg_MIRROR_TARGET_LICENSE_DECLARED_EXPRESSION)
+        set(mirror_target_license_declared_expression "TRUE")
+    endif()
+
+    set_property(GLOBAL PROPERTY
+        _qt_internal_sbom_mirror_target_license_declared_expression
+        "${mirror_target_license_declared_expression}")
     set_property(GLOBAL PROPERTY
         _qt_internal_sbom_default_target_license_concluded_expression
         "${default_target_license_concluded}")
@@ -1145,6 +1157,8 @@ macro(_qt_internal_get_sbom_add_target_common_options opt_args single_args multi
         NO_DEFAULT_QT_PACKAGE_VERSION
         NO_DEFAULT_QT_SUPPLIER
         NO_DEFAULT_PROJECT_CONTAINS_RELATIONSHIP
+        MIRROR_LICENSE_DECLARED_EXPRESSION
+        NO_MIRROR_LICENSE_DECLARED_EXPRESSION
         NO_PROJECT_DEFAULT_LICENSE_CONCLUDED_EXPRESSION
         NO_PROJECT_DEFAULT_LICENSE_DECLARED_EXPRESSION
         NO_TARGET_LICENSE_EXPRESSION_FOR_FILES
@@ -1456,6 +1470,27 @@ function(_qt_internal_sbom_add_target target)
             _qt_internal_sbom_default_target_license_declared_expression)
     endif()
 
+    # Mirror the concluded license expression to the declared license expression, when the project
+    # opt in is set, or if it's a qt entity.
+    # The project opt in does not apply to third party and system entities.
+    get_cmake_property(project_mirror_license_declared_expression
+        _qt_internal_sbom_mirror_target_license_declared_expression)
+
+    set(mirror_license_declared_expression FALSE)
+    if(project_mirror_license_declared_expression
+            AND NOT is_third_party_or_system_entity_type)
+        set(mirror_license_declared_expression TRUE)
+    endif()
+    if(is_qt_entity_type)
+        set(mirror_license_declared_expression TRUE)
+    endif()
+    if(arg_MIRROR_LICENSE_DECLARED_EXPRESSION)
+        set(mirror_license_declared_expression TRUE)
+    endif()
+    if(arg_NO_MIRROR_LICENSE_DECLARED_EXPRESSION)
+        set(mirror_license_declared_expression FALSE)
+    endif()
+
     # An explicitly declared expression has priority over the project wide default, which in turn
     # has priority over a mirrored value.
     set(license_declared_expression "")
@@ -1464,15 +1499,8 @@ function(_qt_internal_sbom_add_target target)
         set(license_declared_expression "${arg_LICENSE_DECLARED_EXPRESSION}")
     elseif(project_default_license_declared_expression)
         set(license_declared_expression "${project_default_license_declared_expression}")
-    elseif(license_expression AND arg___QT_INTERNAL_HANDLE_QT_ENTITY_TYPE_LICENSE)
-        _qt_internal_sbom_forward_sbom_add_target_options_modified(sbom_add_target_args)
-        _qt_internal_sbom_handle_qt_entity_license_declared_expression(${target}
-            ${sbom_add_target_args}
-            COMPUTED_LICENSE_CONCLUDED_EXPRESSION "${license_expression}"
-            OUT_VAR qt_entity_license_declared_expression)
-        if(qt_entity_license_declared_expression)
-            set(license_declared_expression "${qt_entity_license_declared_expression}")
-        endif()
+    elseif(license_expression AND mirror_license_declared_expression)
+        set(license_declared_expression "${license_expression}")
     endif()
 
     if(license_declared_expression)
