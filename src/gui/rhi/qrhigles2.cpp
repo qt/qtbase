@@ -1896,7 +1896,7 @@ bool QRhiGles2::isFeatureSupported(QRhi::Feature feature) const
     case QRhi::DispatchIndirect:
         return caps.dispatchIndirect;
     case QRhi::PushConstants:
-        return false;
+        return true;
     case QRhi::DrawIndirectCount:
         return caps.drawIndirectCount;
     case QRhi::BufferToBufferCopy:
@@ -1942,7 +1942,9 @@ int QRhiGles2::resourceLimit(QRhi::ResourceLimit limit) const
     case QRhi::MaxVertexStorageBuffers:
         return caps.maxVertexStorageBuffers;
     case QRhi::MaxPushConstantsSize:
-        return 0;
+        // Emulated with plain uniforms, so the real limit is the uniform
+        // budget shared with everything else. Report the portable minimum.
+        return int(MAX_PUSH_CONSTANTS_SIZE);
     case QRhi::MaxFragmentStorageBuffers:
         return caps.maxFragmentStorageBuffers;
     case QRhi::ShadingRateImageTileSize:
@@ -2432,10 +2434,53 @@ void QRhiGles2::setStencilRef(QRhiCommandBuffer *cb, quint32 refValue)
 
 void QRhiGles2::setPushConstants(QRhiCommandBuffer *cb, quint32 offset, quint32 size, const void *data)
 {
-    Q_UNUSED(cb);
-    Q_UNUSED(offset);
-    Q_UNUSED(size);
-    Q_UNUSED(data);
+    QGles2CommandBuffer *cbD = QRHI_RES(QGles2CommandBuffer, cb);
+    Q_ASSERT(cbD->recordingPass != QGles2CommandBuffer::NoPass);
+
+    QRhiGraphicsPipeline *maybeGraphicsPs = nullptr;
+    QRhiComputePipeline *maybeComputePs = nullptr;
+    quint32 blockSize = 0;
+    if (cbD->recordingPass == QGles2CommandBuffer::ComputePass) {
+        QGles2ComputePipeline *psD = QRHI_RES(QGles2ComputePipeline, cbD->currentComputePipeline);
+        if (!psD)
+            return;
+        maybeComputePs = cbD->currentComputePipeline;
+        blockSize = psD->pushConstantSize;
+    } else {
+        QGles2GraphicsPipeline *psD = QRHI_RES(QGles2GraphicsPipeline, cbD->currentGraphicsPipeline);
+        if (!psD)
+            return;
+        maybeGraphicsPs = cbD->currentGraphicsPipeline;
+        blockSize = psD->pushConstantSize;
+    }
+    if (!blockSize) {
+        qWarning("No pipeline with a push constant block is active; setPushConstants ignored");
+        return;
+    }
+
+    if (offset + size > MAX_PUSH_CONSTANTS_SIZE) {
+        qWarning("Push constant data of %u bytes at offset %u exceeds the %u byte maximum; "
+                 "setPushConstants ignored", size, offset, MAX_PUSH_CONSTANTS_SIZE);
+        return;
+    }
+
+    // A partial update has to be honored, so the block is kept on the command
+    // buffer and the whole of it is submitted every time.
+    const quint32 total = qMin(qMax(blockSize, offset + size), MAX_PUSH_CONSTANTS_SIZE);
+    if (quint32(cbD->pushConstantData.size()) < total)
+        cbD->pushConstantData.resize(int(total), 0);
+    memcpy(cbD->pushConstantData.data() + offset, data, size);
+
+    const quint32 dataOffset = quint32(cbD->pushConstantPool.size());
+    cbD->pushConstantPool.resize(int(dataOffset + total));
+    memcpy(cbD->pushConstantPool.data() + dataOffset, cbD->pushConstantData.constData(), total);
+
+    QGles2CommandBuffer::Command &cmd(cbD->commands.get());
+    cmd.cmd = QGles2CommandBuffer::Command::SetPushConstants;
+    cmd.args.setPushConstants.maybeGraphicsPs = maybeGraphicsPs;
+    cmd.args.setPushConstants.maybeComputePs = maybeComputePs;
+    cmd.args.setPushConstants.dataOffset = dataOffset;
+    cmd.args.setPushConstants.size = total;
 }
 
 void QRhiGles2::setShadingRate(QRhiCommandBuffer *cb, const QSize &coarsePixelSize)
@@ -4095,6 +4140,21 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
                                 cmd.args.bindShaderResources.dynamicOffsetPairs,
                                 cmd.args.bindShaderResources.dynamicOffsetCount);
             break;
+        case QGles2CommandBuffer::Command::SetPushConstants:
+        {
+            QRhiGraphicsPipeline *maybeGraphicsPs = cmd.args.setPushConstants.maybeGraphicsPs;
+            QRhiComputePipeline *maybeComputePs = cmd.args.setPushConstants.maybeComputePs;
+            const QGles2UniformDescriptionVector &uniforms(maybeGraphicsPs
+                    ? QRHI_RES(QGles2GraphicsPipeline, maybeGraphicsPs)->pushConstantUniforms
+                    : QRHI_RES(QGles2ComputePipeline, maybeComputePs)->pushConstantUniforms);
+            QGles2UniformState *uniformState = maybeGraphicsPs
+                    ? QRHI_RES(QGles2GraphicsPipeline, maybeGraphicsPs)->uniformState
+                    : QRHI_RES(QGles2ComputePipeline, maybeComputePs)->uniformState;
+            setUniformsFromBlock(uniforms, -1,
+                                 cbD->pushConstantPool.constData() + cmd.args.setPushConstants.dataOffset,
+                                 cmd.args.setPushConstants.size, 0, uniformState);
+        }
+            break;
         case QGles2CommandBuffer::Command::BindFramebuffer:
         {
             QVarLengthArray<GLenum, 8> bufs;
@@ -4820,21 +4880,40 @@ void QRhiGles2::executeBindGraphicsPipeline(QGles2CommandBuffer *cbD, QGles2Grap
     f->glUseProgram(psD->program);
 }
 
+// The source is a uniform block (std140) or a push constant block (std430)
+// laid out for the GPU, which is not what glUniform* wants: there the values
+// are tightly packed. srcStride is the distance in bytes between the array
+// elements, or between the matrix columns for matrix types.
 template <typename T>
-static inline void qrhi_std140_to_packed(T *dst, int vecSize, int elemCount, const void *src)
+static inline void qrhi_block_to_packed(T *dst, int vecSize, int elemCount, const void *src, quint32 srcStride)
 {
-    const T *p = reinterpret_cast<const T *>(src);
+    const char *p = reinterpret_cast<const char *>(src);
     for (int i = 0; i < elemCount; ++i) {
+        const T *e = reinterpret_cast<const T *>(p);
         for (int j = 0; j < vecSize; ++j)
-            dst[vecSize * i + j] = *p++;
-        p += 4 - vecSize;
+            dst[vecSize * i + j] = e[j];
+        p += srcStride;
     }
 }
 
-static inline qint64 qrhi_std140_read_size(QShaderDescription::VariableType type, int arrayDim)
+// The default stride for both the arrays and the matrix columns in an std140
+// uniform block. Push constant blocks are std430, where an array of scalars or
+// vec2 is tightly packed, and so is a mat2; there the reflection-provided
+// stride is used instead.
+static const quint32 QRHI_GL_STD140_STRIDE = 16;
+
+static inline quint32 qrhi_uniform_stride(const QGles2UniformDescription &uniform)
 {
+    return uniform.elemStride ? uniform.elemStride : QRHI_GL_STD140_STRIDE;
+}
+
+static inline qint64 qrhi_uniform_read_size(QShaderDescription::VariableType type, int arrayDim, quint32 stride)
+{
+    if (!stride)
+        stride = QRHI_GL_STD140_STRIDE;
+
     qint64 elemSize;
-    qint64 stride = 16;
+    qint64 elemStride = stride;
 
     switch (type) {
     case QShaderDescription::Float:
@@ -4858,18 +4937,18 @@ static inline qint64 qrhi_std140_read_size(QShaderDescription::VariableType type
         elemSize = 16;
         break;
     case QShaderDescription::Mat2:
-        // two columns with a 16 byte stride
-        elemSize = 24;
-        stride = 32;
+        // two columns, stride is the column stride (16 with std140)
+        elemSize = stride + 8;
+        elemStride = 2 * stride;
         break;
     case QShaderDescription::Mat3:
-        // three columns with a 16 byte stride
-        elemSize = 44;
-        stride = 48;
+        // three columns
+        elemSize = 2 * stride + 12;
+        elemStride = 3 * stride;
         break;
     case QShaderDescription::Mat4:
-        elemSize = 64;
-        stride = 64;
+        elemSize = 3 * stride + 16;
+        elemStride = 4 * stride;
         break;
     case QShaderDescription::Bool:
         return 4;
@@ -4883,7 +4962,7 @@ static inline qint64 qrhi_std140_read_size(QShaderDescription::VariableType type
         return 0;
     }
 
-    return arrayDim < 1 ? elemSize : (arrayDim - 1) * stride + elemSize;
+    return arrayDim < 1 ? elemSize : (arrayDim - 1) * elemStride + elemSize;
 }
 
 void QRhiGles2::bindCombinedSampler(QGles2CommandBuffer *cbD, QGles2Texture *texD, QGles2Sampler *samplerD,
@@ -4939,6 +5018,309 @@ void QRhiGles2::bindCombinedSampler(QGles2CommandBuffer *cbD, QGles2Texture *tex
     }
 }
 
+void QRhiGles2::setUniformValue(const QGles2UniformDescription &uniform, const void *src, QGles2UniformState *uniformState)
+{
+    const quint32 stride = qrhi_uniform_stride(uniform);
+
+    switch (uniform.type) {
+    case QShaderDescription::Float:
+    {
+        const int elemCount = uniform.arrayDim;
+        if (elemCount < 1) {
+            const float v = *reinterpret_cast<const float *>(src);
+            if (uniform.glslLocation <= QGles2UniformState::MAX_TRACKED_LOCATION) {
+                QGles2UniformState &thisUniformState(uniformState[uniform.glslLocation]);
+                if (thisUniformState.componentCount != 1 || thisUniformState.v[0] != v) {
+                    thisUniformState.componentCount = 1;
+                    thisUniformState.v[0] = v;
+                    f->glUniform1f(uniform.glslLocation, v);
+                }
+            } else {
+                f->glUniform1f(uniform.glslLocation, v);
+            }
+        } else {
+            m_scratch.packedArray.resize(elemCount);
+            qrhi_block_to_packed(&m_scratch.packedArray.data()->f, 1, elemCount, src, stride);
+            f->glUniform1fv(uniform.glslLocation, elemCount, &m_scratch.packedArray.constData()->f);
+        }
+    }
+        break;
+    case QShaderDescription::Vec2:
+    {
+        const int elemCount = uniform.arrayDim;
+        if (elemCount < 1) {
+            const float *v = reinterpret_cast<const float *>(src);
+            if (uniform.glslLocation <= QGles2UniformState::MAX_TRACKED_LOCATION) {
+                QGles2UniformState &thisUniformState(uniformState[uniform.glslLocation]);
+                if (thisUniformState.componentCount != 2
+                        || thisUniformState.v[0] != v[0]
+                        || thisUniformState.v[1] != v[1])
+                {
+                    thisUniformState.componentCount = 2;
+                    thisUniformState.v[0] = v[0];
+                    thisUniformState.v[1] = v[1];
+                    f->glUniform2fv(uniform.glslLocation, 1, v);
+                }
+            } else {
+                f->glUniform2fv(uniform.glslLocation, 1, v);
+            }
+        } else {
+            m_scratch.packedArray.resize(elemCount * 2);
+            qrhi_block_to_packed(&m_scratch.packedArray.data()->f, 2, elemCount, src, stride);
+            f->glUniform2fv(uniform.glslLocation, elemCount, &m_scratch.packedArray.constData()->f);
+        }
+    }
+        break;
+    case QShaderDescription::Vec3:
+    {
+        const int elemCount = uniform.arrayDim;
+        if (elemCount < 1) {
+            const float *v = reinterpret_cast<const float *>(src);
+            if (uniform.glslLocation <= QGles2UniformState::MAX_TRACKED_LOCATION) {
+                QGles2UniformState &thisUniformState(uniformState[uniform.glslLocation]);
+                if (thisUniformState.componentCount != 3
+                        || thisUniformState.v[0] != v[0]
+                        || thisUniformState.v[1] != v[1]
+                        || thisUniformState.v[2] != v[2])
+                {
+                    thisUniformState.componentCount = 3;
+                    thisUniformState.v[0] = v[0];
+                    thisUniformState.v[1] = v[1];
+                    thisUniformState.v[2] = v[2];
+                    f->glUniform3fv(uniform.glslLocation, 1, v);
+                }
+            } else {
+                f->glUniform3fv(uniform.glslLocation, 1, v);
+            }
+        } else {
+            m_scratch.packedArray.resize(elemCount * 3);
+            qrhi_block_to_packed(&m_scratch.packedArray.data()->f, 3, elemCount, src, stride);
+            f->glUniform3fv(uniform.glslLocation, elemCount, &m_scratch.packedArray.constData()->f);
+        }
+    }
+        break;
+    case QShaderDescription::Vec4:
+    {
+        const int elemCount = uniform.arrayDim;
+        if (elemCount < 1) {
+            const float *v = reinterpret_cast<const float *>(src);
+            if (uniform.glslLocation <= QGles2UniformState::MAX_TRACKED_LOCATION) {
+                QGles2UniformState &thisUniformState(uniformState[uniform.glslLocation]);
+                if (thisUniformState.componentCount != 4
+                        || thisUniformState.v[0] != v[0]
+                        || thisUniformState.v[1] != v[1]
+                        || thisUniformState.v[2] != v[2]
+                        || thisUniformState.v[3] != v[3])
+                {
+                    thisUniformState.componentCount = 4;
+                    thisUniformState.v[0] = v[0];
+                    thisUniformState.v[1] = v[1];
+                    thisUniformState.v[2] = v[2];
+                    thisUniformState.v[3] = v[3];
+                    f->glUniform4fv(uniform.glslLocation, 1, v);
+                }
+            } else {
+                f->glUniform4fv(uniform.glslLocation, 1, v);
+            }
+        } else if (stride == 16) {
+            f->glUniform4fv(uniform.glslLocation, elemCount, reinterpret_cast<const float *>(src));
+        } else {
+            m_scratch.packedArray.resize(elemCount * 4);
+            qrhi_block_to_packed(&m_scratch.packedArray.data()->f, 4, elemCount, src, stride);
+            f->glUniform4fv(uniform.glslLocation, elemCount, &m_scratch.packedArray.constData()->f);
+        }
+    }
+        break;
+    case QShaderDescription::Mat2:
+    {
+        const int elemCount = uniform.arrayDim;
+        m_scratch.packedArray.resize(qMax(1, elemCount) * 4);
+        qrhi_block_to_packed(&m_scratch.packedArray.data()->f, 2, qMax(1, elemCount) * 2, src, stride);
+        f->glUniformMatrix2fv(uniform.glslLocation, qMax(1, elemCount), GL_FALSE, &m_scratch.packedArray.constData()->f);
+    }
+        break;
+    case QShaderDescription::Mat3:
+    {
+        const int elemCount = uniform.arrayDim;
+        m_scratch.packedArray.resize(qMax(1, elemCount) * 9);
+        qrhi_block_to_packed(&m_scratch.packedArray.data()->f, 3, qMax(1, elemCount) * 3, src, stride);
+        f->glUniformMatrix3fv(uniform.glslLocation, qMax(1, elemCount), GL_FALSE, &m_scratch.packedArray.constData()->f);
+    }
+        break;
+    case QShaderDescription::Mat4:
+        if (stride == 16) {
+            f->glUniformMatrix4fv(uniform.glslLocation, qMax(1, uniform.arrayDim), GL_FALSE, reinterpret_cast<const float *>(src));
+        } else {
+            const int elemCount = qMax(1, uniform.arrayDim);
+            m_scratch.packedArray.resize(elemCount * 16);
+            qrhi_block_to_packed(&m_scratch.packedArray.data()->f, 4, elemCount * 4, src, stride);
+            f->glUniformMatrix4fv(uniform.glslLocation, elemCount, GL_FALSE, &m_scratch.packedArray.constData()->f);
+        }
+        break;
+    case QShaderDescription::Int:
+    {
+        const int elemCount = uniform.arrayDim;
+        if (elemCount < 1) {
+            f->glUniform1i(uniform.glslLocation, *reinterpret_cast<const qint32 *>(src));
+        } else {
+            m_scratch.packedArray.resize(elemCount);
+            qrhi_block_to_packed(&m_scratch.packedArray.data()->i, 1, elemCount, src, stride);
+            f->glUniform1iv(uniform.glslLocation, elemCount, &m_scratch.packedArray.constData()->i);
+        }
+    }
+        break;
+    case QShaderDescription::Int2:
+    {
+        const int elemCount = uniform.arrayDim;
+        if (elemCount < 1) {
+            f->glUniform2iv(uniform.glslLocation, 1, reinterpret_cast<const qint32 *>(src));
+        } else {
+            m_scratch.packedArray.resize(elemCount * 2);
+            qrhi_block_to_packed(&m_scratch.packedArray.data()->i, 2, elemCount, src, stride);
+            f->glUniform2iv(uniform.glslLocation, elemCount, &m_scratch.packedArray.constData()->i);
+        }
+    }
+        break;
+    case QShaderDescription::Int3:
+    {
+        const int elemCount = uniform.arrayDim;
+        if (elemCount < 1) {
+            f->glUniform3iv(uniform.glslLocation, 1, reinterpret_cast<const qint32 *>(src));
+        } else {
+            m_scratch.packedArray.resize(elemCount * 3);
+            qrhi_block_to_packed(&m_scratch.packedArray.data()->i, 3, elemCount, src, stride);
+            f->glUniform3iv(uniform.glslLocation, elemCount, &m_scratch.packedArray.constData()->i);
+        }
+    }
+        break;
+    case QShaderDescription::Int4:
+        if (uniform.arrayDim < 1 || stride == 16) {
+            f->glUniform4iv(uniform.glslLocation, qMax(1, uniform.arrayDim), reinterpret_cast<const qint32 *>(src));
+        } else {
+            m_scratch.packedArray.resize(uniform.arrayDim * 4);
+            qrhi_block_to_packed(&m_scratch.packedArray.data()->i, 4, uniform.arrayDim, src, stride);
+            f->glUniform4iv(uniform.glslLocation, uniform.arrayDim, &m_scratch.packedArray.constData()->i);
+        }
+        break;
+    case QShaderDescription::Uint:
+    {
+        const int elemCount = uniform.arrayDim;
+        if (elemCount < 1) {
+            f->glUniform1ui(uniform.glslLocation, *reinterpret_cast<const quint32 *>(src));
+        } else {
+            m_scratch.packedArray.resize(elemCount);
+            qrhi_block_to_packed(&m_scratch.packedArray.data()->u, 1, elemCount, src, stride);
+            f->glUniform1uiv(uniform.glslLocation, elemCount, &m_scratch.packedArray.constData()->u);
+        }
+    }
+        break;
+    case QShaderDescription::Uint2:
+    {
+        const int elemCount = uniform.arrayDim;
+        if (elemCount < 1) {
+            f->glUniform2uiv(uniform.glslLocation, 1, reinterpret_cast<const quint32 *>(src));
+        } else {
+            m_scratch.packedArray.resize(elemCount * 2);
+            qrhi_block_to_packed(&m_scratch.packedArray.data()->u, 2, elemCount, src, stride);
+            f->glUniform2uiv(uniform.glslLocation, elemCount, &m_scratch.packedArray.constData()->u);
+        }
+    }
+        break;
+    case QShaderDescription::Uint3:
+    {
+        const int elemCount = uniform.arrayDim;
+        if (elemCount < 1) {
+            f->glUniform3uiv(uniform.glslLocation, 1, reinterpret_cast<const quint32 *>(src));
+        } else {
+            m_scratch.packedArray.resize(elemCount * 3);
+            qrhi_block_to_packed(&m_scratch.packedArray.data()->u, 3, elemCount, src, stride);
+            f->glUniform3uiv(uniform.glslLocation, elemCount, &m_scratch.packedArray.constData()->u);
+        }
+    }
+        break;
+    case QShaderDescription::Uint4:
+        if (uniform.arrayDim < 1 || stride == 16) {
+            f->glUniform4uiv(uniform.glslLocation, qMax(1, uniform.arrayDim), reinterpret_cast<const quint32 *>(src));
+        } else {
+            m_scratch.packedArray.resize(uniform.arrayDim * 4);
+            qrhi_block_to_packed(&m_scratch.packedArray.data()->u, 4, uniform.arrayDim, src, stride);
+            f->glUniform4uiv(uniform.glslLocation, uniform.arrayDim, &m_scratch.packedArray.constData()->u);
+        }
+        break;
+    case QShaderDescription::Bool: // a glsl bool is 4 bytes, like (u)int
+        f->glUniform1i(uniform.glslLocation, *reinterpret_cast<const qint32 *>(src));
+        break;
+    case QShaderDescription::Bool2:
+        f->glUniform2iv(uniform.glslLocation, 1, reinterpret_cast<const qint32 *>(src));
+        break;
+    case QShaderDescription::Bool3:
+        f->glUniform3iv(uniform.glslLocation, 1, reinterpret_cast<const qint32 *>(src));
+        break;
+    case QShaderDescription::Bool4:
+        f->glUniform4iv(uniform.glslLocation, 1, reinterpret_cast<const qint32 *>(src));
+        break;
+    default:
+        qWarning("Uniform with binding %d, offset %u has unsupported type %d",
+                 uniform.binding, uniform.offset, uniform.type);
+        break;
+    }
+}
+
+// Sets all uniforms belonging to one block. blockData is the start of the
+// source data (the uniform buffer's contents, or the push constant block),
+// blockOffset the offset the block starts at within it. Pass a binding of -1
+// to take all entries of uniforms, which is what push constant blocks, having
+// no binding, do.
+void QRhiGles2::setUniformsFromBlock(const QGles2UniformDescriptionVector &uniforms, int binding,
+                                     const char *blockData, qint64 blockSize, quint32 blockOffset,
+                                     QGles2UniformState *uniformState)
+{
+    for (const QGles2UniformDescription &uniform : uniforms) {
+        if (binding >= 0 && uniform.binding != binding)
+            continue;
+
+        const qint64 readOffset = qint64(blockOffset) + uniform.offset;
+        const qint64 readSize = qrhi_uniform_read_size(uniform.type, uniform.arrayDim, uniform.elemStride);
+        if (readOffset < 0 || readOffset + readSize > blockSize) {
+            qWarning("Uniform with binding %d, offset %u, type %d, array dimension %d would read "
+                     "outside of the %lld bytes of source data. Skipping.",
+                     uniform.binding, uniform.offset, uniform.type, uniform.arrayDim, blockSize);
+            continue;
+        }
+
+#ifndef QT_NO_DEBUG
+        if (uniform.arrayDim > 0
+                && uniform.type != QShaderDescription::Float
+                && uniform.type != QShaderDescription::Vec2
+                && uniform.type != QShaderDescription::Vec3
+                && uniform.type != QShaderDescription::Vec4
+                && uniform.type != QShaderDescription::Int
+                && uniform.type != QShaderDescription::Int2
+                && uniform.type != QShaderDescription::Int3
+                && uniform.type != QShaderDescription::Int4
+                && uniform.type != QShaderDescription::Uint
+                && uniform.type != QShaderDescription::Uint2
+                && uniform.type != QShaderDescription::Uint3
+                && uniform.type != QShaderDescription::Uint4
+                && uniform.type != QShaderDescription::Mat2
+                && uniform.type != QShaderDescription::Mat3
+                && uniform.type != QShaderDescription::Mat4)
+        {
+            qWarning("Uniform with binding %d, offset %u, type %d is an array, "
+                     "but arrays are only supported for float, vec2, vec3, vec4, int, "
+                     "ivec2, ivec3, ivec4, uint, uvec2, uvec3, uvec4, mat2, mat3 "
+                     "and mat4. "
+                     "Only the first element will be set.",
+                     uniform.binding, uniform.offset, uniform.type);
+        }
+#endif
+
+        // in both a uniform block and a push constant block everything is at
+        // least 4 byte aligned, so this should not cause unaligned reads
+        setUniformValue(uniform, blockData + readOffset, uniformState);
+    }
+}
+
 void QRhiGles2::bindShaderResources(QGles2CommandBuffer *cbD,
                                     QRhiGraphicsPipeline *maybeGraphicsPs, QRhiComputePipeline *maybeComputePs,
                                     QRhiShaderResourceBindings *srb,
@@ -4968,298 +5350,8 @@ void QRhiGles2::bindShaderResources(QGles2CommandBuffer *cbD,
                 }
             }
             QGles2Buffer *bufD = QRHI_RES(QGles2Buffer, b->u.ubuf.buf);
-            const char *bufView = bufD->data.constData() + viewOffset;
-            for (const QGles2UniformDescription &uniform : std::as_const(uniforms)) {
-                if (uniform.binding == b->binding) {
-                    const qint64 readOffset = qint64(viewOffset) + uniform.offset;
-                    const qint64 readSize = qrhi_std140_read_size(uniform.type, uniform.arrayDim);
-                    if (readOffset < 0 || readOffset + readSize > bufD->data.size()) {
-                        qWarning("Uniform with buffer binding %d, buffer offset %u, type %d, array "
-                                 "dimension %d would read outside of the uniform buffer of size %lld. "
-                                 "Skipping.",
-                                 uniform.binding, uniform.offset, uniform.type, uniform.arrayDim,
-                                 qint64(bufD->data.size()));
-                        continue;
-                    }
-
-                    // in a uniform buffer everything is at least 4 byte aligned
-                    // so this should not cause unaligned reads
-                    const void *src = bufView + uniform.offset;
-
-#ifndef QT_NO_DEBUG
-                    if (uniform.arrayDim > 0
-                            && uniform.type != QShaderDescription::Float
-                            && uniform.type != QShaderDescription::Vec2
-                            && uniform.type != QShaderDescription::Vec3
-                            && uniform.type != QShaderDescription::Vec4
-                            && uniform.type != QShaderDescription::Int
-                            && uniform.type != QShaderDescription::Int2
-                            && uniform.type != QShaderDescription::Int3
-                            && uniform.type != QShaderDescription::Int4
-                            && uniform.type != QShaderDescription::Uint
-                            && uniform.type != QShaderDescription::Uint2
-                            && uniform.type != QShaderDescription::Uint3
-                            && uniform.type != QShaderDescription::Uint4
-                            && uniform.type != QShaderDescription::Mat2
-                            && uniform.type != QShaderDescription::Mat3
-                            && uniform.type != QShaderDescription::Mat4)
-                    {
-                        qWarning("Uniform with buffer binding %d, buffer offset %d, type %d is an array, "
-                                 "but arrays are only supported for float, vec2, vec3, vec4, int, "
-                                 "ivec2, ivec3, ivec4, uint, uvec2, uvec3, uvec4, mat2, mat3 "
-                                 "and mat4. "
-                                 "Only the first element will be set.",
-                                 uniform.binding, uniform.offset, uniform.type);
-                    }
-#endif
-
-                    // Our input is an std140 layout uniform block. See
-                    // "Standard Uniform Block Layout" in section 7.6.2.2 of
-                    // the OpenGL spec. This has some peculiar alignment
-                    // requirements, which is not what glUniform* wants. Hence
-                    // the unpacking/repacking for arrays and certain types.
-
-                    switch (uniform.type) {
-                    case QShaderDescription::Float:
-                    {
-                        const int elemCount = uniform.arrayDim;
-                        if (elemCount < 1) {
-                            const float v = *reinterpret_cast<const float *>(src);
-                            if (uniform.glslLocation <= QGles2UniformState::MAX_TRACKED_LOCATION) {
-                                QGles2UniformState &thisUniformState(uniformState[uniform.glslLocation]);
-                                if (thisUniformState.componentCount != 1 || thisUniformState.v[0] != v) {
-                                    thisUniformState.componentCount = 1;
-                                    thisUniformState.v[0] = v;
-                                    f->glUniform1f(uniform.glslLocation, v);
-                                }
-                            } else {
-                                f->glUniform1f(uniform.glslLocation, v);
-                            }
-                        } else {
-                            // input is 16 bytes per element as per std140, have to convert to packed
-                            m_scratch.packedArray.resize(elemCount);
-                            qrhi_std140_to_packed(&m_scratch.packedArray.data()->f, 1, elemCount, src);
-                            f->glUniform1fv(uniform.glslLocation, elemCount, &m_scratch.packedArray.constData()->f);
-                        }
-                    }
-                        break;
-                    case QShaderDescription::Vec2:
-                    {
-                        const int elemCount = uniform.arrayDim;
-                        if (elemCount < 1) {
-                            const float *v = reinterpret_cast<const float *>(src);
-                            if (uniform.glslLocation <= QGles2UniformState::MAX_TRACKED_LOCATION) {
-                                QGles2UniformState &thisUniformState(uniformState[uniform.glslLocation]);
-                                if (thisUniformState.componentCount != 2
-                                        || thisUniformState.v[0] != v[0]
-                                        || thisUniformState.v[1] != v[1])
-                                {
-                                    thisUniformState.componentCount = 2;
-                                    thisUniformState.v[0] = v[0];
-                                    thisUniformState.v[1] = v[1];
-                                    f->glUniform2fv(uniform.glslLocation, 1, v);
-                                }
-                            } else {
-                                f->glUniform2fv(uniform.glslLocation, 1, v);
-                            }
-                        } else {
-                            m_scratch.packedArray.resize(elemCount * 2);
-                            qrhi_std140_to_packed(&m_scratch.packedArray.data()->f, 2, elemCount, src);
-                            f->glUniform2fv(uniform.glslLocation, elemCount, &m_scratch.packedArray.constData()->f);
-                        }
-                    }
-                        break;
-                    case QShaderDescription::Vec3:
-                    {
-                        const int elemCount = uniform.arrayDim;
-                        if (elemCount < 1) {
-                            const float *v = reinterpret_cast<const float *>(src);
-                            if (uniform.glslLocation <= QGles2UniformState::MAX_TRACKED_LOCATION) {
-                                QGles2UniformState &thisUniformState(uniformState[uniform.glslLocation]);
-                                if (thisUniformState.componentCount != 3
-                                        || thisUniformState.v[0] != v[0]
-                                        || thisUniformState.v[1] != v[1]
-                                        || thisUniformState.v[2] != v[2])
-                                {
-                                    thisUniformState.componentCount = 3;
-                                    thisUniformState.v[0] = v[0];
-                                    thisUniformState.v[1] = v[1];
-                                    thisUniformState.v[2] = v[2];
-                                    f->glUniform3fv(uniform.glslLocation, 1, v);
-                                }
-                            } else {
-                                f->glUniform3fv(uniform.glslLocation, 1, v);
-                            }
-                        } else {
-                            m_scratch.packedArray.resize(elemCount * 3);
-                            qrhi_std140_to_packed(&m_scratch.packedArray.data()->f, 3, elemCount, src);
-                            f->glUniform3fv(uniform.glslLocation, elemCount, &m_scratch.packedArray.constData()->f);
-                        }
-                    }
-                        break;
-                    case QShaderDescription::Vec4:
-                    {
-                        const int elemCount = uniform.arrayDim;
-                        if (elemCount < 1) {
-                            const float *v = reinterpret_cast<const float *>(src);
-                            if (uniform.glslLocation <= QGles2UniformState::MAX_TRACKED_LOCATION) {
-                                QGles2UniformState &thisUniformState(uniformState[uniform.glslLocation]);
-                                if (thisUniformState.componentCount != 4
-                                        || thisUniformState.v[0] != v[0]
-                                        || thisUniformState.v[1] != v[1]
-                                        || thisUniformState.v[2] != v[2]
-                                        || thisUniformState.v[3] != v[3])
-                                {
-                                    thisUniformState.componentCount = 4;
-                                    thisUniformState.v[0] = v[0];
-                                    thisUniformState.v[1] = v[1];
-                                    thisUniformState.v[2] = v[2];
-                                    thisUniformState.v[3] = v[3];
-                                    f->glUniform4fv(uniform.glslLocation, 1, v);
-                                }
-                            } else {
-                                f->glUniform4fv(uniform.glslLocation, 1, v);
-                            }
-                        } else {
-                            f->glUniform4fv(uniform.glslLocation, elemCount, reinterpret_cast<const float *>(src));
-                        }
-                    }
-                        break;
-                    case QShaderDescription::Mat2:
-                    {
-                        const int elemCount = uniform.arrayDim;
-                        if (elemCount < 1) {
-                            // 4 floats per column (or row, if row-major)
-                            float mat[4];
-                            const float *srcMat = reinterpret_cast<const float *>(src);
-                            memcpy(mat, srcMat, 2 * sizeof(float));
-                            memcpy(mat + 2, srcMat + 4, 2 * sizeof(float));
-                            f->glUniformMatrix2fv(uniform.glslLocation, 1, GL_FALSE, mat);
-                        } else {
-                            m_scratch.packedArray.resize(elemCount * 4);
-                            qrhi_std140_to_packed(&m_scratch.packedArray.data()->f, 2, elemCount * 2, src);
-                            f->glUniformMatrix2fv(uniform.glslLocation, elemCount, GL_FALSE, &m_scratch.packedArray.constData()->f);
-                        }
-                    }
-                        break;
-                    case QShaderDescription::Mat3:
-                    {
-                        const int elemCount = uniform.arrayDim;
-                        if (elemCount < 1) {
-                            // 4 floats per column (or row, if row-major)
-                            float mat[9];
-                            const float *srcMat = reinterpret_cast<const float *>(src);
-                            memcpy(mat, srcMat, 3 * sizeof(float));
-                            memcpy(mat + 3, srcMat + 4, 3 * sizeof(float));
-                            memcpy(mat + 6, srcMat + 8, 3 * sizeof(float));
-                            f->glUniformMatrix3fv(uniform.glslLocation, 1, GL_FALSE, mat);
-                        } else {
-                            m_scratch.packedArray.resize(elemCount * 9);
-                            qrhi_std140_to_packed(&m_scratch.packedArray.data()->f, 3, elemCount * 3, src);
-                            f->glUniformMatrix3fv(uniform.glslLocation, elemCount, GL_FALSE, &m_scratch.packedArray.constData()->f);
-                        }
-                    }
-                        break;
-                    case QShaderDescription::Mat4:
-                        f->glUniformMatrix4fv(uniform.glslLocation, qMax(1, uniform.arrayDim), GL_FALSE, reinterpret_cast<const float *>(src));
-                        break;
-                    case QShaderDescription::Int:
-                    {
-                        const int elemCount = uniform.arrayDim;
-                        if (elemCount < 1) {
-                            f->glUniform1i(uniform.glslLocation, *reinterpret_cast<const qint32 *>(src));
-                        } else {
-                            m_scratch.packedArray.resize(elemCount);
-                            qrhi_std140_to_packed(&m_scratch.packedArray.data()->i, 1, elemCount, src);
-                            f->glUniform1iv(uniform.glslLocation, elemCount, &m_scratch.packedArray.constData()->i);
-                        }
-                    }
-                        break;
-                    case QShaderDescription::Int2:
-                    {
-                        const int elemCount = uniform.arrayDim;
-                        if (elemCount < 1) {
-                            f->glUniform2iv(uniform.glslLocation, 1, reinterpret_cast<const qint32 *>(src));
-                        } else {
-                            m_scratch.packedArray.resize(elemCount * 2);
-                            qrhi_std140_to_packed(&m_scratch.packedArray.data()->i, 2, elemCount, src);
-                            f->glUniform2iv(uniform.glslLocation, elemCount, &m_scratch.packedArray.constData()->i);
-                        }
-                    }
-                        break;
-                    case QShaderDescription::Int3:
-                    {
-                        const int elemCount = uniform.arrayDim;
-                        if (elemCount < 1) {
-                            f->glUniform3iv(uniform.glslLocation, 1, reinterpret_cast<const qint32 *>(src));
-                        } else {
-                            m_scratch.packedArray.resize(elemCount * 3);
-                            qrhi_std140_to_packed(&m_scratch.packedArray.data()->i, 3, elemCount, src);
-                            f->glUniform3iv(uniform.glslLocation, elemCount, &m_scratch.packedArray.constData()->i);
-                        }
-                    }
-                        break;
-                    case QShaderDescription::Int4:
-                        f->glUniform4iv(uniform.glslLocation, qMax(1, uniform.arrayDim), reinterpret_cast<const qint32 *>(src));
-                        break;
-                    case QShaderDescription::Uint:
-                    {
-                        const int elemCount = uniform.arrayDim;
-                        if (elemCount < 1) {
-                            f->glUniform1ui(uniform.glslLocation, *reinterpret_cast<const quint32 *>(src));
-                        } else {
-                            m_scratch.packedArray.resize(elemCount);
-                            qrhi_std140_to_packed(&m_scratch.packedArray.data()->u, 1, elemCount, src);
-                            f->glUniform1uiv(uniform.glslLocation, elemCount, &m_scratch.packedArray.constData()->u);
-                        }
-                    }
-                        break;
-                    case QShaderDescription::Uint2:
-                    {
-                        const int elemCount = uniform.arrayDim;
-                        if (elemCount < 1) {
-                            f->glUniform2uiv(uniform.glslLocation, 1, reinterpret_cast<const quint32 *>(src));
-                        } else {
-                            m_scratch.packedArray.resize(elemCount * 2);
-                            qrhi_std140_to_packed(&m_scratch.packedArray.data()->u, 2, elemCount, src);
-                            f->glUniform2uiv(uniform.glslLocation, elemCount, &m_scratch.packedArray.constData()->u);
-                        }
-                    }
-                        break;
-                    case QShaderDescription::Uint3:
-                    {
-                        const int elemCount = uniform.arrayDim;
-                        if (elemCount < 1) {
-                            f->glUniform3uiv(uniform.glslLocation, 1, reinterpret_cast<const quint32 *>(src));
-                        } else {
-                            m_scratch.packedArray.resize(elemCount * 3);
-                            qrhi_std140_to_packed(&m_scratch.packedArray.data()->u, 3, elemCount, src);
-                            f->glUniform3uiv(uniform.glslLocation, elemCount, &m_scratch.packedArray.constData()->u);
-                        }
-                    }
-                        break;
-                    case QShaderDescription::Uint4:
-                        f->glUniform4uiv(uniform.glslLocation, qMax(1, uniform.arrayDim), reinterpret_cast<const quint32 *>(src));
-                        break;
-                    case QShaderDescription::Bool: // a glsl bool is 4 bytes, like (u)int
-                        f->glUniform1i(uniform.glslLocation, *reinterpret_cast<const qint32 *>(src));
-                        break;
-                    case QShaderDescription::Bool2:
-                        f->glUniform2iv(uniform.glslLocation, 1, reinterpret_cast<const qint32 *>(src));
-                        break;
-                    case QShaderDescription::Bool3:
-                        f->glUniform3iv(uniform.glslLocation, 1, reinterpret_cast<const qint32 *>(src));
-                        break;
-                    case QShaderDescription::Bool4:
-                        f->glUniform4iv(uniform.glslLocation, 1, reinterpret_cast<const qint32 *>(src));
-                        break;
-                    default:
-                        qWarning("Uniform with buffer binding %d, buffer offset %d has unsupported type %d",
-                                 uniform.binding, uniform.offset, uniform.type);
-                        break;
-                    }
-                }
-            }
+            setUniformsFromBlock(uniforms, b->binding, bufD->data.constData(), bufD->data.size(),
+                                 quint32(viewOffset), uniformState);
         }
             break;
         case QRhiShaderResourceBinding::SampledTexture:
@@ -6105,24 +6197,35 @@ void QRhiGles2::registerUniformIfActive(const QShaderDescription::BlockVariable 
         uniform.offset = uint(baseOffset + var.offset);
         uniform.size = var.size;
         uniform.arrayDim = var.arrayDims.isEmpty() ? 0 : var.arrayDims.first();
+        // For matrices the distance between the columns is known from the
+        // reflection. For arrays it has to be derived from the total size.
+        // (std140 and std430 differ here: an array of scalars or vec2 is
+        // tightly packed in the latter, which is what push constants use)
+        if (var.matrixStride)
+            uniform.elemStride = quint32(var.matrixStride);
+        else if (uniform.arrayDim > 0 && var.size > 0)
+            uniform.elemStride = quint32(var.size / uniform.arrayDim);
+        else
+            uniform.elemStride = 0;
         dst->append(uniform);
     }
 }
 
-void QRhiGles2::gatherUniforms(GLuint program,
-                               const QShaderDescription::UniformBlock &ub,
-                               ActiveUniformLocationTracker *activeUniformLocations,
-                               QGles2UniformDescriptionVector *dst)
+void QRhiGles2::gatherBlockMemberUniforms(GLuint program,
+                                          const QByteArray &prefix,
+                                          int binding,
+                                          const QList<QShaderDescription::BlockVariable> &members,
+                                          ActiveUniformLocationTracker *activeUniformLocations,
+                                          QGles2UniformDescriptionVector *dst)
 {
-    QByteArray prefix = ub.structName + '.';
-    for (const QShaderDescription::BlockVariable &blockMember : ub.members) {
+    for (const QShaderDescription::BlockVariable &blockMember : members) {
         if (blockMember.type == QShaderDescription::Struct) {
             QByteArray structPrefix = prefix + blockMember.name;
 
             const int baseOffset = blockMember.offset;
             if (blockMember.arrayDims.isEmpty()) {
                 for (const QShaderDescription::BlockVariable &structMember : blockMember.structMembers)
-                    registerUniformIfActive(structMember, structPrefix + ".", ub.binding,
+                    registerUniformIfActive(structMember, structPrefix + ".", binding,
                                             baseOffset, program, activeUniformLocations, dst);
             } else {
                 if (blockMember.arrayDims.size() > 1) {
@@ -6141,14 +6244,31 @@ void QRhiGles2::gatherUniforms(GLuint program,
                 for (int di = 0; di < dim; ++di) {
                     const QByteArray arrayPrefix = structPrefix + '[' + QByteArray::number(di) + ']' + '.';
                     for (const QShaderDescription::BlockVariable &structMember : blockMember.structMembers)
-                        registerUniformIfActive(structMember, arrayPrefix, ub.binding, elemOffset, program, activeUniformLocations, dst);
+                        registerUniformIfActive(structMember, arrayPrefix, binding, elemOffset, program, activeUniformLocations, dst);
                     elemOffset += elemSize;
                 }
             }
         } else {
-            registerUniformIfActive(blockMember, prefix, ub.binding, 0, program, activeUniformLocations, dst);
+            registerUniformIfActive(blockMember, prefix, binding, 0, program, activeUniformLocations, dst);
         }
     }
+}
+
+void QRhiGles2::gatherUniforms(GLuint program,
+                               const QShaderDescription::UniformBlock &ub,
+                               ActiveUniformLocationTracker *activeUniformLocations,
+                               QGles2UniformDescriptionVector *dst)
+{
+    gatherBlockMemberUniforms(program, ub.structName + '.', ub.binding, ub.members,
+                              activeUniformLocations, dst);
+}
+
+void QRhiGles2::gatherPushConstantUniforms(GLuint program,
+                                           const QShaderDescription::PushConstantBlock &pcb,
+                                           ActiveUniformLocationTracker *activeUniformLocations,
+                                           QGles2UniformDescriptionVector *dst)
+{
+    gatherBlockMemberUniforms(program, pcb.name + '.', -1, pcb.members, activeUniformLocations, dst);
 }
 
 void QRhiGles2::gatherSamplers(GLuint program,
@@ -7457,6 +7577,8 @@ void QGles2GraphicsPipeline::destroy()
 
     program = 0;
     uniforms.clear();
+    pushConstantUniforms.clear();
+    pushConstantSize = 0;
     samplers.clear();
 
     QRHI_RES_RHI(QRhiGles2);
@@ -7592,6 +7714,11 @@ bool QGles2GraphicsPipeline::create()
             const auto uniformBlocks = desc[idx].uniformBlocks();
             for (const QShaderDescription::UniformBlock &ub : uniformBlocks)
                 rhiD->gatherUniforms(program, ub, &activeUniformLocations, &uniforms);
+            const auto pushConstantBlocks = desc[idx].pushConstantBlocks();
+            for (const QShaderDescription::PushConstantBlock &pcb : pushConstantBlocks) {
+                rhiD->gatherPushConstantUniforms(program, pcb, &activeUniformLocations, &pushConstantUniforms);
+                pushConstantSize = qMax(pushConstantSize, quint32(pcb.size));
+            }
             const auto combinedImageSamplers = desc[idx].combinedImageSamplers();
             for (const QShaderDescription::InOutVariable &v : combinedImageSamplers)
                 rhiD->gatherSamplers(program, v, &samplers);
@@ -7642,6 +7769,8 @@ void QGles2ComputePipeline::destroy()
 
     program = 0;
     uniforms.clear();
+    pushConstantUniforms.clear();
+    pushConstantSize = 0;
     samplers.clear();
 
     QRHI_RES_RHI(QRhiGles2);
@@ -7707,6 +7836,11 @@ bool QGles2ComputePipeline::create()
     const auto csUniformBlocks = csDesc.uniformBlocks();
     for (const QShaderDescription::UniformBlock &ub : csUniformBlocks)
         rhiD->gatherUniforms(program, ub, &activeUniformLocations, &uniforms);
+    const auto csPushConstantBlocks = csDesc.pushConstantBlocks();
+    for (const QShaderDescription::PushConstantBlock &pcb : csPushConstantBlocks) {
+        rhiD->gatherPushConstantUniforms(program, pcb, &activeUniformLocations, &pushConstantUniforms);
+        pushConstantSize = qMax(pushConstantSize, quint32(pcb.size));
+    }
     const auto csCombinedImageSamplers = csDesc.combinedImageSamplers();
     for (const QShaderDescription::InOutVariable &v : csCombinedImageSamplers)
         rhiD->gatherSamplers(program, v, &samplers);

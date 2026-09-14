@@ -1,0 +1,30 @@
+#version 440
+
+layout(local_size_x = 1) in;
+
+layout(std430, binding = 0) buffer Out {
+    float data[];
+} outBuf;
+
+// The default layout for a push constant block is std430, where the arrays
+// are tightly packed, unlike in the std140 uniform blocks. That cannot be
+// expressed in an HLSL cbuffer, so this one is not baked for D3D.
+layout(push_constant) uniform PC {
+    float weights[4];
+    vec2 v2s[2];
+    mat3 m;
+} pc;
+
+void main()
+{
+    for (int i = 0; i < 4; ++i)
+        outBuf.data[i] = pc.weights[i];
+    outBuf.data[4] = pc.v2s[0].x;
+    outBuf.data[5] = pc.v2s[0].y;
+    outBuf.data[6] = pc.v2s[1].x;
+    outBuf.data[7] = pc.v2s[1].y;
+    for (int c = 0; c < 3; ++c) {
+        for (int r = 0; r < 3; ++r)
+            outBuf.data[8 + c * 3 + r] = pc.m[c][r];
+    }
+}

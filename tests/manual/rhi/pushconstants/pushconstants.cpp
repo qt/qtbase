@@ -32,10 +32,6 @@ struct {
 
 void preInit()
 {
-    // Direct3D 11, the default on Windows, has no push constants.
-    if (graphicsApi == D3D11)
-        graphicsApi = D3D12;
-
     debugLayer = false;
 }
 

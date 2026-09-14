@@ -1189,12 +1189,19 @@ Q_CONSTINIT QRhiDebugHooks qrhiDebugHooks;
     buffer either.
 
     \value [since 6.13] PushConstants Indicates that
-    \l{QRhiCommandBuffer::setPushConstants()}{setPushConstants()} is functional,
-    meaning shaders can declare a \c{layout(push_constant)} block and the data
-    for it can be updated between draw calls without involving a
-    QRhiShaderResourceBindings. Currently supported with Vulkan, Metal and Direct3D 12. The
-    maximum size of the block is reported by the
-    \l{QRhi::MaxPushConstantsSize}{MaxPushConstantsSize} resource limit.
+    \l{QRhiCommandBuffer::setPushConstants()}{setPushConstants()} is
+    functional, meaning shaders can declare a \c{layout(push_constant)} block
+    and the data for it can be updated between draw calls without involving a
+    QRhiShaderResourceBindings. The maximum size of the block is reported by
+    the \l{QRhi::MaxPushConstantsSize}{MaxPushConstantsSize} resource limit.
+    Vulkan, Metal and Direct3D 12 have a native equivalent. OpenGL and
+    Direct3D 11 emulate it, with plain uniforms and with a small dynamic
+    constant buffer, respectively, so there an update costs about as much as
+    updating a small uniform buffer; what is gained is not having to have a
+    QRhiShaderResourceBindings per draw call. There is one case where the
+    feature is reported as supported but does not apply: with Metal the push
+    constants do not reach the shaders of a pipeline that uses tessellation,
+    because those stages are run as compute there.
  */
 
 /*!
@@ -1336,11 +1343,13 @@ Q_CONSTINIT QRhiDebugHooks qrhiDebugHooks;
     \value [since 6.13] MaxPushConstantsSize The maximum size in bytes of the
     push constant block a shader can declare. 0 when the
     \l{QRhi::PushConstants}{PushConstants} feature is not supported.
-    Portable code should stay within 128 bytes: that is what Direct3D 12
-    reports and what Vulkan guarantees, whereas Metal reports 4096. Note
-    that with Direct3D 12 even 128 is optimistic, because a block that size
-    takes 32 of the 64 root signature DWORDs, so with a sufficiently large
-    QRhiShaderResourceBindings the root signature can still fail to build.
+    Portable code should stay within 128 bytes: that is what Direct3D 11 and
+    12 and OpenGL report and what Vulkan guarantees, whereas Metal reports
+    4096. Note that with Direct3D 12 even 128 is optimistic, because a block
+    that size takes 32 of the 64 root signature DWORDs, so with a
+    sufficiently large QRhiShaderResourceBindings the root signature can
+    still fail to build. With OpenGL the block competes for the uniform
+    budget with everything else in the shader.
  */
 
 /*!
@@ -11608,6 +11617,16 @@ void QRhiCommandBuffer::setStencilRef(quint32 refValue)
     \badcode
         layout(push_constant) uniform PC { uint objectIndex; } pc;
     \endcode
+
+    \note A push constant block defaults to the std430 layout, unlike a
+    uniform block. There an array of scalars or of \c vec2 is tightly packed,
+    and so are the columns of a matrix with two rows (\c mat2, \c mat3x2,
+    \c mat4x2). Neither can be expressed in a Direct3D constant buffer, so a
+    block that has such a member has to be declared with
+    \c{layout(push_constant, std140)} in order to be usable with the D3D
+    backends. (qsb reports an error when baking such a shader for HLSL) Blocks
+    with only scalars, vectors, and \c mat3 or \c mat4 matrices, which is what
+    push constants are mostly used for, are unaffected.
 
     QRhi derives the push constant range from the shader reflection data of the
     pipeline's shader stages, so no extra declaration is needed on the

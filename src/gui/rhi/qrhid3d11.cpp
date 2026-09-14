@@ -4,6 +4,7 @@
 
 #include "qrhid3d11_p.h"
 #include "qshader.h"
+#include "qshader_p.h"
 #include "vs_test_p.h"
 #include <QWindow>
 #include <qmath.h>
@@ -433,6 +434,11 @@ void QRhiD3D11::destroy()
 
     clearShaderCache();
 
+    if (pushConstantBuffer) {
+        pushConstantBuffer->Release();
+        pushConstantBuffer = nullptr;
+    }
+
     if (ofr.tsDisjointQuery) {
         ofr.tsDisjointQuery->Release();
         ofr.tsDisjointQuery = nullptr;
@@ -718,8 +724,9 @@ bool QRhiD3D11::isFeatureSupported(QRhi::Feature feature) const
         return featureLevel >= D3D_FEATURE_LEVEL_11_0;
     case QRhi::DrawIndirectMulti:
     case QRhi::ShaderDrawParameters:
-    case QRhi::PushConstants:
         return false;
+    case QRhi::PushConstants:
+        return true;
     case QRhi::DrawIndirectCount:
         return false;
     case QRhi::DispatchIndirect:
@@ -770,7 +777,8 @@ int QRhiD3D11::resourceLimit(QRhi::ResourceLimit limit) const
     case QRhi::MaxVertexStorageBuffers:
         return 0;
     case QRhi::MaxPushConstantsSize:
-        return 0;
+        // Emulated with a small dynamic constant buffer; match what D3D12 reports.
+        return int(MAX_PUSH_CONSTANTS_SIZE);
     case QRhi::MaxFragmentStorageBuffers:
         return featureLevel >= D3D_FEATURE_LEVEL_11_1
                 ? D3D11_1_UAV_SLOT_COUNT : D3D11_PS_CS_UAV_REGISTER_COUNT;
@@ -1038,6 +1046,37 @@ static const int RBM_GEOMETRY = 3;
 static const int RBM_FRAGMENT = 4;
 static const int RBM_COMPUTE = 5;
 
+static inline int rbmStageIndex(QRhiShaderStage::Type type)
+{
+    switch (type) {
+    case QRhiShaderStage::Vertex:
+        return RBM_VERTEX;
+    case QRhiShaderStage::TessellationControl:
+        return RBM_HULL;
+    case QRhiShaderStage::TessellationEvaluation:
+        return RBM_DOMAIN;
+    case QRhiShaderStage::Geometry:
+        return RBM_GEOMETRY;
+    case QRhiShaderStage::Fragment:
+        return RBM_FRAGMENT;
+    case QRhiShaderStage::Compute:
+        return RBM_COMPUTE;
+    }
+    return -1;
+}
+
+// A push constant block becomes a constant buffer, bound to the register qsb
+// reserved for it (e.g. b0; the uniform blocks of a stage that has a push
+// constant block then start at b1)
+static void getPushConstantInfo(const QShader &shader, const QShaderKey &key, int *reg, quint32 *size)
+{
+    const QList<QShaderDescription::PushConstantBlock> blocks = shader.description().pushConstantBlocks();
+    if (blocks.isEmpty())
+        return;
+    *reg = shader.nativeShaderInfo(key).extraBufferBindings.value(QShaderPrivate::HlslPushConstantBufferBinding, -1);
+    *size = quint32((blocks.first().size + 3) & ~3); // multiple of 4 always
+}
+
 void QRhiD3D11::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBindings *srb,
                                    int dynamicOffsetCount,
                                    const QRhiCommandBuffer::DynamicOffset *dynamicOffsets)
@@ -1157,16 +1196,20 @@ void QRhiD3D11::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
     if (srbUpdate || pipelineChanged) {
         const QShader::NativeResourceBindingMap *resBindMaps[RBM_SUPPORTED_STAGES];
         memset(resBindMaps, 0, sizeof(resBindMaps));
+        uint pushConstantStages = 0;
         if (gfxPsD) {
             resBindMaps[RBM_VERTEX] = &gfxPsD->vs.nativeResourceBindingMap;
             resBindMaps[RBM_HULL] = &gfxPsD->hs.nativeResourceBindingMap;
             resBindMaps[RBM_DOMAIN] = &gfxPsD->ds.nativeResourceBindingMap;
             resBindMaps[RBM_GEOMETRY] = &gfxPsD->gs.nativeResourceBindingMap;
             resBindMaps[RBM_FRAGMENT] = &gfxPsD->fs.nativeResourceBindingMap;
+            pushConstantStages = gfxPsD->pushConstants.stages;
         } else {
             resBindMaps[RBM_COMPUTE] = &compPsD->cs.nativeResourceBindingMap;
+            if (compPsD->pushConstants.reg >= 0 && compPsD->pushConstants.size)
+                pushConstantStages = 1u << uint(RBM_COMPUTE);
         }
-        updateShaderResourceBindings(srbD, resBindMaps);
+        updateShaderResourceBindings(srbD, resBindMaps, pushConstantStages);
     }
 
     const bool srbChanged = gfxPsD ? (cbD->currentGraphicsSrb != srb) : (cbD->currentComputeSrb != srb);
@@ -1348,10 +1391,79 @@ void QRhiD3D11::setStencilRef(QRhiCommandBuffer *cb, quint32 refValue)
 
 void QRhiD3D11::setPushConstants(QRhiCommandBuffer *cb, quint32 offset, quint32 size, const void *data)
 {
-    Q_UNUSED(cb);
-    Q_UNUSED(offset);
-    Q_UNUSED(size);
-    Q_UNUSED(data);
+    QD3D11CommandBuffer *cbD = QRHI_RES(QD3D11CommandBuffer, cb);
+    Q_ASSERT(cbD->recordingPass != QD3D11CommandBuffer::NoPass);
+
+    int reg = -1;
+    quint32 blockSize = 0;
+    uint stages = 0;
+    if (cbD->recordingPass == QD3D11CommandBuffer::ComputePass) {
+        QD3D11ComputePipeline *psD = QRHI_RES(QD3D11ComputePipeline, cbD->currentComputePipeline);
+        if (!psD)
+            return;
+        reg = psD->pushConstants.reg;
+        blockSize = psD->pushConstants.size;
+        stages = 1u << uint(RBM_COMPUTE);
+    } else {
+        QD3D11GraphicsPipeline *psD = QRHI_RES(QD3D11GraphicsPipeline, cbD->currentGraphicsPipeline);
+        if (!psD)
+            return;
+        reg = psD->pushConstants.reg;
+        blockSize = psD->pushConstants.size;
+        stages = psD->pushConstants.stages;
+    }
+    if (reg < 0 || !blockSize || !stages) {
+        qWarning("No pipeline with a push constant block is active; setPushConstants ignored");
+        return;
+    }
+
+    if (offset + size > MAX_PUSH_CONSTANTS_SIZE) {
+        qWarning("Push constant data of %u bytes at offset %u exceeds the %u byte maximum; "
+                 "setPushConstants ignored", size, offset, MAX_PUSH_CONSTANTS_SIZE);
+        return;
+    }
+
+    if (!ensurePushConstantBuffer())
+        return;
+
+    // The constant buffer is written in full every time, so a partial update
+    // has to be merged into the copy kept on the command buffer.
+    const quint32 total = qMin(qMax(blockSize, offset + size), MAX_PUSH_CONSTANTS_SIZE);
+    if (quint32(cbD->pushConstantData.size()) < total)
+        cbD->pushConstantData.resize(int(total), 0);
+    memcpy(cbD->pushConstantData.data() + offset, data, size);
+
+    const quint32 dataOffset = quint32(cbD->pushConstantPool.size());
+    cbD->pushConstantPool.resize(int(dataOffset + total));
+    memcpy(cbD->pushConstantPool.data() + dataOffset, cbD->pushConstantData.constData(), total);
+
+    QD3D11CommandBuffer::Command &cmd(cbD->commands.get());
+    cmd.cmd = QD3D11CommandBuffer::Command::SetPushConstants;
+    cmd.args.setPushConstants.buffer = pushConstantBuffer;
+    cmd.args.setPushConstants.dataOffset = dataOffset;
+    cmd.args.setPushConstants.size = total;
+    cmd.args.setPushConstants.startSlot = uint(reg);
+    cmd.args.setPushConstants.stages = stages;
+}
+
+bool QRhiD3D11::ensurePushConstantBuffer()
+{
+    if (pushConstantBuffer)
+        return true;
+
+    D3D11_BUFFER_DESC desc = {};
+    desc.ByteWidth = aligned(MAX_PUSH_CONSTANTS_SIZE, 256u);
+    desc.Usage = D3D11_USAGE_DYNAMIC;
+    desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+    desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+    HRESULT hr = dev->CreateBuffer(&desc, nullptr, &pushConstantBuffer);
+    if (FAILED(hr)) {
+        qWarning("Failed to create push constant buffer: %s",
+                 qPrintable(QSystemError::windowsComString(hr)));
+        pushConstantBuffer = nullptr;
+        return false;
+    }
+    return true;
 }
 
 void QRhiD3D11::setShadingRate(QRhiCommandBuffer *cb, const QSize &coarsePixelSize)
@@ -2503,11 +2615,22 @@ void QRhiD3D11::drawIndexedIndirectCount(QRhiCommandBuffer *cb,
 
 static inline std::pair<int, int> mapBinding(int binding,
                                              int stageIndex,
-                                             const QShader::NativeResourceBindingMap *nativeResourceBindingMaps[])
+                                             const QShader::NativeResourceBindingMap *nativeResourceBindingMaps[],
+                                             uint pushConstantStages)
 {
     const QShader::NativeResourceBindingMap *map = nativeResourceBindingMaps[stageIndex];
-    if (!map || map->isEmpty())
+    if (!map || map->isEmpty()) {
+        // An empty map normally means an old qsb that did not generate one,
+        // hence the 1:1 fallback. But the push constant register is only
+        // known from qsb versions that always generate the map, so for a
+        // stage with a push constant block an empty map really means the
+        // shader has no other resources. Falling back would put a uniform
+        // buffer at binding 0 on the register reserved for the push constant
+        // block.
+        if (pushConstantStages & (1u << uint(stageIndex)))
+            return { -1, -1 };
         return { binding, binding }; // assume 1:1 mapping
+    }
 
     auto it = map->constFind(binding);
     if (it != map->cend())
@@ -2520,7 +2643,8 @@ static inline std::pair<int, int> mapBinding(int binding,
 }
 
 void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD,
-                                             const QShader::NativeResourceBindingMap *nativeResourceBindingMaps[])
+                                             const QShader::NativeResourceBindingMap *nativeResourceBindingMaps[],
+                                             uint pushConstantStages)
 {
     srbD->resourceBatches.clear();
 
@@ -2596,32 +2720,32 @@ void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD,
             // (ByteWidth) is always a multiple of 256.
             const quint32 sizeInConstants = aligned(b->u.ubuf.maybeSize ? b->u.ubuf.maybeSize : bufD->m_size, 256u) / 16;
             if (b->stage.testFlag(QRhiShaderResourceBinding::VertexStage)) {
-                std::pair<int, int> nativeBinding = mapBinding(b->binding, RBM_VERTEX, nativeResourceBindingMaps);
+                std::pair<int, int> nativeBinding = mapBinding(b->binding, RBM_VERTEX, nativeResourceBindingMaps, pushConstantStages);
                 if (nativeBinding.first >= 0)
                     res[RBM_VERTEX].buffers.append({ b->binding, nativeBinding.first, bufD->buffer, offsetInConstants, sizeInConstants });
             }
             if (b->stage.testFlag(QRhiShaderResourceBinding::TessellationControlStage)) {
-                std::pair<int, int> nativeBinding = mapBinding(b->binding, RBM_HULL, nativeResourceBindingMaps);
+                std::pair<int, int> nativeBinding = mapBinding(b->binding, RBM_HULL, nativeResourceBindingMaps, pushConstantStages);
                 if (nativeBinding.first >= 0)
                     res[RBM_HULL].buffers.append({ b->binding, nativeBinding.first, bufD->buffer, offsetInConstants, sizeInConstants });
             }
             if (b->stage.testFlag(QRhiShaderResourceBinding::TessellationEvaluationStage)) {
-                std::pair<int, int> nativeBinding = mapBinding(b->binding, RBM_DOMAIN, nativeResourceBindingMaps);
+                std::pair<int, int> nativeBinding = mapBinding(b->binding, RBM_DOMAIN, nativeResourceBindingMaps, pushConstantStages);
                 if (nativeBinding.first >= 0)
                     res[RBM_DOMAIN].buffers.append({ b->binding, nativeBinding.first, bufD->buffer, offsetInConstants, sizeInConstants });
             }
             if (b->stage.testFlag(QRhiShaderResourceBinding::GeometryStage)) {
-                std::pair<int, int> nativeBinding = mapBinding(b->binding, RBM_GEOMETRY, nativeResourceBindingMaps);
+                std::pair<int, int> nativeBinding = mapBinding(b->binding, RBM_GEOMETRY, nativeResourceBindingMaps, pushConstantStages);
                 if (nativeBinding.first >= 0)
                     res[RBM_GEOMETRY].buffers.append({ b->binding, nativeBinding.first, bufD->buffer, offsetInConstants, sizeInConstants });
             }
             if (b->stage.testFlag(QRhiShaderResourceBinding::FragmentStage)) {
-                std::pair<int, int> nativeBinding = mapBinding(b->binding, RBM_FRAGMENT, nativeResourceBindingMaps);
+                std::pair<int, int> nativeBinding = mapBinding(b->binding, RBM_FRAGMENT, nativeResourceBindingMaps, pushConstantStages);
                 if (nativeBinding.first >= 0)
                     res[RBM_FRAGMENT].buffers.append({ b->binding, nativeBinding.first, bufD->buffer, offsetInConstants, sizeInConstants });
             }
             if (b->stage.testFlag(QRhiShaderResourceBinding::ComputeStage)) {
-                std::pair<int, int> nativeBinding = mapBinding(b->binding, RBM_COMPUTE, nativeResourceBindingMaps);
+                std::pair<int, int> nativeBinding = mapBinding(b->binding, RBM_COMPUTE, nativeResourceBindingMaps, pushConstantStages);
                 if (nativeBinding.first >= 0)
                     res[RBM_COMPUTE].buffers.append({ b->binding, nativeBinding.first, bufD->buffer, offsetInConstants, sizeInConstants });
             }
@@ -2633,12 +2757,12 @@ void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD,
         {
             const QRhiShaderResourceBinding::Data::TextureAndOrSamplerData *data = &b->u.stex;
             bd.stex.count = data->count;
-            const std::pair<int, int> nativeBindingVert = mapBinding(b->binding, RBM_VERTEX, nativeResourceBindingMaps);
-            const std::pair<int, int> nativeBindingHull = mapBinding(b->binding, RBM_HULL, nativeResourceBindingMaps);
-            const std::pair<int, int> nativeBindingDomain = mapBinding(b->binding, RBM_DOMAIN, nativeResourceBindingMaps);
-            const std::pair<int, int> nativeBindingGeom = mapBinding(b->binding, RBM_GEOMETRY, nativeResourceBindingMaps);
-            const std::pair<int, int> nativeBindingFrag = mapBinding(b->binding, RBM_FRAGMENT, nativeResourceBindingMaps);
-            const std::pair<int, int> nativeBindingComp = mapBinding(b->binding, RBM_COMPUTE, nativeResourceBindingMaps);
+            const std::pair<int, int> nativeBindingVert = mapBinding(b->binding, RBM_VERTEX, nativeResourceBindingMaps, pushConstantStages);
+            const std::pair<int, int> nativeBindingHull = mapBinding(b->binding, RBM_HULL, nativeResourceBindingMaps, pushConstantStages);
+            const std::pair<int, int> nativeBindingDomain = mapBinding(b->binding, RBM_DOMAIN, nativeResourceBindingMaps, pushConstantStages);
+            const std::pair<int, int> nativeBindingGeom = mapBinding(b->binding, RBM_GEOMETRY, nativeResourceBindingMaps, pushConstantStages);
+            const std::pair<int, int> nativeBindingFrag = mapBinding(b->binding, RBM_FRAGMENT, nativeResourceBindingMaps, pushConstantStages);
+            const std::pair<int, int> nativeBindingComp = mapBinding(b->binding, RBM_COMPUTE, nativeResourceBindingMaps, pushConstantStages);
             // if SPIR-V binding b is mapped to tN and sN in HLSL, and it
             // is an array, then it will use tN, tN+1, tN+2, ..., and sN,
             // sN+1, sN+2, ...
@@ -2713,7 +2837,7 @@ void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD,
             bd.simage.generation = texD->generation;
             bool validStage = false;
             if (b->stage.testFlag(QRhiShaderResourceBinding::ComputeStage)) {
-                std::pair<int, int> nativeBinding = mapBinding(b->binding, RBM_COMPUTE, nativeResourceBindingMaps);
+                std::pair<int, int> nativeBinding = mapBinding(b->binding, RBM_COMPUTE, nativeResourceBindingMaps, pushConstantStages);
                 if (nativeBinding.first >= 0) {
                     ID3D11UnorderedAccessView *uav = texD->unorderedAccessViewForLevel(b->u.simage.level);
                     if (uav)
@@ -2722,7 +2846,7 @@ void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD,
                 validStage = true;
             }
             if (b->stage.testFlag(QRhiShaderResourceBinding::FragmentStage)) {
-                QPair<int, int> nativeBinding = mapBinding(b->binding, RBM_FRAGMENT, nativeResourceBindingMaps);
+                QPair<int, int> nativeBinding = mapBinding(b->binding, RBM_FRAGMENT, nativeResourceBindingMaps, pushConstantStages);
                 if (nativeBinding.first >= 0) {
                     ID3D11UnorderedAccessView *uav = texD->unorderedAccessViewForLevel(b->u.simage.level);
                     if (uav)
@@ -2743,7 +2867,7 @@ void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD,
             bd.sbuf.generation = bufD->generation;
             bool validStage = false;
             if (b->stage.testFlag(QRhiShaderResourceBinding::ComputeStage)) {
-                std::pair<int, int> nativeBinding = mapBinding(b->binding, RBM_COMPUTE, nativeResourceBindingMaps);
+                std::pair<int, int> nativeBinding = mapBinding(b->binding, RBM_COMPUTE, nativeResourceBindingMaps, pushConstantStages);
                 if (nativeBinding.first >= 0) {
                     ID3D11UnorderedAccessView *uav = bufD->unorderedAccessView(b->u.sbuf.offset);
                     if (uav)
@@ -2752,7 +2876,7 @@ void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD,
                 validStage = true;
             }
             if (b->stage.testFlag(QRhiShaderResourceBinding::FragmentStage)) {
-                std::pair<int, int> nativeBinding = mapBinding(b->binding, RBM_FRAGMENT, nativeResourceBindingMaps);
+                std::pair<int, int> nativeBinding = mapBinding(b->binding, RBM_FRAGMENT, nativeResourceBindingMaps, pushConstantStages);
                 if (nativeBinding.first >= 0) {
                     ID3D11UnorderedAccessView *uav = bufD->unorderedAccessView(b->u.sbuf.offset);
                     if (uav)
@@ -3194,6 +3318,42 @@ void QRhiD3D11::executeCommandBuffer(QD3D11CommandBuffer *cbD)
                                 cmd.args.bindShaderResources.dynamicOffsetCount,
                                 cmd.args.bindShaderResources.offsetOnlyChange,
                                 &rtUavState);
+            break;
+        case QD3D11CommandBuffer::Command::SetPushConstants:
+        {
+            // With WRITE_DISCARD the draw calls already recorded keep seeing
+            // the data they were given, which is what allows varying the values
+            // between the draw calls.
+            ID3D11Buffer *buf = cmd.args.setPushConstants.buffer;
+            D3D11_MAPPED_SUBRESOURCE mp;
+            HRESULT hr = context->Map(buf, 0, D3D11_MAP_WRITE_DISCARD, 0, &mp);
+            if (SUCCEEDED(hr)) {
+                memcpy(mp.pData, cbD->pushConstantPool.constData() + cmd.args.setPushConstants.dataOffset,
+                       cmd.args.setPushConstants.size);
+                context->Unmap(buf, 0);
+            } else {
+                qWarning("Failed to map push constant buffer: %s",
+                         qPrintable(QSystemError::windowsComString(hr)));
+                break;
+            }
+            const UINT startSlot = cmd.args.setPushConstants.startSlot;
+            const uint stages = cmd.args.setPushConstants.stages;
+            // The uniform buffers of a stage that has a push constant block
+            // start at the next register, so binding one buffer on its own
+            // here never disturbs what bindShaderResources() sets.
+            if (stages & (1u << uint(RBM_VERTEX)))
+                context->VSSetConstantBuffers(startSlot, 1, &buf);
+            if (stages & (1u << uint(RBM_HULL)))
+                context->HSSetConstantBuffers(startSlot, 1, &buf);
+            if (stages & (1u << uint(RBM_DOMAIN)))
+                context->DSSetConstantBuffers(startSlot, 1, &buf);
+            if (stages & (1u << uint(RBM_GEOMETRY)))
+                context->GSSetConstantBuffers(startSlot, 1, &buf);
+            if (stages & (1u << uint(RBM_FRAGMENT)))
+                context->PSSetConstantBuffers(startSlot, 1, &buf);
+            if (stages & (1u << uint(RBM_COMPUTE)))
+                context->CSSetConstantBuffers(startSlot, 1, &buf);
+        }
             break;
         case QD3D11CommandBuffer::Command::StencilRef:
             stencilRef = cmd.args.stencilRef.ref;
@@ -4512,6 +4672,8 @@ void QD3D11GraphicsPipeline::destroy()
     releasePipelineShader(gs);
     releasePipelineShader(fs);
 
+    pushConstants = {};
+
     QRHI_RES_RHI(QRhiD3D11);
     if (rhiD)
         rhiD->unregisterResource(this);
@@ -4940,8 +5102,12 @@ bool QD3D11GraphicsPipeline::create()
 
     QByteArray vsByteCode;
     for (const QRhiShaderStage &shaderStage : std::as_const(m_shaderStages)) {
+        int stagePushConstantRegister = -1;
+        quint32 stagePushConstantSize = 0;
         auto cacheIt = rhiD->m_shaderCache.constFind(shaderStage);
         if (cacheIt != rhiD->m_shaderCache.constEnd()) {
+            stagePushConstantRegister = cacheIt->pushConstantRegister;
+            stagePushConstantSize = cacheIt->pushConstantSize;
             switch (shaderStage.type()) {
             case QRhiShaderStage::Vertex:
                 vs.shader = static_cast<ID3D11VertexShader *>(cacheIt->s);
@@ -4991,6 +5157,8 @@ bool QD3D11GraphicsPipeline::create()
                 rhiD->clearShaderCache();
             }
 
+            getPushConstantInfo(shaderStage.shader(), shaderKey, &stagePushConstantRegister, &stagePushConstantSize);
+
             switch (shaderStage.type()) {
             case QRhiShaderStage::Vertex:
                 hr = rhiD->dev->CreateVertexShader(bytecode.constData(), SIZE_T(bytecode.size()), nullptr, &vs.shader);
@@ -5001,7 +5169,8 @@ bool QD3D11GraphicsPipeline::create()
                 }
                 vsByteCode = bytecode;
                 vs.nativeResourceBindingMap = shaderStage.shader().nativeResourceBindingMap(shaderKey);
-                rhiD->m_shaderCache.insert(shaderStage, QRhiD3D11::Shader(vs.shader, bytecode, vs.nativeResourceBindingMap));
+                rhiD->m_shaderCache.insert(shaderStage, QRhiD3D11::Shader(vs.shader, bytecode, vs.nativeResourceBindingMap,
+                                                                          stagePushConstantRegister, stagePushConstantSize));
                 vs.shader->AddRef();
                 break;
             case QRhiShaderStage::TessellationControl:
@@ -5012,7 +5181,8 @@ bool QD3D11GraphicsPipeline::create()
                     return false;
                 }
                 hs.nativeResourceBindingMap = shaderStage.shader().nativeResourceBindingMap(shaderKey);
-                rhiD->m_shaderCache.insert(shaderStage, QRhiD3D11::Shader(hs.shader, bytecode, hs.nativeResourceBindingMap));
+                rhiD->m_shaderCache.insert(shaderStage, QRhiD3D11::Shader(hs.shader, bytecode, hs.nativeResourceBindingMap,
+                                                                          stagePushConstantRegister, stagePushConstantSize));
                 hs.shader->AddRef();
                 break;
             case QRhiShaderStage::TessellationEvaluation:
@@ -5023,7 +5193,8 @@ bool QD3D11GraphicsPipeline::create()
                     return false;
                 }
                 ds.nativeResourceBindingMap = shaderStage.shader().nativeResourceBindingMap(shaderKey);
-                rhiD->m_shaderCache.insert(shaderStage, QRhiD3D11::Shader(ds.shader, bytecode, ds.nativeResourceBindingMap));
+                rhiD->m_shaderCache.insert(shaderStage, QRhiD3D11::Shader(ds.shader, bytecode, ds.nativeResourceBindingMap,
+                                                                          stagePushConstantRegister, stagePushConstantSize));
                 ds.shader->AddRef();
                 break;
             case QRhiShaderStage::Geometry:
@@ -5034,7 +5205,8 @@ bool QD3D11GraphicsPipeline::create()
                     return false;
                 }
                 gs.nativeResourceBindingMap = shaderStage.shader().nativeResourceBindingMap(shaderKey);
-                rhiD->m_shaderCache.insert(shaderStage, QRhiD3D11::Shader(gs.shader, bytecode, gs.nativeResourceBindingMap));
+                rhiD->m_shaderCache.insert(shaderStage, QRhiD3D11::Shader(gs.shader, bytecode, gs.nativeResourceBindingMap,
+                                                                          stagePushConstantRegister, stagePushConstantSize));
                 gs.shader->AddRef();
                 break;
             case QRhiShaderStage::Fragment:
@@ -5045,11 +5217,21 @@ bool QD3D11GraphicsPipeline::create()
                     return false;
                 }
                 fs.nativeResourceBindingMap = shaderStage.shader().nativeResourceBindingMap(shaderKey);
-                rhiD->m_shaderCache.insert(shaderStage, QRhiD3D11::Shader(fs.shader, bytecode, fs.nativeResourceBindingMap));
+                rhiD->m_shaderCache.insert(shaderStage, QRhiD3D11::Shader(fs.shader, bytecode, fs.nativeResourceBindingMap,
+                                                                          stagePushConstantRegister, stagePushConstantSize));
                 fs.shader->AddRef();
                 break;
             default:
                 break;
+            }
+        }
+
+        if (stagePushConstantRegister >= 0 && stagePushConstantSize) {
+            const int stageIndex = rbmStageIndex(shaderStage.type());
+            if (stageIndex >= 0) {
+                pushConstants.reg = stagePushConstantRegister;
+                pushConstants.size = qMax(pushConstants.size, stagePushConstantSize);
+                pushConstants.stages |= 1u << uint(stageIndex);
             }
         }
     }
@@ -5126,6 +5308,7 @@ void QD3D11ComputePipeline::destroy()
     cs.shader->Release();
     cs.shader = nullptr;
     cs.nativeResourceBindingMap.clear();
+    pushConstants = {};
 
     QRHI_RES_RHI(QRhiD3D11);
     if (rhiD)
@@ -5144,6 +5327,8 @@ bool QD3D11ComputePipeline::create()
     if (cacheIt != rhiD->m_shaderCache.constEnd()) {
         cs.shader = static_cast<ID3D11ComputeShader *>(cacheIt->s);
         cs.nativeResourceBindingMap = cacheIt->nativeResourceBindingMap;
+        pushConstants.reg = cacheIt->pushConstantRegister;
+        pushConstants.size = cacheIt->pushConstantSize;
     } else {
         QString error;
         QShaderKey shaderKey;
@@ -5166,11 +5351,13 @@ bool QD3D11ComputePipeline::create()
         }
 
         cs.nativeResourceBindingMap = m_shaderStage.shader().nativeResourceBindingMap(shaderKey);
+        getPushConstantInfo(m_shaderStage.shader(), shaderKey, &pushConstants.reg, &pushConstants.size);
 
         if (rhiD->m_shaderCache.count() >= QRhiD3D11::MAX_SHADER_CACHE_ENTRIES)
             rhiD->clearShaderCache();
 
-        rhiD->m_shaderCache.insert(m_shaderStage, QRhiD3D11::Shader(cs.shader, bytecode, cs.nativeResourceBindingMap));
+        rhiD->m_shaderCache.insert(m_shaderStage, QRhiD3D11::Shader(cs.shader, bytecode, cs.nativeResourceBindingMap,
+                                                                    pushConstants.reg, pushConstants.size));
     }
 
     cs.shader->AddRef();

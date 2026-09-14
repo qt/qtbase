@@ -244,6 +244,11 @@ struct QGles2UniformDescription
     quint32 offset;
     quint32 size;
     int arrayDim;
+    // Distance in bytes between the array elements, or between the matrix
+    // columns for matrix types. 0 means the std140 default (16). Uniform
+    // blocks are std140, but push constant blocks are std430, where arrays of
+    // scalars and vec2 are tightly packed.
+    quint32 elemStride;
 };
 
 Q_DECLARE_TYPEINFO(QGles2UniformDescription, Q_RELOCATABLE_TYPE);
@@ -278,6 +283,8 @@ struct QGles2GraphicsPipeline : public QRhiGraphicsPipeline
     GLuint program = 0;
     GLenum drawMode = GL_TRIANGLES;
     QGles2UniformDescriptionVector uniforms;
+    QGles2UniformDescriptionVector pushConstantUniforms;
+    quint32 pushConstantSize = 0;
     QGles2SamplerDescriptionVector samplers;
     QGles2UniformState uniformState[QGles2UniformState::MAX_TRACKED_LOCATION + 1];
     QRhiShaderResourceBindings *currentSrb = nullptr;
@@ -296,6 +303,8 @@ struct QGles2ComputePipeline : public QRhiComputePipeline
 
     GLuint program = 0;
     QGles2UniformDescriptionVector uniforms;
+    QGles2UniformDescriptionVector pushConstantUniforms;
+    quint32 pushConstantSize = 0;
     QGles2SamplerDescriptionVector samplers;
     QGles2UniformState uniformState[QGles2UniformState::MAX_TRACKED_LOCATION + 1];
     QRhiShaderResourceBindings *currentSrb = nullptr;
@@ -333,6 +342,7 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
             DrawIndexedIndirectCount,
             BindGraphicsPipeline,
             BindShaderResources,
+            SetPushConstants,
             BindFramebuffer,
             Clear,
             BufferSubData,
@@ -446,6 +456,12 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
                 int dynamicOffsetCount;
                 uint dynamicOffsetPairs[MAX_DYNAMIC_OFFSET_COUNT * 2]; // binding, offset
             } bindShaderResources;
+            struct {
+                QRhiGraphicsPipeline *maybeGraphicsPs;
+                QRhiComputePipeline *maybeComputePs;
+                quint32 dataOffset; // into pushConstantPool
+                quint32 size;
+            } setPushConstants;
             struct {
                 GLbitfield mask;
                 float c[4];
@@ -628,6 +644,7 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
     QRhiShaderResourceBindings *currentGraphicsSrb;
     QRhiShaderResourceBindings *currentComputeSrb;
     uint currentSrbGeneration;
+    QVarLengthArray<char, 128> pushConstantData;
 
     struct GraphicsPassState {
         bool valid = false;
@@ -689,6 +706,7 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
     } textureUnitState[16];
 
     QVarLengthArray<QByteArray, 4> dataRetainPool;
+    QVarLengthArray<char, 1024> pushConstantPool;
     QVarLengthArray<QRhiBufferData, 4> bufferDataRetainPool;
     QVarLengthArray<QImage, 4> imageRetainPool;
 
@@ -707,6 +725,7 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
     }
     void resetCommands() {
         commands.reset();
+        pushConstantPool.clear();
         dataRetainPool.clear();
         bufferDataRetainPool.clear();
         imageRetainPool.clear();
@@ -729,6 +748,7 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
         currentGraphicsSrb = nullptr;
         currentComputeSrb = nullptr;
         currentSrbGeneration = 0;
+        pushConstantData.clear();
         graphicsPassState.reset();
         computePassState.reset();
         memset(textureUnitState, 0, sizeof(textureUnitState));
@@ -891,6 +911,7 @@ public:
     void setBlendConstants(QRhiCommandBuffer *cb, const QColor &c) override;
     void setStencilRef(QRhiCommandBuffer *cb, quint32 refValue) override;
     void setPushConstants(QRhiCommandBuffer *cb, quint32 offset, quint32 size, const void *data) override;
+    static constexpr quint32 MAX_PUSH_CONSTANTS_SIZE = 128;
     void setShadingRate(QRhiCommandBuffer *cb, const QSize &coarsePixelSize) override;
 
     void draw(QRhiCommandBuffer *cb, quint32 vertexCount,
@@ -981,6 +1002,11 @@ public:
                              QRhiGraphicsPipeline *maybeGraphicsPs, QRhiComputePipeline *maybeComputePs,
                              QRhiShaderResourceBindings *srb,
                              const uint *dynOfsPairs, int dynOfsCount);
+    void setUniformValue(const QGles2UniformDescription &uniform, const void *src,
+                         QGles2UniformState *uniformState);
+    void setUniformsFromBlock(const QGles2UniformDescriptionVector &uniforms, int binding,
+                              const char *blockData, qint64 blockSize, quint32 blockOffset,
+                              QGles2UniformState *uniformState);
     QGles2RenderTargetData *enqueueBindFramebuffer(QRhiRenderTarget *rt, QGles2CommandBuffer *cbD,
                                                    bool *wantsColorClear = nullptr, bool *wantsDsClear = nullptr);
     void enqueueBarriersForPass(QGles2CommandBuffer *cbD);
@@ -997,8 +1023,15 @@ public:
                                  GLuint program,
                                  ActiveUniformLocationTracker *activeUniformLocations,
                                  QGles2UniformDescriptionVector *dst);
+    void gatherBlockMemberUniforms(GLuint program, const QByteArray &prefix, int binding,
+                                   const QList<QShaderDescription::BlockVariable> &members,
+                                   ActiveUniformLocationTracker *activeUniformLocations,
+                                   QGles2UniformDescriptionVector *dst);
     void gatherUniforms(GLuint program, const QShaderDescription::UniformBlock &ub,
                         ActiveUniformLocationTracker *activeUniformLocations, QGles2UniformDescriptionVector *dst);
+    void gatherPushConstantUniforms(GLuint program, const QShaderDescription::PushConstantBlock &pcb,
+                                    ActiveUniformLocationTracker *activeUniformLocations,
+                                    QGles2UniformDescriptionVector *dst);
     void gatherSamplers(GLuint program, const QShaderDescription::InOutVariable &v,
                         QGles2SamplerDescriptionVector *dst);
     void gatherGeneratedSamplers(GLuint program,

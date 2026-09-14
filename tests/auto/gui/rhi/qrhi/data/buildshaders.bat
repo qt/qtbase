@@ -56,6 +56,7 @@ qsb --glsl "100 es,300 es,120,150" --hlsl 50 --msl 12 -o glslversionmix.vert.qsb
 qsb --glsl "100 es,120,150" --hlsl 50 --msl 12 -o glslversionmix.frag.qsb simple.frag
 qsb --glsl "150,130,300 es" --hlsl 50 --msl 12 -o fullscreenquad_texture.frag.qsb fullscreenquad_texture.frag
 qsb --glsl "150,130,300 es" --hlsl 50 --msl 12 -o sampletexturearraylayer0.frag.qsb sampletexturearraylayer0.frag
-qsb --msl 12 --hlsl 50 -o pushconstants.vert.qsb pushconstants.vert
-qsb --msl 12 --hlsl 50 -o pushconstants.frag.qsb pushconstants.frag
-qsb --msl 12 --hlsl 50 -o pushconstants.comp.qsb pushconstants.comp
+qsb --glsl "150,120,100 es" --msl 12 --hlsl 50 -o pushconstants.vert.qsb pushconstants.vert
+qsb --glsl "150,120,100 es" --msl 12 --hlsl 50 -o pushconstants.frag.qsb pushconstants.frag
+qsb --glsl "310 es,430" --msl 12 --hlsl 50 -o pushconstants.comp.qsb pushconstants.comp
+qsb --glsl "310 es,430" --msl 12 -o pushconstants_std430.comp.qsb pushconstants_std430.comp

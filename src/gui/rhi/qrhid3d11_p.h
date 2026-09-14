@@ -376,6 +376,11 @@ struct QD3D11GraphicsPipeline : public QRhiGraphicsPipeline
         ID3D11PixelShader *shader = nullptr;
         QShader::NativeResourceBindingMap nativeResourceBindingMap;
     } fs;
+    struct {
+        int reg = -1;
+        quint32 size = 0;
+        uint stages = 0;
+    } pushConstants;
     ID3D11InputLayout *inputLayout = nullptr;
     D3D11_PRIMITIVE_TOPOLOGY d3dTopology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
     ID3D11RasterizerState *rastState = nullptr;
@@ -394,6 +399,10 @@ struct QD3D11ComputePipeline : public QRhiComputePipeline
         ID3D11ComputeShader *shader = nullptr;
         QShader::NativeResourceBindingMap nativeResourceBindingMap;
     } cs;
+    struct {
+        int reg = -1;
+        quint32 size = 0;
+    } pushConstants;
     uint generation = 0;
     friend class QRhiD3D11;
 };
@@ -423,6 +432,7 @@ struct QD3D11CommandBuffer : public QRhiCommandBuffer
             BindIndexBuffer,
             BindGraphicsPipeline,
             BindShaderResources,
+            SetPushConstants,
             StencilRef,
             BlendConstants,
             Draw,
@@ -506,6 +516,13 @@ struct QD3D11CommandBuffer : public QRhiCommandBuffer
                 int dynamicOffsetCount;
                 uint dynamicOffsetPairs[MAX_DYNAMIC_OFFSET_COUNT * 2]; // binding, offsetInConstants
             } bindShaderResources;
+            struct {
+                ID3D11Buffer *buffer;
+                quint32 dataOffset; // into pushConstantPool
+                quint32 size;
+                uint startSlot;
+                uint stages; // mask of RBM_* stage indices
+            } setPushConstants;
             struct {
                 ID3D11DepthStencilState *dsState;
                 quint32 ref;
@@ -608,11 +625,13 @@ struct QD3D11CommandBuffer : public QRhiCommandBuffer
     ID3D11Buffer *currentVertexBuffers[D3D11_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT];
     quint32 currentVertexOffsets[D3D11_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT];
     QD3D11RenderTargetData::Views currentRenderTargetViews;
+    QVarLengthArray<char, 128> pushConstantData;
 
     QVarLengthArray<QByteArray, 4> dataRetainPool;
     QVarLengthArray<QRhiBufferData, 4> bufferDataRetainPool;
     QVarLengthArray<QImage, 4> imageRetainPool;
     QVarLengthArray<QD3D11ShaderResourceBindings::ResourceBatches, 4> resourceBatchRetainPool;
+    QVarLengthArray<char, 1024> pushConstantPool;
 
     // relies heavily on implicit sharing (no copies of the actual data will be made)
     const uchar *retainData(const QByteArray &data) {
@@ -634,6 +653,7 @@ struct QD3D11CommandBuffer : public QRhiCommandBuffer
     }
     void resetCommands() {
         commands.reset();
+        pushConstantPool.clear();
         dataRetainPool.clear();
         bufferDataRetainPool.clear();
         imageRetainPool.clear();
@@ -657,6 +677,7 @@ struct QD3D11CommandBuffer : public QRhiCommandBuffer
         currentIndexBuffer = nullptr;
         currentIndexOffset = 0;
         currentIndexFormat = DXGI_FORMAT_R16_UINT;
+        pushConstantData.clear();
         memset(currentVertexBuffers, 0, sizeof(currentVertexBuffers));
         memset(currentVertexOffsets, 0, sizeof(currentVertexOffsets));
     }
@@ -806,6 +827,7 @@ public:
     void setBlendConstants(QRhiCommandBuffer *cb, const QColor &c) override;
     void setStencilRef(QRhiCommandBuffer *cb, quint32 refValue) override;
     void setPushConstants(QRhiCommandBuffer *cb, quint32 offset, quint32 size, const void *data) override;
+    bool ensurePushConstantBuffer();
     void setShadingRate(QRhiCommandBuffer *cb, const QSize &coarsePixelSize) override;
 
     void draw(QRhiCommandBuffer *cb, quint32 vertexCount,
@@ -873,7 +895,8 @@ public:
                              int layer, int level, const QRhiTextureSubresourceUploadDescription &subresDesc);
     void enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates);
     void updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD,
-                                      const QShader::NativeResourceBindingMap *nativeResourceBindingMaps[]);
+                                      const QShader::NativeResourceBindingMap *nativeResourceBindingMaps[],
+                                      uint pushConstantStages);
     void executeBufferHostWrites(QD3D11Buffer *bufD);
 
     void bindShaderResources(QD3D11CommandBuffer *cbD,
@@ -923,6 +946,9 @@ public:
         QD3D11SwapChain *currentSwapChain = nullptr;
     } contextState;
 
+    static constexpr quint32 MAX_PUSH_CONSTANTS_SIZE = 128;
+    ID3D11Buffer *pushConstantBuffer = nullptr;
+
     struct OffscreenFrame {
         OffscreenFrame(QRhiImplementation *rhi) : cbWrapper(rhi) { }
         bool active = false;
@@ -950,11 +976,15 @@ public:
 
     struct Shader {
         Shader() = default;
-        Shader(IUnknown *s, const QByteArray &bytecode, const QShader::NativeResourceBindingMap &rbm)
-            : s(s), bytecode(bytecode), nativeResourceBindingMap(rbm) { }
+        Shader(IUnknown *s, const QByteArray &bytecode, const QShader::NativeResourceBindingMap &rbm,
+               int pushConstantRegister = -1, quint32 pushConstantSize = 0)
+            : s(s), bytecode(bytecode), nativeResourceBindingMap(rbm),
+              pushConstantRegister(pushConstantRegister), pushConstantSize(pushConstantSize) { }
         IUnknown *s;
         QByteArray bytecode;
         QShader::NativeResourceBindingMap nativeResourceBindingMap;
+        int pushConstantRegister = -1;
+        quint32 pushConstantSize = 0;
     };
     QHash<QRhiShaderStage, Shader> m_shaderCache;
 

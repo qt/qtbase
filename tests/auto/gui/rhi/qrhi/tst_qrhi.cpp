@@ -264,6 +264,9 @@ private slots:
     void pushConstantsCompute_data();
     void pushConstantsCompute();
 
+    void pushConstantsStd430_data();
+    void pushConstantsStd430();
+
     // Make this the last, in case the leaked Vk object test confuses the Vulkan
     // validation or some third-party implicitly loaded layer.
     void leakedResourceDestroy_data();
@@ -14162,7 +14165,7 @@ void tst_QRhi::pushConstants()
     QShader fs = loadShader(":/data/pushconstants.frag.qsb");
     QVERIFY(fs.isValid());
     QCOMPARE(vs.description().pushConstantBlocks().count(), 1);
-    QCOMPARE(vs.description().pushConstantBlocks().first().size, 32);
+    QCOMPARE(vs.description().pushConstantBlocks().first().size, 112);
 
     QRhiVertexInputLayout inputLayout;
     inputLayout.setBindings({ { 2 * sizeof(float) } });
@@ -14181,11 +14184,19 @@ void tst_QRhi::pushConstants()
     }
 
     // Two draws differing only in the push constant data: a red triangle in
-    // the left half and a green one in the right half. The two halves of the
-    // block are set separately, so a partial update at a non-zero offset is
-    // covered as well.
+    // the left half and a green one in the right half. The block is set in
+    // three parts, so partial updates at a non-zero offset are covered too.
     static const float leftRed[8] = { -0.5f, 0.0f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 1.0f };
     static const float rightGreen[8] = { 0.5f, 0.0f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 1.0f };
+    // mat3 colorMat (identity, 16 byte column stride) followed by
+    // float weights[2] (0.5 each, 16 byte array stride), std140 both
+    static const float tail[20] = {
+        1.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, 1.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 1.0f, 0.0f,
+        0.5f, 0.0f, 0.0f, 0.0f,
+        0.5f, 0.0f, 0.0f, 0.0f
+    };
 
     cb->beginPass(rt.data(), Qt::blue, { 1.0f, 0 }, updates);
     QRhiCommandBuffer::VertexInput vbindings(vbuf.data(), 0);
@@ -14196,13 +14207,16 @@ void tst_QRhi::pushConstants()
     cb->setVertexInput(0, 1, &vbindings);
     cb->setPushConstants(0, 16, leftRed);
     cb->setPushConstants(16, 16, leftRed + 4);
+    cb->setPushConstants(32, 80, tail);
     cb->draw(3);
 
+    // The data does not survive the pipeline change, so set it again.
     cb->setGraphicsPipeline(pipeline2.data());
     cb->setShaderResources();
     cb->setVertexInput(0, 1, &vbindings);
     cb->setPushConstants(0, 16, rightGreen);
     cb->setPushConstants(16, 16, rightGreen + 4);
+    cb->setPushConstants(32, 80, tail);
     cb->draw(3);
 
     QRhiReadbackResult readResult;
@@ -14356,6 +14370,98 @@ void tst_QRhi::pushConstantsCompute()
         QCOMPARE(p[i], base2);
     for (int i = 16; i < ELEM_COUNT; ++i)
         QCOMPARE(p[i], base + quint32(i) * stride);
+}
+
+void tst_QRhi::pushConstantsStd430_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::pushConstantsStd430()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    // A push constant block defaults to std430, where an array of scalars or
+    // of vec2 is tightly packed. The backends that hand the block to the GPU
+    // as-is do not care, but OpenGL, which sets the members one by one, does.
+    // There is no D3D here because an HLSL cbuffer cannot express this.
+    if (impl == QRhi::D3D11 || impl == QRhi::D3D12)
+        QSKIP("Tightly packed arrays in a push constant block are not expressible in HLSL");
+
+    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing push constants");
+
+    if (!rhi->isFeatureSupported(QRhi::PushConstants))
+        QSKIP("Push constants are not supported with this backend, skipping test");
+    if (!rhi->isFeatureSupported(QRhi::Compute))
+        QSKIP("Compute is not supported with this backend, skipping test");
+
+    static const int ELEM_COUNT = 17; // 4 floats, 2 vec2s, one mat3
+    QScopedPointer<QRhiBuffer> outBuf(rhi->newBuffer(QRhiBuffer::Static, QRhiBuffer::StorageBuffer,
+                                                     ELEM_COUNT * sizeof(float)));
+    QVERIFY(outBuf->create());
+
+    QScopedPointer<QRhiShaderResourceBindings> srb(rhi->newShaderResourceBindings());
+    srb->setBindings({
+        QRhiShaderResourceBinding::bufferLoadStore(0, QRhiShaderResourceBinding::ComputeStage, outBuf.data())
+    });
+    QVERIFY(srb->create());
+
+    QShader cs = loadShader(":/data/pushconstants_std430.comp.qsb");
+    QVERIFY(cs.isValid());
+    QCOMPARE(cs.description().pushConstantBlocks().count(), 1);
+    QCOMPARE(cs.description().pushConstantBlocks().first().size, 80);
+
+    QScopedPointer<QRhiComputePipeline> pipeline(rhi->newComputePipeline());
+    pipeline->setShaderStage({ QRhiShaderStage::Compute, cs });
+    pipeline->setShaderResourceBindings(srb.data());
+    QVERIFY(pipeline->create());
+
+    QRhiCommandBuffer *cb = nullptr;
+    QVERIFY(rhi->beginOffscreenFrame(&cb) == QRhi::FrameOpSuccess);
+    QVERIFY(cb);
+
+    QByteArray zeroes(ELEM_COUNT * sizeof(float), 0);
+    QRhiResourceUpdateBatch *updates = rhi->nextResourceUpdateBatch();
+    updates->uploadStaticBuffer(outBuf.data(), zeroes.constData());
+
+    // float weights[4] and vec2 v2s[2] are tightly packed, the mat3 columns
+    // are 16 bytes apart even here.
+    static const float pc[20] = {
+        1.0f, 2.0f, 3.0f, 4.0f,
+        5.0f, 6.0f, 7.0f, 8.0f,
+        9.0f, 10.0f, 11.0f, 0.0f,
+        12.0f, 13.0f, 14.0f, 0.0f,
+        15.0f, 16.0f, 17.0f, 0.0f
+    };
+
+    cb->beginComputePass(updates);
+    cb->setComputePipeline(pipeline.data());
+    cb->setShaderResources();
+    cb->setPushConstants(0, sizeof(pc), pc);
+    cb->dispatch(1, 1, 1);
+    cb->endComputePass();
+
+    QRhiReadbackResult readResult;
+    QByteArray bufferData;
+    readResult.completed = [&readResult, &bufferData] { bufferData = readResult.data; };
+    QRhiResourceUpdateBatch *readbackBatch = rhi->nextResourceUpdateBatch();
+    readbackBatch->readBackBuffer(outBuf.data(), 0, ELEM_COUNT * sizeof(float), &readResult);
+    cb->resourceUpdate(readbackBatch);
+
+    rhi->endOffscreenFrame();
+
+    if (impl == QRhi::Null)
+        return;
+
+    QCOMPARE(bufferData.size(), qsizetype(ELEM_COUNT * sizeof(float)));
+    const float *p = reinterpret_cast<const float *>(bufferData.constData());
+    // 1 to 17, in order: anything else means the block was taken apart with
+    // the wrong strides.
+    for (int i = 0; i < ELEM_COUNT; ++i)
+        QCOMPARE(p[i], float(i + 1));
 }
 
 #include <tst_qrhi.moc>
