@@ -1022,6 +1022,11 @@ QWasmWindowStack<>::PositionPreference QWasmWindow::positionPreferenceFromWindow
 // Returns the wasm input context if it exists and is active, otherwise nullptr.
 QWasmInputContext *QWasmWindow::activeWasmInputContext() const
 {
+    // The input context is switched off while accessibility is enabled. Its key
+    // path does not prevent the browser default, so Tab in a text field moved
+    // focus in the browser on top of the move Qt had just made.
+    if (QWasmAccessibility::isEnabled())
+        return nullptr;
     QWasmInputContext *inputContext = QWasmIntegration::get()->wasmInputContext();
     return inputContext && inputContext->isActive() ? inputContext : nullptr;
 }
