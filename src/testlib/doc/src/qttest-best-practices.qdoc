@@ -415,9 +415,12 @@
 
     \section2 Avoid Printing Debug Messages from Autotests
 
-    Autotests should not produce any unhandled warning or debug messages.
-    This will allow the CI Gate to treat new warning or debug messages as
-    test failures.
+    Autotests that pass should not produce any unhandled warning or debug
+    messages. This will allow the CI Gate to treat new warning or debug messages
+    as test failures. As with warnings from compilers when building your code,
+    if warnings are rare they are useful clues to problems, but if they are
+    routine they may hide meaningful issues from developers testing their
+    changes.
 
     Adding debug messages during development is fine, but these should be
     either disabled or removed before a test is checked in.
