@@ -1453,6 +1453,18 @@ static bool isSystemLibrary(const QString &libraryPath)
     return libraryPath.startsWith(systemRoot, Qt::CaseInsensitive);
 }
 
+static QStringList minGWRuntimeFilters(Platform platform)
+{
+    switch (platform) {
+    case WindowsDesktopMinGW:
+        return { "*gcc_"_L1, "*stdc++"_L1, "*winpthread"_L1 };
+    case WindowsDesktopClangMinGW:
+        return { "*unwind"_L1, "*c++"_L1 };
+    default:
+        return {};
+    }
+}
+
 static QStringList findMinGWRuntimePaths(const QString &qtBinDir, Platform platform, const QStringList &runtimeFilters)
 {
     //MinGW: Add runtime libraries. Check first for the Qt binary directory, and default to path if nothing is found.
@@ -1485,16 +1497,10 @@ static QStringList compilerRunTimeLibs(const QString &qtBinDir, Platform platfor
 {
     QStringList result;
     switch (platform) {
-    case WindowsDesktopMinGW: {
-        const QStringList minGWRuntimes = { "*gcc_"_L1, "*stdc++"_L1, "*winpthread"_L1 };
-        result.append(findMinGWRuntimePaths(qtBinDir, platform, minGWRuntimes));
+    case WindowsDesktopMinGW:
+    case WindowsDesktopClangMinGW:
+        result.append(findMinGWRuntimePaths(qtBinDir, platform, minGWRuntimeFilters(platform)));
         break;
-    }
-    case WindowsDesktopClangMinGW: {
-        const QStringList clangMinGWRuntimes = { "*unwind"_L1, "*c++"_L1 };
-        result.append(findMinGWRuntimePaths(qtBinDir, platform, clangMinGWRuntimes));
-        break;
-    }
 #ifdef Q_OS_WIN
     case WindowsDesktopMsvcIntel:
     case WindowsDesktopMsvcArm: { // MSVC/Desktop: Add redistributable packages.
