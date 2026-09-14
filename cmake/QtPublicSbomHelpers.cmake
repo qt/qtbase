@@ -38,6 +38,8 @@ function(_qt_internal_sbom_begin_project)
 
     set(opt_args
         USE_GIT_VERSION
+        NO_DEFAULT_TARGET_LICENSE_CONCLUDED_EXPRESSION
+        NO_DEFAULT_TARGET_LICENSE_DECLARED_EXPRESSION
         __QT_INTERNAL_HANDLE_QT_REPO
         NO_AUTO_DOCUMENT_NAMESPACE_INFIX
         NO_AUTO_SEARCH_EXTERNAL_DOCUMENTS_IN_CMAKE_PATHS
@@ -50,6 +52,8 @@ function(_qt_internal_sbom_begin_project)
         LICENSE_EXPRESSION
         PROJECT_LICENSE_CONCLUDED_EXPRESSION
         PROJECT_LICENSE_DECLARED_EXPRESSION
+        DEFAULT_TARGET_LICENSE_CONCLUDED_EXPRESSION
+        DEFAULT_TARGET_LICENSE_DECLARED_EXPRESSION
         SUPPLIER
         SUPPLIER_URL
         DOWNLOAD_LOCATION
@@ -336,6 +340,25 @@ function(_qt_internal_sbom_begin_project)
     elseif(NOT arg_PROJECT_LICENSE_CONCLUDED_EXPRESSION)
         set(repo_license_declared "${repo_license_concluded}")
     endif()
+
+    set(default_target_license_concluded "")
+    if(NOT arg_NO_DEFAULT_TARGET_LICENSE_CONCLUDED_EXPRESSION)
+        set(default_target_license_concluded
+            "${arg_DEFAULT_TARGET_LICENSE_CONCLUDED_EXPRESSION}")
+    endif()
+
+    set(default_target_license_declared "")
+    if(NOT arg_NO_DEFAULT_TARGET_LICENSE_DECLARED_EXPRESSION)
+        set(default_target_license_declared
+            "${arg_DEFAULT_TARGET_LICENSE_DECLARED_EXPRESSION}")
+    endif()
+
+    set_property(GLOBAL PROPERTY
+        _qt_internal_sbom_default_target_license_concluded_expression
+        "${default_target_license_concluded}")
+    set_property(GLOBAL PROPERTY
+        _qt_internal_sbom_default_target_license_declared_expression
+        "${default_target_license_declared}")
 
     if(repo_license_concluded)
         list(APPEND begin_project_generate_args_spdx LICENSE_CONCLUDED "${repo_license_concluded}")
@@ -1122,6 +1145,8 @@ macro(_qt_internal_get_sbom_add_target_common_options opt_args single_args multi
         NO_DEFAULT_QT_PACKAGE_VERSION
         NO_DEFAULT_QT_SUPPLIER
         NO_DEFAULT_PROJECT_CONTAINS_RELATIONSHIP
+        NO_PROJECT_DEFAULT_LICENSE_CONCLUDED_EXPRESSION
+        NO_PROJECT_DEFAULT_LICENSE_DECLARED_EXPRESSION
         NO_TARGET_LICENSE_EXPRESSION_FOR_FILES
         SBOM_INCOMPLETE_3RD_PARTY_DEPENDENCIES
         IS_QT_3RD_PARTY_HEADER_MODULE
@@ -1355,10 +1380,36 @@ function(_qt_internal_sbom_add_target target)
     # AND the accumulated license expressions.
     set(license_expression "")
 
+    _qt_internal_sbom_is_qt_entity_type("${sbom_entity_type}" is_qt_entity_type)
+    _qt_internal_sbom_is_third_party_or_system_entity_type("${sbom_entity_type}"
+        is_third_party_or_system_entity_type)
+
+    # The project wide defaults apply to project-built targets, so they are not applied
+    # to third party and system entities. Qt entities get their licenses from the qt entity type
+    # handling instead, so the defaults are ignored for them as well.
+    set(use_project_default_license_concluded_expression TRUE)
+    set(use_project_default_license_declared_expression TRUE)
+    if(is_qt_entity_type OR is_third_party_or_system_entity_type)
+        set(use_project_default_license_concluded_expression FALSE)
+        set(use_project_default_license_declared_expression FALSE)
+    endif()
+    if(arg_NO_PROJECT_DEFAULT_LICENSE_CONCLUDED_EXPRESSION)
+        set(use_project_default_license_concluded_expression FALSE)
+    endif()
+    if(arg_NO_PROJECT_DEFAULT_LICENSE_DECLARED_EXPRESSION)
+        set(use_project_default_license_declared_expression FALSE)
+    endif()
+
     if(arg_LICENSE_CONCLUDED_EXPRESSION)
         set(license_expression "${arg_LICENSE_CONCLUDED_EXPRESSION}")
     elseif(arg_LICENSE_EXPRESSION)
         set(license_expression "${arg_LICENSE_EXPRESSION}")
+    elseif(use_project_default_license_concluded_expression)
+        get_cmake_property(project_default_license_concluded_expression
+            _qt_internal_sbom_default_target_license_concluded_expression)
+        if(project_default_license_concluded_expression)
+            set(license_expression "${project_default_license_concluded_expression}")
+        endif()
     endif()
 
     # An explicit LICENSE_CONCLUDED_EXPRESSION replaces other sources, which includes the
@@ -1399,11 +1450,20 @@ function(_qt_internal_sbom_add_target target)
         list(APPEND project_package_options_cydx LICENSE_CONCLUDED "${license_expression}")
     endif()
 
-    # An explicitly declared expression has priority over a mirrored value.
+    set(project_default_license_declared_expression "")
+    if(use_project_default_license_declared_expression)
+        get_cmake_property(project_default_license_declared_expression
+            _qt_internal_sbom_default_target_license_declared_expression)
+    endif()
+
+    # An explicitly declared expression has priority over the project wide default, which in turn
+    # has priority over a mirrored value.
     set(license_declared_expression "")
 
     if(arg_LICENSE_DECLARED_EXPRESSION)
         set(license_declared_expression "${arg_LICENSE_DECLARED_EXPRESSION}")
+    elseif(project_default_license_declared_expression)
+        set(license_declared_expression "${project_default_license_declared_expression}")
     elseif(license_expression AND arg___QT_INTERNAL_HANDLE_QT_ENTITY_TYPE_LICENSE)
         _qt_internal_sbom_forward_sbom_add_target_options_modified(sbom_add_target_args)
         _qt_internal_sbom_handle_qt_entity_license_declared_expression(${target}
@@ -2714,6 +2774,27 @@ function(_qt_internal_sbom_is_qt_entity_type sbom_type out_var)
     endif()
 
     set(${out_var} ${is_qt_entity_type} PARENT_SCOPE)
+endfunction()
+
+# Returns whether the given sbom type is considered to be a third party or system provided entity
+# type.
+function(_qt_internal_sbom_is_third_party_or_system_entity_type sbom_type out_var)
+    set(entity_types
+        QT_THIRD_PARTY_MODULE
+        QT_THIRD_PARTY_SOURCES
+        THIRD_PARTY_LIBRARY
+        THIRD_PARTY_LIBRARY_WITH_FILES
+        THIRD_PARTY_SOURCES
+        SYSTEM_LIBRARY
+        SYSTEM_BUILD_TOOL
+    )
+
+    set(is_third_party_or_system_entity_type FALSE)
+    if(sbom_type IN_LIST entity_types)
+        set(is_third_party_or_system_entity_type TRUE)
+    endif()
+
+    set(${out_var} ${is_third_party_or_system_entity_type} PARENT_SCOPE)
 endfunction()
 
 # Returns whether the given sbom type is considered to a Qt 3rd party entity type.
