@@ -56,6 +56,7 @@ private slots:
     void childWindowLevel();
     void platformSurface();
     void isExposed();
+    void childWindowExposedAfterHideShow();
     void isActive();
 #if defined(Q_OS_WIN)
     void activateTopLevelOnClickWhenFocusInDescendant();
@@ -956,6 +957,28 @@ void tst_QWindow::isExposed()
     QCoreApplication::processEvents();
     QTRY_VERIFY(window.received(QEvent::Expose) > 1);
     QTRY_VERIFY(!window.isExposed());
+}
+
+// A child window that is hidden and shown again has to become exposed again,
+// otherwise nothing ever repaints it.
+void tst_QWindow::childWindowExposedAfterHideShow()
+{
+    Window parent;
+    parent.setTitle(QLatin1String(QTest::currentTestFunction()));
+    parent.setGeometry(QRect(m_availableTopLeft + QPoint(80, 80), m_testWindowSize));
+    parent.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&parent));
+
+    QWindow child(&parent);
+    child.setGeometry(QRect(QPoint(10, 10), m_testWindowSize / 2));
+    child.show();
+    QTRY_VERIFY(child.isExposed());
+
+    child.hide();
+    QTRY_VERIFY(!child.isExposed());
+
+    child.show();
+    QTRY_VERIFY(child.isExposed());
 }
 
 
