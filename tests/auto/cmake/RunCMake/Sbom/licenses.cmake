@@ -56,6 +56,7 @@ _qt_internal_add_sbom(LicenseOldOption
     LICENSE_EXPRESSION "MIT"
 )
 assert_package_licenses(LicenseOldOption CONCLUDED "MIT" DECLARED "NOASSERTION")
+add_assert_str_exists_in_cydx_v1_6_doc("\"expression\": \"MIT\"")
 
 # The concluded option wins over the older option.
 _qt_internal_add_sbom(LicenseConcludedOverridesOldOption
@@ -64,6 +65,8 @@ _qt_internal_add_sbom(LicenseConcludedOverridesOldOption
     LICENSE_CONCLUDED_EXPRESSION "ISC"
 )
 assert_package_licenses(LicenseConcludedOverridesOldOption CONCLUDED "ISC" DECLARED "NOASSERTION")
+add_assert_str_exists_in_cydx_v1_6_doc("\"expression\": \"ISC\"")
+add_assert_str_not_exists_in_cydx_v1_6_doc("\"expression\": \"curl\"")
 
 # Both expressions can be set independently.
 _qt_internal_add_sbom(LicenseConcludedAndDeclared
@@ -73,13 +76,19 @@ _qt_internal_add_sbom(LicenseConcludedAndDeclared
 )
 assert_package_licenses(LicenseConcludedAndDeclared
     CONCLUDED "BSD-3-Clause" DECLARED "Unlicense")
+add_assert_str_exists_in_cydx_v1_6_doc("\"expression\": \"BSD-3-Clause\"")
+add_assert_str_exists_in_cydx_v1_6_doc("\"value\": \"Unlicense\"")
 
-# A declared expression can be set without a concluded one.
+# A declared expression can be set without a concluded one. In CycloneDX it ends up as the
+# component license, with a declared acknowledgement.
 _qt_internal_add_sbom(LicenseDeclaredOnly
     SBOM_ENTITY_TYPE "LIBRARY"
     LICENSE_DECLARED_EXPRESSION "NTP"
 )
 assert_package_licenses(LicenseDeclaredOnly CONCLUDED "NOASSERTION" DECLARED "NTP")
+add_assert_str_exists_in_cydx_v1_6_doc("\"expression\": \"NTP\"")
+add_assert_str_exists_in_cydx_v1_6_doc("\"acknowledgement\": \"declared\"")
+add_assert_str_exists_in_cydx_v1_6_doc("\"acknowledgement\": \"concluded\"")
 
 # An explicit concluded expression replaces the qt entity type expressions, including
 # QT_LICENSE_ID and the directory scope variable. The target is finalized right away, so that the
@@ -131,6 +140,12 @@ set(LICENSE_VARIANT_ARGS
 set(LICENSE_VARIANT_CONCLUDED "0BSD")
 set(LICENSE_VARIANT_DECLARED "Zlib")
 set(LICENSE_VARIANT_ABSENT_NEEDLES "PackageLicenseConcluded: curl")
+# A declared expression that differs from the concluded one is recorded as a CycloneDX property,
+# because CycloneDX v1.6 allows at most one license expression per component.
+set(LICENSE_VARIANT_CYDX_NEEDLES
+    "\"expression\": \"0BSD\""
+    "\"name\": \"spdx:package-license-declared\""
+    "\"value\": \"Zlib\"")
 add_subdirectory(license_project_variants license_concluded_overrides_compat)
 
 # Only the compatibility option, its value is recorded in both fields.
@@ -139,6 +154,10 @@ set(LICENSE_VARIANT_ARGS LICENSE_EXPRESSION "MIT-0")
 unset(LICENSE_VARIANT_ABSENT_NEEDLES)
 set(LICENSE_VARIANT_CONCLUDED "MIT-0")
 set(LICENSE_VARIANT_DECLARED "MIT-0")
+# The same value in both fields needs no extra property.
+set(LICENSE_VARIANT_CYDX_NEEDLES
+    "\"expression\": \"MIT-0\""
+    "\"acknowledgement\": \"concluded\"")
 add_subdirectory(license_project_variants license_compat_only)
 
 # Only the new concluded option, the declared field stays empty.
@@ -146,6 +165,7 @@ set(LICENSE_VARIANT_NAME "LicenseConcludedOnly")
 set(LICENSE_VARIANT_ARGS PROJECT_LICENSE_CONCLUDED_EXPRESSION "Vim")
 set(LICENSE_VARIANT_CONCLUDED "Vim")
 set(LICENSE_VARIANT_DECLARED "NOASSERTION")
+set(LICENSE_VARIANT_CYDX_NEEDLES "\"expression\": \"Vim\"")
 add_subdirectory(license_project_variants license_concluded_only)
 
 # Only the new declared option, the concluded field stays empty.
@@ -153,6 +173,9 @@ set(LICENSE_VARIANT_NAME "LicenseDeclaredOnlyProject")
 set(LICENSE_VARIANT_ARGS PROJECT_LICENSE_DECLARED_EXPRESSION "W3C")
 set(LICENSE_VARIANT_CONCLUDED "NOASSERTION")
 set(LICENSE_VARIANT_DECLARED "W3C")
+set(LICENSE_VARIANT_CYDX_NEEDLES
+    "\"expression\": \"W3C\""
+    "\"acknowledgement\": \"declared\"")
 add_subdirectory(license_project_variants license_declared_only)
 
 # No license options at all.
@@ -160,6 +183,7 @@ set(LICENSE_VARIANT_NAME "LicenseNoneAtAll")
 set(LICENSE_VARIANT_ARGS "")
 set(LICENSE_VARIANT_CONCLUDED "NOASSERTION")
 set(LICENSE_VARIANT_DECLARED "NOASSERTION")
+unset(LICENSE_VARIANT_CYDX_NEEDLES)
 add_subdirectory(license_project_variants license_none_at_all)
 
 sbom_test_end()
