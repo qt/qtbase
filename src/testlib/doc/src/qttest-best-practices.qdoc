@@ -280,8 +280,8 @@
     in verification steps can make a test difficult to understand. Also,
     they can easily break a test in ways that are difficult to diagnose
     when the test is changed to use \l QTRY_VERIFY(), \l QTRY_COMPARE() or
-    \l QBENCHMARK(). These can execute the passed expression multiple times,
-    thus repeating any side-effects.
+    \l QBENCHMARK. These can execute the passed expression repeatedly, thus
+    repeating any side-effects.
 
     When side-effects are unavoidable, ensure that the prior state is restored
     at the end of the test function, even if the test fails. This commonly
