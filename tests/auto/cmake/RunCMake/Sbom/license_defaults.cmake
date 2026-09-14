@@ -78,7 +78,8 @@ _qt_internal_add_sbom(LicenseDefaultsOptOutOwnConcluded
 )
 assert_package_licenses(LicenseDefaultsOptOutOwnConcluded CONCLUDED "Vim" DECLARED "NOASSERTION")
 
-# Qt entities don't get the defaults either, their licenses come from the qt entity type handling.
+# Qt entities don't get the defaults either, their licenses come from the qt entity type handling
+# and mirroring is enabled by default.
 _qt_internal_add_sbom(LicenseDefaultsQtEntity
     SBOM_ENTITY_TYPE "QT_MODULE"
     __QT_INTERNAL_HANDLE_QT_ENTITY_TYPE_LICENSE
@@ -87,11 +88,29 @@ _qt_internal_add_sbom(LicenseDefaultsQtEntity
 assert_package_licenses(LicenseDefaultsQtEntity
     CONCLUDED "BSD-3-Clause" DECLARED "BSD-3-Clause")
 
+
+# A bundled module qt entity doesn't get the defaults either, but mirroring is disabled by default.
+_qt_internal_add_sbom(LicenseDefaultsQtBundledEntity
+    SBOM_ENTITY_TYPE "QT_THIRD_PARTY_MODULE"
+    __QT_INTERNAL_HANDLE_QT_ENTITY_TYPE_LICENSE
+    LICENSE_CONCLUDED_EXPRESSION "curl"
+)
+assert_package_licenses(LicenseDefaultsQtBundledEntity CONCLUDED "curl" DECLARED "NOASSERTION")
+
 # Third party and system entities don't get the defaults, the project doesn't provide them.
 _qt_internal_add_sbom(LicenseDefaultsThirdParty
     SBOM_ENTITY_TYPE "THIRD_PARTY_LIBRARY"
 )
 assert_package_licenses(LicenseDefaultsThirdParty CONCLUDED "NOASSERTION" DECLARED "NOASSERTION")
+
+# A third party entity that asks for the mirroring gets it, the declared default still doesn't
+# apply to it.
+_qt_internal_add_sbom(LicenseDefaultsThirdPartyMirror
+    SBOM_ENTITY_TYPE "THIRD_PARTY_LIBRARY"
+    LICENSE_CONCLUDED_EXPRESSION "IJG"
+    MIRROR_LICENSE_DECLARED_EXPRESSION
+)
+assert_package_licenses(LicenseDefaultsThirdPartyMirror CONCLUDED "IJG" DECLARED "IJG")
 
 _qt_internal_sbom_end_project()
 
