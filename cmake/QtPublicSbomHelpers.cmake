@@ -1122,6 +1122,7 @@ macro(_qt_internal_get_sbom_add_target_common_options opt_args single_args multi
         NO_DEFAULT_QT_PACKAGE_VERSION
         NO_DEFAULT_QT_SUPPLIER
         NO_DEFAULT_PROJECT_CONTAINS_RELATIONSHIP
+        NO_TARGET_LICENSE_EXPRESSION_FOR_FILES
         SBOM_INCOMPLETE_3RD_PARTY_DEPENDENCIES
         IS_QT_3RD_PARTY_HEADER_MODULE
         IS_EXTERNAL_SBOM_ENTITY
@@ -1149,6 +1150,8 @@ macro(_qt_internal_get_sbom_add_target_common_options opt_args single_args multi
         LICENSE_EXPRESSION
         LICENSE_CONCLUDED_EXPRESSION
         LICENSE_DECLARED_EXPRESSION
+        BINARY_FILES_LICENSE_CONCLUDED_EXPRESSION
+        BINARY_FILES_LICENSE_DECLARED_EXPRESSION
         QT_LICENSE_ID
         DOWNLOAD_LOCATION
         ATTRIBUTION_ENTRY_INDEX
@@ -1782,12 +1785,33 @@ function(_qt_internal_sbom_add_target target)
         set(copyrights_option COPYRIGHTS "${copyrights}")
     endif()
 
+    # The file entries of the target inherit the license expressions of the target package, unless
+    # opted out.
     set(license_option "")
-    if(license_expression)
-        list(APPEND license_option LICENSE_CONCLUDED_EXPRESSION "${license_expression}")
+    if(NOT arg_NO_TARGET_LICENSE_EXPRESSION_FOR_FILES)
+        if(license_expression)
+            list(APPEND license_option LICENSE_CONCLUDED_EXPRESSION "${license_expression}")
+        endif()
+        if(license_declared_expression)
+            list(APPEND license_option
+                LICENSE_DECLARED_EXPRESSION "${license_declared_expression}")
+        endif()
     endif()
-    if(license_declared_expression)
-        list(APPEND license_option LICENSE_DECLARED_EXPRESSION "${license_declared_expression}")
+
+    # An explicit expression for the binary files wins over the package expression, as well as over
+    # the opt out.
+    set(binary_files_license_option "${license_option}")
+    if(arg_BINARY_FILES_LICENSE_CONCLUDED_EXPRESSION
+            OR arg_BINARY_FILES_LICENSE_DECLARED_EXPRESSION)
+        set(binary_files_license_option "")
+        if(arg_BINARY_FILES_LICENSE_CONCLUDED_EXPRESSION)
+            list(APPEND binary_files_license_option
+                LICENSE_CONCLUDED_EXPRESSION "${arg_BINARY_FILES_LICENSE_CONCLUDED_EXPRESSION}")
+        endif()
+        if(arg_BINARY_FILES_LICENSE_DECLARED_EXPRESSION)
+            list(APPEND binary_files_license_option
+                LICENSE_DECLARED_EXPRESSION "${arg_BINARY_FILES_LICENSE_DECLARED_EXPRESSION}")
+        endif()
     endif()
 
     if(QT_SBOM_GENERATE_SPDX_V2)
@@ -1799,7 +1823,7 @@ function(_qt_internal_sbom_add_target target)
             ${target_binary_multi_config_args}
             SPDX_ID "${package_spdx_id}"
             ${copyrights_option}
-            ${license_option}
+            ${binary_files_license_option}
         )
 
         _qt_internal_sbom_handle_target_custom_files("${target}"

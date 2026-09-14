@@ -385,6 +385,33 @@ function(_qt_internal_sbom_add_files target)
     set_property(TARGET "${target}" PROPERTY _qt_sbom_custom_file_sets_count "${file_sets_count}")
 endfunction()
 
+# Sets out_var to TRUE if the given custom file set arguments provide their own license
+# expressions, or opt out of the target ones, in which case the target license expressions should
+# not be forwarded to the file set.
+function(_qt_internal_sbom_file_set_overrides_target_license_expression out_var)
+    set(opt_args
+        NO_TARGET_LICENSE_EXPRESSION
+    )
+    set(single_args
+        LICENSE_EXPRESSION
+        LICENSE_CONCLUDED_EXPRESSION
+        LICENSE_DECLARED_EXPRESSION
+    )
+    set(multi_args "")
+
+    cmake_parse_arguments(PARSE_ARGV 1 arg "${opt_args}" "${single_args}" "${multi_args}")
+
+    set(result FALSE)
+    if(arg_NO_TARGET_LICENSE_EXPRESSION
+            OR arg_LICENSE_EXPRESSION
+            OR arg_LICENSE_CONCLUDED_EXPRESSION
+            OR arg_LICENSE_DECLARED_EXPRESSION)
+        set(result TRUE)
+    endif()
+
+    set(${out_var} "${result}" PARENT_SCOPE)
+endfunction()
+
 # Handles addition of custom file SPDX entries for a given target, by processing all the collected
 # file sets so far.
 # Applies the passed license and copyright info to all collected files.
@@ -406,6 +433,8 @@ endfunction()
 # LICENSE_DECLARED_EXPRESSION - a declared license expression to apply to the files. It is not
 # recorded in any SBOM format yet. SPDX v2.3 file entries have no such field.
 # Kept for the future when we generate SPDX 3.
+#
+# NO_TARGET_LICENSE_EXPRESSION - don't inherit the license expressions of the target package.
 #
 # INSTALL_PREFIX - the install prefix for the files, this is usually the install prefix of qt.
 #
@@ -457,12 +486,18 @@ function(_qt_internal_sbom_handle_target_custom_files target)
         FORWARD_SINGLE
             PACKAGE_TYPE
             PACKAGE_SPDX_ID
-            LICENSE_EXPRESSION
-            LICENSE_CONCLUDED_EXPRESSION
-            LICENSE_DECLARED_EXPRESSION
             INSTALL_PREFIX
         FORWARD_MULTI
             COPYRIGHTS
+    )
+
+    _qt_internal_forward_function_args(
+        FORWARD_PREFIX arg
+        FORWARD_OUT_VAR file_common_license_options
+        FORWARD_SINGLE
+            LICENSE_EXPRESSION
+            LICENSE_CONCLUDED_EXPRESSION
+            LICENSE_DECLARED_EXPRESSION
     )
 
     # Subtract -1, because foreach(RANGE is inclusive).
@@ -475,8 +510,16 @@ function(_qt_internal_sbom_handle_target_custom_files target)
                 "${target}")
         endif()
 
+        _qt_internal_sbom_file_set_overrides_target_license_expression(
+            file_set_overrides_license_expression ${file_set_args})
+
+        set(file_set_license_options "${file_common_license_options}")
+        if(file_set_overrides_license_expression)
+            set(file_set_license_options "")
+        endif()
+
         _qt_internal_sbom_handle_target_custom_file_set("${target}"
-            ${file_common_options} ${file_set_args})
+            ${file_common_options} ${file_set_license_options} ${file_set_args})
     endforeach()
 endfunction()
 
@@ -488,6 +531,7 @@ endfunction()
 #   LICENSE_EXPRESSION
 #   LICENSE_CONCLUDED_EXPRESSION
 #   LICENSE_DECLARED_EXPRESSION
+#   NO_TARGET_LICENSE_EXPRESSION
 #   INSTALL_PREFIX
 #   COPYRIGHTS
 # options are the same as in _qt_internal_sbom_handle_target_custom_files, and are actually
@@ -522,7 +566,7 @@ endfunction()
 # files will be installed, relative to $ENV{DESTDIR}/${CMAKE_INSTALL_PREFIX}.
 function(_qt_internal_sbom_handle_target_custom_file_set target)
     set(opt_args
-        ""
+        NO_TARGET_LICENSE_EXPRESSION
     )
     set(single_args
         FILE_TYPE
