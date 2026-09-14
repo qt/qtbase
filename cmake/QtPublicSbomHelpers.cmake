@@ -1147,6 +1147,8 @@ macro(_qt_internal_get_sbom_add_target_common_options opt_args single_args multi
         CPE_VENDOR
         CPE_PRODUCT
         LICENSE_EXPRESSION
+        LICENSE_CONCLUDED_EXPRESSION
+        LICENSE_DECLARED_EXPRESSION
         QT_LICENSE_ID
         DOWNLOAD_LOCATION
         ATTRIBUTION_ENTRY_INDEX
@@ -1350,11 +1352,17 @@ function(_qt_internal_sbom_add_target target)
     # AND the accumulated license expressions.
     set(license_expression "")
 
-    if(arg_LICENSE_EXPRESSION)
+    if(arg_LICENSE_CONCLUDED_EXPRESSION)
+        set(license_expression "${arg_LICENSE_CONCLUDED_EXPRESSION}")
+    elseif(arg_LICENSE_EXPRESSION)
         set(license_expression "${arg_LICENSE_EXPRESSION}")
     endif()
 
-    if(arg___QT_INTERNAL_HANDLE_QT_ENTITY_TYPE_LICENSE)
+    # An explicit LICENSE_CONCLUDED_EXPRESSION replaces other sources, which includes the
+    # qt sbom entity type default, QT_LICENSE_ID, etc.
+    # LICENSE_EXPRESSION is AND-ed with them instead, like it always did.
+    if(arg___QT_INTERNAL_HANDLE_QT_ENTITY_TYPE_LICENSE
+            AND NOT arg_LICENSE_CONCLUDED_EXPRESSION)
         _qt_internal_sbom_forward_sbom_add_target_options_modified(sbom_add_target_args)
         _qt_internal_sbom_handle_qt_entity_license_expression(${target} ${sbom_add_target_args}
             OUT_VAR qt_entity_license_expression)
@@ -1388,19 +1396,27 @@ function(_qt_internal_sbom_add_target target)
         list(APPEND project_package_options_cydx LICENSE_CONCLUDED "${license_expression}")
     endif()
 
-    if(license_expression AND
-            arg___QT_INTERNAL_HANDLE_QT_ENTITY_TYPE_LICENSE)
+    # An explicitly declared expression has priority over a mirrored value.
+    set(license_declared_expression "")
+
+    if(arg_LICENSE_DECLARED_EXPRESSION)
+        set(license_declared_expression "${arg_LICENSE_DECLARED_EXPRESSION}")
+    elseif(license_expression AND arg___QT_INTERNAL_HANDLE_QT_ENTITY_TYPE_LICENSE)
         _qt_internal_sbom_forward_sbom_add_target_options_modified(sbom_add_target_args)
         _qt_internal_sbom_handle_qt_entity_license_declared_expression(${target}
             ${sbom_add_target_args}
-            LICENSE_CONCLUDED_EXPRESSION "${license_expression}"
+            COMPUTED_LICENSE_CONCLUDED_EXPRESSION "${license_expression}"
             OUT_VAR qt_entity_license_declared_expression)
         if(qt_entity_license_declared_expression)
-            list(APPEND project_package_options_spdx
-                LICENSE_DECLARED "${qt_entity_license_declared_expression}")
-            list(APPEND project_package_options_cydx
-                LICENSE_DECLARED "${qt_entity_license_declared_expression}")
+            set(license_declared_expression "${qt_entity_license_declared_expression}")
         endif()
+    endif()
+
+    if(license_declared_expression)
+        list(APPEND project_package_options_spdx
+            LICENSE_DECLARED "${license_declared_expression}")
+        list(APPEND project_package_options_cydx
+            LICENSE_DECLARED "${license_declared_expression}")
     endif()
 
     # Copyrights are additive, so we collect them from all sources that were found.
