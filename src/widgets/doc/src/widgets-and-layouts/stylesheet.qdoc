@@ -112,7 +112,11 @@
     arbitrary local files that the application process has permission to
     access.
 
+    The style sheet parser implementation considers style sheet text as
+    input from a trusted source.
+
     Style sheets that are hardcoded in the application, or embedded in a
-    compiled-in Qt resource file, are not affected by this consideration,
-    since their content is fully controlled by the application itself.
+    compiled-in Qt resource file, are therefore not affected by this
+    consideration, since their content is fully controlled by the application
+    itself.
 */
