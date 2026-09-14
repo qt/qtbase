@@ -68,13 +68,13 @@ void QOhosFloatingWindow::setGeometry(const QRect &rect)
 
     auto *currentScreen = QOhosPlatformWindow::screen();
     QOhosPlatformWindow::setGeometry(rect);
+    const auto frameGeometry = lastRequestedWindowFrameGeometry();
 
-    auto *targetScreen = QOhosPlatformWindow::screenForGeometry(rect.marginsAdded(frameMargins()));
+    auto *targetScreen = QOhosPlatformWindow::screenForGeometry(frameGeometry);
     if (targetScreen != nullptr && targetScreen != currentScreen)
         QWindowSystemInterface::handleWindowScreenChanged(window(), targetScreen->screen());
 
     if (view != nullptr) {
-        auto frameGeometry = rect.marginsAdded(frameMargins());
         if (!qt_window_private(window())->positionAutomatic)
             view->setPosition(frameGeometry.topLeft());
         view->setSize(frameGeometry.size());
