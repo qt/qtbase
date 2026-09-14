@@ -13947,10 +13947,15 @@ void tst_QWidget::dragEnterLeaveSymmetry()
     widget.show();
     QVERIFY(QTest::qWaitForWindowExposed(&widget));
 
+    const auto nativePos = [&widget](QPoint pos) {
+        return QHighDpi::toNativeLocalPosition(pos, widget.windowHandle());
+    };
+
     QMimeData data;
     data.setColorData(QVariant::fromValue(Qt::red));
-    QWindowSystemInterface::handleDrag(widget.windowHandle(), &data, QPoint(1, 1),
-                                       Qt::ActionMask, Qt::LeftButton, {});
+    QWindowSystemInterface::handleDrag(
+            widget.windowHandle(), &data, nativePos(QPoint(1, 1)),
+            Qt::ActionMask, Qt::LeftButton, {});
     QVERIFY(filter.hasEntered(&widget));
     QVERIFY(!filter.hasEntered(&lineEdit));
     QVERIFY(!filter.hasEntered(&label));
@@ -13958,8 +13963,9 @@ void tst_QWidget::dragEnterLeaveSymmetry()
     QVERIFY(!lineEdit.underMouse());
     filter.clear();
 
-    QWindowSystemInterface::handleDrag(widget.windowHandle(), &data, lineEdit.geometry().center(),
-                                       Qt::ActionMask, Qt::LeftButton, {});
+    QWindowSystemInterface::handleDrag(
+            widget.windowHandle(), &data, nativePos(lineEdit.geometry().center()),
+            Qt::ActionMask, Qt::LeftButton, {});
     // DragEnter propagates as the lineEdit doesn't want it, so the widget
     // sees both a Leave and an Enter event
     QVERIFY(filter.hasLeft(&widget));
@@ -13972,8 +13978,9 @@ void tst_QWidget::dragEnterLeaveSymmetry()
     // The lineEdit didn't accept the DragEnter, but it should still has to
     // get the DragLeave so that UnderMouse is cleared; the widget gets both
     // Leave and Enter through propagation.
-    QWindowSystemInterface::handleDrag(widget.windowHandle(), &data, label.geometry().center(),
-                                       Qt::ActionMask, Qt::LeftButton, {});
+    QWindowSystemInterface::handleDrag(
+            widget.windowHandle(), &data, nativePos(label.geometry().center()),
+            Qt::ActionMask, Qt::LeftButton, {});
     QVERIFY(filter.hasLeft(&lineEdit));
     QVERIFY(filter.hasLeft(&widget));
     QVERIFY(filter.hasEntered(&label));
