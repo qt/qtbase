@@ -1013,6 +1013,11 @@ void QOhosView::showImmediate()
         surface->clearNativeWindowSurface();
 
     m_nativeNode->setVisibility(true);
+
+    // Mirrors hide(): ArkUI does not report the node visibility change for an
+    // embedded window, so the view has to.
+    if (viewType() == ViewType::EmbeddedWindow)
+        Q_EMIT windowVisibilityChange(true);
 }
 
 void QOhosView::applyPhoneWindowChrome()
