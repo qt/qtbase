@@ -2159,14 +2159,12 @@ void tst_QTableView::resizeRowsToContents_data()
     QTest::addColumn<bool>("showGrid");
     QTest::addColumn<int>("cellWidth");
     QTest::addColumn<int>("cellHeight");
-    QTest::addColumn<int>("rowHeight");
-    QTest::addColumn<int>("columnWidth");
 
-    QTest::newRow("10x10 grid shown 40x40")
-        << 10 << 10 << false << 40 << 40 << 40 << 40;
+    QTest::newRow("10x10 grid not shown")
+        << 10 << 10 << false << 40 << 40;
 
-    QTest::newRow("10x10 grid not shown 40x40")
-        << 10 << 10 << true << 40 << 40 << 41 << 41;
+    QTest::newRow("10x10 grid shown")
+        << 10 << 10 << true << 40 << 40;
 }
 
 void tst_QTableView::resizeRowsToContents()
@@ -2176,9 +2174,6 @@ void tst_QTableView::resizeRowsToContents()
     QFETCH(bool, showGrid);
     QFETCH(int, cellWidth);
     QFETCH(int, cellHeight);
-    QFETCH(int, rowHeight);
-    QFETCH(int, columnWidth);
-    Q_UNUSED(columnWidth);
 
     QtTestTableModel model(rowCount, columnCount);
     QtTestTableView view;
@@ -2188,11 +2183,15 @@ void tst_QTableView::resizeRowsToContents()
     view.setItemDelegate(&delegate);
     view.setShowGrid(showGrid); // the grid will add to the row height
 
-    delegate.hint = QSize(cellWidth, cellHeight);
+    const int hintHeight = qMax(cellHeight, view.verticalHeader()->sectionSizeHint(0) + 1);
+    delegate.hint = QSize(cellWidth, hintHeight);
+
+    view.verticalHeader()->setDefaultSectionSize(hintHeight + 10);
 
     QSignalSpy resizedSpy(view.verticalHeader(), &QHeaderView::sectionResized);
     view.resizeRowsToContents();
 
+    const int rowHeight = hintHeight + (showGrid ? 1 : 0);
     QCOMPARE(resizedSpy.size(), model.rowCount());
     for (int r = 0; r < model.rowCount(); ++r)
         QCOMPARE(view.rowHeight(r), rowHeight);
@@ -2205,14 +2204,12 @@ void tst_QTableView::resizeColumnsToContents_data()
     QTest::addColumn<bool>("showGrid");
     QTest::addColumn<int>("cellWidth");
     QTest::addColumn<int>("cellHeight");
-    QTest::addColumn<int>("rowHeight");
-    QTest::addColumn<int>("columnWidth");
 
-    QTest::newRow("10x10 grid not shown 60x60")
-        << 10 << 10 << false << 60 << 60 << 60 << 60;
+    QTest::newRow("10x10 grid not shown")
+        << 10 << 10 << false << 60 << 60;
 
-    QTest::newRow("10x10 grid shown 60x60")
-        << 10 << 10 << true << 60 << 60 << 61 << 61;
+    QTest::newRow("10x10 grid shown")
+        << 10 << 10 << true << 60 << 60;
 }
 
 void tst_QTableView::resizeColumnsToContents()
@@ -2222,9 +2219,6 @@ void tst_QTableView::resizeColumnsToContents()
     QFETCH(bool, showGrid);
     QFETCH(int, cellWidth);
     QFETCH(int, cellHeight);
-    QFETCH(int, rowHeight);
-    QFETCH(int, columnWidth);
-    Q_UNUSED(rowHeight);
 
     QtTestTableModel model(rowCount, columnCount);
     QtTestTableView view;
@@ -2232,13 +2226,17 @@ void tst_QTableView::resizeColumnsToContents()
 
     view.setModel(&model);
     view.setItemDelegate(&delegate);
-    view.setShowGrid(showGrid); // the grid will add to the row height
+    view.setShowGrid(showGrid); // the grid will add to the column width
 
-    delegate.hint = QSize(cellWidth, cellHeight);
+    const int hintWidth = qMax(cellWidth, view.horizontalHeader()->sectionSizeHint(0) + 1);
+    delegate.hint = QSize(hintWidth, cellHeight);
+
+    view.horizontalHeader()->setDefaultSectionSize(hintWidth + 10);
 
     QSignalSpy resizedSpy(view.horizontalHeader(), &QHeaderView::sectionResized);
     view.resizeColumnsToContents();
 
+    const int columnWidth = hintWidth + (showGrid ? 1 : 0);
     QCOMPARE(resizedSpy.size(), model.columnCount());
     for (int c = 0; c < model.columnCount(); ++c)
         QCOMPARE(view.columnWidth(c), columnWidth);
