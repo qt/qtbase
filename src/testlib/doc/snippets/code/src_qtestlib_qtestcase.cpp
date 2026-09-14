@@ -25,6 +25,7 @@ public:
     void addSingleStringRows();
     void addMultStringRows();
     void addDataRow();
+    void scopeGuardReport(const QLocale &locale, const QStringList &expected) const;
 
 private Q_SLOTS:
     void initTestCase();
@@ -245,6 +246,18 @@ const auto restoreDefaultLocale = qScopeGuard([prior = QLocale()]() {
 });
 //! [36]
 QLocale::setDefault(QLocale::c());
+}
+
+void MyTestClass::scopeGuardReport(const QLocale &locale, const QStringList &expected) const
+{
+//! [scope-diagnostic]
+    const QStringList actual = locale.uiLanguages();
+    auto report = qScopeGuard([&actual]() {
+        qDebug("\n\t%ls", qUtf16Printable(actual.join("\n\t"_L1)));
+    });
+    QCOMPARE(actual, expected);
+    report.dismiss();
+//! [scope-diagnostic]
 }
 
 void MyTestClass::defaultTryTimeout()
