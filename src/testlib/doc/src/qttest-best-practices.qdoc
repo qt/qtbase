@@ -96,14 +96,15 @@
 
     Naming test cases is important. The test name appears in the failure report
     for a test run. For data-driven tests, the name of the data row also appears
-    in the failure report. The names give those reading the report a first
+    in the failure report. Good names can give those reading the report a first
     indication of what has gone wrong.
 
     Test function names should make it obvious what the function is trying to
     test. Do not simply use the bug-tracking identifier, because the identifiers
-    become obsolete if the bug-tracker is replaced. Also, some bug-trackers may
-    not be accessible to all users. When the bug report may be of interest to
-    later readers of the test code, you can mention it in a comment alongside a
+    become obsolete if the bug-tracker is replaced. Also, developers working
+    offline cannot access your bug-tracker and some bug-trackers may not be
+    accessible to all users. When the bug report may be of interest to later
+    readers of the test code, you can mention it in a comment alongside a
     relevant part of the test.
 
     Likewise, when writing data-driven tests, give descriptive names to the
@@ -121,8 +122,10 @@
 
     Within a test program, test functions should be independent of each other
     and they should not rely upon previous test functions having been run. You
-    can check this by running the test function on its own with
-    \c {tst_foo testname}.
+    can check this by running the test function on its own with \c {tst_foo
+    testname}. For data-driven tests, likewise, avoid dependencies between the
+    rows of the test's data table so that \c {tst_foo function:tag} can be used
+    to run a single row in isolation (for example, to investigate why it fails).
 
     Do not re-use instances of the class under test in several tests. Test
     instances (for example widgets) should not be member variables of the
@@ -168,7 +171,7 @@
     code-paths all the way down into the backends. Testing the upper layer API
     parts using a mock backend is a nice way to isolate errors in the API layer
     from the backends, but it is complementary to tests that run the actual
-    implementation with real-world data.
+    implementation with data that faithfully illustrates real-world conditions.
 
     \section2 Make Tests Complete Quickly
 
@@ -338,12 +341,13 @@
     macros, which periodically test a specified condition until it becomes true
     or some maximum timeout is reached. These macros prevent the test from
     taking longer than necessary, while avoiding breakages when tests are
-    written on workstations and later executed on embedded platforms.
+    developed on faster systems and later executed on slower ones.
 
     If there are no Qt signals, and you are writing the test as part of
     developing a new API, consider whether the API could benefit from the
     addition of a signal that reports the completion of the asynchronous
-    behavior.
+    behavior. If it would make your testing easier, it may well be useful for
+    callers of your API, too.
 
     \section2 Beware of Timing-dependent Behavior
 
