@@ -14,6 +14,8 @@ function(_qt_internal_sbom_handle_target_binary_files target)
         SBOM_ENTITY_TYPE
         SPDX_ID
         LICENSE_EXPRESSION
+        LICENSE_CONCLUDED_EXPRESSION
+        LICENSE_DECLARED_EXPRESSION
         INSTALL_PREFIX
     )
     set(multi_args
@@ -144,6 +146,16 @@ function(_qt_internal_sbom_handle_target_binary_files target)
         list(APPEND file_common_options LICENSE_EXPRESSION "${arg_LICENSE_EXPRESSION}")
     endif()
 
+    if(arg_LICENSE_CONCLUDED_EXPRESSION)
+        list(APPEND file_common_options
+            LICENSE_CONCLUDED_EXPRESSION "${arg_LICENSE_CONCLUDED_EXPRESSION}")
+    endif()
+
+    if(arg_LICENSE_DECLARED_EXPRESSION)
+        list(APPEND file_common_options
+            LICENSE_DECLARED_EXPRESSION "${arg_LICENSE_DECLARED_EXPRESSION}")
+    endif()
+
     if(arg_INSTALL_PREFIX)
         list(APPEND file_common_options INSTALL_PREFIX "${arg_INSTALL_PREFIX}")
     endif()
@@ -245,6 +257,8 @@ function(_qt_internal_sbom_add_binary_file target file_path)
         PACKAGE_SPDX_ID
         PACKAGE_TYPE
         LICENSE_EXPRESSION
+        LICENSE_CONCLUDED_EXPRESSION
+        LICENSE_DECLARED_EXPRESSION
         CONFIG
         INSTALL_PREFIX
     )
@@ -265,9 +279,17 @@ function(_qt_internal_sbom_add_binary_file target file_path)
         list(APPEND file_common_options COPYRIGHT "<text>${copyrights}</text>")
     endif()
 
-    if(arg_LICENSE_EXPRESSION)
-        list(APPEND file_common_options LICENSE "${arg_LICENSE_EXPRESSION}")
+    # LICENSE_EXPRESSION is a compatibility alias of LICENSE_CONCLUDED_EXPRESSION, and is only
+    # used if the latter is not set.
+    if(arg_LICENSE_CONCLUDED_EXPRESSION)
+        list(APPEND file_common_options LICENSE_CONCLUDED "${arg_LICENSE_CONCLUDED_EXPRESSION}")
+    elseif(arg_LICENSE_EXPRESSION)
+        list(APPEND file_common_options LICENSE_CONCLUDED "${arg_LICENSE_EXPRESSION}")
     endif()
+
+    # LICENSE_DECLARED_EXPRESSION is deliberately not forwarded to the generation layer. SPDX v2.3
+    # file entries have no declared license field, and CycloneDX documents don't currently
+    # describe files.
 
     if(arg_INSTALL_PREFIX)
         list(APPEND file_common_options INSTALL_PREFIX "${arg_INSTALL_PREFIX}")
@@ -376,7 +398,14 @@ endfunction()
 #
 # PACKAGE_SPDX_ID - the package spdx id is used to add a relationship between the package and file.
 #
-# LICENSE_EXPRESSION - a license expression to apply to the files.
+# LICENSE_EXPRESSION - a compatibility alias of LICENSE_CONCLUDED_EXPRESSION, only used if the
+# latter is not set.
+#
+# LICENSE_CONCLUDED_EXPRESSION - a concluded license expression to apply to the files.
+#
+# LICENSE_DECLARED_EXPRESSION - a declared license expression to apply to the files. It is not
+# recorded in any SBOM format yet. SPDX v2.3 file entries have no such field.
+# Kept for the future when we generate SPDX 3.
 #
 # INSTALL_PREFIX - the install prefix for the files, this is usually the install prefix of qt.
 #
@@ -389,6 +418,8 @@ function(_qt_internal_sbom_handle_target_custom_files target)
         PACKAGE_TYPE
         PACKAGE_SPDX_ID
         LICENSE_EXPRESSION
+        LICENSE_CONCLUDED_EXPRESSION
+        LICENSE_DECLARED_EXPRESSION
         INSTALL_PREFIX
     )
     set(multi_args
@@ -427,6 +458,8 @@ function(_qt_internal_sbom_handle_target_custom_files target)
             PACKAGE_TYPE
             PACKAGE_SPDX_ID
             LICENSE_EXPRESSION
+            LICENSE_CONCLUDED_EXPRESSION
+            LICENSE_DECLARED_EXPRESSION
             INSTALL_PREFIX
         FORWARD_MULTI
             COPYRIGHTS
@@ -453,6 +486,8 @@ endfunction()
 #   PACKAGE_TYPE
 #   PACKAGE_SPDX_ID
 #   LICENSE_EXPRESSION
+#   LICENSE_CONCLUDED_EXPRESSION
+#   LICENSE_DECLARED_EXPRESSION
 #   INSTALL_PREFIX
 #   COPYRIGHTS
 # options are the same as in _qt_internal_sbom_handle_target_custom_files, and are actually
@@ -494,6 +529,8 @@ function(_qt_internal_sbom_handle_target_custom_file_set target)
         PACKAGE_SPDX_ID
         PACKAGE_TYPE
         LICENSE_EXPRESSION
+        LICENSE_CONCLUDED_EXPRESSION
+        LICENSE_DECLARED_EXPRESSION
         INSTALL_PREFIX
     )
     set(multi_args
@@ -665,6 +702,8 @@ function(_qt_internal_sbom_add_custom_file target installed_file_relative_path)
         PACKAGE_SPDX_ID
         PACKAGE_TYPE
         LICENSE_EXPRESSION
+        LICENSE_CONCLUDED_EXPRESSION
+        LICENSE_DECLARED_EXPRESSION
         INSTALL_PREFIX
         FILE_TYPE
         CONFIG
@@ -688,9 +727,17 @@ function(_qt_internal_sbom_add_custom_file target installed_file_relative_path)
         list(APPEND file_common_options COPYRIGHT "<text>${copyrights}</text>")
     endif()
 
-    if(arg_LICENSE_EXPRESSION)
-        list(APPEND file_common_options LICENSE "${arg_LICENSE_EXPRESSION}")
+    # LICENSE_EXPRESSION is a compatibility alias of LICENSE_CONCLUDED_EXPRESSION, and is only
+    # used if the latter is not set.
+    if(arg_LICENSE_CONCLUDED_EXPRESSION)
+        list(APPEND file_common_options LICENSE_CONCLUDED "${arg_LICENSE_CONCLUDED_EXPRESSION}")
+    elseif(arg_LICENSE_EXPRESSION)
+        list(APPEND file_common_options LICENSE_CONCLUDED "${arg_LICENSE_EXPRESSION}")
     endif()
+
+    # LICENSE_DECLARED_EXPRESSION is deliberately not forwarded to the generation layer. SPDX v2.3
+    # file entries have no declared license field, and CycloneDX documents don't currently
+    # describe files.
 
     if(arg_INSTALL_PREFIX)
         list(APPEND file_common_options INSTALL_PREFIX "${arg_INSTALL_PREFIX}")
