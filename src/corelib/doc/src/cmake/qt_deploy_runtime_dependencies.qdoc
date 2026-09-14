@@ -65,8 +65,10 @@ non-system Qt libraries plus an appropriate set of Qt plugins.
 
 On Linux, the command will deploy additional libraries, beyond just those
 related to Qt, that are included with the project. However, when executed on
-macOS or Windows, the command will use either \c macdeployqt or \c windeployqt,
-which will only deploy libraries that are specific to Qt.
+macOS or Windows, the command will use either \c macdeployqt or \c windeployqt.
+\c macdeployqt only deploys libraries that are specific to Qt. \c windeployqt
+additionally deploys the non-Qt libraries that the deployed binaries link
+against, if those libraries are located in the Qt binary directory.
 
 This command only considers runtime dependencies for which linking
 relationships exist in the underlying binaries. It does not deploy QML modules,
