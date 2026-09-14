@@ -4974,7 +4974,8 @@ void tst_QTableView::resetDefaultSectionSize()
     view.verticalHeader()->resetDefaultSectionSize();
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
-    QCOMPARE(view.verticalHeader()->logicalIndexAt(9, 45), 1);
+    const int sectionSize = view.verticalHeader()->defaultSectionSize();
+    QCOMPARE(view.verticalHeader()->logicalIndexAt(9, sectionSize + sectionSize / 2), 1);
 }
 
 // This has nothing to do with QTableView, but it's convenient to reuse the QtTestTableModel
