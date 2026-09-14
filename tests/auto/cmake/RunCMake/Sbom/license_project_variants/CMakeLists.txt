@@ -18,4 +18,8 @@ foreach(needle IN LISTS LICENSE_VARIANT_ABSENT_NEEDLES)
     add_assert_str_not_exists_in_spdx_v2_3_doc("${needle}")
 endforeach()
 
+foreach(needle IN LISTS LICENSE_VARIANT_CYDX_NEEDLES)
+    add_assert_str_exists_in_cydx_v1_6_doc("${needle}")
+endforeach()
+
 _qt_internal_sbom_end_project()

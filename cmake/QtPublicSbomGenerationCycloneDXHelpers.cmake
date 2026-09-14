@@ -75,6 +75,18 @@ function(_qt_internal_sbom_begin_project_generate_cyclone)
         set(download_location_field "download_location = \"${arg_DOWNLOAD_LOCATION}\"")
     endif()
 
+    set(license_concluded_field "")
+    if(arg_LICENSE_CONCLUDED)
+        set(license_concluded_field
+            "license_concluded_expression = \"${arg_LICENSE_CONCLUDED}\"")
+    endif()
+
+    set(license_declared_field "")
+    if(arg_LICENSE_DECLARED)
+        set(license_declared_field
+            "license_declared_expression = \"${arg_LICENSE_DECLARED}\"")
+    endif()
+
     set(content "
 [root_component]
 name = \"${arg_PROJECT}\" # Required
@@ -83,6 +95,8 @@ version = \"${QT_SBOM_GIT_VERSION}\" # Required
 supplier = '${arg_SUPPLIER}' # Required
 supplier_url = \"${arg_SUPPLIER_URL}\" # Required
 ${download_location_field}
+${license_concluded_field}
+${license_declared_field}
 build_date = \"${current_utc}\"
 serial_number_uuid = \"${arg_BOM_SERIAL_NUMBER_UUID}\" # Required
 description = '''${project_comment}
@@ -283,6 +297,7 @@ function(_qt_internal_sbom_generate_cyclone_add_package)
     _qt_internal_sbom_set_default_option_value(VERSION "")
     _qt_internal_sbom_set_default_option_value(SUPPLIER "")
     _qt_internal_sbom_set_default_option_value(LICENSE_CONCLUDED "")
+    _qt_internal_sbom_set_default_option_value(LICENSE_DECLARED "")
     _qt_internal_sbom_set_default_option_value(COPYRIGHT "")
 
     set(cpe_field "")
@@ -350,6 +365,12 @@ function(_qt_internal_sbom_generate_cyclone_add_package)
             "license_concluded_expression = \\\"${arg_LICENSE_CONCLUDED}\\\"")
     endif()
 
+    set(license_declared_field "")
+    if(arg_LICENSE_DECLARED)
+        set(license_declared_field
+            "license_declared_expression = \\\"${arg_LICENSE_DECLARED}\\\"")
+    endif()
+
     set(supplier_field "")
     if(arg_CYDX_SUPPLIER)
         set(supplier_field "supplier = '${arg_CYDX_SUPPLIER}'")
@@ -393,6 +414,7 @@ ${external_bom_link_field}
 ${cpe_field}
 ${purl_field}
 ${license_concluded_field}
+${license_declared_field}
 ${properties_field}
 ${relationships_field}
 \"

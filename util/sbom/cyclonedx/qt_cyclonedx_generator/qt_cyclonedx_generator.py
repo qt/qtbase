@@ -163,6 +163,8 @@ class RootComponentDict(TypedDict):
     supplier: str
     supplier_url: str
     serial_number_uuid: str
+    license_concluded_expression: str
+    license_declared_expression: str
     relationships: list[RelationshipDict]
 
 
@@ -175,6 +177,8 @@ class ComponentDict(TypedDict):
     copyright: str
     external_bom_link: str
     supplier: str
+    license_concluded_expression: str
+    license_declared_expression: str
     purl_list: list[str]
     cpe_list: list[str]
     properties: list[CyclonePropertyDict]
@@ -421,8 +425,17 @@ def process_toml(toml_data: TomlDataDict, cydx_bom: Bom) -> None:
 
     log.debug("Processing TOML data.")
 
+    licenses_dict: LicensesDict = {}
+    if "licenses" in toml_data:
+        licenses_toml = toml_data["licenses"]
+        for license_entry in licenses_toml:
+            license_id = license_entry["license_id"]
+            licenses_dict[license_id] = license_entry
+
+    license_factory = LicenseFactory()
+
     root_component_object, main_supplier, project_spdx_id = handle_root_component(
-        cydx_bom, toml_data
+        cydx_bom, toml_data, licenses_dict, license_factory
     )
     components[project_spdx_id] = root_component_object
 
@@ -432,7 +445,6 @@ def process_toml(toml_data: TomlDataDict, cydx_bom: Bom) -> None:
 
     external_components_spdx_ids = set()
     components_toml = []
-    license_factory = LicenseFactory()
 
     # Create one component per CMake target (in spdx it would be a spdx package).
     if "components" in toml_data:
@@ -440,13 +452,6 @@ def process_toml(toml_data: TomlDataDict, cydx_bom: Bom) -> None:
 
         components_len = len(components_toml)
         log.debug(f"Processing {components_len} components from TOML data.")
-
-        licenses_dict: LicensesDict = {}
-        if "licenses" in toml_data:
-            licenses_toml = toml_data["licenses"]
-            for license_entry in licenses_toml:
-                license_id = license_entry["license_id"]
-                licenses_dict[license_id] = license_entry
 
         for component_toml in components_toml:
             process_component(
@@ -481,9 +486,13 @@ def process_toml(toml_data: TomlDataDict, cydx_bom: Bom) -> None:
 # Creates the root component of the BOM.
 # The CycloneDX root component is mapped to the Qt spdx project package e.g. qtbase.
 def handle_root_component(
-    cydx_bom: Bom, toml_data: TomlDataDict
+    cydx_bom: Bom,
+    toml_data: TomlDataDict,
+    licenses_dict: LicensesDict,
+    license_factory: LicenseFactory,
 ) -> tuple[Component, Optional[OrganizationalEntity], str]:
     root_components_args: dict[str, Any] = {}
+    properties: list[Property] = []
 
     root_component = validate_required_field(toml_data, "root_component", "TOML data")
     error_context = "root_component"
@@ -514,6 +523,13 @@ def handle_root_component(
             )
         ],
     )
+
+    handle_component_licenses(
+        root_component, licenses_dict, license_factory, root_components_args, properties
+    )
+
+    if properties:
+        root_components_args["properties"] = properties
 
     if project_build_date_str := root_component.get("build_date"):
         project_build_date = _parse_build_date(project_build_date_str)
@@ -652,7 +668,7 @@ def process_component(
     )
 
     handle_component_licenses(
-        component_toml, licenses_dict, license_factory, component_args
+        component_toml, licenses_dict, license_factory, component_args, properties
     )
 
     purl_list = component_toml.get("purl_list", [])
@@ -795,25 +811,45 @@ def get_purl_and_cpe_component_args(
 
 
 # Handles licenses for a component.
+#
+# CycloneDX v1.6-1.7 allows at most one license expression per component, so the concluded and the
+# declared expression can't both end up in the "licenses" field.
+# Use the concluded one when given, fall back to the declared one when not.
+# If both are given, and they differ, record the declared one as a custom property, to not lose
+# information.
 def handle_component_licenses(
-    component_toml: ComponentDict,
+    component_toml: Union[ComponentDict, RootComponentDict],
     licenses_dict: LicensesDict,
     license_factory: LicenseFactory,
     component_args: dict[str, Any],
+    properties: list[Property],
 ) -> None:
-    def transformer(license_expression: str) -> Optional[list[LicenseExpression]]:
-        acknowledgement = LicenseAcknowledgement.CONCLUDED
-        return convert_license_expression_license_objects(
-            license_expression, licenses_dict, license_factory, acknowledgement
-        )
+    concluded_expression = component_toml.get("license_concluded_expression")
+    declared_expression = component_toml.get("license_declared_expression")
 
-    assign_optional_field(
-        component_toml,
-        component_args,
-        source_field="license_concluded_expression",
-        target_field="licenses",
-        transform=transformer,
-    )
+    if concluded_expression:
+        component_args["licenses"] = convert_license_expression_license_objects(
+            concluded_expression,
+            licenses_dict,
+            license_factory,
+            LicenseAcknowledgement.CONCLUDED,
+        )
+    elif declared_expression:
+        component_args["licenses"] = convert_license_expression_license_objects(
+            declared_expression,
+            licenses_dict,
+            license_factory,
+            LicenseAcknowledgement.DECLARED,
+        )
+        return
+
+    if declared_expression and declared_expression != concluded_expression:
+        properties.append(
+            Property(
+                name="spdx:package-license-declared",  # pyright: ignore [reportCallIssue]
+                value=declared_expression,  # pyright: ignore [reportCallIssue]
+            )
+        )
 
 
 # Transforms a spdx license expression into CycloneDX license objects.
