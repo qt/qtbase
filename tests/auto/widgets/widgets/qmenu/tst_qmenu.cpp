@@ -1281,11 +1281,11 @@ void tst_QMenu::QTBUG30595_rtl_submenu()
     QMenu sub("&sub");
     sub.addAction("bar");
     sub.setTitle("&sub");
-    menu.addMenu(&sub);
+    QAction *subAction = menu.addMenu(&sub);
     centerOnScreen(&menu, QSize(120, 40));
     menu.show();
     QVERIFY(QTest::qWaitForWindowExposed(&menu));
-    QTest::mouseClick(&menu, Qt::LeftButton, Qt::NoModifier, QPoint(5,5) );
+    QTest::mouseClick(&menu, Qt::LeftButton, Qt::NoModifier, menu.actionGeometry(subAction).center());
     QTRY_VERIFY(sub.isVisible());
     QVERIFY2(sub.pos().x() < menu.pos().x(), QByteArray::number(sub.pos().x()) + QByteArrayLiteral(" not less than ") + QByteArray::number(menu.pos().x()));
 }
