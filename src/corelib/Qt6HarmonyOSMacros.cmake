@@ -734,7 +734,7 @@ function(_qt_internal_harmonyos_generate_test_bundle_deployment_settings)
     string(APPEND JSON_CONTENT "    \"test-binaries-directory\": \"${CMAKE_BINARY_DIR}\",\n")
     string(APPEND JSON_CONTENT "    \"harmonyos-app-name\": \"QtAutoTests\",\n")
     string(APPEND JSON_CONTENT "    \"harmonyos-app-bundle-name\": \"org.qtproject.autotests\",\n")
-    string(APPEND JSON_CONTENT "    \"harmonyos-target-arch\": [\"arm64-v8a\"]")
+    string(APPEND JSON_CONTENT "    \"harmonyos-target-arch\": [\"${OHOS_ARCH}\"]")
 
     # Exclude "phone" so the bundle is a native 2-in-1 app: a bundle that
     # lists "phone" is treated as a phone-app-on-PC, which makes
