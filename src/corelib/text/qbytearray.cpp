@@ -34,6 +34,7 @@
 #include <stdlib.h>
 
 #include <algorithm>
+#include <limits>
 #include <QtCore/q26numeric.h>
 #include <string>
 
@@ -4658,7 +4659,20 @@ QByteArray QByteArray::toHex(char separator) const
     if (isEmpty())
         return QByteArray();
 
-    const qsizetype length = separator ? (size() * 3 - 1) : (size() * 2);
+    const auto length = [&] {
+        using S = QByteArray::size_type;
+        constexpr auto fail = (std::numeric_limits<S>::max)(); // will cause alloc failure
+        auto r = size();
+        if (separator) { // 3 * size() - 1
+            if (mul_overflow(r, S{3}, &r))
+                return fail;
+            return r - 1;
+        } else {         // 2 * size()
+            if (mul_overflow(r, S{2}, &r))
+                return fail;
+            return r;
+        }
+    }();
     QByteArray hex(length, Qt::Uninitialized);
     char *hexData = hex.data();
     const uchar *data = (const uchar *)this->data();
