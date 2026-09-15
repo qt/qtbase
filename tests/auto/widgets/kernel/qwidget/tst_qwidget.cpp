@@ -10427,11 +10427,14 @@ void tst_QWidget::translucentWidget()
     if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
         QSKIP("Wayland: This fails. Figure out why.");
 
-    QPixmap pm(16,16);
+    // That's a minimum size that has to be used for OHOS
+    // for the test to prevent resizing and test failure.
+    const QSize size(40, 40);
+    QPixmap pm(size);
     pm.fill(Qt::red);
     ColorRedWidget label;
     label.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
-    label.setFixedSize(16,16);
+    label.setFixedSize(size);
     label.setAttribute(Qt::WA_TranslucentBackground);
     label.move(m_availableTopLeft);
     label.show();
@@ -10442,8 +10445,8 @@ void tst_QWidget::translucentWidget()
     const QImage actual = widgetSnapshot.toImage().convertToFormat(QImage::Format_RGB32);
     QImage expected = pm.toImage().scaled(label.devicePixelRatio() * pm.size());
     expected.setDevicePixelRatio(label.devicePixelRatio());
-#ifdef Q_OS_ANDROID
-    // Android uses Format_ARGB32_Premultiplied by default
+#if defined(Q_OS_ANDROID) || defined(Q_OS_HARMONY)
+    // Android and OHOS use Format_ARGB32_Premultiplied by default
     expected = expected.convertToFormat(QImage::Format_RGB32);
 #endif
     QCOMPARE(actual.size(),expected.size());
