@@ -45,6 +45,7 @@
 #include "qstringmatcher.cpp"
 #include "qstringiterator_p.h"
 #include "qstringalgorithms_p.h"
+#include <QtCore/private/qnumeric_p.h>
 
 #include <algorithm>
 #include <functional>
@@ -8410,7 +8411,12 @@ QString QString::repeated(qsizetype times) const
         return QString();
     }
 
-    const qsizetype resultSize = times * d.size;
+    const qsizetype resultSize = [&] {
+        auto r = times;
+        if (mul_overflow(r, d.size, &r))
+            qBadAlloc();
+        return r;
+    }();
 
     QString result;
     result.reserve(resultSize);
