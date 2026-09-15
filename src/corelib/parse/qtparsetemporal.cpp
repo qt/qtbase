@@ -310,7 +310,7 @@ class TemporalFieldMatcher
         bool alreadySet = false; // Did base parse already know this field ?
         // Acceptable values:
         int maxValue = 0; // 0 means unbounded
-        int unset; // Default value in ParsedTemporal, invalid for field.
+        bool allowZero = false;
         // Form of the parsed text:
         qsizetype width; // min digits
         qsizetype maxDigits = 0; // <= 0 means unbounded
@@ -587,9 +587,7 @@ TemporalFieldMatcher::numericExtend(const PartialParse &base, QStringView text,
         if (config.maxValue > 0 && config.roundAfter < 0 && whole > unsigned(config.maxValue))
             continue;
 
-        // If calendar has a year zero, we need to allow 0 in (full) year fields (width >= 4).
-        bool forbidZero = config.unset == 0 && (config.width < 4 || !calendar.hasYearZero());
-        auto optvalue = [whole, forbidZero,
+        auto optvalue = [whole, forbidZero = !config.allowZero,
                          negate = parsed.sign == '-']() -> std::optional<int> {
             constexpr unsigned maxInt = std::numeric_limits<int>::max();
             if (negate && whole == 1 + maxInt)
@@ -866,26 +864,26 @@ TemporalFieldMatcher::continuations(const PartialParse &base, QStringView text,
         // QTime, QDateTime only support millisecond precision, so use 3 as roundAfter.
         // That's also maxDigits, unless RoundFraction => unlimited.
         matches = numericExtend(base, text, field.options,
-                                {millisTarget, base.results.millis >= 0, 999, -1, field.width,
+                                {millisTarget, base.results.millis >= 0, 999, true, field.width,
                                  field.options.testFlag(Flag::RoundFraction) ? 0 : 3, 3});
         break;
     case Cat::Second:
         matches = numericExtend(base, text, field.options,
-                                {secondTarget, base.results.second >= 0, 59, -1, field.width, 2});
+                                {secondTarget, base.results.second >= 0, 59, true, field.width, 2});
         break;
         // case Cat::MinuteFraction: break;
     case Cat::Minute:
         matches = numericExtend(base, text, field.options,
-                                {minuteTarget, base.results.minute >= 0, 59, -1, field.width, 2});
+                                {minuteTarget, base.results.minute >= 0, 59, true, field.width, 2});
         break;
         // case Cat::HourFraction: break;
     case Cat::HourMod12:
         matches = numericExtend(base, text, field.options,
-                                {hourMod12Target, base.hourMod12 > 0, 12, 0, field.width, 2});
+                                {hourMod12Target, base.hourMod12 > 0, 12, false, field.width, 2});
         break;
     case Cat::Hour:
         matches = numericExtend(base, text, field.options,
-                                {hourTarget, base.results.hour >= 0, 23, -1, field.width, 2});
+                                {hourTarget, base.results.hour >= 0, 23, true, field.width, 2});
         break;
     case Cat::PeriodInDay: // am/pm; LDML also has noon, midnight, "at night" and others.
         if (const auto match = dayPeriodPrefix(base, text, field.options); match.second >= 0) {
@@ -905,7 +903,7 @@ TemporalFieldMatcher::continuations(const PartialParse &base, QStringView text,
     case Cat::DayOfMonth: {
         const int maxDays = calendar.maximumDaysInMonth();
         matches = numericExtend(base, text, field.options,
-                                {dayOfMonthTarget, base.results.dayOfMonth > 0, maxDays, 0,
+                                {dayOfMonthTarget, base.results.dayOfMonth > 0, maxDays, false,
                                  field.width, maxDays < 10 ? 1 : maxDays < 100 ? 2 : 3});
     }
         break;
@@ -919,7 +917,7 @@ TemporalFieldMatcher::continuations(const PartialParse &base, QStringView text,
         if (matchesFlagWithin(field.options, Flag::Numeric, FieldGroup::FormMask)) {
             auto extend = numericExtend(base, text, field.options,
                                         {monthTarget, base.results.month > 0,
-                                         calendar.maximumMonthsInYear(), 0, field.width, 2});
+                                         calendar.maximumMonthsInYear(), false, field.width, 2});
             if (matches.empty())
                 matches = std::move(extend);
             else
@@ -931,11 +929,11 @@ TemporalFieldMatcher::continuations(const PartialParse &base, QStringView text,
     case Cat::YearWithinCentury:
         matches = numericExtend(base, text, field.options,
                                 {yearWithinCenturyTarget, base.yearWithinCentury >= 0,
-                                 99, -1, field.width, 2});
+                                 99, true, field.width, 2});
         break;
     case Cat::Year:
         matches = numericExtend(base, text, field.options,
-                                {yearTarget, bool(base.results.year), 0, 0,
+                                {yearTarget, bool(base.results.year), 0, calendar.hasYearZero(),
                                  field.width, -4, -1, calendar.isProleptic()});
         break;
         // case Cat::RelatedGregorianYear: break;
