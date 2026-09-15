@@ -4082,6 +4082,19 @@ auto QtPrivate::toFloat(QByteArrayView a) noexcept -> ParsedNumber<float>
     return {};
 }
 
+template <typename S>
+static S b64_to_encoded_size_saturated(S n)
+{
+    // calculate ⌈n / 3⌉ * 4, saturating when final result overflows
+    constexpr auto fail = (std::numeric_limits<S>::max)(); // causes allocations to fail
+    if (add_overflow(n, S{2}, &n))
+        return fail;
+    n /= 3;
+    if (mul_overflow(n, S{4}, &n))
+        return fail;
+    return n;
+}
+
 /*!
     \since 5.2
 
@@ -4105,7 +4118,7 @@ QByteArray QByteArray::toBase64(Base64Options options) const
 
     const qsizetype sz = size();
 
-    QByteArray tmp((sz + 2) / 3 * 4, Qt::Uninitialized);
+    QByteArray tmp(b64_to_encoded_size_saturated(sz), Qt::Uninitialized);
 
     qsizetype i = 0;
     char *out = tmp.data();
