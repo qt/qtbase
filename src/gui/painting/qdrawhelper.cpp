@@ -3969,11 +3969,30 @@ static void spanfill_from_first(QRasterBuffer *rasterBuffer, QPixelLayout::BPP b
 // -------------------- blend methods ---------------------
 
 #if QT_CONFIG(qtgui_threadpool)
-#define QT_THREAD_PARALLEL_FILLS(function) \
+// Handing a fill to the thread pool only pays off when the spans cover enough
+// pixels, and the limit is higher for solid fills than gradient/texture blends
+static constexpr int MinParallelSolidPixels = 1 << 17;
+static constexpr int MinParallelBlendPixels = 1 << 15;
+
+// Estimates whether the spans cover at least _limit_ pixels
+static inline bool qt_pixelCountAtLeast(int count, const QT_FT_Span *spans, int limit)
+{
+    constexpr int MaxProbeSpans = 32;
+    const int numProbeSpans = qMin(count, MaxProbeSpans);
+    qint64 numPixels = 0;
+    for (int i = 0; i < numProbeSpans; ++i)
+        numPixels += spans[i].len;
+    return numPixels * count >= qint64(limit) * numProbeSpans;
+}
+
+// qtGuiThreadPool() locks mutex, so only call it if the fill is worth splitting
+#define QT_THREAD_PARALLEL_FILLS(function, minPixels) \
     const int segments = (count + 32) / 64; \
-    QThreadPool *threadPool = QGuiApplicationPrivate::qtGuiThreadPool(); \
-    if (segments > 1 && qPixelLayouts[data->rasterBuffer->format].bpp >= QPixelLayout::BPP8 \
-             && threadPool && !threadPool->contains(QThread::currentThread())) { \
+    QThreadPool *threadPool = (segments > 1 \
+             && qPixelLayouts[data->rasterBuffer->format].bpp >= QPixelLayout::BPP8 \
+             && qt_pixelCountAtLeast(count, spans, minPixels)) \
+            ? QGuiApplicationPrivate::qtGuiThreadPool() : nullptr; \
+    if (threadPool && !threadPool->contains(QThread::currentThread())) { \
         QLatch latch(segments); \
         int c = 0; \
         for (int i = 0; i < segments; ++i) { \
@@ -3988,7 +4007,7 @@ static void spanfill_from_first(QRasterBuffer *rasterBuffer, QPixelLayout::BPP b
     } else \
         function(0, count)
 #else
-#define QT_THREAD_PARALLEL_FILLS(function) function(0, count)
+#define QT_THREAD_PARALLEL_FILLS(function, minPixels) function(0, count)
 #endif
 
 static void blend_color_generic(int count, const QT_FT_Span *spans, void *userData)
@@ -4022,7 +4041,7 @@ static void blend_color_generic(int count, const QT_FT_Span *spans, void *userDa
             }
         }
     };
-    QT_THREAD_PARALLEL_FILLS(function);
+    QT_THREAD_PARALLEL_FILLS(function, MinParallelSolidPixels);
 }
 
 static void blend_color_argb(int count, const QT_FT_Span *spans, void *userData)
@@ -4059,7 +4078,7 @@ static void blend_color_argb(int count, const QT_FT_Span *spans, void *userData)
             funcSolid(target, spans[c].len, color, spans[c].coverage);
         }
     };
-    QT_THREAD_PARALLEL_FILLS(function);
+    QT_THREAD_PARALLEL_FILLS(function, MinParallelSolidPixels);
 }
 
 static void blend_color_generic_rgb64(int count, const QT_FT_Span *spans, void *userData)
@@ -4100,7 +4119,7 @@ static void blend_color_generic_rgb64(int count, const QT_FT_Span *spans, void *
             }
         }
     };
-    QT_THREAD_PARALLEL_FILLS(function);
+    QT_THREAD_PARALLEL_FILLS(function, MinParallelSolidPixels);
 #else
     blend_color_generic(count, spans, userData);
 #endif
@@ -4146,7 +4165,7 @@ static void blend_color_generic_fp(int count, const QT_FT_Span *spans, void *use
             }
         }
     };
-    QT_THREAD_PARALLEL_FILLS(function);
+    QT_THREAD_PARALLEL_FILLS(function, MinParallelSolidPixels);
 #else
     blend_color_generic_rgb64(count, spans, userData);
 #endif
@@ -4206,7 +4225,7 @@ void handleSpans(int count, const QT_FT_Span *spans, const QSpanData *data, cons
             }
         }
     };
-    QT_THREAD_PARALLEL_FILLS(function);
+    QT_THREAD_PARALLEL_FILLS(function, MinParallelBlendPixels);
 }
 
 struct QBlendBase
@@ -4410,7 +4429,7 @@ static void blend_untransformed_generic(int count, const QT_FT_Span *spans, void
             }
         }
     };
-    QT_THREAD_PARALLEL_FILLS(function);
+    QT_THREAD_PARALLEL_FILLS(function, MinParallelBlendPixels);
 }
 
 #if QT_CONFIG(raster_64bit)
@@ -4468,7 +4487,7 @@ static void blend_untransformed_generic_rgb64(int count, const QT_FT_Span *spans
             }
         }
     };
-    QT_THREAD_PARALLEL_FILLS(function);
+    QT_THREAD_PARALLEL_FILLS(function, MinParallelBlendPixels);
 }
 #endif
 
@@ -4526,7 +4545,7 @@ static void blend_untransformed_generic_fp(int count, const QT_FT_Span *spans, v
             }
         }
     };
-    QT_THREAD_PARALLEL_FILLS(function);
+    QT_THREAD_PARALLEL_FILLS(function, MinParallelBlendPixels);
 }
 #endif
 
@@ -4573,7 +4592,7 @@ static void blend_untransformed_argb(int count, const QT_FT_Span *spans, void *u
             }
         }
     };
-    QT_THREAD_PARALLEL_FILLS(function);
+    QT_THREAD_PARALLEL_FILLS(function, MinParallelBlendPixels);
 }
 
 static inline quint16 interpolate_pixel_rgb16_255(quint16 x, quint8 a,
@@ -4681,7 +4700,7 @@ static void blend_untransformed_rgb565(int count, const QT_FT_Span *spans, void 
             }
         }
     };
-    QT_THREAD_PARALLEL_FILLS(function);
+    QT_THREAD_PARALLEL_FILLS(function, MinParallelBlendPixels);
 }
 
 static void blend_tiled_generic(int count, const QT_FT_Span *spans, void *userData)
@@ -4733,7 +4752,7 @@ static void blend_tiled_generic(int count, const QT_FT_Span *spans, void *userDa
             }
         }
     };
-    QT_THREAD_PARALLEL_FILLS(function);
+    QT_THREAD_PARALLEL_FILLS(function, MinParallelBlendPixels);
 }
 
 #if QT_CONFIG(raster_64bit)
@@ -4840,7 +4859,7 @@ static void blend_tiled_generic_rgb64(int count, const QT_FT_Span *spans, void *
             }
         }
     };
-    QT_THREAD_PARALLEL_FILLS(function);
+    QT_THREAD_PARALLEL_FILLS(function, MinParallelBlendPixels);
 }
 #endif
 
@@ -4899,7 +4918,7 @@ static void blend_tiled_generic_fp(int count, const QT_FT_Span *spans, void *use
             }
         }
     };
-    QT_THREAD_PARALLEL_FILLS(function);
+    QT_THREAD_PARALLEL_FILLS(function, MinParallelBlendPixels);
 }
 #endif
 
@@ -4953,7 +4972,7 @@ static void blend_tiled_argb(int count, const QT_FT_Span *spans, void *userData)
             }
         }
     };
-    QT_THREAD_PARALLEL_FILLS(function);
+    QT_THREAD_PARALLEL_FILLS(function, MinParallelBlendPixels);
 }
 
 static void blend_tiled_rgb565(int count, const QT_FT_Span *spans, void *userData)
@@ -5052,7 +5071,7 @@ static void blend_tiled_rgb565(int count, const QT_FT_Span *spans, void *userDat
             }
         }
     };
-    QT_THREAD_PARALLEL_FILLS(function);
+    QT_THREAD_PARALLEL_FILLS(function, MinParallelBlendPixels);
 }
 
 /* Image formats here are target formats */
