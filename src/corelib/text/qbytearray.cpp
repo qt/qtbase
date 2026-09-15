@@ -4888,7 +4888,10 @@ QByteArray QByteArray::toPercentEncoding(const QByteArray &exclude, const QByteA
         } else {
             if (!output) {
                 // detach now
-                result.resize(size() * 3); // worst case
+                size_type n = size();
+                if (mul_overflow(n, size_type{3}, &n)) // worst case: 3×
+                    n = (std::numeric_limits<size_type>::max)(); // will cause resize() to fail
+                result.resize(n);
                 output = result.data();
             }
             output[length++] = percent;
