@@ -1197,7 +1197,7 @@ void tst_QMenu::pushButtonPopulateOnAboutToShow()
     b.setMenu(buttonMenu);
     const QScreen *scr = QGuiApplication::screenAt(b.pos());
     b.show();
-    const QRect screen = scr->geometry();
+    const QRect screen = scr->availableGeometry();
 
     QRect desiredGeometry = b.geometry();
     desiredGeometry.moveTopLeft(QPoint(screen.x() + 10, screen.bottom() - b.height() - 5));
