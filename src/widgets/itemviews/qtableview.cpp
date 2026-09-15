@@ -1141,8 +1141,10 @@ int QTableViewPrivate::heightHintForIndex(const QModelIndex &index, int hint, QS
         option.rect.setWidth(q->columnWidth(index.column()));
         if (hasSpans()) {
             auto span = spans.spanAt(index.column(), index.row());
-            if (span && span->m_left == index.column() && span->m_top == index.row())
-                option.rect.setWidth(std::max(option.rect.width(), visualSpanRect(*span).width()));
+            if (span && span->m_left == index.column() && span->m_top == index.row()) {
+                option.rect.setWidth(std::max(option.rect.width(),
+                                              columnSpanWidth(span->m_left, span->width())));
+            }
         }
         // 1px less space when grid is shown (see drawCell)
         if (showGrid)
