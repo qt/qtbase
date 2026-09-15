@@ -1431,8 +1431,9 @@ static inline void toGlTextureFormat(QRhiTexture::Format format, const QRhiGles2
         *gltype = GL_UNSIGNED_SHORT;
         break;
     case QRhiTexture::R8:
-        *glintformat = GL_R8;
-        *glsizedintformat = *glintformat;
+        // GL_EXT_texture_rg on ES 2.0 only accepts unsized GL_RED here; same split as RGBA8 above.
+        *glintformat = caps.gles && caps.ctxMajor < 3 ? GL_RED : GL_R8;
+        *glsizedintformat = GL_R8;
         *glformat = GL_RED;
         *gltype = GL_UNSIGNED_BYTE;
         break;
@@ -1449,8 +1450,8 @@ static inline void toGlTextureFormat(QRhiTexture::Format format, const QRhiGles2
         *gltype = GL_UNSIGNED_BYTE;
         break;
     case QRhiTexture::RG8:
-        *glintformat = GL_RG8;
-        *glsizedintformat = *glintformat;
+        *glintformat = caps.gles && caps.ctxMajor < 3 ? GL_RG : GL_RG8;
+        *glsizedintformat = GL_RG8;
         *glformat = GL_RG;
         *gltype = GL_UNSIGNED_BYTE;
         break;
