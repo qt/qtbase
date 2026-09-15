@@ -199,6 +199,7 @@ protected:
     void leaveEvent(QEvent *) override;
     void hideEvent(QHideEvent *) override;
     void paintEvent(QPaintEvent *) override;
+    void resizeEvent(QResizeEvent *) override;
     void actionEvent(QActionEvent *) override;
     void timerEvent(QTimerEvent *) override;
     bool event(QEvent *) override;
