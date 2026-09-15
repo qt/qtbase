@@ -3587,10 +3587,21 @@ void QD3D12ShaderVisibleDescriptorHeap::destroyWithDeferredRelease(QD3D12Release
     heap.destroyWithDeferredRelease(releaseQueue);
 }
 
-static inline std::pair<int, int> mapBinding(int binding, const QShader::NativeResourceBindingMap &map)
+static inline std::pair<int, int> mapBinding(int binding, const QD3D12ShaderStageData *sd)
 {
-    if (map.isEmpty())
+    const QShader::NativeResourceBindingMap &map(sd->nativeResourceBindingMap);
+    if (map.isEmpty()) {
+        // An empty map normally means an old qsb that did not generate one,
+        // hence the 1:1 fallback. But the push constant register is only
+        // known from qsb versions that always generate the map, so for a
+        // stage with a push constant block an empty map really means the
+        // shader has no other resources. Falling back would put a uniform
+        // buffer at binding 0 on the register reserved for the push constant
+        // block, and the root signature would fail to build.
+        if (sd->pushConstantRegister >= 0)
+            return { -1, -1 };
         return { binding, binding }; // assume 1:1 mapping
+    }
 
     auto it = map.constFind(binding);
     if (it != map.cend())
@@ -3619,7 +3630,7 @@ void QD3D12ShaderResourceVisitor::visit()
             switch (bd->type) {
             case QRhiShaderResourceBinding::UniformBuffer:
             {
-                const int shaderRegister = mapBinding(bd->binding, sd->nativeResourceBindingMap).first;
+                const int shaderRegister = mapBinding(bd->binding, sd).first;
                 if (shaderRegister >= 0 && uniformBuffer)
                     uniformBuffer(sd->stage, bd->u.ubuf, shaderRegister, bd->binding);
             }
@@ -3627,8 +3638,8 @@ void QD3D12ShaderResourceVisitor::visit()
             case QRhiShaderResourceBinding::SampledTexture:
             {
                 Q_ASSERT(bd->u.stex.count > 0);
-                const int textureBaseShaderRegister = mapBinding(bd->binding, sd->nativeResourceBindingMap).first;
-                const int samplerBaseShaderRegister = mapBinding(bd->binding, sd->nativeResourceBindingMap).second;
+                const int textureBaseShaderRegister = mapBinding(bd->binding, sd).first;
+                const int samplerBaseShaderRegister = mapBinding(bd->binding, sd).second;
                 if (textureBaseShaderRegister >= 0 && textures)
                     textures(sd->stage, bd->u.stex.texSamplers, bd->u.stex.count, textureBaseShaderRegister);
                 if (samplerBaseShaderRegister >= 0 && samplers)
@@ -3638,7 +3649,7 @@ void QD3D12ShaderResourceVisitor::visit()
             case QRhiShaderResourceBinding::Texture:
             {
                 Q_ASSERT(bd->u.stex.count > 0);
-                const int baseShaderRegister = mapBinding(bd->binding, sd->nativeResourceBindingMap).first;
+                const int baseShaderRegister = mapBinding(bd->binding, sd).first;
                 if (baseShaderRegister >= 0 && textures)
                     textures(sd->stage, bd->u.stex.texSamplers, bd->u.stex.count, baseShaderRegister);
             }
@@ -3646,49 +3657,49 @@ void QD3D12ShaderResourceVisitor::visit()
             case QRhiShaderResourceBinding::Sampler:
             {
                 Q_ASSERT(bd->u.stex.count > 0);
-                const int baseShaderRegister = mapBinding(bd->binding, sd->nativeResourceBindingMap).first;
+                const int baseShaderRegister = mapBinding(bd->binding, sd).first;
                 if (baseShaderRegister >= 0 && samplers)
                     samplers(sd->stage, bd->u.stex.texSamplers, bd->u.stex.count, baseShaderRegister);
             }
                 break;
             case QRhiShaderResourceBinding::ImageLoad:
             {
-                const int shaderRegister = mapBinding(bd->binding, sd->nativeResourceBindingMap).first;
+                const int shaderRegister = mapBinding(bd->binding, sd).first;
                 if (shaderRegister >= 0 && storageImage)
                     storageImage(sd->stage, bd->u.simage, Load, shaderRegister);
             }
                 break;
             case QRhiShaderResourceBinding::ImageStore:
             {
-                const int shaderRegister = mapBinding(bd->binding, sd->nativeResourceBindingMap).first;
+                const int shaderRegister = mapBinding(bd->binding, sd).first;
                 if (shaderRegister >= 0 && storageImage)
                     storageImage(sd->stage, bd->u.simage, Store, shaderRegister);
             }
                 break;
             case QRhiShaderResourceBinding::ImageLoadStore:
             {
-                const int shaderRegister = mapBinding(bd->binding, sd->nativeResourceBindingMap).first;
+                const int shaderRegister = mapBinding(bd->binding, sd).first;
                 if (shaderRegister >= 0 && storageImage)
                     storageImage(sd->stage, bd->u.simage, LoadStore, shaderRegister);
             }
                 break;
             case QRhiShaderResourceBinding::BufferLoad:
             {
-                const int shaderRegister = mapBinding(bd->binding, sd->nativeResourceBindingMap).first;
+                const int shaderRegister = mapBinding(bd->binding, sd).first;
                 if (shaderRegister >= 0 && storageBuffer)
                     storageBuffer(sd->stage, bd->u.sbuf, Load, shaderRegister);
             }
                 break;
             case QRhiShaderResourceBinding::BufferStore:
             {
-                const int shaderRegister = mapBinding(bd->binding, sd->nativeResourceBindingMap).first;
+                const int shaderRegister = mapBinding(bd->binding, sd).first;
                 if (shaderRegister >= 0 && storageBuffer)
                     storageBuffer(sd->stage, bd->u.sbuf, Store, shaderRegister);
             }
                 break;
             case QRhiShaderResourceBinding::BufferLoadStore:
             {
-                const int shaderRegister = mapBinding(bd->binding, sd->nativeResourceBindingMap).first;
+                const int shaderRegister = mapBinding(bd->binding, sd).first;
                 if (shaderRegister >= 0 && storageBuffer)
                     storageBuffer(sd->stage, bd->u.sbuf, LoadStore, shaderRegister);
             }
