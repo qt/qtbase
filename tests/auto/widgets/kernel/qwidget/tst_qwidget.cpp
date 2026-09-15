@@ -13964,7 +13964,7 @@ void tst_QWidget::dragEnterLeaveSymmetry()
     // sees both a Leave and an Enter event
     QVERIFY(filter.hasLeft(&widget));
     QVERIFY(filter.hasEntered(&widget));
-    QVERIFY(filter.hasEntered(&widget));
+    QVERIFY(filter.hasEntered(&lineEdit));
     // both have the UnderMouse attribute set
     QVERIFY(lineEdit.underMouse());
     QVERIFY(widget.underMouse());
