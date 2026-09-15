@@ -76,6 +76,8 @@ private slots:
     void resourceUpdateBatchBufferCopyInvalid();
     void resourceUpdateBatchRGBATextureUpload_data();
     void resourceUpdateBatchRGBATextureUpload();
+    void resourceUpdateBatchR8TextureUpload_data();
+    void resourceUpdateBatchR8TextureUpload();
     void resourceUpdateBatchRGBATextureCopy_data();
     void resourceUpdateBatchRGBATextureCopy();
     void resourceUpdateBatchRGBATextureMip_data();
@@ -1760,6 +1762,57 @@ void tst_QRhi::resourceUpdateBatchRGBATextureUpload()
             QVERIFY(submitResourceUpdates(rhi.data(), batch));
         }
     }
+}
+
+void tst_QRhi::resourceUpdateBatchR8TextureUpload_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::resourceUpdateBatchR8TextureUpload()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing texture resource updates");
+
+    if (!rhi->isTextureFormatSupported(QRhiTexture::R8))
+        QSKIP("R8 texture format not supported on this backend");
+
+    const int WIDTH = 4;
+    const int HEIGHT = 4;
+    // A value distinct from both 0x00 and 0xFF, so a readback that picks the wrong channel (e.g.
+    // alpha, which is defined to read back as 1.0 == 0xFF for a texture format with no alpha
+    // channel) is unambiguously wrong, not accidentally right.
+    const char RED_VALUE = 0x40;
+
+    QScopedPointer<QRhiTexture> texture(rhi->newTexture(QRhiTexture::R8, QSize(WIDTH, HEIGHT), 1,
+                                                        QRhiTexture::UsedAsTransferSource));
+    QVERIFY(texture->create());
+
+    const QByteArray data(WIDTH * HEIGHT, RED_VALUE);
+    QRhiResourceUpdateBatch *batch = rhi->nextResourceUpdateBatch();
+    QRhiTextureSubresourceUploadDescription subresDesc(data.constData(), data.size());
+    batch->uploadTexture(texture.data(),
+                         QRhiTextureUploadDescription(QRhiTextureUploadEntry(0, 0, subresDesc)));
+
+    QRhiReadbackResult readResult;
+    bool readCompleted = false;
+    readResult.completed = [&readCompleted] { readCompleted = true; };
+    batch->readBackTexture(texture.data(), &readResult);
+
+    QVERIFY(submitResourceUpdates(rhi.data(), batch));
+    QVERIFY(readCompleted);
+    QCOMPARE(readResult.format, QRhiTexture::R8);
+    QCOMPARE(readResult.pixelSize, QSize(WIDTH, HEIGHT));
+
+    // the Null backend does not render so skip the verification for that
+    if (impl == QRhi::Null)
+        return;
+
+    QCOMPARE(readResult.data, data);
 }
 
 void tst_QRhi::resourceUpdateBatchRGBATextureCopy_data()

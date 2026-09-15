@@ -4262,7 +4262,10 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
                     f->glReadPixels(x, y, w, h, GL_RGBA, GL_UNSIGNED_BYTE, tmpBuf.data());
                     const quint8 *srcBase = reinterpret_cast<const quint8 *>(tmpBuf.constData());
                     quint8 *dstBase = reinterpret_cast<quint8 *>(result->data.data());
-                    const int componentIndex = isFeatureSupported(QRhi::RedOrAlpha8IsRed) ? 0 : 3;
+                    const int componentIndex = result->format == QRhiTexture::R8
+                            || isFeatureSupported(QRhi::RedOrAlpha8IsRed)
+                            ? 0
+                            : 3;
                     for (int y = 0; y < h; ++y) {
                         const quint8 *src = srcBase + y * w * 4;
                         quint8 *dst = dstBase + y * w;
