@@ -26,11 +26,11 @@ if(NOT __qt_version_base_impl_package_version)
         PROPERTY __qt_version_@QT_PACKAGE_NAME@_base_impl_package_version_cached
                  "${__qt_version_base_impl_package_version}")
 endif()
-
-# as small optimization run override only if requested version is not the qt
+# as small optimization run override only if requested version is greater the qt
 # global config version
-if(NOT "${${CMAKE_FIND_PACKAGE_NAME}_FIND_VERSION}" STREQUAL ""
-   AND NOT "${${CMAKE_FIND_PACKAGE_NAME}_FIND_VERSION}" STREQUAL
+if(NOT QT_NO_CONFIG_VERSION_OVERRIDE_FILES
+   AND NOT "${${CMAKE_FIND_PACKAGE_NAME}_FIND_VERSION}" STREQUAL ""
+   AND "${${CMAKE_FIND_PACKAGE_NAME}_FIND_VERSION}" VERSION_GREATER
        "${__qt_version_base_impl_package_version}")
 
     # This runs a loop for each component in find_package(Qt6 <version>
@@ -39,11 +39,11 @@ if(NOT "${${CMAKE_FIND_PACKAGE_NAME}_FIND_VERSION}" STREQUAL ""
 
     foreach(__qt_version_override_for_component
             ${${CMAKE_FIND_PACKAGE_NAME}_FIND_COMPONENTS})
+        set(__qt_version_overrides_found FALSE)
         set(__qt_version_override_directory
             "${CMAKE_CURRENT_LIST_DIR}/ConfigVersionOverrides/${__qt_version_override_for_component}"
         )
-        if(NOT QT_NO_CONFIG_VERSION_OVERRIDE_FILES
-           AND EXISTS "${__qt_version_override_directory}")
+        if(EXISTS "${__qt_version_override_directory}")
             # Cache list of version override files.
             get_directory_property(
                 __qt_version_override_file_list_globbed
@@ -80,7 +80,6 @@ if(NOT "${${CMAKE_FIND_PACKAGE_NAME}_FIND_VERSION}" STREQUAL ""
                 )
             endif()
 
-            set(__qt_version_overrides_found FALSE)
             if(NOT __qt_version_override_file_list)
                 message(
                     FATAL_ERROR
@@ -92,16 +91,21 @@ if(NOT "${${CMAKE_FIND_PACKAGE_NAME}_FIND_VERSION}" STREQUAL ""
                 set(__qt_version_before "${PACKAGE_VERSION}")
                 include("${__qt_version_override_file}" OPTIONAL
                         RESULT_VARIABLE __qt_version_override_file_included)
-                if(__qt_version_before AND NOT "${__qt_version_before}"
-                                           STREQUAL "${PACKAGE_VERSION}")
-                    message(
-                        FATAL_ERROR
-                            "The find_package call includes ${__qt_version_override_file} file which tries to override ${PACKAGE_FIND_NAME} with version ${PACKAGE_VERSION} for component ${__qt_version_override_for_component}, however version was set to ${__qt_version_before}. Please split the find_package call to find components separately."
-                    )
-                endif()
 
                 if(__qt_version_override_file_included)
                     set(__qt_version_overrides_found TRUE)
+                endif()
+
+                # the returned versions has to match, if not return base qt
+                # config version
+                if(__qt_version_before AND NOT "${__qt_version_before}"
+                                           STREQUAL "${PACKAGE_VERSION}")
+                    message(
+                        WARNING
+                            "The find_package call includes ${__qt_version_override_file} file which tries to override ${PACKAGE_FIND_NAME} with version ${PACKAGE_VERSION} for component ${__qt_version_override_for_component}, however version was set to ${__qt_version_before}. Please split the find_package call to find components separately."
+                    )
+                    set(__qt_version_overrides_found FALSE)
+                    break()
                 endif()
 
                 # Allow breaking early, which can be set by the including file.
@@ -110,28 +114,34 @@ if(NOT "${${CMAKE_FIND_PACKAGE_NAME}_FIND_VERSION}" STREQUAL ""
                 endif()
             endforeach()
 
-            # We shouldn't include the base impl file if we find overrides.
-            if(__qt_version_overrides_found)
-                set(__qt_version_should_include_base_impl_file FALSE)
-            endif()
-
             unset(__qt_version_override_file)
             unset(__qt_version_override_file_list)
             unset(__qt_version_override_file_list_globbed)
             unset(__qt_version_before)
             unset(__qt_version_override_break_early)
             unset(__qt_version_override_file_included)
-            unset(__qt_version_overrides_found)
             unset(__qt_version_override_glob_expression)
-        elseif(PACKAGE_VERSION
-               AND NOT "${__qt_version_base_impl_package_version}" STREQUAL
-                   "${PACKAGE_VERSION}")
-            message(
-                FATAL_ERROR
-                    "The find_package call tries to override ${PACKAGE_FIND_NAME} with version ${PACKAGE_VERSION} for component ${__qt_version_override_for_component}, however it is not allowed. Please split the find_package call to find components separately."
-            )
+        else()
+            # The version requested is greater that qt version config, therefore
+            # requested component should provide override file in case this qt
+            # version is supported, but it doesn't. Therefore, fail the
+            # find_package call simply by returning qt config version with the
+            # warning.
+            set(__qt_version_overrides_found FALSE)
         endif()
         unset(__qt_version_override_directory)
         unset(__qt_version_override_for_component)
+        if(NOT __qt_version_overrides_found)
+            # Make sure nothing is set as there can be multiple overload files
+            # to bail out
+            unset(PACKAGE_VERSION)
+            unset(PACKAGE_VERSION_COMPATIBLE)
+            unset(PACKAGE_VERSION_EXACT)
+            set(__qt_version_should_include_base_impl_file TRUE)
+            break()
+        else()
+            set(__qt_version_should_include_base_impl_file FALSE)
+        endif()
     endforeach()
+    unset(__qt_version_overrides_found)
 endif()
