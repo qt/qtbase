@@ -122,11 +122,19 @@ inline void drawPixel(QCosmeticStroker *stroker, int x, int y, int coverage)
     if (x < cl.x() || x > cl.right() || y < cl.y() || y > cl.bottom())
         return;
 
-    if (stroker->current_span > 0) {
-        const int lastx = stroker->spans[stroker->current_span-1].x + stroker->spans[stroker->current_span-1].len ;
-        const int lasty = stroker->spans[stroker->current_span-1].y;
+    const int cov = coverage * stroker->opacity >> 8;
 
-        if (stroker->current_span == QCosmeticStroker::NSPANS || y < lasty || (y == lasty && x < lastx)) {
+    if (stroker->current_span > 0) {
+        QT_FT_Span &last = stroker->spans[stroker->current_span - 1];
+        const int lastx = last.x + last.len;
+
+        // Extend the previous span instead of emitting one span per pixel
+        if (y == last.y && x == lastx && cov == last.coverage) {
+            ++last.len;
+            return;
+        }
+
+        if (stroker->current_span == QCosmeticStroker::NSPANS || y < last.y || (y == last.y && x < lastx)) {
             stroker->blend(stroker->current_span, stroker->spans, &stroker->state->penData);
             stroker->current_span = 0;
         }
@@ -135,7 +143,7 @@ inline void drawPixel(QCosmeticStroker *stroker, int x, int y, int coverage)
     stroker->spans[stroker->current_span].x = x;
     stroker->spans[stroker->current_span].len = 1;
     stroker->spans[stroker->current_span].y = y;
-    stroker->spans[stroker->current_span].coverage = coverage*stroker->opacity >> 8;
+    stroker->spans[stroker->current_span].coverage = cov;
     ++stroker->current_span;
 }
 
