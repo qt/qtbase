@@ -1453,28 +1453,40 @@ static bool isSystemLibrary(const QString &libraryPath)
     return libraryPath.startsWith(systemRoot, Qt::CaseInsensitive);
 }
 
+// QDir name filters matching the MinGW runtime libraries. The list is empty for platforms that
+// have no MinGW runtime; callers must check for that, because an empty name filter list makes
+// QDir list every file.
 static QStringList minGWRuntimeFilters(Platform platform)
 {
+    QStringList stems;
     switch (platform) {
     case WindowsDesktopMinGW:
-        return { "*gcc_"_L1, "*stdc++"_L1, "*winpthread"_L1 };
+        stems = { "*gcc_"_L1, "*stdc++"_L1, "*winpthread"_L1 };
+        break;
     case WindowsDesktopClangMinGW:
-        return { "*unwind"_L1, "*c++"_L1 };
+        stems = { "*unwind"_L1, "*c++"_L1 };
+        break;
     default:
         return {};
     }
+
+    const QString suffix = u'*' + sharedLibrarySuffix();
+    QStringList result;
+    result.reserve(stems.size());
+    for (const QString &stem : std::as_const(stems))
+        result.append(stem + suffix);
+    return result;
 }
 
-static QStringList findMinGWRuntimePaths(const QString &qtBinDir, Platform platform, const QStringList &runtimeFilters)
+static QStringList findMinGWRuntimePaths(const QString &qtBinDir, Platform platform)
 {
     //MinGW: Add runtime libraries. Check first for the Qt binary directory, and default to path if nothing is found.
+    const QStringList filters = minGWRuntimeFilters(platform);
+    if (filters.isEmpty())
+        return {};
+
     QStringList result;
     const bool isClang = platform == WindowsDesktopClangMinGW;
-    QStringList filters;
-    const QString suffix = u'*' + sharedLibrarySuffix();
-    for (const auto &minGWRuntime : runtimeFilters)
-        filters.append(minGWRuntime + suffix);
-
     QFileInfoList dlls = QDir(qtBinDir).entryInfoList(filters, QDir::Files);
     if (dlls.isEmpty()) {
         std::wcerr << "Warning: Runtime libraries not found in Qt binary folder, defaulting to looking in path\n";
@@ -1499,7 +1511,7 @@ static QStringList compilerRunTimeLibs(const QString &qtBinDir, Platform platfor
     switch (platform) {
     case WindowsDesktopMinGW:
     case WindowsDesktopClangMinGW:
-        result.append(findMinGWRuntimePaths(qtBinDir, platform, minGWRuntimeFilters(platform)));
+        result.append(findMinGWRuntimePaths(qtBinDir, platform));
         break;
 #ifdef Q_OS_WIN
     case WindowsDesktopMsvcIntel:
@@ -1554,13 +1566,9 @@ static QStringList compilerRunTimeLibs(const QString &qtBinDir, Platform platfor
 // --compiler-runtime, so they must stay out of the third-party library scan.
 static QStringList compilerRunTimeLibsInQtBinDir(const QString &qtBinDir, Platform platform)
 {
-    const QStringList runtimeFilters = minGWRuntimeFilters(platform);
-    if (runtimeFilters.isEmpty())
+    const QStringList filters = minGWRuntimeFilters(platform);
+    if (filters.isEmpty())
         return {};
-    QStringList filters;
-    const QString suffix = u'*' + sharedLibrarySuffix();
-    for (const QString &runtimeFilter : runtimeFilters)
-        filters.append(runtimeFilter + suffix);
     return QDir(qtBinDir).entryList(filters, QDir::Files);
 }
 
