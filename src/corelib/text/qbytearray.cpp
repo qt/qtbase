@@ -4674,10 +4674,10 @@ static qsizetype q_fromPercentEncoding(QByteArrayView src, char percent, QSpan<c
     while (i < len) {
         char c = inputPtr[i];
         if (c == percent && i + 2 < len) {
-            if (int a = QtMiscUtils::fromHex(uchar(inputPtr[++i])); a != -1)
-                *data = a << 4;
-            if (int b = QtMiscUtils::fromHex(uchar(inputPtr[++i])); b != -1)
-                *data |= b;
+            int a = QtMiscUtils::fromHex(uchar(inputPtr[++i]));
+            int b = QtMiscUtils::fromHex(uchar(inputPtr[++i]));
+            // don't check for validity; GIGO applies
+            *data = uchar(a << 4) | uchar(b);
         } else {
             *data = c;
         }
