@@ -8,7 +8,7 @@
 
 QT_BEGIN_NAMESPACE
 
-using namespace QtWaylandClient;
+namespace QtWaylandClient {
 
 Cutouts::Cutouts(::xx_cutouts_v1 *object, QWaylandWindow *window)
     : QtWayland::xx_cutouts_v1(object)
@@ -68,5 +68,7 @@ void Cutouts::xx_cutouts_v1_configure()
         m_unhandled.clear();
     }
 }
+
+} // namespace QtWaylandClient
 
 QT_END_NAMESPACE
