@@ -24,6 +24,7 @@ qt_generate_deploy_app_script(
     [NO_TRANSLATIONS]
     [NO_COMPILER_RUNTIME]
     [NO_UNSUPPORTED_PLATFORM_ERROR]
+    [NO_APP_STORE_COMPLIANCE]                     # since Qt 6.13
     [NO_PLUGINS]                                  # since Qt 6.10
     [EXCLUDE_PLUGIN_TYPES type_or_target...]      # since Qt 6.10
     [INCLUDE_PLUGIN_TYPES type_or_target...]      # since Qt 6.10
@@ -79,6 +80,10 @@ customized way.
 
 For Windows desktop applications, the required runtime files for the compiler
 are also installed by default. To prevent this, specify \c{NO_COMPILER_RUNTIME}.
+
+For macOS app bundles, only Qt plugins and Qt libraries that comply with
+Apple's app store requirements are deployed by default. Since Qt 6.13, the
+\c{NO_APP_STORE_COMPLIANCE} option can be given to disable that constraint.
 
 Since Qt 6.7, you can use \c{DEPLOY_TOOL_OPTIONS} to pass additional options to
 the underlying deployment tool. This only has an effect if the underlying

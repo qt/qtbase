@@ -4150,6 +4150,7 @@ function(qt6_generate_deploy_app_script)
     # package). We would add an EXECUTABLE keyword for that, which would be
     # mutually exclusive with the TARGET keyword.
     set(no_value_options
+        NO_APP_STORE_COMPLIANCE
         NO_PLUGINS
         NO_TRANSLATIONS
         NO_COMPILER_RUNTIME
@@ -4215,6 +4216,9 @@ function(qt6_generate_deploy_app_script)
     )
 
     set(common_deploy_args "")
+    if(arg_NO_APP_STORE_COMPLIANCE)
+        string(APPEND common_deploy_args "    NO_APP_STORE_COMPLIANCE\n")
+    endif()
     if(arg_NO_PLUGINS)
         string(APPEND common_deploy_args "    NO_PLUGINS\n")
     endif()
