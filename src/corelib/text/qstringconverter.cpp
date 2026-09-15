@@ -2568,7 +2568,7 @@ QStringConverter::encodingForData(QByteArrayView data, char16_t expectedFirstCha
     return std::nullopt;
 }
 
-static QByteArray parseHtmlMetaForEncoding(QByteArrayView data)
+QByteArray qParseHtmlMetaForEncoding(QByteArrayView data)
 {
     static constexpr auto metaSearcher = qMakeStaticByteArrayMatcher("meta ");
     static constexpr auto charsetSearcher = qMakeStaticByteArrayMatcher("charset=");
@@ -2620,7 +2620,7 @@ std::optional<QStringConverter::Encoding> QStringConverter::encodingForHtml(QByt
         // trust the initial BOM
         return encoding;
 
-    QByteArray encodingTag = parseHtmlMetaForEncoding(data);
+    const QByteArray encodingTag = qParseHtmlMetaForEncoding(data);
     if (!encodingTag.isEmpty())
         return encodingForName(encodingTag);
 
@@ -2901,7 +2901,7 @@ QStringDecoder QStringDecoder::decoderForHtml(QByteArrayView data)
         // trust the initial BOM
         return QStringDecoder(encoding.value());
 
-    QByteArray encodingTag = parseHtmlMetaForEncoding(data);
+    const QByteArray encodingTag = qParseHtmlMetaForEncoding(data);
     if (!encodingTag.isEmpty())
         return QStringDecoder(encodingTag);
 
