@@ -2708,84 +2708,87 @@ void tst_QByteArray::repeatedSignature() const
 
 void tst_QByteArray::repeated() const
 {
+    using S = QByteArray::size_type;
     QFETCH(QByteArray, string);
     QFETCH(QByteArray, expected);
-    QFETCH(int, count);
+    QFETCH(const S, count);
 
     QCOMPARE(string.repeated(count), expected);
 }
 
 void tst_QByteArray::repeated_data() const
 {
+    using S = QByteArray::size_type;
     QTest::addColumn<QByteArray>("string" );
     QTest::addColumn<QByteArray>("expected" );
-    QTest::addColumn<int>("count" );
+    QTest::addColumn<S>("count" );
 
     /* Empty strings. */
     QTest::newRow("data1")
         << QByteArray()
         << QByteArray()
-        << 0;
+        << S{0};
 
     QTest::newRow("data2")
         << QByteArray()
         << QByteArray()
-        << -1004;
+        << S{-1004};
 
     QTest::newRow("data3")
         << QByteArray()
         << QByteArray()
-        << 1;
+        << S{1};
 
     QTest::newRow("data4")
         << QByteArray()
         << QByteArray()
-        << 5;
+        << S{5};
 
     /* On simple string. */
     QTest::newRow("data5")
         << QByteArray("abc")
         << QByteArray()
-        << -1004;
+        << S{-1004};
 
     QTest::newRow("data6")
         << QByteArray("abc")
         << QByteArray()
-        << -1;
+        << S{-1};
 
     QTest::newRow("data7")
         << QByteArray("abc")
         << QByteArray()
-        << 0;
+        << S{0};
 
     QTest::newRow("data8")
         << QByteArray("abc")
         << QByteArray("abc")
-        << 1;
+        << S{1};
 
     QTest::newRow("data9")
         << QByteArray(("abc"))
         << QByteArray(("abcabc"))
-        << 2;
+        << S{2};
 
     QTest::newRow("data10")
         << QByteArray(("abc"))
         << QByteArray(("abcabcabc"))
-        << 3;
+        << S{3};
 
     QTest::newRow("data11")
         << QByteArray(("abc"))
         << QByteArray(("abcabcabcabc"))
-        << 4;
+        << S{4};
 
     QTest::newRow("static not null terminated")
         << QByteArray(staticNotNullTerminated)
         << QByteArray("datadatadatadata")
-        << 4;
+        << S{4};
+
     QTest::newRow("static standard")
         << QByteArray(staticStandard)
         << QByteArray("datadatadatadata")
-        << 4;
+        << S{4};
 }
 
 void tst_QByteArray::byteRefDetaching() const
