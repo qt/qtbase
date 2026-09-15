@@ -2711,9 +2711,16 @@ void tst_QByteArray::repeated() const
     using S = QByteArray::size_type;
     QFETCH(QByteArray, string);
     QFETCH(QByteArray, expected);
+    QFETCH(const bool, throws);
     QFETCH(const S, count);
 
-    QCOMPARE(string.repeated(count), expected);
+    auto test = [&] {
+        QCOMPARE(string.repeated(count), expected);
+    };
+    if (throws)
+        QVERIFY_THROWS_EXCEPTION(std::bad_alloc, test());
+    else
+        test();
 }
 
 void tst_QByteArray::repeated_data() const
@@ -2721,74 +2728,98 @@ void tst_QByteArray::repeated_data() const
     using S = QByteArray::size_type;
     QTest::addColumn<QByteArray>("string" );
     QTest::addColumn<QByteArray>("expected" );
+    QTest::addColumn<bool>("throws");
     QTest::addColumn<S>("count" );
+
+    constexpr bool DoesNotThrow = false;
+    constexpr bool Throws = true;
 
     /* Empty strings. */
     QTest::newRow("data1")
         << QByteArray()
         << QByteArray()
+        << DoesNotThrow
         << S{0};
 
     QTest::newRow("data2")
         << QByteArray()
         << QByteArray()
+        << DoesNotThrow
         << S{-1004};
 
     QTest::newRow("data3")
         << QByteArray()
         << QByteArray()
+        << DoesNotThrow
         << S{1};
 
     QTest::newRow("data4")
         << QByteArray()
         << QByteArray()
+        << DoesNotThrow
         << S{5};
 
     /* On simple string. */
     QTest::newRow("data5")
         << QByteArray("abc")
         << QByteArray()
+        << DoesNotThrow
         << S{-1004};
 
     QTest::newRow("data6")
         << QByteArray("abc")
         << QByteArray()
+        << DoesNotThrow
         << S{-1};
 
     QTest::newRow("data7")
         << QByteArray("abc")
         << QByteArray()
+        << DoesNotThrow
         << S{0};
 
     QTest::newRow("data8")
         << QByteArray("abc")
         << QByteArray("abc")
+        << DoesNotThrow
         << S{1};
 
     QTest::newRow("data9")
         << QByteArray(("abc"))
         << QByteArray(("abcabc"))
+        << DoesNotThrow
         << S{2};
 
     QTest::newRow("data10")
         << QByteArray(("abc"))
         << QByteArray(("abcabcabc"))
+        << DoesNotThrow
         << S{3};
 
     QTest::newRow("data11")
         << QByteArray(("abc"))
         << QByteArray(("abcabcabcabc"))
+        << DoesNotThrow
         << S{4};
 
     QTest::newRow("static not null terminated")
         << QByteArray(staticNotNullTerminated)
         << QByteArray("datadatadatadata")
+        << DoesNotThrow
         << S{4};
 
     QTest::newRow("static standard")
         << QByteArray(staticStandard)
         << QByteArray("datadatadatadata")
+        << DoesNotThrow
         << S{4};
+
+    // size() * times doesn't overflow, but can't alloc this much memory:
+    QTest::newRow("oversized-alloc")
+        << QByteArray(2, 'a')
+        << QByteArray() // not checked
+        << Throws
+        << (std::numeric_limits<S>::max)() / 2;
 }
 
 void tst_QByteArray::byteRefDetaching() const

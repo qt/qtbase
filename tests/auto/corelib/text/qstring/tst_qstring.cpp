@@ -8742,9 +8742,16 @@ void tst_QString::repeated() const
     using S = QString::size_type;
     QFETCH(QString, string);
     QFETCH(QString, expected);
+    QFETCH(const bool, throws);
     QFETCH(const S, count);
 
-    QCOMPARE(string.repeated(count), expected);
+    auto test = [&] {
+        QCOMPARE(string.repeated(count), expected);
+    };
+    if (throws)
+        QVERIFY_THROWS_EXCEPTION(std::bad_alloc, test());
+    else
+        test();
 }
 
 void tst_QString::repeated_data() const
@@ -8752,64 +8759,86 @@ void tst_QString::repeated_data() const
     using S = QString::size_type;
     QTest::addColumn<QString>("string" );
     QTest::addColumn<QString>("expected" );
+    QTest::addColumn<bool>("throws");
     QTest::addColumn<S>("count" );
+
+    constexpr bool DoesNotThrow = false;
+    constexpr bool Throws = true;
 
     /* Empty strings. */
     QTest::newRow("data1")
         << QString()
         << QString()
+        << DoesNotThrow
         << S{0};
 
     QTest::newRow("data2")
         << QString()
         << QString()
+        << DoesNotThrow
         << S{-1004};
 
     QTest::newRow("data3")
         << QString()
         << QString()
+        << DoesNotThrow
         << S{1};
 
     QTest::newRow("data4")
         << QString()
         << QString()
+        << DoesNotThrow
         << S{5};
 
     /* On simple string. */
     QTest::newRow("data5")
         << QString(QLatin1String("abc"))
         << QString()
+        << DoesNotThrow
         << S{-1004};
 
     QTest::newRow("data6")
         << QString(QLatin1String("abc"))
         << QString()
+        << DoesNotThrow
         << S{-1};
 
     QTest::newRow("data7")
         << QString(QLatin1String("abc"))
         << QString()
+        << DoesNotThrow
         << S{0};
 
     QTest::newRow("data8")
         << QString(QLatin1String("abc"))
         << QString(QLatin1String("abc"))
+        << DoesNotThrow
         << S{1};
 
     QTest::newRow("data9")
         << QString(QLatin1String("abc"))
         << QString(QLatin1String("abcabc"))
+        << DoesNotThrow
         << S{2};
 
     QTest::newRow("data10")
         << QString(QLatin1String("abc"))
         << QString(QLatin1String("abcabcabc"))
+        << DoesNotThrow
         << S{3};
 
     QTest::newRow("data11")
         << QString(QLatin1String("abc"))
         << QString(QLatin1String("abcabcabcabc"))
+        << DoesNotThrow
         << S{4};
+
+    // size() * times doesn't overflow, but can't alloc this much memory
+    QTest::newRow("oversized-alloc")
+        << QString(2, u'a')
+        << QString() // not checked
+        << Throws
+        << (std::numeric_limits<S>::max)() / 4;
 }
 
 void tst_QString::arg_locale()
