@@ -667,7 +667,7 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
         QVarLengthArray<QByteArray, 4> debugMarkerData;
         QVarLengthArray<VkImageMemoryBarrier, 8> imageBarrier;
         QVarLengthArray<VkBufferMemoryBarrier, 8> bufferBarrier;
-        QVarLengthArray<quint32, 64> pushConstantData;
+        QVarLengthArray<char, 256> pushConstantData;
     } pools;
 
     friend class QRhiVulkan;

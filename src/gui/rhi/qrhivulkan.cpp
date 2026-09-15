@@ -6782,8 +6782,7 @@ void QRhiVulkan::setPushConstants(QRhiCommandBuffer *cb, quint32 offset, quint32
         df->vkCmdPushConstants(cbD->activeSecondaryCbStack.last(), layout, stages, offset, size, data);
     } else {
         const int dataIndex = cbD->pools.pushConstantData.size();
-        cbD->pools.pushConstantData.resize(dataIndex + int((size + 3) / 4));
-        memcpy(cbD->pools.pushConstantData.data() + dataIndex, data, size);
+        cbD->pools.pushConstantData.append(static_cast<const char *>(data), size);
         QVkCommandBuffer::Command &cmd(cbD->commands.get());
         cmd.cmd = QVkCommandBuffer::Command::SetPushConstants;
         cmd.args.setPushConstants.layout = layout;

@@ -1434,8 +1434,7 @@ void QRhiD3D11::setPushConstants(QRhiCommandBuffer *cb, quint32 offset, quint32 
     memcpy(cbD->pushConstantData.data() + offset, data, size);
 
     const quint32 dataOffset = quint32(cbD->pushConstantPool.size());
-    cbD->pushConstantPool.resize(int(dataOffset + total));
-    memcpy(cbD->pushConstantPool.data() + dataOffset, cbD->pushConstantData.constData(), total);
+    cbD->pushConstantPool.append(cbD->pushConstantData.constData(), total);
 
     QD3D11CommandBuffer::Command &cmd(cbD->commands.get());
     cmd.cmd = QD3D11CommandBuffer::Command::SetPushConstants;
