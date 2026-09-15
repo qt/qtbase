@@ -588,6 +588,7 @@ QOhosView::QOhosView(QWindow *ownerWindow, QSharedPointer<QNativeNode> nativeNod
 
     m_nativeNode->setNodeAreaChangeHandler(
         [this](auto nodeAreaChangeEvent) {
+            m_nodeLaidOut = true;
             Q_EMIT nodeAreaChanged(nodeAreaChangeEvent);
         });
 
@@ -1689,6 +1690,11 @@ void QOhosView::handleWindowFlagsChange(
 QArkUi::QQtEmbeddedWindowNode::NodeAreaInfo QOhosView::nodeAreaInfo() const
 {
     return m_nativeNode->nodeAreaInfo();
+}
+
+bool QOhosView::isNodeLaidOut() const
+{
+    return m_nodeLaidOut;
 }
 
 bool QOhosView::WindowMinMaxCloseButtonsState::operator==(const WindowMinMaxCloseButtonsState &other) const

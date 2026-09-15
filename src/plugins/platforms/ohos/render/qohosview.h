@@ -139,6 +139,7 @@ public:
         Qt::WindowFlags previousWindowFlags, Qt::WindowFlags currentWindowFlags);
     void handlePaletteChange();
     QArkUi::QQtEmbeddedWindowNode::NodeAreaInfo nodeAreaInfo() const;
+    bool isNodeLaidOut() const;
 
     void showImmediate();
     void hide();
@@ -282,6 +283,12 @@ private:
     QPointer<QWindow> m_ownerWindow;
     std::shared_ptr<QOhosWindowProxy> m_ohosWindowProxy;
     QSharedPointer<QNativeNode> m_nativeNode;
+    // True once the node has reported its first area through the
+    // area-change handler. Before that nodeAreaInfo() returns an empty
+    // 0x0 rect, so callers must not treat it as geometry. The node lives
+    // for the whole view (reset only in the destructor), so this is
+    // never cleared.
+    bool m_nodeLaidOut = false;
     SystemUpdateData m_updateData;
     bool m_updatePending;
     std::function<QOhosWindowProxy::AvoidArea(QOhosWindowProxy::AvoidAreaType)> m_avoidAreasProvider;
