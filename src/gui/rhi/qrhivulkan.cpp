@@ -2772,6 +2772,9 @@ QRhi::FrameOpResult QRhiVulkan::beginFrame(QRhiSwapChain *swapChain, QRhi::Begin
     QVkSwapChain::FrameResources &frame(swapChainD->frameRes[frameResIndex]);
 
     inst->handle()->beginFrame(swapChainD->window);
+    auto instEndFrameOnErrorGuard = qScopeGuard([this, swapChainD] {
+        inst->handle()->endFrame(swapChainD->window);
+    });
 
     // Make sure the previous commands for the same frame slot have finished.
     //
@@ -2871,6 +2874,7 @@ QRhi::FrameOpResult QRhiVulkan::beginFrame(QRhiSwapChain *swapChain, QRhi::Begin
         }
     }
 
+    instEndFrameOnErrorGuard.dismiss();
     return QRhi::FrameOpSuccess;
 }
 
