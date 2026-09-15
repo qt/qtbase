@@ -4551,11 +4551,19 @@ QByteArray::FromBase64Result QByteArray::fromBase64Encoding(QByteArray &&base64,
     return fromBase64Encoding(base64, options);
 }
 
+template <typename S>
+static S b64_to_decoded_size(S n)
+{
+    Q_ASSERT(n >= 0);
+    // Calculate n * 3 / 4 w/o overflow, as ¾ = 1 - ¼, taking rounding into account:
+    //   floor(3 * n /4) == n - ceil(n / 4) == n - (n / 4 + (n % 4 ? 1 : 0))
+    return n - (n / 4 + bool(n % 4));
+}
 
 QByteArray::FromBase64Result QByteArray::fromBase64Encoding(const QByteArray &base64, Base64Options options)
 {
     const auto base64Size = base64.size();
-    QByteArray result((base64Size * 3) / 4, Qt::Uninitialized);
+    QByteArray result(b64_to_decoded_size(base64Size), Qt::Uninitialized);
     const auto base64result = fromBase64_helper(base64.data(),
                                                 base64Size,
                                                 const_cast<char *>(result.constData()),
