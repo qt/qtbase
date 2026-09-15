@@ -317,7 +317,9 @@ class TemporalFieldMatcher
         // If unbounded, beyond max(width, roundAfter, -maxDigits) prefer fewer digits to more.
         qsizetype roundAfter = -1; // >= 0: is fractional part: round to this many digits
         // (Values with fewer than roundAfter digits will also be *=10'd up to match.)
+        // Special cases for year:
         bool allowSign = false;
+        bool allowNegative = false;
     };
     // For use as FieldConfig::target:
     static int &millisTarget(PartialParse &grow) { return grow.results.millis; }
@@ -549,6 +551,8 @@ TemporalFieldMatcher::numericExtend(const PartialParse &base, QStringView text,
 
     const auto parsed = parseDigitSequence(text, base.results.endIndex + leadingSpace,
                                            locale, config.allowSign);
+    if (parsed.sign == '-' && !config.allowNegative)
+        return matches;
     const bool zeroPad = flags.testFlag(Flag::ZeroPad);
     // If !zeroPad, we allow < config.width but flag with Narrow in wanton fields.
     const int width = zeroPad || spacePad ? qMax(1, config.width - leadingSpace) : 1;
@@ -934,7 +938,7 @@ TemporalFieldMatcher::continuations(const PartialParse &base, QStringView text,
     case Cat::Year:
         matches = numericExtend(base, text, field.options,
                                 {yearTarget, bool(base.results.year), 0, calendar.hasYearZero(),
-                                 field.width, -4, -1, calendar.isProleptic()});
+                                 field.width, -4, -1, true, calendar.isProleptic()});
         break;
         // case Cat::RelatedGregorianYear: break;
         // case Cat::Century: break;
