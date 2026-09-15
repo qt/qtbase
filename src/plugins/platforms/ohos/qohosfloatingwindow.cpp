@@ -90,7 +90,6 @@ void QOhosFloatingWindow::setVisible(bool visible)
         m_view->hide();
     else
         m_view->showImmediate();
-    startAsyncWaitForNodeResizeIfNeeded();
 }
 
 WId QOhosFloatingWindow::winId() const
@@ -158,7 +157,8 @@ void QOhosFloatingWindow::initialize()
     QObject::connect(
         m_view.get(), &QOhosView::nodeAreaChanged, m_view.get(),
         [this](QArkUi::QQtEmbeddedWindowNode::NodeAreaInfo event) {
-            handleNodeResizeEvent(event);
+            if (m_view->viewType() == QOhosView::ViewType::EmbeddedWindow)
+                handleNodeResizeEvent(event);
         });
 
     QObject::connect(
@@ -448,12 +448,8 @@ void QOhosFloatingWindow::handleSurfaceStatusChanged(const std::optional<QSize> 
 {
     m_optLastSurfaceSize = optSurfaceSize;
     bool hasSurface = m_view->surfaceOrNull() != nullptr;
-    if (m_view->viewType() == QOhosView::ViewType::EmbeddedWindow) {
+    if (m_view->viewType() == QOhosView::ViewType::EmbeddedWindow)
         setExposedFromOhos(hasSurface);
-    }
-
-    if (hasSurface)
-        startAsyncWaitForNodeResizeIfNeeded();
 }
 
 void QOhosFloatingWindow::handleWindowDisplayIdChanged(QOhosDisplayInfo::JsDisplayId displayId)
@@ -496,8 +492,12 @@ bool QOhosFloatingWindow::windowEvent(QEvent *event)
     if (event->type() == QEvent::Timer) {
         auto *timerEvent = static_cast<QTimerEvent *>(event);
         if (m_view && timerEvent->timerId() == m_geometryChangeTimer.timerId()) {
-            auto syntheticEvent = m_view->nodeAreaInfo();
-            handleNodeResizeEvent(syntheticEvent);
+            // nodeAreaInfo() is only valid once the node has reported its first
+            // area. Until then do nothing: m_geometryChangeTimer is a repeating
+            // timer, so it fires again and re-checks. handleNodeResizeEvent()
+            // stops it once a valid area has been applied.
+            if (m_view->isNodeLaidOut())
+                handleNodeResizeEvent(m_view->nodeAreaInfo());
         }
     }
 
@@ -523,9 +523,10 @@ void QOhosFloatingWindow::handleNodeResizeEvent(const QArkUi::QQtEmbeddedWindowN
     if (Q_UNLIKELY(!m_view))
         return;
 
-    if (m_view->viewType() != QOhosView::ViewType::EmbeddedWindow)
-        setWindowGeometryFromOhos(
-            QRect(areaChangeEvent.globalRelativeOffsetPixels, areaChangeEvent.screenGeometryPixels.size()));
+    const QPoint pos = m_view->viewType() == QOhosView::ViewType::EmbeddedWindow
+        ? areaChangeEvent.parentRelativeOffsetPixels
+        : areaChangeEvent.globalRelativeOffsetPixels;
+    setWindowGeometryFromOhos(QRect(pos, areaChangeEvent.screenGeometryPixels.size()));
 
     updateSafeAreaMargins();
 }
