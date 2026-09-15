@@ -449,6 +449,14 @@ function(_qt_internal_generic_deployqt)
         message(FATAL_ERROR "Unparsed arguments: ${arg_UNPARSED_ARGUMENTS}")
     endif()
 
+    # These have no sensible default here. The caller knows where the libraries and plugins
+    # belong, and it is not always QT_DEPLOY_LIB_DIR and QT_DEPLOY_PLUGINS_DIR.
+    foreach(required_arg IN ITEMS LIB_DIR PLUGINS_DIR)
+        if("${arg_${required_arg}}" STREQUAL "")
+            message(FATAL_ERROR "${required_arg} must be specified")
+        endif()
+    endforeach()
+
     if(arg_VERBOSE OR __QT_DEPLOY_VERBOSE)
         set(verbose TRUE)
     endif()
@@ -593,7 +601,7 @@ function(_qt_internal_generic_deployqt)
         if(__QT_DEPLOY_MUST_ADJUST_PLUGINS_RPATH)
             get_filename_component(file_name ${file_path} NAME)
             file(RELATIVE_PATH rel_lib_dir "${destdir_path}"
-                "${QT_DEPLOY_PREFIX}/${QT_DEPLOY_LIB_DIR}")
+                "${QT_DEPLOY_PREFIX}/${arg_LIB_DIR}")
             _qt_internal_set_rpath(
                 FILE "${destdir_path}/${file_name}"
                 NEW_RPATH "${rpath_origin}/${rel_lib_dir}"
