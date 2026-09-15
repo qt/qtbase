@@ -1669,6 +1669,13 @@ void tst_QString::asprintf()
         QCOMPARE(QString::asprintf("%td", -sbig), QString::fromLatin1("-4294967296"));
     }
 
+    {
+        const intmax_t big = (intmax_t{1} << (24 + sizeof(intmax_t))) + 42; // doesn't fit into a 32-bit long
+        QCOMPARE(QString::asprintf("%jd",     big),       "4294967338"_L1);
+        QCOMPARE(QString::asprintf("%jd %d",  big, 7),    "4294967338 7"_L1);
+        QCOMPARE(QString::asprintf("%jd %jd", big, -big), "4294967338 -4294967338"_L1);
+    }
+
     int i = 6;
     long l = -2;
     float f = 4.023f;
