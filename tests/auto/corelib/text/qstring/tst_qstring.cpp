@@ -8724,75 +8724,77 @@ void tst_QString::repeatedSignature() const
 
 void tst_QString::repeated() const
 {
+    using S = QString::size_type;
     QFETCH(QString, string);
     QFETCH(QString, expected);
-    QFETCH(int, count);
+    QFETCH(const S, count);
 
     QCOMPARE(string.repeated(count), expected);
 }
 
 void tst_QString::repeated_data() const
 {
+    using S = QString::size_type;
     QTest::addColumn<QString>("string" );
     QTest::addColumn<QString>("expected" );
-    QTest::addColumn<int>("count" );
+    QTest::addColumn<S>("count" );
 
     /* Empty strings. */
     QTest::newRow("data1")
         << QString()
         << QString()
-        << 0;
+        << S{0};
 
     QTest::newRow("data2")
         << QString()
         << QString()
-        << -1004;
+        << S{-1004};
 
     QTest::newRow("data3")
         << QString()
         << QString()
-        << 1;
+        << S{1};
 
     QTest::newRow("data4")
         << QString()
         << QString()
-        << 5;
+        << S{5};
 
     /* On simple string. */
     QTest::newRow("data5")
         << QString(QLatin1String("abc"))
         << QString()
-        << -1004;
+        << S{-1004};
 
     QTest::newRow("data6")
         << QString(QLatin1String("abc"))
         << QString()
-        << -1;
+        << S{-1};
 
     QTest::newRow("data7")
         << QString(QLatin1String("abc"))
         << QString()
-        << 0;
+        << S{0};
 
     QTest::newRow("data8")
         << QString(QLatin1String("abc"))
         << QString(QLatin1String("abc"))
-        << 1;
+        << S{1};
 
     QTest::newRow("data9")
         << QString(QLatin1String("abc"))
         << QString(QLatin1String("abcabc"))
-        << 2;
+        << S{2};
 
     QTest::newRow("data10")
         << QString(QLatin1String("abc"))
         << QString(QLatin1String("abcabcabc"))
-        << 3;
+        << S{3};
 
     QTest::newRow("data11")
         << QString(QLatin1String("abc"))
         << QString(QLatin1String("abcabcabcabc"))
-        << 4;
+        << S{4};
 }
 
 void tst_QString::arg_locale()
