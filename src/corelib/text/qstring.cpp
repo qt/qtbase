@@ -7510,7 +7510,7 @@ QString QString::vasprintf(const char *cformat, va_list ap)
                     case lm_h: i = va_arg(ap, int); break;
                     case lm_l: i = va_arg(ap, long int); break;
                     case lm_ll: i = va_arg(ap, qint64); break;
-                    case lm_j: i = va_arg(ap, long int); break;
+                    case lm_j: i = qint64{va_arg(ap, intmax_t)}; break;
 
                     /* ptrdiff_t actually, but it should be the same for us */
                     case lm_z: i = va_arg(ap, qsizetype); break;
