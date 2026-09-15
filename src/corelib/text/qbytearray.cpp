@@ -2669,7 +2669,12 @@ QByteArray QByteArray::repeated(qsizetype times) const
         return QByteArray();
     }
 
-    const qsizetype resultSize = times * size();
+    const qsizetype resultSize = [&] {
+        auto r = times;
+        if (mul_overflow(r, size(), &r))
+            qBadAlloc();
+        return r;
+    }();
 
     QByteArray result;
     result.reserve(resultSize);

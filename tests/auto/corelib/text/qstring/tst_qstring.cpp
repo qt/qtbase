@@ -8891,6 +8891,13 @@ void tst_QString::repeated_data() const
         << DoesNotThrow
         << S{4};
 
+    // size() * times overflows:
+    QTest::newRow("overflow-in-mul")
+        << QString(1024, u'a')
+        << QString() // not checked
+        << Throws
+        << (std::numeric_limits<S>::max)() / 2;
+
     // size() * times doesn't overflow, but can't alloc this much memory
     QTest::newRow("oversized-alloc")
         << QString(2, u'a')

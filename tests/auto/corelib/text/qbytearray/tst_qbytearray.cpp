@@ -2859,6 +2859,13 @@ void tst_QByteArray::repeated_data() const
         << DoesNotThrow
         << S{4};
 
+    // size() * times overflows:
+    QTest::newRow("overflow-in-mul")
+        << QByteArray(1024, 'a')
+        << QByteArray() // not checked
+        << Throws
+        << (std::numeric_limits<S>::max)() / 2;
+
     // size() * times doesn't overflow, but can't alloc this much memory:
     QTest::newRow("oversized-alloc")
         << QByteArray(2, 'a')
