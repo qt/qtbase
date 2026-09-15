@@ -14,6 +14,12 @@ set(PACKAGE_VERSION "6.140")
 set(PACKAGE_VERSION_COMPATIBLE TRUE)
 ]])
 
-find_package(${mock_pkg_name} 6.140 COMPONENTS Bar Foo
+
+find_package(${mock_pkg_name} 1.2.3 COMPONENTS Foo Bar
     PATHS "${mock_pkg_dir}" NO_DEFAULT_PATH
 )
+
+if(NOT ${mock_pkg_name}_FOUND)
+    message(FATAL_ERROR "Expected ${mock_pkg_name} to be found via version override for base version")
+endif()
+
