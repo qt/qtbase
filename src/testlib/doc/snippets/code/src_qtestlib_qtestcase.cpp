@@ -20,15 +20,15 @@ private slots:
 // dummy
 class MyTestClass : public QObject
 {
-    public:
-        void cleanup();
-        void addSingleStringRows();
-        void addMultStringRows();
-        void addDataRow();
+public:
+    void cleanup();
+    void addSingleStringRows();
+    void addMultStringRows();
+    void addDataRow();
 
-    private Q_SLOTS:
-        void initTestCase();
-        void defaultTryTimeout();
+private Q_SLOTS:
+    void initTestCase();
+    void defaultTryTimeout();
 };
 
 void MyTestClass::initTestCase()
