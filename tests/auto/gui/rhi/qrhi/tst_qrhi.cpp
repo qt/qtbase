@@ -82,6 +82,8 @@ private slots:
     void resourceUpdateBatchRGBATextureCopy();
     void resourceUpdateBatchRGBATextureMip_data();
     void resourceUpdateBatchRGBATextureMip();
+    void resourceUpdateBatchR8TextureMip_data();
+    void resourceUpdateBatchR8TextureMip();
     void resourceUpdateBatchTextureRawDataStride_data();
     void resourceUpdateBatchTextureRawDataStride();
     void resourceUpdateBatchTextureInvalidSizeAndStride_data();
@@ -1982,6 +1984,72 @@ void tst_QRhi::resourceUpdateBatchRGBATextureMip()
             expectedImage.fill(0);
         }
         QVERIFY(imageRGBAEquals(expectedImage, wrapperImage));
+    }
+}
+
+void tst_QRhi::resourceUpdateBatchR8TextureMip_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::resourceUpdateBatchR8TextureMip()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing texture resource updates");
+
+    if (!rhi->isTextureFormatSupported(QRhiTexture::R8))
+        QSKIP("R8 texture format not supported on this backend");
+
+    const QSize baseSize(64, 64);
+    QScopedPointer<QRhiTexture> texture(
+            rhi->newTexture(QRhiTexture::R8, baseSize, 1,
+                            QRhiTexture::UsedAsTransferSource | QRhiTexture::MipMapped));
+    QVERIFY(texture->create());
+
+    const QByteArray data(baseSize.width() * baseSize.height(), 0x40);
+    QRhiResourceUpdateBatch *batch = rhi->nextResourceUpdateBatch();
+    QRhiTextureSubresourceUploadDescription subresDesc(data.constData(), data.size());
+    batch->uploadTexture(texture.data(),
+                         QRhiTextureUploadDescription(QRhiTextureUploadEntry(0, 0, subresDesc)));
+    QVERIFY(submitResourceUpdates(rhi.data(), batch));
+
+    const bool canReadNonBaseLevel = rhi->isFeatureSupported(QRhi::ReadBackNonBaseMipLevel);
+    const int levelCount = rhi->mipLevelsForSize(baseSize);
+    for (int level = 0; level < levelCount; ++level) {
+        QRhiReadbackDescription readDesc(texture.data());
+        readDesc.setLevel(level);
+        QRhiReadbackResult readResult;
+        bool readCompleted = false;
+        readResult.completed = [&readCompleted] { readCompleted = true; };
+
+        batch = rhi->nextResourceUpdateBatch();
+        batch->readBackTexture(readDesc, &readResult);
+        QVERIFY(submitResourceUpdates(rhi.data(), batch));
+        QVERIFY(readCompleted);
+
+        const QSize expectedSize = rhi->sizeForMipLevel(level, baseSize);
+        QCOMPARE(readResult.format, QRhiTexture::R8);
+        QCOMPARE(readResult.pixelSize, expectedSize);
+        QCOMPARE(readResult.data.size(), expectedSize.width() * expectedSize.height());
+
+        if (level > 0 && !canReadNonBaseLevel)
+            QCOMPARE(readResult.data.count('\0'), readResult.data.size());
+    }
+
+    // Level 0 always reads back for real; the Null backend only simulates content for RGBA8.
+    if (impl != QRhi::Null) {
+        QRhiReadbackResult readResult;
+        bool readCompleted = false;
+        readResult.completed = [&readCompleted] { readCompleted = true; };
+        batch = rhi->nextResourceUpdateBatch();
+        batch->readBackTexture(texture.data(), &readResult);
+        QVERIFY(submitResourceUpdates(rhi.data(), batch));
+        QVERIFY(readCompleted);
+        QCOMPARE(readResult.data, data);
     }
 }
 

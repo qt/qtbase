@@ -4290,8 +4290,10 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
                     f->glReadPixels(x, y, w, h, glformat, gltype, result->data.data());
                 }
             } else {
-                result->data.resizeForOverwrite(w * h * 4);
-                result->data.fill('\0');
+                // this level can't be read back; return a zero-filled image sized for the format
+                quint32 byteSize = 0;
+                textureFormatInfo(result->format, result->pixelSize, nullptr, &byteSize, nullptr);
+                result->data.fill('\0', byteSize);
             }
             if (fbo) {
                 f->glBindFramebuffer(GL_FRAMEBUFFER, ctx->defaultFramebufferObject());
