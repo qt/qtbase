@@ -414,6 +414,8 @@ struct Q_CORE_EXPORT QLocal8Bit
 #endif
 };
 
+Q_CORE_EXPORT QByteArray qParseHtmlMetaForEncoding(QByteArrayView data);
+
 QT_END_NAMESPACE
 
 #endif // QSTRINGCONVERTER_P_H
