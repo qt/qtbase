@@ -16,6 +16,6 @@ set(PACKAGE_VERSION_COMPATIBLE TRUE)
 
 write_module_dependency(Foo ${mock_pkg_name}Bar "1.2.3")
 
-find_package(${mock_pkg_name} 6.140 REQUIRED COMPONENTS Bar Foo
+find_package(${mock_pkg_name} 6.140 COMPONENTS Bar Foo
     PATHS "${mock_pkg_dir}" NO_DEFAULT_PATH
 )
