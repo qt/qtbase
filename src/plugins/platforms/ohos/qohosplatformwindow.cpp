@@ -615,7 +615,7 @@ void QOhosPlatformWindow::setWindowGeometryFromOhos(const QRect &nativeWindowDra
     qCDebug(QtForOhos) << "window:" << window() << "geometry change to:" << nativeWindowDrawGeometry;
     QWindowSystemInterface::handleGeometryChange(window(), nativeWindowDrawGeometry);
 
-    if (isExposed())
+    if (isExposed() && window()->isVisible())
         sendExposeUpdate();
 }
 
