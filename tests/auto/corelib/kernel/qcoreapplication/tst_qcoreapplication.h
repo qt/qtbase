@@ -31,6 +31,8 @@ private slots:
     void deliverInDefinedOrder();
 #endif
     void applicationPid();
+    void applicationFilePathIsCanonical_data();
+    void applicationFilePathIsCanonical();
 #ifdef QT_BUILD_INTERNAL
     void globalPostedEventsCount();
 #endif

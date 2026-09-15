@@ -332,6 +332,15 @@ static int destroyAppFromEventHandler(int argc, char **argv)
     return EXIT_SUCCESS;
 }
 
+// see QCoreApplication::applicationFilePath(), which must return a canonical
+// path even if this executable was started through a symlink
+static int printApplicationFilePath(int argc, char **argv)
+{
+    TestApplication app(argc, argv);
+    printf("%s\n", qPrintable(QCoreApplication::applicationFilePath()));
+    return EXIT_SUCCESS;
+}
+
 static int usage(const char *name)
 {
     printf("%s <subtest>\n", name);
@@ -375,6 +384,11 @@ int main(int argc, char **argv)
         return destroyAppFromEventHandler(argc - 1, argv + 1);
     if (subtest == "deleteReceiverFromEventDestructor")
         return deleteReceiverFromEventDestructor(argc - 1, argv + 1);
+
+    // keep the real argv[0]: where qAppFileName() returns nothing,
+    // applicationFilePath() falls back to it
+    if (subtest == "printApplicationFilePath")
+        return printApplicationFilePath(argc, argv);
 
     fprintf(stderr, "%s: unknown test %s\n", argv[0], argv[1]);
     return EXIT_FAILURE;

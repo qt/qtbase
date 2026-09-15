@@ -789,6 +789,57 @@ void tst_QCoreApplication::applicationPid()
     QVERIFY(QCoreApplication::applicationPid() > 0);
 }
 
+void tst_QCoreApplication::applicationFilePathIsCanonical_data()
+{
+    QTest::addColumn<bool>("throughDirectory");
+
+    QTest::newRow("symlinked executable") << false;
+    QTest::newRow("symlinked directory") << true;
+}
+
+void tst_QCoreApplication::applicationFilePathIsCanonical()
+{
+#if !QT_CONFIG(process)
+    QSKIP("No QProcess in this build.");
+#elif defined(Q_OS_WIN)
+    QSKIP("QFile::link() creates a .lnk here, which cannot be executed; "
+          "this would need a junction.");
+#elif defined(Q_OS_ANDROID) || defined(Q_OS_HARMONY)
+    QSKIP("Skipped: cannot launch the helper.");
+#else
+    QFETCH(bool, throughDirectory);
+
+    int argc = 0;
+    QCoreApplication app(argc, nullptr);        // QFINDTESTDATA needs one
+
+    const QFileInfo helper(QFINDTESTDATA("apphelper"));
+    QVERIFY2(helper.exists(), "Could not find the apphelper executable");
+
+    QTemporaryDir dir;
+    QVERIFY2(dir.isValid(), qPrintable(dir.errorString()));
+
+    // the symlink is either the executable itself or the directory holding it
+    QString program = dir.filePath("symlink");
+    const QString target = throughDirectory ? helper.absolutePath()
+                                            : helper.absoluteFilePath();
+    QVERIFY2(QFile::link(target, program),
+             qPrintable(QStringLiteral("%1 -> %2").arg(program, target)));
+    if (throughDirectory)
+        program += u'/' + helper.fileName();
+
+    // start the helper by an absolute path that goes through the symlink
+    QProcess process;
+    process.start(program, { "printApplicationFilePath" });
+    QVERIFY2(process.waitForFinished(5000), qPrintable(process.errorString()));
+    QCOMPARE(process.exitStatus(), QProcess::NormalExit);
+    QCOMPARE(process.readAllStandardError(), QByteArray());
+    QCOMPARE(process.exitCode(), 0);
+
+    const QString reported = QString::fromLocal8Bit(process.readAllStandardOutput().trimmed());
+    QCOMPARE(reported, helper.canonicalFilePath());
+#endif
+}
+
 #ifdef QT_BUILD_INTERNAL
 class GlobalPostedEventsCountObject : public QObject
 {
