@@ -10,6 +10,7 @@
 
     \list
     \li \l {Qt D-Bus Overview}
+    \li \l {Qt D-Bus Security Considerations}
     \li \l {Using Qt D-Bus Adaptors}
         \list
             \li \l{Declaring Slots in D-Bus Adaptors}
