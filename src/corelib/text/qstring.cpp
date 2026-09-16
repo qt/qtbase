@@ -9375,7 +9375,7 @@ std::string QString::toStdString() const
         char *last = QUtf8::convertFromUnicode(out, *this);
         return last - out;
     };
-    size_t maxSize = size() * 3;    // worst case for UTF-8
+    const size_t maxSize = size() * size_t{3}; // worst case for UTF-8 (does _not_ overflow!)
 #ifdef __cpp_lib_string_resize_and_overwrite
     // C++23
     result.resize_and_overwrite(maxSize, writeToBuffer);
