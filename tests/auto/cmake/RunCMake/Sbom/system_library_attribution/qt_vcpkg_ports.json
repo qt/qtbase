@@ -1,0 +1,4 @@
+{
+    "lib/libfakeport.a": "fakeport",
+    "lib/libgenexport.a": "genexport"
+}
