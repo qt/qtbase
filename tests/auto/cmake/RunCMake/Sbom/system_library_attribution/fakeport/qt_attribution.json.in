@@ -1,0 +1,12 @@
+[
+    {
+        "Id": "fakeport",
+        "Name": "fakeport",
+        "QtUsage": "Provided by vcpkg for the fake-triplet triplet.",
+        "Version": "7.8.9",
+        "Homepage": "https://qt-project.org/SbomTest/fakeport",
+        "License": "(FTL OR GPL-2.0-or-later)",
+        "LicenseId": "(FTL OR GPL-2.0-or-later)",
+        "PURL": "pkg:vcpkg/fakeport@7.8.9?triplet=fake-triplet"
+    }
+]

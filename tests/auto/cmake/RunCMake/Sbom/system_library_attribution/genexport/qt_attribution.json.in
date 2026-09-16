@@ -1,0 +1,12 @@
+[
+    {
+        "Id": "genexport",
+        "Name": "genexport",
+        "QtUsage": "Provided by vcpkg for the fake-triplet triplet.",
+        "Version": "4.5.6",
+        "Homepage": "https://qt-project.org/SbomTest/genexport",
+        "License": "MIT",
+        "LicenseId": "MIT",
+        "PURL": "pkg:vcpkg/genexport@4.5.6?triplet=fake-triplet"
+    }
+]
