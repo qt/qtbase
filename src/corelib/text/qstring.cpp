@@ -3428,8 +3428,9 @@ QString &QString::assign(QAnyStringView s)
 #ifndef QT_BOOTSTRAPPED
 QString &QString::assign_helper(const char32_t *data, qsizetype len)
 {
+    Q_ASSERT(len >= 0);
     // worst case: each char32_t requires a surrogate pair, so
-    const auto requiredCapacity = len * 2;
+    const auto requiredCapacity = len * 2; // cannot overflow: bounded by memory for [data, len)
     if (requiredCapacity <= capacity() && isDetached()) {
         const auto offset = d.freeSpaceAtBegin();
         if (offset)

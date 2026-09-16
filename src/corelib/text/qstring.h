@@ -621,6 +621,7 @@ public:
         if constexpr (is_contiguous_iterator_v<InputIterator>) {
             const auto p = q20::to_address(first);
             const auto len = qsizetype(last - first);
+            Q_PRE(len >= 0); // cheap, so check
             if constexpr (IsL1C)
                 return assign(QLatin1StringView(reinterpret_cast<const char*>(p), len));
             else if constexpr (sizeof(V) == 4)
@@ -630,6 +631,8 @@ public:
         } else if constexpr (sizeof(V) == 4) { // non-contiguous iterator, feed data piecemeal
             resize(0);
             if constexpr (IsFwdIt) {
+                // This can't overflow for [first, last) a valid range:
+                // distance() < [addressable memory] / sizeof(V) - some ε (e.g.: this code)
                 const qsizetype requiredCapacity = 2 * std::distance(first, last);
                 reserve(requiredCapacity);
             }
