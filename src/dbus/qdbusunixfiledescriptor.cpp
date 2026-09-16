@@ -38,6 +38,14 @@ QT_IMPL_METATYPE_EXTERN(QDBusUnixFileDescriptor)
     QDBusUnixFileDescriptor object and should not be stored or closed by the
     user. Instead, you should make your own copy if you need that.
 
+    That copy is a real, open file descriptor for as long as the
+    QDBusUnixFileDescriptor object exists, so the object should be destroyed
+    as soon as it is no longer needed rather than kept alive indefinitely.
+    Holding many such objects for a long time, for example messages received
+    over D-Bus that carry a file descriptor and are then queued or cached by
+    the application, keeps that many file descriptors open and can exhaust
+    the process's file descriptor table.
+
     \section2 Availability
 
     Unix file descriptor passing is not available in all D-Bus connections.
