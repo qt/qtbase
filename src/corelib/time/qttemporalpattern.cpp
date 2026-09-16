@@ -26,13 +26,27 @@ namespace QtTemporalPattern {
     and \l QDatePattern.
 */
 
-/* Note (QTBUG-70516): For now (Qt 6.12) it suffices to cover everything that
-   the existing Qt datetime format strings are capable of. However, the intent
-   is to eventually expand this to fully support CLDR's datetime formats so that
-   we can switch from converting those to Qt formats when we scan CLDR to
-   actually storing the CLDR format in the qlocale_data_p.h tables and
-   constructing our Q(Date|Time)+Pattern objects from those formats. See comment
-   in header for a link to the relevant parts of LDML.
+/*
+    Future Directions
+
+    QTBUG-70516, QTBUG-81056: For now (Qt 6.12) it suffices to cover everything
+    that the existing Qt datetime format strings are capable of. However, the
+    intent is to eventually expand this to fully support CLDR's datetime formats
+    so that we can switch from converting those to Qt formats when we scan CLDR
+    to actually storing the CLDR format in the qlocale_data_p.h tables and
+    constructing our Q(Date|Time)+Pattern objects from those formats. See
+    comment in header for a link to the relevant parts of LDML.
+
+    QTBUG-114172: RFC 9557 defines some optional suffixes for time zones of
+    datetimes. We shall need to add support for accepting those and for some
+    mechanism for reporting what they said in the return from parsing. Some may
+    be expressible just by setting the zone of the returned datetime but others,
+    such as indications of what calendar should be used when displaying the data
+    to a user, shall need some other mechanism.
+
+    QTBUG-114525: The ECMAScript standard now includes Temporal, a replacement
+    for Date (which is too badly designed to fix). The QML V4 engine shall need
+    support for whatever formats Temporal defines.
 */
 
 /*!

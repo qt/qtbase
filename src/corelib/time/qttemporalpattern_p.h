@@ -40,6 +40,7 @@ namespace QtTemporalPattern {
 
         // Special:
         TimeZone = 4,
+        // RFC 9557 annotations shall need at least one category code.
 
         // Time:
         // MillisecondInDay = 17,
@@ -64,6 +65,8 @@ namespace QtTemporalPattern {
     auto EndTemporalFieldCategories = qToUnderlying(TemporalFieldCategory::EndCategories);
 
     enum class TemporalFieldFlag : quint32 {
+        // This fits in 32-bits for now, but with only 6 to spare; if it is ever
+        // to be made public it may be worth expanding it to 64 bits first.
         Numeric = 1, Verbal = 2, Standalone = 4,
         Narrow = 0x10, Abbreviated = 0x20, Short = 0x40, Wide = 0x80,
         ZeroPad = 0x0100, // For TimeZone, ZeroPad applies only to hour fields.
@@ -84,6 +87,7 @@ namespace QtTemporalPattern {
         // Time-types (if none specified, infer time type from date/time fields):
         GenericTime = 0x0200'0000, StandardTime = 0x0400'0000, DaylightSavingTime = 0x0800'0000,
         // (0x1000'0000, 0x2000'0000, 0x4000'0000 free)
+        // RFC 9557 may need some flags.
         // Local time from system info:
         LocalTimeName = 0x8000'0000 // That's the last bit available to us.
     };
@@ -179,11 +183,12 @@ namespace QtTemporalPattern {
 
 /* We may eventually want to make the following public API (along with a
    forward-declaration of QtTemporalPattern::TemporalField), while leaving the
-   above in a private header. See QTBUG-70516, QTBUG-81056.
+   above in a private header. See qttemporalpattern.cpp's "Future Directions"
+   comment for design-related constraints on that.
 
    This may, of course, involve splitting the types below into a public facade
    with the actual data members hidden from view behind a shared d-pointer to a
-   private internal class.
+   private internal class, in the usual pimpl way.
 
    Please bear that in mind when considering the design of the APIs below, and
    any future changes thereto.
