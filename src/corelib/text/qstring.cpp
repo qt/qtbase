@@ -10119,8 +10119,7 @@ QString QString::toHtmlEscaped() const
     if (pos == std::u16string_view::npos)
         return *this;
     QString rich;
-    const qsizetype len = size();
-    rich.reserve(qsizetype(len * 1.1));
+    rich.reserve(qsizetype(size() * 1.1)); // cannot overflow (sizeof(value_type) == 2)!
     rich += qToStringViewIgnoringNull(*this).first(pos);
     for (auto ch : qToStringViewIgnoringNull(*this).sliced(pos)) {
         if (ch == u'<')
