@@ -54,6 +54,8 @@ static bool loadPlugin(bool &retry)
         return false;
     }
     QPluginLoader loader(plugin);
+#elif defined(Q_OS_DARWIN)
+    QPluginLoader loader(QStringLiteral("tracing/libQCtfTracePlugin.dylib"));
 #else
     QPluginLoader loader(QStringLiteral("tracing/libQCtfTracePlugin.so"));
 #endif
