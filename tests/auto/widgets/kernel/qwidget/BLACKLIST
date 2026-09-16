@@ -2,11 +2,8 @@
 osx
 [render_systemClip]
 osx
-# QTBUG-87668
 [showMinimizedKeepsFocus]
-android
-macos ci
-wayland
+macos ci # Not reproducible by developers
 [normalGeometry]
 android
 [saveRestoreGeometry]
