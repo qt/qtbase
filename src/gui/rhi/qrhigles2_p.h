@@ -128,9 +128,16 @@ struct QGles2Texture : public QRhiTexture
     GLenum gltype;
     QGles2SamplerData samplerState;
     bool specified = false;
-    bool zeroInitialized = false;
+    // when !specified (compressed format without texture storage support), the mip levels
+    // are allocated lazily, one bitmask of mip levels per cubemap face
+    quint32 allocatedLevels[6] = {};
     int mipLevelCount = 0;
     int samples;
+
+    bool isLevelAllocated(int face, int level) const
+    {
+        return specified || (allocatedLevels[face] & (1u << uint(level)));
+    }
 
     enum Access {
         AccessNone,
@@ -1166,6 +1173,7 @@ public:
               screenSpaceDerivatives(false),
               programBinary(false),
               texture3D(false),
+              textureStorage(false),
               tessellation(false),
               geometryShader(false),
               texture1D(false),
@@ -1239,6 +1247,7 @@ public:
         uint screenSpaceDerivatives : 1;
         uint programBinary : 1;
         uint texture3D : 1;
+        uint textureStorage : 1;
         uint tessellation : 1;
         uint geometryShader : 1;
         uint texture1D : 1;

@@ -135,6 +135,8 @@ private slots:
     void renderToTextureCubemapFace();
     void renderToTextureTextureArray_data();
     void renderToTextureTextureArray();
+    void compressedTextureMipUploads_data();
+    void compressedTextureMipUploads();
     void renderToTextureTexturedQuad_data();
     void renderToTextureTexturedQuad();
     void renderToTextureSampleWithSeparateTextureAndSampler_data();
@@ -3527,6 +3529,243 @@ void tst_QRhi::renderToTextureTexturedQuad()
     QCOMPARE_EQ(qGreen(srgbProbe), expectedProbeValue);
     QCOMPARE_EQ(qBlue(srgbProbe), expectedProbeValue);
     QCOMPARE_EQ(qAlpha(srgbProbe), 255);
+}
+
+// Encodes a solid color into BC1 (DXT1) blocks. color0 == color1 and all the
+// 2-bit indices are left at 0, which decodes to color0, fully opaque.
+static QByteArray bc1SolidColor(QRgb color, const QSize &size)
+{
+    const int blockCount = ((size.width() + 3) / 4) * ((size.height() + 3) / 4);
+    const quint16 c565 = quint16(((qRed(color) >> 3) << 11) | ((qGreen(color) >> 2) << 5)
+                                 | (qBlue(color) >> 3));
+    QByteArray data(blockCount * 8, 0);
+    uchar *p = reinterpret_cast<uchar *>(data.data());
+    for (int i = 0; i < blockCount; ++i, p += 8) {
+        p[0] = p[2] = uchar(c565 & 0xFF);
+        p[1] = p[3] = uchar(c565 >> 8);
+    }
+    return data;
+}
+
+// Encodes a solid color into ASTC 4x4 void-extent blocks. The first 12 bits are
+// the void-extent marker (0b111111100), the LDR flag, and the two reserved bits
+// which must be set. The 4x13 extent bits that follow are all ones, meaning
+// "don't care". The last 8 bytes are the color as UNORM16 RGBA.
+static QByteArray astc4x4SolidColor(QRgb color, const QSize &size)
+{
+    const int blockCount = ((size.width() + 3) / 4) * ((size.height() + 3) / 4);
+    const quint16 rgba[4] = { quint16(qRed(color) * 257), quint16(qGreen(color) * 257),
+                              quint16(qBlue(color) * 257), quint16(qAlpha(color) * 257) };
+    QByteArray data(blockCount * 16, 0);
+    uchar *p = reinterpret_cast<uchar *>(data.data());
+    for (int i = 0; i < blockCount; ++i, p += 16) {
+        p[0] = 0xFC;
+        p[1] = 0xFD;
+        p[2] = p[3] = p[4] = p[5] = p[6] = p[7] = 0xFF;
+        for (int c = 0; c < 4; ++c) {
+            p[8 + c * 2] = uchar(rgba[c] & 0xFF);
+            p[9 + c * 2] = uchar(rgba[c] >> 8);
+        }
+    }
+    return data;
+}
+
+enum CompressedUploadMode {
+    BatchedLevels = 0,   // all mip levels in a single uploadTexture()
+    SplitLevels,         // one uploadTexture() per mip level
+    SplitPartialLevels   // two uploadTexture() calls per mip level, one per half
+};
+
+void tst_QRhi::compressedTextureMipUploads_data()
+{
+    static const int uploadModes[] = { BatchedLevels, SplitLevels, SplitPartialLevels };
+    rhiTestDataWithParam("uploadMode", QSpan(uploadModes), [](int mode) {
+        switch (mode) {
+        case SplitLevels:
+            return QStringLiteral("splitLevels");
+        case SplitPartialLevels:
+            return QStringLiteral("splitPartialLevels");
+        default:
+            return QStringLiteral("batchedLevels");
+        }
+    });
+}
+
+void tst_QRhi::compressedTextureMipUploads()
+{
+    // QTBUG-150273: the mip levels of a compressed texture may be uploaded in
+    // separate uploadTexture() operations, in which case the result must be
+    // the same as when uploading the whole chain in one go. The same goes for
+    // uploads that only cover a part of a mip level.
+
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+    QFETCH(int, uploadMode);
+
+    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing rendering");
+
+    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi.get()))
+        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
+
+    const QRhiTexture::Flags texFlags = QRhiTexture::MipMapped;
+
+    QRhiTexture::Format format;
+    QByteArray (*encode)(QRgb, const QSize &);
+    if (rhi->isTextureFormatSupported(QRhiTexture::BC1, texFlags)) {
+        format = QRhiTexture::BC1;
+        encode = bc1SolidColor;
+    } else if (rhi->isTextureFormatSupported(QRhiTexture::ASTC_4x4, texFlags)) {
+        format = QRhiTexture::ASTC_4x4;
+        encode = astc4x4SolidColor;
+    } else {
+        QSKIP("Neither BC1 nor ASTC_4x4 is supported, skipping");
+    }
+
+    // One solid color per mip level, so that sampling the wrong level shows up.
+    // Only levels 0 and 1 matter for the checks below, the rest is filler.
+    static const QRgb levelColors[] = {
+        qRgb(255, 0, 0), qRgb(0, 255, 0), qRgb(0, 0, 255), qRgb(255, 255, 0), qRgb(0, 255, 255),
+        qRgb(255, 0, 255), qRgb(255, 255, 255), qRgb(0, 255, 0), qRgb(0, 0, 255)
+    };
+    const auto leftColor = [](int level) { return levelColors[level % 9]; };
+    const auto rightColor = [](int level) { return levelColors[(level + 1) % 9]; };
+
+    const QSize texSize(256, 256);
+    const int levelCount = rhi->mipLevelsForSize(texSize);
+    QCOMPARE(levelCount, 9);
+
+    QScopedPointer<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGBA8, texSize, 1,
+                                                        QRhiTexture::RenderTarget | QRhiTexture::UsedAsTransferSource));
+    QVERIFY(texture->create());
+
+    QScopedPointer<QRhiTextureRenderTarget> rt(rhi->newTextureRenderTarget({ texture.data() }));
+    QScopedPointer<QRhiRenderPassDescriptor> rpDesc(rt->newCompatibleRenderPassDescriptor());
+    rt->setRenderPassDescriptor(rpDesc.data());
+    QVERIFY(rt->create());
+
+    QScopedPointer<QRhiTexture> inputTexture(rhi->newTexture(format, texSize, 1, texFlags));
+    QVERIFY(inputTexture->create());
+
+    QScopedPointer<QRhiBuffer> vbuf(rhi->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer,
+                                                   sizeof(quadVerticesUvs)));
+    QVERIFY(vbuf->create());
+
+    // Sampling with a mipmap-based min filter is what makes an incomplete mip
+    // chain show up: such a texture then samples as opaque black.
+    QScopedPointer<QRhiSampler> sampler(rhi->newSampler(QRhiSampler::Linear, QRhiSampler::Linear,
+                                                        QRhiSampler::Linear,
+                                                        QRhiSampler::ClampToEdge, QRhiSampler::ClampToEdge));
+    QVERIFY(sampler->create());
+
+    QScopedPointer<QRhiShaderResourceBindings> srb(rhi->newShaderResourceBindings());
+    srb->setBindings({
+                         QRhiShaderResourceBinding::sampledTexture(0, QRhiShaderResourceBinding::FragmentStage, inputTexture.data(), sampler.data())
+                     });
+    QVERIFY(srb->create());
+
+    QScopedPointer<QRhiGraphicsPipeline> pipeline(rhi->newGraphicsPipeline());
+    pipeline->setTopology(QRhiGraphicsPipeline::TriangleStrip);
+    QShader vs = loadShader(":/data/simpletextured.vert.qsb");
+    QVERIFY(vs.isValid());
+    QShader fs = loadShader(":/data/simpletextured.frag.qsb");
+    QVERIFY(fs.isValid());
+    pipeline->setShaderStages({ { QRhiShaderStage::Vertex, vs }, { QRhiShaderStage::Fragment, fs } });
+    QRhiVertexInputLayout inputLayout;
+    inputLayout.setBindings({ { 4 * sizeof(float) } });
+    inputLayout.setAttributes({
+                                  { 0, 0, QRhiVertexInputAttribute::Float2, 0 },
+                                  { 0, 1, QRhiVertexInputAttribute::Float2, 2 * sizeof(float) }
+                              });
+    pipeline->setVertexInputLayout(inputLayout);
+    pipeline->setShaderResourceBindings(srb.data());
+    pipeline->setRenderPassDescriptor(rpDesc.data());
+    QVERIFY(pipeline->create());
+
+    QRhiCommandBuffer *cb = nullptr;
+    QVERIFY(rhi->beginOffscreenFrame(&cb) == QRhi::FrameOpSuccess);
+    QVERIFY(cb);
+
+    QRhiResourceUpdateBatch *bufUpdates = rhi->nextResourceUpdateBatch();
+    bufUpdates->uploadStaticBuffer(vbuf.data(), quadVerticesUvs);
+    cb->resourceUpdate(bufUpdates);
+
+    if (uploadMode == BatchedLevels) {
+        QVarLengthArray<QRhiTextureUploadEntry, 9> entries;
+        for (int level = 0; level < levelCount; ++level) {
+            const QSize levelSize = rhi->sizeForMipLevel(level, texSize);
+            QRhiTextureSubresourceUploadDescription subres;
+            subres.setData(encode(leftColor(level), levelSize));
+            entries.append({ 0, level, subres });
+        }
+        QRhiTextureUploadDescription desc;
+        desc.setEntries(entries.cbegin(), entries.cend());
+        QRhiResourceUpdateBatch *u = rhi->nextResourceUpdateBatch();
+        u->uploadTexture(inputTexture.data(), desc);
+        cb->resourceUpdate(u);
+    } else {
+        // One uploadTexture() operation per piece, each in its own resource
+        // update batch, i.e. the way a mip chain gets streamed in over several
+        // frames under a per-frame upload budget.
+        for (int level = 0; level < levelCount; ++level) {
+            const QSize levelSize = rhi->sizeForMipLevel(level, texSize);
+            // Splitting a level in half is only block aligned while both
+            // halves are at least one 4x4 block wide.
+            const bool split = uploadMode == SplitPartialLevels && levelSize.width() >= 8;
+            if (split) {
+                const QSize halfSize(levelSize.width() / 2, levelSize.height());
+                for (int half = 0; half < 2; ++half) {
+                    QRhiTextureSubresourceUploadDescription subres;
+                    subres.setData(encode(half ? rightColor(level) : leftColor(level), halfSize));
+                    subres.setSourceSize(halfSize);
+                    subres.setDestinationTopLeft(QPoint(half * halfSize.width(), 0));
+                    QRhiResourceUpdateBatch *u = rhi->nextResourceUpdateBatch();
+                    u->uploadTexture(inputTexture.data(), QRhiTextureUploadDescription({ 0, level, subres }));
+                    cb->resourceUpdate(u);
+                }
+            } else {
+                QRhiTextureSubresourceUploadDescription subres;
+                subres.setData(encode(leftColor(level), levelSize));
+                QRhiResourceUpdateBatch *u = rhi->nextResourceUpdateBatch();
+                u->uploadTexture(inputTexture.data(), QRhiTextureUploadDescription({ 0, level, subres }));
+                cb->resourceUpdate(u);
+            }
+        }
+    }
+
+    cb->beginPass(rt.data(), Qt::black, { 1.0f, 0 });
+    cb->setGraphicsPipeline(pipeline.data());
+    cb->setShaderResources();
+    cb->setViewport({ 0, 0, float(texSize.width()), float(texSize.height()) });
+    QRhiCommandBuffer::VertexInput vbindings(vbuf.data(), 0);
+    cb->setVertexInput(0, 1, &vbindings);
+    cb->draw(4);
+
+    QRhiReadbackResult readResult;
+    QImage result;
+    readResult.completed = [&readResult, &result] {
+        result = QImage(reinterpret_cast<const uchar *>(readResult.data.constData()),
+                        readResult.pixelSize.width(), readResult.pixelSize.height(),
+                        QImage::Format_RGBA8888_Premultiplied).copy();
+    };
+    QRhiResourceUpdateBatch *readbackBatch = rhi->nextResourceUpdateBatch();
+    readbackBatch->readBackTexture({ texture.data() }, &readResult);
+    cb->endPass(readbackBatch);
+
+    rhi->endOffscreenFrame();
+
+    QVERIFY(!result.isNull());
+
+    if (impl == QRhi::Null)
+        return;
+
+    // The render target is the same size as the texture and the quad covers it
+    // entirely, so mip level 0 is what gets sampled.
+    const QRgb expectedLeft = leftColor(0);
+    const QRgb expectedRight = uploadMode == SplitPartialLevels ? rightColor(0) : leftColor(0);
+    QCOMPARE(result.pixel(64, 128), expectedLeft);
+    QCOMPARE(result.pixel(192, 128), expectedRight);
 }
 
 void tst_QRhi::renderToTextureSampleWithSeparateTextureAndSampler_data()

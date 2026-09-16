@@ -1161,6 +1161,14 @@ bool QRhiGles2::create(QRhi::Flags flags)
 
     caps.texture3D = caps.ctxMajor >= 3; // 3.0
 
+    // Immutable texture storage. Needed to be able to allocate all mip levels
+    // of a compressed texture without having data at hand.
+    if (caps.gles)
+        caps.textureStorage = caps.ctxMajor >= 3; // ES 3.0
+    else
+        caps.textureStorage = caps.ctxMajor > 4 || (caps.ctxMajor == 4 && caps.ctxMinor >= 2) // 4.2
+                || ctx->hasExtension(QByteArrayLiteral("GL_ARB_texture_storage"));
+
     if (caps.gles)
         caps.texture1D = false; // ES
     else
@@ -3062,19 +3070,35 @@ void QRhiGles2::enqueueSubresUpload(QGles2Texture *texD, QGles2CommandBuffer *cb
     } else if (!rawData.isEmpty() && isCompressed) {
         const int depth = qMax(1, texD->m_depth);
         const int arraySize = qMax(0, texD->m_arraySize);
-        if ((texD->flags().testFlag(QRhiTexture::UsedAsCompressedAtlas) || is3D || isArray)
-                && !texD->zeroInitialized)
-        {
-            // Create on first upload since glCompressedTexImage2D cannot take
-            // nullptr data. We have a rule in the QRhi docs that the first
-            // upload for a compressed texture must cover the entire image, but
-            // that is clearly not ideal when building a texture atlas, or when
-            // having a 3D texture with per-slice data.
+        // When create() could not allocate the storage up front, each mip
+        // level is allocated upon the first upload touching it. For cubemaps
+        // every face is a separate image, hence tracking per face as well.
+        const int face = isCubeMap ? qBound(0, layer, 5) : 0;
+        const QSize subresSize = q->sizeForMipLevel(level, texD->m_pixelSize);
+        QSize size = subresDesc.sourceSize().isEmpty() ? subresSize : subresDesc.sourceSize();
+        size = clampedSubResourceUploadSize(size, dp, level, texD->m_pixelSize);
+        if (size.isEmpty())
+            return;
+
+        // A single subresource upload for a 3D or array texture covers one
+        // slice or layer only, so it can never allocate the mip level on its
+        // own. Neither can an upload that does not cover the entire level.
+        const bool coversWholeSubres = !is3D && !isArray && dp.isNull() && size == subresSize;
+
+        if (!texD->isLevelAllocated(face, level) && !coversWholeSubres) {
+            // glCompressedTexImage* cannot take nullptr data, so allocate the
+            // level with a zero-filled buffer. Any data is accepted here, but
+            // what the areas not overwritten later decode to depends on the
+            // format (e.g. an all-zero ASTC block is an illegal encoding, so
+            // it gives the error color). The real data follows below via
+            // glCompressedTexSubImage*.
+            const int mipDepth = is3D ? q->sizeForMipLevel(level, QSize(depth, depth)).width() : 1;
             quint32 levelByteSize = 0;
-            compressedFormatInfo(texD->m_format, texD->m_pixelSize, nullptr, &levelByteSize, nullptr);
+            if (!compressedFormatInfo(texD->m_format, subresSize, nullptr, &levelByteSize, nullptr))
+                return;
             quint64 byteSize = levelByteSize;
             if (is3D)
-                byteSize *= quint64(depth);
+                byteSize *= quint64(mipDepth);
             if (isArray)
                 byteSize *= quint64(arraySize);
             if (byteSize > quint64(std::numeric_limits<int>::max())) {
@@ -3090,17 +3114,15 @@ void QRhiGles2::enqueueSubresUpload(QGles2Texture *texD, QGles2CommandBuffer *cb
             cmd.args.compressedImage.faceTarget = effectiveTarget;
             cmd.args.compressedImage.level = level;
             cmd.args.compressedImage.glintformat = texD->glintformat;
-            cmd.args.compressedImage.w = texD->m_pixelSize.width();
-            cmd.args.compressedImage.h = is1D && isArray ? arraySize : texD->m_pixelSize.height();
-            cmd.args.compressedImage.depth = is3D ? depth : (isArray ? arraySize : 0);
+            cmd.args.compressedImage.w = subresSize.width();
+            cmd.args.compressedImage.h = is1D && isArray ? arraySize : subresSize.height();
+            cmd.args.compressedImage.depth = is3D ? mipDepth : (isArray ? arraySize : 0);
             cmd.args.compressedImage.size = int(byteSize);
             cmd.args.compressedImage.data = cbD->retainData(zeroBuf);
-            texD->zeroInitialized = true;
+            texD->allocatedLevels[face] |= 1u << uint(level);
         }
 
-        const QSize size = subresDesc.sourceSize().isEmpty() ? q->sizeForMipLevel(level, texD->m_pixelSize)
-                                                             : subresDesc.sourceSize();
-        if (texD->specified || texD->zeroInitialized) {
+        if (texD->isLevelAllocated(face, level)) {
             QGles2CommandBuffer::Command &cmd(cbD->commands.get());
             cmd.cmd = QGles2CommandBuffer::Command::CompressedSubImage;
             cmd.args.compressedSubImage.target = texD->target;
@@ -3116,6 +3138,7 @@ void QRhiGles2::enqueueSubresUpload(QGles2Texture *texD, QGles2CommandBuffer *cb
             cmd.args.compressedSubImage.size = rawData.size();
             cmd.args.compressedSubImage.data = cbD->retainData(rawData);
         } else {
+            // Allocate the level and upload the real data in one go.
             QGles2CommandBuffer::Command &cmd(cbD->commands.get());
             cmd.cmd = QGles2CommandBuffer::Command::CompressedImage;
             cmd.args.compressedImage.target = texD->target;
@@ -3124,10 +3147,11 @@ void QRhiGles2::enqueueSubresUpload(QGles2Texture *texD, QGles2CommandBuffer *cb
             cmd.args.compressedImage.level = level;
             cmd.args.compressedImage.glintformat = texD->glintformat;
             cmd.args.compressedImage.w = size.width();
-            cmd.args.compressedImage.h = is1D && isArray ? arraySize : size.height();
-            cmd.args.compressedImage.depth = is3D ? depth : (isArray ? arraySize : 0);
+            cmd.args.compressedImage.h = size.height();
+            cmd.args.compressedImage.depth = 0;
             cmd.args.compressedImage.size = rawData.size();
             cmd.args.compressedImage.data = cbD->retainData(rawData);
+            texD->allocatedLevels[face] |= 1u << uint(level);
         }
     } else if (!rawData.isEmpty()) {
         QSize size = subresDesc.sourceSize().isEmpty() ? q->sizeForMipLevel(level, texD->m_pixelSize)
@@ -3251,7 +3275,6 @@ void QRhiGles2::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
             QGles2Texture *texD = QRHI_RES(QGles2Texture, u.dst);
             for (const auto &subres : u.subresDesc)
                 enqueueSubresUpload(texD, cbD, subres.layer, subres.level, subres.desc);
-            texD->specified = true;
         } else if (u.type == QRhiResourceUpdateBatchPrivate::TextureOp::Copy) {
             Q_ASSERT(u.src && u.dst);
             QGles2Texture *srcD = QRHI_RES(QGles2Texture, u.src);
@@ -6886,7 +6909,8 @@ void QGles2Texture::destroy()
 
     texture = 0;
     specified = false;
-    zeroInitialized = false;
+    for (quint32 &levelMask : allocatedLevels)
+        levelMask = 0;
 
     QRHI_RES_RHI(QRhiGles2);
     if (rhiD) {
@@ -7099,10 +7123,34 @@ bool QGles2Texture::create()
         // object out via nativeTexture() right away.
         rhiD->f->glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         specified = true;
+    } else if (rhiD->caps.textureStorage && !m_flags.testFlag(ExternalOES)
+               && (!is1D || isArray || rhiD->glTexStorage1D))
+    {
+        // A compressed format cannot be specified with glCompressedTexImage2D(nullptr),
+        // but the immutable storage functions do not need data, so allocate all mip
+        // levels up front. Some implementations reject certain compressed formats
+        // here however (e.g. ASTC with the Android emulator), so check and fall back
+        // to allocating each level upon the first upload touching it.
+        rhiD->f->glBindTexture(target, texture);
+        GLenum err;
+        for ( ; ; ) {
+            err = rhiD->f->glGetError();
+            if (err == GL_NO_ERROR || err == GL_CONTEXT_LOST)
+                break;
+        }
+        if (is1D && !isArray) {
+            rhiD->glTexStorage1D(target, mipLevelCount, glsizedintformat, size.width());
+        } else if (!is1D && (is3D || isArray)) {
+            rhiD->f->glTexStorage3D(target, mipLevelCount, glsizedintformat, size.width(), size.height(),
+                                    is3D ? qMax(1, m_depth) : qMax(0, m_arraySize));
+        } else {
+            rhiD->f->glTexStorage2D(target, mipLevelCount, glsizedintformat, size.width(),
+                                    is1D ? qMax(0, m_arraySize) : size.height());
+        }
+        specified = rhiD->f->glGetError() == GL_NO_ERROR;
+        if (specified) // min filter must not be mipmap-based, see above
+            rhiD->f->glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     } else {
-        // Cannot use glCompressedTexImage2D without valid data, so defer.
-        // Compressed textures will not be used as render targets so this is
-        // not an issue.
         specified = false;
     }
 
@@ -7127,7 +7175,6 @@ bool QGles2Texture::createFrom(QRhiTexture::NativeTexture src)
 
     texture = textureId;
     specified = true;
-    zeroInitialized = true;
 
     owns = false;
 

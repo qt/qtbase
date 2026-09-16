@@ -3411,6 +3411,13 @@ QRhiTextureUploadEntry::QRhiTextureUploadEntry(int layer, int level,
       resourceUpdates->uploadTexture(texture, desc);
     \endcode
 
+    Batching is a recommendation, not a requirement. The subresources of a
+    texture, including the mip levels of a compressed texture, can also be
+    uploaded via separate
+    \l{QRhiResourceUpdateBatch::uploadTexture()}{uploadTexture()} calls, in any
+    order, and spread over multiple frames. This is what streaming a mip chain
+    under a per-frame upload budget needs.
+
     \note This is a RHI API with limited compatibility guarantees, see \l QRhi
     for details.
 
@@ -4747,8 +4754,9 @@ bool QRhiRenderBuffer::createFrom(NativeRenderBuffer src)
      \value UsedWithLoadStore The texture is going to be used with image
      load/store operations, for example, in a compute shader.
 
-     \value UsedAsCompressedAtlas The texture has a compressed format and the
-     dimensions of subresource uploads may not match the texture size.
+     \value UsedAsCompressedAtlas This value has no effect since Qt 6.13.
+     Textures that have a compressed format and the dimensions of subresource
+     uploads do not match the texture size are handled automatically now.
 
      \value ExternalOES The texture should use the GL_TEXTURE_EXTERNAL_OES
      target with OpenGL. This flag is ignored with other graphics APIs.
