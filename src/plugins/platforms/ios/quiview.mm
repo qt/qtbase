@@ -52,7 +52,7 @@ inline ulong getTimeStamp(UIEvent *event)
     useEvent = false;
 #endif
 
-    return ulong(useEvent ? event.timestamp : NSProcessInfo.processInfo.systemUptime) * 1000;
+    return ulong((useEvent ? event.timestamp : NSProcessInfo.processInfo.systemUptime) * 1000);
 }
 }
 
