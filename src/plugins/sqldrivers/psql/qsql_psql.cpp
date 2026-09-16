@@ -666,7 +666,7 @@ QVariant QPSQLResult::data(int i)
         const auto timeString(tzString.sliced(11));
         if (timeString.contains(u'-') || timeString.contains(u'+') || timeString.endsWith(u'Z'))
             return QDateTime::fromString(tzString, Qt::ISODate);
-        const auto utc = tzString.toString() + u'Z';
+        const QString utc = tzString.toString() + u'Z';
         return QVariant(QDateTime::fromString(utc, Qt::ISODate));
     }
 #else
