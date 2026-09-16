@@ -6,6 +6,7 @@
 #include <QtCore/private/qcore_ohos_p.h>
 #include <QtCore/private/qohosappcontext_p.h>
 #include <QtCore/private/qohoscommon_p.h>
+#include <QtCore/private/qohosmemoizingjsthreadfetcher_p.h>
 #include <QtCore/qdir.h>
 #include <QtCore/qlogging.h>
 #include <filemanagement/environment/oh_environment.h>
@@ -17,13 +18,11 @@ QT_BEGIN_NAMESPACE
 
 namespace {
 
-std::optional<QString> tryGetUserDirFromOhEnvironment(FileManagement_ErrCode (*ohEnvironmentDirGetter)(char **))
+template<FileManagement_ErrCode (*ohEnvironmentDirGetter)(char **)>
+std::optional<QString> tryGetUserDirFromOhEnvironment(QOhosJsState &)
 {
     char *dirPath = nullptr;
-    FileManagement_ErrCode dirGetterRetVal = QOhosJsThreadGateway::eval(
-        [&](QOhosJsState &) {
-            return ohEnvironmentDirGetter(&dirPath);
-        });
+    FileManagement_ErrCode dirGetterRetVal = ohEnvironmentDirGetter(&dirPath);
     if (dirGetterRetVal != FileManagement_ErrCode::ERR_OK || dirPath == nullptr) {
         qOhosPrintfDebug("OH_Environment_GetUser* dir getter failed, retval: %d", static_cast<int>(dirGetterRetVal));
         return {};
@@ -36,16 +35,14 @@ std::optional<QString> tryGetUserDirFromOhEnvironment(FileManagement_ErrCode (*o
     return result;
 }
 
-template<FileManagement_ErrCode (*ohEnvironmentDirGetter)(char **)>
-std::optional<QString> tryGetCachedUserDirFromOhEnvironment()
-{
-    static std::optional<QString> cachedDirPath;
+QOhosMemoizingJsThreadFetcher<QString> userDesktopDirFetcher(
+    tryGetUserDirFromOhEnvironment<OH_Environment_GetUserDesktopDir>, "OH_Environment_GetUserDesktopDir()");
 
-    if (!cachedDirPath.has_value())
-        cachedDirPath = tryGetUserDirFromOhEnvironment(ohEnvironmentDirGetter);
+QOhosMemoizingJsThreadFetcher<QString> userDocumentDirFetcher(
+    tryGetUserDirFromOhEnvironment<OH_Environment_GetUserDocumentDir>, "OH_Environment_GetUserDocumentDir()");
 
-    return cachedDirPath;
-}
+QOhosMemoizingJsThreadFetcher<QString> userDownloadDirFetcher(
+    tryGetUserDirFromOhEnvironment<OH_Environment_GetUserDownloadDir>, "OH_Environment_GetUserDownloadDir()");
 
 }
 
@@ -61,10 +58,10 @@ QString QStandardPaths::writableLocation(StandardLocation type)
     switch (type) {
     case DesktopLocation:
         // NOTE: return empty string if the dir isn't available, even in the doc says otherwise
-        return tryGetCachedUserDirFromOhEnvironment<OH_Environment_GetUserDesktopDir>().value_or(QLatin1String());
+        return userDesktopDirFetcher.optValue().value_or(QLatin1String());
     case DocumentsLocation:
         // NOTE: return empty string if the dir isn't available, even in the doc says otherwise
-        return tryGetCachedUserDirFromOhEnvironment<OH_Environment_GetUserDocumentDir>().value_or(QLatin1String());
+        return userDocumentDirFetcher.optValue().value_or(QLatin1String());
     case FontsLocation:
         // NOT SUPPORTED
         break;
@@ -82,7 +79,7 @@ QString QStandardPaths::writableLocation(StandardLocation type)
         break;
     case DownloadLocation:
         // NOTE: return empty string if the dir isn't available, even in the doc says otherwise
-        return tryGetCachedUserDirFromOhEnvironment<OH_Environment_GetUserDownloadDir>().value_or(QLatin1String());
+        return userDownloadDirFetcher.optValue().value_or(QLatin1String());
     case PublicShareLocation:
         // NOT SUPPORTED
         break;
