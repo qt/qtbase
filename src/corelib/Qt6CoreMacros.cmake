@@ -1282,6 +1282,14 @@ function(_qt_internal_assign_to_internal_targets_folder target)
     endif()
 endfunction()
 
+function(_qt_internal_ensure_internal_custom_target target)
+    if(TARGET ${target})
+        return()
+    endif()
+    add_custom_target(${target} ${ARGN})
+    _qt_internal_assign_to_internal_targets_folder(${target})
+endfunction()
+
 # Returns the metatypes build dir where the Qt build system places module metatypes json files and
 # other supporting metatypes files like ${target}_json_file_list.txt.
 # The path is usually the target's BINARY_DIR + "/meta_types"
@@ -3000,10 +3008,7 @@ function(qt6_add_plugin target)
     )
 
     if(target_type STREQUAL "MODULE_LIBRARY")
-        if(NOT TARGET qt_internal_plugins)
-            add_custom_target(qt_internal_plugins)
-            _qt_internal_assign_to_internal_targets_folder(qt_internal_plugins)
-        endif()
+        _qt_internal_ensure_internal_custom_target(qt_internal_plugins)
         add_dependencies(qt_internal_plugins ${target})
     endif()
 
