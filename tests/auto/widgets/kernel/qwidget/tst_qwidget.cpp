@@ -217,6 +217,7 @@ private slots:
     void showFullScreen();
     void showMinimized();
     void showMinimizedKeepsFocus();
+    void focusWidgetRemoved();
     void icon();
     void hideWhenFocusWidgetIsChild();
     void normalGeometry();
@@ -3113,6 +3114,9 @@ void tst_QWidget::activation()
 }
 #endif // Q_OS_WIN
 
+// Records the state the platform reports. It has to be read while the report is
+// delivered, since QWidget::setWindowState() and QWindow::setWindowStates() both
+// overwrite their copy with the requested state before the platform is asked.
 struct WindowStateChangeWatcher : public QObject
 {
     WindowStateChangeWatcher(QWidget *widget)
@@ -3121,6 +3125,12 @@ struct WindowStateChangeWatcher : public QObject
         widget->window()->windowHandle()->installEventFilter(this);
         lastWindowStates = widget->window()->windowHandle()->windowState();
     }
+
+    bool wait(Qt::WindowStates states)
+    {
+        return QTest::qWaitFor([this, states]{ return lastWindowStates == states; });
+    }
+
     Qt::WindowStates lastWindowStates;
 protected:
     bool eventFilter(QObject *receiver, QEvent *event) override
@@ -3574,6 +3584,10 @@ void tst_QWidget::showMinimizedKeepsFocus()
         QSKIP("Window activation is not supported.");
     if (m_platform == QStringLiteral("offscreen"))
         QSKIP("Platform offscreen does not support showMinimized()");
+    if (m_platform.startsWith("wayland"_L1))
+        QSKIP("xdg-shell has no minimized state and no unset_minimized request");
+    if (m_platform == QStringLiteral("android"))
+        QSKIP("Android does not report window state changes");
 
     //here we test that minimizing a widget and restoring it doesn't change the focus inside of it
     {
@@ -3591,15 +3605,58 @@ void tst_QWidget::showMinimizedKeepsFocus()
         QTRY_COMPARE(window.focusWidget(), &child2);
         QTRY_COMPARE(QApplication::focusWidget(), &child2);
 
+        WindowStateChangeWatcher windowState(&window);
+
         window.showMinimized();
-        QTRY_VERIFY(window.isMinimized());
+        QVERIFY2(windowState.wait(Qt::WindowMinimized), "the platform did not apply the minimize");
         QTRY_COMPARE(window.focusWidget(), &child2);
 
         window.showNormal();
+        QVERIFY2(windowState.wait(Qt::WindowNoState), "the platform did not apply the restore");
         QTRY_COMPARE(window.focusWidget(), &child2);
     }
 
-    //testing deletion of the focusWidget
+    //testing clearFocus
+    {
+        QWidget window;
+        window.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
+        window.resize(200, 200);
+        QWidget *firstchild = new QWidget(&window);
+        firstchild->setFocusPolicy(Qt::StrongFocus);
+        QWidget *child = new QWidget(&window);
+        child->setFocusPolicy(Qt::StrongFocus);
+        window.show();
+        QVERIFY(QTest::qWaitForWindowActive(&window));
+        child->setFocus();
+        QTRY_COMPARE(window.focusWidget(), child);
+        QTRY_COMPARE(QApplication::focusWidget(), child);
+
+        child->clearFocus();
+        QCOMPARE(window.focusWidget(), nullptr);
+        QCOMPARE(QApplication::focusWidget(), nullptr);
+
+        WindowStateChangeWatcher windowState(&window);
+
+        window.showMinimized();
+        QVERIFY2(windowState.wait(Qt::WindowMinimized), "the platform did not apply the minimize");
+
+        QCOMPARE(window.focusWidget(), nullptr);
+        QTRY_COMPARE(QApplication::focusWidget(), nullptr);
+
+        window.showNormal();
+        QVERIFY2(windowState.wait(Qt::WindowNoState), "the platform did not apply the restore");
+
+        QVERIFY(QTest::qWaitForWindowActive(&window));
+        QTRY_COMPARE(window.focusWidget(), firstchild);
+        QTRY_COMPARE(QApplication::focusWidget(), firstchild);
+    }
+}
+
+void tst_QWidget::focusWidgetRemoved()
+{
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("Window activation is not supported.");
+
     {
         QWidget window;
         window.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
@@ -3652,36 +3709,6 @@ void tst_QWidget::showMinimizedKeepsFocus()
         child->setEnabled(false);
         QCOMPARE(window.focusWidget(), nullptr);
         QCOMPARE(QApplication::focusWidget(), nullptr);
-    }
-
-    //testing clearFocus
-    {
-        QWidget window;
-        window.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
-        window.resize(200, 200);
-        QWidget *firstchild = new QWidget(&window);
-        firstchild->setFocusPolicy(Qt::StrongFocus);
-        QWidget *child = new QWidget(&window);
-        child->setFocusPolicy(Qt::StrongFocus);
-        window.show();
-        QVERIFY(QTest::qWaitForWindowActive(&window));
-        child->setFocus();
-        QTRY_COMPARE(window.focusWidget(), child);
-        QTRY_COMPARE(QApplication::focusWidget(), child);
-
-        child->clearFocus();
-        QCOMPARE(window.focusWidget(), nullptr);
-        QCOMPARE(QApplication::focusWidget(), nullptr);
-
-        window.showMinimized();
-        QTRY_VERIFY(window.isMinimized());
-        QCOMPARE(window.focusWidget(), nullptr);
-        QTRY_COMPARE(QApplication::focusWidget(), nullptr);
-
-        window.showNormal();
-        QVERIFY(QTest::qWaitForWindowActive(&window));
-        QTRY_COMPARE(window.focusWidget(), firstchild);
-        QTRY_COMPARE(QApplication::focusWidget(), firstchild);
     }
 }
 
