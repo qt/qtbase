@@ -22,6 +22,7 @@
 
 #if defined(Q_OS_HARMONY)
 #include <QtCore/private/qcore_ohos_p.h>
+#include <QtCore/private/qohosmemoizingjsthreadfetcher_p.h>
 #include <array>
 #endif
 
@@ -131,6 +132,19 @@ QOperatingSystemVersionBase QOperatingSystemVersionBase::current()
     return v;
 }
 
+#if defined(Q_OS_HARMONY)
+static QOhosMemoizingJsThreadFetcher<std::array<int, 3>> ohosVersionPropsFetcher(
+    [](QOhosJsState &jsState) -> std::optional<std::array<int, 3>> {
+        auto deviceInfoObj = jsState.eval<QNapi::Object>("@ohos.deviceInfo");
+        return std::array<int, 3>{{
+            deviceInfoObj.get<QNapi::Number>("majorVersion"),
+            deviceInfoObj.get<QNapi::Number>("seniorVersion"),
+            deviceInfoObj.get<QNapi::Number>("featureVersion"),
+        }};
+    },
+    "DeviceInfo.*Version");
+#endif
+
 #if !defined(Q_OS_DARWIN) && !defined(Q_OS_WIN)
 QOperatingSystemVersionBase QOperatingSystemVersionBase::current_impl()
 {
@@ -200,15 +214,8 @@ QOperatingSystemVersionBase QOperatingSystemVersionBase::current_impl()
     // API level 6 was exactly version 2.0.1
     version.m_micro = versionIdx == 5 ? 1 : -1;
 #elif defined(Q_OS_HARMONY)
-    static auto ohosVersionProps = QOhosJsThreadGateway::eval(
-        [](QOhosJsState &jsState) {
-            auto deviceInfoObj = jsState.eval<QNapi::Object>("@ohos.deviceInfo");
-            return std::array<int, 3>{{
-                deviceInfoObj.get<QNapi::Number>("majorVersion"),
-                deviceInfoObj.get<QNapi::Number>("seniorVersion"),
-                deviceInfoObj.get<QNapi::Number>("featureVersion"),
-            }};
-        });
+    constexpr std::array<int, 3> fallbackOhosVersionProps = {{-1, -1, -1}};
+    const auto ohosVersionProps = ohosVersionPropsFetcher.optValue().value_or(fallbackOhosVersionProps);
 
     version.m_major = ohosVersionProps[0];
     version.m_minor = ohosVersionProps[1];
