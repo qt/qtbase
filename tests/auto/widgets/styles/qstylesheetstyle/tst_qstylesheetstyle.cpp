@@ -1166,9 +1166,16 @@ ButtonDialog::ButtonDialog(const QString &style) : m_layout(new QVBoxLayout(this
 {
     m_style = style;
 
-    // For some reason the icon is closer to the border for 'macos'
+    // The indicator sits at a different distance from the border per style
+    // ('macos' closer, 'ohos' further because its indicator is double width).
     // This is fine, as long as the distance is the same for both images
-    ADD_COL = (style.toLower() == "macos" ? 10 : 15);
+    const QString styleKey = style.toLower();
+    if (styleKey == "macos")
+        ADD_COL = 10;
+    else if (styleKey == "ohos")
+        ADD_COL = 25;
+    else
+        ADD_COL = 15;
 
     // A dummy button to receive focus
     m_dummyButton = new QPushButton();
