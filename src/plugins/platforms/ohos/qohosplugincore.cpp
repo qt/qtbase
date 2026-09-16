@@ -5,6 +5,7 @@
 
 #include "qohosmtblockingcallsgateway_p.h"
 #include <QtCore/private/qohoslogger_p.h>
+#include <QtCore/private/qohosmemoizingjsthreadfetcher_p.h>
 #include <algorithm>
 #include <deque>
 #include <exception>
@@ -951,6 +952,8 @@ void initJsThreadState(
     QOhosJsThreadOps::registerInstance(&jsThreadOpsImpl);
 
     getJsStateImpl().initInJsThread(env, std::move(jsModulesFactories), appFunctions, qtRunMode);
+
+    qOhosEnableMemoizingJsThreadFetchers(getJsStateImpl());
 }
 
 void addJsQAbilityPeer(std::shared_ptr<QAbilityPeer> qAbilityPeer)
