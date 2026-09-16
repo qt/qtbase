@@ -1,7 +1,7 @@
 // Copyright (C) 2025 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#include <QtCore/qdir.h>
+#include <QtCore/qfileinfo.h>
 
 #include "qohosplatformfontdatabase_p.h"
 #include "qohosqpaenums.h"
@@ -22,52 +22,7 @@ using SystemFontType = QtOhosQpa::enums::ohos::graphics::text::SystemFontType;
 
 bool ohosNoUiChildMode = false;
 
-QStringList getSystemFontPaths(QtOhos::JsState &jsState)
-{
-    if (ohosNoUiChildMode)
-        return {};
-
-    auto fontModule = jsState.eval<QNapi::Object>("@ohos.font");
-
-    auto systemFontPaths = QNapi::getArrayElements<QStringList, QNapi::String>(
-        fontModule.eval<QNapi::Array>("getSystemFontList()"),
-        [&](QNapi::String fontName) {
-            auto fontInfo = fontModule.eval("getFontByName(*)", {fontName});
-            return fontInfo.IsObject()
-                ? QString::fromStdString(
-                    QNapi::checkedCast<QNapi::Object>(fontInfo).get<QNapi::String>("path"))
-                : QString();
-        });
-
-    systemFontPaths.removeAll(QString());
-
-    return systemFontPaths;
-}
-
-QStringList getUIFontPaths(QtOhos::JsState &jsState)
-{
-    if (ohosNoUiChildMode)
-        return {};
-
-    auto uiFontDirs = QNapi::getArrayElements<QStringList, QNapi::String>(
-        jsState.eval<QNapi::Array>("@ohos.font.getUIFontConfig().fontDir"),
-        &QString::fromStdString);
-
-    QStringList nameFilters;
-    nameFilters << QLatin1String("*.ttf")
-                << QLatin1String("*.otf")
-                << QLatin1String("*.ttc");
-
-    QStringList result;
-    for (const auto &fontDir : uiFontDirs) {
-        for (const QFileInfo &fileInfo : QDir(fontDir).entryInfoList(nameFilters, QDir::Files))
-            result.append(fileInfo.absoluteFilePath());
-    }
-
-    return result;
-}
-
-QStringList getInstalledFontPaths()
+QStringList getAllFontPaths()
 {
     if (ohosNoUiChildMode)
         return {};
@@ -77,7 +32,7 @@ QStringList getInstalledFontPaths()
             auto thenCatchPromises = std::move(evalPromise).makeThenCatchBranches(Q_FUNC_INFO);
             jsState.evalToPromiseOrRejectOnThrow(
                 "@ohos.graphics.text.getSystemFontFullNamesByType(*)",
-                {jsState.mapOhosEnumToJs(SystemFontType::INSTALLED)})
+                {jsState.mapOhosEnumToJs(SystemFontType::ALL)})
             .onThen(
                 [thenPromise = std::move(thenCatchPromises.first)](const QtOhos::CallbackInfo &cbInfo) mutable {
                     auto fontsNamesArray = cbInfo.getFirstArg<QNapi::Array>(Q_FUNC_INFO);
@@ -99,7 +54,7 @@ QStringList getInstalledFontPaths()
                     for (const auto &fontName : fontsNames) {
                         cbInfo.jsState().evalToPromiseOrRejectOnThrow(
                             "@ohos.graphics.text.getFontDescriptorByFullName(*)",
-                            {fontName, cbInfo.jsState().mapOhosEnumToJs(SystemFontType::INSTALLED)})
+                            {fontName, cbInfo.jsState().mapOhosEnumToJs(SystemFontType::ALL)})
                         .onThen(
                             [pathsCollector](const QtOhos::CallbackInfo &cbInfo) {
                                 auto fontDescriptor = cbInfo.getFirstArg<QNapi::Object>(Q_FUNC_INFO);
@@ -152,14 +107,7 @@ std::string getDefaultFontFamily(QtOhos::JsState &jsState)
 
 void registerSystemFonts()
 {
-    QStringList fontPaths;
-    QtOhos::runInJsThreadAndWait(
-        [&](auto &jsState) {
-            fontPaths.append(getSystemFontPaths(jsState));
-            fontPaths.append(getUIFontPaths(jsState));
-        },
-        Q_FUNC_INFO);
-    fontPaths.append(getInstalledFontPaths());
+    QStringList fontPaths = getAllFontPaths();
     fontPaths.removeDuplicates();
 
     QSet<QString> uniqueFontDirs;
