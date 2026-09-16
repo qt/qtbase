@@ -171,6 +171,8 @@
     \snippet code/doc_src_introtodbus.qdoc QDBUS_DEBUG
 
     Information about the messages will be written to the console the application
-    was launched from.
+    was launched from. This includes the full message contents, including all
+    argument values, which may contain sensitive information, so avoid enabling
+    it where the output could be captured by shared or persistent logging.
 
 */
