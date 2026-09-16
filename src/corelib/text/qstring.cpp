@@ -49,6 +49,7 @@
 
 #include <algorithm>
 #include <functional>
+#include <limits>
 
 #ifdef Q_OS_WIN
 #  include <qt_windows.h>
@@ -5638,11 +5639,15 @@ QByteArray QString::toLatin1_helper_inplace(QString &s)
 */
 QByteArray QtPrivate::convertToUtf8(QLatin1StringView string)
 {
+    QByteArray ba;
     if (Q_UNLIKELY(string.isNull()))
-        return QByteArray();
+        return ba;
 
     // create a QByteArray with the worst case scenario size
-    QByteArray ba(string.size() * 2, Qt::Uninitialized);
+    qsizetype required;
+    if (qMulOverflow<2>(string.size(), &required))
+        required = (std::numeric_limits<qsizetype>::max)(); // will cause resize to fail
+    ba.resizeForOverwrite(required);
     const qsizetype sz = QUtf8::convertFromLatin1(ba.data(), string) - ba.data();
     ba.truncate(sz);
 
