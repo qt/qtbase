@@ -186,6 +186,22 @@ enum class DocumentSelectMode {
 
 }
 
+namespace graphics {
+
+namespace text {
+
+enum class SystemFontType {
+    ALL,
+    CUSTOMIZED,
+    GENERIC,
+    INSTALLED,
+    STYLISH,
+};
+
+}
+
+}
+
 namespace inputMethod {
 
 enum class Direction {
@@ -584,6 +600,20 @@ struct OhosEnumMeta<QtOhosQpa::enums::ohos::file::picker::DocumentSelectMode>
 };
 
 template<>
+struct OhosEnumMeta<QtOhosQpa::enums::ohos::graphics::text::SystemFontType>
+{
+    using Enum = QtOhosQpa::enums::ohos::graphics::text::SystemFontType;
+    static constexpr const char *fullTypeName = "@ohos.graphics.text.SystemFontType";
+    static constexpr std::array<std::pair<Enum, const char *>, 5> enumeratorsNames = {{
+        {Enum::ALL, "ALL"},
+        {Enum::CUSTOMIZED, "CUSTOMIZED"},
+        {Enum::GENERIC, "GENERIC"},
+        {Enum::INSTALLED, "INSTALLED"},
+        {Enum::STYLISH, "STYLISH"},
+    }};
+};
+
+template<>
 struct OhosEnumMeta<QtOhosQpa::enums::ohos::inputMethod::Direction>
 {
     using Enum = QtOhosQpa::enums::ohos::inputMethod::Direction;
@@ -842,6 +872,7 @@ Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhosQpa::enums::ohos::bundle::bundleMa
 Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhosQpa::enums::ohos::display::DisplaySourceMode));
 Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhosQpa::enums::ohos::display::Orientation));
 Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhosQpa::enums::ohos::file::picker::DocumentSelectMode));
+Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhosQpa::enums::ohos::graphics::text::SystemFontType));
 Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhosQpa::enums::ohos::inputMethod::Direction));
 Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhosQpa::enums::ohos::inputMethod::EnterKeyType));
 Q_DECLARE_METATYPE(QT_PREPEND_NAMESPACE(QtOhosQpa::enums::ohos::inputMethod::RequestKeyboardReason));

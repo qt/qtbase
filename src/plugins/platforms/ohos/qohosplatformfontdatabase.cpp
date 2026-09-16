@@ -4,6 +4,7 @@
 #include <QtCore/qdir.h>
 
 #include "qohosplatformfontdatabase_p.h"
+#include "qohosqpaenums.h"
 #include <QtCore/private/qnapi_p.h>
 #include <fontconfig/fontconfig.h>
 #include <qohosplugincore.h>
@@ -17,12 +18,7 @@ Q_GUI_EXPORT QFontDatabase::WritingSystem qt_writing_system_for_script(int scrip
 
 namespace {
 
-enum class JsSystemFontType {
-    ALL = 1 << 0,
-    GENERIC = 1 << 1,
-    STYLISH = 1 << 2,
-    INSTALLED = 1 << 3,
-};
+using SystemFontType = QtOhosQpa::enums::ohos::graphics::text::SystemFontType;
 
 bool ohosNoUiChildMode = false;
 
@@ -81,7 +77,7 @@ QStringList getInstalledFontPaths()
             auto thenCatchPromises = std::move(evalPromise).makeThenCatchBranches(Q_FUNC_INFO);
             jsState.evalToPromiseOrRejectOnThrow(
                 "@ohos.graphics.text.getSystemFontFullNamesByType(*)",
-                {static_cast<int>(JsSystemFontType::INSTALLED)})
+                {jsState.mapOhosEnumToJs(SystemFontType::INSTALLED)})
             .onThen(
                 [thenPromise = std::move(thenCatchPromises.first)](const QtOhos::CallbackInfo &cbInfo) mutable {
                     auto fontsNamesArray = cbInfo.getFirstArg<QNapi::Array>(Q_FUNC_INFO);
@@ -103,7 +99,7 @@ QStringList getInstalledFontPaths()
                     for (const auto &fontName : fontsNames) {
                         cbInfo.jsState().evalToPromiseOrRejectOnThrow(
                             "@ohos.graphics.text.getFontDescriptorByFullName(*)",
-                            {fontName, static_cast<int>(JsSystemFontType::INSTALLED)})
+                            {fontName, cbInfo.jsState().mapOhosEnumToJs(SystemFontType::INSTALLED)})
                         .onThen(
                             [pathsCollector](const QtOhos::CallbackInfo &cbInfo) {
                                 auto fontDescriptor = cbInfo.getFirstArg<QNapi::Object>(Q_FUNC_INFO);
