@@ -204,6 +204,13 @@ QDBusArgument::ElementType QDBusDemarshaller::currentType()
     return QDBusArgument::UnknownType;
 }
 
+// This function performs no size, nesting-depth, or type-validity checks of
+// its own (note the unbounded recursion into toVariant() for DBUS_TYPE_VARIANT
+// below). That is not an oversight: libdbus-1 already rejects malformed
+// messages (oversized arrays/strings/messages, excessive variant nesting,
+// unknown type bytes) before QtDBus ever sees them, in its own message-load
+// path. If libdbus-1's validation were ever bypassed or weakened, QtDBus has
+// no independent check of its own to fall back on here.
 QVariant QDBusDemarshaller::toVariantInternal()
 {
     switch (q_dbus_message_iter_get_arg_type(&iterator)) {
