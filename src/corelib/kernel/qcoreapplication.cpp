@@ -79,7 +79,7 @@
 #if defined(Q_OS_HARMONY) && !defined(QT_BOOTSTRAPPED)
 #include <QtCore/private/qcore_ohos_p.h>
 #include <QtCore/private/qnapi_p.h>
-#include <QtCore/private/qohoslogger_p.h>
+#include <QtCore/private/qohosmemoizingjsthreadfetcher_p.h>
 #endif
 
 #ifdef Q_OS_DARWIN
@@ -199,6 +199,20 @@ QString QCoreApplicationPrivate::appName() const
 
     return applicationName;
 }
+
+#if defined(Q_OS_HARMONY) && !defined(QT_BOOTSTRAPPED)
+static QOhosMemoizingJsThreadFetcher<QString> bundleVersionNameFetcher(
+    [](QOhosJsState &jsState) -> std::optional<QString> {
+        const auto flag = jsState.eval<QNapi::Number>(
+            "@ohos.bundle.bundleManager.BundleFlag.GET_BUNDLE_INFO_WITH_APPLICATION");
+        return QString::fromStdString(
+            jsState.eval<QNapi::String>(
+                "@ohos.bundle.bundleManager.getBundleInfoForSelfSync(*).versionName",
+                {flag}));
+    },
+    "BundleInfo.versionName");
+#endif
+
 QString QCoreApplicationPrivate::appVersion() const
 {
     QString applicationVersion;
@@ -223,23 +237,7 @@ QString QCoreApplicationPrivate::appVersion() const
         }
     }
 #elif defined(Q_OS_HARMONY) && !defined(QT_BOOTSTRAPPED)
-    applicationVersion = QOhosJsThreadGateway::eval(
-        [](QOhosJsState &jsState) -> QString {
-            try {
-                const auto flag = jsState.eval<QNapi::Number>(
-                    "@ohos.bundle.bundleManager.BundleFlag.GET_BUNDLE_INFO_WITH_APPLICATION");
-                return QString::fromStdString(
-                    jsState.eval<QNapi::String>(
-                        "@ohos.bundle.bundleManager.getBundleInfoForSelfSync(*).versionName",
-                        {flag}));
-            } catch (const Napi::Error &error) {
-                qOhosPrintfError(
-                    "%s: failed to read bundle versionName: %s",
-                    Q_FUNC_INFO, error.what());
-                return QString();
-            }
-        },
-        Q_FUNC_INFO);
+    applicationVersion = bundleVersionNameFetcher.optValue().value_or(QString());
 #endif
     return applicationVersion;
 }
