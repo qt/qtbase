@@ -24,4 +24,13 @@
     If you need precise, explicit control over which methods are
     bus-callable, use the adaptor pattern instead. See
     \l{Using Qt D-Bus Adaptors} for details.
+
+    \section1 Message validation relies on libdbus-1
+
+    Qt D-Bus does not itself validate incoming message size, nesting depth,
+    or type validity. This is delegated to libdbus-1, which rejects
+    malformed messages before Qt D-Bus reads them. Qt D-Bus links against
+    whichever libdbus-1 is installed on the system, not a version it ships
+    or controls, so this validation depends on that system library's
+    version and behavior.
 */
