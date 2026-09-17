@@ -2068,6 +2068,14 @@ function(_qt_internal_generate_win32_rc_file_and_manifest target)
 
     target_sources(${target} PRIVATE ${outputs})
     _qt_internal_set_source_file_generated(SOURCES ${outputs})
+
+    if(MSVC)
+        # CMake passes the manifest to the linker via /MANIFEST:EMBED,ID=1 /MANIFESTINPUT:<file>,
+        # so the linker merges its own trustInfo block into ours. lld-link up to 21.1.4 emits that
+        # block in the asm.v1 namespace and then namespace-prefixes the merged attributes
+        # (ms_asmv1:level), which Windows rejects. /MANIFESTUAC:NO suppresses the linker's block.
+        target_link_options(${target} PRIVATE "/MANIFESTUAC:NO")
+    endif()
 endfunction()
 
 function(__qt_get_relative_resource_path_for_file output_alias file)
