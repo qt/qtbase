@@ -383,6 +383,33 @@ QT_BEGIN_NAMESPACE
     for details.
  */
 
+#ifdef VK_VERSION_1_1
+// Cannot rely on VK_ENABLE_BETA_EXTENSIONS. Declare what we need ourselves.
+// The layout is fixed by the extension specification.
+struct QVkPhysicalDevicePortabilitySubsetFeatures
+{
+    VkStructureType sType;
+    void *pNext;
+    VkBool32 constantAlphaColorBlendFactors;
+    VkBool32 events;
+    VkBool32 imageViewFormatReinterpretation;
+    VkBool32 imageViewFormatSwizzle;
+    VkBool32 imageView2DOn3DImage;
+    VkBool32 multisampleArrayImage;
+    VkBool32 mutableComparisonSamplers;
+    VkBool32 pointPolygons;
+    VkBool32 samplerMipLodBias;
+    VkBool32 separateStencilMaskRef;
+    VkBool32 shaderSampleRateInterpolationFunctions;
+    VkBool32 tessellationIsolines;
+    VkBool32 tessellationPointMode;
+    VkBool32 triangleFans;
+    VkBool32 vertexAttributeAccessBeyondStride;
+};
+
+static const VkStructureType QVK_STRUCTURE_TYPE_PDPSF = VkStructureType(1000163000);
+#endif
+
 template <class Int>
 inline Int aligned(Int v, Int byteAlign)
 {
@@ -687,6 +714,8 @@ bool QRhiVulkan::create(QRhi::Flags flags)
     }
     qCDebug(QRHI_LOG_INFO, "%d device extensions available", int(devExts.size()));
 
+    const bool hasPhysDevProp2 = inst->extensions().contains(QByteArrayLiteral("VK_KHR_get_physical_device_properties2"));
+
     bool featuresQueried = false;
 #ifdef VK_VERSION_1_1
     VkPhysicalDeviceFeatures2 physDevFeaturesChainable = {};
@@ -705,7 +734,12 @@ bool QRhiVulkan::create(QRhi::Flags flags)
     if (devExts.contains(VK_EXT_DEVICE_FAULT_EXTENSION_NAME))
         addToChain(&physDevFeaturesChainable, &deviceFaultFeatures);
 #endif
-#endif
+
+    QVkPhysicalDevicePortabilitySubsetFeatures portabilitySubsetFeatures = {};
+    portabilitySubsetFeatures.sType = QVK_STRUCTURE_TYPE_PDPSF;
+    if (hasPhysDevProp2 && devExts.contains(QByteArrayLiteral("VK_KHR_portability_subset")))
+        addToChain(&physDevFeaturesChainable, &portabilitySubsetFeatures);
+#endif // VK_VERSION_1_1
 
     // Vulkan >=1.2 headers at build time, >=1.2 implementation at run time
 #ifdef VK_VERSION_1_2
@@ -818,8 +852,6 @@ bool QRhiVulkan::create(QRhi::Flags flags)
 
         QList<const char *> requestedDevExts;
         requestedDevExts.append("VK_KHR_swapchain");
-
-        const bool hasPhysDevProp2 = inst->extensions().contains(QByteArrayLiteral("VK_KHR_get_physical_device_properties2"));
 
         if (devExts.contains(QByteArrayLiteral("VK_KHR_portability_subset"))) {
             if (hasPhysDevProp2) {
