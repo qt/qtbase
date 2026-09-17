@@ -103,10 +103,10 @@ if(NOT __QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
     endfunction()
 endif()
 
-# Copied from QtCMakeHelpers.cmake
+# Copied from QtPublicCMakeHelpers.cmake
 function(_qt_internal_re_escape out_var str)
     string(REGEX REPLACE "([][+.*()^])" "\\\\\\1" regex "${str}")
-    set(${out_var} ${regex} PARENT_SCOPE)
+    set(${out_var} "${regex}" PARENT_SCOPE)
 endfunction()
 
 function(_qt_internal_set_rpath)

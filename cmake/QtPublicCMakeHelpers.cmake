@@ -1240,7 +1240,7 @@ endfunction()
 # Found in https://gitlab.kitware.com/cmake/cmake/issues/18580
 function(_qt_internal_re_escape out_var str)
     string(REGEX REPLACE "([][+.*()^])" "\\\\\\1" regex "${str}")
-    set(${out_var} ${regex} PARENT_SCOPE)
+    set(${out_var} "${regex}" PARENT_SCOPE)
 endfunction()
 
 # Create a non-existent, unique target name.
