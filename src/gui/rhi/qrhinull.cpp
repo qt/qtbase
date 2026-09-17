@@ -440,49 +440,48 @@ QRhi::FrameOpResult QRhiNull::finish()
 void QRhiNull::simulateTextureUpload(const QRhiResourceUpdateBatchPrivate::TextureOp &u)
 {
     QNullTexture *texD = QRHI_RES(QNullTexture, u.dst);
-    for (int layer = 0, maxLayer = u.subresDesc.size(); layer < maxLayer; ++layer) {
-        for (int level = 0; level < QRhi::MAX_MIP_LEVELS; ++level) {
-            for (const QRhiTextureSubresourceUploadDescription &subresDesc : std::as_const(u.subresDesc[layer][level])) {
-                if (!subresDesc.image().isNull()) {
-                    const QImage src = subresDesc.image();
-                    QPainter painter(&texD->image[layer][level]);
-                    const QSize srcSize = subresDesc.sourceSize().isEmpty()
-                            ? src.size() : subresDesc.sourceSize();
-                    painter.setCompositionMode(QPainter::CompositionMode_Source);
-                    painter.drawImage(subresDesc.destinationTopLeft(), src,
-                                      QRect(subresDesc.sourceTopLeft(), srcSize));
-                } else if (!subresDesc.data().isEmpty()) {
-                    const QSize subresSize = q->sizeForMipLevel(level, texD->pixelSize());
-                    int w = subresSize.width();
-                    int h = subresSize.height();
-                    if (!subresDesc.sourceSize().isEmpty()) {
-                        w = subresDesc.sourceSize().width();
-                        h = subresDesc.sourceSize().height();
-                    }
-                    // sourceTopLeft is not supported on this path as per QRhi docs
-                    const QByteArray srcData = subresDesc.data();
-                    const QPoint dstOffset = subresDesc.destinationTopLeft();
-                    QSize size = clampedSubResourceUploadSize(QSize(w, h), dstOffset, level,
-                                                              texD->pixelSize());
-                    size = clampedSubResourceUploadSizeForSourceData(size, subresDesc.dataStride(),
-                                                                     4, srcData.size());
-                    if (size.isEmpty())
-                        continue;
-                    w = size.width();
-                    h = size.height();
-                    const char *src = srcData.constData();
-                    const int srcBpl = w * 4;
-                    int srcStride = srcBpl;
-                    if (subresDesc.dataStride())
-                        srcStride = subresDesc.dataStride();
-                    uchar *dst = texD->image[layer][level].bits();
-                    const int dstBpl = texD->image[layer][level].bytesPerLine();
-                    for (int y = 0; y < h; ++y) {
-                        memcpy(dst + dstOffset.x() * 4 + (y + dstOffset.y()) * dstBpl,
-                               src + y * srcStride,
-                               size_t(srcBpl));
-                    }
-                }
+    for (const auto &subres : u.subresDesc) {
+        const int layer = subres.layer;
+        const int level = subres.level;
+        const QRhiTextureSubresourceUploadDescription &subresDesc(subres.desc);
+        if (!subresDesc.image().isNull()) {
+            const QImage src = subresDesc.image();
+            QPainter painter(&texD->image[layer][level]);
+            const QSize srcSize = subresDesc.sourceSize().isEmpty()
+                    ? src.size() : subresDesc.sourceSize();
+            painter.setCompositionMode(QPainter::CompositionMode_Source);
+            painter.drawImage(subresDesc.destinationTopLeft(), src,
+                              QRect(subresDesc.sourceTopLeft(), srcSize));
+        } else if (!subresDesc.data().isEmpty()) {
+            const QSize subresSize = q->sizeForMipLevel(level, texD->pixelSize());
+            int w = subresSize.width();
+            int h = subresSize.height();
+            if (!subresDesc.sourceSize().isEmpty()) {
+                w = subresDesc.sourceSize().width();
+                h = subresDesc.sourceSize().height();
+            }
+            // sourceTopLeft is not supported on this path as per QRhi docs
+            const QByteArray srcData = subresDesc.data();
+            const QPoint dstOffset = subresDesc.destinationTopLeft();
+            QSize size = clampedSubResourceUploadSize(QSize(w, h), dstOffset, level,
+                                                      texD->pixelSize());
+            size = clampedSubResourceUploadSizeForSourceData(size, subresDesc.dataStride(),
+                                                             4, srcData.size());
+            if (size.isEmpty())
+                continue;
+            w = size.width();
+            h = size.height();
+            const char *src = srcData.constData();
+            const int srcBpl = w * 4;
+            int srcStride = srcBpl;
+            if (subresDesc.dataStride())
+                srcStride = subresDesc.dataStride();
+            uchar *dst = texD->image[layer][level].bits();
+            const int dstBpl = texD->image[layer][level].bytesPerLine();
+            for (int y = 0; y < h; ++y) {
+                memcpy(dst + dstOffset.x() * 4 + (y + dstOffset.y()) * dstBpl,
+                       src + y * srcStride,
+                       size_t(srcBpl));
             }
         }
     }

@@ -4483,12 +4483,8 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
             QVkTexture *utexD = QRHI_RES(QVkTexture, u.dst);
             // batch into a single staging buffer and a single CopyBufferToImage with multiple copyInfos
             VkDeviceSize stagingSize = 0;
-            for (int layer = 0, maxLayer = u.subresDesc.size(); layer < maxLayer; ++layer) {
-                for (int level = 0; level < QRhi::MAX_MIP_LEVELS; ++level) {
-                    for (const QRhiTextureSubresourceUploadDescription &subresDesc : std::as_const(u.subresDesc[layer][level]))
-                        stagingSize += subresUploadByteSize(subresDesc);
-                }
-            }
+            for (const auto &subres : u.subresDesc)
+                stagingSize += subresUploadByteSize(subres.desc);
 
             Q_ASSERT(!utexD->stagingBuffers[currentFrameSlot]);
             VkBufferCreateInfo bufferInfo = {};
@@ -4523,17 +4519,8 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
                 continue;
             }
 
-            for (int layer = 0, maxLayer = u.subresDesc.size(); layer < maxLayer; ++layer) {
-                for (int level = 0; level < QRhi::MAX_MIP_LEVELS; ++level) {
-                    const QList<QRhiTextureSubresourceUploadDescription> &srd(u.subresDesc[layer][level]);
-                    if (srd.isEmpty())
-                        continue;
-                    for (const QRhiTextureSubresourceUploadDescription &subresDesc : std::as_const(srd)) {
-                        prepareUploadSubres(utexD, layer, level,
-                                            subresDesc, &curOfs, mp, &copyInfos);
-                    }
-                }
-            }
+            for (const auto &subres : u.subresDesc)
+                prepareUploadSubres(utexD, subres.layer, subres.level, subres.desc, &curOfs, mp, &copyInfos);
             vmaFlushAllocation(toVmaAllocator(allocator), a, 0, stagingSize);
             vmaUnmapMemory(toVmaAllocator(allocator), a);
 

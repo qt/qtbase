@@ -3301,12 +3301,8 @@ void QRhiMetal::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
         if (u.type == QRhiResourceUpdateBatchPrivate::TextureOp::Upload) {
             QMetalTexture *utexD = QRHI_RES(QMetalTexture, u.dst);
             qsizetype stagingSize = 0;
-            for (int layer = 0, maxLayer = u.subresDesc.count(); layer < maxLayer; ++layer) {
-                for (int level = 0; level < QRhi::MAX_MIP_LEVELS; ++level) {
-                    for (const QRhiTextureSubresourceUploadDescription &subresDesc : std::as_const(u.subresDesc[layer][level]))
-                        stagingSize += subresUploadByteSize(subresDesc);
-                }
-            }
+            for (const auto &subres : u.subresDesc)
+                stagingSize += subresUploadByteSize(subres.desc);
 
             ensureBlit();
             Q_ASSERT(!utexD->d->stagingBuf[currentFrameSlot]);
@@ -3315,12 +3311,8 @@ void QRhiMetal::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
 
             void *mp = [utexD->d->stagingBuf[currentFrameSlot] contents];
             qsizetype curOfs = 0;
-            for (int layer = 0, maxLayer = u.subresDesc.count(); layer < maxLayer; ++layer) {
-                for (int level = 0; level < QRhi::MAX_MIP_LEVELS; ++level) {
-                    for (const QRhiTextureSubresourceUploadDescription &subresDesc : std::as_const(u.subresDesc[layer][level]))
-                        enqueueSubresUpload(utexD, mp, blitEnc, layer, level, subresDesc, &curOfs);
-                }
-            }
+            for (const auto &subres : u.subresDesc)
+                enqueueSubresUpload(utexD, mp, blitEnc, subres.layer, subres.level, subres.desc, &curOfs);
 
             utexD->lastActiveFrameSlot = currentFrameSlot;
 

@@ -24,6 +24,7 @@
 #include <QtCore/qset.h>
 #include <QtCore/qvarlengtharray.h>
 #include <QtCore/private/qflatmap_p.h>
+#include <algorithm>
 
 QT_BEGIN_NAMESPACE
 
@@ -579,8 +580,17 @@ public:
         // In the backend this can then end up, where applicable, as a
         // single, batched copy operation with only one set of barriers.
         // This helps when doing for example glyph cache fills.
-        using MipLevelUploadList = std::array<QVector<QRhiTextureSubresourceUploadDescription>, QRhi::MAX_MIP_LEVELS>;
-        QVarLengthArray<MipLevelUploadList, 6> subresDesc;
+        //
+        // Stored as a flat list sorted by layer, then level, preserving the
+        // submission order within a subresource. (a dense layer x level grid
+        // of containers costs kilobytes per op even when empty, and there
+        // are dozens of ops preallocated in each batch)
+        struct SubresourceUpload {
+            int layer;
+            int level;
+            QRhiTextureSubresourceUploadDescription desc;
+        };
+        QVarLengthArray<SubresourceUpload, 4> subresDesc;
         QRhiTexture *src;
         QRhiTextureCopyDescription desc;
         QRhiReadbackDescription rb;
@@ -591,14 +601,12 @@ public:
             TextureOp op = {};
             op.type = Upload;
             op.dst = tex;
-            int maxLayer = -1;
-            for (auto it = desc.cbeginEntries(), itEnd = desc.cendEntries(); it != itEnd; ++it) {
-                if (it->layer() > maxLayer)
-                    maxLayer = it->layer();
-            }
-            op.subresDesc.resize(maxLayer + 1);
             for (auto it = desc.cbeginEntries(), itEnd = desc.cendEntries(); it != itEnd; ++it)
-                op.subresDesc[it->layer()][it->level()].append(it->description());
+                op.subresDesc.append({ it->layer(), it->level(), it->description() });
+            std::stable_sort(op.subresDesc.begin(), op.subresDesc.end(),
+                             [](const SubresourceUpload &a, const SubresourceUpload &b) {
+                                 return a.layer != b.layer ? a.layer < b.layer : a.level < b.level;
+                             });
             return op;
         }
 
