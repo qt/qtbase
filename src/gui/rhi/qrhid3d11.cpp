@@ -1133,12 +1133,12 @@ void QRhiD3D11::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
         case QRhiShaderResourceBinding::Texture:
         case QRhiShaderResourceBinding::Sampler:
         {
-            const QRhiShaderResourceBinding::Data::TextureAndOrSamplerData *data = &b->u.stex;
-            if (bd.stex.count != data->count) {
-                bd.stex.count = data->count;
+            const QRhiShaderResourceBinding::Data::TextureAndOrSamplerData *data = &b->stex;
+            if (bd.stex.d.size() != data->count()) {
+                bd.stex.d.resize(data->count());
                 srbUpdate = true;
             }
-            for (int elem = 0; elem < data->count; ++elem) {
+            for (int elem = 0; elem < data->count(); ++elem) {
                 QD3D11Texture *texD = QRHI_RES(QD3D11Texture, data->texSamplers[elem].tex);
                 QD3D11Sampler *samplerD = QRHI_RES(QD3D11Sampler, data->texSamplers[elem].sampler);
                 // We use the same code path for both combined and separate
@@ -2768,8 +2768,8 @@ void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD,
         case QRhiShaderResourceBinding::Texture:
         case QRhiShaderResourceBinding::Sampler:
         {
-            const QRhiShaderResourceBinding::Data::TextureAndOrSamplerData *data = &b->u.stex;
-            bd.stex.count = data->count;
+            const QRhiShaderResourceBinding::Data::TextureAndOrSamplerData *data = &b->stex;
+            bd.stex.d.resize(data->count());
             const std::pair<int, int> nativeBindingVert = mapBinding(b->binding, RBM_VERTEX, nativeResourceBindingMaps, pushConstantStages);
             const std::pair<int, int> nativeBindingHull = mapBinding(b->binding, RBM_HULL, nativeResourceBindingMaps, pushConstantStages);
             const std::pair<int, int> nativeBindingDomain = mapBinding(b->binding, RBM_DOMAIN, nativeResourceBindingMaps, pushConstantStages);
@@ -2779,7 +2779,7 @@ void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD,
             // if SPIR-V binding b is mapped to tN and sN in HLSL, and it
             // is an array, then it will use tN, tN+1, tN+2, ..., and sN,
             // sN+1, sN+2, ...
-            for (int elem = 0; elem < data->count; ++elem) {
+            for (int elem = 0; elem < data->count(); ++elem) {
                 QD3D11Texture *texD = QRHI_RES(QD3D11Texture, data->texSamplers[elem].tex);
                 QD3D11Sampler *samplerD = QRHI_RES(QD3D11Sampler, data->texSamplers[elem].sampler);
                 bd.stex.d[elem].texId = texD ? texD->m_id : 0;
@@ -4632,7 +4632,7 @@ bool QD3D11ShaderResourceBindings::create()
     boundResourceData.resize(sortedBindings.count());
 
     for (BoundResourceData &bd : boundResourceData)
-        memset(&bd, 0, sizeof(BoundResourceData));
+        bd = {};
 
     hasDynamicOffset = false;
     for (const QRhiShaderResourceBinding &b : sortedBindings) {
@@ -4657,7 +4657,7 @@ void QD3D11ShaderResourceBindings::updateResources(UpdateFlags flags)
 
     Q_ASSERT(boundResourceData.count() == sortedBindings.count());
     for (BoundResourceData &bd : boundResourceData)
-        memset(&bd, 0, sizeof(BoundResourceData));
+        bd = {};
 
     generation += 1;
 }

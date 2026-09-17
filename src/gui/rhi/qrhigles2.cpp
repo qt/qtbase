@@ -2233,8 +2233,8 @@ void QRhiGles2::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
                 break;
             case QRhiShaderResourceBinding::SampledTexture:
             case QRhiShaderResourceBinding::Texture:
-                for (int elem = 0; elem < b->u.stex.count; ++elem) {
-                    QGles2Texture *texD = QRHI_RES(QGles2Texture, b->u.stex.texSamplers[elem].tex);
+                for (int elem = 0; elem < b->stex.count(); ++elem) {
+                    QGles2Texture *texD = QRHI_RES(QGles2Texture, b->stex.texSamplers[elem].tex);
                     sanityCheckResourceOwnership(texD);
                     trackedRegisterTexture(&passResTracker,
                                            texD,
@@ -5432,9 +5432,9 @@ void QRhiGles2::bindShaderResources(QGles2CommandBuffer *cbD,
                 ps = maybeComputePs;
                 psGeneration = QRHI_RES(QGles2ComputePipeline, maybeComputePs)->generation;
             }
-            for (int elem = 0; elem < b->u.stex.count; ++elem) {
-                QGles2Texture *texD = QRHI_RES(QGles2Texture, b->u.stex.texSamplers[elem].tex);
-                QGles2Sampler *samplerD = QRHI_RES(QGles2Sampler, b->u.stex.texSamplers[elem].sampler);
+            for (int elem = 0; elem < b->stex.count(); ++elem) {
+                QGles2Texture *texD = QRHI_RES(QGles2Texture, b->stex.texSamplers[elem].tex);
+                QGles2Sampler *samplerD = QRHI_RES(QGles2Sampler, b->stex.texSamplers[elem].sampler);
                 for (const QGles2SamplerDescription &shaderSampler : samplers) {
                     if (shaderSampler.combinedBinding == b->binding) {
                         const int loc = shaderSampler.glslLocation + elem;
@@ -5446,14 +5446,14 @@ void QRhiGles2::bindShaderResources(QGles2CommandBuffer *cbD,
         }
             break;
         case QRhiShaderResourceBinding::Texture:
-            for (int elem = 0; elem < b->u.stex.count; ++elem) {
-                QGles2Texture *texD = QRHI_RES(QGles2Texture, b->u.stex.texSamplers[elem].tex);
+            for (int elem = 0; elem < b->stex.count(); ++elem) {
+                QGles2Texture *texD = QRHI_RES(QGles2Texture, b->stex.texSamplers[elem].tex);
                 m_scratch.separateTextureBindings.append({ texD, b->binding, elem });
             }
             break;
         case QRhiShaderResourceBinding::Sampler:
         {
-            QGles2Sampler *samplerD = QRHI_RES(QGles2Sampler, b->u.stex.texSamplers[0].sampler);
+            QGles2Sampler *samplerD = QRHI_RES(QGles2Sampler, b->stex.texSamplers[0].sampler);
             m_scratch.separateSamplerBindings.append({ samplerD, b->binding });
         }
             break;

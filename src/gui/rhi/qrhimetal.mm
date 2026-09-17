@@ -1527,10 +1527,10 @@ void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD
         case QRhiShaderResourceBinding::Texture:
         case QRhiShaderResourceBinding::Sampler:
         {
-            const QRhiShaderResourceBinding::Data::TextureAndOrSamplerData *data = &b->u.stex;
-            for (int elem = 0; elem < data->count; ++elem) {
-                QMetalTexture *texD = QRHI_RES(QMetalTexture, b->u.stex.texSamplers[elem].tex);
-                QMetalSampler *samplerD = QRHI_RES(QMetalSampler, b->u.stex.texSamplers[elem].sampler);
+            const QRhiShaderResourceBinding::Data::TextureAndOrSamplerData *data = &b->stex;
+            for (int elem = 0; elem < data->count(); ++elem) {
+                QMetalTexture *texD = QRHI_RES(QMetalTexture, b->stex.texSamplers[elem].tex);
+                QMetalSampler *samplerD = QRHI_RES(QMetalSampler, b->stex.texSamplers[elem].sampler);
 
                 for (int stage = 0; stage < SUPPORTED_STAGES; ++stage) {
                     if (b->stage.testFlag(toRhiSrbStage(stage))) {
@@ -1902,12 +1902,12 @@ void QRhiMetal::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
         case QRhiShaderResourceBinding::Texture:
         case QRhiShaderResourceBinding::Sampler:
         {
-            const QRhiShaderResourceBinding::Data::TextureAndOrSamplerData *data = &b->u.stex;
-            if (bd.stex.count != data->count) {
-                bd.stex.count = data->count;
+            const QRhiShaderResourceBinding::Data::TextureAndOrSamplerData *data = &b->stex;
+            if (bd.stex.d.size() != data->count()) {
+                bd.stex.d.resize(data->count());
                 resNeedsRebind = true;
             }
-            for (int elem = 0; elem < data->count; ++elem) {
+            for (int elem = 0; elem < data->count(); ++elem) {
                 QMetalTexture *texD = QRHI_RES(QMetalTexture, data->texSamplers[elem].tex);
                 QMetalSampler *samplerD = QRHI_RES(QMetalSampler, data->texSamplers[elem].sampler);
                 Q_ASSERT(texD || samplerD);
@@ -6239,7 +6239,7 @@ bool QMetalShaderResourceBindings::create()
     boundResourceData.resize(sortedBindings.count());
 
     for (BoundResourceData &bd : boundResourceData)
-        memset(&bd, 0, sizeof(BoundResourceData));
+        bd = {};
 
     generation += 1;
     rhiD->registerResource(this, false);
@@ -6254,7 +6254,7 @@ void QMetalShaderResourceBindings::updateResources(UpdateFlags flags)
         std::sort(sortedBindings.begin(), sortedBindings.end(), QRhiImplementation::sortedBindingLessThan);
 
     for (BoundResourceData &bd : boundResourceData)
-        memset(&bd, 0, sizeof(BoundResourceData));
+        bd = {};
 
     generation += 1;
 }

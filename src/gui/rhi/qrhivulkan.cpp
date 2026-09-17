@@ -4128,11 +4128,12 @@ void QRhiVulkan::updateShaderResourceBindings(QRhiShaderResourceBindings *srb)
             break;
         case QRhiShaderResourceBinding::SampledTexture:
         {
-            const QRhiShaderResourceBinding::Data::TextureAndOrSamplerData *data = &b->u.stex;
-            writeInfo.descriptorCount = data->count; // arrays of combined image samplers are supported
+            const QRhiShaderResourceBinding::Data::TextureAndOrSamplerData *data = &b->stex;
+            writeInfo.descriptorCount = data->count(); // arrays of combined image samplers are supported
             writeInfo.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-            ArrayOfImageDesc imageInfo(data->count);
-            for (int elem = 0; elem < data->count; ++elem) {
+            ArrayOfImageDesc imageInfo(data->count());
+            bd.stex.d.resize(data->count());
+            for (int elem = 0; elem < data->count(); ++elem) {
                 QVkTexture *texD = QRHI_RES(QVkTexture, data->texSamplers[elem].tex);
                 QVkSampler *samplerD = QRHI_RES(QVkSampler, data->texSamplers[elem].sampler);
                 bd.stex.d[elem].texId = texD->m_id;
@@ -4143,18 +4144,18 @@ void QRhiVulkan::updateShaderResourceBindings(QRhiShaderResourceBindings *srb)
                 imageInfo[elem].imageView = texD->imageView;
                 imageInfo[elem].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
             }
-            bd.stex.count = data->count;
             imageInfoIndex = imageInfos.size();
             imageInfos.append(imageInfo);
         }
             break;
         case QRhiShaderResourceBinding::Texture:
         {
-            const QRhiShaderResourceBinding::Data::TextureAndOrSamplerData *data = &b->u.stex;
-            writeInfo.descriptorCount = data->count; // arrays of (separate) images are supported
+            const QRhiShaderResourceBinding::Data::TextureAndOrSamplerData *data = &b->stex;
+            writeInfo.descriptorCount = data->count(); // arrays of (separate) images are supported
             writeInfo.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-            ArrayOfImageDesc imageInfo(data->count);
-            for (int elem = 0; elem < data->count; ++elem) {
+            ArrayOfImageDesc imageInfo(data->count());
+            bd.stex.d.resize(data->count());
+            for (int elem = 0; elem < data->count(); ++elem) {
                 QVkTexture *texD = QRHI_RES(QVkTexture, data->texSamplers[elem].tex);
                 bd.stex.d[elem].texId = texD->m_id;
                 bd.stex.d[elem].texGeneration = texD->generation;
@@ -4164,15 +4165,15 @@ void QRhiVulkan::updateShaderResourceBindings(QRhiShaderResourceBindings *srb)
                 imageInfo[elem].imageView = texD->imageView;
                 imageInfo[elem].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
             }
-            bd.stex.count = data->count;
             imageInfoIndex = imageInfos.size();
             imageInfos.append(imageInfo);
         }
             break;
         case QRhiShaderResourceBinding::Sampler:
         {
-            QVkSampler *samplerD = QRHI_RES(QVkSampler, b->u.stex.texSamplers[0].sampler);
+            QVkSampler *samplerD = QRHI_RES(QVkSampler, b->stex.texSamplers[0].sampler);
             writeInfo.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
+            bd.stex.d.resize(1);
             bd.stex.d[0].texId = 0;
             bd.stex.d[0].texGeneration = 0;
             bd.stex.d[0].samplerId = samplerD->m_id;
@@ -6396,12 +6397,12 @@ void QRhiVulkan::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBin
         case QRhiShaderResourceBinding::Texture:
         case QRhiShaderResourceBinding::Sampler:
         {
-            const QRhiShaderResourceBinding::Data::TextureAndOrSamplerData *data = &b->u.stex;
-            if (bd.stex.count != data->count) {
-                bd.stex.count = data->count;
+            const QRhiShaderResourceBinding::Data::TextureAndOrSamplerData *data = &b->stex;
+            if (bd.stex.d.size() != data->count()) {
+                bd.stex.d.resize(data->count());
                 rewriteDescSet = true;
             }
-            for (int elem = 0; elem < data->count; ++elem) {
+            for (int elem = 0; elem < data->count(); ++elem) {
                 QVkTexture *texD = QRHI_RES(QVkTexture, data->texSamplers[elem].tex);
                 QVkSampler *samplerD = QRHI_RES(QVkSampler, data->texSamplers[elem].sampler);
                 // We use the same code path for both combined and separate
@@ -9035,7 +9036,7 @@ bool QVkShaderResourceBindings::create()
         vkbinding.binding = uint32_t(b->binding);
         vkbinding.descriptorType = toVkDescriptorType(b);
         if (b->type == QRhiShaderResourceBinding::SampledTexture || b->type == QRhiShaderResourceBinding::Texture)
-            vkbinding.descriptorCount = b->u.stex.count;
+            vkbinding.descriptorCount = b->stex.count();
         else
             vkbinding.descriptorCount = 1;
         vkbinding.stageFlags = toVkShaderStageFlags(b->stage);
@@ -9066,7 +9067,7 @@ bool QVkShaderResourceBindings::create()
     for (int i = 0; i < QVK_FRAMES_IN_FLIGHT; ++i) {
         boundResourceData[i].resize(sortedBindings.size());
         for (BoundResourceData &bd : boundResourceData[i])
-            memset(&bd, 0, sizeof(BoundResourceData));
+            bd = {};
     }
 
     for (int i = 0; i < QVK_FRAMES_IN_FLIGHT; ++i)
@@ -9106,7 +9107,7 @@ void QVkShaderResourceBindings::updateResources(UpdateFlags flags)
     for (int i = 0; i < QVK_FRAMES_IN_FLIGHT; ++i) {
         Q_ASSERT(boundResourceData[i].size() == sortedBindings.size());
         for (BoundResourceData &bd : boundResourceData[i])
-            memset(&bd, 0, sizeof(BoundResourceData));
+            bd = {};
     }
 
     generation += 1;

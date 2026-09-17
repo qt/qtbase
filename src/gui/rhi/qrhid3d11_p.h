@@ -234,13 +234,13 @@ struct QD3D11ShaderResourceBindings : public QRhiShaderResourceBindings
         uint generation;
     };
     struct BoundSampledTextureData {
-        int count;
-        struct {
-            quint64 texId;
-            uint texGeneration;
-            quint64 samplerId;
-            uint samplerGeneration;
-        } d[QRhiShaderResourceBinding::Data::MAX_TEX_SAMPLER_ARRAY_SIZE];
+        struct Entry {
+            quint64 texId = 0;
+            uint texGeneration = 0;
+            quint64 samplerId = 0;
+            uint samplerGeneration = 0;
+        };
+        QVarLengthArray<Entry, 1> d;
     };
     struct BoundStorageImageData {
         quint64 id;
@@ -251,12 +251,10 @@ struct QD3D11ShaderResourceBindings : public QRhiShaderResourceBindings
         uint generation;
     };
     struct BoundResourceData {
-        union {
-            BoundUniformBufferData ubuf;
-            BoundSampledTextureData stex;
-            BoundStorageImageData simage;
-            BoundStorageBufferData sbuf;
-        };
+        BoundUniformBufferData ubuf = {};
+        BoundSampledTextureData stex;
+        BoundStorageImageData simage = {};
+        BoundStorageBufferData sbuf = {};
     };
     QVarLengthArray<BoundResourceData, 8> boundResourceData;
 
@@ -346,7 +344,6 @@ struct QD3D11ShaderResourceBindings : public QRhiShaderResourceBindings
     friend class QRhiD3D11;
 };
 
-Q_DECLARE_TYPEINFO(QD3D11ShaderResourceBindings::BoundResourceData, Q_RELOCATABLE_TYPE);
 
 struct QD3D11GraphicsPipeline : public QRhiGraphicsPipeline
 {

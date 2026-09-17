@@ -6324,8 +6324,8 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::sampledTexture(
     b.d.binding = binding;
     b.d.stage = stage;
     b.d.type = SampledTexture;
-    b.d.u.stex.count = 1;
-    b.d.u.stex.texSamplers[0] = { tex, sampler };
+    b.d.stex.texSamplers.resize(1);
+    b.d.stex.texSamplers[0] = { tex, sampler };
     return b;
 }
 
@@ -6371,12 +6371,12 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::sampledTextures(
     b.d.binding = binding;
     b.d.stage = stage;
     b.d.type = SampledTexture;
-    b.d.u.stex.count = count;
+    b.d.stex.texSamplers.resize(count);
     for (int i = 0; i < count; ++i) {
         if (texSamplers)
-            b.d.u.stex.texSamplers[i] = texSamplers[i];
+            b.d.stex.texSamplers[i] = texSamplers[i];
         else
-            b.d.u.stex.texSamplers[i] = { nullptr, nullptr };
+            b.d.stex.texSamplers[i] = { nullptr, nullptr };
     }
     return b;
 }
@@ -6416,8 +6416,8 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::texture(int binding, StageF
     b.d.binding = binding;
     b.d.stage = stage;
     b.d.type = Texture;
-    b.d.u.stex.count = 1;
-    b.d.u.stex.texSamplers[0] = { tex, nullptr };
+    b.d.stex.texSamplers.resize(1);
+    b.d.stex.texSamplers[0] = { tex, nullptr };
     return b;
 }
 
@@ -6448,12 +6448,12 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::textures(int binding, Stage
     b.d.binding = binding;
     b.d.stage = stage;
     b.d.type = Texture;
-    b.d.u.stex.count = count;
+    b.d.stex.texSamplers.resize(count);
     for (int i = 0; i < count; ++i) {
         if (tex)
-            b.d.u.stex.texSamplers[i] = { tex[i], nullptr };
+            b.d.stex.texSamplers[i] = { tex[i], nullptr };
         else
-            b.d.u.stex.texSamplers[i] = { nullptr, nullptr };
+            b.d.stex.texSamplers[i] = { nullptr, nullptr };
     }
     return b;
 }
@@ -6492,8 +6492,8 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::sampler(int binding, StageF
     b.d.binding = binding;
     b.d.stage = stage;
     b.d.type = Sampler;
-    b.d.u.stex.count = 1;
-    b.d.u.stex.texSamplers[0] = { nullptr, sampler };
+    b.d.stex.texSamplers.resize(1);
+    b.d.stex.texSamplers[0] = { nullptr, sampler };
     return b;
 }
 
@@ -6833,26 +6833,26 @@ bool operator==(const QRhiShaderResourceBinding &a, const QRhiShaderResourceBind
         }
         break;
     case QRhiShaderResourceBinding::SampledTexture:
-        if (da->u.stex.count != db->u.stex.count)
+        if (da->stex.count() != db->stex.count())
             return false;
-        for (int i = 0; i < da->u.stex.count; ++i) {
-            if (da->u.stex.texSamplers[i].tex != db->u.stex.texSamplers[i].tex
-                    || da->u.stex.texSamplers[i].sampler != db->u.stex.texSamplers[i].sampler)
+        for (int i = 0; i < da->stex.count(); ++i) {
+            if (da->stex.texSamplers[i].tex != db->stex.texSamplers[i].tex
+                    || da->stex.texSamplers[i].sampler != db->stex.texSamplers[i].sampler)
             {
                 return false;
             }
         }
         break;
     case QRhiShaderResourceBinding::Texture:
-        if (da->u.stex.count != db->u.stex.count)
+        if (da->stex.count() != db->stex.count())
             return false;
-        for (int i = 0; i < da->u.stex.count; ++i) {
-            if (da->u.stex.texSamplers[i].tex != db->u.stex.texSamplers[i].tex)
+        for (int i = 0; i < da->stex.count(); ++i) {
+            if (da->stex.texSamplers[i].tex != db->stex.texSamplers[i].tex)
                 return false;
         }
         break;
     case QRhiShaderResourceBinding::Sampler:
-        if (da->u.stex.texSamplers[0].sampler != db->u.stex.texSamplers[0].sampler)
+        if (da->stex.texSamplers[0].sampler != db->stex.texSamplers[0].sampler)
             return false;
         break;
     case QRhiShaderResourceBinding::ImageLoad:
@@ -6908,14 +6908,14 @@ size_t qHash(const QRhiShaderResourceBinding &b, size_t seed) noexcept
         seed = hash(seed, reinterpret_cast<quintptr>(d->u.ubuf.buf));
         break;
     case QRhiShaderResourceBinding::SampledTexture:
-        seed = hash(seed, reinterpret_cast<quintptr>(d->u.stex.texSamplers[0].tex));
-        seed = hash(seed, reinterpret_cast<quintptr>(d->u.stex.texSamplers[0].sampler));
+        seed = hash(seed, reinterpret_cast<quintptr>(d->stex.texSamplers[0].tex));
+        seed = hash(seed, reinterpret_cast<quintptr>(d->stex.texSamplers[0].sampler));
         break;
     case QRhiShaderResourceBinding::Texture:
-        seed = hash(seed, reinterpret_cast<quintptr>(d->u.stex.texSamplers[0].tex));
+        seed = hash(seed, reinterpret_cast<quintptr>(d->stex.texSamplers[0].tex));
         break;
     case QRhiShaderResourceBinding::Sampler:
-        seed = hash(seed, reinterpret_cast<quintptr>(d->u.stex.texSamplers[0].sampler));
+        seed = hash(seed, reinterpret_cast<quintptr>(d->stex.texSamplers[0].sampler));
         break;
     case QRhiShaderResourceBinding::ImageLoad:
     case QRhiShaderResourceBinding::ImageStore:
@@ -6950,23 +6950,23 @@ QDebug operator<<(QDebug dbg, const QRhiShaderResourceBinding &b)
         break;
     case QRhiShaderResourceBinding::SampledTexture:
         dbg.nospace() << " SampledTextures("
-                      << "count=" << d->u.stex.count;
-        for (int i = 0; i < d->u.stex.count; ++i) {
-            dbg.nospace() << " texture=" << d->u.stex.texSamplers[i].tex
-                          << " sampler=" << d->u.stex.texSamplers[i].sampler;
+                      << "count=" << d->stex.count();
+        for (int i = 0; i < d->stex.count(); ++i) {
+            dbg.nospace() << " texture=" << d->stex.texSamplers[i].tex
+                          << " sampler=" << d->stex.texSamplers[i].sampler;
         }
         dbg.nospace() << ')';
         break;
     case QRhiShaderResourceBinding::Texture:
         dbg.nospace() << " Textures("
-                      << "count=" << d->u.stex.count;
-        for (int i = 0; i < d->u.stex.count; ++i)
-            dbg.nospace() << " texture=" << d->u.stex.texSamplers[i].tex;
+                      << "count=" << d->stex.count();
+        for (int i = 0; i < d->stex.count(); ++i)
+            dbg.nospace() << " texture=" << d->stex.texSamplers[i].tex;
         dbg.nospace() << ')';
         break;
     case QRhiShaderResourceBinding::Sampler:
         dbg.nospace() << " Sampler("
-                      << " sampler=" << d->u.stex.texSamplers[0].sampler
+                      << " sampler=" << d->stex.texSamplers[0].sampler
                       << ')';
         break;
     case QRhiShaderResourceBinding::ImageLoad:

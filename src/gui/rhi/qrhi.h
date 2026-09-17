@@ -509,8 +509,8 @@ public:
         };
         static constexpr int MAX_TEX_SAMPLER_ARRAY_SIZE = 16;
         struct TextureAndOrSamplerData {
-            int count;
-            TextureAndSampler texSamplers[MAX_TEX_SAMPLER_ARRAY_SIZE];
+            QVarLengthArray<TextureAndSampler, 4> texSamplers;
+            int count() const { return int(texSamplers.size()); }
         };
         struct StorageImageData {
             QRhiTexture *tex;
@@ -523,15 +523,15 @@ public:
         };
         union {
             UniformBufferData ubuf;
-            TextureAndOrSamplerData stex;
             StorageImageData simage;
             StorageBufferData sbuf;
         } u;
+        TextureAndOrSamplerData stex;
 
         int arraySize() const
         {
             return type == QRhiShaderResourceBinding::SampledTexture || type == QRhiShaderResourceBinding::Texture
-                    ? u.stex.count
+                    ? stex.count()
                     : 1;
         }
 
@@ -566,8 +566,6 @@ private:
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QRhiShaderResourceBinding::StageFlags)
-
-Q_DECLARE_TYPEINFO(QRhiShaderResourceBinding, Q_PRIMITIVE_TYPE);
 
 Q_GUI_EXPORT bool operator==(const QRhiShaderResourceBinding &a, const QRhiShaderResourceBinding &b) noexcept;
 Q_GUI_EXPORT bool operator!=(const QRhiShaderResourceBinding &a, const QRhiShaderResourceBinding &b) noexcept;

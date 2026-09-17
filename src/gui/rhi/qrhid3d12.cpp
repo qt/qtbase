@@ -1604,12 +1604,12 @@ void QRhiD3D12::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
         case QRhiShaderResourceBinding::Texture:
         case QRhiShaderResourceBinding::Sampler:
         {
-            const QRhiShaderResourceBinding::Data::TextureAndOrSamplerData *data = &b->u.stex;
-            if (bd.stex.count != data->count) {
-                bd.stex.count = data->count;
+            const QRhiShaderResourceBinding::Data::TextureAndOrSamplerData *data = &b->stex;
+            if (bd.stex.d.size() != data->count()) {
+                bd.stex.d.resize(data->count());
                 srbUpdate = true;
             }
-            for (int elem = 0; elem < data->count; ++elem) {
+            for (int elem = 0; elem < data->count(); ++elem) {
                 QD3D12Texture *texD = QRHI_RES(QD3D12Texture, data->texSamplers[elem].tex);
                 QD3D12Sampler *samplerD = QRHI_RES(QD3D12Sampler, data->texSamplers[elem].sampler);
                 // We use the same code path for both combined and separate
@@ -3640,29 +3640,29 @@ void QD3D12ShaderResourceVisitor::visit()
                 break;
             case QRhiShaderResourceBinding::SampledTexture:
             {
-                Q_ASSERT(bd->u.stex.count > 0);
+                Q_ASSERT(bd->stex.count() > 0);
                 const int textureBaseShaderRegister = mapBinding(bd->binding, sd).first;
                 const int samplerBaseShaderRegister = mapBinding(bd->binding, sd).second;
                 if (textureBaseShaderRegister >= 0 && textures)
-                    textures(sd->stage, bd->u.stex.texSamplers, bd->u.stex.count, textureBaseShaderRegister);
+                    textures(sd->stage, bd->stex.texSamplers.constData(), bd->stex.count(), textureBaseShaderRegister);
                 if (samplerBaseShaderRegister >= 0 && samplers)
-                    samplers(sd->stage, bd->u.stex.texSamplers, bd->u.stex.count, samplerBaseShaderRegister);
+                    samplers(sd->stage, bd->stex.texSamplers.constData(), bd->stex.count(), samplerBaseShaderRegister);
             }
                 break;
             case QRhiShaderResourceBinding::Texture:
             {
-                Q_ASSERT(bd->u.stex.count > 0);
+                Q_ASSERT(bd->stex.count() > 0);
                 const int baseShaderRegister = mapBinding(bd->binding, sd).first;
                 if (baseShaderRegister >= 0 && textures)
-                    textures(sd->stage, bd->u.stex.texSamplers, bd->u.stex.count, baseShaderRegister);
+                    textures(sd->stage, bd->stex.texSamplers.constData(), bd->stex.count(), baseShaderRegister);
             }
                 break;
             case QRhiShaderResourceBinding::Sampler:
             {
-                Q_ASSERT(bd->u.stex.count > 0);
+                Q_ASSERT(bd->stex.count() > 0);
                 const int baseShaderRegister = mapBinding(bd->binding, sd).first;
                 if (baseShaderRegister >= 0 && samplers)
-                    samplers(sd->stage, bd->u.stex.texSamplers, bd->u.stex.count, baseShaderRegister);
+                    samplers(sd->stage, bd->stex.texSamplers.constData(), bd->stex.count(), baseShaderRegister);
             }
                 break;
             case QRhiShaderResourceBinding::ImageLoad:
@@ -6424,7 +6424,7 @@ bool QD3D12ShaderResourceBindings::create()
 
     boundResourceData.resize(m_bindings.count());
     for (BoundResourceData &bd : boundResourceData)
-        memset(&bd, 0, sizeof(BoundResourceData));
+        bd = {};
 
     bindingCache.reset();
     bindingCacheValid = false;
@@ -6457,7 +6457,7 @@ void QD3D12ShaderResourceBindings::updateResources(UpdateFlags flags)
 
     Q_ASSERT(boundResourceData.count() == m_bindings.count());
     for (BoundResourceData &bd : boundResourceData)
-        memset(&bd, 0, sizeof(BoundResourceData));
+        bd = {};
 
     bindingCache.reset();
     bindingCacheValid = false;
