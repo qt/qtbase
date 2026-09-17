@@ -154,7 +154,7 @@ inline void drawPixelARGB32(QCosmeticStroker *stroker, int x, int y, int coverag
         return;
 
     int offset = x + stroker->ppl*y;
-    uint c = BYTE_MUL(stroker->color, coverage);
+    uint c = BYTE_MUL(stroker->color, coverage * stroker->opacity >> 8);
     stroker->pixels[offset] = sourceOver(stroker->pixels[offset], c);
 }
 
@@ -216,8 +216,9 @@ static StrokeLine strokeLine(int strokeSelection)
 void QCosmeticStroker::setup()
 {
     blend = state->penData.blend;
-    if (state->clip && state->clip->enabled && state->clip->hasRectClip && !state->clip->clipRect.isEmpty()) {
-        clip &= state->clip->clipRect;
+    const QClipData *effectiveClip = state->penData.clip;
+    if (effectiveClip && effectiveClip->hasRectClip && !effectiveClip->clipRect.isEmpty()) {
+        clip &= effectiveClip->clipRect;
         blend = state->penData.unclipped_blend;
     }
 
@@ -272,7 +273,9 @@ void QCosmeticStroker::setup()
     drawCaps = state->lastPen.capStyle() != Qt::FlatCap;
 
     if (strokeSelection & FastDraw) {
-        color = multiplyAlpha256(state->penData.solidColor.rgba64(), opacity).toArgb32();
+        // AA/drawPixelARGB32() does the opacity mul itself, for drawPixelARGB32Opaque() do it here:
+        const uint solid = state->penData.solidColor.rgba();
+        color = (strokeSelection & AntiAliased) ? solid : BYTE_MUL(solid, 255 * opacity >> 8);
         QRasterBuffer *buffer = state->penData.rasterBuffer;
         pixels = reinterpret_cast<uint *>(buffer->buffer());
         ppl = buffer->stride<quint32>();
