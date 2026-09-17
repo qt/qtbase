@@ -2607,14 +2607,15 @@ void tst_QTextEdit::inputMethodQueryImHints()
 
 // QTBUG-51923: Verify that the cursor rectangle returned by the input
 // method query correctly reflects the viewport offset.
+// QTBUG-150480: It actually needs to be in widget coordinates.
 void tst_QTextEdit::inputMethodCursorRect()
 {
     ed->setPlainText("Line1\nLine2Line3\nLine3");
     ed->moveCursor(QTextCursor::End);
-    const QRectF cursorRect = ed->cursorRect();
+    const QRect cursorRect = ed->cursorRect().translated(ed->viewport()->mapTo(ed, QPoint()));
     const QVariant cursorRectV = ed->inputMethodQuery(Qt::ImCursorRectangle);
     QCOMPARE(cursorRectV.userType(), QMetaType::QRectF);
-    QCOMPARE(cursorRectV.toRect(), cursorRect.toRect());
+    QCOMPARE(cursorRectV.toRect(), cursorRect);
 }
 
 void tst_QTextEdit::highlightLongLine()
