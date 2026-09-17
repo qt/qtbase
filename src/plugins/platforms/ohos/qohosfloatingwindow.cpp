@@ -337,6 +337,7 @@ void QOhosFloatingWindow::handleWindowEvent(QOhosWindowProxy::WindowEvent evt)
     case QOhosWindowProxy::WindowEventType::WINDOW_HIDDEN:
         if (!checkWindowAcceptsFocus() && QGuiApplicationPrivate::focus_window == qWindow)
             focusHijackingPopupHidden();
+        updateMinimizedFromPlatformVisibility(false);
         setShownFromOhos(false);
         break;
     case QOhosWindowProxy::WindowEventType::WINDOW_SHOWN:
@@ -348,6 +349,7 @@ void QOhosFloatingWindow::handleWindowEvent(QOhosWindowProxy::WindowEvent evt)
         // window state.
         if (previousWindowEventType == QOhosWindowProxy::WindowEventType::WINDOW_HIDDEN && !qWindow->isVisible())
             qWindow->setVisible(true);
+        updateMinimizedFromPlatformVisibility(true);
         setShownFromOhos(true);
         startAsyncWaitForNodeResizeIfNeeded();
         break;
@@ -355,6 +357,23 @@ void QOhosFloatingWindow::handleWindowEvent(QOhosWindowProxy::WindowEvent evt)
         notifyWindowDestroyedFromOhos();
         return;
     }
+}
+
+void QOhosFloatingWindow::updateMinimizedFromPlatformVisibility(bool platformShown)
+{
+    if (m_view->viewType() != QOhosView::ViewType::SubWindow)
+        return;
+
+    const bool platformHidden = !platformShown;
+    if (platformHidden && !window()->isVisible())
+        return;
+
+    auto states = windowStates();
+    if (states.testFlag(Qt::WindowMinimized) == platformHidden)
+        return;
+
+    states.setFlag(Qt::WindowMinimized, platformHidden);
+    setWindowStateFromOhos(states);
 }
 
 void QOhosFloatingWindow::handleWindowStatusChange(QOhosWindowProxy::WindowStatus evt)

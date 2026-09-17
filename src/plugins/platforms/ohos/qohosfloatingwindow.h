@@ -56,6 +56,7 @@ private:
     void handleNodeResizeEvent(const QArkUi::QQtEmbeddedWindowNode::NodeAreaInfo &areaChangeEvent);
 
     void handleWindowEvent(QOhosWindowProxy::WindowEvent evt);
+    void updateMinimizedFromPlatformVisibility(bool platformShown);
     void handleWindowStatusChange(QOhosWindowProxy::WindowStatus evt);
     void handleWindowVisibilityChange(bool visible);
     void setShownFromOhos(bool shown);
