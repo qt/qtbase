@@ -249,6 +249,7 @@ struct QGles2UniformDescription
     // blocks are std140, but push constant blocks are std430, where arrays of
     // scalars and vec2 are tightly packed.
     quint32 elemStride;
+    int stateIndex; // -1 when not tracked (arrays, matrices, int types)
 };
 
 Q_DECLARE_TYPEINFO(QGles2UniformDescription, Q_RELOCATABLE_TYPE);
@@ -268,10 +269,13 @@ using QGles2SamplerDescriptionVector = QVarLengthArray<QGles2SamplerDescription,
 
 struct QGles2UniformState
 {
-    static constexpr int MAX_TRACKED_LOCATION = 1023;
     int componentCount;
     float v[4];
 };
+
+Q_DECLARE_TYPEINFO(QGles2UniformState, Q_PRIMITIVE_TYPE);
+
+using QGles2UniformStateVector = QVarLengthArray<QGles2UniformState, 8>;
 
 struct QGles2GraphicsPipeline : public QRhiGraphicsPipeline
 {
@@ -286,7 +290,7 @@ struct QGles2GraphicsPipeline : public QRhiGraphicsPipeline
     QGles2UniformDescriptionVector pushConstantUniforms;
     quint32 pushConstantSize = 0;
     QGles2SamplerDescriptionVector samplers;
-    QGles2UniformState uniformState[QGles2UniformState::MAX_TRACKED_LOCATION + 1];
+    QGles2UniformStateVector uniformState;
     QRhiShaderResourceBindings *currentSrb = nullptr;
     uint currentSrbGeneration = 0;
     uint lastUsedInFrameNo = 0;
@@ -306,7 +310,7 @@ struct QGles2ComputePipeline : public QRhiComputePipeline
     QGles2UniformDescriptionVector pushConstantUniforms;
     quint32 pushConstantSize = 0;
     QGles2SamplerDescriptionVector samplers;
-    QGles2UniformState uniformState[QGles2UniformState::MAX_TRACKED_LOCATION + 1];
+    QGles2UniformStateVector uniformState;
     QRhiShaderResourceBindings *currentSrb = nullptr;
     uint currentSrbGeneration = 0;
     uint lastUsedInFrameNo = 0;
@@ -1004,6 +1008,9 @@ public:
                              const uint *dynOfsPairs, int dynOfsCount);
     void setUniformValue(const QGles2UniformDescription &uniform, const void *src,
                          QGles2UniformState *uniformState);
+    static void setupUniformStateTracking(QGles2UniformDescriptionVector *uniforms,
+                                          QGles2UniformDescriptionVector *pushConstantUniforms,
+                                          QGles2UniformStateVector *uniformState);
     void setUniformsFromBlock(const QGles2UniformDescriptionVector &uniforms, int binding,
                               const char *blockData, qint64 blockSize, quint32 blockOffset,
                               QGles2UniformState *uniformState);
