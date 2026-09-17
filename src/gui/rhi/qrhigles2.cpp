@@ -3234,12 +3234,8 @@ void QRhiGles2::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
         const QRhiResourceUpdateBatchPrivate::TextureOp &u(ud->textureOps[opIdx]);
         if (u.type == QRhiResourceUpdateBatchPrivate::TextureOp::Upload) {
             QGles2Texture *texD = QRHI_RES(QGles2Texture, u.dst);
-            for (int layer = 0, maxLayer = u.subresDesc.size(); layer < maxLayer; ++layer) {
-                for (int level = 0; level < QRhi::MAX_MIP_LEVELS; ++level) {
-                    for (const QRhiTextureSubresourceUploadDescription &subresDesc : std::as_const(u.subresDesc[layer][level]))
-                        enqueueSubresUpload(texD, cbD, layer, level, subresDesc);
-                }
-            }
+            for (const auto &subres : u.subresDesc)
+                enqueueSubresUpload(texD, cbD, subres.layer, subres.level, subres.desc);
             texD->specified = true;
         } else if (u.type == QRhiResourceUpdateBatchPrivate::TextureOp::Copy) {
             Q_ASSERT(u.src && u.dst);

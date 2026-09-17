@@ -4659,194 +4659,193 @@ void QRhiD3D12::enqueueResourceUpdates(QD3D12CommandBuffer *cbD, QRhiResourceUpd
                 continue;
             barrierGen.addTransitionBarrier(texD->handle, D3D12_RESOURCE_STATE_COPY_DEST);
             barrierGen.enqueueBufferedTransitionBarriers(cbD);
-            for (int layer = 0, maxLayer = u.subresDesc.size(); layer < maxLayer; ++layer) {
-                for (int level = 0; level < QRhi::MAX_MIP_LEVELS; ++level) {
-                    for (const QRhiTextureSubresourceUploadDescription &subresDesc : std::as_const(u.subresDesc[layer][level])) {
-                        D3D12_SUBRESOURCE_FOOTPRINT footprint = {};
-                        footprint.Format = res->desc.Format;
-                        footprint.Depth = 1;
-                        quint32 totalBytes = 0;
+            for (const auto &subres : u.subresDesc) {
+                const int layer = subres.layer;
+                const int level = subres.level;
+                const QRhiTextureSubresourceUploadDescription &subresDesc(subres.desc);
+                D3D12_SUBRESOURCE_FOOTPRINT footprint = {};
+                footprint.Format = res->desc.Format;
+                footprint.Depth = 1;
+                quint32 totalBytes = 0;
 
-                        QSize subresSize = subresDesc.sourceSize().isEmpty() ? q->sizeForMipLevel(level, texD->m_pixelSize)
-                                                                             : subresDesc.sourceSize();
-                        const QPoint srcPos = subresDesc.sourceTopLeft();
-                        QPoint dstPos = subresDesc.destinationTopLeft();
+                QSize subresSize = subresDesc.sourceSize().isEmpty() ? q->sizeForMipLevel(level, texD->m_pixelSize)
+                                                                     : subresDesc.sourceSize();
+                const QPoint srcPos = subresDesc.sourceTopLeft();
+                QPoint dstPos = subresDesc.destinationTopLeft();
 
-                        if (subresDesc.image().isNull()
-                            && !subresDesc.data().isEmpty()
-                            && !isCompressedFormat(texD->m_format))
-                        {
-                            subresSize = clampedSubResourceUploadSize(subresSize, dstPos, level, texD->m_pixelSize);
-                            quint32 bytesPerPixel = 0;
-                            textureFormatInfo(texD->m_format, subresSize, nullptr, nullptr, &bytesPerPixel);
-                            subresSize = clampedSubResourceUploadSizeForSourceData(subresSize,
-                                                                                   subresDesc.dataStride(),
-                                                                                   bytesPerPixel,
-                                                                                   subresDesc.data().size());
-                            if (subresSize.isEmpty())
-                                continue;
-                        }
+                if (subresDesc.image().isNull()
+                    && !subresDesc.data().isEmpty()
+                    && !isCompressedFormat(texD->m_format))
+                {
+                    subresSize = clampedSubResourceUploadSize(subresSize, dstPos, level, texD->m_pixelSize);
+                    quint32 bytesPerPixel = 0;
+                    textureFormatInfo(texD->m_format, subresSize, nullptr, nullptr, &bytesPerPixel);
+                    subresSize = clampedSubResourceUploadSizeForSourceData(subresSize,
+                                                                           subresDesc.dataStride(),
+                                                                           bytesPerPixel,
+                                                                           subresDesc.data().size());
+                    if (subresSize.isEmpty())
+                        continue;
+                }
 
-                        if (!subresDesc.image().isNull()) {
-                            const QImage img = subresDesc.image();
-                            const int bpl = img.bytesPerLine();
-                            footprint.RowPitch = aligned<UINT>(bpl, D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
-                            totalBytes = footprint.RowPitch * img.height();
-                        } else if (!subresDesc.data().isEmpty() && isCompressedFormat(texD->m_format)) {
-                            QSize blockDim;
-                            quint32 bpl = 0;
-                            compressedFormatInfo(texD->m_format, subresSize, &bpl, nullptr, &blockDim);
-                            footprint.RowPitch = aligned<UINT>(bpl, D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
-                            const int rowCount = aligned(subresSize.height(), blockDim.height()) / blockDim.height();
-                            totalBytes = footprint.RowPitch * rowCount;
-                        } else if (!subresDesc.data().isEmpty()) {
-                            quint32 bpl = 0;
-                            if (subresDesc.dataStride())
-                                bpl = subresDesc.dataStride();
-                            else
-                                textureFormatInfo(texD->m_format, subresSize, &bpl, nullptr, nullptr);
-                            footprint.RowPitch = aligned<UINT>(bpl, D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
-                            totalBytes = footprint.RowPitch * subresSize.height();
-                        } else {
-                            qWarning("Invalid texture upload for %p layer=%d mip=%d", texD, layer, level);
-                            continue;
-                        }
+                if (!subresDesc.image().isNull()) {
+                    const QImage img = subresDesc.image();
+                    const int bpl = img.bytesPerLine();
+                    footprint.RowPitch = aligned<UINT>(bpl, D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
+                    totalBytes = footprint.RowPitch * img.height();
+                } else if (!subresDesc.data().isEmpty() && isCompressedFormat(texD->m_format)) {
+                    QSize blockDim;
+                    quint32 bpl = 0;
+                    compressedFormatInfo(texD->m_format, subresSize, &bpl, nullptr, &blockDim);
+                    footprint.RowPitch = aligned<UINT>(bpl, D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
+                    const int rowCount = aligned(subresSize.height(), blockDim.height()) / blockDim.height();
+                    totalBytes = footprint.RowPitch * rowCount;
+                } else if (!subresDesc.data().isEmpty()) {
+                    quint32 bpl = 0;
+                    if (subresDesc.dataStride())
+                        bpl = subresDesc.dataStride();
+                    else
+                        textureFormatInfo(texD->m_format, subresSize, &bpl, nullptr, nullptr);
+                    footprint.RowPitch = aligned<UINT>(bpl, D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
+                    totalBytes = footprint.RowPitch * subresSize.height();
+                } else {
+                    qWarning("Invalid texture upload for %p layer=%d mip=%d", texD, layer, level);
+                    continue;
+                }
 
-                        const quint32 allocSize = QD3D12StagingArea::allocSizeForArray(totalBytes, 1);
-                        QD3D12StagingArea::Allocation stagingAlloc;
-                        recordSmallStagingAreaDemand(allocSize);
-                        if (smallStagingAreas[currentFrameSlot].remainingCapacity() >= allocSize)
-                            stagingAlloc = smallStagingAreas[currentFrameSlot].get(allocSize);
+                const quint32 allocSize = QD3D12StagingArea::allocSizeForArray(totalBytes, 1);
+                QD3D12StagingArea::Allocation stagingAlloc;
+                recordSmallStagingAreaDemand(allocSize);
+                if (smallStagingAreas[currentFrameSlot].remainingCapacity() >= allocSize)
+                    stagingAlloc = smallStagingAreas[currentFrameSlot].get(allocSize);
 
-                        std::optional<QD3D12StagingArea> ownStagingArea;
-                        if (!stagingAlloc.isValid()) {
-                            ownStagingArea = QD3D12StagingArea();
-                            if (!ownStagingArea->create(this, allocSize, D3D12_HEAP_TYPE_UPLOAD))
-                                continue;
-                            stagingAlloc = ownStagingArea->get(allocSize);
-                            if (!stagingAlloc.isValid()) {
-                                ownStagingArea->destroy();
-                                continue;
-                            }
-                        }
-
-                        D3D12_TEXTURE_COPY_LOCATION dst;
-                        dst.pResource = res->resource;
-                        dst.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
-                        dst.SubresourceIndex = calcSubresource(UINT(level), is3D ? 0u : UINT(layer), texD->mipLevelCount);
-                        D3D12_TEXTURE_COPY_LOCATION src;
-                        src.pResource = stagingAlloc.buffer;
-                        src.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
-                        src.PlacedFootprint.Offset = stagingAlloc.bufferOffset;
-
-                        D3D12_BOX srcBox; // back, right, bottom are exclusive
-
-                        if (!subresDesc.image().isNull()) {
-                            const QImage img = subresDesc.image();
-                            const int bpc = qMax(1, img.depth() / 8);
-                            const int bpl = img.bytesPerLine();
-
-                            QSize size = subresDesc.sourceSize().isEmpty() ? img.size() : subresDesc.sourceSize();
-                            size.setWidth(qMin(size.width(), img.width() - srcPos.x()));
-                            size.setHeight(qMin(size.height(), img.height() - srcPos.y()));
-                            size = clampedSubResourceUploadSize(size, dstPos, level, texD->m_pixelSize);
-
-                            footprint.Width = size.width();
-                            footprint.Height = size.height();
-
-                            srcBox.left = 0;
-                            srcBox.top = 0;
-                            srcBox.right = UINT(size.width());
-                            srcBox.bottom = UINT(size.height());
-                            srcBox.front = 0;
-                            srcBox.back = 1;
-
-                            const uchar *imgPtr = img.constBits();
-                            const quint32 lineBytes = size.width() * bpc;
-                            for (int y = 0, h = size.height(); y < h; ++y) {
-                                memcpy(stagingAlloc.p + y * footprint.RowPitch,
-                                       imgPtr + srcPos.x() * bpc + (y + srcPos.y()) * bpl,
-                                       lineBytes);
-                            }
-                        } else if (!subresDesc.data().isEmpty() && isCompressedFormat(texD->m_format)) {
-                            QSize blockDim;
-                            quint32 bpl = 0;
-                            compressedFormatInfo(texD->m_format, subresSize, &bpl, nullptr, &blockDim);
-                            // x and y must be multiples of the block width and height
-                            dstPos.setX(aligned(dstPos.x(), blockDim.width()));
-                            dstPos.setY(aligned(dstPos.y(), blockDim.height()));
-
-                            srcBox.left = 0;
-                            srcBox.top = 0;
-                            // width and height must be multiples of the block width and height
-                            srcBox.right = aligned(subresSize.width(), blockDim.width());
-                            srcBox.bottom = aligned(subresSize.height(), blockDim.height());
-
-                            srcBox.front = 0;
-                            srcBox.back = 1;
-
-                            footprint.Width = aligned(subresSize.width(), blockDim.width());
-                            footprint.Height = aligned(subresSize.height(), blockDim.height());
-
-                            const quint32 copyBytes = qMin(bpl, footprint.RowPitch);
-                            const QByteArray imgData = subresDesc.data();
-                            const char *imgPtr = imgData.constData();
-                            const int rowCount = aligned(subresSize.height(), blockDim.height()) / blockDim.height();
-                            for (int y = 0; y < rowCount; ++y) {
-                                const quint64 srcOffset = quint64(y) * bpl;
-                                if (srcOffset >= quint64(imgData.size()))
-                                    break;
-                                const quint32 n = quint32(qMin(quint64(copyBytes),
-                                                               quint64(imgData.size()) - srcOffset));
-                                memcpy(stagingAlloc.p + y * footprint.RowPitch, imgPtr + srcOffset, n);
-                            }
-                        } else if (!subresDesc.data().isEmpty()) {
-                            srcBox.left = 0;
-                            srcBox.top = 0;
-                            srcBox.right = subresSize.width();
-                            srcBox.bottom = subresSize.height();
-                            srcBox.front = 0;
-                            srcBox.back = 1;
-
-                            footprint.Width = subresSize.width();
-                            footprint.Height = subresSize.height();
-
-                            quint32 bpl = 0;
-                            if (subresDesc.dataStride())
-                                bpl = subresDesc.dataStride();
-                            else
-                                textureFormatInfo(texD->m_format, subresSize, &bpl, nullptr, nullptr);
-
-                            const quint32 copyBytes = qMin(bpl, footprint.RowPitch);
-                            const QByteArray data = subresDesc.data();
-                            const char *imgPtr = data.constData();
-                            for (int y = 0, h = subresSize.height(); y < h; ++y) {
-                                // subresSize is bounded above, but copyBytes is the full bpl
-                                // for a padded dataStride(), so the last row would still read
-                                // past the data: a stride pads only *between* rows, and the
-                                // caller is not required to supply trailing padding.
-                                const quint64 srcOffset = quint64(y) * bpl;
-                                if (srcOffset >= quint64(data.size()))
-                                    break;
-                                const quint32 n = quint32(qMin(quint64(copyBytes),
-                                                               quint64(data.size()) - srcOffset));
-                                memcpy(stagingAlloc.p + y * footprint.RowPitch, imgPtr + srcOffset, n);
-                            }
-                        }
-
-                        src.PlacedFootprint.Footprint = footprint;
-
-                        cbD->cmdList->CopyTextureRegion(&dst,
-                                                        UINT(dstPos.x()),
-                                                        UINT(dstPos.y()),
-                                                        is3D ? UINT(layer) : 0u,
-                                                        &src,
-                                                        &srcBox);
-
-                        if (ownStagingArea.has_value())
-                            ownStagingArea->destroyWithDeferredRelease(&releaseQueue);
+                std::optional<QD3D12StagingArea> ownStagingArea;
+                if (!stagingAlloc.isValid()) {
+                    ownStagingArea = QD3D12StagingArea();
+                    if (!ownStagingArea->create(this, allocSize, D3D12_HEAP_TYPE_UPLOAD))
+                        continue;
+                    stagingAlloc = ownStagingArea->get(allocSize);
+                    if (!stagingAlloc.isValid()) {
+                        ownStagingArea->destroy();
+                        continue;
                     }
                 }
+
+                D3D12_TEXTURE_COPY_LOCATION dst;
+                dst.pResource = res->resource;
+                dst.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+                dst.SubresourceIndex = calcSubresource(UINT(level), is3D ? 0u : UINT(layer), texD->mipLevelCount);
+                D3D12_TEXTURE_COPY_LOCATION src;
+                src.pResource = stagingAlloc.buffer;
+                src.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
+                src.PlacedFootprint.Offset = stagingAlloc.bufferOffset;
+
+                D3D12_BOX srcBox; // back, right, bottom are exclusive
+
+                if (!subresDesc.image().isNull()) {
+                    const QImage img = subresDesc.image();
+                    const int bpc = qMax(1, img.depth() / 8);
+                    const int bpl = img.bytesPerLine();
+
+                    QSize size = subresDesc.sourceSize().isEmpty() ? img.size() : subresDesc.sourceSize();
+                    size.setWidth(qMin(size.width(), img.width() - srcPos.x()));
+                    size.setHeight(qMin(size.height(), img.height() - srcPos.y()));
+                    size = clampedSubResourceUploadSize(size, dstPos, level, texD->m_pixelSize);
+
+                    footprint.Width = size.width();
+                    footprint.Height = size.height();
+
+                    srcBox.left = 0;
+                    srcBox.top = 0;
+                    srcBox.right = UINT(size.width());
+                    srcBox.bottom = UINT(size.height());
+                    srcBox.front = 0;
+                    srcBox.back = 1;
+
+                    const uchar *imgPtr = img.constBits();
+                    const quint32 lineBytes = size.width() * bpc;
+                    for (int y = 0, h = size.height(); y < h; ++y) {
+                        memcpy(stagingAlloc.p + y * footprint.RowPitch,
+                               imgPtr + srcPos.x() * bpc + (y + srcPos.y()) * bpl,
+                               lineBytes);
+                    }
+                } else if (!subresDesc.data().isEmpty() && isCompressedFormat(texD->m_format)) {
+                    QSize blockDim;
+                    quint32 bpl = 0;
+                    compressedFormatInfo(texD->m_format, subresSize, &bpl, nullptr, &blockDim);
+                    // x and y must be multiples of the block width and height
+                    dstPos.setX(aligned(dstPos.x(), blockDim.width()));
+                    dstPos.setY(aligned(dstPos.y(), blockDim.height()));
+
+                    srcBox.left = 0;
+                    srcBox.top = 0;
+                    // width and height must be multiples of the block width and height
+                    srcBox.right = aligned(subresSize.width(), blockDim.width());
+                    srcBox.bottom = aligned(subresSize.height(), blockDim.height());
+
+                    srcBox.front = 0;
+                    srcBox.back = 1;
+
+                    footprint.Width = aligned(subresSize.width(), blockDim.width());
+                    footprint.Height = aligned(subresSize.height(), blockDim.height());
+
+                    const quint32 copyBytes = qMin(bpl, footprint.RowPitch);
+                    const QByteArray imgData = subresDesc.data();
+                    const char *imgPtr = imgData.constData();
+                    const int rowCount = aligned(subresSize.height(), blockDim.height()) / blockDim.height();
+                    for (int y = 0; y < rowCount; ++y) {
+                        const quint64 srcOffset = quint64(y) * bpl;
+                        if (srcOffset >= quint64(imgData.size()))
+                            break;
+                        const quint32 n = quint32(qMin(quint64(copyBytes),
+                                                       quint64(imgData.size()) - srcOffset));
+                        memcpy(stagingAlloc.p + y * footprint.RowPitch, imgPtr + srcOffset, n);
+                    }
+                } else if (!subresDesc.data().isEmpty()) {
+                    srcBox.left = 0;
+                    srcBox.top = 0;
+                    srcBox.right = subresSize.width();
+                    srcBox.bottom = subresSize.height();
+                    srcBox.front = 0;
+                    srcBox.back = 1;
+
+                    footprint.Width = subresSize.width();
+                    footprint.Height = subresSize.height();
+
+                    quint32 bpl = 0;
+                    if (subresDesc.dataStride())
+                        bpl = subresDesc.dataStride();
+                    else
+                        textureFormatInfo(texD->m_format, subresSize, &bpl, nullptr, nullptr);
+
+                    const quint32 copyBytes = qMin(bpl, footprint.RowPitch);
+                    const QByteArray data = subresDesc.data();
+                    const char *imgPtr = data.constData();
+                    for (int y = 0, h = subresSize.height(); y < h; ++y) {
+                        // subresSize is bounded above, but copyBytes is the full bpl
+                        // for a padded dataStride(), so the last row would still read
+                        // past the data: a stride pads only *between* rows, and the
+                        // caller is not required to supply trailing padding.
+                        const quint64 srcOffset = quint64(y) * bpl;
+                        if (srcOffset >= quint64(data.size()))
+                            break;
+                        const quint32 n = quint32(qMin(quint64(copyBytes),
+                                                       quint64(data.size()) - srcOffset));
+                        memcpy(stagingAlloc.p + y * footprint.RowPitch, imgPtr + srcOffset, n);
+                    }
+                }
+
+                src.PlacedFootprint.Footprint = footprint;
+
+                cbD->cmdList->CopyTextureRegion(&dst,
+                                                UINT(dstPos.x()),
+                                                UINT(dstPos.y()),
+                                                is3D ? UINT(layer) : 0u,
+                                                &src,
+                                                &srcBox);
+
+                if (ownStagingArea.has_value())
+                    ownStagingArea->destroyWithDeferredRelease(&releaseQueue);
             }
         } else if (u.type == QRhiResourceUpdateBatchPrivate::TextureOp::Copy) {
             Q_ASSERT(u.src && u.dst);
