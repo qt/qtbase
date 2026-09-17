@@ -514,7 +514,7 @@ bool qt_apple_isApplicationExtension()
 /*!
     \internal
 
-    Returns the bundle type of the item at \a path, or \c std::nullopt if it is
+    Returns the bundle type of the item at \a path, or \nullopt if it is
     not a bundle.
 
     Whether an item is a bundle is determined by its uniform type conforming to

@@ -3605,7 +3605,7 @@ int QMetaEnum::keysToValue(const char *keys, bool *ok) const
 
 /*!
     Returns the value derived from combining together the values of the \a keys
-    using the OR operator, or \c std::nullopt if \a keys is not defined. Note
+    using the OR operator, or \nullopt if \a keys is not defined. Note
     that the strings in \a keys must be '|'-separated.
 
     \include qmetaobject.cpp qmetaenum-32bit-signextend-64bit

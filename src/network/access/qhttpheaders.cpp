@@ -1853,7 +1853,7 @@ QByteArray QHttpHeaders::combinedValue(WellKnownHeader name) const
     Returns the value of the first valid header \a name interpreted as a
     64-bit integer.
     If the header does not exist or cannot be parsed as an integer, returns
-    \c std::nullopt.
+    \nullopt.
 
     \sa intValues(QAnyStringView name), intValueAt(qsizetype i)
 */
@@ -1883,7 +1883,7 @@ std::optional<qint64> QHttpHeaders::intValue(WellKnownHeader name) const noexcep
 
     Returns the values of the header \a name interpreted as 64-bit integer
     in a list. If the header does not exist or cannot be parsed as an integer,
-    returns \c std::nullopt.
+    returns \nullopt.
 
     \sa intValue(QAnyStringView name), intValueAt(qsizetype i)
 */
@@ -1934,7 +1934,7 @@ std::optional<qint64> QHttpHeaders::intValueAt(qsizetype i) const noexcept
 
     Converts the first found header value of \a name to a QDateTime object, following
     the standard HTTP date formats. If the header does not exist or contains an invalid
-    QDateTime, returns \c std::nullopt.
+    QDateTime, returns \nullopt.
 
     \sa dateTimeValues(QAnyStringView name), dateTimeValueAt(qsizetype i)
 */
@@ -1991,7 +1991,7 @@ void QHttpHeaders::setDateTimeValue(WellKnownHeader name, const QDateTime &dateT
 
     Returns all the header values of \a name in a list of QDateTime objects, following
     the standard HTTP date formats. If no valid date-time values are found, returns
-    \c std::nullopt.
+    \nullopt.
 
     \sa dateTimeValue(QAnyStringView name), dateTimeValueAt(qsizetype i)
 */
@@ -2035,7 +2035,7 @@ std::optional<QDateTime> QHttpHeaders::dateTimeValueAt(qsizetype i) const
 /*!
     \since 6.12
 
-    Returns the ranges of the \c Range HTTP header fields, or \c std::nullopt
+    Returns the ranges of the \c Range HTTP header fields, or \nullopt
     if parsing failed.
 
     Each range represents a byte range. According to RFC 9110:
@@ -2059,7 +2059,7 @@ std::optional<QDateTime> QHttpHeaders::dateTimeValueAt(qsizetype i) const
             headers do not cause the parsing to fail.
         \li If a \c Range header uses the "bytes" unit but is malformed (e.g.,
             missing the hyphen, containing invalid characters, or invalid numbers),
-            the function returns \c std::nullopt.
+            the function returns \nullopt.
     \endlist
 
     \sa setRangeValues, WellKnownHeader::Range

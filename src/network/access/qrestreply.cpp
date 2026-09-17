@@ -96,7 +96,7 @@ QNetworkReply *QRestReply::networkReply() const
 
     The returned value is wrapped in \c std::optional. If the conversion
     from the received data fails (empty data or JSON parsing error),
-    \c std::nullopt is returned, and \a error is filled with details.
+    \nullopt is returned, and \a error is filled with details.
 
     Calling this function consumes the received data, and any further calls
     to get response data will return empty.
