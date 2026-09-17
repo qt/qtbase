@@ -252,6 +252,15 @@ bool QMimeTypeParserBase::parse(QIODevice *dev, const QString &fileName, QString
             }
                 break;
             case ParseMagicMatchRule: {
+                // Rules are nested arbitrarily deeply in the XML, while matching
+                // and destroying them is recursive, so drop what is too deep to
+                // be a genuine rule.
+                if (currentRules.size() >= QMimeMagicRule::MaxRecursionDepth) {
+                    reader.raiseError("<match> elements nested more than "_L1
+                                      + QString::number(QMimeMagicRule::MaxRecursionDepth)
+                                      + " levels deep"_L1);
+                    break;
+                }
                 auto result = createMagicMatchRule(atts);
                 if (Q_UNLIKELY(!result.rule.isValid()))
                     qWarning("QMimeDatabase: Error parsing %ls\n%ls",

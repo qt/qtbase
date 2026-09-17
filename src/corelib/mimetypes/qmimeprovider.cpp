@@ -80,6 +80,25 @@ enum {
 };
 
 /*
+   The depth limit protects the stack, but it does not limit the time. In a
+   corrupt mime.cache, the child offset of a matchlet can point back to the
+   list that contains it. For example, take a list of 2 matchlets where the
+   children of each one are that same list. Each path still stops at
+   MaxRecursionDepth, but there are 2^depth paths, and a file of a few
+   hundred bytes is enough to describe them.
+
+   So one findByMagic() or checkMagicRules() call also has a budget: the
+   number of input data bytes it may scan, summed over all matchlets it
+   checks. Each checked matchlet costs 1 + min(rangeLength, data.size())
+   bytes: the input bytes it may compare, plus 1 so that no matchlet is free.
+   When the budget is used up, the lookup stops and reports no match.
+
+   Checking every matchlet in the shared-mime-info database costs about 76k
+   bytes, so this limit is far above what a valid mime.cache needs.
+ */
+static constexpr qint64 MagicMatchBudget = 1 << 21;
+
+/*
    A list of fixed-size records in the mime.cache file, whose bounds have been
    checked once: for any index below count, the whole record at
    recordOffset(index) is inside the file, so walking the list needs no further
@@ -509,8 +528,16 @@ bool QMimeBinaryProvider::matchSuffixTree(QMimeGlobMatchResult &result,
     return false;
 }
 
-bool QMimeBinaryProvider::matchMagicRule(QMimeBinaryProvider::CacheFile *cacheFile, quint32 numMatchlets, quint64 firstOffset, const QByteArray &data)
+bool QMimeBinaryProvider::matchMagicRule(QMimeBinaryProvider::CacheFile *cacheFile,
+                                         quint32 numMatchlets, quint64 firstOffset,
+                                         const QByteArray &data, int depth, qint64 &budget)
 {
+    // The child offsets come straight from the cache file, so a corrupt (or
+    // hostile) mime.cache can describe a cyclic or unreasonably deep matchlet
+    // tree. Stop following it instead of exhausting the stack.
+    if (depth <= 0)
+        return false;
+
     const char *dataPtr = data.constData();
     const qsizetype dataSize = data.size();
     for (quint32 matchlet = 0; matchlet < numMatchlets; ++matchlet) {
@@ -531,6 +558,9 @@ bool QMimeBinaryProvider::matchMagicRule(QMimeBinaryProvider::CacheFile *cacheFi
         const quint32 valueLength = *valueLengthOpt;
         const quint32 valueOffset = *valueOffsetOpt;
         const quint32 maskOffset = *maskOffsetOpt;
+        budget -= 1 + qMin(quint64(rangeLength), quint64(dataSize));
+        if (budget < 0) // corrupt cache: give up on this record
+            return false;
         const char *value = cacheFile->getData(valueOffset, valueLength);
         const char *mask = maskOffset ? cacheFile->getData(maskOffset, valueLength) : nullptr;
         if (!value || (maskOffset && !mask)) // corrupt cache
@@ -548,25 +578,28 @@ bool QMimeBinaryProvider::matchMagicRule(QMimeBinaryProvider::CacheFile *cacheFi
         if (numChildren == 0) // No submatch? Then we are done.
             return true;
         // Check that one of the submatches matches too
-        if (matchMagicRule(cacheFile, numChildren, firstChildOffset, data))
+        if (matchMagicRule(cacheFile, numChildren, firstChildOffset, data, depth - 1, budget))
             return true;
     }
     return false;
 }
 
-bool QMimeBinaryProvider::magicRecordMatches(quint32 index, const QByteArray &data) const
+bool QMimeBinaryProvider::magicRecordMatches(quint32 index, const QByteArray &data,
+                                             qint64 &budget) const
 {
     const RecordList &matches = m_cacheFile->m_magicMatches;
     const quint32 numMatchlets = m_cacheFile->recordUint32(matches, index, 8);
     const quint32 firstMatchletOffset = m_cacheFile->recordUint32(matches, index, 12);
-    return matchMagicRule(m_cacheFile.get(), numMatchlets, firstMatchletOffset, data);
+    return matchMagicRule(m_cacheFile.get(), numMatchlets, firstMatchletOffset, data,
+                          QMimeMagicRule::MaxRecursionDepth, budget);
 }
 
 void QMimeBinaryProvider::findByMagic(const QByteArray &data, QMimeMagicResult &result)
 {
     const RecordList &matches = m_cacheFile->m_magicMatches;
-    for (quint32 i = 0; i < matches.count(); ++i) {
-        if (magicRecordMatches(i, data)) {
+    qint64 budget = MagicMatchBudget;
+    for (quint32 i = 0; i < matches.count() && budget >= 0; ++i) {
+        if (magicRecordMatches(i, data, budget)) {
             const int accuracy = static_cast<int>(m_cacheFile->recordUint32(matches, i, 0));
             if (accuracy > result.accuracy) {
                 const quint32 mimeTypeOffset = m_cacheFile->recordUint32(matches, i, 4);
@@ -587,12 +620,13 @@ QMimeBinaryProvider::checkMagicRules(const QString &mime, const QByteArray &data
 {
     QMimeMagicCheckResult result;
     const RecordList &matches = m_cacheFile->m_magicMatches;
-    for (quint32 i = 0; i < matches.count(); ++i) {
+    qint64 budget = MagicMatchBudget;
+    for (quint32 i = 0; i < matches.count() && budget >= 0; ++i) {
         const quint32 mimeTypeOffset = m_cacheFile->recordUint32(matches, i, 4);
         if (m_cacheFile->getLatin1String(mimeTypeOffset) != mime)
             continue;
         result.hasRules = true;
-        if (magicRecordMatches(i, data)) {
+        if (magicRecordMatches(i, data, budget)) {
             result.matched = true;
             break;
         }

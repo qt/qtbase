@@ -322,7 +322,7 @@ QByteArray QMimeMagicRule::mask() const
     return result;
 }
 
-bool QMimeMagicRule::matches(const QByteArray &data) const
+bool QMimeMagicRule::matches(const QByteArray &data, int depth) const
 {
     const bool ok = m_matchFunction && (this->*m_matchFunction)(data);
     if (!ok)
@@ -332,11 +332,16 @@ bool QMimeMagicRule::matches(const QByteArray &data) const
     if (m_subMatches.isEmpty())
         return true;
 
+    // Rules can be nested arbitrarily deeply in the XML files, so refuse to
+    // recurse any further and treat the rule as not matching.
+    if (depth <= 0)
+        return false;
+
     //qDebug() << "Checking" << m_subMatches.count() << "sub-rules";
     // Check that one of the submatches matches too
-    for ( QList<QMimeMagicRule>::const_iterator it = m_subMatches.begin(), end = m_subMatches.end() ;
-          it != end ; ++it ) {
-        if ((*it).matches(data)) {
+    for (QList<QMimeMagicRule>::const_iterator it = m_subMatches.begin(), end = m_subMatches.end();
+         it != end ; ++it) {
+        if ((*it).matches(data, depth - 1)) {
             // One of the hierarchies matched -> mimetype recognized.
             return true;
         }

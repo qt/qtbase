@@ -30,6 +30,11 @@ class QMimeMagicRule
 {
 public:
     enum Type { Invalid = 0, String, Host16, Host32, Big16, Big32, Little16, Little32, Byte };
+    // Maximum nesting depth of magic rules that is followed, both for <match>
+    // elements in XML and for matchlets in mime.cache. The deepest nesting in
+    // the shared-mime-info database is 5, so this leaves ample headroom while
+    // keeping recursion bounded for corrupt or hostile input.
+    static constexpr int MaxRecursionDepth = 50;
 
     QMimeMagicRule(const QString &typeStr, const QByteArray &value, const QString &offsets,
                    const QByteArray &mask, QString *errorString);
@@ -57,7 +62,7 @@ public:
 
     bool isValid() const { return m_matchFunction != nullptr; }
 
-    bool matches(const QByteArray &data) const;
+    bool matches(const QByteArray &data, int depth = MaxRecursionDepth) const;
 
     QList<QMimeMagicRule> m_subMatches;
 
