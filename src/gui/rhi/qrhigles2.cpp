@@ -2311,18 +2311,14 @@ void QRhiGles2::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
         cmd.args.bindShaderResources.maybeComputePs = compPsD;
         cmd.args.bindShaderResources.srb = srb;
         cmd.args.bindShaderResources.dynamicOffsetCount = 0;
-        if (srbD->hasDynamicOffset) {
-            if (dynamicOffsetCount < QGles2CommandBuffer::MAX_DYNAMIC_OFFSET_COUNT) {
-                cmd.args.bindShaderResources.dynamicOffsetCount = dynamicOffsetCount;
-                uint *p = cmd.args.bindShaderResources.dynamicOffsetPairs;
-                for (int i = 0; i < dynamicOffsetCount; ++i) {
-                    const QRhiCommandBuffer::DynamicOffset &dynOfs(dynamicOffsets[i]);
-                    *p++ = uint(dynOfs.first);
-                    *p++ = dynOfs.second;
-                }
-            } else {
-                qWarning("Too many dynamic offsets (%d, max is %d)",
-                         dynamicOffsetCount, QGles2CommandBuffer::MAX_DYNAMIC_OFFSET_COUNT);
+        cmd.args.bindShaderResources.dynamicOffsetPoolOffset = 0;
+        if (srbD->hasDynamicOffset && dynamicOffsetCount > 0) {
+            cmd.args.bindShaderResources.dynamicOffsetCount = dynamicOffsetCount;
+            cmd.args.bindShaderResources.dynamicOffsetPoolOffset = quint32(cbD->dynamicOffsetPool.size());
+            for (int i = 0; i < dynamicOffsetCount; ++i) {
+                const QRhiCommandBuffer::DynamicOffset &dynOfs(dynamicOffsets[i]);
+                cbD->dynamicOffsetPool.append(uint(dynOfs.first));
+                cbD->dynamicOffsetPool.append(dynOfs.second);
             }
         }
     }
@@ -4138,7 +4134,7 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
                                 cmd.args.bindShaderResources.maybeGraphicsPs,
                                 cmd.args.bindShaderResources.maybeComputePs,
                                 cmd.args.bindShaderResources.srb,
-                                cmd.args.bindShaderResources.dynamicOffsetPairs,
+                                cbD->dynamicOffsetPool.constData() + cmd.args.bindShaderResources.dynamicOffsetPoolOffset,
                                 cmd.args.bindShaderResources.dynamicOffsetCount);
             break;
         case QGles2CommandBuffer::Command::SetPushConstants:

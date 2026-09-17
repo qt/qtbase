@@ -324,9 +324,6 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
     ~QGles2CommandBuffer();
     void destroy() override;
 
-    // keep at a reasonably low value otherwise sizeof Command explodes
-    static const int MAX_DYNAMIC_OFFSET_COUNT = 8;
-
     struct Command {
         enum Cmd {
             BeginFrame,
@@ -458,7 +455,7 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
                 QRhiComputePipeline *maybeComputePs;
                 QRhiShaderResourceBindings *srb;
                 int dynamicOffsetCount;
-                uint dynamicOffsetPairs[MAX_DYNAMIC_OFFSET_COUNT * 2]; // binding, offset
+                quint32 dynamicOffsetPoolOffset;
             } bindShaderResources;
             struct {
                 QRhiGraphicsPipeline *maybeGraphicsPs;
@@ -711,6 +708,7 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
 
     QVarLengthArray<QByteArray, 4> dataRetainPool;
     QVarLengthArray<char, 1024> pushConstantPool;
+    QVarLengthArray<uint, 32> dynamicOffsetPool; // (binding, offset) pairs
     QVarLengthArray<QRhiBufferData, 4> bufferDataRetainPool;
     QVarLengthArray<QImage, 4> imageRetainPool;
 
@@ -730,6 +728,7 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
     void resetCommands() {
         commands.reset();
         pushConstantPool.clear();
+        dynamicOffsetPool.clear();
         dataRetainPool.clear();
         bufferDataRetainPool.clear();
         imageRetainPool.clear();
