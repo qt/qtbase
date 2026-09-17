@@ -1037,6 +1037,9 @@ function(_qt_internal_harmonyos_add_all_tests_hap_target)
             VERBATIM
         )
     endif()
+
+    _qt_internal_ensure_internal_custom_target(qt_internal_plugins)
+    add_dependencies(all_tests_make_hap qt_internal_plugins)
 endfunction()
 
 # FIXTURES_SETUP test that pushes the signed HAP to the device before any
