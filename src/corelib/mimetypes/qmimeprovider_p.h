@@ -122,8 +122,8 @@ private:
                          quint64 firstOffset, const QString &fileName, qsizetype charPos,
                          bool caseSensitiveCheck);
     static bool matchMagicRule(CacheFile *cacheFile, quint32 numMatchlets, quint64 firstOffset,
-                               const QByteArray &data);
-    bool magicRecordMatches(quint32 index, const QByteArray &data) const;
+                               const QByteArray &data, int depth, qint64 &budget);
+    bool magicRecordMatches(quint32 index, const QByteArray &data, qint64 &budget) const;
     QLatin1StringView iconForMime(CacheFile *cacheFile, const RecordList &icons,
                                   QStringView inputMime);
     void loadMimeTypeList();
