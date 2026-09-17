@@ -20,7 +20,9 @@ if(PkgConfig_FOUND)
         target_link_libraries(Libb2::Libb2 INTERFACE PkgConfig::Libb2)
         set(Libb2_FOUND TRUE)
     endif()
-else()
+endif()
+
+if(NOT TARGET Libb2::Libb2)
     find_path(LIBB2_INCLUDE_DIR NAMES blake2.h)
     find_library(LIBB2_LIBRARY NAMES b2)
 
