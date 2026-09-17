@@ -1260,7 +1260,7 @@ qt_feature("timezone_locale" PRIVATE
     LABEL "QTimeZoneLocale"
     PURPOSE "Provides support for localized time-zone display names."
     CONDITION
-        QT_FEATURE_timezone AND NOT APPLE AND NOT ANDROID
+        QT_FEATURE_timezone AND NOT APPLE AND NOT ANDROID AND NOT WASM
 )
 qt_feature("timezone_tzdb" PUBLIC
     SECTION "Utilities"
