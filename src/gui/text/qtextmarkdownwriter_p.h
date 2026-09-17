@@ -24,6 +24,7 @@
 QT_BEGIN_NAMESPACE
 
 class QAbstractItemModel;
+class QTextTableCell;
 
 class Q_GUI_EXPORT QTextMarkdownWriter
 {
@@ -45,19 +46,30 @@ private:
 
     ListInfo listInfo(QTextList *list);
     void setLinePrefixForBlockQuote(int level);
+    int measureCellWidth(const QTextTableCell &cell, bool ignoreFormat);
 
 private:
-    QTextStream &m_stream;
+    // The part of the writer's state that writeBlock() mutates as it goes.
+    // Grouped together so that measureCellWidth() can save, reset and restore
+    // it in one go.
+    struct BlockState {
+        QString linePrefix;
+        QString codeBlockFence;
+        int wrappedLineIndent = 0;
+        int lastListIndent = 1;
+        bool doubleNewlineWritten = false;
+        bool linePrefixWritten = false;
+        bool indentedCodeBlock = false;
+        bool fencedCodeBlock = false;
+    };
+
+    // A pointer rather than a reference, because measureCellWidth() temporarily
+    // redirects output to a scratch stream; but it is never null.
+    QTextStream *m_stream;
+
     QTextDocument::MarkdownFeatures m_features;
     QMap<QTextList *, ListInfo> m_listInfo;
-    QString m_linePrefix;
-    QString m_codeBlockFence;
-    int m_wrappedLineIndent = 0;
-    int m_lastListIndent = 1;
-    bool m_doubleNewlineWritten = false;
-    bool m_linePrefixWritten = false;
-    bool m_indentedCodeBlock = false;
-    bool m_fencedCodeBlock = false;
+    BlockState m_blockState;
 };
 
 QT_END_NAMESPACE

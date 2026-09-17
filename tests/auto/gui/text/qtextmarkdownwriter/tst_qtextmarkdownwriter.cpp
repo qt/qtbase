@@ -761,6 +761,7 @@ void tst_QTextMarkdownWriter::rewriteDocument_data()
     QTest::newRow("lists and code blocks") << "listsAndCodeBlocks.md";
     QTest::newRow("front matter") << "yaml.md";
     QTest::newRow("long headings") << "longHeadings.md";
+    QTest::newRow("table with formatted spans") << "tableSpans.md";
 }
 
 void tst_QTextMarkdownWriter::rewriteDocument()
@@ -841,6 +842,18 @@ void tst_QTextMarkdownWriter::fromHtml_data()
     QTest::newRow("table with backslash in cell") << // QTBUG-96051
             "<table><tr><td>1011011 [</td><td>1011100 backslash \\</td></tr></table>" <<
             "|1011011 [|1011100 backslash \\\\|";
+    QTest::newRow("table with formatted spans") << // QTBUG-107731
+            "<table>"
+            "<tr><td>short</td><td>short's description</td></tr>"
+            "<tr><td><code>longer</code></td><td>a longer description</td></tr>"
+            "<tr><td><i>emph</i></td><td>emphatically</td></tr>"
+            "<tr><td><b>bold</b></td><td>emboldened</td></tr>"
+            "</table>" <<
+            "|short   |short's description |\n"
+            "|--------|--------------------|\n"
+            "|`longer`|a longer description|\n"
+            "|*emph*  |emphatically        |\n"
+            "|**bold**|emboldened          |";
     // https://spec.commonmark.org/0.31.2/#example-12
     // escaping punctuation is ok, but QTextMarkdownWriter currently doesn't do that (which is also ok)
     QTest::newRow("punctuation") <<
