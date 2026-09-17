@@ -702,7 +702,7 @@ QPalette makeHeaderPalette(const AllPalletesColors &palettesColors)
 QPalette makeItemViewPalette(const AllPalletesColors &palettesColors)
 {
     return makePalette(
-        makeBasePalette(palettesColors),
+        makeSystemPalette(palettesColors),
         {
             {QPalette::Active, QPalette::Base, palettesColors.palettes.window},
             {QPalette::Inactive, QPalette::Base, palettesColors.palettes.window},
