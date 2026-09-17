@@ -339,7 +339,7 @@ void tst_QTextMarkdownWriter::testWriteNestedNumericLists()
     // While we can set the start index for a block, if list items intersect each other, they will
     // still use the list numbering.
     const QString expected = QString::fromLatin1(
-                "1.  ListItem 1\n    1)  ListItem 2\n        1.  ListItem 3\n2.  ListItem 4\n    2)  ListItem 5\n");
+                "1.  ListItem 1\n    1)  ListItem 2\n        1.  ListItem 3\n2.  ListItem 4\n\n    2)  ListItem 5\n");
     if (output != expected && isMainFontFixed())
         QEXPECT_FAIL("", "fixed-pitch main font (QTBUG-103484)", Continue);
     QCOMPARE(output, expected);
@@ -382,7 +382,10 @@ void tst_QTextMarkdownWriter::testWriteNumericListWithStart()
 
     // This will look out of place: it's in a different position than its list would suggest.
     // Generates invalid markdown numbering (OK for humans, but md4c will parse it differently than we "meant").
-    // TODO QTBUG-111707: the writer needs to add newlines, otherwise ListItem 5 becomes part of the text for ListItem 4.
+    // Since it resumes a deeper list with a number other than 1, it cannot interrupt
+    // ListItem 4's paragraph (https://spec.commonmark.org/0.31.2/#list-items), so the
+    // writer separates them with a blank line: otherwise re-reading would make
+    // ListItem 5 part of the text of ListItem 4 (QTBUG-111707).
     cursor.insertBlock();
     cursor.insertText("ListItem 5");
     list2->add(cursor.block());
@@ -406,6 +409,7 @@ void tst_QTextMarkdownWriter::testWriteNumericListWithStart()
     1)  ListItem 2
         1.  ListItem 3
 3.  ListItem 4
+
     2)  ListItem 5
 0.  SecondList Item 0
 1.  SecondList Item 1
@@ -429,6 +433,17 @@ void tst_QTextMarkdownWriter::testWriteNumericListWithStart()
     if (output != expected && isMainFontFixed())
         QEXPECT_FAIL("", "fixed-pitch main font (QTBUG-103484)", Continue);
     QCOMPARE(output, expected);
+
+    // QTBUG-111707: each item must still be a separate block after re-reading;
+    // without the blank line, ListItem 5 was absorbed into ListItem 4's text.
+    QTextDocument reread;
+    reread.setMarkdown(output);
+    QStringList rereadItems;
+    for (QTextBlock b = reread.begin(); b.isValid(); b = b.next())
+        rereadItems << b.text();
+    QCOMPARE(rereadItems, QStringList({ "ListItem 1", "ListItem 2", "ListItem 3",
+                                        "ListItem 4", "ListItem 5",
+                                        "SecondList Item 0", "SecondList Item 1" }));
 }
 
 void tst_QTextMarkdownWriter::testWriteTable()

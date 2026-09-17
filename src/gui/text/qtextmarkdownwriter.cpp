@@ -507,7 +507,16 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
         }
         int indentFirstLine = (listLevel - 1) * (numeric ? 4 : 2);
         m_blockState.wrappedLineIndent += indentFirstLine;
-        if (m_blockState.lastListIndent != listLevel && !m_blockState.doubleNewlineWritten && listInfo(block.textList()).loose)
+        // An ordered list can interrupt a paragraph only if it starts with 1:
+        // https://spec.commonmark.org/0.31.2/#list-items
+        // So an indented "2." resuming a deeper list after a shallower item
+        // is read back as a lazy continuation line of that shallower item,
+        // smashing the two items together. A blank line in between prevents that.
+        // Bullets can always interrupt, so they need no help.
+        const bool cannotInterruptParagraph =
+                numeric && number != 1 && listLevel > m_blockState.lastListIndent;
+        if (m_blockState.lastListIndent != listLevel && !m_blockState.doubleNewlineWritten
+                && (cannotInterruptParagraph || listInfo(block.textList()).loose))
             (*m_stream) << qtmw_Newline;
         m_blockState.lastListIndent = listLevel;
         QString prefix(indentFirstLine, qtmw_Space);

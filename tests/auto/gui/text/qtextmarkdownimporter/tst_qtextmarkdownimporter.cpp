@@ -248,11 +248,11 @@ void tst_QTextMarkdownImporter::lists_data()
     QTest::newRow("nested list offset start")
             << "1. text\n\n    0. indented list item\n\n4. second item in first list"
             << 1 << 0 << 3 << false
-            << "1.  text\n    0.  indented list item\n2.  second item in first list\n";
+            << "1.  text\n\n    0.  indented list item\n2.  second item in first list\n";
     QTest::newRow("offset start after nested list")
             << "1. text\n\n    0. indented list item\n\n4. second item in first list"
             << 2 << 1 << 3 << false
-            << "1.  text\n    0.  indented list item\n2.  second item in first list\n";
+            << "1.  text\n\n    0.  indented list item\n2.  second item in first list\n";
     QTest::newRow("star newline") << "*\n" << 0 << 1 << 1 << true << "* \n";
     QTest::newRow("hyphen newline") << "-\n" << 0 << 1 << 1 << true << "- \n";
     QTest::newRow("hyphen space newline") << "- \n" << 0 << 1 << 1 << true << "- \n";
