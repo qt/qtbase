@@ -209,8 +209,14 @@ int QTextMarkdownImporter::cbEnterBlock(int blockType, void *det)
         m_needsInsertBlock = true;
         break;
     case MD_BLOCK_QUOTE:
+        // md4c delivers these callbacks in document order, so being inside a list item here means
+        // the list encloses this quote: "- > quoted". The list is only pushed onto the stack in
+        // insertBlock(); for the first item, m_needsInsertList tells us if we are already in one.
+        if (!m_blockQuoteDepth)
+            m_blockQuoteInsideListItem = !m_listStack.isEmpty() || m_needsInsertList;
         ++m_blockQuoteDepth;
-        qCDebug(lcMD, "QUOTE level %d", m_blockQuoteDepth);
+        qCDebug(lcMD, "QUOTE level %d inside list item %d", m_blockQuoteDepth,
+                m_blockQuoteInsideListItem);
         break;
     case MD_BLOCK_CODE: {
         MD_BLOCK_CODE_DETAIL *detail = static_cast<MD_BLOCK_CODE_DETAIL *>(det);
@@ -382,6 +388,8 @@ int QTextMarkdownImporter::cbLeaveBlock(int blockType, void *detail)
     case MD_BLOCK_QUOTE: {
         qCDebug(lcMD, "QUOTE level %d ended", m_blockQuoteDepth);
         --m_blockQuoteDepth;
+        if (!m_blockQuoteDepth)
+            m_blockQuoteInsideListItem = false;
         m_needsInsertBlock = true;
     } break;
     case MD_BLOCK_TABLE:
@@ -635,6 +643,10 @@ void QTextMarkdownImporter::insertBlock()
         blockFormat.setProperty(QTextFormat::BlockQuoteLevel, m_blockQuoteDepth);
         blockFormat.setLeftMargin(qtmi_BlockQuoteIndent * m_blockQuoteDepth);
         blockFormat.setRightMargin(qtmi_BlockQuoteIndent);
+        // Remember which way it's nested: a QTextBlock cannot contain another block,
+        // but we need to distinguish "- > quoted" from "> - quoted".
+        if (m_blockQuoteInsideListItem)
+            blockFormat.setProperty(QTextFormat::BlockQuoteInsideListItem, true);
     }
     if (m_codeBlock) {
         blockFormat.setProperty(QTextFormat::BlockCodeLanguage, m_blockCodeLanguage);

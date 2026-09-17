@@ -644,6 +644,13 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QTextTableCellFormat &
     \value BlockQuoteLevel  The depth of nested quoting on this block: 1 means the block is a top-level block quote.
                             Blocks that are not block quotes should not have this property.
                             This enum value has been added in Qt 5.14.
+    \value BlockQuoteInsideListItem Whether the block quote on this block is nested inside a
+                            list item, rather than the list being nested inside the block quote.
+                            A QTextBlock cannot contain another block, so this distinguishes
+                            Markdown's \c {- > quoted} from \c {> - quoted}, which are otherwise
+                            represented identically. Only blocks that have the
+                            \c BlockQuoteLevel property should have this property.
+                            This enum value has been added in Qt 6.13.
     \value BlockCodeLanguage The programming language in a preformatted or code block.
                             Blocks that do not contain code should not have this property.
                             This enum value has been added in Qt 5.14.

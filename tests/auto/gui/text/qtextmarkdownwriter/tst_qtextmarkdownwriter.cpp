@@ -828,7 +828,7 @@ void tst_QTextMarkdownWriter::rewriteDocument_data()
 
     QTest::newRow("block quotes") << "blockquotes.md";
     QTest::newRow("block quotes with lists") << "blockquotesWithLists.md";
-    // QTest::newRow("list item with block quote") << "listItemWithBlockquote.md"; // not supported for now
+    QTest::newRow("list item with block quote") << "listItemWithBlockquote.md"; // QTBUG-104997
     QTest::newRow("example") << "example.md";
     QTest::newRow("list items after headings") << "headingsAndLists.md";
     QTest::newRow("word wrap") << "wordWrap.md";

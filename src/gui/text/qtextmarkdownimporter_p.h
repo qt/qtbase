@@ -103,6 +103,7 @@ private:
     bool m_listItem = false; // true from the beginning of LI to the end of the first P
     bool m_codeBlock = false;
     bool m_imageSpan = false;
+    bool m_blockQuoteInsideListItem = false;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QTextMarkdownImporter::Features)

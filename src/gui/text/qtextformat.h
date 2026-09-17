@@ -130,6 +130,7 @@ public:
         BlockTrailingHorizontalRulerWidth = 0x1060,
         HeadingLevel = 0x1070,
         BlockQuoteLevel = 0x1080,
+        BlockQuoteInsideListItem = 0x1081,
         BlockCodeLanguage = 0x1090,
         BlockCodeFence = 0x1091,
         BlockMarker = 0x10A0,

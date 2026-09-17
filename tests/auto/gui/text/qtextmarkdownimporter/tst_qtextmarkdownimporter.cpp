@@ -29,6 +29,8 @@ class tst_QTextMarkdownImporter : public QObject
     Q_OBJECT
 
 private slots:
+    void blockQuoteNesting_data();
+    void blockQuoteNesting();
     void paragraphs();
     void headingBulletsContinuations();
     void thematicBreaks();
@@ -219,6 +221,45 @@ void tst_QTextMarkdownImporter::thematicBreaks()
         out.close();
     }
 #endif
+}
+
+void tst_QTextMarkdownImporter::blockQuoteNesting_data()
+{
+    QTest::addColumn<QString>("input");
+    QTest::addColumn<bool>("insideListItem");
+    QTest::addColumn<QString>("rewrite");
+
+    // These two parse to blocks that are identical in every other respect,
+    // so the writer can only tell them apart via BlockQuoteInsideListItem.
+    // A block quote that is still open at the end of the document keeps its
+    // trailing marker, which is pre-existing behavior (see blockquotesWithLists.md).
+    QTest::newRow("list inside block quote")
+            << "> - one\n> - two\n" << false << "> - one\n> - two\n> ";
+    QTest::newRow("block quote inside list item")
+            << "- > one\n- > two\n" << true << "- > one\n- > two\n";
+}
+
+void tst_QTextMarkdownImporter::blockQuoteNesting() // QTBUG-104997
+{
+    QFETCH(QString, input);
+    QFETCH(bool, insideListItem);
+    QFETCH(QString, rewrite);
+
+    QTextDocument doc;
+    doc.setMarkdown(input);
+
+    int quotedBlocks = 0;
+    for (QTextBlock b = doc.begin(); b.isValid(); b = b.next()) {
+        const QTextBlockFormat fmt = b.blockFormat();
+        if (!fmt.hasProperty(QTextFormat::BlockQuoteLevel))
+            continue;
+        ++quotedBlocks;
+        QCOMPARE(fmt.boolProperty(QTextFormat::BlockQuoteInsideListItem), insideListItem);
+    }
+    QCOMPARE(quotedBlocks, 2);
+
+    // ...and the distinction has to survive a round trip.
+    QCOMPARE(doc.toMarkdown(), rewrite);
 }
 
 void tst_QTextMarkdownImporter::lists_data()

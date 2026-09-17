@@ -221,7 +221,11 @@ void QTextMarkdownWriter::writeFrame(const QTextFrame *frame)
             } else if (endingCol > 0) {
                 if (block.textList() || block.blockFormat().hasProperty(QTextFormat::BlockCodeLanguage)) {
                     (*m_stream) << qtmw_Newline;
-                    if (block.textList()) {
+                    // list inside a block quote: carry the "> " prefix onto the next line
+                    // quote nested inside a list item: don't end with a dangling  "> "
+                    const bool quoteEndsWithItem = block.blockFormat().boolProperty(
+                            QTextFormat::BlockQuoteInsideListItem);
+                    if (block.textList() && !quoteEndsWithItem) {
                         (*m_stream) << m_blockState.linePrefix;
                         m_blockState.linePrefixWritten = true;
                     }
@@ -457,9 +461,13 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
         m_blockState.linePrefixWritten = m_blockState.linePrefix.size() > 0;
     }
     m_blockState.linePrefix.clear();
+    // block inside a list item: "- > quoted"; leave the prefix to append below
+    // list inside a block quote: "> - quoted"; nothing special here
+    const bool quoteInListItem = blockQuoteLevel > 0 && block.textList()
+            && blockFmt.boolProperty(QTextFormat::BlockQuoteInsideListItem);
     if (!blockFmt.headingLevel() && blockQuoteLevel > 0) {
         setLinePrefixForBlockQuote(blockQuoteLevel);
-        if (!m_blockState.linePrefixWritten) {
+        if (!m_blockState.linePrefixWritten && !quoteInListItem) {
             (*m_stream) << m_blockState.linePrefix;
             m_blockState.linePrefixWritten = true;
         }
@@ -531,6 +539,11 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
         } else {
             prefix += QLatin1StringView(bullet) + qtmw_Space;
         }
+        if (quoteInListItem) {
+            // "- > ": quote nested inside list item
+            prefix += m_blockState.linePrefix;
+            m_blockState.linePrefixWritten = true;
+        }
         (*m_stream) << prefix;
     } else if (blockFmt.hasProperty(QTextFormat::BlockTrailingHorizontalRulerWidth)) {
         (*m_stream) << "- - -\n"; // unambiguous horizontal rule, not an underline under a heading
@@ -570,7 +583,14 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
         wrap = false;
     }
 
-    QString wrapIndentString = m_blockState.linePrefix + QString(m_blockState.wrappedLineIndent, qtmw_Space);
+    // Continuation lines of a quoted list item are indented to line up under the
+    // item's text, and the quote marker goes after that indent: "  > continued".
+    const QString wrappedLineIndentString(m_blockState.wrappedLineIndent, qtmw_Space);
+    QString wrapIndentString;
+    if (quoteInListItem)
+        wrapIndentString = wrappedLineIndentString + m_blockState.linePrefix;
+    else
+        wrapIndentString = m_blockState.linePrefix + wrappedLineIndentString;
     // It would be convenient if QTextStream had a lineCharPos() accessor,
     // to keep track of how many characters (not bytes) have been written on the current line,
     // but it doesn't.  So we have to keep track with this col variable.
