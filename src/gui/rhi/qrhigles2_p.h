@@ -244,6 +244,7 @@ struct QGles2UniformDescription
     quint32 offset;
     quint32 size;
     int arrayDim;
+    int stateIndex; // -1 when not tracked (arrays, matrices, int types)
 };
 
 Q_DECLARE_TYPEINFO(QGles2UniformDescription, Q_RELOCATABLE_TYPE);
@@ -263,10 +264,13 @@ using QGles2SamplerDescriptionVector = QVarLengthArray<QGles2SamplerDescription,
 
 struct QGles2UniformState
 {
-    static constexpr int MAX_TRACKED_LOCATION = 1023;
     int componentCount;
     float v[4];
 };
+
+Q_DECLARE_TYPEINFO(QGles2UniformState, Q_PRIMITIVE_TYPE);
+
+using QGles2UniformStateVector = QVarLengthArray<QGles2UniformState, 8>;
 
 struct QGles2GraphicsPipeline : public QRhiGraphicsPipeline
 {
@@ -279,7 +283,7 @@ struct QGles2GraphicsPipeline : public QRhiGraphicsPipeline
     GLenum drawMode = GL_TRIANGLES;
     QGles2UniformDescriptionVector uniforms;
     QGles2SamplerDescriptionVector samplers;
-    QGles2UniformState uniformState[QGles2UniformState::MAX_TRACKED_LOCATION + 1];
+    QGles2UniformStateVector uniformState;
     QRhiShaderResourceBindings *currentSrb = nullptr;
     uint currentSrbGeneration = 0;
     uint lastUsedInFrameNo = 0;
@@ -297,7 +301,7 @@ struct QGles2ComputePipeline : public QRhiComputePipeline
     GLuint program = 0;
     QGles2UniformDescriptionVector uniforms;
     QGles2SamplerDescriptionVector samplers;
-    QGles2UniformState uniformState[QGles2UniformState::MAX_TRACKED_LOCATION + 1];
+    QGles2UniformStateVector uniformState;
     QRhiShaderResourceBindings *currentSrb = nullptr;
     uint currentSrbGeneration = 0;
     uint lastUsedInFrameNo = 0;
@@ -937,6 +941,8 @@ public:
                              QRhiGraphicsPipeline *maybeGraphicsPs, QRhiComputePipeline *maybeComputePs,
                              QRhiShaderResourceBindings *srb,
                              const uint *dynOfsPairs, int dynOfsCount);
+    static void setupUniformStateTracking(QGles2UniformDescriptionVector *uniforms,
+                                          QGles2UniformStateVector *uniformState);
     QGles2RenderTargetData *enqueueBindFramebuffer(QRhiRenderTarget *rt, QGles2CommandBuffer *cbD,
                                                    bool *wantsColorClear = nullptr, bool *wantsDsClear = nullptr);
     void enqueueBarriersForPass(QGles2CommandBuffer *cbD);

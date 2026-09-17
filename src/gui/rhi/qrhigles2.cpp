@@ -4614,6 +4614,35 @@ void QRhiGles2::bindCombinedSampler(QGles2CommandBuffer *cbD, QGles2Texture *tex
     }
 }
 
+static inline bool qrhi_gl_isTrackedUniform(const QGles2UniformDescription &uniform)
+{
+    // The logic here must match bindShaderResources().
+
+    if (uniform.arrayDim > 0)
+        return false;
+
+    switch (uniform.type) {
+    case QShaderDescription::Float:
+    case QShaderDescription::Vec2:
+    case QShaderDescription::Vec3:
+    case QShaderDescription::Vec4:
+        return true;
+    default:
+        return false;
+    }
+}
+
+void QRhiGles2::setupUniformStateTracking(QGles2UniformDescriptionVector *uniforms,
+                                          QGles2UniformStateVector *uniformState)
+{
+    int count = 0;
+    for (QGles2UniformDescription &uniform : *uniforms)
+        uniform.stateIndex = qrhi_gl_isTrackedUniform(uniform) ? count++ : -1;
+    uniformState->resize(count);
+    if (count)
+        memset(uniformState->data(), 0, size_t(count) * sizeof(QGles2UniformState));
+}
+
 void QRhiGles2::bindShaderResources(QGles2CommandBuffer *cbD,
                                     QRhiGraphicsPipeline *maybeGraphicsPs, QRhiComputePipeline *maybeComputePs,
                                     QRhiShaderResourceBindings *srb,
@@ -4624,8 +4653,8 @@ void QRhiGles2::bindShaderResources(QGles2CommandBuffer *cbD,
     bool activeTexUnitAltered = false;
     QGles2UniformDescriptionVector &uniforms(maybeGraphicsPs ? QRHI_RES(QGles2GraphicsPipeline, maybeGraphicsPs)->uniforms
                                                              : QRHI_RES(QGles2ComputePipeline, maybeComputePs)->uniforms);
-    QGles2UniformState *uniformState = maybeGraphicsPs ? QRHI_RES(QGles2GraphicsPipeline, maybeGraphicsPs)->uniformState
-                                                       : QRHI_RES(QGles2ComputePipeline, maybeComputePs)->uniformState;
+    QGles2UniformState *uniformState = maybeGraphicsPs ? QRHI_RES(QGles2GraphicsPipeline, maybeGraphicsPs)->uniformState.data()
+                                                       : QRHI_RES(QGles2ComputePipeline, maybeComputePs)->uniformState.data();
     m_scratch.separateTextureBindings.clear();
     m_scratch.separateSamplerBindings.clear();
 
@@ -4695,8 +4724,8 @@ void QRhiGles2::bindShaderResources(QGles2CommandBuffer *cbD,
                         const int elemCount = uniform.arrayDim;
                         if (elemCount < 1) {
                             const float v = *reinterpret_cast<const float *>(src);
-                            if (uniform.glslLocation <= QGles2UniformState::MAX_TRACKED_LOCATION) {
-                                QGles2UniformState &thisUniformState(uniformState[uniform.glslLocation]);
+                            if (uniform.stateIndex >= 0) {
+                                QGles2UniformState &thisUniformState(uniformState[uniform.stateIndex]);
                                 if (thisUniformState.componentCount != 1 || thisUniformState.v[0] != v) {
                                     thisUniformState.componentCount = 1;
                                     thisUniformState.v[0] = v;
@@ -4718,8 +4747,8 @@ void QRhiGles2::bindShaderResources(QGles2CommandBuffer *cbD,
                         const int elemCount = uniform.arrayDim;
                         if (elemCount < 1) {
                             const float *v = reinterpret_cast<const float *>(src);
-                            if (uniform.glslLocation <= QGles2UniformState::MAX_TRACKED_LOCATION) {
-                                QGles2UniformState &thisUniformState(uniformState[uniform.glslLocation]);
+                            if (uniform.stateIndex >= 0) {
+                                QGles2UniformState &thisUniformState(uniformState[uniform.stateIndex]);
                                 if (thisUniformState.componentCount != 2
                                         || thisUniformState.v[0] != v[0]
                                         || thisUniformState.v[1] != v[1])
@@ -4744,8 +4773,8 @@ void QRhiGles2::bindShaderResources(QGles2CommandBuffer *cbD,
                         const int elemCount = uniform.arrayDim;
                         if (elemCount < 1) {
                             const float *v = reinterpret_cast<const float *>(src);
-                            if (uniform.glslLocation <= QGles2UniformState::MAX_TRACKED_LOCATION) {
-                                QGles2UniformState &thisUniformState(uniformState[uniform.glslLocation]);
+                            if (uniform.stateIndex >= 0) {
+                                QGles2UniformState &thisUniformState(uniformState[uniform.stateIndex]);
                                 if (thisUniformState.componentCount != 3
                                         || thisUniformState.v[0] != v[0]
                                         || thisUniformState.v[1] != v[1]
@@ -4772,8 +4801,8 @@ void QRhiGles2::bindShaderResources(QGles2CommandBuffer *cbD,
                         const int elemCount = uniform.arrayDim;
                         if (elemCount < 1) {
                             const float *v = reinterpret_cast<const float *>(src);
-                            if (uniform.glslLocation <= QGles2UniformState::MAX_TRACKED_LOCATION) {
-                                QGles2UniformState &thisUniformState(uniformState[uniform.glslLocation]);
+                            if (uniform.stateIndex >= 0) {
+                                QGles2UniformState &thisUniformState(uniformState[uniform.stateIndex]);
                                 if (thisUniformState.componentCount != 4
                                         || thisUniformState.v[0] != v[0]
                                         || thisUniformState.v[1] != v[1]
@@ -5680,6 +5709,7 @@ void QRhiGles2::registerUniformIfActive(const QShaderDescription::BlockVariable 
     // that is not the case, it won't break anything, but we'll generate
     // unnecessary glUniform* calls then.
     uniform.glslLocation = f->glGetUniformLocation(program, name.constData());
+    uniform.stateIndex = -1; // assigned later
     if (uniform.glslLocation >= 0 && !activeUniformLocations->hasSeen(uniform.glslLocation)) {
         if (var.arrayDims.size() > 1) {
             qWarning("Array '%s' has more than one dimension. This is not supported.",
@@ -7012,6 +7042,7 @@ void QGles2GraphicsPipeline::destroy()
     program = 0;
     uniforms.clear();
     samplers.clear();
+    uniformState.clear();
 
     QRHI_RES_RHI(QRhiGles2);
     if (rhiD) {
@@ -7160,7 +7191,7 @@ bool QGles2GraphicsPipeline::create()
         return a.offset < b.offset;
     });
 
-    memset(uniformState, 0, sizeof(uniformState));
+    QRhiGles2::setupUniformStateTracking(&uniforms, &uniformState);
 
     currentSrb = nullptr;
     currentSrbGeneration = 0;
@@ -7197,6 +7228,7 @@ void QGles2ComputePipeline::destroy()
     program = 0;
     uniforms.clear();
     samplers.clear();
+    uniformState.clear();
 
     QRHI_RES_RHI(QRhiGles2);
     if (rhiD) {
@@ -7269,7 +7301,7 @@ bool QGles2ComputePipeline::create()
 
     // storage images and buffers need no special steps here
 
-    memset(uniformState, 0, sizeof(uniformState));
+    QRhiGles2::setupUniformStateTracking(&uniforms, &uniformState);
 
     currentSrb = nullptr;
     currentSrbGeneration = 0;
