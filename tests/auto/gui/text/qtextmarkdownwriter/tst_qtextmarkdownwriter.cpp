@@ -39,6 +39,8 @@ private slots:
     void frontMatter();
     void charFormatWrapping_data();
     void charFormatWrapping();
+    void charFormatWrapOpeningIndicator_data();
+    void charFormatWrapOpeningIndicator();
     void charFormat_data();
     void charFormat();
     void rewriteDocument_data();
@@ -629,6 +631,64 @@ void tst_QTextMarkdownWriter::charFormatWrapping() // QTBUG-116927
     }
 }
 
+void tst_QTextMarkdownWriter::charFormatWrapOpeningIndicator_data()
+{
+    QTest::addColumn<QTextFormat::Property>("property");
+    QTest::addColumn<QVariant>("propertyValue");
+    QTest::addColumn<QString>("expectedIndicator");
+
+    QTest::newRow("FontFixedPitch") << QTextFormat::FontFixedPitch << QVariant(true) << "`";
+    QTest::newRow("FontItalic") << QTextFormat::FontItalic << QVariant(true) << "*";
+    QTest::newRow("FontUnderline") << QTextFormat::FontUnderline << QVariant(true) << "_";
+    QTest::newRow("FontStrikeOut") << QTextFormat::FontStrikeOut << QVariant(true) << "~~";
+    QTest::newRow("FontWeight") << QTextFormat::FontWeight << QVariant(700) << "**";
+}
+
+void tst_QTextMarkdownWriter::charFormatWrapOpeningIndicator() // QTBUG-150359
+{
+    QFETCH(QTextFormat::Property, property);
+    QFETCH(QVariant, propertyValue);
+    QFETCH(QString, expectedIndicator);
+
+    // Vary the column at which the formatted span begins, so that in some
+    // iterations it begins right around the wrapping column.
+    for (int pad = 0; pad < 24; ++pad) {
+        QTextDocument doc;
+        QTextCursor cursor(&doc);
+        cursor.insertText("word word word word word word word word word word word word "
+                          + QString(pad, u'x') + u' ');
+        QTextCharFormat fmt;
+        fmt.setProperty(property, propertyValue);
+        cursor.setCharFormat(fmt);
+        cursor.insertText("formatted");
+        cursor.setCharFormat({});
+        cursor.insertText(" and some trailing words here to finish the line off");
+
+        QString md;
+        QTextStream ts(&md, QIODevice::WriteOnly);
+        QTextMarkdownWriter writer(ts, QTextDocument::MarkdownDialectGitHub);
+        writer.writeAll(&doc);
+
+        const auto indicatorIdx = md.indexOf(expectedIndicator);
+        // the starting indicator always exists, except in case of font problems on some CI platforms
+        if (indicatorIdx <= 0)
+            QSKIP("starting indicator not found, probably due to platform font problems (QTBUG-103484 etc.)");
+
+        qCDebug(lcTests) << "pad" << pad << ":" << md;
+        // An indicator that ends a line is only acceptable if it closes a span
+        // that the same line opened: "`formatted`" may end a line, but a lone
+        // opening "`" must not be left stranded there, away from its text.
+        for (const auto line : QStringView{md}.split(u'\n')) {
+            if (!line.endsWith(expectedIndicator))
+                continue;
+            const auto count = line.count(expectedIndicator);
+            QVERIFY2(count % 2 == 0,
+                     qPrintable(QLatin1String("line ends with an unclosed opening indicator, pad ")
+                                + QString::number(pad) + ": " + line.toString()));
+        }
+    }
+}
+
 void tst_QTextMarkdownWriter::charFormat_data()
 {
     QTest::addColumn<QTextFormat::Property>("property");
@@ -854,6 +914,13 @@ void tst_QTextMarkdownWriter::fromHtml_data()
             "|`longer`|a longer description|\n"
             "|*emph*  |emphatically        |\n"
             "|**bold**|emboldened          |";
+    QTest::newRow("wrap before opening backtick") << // QTBUG-150359
+            "<p>word word word word word word word word word word word word "
+            "xxxxxxxxxxxxxxxxxxx <code>monospaced</code> and some trailing words "
+            "here to finish the line off</p>" <<
+            // the trailing space before the newline is pre-existing behavior
+            "word word word word word word word word word word word word xxxxxxxxxxxxxxxxxxx \n"
+            "`monospaced` and some trailing words here to finish the line off";
     // https://spec.commonmark.org/0.31.2/#example-12
     // escaping punctuation is ok, but QTextMarkdownWriter currently doesn't do that (which is also ok)
     QTest::newRow("punctuation") <<

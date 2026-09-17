@@ -683,8 +683,13 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
                 bool breakingLine = false;
                 while (i < fragLen) {
                     if (col >= ColumnLimit) {
-                        (*m_stream) << markers << qtmw_Newline << wrapIndentString;
-                        markers.clear();
+                        // Markers that end a span belong on this line, next to the text they format;
+                        // markers that begin a span should go the next line.
+                        if (endingMarkers) {
+                            (*m_stream) << markers;
+                            markers.clear();
+                        }
+                        (*m_stream) << qtmw_Newline << wrapIndentString;
                         col = m_blockState.wrappedLineIndent;
                         while (i < fragLen && fragmentText[i].isSpace())
                             ++i;
