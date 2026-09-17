@@ -2089,7 +2089,7 @@ QVariant QPlainTextEdit::inputMethodQuery(Qt::InputMethodQuery query, QVariant a
         break;
     }
 
-    const QPointF offset = contentOffset();
+    const QPointF offset = contentOffset() + d->viewport->mapTo(this, QPointF());
     switch (argument.userType()) {
     case QMetaType::QRectF:
         argument = argument.toRectF().translated(-offset);

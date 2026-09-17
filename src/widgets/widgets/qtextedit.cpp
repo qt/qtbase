@@ -1722,7 +1722,8 @@ QVariant QTextEdit::inputMethodQuery(Qt::InputMethodQuery query, QVariant argume
         break;
     }
 
-    const QPointF offset(-d->horizontalOffset(), -d->verticalOffset());
+    const QPointF offset = QPointF(-d->horizontalOffset(), -d->verticalOffset())
+            + d->viewport->mapTo(this, QPointF());
     switch (argument.userType()) {
     case QMetaType::QRectF:
         argument = argument.toRectF().translated(-offset);
