@@ -171,7 +171,7 @@ bool deploy(const QString &name, const QStringList &options, QString *errorMessa
 #endif
     if (lcTests().isDebugEnabled())
         args << "-verbose=3";
-    return runProcess(g_macdeployqtBinary, args, errorMessage, path);
+    return runProcess(g_macdeployqtBinary, args, errorMessage, path, {}, 60000);
 }
 
 bool run(const QString &name, QString *errorMessage)
