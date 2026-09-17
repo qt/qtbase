@@ -2373,7 +2373,7 @@ void QFont::cacheStatistics()
     \endcode
 
     The named constructors allow to create a tag from an 32bit integer or string value,
-    and will return a \c std::nullopt when the input is invalid.
+    and will return a \nullopt when the input is invalid.
 
     \sa QFont::setFeature(), QFont::featureTags()
 */
@@ -2436,7 +2436,7 @@ void QFont::cacheStatistics()
 /*!
     \fn std::optional<QFont::Tag> QFont::Tag::fromValue(quint32 value) noexcept
 
-    Returns a tag constructed from \a value, or \c std::nullopt if the tag produced
+    Returns a tag constructed from \a value, or \nullopt if the tag produced
     would be invalid.
 
     \sa isValid()
@@ -2446,7 +2446,7 @@ void QFont::cacheStatistics()
     Returns a tag constructed from the string in \a view. The string must be exactly
     four characters long.
 
-    Returns \c std::nullopt if the input is not four characters long, or if the tag
+    Returns \nullopt if the input is not four characters long, or if the tag
     produced would be invalid.
 
     \sa isValid(), fromValue()

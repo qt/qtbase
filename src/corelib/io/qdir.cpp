@@ -1615,7 +1615,7 @@ QFileInfoList QDir::entryInfoList(const QStringList &nameFilters, Filters filter
 /*!
     Creates a sub-directory called \a dirName with the given \a permissions.
 
-    If \a permissions is \c std::nullopt (the default) this function will
+    If \a permissions is \nullopt (the default) this function will
     set the default permissions.
 
     Returns \c true on success; returns \c false if the operation failed or
@@ -1641,7 +1641,7 @@ QFileInfoList QDir::entryInfoList(const QStringList &nameFilters, Filters filter
 
     \note Qt 6.10 added the \a permissions parameter. To get the old behavior
     (using the default platform-specific permissions) of \c{mkdir(const QString &)}
-    set \a permissions to \c std::nullopt (the default). This new method also
+    set \a permissions to \nullopt (the default). This new method also
     transparently replaces the \c {mkdir(const QString &, QFile::Permissions)}
     overload.
 
@@ -1696,7 +1696,7 @@ bool QDir::rmdir(const QString &dirName) const
     If \a dirPath already existed, this method won't change its permissions;
     the same goes for any already existing parent directories.
 
-    If \a permissions is \c std::nullopt (the default value) this function will
+    If \a permissions is \nullopt (the default value) this function will
     set the default permissions.
 
     Returns \c true on success or if \a dirPath already existed; otherwise
@@ -1708,7 +1708,7 @@ bool QDir::rmdir(const QString &dirName) const
 
     \note Qt 6.10 added the \a permissions parameter. To get the old behavior
     (using the default platform-specific permissions) of \c{mkpath(const QString &)}
-    set \a permissions to \c std::nullopt (the default).
+    set \a permissions to \nullopt (the default).
 
     \sa rmpath(), mkdir(), rmdir()
 */
