@@ -23,6 +23,8 @@
 #include <QtCore/qscopeguard.h>
 #include <QtCore/qvarlengtharray.h>
 
+#include <atomic>
+
 static const char m_qtTag[] = "Qt A11Y";
 
 QT_BEGIN_NAMESPACE
@@ -70,7 +72,7 @@ namespace QtAndroidAccessibility
     static int ACTION_COLLAPSE = 0;
     static int ACTION_EXPAND = 0;
 
-    static bool m_accessibilityActivated = false;
+    static std::atomic<bool> m_accessibilityActivated = false;
 
     // This object is needed to schedule the execution of the code that
     // deals with accessibility instances to the Qt main thread.
@@ -122,15 +124,24 @@ namespace QtAndroidAccessibility
 
     static void setActive(JNIEnv */*env*/, jobject /*thiz*/, jboolean active)
     {
-        QMutexLocker lock(QtAndroid::platformInterfaceMutex());
-        QAndroidPlatformIntegration *platformIntegration = QtAndroid::androidPlatformIntegration();
         m_accessibilityActivated = active;
-        if (platformIntegration) {
-            platformIntegration->accessibility()->setActive(active);
-        } else {
+
+        if (!m_accessibilityContext) {
             __android_log_print(ANDROID_LOG_DEBUG, m_qtTag,
-                "Android platform integration is not ready, accessibility activation deferred.");
+                "Accessibility context is not ready, activation deferred.");
+            return;
         }
+
+        QMetaObject::invokeMethod(m_accessibilityContext, [active]() {
+            QMutexLocker lock(QtAndroid::platformInterfaceMutex());
+            auto *platformIntegration = QtAndroid::androidPlatformIntegration();
+            if (!platformIntegration) {
+                __android_log_print(ANDROID_LOG_DEBUG, m_qtTag,
+                    "Android platform integration is not ready, accessibility activation deferred.");
+                return;
+            }
+            platformIntegration->accessibility()->setActive(active);
+        }, Qt::QueuedConnection);
     }
 
     QAccessibleInterface *interfaceFromId(jint objectId)
