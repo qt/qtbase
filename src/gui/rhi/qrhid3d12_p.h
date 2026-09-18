@@ -464,21 +464,22 @@ struct QD3D12ResourceBarrierGenerator
     QD3D12ObjectPool<QD3D12Resource> *resourcePool = nullptr;
 };
 
-struct QD3D12ShaderBytecodeCache
+struct QD3D12ShaderBytecode
 {
-    struct Shader {
-        Shader() = default;
-        Shader(const QByteArray &bytecode, const QShader::NativeResourceBindingMap &rbm)
-            : bytecode(bytecode), nativeResourceBindingMap(rbm)
-        { }
-        QByteArray bytecode;
-        QShader::NativeResourceBindingMap nativeResourceBindingMap;
-    };
-
-    QHash<QRhiShaderStage, Shader> data;
-
-    void insertWithCapacityLimit(const QRhiShaderStage &key, const Shader &s);
+    QD3D12ShaderBytecode() = default;
+    QD3D12ShaderBytecode(const QByteArray &bytecode, const QShader::NativeResourceBindingMap &rbm)
+        : bytecode(bytecode), nativeResourceBindingMap(rbm)
+    { }
+    QByteArray bytecode;
+    QShader::NativeResourceBindingMap nativeResourceBindingMap;
 };
+
+inline quint32 qrhiBinaryCacheEntryByteSize(const QD3D12ShaderBytecode &s)
+{
+    return quint32(s.bytecode.size());
+}
+
+using QD3D12ShaderBytecodeCache = QRhiBinaryCache<QRhiShaderStage, QD3D12ShaderBytecode>;
 
 struct QD3D12ShaderVisibleDescriptorHeap
 {
@@ -1459,7 +1460,7 @@ public:
     IDCompositionDevice *dcompDevice = nullptr;
     QD3D12SwapChain *currentSwapChain = nullptr;
     QSet<QD3D12SwapChain *> swapchains;
-    QD3D12ShaderBytecodeCache shaderBytecodeCache;
+    QD3D12ShaderBytecodeCache shaderBytecodeCache { "Shader bytecode cache" };
     QVarLengthArray<QD3D12Readback, 4> activeReadbacks;
     bool offscreenActive = false;
     QD3D12CommandBuffer *offscreenCb[QD3D12_FRAMES_IN_FLIGHT] = {};

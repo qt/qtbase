@@ -1069,7 +1069,7 @@ void QRhiD3D12::setQueueSubmitParams(QRhiNativeHandles *)
 
 void QRhiD3D12::releaseCachedResources()
 {
-    shaderBytecodeCache.data.clear();
+    shaderBytecodeCache.clear();
 }
 
 // The pipeline library identifies pipelines by name, so we need a key that
@@ -3332,13 +3332,6 @@ void QD3D12ResourceBarrierGenerator::enqueueUavBarrier(QD3D12CommandBuffer *cbD,
         barrier.UAV.pResource = res->resource;
         cbD->cmdList->ResourceBarrier(1, &barrier);
     }
-}
-
-void QD3D12ShaderBytecodeCache::insertWithCapacityLimit(const QRhiShaderStage &key, const Shader &s)
-{
-    if (data.count() >= QRhiD3D12::MAX_SHADER_CACHE_ENTRIES)
-        data.clear();
-    data.insert(key, s);
 }
 
 bool QD3D12ShaderVisibleDescriptorHeap::create(ID3D12Device *device,

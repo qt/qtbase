@@ -257,6 +257,7 @@ public:
     QRhi *q;
 
     static const int MAX_SHADER_CACHE_ENTRIES = 128;
+    static const quint32 MAX_BINARY_CACHE_BYTES = 16 * 1024 * 1024;
 
     bool debugMarkers = false;
     int currentFrameSlot = 0; // for vk, mtl, and similar. unused by gl and d3d11.
@@ -280,6 +281,56 @@ private:
     friend class QRhi;
     friend class QRhiResourceUpdateBatchPrivate;
     friend class QRhiBufferData;
+};
+
+inline quint32 qrhiBinaryCacheEntryByteSize(const QByteArray &data)
+{
+    return quint32(data.size());
+}
+
+template <typename Key, typename Value,
+          quint32 MaxBytes = QRhiImplementation::MAX_BINARY_CACHE_BYTES>
+struct QRhiBinaryCache
+{
+    explicit QRhiBinaryCache(const char *name) : name(name) { }
+
+    QHash<Key, Value> data;
+    quint32 dataByteSize = 0;
+    const char *name;
+
+    void clear()
+    {
+        data.clear();
+        dataByteSize = 0;
+    }
+
+    void insertWithCapacityLimit(const Key &key, const Value &value)
+    {
+        const quint32 entrySize = qrhiBinaryCacheEntryByteSize(value);
+
+        // Replacing an entry must not make the running total drift. This does
+        // happen in practice: trySaveToPipelineCache() in the OpenGL backend
+        // replaces the existing entry when forced to.
+        auto it = data.find(key);
+        if (it != data.end()) {
+            dataByteSize -= qrhiBinaryCacheEntryByteSize(*it);
+            *it = value;
+            dataByteSize += entrySize;
+            return;
+        }
+
+        if (dataByteSize + entrySize > MaxBytes) {
+            // Use the simplest strategy: too much cached data -> drop it all.
+            // An entry larger than the entire budget is still inserted, so the
+            // cache can hold up to the budget plus one entry.
+            qCDebug(QRHI_LOG_INFO, "%s would exceed %u bytes, dropping all %d entries (%u bytes)",
+                    name, MaxBytes, int(data.count()), dataByteSize);
+            clear();
+        }
+
+        data.insert(key, value);
+        dataByteSize += entrySize;
+    }
 };
 
 enum QRhiTargetRectBoundMode

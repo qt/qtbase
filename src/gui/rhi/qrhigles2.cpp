@@ -1849,14 +1849,14 @@ QByteArray QRhiGles2::pipelineCacheData()
 {
     Q_STATIC_ASSERT(sizeof(QGles2PipelineCacheDataHeader) == 256);
 
-    if (m_pipelineCache.isEmpty())
+    if (m_pipelineCache.data.isEmpty())
         return QByteArray();
 
     QGles2PipelineCacheDataHeader header;
     memset(&header, 0, sizeof(header));
     header.rhiId = pipelineCacheRhiId();
     header.arch = quint32(sizeof(void*));
-    header.programBinaryCount = m_pipelineCache.size();
+    header.programBinaryCount = m_pipelineCache.data.size();
     const size_t driverStrLen = qMin(sizeof(header.driver) - 1, size_t(driverInfoStruct.deviceName.size()));
     if (driverStrLen)
         memcpy(header.driver, driverInfoStruct.deviceName.constData(), driverStrLen);
@@ -1864,7 +1864,7 @@ QByteArray QRhiGles2::pipelineCacheData()
 
     const size_t dataOffset = sizeof(header);
     size_t dataSize = 0;
-    for (auto it = m_pipelineCache.cbegin(), end = m_pipelineCache.cend(); it != end; ++it) {
+    for (auto it = m_pipelineCache.data.cbegin(), end = m_pipelineCache.data.cend(); it != end; ++it) {
         dataSize += sizeof(quint32) + it.key().size()
                   + sizeof(quint32) + it->data.size()
                   + sizeof(quint32);
@@ -1872,7 +1872,7 @@ QByteArray QRhiGles2::pipelineCacheData()
 
     QByteArray buf(dataOffset + dataSize, Qt::Uninitialized);
     char *p = buf.data() + dataOffset;
-    for (auto it = m_pipelineCache.cbegin(), end = m_pipelineCache.cend(); it != end; ++it) {
+    for (auto it = m_pipelineCache.data.cbegin(), end = m_pipelineCache.data.cend(); it != end; ++it) {
         const QByteArray key = it.key();
         const QByteArray data = it->data;
         const quint32 format = it->format;
@@ -1952,10 +1952,10 @@ void QRhiGles2::setPipelineCacheData(const QByteArray &data)
             m_pipelineCache.clear();
             return;
         }
-        m_pipelineCache.insert(std::move(key), { format, std::move(binary) }); // ### C++20: emplace
+        m_pipelineCache.insertWithCapacityLimit(key, { format, binary });
     }
 
-    qCDebug(QRHI_LOG_INFO, "Seeded pipeline cache with %d program binaries", int(m_pipelineCache.size()));
+    qCDebug(QRHI_LOG_INFO, "Seeded pipeline cache with %d program binaries", int(m_pipelineCache.data.size()));
 }
 
 QRhiRenderBuffer *QRhiGles2::createRenderBuffer(QRhiRenderBuffer::Type type, const QSize &pixelSize,
@@ -5800,7 +5800,7 @@ QRhiGles2::ProgramCacheResult QRhiGles2::tryLoadFromDiskOrPipelineCache(const QR
     const bool legacyDiskCacheEnabled = isProgramBinaryDiskCacheEnabled();
 
     // QRhi's own (set)PipelineCacheData()
-    const bool pipelineCacheEnabled = caps.programBinary && !m_pipelineCache.isEmpty();
+    const bool pipelineCacheEnabled = caps.programBinary && !m_pipelineCache.data.isEmpty();
 
     // calculating the cache key based on the source code is common for both types of caches
     if (legacyDiskCacheEnabled || pipelineCacheEnabled) {
@@ -5850,8 +5850,8 @@ QRhiGles2::ProgramCacheResult QRhiGles2::tryLoadFromDiskOrPipelineCache(const QR
         // setPipelineCacheData and there's a hit, then no need to go to the
         // filesystem at all.
         if (pipelineCacheEnabled) {
-            auto it = m_pipelineCache.constFind(*cacheKey);
-            if (it != m_pipelineCache.constEnd()) {
+            auto it = m_pipelineCache.data.constFind(*cacheKey);
+            if (it != m_pipelineCache.data.constEnd()) {
                 GLenum err;
                 for ( ; ; ) {
                     err = f->glGetError();
@@ -5897,7 +5897,7 @@ void QRhiGles2::trySaveToPipelineCache(GLuint program, const QByteArray &cacheKe
     // This handles our own simulated "pipeline cache". (specific to QRhi, not
     // shared with legacy QOpenGL* stuff)
 
-    if (caps.programBinary && (force || !m_pipelineCache.contains(cacheKey))) {
+    if (caps.programBinary && (force || !m_pipelineCache.data.contains(cacheKey))) {
         GLint blobSize = 0;
         f->glGetProgramiv(program, GL_PROGRAM_BINARY_LENGTH, &blobSize);
         QByteArray blob(blobSize, Qt::Uninitialized);
@@ -5905,7 +5905,7 @@ void QRhiGles2::trySaveToPipelineCache(GLuint program, const QByteArray &cacheKe
         GLenum binaryFormat = 0;
         f->glGetProgramBinary(program, blobSize, &outSize, &binaryFormat, blob.data());
         if (blobSize == outSize)
-            m_pipelineCache.insert(cacheKey, { binaryFormat, blob });
+            m_pipelineCache.insertWithCapacityLimit(cacheKey, { binaryFormat, blob });
     }
 }
 
