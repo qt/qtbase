@@ -1115,15 +1115,15 @@ void QTextHtmlParserNode::setListStyle(const QList<QCss::Value> &cssValues)
     for (int i = 0; i < cssValues.size(); ++i) {
         if (cssValues.at(i).type == QCss::Value::KnownIdentifier) {
             switch (static_cast<QCss::KnownValue>(cssValues.at(i).variant.toInt())) {
-                case QCss::Value_None: hasOwnListStyle = true; listStyle = QTextListFormat::ListStyleUndefined; break;
-                case QCss::Value_Disc: hasOwnListStyle = true; listStyle = QTextListFormat::ListDisc; break;
-                case QCss::Value_Square: hasOwnListStyle = true; listStyle = QTextListFormat::ListSquare; break;
-                case QCss::Value_Circle: hasOwnListStyle = true; listStyle = QTextListFormat::ListCircle; break;
-                case QCss::Value_Decimal: hasOwnListStyle = true; listStyle = QTextListFormat::ListDecimal; break;
-                case QCss::Value_LowerAlpha: hasOwnListStyle = true; listStyle = QTextListFormat::ListLowerAlpha; break;
-                case QCss::Value_UpperAlpha: hasOwnListStyle = true; listStyle = QTextListFormat::ListUpperAlpha; break;
-                case QCss::Value_LowerRoman: hasOwnListStyle = true; listStyle = QTextListFormat::ListLowerRoman; break;
-                case QCss::Value_UpperRoman: hasOwnListStyle = true; listStyle = QTextListFormat::ListUpperRoman; break;
+                case QCss::KnownValue::None: hasOwnListStyle = true; listStyle = QTextListFormat::ListStyleUndefined; break;
+                case QCss::KnownValue::Disc: hasOwnListStyle = true; listStyle = QTextListFormat::ListDisc; break;
+                case QCss::KnownValue::Square: hasOwnListStyle = true; listStyle = QTextListFormat::ListSquare; break;
+                case QCss::KnownValue::Circle: hasOwnListStyle = true; listStyle = QTextListFormat::ListCircle; break;
+                case QCss::KnownValue::Decimal: hasOwnListStyle = true; listStyle = QTextListFormat::ListDecimal; break;
+                case QCss::KnownValue::LowerAlpha: hasOwnListStyle = true; listStyle = QTextListFormat::ListLowerAlpha; break;
+                case QCss::KnownValue::UpperAlpha: hasOwnListStyle = true; listStyle = QTextListFormat::ListUpperAlpha; break;
+                case QCss::KnownValue::LowerRoman: hasOwnListStyle = true; listStyle = QTextListFormat::ListLowerRoman; break;
+                case QCss::KnownValue::UpperRoman: hasOwnListStyle = true; listStyle = QTextListFormat::ListUpperRoman; break;
                 default: break;
             }
         }
@@ -1201,7 +1201,7 @@ void QTextHtmlParserNode::applyCssDeclarations(const QList<QCss::Declaration> &d
         const QCss::Declaration &decl = declarations.at(i);
         if (decl.d->values.isEmpty()) continue;
 
-        QCss::KnownValue identifier = QCss::UnknownValue;
+        QCss::KnownValue identifier = QCss::KnownValue::Unknown;
         if (decl.d->values.constFirst().type == QCss::Value::KnownIdentifier)
             identifier = static_cast<QCss::KnownValue>(decl.d->values.constFirst().variant.toInt());
 
@@ -1243,8 +1243,8 @@ void QTextHtmlParserNode::applyCssDeclarations(const QList<QCss::Declaration> &d
         case QCss::Property::Float:
             cssFloat = QTextFrameFormat::InFlow;
             switch (identifier) {
-            case QCss::Value_Left: cssFloat = QTextFrameFormat::FloatLeft; break;
-            case QCss::Value_Right: cssFloat = QTextFrameFormat::FloatRight; break;
+            case QCss::KnownValue::Left: cssFloat = QTextFrameFormat::FloatLeft; break;
+            case QCss::KnownValue::Right: cssFloat = QTextFrameFormat::FloatRight; break;
             default: break;
             }
             break;
@@ -1329,47 +1329,47 @@ void QTextHtmlParserNode::applyCssDeclarations(const QList<QCss::Declaration> &d
             break;
         case QCss::Property::Whitespace:
             switch (identifier) {
-            case QCss::Value_Normal: wsm = QTextHtmlParserNode::WhiteSpaceNormal; break;
-            case QCss::Value_Pre: wsm = QTextHtmlParserNode::WhiteSpacePre; break;
-            case QCss::Value_NoWrap: wsm = QTextHtmlParserNode::WhiteSpaceNoWrap; break;
-            case QCss::Value_PreWrap: wsm = QTextHtmlParserNode::WhiteSpacePreWrap; break;
-            case QCss::Value_PreLine: wsm = QTextHtmlParserNode::WhiteSpacePreLine; break;
+            case QCss::KnownValue::Normal: wsm = QTextHtmlParserNode::WhiteSpaceNormal; break;
+            case QCss::KnownValue::Pre: wsm = QTextHtmlParserNode::WhiteSpacePre; break;
+            case QCss::KnownValue::NoWrap: wsm = QTextHtmlParserNode::WhiteSpaceNoWrap; break;
+            case QCss::KnownValue::PreWrap: wsm = QTextHtmlParserNode::WhiteSpacePreWrap; break;
+            case QCss::KnownValue::PreLine: wsm = QTextHtmlParserNode::WhiteSpacePreLine; break;
             default: break;
             }
             break;
         case QCss::Property::VerticalAlignment:
             switch (identifier) {
-            case QCss::Value_Sub: charFormat.setVerticalAlignment(QTextCharFormat::AlignSubScript); break;
-            case QCss::Value_Super: charFormat.setVerticalAlignment(QTextCharFormat::AlignSuperScript); break;
-            case QCss::Value_Middle: charFormat.setVerticalAlignment(QTextCharFormat::AlignMiddle); break;
-            case QCss::Value_Top: charFormat.setVerticalAlignment(QTextCharFormat::AlignTop); break;
-            case QCss::Value_Bottom: charFormat.setVerticalAlignment(QTextCharFormat::AlignBottom); break;
+            case QCss::KnownValue::Sub: charFormat.setVerticalAlignment(QTextCharFormat::AlignSubScript); break;
+            case QCss::KnownValue::Super: charFormat.setVerticalAlignment(QTextCharFormat::AlignSuperScript); break;
+            case QCss::KnownValue::Middle: charFormat.setVerticalAlignment(QTextCharFormat::AlignMiddle); break;
+            case QCss::KnownValue::Top: charFormat.setVerticalAlignment(QTextCharFormat::AlignTop); break;
+            case QCss::KnownValue::Bottom: charFormat.setVerticalAlignment(QTextCharFormat::AlignBottom); break;
             default: charFormat.setVerticalAlignment(QTextCharFormat::AlignNormal); break;
             }
             break;
         case QCss::Property::PageBreakBefore:
             switch (identifier) {
-            case QCss::Value_Always: blockFormat.setPageBreakPolicy(blockFormat.pageBreakPolicy() | QTextFormat::PageBreak_AlwaysBefore); break;
-            case QCss::Value_Auto: blockFormat.setPageBreakPolicy(blockFormat.pageBreakPolicy() & ~QTextFormat::PageBreak_AlwaysBefore); break;
+            case QCss::KnownValue::Always: blockFormat.setPageBreakPolicy(blockFormat.pageBreakPolicy() | QTextFormat::PageBreak_AlwaysBefore); break;
+            case QCss::KnownValue::Auto: blockFormat.setPageBreakPolicy(blockFormat.pageBreakPolicy() & ~QTextFormat::PageBreak_AlwaysBefore); break;
             default: break;
             }
             break;
         case QCss::Property::PageBreakAfter:
             switch (identifier) {
-            case QCss::Value_Always: blockFormat.setPageBreakPolicy(blockFormat.pageBreakPolicy() | QTextFormat::PageBreak_AlwaysAfter); break;
-            case QCss::Value_Auto: blockFormat.setPageBreakPolicy(blockFormat.pageBreakPolicy() & ~QTextFormat::PageBreak_AlwaysAfter); break;
+            case QCss::KnownValue::Always: blockFormat.setPageBreakPolicy(blockFormat.pageBreakPolicy() | QTextFormat::PageBreak_AlwaysAfter); break;
+            case QCss::KnownValue::Auto: blockFormat.setPageBreakPolicy(blockFormat.pageBreakPolicy() & ~QTextFormat::PageBreak_AlwaysAfter); break;
             default: break;
             }
             break;
         case QCss::Property::TextUnderlineStyle:
             switch (identifier) {
-            case QCss::Value_None: charFormat.setUnderlineStyle(QTextCharFormat::NoUnderline); break;
-            case QCss::Value_Solid: charFormat.setUnderlineStyle(QTextCharFormat::SingleUnderline); break;
-            case QCss::Value_Dashed: charFormat.setUnderlineStyle(QTextCharFormat::DashUnderline); break;
-            case QCss::Value_Dotted: charFormat.setUnderlineStyle(QTextCharFormat::DotLine); break;
-            case QCss::Value_DotDash: charFormat.setUnderlineStyle(QTextCharFormat::DashDotLine); break;
-            case QCss::Value_DotDotDash: charFormat.setUnderlineStyle(QTextCharFormat::DashDotDotLine); break;
-            case QCss::Value_Wave: charFormat.setUnderlineStyle(QTextCharFormat::WaveUnderline); break;
+            case QCss::KnownValue::None: charFormat.setUnderlineStyle(QTextCharFormat::NoUnderline); break;
+            case QCss::KnownValue::Solid: charFormat.setUnderlineStyle(QTextCharFormat::SingleUnderline); break;
+            case QCss::KnownValue::Dashed: charFormat.setUnderlineStyle(QTextCharFormat::DashUnderline); break;
+            case QCss::KnownValue::Dotted: charFormat.setUnderlineStyle(QTextCharFormat::DotLine); break;
+            case QCss::KnownValue::DotDash: charFormat.setUnderlineStyle(QTextCharFormat::DashDotLine); break;
+            case QCss::KnownValue::DotDotDash: charFormat.setUnderlineStyle(QTextCharFormat::DashDotDotLine); break;
+            case QCss::KnownValue::Wave: charFormat.setUnderlineStyle(QTextCharFormat::WaveUnderline); break;
             default: break;
             }
             break;
@@ -1386,9 +1386,9 @@ void QTextHtmlParserNode::applyCssDeclarations(const QList<QCss::Declaration> &d
             break;
         case QCss::Property::TextAlignment:
             switch (identifier) {
-            case QCss::Value_Left: blockFormat.setAlignment(Qt::AlignLeft); break;
-            case QCss::Value_Center: blockFormat.setAlignment(Qt::AlignCenter); break;
-            case QCss::Value_Right: blockFormat.setAlignment(Qt::AlignRight); break;
+            case QCss::KnownValue::Left: blockFormat.setAlignment(Qt::AlignLeft); break;
+            case QCss::KnownValue::Center: blockFormat.setAlignment(Qt::AlignCenter); break;
+            case QCss::KnownValue::Right: blockFormat.setAlignment(Qt::AlignRight); break;
             default: break;
             }
             break;
@@ -1425,9 +1425,9 @@ void QTextHtmlParserNode::applyCssDeclarations(const QList<QCss::Declaration> &d
         {
             QPen pen = charFormat.textOutline();
             switch (identifier) {
-            case QCss::Value_SquareCap: pen.setCapStyle(Qt::SquareCap); break;
-            case QCss::Value_FlatCap: pen.setCapStyle(Qt::FlatCap); break;
-            case QCss::Value_RoundCap: pen.setCapStyle(Qt::RoundCap); break;
+            case QCss::KnownValue::SquareCap: pen.setCapStyle(Qt::SquareCap); break;
+            case QCss::KnownValue::FlatCap: pen.setCapStyle(Qt::FlatCap); break;
+            case QCss::KnownValue::RoundCap: pen.setCapStyle(Qt::RoundCap); break;
             default: break;
             }
             charFormat.setTextOutline(pen);
@@ -1437,10 +1437,10 @@ void QTextHtmlParserNode::applyCssDeclarations(const QList<QCss::Declaration> &d
         {
             QPen pen = charFormat.textOutline();
             switch (identifier) {
-            case QCss::Value_MiterJoin: pen.setJoinStyle(Qt::MiterJoin); break;
-            case QCss::Value_BevelJoin: pen.setJoinStyle(Qt::BevelJoin); break;
-            case QCss::Value_RoundJoin: pen.setJoinStyle(Qt::RoundJoin); break;
-            case QCss::Value_SvgMiterJoin: pen.setJoinStyle(Qt::SvgMiterJoin); break;
+            case QCss::KnownValue::MiterJoin: pen.setJoinStyle(Qt::MiterJoin); break;
+            case QCss::KnownValue::BevelJoin: pen.setJoinStyle(Qt::BevelJoin); break;
+            case QCss::KnownValue::RoundJoin: pen.setJoinStyle(Qt::RoundJoin); break;
+            case QCss::KnownValue::SvgMiterJoin: pen.setJoinStyle(Qt::SvgMiterJoin); break;
             default: break;
             }
             charFormat.setTextOutline(pen);
@@ -2073,7 +2073,7 @@ QList<QCss::Declaration> standardDeclarationForNode(const QTextHtmlParserNode &n
             decl.d->property = "text-decoration"_L1;
             decl.d->propertyId = QCss::Property::TextDecoration;
             val.type = QCss::Value::KnownIdentifier;
-            val.variant = QVariant(QCss::Value_Underline);
+            val.variant = QVariant::fromValue(QCss::KnownValue::Underline);
             decl.d->values = QList<QCss::Value> { val };
             decl.d->inheritable = true;
             decls << decl;
@@ -2092,7 +2092,7 @@ QList<QCss::Declaration> standardDeclarationForNode(const QTextHtmlParserNode &n
         decl.d->property = "font-weight"_L1;
         decl.d->propertyId = QCss::Property::FontWeight;
         val.type = QCss::Value::KnownIdentifier;
-        val.variant = QVariant(QCss::Value_Bold);
+        val.variant = QVariant::fromValue(QCss::KnownValue::Bold);
         decl.d->values = QList<QCss::Value> { val };
         decl.d->inheritable = true;
         decls << decl;
@@ -2108,11 +2108,11 @@ QList<QCss::Declaration> standardDeclarationForNode(const QTextHtmlParserNode &n
             decl.d->inheritable = false;
             val.type = QCss::Value::KnownIdentifier;
             switch (node.id) {
-            case Html_h1: val.variant = QVariant(QCss::Value_XXLarge); break;
-            case Html_h2: val.variant = QVariant(QCss::Value_XLarge); break;
-            case Html_h3: case Html_big: val.variant = QVariant(QCss::Value_Large); break;
-            case Html_h4: val.variant = QVariant(QCss::Value_Medium); break;
-            case Html_h5: case Html_small: val.variant = QVariant(QCss::Value_Small); break;
+            case Html_h1: val.variant = QVariant::fromValue(QCss::KnownValue::XXLarge); break;
+            case Html_h2: val.variant = QVariant::fromValue(QCss::KnownValue::XLarge); break;
+            case Html_h3: case Html_big: val.variant = QVariant::fromValue(QCss::KnownValue::Large); break;
+            case Html_h4: val.variant = QVariant::fromValue(QCss::KnownValue::Medium); break;
+            case Html_h5: case Html_small: val.variant = QVariant::fromValue(QCss::KnownValue::Small); break;
             default: break;
             }
             decl.d->values = QList<QCss::Value> { val };
@@ -2126,7 +2126,7 @@ QList<QCss::Declaration> standardDeclarationForNode(const QTextHtmlParserNode &n
         decl.d->property = "text-align"_L1;
         decl.d->propertyId = QCss::Property::TextAlignment;
         val.type = QCss::Value::KnownIdentifier;
-        val.variant = (node.id == Html_td) ? QVariant(QCss::Value_Left) : QVariant(QCss::Value_Center);
+        val.variant = QVariant::fromValue((node.id == Html_td) ? QCss::KnownValue::Left : QCss::KnownValue::Center);
         decl.d->values = QList<QCss::Value> { val };
         decl.d->inheritable = true;
         decls << decl;
@@ -2137,7 +2137,7 @@ QList<QCss::Declaration> standardDeclarationForNode(const QTextHtmlParserNode &n
         decl.d->property = "text-decoration"_L1;
         decl.d->propertyId = QCss::Property::TextDecoration;
         val.type = QCss::Value::KnownIdentifier;
-        val.variant = QVariant(QCss::Value_LineThrough);
+        val.variant = QVariant::fromValue(QCss::KnownValue::LineThrough);
         decl.d->values = QList<QCss::Value> { val };
         decl.d->inheritable = true;
         decls << decl;
@@ -2152,7 +2152,7 @@ QList<QCss::Declaration> standardDeclarationForNode(const QTextHtmlParserNode &n
         decl.d->property = "font-style"_L1;
         decl.d->propertyId = QCss::Property::FontStyle;
         val.type = QCss::Value::KnownIdentifier;
-        val.variant = QVariant(QCss::Value_Italic);
+        val.variant = QVariant::fromValue(QCss::KnownValue::Italic);
         decl.d->values = QList<QCss::Value> { val };
         decl.d->inheritable = true;
         decls << decl;
@@ -2163,7 +2163,7 @@ QList<QCss::Declaration> standardDeclarationForNode(const QTextHtmlParserNode &n
         decl.d->property = "vertical-align"_L1;
         decl.d->propertyId = QCss::Property::VerticalAlignment;
         val.type = QCss::Value::KnownIdentifier;
-        val.variant = (node.id == Html_sub) ? QVariant(QCss::Value_Sub) : QVariant(QCss::Value_Super);
+        val.variant = QVariant::fromValue((node.id == Html_sub) ? QCss::KnownValue::Sub : QCss::KnownValue::Super);
         decl.d->values = QList<QCss::Value> { val };
         decl.d->inheritable = true;
         decls << decl;
@@ -2174,7 +2174,7 @@ QList<QCss::Declaration> standardDeclarationForNode(const QTextHtmlParserNode &n
         decl.d->property = "list-style"_L1;
         decl.d->propertyId = QCss::Property::ListStyle;
         val.type = QCss::Value::KnownIdentifier;
-        val.variant = (node.id == Html_ul) ? QVariant(QCss::Value_Disc) : QVariant(QCss::Value_Decimal);
+        val.variant = QVariant::fromValue((node.id == Html_ul) ? QCss::KnownValue::Disc : QCss::KnownValue::Decimal);
         decl.d->values = QList<QCss::Value> { val };
         decl.d->inheritable = true;
         decls << decl;
@@ -2205,9 +2205,9 @@ QList<QCss::Declaration> standardDeclarationForNode(const QTextHtmlParserNode &n
         decl.d->propertyId = QCss::Property::Whitespace;
         val.type = QCss::Value::KnownIdentifier;
         switch (node.id) {
-        case Html_br: val.variant = QVariant(QCss::Value_PreWrap); break;
-        case Html_nobr: val.variant = QVariant(QCss::Value_NoWrap); break;
-        case Html_pre: val.variant = QVariant(QCss::Value_Pre); break;
+        case Html_br: val.variant = QVariant::fromValue(QCss::KnownValue::PreWrap); break;
+        case Html_nobr: val.variant = QVariant::fromValue(QCss::KnownValue::NoWrap); break;
+        case Html_pre: val.variant = QVariant::fromValue(QCss::KnownValue::Pre); break;
         default: break;
         }
         decl.d->values = QList<QCss::Value> { val };

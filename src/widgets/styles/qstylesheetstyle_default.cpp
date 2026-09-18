@@ -81,7 +81,7 @@ using namespace QCss;
 
 // Adds a value to the current property.
 // The first parameter should be Value::KnownIdentifier if the value can be
-// found among the Value_* constants, in which case the second should be that
+// found among the KnownValue constants, in which case the second should be that
 // constant. Otherwise the first parameter is Value::Identifier and the second
 // is a string.
 // Adding more values is the same as separating by spaces in CSS.
@@ -90,7 +90,7 @@ using namespace QCss;
 
 #define ADD_VALUE(x, y) \
     value.type = (x); \
-    value.variant = (y); \
+    value.variant = QVariant::fromValue(y); \
     decl.d->values << value
 
 // Adds the current declaration to the rule.
@@ -138,11 +138,11 @@ StyleSheet QStyleSheetStyle::getDefaultStyleSheet() const
         ADD_SELECTOR;
 
         SET_PROPERTY("-qt-background-role"_L1, Property::QtBackgroundRole);
-        ADD_VALUE(QCss::Value::KnownIdentifier, Value_Base);
+        ADD_VALUE(QCss::Value::KnownIdentifier, KnownValue::Base);
         ADD_DECLARATION;
 
         SET_PROPERTY("border"_L1, Property::Border);
-        ADD_VALUE(QCss::Value::KnownIdentifier, Value_Native);
+        ADD_VALUE(QCss::Value::KnownIdentifier, KnownValue::Native);
         ADD_DECLARATION;
 
         SET_PROPERTY("-qt-style-features"_L1, Property::QtStyleFeatures);
@@ -162,7 +162,7 @@ StyleSheet QStyleSheetStyle::getDefaultStyleSheet() const
         ADD_SELECTOR;
 
         SET_PROPERTY("border"_L1, Property::Border);
-        ADD_VALUE(QCss::Value::KnownIdentifier, Value_None);
+        ADD_VALUE(QCss::Value::KnownIdentifier, KnownValue::None);
         ADD_DECLARATION;
 
         ADD_STYLE_RULE;
@@ -177,7 +177,7 @@ StyleSheet QStyleSheetStyle::getDefaultStyleSheet() const
         ADD_SELECTOR;
 
         SET_PROPERTY("border"_L1, Property::Border);
-        ADD_VALUE(QCss::Value::KnownIdentifier, Value_Native);
+        ADD_VALUE(QCss::Value::KnownIdentifier, KnownValue::Native);
         ADD_DECLARATION;
 
         ADD_STYLE_RULE;
@@ -197,11 +197,11 @@ StyleSheet QStyleSheetStyle::getDefaultStyleSheet() const
         ADD_SELECTOR;
 
         SET_PROPERTY("background"_L1, Property::Background);
-        ADD_VALUE(QCss::Value::KnownIdentifier, Value_None);
+        ADD_VALUE(QCss::Value::KnownIdentifier, KnownValue::None);
         ADD_DECLARATION;
 
         SET_PROPERTY("border-image"_L1, Property::BorderImage);
-        ADD_VALUE(QCss::Value::KnownIdentifier, Value_None);
+        ADD_VALUE(QCss::Value::KnownIdentifier, KnownValue::None);
         ADD_DECLARATION;
 
         ADD_STYLE_RULE;
@@ -216,7 +216,7 @@ StyleSheet QStyleSheetStyle::getDefaultStyleSheet() const
         ADD_SELECTOR;
 
         SET_PROPERTY("border"_L1, Property::Border);
-        ADD_VALUE(QCss::Value::KnownIdentifier, Value_Native);
+        ADD_VALUE(QCss::Value::KnownIdentifier, KnownValue::Native);
         ADD_DECLARATION;
 
         ADD_STYLE_RULE;
@@ -233,11 +233,11 @@ StyleSheet QStyleSheetStyle::getDefaultStyleSheet() const
         ADD_SELECTOR;
 
         SET_PROPERTY("-qt-background-role"_L1, Property::QtBackgroundRole);
-        ADD_VALUE(QCss::Value::KnownIdentifier, Value_Window);
+        ADD_VALUE(QCss::Value::KnownIdentifier, KnownValue::Window);
         ADD_DECLARATION;
 
         SET_PROPERTY("border"_L1, Property::Border);
-        ADD_VALUE(QCss::Value::KnownIdentifier, Value_Native);
+        ADD_VALUE(QCss::Value::KnownIdentifier, KnownValue::Native);
         ADD_DECLARATION;
 
         ADD_STYLE_RULE;
@@ -257,7 +257,7 @@ StyleSheet QStyleSheetStyle::getDefaultStyleSheet() const
         ADD_SELECTOR;
 
         SET_PROPERTY("border-style"_L1, Property::BorderStyles);
-        ADD_VALUE(QCss::Value::KnownIdentifier, Value_Native);
+        ADD_VALUE(QCss::Value::KnownIdentifier, KnownValue::Native);
         ADD_DECLARATION;
 
         if (!styleIsPixmapBased) {
@@ -283,7 +283,7 @@ StyleSheet QStyleSheetStyle::getDefaultStyleSheet() const
         ADD_SELECTOR;
 
         SET_PROPERTY("border"_L1, Property::Border);
-        ADD_VALUE(QCss::Value::KnownIdentifier, Value_Native);
+        ADD_VALUE(QCss::Value::KnownIdentifier, KnownValue::Native);
         ADD_DECLARATION;
 
         if (!styleIsPixmapBased) {
@@ -294,7 +294,7 @@ StyleSheet QStyleSheetStyle::getDefaultStyleSheet() const
         }
 
         SET_PROPERTY("-qt-background-role"_L1, Property::QtBackgroundRole);
-        ADD_VALUE(QCss::Value::KnownIdentifier, Value_Base);
+        ADD_VALUE(QCss::Value::KnownIdentifier, KnownValue::Base);
         ADD_DECLARATION;
 
         ADD_STYLE_RULE;
@@ -314,7 +314,7 @@ StyleSheet QStyleSheetStyle::getDefaultStyleSheet() const
         ADD_SELECTOR;
 
         SET_PROPERTY("-qt-background-role"_L1, Property::QtBackgroundRole);
-        ADD_VALUE(QCss::Value::KnownIdentifier, Value_Button);
+        ADD_VALUE(QCss::Value::KnownIdentifier, KnownValue::Button);
         ADD_DECLARATION;
 
         ADD_STYLE_RULE;
@@ -331,7 +331,7 @@ StyleSheet QStyleSheetStyle::getDefaultStyleSheet() const
         ADD_SELECTOR;
 
         SET_PROPERTY("border"_L1, Property::Border);
-        ADD_VALUE(QCss::Value::KnownIdentifier, Value_Native);
+        ADD_VALUE(QCss::Value::KnownIdentifier, KnownValue::Native);
         ADD_DECLARATION;
 
         SET_PROPERTY("-qt-style-features"_L1, Property::QtStyleFeatures);
@@ -339,7 +339,7 @@ StyleSheet QStyleSheetStyle::getDefaultStyleSheet() const
         ADD_DECLARATION;
 
         SET_PROPERTY("-qt-background-role"_L1, Property::QtBackgroundRole);
-        ADD_VALUE(QCss::Value::KnownIdentifier, Value_Base);
+        ADD_VALUE(QCss::Value::KnownIdentifier, KnownValue::Base);
         ADD_DECLARATION;
 
         ADD_STYLE_RULE;
@@ -354,7 +354,7 @@ StyleSheet QStyleSheetStyle::getDefaultStyleSheet() const
         ADD_SELECTOR;
 
         SET_PROPERTY("-qt-background-role"_L1, Property::QtBackgroundRole);
-        ADD_VALUE(QCss::Value::KnownIdentifier, Value_Window);
+        ADD_VALUE(QCss::Value::KnownIdentifier, KnownValue::Window);
         ADD_DECLARATION;
 
         ADD_STYLE_RULE;
@@ -384,7 +384,7 @@ StyleSheet QStyleSheetStyle::getDefaultStyleSheet() const
         ADD_SELECTOR;
 
         SET_PROPERTY("-qt-background-role"_L1, Property::QtBackgroundRole);
-        ADD_VALUE(QCss::Value::KnownIdentifier, Value_Window);
+        ADD_VALUE(QCss::Value::KnownIdentifier, KnownValue::Window);
         ADD_DECLARATION;
 
         ADD_STYLE_RULE;
@@ -407,7 +407,7 @@ StyleSheet QStyleSheetStyle::getDefaultStyleSheet() const
         ADD_SELECTOR;
 
         SET_PROPERTY("-qt-background-role"_L1, Property::QtBackgroundRole);
-        ADD_VALUE(QCss::Value::KnownIdentifier, Value_Button);
+        ADD_VALUE(QCss::Value::KnownIdentifier, KnownValue::Button);
         ADD_DECLARATION;
 
         if (!styleIsPixmapBased) {
@@ -417,7 +417,7 @@ StyleSheet QStyleSheetStyle::getDefaultStyleSheet() const
         }
 
         SET_PROPERTY("border"_L1, Property::Border);
-        ADD_VALUE(QCss::Value::KnownIdentifier, Value_Native);
+        ADD_VALUE(QCss::Value::KnownIdentifier, KnownValue::Native);
         ADD_DECLARATION;
 
         ADD_STYLE_RULE;
@@ -432,7 +432,7 @@ StyleSheet QStyleSheetStyle::getDefaultStyleSheet() const
         ADD_SELECTOR;
 
         SET_PROPERTY("-qt-background-role"_L1, Property::QtBackgroundRole);
-        ADD_VALUE(QCss::Value::KnownIdentifier, Value_Base);
+        ADD_VALUE(QCss::Value::KnownIdentifier, KnownValue::Base);
         ADD_DECLARATION;
 
         ADD_STYLE_RULE;
@@ -447,7 +447,7 @@ StyleSheet QStyleSheetStyle::getDefaultStyleSheet() const
         ADD_SELECTOR;
 
         SET_PROPERTY("-qt-background-role"_L1, Property::QtBackgroundRole);
-        ADD_VALUE(QCss::Value::KnownIdentifier, Value_Window);
+        ADD_VALUE(QCss::Value::KnownIdentifier, KnownValue::Window);
         ADD_DECLARATION;
 
         ADD_STYLE_RULE;
@@ -462,7 +462,7 @@ StyleSheet QStyleSheetStyle::getDefaultStyleSheet() const
         ADD_SELECTOR;
 
         SET_PROPERTY("border"_L1, Property::Border);
-        ADD_VALUE(QCss::Value::KnownIdentifier, Value_Native);
+        ADD_VALUE(QCss::Value::KnownIdentifier, KnownValue::Native);
         ADD_DECLARATION;
 
         ADD_STYLE_RULE;

@@ -184,100 +184,102 @@ static constexpr QCssKnownValue<Property> properties[] = {
 CHECK_ARRAY_IS_SORTED(properties, Property)
 
 static constexpr QCssKnownValue<KnownValue> values[] = {
-    { "accent", Value_Accent },
-    { "active", Value_Active },
-    { "alternate-base", Value_AlternateBase },
-    { "always", Value_Always },
-    { "auto", Value_Auto },
-    { "base", Value_Base },
-    { "beveljoin", Value_BevelJoin},
-    { "bold", Value_Bold },
-    { "bottom", Value_Bottom },
-    { "bright-text", Value_BrightText },
-    { "button", Value_Button },
-    { "button-text", Value_ButtonText },
-    { "center", Value_Center },
-    { "circle", Value_Circle },
-    { "dark", Value_Dark },
-    { "dashed", Value_Dashed },
-    { "decimal", Value_Decimal },
-    { "disabled", Value_Disabled },
-    { "disc", Value_Disc },
-    { "dot-dash", Value_DotDash },
-    { "dot-dot-dash", Value_DotDotDash },
-    { "dotted", Value_Dotted },
-    { "double", Value_Double },
-    { "flatcap", Value_FlatCap},
-    { "groove", Value_Groove },
-    { "highlight", Value_Highlight },
-    { "highlighted-text", Value_HighlightedText },
-    { "inset", Value_Inset },
-    { "italic", Value_Italic },
-    { "large", Value_Large },
-    { "left", Value_Left },
-    { "light", Value_Light },
-    { "line-through", Value_LineThrough },
-    { "link", Value_Link },
-    { "link-visited", Value_LinkVisited },
-    { "lower-alpha", Value_LowerAlpha },
-    { "lower-roman", Value_LowerRoman },
-    { "lowercase", Value_Lowercase },
-    { "medium", Value_Medium },
-    { "mid", Value_Mid },
-    { "middle", Value_Middle },
-    { "midlight", Value_Midlight },
-    { "miterjoin", Value_MiterJoin},
-    { "native", Value_Native },
-    { "no-role", Value_NoRole },
-    { "none", Value_None },
-    { "normal", Value_Normal },
-    { "nowrap", Value_NoWrap },
-    { "oblique", Value_Oblique },
-    { "off", Value_Off },
-    { "on", Value_On },
-    { "outset", Value_Outset },
-    { "overline", Value_Overline },
-    { "placeholder-text", Value_PlaceholderText },
-    { "pre", Value_Pre },
-    { "pre-line", Value_PreLine },
-    { "pre-wrap", Value_PreWrap },
-    { "ridge", Value_Ridge },
-    { "right", Value_Right },
-    { "roundcap", Value_RoundCap},
-    { "roundjoin", Value_RoundJoin},
-    { "selected", Value_Selected },
-    { "shadow", Value_Shadow },
-    { "small" , Value_Small },
-    { "small-caps", Value_SmallCaps },
-    { "solid", Value_Solid },
-    { "square", Value_Square },
-    { "squarecap", Value_SquareCap},
-    { "sub", Value_Sub },
-    { "super", Value_Super },
-    { "svgmiterjoin", Value_SvgMiterJoin},
-    { "text", Value_Text },
-    { "tooltip-base", Value_ToolTipBase },
-    { "tooltip-text", Value_ToolTipText },
-    { "top", Value_Top },
-    { "transparent", Value_Transparent },
-    { "underline", Value_Underline },
-    { "upper-alpha", Value_UpperAlpha },
-    { "upper-roman", Value_UpperRoman },
-    { "uppercase", Value_Uppercase },
-    { "wave", Value_Wave },
-    { "window", Value_Window },
-    { "window-text", Value_WindowText },
-    { "x-large", Value_XLarge },
-    { "xx-large", Value_XXLarge }
+    { "accent", KnownValue::Accent },
+    { "active", KnownValue::Active },
+    { "alternate-base", KnownValue::AlternateBase },
+    { "always", KnownValue::Always },
+    { "auto", KnownValue::Auto },
+    { "base", KnownValue::Base },
+    { "beveljoin", KnownValue::BevelJoin},
+    { "bold", KnownValue::Bold },
+    { "bottom", KnownValue::Bottom },
+    { "bright-text", KnownValue::BrightText },
+    { "button", KnownValue::Button },
+    { "button-text", KnownValue::ButtonText },
+    { "center", KnownValue::Center },
+    { "circle", KnownValue::Circle },
+    { "dark", KnownValue::Dark },
+    { "dashed", KnownValue::Dashed },
+    { "decimal", KnownValue::Decimal },
+    { "disabled", KnownValue::Disabled },
+    { "disc", KnownValue::Disc },
+    { "dot-dash", KnownValue::DotDash },
+    { "dot-dot-dash", KnownValue::DotDotDash },
+    { "dotted", KnownValue::Dotted },
+    { "double", KnownValue::Double },
+    { "flatcap", KnownValue::FlatCap},
+    { "groove", KnownValue::Groove },
+    { "highlight", KnownValue::Highlight },
+    { "highlighted-text", KnownValue::HighlightedText },
+    { "inset", KnownValue::Inset },
+    { "italic", KnownValue::Italic },
+    { "large", KnownValue::Large },
+    { "left", KnownValue::Left },
+    { "light", KnownValue::Light },
+    { "line-through", KnownValue::LineThrough },
+    { "link", KnownValue::Link },
+    { "link-visited", KnownValue::LinkVisited },
+    { "lower-alpha", KnownValue::LowerAlpha },
+    { "lower-roman", KnownValue::LowerRoman },
+    { "lowercase", KnownValue::Lowercase },
+    { "medium", KnownValue::Medium },
+    { "mid", KnownValue::Mid },
+    { "middle", KnownValue::Middle },
+    { "midlight", KnownValue::Midlight },
+    { "miterjoin", KnownValue::MiterJoin},
+    { "native", KnownValue::Native },
+    { "no-role", KnownValue::NoRole },
+    { "none", KnownValue::None },
+    { "normal", KnownValue::Normal },
+    { "nowrap", KnownValue::NoWrap },
+    { "oblique", KnownValue::Oblique },
+    { "off", KnownValue::Off },
+    { "on", KnownValue::On },
+    { "outset", KnownValue::Outset },
+    { "overline", KnownValue::Overline },
+    { "placeholder-text", KnownValue::PlaceholderText },
+    { "pre", KnownValue::Pre },
+    { "pre-line", KnownValue::PreLine },
+    { "pre-wrap", KnownValue::PreWrap },
+    { "ridge", KnownValue::Ridge },
+    { "right", KnownValue::Right },
+    { "roundcap", KnownValue::RoundCap},
+    { "roundjoin", KnownValue::RoundJoin},
+    { "selected", KnownValue::Selected },
+    { "shadow", KnownValue::Shadow },
+    { "small" , KnownValue::Small },
+    { "small-caps", KnownValue::SmallCaps },
+    { "solid", KnownValue::Solid },
+    { "square", KnownValue::Square },
+    { "squarecap", KnownValue::SquareCap},
+    { "sub", KnownValue::Sub },
+    { "super", KnownValue::Super },
+    { "svgmiterjoin", KnownValue::SvgMiterJoin},
+    { "text", KnownValue::Text },
+    { "tooltip-base", KnownValue::ToolTipBase },
+    { "tooltip-text", KnownValue::ToolTipText },
+    { "top", KnownValue::Top },
+    { "transparent", KnownValue::Transparent },
+    { "underline", KnownValue::Underline },
+    { "upper-alpha", KnownValue::UpperAlpha },
+    { "upper-roman", KnownValue::UpperRoman },
+    { "uppercase", KnownValue::Uppercase },
+    { "wave", KnownValue::Wave },
+    { "window", KnownValue::Window },
+    { "window-text", KnownValue::WindowText },
+    { "x-large", KnownValue::XLarge },
+    { "xx-large", KnownValue::XXLarge }
 };
 CHECK_ARRAY_IS_SORTED(values, KnownValue)
 
 //Map id to strings as they appears in the 'values' array above
 static constexpr uchar indexOfId[] = {
-    0, 46, 54, 47, 55, 56, 63, 38, 29, 83, 84, 28, 48, 7, 76, 52,
-    32, 68, 69, 30, 58, 74, 8, 12, 43, 65, 21, 15, 19, 20, 22, 24, 57, 27, 51, 80, 40, 4, 3, 45, 75, 18, 13,
-    66, 16, 35, 77, 36, 78, 64, 79, 37, 67, 23, 59, 42, 6, 60, 70, 82, 10, 31, 41, 14, 39, 71, 9, 11, 5, 81,
-    62, 25, 26, 33, 34, 2, 44, 72, 73, 53, 0, 17, 1, 61, 50, 49 };
+     0, 46, 54, 47, 55, 56, 63, 38, 29, 83, 84, 28, 48,  7, 76, 52,
+    32, 68, 69, 30, 58, 74,  8, 12, 43, 65, 21, 15, 19, 20, 22, 24,
+    57, 27, 51, 80, 40,  4,  3, 45, 75, 18, 13, 66, 16, 35, 77, 36,
+    78, 64, 79, 37, 67, 23, 59, 42,  6, 60, 70, 82, 10, 31, 41, 14,
+    39, 71,  9, 11,  5, 81, 62, 25, 26, 33, 34,  2, 44, 72, 73, 53,
+     0, 17,  1, 61, 50, 49 };
 
 static_assert(std::size(indexOfId) == std::size(values) + 1);   // UnknownValue not in values array but in indexOfId
 
@@ -730,12 +732,12 @@ static Qt::Alignment parseAlignment(const QCss::Value *values, int count)
     for (int i = 0; i < qMin(2, count); i++) {
         if (values[i].type != Value::KnownIdentifier)
             break;
-        switch (values[i].variant.toInt()) {
-        case Value_Left: a[i] = Qt::AlignLeft; break;
-        case Value_Right: a[i] = Qt::AlignRight; break;
-        case Value_Top: a[i] = Qt::AlignTop; break;
-        case Value_Bottom: a[i] = Qt::AlignBottom; break;
-        case Value_Center: a[i] = Qt::AlignCenter; break;
+        switch (values[i].variant.value<KnownValue>()) {
+        case KnownValue::Left: a[i] = Qt::AlignLeft; break;
+        case KnownValue::Right: a[i] = Qt::AlignRight; break;
+        case KnownValue::Top: a[i] = Qt::AlignTop; break;
+        case KnownValue::Bottom: a[i] = Qt::AlignBottom; break;
+        case KnownValue::Center: a[i] = Qt::AlignCenter; break;
         default: break;
         }
     }
@@ -757,7 +759,7 @@ static ColorData parseColorValue(QCss::Value v)
     if (v.type == Value::Color)
         return qvariant_cast<QColor>(v.variant);
 
-    if (v.type == Value::KnownIdentifier && v.variant.toInt() == Value_Transparent)
+    if (v.type == Value::KnownIdentifier && v.variant.value<KnownValue>() == KnownValue::Transparent)
         return QColor(Qt::transparent);
 
     if (v.type != Value::Function)
@@ -769,11 +771,11 @@ static ColorData parseColorValue(QCss::Value v)
 
     const QString &identifier = lst.at(0);
     if ((identifier.compare("palette"_L1, Qt::CaseInsensitive)) == 0) {
-        static_assert((Value_LastColorRole - Value_FirstColorRole + 1) == QPalette::ColorRole::NColorRoles);
+        static_assert((int(KnownValue::LastColorRole) - int(KnownValue::FirstColorRole) + 1) == QPalette::ColorRole::NColorRoles);
 
         const KnownValue role = findKnownValue(lst.at(1).trimmed(), values);
-        if (role >= Value_FirstColorRole && role <= Value_LastColorRole)
-            return (QPalette::ColorRole)(role-Value_FirstColorRole);
+        if (role >= KnownValue::FirstColorRole && role <= KnownValue::LastColorRole)
+            return (QPalette::ColorRole)(int(role) - int(KnownValue::FirstColorRole));
 
         return ColorData();
     }
@@ -975,30 +977,30 @@ static QBrush brushFromData(const BrushData& c, const QPalette &pal)
 static BorderStyle parseStyleValue(const QCss::Value &v)
 {
     if (v.type == Value::KnownIdentifier) {
-        switch (v.variant.toInt()) {
-        case Value_None:
+        switch (v.variant.value<KnownValue>()) {
+        case KnownValue::None:
             return BorderStyle_None;
-        case Value_Dotted:
+        case KnownValue::Dotted:
             return BorderStyle_Dotted;
-        case Value_Dashed:
+        case KnownValue::Dashed:
             return BorderStyle_Dashed;
-        case Value_Solid:
+        case KnownValue::Solid:
             return BorderStyle_Solid;
-        case Value_Double:
+        case KnownValue::Double:
             return BorderStyle_Double;
-        case Value_DotDash:
+        case KnownValue::DotDash:
             return BorderStyle_DotDash;
-        case Value_DotDotDash:
+        case KnownValue::DotDotDash:
             return BorderStyle_DotDotDash;
-        case Value_Groove:
+        case KnownValue::Groove:
             return BorderStyle_Groove;
-        case Value_Ridge:
+        case KnownValue::Ridge:
             return BorderStyle_Ridge;
-        case Value_Inset:
+        case KnownValue::Inset:
             return BorderStyle_Inset;
-        case Value_Outset:
+        case KnownValue::Outset:
             return BorderStyle_Outset;
-        case Value_Native:
+        case KnownValue::Native:
             return BorderStyle_Native;
         default:
             break;
@@ -1071,10 +1073,10 @@ static void parseShorthandBackgroundProperty(const QList<QCss::Value> &values, B
         if (v.type == Value::Uri) {
             *image = v.variant.toString();
             continue;
-        } else if (v.type == Value::KnownIdentifier && v.variant.toInt() == Value_None) {
+        } else if (v.type == Value::KnownIdentifier && v.variant.value<KnownValue>() == KnownValue::None) {
             *image = QString();
             continue;
-        } else if (v.type == Value::KnownIdentifier && v.variant.toInt() == Value_Transparent) {
+        } else if (v.type == Value::KnownIdentifier && v.variant.value<KnownValue>() == KnownValue::Transparent) {
             *brush = QBrush(Qt::transparent);
         }
 
@@ -1169,12 +1171,12 @@ static bool setFontSizeFromValue(QCss::Value value, QFont *font, int *fontSizeAd
 {
     if (value.type == Value::KnownIdentifier) {
         bool valid = true;
-        switch (value.variant.toInt()) {
-            case Value_Small: *fontSizeAdjustment = -1; break;
-            case Value_Medium: *fontSizeAdjustment = 0; break;
-            case Value_Large: *fontSizeAdjustment = 1; break;
-            case Value_XLarge: *fontSizeAdjustment = 2; break;
-            case Value_XXLarge: *fontSizeAdjustment = 3; break;
+        switch (value.variant.value<KnownValue>()) {
+            case KnownValue::Small: *fontSizeAdjustment = -1; break;
+            case KnownValue::Medium: *fontSizeAdjustment = 0; break;
+            case KnownValue::Large: *fontSizeAdjustment = 1; break;
+            case KnownValue::XLarge: *fontSizeAdjustment = 2; break;
+            case KnownValue::XXLarge: *fontSizeAdjustment = 3; break;
             default: valid = false; break;
         }
         return valid;
@@ -1206,10 +1208,10 @@ static bool setFontStyleFromValue(const QCss::Value &value, QFont *font)
 {
     if (value.type != Value::KnownIdentifier)
         return false ;
-    switch (value.variant.toInt()) {
-        case Value_Normal: font->setStyle(QFont::StyleNormal); return true;
-        case Value_Italic: font->setStyle(QFont::StyleItalic); return true;
-        case Value_Oblique: font->setStyle(QFont::StyleOblique); return true;
+    switch (value.variant.value<KnownValue>()) {
+        case KnownValue::Normal: font->setStyle(QFont::StyleNormal); return true;
+        case KnownValue::Italic: font->setStyle(QFont::StyleItalic); return true;
+        case KnownValue::Oblique: font->setStyle(QFont::StyleOblique); return true;
         default: break;
     }
     return false;
@@ -1219,10 +1221,10 @@ static bool setFontKerningFromValue(const QCss::Value &value, QFont *font)
 {
     if (value.type != Value::KnownIdentifier)
         return false ;
-    switch (value.variant.toInt()) {
-        case Value_Normal: font->setKerning(true); return true;
-        case Value_None: font->setKerning(false); return true;
-        case Value_Auto: return true;
+    switch (value.variant.value<KnownValue>()) {
+        case KnownValue::Normal: font->setKerning(true); return true;
+        case KnownValue::None: font->setKerning(false); return true;
+        case KnownValue::Auto: return true;
         default: break;
     }
     return false;
@@ -1231,9 +1233,9 @@ static bool setFontKerningFromValue(const QCss::Value &value, QFont *font)
 static bool setFontWeightFromValue(const QCss::Value &value, QFont *font)
 {
     if (value.type == Value::KnownIdentifier) {
-        switch (value.variant.toInt()) {
-            case Value_Normal: font->setWeight(QFont::Normal); return true;
-            case Value_Bold: font->setWeight(QFont::Bold); return true;
+        switch (value.variant.value<KnownValue>()) {
+            case KnownValue::Normal: font->setWeight(QFont::Normal); return true;
+            case KnownValue::Bold: font->setWeight(QFont::Bold); return true;
             default: break;
         }
         return false;
@@ -1284,11 +1286,11 @@ static void setTextDecorationFromValues(const QList<QCss::Value> &values, QFont 
     for (const QCss::Value &value : values) {
         if (value.type != Value::KnownIdentifier)
             continue;
-        switch (value.variant.toInt()) {
-            case Value_Underline: font->setUnderline(true); break;
-            case Value_Overline: font->setOverline(true); break;
-            case Value_LineThrough: font->setStrikeOut(true); break;
-            case Value_None:
+        switch (value.variant.value<KnownValue>()) {
+            case KnownValue::Underline: font->setUnderline(true); break;
+            case KnownValue::Overline: font->setOverline(true); break;
+            case KnownValue::LineThrough: font->setStrikeOut(true); break;
+            case KnownValue::None:
                 font->setUnderline(false);
                 font->setOverline(false);
                 font->setStrikeOut(false);
@@ -1357,9 +1359,9 @@ static void parseShorthandFontProperty(const QList<QCss::Value> &values, QFont *
 static void setFontVariantFromValue(const QCss::Value &value, QFont *font)
 {
     if (value.type == Value::KnownIdentifier) {
-        switch (value.variant.toInt()) {
-            case Value_Normal: font->setCapitalization(QFont::MixedCase); break;
-            case Value_SmallCaps: font->setCapitalization(QFont::SmallCaps); break;
+        switch (value.variant.value<KnownValue>()) {
+            case KnownValue::Normal: font->setCapitalization(QFont::MixedCase); break;
+            case KnownValue::SmallCaps: font->setCapitalization(QFont::SmallCaps); break;
             default: break;
         }
     }
@@ -1368,10 +1370,10 @@ static void setFontVariantFromValue(const QCss::Value &value, QFont *font)
 static void setTextTransformFromValue(const QCss::Value &value, QFont *font)
 {
     if (value.type == Value::KnownIdentifier) {
-        switch (value.variant.toInt()) {
-            case Value_None: font->setCapitalization(QFont::MixedCase); break;
-            case Value_Uppercase: font->setCapitalization(QFont::AllUppercase); break;
-            case Value_Lowercase: font->setCapitalization(QFont::AllLowercase); break;
+        switch (value.variant.value<KnownValue>()) {
+            case KnownValue::None: font->setCapitalization(QFont::MixedCase); break;
+            case KnownValue::Uppercase: font->setCapitalization(QFont::AllUppercase); break;
+            case KnownValue::Lowercase: font->setCapitalization(QFont::AllLowercase); break;
             default: break;
         }
     }
@@ -1925,13 +1927,13 @@ QIcon Declaration::iconValue() const
         QIcon::State state = QIcon::Off;
         for (int j = 0; j < 2; j++) {
             if (i != d->values.size() && d->values.at(i).type == Value::KnownIdentifier) {
-                switch (d->values.at(i).variant.toInt()) {
-                case Value_Disabled: mode = QIcon::Disabled; break;
-                case Value_Active: mode = QIcon::Active; break;
-                case Value_Selected: mode = QIcon::Selected; break;
-                case Value_Normal: mode = QIcon::Normal; break;
-                case Value_On: state = QIcon::On; break;
-                case Value_Off: state = QIcon::Off; break;
+                switch (d->values.at(i).variant.value<KnownValue>()) {
+                case KnownValue::Disabled: mode = QIcon::Disabled; break;
+                case KnownValue::Active: mode = QIcon::Active; break;
+                case KnownValue::Selected: mode = QIcon::Selected; break;
+                case KnownValue::Normal: mode = QIcon::Normal; break;
+                case KnownValue::On: state = QIcon::On; break;
+                case KnownValue::Off: state = QIcon::Off; break;
                 default: break;
                 }
                 ++i;
@@ -2961,7 +2963,7 @@ bool Parser::parseTerm(Value *value)
             if (haveUnary) return false;
             value->type = Value::Identifier;
             const KnownValue theid = findKnownValue(str, values);
-            if (theid != UnknownValue) {
+            if (theid != KnownValue::Unknown) {
                 value->type = Value::KnownIdentifier;
                 value->variant = QVariant::fromValue(theid);
             }

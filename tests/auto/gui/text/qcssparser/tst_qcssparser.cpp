@@ -306,11 +306,11 @@ void tst_QCssParser::term_data()
     QTest::newRow("uri_query_unquoted") << true << "url(www.kde.org/test?key=value&v=123)" << val;
 
     val.type = QCss::Value::KnownIdentifier;
-    val.variant = int(QCss::Value_Italic);
+    val.variant = QVariant::fromValue(QCss::KnownValue::Italic);
     QTest::newRow("italic") << true << "italic" << val;
 
     val.type = QCss::Value::KnownIdentifier;
-    val.variant = int(QCss::Value_Italic);
+    val.variant = QVariant::fromValue(QCss::KnownValue::Italic);
     QTest::newRow("ItaLIc") << true << "ItaLIc" << val;
 }
 

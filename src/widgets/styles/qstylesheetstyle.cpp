@@ -982,9 +982,9 @@ QRenderRule::QRenderRule(const QList<Declaration> &declarations, const QObject *
         } else if (decl.d->propertyId == Property::QtBackgroundRole) {
             if (bg && bg->brush.style() != Qt::NoBrush)
                 continue;
-            int role = decl.d->values.at(0).variant.toInt();
-            if (role >= Value_FirstColorRole && role <= Value_LastColorRole)
-                defaultBackground = palette.color((QPalette::ColorRole)(role-Value_FirstColorRole));
+            KnownValue role = decl.d->values.at(0).variant.value<KnownValue>();
+            if (role >= KnownValue::FirstColorRole && role <= KnownValue::LastColorRole)
+                defaultBackground = palette.color((QPalette::ColorRole)(int(role) - int(KnownValue::FirstColorRole)));
         } else if (decl.d->property.startsWith("qproperty-"_L1, Qt::CaseInsensitive)) {
             // intentionally left blank...
         } else if (decl.d->propertyId == Property::Unknown) {
