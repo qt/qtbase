@@ -341,10 +341,10 @@ static constexpr QCssKnownValue<quint64> pseudos[] = {
 CHECK_ARRAY_IS_SORTED(pseudos, quint64)
 
 static constexpr QCssKnownValue<Origin> origins[] = {
-    { "border", Origin_Border },
-    { "content", Origin_Content },
-    { "margin", Origin_Margin }, // not in css
-    { "padding", Origin_Padding }
+    { "border", Origin::Border },
+    { "content", Origin::Content },
+    { "margin", Origin::Margin }, // not in css
+    { "padding", Origin::Padding }
 };
 CHECK_ARRAY_IS_SORTED(origins, Origin)
 
@@ -1772,7 +1772,7 @@ Origin Declaration::originValue() const
     if (d->parsed.isValid())
         return static_cast<Origin>(d->parsed.toInt());
     if (d->values.size() != 1)
-        return Origin_Unknown;
+        return Origin::Unknown;
     Origin v = findKnownValue(d->values.at(0).variant.toString(), origins);
     d->parsed = QVariant::fromValue(v);
     return v;

@@ -1483,7 +1483,7 @@ void tst_QCssParser::shorthandBackgroundProperty()
     QString image;
     QCss::Repeat repeat = QCss::Repeat::XY;
     Qt::Alignment alignment = Qt::AlignTop | Qt::AlignLeft;
-    QCss::Origin origin = QCss::Origin_Padding;
+    QCss::Origin origin = QCss::Origin::Padding;
     QCss::Attachment attachment;
     QCss::Origin ignoredOrigin;
     v.extractBackground(&brush, &image, &repeat, &alignment, &origin, &attachment, &ignoredOrigin);

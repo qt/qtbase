@@ -310,12 +310,12 @@ enum class Repeat {
     XY,
 };
 
-enum Origin {
-    Origin_Unknown,
-    Origin_Padding,
-    Origin_Border,
-    Origin_Content,
-    Origin_Margin,
+enum class Origin {
+    Unknown,
+    Padding,
+    Border,
+    Content,
+    Margin,
 };
 
 enum PositionMode {

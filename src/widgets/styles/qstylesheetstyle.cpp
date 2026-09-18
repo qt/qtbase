@@ -893,7 +893,7 @@ QRenderRule::QRenderRule(const QList<Declaration> &declarations, const QObject *
         geo = new QStyleSheetGeometryData(w, h, minw, minh, maxw, maxh);
 
     int left = 0, top = 0, right = 0, bottom = 0;
-    Origin origin = Origin_Unknown;
+    Origin origin = Origin::Unknown;
     Qt::Alignment position;
     QCss::PositionMode mode = PositionMode_Unknown;
     Qt::Alignment textAlignment;
@@ -917,8 +917,8 @@ QRenderRule::QRenderRule(const QList<Declaration> &declarations, const QObject *
     Repeat repeat = Repeat::XY;
     Qt::Alignment alignment = Qt::AlignTop | Qt::AlignLeft;
     Attachment attachment = Attachment_Scroll;
-    origin = Origin_Padding;
-    Origin clip = Origin_Border;
+    origin = Origin::Padding;
+    Origin clip = Origin::Border;
     if (v.extractBackground(&brush, &uri, &repeat, &alignment, &origin, &attachment, &clip)) {
         QPixmap pixmap = QStyleSheetStyle::loadPixmap(uri, object);
         if (!uri.isEmpty() && pixmap.isNull())
@@ -1204,16 +1204,18 @@ void QRenderRule::drawBorderImage(QPainter *p, const QRect& rect)
 QRect QRenderRule::originRect(const QRect &rect, Origin origin) const
 {
     switch (origin) {
-    case Origin_Padding:
+    case Origin::Padding:
         return paddingRect(rect);
-    case Origin_Border:
+    case Origin::Border:
         return borderRect(rect);
-    case Origin_Content:
+    case Origin::Content:
         return contentsRect(rect);
-    case Origin_Margin:
-    default:
+    case Origin::Margin:
         return rect;
+    case Origin::Unknown:
+        break;
     }
+    Q_UNREACHABLE_RETURN(rect);
 }
 
 void QRenderRule::drawBackgroundImage(QPainter *p, const QRect &rect, QPoint off)
@@ -1366,7 +1368,7 @@ void QRenderRule::drawBackground(QPainter *p, const QRect& rect, const QPoint& o
         brush = defaultBackground;
 
     if (brush.style() != Qt::NoBrush) {
-        Origin origin = hasBackground() ? background()->clip : Origin_Border;
+        Origin origin = hasBackground() ? background()->clip : Origin::Border;
         // ### fix for  gradients
         const QPainterPath &borderPath = borderClip(originRect(rect, origin));
         if (!borderPath.isEmpty()) {
@@ -2195,7 +2197,7 @@ static Origin defaultOrigin(int pe)
     case PseudoElement_ToolButtonMenu:
     case PseudoElement_SliderAddPage:
     case PseudoElement_SliderSubPage:
-        return Origin_Border;
+        return Origin::Border;
 
     case PseudoElement_SpinBoxUpButton:
     case PseudoElement_SpinBoxDownButton:
@@ -2205,7 +2207,7 @@ static Origin defaultOrigin(int pe)
     case PseudoElement_MenuCheckMark:
     case PseudoElement_MenuIcon:
     case PseudoElement_MenuRightArrow:
-        return Origin_Padding;
+        return Origin::Padding;
 
     case PseudoElement_Indicator:
     case PseudoElement_ExclusiveIndicator:
@@ -2222,10 +2224,10 @@ static Origin defaultOrigin(int pe)
     case PseudoElement_HeaderViewDownArrow:
     case PseudoElement_SliderGroove:
     case PseudoElement_SliderHandle:
-        return Origin_Content;
+        return Origin::Content;
 
     default:
-        return Origin_Margin;
+        return Origin::Margin;
     }
 }
 
@@ -2446,7 +2448,7 @@ QRect QStyleSheetStyle::positionRect(const QWidget *w, const QRenderRule& rule1,
                                      const QRect& rect, Qt::LayoutDirection dir) const
 {
     const QStyleSheetPositionData *p = rule2.position();
-    Origin origin = (p && p->origin != Origin_Unknown) ? p->origin : defaultOrigin(pe);
+    Origin origin = (p && p->origin != Origin::Unknown) ? p->origin : defaultOrigin(pe);
     QRect originRect = rule1.originRect(rect, origin);
     return positionRect(w, rule2, pe, originRect, dir);
 }
@@ -6093,7 +6095,7 @@ QRect QStyleSheetStyle::subControlRect(ComplexControl cc, const QStyleOptionComp
                         const QStyleSheetPositionData *pos = subRule.position();
                         QRect originRect = grooveRect;
                         if (rule.hasBox()) {
-                            Origin origin = (pos && pos->origin != Origin_Unknown) ? pos->origin : defaultOrigin(pe);
+                            Origin origin = (pos && pos->origin != Origin::Unknown) ? pos->origin : defaultOrigin(pe);
                             originRect = rule.originRect(opt->rect, origin);
                         }
                         return positionRect(w, subRule, pe, originRect, styleOptionSlider.direction);
