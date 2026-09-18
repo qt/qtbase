@@ -114,6 +114,13 @@ void updateOhosStatusBarIcon(QtOhos::JsState &jsState, QNapi::Object iconData)
     qOhosPrintfDebug("%s: Successfully updated status bar icon", Q_FUNC_INFO);
 }
 
+QNapi::Promise updateOhosStatusBarHoverTips(QtOhos::JsState &jsState, const std::string &hoverTips)
+{
+    return jsState.evalToPromiseOrRejectOnThrow(
+        "@kit.StatusBarExtensionKit.statusBarManager.updateStatusBarHoverTips(*)",
+        {getContextForStatusBarManager(jsState), applyWorkaroundForEmptyHoverTips(hoverTips)});
+}
+
 void updateOhosStatusBarMenu(QtOhos::JsState &jsState, QNapi::Array statusBarGroupMenus)
 {
     jsState.eval(
@@ -335,9 +342,7 @@ void QOhosSystemTrayIcon::updateToolTip(const QString &tooltip)
     if (m_jsScopeData) {
         QtOhos::invokeInJsThreadAndWaitForContinue(
             [&](QtOhos::JsState &jsState, QOhosTaskPromise<> taskPromise) {
-                jsState.evalToPromiseOrRejectOnThrow(
-                    "@kit.StatusBarExtensionKit.statusBarManager.updateStatusBarHoverTips(*)",
-                    {getContextForStatusBarManager(jsState), applyWorkaroundForEmptyHoverTips(tooltip.toStdString())})
+                updateOhosStatusBarHoverTips(jsState, tooltip.toStdString())
                 .onCatch(QtOhos::makeErrorLoggingJsCallback("updateStatusBarHoverTips()"))
                 .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
             },
