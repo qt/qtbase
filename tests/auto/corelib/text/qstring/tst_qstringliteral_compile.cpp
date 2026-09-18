@@ -27,7 +27,10 @@ constexpr bool checkConstexprness()
 
     QString value = u"Hello"_s;
 #if QT_CORE_INLINE_IMPL_SINCE(6, 13)
+    QT_WARNING_PUSH
+    QT_WARNING_DISABLE_CLANG("-Wself-assign")
     value = value;
+    QT_WARNING_POP
     result &= value.size() == 5;
 #endif
 
