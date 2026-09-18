@@ -11,59 +11,64 @@
 #endif
 using namespace Qt::StringLiterals;
 
-static constexpr QLatin1StringView formats[] = {
-    "M/d/yyyy"_L1,
-    "h"_L1,
-    "hh"_L1,
-    "H"_L1,
-    "HH"_L1,
-    "m"_L1,
-    "mm"_L1,
-    "s"_L1,
-    "ss"_L1,
-    "z"_L1,
-    "zzz"_L1,
-    "A"_L1,
-    "t"_L1,
-    "M/d/yyyy hh:mm"_L1,
-    "M/d/yyyy hh:mm A"_L1,
-    "M/d/yyyy, hh:mm"_L1,
-    "M/d/yyyy, hh:mm A"_L1,
-    "MMM d yyyy"_L1,
-    "MMM d yyyy hh:mm"_L1,
-    "MMM d yyyy hh:mm:ss"_L1,
-    "MMM d yyyy, hh:mm"_L1,
-    "MMM d yyyy, hh:mm:ss"_L1,
-    "MMMM d yyyy"_L1,
-    "MMMM d yyyy hh:mm"_L1,
-    "MMMM d yyyy hh:mm:ss"_L1,
-    "MMMM d yyyy, hh:mm"_L1,
-    "MMMM d yyyy, hh:mm:ss"_L1,
-    "MMMM d yyyy, hh:mm:ss t"_L1,
-    "MMM d, yyyy"_L1,
-    "MMM d, yyyy hh:mm"_L1,
-    "MMM d, yyyy hh:mm:ss"_L1,
-    "MMMM d, yyyy"_L1,
-    "MMMM d, yyyy hh:mm"_L1,
-    "MMMM d, yyyy hh:mm:ss"_L1,
-    "MMMM d, yyyy hh:mm:ss t"_L1,
-    "d MMM yyyy"_L1,
-    "d MMM yyyy hh:mm"_L1,
-    "d MMM yyyy hh:mm:ss"_L1,
-    "d MMM yyyy, hh:mm"_L1,
-    "d MMM yyyy, hh:mm:ss"_L1,
-    "d MMMM yyyy"_L1,
-    "d MMMM yyyy hh:mm"_L1,
-    "d MMMM yyyy hh:mm:ss"_L1,
-    "d MMMM yyyy, hh:mm"_L1,
-    "d MMMM yyyy, hh:mm:ss"_L1,
-    "d MMM, yyyy"_L1,
-    "d MMM, yyyy hh:mm"_L1,
-    "d MMM, yyyy hh:mm:ss"_L1,
-    "d MMMM, yyyy"_L1,
-    "d MMMM, yyyy hh:mm"_L1,
-    "d MMMM, yyyy hh:mm:ss"_L1,
-    "yyyy-MM-ddThh:mm:ss.zt"_L1,
+static constexpr struct {
+    QLatin1StringView format;
+    int baseYear = 1900;
+} patterns[] = {
+    { "M/d/yyyy"_L1 },
+    { "h"_L1 },
+    { "hh"_L1 },
+    { "H"_L1 },
+    { "HH"_L1 },
+    { "m"_L1 },
+    { "mm"_L1 },
+    { "s"_L1 },
+    { "ss"_L1 },
+    { "z"_L1 },
+    { "zzz"_L1 },
+    { "A"_L1 },
+    { "t"_L1 },
+    { "M/d/yyyy hh:mm"_L1 },
+    { "M/d/yyyy hh:mm A"_L1 },
+    { "M/d/yyyy, hh:mm"_L1 },
+    { "M/d/yyyy, hh:mm A"_L1 },
+    { "MMM d yyyy"_L1 },
+    { "MMM d yyyy hh:mm"_L1 },
+    { "MMM d yyyy hh:mm:ss"_L1 },
+    { "MMM d yyyy, hh:mm"_L1 },
+    { "MMM d yyyy, hh:mm:ss"_L1 },
+    { "MMMM d yyyy"_L1 },
+    { "MMMM d yyyy hh:mm"_L1 },
+    { "MMMM d yyyy hh:mm:ss"_L1 },
+    { "MMMM d yyyy, hh:mm"_L1 },
+    { "MMMM d yyyy, hh:mm:ss"_L1 },
+    { "MMMM d yyyy, hh:mm:ss t"_L1 },
+    { "MMM d, yyyy"_L1 },
+    { "MMM d, yyyy hh:mm"_L1 },
+    { "MMM d, yyyy hh:mm:ss"_L1 },
+    { "MMMM d, yyyy"_L1 },
+    { "MMMM d, yyyy hh:mm"_L1 },
+    { "MMMM d, yyyy hh:mm:ss"_L1 },
+    { "MMMM d, yyyy hh:mm:ss t"_L1 },
+    { "d MMM yyyy"_L1 },
+    { "d MMM yyyy hh:mm"_L1 },
+    { "d MMM yyyy hh:mm:ss"_L1 },
+    { "d MMM yyyy, hh:mm"_L1 },
+    { "d MMM yyyy, hh:mm:ss"_L1 },
+    { "d MMMM yyyy"_L1 },
+    { "d MMMM yyyy hh:mm"_L1 },
+    { "d MMMM yyyy hh:mm:ss"_L1 },
+    { "d MMMM yyyy, hh:mm"_L1 },
+    { "d MMMM yyyy, hh:mm:ss"_L1 },
+    { "d MMM, yyyy"_L1 },
+    { "d MMM, yyyy hh:mm"_L1 },
+    { "d MMM, yyyy hh:mm:ss"_L1 },
+    { "d MMMM, yyyy"_L1 },
+    { "d MMMM, yyyy hh:mm"_L1 },
+    { "d MMMM, yyyy hh:mm:ss"_L1 },
+    { "yyyy-MM-ddThh:mm:ss.zt"_L1 },
+    { "yyMMddHHmmss"_L1, 1950 }, // ASN.1 UTC type
+    { "yyyyMMddHHmmsst"_L1 }, // ASN.1 generalized type
 };
 
 // libFuzzer entry-point for testing QDateTimeParser
@@ -76,15 +81,18 @@ extern "C" int LLVMFuzzerTestOneInput(const char *Data, size_t Size)
     QDateTime::fromString(userString, Qt::RFC2822Date);
     QDateTime::fromString(userString, Qt::ISODateWithMs);
 
-    QDateTime::fromString(userString, formats[0], QCalendar(QCalendar::System::Gregorian));
-    for (int sys = int(QCalendar::System::Julian); sys <= int(QCalendar::System::Last); ++sys)
-        QDateTime::fromString(userString, formats[0], QCalendar(QCalendar::System(sys)));
+    QDateTime::fromString(userString, patterns[0].format, patterns[0].baseYear,
+                          QCalendar(QCalendar::System::Gregorian));
+    for (int sys = int(QCalendar::System::Julian); sys <= int(QCalendar::System::Last); ++sys) {
+        QDateTime::fromString(userString, patterns[0].format, patterns[0].baseYear,
+                              QCalendar(QCalendar::System(sys)));
+    }
 
-    for (const auto &format : formats) {
+    for (const auto &pattern : patterns) {
         #ifdef LOG_FORMAT
-        qDebug() << "Trying format:" << format;
+        qDebug() << "Trying format:" << pattern.format << "with base year:" << pattern.baseYear;
         #endif
-        QDateTime::fromString(userString, format);
+        QDateTime::fromString(userString, pattern.format, pattern.baseYear);
     }
     return 0;
 }
