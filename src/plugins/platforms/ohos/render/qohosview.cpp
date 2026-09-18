@@ -1019,7 +1019,9 @@ void QOhosView::showImmediate()
     }
 
     auto *surface = surfaceOrNull();
-    if (surface != nullptr)
+    const bool isVulkanWindow =
+        m_ownerWindow && m_ownerWindow->surfaceType() == QSurface::VulkanSurface;
+    if (surface != nullptr && !isVulkanWindow)
         surface->clearNativeWindowSurface();
 
     m_nativeNode->setVisibility(true);
