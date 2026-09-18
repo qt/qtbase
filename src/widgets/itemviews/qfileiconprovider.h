@@ -6,8 +6,6 @@
 #define QFILEICONPROVIDER_H
 
 #include <QtWidgets/qtwidgetsglobal.h>
-#include <QtCore/qfileinfo.h>
-#include <QtCore/qscopedpointer.h>
 #include <QtGui/qicon.h>
 #include <QtGui/qabstractfileiconprovider.h>
 
@@ -15,6 +13,7 @@ QT_BEGIN_NAMESPACE
 
 
 class QFileIconProviderPrivate;
+class QFileInfo;
 
 class Q_WIDGETS_EXPORT QFileIconProvider : public QAbstractFileIconProvider
 {

@@ -7,6 +7,7 @@
 #include <qguiapplication.h>
 #include <private/qguiapplication_p.h>
 #include <qpa/qplatformtheme.h>
+#include <qfileinfo.h>
 #include <qicon.h>
 #if QT_CONFIG(mimetype)
 #include <qmimedatabase.h>
