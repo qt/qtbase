@@ -198,11 +198,6 @@ void QOhosFloatingWindow::initialize()
 
     QObject::connect(qWindow, &QWindow::modalityChanged, m_view.get(), &QOhosView::setModality);
 
-    QObject::connect(
-        m_view.get(), &QOhosView::surfaceStatusChanged,
-        qWindow,
-        [this](const std::optional<QSize> &optSurfaceSize) { handleSurfaceStatusChanged(optSurfaceSize); });
-
     QObject::connect(qWindow, &QWindow::windowTitleChanged, m_view.get(), &QOhosView::setTitle);
 
     QObject::connect(
@@ -333,7 +328,7 @@ void QOhosFloatingWindow::handleWindowEvent(QOhosWindowProxy::WindowEvent evt)
         // window state.
         if (previousWindowEventType == QOhosWindowProxy::WindowEventType::WINDOW_HIDDEN && !qWindow->isVisible())
             qWindow->setVisible(true);
-        setExposedFromOhos(true);
+        setExposedFromOhos(true, ExposeUpdatePolicy::DeferredUntilGeometry);
         startAsyncWaitForNodeResizeIfNeeded();
         break;
     case QOhosWindowProxy::WindowEventType::WINDOW_DESTROYED:
@@ -415,7 +410,7 @@ void QOhosFloatingWindow::handleWindowVisibilityChange(bool visible)
     if (visible && m_windowMask.has_value())
         m_view->setWindowMask(QOhosWindowProxy::WindowMask{m_windowMask.value()});
 
-    setExposedFromOhos(visible);
+    setExposedFromOhos(visible, ExposeUpdatePolicy::DeferredUntilGeometry);
 }
 
 void QOhosFloatingWindow::handleAvoidAreaChanged(
@@ -442,14 +437,6 @@ void QOhosFloatingWindow::handleAvoidAreaChanged(
             << "bottom:" <<  systemAvoidArea.bottomRect;
         startAsyncWaitForNodeResizeIfNeeded();
     }
-}
-
-void QOhosFloatingWindow::handleSurfaceStatusChanged(const std::optional<QSize> &optSurfaceSize)
-{
-    m_optLastSurfaceSize = optSurfaceSize;
-    bool hasSurface = m_view->surfaceOrNull() != nullptr;
-    if (m_view->viewType() == QOhosView::ViewType::EmbeddedWindow)
-        setExposedFromOhos(hasSurface);
 }
 
 void QOhosFloatingWindow::handleWindowDisplayIdChanged(QOhosDisplayInfo::JsDisplayId displayId)
