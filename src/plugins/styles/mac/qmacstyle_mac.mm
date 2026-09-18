@@ -298,6 +298,34 @@ static const qreal closeButtonCornerRadius = 2.0;
 // Geometry of the bezel an NSTextField draws with Liquid Glass. The same
 // values apply to all control sizes.
 static const qreal textFieldBezelCornerRadius = 4.0;
+static const qreal textFieldBezelBorderWidth = 1.0;
+
+// Starting with Tahoe's Liquid Glass, the rounded/square bezel of an NSTextField is
+// drawn using an opaque system material that does not respect NSTextFieldCell's
+// 'backgroundColor' in either 'Light' or 'Dark' mode, unlike before. If the widget
+// asks for a background color other than the system's default text background, we
+// have to paint that color ourselves, see drawTextFieldCustomBackground().
+static bool hasCustomTextFieldBackground(const QPalette &palette)
+{
+    if (!qt_apple_runningWithLiquidGlass())
+        return false;
+    return palette.brush(QPalette::Base).color() != qt_mac_toQColor(NSColor.textBackgroundColor);
+}
+
+// Paints 'color' inside the bezel drawn by an NSTextField, following the bezel's
+// rounded shape and leaving its border visible.
+static void drawTextFieldCustomBackground(QPainter *p, const QRect &rect, const QColor &color)
+{
+    const QRectF bgRect = QRectF(rect).adjusted(textFieldBezelBorderWidth, textFieldBezelBorderWidth,
+                                                -textFieldBezelBorderWidth, -textFieldBezelBorderWidth);
+    const qreal radius = textFieldBezelCornerRadius - textFieldBezelBorderWidth;
+    QPainterPath path;
+    path.addRoundedRect(bgRect, radius, radius);
+    p->save();
+    p->setRenderHint(QPainter::Antialiasing);
+    p->fillPath(path, color);
+    p->restore();
+}
 
 #if QT_CONFIG(accessibility) // This ifdef to avoid "unused function" warning.
 QBrush brushForToolButton(bool isOnKeyWindow)
@@ -3566,34 +3594,18 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
                 tf.enabled = isEnabled;
                 tf.editable = !isReadOnly;
                 const QColor bgColor = frame->palette.brush(QPalette::Base).color();
-                bool hasCustomBackground = false;
-                if (qt_apple_runningWithLiquidGlass()) {
-                    // Starting with Tahoe's Liquid Glass, the rounded/square bezel of an
-                    // NSTextField is drawn using an opaque system material that does not
-                    // respect NSTextFieldCell's 'backgroundColor' in either 'Light' or
-                    // 'Dark' mode, unlike before. If the widget asks for a background
-                    // color other than the system's default text background, we can no
-                    // longer use the bezeled native cell to render it faithfully, so we
-                    // fall back to a plain border and paint the (custom) background
-                    // color ourselves below.
-                    const QColor defaultColor = qt_mac_toQColor(NSColor.textBackgroundColor);
-                    hasCustomBackground = bgColor != defaultColor;
-                }
+                const bool hasCustomBackground = hasCustomTextFieldBackground(frame->palette);
                 tf.bezeled = YES;
-                if (hasCustomBackground) {
-                    tf.bezeled = NO;
-                    tf.bordered = YES;
-                }
                 static_cast<NSTextFieldCell *>(tf.cell).bezelStyle = isRounded ? NSTextFieldRoundedBezel : NSTextFieldSquareBezel;
                 tf.frame = opt->rect.toCGRect();
                 d->drawNSViewInRect(tf, opt->rect, p, ^(CGContextRef, const CGRect &rect) {
-                    if (!isDarkMode() || hasCustomBackground) {
-                        // In 'Dark' mode controls are transparent by default, so we do not
-                        // have to over-paint the (potentially custom) color in the
-                        // background. In 'Light' mode, and whenever we've fallen back to
-                        // a plain border above because of a custom background color, we
-                        // have to care about the correct background color.
+                    if (!isDarkMode() && !hasCustomBackground) {
+                        // In 'Dark' mode controls are transparent, so we do not over-paint
+                        // the color in the background. In 'Light' mode we have to care
+                        // about the correct background color.
                         // See the comments below for PE_PanelLineEdit.
+                        // A custom background color is painted by us further below, since
+                        // the Liquid Glass bezel ignores the cell's background color.
                         CGContextRef cgContext = NSGraphicsContext.currentContext.CGContext;
                         // See QMacCGContext, here we expect bitmap context created with
                         // color space 'kCGColorSpaceSRGB', if it's something else - we
@@ -3622,6 +3634,8 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
                     }
                     [tf.cell drawWithFrame:fixedRect inView:tf];
                 });
+                if (hasCustomBackground)
+                    drawTextFieldCustomBackground(p, opt->rect, bgColor);
             } else {
                 QCommonStyle::drawPrimitive(pe, opt, p, w);
             }
@@ -3630,7 +3644,10 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
     case PE_PanelLineEdit:
         {
             const QStyleOptionFrame *panel = qstyleoption_cast<const QStyleOptionFrame *>(opt);
-            if (isDarkMode() || (panel && panel->lineWidth <= 0)) {
+            // A custom background color must not be filled as a plain rectangle, it is
+            // painted to follow the bezel's shape in PE_FrameLineEdit.
+            const bool hasCustomBackground = panel && hasCustomTextFieldBackground(panel->palette);
+            if ((panel && panel->lineWidth <= 0) || (isDarkMode() && !hasCustomBackground)) {
                 // QCommonStyle::drawPrimitive(PE_PanelLineEdit) fill the background with
                 // a proper color, defined in opt->palette and then, if lineWidth > 0, it
                 // calls QMacStyle::drawPrimitive(PE_FrameLineEdit). We use NSTextFieldCell
