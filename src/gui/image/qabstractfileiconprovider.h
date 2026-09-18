@@ -6,13 +6,13 @@
 #define QABSTRACTFILEICONPROVIDER_H
 
 #include <QtGui/qtguiglobal.h>
-#include <QtCore/qfileinfo.h>
 #include <QtCore/qscopedpointer.h>
 #include <QtGui/qicon.h>
 
 QT_BEGIN_NAMESPACE
 
 class QAbstractFileIconProviderPrivate;
+class QFileInfo;
 
 class Q_GUI_EXPORT QAbstractFileIconProvider
 {
