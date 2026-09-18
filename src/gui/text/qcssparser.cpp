@@ -357,9 +357,9 @@ static constexpr QCssKnownValue<Repeat> repeats[] = {
 CHECK_ARRAY_IS_SORTED(repeats, Repeat)
 
 static constexpr QCssKnownValue<TileMode> tileModes[] = {
-    { "repeat", TileMode_Repeat },
-    { "round", TileMode_Round },
-    { "stretch", TileMode_Stretch },
+    { "repeat", TileMode::Repeat },
+    { "round", TileMode::Round },
+    { "stretch", TileMode::Stretch },
 };
 CHECK_ARRAY_IS_SORTED(tileModes, TileMode)
 
@@ -1839,7 +1839,7 @@ void Declaration::borderImageValue(QString *image, int *cuts,
     *image = uriValue();
     for (int i = 0; i < 4; i++)
         cuts[i] = -1;
-    *h = *v = TileMode_Stretch;
+    *h = *v = TileMode::Stretch;
 
     if (d->values.size() < 2)
         return;

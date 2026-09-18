@@ -1853,20 +1853,20 @@ void tst_QCssParser::extractBorderImage_data()
 
     QTest::newRow("no valid url, 1 stretch")
         << "border-image: stretch" << QString()
-        << QCss::TileMode::TileMode_Stretch
-        << QCss::TileMode::TileMode_Stretch;
+        << QCss::TileMode::Stretch
+        << QCss::TileMode::Stretch;
     QTest::newRow("tilemode stretch")
         << "border-image: url(:/image.png) 1 stretch"  << ":/image.png"
-        << QCss::TileMode::TileMode_Stretch
-        << QCss::TileMode::TileMode_Stretch;
+        << QCss::TileMode::Stretch
+        << QCss::TileMode::Stretch;
     QTest::newRow("tilemode repeat")
         << "border-image: url(:/image.png) 1 2 repeat" << ":/image.png"
-        << QCss::TileMode::TileMode_Repeat
-        << QCss::TileMode::TileMode_Repeat;
+        << QCss::TileMode::Repeat
+        << QCss::TileMode::Repeat;
     QTest::newRow("tilemode repeat and stretch")
         << "border-image: url(:/image.png) 1 2 3 repeat stretch" << ":/image.png"
-        << QCss::TileMode::TileMode_Repeat
-        << QCss::TileMode::TileMode_Stretch;
+        << QCss::TileMode::Repeat
+        << QCss::TileMode::Stretch;
 }
 
 void tst_QCssParser::extractBorderImage()

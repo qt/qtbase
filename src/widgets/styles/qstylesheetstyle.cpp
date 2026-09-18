@@ -337,8 +337,8 @@ static constexpr PseudoElementInfo knownPseudoElements[NumPseudoElements] = {
 struct QStyleSheetBorderImageData : public QSharedData
 {
     std::array<int, 4> cuts = {-1, -1, -1, -1};
-    QCss::TileMode horizStretch = QCss::TileMode_Unknown;
-    QCss::TileMode vertStretch = QCss::TileMode_Unknown;
+    QCss::TileMode horizStretch = QCss::TileMode::Unknown;
+    QCss::TileMode vertStretch = QCss::TileMode::Unknown;
     QPixmap pixmap;
 };
 
@@ -1171,15 +1171,15 @@ void QRenderRule::drawBorderImage(QPainter *p, const QRect& rect)
     setClip(p, rect);
     const auto tileMode2TileRule = [](TileMode tileMode) -> Qt::TileRule {
         switch (tileMode) {
-        case TileMode_Unknown:
-        case TileMode_Stretch:
+        case TileMode::Unknown:
+        case TileMode::Stretch:
             return Qt::StretchTile;
-        case TileMode_Round:
+        case TileMode::Round:
             return Qt::RoundTile;
-        case TileMode_Repeat:
+        case TileMode::Repeat:
             return Qt::RepeatTile;
         }
-        qWarning() << "Invalid tile mode:" << tileMode;
+        qWarning() << "Invalid tile mode:" << int(tileMode);
         Q_UNREACHABLE_RETURN(Qt::StretchTile);
     };
 

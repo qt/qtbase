@@ -295,11 +295,11 @@ enum Edge {
     NumEdges
 };
 
-enum TileMode {
-    TileMode_Unknown,
-    TileMode_Round,
-    TileMode_Stretch,
-    TileMode_Repeat,
+enum class TileMode {
+    Unknown,
+    Round,
+    Stretch,
+    Repeat,
 };
 
 enum Repeat {
