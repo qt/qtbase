@@ -1438,22 +1438,22 @@ void tst_QCssParser::shorthandBackgroundProperty_data()
     QTest::addColumn<QCss::Repeat>("expectedRepeatValue");
     QTest::addColumn<Qt::Alignment>("expectedAlignment");
 
-    QTest::newRow("simple color") << "background: red" << QBrush(QColor("red")) << QString() << QCss::Repeat_XY << Qt::Alignment(Qt::AlignLeft | Qt::AlignTop);
-    QTest::newRow("plain color") << "background-color: red" << QBrush(QColor("red")) << QString() << QCss::Repeat_XY << Qt::Alignment(Qt::AlignLeft | Qt::AlignTop);
-    QTest::newRow("palette color") << "background-color: palette(mid)" << qApp->palette().mid() << QString() << QCss::Repeat_XY << Qt::Alignment(Qt::AlignLeft | Qt::AlignTop);
-    QTest::newRow("multiple") << "background: url(chess.png) blue repeat-y" << QBrush(QColor("blue")) << QString("chess.png") << QCss::Repeat_Y << Qt::Alignment(Qt::AlignLeft | Qt::AlignTop);
-    QTest::newRow("plain alignment") << "background-position: center" << QBrush() << QString() << QCss::Repeat_XY << Qt::Alignment(Qt::AlignCenter);
-    QTest::newRow("plain alignment2") << "background-position: left top" << QBrush() << QString() << QCss::Repeat_XY << Qt::Alignment(Qt::AlignLeft | Qt::AlignTop);
-    QTest::newRow("plain alignment3") << "background-position: left" << QBrush() << QString() << QCss::Repeat_XY << Qt::Alignment(Qt::AlignLeft | Qt::AlignVCenter);
-    QTest::newRow("multi") << "background: left url(blah.png) repeat-x" << QBrush() << QString("blah.png") << QCss::Repeat_X << Qt::Alignment(Qt::AlignLeft | Qt::AlignVCenter);
-    QTest::newRow("multi2") << "background: url(blah.png) repeat-x top" << QBrush() << QString("blah.png") << QCss::Repeat_X << Qt::Alignment(Qt::AlignTop | Qt::AlignHCenter);
-    QTest::newRow("multi3") << "background: url(blah.png) top right" << QBrush() << QString("blah.png") << QCss::Repeat_XY << Qt::Alignment(Qt::AlignTop | Qt::AlignRight);
+    QTest::newRow("simple color") << "background: red" << QBrush(QColor("red")) << QString() << QCss::Repeat::XY << Qt::Alignment(Qt::AlignLeft | Qt::AlignTop);
+    QTest::newRow("plain color") << "background-color: red" << QBrush(QColor("red")) << QString() << QCss::Repeat::XY << Qt::Alignment(Qt::AlignLeft | Qt::AlignTop);
+    QTest::newRow("palette color") << "background-color: palette(mid)" << qApp->palette().mid() << QString() << QCss::Repeat::XY << Qt::Alignment(Qt::AlignLeft | Qt::AlignTop);
+    QTest::newRow("multiple") << "background: url(chess.png) blue repeat-y" << QBrush(QColor("blue")) << QString("chess.png") << QCss::Repeat::Y << Qt::Alignment(Qt::AlignLeft | Qt::AlignTop);
+    QTest::newRow("plain alignment") << "background-position: center" << QBrush() << QString() << QCss::Repeat::XY << Qt::Alignment(Qt::AlignCenter);
+    QTest::newRow("plain alignment2") << "background-position: left top" << QBrush() << QString() << QCss::Repeat::XY << Qt::Alignment(Qt::AlignLeft | Qt::AlignTop);
+    QTest::newRow("plain alignment3") << "background-position: left" << QBrush() << QString() << QCss::Repeat::XY << Qt::Alignment(Qt::AlignLeft | Qt::AlignVCenter);
+    QTest::newRow("multi") << "background: left url(blah.png) repeat-x" << QBrush() << QString("blah.png") << QCss::Repeat::X << Qt::Alignment(Qt::AlignLeft | Qt::AlignVCenter);
+    QTest::newRow("multi2") << "background: url(blah.png) repeat-x top" << QBrush() << QString("blah.png") << QCss::Repeat::X << Qt::Alignment(Qt::AlignTop | Qt::AlignHCenter);
+    QTest::newRow("multi3") << "background: url(blah.png) top right" << QBrush() << QString("blah.png") << QCss::Repeat::XY << Qt::Alignment(Qt::AlignTop | Qt::AlignRight);
     QTest::newRow("url-query-quoted") << "background: url(\"https://placecats.com/300/200?fit=contain&position=top\")"
                                                                     << QBrush() << QString("https://placecats.com/300/200?fit=contain&position=top")
-                                                                    << QCss::Repeat_XY << Qt::Alignment(Qt::AlignTop | Qt::AlignLeft);
+                                                                    << QCss::Repeat::XY << Qt::Alignment(Qt::AlignTop | Qt::AlignLeft);
     QTest::newRow("url-query-unquoted") << "background: url(https://placecats.com/300/200?fit=contain&position=top)"
                                                                     << QBrush() << QString("https://placecats.com/300/200?fit=contain&position=top")
-                                                                    << QCss::Repeat_XY << Qt::Alignment(Qt::AlignTop | Qt::AlignLeft);
+                                                                    << QCss::Repeat::XY << Qt::Alignment(Qt::AlignTop | Qt::AlignLeft);
 }
 
 void tst_QCssParser::shorthandBackgroundProperty()
@@ -1481,7 +1481,7 @@ void tst_QCssParser::shorthandBackgroundProperty()
 
     QBrush brush;
     QString image;
-    QCss::Repeat repeat = QCss::Repeat_XY;
+    QCss::Repeat repeat = QCss::Repeat::XY;
     Qt::Alignment alignment = Qt::AlignTop | Qt::AlignLeft;
     QCss::Origin origin = QCss::Origin_Padding;
     QCss::Attachment attachment;

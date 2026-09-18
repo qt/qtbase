@@ -302,12 +302,12 @@ enum class TileMode {
     Repeat,
 };
 
-enum Repeat {
-    Repeat_Unknown,
-    Repeat_None,
-    Repeat_X,
-    Repeat_Y,
-    Repeat_XY,
+enum class Repeat {
+    Unknown,
+    None,
+    X,
+    Y,
+    XY,
 };
 
 enum Origin {

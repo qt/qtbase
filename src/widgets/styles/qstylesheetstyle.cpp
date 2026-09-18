@@ -914,7 +914,7 @@ QRenderRule::QRenderRule(const QList<Declaration> &declarations, const QObject *
 
     QBrush brush;
     QString uri;
-    Repeat repeat = Repeat_XY;
+    Repeat repeat = Repeat::XY;
     Qt::Alignment alignment = Qt::AlignTop | Qt::AlignLeft;
     Attachment attachment = Attachment_Scroll;
     origin = Origin_Padding;
@@ -1243,22 +1243,22 @@ void QRenderRule::drawBackgroundImage(QPainter *p, const QRect &rect, QPoint off
     QRect inter = aligned.translated(-off).intersected(r);
 
     switch (background()->repeat) {
-    case Repeat_Y:
+    case Repeat::Y:
         p->drawTiledPixmap(inter.x(), r.y(), inter.width(), r.height(), bgp,
                            inter.x() - aligned.x() + off.x(),
                            bgpHeight - int(aligned.y() - r.y()) % bgpHeight + off.y());
         break;
-    case Repeat_X:
+    case Repeat::X:
         p->drawTiledPixmap(r.x(), inter.y(), r.width(), inter.height(), bgp,
                            bgpWidth - int(aligned.x() - r.x())%bgpWidth + off.x(),
                            inter.y() - aligned.y() + off.y());
         break;
-    case Repeat_XY:
+    case Repeat::XY:
         p->drawTiledPixmap(r, bgp,
                             QPoint(bgpWidth - int(aligned.x() - r.x())% bgpWidth + off.x(),
                                    bgpHeight - int(aligned.y() - r.y())%bgpHeight + off.y()));
         break;
-    case Repeat_None:
+    case Repeat::None:
     default:
         p->drawPixmap(inter.x(), inter.y(), bgp, inter.x() - aligned.x() + off.x(),
                       inter.y() - aligned.y() + off.y(), bgp.width() , bgp.height());

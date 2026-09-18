@@ -349,10 +349,10 @@ static constexpr QCssKnownValue<Origin> origins[] = {
 CHECK_ARRAY_IS_SORTED(origins, Origin)
 
 static constexpr QCssKnownValue<Repeat> repeats[] = {
-    { "no-repeat", Repeat_None },
-    { "repeat-x", Repeat_X },
-    { "repeat-xy", Repeat_XY },
-    { "repeat-y", Repeat_Y }
+    { "no-repeat", Repeat::None },
+    { "repeat-x", Repeat::X },
+    { "repeat-xy", Repeat::XY },
+    { "repeat-y", Repeat::Y }
 };
 CHECK_ARRAY_IS_SORTED(repeats, Repeat)
 
@@ -1064,7 +1064,7 @@ static void parseShorthandBackgroundProperty(const QList<QCss::Value> &values, B
 {
     *brush = BrushData();
     *image = QString();
-    *repeat = Repeat_XY;
+    *repeat = Repeat::XY;
     *alignment = Qt::AlignTop | Qt::AlignLeft;
 
     for (qsizetype i = 0; i < values.size(); ++i) {
@@ -1080,7 +1080,7 @@ static void parseShorthandBackgroundProperty(const QList<QCss::Value> &values, B
         }
 
         const Repeat repeatAttempt = findKnownValue(v.variant.toString(), repeats);
-        if (repeatAttempt != Repeat_Unknown) {
+        if (repeatAttempt != Repeat::Unknown) {
             *repeat = repeatAttempt;
             continue;
         }
@@ -1124,10 +1124,10 @@ bool ValueExtractor::extractBackground(QBrush *brush, QString *image, Repeat *re
                 break;
             case Property::BackgroundRepeat:
                 if (decl.d->parsed.isValid()) {
-                    *repeat = static_cast<Repeat>(decl.d->parsed.toInt());
+                    *repeat = decl.d->parsed.value<Repeat>();
                 } else {
                     *repeat = findKnownValue(val.variant.toString(), repeats);
-                    decl.d->parsed = *repeat;
+                    decl.d->parsed = QVariant::fromValue(*repeat);
                 }
                 break;
             case Property::BackgroundPosition:
@@ -1761,7 +1761,7 @@ Repeat Declaration::repeatValue() const
     if (d->parsed.isValid())
         return static_cast<Repeat>(d->parsed.toInt());
     if (d->values.size() != 1)
-        return Repeat_Unknown;
+        return Repeat::Unknown;
     Repeat v = findKnownValue(d->values.at(0).variant.toString(), repeats);
     d->parsed = QVariant::fromValue(v);
     return v;
