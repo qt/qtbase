@@ -123,7 +123,9 @@ QAbstractTestLogger::QAbstractTestLogger(const char *filename)
         return;
     }
 #if defined(_MSC_VER)
-    if (::fopen_s(&stream, filename, "wt")) {
+    // "N": fopen_s opens the file exclusively, so a child process that inherits the handle and
+    // outlives us (e.g. mspdbsrv.exe, spawned by cl.exe) would keep the log file unreadable.
+    if (::fopen_s(&stream, filename, "wtN")) {
 #else
     stream = ::fopen(filename, "wt");
     if (!stream) {
