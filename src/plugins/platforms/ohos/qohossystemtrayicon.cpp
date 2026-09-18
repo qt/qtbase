@@ -16,6 +16,8 @@
 #include <QtGui/qpa/qplatformmenu.h>
 #include <QtGui/qscreen.h>
 #include <algorithm>
+#include <chrono>
+#include <cstdint>
 #include <optional>
 #include <qohosjsscopedataowner.h>
 
@@ -30,6 +32,59 @@ const std::string ohosSystemTrayItemTitle = "Qt Application";
 const auto trayIconGeometry = QRect(0, 0, 24, 24);
 
 const auto notificationIconSize = QSize(128,128);
+
+QNapi::Promise makeRejectedPromise(napi_env env, QNapi::Value rejectValue)
+{
+    auto deferred = Napi::Promise::Deferred::New(env);
+    deferred.Reject(rejectValue);
+    return deferred.Promise();
+}
+
+QNapi::Promise makePromiseResolvedAfter(QOhosJsState &jsState, std::chrono::milliseconds delay)
+{
+    auto deferred = Napi::Promise::Deferred::New(jsState.env());
+    QtOhos::setJsTimeout(
+        jsState,
+        [deferred](const QOhosCallbackInfo &cbInfo) {
+            deferred.Resolve(cbInfo.Env().Undefined());
+        },
+        delay);
+
+    return deferred.Promise();
+}
+
+QNapi::Promise callToPromiseOrRejectOnThrow(
+    QOhosJsState &jsState, const std::function<QNapi::Promise(QOhosJsState &)> &func)
+{
+    try {
+        return func(jsState);
+    } catch (const Napi::Error &error) {
+        return makeRejectedPromise(jsState.env(), error.Value());
+    }
+}
+
+QNapi::Promise callWithStatusBarManagerThrottlingRetry(
+    QOhosJsState &jsState, std::function<QNapi::Promise(QOhosJsState &)> call)
+{
+    auto callAttemptPromise = callToPromiseOrRejectOnThrow(jsState, call);
+
+    return callAttemptPromise.onCatch(
+        [call = std::move(call)](const QOhosCallbackInfo &cbInfo) mutable {
+            auto rejectedValue = cbInfo.getFirstArg<QNapi::Value>(Q_FUNC_INFO);
+
+            constexpr std::int64_t tooFrequentApiCallsErrorCode = 1010710003;
+            constexpr auto throttlingWindow = std::chrono::milliseconds(20);
+
+            if (QtOhos::tryExtractErrorInfoFromJsError(rejectedValue).optCode != tooFrequentApiCallsErrorCode)
+                return makeRejectedPromise(cbInfo.Env(), rejectedValue);
+
+            return makePromiseResolvedAfter(cbInfo.jsState(), throttlingWindow)
+                .onThen(
+                    [call = std::move(call)](const QOhosCallbackInfo &cbInfo) {
+                        return callToPromiseOrRejectOnThrow(cbInfo.jsState(), call);
+                    });
+        });
+}
 
 std::string applyWorkaroundForEmptyHoverTips(const std::string &hoverTips)
 {
@@ -292,17 +347,23 @@ void QOhosSystemTrayIcon::init()
     m_optJsScopeData.emplace();
     QOhosJsThreadGateway::invokeAndWaitForContinue(
         [&](QOhosJsState &jsState, QOhosTaskPromise<> taskPromise) {
-            auto jsStatusBarIcon = makeJsStatusBarIcon(jsState, m_icon);
-            auto jsStatusBarGroupMenus = jsStatusBarGroupMenusFactory(jsState);
-            auto optHoverTipsString = qTransform(
-                m_optToolTip,
-                [](const auto &toolTip) {
-                    return toolTip.toStdString();
-                });
-            auto jsStatusBarItem = makeJsStatusBarItem(
-                jsState, jsStatusBarIcon, ohosSystemTrayItemTitle, jsStatusBarGroupMenus, optHoverTipsString);
+            callWithStatusBarManagerThrottlingRetry(
+                jsState,
+                [icon = m_icon, optToolTip = m_optToolTip, jsStatusBarGroupMenusFactory](
+                    QOhosJsState &jsState) {
+                    auto jsStatusBarIcon = makeJsStatusBarIcon(jsState, icon);
+                    auto jsStatusBarGroupMenus = jsStatusBarGroupMenusFactory(jsState);
+                    auto optHoverTipsString = qTransform(
+                        optToolTip,
+                        [](const auto &toolTip) {
+                            return toolTip.toStdString();
+                        });
+                    auto jsStatusBarItem = makeJsStatusBarItem(
+                        jsState, jsStatusBarIcon, ohosSystemTrayItemTitle, jsStatusBarGroupMenus,
+                        optHoverTipsString);
 
-            addItemToOhosStatusBar(jsState, jsStatusBarItem)
+                    return addItemToOhosStatusBar(jsState, jsStatusBarItem);
+                })
             .onThen(
                 [this, selfRef, taskPromise = std::move(taskPromise)](const QOhosCallbackInfo &cbInfo) {
                     **m_optJsScopeData = JsScopeData {
@@ -318,7 +379,7 @@ void QOhosSystemTrayIcon::init()
 
                     m_optJsScopeData->addAsyncCleanup(
                         [](QOhosJsState &jsState, JsScopeData &, QOhosTaskPromise<> donePromise) {
-                            removeIconFromOhosStatusBar(jsState)
+                            callWithStatusBarManagerThrottlingRetry(jsState, &removeIconFromOhosStatusBar)
                             .onCatch(QtOhos::makeErrorLoggingJsCallback("remove system tray icon"))
                             .onFinally(std::move(donePromise).makeChained(Q_FUNC_INFO));
                         });
@@ -351,7 +412,11 @@ void QOhosSystemTrayIcon::updateIcon(const QIcon &icon)
 
     QOhosJsThreadGateway::invokeAndWaitForContinue(
         [&](QOhosJsState &jsState, QOhosTaskPromise<> taskPromise) {
-            updateOhosStatusBarIcon(jsState, makeJsStatusBarIcon(jsState, icon))
+            callWithStatusBarManagerThrottlingRetry(
+                jsState,
+                [icon](QOhosJsState &jsState) {
+                    return updateOhosStatusBarIcon(jsState, makeJsStatusBarIcon(jsState, icon));
+                })
             .onCatch(QtOhos::makeErrorLoggingJsCallback("updateStatusBarIcon()"))
             .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
         },
@@ -365,7 +430,11 @@ void QOhosSystemTrayIcon::updateToolTip(const QString &tooltip)
     if (m_optJsScopeData) {
         QOhosJsThreadGateway::invokeAndWaitForContinue(
             [&](QOhosJsState &jsState, QOhosTaskPromise<> taskPromise) {
-                updateOhosStatusBarHoverTips(jsState, tooltip.toStdString())
+                callWithStatusBarManagerThrottlingRetry(
+                    jsState,
+                    [tooltip](QOhosJsState &jsState) {
+                        return updateOhosStatusBarHoverTips(jsState, tooltip.toStdString());
+                    })
                 .onCatch(QtOhos::makeErrorLoggingJsCallback("updateStatusBarHoverTips()"))
                 .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
             },
@@ -429,7 +498,11 @@ void QOhosSystemTrayIcon::updateMenu(QPlatformMenu *menu)
 
     QOhosJsThreadGateway::invokeAndWaitForContinue(
         [&](QOhosJsState &jsState, QOhosTaskPromise<> taskPromise) {
-            updateOhosStatusBarMenu(jsState, jsStatusBarGroupMenusFactory(jsState))
+            callWithStatusBarManagerThrottlingRetry(
+                jsState,
+                [jsStatusBarGroupMenusFactory](QOhosJsState &jsState) {
+                    return updateOhosStatusBarMenu(jsState, jsStatusBarGroupMenusFactory(jsState));
+                })
             .onCatch(QtOhos::makeErrorLoggingJsCallback("updateStatusBarMenu()"))
             .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
         },
