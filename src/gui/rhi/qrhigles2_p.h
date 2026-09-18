@@ -1314,7 +1314,7 @@ public:
         quint32 format;
         QByteArray data;
     };
-    QHash<QByteArray, PipelineCacheData> m_pipelineCache;
+    QRhiBinaryCache<QByteArray, PipelineCacheData> m_pipelineCache { "Program binary cache" };
 
     struct Scratch {
         union data32_t {
@@ -1338,6 +1338,11 @@ public:
 };
 
 Q_DECLARE_TYPEINFO(QRhiGles2::DeferredReleaseEntry, Q_RELOCATABLE_TYPE);
+
+inline quint32 qrhiBinaryCacheEntryByteSize(const QRhiGles2::PipelineCacheData &d)
+{
+    return quint32(d.data.size());
+}
 
 QT_END_NAMESPACE
 

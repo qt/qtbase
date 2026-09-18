@@ -1015,7 +1015,7 @@ public:
         QByteArray entryPoint;
         uint compileFlags;
     };
-    QHash<BytecodeCacheKey, QByteArray> m_bytecodeCache;
+    QRhiBinaryCache<BytecodeCacheKey, QByteArray> m_bytecodeCache { "Bytecode cache" };
 };
 
 Q_DECLARE_TYPEINFO(QRhiD3D11::TextureReadback, Q_RELOCATABLE_TYPE);

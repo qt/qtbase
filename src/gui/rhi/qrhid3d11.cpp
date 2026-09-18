@@ -845,18 +845,18 @@ struct QD3D11PipelineCacheDataHeader
 QByteArray QRhiD3D11::pipelineCacheData()
 {
     QByteArray data;
-    if (m_bytecodeCache.isEmpty())
+    if (m_bytecodeCache.data.isEmpty())
         return data;
 
     QD3D11PipelineCacheDataHeader header;
     memset(&header, 0, sizeof(header));
     header.rhiId = pipelineCacheRhiId();
     header.arch = quint32(sizeof(void*));
-    header.count = m_bytecodeCache.count();
+    header.count = m_bytecodeCache.data.count();
 
     const size_t dataOffset = sizeof(header);
     size_t dataSize = 0;
-    for (auto it = m_bytecodeCache.cbegin(), end = m_bytecodeCache.cend(); it != end; ++it) {
+    for (auto it = m_bytecodeCache.data.cbegin(), end = m_bytecodeCache.data.cend(); it != end; ++it) {
         BytecodeCacheKey key = it.key();
         QByteArray bytecode = it.value();
         dataSize +=
@@ -869,7 +869,7 @@ QByteArray QRhiD3D11::pipelineCacheData()
 
     QByteArray buf(dataOffset + dataSize, Qt::Uninitialized);
     char *p = buf.data() + dataOffset;
-    for (auto it = m_bytecodeCache.cbegin(), end = m_bytecodeCache.cend(); it != end; ++it) {
+    for (auto it = m_bytecodeCache.data.cbegin(), end = m_bytecodeCache.data.cend(); it != end; ++it) {
         BytecodeCacheKey key = it.key();
         QByteArray bytecode = it.value();
 
@@ -962,10 +962,10 @@ void QRhiD3D11::setPipelineCacheData(const QByteArray &data)
         }
         cacheKey.compileFlags = flags;
 
-        m_bytecodeCache.insert(cacheKey, bytecode);
+        m_bytecodeCache.insertWithCapacityLimit(cacheKey, bytecode);
     }
 
-    qCDebug(QRHI_LOG_INFO, "Seeded bytecode cache with %d shaders", int(m_bytecodeCache.count()));
+    qCDebug(QRHI_LOG_INFO, "Seeded bytecode cache with %d shaders", int(m_bytecodeCache.data.count()));
 }
 
 QRhiRenderBuffer *QRhiD3D11::createRenderBuffer(QRhiRenderBuffer::Type type, const QSize &pixelSize,
@@ -5025,8 +5025,8 @@ QByteArray QRhiD3D11::compileHlslShaderSource(const QShader &shader, QShader::Va
         cacheKey.target = target;
         cacheKey.entryPoint = hlslSource.entryPoint();
         cacheKey.compileFlags = flags;
-        auto cacheIt = m_bytecodeCache.constFind(cacheKey);
-        if (cacheIt != m_bytecodeCache.constEnd())
+        auto cacheIt = m_bytecodeCache.data.constFind(cacheKey);
+        if (cacheIt != m_bytecodeCache.data.constEnd())
             return cacheIt.value();
     }
 
@@ -5057,7 +5057,7 @@ QByteArray QRhiD3D11::compileHlslShaderSource(const QShader &shader, QShader::Va
     bytecode->Release();
 
     if (rhiFlags.testFlag(QRhi::EnablePipelineCacheDataSave))
-        m_bytecodeCache.insert(cacheKey, result);
+        m_bytecodeCache.insertWithCapacityLimit(cacheKey, result);
 
     return result;
 }
