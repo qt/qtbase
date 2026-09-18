@@ -3605,11 +3605,12 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
                     }
 
                     CGRect fixedRect = rect;
-                    if (qt_apple_runningWithLiquidGlass()) {
-                        // The text edit cell is drawn with a little offset to the left and
+                    if (qt_apple_runningWithLiquidGlass() && tf.bezeled) {
+                        // Bezeled text edit cells are drawn with a little offset to the left and
                         // the size increase compared to the 'rect' we want it to be drawn in. As a
                         // result, the cell's 'outline' is clipped away. Adjusting the rectangle
                         // for this, so that it's inside the clip rect, as it was before Tahoe.
+                        // This is not the case for non-bezeled/square rect cells.
                         fixedRect = CGRectInset(rect, 1., 1.);
                     }
                     [tf.cell drawWithFrame:fixedRect inView:tf];
