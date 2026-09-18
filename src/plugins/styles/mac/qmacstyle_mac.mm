@@ -3566,9 +3566,7 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
                     // longer use the bezeled native cell to render it faithfully, so we
                     // fall back to a plain border and paint the (custom) background
                     // color ourselves below.
-                    NSColor *sysColor = [NSColor.textBackgroundColor colorUsingColorSpace:NSColorSpace.sRGBColorSpace];
-                    const QColor defaultColor = QColor::fromRgbF(sysColor.redComponent, sysColor.greenComponent,
-                                                                  sysColor.blueComponent, sysColor.alphaComponent);
+                    const QColor defaultColor = qt_mac_toQColor(NSColor.textBackgroundColor);
                     hasCustomBackground = bgColor != defaultColor;
                 }
                 tf.bezeled = YES;
