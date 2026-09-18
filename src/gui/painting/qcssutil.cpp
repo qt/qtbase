@@ -18,21 +18,21 @@ static QPen qPenFromStyle(const QBrush& b, qreal width, BorderStyle s)
     Qt::PenStyle ps = Qt::NoPen;
 
     switch (s) {
-    case BorderStyle_Dotted:
+    case BorderStyle::Dotted:
         ps  = Qt::DotLine;
         break;
-    case BorderStyle_Dashed:
+    case BorderStyle::Dashed:
         ps = Qt::DashLine;
         break;
-    case BorderStyle_DotDash:
+    case BorderStyle::DotDash:
         ps = Qt::DashDotLine;
         break;
-    case BorderStyle_DotDotDash:
+    case BorderStyle::DotDotDash:
         ps = Qt::DashDotDotLine;
         break;
-    case BorderStyle_Inset:
-    case BorderStyle_Outset:
-    case BorderStyle_Solid:
+    case BorderStyle::Inset:
+    case BorderStyle::Outset:
+    case BorderStyle::Solid:
         ps = Qt::SolidLine;
         break;
     default:
@@ -47,34 +47,34 @@ void qDrawRoundedCorners(QPainter *p, qreal x1, qreal y1, qreal x2, qreal y2,
                          Edge edge, BorderStyle s, QBrush c)
 {
     const qreal pw = (edge == TopEdge || edge == BottomEdge) ? y2-y1 : x2-x1;
-    if (s == BorderStyle_Double) {
+    if (s == BorderStyle::Double) {
         qreal wby3 = pw/3;
         switch (edge) {
         case TopEdge:
         case BottomEdge:
-            qDrawRoundedCorners(p, x1, y1, x2, y1+wby3, r1, r2, edge, BorderStyle_Solid, c);
-            qDrawRoundedCorners(p, x1, y2-wby3, x2, y2, r1, r2, edge, BorderStyle_Solid, c);
+            qDrawRoundedCorners(p, x1, y1, x2, y1+wby3, r1, r2, edge, BorderStyle::Solid, c);
+            qDrawRoundedCorners(p, x1, y2-wby3, x2, y2, r1, r2, edge, BorderStyle::Solid, c);
             break;
         case LeftEdge:
-            qDrawRoundedCorners(p, x1, y1+1, x1+wby3, y2, r1, r2, LeftEdge, BorderStyle_Solid, c);
-            qDrawRoundedCorners(p, x2-wby3, y1+1, x2, y2, r1, r2, LeftEdge, BorderStyle_Solid, c);
+            qDrawRoundedCorners(p, x1, y1+1, x1+wby3, y2, r1, r2, LeftEdge, BorderStyle::Solid, c);
+            qDrawRoundedCorners(p, x2-wby3, y1+1, x2, y2, r1, r2, LeftEdge, BorderStyle::Solid, c);
             break;
         case RightEdge:
-            qDrawRoundedCorners(p, x1, y1+1, x1+wby3, y2, r1, r2, RightEdge, BorderStyle_Solid, c);
-            qDrawRoundedCorners(p, x2-wby3, y1+1, x2, y2, r1, r2, RightEdge, BorderStyle_Solid, c);
+            qDrawRoundedCorners(p, x1, y1+1, x1+wby3, y2, r1, r2, RightEdge, BorderStyle::Solid, c);
+            qDrawRoundedCorners(p, x2-wby3, y1+1, x2, y2, r1, r2, RightEdge, BorderStyle::Solid, c);
             break;
         default:
             break;
         }
         return;
-    } else if (s == BorderStyle_Ridge || s == BorderStyle_Groove) {
+    } else if (s == BorderStyle::Ridge || s == BorderStyle::Groove) {
         BorderStyle s1, s2;
-        if (s == BorderStyle_Groove) {
-            s1 = BorderStyle_Inset;
-            s2 = BorderStyle_Outset;
+        if (s == BorderStyle::Groove) {
+            s1 = BorderStyle::Inset;
+            s2 = BorderStyle::Outset;
         } else {
-            s1 = BorderStyle_Outset;
-            s2 = BorderStyle_Inset;
+            s1 = BorderStyle::Outset;
+            s2 = BorderStyle::Inset;
         }
         int pwby2 = qRound(pw/2);
         switch (edge) {
@@ -97,8 +97,8 @@ void qDrawRoundedCorners(QPainter *p, qreal x1, qreal y1, qreal x2, qreal y2,
         default:
             break;
         }
-    } else if ((s == BorderStyle_Outset && (edge == TopEdge || edge == LeftEdge))
-            || (s == BorderStyle_Inset && (edge == BottomEdge || edge == RightEdge)))
+    } else if ((s == BorderStyle::Outset && (edge == TopEdge || edge == LeftEdge))
+            || (s == BorderStyle::Inset && (edge == BottomEdge || edge == RightEdge)))
             c = c.color().lighter();
 
     p->save();
@@ -153,17 +153,17 @@ void qDrawEdge(QPainter *p, qreal x1, qreal y1, qreal x2, qreal y2, qreal dw1, q
     p->save();
     const qreal width = (edge == TopEdge || edge == BottomEdge) ? (y2-y1) : (x2-x1);
 
-    if (width <= 2 && style == BorderStyle_Double)
-        style = BorderStyle_Solid;
+    if (width <= 2 && style == BorderStyle::Double)
+        style = BorderStyle::Solid;
 
     switch (style) {
-    case BorderStyle_Inset:
-    case BorderStyle_Outset:
-        if ((style == BorderStyle_Outset && (edge == TopEdge || edge == LeftEdge))
-            || (style == BorderStyle_Inset && (edge == BottomEdge || edge == RightEdge)))
+    case BorderStyle::Inset:
+    case BorderStyle::Outset:
+        if ((style == BorderStyle::Outset && (edge == TopEdge || edge == LeftEdge))
+            || (style == BorderStyle::Inset && (edge == BottomEdge || edge == RightEdge)))
             c = c.color().lighter();
         Q_FALLTHROUGH();
-    case BorderStyle_Solid: {
+    case BorderStyle::Solid: {
         p->setPen(Qt::NoPen);
         p->setBrush(c);
         if (width == 1 || (dw1 == 0 && dw2 == 0)) {
@@ -194,10 +194,10 @@ void qDrawEdge(QPainter *p, qreal x1, qreal y1, qreal x2, qreal y2, qreal dw1, q
         }
         break;
     }
-    case BorderStyle_Dotted:
-    case BorderStyle_Dashed:
-    case BorderStyle_DotDash:
-    case BorderStyle_DotDotDash:
+    case BorderStyle::Dotted:
+    case BorderStyle::Dashed:
+    case BorderStyle::DotDash:
+    case BorderStyle::DotDotDash:
         p->setPen(qPenFromStyle(c, width, style));
         if (width == 1)
             p->drawLine(QLineF(x1, y1, x2 - 1, y2 - 1));
@@ -207,45 +207,45 @@ void qDrawEdge(QPainter *p, qreal x1, qreal y1, qreal x2, qreal y2, qreal dw1, q
             p->drawLine(QLineF((x1+x2)/2, y1 + width/2, (x1+x2)/2, y2 - width/2));
         break;
 
-    case BorderStyle_Double: {
+    case BorderStyle::Double: {
         int wby3 = qRound(width/3);
         int dw1by3 = qRound(dw1/3);
         int dw2by3 = qRound(dw2/3);
         switch (edge) {
         case TopEdge:
-            qDrawEdge(p, x1, y1, x2, y1 + wby3, dw1by3, dw2by3, TopEdge, BorderStyle_Solid, c);
+            qDrawEdge(p, x1, y1, x2, y1 + wby3, dw1by3, dw2by3, TopEdge, BorderStyle::Solid, c);
             qDrawEdge(p, x1 + dw1 - dw1by3, y2 - wby3, x2 - dw2 + dw1by3, y2,
-                      dw1by3, dw2by3, TopEdge, BorderStyle_Solid, c);
+                      dw1by3, dw2by3, TopEdge, BorderStyle::Solid, c);
             break;
         case LeftEdge:
-            qDrawEdge(p, x1, y1, x1 + wby3, y2, dw1by3, dw2by3, LeftEdge, BorderStyle_Solid, c);
+            qDrawEdge(p, x1, y1, x1 + wby3, y2, dw1by3, dw2by3, LeftEdge, BorderStyle::Solid, c);
             qDrawEdge(p, x2 - wby3, y1 + dw1 - dw1by3, x2, y2 - dw2 + dw2by3, dw1by3, dw2by3,
-                      LeftEdge, BorderStyle_Solid, c);
+                      LeftEdge, BorderStyle::Solid, c);
             break;
         case BottomEdge:
             qDrawEdge(p, x1 + dw1 - dw1by3, y1, x2 - dw2 + dw2by3, y1 + wby3, dw1by3, dw2by3,
-                      BottomEdge, BorderStyle_Solid, c);
-            qDrawEdge(p, x1, y2 - wby3, x2, y2, dw1by3, dw2by3, BottomEdge, BorderStyle_Solid, c);
+                      BottomEdge, BorderStyle::Solid, c);
+            qDrawEdge(p, x1, y2 - wby3, x2, y2, dw1by3, dw2by3, BottomEdge, BorderStyle::Solid, c);
             break;
         case RightEdge:
-            qDrawEdge(p, x2 - wby3, y1, x2, y2, dw1by3, dw2by3, RightEdge, BorderStyle_Solid, c);
+            qDrawEdge(p, x2 - wby3, y1, x2, y2, dw1by3, dw2by3, RightEdge, BorderStyle::Solid, c);
             qDrawEdge(p, x1, y1 + dw1 - dw1by3, x1 + wby3, y2 - dw2 + dw2by3, dw1by3, dw2by3,
-                      RightEdge, BorderStyle_Solid, c);
+                      RightEdge, BorderStyle::Solid, c);
             break;
         default:
             break;
         }
         break;
     }
-    case BorderStyle_Ridge:
-    case BorderStyle_Groove: {
+    case BorderStyle::Ridge:
+    case BorderStyle::Groove: {
         BorderStyle s1, s2;
-        if (style == BorderStyle_Groove) {
-            s1 = BorderStyle_Inset;
-            s2 = BorderStyle_Outset;
+        if (style == BorderStyle::Groove) {
+            s1 = BorderStyle::Inset;
+            s2 = BorderStyle::Outset;
         } else {
-            s1 = BorderStyle_Outset;
-            s2 = BorderStyle_Inset;
+            s1 = BorderStyle::Outset;
+            s2 = BorderStyle::Inset;
         }
         int dw1by2 = qFloor(dw1/2), dw2by2 = qFloor(dw2/2);
         int wby2 = qRound(width/2);
@@ -271,7 +271,9 @@ void qDrawEdge(QPainter *p, qreal x1, qreal y1, qreal x2, qreal y2, qreal dw1, q
         }
         break;
     }
-    default:
+    case BorderStyle::Native:
+    case BorderStyle::None:
+    case BorderStyle::Unknown:
         break;
     }
     p->restore();
@@ -300,10 +302,10 @@ static bool paintsOver(const QCss::BorderStyle *styles, const QBrush *colors, QC
     QCss::BorderStyle s1 = styles[e1];
     QCss::BorderStyle s2 = styles[e2];
 
-    if (s2 == BorderStyle_None || colors[e2] == Qt::transparent)
+    if (s2 == BorderStyle::None || colors[e2] == Qt::transparent)
         return true;
 
-    if ((s1 == BorderStyle_Solid && s2 == BorderStyle_Solid) && (colors[e1] == colors[e2])
+    if ((s1 == BorderStyle::Solid && s2 == BorderStyle::Solid) && (colors[e1] == colors[e2])
             && colors[e1].isOpaque()) {
         return true;
     }
@@ -319,7 +321,7 @@ void qDrawBorder(QPainter *p, const QRect &rect, const QCss::BorderStyle *styles
     qNormalizeRadii(rect, radii, &tlr, &trr, &blr, &brr);
 
     // Drawn in increasing order of precedence
-    if (styles[BottomEdge] != BorderStyle_None && borders[BottomEdge] > 0) {
+    if (styles[BottomEdge] != BorderStyle::None && borders[BottomEdge] > 0) {
         qreal dw1 = (blr.width() || paintsOver(styles, colors, BottomEdge, LeftEdge)) ? 0 : borders[LeftEdge];
         qreal dw2 = (brr.width() || paintsOver(styles, colors, BottomEdge, RightEdge)) ? 0 : borders[RightEdge];
         qreal x1 = br.x() + blr.width();
@@ -331,7 +333,7 @@ void qDrawBorder(QPainter *p, const QRect &rect, const QCss::BorderStyle *styles
         if (blr.width() || brr.width())
             qDrawRoundedCorners(p, x1, y1, x2, y2, blr, brr, BottomEdge, styles[BottomEdge], colors[BottomEdge]);
     }
-    if (styles[RightEdge] != BorderStyle_None && borders[RightEdge] > 0) {
+    if (styles[RightEdge] != BorderStyle::None && borders[RightEdge] > 0) {
         qreal dw1 = (trr.height() || paintsOver(styles, colors, RightEdge, TopEdge)) ? 0 : borders[TopEdge];
         qreal dw2 = (brr.height() || paintsOver(styles, colors, RightEdge, BottomEdge)) ? 0 : borders[BottomEdge];
         qreal x1 = br.x() + br.width() - borders[RightEdge];
@@ -343,7 +345,7 @@ void qDrawBorder(QPainter *p, const QRect &rect, const QCss::BorderStyle *styles
         if (trr.height() || brr.height())
             qDrawRoundedCorners(p, x1, y1, x2, y2, trr, brr, RightEdge, styles[RightEdge], colors[RightEdge]);
     }
-    if (styles[LeftEdge] != BorderStyle_None && borders[LeftEdge] > 0) {
+    if (styles[LeftEdge] != BorderStyle::None && borders[LeftEdge] > 0) {
         qreal dw1 = (tlr.height() || paintsOver(styles, colors, LeftEdge, TopEdge)) ? 0 : borders[TopEdge];
         qreal dw2 = (blr.height() || paintsOver(styles, colors, LeftEdge, BottomEdge)) ? 0 : borders[BottomEdge];
         qreal x1 = br.x();
@@ -355,7 +357,7 @@ void qDrawBorder(QPainter *p, const QRect &rect, const QCss::BorderStyle *styles
         if (tlr.height() || blr.height())
             qDrawRoundedCorners(p, x1, y1, x2, y2, tlr, blr, LeftEdge, styles[LeftEdge], colors[LeftEdge]);
     }
-    if (styles[TopEdge] != BorderStyle_None && borders[TopEdge] > 0) {
+    if (styles[TopEdge] != BorderStyle::None && borders[TopEdge] > 0) {
         qreal dw1 = (tlr.width() || paintsOver(styles, colors, TopEdge, LeftEdge)) ? 0 : borders[LeftEdge];
         qreal dw2 = (trr.width() || paintsOver(styles, colors, TopEdge, RightEdge)) ? 0 : borders[RightEdge];
         qreal x1 = br.x() + tlr.width();

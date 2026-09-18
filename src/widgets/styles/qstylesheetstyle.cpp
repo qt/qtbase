@@ -368,10 +368,10 @@ struct QStyleSheetBorderData : public QSharedData
 
     std::array<int, 4> borders = {0, 0, 0, 0};
     std::array<QBrush, 4> colors;
-    std::array<QCss::BorderStyle, 4> styles = {QCss::BorderStyle_None,
-                                               QCss::BorderStyle_None,
-                                               QCss::BorderStyle_None,
-                                               QCss::BorderStyle_None};
+    std::array<QCss::BorderStyle, 4> styles = {QCss::BorderStyle::None,
+                                               QCss::BorderStyle::None,
+                                               QCss::BorderStyle::None,
+                                               QCss::BorderStyle::None};
     std::array<QSize, 4> radii; // topleft, topright, bottomleft, bottomright
     QSharedDataPointer<QStyleSheetBorderImageData> bi;
 
@@ -380,10 +380,10 @@ struct QStyleSheetBorderData : public QSharedData
     bool isOpaque() const
     {
         for (size_t i = 0; i < 4; i++) {
-            if (styles[i] == QCss::BorderStyle_Native || styles[i] == QCss::BorderStyle_None)
+            if (styles[i] == QCss::BorderStyle::Native || styles[i] == QCss::BorderStyle::None)
                 continue;
-            if (styles[i] >= QCss::BorderStyle_Dotted && styles[i] <= QCss::BorderStyle_DotDotDash
-                && styles[i] != BorderStyle_Solid)
+            if (styles[i] >= QCss::BorderStyle::Dotted && styles[i] <= QCss::BorderStyle::DotDotDash
+                && styles[i] != QCss::BorderStyle::Solid)
                 return false;
             if (!colors[i].isOpaque())
                 return false;
@@ -512,12 +512,12 @@ public:
 
     bool hasNativeBorder() const {
         return bd == nullptr
-               || (!bd->hasBorderImage() && bd->styles[0] == BorderStyle_Native);
+               || (!bd->hasBorderImage() && bd->styles[0] == QCss::BorderStyle::Native);
     }
 
     bool hasNativeOutline() const {
         return (ou == nullptr
-                || (!ou->hasBorderImage() && ou->styles[0] == BorderStyle_Native));
+                || (!ou->hasBorderImage() && ou->styles[0] == QCss::BorderStyle::Native));
     }
 
     bool baseStyleCanDraw() const {
@@ -1135,16 +1135,16 @@ void QRenderRule::fixupBorder(int nativeWidth)
         const bool hasRadius = bd->radii[0].isValid() || bd->radii[1].isValid()
                                || bd->radii[2].isValid() || bd->radii[3].isValid();
         for (int i = 0; i < 4; i++) {
-            if ((bd->styles[i] == BorderStyle_Native) && hasRadius)
-                bd->styles[i] = BorderStyle_None;
+            if ((bd->styles[i] == QCss::BorderStyle::Native) && hasRadius)
+                bd->styles[i] = QCss::BorderStyle::None;
 
             switch (bd->styles[i]) {
-            case BorderStyle_None:
+            case QCss::BorderStyle::None:
                 // border-style: none forces width to be 0
                 bd->colors[i] = QBrush();
                 bd->borders[i] = 0;
                 break;
-            case BorderStyle_Native:
+            case QCss::BorderStyle::Native:
                 if (bd->borders[i] == 0)
                     bd->borders[i] = nativeWidth;
                 Q_FALLTHROUGH();

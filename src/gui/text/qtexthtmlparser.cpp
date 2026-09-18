@@ -1136,29 +1136,29 @@ void QTextHtmlParserNode::setListStyle(const QList<QCss::Value> &cssValues)
 static QTextFrameFormat::BorderStyle toQTextFrameFormat(QCss::BorderStyle cssStyle)
 {
     switch (cssStyle) {
-    case QCss::BorderStyle::BorderStyle_Dotted:
+    case QCss::BorderStyle::Dotted:
         return QTextFrameFormat::BorderStyle::BorderStyle_Dotted;
-    case QCss::BorderStyle::BorderStyle_Dashed:
+    case QCss::BorderStyle::Dashed:
         return QTextFrameFormat::BorderStyle::BorderStyle_Dashed;
-    case QCss::BorderStyle::BorderStyle_Solid:
+    case QCss::BorderStyle::Solid:
         return QTextFrameFormat::BorderStyle::BorderStyle_Solid;
-    case QCss::BorderStyle::BorderStyle_Double:
+    case QCss::BorderStyle::Double:
         return QTextFrameFormat::BorderStyle::BorderStyle_Double;
-    case QCss::BorderStyle::BorderStyle_DotDash:
+    case QCss::BorderStyle::DotDash:
         return QTextFrameFormat::BorderStyle::BorderStyle_DotDash;
-    case QCss::BorderStyle::BorderStyle_DotDotDash:
+    case QCss::BorderStyle::DotDotDash:
         return QTextFrameFormat::BorderStyle::BorderStyle_DotDotDash;
-    case QCss::BorderStyle::BorderStyle_Groove:
+    case QCss::BorderStyle::Groove:
         return QTextFrameFormat::BorderStyle::BorderStyle_Groove;
-    case QCss::BorderStyle::BorderStyle_Ridge:
+    case QCss::BorderStyle::Ridge:
         return QTextFrameFormat::BorderStyle::BorderStyle_Ridge;
-    case QCss::BorderStyle::BorderStyle_Inset:
+    case QCss::BorderStyle::Inset:
         return QTextFrameFormat::BorderStyle::BorderStyle_Inset;
-    case QCss::BorderStyle::BorderStyle_Outset:
+    case QCss::BorderStyle::Outset:
         return QTextFrameFormat::BorderStyle::BorderStyle_Outset;
-    case QCss::BorderStyle::BorderStyle_Unknown:
-    case QCss::BorderStyle::BorderStyle_None:
-    case QCss::BorderStyle::BorderStyle_Native:
+    case QCss::BorderStyle::Unknown:
+    case QCss::BorderStyle::None:
+    case QCss::BorderStyle::Native:
         return QTextFrameFormat::BorderStyle::BorderStyle_None;
     // Intentionally no "default" to allow a compiler warning when extending the enum
     // without updating this here. clang gives such a warning.
@@ -1179,7 +1179,7 @@ void QTextHtmlParserNode::applyCssDeclarations(const QList<QCss::Declaration> &d
         int cssBorder[4];
         QSize cssRadii[4]; // unused
         for (int i = 0; i < 4; ++i) {
-            cssStyles[i] = QCss::BorderStyle_None;
+            cssStyles[i] = QCss::BorderStyle::None;
             cssBorder[i] = 0;
         }
         // this will parse (and cache) "border-width" as a list so the
@@ -1214,8 +1214,8 @@ void QTextHtmlParserNode::applyCssDeclarations(const QList<QCss::Declaration> &d
             break;
         }
         case QCss::Property::BorderStyles:
-            if (decl.styleValue() != QCss::BorderStyle_Unknown && decl.styleValue() != QCss::BorderStyle_Native)
-                borderStyle = static_cast<QTextFrameFormat::BorderStyle>(decl.styleValue() - 1);
+            if (decl.styleValue() != QCss::BorderStyle::Unknown && decl.styleValue() != QCss::BorderStyle::Native)
+                borderStyle = toQTextFrameFormat(decl.styleValue());
             break;
         case QCss::Property::BorderWidth: {
             int borders[4];

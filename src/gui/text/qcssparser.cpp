@@ -979,35 +979,34 @@ static BorderStyle parseStyleValue(const QCss::Value &v)
     if (v.type == Value::KnownIdentifier) {
         switch (v.variant.value<KnownValue>()) {
         case KnownValue::None:
-            return BorderStyle_None;
+            return BorderStyle::None;
         case KnownValue::Dotted:
-            return BorderStyle_Dotted;
+            return BorderStyle::Dotted;
         case KnownValue::Dashed:
-            return BorderStyle_Dashed;
+            return BorderStyle::Dashed;
         case KnownValue::Solid:
-            return BorderStyle_Solid;
+            return BorderStyle::Solid;
         case KnownValue::Double:
-            return BorderStyle_Double;
+            return BorderStyle::Double;
         case KnownValue::DotDash:
-            return BorderStyle_DotDash;
+            return BorderStyle::DotDash;
         case KnownValue::DotDotDash:
-            return BorderStyle_DotDotDash;
+            return BorderStyle::DotDotDash;
         case KnownValue::Groove:
-            return BorderStyle_Groove;
+            return BorderStyle::Groove;
         case KnownValue::Ridge:
-            return BorderStyle_Ridge;
+            return BorderStyle::Ridge;
         case KnownValue::Inset:
-            return BorderStyle_Inset;
+            return BorderStyle::Inset;
         case KnownValue::Outset:
-            return BorderStyle_Outset;
+            return BorderStyle::Outset;
         case KnownValue::Native:
-            return BorderStyle_Native;
+            return BorderStyle::Native;
         default:
             break;
         }
     }
-
-    return BorderStyle_Unknown;
+    return BorderStyle::Unknown;
 }
 
 void ValueExtractor::borderValue(const Declaration &decl, int *width, QCss::BorderStyle *style, QBrush *color)
@@ -1021,7 +1020,7 @@ void ValueExtractor::borderValue(const Declaration &decl, int *width, QCss::Bord
     }
 
     *width = 0;
-    *style = BorderStyle_None;
+    *style = BorderStyle::None;
     *color = QColor();
 
     if (decl.d->values.isEmpty())
@@ -1030,7 +1029,7 @@ void ValueExtractor::borderValue(const Declaration &decl, int *width, QCss::Bord
     BorderData data;
     data.width.number = 0;
     data.width.unit = LengthData::None;
-    data.style = BorderStyle_None;
+    data.style = BorderStyle::None;
 
     int i = 0;
     if (decl.d->values.at(i).type == Value::Length || decl.d->values.at(i).type == Value::Number) {
@@ -1043,14 +1042,14 @@ void ValueExtractor::borderValue(const Declaration &decl, int *width, QCss::Bord
     }
 
     data.style = parseStyleValue(decl.d->values.at(i));
-    if (data.style != BorderStyle_Unknown) {
+    if (data.style != BorderStyle::Unknown) {
         *style = data.style;
         if (++i >= decl.d->values.size()) {
             decl.d->parsed = QVariant::fromValue<BorderData>(data);
             return;
         }
     } else {
-        data.style = BorderStyle_None;
+        data.style = BorderStyle::None;
     }
 
      data.color = parseBrushValue(decl.d->values.at(i), pal);
@@ -1742,7 +1741,7 @@ void Declaration::colorValues(QColor *c, const QPalette &pal) const
 BorderStyle Declaration::styleValue() const
 {
     if (d->values.size() != 1)
-        return BorderStyle_None;
+        return BorderStyle::None;
     return parseStyleValue(d->values.at(0));
 }
 
@@ -1751,7 +1750,7 @@ void Declaration::styleValues(BorderStyle *s) const
     int i;
     for (i = 0; i < qMin(d->values.size(), 4); i++)
         s[i] = parseStyleValue(d->values.at(i));
-    if (i == 0) s[0] = s[1] = s[2] = s[3] = BorderStyle_None;
+    if (i == 0) s[0] = s[1] = s[2] = s[3] = BorderStyle::None;
     else if (i == 1) s[3] = s[2] = s[1] = s[0];
     else if (i == 2) s[2] = s[0], s[3] = s[1];
     else if (i == 3) s[3] = s[1];

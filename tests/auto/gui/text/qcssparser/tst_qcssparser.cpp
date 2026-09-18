@@ -1785,25 +1785,25 @@ void tst_QCssParser::extractBorder_data()
     QTest::addColumn<QCss::BorderStyle>("expectedTopStyle");
     QTest::addColumn<QColor>("expectedTopColor");
 
-    QTest::newRow("all values") << "border: 2px solid green" << 2 << QCss::BorderStyle_Solid << QColor("green");
-    QTest::newRow("palette") << "border: 2px solid palette(highlight)" << 2 << QCss::BorderStyle_Solid << qApp->palette().color(QPalette::Highlight);
-    QTest::newRow("just width") << "border: 2px" << 2 << QCss::BorderStyle_None << QColor();
-    QTest::newRow("just style") << "border: solid" << 0 << QCss::BorderStyle_Solid << QColor();
-    QTest::newRow("just color") << "border: green" << 0 << QCss::BorderStyle_None << QColor("green");
-    QTest::newRow("width+style") << "border: 2px solid" << 2 << QCss::BorderStyle_Solid << QColor();
-    QTest::newRow("style+color") << "border: solid green" << 0 << QCss::BorderStyle_Solid << QColor("green");
-    QTest::newRow("width+color") << "border: 3px green" << 3 << QCss::BorderStyle_None << QColor("green");
-    QTest::newRow("groove style") << "border: groove" << 0 << QCss::BorderStyle_Groove << QColor();
-    QTest::newRow("ridge style") << "border: ridge" << 0 << QCss::BorderStyle_Ridge << QColor();
-    QTest::newRow("double style") << "border: double" << 0 << QCss::BorderStyle_Double << QColor();
-    QTest::newRow("inset style") << "border: inset" << 0 << QCss::BorderStyle_Inset << QColor();
-    QTest::newRow("outset style") << "border: outset" << 0 << QCss::BorderStyle_Outset << QColor();
-    QTest::newRow("dashed style") << "border: dashed" << 0 << QCss::BorderStyle_Dashed << QColor();
-    QTest::newRow("dotted style") << "border: dotted" << 0 << QCss::BorderStyle_Dotted << QColor();
-    QTest::newRow("dot-dash style") << "border: dot-dash" << 0 << QCss::BorderStyle_DotDash << QColor();
-    QTest::newRow("dot-dot-dash style") << "border: dot-dot-dash" << 0 << QCss::BorderStyle_DotDotDash << QColor();
+    QTest::newRow("all values") << "border: 2px solid green" << 2 << QCss::BorderStyle::Solid << QColor("green");
+    QTest::newRow("palette") << "border: 2px solid palette(highlight)" << 2 << QCss::BorderStyle::Solid << qApp->palette().color(QPalette::Highlight);
+    QTest::newRow("just width") << "border: 2px" << 2 << QCss::BorderStyle::None << QColor();
+    QTest::newRow("just style") << "border: solid" << 0 << QCss::BorderStyle::Solid << QColor();
+    QTest::newRow("just color") << "border: green" << 0 << QCss::BorderStyle::None << QColor("green");
+    QTest::newRow("width+style") << "border: 2px solid" << 2 << QCss::BorderStyle::Solid << QColor();
+    QTest::newRow("style+color") << "border: solid green" << 0 << QCss::BorderStyle::Solid << QColor("green");
+    QTest::newRow("width+color") << "border: 3px green" << 3 << QCss::BorderStyle::None << QColor("green");
+    QTest::newRow("groove style") << "border: groove" << 0 << QCss::BorderStyle::Groove << QColor();
+    QTest::newRow("ridge style") << "border: ridge" << 0 << QCss::BorderStyle::Ridge << QColor();
+    QTest::newRow("double style") << "border: double" << 0 << QCss::BorderStyle::Double << QColor();
+    QTest::newRow("inset style") << "border: inset" << 0 << QCss::BorderStyle::Inset << QColor();
+    QTest::newRow("outset style") << "border: outset" << 0 << QCss::BorderStyle::Outset << QColor();
+    QTest::newRow("dashed style") << "border: dashed" << 0 << QCss::BorderStyle::Dashed << QColor();
+    QTest::newRow("dotted style") << "border: dotted" << 0 << QCss::BorderStyle::Dotted << QColor();
+    QTest::newRow("dot-dash style") << "border: dot-dash" << 0 << QCss::BorderStyle::DotDash << QColor();
+    QTest::newRow("dot-dot-dash style") << "border: dot-dot-dash" << 0 << QCss::BorderStyle::DotDotDash << QColor();
 
-    QTest::newRow("top-width+color") << "border-top: 3px green" << 3 << QCss::BorderStyle_None << QColor("green");
+    QTest::newRow("top-width+color") << "border-top: 3px green" << 3 << QCss::BorderStyle::None << QColor("green");
 }
 
 void tst_QCssParser::extractBorder()

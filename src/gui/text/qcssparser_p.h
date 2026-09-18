@@ -271,20 +271,20 @@ enum class KnownValue {
     Off,
 };
 
-enum BorderStyle {
-    BorderStyle_Unknown,
-    BorderStyle_None,
-    BorderStyle_Dotted,
-    BorderStyle_Dashed,
-    BorderStyle_Solid,
-    BorderStyle_Double,
-    BorderStyle_DotDash,
-    BorderStyle_DotDotDash,
-    BorderStyle_Groove,
-    BorderStyle_Ridge,
-    BorderStyle_Inset,
-    BorderStyle_Outset,
-    BorderStyle_Native,
+enum class BorderStyle {
+    Unknown,
+    None,
+    Dotted,
+    Dashed,
+    Solid,
+    Double,
+    DotDash,
+    DotDotDash,
+    Groove,
+    Ridge,
+    Inset,
+    Outset,
+    Native,
 };
 
 enum Edge {
