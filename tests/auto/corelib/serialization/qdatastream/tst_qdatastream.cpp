@@ -2790,24 +2790,41 @@ void tst_QDataStream::status_charptr_QByteArray_data()
     QByteArray threeMbMinus1 = oneMbMinus1 + 'j' + oneMbMinus1 + 'k' + oneMbMinus1;
 
     // ok
-    QTest::newRow("size 0") << QByteArray("\x00\x00\x00\x00", 4) << (int) QDataStream::Ok << QByteArray();
-    QTest::newRow("size 1") << QByteArray("\x00\x00\x00\x01j", 5) << (int) QDataStream::Ok << QByteArray("j");
-    QTest::newRow("size 2") << QByteArray("\x00\x00\x00\x02jk", 6) << (int) QDataStream::Ok << QByteArray("jk");
-    QTest::newRow("size 3") << QByteArray("\x00\x00\x00\x03jkl", 7) << (int) QDataStream::Ok << QByteArray("jkl");
-    QTest::newRow("size 4") << QByteArray("\x00\x00\x00\x04jklm", 8) << (int) QDataStream::Ok << QByteArray("jklm");
-    QTest::newRow("size 4j") << QByteArray("\x00\x00\x00\x04jklmj", 8) << (int) QDataStream::Ok << QByteArray("jklm");
-    QTest::newRow("size 1MB-1") << QByteArray("\x00\x0f\xff\xff", 4) + oneMbMinus1 + QByteArray("j") << (int) QDataStream::Ok << oneMbMinus1;
-    QTest::newRow("size 1MB") << QByteArray("\x00\x10\x00\x00", 4) + oneMbMinus1 + QByteArray("jkl") << (int) QDataStream::Ok << oneMbMinus1 + "j";
-    QTest::newRow("size 1MB+1") << QByteArray("\x00\x10\x00\x01", 4) + oneMbMinus1 + QByteArray("jkl") << (int) QDataStream::Ok << oneMbMinus1 + "jk";
-    QTest::newRow("size 3MB-1") << QByteArray("\x00\x2f\xff\xff", 4) + threeMbMinus1 + QByteArray("j") << (int) QDataStream::Ok << threeMbMinus1;
-    QTest::newRow("size 3MB") << QByteArray("\x00\x30\x00\x00", 4) + threeMbMinus1 + QByteArray("jkl") << (int) QDataStream::Ok << threeMbMinus1 + "j";
-    QTest::newRow("size 3MB+1") << QByteArray("\x00\x30\x00\x01", 4) + threeMbMinus1 + QByteArray("jkl") << (int) QDataStream::Ok << threeMbMinus1 + "jk";
+    auto addOkRows = [](const char *name, const QByteArray &data, const QByteArray &expectedString) {
+        QTest::newRow(name) << data << int(QDataStream::Ok) << expectedString;
+
+        // extended size prefix followed by upper 32-bit as zero
+        QByteArrayView prefix("\xff\xff\xff\xfe\0\0\0\0", 8);
+        QTest::addRow("extended-%s", name) << (prefix + data) << int(QDataStream::Ok) << expectedString;
+    };
+    addOkRows("size 0", QByteArray("\x00\x00\x00\x00", 4), QByteArray());
+    addOkRows("size 1", QByteArray("\x00\x00\x00\x01j", 5), QByteArray("j"));
+    addOkRows("size 2", QByteArray("\x00\x00\x00\x02jk", 6), QByteArray("jk"));
+    addOkRows("size 3", QByteArray("\x00\x00\x00\x03jkl", 7), QByteArray("jkl"));
+    addOkRows("size 4", QByteArray("\x00\x00\x00\x04jklm", 8), QByteArray("jklm"));
+    addOkRows("size 4j", QByteArray("\x00\x00\x00\x04jklmj", 8), QByteArray("jklm"));
+    addOkRows("size 1MB-1", QByteArray("\x00\x0f\xff\xff", 4) + oneMbMinus1 + QByteArray("j"), oneMbMinus1);
+    addOkRows("size 1MB", QByteArray("\x00\x10\x00\x00", 4) + oneMbMinus1 + QByteArray("jkl"), oneMbMinus1 + "j");
+    addOkRows("size 1MB+1", QByteArray("\x00\x10\x00\x01", 4) + oneMbMinus1 + QByteArray("jkl"), oneMbMinus1 + "jk");
+    addOkRows("size 3MB-1", QByteArray("\x00\x2f\xff\xff", 4) + threeMbMinus1 + QByteArray("j"), threeMbMinus1);
+    addOkRows("size 3MB", QByteArray("\x00\x30\x00\x00", 4) + threeMbMinus1 + QByteArray("jkl"), threeMbMinus1 + "j");
+    addOkRows("size 3MB+1", QByteArray("\x00\x30\x00\x01", 4) + threeMbMinus1 + QByteArray("jkl"), threeMbMinus1 + "jk");
 
     // past end
     QTest::newRow("empty") << QByteArray() << (int) QDataStream::ReadPastEnd << QByteArray();
-    QTest::newRow("trunclen 1") << QByteArray("x") << (int) QDataStream::ReadPastEnd << QByteArray();
-    QTest::newRow("trunclen 2") << QByteArray("xx") << (int) QDataStream::ReadPastEnd << QByteArray();
-    QTest::newRow("trunclen 3") << QByteArray("xxx") << (int) QDataStream::ReadPastEnd << QByteArray();
+    QTest::newRow("trunclen 1") << "\0"_ba << (int) QDataStream::ReadPastEnd << QByteArray();
+    QTest::newRow("trunclen 2") << "\0\0"_ba << (int) QDataStream::ReadPastEnd << QByteArray();
+    QTest::newRow("trunclen 3") << "\0\0\0"_ba << (int) QDataStream::ReadPastEnd << QByteArray();
+    QTest::newRow("trunclen 1-x") << QByteArray("x") << (int) QDataStream::ReadPastEnd << QByteArray();
+    QTest::newRow("trunclen 2-xx") << QByteArray("xx") << (int) QDataStream::ReadPastEnd << QByteArray();
+    QTest::newRow("trunclen 3-xxx") << QByteArray("xxx") << (int) QDataStream::ReadPastEnd << QByteArray();
+    QTest::newRow("extended-trunclen 1") << "\xff\xff\xff\xfe\0"_ba << (int) QDataStream::ReadPastEnd << QByteArray();
+    QTest::newRow("extended-trunclen 2") << "\xff\xff\xff\xfe\0\0"_ba << (int) QDataStream::ReadPastEnd << QByteArray();
+    QTest::newRow("extended-trunclen 3") << "\xff\xff\xff\xfe\0\0\0"_ba << (int) QDataStream::ReadPastEnd << QByteArray();
+    QTest::newRow("extended-trunclen 4") << "\xff\xff\xff\xfe\0\0\0\0"_ba << (int) QDataStream::ReadPastEnd << QByteArray();
+    QTest::newRow("extended-trunclen 5") << "\xff\xff\xff\xfe\0\0\0\0\0"_ba << (int) QDataStream::ReadPastEnd << QByteArray();
+    QTest::newRow("extended-trunclen 6") << "\xff\xff\xff\xfe\0\0\0\0\0\0"_ba << (int) QDataStream::ReadPastEnd << QByteArray();
+    QTest::newRow("extended-trunclen 7") << "\xff\xff\xff\xfe\0\0\0\0\0\0\0"_ba << (int) QDataStream::ReadPastEnd << QByteArray();
     QTest::newRow("truncdata 1") << QByteArray("xxxx") << (int) QDataStream::ReadPastEnd << QByteArray();
     QTest::newRow("truncdata 2") << QByteArray("xxxxyyyy") << (int) QDataStream::ReadPastEnd << QByteArray();
     QTest::newRow("badsize 1") << QByteArray("\x00\x00\x00\x01", 4) << (int) QDataStream::ReadPastEnd << QByteArray();
@@ -2878,6 +2895,8 @@ QT_WARNING_POP
             QCOMPARE(buf.size(), expectedString.size());
             QCOMPARE(buf, expectedString);
             QCOMPARE(int(stream.status()), expectedStatus);
+            if (expectedStatus != QDataStream::Ok)
+                QVERIFY(buf.isNull());
         }
     }
 }
@@ -2909,24 +2928,41 @@ void tst_QDataStream::status_QString_data()
     QByteArray oneMbMinus1Data = qstring2qbytearray(oneMbMinus1);
 
     // ok
-    QTest::newRow("size 0") << QByteArray("\x00\x00\x00\x00", 4) << (int) QDataStream::Ok << QString();
-    QTest::newRow("size 1") << QByteArray("\x00\x00\x00\x02\x00j", 6) << (int) QDataStream::Ok << QString("j");
-    QTest::newRow("size 2") << QByteArray("\x00\x00\x00\x04\x00j\x00k", 8) << (int) QDataStream::Ok << QString("jk");
-    QTest::newRow("size 3") << QByteArray("\x00\x00\x00\x06\x00j\x00k\x00l", 10) << (int) QDataStream::Ok << QString("jkl");
-    QTest::newRow("size 4") << QByteArray("\x00\x00\x00\x08\x00j\x00k\x00l\x00m", 12) << (int) QDataStream::Ok << QString("jklm");
-    QTest::newRow("size 4j") << QByteArray("\x00\x00\x00\x08\x00j\x00k\x00l\x00mjj", 14) << (int) QDataStream::Ok << QString("jklm");
-    QTest::newRow("size 1MB-1") << QByteArray("\x00\x1f\xff\xfe", 4) + oneMbMinus1Data + QByteArray("jj") << (int) QDataStream::Ok << oneMbMinus1;
-    QTest::newRow("size 1MB") << QByteArray("\x00\x20\x00\x00", 4) + oneMbMinus1Data + QByteArray("\x00j\x00k\x00l", 6) << (int) QDataStream::Ok << oneMbMinus1 + "j";
-    QTest::newRow("size 1MB+1") << QByteArray("\x00\x20\x00\x02", 4) + oneMbMinus1Data + QByteArray("\x00j\x00k\x00l", 6) << (int) QDataStream::Ok << oneMbMinus1 + "jk";
-    QTest::newRow("size 3MB-1") << QByteArray("\x00\x5f\xff\xfe", 4) + threeMbMinus1Data + QByteArray("jj") << (int) QDataStream::Ok << threeMbMinus1;
-    QTest::newRow("size 3MB") << QByteArray("\x00\x60\x00\x00", 4) + threeMbMinus1Data + QByteArray("\x00j\x00k\x00l", 6) << (int) QDataStream::Ok << threeMbMinus1 + "j";
-    QTest::newRow("size 3MB+1") << QByteArray("\x00\x60\x00\x02", 4) + threeMbMinus1Data + QByteArray("\x00j\x00k\x00l", 6) << (int) QDataStream::Ok << threeMbMinus1 + "jk";
+    auto addOkRows = [](const char *name, const QByteArray &data, const QString &expectedString) {
+        QTest::newRow(name) << data << int(QDataStream::Ok) << expectedString;
+
+        // extended size prefix followed by upper 32-bit as zero
+        QByteArrayView prefix("\xff\xff\xff\xfe\0\0\0\0", 8);
+        QTest::addRow("extended-%s", name) << (prefix + data) << int(QDataStream::Ok) << expectedString;
+    };
+    addOkRows("size 0", QByteArray("\x00\x00\x00\x00", 4), QString());
+    addOkRows("size 1", QByteArray("\x00\x00\x00\x02\x00j", 6), QString("j"));
+    addOkRows("size 2", QByteArray("\x00\x00\x00\x04\x00j\x00k", 8), QString("jk"));
+    addOkRows("size 3", QByteArray("\x00\x00\x00\x06\x00j\x00k\x00l", 10), QString("jkl"));
+    addOkRows("size 4", QByteArray("\x00\x00\x00\x08\x00j\x00k\x00l\x00m", 12), QString("jklm"));
+    addOkRows("size 4j", QByteArray("\x00\x00\x00\x08\x00j\x00k\x00l\x00mjj", 14), QString("jklm"));
+    addOkRows("size 1MB-1", QByteArray("\x00\x1f\xff\xfe", 4) + oneMbMinus1Data + QByteArray("jj"), oneMbMinus1);
+    addOkRows("size 1MB", QByteArray("\x00\x20\x00\x00", 4) + oneMbMinus1Data + QByteArray("\x00j\x00k\x00l", 6), oneMbMinus1 + "j");
+    addOkRows("size 1MB+1", QByteArray("\x00\x20\x00\x02", 4) + oneMbMinus1Data + QByteArray("\x00j\x00k\x00l", 6), oneMbMinus1 + "jk");
+    addOkRows("size 3MB-1", QByteArray("\x00\x5f\xff\xfe", 4) + threeMbMinus1Data + QByteArray("jj"), threeMbMinus1);
+    addOkRows("size 3MB", QByteArray("\x00\x60\x00\x00", 4) + threeMbMinus1Data + QByteArray("\x00j\x00k\x00l", 6), threeMbMinus1 + "j");
+    addOkRows("size 3MB+1", QByteArray("\x00\x60\x00\x02", 4) + threeMbMinus1Data + QByteArray("\x00j\x00k\x00l", 6), threeMbMinus1 + "jk");
 
     // past end
     QTest::newRow("empty") << QByteArray() << (int) QDataStream::ReadPastEnd << QString();
-    QTest::newRow("trunclen 1") << QByteArray("x") << (int) QDataStream::ReadPastEnd << QString();
-    QTest::newRow("trunclen 2") << QByteArray("xx") << (int) QDataStream::ReadPastEnd << QString();
-    QTest::newRow("trunclen 3") << QByteArray("xxx") << (int) QDataStream::ReadPastEnd << QString();
+    QTest::newRow("trunclen 1") << "\0"_ba << (int) QDataStream::ReadPastEnd << QString();
+    QTest::newRow("trunclen 2") << "\0\0"_ba << (int) QDataStream::ReadPastEnd << QString();
+    QTest::newRow("trunclen 3") << "\0\0\0"_ba << (int) QDataStream::ReadPastEnd << QString();
+    QTest::newRow("trunclen 1-x") << QByteArray("x") << (int) QDataStream::ReadPastEnd << QString();
+    QTest::newRow("trunclen 2-xx") << QByteArray("xx") << (int) QDataStream::ReadPastEnd << QString();
+    QTest::newRow("trunclen 3-xxx") << QByteArray("xxx") << (int) QDataStream::ReadPastEnd << QString();
+    QTest::newRow("extended-trunclen 1") << "\xff\xff\xff\xfe\0"_ba << (int) QDataStream::ReadPastEnd << QString();
+    QTest::newRow("extended-trunclen 2") << "\xff\xff\xff\xfe\0\0"_ba << (int) QDataStream::ReadPastEnd << QString();
+    QTest::newRow("extended-trunclen 3") << "\xff\xff\xff\xfe\0\0\0"_ba << (int) QDataStream::ReadPastEnd << QString();
+    QTest::newRow("extended-trunclen 4") << "\xff\xff\xff\xfe\0\0\0\0"_ba << (int) QDataStream::ReadPastEnd << QString();
+    QTest::newRow("extended-trunclen 5") << "\xff\xff\xff\xfe\0\0\0\0\0"_ba << (int) QDataStream::ReadPastEnd << QString();
+    QTest::newRow("extended-trunclen 6") << "\xff\xff\xff\xfe\0\0\0\0\0\0"_ba << (int) QDataStream::ReadPastEnd << QString();
+    QTest::newRow("extended-trunclen 7") << "\xff\xff\xff\xfe\0\0\0\0\0\0\0"_ba << (int) QDataStream::ReadPastEnd << QString();
     QTest::newRow("truncdata 1") << QByteArray("xxxx") << (int) QDataStream::ReadPastEnd << QString();
     QTest::newRow("truncdata 2") << QByteArray("xxxxyyyy") << (int) QDataStream::ReadPastEnd << QString();
     QTest::newRow("badsize 1") << QByteArray("\x00\x00\x00\x02", 4) << (int) QDataStream::ReadPastEnd << QString();
@@ -2966,6 +3002,8 @@ void tst_QDataStream::status_QString()
     QCOMPARE(str.size(), expectedString.size());
     QCOMPARE(str, expectedString);
     QCOMPARE(int(stream.status()), expectedStatus);
+    if (expectedStatus != QDataStream::Ok)
+        QVERIFY(str.isNull());
 }
 
 static QBitArray bitarray(const QString &str)
