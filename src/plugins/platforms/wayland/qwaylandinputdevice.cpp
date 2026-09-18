@@ -42,6 +42,7 @@
 #include <qpa/qplatforminputcontext.h>
 #include <qpa/qplatformtheme.h>
 #include <QDebug>
+#include <QtCore/qscopeguard.h>
 
 #include <unistd.h>
 #include <fcntl.h>
@@ -1241,6 +1242,7 @@ bool QWaylandInputDevice::Pointer::isDefinitelyTerminated(QtWayland::wl_pointer:
 
 void QWaylandInputDevice::Keyboard::keyboard_keymap(uint32_t format, int32_t fd, uint32_t size)
 {
+    const auto fdCloser = qScopeGuard([fd] { close(fd); });
     mKeymapFormat = format;
 #if QT_CONFIG(xkbcommon)
     if (format == WL_KEYBOARD_KEYMAP_FORMAT_NO_KEYMAP)
@@ -1248,15 +1250,12 @@ void QWaylandInputDevice::Keyboard::keyboard_keymap(uint32_t format, int32_t fd,
 
     if (format != WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1) {
         qCWarning(lcQpaWayland) << "unknown keymap format:" << format;
-        close(fd);
         return;
     }
 
     char *map_str = static_cast<char *>(mmap(nullptr, size, PROT_READ, MAP_PRIVATE, fd, 0));
-    if (map_str == MAP_FAILED) {
-        close(fd);
+    if (map_str == MAP_FAILED)
         return;
-    }
 
     mXkbKeymap.reset(xkb_keymap_new_from_string(mParent->mQDisplay->xkbContext(), map_str,
                                                 XKB_KEYMAP_FORMAT_TEXT_V1,
@@ -1264,14 +1263,12 @@ void QWaylandInputDevice::Keyboard::keyboard_keymap(uint32_t format, int32_t fd,
     QXkbCommon::verifyHasLatinLayout(mXkbKeymap.get());
 
     munmap(map_str, size);
-    close(fd);
 
     if (mXkbKeymap)
         mXkbState.reset(xkb_state_new(mXkbKeymap.get()));
     else
         mXkbState.reset(nullptr);
 #else
-    Q_UNUSED(fd);
     Q_UNUSED(size);
 #endif
 }
