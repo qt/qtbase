@@ -465,10 +465,11 @@ void QOhosPlatformWindow::setSafeAreaMarginsFromOhos(const QMargins &margins)
     QWindowSystemInterface::handleSafeAreaMarginsChanged(window());
 }
 
-void QOhosPlatformWindow::setExposedFromOhos(bool exposed)
+void QOhosPlatformWindow::setExposedFromOhos(bool exposed, ExposeUpdatePolicy policy)
 {
     m_exposed = exposed;
-    sendExposeUpdate();
+    if (policy == ExposeUpdatePolicy::Immediate || !m_exposed)
+        sendExposeUpdate();
 }
 
 void QOhosPlatformWindow::handleDpiChange()

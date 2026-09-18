@@ -62,7 +62,6 @@ private:
                                 const QOhosWindowProxy::AvoidArea &systemAvoidArea);
     void updateSafeAreaMargins();
     void handleWindowRectChanged(const QOhosWindowProxy::RectChangeOptions &rectChangeOptions);
-    void handleSurfaceStatusChanged(const std::optional<QSize> &optSurfaceSize);
     void handleWindowDisplayIdChanged(QOhosDisplayInfo::JsDisplayId displayId);
 
     std::unique_ptr<QOhosView> m_view;
@@ -70,7 +69,6 @@ private:
     std::optional<QOhosWindowProxy::WindowEventType> m_lastWindowEventType;
     std::optional<QOhosWindowProxy::WindowStatusType> m_lastWindowStatusType;
     std::optional<QRegion> m_windowMask;
-    std::optional<QSize> m_optLastSurfaceSize;
     QMap<QOhosWindowProxy::AvoidAreaType, QOhosWindowProxy::AvoidArea> m_avoidAreaCache;
     QBasicTimer m_geometryChangeTimer;
 };
