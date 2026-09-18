@@ -1893,7 +1893,7 @@ void tst_QCssParser::extractBorderImage()
     QCss::TileMode horizStretch, vertStretch;
     int cuts[4];
     for (const auto& decl : decls) {
-        if (decl.d->propertyId == QCss::BorderImage) {
+        if (decl.d->propertyId == QCss::Property::BorderImage) {
             decl.borderImageValue(&uri, cuts, &horizStretch, &vertStretch);
             QCOMPARE(uri, imgUrl);
             QCOMPARE(horizStretch, tileMode1);
@@ -1946,7 +1946,7 @@ void tst_QCssParser::extractBorderImageCuts()
     QCss::TileMode horizStretch, vertStretch;
     int cuts[4];
     for (const auto& decl : decls) {
-        if (decl.d->propertyId == QCss::BorderImage) {
+        if (decl.d->propertyId == QCss::Property::BorderImage) {
             decl.borderImageValue(&uri, cuts, &horizStretch, &vertStretch);
             QCOMPARE(cuts[0], expCut1);
             QCOMPARE(cuts[1], expCut2);
@@ -2114,7 +2114,7 @@ void tst_QCssParser::borderColor()
             sheet.styleRules.at(0) : *sheet.nameIndex.begin();
     const QList<QCss::Declaration> decls = rule.declarations;
     QVERIFY(decls.size() == 1);
-    QVERIFY(decls[0].d->propertyId == QCss::BorderColor);
+    QVERIFY(decls[0].d->propertyId == QCss::Property::BorderColor);
 
     QBrush colors[4];
 

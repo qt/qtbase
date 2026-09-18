@@ -958,7 +958,7 @@ QRenderRule::QRenderRule(const QList<Declaration> &declarations, const QObject *
 #endif
 
     for (const Declaration &decl : declarations) {
-        if (decl.d->propertyId == BorderImage) {
+        if (decl.d->propertyId == Property::BorderImage) {
             QString uri;
             QCss::TileMode horizStretch, vertStretch;
             std::array<int, 4> cuts;
@@ -979,7 +979,7 @@ QRenderRule::QRenderRule(const QList<Declaration> &declarations, const QObject *
                 bi->horizStretch = horizStretch;
                 bi->vertStretch = vertStretch;
             }
-        } else if (decl.d->propertyId == QtBackgroundRole) {
+        } else if (decl.d->propertyId == Property::QtBackgroundRole) {
             if (bg && bg->brush.style() != Qt::NoBrush)
                 continue;
             int role = decl.d->values.at(0).variant.toInt();
@@ -987,7 +987,7 @@ QRenderRule::QRenderRule(const QList<Declaration> &declarations, const QObject *
                 defaultBackground = palette.color((QPalette::ColorRole)(role-Value_FirstColorRole));
         } else if (decl.d->property.startsWith("qproperty-"_L1, Qt::CaseInsensitive)) {
             // intentionally left blank...
-        } else if (decl.d->propertyId == UnknownProperty) {
+        } else if (decl.d->propertyId == Property::Unknown) {
             bool knownStyleHint = false;
             for (const auto sh : knownStyleHints) {
                 QLatin1StringView styleHint(sh);

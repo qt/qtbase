@@ -53,8 +53,8 @@ QT_BEGIN_NAMESPACE
 namespace QCss
 {
 
-enum Property {
-    UnknownProperty,
+enum class Property {
+    Unknown,
     BackgroundColor,
     Color,
     Float,
@@ -413,7 +413,7 @@ struct Q_GUI_EXPORT Declaration
 {
     struct DeclarationData : public QSharedData
     {
-        inline DeclarationData() : propertyId(UnknownProperty), important(false), inheritable(false) {}
+        inline DeclarationData() : propertyId(Property::Unknown), important(false), inheritable(false) {}
         QString property;
         Property propertyId;
         QList<Value> values;
@@ -423,7 +423,7 @@ struct Q_GUI_EXPORT Declaration
     };
     QExplicitlySharedDataPointer<DeclarationData> d;
     inline Declaration() : d(new DeclarationData()) {}
-    inline bool isEmpty() const { return d->property.isEmpty() && d->propertyId == UnknownProperty; }
+    inline bool isEmpty() const { return d->property.isEmpty() && d->propertyId == Property::Unknown; }
 
     // helper functions
     QColor colorValue(const QPalette & = QPalette()) const;

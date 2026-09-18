@@ -60,126 +60,126 @@ struct QCssKnownValue<T>::ByName
 
 // This array is sorted alphabetically.
 static constexpr QCssKnownValue<Property> properties[] = {
-    { "-qt-background-role", QtBackgroundRole },
-    { "-qt-block-indent", QtBlockIndent },
-    { "-qt-fg-texture-cachekey", QtForegroundTextureCacheKey },
-    { "-qt-foreground", QtForeground },
-    { "-qt-line-height-type", QtLineHeightType },
-    { "-qt-list-indent", QtListIndent },
-    { "-qt-list-number-prefix", QtListNumberPrefix },
-    { "-qt-list-number-suffix", QtListNumberSuffix },
-    { "-qt-paragraph-type", QtParagraphType },
-    { "-qt-stroke-color", QtStrokeColor },
-    { "-qt-stroke-dasharray", QtStrokeDashArray },
-    { "-qt-stroke-dashoffset", QtStrokeDashOffset },
-    { "-qt-stroke-linecap", QtStrokeLineCap },
-    { "-qt-stroke-linejoin", QtStrokeLineJoin },
-    { "-qt-stroke-miterlimit", QtStrokeMiterLimit },
-    { "-qt-stroke-width", QtStrokeWidth },
-    { "-qt-style-features", QtStyleFeatures },
-    { "-qt-table-type", QtTableType },
-    { "-qt-user-state", QtUserState },
-    { "accent-color", QtAccent },
-    { "alternate-background-color", QtAlternateBackground },
-    { "background", Background },
-    { "background-attachment", BackgroundAttachment },
-    { "background-clip", BackgroundClip },
-    { "background-color", BackgroundColor },
-    { "background-image", BackgroundImage },
-    { "background-origin", BackgroundOrigin },
-    { "background-position", BackgroundPosition },
-    { "background-repeat", BackgroundRepeat },
-    { "border", Border },
-    { "border-bottom", BorderBottom },
-    { "border-bottom-color", BorderBottomColor },
-    { "border-bottom-left-radius", BorderBottomLeftRadius },
-    { "border-bottom-right-radius", BorderBottomRightRadius },
-    { "border-bottom-style", BorderBottomStyle },
-    { "border-bottom-width", BorderBottomWidth },
-    { "border-collapse", BorderCollapse },
-    { "border-color", BorderColor },
-    { "border-image", BorderImage },
-    { "border-left", BorderLeft },
-    { "border-left-color", BorderLeftColor },
-    { "border-left-style", BorderLeftStyle },
-    { "border-left-width", BorderLeftWidth },
-    { "border-radius", BorderRadius },
-    { "border-right", BorderRight },
-    { "border-right-color", BorderRightColor },
-    { "border-right-style", BorderRightStyle },
-    { "border-right-width", BorderRightWidth },
-    { "border-style", BorderStyles },
-    { "border-top", BorderTop },
-    { "border-top-color", BorderTopColor },
-    { "border-top-left-radius", BorderTopLeftRadius },
-    { "border-top-right-radius", BorderTopRightRadius },
-    { "border-top-style", BorderTopStyle },
-    { "border-top-width", BorderTopWidth },
-    { "border-width", BorderWidth },
-    { "bottom", Bottom },
-    { "color", Color },
-    { "float", Float },
+    { "-qt-background-role", Property::QtBackgroundRole },
+    { "-qt-block-indent", Property::QtBlockIndent },
+    { "-qt-fg-texture-cachekey", Property::QtForegroundTextureCacheKey },
+    { "-qt-foreground", Property::QtForeground },
+    { "-qt-line-height-type", Property::QtLineHeightType },
+    { "-qt-list-indent", Property::QtListIndent },
+    { "-qt-list-number-prefix", Property::QtListNumberPrefix },
+    { "-qt-list-number-suffix", Property::QtListNumberSuffix },
+    { "-qt-paragraph-type", Property::QtParagraphType },
+    { "-qt-stroke-color", Property::QtStrokeColor },
+    { "-qt-stroke-dasharray", Property::QtStrokeDashArray },
+    { "-qt-stroke-dashoffset", Property::QtStrokeDashOffset },
+    { "-qt-stroke-linecap", Property::QtStrokeLineCap },
+    { "-qt-stroke-linejoin", Property::QtStrokeLineJoin },
+    { "-qt-stroke-miterlimit", Property::QtStrokeMiterLimit },
+    { "-qt-stroke-width", Property::QtStrokeWidth },
+    { "-qt-style-features", Property::QtStyleFeatures },
+    { "-qt-table-type", Property::QtTableType },
+    { "-qt-user-state", Property::QtUserState },
+    { "accent-color", Property::QtAccent },
+    { "alternate-background-color", Property::QtAlternateBackground },
+    { "background", Property::Background },
+    { "background-attachment", Property::BackgroundAttachment },
+    { "background-clip", Property::BackgroundClip },
+    { "background-color", Property::BackgroundColor },
+    { "background-image", Property::BackgroundImage },
+    { "background-origin", Property::BackgroundOrigin },
+    { "background-position", Property::BackgroundPosition },
+    { "background-repeat", Property::BackgroundRepeat },
+    { "border", Property::Border },
+    { "border-bottom", Property::BorderBottom },
+    { "border-bottom-color", Property::BorderBottomColor },
+    { "border-bottom-left-radius", Property::BorderBottomLeftRadius },
+    { "border-bottom-right-radius", Property::BorderBottomRightRadius },
+    { "border-bottom-style", Property::BorderBottomStyle },
+    { "border-bottom-width", Property::BorderBottomWidth },
+    { "border-collapse", Property::BorderCollapse },
+    { "border-color", Property::BorderColor },
+    { "border-image", Property::BorderImage },
+    { "border-left", Property::BorderLeft },
+    { "border-left-color", Property::BorderLeftColor },
+    { "border-left-style", Property::BorderLeftStyle },
+    { "border-left-width", Property::BorderLeftWidth },
+    { "border-radius", Property::BorderRadius },
+    { "border-right", Property::BorderRight },
+    { "border-right-color", Property::BorderRightColor },
+    { "border-right-style", Property::BorderRightStyle },
+    { "border-right-width", Property::BorderRightWidth },
+    { "border-style", Property::BorderStyles },
+    { "border-top", Property::BorderTop },
+    { "border-top-color", Property::BorderTopColor },
+    { "border-top-left-radius", Property::BorderTopLeftRadius },
+    { "border-top-right-radius", Property::BorderTopRightRadius },
+    { "border-top-style", Property::BorderTopStyle },
+    { "border-top-width", Property::BorderTopWidth },
+    { "border-width", Property::BorderWidth },
+    { "bottom", Property::Bottom },
+    { "color", Property::Color },
+    { "float", Property::Float },
     { "font", Property::Font },
-    { "font-family", FontFamily },
-    { "font-kerning", FontKerning },
-    { "font-size", FontSize },
-    { "font-style", FontStyle },
-    { "font-variant", FontVariant },
-    { "font-weight", FontWeight },
-    { "height", Height },
-    { "icon", QtIcon },
-    { "image", QtImage },
-    { "image-position", QtImageAlignment },
-    { "left", Left },
-    { "letter-spacing", LetterSpacing },
-    { "line-height", LineHeight },
-    { "list-style", ListStyle },
-    { "list-style-type", ListStyleType },
-    { "margin" , Margin },
-    { "margin-bottom", MarginBottom },
-    { "margin-left", MarginLeft },
-    { "margin-right", MarginRight },
-    { "margin-top", MarginTop },
-    { "max-height", MaximumHeight },
-    { "max-width", MaximumWidth },
-    { "min-height", MinimumHeight },
-    { "min-width", MinimumWidth },
-    { "outline", Outline },
-    { "outline-bottom-left-radius", OutlineBottomLeftRadius },
-    { "outline-bottom-right-radius", OutlineBottomRightRadius },
-    { "outline-color", OutlineColor },
-    { "outline-offset", OutlineOffset },
-    { "outline-radius", OutlineRadius },
-    { "outline-style", OutlineStyle },
-    { "outline-top-left-radius", OutlineTopLeftRadius },
-    { "outline-top-right-radius", OutlineTopRightRadius },
-    { "outline-width", OutlineWidth },
-    { "padding", Padding },
-    { "padding-bottom", PaddingBottom },
-    { "padding-left", PaddingLeft },
-    { "padding-right", PaddingRight },
-    { "padding-top", PaddingTop },
-    { "page-break-after", PageBreakAfter },
-    { "page-break-before", PageBreakBefore },
-    { "placeholder-text-color", QtPlaceHolderText },
-    { "position", Position },
-    { "right", Right },
-    { "selection-background-color", QtSelectionBackground },
-    { "selection-color", QtSelectionForeground },
-    { "spacing", QtSpacing },
-    { "subcontrol-origin", QtOrigin },
-    { "subcontrol-position", QtPosition },
-    { "text-align", TextAlignment },
-    { "text-decoration", TextDecoration },
-    { "text-decoration-color", TextDecorationColor },
-    { "text-indent", TextIndent },
-    { "text-transform", TextTransform },
-    { "text-underline-style", TextUnderlineStyle },
-    { "top", Top },
-    { "vertical-align", VerticalAlignment },
-    { "white-space", Whitespace },
-    { "width", Width },
-    { "word-spacing", WordSpacing }
+    { "font-family", Property::FontFamily },
+    { "font-kerning", Property::FontKerning },
+    { "font-size", Property::FontSize },
+    { "font-style", Property::FontStyle },
+    { "font-variant", Property::FontVariant },
+    { "font-weight", Property::FontWeight },
+    { "height", Property::Height },
+    { "icon", Property::QtIcon },
+    { "image", Property::QtImage },
+    { "image-position", Property::QtImageAlignment },
+    { "left", Property::Left },
+    { "letter-spacing", Property::LetterSpacing },
+    { "line-height", Property::LineHeight },
+    { "list-style", Property::ListStyle },
+    { "list-style-type", Property::ListStyleType },
+    { "margin", Property::Margin },
+    { "margin-bottom", Property::MarginBottom },
+    { "margin-left", Property::MarginLeft },
+    { "margin-right", Property::MarginRight },
+    { "margin-top", Property::MarginTop },
+    { "max-height", Property::MaximumHeight },
+    { "max-width", Property::MaximumWidth },
+    { "min-height", Property::MinimumHeight },
+    { "min-width", Property::MinimumWidth },
+    { "outline", Property::Outline },
+    { "outline-bottom-left-radius", Property::OutlineBottomLeftRadius },
+    { "outline-bottom-right-radius", Property::OutlineBottomRightRadius },
+    { "outline-color", Property::OutlineColor },
+    { "outline-offset", Property::OutlineOffset },
+    { "outline-radius", Property::OutlineRadius },
+    { "outline-style", Property::OutlineStyle },
+    { "outline-top-left-radius", Property::OutlineTopLeftRadius },
+    { "outline-top-right-radius", Property::OutlineTopRightRadius },
+    { "outline-width", Property::OutlineWidth },
+    { "padding", Property::Padding },
+    { "padding-bottom", Property::PaddingBottom },
+    { "padding-left", Property::PaddingLeft },
+    { "padding-right", Property::PaddingRight },
+    { "padding-top", Property::PaddingTop },
+    { "page-break-after", Property::PageBreakAfter },
+    { "page-break-before", Property::PageBreakBefore },
+    { "placeholder-text-color", Property::QtPlaceHolderText },
+    { "position", Property::Position },
+    { "right", Property::Right },
+    { "selection-background-color", Property::QtSelectionBackground },
+    { "selection-color", Property::QtSelectionForeground },
+    { "spacing", Property::QtSpacing },
+    { "subcontrol-origin", Property::QtOrigin },
+    { "subcontrol-position", Property::QtPosition },
+    { "text-align", Property::TextAlignment },
+    { "text-decoration", Property::TextDecoration },
+    { "text-decoration-color", Property::TextDecorationColor },
+    { "text-indent", Property::TextIndent },
+    { "text-transform", Property::TextTransform },
+    { "text-underline-style", Property::TextUnderlineStyle },
+    { "top", Property::Top },
+    { "vertical-align", Property::VerticalAlignment },
+    { "white-space", Property::Whitespace },
+    { "width", Property::Width },
+    { "word-spacing", Property::WordSpacing }
 };
 CHECK_ARRAY_IS_SORTED(properties, Property)
 
@@ -410,21 +410,21 @@ static inline bool isInheritable(Property propertyId)
 {
     switch (propertyId) {
     case Property::Font:
-    case FontKerning:
-    case FontFamily:
-    case FontSize:
-    case FontStyle:
-    case FontWeight:
-    case TextIndent:
-    case Whitespace:
-    case ListStyleType:
-    case ListStyle:
-    case TextAlignment:
-    case FontVariant:
-    case TextTransform:
-    case LineHeight:
-    case LetterSpacing:
-    case WordSpacing:
+    case Property::FontKerning:
+    case Property::FontFamily:
+    case Property::FontSize:
+    case Property::FontStyle:
+    case Property::FontWeight:
+    case Property::TextIndent:
+    case Property::Whitespace:
+    case Property::ListStyleType:
+    case Property::ListStyle:
+    case Property::TextAlignment:
+    case Property::FontVariant:
+    case Property::TextTransform:
+    case Property::LineHeight:
+    case Property::LetterSpacing:
+    case Property::WordSpacing:
         return true;
     default:
         break;
@@ -531,12 +531,12 @@ bool ValueExtractor::extractGeometry(int *w, int *h, int *minw, int *minh, int *
     bool hit = false;
     for (const Declaration &decl : std::as_const(declarations)) {
         switch (decl.d->propertyId) {
-        case Width: *w = lengthValue(decl); break;
-        case Height: *h = lengthValue(decl); break;
-        case MinimumWidth: *minw = lengthValue(decl); break;
-        case MinimumHeight: *minh = lengthValue(decl); break;
-        case MaximumWidth: *maxw = lengthValue(decl); break;
-        case MaximumHeight: *maxh = lengthValue(decl); break;
+        case Property::Width: *w = lengthValue(decl); break;
+        case Property::Height: *h = lengthValue(decl); break;
+        case Property::MinimumWidth: *minw = lengthValue(decl); break;
+        case Property::MinimumHeight: *minh = lengthValue(decl); break;
+        case Property::MaximumWidth: *maxw = lengthValue(decl); break;
+        case Property::MaximumHeight: *maxh = lengthValue(decl); break;
         default: continue;
         }
         hit = true;
@@ -552,14 +552,14 @@ bool ValueExtractor::extractPosition(int *left, int *top, int *right, int *botto
     bool hit = false;
     for (const Declaration &decl : std::as_const(declarations)) {
         switch (decl.d->propertyId) {
-        case Left: *left = lengthValue(decl); break;
-        case Top: *top = lengthValue(decl); break;
-        case Right: *right = lengthValue(decl); break;
-        case Bottom: *bottom = lengthValue(decl); break;
-        case QtOrigin: *origin = decl.originValue(); break;
-        case QtPosition: *position = decl.alignmentValue(); break;
-        case TextAlignment: *textAlignment = decl.alignmentValue(); break;
-        case Position: *mode = decl.positionValue(); break;
+        case Property::Left: *left = lengthValue(decl); break;
+        case Property::Top: *top = lengthValue(decl); break;
+        case Property::Right: *right = lengthValue(decl); break;
+        case Property::Bottom: *bottom = lengthValue(decl); break;
+        case Property::QtOrigin: *origin = decl.originValue(); break;
+        case Property::QtPosition: *position = decl.alignmentValue(); break;
+        case Property::TextAlignment: *textAlignment = decl.alignmentValue(); break;
+        case Property::Position: *mode = decl.positionValue(); break;
         default: continue;
         }
         hit = true;
@@ -574,18 +574,18 @@ bool ValueExtractor::extractBox(int *margins, int *paddings, int *spacing)
     bool hit = false;
     for (const Declaration &decl : std::as_const(declarations)) {
         switch (decl.d->propertyId) {
-        case PaddingLeft: paddings[LeftEdge] = lengthValue(decl); break;
-        case PaddingRight: paddings[RightEdge] = lengthValue(decl); break;
-        case PaddingTop: paddings[TopEdge] = lengthValue(decl); break;
-        case PaddingBottom: paddings[BottomEdge] = lengthValue(decl); break;
-        case Padding: lengthValues(decl, paddings); break;
+        case Property::PaddingLeft: paddings[LeftEdge] = lengthValue(decl); break;
+        case Property::PaddingRight: paddings[RightEdge] = lengthValue(decl); break;
+        case Property::PaddingTop: paddings[TopEdge] = lengthValue(decl); break;
+        case Property::PaddingBottom: paddings[BottomEdge] = lengthValue(decl); break;
+        case Property::Padding: lengthValues(decl, paddings); break;
 
-        case MarginLeft: margins[LeftEdge] = lengthValue(decl); break;
-        case MarginRight: margins[RightEdge] = lengthValue(decl); break;
-        case MarginTop: margins[TopEdge] = lengthValue(decl); break;
-        case MarginBottom: margins[BottomEdge] = lengthValue(decl); break;
-        case Margin: lengthValues(decl, margins); break;
-        case QtSpacing: if (spacing) *spacing = lengthValue(decl); break;
+        case Property::MarginLeft: margins[LeftEdge] = lengthValue(decl); break;
+        case Property::MarginRight: margins[RightEdge] = lengthValue(decl); break;
+        case Property::MarginTop: margins[TopEdge] = lengthValue(decl); break;
+        case Property::MarginBottom: margins[BottomEdge] = lengthValue(decl); break;
+        case Property::Margin: lengthValues(decl, margins); break;
+        case Property::QtSpacing: if (spacing) *spacing = lengthValue(decl); break;
 
         default: continue;
         }
@@ -599,7 +599,7 @@ int ValueExtractor::extractStyleFeatures() const
 {
     int features = StyleFeature_None;
     for (const Declaration &decl : declarations) {
-        if (decl.d->propertyId == QtStyleFeatures)
+        if (decl.d->propertyId == Property::QtStyleFeatures)
             features = decl.styleFeaturesValue();
     }
     return features;
@@ -640,43 +640,43 @@ bool ValueExtractor::extractBorder(int *borders, QBrush *colors, BorderStyle *st
     bool hit = false;
     for (const Declaration &decl : std::as_const(declarations)) {
         switch (decl.d->propertyId) {
-        case BorderLeftWidth: borders[LeftEdge] = lengthValue(decl); break;
-        case BorderRightWidth: borders[RightEdge] = lengthValue(decl); break;
-        case BorderTopWidth: borders[TopEdge] = lengthValue(decl); break;
-        case BorderBottomWidth: borders[BottomEdge] = lengthValue(decl); break;
-        case BorderWidth: lengthValues(decl, borders); break;
+        case Property::BorderLeftWidth: borders[LeftEdge] = lengthValue(decl); break;
+        case Property::BorderRightWidth: borders[RightEdge] = lengthValue(decl); break;
+        case Property::BorderTopWidth: borders[TopEdge] = lengthValue(decl); break;
+        case Property::BorderBottomWidth: borders[BottomEdge] = lengthValue(decl); break;
+        case Property::BorderWidth: lengthValues(decl, borders); break;
 
-        case BorderLeftColor: colors[LeftEdge] = decl.brushValue(pal); break;
-        case BorderRightColor: colors[RightEdge] = decl.brushValue(pal); break;
-        case BorderTopColor: colors[TopEdge] = decl.brushValue(pal); break;
-        case BorderBottomColor: colors[BottomEdge] = decl.brushValue(pal); break;
-        case BorderColor: decl.brushValues(colors, pal); break;
+        case Property::BorderLeftColor: colors[LeftEdge] = decl.brushValue(pal); break;
+        case Property::BorderRightColor: colors[RightEdge] = decl.brushValue(pal); break;
+        case Property::BorderTopColor: colors[TopEdge] = decl.brushValue(pal); break;
+        case Property::BorderBottomColor: colors[BottomEdge] = decl.brushValue(pal); break;
+        case Property::BorderColor: decl.brushValues(colors, pal); break;
 
-        case BorderTopStyle: styles[TopEdge] = decl.styleValue(); break;
-        case BorderBottomStyle: styles[BottomEdge] = decl.styleValue(); break;
-        case BorderLeftStyle: styles[LeftEdge] = decl.styleValue(); break;
-        case BorderRightStyle: styles[RightEdge] = decl.styleValue(); break;
-        case BorderStyles:  decl.styleValues(styles); break;
+        case Property::BorderTopStyle: styles[TopEdge] = decl.styleValue(); break;
+        case Property::BorderBottomStyle: styles[BottomEdge] = decl.styleValue(); break;
+        case Property::BorderLeftStyle: styles[LeftEdge] = decl.styleValue(); break;
+        case Property::BorderRightStyle: styles[RightEdge] = decl.styleValue(); break;
+        case Property::BorderStyles:  decl.styleValues(styles); break;
 
-        case BorderTopLeftRadius: radii[0] = sizeValue(decl); break;
-        case BorderTopRightRadius: radii[1] = sizeValue(decl); break;
-        case BorderBottomLeftRadius: radii[2] = sizeValue(decl); break;
-        case BorderBottomRightRadius: radii[3] = sizeValue(decl); break;
-        case BorderRadius: sizeValues(decl, radii); break;
+        case Property::BorderTopLeftRadius: radii[0] = sizeValue(decl); break;
+        case Property::BorderTopRightRadius: radii[1] = sizeValue(decl); break;
+        case Property::BorderBottomLeftRadius: radii[2] = sizeValue(decl); break;
+        case Property::BorderBottomRightRadius: radii[3] = sizeValue(decl); break;
+        case Property::BorderRadius: sizeValues(decl, radii); break;
 
-        case BorderLeft:
+        case Property::BorderLeft:
             borderValue(decl, &borders[LeftEdge], &styles[LeftEdge], &colors[LeftEdge]);
             break;
-        case BorderTop:
+        case Property::BorderTop:
             borderValue(decl, &borders[TopEdge], &styles[TopEdge], &colors[TopEdge]);
             break;
-        case BorderRight:
+        case Property::BorderRight:
             borderValue(decl, &borders[RightEdge], &styles[RightEdge], &colors[RightEdge]);
             break;
-        case BorderBottom:
+        case Property::BorderBottom:
             borderValue(decl, &borders[BottomEdge], &styles[BottomEdge], &colors[BottomEdge]);
             break;
-        case Border:
+        case Property::Border:
             borderValue(decl, &borders[LeftEdge], &styles[LeftEdge], &colors[LeftEdge]);
             borders[TopEdge] = borders[RightEdge] = borders[BottomEdge] = borders[LeftEdge];
             styles[TopEdge] = styles[RightEdge] = styles[BottomEdge] = styles[LeftEdge];
@@ -698,18 +698,18 @@ bool ValueExtractor::extractOutline(int *borders, QBrush *colors, BorderStyle *s
     bool hit = false;
     for (const Declaration &decl : std::as_const(declarations)) {
         switch (decl.d->propertyId) {
-        case OutlineWidth: lengthValues(decl, borders); break;
-        case OutlineColor: decl.brushValues(colors, pal); break;
-        case OutlineStyle:  decl.styleValues(styles); break;
+        case Property::OutlineWidth: lengthValues(decl, borders); break;
+        case Property::OutlineColor: decl.brushValues(colors, pal); break;
+        case Property::OutlineStyle:  decl.styleValues(styles); break;
 
-        case OutlineTopLeftRadius: radii[0] = sizeValue(decl); break;
-        case OutlineTopRightRadius: radii[1] = sizeValue(decl); break;
-        case OutlineBottomLeftRadius: radii[2] = sizeValue(decl); break;
-        case OutlineBottomRightRadius: radii[3] = sizeValue(decl); break;
-        case OutlineRadius: sizeValues(decl, radii); break;
-        case OutlineOffset: lengthValues(decl, offsets); break;
+        case Property::OutlineTopLeftRadius: radii[0] = sizeValue(decl); break;
+        case Property::OutlineTopRightRadius: radii[1] = sizeValue(decl); break;
+        case Property::OutlineBottomLeftRadius: radii[2] = sizeValue(decl); break;
+        case Property::OutlineBottomRightRadius: radii[3] = sizeValue(decl); break;
+        case Property::OutlineRadius: sizeValues(decl, radii); break;
+        case Property::OutlineOffset: lengthValues(decl, offsets); break;
 
-        case Outline:
+        case Property::Outline:
             borderValue(decl, &borders[LeftEdge], &styles[LeftEdge], &colors[LeftEdge]);
             borders[TopEdge] = borders[RightEdge] = borders[BottomEdge] = borders[LeftEdge];
             styles[TopEdge] = styles[RightEdge] = styles[BottomEdge] = styles[LeftEdge];
@@ -1114,14 +1114,14 @@ bool ValueExtractor::extractBackground(QBrush *brush, QString *image, Repeat *re
             continue;
         const QCss::Value &val = decl.d->values.at(0);
         switch (decl.d->propertyId) {
-            case BackgroundColor:
+            case Property::BackgroundColor:
                     *brush = decl.brushValue();
                 break;
-            case BackgroundImage:
+            case Property::BackgroundImage:
                 if (val.type == Value::Uri)
                     *image = val.variant.toString();
                 break;
-            case BackgroundRepeat:
+            case Property::BackgroundRepeat:
                 if (decl.d->parsed.isValid()) {
                     *repeat = static_cast<Repeat>(decl.d->parsed.toInt());
                 } else {
@@ -1129,16 +1129,16 @@ bool ValueExtractor::extractBackground(QBrush *brush, QString *image, Repeat *re
                     decl.d->parsed = *repeat;
                 }
                 break;
-            case BackgroundPosition:
+            case Property::BackgroundPosition:
                 *alignment = decl.alignmentValue();
                 break;
-            case BackgroundOrigin:
+            case Property::BackgroundOrigin:
                 *origin = decl.originValue();
                 break;
-            case BackgroundClip:
+            case Property::BackgroundClip:
                 *clip = decl.originValue();
                 break;
-            case Background:
+            case Property::Background:
                 if (decl.d->parsed.isValid()) {
                     BackgroundData data = qvariant_cast<BackgroundData>(decl.d->parsed);
                     *brush = brushFromData(data.brush, pal);
@@ -1155,7 +1155,7 @@ bool ValueExtractor::extractBackground(QBrush *brush, QString *image, Repeat *re
                     }
                 }
                 break;
-            case BackgroundAttachment:
+            case Property::BackgroundAttachment:
                 *attachment = decl.attachmentValue();
                 break;
             default: continue;
@@ -1391,17 +1391,17 @@ bool ValueExtractor::extractFont(QFont *font, int *fontSizeAdjustment)
             continue;
         const QCss::Value &val = decl.d->values.at(0);
         switch (decl.d->propertyId) {
-            case FontSize: setFontSizeFromValue(val, font, fontSizeAdjustment); break;
-            case FontStyle: setFontStyleFromValue(val, font); break;
-            case FontWeight: setFontWeightFromValue(val, font); break;
-            case FontFamily: setFontFamilyFromValues(decl.d->values, font); break;
-            case FontKerning: setFontKerningFromValue(val, font); break;
-            case TextDecoration: setTextDecorationFromValues(decl.d->values, font); break;
-            case Font: parseShorthandFontProperty(decl.d->values, font, fontSizeAdjustment); break;
-            case FontVariant: setFontVariantFromValue(val, font); break;
-            case TextTransform: setTextTransformFromValue(val, font); break;
-            case LetterSpacing: setLetterSpacingFromValue(val, font); break;
-            case WordSpacing: setWordSpacingFromValue(val, font); break;
+            case Property::FontSize: setFontSizeFromValue(val, font, fontSizeAdjustment); break;
+            case Property::FontStyle: setFontStyleFromValue(val, font); break;
+            case Property::FontWeight: setFontWeightFromValue(val, font); break;
+            case Property::FontFamily: setFontFamilyFromValues(decl.d->values, font); break;
+            case Property::FontKerning: setFontKerningFromValue(val, font); break;
+            case Property::TextDecoration: setTextDecorationFromValues(decl.d->values, font); break;
+            case Property::Font: parseShorthandFontProperty(decl.d->values, font, fontSizeAdjustment); break;
+            case Property::FontVariant: setFontVariantFromValue(val, font); break;
+            case Property::TextTransform: setTextTransformFromValue(val, font); break;
+            case Property::LetterSpacing: setLetterSpacingFromValue(val, font); break;
+            case Property::WordSpacing: setWordSpacingFromValue(val, font); break;
             default: continue;
         }
         hit = true;
@@ -1423,12 +1423,12 @@ bool ValueExtractor::extractPalette(QBrush *foreground,
     bool hit = false;
     for (const Declaration &decl : declarations) {
         switch (decl.d->propertyId) {
-        case Color: *foreground = decl.brushValue(pal); break;
-        case QtSelectionForeground: *selectedForeground = decl.brushValue(pal); break;
-        case QtSelectionBackground: *selectedBackground = decl.brushValue(pal); break;
-        case QtAlternateBackground: *alternateBackground = decl.brushValue(pal); break;
-        case QtPlaceHolderText: *placeHolderTextForeground = decl.brushValue(pal); break;
-        case QtAccent: *accent = decl.brushValue(pal); break;
+        case Property::Color: *foreground = decl.brushValue(pal); break;
+        case Property::QtSelectionForeground: *selectedForeground = decl.brushValue(pal); break;
+        case Property::QtSelectionBackground: *selectedBackground = decl.brushValue(pal); break;
+        case Property::QtAlternateBackground: *alternateBackground = decl.brushValue(pal); break;
+        case Property::QtPlaceHolderText: *placeHolderTextForeground = decl.brushValue(pal); break;
+        case Property::QtAccent: *accent = decl.brushValue(pal); break;
         default: continue;
         }
         hit = true;
@@ -1449,7 +1449,7 @@ bool ValueExtractor::extractImage(QIcon *icon, Qt::Alignment *a, QSize *size) co
     bool hit = false;
     for (const Declaration &decl : declarations) {
         switch (decl.d->propertyId) {
-        case QtImage:
+        case Property::QtImage:
             *icon = decl.iconValue();
             if (decl.d->values.size() > 0 && decl.d->values.at(0).type == Value::Uri) {
                 // try to pull just the size from the image...
@@ -1461,7 +1461,7 @@ bool ValueExtractor::extractImage(QIcon *icon, Qt::Alignment *a, QSize *size) co
                 }
             }
             break;
-        case QtImageAlignment: *a = decl.alignmentValue();  break;
+        case Property::QtImageAlignment: *a = decl.alignmentValue();  break;
         default: continue;
         }
         hit = true;
@@ -1474,7 +1474,7 @@ bool ValueExtractor::extractIcon(QIcon *icon, QSize *size) const
     // Find last declaration that specifies an icon
     const auto declaration = std::find_if(
                 declarations.rbegin(), declarations.rend(),
-                [](const Declaration &decl) { return decl.d->propertyId == QtIcon; });
+                [](const Declaration &decl) { return decl.d->propertyId == Property::QtIcon; });
     if (declaration == declarations.rend())
         return false;
 
@@ -1801,7 +1801,7 @@ Attachment Declaration::attachmentValue() const
 
 int Declaration::styleFeaturesValue() const
 {
-    Q_ASSERT(d->propertyId == QtStyleFeatures);
+    Q_ASSERT(d->propertyId == Property::QtStyleFeatures);
     if (d->parsed.isValid())
         return d->parsed.toInt();
     int features = StyleFeature_None;
