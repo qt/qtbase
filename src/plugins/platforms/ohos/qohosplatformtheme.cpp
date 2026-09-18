@@ -190,7 +190,6 @@ ToolButtonPaletteColors makeToolButtonPaletteColorsDark()
 struct SystemPaletteColors
 {
     QColor activeWindowFrame;
-    QColor inactiveWindowFrame;
     QColor textHint;
     QColor textTertiary;
 };
@@ -199,7 +198,6 @@ SystemPaletteColors makeSystemButtonPaletteColorsLight()
 {
     return {
         .activeWindowFrame = QColor("#FFE4E4E4"),
-        .inactiveWindowFrame = QColor("#FFF2F3F5"),
         .textHint = QColor("#99182431"),
         .textTertiary = QColor("#66182431"),
     };
@@ -209,7 +207,6 @@ SystemPaletteColors makeSystemButtonPaletteColorsDark()
 {
     return {
         .activeWindowFrame = QColor("#FF000000"),
-        .inactiveWindowFrame = QColor("#FF18181A"),
         .textHint = QColor("#99FFFFFF"),
         .textTertiary = QColor("#66FFFFFF"),
     };
@@ -511,9 +508,9 @@ QPalette makeSystemPalette(const AllPalletesColors &palettesColors)
             {QPalette::Disabled, QPalette::Text, palettesColors.palettes.disabledTextPrimary},
             {QPalette::Inactive, QPalette::Text, palettesColors.palettes.inactiveTextPrimary},
 
-            {QPalette::Active, QPalette::Base, palettesColors.system.activeWindowFrame},
-            {QPalette::Disabled, QPalette::Base, palettesColors.system.inactiveWindowFrame},
-            {QPalette::Inactive, QPalette::Base, palettesColors.system.inactiveWindowFrame},
+            {QPalette::Active, QPalette::Base, palettesColors.palettes.window},
+            {QPalette::Disabled, QPalette::Base, palettesColors.palettes.window},
+            {QPalette::Inactive, QPalette::Base, palettesColors.palettes.window},
 
             {QPalette::Active, QPalette::AlternateBase, palettesColors.palettes.textPrimary},
 
