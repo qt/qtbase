@@ -3366,6 +3366,9 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
     ba.clear();
 
     qint64 size = QDataStream::readQSizeType(in);
+    if (in.status() != QDataStream::Ok)
+        return in;
+
     qsizetype len = size;
     if (size != len || size < -1) {
         ba.clear();

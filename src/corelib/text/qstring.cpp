@@ -9522,6 +9522,11 @@ QDataStream &operator>>(QDataStream &in, QString &str)
         str = QString::fromLatin1(l);
     } else {
         qint64 size = QDataStream::readQSizeType(in);
+        if (in.status() != QDataStream::Ok) {
+            // read error -> null QString
+            str = QString();
+            return in;
+        }
         qsizetype bytes = size;
         if (size != bytes || size < -1) {
             str.clear();
