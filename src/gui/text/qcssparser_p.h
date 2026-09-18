@@ -318,12 +318,12 @@ enum class Origin {
     Margin,
 };
 
-enum PositionMode {
-    PositionMode_Unknown,
-    PositionMode_Static,
-    PositionMode_Relative,
-    PositionMode_Absolute,
-    PositionMode_Fixed,
+enum class PositionMode {
+    Unknown,
+    Static,
+    Relative,
+    Absolute,
+    Fixed,
 };
 
 enum Attachment {

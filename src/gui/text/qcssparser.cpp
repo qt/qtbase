@@ -364,10 +364,10 @@ static constexpr QCssKnownValue<TileMode> tileModes[] = {
 CHECK_ARRAY_IS_SORTED(tileModes, TileMode)
 
 static constexpr QCssKnownValue<PositionMode> positions[] = {
-    { "absolute", PositionMode_Absolute },
-    { "fixed", PositionMode_Fixed },
-    { "relative", PositionMode_Relative },
-    { "static", PositionMode_Static }
+    { "absolute", PositionMode::Absolute },
+    { "fixed", PositionMode::Fixed },
+    { "relative", PositionMode::Relative },
+    { "static", PositionMode::Static }
 };
 CHECK_ARRAY_IS_SORTED(positions, PositionMode)
 
@@ -1783,7 +1783,7 @@ PositionMode Declaration::positionValue() const
     if (d->parsed.isValid())
         return static_cast<PositionMode>(d->parsed.toInt());
     if (d->values.size() != 1)
-        return PositionMode_Unknown;
+        return PositionMode::Unknown;
     PositionMode v = findKnownValue(d->values.at(0).variant.toString(), positions);
     d->parsed = QVariant::fromValue(v);
     return v;

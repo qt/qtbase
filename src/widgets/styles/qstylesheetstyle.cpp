@@ -895,7 +895,7 @@ QRenderRule::QRenderRule(const QList<Declaration> &declarations, const QObject *
     int left = 0, top = 0, right = 0, bottom = 0;
     Origin origin = Origin::Unknown;
     Qt::Alignment position;
-    QCss::PositionMode mode = PositionMode_Unknown;
+    QCss::PositionMode mode = PositionMode::Unknown;
     Qt::Alignment textAlignment;
     if (v.extractPosition(&left, &top, &right, &bottom, &origin, &position, &mode, &textAlignment))
         p = new QStyleSheetPositionData(left, top, right, bottom, origin, position, mode, textAlignment);
@@ -2407,9 +2407,9 @@ static PositionMode defaultPositionMode(int pe)
     case PseudoElement_SliderGroove:
     case PseudoElement_SliderHandle:
     case PseudoElement_TabWidgetPane:
-        return PositionMode_Absolute;
+        return PositionMode::Absolute;
     default:
-        return PositionMode_Static;
+        return PositionMode::Static;
     }
 }
 
@@ -2417,11 +2417,11 @@ QRect QStyleSheetStyle::positionRect(const QWidget *w, const QRenderRule &rule2,
                                      const QRect &originRect, Qt::LayoutDirection dir) const
 {
     const QStyleSheetPositionData *p = rule2.position();
-    PositionMode mode = (p && p->mode != PositionMode_Unknown) ? p->mode : defaultPositionMode(pe);
+    PositionMode mode = (p && p->mode != PositionMode::Unknown) ? p->mode : defaultPositionMode(pe);
     Qt::Alignment position = (p && p->position != 0) ? p->position : defaultPosition(pe);
     QRect r;
 
-    if (mode != PositionMode_Absolute) {
+    if (mode != PositionMode::Absolute) {
         QSize sz = defaultSize(w, rule2.size(), originRect, pe);
         sz = sz.expandedTo(rule2.minimumContentsSize());
         r = QStyle::alignedRect(dir, position, sz, originRect);
@@ -5983,8 +5983,9 @@ QRect QStyleSheetStyle::subControlRect(ComplexControl cc, const QStyleOptionComp
                     labelRule.geo->height = th;
                 }
                 if (!labelRule.hasPosition()) {
-                    labelRule.p = new QStyleSheetPositionData(0, 0, 0, 0, defaultOrigin(PseudoElement_GroupBoxTitle),
-                                                              gb->textAlignment, PositionMode_Static);
+                    labelRule.p = new QStyleSheetPositionData(
+                            0, 0, 0, 0, defaultOrigin(PseudoElement_GroupBoxTitle),
+                            gb->textAlignment, PositionMode::Static);
                 }
                 QRect r = positionRect(w, rule, labelRule, PseudoElement_GroupBoxTitle,
                                       opt->rect, opt->direction);
