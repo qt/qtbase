@@ -15,6 +15,7 @@ static constexpr struct {
     QLatin1StringView format;
     int baseYear = 1900;
 } patterns[] = {
+    { ""_L1 }, // Accepts only an empty string, returns default
     { "M/d/yyyy"_L1 },
     { "h"_L1 },
     { "hh"_L1 },
@@ -69,6 +70,9 @@ static constexpr struct {
     { "yyyy-MM-ddThh:mm:ss.zt"_L1 },
     { "yyMMddHHmmss"_L1, 1950 }, // ASN.1 UTC type
     { "yyyyMMddHHmmsst"_L1 }, // ASN.1 generalized type
+    { "yyyy'-'MM'-'dd'T'HHmmss'.'zzz' 't"_L1 }, // correctly matched quotes
+    { "yyyy''MM''dd HHmmss''zzz''t"_L1 }, // doubled quotes as literal quotes
+    { "yyyy MMMM dddd HH mm ss.zzz t'unmatched"_L1 }, // malformed - rejected
 };
 
 // libFuzzer entry-point for testing QDateTimeParser
