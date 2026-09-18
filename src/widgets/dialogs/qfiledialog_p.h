@@ -48,6 +48,8 @@
 #include <unistd.h>
 #endif
 
+#include <memory>
+
 QT_REQUIRE_CONFIG(filedialog);
 
 QT_BEGIN_NAMESPACE
@@ -235,7 +237,7 @@ public:
     inline QString selectedNameFilter_sys() const;
     //////////////////////////////////////////////
 
-    QScopedPointer<Ui_QFileDialog> qFileDialogUi;
+    std::unique_ptr<Ui_QFileDialog> qFileDialogUi;
 
     QString acceptLabel;
 

@@ -48,6 +48,7 @@
 #endif
 
 #include <algorithm>
+#include <memory>
 
 QT_BEGIN_NAMESPACE
 
@@ -3101,7 +3102,7 @@ void QFileDialogPrivate::createWidgets()
         treeHeader->addAction(showHeader);
     }
 
-    QScopedPointer<QItemSelectionModel> selModel(qFileDialogUi->treeView->selectionModel());
+    std::unique_ptr<QItemSelectionModel> selModel(qFileDialogUi->treeView->selectionModel());
     qFileDialogUi->treeView->setSelectionModel(qFileDialogUi->listView->selectionModel());
 
     QObjectPrivate::connect(qFileDialogUi->treeView, &QAbstractItemView::activated,
@@ -3224,7 +3225,7 @@ void QFileDialog::setProxyModel(QAbstractProxyModel *proxyModel)
         QObjectPrivate::connect(d->model, &QAbstractItemModel::rowsInserted,
                                 d, &QFileDialogPrivate::rowsInserted);
     }
-    QScopedPointer<QItemSelectionModel> selModel(d->qFileDialogUi->treeView->selectionModel());
+    std::unique_ptr<QItemSelectionModel> selModel(d->qFileDialogUi->treeView->selectionModel());
     d->qFileDialogUi->treeView->setSelectionModel(d->qFileDialogUi->listView->selectionModel());
 
     d->setRootIndex(idx);
@@ -3362,7 +3363,7 @@ void QFileDialogPrivate::goHome()
 
 void QFileDialogPrivate::saveHistorySelection()
 {
-    if (qFileDialogUi.isNull() || currentHistoryLocation < 0 || currentHistoryLocation >= currentHistory.size())
+    if (!qFileDialogUi || currentHistoryLocation < 0 || currentHistoryLocation >= currentHistory.size())
         return;
     auto &item = currentHistory[currentHistoryLocation];
     item.selection.clear();
@@ -3404,7 +3405,7 @@ void QFileDialogPrivate::navigate(HistoryItem &historyItem)
     Q_Q(QFileDialog);
     q->setDirectory(historyItem.path);
     // Restore selection unless something has changed in the file system
-    if (qFileDialogUi.isNull() || historyItem.selection.isEmpty())
+    if (!qFileDialogUi || historyItem.selection.isEmpty())
         return;
     if (std::any_of(historyItem.selection.cbegin(), historyItem.selection.cend(),
                     [](const QPersistentModelIndex &i) { return !i.isValid(); })) {
