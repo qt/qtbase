@@ -326,10 +326,10 @@ enum class PositionMode {
     Fixed,
 };
 
-enum Attachment {
-    Attachment_Unknown,
-    Attachment_Fixed,
-    Attachment_Scroll,
+enum class Attachment {
+    Unknown,
+    Fixed,
+    Scroll,
 };
 
 enum StyleFeature {

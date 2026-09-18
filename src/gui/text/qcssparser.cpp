@@ -372,8 +372,8 @@ static constexpr QCssKnownValue<PositionMode> positions[] = {
 CHECK_ARRAY_IS_SORTED(positions, PositionMode)
 
 static constexpr QCssKnownValue<Attachment> attachments[] = {
-    { "fixed", Attachment_Fixed },
-    { "scroll", Attachment_Scroll }
+    { "fixed", Attachment::Fixed },
+    { "scroll", Attachment::Scroll }
 };
 CHECK_ARRAY_IS_SORTED(attachments, Attachment)
 
@@ -1794,7 +1794,7 @@ Attachment Declaration::attachmentValue() const
     if (d->parsed.isValid())
         return static_cast<Attachment>(d->parsed.toInt());
     if (d->values.size() != 1)
-        return Attachment_Unknown;
+        return Attachment::Unknown;
     Attachment v = findKnownValue(d->values.at(0).variant.toString(), attachments);
     d->parsed = QVariant::fromValue(v);
     return v;

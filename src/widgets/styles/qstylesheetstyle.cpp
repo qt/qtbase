@@ -916,7 +916,7 @@ QRenderRule::QRenderRule(const QList<Declaration> &declarations, const QObject *
     QString uri;
     Repeat repeat = Repeat::XY;
     Qt::Alignment alignment = Qt::AlignTop | Qt::AlignLeft;
-    Attachment attachment = Attachment_Scroll;
+    Attachment attachment = Attachment::Scroll;
     origin = Origin::Padding;
     Origin clip = Origin::Border;
     if (v.extractBackground(&brush, &uri, &repeat, &alignment, &origin, &attachment, &clip)) {
@@ -1234,7 +1234,7 @@ void QRenderRule::drawBackgroundImage(QPainter *p, const QRect &rect, QPoint off
         p->setClipRect(originRect(rect, background()->clip), Qt::IntersectClip);
     }
 
-    if (background()->attachment == Attachment_Fixed)
+    if (background()->attachment == Attachment::Fixed)
         off = QPoint(0, 0);
 
     QSize bgpSize = bgp.size() / bgp.devicePixelRatio();
