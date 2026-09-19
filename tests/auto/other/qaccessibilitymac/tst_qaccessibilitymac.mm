@@ -851,6 +851,7 @@ private Q_SLOTS:
     void notificationsTest();
     void checkBoxTest();
     void tableViewTest();
+    void tableViewSelectionAfterModelChange();
     void treeViewTest();
     void tabBarTest();
     void windowTest();
@@ -1232,6 +1233,67 @@ void tst_QAccessibilityMac::tableViewTest()
         QVERIFY([childObject.role isEqualToString:NSAccessibilityRowRole] ||
                [childObject.role isEqualToString:NSAccessibilityColumnRole]);
     }
+}
+
+void tst_QAccessibilityMac::tableViewSelectionAfterModelChange()
+{
+    QTableWidget *tableWidget = new QTableWidget(3, 1, m_window);
+    const QStringList contents = {"Socrates", "Confucius", "Kant"};
+    for (int i = 0; i < contents.size(); ++i)
+        tableWidget->setItem(i, 0, new QTableWidgetItem(contents.at(i)));
+    m_window->addWidget(tableWidget);
+    QVERIFY(QTest::qWaitForWindowExposed(m_window));
+    QCoreApplication::processEvents();
+
+    tableWidget->selectRow(0);
+
+    TestAXObject *appObject = [TestAXObject getApplicationAXObject];
+    QVERIFY(appObject);
+
+    NSArray *windowList = [appObject windowList];
+    QVERIFY([windowList count] == 1);
+    TestAXObject *window = [[TestAXObject alloc]
+            initWithAXUIElementRef:(AXUIElementRef)windowList[0]];
+    QVERIFY(window.valid);
+
+    AXUIElementRef tableViewRef = [window findDirectChildByRole:kAXTableRole];
+    QVERIFY(tableViewRef != nil);
+    TestAXObject *tableView = [[TestAXObject alloc] initWithAXUIElementRef:tableViewRef];
+
+    NSArray *rowArray = [tableView tableRows];
+    QCOMPARE(rowArray.count, 3u);
+    TestAXObject *row = [[TestAXObject alloc] initWithAXUIElementRef:(AXUIElementRef)rowArray[0]];
+    NSArray *cells = row.childList;
+    QCOMPARE(cells.count, 1u);
+    TestAXObject *cell = [[TestAXObject alloc] initWithAXUIElementRef:(AXUIElementRef)cells[0]];
+    QVERIFY([cell.title isEqualToString:@"Socrates"]);
+
+    // Drain native elements before querying the cached selection.
+    @autoreleasepool {
+        tableWidget->setRowCount(2);
+    }
+    QCoreApplication::processEvents();
+
+    CFTypeRef selectedChildrenValue = nullptr;
+    QCOMPARE(AXUIElementCopyAttributeValue(tableViewRef, kAXSelectedChildrenAttribute,
+                                           &selectedChildrenValue), kAXErrorSuccess);
+    NSArray *selectedChildren = (NSArray *)selectedChildrenValue;
+    QVERIFY(selectedChildren != nil);
+    QCOMPARE(selectedChildren.count, 1u);
+    TestAXObject *selectedCell = [[TestAXObject alloc]
+            initWithAXUIElementRef:(AXUIElementRef)selectedChildren[0]];
+    QVERIFY([selectedCell.title isEqualToString:@"Socrates"]);
+
+    [selectedCell release];
+    [selectedChildren release];
+    [cell release];
+    [cells release];
+    [row release];
+    [rowArray release];
+    [tableView release];
+    [window release];
+    [windowList release];
+    [appObject release];
 }
 
 void tst_QAccessibilityMac::treeViewTest()
