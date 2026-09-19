@@ -2216,6 +2216,8 @@ void QWindowsWindow::handleDpiChangedAfterParent(HWND hwnd)
     const qreal scale = dpiRelativeScale(dpi);
     setSavedDpi(dpi);
 
+    QWindowsThemeCache::clearThemeCache(hwnd);
+
     checkForScreenChanged(QWindowsWindow::FromDpiChange);
 
     // Child windows do not get WM_GETDPISCALEDSIZE messages to inform
