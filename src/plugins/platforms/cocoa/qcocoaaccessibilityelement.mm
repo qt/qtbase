@@ -216,25 +216,14 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
     return [self elementWithId:anId];
 }
 
-+ (void)removeElementsFromCache:(NSArray *)array {
-    for (uint i = 0; i < array.count; ++i) {
-        QMacAccessibilityElement *cell = [array objectAtIndex:i];
-        if (cell->axid) { // it's a proper cell, remove from cache
-            QAccessibleCache::instance()->deleteInterface(cell->axid);
-        }
-    }
-}
-
 // called by QAccessibleCache::removeAccessibleElement, which also releases
 - (void)invalidate {
     axid = 0;
     if (rows) {
-        [QMacAccessibilityElement removeElementsFromCache:rows];
         [rows autorelease];
         rows = nil;
     }
     if (columns) {
-        [QMacAccessibilityElement removeElementsFromCache:columns];
         [columns autorelease];
         columns = nil;
     }
@@ -243,27 +232,13 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
     NSAccessibilityPostNotification(self, NSAccessibilityUIElementDestroyedNotification);
 }
 
-/*!
-    \internal
-
-    If this element represents a table, then the rows and columns array are both
-    populated with elements representing the rows and columns. If this elements
-    represents a row, then the columns array is populated with elements
-    representing the cells. Not all of those synthesized elements might be in
-    the cache, but those that are need to be removed so that we don't end up
-    with stale representations of children when the higher-level element
-    expires.
-*/
+// The view and accessibility cache own the interfaces. Native element teardown
+// must not delete interfaces that the table still references.
 - (void)dealloc {
-    if (rows) {
-        [QMacAccessibilityElement removeElementsFromCache:rows];
+    if (rows)
         [rows release]; // will also release all entries first
-    }
-    if (columns) {
-        [QMacAccessibilityElement removeElementsFromCache:columns];
+    if (columns)
         [columns release]; // will also release all entries first
-    }
-    QAccessibleCache::instance()->deleteInterface(axid);
     [super dealloc];
 }
 
