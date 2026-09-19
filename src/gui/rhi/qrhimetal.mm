@@ -4799,7 +4799,8 @@ static void qrhimtl_releaseSampler(const QRhiMetalData::DeferredReleaseEntry &e)
 
 void QRhiMetal::executeDeferredReleases(bool forced)
 {
-    for (int i = d->releaseQueue.count() - 1; i >= 0; --i) {
+    qsizetype keepBegin = d->releaseQueue.size();
+    for (qsizetype i = keepBegin - 1; i >= 0; --i) {
         const QRhiMetalData::DeferredReleaseEntry &e(d->releaseQueue[i]);
         if (forced || currentFrameSlot == e.lastActiveFrameSlot || e.lastActiveFrameSlot < 0) {
             switch (e.type) {
@@ -4839,9 +4840,12 @@ void QRhiMetal::executeDeferredReleases(bool forced)
             default:
                 break;
             }
-            d->releaseQueue.removeAt(i);
+        } else if (--keepBegin != i) {
+            d->releaseQueue[keepBegin] = std::move(d->releaseQueue[i]);
         }
     }
+    if (keepBegin)
+        d->releaseQueue.remove(0, keepBegin);
 }
 
 void QRhiMetal::finishActiveReadbacks(bool forced)

@@ -12,6 +12,8 @@
 #include "cs_mipmap_p.h"
 #include "cs_mipmap_3d_p.h"
 
+#include <utility>
+
 #if __has_include(<pix.h>)
 #include <pix.h>
 #define QRHI_D3D12_HAS_OLD_PIX
@@ -3438,7 +3440,8 @@ void QD3D12ReleaseQueue::activatePendingDeferredReleaseRequests(int frameSlot)
 
 void QD3D12ReleaseQueue::executeDeferredReleases(int frameSlot, bool forced)
 {
-    for (int i = queue.count() - 1; i >= 0; --i) {
+    qsizetype keepBegin = queue.size();
+    for (qsizetype i = keepBegin - 1; i >= 0; --i) {
         const DeferredReleaseEntry &e(queue[i]);
         if (forced || (e.frameSlotToBeReleasedIn.has_value() && e.frameSlotToBeReleasedIn.value() == frameSlot)) {
             switch (e.type) {
@@ -3470,9 +3473,12 @@ void QD3D12ReleaseQueue::executeDeferredReleases(int frameSlot, bool forced)
                 e.poolForViews->release(e.viewsStart, e.viewCount);
                 break;
             }
-            queue.removeAt(i);
+        } else if (--keepBegin != i) {
+            queue[keepBegin] = std::move(queue[i]);
         }
     }
+    if (keepBegin)
+        queue.remove(0, keepBegin);
 }
 
 void QD3D12ReleaseQueue::releaseAll()

@@ -50,6 +50,7 @@ QT_WARNING_POP
 
 #include <QtCore/q20memory.h>
 #include <optional>
+#include <utility>
 
 QT_BEGIN_NAMESPACE
 
@@ -5143,7 +5144,8 @@ static void qrhivk_releaseSampler(const QRhiVulkan::DeferredReleaseEntry &e, VkD
 
 void QRhiVulkan::executeDeferredReleases(bool forced)
 {
-    for (int i = releaseQueue.size() - 1; i >= 0; --i) {
+    qsizetype keepBegin = releaseQueue.size();
+    for (qsizetype i = keepBegin - 1; i >= 0; --i) {
         const QRhiVulkan::DeferredReleaseEntry &e(releaseQueue[i]);
         if (forced || currentFrameSlot == e.lastActiveFrameSlot || e.lastActiveFrameSlot < 0) {
             switch (e.type) {
@@ -5193,9 +5195,12 @@ void QRhiVulkan::executeDeferredReleases(bool forced)
                 Q_UNREACHABLE();
                 break;
             }
-            releaseQueue.removeAt(i);
+        } else if (--keepBegin != i) {
+            releaseQueue[keepBegin] = std::move(releaseQueue[i]);
         }
     }
+    if (keepBegin)
+        releaseQueue.remove(0, keepBegin);
 }
 
 void QRhiVulkan::finishActiveReadbacks(bool forced)
