@@ -21,6 +21,7 @@ class tst_QCalendarWidget : public QObject
 private slots:
     void getSetCheck();
     void buttonClickCheck();
+    void keyboardInput();
 
     void setTextFormat();
     void resetTextFormat();
@@ -189,6 +190,22 @@ void tst_QCalendarWidget::buttonClickCheck()
     QTest::mouseClick(button, Qt::LeftButton);
     QCOMPARE(2, object.monthShown());
 
+}
+
+void tst_QCalendarWidget::keyboardInput()
+{
+    QCalendarWidget calendar;
+    calendar.setLocale(QLocale(QLocale::German));
+    calendar.show();
+    calendar.activateWindow();
+    QVERIFY(QTest::qWaitForWindowActive(&calendar));
+
+    QWidget *calendarView = calendar.findChild<QWidget *>("qt_calendar_calendarview");
+    calendarView->setFocus();
+    QTest::keyClicks(calendarView, "01.05.23");
+    QTest::keyClick(calendarView, Qt::Key_Enter);
+
+    QCOMPARE(calendar.selectedDate(), QDate(2023, 5, 1));
 }
 
 void tst_QCalendarWidget::setTextFormat()

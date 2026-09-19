@@ -259,7 +259,7 @@ QDate QCalendarMonthValidator::applyToDate(QDate date, QCalendar cal) const
     if (!parts.isValid())
         return QDate();
     parts.month = qMin(qMax(1, m_month), cal.monthsInYear(parts.year));
-    parts.day = qMin(parts.day, cal.daysInMonth(m_month, parts.year)); // m_month or parts.month ?
+    parts.day = qMin(parts.day, cal.daysInMonth(parts.month, parts.year));
     return cal.dateFromParts(parts);
 }
 
