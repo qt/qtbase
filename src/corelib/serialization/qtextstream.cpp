@@ -1600,7 +1600,8 @@ bool QTextStream::readLineInto(QString *line, qint64 maxlen)
 
     const QChar *readPtr;
     qsizetype length;
-    if (!d->scan(&readPtr, &length, qsizetype(maxlen), QTextStreamPrivate::EndOfLine)) {
+    qsizetype clampedlen = q26::saturating_cast<qsizetype>(maxlen);
+    if (!d->scan(&readPtr, &length, clampedlen, QTextStreamPrivate::EndOfLine)) {
         if (line && !line->isNull())
             line->resize(0);
         return false;
