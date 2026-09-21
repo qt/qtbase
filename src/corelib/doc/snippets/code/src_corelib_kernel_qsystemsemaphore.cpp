@@ -3,6 +3,8 @@
 
 #include <QSystemSemaphore>
 
+#if QT_CONFIG(systemsemaphore)
+
 void example()
 {
     {
@@ -34,3 +36,5 @@ void example()
         //! [2]
     }
 }
+
+#endif // systemsemaphore
