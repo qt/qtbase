@@ -6320,7 +6320,9 @@ void QString::truncate(qsizetype pos)
 */
 void QString::chop(qsizetype n)
 {
-    if (n > 0)
+    if (n > size())
+        resize(0);      // can't remove more than size() characters
+    else if (n > 0)
         resize(d.size - n);
 }
 
