@@ -3336,11 +3336,11 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
                         QRenderRule arrowRule = renderRule(w, opt, PseudoElement_ToolButtonMenuArrow);
                         QRect arrowRect = arrowRule.hasGeometry()
                                         ? positionRect(w, arrowRule, PseudoElement_ToolButtonMenuArrow, menuButtonRect, toolOpt.direction)
-                                        : arrowRule.contentsRect(menuButtonRect);
+                                        : menuButtonRect;
                         if (arrowRule.hasDrawable()) {
                             arrowRule.drawRule(p, arrowRect);
                         } else {
-                            toolOpt.rect = arrowRect;
+                            toolOpt.rect = arrowRule.contentsRect(arrowRect);
                             baseStyle()->drawPrimitive(QStyle::PE_IndicatorArrowDown, &toolOpt, p, w);
                         }
                     }
@@ -3366,7 +3366,7 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
                 const auto arrowElement = customArrowElement();
                 QRenderRule subRule = renderRule(w, opt, arrowElement);
                 QRect arrowRect = subRule.hasGeometry() ? positionRect(w, subRule, arrowElement, toolOpt.rect, toolOpt.direction)
-                                                        : subRule.contentsRect(toolOpt.rect);
+                                                        : toolOpt.rect;
 
                 switch (toolOpt.toolButtonStyle) {
                 case Qt::ToolButtonIconOnly:
