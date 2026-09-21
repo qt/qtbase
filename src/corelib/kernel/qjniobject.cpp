@@ -370,6 +370,8 @@ public:
     jobject m_jobject = nullptr;
     jclass m_jclass = nullptr;
     bool m_own_jclass = true;
+    // Whether m_className is the name Qt resolved the class with.
+    bool m_resolvedByName = false;
     enum class IsJString : quint8 {
         Unknown,
         Yes,
@@ -603,7 +605,10 @@ jmethodID QJniObject::getCachedMethodID(JNIEnv *env,
 jmethodID QJniObject::getCachedMethodID(JNIEnv *env, const char *name,
                                         const char *signature, bool isStatic) const
 {
-    return QJniObject::getCachedMethodID(env, d->m_jclass, d->m_className, name, signature, isStatic);
+    // A class Qt did not resolve by name may share its name with another
+    // loader's, so it cannot share the name-keyed cache.
+    const QByteArray className = d->m_resolvedByName ? d->m_className : QByteArray();
+    return QJniObject::getCachedMethodID(env, d->m_jclass, className, name, signature, isStatic);
 }
 
 typedef QHash<QByteArray, jfieldID> JFieldIDHash;
@@ -661,7 +666,8 @@ jfieldID QJniObject::getCachedFieldID(JNIEnv *env,
                                       const char *signature,
                                       bool isStatic) const
 {
-    return QJniObject::getCachedFieldID(env, d->m_jclass, d->m_className, name, signature, isStatic);
+    const QByteArray className = d->m_resolvedByName ? d->m_className : QByteArray();
+    return QJniObject::getCachedFieldID(env, d->m_jclass, className, name, signature, isStatic);
 }
 
 /*!
@@ -691,6 +697,7 @@ QJniObject::QJniObject(const char *className)
     d->m_className = className;
     d->m_jclass = loadClass(d->m_className, jniEnv());
     d->m_own_jclass = false;
+    d->m_resolvedByName = true;
 
     d->construct();
 }
@@ -714,6 +721,7 @@ QJniObject::QJniObject(const char *className, const char *signature, ...)
     d->m_className = className;
     d->m_jclass = loadClass(d->m_className, jniEnv());
     d->m_own_jclass = false;
+    d->m_resolvedByName = true;
 
     va_list args;
     va_start(args, signature);
@@ -1455,6 +1463,7 @@ QJniObject QJniObject::fromString(const QString &string)
     jstring stringRef = QtJniTypes::Detail::fromQString(string, env);
     QJniObject stringObject = getCleanJniObject(stringRef, env);
     stringObject.d->m_className = QtJniTypes::Traits<jstring>::className();
+    stringObject.d->m_resolvedByName = true;
     stringObject.d->m_is_jstring = QJniObjectPrivate::IsJString::Yes;
     return stringObject;
 }
