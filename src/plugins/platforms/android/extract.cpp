@@ -70,6 +70,9 @@ Java_org_qtproject_qt_android_ExtractStyle_extractNativeChunkInfo20(JNIEnv *env,
         return 0;
 
     jint *data = (jint*)malloc(sizeof(jint)*size);
+    if (!data)
+        return 0;
+
     size_t pos = 0;
     data[pos++] = chunk->numXDivs;
     data[pos++] = chunk->numYDivs;
