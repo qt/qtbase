@@ -159,8 +159,13 @@ public class QtNative
                 if (!openMode.equals("r"))
                    isRequestPermission = permissions.get(i).isWritePermission();
 
-                if (Objects.equals(iterUri.getPath(), uriStr) && isRequestPermission)
+                final boolean isSameAuthority =
+                        Objects.equals(iterUri.getAuthority(), parsedUri.getAuthority());
+                final boolean isSamePath = Objects.equals(iterUri.getPath(), uriStr);
+
+                if (isSameAuthority && isSamePath && isRequestPermission) {
                     return iterUri;
+                }
             }
 
             // if we only have transient permissions on uri all the above will fail,
