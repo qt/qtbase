@@ -133,7 +133,6 @@ public:
     virtual std::shared_ptr<QAbilityPeer> defaultQAbilityPeer() = 0;
     virtual std::shared_ptr<QAbilityPeer> tryGetQAbilityPeerByInstanceId(const std::string &instanceId) = 0;
     virtual std::shared_ptr<QAbilityPeer> tryGetQAbilityPeerByInstance(QNapi::Object qAbility) = 0;
-    virtual std::shared_ptr<QAbilityPeer> tryGetQAbilityPeerByQWindow(QObjectThreadSafeRef qwindow) = 0;
 
     virtual void visitEachQAbilityPeer(const std::function<void(std::shared_ptr<QAbilityPeer>)> &visitor) = 0;
 
