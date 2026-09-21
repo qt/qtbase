@@ -161,6 +161,9 @@ namespace QtAndroidInput
         if (modifiers & 0x00001000) // META_CTRL_ON
             qmodifiers |= Qt::ControlModifier;
 
+        if (modifiers & 0x00010000) // META_META_ON
+            qmodifiers |= Qt::MetaModifier;
+
         return qmodifiers;
     }
 
