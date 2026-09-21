@@ -575,6 +575,10 @@ void tst_QWindow::positioning()
 #ifdef Q_OS_ANDROID
     QSKIP("Fails on Android. QTBUG-105201");
 #endif
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(
+            QPlatformIntegration::WindowManagement)) {
+        QSKIP("This platform does not manage top-level window positions");
+    }
     if (!supportsNonFullScreenWindows())
         QSKIP("This platform does not support non-fullscreen windows");
 
@@ -634,6 +638,10 @@ void tst_QWindow::framePositioning()
 #ifdef Q_OS_ANDROID
     QSKIP("Fails on Android. QTBUG-105201");
 #endif
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(
+            QPlatformIntegration::WindowManagement)) {
+        QSKIP("This platform does not manage top-level window positions");
+    }
     if (!supportsNonFullScreenWindows())
         QSKIP("This platform does not support non-fullscreen windows");
 
