@@ -199,7 +199,6 @@ hb_shape (hb_font_t           *font,
 
 
 #ifdef HB_EXPERIMENTAL_API
-#ifndef HB_NO_VAR
 
 static float
 buffer_advance (hb_buffer_t *buffer)
@@ -441,7 +440,7 @@ hb_shape_justify (hb_font_t          *font,
 
   return true;
 }
-#endif
+
 #endif
 
 

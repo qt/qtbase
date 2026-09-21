@@ -11,8 +11,6 @@ namespace OT {
 //namespace Var {
 
 
-#ifndef HB_NO_DRAW
-
 struct hb_transforming_pen_context_t
 {
   hb_transform_t<> transform;
@@ -412,8 +410,6 @@ VARC::get_path_at (const hb_varc_context_t &c,
 
   return true;
 }
-
-#endif
 
 //} // namespace Var
 } // namespace OT
