@@ -308,7 +308,7 @@ void qt_blend_argb32_on_argb32_scanline_neon(uint *dest, const uint *src, int le
         qt_blend_argb32_on_argb32_neon((uchar *)dest, 4 * length, (uchar *)src, 4 * length, length, 1, 256);
 #endif
     } else {
-        qt_blend_argb32_on_argb32_neon((uchar *)dest, 4 * length, (uchar *)src, 4 * length, length, 1, (const_alpha * 256) / 255);
+        qt_blend_argb32_on_argb32_neon((uchar *)dest, 4 * length, (uchar *)src, 4 * length, length, 1, (const_alpha * 256 + 254) / 255);
     }
 }
 
