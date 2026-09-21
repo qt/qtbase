@@ -5,6 +5,7 @@
 import atexit
 import os
 import shlex
+import shutil
 import subprocess
 import sys
 import time
@@ -58,9 +59,8 @@ if not args.build_path:
 
 adb = args.adb
 if not adb:
-    adb = 'adb'
-    null_dev = subprocess.DEVNULL
-    if subprocess.call(['command', '-v', adb], stdout=null_dev, stderr=null_dev) != 0:
+    adb = shutil.which('adb')
+    if not adb:
         die("adb tool path is not provided and is not found in PATH")
 
 try:
