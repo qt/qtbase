@@ -761,6 +761,7 @@ void QHttp2Stream::handleDATA(const Frame &inboundFrame)
         if (endStream)
             transitionState(StateTransition::CloseRemote);
         const auto shouldBuffer = m_configuration.useDownloadBuffer && !fragment.isEmpty();
+        QPointer<QHttp2Stream> self(this);
         if (shouldBuffer) {
             // Only non-empty fragments get appended!
             m_downloadBuffer.append(std::move(fragment));
@@ -768,6 +769,8 @@ void QHttp2Stream::handleDATA(const Frame &inboundFrame)
         } else {
             emit dataReceived(fragment, endStream);
         }
+        if (!self)
+            return;
     }
 
     if (!endStream && m_recvWindow < connection->streamInitialReceiveWindowSize / 2) {
@@ -1324,8 +1327,9 @@ bool QHttp2Connection::readClientPreface()
 void QHttp2Connection::handleConnectionClosure()
 {
     const auto errorString = QCoreApplication::translate("QHttp", "Connection closed");
-    for (auto it = m_streams.cbegin(), end = m_streams.cend(); it != end; ++it) {
-        const QPointer<QHttp2Stream> &stream = it.value();
+    const QList<quint32> streamIDs = m_streams.keys();
+    for (quint32 streamID : streamIDs) {
+        QHttp2Stream *stream = m_streams.value(streamID, nullptr);
         if (stream && stream->isActive())
             stream->finishWithError(PROTOCOL_ERROR, errorString);
     }
@@ -1367,7 +1371,9 @@ void QHttp2Connection::connectionError(Http2Error errorCode, const QString &mess
     m_lastStreamToProcess = std::min(m_lastIncomingStreamID, m_lastStreamToProcess);
     sendGOAWAYFrame(errorCode, m_lastStreamToProcess);
 
-    for (QHttp2Stream *stream : std::as_const(m_streams)) {
+    const QList<quint32> streamIDs = m_streams.keys();
+    for (quint32 streamID : streamIDs) {
+        QHttp2Stream *stream = m_streams.value(streamID, nullptr);
         if (stream && stream->isActive())
             stream->finishWithError(errorCode, message);
     }
@@ -2078,7 +2084,9 @@ void QHttp2Connection::handleGOAWAY()
         // As the peer is closing the connection immediately, they won't
         // process any more data, so we close the connection here already.
         m_connectionAborted = true;
-        for (QHttp2Stream *stream : std::as_const(m_streams)) {
+        const QList<quint32> streamIDs = m_streams.keys();
+        for (quint32 streamID : streamIDs) {
+            QHttp2Stream *stream = m_streams.value(streamID, nullptr);
             if (stream && stream->isActive())
                 stream->finishWithError(errorCode, u"Received GOAWAY"_s);
         }
