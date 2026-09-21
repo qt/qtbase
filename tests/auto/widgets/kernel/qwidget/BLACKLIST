@@ -1,8 +1,5 @@
 [optimizedResize_topLevel]
 osx
-[render_windowOpacity]
-macos arm
-wayland
 [render_systemClip]
 osx
 # QTBUG-87668
