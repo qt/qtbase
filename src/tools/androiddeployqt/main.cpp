@@ -1658,9 +1658,11 @@ bool copyAndroidSources(const Options &options)
     }
 
     QSet<QString> excludedAbsolutePaths;
-    const QString providerPaths = sourceDirectory.absoluteFilePath(
-        QStringLiteral("res/xml/qtprovider_paths.xml"));
-    if (QFileInfo::exists(providerPaths)) {
+    for (const auto &variant : { "res/xml/qtprovider_paths.xml"_L1,
+                                 "res/xml-v30/qtprovider_paths.xml"_L1 }) {
+        const QString providerPaths = sourceDirectory.absoluteFilePath(variant);
+        if (!QFileInfo::exists(providerPaths))
+            continue;
         fprintf(stderr,
             "Warning: %s in the package source directory is being excluded. Qt "
             "now bundles its own copy of it under the Android sources directory, "
