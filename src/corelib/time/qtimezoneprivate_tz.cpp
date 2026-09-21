@@ -233,34 +233,38 @@ static QTzHeader parseTzHeader(QDataStream &ds, bool *ok)
     return hdr;
 }
 
-static QList<QTzTransition> parseTzTransitions(QDataStream &ds, int tzh_timecnt, bool longTran)
+static std::optional<QList<QTzTransition>>
+parseTzTransitions(QDataStream &ds, int tzh_timecnt, int tzh_typecnt, bool longTran)
 {
     QList<QTzTransition> transitions(tzh_timecnt);
 
     if (longTran) {
         // Parse tzh_timecnt x 8-byte transition times
-        for (int i = 0; i < tzh_timecnt && ds.status() == QDataStream::Ok; ++i) {
+        for (int i = 0; i < tzh_timecnt; ++i) {
             ds >> transitions[i].tz_time;
             if (ds.status() != QDataStream::Ok)
-                transitions.resize(i);
+                return {};
         }
     } else {
         // Parse tzh_timecnt x 4-byte transition times
         qint32 val;
-        for (int i = 0; i < tzh_timecnt && ds.status() == QDataStream::Ok; ++i) {
+        for (int i = 0; i < tzh_timecnt; ++i) {
             ds >> val;
             transitions[i].tz_time = val;
             if (ds.status() != QDataStream::Ok)
-                transitions.resize(i);
+                return {};
         }
     }
 
     // Parse tzh_timecnt x 1-byte transition type index
-    for (int i = 0; i < tzh_timecnt && ds.status() == QDataStream::Ok; ++i) {
+    for (int i = 0; i < tzh_timecnt; ++i) {
         quint8 typeind;
         ds >> typeind;
-        if (ds.status() == QDataStream::Ok)
-            transitions[i].tz_typeind = typeind;
+        if (ds.status() != QDataStream::Ok)
+            return {};
+        if (typeind >= tzh_typecnt)
+            return {}; // Malformed: transition names an undefined type.
+        transitions[i].tz_typeind = typeind;
     }
 
     return transitions;
@@ -853,9 +857,13 @@ QTzTimeZoneCacheEntry QTzTimeZoneCache::findEntry(const QByteArray &ianaId)
     QTzHeader hdr = parseTzHeader(ds, &ok);
     if (!ok || ds.status() != QDataStream::Ok)
         return ret;
-    QList<QTzTransition> tranList = parseTzTransitions(ds, hdr.tzh_timecnt, false);
-    if (ds.status() != QDataStream::Ok)
+
+    auto trans = parseTzTransitions(ds, hdr.tzh_timecnt, hdr.tzh_typecnt, false);
+    if (!trans)
         return ret;
+    Q_ASSERT(ds.status() == QDataStream::Ok);
+    QList<QTzTransition> tranList = std::move(*trans);
+
     QList<QTzType> typeList = parseTzTypes(ds, hdr.tzh_typecnt);
     if (ds.status() != QDataStream::Ok)
         return ret;
@@ -875,9 +883,13 @@ QTzTimeZoneCacheEntry QTzTimeZoneCache::findEntry(const QByteArray &ianaId)
         QTzHeader hdr2 = parseTzHeader(ds, &ok);
         if (!ok || ds.status() != QDataStream::Ok)
             return ret;
-        tranList = parseTzTransitions(ds, hdr2.tzh_timecnt, true);
-        if (ds.status() != QDataStream::Ok)
+
+        trans = parseTzTransitions(ds, hdr2.tzh_timecnt, hdr2.tzh_typecnt, true);
+        if (!trans)
             return ret;
+        Q_ASSERT(ds.status() == QDataStream::Ok);
+        tranList = std::move(*trans);
+
         typeList = parseTzTypes(ds, hdr2.tzh_typecnt);
         if (ds.status() != QDataStream::Ok)
             return ret;
