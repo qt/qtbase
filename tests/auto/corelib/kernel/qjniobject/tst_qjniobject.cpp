@@ -144,6 +144,9 @@ private slots:
     void callback();
     void callStaticOverloadResolution();
 
+    void cachedMethodIdKeyCollision();
+    void cachedFieldIdKeyIgnoresKind();
+
     void implicitExceptionHandling_construct();
     void implicitExceptionHandling_callMethod();
     void implicitExceptionHandling_callStaticMethod();
@@ -2885,6 +2888,45 @@ void tst_QJniObject::setStaticFieldWithException()
         QVERIFY(result.error());
     }
 #endif
+}
+
+static constexpr const char taskClassName[] =
+        "org/qtproject/qt/android/testdatapackage/Task";
+static constexpr const char tasksClassName[] =
+        "org/qtproject/qt/android/testdatapackage/Tasks";
+static constexpr const char fieldItemClassName[] =
+        "org/qtproject/qt/android/testdatapackage/FieldItem";
+
+void tst_QJniObject::cachedMethodIdKeyCollision()
+{
+    // Task/send and Tasks/end concatenate to the same string, so the two
+    // lookups shared a method ID cache entry while the key had no separator.
+    QJniObject task(taskClassName);
+    QVERIFY(task.isValid());
+    QJniObject tasks(tasksClassName);
+    QVERIFY(tasks.isValid());
+
+    QCOMPARE(task.callMethod<jint>("send", 1), 11);
+    QCOMPARE(tasks.callMethod<jint>("end", 1), 21);
+
+    // The reverse order populates the shared entry from the other side.
+    QCOMPARE(tasks.callMethod<jint>("end", 2), 22);
+    QCOMPARE(task.callMethod<jint>("send", 2), 12);
+}
+
+void tst_QJniObject::cachedFieldIdKeyIgnoresKind()
+{
+    // Both ids resolve through FieldItem and shared a cache entry while the
+    // key left the kind out. Only the setters go through the field cache.
+    QJniObject item(fieldItemClassName);
+    QVERIFY(item.isValid());
+    QCOMPARE(item.getField<jint>("id"), 200);
+
+    item.setField<jint>("id", 7);
+    QJniObject::setStaticField<jint>(fieldItemClassName, "id", 9);
+
+    QCOMPARE(item.getField<jint>("id"), 7);
+    QCOMPARE(QJniObject::getStaticField<jint>(fieldItemClassName, "id"), 9);
 }
 
 QTEST_MAIN(tst_QJniObject)

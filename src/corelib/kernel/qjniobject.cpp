@@ -380,10 +380,11 @@ public:
     mutable IsJString m_is_jstring = IsJString::Unknown;
 };
 
+// The separator keeps the concatenation unambiguous.
 template <typename ...Args>
 static inline QByteArray cacheKey(Args &&...args)
 {
-    return (QByteArrayView(":") + ... + QByteArrayView(args));
+    return ((QByteArrayView(":") + QByteArrayView(args)) + ...);
 }
 
 struct JClassHash : QHash<QByteArray, jclass>
@@ -578,7 +579,8 @@ jmethodID QJniObject::getCachedMethodID(JNIEnv *env,
     if (className.isEmpty())
         return getMethodID(env, clazz, name, signature, isStatic);
 
-    const QByteArray key = cacheKey(className, name, signature);
+    const QByteArray key = cacheKey(className, name, signature,
+                                    isStatic ? "static" : "instance");
     QHash<QByteArray, jmethodID>::const_iterator it;
 
     {
@@ -634,10 +636,11 @@ jfieldID QJniObject::getCachedFieldID(JNIEnv *env,
                                       const char *signature,
                                       bool isStatic)
 {
-    if (className.isNull())
+    if (className.isEmpty())
         return getFieldID(env, clazz, name, signature, isStatic);
 
-    const QByteArray key = cacheKey(className, name, signature);
+    const QByteArray key = cacheKey(className, name, signature,
+                                    isStatic ? "static" : "instance");
     QHash<QByteArray, jfieldID>::const_iterator it;
 
     {
