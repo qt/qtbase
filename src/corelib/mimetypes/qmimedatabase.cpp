@@ -599,6 +599,49 @@ bool QMimeDatabasePrivate::inherits(const QString &mime, const QString &parent)
     \snippet code/src_corelib_mimetype_qmimedatabase.cpp 0
 
     \sa QMimeType, {MIME Type Browser}
+
+    \section1 Security Considerations
+
+    \section2 Blocking calls
+    All QMimeDatabase objects share the same database, protected by a single
+    process-wide mutex. Every lookup holds this mutex while performing disk
+    I/O. For example, when loading or checking MIME definitions.
+
+    As a result, one slow or unresponsive read can block every thread using
+    QMimeDatabase. This is especially problematic when files or MIME
+    definition directories are on slow storage, such as a network mount.
+
+    To keep the UI responsive, perform the lookups in worker threads and update
+    the UI from a continuation. This example handles a list of files:
+
+    \code
+    // Called from the main thread
+    const QStringList paths = { "/mnt/share/report.pdf", "/mnt/share/data.csv",
+                                "/mnt/share/photo.jpg", "/mnt/share/notes.txt" };
+    QtConcurrent::mapped(paths, [](const QString &path) {
+        // Runs in a worker thread, once per file
+        return QMimeDatabase().mimeTypeForFile(path).name();
+    }).then(this, [this, paths](QFuture<QString> future) {
+        // Runs in the main thread, once every lookup has finished
+        const QStringList names = future.results(); // same order as paths
+        for (qsizetype i = 0; i < paths.size(); ++i)
+            updateUi(paths.at(i), names.at(i));
+    });
+    \endcode
+
+    The code example requires the Qt Concurrent module. \c QtConcurrent::mapped()
+    runs the lambda once per file. Each invocation of the lambda runs on a thread
+    from the \c QThreadPool pool. The function returns a single \c QFuture
+    containing the lambda's return value for each file, in the same order as
+    the input list. \l {QFuture::then()}{then()} attaches a continuation to
+    that QFuture, allowing to chain multiple asynchronous computations.
+    Once all asynchronous computations have finished, the continuation runs in
+    the thread of the context object, here the main thread. The continuation takes
+    the QFuture itself and reads all results with \l {QFuture::results()}{results()}.
+
+    \note This pattern moves the blocking calls to worker threads, it does not
+    remove them. The lookups still run one at a time, because they share the mutex.
+    While a worker holds the mutex, every other QMimeDatabase call waits.
  */
 
 /*!
