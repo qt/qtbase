@@ -182,10 +182,7 @@ QDBusMetaObjectGenerator::findType(const QByteArray &signature,
         // this case is used only by the qdbus command-line tool
         // invalid, let's create an impossible type that contains the signature
 
-        if (signature == "av") {
-            result.name = "QVariantList";
-            type = QMetaType::QVariantList;
-        } else if (signature == "a{sv}") {
+        if (signature == "a{sv}") {
             result.name = "QVariantMap";
             type = QMetaType::QVariantMap;
         } else if (signature == "a{ss}") {
