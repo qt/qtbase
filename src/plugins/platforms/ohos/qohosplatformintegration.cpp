@@ -326,7 +326,6 @@ bool QOhosPlatformIntegration::hasCapability(Capability cap) const
         }
         case MultipleWindows:
         case WindowManagement:
-        case NonFullScreenWindows:
             return QOhosSettings::instance().isWindowPcModeEnabled();
         case TopStackedNativeChildWindows: return false;
         default:
