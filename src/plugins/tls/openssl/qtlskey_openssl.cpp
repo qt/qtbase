@@ -584,6 +584,9 @@ TlsKeyOpenSSL *TlsKeyOpenSSL::publicKeyFromX509(X509 *x)
 #if defined(OPENSSL_VERSION_MAJOR) && OPENSSL_VERSION_MAJOR >= 3
     } else if (keyTypeName.contains(QLatin1String("ML-DSA")) ||
                keyTypeName.contains(QLatin1String("mldsa"))) {
+#ifndef OPENSSL_NO_DEPRECATED_3_0
+        q_EVP_PKEY_up_ref(pkey);
+#endif
         tlsKey->genericKey = pkey;
         tlsKey->keyAlgorithm = QSsl::MlDsa;
         tlsKey->keyIsNull = false;
