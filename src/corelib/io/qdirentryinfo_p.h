@@ -236,6 +236,22 @@ public:
             [](const QFileInfo &fileInfo) {return fileInfo.isSymbolicLink(); });
     }
 
+    bool isJunction() {
+        return query(
+            [](Native &native) {
+                return native.ensureFilled(QFileSystemMetaData::LinkType).isJunction();
+            },
+            [](const QFileInfo &fileInfo) { return fileInfo.isJunction(); });
+    }
+
+    QString junctionTarget() {
+        return query(
+            [](Native &native) {
+                return QFileSystemEngine::getJunctionTarget(native.entry, native.metaData).filePath();
+            },
+            [](const QFileInfo &fileInfo) { return fileInfo.junctionTarget(); });
+    }
+
     bool exists() {
         return query(
             [](Native &native) {

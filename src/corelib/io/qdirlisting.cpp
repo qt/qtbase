@@ -288,6 +288,11 @@ void QDirListingPrivate::pushDirectory(QDirEntryInfo &entryInfo)
         if (followSymlinks && d->visitedLinks.hasSeen(entryInfo.canonicalFilePath()))
             return;
 
+#ifdef Q_OS_WIN
+        if (entryInfo.isJunction() && d->visitedLinks.hasSeen(entryInfo.junctionTarget()))
+            return;
+#endif
+
         d->engine->setFileName(path);
         if (auto it = d->engine->beginEntryList(path, iteratorFlags, nameFilters)) {
             d->iterators.push(std::move(it));
@@ -310,6 +315,14 @@ void QDirListingPrivate::pushDirectory(QDirEntryInfo &entryInfo)
             if (id.isValid() && d->visitedLinks.hasSeen(id))
                 return;
         }
+
+#ifdef Q_OS_WIN
+        if (entryInfo.isJunction()) {
+            QFileSystemNativeId id = it->nativeId();
+            if (id.isValid() && d->visitedLinks.hasSeen(id))
+                return;
+        }
+#endif
 
         d->iterators.push(std::move(it));
 #endif
