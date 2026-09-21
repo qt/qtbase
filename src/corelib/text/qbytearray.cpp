@@ -3650,21 +3650,7 @@ QByteArrayView QtPrivate::trimmed(QByteArrayView view) noexcept
 
 QByteArray QByteArray::leftJustified(qsizetype width, char fill, bool truncate) const
 {
-    QByteArray result;
-    qsizetype len = size();
-    qsizetype padlen = width - len;
-    if (padlen > 0) {
-        result.resize(len+padlen);
-        if (len)
-            memcpy(result.d.data(), data(), len);
-        memset(result.d.data()+len, fill, padlen);
-    } else {
-        if (truncate)
-            result = left(width);
-        else
-            result = *this;
-    }
-    return result;
+    return QStringAlgorithms<QByteArray>::aligned(*this, width, fill, Qt::AlignLeft, truncate);
 }
 
 /*!
@@ -3687,21 +3673,7 @@ QByteArray QByteArray::leftJustified(qsizetype width, char fill, bool truncate) 
 
 QByteArray QByteArray::rightJustified(qsizetype width, char fill, bool truncate) const
 {
-    QByteArray result;
-    qsizetype len = size();
-    qsizetype padlen = width - len;
-    if (padlen > 0) {
-        result.resize(len+padlen);
-        if (len)
-            memcpy(result.d.data()+padlen, data(), len);
-        memset(result.d.data(), fill, padlen);
-    } else {
-        if (truncate)
-            result = left(width);
-        else
-            result = *this;
-    }
-    return result;
+    return QStringAlgorithms<QByteArray>::aligned(*this, width, fill, Qt::AlignRight, truncate);
 }
 
 auto QtPrivate::toSignedInteger(QByteArrayView data, int base) -> ParsedNumber<qlonglong>
