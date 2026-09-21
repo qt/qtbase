@@ -95,6 +95,29 @@ class QList
     template <typename InputIterator>
     using if_input_iterator = QtPrivate::IfIsInputIterator<InputIterator>;
 
+    template <typename InputIterator> explicit
+    QList(InputIterator i1, InputIterator i2, std::input_iterator_tag)
+    {
+        std::copy(i1, i2, std::back_inserter(*this));
+    }
+
+    template <typename ForwardIterator> explicit
+    QList(ForwardIterator i1, ForwardIterator i2, std::forward_iterator_tag)
+        : d(std::distance(i1, i2))
+    {
+        if (i1 != i2) {
+            // appendIteratorRange can deal with contiguous iterators on its own,
+            // this is an optimization for C++17 code.
+            Q_CHECK_PTR(d.data());
+            if constexpr (std::is_same_v<std::decay_t<ForwardIterator>, iterator> ||
+                          std::is_same_v<std::decay_t<ForwardIterator>, const_iterator>) {
+                d->copyAppend(i1.i, i2.i);
+            } else {
+                d->appendIteratorRange(i1, i2);
+            }
+        }
+    }
+
 public:
     using Type = T;
     using value_type = T;
@@ -333,24 +356,8 @@ public:
 
     template <typename InputIterator, if_input_iterator<InputIterator> = true>
     QList(InputIterator i1, InputIterator i2)
+        : QList(i1, i2, typename std::iterator_traits<InputIterator>::iterator_category{})
     {
-        if constexpr (!std::is_convertible_v<typename std::iterator_traits<InputIterator>::iterator_category, std::forward_iterator_tag>) {
-            std::copy(i1, i2, std::back_inserter(*this));
-        } else {
-            const auto distance = std::distance(i1, i2);
-            if (distance) {
-                d = DataPointer(qsizetype(distance));
-                Q_CHECK_PTR(d.data());
-                // appendIteratorRange can deal with contiguous iterators on its own,
-                // this is an optimization for C++17 code.
-                if constexpr (std::is_same_v<std::decay_t<InputIterator>, iterator> ||
-                              std::is_same_v<std::decay_t<InputIterator>, const_iterator>) {
-                    d->copyAppend(i1.i, i2.i);
-                } else {
-                    d->appendIteratorRange(i1, i2);
-               }
-            }
-        }
     }
 
     // This constructor is here for compatibility with QStringList in Qt 5, that has a QStringList(const QString &) constructor
