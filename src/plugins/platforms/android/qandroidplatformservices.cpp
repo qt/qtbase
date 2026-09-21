@@ -13,6 +13,9 @@
 #include <QtCore/QJniObject>
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qscopedvaluerollback.h>
+
+#include <algorithm>
+#include <utility>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -100,43 +103,43 @@ bool QAndroidPlatformServices::openURL(const QString &url) const
             getMimeOfUrl(url));
 }
 
+// Qt's provider is the fallback, so an application's own is tried first.
+static QStringList reorderApplicationProvidersFirst(QStringList authorities)
+{
+    std::stable_partition(authorities.begin(), authorities.end(), [](const QString &authority) {
+        return !authority.endsWith(s_defaultProvider);
+    });
+    return authorities;
+}
+
 bool QAndroidPlatformServices::openUrlWithFileProvider(const QUrl &url)
 {
     const QJniObject context = QNativeInterface::QAndroidApplication::context();
-    auto authorities = getFileProviderAuthorities(context);
+    const QStringList authorities =
+            reorderApplicationProvidersFirst(getFileProviderAuthorities(context));
     if (authorities.isEmpty())
         return false;
-    return openUrlWithAuthority(url, getAdequateFileproviderAuthority(authorities));
-}
 
-
-QString QAndroidPlatformServices::getAdequateFileproviderAuthority(const QStringList &authorities) const
-{
-    if (authorities.size() == 1)
-        return authorities[0];
-
-    QString nonQtAuthority;
-    for (const auto &authority : authorities) {
-        if (!authority.endsWith(s_defaultProvider, Qt::CaseSensitive)) {
-            nonQtAuthority = authority;
-            break;
-        }
+    // Only getUriForFile() knows which provider covers a file, so try each.
+    for (const QString &authority : authorities) {
+        const QJniObject uri = fileProviderUri(url, authority);
+        if (uri.isValid())
+            return openURL(uri.toString());
     }
-    return nonQtAuthority;
+    return false;
 }
 
-bool QAndroidPlatformServices::openUrlWithAuthority(const QUrl &url, const QString &authority)
+QJniObject QAndroidPlatformServices::fileProviderUri(const QUrl &url,
+                                                     const QString &authority) const
 {
     const auto urlPath = QJniObject::fromString(url.path());
     const auto urlFile = QJniObject(Traits<File>::className(),
                                     urlPath.object<jstring>());
-    const auto fileProviderUri = QJniObject::callStaticMethod<Uri>(
+    // Throws if no root covers the file, surfacing here as an invalid object.
+    return QJniObject::callStaticMethod<Uri>(
             Traits<FileProvider>::className(), "getUriForFile",
             QNativeInterface::QAndroidApplication::context(), authority,
             urlFile.object<File>());
-    if (fileProviderUri.isValid())
-        return openURL(fileProviderUri.toString());
-    return false;
 }
 
 QStringList QAndroidPlatformServices::getFileProviderAuthorities(const QJniObject &context) const

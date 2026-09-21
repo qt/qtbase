@@ -8,6 +8,7 @@
 #include <qpa/qplatformservices.h>
 #include "androidjnimain.h"
 #include <QtCore/private/qjnihelpers_p.h>
+#include <QtCore/qjniobject.h>
 #include <QtCore/qobject.h>
 #include <QUrl>
 
@@ -33,11 +34,10 @@ private:
     bool openURL(const QUrl &url) const;
     bool openURL(const QString &url) const;
     bool openUrlWithFileProvider(const QUrl &url);
-    bool openUrlWithAuthority(const QUrl &url, const QString &authority);
+    QJniObject fileProviderUri(const QUrl &url, const QString &authority) const;
 
     QString getMimeOfUrl(const QUrl &url) const;
     QStringList getFileProviderAuthorities(const QJniObject &context) const;
-    QString getAdequateFileproviderAuthority(const QStringList &authorities) const;
 
 private:
     QUrl m_handlingUrl;
