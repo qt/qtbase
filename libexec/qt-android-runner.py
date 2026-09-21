@@ -4,6 +4,7 @@
 
 import atexit
 import os
+import re
 import shlex
 import shutil
 import subprocess
@@ -23,6 +24,19 @@ def error(msg):
 def die(msg):
     error(msg)
     sys.exit(1)
+
+# Check what the device reports before it reaches a command line.
+TIMESTAMP_PATTERN = re.compile(r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}$")
+
+def checked_timestamp(value):
+    if not TIMESTAMP_PATTERN.match(value):
+        die(f"The device reported a malformed timestamp: {value!r}")
+    return value
+
+def checked_pid(value):
+    if not value.isdigit():
+        die(f"The device reported a malformed pid: {value!r}")
+    return value
 
 # Define and parse arguments
 parser = argparse.ArgumentParser(description="Qt for Android app runner.",
@@ -65,7 +79,7 @@ if not adb:
 
 try:
     devices = []
-    output = subprocess.check_output(f"{adb} devices", shell=True).decode().strip()
+    output = subprocess.check_output([adb, "devices"]).decode().strip()
     for line in output.splitlines():
         if '\tdevice' in line:
             serial = line.split('\t')[0]
@@ -78,12 +92,9 @@ try:
 except Exception as e:
     die(f"Failed to check for running devices, received error: {e}")
 
-# Keep both forms: adb_argv for subprocess.run(list) calls below, and a
-# shlex-joined string so the existing f-string shell=True usages still work.
 adb_argv = [adb]
 if args.serial:
     adb_argv += ["-s", args.serial]
-adb = shlex.join(adb_argv)
 
 if args.build_path is None:
     die("App build path is not provided")
@@ -91,7 +102,7 @@ if args.build_path is None:
 if args.apk and args.install:
     status(f"Installing the app APK {args.apk}")
     try:
-        subprocess.run(f"{adb} install \"{args.apk}\"", check=True, shell=True)
+        subprocess.run([*adb_argv, "install", args.apk], check=True)
     except Exception as e:
         error(f"Failed to install the APK, received error: {e}")
 
@@ -226,8 +237,9 @@ if remaining_args:
 # Get formatted time from device
 start_timestamp = ""
 try:
-    start_timestamp = subprocess.check_output(f"{adb} shell \"date +'%Y-%m-%d %H:%M:%S.%3N'\"",
-                                              shell=True).decode().strip()
+    date_command = "date +'%Y-%m-%d %H:%M:%S.%3N'"
+    start_timestamp = checked_timestamp(
+        subprocess.check_output([*adb_argv, "shell", date_command]).decode().strip())
 except Exception as e:
     die(f"Failed to get formatted time from the device, received error: {e}")
 
@@ -237,6 +249,7 @@ except Exception as e:
     die(f"Failed to start the app {package_name}, received error: {e}")
 
 # Wait for the app to start and retrieve its pid
+pidof_cmd = [*adb_argv, "shell", "pidof", shlex.quote(package_name)]
 start_timeout = 5
 time_limit = time.time() + start_timeout
 pid = None
@@ -245,8 +258,8 @@ while pid is None:
         die(f"Couldn't retrieve the app's PID within {start_timeout} seconds")
     time.sleep(0.5)
     try:
-        pidof_output = subprocess.check_output(f"{adb} shell pidof {package_name}", shell=True)
-        pid = pidof_output.decode().strip().split()[0]
+        pidof_output = subprocess.check_output(pidof_cmd)
+        pid = checked_pid(pidof_output.decode().strip().split()[0])
     except subprocess.CalledProcessError:
         continue
 
@@ -265,12 +278,13 @@ signal.signal(signal.SIGINT, terminate_app)
 logcat_process = None
 try:
     format_arg = "-v brief -v color"
-    time_arg = f"-T '{start_timestamp}'"
+    time_arg = f"-T {shlex.quote(start_timestamp)}"
     # escape char and color followed with fatal tag
     fatal_regex = "-e $'^\x1b\\[[0-9]*mF/'"
     pid_regex = f"-e '([ ]*{pid}):'"
-    logcat_cmd = f"{adb} shell \"logcat {time_arg} {format_arg} | grep {pid_regex} {fatal_regex}\""
-    logcat_process = subprocess.Popen(logcat_cmd, shell=True)
+    # The pipe runs on the device, so pass the pipeline as one adb argument.
+    logcat_cmd = f"logcat {time_arg} {format_arg} | grep {pid_regex} {fatal_regex}"
+    logcat_process = subprocess.Popen([*adb_argv, "shell", logcat_cmd])
 except Exception as e:
     die(f"Failed to get logcat for the app {package_name}, received error: {e}")
 
@@ -279,9 +293,8 @@ try:
     while not interrupted:
         time.sleep(1)
         try:
-            pidof_output = subprocess.check_output(f"{adb} shell pidof {package_name}", shell=True)
-            pid = pidof_output.decode().strip()
-            if not pid:
+            pidof_output = subprocess.check_output(pidof_cmd)
+            if not pidof_output.decode().strip():
                 status(f"The app \"{package_name}\" has exited")
                 break
         except subprocess.CalledProcessError:
@@ -293,7 +306,8 @@ finally:
 
 if interrupted:
     try:
-        subprocess.Popen(f"{adb} shell am force-stop {package_name}", shell=True)
+        subprocess.Popen([*adb_argv, "shell", "am", "force-stop",
+                          shlex.quote(package_name)])
         status(f"The app \"{package_name}\" with {pid} has been terminated")
     except Exception as e:
         error(f"Failed to terminate the app {package_name}, received error: {e}")
