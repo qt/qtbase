@@ -607,21 +607,21 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
     static native boolean isTabletEventSupported();
     static native void tabletEvent(int winId, int deviceId, long time, int action,
                                           int pointerType, int buttonState, float x, float y,
-                                          float pressure);
+                                          float pressure, int metaState);
     // tablet methods
 
     // pointer methods
-    static native void mouseDown(int winId, int x, int y, int mouseButtonState);
-    static native void mouseUp(int winId, int x, int y, int mouseButtonState);
-    static native void mouseMove(int winId, int x, int y, int mouseButtonState);
-    static native void mouseWheel(int winId, int x, int y, float hDelta, float vDelta);
+    static native void mouseDown(int winId, int x, int y, int mouseButtonState, int metaState);
+    static native void mouseUp(int winId, int x, int y, int mouseButtonState, int metaState);
+    static native void mouseMove(int winId, int x, int y, int mouseButtonState, int metaState);
+    static native void mouseWheel(int winId, int x, int y, float hDelta, float vDelta, int metaState);
     static native void touchBegin(int winId);
     static native void touchAdd(int winId, int pointerId, int action, boolean primary,
                                        int x, int y, float major, float minor, float rotation,
                                        float pressure);
-    static native void touchEnd(int winId, int action);
-    static native void touchCancel(int winId);
-    static native void longPress(int winId, int x, int y);
+    static native void touchEnd(int winId, int action, int metaState);
+    static native void touchCancel(int winId, int metaState);
+    static native void longPress(int winId, int x, int y, int metaState);
     // pointer methods
 
     static private int getAction(int index, MotionEvent event)
@@ -672,7 +672,8 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
         } else if (m_tabletEventSupported && pointerType != 0) {
             tabletEvent(id, event.getDeviceId(), event.getEventTime(), event.getActionMasked(),
                     pointerType, event.getButtonState(),
-                    event.getX(), event.getY(), event.getPressure());
+                    event.getX(), event.getY(), event.getPressure(),
+                    event.getMetaState());
         } else {
             touchBegin(id);
             for (int i = 0; i < event.getPointerCount(); ++i) {
@@ -690,19 +691,19 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
 
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
-                    touchEnd(id, 0);
+                    touchEnd(id, 0, event.getMetaState());
                     break;
 
                 case MotionEvent.ACTION_UP:
-                    touchEnd(id, 2);
+                    touchEnd(id, 2, event.getMetaState());
                     break;
 
                 case MotionEvent.ACTION_CANCEL:
-                    touchCancel(id);
+                    touchCancel(id, event.getMetaState());
                     break;
 
                 default:
-                    touchEnd(id, 1);
+                    touchEnd(id, 1, event.getMetaState());
             }
         }
     }
@@ -728,23 +729,27 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
     {
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_UP:
-                mouseUp(id, (int) event.getX(), (int) event.getY(), event.getButtonState());
+                mouseUp(id, (int) event.getX(), (int) event.getY(), event.getButtonState(),
+                        event.getMetaState());
                 break;
 
             case MotionEvent.ACTION_DOWN:
-                mouseDown(id, (int) event.getX(), (int) event.getY(), event.getButtonState());
+                mouseDown(id, (int) event.getX(), (int) event.getY(), event.getButtonState(),
+                          event.getMetaState());
                 m_oldX = (int) event.getX();
                 m_oldY = (int) event.getY();
                 break;
             case MotionEvent.ACTION_HOVER_MOVE:
             case MotionEvent.ACTION_MOVE:
                 if (event.getToolType(0) == MotionEvent.TOOL_TYPE_MOUSE) {
-                    mouseMove(id, (int) event.getX(), (int) event.getY(), event.getButtonState());
+                    mouseMove(id, (int) event.getX(), (int) event.getY(), event.getButtonState(),
+                              event.getMetaState());
                 } else {
                     int dx = (int) (event.getX() - m_oldX);
                     int dy = (int) (event.getY() - m_oldY);
                     if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
-                        mouseMove(id, (int) event.getX(), (int) event.getY(), event.getButtonState());
+                        mouseMove(id, (int) event.getX(), (int) event.getY(), event.getButtonState(),
+                                  event.getMetaState());
                         m_oldX = (int) event.getX();
                         m_oldY = (int) event.getY();
                     }
@@ -753,7 +758,8 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
             case MotionEvent.ACTION_SCROLL:
                 mouseWheel(id, (int) event.getX(), (int) event.getY(),
                         event.getAxisValue(MotionEvent.AXIS_HSCROLL),
-                        event.getAxisValue(MotionEvent.AXIS_VSCROLL));
+                        event.getAxisValue(MotionEvent.AXIS_VSCROLL),
+                        event.getMetaState());
                 break;
             default:
                 return false;

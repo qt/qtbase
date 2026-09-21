@@ -78,7 +78,8 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
                 new GestureDetector(context, new GestureDetector.SimpleOnGestureListener() {
                     @Override
                     public void onLongPress(MotionEvent event) {
-                        QtInputDelegate.longPress(getId(), (int) event.getX(), (int) event.getY());
+                        QtInputDelegate.longPress(getId(), (int) event.getX(), (int) event.getY(),
+                                                  event.getMetaState());
                     }
                 });
             m_gestureDetector.setIsLongpressEnabled(true);
