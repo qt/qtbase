@@ -6319,9 +6319,26 @@ void QString::chop(qsizetype n)
 }
 
 /*!
-    Sets every character in the string to character \a ch. If \a size
-    is different from -1 (default), the string is resized to \a
-    size beforehand.
+    Sets every character in the string to character \a ch.
+
+    Example:
+
+    \snippet qstring/main.cpp fill
+
+    \sa resize()
+*/
+QString& QString::fill(QChar ch)
+{
+    QChar *ptr = begin();
+    std::fill_n(ptr, size(), ch.unicode());
+    return *this;
+}
+
+/*!
+    \overload
+    Sets every character in the string to character \a ch. If \a size is
+    negative, the string's current size is retained; otherwise, the string is
+    resized to size \a size beforehand.
 
     Example:
 
@@ -6332,10 +6349,9 @@ void QString::chop(qsizetype n)
 
 QString& QString::fill(QChar ch, qsizetype size)
 {
-    resize(size < 0 ? d.size : size);
-    if (d.size)
-        std::fill(d.data(), d.data() + d.size, ch.unicode());
-    return *this;
+    if (size >= 0)
+        resizeForOverwrite(size);
+    return fill(ch);
 }
 
 /*!

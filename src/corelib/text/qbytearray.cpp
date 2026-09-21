@@ -1904,8 +1904,25 @@ void QByteArray::resizeForOverwrite(qsizetype size)
 }
 
 /*!
-    Sets every byte in the byte array to \a ch. If \a size is different from -1
-    (the default), the byte array is resized to size \a size beforehand.
+    Sets every byte in the byte array to \a ch.
+
+    Example:
+    \snippet code/src_corelib_text_qbytearray.cpp fill
+
+    \sa resize()
+*/
+QByteArray &QByteArray::fill(char ch)
+{
+    if (size())
+        memset(begin(), ch, size());
+    return *this;
+}
+
+/*!
+    \overload
+    Sets every byte in the byte array to \a ch. If \a size is negative, the
+    byte array's current size is retained; otherwise, the byte array is resized
+    to size \a size beforehand.
 
     Example:
     \snippet code/src_corelib_text_qbytearray.cpp 14
@@ -1915,10 +1932,9 @@ void QByteArray::resizeForOverwrite(qsizetype size)
 
 QByteArray &QByteArray::fill(char ch, qsizetype size)
 {
-    resize(size < 0 ? this->size() : size);
-    if (this->size())
-        memset(d.data(), ch, this->size());
-    return *this;
+    if (size >= 0)
+        resizeForOverwrite(size);
+    return fill(ch);
 }
 
 void QByteArray::reallocData(qsizetype alloc, QArrayData::AllocationOption option)

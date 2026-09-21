@@ -332,14 +332,20 @@ void Widget::endsWithFunction()
 
 void Widget::fillFunction()
 {
-    //! [21]
+    {
+    //! [fill]
     QString str = "Berlin";
     str.fill('z');
     // str == "zzzzzz"
-
+    //! [fill]
+    }
+    {
+    //! [21]
+    QString str = "Berlin";
     str.fill('A', 2);
     // str == "AA"
     //! [21]
+    }
 }
 
 void Widget::fromRawDataFunction()

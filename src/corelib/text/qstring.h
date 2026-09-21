@@ -290,7 +290,8 @@ public:
     void resize(qsizetype size, QChar fillChar);
     void resizeForOverwrite(qsizetype size);
 
-    QString &fill(QChar c, qsizetype size = -1);
+    QString &fill(QChar ch);
+    QString &fill(QChar c, qsizetype size);
     void truncate(qsizetype pos);
     void chop(qsizetype n);
 
@@ -608,8 +609,9 @@ public:
     QString &assign(QAnyStringView s);
     inline QString &assign(qsizetype n, QChar c)
     {
-        Q_ASSERT(n >= 0);
-        return fill(c, n);
+        Q_PRE(n >= 0);
+        resizeForOverwrite(n);
+        return fill(c);
     }
     template <typename InputIterator, if_compatible_iterator<InputIterator> = true>
     QString &assign(InputIterator first, InputIterator last)

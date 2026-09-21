@@ -112,7 +112,8 @@ public:
     void resize(qsizetype size, char c);
     void resizeForOverwrite(qsizetype size);
 
-    QByteArray &fill(char c, qsizetype size = -1);
+    QByteArray &fill(char ch);
+    QByteArray &fill(char c, qsizetype size);
 
     inline qsizetype capacity() const;
     inline void reserve(qsizetype size);
@@ -321,8 +322,9 @@ public:
     QByteArray &assign(QByteArrayView v);
     QByteArray &assign(qsizetype n, char c)
     {
-        Q_ASSERT(n >= 0);
-        return fill(c, n);
+        Q_PRE(n >= 0);
+        resizeForOverwrite(n);
+        return fill(c);
     }
     template <typename InputIterator, if_input_iterator<InputIterator> = true>
     QByteArray &assign(InputIterator first, InputIterator last)

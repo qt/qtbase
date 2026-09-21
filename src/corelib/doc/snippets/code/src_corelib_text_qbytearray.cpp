@@ -142,11 +142,15 @@ void wrapInFunction()
     }
 
     {
-        //! [14]
+        //! [fill]
         QByteArray ba("Istambul");
         ba.fill('o');
         // ba == "oooooooo"
-
+        //! [fill]
+    }
+    {
+        //! [14]
+        QByteArray ba("Istambul");
         ba.fill('X', 2);
         // ba == "XX"
         //! [14]
