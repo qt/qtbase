@@ -316,7 +316,7 @@ abstract class QtLoader {
                         + "deployment. It may be necessary to specify the path to "
                         + "the directory where Qt libraries are installed using either "
                         + "android.app.system_libs_prefix metadata variable in your "
-                        + "AndroidManifest.xml or QT_ANDROID_SYSTEM_LIBS_PATH in your "
+                        + "AndroidManifest.xml or QT_ANDROID_SYSTEM_LIBS_PREFIX in your "
                         + "CMakeLists.txt");
             }
 
