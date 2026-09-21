@@ -295,6 +295,10 @@ static const int closeButtonSize = 14;
 static const qreal closeButtonCornerRadius = 2.0;
 #endif // QT_CONFIG(tabbar)
 
+// Geometry of the bezel an NSTextField draws with Liquid Glass. The same
+// values apply to all control sizes.
+static const qreal textFieldBezelCornerRadius = 4.0;
+
 #if QT_CONFIG(accessibility) // This ifdef to avoid "unused function" warning.
 QBrush brushForToolButton(bool isOnKeyWindow)
 {
@@ -307,7 +311,6 @@ QBrush brushForToolButton(bool isOnKeyWindow)
     return isOnKeyWindow ? QColor(0, 0, 0, 28) : QColor(0, 0, 0, 21);
 }
 #endif // QT_CONFIG(accessibility)
-
 
 static const int headerSectionArrowHeight = 6;
 static const int headerSectionSeparatorInset = 2;
@@ -1260,13 +1263,20 @@ void QMacStylePrivate::drawFocusRing(QPainter *p, const QRectF &targetRect, int 
     case SegmentedControl_Middle:
     case TextField: {
         auto innerRect = targetRect;
+        qreal innerRadius = 0.0;
         if (cw.type == Button_SquareButton)
             innerRect = cw.adjustedControlFrame(targetRect.adjusted(hMargin, vMargin, -hMargin, -vMargin));
-        if (cw.type == TextField)
+        if (cw.type == TextField) {
             innerRect = innerRect.adjusted(hMargin, vMargin, -hMargin, -vMargin).adjusted(0.5, 0.5, -0.5, -0.5);
+            if (qt_apple_runningWithLiquidGlass())
+                innerRadius = textFieldBezelCornerRadius - 0.5;
+        }
         const auto outerRect = innerRect.adjusted(-focusRingWidth, -focusRingWidth, focusRingWidth, focusRingWidth);
-        const auto outerRadius = focusRingWidth;
-        focusRingPath.addRect(innerRect);
+        const auto outerRadius = innerRadius + focusRingWidth;
+        if (innerRadius > 0.0)
+            focusRingPath.addRoundedRect(innerRect, innerRadius, innerRadius);
+        else
+            focusRingPath.addRect(innerRect);
         focusRingPath.addRoundedRect(outerRect, outerRadius, outerRadius);
         break;
     }
