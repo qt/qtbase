@@ -838,7 +838,7 @@ public:
             if (m_commandLineArgs->isFramework()) {
                 for (const auto &header : m_publicHeaders) {
                     if (!generateForwardingHeader(m_commandLineArgs->stagingDir() + '/' + header,
-                                                  header, /*useIncludeNext=*/true)) {
+                                                  header, /*frameworkForwarder=*/true)) {
                         error = SyncFailed;
                     }
                 }
@@ -1647,7 +1647,7 @@ public:
 
     [[nodiscard]] bool generateForwardingHeader(const std::string &outputFilePath,
                                                 const std::string &aliasedFilePath,
-                                                bool useIncludeNext = false);
+                                                bool frameworkForwarder = false);
 
     [[nodiscard]] bool generateAliasedHeaderFileIfTimestampChanged(
             const std::string &outputFilePath, const std::string &aliasedFilePath,
@@ -1865,16 +1865,9 @@ bool SyncScanner::updateOrCopy(const std::filesystem::path &src,
 
 // The function generates a forwarding header at outputFilePath that includes aliasedFilePath
 // from the current module (that is, <Module/aliasedFilePath>).
-//
-// With useIncludeNext the forwarder uses #include_next instead of a plain #include. This is
-// needed when the forwarder itself is found under the same spelling as it forwards to,
-// as is the case for the lowercase framework forwarders that re-expose a framework's own
-// headers via a plain include path: a plain #include would resolve back to the forwarder
-// itself and recurse, whereas #include_next continues the include search past the forwarder
-// into the framework.
 bool SyncScanner::generateForwardingHeader(const std::string &outputFilePath,
                                            const std::string &aliasedFilePath,
-                                           bool useIncludeNext)
+                                           bool frameworkForwarder)
 {
     if (m_commandLineArgs->showOnly())
         return true;
@@ -1885,15 +1878,27 @@ bool SyncScanner::generateForwardingHeader(const std::string &outputFilePath,
         return false;
     }
 
-    std::string buffer;
-    if (useIncludeNext)
-        buffer += "#include_next <";
-    else
-        buffer += "#include <";
+    const std::string include = "<"
+        + m_commandLineArgs->moduleName() + "/" + aliasedFilePath
+        + ">";
 
-    buffer += m_commandLineArgs->moduleName() + "/";
-    buffer += aliasedFilePath;
-    buffer += "> // IWYU pragma: export\n";
+    std::string buffer;
+    if (frameworkForwarder) {
+        // We're forwarding from include/QtFoo/qfoo.h into the framework,
+        // based on someone including <qfoo.h>. But we can't guarantee that
+        // the framework path comes after the forwarding-path in the build
+        // flags, nor its relation to a possible naked Qt include/ path in
+        // the build flags. So we play it safe, and try to first include the
+        // framework header via the remaining include paths, and otherwise
+        // restart the header lookup from the start of the include paths.
+        buffer += "#if __has_include_next(" + include + ")\n";
+        buffer += "#  include_next " + include + " // IWYU pragma: export\n";
+        buffer += "#else\n";
+        buffer += "#  include " + include + " // IWYU pragma: export\n";
+        buffer += "#endif\n";
+    } else {
+        buffer += "#include " + include + " // IWYU pragma: export\n";
+    }
 
     return writeIfDifferent(outputFilePath, buffer);
 }

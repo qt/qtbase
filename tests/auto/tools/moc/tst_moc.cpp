@@ -864,6 +864,7 @@ private slots:
     void includeNextFeatureGuard();
     void includeNextInPrimarySourceFile();
     void includeNextRelativeForwarder();
+    void includeNextFramework_data();
     void includeNextFramework();
     void hasIncludeNext();
     void cstyleEnums();
@@ -1894,22 +1895,44 @@ void tst_Moc::includeNextRelativeForwarder()
 #endif
 }
 
+void tst_Moc::includeNextFramework_data()
+{
+    QTest::addColumn<QStringList>("includeArgs");
+
+    const QString forwarder = m_sourceDirectory + QStringLiteral("/include-next/forwarder");
+
+    // The Qt framework build reaches a bare <qfoo.h> through a forwarder in a
+    // plain -I directory that redirects to <QtFoo/qfoo.h>. The forwarder must
+    // land on the framework header whether the framework path comes before or
+    // after it, since we can't control where the build system puts it.
+
+    // Framework path after the forwarder: __has_include_next finds the framework
+    // and #include_next continues into it. moc always appends -F paths after -I
+    // paths, so a -F framework only ever exercises this ordering.
+    QTest::newRow("framework after forwarder")
+        << (QStringList() << "-I" << forwarder << "-F" << m_sourceDirectory);
+
+    // Framework path before the forwarder: __has_include_next fails, so the
+    // forwarder falls back to a plain #include that restarts the search and
+    // reaches the framework ahead of it. Only -I $DIR/Test.framework can put the
+    // framework first, since moc keeps those in -I order; this is the ordering
+    // CMake's AUTOMOC produces.
+    QTest::newRow("framework before forwarder")
+        << (QStringList() << "-I" << m_sourceDirectory + QStringLiteral("/Test.framework")
+                          << "-I" << forwarder);
+}
+
 void tst_Moc::includeNextFramework()
 {
 #ifdef MOC_CROSS_COMPILED
     QSKIP("Not tested when cross-compiled");
 #endif
 #if defined(Q_OS_DARWIN) && QT_CONFIG(process)
-    // The Qt framework build reaches a bare <qfoo.h> through a forwarder in a
-    // plain -I directory that does #include_next <QtFoo/qfoo.h>, continuing into
-    // the -F framework path. moc appends -F paths after -I paths, so the
-    // forwarder is always found first; #include_next must continue into the
-    // framework.
+    QFETCH(QStringList, includeArgs);
+
     const QString base = m_sourceDirectory + QStringLiteral("/include-next");
     QStringList args;
-    args << "-E"
-         << "-I" << base + QStringLiteral("/forwarder")
-         << "-F" << m_sourceDirectory
+    args << "-E" << includeArgs
          << base + QStringLiteral("/framework-consumer.h");
 
     QProcess proc;
