@@ -211,6 +211,18 @@ static inline QD3D12RenderTargetData *rtData(QRhiRenderTarget *rt)
     Q_UNREACHABLE_RETURN(nullptr);
 }
 
+static D3D12_MESSAGE_ID qd3d12_suppressed_messages[] = {
+    // there is no way of knowing the clear color upfront
+    D3D12_MESSAGE_ID_CLEARRENDERTARGETVIEW_MISMATCHINGCLEARVALUE,
+    // same for the depth-stencil clear values
+    D3D12_MESSAGE_ID_CLEARDEPTHSTENCILVIEW_MISMATCHINGCLEARVALUE,
+    // we have no control over viewport and scissor rects
+    D3D12_MESSAGE_ID_DRAW_EMPTY_SCISSOR_RECTANGLE,
+    // a miss in the pipeline library is perfectly normal, it just means the
+    // pipeline state has to be built now
+    D3D12_MESSAGE_ID_LOADPIPELINE_NAMENOTFOUND
+};
+
 #ifdef QRHI_D3D12_INFOQUEUE1_AVAILABLE
 static void __stdcall qd3d12_message_callback(D3D12_MESSAGE_CATEGORY category,
                                               D3D12_MESSAGE_SEVERITY severity,
@@ -225,11 +237,9 @@ static void __stdcall qd3d12_message_callback(D3D12_MESSAGE_CATEGORY category,
     // filtering the storage filter does.
     if (severity == D3D12_MESSAGE_SEVERITY_INFO)
         return;
-    if (id == D3D12_MESSAGE_ID_CLEARRENDERTARGETVIEW_MISMATCHINGCLEARVALUE
-            || id == D3D12_MESSAGE_ID_CLEARDEPTHSTENCILVIEW_MISMATCHINGCLEARVALUE
-            || id == D3D12_MESSAGE_ID_DRAW_EMPTY_SCISSOR_RECTANGLE)
-    {
-        return;
+    for (D3D12_MESSAGE_ID suppressedId : qd3d12_suppressed_messages) {
+        if (id == suppressedId)
+            return;
     }
 
     // Called on the thread that made the offending call, from within the D3D12
@@ -395,16 +405,8 @@ bool QRhiD3D12::create(QRhi::Flags flags)
                 infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, true);
             }
             D3D12_INFO_QUEUE_FILTER filter = {};
-            D3D12_MESSAGE_ID suppressedMessages[3] = {
-                // there is no way of knowing the clear color upfront
-                D3D12_MESSAGE_ID_CLEARRENDERTARGETVIEW_MISMATCHINGCLEARVALUE,
-                // same for the depth-stencil clear values
-                D3D12_MESSAGE_ID_CLEARDEPTHSTENCILVIEW_MISMATCHINGCLEARVALUE,
-                // we have no control over viewport and scissor rects
-                D3D12_MESSAGE_ID_DRAW_EMPTY_SCISSOR_RECTANGLE
-            };
-            filter.DenyList.NumIDs = 3;
-            filter.DenyList.pIDList = suppressedMessages;
+            filter.DenyList.NumIDs = UINT(std::size(qd3d12_suppressed_messages));
+            filter.DenyList.pIDList = qd3d12_suppressed_messages;
             // Setting the filter would enable Info messages (e.g. about
             // resource creation) which we don't need.
             D3D12_MESSAGE_SEVERITY infoSev = D3D12_MESSAGE_SEVERITY_INFO;
