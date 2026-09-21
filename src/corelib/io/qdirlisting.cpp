@@ -288,6 +288,11 @@ void QDirListingPrivate::pushDirectory(QDirEntryInfo &entryInfo)
         if (followSymlinks && d->visitedLinks.hasSeen(entryInfo.canonicalFilePath()))
             return;
 
+#ifdef Q_OS_WIN
+        if (entryInfo.isJunction() && d->visitedLinks.hasSeen(entryInfo.junctionTarget()))
+            return;
+#endif
+
         d->engine->setFileName(path);
         if (auto it = d->engine->beginEntryList(path, iteratorFlags, nameFilters)) {
             d->iterators.push(std::move(it));
@@ -300,6 +305,11 @@ void QDirListingPrivate::pushDirectory(QDirEntryInfo &entryInfo)
         // Stop link loops
         if (followSymlinks && d->visitedLinks.hasSeen(entryInfo.canonicalFilePath()))
             return;
+
+#ifdef Q_OS_WIN
+        if (entryInfo.isJunction() && d->visitedLinks.hasSeen(entryInfo.junctionTarget()))
+            return;
+#endif
 
         d->iterators.push(std::make_unique<QFileSystemIterator>(
                 entryInfo.query(

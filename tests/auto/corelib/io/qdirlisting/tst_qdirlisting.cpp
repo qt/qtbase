@@ -72,6 +72,124 @@ private: // convenience functions
         return false;
     }
 
+    bool createJunction(const QString &destination, const QString &junction)
+    {
+#ifdef Q_OS_WIN
+        struct MountPointBuffer {
+            DWORD  ReparseTag;
+            WORD   ReparseDataLength;
+            WORD   Reserved;
+            WORD   SubstituteNameOffset;
+            WORD   SubstituteNameLength;
+            WORD   PrintNameOffset;
+            WORD   PrintNameLength;
+            WCHAR  PathBuffer[1];
+        };
+
+        const std::wstring base = QDir::toNativeSeparators(m_dataDir->path()).toStdWString();
+        const std::wstring dest = L"\\??\\" + base + L"\\" + QDir::toNativeSeparators(destination).toStdWString();
+        const std::wstring jnct = base + L"\\" + QDir::toNativeSeparators(junction).toStdWString();
+
+        // Create the directory that will become the junction
+        if (!CreateDirectoryW(jnct.c_str(), nullptr))
+            return false;
+
+        // The directory is created - add it to the list
+        createdDirectories.prepend(junction);
+
+        // Open it without following reparse points
+        HANDLE h = CreateFileW(jnct.c_str(),
+                               GENERIC_WRITE,
+                               FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                               nullptr,
+                               OPEN_EXISTING,
+                               FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS,
+                               nullptr);
+        if (h == INVALID_HANDLE_VALUE)
+            return false;
+
+        // Build the reparse data buffer
+        size_t subNameLen  = dest.size() * sizeof(WCHAR);   // no null terminator
+        size_t printNameLen = 0;                            // empty print name is fine
+        size_t bufSize = offsetof(MountPointBuffer, PathBuffer)
+                + subNameLen + sizeof(WCHAR)           // substitute name + null
+                + printNameLen + sizeof(WCHAR);        // print name + null
+
+        std::vector<char> buf(bufSize, 0);
+        auto* rdb = reinterpret_cast<MountPointBuffer*>(buf.data());
+
+        rdb->ReparseTag        = IO_REPARSE_TAG_MOUNT_POINT;
+        rdb->ReparseDataLength = static_cast<WORD>(bufSize - offsetof(MountPointBuffer, SubstituteNameOffset));
+        rdb->SubstituteNameOffset = 0;
+        rdb->SubstituteNameLength = static_cast<WORD>(subNameLen);
+        rdb->PrintNameOffset   = static_cast<WORD>(subNameLen + sizeof(WCHAR));
+        rdb->PrintNameLength   = 0;
+
+        memcpy(rdb->PathBuffer, dest.c_str(), subNameLen);
+        // null terminators already zeroed by vector constructor
+
+        DWORD bytesReturned = 0;
+        bool ok = DeviceIoControl(
+                h,
+                FSCTL_SET_REPARSE_POINT,
+                buf.data(), static_cast<DWORD>(bufSize),
+                nullptr, 0,
+                &bytesReturned,
+                nullptr
+                );
+        CloseHandle(h);
+        return ok;
+#else
+        Q_UNUSED(destination);
+        Q_UNUSED(junction);
+        return false;
+#endif
+    }
+
+    bool removeJunction(const QString &junction)
+    {
+#ifdef Q_OS_WIN
+        const std::wstring base = QDir::toNativeSeparators(m_dataDir->path()).toStdWString();
+        const std::wstring jnct = base + L"\\" + QDir::toNativeSeparators(junction).toStdWString();
+
+        // Open without following the reparse point
+        HANDLE h = CreateFileW(jnct.c_str(),
+                               GENERIC_WRITE,
+                               FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                               nullptr,
+                               OPEN_EXISTING,
+                               FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS,
+                               nullptr);
+        if (h == INVALID_HANDLE_VALUE)
+            return false;
+
+        // To delete a reparse point, DeviceIoControl with FSCTL_DELETE_REPARSE_POINT
+        // needs a REPARSE_GUID_DATA_BUFFER with just the tag set
+        REPARSE_GUID_DATA_BUFFER rdb = {};
+        rdb.ReparseTag = IO_REPARSE_TAG_MOUNT_POINT;
+
+        DWORD bytesReturned = 0;
+        bool ok = DeviceIoControl(
+                h,
+                FSCTL_DELETE_REPARSE_POINT,
+                &rdb, REPARSE_GUID_DATA_BUFFER_HEADER_SIZE,
+                nullptr, 0,
+                &bytesReturned,
+                nullptr
+                );
+        CloseHandle(h);
+
+        if (!ok)
+            return false;
+
+        // Now it's a plain empty directory
+        return RemoveDirectoryW(jnct.c_str());
+#else
+        Q_UNUSED(junction);
+        return false;
+#endif
+    }
+
 private slots:
     void initTestCase();
     void constructorsAndAssignment();
@@ -80,6 +198,7 @@ private slots:
     void iterateResource_data();
     void iterateResource();
     void stopLinkLoop();
+    void windowsJunctionLoop();
 #ifdef QT_BUILD_INTERNAL
     void engineWithNoIterator();
     void testQFsFileEngineIterator_data() { iterateRelativeDirectory_data(); }
@@ -643,6 +762,35 @@ void tst_QDirListing::stopLinkLoop()
     QCOMPARE_GT(max, 0);
 
     // The goal of this test is only to ensure that the test above don't malfunction
+}
+
+void tst_QDirListing::windowsJunctionLoop()
+{
+#ifdef Q_OS_WIN
+    createDirectory("junction");
+    createDirectory("junction/a");
+    createDirectory("junction/a/b");
+
+    if (!createJunction("junction/a", "junction/a/b/loop"))
+        QSKIP("Failed to create a junction point. The test will not work.");
+
+    auto guard = qScopeGuard([this]{ removeJunction("junction/a/b/loop"); });
+
+    QDirListing dirIter("junction", QDirListing::IteratorFlag::Recursive);
+    QList<QString> readEntries;
+    for (const auto &entry : dirIter)
+        readEntries.append(entry.filePath());
+
+    // We should stop when we saw the junction for the second time
+    const QList<QString> expectedEntries = { "junction/a",
+                                             "junction/a/b",
+                                             "junction/a/b/loop",
+                                             "junction/a/b/loop/b",
+                                             "junction/a/b/loop/b/loop" };
+    QCOMPARE_EQ(readEntries, expectedEntries);
+#else
+    QSKIP("This test is Windows-only.");
+#endif
 }
 
 #ifdef QT_BUILD_INTERNAL
