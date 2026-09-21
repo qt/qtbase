@@ -1,6 +1,6 @@
 // Copyright (C) 2021 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
-// Qt-Security score:significant reason:default
+// Qt-Security score:significant reason:trusted-data
 
 #include "qnetworkproxy.h"
 
@@ -38,6 +38,29 @@ ProxyInfoObject::~ProxyInfoObject()
     QtNetwork::callStaticMethod<void>("unregisterReceiver", QAndroidApplication::context());
 }
 
+// nonProxyHosts entries, as ignoreProxyFor() in qnetworkproxy_generic.cpp.
+static bool isExcluded(QStringView host, QStringView entry)
+{
+    QStringView token = entry.trimmed();
+    if (token.isEmpty())
+        return false;
+    if (token.size() == 1 && token.front() == u'*')
+        return true;
+
+    if (token.startsWith(u'*'))
+        token = token.sliced(1);
+    if (token.endsWith(u'.') && !host.endsWith(u'.'))
+        token = token.chopped(1);
+    if (token.startsWith(u'.'))
+        token = token.sliced(1);
+
+    if (token.isEmpty() || !host.endsWith(token, Qt::CaseInsensitive))
+        return false;
+
+    // Keep "example.com" from matching "notexample.com".
+    return (host.size() == token.size()) || (host[host.size() - token.size() - 1] == u'.');
+}
+
 QList<QNetworkProxy> QNetworkProxyFactory::systemProxyForQuery(const QNetworkProxyQuery &query)
 {
     QList<QNetworkProxy> proxyList;
@@ -50,9 +73,9 @@ QList<QNetworkProxy> QNetworkProxyFactory::systemProxyForQuery(const QNetworkPro
         const QJniArray exclusionList = proxyInfo.callMethod<String[]>("getExclusionList");
         bool exclude = false;
         if (exclusionList.isValid()) {
-            const QUrl host = QUrl(query.url().host());
+            const QString host = query.peerHostName();
             for (const auto &entry : exclusionList) {
-                if (host.matches(QUrl(entry.toString()), QUrl::RemoveScheme)) {
+                if (isExcluded(host, entry.toString())) {
                     exclude = true;
                     break;
                 }
