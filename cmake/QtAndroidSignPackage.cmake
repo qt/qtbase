@@ -35,14 +35,15 @@ if(type STREQUAL ".aab")
     set(digestalg "SHA-256")
     set(sigalg "SHA256withRSA")
 
+    # Name the variable so the password stays out of the process list.
     if(DEFINED ENV{QT_ANDROID_KEYSTORE_KEY_PASS})
-        set(keypass_arg -keypass "$ENV{QT_ANDROID_KEYSTORE_KEY_PASS}")
+        set(keypass_arg -keypass:env QT_ANDROID_KEYSTORE_KEY_PASS)
     else()
         set(keypass_arg "")
     endif()
 
     if(DEFINED ENV{QT_ANDROID_KEYSTORE_STORE_PASS})
-        set(storepass_arg -storepass "$ENV{QT_ANDROID_KEYSTORE_STORE_PASS}")
+        set(storepass_arg -storepass:env QT_ANDROID_KEYSTORE_STORE_PASS)
     else()
         set(storepass_arg "")
     endif()
@@ -78,11 +79,24 @@ elseif(type STREQUAL ".apk")
     execute_process(
         COMMAND "${ZIPALIGN_PATH}" -c 4 "${UNSIGNED_PACKAGE}")
 
+    # An undefined variable still means an empty password, as before.
+    if(DEFINED ENV{QT_ANDROID_KEYSTORE_STORE_PASS})
+        set(ks_pass_arg env:QT_ANDROID_KEYSTORE_STORE_PASS)
+    else()
+        set(ks_pass_arg "pass:")
+    endif()
+
+    if(DEFINED ENV{QT_ANDROID_KEYSTORE_KEY_PASS})
+        set(key_pass_arg env:QT_ANDROID_KEYSTORE_KEY_PASS)
+    else()
+        set(key_pass_arg "pass:")
+    endif()
+
     execute_process(
         COMMAND "${PROGRAM}" sign
             --ks "$ENV{QT_ANDROID_KEYSTORE_PATH}"
-            --ks-pass "pass:$ENV{QT_ANDROID_KEYSTORE_STORE_PASS}"
-            --key-pass "pass:$ENV{QT_ANDROID_KEYSTORE_KEY_PASS}"
+            --ks-pass "${ks_pass_arg}"
+            --key-pass "${key_pass_arg}"
             --ks-key-alias "$ENV{QT_ANDROID_KEYSTORE_ALIAS}"
             --out "${SIGNED_PACKAGE}" "${UNSIGNED_PACKAGE}"
         RESULT_VARIABLE sign_result
