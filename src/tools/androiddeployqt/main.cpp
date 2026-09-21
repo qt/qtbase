@@ -3371,6 +3371,39 @@ static QString zipalignPath(const Options &options, bool *ok)
     return zipAlignTool;
 }
 
+// Naming the variable keeps the password out of the process list.
+static constexpr auto storePasswordVariable = "QT_ANDROID_DEPLOY_STORE_PASS"_L1;
+static constexpr auto keyPasswordVariable = "QT_ANDROID_DEPLOY_KEY_PASS"_L1;
+
+class SignerPasswordEnvironment
+{
+public:
+    explicit SignerPasswordEnvironment(const Options &options)
+        : m_storeSet(!options.keyStorePassword.isEmpty()),
+          m_keySet(!options.keyPass.isEmpty())
+    {
+        if (m_storeSet)
+            qputenv(storePasswordVariable.data(), options.keyStorePassword.toLocal8Bit());
+        if (m_keySet)
+            qputenv(keyPasswordVariable.data(), options.keyPass.toLocal8Bit());
+    }
+
+    ~SignerPasswordEnvironment()
+    {
+        // Only clear what this set, so a pre-existing variable survives.
+        if (m_storeSet)
+            qunsetenv(storePasswordVariable.data());
+        if (m_keySet)
+            qunsetenv(keyPasswordVariable.data());
+    }
+
+    Q_DISABLE_COPY_MOVE(SignerPasswordEnvironment)
+
+private:
+    const bool m_storeSet;
+    const bool m_keySet;
+};
+
 bool signAAB(const Options &options)
 {
     if (options.verbose)
@@ -3396,13 +3429,13 @@ bool signAAB(const Options &options)
             .arg(shellQuote(jarSignerTool), shellQuote(options.sigAlg), shellQuote(options.digestAlg), shellQuote(options.keyStore));
 
     if (!options.keyStorePassword.isEmpty())
-        jarSignerTool += " -storepass %1"_L1.arg(shellQuote(options.keyStorePassword));
+        jarSignerTool += " -storepass:env %1"_L1.arg(storePasswordVariable);
 
     if (!options.storeType.isEmpty())
         jarSignerTool += " -storetype %1"_L1.arg(shellQuote(options.storeType));
 
     if (!options.keyPass.isEmpty())
-        jarSignerTool += " -keypass %1"_L1.arg(shellQuote(options.keyPass));
+        jarSignerTool += " -keypass:env %1"_L1.arg(keyPasswordVariable);
 
     if (!options.sigFile.isEmpty())
         jarSignerTool += " -sigfile %1"_L1.arg(shellQuote(options.sigFile));
@@ -3431,6 +3464,7 @@ bool signAAB(const Options &options)
         QString command = jarSignerTool + " %1 %2"_L1.arg(shellQuote(file))
                                                      .arg(shellQuote(options.keyStoreAlias));
 
+        const SignerPasswordEnvironment passwords(options);
         auto jarSignerCommand = openProcess(command);
         if (jarSignerCommand == 0) {
             fprintf(stderr, "Couldn't run jarsigner.\n");
@@ -3524,13 +3558,13 @@ bool signPackage(const Options &options)
             .arg(shellQuote(apksignerTool), shellQuote(options.keyStore));
 
     if (!options.keyStorePassword.isEmpty())
-        apkSignCommand += " --ks-pass pass:%1"_L1.arg(shellQuote(options.keyStorePassword));
+        apkSignCommand += " --ks-pass env:%1"_L1.arg(storePasswordVariable);
 
     if (!options.keyStoreAlias.isEmpty())
         apkSignCommand += " --ks-key-alias %1"_L1.arg(shellQuote(options.keyStoreAlias));
 
     if (!options.keyPass.isEmpty())
-        apkSignCommand += " --key-pass pass:%1"_L1.arg(shellQuote(options.keyPass));
+        apkSignCommand += " --key-pass env:%1"_L1.arg(keyPasswordVariable);
 
     if (options.verbose)
         apkSignCommand += " --verbose"_L1;
@@ -3559,8 +3593,11 @@ bool signPackage(const Options &options)
     };
 
     // Sign the package
-    if (!apkSignerRunner(apkSignCommand, options.verbose))
-        return false;
+    {
+        const SignerPasswordEnvironment passwords(options);
+        if (!apkSignerRunner(apkSignCommand, options.verbose))
+            return false;
+    }
 
     const QString apkVerifyCommand =
             "%1 verify --verbose %2"_L1
