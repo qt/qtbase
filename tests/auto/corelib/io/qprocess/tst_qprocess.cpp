@@ -1613,18 +1613,22 @@ struct DisableCrashLogger
 #endif // RLIMIT_CORE
 
     std::array<struct sigaction, std::size(sigs)> oldhandlers;
+    std::terminate_handler oldTerminateHandler;
     DisableCrashLogger()
+        : oldTerminateHandler(std::get_terminate())
     {
         struct sigaction def = {};
         def.sa_handler = SIG_DFL;
         for (uint i = 0; i < std::size(sigs); ++i)
             sigaction(sigs[i], &def, &oldhandlers[i]);
+        std::set_terminate(std::abort);
     }
     ~DisableCrashLogger()
     {
         // restore them
         for (uint i = 0; i < std::size(sigs); ++i)
             sigaction(sigs[i], &oldhandlers[i], nullptr);
+        std::set_terminate(oldTerminateHandler);
     }
 };
 
@@ -1762,21 +1766,18 @@ void tst_QProcess::terminateInChildProcessModifier_data()
     using F = std::function<void(void)>;
     QTest::addColumn<F>("function");
     QTest::addColumn<QProcess::ExitStatus>("exitStatus");
-    QTest::addColumn<bool>("stderrIsEmpty");
 
-    QTest::newRow("_exit") << F([]() { _exit(0); }) << QProcess::NormalExit << true;
-    QTest::newRow("abort") << F(std::abort) << QProcess::CrashExit << true;
-    QTest::newRow("sigkill") << F([]() { raise(SIGKILL); }) << QProcess::CrashExit << true;
-    QTest::newRow("terminate") << F(std::terminate) << QProcess::CrashExit
-                               << (std::get_terminate() == std::abort);
-    QTest::newRow("crash") << F([]() { tst_QProcessCrash::crash(); }) << QProcess::CrashExit << true;
+    QTest::newRow("_exit") << F([]() { _exit(0); }) << QProcess::NormalExit;
+    QTest::newRow("abort") << F(std::abort) << QProcess::CrashExit;
+    QTest::newRow("sigkill") << F([]() { raise(SIGKILL); }) << QProcess::CrashExit;
+    QTest::newRow("terminate") << F(std::terminate) << QProcess::CrashExit;
+    QTest::newRow("crash") << F([]() { tst_QProcessCrash::crash(); }) << QProcess::CrashExit;
 }
 
 void tst_QProcess::terminateInChildProcessModifier()
 {
     QFETCH(std::function<void(void)>, function);
     QFETCH(QProcess::ExitStatus, exitStatus);
-    QFETCH(bool, stderrIsEmpty);
 
     // testForwardingHelper prints to both stdout and stderr, so if we fail to
     // fail we should be able to tell too
@@ -1811,8 +1812,7 @@ void tst_QProcess::terminateInChildProcessModifier()
 #endif
 
     QByteArray standardError = process.readAllStandardError();
-    QVERIFY2(standardError.isEmpty() == stderrIsEmpty,
-             "stderr was: " + standardError);
+    QVERIFY2(standardError.isEmpty(), "stderr was: " + standardError);
 }
 
 void tst_QProcess::raiseInChildProcessModifier()
