@@ -41,6 +41,9 @@ void clearJsTimeout(JsState &jsState, int timerId);
 
 QNapi::Promise makeResolvedPromise(QNapi::Value valueForResolve);
 
+// Makes a Promise resolved to undefined, the JS way of saying "no particular value".
+QNapi::Promise makeResolvedPromise(Napi::Env env);
+
 template<typename T>
 std::optional<T> getOptionalProperty(const QNapi::Object &object, const std::string &propName);
 

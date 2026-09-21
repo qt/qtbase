@@ -73,6 +73,11 @@ QNapi::Promise makeResolvedPromise(QNapi::Value valueForResolve)
     return promiseDeferred.Promise();
 }
 
+QNapi::Promise makeResolvedPromise(Napi::Env env)
+{
+    return makeResolvedPromise(env.Undefined());
+}
+
 std::optional<std::uint32_t> tryGetCodeFromJsBusinessError(const Napi::Error &error)
 {
     if (!error.Value().IsObject())

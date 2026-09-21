@@ -1475,14 +1475,14 @@ QNapi::Value handleAbilityOnDestroy(const CallbackInfo &cbInfo)
     auto qAbilityPeer = cbInfo.jsState().tryGetQAbilityPeerByInstance(qAbility);
     if (!qAbilityPeer) {
         qOhosPrintfDebug("%s: no matching QAbilityPeer, returning resolved Promise", Q_FUNC_INFO);
-        return makeResolvedPromise(cbInfo.Env().Undefined());
+        return makeResolvedPromise(cbInfo.Env());
     }
 
     auto optQWindowDestroyPromise = qAbilityPeer->qWindowDestroyPromise();
 
     auto initialPromise = optQWindowDestroyPromise.has_value()
         ? optQWindowDestroyPromise.value()
-        : makeResolvedPromise(cbInfo.Env().Undefined());
+        : makeResolvedPromise(cbInfo.Env());
 
     auto resultPromiseDeferred = std::make_shared<QNapi::Promise::Deferred>(cbInfo.Env());
 
