@@ -84,8 +84,9 @@ extern "C" int LLVMFuzzerTestOneInput(const char *Data, size_t Size)
     QDateTime::fromString(userString, patterns[0].format, patterns[0].baseYear,
                           QCalendar(QCalendar::System::Gregorian));
     for (int sys = int(QCalendar::System::Julian); sys <= int(QCalendar::System::Last); ++sys) {
-        QDateTime::fromString(userString, patterns[0].format, patterns[0].baseYear,
-                              QCalendar(QCalendar::System(sys)));
+        QCalendar cal(QCalendar::System(sys));
+        if (cal.isValid()) // There are gaps in the enum, so it might not be.
+            QDateTime::fromString(userString, patterns[0].format, patterns[0].baseYear, cal);
     }
 
     for (const auto &pattern : patterns) {
