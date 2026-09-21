@@ -17,6 +17,16 @@ static constexpr struct {
 } patterns[] = {
     { ""_L1 }, // Accepts only an empty string, returns default
     { "M/d/yyyy"_L1 },
+    { "yy"_L1 },
+    { "yyyy"_L1 },
+    { "M"_L1 },
+    { "MM"_L1 },
+    { "MMM"_L1 },
+    { "MMMM"_L1 },
+    { "d"_L1 },
+    { "dd"_L1 },
+    { "ddd"_L1 },
+    { "dddd"_L1 },
     { "h"_L1 },
     { "hh"_L1 },
     { "H"_L1 },
@@ -27,8 +37,13 @@ static constexpr struct {
     { "ss"_L1 },
     { "z"_L1 },
     { "zzz"_L1 },
+    { "a"_L1 },
     { "A"_L1 },
+    { "Ap"_L1 },
     { "t"_L1 },
+    { "tt"_L1 },
+    { "ttt"_L1 },
+    { "tttt"_L1 },
     { "M/d/yyyy hh:mm"_L1 },
     { "M/d/yyyy hh:mm A"_L1 },
     { "M/d/yyyy, hh:mm"_L1 },
@@ -75,7 +90,7 @@ static constexpr struct {
     { "yyyy MMMM dddd HH mm ss.zzz t'unmatched"_L1 }, // malformed - rejected
 };
 
-// libFuzzer entry-point for testing QDateTimeParser
+// libFuzzer entry-point for testing QDateTime::fromString()
 extern "C" int LLVMFuzzerTestOneInput(const char *Data, size_t Size)
 {
     const QString userString = QString::fromUtf8(Data, Size);
