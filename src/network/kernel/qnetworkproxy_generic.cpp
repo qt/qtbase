@@ -29,7 +29,7 @@ static bool ignoreProxyFor(const QNetworkProxyQuery &query)
     const QList<QByteArray> noProxyTokens = noProxy.split(',');
 
     for (const QByteArray &rawToken : noProxyTokens) {
-        auto token = QLatin1StringView(rawToken).trimmed();
+        QString token = QString::fromUtf8(rawToken).trimmed();
 
         // A lone "*" bypasses every host, which suffix matching cannot express.
         if (token == "*"_L1)
@@ -45,6 +45,10 @@ static bool ignoreProxyFor(const QNetworkProxyQuery &query)
 
         if (token.startsWith(u'.')) // leading dot is implied
             token = token.mid(1);
+
+        // QUrl hands back a canonical host, so put the entry in that form.
+        if (const QByteArray ace = QUrl::toAce(token); !ace.isEmpty())
+            token = QUrl::fromAce(ace);
 
         if (host.endsWith(token)) {
 
