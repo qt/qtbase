@@ -207,6 +207,11 @@ the \c <application> section:
         This is necessary when using Qt libraries installed outside an app's
         default native (JNI) library directory.
         The default value is \c {/system/lib/}.
+        \note Set this only to a directory that untrusted code cannot write
+        to. Qt loads native libraries and plugins from this directory
+        without verifying them, so any code placed there runs with the
+        application's permissions.
+
 \endtable
 
 \section2 Meta-data in Services
