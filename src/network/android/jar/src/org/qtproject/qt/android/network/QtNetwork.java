@@ -16,7 +16,7 @@ class QtNetwork
     private static final String LOG_TAG = "QtNetwork";
     private static ProxyReceiver m_proxyReceiver = null;
     private static final Object m_lock = new Object();
-    private static ProxyInfo m_proxyInfo = null;
+    private static volatile ProxyInfo m_proxyInfo = null;
 
     private static class ProxyReceiver extends BroadcastReceiver
     {
@@ -47,6 +47,9 @@ class QtNetwork
                 return;
 
             context.unregisterReceiver(m_proxyReceiver);
+            // Statics outlive a Qt shutdown and would block re-registering.
+            m_proxyReceiver = null;
+            m_proxyInfo = null;
         }
     }
 
