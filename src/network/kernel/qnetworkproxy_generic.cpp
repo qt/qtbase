@@ -31,7 +31,11 @@ static bool ignoreProxyFor(const QNetworkProxyQuery &query)
     for (const QByteArray &rawToken : noProxyTokens) {
         auto token = QLatin1StringView(rawToken).trimmed();
 
-        // Since we use suffix matching, "*" is our 'default' behaviour
+        // A lone "*" bypasses every host, which suffix matching cannot express.
+        if (token == "*"_L1)
+            return true;
+
+        // A leading "*" is redundant once the rest is matched as a suffix.
         if (token.startsWith(u'*'))
             token = token.mid(1);
 
