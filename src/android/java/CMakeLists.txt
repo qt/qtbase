@@ -39,6 +39,7 @@ set(strings_resouces
 
 set(xml_resources
     "${CMAKE_CURRENT_SOURCE_DIR}/res/xml/qtprovider_paths.xml"
+    "${CMAKE_CURRENT_SOURCE_DIR}/res/xml-v30/qtprovider_paths.xml"
 )
 
 add_custom_target(Qt${QtBase_VERSION_MAJOR}AndroidBindings

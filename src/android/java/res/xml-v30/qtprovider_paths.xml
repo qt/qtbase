@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- No external-path. QStandardPaths is app-scoped only from API 30. -->
+    <!-- For getFilesDirectory() -->
+    <files-path name="files_path" path="/"/>
+    <!-- For getExternalFilesDir() -->
+    <external-files-path name="external_files_path" path="/"/>
+    <!-- For getExternalCacheDir() -->
+    <external-cache-path name="external_cache_path" path="/"/>
+</paths>
