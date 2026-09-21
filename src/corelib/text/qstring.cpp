@@ -7058,23 +7058,7 @@ QString QString::nullTerminated() &&
 
 QString QString::leftJustified(qsizetype width, QChar fill, bool truncate) const
 {
-    QString result;
-    qsizetype len = size();
-    qsizetype padlen = width - len;
-    if (padlen > 0) {
-        result.resize(len+padlen);
-        if (len)
-            memcpy(result.d.data(), d.data(), sizeof(QChar)*len);
-        QChar *uc = (QChar*)result.d.data() + len;
-        while (padlen--)
-           * uc++ = fill;
-    } else {
-        if (truncate)
-            result = left(width);
-        else
-            result = *this;
-    }
-    return result;
+    return QStringAlgorithms<QString>::aligned(*this, width, fill, Qt::AlignLeft, truncate);
 }
 
 /*!
@@ -7097,23 +7081,7 @@ QString QString::leftJustified(qsizetype width, QChar fill, bool truncate) const
 
 QString QString::rightJustified(qsizetype width, QChar fill, bool truncate) const
 {
-    QString result;
-    qsizetype len = size();
-    qsizetype padlen = width - len;
-    if (padlen > 0) {
-        result.resize(len+padlen);
-        QChar *uc = (QChar*)result.d.data();
-        while (padlen--)
-           * uc++ = fill;
-        if (len)
-          memcpy(static_cast<void *>(uc), static_cast<const void *>(d.data()), sizeof(QChar)*len);
-    } else {
-        if (truncate)
-            result = left(width);
-        else
-            result = *this;
-    }
-    return result;
+    return QStringAlgorithms<QString>::aligned(*this, width, fill, Qt::AlignRight, truncate);
 }
 
 /*!

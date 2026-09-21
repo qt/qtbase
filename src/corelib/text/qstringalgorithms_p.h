@@ -16,6 +16,7 @@
 // We mean it.
 //
 
+#include <QtCore/qnamespace.h>
 #include "qspan.h"
 #include "qstring.h"
 #include "qlocale_p.h"      // for ascii_isspace
@@ -31,6 +32,51 @@ template <typename StringType> struct QStringAlgorithms
         std::conditional_t<std::is_same_v<StringType, QString>, QStringView, QByteArrayView>;
     using ViewChar = typename ViewType::storage_type;
     static const bool isConst = std::is_const<StringType>::value;
+
+    static NakedStringType aligned(const StringType &txt, qsizetype width, Char fill,
+                                   Qt::AlignmentFlag align, bool truncate)
+    {
+        const auto len = txt.size();
+
+        if (len == width)  // nothing to do, keep sharing
+            return txt;
+
+        if (len > width) { // too long
+            if (truncate)
+                return txt.left(width);
+            else
+                return txt;
+        }
+
+        // too short, so truncate doesn't matter
+
+        return [&] {
+            NakedStringType result;
+            result.reserve(width);
+            switch (align){
+            case Qt::AlignLeft:
+                result += txt;
+                result.resize(width, fill);
+                break;
+            case Qt::AlignRight:
+                result.resize(width - len, fill);
+                result += txt;
+                break;
+            case Qt::AlignHCenter:
+            case Qt::AlignJustify:
+            case Qt::AlignAbsolute:
+            case Qt::AlignHorizontal_Mask:
+            case Qt::AlignTop:
+            case Qt::AlignBottom:
+            case Qt::AlignVCenter:
+            case Qt::AlignBaseline:
+            case Qt::AlignVertical_Mask:
+            case Qt::AlignCenter:
+                Q_UNREACHABLE();
+            };
+            return result;
+        }();
+    }
 
     static inline bool isSpace(char ch) { return ascii_isspace(ch); }
     static inline bool isSpace(QChar ch) { return ch.isSpace(); }
