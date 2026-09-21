@@ -111,12 +111,18 @@ def find_launcher_activity(root):
     return None
 
 
+# A manifest has no document type definition, so refuse ones that have it.
+class ManifestBuilder(ET.TreeBuilder):
+    def doctype(self, name, pubid, system):
+        raise ValueError("The manifest must not declare a document type definition.")
+
+
 def get_manifest_activity(manifest_file):
     try:
         if not os.path.isfile(manifest_file):
             return None
 
-        tree = ET.parse(manifest_file)
+        tree = ET.parse(manifest_file, ET.XMLParser(target=ManifestBuilder()))
         root = tree.getroot()
         return find_launcher_activity(root)
     except Exception as e:
