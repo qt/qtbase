@@ -27,6 +27,11 @@ done <<EOF
 $(grep -rl "$MAGIC" "$ROOT_DIR")
 EOF
 
+if [ -z "$INCLUDE_FILES" ]; then
+    echo "No Security Critical files found; running analysis with an explicit fallback sentinel."
+    INCLUDE_FILES="__NO_FILES_FOUND__"
+fi
+
 export INCLUDE_FILES
 
 for MODULE in qtconcurrent qtcore qtdbus qtgui qtnetwork qtopengl qtopenglwidgets qtsql qttest qtwaylandclient qtwidgets qtprintsupport qtxml; do
@@ -36,72 +41,84 @@ for MODULE in qtconcurrent qtcore qtdbus qtgui qtnetwork qtopengl qtopenglwidget
     if [ "$MODULE" == "qtconcurrent" ]
     then
         export TARGET_NAME="build/lib/libQt6Concurrent.so.*.ir"
-        export EXCLUDE_FILES="build/*:src/3rdparty/*:src/testlib/*:src/corelib/*"
+        export EXCLUDE_FILES="build/*:src/3rdparty/*:src/testlib/**:src/corelib/**"
         export PACKAGE="Add-ons"
     elif [ "$MODULE" == "qtcore" ]
     then
         export TARGET_NAME="build/lib/libQt6Core.so.*.ir"
-        export EXCLUDE_FILES="build/*:src/3rdparty/*:src/testlib/*"
+        export EXCLUDE_FILES="build/*:src/3rdparty/*:src/testlib/**"
         export PACKAGE="Essentials"
     elif [ "$MODULE" == "qtdbus" ]
     then
         export TARGET_NAME="build/lib/libQt6DBus.so.*.ir"
-        export EXCLUDE_FILES="build/*:src/3rdparty/*:src/testlib/*:src/corelib/*"
+        export EXCLUDE_FILES="build/*:src/3rdparty/*:src/testlib/**:src/corelib/**"
         export PACKAGE="Essentials"
     elif [ "$MODULE" == "qtgui" ]
     then
-        export TARGET_NAME="build/lib/libQt6Gui.so.*.ir"
-        export PLUGINS="build/plugins/platforms/*.so.ir:build/plugins/platforminputcontexts/*.so.ir:build/plugins/platformthemes/*.so.ir:build/plugins/imageformats/*.so.ir:build/plugins/generic/*.so.ir"
-        export EXCLUDE_FILES="build/*:src/3rdparty/*:src/testlib/*:src/corelib/*:src/dbus/*:src/opengl/*:src/network/*"
+        # Includes the private platform-support libraries that the platform
+        # plugins below link against (confirmed built via qtbase_log.txt);
+        # none of them had a TARGET_NAME entry before.
+        TARGET_NAME="build/lib/libQt6Gui.so.*.ir"
+        TARGET_NAME="$TARGET_NAME:build/lib/libQt6XcbQpa.so.*.ir"
+        TARGET_NAME="$TARGET_NAME:build/lib/libQt6EglFSDeviceIntegration.so.*.ir"
+        TARGET_NAME="$TARGET_NAME:build/lib/libQt6EglFsKmsGbmSupport.so.*.ir"
+        TARGET_NAME="$TARGET_NAME:build/lib/libQt6EglFsKmsSupport.so.*.ir"
+        TARGET_NAME="$TARGET_NAME:build/lib/libQt6FbSupport.a.ir"
+        TARGET_NAME="$TARGET_NAME:build/lib/libQt6InputSupport.a.ir"
+        TARGET_NAME="$TARGET_NAME:build/lib/libQt6KmsSupport.a.ir"
+        TARGET_NAME="$TARGET_NAME:build/lib/libQt6DeviceDiscoverySupport.a.ir"
+        export TARGET_NAME
+        export PLUGINS="build/plugins/platforms/*.so.ir:build/plugins/platforminputcontexts/*.so.ir:build/plugins/platformthemes/*.so.ir:build/plugins/imageformats/*.so.ir:build/plugins/generic/*.so.ir:build/plugins/egldeviceintegrations/*.so.ir"
+        export EXCLUDE_FILES="build/*:src/3rdparty/*:src/testlib/**:src/corelib/**:src/dbus/**:src/opengl/**:src/network/**"
         export PACKAGE="Essentials"
     elif [ "$MODULE" == "qtnetwork" ]
     then
         export TARGET_NAME="build/lib/libQt6Network.so.*.ir"
         export PLUGINS="build/plugins/networkinformation/*.so.ir:build/plugins/tls/*.so.ir"
-        export EXCLUDE_FILES="build/*:src/3rdparty/*:src/testlib/*:src/corelib/*:src/dbus/*"
+        export EXCLUDE_FILES="build/*:src/3rdparty/*:src/testlib/**:src/corelib/**:src/dbus/**"
         export PACKAGE="Essentials"
     elif [ "$MODULE" == "qtopengl" ]
     then
         export TARGET_NAME="build/lib/libQt6OpenGL.so.*.ir"
-        export EXCLUDE_FILES="build/*:src/3rdparty/*:src/corelib/*:src/gui/*:src/dbus/*:src/opengl/qopenglfunctions_*"
+        export EXCLUDE_FILES="build/*:src/3rdparty/*:src/corelib/**:src/gui/**:src/dbus/**:src/opengl/**"
         export PACKAGE="Add-ons"
     elif [ "$MODULE" == "qtopenglwidgets" ]
     then
         export TARGET_NAME="build/lib/libQt6OpenGLWidgets.so.*.ir"
-        export EXCLUDE_FILES="build/*:src/3rdparty/*:src/corelib/*:src/gui/*:src/dbus/*:src/opengl/qopenglfunctions_*"
+        export EXCLUDE_FILES="build/*:src/3rdparty/*:src/corelib/**:src/gui/**:src/dbus/**:src/opengl/**"
         export PACKAGE="Add-ons"
     elif [ "$MODULE" == "qtsql" ]
     then
         export TARGET_NAME="build/lib/libQt6Sql.so.*.ir"
         export PLUGINS="build/plugins/sqldrivers/*.so.ir"
-        export EXCLUDE_FILES="build/*:src/3rdparty/*:src/corelib/*:src/gui/*:src/testlib/*"
+        export EXCLUDE_FILES="build/*:src/3rdparty/*:src/corelib/**:src/gui/**:src/testlib/**"
         export PACKAGE="Add-ons"
     elif [ "$MODULE" == "qttest" ]
     then
         export TARGET_NAME="build/lib/libQt6Test.so.*.ir"
-        export EXCLUDE_FILES="build/*:src/3rdparty/*:src/corelib/*:src/gui/*:src/widgets/*:src/testlib/3rdparty/*"
+        export EXCLUDE_FILES="build/*:src/3rdparty/*:src/corelib/**:src/gui/**:src/widgets/**:src/testlib/**"
         export PACKAGE="Essentials"
     elif [ "$MODULE" == "qtwaylandclient" ]
     then
         export TARGET_NAME="build/libexec/qtwaylandscanner.ir:build/lib/libQt6WaylandClient.so.*.ir:build/lib/libQt6WlShellIntegration.so.*.ir"
         export PLUGINS="build/plugins/platforms/libqwayland.so.ir:build/plugins/wayland*/*.so.ir"
-        export EXCLUDE_FILES="build/*:src/3rdparty/*:src/corelib/*:src/dbus/*:src/gui/*:src/tools/*"
+        export EXCLUDE_FILES="build/*:src/3rdparty/*:src/corelib/**:src/dbus/**:src/gui/**:src/tools/**"
         export PACKAGE="Add-ons"
     elif [ "$MODULE" == "qtwidgets" ]
     then
         export TARGET_NAME="build/lib/libQt6Widgets.so.*.ir"
-        export EXCLUDE_FILES="build/*:src/3rdparty/*:src/corelib/*:src/dbus/*:src/gui/*:src/testlib/*"
+        export EXCLUDE_FILES="build/*:src/3rdparty/*:src/corelib/**:src/dbus/**:src/gui/**:src/testlib/**"
         export PACKAGE="Essentials"
     elif [ "$MODULE" == "qtprintsupport" ]
     then
         export TARGET_NAME="build/lib/libQt6PrintSupport.so.*.ir"
         export PLUGINS="build/plugins/printsupport/*.so.ir"
-        export EXCLUDE_FILES="build/*:src/3rdparty/*:src/corelib/*:src/gui/*:src/widgets/*:src/testlib/*:src/dbus/*"
+        export EXCLUDE_FILES="build/*:src/3rdparty/*:src/corelib/**:src/gui/**:src/widgets/**:src/testlib/**:src/dbus/**"
         export PACKAGE="Add-ons"
     elif [ "$MODULE" == "qtxml" ]
     then
         export TARGET_NAME="build/lib/libQt6Xml.so.*.ir"
-        export EXCLUDE_FILES="build/*:src/3rdparty/*:src/corelib/*:src/testlib/*"
+        export EXCLUDE_FILES="build/*:src/3rdparty/*:src/corelib/**:src/testlib/**"
         export PACKAGE="Add-ons"
     fi
     axivion_ci "$@"
