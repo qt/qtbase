@@ -2650,6 +2650,8 @@ static bool needsReallocate(const QString &str, qsizetype newSize)
     If \a size is less than the current size, characters beyond position
     \a size are excluded from the string.
 
+    If \a size is negative, it is equivalent to passing zero.
+
     \note While resize() will grow the capacity if needed, it never shrinks
     capacity. To shed excess capacity, use squeeze().
 
@@ -2663,8 +2665,6 @@ static bool needsReallocate(const QString &str, qsizetype newSize)
     If you want to expand the string so that it reaches a certain
     width and fill the new positions with a particular character, use
     the leftJustified() function:
-
-    If \a size is negative, it is equivalent to passing zero.
 
     \snippet qstring/main.cpp 47
 
