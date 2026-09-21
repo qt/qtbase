@@ -65,6 +65,7 @@
 #include <chrono>
 #include <cmath>
 #include <cstdio>
+#include <exception>
 #include <limits>
 #include <memory>
 #include <mutex>
@@ -1798,6 +1799,33 @@ bool reportResult(bool success, const void *lhs, const void *rhs,
     return QTestResult::reportResult(success, lhs, rhs, lhsFormatter, rhsFormatter,
                                      lhsExpr, rhsExpr, op, file, line);
 }
+
+Q_CONSTINIT static std::terminate_handler oldTerminateHandler = nullptr;
+[[noreturn]] static void terminateHandler()
+{
+    Q_CONSTINIT static std::atomic_flag terminationLatch = ATOMIC_FLAG_INIT;
+    if (terminationLatch.test_and_set(std::memory_order_relaxed)) {
+        // another thread has already reached the handler; let it terminate the
+        // application
+        qSleep(std::chrono::milliseconds::max());
+    }
+
+    const char *reason = std::current_exception()
+            ? "Caught unhandled exception" : "std::terminate() called";
+    QTestResult::addFailure(reason, __FILE__, __LINE__);
+    if (QTestResult::currentTestFunction()) {
+        QTestResult::finishedCurrentTestFunction();
+        QTestResult::setCurrentTestFunction(nullptr);
+    }
+
+    // Run the old termination handler directly, not via std::terminate().
+    // On some platforms, that runs this function again despite not being
+    // the terminate handler any more.
+    const std::terminate_handler next = oldTerminateHandler;
+    qCleanup();
+    next();
+    std::abort(); // terminate handlers must not return
+}
 } // namespace QTest
 
 static void initEnvironment()
@@ -1826,8 +1854,9 @@ static QFile androidExitCodeFile()
     \snippet code/src_qtestlib_qtestcase.cpp 18
 
     This function returns 0 if no tests failed, or a value other than 0 if one
-    or more tests failed or in case of unhandled exceptions.  (Skipped tests do
-    not influence the return value.)
+    or more tests failed (skipped tests do not influence the return value). No
+    exceptions are handled by this function: if a test throws, the process will
+    terminate.
 
     For stand-alone test applications, the convenience macro \l QTEST_MAIN() can
     be used to declare a main() function that parses the command line arguments
@@ -1916,6 +1945,9 @@ void QTest::qInit(QObject *testObject, int argc, char **argv)
 #ifdef Q_OS_ANDROID
     androidExitCodeFile().remove();
 #endif
+
+    oldTerminateHandler = std::get_terminate();
+    std::set_terminate(terminateHandler);
 }
 
 /*! \internal
@@ -1928,7 +1960,8 @@ int QTest::qRun()
     int callgrindChildExitCode = 0;
 #endif
 
-#ifndef QT_NO_EXCEPTIONS
+#if defined(Q_OS_WIN) && !defined(QT_NO_EXCEPTIONS)
+    // Our WindowsFaultHandler interferes with reporting uncaught exceptions
     try {
 #endif
 
@@ -2008,7 +2041,7 @@ int QTest::qRun()
         }
     }
 
-#ifndef QT_NO_EXCEPTIONS
+#if defined(Q_OS_WIN) && !defined(QT_NO_EXCEPTIONS)
     } catch (...) {
         QTestResult::addFailure("Caught unhandled exception", __FILE__, __LINE__);
         if (QTestResult::currentTestFunction()) {
@@ -2049,6 +2082,9 @@ int QTest::qRun()
 */
 void QTest::qCleanup()
 {
+    if (std::get_terminate() == terminateHandler)
+        std::set_terminate(oldTerminateHandler);
+    oldTerminateHandler = nullptr;
     currentTestObject = nullptr;
 
 #if QT_CONFIG(valgrind)
