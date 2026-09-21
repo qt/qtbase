@@ -3024,8 +3024,7 @@ static void insert_helper(QString &str, qsizetype i, const T &toInsert)
 */
 QString &QString::insert(qsizetype i, QLatin1StringView str)
 {
-    const char *s = str.latin1();
-    if (i < 0 || !s || !(*s))
+    if (i < 0 || str.isEmpty())
         return *this;
 
     insert_helper(*this, i, str);
