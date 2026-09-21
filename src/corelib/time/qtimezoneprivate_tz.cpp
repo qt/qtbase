@@ -1011,7 +1011,11 @@ QTzTimeZoneCacheEntry QTzTimeZoneCache::findEntry(const QByteArray &ianaId)
             tran.ruleIndex = ruleIndex;
         }
 
-        tran.atMSecsSinceEpoch = tz_tran.tz_time * 1000;
+        if (qMulOverflow<1000>(tz_tran.tz_time, &tran.atMSecsSinceEpoch)) {
+            ret.m_tranTimes.clear();
+            ret.m_posixRule.clear();
+            break;
+        }
         ret.m_tranTimes.append(tran);
     }
 
