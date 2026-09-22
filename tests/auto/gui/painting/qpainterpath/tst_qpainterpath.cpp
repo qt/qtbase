@@ -9,6 +9,8 @@
 #include <qpen.h>
 #include <qmath.h>
 
+#include <tuple>
+
 class tst_QPainterPath : public QObject
 {
     Q_OBJECT
@@ -45,6 +47,7 @@ private slots:
     void testOperatorEquals();
     void testOperatorEquals_fuzzy();
     void testOperatorDatastream();
+    void testOperatorDatastreamValidation();
 
     void testArcMoveTo_data();
     void testArcMoveTo();
@@ -786,6 +789,81 @@ void tst_QPainterPath::testOperatorDatastream()
     }
     QCOMPARE(p3.elementCount(), path.elementCount());
     QCOMPARE(p4.elementCount(), 2);
+}
+
+// operator>> validates the serialized elements (the QDataStream doc says the class
+// is not resilient against corrupt data in general, but a path with e.g. consecutive
+// MoveTos or a stray CurveToData used to be accepted and could crash when painted)
+void tst_QPainterPath::testOperatorDatastreamValidation()
+{
+    using Elem = std::tuple<int, qreal, qreal>;
+    const int MoveTo = QPainterPath::MoveToElement, LineTo = QPainterPath::LineToElement,
+              CurveTo = QPainterPath::CurveToElement,
+              CurveToData = QPainterPath::CurveToDataElement;
+    auto read = [](const QList<Elem> &elems, int cStart = 0, int fillRule = Qt::OddEvenFill,
+                   QPainterPath *pathOut = nullptr) {
+        QByteArray bytes;
+        {
+            QDataStream out(&bytes, QIODevice::WriteOnly);
+            out << qint32(elems.size());
+            for (const auto &[type, x, y] : elems)
+                out << qint32(type) << x << y;
+            out << qint32(cStart) << qint32(fillRule);
+        }
+        QPainterPath path;
+        QDataStream in(bytes);
+        in >> path;
+        if (pathOut)
+            *pathOut = path;
+        return in.status();
+    };
+    auto types = [](const QPainterPath &path) {
+        QList<int> result;
+        for (int i = 0; i < path.elementCount(); ++i)
+            result << path.elementAt(i).type;
+        return result;
+    };
+    QPainterPath path;
+
+    // Consecutive MoveTos are folded into the last one, as moveTo() does ...
+    QCOMPARE(read({{MoveTo, 1, 2}, {MoveTo, 3, 4}, {LineTo, 5, 6}}, 1, Qt::OddEvenFill, &path),
+             QDataStream::Ok);
+    QCOMPARE(types(path), QList<int>({MoveTo, LineTo}));
+    QCOMPARE(QPointF(path.elementAt(0)), QPointF(3, 4));
+    // ... and the current subpath start is adjusted accordingly
+    path.closeSubpath();
+    QCOMPARE(types(path), QList<int>({MoveTo, LineTo, LineTo}));
+    QCOMPARE(QPointF(path.elementAt(2)), QPointF(3, 4));
+
+    // A trailing MoveTo is what moveTo() produces too, so it is kept
+    QCOMPARE(read({{MoveTo, 1, 2}, {LineTo, 3, 4}, {MoveTo, 5, 6}}, 2, Qt::OddEvenFill, &path),
+             QDataStream::Ok);
+    QCOMPARE(types(path), QList<int>({MoveTo, LineTo, MoveTo}));
+
+    // A curve with its two data elements is fine, cStart is validated
+    QCOMPARE(read({{MoveTo, 0, 0}, {CurveTo, 1, 1}, {CurveToData, 2, 2}, {CurveToData, 3, 3}},
+                  99, Qt::WindingFill, &path),
+             QDataStream::Ok);
+    QCOMPARE(types(path), QList<int>({MoveTo, CurveTo, CurveToData, CurveToData}));
+    QCOMPARE(path.fillRule(), Qt::WindingFill);
+    path.closeSubpath(); // must not dereference the bogus cStart
+    QCOMPARE(path.elementCount(), 5);
+
+    // Everything else is rejected: the path is reset and the stream marked corrupt
+    const QList<QList<Elem>> corrupt = {
+        {{MoveTo, 0, 0}, {7, 1, 1}},                            // unknown element type
+        {{MoveTo, 0, 0}, {LineTo, qQNaN(), 1}},                 // non-finite coordinate
+        {{LineTo, 0, 0}, {LineTo, 1, 1}},                       // does not start with a MoveTo
+        {{MoveTo, 0, 0}, {CurveTo, 1, 1}, {CurveToData, 2, 2}}, // curve missing a data element
+        {{MoveTo, 0, 0}, {CurveTo, 1, 1}, {LineTo, 2, 2}, {CurveToData, 3, 3}},
+        {{MoveTo, 0, 0}, {CurveToData, 1, 1}},                  // stray curve data
+    };
+    for (const auto &elems : corrupt) {
+        QCOMPARE(read(elems, 0, Qt::OddEvenFill, &path), QDataStream::ReadCorruptData);
+        QVERIFY(path.isEmpty());
+    }
+    QCOMPARE(read({{MoveTo, 0, 0}, {LineTo, 1, 1}}, 0, 5, &path), QDataStream::ReadCorruptData);
+    QVERIFY(path.isEmpty());
 }
 
 void tst_QPainterPath::closing()
