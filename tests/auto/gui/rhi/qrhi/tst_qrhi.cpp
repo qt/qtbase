@@ -1539,6 +1539,9 @@ void tst_QRhi::resourceUpdateBatchR8TextureUpload()
     if (!rhi->isTextureFormatSupported(QRhiTexture::R8))
         QSKIP("R8 texture format not supported on this backend");
 
+    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi.get()))
+        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
+
     const int WIDTH = 4;
     const int HEIGHT = 4;
     // A value distinct from both 0x00 and 0xFF, so a readback that picks the wrong channel (e.g.
@@ -1759,6 +1762,9 @@ void tst_QRhi::resourceUpdateBatchR8TextureMip()
 
     if (!rhi->isTextureFormatSupported(QRhiTexture::R8))
         QSKIP("R8 texture format not supported on this backend");
+
+    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi.get()))
+        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
 
     const QSize baseSize(64, 64);
     QScopedPointer<QRhiTexture> texture(
