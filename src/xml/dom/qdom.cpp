@@ -3275,8 +3275,8 @@ void QDomDocumentTypePrivate::save(QTextStream& s, int, int indent) const
     \ingroup xml-tools
 
     The QDomDocumentType class allows read-only access to some of the
-    data structures in the DTD: it can return a map of all entities()
-    and notations(). In addition the function name() returns the name
+    data structures in the DTD: it can return maps of entities() and
+    notations(). In addition the function name() returns the name
     of the document type as specified in the &lt;!DOCTYPE name&gt;
     tag. This class also provides the publicId(), systemId() and
     internalSubset() functions.
@@ -3330,7 +3330,14 @@ QString QDomDocumentType::name() const
 }
 
 /*!
-    Returns a map of all entities described in the DTD.
+    Returns a map of the entities described in the DTD.
+
+    \note Only entities declared with a public or a system identifier are
+    represented. The parser expands internal entities and discards their
+    declarations, so those do not appear in this map. The internal subset
+    itself is still available verbatim from internalSubset().
+
+    \sa notations(), internalSubset(), QDomDocument::setContent()
 */
 QDomNamedNodeMap QDomDocumentType::entities() const
 {
@@ -5451,6 +5458,11 @@ void QDomEntityPrivate::save(QTextStream& s, int, int) const
     or unparsed. Note that this models the entity itself not the
     entity declaration.
 
+    \note Only entities declared with a public or a system identifier are
+    represented. The parser expands internal entities and discards their
+    declarations, so a QDomEntity is never created for them. See
+    QDomDocument::setContent() for how entity references are handled.
+
     DOM does not support editing entity nodes; if a user wants to make
     changes to the contents of an entity, every related
     QDomEntityReference node must be replaced in the DOM tree by a
@@ -6361,7 +6373,10 @@ bool QDomDocument::setContent(const QString& text, bool namespaceProcessing,
     \list
     \li References to internal general entities and character entities occurring in the
         content are included. The result is a QDomText node with the references replaced
-        by their corresponding entity values.
+        by their corresponding entity values. The declaration itself is not retained: it
+        does not appear in QDomDocumentType::entities(), and toString() does not
+        reproduce it, although QDomDocumentType::internalSubset() still returns the
+        internal subset verbatim.
     \li References to parameter entities occurring in the internal subset are included.
         The result is a QDomDocumentType node which contains entity and notation declarations
         with the references replaced by their corresponding entity values.
