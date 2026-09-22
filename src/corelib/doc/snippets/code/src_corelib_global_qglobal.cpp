@@ -217,19 +217,6 @@ ASSERT failure in divide: "division by zero", file div.cpp, line 7
 //! [20]
 #endif
 
-
-void pointer_example()
-{
-    //! [21]
-    int *a;
-
-    Q_CHECK_PTR(a = new int[80]);   // WRONG!
-
-    a = new (std::nothrow) int[80];      // Right
-    Q_CHECK_PTR(a);
-    //! [21]
-}
-
 //! [22]
 template<typename TInputType>
 const TInputType &myMin(const TInputType &value1, const TInputType &value2)

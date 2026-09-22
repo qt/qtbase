@@ -137,14 +137,9 @@ void qt_assert_x(const char *where, const char *what, const char *file, int line
     of memory and aborts program execution. It throws \c std::bad_alloc instead
     if exceptions are enabled.
 
-    Q_CHECK_PTR does nothing if \c QT_NO_DEBUG and \c QT_NO_EXCEPTIONS were
-    defined during compilation. Therefore you must not use Q_CHECK_PTR to check
-    for successful memory allocations because the check will be disabled in
-    some cases.
-
-    Example:
-
-    \snippet code/src_corelib_global_qglobal.cpp 21
+    \note In Qt versions prior to 6.13, this macro was a no-op in certain
+    build configurations. Since 6.13, it always reliably terminates or
+    throws.
 
     \sa qWarning(), {Debugging Techniques}
 */

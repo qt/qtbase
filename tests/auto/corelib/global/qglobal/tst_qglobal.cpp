@@ -459,6 +459,12 @@ void tst_QGlobal::checkptr()
 
     const char *c = "hello";
     QCOMPARE(q_check_ptr(c), c);
+
+    int *pi = nullptr;
+    const auto reaper = qScopeGuard([&] { delete pi; });
+    Q_CHECK_PTR(pi = new int{42}); // side-effects always materialize
+    QCOMPARE_NE(pi, nullptr);
+    QCOMPARE_EQ(*pi, 42);
 }
 
 // Check Q_STATIC_ASSERT, It should compile
