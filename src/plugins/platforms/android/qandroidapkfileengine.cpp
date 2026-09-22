@@ -127,6 +127,8 @@ qint64 QAndroidApkFileEngine::read(char *data, qint64 maxlen)
         return -1;
 
     QJniArray<jbyte> byteArray = m_apkFileEngine.callMethod<jbyte[]>("read", jlong(maxlen));
+    if (!byteArray.isValid())
+        return -1;
 
     QJniEnvironment env;
     env->GetByteArrayRegion(byteArray.arrayObject(), 0, byteArray.size(), (jbyte*)data);
