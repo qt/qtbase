@@ -2494,6 +2494,13 @@ QDataStream &operator<<(QDataStream &s, const QPainterPath &p)
     Reads a painter path from the given \a stream into the specified \a path,
     and returns a reference to the \a stream.
 
+    The data is validated: if it contains an element of unknown type or with
+    non-finite coordinates, a curve without its two data elements, a path
+    that does not start with a move, or an invalid fill rule, \a path is
+    reset to an empty path and the stream's status is set to
+    QDataStream::ReadCorruptData. Consecutive move elements are folded into
+    the last one, as QPainterPath::moveTo() does.
+
     \sa {Serializing Qt Data Types}
 */
 QDataStream &operator>>(QDataStream &s, QPainterPath &p)
@@ -2506,17 +2513,31 @@ QDataStream &operator>>(QDataStream &s, QPainterPath &p)
         p = {};
         return s;
     }
+    if (size < 0) {
+        p = {};
+        s.setStatus(QDataStream::ReadCorruptData);
+        return s;
+    }
 
     p.ensureData(); // in case if p.d_func() == 0
     p.setDirty(true);
-    p.d_func()->elements.clear();
+    QList<QPainterPath::Element> &elements = p.d_func()->elements;
+    elements.clear();
+    bool folded = false;
+    int curveDataPending = 0; // CurveToData elements still owed by the last CurveTo
     for (int i=0; i<size; ++i) {
         int type;
         double x, y;
         s >> type;
         s >> x;
         s >> y;
-        Q_ASSERT(type >= 0 && type <= 3);
+        if (type < QPainterPath::MoveToElement || type > QPainterPath::CurveToDataElement) {
+#ifndef QT_NO_DEBUG
+            qWarning("QDataStream::operator>>: Invalid QPainterPath element type read, skipping it");
+#endif
+            errorDetected = true;
+            continue;
+        }
         if (!isValidCoord(qreal(x)) || !isValidCoord(qreal(y))) {
 #ifndef QT_NO_DEBUG
             qWarning("QDataStream::operator>>: Invalid QPainterPath coordinates read, skipping it");
@@ -2525,15 +2546,56 @@ QDataStream &operator>>(QDataStream &s, QPainterPath &p)
             continue;
         }
         QPainterPath::Element elm = { qreal(x), qreal(y), QPainterPath::ElementType(type) };
-        p.d_func()->elements.append(elm);
+        // Enforce the structure that the QPainterPath API guarantees: the path starts
+        // with a MoveTo, a CurveTo is followed by exactly two CurveToData elements, and
+        // a MoveTo directly after a MoveTo replaces it (see QPainterPath::moveTo())
+        if (curveDataPending > 0) {
+            if (elm.type != QPainterPath::CurveToDataElement) {
+                errorDetected = true;
+                continue;
+            }
+            --curveDataPending;
+        } else if (elm.type == QPainterPath::CurveToDataElement
+                   || (elements.isEmpty() && elm.type != QPainterPath::MoveToElement)) {
+            errorDetected = true;
+            continue;
+        } else if (elm.type == QPainterPath::CurveToElement) {
+            curveDataPending = 2;
+        } else if (elm.type == QPainterPath::MoveToElement && !elements.isEmpty()
+                   && elements.last().type == QPainterPath::MoveToElement) {
+            elements.last() = elm;
+            folded = true;
+            continue;
+        }
+        elements.append(elm);
     }
-    s >> p.d_func()->cStart;
+    if (curveDataPending > 0)
+        errorDetected = true;
+    int cStart;
+    s >> cStart;
     int fillRule;
     s >> fillRule;
-    Q_ASSERT(fillRule == Qt::OddEvenFill || fillRule == Qt::WindingFill);
-    p.d_func()->hasWindingFill = (Qt::FillRule(fillRule) == Qt::WindingFill);
-    if (errorDetected || p.d_func()->elements.isEmpty())
+    if (fillRule != Qt::OddEvenFill && fillRule != Qt::WindingFill)
+        errorDetected = true;
+    if (errorDetected || elements.isEmpty()) {
+#ifndef QT_NO_DEBUG
+        qWarning("QDataStream::operator>>: Invalid QPainterPath read, resetting it");
+#endif
         p = QPainterPath();  // Better than to return path with possibly corrupt datastructure, which would likely cause crash
+        s.setStatus(QDataStream::ReadCorruptData);
+        return s;
+    }
+    p.d_func()->hasWindingFill = (Qt::FillRule(fillRule) == Qt::WindingFill);
+    // cStart is the index of the MoveTo starting the current subpath; folding
+    // shifts indices, and an out-of-range value would be dereferenced by
+    // closeSubpath(), so recompute it unless the streamed one is consistent
+    if (folded || cStart < 0 || cStart >= elements.size()
+        || elements.at(cStart).type != QPainterPath::MoveToElement) {
+        cStart = elements.size() - 1;
+        while (elements.at(cStart).type != QPainterPath::MoveToElement)
+            --cStart;
+    }
+    p.d_func()->cStart = cStart;
     return s;
 }
 #endif // QT_NO_DATASTREAM
