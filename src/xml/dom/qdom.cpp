@@ -5380,42 +5380,6 @@ QDomNodePrivate* QDomEntityPrivate::cloneNode(bool deep)
     return p;
 }
 
-/*
-  Encode an entity value upon saving.
-*/
-static QByteArray encodeEntity(const QByteArray& str)
-{
-    QByteArray tmp(str);
-    int len = tmp.size();
-    int i = 0;
-    const char* d = tmp.constData();
-    while (i < len) {
-        if (d[i] == '%'){
-            tmp.replace(i, 1, "&#60;");
-            d = tmp.constData();
-            len += 4;
-            i += 5;
-        }
-        else if (d[i] == '"') {
-            tmp.replace(i, 1, "&#34;");
-            d = tmp.constData();
-            len += 4;
-            i += 5;
-        } else if (d[i] == '&' && i + 1 < len && d[i+1] == '#') {
-            // Don't encode &lt; or &quot; or &custom;.
-            // Only encode character references
-            tmp.replace(i, 1, "&#38;");
-            d = tmp.constData();
-            len += 4;
-            i += 5;
-        } else {
-            ++i;
-        }
-    }
-
-    return tmp;
-}
-
 void QDomEntityPrivate::save(QTextStream& s, int, int) const
 {
     QString _name = name;
@@ -5423,7 +5387,10 @@ void QDomEntityPrivate::save(QTextStream& s, int, int) const
         _name = u"% "_s + _name.mid(1);
 
     if (m_sys.isNull() && m_pub.isNull()) {
-        s << "<!ENTITY " << _name << " \"" << encodeEntity(value.toUtf8()) << "\">" << Qt::endl;
+        // entity nodes are only ever created for external entity declarations,
+        // so at least one of the two IDs is non-null. If we ever change this again,
+        // we need to re-activate this branch (see git history for historic version).
+        Q_UNREACHABLE();
     } else {
         s << "<!ENTITY " << _name << ' ';
         if (m_pub.isNull()) {
