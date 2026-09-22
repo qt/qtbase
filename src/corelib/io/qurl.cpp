@@ -537,6 +537,23 @@ public:
     void setQuery(const QString &value, qsizetype from, qsizetype end);
     void setFragment(const QString &value, qsizetype from, qsizetype end);
 
+    uint presentSections() const noexcept
+    {
+        uint s = sectionIsPresent;
+
+        // We have to ignore the host-is-present flag for local files (the
+        // "file" protocol), due to the requirements of the XDG file URI
+        // specification.
+        if (isLocalFile())
+            s &= ~Host;
+
+        // If the password was set, we must have a username too
+        if (s & Password)
+            s |= UserName;
+
+        return s;
+    }
+
     inline bool hasScheme() const { return sectionIsPresent & Scheme; }
     inline bool hasAuthority() const { return sectionIsPresent & Authority; }
     inline bool hasUserInfo() const { return sectionIsPresent & UserInfo; }
@@ -552,6 +569,15 @@ public:
     QString toLocalFile(QUrl::FormattingOptions options) const;
 
     QString mergePaths(const QString &relativePath) const;
+
+    void clear()
+    {
+        clearError();
+        scheme = userName = password = host = path = query = fragment = QString();
+        port = -1;
+        sectionIsPresent = 0;
+        flags = 0;
+    }
 
     QAtomicInt ref;
     int port;
@@ -899,6 +925,8 @@ inline void QUrlPrivate::appendUserName(QString &appendTo, QUrl::FormattingOptio
     // only called from QUrl::userName()
     appendToUser(appendTo, userName, options,
                  options & QUrl::EncodeDelimiters ? userNameInUrl : userNameInIsolation);
+    if (appendTo.isNull() && hasPassword())
+        appendTo.detach();      // the presence of password implies presence of username
 }
 
 inline void QUrlPrivate::appendPassword(QString &appendTo, QUrl::FormattingOptions options) const
@@ -1371,9 +1399,8 @@ inline void QUrlPrivate::parse(const QString &url, QUrl::ParsingMode parsingMode
     //   relative-part = "//" authority path-abempty
     //                 /  other path types here
 
-    sectionIsPresent = 0;
-    flags = 0;
-    clearError();
+    Q_ASSERT(sectionIsPresent == 0);
+    Q_ASSERT(!error);
 
     // find the important delimiters
     qsizetype colon = -1;
@@ -1429,10 +1456,10 @@ inline void QUrlPrivate::parse(const QString &url, QUrl::ParsingMode parsingMode
         pathStart = authorityEnd;
         setPath(url, pathStart, hierEnd);
     } else {
-        userName.clear();
-        password.clear();
-        host.clear();
-        port = -1;
+        Q_ASSERT(userName.isNull());
+        Q_ASSERT(password.isNull());
+        Q_ASSERT(host.isNull());
+        Q_ASSERT(port == -1);
         pathStart = hierStart;
 
         if (hierStart < hierEnd)
@@ -1441,9 +1468,11 @@ inline void QUrlPrivate::parse(const QString &url, QUrl::ParsingMode parsingMode
             path.clear();
     }
 
+    Q_ASSERT(query.isNull());
     if (size_t(question) < size_t(hash))
         setQuery(url, question + 1, qMin<size_t>(hash, len));
 
+    Q_ASSERT(fragment.isNull());
     if (hash != -1)
         setFragment(url, hash + 1, len);
 
@@ -1868,7 +1897,7 @@ void QUrl::setUrl(const QString &url, ParsingMode parsingMode)
     if (parsingMode == DecodedMode) {
         qWarning("QUrl: QUrl::DecodedMode is not permitted when parsing a full URL");
     } else {
-        detach();
+        detachToClear();
         d->parse(url, parsingMode);
     }
 }
@@ -3073,14 +3102,7 @@ bool QUrl::operator ==(const QUrl &url) const
     if (!url.d)
         return d->isEmpty();
 
-    // First, compare which sections are present, since it speeds up the
-    // processing considerably. We just have to ignore the host-is-present flag
-    // for local files (the "file" protocol), due to the requirements of the
-    // XDG file URI specification.
-    int mask = QUrlPrivate::FullUrl;
-    if (isLocalFile())
-        mask &= ~QUrlPrivate::Host;
-    return (d->sectionIsPresent & mask) == (url.d->sectionIsPresent & mask) &&
+    return (d->presentSections() == url.d->presentSections()) &&
             d->scheme == url.d->scheme &&
             d->userName == url.d->userName &&
             d->password == url.d->password &&
@@ -3110,13 +3132,7 @@ bool QUrl::matches(const QUrl &url, FormattingOptions options) const
     if (!url.d)
         return d->isEmpty();
 
-    // First, compare which sections are present, since it speeds up the
-    // processing considerably. We just have to ignore the host-is-present flag
-    // for local files (the "file" protocol), due to the requirements of the
-    // XDG file URI specification.
-    int mask = QUrlPrivate::FullUrl;
-    if (isLocalFile())
-        mask &= ~QUrlPrivate::Host;
+    uint mask = d->presentSections();
 
     if (options.testFlag(QUrl::RemoveScheme))
         mask &= ~QUrlPrivate::Scheme;
@@ -3202,12 +3218,9 @@ QUrl &QUrl::operator =(const QUrl &url) noexcept
 */
 QUrl &QUrl::operator =(const QString &url)
 {
-    if (url.isEmpty()) {
-        clear();
-    } else {
-        detach();
+    detachToClear();
+    if (!url.isEmpty())
         d->parse(url, TolerantMode);
-    }
     return *this;
 }
 
@@ -3228,6 +3241,22 @@ void QUrl::detach()
         d = new QUrlPrivate;
     else
         qAtomicDetach(d);
+}
+
+/*!
+    \internal
+
+    Forces a detach resulting in a clear state.
+*/
+void QUrl::detachToClear()
+{
+    if (d && (d->ref.loadAcquire() == 1 || !d->ref.deref())) {
+        // we had the only copy
+        d->ref.storeRelaxed(1);
+        d->clear();
+    } else {
+        d = new QUrlPrivate;
+    }
 }
 
 /*!

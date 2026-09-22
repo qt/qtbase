@@ -8,6 +8,7 @@
 #include <QtCore/qstring.h>
 
 #if QT_CONFIG(dom)
+class tst_QDom;
 
 QT_BEGIN_NAMESPACE
 
@@ -200,6 +201,7 @@ protected:
     QDomNode(QDomNodePrivate*);
 
 private:
+    friend class ::tst_QDom;
     friend class QDomDocument;
     friend class QDomDocumentType;
     friend class QDomNodeList;

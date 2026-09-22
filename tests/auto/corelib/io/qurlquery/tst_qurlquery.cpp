@@ -5,7 +5,8 @@
 #include <QtCore/QUrlQuery>
 #include <QTest>
 
-typedef QList<QPair<QString, QString> > QueryItems;
+using QueryItemPair = std::pair<QString, QString>;
+using QueryItems = QList<QueryItemPair>;
 Q_DECLARE_METATYPE(QueryItems)
 Q_DECLARE_METATYPE(QUrl::ComponentFormattingOptions)
 
@@ -45,7 +46,7 @@ private Q_SLOTS:
     void old_hasQueryItem();
 };
 
-static QString prettyPair(const QPair<QString, QString> &pair)
+static QString prettyPair(const QueryItemPair &pair)
 {
     const auto represent = [](const QString &s) {
         return s.isNull() ? u"null"_s : u'"' + s + u'"';
@@ -80,38 +81,38 @@ static bool compare(const QueryItems &actual, const QueryItems &expected,
             return; \
     } while (0)
 
-inline QueryItems operator+(QueryItems items, const QPair<QString, QString> &pair)
+inline QueryItems operator+(QueryItems items, const QueryItemPair &pair)
 {
     // items is already a copy
     items.append(pair);
     return items;
 }
 
-inline QueryItems operator+(const QPair<QString, QString> &pair, QueryItems items)
+inline QueryItems operator+(const QueryItemPair &pair, QueryItems items)
 {
     // items is already a copy
     items.prepend(pair);
     return items;
 }
 
-inline QPair<QString, QString> qItem(const QString &first, const QString &second)
+inline QueryItemPair qItem(const QString &first, const QString &second)
 {
-    return qMakePair(first, second);
+    return {first, second};
 }
 
-inline QPair<QString, QString> qItem(const char *first, const QString &second)
+inline QueryItemPair qItem(const char *first, const QString &second)
 {
-    return qMakePair(QString::fromUtf8(first), second);
+    return {QString::fromUtf8(first), second};
 }
 
-inline QPair<QString, QString> qItem(const char *first, const char *second)
+inline QueryItemPair qItem(const char *first, const char *second)
 {
-    return qMakePair(QString::fromUtf8(first), QString::fromUtf8(second));
+    return {QString::fromUtf8(first), QString::fromUtf8(second)};
 }
 
-inline QPair<QString, QString> qItem(const QString &first, const char *second)
+inline QueryItemPair qItem(const QString &first, const char *second)
 {
-    return qMakePair(first, QString::fromUtf8(second));
+    return {first, QString::fromUtf8(second)};
 }
 
 static QUrlQuery emptyQuery()
@@ -220,11 +221,10 @@ void tst_QUrlQuery::constructing()
     QCOMPARE(empty.queryValueDelimiter(), QChar(QLatin1Char('(')));
     QCOMPARE(empty.queryPairDelimiter(), QChar(QLatin1Char(')')));
 
-    QList<QPair<QString, QString> > query;
-    query += qMakePair(QString("type"), QString("login"));
-    query += qMakePair(QString("name"), QString::fromUtf8("åge nissemannsen"));
-    query += qMakePair(QString("ole&du"), QString::fromUtf8("anne+jørgen=sant"));
-    query += qMakePair(QString("prosent"), QString("%"));
+    QueryItems query = {{u"type"_s, u"login"_s},
+                        {u"name"_s, QString::fromUtf8("åge nissemannsen")},
+                        {u"ole&du"_s, QString::fromUtf8("anne+jørgen=sant")},
+                        {u"prosent"_s, u"%"_s}};
     copy.setQueryItems(query);
     QVERIFY(!copy.isEmpty());
 
@@ -251,7 +251,7 @@ void tst_QUrlQuery::addRemove()
         QCOMPARE(query.queryItemValue("a"), QString("b"));
         QCOMPARE(query.allQueryItemValues("a"), QStringList() << "b");
 
-        QList<QPair<QString, QString> > allItems = query.queryItems();
+        QueryItems allItems = query.queryItems();
         QCOMPARE(allItems.size(), 1);
         QCOMPARE(allItems.at(0).first, QString("a"));
         QCOMPARE(allItems.at(0).second, QString("b"));
@@ -270,7 +270,7 @@ void tst_QUrlQuery::addRemove()
         QCOMPARE(query.queryItemValue("c"), QString("d"));
         QCOMPARE(query.allQueryItemValues("c"), QStringList() << "d");
 
-        QList<QPair<QString, QString> > allItems = query.queryItems();
+        QueryItems allItems = query.queryItems();
         QCOMPARE(allItems.size(), 2);
         QVERIFY(allItems.contains(qItem("a", "b")));
         QVERIFY(allItems.contains(qItem("c", "d")));
@@ -293,7 +293,7 @@ void tst_QUrlQuery::addRemove()
         QCOMPARE(query.queryItemValue("a"), QString("b"));
         QCOMPARE(query.allQueryItemValues("a"), QStringList() << "b");
 
-        QList<QPair<QString, QString> > allItems = query.queryItems();
+        QueryItems allItems = query.queryItems();
         QCOMPARE(allItems.size(), 1);
         QCOMPARE(allItems.at(0).first, QString("a"));
         QCOMPARE(allItems.at(0).second, QString("b"));
@@ -317,7 +317,7 @@ void tst_QUrlQuery::addRemove()
         QCOMPARE(query.queryItemValue("e"), emptyButNotNull);
         QCOMPARE(query.allQueryItemValues("e"), QStringList() << emptyButNotNull);
 
-        QList<QPair<QString, QString> > allItems = query.queryItems();
+        QueryItems allItems = query.queryItems();
         QCOMPARE(allItems.size(), 2);
         QVERIFY(allItems.contains(qItem("a", "b")));
         QVERIFY(allItems.contains(qItem("e", emptyButNotNull)));
@@ -481,7 +481,7 @@ void tst_QUrlQuery::basicParsing_data()
     QTest::newRow("2-ab-ab") << "a=b&a=b" << (QueryItems() << qItem("a", "b") << qItem("a", "b"));
     QTest::newRow("2-ab-ac") << "a=b&a=c" << (QueryItems() << qItem("a", "b") << qItem("a", "c"));
 
-    QPair<QString, QString> novalue = qItem("somekey", QString());
+    QueryItemPair novalue = qItem("somekey", QString());
     QueryItems list2 = baselist + novalue;
     QTest::newRow("3-novalue-ab-cd") << "somekey&a=b&c=d" << (novalue + baselist);
     QTest::newRow("3-ab-novalue-cd") << "a=b&somekey&c=d" << (QueryItems() << qItem("a", "b") << novalue << qItem("c", "d"));
@@ -490,7 +490,7 @@ void tst_QUrlQuery::basicParsing_data()
     list2 << qItem("otherkeynovalue", QString());
     QTest::newRow("4-ab-cd-novalue-novalue") << "a=b&c=d&somekey&otherkeynovalue" << list2;
 
-    QPair<QString, QString> emptyvalue = qItem("somekey", emptyButNotNull);
+    QueryItemPair emptyvalue = qItem("somekey", emptyButNotNull);
     list2 = baselist + emptyvalue;
     QTest::newRow("3-emptyvalue-ab-cd") << "somekey=&a=b&c=d" << (emptyvalue + baselist);
     QTest::newRow("3-ab-emptyvalue-cd") << "a=b&somekey=&c=d" << (QueryItems() << qItem("a", "b") << emptyvalue << qItem("c", "d"));
@@ -709,19 +709,20 @@ void tst_QUrlQuery::old_queryItems()
     // test imported from old tst_qurl.cpp
     QUrlQuery url;
 
-    QList<QPair<QString, QString> > newItems;
-    newItems += qMakePair(QString("1"), QString("a"));
-    newItems += qMakePair(QString("2"), QString("b"));
-    newItems += qMakePair(QString("3"), QString("c"));
-    newItems += qMakePair(QString("4"), QString("a b"));
-    newItems += qMakePair(QString("5"), QString("&"));
-    newItems += qMakePair(QString("foo bar"), QString("hello world"));
-    newItems += qMakePair(QString("foo+bar"), QString("hello+world"));
-    newItems += qMakePair(QString("tex"), QString("a + b = c"));
+    QueryItems newItems = {
+        {u"1"_s, u"a"_s},
+        {u"2"_s, u"b"_s},
+        {u"3"_s, u"c"_s},
+        {u"4"_s, u"a b"_s},
+        {u"5"_s, u"&"_s},
+        {u"foo bar"_s, u"hello world"_s},
+        {u"foo+bar"_s, u"hello+world"_s},
+        {u"tex"_s, u"a + b = c"_s}
+    };
     url.setQueryItems(newItems);
     QVERIFY(!url.isEmpty());
 
-    QList<QPair<QString, QString> > setItems = url.queryItems();
+    QueryItems setItems = url.queryItems();
     QCOMPARE(newItems, setItems);
 
     url.addQueryItem("1", "z");

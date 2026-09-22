@@ -54,17 +54,6 @@ CGImageRef qt_mac_toCGImage(const QImage &inImage)
     return inImage.convertToFormat(QImage::Format_ARGB32_Premultiplied).toCGImage();
 }
 
-CGImageRef qt_mac_toCGImageMask(const QImage &image)
-{
-    static const auto deleter = [](void *image, const void *, size_t) { delete static_cast<QImage *>(image); };
-    QCFType<CGDataProviderRef> dataProvider =
-            CGDataProviderCreateWithData(new QImage(image), image.bits(),
-                                                    image.sizeInBytes(), deleter);
-
-    return CGImageMaskCreate(image.width(), image.height(), 8, image.depth(),
-                              image.bytesPerLine(), dataProvider, NULL, false);
-}
-
 void qt_mac_drawCGImage(CGContextRef inContext, const CGRect *inBounds, CGImageRef inImage)
 {
     CGContextSaveGState( inContext );
@@ -118,17 +107,17 @@ QT_END_NAMESPACE
 
 + (instancetype)imageFromQIcon:(const QIcon &)icon
 {
-    return [NSImage imageFromQIcon:icon withSize:0];
+    return [NSImage imageFromQIcon:icon withSize:QSize()];
 }
 
-+ (instancetype)imageFromQIcon:(const QIcon &)icon withSize:(int)size
++ (instancetype)imageFromQIcon:(const QIcon &)icon withSize:(const QSize &)size
 {
     if (icon.isNull())
         return nil;
 
     auto availableSizes = icon.availableSizes();
-    if (availableSizes.isEmpty() && size > 0)
-        availableSizes << QSize(size, size);
+    if (availableSizes.isEmpty() && !size.isNull())
+        availableSizes << size;
 
     auto nsImage = [[[NSImage alloc] initWithSize:NSZeroSize] autorelease];
 
@@ -144,6 +133,9 @@ QT_END_NAMESPACE
         auto *imageRep = [[NSBitmapImageRep alloc] initWithCGImage:cgImage];
         imageRep.size = image.deviceIndependentSize().toCGSize();
         [nsImage addRepresentation:[imageRep autorelease]];
+        // Match behavior of loading icns files, where the NSImage size
+        // reflects the largest representation.
+        nsImage.size = imageRep.size;
     }
 
     if (!nsImage.representations.count)
@@ -151,8 +143,10 @@ QT_END_NAMESPACE
 
     [nsImage setTemplate:icon.isMask()];
 
-    if (size)
-        nsImage.size = CGSizeMake(size, size);
+    if (!size.isNull()) {
+        auto imageSize = QSizeF::fromCGSize(nsImage.size);
+        nsImage.size = imageSize.scaled(size, Qt::KeepAspectRatio).toCGSize();
+    }
 
     return nsImage;
 }

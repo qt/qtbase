@@ -16,6 +16,8 @@
 #include <initializer_list>
 #include <type_traits>
 
+class tst_QList;
+
 QT_BEGIN_NAMESPACE
 
 namespace QtPrivate {
@@ -77,6 +79,8 @@ class QList
     using DataOps = QArrayDataOps<T>;
     using DataPointer = QArrayDataPointer<T>;
     class DisableRValueRefs {};
+
+    friend class ::tst_QList;
 
     DataPointer d;
 

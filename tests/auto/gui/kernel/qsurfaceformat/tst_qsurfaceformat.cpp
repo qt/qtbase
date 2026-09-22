@@ -54,10 +54,10 @@ void tst_QSurfaceFormat::versionCheck()
     format.setMinorVersion(formatMinor);
     format.setMajorVersion(formatMajor);
 
-    QCOMPARE(format.version() >= qMakePair(compareMajor, compareMinor), expected);
+    QCOMPARE(format.version() >= std::pair(compareMajor, compareMinor), expected);
 
     format.setVersion(formatMajor, formatMinor);
-    QCOMPARE(format.version() >= qMakePair(compareMajor, compareMinor), expected);
+    QCOMPARE(format.version() >= std::pair(compareMajor, compareMinor), expected);
 }
 
 #include <tst_qsurfaceformat.moc>

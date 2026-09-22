@@ -80,6 +80,8 @@ class Q_CORE_EXPORT QTimeZone
         ShortData s;
     };
     QTimeZone(ShortData &&sd) : d(std::move(sd)) {}
+    // Would be treated as int offsetSeconds:
+    QTimeZone(Qt::TimeSpec) = delete; // Use QTimeZone::UTC or QTimeZone::LocalTime instead.
 
 public:
     // Sane UTC offsets range from -14 to +14 hours:

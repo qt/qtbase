@@ -32,7 +32,7 @@ struct QArrayData
     };
     Q_DECLARE_FLAGS(ArrayOptions, ArrayOption)
 
-    QBasicAtomicInt m_ref;
+    QBasicAtomicInt ref_;
     ArrayOptions flags;
     qsizetype alloc;
 
@@ -49,19 +49,19 @@ struct QArrayData
     /// Returns true if sharing took place
     bool ref() noexcept
     {
-        m_ref.ref();
+        ref_.ref();
         return true;
     }
 
     /// Returns false if deallocation is necessary
     bool deref() noexcept
     {
-        return m_ref.deref();
+        return ref_.deref();
     }
 
     bool isShared() const noexcept
     {
-        return m_ref.loadRelaxed() != 1;
+        return ref_.loadRelaxed() != 1;
     }
 
     // Returns true if a detach is necessary before modifying the data
@@ -69,7 +69,7 @@ struct QArrayData
     // detaching is necessary, you should be in a non-const function already
     bool needsDetach() const noexcept
     {
-        return m_ref.loadRelaxed() > 1;
+        return ref_.loadRelaxed() > 1;
     }
 
     qsizetype detachCapacity(qsizetype newSize) const noexcept

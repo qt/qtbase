@@ -30,6 +30,7 @@ public:
     tst_QHostAddress();
 
 private slots:
+    void constructor();
     void constructor_QString_data();
     void constructor_QString();
     void setAddress_QString_data();
@@ -60,6 +61,42 @@ Q_DECLARE_METATYPE(QHostAddress)
 tst_QHostAddress::tst_QHostAddress()
 {
     qRegisterMetaType<QHostAddress>("QHostAddress");
+}
+
+static void verifyClear(const QHostAddress &addr)
+{
+    QVERIFY(addr.isNull());
+    QVERIFY(!addr.isLoopback());
+    QVERIFY(!addr.isGlobal());
+    QVERIFY(!addr.isLinkLocal());
+    QVERIFY(!addr.isSiteLocal());
+    QVERIFY(!addr.isUniqueLocalUnicast());
+    QVERIFY(!addr.isMulticast());
+    QVERIFY(!addr.isBroadcast());
+    QCOMPARE(addr, QHostAddress());
+    QCOMPARE(addr, QHostAddress::Null);
+    QCOMPARE(addr.protocol(), QHostAddress::UnknownNetworkLayerProtocol);
+
+    bool ok = true;
+    QCOMPARE(addr.toIPv4Address(&ok), 0);
+    QVERIFY(!ok);
+
+    QCOMPARE(QByteArrayView::fromArray(addr.toIPv6Address().c),
+             QByteArrayView::fromArray(QIPv6Address{}.c));
+    QCOMPARE(addr.scopeId(), QString());
+
+    QCOMPARE(addr.toString(), QString());
+
+    size_t seed = QHashSeed::globalSeed();
+    QCOMPARE(qHash(addr, seed), qHash(QHostAddress(), seed));
+    seed = 0;
+    QCOMPARE(qHash(addr, seed), qHash(QHostAddress(), seed));
+}
+
+void tst_QHostAddress::constructor()
+{
+    QHostAddress addr;
+    verifyClear(addr);
 }
 
 void tst_QHostAddress::constructor_QString_data()
@@ -94,6 +131,9 @@ void tst_QHostAddress::constructor_QString()
         QVERIFY( hostAddr.isNull() );
         QVERIFY( hostAddr.protocol() == QHostAddress::UnknownNetworkLayerProtocol );
     }
+
+    hostAddr.clear();
+    verifyClear(hostAddr);
 }
 
 void tst_QHostAddress::setAddress_QString_data()
@@ -201,6 +241,9 @@ void tst_QHostAddress::setAddress_QString()
         QVERIFY( hostAddr.isNull() );
         QVERIFY( hostAddr.protocol() == QHostAddress::UnknownNetworkLayerProtocol );
     }
+
+    hostAddr.clear();
+    verifyClear(hostAddr);
 }
 
 void tst_QHostAddress::specialAddresses_data()
@@ -239,6 +282,7 @@ void tst_QHostAddress::specialAddresses()
     QFETCH(QHostAddress::SpecialAddress, address);
     QFETCH(bool, result);
     QCOMPARE(QHostAddress(text) == address, result);
+    size_t seed = QHashSeed::globalSeed();
 
     //check special address equal to itself (QTBUG-22898), note two overloads of operator==
     QVERIFY(QHostAddress(address) == QHostAddress(address));
@@ -252,11 +296,19 @@ void tst_QHostAddress::specialAddresses()
         QHostAddress ha;
         ha.setAddress(address);
         QVERIFY(ha == address);
+        QCOMPARE(qHash(ha, seed), qHash(QHostAddress(address), seed));
+        QCOMPARE(qHash(ha, 0), qHash(QHostAddress(address), 0));
     }
 
     QHostAddress setter;
     setter.setAddress(text);
-    QCOMPARE(setter == address, result);
+    if (result) {
+        QCOMPARE(setter, address);
+        QCOMPARE(qHash(setter, seed), qHash(QHostAddress(address), seed));
+        QCOMPARE(qHash(setter, 0), qHash(QHostAddress(address), 0));
+    } else {
+        QCOMPARE_NE(setter, address);
+    }
 }
 
 
@@ -288,8 +340,11 @@ void tst_QHostAddress::compare()
 
     QCOMPARE(first == second, result);
     QCOMPARE(second == first, result);
-    if (result == true)
-        QCOMPARE(qHash(first), qHash(second));
+    if (result == true) {
+        size_t seed = QHashSeed::globalSeed();
+        QCOMPARE(qHash(first, seed), qHash(second, seed));
+        QCOMPARE(qHash(first, 0), qHash(second, 0));
+    }
 }
 
 void tst_QHostAddress::isEqual_data()
@@ -370,6 +425,11 @@ void tst_QHostAddress::scopeId()
     address2 = address;
     QCOMPARE(address2.scopeId(), QString("eth0"));
     QCOMPARE(address2.toString().toLower(), QString("fe80::2e0:4cff:fefb:662a%eth0"));
+
+    address.clear();
+    verifyClear(address);
+    address2.clear();
+    verifyClear(address2);
 }
 
 void tst_QHostAddress::hashKey()

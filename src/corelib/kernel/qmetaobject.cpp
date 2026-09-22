@@ -3662,8 +3662,10 @@ bool QMetaProperty::write(QObject *object, const QVariant &value) const
     QVariant v = value;
     QMetaType t(mobj->d.metaTypes[data.index(mobj)]);
     if (t != QMetaType::fromType<QVariant>() && t != v.metaType()) {
-        if (isEnumType() && !t.metaObject() && v.metaType().id() == QMetaType::QString) {
+        if (isEnumType() && !t.metaObject() && v.metaType() == QMetaType::fromType<QString>()) {
             // Assigning a string to a property of type Q_ENUMS (instead of Q_ENUM)
+            // means the QMetaType has no associated QMetaObject, so it can't
+            // do the conversion (see qmetatype.cpp:convertToEnum()).
             bool ok;
             if (isFlagType())
                 v = QVariant(menum.keysToValue(value.toByteArray(), &ok));
@@ -3671,7 +3673,8 @@ bool QMetaProperty::write(QObject *object, const QVariant &value) const
                 v = QVariant(menum.keyToValue(value.toByteArray(), &ok));
             if (!ok)
                 return false;
-        } else if (!value.isValid()) {
+        }
+        if (!v.isValid()) {
             if (isResettable())
                 return reset(object);
             v = QVariant(t, nullptr);

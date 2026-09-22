@@ -81,6 +81,8 @@ private slots:
 
     void columnWidthWithImage_data();
     void columnWidthWithImage();
+
+    void QTBUG138678_insertColumnAtStartWithRowspan();
 #endif
 
 private:
@@ -1336,6 +1338,49 @@ void tst_QTextTable::columnWidthWithImage()
     const QRectF rightRect = currentTable->document()->documentLayout()->blockBoundingRect(block);
     QCOMPARE(leftRect.size().toSize(), imageSize);
     QVERIFY(rightRect.left() > leftRect.right());
+}
+
+void tst_QTextTable::QTBUG138678_insertColumnAtStartWithRowspan()
+{
+    QString s =
+"<html><body>"
+"<table border=1>"
+"<tr>"
+"    <td />"
+"    <td />"
+"    <td />"
+"    <td />"
+"    <td />"
+"</tr>"
+"<tr>"
+"    <td rowspan=2 />"
+"    <td rowspan=2 />"
+"    <td />"
+"    <td />"
+"    <td rowspan=2 />"
+"</tr>"
+"<tr>"
+"    <td />"
+"    <td />"
+"</tr>"
+"</table></body></html>)";
+
+    QTextDocument doc;
+    doc.setHtml(s);
+
+    QTextEdit textEdit;
+    textEdit.setDocument(&doc);
+    textEdit.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&textEdit));
+
+    QTextCursor cursor(doc.firstBlock());
+    cursor.movePosition(QTextCursor::Right);
+
+    QTextTable *currentTable = cursor.currentTable();
+    QVERIFY(currentTable);
+
+    // Don't assert
+    currentTable->insertColumns(0, 1);
 }
 #endif
 

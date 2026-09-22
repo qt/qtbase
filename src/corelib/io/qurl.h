@@ -266,6 +266,8 @@ public:
     friend Q_CORE_EXPORT size_t qHash(const QUrl &url, size_t seed) noexcept;
 
 private:
+    void detachToClear();
+
     QUrlPrivate *d;
     friend class QUrlQuery;
 

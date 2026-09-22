@@ -1559,7 +1559,7 @@ static void QT_FASTCALL storeRGB16FFromRGB32(uchar *dest, const uint *src, int i
 {
     QRgbaFloat16 *d = reinterpret_cast<QRgbaFloat16 *>(dest) + index;
     for (int i = 0; i < count; ++i)
-        d[i] = QRgbaFloat16::fromArgb32(src[i]);
+        d[i] = QRgbaFloat16::fromArgb32(src[i] | 0xff000000);
 }
 
 static const uint *QT_FASTCALL fetchRGBA16FToARGB32PM(uint *buffer, const uchar *src, int index, int count,
@@ -1615,7 +1615,7 @@ static void QT_FASTCALL storeRGB32FFromRGB32(uchar *dest, const uint *src, int i
 {
     QRgbaFloat32 *d = reinterpret_cast<QRgbaFloat32 *>(dest) + index;
     for (int i = 0; i < count; ++i)
-        d[i] = QRgbaFloat32::fromArgb32(src[i]);
+        d[i] = QRgbaFloat32::fromArgb32(src[i] | 0xff000000);
 }
 
 static const uint *QT_FASTCALL fetchRGBA32FToARGB32PM(uint *buffer, const uchar *src, int index, int count,

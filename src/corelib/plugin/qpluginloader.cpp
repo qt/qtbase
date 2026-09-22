@@ -71,7 +71,7 @@ using namespace Qt::StringLiterals;
     link to plugins statically. You can use QLibrary if you need to
     load dynamic libraries in a statically linked application.
 
-    \sa QLibrary, {Plug & Paint Example}
+    \sa QLibrary, {Echo Plugin Example}
 */
 
 static constexpr QLibrary::LoadHints defaultLoadHints = QLibrary::PreventUnloadHint;

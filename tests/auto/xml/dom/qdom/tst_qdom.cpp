@@ -15,6 +15,7 @@
 #include <QtXml>
 #include <QVariant>
 #include <cmath>
+#include <QtXml/private/qdom_p.h>
 
 QT_REQUIRE_CONFIG(dom);
 QT_FORWARD_DECLARE_CLASS(QDomDocument)
@@ -108,6 +109,7 @@ private slots:
     void DTDInternalSubset_data() const;
     void QTBUG49113_dontCrashWithNegativeIndex() const;
     void standalone();
+    void splitTextLeakMemory() const;
 
     void cleanupTestCase() const;
 
@@ -2342,6 +2344,20 @@ void tst_QDom::DTDInternalSubset_data() const
           + "]>\n"
           "<note/>\n"
        << internalSubset0;
+}
+
+void tst_QDom::splitTextLeakMemory() const
+{
+    QDomDocument doc;
+    QDomElement top = doc.createElement("top");
+    QDomText text = doc.createTextNode("abcdefgh");
+    top.appendChild(text);
+    QDomText end = text.splitText(2);
+    QCOMPARE(text.data(), "ab"_L1);
+    QCOMPARE(end.data(), "cdefgh"_L1);
+    // only the parent node and the document have a reference on the nodes
+    QCOMPARE(text.impl->ref.loadRelaxed(), 2);
+    QCOMPARE(end.impl->ref.loadRelaxed(), 2);
 }
 
 QTEST_MAIN(tst_QDom)

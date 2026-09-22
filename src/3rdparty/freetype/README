@@ -1,7 +1,7 @@
-FreeType 2.13.3
+FreeType 2.14.1
 ===============
 
-Homepage: https://www.freetype.org
+Homepage: https://freetype.org
 
 FreeType is a freely available software library to render fonts.
 
@@ -13,7 +13,7 @@ Please   read  the   `docs/CHANGES`   file,   it  contains   IMPORTANT
 INFORMATION.
 
 Read the files `docs/INSTALL*`  for installation instructions; see the
-file `docs/LICENSE.TXT` for the available licenses.
+file `LICENSE.TXT` for the available licenses.
 
 For using FreeType's git repository  instead of a distribution bundle,
 please read file  `README.git`.  Note that you have  to actually clone
@@ -32,13 +32,13 @@ sites.  Go to
 
 and download one of the following files.
 
-  freetype-doc-2.13.3.tar.xz
-  freetype-doc-2.13.3.tar.gz
-  ftdoc2133.zip
+  freetype-doc-2.14.1.tar.xz
+  freetype-doc-2.14.1.tar.gz
+  ftdoc2141.zip
 
 To view the documentation online, go to
 
-  https://www.freetype.org/freetype2/docs/
+  https://freetype.org/freetype2/docs/
 
 
 Mailing Lists
@@ -54,7 +54,7 @@ e-mail lists.
 
 The lists are moderated; see
 
-  https://www.freetype.org/contact.html
+  https://freetype.org/contact.html
 
 how to subscribe.
 
@@ -85,7 +85,7 @@ FreeType!
 
 Details on the process can be found here:
 
-  https://www.freetype.org/developer.html#patches
+  https://freetype.org/developer.html#patches
 
 
 Enjoy!
@@ -94,7 +94,7 @@ Enjoy!
 
 ----------------------------------------------------------------------
 
-Copyright (C) 2006-2024 by
+Copyright (C) 2006-2025 by
 David Turner, Robert Wilhelm, and Werner Lemberg.
 
 This  file is  part of  the FreeType  project, and  may only  be used,

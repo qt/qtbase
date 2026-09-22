@@ -17,6 +17,8 @@
 
 #include <QtCore/private/qcore_mac_p.h>
 
+#include <QtCore/qsize.h>
+
 #include <QtGui/private/qtguiglobal_p.h>
 #include <QtGui/qregion.h>
 #include <QtGui/qpalette.h>
@@ -44,13 +46,13 @@ QT_END_NAMESPACE
 @interface NSImage (QtExtras)
 + (instancetype)imageFromQImage:(const QT_PREPEND_NAMESPACE(QImage) &)image;
 + (instancetype)imageFromQIcon:(const QT_PREPEND_NAMESPACE(QIcon) &)icon;
-+ (instancetype)imageFromQIcon:(const QT_PREPEND_NAMESPACE(QIcon) &)icon withSize:(int)size;
++ (instancetype)imageFromQIcon:(const QT_PREPEND_NAMESPACE(QIcon) &)icon
+                      withSize:(const QT_PREPEND_NAMESPACE(QSize) &)size;
 @end
 QT_BEGIN_NAMESPACE
 
 #endif
 Q_GUI_EXPORT CGImageRef qt_mac_toCGImage(const QImage &qImage);
-Q_GUI_EXPORT CGImageRef qt_mac_toCGImageMask(const QImage &qImage);
 Q_GUI_EXPORT QImage qt_mac_toQImage(CGImageRef image);
 
 Q_GUI_EXPORT void qt_mac_drawCGImage(CGContextRef inContext, const CGRect *inBounds, CGImageRef inImage);

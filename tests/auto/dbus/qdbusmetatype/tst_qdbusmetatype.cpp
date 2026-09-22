@@ -25,7 +25,7 @@ private slots:
     void invalidTypes();
 };
 
-typedef QPair<QString,QString> StringPair;
+using StringPair = std::pair<QString, QString>;
 
 struct Struct1 { };             // (s)
 struct Struct2 { };             // (sos)

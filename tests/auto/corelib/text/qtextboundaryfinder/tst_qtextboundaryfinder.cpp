@@ -12,7 +12,7 @@
 
 #include <algorithm>
 
-using namespace Qt::Literals::StringLiterals;
+using namespace Qt::StringLiterals;
 
 class tst_QTextBoundaryFinder : public QObject
 {

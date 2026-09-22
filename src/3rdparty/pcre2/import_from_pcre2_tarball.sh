@@ -44,6 +44,7 @@ copy_file() {
 
 copy_file "src/pcre2.h.generic" "src/pcre2.h"
 copy_file "src/pcre2_chartables.c.dist" "src/pcre2_chartables.c"
+copy_file "deps/sljit/LICENSE" "LICENSE-SLJIT"
 
 FILES="
     AUTHORS.md
@@ -53,6 +54,7 @@ FILES="
     src/pcre2_chkdint.c
     src/pcre2_compile.c
     src/pcre2_compile.h
+    src/pcre2_compile_cgroup.c
     src/pcre2_compile_class.c
     src/pcre2_config.c
     src/pcre2_context.c
@@ -63,8 +65,6 @@ FILES="
     src/pcre2_internal.h
     src/pcre2_intmodedep.h
     src/pcre2_jit_compile.c
-    src/pcre2_jit_match.c
-    src/pcre2_jit_misc.c
     src/pcre2_maketables.c
     src/pcre2_match.c
     src/pcre2_match_data.c
@@ -74,7 +74,8 @@ FILES="
     src/pcre2_script_run.c
     src/pcre2_serialize.c
     src/pcre2_jit_char_inc.h
-    src/pcre2_jit_neon_inc.h
+    src/pcre2_jit_match_inc.h
+    src/pcre2_jit_misc_inc.h
     src/pcre2_jit_simd_inc.h
     src/pcre2_string_utils.c
     src/pcre2_study.c
@@ -83,7 +84,7 @@ FILES="
     src/pcre2_tables.c
     src/pcre2_ucd.c
     src/pcre2_ucp.h
-    src/pcre2_ucptables.c
+    src/pcre2_ucptables_inc.h
     src/pcre2_util.h
     src/pcre2_valid_utf.c
     src/pcre2_xclass.c

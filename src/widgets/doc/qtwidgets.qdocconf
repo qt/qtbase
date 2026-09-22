@@ -26,7 +26,20 @@ qhp.QtWidgets.subprojects.classes.sortPages = true
 
 tagfile                 = ../../../doc/qtwidgets/qtwidgets.tags
 
-depends                 += qtcore qtgui qtdoc qtsql qtdesigner qtquick qmake qtcmake qtsvg qtlinguist qthelp
+depends += \
+    qtcore \
+    qtgui \
+    qtdoc \
+    qtsql \
+    qtdesigner \
+    qtquick \
+    qmake \
+    qtcmake \
+    qtsvg \
+    qtlinguist \
+    qthelp \
+    qtopengl \
+    qtshadertools
 
 headerdirs  += ..
 

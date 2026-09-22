@@ -235,7 +235,7 @@ public:
      * The first string is the test ID, the second is
      * a description of what went wrong.
      */
-    typedef QPair<QString, QString> GeneralFailure;
+    using GeneralFailure = std::pair<QString, QString>;
 
     /**
      * The string is the test ID.
@@ -376,7 +376,7 @@ public:
             QFile inputFile(inputFilePath);
             if(!inputFile.open(QIODevice::ReadOnly))
             {
-                failures.append(qMakePair(id, QLatin1String("Failed to open input file ") + inputFilePath));
+                failures.append({id, "Failed to open input file "_L1 + inputFilePath});
                 return true;
             }
 
@@ -384,8 +384,8 @@ public:
             {
                 if(isWellformed(&inputFile, ParseSinglePass))
                 {
-                     failures.append(qMakePair(id, QLatin1String("Failed to flag ") + inputFilePath
-                                                   + QLatin1String(" as not well-formed.")));
+                    failures.append({id,
+                                    "Failed to flag %1 as not well-formed."_L1.arg(inputFilePath)});
 
                      /* Exit, the incremental test will fail as well, no need to flood the output. */
                      return true;
@@ -395,8 +395,8 @@ public:
 
                 if(isWellformed(&inputFile, ParseIncrementally))
                 {
-                     failures.append(qMakePair(id, QLatin1String("Failed to flag ") + inputFilePath
-                                                   + QLatin1String(" as not well-formed with incremental parsing.")));
+                     failures.append({id, "Failed to flag %1 as not well-formed with incremental "
+                                          "parsing."_L1.arg(inputFilePath)});
                 }
                 else
                     successes.append(id);
@@ -419,7 +419,7 @@ public:
 
                     if(!expectedFile.open(QIODevice::ReadOnly))
                     {
-                        failures.append(qMakePair(id, QLatin1String("Failed to open baseline ") + expectedFilePath));
+                        failures.append({id, "Failed to open baseline "_L1 + expectedFilePath});
                         return true;
                     }
 
@@ -438,9 +438,9 @@ public:
                     input = makeCanonical(inputFilePath, docType, hasError, (incremental = true));
 
                 if(hasError)
-                    failures.append(qMakePair(id, QString::fromLatin1("Failed to parse %1%2")
-                                              .arg(incremental?"(incremental run only) ":"")
-                                              .arg(inputFilePath)));
+                    failures.append({id, "Failed to parse %1%2"_L1
+                                         .arg(incremental ? "(incremental run only) " : "",
+                                              inputFilePath)});
 
                 if(!expectedFilePath.isEmpty() && input != expected)
                 {
