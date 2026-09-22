@@ -180,11 +180,6 @@ T evalWithPromise(
     std::function<void(QOhosJsState &, QOhosTaskPromise<T>)> evalFunc,
     std::string callerContextName = {});
 
-// Backward-compatible alias for evalWithPromise(); kept so existing callers
-// passing a result consumer keep compiling.
-template<typename T>
-T evalWithConsumer(std::function<void(QOhosJsState &, std::function<void(T)>)> evalFunc);
-
 }
 
 class Q_CORE_EXPORT QOhosJsThreadOps
@@ -533,15 +528,6 @@ T QOhosJsThreadGateway::evalWithPromise(
         callerContextName);
 
     return std::move(*result);
-}
-
-template<typename T>
-T QOhosJsThreadGateway::evalWithConsumer(std::function<void(QOhosJsState &, std::function<void(T)>)> evalFunc)
-{
-    return evalWithPromise<T>(
-        [evalFunc = std::move(evalFunc)](QOhosJsState &jsState, QOhosTaskPromise<T> resultPromise) {
-            evalFunc(jsState, std::move(resultPromise));
-        });
 }
 
 QT_END_NAMESPACE
