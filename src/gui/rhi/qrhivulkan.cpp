@@ -861,21 +861,42 @@ bool QRhiVulkan::create(QRhi::Flags flags)
 
 #ifdef VK_KHR_create_renderpass2
         if (devExts.contains(VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME)) {
-            requestedDevExts.append(VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME);
-            caps.renderPass2KHR = true;
+            // VK_KHR_create_renderpass2 depends on multiview and maintenance2. Both are
+            // core in Vulkan 1.1, but with a 1.0 instance they have to be requested
+            // explicitly, otherwise enabling create_renderpass2 is invalid.
+            bool canEnable = true;
+            if (caps.apiVersion < QVersionNumber(1, 1)) {
+                canEnable = hasPhysDevProp2
+                            && devExts.contains(QByteArrayLiteral("VK_KHR_multiview"))
+                            && devExts.contains(QByteArrayLiteral("VK_KHR_maintenance2"));
+                if (canEnable) {
+                    requestedDevExts.append("VK_KHR_multiview");
+                    requestedDevExts.append("VK_KHR_maintenance2");
+                }
+            }
+            if (canEnable) {
+                requestedDevExts.append(VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME);
+                caps.renderPass2KHR = true;
+            }
         }
 #endif
 
 #ifdef VK_KHR_depth_stencil_resolve
-        if (devExts.contains(VK_KHR_DEPTH_STENCIL_RESOLVE_EXTENSION_NAME)) {
-            requestedDevExts.append(VK_KHR_DEPTH_STENCIL_RESOLVE_EXTENSION_NAME);
-            caps.depthStencilResolveKHR = true;
+        {
+            const bool hasRenderPass2Dep = caps.renderPass2KHR || caps.apiVersion >= QVersionNumber(1, 2);
+            if (hasRenderPass2Dep && devExts.contains(VK_KHR_DEPTH_STENCIL_RESOLVE_EXTENSION_NAME)) {
+                requestedDevExts.append(VK_KHR_DEPTH_STENCIL_RESOLVE_EXTENSION_NAME);
+                caps.depthStencilResolveKHR = true;
+            }
         }
 #endif
 
 #ifdef VK_KHR_fragment_shading_rate
-        if (devExts.contains(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME))
-            requestedDevExts.append(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME);
+        {
+            const bool hasRenderPass2Dep = caps.renderPass2KHR || caps.apiVersion >= QVersionNumber(1, 2);
+            if (hasRenderPass2Dep && devExts.contains(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME))
+                requestedDevExts.append(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME);
+        }
 #endif
 
 #ifdef VK_EXT_device_fault
