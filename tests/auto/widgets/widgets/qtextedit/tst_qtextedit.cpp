@@ -2315,7 +2315,8 @@ void tst_QTextEdit::noWrapBackgrounds()
     topLevel.show();
     QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
 
-    const QImage img = edit.viewport()->grab().toImage();
+    QImage img(edit.viewport()->size(), QImage::Format_ARGB32_Premultiplied);
+    edit.viewport()->render(&img);
     QCOMPARE(img, img.flipped(Qt::Horizontal));
 }
 
