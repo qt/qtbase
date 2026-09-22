@@ -704,7 +704,18 @@ int QDateTimeParser::sectionMaxSize(Section s, int count) const
     case YearSection2Digits:
         return 2;
     case TimeZoneSection:
-        // Arbitrarily many tokens (each up to 14 bytes) joined with / separators:
+        switch (count) { // See findTimeZone()'s documentation.
+        case 1: // any recognized format
+            break;
+        case 2: // simple offset format, no colons [sign]HHmm
+            return 5;
+        case 3: // simple offset format, with colons [sign]HH:mm
+            return 6;
+        case 4: // only a zone name
+            break;
+        }
+        // IANA ID is arbitrarily many tokens (each up to 14 bytes) joined with
+        // '/' separators. Other forms of name are unconstrained.
         return std::numeric_limits<int>::max();
 
     case CalendarPopupSection:
@@ -1559,11 +1570,6 @@ QDateTimeParser::parse(const QString &input, int position,
 
     if (scan.value.isValid() && scan.state != Invalid) {
         if (context != FromString && scan.value < minimum) {
-            const QLatin1Char space(' ');
-            if (scan.value >= minimum)
-                qWarning("QDateTimeParser::parse Internal error 3 (%ls %ls)",
-                         qUtf16Printable(scan.value.toString()), qUtf16Printable(minimum.toString()));
-
             bool done = false;
             scan.state = Invalid;
             const int sectionNodesCount = sectionNodes.size();
@@ -1572,8 +1578,13 @@ QDateTimeParser::parse(const QString &input, int position,
                 QString t = sectionText(m_text, i, sn.pos).toLower();
                 if ((t.size() < sectionMaxSize(i)
                      && ((fieldInfo(i) & (FixedWidth|Numeric)) != Numeric))
-                    || t.contains(space)) {
+                    || t.contains(u' ')) {
                     switch (sn.type) {
+                    case TimeZoneSection:
+                        // Don't even try to find a zone that might match if we
+                        // amended the text. It may well exist but it'd be
+                        // insanely expensive to check.
+                        break;
                     case AmPmSection:
                         switch (findAmPm(t, i)) {
                         case AM:
@@ -2062,6 +2073,8 @@ int QDateTimeParser::SectionNode::maxChange() const
     case MinuteSection: return (MINS_PER_HOUR - 1) * MSECS_PER_MIN;
     case Hour24Section: return 23 * MSECS_PER_HOUR;
     case Hour12Section: return 11 * MSECS_PER_HOUR;
+    case TimeZoneSection:
+        return (QTimeZone::MaxUtcOffsetSecs - QTimeZone::MinUtcOffsetSecs - 1) * MSECS_PER_SEC;
 
         // Date. unit is day (assuming Gregorian calendar):
         // 1 to 7 (or n month-start to n-1 of next week, month-end to n+1 of previous week):
