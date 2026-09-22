@@ -9716,7 +9716,7 @@ void QWidget::focusInEvent(QFocusEvent *)
     \fn void QWidget::focusOutEvent(QFocusEvent *event)
 
     This event handler can be reimplemented in a subclass to receive
-    keyboard focus events (focus lost) for the widget. The events is
+    keyboard focus events (focus lost) for the widget. The event is
     passed in the \a event parameter.
 
     A widget normally must setFocusPolicy() to something other than
