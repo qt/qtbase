@@ -3208,6 +3208,7 @@ QRhi::FrameOpResult QRhiVulkan::endOffscreenFrame(QRhi::EndFrameFlags flags)
 QRhi::FrameOpResult QRhiVulkan::finish()
 {
     QVkSwapChain *swapChainD = nullptr;
+    QVkSwapChain::FrameResources *swapChainFrameRes = nullptr;
     if (inFrame) {
         // There is either a swapchain or an offscreen frame on-going.
         // End command recording and submit what we have.
@@ -3223,13 +3224,19 @@ QRhi::FrameOpResult QRhiVulkan::finish()
             Q_ASSERT(currentSwapChain);
             Q_ASSERT(currentSwapChain->cbWrapper.recordingPass == QVkCommandBuffer::NoPass);
             swapChainD = currentSwapChain;
+            swapChainFrameRes = &swapChainD->frameRes[swapChainD->bufferCount > 1 ? currentFrameSlot : 0];
             recordPrimaryCommandBuffer(&swapChainD->cbWrapper);
             swapChainD->cbWrapper.resetCommands();
             cb = swapChainD->cbWrapper.cb;
         }
-        QRhi::FrameOpResult submitres = endAndSubmitPrimaryCommandBuffer(cb, VK_NULL_HANDLE, nullptr, nullptr);
+        VkSemaphore *waitSem = swapChainFrameRes && swapChainFrameRes->imageSemWaitable
+                               ? &swapChainFrameRes->imageSem
+                               : nullptr;
+        QRhi::FrameOpResult submitres = endAndSubmitPrimaryCommandBuffer(cb, VK_NULL_HANDLE, waitSem, nullptr);
         if (submitres != QRhi::FrameOpSuccess)
             return submitres;
+        if (waitSem)
+            swapChainFrameRes->imageSemWaitable = false;
     }
 
     df->vkQueueWaitIdle(gfxQueue);
@@ -3241,9 +3248,8 @@ QRhi::FrameOpResult QRhiVulkan::finish()
         if (ofr.active) {
             startPrimaryCommandBuffer(&ofr.cbWrapper[currentFrameSlot]->cb);
         } else {
-            QVkSwapChain::FrameResources &frame(swapChainD->frameRes[currentFrameSlot]);
-            startPrimaryCommandBuffer(&frame.cmdBuf);
-            swapChainD->cbWrapper.cb = frame.cmdBuf;
+            startPrimaryCommandBuffer(&swapChainFrameRes->cmdBuf);
+            swapChainD->cbWrapper.cb = swapChainFrameRes->cmdBuf;
         }
     }
 
