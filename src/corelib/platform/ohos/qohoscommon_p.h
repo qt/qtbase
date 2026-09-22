@@ -64,10 +64,7 @@ constexpr bool isStdOptional = IsStdOptional<T>::value;
 }
 
 template<typename T, typename Func>
-std::enable_if_t<
-    qohoscommon_p_h_detail::isStdOptional<QOhosInvokeResult<Func, T>>,
-    QOhosInvokeResult<Func, T>>
-qAndThen(const std::optional<T> &opt, Func &&func);
+QOhosInvokeResult<Func, T> qAndThen(const std::optional<T> &opt, Func &&func);
 
 template<typename T, typename Func>
 std::optional<std::remove_cv_t<QOhosInvokeResult<Func, T>>> qTransform(const std::optional<T> &opt, Func &&func);
@@ -230,11 +227,11 @@ std::shared_ptr<void> makeDestroyNotifier(std::function<void()> callOnDestroy);
 }
 
 template<typename T, typename Func>
-std::enable_if_t<
-    qohoscommon_p_h_detail::isStdOptional<QOhosInvokeResult<Func, T>>,
-    QOhosInvokeResult<Func, T>>
-qAndThen(const std::optional<T> &opt, Func &&func)
+QOhosInvokeResult<Func, T> qAndThen(const std::optional<T> &opt, Func &&func)
 {
+    static_assert(
+        qohoscommon_p_h_detail::isStdOptional<QOhosInvokeResult<Func, T>>,
+        "func must return a std::optional");
     return opt.has_value() ? func(*opt) : QOhosInvokeResult<Func, T>();
 }
 
