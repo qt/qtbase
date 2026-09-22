@@ -312,11 +312,12 @@ static QMap<int, QByteArray> parseTzAbbreviations(QDataStream &ds, int tzh_charc
     }
     // Then extract all the substrings pointed to by types
     for (const QTzType &type : types) {
-        QByteArray abbrev;
-        for (int i = type.tz_abbrind; input.at(i) != '\0'; ++i)
-            abbrev.append(input.at(i));
+        const qsizetype end = type.tz_abbrind < input.size()
+                ? input.indexOf('\0', type.tz_abbrind) : -1;
+        if (end < 0)
+            return QMap<int, QByteArray>();
         // Have reached end of an abbreviation, so add to map
-        map[type.tz_abbrind] = abbrev;
+        map[type.tz_abbrind] = input.sliced(type.tz_abbrind, end - type.tz_abbrind);
     }
     return map;
 }
