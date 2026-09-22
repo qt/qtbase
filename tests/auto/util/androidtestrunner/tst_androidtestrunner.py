@@ -1316,7 +1316,8 @@ class DeviceRunTests(unittest.TestCase):
         try:
             proc = self.invoke(scenario="crash", test_args=["runScenario"],
                                extra_runner_args=("--show-logcat",),
-                               extra_env={"ANDROID_NDK_ROOT": ndk})
+                               extra_env={"ANDROID_NDK_ROOT": ndk,
+                                          "ANDROID_NDK_HOME": ndk})
             self.assert_abnormal(proc.returncode)
             output = proc.stdout + proc.stderr
             self.assertIn("ndk-stack path not provided", output,
