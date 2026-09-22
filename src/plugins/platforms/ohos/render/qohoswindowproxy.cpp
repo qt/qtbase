@@ -323,7 +323,7 @@ QOhosWindowProxy::QOhosWindowProxy(
                 windowProxyData.owningQWindowRef)))
     , m_windowProxyType(windowProxyData.windowProxyType)
     , m_nodeXComponent(windowProxyData.nodeXComponent)
-    , m_qAbilityInstanceId(m_jsScopeData->qAbilityPeer->instanceId())
+    , m_qAbilityInstanceId(m_jsScopeData->jsWindowRef->owningQAbilityInstanceId())
 {
     std::vector<std::shared_ptr<void>> eventListenersHandles;
     for (const auto &eventHandlerDescriptor : eventHandlerDescriptors) {
@@ -1432,7 +1432,7 @@ QOhosWindowProxy::JsScopeData::~JsScopeData()
         windowDestroyedFromSystem = true;
         qOhosPrintfWarning(
             "Attempting to terminate qAbility with instance id: %s",
-            qAbilityPeer->instanceId().c_str());
+            jsWindowRef->owningQAbilityInstanceId().c_str());
         qAbilityPeer->qAbility().eval("context.terminateSelf()");
     } else if (!windowDestroyedFromSystem) {
         // FIXME - destroyWindow usually does and returns nothing
