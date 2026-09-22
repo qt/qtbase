@@ -13,22 +13,9 @@
 #include "qxmlstream.h"
 #include "private/qxmlstream_p.h"
 
-#include <memory>
-
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
-
-template <typename T, typename...Args>
-static QExplicitlySharedDataPointer<T> qdom_make_esdp(Args&&...args)
-{
-    QExplicitlySharedDataPointer<T> dp{
-        new T(std::forward<Args>(args)...),
-        QAdoptSharedDataTag{}
-    };
-    Q_ASSERT(dp->ref.loadRelaxed() == 1);
-    return dp;
-}
 
 /**************************************************************
  *
@@ -140,13 +127,6 @@ bool QDomBuilder::characters(const QString &characters, bool cdata)
     QExplicitlySharedDataPointer<QDomNodePrivate> n;
     if (cdata) {
         n.reset(doc->createCDATASection(characters));
-    } else if (!entityName.isEmpty()) {
-        auto e = qdom_make_esdp<QDomEntityPrivate>(
-                    doc, nullptr, entityName, QString(), QString(), QString());
-        e->value = characters;
-        doc->doctype()->appendChild(e.get());
-        e.reset(); // reaps unless appendChild() adopted
-        n.reset(doc->createEntityReference(entityName));
     } else {
         n.reset(doc->createTextNode(characters));
     }
@@ -185,18 +165,6 @@ void QDomBuilder::fatalError(const QString &message)
     parseResult.errorMessage = message;
     parseResult.errorLine = reader->lineNumber();
     parseResult.errorColumn = reader->columnNumber();
-}
-
-bool QDomBuilder::startEntity(const QString &name)
-{
-    entityName = name;
-    return true;
-}
-
-bool QDomBuilder::endEntity()
-{
-    entityName.clear();
-    return true;
 }
 
 bool QDomBuilder::comment(const QString &characters)
