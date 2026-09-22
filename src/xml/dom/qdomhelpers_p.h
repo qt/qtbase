@@ -44,8 +44,6 @@ public:
     bool characters(const QString &characters, bool cdata = false);
     bool processingInstruction(const QString &target, const QString &data);
     bool skippedEntity(const QString &name);
-    bool startEntity(const QString &name);
-    bool endEntity();
     bool startDTD(const QString &name, const QString &publicId, const QString &systemId);
     bool parseDTD(const QString &dtd);
     bool comment(const QString &characters);
@@ -67,7 +65,6 @@ private:
     QDomDocumentPrivate *doc;
     QDomNodePrivate *node;
     QXmlStreamReader *reader;
-    QString entityName;
     QDomDocument::ParseOptions parseOptions;
 };
 
