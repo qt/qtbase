@@ -1132,11 +1132,43 @@ void tst_QByteArray::assign()
         QCOMPARE(ba, test);
         QCOMPARE(ba.size(), test.size());
 
+        const uchar uchars[] = { 'T', uchar(0), 'S', 'T'};
+        test = QByteArrayView::fromArray(uchars);
+        ba = prototype;
+        ba.assign(std::begin(uchars), std::begin(uchars));
+        QCOMPARE(ba.size(), 0);
+        ba = prototype;
+        QCOMPARE(ba.assign(std::begin(uchars), std::end(uchars)), test);
+        QCOMPARE(ba.size(), test.size());
+
+        const QList ucharList(std::begin(uchars), std::end(uchars));
+        ba = prototype;
+        ba.assign(ucharList.begin(), ucharList.begin());
+        QCOMPARE(ba.size(), 0);
+        ba = prototype;
+        ba.assign(ucharList.begin(), ucharList.end());
+        QCOMPARE(ba.size(), test.size());
+
         const std::byte bytes[] = {std::byte('T'), std::byte(0), std::byte('S'), std::byte('T')};
         test = QByteArrayView::fromArray(bytes);
         ba = prototype;
-        QCOMPARE(ba.assign(test.begin(), test.end()), test);
+        ba.assign(std::begin(bytes), std::begin(bytes));
+        QCOMPARE(ba.size(), 0);
+        ba = prototype;
+        QCOMPARE(ba.assign(std::begin(bytes), std::end(bytes)), test);
         QCOMPARE(ba.size(), test.size());
+
+#if 0
+        // QByteArrayView cannot be constructed from QList::iterator and
+        // one cannot assign std::byte to char
+        const QList byteList(std::begin(bytes), std::end(bytes));
+        ba = prototype;
+        ba.assign(byteList.begin(), byteList.begin());
+        QCOMPARE(ba.size(), 0);
+        ba = prototype;
+        ba.assign(byteList.begin(), byteList.end());
+        QCOMPARE(ba.size(), test.size());
+#endif
 
         std::stringstream ss;
         ba = prototype;

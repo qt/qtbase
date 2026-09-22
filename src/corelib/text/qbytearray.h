@@ -329,7 +329,7 @@ public:
     template <typename InputIterator, if_input_iterator<InputIterator> = true>
     QByteArray &assign(InputIterator first, InputIterator last)
     {
-        if constexpr (std::is_same_v<InputIterator, iterator> || std::is_same_v<InputIterator, const_iterator>) {
+        if constexpr (QtPrivate::IsCompatibleByteArrayPointer<InputIterator>::value) {
             return assign(QByteArrayView(first, last));
         } else {
             d->assign(first, last);
