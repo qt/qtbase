@@ -960,8 +960,11 @@ QList<T>::insert(qsizetype i, qsizetype n, parameter_type t)
 {
     Q_ASSERT_X(size_t(i) <= size_t(d.size), "QList<T>::insert", "index out of range");
     Q_ASSERT_X(n >= 0, "QList::insert", "invalid count");
-    if (Q_LIKELY(n))
+    if (Q_LIKELY(n)) {
         d->insert(i, n, t);
+        return iterator(d.begin() + i);
+    }
+    // force detach:
     return begin() + i;
 }
 
@@ -972,7 +975,7 @@ QList<T>::emplace(qsizetype i, Args&&... args)
 {
     Q_ASSERT_X(i >= 0 && i <= d.size, "QList<T>::insert", "index out of range");
     d->emplace(i, std::forward<Args>(args)...);
-    return begin() + i;
+    return iterator(d.begin() + i);
 }
 
 template<typename T>
@@ -980,7 +983,7 @@ template<typename... Args>
 inline typename QList<T>::reference QList<T>::emplaceBack(Args &&... args)
 {
     d->emplace(d.size, std::forward<Args>(args)...);
-    return *(end() - 1);
+    return *(d.end() - 1);
 }
 
 template <typename T>
@@ -992,9 +995,11 @@ typename QList<T>::iterator QList<T>::erase(const_iterator abegin, const_iterato
 
     qsizetype i = std::distance(constBegin(), abegin);
     qsizetype n = std::distance(abegin, aend);
-    remove(i, n);
 
-    return begin() + i;
+    d.detach();     // always detach
+    if (n)
+        d->erase(d.begin() + i, n);
+    return iterator(d.begin() + i);
 }
 
 template <typename T>
