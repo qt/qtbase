@@ -128,7 +128,8 @@
             effect with the listed tools.
         \li \c {--ndk-stack <command-path>}: Specifies the path to the
             \l {Android: ndk-stack}{ndk-stack} tool for symbolizing crash stack
-            traces. Defaults to the tool path found under \c $ANDROID_NDK_ROOT.
+            traces. Defaults to the tool found under \c $ANDROID_NDK_ROOT,
+            falling back to \c $ANDROID_NDK_HOME.
         \li \c --show-logcat: Prints the logcat output to stdout regardless
             of test failure. Reads the main, system and crash buffers, and
             includes \c system_server lines when an ANR is detected.

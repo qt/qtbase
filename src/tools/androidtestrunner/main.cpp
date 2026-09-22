@@ -253,6 +253,26 @@ static QStringList splitOwnAndTestArgs(const QStringList &args,
     return ownArgs;
 }
 
+static QString ndkStackPath()
+{
+#ifdef Q_OS_WIN
+    const QStringList candidates = { "ndk-stack.cmd"_L1, "ndk-stack.bat"_L1, "ndk-stack"_L1 };
+#else
+    const QStringList candidates = { "ndk-stack"_L1 };
+#endif
+    for (const char *var : { "ANDROID_NDK_ROOT", "ANDROID_NDK_HOME" }) {
+        const QString ndkPath = qEnvironmentVariable(var);
+        if (ndkPath.isEmpty())
+            continue;
+        for (const QString &name : candidates) {
+            const QString path = ndkPath + QDir::separator() + name;
+            if (QFile::exists(path))
+                return path;
+        }
+    }
+    return {};
+}
+
 static bool parseOptions()
 {
     QCommandLineParser parser;
@@ -297,7 +317,8 @@ static bool parseOptions()
         "Don't append INSTALL_ROOT=... to --make. Only honored for make-family "
         "tools (make, gmake, nmake, mingw32-make, jom)."_L1);
     QCommandLineOption ndkStackOpt(
-        "ndk-stack"_L1, "Path to ndk-stack (default: $ANDROID_NDK_ROOT/ndk-stack)."_L1, "path"_L1);
+        "ndk-stack"_L1, "Path to ndk-stack (default: ndk-stack under $ANDROID_NDK_ROOT "
+        "or $ANDROID_NDK_HOME)."_L1, "path"_L1);
     QCommandLineOption showLogcatOpt(
         "show-logcat"_L1, "Print logcat output (+ system_server on ANR)."_L1);
     QCommandLineOption verboseOpt(
@@ -405,21 +426,8 @@ static bool parseOptions()
     if (g_options.serial.isEmpty())
         g_options.serial = qEnvironmentVariable("ANDROID_DEVICE_SERIAL");
 
-    if (g_options.ndkStackPath.isEmpty()) {
-        const QString ndkPath = qEnvironmentVariable("ANDROID_NDK_ROOT");
-#ifdef Q_OS_WIN
-        const QStringList candidates = { "ndk-stack.cmd"_L1, "ndk-stack.bat"_L1, "ndk-stack"_L1 };
-#else
-        const QStringList candidates = { "ndk-stack"_L1 };
-#endif
-        for (const QString &name : candidates) {
-            const QString path = ndkPath + QDir::separator() + name;
-            if (QFile::exists(path)) {
-                g_options.ndkStackPath = path;
-                break;
-            }
-        }
-    }
+    if (g_options.ndkStackPath.isEmpty())
+        g_options.ndkStackPath = ndkStackPath();
 
     return true;
 }
@@ -936,7 +944,8 @@ static void printLogcatCrash(const QByteArray &logcat)
     QByteArray crashLogcat(logcat);
     if (g_options.ndkStackPath.isEmpty()) {
         qWarning() << "Warning: ndk-stack path not provided and couldn't be deduced "
-                      "using the ANDROID_NDK_ROOT environment variable.";
+                      "using the ANDROID_NDK_ROOT or ANDROID_NDK_HOME environment "
+                      "variables.";
     } else if (const QString libsPath = getAbiLibsPath(); libsPath.isEmpty()) {
         qWarning() << "Warning: could not determine the device ABI, "
                       "skipping ndk-stack and printing the raw dump.";
