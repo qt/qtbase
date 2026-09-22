@@ -1861,7 +1861,7 @@ void QByteArray::resize(qsizetype size)
     if (d.needsDetach() || size > capacityAtEnd)
         reallocData(size, QArrayData::Grow);
     d.size = size;
-    if (d.allocatedCapacity())
+    if (d.isMutable())
         d.data()[size] = 0;
 }
 

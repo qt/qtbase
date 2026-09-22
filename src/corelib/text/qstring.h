@@ -648,12 +648,12 @@ public:
             return *this;
         } else if constexpr (QtPrivate::IsCompatibleChar8Type<V>::value) {
             assign_helper_char8(first, last);
-            if (d.constAllocatedCapacity())
+            if (d.isMutable())
                 d.data()[d.size] = u'\0';
             return *this;
         } else {
             d->assign(first, last, [](QChar ch) noexcept -> char16_t { return ch.unicode(); });
-            if (d.constAllocatedCapacity())
+            if (d.isMutable())
                 d.data()[d.size] = u'\0';
             return *this;
         }
