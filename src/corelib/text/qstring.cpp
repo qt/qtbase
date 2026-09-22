@@ -2681,7 +2681,7 @@ void QString::resize(qsizetype size)
     if (d.needsDetach() || needsReallocate(*this, size))
         reallocData(size, QArrayData::Grow);
     d.size = size;
-    if (d.allocatedCapacity())
+    if (d.isMutable())
         d.data()[size] = u'\0';
 }
 

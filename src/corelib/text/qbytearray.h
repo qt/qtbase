@@ -324,7 +324,7 @@ public:
             return assign(QByteArrayView(first, last));
         } else {
             d->assign(first, last);
-            if (d.data())
+            if (d.isMutable())
                 d.data()[d.size] = '\0';
             return *this;
         }
