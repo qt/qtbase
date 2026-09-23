@@ -1,6 +1,7 @@
 // Copyright (C) 2025 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
+#include <QtCore/private/qcore_ohos_p.h>
 #include <qohosclipboardobject.h>
 
 #include <QtCore/private/qohoscommon_p.h>
@@ -15,7 +16,6 @@
 #include <multimedia/image_framework/image/pixelmap_native.h>
 #include <qarkui/qarkuiutils.h>
 #include <qohosapppermissions_p.h>
-#include <qohosplugincore.h>
 #include <qohosudmfconversions.h>
 #include <qohosutils.h>
 
@@ -153,8 +153,8 @@ QOhosClipboardObject::QOhosClipboardObject(
         QtOhos::moveToSharedPtr(std::move(pasteboardUpdatesNotifier)))
 {
     auto weakPasteboardUpdatesNotifier = QtOhos::makeWeakPtr(m_pasteboardUpdatesNotifier);
-    m_jsScopeData = QtOhos::evalInJsThread(
-        [&](QtOhos::JsState &) {
+    m_jsScopeData = QOhosJsThreadGateway::eval(
+        [&](QOhosJsState &) {
             auto pasteboard = std::shared_ptr<::OH_Pasteboard>(
                 QArkUi::callArkUiOrFailOnNullResult(
                     Q_OHOS_NAMED_FUNC(::OH_Pasteboard_Create)),
@@ -190,7 +190,7 @@ QOhosClipboardObject::QOhosClipboardObject(
                 pasteboard,
                 [pasteboardDataChangedJsThreadListener]() {
                     auto __dbg = make_QCScopedDebugJS(Q_FUNC_INFO);
-                    QtOhos::invokeInJsThread(
+                    QOhosJsThreadGateway::invoke(
                         [pasteboardDataChangedJsThreadListener](auto &) {
                             (*pasteboardDataChangedJsThreadListener)();
                         });
@@ -221,8 +221,8 @@ QOhosClipboardObject::PasteboardData QOhosClipboardObject::getPasteboardDataWith
 {
     std::optional<PasteboardDataSource> dataSource;
     QOhosSupplier<std::unique_ptr<QMimeData>> mimeDataFactory;
-    std::tie(dataSource, mimeDataFactory) = QtOhos::evalInJsThreadWithPromise<std::pair<std::optional<PasteboardDataSource>, QOhosSupplier<std::unique_ptr<QMimeData>>>>(
-        [&](QtOhos::JsState &jsState, auto evalPromise) {
+    std::tie(dataSource, mimeDataFactory) = QOhosJsThreadGateway::evalWithPromise<std::pair<std::optional<PasteboardDataSource>, QOhosSupplier<std::unique_ptr<QMimeData>>>>(
+        [&](QOhosJsState &jsState, auto evalPromise) {
             static constexpr const char *ohosGetPasteboardDataPermission = "ohos.permission.READ_PASTEBOARD";
             auto sharedEvalPromise = QtOhos::moveToSharedPtr(std::move(evalPromise).makeChained(Q_FUNC_INFO));
             QOhosAppPermissions::checkAppPermissionGrantedWithConsumer(
@@ -267,8 +267,8 @@ void QOhosClipboardObject::setMimeDataSync(
 
     auto udmfDataFactory = makeLazyProcessingUdmfDataFactoryFromQMimeData(mimeData, shareInAppOnly);
 
-    QtOhos::runInJsThreadAndWait(
-        [&](QtOhos::JsState &) {
+    QOhosJsThreadGateway::runAndWait(
+        [&](QOhosJsState &) {
             auto udmfData = udmfDataFactory();
 
             int res = QArkUi::callArkUi(
