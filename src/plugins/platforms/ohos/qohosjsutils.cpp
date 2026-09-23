@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qohosjsutils.h"
+#include <QtCore/private/qcore_ohos_p.h>
 #include <QtCore/private/qohoscommon_p.h>
 #include <qohosutils.h>
 
@@ -12,12 +13,12 @@ QT_BEGIN_NAMESPACE
 namespace QtOhos {
 
 std::shared_ptr<void> startDelayedJsThreadTask(
-    JsState &jsState, std::function<void(JsState &)> task,
+    QOhosJsState &jsState, std::function<void(QOhosJsState &)> task,
     std::chrono::milliseconds delay)
 {
     struct Context
     {
-        std::function<void(JsState &)> task;
+        std::function<void(QOhosJsState &)> task;
         std::optional<int> timerId;
     };
 
@@ -27,7 +28,7 @@ std::shared_ptr<void> startDelayedJsThreadTask(
     int timerId = jsState.eval<QNapi::Number>(
         "Global.setTimeout(*)",
         {
-            [context](const CallbackInfo &cbInfo) {
+            [context](const QOhosCallbackInfo &cbInfo) {
                 if (context->task) {
                     auto task = std::exchange(context->task, nullptr);
                     context->timerId.reset();
@@ -41,8 +42,8 @@ std::shared_ptr<void> startDelayedJsThreadTask(
     return QtOhos::makeDestroyNotifier(
         [context]() {
             if (context->timerId.has_value()) {
-                runInJsThreadAndWait(
-                    [&](JsState &jsState) {
+                QOhosJsThreadGateway::runAndWait(
+                    [&](QOhosJsState &jsState) {
                         jsState.eval("Global.clearTimeout(*)", {context->timerId.value()});
                     },
                     Q_FUNC_INFO);
@@ -61,7 +62,7 @@ int setJsTimeout(
     return timerId;
 }
 
-void clearJsTimeout(JsState &jsState, int timerId)
+void clearJsTimeout(QOhosJsState &jsState, int timerId)
 {
     jsState.eval("Global.clearTimeout(*)", {timerId});
 }
@@ -98,7 +99,7 @@ void rethrowUnlessJsBusinessErrorIs(
 }
 
 bool runIgnoringJsBusinessError(
-    JsState &, std::uint32_t suppressedErrorCode, const char *callerContextName,
+    QOhosJsState &, std::uint32_t suppressedErrorCode, const char *callerContextName,
     const std::function<void()> &action)
 {
     try {

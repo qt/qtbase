@@ -4,6 +4,7 @@
 #ifndef QOHOSJSUTILS_H
 #define QOHOSJSUTILS_H
 
+#include <QtCore/private/qcore_ohos_p.h>
 #include <QtCore/private/qnapi_p.h>
 #include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/private/qohosjstools_p.h>
@@ -30,14 +31,14 @@ QNapi::Promise adaptAsyncCallResultToJsPromise(
     const QOhosConsumer<JsState &, QOhosConsumer<JsState &, T>> &asyncCallFunc);
 
 Q_REQUIRED_RESULT std::shared_ptr<void> startDelayedJsThreadTask(
-    JsState &jsState, std::function<void(JsState &)> task,
+    QOhosJsState &jsState, std::function<void(QOhosJsState &)> task,
     std::chrono::milliseconds delay);
 
 int setJsTimeout(
     JsState &jsState, std::function<void(const CallbackInfo &)> timeoutFunc,
     std::chrono::milliseconds delay);
 
-void clearJsTimeout(JsState &jsState, int timerId);
+void clearJsTimeout(QOhosJsState &jsState, int timerId);
 
 QNapi::Promise makeResolvedPromise(QNapi::Value valueForResolve);
 
@@ -54,7 +55,7 @@ void rethrowUnlessJsBusinessErrorIs(
 // Runs action; on JS business error matching suppressedErrorCode warns and returns, otherwise rethrows.
 // Returns true if action completed, false if error was swallowed.
 bool runIgnoringJsBusinessError(
-    JsState &, std::uint32_t suppressedErrorCode, const char *callerContextName,
+    QOhosJsState &, std::uint32_t suppressedErrorCode, const char *callerContextName,
     const std::function<void()> &action);
 
 template<typename T>
