@@ -1219,6 +1219,16 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
     Q_UNUSED(expectedSize); // Avoid warning in release mode
     Q_UNUSED(buf);
     qsizetype size = 0;
+
+    // With Mode == Prepare, we are passed a null buffer pointer.
+    const auto bufferAt = [&](qsizetype offset) -> char * {
+        if constexpr (mode == Construct) {
+            return buf + offset;
+        } else {
+            Q_UNUSED(offset);
+            return nullptr;
+        }
+    };
     int dataIndex;
     int paramsIndex;
     int enumIndex;
@@ -1237,8 +1247,7 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
     }
 
     // Populate the QMetaObjectPrivate structure.
-    QMetaObjectPrivate *pmeta = buf ? reinterpret_cast<QMetaObjectPrivate *>(buf + size)
-                                    : nullptr;
+    QMetaObjectPrivate *pmeta = reinterpret_cast<QMetaObjectPrivate *>(bufferAt(size));
     //int pmetaSize = size;
     dataIndex = MetaObjectPrivateFieldCount;
     int methodParametersDataSize = aggregateParameterCount(d->methods)
@@ -1300,7 +1309,7 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
     int *data = reinterpret_cast<int *>(pmeta);
     size += dataIndex * sizeof(int);
     ALIGN(size, void *);
-    [[maybe_unused]] char *str = reinterpret_cast<char *>(buf + size);
+    [[maybe_unused]] char *str = bufferAt(size);
     if constexpr (mode == Construct) {
         meta->d.stringdata = reinterpret_cast<const uint *>(str);
         meta->d.data = reinterpret_cast<uint *>(data);
@@ -1498,7 +1507,7 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
     if (d->relatedMetaObjects.size() > 0) {
         using SuperData = QMetaObject::SuperData;
         ALIGN(size, SuperData);
-        auto objects = reinterpret_cast<SuperData *>(buf + size);
+        auto objects = reinterpret_cast<SuperData *>(bufferAt(size));
         if constexpr (mode == Construct) {
             meta->d.relatedMetaObjects = objects;
             for (index = 0; index < d->relatedMetaObjects.size(); ++index)
@@ -1509,7 +1518,7 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
     }
 
     ALIGN(size, QtPrivate::QMetaTypeInterface *);
-    auto types = reinterpret_cast<const QtPrivate::QMetaTypeInterface **>(buf + size);
+    auto types = reinterpret_cast<const QtPrivate::QMetaTypeInterface **>(bufferAt(size));
     if constexpr (mode == Construct) {
         meta->d.metaTypes = types;
         for (const auto &prop : d->properties) {
