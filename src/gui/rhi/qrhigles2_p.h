@@ -349,6 +349,7 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
             BufferSubData,
             GetBufferSubData,
             CopyBuf,
+            ClearBufferSubData,
             CopyTex,
             ReadPixels,
             SubImage,
@@ -497,6 +498,13 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
                 int dstOffset;
                 int size;
             } copyBuf;
+            struct {
+                GLenum target;
+                GLuint buffer;
+                int offset;
+                int size;
+                quint8 value;
+            } clearBufferSubData;
             struct {
                 GLenum srcTarget;
                 GLenum srcFaceTarget;
@@ -1086,6 +1094,8 @@ public:
     void(QOPENGLF_APIENTRYP glFramebufferTextureMultiviewOVR)(GLenum, GLenum, GLuint, GLint,
                                                               GLint, GLsizei) = nullptr;
     void (QOPENGLF_APIENTRYP glQueryCounter)(GLuint, GLenum) = nullptr;
+    void (QOPENGLF_APIENTRYP glClearBufferSubData)(GLenum, GLenum, GLintptr, GLsizeiptr,
+                                                   GLenum, GLenum, const void *) = nullptr;
     void (QOPENGLF_APIENTRYP glGetQueryObjectui64v)(GLuint, GLenum, quint64 *) = nullptr;
     void (QOPENGLF_APIENTRYP glObjectLabel)(GLenum, GLuint, GLsizei, const GLchar *) = nullptr;
     void (QOPENGLF_APIENTRYP glFramebufferTexture2DMultisampleEXT)(GLenum, GLenum, GLenum, GLuint, GLint, GLsizei) = nullptr;
@@ -1170,7 +1180,8 @@ public:
               perRenderTargetBlending(false),
               dispatchIndirect(false),
               drawIndirectCount(false),
-              copyBuffer(false)
+              copyBuffer(false),
+              clearBuffer(false)
         { }
         int ctxMajor;
         int ctxMinor;
@@ -1248,6 +1259,7 @@ public:
         uint dispatchIndirect : 1;
         uint drawIndirectCount : 1;
         uint copyBuffer : 1;
+        uint clearBuffer : 1;
     } caps;
     QGles2SwapChain *currentSwapChain = nullptr;
     QSet<GLint> supportedCompressedFormats;

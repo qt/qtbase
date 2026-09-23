@@ -10994,6 +10994,98 @@ void QRhiResourceUpdateBatch::copyBuffer(QRhiBuffer *dst, QRhiBuffer *src, const
 }
 
 /*!
+   Enqueues filling \a size bytes of the buffer \a buf, starting at \a offset,
+   with the byte \a value.
+
+   The buffer must have been created with the QRhiBuffer::StorageBuffer usage.
+   Such buffers are only available when the \l QRhi::Compute feature is
+   reported as supported, and are never of the type QRhiBuffer::Dynamic. The
+   clear is performed on the GPU, and it takes effect in the order it was
+   recorded in, relative to the compute and render passes, and to the other
+   buffer operations in the batch that are performed on the GPU, such as
+   copyBuffer(). This makes it suitable for resetting storage buffers
+   (counters, accumulators) between compute dispatches.
+
+   \note \a offset must be a multiple of 4, otherwise the clear is ignored,
+   with a warning. When \a size is not a multiple of 4, it is rounded down to
+   the previous multiple of 4, again with a warning, which means the
+   remaining one to three bytes are left untouched. These are restrictions of
+   some of the underlying 3D APIs.
+
+   \note The clear maps to the native buffer fill or clear operation of the
+   underlying 3D API, such as \c vkCmdFillBuffer or
+   \c ClearUnorderedAccessViewUint, without transferring data from the CPU.
+   The exception is OpenGL ES, which has no way of clearing the contents of a
+   buffer on the GPU. There the clear is implemented by uploading \a size
+   bytes of data.
+
+   \note Mixing clears with host-side updates
+   (\l{QRhiResourceUpdateBatch::uploadStaticBuffer()}{uploadStaticBuffer()}) on
+   the same buffer within the same frame follows the order in which the
+   operations were recorded in the batch only when the
+   \l QRhi::StaticBuffersOnGpuTimeline feature is reported as supported. See
+   copyBuffer() for details.
+
+   \since 6.13
+   \sa copyBuffer()
+ */
+void QRhiResourceUpdateBatch::clearStorageBuffer(QRhiBuffer *buf, quint32 offset, quint32 size, quint8 value)
+{
+    if (!buf) {
+        qWarning("Buffer clear with a null buffer is not supported");
+        return;
+    }
+    if (!buf->usage().testFlag(QRhiBuffer::StorageBuffer)) {
+        qWarning("Buffer clear is only supported for buffers with StorageBuffer usage");
+        return;
+    }
+    // StorageBuffer is not supposed to be combined with Dynamic, but not all
+    // backends reject it
+    if (buf->type() == QRhiBuffer::Dynamic) {
+        qWarning("Buffer clear is not supported for Dynamic buffers");
+        return;
+    }
+    if (offset % 4u) {
+        qWarning("Buffer clear offset %u is not a multiple of 4", offset);
+        return;
+    }
+    if (quint64(offset) + size > buf->size()) {
+        qWarning("Buffer clear of %u bytes at offset %u does not fit the buffer (%u bytes)",
+                 size, offset, buf->size());
+        return;
+    }
+    if (size % 4u) {
+        qWarning("Buffer clear size %u is not a multiple of 4, rounding down", size);
+        size &= ~3u;
+    }
+    if (!size)
+        return;
+
+    const int idx = d->activeBufferOpCount++;
+    const QRhiResourceUpdateBatchPrivate::BufferOp op = QRhiResourceUpdateBatchPrivate::BufferOp::clear(buf,
+        offset, size, value);
+
+    if (idx < d->bufferOps.size())
+        d->bufferOps[idx] = op;
+    else
+        d->bufferOps.append(op);
+}
+
+/*!
+   \overload
+
+   Enqueues filling the entire buffer \a buf with the byte \a value. When the
+   size of \a buf is not a multiple of 4, the last one to three bytes are left
+   untouched, and a warning is printed.
+
+   \since 6.13
+ */
+void QRhiResourceUpdateBatch::clearStorageBuffer(QRhiBuffer *buf, quint8 value)
+{
+    clearStorageBuffer(buf, 0, buf ? buf->size() : 0, value);
+}
+
+/*!
     Enqueues uploading the image data for one or more mip levels in one or more
     layers of the texture \a tex.
 

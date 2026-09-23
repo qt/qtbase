@@ -483,16 +483,18 @@ public:
             DynamicUpdate,
             StaticUpload,
             Read,
-            Copy
+            Copy,
+            Clear
         };
         Type type;
         QRhiBuffer *buf;
         quint32 offset;
         QRhiBufferData data;
-        quint32 readSize; // also the number of bytes to copy with Copy
+        quint32 readSize; // also the number of bytes to copy with Copy, or to fill with Clear
         QRhiReadbackResult *result;
         QRhiBuffer *src;
         quint32 srcOffset;
+        quint8 fillValue;
 
         static BufferOp dynamicUpdate(QRhiBuffer *buf, quint32 offset, quint32 size, const void *data)
         {
@@ -578,6 +580,24 @@ public:
             op.src = src;
             op.srcOffset = srcOffset;
             return op;
+        }
+
+        static BufferOp clear(QRhiBuffer *buf, quint32 offset, quint32 size, quint8 value)
+        {
+            BufferOp op = {};
+            op.type = Clear;
+            op.buf = buf;
+            op.offset = offset;
+            op.readSize = size;
+            op.fillValue = value;
+            return op;
+        }
+
+        // For the APIs that clear in units of 32 bits: fillValue repeated in
+        // all four bytes of the word, e.g. 0xAB becomes 0xABABABAB.
+        quint32 fillValue32() const
+        {
+            return quint32(fillValue) * 0x01010101u;
         }
     };
 

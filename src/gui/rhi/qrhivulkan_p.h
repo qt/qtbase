@@ -414,6 +414,7 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
     struct Command {
         enum Cmd {
             CopyBuffer,
+            FillBuffer,
             CopyBufferToImage,
             CopyImage,
             CopyImageToBuffer,
@@ -456,6 +457,12 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
                 VkBuffer dst;
                 VkBufferCopy desc;
             } copyBuffer;
+            struct {
+                VkBuffer dst;
+                VkDeviceSize offset;
+                VkDeviceSize size;
+                uint32_t data;
+            } fillBuffer;
             struct {
                 VkBuffer src;
                 VkImage dst;

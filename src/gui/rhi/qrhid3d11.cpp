@@ -2160,6 +2160,20 @@ void QRhiD3D11::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
             box.back = box.bottom = 1;
             box.right = u.srcOffset + u.readSize;
             cmd.args.copySubRes.srcBox = box;
+        } else if (u.type == QRhiResourceUpdateBatchPrivate::BufferOp::Clear) {
+            QD3D11Buffer *bufD = QRHI_RES(QD3D11Buffer, u.buf);
+            Q_ASSERT(bufD->m_type != QRhiBuffer::Dynamic);
+
+            ID3D11UnorderedAccessView *uav = bufD->createClearUnorderedAccessView(u.offset, u.readSize);
+            if (!uav)
+                continue;
+            cbD->ownedUavs.append(uav);
+
+            QD3D11CommandBuffer::Command &cmd(cbD->commands.get());
+            cmd.cmd = QD3D11CommandBuffer::Command::ClearUav;
+            cmd.args.clearUav.uav = uav;
+            for (UINT &v : cmd.args.clearUav.values)
+                v = u.fillValue32();
         }
     }
     for (int opIdx = 0; opIdx < ud->activeTextureOpCount; ++opIdx) {
@@ -3414,6 +3428,9 @@ void QRhiD3D11::executeCommandBuffer(QD3D11CommandBuffer *cbD)
                                            cmd.args.copySubRes.src, cmd.args.copySubRes.srcSubRes,
                                            cmd.args.copySubRes.hasSrcBox ? &cmd.args.copySubRes.srcBox : nullptr);
             break;
+        case QD3D11CommandBuffer::Command::ClearUav:
+            context->ClearUnorderedAccessViewUint(cmd.args.clearUav.uav, cmd.args.clearUav.values);
+            break;
         case QD3D11CommandBuffer::Command::ResolveSubRes:
             context->ResolveSubresource(cmd.args.resolveSubRes.dst, cmd.args.resolveSubRes.dstSubRes,
                                         cmd.args.resolveSubRes.src, cmd.args.resolveSubRes.srcSubRes,
@@ -3609,6 +3626,29 @@ ID3D11UnorderedAccessView *QD3D11Buffer::unorderedAccessView(quint32 offset)
     }
 
     uavs[offset] = uav;
+    return uav;
+}
+
+// Not cached, because arbitrary ranges could make a cache grow without bounds.
+ID3D11UnorderedAccessView *QD3D11Buffer::createClearUnorderedAccessView(quint32 offset, quint32 size)
+{
+    // A typed view, unlike a raw one, can start at any multiple of 4 bytes.
+    // Typed UAVs need feature level 11_0, which Compute requires.
+    D3D11_UNORDERED_ACCESS_VIEW_DESC desc = {};
+    desc.Format = DXGI_FORMAT_R32_UINT;
+    desc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
+    desc.Buffer.FirstElement = offset / 4u;
+    desc.Buffer.NumElements = size / 4u;
+
+    QRHI_RES_RHI(QRhiD3D11);
+    ID3D11UnorderedAccessView *uav = nullptr;
+    HRESULT hr = rhiD->dev->CreateUnorderedAccessView(buffer, &desc, &uav);
+    if (FAILED(hr)) {
+        qWarning("Failed to create UAV: %s",
+            qPrintable(QSystemError::windowsComString(hr)));
+        return nullptr;
+    }
+
     return uav;
 }
 
@@ -5382,7 +5422,7 @@ QD3D11CommandBuffer::~QD3D11CommandBuffer()
 
 void QD3D11CommandBuffer::destroy()
 {
-    // nothing to do here
+    releaseOwnedViews();
 }
 
 bool QD3D11SwapChainTimestamps::prepare(QRhiD3D11 *rhiD)

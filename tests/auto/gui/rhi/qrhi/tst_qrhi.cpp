@@ -81,6 +81,12 @@ private slots:
     void resourceUpdateBatchBufferCopyInvalid();
     void resourceUpdateBatchBufferCopyAndUploadOrder_data();
     void resourceUpdateBatchBufferCopyAndUploadOrder();
+    void resourceUpdateBatchBufferClear_data();
+    void resourceUpdateBatchBufferClear();
+    void resourceUpdateBatchBufferClearInvalid_data();
+    void resourceUpdateBatchBufferClearInvalid();
+    void computeAfterBufferClear_data();
+    void computeAfterBufferClear();
     void resourceUpdateBatchStaticBufferUploadEdgeCases_data();
     void resourceUpdateBatchStaticBufferUploadEdgeCases();
     void resourceUpdateBatchRGBATextureUpload_data();
@@ -1654,6 +1660,159 @@ void tst_QRhi::resourceUpdateBatchBufferCopyAndUploadOrder()
         expected.replace(8, 8, QByteArray(8, 'B'));
         QCOMPARE(runInOneBatch(true, 8, QByteArray(8, 'B')), expected);
     }
+}
+
+void tst_QRhi::resourceUpdateBatchBufferClear_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::resourceUpdateBatchBufferClear()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing buffer clears");
+
+    if (!rhi->isFeatureSupported(QRhi::Compute))
+        QSKIP("Compute is not supported, and so there are no storage buffers to clear");
+
+    if (!rhi->isFeatureSupported(QRhi::ReadBackNonUniformBuffer))
+        QSKIP("Reading back non-uniform buffers is not supported, skipping testing buffer clears");
+
+    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi.get()))
+        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
+
+    const auto makePattern = [](int size) {
+        QByteArray pattern(size, 0);
+        for (int i = 0; i < size; ++i)
+            pattern[i] = char('A' + i % 26);
+        return pattern;
+    };
+
+    // Uploads the pattern, then does the clears and the readback in a second batch.
+    const auto clearAndReadBack = [&rhi](const QByteArray &pattern,
+                                         const std::function<void(QRhiResourceUpdateBatch *, QRhiBuffer *)> &clear) {
+        QScopedPointer<QRhiBuffer> buf(rhi->newBuffer(QRhiBuffer::Static, QRhiBuffer::StorageBuffer, quint32(pattern.size())));
+        if (!buf->create())
+            return QByteArray();
+
+        QRhiResourceUpdateBatch *batch = rhi->nextResourceUpdateBatch();
+        batch->uploadStaticBuffer(buf.data(), pattern.constData());
+        if (!submitResourceUpdates(rhi.data(), batch))
+            return QByteArray();
+
+        batch = rhi->nextResourceUpdateBatch();
+        clear(batch, buf.data());
+        QRhiReadbackResult readResult;
+        bool readCompleted = false;
+        readResult.completed = [&readCompleted] { readCompleted = true; };
+        batch->readBackBuffer(buf.data(), 0, quint32(pattern.size()), &readResult);
+        if (!submitResourceUpdates(rhi.data(), batch) || !readCompleted)
+            return QByteArray();
+        return readResult.data;
+    };
+
+    const int bufferSize = 64;
+    const QByteArray pattern = makePattern(bufferSize);
+
+    // whole buffer
+    QCOMPARE(clearAndReadBack(pattern, [](QRhiResourceUpdateBatch *batch, QRhiBuffer *buf) {
+        batch->clearStorageBuffer(buf, 0);
+    }), QByteArray(bufferSize, 0));
+
+    // range starting at a multiple of 16
+    {
+        QByteArray expected = pattern;
+        expected.replace(16, 8, QByteArray(8, char(0xAB)));
+        QCOMPARE(clearAndReadBack(pattern, [](QRhiResourceUpdateBatch *batch, QRhiBuffer *buf) {
+            batch->clearStorageBuffer(buf, 16, 8, 0xAB);
+        }), expected);
+    }
+
+    // range starting at a multiple of 4 that is not a multiple of 16
+    {
+        QByteArray expected = pattern;
+        expected.replace(4, 20, QByteArray(20, char(0x5A)));
+        QCOMPARE(clearAndReadBack(pattern, [](QRhiResourceUpdateBatch *batch, QRhiBuffer *buf) {
+            batch->clearStorageBuffer(buf, 4, 20, 0x5A);
+        }), expected);
+    }
+
+    // Sizes that are not a multiple of 4 get rounded down, leaving the last
+    // bytes untouched. Also checks that clears follow the recording order.
+    {
+        const int oddBufferSize = 30;
+        const QByteArray oddPattern = makePattern(oddBufferSize);
+        QByteArray expected = oddPattern;
+        expected.replace(0, 28, QByteArray(28, char(0x11)));
+        expected.replace(4, 8, QByteArray(8, char(0x22)));
+        QTest::ignoreMessage(QtWarningMsg, "Buffer clear size 30 is not a multiple of 4, rounding down");
+        QTest::ignoreMessage(QtWarningMsg, "Buffer clear size 10 is not a multiple of 4, rounding down");
+        QCOMPARE(clearAndReadBack(oddPattern, [](QRhiResourceUpdateBatch *batch, QRhiBuffer *buf) {
+            batch->clearStorageBuffer(buf, 0x11);
+            batch->clearStorageBuffer(buf, 4, 10, 0x22);
+        }), expected);
+    }
+}
+
+void tst_QRhi::resourceUpdateBatchBufferClearInvalid_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::resourceUpdateBatchBufferClearInvalid()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing invalid buffer clears");
+
+    if (!rhi->isFeatureSupported(QRhi::Compute))
+        QSKIP("Compute is not supported, and so there are no storage buffers to clear");
+
+    const int bufferSize = 32;
+    QScopedPointer<QRhiBuffer> buf(rhi->newBuffer(QRhiBuffer::Static, QRhiBuffer::StorageBuffer, bufferSize));
+    QVERIFY(buf->create());
+    QScopedPointer<QRhiBuffer> vbuf(rhi->newBuffer(QRhiBuffer::Static, QRhiBuffer::VertexBuffer, bufferSize));
+    QVERIFY(vbuf->create());
+
+    QRhiResourceUpdateBatch *batch = rhi->nextResourceUpdateBatch();
+    QVERIFY(batch);
+
+    QTest::ignoreMessage(QtWarningMsg, "Buffer clear with a null buffer is not supported");
+    batch->clearStorageBuffer(nullptr, 0);
+    QTest::ignoreMessage(QtWarningMsg, "Buffer clear with a null buffer is not supported");
+    batch->clearStorageBuffer(nullptr, 0, 4, 0);
+
+    QTest::ignoreMessage(QtWarningMsg, "Buffer clear is only supported for buffers with StorageBuffer usage");
+    batch->clearStorageBuffer(vbuf.data(), 0);
+
+    // Most backends refuse to create such a buffer in the first place.
+    QScopedPointer<QRhiBuffer> dynamicBuf(rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::StorageBuffer, bufferSize));
+    if (dynamicBuf->create()) {
+        QTest::ignoreMessage(QtWarningMsg, "Buffer clear is not supported for Dynamic buffers");
+        batch->clearStorageBuffer(dynamicBuf.data(), 0);
+    }
+
+    QTest::ignoreMessage(QtWarningMsg, "Buffer clear offset 2 is not a multiple of 4");
+    batch->clearStorageBuffer(buf.data(), 2, 8, 0);
+
+    QTest::ignoreMessage(QtWarningMsg, "Buffer clear of 32 bytes at offset 16 does not fit the buffer (32 bytes)");
+    batch->clearStorageBuffer(buf.data(), 16, 32, 0);
+
+    // A zero sized clear is a no-op, not a warning, but rounding a size down
+    // to zero warns.
+    batch->clearStorageBuffer(buf.data(), 0, 0, 0);
+    QTest::ignoreMessage(QtWarningMsg, "Buffer clear size 3 is not a multiple of 4, rounding down");
+    batch->clearStorageBuffer(buf.data(), 0, 3, 0);
+
+    // Nothing should have been recorded.
+    QVERIFY(submitResourceUpdates(rhi.data(), batch));
 }
 
 void tst_QRhi::resourceUpdateBatchStaticBufferUploadEdgeCases_data()
@@ -9494,6 +9653,91 @@ void tst_QRhi::dispatchIndirectBaseline()
             }
         }
     }
+}
+
+void tst_QRhi::computeAfterBufferClear_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::computeAfterBufferClear()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing compute with buffer clears");
+
+    if (!rhi->isFeatureSupported(QRhi::Compute))
+        QSKIP("Compute is not supported on this backend");
+
+    if (!rhi->isFeatureSupported(QRhi::ReadBackNonUniformBuffer))
+        QSKIP("Reading back non-uniform buffers is not supported, skipping testing compute with buffer clears");
+
+    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi.get()))
+        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
+
+    // Work group x writes x to element x.
+    const QShader cs = loadShader(":/data/dispatch_indirect_consume.comp.qsb");
+    QVERIFY(cs.isValid());
+
+    const quint32 elementCount = 16;
+    QScopedPointer<QRhiBuffer> buf(rhi->newBuffer(QRhiBuffer::Static, QRhiBuffer::StorageBuffer,
+                                                  elementCount * sizeof(quint32)));
+    QVERIFY(buf->create());
+
+    QScopedPointer<QRhiShaderResourceBindings> srb(rhi->newShaderResourceBindings());
+    srb->setBindings({
+        QRhiShaderResourceBinding::bufferLoadStore(0, QRhiShaderResourceBinding::ComputeStage, buf.data())
+    });
+    QVERIFY(srb->create());
+
+    QScopedPointer<QRhiComputePipeline> ps(rhi->newComputePipeline());
+    ps->setShaderStage({ QRhiShaderStage::Compute, cs });
+    ps->setShaderResourceBindings(srb.data());
+    QVERIFY(ps->create());
+
+    QRhiCommandBuffer *cb = nullptr;
+    QCOMPARE(rhi->beginOffscreenFrame(&cb), QRhi::FrameOpSuccess);
+    QVERIFY(cb);
+
+    QRhiResourceUpdateBatch *u = rhi->nextResourceUpdateBatch();
+    u->uploadStaticBuffer(buf.data(), QByteArray(int(elementCount * sizeof(quint32)), 0).constData());
+
+    // A clear between two dispatches has to be ordered after the writes of the
+    // first one, and before the writes of the second one.
+    cb->beginComputePass(u);
+    cb->setComputePipeline(ps.data());
+    cb->setShaderResources(srb.data());
+    cb->dispatch(4, 1, 1);
+    u = rhi->nextResourceUpdateBatch();
+    u->clearStorageBuffer(buf.data(), 0xFF);
+    cb->endComputePass(u);
+
+    cb->beginComputePass();
+    cb->setComputePipeline(ps.data());
+    cb->setShaderResources(srb.data());
+    cb->dispatch(2, 1, 1);
+    QRhiReadbackResult readResult;
+    bool readCompleted = false;
+    readResult.completed = [&readCompleted] { readCompleted = true; };
+    u = rhi->nextResourceUpdateBatch();
+    u->readBackBuffer(buf.data(), 0, elementCount * sizeof(quint32), &readResult);
+    cb->endComputePass(u);
+
+    rhi->endOffscreenFrame();
+
+    if (impl == QRhi::Null)
+        return;
+
+    QVERIFY(readCompleted);
+    QCOMPARE(quint32(readResult.data.size()), elementCount * sizeof(quint32));
+    const quint32 *p = reinterpret_cast<const quint32 *>(readResult.data.constData());
+    QCOMPARE(p[0], 0u);
+    QCOMPARE(p[1], 1u);
+    for (quint32 i = 2; i < elementCount; ++i)
+        QCOMPARE(p[i], 0xFFFFFFFFu);
 }
 
 void tst_QRhi::dispatchIndirectFromCompute_data()

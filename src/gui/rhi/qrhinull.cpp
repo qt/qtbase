@@ -583,6 +583,9 @@ void QRhiNull::resourceUpdate(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *re
             QNullBuffer *dstD = QRHI_RES(QNullBuffer, u.buf);
             QNullBuffer *srcD = QRHI_RES(QNullBuffer, u.src);
             memcpy(dstD->data + u.offset, srcD->data + u.srcOffset, size_t(u.readSize));
+        } else if (u.type == QRhiResourceUpdateBatchPrivate::BufferOp::Clear) {
+            QNullBuffer *bufD = QRHI_RES(QNullBuffer, u.buf);
+            memset(bufD->data + u.offset, u.fillValue, size_t(u.readSize));
         }
     }
     for (int opIdx = 0; opIdx < ud->activeTextureOpCount; ++opIdx) {

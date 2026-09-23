@@ -39,6 +39,7 @@ struct QD3D11Buffer : public QRhiBuffer
     void endFullDynamicBufferUpdateForCurrentFrame() override;
 
     ID3D11UnorderedAccessView *unorderedAccessView(quint32 offset);
+    ID3D11UnorderedAccessView *createClearUnorderedAccessView(quint32 offset, quint32 size);
 
     ID3D11Buffer *buffer = nullptr;
     char *dynBuf = nullptr;
@@ -441,6 +442,7 @@ struct QD3D11CommandBuffer : public QRhiCommandBuffer
             DrawIndexedIndirect,
             UpdateSubRes,
             CopySubRes,
+            ClearUav,
             ResolveSubRes,
             GenMip,
             DebugMarkBegin,
@@ -576,6 +578,10 @@ struct QD3D11CommandBuffer : public QRhiCommandBuffer
                 D3D11_BOX srcBox;
             } copySubRes;
             struct {
+                ID3D11UnorderedAccessView *uav;
+                UINT values[4];
+            } clearUav;
+            struct {
                 ID3D11Resource *dst;
                 UINT dstSubRes;
                 ID3D11Resource *src;
@@ -632,6 +638,7 @@ struct QD3D11CommandBuffer : public QRhiCommandBuffer
     QVarLengthArray<QImage, 4> imageRetainPool;
     QVarLengthArray<QD3D11ShaderResourceBindings::ResourceBatches, 4> resourceBatchRetainPool;
     QVarLengthArray<char, 1024> pushConstantPool;
+    QVarLengthArray<ID3D11UnorderedAccessView *, 4> ownedUavs;
 
     // relies heavily on implicit sharing (no copies of the actual data will be made)
     const uchar *retainData(const QByteArray &data) {
@@ -651,6 +658,11 @@ struct QD3D11CommandBuffer : public QRhiCommandBuffer
         resourceBatchRetainPool.append(resourceBatches);
         return resourceBatchRetainPool.count() - 1;
     }
+    void releaseOwnedViews() {
+        for (ID3D11UnorderedAccessView *uav : std::as_const(ownedUavs))
+            uav->Release();
+        ownedUavs.clear();
+    }
     void resetCommands() {
         commands.reset();
         pushConstantPool.clear();
@@ -658,6 +670,7 @@ struct QD3D11CommandBuffer : public QRhiCommandBuffer
         bufferDataRetainPool.clear();
         imageRetainPool.clear();
         resourceBatchRetainPool.clear();
+        releaseOwnedViews();
     }
     void resetState() {
         recordingPass = NoPass;

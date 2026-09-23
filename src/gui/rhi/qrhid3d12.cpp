@@ -4601,6 +4601,51 @@ void QRhiD3D12::enqueueResourceUpdates(QD3D12CommandBuffer *cbD, QRhiResourceUpd
             cbD->cmdList->CopyBufferRegion(dstRes->resource, u.offset,
                                            srcRes->resource, u.srcOffset,
                                            u.readSize);
+        } else if (u.type == QRhiResourceUpdateBatchPrivate::BufferOp::Clear) {
+            QD3D12Buffer *bufD = QRHI_RES(QD3D12Buffer, u.buf);
+            Q_ASSERT(bufD->m_type != QRhiBuffer::Dynamic);
+
+            QD3D12Resource *res = resourcePool.lookupRef(bufD->handles[0]);
+            if (!res)
+                continue;
+
+            bool gotNewHeap = false;
+            if (!ensureShaderVisibleDescriptorHeapCapacity(&shaderVisibleCbvSrvUavHeap,
+                                                           D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
+                                                           currentFrameSlot, 1, &gotNewHeap))
+            {
+                continue;
+            }
+            if (gotNewHeap)
+                bindShaderVisibleHeaps(cbD);
+
+            const QD3D12Descriptor cpuDesc = cbvSrvUavPool.allocate(1);
+            if (!cpuDesc.isValid())
+                continue;
+            const QD3D12Descriptor gpuDesc = shaderVisibleCbvSrvUavHeap.perFrameHeapSlice[currentFrameSlot].get(1);
+
+            // Typed, because a raw view would need a 16 byte aligned offset.
+            D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
+            uavDesc.Format = DXGI_FORMAT_R32_UINT;
+            uavDesc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
+            uavDesc.Buffer.FirstElement = u.offset / 4u;
+            uavDesc.Buffer.NumElements = u.readSize / 4u;
+            dev->CreateUnorderedAccessView(res->resource, nullptr, &uavDesc, cpuDesc.cpuHandle);
+            dev->CopyDescriptorsSimple(1, gpuDesc.cpuHandle, cpuDesc.cpuHandle,
+                                       D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+            if (res->state == D3D12_RESOURCE_STATE_UNORDERED_ACCESS && res->uavUsage)
+                barrierGen.enqueueUavBarrier(cbD, bufD->handles[0]);
+            barrierGen.addTransitionBarrier(bufD->handles[0], D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+            barrierGen.enqueueBufferedTransitionBarriers(cbD);
+
+            const UINT values[4] = { u.fillValue32(), u.fillValue32(), u.fillValue32(), u.fillValue32() };
+            cbD->cmdList->ClearUnorderedAccessViewUint(gpuDesc.gpuHandle, cpuDesc.cpuHandle,
+                                                       res->resource, values, 0, nullptr);
+
+            res->uavUsage = QD3D12Resource::UavUsageWrite;
+
+            releaseQueue.deferredReleaseViews(&cbvSrvUavPool, cpuDesc, 1);
         }
     }
 

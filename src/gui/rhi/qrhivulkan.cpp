@@ -4727,6 +4727,20 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
             cmd.args.copyBuffer.desc = copyInfo;
 
             srcD->lastActiveFrameSlot = dstD->lastActiveFrameSlot = currentFrameSlot;
+        } else if (u.type == QRhiResourceUpdateBatchPrivate::BufferOp::Clear) {
+            QVkBuffer *bufD = QRHI_RES(QVkBuffer, u.buf);
+            Q_ASSERT(bufD->m_type != QRhiBuffer::Dynamic);
+
+            trackedBufferBarrier(cbD, bufD, 0, VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
+
+            QVkCommandBuffer::Command &cmd(cbD->commands.get());
+            cmd.cmd = QVkCommandBuffer::Command::FillBuffer;
+            cmd.args.fillBuffer.dst = bufD->buffers[0];
+            cmd.args.fillBuffer.offset = u.offset;
+            cmd.args.fillBuffer.size = u.readSize;
+            cmd.args.fillBuffer.data = u.fillValue32();
+
+            bufD->lastActiveFrameSlot = currentFrameSlot;
         }
     }
 
@@ -5344,6 +5358,10 @@ void QRhiVulkan::recordPrimaryCommandBuffer(QVkCommandBuffer *cbD)
         case QVkCommandBuffer::Command::CopyBuffer:
             df->vkCmdCopyBuffer(cbD->cb, cmd.args.copyBuffer.src, cmd.args.copyBuffer.dst,
                                 1, &cmd.args.copyBuffer.desc);
+            break;
+        case QVkCommandBuffer::Command::FillBuffer:
+            df->vkCmdFillBuffer(cbD->cb, cmd.args.fillBuffer.dst, cmd.args.fillBuffer.offset,
+                                cmd.args.fillBuffer.size, cmd.args.fillBuffer.data);
             break;
         case QVkCommandBuffer::Command::CopyBufferToImage:
             df->vkCmdCopyBufferToImage(cbD->cb, cmd.args.copyBufferToImage.src, cmd.args.copyBufferToImage.dst,

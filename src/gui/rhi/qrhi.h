@@ -1946,6 +1946,8 @@ public:
     void uploadStaticBuffer(QRhiBuffer *buf, QByteArray data);
     void readBackBuffer(QRhiBuffer *buf, quint32 offset, quint32 size, QRhiReadbackResult *result);
     void copyBuffer(QRhiBuffer *dst, QRhiBuffer *src, const QRhiBufferCopyDescription &desc = QRhiBufferCopyDescription());
+    void clearStorageBuffer(QRhiBuffer *buf, quint32 offset, quint32 size, quint8 value);
+    void clearStorageBuffer(QRhiBuffer *buf, quint8 value);
     void uploadTexture(QRhiTexture *tex, const QRhiTextureUploadDescription &desc);
     void uploadTexture(QRhiTexture *tex, const QImage &image);
     void copyTexture(QRhiTexture *dst, QRhiTexture *src, const QRhiTextureCopyDescription &desc = QRhiTextureCopyDescription());

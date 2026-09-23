@@ -3816,6 +3816,15 @@ void QRhiMetal::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
             }
 
             srcD->lastActiveFrameSlot = dstD->lastActiveFrameSlot = currentFrameSlot;
+        } else if (u.type == QRhiResourceUpdateBatchPrivate::BufferOp::Clear) {
+            QMetalBuffer *bufD = QRHI_RES(QMetalBuffer, u.buf);
+            Q_ASSERT(bufD->m_type != QRhiBuffer::Dynamic && !bufD->d->slotted);
+            executeBufferHostWritesForCurrentFrame(bufD);
+            ensureBlit();
+            [blitEnc fillBuffer: bufD->d->buf[0]
+                          range: NSMakeRange(u.offset, u.readSize)
+                          value: u.fillValue];
+            bufD->lastActiveFrameSlot = currentFrameSlot;
         }
     }
 

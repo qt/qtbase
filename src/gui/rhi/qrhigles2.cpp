@@ -1390,6 +1390,16 @@ bool QRhiGles2::create(QRhi::Flags flags)
     if (!caps.copyBuffer && ctx->hasExtension(QByteArrayLiteral("GL_ARB_copy_buffer")))
         caps.copyBuffer = ctx->getProcAddress(QByteArrayLiteral("glCopyBufferSubData")) != nullptr;
 
+    if (!caps.gles
+            && (caps.ctxMajor > 4 || (caps.ctxMajor == 4 && caps.ctxMinor >= 3)
+                || ctx->hasExtension(QByteArrayLiteral("GL_ARB_clear_buffer_object"))))
+    {
+        glClearBufferSubData = reinterpret_cast<void(QOPENGLF_APIENTRYP)(GLenum, GLenum, GLintptr, GLsizeiptr,
+                                                                        GLenum, GLenum, const void *)>(
+            ctx->getProcAddress(QByteArrayLiteral("glClearBufferSubData")));
+        caps.clearBuffer = glClearBufferSubData != nullptr;
+    }
+
     // glMultiDraw*IndirectCount: core in 4.6, ARB on older desktop.
     // No counterpart in OpenGL ES.
     if (caps.gles)
@@ -3193,6 +3203,30 @@ void QRhiGles2::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
             cmd.args.copyBuf.srcOffset = u.srcOffset;
             cmd.args.copyBuf.dstOffset = u.offset;
             cmd.args.copyBuf.size = u.readSize;
+        } else if (u.type == QRhiResourceUpdateBatchPrivate::BufferOp::Clear) {
+            QGles2Buffer *bufD = QRHI_RES(QGles2Buffer, u.buf);
+            Q_ASSERT(bufD->buffer);
+
+            trackedBufferBarrier(cbD, bufD, QGles2Buffer::AccessUpdate);
+
+            QGles2CommandBuffer::Command &cmd(cbD->commands.get());
+            if (caps.clearBuffer) {
+                cmd.cmd = QGles2CommandBuffer::Command::ClearBufferSubData;
+                cmd.args.clearBufferSubData.target = bufD->targetForDataOps;
+                cmd.args.clearBufferSubData.buffer = bufD->buffer;
+                cmd.args.clearBufferSubData.offset = u.offset;
+                cmd.args.clearBufferSubData.size = u.readSize;
+                cmd.args.clearBufferSubData.value = u.fillValue;
+            } else {
+                QRhiBufferData fillData;
+                fillData.assign(QByteArray(u.readSize, char(u.fillValue)));
+                cmd.cmd = QGles2CommandBuffer::Command::BufferSubData;
+                cmd.args.bufferSubData.target = bufD->targetForDataOps;
+                cmd.args.bufferSubData.buffer = bufD->buffer;
+                cmd.args.bufferSubData.offset = u.offset;
+                cmd.args.bufferSubData.size = u.readSize;
+                cmd.args.bufferSubData.data = cbD->retainBufferData(fillData);
+            }
         }
     }
 
@@ -4203,6 +4237,12 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
             bindVertexIndexBufferWithStateReset(&state, f, cmd.args.bufferSubData.target, cmd.args.bufferSubData.buffer);
             f->glBufferSubData(cmd.args.bufferSubData.target, cmd.args.bufferSubData.offset, cmd.args.bufferSubData.size,
                                cmd.args.bufferSubData.data);
+            break;
+        case QGles2CommandBuffer::Command::ClearBufferSubData:
+            bindVertexIndexBufferWithStateReset(&state, f, cmd.args.clearBufferSubData.target, cmd.args.clearBufferSubData.buffer);
+            glClearBufferSubData(cmd.args.clearBufferSubData.target, GL_R8UI,
+                                 cmd.args.clearBufferSubData.offset, cmd.args.clearBufferSubData.size,
+                                 GL_RED_INTEGER, GL_UNSIGNED_BYTE, &cmd.args.clearBufferSubData.value);
             break;
         case QGles2CommandBuffer::Command::GetBufferSubData:
         {
