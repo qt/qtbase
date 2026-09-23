@@ -239,11 +239,6 @@ bool QDomParser::parseProlog()
                                 reader->dtdPublicId(),
                                 reader->dtdSystemId(),
                                 QXmlStreamReaderPrivate::get(reader)->dtdInternalSubset());
-            if constexpr (false) {
-                // ### kept for the translated string
-                domBuilder.fatalError(
-                        QDomParser::tr("Error occurred while processing document type declaration"));
-            }
             if (!parseMarkupDecl())
                 return false;
             break;
