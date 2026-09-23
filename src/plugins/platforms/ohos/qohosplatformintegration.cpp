@@ -22,6 +22,7 @@
 #include "qohossystemlocale.h"
 #include "qohosutils.h"
 
+#include <QtCore/private/qcore_ohos_p.h>
 #include <QtCore/qdebug.h>
 #include <QtCore/qthread.h>
 #include <QtCore/private/qnapi_p.h>
@@ -31,7 +32,6 @@
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtCore/qcoreapplication.h>
 #include <qohosdeviceinfo_p.h>
-#include <qohosplugincore.h>
 #include <qohossettings.h>
 
 #include "qohosplatformfontdatabase_p.h"
@@ -51,7 +51,7 @@ QT_BEGIN_NAMESPACE
 
 namespace {
 
-bool isInputDeviceOfType(QtOhos::JsState &jsState, std::uint32_t deviceId, const std::string &type)
+bool isInputDeviceOfType(QOhosJsState &jsState, std::uint32_t deviceId, const std::string &type)
 {
     auto devSources = QNapi::getArrayElements<std::vector<std::string>, QNapi::String>(
         jsState.eval<QNapi::Array>(
@@ -60,24 +60,24 @@ bool isInputDeviceOfType(QtOhos::JsState &jsState, std::uint32_t deviceId, const
     return std::find(devSources.begin(), devSources.end(), type) != devSources.end();
 }
 
-bool isInputDeviceWithTouchscreen(QtOhos::JsState &jsState, std::uint32_t deviceId)
+bool isInputDeviceWithTouchscreen(QOhosJsState &jsState, std::uint32_t deviceId)
 {
     return isInputDeviceOfType(jsState, deviceId, "touchscreen");
 }
 
-bool isInputDeviceWithTouchpad(QtOhos::JsState &jsState, std::uint32_t deviceId)
+bool isInputDeviceWithTouchpad(QOhosJsState &jsState, std::uint32_t deviceId)
 {
     return isInputDeviceOfType(jsState, deviceId, "touchpad");
 }
 
-bool isInputDeviceWithMouse(QtOhos::JsState &jsState, std::uint32_t deviceId)
+bool isInputDeviceWithMouse(QOhosJsState &jsState, std::uint32_t deviceId)
 {
     return isInputDeviceOfType(jsState, deviceId, "mouse");
 }
 
 bool isDeviceTypeInDeviceIds(
-    QtOhos::JsState &jsState, const std::vector<std::uint32_t> &deviceIds,
-    const std::function<bool(QtOhos::JsState &, std::uint32_t)> &isDeviceTypeFunc)
+    QOhosJsState &jsState, const std::vector<std::uint32_t> &deviceIds,
+    const std::function<bool(QOhosJsState &, std::uint32_t)> &isDeviceTypeFunc)
 {
     return std::any_of(
         deviceIds.begin(), deviceIds.end(),
@@ -88,12 +88,12 @@ bool isDeviceTypeInDeviceIds(
 
 std::set<QInputDevice::DeviceType> getAvailableDeviceTypes()
 {
-    return QtOhos::evalInJsThreadWithPromise<std::set<QInputDevice::DeviceType>>(
-        [](QtOhos::JsState &jsState, QOhosTaskPromise<std::set<QInputDevice::DeviceType>> evalPromise) {
+    return QOhosJsThreadGateway::evalWithPromise<std::set<QInputDevice::DeviceType>>(
+        [](QOhosJsState &jsState, QOhosTaskPromise<std::set<QInputDevice::DeviceType>> evalPromise) {
             auto thenCatchPromises = std::move(evalPromise).makeThenCatchBranches(Q_FUNC_INFO);
             jsState.evalToPromiseOrRejectOnThrow("@ohos.multimodalInput.inputDevice.getDeviceList()")
                 .onThen(
-                    [thenPromise = std::move(thenCatchPromises.first)](const QtOhos::CallbackInfo &cbInfo) {
+                    [thenPromise = std::move(thenCatchPromises.first)](const QOhosCallbackInfo &cbInfo) {
                         auto deviceIdsJsArray = cbInfo.getFirstArg<QNapi::Array>(Q_FUNC_INFO);
                         auto deviceIds = QNapi::getArrayElements<std::vector<std::uint32_t>, QNapi::Number>(deviceIdsJsArray);
                         std::set<QInputDevice::DeviceType> deviceTypes;
@@ -106,7 +106,7 @@ std::set<QInputDevice::DeviceType> getAvailableDeviceTypes()
                         thenPromise(deviceTypes);
                     })
                 .onCatch(
-                    [catchPromise = std::move(thenCatchPromises.second)](const QtOhos::CallbackInfo &) {
+                    [catchPromise = std::move(thenCatchPromises.second)](const QOhosCallbackInfo &) {
                         qOhosPrintfError(
                             "Error while obtaining device list (@ohos.multimodalInput.inputDevice.getDeviceList()). "
                             "No pointing devices will be pre-registered; every device will instead be lazily "
