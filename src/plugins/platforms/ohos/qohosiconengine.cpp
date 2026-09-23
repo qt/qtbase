@@ -3,8 +3,8 @@
 
 #include "qohosiconengine.h"
 
-#include <qohosplugincore.h>
 
+#include <QtCore/private/qcore_ohos_p.h>
 #include <QtGui/qfont.h>
 #include <QtGui/private/qfonticonengine_p.h>
 
@@ -20,7 +20,7 @@ using namespace Qt::StringLiterals;
 
 namespace {
 
-std::optional<char32_t> tryGetOhosSymbolCodepoint(QtOhos::JsState &jsState, const char *ohosSymbolName)
+std::optional<char32_t> tryGetOhosSymbolCodepoint(QOhosJsState &jsState, const char *ohosSymbolName)
 {
     try {
         return jsState.eval<QNapi::Number>(
@@ -50,8 +50,8 @@ const QHash<QString, char32_t> &getThemeIconCodepoints()
         {"text-x-generic"_L1, "doc"},
     };
 
-    static const QHash<QString, char32_t> codepoints = QtOhos::evalInJsThread(
-        [](QtOhos::JsState &jsState) {
+    static const QHash<QString, char32_t> codepoints = QOhosJsThreadGateway::eval(
+        [](QOhosJsState &jsState) {
             QHash<QString, char32_t> codepoints;
             for (const auto &entry : themeIconToOhosSymbolMapping) {
                 const auto optCodepoint = tryGetOhosSymbolCodepoint(jsState, entry.ohosSymbolName);

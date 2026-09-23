@@ -1,13 +1,13 @@
 // Copyright (C) 2025 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
+#include <QtCore/private/qcore_ohos_p.h>
 #include <QtCore/qfileinfo.h>
 
 #include "qohosplatformfontdatabase_p.h"
 #include "qohosqpaenums.h"
 #include <QtCore/private/qnapi_p.h>
 #include <fontconfig/fontconfig.h>
-#include <qohosplugincore.h>
 
 using namespace std::string_literals;
 
@@ -27,14 +27,14 @@ QStringList getAllFontPaths()
     if (ohosNoUiChildMode)
         return {};
 
-    auto fontsPaths = QtOhos::evalInJsThreadWithPromise<std::vector<std::string>>(
-        [](QtOhos::JsState &jsState, QOhosTaskPromise<std::vector<std::string>> evalPromise) {
+    auto fontsPaths = QOhosJsThreadGateway::evalWithPromise<std::vector<std::string>>(
+        [](QOhosJsState &jsState, QOhosTaskPromise<std::vector<std::string>> evalPromise) {
             auto thenCatchPromises = std::move(evalPromise).makeThenCatchBranches(Q_FUNC_INFO);
             jsState.evalToPromiseOrRejectOnThrow(
                 "@ohos.graphics.text.getSystemFontFullNamesByType(*)",
                 {jsState.mapOhosEnumToJs(SystemFontType::ALL)})
             .onThen(
-                [thenPromise = std::move(thenCatchPromises.first)](const QtOhos::CallbackInfo &cbInfo) mutable {
+                [thenPromise = std::move(thenCatchPromises.first)](const QOhosCallbackInfo &cbInfo) mutable {
                     auto fontsNamesArray = cbInfo.getFirstArg<QNapi::Array>(Q_FUNC_INFO);
 
                     if (fontsNamesArray.Length() == 0) {
@@ -56,13 +56,13 @@ QStringList getAllFontPaths()
                             "@ohos.graphics.text.getFontDescriptorByFullName(*)",
                             {fontName, cbInfo.jsState().mapOhosEnumToJs(SystemFontType::ALL)})
                         .onThen(
-                            [pathsCollector](const QtOhos::CallbackInfo &cbInfo) {
+                            [pathsCollector](const QOhosCallbackInfo &cbInfo) {
                                 auto fontDescriptor = cbInfo.getFirstArg<QNapi::Object>(Q_FUNC_INFO);
                                 auto optFontPath = QNapi::getOptionalPropOrEmpty<QNapi::String>(fontDescriptor, "path");
                                 (*pathsCollector)(!optFontPath.IsEmpty() ? optFontPath.Utf8Value() : ""s);
                             })
                         .onCatch(
-                            [pathsCollector, fontName](const QtOhos::CallbackInfo &cbInfo) {
+                            [pathsCollector, fontName](const QOhosCallbackInfo &cbInfo) {
                                 QtOhos::logJsCallbackError(
                                     cbInfo, ("getFontDescriptorByFullName("s + fontName + ") failed"s).c_str());
                                 (*pathsCollector)(""s);
@@ -70,7 +70,7 @@ QStringList getAllFontPaths()
                     }
                 })
             .onCatch(
-                [catchPromise = std::move(thenCatchPromises.second)](const QtOhos::CallbackInfo &cbInfo) {
+                [catchPromise = std::move(thenCatchPromises.second)](const QOhosCallbackInfo &cbInfo) {
                     QtOhos::logJsCallbackError(cbInfo, "getSystemFontFullNamesByType() failed");
                     catchPromise({});
                 });
@@ -87,7 +87,7 @@ QStringList getAllFontPaths()
     return result;
 }
 
-std::string getDefaultFontFamily(QtOhos::JsState &jsState)
+std::string getDefaultFontFamily(QOhosJsState &jsState)
 {
     if (ohosNoUiChildMode)
         return "";
@@ -173,7 +173,7 @@ QFont QOhosPlatformFontDatabase::defaultFont() const
     static const QString defaultFontFamily =
         QFontDatabase::families().contains(QLatin1String(preferredDefaultFontFamily))
             ? QString::fromStdString(preferredDefaultFontFamily)
-            : QtOhos::evalInJsThread(
+            : QOhosJsThreadGateway::eval(
                 [&](auto &jsState) {
                     return QString::fromStdString(getDefaultFontFamily(jsState));
                 },
