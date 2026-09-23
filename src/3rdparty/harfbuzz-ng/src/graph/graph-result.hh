@@ -1,5 +1,5 @@
 /*
- * Copyright © 2022  Google, Inc.
+ * Copyright © 2026  Google, Inc.
  *
  *  This is part of HarfBuzz, a text shaping library.
  *
@@ -24,43 +24,44 @@
  * Google Author(s): Garret Rieger
  */
 
-#include "graph.hh"
-#include "../hb-ot-layout-gsubgpos.hh"
+#ifndef GRAPH_GRAPH_RESULT_HH
+#define GRAPH_GRAPH_RESULT_HH
 
-#ifndef GRAPH_GSUBGPOS_CONTEXT_HH
-#define GRAPH_GSUBGPOS_CONTEXT_HH
+#include "../hb-result.hh"
 
 namespace graph {
 
-struct Lookup;
-
-struct gsubgpos_graph_context_t
-{
-  HB_INTERNAL static graph_result_t<gsubgpos_graph_context_t> create (hb_tag_t table_tag_,
-                                                                      graph_t& graph_);
-
-  hb_tag_t table_tag;
-  graph_t& graph;
-  unsigned lookup_list_index;
-  hb_hashmap_t<unsigned, graph::Lookup*> lookups;
-  hb_hashmap_t<unsigned, unsigned> subtable_to_extension;
-  hb_hashmap_t<unsigned, hb_vector_t<unsigned>> split_subtables;
-
-
-  HB_INTERNAL graph_result_t<unsigned> create_node (unsigned size);
-
-  graph_result_t<void> add_buffer (char* buffer)
-  {
-    return graph.add_buffer (buffer);
-  }
-
- private:
-  HB_INTERNAL gsubgpos_graph_context_t (hb_tag_t table_tag_,
-                                        graph_t& graph_);
-
-  HB_INTERNAL unsigned num_non_ext_subtables ();
+enum graph_error_t {
+  ALLOCATION_FAILURE,
+  LIMIT_EXCEEDED,
+  INVALID_ARGUMENT,
+  CYCLE_DETECTED,
+  SANITIZE_FAILURE,
+  OUT_OF_BOUNDS,
+  ORPHANED_NODES,
+  OVERFLOW_RESOLUTION_FAILED,
+  UNKNOWN,
 };
 
+static inline const char* to_string(graph_error_t e) {
+  switch (e) {
+    case ALLOCATION_FAILURE: return "Memory Allocation Failed";
+    case LIMIT_EXCEEDED: return "Limit Exceeded";
+    case INVALID_ARGUMENT: return "Invalid Argument";
+    case CYCLE_DETECTED: return "Cycle in Graph";
+    case SANITIZE_FAILURE: return "Failed Sanitization";
+    case OUT_OF_BOUNDS: return "Out of Bounds";
+    case ORPHANED_NODES: return "Graph is not fully connected";
+    case OVERFLOW_RESOLUTION_FAILED: return "Overflows are not able to be resolved";
+    case UNKNOWN:
+    default:
+      return "Unknown Error";
+  }
 }
 
-#endif  // GRAPH_GSUBGPOS_CONTEXT
+template<typename T>
+using graph_result_t = hb_result_t<T, graph_error_t>;
+
+} // namespace graph
+
+#endif /* GRAPH_GRAPH_RESULT_HH */

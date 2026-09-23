@@ -379,7 +379,8 @@ struct gvar_GVAR
     bool long_offset = glyph_var_data_size > 0x1FFFEu || force_long_offsets;
     out->flags = long_offset ? 1 : 0;
 
-    HBUINT8 *glyph_var_data_offsets = c->allocate_size<HBUINT8> ((long_offset ? 4 : 2) * (num_glyphs + 1), false);
+    unsigned glyph_var_data_offsets_size = (long_offset ? 4 : 2) * (num_glyphs + 1);
+    HBUINT8 *glyph_var_data_offsets = c->allocate_size<HBUINT8> (glyph_var_data_offsets_size, false);
     if (!glyph_var_data_offsets) return_trace (false);
 
     /* shared tuples */
@@ -387,7 +388,7 @@ struct gvar_GVAR
     out->sharedTupleCount = shared_tuple_count;
 
     if (!shared_tuple_count)
-      out->sharedTuples = 0;
+      out->sharedTuples = (char *) glyph_var_data_offsets + glyph_var_data_offsets_size - (char *) out;
     else
     {
       hb_array_t<const F2DOT14> shared_tuples = glyph_vars.compiled_shared_tuples.as_array ().copy (c);
@@ -507,12 +508,13 @@ struct gvar_GVAR
 #endif
     out->flags = long_offset ? 1 : 0;
 
-    HBUINT8 *subset_offsets = c->serializer->allocate_size<HBUINT8> ((long_offset ? 4 : 2) * (num_glyphs + 1), false);
+    unsigned subset_offsets_size = (long_offset ? 4 : 2) * (num_glyphs + 1);
+    HBUINT8 *subset_offsets = c->serializer->allocate_size<HBUINT8> (subset_offsets_size, false);
     if (!subset_offsets) return_trace (false);
 
     /* shared tuples */
     if (!sharedTupleCount || !sharedTuples)
-      out->sharedTuples = 0;
+      out->sharedTuples = (char *) subset_offsets + subset_offsets_size - (char *) out;
     else
     {
       unsigned int shared_tuple_size = F2DOT14::static_size * axisCount * sharedTupleCount;
@@ -757,7 +759,8 @@ struct gvar_GVAR
 				 const hb_array_t<contour_point_t> points,
 				 hb_glyf_scratch_t &scratch,
 				 hb_scalar_cache_t *gvar_cache = nullptr,
-				 bool phantom_only = false) const
+				 bool phantom_only = false,
+				 int64_t *budget = nullptr) const
     {
       if (unlikely (glyph >= glyphCount)) return true;
       hb_scalar_cache_t *scalar_cache = gvar_cache ?
@@ -805,6 +808,11 @@ struct gvar_GVAR
 								 scalar_cache);
 
 	if (scalar == 0.f) continue;
+
+	if (budget &&
+	    unlikely (!hb_budget_spend (*budget, HB_BUDGET_1,
+					 phantom_only && count >= 4 ? 4 : count)))
+	  return false;
 
 	if (!private_points_checked)
 	{

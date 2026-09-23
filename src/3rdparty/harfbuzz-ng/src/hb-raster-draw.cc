@@ -83,11 +83,21 @@ struct hb_raster_draw_t
   float flatten_clip_x0 = 0.f, flatten_clip_y0 = 0.f;
   float flatten_clip_x1 = 0.f, flatten_clip_y1 = 0.f;
 
-  /* Curve-flattening work, charged one unit per Bézier subdivision.
-     When external_work is set (by raster-paint), that session budget
-     is charged instead of the standalone per-session one. */
-  int64_t  flatten_work_left = HB_RASTER_MAX_DRAW_WORK;
-  int64_t *external_work = nullptr;
+  /* Work budget for outline traversal and curve flattening.  A paint
+     backend seeds this through the public draw-budget API before drawing
+     and reads the remainder back afterwards, so a whole paint session
+     shares one budget without reaching into this object. */
+  int64_t  budget = HB_BUDGET_DEFAULT;
+  int64_t  budget_remaining = HB_BUDGET_GLYPH;
+
+  void recharge_budget ()
+  {
+    budget_remaining = budget == HB_BUDGET_DEFAULT ?
+		       HB_BUDGET_GLYPH : budget;
+  }
+
+  int64_t *get_budget_remaining ()
+  { return &budget_remaining; }
 
   /* Accumulated geometry */
   int64_t edges_left = HB_RASTER_MAX_DRAW_EDGES;
@@ -478,8 +488,7 @@ hb_raster_draw_clear (hb_raster_draw_t *draw)
   draw->has_extents = false;
   draw->has_clip_box = false;
   draw->flatten_clip_active = false;
-  draw->flatten_work_left = HB_RASTER_MAX_DRAW_WORK;
-  draw->external_work = nullptr;
+  draw->recharge_budget ();
   draw->edges_left = HB_RASTER_MAX_DRAW_EDGES;
   draw->edges.clear ();
   draw->active_edges.clear ();
@@ -501,6 +510,7 @@ hb_raster_draw_reset (hb_raster_draw_t *draw)
   draw->transform         = {1, 0, 0, 1, 0, 0};
   draw->x_scale_factor    = 1.f;
   draw->y_scale_factor    = 1.f;
+  draw->budget            = HB_BUDGET_DEFAULT;
   hb_raster_draw_clear (draw);
 }
 
@@ -517,20 +527,21 @@ hb_raster_draw_set_clip_box (hb_raster_draw_t *draw,
   hb_raster_draw_update_flatten_clip (draw);
 }
 
-void
-hb_raster_draw_set_external_work (hb_raster_draw_t *draw,
-				  int64_t *work_left)
-{
-  draw->external_work = work_left;
-}
-
 int64_t
-hb_raster_draw_get_edge_work (hb_raster_draw_t *draw, unsigned max_rows)
+hb_raster_draw_get_pixel_work (const hb_raster_draw_t *draw,
+			       unsigned int max_rows,
+			       unsigned int max_cols)
 {
   int64_t work = 0;
-  for (const auto &e : draw->edges)
-    work += 1 + hb_min (((int64_t) e.yH - (int64_t) e.yL) >> HB_RASTER_PIXEL_BITS,
-			(int64_t) max_rows);
+  for (const auto &edge : draw->edges)
+  {
+    int64_t dx = (int64_t) edge.xH - edge.xL;
+    if (dx < 0) dx = -dx;
+    work += 1 + hb_min (((int64_t) edge.yH - edge.yL) >> HB_RASTER_PIXEL_BITS,
+			(int64_t) max_rows)
+	      + hb_min (dx >> HB_RASTER_PIXEL_BITS,
+			(int64_t) max_cols);
+  }
   return work;
 }
 
@@ -619,7 +630,7 @@ flatten_quadratic_recursive (hb_raster_draw_t *draw,
   unsigned top = 0;
 
   bool check_clip = draw->flatten_clip_active;
-  int64_t *work = draw->external_work ? draw->external_work : &draw->flatten_work_left;
+  int64_t *work = draw->get_budget_remaining ();
   int64_t work_left = *work;
 
   while (true)
@@ -829,7 +840,7 @@ flatten_cubic_recursive (hb_raster_draw_t *draw,
   unsigned top = 0;
 
   bool check_clip = draw->flatten_clip_active;
-  int64_t *work = draw->external_work ? draw->external_work : &draw->flatten_work_left;
+  int64_t *work = draw->get_budget_remaining ();
   int64_t work_left = *work;
 
   while (true)
@@ -1091,6 +1102,28 @@ hb_raster_close_path (hb_draw_funcs_t *dfuncs HB_UNUSED,
   /* no-op: hb_draw_funcs_t already emits closing line_to before us */
 }
 
+static hb_bool_t
+hb_raster_draw_set_budget (hb_draw_funcs_t *, void *draw_data,
+			   int64_t budget, void *)
+{
+  auto *draw = (hb_raster_draw_t *) draw_data;
+  draw->budget = budget;
+  draw->recharge_budget ();
+  return true;
+}
+
+static int64_t
+hb_raster_draw_get_budget (hb_draw_funcs_t *, void *draw_data, void *)
+{
+  return ((hb_raster_draw_t *) draw_data)->budget;
+}
+
+static int64_t *
+hb_raster_draw_get_budget_remaining (hb_draw_funcs_t *, void *draw_data, void *)
+{
+  return ((hb_raster_draw_t *) draw_data)->get_budget_remaining ();
+}
+
 
 /* Lazy-loader singleton for draw funcs */
 
@@ -1107,6 +1140,9 @@ static struct hb_raster_draw_funcs_lazy_loader_t : hb_draw_funcs_lazy_loader_t<h
     hb_draw_funcs_set_quadratic_to_func (funcs, hb_raster_quadratic_to, nullptr, nullptr);
     hb_draw_funcs_set_cubic_to_func     (funcs, hb_raster_cubic_to,     nullptr, nullptr);
     hb_draw_funcs_set_close_path_func   (funcs, hb_raster_close_path,   nullptr, nullptr);
+    hb_draw_funcs_set_set_budget_func (funcs, hb_raster_draw_set_budget, nullptr, nullptr);
+    hb_draw_funcs_set_get_budget_func (funcs, hb_raster_draw_get_budget, nullptr, nullptr);
+    hb_draw_funcs_set_get_budget_remaining_func (funcs, hb_raster_draw_get_budget_remaining, nullptr, nullptr);
 
     hb_draw_funcs_make_immutable (funcs);
 
@@ -1290,38 +1326,137 @@ edge_sweep_row (int32_t                *area,
   if (total_dx > 0)
   {
     /* Left-to-right edge. */
+    if (likely ((unsigned) (cx0 - x_org) < width && (unsigned) (cx1 - x_org) < width))
+    {
+      /* Entirely inside the surface: unclipped walk. */
+      int32_t x_b = (int32_t) hb_clamp (((int64_t) cx0 + 1) * HB_RASTER_ONE_PIXEL,
+					(int64_t) INT32_MIN, (int64_t) INT32_MAX);
+      int32_t fy_b = fy0 + (int32_t) ((((int64_t) x_b - (int64_t) x0) * total_dy) / total_dx);
+      cell_add (area, cover, width, cx0 - x_org, fx0, fy0, HB_RASTER_ONE_PIXEL, fy_b, wind, x_min, x_max);
+
+      int32_t fy_prev = fy_b;
+      for (int32_t cx = cx0 + 1; cx < cx1; cx++)
+      {
+	fy_b = fy_prev + delta_fy;
+	cell_add (area, cover, width, cx - x_org, 0, fy_prev, HB_RASTER_ONE_PIXEL, fy_b, wind, x_min, x_max);
+	fy_prev = fy_b;
+      }
+
+      cell_add (area, cover, width, cx1 - x_org, 0, fy_prev, fx1, fy1, wind, x_min, x_max);
+      return;
+    }
+
+    /* Visible column window.  Columns left of it only contribute their
+     * total cover to column 0 (see cell_add) and that total telescopes,
+     * while columns right of it contribute nothing; so neither side is
+     * walked cell by cell.  Skipping ahead in the fy accumulation is
+     * exact: the increment is constant and the running sums are bounded,
+     * so k steps equal one k·delta_fy jump. */
+    int64_t col_min = (int64_t) x_org;
+    int64_t col_max = (int64_t) x_org + (int64_t) width - 1;
+
+    if (unlikely (cx1 < col_min))
+    {
+      /* Entirely left of the surface. */
+      cell_add (area, cover, width, -1, 0, fy0, 0, fy1, wind, x_min, x_max);
+      return;
+    }
+    if (unlikely (cx0 > col_max))
+      return; /* Entirely right of the surface. */
+
     int32_t x_b = (int32_t) hb_clamp (((int64_t) cx0 + 1) * HB_RASTER_ONE_PIXEL,
 				      (int64_t) INT32_MIN, (int64_t) INT32_MAX);
     int32_t fy_b = fy0 + (int32_t) ((((int64_t) x_b - (int64_t) x0) * total_dy) / total_dx);
-    cell_add (area, cover, width, cx0 - x_org, fx0, fy0, HB_RASTER_ONE_PIXEL, fy_b, wind, x_min, x_max);
 
+    int32_t cx = cx0 + 1;
     int32_t fy_prev = fy_b;
-    for (int32_t cx = cx0 + 1; cx < cx1; cx++)
+    if (likely (cx0 >= col_min))
+      cell_add (area, cover, width, cx0 - x_org, fx0, fy0, HB_RASTER_ONE_PIXEL, fy_b, wind, x_min, x_max);
+    else
+    {
+      /* Fold the first cell and the mid columns left of the surface
+       * into one column-0 cover update. */
+      int32_t cx_skip = (int32_t) col_min; /* ≤ cx1, so it fits */
+      fy_prev = fy_b + (int32_t) ((int64_t) (cx_skip - cx) * delta_fy);
+      cell_add (area, cover, width, -1, 0, fy0, 0, fy_prev, wind, x_min, x_max);
+      cx = cx_skip;
+    }
+
+    int32_t cx_end = (int32_t) hb_min ((int64_t) cx1, col_max + 1);
+    for (; cx < cx_end; cx++)
     {
       fy_b = fy_prev + delta_fy;
       cell_add (area, cover, width, cx - x_org, 0, fy_prev, HB_RASTER_ONE_PIXEL, fy_b, wind, x_min, x_max);
       fy_prev = fy_b;
     }
 
-    cell_add (area, cover, width, cx1 - x_org, 0, fy_prev, fx1, fy1, wind, x_min, x_max);
+    if (likely (cx1 <= col_max))
+      cell_add (area, cover, width, cx1 - x_org, 0, fy_prev, fx1, fy1, wind, x_min, x_max);
   }
   else
   {
     /* Right-to-left edge. */
+    if (likely ((unsigned) (cx0 - x_org) < width && (unsigned) (cx1 - x_org) < width))
+    {
+      /* Entirely inside the surface: unclipped walk. */
+      int32_t x_b = (int32_t) hb_clamp ((int64_t) cx0 * HB_RASTER_ONE_PIXEL,
+					(int64_t) INT32_MIN, (int64_t) INT32_MAX);
+      int32_t fy_b = fy0 + (int32_t) ((((int64_t) x_b - (int64_t) x0) * total_dy) / total_dx);
+      cell_add (area, cover, width, cx0 - x_org, fx0, fy0, 0, fy_b, wind, x_min, x_max);
+
+      int32_t fy_prev = fy_b;
+      for (int32_t cx = cx0 - 1; cx > cx1; cx--)
+      {
+	fy_b = fy_prev - delta_fy;
+	cell_add (area, cover, width, cx - x_org, HB_RASTER_ONE_PIXEL, fy_prev, 0, fy_b, wind, x_min, x_max);
+	fy_prev = fy_b;
+      }
+
+      cell_add (area, cover, width, cx1 - x_org, HB_RASTER_ONE_PIXEL, fy_prev, fx1, fy1, wind, x_min, x_max);
+      return;
+    }
+
+    int64_t col_min = (int64_t) x_org;
+    int64_t col_max = (int64_t) x_org + (int64_t) width - 1;
+
+    if (unlikely (cx0 < col_min))
+    {
+      /* Entirely left of the surface. */
+      cell_add (area, cover, width, -1, 0, fy0, 0, fy1, wind, x_min, x_max);
+      return;
+    }
+    if (unlikely (cx1 > col_max))
+      return; /* Entirely right of the surface. */
+
     int32_t x_b = (int32_t) hb_clamp ((int64_t) cx0 * HB_RASTER_ONE_PIXEL,
 				      (int64_t) INT32_MIN, (int64_t) INT32_MAX);
     int32_t fy_b = fy0 + (int32_t) ((((int64_t) x_b - (int64_t) x0) * total_dy) / total_dx);
     cell_add (area, cover, width, cx0 - x_org, fx0, fy0, 0, fy_b, wind, x_min, x_max);
 
+    int32_t cx = cx0 - 1;
     int32_t fy_prev = fy_b;
-    for (int32_t cx = cx0 - 1; cx > cx1; cx--)
+    if (unlikely (cx > col_max))
+    {
+      /* Mid columns right of the surface contribute nothing. */
+      int32_t cx_skip = (int32_t) col_max; /* ≥ cx1, so it fits */
+      fy_prev = fy_b - (int32_t) ((int64_t) (cx - cx_skip) * delta_fy);
+      cx = cx_skip;
+    }
+
+    int32_t cx_stop = (int32_t) hb_max ((int64_t) cx1, col_min - 1);
+    for (; cx > cx_stop; cx--)
     {
       fy_b = fy_prev - delta_fy;
       cell_add (area, cover, width, cx - x_org, HB_RASTER_ONE_PIXEL, fy_prev, 0, fy_b, wind, x_min, x_max);
       fy_prev = fy_b;
     }
 
-    cell_add (area, cover, width, cx1 - x_org, HB_RASTER_ONE_PIXEL, fy_prev, fx1, fy1, wind, x_min, x_max);
+    if (likely (cx1 >= col_min))
+      cell_add (area, cover, width, cx1 - x_org, HB_RASTER_ONE_PIXEL, fy_prev, fx1, fy1, wind, x_min, x_max);
+    else
+      /* Fold the mid columns left of the surface and the last cell
+       * into one column-0 cover update. */
+      cell_add (area, cover, width, -1, 0, fy_prev, 0, fy1, wind, x_min, x_max);
   }
 }
 
