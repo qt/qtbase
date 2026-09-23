@@ -99,6 +99,7 @@ private slots:
     void checkLiveness() const;
     void reportDuplicateAttributes() const;
     void reportDuplicateDTD() const;
+    void reportUnbalancedElements() const;
     void appendChildFromToDocument() const;
     void iterateCDATA() const;
     void appendDocumentNode() const;
@@ -2173,6 +2174,26 @@ void tst_QDom::reportDuplicateDTD() const
         const auto r = doc.setContent("<!DOCTYPE a><!DOCTYPE b><a/>"_L1);
         QVERIFY(!r);
         QCOMPARE(r.errorMessage, "Found second DTD token in Prolog."_L1);
+    }
+}
+
+void tst_QDom::reportUnbalancedElements() const
+{
+    // Unbalanced start and end elements are a well-formedness error.
+
+    // This should be caught by QXmlStreamReader already; test it here to confirm
+    // the error comes from there, and not from QDomParser.
+    {
+        QDomDocument doc;
+        const auto r = doc.setContent("<a><b></a></b>"_L1);
+        QVERIFY(!r);
+        QCOMPARE(r.errorMessage, "Opening and ending tag mismatch."_L1);
+    }
+    {
+        QDomDocument doc;
+        const auto r = doc.setContent("<a><b></b>"_L1);
+        QVERIFY(!r);
+        QCOMPARE(r.errorMessage, "Premature end of document."_L1);
     }
 }
 
