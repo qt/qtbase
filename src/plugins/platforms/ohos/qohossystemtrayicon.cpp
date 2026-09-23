@@ -6,6 +6,7 @@
 #include "qohospixelmapconversions.h"
 #include "qohosqpaenums.h"
 #include "qohosstatusbarmenu.h"
+#include <QtCore/private/qcore_ohos_p.h>
 #include <QtCore/qdatetime.h>
 #include <QtCore/qobject.h>
 #include <QtGui/private/qhighdpiscaling_p.h>
@@ -16,7 +17,6 @@
 #include <QtGui/qscreen.h>
 #include <algorithm>
 #include <optional>
-#include <qohosplugincore.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -42,7 +42,7 @@ std::function<QNapi::Array(QOhosJsState &)> makeEmptyJsArrayFactory()
     };
 }
 
-QNapi::Object getContextForStatusBarManager(QtOhos::JsState &jsState)
+QNapi::Object getContextForStatusBarManager(QOhosJsState &jsState)
 {
     auto optQAbility = jsState.defaultQAbility();
     if (!optQAbility)
@@ -52,12 +52,12 @@ QNapi::Object getContextForStatusBarManager(QtOhos::JsState &jsState)
 }
 
 std::shared_ptr<void> registerOhosIconLeftClickListener(
-    QtOhos::JsState &jsState, std::function<void()> leftClickListener)
+    QOhosJsState &jsState, std::function<void()> leftClickListener)
 {
     return registerQOhosOnOffMethodsBasedEventHandler(
         jsState.eval<QNapi::Object>("@kit.StatusBarExtensionKit.statusBarManager"),
         "statusBarIconClick",
-        [leftClickListener = std::move(leftClickListener)](const QtOhos::CallbackInfo &cbInfo) {
+        [leftClickListener = std::move(leftClickListener)](const QOhosCallbackInfo &cbInfo) {
             auto eventData = cbInfo.getFirstArg<QNapi::Object>(Q_FUNC_INFO);
             auto optIconClickType = QNapi::getOptionalPropOrEmpty<QNapi::String>(
                 QNapi::getOptionalPropOrEmpty<QNapi::Object>(eventData, "data"),
@@ -75,7 +75,7 @@ std::shared_ptr<void> registerOhosIconLeftClickListener(
         });
 }
 
-void removeIconFromOhosStatusBar(QtOhos::JsState &jsState)
+void removeIconFromOhosStatusBar(QOhosJsState &jsState)
 {
     jsState.eval(
         "@kit.StatusBarExtensionKit.statusBarManager.removeFromStatusBar(*)",
@@ -84,7 +84,7 @@ void removeIconFromOhosStatusBar(QtOhos::JsState &jsState)
     qOhosPrintfDebug("%s: Successfully removed icon from status bar", Q_FUNC_INFO);
 }
 
-std::shared_ptr<void> addItemToOhosStatusBar(QtOhos::JsState &jsState, QNapi::Object statusBarItem)
+std::shared_ptr<void> addItemToOhosStatusBar(QOhosJsState &jsState, QNapi::Object statusBarItem)
 {
     jsState.eval(
         "@kit.StatusBarExtensionKit.statusBarManager.addToStatusBar(*)",
@@ -94,11 +94,11 @@ std::shared_ptr<void> addItemToOhosStatusBar(QtOhos::JsState &jsState, QNapi::Ob
 
     return QtOhos::makeDestroyNotifier(
         []() {
-            QtOhos::runInJsThreadAndWait(&removeIconFromOhosStatusBar, Q_FUNC_INFO);
+            QOhosJsThreadGateway::runAndWait(&removeIconFromOhosStatusBar, Q_FUNC_INFO);
         });
 }
 
-void updateOhosStatusBarIcon(QtOhos::JsState &jsState, QNapi::Object iconData)
+void updateOhosStatusBarIcon(QOhosJsState &jsState, QNapi::Object iconData)
 {
     qOhosPrintfDebug("%s", Q_FUNC_INFO);
 
@@ -114,14 +114,14 @@ void updateOhosStatusBarIcon(QtOhos::JsState &jsState, QNapi::Object iconData)
     qOhosPrintfDebug("%s: Successfully updated status bar icon", Q_FUNC_INFO);
 }
 
-QNapi::Promise updateOhosStatusBarHoverTips(QtOhos::JsState &jsState, const std::string &hoverTips)
+QNapi::Promise updateOhosStatusBarHoverTips(QOhosJsState &jsState, const std::string &hoverTips)
 {
     return jsState.evalToPromiseOrRejectOnThrow(
         "@kit.StatusBarExtensionKit.statusBarManager.updateStatusBarHoverTips(*)",
         {getContextForStatusBarManager(jsState), applyWorkaroundForEmptyHoverTips(hoverTips)});
 }
 
-void updateOhosStatusBarMenu(QtOhos::JsState &jsState, QNapi::Array statusBarGroupMenus)
+void updateOhosStatusBarMenu(QOhosJsState &jsState, QNapi::Array statusBarGroupMenus)
 {
     jsState.eval(
         "@kit.StatusBarExtensionKit.statusBarManager.updateStatusBarMenu(*)",
@@ -131,7 +131,7 @@ void updateOhosStatusBarMenu(QtOhos::JsState &jsState, QNapi::Array statusBarGro
 }
 
 QNapi::Object makeJsStatusBarItem(
-    QtOhos::JsState &jsState, QNapi::Object statusBarIcon, const std::string &title,
+    QOhosJsState &jsState, QNapi::Object statusBarIcon, const std::string &title,
     QNapi::Array statusBarGroupMenus, std::optional<std::string> hoverTips)
 {
     auto *env = jsState.env();
@@ -170,14 +170,14 @@ QImage convertIconToScaledImage(
     return fallbackImage;
 }
 
-QNapi::Object makeJsPixelMapFromIcon(QtOhos::JsState &jsState, const QIcon &icon)
+QNapi::Object makeJsPixelMapFromIcon(QOhosJsState &jsState, const QIcon &icon)
 {
     const QSize iconSize(48, 48);
     return makeDisplayDensityScaledJsPixelMapFromQImage(
         jsState, convertIconToScaledImage(icon, iconSize, Qt::transparent));
 }
 
-QNapi::Object makeJsStatusBarIcon(QtOhos::JsState &jsState, const QIcon &icon)
+QNapi::Object makeJsStatusBarIcon(QOhosJsState &jsState, const QIcon &icon)
 {
     auto *env = jsState.env();
 
@@ -198,7 +198,7 @@ QNapi::Object makeJsStatusBarIcon(QtOhos::JsState &jsState, const QIcon &icon)
 }
 
 QNapi::Object makeJsNotificationContent(
-    QtOhos::JsState &jsState, const std::string &title, const std::string &text)
+    QOhosJsState &jsState, const std::string &title, const std::string &text)
 {
     using ContentType = QtOhosQpa::enums::ohos::notificationManager::ContentType;
 
@@ -219,7 +219,7 @@ QNapi::Object makeJsNotificationContent(
 }
 
 QNapi::Object makeJsNotificationRequest(
-    QtOhos::JsState &jsState, const std::string &title, const std::string &content,
+    QOhosJsState &jsState, const std::string &title, const std::string &content,
     const QIcon &icon, std::optional<int> optAutoDeletedDelayMs)
 {
     auto iconPixelMap = makeDisplayDensityScaledJsPixelMapFromQImage(
@@ -286,8 +286,8 @@ void QOhosSystemTrayIcon::init()
             : makeEmptyJsArrayFactory();
 
     auto selfRef = QtOhos::makeQThreadSafeRef(this);
-    m_jsScopeData = QtOhos::evalInJsThread(
-        [&](QtOhos::JsState &jsState) {
+    m_jsScopeData = QOhosJsThreadGateway::eval(
+        [&](QOhosJsState &jsState) {
             auto jsStatusBarIcon = makeJsStatusBarIcon(jsState, m_icon);
             auto jsStatusBarGroupMenus = jsStatusBarGroupMenusFactory(jsState);
             auto optHoverTipsString = qTransform(
@@ -328,8 +328,8 @@ void QOhosSystemTrayIcon::updateIcon(const QIcon &icon)
 
     m_icon = icon;
 
-    QtOhos::runInJsThreadAndWait(
-        [&](QtOhos::JsState &jsState) {
+    QOhosJsThreadGateway::runAndWait(
+        [&](QOhosJsState &jsState) {
             updateOhosStatusBarIcon(jsState, makeJsStatusBarIcon(jsState, icon));
         },
         Q_FUNC_INFO);
@@ -340,8 +340,8 @@ void QOhosSystemTrayIcon::updateToolTip(const QString &tooltip)
     m_optToolTip = tooltip;
 
     if (m_jsScopeData) {
-        QtOhos::invokeInJsThreadAndWaitForContinue(
-            [&](QtOhos::JsState &jsState, QOhosTaskPromise<> taskPromise) {
+        QOhosJsThreadGateway::invokeAndWaitForContinue(
+            [&](QOhosJsState &jsState, QOhosTaskPromise<> taskPromise) {
                 updateOhosStatusBarHoverTips(jsState, tooltip.toStdString())
                 .onCatch(QtOhos::makeErrorLoggingJsCallback("updateStatusBarHoverTips()"))
                 .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
@@ -359,8 +359,8 @@ void QOhosSystemTrayIcon::showMessage(
     const QString &title, const QString &msg, const QIcon &icon, MessageIcon iconType, int msecs)
 {
     Q_UNUSED(iconType);
-    QtOhos::invokeInJsThreadAndWaitForContinue(
-        [&](QtOhos::JsState &jsState, QOhosTaskPromise<> taskPromise) {
+    QOhosJsThreadGateway::invokeAndWaitForContinue(
+        [&](QOhosJsState &jsState, QOhosTaskPromise<> taskPromise) {
             auto notificationRequest = makeJsNotificationRequest(
                 jsState, title.toStdString(), msg.toStdString(), icon,
                 msecs > 0 ? std::optional(msecs) : std::nullopt);
@@ -404,8 +404,8 @@ void QOhosSystemTrayIcon::updateMenu(QPlatformMenu *menu)
             ? static_cast<QOhosStatusBarMenu *>(m_menu)->makeJsStatusBarGroupMenusFactory()
             : makeEmptyJsArrayFactory();
 
-    QtOhos::runInJsThreadAndWait(
-        [&](QtOhos::JsState &jsState) {
+    QOhosJsThreadGateway::runAndWait(
+        [&](QOhosJsState &jsState) {
             updateOhosStatusBarMenu(jsState, jsStatusBarGroupMenusFactory(jsState));
         },
         Q_FUNC_INFO);
