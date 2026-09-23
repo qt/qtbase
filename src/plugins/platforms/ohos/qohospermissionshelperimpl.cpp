@@ -3,6 +3,7 @@
 
 #include "qohospermissionshelperimpl.h"
 
+#include <QtCore/private/qcore_ohos_p.h>
 #include <QtCore/private/qohoslogger_p.h>
 #include <optional>
 #include <qohosapppermissions_p.h>
@@ -42,7 +43,7 @@ std::optional<Qt::PermissionStatus> tryMapPermissionStatusFromOhos(
 }
 
 std::optional<QtOhosQpa::enums::ohos::abilityAccessCtrl::PermissionStatus> tryGetSelfPermissionStatus(
-    QtOhos::JsState &jsState, const std::string &permissionName)
+    QOhosJsState &jsState, const std::string &permissionName)
 {
     using OhosPermissionStatus = QtOhosQpa::enums::ohos::abilityAccessCtrl::PermissionStatus;
 
@@ -82,8 +83,8 @@ QList<Qt::PermissionStatus> QOhosPermissionsHelperImpl::checkStatusesOfPermissio
     if (permissionNames.isEmpty())
         return {};
 
-    return QtOhos::evalInJsThread(
-        [&](QtOhos::JsState &jsState) {
+    return QOhosJsThreadGateway::eval(
+        [&](QOhosJsState &jsState) {
             QList<Qt::PermissionStatus> statuses;
             for (const auto &permissionName : permissionNames) {
                 auto optPermissionStatus = qAndThen(
@@ -134,8 +135,8 @@ void QOhosPermissionsHelperImpl::requestPermissionsFromUserIfNeeded(
            ? std::optional(QtOhos::QObjectThreadSafeRef(optInstanceMainWindow))
            : std::nullopt;
 
-    QtOhos::invokeInJsThread(
-        [context, permissionNames, optInstanceMainWindowRef](QtOhos::JsState &jsState) {
+    QOhosJsThreadGateway::invoke(
+        [context, permissionNames, optInstanceMainWindowRef](QOhosJsState &jsState) {
             auto optQAbility = QtOhos::tryMapOptMainWindowToQAbility(jsState, optInstanceMainWindowRef);
             if (!optQAbility) {
                 context->resultConsumerQtContextRef.visitInQtThreadIfAlive(
@@ -195,7 +196,7 @@ void QOhosPermissionsHelperImpl::requestPermissionsOnSettingIfNeeded(
            ? std::optional(QtOhos::QObjectThreadSafeRef(optInstanceMainWindow))
            : std::nullopt;
 
-    QtOhos::invokeInJsThread(
+    QOhosJsThreadGateway::invoke(
         [context, permissionNames, optInstanceMainWindowRef](auto &jsState) {
             auto optQAbility = QtOhos::tryMapOptMainWindowToQAbility(jsState, optInstanceMainWindowRef);
             if (!optQAbility) {
