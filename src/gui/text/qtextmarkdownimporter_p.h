@@ -47,6 +47,10 @@ public:
         FeatureTasklists =                0x0800,
         FeatureUnderline =                0x4000,
         FeatureFrontMatter =            0x100000, // Qt feature, not yet in MD4C
+        // NOTE: flags above are kept in sync with #define MD_FLAG_*; therefore,
+        // do NOT add any more Qt-specific flags (within the lower 32 bits).
+        // Because we have FeatureFrontMatter, we cannot support MD_FLAG_FOOTNOTES.
+
         // composite flags
         FeaturePermissiveAutoLinks = FeaturePermissiveMailAutoLinks
             | FeaturePermissiveURLAutoLinks | FeaturePermissiveWWWAutoLinks,
