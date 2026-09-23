@@ -2419,11 +2419,14 @@ void tst_QDateTime::springForward()
         if (zone.offsetFromUtc(QDateTime(QDate(1981, 12, 31), QTime(16, 0), UTC)) != 8 * 3600)
             QEXPECT_FAIL(rowId, "QTBUG-145768: zone data lacks the 1981 transition", Abort);
 # elif defined(USING_WIN_TZ)
+        Q_UNUSED(zone);
         QEXPECT_FAIL(rowId, "QTBUG-145768: system historical zone data is limited", Abort);
 # elif defined(INADEQUATE_TZ_DATA) && Q_PROCESSOR_WORDSIZE < 8
         // It seems CI has better data on 64-bit Android than on 32-bit.
+        Q_UNUSED(zone);
         QEXPECT_FAIL(rowId, "QTBUG-145768: system historical zone data is limited", Abort);
 # else
+        Q_UNUSED(zone);
         Q_UNUSED(rowId);
 # endif // Support for 2022g IANA DB's knowledge of a 1981 transition.
     };
