@@ -14,7 +14,6 @@
 #include "private/qxmlstream_p.h"
 
 #include <memory>
-#include <stack>
 
 QT_BEGIN_NAMESPACE
 
@@ -338,11 +337,9 @@ bool QDomParser::parseBody()
 {
     Q_ASSERT(reader);
 
-    std::stack<QString> tagStack;
     while (!reader->atEnd() && !reader->hasError()) {
         switch (reader->tokenType()) {
         case QXmlStreamReader::StartElement:
-            tagStack.push(reader->qualifiedName().toString());
             if (!domBuilder.startElement(reader->namespaceUri().toString(),
                                          reader->qualifiedName().toString(),
                                          reader->attributes())) {
@@ -352,12 +349,12 @@ bool QDomParser::parseBody()
             }
             break;
         case QXmlStreamReader::EndElement:
-            if (tagStack.empty() || reader->qualifiedName() != tagStack.top()) {
+            if constexpr (false) {
+                // ### kept for the translated string
                 domBuilder.fatalError(
                         QDomParser::tr("Unexpected end element '%1'").arg(reader->name()));
-                return false;
             }
-            tagStack.pop();
+
             if (!domBuilder.endElement()) {
                 domBuilder.fatalError(
                         QDomParser::tr("Error occurred while processing an end element"));
@@ -411,9 +408,9 @@ bool QDomParser::parseBody()
         return false;
     }
 
-    if (!tagStack.empty()) {
+    if constexpr (false) {
+        // ### kept for the translated string
         domBuilder.fatalError(QDomParser::tr("Tag mismatch"));
-        return false;
     }
 
     return true;
