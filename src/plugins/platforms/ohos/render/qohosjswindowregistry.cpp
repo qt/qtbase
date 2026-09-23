@@ -27,8 +27,8 @@ std::shared_ptr<void> QOhosJsWindowRegistry::registerJsWindow(std::shared_ptr<QA
 }
 
 std::vector<QArkUi::JsWindowId> QOhosJsWindowRegistry::queryByPredicate(
-    QtOhos::JsState &jsState,
-    const std::function<bool(QtOhos::JsState &, const QArkUi::JsWindowRef &)> &predicate)
+    QOhosJsState &jsState,
+    const std::function<bool(QOhosJsState &, const QArkUi::JsWindowRef &)> &predicate)
 {
     std::vector<QArkUi::JsWindowId> result;
     for (const auto &windowIdRefPair : m_windowRefs) {

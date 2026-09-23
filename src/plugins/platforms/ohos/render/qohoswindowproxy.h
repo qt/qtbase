@@ -217,7 +217,7 @@ public:
         QOhosDisplayInfo::JsDisplayId displayId, const QPoint &queryLocation,
         std::uint32_t queryLimit = 0);
     static std::vector<QArkUi::JsWindowId> queryQtManagedWindowIdsByPredicate(
-        const std::function<bool(QtOhos::JsState &jsState, const QArkUi::JsWindowRef &)> &predicate);
+        const std::function<bool(QOhosJsState &jsState, const QArkUi::JsWindowRef &)> &predicate);
 
     std::optional<QOhosDisplayInfo::JsDisplayId> tryGetMainWindowJsDisplayId() const;
     void shiftAppWindowFocus(QOhosWindowProxy &targetProxy);

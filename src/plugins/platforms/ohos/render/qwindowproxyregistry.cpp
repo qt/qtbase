@@ -108,7 +108,7 @@ QWindowProxyRegistry &QWindowProxyRegistry::instance()
 std::vector<QWindow *> QWindowProxyRegistry::queryWindowsWithSystemWindowAndFocus()
 {
     return querySystemWindows(
-        [](QtOhos::JsState &, const QArkUi::JsWindowRef &jsWindow) {
+        [](QOhosJsState &, const QArkUi::JsWindowRef &jsWindow) {
             return jsWindow.isFocused();
         });
 }
@@ -116,13 +116,13 @@ std::vector<QWindow *> QWindowProxyRegistry::queryWindowsWithSystemWindowAndFocu
 std::vector<QWindow *> QWindowProxyRegistry::queryWindowsWithVisibleSystemWindow()
 {
     return querySystemWindows(
-        [](QtOhos::JsState &, const QArkUi::JsWindowRef &jsWindow) {
+        [](QOhosJsState &, const QArkUi::JsWindowRef &jsWindow) {
             return jsWindow.isWindowShown();
         });
 }
 
 std::vector<QWindow *> QWindowProxyRegistry::querySystemWindows(
-    const std::function<bool(QtOhos::JsState &, const QArkUi::JsWindowRef &)> &predicate)
+    const std::function<bool(QOhosJsState &, const QArkUi::JsWindowRef &)> &predicate)
 {
     auto jsWindowIds = QOhosWindowProxy::queryQtManagedWindowIdsByPredicate(predicate);
 

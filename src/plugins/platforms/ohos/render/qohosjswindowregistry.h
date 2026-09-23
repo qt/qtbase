@@ -4,12 +4,12 @@
 #ifndef QOHOSJSWINDOWREGISTRY_H
 #define QOHOSJSWINDOWREGISTRY_H
 
+#include <QtCore/private/qcore_ohos_p.h>
 #include <QtCore/qglobal.h>
 #include <functional>
 #include <map>
 #include <memory>
 #include <qarkui/window.h>
-#include <qohosplugincore.h>
 #include <vector>
 
 QT_BEGIN_NAMESPACE
@@ -26,8 +26,8 @@ public:
 
     std::shared_ptr<void> registerJsWindow(std::shared_ptr<QArkUi::JsWindowRef> jsWindowRef);
     std::vector<QArkUi::JsWindowId> queryByPredicate(
-        QtOhos::JsState &jsState,
-        const std::function<bool(QtOhos::JsState &, const QArkUi::JsWindowRef &)> &predicate);
+        QOhosJsState &jsState,
+        const std::function<bool(QOhosJsState &, const QArkUi::JsWindowRef &)> &predicate);
 
     std::shared_ptr<QArkUi::JsWindowRef> tryFindJsWindowById(QArkUi::JsWindowId jsWinId) const;
     std::shared_ptr<QArkUi::JsWindowRef> tryFindJsWindowByQWindowRef(QtOhos::QObjectThreadSafeRef qwindow) const;
