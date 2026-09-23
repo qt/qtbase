@@ -10,9 +10,9 @@
     "License": "MIT License",
     "LicenseId": "MIT",
     "LicenseFile": "LICENSE.md",
-    "Version": "0.5.3",
-    "DownloadLocation": "https://github.com/mity/md4c/releases/tag/release-0.5.3",
-    "PURL": "pkg:github/mity/md4c@release-$<VERSION>",
+    "Version": "0.6.0",
+    "DownloadLocation": "https://github.com/mity/md4c/releases/tag/v0.6.0",
+    "PURL": "pkg:github/mity/md4c@v$<VERSION>",
     "CPE": "cpe:2.3:a:md4c_project:md4c:$<VERSION>:*:*:*:*:*:*:*",
-    "Copyright": "Copyright © 2016-2024 Martin Mitáš"
+    "Copyright": "Copyright © 2016-2026 Martin Mitáš"
 }

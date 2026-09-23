@@ -51,8 +51,10 @@ static_assert(int(QTextMarkdownImporter::FeaturePermissiveAutoLinks) == MD_FLAG_
 static_assert(int(QTextMarkdownImporter::FeatureTasklists) == MD_FLAG_TASKLISTS);
 static_assert(int(QTextMarkdownImporter::FeatureNoHTML) == MD_FLAG_NOHTML);
 static_assert(int(QTextMarkdownImporter::DialectCommonMark) == MD_DIALECT_COMMONMARK);
+// We don't yet support all the features in MD_DIALECT_GITHUB
 static_assert(int(QTextMarkdownImporter::DialectGitHub) ==
-              (MD_DIALECT_GITHUB | MD_FLAG_UNDERLINE | QTextMarkdownImporter::FeatureFrontMatter));
+              (MD_FLAG_PERMISSIVEAUTOLINKS | MD_FLAG_TABLES | MD_FLAG_STRIKETHROUGH | MD_FLAG_TASKLISTS
+                | MD_FLAG_UNDERLINE | QTextMarkdownImporter::FeatureFrontMatter));
 
 // --------------------------------------------------------
 // MD4C callback function wrappers
@@ -167,7 +169,7 @@ void QTextMarkdownImporter::import(const QString &markdown)
 {
     MD_PARSER callbacks = {
         0, // abi_version
-        unsigned(m_features),
+        unsigned(m_features) & unsigned(0xFFEFFFFF), // exclude MD_FLAG_FOOTNOTES: unsupported in Qt
         &CbEnterBlock,
         &CbLeaveBlock,
         &CbEnterSpan,

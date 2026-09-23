@@ -46,6 +46,8 @@ private slots:
     void fencedCodeBlocks();
     void frontMatter_data();
     void frontMatter();
+    void admonitions();
+    void footnotes();
     void toRawText_data();
     void toRawText();
 
@@ -717,6 +719,90 @@ void tst_QTextMarkdownImporter::frontMatter()
     if (expectedFrontMatterSize)
         QCOMPARE(doc.metaInformation(QTextDocument::FrontMatter), yaml); // without fences
     QCOMPARE(doc.metaInformation(QTextDocument::FrontMatter).size(), expectedFrontMatterSize);
+}
+
+void tst_QTextMarkdownImporter::admonitions() // QTBUG-149922
+{
+    // QTextDocument doesn't have a representation for admonitions yet.
+    // But test what happens when we parse a markdown file that has them.
+    // We expect them to be seen as block quotes; the syntax like "[!NOTE]"
+    // comes out as-is for now, whereas in the future it could trigger some CSS style.
+    QTextDocument doc;
+    QFile f(QFINDTESTDATA("data/admonitions.md"));
+    QVERIFY(f.open(QFile::ReadOnly));
+    doc.setMarkdown(f.readAll());
+
+#ifdef DEBUG_WRITE_HTML
+    {
+        QFile out("/tmp/admonitions.html");
+        out.open(QFile::WriteOnly);
+        out.write(doc.toHtml().toLatin1());
+        out.close();
+    }
+#endif
+
+    QTextFrame::iterator iterator = doc.rootFrame()->begin();
+    QTextFrame *currentFrame = iterator.currentFrame();
+    int blockQuoteCount = 0;
+    int plainBlockCount = 0;
+    while (!iterator.atEnd()) {
+        // There are no child frames
+        QCOMPARE(iterator.currentFrame(), currentFrame);
+        // Check BlockQuoteLevel
+        QTextBlock block = iterator.currentBlock();
+        const bool blockQuote = block.blockFormat().hasProperty(QTextFormat::BlockQuoteLevel);
+        if (blockQuote) {
+            QCOMPARE(block.blockFormat().intProperty(QTextFormat::BlockQuoteLevel), 1);
+            ++blockQuoteCount;
+        } else {
+            ++plainBlockCount;
+        }
+        qCDebug(lcTests) << (blockQuoteCount ? "quote" : "text") << block.text();
+        ++iterator;
+    }
+    QCOMPARE(blockQuoteCount, 5);
+    QCOMPARE(plainBlockCount, 1);
+}
+
+void tst_QTextMarkdownImporter::footnotes() // QTBUG-149923
+{
+    // QTextDocument doesn't have a representation for footnotes yet.
+    // But test what happens when we parse a markdown file that has them.
+    QTextDocument doc;
+    QFile f(QFINDTESTDATA("data/footnotes.md"));
+    QVERIFY(f.open(QFile::ReadOnly));
+    doc.setMarkdown(f.readAll());
+
+#ifdef DEBUG_WRITE_HTML
+    {
+        QFile out("/tmp/footnotes.html");
+        out.open(QFile::WriteOnly);
+        out.write(doc.toHtml().toLatin1());
+        out.close();
+    }
+#endif
+
+    QTextFrame::iterator iterator = doc.rootFrame()->begin();
+    QTextFrame *currentFrame = iterator.currentFrame();
+    int nonEmptyBlockCount = 0;
+    int firstFootNoteIndex = -1;
+    while (!iterator.atEnd()) {
+        // There are no child frames
+        QCOMPARE(iterator.currentFrame(), currentFrame);
+        QTextBlock block = iterator.currentBlock();
+        if (!block.text().isEmpty()) {
+            qCDebug(lcTests) << block.text();
+            // Without MD_FLAG_FOOTNOTES (which QTD cannot support right now),
+            // the special syntax is ignored, and the first footnote is an ordinary inline paragraph.
+            // If MD_FLAG_FOOTNOTES got turned on, md4c would emit it into the last block instead.
+            if (block.text().contains("This is the first footnote."))
+                firstFootNoteIndex = nonEmptyBlockCount;
+            ++nonEmptyBlockCount;
+        }
+        ++iterator;
+    }
+    QCOMPARE(nonEmptyBlockCount, 7);
+    QCOMPARE(firstFootNoteIndex, 2);
 }
 
 void tst_QTextMarkdownImporter::toRawText_data()
