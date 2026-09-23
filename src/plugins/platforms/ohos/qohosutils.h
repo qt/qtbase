@@ -4,6 +4,7 @@
 #ifndef QOHOSUTILS_H
 #define QOHOSUTILS_H
 
+#include <QtCore/private/qcore_ohos_p.h>
 #include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/qglobal.h>
 #include <QtCore/qlogging.h>
@@ -12,7 +13,6 @@
 #include <memory>
 #include <mutex>
 #include <optional>
-#include <qohosplugincore.h>
 #include <string>
 #include <tuple>
 #include <type_traits>
@@ -83,7 +83,7 @@ std::string printfToString(const char *format, ...) Q_ATTRIBUTE_FORMAT_PRINTF(1,
 const char *mapBoolToTrueFalseStr(bool value);
 
 std::optional<QNapi::Object> tryMapOptMainWindowToQAbility(
-    QtOhos::JsState &jsState, std::optional<QtOhos::QObjectThreadSafeRef> optInstanceMainWindowRef);
+    QOhosJsState &jsState, std::optional<QtOhos::QObjectThreadSafeRef> optInstanceMainWindowRef);
 
 template<typename ForwardIt, typename Predicate>
 ForwardIt removeMatchingWithLookahead(ForwardIt firstIt, ForwardIt lastIt, Predicate &&predicate)
