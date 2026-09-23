@@ -1852,7 +1852,7 @@ std::vector<QArkUi::JsWindowId> QOhosWindowProxy::queryWindowIdsByCoordinate(
 }
 
 std::vector<QArkUi::JsWindowId> QOhosWindowProxy::queryQtManagedWindowIdsByPredicate(
-    const std::function<bool(QtOhos::JsState &, const QArkUi::JsWindowRef &)> &predicate)
+    const std::function<bool(QOhosJsState &, const QArkUi::JsWindowRef &)> &predicate)
 {
     return QtOhos::evalInJsThread([&](QtOhos::JsState &jsState) {
         auto &jsWindowRegistry = jsState.getAttachedObjectWithLazyCreate<QOhosJsWindowRegistry>();

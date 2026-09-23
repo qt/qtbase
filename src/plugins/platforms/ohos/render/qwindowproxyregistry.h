@@ -4,12 +4,12 @@
 #ifndef QWINDOWPROXYREGISTRY_H
 #define QWINDOWPROXYREGISTRY_H
 
+#include <QtCore/private/qcore_ohos_p.h>
 #include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/qglobal.h>
 #include <map>
 #include <optional>
 #include <qarkui/window.h>
-#include <qohosplugincore.h>
 #include <render/qohoswindowproxy.h>
 #include <string>
 
@@ -45,7 +45,7 @@ private:
     QWindowProxyRegistry();
 
     std::vector<QWindow *> querySystemWindows(
-        const std::function<bool(QtOhos::JsState &, const QArkUi::JsWindowRef &)> &predicate);
+        const std::function<bool(QOhosJsState &, const QArkUi::JsWindowRef &)> &predicate);
 
     std::map<QArkUi::JsWindowId, QtOhos::InternalWindowId> m_jsWindowIdMap;
     std::map<QtOhos::InternalWindowId, std::string> m_qAbilityInstanceIdMap;
