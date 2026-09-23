@@ -35,9 +35,9 @@ std::string applyWorkaroundForEmptyHoverTips(const std::string &hoverTips)
     return !hoverTips.empty() ? hoverTips : " ";
 }
 
-std::function<QNapi::Array(QtOhos::JsState &)> makeEmptyJsArrayFactory()
+std::function<QNapi::Array(QOhosJsState &)> makeEmptyJsArrayFactory()
 {
-    return [](QtOhos::JsState &jsState) {
+    return [](QOhosJsState &jsState) {
         return QNapi::Array::New(jsState.env());
     };
 }
