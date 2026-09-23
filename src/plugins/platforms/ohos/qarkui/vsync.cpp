@@ -3,6 +3,7 @@
 
 #include <qarkui/vsync.h>
 
+#include <QtCore/private/qcore_ohos_p.h>
 #include <cstdint>
 #include <functional>
 #include <map>
@@ -10,7 +11,6 @@
 #include <native_vsync/native_vsync.h>
 #include <native_window/external_window.h>
 #include <qarkui/qarkuiutils.h>
-#include <qohosplugincore.h>
 #include <qohosutils.h>
 #include <render/qohosbatchingrequestshandler.h>
 #include <unordered_set>
@@ -128,8 +128,8 @@ QOhosVSyncRegistry::QOhosVSyncRegistry()
 {
     auto vsyncFrameReadyHandler = makeQtOhosBatchingMTRequestsHandler<std::unordered_set<VsyncId>>(
         [](std::function<void()> task) {
-            QtOhos::invokeInJsThread(
-                [task = std::move(task)](QtOhos::JsState &){
+            QOhosJsThreadGateway::invoke(
+                [task = std::move(task)](QOhosJsState &){
                     task();
                 });
         },

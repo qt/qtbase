@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qohosinputmethodproxy.h"
+#include <QtCore/private/qcore_ohos_p.h>
 #include <QtCore/private/qohoslogger_p.h>
 #include <QtCore/private/qstringconverter_p.h>
 #include <algorithm>
 #include <codecvt>
 #include <locale>
 #include <qarkui/qarkuiutils.h>
-#include <qohosplugincore.h>
 #include <qohosutils.h>
 
 QT_BEGIN_NAMESPACE
@@ -340,7 +340,7 @@ QOhosInputMethodProxy::QOhosInputMethodProxy(
     , m_textAroundCursor(std::make_shared<QOhosMutexProtectedValue<TextAroundCursor>>())
 {
     auto weakClientCallbacks = QtOhos::makeWeakPtr(clientCallbacks);
-    m_jsScopeData = QtOhos::evalInJsThread(
+    m_jsScopeData = QOhosJsThreadGateway::eval(
         [&](auto &) -> std::shared_ptr<JsScopeData> {
             auto textEditorProxyData = std::make_shared<JsScopeData::JsTextEditorProxyData>();
             auto textEditorProxy = makeTextEditorProxy();
@@ -380,8 +380,8 @@ void QOhosInputMethodProxy::showTextInput(::InputMethod_RequestKeyboardReason re
         return;
     }
 
-    QtOhos::runInJsThreadAndWait(
-        [&](QtOhos::JsState &) {
+    QOhosJsThreadGateway::runAndWait(
+        [&](QOhosJsState &) {
             if (m_jsScopeData->textEditorProxyData->textInputShown) {
                 qOhosPrintfDebug("%s: text input already shown, skip showing it again", Q_FUNC_INFO);
                 return;
@@ -409,8 +409,8 @@ void QOhosInputMethodProxy::notifyConfigurationChange(
         return;
     }
 
-    QtOhos::runInJsThreadAndWait(
-        [&](QtOhos::JsState &) {
+    QOhosJsThreadGateway::runAndWait(
+        [&](QOhosJsState &) {
             ::InputMethod_ErrorCode errcode = QArkUi::callArkUi(
                 Q_OHOS_NAMED_FUNC(::OH_InputMethodProxy_NotifyConfigurationChange),
                 m_jsScopeData->inputMethodProxy.get(),
@@ -433,8 +433,8 @@ void QOhosInputMethodProxy::notifyCursorUpdate(const QRectF &cursorRect)
     double width = cursorRect.width();
     double height = cursorRect.height();
 
-    QtOhos::runInJsThreadAndWait(
-        [&](QtOhos::JsState &) {
+    QOhosJsThreadGateway::runAndWait(
+        [&](QOhosJsState &) {
             auto ohCursorInfo = makeCursorInfo(x, y, width, height);
 
             ::InputMethod_ErrorCode errcode = QArkUi::callArkUi(
@@ -453,8 +453,8 @@ void QOhosInputMethodProxy::notifySelectionChange(std::u16string text, int start
         return;
     }
 
-    QtOhos::runInJsThreadAndWait(
-        [&](QtOhos::JsState &) {
+    QOhosJsThreadGateway::runAndWait(
+        [&](QOhosJsState &) {
             ::InputMethod_ErrorCode errcode = QArkUi::callArkUi(
                 Q_OHOS_NAMED_FUNC(::OH_InputMethodProxy_NotifySelectionChange),
                 m_jsScopeData->inputMethodProxy.get(), &text[0], text.size(), start, end);

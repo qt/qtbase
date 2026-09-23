@@ -3,13 +3,13 @@
 
 #include <qohosforeignwindow.h>
 
+#include <QtCore/private/qcore_ohos_p.h>
 #include <QtGui/private/qhighdpiscaling_p.h>
 #include <arkui/native_node.h>
 #include <arkui/native_type.h>
 #include <qarkui/qembeddedwindownode.h>
 #include <qohosplatformwindow.h>
 #include <qohosplatformscreen.h>
-#include <qohosplugincore.h>
 #include <qohosutils.h>
 #include <qpa/qplatformscreen.h>
 #include <qpa/qwindowsysteminterface.h>
@@ -20,7 +20,7 @@ QT_BEGIN_NAMESPACE
 QOhosForeignWindow::QOhosForeignWindow(QWindow *qWindow, WId windowId)
     : QOhosPlatformWindow(qWindow)
 {
-    QtOhos::runInJsThreadAndWait([&](QtOhos::JsState &) {
+    QOhosJsThreadGateway::runAndWait([&](QOhosJsState &) {
         auto windowIdStruct = std::unique_ptr<QtOhos::WindowIdStruct>(
             reinterpret_cast<QtOhos::WindowIdStruct *>(windowId));
 
@@ -67,7 +67,7 @@ void QOhosForeignWindow::setGeometry(const QRect &unscaledGeometry)
     auto scaledGeometry = QHighDpi::fromNative(QRectF(unscaledGeometry),
                               static_cast<QOhosPlatformScreen *>(screen())->pixelScalingCoefficient());
 
-    QtOhos::runInJsThreadAndWait([&](QtOhos::JsState &) {
+    QOhosJsThreadGateway::runAndWait([&](QOhosJsState &) {
         m_jsStateData->embeddedWindow->setSize(scaledGeometry.size());
         m_jsStateData->embeddedWindow->setPosition(scaledGeometry.topLeft());
     },
@@ -78,7 +78,7 @@ void QOhosForeignWindow::setGeometry(const QRect &unscaledGeometry)
 
 WId QOhosForeignWindow::winId() const
 {
-    return QtOhos::evalInJsThread([this](QtOhos::JsState &) {
+    return QOhosJsThreadGateway::eval([this](QOhosJsState &) {
         return reinterpret_cast<WId>(m_jsStateData->embeddedWindow->qtWindowId());
     },
     Q_FUNC_INFO);
@@ -90,7 +90,7 @@ void QOhosForeignWindow::setParent(const QPlatformWindow *window)
         qOhosReportFatalErrorAndAbort("Reparenting to foreign windows is not supported");
 
     if (window == nullptr) {
-        QtOhos::runInJsThreadAndWait([&](QtOhos::JsState &) {
+        QOhosJsThreadGateway::runAndWait([&](QOhosJsState &) {
             m_jsStateData->embeddedWindow->detachFromParentIfPresent();
         },
         Q_FUNC_INFO);
@@ -108,7 +108,7 @@ void QOhosForeignWindow::setParent(const QPlatformWindow *window)
 
 void QOhosForeignWindow::setVisible(bool visible)
 {
-    QtOhos::runInJsThreadAndWait([&](QtOhos::JsState &) {
+    QOhosJsThreadGateway::runAndWait([&](QOhosJsState &) {
         m_jsStateData->embeddedWindow->setNodeVisibility(visible);
     },
     Q_FUNC_INFO);
