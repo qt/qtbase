@@ -50,6 +50,7 @@ qt_internal_add_3rdparty_library(BundledHarfbuzz
         src/hb-paint-extents.cc src/hb-paint-extents.hh
         src/hb-priority-queue.hh
         src/hb-repacker.hh
+        src/hb-result.hh
         src/hb-script-list.h
         src/hb-set.cc src/hb-set.h src/hb-set.hh
         src/hb-set-digest.hh
@@ -198,6 +199,7 @@ qt_internal_extend_target(BundledHarfbuzz CONDITION TRUE
         src/OT/name/name.hh
         src/OT/Var/VARC/coord-setter.hh
         src/OT/Var/VARC/VARC.cc src/OT/Var/VARC/VARC.hh
+        src/OT/Var/VARC/VARC-subset.hh
     DEFINES
         HAVE_OT
 )
