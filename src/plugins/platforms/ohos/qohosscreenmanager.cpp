@@ -1,6 +1,7 @@
 // Copyright (C) 2025 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
+#include <QtCore/private/qcore_ohos_p.h>
 #include <qohosscreenmanager.h>
 #include <cstdint>
 #include <memory>
@@ -17,7 +18,7 @@ QOhosScreenManager::QOhosScreenManager()
     auto selfRef = QtOhos::QThreadSafeRef<QOhosScreenManager>(this);
 
     std::vector<QOhosDisplayInfo> registeredDisplays;
-    QtOhos::runInJsThreadAndWait([&](QtOhos::JsState &jsState) {
+    QOhosJsThreadGateway::runAndWait([&](QOhosJsState &jsState) {
         m_jsScopeData = QtOhos::makeProxyWithJsThreadDeleter(
             QArkUi::QOhosDisplayManager::create(
                 jsState, QArkUi::QOhosDisplayManager::CreateInfo{

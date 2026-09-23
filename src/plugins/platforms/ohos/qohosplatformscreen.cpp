@@ -1,6 +1,7 @@
 // Copyright (C) 2025 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
+#include <QtCore/private/qcore_ohos_p.h>
 #include <QtCore/qdebug.h>
 #include <QtCore/qdatetime.h>
 
@@ -369,8 +370,8 @@ Qt::ScreenOrientation QOhosPlatformScreen::nativeOrientation() const
 
 QRect QOhosPlatformScreen::getAvailableArea() const
 {
-    return QtOhos::evalInJsThreadWithPromise<QRect>(
-        [&](QtOhos::JsState &jsState, QOhosTaskPromise<QRect> evalPromise) {
+    return QOhosJsThreadGateway::evalWithPromise<QRect>(
+        [&](QOhosJsState &jsState, QOhosTaskPromise<QRect> evalPromise) {
 
             QNapi::Object display;
             try {
@@ -387,7 +388,7 @@ QRect QOhosPlatformScreen::getAvailableArea() const
             auto thenCatchPromises = std::move(evalPromise).makeThenCatchBranches(Q_FUNC_INFO);
             display.evalToPromiseOrRejectOnThrow("getAvailableArea()")
             .onThen(
-                [thenPromise = std::move(thenCatchPromises.first)](const QtOhos::CallbackInfo &cbInfo) {
+                [thenPromise = std::move(thenCatchPromises.first)](const QOhosCallbackInfo &cbInfo) {
                     auto availableArea = cbInfo.getFirstArg<QNapi::Object>(Q_FUNC_INFO);
                     thenPromise(
                         QRect(
@@ -397,7 +398,7 @@ QRect QOhosPlatformScreen::getAvailableArea() const
                             availableArea.get<QNapi::Number>("height")));
                 })
             .onCatch(
-                [catchPromise = std::move(thenCatchPromises.second)](const QtOhos::CallbackInfo &cbInfo) {
+                [catchPromise = std::move(thenCatchPromises.second)](const QOhosCallbackInfo &cbInfo) {
                     QtOhos::logJsCallbackError(cbInfo, "Error occurred in JS getAvailableArea()");
                     catchPromise(QRect());
                 });
@@ -487,9 +488,9 @@ QPixmap QOhosPlatformScreen::grabWindow(WId wId, int x, int y, int width, int he
             this, QOhosPlatformWindow::fromQWindow(window)->makeSnapshot(), captureRect);
     }
 
-    auto capturedScreenPixmap = QtOhos::evalInJsThreadWithPromise<QPixmap>(
+    auto capturedScreenPixmap = QOhosJsThreadGateway::evalWithPromise<QPixmap>(
         [displayId = m_displayInfo.id](
-            QtOhos::JsState &jsState, QOhosTaskPromise<QPixmap> evalPromise) {
+            QOhosJsState &jsState, QOhosTaskPromise<QPixmap> evalPromise) {
             auto sharedEvalPromise = QtOhos::moveToSharedPtr(std::move(evalPromise).makeChained(Q_FUNC_INFO));
             tryCaptureScreenPixelmapWithPermissionCheck(
                 jsState, displayId,
