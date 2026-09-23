@@ -6,12 +6,13 @@
 
 #include <QtCore/qpointer.h>
 #include <QtCore/qglobal.h>
+#include <QtCore/private/qcore_ohos_p.h>
+#include <QtCore/private/qohoscommon_p.h>
 #include <QtGui/qwindow.h>
 #include <QtGui/qinputdevice.h>
 #include <ace/xcomponent/native_interface_xcomponent.h>
 #include <arkui/ui_input_event.h>
 #include <qohosinputmethodeventhandler.h>
-#include <qohosplugincore.h>
 #include <render/qohosnativegestureshandler.h>
 #include <render/qxcomponent.h>
 

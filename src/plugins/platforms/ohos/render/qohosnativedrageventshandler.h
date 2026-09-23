@@ -6,9 +6,9 @@
 
 #include <arkui/drag_and_drop.h>
 #include <arkui/native_node.h>
+#include <QtCore/private/qcore_ohos_p.h>
 #include <QtCore/private/qohoscommon_p.h>
 #include <QtGui/qwindow.h>
-#include <qohosplugincore.h>
 
 QT_BEGIN_NAMESPACE
 

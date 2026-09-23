@@ -4,11 +4,11 @@
 #ifndef QOHOSHOVEREVENTSGENERATOR_H
 #define QOHOSHOVEREVENTSGENERATOR_H
 
+#include <QtCore/private/qcore_ohos_p.h>
 #include <QtCore/qglobal.h>
 #include <QtGui/qwindow.h>
 #include <memory>
 #include <qohosinputmethodeventhandler.h>
-#include <qohosplugincore.h>
 
 QT_BEGIN_NAMESPACE
 

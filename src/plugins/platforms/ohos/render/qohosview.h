@@ -4,11 +4,14 @@
 #ifndef QOHOSVIEW_H
 #define QOHOSVIEW_H
 
+#include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/qflags.h>
 #include <QtCore/qglobal.h>
 #include <QtCore/qmimedata.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qpoint.h>
+#include <QtCore/qpointer.h>
+#include <QtCore/qsharedpointer.h>
 #include <QtCore/qsize.h>
 #include <QtCore/qstring.h>
 #include <QtGui/qimage.h>
@@ -18,7 +21,6 @@
 #include <qohosdisplayinfo.h>
 #include <qohosforeignwindow.h>
 #include <qohosplatformwindow.h>
-#include <qohosplugincore.h>
 #include <qohosruntimedevicetypeandmode.h>
 #include <qohossettings.h>
 #include <qohoswindowproperty.h>

@@ -4,13 +4,13 @@
 #ifndef QARKUI__WINDOW_H
 #define QARKUI__WINDOW_H
 
+#include <QtCore/private/qcore_ohos_p.h>
 #include <QtCore/private/qnapi_p.h>
 #include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/qglobal.h>
 #include <QtCore/qrect.h>
 #include <optional>
 #include <qohosdisplayinfo.h>
-#include <qohosplugincore.h>
 #include <qohosutils.h>
 #include <string>
 #include <vector>

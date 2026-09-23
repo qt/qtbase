@@ -11,11 +11,12 @@
 #include <QtCore/qtimer.h>
 #include <QtCore/qwaitcondition.h>
 #include <QtCore/qatomic.h>
+#include <QtCore/qscopedpointer.h>
+#include <QtCore/private/qohoscommon_p.h>
 
 #include <functional>
 #include <optional>
 #include <qohosdisplayinfo.h>
-#include <qohosplugincore.h>
 #include "EGL/eglplatform.h"
 #include "qohosplatformcursor.h"
 

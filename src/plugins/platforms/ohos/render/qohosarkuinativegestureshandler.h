@@ -4,10 +4,10 @@
 #ifndef QOHOSARKUINATIVEGESTURESHANDLER_H
 #define QOHOSARKUINATIVEGESTURESHANDLER_H
 
+#include <QtCore/private/qcore_ohos_p.h>
 #include <QtCore/private/qohoscommon_p.h>
 #include <QtGui/qwindow.h>
 #include <qarkui/qembeddedwindownode.h>
-#include <qohosplugincore.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -3,7 +3,7 @@
 
 #include "qohosvulkansurface.h"
 
-#include <qohosplugincore.h>
+#include <QtCore/private/qohoslogger_p.h>
 
 QT_BEGIN_NAMESPACE
 

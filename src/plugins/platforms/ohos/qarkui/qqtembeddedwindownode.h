@@ -4,10 +4,10 @@
 #ifndef QQTEMBEDDEDWINDOWNODE_H
 #define QQTEMBEDDEDWINDOWNODE_H
 
+#include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/qglobal.h>
 #include <optional>
 #include <qarkui/qembeddedwindownode.h>
-#include <qohosplugincore.h>
 #include <QtCore/qpoint.h>
 
 QT_BEGIN_NAMESPACE
