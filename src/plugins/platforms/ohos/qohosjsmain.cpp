@@ -1053,12 +1053,12 @@ QNapi::Value handleAbilityOnContinue(const CallbackInfo &cbInfo)
 
     return adaptAsyncCallResultToJsPromise<QOhosAbilityOnContinueResult>(
         cbInfo.jsState(),
-        [](JsState &jsState, auto result) {
+        [](QOhosJsState &jsState, auto result) {
             return jsState.mapOhosEnumToJs(result);
         },
-        [&](JsState &jsState, auto resultConsumer) {
+        [&](QOhosJsState &jsState, auto resultConsumer) {
             getQAbilityInstancesManager().getAbilityPeerBackend(uiAbilityPeer)->handleOnContinueRequestFromSystem(
-                jsState, wantParamsObj, std::move(resultConsumer));
+                static_cast<JsState &>(jsState), wantParamsObj, std::move(resultConsumer));
         });
 }
 
@@ -1233,16 +1233,16 @@ void asyncRunTaskInTemporaryThread(std::function<void()> task, std::function<voi
 }
 
 void asyncRunTaskInTemporaryThreadWithTimeout(
-    JsState &jsState, std::function<void()> task, std::chrono::milliseconds waitTimeout,
-    QOhosConsumer<JsState &, bool> successConsumer)
+    QOhosJsState &jsState, std::function<void()> task, std::chrono::milliseconds waitTimeout,
+    QOhosConsumer<QOhosJsState &, bool> successConsumer)
 {
     auto successNotifyFunc = moveToSharedPtr(
-        makeCallOnceConsumerWrapper<JsState &, bool>(
+        makeCallOnceConsumerWrapper<QOhosJsState &, bool>(
             std::move(successConsumer)));
 
     setJsTimeout(
         jsState,
-        [successNotifyFunc](const CallbackInfo &cbInfo) {
+        [successNotifyFunc](const QOhosCallbackInfo &cbInfo) {
             (*successNotifyFunc)(cbInfo.jsState(), false);
         },
         waitTimeout);
@@ -1443,7 +1443,7 @@ QNapi::Value handleAbilityOnPrepareToTerminateAsync(const CallbackInfo &cbInfo)
         return getQAbilityInstancesManager().getAbilityPeerBackend(optQUiAbilityPeer)->handleCloseRequestFromSystem(
             jsState, "UIAbility::onPrepareToTerminateAsync",
             QUiAbilityPeerBackend::CloseAbilityRequestSource::OnPrepareToTerminate,
-            [](JsState &jsState, QUiAbilityPeerBackend::CloseAbilityRequestResolution ohosRequestResolution) {
+            [](QOhosJsState &jsState, QUiAbilityPeerBackend::CloseAbilityRequestResolution ohosRequestResolution) {
                 return QNapi::Boolean::New(
                     jsState.env(),
                     ohosRequestResolution == QUiAbilityPeerBackend::CloseAbilityRequestResolution::DontClose);
@@ -1505,7 +1505,7 @@ QNapi::Value handleAbilityOnDestroy(const CallbackInfo &cbInfo)
                         s_qtAppThreadIdleStateWaitFunc();
                     },
                     resultPromiseAutoresolveTimeout,
-                    [instanceId = qAbilityPeer->instanceId(), resultPromiseDeferred](JsState &jsState, bool threadExited) {
+                    [instanceId = qAbilityPeer->instanceId(), resultPromiseDeferred](QOhosJsState &jsState, bool threadExited) {
                         qOhosPrintfInfo(
                             "Qt: end waiting for Qt app's main() function, returned: %s",
                             mapBoolToTrueFalseStr(threadExited));

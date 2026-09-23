@@ -54,7 +54,7 @@ std::shared_ptr<void> startDelayedJsThreadTask(
 }
 
 int setJsTimeout(
-    JsState &jsState, std::function<void(const CallbackInfo &)> timeoutFunc,
+    QOhosJsState &jsState, std::function<void(const QOhosCallbackInfo &)> timeoutFunc,
     std::chrono::milliseconds delay)
 {
     int timerId = jsState.eval<QNapi::Number>(

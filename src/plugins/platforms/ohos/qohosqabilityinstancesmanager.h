@@ -34,8 +34,8 @@ public:
     };
 
     virtual QNapi::Promise handleCloseRequestFromSystem(
-        JsState &jsState, const std::string &logContextStr, CloseAbilityRequestSource requestSource,
-        std::function<QNapi::Value(JsState &, CloseAbilityRequestResolution)> promiseValueFactory) = 0;
+        QOhosJsState &jsState, const std::string &logContextStr, CloseAbilityRequestSource requestSource,
+        std::function<QNapi::Value(QOhosJsState &, CloseAbilityRequestResolution)> promiseValueFactory) = 0;
 
     virtual void handleOnContinueRequestFromSystem(
         JsState &jsState, QNapi::Object wantParamsObj,
