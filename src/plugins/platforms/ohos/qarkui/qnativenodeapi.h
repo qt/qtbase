@@ -14,7 +14,6 @@
 #include <functional>
 #include <memory>
 #include <optional>
-#include <qohosplugincore.h>
 #include <qohosutils.h>
 #include <set>
 #include <string>

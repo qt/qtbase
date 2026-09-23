@@ -20,7 +20,6 @@
 #include <QtCore/qstring.h>
 #include <QtCore/qvariant.h>
 #include <optional>
-#include <qohosplugincore.h>
 
 QT_BEGIN_NAMESPACE
 

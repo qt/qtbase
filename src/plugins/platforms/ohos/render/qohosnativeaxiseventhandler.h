@@ -4,12 +4,12 @@
 #ifndef QOHOSNATIVEAXISEVENTHANDLER_H
 #define QOHOSNATIVEAXISEVENTHANDLER_H
 
+#include <QtCore/private/qcore_ohos_p.h>
 #include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/qglobal.h>
 #include <QtGui/qwindow.h>
 #include <arkui/ui_input_event.h>
 #include <qohosinputmethodeventhandler.h>
-#include <qohosplugincore.h>
 
 QT_BEGIN_NAMESPACE
 

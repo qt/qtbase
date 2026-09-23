@@ -20,7 +20,6 @@
 #include <optional>
 #include <qarkui/input.h>
 #include <qarkui/qnativenodeapi.h>
-#include <qohosplugincore.h>
 #include <qohosudmf.h>
 #include <render/qxcomponent.h>
 #include <vector>

@@ -9,7 +9,6 @@
 #include <native_buffer/native_buffer.h>
 #include <native_window/buffer_handle.h>
 #include <poll.h>
-#include <qohosplugincore.h>
 #include <qohosutils.h>
 #include <sys/mman.h>
 #include <unistd.h>

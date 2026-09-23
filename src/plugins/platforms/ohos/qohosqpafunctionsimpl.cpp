@@ -15,7 +15,6 @@
 #include <qohosplatformintegration.h>
 #include <qohosplatformservices.h>
 #include <qohosplatformwindow.h>
-#include <qohosplugincore.h>
 #include <qohosqpaenums.h>
 #include <qohosqpafunctions_p.h>
 #include <qohosutils.h>

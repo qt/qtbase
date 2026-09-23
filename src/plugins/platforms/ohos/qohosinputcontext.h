@@ -6,12 +6,13 @@
 
 #include <optional>
 #include <qohosinputmethodproxy.h>
-#include <qohosplugincore.h>
 #include <qohosqpaenums.h>
 #include <qpa/qplatforminputcontext.h>
 #include <qpa/qwindowsysteminterface.h>
 #include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/qglobal.h>
+#include <QtCore/qpointer.h>
+#include <QtCore/qsharedpointer.h>
 
 QT_BEGIN_NAMESPACE
 

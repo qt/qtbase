@@ -4,6 +4,7 @@
 #ifndef QOHOSNATIVEGESTURESHANDLER_H
 #define QOHOSNATIVEGESTURESHANDLER_H
 
+#include <QtCore/private/qcore_ohos_p.h>
 #include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/qglobal.h>
 #include <QtCore/qpoint.h>
@@ -12,7 +13,6 @@
 #include <chrono>
 #include <cstdint>
 #include <functional>
-#include <qohosplugincore.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -4,12 +4,12 @@
 #ifndef QOHOSWINDOWMANAGER_H
 #define QOHOSWINDOWMANAGER_H
 
+#include <QtCore/private/qcore_ohos_p.h>
 #include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/qpoint.h>
 #include <QtCore/qrect.h>
 #include <QtCore/qstringlist.h>
 #include <QtCore/qstring.h>
-#include <qohosplugincore.h>
 #include <qohosqpaenums.h>
 #include <functional>
 #include <optional>

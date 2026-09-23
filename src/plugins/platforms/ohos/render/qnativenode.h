@@ -22,7 +22,6 @@
 #include <qarkui/qqtembeddedwindownode.h>
 #include <qohosforeignwindow.h>
 #include <qohosplatformwindow.h>
-#include <qohosplugincore.h>
 #include <render/qohossurface.h>
 #include <render/qxcomponent.h>
 #include <vector>
