@@ -343,6 +343,7 @@ struct QMetalCommandBuffer : public QRhiCommandBuffer
     bool hasStencilRefSet;
     quint32 currentStencilRef;
     QVarLengthArray<char, 128> pushConstantData;
+    bool pushConstantsNeedRebind;
 
     const QRhiNativeHandles *nativeHandles();
     void resetState(double lastGpuTime = 0);

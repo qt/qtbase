@@ -433,6 +433,8 @@ struct QMetalCommandBufferData
     QRhiBatchedBindings<NSUInteger> currentVertexInputOffsets;
     id<MTLDepthStencilState> currentDepthStencilState;
     QMetalShaderResourceBindingsData currentShaderResourceBindingState;
+    QVarLengthArray<QByteArray, 4> openDebugGroups;
+
     // Intended final store actions for the attachments whose store action is
     // deferred. MTLStoreActionUnknown for depth and stencil means not deferred.
     // See beginPass().
@@ -1733,6 +1735,17 @@ void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD
     cbD->d->currentShaderResourceBindingState = bindingData;
 }
 
+static inline quint32 mtlPushConstantBlockSize(const QMetalShader &s)
+{
+    const QList<QShaderDescription::PushConstantBlock> blocks = s.desc.pushConstantBlocks();
+    return blocks.isEmpty() ? 0 : quint32(blocks.first().size);
+}
+
+static inline int mtlPushConstantBufferIndex(const QMetalShader &s)
+{
+    return s.nativeShaderInfo.extraBufferBindings.value(QShaderPrivate::MslPushConstantBufferBinding, -1);
+}
+
 void QMetalGraphicsPipeline::makeActiveForCurrentRenderPassEncoder(QMetalCommandBuffer *cbD)
 {
     QRHI_RES_RHI(QRhiMetal);
@@ -1774,6 +1787,22 @@ void QMetalGraphicsPipeline::makeActiveForCurrentRenderPassEncoder(QMetalCommand
                                                         slopeScale: d->slopeScaledDepthBias
                                                         clamp: 0.0f];
         cbD->currentDepthBiasValues = { d->depthBias, d->slopeScaledDepthBias };
+    }
+
+    if (cbD->pushConstantsNeedRebind && !d->tess.enabled) {
+        const int vsIdx = mtlPushConstantBufferIndex(d->vs);
+        const int fsIdx = mtlPushConstantBufferIndex(d->fs);
+        if (vsIdx >= 0 || fsIdx >= 0) {
+            const quint32 blockSize = qMax(mtlPushConstantBlockSize(d->vs), mtlPushConstantBlockSize(d->fs));
+            if (quint32(cbD->pushConstantData.size()) < blockSize)
+                cbD->pushConstantData.resize(int(blockSize), 0);
+            const NSUInteger total = NSUInteger(cbD->pushConstantData.size());
+            if (vsIdx >= 0)
+                [cbD->d->currentRenderPassEncoder setVertexBytes: cbD->pushConstantData.constData() length: total atIndex: NSUInteger(vsIdx)];
+            if (fsIdx >= 0)
+                [cbD->d->currentRenderPassEncoder setFragmentBytes: cbD->pushConstantData.constData() length: total atIndex: NSUInteger(fsIdx)];
+            cbD->pushConstantsNeedRebind = false;
+        }
     }
 }
 
@@ -2293,17 +2322,6 @@ void QRhiMetal::setStencilRef(QRhiCommandBuffer *cb, quint32 refValue)
     cbD->currentStencilRef = refValue;
 }
 
-static inline quint32 mtlPushConstantBlockSize(const QMetalShader &s)
-{
-    const QList<QShaderDescription::PushConstantBlock> blocks = s.desc.pushConstantBlocks();
-    return blocks.isEmpty() ? 0 : quint32(blocks.first().size);
-}
-
-static inline int mtlPushConstantBufferIndex(const QMetalShader &s)
-{
-    return s.nativeShaderInfo.extraBufferBindings.value(QShaderPrivate::MslPushConstantBufferBinding, -1);
-}
-
 void QRhiMetal::setPushConstants(QRhiCommandBuffer *cb, quint32 offset, quint32 size, const void *data)
 {
     QMetalCommandBuffer *cbD = QRHI_RES(QMetalCommandBuffer, cb);
@@ -2414,6 +2432,8 @@ void QRhiMetal::finalizeDeferredStoreActions(QMetalCommandBuffer *cbD, bool pass
 void QRhiMetal::interruptRenderPass(QMetalCommandBuffer *cbD)
 {
     finalizeDeferredStoreActions(cbD, false);
+    for (qsizetype i = 0; i < cbD->d->openDebugGroups.size(); ++i)
+        [cbD->d->currentRenderPassEncoder popDebugGroup];
     [cbD->d->currentRenderPassEncoder endEncoding];
     cbD->d->currentRenderPassEncoder = nil;
 }
@@ -2442,10 +2462,17 @@ static void endTempComputeEncoding(QRhiMetal *rhiD, QMetalCommandBuffer *cbD,
     QMetalRenderTargetData *rtD = currentRenderTargetData(cbD);
     Q_ASSERT(rtD);
 
+    // A memoryless attachment cannot be loaded, its contents are lost (see
+    // NoTransientBacking), even when the store action is not DontCare, which is
+    // the case with a resolve.
+    const auto canLoad = [](MTLRenderPassAttachmentDescriptor *att) {
+        return att.storeAction != MTLStoreActionDontCare && canStoreAttachment(att.texture);
+    };
+
     QVarLengthArray<MTLLoadAction, 4> oldColorLoad;
     for (uint i = 0; i < uint(rtD->colorAttCount); ++i) {
         oldColorLoad.append(cbD->d->currentPassRpDesc.colorAttachments[i].loadAction);
-        if (cbD->d->currentPassRpDesc.colorAttachments[i].storeAction != MTLStoreActionDontCare)
+        if (canLoad(cbD->d->currentPassRpDesc.colorAttachments[i]))
             cbD->d->currentPassRpDesc.colorAttachments[i].loadAction = MTLLoadActionLoad;
     }
 
@@ -2453,11 +2480,11 @@ static void endTempComputeEncoding(QRhiMetal *rhiD, QMetalCommandBuffer *cbD,
     MTLLoadAction oldStencilLoad;
     if (rtD->dsAttCount) {
         oldDepthLoad = cbD->d->currentPassRpDesc.depthAttachment.loadAction;
-        if (cbD->d->currentPassRpDesc.depthAttachment.storeAction != MTLStoreActionDontCare)
+        if (canLoad(cbD->d->currentPassRpDesc.depthAttachment))
             cbD->d->currentPassRpDesc.depthAttachment.loadAction = MTLLoadActionLoad;
 
         oldStencilLoad = cbD->d->currentPassRpDesc.stencilAttachment.loadAction;
-        if (cbD->d->currentPassRpDesc.stencilAttachment.storeAction != MTLStoreActionDontCare)
+        if (canLoad(cbD->d->currentPassRpDesc.stencilAttachment))
             cbD->d->currentPassRpDesc.stencilAttachment.loadAction = MTLLoadActionLoad;
     }
 
@@ -2477,9 +2504,18 @@ static void endTempComputeEncoding(QRhiMetal *rhiD, QMetalCommandBuffer *cbD,
     // a pipeline is already current, and there is none at that point.
     const bool prevHasDefaultScissor = cbD->currentGraphicsPipeline
             && !cbD->currentGraphicsPipeline->flags().testFlag(QRhiGraphicsPipeline::UsesScissor);
+    // Rebound when the callers reactivate the pipeline, or when the next
+    // pipeline with a push constant block is set.
+    const QVarLengthArray<char, 128> prevPushConstantData = cbD->pushConstantData;
 
     cbD->d->currentRenderPassEncoder = [cbD->d->cb renderCommandEncoderWithDescriptor: cbD->d->currentPassRpDesc];
     cbD->resetPerPassCachedState();
+
+    for (const QByteArray &name : std::as_const(cbD->d->openDebugGroups))
+        [cbD->d->currentRenderPassEncoder pushDebugGroup: [NSString stringWithUTF8String: name.constData()]];
+
+    cbD->pushConstantData = prevPushConstantData;
+    cbD->pushConstantsNeedRebind = !prevPushConstantData.isEmpty();
 
     // Must come before the callers reactivate the pipeline: setScissor()
     // expects no pipeline to be current yet, and setDefaultScissor() consults
@@ -3059,11 +3095,9 @@ bool QRhiMetal::icbDraw(QMetalCommandBuffer *cbD, bool indexed,
         }
     }
 
-    if (indexed) {
-        cbD->currentIndexBuffer = indexBufD;
-        cbD->currentIndexOffset = savedIndexOffset;
-        cbD->currentIndexFormat = savedIndexFormat;
-    }
+    cbD->currentIndexBuffer = indexBufD;
+    cbD->currentIndexOffset = savedIndexOffset;
+    cbD->currentIndexFormat = savedIndexFormat;
 
     // Declare buffer dependencies and execute the GPU-encoded ICB. The range to
     // execute is read from icbRangeBuffer, which the kernel just wrote.
@@ -3159,10 +3193,18 @@ void QRhiMetal::debugMarkBegin(QRhiCommandBuffer *cb, const QByteArray &name)
 
     NSString *str = [NSString stringWithUTF8String: name.constData()];
     QMetalCommandBuffer *cbD = QRHI_RES(QMetalCommandBuffer, cb);
-    if (cbD->recordingPass != QMetalCommandBuffer::NoPass)
+    switch (cbD->recordingPass) {
+    case QMetalCommandBuffer::RenderPass:
         [cbD->d->currentRenderPassEncoder pushDebugGroup: str];
-    else
+        cbD->d->openDebugGroups.append(name);
+        break;
+    case QMetalCommandBuffer::ComputePass:
+        [cbD->d->currentComputePassEncoder pushDebugGroup: str];
+        break;
+    default:
         [cbD->d->cb pushDebugGroup: str];
+        break;
+    }
 }
 
 void QRhiMetal::debugMarkEnd(QRhiCommandBuffer *cb)
@@ -3171,10 +3213,19 @@ void QRhiMetal::debugMarkEnd(QRhiCommandBuffer *cb)
         return;
 
     QMetalCommandBuffer *cbD = QRHI_RES(QMetalCommandBuffer, cb);
-    if (cbD->recordingPass != QMetalCommandBuffer::NoPass)
+    switch (cbD->recordingPass) {
+    case QMetalCommandBuffer::RenderPass:
         [cbD->d->currentRenderPassEncoder popDebugGroup];
-    else
+        if (!cbD->d->openDebugGroups.isEmpty())
+            cbD->d->openDebugGroups.removeLast();
+        break;
+    case QMetalCommandBuffer::ComputePass:
+        [cbD->d->currentComputePassEncoder popDebugGroup];
+        break;
+    default:
         [cbD->d->cb popDebugGroup];
+        break;
+    }
 }
 
 void QRhiMetal::debugMarkMsg(QRhiCommandBuffer *cb, const QByteArray &msg)
@@ -3183,8 +3234,17 @@ void QRhiMetal::debugMarkMsg(QRhiCommandBuffer *cb, const QByteArray &msg)
         return;
 
     QMetalCommandBuffer *cbD = QRHI_RES(QMetalCommandBuffer, cb);
-    if (cbD->recordingPass != QMetalCommandBuffer::NoPass)
-        [cbD->d->currentRenderPassEncoder insertDebugSignpost: [NSString stringWithUTF8String: msg.constData()]];
+    NSString *str = [NSString stringWithUTF8String: msg.constData()];
+    switch (cbD->recordingPass) {
+    case QMetalCommandBuffer::RenderPass:
+        [cbD->d->currentRenderPassEncoder insertDebugSignpost: str];
+        break;
+    case QMetalCommandBuffer::ComputePass:
+        [cbD->d->currentComputePassEncoder insertDebugSignpost: str];
+        break;
+    default:
+        break;
+    }
 }
 
 const QRhiNativeHandles *QRhiMetal::nativeHandles(QRhiCommandBuffer *cb)
@@ -8113,6 +8173,7 @@ void QMetalCommandBuffer::resetPerPassState()
 {
     recordingPass = NoPass;
     currentTarget = nullptr;
+    d->openDebugGroups.clear();
     resetPerPassCachedState();
 }
 
@@ -8122,6 +8183,7 @@ void QMetalCommandBuffer::resetPerPassCachedState()
     currentComputePipeline = nullptr;
     currentPipelineGeneration = 0;
     pushConstantData.clear();
+    pushConstantsNeedRebind = false;
     currentGraphicsSrb = nullptr;
     currentComputeSrb = nullptr;
     currentSrbGeneration = 0;
