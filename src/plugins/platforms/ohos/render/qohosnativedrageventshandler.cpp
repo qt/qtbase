@@ -1,6 +1,7 @@
 // Copyright (C) 2025 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
+#include <QtCore/private/qcore_ohos_p.h>
 #include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/private/qohoslogger_p.h>
 #include <QtCore/qmimedata.h>
@@ -199,14 +200,14 @@ Qt::DropAction processDropInQWindow(
 }
 
 void processPendingDropRequestAsynchronously(
-    QtOhos::JsState &jsState, QtOhos::QThreadSafeRef<QWindow> qWindowRef, const DragEventInfo &dragEventInfo,
+    QOhosJsState &jsState, QtOhos::QThreadSafeRef<QWindow> qWindowRef, const DragEventInfo &dragEventInfo,
     QOhosSupplier<std::unique_ptr<QMimeData>> dropDataFactory, std::int32_t pendingDropRequestId)
 {
     qOhosPrintfDebug("%s: async processing of drop request with id=%d", Q_FUNC_INFO, pendingDropRequestId);
 
-    auto qtDropActionConsumer = moveToSharedPtr(
-        QtOhos::makeCallOnceConsumerWrapper<QtOhos::JsState &, Qt::DropAction>(
-            [pendingDropRequestId](QtOhos::JsState &, Qt::DropAction qtDropAction) {
+    auto qtDropActionConsumer = QtOhos::moveToSharedPtr(
+        QtOhos::makeCallOnceConsumerWrapper<QOhosJsState &, Qt::DropAction>(
+            [pendingDropRequestId](QOhosJsState &, Qt::DropAction qtDropAction) {
                 qOhosPrintfDebug(
                     "%s: got qtDropAction=%d for drop request with id=%d",
                     Q_FUNC_INFO, static_cast<int>(qtDropAction), pendingDropRequestId);
@@ -224,7 +225,7 @@ void processPendingDropRequestAsynchronously(
     constexpr auto notifyDragEndPendingTimeout = ch::milliseconds(1500);
     QtOhos::setJsTimeout(
         jsState,
-        [pendingDropRequestId, qtDropActionConsumer](const QtOhos::CallbackInfo &cbInfo) {
+        [pendingDropRequestId, qtDropActionConsumer](const QOhosCallbackInfo &cbInfo) {
             if ((*qtDropActionConsumer)(cbInfo.jsState(), Qt::IgnoreAction))
                 qOhosPrintfDebug("%s: used timeout action for drop request with id=%d", Q_FUNC_INFO, pendingDropRequestId);
         },
@@ -233,8 +234,8 @@ void processPendingDropRequestAsynchronously(
     qWindowRef.visitInQtThreadIfAlive(
         [dragEventInfo, dropDataFactory = std::move(dropDataFactory), qtDropActionConsumer](QWindow &qWindow) mutable {
             auto dropAction = processDropInQWindow(qWindow, dragEventInfo, std::move(dropDataFactory));
-            QtOhos::runInJsThreadAndWait(
-                [&](QtOhos::JsState &jsState) {
+            QOhosJsThreadGateway::runAndWait(
+                [&](QOhosJsState &jsState) {
                     (*qtDropActionConsumer)(jsState, dropAction);
                 },
                 Q_FUNC_INFO);
@@ -247,7 +248,7 @@ bool isAsyncDropHandlingAllowed()
 }
 
 bool tryStartAsyncProcessingOfDropEvent(
-    QtOhos::JsState &jsState, ::ArkUI_DragEvent *dragEvent, QtOhos::QThreadSafeRef<QWindow> qWindowRef,
+    QOhosJsState &jsState, ::ArkUI_DragEvent *dragEvent, QtOhos::QThreadSafeRef<QWindow> qWindowRef,
     const DragEventInfo &dragEventInfo, QOhosSupplier<std::unique_ptr<QMimeData>> dropDataFactory)
 {
     if (!isAsyncDropHandlingAllowed())
@@ -379,7 +380,7 @@ QOhosConsumer<::ArkUI_NodeEvent *> makeQOhosNativeDragEventsHandler(
     QtOhos::QThreadSafeRef<QWindow> qWindowRef)
 {
     auto eventsHandler = [qWindowRef, dragMoveResponder = DragMoveResponder(qWindowRef)](
-        QtOhos::JsState &jsState, ::ArkUI_NodeEvent *nodeEvent) mutable {
+        QOhosJsState &jsState, ::ArkUI_NodeEvent *nodeEvent) mutable {
         auto eventType = QArkUi::callArkUi(Q_OHOS_NAMED_FUNC(OH_ArkUI_NodeEvent_GetEventType), nodeEvent);
         auto *dragEvent = QArkUi::callArkUiOrFailOnNullResult(Q_OHOS_NAMED_FUNC(::OH_ArkUI_NodeEvent_GetDragEvent), nodeEvent);
         auto node = QArkUi::callArkUiOrFailOnNullResult(Q_OHOS_NAMED_FUNC(OH_ArkUI_NodeEvent_GetNodeHandle), nodeEvent);
@@ -462,8 +463,8 @@ QOhosConsumer<::ArkUI_NodeEvent *> makeQOhosNativeDragEventsHandler(
     };
 
     return [eventsHandler = std::move(eventsHandler)](::ArkUI_NodeEvent *nodeEvent) mutable {
-        QtOhos::runInJsThreadAndWait(
-            [&](QtOhos::JsState &jsState) {
+        QOhosJsThreadGateway::runAndWait(
+            [&](QOhosJsState &jsState) {
                 eventsHandler(jsState, nodeEvent);
             },
             Q_FUNC_INFO);

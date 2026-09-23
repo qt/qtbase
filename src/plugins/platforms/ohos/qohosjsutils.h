@@ -14,7 +14,6 @@
 #include <functional>
 #include <memory>
 #include <optional>
-#include <qohosplugincore.h>
 #include <qohosutils.h>
 #include <string>
 #include <type_traits>
@@ -27,15 +26,15 @@ namespace QtOhos {
 
 template<typename T>
 QNapi::Promise adaptAsyncCallResultToJsPromise(
-    JsState &jsState, std::function<QNapi::Value(JsState &, T)> promiseValueFactory,
-    const QOhosConsumer<JsState &, QOhosConsumer<JsState &, T>> &asyncCallFunc);
+    QOhosJsState &jsState, std::function<QNapi::Value(QOhosJsState &, T)> promiseValueFactory,
+    const QOhosConsumer<QOhosJsState &, QOhosConsumer<QOhosJsState &, T>> &asyncCallFunc);
 
 Q_REQUIRED_RESULT std::shared_ptr<void> startDelayedJsThreadTask(
     QOhosJsState &jsState, std::function<void(QOhosJsState &)> task,
     std::chrono::milliseconds delay);
 
 int setJsTimeout(
-    JsState &jsState, std::function<void(const CallbackInfo &)> timeoutFunc,
+    QOhosJsState &jsState, std::function<void(const QOhosCallbackInfo &)> timeoutFunc,
     std::chrono::milliseconds delay);
 
 void clearJsTimeout(QOhosJsState &jsState, int timerId);
@@ -63,15 +62,15 @@ bool runIgnoringJsBusinessError(
 
 template<typename T>
 QNapi::Promise adaptAsyncCallResultToJsPromise(
-    JsState &jsState, std::function<QNapi::Value(JsState &, T)> promiseValueFactory,
-    const QOhosConsumer<JsState &, QOhosConsumer<JsState &, T>> &asyncCallFunc)
+    QOhosJsState &jsState, std::function<QNapi::Value(QOhosJsState &, T)> promiseValueFactory,
+    const QOhosConsumer<QOhosJsState &, QOhosConsumer<QOhosJsState &, T>> &asyncCallFunc)
 {
     auto promiseDeferred = QNapi::Promise::Deferred::New(jsState.env());
 
     asyncCallFunc(
         jsState,
-        makeCallOnceConsumerWrapper<JsState &, T>(
-            [promiseDeferred, promiseValueFactory = std::move(promiseValueFactory)](JsState &jsState, T result) {
+        makeCallOnceConsumerWrapper<QOhosJsState &, T>(
+            [promiseDeferred, promiseValueFactory = std::move(promiseValueFactory)](QOhosJsState &jsState, T result) {
                 promiseDeferred.Resolve(promiseValueFactory(jsState, result));
             }));
 

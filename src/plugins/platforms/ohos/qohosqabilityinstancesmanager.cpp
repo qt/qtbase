@@ -284,8 +284,8 @@ public:
     bool isTerminating() override;
 
     QNapi::Promise handleCloseRequestFromSystem(
-        JsState &jsState, const std::string &logContextStr, CloseAbilityRequestSource requestSource,
-        std::function<QNapi::Value(JsState &, CloseAbilityRequestResolution)> promiseValueFactory) override;
+        QOhosJsState &jsState, const std::string &logContextStr, CloseAbilityRequestSource requestSource,
+        std::function<QNapi::Value(QOhosJsState &, CloseAbilityRequestResolution)> promiseValueFactory) override;
 
     void handleOnContinueRequestFromSystem(
         JsState &jsState, QNapi::Object wantParamsObj,
@@ -326,7 +326,7 @@ QUiAbilityPeerImpl::QUiAbilityPeerImpl(
             return handleCloseRequestFromSystem(
                 jsState, "Window.windowWillClose",
                 CloseAbilityRequestSource::WindowWillClose,
-                [](JsState &jsState, CloseAbilityRequestResolution ohosRequestResolution) {
+                [](QOhosJsState &jsState, CloseAbilityRequestResolution ohosRequestResolution) {
                     return QNapi::Boolean::New(
                         jsState.env(),
                         ohosRequestResolution == CloseAbilityRequestResolution::DontClose);
@@ -403,8 +403,8 @@ QOhosCloseEventContext::CloseRootCause mapCloseAbilityRequestSourceToRootCause(
 }
 
 QNapi::Promise QUiAbilityPeerImpl::handleCloseRequestFromSystem(
-    JsState &jsState, const std::string &logContextStr, CloseAbilityRequestSource requestSource,
-    std::function<QNapi::Value(JsState &, CloseAbilityRequestResolution)> promiseValueFactory)
+    QOhosJsState &jsState, const std::string &logContextStr, CloseAbilityRequestSource requestSource,
+    std::function<QNapi::Value(QOhosJsState &, CloseAbilityRequestResolution)> promiseValueFactory)
 {
     auto instanceId = this->instanceId();
 
@@ -428,7 +428,7 @@ QNapi::Promise QUiAbilityPeerImpl::handleCloseRequestFromSystem(
         std::weak_ptr<QUiAbilityPeer> weakQAbilityPeer;
         std::shared_ptr<QNapi::Promise::Deferred> promiseDeferred;
         std::string instanceId;
-        std::function<QNapi::Value(JsState &, CloseAbilityRequestResolution)> promiseValueFactory;
+        std::function<QNapi::Value(QOhosJsState &, CloseAbilityRequestResolution)> promiseValueFactory;
     };
 
     auto promiseResolveFuncContext = moveToSharedPtr(
@@ -441,8 +441,8 @@ QNapi::Promise QUiAbilityPeerImpl::handleCloseRequestFromSystem(
         });
 
     auto promiseResolveFunc = moveToSharedPtr(
-        makeCallOnceConsumerWrapper<JsState &, CloseAbilityRequestResolution>(
-            [context = promiseResolveFuncContext](JsState &jsState, CloseAbilityRequestResolution ohosRequestResolution) {
+        makeCallOnceConsumerWrapper<QOhosJsState &, CloseAbilityRequestResolution>(
+            [context = promiseResolveFuncContext](QOhosJsState &jsState, CloseAbilityRequestResolution ohosRequestResolution) {
                 auto qAbilityPeer = context->weakQAbilityPeer.lock();
                 if (qAbilityPeer && ohosRequestResolution == CloseAbilityRequestResolution::Close) {
                     JsWindowsTracker::tagWindowAsClosing(
@@ -458,7 +458,7 @@ QNapi::Promise QUiAbilityPeerImpl::handleCloseRequestFromSystem(
     constexpr auto promiseAutoresolveTimeout = 9s;
     setJsTimeout(
         jsState,
-        [logContextStr, promiseResolveFunc, instanceId](const CallbackInfo &cbInfo) {
+        [logContextStr, promiseResolveFunc, instanceId](const QOhosCallbackInfo &cbInfo) {
             if ((*promiseResolveFunc)(cbInfo.jsState(), CloseAbilityRequestResolution::DontClose)) {
                 qOhosPrintfInfo(
                     "%s: promise resolved by timeout, id: '%s'",
