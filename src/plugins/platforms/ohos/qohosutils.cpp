@@ -58,7 +58,7 @@ const char *mapBoolToTrueFalseStr(bool value)
 }
 
 std::optional<QNapi::Object> tryMapOptMainWindowToQAbility(
-    QtOhos::JsState &jsState, std::optional<QtOhos::QObjectThreadSafeRef> optInstanceMainWindowRef)
+    QOhosJsState &jsState, std::optional<QtOhos::QObjectThreadSafeRef> optInstanceMainWindowRef)
 {
     if (!optInstanceMainWindowRef.has_value())
         return jsState.defaultQAbility();

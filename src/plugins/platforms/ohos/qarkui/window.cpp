@@ -5,6 +5,7 @@
 
 #include <cstdint>
 #include <qarkui/qarkuiutils.h>
+#include <qohosplugincore.h>
 #include <qohosutils.h>
 #include <window_manager/oh_window.h>
 #include <window_manager/oh_window_comm.h>
