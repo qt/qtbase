@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qohoswindowmanager.h"
+#include <QtCore/private/qcore_ohos_p.h>
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/private/qnapi_p.h>
 #include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/private/qohoslogger_p.h>
 #include <QtCore/private/qohospathutils_p.h>
-#include <qohosplugincore.h>
 #include <QtCore/qurl.h>
 #include <algorithm>
 #include <iterator>
@@ -25,14 +25,14 @@ struct FilePickerResult
 };
 
 std::optional<QNapi::Object> tryGetQAbilityForQWindow(
-    QtOhos::JsState &jsState, QtOhos::QObjectThreadSafeRef qWindowRef)
+    QOhosJsState &jsState, QtOhos::QObjectThreadSafeRef qWindowRef)
 {
     auto optQAbility = jsState.tryGetQAbilityByQWindow(qWindowRef);
     return optQAbility ? optQAbility : jsState.defaultQAbility();
 }
 
 QNapi::Object makeDocumentViewPicker(
-    QtOhos::JsState &jsState, QNapi::Object qAbility,
+    QOhosJsState &jsState, QNapi::Object qAbility,
     QtOhos::QObjectThreadSafeRef contextWindowRef)
 {
     auto optContextJsWindow = jsState.tryGetJsWindowByQWindow(contextWindowRef);
@@ -46,7 +46,7 @@ QNapi::Object makeDocumentViewPicker(
 }
 
 void startOhosFilePicker(
-    QtOhos::JsState &jsState, QtOhos::QObjectThreadSafeRef contextWindowRef,
+    QOhosJsState &jsState, QtOhos::QObjectThreadSafeRef contextWindowRef,
     const std::string &pickerActionName, QNapi::Object pickerActionOptions,
     QOhosConsumer<std::optional<FilePickerResult>> resultConsumer)
 {
@@ -67,7 +67,7 @@ void startOhosFilePicker(
         QNapi::Reference<>::makePersistentFrom(
             makeDocumentViewPicker(jsState, optQAbility.value(), contextWindowRef)));
     documentViewPicker->evalToPromiseOrRejectOnThrow(pickerActionName + "(*)", {pickerActionOptions}).onThen(
-        [documentViewPicker, pickerActionName, sharedResultConsumer](const QtOhos::CallbackInfo &cbInfo) {
+        [documentViewPicker, pickerActionName, sharedResultConsumer](const QOhosCallbackInfo &cbInfo) {
             auto actionResult = cbInfo.getFirstArg<QNapi::Array>(Q_FUNC_INFO);
             auto resultOhosUris = QNapi::getArrayElements<std::vector<std::string>, QNapi::String>(actionResult);
 
@@ -117,8 +117,8 @@ void showFileDialogOpen(
 {
     auto sharedResultCallback = QtOhos::moveToSharedPtr(std::move(resultCallback));
 
-    QtOhos::invokeInJsThread(
-        [contextWindowRef, filters, defaultPath, documentSelectMode, resultMultiplicity, sharedResultCallback](QtOhos::JsState &jsState) {
+    QOhosJsThreadGateway::invoke(
+        [contextWindowRef, filters, defaultPath, documentSelectMode, resultMultiplicity, sharedResultCallback](QOhosJsState &jsState) {
             constexpr auto ohosMaxValueForMaxSelectNumber = 500;
 
             auto *env = jsState.env();
@@ -157,8 +157,8 @@ void showFileDialogSave(
 {
     auto sharedResultCallback = QtOhos::moveToSharedPtr(std::move(resultCallback));
 
-    QtOhos::invokeInJsThread(
-        [contextWindowRef, newFileNames, defaultFilePath, fileSuffixChoices, sharedResultCallback](QtOhos::JsState &jsState) {
+    QOhosJsThreadGateway::invoke(
+        [contextWindowRef, newFileNames, defaultFilePath, fileSuffixChoices, sharedResultCallback](QOhosJsState &jsState) {
             auto *env = jsState.env();
             auto documentSaveOptions = QNapi::Object::New(env);
             if (!newFileNames.isEmpty())
