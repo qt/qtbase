@@ -2060,13 +2060,23 @@ int QDateTimeParser::SectionNode::maxChange() const
     case MinuteSection: return 59 * 60 * 1000;
     case Hour24Section: case Hour12Section: return 59 * 60 * 60 * 1000;
 
-        // Date. unit is day
+        // Date. unit is day (assuming Gregorian calendar):
+        // 1 to 7 (or n month-start to n-1 of next week, month-end to n+1 of previous week):
     case DayOfWeekSectionShort:
-    case DayOfWeekSectionLong: return 7;
+    case DayOfWeekSectionLong: return 6;
+        // 1st to 31st:
     case DaySection: return 30;
-    case MonthSection: return 365 - 31;
-    case YearSection: return 9999 * 365;
-    case YearSection2Digits: return 100 * 365;
+        // n-th of Jan to n-th of Dec in a leap year:
+    case MonthSection: return 366 - 31;
+        // Years range from -9999 to +9999 with no 0 in the middle:
+    case YearSection: return 19997 * 365 + 50 * 97 - 1;
+        /* (-10001 and 10000 are leap years; the 200 centuries minus two years
+           of the supported range thus only get 49 multiple-of-four centuries in
+           the 50 Gregorian cycles they overlap.)
+        */
+        // Change within a century:
+    case YearSection2Digits: return 100 * 365 + 24;
+        // (... albeit day of week and month plus month could make it jump by more.)
     default:
         qWarning("QDateTimeParser::maxChange() Internal error (%ls)",
                  qUtf16Printable(name()));
