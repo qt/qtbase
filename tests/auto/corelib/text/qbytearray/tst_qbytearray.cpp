@@ -62,6 +62,7 @@ private slots:
     void appendExtended();
     void nullTerminated();
     void appendEmptyNull();
+    void assign_data();
     void assign();
     void assignShared();
     void assignUsesPrependBuffer();
@@ -1050,48 +1051,82 @@ void tst_QByteArray::appendEmptyNull()
     QVERIFY(!r.isNull());
 }
 
+void tst_QByteArray::assign_data()
+{
+    QTest::addColumn<QByteArray>("prototype");
+    QTest::newRow("null") << QByteArray();
+    QTest::newRow("empty") << QByteArray("");
+    QTest::newRow("regular") << QByteArray("A");
+
+    QByteArray capacityReserved = "B";
+    capacityReserved.reserve(240);
+    QTest::newRow("capacity-preserved") << capacityReserved;
+
+    const QByteArray rawempty = ""_ba;
+    Q_ASSERT(!rawempty.data_ptr().isMutable());
+    QTest::newRow("raw-empty") << rawempty;
+
+    const QByteArray raw = "C"_ba;
+    Q_ASSERT(!raw.data_ptr().isMutable());
+    QTest::newRow("raw-non-mepty") << raw;
+}
+
 void tst_QByteArray::assign()
 {
+    QFETCH(const QByteArray, prototype);
+    QByteArray ba;
+
     // QByteArray &assign(QByteArrayView)
     {
-        QByteArray ba;
+        ba = prototype;
         QByteArray test("data");
         QCOMPARE(ba.assign(test), test);
         QCOMPARE(ba.size(), test.size());
+
         test = "data\0data";
+        ba = prototype;
         QCOMPARE(ba.assign(test), test);
         QCOMPARE(ba.size(), test.size());
+
         test = "data\0data"_ba;
+        ba = prototype;
         QCOMPARE(ba.assign(test), test);
         QCOMPARE(ba.size(), test.size());
     }
     // QByteArray &assign(qsizetype, char);
     {
-        QByteArray ba;
+        ba = prototype;
         QByteArray test("ddd");
         QCOMPARE(ba.assign(3, 'd'), test);
         QCOMPARE(ba.size(), test.size());
+
         test = "xx";
+        ba = prototype;
         QCOMPARE(ba.assign(20, 'd').assign(2, 'x'), test);
         QCOMPARE(ba.size(), test.size());
+
         test = "ddddd";
+        ba = prototype;
         QCOMPARE(ba.assign(0, 'x').assign(5, 'd'), test);
         QCOMPARE(ba.size(), test.size());
+
         test = "\0\0\0"_ba;
+        ba = prototype;
         QCOMPARE(ba.assign(0, 'x').assign(3, '\0'), test);
         QCOMPARE(ba.size(), test.size());
     }
     // QByteArray &assign(InputIterator, InputIterator)
     {
-        QByteArray ba;
         QByteArrayView test;
 
         QList<char> l = {'\0', 'T', 'E', 'S', 'T'};
 
+        ba = prototype;
         ba.assign(l.begin(), l.begin());
         QVERIFY(ba.isEmpty());
         QCOMPARE(*ba.constData(), '\0');
 
+        ba = prototype;
         ba.assign(l.begin(), l.end());
         test = "\0TEST"_ba;
         QCOMPARE(ba, test);
@@ -1099,39 +1134,49 @@ void tst_QByteArray::assign()
 
         const std::byte bytes[] = {std::byte('T'), std::byte(0), std::byte('S'), std::byte('T')};
         test = QByteArrayView::fromArray(bytes);
+        ba = prototype;
         QCOMPARE(ba.assign(test.begin(), test.end()), test);
         QCOMPARE(ba.size(), test.size());
 
         std::stringstream ss;
+        ba = prototype;
+        ba.assign(std::istream_iterator<char>{ss}, std::istream_iterator<char>{});
+
+        ss.clear();
         ss << "T " << '\0' << ' ' << "S " << "T ";
+        ba = prototype;
         ba.assign(std::istream_iterator<char>{ss}, std::istream_iterator<char>{});
         test = "T\0ST"_ba;
         QCOMPARE(ba, test);
         QCOMPARE(ba.size(), test.size());
-
-        ba.assign(l.begin(), l.begin());
-        QVERIFY(ba.isEmpty());
-        QCOMPARE(*ba.constData(), '\0');
     }
     // Test chaining
     {
-        QByteArray ba;
         QByteArray test("TTTTT");
         char arr[] = {'T', 'E', 'S', 'T'};
+        ba = prototype;
         ba.assign(std::begin(arr), std::end(arr)).assign({"Hello World!"}).assign(5, 'T');
         QCOMPARE(ba, test);
         QCOMPARE(ba.size(), test.size());
+
         test = "DATA";
+        ba = prototype;
         QCOMPARE(ba.assign(300, 'T').assign({"DATA"}), test);
         QCOMPARE(ba.size(), test.size());
+
         test = QByteArray(arr, q20::ssize(arr));
+        ba = prototype;
         QCOMPARE(ba.assign(10, 'c').assign(std::begin(arr), std::end(arr)), test);
         QCOMPARE(ba.size(), test.size());
+
         test = "TTT";
+        ba = prototype;
         QCOMPARE(ba.assign("data").assign(QByteArrayView::fromArray(
                          {std::byte('T'), std::byte('T'), std::byte('T')})), test);
         QCOMPARE(ba.size(), test.size());
+
         test = "\0data";
+        ba = prototype;
         QCOMPARE(ba.assign("data").assign("\0data"), test);
         QCOMPARE(ba.size(), test.size());
     }
