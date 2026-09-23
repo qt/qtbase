@@ -4,17 +4,17 @@
 #ifndef QOHOSSTATUSBARMENU_H
 #define QOHOSSTATUSBARMENU_H
 
+#include <QtCore/private/qcore_ohos_p.h>
 #include <QtGui/qpa/qplatformmenu.h>
 #include <functional>
 #include <memory>
-#include <qohosplugincore.h>
 
 QT_BEGIN_NAMESPACE
 
 class QOhosStatusBarMenu : public QPlatformMenu
 {
 public:
-    virtual std::function<QNapi::Array(QtOhos::JsState &)> makeJsStatusBarGroupMenusFactory() const = 0;
+    virtual std::function<QNapi::Array(QOhosJsState &)> makeJsStatusBarGroupMenusFactory() const = 0;
 
 protected:
     QOhosStatusBarMenu();
