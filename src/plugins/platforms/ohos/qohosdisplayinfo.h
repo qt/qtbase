@@ -5,11 +5,11 @@
 #define QOHOSDISPLAYINFO_H
 
 #include <QtCore/qsize.h>
+#include <QtCore/private/qcore_ohos_p.h>
 #include <QtCore/private/qnapi_p.h>
 #include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/qstring.h>
 #include <optional>
-#include <qohosplugincore.h>
 #include <qohosqpaenums.h>
 #include <qohosutils.h>
 #include <qpa/qplatformscreen.h>
@@ -24,8 +24,8 @@ struct QOhosDisplayInfo
 
     using JsDisplayId = QtOhos::TypedId<double, struct JsDisplayIdTag>;
 
-    static QOhosDisplayInfo makeFromOhosDisplayObject(QtOhos::JsState &jsState, QNapi::Object displayObject);
-    static std::optional<QNapi::Object> tryGetDisplayById(QtOhos::JsState &jsState, QOhosDisplayInfo::JsDisplayId displayId);
+    static QOhosDisplayInfo makeFromOhosDisplayObject(QOhosJsState &jsState, QNapi::Object displayObject);
+    static std::optional<QNapi::Object> tryGetDisplayById(QOhosJsState &jsState, QOhosDisplayInfo::JsDisplayId displayId);
 
     JsDisplayId id;
     QString name;

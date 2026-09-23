@@ -21,12 +21,12 @@ QOhosScreenManager::QOhosScreenManager()
         m_jsScopeData = QtOhos::makeProxyWithJsThreadDeleter(
             QArkUi::QOhosDisplayManager::create(
                 jsState, QArkUi::QOhosDisplayManager::CreateInfo{
-                    .displaysUpdatedCb = [selfRef](QtOhos::JsState &, std::vector<QOhosDisplayInfo> displayInfos) {
+                    .displaysUpdatedCb = [selfRef](QOhosJsState &, std::vector<QOhosDisplayInfo> displayInfos) {
                         selfRef.visitInQtThreadIfAlive([displayInfos = std::move(displayInfos)](QOhosScreenManager &self) {
                             self.rebuildScreenList(displayInfos);
                         });
                     },
-                    .displayAvailableAreaChangedCb = [selfRef](QtOhos::JsState &, JsDisplayId displayId, QRectF availableArea) {
+                    .displayAvailableAreaChangedCb = [selfRef](QOhosJsState &, JsDisplayId displayId, QRectF availableArea) {
                         selfRef.visitInQtThreadIfAlive([displayId, availableArea](QOhosScreenManager &self) {
                             self.handleDisplayAvailableAreaChanged(displayId, availableArea);
                         });
