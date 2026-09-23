@@ -396,7 +396,7 @@ void drawCheckBoxOrRadioButtonIndicator(QPainter &painter, const QStyleOption &o
     QRect indicatorRect(0, 0, checkBoxOrRadioButtonIndicatorSize, checkBoxOrRadioButtonIndicatorSize);
     indicatorRect.moveCenter(option.rect.center());
 
-    auto activeColor = option.palette.color(QPalette::Active, QPalette::Button);
+    auto activeColor = option.palette.color(QPalette::Active, QPalette::Highlight);
     if (isOn) {
         if (isCheckBox) {
             drawEllipse(painter, Qt::NoPen, activeColor, indicatorRect);
@@ -411,10 +411,39 @@ void drawCheckBoxOrRadioButtonIndicator(QPainter &painter, const QStyleOption &o
                 adjusted(indicatorRect, -radioButtonIndicatorStrokeWidth / 2));
         }
     } else {
+        const auto outlineColor = option.palette.color(QPalette::Inactive, QPalette::Button);
+        const auto backgroundBrush = option.palette.brush(QPalette::Inactive, QPalette::Base);
+        const auto discRect = adjusted(indicatorRect, -checkBoxOrRadioButtonIndicatorStrokeWidth);
+
         drawEllipse(
-            painter, QPen(option.palette.color(QPalette::Inactive, QPalette::Button),
-            checkBoxOrRadioButtonIndicatorStrokeWidth), option.palette.color(QPalette::Inactive, QPalette::Base),
-            adjusted(indicatorRect, -checkBoxOrRadioButtonIndicatorStrokeWidth));
+            painter, QPen(outlineColor, checkBoxOrRadioButtonIndicatorStrokeWidth), backgroundBrush,
+            discRect);
+
+        if (const auto *themePalette = QGuiApplicationPrivate::platformTheme()->palette(
+                isCheckBox
+                    ? QPlatformTheme::Palette::CheckBoxPalette
+                    : QPlatformTheme::Palette::RadioButtonPalette)) {
+            const auto overlayOutlineColor = themePalette->color(QPalette::Inactive, QPalette::Button);
+            const auto overlayBackgroundBrush = themePalette->brush(QPalette::Inactive, QPalette::Base);
+
+            const bool shouldPresentOverlayForOverriddenOutlineColor =
+                outlineColor != overlayOutlineColor;
+            const bool shouldPresentOverlayForOverriddenBackgroundBrush =
+                backgroundBrush != overlayBackgroundBrush;
+
+            if (shouldPresentOverlayForOverriddenOutlineColor
+                || shouldPresentOverlayForOverriddenBackgroundBrush) {
+                drawEllipse(
+                    painter,
+                    shouldPresentOverlayForOverriddenOutlineColor
+                        ? QPen(overlayOutlineColor, checkBoxOrRadioButtonIndicatorStrokeWidth)
+                        : QPen(Qt::NoPen),
+                    shouldPresentOverlayForOverriddenBackgroundBrush
+                        ? overlayBackgroundBrush
+                        : QBrush(Qt::NoBrush),
+                    discRect);
+            }
+        }
     }
 
     painter.restore();
@@ -1137,7 +1166,7 @@ void QOhosStyle::drawPrimitive(
                     toolButtonCornerRadius, toolButtonCornerRadius);
             } else if (qobjectIsInstanceOf<QCheckBox>(widget) || qobjectIsInstanceOf<QRadioButton>(widget)) {
                 drawEllipse(
-                    *painter, QPen(option->palette.color(QPalette::Active, QPalette::Button),
+                    *painter, QPen(option->palette.color(QPalette::Active, QPalette::Highlight),
                     checkBoxOrRadioButtonFocusStrokeWidth), Qt::NoBrush, option->rect);
             } else if (qobjectIsInstanceOf<QTabBar>(widget)) {
                 drawRoundedRect(

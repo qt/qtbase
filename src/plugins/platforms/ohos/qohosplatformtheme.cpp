@@ -555,6 +555,7 @@ QPalette makeCheckBoxOrRadioButtonPalette(const AllPalletesColors &palettesColor
             {QPalette::Inactive, QPalette::Base, palettesColors.palettes.switchBgOff},
             {QPalette::Inactive, QPalette::Button, palettesColors.palettes.switchOutlineOff},
             {QPalette::Active, QPalette::Button, palettesColors.palettes.highlighted},
+            {QPalette::Active, QPalette::Highlight, palettesColors.palettes.highlighted},
             {QPalette::Active, QPalette::WindowText, palettesColors.palettes.highlighted},
             {QPalette::Inactive, QPalette::WindowText, palettesColors.palettes.inactiveText},
             {QPalette::Disabled, QPalette::WindowText, palettesColors.palettes.inactiveHighlighted},
