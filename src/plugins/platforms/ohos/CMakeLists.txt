@@ -18,6 +18,7 @@ qt_internal_add_plugin(QOhosPlatformIntegrationPlugin
         qarkui/qembeddedwindownode.cpp qarkui/qembeddedwindownode.h
         qarkui/qnativenodeapi.cpp qarkui/qnativenodeapi.h
         qarkui/qohosdragaction.cpp qarkui/qohosdragaction.h
+        qarkui/qohosdrageventcshim.c qarkui/qohosdrageventcshim.h
         qarkui/qqtembeddedwindownode.cpp qarkui/qqtembeddedwindownode.h
         qarkui/qxcomponentregistry.cpp qarkui/qxcomponentregistry.h
         qarkui/vsync.cpp qarkui/vsync.h
