@@ -377,6 +377,8 @@ struct QMetalCommandBufferData
     QRhiBatchedBindings<NSUInteger> currentVertexInputOffsets;
     id<MTLDepthStencilState> currentDepthStencilState;
     QMetalShaderResourceBindingsData currentShaderResourceBindingState;
+    QVarLengthArray<QByteArray, 4> openDebugGroups;
+
     // Intended final store actions for the attachments whose store action is
     // deferred. MTLStoreActionUnknown for depth and stencil means not deferred.
     // See beginPass().
@@ -2136,6 +2138,8 @@ void QRhiMetal::finalizeDeferredStoreActions(QMetalCommandBuffer *cbD, bool pass
 void QRhiMetal::interruptRenderPass(QMetalCommandBuffer *cbD)
 {
     finalizeDeferredStoreActions(cbD, false);
+    for (qsizetype i = 0; i < cbD->d->openDebugGroups.size(); ++i)
+        [cbD->d->currentRenderPassEncoder popDebugGroup];
     [cbD->d->currentRenderPassEncoder endEncoding];
     cbD->d->currentRenderPassEncoder = nil;
 }
@@ -2164,10 +2168,17 @@ static void endTempComputeEncoding(QRhiMetal *rhiD, QMetalCommandBuffer *cbD,
     QMetalRenderTargetData *rtD = currentRenderTargetData(cbD);
     Q_ASSERT(rtD);
 
+    // A memoryless attachment cannot be loaded, its contents are lost (see
+    // NoTransientBacking), even when the store action is not DontCare, which is
+    // the case with a resolve.
+    const auto canLoad = [](MTLRenderPassAttachmentDescriptor *att) {
+        return att.storeAction != MTLStoreActionDontCare && canStoreAttachment(att.texture);
+    };
+
     QVarLengthArray<MTLLoadAction, 4> oldColorLoad;
     for (uint i = 0; i < uint(rtD->colorAttCount); ++i) {
         oldColorLoad.append(cbD->d->currentPassRpDesc.colorAttachments[i].loadAction);
-        if (cbD->d->currentPassRpDesc.colorAttachments[i].storeAction != MTLStoreActionDontCare)
+        if (canLoad(cbD->d->currentPassRpDesc.colorAttachments[i]))
             cbD->d->currentPassRpDesc.colorAttachments[i].loadAction = MTLLoadActionLoad;
     }
 
@@ -2175,11 +2186,11 @@ static void endTempComputeEncoding(QRhiMetal *rhiD, QMetalCommandBuffer *cbD,
     MTLLoadAction oldStencilLoad;
     if (rtD->dsAttCount) {
         oldDepthLoad = cbD->d->currentPassRpDesc.depthAttachment.loadAction;
-        if (cbD->d->currentPassRpDesc.depthAttachment.storeAction != MTLStoreActionDontCare)
+        if (canLoad(cbD->d->currentPassRpDesc.depthAttachment))
             cbD->d->currentPassRpDesc.depthAttachment.loadAction = MTLLoadActionLoad;
 
         oldStencilLoad = cbD->d->currentPassRpDesc.stencilAttachment.loadAction;
-        if (cbD->d->currentPassRpDesc.stencilAttachment.storeAction != MTLStoreActionDontCare)
+        if (canLoad(cbD->d->currentPassRpDesc.stencilAttachment))
             cbD->d->currentPassRpDesc.stencilAttachment.loadAction = MTLLoadActionLoad;
     }
 
@@ -2201,6 +2212,9 @@ static void endTempComputeEncoding(QRhiMetal *rhiD, QMetalCommandBuffer *cbD,
 
     cbD->d->currentRenderPassEncoder = [cbD->d->cb renderCommandEncoderWithDescriptor: cbD->d->currentPassRpDesc];
     cbD->resetPerPassCachedState();
+
+    for (const QByteArray &name : std::as_const(cbD->d->openDebugGroups))
+        [cbD->d->currentRenderPassEncoder pushDebugGroup: [NSString stringWithUTF8String: name.constData()]];
 
     // Must come before the callers reactivate the pipeline: setScissor()
     // expects no pipeline to be current yet, and setDefaultScissor() consults
@@ -2769,10 +2783,18 @@ void QRhiMetal::debugMarkBegin(QRhiCommandBuffer *cb, const QByteArray &name)
 
     NSString *str = [NSString stringWithUTF8String: name.constData()];
     QMetalCommandBuffer *cbD = QRHI_RES(QMetalCommandBuffer, cb);
-    if (cbD->recordingPass != QMetalCommandBuffer::NoPass)
+    switch (cbD->recordingPass) {
+    case QMetalCommandBuffer::RenderPass:
         [cbD->d->currentRenderPassEncoder pushDebugGroup: str];
-    else
+        cbD->d->openDebugGroups.append(name);
+        break;
+    case QMetalCommandBuffer::ComputePass:
+        [cbD->d->currentComputePassEncoder pushDebugGroup: str];
+        break;
+    default:
         [cbD->d->cb pushDebugGroup: str];
+        break;
+    }
 }
 
 void QRhiMetal::debugMarkEnd(QRhiCommandBuffer *cb)
@@ -2781,10 +2803,19 @@ void QRhiMetal::debugMarkEnd(QRhiCommandBuffer *cb)
         return;
 
     QMetalCommandBuffer *cbD = QRHI_RES(QMetalCommandBuffer, cb);
-    if (cbD->recordingPass != QMetalCommandBuffer::NoPass)
+    switch (cbD->recordingPass) {
+    case QMetalCommandBuffer::RenderPass:
         [cbD->d->currentRenderPassEncoder popDebugGroup];
-    else
+        if (!cbD->d->openDebugGroups.isEmpty())
+            cbD->d->openDebugGroups.removeLast();
+        break;
+    case QMetalCommandBuffer::ComputePass:
+        [cbD->d->currentComputePassEncoder popDebugGroup];
+        break;
+    default:
         [cbD->d->cb popDebugGroup];
+        break;
+    }
 }
 
 void QRhiMetal::debugMarkMsg(QRhiCommandBuffer *cb, const QByteArray &msg)
@@ -2793,8 +2824,17 @@ void QRhiMetal::debugMarkMsg(QRhiCommandBuffer *cb, const QByteArray &msg)
         return;
 
     QMetalCommandBuffer *cbD = QRHI_RES(QMetalCommandBuffer, cb);
-    if (cbD->recordingPass != QMetalCommandBuffer::NoPass)
-        [cbD->d->currentRenderPassEncoder insertDebugSignpost: [NSString stringWithUTF8String: msg.constData()]];
+    NSString *str = [NSString stringWithUTF8String: msg.constData()];
+    switch (cbD->recordingPass) {
+    case QMetalCommandBuffer::RenderPass:
+        [cbD->d->currentRenderPassEncoder insertDebugSignpost: str];
+        break;
+    case QMetalCommandBuffer::ComputePass:
+        [cbD->d->currentComputePassEncoder insertDebugSignpost: str];
+        break;
+    default:
+        break;
+    }
 }
 
 const QRhiNativeHandles *QRhiMetal::nativeHandles(QRhiCommandBuffer *cb)
@@ -6711,6 +6751,7 @@ void QMetalCommandBuffer::resetPerPassState()
 {
     recordingPass = NoPass;
     currentTarget = nullptr;
+    d->openDebugGroups.clear();
     resetPerPassCachedState();
 }
 
