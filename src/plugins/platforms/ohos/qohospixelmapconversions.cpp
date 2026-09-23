@@ -175,7 +175,7 @@ QImage createQImageFromNativePixelMap(::OH_PixelmapNative *pixelMap)
     return resultImage;
 }
 
-static double getPrimaryDisplayPixelDensity(QtOhos::JsState &jsState)
+static double getPrimaryDisplayPixelDensity(QOhosJsState &jsState)
 {
     constexpr auto fallbackDisplayDensity = 1.0;
 
@@ -193,7 +193,7 @@ static double getPrimaryDisplayPixelDensity(QtOhos::JsState &jsState)
     return density > 0.0 ? density : fallbackDisplayDensity;
 }
 
-QNapi::Object makeDisplayDensityScaledJsPixelMapFromQImage(QtOhos::JsState &jsState, const QImage &image)
+QNapi::Object makeDisplayDensityScaledJsPixelMapFromQImage(QOhosJsState &jsState, const QImage &image)
 {
     qOhosPrintfDebug(
         "%s: image dimensions: %dx%d, format: %d, bytes: %lld",

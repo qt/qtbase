@@ -4,16 +4,16 @@
 #ifndef QOHOSPIXELMAPCONVERSIONS_H
 #define QOHOSPIXELMAPCONVERSIONS_H
 
+#include <QtCore/private/qcore_ohos_p.h>
 #include <QtCore/qglobal.h>
 #include <QtGui/qimage.h>
 #include <multimedia/image_framework/image/pixelmap_native.h>
-#include <qohosplugincore.h>
 
 QT_BEGIN_NAMESPACE
 
 QImage createQImageFromNativePixelMap(::OH_PixelmapNative *pixelMap);
 
-QNapi::Object makeDisplayDensityScaledJsPixelMapFromQImage(QtOhos::JsState &jsState, const QImage &image);
+QNapi::Object makeDisplayDensityScaledJsPixelMapFromQImage(QOhosJsState &jsState, const QImage &image);
 
 QT_END_NAMESPACE
 
