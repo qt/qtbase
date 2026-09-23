@@ -153,7 +153,7 @@ void QOhosPermissionsHelperImpl::requestPermissionsFromUserIfNeeded(
             }
             QOhosAppPermissions::requestAppPermissionsFromUserWithResult(
                 jsState, optQAbility.value(), permissionNames,
-                [context](QtOhos::JsState &, std::vector<QOhosPermissionsHelper::PermissionRequestResult> result) {
+                [context](QOhosJsState &, std::vector<QOhosPermissionsHelper::PermissionRequestResult> result) {
                     context->resultConsumerQtContextRef.visitInQtThreadIfAlive(
                         [context, appPermissionResults = result](auto &) {
                             QList<PermissionRequestResult> appPermResults;
@@ -208,7 +208,7 @@ void QOhosPermissionsHelperImpl::requestPermissionsOnSettingIfNeeded(
             }
             QOhosAppPermissions::requestAppPermissionsOnSetting(
                 jsState, optQAbility.value(), permissionNames,
-                [context](QtOhos::JsState &, std::vector<bool> permissionsGranted) {
+                [context](QOhosJsState &, std::vector<bool> permissionsGranted) {
                     context->resultConsumerQtContextRef.visitInQtThreadIfAlive(
                         [context, permissionsGranted](auto &) {
                             QList<bool> qPermissionsGranted(

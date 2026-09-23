@@ -43,7 +43,7 @@ namespace {
 static const int ohosLogicalDpi = 72;
 
 std::shared_ptr<::OH_PixelmapNative> captureScreenPixelmap(
-    QtOhos::JsState &, QOhosDisplayInfo::JsDisplayId displayId)
+    QOhosJsState &, QOhosDisplayInfo::JsDisplayId displayId)
 {
     ::OH_PixelmapNative *pixelMapNativePtr;
 
@@ -55,7 +55,7 @@ std::shared_ptr<::OH_PixelmapNative> captureScreenPixelmap(
 }
 
 void tryCaptureScreenPixelmapWithPermissionCheck(
-    QtOhos::JsState &jsState, QOhosDisplayInfo::JsDisplayId displayId,
+    QOhosJsState &jsState, QOhosDisplayInfo::JsDisplayId displayId,
     QOhosConsumer<std::shared_ptr<::OH_PixelmapNative>> pixelMapOrNullConsumer)
 {
     static constexpr const char *ohosCustomScreenCapturePermission =

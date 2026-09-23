@@ -510,7 +510,7 @@ void requestAppPermissionsInBackground(JsState &jsState, const std::vector<std::
 
         QOhosAppPermissions::requestAppPermissionFromUser(
             jsState, permissionName,
-            [permissionName](JsState &, bool permissionGranted) {
+            [permissionName](QOhosJsState &, bool permissionGranted) {
                 if (permissionGranted) {
                     qOhosPrintfInfo(
                         "Qt: automatically requested application permission granted: '%s'",
