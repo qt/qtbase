@@ -48,7 +48,8 @@ QOhosMemoizingJsThreadFetcher<QString> userDownloadDirFetcher(
 
 QStringList QStandardPaths::standardLocations(StandardLocation type)
 {
-    return QStringList(writableLocation(type));
+    const QString writable = writableLocation(type);
+    return writable.isEmpty() ? QStringList{} : QStringList{writable};
 }
 
 QString QStandardPaths::writableLocation(StandardLocation type)
