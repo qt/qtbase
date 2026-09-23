@@ -150,7 +150,7 @@ constexpr double ohos_id_alpha_content_tertiary = 0.4;
 QColor makeInactiveOrDisabledFromColor(const QColor &color)
 {
     auto disabledColor = color;
-    disabledColor.setAlphaF(ohos_id_alpha_disabled);
+    disabledColor.setAlphaF(qBound(0.0, color.alphaF() * ohos_id_alpha_disabled, 1.0));
 
     return disabledColor;
 }
@@ -468,6 +468,15 @@ void drawLineEditBackground(QPainter &painter, const QStyleOption &option)
     }
 }
 
+QColor getPushButtonOverlayFill(bool isPressed, const QStyleOptionButton &option)
+{
+    const auto role = isPressed ? QPalette::Dark : QPalette::Light;
+    if (const auto *themePalette =
+            QGuiApplicationPrivate::platformTheme()->palette(QPlatformTheme::Palette::ButtonPalette))
+        return themePalette->color(QPalette::Active, role);
+    return option.palette.color(QPalette::Active, role);
+}
+
 QBrush getPushButtonBackgroundBrush(const QStyleOptionButton &option)
 {
     const auto isDefaultButton = option.features.testFlag(QStyleOptionButton::DefaultButton);
@@ -479,17 +488,39 @@ QBrush getPushButtonBackgroundBrush(const QStyleOptionButton &option)
         ? option.palette.color(QPalette::Active, QPalette::AlternateBase)
         : makeInactiveOrDisabledFromColor(option.palette.color(QPalette::Active, QPalette::AlternateBase));
 
-    return isOn
-        ? isDefaultButton || isAutoDefaultButton
+    if (isOn)
+        return isDefaultButton || isAutoDefaultButton
             ? defaultButtonBackgroundColor
-            : option.palette.color(QPalette::Active, QPalette::Dark)
-        : isDefaultButton
-            ? defaultButtonBackgroundColor
-            : option.palette.brush(
-                isEnabled
-                    ? QPalette::Active
-                    : QPalette::Inactive,
-                QPalette::Button);
+            : getPushButtonOverlayFill(true, option);
+
+    if (isDefaultButton)
+        return defaultButtonBackgroundColor;
+
+    return option.palette.brush(
+        isEnabled ? QPalette::Active : QPalette::Inactive, QPalette::Button);
+}
+
+std::optional<QBrush> getPushButtonFillOverlayBrush(const QStyleOptionButton &option)
+{
+    const auto isDefaultButton = option.features.testFlag(QStyleOptionButton::DefaultButton);
+    const auto isOn = option.state.testFlag(QStyle::State_On);
+    if (isDefaultButton || isOn)
+        return std::nullopt;
+
+    const auto colorGroup = option.state.testFlag(QStyle::State_Enabled)
+        ? QPalette::Active
+        : QPalette::Inactive;
+    if (option.palette.isBrushSet(colorGroup, QPalette::Button))
+        return std::nullopt;
+
+    if (const auto *themePalette =
+            QGuiApplicationPrivate::platformTheme()->palette(QPlatformTheme::Palette::ButtonPalette)) {
+        const auto themeBrush = themePalette->brush(colorGroup, QPalette::Button);
+        if (option.palette.brush(colorGroup, QPalette::Button) != themeBrush)
+            return themeBrush;
+    }
+
+    return std::nullopt;
 }
 
 QColor getPushButtonTextColor(const QStyleOptionButton &option)
@@ -497,12 +528,10 @@ QColor getPushButtonTextColor(const QStyleOptionButton &option)
     const auto isEnabled = option.state.testFlag(QStyle::State_Enabled);
     const auto isDefaultButton = option.features.testFlag(QStyleOptionButton::DefaultButton);
     const auto isOn = option.state.testFlag(QStyle::State_On);
-    const QPalette *themePalette =
-        QGuiApplicationPrivate::platformTheme()->palette(QPlatformTheme::Palette::ButtonPalette);
 
     return isDefaultButton || isOn
-        ? themePalette->color(QPalette::Active, QPalette::BrightText)
-        : themePalette->color(
+        ? option.palette.color(QPalette::Active, QPalette::BrightText)
+        : option.palette.color(
             isEnabled
                 ? QPalette::Active
                 : QPalette::Disabled,
@@ -524,8 +553,14 @@ void drawPushButtonBackground(QPainter &painter, const QStyleOptionButton &optio
         painter.setBrush(getPushButtonBackgroundBrush(option));
         painter.drawRoundedRect(rect, pushButtonCornerRadius, pushButtonCornerRadius);
 
+        const auto fillOverlayBrush = getPushButtonFillOverlayBrush(option);
+        if (fillOverlayBrush) {
+            painter.setBrush(*fillOverlayBrush);
+            painter.drawRoundedRect(rect, pushButtonCornerRadius, pushButtonCornerRadius);
+        }
+
         if (isMouseOver || isSunken) {
-            painter.setBrush(getSunkenOrHoverColor(isSunken, option.palette));
+            painter.setBrush(getPushButtonOverlayFill(isSunken, option));
             painter.drawRoundedRect(rect, pushButtonCornerRadius, pushButtonCornerRadius);
         }
     });
