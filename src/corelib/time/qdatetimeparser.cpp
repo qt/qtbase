@@ -5,7 +5,7 @@
 #include "private/qdatetimeparser_p.h"
 
 #include "qdatastream.h"
-#include "qdatetime.h"
+#include "private/qdatetime_p.h"
 #include "qdebug.h"
 #include "qlocale.h"
 #include "private/qlocale_p.h"
@@ -2053,12 +2053,14 @@ QDateTimeParser::AmPmFinder QDateTimeParser::findAmPm(QString &str, int sectionI
 
 int QDateTimeParser::SectionNode::maxChange() const
 {
+    using namespace QtPrivate::DateTimeConstants;
     switch (type) {
         // Time. unit is msec
-    case MSecSection: return 999;
-    case SecondSection: return 59 * 1000;
-    case MinuteSection: return 59 * 60 * 1000;
-    case Hour24Section: case Hour12Section: return 59 * 60 * 60 * 1000;
+    case MSecSection: return MSECS_PER_SEC - 1;
+    case SecondSection: return (SECS_PER_MIN - 1) * MSECS_PER_SEC;
+    case MinuteSection: return (MINS_PER_HOUR - 1) * MSECS_PER_MIN;
+    case Hour24Section: return 23 * MSECS_PER_HOUR;
+    case Hour12Section: return 11 * MSECS_PER_HOUR;
 
         // Date. unit is day (assuming Gregorian calendar):
         // 1 to 7 (or n month-start to n-1 of next week, month-end to n+1 of previous week):
