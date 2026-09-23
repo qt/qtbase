@@ -344,12 +344,6 @@ bool QDomParser::parseBody()
             }
             break;
         case QXmlStreamReader::EndElement:
-            if constexpr (false) {
-                // ### kept for the translated string
-                domBuilder.fatalError(
-                        QDomParser::tr("Unexpected end element '%1'").arg(reader->name()));
-            }
-
             if (!domBuilder.endElement()) {
                 domBuilder.fatalError(
                         QDomParser::tr("Error occurred while processing an end element"));
@@ -401,11 +395,6 @@ bool QDomParser::parseBody()
         domBuilder.fatalError(reader->errorString());
         reader->readNext();
         return false;
-    }
-
-    if constexpr (false) {
-        // ### kept for the translated string
-        domBuilder.fatalError(QDomParser::tr("Tag mismatch"));
     }
 
     return true;
