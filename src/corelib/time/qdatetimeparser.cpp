@@ -1613,13 +1613,14 @@ QDateTimeParser::parse(const QString &input, int position,
                             break;
                         case PossibleAM:
                         case PossiblePM:
-                        case PossibleBoth: {
-                            const QDateTime copy(scan.value.addSecs(12 * 60 * 60));
-                            if (copy >= minimum && copy <= maximum)
-                                scan.state = Intermediate;
-                            else
+                        case PossibleBoth:
+                            if (const QDateTime copy(scan.value.addSecs(12 * 60 * 60));
+                                    copy < minimum || copy > maximum) {
                                 scan.state = Invalid;
-                            break; }
+                            } else {
+                                scan.state = Intermediate;
+                            }
+                            break;
                         }
                         done = true;
                         break;
