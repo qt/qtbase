@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qohosplatformservices.h"
+#include <QtCore/private/qcore_ohos_p.h>
 #include <QtCore/qurl.h>
 #include <QtCore/private/qnapi_p.h>
 #include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/private/qohospathutils_p.h>
 #include <QtCore/qfileinfo.h>
 #include <QtGui/qcolor.h>
-#include <qohosplugincore.h>
 #include <qohosqpaenums.h>
 
 QT_BEGIN_NAMESPACE
@@ -24,12 +24,12 @@ void callStartAbility(QNapi::Object baseQAbility, QNapi::Object want, QOhosTaskP
     auto thenCatchPromises = std::move(resultPromise).makeThenCatchBranches(Q_FUNC_INFO);
     baseQAbility.evalToPromiseOrRejectOnThrow("context.startAbility(*)", {want})
     .onThen(
-        [thenPromise = std::move(thenCatchPromises.first)](const QtOhos::CallbackInfo &) {
+        [thenPromise = std::move(thenCatchPromises.first)](const QOhosCallbackInfo &) {
             qOhosPrintfDebug("Got success from startAbility()");
             thenPromise(true);
         })
     .onCatch(
-        [catchPromise = std::move(thenCatchPromises.second)](const QtOhos::CallbackInfo &cbInfo) {
+        [catchPromise = std::move(thenCatchPromises.second)](const QOhosCallbackInfo &cbInfo) {
             QtOhos::logJsCallbackError(cbInfo, "Got error from startAbility()");
             catchPromise(false);
         });
@@ -48,11 +48,11 @@ QOhosColorPicker::QOhosColorPicker() = default;
 void QOhosColorPicker::pickColor()
 {
     auto selfRef = QtOhos::makeQThreadSafeRef(this);
-    QtOhos::invokeInJsThread(
-        [selfRef](QtOhos::JsState &jsState) {
+    QOhosJsThreadGateway::invoke(
+        [selfRef](QOhosJsState &jsState) {
             jsState.evalToPromiseOrRejectOnThrow("@kit.Penkit.imageFeaturePicker.pickForResult()")
             .onThen(
-                [selfRef](const QtOhos::CallbackInfo &cbInfo) {
+                [selfRef](const QOhosCallbackInfo &cbInfo) {
                     auto pickedColorInfo = cbInfo.getFirstArg<QNapi::Object>(Q_FUNC_INFO);
                     auto color = pickedColorInfo.get<QNapi::Object>("color");
                     QColor qColor(
@@ -66,7 +66,7 @@ void QOhosColorPicker::pickColor()
                         });
                 })
             .onCatch(
-                [](const QtOhos::CallbackInfo &cbInfo) {
+                [](const QOhosCallbackInfo &cbInfo) {
                     QtOhos::logJsCallbackError(cbInfo, "@kit.Penkit.imageFeaturePicker.pickForResult() failed");
                 });
         });
@@ -93,8 +93,8 @@ bool QOhosPlatformServices::hasCapability(Capability capability) const
 
 bool QOhosPlatformServices::openUrl(const QUrl &url)
 {
-    return QtOhos::evalInJsThreadWithPromise<bool>(
-        [&](QtOhos::JsState &jsState, QOhosTaskPromise<bool> evalPromise) {
+    return QOhosJsThreadGateway::evalWithPromise<bool>(
+        [&](QOhosJsState &jsState, QOhosTaskPromise<bool> evalPromise) {
             auto optMainUiAbility = jsState.defaultQAbility();
             if (!optMainUiAbility) {
                 evalPromise(false);
