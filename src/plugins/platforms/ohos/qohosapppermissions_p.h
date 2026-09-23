@@ -15,10 +15,10 @@
 // We mean it.
 //
 
+#include <QtCore/private/qcore_ohos_p.h>
 #include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/private/qohospermissionshelper_p.h>
 #include <QtCore/qglobal.h>
-#include <qohosplugincore.h>
 #include <string>
 
 QT_BEGIN_NAMESPACE
@@ -28,34 +28,34 @@ namespace QOhosAppPermissions {
 using AppPermissionResult = QOhosPermissionsHelper::PermissionRequestResult;
 
 Q_CORE_EXPORT void checkAppPermissionGrantedWithConsumer(
-    QtOhos::JsState &jsState, const std::string &permissionName,
-    QOhosConsumer<QtOhos::JsState &, bool> resultConsumer);
+    QOhosJsState &jsState, const std::string &permissionName,
+    QOhosConsumer<QOhosJsState &, bool> resultConsumer);
 
 Q_CORE_EXPORT void requestAppPermissionFromUser(
-    QtOhos::JsState &jsState, const std::string &permissionName,
-    QOhosConsumer<QtOhos::JsState &, bool> resultConsumer);
+    QOhosJsState &jsState, const std::string &permissionName,
+    QOhosConsumer<QOhosJsState &, bool> resultConsumer);
 
 Q_CORE_EXPORT void requestAppPermissionFromUser(
-    QtOhos::JsState &jsState, QNapi::Object qAbility, const std::string &permissionName,
-    QOhosConsumer<QtOhos::JsState &, bool> resultConsumer);
+    QOhosJsState &jsState, QNapi::Object qAbility, const std::string &permissionName,
+    QOhosConsumer<QOhosJsState &, bool> resultConsumer);
 
 Q_CORE_EXPORT void requestAppPermissionsFromUserWithResult(
-    QtOhos::JsState &jsState, const std::vector<std::string> &permissionNames,
-    QOhosConsumer<QtOhos::JsState &, std::vector<AppPermissionResult>> resultConsumer);
+    QOhosJsState &jsState, const std::vector<std::string> &permissionNames,
+    QOhosConsumer<QOhosJsState &, std::vector<AppPermissionResult>> resultConsumer);
 
 Q_CORE_EXPORT void requestAppPermissionsFromUserWithResult(
-    QtOhos::JsState &jsState, QNapi::Object qAbility,
+    QOhosJsState &jsState, QNapi::Object qAbility,
     const std::vector<std::string> &permissionNames,
-    QOhosConsumer<QtOhos::JsState &, std::vector<AppPermissionResult>> resultConsumer);
+    QOhosConsumer<QOhosJsState &, std::vector<AppPermissionResult>> resultConsumer);
 
 Q_CORE_EXPORT void requestAppPermissionsOnSetting(
-    QtOhos::JsState &jsState, const std::vector<std::string> &permissionNames,
-    QOhosConsumer<QtOhos::JsState &, std::vector<bool>> resultConsumer);
+    QOhosJsState &jsState, const std::vector<std::string> &permissionNames,
+    QOhosConsumer<QOhosJsState &, std::vector<bool>> resultConsumer);
 
 Q_CORE_EXPORT void requestAppPermissionsOnSetting(
-    QtOhos::JsState &jsState, QNapi::Object qAbility,
+    QOhosJsState &jsState, QNapi::Object qAbility,
     const std::vector<std::string> &permissionNames,
-    QOhosConsumer<QtOhos::JsState &, std::vector<bool>> resultConsumer);
+    QOhosConsumer<QOhosJsState &, std::vector<bool>> resultConsumer);
 
 }
 

@@ -5,7 +5,6 @@
 #include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/private/qohoslogger_p.h>
 #include <optional>
-#include <qohosplugincore.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -14,7 +13,7 @@ namespace QOhosAppPermissions {
 namespace {
 
 void tryGetBundleAccessTokenIdWithConsumer(
-    QtOhos::JsState &jsState, QOhosConsumer<QtOhos::JsState &, std::optional<int>> resultConsumer)
+    QOhosJsState &jsState, QOhosConsumer<QOhosJsState &, std::optional<int>> resultConsumer)
 {
     auto bundleFlags = jsState.eval<QNapi::Number>(
         "@ohos.bundle.bundleManager.BundleFlag.GET_BUNDLE_INFO_WITH_APPLICATION");
@@ -22,33 +21,33 @@ void tryGetBundleAccessTokenIdWithConsumer(
     auto sharedResultConsumer = QtOhos::moveToSharedPtr(std::move(resultConsumer));
     jsState.evalToPromiseOrRejectOnThrow(
         "@ohos.bundle.bundleManager.getBundleInfoForSelf(*)", {bundleFlags})
-    .onThen([sharedResultConsumer](const QtOhos::CallbackInfo &cbInfo) {
+    .onThen([sharedResultConsumer](const QOhosCallbackInfo &cbInfo) {
         QNapi::Object bundleInfo = cbInfo.getFirstArg<QNapi::Object>(Q_FUNC_INFO);
         (*sharedResultConsumer)(
             cbInfo.jsState(),
             std::optional<int>(bundleInfo.eval<QNapi::Number>("appInfo.accessTokenId")));
     })
-    .onCatch([sharedResultConsumer](const QtOhos::CallbackInfo &cbInfo) {
+    .onCatch([sharedResultConsumer](const QOhosCallbackInfo &cbInfo) {
         QtOhos::logJsCallbackError(cbInfo, "Got error from getBundleInfoForSelf()");
         (*sharedResultConsumer)(cbInfo.jsState(), {});
     });
 }
 
 void checkAppPermissionStatusGrantedWithConsumer(
-    QtOhos::JsState &jsState, int bundleAccessToken, const std::string &permissionName,
-    QOhosConsumer<QtOhos::JsState &, bool> resultConsumer)
+    QOhosJsState &jsState, int bundleAccessToken, const std::string &permissionName,
+    QOhosConsumer<QOhosJsState &, bool> resultConsumer)
 {
     auto sharedResultConsumer = QtOhos::moveToSharedPtr(std::move(resultConsumer));
     jsState.evalToPromiseOrRejectOnThrow(
         "@ohos.abilityAccessCtrl.createAtManager().checkAccessToken(*)",
         {bundleAccessToken, permissionName})
-    .onThen([sharedResultConsumer](const QtOhos::CallbackInfo &cbInfo) {
+    .onThen([sharedResultConsumer](const QOhosCallbackInfo &cbInfo) {
         auto status = cbInfo.getFirstArg<QNapi::Number>(Q_FUNC_INFO);
         auto permissionGrantedStatus = cbInfo.jsState().eval<QNapi::Number>(
             "@ohos.abilityAccessCtrl.GrantStatus.PERMISSION_GRANTED");
         (*sharedResultConsumer)(cbInfo.jsState(), status == permissionGrantedStatus);
     })
-    .onCatch([sharedResultConsumer](const QtOhos::CallbackInfo &cbInfo) {
+    .onCatch([sharedResultConsumer](const QOhosCallbackInfo &cbInfo) {
         QtOhos::logJsCallbackError(cbInfo, "Got error from checkAccessToken()");
         (*sharedResultConsumer)(cbInfo.jsState(), false);
     });
@@ -57,13 +56,13 @@ void checkAppPermissionStatusGrantedWithConsumer(
 }
 
 void checkAppPermissionGrantedWithConsumer(
-    QtOhos::JsState &jsState, const std::string &permissionName,
-    QOhosConsumer<QtOhos::JsState &, bool> resultConsumer)
+    QOhosJsState &jsState, const std::string &permissionName,
+    QOhosConsumer<QOhosJsState &, bool> resultConsumer)
 {
     tryGetBundleAccessTokenIdWithConsumer(
         jsState,
         [permissionName, resultConsumer = std::move(resultConsumer)](
-            QtOhos::JsState &jsState, std::optional<int> bundleAccessTokenId) mutable {
+            QOhosJsState &jsState, std::optional<int> bundleAccessTokenId) mutable {
             if (bundleAccessTokenId.has_value()) {
                 checkAppPermissionStatusGrantedWithConsumer(
                     jsState, bundleAccessTokenId.value(), permissionName,
@@ -78,8 +77,8 @@ void checkAppPermissionGrantedWithConsumer(
 }
 
 void requestAppPermissionFromUser(
-    QtOhos::JsState &jsState, const std::string &permissionName,
-    QOhosConsumer<QtOhos::JsState &, bool> resultConsumer)
+    QOhosJsState &jsState, const std::string &permissionName,
+    QOhosConsumer<QOhosJsState &, bool> resultConsumer)
 {
     auto optQAbility = jsState.defaultQAbility();
     if (!optQAbility) {
@@ -94,19 +93,19 @@ void requestAppPermissionFromUser(
 }
 
 void requestAppPermissionFromUser(
-    QtOhos::JsState &jsState, QNapi::Object qAbility, const std::string &permissionName,
-    QOhosConsumer<QtOhos::JsState &, bool> resultConsumer)
+    QOhosJsState &jsState, QNapi::Object qAbility, const std::string &permissionName,
+    QOhosConsumer<QOhosJsState &, bool> resultConsumer)
 {
     requestAppPermissionsFromUserWithResult(
         jsState, qAbility, {permissionName},
-        [resultConsumer = std::move(resultConsumer)](QtOhos::JsState &jsState, std::vector<QOhosAppPermissions::AppPermissionResult> result) {
+        [resultConsumer = std::move(resultConsumer)](QOhosJsState &jsState, std::vector<QOhosAppPermissions::AppPermissionResult> result) {
             resultConsumer(jsState, result.size() == 1 && result.front().permissionGranted);
         });
 }
 
 void requestAppPermissionsFromUserWithResult(
-    QtOhos::JsState &jsState, const std::vector<std::string> &permissionNames,
-    QOhosConsumer<QtOhos::JsState &, std::vector<AppPermissionResult>> resultConsumer)
+    QOhosJsState &jsState, const std::vector<std::string> &permissionNames,
+    QOhosConsumer<QOhosJsState &, std::vector<AppPermissionResult>> resultConsumer)
 {
     auto optQAbility = jsState.defaultQAbility();
     if (!optQAbility) {
@@ -127,9 +126,9 @@ void requestAppPermissionsFromUserWithResult(
 }
 
 void requestAppPermissionsFromUserWithResult(
-    QtOhos::JsState &jsState, QNapi::Object qAbility,
+    QOhosJsState &jsState, QNapi::Object qAbility,
     const std::vector<std::string> &permissionNames,
-    QOhosConsumer<QtOhos::JsState &, std::vector<AppPermissionResult>> resultConsumer)
+    QOhosConsumer<QOhosJsState &, std::vector<AppPermissionResult>> resultConsumer)
 {
     auto sharedResultConsumer = QtOhos::moveToSharedPtr(std::move(resultConsumer));
     jsState.evalToPromiseOrRejectOnThrow(
@@ -141,7 +140,7 @@ void requestAppPermissionsFromUserWithResult(
                 std::vector<QNapi::ValueWrapper>(permissionNames.begin(), permissionNames.end()))
         })
     .onThen(
-        [permissionNames, sharedResultConsumer](const QtOhos::CallbackInfo &cbInfo) {
+        [permissionNames, sharedResultConsumer](const QOhosCallbackInfo &cbInfo) {
             QNapi::Object resultObj = cbInfo.getFirstArg<QNapi::Object>(Q_FUNC_INFO);
 
             auto resultPermissionsNames =
@@ -181,7 +180,7 @@ void requestAppPermissionsFromUserWithResult(
             (*sharedResultConsumer)(cbInfo.jsState(), appPermissionResults);
         })
     .onCatch(
-        [permissionNames, sharedResultConsumer](const QtOhos::CallbackInfo &cbInfo) {
+        [permissionNames, sharedResultConsumer](const QOhosCallbackInfo &cbInfo) {
             QtOhos::logJsCallbackError(cbInfo, "Got error from requestPermissionsFromUser()");
             const std::size_t totalPermissions = permissionNames.size();
             std::vector<AppPermissionResult> appPermissionResults(
@@ -195,8 +194,8 @@ void requestAppPermissionsFromUserWithResult(
 }
 
 void requestAppPermissionsOnSetting(
-    QtOhos::JsState &jsState, const std::vector<std::string> &permissionNames,
-    QOhosConsumer<QtOhos::JsState &, std::vector<bool>> resultConsumer)
+    QOhosJsState &jsState, const std::vector<std::string> &permissionNames,
+    QOhosConsumer<QOhosJsState &, std::vector<bool>> resultConsumer)
 {
     auto optQAbility = jsState.defaultQAbility();
     if (!optQAbility) {
@@ -210,9 +209,9 @@ void requestAppPermissionsOnSetting(
 }
 
 void requestAppPermissionsOnSetting(
-    QtOhos::JsState &jsState, QNapi::Object qAbility,
+    QOhosJsState &jsState, QNapi::Object qAbility,
     const std::vector<std::string> &permissionNames,
-    QOhosConsumer<QtOhos::JsState &, std::vector<bool>> resultConsumer)
+    QOhosConsumer<QOhosJsState &, std::vector<bool>> resultConsumer)
 {
     auto sharedResultConsumer = QtOhos::moveToSharedPtr(std::move(resultConsumer));
     jsState.evalToPromiseOrRejectOnThrow(
@@ -224,7 +223,7 @@ void requestAppPermissionsOnSetting(
                 std::vector<QNapi::ValueWrapper>(permissionNames.begin(), permissionNames.end()))
         })
     .onThen(
-        [permissionNames, sharedResultConsumer](const QtOhos::CallbackInfo &cbInfo) {
+        [permissionNames, sharedResultConsumer](const QOhosCallbackInfo &cbInfo) {
             QNapi::Array resultArray = cbInfo.getFirstArg<QNapi::Array>(Q_FUNC_INFO);
 
             auto resultAuthResults = QNapi::getArrayElements<std::vector<int>, QNapi::Number>(resultArray);
@@ -242,7 +241,7 @@ void requestAppPermissionsOnSetting(
             (*sharedResultConsumer)(cbInfo.jsState(), settingsPermissionResults);
         })
     .onCatch(
-        [permissionNames, sharedResultConsumer](const QtOhos::CallbackInfo &cbInfo) {
+        [permissionNames, sharedResultConsumer](const QOhosCallbackInfo &cbInfo) {
             QtOhos::logJsCallbackError(cbInfo, "Got error from requestPermissionOnSetting()");
             std::vector<bool> settingsPermissionResults(permissionNames.size(), false);
             (*sharedResultConsumer)(cbInfo.jsState(), settingsPermissionResults);
