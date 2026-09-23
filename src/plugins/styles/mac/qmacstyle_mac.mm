@@ -3503,8 +3503,8 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
             return cs == QStyleHelper::SizeSmall ? 0.5 : 0.0;
         } ();
         d->drawNSViewInRect(tb, opt->rect, p, ^(CGContextRef ctx, const CGRect &rect) {
-            CGContextTranslateCTM(ctx, 0, vOffset);
-            [tb.cell drawInteriorWithFrame:rect inView:tb];
+            CGContextTranslateCTM(ctx, rect.origin.x, rect.origin.y + vOffset);
+            [tb.cell drawInteriorWithFrame:tb.bounds inView:tb];
         });
         break; }
     case PE_FrameFocusRect:
