@@ -24,6 +24,7 @@
 #include <optional>
 #include <qarkui/qarkuiutils.h>
 #include <qarkui/qnativenodeapi.h>
+#include <qarkui/qohosdrageventcshim.h>
 #include <qohosjsutils.h>
 #include <qohosplatformdrag.h>
 #include <qohosudmf.h>
@@ -45,13 +46,15 @@ QT_BEGIN_NAMESPACE
 
 namespace {
 
-// The following DragResult constants are listed in the JS documentation,
-// but they are not included as ArkUI_DragResult enumerators (despite the
-// fact that they actually work according to the JS documentation):
-//  - DROP_ENABLED = 3
-//  - DROP_DISABLED = 4
-constexpr auto Q_DROP_ENABLED = static_cast<ArkUI_DragResult>(3);
-constexpr auto Q_DROP_DISABLED = static_cast<ArkUI_DragResult>(4);
+// The following DragResult values are listed in the ArkTS documentation and accepted by
+// OH_ArkUI_DragEvent_SetDragResult(), but they have no corresponding ArkUI_DragResult
+// enumerators and 4 currently lies outside the C++ value range [0, 3] of ArkUI_DragResult,
+// so both are passed as integers to qohosdrageventcshim.c.
+enum class DropStatus : std::underlying_type_t<::ArkUI_DragResult>
+{
+    Enabled = 3,
+    Disabled = 4,
+};
 
 struct DragEventInfo
 {
@@ -403,11 +406,12 @@ QOhosConsumer<::ArkUI_NodeEvent *> makeQOhosNativeDragEventsHandler(
                     dragEventInfo,
                     makeDummyQMimeDataFactoryFromUdmfDataTypes(getDragEventDataTypes(dragEvent)));
                 QArkUi::callArkUiOrFailOnErrorResult(
-                    Q_OHOS_NAMED_FUNC(::OH_ArkUI_DragEvent_SetDragResult),
+                    Q_OHOS_NAMED_FUNC(::qOhosSetArkUiDragEventDragResult),
                     dragEvent,
-                    qtDropAction.value_or(Qt::IgnoreAction) != Qt::IgnoreAction
-                        ? Q_DROP_ENABLED
-                        : Q_DROP_DISABLED);
+                    static_cast<std::uint32_t>(
+                        qtDropAction.value_or(Qt::IgnoreAction) != Qt::IgnoreAction
+                            ? DropStatus::Enabled
+                            : DropStatus::Disabled));
                 setDragEventSuggestedDropOperationIfAvailable(
                     dragEvent, qAndThen(qtDropAction, &tryMapQOhosArkUiDropOperationFromQt));
             }
