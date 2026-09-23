@@ -546,6 +546,7 @@ private slots:
 
     void insert_special_cases();
 
+    void assign_data();
     void assign();
     void assign_shared();
     void assign_uses_prepend_buffer();
@@ -3747,62 +3748,96 @@ void tst_QString::appendFromRawData()
     QCOMPARE_NE((void *)copy.constData(), (void *)str.constData());
 }
 
+void tst_QString::assign_data()
+{
+    QTest::addColumn<QString>("prototype");
+    QTest::newRow("null") << QString();
+    QTest::newRow("empty") << QString(u"");
+    QTest::newRow("regular") << QString::fromLatin1("A");
+
+    QString capacityReserved = "B"_L1;
+    capacityReserved.reserve(240);
+    QTest::newRow("capacity-preserved") << capacityReserved;
+
+    const QString rawempty = u""_s;
+    Q_ASSERT(!rawempty.data_ptr().isMutable());
+    QTest::newRow("raw-empty") << rawempty;
+
+    const QString raw = u"C"_s;
+    Q_ASSERT(!raw.data_ptr().isMutable());
+    QTest::newRow("raw-non-mepty") << raw;
+}
+
 void tst_QString::assign()
 {
+    QFETCH(const QString, prototype);
+    QString str;
+
     // QString &assign(QAnyStringView)
     {
-        QString str;
+        str = prototype;
         QCOMPARE(str.assign("data"), u"data");
         QCOMPARE(str.size(), 4);
+        str = prototype;
         QCOMPARE(str.assign(u8"data\0data"), u"data\0data");
         QCOMPARE(str.size(), 4);
+        str = prototype;
         QCOMPARE(str.assign(u"\0data\0data"), u"\0data\0data");
         QCOMPARE(str.size(), 0);
+        str = prototype;
         QCOMPARE(str.assign(QAnyStringView("data\0")), u"data\0");
         QCOMPARE(str.size(), 4);
+        str = prototype;
         QCOMPARE(str.assign(QStringView(u"(ノಠ益ಠ)ノ彡┻━┻\0")), u"(ノಠ益ಠ)ノ彡┻━┻\0");
         QCOMPARE(str.size(), 11);
+        str = prototype;
         QCOMPARE(str.assign(QUtf8StringView(u8"٩(⁎❛ᴗ❛⁎)۶")), u"٩(⁎❛ᴗ❛⁎)۶");
         QCOMPARE(str.size(), 9);
+        str = prototype;
         QCOMPARE(str.assign(QLatin1String("datadata")), u"datadata");
         QCOMPARE(str.size(), 8);
     }
     // QString &assign(qsizetype, char);
     {
-        QString str;
+        str = prototype;
         QCOMPARE(str.assign(3, u'è'), u"èèè");
         QCOMPARE(str.size(), 3);
+        str = prototype;
         QCOMPARE(str.assign(20, u'd').assign(2, u'ᴗ'), u"ᴗᴗ");
         QCOMPARE(str.size(), 2);
+        str = prototype;
         QCOMPARE(str.assign(0, u'x').assign(5, QLatin1Char('d')), u"ddddd");
         QCOMPARE(str.size(), 5);
+        str = prototype;
         QCOMPARE(str.assign(3, u'x'), u"xxx");
         QCOMPARE(str.size(), 3);
     }
     // QString &assign(InputIterator, InputIterator)
     {
-        // This needs to be on its own to ensure we call them on empty str
-        QString str;
-
         const char16_t c16[] = u"٩(⁎❛ᴗ❛⁎)۶ 🤷";
         std::u16string c16str(c16);
+        str = prototype;
         str.assign(c16str.begin(), c16str.begin());
+        QCOMPARE(str.size(), 0);
+
+        std::vector<QChar> qc16str(c16str.begin(), c16str.end());
+        str = prototype;
+        str.assign(qc16str.begin(), qc16str.begin());
         QCOMPARE(str.size(), 0);
     }
     {
 #ifndef QT_NO_CAST_FROM_ASCII
-        // This needs to be on its own to ensure we call them on empty str
-        QString str;
         const char c8[] = "a©☻🂤"; // [1, 2, 3, 4] bytes in utf-8 code points
         std::string c8str(c8);
+        str = prototype;
         str.assign(c8str.begin(), c8str.begin());
         QCOMPARE(str.size(), 0);
 #endif
     }
     {
         // Forward iterator versions
-        QString str;
         const QString tstr = QString::fromUtf8(u8"(ノಠ益ಠ)\0ノ彡┻━┻");
+        str = prototype;
         QCOMPARE(str.assign(tstr.begin(), tstr.end()), u"(ノಠ益ಠ)\0ノ彡┻━┻");
         QCOMPARE(str.size(), 6);
 
@@ -3813,10 +3848,12 @@ void tst_QString::assign()
 
 #ifndef QT_NO_CAST_FROM_ASCII
         const char c8[] = "a©☻🂤"; // [1, 2, 3, 4] bytes in utf-8 code points
+        str = prototype;
         str.assign(std::begin(c8), std::end(c8) - 1);
         QCOMPARE(str, c8);
 
         std::string c8str(c8);
+        str = prototype;
         str.assign(c8str.begin(), c8str.end());
         QCOMPARE(str, c8);
         QCOMPARE(str.capacity(), qsizetype(std::size(c8) - 1));
@@ -3827,26 +3864,31 @@ void tst_QString::assign()
         QCOMPARE_EQ(str.size(), 0);
 
         std::forward_list<char> fwd(std::begin(c8), std::end(c8) - 1);
+        str = prototype;
         str.assign(fwd.begin(), fwd.end());
         QCOMPARE(str, c8);
 #endif
 #ifdef __cpp_char8_t
         const char8_t c8t[] = u8"🂤🂤🂤🂤🂤🂤🂤🂤🂤🂤"; // 10 x 4 bytes in utf-8 code points
+        str = prototype;
         str.assign(std::begin(c8t), std::end(c8t) - 1);
         QCOMPARE(str, c8t);
         QCOMPARE(str.size(), 20);
 #endif
 #ifdef __cpp_lib_char8_t
         std::u8string c8tstr(c8t);
+        str = prototype;
         str.assign(c8tstr.begin(), c8tstr.end());
         QCOMPARE(str, c8t);
 #endif
 
         const char16_t c16[] = u"٩(⁎❛ᴗ❛⁎)۶ 🤷";
+        str = prototype;
         str.assign(std::begin(c16), std::end(c16) - 1);
         QCOMPARE(str, c16);
 
         std::u16string c16str(c16);
+        str = prototype;
         str.assign(c16str.begin(), c16str.end());
         QCOMPARE(str, c16);
 
@@ -3856,10 +3898,12 @@ void tst_QString::assign()
         QCOMPARE_EQ(str.size(), 0);
 
         const char32_t c32[] = U"٩(⁎❛ᴗ❛⁎)۶ 🤷";
+        str = prototype;
         str.assign(std::begin(c32), std::end(c32) - 1);
         QCOMPARE(str, c16);
 
         std::u32string c32str(c32);
+        str = prototype;
         str.assign(c32str.begin(), c32str.end());
         QCOMPARE(str, c16);
 
@@ -3869,21 +3913,29 @@ void tst_QString::assign()
         QCOMPARE_EQ(str.size(), 0);
 
         QVarLengthArray<QLatin1Char, 5> l1ch = {'F'_L1, 'G'_L1, 'H'_L1, 'I'_L1, 'J'_L1};
+        str = prototype;
         str.assign(l1ch.begin(), l1ch.end());
         QCOMPARE(str, u"FGHIJ");
+
         std::forward_list<QChar> qch = {u'G', u'H', u'I', u'J', u'K'};
+        str = prototype;
         str.assign(qch.begin(), qch.end());
         QCOMPARE(str, u"GHIJK");
+
         const QList<char16_t> qch16 = {u'X', u'H', u'I', u'J', u'K'}; // QList<T>::iterator need not be T*
+        str = prototype;
         str.assign(qch16.begin(), qch16.end());
         QCOMPARE(str, u"XHIJK");
+
 #if defined(Q_OS_WIN)
+        str = prototype;
         QVarLengthArray<wchar_t> wch = {L'A', L'B', L'C', L'D', L'E'};
         str.assign(wch.begin(), wch.end());
         QCOMPARE(str, u"ABCDE");
 #endif
         // Input iterator versions
         std::stringstream ss("50 51 52 53 54");
+        str = prototype;
         str.assign(std::istream_iterator<ushort>{ss}, std::istream_iterator<ushort>{});
         QCOMPARE(str, u"23456");
 
@@ -3908,6 +3960,7 @@ void tst_QString::assign()
         const char c8IllFormed[] = "a\xe0\x9f\x80""a";
         ss.clear();
         ss.str(c8IllFormed);
+        str = prototype;
         str.assign(std::istream_iterator<char>{ss}, std::istream_iterator<char>{});
         QEXPECT_FAIL("", "Iconsistent handling of ill-formed sequences, QTBUG-117051", Continue);
         QCOMPARE_EQ(str, QString(c8IllFormed));
@@ -3915,18 +3968,21 @@ void tst_QString::assign()
         const char c82[] = "ÌşṫһíᶊśꞧɨℼṩuDF49ïľι?";
         ss.clear();
         ss.str(c82);
+        str = prototype;
         str.assign(std::istream_iterator<char>{ss}, std::istream_iterator<char>{});
         QCOMPARE(str, c82);
 
         const char uc8[] = "ẵƽ𝔰ȉ𝚐ꞑ𝒾𝝿𝕘";
         ss.clear();
         ss.str(uc8);
+        str = prototype;
         str.assign(std::istream_iterator<uchar>{ss}, std::istream_iterator<uchar>{});
         QCOMPARE(str, uc8);
 
         ss.clear();
         const char sc8[] = "𓁇ख़ॵ௵";
         ss.str(sc8);
+        str = prototype;
         str.assign(std::istream_iterator<signed char>{ss}, std::istream_iterator<signed char>{});
         QCOMPARE(str, sc8);
 
@@ -3939,7 +3995,7 @@ void tst_QString::assign()
     }
     // Test chaining
     {
-        QString str;
+        str = prototype;
         QString tstr = u"TEST DATA"_s;
         str.assign(tstr.begin(), tstr.end()).assign({"Hello World!"}).assign(5, u'T');
         QCOMPARE(str, u"TTTTT");
