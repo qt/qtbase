@@ -7,7 +7,6 @@
 #include <QtGui/qpainterpath.h>
 #include <QtWidgets/qcheckbox.h>
 #include <QtWidgets/qcombobox.h>
-#include <QtWidgets/qgroupbox.h>
 #include <QtWidgets/qlineedit.h>
 #include <QtWidgets/qlistview.h>
 #include <QtWidgets/qmdisubwindow.h>
@@ -134,7 +133,6 @@ constexpr int tabBarTabUnderLineWidth = 2;
 constexpr int groupBoxBottomPadding = 8;
 constexpr int groupBoxFrameCornerRadius = 8;
 constexpr int groupBoxHorizontalPadding = 12;
-constexpr int groupBoxTitleTextFontSize = 20;
 constexpr int groupBoxTitleToContentSpacing = 8;
 constexpr int groupBoxTopPadding = 24;
 
@@ -207,6 +205,17 @@ bool isHoverable(const QWidget *widget)
 QRect adjusted(const QRect &rect, int growth)
 {
     return rect.adjusted(-growth, -growth, growth, growth);
+}
+
+QFont getGroupBoxTitleFont(const QWidget *widget)
+{
+    const bool widgetHasItsOwnFont = widget != nullptr && widget->testAttribute(Qt::WA_SetFont);
+    if (widgetHasItsOwnFont)
+        return widget->font();
+
+    const auto *themeFont =
+        QGuiApplicationPrivate::platformTheme()->font(QPlatformTheme::GroupBoxTitleFont);
+    return themeFont != nullptr ? *themeFont : QFont();
 }
 
 QColor getSunkenOrHoverColor(bool isSunken, const QPalette &palette)
@@ -1464,18 +1473,20 @@ void QOhosStyle::drawComplexControl(
         break;
     }
     case CC_GroupBox: {
-        const auto groupBox = qstyleoption_cast<const QStyleOptionGroupBox *>(option);
-        if (groupBox != nullptr) {
-            auto groupBoxCopy = *groupBox;
-            groupBoxCopy.textAlignment |= Qt::AlignVCenter;
+        if (qStyleOptionIs<QStyleOptionGroupBox>(option)) {
+            auto groupBox = *qstyleoption_cast<const QStyleOptionGroupBox *>(option);
+            groupBox.textAlignment |= Qt::AlignVCenter;
 
             const auto colorGroup = option->state.testFlag(QStyle::State_Enabled)
                 ? QPalette::Active
                 : QPalette::Disabled;
-            if (!groupBoxCopy.palette.isBrushSet(colorGroup, QPalette::WindowText))
-                groupBoxCopy.textColor = groupBoxCopy.palette.color(QPalette::Text);
+            if (!groupBox.palette.isBrushSet(colorGroup, QPalette::WindowText))
+                groupBox.textColor = groupBox.palette.color(QPalette::Text);
 
-            QCommonStyle::drawComplexControl(control, &groupBoxCopy, painter, widget);
+            const auto titleFont = getGroupBoxTitleFont(widget);
+            painter->setFont(titleFont);
+
+            QCommonStyle::drawComplexControl(control, &groupBox, painter, widget);
         }
         break;
     }
@@ -1634,33 +1645,36 @@ QRect QOhosStyle::subControlRect(
         }
     case CC_GroupBox:
         if (qStyleOptionIs<QStyleOptionGroupBox>(option)) {
-            auto groupBox = qstyleoption_cast<const QStyleOptionGroupBox *>(option);
+            auto groupBox = *qstyleoption_cast<const QStyleOptionGroupBox *>(option);
+            groupBox.fontMetrics = QFontMetrics(getGroupBoxTitleFont(widget));
+
             auto labelRect =
-                QCommonStyle::subControlRect(control, option, SC_GroupBoxLabel, widget);
-            if (groupBox->text.isEmpty()) {
-                labelRect.moveTop(groupBox->rect.top() + groupBoxTopPadding);
+                QCommonStyle::subControlRect(control, &groupBox, SC_GroupBoxLabel, widget);
+            if (groupBox.text.isEmpty()) {
+                labelRect.moveTop(groupBox.rect.top() + groupBoxTopPadding);
                 labelRect.moveBottom(labelRect.top());
             } else {
-                labelRect.moveTop(groupBox->rect.top() + groupBoxTopPadding + groupBoxTitleTextFontSize / 2);
+                labelRect.moveTop(
+                    groupBox.rect.top() + groupBoxTopPadding + groupBox.fontMetrics.height() / 2);
             }
 
             switch (subControl) {
             case SC_GroupBoxFrame:
-                return QCommonStyle::subControlRect(control, option, subControl, widget);
+                return QCommonStyle::subControlRect(control, &groupBox, subControl, widget);
             case SC_GroupBoxLabel: {
                 return labelRect;
             }
             case SC_GroupBoxCheckBox: {
                 auto checkBoxRect =
-                    QCommonStyle::subControlRect(control, option, subControl, widget);
+                    QCommonStyle::subControlRect(control, &groupBox, subControl, widget);
                 checkBoxRect.moveTop(labelRect.center().y() - checkBoxRect.height() / 2);
                 return checkBoxRect;
             }
             case SC_GroupBoxContents: {
                 auto contentsRect =
-                    QCommonStyle::subControlRect(control, option, SC_GroupBoxContents, widget);
-                contentsRect.setTop(labelRect.bottom() + (groupBox->text.isEmpty() ? 0 : groupBoxTitleToContentSpacing));
-                contentsRect.setBottom(groupBox->rect.bottom() - groupBoxBottomPadding);
+                    QCommonStyle::subControlRect(control, &groupBox, SC_GroupBoxContents, widget);
+                contentsRect.setTop(labelRect.bottom() + (groupBox.text.isEmpty() ? 0 : groupBoxTitleToContentSpacing));
+                contentsRect.setBottom(groupBox.rect.bottom() - groupBoxBottomPadding);
                 contentsRect.adjust(groupBoxHorizontalPadding, 0, -groupBoxHorizontalPadding, 0);
                 return contentsRect;
             }
@@ -1816,6 +1830,24 @@ QSize QOhosStyle::sizeFromContents(
             return defaultSize;
         }
     }
+    case CT_GroupBox: {
+        const auto groupBox = qstyleoption_cast<const QStyleOptionGroupBox *>(option);
+        if (groupBox == nullptr)
+            return QCommonStyle::sizeFromContents(contents, option, contentsSize, widget);
+
+        const QFontMetrics titleMetrics(getGroupBoxTitleFont(widget));
+        QSize titleSize(
+            titleMetrics.horizontalAdvance(groupBox->text) + titleMetrics.horizontalAdvance(u' '),
+            titleMetrics.height());
+        if (groupBox->subControls.testFlag(SC_GroupBoxCheckBox)) {
+            titleSize.rwidth() += pixelMetric(PM_IndicatorWidth, option, widget)
+                + pixelMetric(PM_CheckBoxLabelSpacing, option, widget);
+            titleSize.rheight() =
+                std::max(titleSize.height(), pixelMetric(PM_IndicatorHeight, option, widget));
+        }
+
+        return QCommonStyle::sizeFromContents(contents, option, titleSize, widget);
+    }
     case CT_LineEdit: {
         int horizontalMargin;
         if (widget != nullptr && qobjectIsInstanceOf<QAbstractSpinBox>(widget->parent()))
@@ -1963,11 +1995,6 @@ void QOhosStyle::polish(QWidget *widget)
     } else if (qobjectIsInstanceOf<QScrollBar>(widget)) {
         widget->setAttribute(Qt::WA_NoSystemBackground);
         widget->setAttribute(Qt::WA_OpaquePaintEvent, false);
-    } else if (qobjectIsInstanceOf<QGroupBox>(widget)) {
-        QFont font;
-        font.setPointSize(groupBoxTitleTextFontSize);
-        font.setBold(true);
-        widget->setFont(font);
     } else if (qobjectIsInstanceOf<QListView>(widget)) {
         qobject_cast<QListView *>(widget)->viewport()->setAttribute(Qt::WA_Hover);
     } else if (qobjectIsInstanceOf<QComboBox>(widget)) {
