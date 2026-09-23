@@ -4,6 +4,7 @@
 #ifndef QARKUI_DISPLAY_MANAGER_H
 #define QARKUI_DISPLAY_MANAGER_H
 
+#include <QtCore/private/qcore_ohos_p.h>
 #include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/qglobal.h>
 #include <qohosdisplayinfo.h>
@@ -19,27 +20,27 @@ public:
 
     struct CreateInfo
     {
-        QOhosConsumer<QtOhos::JsState &, std::vector<QOhosDisplayInfo>> displaysUpdatedCb;
-        QOhosConsumer<QtOhos::JsState &, JsDisplayId, QRectF> displayAvailableAreaChangedCb;
+        QOhosConsumer<QOhosJsState &, std::vector<QOhosDisplayInfo>> displaysUpdatedCb;
+        QOhosConsumer<QOhosJsState &, JsDisplayId, QRectF> displayAvailableAreaChangedCb;
     };
 
-    static std::shared_ptr<QOhosDisplayManager> create(QtOhos::JsState &jsState, CreateInfo createInfo);
+    static std::shared_ptr<QOhosDisplayManager> create(QOhosJsState &jsState, CreateInfo createInfo);
 
     std::vector<QOhosDisplayInfo> getRegisteredDisplayInfos();
 
 private:
-    QOhosDisplayManager(QtOhos::JsState &jsState, CreateInfo createInfo);
+    QOhosDisplayManager(QOhosJsState &jsState, CreateInfo createInfo);
 
     void registerDisplayCallbackListener(
         QNapi::Object displayModule, const std::string &eventName,
-        QOhosConsumer<QtOhos::JsState &, QOhosDisplayInfo::JsDisplayId> handleFunction);
-    bool tryRegisterDisplay(QtOhos::JsState &jsState, JsDisplayId displayId);
-    void rebuildRegisteredDisplayList(QtOhos::JsState &jsState);
+        QOhosConsumer<QOhosJsState &, QOhosDisplayInfo::JsDisplayId> handleFunction);
+    bool tryRegisterDisplay(QOhosJsState &jsState, JsDisplayId displayId);
+    void rebuildRegisteredDisplayList(QOhosJsState &jsState);
 
     std::vector<QOhosDisplayInfo> m_registeredDisplayInfos;
     std::vector<std::shared_ptr<void>> m_destroyNotifiers;
     std::map<JsDisplayId, std::shared_ptr<void>> m_perDisplayDestroyNotifiers;
-    QOhosConsumer<QtOhos::JsState &, JsDisplayId, QRectF> m_availableAreaChangedCb;
+    QOhosConsumer<QOhosJsState &, JsDisplayId, QRectF> m_availableAreaChangedCb;
 };
 
 QPoint mapFromDisplayToGlobal(const QPoint &displayOffset, QOhosDisplayInfo::JsDisplayId jsDisplayId);

@@ -17,7 +17,7 @@ constexpr double mapPixelsToMillimeters(double pixels, double dpi)
 
 }
 
-QOhosDisplayInfo QOhosDisplayInfo::makeFromOhosDisplayObject(QtOhos::JsState &jsState, QNapi::Object displayObject)
+QOhosDisplayInfo QOhosDisplayInfo::makeFromOhosDisplayObject(QOhosJsState &jsState, QNapi::Object displayObject)
 {
     constexpr auto forceEmptyTopLevelOffsetPixels  = false;
 
@@ -63,7 +63,7 @@ QOhosDisplayInfo QOhosDisplayInfo::makeFromOhosDisplayObject(QtOhos::JsState &js
     return result;
 }
 
-std::optional<QNapi::Object> QOhosDisplayInfo::tryGetDisplayById(QtOhos::JsState &jsState, QOhosDisplayInfo::JsDisplayId displayId)
+std::optional<QNapi::Object> QOhosDisplayInfo::tryGetDisplayById(QOhosJsState &jsState, QOhosDisplayInfo::JsDisplayId displayId)
 {
     std::optional<QNapi::Object> result;
     try {

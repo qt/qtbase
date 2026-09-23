@@ -71,12 +71,12 @@ QPoint getGlobalDisplayOffsetOfDisplay(QOhosDisplayInfo::JsDisplayId displayId)
 
 void QOhosDisplayManager::registerDisplayCallbackListener(
     QNapi::Object displayModule, const std::string &eventName,
-    QOhosConsumer<QtOhos::JsState &, JsDisplayId> handleFunction)
+    QOhosConsumer<QOhosJsState &, JsDisplayId> handleFunction)
 {
     m_destroyNotifiers.push_back(
         registerQOhosOnOffMethodsBasedEventHandler(
             displayModule, eventName,
-            [handleFunction = std::move(handleFunction)](const QtOhos::CallbackInfo &cbInfo) {
+            [handleFunction = std::move(handleFunction)](const QOhosCallbackInfo &cbInfo) {
                 auto changedDisplayIdValue = cbInfo.getFirstArg<QNapi::Number>(Q_FUNC_INFO);
                 auto changedDisplayId = JsDisplayId{changedDisplayIdValue};
                 handleFunction(cbInfo.jsState(), changedDisplayId);
@@ -84,7 +84,7 @@ void QOhosDisplayManager::registerDisplayCallbackListener(
 }
 
 bool QOhosDisplayManager::tryRegisterDisplay(
-    QtOhos::JsState &jsState, JsDisplayId displayId)
+    QOhosJsState &jsState, JsDisplayId displayId)
 {
     auto optDisplay = QOhosDisplayInfo::tryGetDisplayById(jsState, displayId);
     if (!optDisplay.has_value()) {
@@ -101,7 +101,7 @@ bool QOhosDisplayManager::tryRegisterDisplay(
     auto availableAreaChangeHandle = registerQOhosOnOffMethodsBasedEventHandler(
         optDisplay.value(),
         "availableAreaChange",
-        [this, displayId](const QtOhos::CallbackInfo &cbInfo) {
+        [this, displayId](const QOhosCallbackInfo &cbInfo) {
             auto availableArea = cbInfo.getFirstArg<QNapi::Object>(Q_FUNC_INFO);
             auto availableAreaQRectF = QRectF(
                 availableArea.get<QNapi::Number>("left"),
@@ -123,7 +123,7 @@ bool QOhosDisplayManager::tryRegisterDisplay(
 }
 
 std::shared_ptr<QOhosDisplayManager> QOhosDisplayManager::create(
-    QtOhos::JsState &jsState, CreateInfo createInfo)
+    QOhosJsState &jsState, CreateInfo createInfo)
 {
     return std::shared_ptr<QOhosDisplayManager>(new QOhosDisplayManager(jsState, std::move(createInfo)));
 }
@@ -133,7 +133,7 @@ std::vector<QOhosDisplayInfo> QOhosDisplayManager::getRegisteredDisplayInfos()
     return m_registeredDisplayInfos;
 }
 
-QOhosDisplayManager::QOhosDisplayManager(QtOhos::JsState &jsState, CreateInfo createInfo)
+QOhosDisplayManager::QOhosDisplayManager(QOhosJsState &jsState, CreateInfo createInfo)
 {
     rebuildRegisteredDisplayList(jsState);
 
@@ -152,14 +152,14 @@ QOhosDisplayManager::QOhosDisplayManager(QtOhos::JsState &jsState, CreateInfo cr
         registerDisplayCallbackListener(
             displayModule,
             eventName,
-            [this, displaysUpdatedCb](QtOhos::JsState &jsState, JsDisplayId) {
+            [this, displaysUpdatedCb](QOhosJsState &jsState, JsDisplayId) {
                 rebuildRegisteredDisplayList(jsState);
                 (*displaysUpdatedCb)(jsState, m_registeredDisplayInfos);
             });
     }
 }
 
-void QOhosDisplayManager::rebuildRegisteredDisplayList(QtOhos::JsState &jsState)
+void QOhosDisplayManager::rebuildRegisteredDisplayList(QOhosJsState &jsState)
 {
     m_perDisplayDestroyNotifiers = {};
     m_registeredDisplayInfos = {};
