@@ -98,6 +98,7 @@ private slots:
     void indentComments() const;
     void checkLiveness() const;
     void reportDuplicateAttributes() const;
+    void reportDuplicateDTD() const;
     void appendChildFromToDocument() const;
     void iterateCDATA() const;
     void appendDocumentNode() const;
@@ -2153,6 +2154,26 @@ void tst_QDom::reportDuplicateAttributes() const
     QDomDocument dd;
     bool isSuccess = bool(dd.setContent(QLatin1String("<test x=\"1\" x=\"2\"/>")));
     QVERIFY2(!isSuccess, "Duplicate attributes are well-formedness errors, and should be reported as such.");
+}
+
+void tst_QDom::reportDuplicateDTD() const
+{
+    // Two DOCTYPE declarations in a document is a well-formedness error.
+
+    // This should be caught by QXmlStreamReader already; test it here to confirm
+    // the error comes from there, and not from QDomParser.
+    {
+        QDomDocument doc;
+        const auto r = doc.setContent("<!DOCTYPE a><a/><!DOCTYPE b>"_L1);
+        QVERIFY(!r);
+        QCOMPARE(r.errorMessage, "Unexpected token type DTD in Body."_L1);
+    }
+    {
+        QDomDocument doc;
+        const auto r = doc.setContent("<!DOCTYPE a><!DOCTYPE b><a/>"_L1);
+        QVERIFY(!r);
+        QCOMPARE(r.errorMessage, "Found second DTD token in Prolog."_L1);
+    }
 }
 
 void tst_QDom::namespacedAttributes() const
