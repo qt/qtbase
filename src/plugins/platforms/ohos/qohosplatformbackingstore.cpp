@@ -10,6 +10,7 @@
 #include <qarkui/vsync.h>
 #include <qohosutils.h>
 #include <render/qohosview.h>
+#include <QtCore/private/qcore_ohos_p.h>
 #include <QtCore/private/qohoslogger_p.h>
 #include <QtCore/qendian.h>
 #include <algorithm>
@@ -113,8 +114,8 @@ std::function<void()> makeVSyncFrameRequestFunc(
     QOhosConsumer<QWindow *> qtThreadFlushFunc)
 {
     auto sharedQtThreadFlushFunc = QtOhos::moveToSharedPtr(std::move(qtThreadFlushFunc));
-    return QtOhos::evalInJsThread(
-        [&](QtOhos::JsState &) {
+    return QOhosJsThreadGateway::eval(
+        [&](QOhosJsState &) {
             auto sharedFrameRequestFunc = QtOhos::makeProxyWithJsThreadDeleter(
                 QtOhos::moveToSharedPtr(
                     QArkUi::makeVSyncFrameRequester(

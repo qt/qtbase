@@ -3,10 +3,10 @@
 
 #include <qarkui/window_manager.h>
 
+#include <QtCore/private/qcore_ohos_p.h>
 #include <cstdint>
 #include <qohosdisplayinfo.h>
 #include <multimodalinput/oh_input_manager.h>
-#include <qohosplugincore.h>
 #include <qohosutils.h>
 #include <render/qohosbatchingrequestshandler.h>
 #include <window_manager/oh_display_info.h>
@@ -115,8 +115,8 @@ EventConsumersMap<Traits>::EventConsumersMap()
     : m_mtSafeEventsConsumerProxy(
         makeQtOhosSimpleBatchingMTRequestsHandler<std::tuple<JsWindowId, MappedEventType>>(
             [](std::function<void()> task) {
-                QtOhos::invokeInJsThread(
-                    [task = std::move(task)](QtOhos::JsState &) {
+                QOhosJsThreadGateway::invoke(
+                    [task = std::move(task)](QOhosJsState &) {
                         task();
                     });
             },
