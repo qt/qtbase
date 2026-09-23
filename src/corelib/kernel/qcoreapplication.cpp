@@ -911,6 +911,11 @@ QCoreApplication::~QCoreApplication()
 
     qt_call_post_routines();
 
+#ifndef QT_NO_QOBJECT
+    QCoreApplicationPrivate::is_app_closing = true;
+    QCoreApplicationPrivate::is_app_running = false;
+#endif
+
 #if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
 #  ifdef __cpp_lib_atomic_ref
     std::atomic_ref(self).store(nullptr, std::memory_order_relaxed);
@@ -920,11 +925,6 @@ QCoreApplication::~QCoreApplication()
     g_self.storeRelaxed(nullptr);
 #else
     self.storeRelaxed(nullptr);
-#endif
-
-#ifndef QT_NO_QOBJECT
-    QCoreApplicationPrivate::is_app_closing = true;
-    QCoreApplicationPrivate::is_app_running = false;
 #endif
 
 #if QT_CONFIG(thread)
@@ -1118,6 +1118,9 @@ bool QCoreApplication::notifyInternal2(QObject *receiver, QEvent *event)
     QScopedScopeLevelCounter scopeLevelCounter(threadData);
     if (!selfRequired)
         return doNotify(receiver, event);
+
+    if (QCoreApplicationPrivate::is_app_closing)
+        return false; // no event delivery while the application is closing
 
 #if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0)
     if (!QThread::isMainThread())
