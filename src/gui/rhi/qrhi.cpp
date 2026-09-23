@@ -1199,9 +1199,9 @@ Q_CONSTINIT QRhiDebugHooks qrhiDebugHooks;
     constant buffer, respectively, so there an update costs about as much as
     updating a small uniform buffer; what is gained is not having to have a
     QRhiShaderResourceBindings per draw call. There is one case where the
-    feature is reported as supported but does not apply: with Metal the push
-    constants do not reach the shaders of a pipeline that uses tessellation,
-    because those stages are run as compute there.
+    feature is reported as supported but does not apply: with Metal, push
+    constants are not supported with a graphics pipeline that uses
+    tessellation.
 
     \value [since 6.13] StaticBuffersOnGpuTimeline Indicates that updates of
     QRhiBuffer objects with a type of QRhiBuffer::Immutable or
@@ -11786,6 +11786,10 @@ void QRhiCommandBuffer::setStencilRef(quint32 refValue)
     \note This is only functional when the PushConstants feature is reported as
     supported. The maximum size of the block is reported by the
     MaxPushConstantsSize resource limit.
+
+    \note With Metal, push constants are not supported with a graphics pipeline
+    that uses tessellation. Calling this function while such a pipeline is
+    bound has no effect, apart from a warning.
 
     \note Must be called inside a pass, after setGraphicsPipeline() or
     setComputePipeline().
