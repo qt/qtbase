@@ -722,6 +722,15 @@ QFont makeTitleFont()
     return font;
 }
 
+QFont makeGroupBoxTitleFont()
+{
+    auto font = QGuiApplicationPrivate::platformIntegration()->fontDatabase()->defaultFont();
+    font.setPointSize(20);
+    font.setBold(true);
+
+    return font;
+}
+
 QFont makePushButtonFont()
 {
     auto font = QGuiApplicationPrivate::platformIntegration()->fontDatabase()->defaultFont();
@@ -991,7 +1000,7 @@ QOhosPlatformTheme::QOhosPlatformTheme()
     : m_fonts(
         {
             {DockWidgetTitleFont, makeTitleFont()},
-            {GroupBoxTitleFont, makeTitleFont()},
+            {GroupBoxTitleFont, makeGroupBoxTitleFont()},
             {ListViewFont, makeListViewFont()},
             {MenuBarFont, makeMenuFont()},
             {MenuFont, makeMenuFont()},
