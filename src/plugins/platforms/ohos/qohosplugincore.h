@@ -7,7 +7,6 @@
 #include <QtCore/private/qcore_ohos_p.h>
 #include <QtCore/private/qnapi_p.h>
 #include <QtCore/private/qohoscommon_p.h>
-#include <QtCore/qobject.h>
 #include <atomic>
 #include <chrono>
 #include <cstdlib>
