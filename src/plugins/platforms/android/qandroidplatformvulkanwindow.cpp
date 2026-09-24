@@ -3,7 +3,6 @@
 // Qt-Security score:significant reason:default
 
 #include "androidjnimain.h"
-#include "qandroideventdispatcher.h"
 #include "qandroidplatformscreen.h"
 #include "qandroidplatformvulkanwindow.h"
 
