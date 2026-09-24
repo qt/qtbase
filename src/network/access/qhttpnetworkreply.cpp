@@ -458,6 +458,12 @@ qint64 QHttpNetworkReplyPrivate::readHeader(QIODevice *socket)
             fragment.append(c);
             bytes++;
 
+            // Enforce the total header size limit while accumulating.
+            if (fragment.size() > parser.maxRawHeaderSize()) {
+                fragment.clear();
+                return -1;
+            }
+
             if (c == '\n') {
                 // check for possible header endings. As per HTTP rfc,
                 // the header endings will be marked by CRLFCRLF. But

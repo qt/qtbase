@@ -89,6 +89,14 @@ public:
     }
     qsizetype maxTotalHeaderSize() const { return maxTotalSize; }
 
+    qsizetype maxRawHeaderSize() const {
+        constexpr qsizetype TrailingLineEndings = 4;
+        qsizetype result;
+        if (qAddOverflow(maxTotalSize, TrailingLineEndings, &result))
+            return (std::numeric_limits<qsizetype>::max)();
+        return result;
+    }
+
     void setMaxHeaderFields(qsizetype size) {
         Q_ASSERT(size > 0);
         maxFieldCount = size;
