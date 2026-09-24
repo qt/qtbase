@@ -867,8 +867,12 @@ std::optional<bool> mapOhosConfigurationColorModeToDarkModeFlag(OhosConfiguratio
 
 QColor readAccentColor(QtOhos::JsState &jsState)
 {
+    auto optQAbility = jsState.defaultQAbility();
+    if (!optQAbility)
+        return {};
+
     const auto argb = static_cast<uint32_t>(
-        jsState.defaultQAbilityPeer()->qAbility().eval<QNapi::Number>(
+        optQAbility->eval<QNapi::Number>(
             "context.resourceManager.getColorByNameSync(*)",
             {"ohos_id_color_emphasize"}));
     return QColor::fromRgba(argb);
