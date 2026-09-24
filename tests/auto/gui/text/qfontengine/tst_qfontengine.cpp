@@ -3,10 +3,12 @@
 
 #include <QTest>
 
+#include <QtCore/qfile.h>
 #include <QtCore/qscopeguard.h>
 #include <QtGui/qfont.h>
 #include <QtGui/qfontdatabase.h>
 #include <QtGui/qfontinfo.h>
+#include <QtGui/qrawfont.h>
 #include <QtGui/private/qfont_p.h>
 #include <QtGui/private/qfontengine_p.h>
 
@@ -74,6 +76,7 @@ private slots:
 
 #if !defined(QFONTENGINE_BENCHMARK)
     void glyphSizeLimit();
+    void zeroLengthTable();
 #endif
 
 private:
@@ -351,6 +354,28 @@ void tst_QFontEngine::glyphSizeLimit()
     QVERIFY(fontEngine->alphaMapForGlyph(normalGlyph, largeScale).isNull());
     QVERIFY(fontEngine->alphaMapForGlyph(normalGlyph, QFixedPoint(), largeScale).isNull());
     QVERIFY(fontEngine->alphaRGBMapForGlyph(normalGlyph, QFixedPoint(), largeScale).isNull());
+}
+
+void tst_QFontEngine::zeroLengthTable()
+{
+    // testfont_zerolengthtable.ttf is a copy of test.ttf with an added custom
+    // "foo " table which has a length of zero in the table directory. The
+    // font is otherwise valid (correct table checksums and checkSumAdjustment).
+    // Retrieving the zero-length table should be treated the same as
+    // retrieving a non-existent table, and must not trigger an assert.
+    QFile file(QFINDTESTDATA("testfont_zerolengthtable.ttf"));
+    QVERIFY(file.open(QIODevice::ReadOnly));
+    const QByteArray fontData = file.readAll();
+
+    QRawFont rawFont;
+    rawFont.loadFromData(fontData, 12.0, QFont::PreferDefaultHinting);
+    QVERIFY(rawFont.isValid());
+
+    // Valid tables are unaffected
+    QVERIFY(!rawFont.fontTable(QFont::Tag("cmap")).isEmpty());
+
+    // Retrieving the zero-length table returns no data (and does not assert)
+    QVERIFY(rawFont.fontTable(QFont::Tag("foo ")).isEmpty());
 }
 
 #endif // !define(QFONTENGINE_BENCHMARK)

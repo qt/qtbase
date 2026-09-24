@@ -536,11 +536,10 @@ bool QWindowsFontEngineDirectWrite::getSfntTableData(uint tag, uchar *buffer, ui
                                                         &tableContext, &exists);
     if (SUCCEEDED(hr)) {
         if (exists) {
-            ret = true;
             if (buffer && *length >= tableSize)
                 memcpy(buffer, tableData, tableSize);
             *length = tableSize;
-            Q_ASSERT(int(*length) > 0);
+            ret = (*length) > 0;
         }
         m_directWriteFontFace->ReleaseFontTable(tableContext);
     } else {
