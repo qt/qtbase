@@ -8,5 +8,7 @@ import android.view.Surface;
 
 interface QtSurfaceInterface
 {
-    void onSurfaceChanged(Surface surface);
+    void onSurfaceCreated(Surface surface);
+    void onSurfaceRedrawNeeded(Runnable drawingFinished); // request frame, shown after drawingFinished run
+    void onSurfaceDestroyed(Runnable surfaceReleased);
 }

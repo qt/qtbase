@@ -5,15 +5,21 @@
 
 #include "qandroidplatformwindow.h"
 #include "androidbackendregister.h"
+#include "qandroideventdispatcher.h"
 #include "qandroidplatformscreen.h"
 
 #include "androidjnimain.h"
 
 #include <qguiapplication.h>
 #include <qpa/qwindowsysteminterface.h>
+#include <qthread.h>
 #include <private/qhighdpiscaling_p.h>
 #include <private/qjnihelpers_p.h>
 
+#include <android/native_window.h>
+#include <android/native_window_jni.h>
+
+#include <memory>
 #include <optional>
 
 QT_BEGIN_NAMESPACE
@@ -29,8 +35,7 @@ Q_DECLARE_JNI_CLASS(QtWindowInsetsController, "org/qtproject/qt/android/QtWindow
 
 QAndroidPlatformWindow::QAndroidPlatformWindow(QWindow *window)
     : QPlatformWindow(window), m_nativeQtWindow(nullptr),
-      m_surfaceContainerType(SurfaceContainer::TextureView), m_nativeParentQtWindow(nullptr),
-      m_androidSurfaceObject(nullptr)
+      m_surfaceContainerType(SurfaceContainer::TextureView), m_nativeParentQtWindow(nullptr)
 {
     if (window->surfaceType() == QSurface::RasterSurface)
         window->setSurfaceType(QSurface::OpenGLSurface);
@@ -97,11 +102,16 @@ void QAndroidPlatformWindow::initialize()
     }
     qCDebug(lcQpaWindow) << "Window" << m_nativeViewId << "using surface container type"
                          << static_cast<int>(m_surfaceContainerType);
+
+    // Ask Java for the Surface up front so its SurfaceHolder callbacks have
+    // time to fire before QSG wants to render.
+    if (!isForeignWindow() && !isEmbeddingContainer())
+        createSurface();
 }
 
 QAndroidPlatformWindow::~QAndroidPlatformWindow()
 {
-    const auto guard = destructionGuard();
+    releaseSurface();
     if (window()->isTopLevel())
         platformScreen()->removeWindow(this);
 }
@@ -183,6 +193,7 @@ void QAndroidPlatformWindow::setVisible(bool visible)
         return;
 
     QPlatformWindow::setVisible(visible);
+    sendChildExposeEvents();
 }
 
 void QAndroidPlatformWindow::setWindowState(Qt::WindowStates state)
@@ -320,7 +331,12 @@ void QAndroidPlatformWindow::updateFocusedEditText()
 
 bool QAndroidPlatformWindow::isExposed() const
 {
-    return qApp->applicationState() > Qt::ApplicationHidden
+    // Not exposed until Android provides a Surface, so QRhi never starts
+    // without a GPU surface. A child is on screen only while its parent is.
+    const QWindow *parent = window()->parent();
+    return m_surfaceValid
+            && (!parent || !parent->handle() || parent->handle()->isExposed())
+            && qApp->applicationState() > Qt::ApplicationHidden
             && window()->isVisible()
             && !window()->geometry().isEmpty();
 }
@@ -332,7 +348,24 @@ void QAndroidPlatformWindow::applicationStateChanged(Qt::ApplicationState)
         region = QRect(QPoint(), geometry().size());
 
     QWindowSystemInterface::handleExposeEvent(window(), region);
+    sendChildExposeEvents();
     QWindowSystemInterface::flushWindowSystemEvents();
+}
+
+void QAndroidPlatformWindow::sendChildExposeEvents() const
+{
+    // Child exposure depends on this window's, so it changes with it.
+    for (QObject *object : window()->children()) {
+        auto *child = qobject_cast<QWindow *>(object);
+        if (!child || !child->handle())
+            continue;
+        auto *platformChild = static_cast<QAndroidPlatformWindow *>(child->handle());
+        QRegion region;
+        if (platformChild->isExposed())
+            region = QRect(QPoint(), platformChild->geometry().size());
+        QWindowSystemInterface::handleExposeEvent(child, region);
+        platformChild->sendChildExposeEvents();
+    }
 }
 
 void QAndroidPlatformWindow::createSurface()
@@ -344,37 +377,113 @@ void QAndroidPlatformWindow::createSurface()
                                       m_surfaceContainerType);
 }
 
+void QAndroidPlatformWindow::ensureNativeWindow()
+{
+    if (m_nativeWindow || QThread::currentThread() != qApp->thread())
+        return;
+    if (!m_nativeQtWindow.isValid())
+        return;
+    // Ask Java for the Surface directly instead of waiting for the queued
+    // surfaceCreated, which would re-enter user code from inside makeCurrent().
+    auto surface = m_nativeQtWindow.callMethod<QtJniTypes::Surface>("getSurface");
+    if (surface.isValid() && surface.callMethod<jboolean>("isValid")) {
+        if (ANativeWindow *native = ANativeWindow_fromSurface(
+                    QJniEnvironment::getJniEnv(), surface.object())) {
+            m_nativeWindow = native;
+        }
+    }
+}
+
+void QAndroidPlatformWindow::onSurfaceCreated(QtJniTypes::Surface surface)
+{
+    qCDebug(lcQpaWindow) << "onSurfaceCreated() for windowId" << m_nativeViewId;
+    if (isForeignWindow() || isEmbeddingContainer() || !surface.isValid())
+        return;
+
+    ANativeWindow *native = ANativeWindow_fromSurface(QJniEnvironment::getJniEnv(),
+                                                      surface.object());
+    if (!native) {
+        qCWarning(lcQpaWindow) << "ANativeWindow_fromSurface returned null for windowId"
+                               << m_nativeViewId;
+        return;
+    }
+
+    if (native == m_nativeWindow) {
+        // Already fetched by ensureNativeWindow() or re-sent by
+        // Android, so keep the GPU surface and drop the extra reference.
+        ANativeWindow_release(native);
+    } else {
+        if (m_nativeWindow) {
+            // New Surface without a surfaceDestroyed. Release the old GPU
+            // surface first, else eglCreateWindowSurface() hits EGL_BAD_ALLOC.
+            QPlatformSurfaceEvent surfaceEvent(QPlatformSurfaceEvent::SurfaceAboutToBeDestroyed);
+            QGuiApplication::sendEvent(window(), &surfaceEvent);
+            releaseSurface();
+        }
+        m_nativeWindow = native;
+
+        // Pairs with SurfaceAboutToBeDestroyed. QWidget recreates its native
+        // state (winId) only on SurfaceCreated.
+        QPlatformSurfaceEvent surfaceEvent(QPlatformSurfaceEvent::SurfaceCreated);
+        QGuiApplication::sendEvent(window(), &surfaceEvent);
+    }
+
+    m_surfaceValid = true;
+
+    // Without a non-empty expose the QWindow never becomes exposed and
+    // renders nothing.
+    QWindowSystemInterface::handleExposeEvent(window(),
+                                              QRegion(QRect(QPoint(), geometry().size())));
+    sendChildExposeEvents();
+}
+
+void QAndroidPlatformWindow::onRedrawNeeded()
+{
+    qCDebug(lcQpaWindow) << "onRedrawNeeded() for windowId" << m_nativeViewId;
+    // Synchronous, so the frame for the current size is done when this returns.
+    if (isExposed()) {
+        QWindowSystemInterface::handleExposeEvent<QWindowSystemInterface::SynchronousDelivery>(
+                window(), QRegion(QRect(QPoint(), geometry().size())));
+    }
+}
+
+void QAndroidPlatformWindow::onSurfaceDestroyed()
+{
+    qCDebug(lcQpaWindow) << "onSurfaceDestroyed() for windowId" << m_nativeViewId;
+    if (isForeignWindow() || isEmbeddingContainer())
+        return;
+
+    // Unexpose first so the scene graph stops scheduling frames and doesn't
+    // rebuild its swapchain against the missing surface.
+    m_surfaceValid = false;
+    QWindowSystemInterface::handleExposeEvent<QWindowSystemInterface::SynchronousDelivery>(
+            window(), QRegion());
+    sendChildExposeEvents();
+
+    // Returns once the scene graph released its swapchain, so the render thread
+    // no longer uses the GPU surface.
+    QPlatformSurfaceEvent surfaceEvent(QPlatformSurfaceEvent::SurfaceAboutToBeDestroyed);
+    QGuiApplication::sendEvent(window(), &surfaceEvent);
+
+    releaseSurface();
+}
+
+void QAndroidPlatformWindow::releaseSurface()
+{
+    destroyWindowSurface();
+    if (m_nativeWindow) {
+        ANativeWindow_release(m_nativeWindow);
+        m_nativeWindow = nullptr;
+    }
+}
+
 void QAndroidPlatformWindow::destroySurface()
 {
+    releaseSurface();
     // Embedding containers never construct the Java window, so there is
     // nothing to destroy.
     if (m_nativeQtWindow.isValid())
         m_nativeQtWindow.callMethod<void>("destroySurface");
-}
-
-void QAndroidPlatformWindow::onSurfaceChanged(QtJniTypes::Surface surface)
-{
-    QMutexLocker surfaceLock(&m_surfaceMutex);
-    const bool surfaceIsValid = surface.isValid();
-    qCDebug(lcQpaWindow) << "onSurfaceChanged(): valid Surface received" << surfaceIsValid;
-    m_androidSurfaceObject = surface;
-    if (surfaceIsValid) {
-        // wait until we have a valid surface to draw into
-        m_surfaceWaitCondition.wakeOne();
-    } else {
-        clearSurface();
-    }
-
-    sendExpose();
-}
-
-void QAndroidPlatformWindow::sendExpose() const
-{
-    QRect availableGeometry = screen()->availableGeometry();
-    if (!geometry().isNull() && !availableGeometry.isNull()) {
-        QWindowSystemInterface::handleExposeEvent(window(),
-                                                  QRegion(QRect(QPoint(), geometry().size())));
-    }
 }
 
 bool QAndroidPlatformWindow::blockedByModal() const
@@ -390,25 +499,83 @@ bool QAndroidPlatformWindow::isEmbeddingContainer() const
     return !QtAndroid::isQtApplication() && window()->isTopLevel();
 }
 
-void QAndroidPlatformWindow::setSurface(JNIEnv *env, jobject object, jint windowId,
-                                        QtJniTypes::Surface surface)
+QAndroidPlatformWindow *QAndroidPlatformWindow::findWindowById(jint windowId)
+{
+    const QList<QWindow*> windows = qGuiApp->allWindows();
+    for (QWindow *w : windows) {
+        if (!w->handle())
+            continue;
+        auto *pw = static_cast<QAndroidPlatformWindow *>(w->handle());
+        if (pw->nativeViewId() == windowId)
+            return pw;
+    }
+    return nullptr;
+}
+
+void QAndroidPlatformWindow::surfaceCreated(JNIEnv *env, jobject object, jint windowId,
+                                            QtJniTypes::Surface surface)
 {
     Q_UNUSED(env)
     Q_UNUSED(object)
-
     if (!qGuiApp)
         return;
+    // Queued, not blocking, so the Android UI thread keeps compositing.
+    // Blocking here showed black bands flickering during transitions.
+    QJniObject keepalive(surface);
+    QMetaObject::invokeMethod(qApp, [windowId, keepalive]() {
+        if (auto *pw = findWindowById(windowId))
+            pw->onSurfaceCreated(QtJniTypes::Surface(keepalive));
+    }, Qt::QueuedConnection);
+}
 
-    const QList<QWindow*> windows = qGuiApp->allWindows();
-    for (QWindow * window : windows) {
-        if (!window->handle())
-            continue;
-        QAndroidPlatformWindow *platformWindow =
-                                static_cast<QAndroidPlatformWindow *>(window->handle());
-        const auto guard = platformWindow->destructionGuard();
-        if (platformWindow->nativeViewId() == windowId)
-            platformWindow->onSurfaceChanged(surface);
+void QAndroidPlatformWindow::surfaceRedrawNeeded(JNIEnv *env, jobject object, jint windowId,
+                                                QtJniTypes::Runnable drawingFinished)
+{
+    Q_UNUSED(env)
+    Q_UNUSED(object)
+    QJniObject finished(drawingFinished);
+    // A parked Qt thread can't draw, and Android must not wait for it.
+    if (!qGuiApp || (QtAndroid::blockEventLoopsWhenSuspended()
+                     && QAndroidEventDispatcherStopper::stopped())) {
+        finished.callMethod<void>("run");
+        return;
     }
+    // Android keeps the old frame until drawingFinished runs, which may happen
+    // on any thread, so no wait here.
+    QMetaObject::invokeMethod(qApp, [windowId, finished]() {
+        if (auto *pw = findWindowById(windowId))
+            pw->onRedrawNeeded();
+        finished.callMethod<void>("run");
+    }, Qt::QueuedConnection);
+}
+
+void QAndroidPlatformWindow::surfaceDestroyed(JNIEnv *env, jobject object, jint windowId,
+                                             QtJniTypes::Runnable surfaceReleased)
+{
+    Q_UNUSED(env)
+    Q_UNUSED(object)
+    QJniObject released(surfaceReleased);
+    const auto finish = [released] {
+        if (released.isValid())
+            released.callMethod<void>("run");
+    };
+    if (!qGuiApp) {
+        finish();
+        return;
+    }
+    // A parked Qt thread cannot process queued teardown until resume.
+    if (QtAndroid::blockEventLoopsWhenSuspended()
+            && QAndroidEventDispatcherStopper::stopped()) {
+        if (auto *pw = findWindowById(windowId))
+            pw->releaseSurface();
+        finish();
+        return;
+    }
+    QMetaObject::invokeMethod(qApp, [windowId, finish]() {
+        if (auto *pw = findWindowById(windowId))
+            pw->onSurfaceDestroyed();
+        finish();
+    }, Qt::QueuedConnection);
 }
 
 void QAndroidPlatformWindow::windowFocusChanged(JNIEnv *env, jobject object,
@@ -497,24 +664,14 @@ static void updateWindows(JNIEnv *env, jobject object)
 }
 Q_DECLARE_JNI_NATIVE_METHOD(updateWindows)
 
-/*
-    Due to calls originating from Android, it is possible for native methods to
-    try to manipulate any given instance of QAndroidPlatformWindow when it is
-    already being destroyed. So we use this to guard against that. It is called
-    in the destructor, and should also be called in any function registered to
-    be called from java that may touch an instance of QAndroidPlatformWindow.
- */
-QMutexLocker<QMutex> QAndroidPlatformWindow::destructionGuard()
-{
-    return QMutexLocker(&m_destructionMutex);
-}
-
 bool QAndroidPlatformWindow::registerNatives(QJniEnvironment &env)
 {
     if (!env.registerNativeMethods(QtJniTypes::Traits<QtJniTypes::QtWindow>::className(),
             {
                 Q_JNI_NATIVE_METHOD(updateWindows),
-                Q_JNI_NATIVE_SCOPED_METHOD(setSurface, QAndroidPlatformWindow),
+                Q_JNI_NATIVE_SCOPED_METHOD(surfaceCreated, QAndroidPlatformWindow),
+                Q_JNI_NATIVE_SCOPED_METHOD(surfaceRedrawNeeded, QAndroidPlatformWindow),
+                Q_JNI_NATIVE_SCOPED_METHOD(surfaceDestroyed, QAndroidPlatformWindow),
                 Q_JNI_NATIVE_SCOPED_METHOD(windowFocusChanged, QAndroidPlatformWindow),
                 Q_JNI_NATIVE_SCOPED_METHOD(safeAreaMarginsChanged, QAndroidPlatformWindow)
             })) {

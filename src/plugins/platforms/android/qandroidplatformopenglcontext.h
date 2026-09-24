@@ -15,11 +15,17 @@ class QAndroidPlatformOpenGLContext : public QEGLPlatformContext
 public:
     using QEGLPlatformContext::QEGLPlatformContext;
     QAndroidPlatformOpenGLContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share, EGLDisplay display);
+    ~QAndroidPlatformOpenGLContext();
     void swapBuffers(QPlatformSurface *surface) override;
     bool makeCurrent(QPlatformSurface *surface) override;
 
 private:
     EGLSurface eglSurfaceForPlatformSurface(QPlatformSurface *surface) override;
+    EGLSurface ensureFallbackPbuffer();
+
+    // Lets makeCurrent() succeed before the window's Surface arrives, for
+    // example on a worker thread right after QWindow::create().
+    EGLSurface m_fallbackPbuffer = EGL_NO_SURFACE;
 };
 
 QT_END_NAMESPACE

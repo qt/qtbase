@@ -30,20 +30,36 @@ class QtTextureView extends TextureView implements TextureView.SurfaceTextureLis
 
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int width, int height) {
-        m_surface = new Surface(surfaceTexture);
-        m_surfaceCallback.onSurfaceChanged(m_surface);
+        if (m_surface == null) {
+            m_surface = new Surface(surfaceTexture);
+            m_surfaceCallback.onSurfaceCreated(m_surface);
+        }
     }
 
     @Override
     public void onSurfaceTextureSizeChanged(SurfaceTexture surfaceTexture, int width, int height) {
-        m_surface = new Surface(surfaceTexture);
-        m_surfaceCallback.onSurfaceChanged(m_surface);
+        // A SurfaceTexture set in the constructor never gets onSurfaceTextureAvailable,
+        // so the first resize delivers the Surface.
+        if (m_surface == null) {
+            m_surface = new Surface(surfaceTexture);
+            m_surfaceCallback.onSurfaceCreated(m_surface);
+            return;
+        }
+        // HWUI shows the old buffer at the new size until Qt draws, and offers
+        // nothing to wait on, so ask for a frame right away.
+        m_surfaceCallback.onSurfaceRedrawNeeded(() -> {});
     }
 
     @Override
     public boolean onSurfaceTextureDestroyed(SurfaceTexture surfaceTexture) {
-       m_surfaceCallback.onSurfaceChanged(null);
-       return true;
+        final Surface surface = m_surface;
+        m_surface = null;
+        m_surfaceCallback.onSurfaceDestroyed(() -> {
+            if (surface != null)
+                surface.release();
+            surfaceTexture.release();
+        });
+        return false;
     }
 
     @Override

@@ -15,15 +15,20 @@ import android.opengl.EGLContext;
 import android.opengl.EGLDisplay;
 import android.opengl.EGLSurface;
 import android.opengl.GLES20;
+import android.os.Build;
 import android.view.Surface;
+import android.view.SurfaceControl;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 @SuppressLint("ViewConstructor")
-class QtSurface extends SurfaceView implements SurfaceHolder.Callback
+class QtSurface extends SurfaceView implements SurfaceHolder.Callback2
 {
+    private final int m_format;
     private final QtSurfaceInterface m_surfaceCallback;
     private boolean m_backgroundPrimed = false;
+    private SurfaceControl m_renderControl;
+    private Surface m_renderSurface;
 
     QtSurface(Context context, QtSurfaceInterface surfaceCallback, boolean onTop, int imageDepth)
     {
@@ -32,8 +37,9 @@ class QtSurface extends SurfaceView implements SurfaceHolder.Callback
         setFocusableInTouchMode(false);
         setZOrderMediaOverlay(onTop);
         m_surfaceCallback = surfaceCallback;
+        m_format = imageDepth == 16 ? PixelFormat.RGB_565 : PixelFormat.RGBA_8888;
         SurfaceHolder holder = getHolder();
-        holder.setFormat(imageDepth == 16 ? PixelFormat.RGB_565 : PixelFormat.RGBA_8888);
+        holder.setFormat(m_format);
         holder.addCallback(this);
     }
 
@@ -46,29 +52,113 @@ class QtSurface extends SurfaceView implements SurfaceHolder.Callback
         m_backgroundPrimed = frame != null && frame.width() > 0 && frame.height() > 0;
         if (m_backgroundPrimed)
             paintBackgroundColor(holder.getSurface());
+        if (Build.VERSION.SDK_INT >= 29) {
+            // The holder forcibly disconnects its queue when this view disappears.
+            final SurfaceControl control = new SurfaceControl.Builder()
+                    .setName("QtSurface")
+                    .setParent(getSurfaceControl())
+                    .setBufferSize(Math.max(1, getWidth()), Math.max(1, getHeight()))
+                    .setFormat(m_format)
+                    .build();
+            try {
+                initializeRenderSurface(control, new Surface(control));
+            } catch (RuntimeException | Error failure) {
+                try {
+                    control.release();
+                } catch (RuntimeException | Error cleanupFailure) {
+                    failure.addSuppressed(cleanupFailure);
+                }
+                throw failure;
+            }
+        }
         if (m_surfaceCallback != null)
-            m_surfaceCallback.onSurfaceChanged(holder.getSurface());
+            m_surfaceCallback.onSurfaceCreated(
+                m_renderSurface != null ? m_renderSurface : holder.getSurface());
+    }
+
+    private void initializeRenderSurface(SurfaceControl control, Surface surface)
+    {
+        try (SurfaceControl.Transaction transaction = new SurfaceControl.Transaction()) {
+            transaction.setVisibility(control, true).apply();
+        } catch (RuntimeException | Error failure) {
+            try {
+                surface.release();
+            } catch (RuntimeException | Error cleanupFailure) {
+                failure.addSuppressed(cleanupFailure);
+            }
+            throw failure;
+        }
+        m_renderControl = control;
+        m_renderSurface = surface;
     }
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height)
     {
-        // FIXME: this can sometimes cause flicker on orientation change
+        if (m_renderControl != null) {
+            try (SurfaceControl.Transaction transaction = new SurfaceControl.Transaction()) {
+                transaction.setBufferSize(m_renderControl, width, height).apply();
+            }
+        }
         if (!m_backgroundPrimed && width > 0 && height > 0) {
             paintBackgroundColor(holder.getSurface());
             m_backgroundPrimed = true;
         }
+    }
+
+    @Override
+    public void surfaceRedrawNeeded(SurfaceHolder holder)
+    {
+        // Only reached through the default surfaceRedrawNeededAsync().
+    }
+
+    @Override
+    public void surfaceRedrawNeededAsync(SurfaceHolder holder, Runnable drawingFinished)
+    {
+        // SurfaceView's redraw synchronization still consumes a holder buffer.
+        if (m_renderSurface != null)
+            paintBackgroundColor(holder.getSurface());
         if (m_surfaceCallback != null)
-            m_surfaceCallback.onSurfaceChanged(holder.getSurface());
+            m_surfaceCallback.onSurfaceRedrawNeeded(drawingFinished);
+        else
+            drawingFinished.run();
     }
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder)
     {
-        // Once we return from this function, the Surface will be destroyed,
-        // so everything holding a reference to it needs to clean it up before we do that
-        if (m_surfaceCallback != null)
-            m_surfaceCallback.onSurfaceChanged(null);
+        final Surface surface = m_renderSurface;
+        final SurfaceControl control = m_renderControl;
+        m_renderSurface = null;
+        m_renderControl = null;
+        final Runnable released = () -> {
+            if (surface != null)
+                surface.release();
+            if (control != null)
+                control.release();
+        };
+        Throwable detachFailure = null;
+        try {
+            if (control != null) {
+                try (SurfaceControl.Transaction transaction = new SurfaceControl.Transaction()) {
+                    transaction.reparent(control, null).apply();
+                }
+            }
+        } catch (RuntimeException | Error failure) {
+            detachFailure = failure;
+            throw failure;
+        } finally {
+            try {
+                if (m_surfaceCallback != null)
+                    m_surfaceCallback.onSurfaceDestroyed(released);
+                else
+                    released.run();
+            } catch (RuntimeException | Error failure) {
+                if (detachFailure == null)
+                    throw failure;
+                detachFailure.addSuppressed(failure);
+            }
+        }
     }
 
     // Fill one buffer with colorBackground to avoid a black flash. lockCanvas()

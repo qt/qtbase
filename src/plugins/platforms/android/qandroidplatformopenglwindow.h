@@ -8,7 +8,6 @@
 
 #include "qandroidplatformwindow.h"
 
-#include <QWaitCondition>
 #include <QtCore/qjnienvironment.h>
 #include <QtCore/qjniobject.h>
 
@@ -23,19 +22,17 @@ public:
     ~QAndroidPlatformOpenGLWindow();
 
     void setGeometry(const QRect &rect) override;
+    // Render thread. Creates the EGLSurface on first use, EGL_NO_SURFACE until
+    // Android provides a Surface (the window isn't exposed before that).
     EGLSurface eglSurface(EGLConfig config);
     QSurfaceFormat format() const override;
 
-    void applicationStateChanged(Qt::ApplicationState) override;
-
-protected:
-    void clearSurface() override;
-
 private:
+    void destroyWindowSurface() override;
     EGLDisplay m_eglDisplay = EGL_NO_DISPLAY;
-    EGLSurface m_eglSurface = EGL_NO_SURFACE;
-    EGLNativeWindowType m_nativeWindow = nullptr;
 
+    // Render-thread-only state.
+    EGLSurface m_eglSurface = EGL_NO_SURFACE;
     QSurfaceFormat m_format;
 };
 

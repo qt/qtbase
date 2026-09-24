@@ -62,6 +62,13 @@ void QAndroidPlatformForeignWindow::setVisible(bool visible)
     } else if (!m_nativeViewInserted) {
         addViewToWindow();
     }
+    sendChildExposeEvents();
+}
+
+bool QAndroidPlatformForeignWindow::isExposed() const
+{
+    // A native view is on screen while shown, it has no Surface of Qt's.
+    return window()->isVisible() && qApp->applicationState() > Qt::ApplicationHidden;
 }
 
 void QAndroidPlatformForeignWindow::applicationStateChanged(Qt::ApplicationState state)
