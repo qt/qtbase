@@ -5,7 +5,11 @@ DTD( text="
 <!ELEMENT foo ANY>
 <!ATTLIST foo id  ID #IMPLIED
               ref IDREF #IMPLIED>
-]>" dtdName="foo" )
+]>" dtdName="foo" internalDtdSubset="
+<!ELEMENT foo ANY>
+<!ATTLIST foo id  ID #IMPLIED
+              ref IDREF #IMPLIED>
+" )
 StartElement( name="foo" qualifiedName="foo"
     Attribute( name="ref" qualifiedName="ref" value="a:b" )
  )

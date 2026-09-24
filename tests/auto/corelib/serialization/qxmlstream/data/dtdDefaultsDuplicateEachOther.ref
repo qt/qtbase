@@ -3,7 +3,9 @@ Comment( text=" Two DTD-defaulted attributes collapse to the same expanded name 
 DTD( text="
 <!DOCTYPE root [
 <!ATTLIST el a:attr CDATA "1" b:attr CDATA "2">
-]>" dtdName="root" )
+]>" dtdName="root" internalDtdSubset="
+<!ATTLIST el a:attr CDATA "1" b:attr CDATA "2">
+" )
 StartElement( name="root" qualifiedName="root"
     NamespaceDeclaration( prefix="a" namespaceUri="http://example.org/~wilbur" )
 

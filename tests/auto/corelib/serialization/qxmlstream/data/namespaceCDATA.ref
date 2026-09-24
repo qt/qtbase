@@ -2,7 +2,10 @@ StartDocument( )
 DTD( text="<!DOCTYPE footype [
  <!ATTLIST foo xmlns CDATA #FIXED "http://qt-project.org">
  <!ATTLIST pre:bar xmlns:pre CDATA #FIXED "http://qt-project.org">
-]>" dtdName="footype" )
+]>" dtdName="footype" internalDtdSubset="
+ <!ATTLIST foo xmlns CDATA #FIXED "http://qt-project.org">
+ <!ATTLIST pre:bar xmlns:pre CDATA #FIXED "http://qt-project.org">
+" )
 StartElement( name="body" qualifiedName="body" )
 Characters( whitespace text="
 " )

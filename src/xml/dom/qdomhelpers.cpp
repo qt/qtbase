@@ -41,42 +41,15 @@ bool QDomBuilder::endDocument()
     return true;
 }
 
-void QDomBuilder::startDTD(QStringView name, QStringView publicId, QStringView systemId)
+void QDomBuilder::startDTD(QStringView name, QStringView publicId, QStringView systemId,
+                           QStringView internalSet)
 {
     QDomDocumentTypePrivate * const dt = doc->doctype();
     Q_ASSERT(dt);
     dt->name = name.toString();
     dt->publicId = publicId.toString();
     dt->systemId = systemId.toString();
-}
-
-QString QDomBuilder::dtdInternalSubset(const QString &dtd)
-{
-    // https://www.w3.org/TR/xml/#NT-intSubset
-    // doctypedecl: '<!DOCTYPE' S Name (S ExternalID)? S? ('[' intSubset ']' S?)? '>'
-    const QString &name = doc->doctype()->name;
-    QStringView tmp = QStringView(dtd).sliced(dtd.indexOf(name) + name.size());
-
-    const QString &publicId = doc->doctype()->publicId;
-    if (!publicId.isEmpty())
-        tmp = tmp.sliced(tmp.indexOf(publicId) + publicId.size());
-
-    const QString &systemId = doc->doctype()->systemId;
-    if (!systemId.isEmpty())
-        tmp = tmp.sliced(tmp.indexOf(systemId) + systemId.size());
-
-    const qsizetype obra = tmp.indexOf(u'[');
-    const qsizetype cbra = tmp.lastIndexOf(u']');
-    if (obra >= 0 && cbra >= 0)
-        return tmp.left(cbra).sliced(obra + 1).toString();
-
-    return QString();
-}
-
-bool QDomBuilder::parseDTD(const QString &dtd)
-{
-    doc->doctype()->internalSubset = dtdInternalSubset(dtd);
-    return true;
+    dt->internalSubset = internalSet.toString();
 }
 
 bool QDomBuilder::startElement(const QString &nsURI, const QString &qName,
@@ -264,14 +237,13 @@ bool QDomParser::parseProlog()
         case QXmlStreamReader::DTD:
             domBuilder.startDTD(reader->dtdName(),
                                 reader->dtdPublicId(),
-                                reader->dtdSystemId());
+                                reader->dtdSystemId(),
+                                QXmlStreamReaderPrivate::get(reader)->dtdInternalSubset());
             if constexpr (false) {
                 // ### kept for the translated string
                 domBuilder.fatalError(
                         QDomParser::tr("Error occurred while processing document type declaration"));
             }
-            if (!domBuilder.parseDTD(reader->text().toString()))
-                return false;
             if (!parseMarkupDecl())
                 return false;
             break;

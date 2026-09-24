@@ -6,7 +6,13 @@ DTD( text="
 <!ENTITY replace "replace">
 <!ENTITY me "me">
 %e;
-]>" dtdName="doc"
+]>" dtdName="doc" internalDtdSubset="
+<!ELEMENT doc (#PCDATA)>
+<!ENTITY % e SYSTEM "something">
+<!ENTITY replace "replace">
+<!ENTITY me "me">
+%e;
+"
     EntityDeclaration( name="e" systemId="something" )
 
     EntityDeclaration( name="replace" value="replace" )
