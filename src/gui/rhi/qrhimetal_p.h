@@ -120,6 +120,7 @@ struct QMetalShadingRateMap : public QRhiShadingRateMap
     ~QMetalShadingRateMap();
     void destroy() override;
     bool createFrom(NativeShadingRateMap src) override;
+    QSize logicalSize() const override;
 
     QMetalShadingRateMapData *d;
     uint generation = 0;
@@ -560,6 +561,7 @@ public:
                                        const QShader::NativeResourceBindingMap *nativeResourceBindingMaps[SUPPORTED_STAGES],
                                        const QMetalShader *shaders[SUPPORTED_STAGES]);
     void setDefaultScissor(QMetalCommandBuffer *cbD);
+    static QSize outputSizeForTarget(QRhiRenderTarget *target);
 
     struct TessDrawArgs {
         QMetalCommandBuffer *cbD;

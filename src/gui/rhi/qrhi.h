@@ -1205,6 +1205,8 @@ public:
     virtual bool createFrom(NativeShadingRateMap src);
     virtual bool createFrom(QRhiTexture *src);
 
+    virtual QSize logicalSize() const;
+
 protected:
     QRhiShadingRateMap(QRhiImplementation *rhi);
 };

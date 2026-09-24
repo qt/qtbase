@@ -35,6 +35,9 @@
 
 #if QT_CONFIG(metal)
 # define TST_MTL
+// Implemented in tst_qrhi_metal.mm
+quint64 tst_qrhi_createMetalRasterizationRateMap(void *device, const QSize &screenSize);
+void tst_qrhi_releaseMetalObject(quint64 object);
 #endif
 
 Q_DECLARE_METATYPE(QRhi::Implementation)
@@ -61,6 +64,8 @@ private slots:
     void stats();
     void nativeHandles_data();
     void nativeHandles();
+    void shadingRateMapLogicalSize_data();
+    void shadingRateMapLogicalSize();
     void nativeHandlesImportVulkan();
     void nativeHandlesImportD3D11();
     void nativeHandlesImportOpenGL();
@@ -750,6 +755,50 @@ void tst_QRhi::stats()
         QCOMPARE_GT(stats.blockCount, 0);
         QCOMPARE_GT(stats.usedBytes, 0);
     }
+}
+
+void tst_QRhi::shadingRateMapLogicalSize_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::shadingRateMapLogicalSize()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing shading rate maps");
+
+    if (!rhi->isFeatureSupported(QRhi::VariableRateShadingMap))
+        QSKIP("Variable rate shading is not supported, skipping testing shading rate maps");
+
+    QScopedPointer<QRhiShadingRateMap> srm(rhi->newShadingRateMap());
+    if (!srm)
+        QSKIP("Shading rate maps are not supported, skipping testing shading rate maps");
+
+    // Nothing has been set up yet, so there is no logical size.
+    QVERIFY(!srm->logicalSize().isValid());
+
+#ifdef TST_MTL
+    if (impl == QRhi::Metal) {
+        // A Metal rasterization rate map maps a logical (screen space) size
+        // onto fewer physical pixels. logicalSize() must report the screen
+        // size, since that is the coordinate space viewports and scissors are
+        // interpreted in when the map is attached to a render target.
+        const QSize screenSize(1024, 512);
+        const QRhiMetalNativeHandles *handles = static_cast<const QRhiMetalNativeHandles *>(rhi->nativeHandles());
+        QVERIFY(handles && handles->dev);
+        const quint64 rateMap = tst_qrhi_createMetalRasterizationRateMap(handles->dev, screenSize);
+        QVERIFY(rateMap);
+        // The QRhiShadingRateMap retains the map.
+        const bool created = srm->createFrom(QRhiShadingRateMap::NativeShadingRateMap { rateMap });
+        tst_qrhi_releaseMetalObject(rateMap);
+        QVERIFY(created);
+        QCOMPARE(srm->logicalSize(), screenSize);
+    }
+#endif
 }
 
 void tst_QRhi::nativeHandles_data()

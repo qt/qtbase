@@ -26,3 +26,10 @@ qt_internal_add_test(tst_qrhi
     TESTDATA ${qrhi_resource_files}
     BUILTIN_TESTDATA
 )
+
+qt_internal_extend_target(tst_qrhi CONDITION QT_FEATURE_metal
+    SOURCES
+        tst_qrhi_metal.mm
+    LIBRARIES
+        ${FWMetal}
+)

@@ -2162,11 +2162,39 @@ void QRhiMetal::setVertexInput(QRhiCommandBuffer *cb,
     }
 }
 
+// The size of the coordinate space viewports and scissors are specified in.
+// Normally this is the pixel size of the render target. When a rasterization
+// rate map is attached, Metal interprets viewports and scissors in the logical
+// (screen space) coordinate system of the map, which is typically larger than
+// the physical texture size. This is what foveated rendering on visionOS uses.
+QSize QRhiMetal::outputSizeForTarget(QRhiRenderTarget *target)
+{
+    QRhiShadingRateMap *srm = nullptr;
+    switch (target->resourceType()) {
+    case QRhiResource::TextureRenderTarget:
+        srm = QRHI_RES(QMetalTextureRenderTarget, target)->m_desc.shadingRateMap();
+        break;
+    case QRhiResource::SwapChainRenderTarget:
+        srm = QRHI_RES(QMetalSwapChainRenderTarget, target)->swapChain()->shadingRateMap();
+        break;
+    default:
+        break;
+    }
+
+    if (srm) {
+        const QSize logicalSize = srm->logicalSize();
+        if (logicalSize.isValid())
+            return logicalSize;
+    }
+
+    return target->pixelSize();
+}
+
 void QRhiMetal::setDefaultScissor(QMetalCommandBuffer *cbD)
 {
     cbD->hasCustomScissorSet = false;
 
-    const QSize outputSize = cbD->currentTarget->pixelSize();
+    const QSize outputSize = outputSizeForTarget(cbD->currentTarget);
     std::array<float, 4> vp = cbD->currentViewport.viewport();
     float x = 0, y = 0, w = 0, h = 0;
 
@@ -2192,21 +2220,7 @@ void QRhiMetal::setViewport(QRhiCommandBuffer *cb, const QRhiViewport &viewport)
 {
     QMetalCommandBuffer *cbD = QRHI_RES(QMetalCommandBuffer, cb);
     Q_ASSERT(cbD->recordingPass == QMetalCommandBuffer::RenderPass);
-    QSize outputSize = cbD->currentTarget->pixelSize();
-
-    // If we have a shading rate map check and use the output size as given by the "screenSize"
-    // call. This is important for the viewport to be correct when using a shading rate map, as
-    // the pixel size of the target will likely be smaller then what will be rendered to the output.
-    // This is specifically needed for visionOS.
-    if (cbD->currentTarget->resourceType() == QRhiResource::TextureRenderTarget) {
-        QRhiTextureRenderTarget *rt = static_cast<QRhiTextureRenderTarget *>(cbD->currentTarget);
-        if (QRhiShadingRateMap *srm = rt->description().shadingRateMap()) {
-            if (id<MTLRasterizationRateMap> rateMap = QRHI_RES(QMetalShadingRateMap, srm)->d->rateMap) {
-                auto screenSize = [rateMap screenSize];
-                outputSize = QSize(screenSize.width, screenSize.height);
-            }
-        }
-    }
+    const QSize outputSize = outputSizeForTarget(cbD->currentTarget);
 
     // x,y is top-left in MTLViewportRect but bottom-left in QRhiViewport
     float x, y, w, h;
@@ -2237,7 +2251,7 @@ void QRhiMetal::setScissor(QRhiCommandBuffer *cb, const QRhiScissor &scissor)
     Q_ASSERT(cbD->recordingPass == QMetalCommandBuffer::RenderPass);
     Q_ASSERT(!cbD->currentGraphicsPipeline
              || cbD->currentGraphicsPipeline->m_flags.testFlag(QRhiGraphicsPipeline::UsesScissor));
-    const QSize outputSize = cbD->currentTarget->pixelSize();
+    const QSize outputSize = outputSizeForTarget(cbD->currentTarget);
 
     // x,y is top-left in MTLScissorRect but bottom-left in QRhiScissor
     int x, y, w, h;
@@ -5847,6 +5861,15 @@ bool QMetalShadingRateMap::createFrom(NativeShadingRateMap src)
     QRHI_RES_RHI(QRhiMetal);
     rhiD->registerResource(this);
     return true;
+}
+
+QSize QMetalShadingRateMap::logicalSize() const
+{
+    if (!d->rateMap)
+        return QSize();
+
+    const MTLSize screenSize = [d->rateMap screenSize];
+    return QSize(int(screenSize.width), int(screenSize.height));
 }
 
 // dummy, no Vulkan-style RenderPass+Framebuffer concept here.

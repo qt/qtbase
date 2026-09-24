@@ -5395,10 +5395,13 @@ QRhiResource::Type QRhiShadingRateMap::resourceType() const
     shading is supported by the GPU.
 
     \note With Metal, the \c object field of \a src is expected to contain an
-    id<MTLRasterizationRateMap>. Note that Qt does not perform anything else
-    apart from passing the MTLRasterizationRateMap on to the
-    MTLRenderPassDescriptor. If any special scaling is required, it is up to the
-    application (or the XR compositor) to perform that.
+    id<MTLRasterizationRateMap>. Qt passes the MTLRasterizationRateMap on to the
+    MTLRenderPassDescriptor, and, because Metal then interprets viewports and
+    scissor rectangles in the map's screen space coordinate system, sizes the
+    default scissor and converts viewports and scissors specified via
+    QRhiCommandBuffer accordingly. The size of that coordinate system is
+    reported by logicalSize(). Anything else, such as scaling when sampling
+    the rendered result, is up to the application (or the XR compositor).
  */
 bool QRhiShadingRateMap::createFrom(NativeShadingRateMap src)
 {
@@ -5437,6 +5440,33 @@ bool QRhiShadingRateMap::createFrom(QRhiTexture *src)
 {
     Q_UNUSED(src);
     return false;
+}
+
+/*!
+    \since 6.13
+
+    \return the size of the logical coordinate space the shading rate map
+    defines, or an invalid QSize when the map does not define one.
+
+    Some implementations, Metal in particular, describe a shading rate map in
+    terms of a logical (screen space) size that is mapped onto the physical
+    pixels of the render target. When such a map is attached to a render
+    target, viewports and scissor rectangles are interpreted in the logical
+    coordinate system, and the logical size is typically larger than
+    QRhiRenderTarget::pixelSize(). Applications that derive viewports,
+    scissors, or projection setup from the render target size should use this
+    size instead whenever it is valid.
+
+    For implementations where the shading rate map is a tile image covering
+    the render target, such as Vulkan and Direct 3D 12, there is no separate
+    logical coordinate space, and an invalid QSize is returned. The render
+    target's pixel size applies as usual in that case.
+
+    \sa QRhiRenderTarget::pixelSize()
+ */
+QSize QRhiShadingRateMap::logicalSize() const
+{
+    return QSize();
 }
 
 /*!
