@@ -2,12 +2,17 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QCoreApplication>
+#include <QDBusError>
 #include <QDomDocument>
 #include <QMetaType>
 #include <QTest>
 
+#include <private/qdbusmetaobject_p.h>
+
 #define USE_PRIVATE_CODE
 #include "../qdbusmarshall/common.h"
+
+using namespace Qt::StringLiterals;
 
 class tst_QDBusXmlParser: public QObject
 {
@@ -30,6 +35,8 @@ private slots:
     void signals_();
     void properties_data();
     void properties();
+
+    void manyDistinctSignatures();
 };
 
 static void addAnnotation(QDBusIntrospection::Annotations &annotations, const QString &name,
@@ -541,6 +548,28 @@ void tst_QDBusXmlParser::properties()
 
     QCOMPARE(propertyMap.size(), parsedMap.size());
     QCOMPARE(propertyMap, parsedMap);
+}
+
+void tst_QDBusXmlParser::manyDistinctSignatures()
+{
+    const int numOfMethods = 2000;
+
+    QString xml = "<node><interface name=\"iface.iface1\">"_L1;
+    for (int i = 0; i < numOfMethods; ++i) {
+        QString signature = QString("a"_L1).repeated(i + 1) + "s"_L1;
+        xml += QString("<method name=\"M%1\"><arg type=\"%2\" direction=\"in\"/></method>"_L1)
+                       .arg(i)
+                       .arg(signature);
+    }
+    xml += "</interface></node>"_L1;
+
+    QHash<QString, QDBusMetaObject *> map;
+    QDBusError error;
+    const QScopedPointer<QDBusMetaObject> result(
+            QDBusMetaObject::createMetaObject("iface.iface1"_L1, xml, map, error));
+
+    QVERIFY2(result, qPrintable(error.message()));
+    QCOMPARE(result->methodCount() - result->methodOffset(), numOfMethods);
 }
 
 QTEST_MAIN(tst_QDBusXmlParser)
