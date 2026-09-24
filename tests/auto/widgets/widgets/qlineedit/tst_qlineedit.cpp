@@ -5044,6 +5044,7 @@ void tst_QLineEdit::testQuickSelectionWithMouse()
     QTest::mousePress(lineEdit.windowHandle(), Qt::LeftButton, Qt::NoModifier, center);
     QTest::mouseMove(lineEdit.windowHandle(), dragRight);
     const auto partialSelection = lineEdit.selectedText();
+    const int partialSelectionStart = lineEdit.selectionStart();
     qCDebug(lcTests) << "Selected text:" << lineEdit.selectedText();
     QVERIFY(!partialSelection.endsWith(suffix));
     QTest::mouseMove(lineEdit.windowHandle(), dragRight + pastQuickSelectionThreshold);
@@ -5051,7 +5052,8 @@ void tst_QLineEdit::testQuickSelectionWithMouse()
     QVERIFY(lineEdit.selectedText().endsWith(suffix));
     QTest::mouseMove(lineEdit.windowHandle(), dragRight);
     qCDebug(lcTests) << "Selected text:" << lineEdit.selectedText();
-    QCOMPARE(lineEdit.selectedText(), partialSelection);
+    QCOMPARE(lineEdit.selectionStart(), partialSelectionStart);
+    QCOMPARE(lineEdit.selectionEnd(), lineEdit.cursorPositionAt(dragRight));
     mouseReleaseIfNeeded(dragRight);
 
     lineEdit.setLayoutDirection(Qt::RightToLeft);
