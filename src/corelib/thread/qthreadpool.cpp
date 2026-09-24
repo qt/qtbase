@@ -38,7 +38,7 @@ public:
 /*
     QThreadPool private class.
 */
-
+using QueuePage = QThreadPoolPrivate::QueuePage;
 
 /*!
     \internal
