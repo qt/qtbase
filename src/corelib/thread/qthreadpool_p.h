@@ -113,6 +113,7 @@ public:
     };
 
     QThreadPoolPrivate();
+    static void destroyGlobalThreadPool();
 
     bool tryStart(QRunnable *task);
     void enqueueTask(QRunnable *task, int priority = 0);

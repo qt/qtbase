@@ -144,6 +144,21 @@ void QThreadPoolThread::registerThreadInactive()
 QThreadPoolPrivate:: QThreadPoolPrivate()
 { }
 
+void QThreadPoolPrivate::destroyGlobalThreadPool()
+{
+    if (!globalPool.exists())
+        return;
+
+    QThreadPool *globalThreadPool = []{
+        const QMutexLocker locker(&theMutex);
+        QThreadPool *p = globalPool->theInstance.get();
+        globalPool->theInstance = nullptr;
+        return p;
+    }();
+    if (globalThreadPool)
+        delete globalThreadPool;
+}
+
 bool QThreadPoolPrivate::tryStart(QRunnable *task)
 {
     Q_ASSERT(task != nullptr);
