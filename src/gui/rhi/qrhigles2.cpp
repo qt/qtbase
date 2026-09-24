@@ -7279,8 +7279,12 @@ QGles2SwapChain::~QGles2SwapChain()
 void QGles2SwapChain::destroy()
 {
     QRHI_RES_RHI(QRhiGles2);
-    if (rhiD)
+    if (rhiD) {
+        // Don't leave the window surface bound, the platform may destroy it next.
+        if (surface && currentSurfaceForCurrentContext(rhiD->ctx) == surface)
+            rhiD->ctx->doneCurrent();
         rhiD->unregisterResource(this);
+    }
 }
 
 QRhiCommandBuffer *QGles2SwapChain::currentFrameCommandBuffer()
