@@ -6,7 +6,6 @@
 #include "qandroidplatformopenglwindow.h"
 
 #include "androidjnimain.h"
-#include "qandroideventdispatcher.h"
 #include "qandroidplatformscreen.h"
 
 #include <QSurfaceFormat>

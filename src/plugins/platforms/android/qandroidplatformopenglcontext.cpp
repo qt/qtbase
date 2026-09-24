@@ -1,18 +1,16 @@
 // Copyright (C) 2014 BogDan Vatra <bogdan@kde.org>
-// Copyright (C) 2016 The Qt Company Ltd.
+// Copyright (C) 2026 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 // Qt-Security score:significant reason:default
 
 #include "qandroidplatformopenglcontext.h"
-#include "qandroidplatformopenglwindow.h"
-#include "qandroidplatformintegration.h"
 #include "qandroidplatformoffscreensurface.h"
+#include "qandroidplatformopenglwindow.h"
 
-#include <QtGui/private/qeglpbuffer_p.h>
-
-#include <QSurface>
-#include <QtGui/private/qopenglcontext_p.h>
 #include <QtGui/QOffscreenSurface>
+#include <QtGui/QSurface>
+#include <QtGui/private/qopenglcontext_p.h>
+#include <QtGui/private/qeglpbuffer_p.h>
 
 QT_BEGIN_NAMESPACE
 
