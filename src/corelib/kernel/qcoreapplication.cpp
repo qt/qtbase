@@ -929,16 +929,7 @@ QCoreApplication::~QCoreApplication()
 
 #if QT_CONFIG(thread)
     // Synchronize and stop the global thread pool threads.
-    QThreadPool *globalThreadPool = nullptr;
-    QT_TRY {
-        globalThreadPool = QThreadPool::globalInstance();
-    } QT_CATCH (...) {
-        // swallow the exception, since destructors shouldn't throw
-    }
-    if (globalThreadPool) {
-        globalThreadPool->waitForDone();
-        delete globalThreadPool;
-    }
+    QThreadPoolPrivate::destroyGlobalThreadPool();
 #endif
 
 #ifndef QT_NO_QOBJECT
