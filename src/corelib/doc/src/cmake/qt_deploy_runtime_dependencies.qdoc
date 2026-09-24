@@ -217,9 +217,6 @@ example \c qjpeg.
 \note Plugin names must not be confused with plugin targets. For example, the \c
 Qt6::QJpegPlugin target's plugin name is \c qjpeg.
 
-\note The arguments \c EXCLUDE_PLUGINS, \c EXCLUDE_PLUGIN_TYPES, \c
-INCLUDE_PLUGINS, and \c INCLUDE_PLUGIN_TYPES only work on Windows and Linux.
-
 \section1 Example
 
 The following example shows how to deploy an application \c{MyApp}.

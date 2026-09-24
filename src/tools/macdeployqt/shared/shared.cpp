@@ -36,6 +36,10 @@ bool secureTimestamp = false;
 bool appstoreCompliant = false;
 int logLevel = 1;
 bool deployFramework = false;
+QStringList excludedPlugins;
+QStringList includedPlugins;
+QStringList excludedPluginTypes;
+QStringList includedPluginTypes;
 
 using std::cout;
 using std::endl;
@@ -1134,13 +1138,27 @@ void deployPlugins(const ApplicationBundleInfo &appBundleInfo, const QString &pl
 
     const auto addPlugins = [&pluginSourcePath,&pluginList,useDebugLibs](const QString &subDirectory,
             const std::function<bool(QString)> &predicate = std::function<bool(QString)>()) {
+        if (excludedPluginTypes.contains(subDirectory)) {
+            LogNormal() << "Skipping excluded plugin type" << subDirectory;
+            return;
+        }
         const QStringList libs = QDir(pluginSourcePath + u'/' + subDirectory)
                 .entryList({QStringLiteral("*.dylib")});
         for (const QString &lib : libs) {
             if (lib.endsWith(QStringLiteral("_debug.dylib")) != useDebugLibs)
                 continue;
-            if (!predicate || predicate(lib))
-                pluginList.append(subDirectory + u'/' + lib);
+            // The plugin name is the file name without "lib" and the suffix, as in qjpeg.
+            QString pluginName = lib;
+            pluginName.chop(useDebugLibs ? 12 : 6);
+            if (pluginName.startsWith("lib"_L1))
+                pluginName.remove(0, 3);
+            if (excludedPlugins.contains(pluginName)) {
+                LogNormal() << "Skipping excluded plugin" << subDirectory + u'/' + lib;
+                continue;
+            }
+            const QString plugin = subDirectory + u'/' + lib;
+            if ((!predicate || predicate(lib)) && !pluginList.contains(plugin))
+                pluginList.append(plugin);
         }
     };
 
@@ -1231,6 +1249,35 @@ void deployPlugins(const ApplicationBundleInfo &appBundleInfo, const QString &pl
             for (const auto &pluginType : it.second) {
                 addPlugins(pluginType);
             }
+        }
+    }
+
+    // Plugin types that were asked for by name.
+    for (const QString &pluginType : std::as_const(includedPluginTypes)) {
+        if (!QDir(pluginSourcePath + u'/' + pluginType).exists()) {
+            LogWarning() << "Could not find the included plugin type" << pluginType;
+            continue;
+        }
+        addPlugins(pluginType);
+    }
+
+    // Plugins that were asked for by name, of any type.
+    const QString libSuffix = useDebugLibs ? u"_debug.dylib"_s : u".dylib"_s;
+    for (const QString &pluginName : std::as_const(includedPlugins)) {
+        const QStringList types = QDir(pluginSourcePath).entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+        bool found = false;
+        for (const QString &type : types) {
+            if (excludedPluginTypes.contains(type))
+                continue;
+            const QString plugin = type + "/lib"_L1 + pluginName + libSuffix;
+            if (!QFile::exists(pluginSourcePath + u'/' + plugin))
+                continue;
+            found = true;
+            if (!pluginList.contains(plugin))
+                pluginList.append(plugin);
+        }
+        if (!found) {
+            LogWarning() << "Could not find the included plugin" << pluginName;
         }
     }
 

@@ -16,6 +16,10 @@ extern int logLevel;
 #define LogDebug()      if (logLevel < 3) {} else qDebug() << "Log:"
 
 extern bool runStripEnabled;
+extern QStringList excludedPlugins;
+extern QStringList includedPlugins;
+extern QStringList excludedPluginTypes;
+extern QStringList includedPluginTypes;
 
 class FrameworkInfo
 {

@@ -36,6 +36,13 @@ int main(int argc, char **argv)
         qDebug() << "   -sign-for-notarization=<ident>: Activate the necessary options for notarization (requires internet connection)";
         qDebug() << "   -appstore-compliant           : Skip deployment of components that use private API";
         qDebug() << "   -libpath=<path>               : Add the given path to the library search path";
+        qDebug() << "   -exclude-plugins=<list>       : Do not deploy the given plugins, a comma-separated";
+        qDebug() << "                                   list of plugin names such as qjpeg,qsvgicon";
+        qDebug() << "   -include-plugins=<list>       : Also deploy the given plugins, a comma-separated";
+        qDebug() << "                                   list of plugin names";
+        qDebug() << "   -exclude-plugin-types=<list>  : Do not deploy plugins of the given types, a comma-separated";
+        qDebug() << "                                   list of plugin types such as imageformats,iconengines";
+        qDebug() << "   -include-plugin-types=<list>  : Also deploy all plugins of the given types";
         qDebug() << "   -fs=<filesystem>              : Set the filesystem used for the .dmg disk image (defaults to HFS+)";
         qDebug() << "";
         qDebug() << "macdeployqt takes an application bundle as input and makes it";
@@ -138,6 +145,42 @@ int main(int argc, char **argv)
             } else {
                 qmlImportPaths << argument.mid(index+1);
             }
+        } else if (argument.startsWith(QByteArrayView("-include-plugin-types"))) {
+            LogDebug() << "Argument found:" << argument;
+            int index = argument.indexOf('=');
+            if (index == -1) {
+                LogError() << "Missing plugin type list";
+                return 1;
+            }
+            includedPluginTypes += QString::fromLocal8Bit(argument.mid(index + 1))
+                    .split(u',', Qt::SkipEmptyParts);
+        } else if (argument.startsWith(QByteArrayView("-exclude-plugin-types"))) {
+            LogDebug() << "Argument found:" << argument;
+            int index = argument.indexOf('=');
+            if (index == -1) {
+                LogError() << "Missing plugin type list";
+                return 1;
+            }
+            excludedPluginTypes += QString::fromLocal8Bit(argument.mid(index + 1))
+                    .split(u',', Qt::SkipEmptyParts);
+        } else if (argument.startsWith(QByteArrayView("-include-plugins"))) {
+            LogDebug() << "Argument found:" << argument;
+            int index = argument.indexOf('=');
+            if (index == -1) {
+                LogError() << "Missing plugin list";
+                return 1;
+            }
+            includedPlugins += QString::fromLocal8Bit(argument.mid(index + 1))
+                    .split(u',', Qt::SkipEmptyParts);
+        } else if (argument.startsWith(QByteArrayView("-exclude-plugins"))) {
+            LogDebug() << "Argument found:" << argument;
+            int index = argument.indexOf('=');
+            if (index == -1) {
+                LogError() << "Missing plugin list";
+                return 1;
+            }
+            excludedPlugins += QString::fromLocal8Bit(argument.mid(index + 1))
+                    .split(u',', Qt::SkipEmptyParts);
         } else if (argument.startsWith(QByteArrayView("-libpath"))) {
             LogDebug() << "Argument found:" << argument;
             int index = argument.indexOf('=');
