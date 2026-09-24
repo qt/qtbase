@@ -1204,9 +1204,6 @@ void tst_QRhi::resourceUpdateBatchBuffer()
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing buffer resource updates");
 
-    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi.get()))
-        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
-
     const int bufferSize = 23;
     const QByteArray a(bufferSize, 'A');
     const QByteArray b(bufferSize, 'B');
@@ -1313,9 +1310,6 @@ void tst_QRhi::resourceUpdateBatchRGBATextureUpload()
     QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing texture resource updates");
-
-    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi.get()))
-        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
 
     QImage image(234, 123, QImage::Format_RGBA8888_Premultiplied);
     image.fill(Qt::red);
@@ -1539,9 +1533,6 @@ void tst_QRhi::resourceUpdateBatchR8TextureUpload()
     if (!rhi->isTextureFormatSupported(QRhiTexture::R8))
         QSKIP("R8 texture format not supported on this backend");
 
-    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi.get()))
-        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
-
     const int WIDTH = 4;
     const int HEIGHT = 4;
     // A value distinct from both 0x00 and 0xFF, so a readback that picks the wrong channel (e.g.
@@ -1589,9 +1580,6 @@ void tst_QRhi::resourceUpdateBatchRGBATextureCopy()
     QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing texture resource updates");
-
-    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi.get()))
-        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
 
     QImage red(256, 256, QImage::Format_RGBA8888_Premultiplied);
     red.fill(Qt::red);
@@ -1692,9 +1680,6 @@ void tst_QRhi::resourceUpdateBatchRGBATextureMip()
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing texture resource updates");
 
-    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi.get()))
-        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
-
 
     QImage red(512, 512, QImage::Format_RGBA8888_Premultiplied);
     red.fill(Qt::red);
@@ -1763,9 +1748,6 @@ void tst_QRhi::resourceUpdateBatchR8TextureMip()
     if (!rhi->isTextureFormatSupported(QRhiTexture::R8))
         QSKIP("R8 texture format not supported on this backend");
 
-    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi.get()))
-        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
-
     const QSize baseSize(64, 64);
     QScopedPointer<QRhiTexture> texture(
             rhi->newTexture(QRhiTexture::R8, baseSize, 1,
@@ -1829,9 +1811,6 @@ void tst_QRhi::resourceUpdateBatchTextureRawDataStride()
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing texture resource updates");
 
-    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi.get()))
-        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
-
     const int WIDTH = 150;
     const int DATA_WIDTH = 180;
     const int HEIGHT = 50;
@@ -1889,9 +1868,6 @@ void tst_QRhi::resourceUpdateBatchTextureInvalidSizeAndStride()
     QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing texture resource updates");
-
-    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi.get()))
-        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
 
     // Raw data uploads where sourceSize() or dataStride() describe more data than
     // was actually provided, or where the destination region runs outside the
@@ -2065,9 +2041,6 @@ void tst_QRhi::resourceUpdateBatchBetweenFrames()
     QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing resource updates");
-
-    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi.get()))
-        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
 
     QImage image(128, 128, QImage::Format_RGBA8888_Premultiplied);
     image.fill(Qt::red);
@@ -5305,9 +5278,6 @@ void tst_QRhi::resourceUpdateBatchBufferTextureWithSwapchainFrames()
     QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing buffer resource updates");
-
-    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi.get()))
-        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
 
     QScopedPointer<QWindow> window(new QWindow);
     setWindowType(window.data(), impl);
@@ -9518,9 +9488,6 @@ void tst_QRhi::storageBuffer()
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing");
 
-    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi))
-        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
-
     if (!rhi->isFeatureSupported(QRhi::Feature::Compute))
         QSKIP("Compute is not supported with this graphics API, skipping test");
 
@@ -9648,9 +9615,6 @@ void tst_QRhi::storageBuffer()
     QRhi *rhi = sharedRhi(impl, initParams);
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing");
-
-    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi))
-        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
 
     if (!rhi->isFeatureSupported(QRhi::Feature::Compute))
         QSKIP("Compute is not supported with this graphics API, skipping test");
