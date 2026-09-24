@@ -23,10 +23,16 @@ import android.view.WindowInsetsController;
 import android.os.Build;
 
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 @SuppressLint("ViewConstructor")
-class QtWindow extends QtLayout implements QtSurfaceInterface {
+class QtWindow extends QtLayout implements QtSurfaceInterface
+{
     private View m_surfaceContainer;
+    // Read from native code on the Qt GUI thread, written on the UI thread.
+    private volatile Surface m_surface;
+    private boolean m_nativeSurfaceRetired = false;
+    private final ConcurrentLinkedQueue<Runnable> m_pendingSurfaceReleases = new ConcurrentLinkedQueue<>();
     private View m_nativeView;
     private final HashMap<Integer, QtWindow> m_childWindows = new HashMap<>();
     private QtWindow m_parentWindow;
@@ -37,7 +43,9 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
     private boolean m_firstSafeMarginsDelivered = false;
     private int m_actionBarHeight = -1;
 
-    private static native void setSurface(int windowId, Surface surface);
+    private static native void surfaceCreated(int windowId, Surface surface);
+    private static native void surfaceRedrawNeeded(int windowId, Runnable drawingFinished);
+    private static native void surfaceDestroyed(int windowId, Runnable surfaceReleased);
     private static native void safeAreaMarginsChanged(Insets insets, int id);
     static native void windowFocusChanged(boolean hasFocus, int id);
     static native void updateWindows();
@@ -238,9 +246,39 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
     }
 
     @Override
-    public void onSurfaceChanged(Surface surface)
+    public void onSurfaceCreated(Surface surface)
     {
-        setSurface(getId(), surface);
+        m_surface = surface;
+        surfaceCreated(getId(), surface);
+    }
+
+    @Override
+    public void onSurfaceRedrawNeeded(Runnable drawingFinished)
+    {
+        surfaceRedrawNeeded(getId(), drawingFinished);
+    }
+
+    @Override
+    public void onSurfaceDestroyed(Runnable surfaceReleased)
+    {
+        m_surface = null;
+        if (m_nativeSurfaceRetired) {
+            surfaceReleased.run();
+            return;
+        }
+        m_pendingSurfaceReleases.add(surfaceReleased);
+        surfaceDestroyed(getId(), () -> {
+            if (m_pendingSurfaceReleases.remove(surfaceReleased))
+                surfaceReleased.run();
+        });
+    }
+
+    // Lets the Qt GUI thread fetch the current Surface synchronously instead
+    // of waiting for the queued surfaceCreated dispatch to land.
+    @UsedFromNativeCode
+    Surface getSurface()
+    {
+        return m_surface;
     }
 
     @Override
@@ -328,12 +366,52 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
     @UsedFromNativeCode
     void destroySurface()
     {
-        QtNative.runAction(()-> {
+        QtNative.runAction(this::destroySurfaceOnUiThread, false);
+    }
+
+    private void destroySurfaceOnUiThread()
+    {
+        // Native teardown precedes this action, including delayed callbacks.
+        m_nativeSurfaceRetired = true;
+        Throwable removalFailure = null;
+        try {
             if (m_surfaceContainer != null) {
                 removeView(m_surfaceContainer);
                 m_surfaceContainer = null;
-                }
-        }, false);
+            }
+        } catch (RuntimeException | Error failure) {
+            removalFailure = failure;
+            throw failure;
+        } finally {
+            try {
+                releasePendingSurfaces();
+            } catch (RuntimeException | Error failure) {
+                if (removalFailure == null)
+                    throw failure;
+                if (removalFailure != failure)
+                    removalFailure.addSuppressed(failure);
+            }
+        }
+    }
+
+    private void releasePendingSurfaces()
+    {
+        Throwable firstFailure = null;
+        Runnable released;
+        while ((released = m_pendingSurfaceReleases.poll()) != null) {
+            try {
+                released.run();
+            } catch (RuntimeException | Error failure) {
+                if (firstFailure == null)
+                    firstFailure = failure;
+                else if (firstFailure != failure)
+                    firstFailure.addSuppressed(failure);
+            }
+        }
+        if (firstFailure instanceof RuntimeException)
+            throw (RuntimeException) firstFailure;
+        if (firstFailure instanceof Error)
+            throw (Error) firstFailure;
     }
 
     @UsedFromNativeCode

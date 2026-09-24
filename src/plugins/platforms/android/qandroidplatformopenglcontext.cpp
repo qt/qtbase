@@ -21,6 +21,23 @@ QAndroidPlatformOpenGLContext::QAndroidPlatformOpenGLContext(const QSurfaceForma
 {
 }
 
+QAndroidPlatformOpenGLContext::~QAndroidPlatformOpenGLContext()
+{
+    if (m_fallbackPbuffer != EGL_NO_SURFACE)
+        eglDestroySurface(eglDisplay(), m_fallbackPbuffer);
+}
+
+EGLSurface QAndroidPlatformOpenGLContext::ensureFallbackPbuffer()
+{
+    if (m_fallbackPbuffer != EGL_NO_SURFACE)
+        return m_fallbackPbuffer;
+    static const EGLint pbufferAttribs[] = { EGL_WIDTH, 1, EGL_HEIGHT, 1, EGL_NONE };
+    m_fallbackPbuffer = eglCreatePbufferSurface(eglDisplay(), eglConfig(), pbufferAttribs);
+    if (Q_UNLIKELY(m_fallbackPbuffer == EGL_NO_SURFACE))
+        qWarning("EGL Error: could not create pbuffer fallback surface: 0x%x", eglGetError());
+    return m_fallbackPbuffer;
+}
+
 void QAndroidPlatformOpenGLContext::swapBuffers(QPlatformSurface *surface)
 {
     if (surface->surface()->surfaceClass() != QSurface::Window) {
@@ -29,6 +46,7 @@ void QAndroidPlatformOpenGLContext::swapBuffers(QPlatformSurface *surface)
     }
 
     QAndroidPlatformOpenGLWindow *window = static_cast<QAndroidPlatformOpenGLWindow *>(surface);
+    // No Surface yet, so there is nothing visible to swap.
     if (window->eglSurface(eglConfig()) == EGL_NO_SURFACE)
         return;
 
@@ -38,22 +56,19 @@ void QAndroidPlatformOpenGLContext::swapBuffers(QPlatformSurface *surface)
 
 bool QAndroidPlatformOpenGLContext::makeCurrent(QPlatformSurface *surface)
 {
-    if (surface->surface()->surfaceClass() != QSurface::Window)
-        return QEGLPlatformContext::makeCurrent(surface);
-
-    QAndroidPlatformOpenGLWindow *window = static_cast<QAndroidPlatformOpenGLWindow *>(surface);
-    // Has the Surface been destroyed?
-    if (window->eglSurface(eglConfig()) == EGL_NO_SURFACE) {
-        qWarning() << "makeCurrent(): no EGLSurface, likely Surface destroyed by Android.";
-        return false;
-    }
     return QEGLPlatformContext::makeCurrent(surface);
 }
 
 EGLSurface QAndroidPlatformOpenGLContext::eglSurfaceForPlatformSurface(QPlatformSurface *surface)
 {
     if (surface->surface()->surfaceClass() == QSurface::Window) {
-        return static_cast<QAndroidPlatformOpenGLWindow *>(surface)->eglSurface(eglConfig());
+        EGLSurface eglSurface =
+                static_cast<QAndroidPlatformOpenGLWindow *>(surface)->eglSurface(eglConfig());
+        // No Surface from Android yet. Use a 1x1 pbuffer so makeCurrent()
+        // succeeds, a later makeCurrent() binds the real surface.
+        if (eglSurface == EGL_NO_SURFACE)
+            eglSurface = ensureFallbackPbuffer();
+        return eglSurface;
     } else {
         if (auto *platformOffscreenSurface = dynamic_cast<QAndroidPlatformOffscreenSurface *>(surface))
             return platformOffscreenSurface->surface();

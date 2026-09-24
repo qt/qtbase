@@ -27,10 +27,8 @@ QAndroidPlatformOpenGLWindow::QAndroidPlatformOpenGLWindow(QWindow *window, EGLD
 
 QAndroidPlatformOpenGLWindow::~QAndroidPlatformOpenGLWindow()
 {
-    m_surfaceWaitCondition.wakeOne();
-    QMutexLocker surfaceLock(&m_surfaceMutex);
+    // The base class destructor can't reach destroyWindowSurface().
     destroySurface();
-    clearSurface();
 }
 
 void QAndroidPlatformOpenGLWindow::setGeometry(const QRect &rect)
@@ -48,50 +46,20 @@ void QAndroidPlatformOpenGLWindow::setGeometry(const QRect &rect)
 
 EGLSurface QAndroidPlatformOpenGLWindow::eglSurface(EGLConfig config)
 {
-    if (m_eglSurface != EGL_NO_SURFACE && !m_androidSurfaceObject.isValid())
+    if (Q_LIKELY(m_eglSurface != EGL_NO_SURFACE))
         return m_eglSurface;
+    ensureNativeWindow();
+    if (!m_nativeWindow)
+        return EGL_NO_SURFACE;
 
-    QMutexLocker surfaceLock(&m_surfaceMutex);
-    if (m_eglSurface == EGL_NO_SURFACE) {
-        static constexpr char funcName[] = "QAndroidPlatformOpenGLWindow::eglSurface()";
-        QtAndroidPrivate::AndroidDeadlockProtector protector(funcName);
-        if (!protector.acquire()) {
-            qFatal("Failed to acquire deadlock protector for %s.", funcName);
-            return m_eglSurface;
-        }
-
-        createSurface();
-        qCDebug(lcQpaWindow) << "called createSurface(), waiting for Surface to be ready...";
-        m_surfaceWaitCondition.wait(&m_surfaceMutex);
+    m_eglSurface = eglCreateWindowSurface(m_eglDisplay, config, m_nativeWindow, nullptr);
+    if (Q_UNLIKELY(m_eglSurface == EGL_NO_SURFACE)) {
+        EGLint error = eglGetError();
+        eglTerminate(m_eglDisplay);
+        qFatal("EGL Error : Could not create the egl surface: error = 0x%x\n", error);
     }
-
-    if (m_androidSurfaceObject.isValid()) {
-        clearSurface();
-        m_nativeWindow = ANativeWindow_fromSurface(
-            QJniEnvironment::getJniEnv(), m_androidSurfaceObject.object());
-        m_androidSurfaceObject = QJniObject();
-        m_eglSurface = eglCreateWindowSurface(m_eglDisplay, config, m_nativeWindow, NULL);
-        m_format = q_glFormatFromConfig(m_eglDisplay, config, window()->requestedFormat());
-        if (Q_UNLIKELY(m_eglSurface == EGL_NO_SURFACE)) {
-            EGLint error = eglGetError();
-            eglTerminate(m_eglDisplay);
-            qFatal("EGL Error : Could not create the egl surface: error = 0x%x\n", error);
-        }
-
-        sendExpose();
-    }
-
+    m_format = q_glFormatFromConfig(m_eglDisplay, config, window()->requestedFormat());
     return m_eglSurface;
-}
-
-void QAndroidPlatformOpenGLWindow::applicationStateChanged(Qt::ApplicationState state)
-{
-    if (state <=  Qt::ApplicationHidden) {
-        QMutexLocker surfaceLock(&m_surfaceMutex);
-        destroySurface();
-        clearSurface();
-    }
-    QAndroidPlatformWindow::applicationStateChanged(state);
 }
 
 QSurfaceFormat QAndroidPlatformOpenGLWindow::format() const
@@ -102,17 +70,11 @@ QSurfaceFormat QAndroidPlatformOpenGLWindow::format() const
     return m_format;
 }
 
-void QAndroidPlatformOpenGLWindow::clearSurface()
+void QAndroidPlatformOpenGLWindow::destroyWindowSurface()
 {
     if (m_eglSurface != EGL_NO_SURFACE) {
-        eglMakeCurrent(m_eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
         eglDestroySurface(m_eglDisplay, m_eglSurface);
         m_eglSurface = EGL_NO_SURFACE;
-    }
-
-    if (m_nativeWindow) {
-        ANativeWindow_release(m_nativeWindow);
-        m_nativeWindow = nullptr;
     }
 }
 

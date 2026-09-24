@@ -3,6 +3,7 @@
 
 if(ANDROID)
     add_subdirectory(android)
+    add_subdirectory(androidnativesurfaces)
     add_subdirectory(android_appless)
     add_subdirectory(androiditemmodel)
     add_subdirectory(androidactivityalias)

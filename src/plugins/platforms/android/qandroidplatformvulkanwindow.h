@@ -14,7 +14,6 @@
 #include "qandroidplatformvulkaninstance.h"
 #include "qandroidplatformwindow.h"
 
-#include <QWaitCondition>
 #include <QtCore/QJniEnvironment>
 #include <QtCore/QJniObject>
 
@@ -28,18 +27,15 @@ public:
 
     void setGeometry(const QRect &rect) override;
     QSurfaceFormat format() const override;
-    void applicationStateChanged(Qt::ApplicationState) override;
 
+    // Render thread. Creates the VkSurfaceKHR on first use. The window isn't
+    // exposed before a Surface exists, so QRhi always finds one here.
     VkSurfaceKHR *vkSurface();
 
-protected:
-    void clearSurface() override;
-
 private:
-    void destroyAndClearSurface();
-
-    ANativeWindow *m_nativeWindow;
+    void destroyWindowSurface() override;
     QSurfaceFormat m_format;
+    // Render-thread-only state.
     VkSurfaceKHR m_vkSurface;
     PFN_vkCreateAndroidSurfaceKHR m_createVkSurface;
     PFN_vkDestroySurfaceKHR m_destroyVkSurface;

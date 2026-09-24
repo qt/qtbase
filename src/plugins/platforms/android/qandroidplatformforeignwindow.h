@@ -21,6 +21,7 @@ public:
     ~QAndroidPlatformForeignWindow();
     void setVisible(bool visible) override;
     void applicationStateChanged(Qt::ApplicationState state) override;
+    bool isExposed() const override;
     bool isForeignWindow() const override { return true; }
 
     WId winId() const override;

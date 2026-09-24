@@ -20,7 +20,6 @@ using namespace Qt::StringLiterals;
 
 QAndroidPlatformVulkanWindow::QAndroidPlatformVulkanWindow(QWindow *window)
     : QAndroidPlatformWindow(window),
-      m_nativeWindow(nullptr),
       m_vkSurface(0),
       m_createVkSurface(nullptr),
       m_destroyVkSurface(nullptr)
@@ -29,8 +28,8 @@ QAndroidPlatformVulkanWindow::QAndroidPlatformVulkanWindow(QWindow *window)
 
 QAndroidPlatformVulkanWindow::~QAndroidPlatformVulkanWindow()
 {
-    m_surfaceWaitCondition.wakeOne();
-    destroyAndClearSurface();
+    // The base class destructor can't reach destroyWindowSurface().
+    destroySurface();
 }
 
 void QAndroidPlatformVulkanWindow::setGeometry(const QRect &rect)
@@ -46,85 +45,48 @@ void QAndroidPlatformVulkanWindow::setGeometry(const QRect &rect)
     }
 }
 
-void QAndroidPlatformVulkanWindow::applicationStateChanged(Qt::ApplicationState state)
-{
-    if (state <= Qt::ApplicationHidden) {
-        destroyAndClearSurface();
-    }
-    QAndroidPlatformWindow::applicationStateChanged(state);
-}
-
 QSurfaceFormat QAndroidPlatformVulkanWindow::format() const
 {
     return window()->requestedFormat();
 }
 
-void QAndroidPlatformVulkanWindow::clearSurface()
+VkSurfaceKHR *QAndroidPlatformVulkanWindow::vkSurface()
+{
+    if (Q_LIKELY(m_vkSurface != VK_NULL_HANDLE))
+        return &m_vkSurface;
+    ensureNativeWindow();
+    if (!m_nativeWindow)
+        return &m_vkSurface;
+
+    QVulkanInstance *inst = window()->vulkanInstance();
+    if (!inst) {
+        qWarning("Attempted to create Vulkan surface without an instance; "
+                 "was QWindow::setVulkanInstance() called?");
+        return &m_vkSurface;
+    }
+    if (!m_createVkSurface) {
+        m_createVkSurface = reinterpret_cast<PFN_vkCreateAndroidSurfaceKHR>(
+                    inst->getInstanceProcAddr("vkCreateAndroidSurfaceKHR"));
+    }
+    if (!m_destroyVkSurface) {
+        m_destroyVkSurface = reinterpret_cast<PFN_vkDestroySurfaceKHR>(
+                    inst->getInstanceProcAddr("vkDestroySurfaceKHR"));
+    }
+    VkAndroidSurfaceCreateInfoKHR surfaceInfo {};
+    surfaceInfo.sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR;
+    surfaceInfo.window = m_nativeWindow;
+    const VkResult err = m_createVkSurface(inst->vkInstance(), &surfaceInfo, nullptr, &m_vkSurface);
+    if (err != VK_SUCCESS)
+        qWarning("Failed to create Android VkSurface: %d", err);
+    return &m_vkSurface;
+}
+
+void QAndroidPlatformVulkanWindow::destroyWindowSurface()
 {
     if (m_vkSurface && m_destroyVkSurface) {
         m_destroyVkSurface(window()->vulkanInstance()->vkInstance(), m_vkSurface, nullptr);
-        m_vkSurface = 0;
+        m_vkSurface = VK_NULL_HANDLE;
     }
-
-    if (m_nativeWindow) {
-        ANativeWindow_release(m_nativeWindow);
-        m_nativeWindow = nullptr;
-    }
-}
-
-void QAndroidPlatformVulkanWindow::destroyAndClearSurface()
-{
-    QMutexLocker surfaceLock(&m_surfaceMutex);
-    destroySurface();
-    clearSurface();
-}
-
-VkSurfaceKHR *QAndroidPlatformVulkanWindow::vkSurface()
-{
-    // Lock-free fast path
-    if (m_vkSurface != VK_NULL_HANDLE && !m_androidSurfaceObject.isValid())
-        return &m_vkSurface;
-
-    QMutexLocker lock(&m_surfaceMutex);
-    if (m_vkSurface == VK_NULL_HANDLE) {
-        QtAndroidPrivate::AndroidDeadlockProtector protector(
-            u"QAndroidPlatformVulkanWindow::vkSurface()"_s);
-        if (!protector.acquire())
-            return &m_vkSurface;
-        createSurface();
-        m_surfaceWaitCondition.wait(&m_surfaceMutex);
-    }
-
-    if (m_androidSurfaceObject.isValid()) {
-        clearSurface();
-        m_nativeWindow = ANativeWindow_fromSurface(QJniEnvironment::getJniEnv(),
-                                                   m_androidSurfaceObject.object());
-        m_androidSurfaceObject = QJniObject();
-        VkAndroidSurfaceCreateInfoKHR surfaceInfo;
-        memset(&surfaceInfo, 0, sizeof(surfaceInfo));
-        surfaceInfo.sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR;
-        surfaceInfo.window = m_nativeWindow;
-        QVulkanInstance *inst = window()->vulkanInstance();
-        if (!inst) {
-            qWarning("Attempted to create Vulkan surface without an instance; was QWindow::setVulkanInstance() called?");
-            return &m_vkSurface;
-        }
-        if (!m_createVkSurface) {
-            m_createVkSurface = reinterpret_cast<PFN_vkCreateAndroidSurfaceKHR>(
-                        inst->getInstanceProcAddr("vkCreateAndroidSurfaceKHR"));
-        }
-        if (!m_destroyVkSurface) {
-            m_destroyVkSurface = reinterpret_cast<PFN_vkDestroySurfaceKHR>(
-                        inst->getInstanceProcAddr("vkDestroySurfaceKHR"));
-        }
-        VkResult err = m_createVkSurface(inst->vkInstance(), &surfaceInfo, nullptr, &m_vkSurface);
-        if (err != VK_SUCCESS)
-            qWarning("Failed to create Android VkSurface: %d", err);
-
-        sendExpose();
-    }
-
-    return &m_vkSurface;
 }
 
 QT_END_NAMESPACE

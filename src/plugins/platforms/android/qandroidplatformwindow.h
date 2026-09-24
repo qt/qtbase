@@ -12,9 +12,9 @@
 #include <QtCore/qjniobject.h>
 #include <QtCore/qjnitypes.h>
 #include <QtCore/qloggingcategory.h>
-#include <QtCore/qmutex.h>
-#include <QtCore/qwaitcondition.h>
 #include <jni.h>
+
+struct ANativeWindow;
 
 QT_BEGIN_NAMESPACE
 
@@ -22,8 +22,19 @@ Q_DECLARE_LOGGING_CATEGORY(lcQpaWindow)
 Q_DECLARE_JNI_CLASS(QtWindow, "org/qtproject/qt/android/QtWindow")
 Q_DECLARE_JNI_CLASS(Surface, "android/view/Surface")
 Q_DECLARE_JNI_CLASS(Insets, "android/graphics/Insets")
+Q_DECLARE_JNI_CLASS(Runnable, "java/lang/Runnable")
 
 class QAndroidPlatformScreen;
+
+// Surface lifecycle. The Qt GUI thread owns m_nativeWindow and the expose
+// state. JNI surface callbacks are queued unless Qt is parked.
+// When Qt destroys a window it releases the GPU surface itself first.
+// The render thread creates its EGL/Vk surface lazily from m_nativeWindow, and
+// isExposed() stays false until a Surface arrives.
+//
+// m_nativeWindow needs no atomics. The GUI thread writes it only while the
+// render thread is paused by SurfaceAboutToBeDestroyed, and the render thread
+// reads it only after the posted expose event, which orders the write.
 
 class QAndroidPlatformWindow: public QPlatformWindow
 {
@@ -65,19 +76,40 @@ public:
     QtJniTypes::QtWindow nativeWindow() const { return m_nativeQtWindow; }
 
     virtual void applicationStateChanged(Qt::ApplicationState);
+    void sendChildExposeEvents() const;
     int nativeViewId() const { return m_nativeViewId; }
 
     static bool registerNatives(QJniEnvironment &env);
-    void onSurfaceChanged(QtJniTypes::Surface surface);
+
+    // GUI-thread handlers for the queued JNI surface callbacks.
+    void onSurfaceCreated(QtJniTypes::Surface surface);
+    void onRedrawNeeded();
+    void onSurfaceDestroyed();
 
 protected:
     void setGeometry(const QRect &rect) override;
     void createSurface();
-    void destroySurface();
-    void sendExpose() const;
     bool blockedByModal() const;
     bool isEmbeddingContainer() const;
-    virtual void clearSurface() {}
+
+    // Ends Qt's use of the Surface. Runs on the GUI thread, or inline while
+    // Qt is parked.
+    void releaseSurface();
+
+    // Also removes the Surface from Java, which doesn't report that back.
+    void destroySurface();
+
+    // Fetches the Surface from Java without blocking, so makeCurrent() right
+    // after QWindow::create() works. GUI thread only.
+    void ensureNativeWindow();
+
+    // Written on the GUI thread, read on the render thread after the expose
+    // event that follows the write.
+    ANativeWindow *m_nativeWindow = nullptr;
+
+    // Between Android's surfaceCreated and surfaceDestroyed. Unlike
+    // m_nativeWindow, it drops before the GPU surface is torn down.
+    bool m_surfaceValid = false;
 
     bool m_isRaster;
 
@@ -85,21 +117,21 @@ protected:
     QtJniTypes::QtWindow m_nativeQtWindow;
     SurfaceContainer m_surfaceContainerType = SurfaceContainer::SurfaceView;
     QtJniTypes::QtWindow m_nativeParentQtWindow;
-    // The Android Surface, accessed from multiple threads, guarded by m_surfaceMutex.
-    // If the window is using QtSurface, which is a SurfaceView subclass, this Surface will be
-    // automatically created by Android when QtSurface is in a layout and visible. If the
-    // QtSurface is detached or hidden (app goes to background), Android will automatically
-    // destroy the Surface.
-    QtJniTypes::Surface m_androidSurfaceObject;
-    QWaitCondition m_surfaceWaitCondition;
-    QMutex m_surfaceMutex;
-    QMutex m_destructionMutex;
 
     QMargins m_safeAreaMargins;
 
 private:
-    static void setSurface(JNIEnv *env, jobject obj, jint windowId, QtJniTypes::Surface surface);
-    Q_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE(setSurface)
+    // The EGL or Vulkan surface, which has to go before the ANativeWindow.
+    virtual void destroyWindowSurface() {}
+
+    static void surfaceCreated(JNIEnv *env, jobject obj, jint windowId, QtJniTypes::Surface surface);
+    Q_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE(surfaceCreated)
+    static void surfaceRedrawNeeded(JNIEnv *env, jobject obj, jint windowId,
+                                    QtJniTypes::Runnable drawingFinished);
+    Q_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE(surfaceRedrawNeeded)
+    static void surfaceDestroyed(JNIEnv *env, jobject obj, jint windowId,
+                                 QtJniTypes::Runnable surfaceReleased);
+    Q_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE(surfaceDestroyed)
     static void windowFocusChanged(JNIEnv *env, jobject object, jboolean focus, jint windowId);
     Q_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE(windowFocusChanged)
     static void safeAreaMarginsChanged(JNIEnv *env, jobject obj, QtJniTypes::Insets insets, jint  id);
@@ -107,7 +139,7 @@ private:
     static void applySystemUiNative(JNIEnv *env, jobject obj);
     Q_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE(applySystemUiNative)
 
-    [[nodiscard]] QMutexLocker<QMutex> destructionGuard();
+    static QAndroidPlatformWindow *findWindowById(jint windowId);
 };
 
 QT_END_NAMESPACE
