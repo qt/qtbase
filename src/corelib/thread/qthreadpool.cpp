@@ -19,6 +19,15 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
+namespace {
+struct QThreadGlobalPool
+{
+    QPointer<QThreadPool> theInstance;
+};
+QBasicMutex theMutex;
+}
+Q_GLOBAL_STATIC(QThreadGlobalPool, globalPool)
+
 /*
     QThread wrapper, provides synchronization against a ThreadPool
 */
@@ -467,11 +476,12 @@ QThreadPool::~QThreadPool()
 */
 QThreadPool *QThreadPool::globalInstance()
 {
-    Q_CONSTINIT static QPointer<QThreadPool> theInstance;
-    Q_CONSTINIT static QBasicMutex theMutex;
+    if (!globalPool.exists() && QCoreApplication::closingDown())
+        return nullptr;     // don't create
 
+    QPointer<QThreadPool> &theInstance = globalPool->theInstance;
     const QMutexLocker locker(&theMutex);
-    if (theInstance.isNull() && !QCoreApplication::closingDown())
+    if (!theInstance)
         theInstance = new QThreadPool();
     return theInstance;
 }
