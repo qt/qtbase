@@ -6785,8 +6785,20 @@ void tst_QWidget::moveChild()
 
     QTRY_COMPARE(parent.r, QRegion(oldGeometry) - child.geometry());
 
-    // should be scrolled in backingstore
-    QCOMPARE(child.r, QRegion());
+    // QBackingStore::scroll() refuses a scroll whose native delta is not a
+    // whole number of pixels, because the rendered pixels cannot be reused.
+    // The child is repainted instead of scrolled then.
+    const qreal dpr = parent.devicePixelRatio();
+    const qreal nativeDx = offset.x() * dpr;
+    const qreal nativeDy = offset.y() * dpr;
+    const bool scrollable = qFuzzyIsNull(nativeDx - qRound(nativeDx))
+                         && qFuzzyIsNull(nativeDy - qRound(nativeDy));
+
+    if (scrollable)
+        QCOMPARE(child.r, QRegion());              // scrolled in the backing store
+    else
+        QCOMPARE(child.r, QRegion(child.rect()));  // repainted instead
+
     VERIFY_COLOR(child, child.rect(), child.color);
     VERIFY_COLOR(parent, QRegion(parent.rect()) - child.geometry(), parent.color);
 }
