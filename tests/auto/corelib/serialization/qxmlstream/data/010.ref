@@ -10,7 +10,16 @@ DTD( text="
 <!ATTLIST bar a:attr CDATA #IMPLIED
               b:attr CDATA #IMPLIED
               c:attr CDATA #IMPLIED>
-]>" dtdName="foo" )
+]>" dtdName="foo" internalDtdSubset="
+<!ELEMENT foo ANY>
+<!ATTLIST foo xmlns:a CDATA #IMPLIED
+              xmlns:b CDATA #IMPLIED
+              xmlns:c CDATA #IMPLIED>
+<!ELEMENT bar ANY>
+<!ATTLIST bar a:attr CDATA #IMPLIED
+              b:attr CDATA #IMPLIED
+              c:attr CDATA #IMPLIED>
+" )
 StartElement( name="foo" qualifiedName="foo"
     NamespaceDeclaration( prefix="a" namespaceUri="http://example.org/~wilbur" )
 

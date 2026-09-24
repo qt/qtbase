@@ -387,6 +387,10 @@ public:
     void parseError();
     void checkPublicLiteral(QStringView publicId);
 
+    // internal DTD subset support (subset of text() between '[' and ']'; empty if there is none)
+    QStringView dtdInternalSubset() const { return dtdInternalSubsetValue; }
+    static QXmlStreamReaderPrivate *get(QXmlStreamReader *reader) { return reader->d_func(); }
+
     bool scanDtd;
     XmlStringRef lastAttributeValue;
     bool lastAttributeIsCData;
@@ -434,6 +438,7 @@ public:
     XmlStringRef prefix, namespaceUri, qualifiedName, name;
     XmlStringRef processingInstructionTarget, processingInstructionData;
     XmlStringRef dtdName, dtdPublicId, dtdSystemId;
+    XmlStringRef dtdInternalSubsetValue;
     XmlStringRef documentVersion, documentEncoding;
     uint isEmptyElement : 1;
     uint isWhitespace : 1;

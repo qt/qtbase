@@ -3,7 +3,9 @@ Comment( text=" Clash between a root-declared namespace and a DTD-injected one (
 DTD( text="
 <!DOCTYPE root [
 <!ATTLIST el xmlns:p CDATA "http://example.org/shared" p:attr CDATA "from-dtd">
-]>" dtdName="root" )
+]>" dtdName="root" internalDtdSubset="
+<!ATTLIST el xmlns:p CDATA "http://example.org/shared" p:attr CDATA "from-dtd">
+" )
 StartElement( name="root" qualifiedName="root"
     NamespaceDeclaration( prefix="a" namespaceUri="http://example.org/shared" )
  )

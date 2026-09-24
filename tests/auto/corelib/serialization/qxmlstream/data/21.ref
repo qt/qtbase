@@ -16,7 +16,24 @@ DTD( text="<!DOCTYPE html:html [
 <!ELEMENT html:p (#PCDATA|html:br)*>
 <!ATTLIST html:p class CDATA #IMPLIED>
 <!ELEMENT html:br EMPTY>
-]>" dtdName="html"
+]>" dtdName="html" internalDtdSubset="
+<!ENTITY ent1 'foo'>
+<!ENTITY ent2 'foo<br/>'>
+<!ELEMENT html:html (html:head, html:body)>
+<!ATTLIST html:html xmlns:html CDATA #IMPLIED>
+<!ELEMENT html:head (html:title,script*)>
+<!ATTLIST html:head xmlns CDATA #IMPLIED>
+<!ELEMENT script (#PCDATA)>
+<!ATTLIST script 
+     src CDATA #IMPLIED
+     type CDATA #IMPLIED
+     charset CDATA #IMPLIED>
+<!ELEMENT html:title (#PCDATA)>
+<!ELEMENT html:body (html:p)>
+<!ELEMENT html:p (#PCDATA|html:br)*>
+<!ATTLIST html:p class CDATA #IMPLIED>
+<!ELEMENT html:br EMPTY>
+"
     EntityDeclaration( name="ent1" value="foo" )
 
     EntityDeclaration( name="ent2" value="foo<br/>" )

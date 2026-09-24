@@ -192,6 +192,7 @@ bool QXmlStreamReaderPrivate::parse()
         dtdName.clear();
         dtdPublicId.clear();
         dtdSystemId.clear();
+        dtdInternalSubsetValue.clear();
         Q_FALLTHROUGH();
     case QXmlStreamReader::Comment:
     case QXmlStreamReader::Characters:
@@ -550,6 +551,12 @@ markup ::= markup_start markup_list RBRACK;
 /.
         case $rule_number:
             scanDtd = false;
+            {
+                Q_ASSERT(sym(1).len == 1);
+                const auto start = sym(1).pos + 1; // just after the [
+                const auto end = sym(3).pos;       // just before the ]
+                dtdInternalSubsetValue = XmlStringRef(&textBuffer, start, end - start);
+            }
         break;
 ./
 

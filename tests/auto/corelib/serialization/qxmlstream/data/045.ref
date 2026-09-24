@@ -4,7 +4,10 @@ DTD( text="
 <!DOCTYPE foo [
 <!ELEMENT foo ANY>
 <!ATTLIST foo id ID #REQUIRED>
-]>" dtdName="foo" )
+]>" dtdName="foo" internalDtdSubset="
+<!ELEMENT foo ANY>
+<!ATTLIST foo id ID #REQUIRED>
+" )
 StartElement( name="foo" qualifiedName="foo"
     Attribute( name="id" qualifiedName="id" value="a:b" )
  )

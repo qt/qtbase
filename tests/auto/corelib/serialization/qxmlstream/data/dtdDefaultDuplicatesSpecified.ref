@@ -3,7 +3,9 @@ Comment( text=" DTD-defaulted attribute duplicates a specified attribute (same e
 DTD( text="
 <!DOCTYPE root [
 <!ATTLIST el b:attr CDATA "2">
-]>" dtdName="root" )
+]>" dtdName="root" internalDtdSubset="
+<!ATTLIST el b:attr CDATA "2">
+" )
 StartElement( name="root" qualifiedName="root"
     NamespaceDeclaration( prefix="a" namespaceUri="http://example.org/~wilbur" )
 

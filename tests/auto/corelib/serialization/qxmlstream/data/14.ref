@@ -5,7 +5,12 @@ DTD( text="
 <!ENTITY % xx '%zz;'>
 <!ENTITY % zz '<!ENTITY tricky "error-prone" >' >
 <!ENTITY tricky "error-prone" >
-]>" dtdName="test"
+]>" dtdName="test" internalDtdSubset="
+<!ELEMENT test (#PCDATA) >
+<!ENTITY % xx '%zz;'>
+<!ENTITY % zz '<!ENTITY tricky "error-prone" >' >
+<!ENTITY tricky "error-prone" >
+"
     EntityDeclaration( name="xx" value="%zz;" )
 
     EntityDeclaration( name="zz" value="<!ENTITY tricky "error-prone" >" )

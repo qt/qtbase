@@ -4,7 +4,10 @@ DTD( text="
 <!DOCTYPE foo [
 <!ELEMENT foo ANY>
 <!ATTLIST foo xmlns CDATA #IMPLIED>
-]>" dtdName="foo" )
+]>" dtdName="foo" internalDtdSubset="
+<!ELEMENT foo ANY>
+<!ATTLIST foo xmlns CDATA #IMPLIED>
+" )
 StartElement( name="foo" namespaceUri="#beeblebrox" qualifiedName="foo"
     NamespaceDeclaration( namespaceUri="#beeblebrox" )
  )

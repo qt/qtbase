@@ -1083,6 +1083,7 @@ void QXmlStreamReaderPrivate::init()
     dtdName.clear();
     dtdPublicId.clear();
     dtdSystemId.clear();
+    dtdInternalSubsetValue.clear();
     entityDeclarations.clear();
     entityDeclarations.reserve(16);
     publicEntityDeclarations.clear();

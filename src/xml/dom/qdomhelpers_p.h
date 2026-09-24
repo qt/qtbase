@@ -44,8 +44,8 @@ public:
     bool characters(const QString &characters, bool cdata = false);
     bool processingInstruction(const QString &target, const QString &data);
     bool skippedEntity(const QString &name);
-    void startDTD(QStringView name, QStringView publicId, QStringView systemId);
-    bool parseDTD(const QString &dtd);
+    void startDTD(QStringView name, QStringView publicId, QStringView systemId,
+                  QStringView internalSet);
     bool comment(const QString &characters);
     bool externalEntityDecl(const QString &name, const QString &publicId, const QString &systemId);
     bool notationDecl(const QString &name, const QString &publicId, const QString &systemId);
@@ -59,8 +59,6 @@ public:
     { return parseOptions & QDomDocument::ParseOption::PreserveSpacingOnlyNodes; }
 
 private:
-    QString dtdInternalSubset(const QString &dtd);
-
     QDomDocument::ParseResult parseResult;
     QDomDocumentPrivate *doc;
     QDomNodePrivate *node;

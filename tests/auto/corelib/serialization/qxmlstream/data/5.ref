@@ -6,7 +6,13 @@ DTD( text="
 %e;
 <!ENTITY not "not">
 <!ENTITY me "me">
-]>" dtdName="doc"
+]>" dtdName="doc" internalDtdSubset="
+<!ELEMENT doc (#PCDATA)>
+<!ENTITY % e SYSTEM "something">
+%e;
+<!ENTITY not "not">
+<!ENTITY me "me">
+"
     EntityDeclaration( name="e" systemId="something" )
  )
 StartElement( name="doc" qualifiedName="doc"

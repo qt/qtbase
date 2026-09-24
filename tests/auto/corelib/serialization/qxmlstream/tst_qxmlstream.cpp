@@ -9,8 +9,10 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
+
 #include <QTest>
 #include <QtTest/private/qcomparisontesthelper_p.h>
+
 #include <QUrl>
 #include <QVarLengthArray>
 #include <QXmlStreamReader>
@@ -18,6 +20,7 @@
 #include <QtCore/qscopeguard.h>
 #include <QStack>
 #include <private/qzipreader_p.h>
+#include <QtCore/private/qxmlstream_p.h>
 
 #include "qc14n.h"
 
@@ -957,6 +960,8 @@ QByteArray tst_QXmlStream::dumpTokenStream(QXmlStreamReader &reader, Actions act
                 writer << " dtdPublicId=\"" << publicId << '"';
             if (const auto systemId = reader.dtdSystemId(); !systemId.isEmpty())
                 writer << " dtdSystemId=\"" << systemId << '"';
+            if (const auto internal = QXmlStreamReaderPrivate::get(&reader)->dtdInternalSubset(); !internal.isEmpty())
+                writer << " internalDtdSubset=\"" << internal << '"';
             hasDtdDeclarations = true;
             break;
 
@@ -2660,6 +2665,7 @@ void tst_QXmlStream::clearReallyResetsDtdInformation() const
         if (r.readNext() == QXmlStreamReader::DTD && queryDeclarationsFirst) {
             QVERIFY(!r.entityDeclarations().isEmpty());
             QVERIFY(!r.notationDeclarations().isEmpty());
+            QVERIFY(!QXmlStreamReaderPrivate::get(&r)->dtdInternalSubset().isEmpty());
         }
     }
     QVERIFY(!r.hasError());
@@ -2680,6 +2686,7 @@ void tst_QXmlStream::clearReallyResetsDtdInformation() const
     QCOMPARE(r.dtdName(), ""_L1);
     QCOMPARE(r.dtdPublicId(), ""_L1);
     QCOMPARE(r.dtdSystemId(), ""_L1);
+    QCOMPARE(QXmlStreamReaderPrivate::get(&r)->dtdInternalSubset(), ""_L1);
 
     while (!r.atEnd()) {
         [[maybe_unused]]
@@ -2689,6 +2696,7 @@ void tst_QXmlStream::clearReallyResetsDtdInformation() const
         QVERIFY(r.notationDeclarations().isEmpty());
         QCOMPARE(r.dtdPublicId(), ""_L1);
         QCOMPARE(r.dtdSystemId(), ""_L1);
+        QCOMPARE(QXmlStreamReaderPrivate::get(&r)->dtdInternalSubset(), ""_L1);
         printOnFail.dismiss();
     }
     QVERIFY(!r.hasError());
