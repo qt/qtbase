@@ -5662,8 +5662,6 @@ void tst_QRhi::indexedIndirectMultiDrawBaseline()
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing indexedIndirectMultiDrawBaseline");
 
-    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi))
-        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
     if (!rhi->isFeatureSupported(QRhi::DrawIndirect))
         QSKIP("Indirect draw not supported on this backend");
     if (!rhi->isFeatureSupported(QRhi::BaseVertex))
@@ -5805,8 +5803,6 @@ void tst_QRhi::indexedIndirectMultiDrawCustomStride()
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing indexedIndirectMultiDrawCustomStride");
 
-    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi))
-        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
     if (!rhi->isFeatureSupported(QRhi::DrawIndirect))
         QSKIP("Indirect draw not supported on this backend");
     if (!rhi->isFeatureSupported(QRhi::BaseVertex))
@@ -5952,8 +5948,6 @@ void tst_QRhi::indexedIndirectMultiDrawFromCompute()
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing indexedIndirectMultiDrawFromCompute");
 
-    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi))
-        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
     if (!rhi->isFeatureSupported(QRhi::Compute))
         QSKIP("Compute not supported on this backend");
     if (!rhi->isFeatureSupported(QRhi::DrawIndirect))
@@ -6118,8 +6112,6 @@ void tst_QRhi::indexedIndirectMultiDrawHighDrawCount()
         QSKIP("QRhi could not be created, skipping testing "
               "indexedIndirectMultiDrawHighDrawCount");
 
-    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi))
-        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
     if (!rhi->isFeatureSupported(QRhi::DrawIndirect))
         QSKIP("Indirect draw not supported on this backend");
     if (!rhi->isFeatureSupported(QRhi::BaseVertex))
@@ -6308,8 +6300,6 @@ void tst_QRhi::indexedIndirectMultiDrawHighDrawCountViewport()
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing "
               "indexedIndirectMultiDrawHighDrawCountViewport");
-    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi))
-        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
     if (!rhi->isFeatureSupported(QRhi::DrawIndirect))
         QSKIP("Indirect draw not supported on this backend");
     if (!rhi->isFeatureSupported(QRhi::BaseVertex))
@@ -6462,8 +6452,6 @@ void tst_QRhi::indexedIndirectMultiDrawHighDrawCountMultisample()
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing "
               "indexedIndirectMultiDrawHighDrawCountMultisample");
-    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi))
-        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
     if (!rhi->isFeatureSupported(QRhi::DrawIndirect))
         QSKIP("Indirect draw not supported on this backend");
     if (!rhi->isFeatureSupported(QRhi::BaseVertex))
@@ -6618,8 +6606,6 @@ void tst_QRhi::indexedIndirectMultiDrawHighDrawCountMultisampleDepthResolve()
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing "
               "indexedIndirectMultiDrawHighDrawCountMultisampleDepthResolve");
-    if (impl == QRhi::Vulkan && isAndroidSwiftShader(rhi))
-        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
     if (!rhi->isFeatureSupported(QRhi::DrawIndirect))
         QSKIP("Indirect draw not supported on this backend");
     if (!rhi->isFeatureSupported(QRhi::BaseVertex))
