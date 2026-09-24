@@ -423,6 +423,14 @@ qint64 QHttpNetworkReplyPrivate::readStatus(QIODevice *socket)
             fragment.clear();
             return -1;
         }
+
+        // parseStatus() rejects reason phrases longer than MAX_REASON_PHRASE_SIZE anyway,
+        // so anything beyond that plus a generous allowance for the rest of the line
+        // can never be valid.
+        if (fragment.size() > HeaderConstants::MAX_REASON_PHRASE_SIZE + 64) {
+            fragment.clear();
+            return -1;
+        }
     } while (haveRead == 1);
 
     return bytes;

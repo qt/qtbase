@@ -24,6 +24,8 @@ private Q_SLOTS:
 
     void headerSizeLimit_data();
     void headerSizeLimit();
+
+    void statusLineSizeLimit();
 };
 
 void tst_QHttpNetworkReply::parseHeader_data()
@@ -278,6 +280,27 @@ void tst_QHttpNetworkReply::headerSizeLimit()
         // Must stop reading as soon as the limit is exceeded, not consume everything.
         QCOMPARE_LE(socket.inputBuffer.pos(), replyPrivate->parser.maxRawHeaderSize() + 1);
     }
+}
+
+void tst_QHttpNetworkReply::statusLineSizeLimit()
+{
+    // A status line that is never terminated must be rejected once it can
+    // no longer be valid, instead of being buffered indefinitely.
+    const QByteArray status = "HTTP/1.1 200 " + QByteArray(1024 * 1024, 'a');
+    TestHeaderSocket socket(status);
+    TestHeaderReply reply;
+    QHttpNetworkReplyPrivate *replyPrivate = reply.replyPrivate();
+
+    QCOMPARE(replyPrivate->readStatus(&socket), qint64(-1));
+    QVERIFY(replyPrivate->fragment.isEmpty());
+    QCOMPARE_LT(socket.inputBuffer.pos(), 4096);
+
+    // The longest acceptable reason phrase still parses.
+    const QByteArray okStatus = "HTTP/1.1 200 " + QByteArray(1024, 'a') + "\r\n";
+    TestHeaderSocket okSocket(okStatus);
+    TestHeaderReply okReply;
+    QCOMPARE(okReply.replyPrivate()->readStatus(&okSocket), qint64(okStatus.size()));
+    QCOMPARE(okReply.statusCode(), 200);
 }
 
 QTEST_MAIN(tst_QHttpNetworkReply)
