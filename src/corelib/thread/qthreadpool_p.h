@@ -107,7 +107,7 @@ private:
 };
 
 class QThreadPoolThread;
-class Q_CORE_EXPORT QThreadPoolPrivate : public QObjectPrivate
+class QThreadPoolPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QThreadPool)
     friend class QThreadPoolThread;
