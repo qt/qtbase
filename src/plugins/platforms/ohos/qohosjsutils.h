@@ -58,14 +58,6 @@ bool runIgnoringJsBusinessError(
     const std::function<void()> &action);
 
 template<typename T>
-QOhosSupplier<T> makeDataSource(
-    std::function<T(JsState &)> initialValueReader,
-    std::function<std::shared_ptr<void>(JsState &, QOhosConsumer<T>)> changeListenerFactory,
-    QOhosConsumer<T> valueChangedHandler,
-    QOhosConsumer<std::function<void()>> targetThreadExecutor,
-    std::string callerContextName = {});
-
-template<typename T>
 QNapi::Promise adaptAsyncCallResultToJsPromise(
     JsState &jsState, std::function<QNapi::Value(JsState &, T)> promiseValueFactory,
     const QOhosConsumer<JsState &, QOhosConsumer<JsState &, T>> &asyncCallFunc)
@@ -91,42 +83,21 @@ std::optional<T> getOptionalProperty(const QNapi::Object &object, const std::str
         : std::nullopt;
 }
 
-template<typename T>
-QOhosSupplier<T> makeDataSource(
-    std::function<T(JsState &)> initialValueReader,
-    std::function<std::shared_ptr<void>(JsState &, QOhosConsumer<T>)> changeListenerFactory,
-    QOhosConsumer<T> valueChangedHandler,
-    QOhosConsumer<std::function<void()>> targetThreadExecutor,
-    std::string callerContextName)
-{
-    return makeQOhosDataSource<T>(
-        [initialValueReader = std::move(initialValueReader)](QOhosJsState &jsState) {
-            return initialValueReader(static_cast<JsState &>(jsState));
-        },
-        [changeListenerFactory = std::move(changeListenerFactory)](
-            QOhosJsState &jsState, QOhosConsumer<T> valueUpdatesConsumer) {
-            return changeListenerFactory(static_cast<JsState &>(jsState), std::move(valueUpdatesConsumer));
-        },
-        std::move(valueChangedHandler),
-        std::move(targetThreadExecutor),
-        std::move(callerContextName));
-}
-
 template<typename ConfigValue>
 QOhosSupplier<ConfigValue> makeOhosConfigValueDataSource(
-    std::function<ConfigValue(QtOhos::JsState &)> initValueSupplier,
-    std::function<ConfigValue(QtOhos::JsState &, const QNapi::Object &)> valueFetcher,
+    std::function<ConfigValue(QOhosJsState &)> initValueSupplier,
+    std::function<ConfigValue(QOhosJsState &, const QNapi::Object &)> valueFetcher,
     QOhosConsumer<ConfigValue> valueChangedHandler)
 {
-    return QtOhos::makeDataSource<ConfigValue>(
+    return makeQOhosDataSource<ConfigValue>(
         std::move(initValueSupplier),
-        [valueFetcher = std::move(valueFetcher)](QtOhos::JsState &jsState, QOhosConsumer<ConfigValue> valueUpdatesConsumer) mutable {
+        [valueFetcher = std::move(valueFetcher)](QOhosJsState &jsState, QOhosConsumer<ConfigValue> valueUpdatesConsumer) mutable {
             return registerOhosAppContextEnvironmentCallback(
                 jsState,
                 {
                     {
                         "onConfigurationUpdated",
-                        [valueFetcher = std::move(valueFetcher), valueUpdatesConsumer = std::move(valueUpdatesConsumer)](const QtOhos::CallbackInfo &cbInfo) {
+                        [valueFetcher = std::move(valueFetcher), valueUpdatesConsumer = std::move(valueUpdatesConsumer)](const QOhosCallbackInfo &cbInfo) {
                             auto config = cbInfo.getFirstArg<QNapi::Object>(Q_FUNC_INFO);
                             valueUpdatesConsumer(valueFetcher(cbInfo.jsState(), config));
                         }
