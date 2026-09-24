@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qohossettings.h"
+#include <QtCore/private/qcore_ohos_p.h>
 #include <QtCore/private/qohoscommon_p.h>
 #include <cmath>
 #include <cstring>
@@ -9,7 +10,6 @@
 #include <optional>
 #include <qohosdeviceinfo_p.h>
 #include <qohosjsutils.h>
-#include <qohosplugincore.h>
 #include <qohosutils.h>
 #include <string>
 
@@ -22,8 +22,8 @@ constexpr const char *windowPcModeSwitchStatusPropertyName = "window_pcmode_swit
 
 std::optional<std::string> tryGetDataItemValue(const std::string &name, const std::string &domainName)
 {
-    return QtOhos::evalInJsThreadWithPromise<std::optional<std::string>>(
-        [&](QtOhos::JsState &jsState, auto evalPromise) {
+    return QOhosJsThreadGateway::evalWithPromise<std::optional<std::string>>(
+        [&](QOhosJsState &jsState, auto evalPromise) {
         auto optDefaultQAbility = jsState.defaultQAbility();
         if (!optDefaultQAbility) {
             evalPromise({});
@@ -34,11 +34,11 @@ std::optional<std::string> tryGetDataItemValue(const std::string &name, const st
         jsState.evalToPromiseOrRejectOnThrow(
             "@ohos.settings.getValue(*)",
             {optDefaultQAbility->get("context"), name, domainName})
-        .onThen([thenPromise = std::move(thenCatchPromises.first)](const QtOhos::CallbackInfo &cbInfo) {
+        .onThen([thenPromise = std::move(thenCatchPromises.first)](const QOhosCallbackInfo &cbInfo) {
             std::string result = cbInfo.getFirstArg<QNapi::String>(Q_FUNC_INFO);
             thenPromise(result);
         })
-        .onCatch([catchPromise = std::move(thenCatchPromises.second), name, domainName](const QtOhos::CallbackInfo &) {
+        .onCatch([catchPromise = std::move(thenCatchPromises.second), name, domainName](const QOhosCallbackInfo &) {
             qOhosPrintfError(
                 "Got error from @ohos.settings.getValue(..., '%s', '%s').",
                 name.c_str(), domainName.c_str());
@@ -70,18 +70,18 @@ std::optional<double> tryGetDataItemTypedValue(const std::string &name, const st
 
 std::string getOhosSettingsUserPropertyDomainName()
 {
-    return QtOhos::evalInJsThread([](QtOhos::JsState &jsState) {
+    return QOhosJsThreadGateway::eval([](QOhosJsState &jsState) {
         return jsState.eval<QNapi::String>("@ohos.settings.domainName.USER_PROPERTY").Utf8Value();
     },
     Q_FUNC_INFO);
 }
 
-std::string settingsUserPropertyDomainName(QtOhos::JsState &jsState)
+std::string settingsUserPropertyDomainName(QOhosJsState &jsState)
 {
     return jsState.eval<QNapi::String>("@ohos.settings.domainName.USER_PROPERTY");
 }
 
-std::optional<QNapi::Object> settingsContext(QtOhos::JsState &jsState)
+std::optional<QNapi::Object> settingsContext(QOhosJsState &jsState)
 {
     auto optQAbility = jsState.defaultQAbility();
     return optQAbility
@@ -90,7 +90,7 @@ std::optional<QNapi::Object> settingsContext(QtOhos::JsState &jsState)
 }
 
 std::string readSettingValue(
-    QtOhos::JsState &jsState, const QNapi::Object &context, const std::string &name)
+    QOhosJsState &jsState, const QNapi::Object &context, const std::string &name)
 {
     return jsState.eval<QNapi::String>(
         "@ohos.settings.getValueSync(*)",
@@ -98,8 +98,8 @@ std::string readSettingValue(
 }
 
 std::shared_ptr<void> registerSettingsKeyObserver(
-    QtOhos::JsState &jsState, QNapi::Object context, const std::string &name,
-    std::function<void(QtOhos::JsState &)> onChanged)
+    QOhosJsState &jsState, QNapi::Object context, const std::string &name,
+    std::function<void(QOhosJsState &)> onChanged)
 {
     const std::string domainName = settingsUserPropertyDomainName(jsState);
 
@@ -107,7 +107,7 @@ std::shared_ptr<void> registerSettingsKeyObserver(
         "@ohos.settings.registerKeyObserver(*)",
         {
             context, name, domainName,
-            [onChanged = std::move(onChanged)](const QtOhos::CallbackInfo &cbInfo) {
+            [onChanged = std::move(onChanged)](const QOhosCallbackInfo &cbInfo) {
                 onChanged(cbInfo.jsState());
             }
         });
@@ -122,8 +122,8 @@ std::shared_ptr<void> registerSettingsKeyObserver(
     return std::shared_ptr<void>(
         nullptr,
         [contextRefPtr, name, domainName](auto) {
-            QtOhos::runInJsThreadAndWait(
-                [&](QtOhos::JsState &jsState) {
+            QOhosJsThreadGateway::runAndWait(
+                [&](QOhosJsState &jsState) {
                     auto contextRef = std::move(*contextRefPtr);
                     jsState.eval<QNapi::Value>(
                         "@ohos.settings.unregisterKeyObserver(*)",
@@ -133,7 +133,7 @@ std::shared_ptr<void> registerSettingsKeyObserver(
         });
 }
 
-bool readWindowPcModeEnabled(QtOhos::JsState &jsState)
+bool readWindowPcModeEnabled(QOhosJsState &jsState)
 {
     auto optContext = settingsContext(jsState);
     if (!optContext)
@@ -147,9 +147,9 @@ QOhosSupplier<bool> makeWindowPcModeEnabledSupplier()
     if (QOhosDeviceInfo::is2in1())
         return [] { return true; };
 
-    return QtOhos::makeDataSource<bool>(
+    return makeQOhosDataSource<bool>(
         readWindowPcModeEnabled,
-        [](QtOhos::JsState &jsState, QOhosConsumer<bool> valueChangedConsumer) -> std::shared_ptr<void> {
+        [](QOhosJsState &jsState, QOhosConsumer<bool> valueChangedConsumer) -> std::shared_ptr<void> {
             // FIXME: the observer must use the launching UIAbility's context. By
             // API definition @ohos.settings does not accept the application
             // context, and free-window state is not part of the app Configuration.
@@ -163,7 +163,7 @@ QOhosSupplier<bool> makeWindowPcModeEnabledSupplier()
 
             return registerSettingsKeyObserver(
                 jsState, optContext.value(), windowPcModeSwitchStatusPropertyName,
-                [valueChangedConsumer = std::move(valueChangedConsumer)](QtOhos::JsState &jsState) {
+                [valueChangedConsumer = std::move(valueChangedConsumer)](QOhosJsState &jsState) {
                     valueChangedConsumer(readWindowPcModeEnabled(jsState));
                 });
         },
@@ -176,7 +176,7 @@ QOhosSupplier<bool> makeUncachedWindowPcModeEnabledSupplier()
 {
     return [] {
         return QOhosDeviceInfo::is2in1()
-            || QtOhos::evalInJsThread(readWindowPcModeEnabled, Q_FUNC_INFO);
+            || QOhosJsThreadGateway::eval(readWindowPcModeEnabled, Q_FUNC_INFO);
     };
 }
 

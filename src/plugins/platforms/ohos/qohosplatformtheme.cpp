@@ -806,7 +806,7 @@ Qt::ColorScheme mapOhosThemeToColorScheme(
 
 using OhosConfigurationColorMode = QtOhosQpa::enums::ohos::app::ability::ConfigurationConstant::ColorMode;
 
-OhosConfigurationColorMode mapOhosConfigurationColorModeFromJs(QtOhos::JsState &jsState, QNapi::Number colorModeJsEnum)
+OhosConfigurationColorMode mapOhosConfigurationColorModeFromJs(QOhosJsState &jsState, QNapi::Number colorModeJsEnum)
 {
     constexpr auto fallbackColorMode = OhosConfigurationColorMode::COLOR_MODE_NOT_SET;
     auto optColorMode = jsState.tryMapOhosEnumFromJs<OhosConfigurationColorMode>(colorModeJsEnum);
@@ -820,8 +820,8 @@ void setOhosConfigColorMode(OhosConfigurationColorMode colorMode)
         return;
     }
 
-    QtOhos::runInJsThreadAndWait(
-        [&](QtOhos::JsState &jsState) {
+    QOhosJsThreadGateway::runAndWait(
+        [&](QOhosJsState &jsState) {
             auto optQAbility = jsState.defaultQAbility();
             if (!optQAbility) {
                 qCWarning(QtForOhos, "%s: cannot set a color mode without a UIAbility", Q_FUNC_INFO);
@@ -838,14 +838,14 @@ QOhosSupplier<OhosConfigurationColorMode> makeOhosConfigColorModeDataSource(
     QOhosConsumer<OhosConfigurationColorMode> valueChangedHandler)
 {
     return QtOhos::makeOhosConfigValueDataSource<OhosConfigurationColorMode>(
-        [](QtOhos::JsState &jsState) {
+        [](QOhosJsState &jsState) {
             auto optQAbility = jsState.defaultQAbility();
             return optQAbility
                 ? mapOhosConfigurationColorModeFromJs(
                     jsState, optQAbility->eval<QNapi::Number>("context.config.colorMode"))
                 : OhosConfigurationColorMode::COLOR_MODE_NOT_SET;
         },
-        [](QtOhos::JsState &jsState, const QNapi::Object &config) {
+        [](QOhosJsState &jsState, const QNapi::Object &config) {
             return mapOhosConfigurationColorModeFromJs(jsState, config.get<QNapi::Number>("colorMode"));
         },
         std::move(valueChangedHandler));
@@ -865,7 +865,7 @@ std::optional<bool> mapOhosConfigurationColorModeToDarkModeFlag(OhosConfiguratio
     return {};
 }
 
-QColor readAccentColor(QtOhos::JsState &jsState)
+QColor readAccentColor(QOhosJsState &jsState)
 {
     auto optQAbility = jsState.defaultQAbility();
     if (!optQAbility)
@@ -882,13 +882,13 @@ QOhosSupplier<QColor> makeOhosAccentColorDataSource(QOhosConsumer<QColor> accent
 {
     return QtOhos::makeOhosConfigValueDataSource<QColor>(
         readAccentColor,
-        [](QtOhos::JsState &jsState, const QNapi::Object &) {
+        [](QOhosJsState &jsState, const QNapi::Object &) {
             return readAccentColor(jsState);
         },
         std::move(accentColorChangedHandler));
 }
 
-std::optional<QPixmap> tryGetFilePixmapByResourceObject(QtOhos::JsState &jsState, QNapi::Object resource)
+std::optional<QPixmap> tryGetFilePixmapByResourceObject(QOhosJsState &jsState, QNapi::Object resource)
 {
     std::string undocumentedParamsPropertyName("params");
     auto optParams = QNapi::getOptionalPropOrEmpty<QNapi::Value>(resource, undocumentedParamsPropertyName);
@@ -940,7 +940,7 @@ std::optional<QPixmap> tryGetFilePixmapByResourceObject(QtOhos::JsState &jsState
 }
 
 std::optional<QPixmap> tryGetFilePixmapByFilenameExtension(
-    QtOhos::JsState &jsState, const std::string &filenameExtension)
+    QOhosJsState &jsState, const std::string &filenameExtension)
 {
     std::string ohosDotFilenameExtension = "." + filenameExtension;
     auto uniformDataType = jsState.eval<QNapi::String>(
@@ -974,8 +974,8 @@ QOhosFileIconEngine::QOhosFileIconEngine(const QFileInfo &info, QPlatformTheme::
 QPixmap QOhosFileIconEngine::filePixmap(const QSize &size, QIcon::Mode, QIcon::State)
 {
     auto fileNameSuffix = fileInfo().suffix();
-    auto optPixmap = QtOhos::evalInJsThread(
-        [&](QtOhos::JsState &jsState) {
+    auto optPixmap = QOhosJsThreadGateway::eval(
+        [&](QOhosJsState &jsState) {
             return tryGetFilePixmapByFilenameExtension(jsState, fileNameSuffix.toStdString());
         },
         Q_FUNC_INFO);
