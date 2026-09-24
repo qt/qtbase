@@ -299,16 +299,133 @@ void qt_blend_argb32_on_rgb16_neon(uchar *destPixels, int dbpl,
 }
 #endif
 
-void qt_blend_argb32_on_argb32_scanline_neon(uint *dest, const uint *src, int length, uint const_alpha)
+inline void qt_blend_argb32_on_argb32_opaque_neon(uchar *destPixels, int dbpl,
+                                                  const uchar *srcPixels, int sbpl,
+                                                  int w, int h)
 {
+#if defined(ENABLE_PIXMAN_DRAWHELPERS)
+    pixman_composite_over_8888_8888_asm_neon(w, h, (uint32_t *)destPixels, dbpl / 4, (uint32_t *)srcPixels, sbpl / 4);
+#else
+    uint32_t *dst = reinterpret_cast<uint32_t *>(destPixels);
+    const uint32_t *src = reinterpret_cast<const uint32_t *>(srcPixels);
+    const uint16x8_t half = vdupq_n_u16(0x80);
+    const uint16x8_t full = vdupq_n_u16(0xff);
+    for (int y = 0; y < h; ++y) {
+        int x = 0;
+        for (; x < (w - 3); x += 4) {
+            if ((src[x] | src[x + 1] | src[x + 2] | src[x + 3]) != 0) {
+                uint32x4_t src32 = vld1q_u32(src + x);
+                uint32x4_t dst32 = vld1q_u32(dst + x);
+
+                const uint8x16_t src8 = vreinterpretq_u8_u32(src32);
+                const uint8x16_t dst8 = vreinterpretq_u8_u32(dst32);
+
+                const uint8x8_t src8_low = vget_low_u8(src8);
+                const uint8x8_t dst8_low = vget_low_u8(dst8);
+
+                const uint8x8_t src8_high = vget_high_u8(src8);
+                const uint8x8_t dst8_high = vget_high_u8(dst8);
+
+                const uint16x8_t src16_low = vmovl_u8(src8_low);
+                const uint16x8_t dst16_low = vmovl_u8(dst8_low);
+
+                const uint16x8_t src16_high = vmovl_u8(src8_high);
+                const uint16x8_t dst16_high = vmovl_u8(dst8_high);
+
+                const uint16x8_t result16_low = qvsource_over_u16(src16_low, dst16_low, half, full);
+                const uint16x8_t result16_high = qvsource_over_u16(src16_high, dst16_high, half, full);
+
+                const uint32x2_t result32_low = vreinterpret_u32_u8(vmovn_u16(result16_low));
+                const uint32x2_t result32_high = vreinterpret_u32_u8(vmovn_u16(result16_high));
+
+                vst1q_u32(dst + x, vcombine_u32(result32_low, result32_high));
+            }
+        }
+        for (; x < w; ++x) {
+            const uint s = src[x];
+            if (s >= 0xff000000)
+                dst[x] = s;
+            else if (s != 0)
+                dst[x] = s + BYTE_MUL(dst[x], qAlpha(~s));
+        }
+        destPixels += dbpl;
+        srcPixels += sbpl;
+        dst = reinterpret_cast<uint32_t *>(destPixels);
+        src = reinterpret_cast<const uint32_t *>(srcPixels);
+    }
+#endif
+}
+
+inline void qt_blend_argb32_on_argb32_with_alpha_neon(uchar *destPixels, int dbpl,
+                                                     const uchar *srcPixels, int sbpl,
+                                                     int w, int h,
+                                                     uint const_alpha)
+{
+    Q_ASSERT(const_alpha > 0 && const_alpha < 256); // const_alpha on ]0-255] form
+    uint32_t *dst = reinterpret_cast<uint32_t *>(destPixels);
+    const uint32_t *src = reinterpret_cast<const uint32_t *>(srcPixels);
+    const uint16x8_t half = vdupq_n_u16(0x80);
+    const uint16x8_t full = vdupq_n_u16(0xff);
+    const uint16x8_t const_alpha16 = vdupq_n_u16(const_alpha);
+    for (int y = 0; y < h; ++y) {
+        int x = 0;
+        for (; x < (w - 3); x += 4) {
+            if ((src[x] | src[x + 1] | src[x + 2] | src[x + 3]) != 0) {
+                uint32x4_t src32 = vld1q_u32(src + x);
+                uint32x4_t dst32 = vld1q_u32(dst + x);
+
+                const uint8x16_t src8 = vreinterpretq_u8_u32(src32);
+                const uint8x16_t dst8 = vreinterpretq_u8_u32(dst32);
+
+                const uint8x8_t src8_low = vget_low_u8(src8);
+                const uint8x8_t dst8_low = vget_low_u8(dst8);
+
+                const uint8x8_t src8_high = vget_high_u8(src8);
+                const uint8x8_t dst8_high = vget_high_u8(dst8);
+
+                const uint16x8_t src16_low = vmovl_u8(src8_low);
+                const uint16x8_t dst16_low = vmovl_u8(dst8_low);
+
+                const uint16x8_t src16_high = vmovl_u8(src8_high);
+                const uint16x8_t dst16_high = vmovl_u8(dst8_high);
+
+                const uint16x8_t srcalpha16_low = qvbyte_mul_u16(src16_low, const_alpha16, half);
+                const uint16x8_t srcalpha16_high = qvbyte_mul_u16(src16_high, const_alpha16, half);
+
+                const uint16x8_t result16_low = qvsource_over_u16(srcalpha16_low, dst16_low, half, full);
+                const uint16x8_t result16_high = qvsource_over_u16(srcalpha16_high, dst16_high, half, full);
+
+                const uint32x2_t result32_low = vreinterpret_u32_u8(vmovn_u16(result16_low));
+                const uint32x2_t result32_high = vreinterpret_u32_u8(vmovn_u16(result16_high));
+
+                vst1q_u32(dst + x, vcombine_u32(result32_low, result32_high));
+            }
+        }
+        for (; x < w; ++x) {
+            uint s = src[x];
+            if (s != 0) {
+                s = BYTE_MUL(s, const_alpha);
+                dst[x] = s + BYTE_MUL(dst[x], qAlpha(~s));
+            }
+        }
+        destPixels += dbpl;
+        srcPixels += sbpl;
+        dst = reinterpret_cast<uint32_t *>(destPixels);
+        src = reinterpret_cast<const uint32_t *>(srcPixels);
+    }
+}
+
+void comp_func_SourceOver_neon(uint *dest, const uint *src, int length, uint const_alpha)
+{
+    Q_ASSERT(const_alpha < 256); // const_alpha on [0-255] form
     if (const_alpha == 255) {
 #if defined(ENABLE_PIXMAN_DRAWHELPERS)
         pixman_composite_scanline_over_asm_neon(length, dest, src);
 #else
-        qt_blend_argb32_on_argb32_neon((uchar *)dest, 4 * length, (uchar *)src, 4 * length, length, 1, 256);
+        qt_blend_argb32_on_argb32_opaque_neon(reinterpret_cast<uchar *>(dest), 0, reinterpret_cast<const uchar *>(src), 0, length, 1);
 #endif
-    } else {
-        qt_blend_argb32_on_argb32_neon((uchar *)dest, 4 * length, (uchar *)src, 4 * length, length, 1, (const_alpha * 256 + 254) / 255);
+    } else if (const_alpha != 0) {
+        qt_blend_argb32_on_argb32_with_alpha_neon(reinterpret_cast<uchar *>(dest), 0, reinterpret_cast<const uchar *>(src), 0, length, 1, const_alpha);
     }
 }
 
@@ -317,103 +434,17 @@ void qt_blend_argb32_on_argb32_neon(uchar *destPixels, int dbpl,
                                     int w, int h,
                                     int const_alpha)
 {
-    const uint *src = (const uint *) srcPixels;
-    uint *dst = (uint *) destPixels;
-    uint16x8_t half = vdupq_n_u16(0x80);
-    uint16x8_t full = vdupq_n_u16(0xff);
+    Q_ASSERT(const_alpha >= 0 && const_alpha <= 256); // const_alpha on [0-256] form
     if (const_alpha == 256) {
-#if defined(ENABLE_PIXMAN_DRAWHELPERS)
-        pixman_composite_over_8888_8888_asm_neon(w, h, (uint32_t *)destPixels, dbpl / 4, (uint32_t *)srcPixels, sbpl / 4);
-#else
-        for (int y=0; y<h; ++y) {
-            int x = 0;
-            for (; x < w-3; x += 4) {
-                if (src[x] | src[x+1] | src[x+2] | src[x+3]) {
-                    uint32x4_t src32 = vld1q_u32((uint32_t *)&src[x]);
-                    uint32x4_t dst32 = vld1q_u32((uint32_t *)&dst[x]);
-
-                    const uint8x16_t src8 = vreinterpretq_u8_u32(src32);
-                    const uint8x16_t dst8 = vreinterpretq_u8_u32(dst32);
-
-                    const uint8x8_t src8_low = vget_low_u8(src8);
-                    const uint8x8_t dst8_low = vget_low_u8(dst8);
-
-                    const uint8x8_t src8_high = vget_high_u8(src8);
-                    const uint8x8_t dst8_high = vget_high_u8(dst8);
-
-                    const uint16x8_t src16_low = vmovl_u8(src8_low);
-                    const uint16x8_t dst16_low = vmovl_u8(dst8_low);
-
-                    const uint16x8_t src16_high = vmovl_u8(src8_high);
-                    const uint16x8_t dst16_high = vmovl_u8(dst8_high);
-
-                    const uint16x8_t result16_low = qvsource_over_u16(src16_low, dst16_low, half, full);
-                    const uint16x8_t result16_high = qvsource_over_u16(src16_high, dst16_high, half, full);
-
-                    const uint32x2_t result32_low = vreinterpret_u32_u8(vmovn_u16(result16_low));
-                    const uint32x2_t result32_high = vreinterpret_u32_u8(vmovn_u16(result16_high));
-
-                    vst1q_u32((uint32_t *)&dst[x], vcombine_u32(result32_low, result32_high));
-                }
-            }
-            for (; x<w; ++x) {
-                uint s = src[x];
-                if (s >= 0xff000000)
-                    dst[x] = s;
-                else if (s != 0)
-                    dst[x] = s + BYTE_MUL(dst[x], qAlpha(~s));
-            }
-            dst = (quint32 *)(((uchar *) dst) + dbpl);
-            src = (const quint32 *)(((const uchar *) src) + sbpl);
-        }
-#endif
+        qt_blend_argb32_on_argb32_opaque_neon(destPixels, dbpl,
+                                              srcPixels, sbpl,
+                                              w, h);
     } else if (const_alpha != 0) {
-        const_alpha = (const_alpha * 255) >> 8;
-        uint16x8_t const_alpha16 = vdupq_n_u16(const_alpha);
-        for (int y = 0; y < h; ++y) {
-            int x = 0;
-            for (; x < w-3; x += 4) {
-                if (src[x] | src[x+1] | src[x+2] | src[x+3]) {
-                    uint32x4_t src32 = vld1q_u32((uint32_t *)&src[x]);
-                    uint32x4_t dst32 = vld1q_u32((uint32_t *)&dst[x]);
-
-                    const uint8x16_t src8 = vreinterpretq_u8_u32(src32);
-                    const uint8x16_t dst8 = vreinterpretq_u8_u32(dst32);
-
-                    const uint8x8_t src8_low = vget_low_u8(src8);
-                    const uint8x8_t dst8_low = vget_low_u8(dst8);
-
-                    const uint8x8_t src8_high = vget_high_u8(src8);
-                    const uint8x8_t dst8_high = vget_high_u8(dst8);
-
-                    const uint16x8_t src16_low = vmovl_u8(src8_low);
-                    const uint16x8_t dst16_low = vmovl_u8(dst8_low);
-
-                    const uint16x8_t src16_high = vmovl_u8(src8_high);
-                    const uint16x8_t dst16_high = vmovl_u8(dst8_high);
-
-                    const uint16x8_t srcalpha16_low = qvbyte_mul_u16(src16_low, const_alpha16, half);
-                    const uint16x8_t srcalpha16_high = qvbyte_mul_u16(src16_high, const_alpha16, half);
-
-                    const uint16x8_t result16_low = qvsource_over_u16(srcalpha16_low, dst16_low, half, full);
-                    const uint16x8_t result16_high = qvsource_over_u16(srcalpha16_high, dst16_high, half, full);
-
-                    const uint32x2_t result32_low = vreinterpret_u32_u8(vmovn_u16(result16_low));
-                    const uint32x2_t result32_high = vreinterpret_u32_u8(vmovn_u16(result16_high));
-
-                    vst1q_u32((uint32_t *)&dst[x], vcombine_u32(result32_low, result32_high));
-                }
-            }
-            for (; x<w; ++x) {
-                uint s = src[x];
-                if (s != 0) {
-                    s = BYTE_MUL(s, const_alpha);
-                    dst[x] = s + BYTE_MUL(dst[x], qAlpha(~s));
-                }
-            }
-            dst = (quint32 *)(((uchar *) dst) + dbpl);
-            src = (const quint32 *)(((const uchar *) src) + sbpl);
-        }
+        const uint const_alpha_255 = (static_cast<uint>(const_alpha) * 255) >> 8;
+        qt_blend_argb32_on_argb32_with_alpha_neon(destPixels, dbpl,
+                                                  srcPixels, sbpl,
+                                                  w, h,
+                                                  const_alpha_255);
     }
 }
 

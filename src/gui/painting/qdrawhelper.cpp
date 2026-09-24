@@ -7100,7 +7100,7 @@ static void qInitDrawhelperFunctions()
     qBlendFunctions[QImage::Format_RGBA8888_Premultiplied][QImage::Format_RGBA8888_Premultiplied] = qt_blend_argb32_on_argb32_neon;
 #endif
 
-    qt_functionForMode_C[QPainter::CompositionMode_SourceOver] = qt_blend_argb32_on_argb32_scanline_neon;
+    qt_functionForMode_C[QPainter::CompositionMode_SourceOver] = comp_func_SourceOver_neon;
     qt_functionForModeSolid_C[QPainter::CompositionMode_SourceOver] = comp_func_solid_SourceOver_neon;
     qt_functionForMode_C[QPainter::CompositionMode_Plus] = comp_func_Plus_neon;
 
