@@ -68,9 +68,9 @@ static bool ft_getSfntTable(void *user_data, uint tag, uchar *buffer, uint *leng
     bool result = false;
     if (FT_IS_SFNT(face)) {
         FT_ULong len = *length;
-        result = FT_Load_Sfnt_Table(face, tag, 0, buffer, &len) == FT_Err_Ok;
+        result = FT_Load_Sfnt_Table(face, tag, 0, buffer, &len) == FT_Err_Ok
+                 && len > 0;
         *length = len;
-        Q_ASSERT(!result || int(*length) > 0);
     }
 
     return result;

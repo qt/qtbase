@@ -68,8 +68,7 @@ bool QCoreTextFontEngine::ct_getSfntTable(void *user_data, uint tag, uchar *buff
     if (buffer && int(*length) >= tableLength)
         CFDataGetBytes(table, CFRangeMake(0, tableLength), buffer);
     *length = tableLength;
-    Q_ASSERT(int(*length) > 0);
-    return true;
+    return *length > 0;
 }
 
 QFont::Weight QCoreTextFontEngine::qtWeightFromCFWeight(float value)
