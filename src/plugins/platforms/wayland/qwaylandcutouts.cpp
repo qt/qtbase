@@ -16,6 +16,11 @@ Cutouts::Cutouts(::xx_cutouts_v1 *object, QWaylandWindow *window)
 {
 }
 
+Cutouts::~Cutouts()
+{
+    destroy();
+}
+
 void Cutouts::xx_cutouts_v1_cutout_box(int32_t x, int32_t y, int32_t width, int32_t height, [[maybe_unused]] uint32_t type, [[maybe_unused]] uint32_t id)
 {
     // compute the minimum screen area we would lose on each side, and pick the minimum one

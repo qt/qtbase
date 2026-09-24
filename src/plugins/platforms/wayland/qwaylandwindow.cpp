@@ -980,7 +980,10 @@ QMargins QWaylandWindow::safeAreaMargins() const
 
 void QWaylandWindow::setSafeAreaMargins(const QMargins &margins)
 {
-    m_safeAreaMargins = (margins - mWindowDecoration->margins()) | QMargins();
+    if (mWindowDecoration)
+        m_safeAreaMargins = (margins - mWindowDecoration->margins()) | QMargins();
+    else
+        m_safeAreaMargins = margins;
     QWindowSystemInterface::handleSafeAreaMarginsChanged(window());
 }
 

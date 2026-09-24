@@ -28,6 +28,7 @@ class Cutouts : public QtWayland::xx_cutouts_v1
 {
 public:
     Cutouts(::xx_cutouts_v1 *object, QWaylandWindow *window);
+    ~Cutouts() override;
 
 protected:
     void xx_cutouts_v1_cutout_box(int32_t x, int32_t y, int32_t width, int32_t height, uint32_t type, uint32_t id) override;
