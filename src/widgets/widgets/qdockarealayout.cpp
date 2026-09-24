@@ -3310,8 +3310,7 @@ void QDockAreaLayout::resizeDocks(const QList<QDockWidget *> &docks,
         }
 
         const int dockNum = path.constFirst();
-        const int numberDocks = this->docks.size();
-        Q_ASSERT(dockNum < numberDocks);
+        Q_ASSERT(std::size_t(dockNum) < this->docks.size());
         QRect &r = this->docks[dockNum].rect;
         QSize s = r.size();
         rpick(o, s) = size;
