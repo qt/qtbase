@@ -32,4 +32,5 @@ add_subdirectory(multithreaded)
 
 if(QT_FEATURE_im)
     add_subdirectory(inputcontext)
+    add_subdirectory(textinputv3)
 endif()

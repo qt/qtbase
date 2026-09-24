@@ -13,6 +13,7 @@ qt_manual_moc(moc_files
     fullscreenshellv1.h
     fractionalscalev1.h
     textinput.h
+    textinputv3.h
     qttextinput.h
     viewport.h
     xdgdialog.h
@@ -29,6 +30,7 @@ add_library(SharedClientTest
         fractionalscalev1.cpp fractionalscalev1.h
         mockcompositor.cpp mockcompositor.h
         textinput.cpp textinput.h
+        textinputv3.cpp textinputv3.h
         qttextinput.cpp qttextinput.h
         xdgoutputv1.cpp xdgoutputv1.h
         xdgshell.cpp xdgshell.h
@@ -44,6 +46,7 @@ qt6_generate_wayland_protocol_server_sources(SharedClientTest
         ${PROJECT_SOURCE_DIR}/src/3rdparty/wayland/protocols/wp-primary-selection/wp-primary-selection-unstable-v1.xml
         ${PROJECT_SOURCE_DIR}/src/3rdparty/wayland/protocols/tablet/tablet-unstable-v2.xml
         ${PROJECT_SOURCE_DIR}/src/3rdparty/wayland/protocols/text-input/v2/text-input-unstable-v2.xml
+        ${PROJECT_SOURCE_DIR}/src/3rdparty/wayland/protocols/text-input/v3/text-input-unstable-v3.xml
         ${PROJECT_SOURCE_DIR}/src/3rdparty/wayland/extensions/qt-text-input-method-unstable-v1.xml
         ${PROJECT_SOURCE_DIR}/src/3rdparty/wayland/protocols/fractional-scale/fractional-scale-v1.xml
         ${PROJECT_SOURCE_DIR}/src/3rdparty/wayland/protocols/viewporter/viewporter.xml
