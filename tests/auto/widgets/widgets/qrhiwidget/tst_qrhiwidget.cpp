@@ -18,17 +18,6 @@
 #include <private/qvulkandefaultinstance_p.h>
 #endif
 
-// True when running on the Android emulator's SwiftShader software renderer.
-static bool isAndroidSwiftShader(const QRhi *rhi)
-{
-#ifdef Q_OS_ANDROID
-    return rhi->driverInfo().deviceName.contains("SwiftShader");
-#else
-    Q_UNUSED(rhi);
-    return false;
-#endif
-}
-
 class tst_QRhiWidget : public QObject
 {
     Q_OBJECT
@@ -361,8 +350,6 @@ void tst_QRhiWidget::simple()
 
     QTRY_VERIFY(frameSpy.count() > 0);
 
-    if (api == QRhiWidget::Api::Vulkan && isAndroidSwiftShader(rhiWidget->rhi()))
-        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
     QCOMPARE(errorSpy.count(), 0);
 
     QCOMPARE(rhiWidget->sampleCount(), 1);
@@ -479,8 +466,6 @@ void tst_QRhiWidget::msaa()
 
     QTRY_VERIFY(frameSpy.count() > 0);
 
-    if (api == QRhiWidget::Api::Vulkan && isAndroidSwiftShader(rhiWidget->rhi()))
-        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
     QCOMPARE(errorSpy.count(), 0);
 
     QCOMPARE(rhiWidget->sampleCount(), 4);
@@ -739,9 +724,6 @@ void tst_QRhiWidget::grabFramebufferWhileStillInvisible()
     QVERIFY(QTest::qWaitForWindowExposed(&w));
     QTRY_VERIFY(frameSpy.count() > 0);
 
-    if (api == QRhiWidget::Api::Vulkan && isAndroidSwiftShader(w.rhi()))
-        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
-
     QCOMPARE(errorSpy.count(), 0);
 
     if (api != QRhiWidget::Api::Null) {
@@ -779,9 +761,6 @@ void tst_QRhiWidget::grabViaQWidgetGrab()
     w.show();
     QVERIFY(QTest::qWaitForWindowExposed(&w));
     QTRY_VERIFY(frameSpy.count() > 0);
-
-    if (api == QRhiWidget::Api::Vulkan && isAndroidSwiftShader(w.rhi()))
-        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
 
     QImage image = w.grab().toImage();
 
@@ -822,8 +801,6 @@ void tst_QRhiWidget::mirror()
 
     QTRY_VERIFY(frameSpy.count() > 0);
 
-    if (api == QRhiWidget::Api::Vulkan && isAndroidSwiftShader(rhiWidget->rhi()))
-        QSKIP("SwiftShader renders and reads back unreliably (QTBUG-146930)");
     QCOMPARE(errorSpy.count(), 0);
 
     frameSpy.clear();
