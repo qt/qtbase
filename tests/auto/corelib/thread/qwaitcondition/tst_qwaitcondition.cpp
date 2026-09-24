@@ -30,11 +30,6 @@ static const int ThreadCount = 4;
 class TerminatingThread : public QThread
 {
 public:
-    explicit TerminatingThread()
-    {
-        setTerminationEnabled(true);
-    }
-
     ~TerminatingThread()
     {
         if (isRunning()) {
