@@ -650,7 +650,11 @@ uint64_t QT_MANGLE_NAMESPACE(qDetectCpuFeatures)()
         while (char *token = strtok(disable, " ")) {
             disable = nullptr;
             for (uint i = 0; i < arraysize(features_indices); ++i) {
-                if (strcmp(token, features_string + features_indices[i]) == 0)
+                const char *name = features_string + features_indices[i];
+                if (*name == '\0')
+                    continue;
+                // non-empty entries carry a leading space
+                if (strcmp(token, name + 1) == 0)
                     f &= ~(Q_UINT64_C(1) << i);
             }
         }
