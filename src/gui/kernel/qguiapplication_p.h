@@ -291,6 +291,7 @@ public:
 
     QString firstWindowTitle;
     QIcon forcedWindowIcon;
+    qint64 badgeNumber = 0;
 
     static QList<QObject *> generic_plugin_list;
 #if QT_CONFIG(shortcut)

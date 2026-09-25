@@ -53,6 +53,7 @@ private slots:
     void cleanup();
     void displayName();
     void desktopFileName();
+    void badgeNumber();
     void firstWindowTitle();
     void windowIcon();
     void focusObject();
@@ -145,6 +146,33 @@ void tst_QGuiApplication::desktopFileName()
 
     QGuiApplication::setDesktopFileName(QString());
     QCOMPARE(QGuiApplication::desktopFileName(), QString());
+}
+
+void tst_QGuiApplication::badgeNumber()
+{
+    int argc = 1;
+    char *argv[] = { const_cast<char*>("tst_qguiapplication") };
+    QGuiApplication app(argc, argv);
+    QSignalSpy spy(&app, &QGuiApplication::badgeNumberChanged);
+
+    QCOMPARE(app.badgeNumber(), qint64(0));
+
+    app.setBadgeNumber(0);
+    QCOMPARE(spy.size(), 0);
+
+    app.setBadgeNumber(42);
+    QCOMPARE(app.badgeNumber(), qint64(42));
+    QCOMPARE(spy.size(), 1);
+    QCOMPARE(spy.last().at(0).toLongLong(), qint64(42));
+
+    app.setBadgeNumber(42);
+    QCOMPARE(spy.size(), 1);
+
+    app.setBadgeNumber(0);
+    QCOMPARE(app.badgeNumber(), qint64(0));
+    QCOMPARE(spy.size(), 2);
+
+    app.setBadgeNumber(0);
 }
 
 void tst_QGuiApplication::firstWindowTitle()

@@ -47,6 +47,8 @@ class Q_GUI_EXPORT QGuiApplication : public QCoreApplication
     Q_PROPERTY(bool quitOnLastWindowClosed  READ quitOnLastWindowClosed
                WRITE setQuitOnLastWindowClosed)
     Q_PROPERTY(QScreen *primaryScreen READ primaryScreen NOTIFY primaryScreenChanged STORED false)
+    Q_PROPERTY(qint64 badgeNumber READ badgeNumber WRITE setBadgeNumber
+               NOTIFY badgeNumberChanged REVISION(6, 13))
 
 public:
 #ifdef Q_QDOC
@@ -59,6 +61,7 @@ public:
     static void setApplicationDisplayName(const QString &name);
     static QString applicationDisplayName();
 
+    qint64 badgeNumber() const;
     Q_SLOT void setBadgeNumber(qint64 number);
 
     static void setDesktopFileName(const QString &name);
@@ -158,6 +161,7 @@ Q_SIGNALS:
     void saveStateRequest(QSessionManager &sessionManager);
 #endif
     void applicationDisplayNameChanged();
+    void badgeNumberChanged(qint64 number);
 #if QT_DEPRECATED_SINCE(6, 0)
     QT_DEPRECATED_VERSION_X_6_0("Handle QEvent::ApplicationPaletteChange instead") void paletteChanged(const QPalette &pal);
     QT_DEPRECATED_VERSION_X_6_0("Handle QEvent::ApplicationFontChange instead")  void fontChanged(const QFont &font);

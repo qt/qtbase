@@ -789,7 +789,8 @@ QString QGuiApplication::applicationDisplayName()
 }
 
 /*!
-    Sets the application's badge to \a number.
+    \property QGuiApplication::badgeNumber
+    \brief the number shown in the application's badge
 
     Useful for providing feedback to the user about the number
     of unread messages or similar.
@@ -802,14 +803,28 @@ QString QGuiApplication::applicationDisplayName()
     number will be clamped to the supported range. If the number does
     not fit within the badge, the number may be visually elided.
 
-    Setting the number to 0 will clear the badge.
+    Setting the number to 0 will clear the badge. The default value is 0.
 
     \since 6.5
-    \sa applicationName
+    \sa applicationName, applicationProgress
 */
+qint64 QGuiApplication::badgeNumber() const
+{
+    Q_D(const QGuiApplication);
+    return d->badgeNumber;
+}
+
 void QGuiApplication::setBadgeNumber(qint64 number)
 {
+    Q_D(QGuiApplication);
+    // Always forward to the platform, even if unchanged, as some platforms
+    // (e.g. iOS) persist the badge across launches, and applications rely
+    // on setBadgeNumber(0) to clear a stale badge.
     QGuiApplicationPrivate::platformIntegration()->setApplicationBadge(number);
+    if (d->badgeNumber == number)
+        return;
+    d->badgeNumber = number;
+    emit badgeNumberChanged(number);
 }
 
 /*!
