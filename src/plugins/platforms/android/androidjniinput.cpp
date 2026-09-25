@@ -960,8 +960,9 @@ namespace QtAndroidInput
     {
         qCDebug(lcQpaInputMethods) << "@@@ handleLocationChanged" << id << x << y;
         QAndroidInputContext *inputContext = QAndroidInputContext::androidInputContext();
+        // Queued, as Java reads nothing back and blocking here can deadlock.
         if (inputContext && qGuiApp)
-            QMetaObject::invokeMethod(inputContext, "handleLocationChanged", Qt::BlockingQueuedConnection,
+            QMetaObject::invokeMethod(inputContext, "handleLocationChanged", Qt::QueuedConnection,
                                       Q_ARG(int, id), Q_ARG(int, x), Q_ARG(int, y));
 
     }
