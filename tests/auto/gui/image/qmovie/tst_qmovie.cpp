@@ -22,6 +22,15 @@
 
 using namespace std::chrono_literals;
 
+// A file that cannot be rewound, like a socket or a QNetworkReply.
+class SequentialFile : public QFile
+{
+public:
+    using QFile::QFile;
+
+    bool isSequential() const override { return true; }
+};
+
 class tst_QMovie : public QObject
 {
     Q_OBJECT
@@ -60,6 +69,7 @@ private slots:
 
     void setScaledSize_data();
     void setScaledSize();
+    void sequentialDeviceCannotLoop();
 
 private:
     void playMovieImpl(QMovie &movie);
@@ -366,6 +376,33 @@ void tst_QMovie::setScaledSize()
     movie.start();
     QCOMPARE(movie.currentFrameNumber(), 0);
     QCOMPARE(movie.currentImage().size(), expectedSize);
+}
+
+void tst_QMovie::sequentialDeviceCannotLoop()
+{
+#ifndef QTEST_HAVE_GIF
+    QSKIP("This test requires GIF support");
+#endif
+
+    SequentialFile file(QFINDTESTDATA("animations/comicsecard.gif"));
+    QVERIFY(file.open(QIODevice::ReadOnly));
+
+    QMovie movie;
+    movie.setDevice(&file);
+    movie.setCacheMode(QMovie::CacheNone);
+    movie.setSpeed(1000);
+
+    // A sequential device cannot be rewound while uncached, so the animation
+    // can only be played once. Restarting it from the finished() handler, as
+    // consumers commonly do to implement looping, must not make QMovie report
+    // another finish; otherwise the two keep triggering each other.
+    QSignalSpy finishedSpy(&movie, &QMovie::finished);
+    connect(&movie, &QMovie::finished, this, [&movie] { movie.start(); });
+
+    movie.start();
+
+    QTRY_COMPARE(finishedSpy.size(), 1);
+    QCOMPARE(movie.state(), QMovie::NotRunning);
 }
 
 QTEST_MAIN(tst_QMovie)
