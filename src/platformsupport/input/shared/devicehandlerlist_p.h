@@ -27,13 +27,17 @@ template <typename Handler>
 class DeviceHandlerList {
 public:
     struct Device {
+    #ifndef __cpp_aggregate_paren_init
+        Q_IMPLICIT Device(QString s, std::unique_ptr<Handler> p)
+            : deviceNode(std::move(s)), handler(std::move(p)) {}
+    #endif
         QString deviceNode;
         std::unique_ptr<Handler> handler;
     };
 
-    void add(const QString &deviceNode, std::unique_ptr<Handler> handler)
+    void add(QString deviceNode, std::unique_ptr<Handler> handler)
     {
-        v.push_back({deviceNode, std::move(handler)});
+        v.emplace_back(std::move(deviceNode), std::move(handler));
     }
 
     bool remove(const QString &deviceNode)
