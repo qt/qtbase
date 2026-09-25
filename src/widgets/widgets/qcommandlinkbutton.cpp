@@ -12,7 +12,9 @@
 #include <qmath.h>
 
 #include "private/qpushbutton_p.h"
+#if QT_CONFIG(style_stylesheet)
 #include "private/qstylesheetstyle_p.h"
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -286,7 +288,12 @@ bool QCommandLinkButton::event(QEvent *e)
         // - or it has been set in the style sheet, in which case we don't want to override it here.
         // When a style sheet with an icon is replaced by one without an icon, the old icon
         // will be reset, when baseStyle()->repolish() is called.
-        if (!qobject_cast<QStyleSheetStyle *>(style())) {
+#if QT_CONFIG(style_stylesheet)
+        const bool isStyleSheetStyle = qobject_cast<QStyleSheetStyle *>(style());
+#else
+        const bool isStyleSheetStyle = false;
+#endif
+        if (!isStyleSheetStyle) {
             QStyleOptionButton opt;
             initStyleOption(&opt);
             setIcon(style()->standardIcon(QStyle::SP_CommandLink, &opt, this));
