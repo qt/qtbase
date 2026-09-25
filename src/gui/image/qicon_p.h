@@ -55,7 +55,6 @@ public:
 
 struct QPixmapIconEngineEntry
 {
-    QPixmapIconEngineEntry() = default;
     QPixmapIconEngineEntry(const QPixmap &pm, QIcon::Mode m, QIcon::State s)
         : pixmap(pm), size(pm.size()), mode(m), state(s) {}
     QPixmapIconEngineEntry(const QString &file, const QSize &sz, QIcon::Mode m, QIcon::State s)
@@ -105,13 +104,10 @@ public:
 private:
     void removePixmapEntry(QPixmapIconEngineEntry *pe)
     {
-        auto idx = pixmaps.size();
-        while (--idx >= 0) {
-            if (pe == &pixmaps.at(idx)) {
-                pixmaps.remove(idx);
-                return;
-            }
-        }
+        const auto pred = [pe](const auto &entry) { return pe == &entry; };
+        const auto it = std::find_if(pixmaps.begin(), pixmaps.end(), pred);
+        if (it != pixmaps.end())
+            pixmaps.erase(it);
     }
     QPixmapIconEngineEntry *tryMatch(const QSize &size, qreal scale, QIcon::Mode mode, QIcon::State state);
     QList<QPixmapIconEngineEntry> pixmaps;
