@@ -39,6 +39,12 @@ qt_internal_add_test(tst_qguiapplication
     BUILTIN_TESTDATA
 )
 
+# The Windows platform plugin loads the IDI_ICON1 resource for its window classes
+qt_internal_extend_target(tst_qguiapplication CONDITION WIN32
+    SOURCES
+        tst_qguiapplication.rc
+)
+
 if (ANDROID)
     set_property(TARGET tst_qguiapplication PROPERTY QT_ANDROID_VERSION_NAME ${target_version})
 endif()

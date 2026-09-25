@@ -23,6 +23,10 @@
 
 #include <QtGui/private/qopenglcontext_p.h>
 
+#ifdef Q_OS_WIN
+#include <qt_windows.h>
+#endif
+
 #include <QDebug>
 
 #include "tst_qcoreapplication.h"
@@ -80,6 +84,9 @@ private slots:
     void staticFunctions();
 
     void topLevelAt();
+#ifdef Q_OS_WIN
+    void windowClassIconsReleased();
+#endif
 
     void settableStyleHints_data();
     void settableStyleHints(); // Needs to run last as it changes style hints.
@@ -1497,6 +1504,46 @@ void tst_QGuiApplication::topLevelAt()
     QTRY_COMPARE(app.topLevelAt(QPoint(300, 300)), &bottom);
     QTRY_COMPARE(app.topLevelAt(QPoint(225, 225)), &top);
 }
+
+#ifdef Q_OS_WIN
+void tst_QGuiApplication::windowClassIconsReleased()
+{
+    // QTBUG-149920: The Windows platform plugin registers its window classes with the
+    // IDI_ICON1 resource of the application (provided by tst_qguiapplication.rc). The
+    // icons are loaded for every QGuiApplication and have to be destroyed again when the
+    // classes are unregistered, otherwise their GDI objects leak per application instance.
+    int argc = 1;
+    char *argv[] = { const_cast<char*>("tst_qguiapplication") };
+    // Returns the class icon of a top level window, or nullptr if not on the windows platform
+    const auto runApplication = [&argc, &argv]() -> HICON {
+        QGuiApplication app(argc, argv);
+        if (QGuiApplication::platformName() != QLatin1String("windows"))
+            return nullptr;
+        QWindow window; // a top level with a title bar uses a window class with icons
+        window.create();
+        const auto hwnd = reinterpret_cast<HWND>(window.winId());
+        return reinterpret_cast<HICON>(GetClassLongPtr(hwnd, GCLP_HICON));
+    };
+    const auto gdiObjectCount = [] {
+        return GetGuiResources(GetCurrentProcess(), GR_GDIOBJECTS);
+    };
+
+    const HICON classIcon = runApplication();
+    if (!classIcon)
+        QSKIP("This test requires the windows platform plugin");
+    // Make sure IDI_ICON1 from tst_qguiapplication.rc was picked up rather than
+    // the shared system fallback, otherwise there is nothing to leak
+    const auto sharedFallback = static_cast<HICON>(
+            LoadImage(nullptr, IDI_APPLICATION, IMAGE_ICON, 0, 0, LR_DEFAULTSIZE | LR_SHARED));
+    QVERIFY(classIcon != sharedFallback);
+
+    runApplication(); // warm up so that lazily created shared objects do not affect the count
+    const DWORD gdiObjects = gdiObjectCount();
+    for (int i = 0; i < 3; ++i)
+        runApplication();
+    QCOMPARE(gdiObjectCount(), gdiObjects);
+}
+#endif // Q_OS_WIN
 
 void tst_QGuiApplication::settableStyleHints_data()
 {

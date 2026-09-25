@@ -1,0 +1,5 @@
+// Copyright (C) 2026 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
+
+// Application icon picked up by the Windows platform plugin for its window classes
+IDI_ICON1 ICON "icons/appicon.ico"
