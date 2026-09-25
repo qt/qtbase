@@ -2634,6 +2634,9 @@ void tst_QLocale::toDateTime_data()
                              U"\U00011134\U0001111d\U00011133\U00011122\U0001112a\U00011120"
                              U"\U00011122\U00011128, \U00011138\U00011136\U00011137\U0001113d "
                              U"\U0001113b:\U00011138\U00011137:\U00011138\U0001113b PM") << true;
+
+    QTest::newRow("cIc44p4,-zone") // Found by fuzzer (run locally).
+        << "C" << QDateTime() << u"t"_s << u"cIc44p4,"_s << false;
 }
 
 void tst_QLocale::toDateTime()

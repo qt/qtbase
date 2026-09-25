@@ -511,9 +511,13 @@ static int parsePosixOffset(const char *begin, const char *end)
         ++begin;
     }
 
+    // POSIX says hour is at most 24, minutes and seconds (when present) at most 59.
+    // We here enforce the stronger condition that the offset is at most 24 hours.
+    // (This is weaker than QTZ's M(ax|in)UtcOffsetSecs but asserted by QDT.)
     int value = parsePosixTime(begin, end);
-    if (value == INT_MIN)
-        return value;
+    using namespace QtPrivate::DateTimeConstants;
+    if (value < -SECS_PER_DAY || value > SECS_PER_DAY)
+        return INT_MIN;
     return negate ? -value : value;
 }
 
@@ -590,6 +594,7 @@ PosixZone PosixZone::parse(const char *&pos, const char *end)
     // zone offset, form [+-]hh:mm:ss
     const char *zoneBegin = pos;
     const char *zoneEnd = pos;
+    // Sign is optional (implicitly +):
     if (zoneEnd < end && (zoneEnd[0] == '+' || zoneEnd[0] == '-'))
         ++zoneEnd;
     while (zoneEnd < end) {
