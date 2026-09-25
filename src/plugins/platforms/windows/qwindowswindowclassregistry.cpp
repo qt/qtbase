@@ -72,7 +72,7 @@ QString QWindowsWindowClassRegistry::registerWindowClass(const QWindowsWindowCla
     if (shouldDecorateWindowClassName(className, description.procedure))
         className += QUuid::createUuid().toString();
 
-    if (m_registeredWindowClassNames.contains(className))        // already registered in our list
+    if (m_registeredWindowClasses.contains(className))        // already registered in our list
         return className;
 
     const auto appInstance = static_cast<HINSTANCE>(GetModuleHandle(nullptr));
@@ -83,25 +83,36 @@ QString QWindowsWindowClassRegistry::registerWindowClass(const QWindowsWindowCla
     wc.lpfnWndProc = description.procedure;
     wc.hInstance = appInstance;
     wc.hbrBackground = description.brush;
+    WindowClassIcons icons;
     if (description.hasIcon) {
-        wc.hIcon = static_cast<HICON>(LoadImage(appInstance, L"IDI_ICON1", IMAGE_ICON, 0, 0, LR_DEFAULTSIZE));
-        if (wc.hIcon) {
+        // Icons loaded from the application resources without LR_SHARED are owned by
+        // the caller and have to be destroyed with DestroyIcon() once the class is
+        // unregistered. The fallback is a shared system icon, which must not be destroyed.
+        icons.icon = static_cast<HICON>(LoadImage(appInstance, L"IDI_ICON1", IMAGE_ICON, 0, 0, LR_DEFAULTSIZE));
+        if (icons.icon) {
             int sw = GetSystemMetrics(SM_CXSMICON);
             int sh = GetSystemMetrics(SM_CYSMICON);
-            wc.hIconSm = static_cast<HICON>(LoadImage(appInstance, L"IDI_ICON1", IMAGE_ICON, sw, sh, 0));
-        }
-        else {
+            icons.iconSmall = static_cast<HICON>(LoadImage(appInstance, L"IDI_ICON1", IMAGE_ICON, sw, sh, 0));
+            wc.hIcon = icons.icon;
+            wc.hIconSm = icons.iconSmall;
+        } else {
             wc.hIcon = static_cast<HICON>(LoadImage(nullptr, IDI_APPLICATION, IMAGE_ICON, 0, 0, LR_DEFAULTSIZE | LR_SHARED));
         }
     }
 
     wc.lpszClassName = reinterpret_cast<LPCWSTR>(className.utf16());
     ATOM atom = RegisterClassEx(&wc);
-    if (!atom)
+    if (!atom) {
         qCWarning(lcQpaWindowClass) << "Failed to register window class" << className
             << "(" << qt_error_string(-1) << ")";
+        if (icons.icon)
+            DestroyIcon(icons.icon);
+        if (icons.iconSmall)
+            DestroyIcon(icons.iconSmall);
+        icons = {};
+    }
 
-    m_registeredWindowClassNames.insert(className);
+    m_registeredWindowClasses.insert(className, icons);
 
     qCDebug(lcQpaWindowClass).nospace() << __FUNCTION__ << ' ' << className << ' ' << description << " atom=" << atom;
 
@@ -132,12 +143,19 @@ void QWindowsWindowClassRegistry::unregisterWindowClasses()
 {
     const auto appInstance = static_cast<HINSTANCE>(GetModuleHandle(nullptr));
 
-    for (const QString &name : std::as_const(m_registeredWindowClassNames)) {
-        if (!UnregisterClass(reinterpret_cast<LPCWSTR>(name.utf16()), appInstance) && QWindowsContext::verbose)
-            qCWarning(lcQpaWindowClass) << "Failed to unregister window class" << name
-                << "(" << qt_error_string(-1) << ")";
+    for (auto it = m_registeredWindowClasses.cbegin(), end = m_registeredWindowClasses.cend(); it != end; ++it) {
+        if (!UnregisterClass(reinterpret_cast<LPCWSTR>(it.key().utf16()), appInstance)) {
+            if (QWindowsContext::verbose)
+                qCWarning(lcQpaWindowClass) << "Failed to unregister window class" << it.key()
+                    << "(" << qt_error_string(-1) << ")";
+            continue; // the class is still in use and keeps referencing its icons
+        }
+        if (it->icon)
+            DestroyIcon(it->icon);
+        if (it->iconSmall)
+            DestroyIcon(it->iconSmall);
     }
-    m_registeredWindowClassNames.clear();
+    m_registeredWindowClasses.clear();
 }
 
 QT_END_NAMESPACE

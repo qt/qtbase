@@ -7,8 +7,8 @@
 
 #include "qtwindowsglobal.h"
 
+#include <QtCore/qhash.h>
 #include <QtCore/qloggingcategory.h>
-#include <QtCore/qset.h>
 #include <QtCore/qstring.h>
 
 QT_BEGIN_NAMESPACE
@@ -32,6 +32,14 @@ public:
     QString registerWindowClass(QString name, WNDPROC procedure);
 
 private:
+    // Icons loaded from the application resources for a window class.
+    // They are owned by the registry and destroyed with the class.
+    struct WindowClassIcons
+    {
+        HICON icon = nullptr;
+        HICON iconSmall = nullptr;
+    };
+
     static QString classNamePrefix();
 
     bool shouldDecorateWindowClassName(const QString &name, WNDPROC procedure) const;
@@ -40,7 +48,7 @@ private:
     static QWindowsWindowClassRegistry *m_instance;
 
     WNDPROC m_defaultProcedure;
-    QSet<QString> m_registeredWindowClassNames;
+    QHash<QString, WindowClassIcons> m_registeredWindowClasses;
 };
 
 QT_END_NAMESPACE
