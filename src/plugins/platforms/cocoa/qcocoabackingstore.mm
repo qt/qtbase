@@ -337,12 +337,12 @@ void QCALayerBackingStore::flush(QWindow *flushedWindow, const QRegion &region, 
         return;
     }
 
-    finalizeBackBuffer();
-
     if (flushedWindow != window()) {
         flushSubWindow(flushedWindow);
         return;
     }
+
+    finalizeBackBuffer();
 
     if (m_buffers.front()->isInUse() && !m_buffers.front()->isDirty()) {
         qCInfo(lcQpaBackingStore) << "Asked to flush, but front buffer is up to date. Ignoring.";
@@ -416,6 +416,19 @@ void QCALayerBackingStore::flushSubWindow(QWindow *subWindow)
         subWindowBackingStore->m_clearSurfaceOnPaint = false;
     }
 
+    // Pick the buffer that holds the latest content. If the front buffer is not dirty
+    // it is fully up to date, e.g. after the top-level window has already flushed and
+    // swapped its buffers on resize, in which case the back buffer may be an older,
+    // smaller surface. Otherwise the latest content was just painted into the back
+    // buffer, so finalize it and read from there, as we do for the top-level window.
+    GraphicsBuffer *sourceBuffer = nullptr;
+    if (!m_buffers.front()->isDirty()) {
+        sourceBuffer = m_buffers.front().get();
+    } else {
+        finalizeBackBuffer();
+        sourceBuffer = m_buffers.back().get();
+    }
+
     // Query platform window for subwindow size, so that we
     // incorporate any effects of the QHighDpiScaling layer.
     auto subWindowSize = subWindow->handle()->geometry().size();
@@ -435,10 +448,10 @@ void QCALayerBackingStore::flushSubWindow(QWindow *subWindow)
     auto scale = layer.contentsScale;
     subviewRect = CGRectApplyAffineTransform(subviewRect, CGAffineTransformMakeScale(scale, scale));
 
-    m_buffers.back()->lock(QPlatformGraphicsBuffer::SWReadAccess);
-    const QImage *backingStoreImage = m_buffers.back()->asImage();
+    sourceBuffer->lock(QPlatformGraphicsBuffer::SWReadAccess);
+    const QImage *backingStoreImage = sourceBuffer->asImage();
     painter.drawImage(subWindowLocalRect, *backingStoreImage, QRectF::fromCGRect(subviewRect));
-    m_buffers.back()->unlock();
+    sourceBuffer->unlock();
 
     painter.end();
     subWindowBackingStore->endPaint();
