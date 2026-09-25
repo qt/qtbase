@@ -68,13 +68,14 @@ EGLSurface QAndroidPlatformOpenGLContext::eglSurfaceForPlatformSurface(QPlatform
         // succeeds, a later makeCurrent() binds the real surface.
         if (eglSurface == EGL_NO_SURFACE)
             eglSurface = ensureFallbackPbuffer();
+
         return eglSurface;
-    } else {
-        if (auto *platformOffscreenSurface = dynamic_cast<QAndroidPlatformOffscreenSurface *>(surface))
-            return platformOffscreenSurface->surface();
-        else
-            return static_cast<QEGLPbuffer *>(surface)->pbuffer();
     }
+
+    if (auto *platformOffscreenSurface = dynamic_cast<QAndroidPlatformOffscreenSurface *>(surface))
+        return platformOffscreenSurface->surface();
+
+    return static_cast<QEGLPbuffer *>(surface)->pbuffer();
 }
 
 QT_END_NAMESPACE
