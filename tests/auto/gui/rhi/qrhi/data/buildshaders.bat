@@ -3,7 +3,7 @@
 
 qsb --glsl "150,120,100 es" --hlsl 50 -c --msl 12 -o colored.vert.qsb colored.vert
 qsb --glsl "150,120,100 es" --hlsl 50 -c --msl 12 -o colored.frag.qsb colored.frag
-qsb --glsl "150,120,100 es" --hlsl 50 -c --msl 12 -o simple.vert.qsb simple.vert
+qsb --glsl "150,120,100 es,300 es" --hlsl 50 -c --msl 12 -o simple.vert.qsb simple.vert
 qsb --glsl "150,120,100 es" --hlsl 50 -c --msl 12 -o simple.frag.qsb simple.frag
 qsb --glsl "150,120,100 es" --hlsl 50 -c --msl 12 -o simpletextured.vert.qsb simpletextured.vert
 qsb --glsl "150,120,100 es" --hlsl 50 -c --msl 12 -o simpletextured.frag.qsb simpletextured.frag
