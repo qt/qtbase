@@ -413,7 +413,7 @@ void tst_Android::testFullScreenDimensions()
             display.callMethod<void>("getSize", jappSize);
             return QSize(jappSize.getField<jint>("x"), jappSize.getField<jint>("y"));
         }
-    }();
+    };
 
     auto realSize = [=]() {
         QtJniTypes::Point jrealSize{};
@@ -444,7 +444,7 @@ void tst_Android::testFullScreenDimensions()
 
             return QSize(insetRight + insetLeft, insetTop + insetBottom);
         }
-    }();
+    };
 
     QWidget widget;
     QPalette palette = widget.palette();
@@ -456,7 +456,8 @@ void tst_Android::testFullScreenDimensions()
         // Normal Window
         // available geometry == app size (depending on the Android version)
         widget.showNormal();
-        QTRY_COMPARE(screen->availableGeometry().size(), appSize - insetsSize);
+        // Re-read on each retry, the insets at test start can be stale.
+        QTRY_COMPARE(screen->availableGeometry().size(), appSize() - insetsSize());
         QTRY_COMPARE(screen->geometry().size(), realSize);
     }
 
