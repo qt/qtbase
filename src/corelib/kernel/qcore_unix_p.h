@@ -70,8 +70,10 @@ static inline constexpr clockid_t QSteadyClockClockId =
 #if !defined(CLOCK_MONOTONIC)
         // we don't know how to set the monotonic clock
         CLOCK_REALTIME
-#elif defined(_LIBCPP_VERSION) && defined(_LIBCPP_HAS_NO_MONOTONIC_CLOCK)
-        // libc++ falling back to system_clock
+#elif defined(_LIBCPP_VERSION)                      \
+        && (defined(_LIBCPP_HAS_NO_MONOTONIC_CLOCK) \
+            || (defined(_LIBCPP_HAS_MONOTONIC_CLOCK) && !_LIBCPP_HAS_MONOTONIC_CLOCK))
+        // libc++ falling back to system_clock (the macro was inverted in LLVM 20)
         CLOCK_REALTIME
 #elif defined(__GLIBCXX__) && !defined(_GLIBCXX_USE_CLOCK_MONOTONIC)
         // libstdc++ falling back to system_clock
