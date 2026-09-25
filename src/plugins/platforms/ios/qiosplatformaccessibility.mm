@@ -89,7 +89,6 @@ void QIOSPlatformAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *even
     case QAccessible::ObjectCreated:
     case QAccessible::ObjectShow:
     case QAccessible::ObjectHide:
-    case QAccessible::ObjectDestroyed:
         invalidateCache(accessibleInterface);
         switch (accessibleInterface->role()) {
         case QAccessible::Window:
@@ -101,6 +100,15 @@ void QIOSPlatformAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *even
             // While smaller changes can be handled by re-reading the layout
             UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification, nil);
         }
+        break;
+    case QAccessible::ObjectDestroyed:
+        invalidateCache(accessibleInterface);
+        // It would be nice if we could read the role from an
+        // destroyed a11y object, to check whether the object was
+        // a window or dialog before it was destroyed, but we can't
+        // trust that doing so won't try to read the object itself.
+        // Instead of unconditionally posting a screen change here,
+        // we assume that anything that is destroyed is hidden first.
         break;
     default:
         break;
