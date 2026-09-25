@@ -348,7 +348,7 @@ QPixmap QPixmapIconEngine::scaledPixmap(const QSize &size, QIcon::Mode mode, QIc
 
     if (pm.isNull()) {
         removePixmapEntry(pe);
-        if (pixmaps.isEmpty())
+        if (pixmaps.empty())
             return pm;
         return scaledPixmap(size, mode, state, scale);
     }
@@ -431,7 +431,7 @@ void QPixmapIconEngine::addPixmap(const QPixmap &pixmap, QIcon::Mode mode, QIcon
             pe->pixmap = pixmap;
             pe->fileName.clear();
         } else {
-            pixmaps += QPixmapIconEngineEntry(pixmap, mode, state);
+            pixmaps.emplace_back(pixmap, mode, state);
         }
     }
 }
@@ -467,14 +467,14 @@ void QPixmapIconEngine::addFile(const QString &fileName, const QSize &size, QIco
         if (ignoreSize) { // No size specified: Add all images.
             if (imageReader.supportsReadSize()) {
                 do {
-                    pixmaps += QPixmapIconEngineEntry(abs, imageReader.size(), mode, state);
+                    pixmaps.emplace_back(abs, imageReader.size(), mode, state);
                 } while (imageReader.jumpToNextImage());
             } else {
                 while (imageReader.read(&image))
-                    pixmaps += QPixmapIconEngineEntry(abs, image, mode, state);
+                    pixmaps.emplace_back(abs, image, mode, state);
             }
         } else {
-            pixmaps += QPixmapIconEngineEntry(abs, size, mode, state);
+            pixmaps.emplace_back(abs, size, mode, state);
         }
         return;
     }
@@ -495,14 +495,14 @@ void QPixmapIconEngine::addFile(const QString &fileName, const QSize &size, QIco
         }
     }
     for (const QImage &i : std::as_const(icoImages))
-        pixmaps += QPixmapIconEngineEntry(abs, i, mode, state);
-    if (icoImages.isEmpty() && !ignoreSize) // Add placeholder with the filename and empty pixmap for the size.
-        pixmaps += QPixmapIconEngineEntry(abs, size, mode, state);
+        pixmaps.emplace_back(abs, i, mode, state);
+    if (icoImages.empty() && !ignoreSize) // Add placeholder with the filename and empty pixmap for the size.
+        pixmaps.emplace_back(abs, size, mode, state);
 }
 
 bool QPixmapIconEngine::isNull()
 {
-    return pixmaps.isEmpty();
+    return pixmaps.empty();
 }
 
 QString QPixmapIconEngine::key() const
@@ -540,7 +540,7 @@ bool QPixmapIconEngine::read(QDataStream &in)
         } else {
             QPixmapIconEngineEntry pe(fileName, sz, QIcon::Mode(mode), QIcon::State(state));
             pe.pixmap = pm;
-            pixmaps += pe;
+            pixmaps.push_back(std::move(pe));
         }
     }
     return true;
