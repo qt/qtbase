@@ -7,6 +7,7 @@
 #include <qpa/qplatformintegration.h>
 #include <private/qguiapplication_p.h>
 #include <qpainter.h>
+#include <qscreen.h>
 
 #include <QTest>
 
@@ -35,6 +36,8 @@ private slots:
     void flush();
 
     void staticContents();
+
+    void childWindowFlush();
 };
 
 void tst_QBackingStore::initTestCase_data()
@@ -362,6 +365,76 @@ void tst_QBackingStore::staticContents()
             QCOMPARE(image.pixelColor(repaintRect.bottomRight() * dpr), Qt::red);
         }
     }
+}
+
+void tst_QBackingStore::childWindowFlush()
+{
+    const auto *integration = QGuiApplicationPrivate::platformIntegration();
+    if (!integration->hasCapability(QPlatformIntegration::ScreenWindowGrabbing))
+        QSKIP("Platform does not support grabbing screen");
+    if (!integration->hasCapability(QPlatformIntegration::ChildWindows))
+        QSKIP("Platform does not support child windows");
+
+    QWindow parent;
+    parent.setGeometry(100, 100, 400, 400);
+    QWindow child(&parent);
+    QRect childRect(0, 0, 200, 200);
+    child.setGeometry(childRect);
+    child.show();
+    parent.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&parent));
+    QVERIFY(QTest::qWaitForWindowExposed(&child));
+
+    QBackingStore backingStore(&parent);
+
+    // Prime double buffering at the initial small size.
+    QRect small(0, 0, 100, 100);
+    backingStore.resize(small.size());
+    backingStore.beginPaint(small);
+    {
+        QPainter p(backingStore.paintDevice());
+        p.fillRect(small, Qt::blue);
+    }
+    backingStore.endPaint();
+    backingStore.flush(small);
+    backingStore.flush(small, &child);
+
+    static const QColor greenColor = Qt::green;
+
+    // Grow to the full parent size, paint red with the child's
+    // area green, flush the top-level (swaps buffers) and then
+    // the native child.
+    QRect big(QPoint(), parent.size());
+    backingStore.resize(big.size());
+    backingStore.beginPaint(big);
+    {
+        QPainter p(backingStore.paintDevice());
+        p.fillRect(big, Qt::red);
+        p.fillRect(childRect, greenColor);
+    }
+    backingStore.endPaint();
+    backingStore.flush(big);
+    backingStore.flush(big, &child);
+
+    // Move the child over the red area, so that any part of the
+    // child that was not flushed shows red instead of green.
+    child.setPosition(200, 200);
+
+    QImage grab;
+    auto pixelAt = [&](const QPoint &point) {
+        return grab.pixelColor(point * grab.devicePixelRatio());
+    };
+
+    auto grabPixelAt = [&](const QPoint &point) {
+        grab = parent.screen()->grabWindow(parent.winId()).toImage();
+        return pixelAt(point);
+    };
+
+    QTRY_COMPARE(grabPixelAt(QPoint(250, 250)), greenColor);
+
+    QCOMPARE(pixelAt(QPoint(350, 250)), greenColor);
+    QCOMPARE(pixelAt(QPoint(250, 350)), greenColor);
+    QCOMPARE(pixelAt(QPoint(350, 350)), greenColor);
 }
 
 #include <tst_qbackingstore.moc>
