@@ -908,7 +908,7 @@ void Widget::plusEqualOperator()
 void Widget::arrayOperator()
 {
     //! [85]
-    QString str;
+    QString str = "?";
 
     if (str[0] == QChar('?'))
         str[0] = QChar('_');
