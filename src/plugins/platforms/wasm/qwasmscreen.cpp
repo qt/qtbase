@@ -10,9 +10,9 @@
 #include "qwasmkeytranslator.h"
 #include "qwasmwindow.h"
 
-#include <emscripten/bind.h>
 #include <emscripten/val.h>
 
+#include <private/qwasmsuspendresumecontrol_p.h>
 #include <qpa/qwindowsysteminterface.h>
 #include <QtCore/qcoreapplication.h>
 #include <QtGui/qguiapplication.h>
@@ -22,9 +22,6 @@
 QT_BEGIN_NAMESPACE
 
 using namespace emscripten;
-
-const char *QWasmScreen::m_canvasResizeObserverCallbackContextPropertyName =
-        "data-qtCanvasResizeObserverCallbackContext";
 
 QWasmScreen::QWasmScreen(const emscripten::val &containerOrCanvas)
     : m_container(containerOrCanvas),
@@ -75,6 +72,7 @@ QWasmScreen::QWasmScreen(const emscripten::val &containerOrCanvas)
             .set(outerScreenId().toStdString(), m_container);
 
     updateQScreenSize();
+    installCanvasResizeObserver();
     m_shadowContainer.call<void>("focus");
 
     m_touchDevice = std::make_unique<QPointingDevice>(
@@ -99,10 +97,9 @@ QWasmScreen::QWasmScreen(const emscripten::val &containerOrCanvas)
 
 QWasmScreen::~QWasmScreen()
 {
+    m_resizeObserver.call<void>("disconnect");
+    QWasmSuspendResumeControl::get()->removeEventHandler(m_resizeObserverHandlerIndex);
     m_intermediateContainer.call<void>("remove");
-
-    m_shadowContainer.set(m_canvasResizeObserverCallbackContextPropertyName,
-                          emscripten::val(uintptr_t(0)));
 }
 
 void QWasmScreen::deleteScreen()
@@ -266,6 +263,9 @@ void QWasmScreen::updateQScreenSize()
     double css_height;
     emscripten_get_element_css_size(outerScreenId().toUtf8().constData(), &css_width, &css_height);
     QSizeF cssSize(css_width, css_height);
+    // A hidden container reports 0x0, keep the last laid out size.
+    if (cssSize.isNull())
+        return;
 
     // Returns the html elements document/body position
     auto getElementBodyPosition = [](const emscripten::val &element) -> QPoint {
@@ -279,44 +279,16 @@ void QWasmScreen::updateQScreenSize()
     setGeometry(QRect(getElementBodyPosition(m_shadowContainer), cssSize.toSize()));
 }
 
-void QWasmScreen::canvasResizeObserverCallback(emscripten::val entries, emscripten::val)
-{
-    int count = entries["length"].as<int>();
-    if (count == 0)
-        return;
-    emscripten::val entry = entries[0];
-    QWasmScreen *screen = reinterpret_cast<QWasmScreen *>(
-            entry["target"][m_canvasResizeObserverCallbackContextPropertyName].as<uintptr_t>());
-    if (!screen) {
-        qWarning() << "QWasmScreen::canvasResizeObserverCallback: missing screen pointer";
-        return;
-    }
-
-    screen->updateQScreenSize();
-}
-
-EMSCRIPTEN_BINDINGS(qtCanvasResizeObserverCallback)
-{
-    emscripten::function("qtCanvasResizeObserverCallback",
-                         &QWasmScreen::canvasResizeObserverCallback);
-}
-
+// Tracks container layout changes the window resize event misses, such as the
+// container being revealed or sized by the page after Qt has started.
 void QWasmScreen::installCanvasResizeObserver()
 {
-    emscripten::val ResizeObserver = emscripten::val::global("ResizeObserver");
-    if (ResizeObserver == emscripten::val::undefined())
-        return; // ResizeObserver API is not available
-    emscripten::val resizeObserver =
-            ResizeObserver.new_(emscripten::val::module_property("qtCanvasResizeObserverCallback"));
-    if (resizeObserver == emscripten::val::undefined())
-        return; // Something went horribly wrong
-
-    // We need to get back to this instance from the (static) resize callback;
-    // set a "data-" property on the canvas element.
-    m_shadowContainer.set(m_canvasResizeObserverCallbackContextPropertyName,
-                          emscripten::val(uintptr_t(this)));
-
-    resizeObserver.call<void>("observe", m_shadowContainer);
+    QWasmSuspendResumeControl *suspendResume = QWasmSuspendResumeControl::get();
+    m_resizeObserverHandlerIndex = suspendResume->registerEventHandler(
+            [this](emscripten::val) { updateQScreenSize(); });
+    m_resizeObserver = emscripten::val::global("ResizeObserver").new_(
+            suspendResume->jsEventHandlerAt(m_resizeObserverHandlerIndex));
+    m_resizeObserver.call<void>("observe", m_shadowContainer);
 }
 
 emscripten::val QWasmScreen::containerElement()
