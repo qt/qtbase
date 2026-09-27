@@ -1414,6 +1414,8 @@ void QIcon::setFallbackThemeName(const QString &name)
 */
 QIcon QIcon::fromTheme(const QString &name)
 {
+    if (name.isEmpty())
+        return {};
 
     if (QIcon *cachedIcon = qtIconCache()->object(name))
         return *cachedIcon;
