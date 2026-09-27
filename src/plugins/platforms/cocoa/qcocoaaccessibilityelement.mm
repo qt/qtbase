@@ -1032,7 +1032,9 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
     const QStringList &supportedActionNames = QAccessibleBridgeUtils::effectiveActionNames(iface);
     for (const QString &qtAction : supportedActionNames) {
         NSString *nsAction = QCocoaAccessible::getTranslatedAction(qtAction);
-        if (nsAction)
+        // Several Qt actions translate to the same NSAccessibility action
+        // (press and toggle both are AXPress). List the action only once.
+        if (nsAction && ![nsActions containsObject:nsAction])
             [nsActions addObject : nsAction];
     }
 
