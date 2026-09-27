@@ -494,6 +494,60 @@ class WidgetTestCase(unittest.TestCase):
         window.maximize()
         self.assertEqual(window.frame_rect, Rect(x=200, y=200, width=300, height=300))
 
+    def test_screen_follows_container_resize(self):
+        screen = Screen(self._driver, ScreenPosition.RELATIVE,
+                        x=200, y=200, width=300, height=300)
+        self.assertEqual(screen.rect.width, 300)
+
+        # Resize only the container, no window resize event.
+        self._driver.execute_script(
+            'arguments[0].style.width = "500px"; arguments[0].style.height = "400px";',
+            screen.element)
+
+        WebDriverWait(self._driver, 1).until(
+            lambda _: screen.rect.width == 500 and screen.rect.height == 400)
+
+    def test_hidden_screen_gets_geometry_when_shown(self):
+        screen = Screen(self._driver, ScreenPosition.HIDDEN,
+                        x=200, y=200, width=300, height=300)
+        self.assertEqual(screen.rect.width, 0)
+
+        self._driver.execute_script('arguments[0].style.display = "block";', screen.element)
+
+        WebDriverWait(self._driver, 1).until(
+            lambda _: screen.rect.width == 300 and screen.rect.height == 300)
+
+        window = Window(parent=screen, rect=Rect(x=250, y=250, width=100, height=100),
+                        title='Revealed')
+        window.set_background_color(Color(r=255, g=0, b=0))
+        wait_for_animation_frame(self._driver)
+        self.assertEqual(window.color_at(0, 0), Color(r=255, g=0, b=0))
+
+    def test_hiding_screen_keeps_geometry(self):
+        screen = Screen(self._driver, ScreenPosition.RELATIVE,
+                        x=200, y=200, width=300, height=300)
+        window = Window(parent=screen, rect=Rect(x=250, y=250, width=100, height=100),
+                        title='Maximized')
+        window.maximize()
+        self.assertEqual(window.frame_rect, Rect(x=200, y=200, width=300, height=300))
+
+        # Hide, then send a window resize event, neither may collapse the screen.
+        self._driver.execute_script('arguments[0].style.display = "none";', screen.element)
+        self._driver.execute_script('window.dispatchEvent(new Event("resize"));')
+        self._driver.execute_async_script(
+            'const done = arguments[arguments.length - 1];'
+            'requestAnimationFrame(() => requestAnimationFrame(done));')
+        self.assertEqual(screen.rect.width, 300)
+        self.assertEqual(screen.rect.height, 300)
+
+        # Resized while hidden, the new size is picked up when shown again.
+        self._driver.execute_script(
+            'arguments[0].style.width = "500px"; arguments[0].style.display = "block";',
+            screen.element)
+        WebDriverWait(self._driver, 1).until(
+            lambda _: screen.rect.width == 500 and screen.rect.height == 300)
+        self.assertEqual(window.frame_rect, Rect(x=200, y=200, width=500, height=300))
+
     def test_multitouch_window_move(self):
         screen = Screen(self._driver, ScreenPosition.FIXED,
                         x=0, y=0, width=600, height=600)
@@ -867,6 +921,7 @@ class ScreenPosition(Enum):
     FIXED = auto()
     RELATIVE = auto()
     IN_SCROLL_CONTAINER = auto()
+    HIDDEN = auto()
 
 class Screen:
     def __init__(self, driver, positioning=None, x=None, y=None, width=None, height=None, container_width=0, container_height=0, screen_name=None):
@@ -885,6 +940,8 @@ class Screen:
             command = f'initializeScreenWithRelativePosition({x}, {y}, {width}, {height})'
         elif positioning == ScreenPosition.IN_SCROLL_CONTAINER:
             command = f'initializeScreenInScrollContainer({container_width}, {container_height}, {x}, {y}, {width}, {height})'
+        elif positioning == ScreenPosition.HIDDEN:
+            command = f'initializeHiddenScreen({x}, {y}, {width}, {height})'
         self.element = self.driver.execute_script(
             f'''
                 return testSupport.{command};

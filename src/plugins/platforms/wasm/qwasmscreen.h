@@ -66,7 +66,6 @@ public:
     void invalidateSize();
     void updateQScreenSize();
     void installCanvasResizeObserver();
-    static void canvasResizeObserverCallback(emscripten::val entries, emscripten::val);
 
 public slots:
     void setGeometry(const QRect &rect);
@@ -82,11 +81,12 @@ private:
     std::unique_ptr<QWasmCompositor> m_compositor;
     std::unique_ptr<QPointingDevice> m_touchDevice;
     std::unique_ptr<QPointingDevice> m_tabletDevice;
-    QRect m_geometry = QRect(0, 0, 100, 100);
+    QRect m_geometry;
     int m_depth = 32;
     QImage::Format m_format = QImage::Format_RGB32;
     QWasmCursor m_cursor;
-    static const char *m_canvasResizeObserverCallbackContextPropertyName;
+    emscripten::val m_resizeObserver = emscripten::val::undefined();
+    uint32_t m_resizeObserverHandlerIndex = 0;
     std::unique_ptr<qstdweb::EventCallback> m_onContextMenu;
 };
 

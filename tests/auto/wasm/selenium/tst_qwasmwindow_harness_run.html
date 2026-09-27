@@ -46,6 +46,17 @@
 
                     return screenDiv;
                 },
+                // Hidden when Qt creates the screen, like a page revealing it after startup.
+                initializeHiddenScreen: (left, top, width, height) => {
+                    const screenDiv = makeSizedDiv(left, top, width, height);
+                    testSandbox.appendChild(screenDiv);
+
+                    screenDiv.style.position = 'relative';
+                    screenDiv.style.display = 'none';
+                    instance.qtAddContainerElement(screenDiv);
+
+                    return screenDiv;
+                },
                 initializeScreenInScrollContainer:
                     (scrollWidth, scrollHeight, left, top, width, height) => {
                         const scrollContainer = document.createElement('div');
