@@ -1220,8 +1220,8 @@ private:
  */
 void tst_QLocalSocket::processConnection()
 {
-#if !QT_CONFIG(process)
-    QSKIP("No qprocess support");
+#if !QT_CONFIG(process) || defined(Q_OS_HARMONY)
+    QSKIP("Skipped, cannot launch helper on this platform");
 #else
 
 #ifdef Q_OS_WIN
