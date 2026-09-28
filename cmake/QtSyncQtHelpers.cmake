@@ -132,6 +132,7 @@ function(qt_internal_target_sync_headers target
 
     set(common_syncqt_arguments
         -module "${module}"
+        -moduleVersion "${PROJECT_VERSION}"
         -sourceDir "${source_dir_real}"
         -binaryDir "${binary_dir_real}"
         -privateHeadersFilter "${private_filter_regex}"
