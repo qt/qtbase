@@ -1255,6 +1255,11 @@ void QOhosView::setNativeNodeVisibility(bool visible)
 
 void QOhosView::hideMainWindow()
 {
+    if (m_ohosWindowProxy == nullptr) {
+        setNativeNodeVisibility(false);
+        return;
+    }
+
     if (m_ohosWindowProxy->tryHideAbility()) {
         m_lastMainWindowHideMethod = WindowHideMethod::HideAbility;
         return;
