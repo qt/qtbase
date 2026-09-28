@@ -36,9 +36,9 @@ private:
     void destroyWindowSurface() override;
     QSurfaceFormat m_format;
     // Render-thread-only state.
-    VkSurfaceKHR m_vkSurface;
-    PFN_vkCreateAndroidSurfaceKHR m_createVkSurface;
-    PFN_vkDestroySurfaceKHR m_destroyVkSurface;
+    VkSurfaceKHR m_vkSurface = VK_NULL_HANDLE;
+    PFN_vkCreateAndroidSurfaceKHR m_createVkSurface = nullptr;
+    PFN_vkDestroySurfaceKHR m_destroyVkSurface = nullptr;
 };
 
 QT_END_NAMESPACE
