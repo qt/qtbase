@@ -95,7 +95,7 @@ namespace detail {
     // http://eel.is/c++draft/pointer.conversion#3
     template <typename Ptr, typename = void>
     struct to_address_helper {
-        static auto get(const Ptr &ptr) noexcept
+        static constexpr auto get(const Ptr &ptr) noexcept
         { return q20::to_address(ptr.operator->()); }
     };
     template <typename Ptr>
@@ -103,7 +103,7 @@ namespace detail {
             decltype(std::pointer_traits<Ptr>::to_address(std::declval<const Ptr&>()))
         >>
     {
-        static auto get(const Ptr &ptr) noexcept
+        static constexpr auto get(const Ptr &ptr) noexcept
         { return std::pointer_traits<Ptr>::to_address(ptr); }
     };
 } // namespace detail
