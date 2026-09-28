@@ -70,6 +70,9 @@ public:
     // a registered module, or an unknown one loaded with napi_load_module() and memoized; empty if that load fails
     virtual std::optional<QNapi::Object> tryGetModule(const std::string &moduleName) = 0;
 
+    template<typename T>
+    std::enable_if_t<std::is_default_constructible<T>::value, T> &getAttachedObjectWithLazyCreate();
+
     virtual void startAppProcess(
         const std::string &processId, QNapi::Object requestWant,
         QNapi::Object optStartOptions, std::function<void(QOhosJsState &)> continueFunc) = 0;
@@ -134,6 +137,8 @@ private:
     static OhosEnumInfo makeOhosEnumInfo();
 
     virtual std::tuple<QNapi::Object, std::string> extractModuleFromEvalExpr(const std::string &expr) = 0;
+    virtual void *getAttachedObjectWithLazyCreate(
+        const std::type_info &objectTypeInfo, QOhosSupplier<std::shared_ptr<void>> objectFactory) = 0;
     virtual QNapi::Number mapOhosEnumToJs(int enumValue, const std::type_info &enumTypeInfo, OhosEnumInfo (*ohosEnumInfoFactory)()) = 0;
     virtual std::optional<int> tryMapOhosEnumFromJs(QNapi::Number enumJsValue, const std::type_info &enumTypeInfo, OhosEnumInfo (*ohosEnumInfoFactory)()) = 0;
     virtual int mapOhosEnumFromJs(QNapi::Number enumJsValue, const std::type_info &enumTypeInfo, OhosEnumInfo (*ohosEnumInfoFactory)()) = 0;
@@ -418,6 +423,14 @@ inline QNapi::Promise QOhosJsState::evalToPromiseOrRejectOnThrow(
     std::tie(module, subExpr) = extractModuleFromEvalExpr(expr);
 
     return module.evalToPromiseOrRejectOnThrow(subExpr, exprArgs);
+}
+
+template<typename T>
+std::enable_if_t<std::is_default_constructible<T>::value, T> &QOhosJsState::getAttachedObjectWithLazyCreate()
+{
+    auto *objectPtr = reinterpret_cast<T *>(
+        getAttachedObjectWithLazyCreate(typeid(T), &std::make_shared<T>));
+    return *objectPtr;
 }
 
 template<typename Enum>

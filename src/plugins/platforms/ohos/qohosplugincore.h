@@ -105,18 +105,12 @@ public:
     virtual QtRunMode qtRunMode() = 0;
 
     template<typename T>
-    std::enable_if_t<std::is_default_constructible<T>::value, T> &getAttachedObjectWithLazyCreate();
-
-    template<typename T>
     QNapi::Symbol getJsSymbolForType();
 
 protected:
     JsState();
 
 private:
-    virtual void *getAttachedObjectWithLazyCreate(
-        const std::type_info &objectTypeInfo, QOhosSupplier<std::shared_ptr<void>> objectFactory) = 0;
-
     virtual QNapi::Symbol getJsSymbolForType(const std::type_info &typeInfo) = 0;
 };
 
@@ -211,14 +205,6 @@ T evalInJsThreadWithPromise(
 Q_REQUIRED_RESULT bool tryInvokeInQtThreadAndTryWaitForContinue(
     std::function<void(std::function<void()>)> &&task,
     std::chrono::nanoseconds timeout);
-
-template<typename T>
-std::enable_if_t<std::is_default_constructible<T>::value, T> &JsState::getAttachedObjectWithLazyCreate()
-{
-    auto *objectPtr = reinterpret_cast<T *>(
-        getAttachedObjectWithLazyCreate(typeid(T), &std::make_shared<T>));
-    return *objectPtr;
-}
 
 template<typename T>
 QNapi::Symbol JsState::getJsSymbolForType()
