@@ -12,6 +12,7 @@
 #include <QtCore/qjniobject.h>
 #include <QtCore/qjnitypes.h>
 #include <QtCore/qloggingcategory.h>
+
 #include <jni.h>
 
 struct ANativeWindow;
