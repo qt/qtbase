@@ -4,6 +4,7 @@
 #include "qohosjstools_p.h"
 #include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/private/qohoslogger_p.h>
+#include <exception>
 #include <iterator>
 #include <vector>
 
@@ -145,6 +146,27 @@ std::shared_ptr<void> registerOhosAppContextEnvironmentCallback(
                 },
                 Q_FUNC_INFO);
         });
+}
+
+void runQOhosJsCodeLoggingExceptions(napi_env env, const char *callerContextName, const std::function<void()> &code)
+{
+    Napi::Env napiEnv(env);
+    Napi::HandleScope codeScope(napiEnv);
+
+    try {
+        code();
+    } catch (const Napi::Error &error) {
+        qOhosPrintfWarning("%s: caught a JS error: %s", callerContextName, error.what());
+    } catch (const std::exception &e) {
+        qOhosPrintfWarning("%s: caught an exception: %s", callerContextName, e.what());
+    } catch (...) {
+        qOhosPrintfWarning("%s: caught an unknown exception", callerContextName);
+    }
+
+    if (napiEnv.IsExceptionPending()) {
+        auto pendingException = napiEnv.GetAndClearPendingException();
+        qOhosPrintfWarning("%s: cleared a pending JS exception: %s", callerContextName, pendingException.what());
+    }
 }
 
 QT_END_NAMESPACE
