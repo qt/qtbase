@@ -778,20 +778,21 @@ void handleDefaultQAbilityInstanceStartup(JsState &jsState, std::shared_ptr<QAbi
                     s_appExitCode = exitCode;
 
                 qOhosPrintfInfo("Qt: asynchronously terminating remaining QAbility instances, if any");
-                QtOhos::invokeInJsThread(
-                    [](QtOhos::JsState &jsState) {
+                QOhosJsThreadGateway::invoke(
+                    [](QOhosJsState &jsState) {
+                        auto &pluginJsState = JsState::castFrom(jsState);
                         if (s_hotStartEnabled)
                             QAbilityInstancesManager::instance(jsState).registerPendingAutoStartedInstance(&handleDefaultQAbilityInstanceStartup);
 
                         qOhosPrintfInfo(
                             "Qt: force-resolving pending QWindow destroy Promises before termination if needed");
-                        jsState.visitEachQAbilityPeer(
+                        pluginJsState.visitEachQAbilityPeer(
                             [&](std::shared_ptr<QtOhos::QAbilityPeer> peer) {
                                 peer->forceResolveQWindowDestroyPromiseIfPresent(
                                     Napi::Env(jsState.env()));
                             });
 
-                        terminateAllAbilityInstances(jsState, "Qt main() exit");
+                        terminateAllAbilityInstances(pluginJsState, "Qt main() exit");
                     });
 
                 (*qtAppThreadIdleSetFunc)(true);
@@ -1177,12 +1178,12 @@ QNapi::Value handleAbilityStageOnAcceptWant(const CallbackInfo &cbInfo)
     return QNapi::String::New(cbInfo.Env(), qAbilityInstanceId);
 }
 
-void asyncRunTaskInTemporaryThread(std::function<void()> task, std::function<void(JsState &)> continueFunc)
+void asyncRunTaskInTemporaryThread(std::function<void()> task, std::function<void(QOhosJsState &)> continueFunc)
 {
     auto taskRunnerThread = std::thread(
         [task = std::move(task), continueFunc = std::move(continueFunc)]() {
             task();
-            QtOhos::invokeInJsThread(std::move(continueFunc));
+            QOhosJsThreadGateway::invoke(std::move(continueFunc));
         });
     taskRunnerThread.detach();
 }
@@ -1204,7 +1205,7 @@ void asyncRunTaskInTemporaryThreadWithTimeout(
 
     asyncRunTaskInTemporaryThread(
         std::move(task),
-        [successNotifyFunc](JsState &jsState) {
+        [successNotifyFunc](QOhosJsState &jsState) {
             (*successNotifyFunc)(jsState, true);
         });
 }
