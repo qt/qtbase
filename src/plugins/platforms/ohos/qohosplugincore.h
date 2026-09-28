@@ -102,6 +102,8 @@ enum class QtRunMode
 class JsState : public QOhosJsState
 {
 public:
+    static JsState &castFrom(QOhosJsState &jsState);
+
     JsState(const JsState &) = delete;
     JsState &operator=(const JsState &) = delete;
 
@@ -255,7 +257,7 @@ auto evalInJsThread(Func &&func, std::string callerContextName) -> decltype(func
     Q_UNUSED(callerContextName);
     return QOhosJsThreadGateway::eval(
         [&func](QOhosJsState &jsState) {
-            return func(static_cast<JsState &>(jsState));
+            return func(JsState::castFrom(jsState));
         });
 }
 
@@ -264,7 +266,7 @@ T evalInJsThreadWithConsumer(std::function<void(QtOhos::JsState &, std::function
 {
     return QOhosJsThreadGateway::evalWithConsumer<T>(
         [evalFunc = std::move(evalFunc)](QOhosJsState &jsState, std::function<void(T)> consumer) {
-            evalFunc(static_cast<JsState &>(jsState), std::move(consumer));
+            evalFunc(JsState::castFrom(jsState), std::move(consumer));
         });
 }
 
