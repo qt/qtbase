@@ -198,13 +198,6 @@ void invokeInJsThreadAndWaitForContinue(
     std::function<void(JsState &, QOhosTaskPromise<>)> &&task,
     std::string callerContextName = {});
 
-// Runs the task inside the JS thread and waits until its execution ends.
-// When called from the JS thread, it calls the task directly. For other threads
-// it behaves like a wrapper around the invokeInJsThreadAndWaitForContinue().
-void runInJsThreadAndWait(
-    const std::function<void(JsState &)> &task,
-    std::string callerContextName = {});
-
 template<typename Func>
 auto evalInJsThread(Func &&func, std::string callerContextName = {}) -> decltype(func(std::declval<JsState &>()));
 

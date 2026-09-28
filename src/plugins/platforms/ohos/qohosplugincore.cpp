@@ -886,7 +886,16 @@ void JsThreadOpsImpl::runAndWait(
     const std::function<void(QOhosJsState &)> &task,
     std::string callerContextName)
 {
-    QtOhos::runInJsThreadAndWait(task, std::move(callerContextName));
+    if (getJsStateImpl().isJsThread()) {
+        task(getJsStateImpl());
+    } else {
+        invokeAndWaitForContinue(
+            [&](auto &jsState, auto taskPromise) {
+                task(jsState);
+                taskPromise();
+            },
+            std::move(callerContextName));
+    }
 }
 
 }
@@ -1078,21 +1087,6 @@ void invokeInJsThreadAndWaitForContinue(
             "%s: exception from task invoked in JS thread (caller: \"%s\"): %s",
             Q_FUNC_INFO, callerContextName.c_str(),
             completionState->jsThreadExceptionMsg.value().c_str());
-    }
-}
-
-void runInJsThreadAndWait(
-    const std::function<void(JsState &)> &task, std::string callerContextName)
-{
-    if (getJsStateImpl().isJsThread()) {
-        task(getJsStateImpl());
-    } else {
-        invokeInJsThreadAndWaitForContinue(
-            [&](auto &jsState, auto taskPromise) {
-                task(jsState);
-                taskPromise();
-            },
-            std::move(callerContextName));
     }
 }
 

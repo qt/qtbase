@@ -466,7 +466,7 @@ void QOhosWindowProxy::setWindowBackgroundColor(const QColor &color)
 {
     qCDebug(QtForOhos) << Q_FUNC_INFO << color;
 
-    QtOhos::runInJsThreadAndWait([&](QtOhos::JsState &) {
+    QOhosJsThreadGateway::runAndWait([&](QOhosJsState &) {
         if (m_jsScopeData->isWindowClosing())
             return;
         m_jsScopeData->jsWindowRef->eval("setWindowBackgroundColor(*)", {color.name(QColor::HexArgb).toStdString()});
@@ -519,7 +519,7 @@ void QOhosWindowProxy::setCustomCursor(const QImage &customCursorImage, const QP
 
 void QOhosWindowProxy::setPointerStyleSync(const QCursor &cursor)
 {
-    QtOhos::runInJsThreadAndWait([&](QtOhos::JsState &jsState) {
+    QOhosJsThreadGateway::runAndWait([&](QOhosJsState &jsState) {
         if (m_jsScopeData->isWindowClosing())
             return;
         auto windowId = m_jsScopeData->jsWindowRef->jsObject().get<QNapi::Number>("getWindowProperties().id");
@@ -546,7 +546,7 @@ void QOhosWindowProxy::setWindowCallbackReceiver(std::unique_ptr<WindowCallbacks
 {
     auto sharedWindowCallbackReceiver = std::shared_ptr<WindowCallbacks>(std::move(callbackReceiver));
 
-    QtOhos::runInJsThreadAndWait([&](QtOhos::JsState &) {
+    QOhosJsThreadGateway::runAndWait([&](QOhosJsState &) {
         m_jsScopeData->windowCallbackReceiver = QtOhos::moveToSharedPtr(WindowCallbacks {
             .onWindowEvent = makeQtThreadWindowCallbackDelegate(&WindowCallbacks::onWindowEvent, sharedWindowCallbackReceiver),
             .onWindowStatusChange = makeQtThreadWindowCallbackDelegate(&WindowCallbacks::onWindowStatusChange, sharedWindowCallbackReceiver),
@@ -577,7 +577,7 @@ void QOhosWindowProxy::setNonClientAreaMouseWindowCallbackReceiver(
                 (*qtConsumer)(std::move(batch));
         });
 
-    QtOhos::runInJsThreadAndWait([&](QtOhos::JsState &) {
+    QOhosJsThreadGateway::runAndWait([&](QOhosJsState &) {
         m_jsScopeData->nonClientAreaMouseEventConsumer = std::move(jsConsumer);
     },
     Q_FUNC_INFO);
@@ -599,7 +599,7 @@ void QOhosWindowProxy::setNonClientAreaTouchWindowCallbackReceiver(
                 (*qtConsumer)(std::move(batch));
         });
 
-    QtOhos::runInJsThreadAndWait([&](QtOhos::JsState &) {
+    QOhosJsThreadGateway::runAndWait([&](QOhosJsState &) {
         m_jsScopeData->nonClientAreaTouchEventConsumer = std::move(jsConsumer);
     },
     Q_FUNC_INFO);
@@ -1047,8 +1047,8 @@ void QOhosWindowProxy::setWindowTitleButtonVisible(bool maximizeVisible, bool mi
     if (!qtIsMainWindow())
         return;
 
-    QtOhos::runInJsThreadAndWait(
-        [&](QtOhos::JsState &jsState) {
+    QOhosJsThreadGateway::runAndWait(
+        [&](QOhosJsState &jsState) {
             if (m_jsScopeData->isWindowClosing())
                 return;
 
@@ -1091,7 +1091,7 @@ void QOhosWindowProxy::setWindowTopmost(bool topmost)
 
 void QOhosWindowProxy::setWindowDecorVisible(bool visible)
 {
-    QtOhos::runInJsThreadAndWait([&](QtOhos::JsState &) {
+    QOhosJsThreadGateway::runAndWait([&](QOhosJsState &) {
         if (m_jsScopeData->isWindowClosing())
             return;
 
@@ -1107,7 +1107,7 @@ void QOhosWindowProxy::setWindowTitleMoveEnabled(bool enabled)
         return;
     }
 
-    QtOhos::runInJsThreadAndWait([&](QtOhos::JsState &) {
+    QOhosJsThreadGateway::runAndWait([&](QOhosJsState &) {
         if (m_jsScopeData->isWindowClosing())
             return;
 
@@ -1126,7 +1126,7 @@ void QOhosWindowProxy::setWindowShadowRadius(double radius)
     if (qtIsMainWindow())
         return;
 
-    QtOhos::runInJsThreadAndWait([&](QtOhos::JsState &) {
+    QOhosJsThreadGateway::runAndWait([&](QOhosJsState &) {
         m_jsScopeData->jsWindowRef->eval("setWindowShadowRadius(*)", {radius});
     },
     Q_FUNC_INFO);
