@@ -6132,15 +6132,16 @@ QDataStream &operator<<(QDataStream &out, QDate date)
 
 QDataStream &operator>>(QDataStream &in, QDate &date)
 {
+    qint64 jd;
     if (in.version() < QDataStream::Qt_5_0) {
-        quint32 jd;
-        in >> jd;
+        quint32 jd32;
+        in >> jd32;
         // Older versions consider 0 an invalid jd.
-        date.jd = (jd != 0 ? jd : QDate::nullJd());
+        jd = (jd32 != 0 ? qint64(jd32) : QDate::nullJd());
     } else {
-        in >> date.jd;
+        in >> jd;
     }
-
+    date = QDate::fromJulianDay(jd);
     return in;
 }
 
@@ -6180,6 +6181,8 @@ QDataStream &operator>>(QDataStream &in, QTime &time)
         // Qt3 would write 0 for a null time
         time.mds = (ds == 0) ? QTime::NullTime : int(ds);
     }
+    if (time.mds != QTime::NullTime && (time.mds < 0 || time.mds >= MSECS_PER_DAY))
+        time.mds = QTime::NullTime;
     return in;
 }
 
