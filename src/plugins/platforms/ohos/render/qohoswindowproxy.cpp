@@ -1507,7 +1507,7 @@ std::shared_ptr<void> QOhosWindowProxy::JsScopeData::registerEventListener(
 }
 
 std::shared_ptr<void> QOhosWindowProxy::JsScopeData::registerSubWindowCloseHandler(
-    QtOhos::JsState &, std::function<bool()> handler)
+    QOhosJsState &, std::function<bool()> handler)
 {
     auto weakSelf = QtOhos::makeWeakPtr(shared_from_this());
     return registerQOhosOnOffMethodsBasedEventHandler(
