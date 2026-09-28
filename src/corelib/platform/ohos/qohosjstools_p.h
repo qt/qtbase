@@ -42,6 +42,9 @@ Q_CORE_EXPORT std::shared_ptr<void> registerOhosAppContextEnvironmentCallback(
     QOhosJsState &jsState,
     std::vector<std::pair<std::string, QNapi::CallbackFuncWrapper>> environmentCallbackMethods);
 
+// runs code in a handle scope; a C++ exception it throws and a JS exception it leaves pending are logged under callerContextName, never propagated
+Q_CORE_EXPORT void runQOhosJsCodeLoggingExceptions(napi_env env, const char *callerContextName, const std::function<void()> &code);
+
 // Creates a Data Source: an object tracking a value owned by a JS object and mirrored
 // onto a caller-chosen target thread. The returned supplier keeps it alive and yields
 // the current value; valueChangedHandler is called on each change. Value updates and the
