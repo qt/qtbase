@@ -611,7 +611,7 @@ void JsStateImpl::setOnContinueRequestsHandler(
                             Q_FUNC_INFO, result.DoubleValue());
                     }
                     resultConsumer(
-                        static_cast<JsState &>(resultJsState),
+                        JsState::castFrom(resultJsState),
                         optResultEnum.value_or(QOhosAbilityOnContinueResult::REJECT));
                 });
         });
@@ -931,6 +931,14 @@ QAbilityEngine::QAbilityEngine() = default;
 JsState::~JsState() = default;
 
 JsState::JsState() = default;
+
+JsState &JsState::castFrom(QOhosJsState &jsState)
+{
+    if (&jsState != &getJsStateImpl())
+        qOhosReportFatalErrorAndAbort("%s: jsState is not the plugin's JsState", Q_FUNC_INFO);
+
+    return static_cast<JsState &>(jsState);
+}
 
 JsState &CallbackInfo::jsState() const
 {

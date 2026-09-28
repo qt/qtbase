@@ -1058,7 +1058,7 @@ QNapi::Value handleAbilityOnContinue(const CallbackInfo &cbInfo)
         },
         [&](QOhosJsState &jsState, auto resultConsumer) {
             getQAbilityInstancesManager().getAbilityPeerBackend(uiAbilityPeer)->handleOnContinueRequestFromSystem(
-                static_cast<JsState &>(jsState), wantParamsObj, std::move(resultConsumer));
+                JsState::castFrom(jsState), wantParamsObj, std::move(resultConsumer));
         });
 }
 
