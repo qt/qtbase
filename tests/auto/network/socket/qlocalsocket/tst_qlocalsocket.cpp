@@ -1700,6 +1700,11 @@ void tst_QLocalSocket::verifySocketOptions()
    QFETCH(QLocalServer::SocketOption, opts);
    QFETCH(QFile::Permissions, perms);
 
+#ifdef Q_OS_HARMONY
+    if (perms.testFlag(QFile::ExeUser))
+        QSKIP("access(X_OK) always fails on Unix domain sockets on HarmonyOS");
+#endif
+
    CrashSafeLocalServer server;
    server.setSocketOptions(opts);
    QVERIFY2(server.listen(service), qUtf8Printable(server.errorString()));
