@@ -14,16 +14,26 @@ namespace QtOhos {
 
 namespace {
 
-QJsonValue mapNapiValueToJsonValue(const QNapi::Value &napiValue);
+constexpr int napiToJsonMappingNestingLimit = 1024;
+
+QJsonValue mapNapiValueToJsonValue(const QNapi::Value &napiValue, int remainingNestingLevels);
+QJsonObject mapNapiObjectToJsonObjectImpl(const QNapi::Object &napiObject, int remainingNestingLevels);
 QNapi::Value mapJsonValueToNapiValue(napi_env env, const QJsonValue &jsonValue);
 
-QJsonArray mapNapiArrayToJsonArray(const QNapi::Array &napiArray)
+void checkNapiToJsonMappingRemainingNestingLevels(napi_env env, int remainingNestingLevels)
 {
+    if (remainingNestingLevels == 0)
+        throw QNapi::makeLoggedException(env, "JS value nested too deeply to be mapped to JSON");
+}
+
+QJsonArray mapNapiArrayToJsonArray(const QNapi::Array &napiArray, int remainingNestingLevels)
+{
+    checkNapiToJsonMappingRemainingNestingLevels(napiArray.Env(), remainingNestingLevels);
     QJsonArray jsonArray;
     const std::uint32_t arrayLength = napiArray.Length();
     for (std::uint32_t i = 0; i < arrayLength; ++i) {
         Napi::HandleScope elementScope(napiArray.Env());
-        auto jsonValue = mapNapiValueToJsonValue(napiArray.Get(i));
+        auto jsonValue = mapNapiValueToJsonValue(napiArray.Get(i), remainingNestingLevels);
         jsonArray.append(jsonValue.isUndefined() ? QJsonValue(QJsonValue::Null) : jsonValue);
     }
     return jsonArray;
@@ -42,7 +52,7 @@ QNapi::Array mapJsonArrayToNapiArray(napi_env env, const QJsonArray &jsonArray)
         });
 }
 
-QJsonValue mapNapiValueToJsonValue(const QNapi::Value &napiValue)
+QJsonValue mapNapiValueToJsonValue(const QNapi::Value &napiValue, int remainingNestingLevels)
 {
     if (napiValue.IsNull())
         return QJsonValue(QJsonValue::Null);
@@ -53,9 +63,9 @@ QJsonValue mapNapiValueToJsonValue(const QNapi::Value &napiValue)
     if (napiValue.IsString())
         return QJsonValue(QString::fromStdString(QNapi::checkedCast<QNapi::String>(napiValue)));
     if (napiValue.IsArray())
-        return mapNapiArrayToJsonArray(QNapi::checkedCast<QNapi::Array>(napiValue));
+        return mapNapiArrayToJsonArray(QNapi::checkedCast<QNapi::Array>(napiValue), remainingNestingLevels - 1);
     if (napiValue.IsObject() && !napiValue.IsFunction())
-        return mapNapiObjectToJsonObject(QNapi::checkedCast<QNapi::Object>(napiValue));
+        return mapNapiObjectToJsonObjectImpl(QNapi::checkedCast<QNapi::Object>(napiValue), remainingNestingLevels - 1);
     return QJsonValue(QJsonValue::Undefined);
 }
 
@@ -79,19 +89,25 @@ QNapi::Value mapJsonValueToNapiValue(napi_env env, const QJsonValue &jsonValue)
     Q_UNREACHABLE_RETURN(QNapi::Value());
 }
 
-}
-
-QJsonObject mapNapiObjectToJsonObject(const QNapi::Object &napiObject)
+QJsonObject mapNapiObjectToJsonObjectImpl(const QNapi::Object &napiObject, int remainingNestingLevels)
 {
+    checkNapiToJsonMappingRemainingNestingLevels(napiObject.Env(), remainingNestingLevels);
     QJsonObject jsonObject;
     for (const auto &property : napiObject) {
         if (!property.first.IsString())
             continue;
-        auto jsonValue = mapNapiValueToJsonValue(property.second);
+        auto jsonValue = mapNapiValueToJsonValue(property.second, remainingNestingLevels);
         if (!jsonValue.isUndefined())
             jsonObject.insert(QString::fromStdString(QNapi::checkedCast<QNapi::String>(property.first)), jsonValue);
     }
     return jsonObject;
+}
+
+}
+
+QJsonObject mapNapiObjectToJsonObject(const QNapi::Object &napiObject)
+{
+    return mapNapiObjectToJsonObjectImpl(napiObject, napiToJsonMappingNestingLimit);
 }
 
 QNapi::Object mapJsonObjectToNapiObject(napi_env env, const QJsonObject &jsonObject)

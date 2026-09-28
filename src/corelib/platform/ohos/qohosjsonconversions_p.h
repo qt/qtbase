@@ -22,7 +22,7 @@ QT_BEGIN_NAMESPACE
 
 namespace QtOhos {
 
-// follows JSON.stringify(): property values without a JSON counterpart are skipped in objects and become null in arrays
+// follows JSON.stringify(): property values without a JSON counterpart are skipped in objects and become null in arrays; throws Napi::Error for values nested too deeply, which includes cycles
 Q_CORE_EXPORT QJsonObject mapNapiObjectToJsonObject(const QNapi::Object &napiObject);
 
 // null and undefined QJsonValue both become JS null
