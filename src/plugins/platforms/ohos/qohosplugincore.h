@@ -167,9 +167,6 @@ void dispatchNewWant(QNapi::Object qAbility, QNapi::Object want, QNapi::Object l
 // invokes the task inside the JS thread, can be called from Qt thread at any time
 void invokeInJsThread(std::function<void(JsState &)> task);
 
-template<typename T>
-T evalInJsThreadWithConsumer(std::function<void(QtOhos::JsState &, std::function<void(T)>)> evalFunc);
-
 // Invokes the task inside the Qt thread and blocks the caller's thread until either:
 //  - the "continue" function (std::function<void()>, passed as second argument to
 //    the task) is called on the Qt side and returns,
@@ -195,15 +192,6 @@ template<typename T>
 QNapi::Symbol JsState::getJsSymbolForType()
 {
     return getJsSymbolForType(typeid(T));
-}
-
-template<typename T>
-T evalInJsThreadWithConsumer(std::function<void(QtOhos::JsState &, std::function<void(T)>)> evalFunc)
-{
-    return QOhosJsThreadGateway::evalWithConsumer<T>(
-        [evalFunc = std::move(evalFunc)](QOhosJsState &jsState, std::function<void(T)> consumer) {
-            evalFunc(JsState::castFrom(jsState), std::move(consumer));
-        });
 }
 
 }
