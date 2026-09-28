@@ -127,4 +127,10 @@
     application template bundled with Qt makes the kit modules that Qt
     needs available to native code. QHarmonyJsContext::tryImportModule()
     accepts their names, such as \c {@kit.ShareKit.systemShare}.
+
+    \section1 Platform API Examples
+
+    \list
+    \li \l {Qt for HarmonyOS Restart Application Example}
+    \endlist
 */

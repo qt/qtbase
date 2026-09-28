@@ -1,0 +1,59 @@
+// Copyright (C) 2026 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \title Qt for HarmonyOS Restart Application Example
+    \example platform/harmonyrestartapp
+    \examplecategory {Mobile}
+    \meta tag {widgets,harmonyos,want}
+    \ingroup corelib_examples
+
+    \brief Restarts a Qt application on HarmonyOS and passes data to the new
+    instance in the parameters of its launch Want.
+
+    An application can ask the platform to restart it. The Want that it
+    passes becomes the launch Want of the new instance, so it decides what
+    the restarted application starts with. The example keeps a restart count
+    in a Want parameter of its own, \c org.qtproject.example.restartCount,
+    and shows the count of the running instance.
+
+    The example has a single window, so the process has a single
+    \c UIAbility instance, the default ability. The \c launchWant property
+    of that ability is the Want that the application was launched with. The
+    first button passes that Want object itself, so the new instance starts
+    with the same count. The second button passes a copy with the count
+    increased. The copy is built on the Qt thread as a QJsonObject and
+    mapped to a JS object on the JS thread:
+
+    \snippet platform/harmonyrestartapp/main.cpp 1
+
+    The restart itself is a call to \c restartApp() on the
+    \c ApplicationContext, which the task reaches from the default ability.
+    The task uses node-addon-api, the C++ wrapper for Node-API published by
+    the Node.js project, as we recommend for applications:
+
+    \snippet platform/harmonyrestartapp/main.cpp 0
+
+    If the platform accepts the request, the new instance replaces the
+    running one. If the platform refuses, for example because restarts were
+    requested too often, \c restartApp() throws synchronously.
+    node-addon-api turns the thrown error into a C++ exception, which the
+    example catches. The failure is then shown in the window, as is a
+    missing ability. The task posts the text to the Qt thread with
+    QNativeInterface::QHarmonyApplication::runOnQtThread(). It passes a
+    QPointer to the status label, which was created on the Qt thread. The
+    posted functor checks the QPointer before it updates the label:
+
+    \snippet platform/harmonyrestartapp/main.cpp 2
+
+    The example reads the launch Want once at startup, with
+    QNativeInterface::QHarmonyApplication::runOnJsThreadAndWait() and
+    QtHarmony::mapJsObjectToQJsonObject(). The count that the window shows
+    and the Want of the second button both come from it.
+
+    \section1 Running the Example
+
+    Press the second button. The application restarts and shows the count
+    increased by one. If you press the first button instead, the restarted
+    application shows the same count.
+*/
