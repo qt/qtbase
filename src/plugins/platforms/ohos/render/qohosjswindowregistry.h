@@ -17,6 +17,8 @@ QT_BEGIN_NAMESPACE
 class QOhosJsWindowRegistry
 {
 public:
+    static QOhosJsWindowRegistry &instance(QOhosJsState &jsState);
+
     QOhosJsWindowRegistry();
 
     QOhosJsWindowRegistry(const QOhosJsWindowRegistry &) = delete;

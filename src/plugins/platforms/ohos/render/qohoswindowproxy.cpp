@@ -1855,8 +1855,7 @@ std::vector<QArkUi::JsWindowId> QOhosWindowProxy::queryQtManagedWindowIdsByPredi
     const std::function<bool(QOhosJsState &, const QArkUi::JsWindowRef &)> &predicate)
 {
     return QtOhos::evalInJsThread([&](QtOhos::JsState &jsState) {
-        auto &jsWindowRegistry = jsState.getAttachedObjectWithLazyCreate<QOhosJsWindowRegistry>();
-        return jsWindowRegistry.queryByPredicate(jsState, predicate);
+        return QOhosJsWindowRegistry::instance(jsState).queryByPredicate(jsState, predicate);
     },
     Q_FUNC_INFO);
 }
@@ -1922,10 +1921,9 @@ void QOhosWindowProxy::shiftAppWindowFocus(QOhosWindowProxy &targetProxy)
 std::shared_ptr<QOhosWindowProxy> QOhosWindowProxy::create(QtOhos::JsState &jsState, QOhosWindowProxyData data)
 {
     auto window = std::shared_ptr<QOhosWindowProxy>(new QOhosWindowProxy(std::move(data)));
-    auto &jsWindowRegistry = jsState.getAttachedObjectWithLazyCreate<QOhosJsWindowRegistry>();
     return QtOhos::makeSharedPtrWithAttachedExtraData(
         window,
-        jsWindowRegistry.registerJsWindow(window->m_jsScopeData->jsWindowRef));
+        QOhosJsWindowRegistry::instance(jsState).registerJsWindow(window->m_jsScopeData->jsWindowRef));
 }
 
 QT_END_NAMESPACE

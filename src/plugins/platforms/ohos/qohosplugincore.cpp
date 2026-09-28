@@ -558,8 +558,7 @@ std::shared_ptr<QAbilityPeer> JsStateImpl::tryGetQAbilityPeerByInstance(QNapi::O
 
 std::optional<QNapi::Object> JsStateImpl::tryGetJsWindowByQWindow(QObjectThreadSafeRef qwindow)
 {
-    auto &jsWindowRegistry = JsState::getAttachedObjectWithLazyCreate<QOhosJsWindowRegistry>();
-    auto optJsWindowRef = jsWindowRegistry.tryFindJsWindowByQWindowRef(qwindow);
+    auto optJsWindowRef = QOhosJsWindowRegistry::instance(*this).tryFindJsWindowByQWindowRef(qwindow);
     return optJsWindowRef ? std::optional(optJsWindowRef->jsObject()) : std::nullopt;
 }
 
@@ -570,8 +569,7 @@ std::optional<QNapi::Object> JsStateImpl::tryGetQAbilityByQWindow(QObjectThreadS
             return peer->qWindowRef() == qwindow;
         });
     if (!qAbilityPeer) {
-        auto &jsWindowRegistry = JsState::getAttachedObjectWithLazyCreate<QOhosJsWindowRegistry>();
-        auto optJsWindowRef = jsWindowRegistry.tryFindJsWindowByQWindowRef(qwindow);
+        auto optJsWindowRef = QOhosJsWindowRegistry::instance(*this).tryFindJsWindowByQWindowRef(qwindow);
         if (optJsWindowRef)
             qAbilityPeer = tryGetQAbilityPeerByInstanceId(
                 optJsWindowRef->owningQAbilityInstanceId());
