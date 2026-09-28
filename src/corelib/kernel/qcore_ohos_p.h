@@ -67,6 +67,9 @@ public:
     virtual QNapi::Object appLaunchWant() = 0;
     virtual std::optional<QNapi::Object> optAppLaunchParam() = 0;
 
+    // a registered module, or an unknown one loaded with napi_load_module() and memoized; empty if that load fails
+    virtual std::optional<QNapi::Object> tryGetModule(const std::string &moduleName) = 0;
+
     virtual void startAppProcess(
         const std::string &processId, QNapi::Object requestWant,
         QNapi::Object optStartOptions, std::function<void(QOhosJsState &)> continueFunc) = 0;

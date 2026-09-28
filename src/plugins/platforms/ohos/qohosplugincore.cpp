@@ -233,19 +233,40 @@ QNapi::Symbol getJsWindowsTrackerIsClosingPropSymbol(JsState &jsState)
     return jsState.getJsSymbolForType<SymbolTag>();
 }
 
-QNapi::Object loadJsModuleViaNapiOrFail(napi_env env, const std::string &moduleName)
+std::optional<QNapi::Object> tryLoadJsModuleViaNapi(napi_env env, const std::string &moduleName)
 {
     qOhosPrintfDebug("%s: loading napi module '%s' via napi_load_module()", Q_FUNC_INFO, moduleName.c_str());
 
     napi_value result = nullptr;
     auto status = napi_load_module(env, moduleName.c_str(), &result);
     if (status != napi_ok) {
-        qOhosReportFatalErrorAndAbort(
+        Napi::Env napiEnv(env);
+        if (napiEnv.IsExceptionPending())
+            napiEnv.GetAndClearPendingException();
+        qOhosPrintfWarning(
             "%s: napi_load_module failed for module '%s' (status=%d)",
             Q_FUNC_INFO, moduleName.c_str(), static_cast<int>(status));
+        return std::nullopt;
+    }
+
+    Napi::Value resultValue(env, result);
+    if (!resultValue.IsObject()) {
+        qOhosPrintfWarning(
+            "%s: napi_load_module returned %s instead of an object for module '%s'",
+            Q_FUNC_INFO, QNapi::getValueTypeString(resultValue).c_str(), moduleName.c_str());
+        return std::nullopt;
     }
 
     return QNapi::Object(env, result);
+}
+
+QNapi::Object loadJsModuleViaNapiOrFail(napi_env env, const std::string &moduleName)
+{
+    auto optModule = tryLoadJsModuleViaNapi(env, moduleName);
+    if (!optModule)
+        qOhosReportFatalErrorAndAbort("%s: required module '%s' not loaded", Q_FUNC_INFO, moduleName.c_str());
+
+    return optModule.value();
 }
 
 QNapi::Object loadJsModuleViaEtsFactoryOrFail(
@@ -299,6 +320,7 @@ public:
 
     QNapi::Object appLaunchWant() override;
     std::optional<QNapi::Object> optAppLaunchParam() override;
+    std::optional<QNapi::Object> tryGetModule(const std::string &moduleName) override;
 
     QNapi::Object defaultWindowStageOrEmpty() override;
     QNapi::Object defaultUiContextOrEmpty() override;
@@ -360,6 +382,7 @@ private:
     std::shared_ptr<QAbilityPeer> m_defaultQAbilityPeer;
     std::map<std::string, std::shared_ptr<QAbilityPeer>> m_qAbilityPeers;
     std::map<std::string, std::function<QNapi::Object(JsState &)>> m_jsModulesFactories;
+    std::map<std::string, QNapi::Reference<QNapi::Object>> m_onDemandJsModules;
     std::shared_ptr<AppFunctions> m_appFunctions;
     PreQueuingJsTasksExecutor m_tasksExecutor;
     std::map<std::uint64_t, std::shared_ptr<QOhosConsumer<QOhosJsState &, QNapi::Object, QNapi::Object, QNapi::Object>>> m_newWantConsumers;
@@ -508,6 +531,24 @@ QNapi::Object JsStateImpl::getModule(const std::string &moduleName)
         throw QNapi::makeLoggedException(m_env, "JS module not found: "s + moduleName);
 
     return moduleFactoryIter->second(*this);
+}
+
+std::optional<QNapi::Object> JsStateImpl::tryGetModule(const std::string &moduleName)
+{
+    auto moduleFactoryIter = m_jsModulesFactories.find(moduleName);
+    if (moduleFactoryIter != m_jsModulesFactories.end())
+        return moduleFactoryIter->second(*this);
+
+    auto onDemandModuleIter = m_onDemandJsModules.find(moduleName);
+    if (onDemandModuleIter != m_onDemandJsModules.end())
+        return onDemandModuleIter->second.Value();
+
+    auto optModule = tryLoadJsModuleViaNapi(m_env, moduleName);
+    if (!optModule)
+        return std::nullopt;
+
+    m_onDemandJsModules.emplace(moduleName, QNapi::Reference<>::makePersistentFrom(optModule.value()));
+    return optModule;
 }
 
 QNapi::Object JsStateImpl::appLaunchWant()
