@@ -26,7 +26,9 @@ QOhosJsState &jsState()
     On HarmonyOS, Qt runs the application on its own thread. The ArkTS
     runtime and the platform UI run on the main thread of the process,
     called the JS thread. Platform APIs are only available on the JS thread.
-    Code that runs there receives a QHarmonyJsContext. JS callbacks created
+    To run code there, use
+    QNativeInterface::QHarmonyApplication::runOnJsThread(). The code
+    receives a QHarmonyJsContext as the task argument. JS callbacks created
     with \c napi_create_function() receive only a \c napi_env. They get the
     context with fromEnv().
 
@@ -35,14 +37,13 @@ QOhosJsState &jsState()
     QHarmonyAppJsContext::fromJsContext().
 
     All member functions must be called on the JS thread. A \c napi_value
-    that they return is valid until the code or callback that obtained it
+    that they return is valid until the task or callback that obtained it
     returns. It must not be passed to another thread. To keep a JS object
     longer, use a QHarmonyJsObjectRef.
 
     A QHarmonyJsContext reference is valid as long as the \c napi_env of
-    the context, which is until the code or callback that received or
-    obtained it returns. Get the context again in each piece of code or
-    callback.
+    the context, which is until the task or callback that received or
+    obtained it returns. Get the context again in each task or callback.
 */
 
 /*!

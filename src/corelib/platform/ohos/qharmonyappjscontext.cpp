@@ -26,7 +26,7 @@ QOhosJsState &jsState()
     \c UIAbility instance. Keeping the two apart makes function signatures
     meaningful. A function that takes a QHarmonyAppJsContext depends on the
     application's state. A function that takes a QHarmonyJsContext needs
-    only the runtime. Code gets the application context once, with
+    only the runtime. A task gets the application context once, with
     fromJsContext(), and passes it on.
 
     The class derives from QHarmonyJsContext, and there is only one object.

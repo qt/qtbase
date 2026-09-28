@@ -3411,6 +3411,12 @@ void *QCoreApplication::resolveInterface(const char *name, int revision) const
     static AndroidApplication androidApplication;
     QT_NATIVE_INTERFACE_RETURN_IF(QAndroidApplication, &androidApplication);
 #endif
+#if defined(Q_OS_HARMONY)
+    using namespace QNativeInterface;
+    struct HarmonyApplication : public QHarmonyApplication {};
+    static HarmonyApplication harmonyApplication;
+    QT_NATIVE_INTERFACE_RETURN_IF(QHarmonyApplication, &harmonyApplication);
+#endif
     Q_UNUSED(name); Q_UNUSED(revision);
     return nullptr;
 }

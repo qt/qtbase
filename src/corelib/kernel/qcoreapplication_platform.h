@@ -31,6 +31,13 @@ class _jobject;
 typedef _jobject* jobject;
 #endif
 
+#if defined(Q_OS_HARMONY) || defined(Q_QDOC)
+#include <QtCore/qharmonyjscontext.h>
+#include <functional>
+#include <optional>
+#include <type_traits>
+#endif // #if defined(Q_OS_HARMONY) || defined(Q_QDOC)
+
 QT_BEGIN_NAMESPACE
 
 namespace QNativeInterface
@@ -61,6 +68,43 @@ struct Q_CORE_EXPORT QAndroidApplication
         return static_cast<QFuture<void>>(runOnAndroidMainThread(func, timeout));
     }
 #endif
+};
+#endif
+
+#if defined(Q_OS_HARMONY) || defined(Q_QDOC)
+struct Q_CORE_EXPORT QHarmonyApplication
+{
+    QT_DECLARE_NATIVE_INTERFACE(QHarmonyApplication, 1, QCoreApplication)
+
+    static void runOnJsThread(std::function<void(QHarmonyJsContext &)> task);
+    static void runOnJsThreadAndWait(const std::function<void(QHarmonyJsContext &)> &task);
+
+#ifdef Q_QDOC
+    template <typename Func, typename Result>
+    static Result runOnJsThreadAndWait(Func &&task);
+#else
+    template <typename Func, typename Result = std::invoke_result_t<Func, QHarmonyJsContext &>>
+    static std::enable_if_t<!std::is_void_v<Result>, Result> runOnJsThreadAndWait(Func &&task)
+    {
+        static_assert(!std::is_reference_v<Result>, "The task must return a value, not a reference");
+        static_assert(std::is_default_constructible_v<Result>, "The task's result type must be default-constructible");
+        static_assert(
+            !std::is_convertible_v<Result, napi_value> && !std::is_convertible_v<Result, napi_ref>,
+            "A napi_value or napi_ref result must not leave the JS thread");
+        std::optional<Result> optResult;
+        runOnJsThreadAndWait(
+            [&](QHarmonyJsContext &jsContext) {
+                auto result = std::invoke(std::forward<Func>(task), jsContext);
+                bool exceptionPending = false;
+                napi_is_exception_pending(jsContext.env(), &exceptionPending);
+                if (!exceptionPending)
+                    optResult.emplace(std::move(result));
+            });
+        return optResult ? std::move(*optResult) : Result();
+    }
+#endif
+
+    static void runOnQtThread(std::function<void()> task);
 };
 #endif
 }
