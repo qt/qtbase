@@ -820,6 +820,7 @@ void tst_QFileInfo::canonicalFilePath_data()
         f.setPermissions({});
     };
 
+#ifndef Q_NO_SYMLINKS
     // symlink to files
     static auto simpleFileSymlink = +[] {
         QFile f("file.txt");
@@ -834,8 +835,10 @@ void tst_QFileInfo::canonicalFilePath_data()
         simpleFileSymlink();
         QFile::remove("file.txt");
     };
+#endif
 
 #ifdef Q_OS_UNIX
+#ifndef Q_NO_SYMLINKS
     // QFile::link() creates absolute links
     QTest::newRow("symlink-file-relative") << "link.lnk" << "@/file.txt" << +[] {
         touch("file.txt");
@@ -873,6 +876,7 @@ void tst_QFileInfo::canonicalFilePath_data()
         symlink("peter", "paul");
         symlink("paul", "peter");
     };
+#endif
 
     // On Darwin, this may change Unicode normalization forms
     static const QString composed = u"caf\u00e9.txt"_s;
