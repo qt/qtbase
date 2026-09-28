@@ -164,9 +164,6 @@ void removeMatchingJsQAbilityPeer(QNapi::Object qAbility);
 // this function should be called from JS thread when new Want object is received
 void dispatchNewWant(QNapi::Object qAbility, QNapi::Object want, QNapi::Object launchParam);
 
-// invokes the task inside the JS thread, can be called from Qt thread at any time
-void invokeInJsThread(std::function<void(JsState &)> task);
-
 // Invokes the task inside the Qt thread and blocks the caller's thread until either:
 //  - the "continue" function (std::function<void()>, passed as second argument to
 //    the task) is called on the Qt side and returns,

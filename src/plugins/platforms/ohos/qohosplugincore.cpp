@@ -882,7 +882,10 @@ JsStateImpl &getJsStateImpl()
 QOhosMtBlockingCallsGateway<JsState> &getQtJsBlockingCallsGateway()
 {
     static auto qtJsBlockingCallsGateway = QOhosMtBlockingCallsGateway<JsState>::makeInstance(
-        invokeInQtThread, invokeInJsThread);
+        invokeInQtThread,
+        [](std::function<void(JsState &)> task) {
+            getJsStateImpl().invokeTask(std::move(task));
+        });
     return *qtJsBlockingCallsGateway;
 }
 
@@ -907,7 +910,7 @@ QOhosJsState &JsThreadOpsImpl::jsState()
 
 void JsThreadOpsImpl::invoke(std::function<void(QOhosJsState &)> task)
 {
-    QtOhos::invokeInJsThread(std::move(task));
+    getJsStateImpl().invokeTask(std::move(task));
 }
 
 void JsThreadOpsImpl::invokeAndWaitForContinue(
@@ -982,7 +985,7 @@ void JsThreadOpsImpl::invokeAndWaitForContinue(
             },
             callerContextName);
 
-        invokeInJsThread(
+        getJsStateImpl().invokeTask(
             [catchingTaskWrapper = std::move(catchingTaskWrapper), sharedTaskPromise](JsState &jsState) {
                 catchingTaskWrapper(jsState, std::move(*sharedTaskPromise));
             });
@@ -1112,11 +1115,6 @@ void removeMatchingJsQAbilityPeer(QNapi::Object qAbility)
 void dispatchNewWant(QNapi::Object qAbility, QNapi::Object want, QNapi::Object launchParam)
 {
     getJsStateImpl().dispatchNewWantInJsThread(qAbility, want, launchParam);
-}
-
-void invokeInJsThread(std::function<void(JsState &)> task)
-{
-    getJsStateImpl().invokeTask(std::move(task));
 }
 
 bool tryInvokeInQtThreadAndTryWaitForContinue(

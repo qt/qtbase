@@ -219,8 +219,8 @@ void QAbilityPeerImpl::setQWindow(Napi::Env env, QObjectThreadSafeRef qwindow)
             qOhosPrintfDebug(
                 "%s: sending request to resolve QWindow destroy notify Promise if needed: %s",
                 Q_FUNC_INFO, qWindowRef.refName().c_str());
-            QtOhos::invokeInJsThread(
-                [qWindowRef, weakPromiseData](JsState &jsState) {
+            QOhosJsThreadGateway::invoke(
+                [qWindowRef, weakPromiseData](QOhosJsState &jsState) {
                     auto promiseData = weakPromiseData.lock();
                     if (promiseData && promiseData->deferred) {
                         qOhosPrintfDebug(
@@ -469,8 +469,8 @@ QNapi::Promise QUiAbilityPeerImpl::handleCloseRequestFromSystem(
                     qOhosPrintfInfo(
                         "%s: requesting promise resolve to %d from Qt thread, id: '%s'",
                         logContextStr.c_str(), static_cast<int>(ohosRequestResolution), instanceId.c_str());
-                    QtOhos::invokeInJsThread(
-                        [logContextStr, promiseResolveFunc, ohosRequestResolution, instanceId](JsState &jsState) {
+                    QOhosJsThreadGateway::invoke(
+                        [logContextStr, promiseResolveFunc, ohosRequestResolution, instanceId](QOhosJsState &jsState) {
                             bool resolveCalled = (*promiseResolveFunc)(jsState, ohosRequestResolution);
                             qOhosPrintfInfo(
                                 "%s: promise resolve to %d, called: %s, id: '%s'",
@@ -495,9 +495,9 @@ void QUiAbilityPeerImpl::handleOnContinueRequestFromSystem(
         m_onContinueRequestsHandler(jsState, wantParamsObj, std::move(resultConsumer));
     } else {
         qOhosPrintfDebug("%s: no handler set, rejecting", Q_FUNC_INFO);
-        QtOhos::invokeInJsThread(
-            [resultConsumer = std::move(resultConsumer)](JsState &jsState) {
-                resultConsumer(jsState, QOhosAbilityOnContinueResult::REJECT);
+        QOhosJsThreadGateway::invoke(
+            [resultConsumer = std::move(resultConsumer)](QOhosJsState &jsState) {
+                resultConsumer(JsState::castFrom(jsState), QOhosAbilityOnContinueResult::REJECT);
             });
     }
 }
