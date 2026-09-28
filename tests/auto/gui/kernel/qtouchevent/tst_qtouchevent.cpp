@@ -851,9 +851,9 @@ void tst_QTouchEvent::multiPointRawEventTranslationOnTouchScreen()
     QPoint centerPos = touchWidget.rect().center();
     QPoint leftScenePos = leftWidget.mapToParent(leftPos);
     QPoint rightScenePos = rightWidget.mapToParent(rightPos);
-    QPoint leftScreenPos = leftWidget.mapToGlobal(leftPos);
-    QPoint rightScreenPos = rightWidget.mapToGlobal(rightPos);
-    QPoint centerScreenPos = touchWidget.mapToGlobal(centerPos);
+    const QPointF leftScreenPos = leftWidget.mapToGlobal(QPointF(leftPos));
+    const QPointF rightScreenPos = rightWidget.mapToGlobal(QPointF(rightPos));
+    const QPointF centerScreenPos = touchWidget.mapToGlobal(QPointF(centerPos));
 
     // generate TouchBegins on both leftWidget and rightWidget
     auto touchSequence = QTest::touchEvent(touchWidget.windowHandle(), touchScreenDevice);
