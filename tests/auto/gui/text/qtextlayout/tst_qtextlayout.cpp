@@ -138,6 +138,8 @@ private slots:
     void standaloneInlineObject_cursorToX();
     void standaloneInlineObject_wrapping();
     void standaloneInlineObject_eliding();
+    void elideLineBeforeHardLineBreak_data();
+    void elideLineBeforeHardLineBreak();
 #endif
     void drawCursorOnTranslucentTarget_qtbug109173();
     void drawCursorWidthZeroFractionalScale_qtbug109643();
@@ -3156,6 +3158,42 @@ void tst_QTextLayout::standaloneInlineObject_eliding()
     QVERIFY(!elided.isEmpty());
     QVERIFY(elided.size() < text.size());
     QVERIFY(elided.contains(QChar(0x2026)) || elided.contains(QLatin1String("...")));
+}
+
+void tst_QTextLayout::elideLineBeforeHardLineBreak_data()
+{
+    QTest::addColumn<Qt::TextElideMode>("mode");
+    QTest::addColumn<QString>("text");
+    QTest::addColumn<QString>("expected");
+
+    const QChar separator = QChar::LineSeparator;
+    const QChar ellipsis(0x2026);
+    const QString oneTwo = QStringLiteral("one") + separator + QStringLiteral("two");
+    QTest::newRow("text") << Qt::ElideRight << oneTwo << (QStringLiteral("one") + ellipsis);
+    QTest::newRow("empty") << Qt::ElideRight << (separator + QStringLiteral("two"))
+                           << QString(ellipsis);
+    QTest::newRow("last line") << Qt::ElideRight << QStringLiteral("one") << QStringLiteral("one");
+    // Only ElideRight elides text that fits just because more lines follow.
+    QTest::newRow("left") << Qt::ElideLeft << oneTwo << oneTwo;
+    QTest::newRow("middle") << Qt::ElideMiddle << oneTwo << oneTwo;
+}
+
+void tst_QTextLayout::elideLineBeforeHardLineBreak()
+{
+    // The text after the hard line break is narrow enough to fit, but it's not on the same line.
+    QFETCH(Qt::TextElideMode, mode);
+    QFETCH(QString, text);
+    QFETCH(QString, expected);
+
+    QTextLayout layout(text, testFont);
+    layout.beginLayout();
+    QTextLine line = layout.createLine();
+    line.setLineWidth(TESTFONT_SIZE * 20);
+    layout.endLayout();
+
+    const QString elided = layout.engine()->elidedText(mode, QFixed(TESTFONT_SIZE * 20), 0,
+                                                       line.textStart(), line.textLength());
+    QCOMPARE(elided, expected);
 }
 #endif
 

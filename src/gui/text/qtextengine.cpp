@@ -3250,10 +3250,18 @@ QString QTextEngine::elidedText(Qt::TextElideMode mode, QFixed width, int flags,
             ? from + count
             : layoutData->string.size();
 
+    // The text after a hard line break cannot be appended to the requested range. If there is
+    // such text, we need to elide, no matter how narrow the text is. Only ElideRight can express
+    // that; for the other modes the ellipsis would not mark the missing lines below.
+    const bool continuesAfterLineBreak = mode == Qt::ElideRight && to > from
+            && to < layoutData->string.size()
+            && layoutData->string.at(to - 1) == QChar::LineSeparator;
+
     if (mode == Qt::ElideNone
-        || this->width(from, layoutData->string.size()) <= width
-        || to - from <= 1)
+        || (!continuesAfterLineBreak
+            && (this->width(from, layoutData->string.size()) <= width || to - from <= 1))) {
         return layoutData->string.mid(from, from - to);
+    }
 
     QFixed ellipsisWidth;
     QString ellipsisText;
