@@ -1,0 +1,12 @@
+// Copyright (C) 2026 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \namespace QtHarmony
+    \inmodule QtCore
+    \brief The QtHarmony namespace holds free functions of the HarmonyOS
+    platform API.
+
+    The functions are meant for code running on the JS thread, where the
+    platform APIs are usable.
+*/
