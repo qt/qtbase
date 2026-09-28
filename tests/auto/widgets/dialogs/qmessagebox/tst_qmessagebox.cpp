@@ -21,6 +21,12 @@ class tst_QMessageBox : public QObject
 {
     Q_OBJECT
 
+    using StaticFunc = QMessageBox::StandardButton (*)(QWidget *,
+                                                       const QString &,
+                                                       const QString&,
+                                                       QMessageBox::StandardButtons,
+                                                       QMessageBox::StandardButton);
+
 private slots:
     void initTestCase_data();
     void init();
@@ -31,6 +37,7 @@ private slots:
     void escapeButton();
     void clickedButton();
     void button();
+    void statics_data();
     void statics();
     void about();
     void detailsText();
@@ -391,42 +398,47 @@ void tst_QMessageBox::clickedButton()
     }
 }
 
+void tst_QMessageBox::statics_data()
+{
+    QTest::addColumn<StaticFunc>("func");
+
+#define ROW(x) QTest::addRow("%s", #x) << StaticFunc(&QMessageBox:: x)
+    ROW(information);
+    ROW(critical);
+    ROW(question);
+    ROW(warning);
+#undef ROW
+}
+
 void tst_QMessageBox::statics()
 {
-    QMessageBox::StandardButton (*statics[4])(QWidget *, const QString &,
-         const QString&, QMessageBox::StandardButtons buttons,
-         QMessageBox::StandardButton);
-
-    statics[0] = QMessageBox::information;
-    statics[1] = QMessageBox::critical;
-    statics[2] = QMessageBox::question;
-    statics[3] = QMessageBox::warning;
+    QFETCH(const StaticFunc, func);
 
     ExecCloseHelper closeHelper;
-    for (int i = 0; i < 4; i++) {
+    {
         closeHelper.start(Qt::Key_Escape);
-        QMessageBox::StandardButton sb = (*statics[i])(nullptr, "caption",
+        QMessageBox::StandardButton sb = func(nullptr, "caption",
             "text", QMessageBox::Yes | QMessageBox::No | QMessageBox::Help | QMessageBox::Cancel,
            QMessageBox::NoButton);
         QCOMPARE(sb, QMessageBox::Cancel);
         QVERIFY(closeHelper.done());
 
         closeHelper.start(ExecCloseHelper::CloseWindow);
-        sb = (*statics[i])(nullptr, "caption",
+        sb = func(nullptr, "caption",
            "text", QMessageBox::Yes | QMessageBox::No | QMessageBox::Help | QMessageBox::Cancel,
            QMessageBox::NoButton);
         QCOMPARE(sb, QMessageBox::Cancel);
         QVERIFY(closeHelper.done());
 
         closeHelper.start(Qt::Key_Enter);
-        sb = (*statics[i])(nullptr, "caption",
+        sb = func(nullptr, "caption",
            "text", QMessageBox::Yes | QMessageBox::No | QMessageBox::Help,
            QMessageBox::Yes);
         QCOMPARE(sb, QMessageBox::Yes);
         QVERIFY(closeHelper.done());
 
         closeHelper.start(Qt::Key_Enter);
-        sb = (*statics[i])(nullptr, "caption",
+        sb = func(nullptr, "caption",
            "text", QMessageBox::Yes | QMessageBox::No | QMessageBox::Help,
             QMessageBox::No);
         QCOMPARE(sb, QMessageBox::No);
