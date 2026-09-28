@@ -66,6 +66,8 @@ public:
 
     Two references compare equal when they refer to the same JS object, even
     if they were created independently.
+
+    \sa {Qt for HarmonyOS Platform API}
 */
 
 /*!

@@ -9,4 +9,6 @@
 
     The functions are meant for code running on the JS thread, where the
     platform APIs are usable.
+
+    \sa {Qt for HarmonyOS Platform API}
 */
