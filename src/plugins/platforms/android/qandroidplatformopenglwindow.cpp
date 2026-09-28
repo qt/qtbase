@@ -21,7 +21,7 @@
 QT_BEGIN_NAMESPACE
 
 QAndroidPlatformOpenGLWindow::QAndroidPlatformOpenGLWindow(QWindow *window, EGLDisplay display)
-    :QAndroidPlatformWindow(window), m_eglDisplay(display)
+    : QAndroidPlatformWindow(window), m_eglDisplay(display)
 { }
 
 QAndroidPlatformOpenGLWindow::~QAndroidPlatformOpenGLWindow()
@@ -59,9 +59,8 @@ EGLSurface QAndroidPlatformOpenGLWindow::eglSurface(EGLConfig config)
 
 QSurfaceFormat QAndroidPlatformOpenGLWindow::format() const
 {
-    if (m_nativeWindow == 0)
+    if (!m_nativeWindow)
         return window()->requestedFormat();
-
     return m_format;
 }
 

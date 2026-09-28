@@ -111,7 +111,6 @@ QAndroidPlatformWindow::~QAndroidPlatformWindow()
         platformScreen()->removeWindow(this);
 }
 
-
 void QAndroidPlatformWindow::lower()
 {
     if (m_nativeParentQtWindow.isValid()) {
