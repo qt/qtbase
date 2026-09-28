@@ -13672,7 +13672,7 @@ void QRhiPassResourceTracker::registerBuffer(QRhiBuffer *buf, int slot, BufferAc
     b.access = *access;
     b.stage = *stage;
     b.stateAtPassBegin = state; // first use -> initial state
-    m_buffers.insert(buf, b);
+    m_buffers.append(buf, b);
 }
 
 static inline QRhiPassResourceTracker::TextureStage earlierStage(QRhiPassResourceTracker::TextureStage a,
@@ -13719,7 +13719,7 @@ void QRhiPassResourceTracker::registerTexture(QRhiTexture *tex, TextureAccess *a
     t.access = *access;
     t.stage = *stage;
     t.stateAtPassBegin = state; // first use -> initial state
-    m_textures.insert(tex, t);
+    m_textures.append(tex, t);
 }
 
 QRhiPassResourceTracker::BufferStage QRhiPassResourceTracker::toPassTrackerBufferStage(QRhiShaderResourceBinding::StageFlags stages)
