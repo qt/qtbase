@@ -783,8 +783,8 @@ QOhosSupplier<std::unique_ptr<QMimeData>> makeLazyFetchingQMimeDataFactoryFromUd
             supplierEntry.first,
             [mimeType = supplierEntry.first.toStdString(), baseSupplier = std::move(supplierEntry.second)]() {
                 qOhosPrintfDebug("%s: fetching data for MIME type '%s'", Q_FUNC_INFO, mimeType.c_str());
-                return QtOhos::evalInJsThread(
-                    [&](QtOhos::JsState &) {
+                return QOhosJsThreadGateway::eval(
+                    [&](QOhosJsState &) {
                         return baseSupplier();
                     },
                     Q_FUNC_INFO);
