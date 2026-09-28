@@ -7,8 +7,6 @@
 
 #include <QtCore/qbytearray.h>
 
-const QString srcDir = QStringLiteral(QT_STRINGIFY(SRC_DIR));
-
 class tst_QDecompressHelper : public QObject
 {
     Q_OBJECT
@@ -336,8 +334,8 @@ void tst_QDecompressHelper::decompressBigData_data()
                                 << fiveGiB << false;
 
 #if QT_CONFIG(brotli)
-    QTest::newRow("brotli-4G") << QByteArray("br") << (srcDir + "/4G.br") << fourGiB << false;
-    QTest::newRow("brotli-counted-4G") << QByteArray("br") << (srcDir + "/4G.br") << fourGiB << true;
+    QTest::newRow("brotli-4G") << QByteArray("br") << QString(":/4G.br") << fourGiB << false;
+    QTest::newRow("brotli-counted-4G") << QByteArray("br") << QString(":/4G.br") << fourGiB << true;
 #endif
 
 #if QT_CONFIG(zstd)
