@@ -15,6 +15,7 @@
 #include <QtGui/private/qhighdpiscaling_p.h>
 #include <QtGui/private/qabstractfileiconengine_p.h>
 #include <initializer_list>
+#include <memory>
 #include <qohosjsmain.h>
 #include <qohosjsutils.h>
 #include <qohosqpaenums.h>
@@ -927,23 +928,6 @@ void setOhosConfigColorMode(OhosConfigurationColorMode colorMode)
         Q_FUNC_INFO);
 }
 
-QOhosSupplier<OhosConfigurationColorMode> makeOhosConfigColorModeDataSource(
-    QOhosConsumer<OhosConfigurationColorMode> valueChangedHandler)
-{
-    return QtOhos::makeOhosConfigValueDataSource<OhosConfigurationColorMode>(
-        [](QOhosJsState &jsState) {
-            auto optQAbility = jsState.defaultQAbility();
-            return optQAbility
-                ? mapOhosConfigurationColorModeFromJs(
-                    jsState, optQAbility->eval<QNapi::Number>("context.config.colorMode"))
-                : OhosConfigurationColorMode::COLOR_MODE_NOT_SET;
-        },
-        [](QOhosJsState &jsState, const QNapi::Object &config) {
-            return mapOhosConfigurationColorModeFromJs(jsState, config.get<QNapi::Number>("colorMode"));
-        },
-        std::move(valueChangedHandler));
-}
-
 std::optional<bool> mapOhosConfigurationColorModeToDarkModeFlag(OhosConfigurationColorMode colorMode)
 {
     switch (colorMode) {
@@ -971,14 +955,44 @@ QColor readAccentColor(QOhosJsState &jsState)
     return QColor::fromRgba(argb);
 }
 
-QOhosSupplier<QColor> makeOhosAccentColorDataSource(QOhosConsumer<QColor> accentColorChangedHandler)
+struct OhosThemeConfig
 {
-    return QtOhos::makeOhosConfigValueDataSource<QColor>(
-        readAccentColor,
-        [](QOhosJsState &jsState, const QNapi::Object &) {
-            return readAccentColor(jsState);
+    OhosConfigurationColorMode colorMode = OhosConfigurationColorMode::COLOR_MODE_NOT_SET;
+    QColor accentColor;
+
+    bool operator==(const OhosThemeConfig &other) const
+    {
+        return colorMode == other.colorMode && accentColor == other.accentColor;
+    }
+
+    bool operator!=(const OhosThemeConfig &other) const
+    {
+        return !(*this == other);
+    }
+};
+
+QOhosSupplier<OhosThemeConfig> makeOhosThemeConfigDataSource(
+    QOhosConsumer<OhosThemeConfig> valueChangedHandler)
+{
+    return QtOhos::makeOhosConfigValueDataSource<OhosThemeConfig>(
+        [](QOhosJsState &jsState) {
+            auto optQAbility = jsState.defaultQAbility();
+            if (!optQAbility)
+                return OhosThemeConfig{};
+
+            return OhosThemeConfig{
+                .colorMode = mapOhosConfigurationColorModeFromJs(
+                    jsState, optQAbility->eval<QNapi::Number>("context.config.colorMode")),
+                .accentColor = readAccentColor(jsState),
+            };
         },
-        std::move(accentColorChangedHandler));
+        [](QOhosJsState &jsState, const QNapi::Object &config) {
+            return OhosThemeConfig{
+                .colorMode = mapOhosConfigurationColorModeFromJs(jsState, config.get<QNapi::Number>("colorMode")),
+                .accentColor = readAccentColor(jsState),
+            };
+        },
+        std::move(valueChangedHandler));
 }
 
 std::optional<QPixmap> tryGetFilePixmapByResourceObject(QOhosJsState &jsState, QNapi::Object resource)
@@ -1087,20 +1101,20 @@ QOhosPlatformTheme::QOhosPlatformTheme()
         }))
     , m_wheelScrollLines(defaultWheelScrollLines)
 {
-    auto colorModeDataSource = makeOhosConfigColorModeDataSource(
-        [this](auto) {
-            refreshPalettes();
-            QWindowSystemInterface::handleThemeChange<QWindowSystemInterface::SynchronousDelivery>();
-        });
-    m_ohosConfigDarkModeFlagSupplier = [colorModeDataSource = std::move(colorModeDataSource)]() {
-        return mapOhosConfigurationColorModeToDarkModeFlag(colorModeDataSource());
+    auto themeConfigDataSource = std::make_shared<QOhosSupplier<OhosThemeConfig>>(
+        makeOhosThemeConfigDataSource(
+            [this](const auto &) {
+                refreshPalettes();
+                QWindowSystemInterface::handleThemeChange<QWindowSystemInterface::SynchronousDelivery>();
+            }));
+
+    m_ohosConfigDarkModeFlagSupplier = [themeConfigDataSource]() {
+        return mapOhosConfigurationColorModeToDarkModeFlag((*themeConfigDataSource)().colorMode);
     };
 
-    m_ohosAccentColorSupplier = makeOhosAccentColorDataSource(
-        [this](const auto &) {
-            refreshPalettes();
-            QWindowSystemInterface::handleThemeChange<QWindowSystemInterface::SynchronousDelivery>();
-        });
+    m_ohosAccentColorSupplier = [themeConfigDataSource]() {
+        return (*themeConfigDataSource)().accentColor;
+    };
 
     refreshPalettes();
 }
