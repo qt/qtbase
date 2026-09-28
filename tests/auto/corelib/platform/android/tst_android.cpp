@@ -499,6 +499,8 @@ void tst_Android::orientationChange()
     widget.setAutoFillBackground(true);
     widget.setPalette(palette);
     widget.show();
+    // Wait for the first paint, or the first rotation flakes on slower devices.
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
 
     QScreen *screen = QGuiApplication::primaryScreen();
     QSignalSpy orientationSpy(screen, &QScreen::orientationChanged);
