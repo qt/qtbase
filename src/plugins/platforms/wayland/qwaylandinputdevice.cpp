@@ -1267,7 +1267,7 @@ void QWaylandInputDevice::Keyboard::keyboard_keymap(uint32_t format, int32_t fd,
         return;
     }
 
-    mXkbKeymap.reset(xkb_keymap_new_from_string(mParent->mQDisplay->xkbContext(), map_str,
+    mXkbKeymap.reset(xkb_keymap_new_from_buffer(mParent->mQDisplay->xkbContext(), map_str, size,
                                                 XKB_KEYMAP_FORMAT_TEXT_V1,
                                                 XKB_KEYMAP_COMPILE_NO_FLAGS));
     QXkbCommon::verifyHasLatinLayout(mXkbKeymap.get());
