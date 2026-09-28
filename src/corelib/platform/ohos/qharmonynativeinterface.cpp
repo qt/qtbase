@@ -67,6 +67,8 @@ void runTaskLoggingExceptions(
     \inheaderfile QCoreApplication
     \ingroup native-interfaces
     \ingroup native-interfaces-qcoreapplication
+
+    \sa {Qt for HarmonyOS Platform API}
 */
 QT_DEFINE_NATIVE_INTERFACE(QHarmonyApplication);
 

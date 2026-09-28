@@ -33,6 +33,8 @@ QOhosJsState &jsState()
     QHarmonyJsContext::fromEnv() returns it as the base class. All member
     functions must be called on the JS thread. References to it and its
     \c napi_value results follow the lifetime rules of QHarmonyJsContext.
+
+    \sa {Qt for HarmonyOS Platform API}
 */
 
 QHarmonyAppJsContext::QHarmonyAppJsContext() = default;

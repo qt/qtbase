@@ -44,6 +44,8 @@ QOhosJsState &jsState()
     A QHarmonyJsContext reference is valid as long as the \c napi_env of
     the context, which is until the task or callback that received or
     obtained it returns. Get the context again in each task or callback.
+
+    \sa {Qt for HarmonyOS Platform API}
 */
 
 /*!

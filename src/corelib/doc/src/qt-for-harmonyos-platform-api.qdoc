@@ -1,0 +1,130 @@
+// Copyright (C) 2026 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page qt-for-harmonyos-platform-api.html
+    \title Qt for HarmonyOS Platform API
+    \brief Using HarmonyOS platform APIs from a Qt application.
+
+    \note Qt's HarmonyOS platform API is in Technology Preview and may
+    change in future releases.
+
+    A Qt application can call HarmonyOS ArkTS APIs directly. This
+    documentation calls them platform APIs. Use them for features that Qt
+    does not cover, such as showing the system share sheet, making an
+    in-app purchase, or refreshing the application's home-screen widgets.
+    Qt does not wrap these APIs.
+
+    On HarmonyOS, the ArkTS runtime and the platform UI run on the main
+    thread of the process. This documentation refers to this thread as the
+    JS thread, and to the objects of the ArkTS runtime as JS objects. Qt
+    runs the application on a separate thread, called the Qt thread.
+
+    Qt provides the following classes and functions for calling platform
+    APIs:
+
+    \list
+    \li QNativeInterface::QHarmonyApplication runs code on the JS thread,
+        where the platform APIs are available, and brings results back to
+        the Qt thread. The code receives a QHarmonyJsContext.
+    \li QHarmonyJsContext provides the Node-API environment and loads JS
+        modules by name.
+    \li QHarmonyAppJsContext gives access to application-level JS objects,
+        such as the default \c UIAbility instance.
+    \li QHarmonyJsObjectRef keeps a JS object alive. You can store, copy,
+        and compare the reference on any thread, but you can access the
+        object only on the JS thread.
+    \li The QtHarmony namespace contains free functions for code that runs
+        on the JS thread, such as conversions between QJsonObject and JS
+        objects.
+    \endlist
+
+    Qt's HarmonyOS platform API uses the C Node-API types \c napi_env and
+    \c napi_value. They are part of the HarmonyOS SDK and have a stable ABI.
+    Node-API is a low-level, weakly typed C API that requires manual error
+    handling and resource management. It is strongly recommended that
+    applications use
+    \l {https://github.com/nodejs/node-addon-api}{node-addon-api}, the
+    header-only C++ wrapper for Node-API that the Node.js project publishes.
+    Its types convert to and from the C types at no cost. The snippet in
+    the next section uses it.
+
+    \section1 The Two Threads
+
+    The Qt thread is the thread of the QCoreApplication object, which runs
+    the Qt event loop. Platform APIs are available only on the JS thread. To
+    run code there, pass it as a task to
+    QNativeInterface::QHarmonyApplication::runOnJsThread():
+
+    \code
+    const QJsonObject vibrationEffect{
+        {"type", "time"},
+        {"duration", 200},
+    };
+    const QJsonObject vibrationAttribute{
+        {"usage", "touch"},
+    };
+
+    // ...
+
+    QNativeInterface::QHarmonyApplication::runOnJsThread(
+        [vibrationEffect, vibrationAttribute](QHarmonyJsContext &jsContext) {
+            Napi::Env env(jsContext.env());
+            Napi::Object vibratorModule(env, jsContext.tryImportModule("@ohos.vibrator"));
+            if (vibratorModule.IsEmpty())
+                return;
+
+            Napi::Object jsVibrationEffect(env, QtHarmony::mapQJsonObjectToJsObject(env, vibrationEffect));
+            Napi::Object jsVibrationAttribute(env, QtHarmony::mapQJsonObjectToJsObject(env, vibrationAttribute));
+
+            auto startVibrationFunc = vibratorModule.Get("startVibration").As<Napi::Function>();
+            auto startVibrationPromise = startVibrationFunc.Call(vibratorModule, {jsVibrationEffect, jsVibrationAttribute}).As<Napi::Object>();
+            startVibrationPromise.Get("then").As<Napi::Function>().Call(
+                startVibrationPromise,
+                {
+                    Napi::Function::New(
+                        env,
+                        [](const Napi::CallbackInfo &) {
+                            qDebug() << "startVibration() succeeded";
+                        }),
+                    Napi::Function::New(
+                        env,
+                        [](const Napi::CallbackInfo &info) {
+                            qWarning() << "startVibration() failed:" << QString::fromStdString(info[0].ToString());
+                        }),
+                });
+        });
+    \endcode
+
+    Code that runs on the JS thread must follow the rules listed in the
+    QNativeInterface::QHarmonyApplication documentation. To send results
+    back to the Qt thread, use
+    QNativeInterface::QHarmonyApplication::runOnQtThread(). To pass JS data
+    to the Qt thread, convert it to a QJsonObject with
+    QtHarmony::mapJsObjectToQJsonObject(), or keep it in a
+    QHarmonyJsObjectRef.
+
+    \section1 JS Callbacks
+
+    Asynchronous platform APIs return promises or take callbacks. To handle
+    a promise or to pass a callback, create a function with
+    \c napi_create_function(). Such a function receives the \c napi_env, but
+    not a QHarmonyJsContext. To get the context, call
+    QHarmonyJsContext::fromEnv(). These functions run on the JS thread and
+    follow the same rules as tasks passed to
+    QNativeInterface::QHarmonyApplication::runOnJsThread().
+
+    \section1 JS Modules
+
+    QHarmonyJsContext::tryImportModule() returns a JS module by name, for
+    example \c {@ohos.app.ability.AbilityConstant}. It loads the module on
+    first use. Enumerations are properties of the module object or of a
+    namespace in it. For example, \c LaunchReason is a property of the
+    \c {@ohos.app.ability.AbilityConstant} module object. Enumeration
+    values are properties of their enumeration.
+
+    Native code cannot load kits, the \c {@kit.*} modules. The ArkTS
+    application template bundled with Qt makes the kit modules that Qt
+    needs available to native code. QHarmonyJsContext::tryImportModule()
+    accepts their names, such as \c {@kit.ShareKit.systemShare}.
+*/
