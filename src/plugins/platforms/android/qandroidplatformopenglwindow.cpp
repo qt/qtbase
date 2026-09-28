@@ -54,9 +54,8 @@ EGLSurface QAndroidPlatformOpenGLWindow::eglSurface(EGLConfig config)
 
     m_eglSurface = eglCreateWindowSurface(m_eglDisplay, config, m_nativeWindow, nullptr);
     if (Q_UNLIKELY(m_eglSurface == EGL_NO_SURFACE)) {
-        EGLint error = eglGetError();
-        eglTerminate(m_eglDisplay);
-        qFatal("EGL Error : Could not create the egl surface: error = 0x%x\n", error);
+        qWarning("EGL Error: could not create egl surface: 0x%x", eglGetError());
+        return EGL_NO_SURFACE;
     }
     m_format = q_glFormatFromConfig(m_eglDisplay, config, window()->requestedFormat());
     return m_eglSurface;
