@@ -36,7 +36,8 @@ QOhosJsState &jsState()
 
     All member functions must be called on the JS thread. A \c napi_value
     that they return is valid until the code or callback that obtained it
-    returns. It must not be passed to another thread.
+    returns. It must not be passed to another thread. To keep a JS object
+    longer, use a QHarmonyJsObjectRef.
 
     A QHarmonyJsContext reference is valid as long as the \c napi_env of
     the context, which is until the code or callback that received or
