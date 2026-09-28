@@ -327,8 +327,8 @@ QUiAbilityPeerImpl::QUiAbilityPeerImpl(
         {
             .optEventSourceAliveCheckFunc =
                 [qAbilityWeakRef = moveToSharedPtr(Napi::Weak(uiAbility))](QNapi::Object window) {
-                    bool isWindowClosing = evalInJsThread(
-                        [&](JsState &) {
+                    bool isWindowClosing = QOhosJsThreadGateway::eval(
+                        [&](QOhosJsState &) {
                             return JsWindowsTracker::isWindowClosing(window);
                         },
                         Q_FUNC_INFO);

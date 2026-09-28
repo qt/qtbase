@@ -80,10 +80,10 @@ m_jsScopeData.addAsyncCleanup(
 1. **Strict partition.** Only JS-thread-affine state goes in `JsScopeData`; only Qt-thread state goes in the other members. Accessing the bundle from Qt-thread code, through `m_jsScopeData` or a dereference of `m_optJsScopeData`, is strictly forbidden. Accessing Qt-thread state (other members) from JS-thread code is allowed (unless forbidden for other reasons) if proper synchronization is ensured (e.g. inside `QOhosJsThreadGateway::runAndWait()` blocks).
 
 2. **Access syntax tags thread affinity.** With the partition held, `m_jsScopeData` or a dereference of `m_optJsScopeData` (`*m_optJsScopeData`, `m_optJsScopeData->`) means "JS-thread state", and `m_def` means "Qt-thread state" at every use site. `m_optJsScopeData` itself is Qt-thread state like any other `m_...` member. This makes wrong-thread access syntactically visible:
-   - `m_jsScopeData`, or a dereference of `m_optJsScopeData`, *outside* a `QOhosJsThreadGateway::runAndWait`, `evalInJsThread`, etc. closure is a red flag.
+   - `m_jsScopeData`, or a dereference of `m_optJsScopeData`, *outside* a `QOhosJsThreadGateway::runAndWait`, `QOhosJsThreadGateway::eval`, etc. closure is a red flag.
    - Touching a plain `m_...` member *inside* a JS-thread closure requires extra attention.
 
-3. **Create and touch `JsScopeData` contents only inside JS-thread closures** (`QOhosJsThreadGateway::runAndWait`, `evalInJsThread`, etc.). The Qt thread only ever constructs or destroys the owner, never dereferences it for JS work.
+3. **Create and touch `JsScopeData` contents only inside JS-thread closures** (`QOhosJsThreadGateway::runAndWait`, `QOhosJsThreadGateway::eval`, etc.). The Qt thread only ever constructs or destroys the owner, never dereferences it for JS work.
 
 ## Why bundle instead of per-resource handles
 

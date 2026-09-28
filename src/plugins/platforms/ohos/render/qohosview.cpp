@@ -401,8 +401,8 @@ std::shared_ptr<QOhosWindowProxy> QOhosView::tryCreateWindowProxyIfNeeded(ViewTy
         if (useAutoStartedMainWindow) {
             QOhosWindowProxy::ExistingMainWindowCreateInfo createInfo;
             createInfo.qWindowRef = QtOhos::QObjectThreadSafeRef(qWindow);
-            createInfo.qAbilityInstanceId =  QtOhos::evalInJsThread([](QtOhos::JsState &jsState) {
-                return jsState.defaultQAbilityPeer()->instanceId();
+            createInfo.qAbilityInstanceId =  QOhosJsThreadGateway::eval([](QOhosJsState &jsState) {
+                return QtOhos::JsState::castFrom(jsState).defaultQAbilityPeer()->instanceId();
             },
             Q_FUNC_INFO);
             result = QOhosWindowProxy::createForExistingMainWindow(createInfo);

@@ -567,8 +567,8 @@ void QOhosWindowProxy::setPointerStyleSync(const QCursor &cursor)
 
 QArkUi::WindowProperties QOhosWindowProxy::getWindowProperties() const
 {
-    return QtOhos::evalInJsThread(
-        [&](QtOhos::JsState &) {
+    return QOhosJsThreadGateway::eval(
+        [&](QOhosJsState &) {
             if (m_jsScopeData->isWindowClosing())
                 return QArkUi::WindowProperties {};
             return getWindowPropertiesFromJsWindow(m_jsScopeData->jsWindowRef->jsObject());
@@ -838,8 +838,8 @@ bool QOhosWindowProxy::tryHideAbility()
 
 bool QOhosWindowProxy::getImmersiveModeEnabledState()
 {
-    return QtOhos::evalInJsThread(
-        [&](QtOhos::JsState &) {
+    return QOhosJsThreadGateway::eval(
+        [&](QOhosJsState &) {
             if (m_jsScopeData->isWindowClosing())
                 return false;
             return m_jsScopeData->jsWindowRef->eval<QNapi::Boolean>("getImmersiveModeEnabledState()").Value();
@@ -932,8 +932,8 @@ void QOhosWindowProxy::setWindowLimits(const QSize &minSize, const QSize &maxSiz
 QOhosWindowProxy::WindowLimits QOhosWindowProxy::getWindowLimits() const
 {
     qCDebug(QtForOhos, "%s", Q_FUNC_INFO);
-    return QtOhos::evalInJsThread(
-        [&](QtOhos::JsState &) {
+    return QOhosJsThreadGateway::eval(
+        [&](QOhosJsState &) {
             if (m_jsScopeData->isWindowClosing())
                 return WindowLimits {};
             auto windowLimitsObject = m_jsScopeData->jsWindowRef->eval<QNapi::Object>("getWindowLimits()");
@@ -950,8 +950,8 @@ QOhosWindowProxy::WindowLimits QOhosWindowProxy::getWindowLimits() const
 QOhosWindowProxy::AvoidArea QOhosWindowProxy::getWindowAvoidArea(AvoidAreaType avoidAreaType) const
 {
     qCDebug(QtForOhos, "%s: %d", Q_FUNC_INFO, avoidAreaType);
-    return QtOhos::evalInJsThread(
-        [&](QtOhos::JsState &jsState) {
+    return QOhosJsThreadGateway::eval(
+        [&](QOhosJsState &jsState) {
             if (m_jsScopeData->isWindowClosing())
                 return AvoidArea {};
             auto avoidAreaObject = m_jsScopeData->jsWindowRef->eval<QNapi::Object>(
@@ -1326,8 +1326,8 @@ std::shared_ptr<void> QOhosWindowProxy::registerSubWindowCloseHandler(
     std::function<void()> handler, bool handlerReturnValue)
 {
     auto sharedHandler = QtOhos::moveToSharedPtr(std::move(handler));
-    auto jsWindowRegistrationHandle = QtOhos::evalInJsThread(
-        [&](QtOhos::JsState &jsState) {
+    auto jsWindowRegistrationHandle = QOhosJsThreadGateway::eval(
+        [&](QOhosJsState &jsState) {
             return QtOhos::makeProxyWithJsThreadDeleter(
                 m_jsScopeData->registerSubWindowCloseHandler(
                     jsState,
@@ -1839,8 +1839,8 @@ void QOhosWindowProxy::enableDrag(bool enable)
 
 std::optional<bool> QOhosWindowProxy::isFocused() const
 {
-    return QtOhos::evalInJsThread(
-        [&](QtOhos::JsState &) -> std::optional<bool> {
+    return QOhosJsThreadGateway::eval(
+        [&](QOhosJsState &) -> std::optional<bool> {
             if (m_jsScopeData->isWindowClosing())
                 return std::nullopt;
 
@@ -1882,7 +1882,7 @@ std::vector<QArkUi::JsWindowId> QOhosWindowProxy::queryWindowIdsByCoordinate(
 std::vector<QArkUi::JsWindowId> QOhosWindowProxy::queryQtManagedWindowIdsByPredicate(
     const std::function<bool(QOhosJsState &, const QArkUi::JsWindowRef &)> &predicate)
 {
-    return QtOhos::evalInJsThread([&](QtOhos::JsState &jsState) {
+    return QOhosJsThreadGateway::eval([&](QOhosJsState &jsState) {
         return QOhosJsWindowRegistry::instance(jsState).queryByPredicate(jsState, predicate);
     },
     Q_FUNC_INFO);
@@ -1917,8 +1917,8 @@ std::optional<QOhosDisplayInfo::JsDisplayId> QOhosWindowProxy::tryGetMainWindowJ
 {
     return qtIsMainWindow()
         ? getWindowProperties().displayId
-        : QtOhos::evalInJsThread(
-            [&](QtOhos::JsState &) {
+        : QOhosJsThreadGateway::eval(
+            [&](QOhosJsState &) {
                 auto qUiAbilityPeer
                     = QtOhos::QUiAbilityPeer::tryCastFromQAbilityPeerOrNull(m_jsScopeData->qAbilityPeer);
                 return qUiAbilityPeer
