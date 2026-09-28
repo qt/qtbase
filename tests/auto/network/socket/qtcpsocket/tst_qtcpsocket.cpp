@@ -319,9 +319,11 @@ void tst_QTcpSocket::initTestCase_data()
 //    QTest::newRow("WithHttpProxyNtlmAuth SSL") << true << int(HttpProxy | AuthNtlm) << true;
 #endif
 
+#if QT_CONFIG(process) && !defined(Q_OS_HARMONY)
     stressTestDir = QFINDTESTDATA("stressTest");
     QVERIFY2(!stressTestDir.isEmpty(), qPrintable(
         QString::fromLatin1("Couldn't find stressTest dir starting from %1.").arg(QDir::currentPath())));
+#endif
 }
 
 void tst_QTcpSocket::initTestCase()
@@ -2515,8 +2517,8 @@ void tst_QTcpSocket::suddenRemoteDisconnect_data()
 
 void tst_QTcpSocket::suddenRemoteDisconnect()
 {
-#if !QT_CONFIG(process)
-    QSKIP("This test requires QProcess support");
+#if !QT_CONFIG(process) || defined(Q_OS_HARMONY)
+    QSKIP("Skipped, cannot launch helper on this platform");
 #else
     QFETCH(QString, client);
     QFETCH(QString, server);
