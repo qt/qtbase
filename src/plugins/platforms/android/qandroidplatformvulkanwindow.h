@@ -34,7 +34,6 @@ public:
 
 private:
     void destroyWindowSurface() override;
-    QSurfaceFormat m_format;
     // Render-thread-only state.
     VkSurfaceKHR m_vkSurface = VK_NULL_HANDLE;
     PFN_vkCreateAndroidSurfaceKHR m_createVkSurface = nullptr;
