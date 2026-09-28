@@ -18,6 +18,8 @@
 
 #include "qrhi_p.h"
 
+#include <QtCore/private/qflatmap_p.h>
+
 #ifdef Q_OS_WIN
 #include "qdxgihdrinfo_p.h"
 #endif

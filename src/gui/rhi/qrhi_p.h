@@ -21,10 +21,11 @@
 #include <QAtomicInt>
 #include <QElapsedTimer>
 #include <QLoggingCategory>
+#include <QtCore/qhash.h>
 #include <QtCore/qset.h>
 #include <QtCore/qvarlengtharray.h>
-#include <QtCore/private/qflatmap_p.h>
 #include <algorithm>
+#include <utility>
 
 QT_BEGIN_NAMESPACE
 
@@ -732,6 +733,75 @@ public:
     static Type newId();
 };
 
+// The tracked resources of a pass, in the order the pass first used them.
+// Neither QHash nor QVarLengthFlatMap is suitable on its own. Most passes track
+// a handful of resources, which a QHash would allocate for. But a pass can also
+// track thousands, such as the vertex and index buffers of thousands of draw
+// calls, and a flat map keeps its keys sorted, so each insertion shifts half
+// the entries, which is quadratic in the number of resources. So the entries are
+// appended to a QVarLengthArray and searched linearly while there are few, and
+// indexed by a QHash once there are more.
+template <typename Key, typename T, qsizetype Prealloc>
+class QRhiPassResourceMap
+{
+public:
+    using value_type = std::pair<Key, T>;
+    using iterator = value_type *;
+    using const_iterator = const value_type *;
+
+    iterator begin() { return m_entries.begin(); }
+    iterator end() { return m_entries.end(); }
+    const_iterator begin() const { return m_entries.cbegin(); }
+    const_iterator end() const { return m_entries.cend(); }
+    const_iterator cbegin() const { return m_entries.cbegin(); }
+    const_iterator cend() const { return m_entries.cend(); }
+
+    bool isEmpty() const { return m_entries.isEmpty(); }
+    qsizetype size() const { return m_entries.size(); }
+
+    void clear()
+    {
+        m_entries.clear();
+        m_index.clear();
+    }
+
+    const_iterator find(Key key) const
+    {
+        if (m_index.isEmpty()) {
+            return std::find_if(m_entries.cbegin(), m_entries.cend(),
+                                [key](const value_type &entry) { return entry.first == key; });
+        }
+        const auto it = m_index.constFind(key);
+        return it == m_index.cend() ? m_entries.cend() : m_entries.cbegin() + it.value();
+    }
+
+    iterator find(Key key)
+    {
+        const const_iterator it = std::as_const(*this).find(key);
+        return m_entries.begin() + (it - m_entries.cbegin());
+    }
+
+    bool contains(Key key) const { return find(key) != cend(); }
+
+    // The key must not be in the map yet.
+    void append(Key key, const T &value)
+    {
+        m_entries.append({ key, value });
+        if (!m_index.isEmpty()) {
+            m_index.insert(key, m_entries.size() - 1);
+        } else if (m_entries.size() > LinearSearchLimit) {
+            m_index.reserve(m_entries.size() * 2);
+            for (qsizetype i = 0; i < m_entries.size(); ++i)
+                m_index.insert(m_entries[i].first, i);
+        }
+    }
+
+private:
+    static constexpr qsizetype LinearSearchLimit = 32;
+    QVarLengthArray<value_type, Prealloc> m_entries;
+    QHash<Key, qsizetype> m_index;
+};
+
 class QRhiPassResourceTracker
 {
 public:
@@ -800,7 +870,7 @@ public:
         UsageState stateAtPassBegin;
     };
 
-    const QVarLengthFlatMap<QRhiBuffer *, Buffer, 12> &buffers() const { return m_buffers; }
+    const QRhiPassResourceMap<QRhiBuffer *, Buffer, 12> &buffers() const { return m_buffers; }
 
     struct Texture {
         TextureAccess access;
@@ -808,14 +878,14 @@ public:
         UsageState stateAtPassBegin;
     };
 
-    const QVarLengthFlatMap<QRhiTexture *, Texture, 12> &textures() const { return m_textures; }
+    const QRhiPassResourceMap<QRhiTexture *, Texture, 12> &textures() const { return m_textures; }
 
     static BufferStage toPassTrackerBufferStage(QRhiShaderResourceBinding::StageFlags stages);
     static TextureStage toPassTrackerTextureStage(QRhiShaderResourceBinding::StageFlags stages);
 
 private:
-    QVarLengthFlatMap<QRhiBuffer *, Buffer, 12> m_buffers;
-    QVarLengthFlatMap<QRhiTexture *, Texture, 12> m_textures;
+    QRhiPassResourceMap<QRhiBuffer *, Buffer, 12> m_buffers;
+    QRhiPassResourceMap<QRhiTexture *, Texture, 12> m_textures;
 };
 
 Q_DECLARE_TYPEINFO(QRhiPassResourceTracker::Buffer, Q_RELOCATABLE_TYPE);
