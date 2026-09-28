@@ -798,8 +798,9 @@ void tst_QFileInfo::canonicalFilePath_data()
     // This used to crash on macOS
     QTest::addRow("root") << "/" << "/" << noSetupFunction;
     // This used to crash on Mac, verify that it doesn't anymore.
-    QTest::newRow("past-root-dir") << "/tmp/../../../../../../../../../../../../../../../../../"
-                                   << "/" << noSetupFunction;
+    if (QString tmpdir = QDir::tempPath(); !tmpdir.isEmpty())
+        QTest::newRow("past-root-dir") << tmpdir + "/../../../../../../../../../../../../../../../../../"
+                                       << "/" << noSetupFunction;
 #else
     if (QString tmpdir = QDir::tempPath(); !tmpdir.isEmpty())
         QTest::newRow("past-root-dir") << tmpdir + "/../../../../../../../../../../../../../../../../../"
