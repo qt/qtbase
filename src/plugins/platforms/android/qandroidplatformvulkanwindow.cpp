@@ -18,10 +18,7 @@ QT_BEGIN_NAMESPACE
 using namespace Qt::StringLiterals;
 
 QAndroidPlatformVulkanWindow::QAndroidPlatformVulkanWindow(QWindow *window)
-    : QAndroidPlatformWindow(window),
-      m_vkSurface(0),
-      m_createVkSurface(nullptr),
-      m_destroyVkSurface(nullptr)
+    : QAndroidPlatformWindow(window)
 {
 }
 
