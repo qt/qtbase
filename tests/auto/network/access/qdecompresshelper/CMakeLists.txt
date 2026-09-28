@@ -17,8 +17,6 @@ qt_internal_add_test(tst_qdecompresshelper
         inflate.rcc.cpp
         tst_qdecompresshelper.cpp
         zstandard.rcc.cpp
-    DEFINES
-        SRC_DIR=${CMAKE_CURRENT_SOURCE_DIR}
     LIBRARIES
         Qt::NetworkPrivate
 )
@@ -30,4 +28,5 @@ qt_internal_add_resource(tst_qdecompresshelper "tst_qdecompresshelper_testdata"
         "${CMAKE_CURRENT_SOURCE_DIR}"
     FILES
         10K.gz
+        4G.br
 )
