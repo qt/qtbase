@@ -245,7 +245,7 @@ private:
             void (JsScopeData::*handleFunctions)(const QtOhos::CallbackInfo &),
             QFlags<EventHandlerFlagBits> eventHandlerFlags);
         std::shared_ptr<void> registerSubWindowCloseHandler(
-            QtOhos::JsState &jsState,
+            QOhosJsState &jsState,
             std::function<bool()> handler);
         void handleWindowEventCallback(const QtOhos::CallbackInfo &cbInfo);
         void handleWindowStatusCallback(const QtOhos::CallbackInfo &cbInfo);
