@@ -563,6 +563,45 @@ void tst_Android::orientationChange()
         QTRY_COMPARE(screen->physicalDotsPerInchY(), orientationValues.physicalYDPI);
         QTRY_COMPARE(screen->physicalSize(), orientationValues.physicalSize);
 
+        // Sample pixels at the centre, edges and corners. A missed expose or
+        // stale size shows the clear colour instead of the widget background.
+        QWindow *winHandle = widget.windowHandle();
+        QVERIFY2(winHandle, "widget has no window handle after orientation change");
+        QTRY_VERIFY_WITH_TIMEOUT(winHandle->isExposed(), 5000);
+        QPixmap shot;
+        QTRY_VERIFY_WITH_TIMEOUT(!(shot = widget.grab()).isNull(), 5000);
+        // grab() returns physical pixels and widget.size() is logical, so
+        // compare against the size scaled by the device pixel ratio.
+        const QSize expectedShotSize = (QSizeF(widget.size()) * widget.devicePixelRatio()).toSize();
+        QCOMPARE(shot.size(), expectedShotSize);
+        const QImage frame = shot.toImage();
+        const QColor expectedColor(Qt::red);
+        const int w = frame.width();
+        const int h = frame.height();
+        // Inset by a few px from each edge to skip any anti-aliased seam.
+        const int inset = 4;
+        struct Sample { const char *name; QPoint at; };
+        const Sample samples[] = {
+            { "centre",       { w / 2,         h / 2         } },
+            { "top-edge",     { w / 2,         inset         } },
+            { "bottom-edge",  { w / 2,         h - 1 - inset } },
+            { "left-edge",    { inset,         h / 2         } },
+            { "right-edge",   { w - 1 - inset, h / 2         } },
+            { "top-left",     { inset,         inset         } },
+            { "top-right",    { w - 1 - inset, inset         } },
+            { "bottom-left",  { inset,         h - 1 - inset } },
+            { "bottom-right", { w - 1 - inset, h - 1 - inset } },
+        };
+        for (const Sample &s : samples) {
+            const QColor got(frame.pixel(s.at));
+            QVERIFY2(got == expectedColor,
+                        qPrintable(QStringLiteral("sample %1 at (%2, %3) in %4x%5: got %6, expected %7")
+                                        .arg(QLatin1StringView(s.name))
+                                        .arg(s.at.x()).arg(s.at.y())
+                                        .arg(w).arg(h)
+                                        .arg(got.name()).arg(expectedColor.name())));
+        }
+
         orientationSpy.clear();
     };
 
