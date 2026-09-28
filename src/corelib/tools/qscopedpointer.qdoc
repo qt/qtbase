@@ -321,3 +321,10 @@
 
     \memberswap{pointer}.
  */
+
+/*!
+    \typedef QScopedPointer::element_type
+    \since 6.13
+
+    An alias for \c{T}.
+*/

@@ -29,6 +29,8 @@ class QPointer
         typename std::conditional<std::is_const<T>::value, const QObject, QObject>::type;
     QWeakPointer<QObjectType> wp;
 public:
+    using element_type = T;
+
     Q_NODISCARD_CTOR
     QPointer() noexcept = default;
     Q_NODISCARD_CTOR

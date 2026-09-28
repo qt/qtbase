@@ -71,6 +71,8 @@ template <typename T, typename Cleanup = QScopedPointerDeleter<T> >
 class QScopedPointer
 {
 public:
+    using element_type = T;
+
     Q_NODISCARD_CTOR
     explicit QScopedPointer(T *p = nullptr) noexcept : d(p)
     {

@@ -287,3 +287,10 @@
     Returns a guarded pointer that points to the same object that
     \a variant holds.
 */
+
+/*!
+    \typedef QPointer::element_type
+    \since 6.13
+
+    An alias for \c{T}.
+*/
