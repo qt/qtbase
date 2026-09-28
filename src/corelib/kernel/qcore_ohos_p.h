@@ -290,6 +290,10 @@ Q_CORE_EXPORT void initQtThreadState();
 template<typename T>
 std::shared_ptr<T> makeProxyWithJsThreadDeleter(std::shared_ptr<T> &&baseSharedPtr);
 
+// as makeProxyWithJsThreadDeleter(), but the release is posted to the JS thread instead of awaited
+template<typename T>
+std::shared_ptr<T> makeProxyWithAsyncJsThreadDeleter(std::shared_ptr<T> &&baseSharedPtr);
+
 // invokes the task inside the Qt thread, can be called from any thread at any time
 Q_CORE_EXPORT void invokeInQtThread(std::function<void()> task);
 
@@ -366,6 +370,20 @@ std::shared_ptr<T> makeProxyWithJsThreadDeleter(std::shared_ptr<T> &&baseSharedP
                     baseSharedPtr.reset();
                 },
                 Q_FUNC_INFO);
+        });
+}
+
+template<typename T>
+std::shared_ptr<T> makeProxyWithAsyncJsThreadDeleter(std::shared_ptr<T> &&baseSharedPtr)
+{
+    auto *baseRawPtr = baseSharedPtr.get();
+    return std::shared_ptr<T>(
+        baseRawPtr,
+        [baseSharedPtr = std::move(baseSharedPtr)](T *) mutable {
+            QOhosJsThreadGateway::invoke(
+                [baseSharedPtr = std::move(baseSharedPtr)](QOhosJsState &) mutable {
+                    baseSharedPtr.reset();
+                });
         });
 }
 
