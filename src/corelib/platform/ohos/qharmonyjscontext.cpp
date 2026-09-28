@@ -4,6 +4,7 @@
 #include "qharmonyjscontext.h"
 #include <QtCore/private/qcore_ohos_p.h>
 #include <QtCore/private/qohoslogger_p.h>
+#include <QtCore/qharmonyappjscontext.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -28,6 +29,10 @@ QOhosJsState &jsState()
     Code that runs there receives a QHarmonyJsContext. JS callbacks created
     with \c napi_create_function() receive only a \c napi_env. They get the
     context with fromEnv().
+
+    QHarmonyAppJsContext provides the state of the application in the
+    runtime, such as its default \c UIAbility instance. To get it, call
+    QHarmonyAppJsContext::fromJsContext().
 
     All member functions must be called on the JS thread. A \c napi_value
     that they return is valid until the code or callback that obtained it
@@ -58,10 +63,7 @@ QHarmonyJsContext::~QHarmonyJsContext() = default;
 */
 QHarmonyJsContext &QHarmonyJsContext::fromEnv(napi_env env)
 {
-    Q_ASSERT(env == jsState().env());
-
-    static QHarmonyJsContext jsContext;
-    return jsContext;
+    return QHarmonyAppJsContext::fromEnv(env);
 }
 
 /*!

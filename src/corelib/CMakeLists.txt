@@ -1268,6 +1268,7 @@ qt_internal_extend_target(Core CONDITION OHOS
         platform/ohos/qohosmemoizingjsthreadfetcher.cpp platform/ohos/qohosmemoizingjsthreadfetcher_p.h
         platform/ohos/qharmonyjsonconversions.cpp platform/ohos/qharmonyjsonconversions.h
         platform/ohos/qharmonyjscontext.cpp platform/ohos/qharmonyjscontext.h
+        platform/ohos/qharmonyappjscontext.cpp platform/ohos/qharmonyappjscontext.h
     DEFINES
         NODE_ADDON_API_ENABLE_TYPE_CHECK_ON_AS
         NAPI_CPP_EXCEPTIONS
