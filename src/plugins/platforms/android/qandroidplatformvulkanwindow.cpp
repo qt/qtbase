@@ -35,13 +35,10 @@ void QAndroidPlatformVulkanWindow::setGeometry(const QRect &rect)
 {
     QAndroidPlatformWindow::setGeometry(rect);
 
-    QRect availableGeometry = screen()->availableGeometry();
-    if (rect.width() > 0
-            && rect.height() > 0
-            && availableGeometry.width() > 0
-            && availableGeometry.height() > 0) {
-        QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(0, 0), rect.size()));
-    }
+    // Like the OpenGL window, programmatic resizes need an expose to
+    // re-layout widget-embedded scenes.
+    if (!rect.isEmpty() && !screen()->availableGeometry().isEmpty())
+        QWindowSystemInterface::handleExposeEvent(window(), QRegion(QRect(QPoint(), rect.size())));
 }
 
 QSurfaceFormat QAndroidPlatformVulkanWindow::format() const

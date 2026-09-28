@@ -34,13 +34,10 @@ void QAndroidPlatformOpenGLWindow::setGeometry(const QRect &rect)
 {
     QAndroidPlatformWindow::setGeometry(rect);
 
-    QRect availableGeometry = screen()->availableGeometry();
-    if (rect.width() > 0
-            && rect.height() > 0
-            && availableGeometry.width() > 0
-            && availableGeometry.height() > 0) {
-        QWindowSystemInterface::handleExposeEvent(window(), QRect(QPoint(0, 0), rect.size()));
-    }
+    // Programmatic resizes need an expose to drive Qt-internal re-layout on
+    // widget-embedded scenes (QQuickWidget).
+    if (!rect.isEmpty() && !screen()->availableGeometry().isEmpty())
+        QWindowSystemInterface::handleExposeEvent(window(), QRegion(QRect(QPoint(), rect.size())));
 }
 
 EGLSurface QAndroidPlatformOpenGLWindow::eglSurface(EGLConfig config)
