@@ -167,15 +167,6 @@ void dispatchNewWant(QNapi::Object qAbility, QNapi::Object want, QNapi::Object l
 // invokes the task inside the JS thread, can be called from Qt thread at any time
 void invokeInJsThread(std::function<void(JsState &)> task);
 
-// Invokes the task inside the JS thread and blocks the caller's thread until
-// the "continue" function (std::function<void()>, passed as second argument to
-// the task) is called on the JS side.
-// It can be called from the Qt thread at any time, calling it from the JS
-// thread is illegal.
-void invokeInJsThreadAndWaitForContinue(
-    std::function<void(JsState &, QOhosTaskPromise<>)> &&task,
-    std::string callerContextName = {});
-
 template<typename Func>
 auto evalInJsThread(Func &&func, std::string callerContextName = {}) -> decltype(func(std::declval<JsState &>()));
 
