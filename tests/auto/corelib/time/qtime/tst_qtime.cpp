@@ -31,6 +31,8 @@ private Q_SLOTS:
     void addSecs_data();
     void addSecs();
     void orderingCompiles();
+    void extractOutOfRange_data();
+    void extractOutOfRange();
     void operator_eq_eq_data();
     void operator_eq_eq();
     void ordering_data();
@@ -325,6 +327,42 @@ void tst_QTime::msecsTo()
 void tst_QTime::orderingCompiles()
 {
     QTestPrivate::testAllComparisonOperatorsCompile<QTime>();
+}
+
+void tst_QTime::extractOutOfRange_data()
+{
+    QTest::addColumn<quint32>("msecs");
+    QTest::addColumn<bool>("valid");
+
+    constexpr quint32 msecsPerDay = 24 * 60 * 60 * 1000;
+    QTest::newRow("midnight") << quint32(0) << true;
+    QTest::newRow("last-ms-of-day") << quint32(msecsPerDay - 1) << true;
+    QTest::newRow("past-end-of-day") << quint32(msecsPerDay + 1) << false;
+    QTest::newRow("int-max") << quint32(std::numeric_limits<int>::max()) << false;
+    QTest::newRow("negative-one") << quint32(-1) << false;
+    QTest::newRow("negative-two") << quint32(-2) << false;
+}
+
+void tst_QTime::extractOutOfRange()
+{
+    QFETCH(const quint32, msecs);
+    QFETCH(const bool, valid);
+
+    QByteArray byteArray;
+    QDataStream dataStream(&byteArray, QIODevice::ReadWrite);
+    dataStream << msecs;
+    dataStream.device()->reset();
+
+    QTime deserialised;
+    dataStream >> deserialised;
+    QCOMPARE(dataStream.status(), QDataStream::Ok);
+    QCOMPARE(deserialised.isValid(), valid);
+    if (valid) {
+        QCOMPARE(deserialised.msecsSinceStartOfDay(), int(msecs));
+    } else {
+        QVERIFY(deserialised.isNull());
+        QCOMPARE(deserialised.msecsSinceStartOfDay(), 0);
+    }
 }
 
 void tst_QTime::operator_eq_eq_data()

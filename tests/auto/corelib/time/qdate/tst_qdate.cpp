@@ -80,6 +80,8 @@ private Q_SLOTS:
     void ordering_chrono_types();
     void operator_insert_extract_data();
     void operator_insert_extract();
+    void extractOutOfRange_data();
+    void extractOutOfRange();
 #if QT_CONFIG(datestring)
     void fromStringDateFormat_data();
     void fromStringDateFormat();
@@ -1257,6 +1259,41 @@ void tst_QDate::operator_insert_extract()
     QCOMPARE(dataStream.status(), QDataStream::Ok);
 
     QCOMPARE(deserialised, date);
+}
+
+void tst_QDate::extractOutOfRange_data()
+{
+    QTest::addColumn<qint64>("julianDay");
+    QTest::addColumn<bool>("valid");
+
+    QTest::newRow("minJd") << minJd << true;
+    QTest::newRow("maxJd") << maxJd << true;
+    QTest::newRow("below-minJd") << minJd - 1 << false;
+    QTest::newRow("above-maxJd") << maxJd + 1 << false;
+    QTest::newRow("int64-min") << std::numeric_limits<qint64>::min() << false;
+    QTest::newRow("int64-max") << std::numeric_limits<qint64>::max() << false;
+}
+
+void tst_QDate::extractOutOfRange()
+{
+    QFETCH(const qint64, julianDay);
+    QFETCH(const bool, valid);
+
+    QByteArray byteArray;
+    QDataStream dataStream(&byteArray, QIODevice::ReadWrite);
+    dataStream << julianDay;
+    dataStream.device()->reset();
+
+    QDate deserialised;
+    dataStream >> deserialised;
+    QCOMPARE(dataStream.status(), QDataStream::Ok);
+    QCOMPARE(deserialised.isValid(), valid);
+    if (valid) {
+        QCOMPARE(deserialised.toJulianDay(), julianDay);
+    } else {
+        QVERIFY(deserialised.isNull());
+        QCOMPARE(deserialised.toJulianDay(), QDate().toJulianDay());
+    }
 }
 
 #if QT_CONFIG(datestring)
