@@ -42,8 +42,8 @@ private:
 ```cpp
 m_jsScopeData = QtOhos::makeProxyWithJsThreadDeleter(std::make_shared<JsScopeData>());
 
-QtOhos::runInJsThreadAndWait(
-    [&](QtOhos::JsState &jsState) {
+QOhosJsThreadGateway::runAndWait(
+    [&](QOhosJsState &jsState) {
         m_jsScopeData->jsObject = makeJsObject(jsState);
         m_jsScopeData->someListenerHandle = registerListener(jsState, /* ... */);
     },
@@ -71,13 +71,13 @@ After construction, read or modify `m_jsScopeData` contents only from code runni
 
 ## Rules
 
-1. **Strict partition.** Only JS-thread-affine state goes in `JsScopeData`; only Qt-thread state goes in the other members. Accessing `m_jsScopeData->...` from Qt-thread code is strictly forbidden. Accessing Qt-thread state (other members) from JS-thread code is allowed (unless forbidden for other reasons) if proper synchronization is ensured (e.g. inside `runInJsThreadAndWait()` blocks).
+1. **Strict partition.** Only JS-thread-affine state goes in `JsScopeData`; only Qt-thread state goes in the other members. Accessing `m_jsScopeData->...` from Qt-thread code is strictly forbidden. Accessing Qt-thread state (other members) from JS-thread code is allowed (unless forbidden for other reasons) if proper synchronization is ensured (e.g. inside `QOhosJsThreadGateway::runAndWait()` blocks).
 
 2. **Access syntax tags thread affinity.** With the partition held, `m_jsScopeData->abc` means "JS-thread state" and `m_def` means "Qt-thread state" at every use site. This makes wrong-thread access syntactically visible:
-   - A bare `m_jsScopeData->...` *outside* a `runInJsThreadAndWait`, `evalInJsThread`, etc. closure is a red flag.
+   - A bare `m_jsScopeData->...` *outside* a `QOhosJsThreadGateway::runAndWait`, `evalInJsThread`, etc. closure is a red flag.
    - Touching a plain `m_...` member *inside* a JS-thread closure requires extra attention.
 
-3. **Create and touch `JsScopeData` contents only inside JS-thread closures** (`runInJsThreadAndWait`, `evalInJsThread`, etc.). The Qt thread only ever moves/resets the `shared_ptr` itself, never dereferences it for JS work.
+3. **Create and touch `JsScopeData` contents only inside JS-thread closures** (`QOhosJsThreadGateway::runAndWait`, `evalInJsThread`, etc.). The Qt thread only ever moves/resets the `shared_ptr` itself, never dereferences it for JS work.
 
 ## Why bundle instead of per-resource handles
 
