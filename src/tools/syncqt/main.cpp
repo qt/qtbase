@@ -20,6 +20,7 @@
 #include <fstream>
 #include <string>
 #include <string_view>
+#include <charconv>
 #include <cstring>
 #include <sstream>
 #include <filesystem>
@@ -92,31 +93,43 @@ std::string asciiToUpper(std::string s)
     return s;
 }
 
-bool parseVersion(const std::string &version, int &major, int &minor)
+struct VersionParseResult
 {
-    const size_t separatorPos = version.find('.');
-    if (separatorPos == std::string::npos || separatorPos == (version.size() - 1)
-        || separatorPos == 0)
-        return false;
+    std::array<int, 3> parts = {};
+    size_t count = 0;
+    std::string error;
 
-    try {
-        size_t pos = 0;
-        major = std::stoi(version.substr(0, separatorPos), &pos);
-        if (pos != separatorPos)
-            return false;
+    bool ok() const { return error.empty(); }
+};
 
-        const size_t nextPart = separatorPos + 1;
-        pos = 0;
-        minor = std::stoi(version.substr(nextPart), &pos);
-        if (pos != (version.size() - nextPart))
-            return false;
-    } catch (const std::invalid_argument &) {
-        return false;
-    } catch (const std::out_of_range &) {
-        return false;
+// Parses "<major>.<minor>" or "<major>.<minor>.<patch>", ignoring surrounding whitespace.
+// Unused parts are left as 0.
+VersionParseResult parseVersion(const std::string &version)
+{
+    static const std::regex VersionPartsRegex("\\s*(\\d+)\\.(\\d+)(?:\\.(\\d+))?\\s*");
+
+    VersionParseResult result;
+    std::smatch match;
+    if (!std::regex_match(version, match, VersionPartsRegex)) {
+        result.error = "expected 2 or 3 dot-separated integer parts";
+        return result;
     }
 
-    return true;
+    for (size_t i = 1; i < match.size(); ++i) {
+        if (!match[i].matched)
+            // Skip over 'patch' match for a 2-part version.
+            continue;
+        const std::string part = match[i].str();
+        int value = 0;
+        const auto [_, errorCode] = std::from_chars(part.data(), part.data() + part.size(), value);
+        if (errorCode != std::errc{}) {
+            result.error = "failed to convert version part '" + part + "' to an integer";
+            result.count = 0;
+            return result;
+        }
+        result.parts[result.count++] = value;
+    }
+    return result;
 }
 
 class DummyOutputStream : public std::ostream
@@ -200,6 +213,11 @@ public:
 
     const std::string &moduleName() const { return m_moduleName; }
 
+    const std::string &moduleVersion() const { return m_moduleVersion; }
+    int moduleVersionMajor() const { return m_moduleVersionMajor; }
+    int moduleVersionMinor() const { return m_moduleVersionMinor; }
+    int moduleVersionPatch() const { return m_moduleVersionPatch; }
+
     const std::string &sourceDir() const { return m_sourceDir; }
 
     const std::string &binaryDir() const { return m_binaryDir; }
@@ -268,6 +286,7 @@ public:
                      " -includeDir <dir> -privateIncludeDir <dir> -qpaIncludeDir <dir> -rhiIncludeDir <dir> -ssgIncludeDir <dir>"
                      " -spiIncludeDir <dir>"
                      " -stagingDir <dir> <-headers <header list>|-all> [-debug]"
+                     " [-moduleVersion <version>]" // TODO: Make it required in Qt 6.13
                      " [-versionScript <path>] [-qpaHeadersFilter <regex>] [-rhiHeadersFilter <regex>]"
                      " [-spiHeadersFilter <regex>]"
                      " [-knownModules <module1> <module2>... <moduleN>]"
@@ -323,6 +342,8 @@ public:
                      "  -publicNamespaceFilter          Symbols that are in the specified\n"
                      "                                  namespace.\n"
                      "                                  are treated as public symbols.\n"
+                     "  -moduleVersion                  Specify the module's version.\n"
+                     "                                  Defaults to the Qt version.\n"
                      "  -versionScript                  Generate linker version script by\n"
                      "                                  provided path.\n"
                      "  -debug                          Enable debug output.\n"
@@ -382,6 +403,7 @@ private:
             { "-versionScript", { &m_versionScriptFile, true } },
             { "-publicNamespaceFilter", { &publicNamespaceFilter, true } },
             { "-moduleMapFile", { &m_moduleMapFile, true } },
+            { "-moduleVersion", { &m_moduleVersion, true } },
         };
 
         const std::unordered_map<std::string, CommandLineOption<std::set<std::string>>>
@@ -519,6 +541,34 @@ private:
             return false;
         }
 
+        if (m_moduleVersion.empty()) {
+            // TODO: Make the argument required in Qt 6.13. For now default to the Qt version.
+            m_moduleVersion = QT_VERSION_STR;
+        }
+
+        const utils::VersionParseResult version = utils::parseVersion(m_moduleVersion);
+        if (!version.ok()) {
+            std::cerr << "Failed to parse module version '" << m_moduleVersion << "': "
+                      << version.error
+                      << ". The version is expected to be in the format "
+                         "<major>.<minor>[.<patch>]." << std::endl;
+            return false;
+        }
+
+        for (size_t i = 0; i < version.count; ++i) {
+            if (version.parts[i] > 255) {
+                std::cerr << "Module version part '" << version.parts[i]
+                          << "' can not be encoded into a 2 digit hexidecimal number which "
+                          << "is embbedded into the module version file. Operating on the value "
+                          << "using macros like QT_VERSION_CHECK will not work correctly."
+                          << std::endl;
+            }
+        }
+
+        m_moduleVersionMajor = version.parts[0];
+        m_moduleVersionMinor = version.parts[1];
+        m_moduleVersionPatch = version.parts[2];
+
         for (const auto &argument : listArgumentMap)
             argument.second.value->erase("");
 
@@ -547,6 +597,10 @@ private:
     }
 
     std::string m_moduleName;
+    std::string m_moduleVersion;
+    int m_moduleVersionMajor;
+    int m_moduleVersionMinor;
+    int m_moduleVersionPatch;
     std::string m_sourceDir;
     std::string m_binaryDir;
     std::string m_includeDir;
@@ -1692,14 +1746,22 @@ public:
     [[nodiscard]] bool generateVersionHeader(const std::string &outputFile)
     {
         std::string moduleNameUpper = utils::asciiToUpper( m_commandLineArgs->moduleName());
+        std::string moduleVersion = m_commandLineArgs->moduleVersion();
+        int majorVersion = m_commandLineArgs->moduleVersionMajor();
+        int minorVersion = m_commandLineArgs->moduleVersionMinor();
+        int patchVersion = m_commandLineArgs->moduleVersionPatch();
 
         std::stringstream buffer;
         buffer << "/* This file was generated by syncqt. */\n"
                << "#ifndef QT_" << moduleNameUpper << "_VERSION_H\n"
                << "#define QT_" << moduleNameUpper << "_VERSION_H\n\n"
-               << "#define " << moduleNameUpper << "_VERSION_STR \"" << QT_VERSION_STR << "\"\n\n"
+               << "#define " << moduleNameUpper << "_VERSION_STR \"" << moduleVersion << "\"\n\n"
                << "#define " << moduleNameUpper << "_VERSION "
-               << "0x0" << QT_VERSION_MAJOR << "0" << QT_VERSION_MINOR << "0" << QT_VERSION_PATCH
+               << "0x"
+               << std::hex << std::setfill('0')
+               << std::setw(2) << majorVersion
+               << std::setw(2) << minorVersion
+               << std::setw(2) << patchVersion
                << "\n\n"
                << "#endif // QT_" << moduleNameUpper << "_VERSION_H\n";
 
@@ -1721,9 +1783,8 @@ public:
             if (separatorPos != std::string::npos) {
                 std::string version = descriptor.substr(separatorPos + 1);
                 versionDisclaimer = " and will be removed in Qt " + version;
-                int minor = 0;
-                int major = 0;
-                if (!utils::parseVersion(version, major, minor)) {
+                const utils::VersionParseResult parsed = utils::parseVersion(version);
+                if (!parsed.ok() || parsed.count != 2) {
                     std::cerr << ErrorMessagePreamble
                               << "Invalid version format specified for the deprecated header file "
                               << headerPath << ": '" << version
@@ -1731,6 +1792,8 @@ public:
                     result = false;
                     continue;
                 }
+                const int major = parsed.parts[0];
+                const int minor = parsed.parts[1];
 
                 if (QT_VERSION_MAJOR > major
                     || (QT_VERSION_MAJOR == major && QT_VERSION_MINOR >= minor)) {
