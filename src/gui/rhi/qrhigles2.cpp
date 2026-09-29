@@ -5116,7 +5116,7 @@ void QRhiGles2::beginPass(QRhiCommandBuffer *cb,
     clearCmd.args.clear.s = depthStencilClearValue.stencilClearValue();
 
     cbD->recordingPass = QGles2CommandBuffer::RenderPass;
-    cbD->passNeedsResourceTracking = !flags.testFlag(QRhiCommandBuffer::DoNotTrackResourcesForCompute);
+    cbD->passNeedsResourceTracking = !flags.testFlag(QRhiCommandBuffer::DoNotTrackResourcesForCompute) && caps.compute;
     cbD->currentTarget = rt;
 
     cbD->resetCachedState();
