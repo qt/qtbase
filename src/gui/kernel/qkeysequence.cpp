@@ -585,6 +585,9 @@ static constexpr struct {
     { Qt::Key_Find,                       QT_TRANSLATE_NOOP("QShortcut", "Find") },
     { Qt::Key_Undo,                       QT_TRANSLATE_NOOP("QShortcut", "Undo") },
     { Qt::Key_Redo,                       QT_TRANSLATE_NOOP("QShortcut", "Redo") },
+    { Qt::Key_Assistant,                  QT_TRANSLATE_NOOP("QShortcut", "Assistant") },
+    { Qt::Key_SelectiveScreenshot,        QT_TRANSLATE_NOOP("QShortcut", "Selective Screenshot") },
+    { Qt::Key_PerformanceMode,            QT_TRANSLATE_NOOP("QShortcut", "Performance Mode") },
 
     // --------------------------------------------------------------
     // More consistent namings

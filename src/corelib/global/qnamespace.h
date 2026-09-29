@@ -1034,6 +1034,10 @@ namespace Qt {
         Key_Undo     = 0x01000123,
         Key_Redo     = 0x01000124,
 
+        Key_Assistant           = 0x01000125,
+        Key_SelectiveScreenshot = 0x01000126,
+        Key_PerformanceMode     = 0x01000127,
+
         Key_MediaLast = 0x0100ffff,
 
         // Keypad navigation keys

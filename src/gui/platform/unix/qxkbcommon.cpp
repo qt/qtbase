@@ -298,6 +298,9 @@ static constexpr const auto KeyTbl = qMakeArray(
         Xkb2Qt<XKB_KEY_XF86BackForward,         Qt::Key_BackForward>,
         Xkb2Qt<XKB_KEY_XF86ApplicationLeft,     Qt::Key_ApplicationLeft>,
         Xkb2Qt<XKB_KEY_XF86ApplicationRight,    Qt::Key_ApplicationRight>,
+#ifdef XKB_KEY_XF86Assistant
+        Xkb2Qt<XKB_KEY_XF86Assistant,           Qt::Key_Assistant>,
+#endif
         Xkb2Qt<XKB_KEY_XF86Book,                Qt::Key_Book>,
         Xkb2Qt<XKB_KEY_XF86CD,                  Qt::Key_CD>,
         Xkb2Qt<XKB_KEY_XF86Calculater,          Qt::Key_Calculator>,
@@ -327,6 +330,9 @@ static constexpr const auto KeyTbl = qMakeArray(
         Xkb2Qt<XKB_KEY_XF86Open,                Qt::Key_Open>,
         Xkb2Qt<XKB_KEY_XF86Option,              Qt::Key_Option>,
         Xkb2Qt<XKB_KEY_XF86Paste,               Qt::Key_Paste>,
+#ifdef XKB_KEY_XF86PerformanceMode
+        Xkb2Qt<XKB_KEY_XF86PerformanceMode,     Qt::Key_PerformanceMode>,
+#endif
         Xkb2Qt<XKB_KEY_XF86Phone,               Qt::Key_Phone>,
 #ifdef XKB_KEY_XF86PickupPhone
         Xkb2Qt<XKB_KEY_XF86PickupPhone,         Qt::Key_Call>,
@@ -340,6 +346,9 @@ static constexpr const auto KeyTbl = qMakeArray(
         Xkb2Qt<XKB_KEY_XF86RotationPB,          Qt::Key_RotationPB>,
         Xkb2Qt<XKB_KEY_XF86RotationKB,          Qt::Key_RotationKB>,
         Xkb2Qt<XKB_KEY_XF86Save,                Qt::Key_Save>,
+#ifdef XKB_KEY_XF86SelectiveScreenshot
+        Xkb2Qt<XKB_KEY_XF86SelectiveScreenshot, Qt::Key_SelectiveScreenshot>,
+#endif
         Xkb2Qt<XKB_KEY_XF86Send,                Qt::Key_Send>,
         Xkb2Qt<XKB_KEY_XF86Spell,               Qt::Key_Spell>,
         Xkb2Qt<XKB_KEY_XF86SplitScreen,         Qt::Key_SplitScreen>,

@@ -1867,6 +1867,11 @@
     \value Key_Find
     \value Key_Undo
     \value Key_Redo
+    \value [since 6.13] Key_Assistant A key to invoke a voice assistant.
+    \value [since 6.13] Key_SelectiveScreenshot A key to take a screenshot of a
+           user-selected part of the screen.
+    \value [since 6.13] Key_PerformanceMode A key to switch the performance mode
+           of the device.
     \value Key_MediaLast
     \value Key_unknown
 
