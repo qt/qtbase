@@ -12,6 +12,7 @@
 #include <qvarlengtharray.h>
 
 #include <algorithm>
+#include <q20iterator.h>
 #include <list>
 #include <tuple>
 
@@ -44,6 +45,7 @@ private slots:
     void remove_if_key_value() { remove_if_impl([](const auto &k, const auto &v) { return is_even(k) && is_empty(v); }); }
     void remove_if_key() { remove_if_impl([](int k) { return is_even(k); }, true); }
     void statefulComparator();
+    void makeUniqueComparisonCount();
     void transparency_using();
     void transparency_struct();
     void try_emplace_and_insert_or_assign();
@@ -470,6 +472,32 @@ void tst_QFlatMap::statefulComparator()
     QCOMPARE(m2.key_comp().count, m1.key_comp().count);
     m2.insert(m1.begin(), m1.end());
     QVERIFY(m2.key_comp().count > m1.key_comp().count);
+}
+
+void tst_QFlatMap::makeUniqueComparisonCount()
+{
+    int count = 0;
+    auto countedLess = [&count](const auto &lhs, const auto &rhs) {
+        ++count;
+        return lhs < rhs;
+    };
+    using CountedCompare = decltype(countedLess);
+
+    using Map = QFlatMap<int, int, CountedCompare>;
+
+    // sorted, but contains duplicates
+    constexpr std::pair<const int, int> sortedWithDuplicates[] = {
+        {0, 0}, {1, 1}, {1, 2}, {2, 3}, {3, 4}, {3, 5}, {3, 6}, {4, 7},
+    };
+    constexpr qsizetype elementCount = q20::ssize(sortedWithDuplicates);
+
+    Map map{countedLess};
+    map.insert(Qt::OrderedUniqueRange,
+               std::begin(sortedWithDuplicates),
+               std::end(sortedWithDuplicates));
+    // makeUnique() applies the predicate once per adjacent pair
+    QCOMPARE(count, elementCount - 1);
+    QCOMPARE(map.size(), 5);
 }
 
 void tst_QFlatMap::transparency_using()

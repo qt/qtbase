@@ -1024,8 +1024,11 @@ private:
     void makeUnique()
     {
         // std::unique, but over two ranges
+        //
+        // The range is sorted, so rhs < lhs is known to be false and lhs
+        // and rhs are equivalent iff !(lhs < rhs)
         auto equivalent = [t=this](const auto &lhs, const auto &rhs) {
-            return !t->key_compare::operator()(lhs, rhs) && !t->key_compare::operator()(rhs, lhs);
+            return !t->key_compare::operator()(lhs, rhs);
         };
         const auto kb = c.keys.begin();
         const auto ke = c.keys.end();
