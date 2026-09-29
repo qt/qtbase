@@ -192,8 +192,8 @@ protected:
             poll(fds, 2, -1);
 
             if (fds[1].revents & POLLIN) {
-                // we don't really care to read the byte that was written here since we're closing down
-                wl_display_cancel_read(m_wldisplay);
+                // we don't really care to read the byte that was written here since we're closing down.
+                // The pending read is cancelled after the loop.
                 break;
             }
 
@@ -205,6 +205,11 @@ protected:
             else
                 wl_display_cancel_read(m_wldisplay);
         }
+
+        // If a read was prepared (by us or by the main thread on our behalf) and we are
+        // exiting without consuming it, cancel it so that other readers are not blocked.
+        if (m_reading.loadAcquire())
+            wl_display_cancel_read(m_wldisplay);
     }
 
 private:
