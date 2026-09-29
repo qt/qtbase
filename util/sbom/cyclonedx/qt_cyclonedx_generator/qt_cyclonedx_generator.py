@@ -84,7 +84,13 @@ from typing import (
 )
 from uuid import UUID
 
-from cyclonedx.factory.license import LicenseFactory
+# Older cyclonedx-python-lib versions lack the contrib module. But the older
+# import is deprecated.
+try:
+    from cyclonedx.contrib.license.factories import LicenseFactory
+except ImportError:
+    from cyclonedx.factory.license import LicenseFactory  # type: ignore[no-redef]
+
 from cyclonedx.exception import MissingOptionalDependencyException
 from cyclonedx.model import (
     XsUri,
