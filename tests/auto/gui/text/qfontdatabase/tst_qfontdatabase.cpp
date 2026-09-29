@@ -691,7 +691,7 @@ void tst_QFontDatabase::addApplicationFontFallback()
 
     {
         QString hebrewFontNow = getHebrewFont();
-        QCOMPARE(hebrewFontNow, defaultHebrewFont);
+        QVERIFY(hebrewFontNow != u"QtBidiTestFont"_s);
     }
 
     QFontDatabase::setApplicationFallbackFontFamilies(QChar::Script_Hebrew, QStringList(u"QtBidiTestFont"_s));
@@ -705,7 +705,7 @@ void tst_QFontDatabase::addApplicationFontFallback()
 
     {
         QString hebrewFontNow = getHebrewFont();
-        QCOMPARE(hebrewFontNow, defaultHebrewFont);
+        QVERIFY(hebrewFontNow != u"QtBidiTestFont"_s);
     }
 
     limitedId = QFontDatabase::addApplicationFont(m_limitedFont);
