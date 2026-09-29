@@ -1831,9 +1831,21 @@ QTimeZonePrivate::findLongUtcPrefix(QStringView text)
             do {
                 // text[length] is sign or the colon after last digit-group.
                 Q_ASSERT(length < text.size());
-                if (!digitAt(length + 1) || (groups && !digitAt(length + 2)))
+                if (!digitAt(length + 1))
                     break;
-                length += digitAt(length + 2) ? 3 : 2;
+                qsizetype digits = digitAt(length + 2) ? 2 : 1;
+                do {
+                    bool ok = false;
+                    unsigned short field = text.sliced(length + 1, digits).toUShort(&ok);
+                    if (ok && field < (groups ? 60 : 24))
+                        break;
+                    // On failure, drop a digit and (if any remain) try again:
+                } while (--digits > 0);
+                // Fields after hour must have two digits:
+                if (digits < (groups ? 2 : 1))
+                    break;
+                // Consume sign or colon and digits that make up this field:
+                length += 1 + digits;
             } while (++groups < 3 && length < text.size() && text[length] == u':');
             if (length > 4)
                 return { text.first(length).toLatin1(), length, QTimeZone::GenericTime };
