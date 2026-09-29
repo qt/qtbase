@@ -348,7 +348,7 @@ xcb_connection_t *QXcbNativeInterface::connection() const
 
 void *QXcbNativeInterface::atspiBus()
 {
-    QXcbIntegration *integration = static_cast<QXcbIntegration *>(QGuiApplicationPrivate::platformIntegration());
+    QXcbIntegration *integration = QXcbIntegration::instance();
     QXcbConnection *connection = integration->connection();
     if (connection) {
         auto atspiBusAtom = connection->atom(QXcbAtom::AtomAT_SPI_BUS);
