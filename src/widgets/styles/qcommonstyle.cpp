@@ -1375,7 +1375,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                 if (button->state & (State_On | State_Sunken))
                     iconRect.translate(proxy()->pixelMetric(PM_ButtonShiftHorizontal, opt, widget),
                                        proxy()->pixelMetric(PM_ButtonShiftVertical, opt, widget));
-                p->drawPixmap(iconRect, pixmap);
+                p->drawPixmap(iconRect.x(), iconRect.y(), pixmap);
             } else {
                 tf |= Qt::AlignHCenter;
             }
@@ -1981,7 +1981,9 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
             if (!tab->icon.isNull()) {
                 const auto mode = (tab->state & State_Enabled) ? QIcon::Normal : QIcon::Disabled;
                 const auto state = (tab->state & State_Selected) ? QIcon::On : QIcon::Off;
-                tab->icon.paint(p, iconRect, Qt::AlignCenter, mode, state);
+                const auto tabIcon =
+                        tab->icon.pixmap(tab->iconSize, QStyleHelper::getDpr(p), mode, state);
+                p->drawPixmap(iconRect.x(), iconRect.y(), tabIcon);
             }
 
             proxy()->drawItemText(p, tr, alignment, tab->palette, tab->state & State_Enabled, tab->text,
