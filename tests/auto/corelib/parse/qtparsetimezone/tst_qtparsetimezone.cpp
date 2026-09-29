@@ -949,6 +949,9 @@ void tst_QtParseTimeZone::prefix_data()
         << u"UTC+01:00"_s << QLocale::c()
         << Flags{ Flag::Numeric | Flag::Wide }
         << 0 << 9 << QDTP::UnknownDaylightTime << QTimeZone(3600);
+    QTest::addRow("UTC-31/C/none/0") // Treats the 1 as trailing cruft, as 31 > 24.
+        << u"UTC-31"_s << QLocale::c() << Flags{}
+        << 0 << 5 << QDTP::UnknownDaylightTime << QTimeZone(-3 * 3600);
 
     // The only locale (in CLDR v48) that doesn't use a separator:
     const QLocale am_ET(QLocale::Amharic, QLocale::Ethiopia);
