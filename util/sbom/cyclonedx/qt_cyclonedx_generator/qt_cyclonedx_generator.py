@@ -619,7 +619,7 @@ def process_component(
     # Some components might be external to the current BOM.
     # For example for the QtSvg module, QtCore is external, because it's built in qtbase,
     # not qtsvg. To be able to declare a dependency on QtCore, we still need to add it as a
-    # component. But we add a BOM external reference link to it, signalling that the full
+    # component. But we add a BOM external reference link to it, signaling that the full
     # component information is in a different BOM.
     assign_optional_field(
         component_toml,
