@@ -1005,7 +1005,8 @@ void QOhosView::showImmediate()
     }
 
     if (m_ohosWindowProxy != nullptr) {
-        restoreMainWindow();
+        if (hadWindowProxy)
+            restoreMainWindow();
         showWindow();
     }
 
