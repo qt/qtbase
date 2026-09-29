@@ -1718,6 +1718,7 @@ static QByteArray qSspiStartup(QAuthenticatorPrivate *ctx, QAuthenticatorPrivate
 static QByteArray qSspiContinue(QAuthenticatorPrivate *ctx, QAuthenticatorPrivate::Method method,
                                 QStringView host, QByteArrayView challenge)
 {
+    Q_UNUSED(method);
     QByteArray result;
     SecBuffer challengeBuf;
     SecBuffer responseBuf;
@@ -1745,12 +1746,10 @@ static QByteArray qSspiContinue(QAuthenticatorPrivate *ctx, QAuthenticatorPrivat
     responseBuf.pvBuffer   = nullptr;
     responseBuf.cbBuffer   = 0;
 
-    // Calculate target (SPN for Negotiate, empty for NTLM)
     QString targetName = ctx->options.value("spn"_L1).toString();
     if (targetName.isEmpty())
         targetName = "HTTP/"_L1 + host;
-    const std::wstring targetNameW = (method == QAuthenticatorPrivate::Negotiate
-                                      ? targetName : QString()).toStdWString();
+    const std::wstring targetNameW = targetName.toStdWString();
 
     // Generate our challenge-response message
     SECURITY_STATUS secStatus = pSecurityFunctionTable->InitializeSecurityContext(
