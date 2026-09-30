@@ -3215,8 +3215,13 @@ void QWindowsWindow::requestActivateWindow()
 
     // OK, our window is not minimized, so now we will try to bring it to front manually.
     const HWND oldForegroundWindow = GetForegroundWindow();
-    if (!oldForegroundWindow) // It may be NULL, according to MS docs.
+    if (!oldForegroundWindow) { // There's no foreground window at all, just activate our window directly.
+        // Already the foreground window, just need to be activated.
+        SetActiveWindow(m_data.hwnd);
+        // SetActiveWindow() doesn't transfer focus, we need to do it ourself.
+        SetFocus(m_data.hwnd);
         return;
+    }
 
     // First try to send a message to the current foreground window to check whether
     // it is currently hanging or not.
@@ -3239,6 +3244,7 @@ void QWindowsWindow::requestActivateWindow()
     // Activate the window too. This will force us to the virtual desktop this
     // window is on, if it's on another virtual desktop.
     SetActiveWindow(m_data.hwnd);
+    SetFocus(m_data.hwnd);
 }
 
 bool QWindowsWindow::setKeyboardGrabEnabled(bool grab)
