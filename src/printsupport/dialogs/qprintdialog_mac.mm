@@ -304,7 +304,7 @@ void QPrintDialog::setVisible(bool visible)
     if (!visible == !isCurrentlyVisible)
         return;
 
-    if (d->printer->outputFormat() != QPrinter::NativeFormat)
+    if (d->printer->outputFormat() != QPrinter::NativeFormat && !isCurrentlyVisible)
         return;
 
     QDialog::setVisible(visible);
