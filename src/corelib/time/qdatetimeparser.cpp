@@ -1024,7 +1024,9 @@ static QDate actualDate(QDateTimeParser::Sections known, QCalendar calendar, int
     // Assuming year > 0 ...
     if (year % 100 != year2digits) {
         if (known & QDateTimeParser::YearSection2Digits) {
-            // Over-ride year, even if specified:
+            // Year and its last two digits disagree: prefer the two-digit
+            // reading. Not the final answer: scanString() flags the conflict
+            // and adopts this only when the two-digit section is being edited.
             year = yearInCenturyFrom(year2digits, baseYear);
             known &= ~QDateTimeParser::YearSection;
         } else {
