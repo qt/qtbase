@@ -340,13 +340,7 @@ QUiAbilityEngine::~QUiAbilityEngine() = default;
 
 QAbilityInfo QUiAbilityEngine::readAbilityInfo(const QNapi::Object &ability) const
 {
-    auto abilityInfo = ability.eval<QNapi::Object>("context.abilityInfo");
-
-    return {
-        .name = abilityInfo.get<QNapi::String>("name"),
-        .bundleName = abilityInfo.get<QNapi::String>("bundleName"),
-        .moduleName = abilityInfo.get<QNapi::String>("moduleName"),
-    };
+    return QAbilityInstancesManager::readAbilityInfo(ability);
 }
 
 void redirectStandardDescriptorsToFile(const std::string &redirectedStdoutPath)
