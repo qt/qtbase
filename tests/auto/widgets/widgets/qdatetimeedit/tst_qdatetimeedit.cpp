@@ -1333,6 +1333,9 @@ void tst_QDateTimeEdit::editingRanged()
     QFETCH(QString, userInput);
     QFETCH(QDateTime, expected);
 
+    testFocusWidget->hide();
+    testWidget->hide();
+
     QScopedPointer<QDateTimeEdit> edit;
     if (minTime.isValid()) {
         edit.reset(new QDateTimeEdit);
