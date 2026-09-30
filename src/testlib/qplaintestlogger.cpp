@@ -12,6 +12,7 @@
 
 #include <array>
 #include <cstdio>
+#include <optional>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -176,8 +177,7 @@ namespace QTest {
         return digits;
     }
 
-    // Pretty-prints a benchmark result using the given number of significant digits.
-    template <typename T> QByteArray formatResult(T number, int significantDigits)
+    template <typename T> QByteArray specialValue(T number)
     {
         if (qIsNaN(number) || number < T(0)) // (includes -ve infinity)
             return "NaN";
@@ -185,8 +185,92 @@ namespace QTest {
             return "INF";
         if (number == T(0))
             return "0";
+        return {};
+    }
 
-        return QByteArray::number(number, 'e', qMax(1, significantDigits - 1));
+    // To use the same scale as mean, standard deviation passes a value for scale.
+    // Use a multiple of 3 as exponent, with 0.1 <= mantissa < 1000.
+    auto formatResult(qreal number, int significantDigits, std::optional<int> scale = {})
+    {
+        struct R {
+            QByteArray text;
+            std::optional<int> scale;
+        } res = {{}, scale};
+
+        if (QByteArray special = specialValue(number); !special.isEmpty()) {
+            res.text = special;
+            return res;
+        }
+
+        int decimals = significantDigits;
+        qreal mantissa = number;
+        int thous = 0;
+        if (scale) {
+            // Imposed scale (to use same for standard deviation and mean): this
+            // may give us a mantissa outside the 0.1-to-100 range. Allow that
+            // to give more, but not less, significant digits than asked for.
+            Q_ASSERT(*scale % 3 == 0);
+            thous = *scale / 3;
+            int i = thous;
+            for (; i < 0; ++i)
+                mantissa *= 1e3;
+            for (; i > 0; --i)
+                mantissa /= 1e3;
+            // When mean's mantissa was < 1, if standard deviation is small
+            // (less than .1 at the same scale), allow for its leading zeros:
+            for (qreal extra = 1.0; mantissa * extra < 0.1; extra *= 10)
+                ++decimals;
+        } else {
+            // Find the nearest-zeroth power of 1000 for which 0.1 <= number /
+            // 1e{3*thous} <= 1000. (This leaves no exponent from 0.1 to
+            // 999.49...9, with positive exponents getting 1 <= mantissa < 1000
+            // and negative exponents getting 0.1 <= mantissa < 100; a slight
+            // asymmetry, to make exponent-free more common.) Iterative, because
+            // we expect values at scales between nano and mega, so few
+            // iterations are needed. (Theoretical worst case for double would
+            // be about 100 iterations; for long double about 1650 - but
+            // measurements with precision outside float's dozen-iteration range
+            // are unrealistic.)
+            while (mantissa >= 1000) {
+                mantissa /= 1e3;
+                ++thous;
+            }
+            while (mantissa < 0.1) {
+                mantissa *= 1e3;
+                --thous;
+            }
+        }
+        res.scale = 3 * thous;
+
+        // Format mantissa:
+        // 'f' format's precision is the number of digits in the fractional
+        // part; we need to correct for earlier significant digits:
+        if (mantissa >= 100)
+            decimals -= 3;
+        else if (mantissa >= 10)
+            decimals -= 2;
+        else if (mantissa >= 1)
+            --decimals;
+        // When scale is imposed, that might take decimals < 0 (e.g. if std.dev
+        // is bigger than mean), which is ignored, so clip to 0:
+        res.text = QByteArray::number(mantissa, 'f', qMax(decimals, 0));
+
+        if (thous) {
+            // Format exponent and append it:
+            QByteArray tail = QByteArray::number(*res.scale);
+            if (tail.startsWith('-')) {
+                if (tail.size() < 3) // zero-pad after the sign:
+                    tail.insert(1, '0');
+            } else {
+                if (tail.size() < 2) // zero-pad at start:
+                    tail.prepend('0');
+                tail.prepend('+'); // always include a sign
+            }
+            tail.prepend('e');
+            res.text += tail;
+        }
+
+        return res;
     }
 }
 
@@ -301,8 +385,9 @@ void QPlainTestLogger::printBenchmarkResults(const QList<QBenchmarkResult> &resu
         const char * unitText = QTest::benchmarkMetricUnit(result.measurement.metric);
         int significantDigits = QTest::countSignificantDigits(result.measurement.value);
         qreal valuePerIteration = qreal(result.measurement.value) / qreal(result.iterations);
-        buf.appendf("     %s %s%s", QTest::formatResult(valuePerIteration, significantDigits).constData(),
-                    unitText, result.setByMacro ? " per iteration" : "");
+        auto midForm = QTest::formatResult(valuePerIteration, significantDigits);
+        buf.appendf("     %s %s%s", midForm.text.constData(), unitText,
+                    result.setByMacro ? " per iteration" : "");
 
         switch (result.measurement.metric) {
         case QTest::BitsPerSecond:
@@ -361,20 +446,17 @@ void QPlainTestLogger::printBenchmarkResults(const QList<QBenchmarkResult> &resu
         }
 
         Q_ASSERT(result.iterations > 0);
+        auto totForm = QTest::formatResult(result.measurement.value, significantDigits);
         if (result.measurement.variance) {
+            auto stdForm = QTest::formatResult(sqrt(result.measurement.variance),
+                                               significantDigits, midForm.scale);
             buf.appendf(" (total: %s %s, std.dev: %s %s, iterations: %d)\n",
-                        QTest::formatResult(result.measurement.value,
-                                            significantDigits).constData(),
-                        unitText,
-                        QTest::formatResult(sqrt(result.measurement.variance),
-                                            significantDigits).constData(),
-                        unitText,
+                        totForm.text.constData(), unitText,
+                        stdForm.text.constData(), unitText,
                         result.iterations);
         } else {
             buf.appendf(" (total: %s %s, iterations: %d)\n",
-                        QTest::formatResult(result.measurement.value,
-                                            significantDigits).constData(),
-                        unitText,
+                        totForm.text.constData(), unitText,
                         result.iterations);
         }
         outputMessage(buf);
