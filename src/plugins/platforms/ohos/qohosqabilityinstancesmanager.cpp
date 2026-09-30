@@ -57,11 +57,10 @@ QNapi::Symbol getAbilityLaunchParamPropSymbol(JsState &jsState)
 }
 
 void sendWantToSelfQAbility(
-    std::shared_ptr<QAbilityEngine> abilityEngine,
     QNapi::Object baseQAbility, QNapi::Object optStartOptions, const std::string &instanceId,
     std::function<void(JsState &)> continueFunc)
 {
-    auto qAbilityInfo = abilityEngine->readAbilityInfo(baseQAbility);
+    auto qAbilityInfo = QAbilityInstancesManager::readAbilityInfo(baseQAbility);
 
     std::vector<QNapi::ValueWrapper> startAbilityArgs = {
         QNapi::makeObject(
@@ -624,7 +623,7 @@ bool QAbilityInstancesManagerImpl::isWantFromThisApp(QNapi::Object appQAbility, 
     auto callerAbilityNameParam = QNapi::getPropOrUndefined(wantParameters, callerAbilityNameWantParamKey);
     auto callerBundleNameParam = QNapi::getPropOrUndefined(wantParameters, callerBundleNameWantParamKey);
 
-    auto appAbilityInfo = m_abilityEngine->readAbilityInfo(appQAbility);
+    auto appAbilityInfo = readAbilityInfo(appQAbility);
 
     return
         callerAbilityNameParam.IsString()
@@ -688,7 +687,7 @@ void QAbilityInstancesManagerImpl::startNewInstance(
     m_pendingInstancesStartParams.emplace(instanceId, std::move(startParams));
 
     sendWantToSelfQAbility(
-        m_abilityEngine, baseQAbility, optStartOptions, instanceId,
+        baseQAbility, optStartOptions, instanceId,
         [context](JsState &jsState) {
             context->sendWantFinished = true;
             context->callNotifyIfReady(jsState);
