@@ -45,6 +45,13 @@ protected:
     QUiAbilityPeerBackend();
 };
 
+struct QAbilityInfo
+{
+    std::string name;
+    std::string bundleName;
+    std::string moduleName;
+};
+
 struct QAbilityInstancesManager
 {
 public:

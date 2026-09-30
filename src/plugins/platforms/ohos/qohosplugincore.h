@@ -56,13 +56,6 @@ protected:
     QAbilityPeer();
 };
 
-struct QAbilityInfo
-{
-    std::string name;
-    std::string bundleName;
-    std::string moduleName;
-};
-
 class JsState;
 
 class AppFunctions
