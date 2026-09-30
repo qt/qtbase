@@ -896,6 +896,15 @@ void QSocks5SocketEnginePrivate::_q_emitPendingReadNotification()
         q->readNotification();
         if (!qq)
             return;
+        // The receiver may have read only part of the buffer (for instance
+        // due to QAbstractSocket::readBufferSize()) and no new data may
+        // arrive to trigger another notification, so keep notifying until
+        // the buffer is empty or read notifications have been disabled.
+        if (mode == ConnectMode && !connectData->readBuffer.isEmpty()) {
+            if (readNotificationEnabled)
+                emitReadNotification();
+            return;
+        }
         // check if there needs to be a new zero read notification
         if (data && data->controlSocket->state() == QAbstractSocket::UnconnectedState
                 && data->controlSocket->error() == QAbstractSocket::RemoteHostClosedError) {
@@ -1220,10 +1229,9 @@ void QSocks5SocketEnginePrivate::_q_controlSocketErrorOccurred(QAbstractSocket::
 
     if (error == QAbstractSocket::RemoteHostClosedError
         && socks5State == Connected) {
-        // clear the read buffer in connect mode so that bytes available returns 0
-        // if there already is a read notification pending then this will be processed first
-        if (!readNotificationPending)
-            connectData->readBuffer.clear();
+        // Keep the buffered data, the close is reported once it has been read.
+        // If read notifications are disabled, setReadNotificationEnabled()
+        // announces both when they are enabled again.
         emitReadNotification();
         data->controlSocket->close();
         // cause a disconnect in the outer socket
@@ -1831,7 +1839,9 @@ void QSocks5SocketEngine::setReadNotificationEnabled(bool enable)
     if (!d->readNotificationEnabled
         && enable) {
         if (d->mode == QSocks5SocketEnginePrivate::ConnectMode)
-            emitSignal = !d->connectData->readBuffer.isEmpty();
+            emitSignal = !d->connectData->readBuffer.isEmpty()
+                    || (d->socks5State == QSocks5SocketEnginePrivate::Connected
+                        && d->data->controlSocket->state() == QAbstractSocket::UnconnectedState);
 #ifndef QT_NO_UDPSOCKET
         else if (d->mode == QSocks5SocketEnginePrivate::UdpAssociateMode)
             emitSignal = !d->udpData->pendingDatagrams.isEmpty();

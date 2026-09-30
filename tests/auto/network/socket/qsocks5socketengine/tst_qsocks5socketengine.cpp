@@ -3,6 +3,7 @@
 
 
 #include <QtTest/QTest>
+#include <QtTest/QSignalSpy>
 #include <QtTest/QTestEventLoop>
 
 #include <QtCore/QElapsedTimer>
@@ -51,6 +52,10 @@ private slots:
     void incomplete();
     void connectWithDomainNameReply_data();
     void connectWithDomainNameReply();
+    void readWithLimitedReadBuffer_data();
+    void readWithLimitedReadBuffer();
+    void remoteCloseWhileReadingPaused_data();
+    void remoteCloseWhileReadingPaused();
 
 protected slots:
     void proxyAuthenticationRequired(const QNetworkProxy &proxy, QAuthenticator *auth) override;
@@ -114,6 +119,54 @@ private slots:
         new MiniSocks5ResponseHandler(responses, client, autoResponseTime);
     }
 };
+
+// Accepts one connection without authentication and answers the CONNECT
+// request with a success reply followed by the payload
+class MiniSocks5PayloadServer : public QTcpServer
+{
+public:
+    MiniSocks5PayloadServer(const QByteArray &payload, bool closeAfterPayload)
+        : payload(payload), closeAfterPayload(closeAfterPayload)
+    {
+        listen(QHostAddress::LocalHost);
+        connect(this, &QTcpServer::newConnection,
+                this, &MiniSocks5PayloadServer::handleNewConnection);
+    }
+
+private:
+    void handleNewConnection()
+    {
+        client = nextPendingConnection();
+        connect(client, &QTcpSocket::readyRead, this, &MiniSocks5PayloadServer::handleRequest);
+    }
+
+    void handleRequest()
+    {
+        // SOCKS5 requests are small, assume each arrives in one piece
+        client->readAll();
+        if (!methodSelected) {
+            methodSelected = true;
+            client->write(QByteArray::fromRawData("\5\0", 2)); // no authentication
+            return;
+        }
+        client->write(QByteArray::fromRawData("\5\0\0\1\1\2\3\4\5\6", 10) + payload);
+        if (closeAfterPayload)
+            client->disconnectFromHost();
+    }
+
+    const QByteArray payload;
+    QTcpSocket *client = nullptr;
+    const bool closeAfterPayload;
+    bool methodSelected = false;
+};
+
+static QByteArray makePayload(qsizetype size)
+{
+    QByteArray payload(size, Qt::Uninitialized);
+    for (qsizetype i = 0; i < payload.size(); ++i)
+        payload[i] = char(i % 251);
+    return payload;
+}
 
 void tst_QSocks5SocketEngine::initTestCase()
 {
@@ -1050,6 +1103,107 @@ void tst_QSocks5SocketEngine::connectWithDomainNameReply()
     // but the port following the name must still be parsed correctly.
     QCOMPARE(socket.localAddress(), QHostAddress());
     QCOMPARE(socket.localPort(), quint16(0x0506));
+}
+
+void tst_QSocks5SocketEngine::readWithLimitedReadBuffer_data()
+{
+    QTest::addColumn<bool>("remoteCloses");
+
+    QTest::newRow("remote-stays-open") << false;
+    QTest::newRow("remote-closes") << true;
+}
+
+void tst_QSocks5SocketEngine::readWithLimitedReadBuffer()
+{
+    // The proxy sends much more than fits into the socket's read buffer
+    // at once and then nothing more. All of it must still reach the reader.
+    QFETCH(bool, remoteCloses);
+
+    const QByteArray payload = makePayload(256 * 1024);
+    MiniSocks5PayloadServer server(payload, remoteCloses);
+    QVERIFY(server.isListening());
+
+    QTcpSocket socket;
+    socket.setProxy(QNetworkProxy(QNetworkProxy::Socks5Proxy, "127.0.0.1", server.serverPort()));
+    socket.setReadBufferSize(4096);
+    QByteArray received;
+    connect(&socket, &QTcpSocket::readyRead, this, [&] {
+        received += socket.readAll();
+        if (received.size() >= payload.size())
+            QTestEventLoop::instance().exitLoop();
+    });
+    QSignalSpy disconnectedSpy(&socket, &QAbstractSocket::disconnected);
+    socket.connectToHost("0.1.2.3", 12345);
+
+    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+    QCOMPARE(received.size(), payload.size());
+    QCOMPARE(received, payload);
+    if (remoteCloses) {
+        QVERIFY(!disconnectedSpy.isEmpty() || disconnectedSpy.wait());
+        QCOMPARE(socket.state(), QAbstractSocket::UnconnectedState);
+    } else {
+        QCOMPARE(socket.state(), QAbstractSocket::ConnectedState);
+    }
+}
+
+void tst_QSocks5SocketEngine::remoteCloseWhileReadingPaused_data()
+{
+    QTest::addColumn<qsizetype>("payloadSize");
+
+    QTest::newRow("data-left-in-engine") << qsizetype(256 * 1024);
+    // Exactly fills the socket's read buffer
+    QTest::newRow("nothing-left-in-engine") << qsizetype(4096);
+}
+
+void tst_QSocks5SocketEngine::remoteCloseWhileReadingPaused()
+{
+    // The proxy closes while the socket's read buffer is full and read
+    // notifications are disabled. Once the reader resumes, it must get
+    // all of the data and then the close.
+    QFETCH(qsizetype, payloadSize);
+
+    const QByteArray payload = makePayload(payloadSize);
+    MiniSocks5PayloadServer server(payload, true);
+    QVERIFY(server.isListening());
+
+    QTcpSocket socket;
+    socket.setProxy(QNetworkProxy(QNetworkProxy::Socks5Proxy, "127.0.0.1", server.serverPort()));
+    socket.setReadBufferSize(4096);
+    QByteArray received;
+    bool paused = true;
+    connect(&socket, &QTcpSocket::readyRead, this, [&] {
+        if (paused)
+            return;
+        received += socket.readAll();
+        if (received.size() >= payload.size())
+            QTestEventLoop::instance().exitLoop();
+    });
+    QSignalSpy connectedSpy(&socket, &QAbstractSocket::connected);
+    QSignalSpy disconnectedSpy(&socket, &QAbstractSocket::disconnected);
+    socket.connectToHost("0.1.2.3", 12345);
+    QVERIFY(!connectedSpy.isEmpty() || connectedSpy.wait());
+
+    // The engine's connection to the proxy
+    auto *proxySocket = socket.findChild<QTcpSocket *>();
+    QVERIFY(proxySocket);
+    QSignalSpy proxyClosedSpy(proxySocket, &QAbstractSocket::disconnected);
+    QVERIFY(proxySocket->state() == QAbstractSocket::UnconnectedState
+            || proxyClosedSpy.wait());
+    // Let the socket handle what the engine has queued for it meanwhile
+    QCoreApplication::processEvents();
+    QCOMPARE(socket.state(), QAbstractSocket::ConnectedState);
+
+    paused = false;
+    received += socket.readAll();
+    if (received.size() < payload.size()) {
+        QTestEventLoop::instance().enterLoop(10);
+        QVERIFY(!QTestEventLoop::instance().timeout());
+    }
+    QCOMPARE(received.size(), payload.size());
+    QCOMPARE(received, payload);
+    QVERIFY(!disconnectedSpy.isEmpty() || disconnectedSpy.wait());
+    QCOMPARE(socket.state(), QAbstractSocket::UnconnectedState);
 }
 
 //----------------------------------------------------------------------------------
