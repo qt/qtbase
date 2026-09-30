@@ -524,10 +524,7 @@ class QAbilityInstancesManagerImpl final : public QAbilityInstancesManager
 {
 public:
     explicit QAbilityInstancesManagerImpl(
-        std::shared_ptr<QAbilityEngine> abilityEngine,
         std::function<void(JsState &, std::shared_ptr<QAbilityPeer>)> autoStartedInstanceStartupNotifyFunc);
-
-    std::shared_ptr<QAbilityEngine> abilityEngine() override;
 
     bool isWantFromThisApp(QNapi::Object appQAbility, QNapi::Object want) const override;
 
@@ -558,7 +555,6 @@ private:
         JsState &jsState, const std::string &abilityInstanceId,
         const std::function<std::shared_ptr<QAbilityPeer>(const std::string &, const InstanceStartParams &)> &qAbilityPeerFactory);
 
-    std::shared_ptr<QAbilityEngine> m_abilityEngine;
     std::shared_ptr<std::function<void(JsState &, std::shared_ptr<QAbilityPeer>)>> m_autoStartedInstanceStartupNotifyFunc;
     std::shared_ptr<std::map<QUiAbilityPeer *, std::weak_ptr<QUiAbilityPeerImpl>>> m_ownedUiAbilityPeers;
     QOhosSupplier<std::string> m_abilityInstanceIdsGenerator;
@@ -567,10 +563,8 @@ private:
 };
 
 QAbilityInstancesManagerImpl::QAbilityInstancesManagerImpl(
-    std::shared_ptr<QAbilityEngine> abilityEngine,
     std::function<void(JsState &, std::shared_ptr<QAbilityPeer>)> autoStartedInstanceStartupNotifyFunc)
-    : m_abilityEngine(abilityEngine)
-    , m_autoStartedInstanceStartupNotifyFunc(moveToSharedPtr(std::move(autoStartedInstanceStartupNotifyFunc)))
+    : m_autoStartedInstanceStartupNotifyFunc(moveToSharedPtr(std::move(autoStartedInstanceStartupNotifyFunc)))
     , m_ownedUiAbilityPeers(std::make_shared<std::map<QUiAbilityPeer *, std::weak_ptr<QUiAbilityPeerImpl>>>())
     , m_abilityInstanceIdsGenerator(makeAbilityInstanceIdsGenerator())
 {
@@ -607,11 +601,6 @@ std::string QAbilityInstancesManagerImpl::getQAbilityInstanceIdOrPendingAutoStar
     return optInstanceId.has_value()
         ? optInstanceId.value()
         : m_pendingAutoStartedInstanceId.value();
-}
-
-std::shared_ptr<QAbilityEngine> QAbilityInstancesManagerImpl::abilityEngine()
-{
-    return m_abilityEngine;
 }
 
 bool QAbilityInstancesManagerImpl::isWantFromThisApp(QNapi::Object appQAbility, QNapi::Object want) const
@@ -805,10 +794,9 @@ QAbilityInfo QAbilityInstancesManager::readAbilityInfo(const QNapi::Object &abil
 }
 
 std::shared_ptr<QAbilityInstancesManager> makeQAbilityInstancesManager(
-    std::shared_ptr<QAbilityEngine> abilityEngine,
     std::function<void(JsState &, std::shared_ptr<QAbilityPeer>)> autoStartedInstanceStartupNotifyFunc)
 {
-    return std::make_shared<QAbilityInstancesManagerImpl>(abilityEngine, std::move(autoStartedInstanceStartupNotifyFunc));
+    return std::make_shared<QAbilityInstancesManagerImpl>(std::move(autoStartedInstanceStartupNotifyFunc));
 }
 
 }

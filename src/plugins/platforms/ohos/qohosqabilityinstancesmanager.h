@@ -56,8 +56,6 @@ public:
 
     static QAbilityInfo readAbilityInfo(const QNapi::Object &ability);
 
-    virtual std::shared_ptr<QAbilityEngine> abilityEngine() = 0;
-
     virtual bool isWantFromThisApp(QNapi::Object appQAbility, QNapi::Object want) const = 0;
 
     virtual std::optional<std::string> tryGetQAbilityInstanceIdFromWant(QNapi::Object appQAbility, QNapi::Object want) const = 0;
@@ -81,7 +79,6 @@ protected:
 };
 
 std::shared_ptr<QAbilityInstancesManager> makeQAbilityInstancesManager(
-    std::shared_ptr<QAbilityEngine> abilityEngine,
     std::function<void(JsState &, std::shared_ptr<QAbilityPeer>)> autoStartedInstanceStartupNotifyFunc);
 
 }

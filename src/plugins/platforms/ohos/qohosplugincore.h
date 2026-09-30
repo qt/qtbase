@@ -63,17 +63,6 @@ struct QAbilityInfo
     std::string moduleName;
 };
 
-class QAbilityEngine
-{
-public:
-    virtual ~QAbilityEngine();
-
-    virtual QAbilityInfo readAbilityInfo(const QNapi::Object &ability) const = 0;
-
-protected:
-    QAbilityEngine();
-};
-
 class JsState;
 
 class AppFunctions
