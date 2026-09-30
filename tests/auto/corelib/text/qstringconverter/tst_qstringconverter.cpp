@@ -2726,6 +2726,31 @@ void tst_QStringConverter::finalizeStateful()
         QCOMPARE(r.invalidChars, 0);
         QCOMPARE(r.next, nullptr);
     }
+    {
+        // Decoder with a truncated multi-byte sequence pending in ICU
+        static const char input[] = { 'a', '\x82' }; // lead byte of a 2-byte sequence
+        auto decoder = QStringDecoder("Shift_JIS");
+        if (!decoder.isValid())
+            QSKIP("ICU without support for Shift_JIS, cannot continue test.");
+        QString buffer(20, '\0');
+        QChar *out = decoder.appendToBuffer(buffer.data(), QByteArrayView(input));
+        QCOMPARE(std::distance(buffer.data(), out), 1);
+        QCOMPARE(buffer[0], u'a');
+
+        auto r = decoder.finalize(out, buffer.end() - out);
+        QCOMPARE(r.error, QStringDecoder::FinalizeResult::Error::InvalidCharacters);
+        QCOMPARE(r.invalidChars, 1);
+        QCOMPARE(std::distance(buffer.data(), r.next), 2);
+
+        // Repeat, but calling finalize() without an output
+        decoder = QStringDecoder("Shift_JIS");
+        out = decoder.appendToBuffer(buffer.data(), QByteArrayView(input));
+        QCOMPARE(std::distance(buffer.data(), out), 1);
+        auto r2 = decoder.finalize();
+        QCOMPARE(r2.error, QStringDecoder::FinalizeResult::Error::InvalidCharacters);
+        QCOMPARE(r2.invalidChars, 1);
+        QCOMPARE(r2.next, nullptr);
+    }
 #endif
 }
 

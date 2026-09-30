@@ -2499,18 +2499,25 @@ std::optional<QStringConverter::Encoding> QStringConverter::encodingForName(QAny
 }
 
 #ifndef QT_BOOTSTRAPPED
-namespace QtPrivate {
+enum class ConversionDirection { Decoding, Encoding };
+
 // Note: Check isValid() on the QStringConverter before calling this with its
 // state!
+template <ConversionDirection Direction>
 static int partiallyParsedDataCount(QStringConverter::State *state)
 {
-#if QT_CONFIG(icu)
+#if defined(QT_USE_ICU_CODECS)
     if (state->flags & QStringConverter::Flag::UsesIcu) {
         UConverter *converter = static_cast<UConverter *>(state->d[0]);
         if (!converter)
             return 0;
+        QT_COM_THREAD_INIT
         UErrorCode err = U_ZERO_ERROR;
-        auto leftOver = ucnv_fromUCountPending(converter, &err);
+        int32_t leftOver;
+        if constexpr (Direction == ConversionDirection::Decoding)
+            leftOver = ucnv_toUCountPending(converter, &err);
+        else
+            leftOver = ucnv_fromUCountPending(converter, &err);
         // If there is an error, leftOver is -1, so no need for an additional
         // check.
         return std::max(leftOver, 0);
@@ -2518,7 +2525,6 @@ static int partiallyParsedDataCount(QStringConverter::State *state)
 #endif
     return q26::saturating_cast<int>(state->remainingChars);
 }
-} // namespace QtPrivate
 
 /*!
    Returns the encoding for the content of \a data if it can be determined.
@@ -2767,7 +2773,7 @@ auto QStringDecoder::finalize(char16_t *out, qsizetype maxlen) -> FinalizeResult
 {
     int count = 0;
     if (isValid())
-        count = QtPrivate::partiallyParsedDataCount(&state);
+        count = partiallyParsedDataCount<ConversionDirection::Decoding>(&state);
     using Error = FinalizeResult::Error;
     const qint16 invalidChars = q26::saturating_cast<qint16>(state.invalidChars + count);
     if (count == 0 || !out) {
@@ -2823,7 +2829,7 @@ auto QStringEncoder::finalize(char *out, qsizetype maxlen) -> QStringEncoder::Fi
 {
     qsizetype count = 0;
     if (isValid())
-        count = QtPrivate::partiallyParsedDataCount(&state);
+        count = partiallyParsedDataCount<ConversionDirection::Encoding>(&state);
     // For ICU we may be using a stateful codec that need to restore or finalize
     // some state, otherwise we have nothing to do with count == 0
     using Error = FinalizeResult::Error;
@@ -2837,6 +2843,7 @@ auto QStringEncoder::finalize(char *out, qsizetype maxlen) -> QStringEncoder::Fi
     if ((false)) {
 #if defined(QT_USE_ICU_CODECS)
     } else if (usesIcu) {
+        QT_COM_THREAD_INIT
         Q_ASSERT(out);
         auto *icu_conv = static_cast<UConverter *>(state.d[0]);
         Q_ASSERT(icu_conv); // bool usesIcu checks that the pointer is non-null
