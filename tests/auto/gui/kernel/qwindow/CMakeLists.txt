@@ -47,3 +47,8 @@ qt_internal_extend_target(tst_qwindow CONDITION QT_FEATURE_dynamicgl AND WIN32
     LIBRARIES
         user32
 )
+
+qt_internal_extend_target(tst_qwindow CONDITION WIN32
+    LIBRARIES
+        dwmapi
+)
