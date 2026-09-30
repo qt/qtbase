@@ -79,7 +79,7 @@ void tst_QTimeZoneBackend::isValidId_data()
     TESTSET("good hyphen", "hy-phen", true);
 
     TESTSET("valid char _", "_", true);
-    TESTSET("valid char .", ".", true);
+    TESTSET("valid char .", ".", false);
     TESTSET("valid char :", ":", true);
     TESTSET("valid char +", "+", true);
     TESTSET("valid char A", "A", true);
@@ -95,6 +95,7 @@ void tst_QTimeZoneBackend::isValidId_data()
     TESTSET("valid pair .z", ".z", true);
     TESTSET("valid pair _z", "_z", true);
     TESTSET("invalid pair -z", "-z", false);
+    TESTSET("invalid pair ..", "..", false);
 
     TESTSET("valid triple a/z", "a/z", true);
     TESTSET("valid triple a.z", "a.z", true);
@@ -103,6 +104,7 @@ void tst_QTimeZoneBackend::isValidId_data()
     TESTSET("invalid triple a z", "a z", false);
     TESTSET("invalid triple a\\z", "a\\z", false);
     TESTSET("invalid triple a,z", "a,z", false);
+    TESTSET("invalid triple ...", "...", false);
 
     TESTSET("invalid space", " ", false);
     TESTSET("invalid char ^", "^", false);
@@ -135,6 +137,8 @@ void tst_QTimeZoneBackend::isValidId_data()
     QTest::newRow("a,z alone") << QByteArray("a,z") << false;
     QTest::newRow("/z alone") << QByteArray("/z") << false;
     QTest::newRow("-z alone") << QByteArray("-z") << false;
+    QTest::newRow("dot-dot path") << QByteArray("../../../etc/passwd") << false;
+    QTest::newRow("dot-dot mid path") << QByteArray("Europe/../../etc/shadow") << false;
 #if (defined(Q_OS_ANDROID) || QT_CONFIG(icu)) && !QT_CONFIG(timezone_tzdb)
     QTest::newRow("long alone") << QByteArray("12345678901234567") << true;
     QTest::newRow("over-long alone") << QByteArray("123456789012345678") << false;

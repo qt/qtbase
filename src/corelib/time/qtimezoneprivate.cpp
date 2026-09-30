@@ -780,9 +780,10 @@ bool QTimeZonePrivate::isValidId(QByteArrayView ianaId)
       Main rules for defining TZ/IANA names, as per
       https://www.iana.org/time-zones/repository/theory.html, are:
        1. Use only valid POSIX file name components
-       2. Within a file name component, use only ASCII letters, `.', `-' and `_'.
-       3. Do not use digits (except in a [+-]\d+ suffix, when used).
-       4. A file name component must not exceed 14 characters or start with `-'
+       2. Do not use the file name components "." and "..".
+       3. Within a file name component, use only ASCII letters, `.', `-' and `_'.
+       4. Do not use digits (except in a [+-]\d+ suffix, when used).
+       5. A file name component must not exceed 14 characters or start with `-'
 
       However, the rules are really guidelines - a later one says
        - Do not change established names if they only marginally violate the
@@ -825,19 +826,27 @@ bool QTimeZonePrivate::isValidId(QByteArrayView ianaId)
     const int MaxSectionLength = 14;
 #endif
     int sectionLength = 0;
+    int sectionDots = 0;
+    const auto sectionIsSane = [](int sectionLength, int sectionDots) {
+        if (sectionLength < MinSectionLength || sectionLength > MaxSectionLength)
+            return false; // violates (4)
+        return sectionLength != sectionDots;
+    };
     for (const char *it = ianaId.begin(), * const end = ianaId.end(); it != end; ++it, ++sectionLength) {
         const char ch = *it;
         if (ch == '/') {
-            if (sectionLength < MinSectionLength || sectionLength > MaxSectionLength)
-                return false; // violates (4)
+            if (!sectionIsSane(sectionLength, sectionDots))
+                return false;
             sectionLength = -1;
+            sectionDots = 0;
         } else if (ch == '-') {
             if (sectionLength == 0)
                 return false; // violates (4)
+        } else if (ch == '.') {
+            ++sectionDots;
         } else if (!isAsciiLower(ch)
                 && !isAsciiUpper(ch)
                 && !(ch == '_')
-                && !(ch == '.')
                    // Should ideally check these only happen as an offset:
                 && !isAsciiDigit(ch)
                 && !(ch == '+')
@@ -845,9 +854,7 @@ bool QTimeZonePrivate::isValidId(QByteArrayView ianaId)
             return false; // violates (2)
         }
     }
-    if (sectionLength < MinSectionLength || sectionLength > MaxSectionLength)
-        return false; // violates (4)
-    return true;
+    return sectionIsSane(sectionLength, sectionDots);
 }
 
 QString QTimeZonePrivate::isoOffsetFormat(int offsetFromUtc, QTimeZone::NameType mode)
