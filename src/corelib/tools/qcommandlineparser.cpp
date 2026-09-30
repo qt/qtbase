@@ -170,7 +170,7 @@ QStringList QCommandLineParserPrivate::aliases(const QString &optionName) const
     QCoreApplication::arguments() before QCommandLineParser defines the \c{profile}
     option and parses the command line.
 
-    \section2 How to Use QCommandLineParser in Complex Applications
+    \section1 How to Use QCommandLineParser in Complex Applications
 
     In practice, additional error checking needs to be performed on the positional
     arguments and option values. For example, ranges of numbers should be checked.

@@ -3862,7 +3862,7 @@ QRhi *QRhiResource::rhi() const
     are already set based on the arguments passed to
     \l{QRhi::newBuffer()}{newBuffer()}.
 
-    \section2 Example usage
+    \section1 Example usage
 
     To create a uniform buffer for a shader where the GLSL uniform block
     contains a single \c mat4 member, and update the contents:
@@ -3902,7 +3902,7 @@ QRhi *QRhiResource::rhi() const
         commandBuffer->resourceUpdate(batch); // or, alternatively, pass 'batch' to a beginPass() call
     \endcode
 
-    \section2 Common patterns
+    \section1 Common patterns
 
     A call to create() destroys any existing native resources if create() was
     successfully called before. If those native resources are still in use by
@@ -4466,7 +4466,7 @@ bool QRhiRenderBuffer::createFrom(NativeRenderBuffer src)
     native texture object with the changed settings, call the setters and call
     create() again. This then might be a potentially expensive operation.
 
-    \section2 Example usage
+    \section1 Example usage
 
     To create a 2D texture with a size of 512x512 pixels and set its contents to all green:
 
@@ -4481,7 +4481,7 @@ bool QRhiRenderBuffer::createFrom(NativeRenderBuffer src)
         commandBuffer->resourceUpdate(batch); // or, alternatively, pass 'batch' to a beginPass() call
     \endcode
 
-    \section2 Common patterns
+    \section1 Common patterns
 
     A call to create() destroys any existing native resources if create() was
     successfully called before. If those native resources are still in use by
@@ -5712,7 +5712,7 @@ QRhiResource::Type QRhiTextureRenderTarget::resourceType() const
     uniform block is present in the vertex shader as well so the same buffer is
     made visible to the vertex stage too.
 
-    \section3 Advanced usage
+    \section1 Advanced usage
 
     Building on the above example, let's assume that a pass now needs to use
     the exact same pipeline and shaders with a different texture. Creating a
@@ -6856,7 +6856,7 @@ QDebug operator<<(QDebug dbg, const QRhiShaderResourceBindings &srb)
     \note stencilReadMask() and stencilWriteMask() apply to both faces. They
     both default to 0xFF.
 
-    \section2 Example usage
+    \section1 Example usage
 
     All settings of a graphics pipeline have defaults which might be suitable
     to many applications. Therefore a minimal example of creating a graphics

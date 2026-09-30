@@ -80,7 +80,7 @@
     from freedesktop.org, provided that the locale encodes file names using
     UTF-8 (required by IDN).
 
-    \section2 Relative URLs vs Relative Paths
+    \section1 Relative URLs vs Relative Paths
 
     Calling isRelative() will return whether or not the URL is relative.
     A relative URL has no \l {scheme}. For example:
@@ -96,7 +96,7 @@
     which returns an absolute URL. isParentOf() is used for determining whether
     one URL is a parent of another.
 
-    \section2 Error checking
+    \section1 Error checking
 
     QUrl is capable of detecting many errors in URLs while parsing it or when
     components of the URL are set with individual setter methods (like
@@ -129,7 +129,7 @@
     QUrl is capable of recording only one error condition. If more than one
     error is found, it is undefined which error is reported.
 
-    \section2 Character Conversions
+    \section1 Character Conversions
 
     Follow these rules to avoid erroneous character conversion when
     dealing with URLs and strings:
