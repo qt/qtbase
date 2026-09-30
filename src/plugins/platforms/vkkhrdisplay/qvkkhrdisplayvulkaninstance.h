@@ -18,6 +18,7 @@
 
 #include <QtGui/private/qbasicvulkanplatforminstance_p.h>
 #include <QtCore/qsize.h>
+#include <QtCore/qstring.h>
 #include <QtCore/qloggingcategory.h>
 
 #include <climits> // For UINT_MAX
@@ -38,6 +39,8 @@ public:
     VkSurfaceKHR createSurface(QWindow *window);
 
     QSize displaySize() const { return QSize(int(m_width), int(m_height)); }
+    QString displayName() const { return m_displayName; }
+    QSizeF physicalSize() const { return m_physicalSize; }
 
     using CreatedCallback = void (*)(QVkKhrDisplayVulkanInstance *, void *);
     void setCreatedCallback(CreatedCallback callback, void *userData) {
@@ -67,6 +70,8 @@ private:
     VkDisplayModeKHR m_displayMode = VK_NULL_HANDLE;
     uint32_t m_width = 0;
     uint32_t m_height = 0;
+    QString m_displayName;
+    QSizeF m_physicalSize;
     uint32_t m_planeIndex = UINT_MAX;
     uint32_t m_planeStackIndex = UINT_MAX;
 };
