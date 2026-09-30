@@ -15,6 +15,8 @@
 #include <QtCore/QLocale>
 #include <QtCore/QDebug>
 
+#include <algorithm>
+
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
@@ -212,24 +214,32 @@ QUrl QFileSelector::select(const QUrl &filePath) const
 }
 
 QString QFileSelectorPrivate::selectionHelper(const QString &path, const QString &fileName,
-                                              const QStringList &selectors, QChar indicator)
+                                              QSpan<QString> selectors, QChar indicator)
 {
     /* selectionHelper does a depth-first search of possible selected files. Because there is strict
        selector ordering in the API, we can stop checking as soon as we find the file in a directory
        which does not contain any other valid selector directories.
+
+       The caller is expected to pass a duplicate-free selector list; the current selector is then
+       dropped by index rather than value when recursing. To recurse over "everything but selector i"
+       without copying, we rotate selector i to the front of [0, i] (which keeps the relative order of
+       the rest intact), recurse over the tail, then rotate back.
     */
     Q_ASSERT(path.isEmpty() || path.endsWith(u'/'));
 
-    for (const QString &s : selectors) {
+    for (qsizetype i = 0; i < selectors.size(); ++i) {
         QString prospectiveBase = path;
         if (!indicator.isNull())
             prospectiveBase += indicator;
-        prospectiveBase += s + u'/';
-        QStringList remainingSelectors = selectors;
-        remainingSelectors.removeAll(s);
-        if (!QDir(prospectiveBase).exists())
+        prospectiveBase += selectors[i];
+        prospectiveBase += u'/';
+        if (!QFileInfo(prospectiveBase).isDir())
             continue;
-        QString prospectiveFile = selectionHelper(prospectiveBase, fileName, remainingSelectors, indicator);
+
+        std::rotate(selectors.begin(), selectors.begin() + i, selectors.begin() + i + 1);
+        QString prospectiveFile =
+                selectionHelper(prospectiveBase, fileName, selectors.subspan(1), indicator);
+        std::rotate(selectors.begin(), selectors.begin() + 1, selectors.begin() + i + 1);
         if (!prospectiveFile.isEmpty())
             return prospectiveFile;
     }
@@ -249,8 +259,9 @@ QString QFileSelectorPrivate::select(const QString &filePath) const
     QString pathString;
     if (auto path = fi.path(); !path.isEmpty())
         pathString = path.endsWith(u'/') ? path : path + u'/';
-    QString ret = selectionHelper(pathString,
-            fi.fileName(), q->allSelectors());
+    QStringList selectors = q->allSelectors();
+    selectors.removeDuplicates();
+    QString ret = selectionHelper(pathString, fi.fileName(), selectors);
 
     if (!ret.isEmpty())
         return ret;
