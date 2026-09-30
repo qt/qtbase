@@ -907,7 +907,7 @@ void AppFunctionsImpl::startAppProcess(
 
     auto env = baseQAbility.Env();
 
-    auto qAbilityInfo = getQAbilityInstancesManager().abilityEngine()->readAbilityInfo(baseQAbility);
+    auto qAbilityInfo = QAbilityInstancesManager::readAbilityInfo(baseQAbility);
 
     auto startWantParams = QNapi::Object::New(env);
     auto requestWantParams = QNapi::getOptionalPropOrEmpty<QNapi::Object>(requestWant, "parameters");
