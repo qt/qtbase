@@ -26,30 +26,32 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: ubuntu-20.04
-            os:   ubuntu-20.04
-            # NOTE: system libmd4c is not detected
-            deps:  libgl-dev libglu-dev 'libxcb*-dev' libx11-xcb-dev libxkbcommon-x11-dev libpcre2-dev libz-dev libfreetype6-dev libpng-dev libjpeg-dev libsqlite3-dev libharfbuzz-dev libb2-dev libdouble-conversion-dev libmd4c-dev
+          - name: ubuntu-24.04
+            os:   ubuntu-24.04
+            # NOTE: libmd4c-dev's cmake config exports an md4c::md4c-html
+            # target whose .so is not actually in the package on this release
+            # (and libmd4c-html-dev does not exist to fill the gap either),
+            # so -system-libmd4c cannot be used; qt-bundled md4c instead.
+            deps:  libgl-dev libglu-dev 'libxcb*-dev' libx11-xcb-dev libxkbcommon-x11-dev libpcre2-dev libz-dev libfreetype6-dev libpng-dev libjpeg-dev libsqlite3-dev libharfbuzz-dev libb2-dev libdouble-conversion-dev
             tools: ninja-build ccache
             install_cmd: sudo apt-get -y install
-            configure_flags: -xcb -system-sqlite -system-pcre -system-zlib -system-freetype -system-libpng -system-libjpeg -system-harfbuzz -system-libb2 -system-doubleconversion -system-libmd4c
-          - name: ubuntu-18.04
-            os:   ubuntu-18.04
-            # NOTE: system libb2 is not detected because version < 0.98.1 lacks pkg-config module
-            # NOTE: system libharfbuzz is not detected because system has old version
+            configure_flags: -xcb -system-sqlite -system-pcre -system-zlib -system-freetype -system-libpng -system-libjpeg -system-harfbuzz -system-libb2 -system-doubleconversion
+          - name: ubuntu-22.04
+            os:   ubuntu-22.04
+            # NOTE: same broken md4c-html cmake export as the 24.04 leg
             deps:  libgl-dev libglu-dev 'libxcb*-dev' libx11-xcb-dev libxkbcommon-x11-dev libpcre2-dev libz-dev libfreetype6-dev libpng-dev libjpeg-dev libsqlite3-dev libharfbuzz-dev libb2-dev libdouble-conversion-dev
-            tools: ninja-build ccache gcc-10
+            tools: ninja-build ccache
             install_cmd: sudo apt-get -y install
             configure_flags: -xcb -system-sqlite -system-pcre -system-zlib -system-freetype -system-libpng -system-libjpeg -system-harfbuzz -system-libb2 -system-doubleconversion
-          - name: macos-10.15
-            os:   macos-10.15
+          - name: macos-15
+            os:   macos-15
             deps:  jpeg sqlite libpng pcre2 harfbuzz freetype libb2 double-conversion
             tools: ninja ccache pkg-config
             install_cmd: HOMEBREW_NO_INSTALL_CLEANUP=1 brew install
             # Specifically on macOS pkg_config has to be manually turned on otherwise libraries under /usr/local are not detected.
             configure_flags: -pkg-config -system-sqlite -system-pcre -system-zlib -system-freetype -system-libpng -system-libjpeg -system-harfbuzz -system-libb2 -system-doubleconversion
-          - name: windows-2019
-            os:   windows-2019
+          - name: windows-2022
+            os:   windows-2022
             install_cmd: choco install
             install_cmd_postfix: --yes --no-progress
             # Chocolatey sqlite package does not come with headers, so we build with bundled sqlite.
@@ -65,10 +67,7 @@ jobs:
 
     - name: prepare Linux
       if: runner.os == 'Linux'
-      run: |
-        sudo apt-get update
-        sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 100
-        sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-10 100
+      run: sudo apt-get update
     - name: prepare macOS
       if: runner.os == 'macOS'
       run: echo noop
@@ -80,13 +79,13 @@ jobs:
         rm -rf "C:/Program Files/PostgreSQL/"
         choco install ccache --version 3.7.12 --yes --no-progress --not-silent --verbose --debug
 
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       with:
         path: source
 
     - name: restore ccache
       id: ccache
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       with:
         path: ${{ runner.temp }}/ccache
         # "github.run_id" is unique, which causes the cache to always get
@@ -125,12 +124,36 @@ jobs:
 
     - name: make build directory
       run:  mkdir build
+    - name: put the MinGW runtime next to Qt's own build tools
+      if: runner.os == 'Windows'
+      # CMake picks C:\mingw64's gcc.exe to build everything, including the
+      # host tools this build runs on itself (syncqt.exe first). But Git for
+      # Windows' bash always puts its own bundled MSYS root, mingw64/bin
+      # included, at the front of PATH -- this is baked into how bash.exe
+      # initializes, not something --noprofile --norc or GITHUB_PATH can
+      # override -- and that copy ships the same-named runtime DLLs, built
+      # differently. The loader then finds Git's libstdc++-6.dll and
+      # libgcc_s_seh-1.dll first, not the ones syncqt.exe was actually linked
+      # against: STATUS_DLL_NOT_FOUND (0xC0000135) the first time it runs.
+      #
+      # A DLL alongside the .exe always wins over anything on PATH, so put
+      # the correct pair where every host tool this build produces will find
+      # them first, regardless of what bash does to PATH.
+      run: |
+        mkdir -p build/bin
+        cp /c/mingw64/bin/libgcc_s_seh-1.dll build/bin/
+        cp /c/mingw64/bin/libstdc++-6.dll build/bin/
+        # syncqt.exe's own dependencies (checked); libwinpthread-1.dll is a
+        # common companion for a posix-threaded MinGW build like this one and
+        # cheap to include ahead of some later host tool needing it too.
+        cp /c/mingw64/bin/libwinpthread-1.dll build/bin/ 2>/dev/null || true
     - name: configure
       working-directory: build
       run:  "../source/configure -opensource -confirm-license -ccache -no-pch
         -debug -nomake tests -nomake examples
         -prefix '${{ runner.temp }}'/install_dir
         ${{ matrix.configure_flags }}"
+
     - name: ninja
       working-directory: build
       run: ninja
