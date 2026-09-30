@@ -25,6 +25,18 @@ instructions:
       equals_value: QNX
   - type: AppendToEnvironmentVariable
     variableName: TESTRUNNER
+    variableValue: "repeat-modified 1 --"
+    enable_if:
+      condition: and
+      conditions:
+        - condition: property
+          property: target.osVersion
+          in_values: [VxWorks]
+        - condition: property
+          property: target.arch
+          equals_value: ARMV7
+  - type: AppendToEnvironmentVariable
+    variableName: TESTRUNNER
     variableValue: " {{.AgentWorkingDir}}/coin_vxworks_qemu_runner.sh"
     enable_if:
       condition: property
