@@ -235,7 +235,7 @@ Q_LOGGING_CATEGORY(lcPermissions, "qt.permissions", QtWarningMsg);
     \endcode
 
     \target typed permission
-    \section2 Typed Permissions
+    \section1 Typed Permissions
 
     The following permissions are available:
 

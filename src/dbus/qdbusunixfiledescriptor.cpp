@@ -46,7 +46,7 @@ QT_IMPL_METATYPE_EXTERN(QDBusUnixFileDescriptor)
     the application, keeps that many file descriptors open and can exhaust
     the process's file descriptor table.
 
-    \section2 Availability
+    \section1 Availability
 
     Unix file descriptor passing is not available in all D-Bus connections.
     This feature is present with D-Bus library and bus daemon version 1.4 and

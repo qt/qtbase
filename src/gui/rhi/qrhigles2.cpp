@@ -97,7 +97,7 @@ QT_BEGIN_NAMESPACE
     shareContext can be set to an existing QOpenGLContext. Alternatively,
     Qt::AA_ShareOpenGLContexts is honored as well, when enabled.
 
-    \section2 Working with existing OpenGL contexts
+    \section1 Working with existing OpenGL contexts
 
     When interoperating with another graphics engine, it may be necessary to
     get a QRhi instance that uses the same OpenGL context. This can be achieved
