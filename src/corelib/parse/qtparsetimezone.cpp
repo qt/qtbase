@@ -317,7 +317,7 @@ QList<SizeOffset> matchIso8601(QStringView text, QtTemporalPattern::TemporalFiel
             if ((colon == -1 ? digits.size() : colon) < 2) // Not enough digits for field.
                 break;
             field = digits.first(2).toInt(&ok);
-            if (!ok)
+            if (!ok || field >= 60)
                 break;
             fieldUsed = 2; // So next iteration sees that to compare to colon.
             tail = tail.sliced(sepLen + fieldUsed);

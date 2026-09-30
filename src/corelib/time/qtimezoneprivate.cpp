@@ -975,8 +975,8 @@ findUtcOffsetPrefix(QStringView text, const QLocale &locale)
         hour = locale.toUInt(hourStr, &ok);
     if (ok && !minStr.isEmpty()) {
         minute = locale.toUInt(minStr, &ok);
-        // If the part after a punctuator is bad, pretend we never saw it:
-        if ((!ok || minute >= 60) && minEnd > hourEnd + minStr.size()) {
+        // If it's bad, pretend we saw nothing after the hour:
+        if (!ok || minute >= 60) {
             minEnd = hourEnd;
             minute = 0;
             ok = true;
