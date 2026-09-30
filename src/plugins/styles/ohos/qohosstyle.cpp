@@ -5,6 +5,7 @@
 #include <QtGui/qicon.h>
 #include <QtGui/qpainter.h>
 #include <QtGui/qpainterpath.h>
+#include <QtWidgets/qabstractscrollarea.h>
 #include <QtWidgets/qcheckbox.h>
 #include <QtWidgets/qcombobox.h>
 #include <QtWidgets/qlineedit.h>
@@ -1039,9 +1040,18 @@ void QOhosStyle::drawPrimitive(
 {
     switch (element) {
     case PE_Frame: {
-        if (widget != nullptr && qobjectIsInstanceOf<QComboBox>(widget->parent()))
-            break;
-        QCommonStyle::drawPrimitive(element, option, painter, widget);
+        if (qobjectIsInstanceOf<QAbstractScrollArea>(widget)) {
+            if (const auto *frameOption = qstyleoption_cast<const QStyleOptionFrame *>(option)) {
+                const int frameWidth = frameOption->lineWidth;
+                drawRect(
+                    *painter, QPen(option->palette.color(QPalette::Active, QPalette::Mid), frameWidth), Qt::NoBrush,
+                    adjusted(frameOption->rect, -frameWidth));
+            } else {
+                QCommonStyle::drawPrimitive(element, option, painter, widget);
+            }
+        } else if (widget && !qobjectIsInstanceOf<QComboBox>(widget->parent())) {
+            QCommonStyle::drawPrimitive(element, option, painter, widget);
+        }
         break;
     }
     case PE_FrameWindow:
