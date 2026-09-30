@@ -526,6 +526,21 @@ QTimeZone::QTimeZone(int offsetSeconds)
 {
 }
 
+// The private for a custom UTC offset zone, or null if the offset is
+// out of range or the id is taken
+static QTimeZonePrivate *newCustomZone(const QByteArray &zoneId, int offsetSeconds,
+                                           const QString &name, const QString &abbreviation,
+                                           QLocale::Territory territory, const QString &comment)
+{
+    if (offsetSeconds < QTimeZone::MinUtcOffsetSecs || offsetSeconds > QTimeZone::MaxUtcOffsetSecs)
+        return nullptr; // Outside the +/- 16h range
+    if (QUtcTimeZonePrivate().isTimeZoneIdAvailable(zoneId)
+        || global_tz->backend->isTimeZoneIdAvailable(zoneId)) {
+        return nullptr; // Don't let client code hijack a real zone name.
+    }
+    return new QUtcTimeZonePrivate(zoneId, offsetSeconds, name, abbreviation, territory, comment);
+}
+
 /*!
     Creates a custom time zone instance at fixed offset from UTC.
 
@@ -552,10 +567,7 @@ QTimeZone::QTimeZone(int offsetSeconds)
 
 QTimeZone::QTimeZone(const QByteArray &zoneId, int offsetSeconds, const QString &name,
                      const QString &abbreviation, QLocale::Territory territory, const QString &comment)
-    : d(QUtcTimeZonePrivate().isTimeZoneIdAvailable(zoneId)
-        || global_tz->backend->isTimeZoneIdAvailable(zoneId)
-        ? nullptr // Don't let client code hijack a real zone name.
-        : new QUtcTimeZonePrivate(zoneId, offsetSeconds, name, abbreviation, territory, comment))
+    : d(newCustomZone(zoneId, offsetSeconds, name, abbreviation, territory, comment))
 {
 }
 
