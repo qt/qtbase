@@ -114,6 +114,8 @@ bool QVkKhrDisplayVulkanInstance::chooseDisplay()
 
     m_display = VK_NULL_HANDLE;
     m_displayMode = VK_NULL_HANDLE;
+    m_displayName.clear();
+    m_physicalSize = QSizeF();
 
     // Pick the first display and the first mode, unless specified via env.vars.
     uint32_t wantedDisplayIndex = 0;
@@ -131,8 +133,11 @@ bool QVkKhrDisplayVulkanInstance::chooseDisplay()
                 disp.physicalDimensions.width, disp.physicalDimensions.height,
                 disp.physicalResolution.width, disp.physicalResolution.height);
 
-        if (i == wantedDisplayIndex)
+        if (i == wantedDisplayIndex) {
             m_display = disp.display;
+            m_displayName = QString::fromUtf8(disp.displayName);
+            m_physicalSize = QSizeF(disp.physicalDimensions.width, disp.physicalDimensions.height);
+        }
 
         uint32_t modeCount = 0;
         if (m_getDisplayModePropertiesKHR(m_physDev, disp.display, &modeCount, nullptr) != VK_SUCCESS) {

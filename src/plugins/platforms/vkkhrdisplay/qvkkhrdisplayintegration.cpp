@@ -43,22 +43,38 @@ public:
     QRect geometry() const override { return m_geometry; }
     int depth() const override { return m_depth; }
     QImage::Format format() const override { return m_format; }
+    QString name() const override { return m_name; }
+    QSizeF physicalSize() const override;
     void setVk(QVkKhrDisplayVulkanInstance *inst);
 
 private:
     QVkKhrDisplayVulkanInstance *m_vk = nullptr;
     QRect m_geometry;
+    QString m_name;
+    QSizeF m_physicalSize;
     int m_depth = 32;
     QImage::Format m_format = QImage::Format_ARGB32_Premultiplied;
     friend class QVkKhrDisplayIntegration;
 };
 
+QSizeF QVkKhrDisplayScreen::physicalSize() const
+{
+    // The physical dimensions are zero when not known (or until the
+    // QVulkanInstance initializes), fall back to the default then.
+    if (m_physicalSize.isEmpty())
+        return QPlatformScreen::physicalSize();
+    return m_physicalSize;
+}
+
 void QVkKhrDisplayScreen::setVk(QVkKhrDisplayVulkanInstance *inst)
 {
     m_vk = inst;
+    m_name = m_vk->displayName();
+    m_physicalSize = m_vk->physicalSize();
     m_geometry = QRect(QPoint(0, 0), m_vk->displaySize());
     QWindowSystemInterface::handleScreenGeometryChange(screen(), m_geometry, m_geometry);
-    qCDebug(qLcVkKhrDisplay) << "Screen will report geometry" << m_geometry;
+    qCDebug(qLcVkKhrDisplay) << "Screen will report name" << m_name << "geometry" << m_geometry
+                             << "physical size" << m_physicalSize;
 
     // Thanks to this deferred screen setup, a QWindow with a size based on the
     // dummy screen size may already exist. Try to resize it.
