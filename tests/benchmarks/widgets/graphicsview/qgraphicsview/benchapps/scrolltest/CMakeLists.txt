@@ -16,5 +16,5 @@ qt_internal_add_benchmark(scrolltest
     SOURCES
         main.cpp
     LIBRARIES
-        Qt::Gui
+        Qt::Widgets
 )

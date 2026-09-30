@@ -19,7 +19,7 @@ qt_internal_add_benchmark(chip
         mainwindow.cpp mainwindow.h
         view.cpp view.h
     LIBRARIES
-        Qt::Gui
+        Qt::Widgets
 )
 
 # Resources:
@@ -42,7 +42,12 @@ qt_internal_add_resource(chip "images"
 ## Scopes:
 #####################################################################
 
-qt_internal_extend_target(chip CONDITION TARGET Qt::OpenGL
+qt_internal_extend_target(chip CONDITION TARGET Qt::OpenGLWidgets
     LIBRARIES
-        Qt::OpenGL
+        Qt::OpenGLWidgets
+)
+
+qt_internal_extend_target(chip CONDITION TARGET Qt::PrintSupport
+    LIBRARIES
+        Qt::PrintSupport
 )

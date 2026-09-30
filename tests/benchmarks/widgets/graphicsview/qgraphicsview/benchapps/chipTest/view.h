@@ -32,7 +32,7 @@ private slots:
     void rotateLeft();
     void rotateRight();
 
-    void timerEvent(QTimerEvent *);
+    void timerEvent(QTimerEvent *) override;
 
 private:
     QGraphicsView *graphicsView;

@@ -1,6 +1,6 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
-#include <QtGui>
+#include <QtWidgets>
 
 #include "valgrind/callgrind.h"
 
@@ -49,10 +49,10 @@ protected:
     {
         static int n = 0;
         if (n)
-            CALLGRIND_START_INSTRUMENTATION
+            CALLGRIND_START_INSTRUMENTATION;
         QGraphicsView::paintEvent(event);
         if (n)
-            CALLGRIND_STOP_INSTRUMENTATION
+            CALLGRIND_STOP_INSTRUMENTATION;
         if (++n == 500)
             qApp->quit();
     }

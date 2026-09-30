@@ -63,7 +63,7 @@ void IconItem::reload()
         return;
 
     const QString key = m_filename+QString::number(iconSize.width())+QString::number(iconSize.height());
-    if (QPixmapCache::find(key, m_pixmap))
+    if (QPixmapCache::find(key, &m_pixmap))
         return;
 
     if (m_filename.endsWith(".svg", Qt::CaseInsensitive))

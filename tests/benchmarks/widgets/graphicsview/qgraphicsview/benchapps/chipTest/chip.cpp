@@ -3,7 +3,7 @@
 
 #include "chip.h"
 
-#include <QtGui>
+#include <QtWidgets>
 
 Chip::Chip(const QColor &color, int x, int y)
 {
@@ -32,9 +32,9 @@ void Chip::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
 {
     Q_UNUSED(widget);
 
-    QColor fillColor = (option->state & QStyle::State_Selected) ? color.dark(150) : color;
+    QColor fillColor = (option->state & QStyle::State_Selected) ? color.darker(150) : color;
     if (option->state & QStyle::State_MouseOver)
-        fillColor = fillColor.light(125);
+        fillColor = fillColor.lighter(125);
 
     const qreal lod = option->levelOfDetailFromTransform(painter->worldTransform());
     if (lod < 0.2) {
@@ -56,7 +56,7 @@ void Chip::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
         width += 2;
 
     pen.setWidth(width);
-    painter->setBrush(QBrush(fillColor.dark(option->state & QStyle::State_Sunken ? 120 : 100)));
+    painter->setBrush(QBrush(fillColor.darker(option->state & QStyle::State_Sunken ? 120 : 100)));
 
     painter->drawRect(QRect(14, 14, 79, 39));
     if (lod >= 1) {

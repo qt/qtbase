@@ -5,7 +5,7 @@
 #include "view.h"
 #include "chip.h"
 
-#include <QtGui>
+#include <QtWidgets>
 
 MainWindow::MainWindow(QWidget *parent)
     : QWidget(parent)

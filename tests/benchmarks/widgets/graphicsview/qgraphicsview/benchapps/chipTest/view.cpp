@@ -3,12 +3,18 @@
 
 #include "view.h"
 
-#include <QtGui>
+#include <QtWidgets>
 
 #include "valgrind/callgrind.h"
 
 #ifndef QT_NO_OPENGL
-#include <QtOpenGL>
+#include <QOpenGLWidget>
+#include <QSurfaceFormat>
+#endif
+
+#ifndef QT_NO_PRINTER
+#include <QPrintDialog>
+#include <QPrinter>
 #endif
 
 #include <qmath.h>
@@ -16,14 +22,14 @@
 class CountView : public QGraphicsView
 {
 protected:
-    void paintEvent(QPaintEvent *event)
+    void paintEvent(QPaintEvent *event) override
     {
         static int n = 0;
         if (n)
-            CALLGRIND_START_INSTRUMENTATION
+            CALLGRIND_START_INSTRUMENTATION;
         QGraphicsView::paintEvent(event);
         if (n)
-            CALLGRIND_STOP_INSTRUMENTATION
+            CALLGRIND_STOP_INSTRUMENTATION;
         if (++n == 500)
             qApp->quit();
     }
@@ -99,7 +105,7 @@ View::View(const QString &name, QWidget *parent)
     openGlButton->setText(tr("OpenGL"));
     openGlButton->setCheckable(true);
 #ifndef QT_NO_OPENGL
-    openGlButton->setEnabled(QGLFormat::hasOpenGL());
+    openGlButton->setEnabled(true);
 #else
     openGlButton->setEnabled(false);
 #endif
@@ -166,14 +172,22 @@ void View::setupMatrix()
     matrix.scale(scale, scale);
     matrix.rotate(rotateSlider->value());
 
-    graphicsView->setMatrix(matrix);
+    graphicsView->setTransform(matrix);
     setResetButtonEnabled();
 }
 
 void View::toggleOpenGL()
 {
 #ifndef QT_NO_OPENGL
-    graphicsView->setViewport(openGlButton->isChecked() ? new QGLWidget(QGLFormat(QGL::SampleBuffers)) : new QWidget);
+    if (openGlButton->isChecked()) {
+        QSurfaceFormat format;
+        format.setSamples(4);
+        auto *glWidget = new QOpenGLWidget;
+        glWidget->setFormat(format);
+        graphicsView->setViewport(glWidget);
+    } else {
+        graphicsView->setViewport(new QWidget);
+    }
 #endif
 }
 
