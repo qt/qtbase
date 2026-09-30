@@ -2240,7 +2240,8 @@ struct QStringConverterICU : QStringConverter
     template<qsizetype X>
     static qsizetype fromLen(qsizetype inLength)
     {
-        return X * inLength * sizeof(UChar);
+        // Must match fromUtf16(); stateful codecs may emit output for empty input
+        return UCNV_GET_MAX_BYTES_FOR_STRING(inLength, X);
     }
 
     static qsizetype toLen(qsizetype inLength)

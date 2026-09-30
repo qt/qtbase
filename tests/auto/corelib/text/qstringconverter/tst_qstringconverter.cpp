@@ -205,6 +205,9 @@ private slots:
     void finalizeDecoder();
     void finalizeStateful();
 
+    void allCodecsWork_data();
+    void allCodecsWork();
+
 #ifdef Q_OS_WIN
     // On all other systems local 8-bit encoding is UTF-8
     void fromLocal8Bit_data();
@@ -540,7 +543,6 @@ void tst_QStringConverter::icuEncodeEdgeCases_data()
     QTest::addColumn<QByteArray>("expected") ;
     QTest::addColumn<QByteArray>("codec");
 
-    QTest::addRow("empty") << QString() << QByteArray() << QByteArray("ISO-2022-CN");
     QTest::addRow("BOMonly") << QString(QChar(QChar::ByteOrderMark)) << QByteArray() << QByteArray("ISO-2022-CN");
     QTest::addRow("1to6") << u"좋"_s << QByteArray::fromHex("1b2428434141") << QByteArray("ISO-2022-JP-2");
     QTest::addRow("1to7") << u"漢"_s << QByteArray::fromHex("1b2429470e6947") << QByteArray("ISO-2022-CN");
@@ -2725,6 +2727,130 @@ void tst_QStringConverter::finalizeStateful()
         QCOMPARE(r.next, nullptr);
     }
 #endif
+}
+
+void tst_QStringConverter::allCodecsWork_data()
+{
+    const QStringList codecs = QStringConverter::availableCodecs();
+    QVERIFY(!codecs.isEmpty());
+
+    QTest::addColumn<QString>("codecName");
+    for (const QString &codec : codecs)
+        QTest::addRow("%s", qPrintable(codec)) << codec;
+}
+
+void tst_QStringConverter::allCodecsWork()
+{
+    auto stateless = [](auto &transformer, const auto &input) {
+        using Error = QStringConverter::FinalizeResultError;
+        using Char = decltype(input.at(0));
+        using R = std::conditional_t<sizeof(Char) == 2, QByteArray, QString>;
+        R result = transformer(input);
+
+        qsizetype used = result.size();
+        Error error = Error::NotEnoughSpace;
+        for (qsizetype extra = 16; error == Error::NotEnoughSpace; extra *= 2) {
+            result.resize(used + extra);
+            auto r = transformer.finalize(result.data() + used, extra);
+            used = r.next - result.constData();
+            error = r.error;
+        }
+        result.truncate(used);
+
+        if (error != Error::NoError) {
+            [&] {
+                qWarning() << "decoded:" << result;
+                QFAIL("<conversion error>");
+            }();
+        }
+        return result;
+    };
+
+    QTest::ThrowOnFailEnabler throwOnFail;
+    QFETCH(QString, codecName);
+    QStringEncoder encoder(codecName);
+    QStringDecoder decoder(codecName);
+    QVERIFY(encoder.isValid());
+    QVERIFY(decoder.isValid());
+    const bool canEncodeAscii = true
+            && codecName != "GB_2312-80"
+            && codecName != "ibm-16684_P110-2003"
+            && codecName != "ibm-4899_P100-1998"
+            && codecName != "ibm-803_P100-1999"
+            && codecName != "ibm-971_P100-1995"
+            ;
+
+    // empty and null strings
+    // note: some codecs emit non-empty encoded for empty inputs (e.g.
+    // ISO-2022-KR)
+    QString decoded = stateless(decoder, QByteArray());
+    QByteArray encoded = stateless(encoder, QString());
+    const QByteArray emptyEncoded = encoded;
+    QCOMPARE(decoded, "");
+
+    encoder.resetState();
+    encoded = stateless(encoder, u""_sv);
+    QCOMPARE(encoded, emptyEncoded);
+    decoder.resetState();
+    decoded = stateless(decoder, QByteArrayView(""));
+    QCOMPARE(decoded, "");
+
+    encoder.resetState();
+    encoded = stateless(encoder, u""_s);
+    QCOMPARE(encoded, emptyEncoded);
+    decoder.resetState();
+    decoded = stateless(decoder, ""_ba);
+    QCOMPARE(decoded, "");
+
+    // round-trip the possibly-non-empty encoded form back to UTF-16
+    decoder.resetState();
+    decoded = stateless(decoder, encoded);
+    QCOMPARE(decoded, "");
+
+    // simple US-ASCII strings
+    // note: not all codecs are US-ASCII compatible (e.g., EBCDIC, but also
+    // UTF-16 and 32)
+    if (canEncodeAscii) {
+        encoder.resetState();
+        encoded = stateless(encoder, u"abc"_sv);
+        QVERIFY(!encoded.isEmpty());
+        decoder.resetState();
+        decoded = stateless(decoder, encoded);
+        if (QByteArrayView(QTest::currentDataTag()).startsWith("ISCII"))
+            QEXPECT_FAIL("", "Missing flush in QStringDecoder::finalize()", Continue);
+        QCOMPARE(decoded, "abc");
+
+        // longer US-ASCII string
+        QString expectedDecoded = QString("abcd").repeated(16384);
+        encoder.resetState();
+        encoded = stateless(encoder, expectedDecoded);
+        QVERIFY(!encoded.isEmpty());
+        decoder.resetState();
+        decoded = stateless(decoder, encoded);
+        if (QByteArrayView(QTest::currentDataTag()).startsWith("ISCII"))
+            QEXPECT_FAIL("", "Missing flush in QStringDecoder::finalize()", Continue);
+        QCOMPARE(decoded, expectedDecoded);
+    }
+
+    // control characters, including NUL
+    bool canEncodeControlChars = true
+            && codecName != "GB_2312-80"
+            && codecName != "gsm-03.38-2009"
+            && codecName != "ibm-16684_P110-2003"
+            && codecName != "ibm-971_P100-1995"
+            && codecName != "x11-compound-text"
+            ;
+    if (canEncodeControlChars) {
+        QString expectedDecoded = u"\r\n\0\t"_s;
+        encoder.resetState();
+        encoded = stateless(encoder, expectedDecoded);
+        QVERIFY(!encoded.isEmpty());
+        decoder.resetState();
+        decoded = stateless(decoder, encoded);
+        if (QByteArrayView(QTest::currentDataTag()).startsWith("ISCII"))
+            QEXPECT_FAIL("", "Missing flush in QStringDecoder::finalize()", Continue);
+        QCOMPARE(decoded, expectedDecoded);
+    }
 }
 
 class LoadAndConvert: public QRunnable
