@@ -325,24 +325,6 @@ std::function<int(std::vector<std::string>)> openLibraryWithMainFunctionOrFail(c
     };
 }
 
-class QUiAbilityEngine : public QAbilityEngine
-{
-public:
-    QUiAbilityEngine();
-    ~QUiAbilityEngine();
-
-    QAbilityInfo readAbilityInfo(const QNapi::Object &ability) const override;
-};
-
-QUiAbilityEngine::QUiAbilityEngine() = default;
-
-QUiAbilityEngine::~QUiAbilityEngine() = default;
-
-QAbilityInfo QUiAbilityEngine::readAbilityInfo(const QNapi::Object &ability) const
-{
-    return QAbilityInstancesManager::readAbilityInfo(ability);
-}
-
 void redirectStandardDescriptorsToFile(const std::string &redirectedStdoutPath)
 {
     int openResult = qt_safe_open(redirectedStdoutPath.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
@@ -1597,17 +1579,6 @@ std::string buildFcLangEnvVariableValue(JsState &jsState)
     return language + "_" + region + ".UTF-8";
 }
 
-std::shared_ptr<QAbilityEngine> makeAbilityEngineForQtRunMode(QtRunMode qtRunMode)
-{
-    switch (qtRunMode) {
-    case QtRunMode::Normal:
-    case QtRunMode::NoUiChildProcess:
-        return std::make_shared<QUiAbilityEngine>();
-    }
-
-    qOhosReportFatalErrorAndAbort("%s: Invalid qtRunMode: %d", Q_FUNC_INFO, static_cast<int>(qtRunMode));
-}
-
 void setupQtApplicationImpl(JsState &jsState, QNapi::Object appStartupObj, QtRunMode qtRunMode)
 {
     auto appContext = appStartupObj.get<QNapi::Object>("appContext");
@@ -1625,9 +1596,7 @@ void setupQtApplicationImpl(JsState &jsState, QNapi::Object appStartupObj, QtRun
     qOhosPrintfDebug("%s: setting up Qt in %s mode", Q_FUNC_INFO, mapQtRunModeToString(qtRunMode));
 
     getQAbilityInstancesManagerPtr() =
-        makeQAbilityInstancesManager(
-            makeAbilityEngineForQtRunMode(qtRunMode),
-            &handleDefaultQAbilityInstanceStartup);
+        makeQAbilityInstancesManager(&handleDefaultQAbilityInstanceStartup);
 
     currentQtRunMode = qtRunMode;
     QtOhos::initJsThreadState(

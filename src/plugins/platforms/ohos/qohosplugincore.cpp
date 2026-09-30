@@ -931,10 +931,6 @@ std::shared_ptr<QUiAbilityPeer> QUiAbilityPeer::tryCastFromQAbilityPeerOrNull(
         : nullptr;
 }
 
-QAbilityEngine::~QAbilityEngine() = default;
-
-QAbilityEngine::QAbilityEngine() = default;
-
 JsState::~JsState() = default;
 
 JsState::JsState() = default;
