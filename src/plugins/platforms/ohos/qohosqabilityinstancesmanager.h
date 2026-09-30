@@ -54,6 +54,8 @@ public:
 
     static void setLaunchParamOnAbilityObject(JsState &jsState, QNapi::Object ability, QNapi::Object launchParam);
 
+    static QAbilityInfo readAbilityInfo(const QNapi::Object &ability);
+
     virtual std::shared_ptr<QAbilityEngine> abilityEngine() = 0;
 
     virtual bool isWantFromThisApp(QNapi::Object appQAbility, QNapi::Object want) const = 0;

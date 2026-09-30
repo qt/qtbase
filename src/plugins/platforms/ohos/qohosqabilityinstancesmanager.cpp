@@ -794,6 +794,17 @@ void QAbilityInstancesManager::setLaunchParamOnAbilityObject(
     ability.set(getAbilityLaunchParamPropSymbol(jsState), launchParam);
 }
 
+QAbilityInfo QAbilityInstancesManager::readAbilityInfo(const QNapi::Object &ability)
+{
+    auto abilityInfo = ability.eval<QNapi::Object>("context.abilityInfo");
+
+    return {
+        .name = abilityInfo.get<QNapi::String>("name"),
+        .bundleName = abilityInfo.get<QNapi::String>("bundleName"),
+        .moduleName = abilityInfo.get<QNapi::String>("moduleName"),
+    };
+}
+
 std::shared_ptr<QAbilityInstancesManager> makeQAbilityInstancesManager(
     std::shared_ptr<QAbilityEngine> abilityEngine,
     std::function<void(JsState &, std::shared_ptr<QAbilityPeer>)> autoStartedInstanceStartupNotifyFunc)
