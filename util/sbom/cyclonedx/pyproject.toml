@@ -11,6 +11,9 @@ dependencies = [
     'tomli ; python_version < "3.11"'
 ]
 
+[project.scripts]
+qt_cyclonedx_generator = "qt_cyclonedx_generator.qt_cyclonedx_generator:main"
+
 # Development dependencies.
 [dependency-groups]
 dev = [
@@ -19,9 +22,6 @@ dev = [
     "tomli>=2.3.0",
     "pyright>=1.1.406",
 ]
-
-[project.scripts]
-qt_cyclonedx_generator = "qt_cyclonedx_generator.qt_cyclonedx_generator:main"
 
 [build-system]
 requires = ["setuptools"]
