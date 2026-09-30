@@ -135,6 +135,7 @@ void QTipLabel::reuseTip(const QString &text, int msecDisplayTime, const QPoint 
     }
 #endif
 
+    setWordWrap(Qt::mightBeRichText(text));
     setText(text);
     updateSize(pos);
     restartExpireTimer(msecDisplayTime);
@@ -149,7 +150,6 @@ void  QTipLabel::updateSize(const QPoint &pos)
     // Make it look good with the default ToolTip font on Mac, which has a small descent.
     if (fm.descent() == 2 && fm.ascent() >= 11)
         ++extra.rheight();
-    setWordWrap(Qt::mightBeRichText(text()));
     QSize sh = sizeHint();
     const QScreen *screen = getTipScreen(pos, this);
     if (!wordWrap() && sh.width() > screen->geometry().width()) {
