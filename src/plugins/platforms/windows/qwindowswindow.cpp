@@ -2099,6 +2099,7 @@ void QWindowsWindow::setParent_sys(const QPlatformWindow *parent)
                 updateFullFrameMargins();
             else
                 m_data.fullFrameMargins = {};
+            setDarkBorder(QWindowsTheme::instance()->colorScheme() == Qt::ColorScheme::Dark);
             updateDropSite(isTopLevel);
         }
     }
@@ -3929,6 +3930,10 @@ bool QWindowsWindow::setDarkBorderToWindow(HWND hwnd, bool d)
 
 void QWindowsWindow::setDarkBorder(bool d)
 {
+    // frames only apply to toplevel windows
+    if (!isTopLevel_sys())
+        return;
+
     // respect explicit opt-out and incompatible palettes or styles
     d = d && shouldApplyDarkFrame(window());
 

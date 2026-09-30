@@ -20,6 +20,9 @@
 #include <QOpenGLContext>
 #elif defined(Q_OS_WIN)
 #  include <QtCore/qt_windows.h>
+#  include <QtCore/qregularexpression.h>
+#  include <QtCore/qscopeguard.h>
+#  include <dwmapi.h>
 #endif
 
 Q_LOGGING_CATEGORY(lcTests, "qt.gui.tests")
@@ -61,6 +64,7 @@ private slots:
 #if defined(Q_OS_WIN)
     void activateTopLevelOnClickWhenFocusInDescendant();
     void framelessMaximizeWindowStateSync();
+    void darkFrameAfterReparentToTopLevel();
 #endif
     void testInputEvents();
     void touchToMouseTranslation();
@@ -1189,6 +1193,60 @@ void tst_QWindow::framelessMaximizeWindowStateSync()
     QTRY_COMPARE(window.windowState(), Qt::WindowNoState);
     QTRY_VERIFY(!IsZoomed(hwnd));
     QTRY_COMPARE(window.geometry(), normalGeometry);
+}
+
+// Returns 1/0 for the DWMWA_USE_IMMERSIVE_DARK_MODE state, -1 if it cannot be queried.
+static int immersiveDarkMode(const QWindow *window)
+{
+    BOOL dark = FALSE;
+    const HWND hwnd = reinterpret_cast<HWND>(window->winId());
+    if (FAILED(DwmGetWindowAttribute(hwnd, 20 /* DWMWA_USE_IMMERSIVE_DARK_MODE */,
+                                     &dark, sizeof(dark)))) {
+        return -1;
+    }
+    return dark ? 1 : 0;
+}
+
+// QTBUG-151043: a native child window that becomes a top-level must get a dark
+// frame when the color scheme is dark. Turning it back into a child must not
+// try to set the frame on the child HWND.
+void tst_QWindow::darkFrameAfterReparentToTopLevel()
+{
+    if (QGuiApplication::platformName().compare(QStringLiteral("windows"), Qt::CaseInsensitive))
+        QSKIP("Windows-specific test");
+
+    const auto resetColorScheme = qScopeGuard([] {
+        QGuiApplication::styleHints()->setColorScheme(Qt::ColorScheme::Unknown);
+    });
+    QGuiApplication::styleHints()->setColorScheme(Qt::ColorScheme::Dark);
+
+    const QPalette palette = QGuiApplication::palette();
+    if (palette.color(QPalette::WindowText).lightness()
+        <= palette.color(QPalette::Window).lightness())
+        QSKIP("The platform theme does not provide a dark palette.");
+
+    QWindow parent;
+    parent.setTitle(QLatin1String(QTest::currentTestFunction()));
+    parent.setGeometry(QRect(m_availableTopLeft + QPoint(80, 80), m_testWindowSize));
+    QWindow child(&parent);
+    child.setGeometry(QRect(QPoint(0, 0), m_testWindowSize / 2));
+    child.create();
+    parent.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&parent));
+
+    QTest::failOnWarning(QRegularExpression(QStringLiteral("setDarkBorderToWindow")));
+
+    child.setParent(nullptr);
+    child.setGeometry(QRect(m_availableTopLeft + QPoint(120, 120), m_testWindowSize));
+    child.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&child));
+    const int darkMode = immersiveDarkMode(&child);
+    if (darkMode < 0)
+        QSKIP("DwmGetWindowAttribute does not support DWMWA_USE_IMMERSIVE_DARK_MODE.");
+    QCOMPARE(darkMode, 1);
+
+    child.setParent(&parent);
+    QVERIFY(QTest::qWaitForWindowExposed(&child));
 }
 #endif
 
