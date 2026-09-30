@@ -2769,6 +2769,34 @@ auto QStringDecoder::finalize(char16_t *out, qsizetype maxlen) -> FinalizeResult
     if (isValid())
         count = QtPrivate::partiallyParsedDataCount(&state);
     using Error = FinalizeResult::Error;
+
+#if defined(QT_USE_ICU_CODECS)
+    // Stateful ICU codecs (e.g. ISCII) may hold back input until flushed
+    if (out && isValid() && (state.flags & QStringConverter::Flag::UsesIcu) && state.d[0]) {
+        auto *icu_conv = static_cast<UConverter *>(state.d[0]);
+        UErrorCode err = U_ZERO_ERROR;
+
+        // If the QStringConverter was moved, the state that we used as a context is stale now.
+        UConverterToUCallback action;
+        const void *context;
+        ucnv_getToUCallBack(icu_conv, &action, &context);
+        if (context != &state)
+            ucnv_setToUCallBack(icu_conv, action, &state, nullptr, nullptr, &err);
+
+        const char *dummyInput = "";
+        auto *target = reinterpret_cast<UChar *>(out);
+        const UChar *targetLimit = target + maxlen;
+        ucnv_toUnicode(icu_conv, &target, targetLimit, &dummyInput, dummyInput, nullptr, true,
+                       &err);
+        out = reinterpret_cast<char16_t *>(target);
+        const qint16 invalidChars = q26::saturating_cast<qint16>(state.invalidChars);
+        if (err == U_BUFFER_OVERFLOW_ERROR)
+            return {out, invalidChars, Error::NotEnoughSpace};
+        resetState();
+        return {out, invalidChars, invalidChars ? Error::InvalidCharacters : Error::NoError};
+    }
+#endif
+
     const qint16 invalidChars = q26::saturating_cast<qint16>(state.invalidChars + count);
     if (count == 0 || !out) {
         resetState();
