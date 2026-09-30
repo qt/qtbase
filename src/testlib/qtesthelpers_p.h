@@ -125,6 +125,9 @@ inline static bool moveCursorAway()
     if (QSysInfo::productType() == "rhel" && QSysInfo::productVersion().startsWith(u'1'))
         return true; //Positioning of QCursor does not currently work on RHEL 10
 
+    if (!QGuiApplication::platformName().compare(QLatin1String("wayland"), Qt::CaseInsensitive))
+        return true; //Positioning of QCursor does not work on wayland
+
     QPoint safePos = QGuiApplication::primaryScreen()->availableGeometry().bottomRight();
     safePos -= QPoint(50, 50);
     QCursor::setPos(safePos);
