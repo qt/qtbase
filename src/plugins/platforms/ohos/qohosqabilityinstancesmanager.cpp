@@ -110,8 +110,7 @@ class QAbilityPeerImpl : public virtual QAbilityPeer
 {
 public:
     QAbilityPeerImpl(
-        JsState &jsState, std::shared_ptr<QAbilityEngine> abilityEngine,
-        std::string instanceId, QObjectThreadSafeRef qwindow,
+        JsState &jsState, std::string instanceId, QObjectThreadSafeRef qwindow,
         QNapi::Object uiAbility);
 
     ~QAbilityPeerImpl() = default;
@@ -132,7 +131,6 @@ private:
         QNapi::Reference<QNapi::Promise> promise;
     };
 
-    std::shared_ptr<QAbilityEngine> m_abilityEngine;
     std::string m_instanceId;
     QObjectThreadSafeRef m_qwindow;
     std::shared_ptr<QWindowDestroyPromiseData> m_optQWindowDestroyPromiseData;
@@ -141,11 +139,9 @@ private:
 };
 
 QAbilityPeerImpl::QAbilityPeerImpl(
-    JsState &, std::shared_ptr<QAbilityEngine> abilityEngine,
-    std::string instanceId, QObjectThreadSafeRef qwindow,
+    JsState &, std::string instanceId, QObjectThreadSafeRef qwindow,
     QNapi::Object uiAbility)
-    : m_abilityEngine(abilityEngine)
-    , m_instanceId(std::move(instanceId))
+    : m_instanceId(std::move(instanceId))
     , m_destroyAllowedFlag(std::make_shared<std::atomic_bool>(false))
     , m_uiAbility(Napi::Persistent(uiAbility))
 {
@@ -272,8 +268,7 @@ class QUiAbilityPeerImpl final : public virtual QUiAbilityPeer, public QAbilityP
 {
 public:
     QUiAbilityPeerImpl(
-        JsState &jsState, std::shared_ptr<QAbilityEngine> abilityEngine,
-        std::string instanceId, QObjectThreadSafeRef qwindow,
+        JsState &jsState, std::string instanceId, QObjectThreadSafeRef qwindow,
         QNapi::Object uiAbility, QNapi::Object windowStage);
 
     QNapi::Object uiContext() override;
@@ -303,10 +298,9 @@ private:
 };
 
 QUiAbilityPeerImpl::QUiAbilityPeerImpl(
-    JsState &jsState, std::shared_ptr<QAbilityEngine> abilityEngine,
-    std::string instanceId, QObjectThreadSafeRef qwindow,
+    JsState &jsState, std::string instanceId, QObjectThreadSafeRef qwindow,
     QNapi::Object uiAbility, QNapi::Object windowStage)
-    : QAbilityPeerImpl(jsState, abilityEngine, instanceId, qwindow, uiAbility)
+    : QAbilityPeerImpl(jsState, instanceId, qwindow, uiAbility)
     , m_windowStage(Napi::Persistent(windowStage))
     , m_window(Napi::Persistent(windowStage.eval<QNapi::Object>("getMainWindowSync()")))
 {
@@ -708,7 +702,7 @@ void QAbilityInstancesManagerImpl::handleStartedUiInstance(
         jsState, getQAbilityInstanceIdOrPendingAutoStartedId(qAbility),
         [&](const std::string &instanceId, const InstanceStartParams &startParams) {
             auto uiAbilityPeer = std::make_shared<QUiAbilityPeerImpl>(
-                jsState, m_abilityEngine, instanceId, startParams.qwindow, qAbility, windowStage);
+                jsState, instanceId, startParams.qwindow, qAbility, windowStage);
             QUiAbilityPeer *uiAbilityPeerKey = uiAbilityPeer.get();
             m_ownedUiAbilityPeers->emplace(uiAbilityPeerKey, uiAbilityPeer);
             return makeSharedPtrWithAttachedExtraData(
