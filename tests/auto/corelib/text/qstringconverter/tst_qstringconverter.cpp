@@ -2841,8 +2841,6 @@ void tst_QStringConverter::allCodecsWork()
         QVERIFY(!encoded.isEmpty());
         decoder.resetState();
         decoded = stateless(decoder, encoded);
-        if (QByteArrayView(QTest::currentDataTag()).startsWith("ISCII"))
-            QEXPECT_FAIL("", "Missing flush in QStringDecoder::finalize()", Continue);
         QCOMPARE(decoded, "abc");
 
         // longer US-ASCII string
@@ -2852,8 +2850,6 @@ void tst_QStringConverter::allCodecsWork()
         QVERIFY(!encoded.isEmpty());
         decoder.resetState();
         decoded = stateless(decoder, encoded);
-        if (QByteArrayView(QTest::currentDataTag()).startsWith("ISCII"))
-            QEXPECT_FAIL("", "Missing flush in QStringDecoder::finalize()", Continue);
         QCOMPARE(decoded, expectedDecoded);
     }
 
@@ -2872,8 +2868,6 @@ void tst_QStringConverter::allCodecsWork()
         QVERIFY(!encoded.isEmpty());
         decoder.resetState();
         decoded = stateless(decoder, encoded);
-        if (QByteArrayView(QTest::currentDataTag()).startsWith("ISCII"))
-            QEXPECT_FAIL("", "Missing flush in QStringDecoder::finalize()", Continue);
         QCOMPARE(decoded, expectedDecoded);
     }
 }
