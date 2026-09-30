@@ -431,6 +431,19 @@ using namespace Qt::StringLiterals;
     \c{QT_ENABLE_REGEXP_JIT} environment variable to a non-zero or zero value
     respectively.
 
+    \target sec-con-QRegularExpression
+    \section1 Security Considerations
+
+    Only use pattern strings from trusted sources. Attacker-controlled regex
+    patterns are inherently dangerous because they can consume excessive CPU
+    and memory resources, and Qt does not provide robust controls (timeouts,
+    configurable limits, ...) to safely execute arbitrary patterns.
+
+    To use a variable string as part of a pattern, pass the string through
+    escape() first. Then any special characters in it match literally:
+
+    \snippet code/src_corelib_text_qregularexpression.cpp 27
+
     \sa QRegularExpressionMatch, QRegularExpressionMatchIterator
 */
 
@@ -1344,6 +1357,9 @@ QRegularExpression::QRegularExpression()
     Constructs a QRegularExpression object using the given \a pattern as
     pattern and the \a options as the pattern options.
 
+    For the risks of using a \a pattern from an untrusted source, see
+    \l{sec-con-QRegularExpression}{Security Considerations}.
+
     \sa setPattern(), setPatternOptions()
 */
 QRegularExpression::QRegularExpression(const QString &pattern, PatternOptions options)
@@ -1407,6 +1423,9 @@ QString QRegularExpression::pattern() const
 /*!
     Sets the pattern string of the regular expression to \a pattern. The
     pattern options are left unchanged.
+
+    For the risks of using a \a pattern from an untrusted source, see
+    \l{sec-con-QRegularExpression}{Security Considerations}.
 
     \sa pattern(), setPatternOptions()
 */
@@ -2763,6 +2782,10 @@ QDataStream &operator<<(QDataStream &out, const QRegularExpression &re)
     \relates QRegularExpression
 
     Reads a regular expression from stream \a in into \a re.
+
+    The stream sets the pattern string of \a re. For the risks of reading a
+    pattern from an untrusted source, see
+    \l{sec-con-QRegularExpression}{Security Considerations}.
 
     \sa {Serializing Qt Data Types}
 */

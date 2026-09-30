@@ -2914,6 +2914,10 @@ QBindable<bool> QSortFilterProxyModel::bindableIsSortLocaleAware()
     This method will reset the regular expression options
     but respect case sensitivity.
 
+    For the risks of using a \a pattern from an untrusted source, see
+    \l{sec-con-QRegularExpression}{Security Considerations} in the
+    QRegularExpression documentation.
+
     \note Calling this method updates the regular expression, thereby breaking
     the binding for \l filterRegularExpression. However it has no effect on the
     \l filterCaseSensitivity bindings.
