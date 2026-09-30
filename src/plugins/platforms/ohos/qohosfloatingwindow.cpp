@@ -571,6 +571,8 @@ void QOhosFloatingWindow::updateSafeAreaMargins()
     // nodeScreenGeometryPixels() is the real content rect; drawableRect lies.
     const QRect frame = m_view->viewGeometry().frameGeometry;
     const QRect content = m_view->nodeScreenGeometryPixels();
+    if (!frame.contains(content))
+        return;
     const int alreadyTop = content.top() - frame.top();
     const int alreadyLeft = content.left() - frame.left();
     const int alreadyRight = frame.right() - content.right();
