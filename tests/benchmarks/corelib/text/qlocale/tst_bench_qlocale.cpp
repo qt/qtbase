@@ -52,8 +52,10 @@ static QString data()
     return QStringLiteral("/qt-5/qtbase/tests/benchmarks/corelib/tools/qlocale");
 }
 
-// Make individual cycles O(a few) msecs, rather than tiny fractions thereof:
-#define LOOP(s) for (int i = 0; i < 5000; ++i) { s; }
+// Make benchmarks run for a few dozen iterations, for good variance, but each
+// call to the test function take > micro second, so overhead of benchmark
+// infrastructure doesn't dominate:
+#define LOOP(N, ...) for (int i = 0; i < N; ++i) { __VA_ARGS__; }
 
 void tst_QLocale::fromString_data()
 {
@@ -95,7 +97,7 @@ void tst_QLocale::fromString_data()
 void tst_QLocale::fromString()
 {
     QFETCH(const QString, name);
-    QBENCHMARK { LOOP(QLocale loc(name)) }
+    QBENCHMARK { LOOP(200, QLocale loc(name)) }
 }
 
 void tst_QLocale::fromTags_data()
@@ -143,7 +145,7 @@ void tst_QLocale::fromTags()
     QFETCH(const QLocale::Language, language);
     QFETCH(const QLocale::Script, script);
     QFETCH(const QLocale::Territory, territory);
-    QBENCHMARK { LOOP(QLocale loc(language, script, territory)) }
+    QBENCHMARK { LOOP(2000, QLocale loc(language, script, territory)) }
 }
 
 void tst_QLocale::fromLangScript_data()
@@ -183,7 +185,7 @@ void tst_QLocale::fromLangScript()
 {
     QFETCH(const QLocale::Language, language);
     QFETCH(const QLocale::Script, script);
-    QBENCHMARK { LOOP(QLocale loc(language, script, QLocale::AnyTerritory)) }
+    QBENCHMARK { LOOP(2000, QLocale loc(language, script, QLocale::AnyTerritory)) }
 }
 
 void tst_QLocale::fromLangLand_data()
@@ -222,7 +224,7 @@ void tst_QLocale::fromLangLand()
 {
     QFETCH(const QLocale::Language, language);
     QFETCH(const QLocale::Territory, territory);
-    QBENCHMARK { LOOP(QLocale loc(language, territory)) }
+    QBENCHMARK { LOOP(2000, QLocale loc(language, territory)) }
 }
 
 void tst_QLocale::fromScriptLand_data()
@@ -263,7 +265,7 @@ void tst_QLocale::fromScriptLand()
 {
     QFETCH(const QLocale::Script, script);
     QFETCH(const QLocale::Territory, territory);
-    QBENCHMARK { LOOP(QLocale loc(QLocale::AnyLanguage, script, territory)) }
+    QBENCHMARK { LOOP(500, QLocale loc(QLocale::AnyLanguage, script, territory)) }
 }
 
 void tst_QLocale::fromLang_data()
@@ -291,7 +293,7 @@ void tst_QLocale::fromLang_data()
 void tst_QLocale::fromLang()
 {
     QFETCH(const QLocale::Language, language);
-    QBENCHMARK { LOOP(QLocale loc(language)) }
+    QBENCHMARK { LOOP(2000, QLocale loc(language)) }
 }
 
 void tst_QLocale::fromScript_data()
@@ -316,7 +318,7 @@ void tst_QLocale::fromScript_data()
 void tst_QLocale::fromScript()
 {
     QFETCH(const QLocale::Script, script);
-    QBENCHMARK { LOOP(QLocale loc(QLocale::AnyLanguage, script, QLocale::AnyTerritory)) }
+    QBENCHMARK { LOOP(2000, QLocale loc(QLocale::AnyLanguage, script, QLocale::AnyTerritory)) }
 }
 
 void tst_QLocale::fromLand_data()
@@ -348,33 +350,33 @@ void tst_QLocale::fromLand_data()
 void tst_QLocale::fromLand()
 {
     QFETCH(const QLocale::Territory, territory);
-    QBENCHMARK { LOOP(QLocale loc(QLocale::AnyLanguage, territory)) }
+    QBENCHMARK { LOOP(2000, QLocale loc(QLocale::AnyLanguage, territory)) }
 }
 
 void tst_QLocale::toUpper_QLocale_1()
 {
     QString s = data();
-    QBENCHMARK { LOOP(QString t(QLocale().toUpper(s))) }
+    QBENCHMARK { LOOP(2000, QString t(QLocale().toUpper(s))) }
 }
 
 void tst_QLocale::toUpper_QLocale_2()
 {
     QString s = data();
     QLocale l;
-    QBENCHMARK { LOOP(QString t(l.toUpper(s))) }
+    QBENCHMARK { LOOP(2000, QString t(l.toUpper(s))) }
 }
 
 void tst_QLocale::toUpper_QString()
 {
     QString s = data();
-    QBENCHMARK { LOOP(QString t(s.toUpper())) }
+    QBENCHMARK { LOOP(200, QString t(s.toUpper())) }
 }
 
 void tst_QLocale::number_QString()
 {
     QString s;
     QBENCHMARK {
-        s = QString::number(12345678);
+        LOOP(5000, s = QString::number(12345678));
     }
 }
 
@@ -478,7 +480,7 @@ void tst_QLocale::toLongLong()
     qlonglong actual = expected;
     bool ok = false;
     QBENCHMARK {
-        actual = loc.toLongLong(text, &ok);
+        LOOP(1000, actual = loc.toLongLong(text, &ok));
     }
     QCOMPARE(ok, good);
     QCOMPARE(actual, expected);
@@ -507,7 +509,7 @@ void tst_QLocale::toULongLong()
     qulonglong actual = expected;
     bool ok = false;
     QBENCHMARK {
-        actual = loc.toULongLong(text, &ok);
+        LOOP(1000, actual = loc.toULongLong(text, &ok));
     }
     QCOMPARE(ok, good);
     QCOMPARE(actual, expected);
@@ -614,7 +616,7 @@ void tst_QLocale::toDouble()
     double actual = expected;
     bool ok = false;
     QBENCHMARK {
-        actual = loc.toDouble(text, &ok);
+        LOOP(50, actual = loc.toDouble(text, &ok));
     }
     QEXPECT_FAIL("en: &infin;", "Localized infinity support missing: QTBUG-95460", Abort);
     QEXPECT_FAIL("ga: Nuimh", "Localized NaN support missing: QTBUG-95460", Abort);
@@ -812,7 +814,7 @@ void tst_QLocale::toDate()
 
     QDate d;
     QBENCHMARK {
-        d = loc.toDate(input, format, calendar, baseYear);
+        LOOP(50, d = loc.toDate(input, format, calendar, baseYear));
     }
     QVERIFY(d.isValid());
 }
@@ -860,7 +862,7 @@ void tst_QLocale::toTime()
 
     QTime t;
     QBENCHMARK {
-        t = loc.toTime(input, format);
+        LOOP(50, t = loc.toTime(input, format));
     }
     QVERIFY(t.isValid());
 }
@@ -1232,7 +1234,7 @@ void tst_QLocale::toTimeFormat()
     QTime t;
 
     QBENCHMARK {
-        t = loc.toTime(string, formatType);
+        LOOP(50, t = loc.toTime(string, formatType));
     }
 
     QEXPECT_FAIL("C_LongFormat(HH:mm:ss t)",
