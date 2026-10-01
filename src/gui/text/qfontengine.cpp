@@ -2084,7 +2084,7 @@ glyph_t QFontEngineMulti::glyphIndex(uint ucs4) const
     if (glyph == 0 && !isIgnorableChar(ucs4)) {
         if (!m_fallbackFamiliesQueried)
             const_cast<QFontEngineMulti *>(this)->ensureFallbackFamiliesQueried();
-        for (int x = 1, n = qMin(m_engines.size(), 256); x < n; ++x) {
+        for (int x = 1, n = qMin(m_engines.size(), maximumEngineCount()); x < n; ++x) {
             QFontEngine *engine = m_engines.at(x);
             if (!engine) {
                 if (!shouldLoadFontEngineForCharacter(x, ucs4))
@@ -2151,7 +2151,7 @@ int QFontEngineMulti::stringToCMap(const QChar *str, int len,
 
         int maxGlyphCount = 0;
         uchar engineIndex = 0;
-        for (int x = 1, n = qMin(m_engines.size(), 256); x < n; ++x) {
+        for (int x = 1, n = qMin(m_engines.size(), maximumEngineCount()); x < n; ++x) {
             int numGlyphs = len;
             const_cast<QFontEngineMulti *>(this)->ensureEngineAt(x);
             maxGlyphCount = engine(x)->stringToCMap(str, len, &tempLayout, &numGlyphs, flags);
@@ -2227,7 +2227,7 @@ int QFontEngineMulti::stringToCMap(const QChar *str, int len,
 
             if (!m_fallbackFamiliesQueried)
                 const_cast<QFontEngineMulti *>(this)->ensureFallbackFamiliesQueried();
-            for (int x = contextFontMerging ? 0 : 1, n = qMin(m_engines.size(), 256); x < n; ++x) {
+            for (int x = contextFontMerging ? 0 : 1, n = qMin(m_engines.size(), maximumEngineCount()); x < n; ++x) {
                 QFontEngine *engine = m_engines.at(x);
                 if (!engine) {
                     if (!shouldLoadFontEngineForCharacter(x, ucs4)) {
