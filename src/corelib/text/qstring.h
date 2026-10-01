@@ -82,7 +82,7 @@ constexpr bool QtPrivate::isLatin1(QLatin1StringView) noexcept
 //
 int QStringView::compare(QLatin1StringView s, Qt::CaseSensitivity cs) const noexcept
 {
-#if defined(Q_CC_GNU) || __has_builtin(__builtin_constant_p)
+#if (!defined(Q_CC_GNU_ONLY) || Q_CC_GNU_ONLY >= 1700) && __has_builtin(__builtin_constant_p)
     if (__builtin_constant_p(s.m_size) && s.size() == 1)
         return compare(s.front(), cs);
 #endif
@@ -90,7 +90,7 @@ int QStringView::compare(QLatin1StringView s, Qt::CaseSensitivity cs) const noex
 }
 bool QStringView::startsWith(QLatin1StringView s, Qt::CaseSensitivity cs) const noexcept
 {
-#if defined(Q_CC_GNU) || __has_builtin(__builtin_constant_p)
+#if (!defined(Q_CC_GNU_ONLY) || Q_CC_GNU_ONLY >= 1700) && __has_builtin(__builtin_constant_p)
     if (__builtin_constant_p(s.m_size) && s.size() == 1)
         return startsWith(s.front(), cs);
 #endif
@@ -98,7 +98,7 @@ bool QStringView::startsWith(QLatin1StringView s, Qt::CaseSensitivity cs) const 
 }
 bool QStringView::endsWith(QLatin1StringView s, Qt::CaseSensitivity cs) const noexcept
 {
-#if defined(Q_CC_GNU) || __has_builtin(__builtin_constant_p)
+#if (!defined(Q_CC_GNU_ONLY) || Q_CC_GNU_ONLY >= 1700) && __has_builtin(__builtin_constant_p)
     if (__builtin_constant_p(s.m_size) && s.size() == 1)
         return endsWith(s.front(), cs);
 #endif
@@ -106,7 +106,7 @@ bool QStringView::endsWith(QLatin1StringView s, Qt::CaseSensitivity cs) const no
 }
 qsizetype QStringView::indexOf(QLatin1StringView s, qsizetype from, Qt::CaseSensitivity cs) const noexcept
 {
-#if defined(Q_CC_GNU) || __has_builtin(__builtin_constant_p)
+#if (!defined(Q_CC_GNU_ONLY) || Q_CC_GNU_ONLY >= 1700) && __has_builtin(__builtin_constant_p)
     if (__builtin_constant_p(s.m_size) && s.size() == 1)
         return indexOf(s.front(), from, cs);
 #endif
@@ -118,7 +118,7 @@ qsizetype QStringView::lastIndexOf(QLatin1StringView s, Qt::CaseSensitivity cs) 
 { return lastIndexOf(s, size(), cs); }
 qsizetype QStringView::lastIndexOf(QLatin1StringView s, qsizetype from, Qt::CaseSensitivity cs) const noexcept
 {
-#if defined(Q_CC_GNU) || __has_builtin(__builtin_constant_p)
+#if (!defined(Q_CC_GNU_ONLY) || Q_CC_GNU_ONLY >= 1700) && __has_builtin(__builtin_constant_p)
     if (__builtin_constant_p(s.m_size) && s.size() == 1)
         return lastIndexOf(s.front(), from, cs);
 #endif
@@ -126,7 +126,7 @@ qsizetype QStringView::lastIndexOf(QLatin1StringView s, qsizetype from, Qt::Case
 }
 qsizetype QStringView::count(QLatin1StringView s, Qt::CaseSensitivity cs) const
 {
-#if defined(Q_CC_GNU) || __has_builtin(__builtin_constant_p)
+#if (!defined(Q_CC_GNU_ONLY) || Q_CC_GNU_ONLY >= 1700) && __has_builtin(__builtin_constant_p)
     if (__builtin_constant_p(s.m_size) && s.size() == 1)
         return count(s.front(), cs);
 #endif
