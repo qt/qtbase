@@ -155,12 +155,16 @@ QAbstractFileEngine::FileFlags QAndroidApkFileEngine::fileFlags(FileFlags type) 
 QString QAndroidApkFileEngine::fileName(FileName file) const
 {
     switch (file) {
+    case CanonicalPathName:
+    case CanonicalName:
+        // An entry missing from the APK has no canonical name.
+        if (!m_fileInfo)
+            return QString();
+        Q_FALLTHROUGH();
     case PathName:
     case AbsolutePathName:
-    case CanonicalPathName:
     case DefaultName:
     case AbsoluteName:
-    case CanonicalName:
         return m_fileName;
     case BaseName:
         return m_fileName.mid(m_fileName.lastIndexOf(u'/') + 1);
