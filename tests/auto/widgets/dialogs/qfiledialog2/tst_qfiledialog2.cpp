@@ -1038,11 +1038,11 @@ void tst_QFileDialog2::task251321_sideBarHiddenEntries()
     sidebar->selectUrl(QUrl::fromLocalFile(hiddenSubDir.absolutePath()));
     QTest::mouseClick(sidebar->viewport(), Qt::LeftButton, {},
                       sidebar->visualRect(sidebar->model()->index(0, 0)).center());
-    // give the background processes more time on windows mobile
-    QTest::qWait(250);
 
     QFileSystemModel *model = fd.findChild<QFileSystemModel*>("qt_filesystem_model");
-    QCOMPARE(model->rowCount(model->index(hiddenSubDir.absolutePath())), 2);
+    const QString hiddenPath = hiddenSubDir.absolutePath();
+    QTRY_VERIFY(model->index(hiddenPath).isValid());
+    QTRY_COMPARE(model->rowCount(model->index(hiddenPath)), 2);
 
     hiddenSubDir.rmdir("happy2");
     hiddenSubDir.rmdir("happy");
