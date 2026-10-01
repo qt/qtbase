@@ -1544,7 +1544,9 @@ void QOhosView::syncWindowStateImmediate(WindowStateSyncReason reason)
         submitSystemPropertyUpdate(
             m_updateData.windowStaysOnTop, windowFlags.testFlag(Qt::WindowStaysOnTopHint));
 
-        submitSystemPropertyUpdate(m_updateData.frameless, windowFlags.testFlag(Qt::FramelessWindowHint));
+        submitSystemPropertyUpdate(
+            m_updateData.frameless,
+            platformWindow->decorationPreset() == QOhosPlatformWindow::DecorationPreset::Frameless);
 
         submitSystemPropertyUpdate(
             m_updateData.windowTransparentForInput, windowFlags.testFlag(Qt::WindowTransparentForInput));
@@ -1811,7 +1813,9 @@ void QOhosView::handleWindowFlagsChange(
     const auto flagsChange = previousWindowFlags ^ currentWindowFlags;
 
     bool minMaxCloseButtonStateChanged = (flagsChange & (Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint)) != 0;
-    bool framelessChanged = (flagsChange & Qt::FramelessWindowHint) != 0;
+    bool windowTypeChanged =
+        (previousWindowFlags & Qt::WindowType_Mask) != (currentWindowFlags & Qt::WindowType_Mask);
+    bool framelessChanged = (flagsChange & Qt::FramelessWindowHint) != 0 || windowTypeChanged;
 
     if (minMaxCloseButtonStateChanged || framelessChanged) {
         setWindowMinMaxCloseButtonState(QOhosView::WindowMinMaxCloseButtonsState{
@@ -1829,8 +1833,11 @@ void QOhosView::handleWindowFlagsChange(
     if (transparentForInputChanged)
         setWindowTransparentForInput(currentWindowFlags.testFlag(Qt::WindowTransparentForInput));
 
-    if (framelessChanged)
-        setFramelessWindow(currentWindowFlags.testFlag(Qt::FramelessWindowHint));
+    if (framelessChanged) {
+        auto *platformWindow = QOhosPlatformWindow::fromQWindow(m_ownerWindow);
+        setFramelessWindow(
+            platformWindow->decorationPreset() == QOhosPlatformWindow::DecorationPreset::Frameless);
+    }
 
     bool focusableChanged = (flagsChange & Qt::WindowDoesNotAcceptFocus) != 0;
     if (focusableChanged) {
