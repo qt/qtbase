@@ -9,9 +9,7 @@
 #include <QtGui/private/qhighdpiscaling_p.h>
 #include <QtGui/private/qohoswindowhints_p.h>
 #include <QtGui/private/qwindow_p.h>
-#include <algorithm>
 #include <cmath>
-#include <iterator>
 #include <memory>
 #include <qguiapplication.h>
 #include <qohosdeviceinfo_p.h>
@@ -50,6 +48,18 @@ QOhosView *getWindowsViewOrNull(QWindow *targetWindow)
     }
 
     return view;
+}
+
+Qt::WindowType windowTypeOf(Qt::WindowFlags flags)
+{
+    return static_cast<Qt::WindowType>((flags & Qt::WindowType_Mask).toInt());
+}
+
+bool isShownWithoutDecorationWindowType(Qt::WindowType windowType)
+{
+    return windowType == Qt::Popup
+        || windowType == Qt::SplashScreen
+        || windowType == Qt::ToolTip;
 }
 
 }
@@ -188,7 +198,8 @@ void QOhosPlatformWindow::setWindowFlags(Qt::WindowFlags flags)
         correctedFlags.setFlag(Qt::WindowDoesNotAcceptFocus, true);
     }
 
-    if (correctedFlags.testFlag(Qt::FramelessWindowHint)) {
+    if (correctedFlags.testFlag(Qt::FramelessWindowHint)
+        || isShownWithoutDecorationWindowType(windowTypeOf(flags))) {
         correctedFlags.setFlag(Qt::WindowMaximizeButtonHint, false);
         correctedFlags.setFlag(Qt::WindowMinimizeButtonHint, false);
         correctedFlags.setFlag(Qt::WindowCloseButtonHint, false);
@@ -267,19 +278,10 @@ bool QOhosPlatformWindow::shouldDisplayAsOhosWindow() const
 
 QOhosPlatformWindow::DecorationPreset QOhosPlatformWindow::decorationPreset() const
 {
-    constexpr Qt::WindowType showWithoutDecorationWindowTypes[] = {
-        Qt::WindowType::Popup,
-        Qt::WindowType::SplashScreen,
-        Qt::WindowType::ToolTip,
-    };
-
     auto *qWindow = window();
     bool showWithoutDecoration =
         qWindow->parent() != nullptr
-        || std::find(
-                std::begin(showWithoutDecorationWindowTypes),
-                std::end(showWithoutDecorationWindowTypes),
-                qWindow->type()) != std::end(showWithoutDecorationWindowTypes)
+        || isShownWithoutDecorationWindowType(windowTypeOf(windowFlags()))
         || windowFlags().testFlag(Qt::WindowType::FramelessWindowHint)
         || floatWindowTagValueOrFalse();
 

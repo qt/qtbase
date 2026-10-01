@@ -5,6 +5,7 @@
 #include <QtCore/qharmonyjscontext.h>
 #include <QtCore/qharmonyjsobjectref.h>
 #include <QtCore/qsemaphore.h>
+#include <QtGui/qguiapplication.h>
 #include <QtGui/qwindow.h>
 #include <QtTest/qtest.h>
 #include <atomic>
@@ -26,6 +27,8 @@ using namespace std::chrono_literals;
 
 // Stays below the HarmonyOS app-freeze limit for a blocked JS thread.
 constexpr auto jsThreadBlockTimeout = 3s;
+
+constexpr int capabilityNotSupportedErrorCode = 801;
 
 std::optional<double> getJsWindowId(napi_env env, napi_value windowValue)
 {
@@ -71,6 +74,34 @@ MainWindowIds fetchMainWindowIds(QHarmonyWindow *harmonyWindow)
     };
 }
 
+std::optional<bool> fetchDecorVisible(const QHarmonyJsObjectRef &jsWindowRef)
+{
+    return QHarmonyApplication::runOnJsThreadAndWait(
+        [&](QHarmonyJsContext &jsContext) -> std::optional<bool> {
+            const auto env = jsContext.env();
+            const auto windowValue = jsWindowRef.value(jsContext);
+            const auto functionValue = getJsProperty(env, windowValue, "getWindowDecorVisible");
+            napi_value resultValue = nullptr;
+            const auto status =
+                napi_call_function(env, windowValue, functionValue, 0, nullptr, &resultValue);
+            if (status != napi_pending_exception) {
+                checkNapiStatus(status, "napi_call_function");
+                return tryMapJsBooleanToBool(env, resultValue);
+            }
+
+            napi_value errorValue = nullptr;
+            checkNapiStatus(
+                napi_get_and_clear_last_exception(env, &errorValue),
+                "napi_get_and_clear_last_exception");
+            const auto errorCode = tryMapJsNumberToInt(env, getJsProperty(env, errorValue, "code"));
+            if (errorCode != capabilityNotSupportedErrorCode)
+                checkNapiStatus(status, "getWindowDecorVisible");
+            return std::nullopt;
+        });
+}
+
+using TagWindowOrWidgetAsMainWindow = void (*)(QObject *, bool);
+
 }
 
 class tst_HarmonyWindow : public QObject
@@ -96,6 +127,9 @@ private slots:
     void window_abilityAndJsWindow_replacedAfterDestroyAndShow();
 
     void appJsContext_defaultAbility_unchangedByNewWindow();
+
+    void decoration_popupTaggedAsMainWindow_hidden();
+    void decoration_shownWindowTypeChangedToToolTip_hidden();
 
 private:
     QWindow m_firstWindow;
@@ -380,6 +414,43 @@ void tst_HarmonyWindow::appJsContext_defaultAbility_unchangedByNewWindow()
     QVERIFY(!newAbilityRef.isNull());
     QCOMPARE_NE(newAbilityRef, defaultAbilityRef);
     QCOMPARE(fetchDefaultAbility(), defaultAbilityRef);
+}
+
+void tst_HarmonyWindow::decoration_popupTaggedAsMainWindow_hidden()
+{
+    if (fetchDecorVisible(m_secondHarmonyWindow->jsWindow()) != true)
+        QSKIP("Main windows have no visible title bar in this window mode");
+
+    const auto tagAsMainWindow = reinterpret_cast<TagWindowOrWidgetAsMainWindow>(
+        QGuiApplication::platformFunction("tagWindowOrWidgetAsMainWindow"));
+    QVERIFY(tagAsMainWindow);
+
+    QWindow popup;
+    popup.setFlags(Qt::Popup);
+    tagAsMainWindow(&popup, true);
+    popup.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&popup));
+    auto *harmonyWindow = popup.nativeInterface<QHarmonyWindow>();
+    QVERIFY(harmonyWindow);
+
+    QTRY_COMPARE(fetchDecorVisible(harmonyWindow->jsWindow()), std::optional<bool>(false));
+}
+
+void tst_HarmonyWindow::decoration_shownWindowTypeChangedToToolTip_hidden()
+{
+    if (fetchDecorVisible(m_secondHarmonyWindow->jsWindow()) != true)
+        QSKIP("Main windows have no visible title bar in this window mode");
+
+    QWindow window;
+    window.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
+    auto *harmonyWindow = window.nativeInterface<QHarmonyWindow>();
+    QVERIFY(harmonyWindow);
+    QTRY_COMPARE(fetchDecorVisible(harmonyWindow->jsWindow()), std::optional<bool>(true));
+
+    window.setFlags(Qt::ToolTip);
+
+    QTRY_COMPARE(fetchDecorVisible(harmonyWindow->jsWindow()), std::optional<bool>(false));
 }
 
 QTEST_MAIN(tst_HarmonyWindow)
