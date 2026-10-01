@@ -2199,10 +2199,15 @@ void tst_QMainWindow::resizeDocks()
 //        qDebug() << list[i] << list[i]->size() << sizes[i];
     }
 
+    int requestedEnd = 0;
+    int expectedStart = 0;
     for (int i = 0; i < docks.size(); ++i) {
         QSize s = list[i]->size();
         int value = (orientation == Qt::Horizontal) ? s.width() : s.height();
-        QCOMPARE(value,  qRound(sizes[i]*actualTotal/double(totalFromList)));
+        requestedEnd += sizes[i];
+        const int expectedEnd = qRound(requestedEnd * actualTotal / double(totalFromList));
+        QCOMPARE(value, expectedEnd - expectedStart);
+        expectedStart = expectedEnd;
     }
 }
 
