@@ -58,3 +58,6 @@ wayland
 # QTBUG-149950
 [renderRTL]
 macos ci
+# QTBUG-151082
+[palettePropagation2]
+wayland
