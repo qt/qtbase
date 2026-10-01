@@ -262,7 +262,7 @@ public:
 
     [[nodiscard]] int compare(QStringView other, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     {
-#if defined(Q_CC_GNU) || __has_builtin(__builtin_constant_p)
+#if (!defined(Q_CC_GNU_ONLY) || Q_CC_GNU_ONLY >= 1700) && __has_builtin(__builtin_constant_p)
         if (__builtin_constant_p(other.m_size) && other.size() == 1)
             return compare(other.front(), cs);
 #endif
@@ -274,7 +274,7 @@ public:
     { return size() >= 1 ? compare_single_char_helper(*utf16() - c.unicode()) : -1; }
     [[nodiscard]] int compare(QChar c, Qt::CaseSensitivity cs) const noexcept
     {
-#if defined(Q_CC_GNU) || __has_builtin(__builtin_constant_p)
+#if (!defined(Q_CC_GNU_ONLY) || Q_CC_GNU_ONLY >= 1700) && __has_builtin(__builtin_constant_p)
         if (__builtin_constant_p(cs) && cs == Qt::CaseSensitive)
             return compare(c);
 #endif
@@ -285,7 +285,7 @@ public:
 
     [[nodiscard]] bool startsWith(QStringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     {
-#if defined(Q_CC_GNU) || __has_builtin(__builtin_constant_p)
+#if (!defined(Q_CC_GNU_ONLY) || Q_CC_GNU_ONLY >= 1700) && __has_builtin(__builtin_constant_p)
         if (__builtin_constant_p(s.m_size) && s.size() == 1)
             return startsWith(s.front(), cs);
 #endif
@@ -296,7 +296,7 @@ public:
     { return !empty() && front() == c; }
     [[nodiscard]] bool startsWith(QChar c, Qt::CaseSensitivity cs) const noexcept
     {
-#if defined(Q_CC_GNU) || __has_builtin(__builtin_constant_p)
+#if (!defined(Q_CC_GNU_ONLY) || Q_CC_GNU_ONLY >= 1700) && __has_builtin(__builtin_constant_p)
         if (__builtin_constant_p(cs) && cs == Qt::CaseSensitive)
             return startsWith(c);
 #endif
@@ -305,7 +305,7 @@ public:
 
     [[nodiscard]] bool endsWith(QStringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     {
-#if defined(Q_CC_GNU) || __has_builtin(__builtin_constant_p)
+#if (!defined(Q_CC_GNU_ONLY) || Q_CC_GNU_ONLY >= 1700) && __has_builtin(__builtin_constant_p)
         if (__builtin_constant_p(s.m_size) && s.size() == 1)
             return endsWith(s.front(), cs);
 #endif
@@ -316,7 +316,7 @@ public:
     { return !empty() && back() == c; }
     [[nodiscard]] bool endsWith(QChar c, Qt::CaseSensitivity cs) const noexcept
     {
-#if defined(Q_CC_GNU) || __has_builtin(__builtin_constant_p)
+#if (!defined(Q_CC_GNU_ONLY) || Q_CC_GNU_ONLY >= 1700) && __has_builtin(__builtin_constant_p)
         if (__builtin_constant_p(cs) && cs == Qt::CaseSensitive)
             return endsWith(c);
 #endif
@@ -327,7 +327,7 @@ public:
     { return QtPrivate::findString(*this, from, c.unicode(), cs); }
     [[nodiscard]] qsizetype indexOf(QStringView s, qsizetype from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     {
-#if defined(Q_CC_GNU) || __has_builtin(__builtin_constant_p)
+#if (!defined(Q_CC_GNU_ONLY) || Q_CC_GNU_ONLY >= 1700) && __has_builtin(__builtin_constant_p)
         if (__builtin_constant_p(s.m_size) && s.size() == 1)
             return indexOf(s.front(), from, cs);
 #endif
@@ -345,7 +345,7 @@ public:
     { return QtPrivate::count(*this, c, cs); }
     [[nodiscard]] qsizetype count(QStringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     {
-#if defined(Q_CC_GNU) || __has_builtin(__builtin_constant_p)
+#if (!defined(Q_CC_GNU_ONLY) || Q_CC_GNU_ONLY >= 1700) && __has_builtin(__builtin_constant_p)
         if (__builtin_constant_p(s.m_size) && s.size() == 1)
             return count(s.front(), cs);
 #endif
@@ -361,7 +361,7 @@ public:
     { return lastIndexOf(s, size(), cs); }
     [[nodiscard]] qsizetype lastIndexOf(QStringView s, qsizetype from, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     {
-#if defined(Q_CC_GNU) || __has_builtin(__builtin_constant_p)
+#if (!defined(Q_CC_GNU_ONLY) || Q_CC_GNU_ONLY >= 1700) && __has_builtin(__builtin_constant_p)
         if (__builtin_constant_p(s.m_size) && s.size() == 1)
             return lastIndexOf(s.front(), from, cs);
 #endif

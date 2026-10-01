@@ -288,7 +288,7 @@ public:
 
     [[nodiscard]] bool startsWith(QByteArrayView other) const noexcept
     {
-#if defined(Q_CC_GNU) || __has_builtin(__builtin_constant_p)
+#if (!defined(Q_CC_GNU_ONLY) || Q_CC_GNU_ONLY >= 1700) && __has_builtin(__builtin_constant_p)
         if (__builtin_constant_p(other.m_size) && other.m_size == 1)
             return startsWith(other.front());
 #endif
@@ -299,7 +299,7 @@ public:
 
     [[nodiscard]] bool endsWith(QByteArrayView other) const noexcept
     {
-#if defined(Q_CC_GNU) || __has_builtin(__builtin_constant_p)
+#if (!defined(Q_CC_GNU_ONLY) || Q_CC_GNU_ONLY >= 1700) && __has_builtin(__builtin_constant_p)
         if (__builtin_constant_p(other.m_size) && other.m_size == 1)
             return endsWith(other.front());
 #endif
@@ -310,7 +310,7 @@ public:
 
     [[nodiscard]] qsizetype indexOf(QByteArrayView a, qsizetype from = 0) const noexcept
     {
-#if defined(Q_CC_GNU) || __has_builtin(__builtin_constant_p)
+#if (!defined(Q_CC_GNU_ONLY) || Q_CC_GNU_ONLY >= 1700) && __has_builtin(__builtin_constant_p)
         if (__builtin_constant_p(a.m_size) && a.m_size == 1)
             return indexOf(a.front(), from);
 #endif
@@ -328,7 +328,7 @@ public:
     { return lastIndexOf(a, size()); }
     [[nodiscard]] qsizetype lastIndexOf(QByteArrayView a, qsizetype from) const noexcept
     {
-#if defined(Q_CC_GNU) || __has_builtin(__builtin_constant_p)
+#if (!defined(Q_CC_GNU_ONLY) || Q_CC_GNU_ONLY >= 1700) && __has_builtin(__builtin_constant_p)
         if (__builtin_constant_p(a.m_size) && a.m_size == 1)
             return lastIndexOf(a.front(), from);
 #endif
@@ -339,7 +339,7 @@ public:
 
     [[nodiscard]] qsizetype count(QByteArrayView a) const noexcept
     {
-#if defined(Q_CC_GNU) || __has_builtin(__builtin_constant_p)
+#if (!defined(Q_CC_GNU_ONLY) || Q_CC_GNU_ONLY >= 1700) && __has_builtin(__builtin_constant_p)
         if (__builtin_constant_p(a.m_size) && a.m_size == 1)
             return count(a.front());
 #endif
@@ -457,7 +457,7 @@ template<typename QByteArrayLike,
 
 inline int QByteArrayView::compare(QByteArrayView a) const noexcept
 {
-#if defined(Q_CC_GNU) || __has_builtin(__builtin_constant_p)
+#if (!defined(Q_CC_GNU_ONLY) || Q_CC_GNU_ONLY >= 1700) && __has_builtin(__builtin_constant_p)
     if (__builtin_constant_p(a.m_size) && a.m_size == 1) {
         if (isEmpty())
             return -1;
