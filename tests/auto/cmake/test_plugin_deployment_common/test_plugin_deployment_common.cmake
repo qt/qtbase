@@ -73,6 +73,13 @@ function(create_test_executable target)
         set(installed_app_location "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/${target}")
     endif()
 
+    # The deployment tools don't remove files from an earlier install, so start from an
+    # empty install prefix. Only do this for the prefix that the test harness creates.
+    if(CMAKE_INSTALL_PREFIX MATCHES "_installed$")
+        add_test(clean_${target} "${CMAKE_COMMAND}" -E rm -rf "${CMAKE_INSTALL_PREFIX}")
+        set_tests_properties(clean_${target} PROPERTIES FIXTURES_SETUP clean_step)
+    endif()
+
     # There's no nice way to get the location of an installed binary, so we need to construct
     # the binary install path by hand, somewhat similar to how it's done in
     # the implementation of qt_deploy_runtime_dependencies.
@@ -81,7 +88,10 @@ function(create_test_executable target)
     # or the run_deployed_ test will fail because we didn't deploy the runtime dependencies.
     # When support for additional platforms is added, these locations will have to be augmented.
     add_test(install_${target} "${CMAKE_COMMAND}" --install .)
-    set_tests_properties(install_${target} PROPERTIES FIXTURES_SETUP deploy_step)
+    set_tests_properties(install_${target} PROPERTIES
+        FIXTURES_SETUP deploy_step
+        FIXTURES_REQUIRED clean_step
+    )
     add_test(NAME run_deployed_${target}
              COMMAND "${installed_app_location}"
              # Make sure that we don't use the default working directory which is
