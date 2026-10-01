@@ -237,6 +237,10 @@
     Note that this method doesn't have an overload working with iterators, because
     it invalidates the iterators of the sequence it operates on.
 
+    //![null-pool]
+    If \a pool is \c nullptr, the behavior is undefined.
+    //![null-pool]
+
     \sa {Concurrent Filter and Filter-Reduce}
 */
 
@@ -250,6 +254,11 @@
     Note that this method doesn't have an overload working with iterators, because
     it invalidates the iterators of the sequence it operates on.
 
+    //![null-global-pool]
+    If QThreadPool::globalInstance() is \c nullptr (e.g. during shutdown), the
+    behavior is undefined.
+    //![null-global-pool]
+
     \sa {Concurrent Filter and Filter-Reduce}
 */
 
@@ -262,6 +271,8 @@
     the item is put in the new Sequence. Otherwise, the item will \e not
     appear in the new Sequence.
 
+    \include qtconcurrentfilter.cpp null-pool
+
     \sa {Concurrent Filter and Filter-Reduce}
 */
 
@@ -272,6 +283,8 @@
     new Sequence of kept items. If \a filterFunction returns \c true, a copy of
     the item is put in the new Sequence. Otherwise, the item will \e not
     appear in the new Sequence.
+
+    \include qtconcurrentfilter.cpp null-global-pool
 
     \sa {Concurrent Filter and Filter-Reduce}
 */
@@ -285,6 +298,8 @@
     copy of the item is put in the new Sequence. Otherwise, the item will
     \e not appear in the new Sequence.
 
+    \include qtconcurrentfilter.cpp null-pool
+
     \sa {Concurrent Filter and Filter-Reduce}
 */
 
@@ -295,6 +310,8 @@
     returns a new Sequence of kept items. If \a filterFunction returns \c true, a
     copy of the item is put in the new Sequence. Otherwise, the item will
     \e not appear in the new Sequence.
+
+    \include qtconcurrentfilter.cpp null-global-pool
 
     \sa {Concurrent Filter and Filter-Reduce}
 */
@@ -315,6 +332,8 @@
     QtConcurrent::OrderedReduce, \a reduceFunction is called in the order of
     the original sequence.
 
+    \include qtconcurrentfilter.cpp null-pool
+
     \sa {Concurrent Filter and Filter-Reduce}
 */
 
@@ -332,6 +351,8 @@
     QtConcurrent::UnorderedReduce. If \a reduceOptions is
     QtConcurrent::OrderedReduce, \a reduceFunction is called in the order of
     the original sequence.
+
+    \include qtconcurrentfilter.cpp null-global-pool
 
     \sa {Concurrent Filter and Filter-Reduce}
 */
@@ -355,6 +376,8 @@
     QtConcurrent::OrderedReduce, \a reduceFunction is called in the order of
     the original sequence.
 
+    \include qtconcurrentfilter.cpp null-pool
+
     \sa {Concurrent Filter and Filter-Reduce}
 */
 
@@ -376,6 +399,8 @@
     QtConcurrent::OrderedReduce, \a reduceFunction is called in the order of
     the original sequence.
 
+    \include qtconcurrentfilter.cpp null-global-pool
+
     \sa {Concurrent Filter and Filter-Reduce}
 */
 
@@ -395,6 +420,8 @@
     QtConcurrent::OrderedReduce, the \a reduceFunction is called in the order
     of the original sequence.
 
+    \include qtconcurrentfilter.cpp null-pool
+
     \sa {Concurrent Filter and Filter-Reduce}
 */
 
@@ -412,6 +439,8 @@
     QtConcurrent::UnorderedReduce. If \a reduceOptions is
     QtConcurrent::OrderedReduce, the \a reduceFunction is called in the order
     of the original sequence.
+
+    \include qtconcurrentfilter.cpp null-global-pool
 
     \sa {Concurrent Filter and Filter-Reduce}
 */
@@ -435,6 +464,8 @@
     QtConcurrent::OrderedReduce, the \a reduceFunction is called in the order
     of the original sequence.
 
+    \include qtconcurrentfilter.cpp null-pool
+
     \sa {Concurrent Filter and Filter-Reduce}
 */
 
@@ -456,6 +487,8 @@
     QtConcurrent::OrderedReduce, the \a reduceFunction is called in the order
     of the original sequence.
 
+    \include qtconcurrentfilter.cpp null-global-pool
+
     \sa {Concurrent Filter and Filter-Reduce}
 */
 
@@ -472,6 +505,8 @@
 
     \note This function will block until all items in the sequence have been processed.
 
+    \include qtconcurrentfilter.cpp null-pool
+
     \sa {Concurrent Filter and Filter-Reduce}
 */
 
@@ -487,6 +522,8 @@
 
     \note This function will block until all items in the sequence have been processed.
 
+    \include qtconcurrentfilter.cpp null-global-pool
+
     \sa {Concurrent Filter and Filter-Reduce}
 */
 
@@ -501,6 +538,8 @@
 
     \note This function will block until all items in the sequence have been processed.
 
+    \include qtconcurrentfilter.cpp null-pool
+
     \sa filtered(), {Concurrent Filter and Filter-Reduce}
 */
 
@@ -513,6 +552,8 @@
   appear in the new Sequence.
 
   \note This function will block until all items in the sequence have been processed.
+
+  \include qtconcurrentfilter.cpp null-global-pool
 
   \sa filtered(), {Concurrent Filter and Filter-Reduce}
 */
@@ -529,6 +570,8 @@
     \note This function will block until the iterator reaches the end of the
     sequence being processed.
 
+    \include qtconcurrentfilter.cpp null-pool
+
     \sa filtered(), {Concurrent Filter and Filter-Reduce}
 */
 
@@ -542,6 +585,8 @@
 
   \note This function will block until the iterator reaches the end of the
   sequence being processed.
+
+  \include qtconcurrentfilter.cpp null-global-pool
 
   \sa filtered(), {Concurrent Filter and Filter-Reduce}
 */
@@ -564,6 +609,8 @@
 
     \note This function will block until all items in the sequence have been processed.
 
+    \include qtconcurrentfilter.cpp null-pool
+
     \sa filteredReduced(), {Concurrent Filter and Filter-Reduce}
 */
 
@@ -583,6 +630,8 @@
   the original sequence.
 
   \note This function will block until all items in the sequence have been processed.
+
+  \include qtconcurrentfilter.cpp null-global-pool
 
   \sa filteredReduced(), {Concurrent Filter and Filter-Reduce}
 */
@@ -608,6 +657,8 @@
 
     \note This function will block until all items in the sequence have been processed.
 
+    \include qtconcurrentfilter.cpp null-pool
+
     \sa filteredReduced(), {Concurrent Filter and Filter-Reduce}
 */
 
@@ -631,6 +682,8 @@
 
   \note This function will block until all items in the sequence have been processed.
 
+  \include qtconcurrentfilter.cpp null-global-pool
+
   \sa filteredReduced(), {Concurrent Filter and Filter-Reduce}
 */
 
@@ -653,6 +706,8 @@
     \note This function will block until the iterator reaches the end of the
     sequence being processed.
 
+    \include qtconcurrentfilter.cpp null-pool
+
     \sa filteredReduced(), {Concurrent Filter and Filter-Reduce}
 */
 
@@ -673,6 +728,8 @@
 
   \note This function will block until the iterator reaches the end of the
   sequence being processed.
+
+  \include qtconcurrentfilter.cpp null-global-pool
 
   \sa filteredReduced(), {Concurrent Filter and Filter-Reduce}
 */
@@ -699,6 +756,8 @@
     \note This function will block until the iterator reaches the end of the
     sequence being processed.
 
+    \include qtconcurrentfilter.cpp null-pool
+
     \sa filteredReduced(), {Concurrent Filter and Filter-Reduce}
 */
 
@@ -722,6 +781,8 @@
 
   \note This function will block until the iterator reaches the end of the
   sequence being processed.
+
+  \include qtconcurrentfilter.cpp null-global-pool
 
   \sa filteredReduced(), {Concurrent Filter and Filter-Reduce}
 */

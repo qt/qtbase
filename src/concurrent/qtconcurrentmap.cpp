@@ -350,6 +350,8 @@
     The \a function takes a reference to the item, so that any modifications done to the item
     will appear in \a sequence.
 
+    \include qtconcurrentfilter.cpp null-pool
+
     \sa {Concurrent Map and Map-Reduce}
 */
 
@@ -359,6 +361,8 @@
     Calls \a function once for each item in \a sequence. The \a function takes
     a reference to the item, so that any modifications done to the item
     will appear in \a sequence.
+
+    \include qtconcurrentfilter.cpp null-global-pool
 
     \sa {Concurrent Map and Map-Reduce}
 */
@@ -371,6 +375,8 @@
     The \a function takes a reference to the item, so that any modifications
     done to the item will appear in the sequence which the iterators belong to.
 
+    \include qtconcurrentfilter.cpp null-pool
+
     \sa {Concurrent Map and Map-Reduce}
 */
 
@@ -380,6 +386,8 @@
     Calls \a function once for each item from \a begin to \a end. The
     \a function takes a reference to the item, so that any modifications
     done to the item will appear in the sequence which the iterators belong to.
+
+    \include qtconcurrentfilter.cpp null-global-pool
 
     \sa {Concurrent Map and Map-Reduce}
 */
@@ -392,6 +400,8 @@
     threads taken from the QThreadPool \a pool. You can use QFuture::const_iterator or
     QFutureIterator to iterate through the results.
 
+    \include qtconcurrentfilter.cpp null-pool
+
     \sa {Concurrent Map and Map-Reduce}
 */
 
@@ -401,6 +411,8 @@
     Calls \a function once for each item in \a sequence and returns a future
     with each mapped item as a result. You can use QFuture::const_iterator or
     QFutureIterator to iterate through the results.
+
+    \include qtconcurrentfilter.cpp null-global-pool
 
     \sa {Concurrent Map and Map-Reduce}
 */
@@ -413,6 +425,8 @@
     threads taken from the QThreadPool \a pool. You can use
     QFuture::const_iterator or QFutureIterator to iterate through the results.
 
+    \include qtconcurrentfilter.cpp null-pool
+
     \sa {Concurrent Map and Map-Reduce}
 */
 
@@ -422,6 +436,8 @@
     Calls \a function once for each item from \a begin to \a end and returns a
     future with each mapped item as a result. You can use
     QFuture::const_iterator or QFutureIterator to iterate through the results.
+
+    \include qtconcurrentfilter.cpp null-global-pool
 
     \sa {Concurrent Map and Map-Reduce}
 */
@@ -437,6 +453,8 @@
     time will call \a reduceFunction. The order in which \a reduceFunction is
     called is determined by \a reduceOptions.
 
+    \include qtconcurrentfilter.cpp null-pool
+
     \sa {Concurrent Map and Map-Reduce}
 */
 
@@ -449,6 +467,8 @@
     Note that while \a mapFunction is called concurrently, only one thread at a
     time will call \a reduceFunction. The order in which \a reduceFunction is
     called is determined by \a reduceOptions.
+
+    \include qtconcurrentfilter.cpp null-global-pool
 
     \sa {Concurrent Map and Map-Reduce}
 */
@@ -467,6 +487,8 @@
     time will call \a reduceFunction. The order in which \a reduceFunction is
     called is determined by \a reduceOptions.
 
+    \include qtconcurrentfilter.cpp null-pool
+
     \sa {Concurrent Map and Map-Reduce}
 */
 
@@ -482,6 +504,8 @@
     Note that while \a mapFunction is called concurrently, only one thread at a
     time will call \a reduceFunction. The order in which \a reduceFunction is
     called is determined by \a reduceOptions.
+
+    \include qtconcurrentfilter.cpp null-global-pool
 
     \sa {Concurrent Map and Map-Reduce}
 */
@@ -499,6 +523,8 @@
 
     \note QtConcurrent::OrderedReduce results in the ordered reduction.
 
+    \include qtconcurrentfilter.cpp null-pool
+
     \sa {Concurrent Map and Map-Reduce}
 */
 
@@ -513,6 +539,8 @@
     \a reduceFunction is called is undefined.
 
     \note QtConcurrent::OrderedReduce results in the ordered reduction.
+
+    \include qtconcurrentfilter.cpp null-global-pool
 
     \sa {Concurrent Map and Map-Reduce}
 */
@@ -533,6 +561,8 @@
 
     \note QtConcurrent::OrderedReduce results in the ordered reduction.
 
+    \include qtconcurrentfilter.cpp null-pool
+
     \sa {Concurrent Map and Map-Reduce}
 */
 
@@ -551,6 +581,8 @@
 
     \note QtConcurrent::OrderedReduce results in the ordered reduction.
 
+    \include qtconcurrentfilter.cpp null-global-pool
+
     \sa {Concurrent Map and Map-Reduce}
 */
 
@@ -564,6 +596,8 @@
 
     \note This function will block until all items in the sequence have been processed.
 
+    \include qtconcurrentfilter.cpp null-pool
+
     \sa map(), {Concurrent Map and Map-Reduce}
 */
 
@@ -575,6 +609,8 @@
   will appear in \a sequence.
 
   \note This function will block until all items in the sequence have been processed.
+
+  \include qtconcurrentfilter.cpp null-global-pool
 
   \sa map(), {Concurrent Map and Map-Reduce}
 */
@@ -590,6 +626,8 @@
     \note This function will block until the iterator reaches the end of the
     sequence being processed.
 
+    \include qtconcurrentfilter.cpp null-pool
+
     \sa map(), {Concurrent Map and Map-Reduce}
 */
 
@@ -603,6 +641,8 @@
   \note This function will block until the iterator reaches the end of the
   sequence being processed.
 
+  \include qtconcurrentfilter.cpp null-global-pool
+
   \sa map(), {Concurrent Map and Map-Reduce}
 */
 
@@ -615,6 +655,8 @@
 
     \note This function will block until all items in the sequence have been processed.
 
+    \include qtconcurrentfilter.cpp null-pool
+
     \sa mapped(), {Concurrent Map and Map-Reduce}
 */
 
@@ -625,6 +667,8 @@
   the results. The type of the results will match the type returned by the MapFunctor.
 
   \note This function will block until all items in the sequence have been processed.
+
+  \include qtconcurrentfilter.cpp null-global-pool
 
   \sa mapped(), {Concurrent Map and Map-Reduce}
 */
@@ -644,6 +688,8 @@
     \note This function will block until the iterator reaches the end of the
     sequence being processed.
 
+    \include qtconcurrentfilter.cpp null-pool
+
     \sa mapped(), {Concurrent Map and Map-Reduce}
 */
 
@@ -661,6 +707,8 @@
   \note This function will block until the iterator reaches the end of the
   sequence being processed.
 
+  \include qtconcurrentfilter.cpp null-global-pool
+
   \sa mapped(), {Concurrent Map and Map-Reduce}
 */
 
@@ -677,6 +725,8 @@
 
     \note This function will block until all items in the sequence have been processed.
 
+    \include qtconcurrentfilter.cpp null-pool
+
     \sa mapped(), {Concurrent Map and Map-Reduce}
 */
 
@@ -691,6 +741,8 @@
   called is determined by \a reduceOptions.
 
   \note This function will block until all items in the sequence have been processed.
+
+  \include qtconcurrentfilter.cpp null-global-pool
 
   \sa mapped(), {Concurrent Map and Map-Reduce}
 */
@@ -711,6 +763,8 @@
 
     \note This function will block until all items in the sequence have been processed.
 
+    \include qtconcurrentfilter.cpp null-pool
+
     \sa mapped(), {Concurrent Map and Map-Reduce}
 */
 
@@ -729,6 +783,8 @@
 
   \note This function will block until all items in the sequence have been processed.
 
+  \include qtconcurrentfilter.cpp null-global-pool
+
   \sa mapped(), {Concurrent Map and Map-Reduce}
 */
 
@@ -746,6 +802,8 @@
     \note This function will block until the iterator reaches the end of the
     sequence being processed.
 
+    \include qtconcurrentfilter.cpp null-pool
+
     \sa blockingMappedReduced(), {Concurrent Map and Map-Reduce}
 */
 
@@ -761,6 +819,8 @@
 
   \note This function will block until the iterator reaches the end of the
   sequence being processed.
+
+  \include qtconcurrentfilter.cpp null-global-pool
 
   \sa blockingMappedReduced(), {Concurrent Map and Map-Reduce}
 */
@@ -782,6 +842,8 @@
     \note This function will block until the iterator reaches the end of the
     sequence being processed.
 
+    \include qtconcurrentfilter.cpp null-pool
+
     \sa blockingMappedReduced(), {Concurrent Map and Map-Reduce}
 */
 
@@ -800,6 +862,8 @@
 
   \note This function will block until the iterator reaches the end of the
   sequence being processed.
+
+  \include qtconcurrentfilter.cpp null-global-pool
 
   \sa blockingMappedReduced(), {Concurrent Map and Map-Reduce}
 */
