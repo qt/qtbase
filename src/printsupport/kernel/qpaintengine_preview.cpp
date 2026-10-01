@@ -21,8 +21,8 @@ public:
     ~QPreviewPaintEnginePrivate() {}
 
     QList<const QPicture *> pages;
-    QPaintEngine *engine;
-    QPainter *painter;
+    QPaintEngine *engine = nullptr;
+    QPainter *painter = nullptr;
     QPrinter::PrinterState state;
 
     QPaintEngine *proxy_paint_engine;
@@ -52,12 +52,7 @@ bool QPreviewPaintEngine::begin(QPaintDevice *)
     qDeleteAll(d->pages);
     d->pages.clear();
 
-    QPicture *page = new QPicture;
-    page->d_func()->in_memory_only = true;
-    d->painter = new QPainter(page);
-    d->engine = d->painter->paintEngine();
-    *d->painter->d_func()->state = *painter()->d_func()->state;
-    d->pages.append(page);
+    startPage();
     d->state = QPrinter::Active;
     return true;
 }
@@ -109,28 +104,32 @@ void QPreviewPaintEngine::drawTiledPixmap(const QRectF &r, const QPixmap &pm, co
     d->engine->drawTiledPixmap(r, pm, p);
 }
 
-bool QPreviewPaintEngine::newPage()
+void QPreviewPaintEngine::startPage()
 {
     Q_D(QPreviewPaintEngine);
 
     QPicture *page = new QPicture;
     page->d_func()->in_memory_only = true;
-    QPainter *tmp_painter = new QPainter(page);
-    QPaintEngine *tmp_engine = tmp_painter->paintEngine();
+    QPainter *pagePainter = new QPainter(page);
+    QPaintEngine *pageEngine = pagePainter->paintEngine();
 
-    // copy the painter state from the original painter
-    Q_ASSERT(painter()->d_func()->state && tmp_painter->d_func()->state);
-    *tmp_painter->d_func()->state = *painter()->d_func()->state;
+    Q_ASSERT(painter()->d_func()->state && pagePainter->d_func()->state);
+    *pagePainter->d_func()->state = *painter()->d_func()->state;
 
     // composition modes aren't supported on a QPrinter and yields a
     // warning, so ignore it for now
-    tmp_engine->setDirty(DirtyFlags(AllDirty & ~DirtyCompositionMode));
-    tmp_engine->syncState();
+    pageEngine->setDirty(DirtyFlags(AllDirty & ~DirtyCompositionMode));
+    pageEngine->syncState();
 
     delete d->painter;
-    d->painter = tmp_painter;
+    d->painter = pagePainter;
     d->pages.append(page);
-    d->engine = tmp_engine;
+    d->engine = pageEngine;
+}
+
+bool QPreviewPaintEngine::newPage()
+{
+    startPage();
     return true;
 }
 
