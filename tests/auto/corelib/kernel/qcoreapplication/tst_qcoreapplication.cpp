@@ -393,8 +393,18 @@ void tst_QCoreApplication::libraryPaths()
 #endif
 }
 
+// Later tests create applications that must find their plugins again.
+static auto scopedPluginPathRestore()
+{
+    return qScopeGuard([oldPath = qgetenv("QT_PLUGIN_PATH")] {
+        QVERIFY(oldPath.isNull() ? qunsetenv("QT_PLUGIN_PATH")
+                                 : qputenv("QT_PLUGIN_PATH", oldPath));
+    });
+}
+
 void tst_QCoreApplication::libraryPaths_qt_plugin_path()
 {
+    const auto restorePluginPath = scopedPluginPathRestore();
     int argc = 1;
 
     QCoreApplication app(argc, &argv0);
@@ -410,8 +420,9 @@ void tst_QCoreApplication::libraryPaths_qt_plugin_path()
 
 void tst_QCoreApplication::libraryPaths_qt_plugin_path_2()
 {
+    const auto restorePluginPath = scopedPluginPathRestore();
 #ifdef Q_OS_UNIX
-    QByteArray validPath = QDir("/tmp").canonicalPath().toLatin1();
+    QByteArray validPath = QDir(QDir::tempPath()).canonicalPath().toLatin1();
     QByteArray nonExistentPath = "/nonexistent";
     QByteArray pluginPath = validPath + ':' + nonExistentPath;
 #elif defined(Q_OS_WIN)
