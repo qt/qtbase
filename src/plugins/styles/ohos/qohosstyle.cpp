@@ -1194,7 +1194,7 @@ void QOhosStyle::drawPrimitive(
         const auto frame = qstyleoption_cast<const QStyleOptionFrame *>(option);
         if (frame != nullptr) {
             QPen pen;
-            pen.setColor(frame->palette.alternateBase().color());
+            pen.setColor(option->palette.mid().color());
             pen.setStyle(
                 frame->features.testFlag(QStyleOptionFrame::FrameFeature::Flat)
                 ? Qt::NoPen : Qt::SolidLine);
