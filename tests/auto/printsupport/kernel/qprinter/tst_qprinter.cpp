@@ -16,6 +16,10 @@
 #include <qpagelayout.h>
 #include <qsharedpointer.h>
 #include <qtemporarydir.h>
+#include <qpicture.h>
+#include <qimage.h>
+
+#include <QtPrintSupport/private/qprinter_p.h>
 
 #include <math.h>
 
@@ -44,6 +48,7 @@ private slots:
     void testMargins();
     void testPageSetupDialog();
     void testPrintPreviewDialog();
+    void previewRecordsStartingPenOnEveryPage();
     void testMultipleSets_data();
     void testMultipleSets();
     void testPageMargins_data();
@@ -160,6 +165,46 @@ void tst_QPrinter::testPrintPreviewDialog()
     QPrintPreviewWidget *widget = dialog.findChild<QPrintPreviewWidget *>();
     QVERIFY(widget);
     QCOMPARE(widget->currentPage(), 1);
+}
+
+static int pixelsDrawnWithoutPlaybackPen(const QPicture &page)
+{
+    QImage image(120, 20, QImage::Format_RGB32);
+    image.fill(Qt::white);
+    QPainter painter(&image);
+    painter.setPen(Qt::NoPen);
+    painter.drawPicture(0, 0, page);
+    painter.end();
+
+    int count = 0;
+    for (int y = 0; y < image.height(); ++y) {
+        for (int x = 0; x < image.width(); ++x)
+            count += image.pixel(x, y) != qRgb(255, 255, 255);
+    }
+    return count;
+}
+
+void tst_QPrinter::previewRecordsStartingPenOnEveryPage()
+{
+    // QTBUG-151090: the default pen is never set, so it reaches a recorded page only through the
+    // page's starting state. Replaying with Qt::NoPen makes a missing pen draw nothing.
+    QPrinter printer;
+    printer.setOutputFormat(QPrinter::PdfFormat);
+    QPrinterPrivate *printerPrivate = QPrinterPrivate::get(&printer);
+    printerPrivate->setPreviewMode(true);
+
+    const QLine line(0, 10, 100, 10);
+    QPainter painter(&printer);
+    painter.drawLine(line);
+    printer.newPage();
+    painter.drawLine(line);
+    painter.end();
+    printerPrivate->setPreviewMode(false);
+
+    const QList<const QPicture *> pages = printerPrivate->previewPages();
+    QCOMPARE(pages.size(), 2);
+    QCOMPARE_GT(pixelsDrawnWithoutPlaybackPen(*pages.at(1)), 0);
+    QCOMPARE_GT(pixelsDrawnWithoutPlaybackPen(*pages.at(0)), 0);
 }
 
 void tst_QPrinter::testPageRectAndPaperRect_data()

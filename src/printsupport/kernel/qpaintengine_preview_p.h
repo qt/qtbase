@@ -61,6 +61,9 @@ public:
     int metric(QPaintDevice::PaintDeviceMetric) const override;
 
     QPrinter::PrinterState printerState() const override;
+
+private:
+    void startPage();
 };
 
 QT_END_NAMESPACE

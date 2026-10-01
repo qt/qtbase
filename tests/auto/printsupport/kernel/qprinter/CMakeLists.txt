@@ -17,5 +17,6 @@ qt_internal_add_test(tst_qprinter
     LIBRARIES
         Qt::Gui
         Qt::PrintSupport
+        Qt::PrintSupportPrivate
         Qt::Widgets
 )
