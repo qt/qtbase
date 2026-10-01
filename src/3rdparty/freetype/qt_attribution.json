@@ -56,6 +56,8 @@
         "Name": "Freetype 2 - zlib",
         "QDocModule": "qtgui",
         "QtUsage": "Optionally used in Qt GUI and platform plugins. Configure with -no-freetype, or -system-freetype to avoid.",
+        "SecurityCritical": true,
+        "DownloadLocation": "https://download.savannah.gnu.org/releases/freetype/freetype-2.14.3.tar.gz",
         "Path": "src/gzip",
 
         "Description": "FreeType is a freely available software library to render fonts.",
@@ -70,6 +72,8 @@
         "Name": "Freetype 2 - Bitmap Distribution Format (BDF) support",
         "QDocModule": "qtgui",
         "QtUsage": "Optionally used in Qt GUI and platform plugins. Configure with -no-freetype, or -system-freetype to avoid.",
+        "SecurityCritical": true,
+        "DownloadLocation": "https://download.savannah.gnu.org/releases/freetype/freetype-2.14.3.tar.gz",
         "Path": "src/bdf",
 
         "Description": "FreeType is a freely available software library to render fonts.",
@@ -85,6 +89,8 @@
         "Name": "Freetype 2 - Portable Compiled Format (PCF) support",
         "QDocModule": "qtgui",
         "QtUsage": "Optionally used in Qt GUI and platform plugins. Configure with -no-freetype, or -system-freetype to avoid.",
+        "SecurityCritical": true,
+        "DownloadLocation": "https://download.savannah.gnu.org/releases/freetype/freetype-2.14.3.tar.gz",
         "Path": "src/pcf",
 
         "Description": "FreeType is a freely available software library to render fonts.",
