@@ -275,6 +275,8 @@ public:
 
     static bool disableEmojiSegmenter();
 
+    static constexpr qsizetype maximumEngineCount() { return 256; }
+
     enum HintStyle {
         HintUnset = -1,
         HintNone,

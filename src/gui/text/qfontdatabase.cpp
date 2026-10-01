@@ -650,7 +650,9 @@ QStringList QPlatformFontDatabase::fallbacksForFamily(const QString &family,
         writingSystem = QFontDatabase::Any;
 
     auto *db = QFontDatabasePrivate::instance();
-    for (int i = 0; i < db->count; ++i) {
+    for (int i = 0;
+         i < db->count && preferredFallbacks.size() < QFontEngineMulti::maximumEngineCount() - 1;
+         ++i) {
         QtFontFamily *f = db->families[i];
 
         f->ensurePopulated();
