@@ -41,6 +41,7 @@ class QtWindow extends QtLayout implements QtSurfaceInterface
     private boolean m_editTextFocusInitialized = false;
     private final QtInputConnection.QtInputConnectionListener m_inputConnectionListener;
     private boolean m_firstSafeMarginsDelivered = false;
+    private WindowInsets m_pendingSafeAreaInsets;
     private int m_actionBarHeight = -1;
 
     private static native void surfaceCreated(int windowId, Surface surface);
@@ -93,6 +94,23 @@ class QtWindow extends QtLayout implements QtSurfaceInterface
         registerSafeAreaMarginsListener();
     }
 
+    // Reports safe margins for this window and its children. Also called from
+    // the decor listener, since the insets dispatch can be consumed above us.
+    void reportSafeAreaMarginsFromRoot(WindowInsets freshInsets)
+    {
+        if (!isAttachedToWindow())
+            return;
+        // Post so the layout settles before measuring. Inside a dispatch the
+        // root insets are still the old ones, so use the dispatched insets.
+        getRootView().post(() -> {
+            WindowInsets insets = freshInsets != null ? freshInsets : getRootWindowInsets();
+            if (insets != null)
+                updateSafeAreaMargins(insets);
+        });
+        for (QtWindow child : m_childWindows.values())
+            child.reportSafeAreaMarginsFromRoot(freshInsets);
+    }
+
     void registerSafeAreaMarginsListener()
     {
         if (!(getContext() instanceof QtActivityBase))
@@ -100,7 +118,7 @@ class QtWindow extends QtLayout implements QtSurfaceInterface
 
         setOnApplyWindowInsetsListener((view, insets) -> {
             WindowInsets windowInsets = view.onApplyWindowInsets(insets);
-            reportSafeAreaMargins(windowInsets, getId());
+            updateSafeAreaMargins(windowInsets);
 
             return windowInsets;
         });
@@ -109,7 +127,7 @@ class QtWindow extends QtLayout implements QtSurfaceInterface
         if (isAttachedToWindow()) {
             WindowInsets insets = getRootWindowInsets();
             if (insets != null) {
-                getRootView().post(() -> reportSafeAreaMargins(insets, getId()));
+                getRootView().post(() -> updateSafeAreaMargins(insets));
                 m_firstSafeMarginsDelivered = true;
             }
         } else { // Otherwise request it upon attachement
@@ -134,7 +152,7 @@ class QtWindow extends QtLayout implements QtSurfaceInterface
                         WindowInsets insets = getRootWindowInsets();
                         if (insets != null) {
                             getViewTreeObserver().removeOnPreDrawListener(this);
-                            getRootView().post(() -> reportSafeAreaMargins(insets, getId()));
+                            getRootView().post(() -> updateSafeAreaMargins(insets));
                             m_firstSafeMarginsDelivered = true;
                             return true;
                         }
@@ -147,12 +165,15 @@ class QtWindow extends QtLayout implements QtSurfaceInterface
             };
             getViewTreeObserver().addOnPreDrawListener(listener);
         }
+    }
 
-        addOnLayoutChangeListener((view, l, t, r, b, oldl, oldt, oldr, oldb) -> {
-            WindowInsets insets = getRootWindowInsets();
-            if (insets != null)
-                getRootView().post(() -> reportSafeAreaMargins(insets, getId()));
-        });
+    @Override
+    protected void onLayout(boolean changed, int l, int t, int r, int b)
+    {
+        // Report before the children are laid out, so Qt gets the safe area of
+        // this pass before a Surface the pass creates.
+        reportSafeAreaMargins();
+        super.onLayout(changed, l, t, r, b);
     }
 
     @SuppressWarnings("deprecation")
@@ -193,8 +214,26 @@ class QtWindow extends QtLayout implements QtSurfaceInterface
         return Insets.of(left, top, right, bottom);
     }
 
-    private void reportSafeAreaMargins(WindowInsets insets, int id)
+    private void updateSafeAreaMargins(WindowInsets insets)
     {
+        if (getVisibility() != View.VISIBLE)
+            return;
+        // Retain fresh animation insets until the pending bounds are applied.
+        m_pendingSafeAreaInsets = insets;
+        if (!isLayoutRequested() || isInLayout())
+            reportSafeAreaMargins();
+    }
+
+    private void reportSafeAreaMargins()
+    {
+        WindowInsets insets = m_pendingSafeAreaInsets;
+        m_pendingSafeAreaInsets = null;
+        if (getVisibility() != View.VISIBLE || !(getContext() instanceof QtActivityBase))
+            return;
+        if (insets == null)
+            insets = getRootWindowInsets();
+        if (insets == null)
+            return;
         View rootView = getRootView();
 
         int[] rootLocation = new int[2];
@@ -220,7 +259,7 @@ class QtWindow extends QtLayout implements QtSurfaceInterface
         int right = Math.max(0, Math.min(safeInsets.right, safeInsets.right - rightOffset));
         int bottom = Math.max(0, Math.min(safeInsets.bottom, safeInsets.bottom - bottomOffset));
 
-        safeAreaMarginsChanged(Insets.of(left, top, right, bottom), id);
+        safeAreaMarginsChanged(Insets.of(left, top, right, bottom), getId());
     }
 
     private int actionBarHeight()
@@ -384,7 +423,11 @@ class QtWindow extends QtLayout implements QtSurfaceInterface
         // Added after the geometry, so the first Surface has the final size.
         if (visible && needsSurface && m_surfaceContainer == null)
             addSurfaceContainer(onTop, isOpaque, containerType);
+        final boolean shown = visible && getVisibility() != View.VISIBLE;
         setVisibility(visible ? View.VISIBLE : View.INVISIBLE);
+        // A hidden view reports nothing, so report once when shown.
+        if (shown)
+            requestLayout();
     }
 
     private boolean hasLayoutGeometry(int x, int y, int w, int h)
