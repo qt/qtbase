@@ -1500,6 +1500,9 @@ void tst_QCoreApplication::theMainThread()
 #if defined(Q_OS_HARMONY)
     QSKIP("Skipped on OHOS: QPA sets theMainThread early to prevent the JS thread from being "
           "misregistered as Qt's main thread during initialization");
+#elif defined(Q_OS_ANDROID)
+    QSKIP("Skipped on Android: the platform adopts and names Qt's main thread before "
+          "calling main()");
 #endif
     QVERIFY2(theMainThreadWasUnset, "Something set the theMainThread before main()");
     QVERIFY(theMainThreadIsSet()); // we have at LEAST one QObject alive: tst_QCoreApplication
