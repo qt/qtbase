@@ -70,6 +70,8 @@ if(using_entrypoint_library)
         INCLUDE_DIRECTORIES
            $<TARGET_PROPERTY:Qt::Core,INTERFACE_INCLUDE_DIRECTORIES>
            $<TARGET_PROPERTY:Qt::CorePrivate,INTERFACE_INCLUDE_DIRECTORIES>
+        DEFINES
+          $<TARGET_PROPERTY:Qt::Core,INTERFACE_COMPILE_DEFINITIONS>
     )
 
     list(APPEND export_targets EntryPointImplementation)
