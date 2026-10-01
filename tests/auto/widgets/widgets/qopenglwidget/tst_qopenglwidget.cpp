@@ -45,6 +45,9 @@ private slots:
     void reparentHidden();
     void reparentTopLevel();
     void asViewport();
+    void grabViewport();
+    void grabWithUpdatesDisabled();
+    void grabViewportWhilePainting();
     void requestUpdate();
     void fboRedirect();
     void showHide();
@@ -492,6 +495,104 @@ void tst_QOpenGLWidget::asViewport()
     btn->update();
     qApp->processEvents();
     QCOMPARE(view->paintCount(), 0);
+}
+
+void tst_QOpenGLWidget::grabViewport()
+{
+    // The content of a viewport comes from the scroll area's paintEvent(),
+    // not from paintGL(). Grabbing must still give that content, both via
+    // grabFramebuffer() and via QWidget::grab() on the view or the window.
+    // Each grab uses a different color, so that a grab cannot pass by reading
+    // back what the previous one left in the framebuffer.
+    QGraphicsScene scene;
+    QGraphicsRectItem *rect = scene.addRect(0, 0, 4000, 4000, QPen(Qt::NoPen), QBrush(Qt::red));
+    QWidget widget;
+    QVBoxLayout *layout = new QVBoxLayout(&widget);
+    QGraphicsView *view = new QGraphicsView(&scene);
+    QOpenGLWidget *glw = new QOpenGLWidget;
+    view->setViewport(glw);
+    layout->addWidget(view);
+    widget.resize(300, 300);
+    widget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
+
+    const QImage fbImage = glw->grabFramebuffer();
+    QVERIFY(!fbImage.isNull());
+    QCOMPARE(fbImage.pixelColor(fbImage.width() / 2, fbImage.height() / 2), QColor(Qt::red));
+
+    const QPoint center = glw->rect().center();
+
+    rect->setBrush(Qt::green);
+    const QImage viewImage = view->grab().toImage();
+    QVERIFY(!viewImage.isNull());
+    QCOMPARE(viewImage.pixelColor(glw->mapTo(view, center) * viewImage.devicePixelRatio()),
+             QColor(Qt::green));
+
+    rect->setBrush(Qt::blue);
+    const QImage windowImage = widget.grab().toImage();
+    QVERIFY(!windowImage.isNull());
+    QCOMPARE(windowImage.pixelColor(glw->mapTo(&widget, center) * windowImage.devicePixelRatio()),
+             QColor(Qt::blue));
+}
+
+void tst_QOpenGLWidget::grabWithUpdatesDisabled()
+{
+    // grabFramebuffer() renders, regardless of updates being disabled.
+    ClearWidget w(nullptr, 64, 64);
+    w.resize(64, 64);
+    w.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
+
+    w.setUpdatesEnabled(false);
+    w.setClearColor(0.0f, 0.0f, 1.0f);
+    const QImage image = w.grabFramebuffer();
+    QVERIFY(!image.isNull());
+    QCOMPARE(image.pixel(30, 40), qRgb(0, 0, 255));
+}
+
+class GrabbingGraphicsView : public QGraphicsView
+{
+public:
+    int depth = 0;
+    int maxDepth = 0;
+    int grabs = 0;
+    QColor grabbedColor;
+
+protected:
+    void drawForeground(QPainter *, const QRectF &) override
+    {
+        // Limit the depth so that a recursion fails the test instead of
+        // overflowing the stack.
+        if (depth >= 3)
+            return;
+        ++depth;
+        maxDepth = qMax(maxDepth, depth);
+        ++grabs;
+        const QImage img = static_cast<QOpenGLWidget *>(viewport())->grabFramebuffer();
+        grabbedColor = img.pixelColor(img.width() / 2, img.height() / 2);
+        --depth;
+    }
+};
+
+void tst_QOpenGLWidget::grabViewportWhilePainting()
+{
+    // grabFramebuffer() from within the painting of a viewport, here from
+    // drawForeground() of the view.
+    QGraphicsScene scene;
+    scene.addRect(0, 0, 4000, 4000, QPen(Qt::NoPen), QBrush(Qt::red));
+    GrabbingGraphicsView *view = new GrabbingGraphicsView;
+    view->setScene(&scene);
+    view->setViewport(new QOpenGLWidget);
+    QWidget widget;
+    (new QVBoxLayout(&widget))->addWidget(view);
+    widget.resize(300, 300);
+    widget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
+    QTRY_VERIFY(view->grabs > 0);
+    // Grabbing must not paint the view again, that would recurse.
+    QCOMPARE(view->maxDepth, 1);
+    // What has been painted so far, the scene's background and items, is there.
+    QCOMPARE(view->grabbedColor, QColor(Qt::red));
 }
 
 class PaintCountWidget : public QOpenGLWidget

@@ -595,6 +595,7 @@ public:
     bool hasBeenComposed = false;
     bool flushPending = false;
     bool inPaintGL = false;
+    bool isViewport = false;
     QOpenGLWidget::TargetBuffer currentTargetBuffer = QOpenGLWidget::LeftBuffer;
 };
 
@@ -1067,8 +1068,23 @@ QImage QOpenGLWidgetPrivate::grabFramebuffer(QOpenGLWidget::TargetBuffer targetB
     if (!fbos[targetBuffer]) // could be completely offscreen, without ever getting a resize event
         recreateFbos();
 
-    if (!inPaintGL)
-        render();
+    if (!inPaintGL && !paintDevice->paintingActive()) {
+        if (isViewport) {
+            // The content comes from the scroll area's paintEvent(), routed via
+            // the viewport's event filter, not from paintGL(). QWidget::grab()
+            // gets here while punching the hole, but the painting must still go
+            // to the fbo, not to the target image.
+            const bool wasInBackingStorePaint = std::exchange(inBackingStorePaint, false);
+            const bool wasInPaintEvent = q->testAttribute(Qt::WA_WState_InPaintEvent);
+            q->setAttribute(Qt::WA_WState_InPaintEvent);
+            QPaintEvent e(q->rect());
+            QCoreApplication::sendEvent(q, &e);
+            q->setAttribute(Qt::WA_WState_InPaintEvent, wasInPaintEvent);
+            inBackingStorePaint = wasInBackingStorePaint;
+        } else {
+            render();
+        }
+    }
 
     setCurrentTargetBuffer(targetBuffer);
     if (resolvedFbos[targetBuffer]) {
@@ -1096,6 +1112,7 @@ void QOpenGLWidgetPrivate::initializeViewportFramebuffer()
     // Legacy behavior for compatibility with QGLWidget when used as a graphics view
     // viewport: enable clearing on each painter begin.
     q->setAutoFillBackground(true);
+    isViewport = true;
 }
 
 bool QOpenGLWidgetPrivate::isStereoEnabled()
