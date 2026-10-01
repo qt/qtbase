@@ -132,6 +132,7 @@ bool ThreadEngineBarrier::releaseUnlessLast()
 ThreadEngineBase::ThreadEngineBase(QThreadPool *pool)
     : futureInterface(nullptr), threadPool(pool)
 {
+    Q_PRE(pool);
     setAutoDelete(false);
 }
 
