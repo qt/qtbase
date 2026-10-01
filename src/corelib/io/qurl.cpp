@@ -2456,7 +2456,9 @@ void QUrl::setPath(const QString &path, ParsingMode mode)
 
     Note that QUrl::FullyDecoded may cause data loss if those non-representable
     sequences are present. It is recommended to use that value when the result
-    will be used in a non-URL context, such as sending to an FTP server.
+    will be used in a non-URL context, such as sending to an FTP server. Note
+    that in this mode, a slash encoded as \c %2F will be transformed to an
+    actual slash, but resolved() does not operate on those.
 
     An example of data loss is when you have non-Unicode percent-encoded sequences
     and use FullyDecoded (the default):
@@ -2473,6 +2475,9 @@ void QUrl::setPath(const QString &path, ParsingMode mode)
     Other decoding examples:
 
     \snippet code/src_corelib_io_qurl.cpp 15
+
+    In particular, note that the returned path may contain control characters,
+    including the null character if the input contained \c %00.
 
     \sa setPath()
 */
