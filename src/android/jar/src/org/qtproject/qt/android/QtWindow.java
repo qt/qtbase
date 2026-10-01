@@ -19,6 +19,7 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowInsets;
+import android.view.WindowManager;
 import android.view.WindowInsetsController;
 import android.os.Build;
 
@@ -176,10 +177,24 @@ class QtWindow extends QtLayout implements QtSurfaceInterface
     }
 
     @SuppressWarnings("deprecation")
+    private boolean isAdjustResize()
+    {
+        if (!(getContext() instanceof Activity))
+            return false;
+        int mode = ((Activity) getContext()).getWindow().getAttributes().softInputMode
+                & WindowManager.LayoutParams.SOFT_INPUT_MASK_ADJUST;
+        return mode == WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE;
+    }
+
+    @SuppressWarnings("deprecation")
     Insets getSafeInsets(View view, WindowInsets insets)
     {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             int types = WindowInsets.Type.displayCutout() | WindowInsets.Type.systemBars();
+            // The child dispatch folds the keyboard into the system bars under
+            // adjustResize, but root insets keep it apart, so add it for both.
+            if (isAdjustResize())
+                types |= WindowInsets.Type.ime();
             return insets.getInsets(types);
         }
 
