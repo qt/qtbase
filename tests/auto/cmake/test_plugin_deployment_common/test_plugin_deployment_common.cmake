@@ -1,19 +1,12 @@
-# Copyright (C) 2025 The Qt Company Ltd.
+# Copyright (C) 2026 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-cmake_minimum_required(VERSION 3.16)
-project(test_plugin_deployment)
-enable_testing()
-
-find_package(Qt6 REQUIRED COMPONENTS Core Test)
-if(NOT UNIX OR APPLE)
-    find_package(Qt6 REQUIRED COMPONENTS Gui)
-endif()
-
-qt6_standard_project_setup()
-add_subdirectory(mylib)
-
+# Creates an app from main.cpp in the calling directory that is deployed with DEPLOY_OPTIONS,
+# and tests the deployed app. LIBRARY is a shared library target that the app links to,
+# which has to be installed explicitly.
 function(create_test_executable target)
+    cmake_parse_arguments(PARSE_ARGV 1 arg "" "LIBRARY" "DEPLOY_OPTIONS")
+
     if(CMAKE_VERSION VERSION_LESS "3.19")
         qt_add_executable(${target} MANUAL_FINALIZATION main.cpp)
     else()
@@ -26,34 +19,36 @@ function(create_test_executable target)
 
         MACOSX_BUNDLE TRUE
     )
-    target_link_libraries(${target} PRIVATE MyLib Qt::Test)
+    target_link_libraries(${target} PRIVATE Qt::Test ${arg_LIBRARY})
 
     install(TARGETS ${target}
         BUNDLE  DESTINATION .
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     )
 
-    # Install MyLib explicitly, because macdeployqt/winddeployqt don't take care of installing
-    # non-Qt dependencies.
-    if(APPLE)
-        install(TARGETS MyLib
-            LIBRARY DESTINATION "${target}.app/Contents/Frameworks"
-        )
-    elseif(WIN32)
-        # windeployqt doesn't take care of installing non-Qt dependencies.
-        install(TARGETS MyLib
-            RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
-        )
-    elseif(UNIX AND NOT QT6_IS_SHARED_LIBS_BUILD)
-        # In a static build, GRD won't run, and we need to install the DSO manually.
-        install(TARGETS MyLib
-            LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-        )
+    if(arg_LIBRARY)
+        # Install the library explicitly, because macdeployqt/winddeployqt don't take care of
+        # installing non-Qt dependencies.
+        if(APPLE)
+            install(TARGETS ${arg_LIBRARY}
+                LIBRARY DESTINATION "${target}.app/Contents/Frameworks"
+            )
+        elseif(WIN32)
+            # windeployqt doesn't take care of installing non-Qt dependencies.
+            install(TARGETS ${arg_LIBRARY}
+                RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+            )
+        elseif(UNIX AND NOT QT6_IS_SHARED_LIBS_BUILD)
+            # In a static build, GRD won't run, and we need to install the DSO manually.
+            install(TARGETS ${arg_LIBRARY}
+                LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+            )
+        endif()
     endif()
 
-    if(NOT UNIX OR APPLE)
+    if(NOT arg_LIBRARY OR NOT UNIX OR APPLE)
         # Explicitly link against Qt::Gui, because otherwise, macdeployqt/windeployqt don't deploy
-        # the Gui module.
+        # the Gui module. The apps without a library use Gui directly.
         target_link_libraries(${target} PRIVATE Qt::Gui)
     endif()
 
@@ -62,6 +57,7 @@ function(create_test_executable target)
         OUTPUT_SCRIPT deploy_script
         # Don't fail at configure time on unsupported platforms
         NO_UNSUPPORTED_PLATFORM_ERROR
+        ${arg_DEPLOY_OPTIONS}
     )
     install(SCRIPT ${deploy_script})
 
@@ -95,6 +91,3 @@ function(create_test_executable target)
              WORKING_DIRECTORY "${CMAKE_INSTALL_PREFIX}")
     set_tests_properties(run_deployed_${target} PROPERTIES FIXTURES_REQUIRED deploy_step)
 endfunction()
-
-create_test_executable(App)
-

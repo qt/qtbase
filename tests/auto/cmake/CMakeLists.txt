@@ -459,9 +459,20 @@ endif()
 _qt_internal_test_expect_pass(test_qt_extract_metatypes)
 
 set(deployment_tests
-    test_plugin_deployment
+    test_plugin_deployment_lib
+    test_plugin_deployment_exclude_plugins
+    test_plugin_deployment_exclude_plugin_types
     test_widgets_app_deployment
 )
+
+# Static builds deploy all plugins; skip plugin exclusion tests
+if(NOT QT6_IS_SHARED_LIBS_BUILD)
+    list(REMOVE_ITEM deployment_tests
+        test_plugin_deployment_exclude_plugins
+        test_plugin_deployment_exclude_plugin_types
+    )
+endif()
+
 foreach(test_name IN LISTS deployment_tests)
     set(${test_name}_args
         ${test_name}
