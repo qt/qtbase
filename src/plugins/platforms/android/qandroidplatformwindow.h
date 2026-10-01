@@ -77,6 +77,8 @@ public:
 
     virtual void applicationStateChanged(Qt::ApplicationState);
     void sendChildExposeEvents() const;
+    bool isChildOfQtWindow() const;
+    void updateDerivedSafeAreaMargins();
     int nativeViewId() const { return m_nativeViewId; }
 
     static bool registerNatives(QJniEnvironment &env);

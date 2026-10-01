@@ -16,6 +16,9 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.ViewTreeObserver;
+import android.os.Build;
+import android.view.WindowInsets;
+import android.view.WindowInsetsAnimation;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
@@ -367,6 +370,48 @@ class QtActivityDelegate extends QtActivityDelegateBase
             m_activity.getActionBar().show();
     }
 
+    private void fanOutSafeAreaMargins(WindowInsets insets)
+    {
+        for (QtWindow w : m_topLevelWindows.values())
+            w.reportSafeAreaMarginsFromRoot(insets);
+    }
+
+    private void registerDecorInsetsListener()
+    {
+        // Only the decor view sees every insets change, and showing or hiding
+        // the bars only animates, so forward both to the Qt windows.
+        final View decor = m_activity.getWindow().getDecorView();
+        decor.setOnApplyWindowInsetsListener((view, insets) -> {
+            fanOutSafeAreaMargins(insets);
+            return view.onApplyWindowInsets(insets);
+        });
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            decor.setWindowInsetsAnimationCallback(new WindowInsetsAnimation.Callback(
+                    WindowInsetsAnimation.Callback.DISPATCH_MODE_CONTINUE_ON_SUBTREE) {
+                private WindowInsets m_lastAnimatedInsets;
+
+                @Override
+                public WindowInsets onProgress(WindowInsets insets,
+                                               java.util.List<WindowInsetsAnimation> animations)
+                {
+                    m_lastAnimatedInsets = insets;
+                    return insets;
+                }
+
+                @Override
+                public void onEnd(WindowInsetsAnimation animation)
+                {
+                    // The root insets can still be stale here, the last
+                    // animated insets hold the end state.
+                    WindowInsets insets = m_lastAnimatedInsets != null
+                            ? m_lastAnimatedInsets : decor.getRootWindowInsets();
+                    if (insets != null)
+                        fanOutSafeAreaMargins(insets);
+                }
+            });
+        }
+    }
+
     @UsedFromNativeCode
     @Override
     public void addTopLevelWindow(final QtWindow window)
@@ -386,6 +431,8 @@ class QtActivityDelegate extends QtActivityDelegateBase
             }
 
             m_layout.addView(window, m_topLevelWindows.size());
+            if (m_topLevelWindows.isEmpty())
+                registerDecorInsetsListener();
             m_topLevelWindows.put(window.getId(), window);
             if (!m_splashScreenSticky)
                 hideSplashScreen();

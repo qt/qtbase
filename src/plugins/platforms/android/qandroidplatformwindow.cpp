@@ -144,7 +144,42 @@ void QAndroidPlatformWindow::setSafeAreaMargins(const QMargins safeMargins)
 void QAndroidPlatformWindow::setGeometry(const QRect &rect)
 {
     QWindowSystemInterface::handleGeometryChange(window(), rect);
+    updateDerivedSafeAreaMargins();
     updateNativeWindow(window()->isVisible());
+}
+
+bool QAndroidPlatformWindow::isChildOfQtWindow() const
+{
+    // The shell gives a safe area only to top-level windows and windows
+    // embedded in a native view. Qt derives it for any other window.
+    const QWindow *parent = window()->parent();
+    return parent && parent->handle()
+            && !static_cast<const QAndroidPlatformWindow *>(parent->handle())->isForeignWindow();
+}
+
+void QAndroidPlatformWindow::updateDerivedSafeAreaMargins()
+{
+    if (isChildOfQtWindow()) {
+        // The parent's safe area, clipped to the part of the parent this covers.
+        const auto *parent = static_cast<const QAndroidPlatformWindow *>(window()->parent()->handle());
+        const QMargins parentMargins = parent->safeAreaMargins();
+        const QSize parentSize = parent->geometry().size();
+        const QRect rect = geometry();
+        const QMargins margins(
+                qMax(0, parentMargins.left() - rect.x()),
+                qMax(0, parentMargins.top() - rect.y()),
+                qMax(0, parentMargins.right() - (parentSize.width() - rect.x() - rect.width())),
+                qMax(0, parentMargins.bottom() - (parentSize.height() - rect.y() - rect.height())));
+        if (margins != m_safeAreaMargins) {
+            m_safeAreaMargins = margins;
+            QWindowSystemInterface::handleSafeAreaMarginsChanged(window());
+        }
+    }
+    for (QObject *object : window()->children()) {
+        auto *child = qobject_cast<QWindow *>(object);
+        if (child && child->handle())
+            static_cast<QAndroidPlatformWindow *>(child->handle())->updateDerivedSafeAreaMargins();
+    }
 }
 
 void QAndroidPlatformWindow::updateNativeWindow(bool visible)
@@ -244,6 +279,7 @@ void QAndroidPlatformWindow::setParent(const QPlatformWindow *window)
         m_nativeParentQtWindow = QJniObject();
         platformScreen()->addWindow(this);
     }
+    updateDerivedSafeAreaMargins();
 }
 
 WId QAndroidPlatformWindow::winId() const
@@ -615,30 +651,23 @@ void QAndroidPlatformWindow::safeAreaMarginsChanged(JNIEnv *env, jobject object,
     if (!insets.isValid())
         return;
 
-    QAndroidPlatformWindow *pWindow = nullptr;
-    for (QWindow *window : qGuiApp->allWindows()) {
-        if (!window->handle())
-            continue;
-        QAndroidPlatformWindow *pw = static_cast<QAndroidPlatformWindow *>(window->handle());
-        if (pw->nativeViewId() == id) {
-            pWindow = pw;
-            break;
+    const QMargins safeMargins(insets.getField<int>("left"),
+                               insets.getField<int>("top"),
+                               insets.getField<int>("right"),
+                               insets.getField<int>("bottom"));
+
+    // Queued so margins stay ordered with the geometry events they belong to.
+    QMetaObject::invokeMethod(qApp, [id, safeMargins]() {
+        QAndroidPlatformWindow *pw = findWindowById(id);
+        // A child of a Qt window derives its margins, the layout can be stale.
+        if (!pw || pw->isChildOfQtWindow())
+            return;
+        if (safeMargins != pw->safeAreaMargins()) {
+            pw->setSafeAreaMargins(safeMargins);
+            QWindowSystemInterface::handleSafeAreaMarginsChanged(pw->window());
         }
-    }
-
-    if (!pWindow)
-        return;
-
-    QMargins safeMargins = QMargins(
-                insets.getField<int>("left"),
-                insets.getField<int>("top"),
-                insets.getField<int>("right"),
-                insets.getField<int>("bottom"));
-
-    if (safeMargins != pWindow->safeAreaMargins()) {
-        pWindow->setSafeAreaMargins(safeMargins);
-        QWindowSystemInterface::handleSafeAreaMarginsChanged(pWindow->window());
-    }
+        pw->updateDerivedSafeAreaMargins();
+    }, Qt::QueuedConnection);
 }
 
 static void updateWindows(JNIEnv *env, jobject object)
