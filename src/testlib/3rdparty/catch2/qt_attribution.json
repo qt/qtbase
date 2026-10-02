@@ -3,7 +3,8 @@
         "Id": "catch2",
         "Name": "Catch2",
         "QDocModule": "qttestlib",
-        "QtUsage": "Used for testing of the Qt Test module.",
+        "QtUsage": "A standalone header file used for testing of the Qt Test module. Shipped in the private QtTest include directory for convenience.",
+        "QtParts": ["libs"],
         "Comment": {
             "OldBranch": "Stick to its v2.x branch; no suitable file in v3",
             "UpstreamFile": "single_include/catch2/catch.hpp",
