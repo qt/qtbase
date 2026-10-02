@@ -1131,6 +1131,8 @@ void tst_QStringView::count_stringMatcher() const
 
     // Test the QStringMatcher code path
     QCOMPARE_GT(haystack.size(), 500);
+
+    // 13 is the needle's size threshold in qstring.cpp:qt_count_impl()
     QCOMPARE_GT(needle.size(), 13);
 
     QStringView view{haystack};

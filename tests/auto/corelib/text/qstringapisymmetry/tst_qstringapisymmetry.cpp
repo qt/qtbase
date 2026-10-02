@@ -3346,6 +3346,7 @@ void tst_QStringApiSymmetry::count_data()
     QString str{520, u'z'};
     str[20] = u'a';
     const QString longNeedle = u"zzzzzzzzzzzzzzza"_s;
+    // 13 is the needle's size threshold in qstring.cpp:qt_count_impl()
     QCOMPARE_GT(longNeedle.size(), 13);
     QTest::addRow("string-matcher") << str << longNeedle << qsizetype(1);
 }

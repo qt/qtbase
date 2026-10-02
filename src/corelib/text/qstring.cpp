@@ -971,6 +971,7 @@ Q_CORE_EXPORT void qt_from_latin1(char16_t *dst, const char *str, size_t size) n
 static QVarLengthArray<char16_t> qt_from_latin1_to_qvla(QLatin1StringView str)
 {
     const qsizetype len = str.size();
+    Q_DECL_UNINITIALIZED
     QVarLengthArray<char16_t> arr(len);
     qt_from_latin1(arr.data(), str.data(), len);
     return arr;
@@ -9625,19 +9626,65 @@ bool QtPrivate::isRightToLeft(QStringView string) noexcept
     return false;
 }
 
-qsizetype QtPrivate::count(QStringView haystack, QStringView needle, Qt::CaseSensitivity cs) noexcept
+template <typename Haystack, typename Needle>
+qsizetype qt_count_with_matcher(Haystack haystack, Needle needle, Qt::CaseSensitivity cs) noexcept
+{
+    using Matcher = std::conditional_t<std::is_same_v<Needle, QLatin1StringView>,
+            QLatin1StringMatcher, QStringMatcher>;
+    qsizetype num = 0;
+    qsizetype i = -1;
+
+    Matcher matcher(needle, cs);
+    while ((i = matcher.indexIn(haystack, i + 1)) != -1)
+        ++num;
+    return num;
+}
+
+template <typename String>
+qsizetype qt_count_with_findstring(String haystack, String needle, Qt::CaseSensitivity cs) noexcept
 {
     qsizetype num = 0;
     qsizetype i = -1;
-    if (haystack.size() > 500 && needle.size() > 5) {
-        QStringMatcher matcher(needle, cs);
-        while ((i = matcher.indexIn(haystack, i + 1)) != -1)
-            ++num;
-    } else {
-        while ((i = QtPrivate::findString(haystack, i + 1, needle, cs)) != -1)
-            ++num;
-    }
+    static_assert(noexcept(QtPrivate::findString(haystack, i + 1, needle, cs)));
+    while ((i = QtPrivate::findString(haystack, i + 1, needle, cs)) != -1)
+        ++num;
     return num;
+}
+
+template <typename Haystack, typename Needle>
+qsizetype qt_count_impl(Haystack haystack, Needle needle, Qt::CaseSensitivity cs)
+{
+    static_assert(!std::is_same_v<Haystack, QUtf8StringView>, "assumptions not implemented");
+    static_assert(!std::is_same_v<Needle, QUtf8StringView>, "assumptions not implemented");
+    constexpr int NeedleThreshold = sizeof(needle[0]) == 1 ? 13 : 5;
+    constexpr int HaystackThreshold = 500;
+
+    if (haystack.size() < needle.size())
+        return 0;           // needle bigger than the haystack
+
+    if (haystack.size() > HaystackThreshold && needle.size() > NeedleThreshold)
+        return qt_count_with_matcher(haystack, needle, cs);
+
+    if constexpr (sizeof(haystack[0]) < sizeof(needle[0])) {
+        // searching for a UTF-16 needle in a Latin1 haystack
+        static_assert(sizeof(haystack[0]) * 0, "Not reached, see count(QL1SV, QSV) below");
+    } else if constexpr (sizeof(haystack[0]) > sizeof(needle[0])) {
+        // searching for a Latin1 needle in a UTF-16 haystack
+        // The qt_count_with_matcher() branch above imposes a limit on needle's
+        // size, so we can avoid memory allocation here.
+        Q_DECL_UNINITIALIZED
+        char16_t buf[HaystackThreshold];
+        Q_ASSERT(needle.size() <= HaystackThreshold);
+        qt_from_latin1(buf, needle.data(), needle.size());
+        return qt_count_with_findstring(haystack, QStringView(buf, needle.size()), cs);
+    } else {
+        return qt_count_with_findstring(haystack, needle, cs);
+    }
+}
+
+qsizetype QtPrivate::count(QStringView haystack, QStringView needle, Qt::CaseSensitivity cs) noexcept
+{
+    return qt_count_impl(haystack, needle, cs);
 }
 
 qsizetype QtPrivate::count(QStringView haystack, QChar needle, Qt::CaseSensitivity cs) noexcept
@@ -9652,45 +9699,29 @@ qsizetype QtPrivate::count(QStringView haystack, QChar needle, Qt::CaseSensitivi
 
 qsizetype QtPrivate::count(QLatin1StringView haystack, QLatin1StringView needle, Qt::CaseSensitivity cs)
 {
-    qsizetype num = 0;
-    qsizetype i = -1;
-
-    QLatin1StringMatcher matcher(needle, cs);
-    while ((i = matcher.indexIn(haystack, i + 1)) != -1)
-        ++num;
-
-    return num;
+    return qt_count_impl(haystack, needle, cs);
 }
 
 qsizetype QtPrivate::count(QLatin1StringView haystack, QStringView needle, Qt::CaseSensitivity cs)
 {
+    // not directly using qt_count_impl() above because:
+    // 1) converting the needle to Latin1 is faster (QtPrivate::findString() does it too)
+    // 2) calling QtPrivate::findString() would convert every time
+    // 3) QStringMatcher::indexIn(haystack) would call fromLatin1()
     if (haystack.size() < needle.size())
         return 0;
 
     if (!QtPrivate::isLatin1(needle)) // won't find non-L1 UTF-16 needles in a L1 haystack!
         return 0;
 
-    qsizetype num = 0;
-    qsizetype i = -1;
-
     Q_DECL_UNINITIALIZED
     QVarLengthArray<char> n = qt_to_latin1_unchecked_to_qvla(needle);
-
-    QLatin1StringMatcher matcher(QLatin1StringView(reinterpret_cast<char *>(s.data()), s.size()),
-                                 cs);
-    while ((i = matcher.indexIn(haystack, i + 1)) != -1)
-        ++num;
-
-    return num;
+    return qt_count_impl(haystack, QLatin1StringView(n), cs);
 }
 
 qsizetype QtPrivate::count(QStringView haystack, QLatin1StringView needle, Qt::CaseSensitivity cs)
 {
-    if (haystack.size() < needle.size())
-        return 0;
-
-    QVarLengthArray<char16_t> s = qt_from_latin1_to_qvla(needle);
-    return QtPrivate::count(haystack, QStringView(s.data(), s.size()), cs);
+    return qt_count_impl(haystack, needle, cs);
 }
 
 qsizetype QtPrivate::count(QLatin1StringView haystack, QChar needle, Qt::CaseSensitivity cs) noexcept
