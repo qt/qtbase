@@ -26,6 +26,8 @@
     Note that the result types above are not QFuture objects, but real result
     types (in this case, QStringList and QSet<QString>).
 
+    \include qtconcurrentmap.cpp thread-pool-sharing-note
+
     \section1 Optimize includes
 
     If you include the \c <QtConcurrent> header, the entire Qt Concurrent

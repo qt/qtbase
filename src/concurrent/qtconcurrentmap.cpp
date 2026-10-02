@@ -162,6 +162,14 @@
     Note that the result types above are not QFuture objects, but real result
     types (in this case, QList<QImage> and QImage).
 
+//! [thread-pool-sharing-note]
+    \note A single operation can occupy every thread in its thread pool, delaying
+    other work using the same pool. Overloads without a QThreadPool argument use
+    QThreadPool::globalInstance(), which is shared with other parts of the
+    application and Qt itself. Prefer a dedicated QThreadPool when other work
+    needs to run concurrently.
+//! [thread-pool-sharing-note]
+
     \section1 Optimize includes
 
     If you include the \c <QtConcurrent> header, the entire Qt Concurrent
