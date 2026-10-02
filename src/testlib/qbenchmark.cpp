@@ -83,6 +83,17 @@ void QBenchmarkTestMethodData::endDataRun()
 {
 }
 
+/*!
+    \internal
+    Set initial iteration count based on \a suggestion.
+
+    In qtestcase.cpp, TestMethods::invokeTestOnData() invokes the test method in
+    a loop until (the test fails or skips, or) the test run's duration exceeds a
+    certain minimum; setResults() doubles \c iterationCount when it doesn't
+    accept the result. In each call to the test method, the QBENCHMARK duly
+    performs \c iteractionCount cycles of its block of code, from which other
+    things make the above decisions about whether to double and try again.
+*/
 int QBenchmarkTestMethodData::adjustIterationCount(int suggestion)
 {
     // Let the -iterations option override the measurer.
