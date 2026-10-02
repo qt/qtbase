@@ -212,21 +212,6 @@ int QTest::iterationCount() noexcept
 
 /*! \internal
 */
-void QTest::setIterationCountHint(int count)
-{
-    QBenchmarkTestMethodData::current->adjustIterationCount(count);
-}
-
-/*! \internal
-*/
-void QTest::setIterationCount(int count)
-{
-    QBenchmarkTestMethodData::current->iterationCount = count;
-    QBenchmarkTestMethodData::current->resultAccepted = true;
-}
-
-/*! \internal
-*/
 void QTest::beginBenchmarkMeasurement()
 {
     QBenchmarkGlobalData::current->measurer->start();

@@ -152,8 +152,6 @@ public:
 namespace QTest
 {
     int iterationCount() noexcept;
-    void setIterationCountHint(int count);
-    void setIterationCount(int count);
 
     void beginBenchmarkMeasurement();
     QList<QBenchmarkMeasurerBase::Measurement> endBenchmarkMeasurement();
