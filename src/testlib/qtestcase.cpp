@@ -1071,8 +1071,7 @@ void TestMethods::invokeTestOnData(int index) const
             QTest::inTestFunction = true;
             invokeTestMethodIfValid(m_initMethod);
 
-            const bool initQuit =
-                QTestResult::skipCurrentTest() || QTestResult::currentTestFailed();
+            const bool initQuit = QTest::currentTestResolved();
             if (!initQuit) {
                 QBenchmarkTestMethodData::current->results.clear();
                 QBenchmarkTestMethodData::current->resultAccepted = false;
@@ -1110,12 +1109,11 @@ void TestMethods::invokeTestOnData(int index) const
             // acceptable.
             // The QBENCHMARK macro increases the number of iterations for each run until
             // this happens.
-        } while (invokeOk && isBenchmark
-                 && QBenchmarkTestMethodData::current->resultsAccepted() == false
-                 && !QTestResult::skipCurrentTest() && !QTestResult::currentTestFailed());
+        } while (invokeOk && !QTest::currentTestResolved() && isBenchmark
+                 && !QBenchmarkTestMethodData::current->resultsAccepted());
 
         QBenchmarkTestMethodData::current->endDataRun();
-        if (!QTestResult::skipCurrentTest() && !QTestResult::currentTestFailed()) {
+        if (!QTest::currentTestResolved()) {
             if (i > -1)  // iteration -1 is the warmup iteration.
                 resultsList.append(QBenchmarkTestMethodData::current->results);
 
@@ -1144,13 +1142,14 @@ void TestMethods::invokeTestOnData(int index) const
             const qreal total = std::accumulate(resultsList.begin(), resultsList.end(), 0.0, addResult);
             minimumTotalReached = (total >= QBenchmarkGlobalData::current->minimumTotal);
         }
-    } while (isBenchmark
-             && ((++i < QBenchmarkGlobalData::current->adjustMedianIterationCount()) || !minimumTotalReached)
-             && !QTestResult::skipCurrentTest() && !QTestResult::currentTestFailed());
+    } while (isBenchmark && !QTest::currentTestResolved()
+             && (++i < QBenchmarkGlobalData::current->adjustMedianIterationCount()
+                 // Test that before this so i *does* get its increment:
+                 || !minimumTotalReached));
 
     // If the test is a benchmark, finalize the result after all iterations have finished.
     if (isBenchmark) {
-        bool testPassed = !QTestResult::skipCurrentTest() && !QTestResult::currentTestFailed();
+        bool testPassed = !QTest::currentTestResolved();
         QTestResult::finishedCurrentTestDataCleanup();
         // Only report benchmark figures if the test passed
         if (testPassed && QBenchmarkTestMethodData::current->resultsAccepted())
@@ -1721,7 +1720,7 @@ void TestMethods::invokeTests(QObject *testObject) const
 
     QSignalDumper::startDump();
 
-    if (!QTestResult::skipCurrentTest() && !QTestResult::currentTestFailed()) {
+    if (!QTest::currentTestResolved()) {
 
         runWithWatchdog(watchDog, [this, testObject] {
             invokeTestMethodIfValid(m_initTestCaseMethod, testObject);
