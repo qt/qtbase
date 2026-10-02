@@ -208,8 +208,16 @@ instructions:
     userMessageOnFailure: "Running test failed!"
   - type: MakeDirectory
     directory: "/home/qt/work/testresults"
+    enable_if:
+      condition: property
+      property: host.os
+      equals_value: "Linux"
   - type: ChangeDirectory
     directory: "/home/qt/work/testresults"
+    enable_if:
+      condition: property
+      property: host.os
+      equals_value: "Linux"
   - type: ExecuteCommand
     command: ["scp", "qt@{{.Env.HARMONY_BROKER}}:{{.Env.REMOTE_WORKING_DIR}}/testresults.tar.gz", "{{.Env.COIN_CTEST_RESULTSDIR}}/testresults.tar.gz"]
     maxTimeInSeconds: 14400
