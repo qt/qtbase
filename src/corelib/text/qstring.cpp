@@ -1166,6 +1166,14 @@ void qt_to_latin1_unchecked(uchar *dst, const char16_t *src, qsizetype length)
     qt_to_latin1_internal<false>(dst, src, length);
 }
 
+static QVarLengthArray<char> qt_to_latin1_unchecked_to_qvla(QStringView str)
+{
+    Q_DECL_UNINITIALIZED
+    QVarLengthArray<char> s(str.size());
+    qt_to_latin1_unchecked(reinterpret_cast<uchar *>(s.data()), str.utf16(), str.size());
+    return s;
+}
+
 // Unicode case-insensitive comparison (argument order matches QStringView)
 Q_NEVER_INLINE static int ucstricmp(qsizetype alen, const char16_t *a, qsizetype blen, const char16_t *b)
 {
@@ -9665,8 +9673,8 @@ qsizetype QtPrivate::count(QLatin1StringView haystack, QStringView needle, Qt::C
     qsizetype num = 0;
     qsizetype i = -1;
 
-    QVarLengthArray<uchar> s(needle.size());
-    qt_to_latin1_unchecked(s.data(), needle.utf16(), needle.size());
+    Q_DECL_UNINITIALIZED
+    QVarLengthArray<char> n = qt_to_latin1_unchecked_to_qvla(needle);
 
     QLatin1StringMatcher matcher(QLatin1StringView(reinterpret_cast<char *>(s.data()), s.size()),
                                  cs);
@@ -9875,8 +9883,8 @@ qsizetype QtPrivate::findString(QLatin1StringView haystack, qsizetype from, QStr
         return QtPrivate::findString(haystack, from, QLatin1StringView(&n, 1), cs);
     }
 
-    QVarLengthArray<char> s(needle.size());
-    qt_to_latin1_unchecked(reinterpret_cast<uchar *>(s.data()), needle.utf16(), needle.size());
+    Q_DECL_UNINITIALIZED
+    QVarLengthArray<char> s = qt_to_latin1_unchecked_to_qvla(needle);
     return QtPrivate::findString(haystack, from, QLatin1StringView(s.data(), s.size()), cs);
 }
 
