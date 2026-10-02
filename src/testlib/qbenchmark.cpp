@@ -76,7 +76,7 @@ QBenchmarkTestMethodData::~QBenchmarkTestMethodData()
 
 void QBenchmarkTestMethodData::beginDataRun()
 {
-    iterationCount = adjustIterationCount(1);
+    iterationCount = initialIterationCount(1);
 }
 
 void QBenchmarkTestMethodData::endDataRun()
@@ -85,7 +85,7 @@ void QBenchmarkTestMethodData::endDataRun()
 
 /*!
     \internal
-    Set initial iteration count based on \a suggestion.
+    Initial iteration count based on \a suggestion.
 
     In qtestcase.cpp, TestMethods::invokeTestOnData() invokes the test method in
     a loop until (the test fails or skips, or) the test run's duration exceeds a
@@ -94,16 +94,13 @@ void QBenchmarkTestMethodData::endDataRun()
     performs \c iteractionCount cycles of its block of code, from which other
     things make the above decisions about whether to double and try again.
 */
-int QBenchmarkTestMethodData::adjustIterationCount(int suggestion)
+int QBenchmarkTestMethodData::initialIterationCount(int suggestion) const
 {
     // Let the -iterations option override the measurer.
-    if (QBenchmarkGlobalData::current->iterationCount != -1) {
-        iterationCount = QBenchmarkGlobalData::current->iterationCount;
-    } else {
-        iterationCount = QBenchmarkGlobalData::current->measurer->adjustIterationCount(suggestion);
-    }
+    if (QBenchmarkGlobalData::current->iterationCount != -1)
+        return QBenchmarkGlobalData::current->iterationCount;
 
-    return iterationCount;
+    return QBenchmarkGlobalData::current->measurer->adjustIterationCount(suggestion);
 }
 
 void QBenchmarkTestMethodData::setResults(const QList<QBenchmarkMeasurerBase::Measurement> &list,

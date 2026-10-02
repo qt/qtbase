@@ -122,6 +122,8 @@ private:
 */
 class Q_TESTLIB_EXPORT QBenchmarkTestMethodData
 {
+    int initialIterationCount(int suggestion) const;
+
 public:
     static QBenchmarkTestMethodData *current;
     QBenchmarkTestMethodData();
@@ -134,7 +136,6 @@ public:
 
     bool isBenchmark() const { return valid; }
     bool resultsAccepted() const { return resultAccepted; }
-    int adjustIterationCount(int suggestion);
     void setResults(const QList<QBenchmarkMeasurerBase::Measurement> &m, bool setByMacro = true);
     void setResult(QBenchmarkMeasurerBase::Measurement m, bool setByMacro = true)
     { setResults({ m }, setByMacro); }
