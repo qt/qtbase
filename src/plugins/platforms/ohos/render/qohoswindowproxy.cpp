@@ -361,7 +361,9 @@ void QOhosWindowProxy::removeStartingWindow()
             }
             auto promise = optQUiAbilityPeer->windowStage().evalToPromiseOrRejectOnThrow(
                 "removeStartingWindow()");
-            promise.onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
+            promise
+                .onCatch(QtOhos::makeErrorLoggingJsCallback(Q_FUNC_INFO))
+                .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
         },
         Q_FUNC_INFO);
 }
@@ -433,7 +435,9 @@ void QOhosWindowProxy::moveWindowToGlobalOrGlobalDisplay(
                     "moveWindowToGlobalDisplay(*)", {point.x(), point.y()});
             }
 
-            promise.onFinally(std::move(taskPromise));
+            promise
+                .onCatch(QtOhos::makeErrorLoggingJsCallback(Q_FUNC_INFO))
+                .onFinally(std::move(taskPromise));
         });
 }
 
@@ -457,7 +461,9 @@ void QOhosWindowProxy::setSize(const QSize &size)
 
             auto promise = m_jsScopeData->jsWindowRef->evalToPromiseOrRejectOnThrow(
                 "resizeAsync(*)", {size.width(), size.height()});
-            promise.onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
+            promise
+                .onCatch(QtOhos::makeErrorLoggingJsCallback(Q_FUNC_INFO))
+                .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
         },
         Q_FUNC_INFO);
 }
@@ -621,7 +627,9 @@ void QOhosWindowProxy::raiseToAppTop()
             return;
         }
         auto promise = m_jsScopeData->jsWindowRef->evalToPromiseOrRejectOnThrow("raiseToAppTop()");
-        promise.onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
+        promise
+            .onCatch(QtOhos::makeErrorLoggingJsCallback(Q_FUNC_INFO))
+            .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
     },
     Q_FUNC_INFO);
 }
@@ -646,7 +654,9 @@ void QOhosWindowProxy::showWindow(const ShowWindowOptions &options)
             showWindowArgs.push_back(QNapi::makeObject(jsState.env(), jsOptionsProps));
 
         auto promise = m_jsScopeData->jsWindowRef->evalToPromiseOrRejectOnThrow("showWindow(*)", showWindowArgs);
-        promise.onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
+        promise
+            .onCatch(QtOhos::makeErrorLoggingJsCallback(Q_FUNC_INFO))
+            .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
     },
     Q_FUNC_INFO);
 }
@@ -675,7 +685,9 @@ void QOhosWindowProxy::restore()
             taskPromise();
             return;
         }
-        m_jsScopeData->jsWindowRef->evalToPromiseOrRejectOnThrow("restore()").onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
+        m_jsScopeData->jsWindowRef->evalToPromiseOrRejectOnThrow("restore()")
+        .onCatch(QtOhos::makeErrorLoggingJsCallback(Q_FUNC_INFO))
+        .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
     },
     Q_FUNC_INFO);
 }
@@ -688,7 +700,9 @@ void QOhosWindowProxy::minimize()
             taskPromise();
             return;
         }
-        m_jsScopeData->jsWindowRef->evalToPromiseOrRejectOnThrow("minimize()").onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
+        m_jsScopeData->jsWindowRef->evalToPromiseOrRejectOnThrow("minimize()")
+        .onCatch(QtOhos::makeErrorLoggingJsCallback(Q_FUNC_INFO))
+        .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
     },
     Q_FUNC_INFO);
 }
@@ -1032,6 +1046,7 @@ void QOhosWindowProxy::setTitle(const QString &title)
             }
 
             m_jsScopeData->jsWindowRef->evalToPromiseOrRejectOnThrow("setWindowTitle(*)", {title.toStdString()})
+            .onCatch(QtOhos::makeErrorLoggingJsCallback(Q_FUNC_INFO))
             .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
         },
         Q_FUNC_INFO);
@@ -1084,6 +1099,7 @@ void QOhosWindowProxy::setWindowTopmost(bool topmost)
             }
 
             m_jsScopeData->jsWindowRef->evalToPromiseOrRejectOnThrow("setWindowTopmost(*)", {topmost})
+                .onCatch(QtOhos::makeErrorLoggingJsCallback(Q_FUNC_INFO))
                 .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
         },
         Q_FUNC_INFO);
@@ -1140,6 +1156,7 @@ void QOhosWindowProxy::setWindowCornerRadius(double radius)
     QtOhos::invokeInJsThreadAndWaitForContinue(
         [&](QtOhos::JsState &, QOhosTaskPromise<> taskPromise) {
             m_jsScopeData->jsWindowRef->evalToPromiseOrRejectOnThrow("setWindowCornerRadius(*)", {radius})
+            .onCatch(QtOhos::makeErrorLoggingJsCallback(Q_FUNC_INFO))
             .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
         },
         Q_FUNC_INFO);
@@ -1879,6 +1896,7 @@ void QOhosWindowProxy::moveWindowToGlobal(
 
             m_jsScopeData->jsWindowRef->evalToPromiseOrRejectOnThrow(
                 "moveWindowToGlobal(*)", {position.x(), position.y(), moveConfigurationObject})
+                .onCatch(QtOhos::makeErrorLoggingJsCallback(Q_FUNC_INFO))
                 .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
         },
         Q_FUNC_INFO);
