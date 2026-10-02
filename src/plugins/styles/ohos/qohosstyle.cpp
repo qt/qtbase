@@ -824,9 +824,19 @@ void drawComboBoxFrame(QPainter &painter, const QStyleOptionComboBox &option)
         option.palette.color(QPalette::Active, QPalette::AlternateBase),
         comboBoxFocusFrameWidth);
 
+    const auto buttonBrush = option.palette.brush(QPalette::Button);
     drawRoundedRect(
-        painter, isFocused ? focusedPen : Qt::NoPen, option.palette.brush(QPalette::Window), option.rect,
+        painter, isFocused ? focusedPen : Qt::NoPen, buttonBrush, option.rect,
         comboBoxFrameRadius, comboBoxFrameRadius);
+
+    const auto *ohosThemePalette =
+        QGuiApplicationPrivate::platformTheme()->palette(QPlatformTheme::Palette::ComboBoxPalette);
+    const auto overlayButtonBrush = ohosThemePalette->brush(QPalette::Button);
+
+    bool shouldPresentOverlayForOverriddenButtonBrush = buttonBrush != overlayButtonBrush;
+    if (shouldPresentOverlayForOverriddenButtonBrush)
+        drawRoundedRect(
+            painter, Qt::NoPen, overlayButtonBrush, option.rect, comboBoxFrameRadius, comboBoxFrameRadius);
 
     if (isMouseOver || isOpened) {
         auto pen = isOpened ? focusedPen : Qt::NoPen;

@@ -290,6 +290,25 @@ TextLineEditPaletteColors makeTextLineEditPaletteColorsDark()
     };
 }
 
+struct ComboBoxPaletteColors
+{
+    QColor buttonBackground;
+};
+
+ComboBoxPaletteColors makeComboBoxPaletteColorsLight()
+{
+    return {
+        .buttonBackground = QColor("#0C000000"),
+    };
+};
+
+ComboBoxPaletteColors makeComboBoxPaletteColorsDark()
+{
+    return {
+        .buttonBackground = QColor("#33FFFFFF"),
+    };
+}
+
 struct GroupboxPaletteColors
 {
     QColor background;
@@ -365,6 +384,7 @@ struct AllPalletesColors
     MenuPaletteColors menu;
     TabBarPaletteColors tabBar;
     TextLineEditPaletteColors textLineEdit;
+    ComboBoxPaletteColors comboBox;
     GroupboxPaletteColors groupBox;
     HeaderPaletteColors header;
     TooltipPaletteColors toolTip;
@@ -382,6 +402,7 @@ AllPalletesColors makeAllPalettesColorsLight(const QColor &accentColor)
         .menu = makeMenuPaletteColorsLight(palettes),
         .tabBar = makeTabBarPaletteColorsLight(accentColor),
         .textLineEdit = makeTextLineEditPaletteColorsLight(),
+        .comboBox = makeComboBoxPaletteColorsLight(),
         .groupBox = makeGroupboxPaletteColorsLight(),
         .header = makeHeaderPaletteColorsLight(),
         .toolTip = makeTooltipPaletteColorsLight(),
@@ -400,6 +421,7 @@ AllPalletesColors makeAllPalettesColorsDark(const QColor &accentColor)
         .menu = makeMenuPaletteColorsDark(palettes),
         .tabBar = makeTabBarPaletteColorsDark(accentColor),
         .textLineEdit = makeTextLineEditPaletteColorsDark(),
+        .comboBox = makeComboBoxPaletteColorsDark(),
         .groupBox = makeGroupboxPaletteColorsDark(),
         .header = makeHeaderPaletteColorsDark(),
         .toolTip = makeTooltipPaletteColorsDark(),
@@ -557,7 +579,8 @@ QPalette makeComboBoxPalette(const AllPalletesColors &palettesColors)
             {QPalette::Inactive, QPalette::Text, palettesColors.palettes.inactiveHighlighted},
             {QPalette::Active, QPalette::Light, palettesColors.palettes.hover},
             {QPalette::Active, QPalette::Dark, palettesColors.palettes.clickEffect},
-            {QPalette::Active, QPalette::WindowText, palettesColors.palettes.indicatorArrow}
+            {QPalette::Active, QPalette::WindowText, palettesColors.palettes.indicatorArrow},
+            {QPalette::All, QPalette::Button, palettesColors.comboBox.buttonBackground}
         });
 }
 
