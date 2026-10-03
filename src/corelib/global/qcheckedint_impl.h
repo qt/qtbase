@@ -51,6 +51,12 @@ struct SafeCheckImpl : private CheckIntTypeHelper<Int>
         return !qMulOverflow(a, b, result);
     }
 
+    template <Int B> [[nodiscard]]
+    static constexpr bool mul(Int a, std::integral_constant<Int, B> b, Int *result)
+    {
+        return !qMulOverflow(a, b, result);
+    }
+
     [[nodiscard]]
     static constexpr bool div(Int a, Int b, Int *result) noexcept
     {
@@ -241,6 +247,27 @@ public:
     constexpr QCheckedInt &operator*=(AInt other)
     {
         return *this = *this * QCheckedInt(other);
+    }
+
+    template <Int RHS>
+    friend constexpr QCheckedInt operator*(QCheckedInt lhs, std::integral_constant<Int, RHS> rhs)
+    {
+        QCheckedInt result{};
+        const bool ok = Impl::mul(lhs.m_i, rhs, &result.m_i);
+        Q_CHECKEDINT_POLICY_CHECK(ok, "Overflow in operator*");
+        return result;
+    }
+
+    template <Int LHS>
+    friend constexpr QCheckedInt operator*(std::integral_constant<Int, LHS> lhs, QCheckedInt rhs)
+    {
+        return rhs * lhs;
+    }
+
+    template <Int O>
+    constexpr QCheckedInt &operator*=(std::integral_constant<Int, O> other)
+    {
+        return *this = *this * other;
     }
 
     // Division
