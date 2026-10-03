@@ -47,6 +47,7 @@ using CheckedInt =
         int,
         QtPrivate::QCheckedIntegers::SafeCheckImpl<int>,
         TestPolicy>;
+template <int N> using Integral = std::integral_constant<int, N>;
 
 void tst_QCheckedInt::unary()
 {
@@ -257,6 +258,14 @@ void tst_QCheckedInt::multiplication()
         a *= -10;
         QVERIFY(!checkedIntErrorDetected);
         QCOMPARE(a.value(), -1000);
+
+        a *= Integral<10>{};
+        QVERIFY(!checkedIntErrorDetected);
+        QCOMPARE(a.value(), -10000);
+
+        a *= Integral<-10>{};
+        QVERIFY(!checkedIntErrorDetected);
+        QCOMPARE(a.value(), 100000);
     }
 
     {
@@ -277,6 +286,21 @@ void tst_QCheckedInt::multiplication()
         a *= 2;
         QVERIFY(checkedIntErrorDetected);
     }
+    {
+        QScopedValueRollback rb(checkedIntErrorDetected);
+
+        CheckedInt a(INT_MAX / 4);
+        a *= Integral<2>{};
+        QVERIFY(!checkedIntErrorDetected);
+        QCOMPARE(a.value(), INT_MAX / 2 - 1);
+
+        a *= Integral<2>{};
+        QVERIFY(!checkedIntErrorDetected);
+        QCOMPARE(a.value(), INT_MAX - 3);
+
+        a *= Integral<2>{};
+        QVERIFY(checkedIntErrorDetected);
+    }
 
     {
         QScopedValueRollback rb(checkedIntErrorDetected);
@@ -286,6 +310,13 @@ void tst_QCheckedInt::multiplication()
         QCOMPARE(a.value(), INT_MAX - 1);
 
         a *= INT_MAX;
+        QVERIFY(checkedIntErrorDetected);
+    }
+    {
+        QScopedValueRollback rb(checkedIntErrorDetected);
+
+        CheckedInt a(INT_MAX - 1);
+        a *= Integral<INT_MAX>{};
         QVERIFY(checkedIntErrorDetected);
     }
 
@@ -307,6 +338,21 @@ void tst_QCheckedInt::multiplication()
         a *= 2;
         QVERIFY(checkedIntErrorDetected);
     }
+    {
+        QScopedValueRollback rb(checkedIntErrorDetected);
+
+        CheckedInt a(INT_MIN / 4);
+        a *= Integral<2>{};
+        QVERIFY(!checkedIntErrorDetected);
+        QCOMPARE(a.value(), INT_MIN / 2);
+
+        a *= Integral<2>{};
+        QVERIFY(!checkedIntErrorDetected);
+        QCOMPARE(a.value(), INT_MIN);
+
+        a *= Integral<2>{};
+        QVERIFY(checkedIntErrorDetected);
+    }
 
     {
         QScopedValueRollback rb(checkedIntErrorDetected);
@@ -316,6 +362,13 @@ void tst_QCheckedInt::multiplication()
         QCOMPARE(a.value(), INT_MIN);
 
         a *= -1;
+        QVERIFY(checkedIntErrorDetected);
+    }
+    {
+        QScopedValueRollback rb(checkedIntErrorDetected);
+
+        CheckedInt a(INT_MIN);
+        a *= Integral<-1>{};
         QVERIFY(checkedIntErrorDetected);
     }
 }
