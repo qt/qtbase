@@ -81,7 +81,6 @@ public:
     std::optional<QNapi::Promise> qWindowDestroyPromise() override;
     void forceResolveQWindowDestroyPromiseIfPresent(Napi::Env env) override;
     std::shared_ptr<std::atomic_bool> destroyAllowedFlag() override;
-    bool isTerminating() override;
 
     void setQWindow(Napi::Env env, QObjectThreadSafeRef) override;
 
@@ -125,11 +124,6 @@ void DummyQAbilityPeer::forceResolveQWindowDestroyPromiseIfPresent(Napi::Env)
 std::shared_ptr<std::atomic_bool> DummyQAbilityPeer::destroyAllowedFlag()
 {
     return std::make_shared<std::atomic_bool>(false);
-}
-
-bool DummyQAbilityPeer::isTerminating()
-{
-    return false;
 }
 
 void DummyQAbilityPeer::setQWindow(Napi::Env, QObjectThreadSafeRef)

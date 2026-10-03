@@ -275,7 +275,6 @@ public:
     QNapi::Object launchParam() override;
     QNapi::Object windowStage() override;
     QNapi::Object window() override;
-    bool isTerminating() override;
 
     QNapi::Promise handleCloseRequestFromSystem(
         QOhosJsState &jsState, const std::string &logContextStr, CloseAbilityRequestSource requestSource,
@@ -372,11 +371,6 @@ QNapi::Object QUiAbilityPeerImpl::windowStage()
 QNapi::Object QUiAbilityPeerImpl::window()
 {
     return m_window.Value();
-}
-
-bool QUiAbilityPeerImpl::isTerminating()
-{
-    return qAbility().eval<QNapi::Boolean>("context.isTerminating()");
 }
 
 QOhosCloseEventContext::CloseRootCause mapCloseAbilityRequestSourceToRootCause(

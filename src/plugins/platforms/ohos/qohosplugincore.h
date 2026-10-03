@@ -46,7 +46,6 @@ public:
     virtual std::optional<QNapi::Promise> qWindowDestroyPromise() = 0;
     virtual void forceResolveQWindowDestroyPromiseIfPresent(Napi::Env env) = 0;
     virtual std::shared_ptr<std::atomic_bool> destroyAllowedFlag() = 0;
-    virtual bool isTerminating() = 0;
 
     virtual void setQWindow(Napi::Env env, QObjectThreadSafeRef qwindow) = 0;
 
