@@ -258,11 +258,16 @@ std::string mapEnumsToLogString(const EnumsContainer &enums)
     return output;
 }
 
+bool isAbilityTerminating(QNapi::Object ability)
+{
+    return ability.eval<QNapi::Boolean>("context.isTerminating()");
+}
+
 bool isWindowClosingFromSystem(
     QNapi::Object jsWindow, WindowProxyType windowType, std::shared_ptr<QtOhos::QAbilityPeer> abilityPeer)
 {
     const bool boundToAbility = windowType != WindowProxyType::FloatWindow;
-    return QtOhos::JsWindowsTracker::isWindowClosing(jsWindow) || (boundToAbility && abilityPeer->isTerminating());
+    return QtOhos::JsWindowsTracker::isWindowClosing(jsWindow) || (boundToAbility && isAbilityTerminating(abilityPeer->qAbility()));
 }
 
 }
