@@ -340,6 +340,14 @@ void tst_QCheckedInt::division()
         a = a / 0;
         QVERIFY(checkedIntErrorDetected);
     }
+
+    {
+        QScopedValueRollback rb(checkedIntErrorDetected);
+
+        CheckedInt a(INT_MIN);
+        a /= -1;
+        QVERIFY(checkedIntErrorDetected);
+    }
 }
 
 

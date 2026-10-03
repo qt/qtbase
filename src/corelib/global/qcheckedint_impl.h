@@ -56,6 +56,8 @@ struct SafeCheckImpl : private CheckIntTypeHelper<Int>
     {
         if (Q_UNLIKELY(b == 0))
             return false;
+        if (b == -1 && a == MinInt)
+            return false;
 
         *result = a / b;
         return true;
