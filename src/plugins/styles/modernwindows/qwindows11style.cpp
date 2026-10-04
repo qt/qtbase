@@ -207,34 +207,6 @@ static constexpr QColor shellCaptionCloseTextFillColorPrimary(0xFF,0xFF,0xFF,0xF
 static constexpr QColor shellCaptionCloseFillColorSecondary(0xC4,0x2B,0x1C,0xE6);
 static constexpr QColor shellCaptionCloseTextFillColorSecondary(0xFF,0xFF,0xFF,0xB3);
 
-
-#if QT_CONFIG(toolbutton)
-static void drawArrow(const QStyle *style, const QStyleOptionToolButton *toolbutton,
-                      const QRect &rect, QPainter *painter, const QWidget *widget = nullptr)
-{
-    QStyle::PrimitiveElement pe;
-    switch (toolbutton->arrowType) {
-    case Qt::LeftArrow:
-        pe = QStyle::PE_IndicatorArrowLeft;
-        break;
-    case Qt::RightArrow:
-        pe = QStyle::PE_IndicatorArrowRight;
-        break;
-    case Qt::UpArrow:
-        pe = QStyle::PE_IndicatorArrowUp;
-        break;
-    case Qt::DownArrow:
-        pe = QStyle::PE_IndicatorArrowDown;
-        break;
-    default:
-        return;
-    }
-    QStyleOption arrowOpt = *toolbutton;
-    arrowOpt.rect = rect;
-    style->drawPrimitive(pe, &arrowOpt, painter, widget);
-}
-#endif // QT_CONFIG(toolbutton)
-
 static qreal radioButtonInnerRadius(QStyle::State state)
 {
     qreal radius = 7.0;
@@ -905,23 +877,6 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
         const QRect &r = option->rect;
         if (r.width() <= 1 || r.height() <= 1)
             break;
-        Icon ico = Icon::Help;
-        switch (element) {
-        case PE_IndicatorArrowUp:
-            ico = Icon::ChevronUpMed;
-            break;
-        case PE_IndicatorArrowDown:
-            ico = Icon::ChevronDownMed;
-            break;
-        case PE_IndicatorArrowLeft:
-            ico = Icon::ChevronLeftMed;
-            break;
-        case PE_IndicatorArrowRight:
-            ico = Icon::ChevronRightMed;
-            break;
-        default:
-            break;
-        }
         QPainterStateGuard psg(painter);
         if (option->state.testFlag(State_Sunken)) {
             const auto bsx = proxy()->pixelMetric(PM_ButtonShiftHorizontal, option, widget);
@@ -929,10 +884,8 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
             if (bsx != 0 || bsy != 0)
                 painter->translate(bsx, bsy);
         }
-        painter->setFont(d->assetFont);
-        painter->setPen(option->palette.buttonText().color());
-        painter->setBrush(option->palette.buttonText());
-        painter->drawText(option->rect, Qt::AlignCenter, fluentIcon(ico));
+        drawIndicatorArrow(painter, option->rect, element,
+                           option->palette.color(QPalette::ButtonText));
         break;
     }
     case PE_FrameFocusRect: {
@@ -1517,7 +1470,7 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
                     }
                     pr.translate(shiftX, shiftY);
                     if (hasArrow) {
-                        drawArrow(proxy(), toolbutton, pr, painter, widget);
+                        drawIndicatorArrow(painter, pr, toolbutton, widget);
                     } else {
                         const auto vr = QStyle::visualRect(toolbutton->direction, rect, pr);
                         proxy()->drawItemPixmap(painter, vr, Qt::AlignCenter, pm);
@@ -1530,11 +1483,10 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
                                           toolbutton->state & State_Enabled, text);
                 } else {
                     rect.translate(shiftX, shiftY);
-                    if (hasArrow) {
-                        drawArrow(proxy(), toolbutton, rect, painter, widget);
-                    } else {
+                    if (hasArrow)
+                        drawIndicatorArrow(painter, rect, toolbutton, widget);
+                    else
                         proxy()->drawItemPixmap(painter, rect, Qt::AlignCenter, pm);
-                    }
                 }
             }
         }
@@ -3198,6 +3150,50 @@ void QWindows11Style::drawLineEditFrame(QPainter *p, const QRectF &rect, const Q
         drawRoundedRect(p, rect, underlineCol, Qt::NoBrush);
     }
 }
+
+void QWindows11Style::drawIndicatorArrow(QPainter *painter, const QRect &rect,
+                                         PrimitiveElement arrowType, QPen pen) const
+{
+    Q_D(const QWindows11Style);
+
+    if (rect.width() <= 1 || rect.height() <= 1)
+        return;
+    Icon ico = Icon::Help;
+    switch (arrowType) {
+    case PE_IndicatorArrowUp:
+        ico = Icon::ChevronUpMed;
+        break;
+    case PE_IndicatorArrowDown:
+        ico = Icon::ChevronDownMed;
+        break;
+    case PE_IndicatorArrowLeft:
+        ico = Icon::ChevronLeftMed;
+        break;
+    case PE_IndicatorArrowRight:
+        ico = Icon::ChevronRightMed;
+        break;
+    default:
+        return;
+    }
+    QPainterStateGuard psg(painter);
+    painter->setFont(d->assetFont);
+    painter->setPen(pen);
+    painter->drawText(rect, Qt::AlignCenter, fluentIcon(ico));
+}
+
+#if QT_CONFIG(toolbutton)
+void QWindows11Style::drawIndicatorArrow(QPainter *painter, const QRect &rect,
+                                         const QStyleOptionToolButton *option,
+                                         const QWidget *widget) const
+{
+    const auto arrowType = QCommonStylePrivate::arrowToPrimitiveElement(option->arrowType);
+    QStyleOption arrowOpt = *option;
+    arrowOpt.rect = rect;
+    arrowOpt.palette.setColor(QPalette::ButtonText, controlTextColor(option));
+    proxy()->drawPrimitive(arrowType, &arrowOpt, painter, widget);
+}
+#endif
+
 
 QColor QWindows11Style::winUI3Color(enum WINUI3Color col) const
 {

@@ -629,7 +629,7 @@ void tst_QStyle::testProxyCalled()
         ProxyTest testStyle;
         testStyle.setBaseStyle(style);
         style->drawControl(QStyle::CE_ToolButtonLabel, &opt, &painter, &b);
-        QVERIFY(testStyle.called);
+        QVERIFY2(testStyle.called, qPrintable(style->name()));
         delete style;
     }
 }

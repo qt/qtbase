@@ -141,6 +141,12 @@ private:
     // ControlType::ControlAlt can be mapped to QPalette directly
     QColor controlTextColor(const QStyleOption *option, bool ignoreIsChecked = false) const;
     void drawLineEditFrame(QPainter *p, const QRectF &rect, const QStyleOption *o, bool isEditable = true) const;
+    void drawIndicatorArrow(QPainter *painter, const QRect &rect, PrimitiveElement arrowType,
+                            QPen pen) const;
+#if QT_CONFIG(toolbutton)
+    void drawIndicatorArrow(QPainter *painter, const QRect &rect,
+                            const QStyleOptionToolButton *option, const QWidget *widget) const;
+#endif
     inline QColor winUI3Color(enum WINUI3Color col) const;
     static inline QChar fluentIcon(Icon i) { return QChar(ushort(i)); }
     template <typename C>
