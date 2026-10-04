@@ -88,7 +88,7 @@ public:
 
 protected:
     void setGeometry(const QRect &rect) override;
-    void createSurface();
+    void updateNativeWindow(bool visible);
     bool blockedByModal() const;
     bool isEmbeddingContainer() const;
 

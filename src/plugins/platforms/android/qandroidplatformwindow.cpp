@@ -102,11 +102,6 @@ void QAndroidPlatformWindow::initialize()
     }
     qCDebug(lcQpaWindow) << "Window" << m_nativeViewId << "using surface container type"
                          << static_cast<int>(m_surfaceContainerType);
-
-    // Ask Java for the Surface up front so its SurfaceHolder callbacks have
-    // time to fire before QSG wants to render.
-    if (!isForeignWindow() && !isEmbeddingContainer())
-        createSurface();
 }
 
 QAndroidPlatformWindow::~QAndroidPlatformWindow()
@@ -148,23 +143,30 @@ void QAndroidPlatformWindow::setSafeAreaMargins(const QMargins safeMargins)
 
 void QAndroidPlatformWindow::setGeometry(const QRect &rect)
 {
-    if (!isEmbeddingContainer()) {
-        Q_ASSERT(m_nativeQtWindow.isValid());
-
-        jint x = 0;
-        jint y = 0;
-        jint w = -1;
-        jint h = -1;
-        if (!rect.isNull()) {
-            x = rect.x();
-            y = rect.y();
-            w = rect.width();
-            h = rect.height();
-        }
-        m_nativeQtWindow.callMethod<void>("setGeometry", x, y, w, h);
-    }
-
     QWindowSystemInterface::handleGeometryChange(window(), rect);
+    updateNativeWindow(window()->isVisible());
+}
+
+void QAndroidPlatformWindow::updateNativeWindow(bool visible)
+{
+    if (isEmbeddingContainer())
+        return;
+    // A maximized or full screen window fills the root layout, so Android
+    // resizes it in the pass that rotates, before its Surface is redrawn.
+    const bool fillsLayout = window()->isTopLevel()
+            && window()->windowStates() & (Qt::WindowMaximized | Qt::WindowFullScreen);
+    const QRect rect = fillsLayout ? QRect() : geometry();
+    jint x = 0;
+    jint y = 0;
+    jint w = -1;
+    jint h = -1;
+    if (!rect.isNull()) {
+        x = rect.x();
+        y = rect.y();
+        w = rect.width();
+        h = rect.height();
+    }
+    m_nativeQtWindow.callMethod<void>("updateWindow", x, y, w, h, visible);
 }
 
 void QAndroidPlatformWindow::setVisible(bool visible)
@@ -187,7 +189,14 @@ void QAndroidPlatformWindow::setVisible(bool visible)
         }
     }
 
-    m_nativeQtWindow.callMethod<void>("setVisible", visible);
+    if (visible && !isEmbeddingContainer()) {
+        const bool onTop = window()->flags() & Qt::WindowStaysOnTopHint;
+        const bool isOpaque = !format().hasAlpha()
+                && qFuzzyCompare(window()->opacity(), qreal(1.0));
+        m_nativeQtWindow.callMethod<void>("configureSurface", onTop, isOpaque,
+                                          m_surfaceContainerType);
+    }
+    updateNativeWindow(visible);
 
     if (geometry().isEmpty() || screen()->availableGeometry().isEmpty())
         return;
@@ -202,6 +211,8 @@ void QAndroidPlatformWindow::setWindowState(Qt::WindowStates state)
 
     if (window()->isVisible())
         applySystemUi(state, window()->flags());
+    // Whether the window fills the root layout depends on the state.
+    updateNativeWindow(window()->isVisible());
 }
 
 void QAndroidPlatformWindow::setWindowFlags(Qt::WindowFlags flags)
@@ -366,15 +377,6 @@ void QAndroidPlatformWindow::sendChildExposeEvents() const
         QWindowSystemInterface::handleExposeEvent(child, region);
         platformChild->sendChildExposeEvents();
     }
-}
-
-void QAndroidPlatformWindow::createSurface()
-{
-    const bool windowStaysOnTop = bool(window()->flags() & Qt::WindowStaysOnTopHint);
-    const bool isOpaque = !format().hasAlpha() && qFuzzyCompare(window()->opacity(), qreal(1.0));
-
-    m_nativeQtWindow.callMethod<void>("createSurface", windowStaysOnTop, 32, isOpaque,
-                                      m_surfaceContainerType);
 }
 
 void QAndroidPlatformWindow::ensureNativeWindow()

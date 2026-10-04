@@ -61,12 +61,9 @@ class QtWindow extends QtLayout implements QtSurfaceInterface
         setDefaultFocusHighlightEnabled(false);
         setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
 
-        // Views are by default visible, but QWindows are not.
-        // We should ideally pick up the actual QWindow state here,
-        // but QWindowPrivate::setVisible() expects to control the
-        // order of events tightly, so we need to wait for a call
-        // to QAndroidPlatformWindow::setVisible().
-        setVisible(false);
+        // Views are by default visible, but QWindows are not. Set directly, the
+        // view isn't attached yet, so no queued action can undo a later commit.
+        setVisibility(View.INVISIBLE);
 
         if (!isForeignWindow && context instanceof Activity) {
             // TODO QTBUG-122552 - Service keyboard input not implemented
@@ -240,11 +237,6 @@ class QtWindow extends QtLayout implements QtSurfaceInterface
         return m_actionBarHeight;
     }
 
-    @UsedFromNativeCode
-    void setVisible(boolean visible) {
-        QtNative.runAction(() -> setVisibility(visible ? View.VISIBLE : View.INVISIBLE));
-    }
-
     @Override
     public void onSurfaceCreated(Surface surface)
     {
@@ -339,28 +331,81 @@ class QtWindow extends QtLayout implements QtSurfaceInterface
             m_parentWindow.removeChildWindow(getId());
     }
 
-    @UsedFromNativeCode
-    void createSurface(final boolean onTop,
-                              final int imageDepth, final boolean isOpaque,
-                              final int surfaceContainerType) // TODO constant for type
-    {
-        QtNative.runAction(()-> {
-            if (m_surfaceContainer != null)
-                removeView(m_surfaceContainer);
+    // Qt's latest values, applied together once per UI thread turn, so the
+    // view system never lays out an intermediate state. Guarded by this.
+    private int m_x, m_y, m_width, m_height;
+    private boolean m_visible;
+    private boolean m_needsSurface, m_surfaceOnTop, m_surfaceOpaque;
+    private int m_surfaceContainerType;
+    private final Runnable m_applyUpdate = this::applyUpdate;
 
-            if (surfaceContainerType == 0) {
-                m_surfaceContainer = new QtSurface(getContext(), QtWindow.this,
-                                                   onTop, imageDepth);
-            } else {
-                m_surfaceContainer = new QtTextureView(getContext(), QtWindow.this, isOpaque);
-            }
-             m_surfaceContainer.setLayoutParams(new QtLayout.LayoutParams(
-                                                        ViewGroup.LayoutParams.MATCH_PARENT,
-                                                        ViewGroup.LayoutParams.MATCH_PARENT));
-            // The surface container of this window will be added as the first of the stack.
-            // All other views are stacked based on the order they are created.
-            addView(m_surfaceContainer, 0);
-        });
+    @UsedFromNativeCode
+    void configureSurface(boolean onTop, boolean isOpaque, int containerType)
+    {
+        synchronized (this) {
+            m_needsSurface = true;
+            m_surfaceOnTop = onTop;
+            m_surfaceOpaque = isOpaque;
+            m_surfaceContainerType = containerType;
+        }
+    }
+
+    @UsedFromNativeCode
+    void updateWindow(int x, int y, int width, int height, boolean visible)
+    {
+        synchronized (this) {
+            m_x = x;
+            m_y = y;
+            m_width = width;
+            m_height = height;
+            m_visible = visible;
+        }
+        removeCallbacks(m_applyUpdate);
+        post(m_applyUpdate);
+    }
+
+    private void applyUpdate()
+    {
+        final int x, y, width, height, containerType;
+        final boolean visible, needsSurface, onTop, isOpaque;
+        synchronized (this) {
+            x = m_x;
+            y = m_y;
+            width = m_width;
+            height = m_height;
+            visible = m_visible;
+            needsSurface = m_needsSurface;
+            onTop = m_surfaceOnTop;
+            isOpaque = m_surfaceOpaque;
+            containerType = m_surfaceContainerType;
+        }
+        if (getContext() instanceof QtActivityBase && !hasLayoutGeometry(x, y, width, height))
+            setLayoutParams(new QtLayout.LayoutParams(width, height, x, y));
+        // Added after the geometry, so the first Surface has the final size.
+        if (visible && needsSurface && m_surfaceContainer == null)
+            addSurfaceContainer(onTop, isOpaque, containerType);
+        setVisibility(visible ? View.VISIBLE : View.INVISIBLE);
+    }
+
+    private boolean hasLayoutGeometry(int x, int y, int w, int h)
+    {
+        if (!(getLayoutParams() instanceof QtLayout.LayoutParams))
+            return false;
+        QtLayout.LayoutParams params = (QtLayout.LayoutParams) getLayoutParams();
+        return params.x == x && params.y == y && params.width == w && params.height == h;
+    }
+
+    private void addSurfaceContainer(boolean onTop, boolean isOpaque, int surfaceContainerType)
+    {
+        if (surfaceContainerType == 0)
+            m_surfaceContainer = new QtSurface(getContext(), QtWindow.this, onTop, 32);
+        else
+            m_surfaceContainer = new QtTextureView(getContext(), QtWindow.this, isOpaque);
+        m_surfaceContainer.setLayoutParams(new QtLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        // The surface container of this window will be added as the first of the stack.
+        // All other views are stacked based on the order they are created.
+        addView(m_surfaceContainer, 0);
     }
 
     @UsedFromNativeCode
@@ -412,15 +457,6 @@ class QtWindow extends QtLayout implements QtSurfaceInterface
             throw (RuntimeException) firstFailure;
         if (firstFailure instanceof Error)
             throw (Error) firstFailure;
-    }
-
-    @UsedFromNativeCode
-    void setGeometry(final int x, final int y, final int w, final int h)
-    {
-        QtNative.runAction(()-> {
-            if (getContext() instanceof QtActivityBase)
-                setLayoutParams(new QtLayout.LayoutParams(w, h, x, y));
-        });
     }
 
     void addChildWindow(QtWindow window)
