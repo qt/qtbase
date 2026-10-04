@@ -116,6 +116,8 @@ public:
         return (option && option->direction == Qt::RightToLeft) ||
             (!option && QGuiApplication::isRightToLeft());
     }
+
+    static QStyle::PrimitiveElement arrowToPrimitiveElement(Qt::ArrowType arrowType);
 #if QT_CONFIG(animation)
 private:
     mutable QHash<const QObject*, QStyleAnimation*> animations;

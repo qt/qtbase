@@ -797,29 +797,13 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
 }
 
 #if QT_CONFIG(toolbutton)
-static void drawArrow(const QStyle *style, const QStyleOptionToolButton *toolbutton,
-                      const QRect &rect, QPainter *painter, const QWidget *widget = nullptr)
+static inline void drawArrow(const QStyle *style, const QStyleOptionToolButton *toolbutton,
+                             const QRect &rect, QPainter *painter, const QWidget *widget)
 {
-    QStyle::PrimitiveElement pe;
-    switch (toolbutton->arrowType) {
-    case Qt::LeftArrow:
-        pe = QStyle::PE_IndicatorArrowLeft;
-        break;
-    case Qt::RightArrow:
-        pe = QStyle::PE_IndicatorArrowRight;
-        break;
-    case Qt::UpArrow:
-        pe = QStyle::PE_IndicatorArrowUp;
-        break;
-    case Qt::DownArrow:
-        pe = QStyle::PE_IndicatorArrowDown;
-        break;
-    default:
-        return;
-    }
     QStyleOption arrowOpt = *toolbutton;
     arrowOpt.rect = rect;
-    style->drawPrimitive(pe, &arrowOpt, painter, widget);
+    style->drawPrimitive(QCommonStylePrivate::arrowToPrimitiveElement(toolbutton->arrowType),
+                         &arrowOpt, painter, widget);
 }
 #endif // QT_CONFIG(toolbutton)
 
@@ -6074,6 +6058,22 @@ QIcon QCommonStylePrivate::iconFromResourceTheme(QCommonStyle::StandardPixmap st
     return icon;
 }
 
+QStyle::PrimitiveElement QCommonStylePrivate::arrowToPrimitiveElement(Qt::ArrowType arrowType)
+{
+    switch (arrowType) {
+    case Qt::NoArrow:
+        break;
+    case Qt::UpArrow:
+        return QStyle::PE_IndicatorArrowUp;
+    case Qt::DownArrow:
+        return QStyle::PE_IndicatorArrowDown;
+    case Qt::LeftArrow:
+        return QStyle::PE_IndicatorArrowLeft;
+    case Qt::RightArrow:
+        return QStyle::PE_IndicatorArrowRight;
+    }
+    Q_UNREACHABLE_RETURN(QStyle::PE_IndicatorArrowDown);
+}
 
 /*!
     \internal
