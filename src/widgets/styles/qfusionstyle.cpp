@@ -145,9 +145,10 @@ static QLinearGradient qt_fusion_gradient(const QRect &rect, const QBrush &baseC
     return gradient;
 }
 
-static void qt_fusion_draw_arrow(Qt::ArrowType type, QPainter *painter, const QStyleOption *option, const QRect &rect, const QColor &color)
+static void qt_fusion_draw_arrow(QStyle::PrimitiveElement type, QPainter *painter,
+                                 const QStyleOption *option, const QRect &rect, QColor color)
 {
-    if (rect.isEmpty())
+    if (rect.width() <= 1 || rect.height() <= 1)
         return;
 
     const qreal dpi = QStyleHelper::dpi(option);
@@ -158,38 +159,48 @@ static void qt_fusion_draw_arrow(Qt::ArrowType type, QPainter *painter, const QS
     const int rectMax = qMin(rect.height(), rect.width());
     const int size = qMin(arrowMax, rectMax);
 
-    const QString pixmapName = "fusion-arrow"_L1
-                               % HexString<uint>(type)
-                               % HexString<uint>(color.rgba());
-    QCachedPainter cp(painter, pixmapName, option, rect.size(), rect);
-    if (cp.needsPainting()) {
-        QRectF arrowRect(0, 0, size, arrowHeight * size / arrowWidth);
-        if (type == Qt::LeftArrow || type == Qt::RightArrow)
-            arrowRect = arrowRect.transposed();
-        arrowRect.moveTo((rect.width() - arrowRect.width()) / 2.0,
-                         (rect.height() - arrowRect.height()) / 2.0);
+    QRectF arrowRect(0, 0, size, arrowHeight * size / arrowWidth);
+    if (type == QStyle::PE_IndicatorArrowRight || type == QStyle::PE_IndicatorArrowLeft)
+        arrowRect = arrowRect.transposed();
+    arrowRect.moveTo((rect.width() - arrowRect.width()) / 2.0,
+                     (rect.height() - arrowRect.height()) / 2.0);
 
-        std::array<QPointF, 3> triangle;
-        switch (type) {
-        case Qt::DownArrow:
-            triangle = {arrowRect.topLeft(), arrowRect.topRight(), QPointF(arrowRect.center().x(), arrowRect.bottom())};
-            break;
-        case Qt::RightArrow:
-            triangle = {arrowRect.topLeft(), arrowRect.bottomLeft(), QPointF(arrowRect.right(), arrowRect.center().y())};
-            break;
-        case Qt::LeftArrow:
-            triangle = {arrowRect.topRight(), arrowRect.bottomRight(), QPointF(arrowRect.left(), arrowRect.center().y())};
-            break;
-        default:
-            triangle = {arrowRect.bottomLeft(), arrowRect.bottomRight(), QPointF(arrowRect.center().x(), arrowRect.top())};
-            break;
-        }
-
-        cp->setPen(Qt::NoPen);
-        cp->setBrush(color);
-        cp->setRenderHint(QPainter::Antialiasing);
-        cp->drawPolygon(triangle.data(), int(triangle.size()));
+    std::array<QPointF, 3> triangle;
+    switch (type) {
+    case QStyle::PE_IndicatorArrowDown:
+        triangle = { arrowRect.topLeft(), arrowRect.topRight(),
+                     QPointF(arrowRect.center().x(), arrowRect.bottom()) };
+        break;
+    case QStyle::PE_IndicatorArrowRight:
+        triangle = { arrowRect.topLeft(), arrowRect.bottomLeft(),
+                     QPointF(arrowRect.right(), arrowRect.center().y()) };
+        break;
+    case QStyle::PE_IndicatorArrowLeft:
+        triangle = { arrowRect.topRight(), arrowRect.bottomRight(),
+                     QPointF(arrowRect.left(), arrowRect.center().y()) };
+        break;
+    case QStyle::PE_IndicatorArrowUp:
+        triangle = { arrowRect.bottomLeft(), arrowRect.bottomRight(),
+                     QPointF(arrowRect.center().x(), arrowRect.top()) };
+        break;
+    default:
+        Q_UNREACHABLE();
+        return;
     }
+
+    QPainterStateGuard psg(painter);
+    painter->translate(rect.topLeft());
+    painter->setPen(Qt::NoPen);
+    painter->setBrush(color);
+    painter->setRenderHint(QPainter::Antialiasing);
+    painter->drawPolygon(triangle.data(), int(triangle.size()));
+}
+
+static inline void qt_fusion_draw_arrow(Qt::ArrowType type, QPainter *painter,
+                                        const QStyleOption *option, const QRect &rect, QColor color)
+{
+    return qt_fusion_draw_arrow(QCommonStylePrivate::arrowToPrimitiveElement(type), painter, option,
+                                rect, color);
 }
 
 static void qt_fusion_draw_mdibutton(QPainter *painter, const QStyleOptionTitleBar *option, const QRect &tmp, bool hover, bool sunken)
@@ -397,25 +408,9 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
     case PE_IndicatorArrowRight:
     case PE_IndicatorArrowLeft:
     {
-        if (option->rect.width() <= 1 || option->rect.height() <= 1)
-            break;
         QColor arrowColor = option->palette.windowText().color();
         arrowColor.setAlpha(160);
-        Qt::ArrowType arrow = Qt::UpArrow;
-        switch (elem) {
-        case PE_IndicatorArrowDown:
-            arrow = Qt::DownArrow;
-            break;
-        case PE_IndicatorArrowRight:
-            arrow = Qt::RightArrow;
-            break;
-        case PE_IndicatorArrowLeft:
-            arrow = Qt::LeftArrow;
-            break;
-        default:
-            break;
-        }
-        qt_fusion_draw_arrow(arrow, painter, option, option->rect, arrowColor);
+        qt_fusion_draw_arrow(elem, painter, option, option->rect, arrowColor);
         break;
     }
     case PE_IndicatorItemViewItemCheck: {
@@ -1885,10 +1880,16 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
 
                 } else if (spinBox->buttonSymbols == QAbstractSpinBox::UpDownArrows){
                     // arrows
-                    qt_fusion_draw_arrow(Qt::UpArrow, cp.painter(), option, upRect.adjusted(0, 0, 0, 1),
-                                         (spinBox->stepEnabled & QAbstractSpinBox::StepUpEnabled) ? arrowColor : disabledColor);
-                    qt_fusion_draw_arrow(Qt::DownArrow, cp.painter(), option, downRect,
-                                         (spinBox->stepEnabled & QAbstractSpinBox::StepDownEnabled) ? arrowColor : disabledColor);
+                    qt_fusion_draw_arrow(QStyle::PE_IndicatorArrowUp, cp.painter(), option,
+                                         upRect.adjusted(0, 0, 0, 1),
+                                         (spinBox->stepEnabled & QAbstractSpinBox::StepUpEnabled)
+                                                 ? arrowColor
+                                                 : disabledColor);
+                    qt_fusion_draw_arrow(QStyle::PE_IndicatorArrowDown, cp.painter(), option,
+                                         downRect,
+                                         (spinBox->stepEnabled & QAbstractSpinBox::StepDownEnabled)
+                                                 ? arrowColor
+                                                 : disabledColor);
                 }
             }
         }
@@ -2075,7 +2076,8 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                 const auto buttonRect = proxy()->subControlRect(CC_TitleBar, titleBar, sc, widget);
                 if (buttonRect.isValid()) {
                     qt_fusion_draw_mdibutton(painter, titleBar, buttonRect, isHover(sc), isSunken(sc));
-                    qt_fusion_draw_arrow(Qt::UpArrow, painter, option, buttonRect.adjusted(5, 7, -5, -7), buttonPaintingsColor);
+                    qt_fusion_draw_arrow(QStyle::PE_IndicatorArrowUp, painter, option,
+                                         buttonRect.adjusted(5, 7, -5, -7), buttonPaintingsColor);
                 }
             }
 
@@ -2085,7 +2087,8 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                 const auto buttonRect = proxy()->subControlRect(CC_TitleBar, titleBar, sc, widget);
                 if (buttonRect.isValid()) {
                     qt_fusion_draw_mdibutton(painter, titleBar, buttonRect, isHover(sc), isSunken(sc));
-                    qt_fusion_draw_arrow(Qt::DownArrow, painter, option, buttonRect.adjusted(5, 7, -5, -7), buttonPaintingsColor);
+                    qt_fusion_draw_arrow(QStyle::PE_IndicatorArrowDown, painter, option,
+                                         buttonRect.adjusted(5, 7, -5, -7), buttonPaintingsColor);
                 }
             }
 
@@ -2328,7 +2331,8 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                     // Draw the up/down arrow
                     QColor arrowColor = option->palette.buttonText().color();
                     arrowColor.setAlpha(160);
-                    qt_fusion_draw_arrow(Qt::DownArrow, cp.painter(), option, downArrowRect, arrowColor);
+                    qt_fusion_draw_arrow(QStyle::PE_IndicatorArrowDown, cp.painter(), option,
+                                         downArrowRect, arrowColor);
                 }
             }
         }
