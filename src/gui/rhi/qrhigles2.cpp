@@ -5,6 +5,7 @@
 #include "qrhigles2_p.h"
 #include <QOffscreenSurface>
 #include <QOpenGLContext>
+#include <QtCore/qendian.h>
 #include <QtCore/qmap.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qopenglextensions_p.h>
@@ -1713,6 +1714,20 @@ static inline void toGlTextureFormat(QRhiTexture::Format format, QRhiTexture::Fl
         *glformat = GL_RGBA;
         *gltype = GL_UNSIGNED_BYTE;
         break;
+    }
+}
+
+static inline bool isDepthTextureFormat(QRhiTexture::Format format)
+{
+    switch (format) {
+    case QRhiTexture::D16:
+    case QRhiTexture::D24:
+    case QRhiTexture::D24S8:
+    case QRhiTexture::D32F:
+    case QRhiTexture::D32FS8:
+        return true;
+    default:
+        return false;
     }
 }
 
@@ -4327,15 +4342,29 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
                 if (mipLevel == 0 || caps.nonBaseLevelFramebufferTexture) {
                     f->glGenFramebuffers(1, &fbo);
                     f->glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-                    if (cmd.args.readPixels.slice3D >= 0) {
-                        f->glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                                                     tex, mipLevel, cmd.args.readPixels.slice3D);
-                    } else if (cmd.args.readPixels.readTarget == GL_TEXTURE_1D) {
-                        glFramebufferTexture1D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                                               cmd.args.readPixels.readTarget, tex, mipLevel);
+                    const auto attach = [&](GLenum attachment) {
+                        if (cmd.args.readPixels.slice3D >= 0) {
+                            f->glFramebufferTextureLayer(GL_FRAMEBUFFER, attachment,
+                                                         tex, mipLevel, cmd.args.readPixels.slice3D);
+                        } else if (cmd.args.readPixels.readTarget == GL_TEXTURE_1D) {
+                            glFramebufferTexture1D(GL_FRAMEBUFFER, attachment,
+                                                   cmd.args.readPixels.readTarget, tex, mipLevel);
+                        } else {
+                            f->glFramebufferTexture2D(GL_FRAMEBUFFER, attachment,
+                                                      cmd.args.readPixels.readTarget, tex, mipLevel);
+                        }
+                    };
+                    // A depth(-stencil) texture cannot be attached as a color attachment.
+                    if (isDepthTextureFormat(result->format)) {
+                        attach(GL_DEPTH_ATTACHMENT);
+                        if (isStencilSupportingFormat(result->format))
+                            attach(GL_STENCIL_ATTACHMENT);
+                        // There is no color attachment, which would make the FBO incomplete
+                        // on desktop GL < 4.1 unless the read buffer is set to none.
+                        if (!caps.gles)
+                            f->glReadBuffer(GL_NONE);
                     } else {
-                        f->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                                                  cmd.args.readPixels.readTarget, tex, mipLevel);
+                        attach(GL_COLOR_ATTACHMENT0);
                     }
                 }
             } else {
@@ -4381,7 +4410,20 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
                     quint32 byteSize;
                     textureFormatInfo(result->format, result->pixelSize, nullptr, &byteSize, nullptr);
                     result->data.resizeForOverwrite(byteSize);
+                    // The result is tightly packed, unlike with the default alignment of 4.
+                    f->glPixelStorei(GL_PACK_ALIGNMENT, 1);
                     f->glReadPixels(x, y, w, h, glformat, gltype, result->data.data());
+                    f->glPixelStorei(GL_PACK_ALIGNMENT, 4);
+                    // QRhi guarantees the unused bits of a depth readback to be zero. With D24
+                    // the depth is normalized to 32 bits, but only the top 24 bits are
+                    // meaningful, with D32FS8 only the lowest 8 bits of the second word are.
+                    if (result->format == QRhiTexture::D24 || result->format == QRhiTexture::D32FS8) {
+                        const bool isD24 = result->format == QRhiTexture::D24;
+                        const quint32 mask = isD24 ? 0xFFFFFF00u : 0xFFu;
+                        char *p = result->data.data();
+                        for (qsizetype i = isD24 ? 0 : 1, count = result->data.size() / 4; i < count; i += isD24 ? 1 : 2)
+                            qToUnaligned(qFromUnaligned<quint32>(p + i * 4) & mask, p + i * 4);
+                    }
                 }
             } else {
                 // this level can't be read back; return a zero-filled image sized for the format
