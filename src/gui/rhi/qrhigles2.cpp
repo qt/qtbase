@@ -1759,10 +1759,10 @@ bool QRhiGles2::isTextureFormatSupported(QRhiTexture::Format format, QRhiTexture
         return caps.depthTexture;
 
     case QRhiTexture::D24:
-        return caps.depth24;
+        return caps.depthTexture && caps.depth24;
 
     case QRhiTexture::D24S8:
-        return caps.depth24 && caps.packedDepthStencil;
+        return caps.depthTexture && caps.depth24 && caps.packedDepthStencil;
 
     case QRhiTexture::BGRA8:
         return caps.bgraExternalFormat;
