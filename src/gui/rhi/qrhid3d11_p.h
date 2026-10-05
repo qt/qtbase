@@ -975,6 +975,10 @@ public:
         quint32 bpl;
         QSize pixelSize;
         QRhiTexture::Format format;
+        // The staging texture can be larger than the result, in which case
+        // the result starts at this position in it.
+        QPoint cropOrigin;
+        quint32 bytesPerPixel = 0;
     };
     QVarLengthArray<TextureReadback, 2> activeTextureReadbacks;
     struct BufferReadback {

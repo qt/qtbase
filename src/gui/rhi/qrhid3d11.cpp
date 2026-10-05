@@ -9,6 +9,7 @@
 #include <QWindow>
 #include <qmath.h>
 #include <QtCore/qcryptographichash.h>
+#include <QtCore/qendian.h>
 #include <QtCore/private/qsystemerror_p.h>
 #include "qrhid3dhelpers_p.h"
 
@@ -2222,7 +2223,9 @@ void QRhiD3D11::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
 
             ID3D11Resource *src;
             DXGI_FORMAT dxgiFormat;
-            QRect rect;
+            QRect rect; // what is asked for, and what the result holds
+            QRect copyRect; // what is copied into the staging texture
+            QPoint cropOrigin; // where rect starts in the staging texture
             QRhiTexture::Format format;
             UINT subres = 0;
             QD3D11Texture *texD = QRHI_RES(QD3D11Texture, u.rb.texture());
@@ -2236,11 +2239,21 @@ void QRhiD3D11::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
                 }
                 src = texD->textureResource();
                 dxgiFormat = texD->dxgiFormat;
-                if (u.rb.rect().isValid())
-                    rect = u.rb.rect();
-                else
-                    rect = QRect({0, 0}, q->sizeForMipLevel(u.rb.level(), texD->m_pixelSize));
                 format = texD->m_format;
+                const QRect levelRect(QPoint(0, 0), q->sizeForMipLevel(u.rb.level(), texD->m_pixelSize));
+                rect = u.rb.rect().isValid() ? u.rb.rect() : levelRect;
+                copyRect = rect;
+                if (isDepthTextureFormat(format)) {
+                    // CopySubresourceRegion() requires pSrcBox to be null (and
+                    // DstX/Y/Z to be 0, already the case below) whenever either
+                    // resource involved has the D3D11_BIND_DEPTH_STENCIL bind
+                    // flag, i.e. the whole subresource must be copied. The
+                    // requested rectangle is cropped out of it in
+                    // finishActiveReadbacks().
+                    rect = rect.intersected(levelRect);
+                    copyRect = levelRect;
+                    cropOrigin = rect.topLeft();
+                }
                 is3D = texD->m_flags.testFlag(QRhiTexture::ThreeDimensional);
                 subres = D3D11CalcSubresource(UINT(u.rb.level()), UINT(is3D ? 0 : u.rb.layer()), texD->mipLevelCount);
             } else {
@@ -2263,17 +2276,19 @@ void QRhiD3D11::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
                     rect = u.rb.rect();
                 else
                     rect = QRect({0, 0}, swapChainD->pixelSize);
+                copyRect = rect;
                 format = swapchainReadbackTextureFormat(dxgiFormat, nullptr);
                 if (format == QRhiTexture::UnknownFormat)
                     continue;
             }
             quint32 byteSize = 0;
             quint32 bpl = 0;
-            textureFormatInfo(format, rect.size(), &bpl, &byteSize, nullptr);
+            quint32 bytesPerPixel = 0;
+            textureFormatInfo(format, rect.size(), &bpl, &byteSize, &bytesPerPixel);
 
             D3D11_TEXTURE2D_DESC desc = {};
-            desc.Width = UINT(rect.width());
-            desc.Height = UINT(rect.height());
+            desc.Width = UINT(copyRect.width());
+            desc.Height = UINT(copyRect.height());
             desc.MipLevels = 1;
             desc.ArraySize = 1;
             desc.Format = dxgiFormat;
@@ -2299,14 +2314,15 @@ void QRhiD3D11::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
             cmd.args.copySubRes.srcSubRes = subres;
 
             D3D11_BOX srcBox = {};
-            srcBox.left = UINT(rect.left());
-            srcBox.top = UINT(rect.top());
+            srcBox.left = UINT(copyRect.left());
+            srcBox.top = UINT(copyRect.top());
             srcBox.front = is3D ? UINT(u.rb.layer()) : 0u;
             // back, right, bottom are exclusive
             srcBox.right = srcBox.left + desc.Width;
             srcBox.bottom = srcBox.top + desc.Height;
             srcBox.back = srcBox.front + 1;
-            cmd.args.copySubRes.hasSrcBox = true;
+            // see the comment above: a depth/stencil source requires a null box
+            cmd.args.copySubRes.hasSrcBox = !isDepthTextureFormat(format);
             cmd.args.copySubRes.srcBox = srcBox;
 
             readback.stagingTex = stagingTex;
@@ -2314,6 +2330,8 @@ void QRhiD3D11::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
             readback.bpl = bpl;
             readback.pixelSize = rect.size();
             readback.format = format;
+            readback.cropOrigin = cropOrigin;
+            readback.bytesPerPixel = bytesPerPixel;
 
             activeTextureReadbacks.append(readback);
         } else if (u.type == QRhiResourceUpdateBatchPrivate::TextureOp::GenMips) {
@@ -2343,13 +2361,35 @@ void QRhiD3D11::finishActiveReadbacks()
             // nothing says the rows are tightly packed in the texture, must take
             // the stride into account
             char *dst = readback.result->data.data();
-            char *src = static_cast<char *>(mp.pData);
+            char *src = static_cast<char *>(mp.pData)
+                    + readback.cropOrigin.y() * mp.RowPitch
+                    + readback.cropOrigin.x() * readback.bytesPerPixel;
             for (int y = 0, h = readback.pixelSize.height(); y != h; ++y) {
                 memcpy(dst, src, readback.bpl);
                 dst += readback.bpl;
                 src += mp.RowPitch;
             }
             context->Unmap(readback.stagingTex, 0);
+
+            // The staging texture is in the native layout of the depth-stencil
+            // format: with D24 and D24S8 the depth is in the lower 24 bits and
+            // the stencil in the upper 8 bits, and with D32FS8 the upper 24 bits
+            // of the second word are unused. Convert to the layout QRhi
+            // guarantees: depth in the upper 24 bits and stencil in the lower 8
+            // bits (D24, D24S8), and only the stencil in the second word of the
+            // texel (D32FS8), with all unused bits zero.
+            char *p = readback.result->data.data();
+            if (readback.format == QRhiTexture::D24 || readback.format == QRhiTexture::D24S8) {
+                const bool hasStencil = readback.format == QRhiTexture::D24S8;
+                for (qsizetype px = 0, count = readback.result->data.size() / 4; px < count; ++px) {
+                    const quint32 texel = qFromUnaligned<quint32>(p + px * 4);
+                    const quint32 stencil = hasStencil ? texel >> 24 : 0;
+                    qToUnaligned(((texel & 0x00FFFFFFu) << 8) | stencil, p + px * 4);
+                }
+            } else if (readback.format == QRhiTexture::D32FS8) {
+                for (qsizetype px = 1, count = readback.result->data.size() / 4; px < count; px += 2)
+                    qToUnaligned(qFromUnaligned<quint32>(p + px * 4) & 0xFFu, p + px * 4);
+            }
         } else {
             qWarning("Failed to map readback staging texture: %s",
                 qPrintable(QSystemError::windowsComString(hr)));
