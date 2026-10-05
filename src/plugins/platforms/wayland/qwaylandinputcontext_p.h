@@ -75,8 +75,7 @@ private:
     QWaylandTextInputInterface *textInput() const;
 
     QWaylandDisplay *mDisplay = nullptr;
-    ::wl_surface *mCurrentSurface = nullptr;
-    bool m_inputMethodEnabled = false;
+    QPointer<QWindow> mCurrentWindow;
     QObject *m_focusObject = nullptr;
 
 #if QT_CONFIG(xkbcommon)
