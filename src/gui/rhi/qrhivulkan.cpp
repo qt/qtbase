@@ -49,6 +49,7 @@ QT_WARNING_POP
 #include <private/qvulkandefaultinstance_p.h>
 
 #include <QtCore/q20memory.h>
+#include <QtCore/qendian.h>
 #include <optional>
 #include <utility>
 
@@ -4944,10 +4945,25 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
             }
             textureFormatInfo(readback.format, readback.rect.size(), nullptr, &readback.byteSize, nullptr);
 
+            // vkCmdCopyImageToBuffer() only accepts single-aspect regions
+            // (unlike barriers), so a combined depth-stencil texture is
+            // copied as two regions, each into its own densely packed plane
+            // of the staging buffer. finishActiveReadbacks() then
+            // interleaves the two planes into the result.
+            const bool combinedDepthStencil = texD && isStencilTextureFormat(readback.format);
+            // The depth aspect is copied out as VK_FORMAT_X8_D24_UNORM_PACK32
+            // (D24S8) or VK_FORMAT_D32_SFLOAT (D32FS8), i.e. 4 bytes per
+            // pixel either way, the stencil aspect as VK_FORMAT_S8_UINT.
+            const quint32 pixelCount = quint32(readback.rect.width()) * quint32(readback.rect.height());
+            const quint32 depthPlaneByteSize = pixelCount * 4;
+            const quint32 stagingByteSize = combinedDepthStencil
+                    ? depthPlaneByteSize + pixelCount
+                    : readback.byteSize;
+
             // Create a host visible readback buffer.
             VkBufferCreateInfo bufferInfo = {};
             bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-            bufferInfo.size = readback.byteSize;
+            bufferInfo.size = stagingByteSize;
             bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT;
 
             VmaAllocationCreateInfo allocInfo = {};
@@ -4959,7 +4975,7 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
                 readback.stagingAlloc = allocation;
                 setAllocationName(allocation, texD ? texD->name() : swapChainD->name());
             } else {
-                qWarning("Failed to create readback buffer of size %u: %d", readback.byteSize, err);
+                qWarning("Failed to create readback buffer of size %u: %d", stagingByteSize, err);
                 printExtraErrorInfo(err);
                 continue;
             }
@@ -4979,6 +4995,16 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
             copyDesc.imageExtent.height = uint32_t(readback.rect.height());
             copyDesc.imageExtent.depth = 1;
 
+            const int bufferImageCopyIndex = cbD->pools.bufferImageCopy.size();
+            if (combinedDepthStencil) {
+                copyDesc.imageSubresource.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+                cbD->pools.bufferImageCopy.append(copyDesc);
+                copyDesc.bufferOffset = depthPlaneByteSize;
+                copyDesc.imageSubresource.aspectMask = VK_IMAGE_ASPECT_STENCIL_BIT;
+            }
+            cbD->pools.bufferImageCopy.append(copyDesc);
+            const int copyCount = cbD->pools.bufferImageCopy.size() - bufferImageCopyIndex;
+
             if (texD) {
                 trackedImageBarrier(cbD, texD, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
                                     VK_ACCESS_TRANSFER_READ_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
@@ -4987,7 +5013,8 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
                 cmd.args.copyImageToBuffer.src = texD->image;
                 cmd.args.copyImageToBuffer.srcLayout = texD->usageState.layout;
                 cmd.args.copyImageToBuffer.dst = readback.stagingBuf;
-                cmd.args.copyImageToBuffer.desc = copyDesc;
+                cmd.args.copyImageToBuffer.count = copyCount;
+                cmd.args.copyImageToBuffer.bufferImageCopyIndex = bufferImageCopyIndex;
             } else {
                 // use the swapchain image
                 QVkSwapChain::ImageResources &imageRes(swapChainD->imageRes[swapChainD->currentImageIndex]);
@@ -5011,7 +5038,8 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
                 cmd.args.copyImageToBuffer.src = image;
                 cmd.args.copyImageToBuffer.srcLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
                 cmd.args.copyImageToBuffer.dst = readback.stagingBuf;
-                cmd.args.copyImageToBuffer.desc = copyDesc;
+                cmd.args.copyImageToBuffer.count = copyCount;
+                cmd.args.copyImageToBuffer.bufferImageCopyIndex = bufferImageCopyIndex;
             }
 
             activeTextureReadbacks.append(readback);
@@ -5246,12 +5274,64 @@ void QRhiVulkan::finishActiveReadbacks(bool forced)
             readback.result->format = readback.format;
             readback.result->pixelSize = readback.rect.size();
             readback.result->data.resizeForOverwrite(readback.byteSize);
-            VkResult err = vmaCopyAllocationToMemory(toVmaAllocator(allocator),
-                                                     toVmaAllocation(readback.stagingAlloc),
-                                                     0, readback.result->data.data(), readback.byteSize);
-            if (err != VK_SUCCESS) {
-                qWarning("Failed to copy texture readback buffer of size %u: %d", readback.byteSize, err);
-                readback.result->data.clear();
+
+            if (isStencilTextureFormat(readback.format)) {
+                // The staging buffer holds a densely packed 32-bit depth
+                // plane followed by a densely packed 8-bit stencil plane (see
+                // enqueueResourceUpdates()). Interleave them into one packed
+                // value per pixel, in the same layout OpenGL's native
+                // GL_UNSIGNED_INT_24_8 (D24S8) and
+                // GL_FLOAT_32_UNSIGNED_INT_24_8_REV (D32FS8) readbacks
+                // produce. The Metal and D3D12 backends do the same.
+                const quint32 pixelCount = quint32(readback.rect.width()) * quint32(readback.rect.height());
+                QByteArray planar;
+                const quint32 depthPlaneByteSize = pixelCount * 4;
+                planar.resizeForOverwrite(qsizetype(depthPlaneByteSize + pixelCount));
+                VkResult err = vmaCopyAllocationToMemory(toVmaAllocator(allocator),
+                                                         toVmaAllocation(readback.stagingAlloc),
+                                                         0, planar.data(), size_t(planar.size()));
+                if (err == VK_SUCCESS) {
+                    const quint32 *depthPlane = reinterpret_cast<const quint32 *>(planar.constData());
+                    const quint8 *stencilPlane = reinterpret_cast<const quint8 *>(planar.constData() + depthPlaneByteSize);
+                    char *dst = readback.result->data.data();
+                    if (readback.format == QRhiTexture::D32FS8) {
+                        // 8 bytes per pixel: the float depth, then a 32-bit
+                        // word with the stencil in its low 8 bits.
+                        for (quint32 px = 0; px < pixelCount; ++px) {
+                            const quint32 stencilWord = stencilPlane[px];
+                            memcpy(dst + px * 8, &depthPlane[px], sizeof(quint32));
+                            memcpy(dst + px * 8 + 4, &stencilWord, sizeof(quint32));
+                        }
+                    } else { // D24S8
+                        // 4 bytes per pixel: depth in the upper 24 bits,
+                        // stencil in the low 8 bits.
+                        for (quint32 px = 0; px < pixelCount; ++px) {
+                            // depthPlane[px] is VK_FORMAT_X8_D24_UNORM_PACK32: depth in
+                            // the low 24 bits, upper 8 bits undefined
+                            const quint32 combined = ((depthPlane[px] & 0x00FFFFFFu) << 8) | stencilPlane[px];
+                            memcpy(dst + px * 4, &combined, sizeof(quint32));
+                        }
+                    }
+                } else {
+                    qWarning("Failed to copy texture readback buffer of size %u: %d", quint32(planar.size()), err);
+                    readback.result->data.clear();
+                }
+            } else {
+                VkResult err = vmaCopyAllocationToMemory(toVmaAllocator(allocator),
+                                                         toVmaAllocation(readback.stagingAlloc),
+                                                         0, readback.result->data.data(), readback.byteSize);
+                if (err != VK_SUCCESS) {
+                    qWarning("Failed to copy texture readback buffer of size %u: %d", readback.byteSize, err);
+                    readback.result->data.clear();
+                } else if (readback.format == QRhiTexture::D24) {
+                    // VK_FORMAT_X8_D24_UNORM_PACK32 has the depth in the low
+                    // 24 bits and the upper 8 bits undefined. Use the same
+                    // layout as for D24S8: depth in the upper 24 bits, the
+                    // low 8 bits zero.
+                    char *p = readback.result->data.data();
+                    for (quint32 px = 0, count = readback.byteSize / 4; px < count; ++px)
+                        qToUnaligned((qFromUnaligned<quint32>(p + px * 4) & 0x00FFFFFFu) << 8, p + px * 4);
+                }
             }
 
             vmaDestroyBuffer(toVmaAllocator(allocator), readback.stagingBuf, toVmaAllocation(readback.stagingAlloc));
@@ -5396,7 +5476,8 @@ void QRhiVulkan::recordPrimaryCommandBuffer(QVkCommandBuffer *cbD)
         case QVkCommandBuffer::Command::CopyImageToBuffer:
             df->vkCmdCopyImageToBuffer(cbD->cb, cmd.args.copyImageToBuffer.src, cmd.args.copyImageToBuffer.srcLayout,
                                        cmd.args.copyImageToBuffer.dst,
-                                       1, &cmd.args.copyImageToBuffer.desc);
+                                       uint32_t(cmd.args.copyImageToBuffer.count),
+                                       cbD->pools.bufferImageCopy.constData() + cmd.args.copyImageToBuffer.bufferImageCopyIndex);
             break;
         case QVkCommandBuffer::Command::ImageBarrier:
             df->vkCmdPipelineBarrier(cbD->cb, cmd.args.imageBarrier.srcStageMask, cmd.args.imageBarrier.dstStageMask,

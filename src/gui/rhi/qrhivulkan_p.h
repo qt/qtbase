@@ -480,7 +480,8 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
                 VkImage src;
                 VkImageLayout srcLayout;
                 VkBuffer dst;
-                VkBufferImageCopy desc;
+                int count;
+                int bufferImageCopyIndex;
             } copyImageToBuffer;
             struct {
                 VkPipelineStageFlags srcStageMask;
