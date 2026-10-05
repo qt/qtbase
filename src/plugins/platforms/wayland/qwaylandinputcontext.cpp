@@ -180,17 +180,16 @@ void QWaylandInputContext::setFocusObject(QObject *object)
     if (m_focusObject == object)
         return;
 
-    if (m_inputMethodEnabled) {
-        inputInterface->disableSurface(mCurrentSurface);
-        mCurrentSurface = nullptr;
-        m_inputMethodEnabled = false;
+    if (mCurrentWindow) {
+        if (auto currentSurface = surfaceForWindow(mCurrentWindow))
+            inputInterface->disableSurface(currentSurface);
+        mCurrentWindow.clear();
     }
+
     if (object && inputMethodAccepted()) {
-        QWindow *window = QGuiApplication::focusWindow();
-        mCurrentSurface = surfaceForWindow(window);
-        if (mCurrentSurface) {
-            inputInterface->enableSurface(mCurrentSurface);
-            m_inputMethodEnabled = true;
+        mCurrentWindow = QGuiApplication::focusWindow();
+        if (auto currentSurface = surfaceForWindow(mCurrentWindow)) {
+            inputInterface->enableSurface(currentSurface);
             inputInterface->updateState(Qt::ImQueryAll, QWaylandTextInputInterface::update_state_enter);
         }
     }
