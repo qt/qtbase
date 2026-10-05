@@ -605,6 +605,14 @@ void tst_Android::orientationChange()
         orientationSpy.clear();
     };
 
+    // A device left rotated would skew the baselines below.
+    if (screen->orientation() != Qt::PortraitOrientation) {
+        requestOrientation(Qt::PortraitOrientation);
+        QTRY_COMPARE(screen->orientation(), Qt::PortraitOrientation);
+        QTRY_VERIFY(screen->size().height() > screen->size().width());
+        orientationSpy.clear();
+    }
+
     const QSize portraitSize = screen->size();
     const QSize landscapeSize = QSize(portraitSize.height(), portraitSize.width());
     // QTBUG-142560 - test that the screen's physical DPI remains consistent across orientation changes
