@@ -110,6 +110,11 @@ void tst_QGuiApplication::displayName()
     QGuiApplication app(argc, argv);
     QSignalSpy spy(&app, &QGuiApplication::applicationDisplayNameChanged);
 
+    const auto reset = qScopeGuard([&] {
+        QGuiApplication::setApplicationName(QString());
+        QGuiApplication::setApplicationDisplayName(QString());
+    });
+
     QCOMPARE(::qAppName(), QString::fromLatin1("tst_qguiapplication"));
     QCOMPARE(QGuiApplication::applicationName(), QString::fromLatin1("tst_qguiapplication"));
     QCOMPARE(QGuiApplication::applicationDisplayName(), QString::fromLatin1("tst_qguiapplication"));
