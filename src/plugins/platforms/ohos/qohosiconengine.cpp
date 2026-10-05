@@ -48,6 +48,10 @@ const QHash<QString, char32_t> &getThemeIconCodepoints()
         {"drive-harddisk"_L1, "externaldrive"},
         {"folder"_L1, "folder"},
         {"text-x-generic"_L1, "doc"},
+        {"go-down"_L1, "chevron_down"},
+        {"go-up"_L1, "chevron_up"},
+        {"go-previous"_L1, "chevron_left"},
+        {"go-next"_L1, "chevron_right"},
     };
 
     static const QHash<QString, char32_t> codepoints = QOhosJsThreadGateway::eval(
