@@ -24,6 +24,9 @@
 #include <pwd.h>
 #endif
 #endif
+#ifdef Q_OS_HARMONY
+#include <time.h>
+#endif
 #ifdef Q_OS_WIN
 #include <qt_windows.h>
 #include <private/qwinregistry_p.h>
@@ -1350,6 +1353,18 @@ void tst_QFileInfo::fileTimes()
         return (actual.toString(Qt::ISODateWithMs) + " (should be >) " + before.toString(Qt::ISODateWithMs))
                 .toLatin1();
     };
+    // HarmonyOS (using the HongMeng kernel) uses the coarse clock
+    // to assign file timestamps.
+    auto fsClockNow = [] {
+#ifdef Q_OS_HARMONY
+        timespec ts;
+        clock_gettime(CLOCK_REALTIME_COARSE, &ts);
+        return QDateTime::fromSecsSinceEpoch(ts.tv_sec, QTimeZone::UTC)
+                .addMSecs(ts.tv_nsec / 1000000);
+#else
+        return QDateTime::currentDateTimeUtc();
+#endif
+    };
 
     QFETCH(QString, fileName);
     int sleepTime = 100;
@@ -1391,7 +1406,7 @@ void tst_QFileInfo::fileTimes()
     QDateTime birthTime, writeTime, metadataChangeTime, readTime;
 
     // --- Create file and write to it
-    beforeBirth = QDateTime::currentDateTimeUtc().addMSecs(-fsClockSkew);
+    beforeBirth = fsClockNow().addMSecs(-fsClockSkew);
     {
         QFile file(fileName);
         QVERIFY(file.open(QFile::WriteOnly | QFile::Text));
@@ -1401,7 +1416,7 @@ void tst_QFileInfo::fileTimes()
                  datePairString(birthTime, beforeBirth));
 
         QTest::qSleep(sleepTime);
-        beforeWrite = QDateTime::currentDateTimeUtc().addMSecs(-fsClockSkew);
+        beforeWrite = fsClockNow().addMSecs(-fsClockSkew);
         QTextStream ts(&file);
         ts << fileName << Qt::endl;
     }
@@ -1414,7 +1429,7 @@ void tst_QFileInfo::fileTimes()
 
     // --- Change the file's metadata
     QTest::qSleep(sleepTime);
-    beforeMetadataChange = QDateTime::currentDateTimeUtc().addMSecs(-fsClockSkew);
+    beforeMetadataChange = fsClockNow().addMSecs(-fsClockSkew);
     {
         QFile file(fileName);
         file.setPermissions(file.permissions());
@@ -1430,7 +1445,7 @@ void tst_QFileInfo::fileTimes()
 
     // --- Read the file
     QTest::qSleep(sleepTime);
-    beforeRead = QDateTime::currentDateTimeUtc().addMSecs(-fsClockSkew);
+    beforeRead = fsClockNow().addMSecs(-fsClockSkew);
     {
         QFile file(fileName);
         QVERIFY(file.open(QFile::ReadOnly | QFile::Text));
