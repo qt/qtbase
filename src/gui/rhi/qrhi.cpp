@@ -895,7 +895,9 @@ Q_CONSTINIT QRhiDebugHooks qrhiDebugHooks;
     formats QRhiTexture::RGBA8 and QRhiTexture::BGRA8 are guaranteed to be
     supported for readbacks. In addition, with OpenGL, but not OpenGL ES,
     reading back the 1 byte per component formats QRhiTexture::R8 and
-    QRhiTexture::RED_OR_ALPHA8 are supported as well. Reading back floating
+    QRhiTexture::RED_OR_ALPHA8 are supported as well, and so are the depth and
+    depth-stencil formats QRhiTexture::D16, D24, D24S8, D32F and D32FS8, as long
+    as the format is supported in the first place. Reading back floating
     point formats QRhiTexture::RGBA16F and RGBA32F may work too with OpenGL, as
     long as the implementation provides support for these, but QRhi can give no
     guarantees, as indicated by this flag.
@@ -11184,6 +11186,26 @@ void QRhiResourceUpdateBatch::copyTexture(QRhiTexture *dst, QRhiTexture *src, co
    happens with a byte ordered format. A \l{QRhiTexture::RGBA8}{RGBA8} texture
    maps therefore to byte ordered QImage formats, such as,
    QImage::Format_RGBA8888.
+
+   The data of a depth or depth-stencil texture is returned in the following
+   layout, in native byte order, regardless of the backend. Any bits not
+   mentioned are zero.
+
+   \list
+   \li \l{QRhiTexture::D16}{D16}: 2 bytes per pixel, a 16-bit normalized unsigned integer.
+   \li \l{QRhiTexture::D24}{D24}: 4 bytes per pixel, the 24-bit normalized
+   unsigned integer depth in the upper 24 bits.
+   \li \l{QRhiTexture::D24S8}{D24S8}: 4 bytes per pixel, the 24-bit
+   normalized unsigned integer depth in the upper 24 bits and the stencil in
+   the lower 8 bits.
+   \li \l{QRhiTexture::D32F}{D32F}: 4 bytes per pixel, a 32-bit float.
+   \li \l{QRhiTexture::D32FS8}{D32FS8}: 8 bytes per pixel, a 32-bit float
+   depth, followed by a 32-bit unsigned integer with the stencil in the lower 8
+   bits.
+   \endlist
+
+   \note With OpenGL ES, reading back a depth or depth-stencil texture is not
+   supported, see QRhi::ReadBackAnyTextureFormat.
 
    \note The asynchronous readback is guaranteed to have completed when one of
    the following conditions is met: \l{QRhi::finish()}{finish()} has been
