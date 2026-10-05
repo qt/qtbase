@@ -515,10 +515,10 @@ QStringList QWindowsDirectWriteFontDatabase::addApplicationFont(const QByteArray
         bool hasDefaultLocale = GetUserDefaultLocaleName(defaultLocale, LOCALE_NAME_MAX_LENGTH) != 0;
         wchar_t englishLocale[] = L"en-us";
 
-        static const int SMOOTH_SCALABLE = 0xffff;
-        const bool scalable = true;
-        const bool antialias = false;
-        const int size = SMOOTH_SCALABLE;
+        constexpr int SMOOTH_SCALABLE = 0xffff;
+        constexpr bool scalable = true;
+        constexpr bool antialias = false;
+        constexpr int size = SMOOTH_SCALABLE;
 
         QSupportedWritingSystems writingSystems = supportedWritingSystems(face);
         DirectWriteScope<IDWriteFontFace3> face3;
@@ -540,9 +540,6 @@ QStringList QWindowsDirectWriteFontDatabase::addApplicationFont(const QByteArray
                                            style,
                                            weight,
                                            fixed,
-                                           size,
-                                           antialias,
-                                           scalable,
                                            color](const QString &familyName,
                                                   const QString &styleName)
             {
