@@ -12,6 +12,7 @@
 #include <QtCore/private/qnapi_p.h>
 #include <QtCore/private/qohoslogger_p.h>
 
+#include <algorithm>
 #include <optional>
 
 QT_BEGIN_NAMESPACE
@@ -95,6 +96,7 @@ public:
 
     QIconEngine *clone() const override;
     QString key() const override;
+    QSize actualSize(const QSize &size, QIcon::Mode mode, QIcon::State state) override;
 
 protected:
     QString string() const override;
@@ -119,6 +121,15 @@ QIconEngine *QOhosIconEngine::clone() const
 QString QOhosIconEngine::key() const
 {
     return "QOhosIconEngine"_L1;
+}
+
+QSize QOhosIconEngine::actualSize(const QSize &size, QIcon::Mode mode, QIcon::State state)
+{
+    if (isNull())
+        return QFontIconEngine::actualSize(size, mode, state);
+
+    const int squareSide = std::min(size.width(), size.height());
+    return QSize(squareSide, squareSide);
 }
 
 QString QOhosIconEngine::string() const
