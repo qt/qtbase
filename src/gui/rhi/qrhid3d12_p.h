@@ -701,6 +701,17 @@ struct QD3D12Readback
     QSize pixelSize;
     QRhiTexture::Format format = QRhiTexture::UnknownFormat;
     quint32 stagingRowPitch = 0;
+    // Only used when format is D24S8 or D32FS8: the stencil plane is copied
+    // into the same staging buffer as the depth plane (see
+    // enqueueResourceUpdates()), at this byte offset and with its own row
+    // pitch, since D3D12 exposes combined depth-stencil resources as two
+    // separately addressable planes.
+    quint32 stencilStagingOffset = 0;
+    quint32 stencilStagingRowPitch = 0;
+    // The staging buffer can hold more than the result, in which case the
+    // result starts at this position in it.
+    QPoint cropOrigin;
+    quint32 bytesPerPixel = 0;
 };
 
 struct QD3D12MipmapGenerator

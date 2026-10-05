@@ -7,6 +7,7 @@
 #include <qmath.h>
 #include <QtCore/private/qsystemerror_p.h>
 #include <QtCore/qcryptographichash.h>
+#include <QtCore/qendian.h>
 #include <comdef.h>
 #include "qrhid3dhelpers_p.h"
 #include "cs_mipmap_p.h"
@@ -4480,6 +4481,20 @@ static inline QRhiTexture::Format swapchainReadbackTextureFormat(DXGI_FORMAT for
     return QRhiTexture::UnknownFormat;
 }
 
+static inline bool isDepthTextureFormat(QRhiTexture::Format format)
+{
+    switch (format) {
+    case QRhiTexture::Format::D16:
+    case QRhiTexture::Format::D24:
+    case QRhiTexture::Format::D24S8:
+    case QRhiTexture::Format::D32F:
+    case QRhiTexture::Format::D32FS8:
+        return true;
+    default:
+        return false;
+    }
+}
+
 void QRhiD3D12::enqueueResourceUpdates(QD3D12CommandBuffer *cbD, QRhiResourceUpdateBatch *resourceUpdates)
 {
     QRhiResourceUpdateBatchPrivate *ud = QRhiResourceUpdateBatchPrivate::get(resourceUpdates);
@@ -4907,11 +4922,17 @@ void QRhiD3D12::enqueueResourceUpdates(QD3D12CommandBuffer *cbD, QRhiResourceUpd
                     continue;
                 }
                 is3D = texD->m_flags.testFlag(QRhiTexture::ThreeDimensional);
-                if (u.rb.rect().isValid())
-                    rect = u.rb.rect();
-                else
-                    rect = QRect({0, 0}, q->sizeForMipLevel(u.rb.level(), texD->m_pixelSize));
+                const QRect levelRect({0, 0}, q->sizeForMipLevel(u.rb.level(), texD->m_pixelSize));
                 readback.format = texD->m_format;
+                rect = u.rb.rect().isValid() ? u.rb.rect() : levelRect;
+                if (isDepthTextureFormat(readback.format)) {
+                    // CopyTextureRegion() requires pSrcBox to be null when
+                    // copying from a depth-stencil resource, i.e. the whole
+                    // subresource is copied. The requested rectangle is cropped
+                    // out of it in finishActiveReadbacks().
+                    rect = rect.intersected(levelRect);
+                    readback.cropOrigin = rect.topLeft();
+                }
                 srcHandle = texD->handle;
             } else {
                 Q_ASSERT(currentSwapChain);
@@ -4930,11 +4951,21 @@ void QRhiD3D12::enqueueResourceUpdates(QD3D12CommandBuffer *cbD, QRhiResourceUpd
                               readback.pixelSize,
                               &readback.bytesPerLine,
                               &readback.byteSize,
-                              nullptr);
+                              &readback.bytesPerPixel);
 
             QD3D12Resource *srcRes = resourcePool.lookupRef(srcHandle);
             if (!srcRes)
                 continue;
+
+            // D3D12 exposes a combined depth-stencil resource as two
+            // separately addressable planes (Plane 0 = depth, Plane 1 =
+            // stencil) for copying purposes; CopyTextureRegion cannot copy
+            // both planes in one go. Read them out as two separate copies,
+            // each into its own placed footprint within the same staging
+            // buffer. finishActiveReadbacks() then interleaves the two
+            // planes into the result.
+            const bool combinedDepthStencil = u.rb.texture() && isStencilSupportingFormat(readback.format);
+            const bool depthTexture = u.rb.texture() && isDepthTextureFormat(readback.format);
 
             const UINT subresource = calcSubresource(UINT(u.rb.level()),
                                                      is3D ? 0u : UINT(u.rb.layer()),
@@ -4947,20 +4978,36 @@ void QRhiD3D12::enqueueResourceUpdates(QD3D12CommandBuffer *cbD, QRhiResourceUpd
                                        &layout, nullptr, nullptr, &totalBytes);
             readback.stagingRowPitch = layout.Footprint.RowPitch;
 
-            const quint32 allocSize = aligned<quint32>(totalBytes, QD3D12StagingArea::ALIGNMENT);
+            UINT stencilSubresource = 0;
+            D3D12_PLACED_SUBRESOURCE_FOOTPRINT stencilLayout;
+            UINT64 stencilTotalBytes = 0;
+            if (combinedDepthStencil) {
+                stencilSubresource = subresource
+                        + srcRes->desc.MipLevels * UINT(srcRes->desc.DepthOrArraySize);
+                dev->GetCopyableFootprints(&srcRes->desc, stencilSubresource, 1, 0,
+                                           &stencilLayout, nullptr, nullptr, &stencilTotalBytes);
+                readback.stencilStagingRowPitch = stencilLayout.Footprint.RowPitch;
+            }
+
+            const quint32 allocSize = aligned<quint32>(totalBytes, QD3D12StagingArea::ALIGNMENT)
+                    + (combinedDepthStencil ? aligned<quint32>(stencilTotalBytes, QD3D12StagingArea::ALIGNMENT) : 0);
             if (!readback.staging.create(this, allocSize, D3D12_HEAP_TYPE_READBACK)) {
                 if (u.result->completed)
                     u.result->completed();
                 continue;
             }
             QD3D12StagingArea::Allocation stagingAlloc = readback.staging.get(totalBytes);
-            if (!stagingAlloc.isValid()) {
+            QD3D12StagingArea::Allocation stencilStagingAlloc;
+            if (combinedDepthStencil)
+                stencilStagingAlloc = readback.staging.get(stencilTotalBytes);
+            if (!stagingAlloc.isValid() || (combinedDepthStencil && !stencilStagingAlloc.isValid())) {
                 readback.staging.destroy();
                 if (u.result->completed)
                     u.result->completed();
                 continue;
             }
             Q_ASSERT(stagingAlloc.bufferOffset == 0);
+            readback.stencilStagingOffset = stencilStagingAlloc.bufferOffset;
 
             barrierGen.addTransitionBarrier(srcHandle, D3D12_RESOURCE_STATE_COPY_SOURCE);
             barrierGen.enqueueBufferedTransitionBarriers(cbD);
@@ -4985,7 +5032,26 @@ void QRhiD3D12::enqueueResourceUpdates(QD3D12CommandBuffer *cbD, QRhiResourceUpd
             srcBox.bottom = srcBox.top + UINT(rect.height());
             srcBox.back = srcBox.front + 1;
 
-            cbD->cmdList->CopyTextureRegion(&dst, 0, 0, 0, &src, &srcBox);
+            // see the comment above: a depth-stencil source requires a null box
+            const D3D12_BOX *srcBoxPtr = depthTexture ? nullptr : &srcBox;
+
+            cbD->cmdList->CopyTextureRegion(&dst, 0, 0, 0, &src, srcBoxPtr);
+
+            if (combinedDepthStencil) {
+                D3D12_TEXTURE_COPY_LOCATION stencilDst;
+                stencilDst.pResource = stencilStagingAlloc.buffer;
+                stencilDst.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
+                stencilDst.PlacedFootprint.Offset = stencilStagingAlloc.bufferOffset;
+                stencilDst.PlacedFootprint.Footprint = stencilLayout.Footprint;
+
+                D3D12_TEXTURE_COPY_LOCATION stencilSrc;
+                stencilSrc.pResource = srcRes->resource;
+                stencilSrc.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+                stencilSrc.SubresourceIndex = stencilSubresource;
+
+                cbD->cmdList->CopyTextureRegion(&stencilDst, 0, 0, 0, &stencilSrc, srcBoxPtr);
+            }
+
             activeReadbacks.append(readback);
         } else if (u.type == QRhiResourceUpdateBatchPrivate::TextureOp::GenMips) {
             QD3D12Texture *texD = QRHI_RES(QD3D12Texture, u.dst);
@@ -5049,11 +5115,74 @@ void QRhiD3D12::finishActiveReadbacks(bool forced)
             readback.result->data.resize(int(readback.byteSize));
 
             if (readback.format != QRhiTexture::UnknownFormat) {
-                quint8 *dstPtr = reinterpret_cast<quint8 *>(readback.result->data.data());
-                const quint8 *srcPtr = readback.staging.mem.p;
-                const quint32 lineSize = qMin(readback.bytesPerLine, readback.stagingRowPitch);
-                for (int y = 0, h = readback.pixelSize.height(); y < h; ++y)
-                    memcpy(dstPtr + y * readback.bytesPerLine, srcPtr + y * readback.stagingRowPitch, lineSize);
+                if (isStencilSupportingFormat(readback.format)) {
+                    // The staging buffer holds two separate planes (see
+                    // enqueueResourceUpdates()): the 32-bit depth plane at
+                    // offset 0 and the 8-bit stencil plane at
+                    // readback.stencilStagingOffset, each with its own row
+                    // pitch. Interleave them into one packed value per
+                    // pixel, in the same layout OpenGL's native
+                    // GL_UNSIGNED_INT_24_8 (D24S8) and
+                    // GL_FLOAT_32_UNSIGNED_INT_24_8_REV (D32FS8) readbacks
+                    // produce. The Vulkan and Metal backends do the same.
+                    // A depth-stencil texture is always copied in its entirety,
+                    // so skip to where the requested rectangle starts in each plane.
+                    const quint8 *depthBase = readback.staging.mem.p
+                            + readback.cropOrigin.y() * readback.stagingRowPitch
+                            + readback.cropOrigin.x() * 4;
+                    const quint8 *stencilBase = readback.staging.mem.p + readback.stencilStagingOffset
+                            + readback.cropOrigin.y() * readback.stencilStagingRowPitch
+                            + readback.cropOrigin.x();
+                    char *dst = readback.result->data.data();
+                    const int w = readback.pixelSize.width();
+                    const int h = readback.pixelSize.height();
+                    if (readback.format == QRhiTexture::D32FS8) {
+                        // 8 bytes per pixel: the float depth, then a 32-bit
+                        // word with the stencil in its low 8 bits.
+                        for (int y = 0; y < h; ++y) {
+                            const quint8 *depthRow = depthBase + y * readback.stagingRowPitch;
+                            const quint8 *stencilRow = stencilBase + y * readback.stencilStagingRowPitch;
+                            for (int x = 0; x < w; ++x) {
+                                const quint32 stencilWord = stencilRow[x];
+                                char *dstPixel = dst + (y * w + x) * 8;
+                                memcpy(dstPixel, depthRow + x * 4, sizeof(quint32));
+                                memcpy(dstPixel + 4, &stencilWord, sizeof(quint32));
+                            }
+                        }
+                    } else { // D24S8
+                        // 4 bytes per pixel: depth in the upper 24 bits,
+                        // stencil in the low 8 bits.
+                        for (int y = 0; y < h; ++y) {
+                            const quint8 *depthRow = depthBase + y * readback.stagingRowPitch;
+                            const quint8 *stencilRow = stencilBase + y * readback.stencilStagingRowPitch;
+                            for (int x = 0; x < w; ++x) {
+                                // depthRow's texel is a 32-bit value with the
+                                // 24-bit depth in the low bits, like the
+                                // Vulkan/Metal depth plane.
+                                quint32 depthWord;
+                                memcpy(&depthWord, depthRow + x * 4, sizeof(quint32));
+                                const quint32 combined = ((depthWord & 0x00FFFFFFu) << 8) | stencilRow[x];
+                                memcpy(dst + (y * w + x) * 4, &combined, sizeof(quint32));
+                            }
+                        }
+                    }
+                } else {
+                    quint8 *dstPtr = reinterpret_cast<quint8 *>(readback.result->data.data());
+                    const quint8 *srcPtr = readback.staging.mem.p
+                            + readback.cropOrigin.y() * readback.stagingRowPitch
+                            + readback.cropOrigin.x() * readback.bytesPerPixel;
+                    const quint32 lineSize = qMin(readback.bytesPerLine, readback.stagingRowPitch);
+                    for (int y = 0, h = readback.pixelSize.height(); y < h; ++y)
+                        memcpy(dstPtr + y * readback.bytesPerLine, srcPtr + y * readback.stagingRowPitch, lineSize);
+                    if (readback.format == QRhiTexture::D24) {
+                        // The depth is in the low 24 bits and the upper 8 bits
+                        // are unused. Use the same layout as for D24S8: depth in
+                        // the upper 24 bits, the low 8 bits zero.
+                        char *p = readback.result->data.data();
+                        for (qsizetype px = 0, count = readback.result->data.size() / 4; px < count; ++px)
+                            qToUnaligned((qFromUnaligned<quint32>(p + px * 4) & 0x00FFFFFFu) << 8, p + px * 4);
+                    }
+                }
             } else {
                 memcpy(readback.result->data.data(), readback.staging.mem.p, readback.byteSize);
             }
@@ -5661,20 +5790,6 @@ static inline DXGI_FORMAT toD3DDepthTextureDSVFormat(QRhiTexture::Format format)
         break;
     }
     Q_UNREACHABLE_RETURN(DXGI_FORMAT_D32_FLOAT);
-}
-
-static inline bool isDepthTextureFormat(QRhiTexture::Format format)
-{
-    switch (format) {
-    case QRhiTexture::Format::D16:
-    case QRhiTexture::Format::D24:
-    case QRhiTexture::Format::D24S8:
-    case QRhiTexture::Format::D32F:
-    case QRhiTexture::Format::D32FS8:
-        return true;
-    default:
-        return false;
-    }
 }
 
 bool QD3D12Texture::prepareCreate(QSize *adjustedSize)
