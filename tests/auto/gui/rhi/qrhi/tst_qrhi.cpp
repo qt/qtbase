@@ -11,6 +11,7 @@
 #include <QOperatingSystemVersion>
 #include <qrgbafloat.h>
 #include <qrgba64.h>
+#include <qendian.h>
 
 #include <private/qrhi_p.h>
 
@@ -121,6 +122,8 @@ private slots:
     void textureWithSampleCount();
     void textureFormats_data();
     void textureFormats();
+    void depthTextureReadback_data();
+    void depthTextureReadback();
 
     void renderToTextureSimple_data();
     void renderToTextureSimple();
@@ -11966,6 +11969,164 @@ void tst_QRhi::textureFormats()
 
     std::unique_ptr<QRhiTexture> tex(rhi->newTexture(textureFormat, QSize(512, 512), 1));
     QVERIFY(tex->create());
+}
+
+void tst_QRhi::depthTextureReadback_data()
+{
+    static constexpr QRhiTexture::Format depthFormats[] = {
+        QRhiTexture::D16,
+        QRhiTexture::D24,
+        QRhiTexture::D24S8,
+        QRhiTexture::D32F,
+        QRhiTexture::D32FS8,
+    };
+    rhiTestDataWithParam("depthFormat", QSpan(depthFormats), [](const QRhiTexture::Format format) {
+        return QString::number(format);
+    });
+}
+
+// Verifies that reading back a QRhiTexture with a depth (or depth-stencil)
+// format returns the depth (and stencil) values the texture was cleared to, in
+// the layout documented for QRhiResourceUpdateBatch::readBackTexture().
+void tst_QRhi::depthTextureReadback()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+    QFETCH(QRhiTexture::Format, depthFormat);
+
+    std::unique_ptr<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing depth texture readback");
+
+    if (!rhi->isTextureFormatSupported(depthFormat))
+        QSKIP("Depth format not supported on this backend");
+
+#ifdef TST_GL
+    // glReadPixels() with GL_DEPTH_COMPONENT is not available in OpenGL ES.
+    if (impl == QRhi::OpenGLES2) {
+        const QRhiGles2NativeHandles *glHandles = static_cast<const QRhiGles2NativeHandles *>(rhi->nativeHandles());
+        if (glHandles->context->isOpenGLES())
+            QSKIP("Reading back depth textures is not supported with OpenGL ES");
+    }
+#endif
+
+    const QSize outputSize(15, 15);
+    std::unique_ptr<QRhiTexture> depthTex(rhi->newTexture(depthFormat, outputSize, 1,
+                                                           QRhiTexture::RenderTarget | QRhiTexture::UsedAsTransferSource));
+    QVERIFY(depthTex->create());
+
+    // A render target with a depth texture but no color attachment is valid
+    // (and is exactly what shadow-map-style rendering uses in practice).
+    QRhiTextureRenderTargetDescription rtDesc;
+    rtDesc.setDepthTexture(depthTex.get());
+    std::unique_ptr<QRhiTextureRenderTarget> rt(rhi->newTextureRenderTarget(rtDesc));
+    std::unique_ptr<QRhiRenderPassDescriptor> rpDesc(rt->newCompatibleRenderPassDescriptor());
+    rt->setRenderPassDescriptor(rpDesc.get());
+    QVERIFY(rt->create());
+
+    QRhiCommandBuffer *cb = nullptr;
+    QVERIFY(rhi->beginOffscreenFrame(&cb) == QRhi::FrameOpSuccess);
+    QVERIFY(cb);
+
+    // Arbitrary values, deliberately not 0 or 1, so that the all-zero data a
+    // badly broken readback tends to produce cannot be mistaken for a correct
+    // result.
+    const float clearDepth = 0.25f;
+    const quint32 clearStencil = 0x5A;
+    cb->beginPass(rt.get(), Qt::black, { clearDepth, clearStencil });
+    // No draws: the clear value alone is what gets verified below.
+
+    // Read back the whole texture, and also a sub-rectangle of it.
+    QRhiReadbackResult readResult;
+    bool readCompleted = false;
+    readResult.completed = [&readCompleted] { readCompleted = true; };
+    QRhiReadbackResult subResult;
+    bool subReadCompleted = false;
+    subResult.completed = [&subReadCompleted] { subReadCompleted = true; };
+    const QRect subRect(3, 2, 7, 5);
+    QRhiReadbackDescription subReadback(depthTex.get());
+    subReadback.setRect(subRect);
+    QRhiResourceUpdateBatch *readbackBatch = rhi->nextResourceUpdateBatch();
+    readbackBatch->readBackTexture(depthTex.get(), &readResult);
+    readbackBatch->readBackTexture(subReadback, &subResult);
+    cb->endPass(readbackBatch);
+
+    rhi->endOffscreenFrame();
+    // Offscreen frames are synchronous, so the readback is guaranteed to
+    // have completed by now.
+    QVERIFY(readCompleted);
+    QVERIFY(subReadCompleted);
+    QCOMPARE(readResult.pixelSize, outputSize);
+    QCOMPARE(subResult.pixelSize, subRect.size());
+
+    if (impl == QRhi::Null)
+        return;
+
+    quint32 bytesPerPixel = 0;
+    switch (depthFormat) {
+    case QRhiTexture::D16:
+        bytesPerPixel = 2;
+        break;
+    case QRhiTexture::D24:
+    case QRhiTexture::D24S8:
+    case QRhiTexture::D32F:
+        bytesPerPixel = 4;
+        break;
+    case QRhiTexture::D32FS8:
+        bytesPerPixel = 8;
+        break;
+    default:
+        Q_UNREACHABLE();
+    }
+
+    // Check that the values we cleared to come back. Every texel is checked,
+    // not just a few of them, since all texels have the same value and a
+    // readback with the wrong row stride or offset would otherwise go unnoticed.
+    const auto verifyTexels = [&](const QRhiReadbackResult &result) {
+        const int texelCount = result.pixelSize.width() * result.pixelSize.height();
+        QCOMPARE(quint32(result.data.size()), bytesPerPixel * quint32(texelCount));
+        for (int i = 0; i < texelCount; ++i) {
+            const char *texel = result.data.constData() + i * int(bytesPerPixel);
+            switch (depthFormat) {
+            case QRhiTexture::D32F:
+            case QRhiTexture::D32FS8:
+            {
+                const float depth = qFromUnaligned<float>(texel);
+                QCOMPARE(depth, clearDepth);
+                if (depthFormat == QRhiTexture::D32FS8)
+                    QCOMPARE(qFromUnaligned<quint32>(texel + 4), clearStencil);
+            }
+                break;
+            case QRhiTexture::D16:
+            {
+                // 16-bit normalized depth cannot represent clearDepth exactly,
+                // and the conversion may round to either of the two nearest
+                // values, so allow an error of one.
+                const quint16 rawDepth = qFromUnaligned<quint16>(texel);
+                const int expectedRawDepth = qRound(clearDepth * 0xFFFF);
+                QCOMPARE_LE(qAbs(int(rawDepth) - expectedRawDepth), 1);
+            }
+                break;
+            case QRhiTexture::D24:
+            case QRhiTexture::D24S8:
+            {
+                // The 24-bit depth is in the upper 24 bits, the stencil, if any,
+                // in the lower 8 bits. Same as above, allow an error of one.
+                const quint32 rawTexel = qFromUnaligned<quint32>(texel);
+                const int expectedRawDepth = qRound(clearDepth * 0xFFFFFF);
+                QCOMPARE_LE(qAbs(int(rawTexel >> 8) - expectedRawDepth), 1);
+                QCOMPARE(rawTexel & 0xFF, depthFormat == QRhiTexture::D24S8 ? clearStencil : 0u);
+            }
+                break;
+            default:
+                Q_UNREACHABLE();
+            }
+        }
+    };
+    verifyTexels(readResult);
+    if (QTest::currentTestFailed())
+        return;
+    verifyTexels(subResult);
 }
 
 void tst_QRhi::textureImportOpenGL()
