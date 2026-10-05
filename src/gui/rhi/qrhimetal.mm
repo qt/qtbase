@@ -12,6 +12,7 @@
 #include <QTemporaryFile>
 #include <QFileInfo>
 #include <qmath.h>
+#include <QtCore/qendian.h>
 #include <QOperatingSystemVersion>
 
 #include <QtCore/private/qcore_mac_p.h>
@@ -270,6 +271,16 @@ struct QRhiMetalData
         quint32 bufSize;
         QSize pixelSize;
         QRhiTexture::Format format;
+        // Only used for depth(-stencil) textures whose Metal pixel format does
+        // not match the layout of the readback result, where the staging
+        // buffer holds a densely packed depth plane, followed by a densely
+        // packed stencil plane when the format has stencil. See
+        // enqueueResourceUpdates() and finishActiveReadbacks().
+        quint32 depthPlaneByteSize = 0;
+        quint32 stencilPlaneByteSize = 0;
+        // Whether the depth plane holds 32-bit floats (as opposed to a
+        // 24-bit unorm value in the low bits of each 32-bit word).
+        bool depthPlaneIsFloat = false;
     };
     QVarLengthArray<TextureReadback, 2> activeTextureReadbacks;
 
@@ -3918,19 +3929,68 @@ void QRhiMetal::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
 
             quint32 bpl = 0;
             textureFormatInfo(readback.format, readback.pixelSize, &bpl, &readback.bufSize, nullptr);
-            readback.buf = [d->dev newBufferWithLength: readback.bufSize options: MTLResourceStorageModeShared];
+
+            // The depth and stencil aspects of a texture with a combined
+            // depth/stencil Metal pixel format cannot be copied out with
+            // MTLBlitOptionNone, they need separate blits, each into its own
+            // densely packed plane of the staging buffer. In addition, the
+            // layout of what the blit produces does not necessarily match
+            // what QRhi returns for the format (e.g. D16 and D24 may be backed
+            // by Depth32Float). The decisions are thus based on the actual Metal
+            // pixel format. finishActiveReadbacks() then converts the planes
+            // into the layout of the result.
+            const MTLPixelFormat mtlFormat = texD ? texD->d->format : MTLPixelFormatInvalid;
+            const bool isDepthFormat = texD && (readback.format == QRhiTexture::D16
+                                                || readback.format == QRhiTexture::D24
+                                                || readback.format == QRhiTexture::D24S8
+                                                || readback.format == QRhiTexture::D32F
+                                                || readback.format == QRhiTexture::D32FS8);
+            const bool nativeLayout = (readback.format == QRhiTexture::D16 && mtlFormat == MTLPixelFormatDepth16Unorm)
+                    || (readback.format == QRhiTexture::D32F && mtlFormat == MTLPixelFormatDepth32Float);
+            const bool usePlanes = isDepthFormat && !nativeLayout;
+            bool combinedMtlFormat = mtlFormat == MTLPixelFormatDepth32Float_Stencil8;
+#ifdef Q_OS_MACOS
+            if (mtlFormat == MTLPixelFormatDepth24Unorm_Stencil8)
+                combinedMtlFormat = true;
+#endif
+            const bool hasStencil = isStencilSupportingFormat(readback.format);
+            quint32 depthPlaneBytesPerRow = 0;
+            if (usePlanes) {
+                // The depth blit writes 4 bytes per pixel (a float, or a 24-bit
+                // unorm value in the low bits), the stencil blit 1 byte per pixel.
+                depthPlaneBytesPerRow = quint32(rect.width()) * 4;
+                readback.depthPlaneByteSize = depthPlaneBytesPerRow * quint32(rect.height());
+                if (hasStencil)
+                    readback.stencilPlaneByteSize = quint32(rect.width()) * quint32(rect.height());
+                readback.depthPlaneIsFloat = mtlFormat == MTLPixelFormatDepth32Float
+                        || mtlFormat == MTLPixelFormatDepth32Float_Stencil8;
+            }
+            const quint32 stagingBufSize = usePlanes
+                    ? readback.depthPlaneByteSize + readback.stencilPlaneByteSize
+                    : readback.bufSize;
+            readback.buf = [d->dev newBufferWithLength: stagingBufSize options: MTLResourceStorageModeShared];
 
             ensureBlit();
-            [blitEnc copyFromTexture: src
-                                      sourceSlice: NSUInteger(is3D ? 0 : u.rb.layer())
-                                      sourceLevel: NSUInteger(u.rb.level())
-                                      sourceOrigin: MTLOriginMake(NSUInteger(rect.x()), NSUInteger(rect.y()), NSUInteger(is3D ? u.rb.layer() : 0))
-                                      sourceSize: MTLSizeMake(NSUInteger(rect.width()), NSUInteger(rect.height()), 1)
-                                      toBuffer: readback.buf
-                                      destinationOffset: 0
-                                      destinationBytesPerRow: bpl
-                                      destinationBytesPerImage: 0
-                                      options: MTLBlitOptionNone];
+            const auto blit = [&](quint32 destinationOffset, quint32 destinationBytesPerRow, MTLBlitOption options) {
+                [blitEnc copyFromTexture: src
+                                          sourceSlice: NSUInteger(is3D ? 0 : u.rb.layer())
+                                          sourceLevel: NSUInteger(u.rb.level())
+                                          sourceOrigin: MTLOriginMake(NSUInteger(rect.x()), NSUInteger(rect.y()), NSUInteger(is3D ? u.rb.layer() : 0))
+                                          sourceSize: MTLSizeMake(NSUInteger(rect.width()), NSUInteger(rect.height()), 1)
+                                          toBuffer: readback.buf
+                                          destinationOffset: destinationOffset
+                                          destinationBytesPerRow: destinationBytesPerRow
+                                          destinationBytesPerImage: 0
+                                          options: options];
+            };
+            if (usePlanes) {
+                blit(0, depthPlaneBytesPerRow,
+                     combinedMtlFormat ? MTLBlitOptionDepthFromDepthStencil : MTLBlitOptionNone);
+                if (hasStencil)
+                    blit(readback.depthPlaneByteSize, quint32(rect.width()), MTLBlitOptionStencilFromDepthStencil);
+            } else {
+                blit(0, bpl, MTLBlitOptionNone);
+            }
 
             d->activeTextureReadbacks.append(readback);
         } else if (u.type == QRhiResourceUpdateBatchPrivate::TextureOp::GenMips) {
@@ -4130,6 +4190,8 @@ void QRhiMetal::beginPass(QRhiCommandBuffer *cb,
         cbD->d->currentPassRpDesc.stencilAttachment.texture = rtD->fb.hasStencil ? rtD->fb.dsTex : nil;
         if (rtD->fb.depthNeedsStore) { // Depth/Stencil is set to DontCare by default, override if  needed
             cbD->d->currentPassRpDesc.depthAttachment.storeAction = MTLStoreActionStore;
+            if (rtD->fb.hasStencil)
+                cbD->d->currentPassRpDesc.stencilAttachment.storeAction = MTLStoreActionStore;
         } else if (canStoreAttachment(rtD->fb.dsTex)) {
             // Would be discarded at the end of the pass, but an interruption in
             // the middle of it still has to be able to keep the contents. Defer,
@@ -4933,8 +4995,44 @@ void QRhiMetal::finishActiveReadbacks(bool forced)
             readback.result->format = readback.format;
             readback.result->pixelSize = readback.pixelSize;
             readback.result->data.resize(int(readback.bufSize));
-            void *p = [readback.buf contents];
-            memcpy(readback.result->data.data(), p, readback.bufSize);
+            const void *p = [readback.buf contents];
+            if (readback.depthPlaneByteSize) {
+                // The staging buffer holds a densely packed depth plane, followed
+                // by a densely packed stencil plane when the format has stencil
+                // (see enqueueResourceUpdates()). Convert into the layout QRhi
+                // guarantees: D16 is a 16-bit unorm value, D24 and D24S8 have the
+                // depth in the upper 24 bits and the stencil (or zero) in the lower
+                // 8 bits, and D32FS8 is the float depth followed by a 32-bit word
+                // with the stencil in its low 8 bits.
+                const quint32 pixelCount = quint32(readback.pixelSize.width()) * quint32(readback.pixelSize.height());
+                const char *depthPlane = static_cast<const char *>(p);
+                const quint8 *stencilPlane = reinterpret_cast<const quint8 *>(depthPlane + readback.depthPlaneByteSize);
+                char *dst = readback.result->data.data();
+                for (quint32 px = 0; px < pixelCount; ++px) {
+                    const quint32 depthWord = qFromUnaligned<quint32>(depthPlane + px * 4);
+                    const float depthF = readback.depthPlaneIsFloat ? qFromUnaligned<float>(depthPlane + px * 4) : 0.0f;
+                    const quint32 stencil = readback.stencilPlaneByteSize ? stencilPlane[px] : 0;
+                    switch (readback.format) {
+                    case QRhiTexture::D16:
+                        qToUnaligned(quint16(qRound(qBound(0.0f, depthF, 1.0f) * 65535.0f)), dst + px * 2);
+                        break;
+                    case QRhiTexture::D32FS8:
+                        qToUnaligned(depthWord, dst + px * 8);
+                        qToUnaligned(stencil, dst + px * 8 + 4);
+                        break;
+                    default: // D24, D24S8
+                        {
+                            const quint32 depth24 = readback.depthPlaneIsFloat
+                                    ? quint32(qBound(0.0f, depthF, 1.0f) * 16777215.0f + 0.5f)
+                                    : depthWord & 0x00FFFFFFu;
+                            qToUnaligned((depth24 << 8) | stencil, dst + px * 4);
+                        }
+                        break;
+                    }
+                }
+            } else {
+                memcpy(readback.result->data.data(), p, readback.bufSize);
+            }
             [readback.buf release];
 
             if (readback.result->completed)
