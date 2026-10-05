@@ -1256,9 +1256,10 @@ void QOhosStyle::drawPrimitive(
         }
 
         const auto arrowWidth = 2;
-        auto arrowRect = QRect(0, 0, maxArrowSize, maxArrowSize * 0.5);
-        arrowRect.moveCenter(availableRect.center());
-        arrowRect = adjusted(arrowRect, -arrowWidth * 0.5);
+        const auto arrowCenter = QRectF(availableRect).center();
+        auto arrowRect = QRectF(0, 0, maxArrowSize, maxArrowSize * 0.5);
+        arrowRect.moveCenter(arrowCenter);
+        arrowRect.adjust(arrowWidth * 0.5, arrowWidth * 0.5, -arrowWidth * 0.5, -arrowWidth * 0.5);
 
         const std::vector<QPointF> polygonPoints = {
             QPointF(arrowRect.x(), arrowRect.y()),
@@ -1268,7 +1269,7 @@ void QOhosStyle::drawPrimitive(
         const auto isEnabled = option->state.testFlag(QStyle::State_Enabled);
 
         paintOnStackTop(*painter, [&](auto &p) {
-            p.translate(option->rect.center());
+            p.translate(arrowCenter);
             switch (element) {
             default:
             case PE_IndicatorArrowDown:
@@ -1283,7 +1284,7 @@ void QOhosStyle::drawPrimitive(
                 p.rotate(-90);
                 break;
             }
-            p.translate(-option->rect.center());
+            p.translate(-arrowCenter);
 
             p.setOpacity(isEnabled ? 1.0 : ohos_id_alpha_disabled);
             drawPolyline(
