@@ -1275,8 +1275,10 @@ void QOhosStyle::drawPrimitive(
     case PE_IndicatorArrowRight: {
         QRect availableRect;
         int maxArrowSize = 0;
-        if (qobjectIsInstanceOf<QToolButton>(widget) || qobjectIsInstanceOf<QPushButton>(widget)
-            || qobjectIsInstanceOf<QComboBox>(widget)) {
+        if (qobjectIsInstanceOf<QComboBox>(widget)) {
+            availableRect = option->rect;
+            maxArrowSize = std::min(availableRect.width(), availableRect.height()) * 0.5;
+        } else if (qobjectIsInstanceOf<QToolButton>(widget) || qobjectIsInstanceOf<QPushButton>(widget)) {
             const auto menuButtonIndicatorSize = pixelMetric(PM_MenuButtonIndicator, option, widget);
             availableRect = QRect(
                 widget->size().width() - menuButtonIndicatorSize, 0, menuButtonIndicatorSize, widget->size().height());
@@ -1763,7 +1765,7 @@ QRect QOhosStyle::subControlRect(
             case SC_ComboBoxArrow: {
                 auto arrowIconRect = comboBoxStyleOption->rect;
                 arrowIconRect.setWidth(arrowSize);
-                arrowIconRect.moveRight(comboBoxStyleOption->rect.right());
+                arrowIconRect.moveRight(comboBoxStyleOption->rect.right() - comboBoxFrameLeftRightPadding);
                 return visualRect(comboBoxStyleOption->direction, comboBoxStyleOption->rect, arrowIconRect);
             }
             default:
