@@ -152,6 +152,9 @@ void initJsThreadState(
     napi_env env, std::map<std::string, QNapi::Reference<QNapi::Function>> &&jsModulesFactories,
     std::shared_ptr<AppFunctions> appFunctions, QtRunMode qtRunMode);
 
+// returns true iff the calling thread is the JS thread
+bool isJsThread();
+
 // this function should be called from JS thread for each UIAbility when it's ready
 void addJsQAbilityPeer(std::shared_ptr<QAbilityPeer> qAbilityPeer);
 
