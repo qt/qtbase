@@ -1014,6 +1014,11 @@ void initJsThreadState(
     qOhosEnableMemoizingJsThreadFetchers(getJsStateImpl());
 }
 
+bool isJsThread()
+{
+    return getJsStateImpl().isJsThread();
+}
+
 void addJsQAbilityPeer(std::shared_ptr<QAbilityPeer> qAbilityPeer)
 {
     getJsStateImpl().addQAbilityPeerInJsThread(qAbilityPeer);
