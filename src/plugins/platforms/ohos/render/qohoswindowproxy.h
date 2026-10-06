@@ -223,8 +223,6 @@ public:
     void shiftAppWindowFocus(QOhosWindowProxy &targetProxy);
 
 private:
-    static std::shared_ptr<QOhosWindowProxy> create(QtOhos::JsState &jsState, QOhosWindowProxyData data);
-
     enum class EventHandlerFlagBits
     {
         allowCallWhenAbilityIsTerminating = 1 << 0,
@@ -292,7 +290,17 @@ private:
         QFlags<EventHandlerFlagBits> eventHandlerFlags;
     };
 
-    QOhosWindowProxy(QOhosWindowProxyData data);
+    struct JsThreadInitResult
+    {
+        WindowProxyType windowProxyType;
+        std::shared_ptr<QXComponentNode> nodeXComponent;
+        std::string qAbilityInstanceId;
+        std::shared_ptr<void> jsWindowRegistrationHandle;
+    };
+
+    QOhosWindowProxy(
+        const std::function<void(QtOhos::JsState &, QOhosConsumer<QtOhos::JsState &, QOhosWindowProxyData>)> &makeWindowProxyDataInJsThread);
+    JsThreadInitResult initInJsThread(QtOhos::JsState &jsState, QOhosWindowProxyData windowProxyData);
 
     std::shared_ptr<void> registerSubWindowCloseHandler(
         std::function<void()> handler,
@@ -304,6 +312,7 @@ private:
     WindowProxyType m_windowProxyType;
     std::shared_ptr<QXComponentNode> m_nodeXComponent;
     std::string m_qAbilityInstanceId;
+    std::shared_ptr<void> m_jsWindowRegistrationHandle;
     std::shared_ptr<void> m_subWindowCloseRegistrationHandle;
     std::shared_ptr<void> m_qtWindowCallbacksReceiverHandle;
     std::shared_ptr<void> m_qtNonClientAreaMouseWindowCallbackReceiverHandle;

@@ -316,10 +316,27 @@ const QOhosWindowProxy::EventHandlerDescriptor QOhosWindowProxy::eventHandlerDes
 };
 
 QOhosWindowProxy::QOhosWindowProxy(
-    QOhosWindowProxyData windowProxyData)
+    const std::function<void(QtOhos::JsState &, QOhosConsumer<QtOhos::JsState &, QOhosWindowProxyData>)> &makeWindowProxyDataInJsThread)
     : m_jsScopeData(QtOhos::makeProxyWithJsThreadDeleter(std::make_shared<JsScopeData>()))
-    , m_windowProxyType(windowProxyData.windowProxyType)
-    , m_nodeXComponent(windowProxyData.nodeXComponent)
+{
+    auto jsThreadInitResult = QtOhos::evalInJsThreadWithPromise<JsThreadInitResult>(
+        [&](QtOhos::JsState &jsState, QOhosTaskPromise<JsThreadInitResult> evalPromise) {
+            auto sharedEvalPromise = QtOhos::moveToSharedPtr(std::move(evalPromise).makeChained(Q_FUNC_INFO));
+            makeWindowProxyDataInJsThread(
+                jsState,
+                [sharedEvalPromise, this](QtOhos::JsState &jsState, QOhosWindowProxyData windowProxyData) {
+                    (*sharedEvalPromise)(initInJsThread(jsState, std::move(windowProxyData)));
+                });
+        },
+        Q_FUNC_INFO);
+    m_windowProxyType = jsThreadInitResult.windowProxyType;
+    m_nodeXComponent = std::move(jsThreadInitResult.nodeXComponent);
+    m_qAbilityInstanceId = std::move(jsThreadInitResult.qAbilityInstanceId);
+    m_jsWindowRegistrationHandle = std::move(jsThreadInitResult.jsWindowRegistrationHandle);
+}
+
+QOhosWindowProxy::JsThreadInitResult QOhosWindowProxy::initInJsThread(
+    QtOhos::JsState &jsState, QOhosWindowProxyData windowProxyData)
 {
     *m_jsScopeData = JsScopeData(
         windowProxyData.windowProxyType,
@@ -327,7 +344,6 @@ QOhosWindowProxy::QOhosWindowProxy(
         std::move(windowProxyData.jsKeepAliveData),
         std::move(windowProxyData.qAbilityPeer),
         windowProxyData.owningQWindowRef);
-    m_qAbilityInstanceId = m_jsScopeData->jsWindowRef->owningQAbilityInstanceId();
 
     std::vector<std::shared_ptr<void>> eventListenersHandles;
     for (const auto &eventHandlerDescriptor : eventHandlerDescriptors) {
@@ -337,6 +353,13 @@ QOhosWindowProxy::QOhosWindowProxy(
                 eventHandlerDescriptor.eventHandlerFlags));
     }
     m_jsScopeData->m_eventListenersHandle = QtOhos::moveToSharedPtr(std::move(eventListenersHandles));
+
+    return JsThreadInitResult {
+        .windowProxyType = windowProxyData.windowProxyType,
+        .nodeXComponent = std::move(windowProxyData.nodeXComponent),
+        .qAbilityInstanceId = m_jsScopeData->jsWindowRef->owningQAbilityInstanceId(),
+        .jsWindowRegistrationHandle = QOhosJsWindowRegistry::instance(jsState).registerJsWindow(m_jsScopeData->jsWindowRef),
+    };
 }
 
 QOhosWindowProxy::~QOhosWindowProxy()
@@ -346,6 +369,8 @@ QOhosWindowProxy::~QOhosWindowProxy()
     // still in consistent state. While destroying the m_jsScopeData we
     // call Window::destroyWindow(), which makes the JS object unusable
     // (trying to unregister something on it will throw).
+    // The registry entry goes first so lookups never return a window being torn down.
+    m_jsWindowRegistrationHandle.reset();
     m_subWindowCloseRegistrationHandle.reset();
     m_jsScopeData.reset();
 }
@@ -1327,48 +1352,31 @@ std::shared_ptr<void> QOhosWindowProxy::registerSubWindowCloseHandler(
 std::shared_ptr<QOhosWindowProxy>
 QOhosWindowProxy::createForExistingMainWindow(const ExistingMainWindowCreateInfo &createInfo)
 {
-    return QtOhos::evalInJsThreadWithPromise<std::shared_ptr<QOhosWindowProxy>>(
-        [&](QtOhos::JsState &jsState, QOhosTaskPromise<std::shared_ptr<QOhosWindowProxy>> evalPromise) {
-            auto sharedEvalPromise = QtOhos::moveToSharedPtr(std::move(evalPromise).makeChained(Q_FUNC_INFO));
-            makeWindowProxyDataForExistingMainWindowInJsThread(
-                jsState,
-                createInfo,
-                [sharedEvalPromise](QtOhos::JsState &jsState, QOhosWindowProxyData windowProxyData) {
-                    (*sharedEvalPromise)(QOhosWindowProxy::create(jsState, std::move(windowProxyData)));
-                });
-        },
-        Q_FUNC_INFO);
+    return std::shared_ptr<QOhosWindowProxy>(
+        new QOhosWindowProxy(
+            [&](QtOhos::JsState &jsState, QOhosConsumer<QtOhos::JsState &, QOhosWindowProxyData> windowProxyDataConsumer) {
+                makeWindowProxyDataForExistingMainWindowInJsThread(jsState, createInfo, std::move(windowProxyDataConsumer));
+            }));
 }
 
 std::shared_ptr<QOhosWindowProxy>
 QOhosWindowProxy::createFloatWindow(const FloatWindowCreateInfo &createInfo)
 {
-    return QtOhos::evalInJsThreadWithPromise<std::shared_ptr<QOhosWindowProxy>>(
-        [&](QtOhos::JsState &jsState, QOhosTaskPromise<std::shared_ptr<QOhosWindowProxy>> evalPromise) {
-            auto sharedEvalPromise = QtOhos::moveToSharedPtr(std::move(evalPromise).makeChained(Q_FUNC_INFO));
-            makeWindowProxyDataForFloatWindowInJsThread(
-                jsState, createInfo,
-                [sharedEvalPromise](QtOhos::JsState &jsState, QOhosWindowProxyData windowProxyData) {
-                    (*sharedEvalPromise)(QOhosWindowProxy::create(jsState, std::move(windowProxyData)));
-                });
-        },
-        Q_FUNC_INFO);
+    return std::shared_ptr<QOhosWindowProxy>(
+        new QOhosWindowProxy(
+            [&](QtOhos::JsState &jsState, QOhosConsumer<QtOhos::JsState &, QOhosWindowProxyData> windowProxyDataConsumer) {
+                makeWindowProxyDataForFloatWindowInJsThread(jsState, createInfo, std::move(windowProxyDataConsumer));
+            }));
 }
 
 std::shared_ptr<QOhosWindowProxy>
 QOhosWindowProxy::createMainWindow(const MainWindowCreateInfo &createInfo)
 {
-    return QtOhos::evalInJsThreadWithPromise<std::shared_ptr<QOhosWindowProxy>>(
-        [&](QtOhos::JsState &jsState, QOhosTaskPromise<std::shared_ptr<QOhosWindowProxy>> evalPromise) {
-            auto sharedEvalPromise = QtOhos::moveToSharedPtr(std::move(evalPromise).makeChained(Q_FUNC_INFO));
-            makeWindowProxyDataForMainWindowInJsThread(
-                jsState,
-                createInfo,
-                [sharedEvalPromise](QtOhos::JsState &jsState, QOhosWindowProxyData windowProxyData) {
-                    (*sharedEvalPromise)(QOhosWindowProxy::create(jsState, std::move(windowProxyData)));
-                });
-        },
-        Q_FUNC_INFO);
+    return std::shared_ptr<QOhosWindowProxy>(
+        new QOhosWindowProxy(
+            [&](QtOhos::JsState &jsState, QOhosConsumer<QtOhos::JsState &, QOhosWindowProxyData> windowProxyDataConsumer) {
+                makeWindowProxyDataForMainWindowInJsThread(jsState, createInfo, std::move(windowProxyDataConsumer));
+            }));
 }
 
 std::shared_ptr<QXComponentNode> QOhosWindowProxy::nodeXComponent() const
@@ -1384,26 +1392,21 @@ std::string QOhosWindowProxy::qAbilityInstanceId() const
 std::shared_ptr<QOhosWindowProxy>
 QOhosWindowProxy::createSubWindow(const SubWindowCreateInfo &createInfo)
 {
-    return QtOhos::evalInJsThreadWithPromise<std::shared_ptr<QOhosWindowProxy>>(
-        [&](QtOhos::JsState &jsState, QOhosTaskPromise<std::shared_ptr<QOhosWindowProxy>> evalPromise) {
-            auto sharedEvalPromise = QtOhos::moveToSharedPtr(std::move(evalPromise).makeChained(Q_FUNC_INFO));
-            auto proxyDataConsumer =
-                [sharedEvalPromise](QtOhos::JsState &jsState, QOhosWindowProxyData windowProxyData) {
-                    (*sharedEvalPromise)(QOhosWindowProxy::create(jsState, std::move(windowProxyData)));
-                };
-            // HACK - calling createSubWindow from window may throw while the context is termination
-            // This is only a problem because we currenlty do not properly handle main window closing
-            // Remove this hacky branch after QTFOROH-1080 issues are resolved.
-            if (m_jsScopeData->isWindowClosing()) {
-                makeWindowProxyDataForSubWindowInJsThread(
-                    jsState, createInfo, std::move(proxyDataConsumer));
-            } else {
-                makeWindowProxyDataForSubWindowInJsThread(
-                    jsState, m_jsScopeData->jsWindowRef->jsObject(), createInfo,
-                    std::move(proxyDataConsumer));
-            }
-        },
-        Q_FUNC_INFO);
+    return std::shared_ptr<QOhosWindowProxy>(
+        new QOhosWindowProxy(
+            [&](QtOhos::JsState &jsState, QOhosConsumer<QtOhos::JsState &, QOhosWindowProxyData> windowProxyDataConsumer) {
+                // HACK - calling createSubWindow from window may throw while the context is termination
+                // This is only a problem because we currenlty do not properly handle main window closing
+                // Remove this hacky branch after QTFOROH-1080 issues are resolved.
+                if (m_jsScopeData->isWindowClosing()) {
+                    makeWindowProxyDataForSubWindowInJsThread(
+                        jsState, createInfo, std::move(windowProxyDataConsumer));
+                } else {
+                    makeWindowProxyDataForSubWindowInJsThread(
+                        jsState, m_jsScopeData->jsWindowRef->jsObject(), createInfo,
+                        std::move(windowProxyDataConsumer));
+                }
+            }));
 }
 
 QOhosWindowProxy::JsScopeData::JsScopeData() = default;
@@ -1944,14 +1947,6 @@ void QOhosWindowProxy::shiftAppWindowFocus(QOhosWindowProxy &targetProxy)
             .onFinally(std::move(taskPromise).makeChained(Q_FUNC_INFO));
         },
         Q_FUNC_INFO);
-}
-
-std::shared_ptr<QOhosWindowProxy> QOhosWindowProxy::create(QtOhos::JsState &jsState, QOhosWindowProxyData data)
-{
-    auto window = std::shared_ptr<QOhosWindowProxy>(new QOhosWindowProxy(std::move(data)));
-    return QtOhos::makeSharedPtrWithAttachedExtraData(
-        window,
-        QOhosJsWindowRegistry::instance(jsState).registerJsWindow(window->m_jsScopeData->jsWindowRef));
 }
 
 QT_END_NAMESPACE
