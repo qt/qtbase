@@ -82,6 +82,7 @@ private slots:
     void testFullScreenDimensions();
     void orientationChange();
     void menuBarShowsActionBarOverflow();
+    void menuBarFollowsActiveWindow();
 #endif
 };
 
@@ -975,6 +976,37 @@ void tst_Android::menuBarShowsActionBarOverflow()
     QVERIFY(QTest::qWaitForWindowExposed(&mainWindow));
 
     QVERIFY2(waitForActionBar(true), "The action bar and its overflow button should be shown");
+}
+
+void tst_Android::menuBarFollowsActiveWindow()
+{
+    if (!hasActionBar())
+        QSKIP("The action bar does not show the options menu on this device.");
+
+    QMainWindow mainWindow;
+    mainWindow.menuBar()->addMenu(u"&File"_s)->addAction(u"&New"_s);
+    mainWindow.menuBar()->addMenu(u"&Edit"_s)->addAction(u"&Undo"_s);
+    mainWindow.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&mainWindow));
+    QVERIFY2(waitForActionBar(true), "The action bar should be shown for the first window");
+
+    // A window without a menu bar empties the options menu and hides the action bar
+    QWidget plainWindow;
+    plainWindow.show();
+    mainWindow.close();
+
+    QVERIFY(QTest::qWaitForWindowExposed(&plainWindow));
+    QVERIFY2(waitForActionBar(false), "The action bar and its overflow button should be hidden");
+
+    // and a new menu bar must bring the overflow button back
+    plainWindow.close();
+    QMainWindow secondMainWindow;
+    secondMainWindow.menuBar()->addMenu(u"&View"_s)->addAction(u"&Zoom"_s);
+    secondMainWindow.menuBar()->addMenu(u"&Help"_s)->addAction(u"&About"_s);
+    secondMainWindow.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&secondMainWindow));
+    QVERIFY2(waitForActionBar(true),
+             "The action bar and its overflow button should be shown again");
 }
 
 #endif // QT_CONFIG(widgets)

@@ -122,16 +122,19 @@ namespace QtAndroidMenu
         if (activeTopLevelWindow == window)
             return;
 
-        visibleMenuBar = 0;
+        QAndroidPlatformMenuBar *previousMenuBar = visibleMenuBar;
+        visibleMenuBar = nullptr;
         activeTopLevelWindow = window;
         for (QAndroidPlatformMenuBar *menuBar : std::as_const(menuBars)) {
             if (menuBar->parentWindow() == window) {
                 visibleMenuBar = menuBar;
-                resetMenuBar();
                 break;
             }
         }
-
+        // Also refresh when the new window has no menu bar, otherwise the previous window's menu
+        // stays in the action bar.
+        if (visibleMenuBar != previousMenuBar)
+            resetMenuBar();
     }
 
     void addMenuBar(QAndroidPlatformMenuBar *menuBar)
