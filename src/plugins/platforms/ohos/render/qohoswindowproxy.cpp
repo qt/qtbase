@@ -317,7 +317,6 @@ const QOhosWindowProxy::EventHandlerDescriptor QOhosWindowProxy::eventHandlerDes
 
 QOhosWindowProxy::QOhosWindowProxy(
     const std::function<void(QtOhos::JsState &, QOhosConsumer<QtOhos::JsState &, QOhosWindowProxyData>)> &makeWindowProxyDataInJsThread)
-    : m_jsScopeData(QtOhos::makeProxyWithJsThreadDeleter(std::make_shared<JsScopeData>()))
 {
     auto jsThreadInitResult = QtOhos::evalInJsThreadWithPromise<JsThreadInitResult>(
         [&](QtOhos::JsState &jsState, QOhosTaskPromise<JsThreadInitResult> evalPromise) {
@@ -372,7 +371,6 @@ QOhosWindowProxy::~QOhosWindowProxy()
     // The registry entry goes first so lookups never return a window being torn down.
     m_jsWindowRegistrationHandle.reset();
     m_subWindowCloseRegistrationHandle.reset();
-    m_jsScopeData.reset();
 }
 
 void QOhosWindowProxy::removeStartingWindow()

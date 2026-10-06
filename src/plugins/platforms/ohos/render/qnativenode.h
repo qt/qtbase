@@ -21,6 +21,7 @@
 #include <optional>
 #include <qarkui/qqtembeddedwindownode.h>
 #include <qohosforeignwindow.h>
+#include <qohosjsscopedataowner.h>
 #include <qohosplatformwindow.h>
 #include <render/qohossurface.h>
 #include <render/qxcomponent.h>
@@ -93,7 +94,7 @@ private:
         ::OHNativeWindow *nativeWindow,
         const std::optional<QSize> &optSurfaceSize);
 
-    std::shared_ptr<JsStateData> m_jsStateData;
+    QtOhos::JsScopeDataOwner<JsStateData> m_jsStateData;
     std::unique_ptr<QOhosSurface> m_optSurface;
     QRectF m_nodeGeometry;
     std::optional<QXComponentNode> m_nodeXComponentParent;

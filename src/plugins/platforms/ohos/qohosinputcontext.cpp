@@ -163,9 +163,6 @@ QOhosInputContext::QOhosInputContext()
     , m_qtImEnabled(false)
     , m_qtInputMethodHints(defaultInputMethodHints)
     , m_qtEnterKeyType(defaultEnterKeyType)
-    , m_jsScopeData(
-        QtOhos::makeProxyWithJsThreadDeleter(
-            std::make_shared<JsScopeData>()))
 {
     auto __dbg = make_QCScopedDebug("QOhosInputContext::QOhosInputContext");
 

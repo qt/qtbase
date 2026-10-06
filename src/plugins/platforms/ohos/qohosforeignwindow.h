@@ -7,6 +7,7 @@
 #include <QtCore/qglobal.h>
 #include <qarkui/qembeddedwindownode.h>
 #include <qarkui/qnativenodeapi.h>
+#include <qohosjsscopedataowner.h>
 #include <qohosplatformwindow.h>
 #include <qpa/qplatformwindow.h>
 
@@ -33,7 +34,7 @@ private:
         std::unique_ptr<QArkUi::QEmbeddedWindowNode> embeddedWindow;
     };
 
-    std::shared_ptr<JsStateData> m_jsStateData;
+    QtOhos::JsScopeDataOwner<JsStateData> m_jsStateData;
 };
 
 QT_END_NAMESPACE

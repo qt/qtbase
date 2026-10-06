@@ -14,7 +14,6 @@
 QT_BEGIN_NAMESPACE
 
 QOhosScreenManager::QOhosScreenManager()
-    : m_jsScopeData(QtOhos::makeProxyWithJsThreadDeleter(std::make_shared<JsScopeData>()))
 {
     auto selfRef = QtOhos::QThreadSafeRef<QOhosScreenManager>(this);
 

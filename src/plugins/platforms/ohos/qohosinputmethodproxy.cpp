@@ -340,7 +340,7 @@ QOhosInputMethodProxy::QOhosInputMethodProxy(
     , m_textAroundCursor(std::make_shared<QOhosMutexProtectedValue<TextAroundCursor>>())
 {
     auto weakClientCallbacks = QtOhos::makeWeakPtr(clientCallbacks);
-    m_jsScopeData = QtOhos::makeProxyWithJsThreadDeleter(std::make_shared<JsScopeData>());
+    m_optJsScopeData.emplace();
     bool attachedSuccessfully = QOhosJsThreadGateway::eval(
         [&](auto &) {
             auto textEditorProxyData = std::make_shared<JsScopeData::JsTextEditorProxyData>();
@@ -357,7 +357,7 @@ QOhosInputMethodProxy::QOhosInputMethodProxy(
                 return false;
             }
 
-            *m_jsScopeData = JsScopeData {
+            **m_optJsScopeData = JsScopeData {
                 .textEditorProxy = textEditorProxy,
                 .textEditorProxyData = textEditorProxyData,
                 .inputMethodProxy = inputMethodProxy,
@@ -368,12 +368,12 @@ QOhosInputMethodProxy::QOhosInputMethodProxy(
         },
         Q_FUNC_INFO);
     if (!attachedSuccessfully)
-        m_jsScopeData.reset();
+        m_optJsScopeData.reset();
 }
 
 bool QOhosInputMethodProxy::hasAttachedSuccessfully()
 {
-    return m_jsScopeData != nullptr;
+    return m_optJsScopeData.has_value();
 }
 
 void QOhosInputMethodProxy::showTextInput(::InputMethod_RequestKeyboardReason requestKeyboardReason)
@@ -385,7 +385,7 @@ void QOhosInputMethodProxy::showTextInput(::InputMethod_RequestKeyboardReason re
 
     QOhosJsThreadGateway::runAndWait(
         [&](QOhosJsState &) {
-            if (m_jsScopeData->textEditorProxyData->textInputShown) {
+            if ((*m_optJsScopeData)->textEditorProxyData->textInputShown) {
                 qOhosPrintfDebug("%s: text input already shown, skip showing it again", Q_FUNC_INFO);
                 return;
             }
@@ -395,9 +395,9 @@ void QOhosInputMethodProxy::showTextInput(::InputMethod_RequestKeyboardReason re
 
             ::InputMethod_ErrorCode errcode = QArkUi::callArkUi(
                 Q_OHOS_NAMED_FUNC(::OH_InputMethodProxy_ShowTextInput),
-                m_jsScopeData->inputMethodProxy.get(),
+                (*m_optJsScopeData)->inputMethodProxy.get(),
                 attachOptions.get());
-            m_jsScopeData->textEditorProxyData->textInputShown = errcode == ::InputMethod_ErrorCode::IME_ERR_OK;
+            (*m_optJsScopeData)->textEditorProxyData->textInputShown = errcode == ::InputMethod_ErrorCode::IME_ERR_OK;
             if (errcode != ::InputMethod_ErrorCode::IME_ERR_OK)
                 qOhosPrintfError("%s: OH_InputMethodProxy_ShowTextInput failed!", Q_FUNC_INFO);
         },
@@ -416,7 +416,7 @@ void QOhosInputMethodProxy::notifyConfigurationChange(
         [&](QOhosJsState &) {
             ::InputMethod_ErrorCode errcode = QArkUi::callArkUi(
                 Q_OHOS_NAMED_FUNC(::OH_InputMethodProxy_NotifyConfigurationChange),
-                m_jsScopeData->inputMethodProxy.get(),
+                (*m_optJsScopeData)->inputMethodProxy.get(),
                 enterKeyType, textInputType);
             if (errcode != ::InputMethod_ErrorCode::IME_ERR_OK)
                 qOhosPrintfError("%s: OH_InputMethodProxy_NotifyConfigurationChange failed!", Q_FUNC_INFO);
@@ -442,7 +442,7 @@ void QOhosInputMethodProxy::notifyCursorUpdate(const QRectF &cursorRect)
 
             ::InputMethod_ErrorCode errcode = QArkUi::callArkUi(
                 Q_OHOS_NAMED_FUNC(::OH_InputMethodProxy_NotifyCursorUpdate),
-                m_jsScopeData->inputMethodProxy.get(), ohCursorInfo.get());
+                (*m_optJsScopeData)->inputMethodProxy.get(), ohCursorInfo.get());
             if (errcode != ::InputMethod_ErrorCode::IME_ERR_OK)
                 qOhosPrintfError("%s: OH_InputMethodProxy_NotifyCursorUpdate failed!", Q_FUNC_INFO);
         },
@@ -460,7 +460,7 @@ void QOhosInputMethodProxy::notifySelectionChange(std::u16string text, int start
         [&](QOhosJsState &) {
             ::InputMethod_ErrorCode errcode = QArkUi::callArkUi(
                 Q_OHOS_NAMED_FUNC(::OH_InputMethodProxy_NotifySelectionChange),
-                m_jsScopeData->inputMethodProxy.get(), &text[0], text.size(), start, end);
+                (*m_optJsScopeData)->inputMethodProxy.get(), &text[0], text.size(), start, end);
             if (errcode != ::InputMethod_ErrorCode::IME_ERR_OK)
                 qOhosPrintfError(
                     "%s: OH_InputMethodProxy_NotifySelectionChange failed with error code: %d", Q_FUNC_INFO,

@@ -6,6 +6,7 @@
 
 #include <optional>
 #include <qohosinputmethodproxy.h>
+#include <qohosjsscopedataowner.h>
 #include <qohosqpaenums.h>
 #include <qpa/qplatforminputcontext.h>
 #include <qpa/qwindowsysteminterface.h>
@@ -112,7 +113,7 @@ private:
     Qt::InputMethodHints m_qtInputMethodHints;
     Qt::EnterKeyType m_qtEnterKeyType;
 
-    std::shared_ptr<JsScopeData> m_jsScopeData;
+    QtOhos::JsScopeDataOwner<JsScopeData> m_jsScopeData;
     std::shared_ptr<QOhosInputMethodProxy> m_imProxy;
 
     QPointer<QObject> m_focusObject;

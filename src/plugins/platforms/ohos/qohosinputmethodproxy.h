@@ -10,6 +10,8 @@
 #include <functional>
 #include <inputmethod/inputmethod_controller_capi.h>
 #include <memory>
+#include <optional>
+#include <qohosjsscopedataowner.h>
 #include <string>
 
 QT_BEGIN_NAMESPACE
@@ -76,7 +78,7 @@ private:
 
     std::shared_ptr<ClientCallbacks> m_clientCallbacks;
     std::shared_ptr<QOhosMutexProtectedValue<TextAroundCursor>> m_textAroundCursor;
-    std::shared_ptr<JsScopeData> m_jsScopeData;
+    std::optional<QtOhos::JsScopeDataOwner<JsScopeData>> m_optJsScopeData;
 };
 
 QT_END_NAMESPACE
