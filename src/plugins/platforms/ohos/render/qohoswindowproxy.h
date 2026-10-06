@@ -233,12 +233,25 @@ private:
 
     struct JsScopeData : public std::enable_shared_from_this<JsScopeData>
     {
+        struct NonClientAreaEventsDispatcher
+        {
+            void onMouseEventFromArkUi(const QArkUi::MouseEvent &event) const;
+            void onTouchEventFromArkUi(const QArkUi::TouchEvent &event) const;
+
+            QOhosConsumer<NonClientAreaMouseEvent> mouseEventsConsumer;
+            QOhosConsumer<NonClientAreaTouchEvent> touchEventsConsumer;
+        };
+
         JsScopeData(
             WindowProxyType windowProxyType, QNapi::Reference<QNapi::Object> jsWindow,
             std::shared_ptr<void> optKeepAliveData,
             std::shared_ptr<QtOhos::QAbilityPeer> qAbilityPeer,
             QtOhos::QObjectThreadSafeRef owningQWindowRef);
+        JsScopeData(JsScopeData &&) = default;
+        JsScopeData &operator=(JsScopeData &&) = default;
         ~JsScopeData();
+        JsScopeData(const JsScopeData &) = delete;
+        JsScopeData &operator=(const JsScopeData &) = delete;
 
         std::shared_ptr<void> registerEventListener(
             const std::string &eventName,
@@ -258,19 +271,16 @@ private:
         void handleWindowDisplayIdChangeCallback(const QtOhos::CallbackInfo &cbInfo);
         void onWindowEvent(QtOhos::JsState &jsState, const WindowEvent &windowEvent);
         bool isWindowClosing() const;
-        void onMouseEventFromArkUi(const QArkUi::MouseEvent &event);
-        void onTouchEventFromArkUi(const QArkUi::TouchEvent &event);
 
         WindowProxyType windowProxyType;
         std::shared_ptr<WindowCallbacks> windowCallbackReceiver;
         bool windowDestroyedFromSystem;
         std::shared_ptr<void> optKeepAliveData;
         std::shared_ptr<QtOhos::QAbilityPeer> qAbilityPeer;
+        std::shared_ptr<NonClientAreaEventsDispatcher> nonClientAreaEventsDispatcher;
         std::shared_ptr<void> m_windowFrameMouseFilterHandle;
         std::shared_ptr<void> m_windowFrameTouchFilterHandle;
         std::shared_ptr<void> m_eventListenersHandle;
-        QOhosConsumer<NonClientAreaMouseEvent> nonClientAreaMouseEventConsumer;
-        QOhosConsumer<NonClientAreaTouchEvent> nonClientAreaTouchEventConsumer;
         std::shared_ptr<QArkUi::JsWindowRef> jsWindowRef;
     };
 
