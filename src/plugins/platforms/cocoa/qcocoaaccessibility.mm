@@ -128,6 +128,8 @@ static void populateRoleMap()
     roleMap[QAccessible::ButtonDropDown] = NSAccessibilityPopUpButtonRole;
     roleMap[QAccessible::SpinBox] = NSAccessibilityIncrementorRole;
     roleMap[QAccessible::Slider] = NSAccessibilitySliderRole;
+    // AppKit has no rotary role, and its own circular NSSlider reports as a slider.
+    roleMap[QAccessible::Dial] = NSAccessibilitySliderRole;
     roleMap[QAccessible::ProgressBar] = NSAccessibilityProgressIndicatorRole;
     roleMap[QAccessible::ComboBox] = NSAccessibilityComboBoxRole;
     roleMap[QAccessible::RadioButton] = NSAccessibilityRadioButtonRole;
