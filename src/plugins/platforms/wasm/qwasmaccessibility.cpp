@@ -437,7 +437,23 @@ emscripten::val QWasmAccessibility::createHtmlElement(QAccessibleInterface *ifac
             addEventListener(iface, element, "change");
         } break;
 
-        case QAccessible::Dial:
+        case QAccessible::Dial: {
+            // A dial is rotary and has no html counterpart, so use the slider role
+            // rather than a number input, which reads as a spin button.
+            element = document.call<emscripten::val>("createElement", std::string("div"));
+            setAttribute(element, "tabindex", "0");
+            setAttribute(element, "role", "slider");
+            if (QAccessibleValueInterface *valueInterface = iface->valueInterface()) {
+                setAttribute(element, "aria-valuemin",
+                             valueInterface->minimumValue().toString().toStdString());
+                setAttribute(element, "aria-valuemax",
+                             valueInterface->maximumValue().toString().toStdString());
+                setAttribute(element, "aria-valuenow",
+                             valueInterface->currentValue().toString().toStdString());
+            }
+            // No aria-orientation, a dial turns rather than runs along an axis.
+        } break;
+
         case QAccessible::SpinBox:
         case QAccessible::Slider: {
             element = document.call<emscripten::val>("createElement", std::string("input"));
@@ -780,8 +796,8 @@ void QWasmAccessibility::handleDialUpdate(QAccessibleEvent *event)
     case QAccessible::ValueChanged: {
         QAccessibleInterface *accessible = event->accessibleInterface();
         if (QAccessibleValueInterface *valueInterface = accessible->valueInterface()) {
-            setProperty(getHtmlElement(accessible), "value",
-                        valueInterface->currentValue().toString().toStdString());
+            setAttribute(getHtmlElement(accessible), "aria-valuenow",
+                         valueInterface->currentValue().toString().toStdString());
         }
     } break;
     default:
