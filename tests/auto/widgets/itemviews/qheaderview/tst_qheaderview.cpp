@@ -215,6 +215,7 @@ private slots:
     void setSectionResizeModeWithSectionWillTakeMemory();
     void setModelWithAutoSizeWillSwitchToMemoryMode();
     void tableViewResizeSectionsWillSwitchToMemoryMode();
+    void noMemoryUsageOnNonResize();
 
     void setDefaultSectionSizeRespectsColumnWidth();
 
@@ -3807,6 +3808,17 @@ void tst_QHeaderView::setDefaultSectionSizeRespectsColumnWidth()
     for (int c = 0; c < tree.columnCount(); ++c)
         QTRY_COMPARE(tree.columnWidth(c), columnWidths[c]);
 }
+
+void tst_QHeaderView::noMemoryUsageOnNonResize()
+{
+    TableViewWithBasicModel tv;
+    QVERIFY(tv.hasLowMemoryUsage());
+
+    // This should not change to memory usage.
+    tv.verticalHeader()->resizeSections(QHeaderView::Fixed);
+    QVERIFY(tv.hasLowMemoryUsage());
+}
+
 
 QTEST_MAIN(tst_QHeaderView)
 #include "tst_qheaderview.moc"
