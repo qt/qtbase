@@ -19,6 +19,27 @@
 
 using namespace Qt::StringLiterals;
 
+namespace NothrowHashableTest {
+struct NothrowHashable {};
+size_t qHash(NothrowHashable, size_t = 0) noexcept;
+struct ThrowingHashable {};
+size_t qHash(ThrowingHashable, size_t = 0);
+struct NotHashable {};
+}
+
+static_assert( QtPrivate::QNothrowHashable_v<int>);
+static_assert( QtPrivate::QNothrowHashable_v<NothrowHashableTest::NothrowHashable>);
+static_assert(!QtPrivate::QNothrowHashable_v<NothrowHashableTest::ThrowingHashable>);
+static_assert(!QtPrivate::QNothrowHashable_v<NothrowHashableTest::NotHashable>);
+static_assert( noexcept(qHashMulti(0, 1, NothrowHashableTest::NothrowHashable{})));
+static_assert(!noexcept(qHashMulti(0, 1, NothrowHashableTest::ThrowingHashable{})));
+static_assert( QtPrivate::QNothrowHashable_v<std::pair<int, NothrowHashableTest::NothrowHashable>>);
+static_assert(!QtPrivate::QNothrowHashable_v<std::pair<int, NothrowHashableTest::ThrowingHashable>>);
+static_assert(!QtPrivate::QNothrowHashable_v<std::pair<int, NothrowHashableTest::NotHashable>>);
+// Instantiating the noexcept-specifier must not be a hard error for non-hashable types
+static_assert(!noexcept(std::declval<const QVarLengthArray<NothrowHashableTest::NotHashable> &>().hash(0)));
+static_assert(!noexcept(std::declval<const QVarLengthArray<std::pair<int, NothrowHashableTest::NotHashable>> &>().hash(0)));
+
 static size_t seed = 0;
 class tst_QHashFunctions : public QObject
 {

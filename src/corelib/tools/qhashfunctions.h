@@ -393,16 +393,12 @@ using QHashMultiReturnType = decltype(
     size_t{}
 );
 
-// workaround for a MSVC ICE,
-// https://developercommunity.visualstudio.com/content/problem/996540/internal-compiler-error-on-msvc-1924-when-doing-sf.html
-template <typename T>
-inline constexpr bool QNothrowHashableHelper_v = noexcept(qHash(std::declval<const T &>(), size_t(0)));
-
 template <typename T, typename Enable = void>
 struct QNothrowHashable : std::false_type {};
 
 template <typename T>
-struct QNothrowHashable<T, std::enable_if_t<QNothrowHashableHelper_v<T>>> : std::true_type {};
+struct QNothrowHashable<T, std::enable_if_t<noexcept(qHash(std::declval<const T &>(), size_t(0)))>>
+    : std::true_type {};
 
 template <typename T>
 constexpr inline bool QNothrowHashable_v = QNothrowHashable<T>::value;
@@ -454,8 +450,7 @@ inline size_t qHashRangeCommutative(InputIterator first, InputIterator last, siz
 namespace QHashPrivate {
 template <typename T1, typename T2> inline constexpr bool noexceptPairHash()
 {
-    size_t seed = 0;
-    return noexcept(qHash(std::declval<T1>(), seed)) && noexcept(qHash(std::declval<T2>(), seed));
+    return QtPrivate::QNothrowHashable_v<T1> && QtPrivate::QNothrowHashable_v<T2>;
 }
 } // QHashPrivate
 
