@@ -589,7 +589,7 @@ void QOhosWindowProxy::setNonClientAreaMouseWindowCallbackReceiver(
         });
 
     QOhosJsThreadGateway::runAndWait([&](QOhosJsState &) {
-        m_jsScopeData->nonClientAreaMouseEventConsumer = std::move(jsConsumer);
+        m_jsScopeData->nonClientAreaEventsDispatcher->mouseEventsConsumer = std::move(jsConsumer);
     },
     Q_FUNC_INFO);
 
@@ -611,7 +611,7 @@ void QOhosWindowProxy::setNonClientAreaTouchWindowCallbackReceiver(
         });
 
     QOhosJsThreadGateway::runAndWait([&](QOhosJsState &) {
-        m_jsScopeData->nonClientAreaTouchEventConsumer = std::move(jsConsumer);
+        m_jsScopeData->nonClientAreaEventsDispatcher->touchEventsConsumer = std::move(jsConsumer);
     },
     Q_FUNC_INFO);
 
@@ -1416,17 +1416,18 @@ QOhosWindowProxy::JsScopeData::JsScopeData(
     , windowDestroyedFromSystem(false)
     , optKeepAliveData(optKeepAliveData)
     , qAbilityPeer(qAbilityPeer)
+    , nonClientAreaEventsDispatcher(std::make_shared<NonClientAreaEventsDispatcher>())
     , m_windowFrameMouseFilterHandle(
         QArkUi::registerMouseEventsConsumer(
             getWindowPropertiesFromJsWindow(jsWindow.Value()).id,
-            [this](const QArkUi::MouseEvent &event) {
-                onMouseEventFromArkUi(event);
+            [dispatcher = nonClientAreaEventsDispatcher](const QArkUi::MouseEvent &event) {
+                dispatcher->onMouseEventFromArkUi(event);
             }))
     , m_windowFrameTouchFilterHandle(
         QArkUi::registerTouchEventsConsumer(
             getWindowPropertiesFromJsWindow(jsWindow.Value()).id,
-            [this](const QArkUi::TouchEvent &event) {
-                onTouchEventFromArkUi(event);
+            [dispatcher = nonClientAreaEventsDispatcher](const QArkUi::TouchEvent &event) {
+                dispatcher->onTouchEventFromArkUi(event);
             }))
     , jsWindowRef(
         std::make_shared<QArkUi::JsWindowRef>(
@@ -1439,26 +1440,28 @@ QOhosWindowProxy::JsScopeData::JsScopeData(
 
 QOhosWindowProxy::JsScopeData::~JsScopeData()
 {
-    if (isWindowClosingFromSystem(jsWindowRef->jsObject(), windowProxyType, qAbilityPeer)) {
-        windowDestroyedFromSystem = true;
-        return;
-    }
+    if (jsWindowRef) {
+        if (isWindowClosingFromSystem(jsWindowRef->jsObject(), windowProxyType, qAbilityPeer)) {
+            windowDestroyedFromSystem = true;
+            return;
+        }
 
-    QtOhos::JsWindowsTracker::tagWindowAsClosing(jsWindowRef->jsObject(), "QOhosWindowProxy::JsScopeData destructor");
+        QtOhos::JsWindowsTracker::tagWindowAsClosing(jsWindowRef->jsObject(), "QOhosWindowProxy::JsScopeData destructor");
 
-    if (windowProxyType == WindowProxyType::MainWindow) {
-        // NOTE - Set the windowDestroyedFromSystem flag here early
-        // to avoid callbacks being invoked directly as a result of
-        // calling terminate
-        windowDestroyedFromSystem = true;
-        qOhosPrintfWarning(
-            "Attempting to terminate qAbility with instance id: %s",
-            jsWindowRef->owningQAbilityInstanceId().c_str());
-        qAbilityPeer->qAbility().eval("context.terminateSelf()");
-    } else if (!windowDestroyedFromSystem) {
-        // FIXME - destroyWindow usually does and returns nothing
-        // once the actual implementation is provided wait for the proomise that this function should return
-        jsWindowRef->eval("destroyWindow()");
+        if (windowProxyType == WindowProxyType::MainWindow) {
+            // NOTE - Set the windowDestroyedFromSystem flag here early
+            // to avoid callbacks being invoked directly as a result of
+            // calling terminate
+            windowDestroyedFromSystem = true;
+            qOhosPrintfWarning(
+                "Attempting to terminate qAbility with instance id: %s",
+                jsWindowRef->owningQAbilityInstanceId().c_str());
+            qAbilityPeer->qAbility().eval("context.terminateSelf()");
+        } else if (!windowDestroyedFromSystem) {
+            // FIXME - destroyWindow usually does and returns nothing
+            // once the actual implementation is provided wait for the proomise that this function should return
+            jsWindowRef->eval("destroyWindow()");
+        }
     }
 }
 
@@ -1650,9 +1653,9 @@ bool QOhosWindowProxy::JsScopeData::isWindowClosing() const
     return isWindowClosingFromSystem(jsWindowRef->jsObject(), windowProxyType, qAbilityPeer);
 }
 
-void QOhosWindowProxy::JsScopeData::onMouseEventFromArkUi(const QArkUi::MouseEvent &event)
+void QOhosWindowProxy::JsScopeData::NonClientAreaEventsDispatcher::onMouseEventFromArkUi(const QArkUi::MouseEvent &event) const
 {
-    if (nonClientAreaMouseEventConsumer == nullptr)
+    if (mouseEventsConsumer == nullptr)
         return;
 
     auto optAction = tryMapMouseEventActionToNonClientAreaEventType(event.action);
@@ -1681,12 +1684,12 @@ void QOhosWindowProxy::JsScopeData::onMouseEventFromArkUi(const QArkUi::MouseEve
         .globalPosition = event.globalPosition,
     };
 
-    nonClientAreaMouseEventConsumer(nonClientAreaMouseEvent);
+    mouseEventsConsumer(nonClientAreaMouseEvent);
 }
 
-void QOhosWindowProxy::JsScopeData::onTouchEventFromArkUi(const QArkUi::TouchEvent &event)
+void QOhosWindowProxy::JsScopeData::NonClientAreaEventsDispatcher::onTouchEventFromArkUi(const QArkUi::TouchEvent &event) const
 {
-    if (nonClientAreaTouchEventConsumer == nullptr)
+    if (touchEventsConsumer == nullptr)
         return;
 
     auto optAction = tryMapTouchEventActionToNonClientAreaEventType(event.action);
@@ -1715,7 +1718,7 @@ void QOhosWindowProxy::JsScopeData::onTouchEventFromArkUi(const QArkUi::TouchEve
         .globalPosition = event.globalPosition,
     };
 
-    nonClientAreaTouchEventConsumer(nonClientAreaTouchEvent);
+    touchEventsConsumer(nonClientAreaTouchEvent);
 }
 
 QPixmap QOhosWindowProxy::snapshot() const
