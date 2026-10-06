@@ -3682,11 +3682,10 @@ void QHeaderViewPrivate::resizeSections(QHeaderView::ResizeMode globalMode, bool
     if (noSectionMemoryUsage() && (hasAutoResizeSections() || globalMode != QHeaderView::Fixed))
         setHeaderMode(HeaderMode::FlexibleWithSectionMemoryUsage);
 
-    if (sectionCount() == 0 )
+    // bail out on no section count, if recursive or if all sections should be same size (see above)
+    if (sectionCount() == 0 || resizeRecursionBlock || noSectionMemoryUsage())
         return;
 
-    if (resizeRecursionBlock)
-        return;
     resizeRecursionBlock = true;
 
     invalidateCachedSizeHint();
