@@ -44,6 +44,7 @@ qt_internal_add_plugin(QOhosPlatformIntegrationPlugin
         qohosinputmethodeventhandler.cpp qohosinputmethodeventhandler.h
         qohosinternalwindowid.cpp qohosinternalwindowid_p.h
         qohosjsmain.cpp qohosjsmain.h
+        qohosjsscopedataowner.h
         qohosjsutils.cpp qohosjsutils.h
         qohoskeyevent.cpp qohoskeyevent.h
         qohoskeyeventconverthelpers.cpp qohoskeyeventconverthelpers.h

@@ -11,7 +11,7 @@ These conflict: the object lives and dies on the Qt thread, but holds resources 
 
 ## Pattern
 
-Bundle all JS-thread-affine state into a private nested `struct JsScopeData`, held by a `shared_ptr` whose deleter performs destruction on the JS thread:
+Bundle all JS-thread-affine state into a private nested `struct JsScopeData` and hold it in a `QtOhos::JsScopeDataOwner<JsScopeData>` member:
 
 ```cpp
 // lives on the Qt thread
@@ -31,43 +31,31 @@ private:
     QIcon m_icon;
     QPointer<QObject> m_focusObject;
 
-    std::shared_ptr<JsScopeData> m_jsScopeData;
+    QtOhos::JsScopeDataOwner<JsScopeData> m_jsScopeData;
 };
 ```
 
-`m_jsScopeData` always holds a `JsScopeData` wrapped with `QtOhos::makeProxyWithJsThreadDeleter()`, which makes the deleter hop to the JS thread. There are two ways to set it up; pick whichever fits.
-
-**Option A** - create it empty on the Qt thread, then populate it on the JS thread. Usable only when every `JsScopeData` member is safe to default-construct off the JS thread (e.g. an empty `QNapi::Reference` or `std::shared_ptr`); otherwise use Option B.
+The owner is a non-movable Qt-thread member. It creates the bundle on the JS thread the first time it is dereferenced (`m_jsScopeData->` or `*m_jsScopeData`), and releases it on the JS thread when the owner is destroyed. `JsScopeData` must be default-constructible: its members start empty and are populated from JS-thread code, usually in the constructor of the owning object:
 
 ```cpp
-m_jsScopeData = QtOhos::makeProxyWithJsThreadDeleter(std::make_shared<JsScopeData>());
-
-QOhosJsThreadGateway::runAndWait(
-    [&](QOhosJsState &jsState) {
-        m_jsScopeData->jsObject = makeJsObject(jsState);
-        m_jsScopeData->someListenerHandle = registerListener(jsState, /* ... */);
-    },
-    Q_FUNC_INFO);
+QOhosFoo::QOhosFoo()
+{
+    QOhosJsThreadGateway::runAndWait(
+        [&](QOhosJsState &jsState) {
+            m_jsScopeData->jsObject = makeJsObject(jsState);
+            m_jsScopeData->someListenerHandle = registerListener(jsState, /* ... */);
+        },
+        Q_FUNC_INFO);
+}
 ```
 
-**Option B** - build the fully populated bundle on the JS thread in one step (e.g. via `evalInJsThread()`):
+A bundle whose members all come from one JS-thread visit is assigned as a whole instead: `*m_jsScopeData = JsScopeData { ... };`. `JsScopeData` must then be movable: a bundle that declares a destructor has no implicit move operations and must declare them, or the assignment silently copies.
 
-```cpp
-m_jsScopeData = QtOhos::evalInJsThread(
-    [&](QtOhos::JsState &jsState) {
-        return QtOhos::makeProxyWithJsThreadDeleter(
-            QtOhos::moveToSharedPtr(
-                JsScopeData{
-                    .jsObject = ...,
-                    ...
-                }));
-    },
-    Q_FUNC_INFO);
-```
+A class whose bundle exists only part of the time (e.g. while a tray icon is shown) holds `std::optional<QtOhos::JsScopeDataOwner<JsScopeData>>`, calls `emplace()` on the Qt thread before populating and `reset()` there to release.
 
-Whichever you pick, you do not write any teardown code: when `m_jsScopeData` is reset or the owning object is destroyed (on any thread), the contents are released on the JS thread automatically. The owner's destructor can stay trivial.
+You do not write any teardown code: when `m_jsScopeData` or the owning object is destroyed (on any thread), the contents are released on the JS thread automatically. The owning object's destructor can stay trivial. If populating fails, release whatever was populated the same way, by destroying the owner, or resetting the `std::optional` holding it, on the Qt thread.
 
-After construction, read or modify `m_jsScopeData` contents only from code running in the JS thread, exactly as in Option A.
+An object that is itself created on the JS thread is outside this pattern; it keeps its JS-thread state in a `std::shared_ptr` wrapped with `QtOhos::makeProxyWithJsThreadDeleter()`.
 
 ## Rules
 
@@ -77,7 +65,7 @@ After construction, read or modify `m_jsScopeData` contents only from code runni
    - A bare `m_jsScopeData->...` *outside* a `QOhosJsThreadGateway::runAndWait`, `evalInJsThread`, etc. closure is a red flag.
    - Touching a plain `m_...` member *inside* a JS-thread closure requires extra attention.
 
-3. **Create and touch `JsScopeData` contents only inside JS-thread closures** (`QOhosJsThreadGateway::runAndWait`, `evalInJsThread`, etc.). The Qt thread only ever moves/resets the `shared_ptr` itself, never dereferences it for JS work.
+3. **Create and touch `JsScopeData` contents only inside JS-thread closures** (`QOhosJsThreadGateway::runAndWait`, `evalInJsThread`, etc.). The Qt thread only ever constructs or destroys the owner, never dereferences it for JS work.
 
 ## Why bundle instead of per-resource handles
 
