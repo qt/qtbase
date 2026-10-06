@@ -16,6 +16,7 @@
 #include <QtCore/QElapsedTimer>
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>
+#include <QtCore/QScopeGuard>
 #include <QtCore/qspan.h>
 #include <QtCore/QStandardPaths>
 #include <QtCore/QTemporaryDir>
@@ -1170,10 +1171,6 @@ static void ignoreInvalidMimetypeWarnings(const QString &mimeDir)
     QTest::ignoreMessage(QtWarningMsg, ("QMimeDatabase: Error parsing " + basePath + "invalid-magic3.xml\nInvalid magic rule mask size \"0xffff\"").constData());
 }
 
-QT_BEGIN_NAMESPACE
-extern Q_CORE_EXPORT int qmime_secondsBetweenChecks; // see qmimeprovider.cpp
-QT_END_NAMESPACE
-
 void copyFiles(const QSpan<const char *const> &additionalMimeFiles, const QString &destDir)
 {
     const QString notFoundErrorMessage = QString::fromLatin1("Cannot find '%1'");
@@ -1207,8 +1204,6 @@ void tst_QMimeDatabase::installNewGlobalMimeType()
 #if !QT_CONFIG(process)
     QSKIP("This test requires QProcess support");
 #else
-    qmime_secondsBetweenChecks = 0;
-
     QMimeDatabase db;
     QVERIFY(!db.mimeTypeForName(QLatin1String("text/x-suse-ymp")).isValid());
 
@@ -1221,6 +1216,7 @@ void tst_QMimeDatabase::installNewGlobalMimeType()
     QVERIFY(!QTest::currentTestFailed());
     if (m_isUsingCacheProvider && !waitAndRunUpdateMimeDatabase(mimeDir))
         QSKIP("shared-mime-info not found, skipping mime.cache test");
+    QMimeDatabase::reload();
 
     QCOMPARE(db.mimeTypeForFile(QLatin1String("foo.ymu"), QMimeDatabase::MatchExtension).name(),
              QString::fromLatin1("text/x-SuSE-ymu"));
@@ -1293,6 +1289,7 @@ void tst_QMimeDatabase::installNewGlobalMimeType()
     deleteFiles(additionalGlobalMimeFiles, destDir);
     if (m_isUsingCacheProvider && !waitAndRunUpdateMimeDatabase(mimeDir))
         QSKIP("shared-mime-info not found, skipping mime.cache test");
+    QMimeDatabase::reload();
     QCOMPARE(db.mimeTypeForFile(QLatin1String("foo.ymu"), QMimeDatabase::MatchExtension).name(),
              QString::fromLatin1("application/octet-stream"));
     QVERIFY(!db.mimeTypeForName(QLatin1String("text/x-suse-ymp")).isValid());
@@ -1322,8 +1319,6 @@ void tst_QMimeDatabase::installNewLocalMimeType()
 #else
     QFETCH(bool, useLocalBinaryCache);
 
-    qmime_secondsBetweenChecks = 0;
-
     QMimeDatabase db;
 
     // Check that we're starting clean
@@ -1340,6 +1335,7 @@ void tst_QMimeDatabase::installNewLocalMimeType()
                                     + QDir::toNativeSeparators(m_localMimeDir) + QLatin1Char(')');
         QSKIP(qPrintable(skipWarning));
     }
+    QMimeDatabase::reload();
 
     if (!useLocalBinaryCache)
         ignoreInvalidMimetypeWarnings(m_localMimeDir);
@@ -1423,19 +1419,57 @@ void tst_QMimeDatabase::installNewLocalMimeType()
         QFile::remove(destDir + QStringLiteral("invalid-magic%1.xml").arg(i));
     if (useLocalBinaryCache && !waitAndRunUpdateMimeDatabase(m_localMimeDir))
         QSKIP("shared-mime-info not found, skipping mime.cache test");
+    QMimeDatabase::reload();
     QVERIFY(!db.mimeTypeForName(QLatin1String("text/invalid-magic1")).isValid()); // deleted
     QVERIFY(db.mimeTypeForName(QLatin1String("text/x-suse-ymp")).isValid()); // still present
 
     // The user deletes the cache -> the XML provider makes things still work
     QFile::remove(m_localMimeDir + QString::fromLatin1("/mime.cache"));
+    QMimeDatabase::reload();
     QVERIFY(!db.mimeTypeForName(QLatin1String("text/invalid-magic1")).isValid()); // deleted
     QVERIFY(db.mimeTypeForName(QLatin1String("text/x-suse-ymp")).isValid()); // still present
 
     // Finally, the user deletes the whole local dir
     QVERIFY2(QDir(m_localMimeDir).removeRecursively(), qPrintable(m_localMimeDir + ": " + qt_error_string()));
+    QMimeDatabase::reload();
     QCOMPARE(db.mimeTypeForFile(QLatin1String("foo.ymu"), QMimeDatabase::MatchExtension).name(),
              QString::fromLatin1("application/octet-stream"));
     QVERIFY(!db.mimeTypeForName(QLatin1String("text/x-suse-ymp")).isValid());
+#endif
+}
+
+void tst_QMimeDatabase::reload()
+{
+#if !QT_CONFIG(process)
+    QSKIP("This test requires QProcess support");
+#else
+    const QString name = u"application/x-qt-reload-test"_s;
+    const QString destDir = m_localMimeDir + "/packages/"_L1;
+    const QString definition = destDir + "qt-reload-test.xml"_L1;
+    QMimeDatabase db;
+    QVERIFY(!db.mimeTypeForName(name).isValid());
+
+    QVERIFY(QDir().mkpath(destDir));
+    QFile file(definition);
+    QVERIFY(file.open(QIODevice::WriteOnly));
+    file.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+               "<mime-info xmlns=\"http://www.freedesktop.org/standards/shared-mime-info\">\n"
+               "  <mime-type type=\"application/x-qt-reload-test\">\n"
+               "    <glob pattern=\"*.qtreloadtest\"/>\n"
+               "  </mime-type>\n"
+               "</mime-info>\n");
+    file.close();
+    const auto removeDefinition = qScopeGuard([&] {
+        QFile::remove(definition);
+        runUpdateMimeDatabase(m_localMimeDir);
+        QMimeDatabase::reload();
+    });
+    if (!waitAndRunUpdateMimeDatabase(m_localMimeDir))
+        QSKIP("shared-mime-info not found");
+
+    QMimeDatabase::reload();
+    QVERIFY(db.mimeTypeForName(name).isValid());
+    QCOMPARE(db.mimeTypeForFile(u"file.qtreloadtest"_s, QMimeDatabase::MatchExtension).name(), name);
 #endif
 }
 

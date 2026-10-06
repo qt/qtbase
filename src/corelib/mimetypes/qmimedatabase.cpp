@@ -54,17 +54,13 @@ QMimeDatabasePrivate::~QMimeDatabasePrivate()
 {
 }
 
-Q_CONSTINIT
-#ifdef QT_BUILD_INTERNAL
-Q_CORE_EXPORT
-#else
-static const
-#endif
-int qmime_secondsBetweenChecks = 5;
+using namespace std::chrono_literals;
+
+static constexpr auto qmime_secondsBetweenChecks = 5s;
 
 bool QMimeDatabasePrivate::shouldCheck()
 {
-    if (m_lastCheck.isValid() && m_lastCheck.elapsed() < qmime_secondsBetweenChecks * 1000)
+    if (m_lastCheck.isValid() && m_lastCheck.durationElapsed() < qmime_secondsBetweenChecks)
         return false;
     m_lastCheck.start();
     return true;
@@ -154,6 +150,13 @@ void QMimeDatabasePrivate::loadProviders()
     const auto end = m_providers.end();
     for (; it != end; ++it)
         (*it)->setOverrideProvider((it - 1)->get());
+}
+
+void QMimeDatabasePrivate::reload()
+{
+    QMutexLocker locker(&mutex);
+    // The next query checks the files, as when the periodic check is due.
+    m_lastCheck.invalidate();
 }
 
 const QMimeDatabasePrivate::Providers &QMimeDatabasePrivate::providers()
@@ -594,6 +597,10 @@ bool QMimeDatabasePrivate::inherits(const QString &mime, const QString &parent)
     in the above example. Make sure to run this command when installing the MIME type
     definition file.
 
+    A running application sees new or removed MIME type definitions after a few
+    seconds, when QMimeDatabase checks its files again. An application that
+    installs a definition itself can call reload() to see it at once.
+
     \threadsafe
 
     \snippet code/src_corelib_mimetype_qmimedatabase.cpp 0
@@ -891,6 +898,24 @@ QList<QMimeType> QMimeDatabase::allMimeTypes() const
     QMutexLocker locker(&d->mutex);
 
     return d->allMimeTypes();
+}
+
+/*!
+    \since 6.13
+
+    Makes the next query read again the MIME database files that changed since
+    they were read.
+
+    QMimeDatabase checks the files for changes at most every few seconds.
+    Call this function after installing or removing a MIME type definition,
+    for instance with \c update-mime-database, so that the change is seen
+    at once.
+
+    This affects all QMimeDatabase instances, which share the same data.
+*/
+void QMimeDatabase::reload()
+{
+    QMimeDatabasePrivate::instance()->reload();
 }
 
 /*!

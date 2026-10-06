@@ -51,6 +51,8 @@ public:
 
     QList<QMimeType> allMimeTypes() const;
 
+    static void reload();
+
 private:
     QMimeDatabasePrivate *d;
 };

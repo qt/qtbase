@@ -66,6 +66,7 @@ private slots:
     void installNewGlobalMimeType();
     void installNewLocalMimeType_data();
     void installNewLocalMimeType();
+    void reload();
 
 private:
     void initTestCaseInternal(); // test-specific

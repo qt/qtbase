@@ -55,6 +55,8 @@ public:
 
     QList<QMimeType> allMimeTypes();
 
+    void reload();
+
     QString resolveAlias(const QString &nameOrAlias);
     QStringList parents(const QString &mimeName);
     QMimeType mimeTypeForName(const QString &nameOrAlias);
