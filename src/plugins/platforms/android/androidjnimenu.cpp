@@ -153,6 +153,13 @@ namespace QtAndroidMenu
         }
     }
 
+    void menuBarChanged(QAndroidPlatformMenuBar *menuBar)
+    {
+        QMutexLocker lock(&menuBarMutex);
+        if (visibleMenuBar == menuBar)
+            resetMenuBar();
+    }
+
     static QString removeAmpersandEscapes(QString s)
     {
         qsizetype i = 0;

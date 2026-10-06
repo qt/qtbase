@@ -31,6 +31,7 @@ namespace QtAndroidMenu
     void setActiveTopLevelWindow(QWindow *window);
     void addMenuBar(QAndroidPlatformMenuBar *menuBar);
     void removeMenuBar(QAndroidPlatformMenuBar *menuBar);
+    void menuBarChanged(QAndroidPlatformMenuBar *menuBar);
 
     // Menu support
     bool registerNatives(QJniEnvironment &env);

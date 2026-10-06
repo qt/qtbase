@@ -21,33 +21,39 @@ QAndroidPlatformMenuBar::~QAndroidPlatformMenuBar()
 
 void QAndroidPlatformMenuBar::insertMenu(QPlatformMenu *menu, QPlatformMenu *before)
 {
-    QMutexLocker lock(&m_menusListMutex);
-    m_menus.insert(std::find(m_menus.begin(),
-                             m_menus.end(),
-                             static_cast<QAndroidPlatformMenu *>(before)),
-                   static_cast<QAndroidPlatformMenu *>(menu));
-    m_menuHash.insert(m_nextMenuId++, menu);
+    {
+        QMutexLocker lock(&m_menusListMutex);
+        m_menus.insert(std::find(m_menus.begin(),
+                                 m_menus.end(),
+                                 static_cast<QAndroidPlatformMenu *>(before)),
+                       static_cast<QAndroidPlatformMenu *>(menu));
+        m_menuHash.insert(m_nextMenuId++, menu);
+    }
+    QtAndroidMenu::menuBarChanged(this);
 }
 
 void QAndroidPlatformMenuBar::removeMenu(QPlatformMenu *menu)
 {
-    QMutexLocker lock(&m_menusListMutex);
-    m_menus.erase(std::find(m_menus.begin(),
-                            m_menus.end(),
-                            static_cast<QAndroidPlatformMenu *>(menu)));
+    {
+        QMutexLocker lock(&m_menusListMutex);
+        m_menus.erase(std::find(m_menus.begin(),
+                                m_menus.end(),
+                                static_cast<QAndroidPlatformMenu *>(menu)));
 
-    int maxId = -1;
-    QHash<int, QPlatformMenu *>::iterator it = m_menuHash.begin();
-    while (it != m_menuHash.end()) {
-        if (it.value() == menu) {
-            it = m_menuHash.erase(it);
-        } else {
-            maxId = qMax(maxId, it.key());
-            ++it;
+        int maxId = -1;
+        QHash<int, QPlatformMenu *>::iterator it = m_menuHash.begin();
+        while (it != m_menuHash.end()) {
+            if (it.value() == menu) {
+                it = m_menuHash.erase(it);
+            } else {
+                maxId = qMax(maxId, it.key());
+                ++it;
+            }
         }
-    }
 
-    m_nextMenuId = maxId + 1;
+        m_nextMenuId = maxId + 1;
+    }
+    QtAndroidMenu::menuBarChanged(this);
 }
 
 int QAndroidPlatformMenuBar::menuId(QPlatformMenu *menu) const
