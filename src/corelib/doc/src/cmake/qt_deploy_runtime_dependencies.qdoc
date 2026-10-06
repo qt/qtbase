@@ -180,6 +180,10 @@ be wrapped into a single quoted string so that whitespace is preserved in the
 generated deployment script. Additionally, each value that contains a space,
 like a code signing identity, should be wrapped in backslash escaped quotes.
 
+\note The preferred option format is double-dash ("--option") as used by windeployqt.
+Options will be converted to single-dash ("-option") options for macdeployqt
+when required.
+
 On Linux, deploying runtime dependencies is based on CMake's
 \c{file(GET_RUNTIME_DEPENDENCIES)} command. The options \c{PRE_INCLUDE_REGEXES},
 \c{PRE_EXCLUDE_REGEXES}, \c{POST_INCLUDE_REGEXES}, \c{POST_EXCLUDE_REGEXES},

@@ -821,7 +821,10 @@ function(qt6_deploy_runtime_dependencies)
         if(NOT arg_NO_OVERWRITE)
             list(APPEND tool_options -always-overwrite)
         endif()
-        list(APPEND tool_options ${arg_DEPLOY_TOOL_OPTIONS})
+        # DEPLOY_TOOL_OPTIONS uses the windeployqt style "--option", macdeployqt wants "-option".
+        set(deploy_tool_options ${arg_DEPLOY_TOOL_OPTIONS})
+        list(TRANSFORM deploy_tool_options REPLACE "^--" "-")
+        list(APPEND tool_options ${deploy_tool_options})
     endif()
 
     # This is an internal variable. It is normally unset and is only intended
