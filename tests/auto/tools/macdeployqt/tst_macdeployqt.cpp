@@ -193,22 +193,25 @@ bool runPrintLibraries(const QString &name, QString *errorMessage, QByteArray *s
     return runProcess(binary, args, errorMessage, path, env, 5000, &stdOut, stdErr);
 }
 
+// Runs the application and verifies that it loads binaries from the application
+// bundle only, and not from the Qt build/install location.
 void runVerifyDeployment(const QString &name)
 {
     QString errorMessage;
-    // Verify that the application runs after deployment and that it loads binaries from
-    // the application bundle only.
     QByteArray libraries;
     QVERIFY2(runPrintLibraries(name, &errorMessage, &libraries), qPrintable(errorMessage));
-    const QList<QString> parts = QString::fromLocal8Bit(libraries).split("dyld: loaded:");
+
+    // The DYLD_PRINT_LIBRARIES output lists the loaded libraries, starting with the app
+    // itself; verify that we get the app binary and QtCore as a self-check.
+    const QString output = QString::fromLocal8Bit(libraries);
+    QVERIFY2(output.contains(name + ".app/Contents/MacOS/" + name)
+          && output.contains("QtCore"), qPrintable("Unexpected dyld output:\n" + output));
+
+    // Verify that Qt's PrefixPath does not appear in the loaded library list. This
+    // is where any macdeployqt malfunctions should show up.
     const QString qtPath = QLibraryInfo::path(QLibraryInfo::PrefixPath);
-    // Let assume Qt is not installed in system
-    for (const QString &part : parts) {
-        const auto trimmed = part.trimmed();
-        if (trimmed.isEmpty())
-            continue;
-        QVERIFY(!trimmed.startsWith(qtPath));
-    }
+    QVERIFY2(!output.contains(qtPath),
+             qPrintable("Loaded libraries from outside the bundle:\n" + output));
 }
 
 class tst_macdeployqt : public QObject
@@ -230,6 +233,9 @@ void tst_macdeployqt::initTestCase()
 
     if (QProcess::execute("xcode-select", { "-p" }) != 0)
         QSKIP("Xcode or Xcode command line tools not installed");
+
+    if (!QLibraryInfo::isSharedBuild())
+        QSKIP("macdeployqt deploys Qt frameworks, which a static Qt build does not have");
 
     // Set up test-global unique temporary directory
     g_temporaryDirectory = new QTemporaryDir();
