@@ -7,6 +7,7 @@
 #include <QGuiApplication>
 #include <QtCore/qnativeinterface.h>
 #include <QtCore/qjniobject.h>
+#include <QtCore/qjnienvironment.h>
 #include <QtCore/qdiriterator.h>
 #include <QScreen>
 #include <QWindow>
@@ -16,6 +17,9 @@
 #include <private/qglobal_p.h>  // for widgets feature test
 #if QT_CONFIG(widgets)
 #include <QWidget>
+#include <QMainWindow>
+#include <QMenuBar>
+#include <QMenu>
 #endif
 #include <QSignalSpy>
 #include <QtCore/private/qexpected_p.h>
@@ -36,13 +40,16 @@ Q_DECLARE_JNI_CLASS(WindowInsets, "android/view/WindowInsets")
 Q_DECLARE_JNI_CLASS(Insets, "android/view/Insets")
 Q_DECLARE_JNI_CLASS(GraphicsInsets, "android/graphics/Insets")
 Q_DECLARE_JNI_CLASS(DisplayCutout, "android/view/DisplayCutout")
+Q_DECLARE_JNI_CLASS(ViewConfiguration, "android/view/ViewConfiguration")
 Q_DECLARE_JNI_CLASS(WindowManager, "android/view/WindowManager")
 Q_DECLARE_JNI_CLASS(WindowMetrics, "android/view/WindowMetrics")
 Q_DECLARE_JNI_CLASS(ApplicationInfo, "android/content/pm/ApplicationInfo")
 Q_DECLARE_JNI_CLASS(WindowInsetsType, "android/view/WindowInsets$Type")
 Q_DECLARE_JNI_CLASS(QtActivityLoader, "org/qtproject/qt/android/QtActivityLoader")
-Q_DECLARE_JNI_CLASS(ViewParent, "android/view/ViewParent")
+Q_DECLARE_JNI_CLASS(ActionBar, "android/app/ActionBar")
+Q_DECLARE_JNI_CLASS(ActionMenuView, "android/widget/ActionMenuView")
 Q_DECLARE_JNI_CLASS(ViewGroup, "android/view/ViewGroup")
+Q_DECLARE_JNI_CLASS(ViewParent, "android/view/ViewParent")
 Q_DECLARE_JNI_CLASS(LayoutParams, "android/view/ViewGroup$LayoutParams")
 Q_DECLARE_JNI_CLASS(WindowLayoutParams, "android/view/WindowManager$LayoutParams")
 Q_DECLARE_JNI_CLASS(IBinder, "android/os/IBinder")
@@ -50,6 +57,7 @@ Q_DECLARE_JNI_CLASS(InputMethodManager, "android/view/inputmethod/InputMethodMan
 Q_DECLARE_JNI_CLASS(TestEditText, "org/qtproject/qt/android/TestEditText")
 Q_DECLARE_JNI_CLASS(QtLayoutParams, "org/qtproject/qt/android/QtLayout$LayoutParams")
 Q_DECLARE_JNI_CLASS(QtWindowInsetsController, "org/qtproject/qt/android/QtWindowInsetsController")
+Q_DECLARE_JNI_CLASS(Class, "java/lang/Class")
 
 class tst_Android : public QObject
 {
@@ -73,6 +81,7 @@ private slots:
     void rootMarginsWithoutEnforcement();
     void testFullScreenDimensions();
     void orientationChange();
+    void menuBarShowsActionBarOverflow();
 #endif
 };
 
@@ -846,6 +855,128 @@ void tst_Android::orientationChange()
     testOrientation(Qt::InvertedLandscapeOrientation, landscapeValues);
     testOrientation(Qt::LandscapeOrientation, landscapeValues);
 }
+
+// Walks the view tree below root and returns whether it contains an ActionMenuView that is shown
+// and has children. QTBUG-112272: the action bar can be shown while its menu is detached and
+// empty, in which case there is no overflow button for the user to reach the menu.
+// If hierarchy is not null, every visited view is appended to it, indented by its depth.
+static bool findShownActionMenu(const QtJniTypes::View &root, QStringList *hierarchy = nullptr)
+{
+    using namespace QtJniTypes;
+    QJniEnvironment env;
+
+    bool found = false;
+    QList<std::pair<View, int>> pending{ { root, 0 } };
+    const jclass viewGroupClass = env.findClass<ViewGroup>();
+    const jclass actionMenuViewClass = env.findClass<ActionMenuView>();
+    while (!pending.isEmpty()) {
+        const auto [view, depth] = pending.takeLast();
+        const bool shown = view.callMethod<jboolean>("isShown");
+        const bool isGroup = env->IsInstanceOf(view.object(), viewGroupClass);
+        const int childCount = isGroup ? view.callMethod<jint>("getChildCount") : 0;
+        if (hierarchy) {
+            const QString className =
+                    view.callMethod<Class>("getClass").callMethod<QString>("getName");
+            hierarchy->append(QString(depth * 2, u' ') + className
+                              + (shown ? u" shown"_s : u" hidden"_s)
+                              + (isGroup ? u" children=%1"_s.arg(childCount) : QString()));
+        }
+        if (shown && childCount > 0 && env->IsInstanceOf(view.object(), actionMenuViewClass)) {
+            if (!hierarchy)
+                return true;
+            found = true;
+        }
+
+        // Push the children in reverse, so that they are visited in layout order
+        for (int i = childCount - 1; i >= 0; --i)
+            pending.append({ view.callMethod<View>("getChildAt", i), depth + 1 });
+    }
+    return found;
+}
+
+// Checks on the Android UI thread whether the action bar is shown together with a non-empty
+// action menu (shown == true), or hidden (shown == false). A hidden action bar implies that the
+// menu is hidden too, as View.isShown() is false below a hidden ancestor. Returns false also
+// if the UI thread did not run the check in time.
+static bool actionBarReached(bool shown)
+{
+    // The runnable can still run after a timeout, so it must not refer to this stack frame
+    QFuture<QVariant> future = QNativeInterface::QAndroidApplication::runOnAndroidMainThread(
+            [shown] {
+                using namespace QtJniTypes;
+                const auto activity = QNativeInterface::QAndroidApplication::context();
+                const bool showing = activity.callMethod<ActionBar>("getActionBar")
+                                             .callMethod<jboolean>("isShowing");
+                if (!shown)
+                    return !showing;
+                if (!showing)
+                    return false;
+                const View decorView =
+                        activity.callMethod<Window>("getWindow").callMethod<View>("getDecorView");
+                return findShownActionMenu(decorView);
+            },
+            QDeadlineTimer(1000));
+    future.waitForFinished();
+    return !future.isCanceled() && future.resultCount() > 0 && future.result().toBool();
+}
+
+// Returns the indented decor view hierarchy, read on the Android UI thread, for diagnostics.
+static QString decorViewHierarchy()
+{
+    QFuture<QVariant> future = QNativeInterface::QAndroidApplication::runOnAndroidMainThread(
+            [] {
+                using namespace QtJniTypes;
+                const auto activity = QNativeInterface::QAndroidApplication::context();
+                const View decorView =
+                        activity.callMethod<Window>("getWindow").callMethod<View>("getDecorView");
+                QStringList hierarchy;
+                findShownActionMenu(decorView, &hierarchy);
+                return hierarchy.join(u'\n');
+            },
+            QDeadlineTimer(1000));
+    future.waitForFinished();
+    if (future.isCanceled() || future.resultCount() == 0)
+        return u"<unavailable>"_s;
+    return future.result().toString();
+}
+
+// Waits until the action bar and its menu are both shown or both hidden. The options menu is
+// invalidated asynchronously, so a single read can be too early.
+static bool waitForActionBar(bool shown)
+{
+    const bool reached = QTest::qWaitFor([shown] { return actionBarReached(shown); }, 5000);
+    if (!reached)
+        qWarning().noquote() << "Decor view hierarchy:\n" << decorViewHierarchy();
+    return reached;
+}
+
+static bool hasActionBar()
+{
+    using namespace QtJniTypes;
+    const auto activity = QNativeInterface::QAndroidApplication::context();
+    const bool hasActionBar = activity.callMethod<ActionBar>("getActionBar").isValid();
+    const ViewConfiguration viewConfig =
+            ViewConfiguration::callStaticMethod<ViewConfiguration>("get", activity);
+    const bool hasPermanentMenuKey = viewConfig.callMethod<jboolean>("hasPermanentMenuKey");
+    return hasActionBar && !hasPermanentMenuKey;
+}
+
+// QTBUG-112272: with a Toolbar based action bar (Material themes) the options
+// menu must end up in the action bar, which shows it behind the overflow button.
+void tst_Android::menuBarShowsActionBarOverflow()
+{
+    if (!hasActionBar())
+        QSKIP("The action bar does not show the options menu on this device.");
+
+    QMainWindow mainWindow;
+    mainWindow.menuBar()->addMenu(u"&File"_s)->addAction(u"&New"_s);
+    mainWindow.menuBar()->addMenu(u"&Edit"_s)->addAction(u"&Undo"_s);
+    mainWindow.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&mainWindow));
+
+    QVERIFY2(waitForActionBar(true), "The action bar and its overflow button should be shown");
+}
+
 #endif // QT_CONFIG(widgets)
 
 QTEST_MAIN(tst_Android)

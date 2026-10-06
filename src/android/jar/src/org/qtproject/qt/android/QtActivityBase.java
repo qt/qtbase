@@ -319,7 +319,10 @@ public class QtActivityBase extends Activity
     {
         boolean res = QtNative.onPrepareOptionsMenu(menu);
         m_delegate.setActionBarVisibility(res && menu.size() > 0);
-        return res;
+        // Returning false makes the window detach the menu from a Toolbar based action bar,
+        // which never takes the same menu back (QTBUG-112272).
+        // An empty menu is not a problem, because the action bar will be hidden anyway.
+        return true;
     }
 
     @Override
