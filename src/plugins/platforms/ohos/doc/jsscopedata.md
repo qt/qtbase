@@ -35,7 +35,7 @@ private:
 };
 ```
 
-The owner is a non-movable Qt-thread member. It creates the bundle on the JS thread the first time it is dereferenced (`m_jsScopeData->` or `*m_jsScopeData`), and releases it on the JS thread when the owner is destroyed. `JsScopeData` must be default-constructible: its members start empty and are populated from JS-thread code, usually in the constructor of the owning object:
+The owner is a non-movable Qt-thread member. It creates the bundle on the JS thread the first time it is used (`m_jsScopeData->`, `*m_jsScopeData` or `addAsyncCleanup()`), and releases it on the JS thread when the owner is destroyed. `JsScopeData` must be default-constructible: its members start empty and are populated from JS-thread code, usually in the constructor of the owning object:
 
 ```cpp
 QOhosFoo::QOhosFoo()
@@ -53,9 +53,27 @@ A bundle whose members all come from one JS-thread visit is assigned as a whole 
 
 A class whose bundle exists only part of the time (e.g. while a tray icon is shown) holds `std::optional<QtOhos::JsScopeDataOwner<JsScopeData>> m_optJsScopeData`, calls `emplace()` on the Qt thread before populating and `reset()` there to release.
 
-You do not write any teardown code: when `m_jsScopeData` or the owning object is destroyed (on any thread), the contents are released on the JS thread automatically. The owning object's destructor can stay trivial. If populating fails, release whatever was populated the same way, by destroying the owner, or resetting the `std::optional` holding it, on the Qt thread.
+You do not write any teardown code in the destructor: when `m_jsScopeData` or the owning object is destroyed (on the Qt thread, or any thread other than the JS thread), the contents are released on the JS thread automatically. The owning object's destructor can stay trivial. If populating fails, release whatever was populated the same way, by destroying the owner, or resetting the `std::optional` holding it, on the Qt thread.
 
-An object that is itself created on the JS thread is outside this pattern; it keeps its JS-thread state in a `std::shared_ptr` wrapped with `QtOhos::makeProxyWithJsThreadDeleter()`.
+An object that is itself created or destroyed on the JS thread is outside this pattern; it keeps its JS-thread state in a `std::shared_ptr` wrapped with `QtOhos::makeProxyWithJsThreadDeleter()`.
+
+## Asynchronous cleanup
+
+The bundle's member destructors are synchronous. When releasing a resource takes asynchronous JS calls (a destroy function returning a promise, an `off()` that must complete before the next step), register the release as a cleanup, on the JS thread, where the resource is acquired:
+
+```cpp
+m_jsScopeData->jsObject = makeJsObject(jsState);
+m_jsScopeData.addAsyncCleanup(
+    [](QOhosJsState &, JsScopeData &data, QOhosTaskPromise<> donePromise) {
+        data.jsObject.evalToPromiseOrRejectOnThrow("destroy()")
+        .onCatch(QtOhos::makeErrorLoggingJsCallback("destroy()"))
+        .onFinally(std::move(donePromise).makeChained(Q_FUNC_INFO));
+    });
+```
+
+- Cleanups run on the JS thread in reverse registration order, before the members are destroyed; the bundle stays valid for the whole chain. The owner's destructor waits until the last one has settled.
+- A cleanup settles its promise once its JS calls have completed, whether they succeeded or failed. One that throws or drops the promise is logged and the chain continues.
+- Several asynchronous steps are either one cleanup each, or one cleanup chaining them.
 
 ## Rules
 
@@ -72,5 +90,5 @@ An object that is itself created on the JS thread is outside this pattern; it ke
 Each resource could carry its own JS-thread-hopping deleter, but bundling gives:
 
 - **One thread hop on teardown** instead of N blocking cross-thread round-trips.
-- **Atomic lifetime** - everything created in one JS-thread visit, released in one.
+- **Atomic lifetime** - everything created in one JS-thread visit, released in one teardown, even when that teardown spans asynchronous cleanups.
 - **Visible thread affinity at call sites** - every JS-state access reads `m_jsScopeData->...`, distinct from Qt-state members, so wrong-thread access stands out (see Rule 2).
