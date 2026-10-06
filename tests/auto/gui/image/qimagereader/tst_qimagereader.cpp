@@ -900,6 +900,19 @@ void tst_QImageReader::gifHandlerBugs()
         QCOMPARE(im.pixel(0,0), qRgba(0x3f, 0xff, 0x7f, 0x00));
         QCOMPARE(im.pixel(10,10), qRgba(0x3f, 0xff, 0x7f, 0x00));
     }
+
+    // Check that size reporting matches what is actually produced
+    {
+        QImageReader io1(prefix + "lsd3000_frame100.gif");
+        QVERIFY(io1.canRead());
+        const QSize sz1 = io1.size();
+        QCOMPARE(io1.read().size(), sz1);
+
+        QImageReader io2(prefix + "oversize.gif");
+        QVERIFY(io2.canRead());
+        const QSize sz2 = io2.size();
+        QCOMPARE(io2.read().size().isEmpty(), sz2.isEmpty());
+    }
 }
 
 void tst_QImageReader::animatedGif()
