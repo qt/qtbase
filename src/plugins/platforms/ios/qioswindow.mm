@@ -406,8 +406,12 @@ void QIOSWindow::applicationStateChanged(Qt::ApplicationState)
     if (isForeignWindow())
         return;
 
-    if (window()->isExposed() != isExposed())
-        [quiview_cast(m_view) sendUpdatedExposeEvent];
+    if (window()->isExposed() != isExposed()) {
+        if (isExposed())
+            [m_view setNeedsDisplay];
+        else
+            [quiview_cast(m_view) sendUpdatedExposeEvent];
+    }
 }
 
 qreal QIOSWindow::devicePixelRatio() const
