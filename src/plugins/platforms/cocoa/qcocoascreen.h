@@ -86,14 +86,14 @@ private:
 
     QRect m_geometry;
     QRect m_availableGeometry;
-    qreal m_refreshRate = 0;
-    int m_depth = 0;
+    qreal m_refreshRate = 60;
+    int m_depth = 24;
     QString m_name;
-    QImage::Format m_format;
+    QImage::Format m_format = QImage::Format_RGB32;
     QColorSpace m_colorSpace;
     QSizeF m_physicalSize;
-    QCocoaCursor *m_cursor;
-    qreal m_devicePixelRatio = 0;
+    QCocoaCursor *m_cursor = nullptr;
+    qreal m_devicePixelRatio = 1;
     qreal m_rotation = 0;
 
     CVDisplayLinkRef m_displayLink = nullptr;
