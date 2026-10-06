@@ -73,14 +73,18 @@ void QIOSApplicationState::handleApplicationStateChanged(UIApplicationState uiSt
     Qt::ApplicationState newState = toQtApplicationState(uiState);
     qCDebug(lcQpaApplication) << qPrintable(reason) << "- moving from" << oldState << "to" << newState;
 
+    // Persist up front, so that code triggered by our internal applicationStateWillChange
+    // signal will reflect the current state and not the previous state, even when going
+    // via QGuiApplication::applicationState()
+    QGuiApplicationPrivate::applicationState = newState;
+
     if (QIOSIntegration *integration = QIOSIntegration::instance()) {
         emit integration->applicationState.applicationStateWillChange(oldState, newState);
-        QWindowSystemInterface::handleApplicationStateChanged(newState);
+        QWindowSystemInterface::handleApplicationStateChanged(newState, newState != oldState);
         emit integration->applicationState.applicationStateDidChange(oldState, newState);
         qCDebug(lcQpaApplication) << "done moving to" << newState;
     } else {
-        qCDebug(lcQpaApplication) << "no platform integration yet, setting state directly";
-        QGuiApplicationPrivate::applicationState = newState;
+        qCDebug(lcQpaApplication) << "no platform integration yet, set state directly";
     }
 }
 
