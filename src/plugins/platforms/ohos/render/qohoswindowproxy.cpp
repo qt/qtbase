@@ -317,18 +317,18 @@ const QOhosWindowProxy::EventHandlerDescriptor QOhosWindowProxy::eventHandlerDes
 
 QOhosWindowProxy::QOhosWindowProxy(
     QOhosWindowProxyData windowProxyData)
-    : m_jsScopeData(
-        QtOhos::makeProxyWithJsThreadDeleter(
-            std::make_shared<JsScopeData>(
-                windowProxyData.windowProxyType,
-                std::move(windowProxyData.jsWindow),
-                std::move(windowProxyData.jsKeepAliveData),
-                std::move(windowProxyData.qAbilityPeer),
-                windowProxyData.owningQWindowRef)))
+    : m_jsScopeData(QtOhos::makeProxyWithJsThreadDeleter(std::make_shared<JsScopeData>()))
     , m_windowProxyType(windowProxyData.windowProxyType)
     , m_nodeXComponent(windowProxyData.nodeXComponent)
-    , m_qAbilityInstanceId(m_jsScopeData->jsWindowRef->owningQAbilityInstanceId())
 {
+    *m_jsScopeData = JsScopeData(
+        windowProxyData.windowProxyType,
+        std::move(windowProxyData.jsWindow),
+        std::move(windowProxyData.jsKeepAliveData),
+        std::move(windowProxyData.qAbilityPeer),
+        windowProxyData.owningQWindowRef);
+    m_qAbilityInstanceId = m_jsScopeData->jsWindowRef->owningQAbilityInstanceId();
+
     std::vector<std::shared_ptr<void>> eventListenersHandles;
     for (const auto &eventHandlerDescriptor : eventHandlerDescriptors) {
         eventListenersHandles.push_back(
@@ -1405,6 +1405,8 @@ QOhosWindowProxy::createSubWindow(const SubWindowCreateInfo &createInfo)
         },
         Q_FUNC_INFO);
 }
+
+QOhosWindowProxy::JsScopeData::JsScopeData() = default;
 
 QOhosWindowProxy::JsScopeData::JsScopeData(
     WindowProxyType windowProxyType, QNapi::Reference<QNapi::Object> jsWindow,

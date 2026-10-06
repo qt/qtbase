@@ -115,6 +115,7 @@ void CallbackReceiver::onHoverEvent(bool isHover)
 
 QNativeNode::QNativeNode(const CreateInfo &nativeNodeCreateInfo)
     : QObject()
+    , m_jsStateData(QtOhos::makeProxyWithJsThreadDeleter(std::make_shared<JsStateData>()))
 {
     auto qWindow = QPointer<QWindow>(nativeNodeCreateInfo.window);
     auto selfRef = QtOhos::makeQThreadSafeRef(this);
@@ -141,8 +142,6 @@ QNativeNode::QNativeNode(const CreateInfo &nativeNodeCreateInfo)
     auto imEventHandlerRef = QtOhos::makeQThreadSafeRef(inputMethodEventHandler);
 
     QOhosJsThreadGateway::runAndWait([&](QOhosJsState &) {
-        m_jsStateData = QtOhos::makeProxyWithJsThreadDeleter(std::make_shared<JsStateData>());
-
         using ParentDescriptor = QArkUi::QEmbeddedWindowNode::ParentDescriptor;
 
         std::optional<ParentDescriptor> optParentDescriptor;

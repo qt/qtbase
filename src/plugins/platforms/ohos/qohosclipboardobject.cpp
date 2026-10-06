@@ -151,9 +151,10 @@ QOhosClipboardObject::QOhosClipboardObject(
     std::function<void(std::optional<PasteboardDataSource>)> &&pasteboardUpdatesNotifier)
     : m_pasteboardUpdatesNotifier(
         QtOhos::moveToSharedPtr(std::move(pasteboardUpdatesNotifier)))
+    , m_jsScopeData(QtOhos::makeProxyWithJsThreadDeleter(std::make_shared<JsScopeData>()))
 {
     auto weakPasteboardUpdatesNotifier = QtOhos::makeWeakPtr(m_pasteboardUpdatesNotifier);
-    m_jsScopeData = QOhosJsThreadGateway::eval(
+    QOhosJsThreadGateway::runAndWait(
         [&](QOhosJsState &) {
             auto pasteboard = std::shared_ptr<::OH_Pasteboard>(
                 QArkUi::callArkUiOrFailOnNullResult(
@@ -200,12 +201,10 @@ QOhosClipboardObject::QOhosClipboardObject(
                     ::Pasteboard_NotifyType::NOTIFY_REMOTE_DATA_CHANGE,
                 });
 
-            return QtOhos::makeProxyWithJsThreadDeleter(
-                QtOhos::moveToSharedPtr(
-                    JsScopeData{
-                        .pasteboard = pasteboard,
-                        .pasteboardDataChangedListenerHandle = pasteboardDataChangedListenerHandle,
-                    }));
+            *m_jsScopeData = JsScopeData{
+                .pasteboard = pasteboard,
+                .pasteboardDataChangedListenerHandle = pasteboardDataChangedListenerHandle,
+            };
         },
         Q_FUNC_INFO);
 }
