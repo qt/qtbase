@@ -252,7 +252,7 @@
         });
 
         QIOSApplicationState *applicationState = &QIOSIntegration::instance()->applicationState;
-        m_appStateChangedConnection = QObject::connect(applicationState, &QIOSApplicationState::applicationStateDidChange,
+        m_appStateChangedConnection = QObject::connect(applicationState, &QIOSApplicationState::applicationStateWillChange,
             [self](Qt::ApplicationState oldState, Qt::ApplicationState newState) {
                 if (oldState == Qt::ApplicationSuspended && newState != Qt::ApplicationSuspended) {
                     // We may have ignored an earlier layout because the application was suspended,
