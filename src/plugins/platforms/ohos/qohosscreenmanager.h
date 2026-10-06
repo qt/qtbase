@@ -12,6 +12,7 @@
 #include <optional>
 #include <qarkui/displaymanager.h>
 #include <qohosdisplayinfo.h>
+#include <qohosjsscopedataowner.h>
 #include <qohosplatformscreen.h>
 #include <vector>
 
@@ -60,7 +61,7 @@ private:
         std::shared_ptr<QArkUi::QOhosDisplayManager> displayManager;
     };
 
-    std::shared_ptr<JsScopeData> m_jsScopeData;
+    QtOhos::JsScopeDataOwner<JsScopeData> m_jsScopeData;
     std::vector<std::unique_ptr<QOhosPlatformScreenHolder>> m_displays;
 };
 

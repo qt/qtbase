@@ -151,7 +151,6 @@ QOhosClipboardObject::QOhosClipboardObject(
     std::function<void(std::optional<PasteboardDataSource>)> &&pasteboardUpdatesNotifier)
     : m_pasteboardUpdatesNotifier(
         QtOhos::moveToSharedPtr(std::move(pasteboardUpdatesNotifier)))
-    , m_jsScopeData(QtOhos::makeProxyWithJsThreadDeleter(std::make_shared<JsScopeData>()))
 {
     auto weakPasteboardUpdatesNotifier = QtOhos::makeWeakPtr(m_pasteboardUpdatesNotifier);
     QOhosJsThreadGateway::runAndWait(

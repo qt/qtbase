@@ -11,6 +11,7 @@
 #include <atomic>
 #include <cstdint>
 #include <optional>
+#include <qohosjsscopedataowner.h>
 #include <qpa/qplatformtheme.h>
 #include <string>
 
@@ -228,7 +229,7 @@ private:
         std::shared_ptr<void> m_rightMenuClickListenerHandle;
     };
 
-    std::shared_ptr<JsScopeData> m_jsScopeData;
+    QtOhos::JsScopeDataOwner<JsScopeData> m_jsScopeData;
 };
 
 QOhosStatusBarMenuItem::QOhosStatusBarMenuItem()
@@ -376,7 +377,6 @@ std::string QOhosStatusBarMenuItem::generateNextMenuCode()
 
 QOhosStatusBarMenuImpl::QOhosStatusBarMenuImpl()
     : QOhosStatusBarMenu()
-    , m_jsScopeData(QtOhos::makeProxyWithJsThreadDeleter(std::make_shared<JsScopeData>()))
 {
     auto selfRef = QtOhos::makeQThreadSafeRef(this);
     QOhosJsThreadGateway::runAndWait(

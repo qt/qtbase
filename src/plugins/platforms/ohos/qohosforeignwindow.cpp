@@ -19,7 +19,6 @@ QT_BEGIN_NAMESPACE
 
 QOhosForeignWindow::QOhosForeignWindow(QWindow *qWindow, WId windowId)
     : QOhosPlatformWindow(qWindow)
-    , m_jsStateData(QtOhos::makeProxyWithJsThreadDeleter(std::make_shared<JsStateData>()))
 {
     QOhosJsThreadGateway::runAndWait([&](QOhosJsState &) {
         auto windowIdStruct = std::unique_ptr<QtOhos::WindowIdStruct>(

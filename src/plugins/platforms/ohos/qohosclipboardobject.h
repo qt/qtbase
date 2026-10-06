@@ -10,6 +10,7 @@
 #include <database/pasteboard/oh_pasteboard.h>
 #include <memory>
 #include <optional>
+#include <qohosjsscopedataowner.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -46,7 +47,7 @@ private:
     };
 
     std::shared_ptr<QOhosConsumer<std::optional<PasteboardDataSource>>> m_pasteboardUpdatesNotifier;
-    std::shared_ptr<JsScopeData> m_jsScopeData;
+    QtOhos::JsScopeDataOwner<JsScopeData> m_jsScopeData;
 };
 
 QT_END_NAMESPACE

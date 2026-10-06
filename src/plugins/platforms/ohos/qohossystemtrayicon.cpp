@@ -17,6 +17,7 @@
 #include <QtGui/qscreen.h>
 #include <algorithm>
 #include <optional>
+#include <qohosjsscopedataowner.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -270,14 +271,14 @@ private:
         std::shared_ptr<void> m_iconLeftClickListenerHandle;
     };
 
-    std::shared_ptr<JsScopeData> m_jsScopeData;
+    std::optional<QtOhos::JsScopeDataOwner<JsScopeData>> m_optJsScopeData;
 };
 
 QOhosSystemTrayIcon::QOhosSystemTrayIcon() = default;
 
 void QOhosSystemTrayIcon::init()
 {
-    if (m_jsScopeData)
+    if (m_optJsScopeData)
         return;
 
     auto jsStatusBarGroupMenusFactory =
@@ -286,7 +287,7 @@ void QOhosSystemTrayIcon::init()
             : makeEmptyJsArrayFactory();
 
     auto selfRef = QtOhos::makeQThreadSafeRef(this);
-    m_jsScopeData = QtOhos::makeProxyWithJsThreadDeleter(std::make_shared<JsScopeData>());
+    m_optJsScopeData.emplace();
     QOhosJsThreadGateway::runAndWait(
         [&](QOhosJsState &jsState) {
             auto jsStatusBarIcon = makeJsStatusBarIcon(jsState, m_icon);
@@ -298,7 +299,7 @@ void QOhosSystemTrayIcon::init()
                 });
             auto jsStatusBarItem = makeJsStatusBarItem(
                 jsState, jsStatusBarIcon, ohosSystemTrayItemTitle, jsStatusBarGroupMenus, optHoverTipsString);
-            *m_jsScopeData = JsScopeData {
+            **m_optJsScopeData = JsScopeData {
                 .m_statusBarItemHandle = addItemToOhosStatusBar(jsState, jsStatusBarItem),
                 .m_iconLeftClickListenerHandle = registerOhosIconLeftClickListener(
                     jsState,
@@ -317,12 +318,12 @@ void QOhosSystemTrayIcon::init()
 
 void QOhosSystemTrayIcon::cleanup()
 {
-    m_jsScopeData.reset();
+    m_optJsScopeData.reset();
 }
 
 void QOhosSystemTrayIcon::updateIcon(const QIcon &icon)
 {
-    if (!m_jsScopeData)
+    if (!m_optJsScopeData)
         return;
 
     m_icon = icon;
@@ -338,7 +339,7 @@ void QOhosSystemTrayIcon::updateToolTip(const QString &tooltip)
 {
     m_optToolTip = tooltip;
 
-    if (m_jsScopeData) {
+    if (m_optJsScopeData) {
         QOhosJsThreadGateway::invokeAndWaitForContinue(
             [&](QOhosJsState &jsState, QOhosTaskPromise<> taskPromise) {
                 updateOhosStatusBarHoverTips(jsState, tooltip.toStdString())
@@ -393,7 +394,7 @@ void QOhosSystemTrayIcon::updateMenu(QPlatformMenu *menu)
 
     m_menu = menu;
 
-    if (!m_jsScopeData) {
+    if (!m_optJsScopeData) {
         qOhosPrintfDebug("%s: System tray not initialized yet", Q_FUNC_INFO);
         return;
     }

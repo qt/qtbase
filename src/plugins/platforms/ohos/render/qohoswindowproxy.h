@@ -23,6 +23,7 @@
 #include <qarkui/input.h>
 #include <qarkui/window.h>
 #include <qohosdisplayinfo.h>
+#include <qohosjsscopedataowner.h>
 #include <qohosplugincore.h>
 #include <qohosqpaenums.h>
 #include <qohosutils.h>
@@ -308,7 +309,7 @@ private:
 
     static const EventHandlerDescriptor eventHandlerDescriptors[];
 
-    std::shared_ptr<JsScopeData> m_jsScopeData;
+    QtOhos::JsScopeDataOwner<JsScopeData> m_jsScopeData;
     WindowProxyType m_windowProxyType;
     std::shared_ptr<QXComponentNode> m_nodeXComponent;
     std::string m_qAbilityInstanceId;
