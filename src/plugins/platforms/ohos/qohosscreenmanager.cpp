@@ -14,26 +14,26 @@
 QT_BEGIN_NAMESPACE
 
 QOhosScreenManager::QOhosScreenManager()
+    : m_jsScopeData(QtOhos::makeProxyWithJsThreadDeleter(std::make_shared<JsScopeData>()))
 {
     auto selfRef = QtOhos::QThreadSafeRef<QOhosScreenManager>(this);
 
     std::vector<QOhosDisplayInfo> registeredDisplays;
     QOhosJsThreadGateway::runAndWait([&](QOhosJsState &jsState) {
-        m_jsScopeData = QtOhos::makeProxyWithJsThreadDeleter(
-            QArkUi::QOhosDisplayManager::create(
-                jsState, QArkUi::QOhosDisplayManager::CreateInfo{
-                    .displaysUpdatedCb = [selfRef](QOhosJsState &, std::vector<QOhosDisplayInfo> displayInfos) {
-                        selfRef.visitInQtThreadIfAlive([displayInfos = std::move(displayInfos)](QOhosScreenManager &self) {
-                            self.rebuildScreenList(displayInfos);
-                        });
-                    },
-                    .displayAvailableAreaChangedCb = [selfRef](QOhosJsState &, JsDisplayId displayId, QRectF availableArea) {
-                        selfRef.visitInQtThreadIfAlive([displayId, availableArea](QOhosScreenManager &self) {
-                            self.handleDisplayAvailableAreaChanged(displayId, availableArea);
-                        });
-                    },
-                }));
-        registeredDisplays = m_jsScopeData->getRegisteredDisplayInfos();
+        m_jsScopeData->displayManager = QArkUi::QOhosDisplayManager::create(
+            jsState, QArkUi::QOhosDisplayManager::CreateInfo{
+                .displaysUpdatedCb = [selfRef](QOhosJsState &, std::vector<QOhosDisplayInfo> displayInfos) {
+                    selfRef.visitInQtThreadIfAlive([displayInfos = std::move(displayInfos)](QOhosScreenManager &self) {
+                        self.rebuildScreenList(displayInfos);
+                    });
+                },
+                .displayAvailableAreaChangedCb = [selfRef](QOhosJsState &, JsDisplayId displayId, QRectF availableArea) {
+                    selfRef.visitInQtThreadIfAlive([displayId, availableArea](QOhosScreenManager &self) {
+                        self.handleDisplayAvailableAreaChanged(displayId, availableArea);
+                    });
+                },
+            });
+        registeredDisplays = m_jsScopeData->displayManager->getRegisteredDisplayInfos();
     },
     Q_FUNC_INFO);
 

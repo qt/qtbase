@@ -340,8 +340,9 @@ QOhosInputMethodProxy::QOhosInputMethodProxy(
     , m_textAroundCursor(std::make_shared<QOhosMutexProtectedValue<TextAroundCursor>>())
 {
     auto weakClientCallbacks = QtOhos::makeWeakPtr(clientCallbacks);
-    m_jsScopeData = QOhosJsThreadGateway::eval(
-        [&](auto &) -> std::shared_ptr<JsScopeData> {
+    m_jsScopeData = QtOhos::makeProxyWithJsThreadDeleter(std::make_shared<JsScopeData>());
+    bool attachedSuccessfully = QOhosJsThreadGateway::eval(
+        [&](auto &) {
             auto textEditorProxyData = std::make_shared<JsScopeData::JsTextEditorProxyData>();
             auto textEditorProxy = makeTextEditorProxy();
             auto callbacksRegistrationHandle = registerCallbacks(
@@ -353,19 +354,21 @@ QOhosInputMethodProxy::QOhosInputMethodProxy(
             auto inputMethodProxy = tryMakeInputMethodProxy(textEditorProxy, attachOptions);
             if (!inputMethodProxy) {
                 qOhosPrintfError("%s: inputMethodProxy is nullptr!", Q_FUNC_INFO);
-                return nullptr;
+                return false;
             }
 
-            return QtOhos::makeProxyWithJsThreadDeleter(
-                QtOhos::moveToSharedPtr(
-                    JsScopeData {
-                        .textEditorProxy = textEditorProxy,
-                        .textEditorProxyData = textEditorProxyData,
-                        .inputMethodProxy = inputMethodProxy,
-                        .callbacksRegistrationHandle = callbacksRegistrationHandle,
-                    }));
+            *m_jsScopeData = JsScopeData {
+                .textEditorProxy = textEditorProxy,
+                .textEditorProxyData = textEditorProxyData,
+                .inputMethodProxy = inputMethodProxy,
+                .callbacksRegistrationHandle = callbacksRegistrationHandle,
+            };
+
+            return true;
         },
         Q_FUNC_INFO);
+    if (!attachedSuccessfully)
+        m_jsScopeData.reset();
 }
 
 bool QOhosInputMethodProxy::hasAttachedSuccessfully()

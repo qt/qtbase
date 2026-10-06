@@ -242,6 +242,7 @@ private:
             QOhosConsumer<NonClientAreaTouchEvent> touchEventsConsumer;
         };
 
+        JsScopeData();
         JsScopeData(
             WindowProxyType windowProxyType, QNapi::Reference<QNapi::Object> jsWindow,
             std::shared_ptr<void> optKeepAliveData,
@@ -272,9 +273,9 @@ private:
         void onWindowEvent(QtOhos::JsState &jsState, const WindowEvent &windowEvent);
         bool isWindowClosing() const;
 
-        WindowProxyType windowProxyType;
+        WindowProxyType windowProxyType = {};
         std::shared_ptr<WindowCallbacks> windowCallbackReceiver;
-        bool windowDestroyedFromSystem;
+        bool windowDestroyedFromSystem = false;
         std::shared_ptr<void> optKeepAliveData;
         std::shared_ptr<QtOhos::QAbilityPeer> qAbilityPeer;
         std::shared_ptr<NonClientAreaEventsDispatcher> nonClientAreaEventsDispatcher;

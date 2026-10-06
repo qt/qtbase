@@ -286,7 +286,8 @@ void QOhosSystemTrayIcon::init()
             : makeEmptyJsArrayFactory();
 
     auto selfRef = QtOhos::makeQThreadSafeRef(this);
-    m_jsScopeData = QOhosJsThreadGateway::eval(
+    m_jsScopeData = QtOhos::makeProxyWithJsThreadDeleter(std::make_shared<JsScopeData>());
+    QOhosJsThreadGateway::runAndWait(
         [&](QOhosJsState &jsState) {
             auto jsStatusBarIcon = makeJsStatusBarIcon(jsState, m_icon);
             auto jsStatusBarGroupMenus = jsStatusBarGroupMenusFactory(jsState);
@@ -297,19 +298,17 @@ void QOhosSystemTrayIcon::init()
                 });
             auto jsStatusBarItem = makeJsStatusBarItem(
                 jsState, jsStatusBarIcon, ohosSystemTrayItemTitle, jsStatusBarGroupMenus, optHoverTipsString);
-            return QtOhos::makeProxyWithJsThreadDeleter(
-                QtOhos::moveToSharedPtr(
-                    JsScopeData {
-                        .m_statusBarItemHandle = addItemToOhosStatusBar(jsState, jsStatusBarItem),
-                        .m_iconLeftClickListenerHandle = registerOhosIconLeftClickListener(
-                            jsState,
-                            [selfRef]() {
-                                selfRef.visitInQtThreadIfAlive(
-                                    [](auto &self) {
-                                        Q_EMIT self.activated(QPlatformSystemTrayIcon::Trigger);
-                                    });
-                            }),
-                    }));
+            *m_jsScopeData = JsScopeData {
+                .m_statusBarItemHandle = addItemToOhosStatusBar(jsState, jsStatusBarItem),
+                .m_iconLeftClickListenerHandle = registerOhosIconLeftClickListener(
+                    jsState,
+                    [selfRef]() {
+                        selfRef.visitInQtThreadIfAlive(
+                            [](auto &self) {
+                                Q_EMIT self.activated(QPlatformSystemTrayIcon::Trigger);
+                            });
+                    }),
+            };
         },
         Q_FUNC_INFO);
 

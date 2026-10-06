@@ -55,7 +55,12 @@ private:
     QOhosPlatformScreenHolder *platformScreenHolderForDisplayIdOrNull(QOhosDisplayInfo::JsDisplayId displayId) const;
     void rebuildScreenList(std::vector<QOhosDisplayInfo> updatedScreenList);
 
-    std::shared_ptr<QArkUi::QOhosDisplayManager> m_jsScopeData;
+    struct JsScopeData
+    {
+        std::shared_ptr<QArkUi::QOhosDisplayManager> displayManager;
+    };
+
+    std::shared_ptr<JsScopeData> m_jsScopeData;
     std::vector<std::unique_ptr<QOhosPlatformScreenHolder>> m_displays;
 };
 

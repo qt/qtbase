@@ -376,22 +376,21 @@ std::string QOhosStatusBarMenuItem::generateNextMenuCode()
 
 QOhosStatusBarMenuImpl::QOhosStatusBarMenuImpl()
     : QOhosStatusBarMenu()
+    , m_jsScopeData(QtOhos::makeProxyWithJsThreadDeleter(std::make_shared<JsScopeData>()))
 {
     auto selfRef = QtOhos::makeQThreadSafeRef(this);
-    m_jsScopeData = QOhosJsThreadGateway::eval(
+    QOhosJsThreadGateway::runAndWait(
         [&](QOhosJsState &jsState) {
-            return QtOhos::makeProxyWithJsThreadDeleter(
-                QtOhos::moveToSharedPtr(
-                    JsScopeData {
-                        .m_rightMenuClickListenerHandle = registerOhosRightMenuClickListener(
-                            jsState,
-                            [selfRef](std::string menuCode) {
-                                selfRef.visitInQtThreadIfAlive(
-                                    [menuCode](auto &self) {
-                                        self.handleRightClickEvent(menuCode);
-                                    });
-                            }),
-                    }));
+            *m_jsScopeData = JsScopeData {
+                .m_rightMenuClickListenerHandle = registerOhosRightMenuClickListener(
+                    jsState,
+                    [selfRef](std::string menuCode) {
+                        selfRef.visitInQtThreadIfAlive(
+                            [menuCode](auto &self) {
+                                self.handleRightClickEvent(menuCode);
+                            });
+                    }),
+            };
         },
         Q_FUNC_INFO);
 }

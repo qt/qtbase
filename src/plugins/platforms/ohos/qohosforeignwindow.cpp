@@ -19,6 +19,7 @@ QT_BEGIN_NAMESPACE
 
 QOhosForeignWindow::QOhosForeignWindow(QWindow *qWindow, WId windowId)
     : QOhosPlatformWindow(qWindow)
+    , m_jsStateData(QtOhos::makeProxyWithJsThreadDeleter(std::make_shared<JsStateData>()))
 {
     QOhosJsThreadGateway::runAndWait([&](QOhosJsState &) {
         auto windowIdStruct = std::unique_ptr<QtOhos::WindowIdStruct>(
@@ -43,12 +44,11 @@ QOhosForeignWindow::QOhosForeignWindow(QWindow *qWindow, WId windowId)
             windowIdStruct->stack = stackNode->handle();
         }
 
-        m_jsStateData = QtOhos::makeProxyWithJsThreadDeleter(
-            std::make_shared<JsStateData>(JsStateData {
-                .embeddedWindow = std::make_unique<QArkUi::QEmbeddedWindowNode>(
-                    std::move(stackNode), std::move(embeddedComponentNode),
-                    std::move(windowIdStruct)),
-            }));
+        *m_jsStateData = JsStateData {
+            .embeddedWindow = std::make_unique<QArkUi::QEmbeddedWindowNode>(
+                std::move(stackNode), std::move(embeddedComponentNode),
+                std::move(windowIdStruct)),
+        };
     },
     Q_FUNC_INFO);
 }
