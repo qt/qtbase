@@ -383,7 +383,19 @@ void drawLineEditBackground(QPainter &painter, const QStyleOption &option)
 {
     auto radius = std::min(
         std::min(option.rect.size().width(), option.rect.size().height()) * 0.5, lineEditCornerRadius);
-    drawRoundedRect(painter, Qt::NoPen, option.palette.brush(QPalette::Base), option.rect, radius, radius);
+
+    const auto colorGroup = option.palette.currentColorGroup();
+    const auto baseBrush = option.palette.brush(colorGroup, QPalette::Base);
+
+    drawRoundedRect(painter, Qt::NoPen, baseBrush, option.rect, radius, radius);
+
+    if (const auto *ohosThemePalette = QGuiApplicationPrivate::platformTheme()->palette(
+        QPlatformTheme::Palette::TextLineEditPalette)) {
+        const auto overlayBaseBrush = ohosThemePalette->brush(colorGroup, QPalette::Base);
+        const bool shouldPresentOverlayForOverriddenBaseBrush = baseBrush != overlayBaseBrush;
+        if (shouldPresentOverlayForOverriddenBaseBrush)
+            drawRoundedRect(painter, Qt::NoPen, overlayBaseBrush, option.rect, radius, radius);
+    }
 }
 
 QBrush getPushButtonBackgroundBrush(const QStyleOptionButton &option)
