@@ -267,6 +267,10 @@ static inline QDBusMessage xdgDesktopPortalSendEmail(const QUrl &url, const QStr
         options.insert("subject"_L1, subject);
     if (const auto body = urlQuery.queryItemValue("body"_L1); !body.isEmpty())
         options.insert("body"_L1, body);
+    if (const auto cc = urlQuery.allQueryItemValues("cc"_L1, QUrl::FullyDecoded); !cc.isEmpty())
+        options.insert("cc"_L1, cc);
+    if (const auto bcc = urlQuery.allQueryItemValues("bcc"_L1, QUrl::FullyDecoded); !bcc.isEmpty())
+        options.insert("bcc"_L1, bcc);
 
     // O_PATH seems to be present since Linux 2.6.39, which is not case of RHEL 6
 #ifdef O_PATH
