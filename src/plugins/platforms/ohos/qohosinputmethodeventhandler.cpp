@@ -387,6 +387,9 @@ void QOhosInputMethodEventHandler::onMouseEvent(const QOhosMouseEvent &mouseEven
         .deviceType = mouseEvent.deviceType,
     };
 
+    if (m_currentMouseGrabbingWindow.isNull() || mouseEvent.targetWindow == m_currentMouseGrabbingWindow)
+        updateEnteredWindow(mouseEvent.targetWindow, mouseEvent.localPosition, mouseEvent.globalPosition);
+
     handleMouseEvent(wsiEvent);
 }
 
@@ -400,9 +403,36 @@ void QOhosInputMethodEventHandler::onHoverEvent(const QOhosHoverEvent &hoverEven
         return;
 
     if (isHover)
-        QWindowSystemInterface::handleEnterEvent(window, local, global);
+        updateEnteredWindow(window, local, global);
     else
-        QWindowSystemInterface::handleLeaveEvent(window);
+        leaveWindowIfEntered(window);
+}
+
+void QOhosInputMethodEventHandler::updateEnteredWindow(QWindow *window, const QPointF &localPosition, const QPointF &globalPosition)
+{
+    if (!window || window == m_optEnteredWindow || qt_window_private(window)->blockedByModalWindow)
+        return;
+
+    if (m_optEnteredWindow)
+        QWindowSystemInterface::handleEnterLeaveEvent(window, m_optEnteredWindow, localPosition, globalPosition);
+    else
+        QWindowSystemInterface::handleEnterEvent(window, localPosition, globalPosition);
+    m_optEnteredWindow = window;
+}
+
+void QOhosInputMethodEventHandler::leaveWindowIfEntered(QWindow *window)
+{
+    if (!window || window != m_optEnteredWindow)
+        return;
+
+    QWindowSystemInterface::handleLeaveEvent(window);
+    m_optEnteredWindow.clear();
+}
+
+void QOhosInputMethodEventHandler::forgetEnteredWindow(QWindow *window)
+{
+    if (window == m_optEnteredWindow)
+        m_optEnteredWindow.clear();
 }
 
 void QOhosInputMethodEventHandler::onMouseWheelEvent(const QOhosWheelEvent &event, QWindow *window)
@@ -615,17 +645,14 @@ void QOhosInputMethodEventHandler::stopAnyMouseGrab()
 {
     if (!m_currentMouseGrabbingWindow.isNull() && m_lastWsiMouseEvent.has_value()) {
         auto lastWsiMouseEventValue = m_lastWsiMouseEvent.value();
-        auto *previousCaptureWindow = m_currentMouseGrabbingWindow.data();
         auto *optLastWindowUnderCursor = lastWsiMouseEventValue.targetWindow.data();
         auto *optCurrentWindowUnderCursor = qGuiApp->topLevelAt(
             QHighDpi::fromNativePixels(
                 lastWsiMouseEventValue.globalPosition.toPoint(),
                 lastWsiMouseEventValue.targetWindow.data()));
 
-        if (optLastWindowUnderCursor != nullptr
-            && optCurrentWindowUnderCursor != nullptr
-            && optLastWindowUnderCursor != previousCaptureWindow) {
-            QWindowSystemInterface::handleEnterEvent(
+        if (optLastWindowUnderCursor != nullptr && optCurrentWindowUnderCursor != nullptr) {
+            updateEnteredWindow(
                 optLastWindowUnderCursor, lastWsiMouseEventValue.localPosition,
                 lastWsiMouseEventValue.globalPosition);
         }

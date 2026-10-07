@@ -114,6 +114,8 @@ public:
     void grabKeyboard(QWindow *window);
     void stopAnyKeyboardGrab();
 
+    void forgetEnteredWindow(QWindow *window);
+
     QPoint cursorPosition() const;
 
 private:
@@ -135,6 +137,8 @@ private:
     void handleTouchEvent(const QWindowSystemInterfaceTouchEvent &touchEvent);
     void updateWindowsUnderTouchPoints(const QWindowSystemInterfaceTouchEvent &touchEvent);
     void registerOnWindowCloseToResetMouseButtonsState(QWindow *window);
+    void updateEnteredWindow(QWindow *window, const QPointF &localPosition, const QPointF &globalPosition);
+    void leaveWindowIfEntered(QWindow *window);
 
     std::unordered_map<QInputDevice::DeviceType, QInputDevice *> m_pointingDevices;
 
@@ -145,6 +149,7 @@ private:
     QPointer<QWindow> m_currentMouseGrabbingWindow;
     QPointer<QWindow> m_currentKeyboardGrabbingWindow;
     QPointer<QWindow> m_pendingActivationWindow;
+    QPointer<QWindow> m_optEnteredWindow;
     QMap<Qt::Key, ushort> m_autoRepeatCountMap;
     std::optional<QOhosMouseEvent> m_lastWsiMouseEvent;
     std::optional<QWindowSystemInterfaceTouchEvent> m_lastWsiTouchEvent;

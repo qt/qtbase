@@ -702,6 +702,11 @@ bool QOhosPlatformWindow::windowEvent(QEvent *event)
         m_propertiesStore.notifyPropertyWrite(propertyName);
         break;
     }
+    case QEvent::Leave:
+    case QEvent::WindowUnblocked:
+        if (auto *inputMethodEventHandler = QOhosPlatformIntegration::instance()->inputMethodEventHandler())
+            inputMethodEventHandler->forgetEnteredWindow(window());
+        break;
     default: break;
     }
 
