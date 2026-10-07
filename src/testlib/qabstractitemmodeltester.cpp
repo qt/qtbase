@@ -185,7 +185,8 @@ private:
     This enumeration specifies how QAbstractItemModelTester should report
     a failure when it tests a QAbstractItemModel subclass.
 
-    \value QtTest The failures will be reported as QtTest test failures.
+    \value QtTest The failures will be reported as
+           \l{Qt Test C++ Classes}{QtTest} test failures.
 
     \value Warning The failures will be reported as
     warning messages in the \c{qt.modeltest} logging category.
