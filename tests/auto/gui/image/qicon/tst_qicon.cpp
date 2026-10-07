@@ -6,6 +6,7 @@
 #include <QBuffer>
 #include <QStandardPaths>
 #include <QPainter>
+#include <QTemporaryFile>
 #if QT_CONFIG(process)
 #include <QProcess>
 #endif
@@ -33,6 +34,7 @@ private slots:
     void cacheKey();
     void detach();
     void addFile();
+    void addFileKeepsAspectRatio();
     void pixmap();
     void pixmapByDprFromEngine_data();
     void pixmapByDprFromEngine();
@@ -434,6 +436,23 @@ void tst_QIcon::addFile()
         expectedHighDpiImage(64, ":/styles/commonstyle/images/standardbutton-save-%1.png"));
     QCOMPARE(icon.pixmap(128, QIcon::Selected).toImage(),
         expectedHighDpiImage(128, ":/styles/commonstyle/images/standardbutton-save-%1.png"));
+}
+
+void tst_QIcon::addFileKeepsAspectRatio()
+{
+    // A JPEG is decoded at the requested size, which must not squeeze it into a square.
+    if (!QImageReader::supportedImageFormats().contains("jpeg"))
+        QSKIP("This test requires the JPEG image format plugin");
+
+    QTemporaryFile file;
+    QVERIFY(file.open());
+    QImage image(40, 80, QImage::Format_RGB32);
+    image.fill(Qt::red);
+    QVERIFY(image.save(&file, "JPEG"));
+    file.close();
+
+    const QIcon icon(file.fileName());
+    QCOMPARE(icon.pixmap(QSize(32, 32), 1.0).size(), QSize(16, 32));
 }
 
 void tst_QIcon::pixmap()
