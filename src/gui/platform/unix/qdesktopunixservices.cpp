@@ -260,8 +260,9 @@ static inline QDBusMessage xdgDesktopPortalSendEmail(const QUrl &url, const QStr
 
     QUrlQuery urlQuery(url);
     QVariantMap options;
-    if (const auto address = url.path(); !address.isEmpty())
-        options.insert("address"_L1, address);
+    QStringList addresses = url.path().split(u',') +  urlQuery.allQueryItemValues("to"_L1, QUrl::FullyDecoded);
+    if (!addresses.isEmpty())
+        options.insert("addresses"_L1, addresses);
     if (const auto subject = urlQuery.queryItemValue("subject"_L1); !subject.isEmpty())
         options.insert("subject"_L1, subject);
     if (const auto body = urlQuery.queryItemValue("body"_L1); !body.isEmpty())
