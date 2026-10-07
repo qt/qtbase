@@ -92,7 +92,6 @@ qt_internal_add_plugin(QOhosPlatformIntegrationPlugin
         render/qohosbatchingrequestshandler.h
         render/qohosegl.cpp render/qohosegl.h
         render/qohosdrageventutils.cpp render/qohosdrageventutils.h
-        render/qohoshovereventsgenerator.cpp render/qohoshovereventsgenerator.h
         render/qohosjswindowregistry.cpp render/qohosjswindowregistry.h
         render/qohosnativeaxiseventhandler.cpp render/qohosnativeaxiseventhandler.h
         render/qohosnativedrageventshandler.cpp render/qohosnativedrageventshandler.h

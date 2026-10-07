@@ -60,8 +60,7 @@ class QOhosNativeNodeMouseInputHandler final : public std::enable_shared_from_th
 public:
     QOhosNativeNodeMouseInputHandler(
         QtOhos::QThreadSafeRef<QWindow> qWindowRef,
-        QtOhos::QThreadSafeRef<QOhosInputMethodEventHandler> imEventHandlerRef,
-        std::shared_ptr<QOhosHoverEventsGenerator> hoverEventsGenerator);
+        QtOhos::QThreadSafeRef<QOhosInputMethodEventHandler> imEventHandlerRef);
 
     void handleMouseEvent(QArkUi::NativeNodeMouseEvent nativeNodeMouseEvent);
 
@@ -79,18 +78,15 @@ private:
 
     QtOhos::QThreadSafeRef<QWindow> m_qWindowRef;
     QtOhos::QThreadSafeRef<QOhosInputMethodEventHandler> m_imEventHandlerRef;
-    std::shared_ptr<QOhosHoverEventsGenerator> m_hoverEventsGenerator;
 
     std::function<void(std::function<void(std::vector<MouseEvent> &)>)> m_optMouseEventsHandler;
 };
 
 QOhosNativeNodeMouseInputHandler::QOhosNativeNodeMouseInputHandler(
     QtOhos::QThreadSafeRef<QWindow> qWindowRef,
-    QtOhos::QThreadSafeRef<QOhosInputMethodEventHandler> imEventHandlerRef,
-    std::shared_ptr<QOhosHoverEventsGenerator> hoverEventsGenerator)
+    QtOhos::QThreadSafeRef<QOhosInputMethodEventHandler> imEventHandlerRef)
     : m_qWindowRef(qWindowRef)
     , m_imEventHandlerRef(imEventHandlerRef)
-    , m_hoverEventsGenerator(hoverEventsGenerator)
 {
 }
 
@@ -114,8 +110,6 @@ void QOhosNativeNodeMouseInputHandler::handleMouseEvent(QArkUi::NativeNodeMouseE
         .modifiers = nativeNodeMouseEvent.modifiers,
         .deviceType = nativeNodeMouseEvent.deviceType,
     };
-
-    m_hoverEventsGenerator->handleQOhosMouseEvent(mouseEvent);
 
     if (!m_optMouseEventsHandler) {
         auto weakSelf = QtOhos::makeWeakPtr(shared_from_this());
@@ -181,10 +175,9 @@ bool QOhosNativeNodeMouseInputHandler::mayDropMouseEvent(
 
 QOhosConsumer<QArkUi::NativeNodeMouseEvent> makeQOhosNativeMouseEventsHandler(
     QtOhos::QThreadSafeRef<QWindow> qWindowRef,
-    QtOhos::QThreadSafeRef<QOhosInputMethodEventHandler> imEventHandlerRef,
-    std::shared_ptr<QOhosHoverEventsGenerator> hoverEventsGenerator)
+    QtOhos::QThreadSafeRef<QOhosInputMethodEventHandler> imEventHandlerRef)
 {
-    auto mouseInputHandler = std::make_shared<QOhosNativeNodeMouseInputHandler>(qWindowRef, imEventHandlerRef, hoverEventsGenerator);
+    auto mouseInputHandler = std::make_shared<QOhosNativeNodeMouseInputHandler>(qWindowRef, imEventHandlerRef);
     return [mouseInputHandler](QArkUi::NativeNodeMouseEvent nativeNodeMouseEvent) {
         mouseInputHandler->handleMouseEvent(nativeNodeMouseEvent);
     };

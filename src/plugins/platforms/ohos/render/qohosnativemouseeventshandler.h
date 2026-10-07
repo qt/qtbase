@@ -10,14 +10,12 @@
 #include <QtGui/qwindow.h>
 #include <qarkui/input.h>
 #include <qohosinputmethodeventhandler.h>
-#include <render/qohoshovereventsgenerator.h>
 
 QT_BEGIN_NAMESPACE
 
 QOhosConsumer<QArkUi::NativeNodeMouseEvent> makeQOhosNativeMouseEventsHandler(
     QtOhos::QThreadSafeRef<QWindow> qWindowRef,
-    QtOhos::QThreadSafeRef<QOhosInputMethodEventHandler> imEventHandlerRef,
-    std::shared_ptr<QOhosHoverEventsGenerator> hoverEventsGenerator);
+    QtOhos::QThreadSafeRef<QOhosInputMethodEventHandler> imEventHandlerRef);
 
 QT_END_NAMESPACE
 

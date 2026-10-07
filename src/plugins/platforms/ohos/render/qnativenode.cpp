@@ -25,7 +25,6 @@
 #include <qpa/qwindowsysteminterface.h>
 #include <render/qohosarkuinativegestureshandler.h>
 #include <render/qohosdrageventutils.h>
-#include <render/qohoshovereventsgenerator.h>
 #include <render/qohosnativeaxiseventhandler.h>
 #include <render/qohosnativedrageventshandler.h>
 #include <render/qohosnativekeyeventshandler.h>
@@ -208,12 +207,18 @@ QNativeNode::QNativeNode(const CreateInfo &nativeNodeCreateInfo)
         if (QtOhos::isNativeNodeApiKeyEventsEnabled())
             m_jsStateData->embeddedWindow->setKeyEventsHandler(makeQOhosNativeKeyEventsHandler(qWindowRef, imEventHandlerRef));
         if (QtOhos::isNativeNodeApiMouseEventsEnabled()) {
-            auto hoverEventsGenerator = makeQOhosHoverEventsGenerator(qWindowRef, imEventHandlerRef);
             m_jsStateData->embeddedWindow->setMouseEventsHandler(
-                makeQOhosNativeMouseEventsHandler(qWindowRef, imEventHandlerRef, hoverEventsGenerator));
+                makeQOhosNativeMouseEventsHandler(qWindowRef, imEventHandlerRef));
             m_jsStateData->embeddedWindow->setHoverEventsHandler(
-                [hoverEventsGenerator](QArkUi::NativeNodeHoverEvent hoverEvent) {
-                    hoverEventsGenerator->handleQOhosHoverEvent(hoverEvent.isHovered);
+                [qWindowRef, imEventHandlerRef](QArkUi::NativeNodeHoverEvent hoverEvent) {
+                    if (hoverEvent.isHovered)
+                        return;
+                    imEventHandlerRef.visitInQtThreadIfAlive(
+                        [qWindowRef](QOhosInputMethodEventHandler &imEventHandler) {
+                            QWindow *qWindow = qWindowRef.data();
+                            if (qWindow)
+                                imEventHandler.onHoverEvent(QOhosHoverEvent { .targetWindow = qWindow });
+                        });
                 });
         }
     },
