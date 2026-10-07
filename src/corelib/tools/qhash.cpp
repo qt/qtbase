@@ -1021,8 +1021,8 @@ void QHashSeed::resetRandomGlobalSeed()
 
     Returns the current global QHash seed.
 
-    The seed is set in any newly created QHash. See \l{qHash} about how this seed
-    is being used by QHash.
+    The seed is set in any newly created QHash. See
+    \l{The hashing function}{qHash} about how this seed is being used by QHash.
 
     \sa QHashSeed, QHashSeed::globalSeed()
  */
@@ -1047,8 +1047,8 @@ int qGlobalQHashSeed()
     the value of 0 is used to request a stable algorithm for C++ primitive
     types types (like \c int) and string types (QString, QByteArray).
 
-    The seed is set in any newly created QHash. See \l{qHash} about how this seed
-    is being used by QHash.
+    The seed is set in any newly created QHash. See
+    \l{The hashing function}{qHash} about how this seed is being used by QHash.
 
     If the environment variable \c QT_HASH_SEED is set, calling this function will
     result in a no-op.
@@ -1530,7 +1530,7 @@ size_t qHash(long double key, size_t seed) noexcept
        key. With QHash, the items are arbitrarily ordered.
     \li The key type of a QMap must provide operator<(). The key
        type of a QHash must provide operator==() and a global
-       hash function called qHash() (see \l{qHash}).
+       hash function called qHash() (see \l{The hashing function}{qHash}).
     \endlist
 
     Here's an example QHash with QString keys and \c int values:
