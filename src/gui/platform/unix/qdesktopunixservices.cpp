@@ -260,9 +260,12 @@ static inline QDBusMessage xdgDesktopPortalSendEmail(const QUrl &url, const QStr
 
     QUrlQuery urlQuery(url);
     QVariantMap options;
-    options.insert("address"_L1, url.path());
-    options.insert("subject"_L1, urlQuery.queryItemValue("subject"_L1));
-    options.insert("body"_L1, urlQuery.queryItemValue("body"_L1));
+    if (const auto address = url.path(); !address.isEmpty())
+        options.insert("address"_L1, address);
+    if (const auto subject = urlQuery.queryItemValue("subject"_L1); !subject.isEmpty())
+        options.insert("subject"_L1, subject);
+    if (const auto body = urlQuery.queryItemValue("body"_L1); !body.isEmpty())
+        options.insert("body"_L1, body);
 
     // O_PATH seems to be present since Linux 2.6.39, which is not case of RHEL 6
 #ifdef O_PATH
@@ -278,7 +281,8 @@ static inline QDBusMessage xdgDesktopPortalSendEmail(const QUrl &url, const QStr
         }
     }
 
-    options.insert("attachment_fds"_L1, QVariant::fromValue(attachments));
+    if (attachments.size() > 0)
+        options.insert("attachment_fds"_L1, QVariant::fromValue(attachments));
 #endif
 
     if (!xdgActivationToken.isEmpty()) {
