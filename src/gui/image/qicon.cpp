@@ -42,8 +42,13 @@ public:
         : m_reader(fileName)
         , m_atEnd(false)
     {
-        if (m_reader.supportsOption(QImageIOHandler::ScaledSize))
-            m_reader.setScaledSize(size);
+        if (m_reader.supportsOption(QImageIOHandler::ScaledSize)) {
+            // The scaled size is exact, so fit it to the aspect ratio of the image.
+            const QSize imageSize = m_reader.size();
+            m_reader.setScaledSize(!imageSize.isEmpty() && !size.isEmpty()
+                                           ? imageSize.scaled(size, Qt::KeepAspectRatio)
+                                           : size);
+        }
     }
 
     QByteArray format() const { return m_reader.format(); }
