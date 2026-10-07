@@ -1,0 +1,54 @@
+// Copyright (C) 2026 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \title Qt for HarmonyOS Notification Example
+    \example platform/harmonynotification
+    \examplecategory {Mobile}
+    \meta tag {widgets,harmonyos,notification}
+    \ingroup corelib_examples
+
+    \brief Posts a notification from a Qt application on HarmonyOS.
+
+    The example asks the user to allow notifications for the application. It
+    then posts a notification with the title and text entered in its window.
+    It uses the platform's \c {@ohos.notificationManager} module.
+
+    The button handlers hand the work to the JS thread. The title and text
+    are collected on the Qt thread as a QJsonObject:
+
+    \snippet platform/harmonynotification/main.cpp 0
+
+    \c requestEnableNotification() shows the platform dialog in which the
+    user allows notifications. It takes the \c UIAbilityContext of the
+    default ability, and the dialog is bound to that context:
+
+    \snippet platform/harmonynotification/main.cpp 1
+
+    \c publish() takes a notification request, which the task builds on the
+    JS thread. The content type comes from the \c ContentType enumeration of
+    the module. The title and text are mapped from the QJsonObject with
+    QtHarmony::mapQJsonObjectToJsObject():
+
+    \snippet platform/harmonynotification/main.cpp 2
+
+    Both calls return a promise. The handlers attached to the promise report
+    the outcome in the window. They post the text to the Qt thread with
+    QNativeInterface::QHarmonyApplication::runOnQtThread(). They pass a
+    QPointer to the status label, which was created on the Qt thread. The
+    posted functor checks the QPointer before it updates the label:
+
+    \snippet platform/harmonynotification/main.cpp 3
+
+    The window also shows an error that a call throws before its promise
+    exists, and a missing module or ability.
+
+    \section1 Running the Example
+
+    Press \uicontrol {Allow notifications} and allow notifications in the
+    dialog. Then press \uicontrol {Post notification}. While notifications
+    are not allowed, \c publish() fails with a "Notification disabled"
+    error, which the window shows. The request uses the default notification
+    ID, so posting again updates the notification instead of adding another
+    one.
+*/
