@@ -259,6 +259,8 @@ private slots:
     void cancelChainWithContext_data();
     void cancelChainWithContext();
     void cancelChainOnAnOverwrittenFuture();
+    void cancelChainOnContinuationOfFinishedFuture();
+    void unwrapFinishedFuture();
 
     void continuationMayDestroyItsOwnPromise();
 
@@ -5990,6 +5992,45 @@ void tst_QFuture::continuationMayDestroyItsOwnPromise()
     });
 
     QTRY_VERIFY(continuationRan);
+}
+
+void tst_QFuture::cancelChainOnContinuationOfFinishedFuture()
+{
+    {
+        auto parent = QtFuture::makeReadyValueFuture(42);
+        int thenCnt = 0;
+        auto f = parent.then([&](int) { ++thenCnt; });
+        QVERIFY(f.isFinished());
+
+        f.cancelChain();
+        QCOMPARE_EQ(thenCnt, 1);
+        QVERIFY(!parent.isCanceled());
+    }
+    {
+        int thenCnt = 0;
+        auto f = QtFuture::makeReadyValueFuture(42).then([&](int) { ++thenCnt; });
+        QVERIFY(f.isFinished());
+
+        f.cancelChain();
+        QCOMPARE_EQ(thenCnt, 1);
+    }
+    {
+        QObject context;
+        int thenCnt = 0;
+        auto f = QtFuture::makeReadyValueFuture(42).then(&context, [&](int) { ++thenCnt; });
+        QTRY_VERIFY(f.isFinished());
+
+        f.cancelChain();
+        QCOMPARE_EQ(thenCnt, 1);
+    }
+}
+
+void tst_QFuture::unwrapFinishedFuture()
+{
+    auto outer = QtFuture::makeReadyValueFuture(QtFuture::makeReadyValueFuture(42));
+    auto f = outer.unwrap();
+    QVERIFY(f.isFinished());
+    QCOMPARE_EQ(f.result(), 42);
 }
 
 QTEST_MAIN(tst_QFuture)

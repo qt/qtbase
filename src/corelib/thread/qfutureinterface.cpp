@@ -932,6 +932,9 @@ void QFutureInterfaceBase::setContinuation(std::function<void (const QFutureInte
     if (isFinished()) {
         d->continuationExecuted = true;
 
+        if (futureData && futureData->nonConcludedParent == d)
+            futureData->nonConcludedParent = nullptr;
+
         lock.unlock();
         func(*this);
         lock.relock();
