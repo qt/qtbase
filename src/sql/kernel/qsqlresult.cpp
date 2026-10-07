@@ -97,7 +97,6 @@ QString QSqlResultPrivate::namedToPositionalBinding(const QString &query)
     int count = 0;
     qsizetype i = 0;
     bool ignoreBraces = (sqldriver->dbmsType() == QSqlDriver::PostgreSQL);
-    const bool qmarkNotationSupported = (sqldriver->dbmsType() != QSqlDriver::PostgreSQL);
 
     while (i < n) {
         QChar ch = query.at(i);
