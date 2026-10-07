@@ -1758,9 +1758,10 @@ QRect QOhosStyle::subControlRect(
                 return adjusted(comboBoxStyleOption->rect, -comboBoxFocusFrameWidth);;
             }
             case SC_ComboBoxEditField: {
-                return comboBoxStyleOption->rect.adjusted(
+                const auto editFieldRect = comboBoxStyleOption->rect.adjusted(
                     comboBoxFrameLeftRightPadding, comboBoxVerticalMargin,
                     -arrowSize - comboBoxFrameLeftRightPadding, -comboBoxVerticalMargin);
+                return visualRect(comboBoxStyleOption->direction, comboBoxStyleOption->rect, editFieldRect);
             }
             case SC_ComboBoxArrow: {
                 auto arrowIconRect = comboBoxStyleOption->rect;
