@@ -32,11 +32,6 @@ public:
         Frameless,
     };
 
-    enum class ExposeUpdatePolicy {
-        Immediate,
-        DeferredUntilGeometry,
-    };
-
     static const QOhosPropertyDescriptor<QWindow *> subWindowOfTagProperty;
     static const QOhosPropertyDescriptor<bool> mainWindowTagProperty;
     static const QOhosPropertyDescriptor<bool> floatWindowTagProperty;
@@ -131,7 +126,7 @@ protected:
     void setWindowStateFromOhos(Qt::WindowStates state);
     void setWindowMarginsFromOhos(const QMargins &margins);
     void setSafeAreaMarginsFromOhos(const QMargins &margins);
-    void setExposedFromOhos(bool exposed, ExposeUpdatePolicy policy = ExposeUpdatePolicy::Immediate);
+    void setExposedFromOhos(bool exposed);
     void setDisplayIdFromOhos(std::optional<QOhosDisplayInfo::JsDisplayId> displayId);
     void setWindowGeometryFromOhos(const QRect &nativeWindowDrawGeometry);
     void notifyWindowDestroyedFromOhos();
