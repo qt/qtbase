@@ -261,7 +261,11 @@ class QPSQLResultPrivate final : public QSqlResultPrivate
     Q_DECLARE_PUBLIC(QPSQLResult)
 public:
     Q_DECLARE_SQLDRIVER_PRIVATE(QPSQLDriver)
-    using QSqlResultPrivate::QSqlResultPrivate;
+
+    QPSQLResultPrivate(QSqlResult *q, const QSqlDriver *drv) : QSqlResultPrivate(q, drv)
+    {
+        qmarkNotationSupported = false;
+    }
 
     QString fieldSerial(qsizetype i) const override { return QString("$%1"_L1).arg(i + 1); }
     void deallocatePreparedStmt();

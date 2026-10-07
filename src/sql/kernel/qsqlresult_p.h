@@ -100,6 +100,7 @@ public:
     bool isSel = false;
     bool forwardOnly = false;
     bool positionalBindingEnabled = true;
+    bool qmarkNotationSupported = true;
 
     static bool isVariantNull(const QVariant &variant);
 };
