@@ -224,7 +224,7 @@ private:
 };
 
 #ifndef QT_NO_DEBUG_STREAM
-Q_GUI_EXPORT QDebug operator<<(QDebug, const QXcbScreen *);
+Q_XCB_EXPORT QDebug operator<<(QDebug, const QXcbScreen *);
 #endif
 
 QT_END_NAMESPACE
