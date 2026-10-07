@@ -14,6 +14,14 @@ find_package(Qt6 REQUIRED
     HINTS ${Qt6Tests_PREFIX_PATH}
 )
 
+if(TEST_LTO)
+    include(CheckIPOSupported)
+    check_ipo_supported(RESULT ipo_supported)
+    if(ipo_supported)
+        set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
+    endif()
+endif()
+
 qt6_add_library(leaf_lib STATIC leaf_lib.cpp)
 qt6_add_resources(leaf_lib resources2
     FILES resource2.txt PREFIX "/" BIG_RESOURCES)

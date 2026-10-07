@@ -619,7 +619,15 @@ function(_qt_internal_add_rcc_pass2)
         AUTOMOC OFF
         AUTOUIC OFF
         _qt_internal_is_rcc_pass2_obj_lib TRUE
+        INTERPROCEDURAL_OPTIMIZATION OFF
     )
+    # rcc --pass 2 needs a regular object file to patch, not LTO bytecode.
+    # -flto may also come from CMAKE_CXX_FLAGS, which the property does not cover.
+    if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+        target_compile_options(${arg_OBJECT_LIB} PRIVATE -fno-lto)
+    elseif(MSVC)
+        target_compile_options(${arg_OBJECT_LIB} PRIVATE /GL-)
+    endif()
     # The modification of TARGET_OBJECTS needs the following change in cmake
     # https://gitlab.kitware.com/cmake/cmake/commit/93c89bc75ceee599ba7c08b8fe1ac5104942054f
     add_custom_command(

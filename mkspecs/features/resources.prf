@@ -23,7 +23,12 @@ rcc.variable_out = SOURCES
 
 } else {
 
-isEmpty(RCC_CXX):RCC_CXX = $$QMAKE_CXX $(CXXFLAGS)
+isEmpty(RCC_CXX) {
+    RCC_CXX = $$QMAKE_CXX $(CXXFLAGS)
+    # -pass 2 needs a regular object file to patch, not LTO bytecode.
+    clang_cl|gcc|clang: RCC_CXX += -fno-lto
+    else:msvc: RCC_CXX += -GL-
+}
 RCC_OUT_BASE = $$RCC_DIR/$${first(QMAKE_MOD_RCC)}_${QMAKE_FILE_BASE}
 RCC_CPP = $$RCC_OUT_BASE$${first(QMAKE_EXT_CPP)}
 RCC_TMP = $${RCC_OUT_BASE}.tmp$${first(QMAKE_EXT_OBJ)}

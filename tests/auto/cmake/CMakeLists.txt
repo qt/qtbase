@@ -437,6 +437,11 @@ _qt_internal_test_expect_pass(test_add_resources_binary_generated
 if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.17")
     _qt_internal_test_expect_pass(test_add_resources_big_resources
         BINARY test_add_resources_big_resources)
+    _qt_internal_test_expect_pass(test_add_resources_big_resources
+        TESTNAME test_add_resources_big_resources_lto
+        BUILD_DIR test_add_resources_big_resources_lto
+        BUILD_OPTIONS -DTEST_LTO=ON
+        BINARY test_add_resources_big_resources)
 endif()
 
 include(test_plugin_shared_static_flavor.cmake)
