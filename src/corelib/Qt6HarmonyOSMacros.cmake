@@ -80,58 +80,25 @@ function(_qt_internal_harmonyos_get_qt_install_dirs
     endif()
 endfunction()
 
-# Helper function to extract project libraries from QtDeployTargets.cmake
-function(_qt_internal_harmonyos_extract_project_libraries target output_var)
-    _qt_internal_get_deploy_impl_dir(deploy_impl_dir)
-    set(deploy_targets_file "${deploy_impl_dir}/QtDeployTargets.cmake")
-
-    # Check if file exists
-    if(NOT EXISTS "${deploy_targets_file}")
-        if(QT_INTERNAL_VERBOSE)
-            message(STATUS "QtDeployTargets.cmake not found at: ${deploy_targets_file}")
-        endif()
-        set(${output_var} "" PARENT_SCOPE)
-        return()
+# Collects the project's shared and module libraries once (cached globally) and adds them to the
+# target's project-libraries list, except for the target itself.
+# Runs deferred at the end of the top-level directory, when all project targets exist.
+function(_qt_internal_harmonyos_add_project_libraries target)
+    get_property(collected GLOBAL PROPERTY _qt_harmonyos_project_library_candidates SET)
+    if(collected)
+        get_property(targets GLOBAL PROPERTY _qt_harmonyos_project_library_candidates)
+    else()
+        _qt_internal_collect_buildsystem_targets(targets
+            "${CMAKE_SOURCE_DIR}" INCLUDE SHARED_LIBRARY MODULE_LIBRARY)
+        set_property(GLOBAL PROPERTY _qt_harmonyos_project_library_candidates "${targets}")
     endif()
 
-    # include() evaluates the file as CMake code, which correctly handles path escaping,
-    # CMake list-separator semicolons, and other special characters.  Regex parsing was
-    # rejected because it would need to re-implement CMake's own string escaping rules.
-    set(__QT_DEPLOY_TARGETS "")
-    include("${deploy_targets_file}")
-
-    # TODO The following is a check to help catching projects that need to be
-    # re-configured after the introduction of __QT_DEPLOY_TARGETS. This can be
-    # removed after we can assume that no "old projects" exist anymore.
-    if(__QT_DEPLOY_TARGETS STREQUAL "")
-        message(FATAL_ERROR
-            "The deployment information is missing the __QT_DEPLOY_TARGETS variable. "
-            "This can be fixed by re-configuring the project."
-        )
-    endif()
-
-    # Collect all __QT_DEPLOY_TARGET_*_FILE variables
-    set(library_paths "")
-    foreach(target_name IN LISTS __QT_DEPLOY_TARGETS)
-        # Skip the main application target itself
-        if(target_name STREQUAL "${target}")
-            continue()
-        endif()
-
-        set(lib_path "${__QT_DEPLOY_TARGET_${target_name}_FILE}")
-
-        # Only include .so files (shared/module libraries)
-        if(lib_path MATCHES "\\.so$")
-            list(APPEND library_paths "${lib_path}")
-        endif()
-    endforeach()
-
-    # Remove duplicates
-    if(library_paths)
-        list(REMOVE_DUPLICATES library_paths)
-    endif()
-
-    set(${output_var} "${library_paths}" PARENT_SCOPE)
+    list(REMOVE_ITEM targets ${target})
+    list(TRANSFORM targets REPLACE "(.+)" "$<TARGET_FILE:\\1>")
+    get_property(libs TARGET ${target} PROPERTY _qt_harmonyos_project_libraries)
+    list(APPEND libs ${targets})
+    list(REMOVE_DUPLICATES libs)
+    set_target_properties(${target} PROPERTIES _qt_harmonyos_project_libraries "${libs}")
 endfunction()
 
 # Collect directly-linked SHARED_LIBRARY CMake targets into a list of their
@@ -549,30 +516,17 @@ function(_qt_internal_harmonyos_generate_deployment_settings target)
             ",\n    \"permissions\": [\n        ${harmonyos_permissions_joined}\n    ]")
     endif()
 
-    # Extract project libraries from QtDeployTargets.cmake
-    _qt_internal_harmonyos_extract_project_libraries(${target} PROJECT_LIBS)
-
-    # Also collect directly-linked SHARED_LIBRARY CMake targets (e.g. test helper libs
-    # like qmetatype_lib1 that are NOT Qt libraries and would otherwise be omitted from
-    # harmonydeployqt's ELF dependency scan which only tracks libQt6* libs).
-    _qt_internal_harmonyos_collect_extra_libs(${target} EXTRA_LIBS)
-    if(EXTRA_LIBS)
-        list(APPEND PROJECT_LIBS ${EXTRA_LIBS})
-        list(REMOVE_DUPLICATES PROJECT_LIBS)
-    endif()
-
-    if(PROJECT_LIBS)
-        # Convert list to JSON array
-        set(PROJECT_LIBS_JSON "")
-        foreach(lib_path ${PROJECT_LIBS})
-            if(PROJECT_LIBS_JSON)
-                string(APPEND PROJECT_LIBS_JSON ", ")
-            endif()
-            # Use the path directly - generator expressions resolved by file(GENERATE)
-            string(APPEND PROJECT_LIBS_JSON "\"${lib_path}\"")
-        endforeach()
-        string(APPEND JSON_CONTENT ",\n    \"project-libraries\": [${PROJECT_LIBS_JSON}]")
-    endif()
+    # Directly-linked SHARED_LIBRARY targets (e.g. test helper libs like qmetatype_lib1) are
+    # not Qt libraries and would otherwise be omitted from harmonydeployqt's ELF dependency
+    # scan, which only tracks libQt6* libs.
+    _qt_internal_harmonyos_collect_extra_libs(${target} extra_libs)
+    set_target_properties(${target} PROPERTIES _qt_harmonyos_project_libraries "${extra_libs}")
+    cmake_language(EVAL CODE
+        "cmake_language(DEFER DIRECTORY [[${CMAKE_SOURCE_DIR}]]
+            CALL _qt_internal_harmonyos_add_project_libraries [[${target}]])"
+    )
+    _qt_internal_harmonyos_add_deployment_list_property(JSON_CONTENT
+        "project-libraries" ${target} _qt_harmonyos_project_libraries)
 
     # User-supplied extra plugin paths/targets (resolved to $<TARGET_FILE:>
     # in _qt_internal_harmonyos_format_deployment_paths).
