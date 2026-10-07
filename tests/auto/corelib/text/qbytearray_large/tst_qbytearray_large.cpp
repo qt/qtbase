@@ -5,6 +5,7 @@
 #include <QTest>
 
 #include <qbytearray.h>
+#include <qendian.h>
 
 #include <q20iterator.h>
 #include <stdexcept>
@@ -23,6 +24,8 @@ private slots:
     void qCompress();
     void qUncompressCorruptedData_data();
     void qUncompressCorruptedData();
+    void qUncompressSizeHint_data();
+    void qUncompressSizeHint();
     void qUncompress4GiBPlus();
     void qCompressionZeroTermination();
 #endif
@@ -109,6 +112,28 @@ void tst_QByteArrayLarge::qUncompressCorruptedData()
 
     res = ::qUncompress(in + "blah");
     QCOMPARE(res, QByteArray());
+}
+
+void tst_QByteArrayLarge::qUncompressSizeHint_data()
+{
+    QTest::addColumn<quint32>("hint");
+
+    // The size hint in the header is only a hint: it must neither make the
+    // decompression fail, nor preallocate the size it declares.
+    QTest::newRow("too-small") << quint32(1);
+    QTest::newRow("exact") << quint32(4096);
+    QTest::newRow("above-ratio") << quint32(0x00100000);
+    QTest::newRow("max") << quint32(0xffffffff);
+}
+
+void tst_QByteArrayLarge::qUncompressSizeHint()
+{
+    QFETCH(quint32, hint);
+
+    const QByteArray original(4096, 'x');
+    QByteArray compressed = ::qCompress(original);
+    qToBigEndian(hint, compressed.data());
+    QCOMPARE(::qUncompress(compressed), original);
 }
 
 void tst_QByteArrayLarge::qUncompress4GiBPlus()
