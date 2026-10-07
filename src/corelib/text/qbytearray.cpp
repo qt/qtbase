@@ -745,7 +745,7 @@ QByteArray qUncompress(const uchar* data, qsizetype nbytes)
     if (nbytes < HeaderSize)
         return invalidCompressedData();
 
-    const auto expectedSize = qFromBigEndian<CompressSizeHint_t>(data);
+    auto expectedSize = qFromBigEndian<CompressSizeHint_t>(data);
     if (nbytes == HeaderSize) {
         if (expectedSize != 0)
             return invalidCompressedData();
@@ -753,6 +753,20 @@ QByteArray qUncompress(const uchar* data, qsizetype nbytes)
     }
 
     constexpr auto MaxDecompressedSize = size_t(QByteArray::maxSize());
+
+    // The header comes from the (possibly untrusted) input, so don't let it
+    // trigger a huge allocation: deflate can't produce more than ~1032 bytes
+    // out of one byte of input. If the hint is bigger than that, it's wrong
+    // anyway; the output buffer grows as needed.
+    constexpr size_t MaxCompressionRatio = 1032;
+    constexpr size_t Slack = 1024;
+    size_t maxPlausibleSize;
+    if (qMulOverflow(size_t(nbytes - HeaderSize), MaxCompressionRatio, &maxPlausibleSize)
+        || qAddOverflow(maxPlausibleSize, Slack, &maxPlausibleSize)) {
+        maxPlausibleSize = MaxDecompressedSize;
+    }
+    expectedSize = CompressSizeHint_t(std::min(size_t(expectedSize), maxPlausibleSize));
+
     if constexpr (MaxDecompressedSize < std::numeric_limits<CompressSizeHint_t>::max()) {
         if (expectedSize > MaxDecompressedSize)
             return tooMuchData(ZLibOp::Decompression);
