@@ -532,6 +532,9 @@ void QOhosFloatingWindow::handleNodeResizeEvent(const QArkUi::QQtEmbeddedWindowN
 
     if (m_view->viewType() != QOhosView::ViewType::EmbeddedWindow) {
         const QSize size = areaChangeEvent.screenGeometryPixels.size();
+        if (size.isEmpty())
+            return;
+
         if (size != m_optSizeBeforeResizeRequest) {
             m_optSizeBeforeResizeRequest.reset();
             setWindowGeometryFromOhos(QRect(areaChangeEvent.globalRelativeOffsetPixels, size));
