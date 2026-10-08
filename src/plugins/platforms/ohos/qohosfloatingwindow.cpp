@@ -62,7 +62,9 @@ void QOhosFloatingWindow::setGeometry(const QRect &rect)
         && view->viewType() == QOhosView::ViewType::MainWindow;
 
     if (geometryControlledBySystem) {
-        setWindowGeometryFromOhos(windowGeometry());
+        const auto actualGeometry = QPlatformWindow::geometry();
+        QPlatformWindow::setGeometry(rect);
+        setWindowGeometryFromOhos(actualGeometry);
         return;
     }
 
