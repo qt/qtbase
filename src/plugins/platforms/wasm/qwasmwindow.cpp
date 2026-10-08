@@ -88,11 +88,10 @@ QWasmWindow::QWasmWindow(QWindow *w,
     m_canvas["classList"].call<void>("add", emscripten::val("qt-window-canvas"));
 
 #if QT_CONFIG(clipboard)
-    if (QWasmClipboard::shouldInstallWindowEventHandlers()) {
-        m_cutCallback = QWasmEventHandler(m_canvas, "cut", QWasmClipboard::cut);
-        m_copyCallback = QWasmEventHandler(m_canvas, "copy", QWasmClipboard::copy);
-        m_pasteCallback = QWasmEventHandler(m_canvas, "paste", QWasmClipboard::paste);
-    }
+    // The window is the only ancestor of every focusable child element.
+    m_cutCallback = QWasmEventHandler(m_window, "cut", QWasmClipboard::cut);
+    m_copyCallback = QWasmEventHandler(m_window, "copy", QWasmClipboard::copy);
+    m_pasteCallback = QWasmEventHandler(m_window, "paste", QWasmClipboard::paste);
 #endif
 
     // Set up m_focusHelper, which is an invisible child element of the window which takes

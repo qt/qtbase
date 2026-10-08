@@ -47,8 +47,27 @@ static void commonCopyEvent(val event)
     event.call<void>("preventDefault");
 }
 
+// Returns the Qt window element the event originated in, found through the
+// composed path and .qt-window, or null if it did not originate in a Qt window.
+static val eventQtWindow(val event)
+{
+    const val target = Event::composedTarget(event);
+    if (target.isNull() || target.isUndefined() || target["closest"].isUndefined())
+        return val::null();
+    return target.call<val>("closest", val(".qt-window"));
+}
+
+// A window handler also sees child window events, which the child services itself.
+static bool isEventForReceivingHandler(val event)
+{
+    return eventQtWindow(event).strictlyEquals(event["currentTarget"]);
+}
+
 void QWasmClipboard::cut(val event)
 {
+    if (!isEventForReceivingHandler(event))
+        return;
+
     if (!QWasmIntegration::get()->getWasmClipboard()->hasClipboardApi()) {
         // Send synthetic Ctrl+X to make the app cut data to Qt's clipboard
          QWindowSystemInterface::handleKeyEvent(
@@ -60,6 +79,9 @@ void QWasmClipboard::cut(val event)
 
 void QWasmClipboard::copy(val event)
 {
+    if (!isEventForReceivingHandler(event))
+        return;
+
     if (!QWasmIntegration::get()->getWasmClipboard()->hasClipboardApi()) {
         // Send synthetic Ctrl+C to make the app copy data to Qt's clipboard
             QWindowSystemInterface::handleKeyEvent(
@@ -68,20 +90,9 @@ void QWasmClipboard::copy(val event)
     commonCopyEvent(event);
 }
 
-// Returns true if the event targets an element in a Qt window.
-static bool eventTargetsQtWindow(val event)
-{
-    val target = event["target"];
-    if (target.isNull() || target.isUndefined() || target["closest"].isUndefined())
-        return false;
-    return !target.call<val>("closest", val(".qt-window")).isNull();
-}
-
 void QWasmClipboard::paste(val event)
 {
-    // The document-level handler sees paste events for the whole page. Leave
-    // events for non-Qt elements to the browser.
-    if (!eventTargetsQtWindow(event))
+    if (!isEventForReceivingHandler(event))
         return;
 
     // sendClipboardData() delivers the data via a synthetic Ctrl+V. Cancel the default
@@ -100,13 +111,6 @@ QWasmClipboard::QWasmClipboard()
 
     if (m_hasClipboardApi && hasPermissionsApi)
         initClipboardPermissions();
-
-    if (!shouldInstallWindowEventHandlers()) {
-        val document = val::global("document");
-        m_documentCut = QWasmEventHandler(document, "cut", QWasmClipboard::cut);
-        m_documentCopy = QWasmEventHandler(document, "copy", QWasmClipboard::copy);
-        m_documentPaste = QWasmEventHandler(document, "paste", QWasmClipboard::paste);
-    }
 }
 
 QWasmClipboard::~QWasmClipboard()
@@ -176,12 +180,6 @@ void QWasmClipboard::initClipboardPermissions()
 bool QWasmClipboard::hasClipboardApi()
 {
     return m_hasClipboardApi;
-}
-
-bool QWasmClipboard::shouldInstallWindowEventHandlers()
-{
-    // Chrome uses global handlers
-    return val::global("window")["chrome"].isUndefined();
 }
 
 void QWasmClipboard::writeToClipboardApi()

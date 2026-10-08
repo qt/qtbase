@@ -914,6 +914,25 @@ class WidgetTestCase(unittest.TestCase):
         self.assertEqual(len(w1_w1_w1.events), 2)
         self.assertEqual(len(w1_w1.events), 2)
 
+    def test_rich_text_paste(self):
+        screen = Screen(self._driver, ScreenPosition.FIXED,
+                        x=0, y=0, width=600, height=400)
+
+        w0 = Widget(self._driver, "w0", 6)
+        w0.show()
+        w0.activate()
+        w0.focusTextEdit()
+        wait_for_animation_frame(self._driver)
+
+        input_element = screen.find_element(
+            By.CSS_SELECTOR, 'div.qt-window input.qt-window-input-element')
+        paste_html(self._driver, input_element, '<b>Bold text</b>', 'Bold text')
+        wait_for_animation_frame(self._driver)
+
+        state = w0.richTextState()
+        self.assertEqual(state['text'], 'Bold text')
+        self.assertTrue(state['bold'])
+
     def tearDown(self):
         self._driver.quit()
 
@@ -1056,6 +1075,13 @@ class Widget:
                 '''
             )
 
+        if isNative == 6:
+            self.driver.execute_script(
+                f'''
+                    instance.createRichTextWidget('{self.name}');
+                '''
+            )
+
         if isNative == 1:
             information = self.__window_information()
             self.screen = Screen(self.driver, screen_name=information['screen']['name'])
@@ -1080,6 +1106,16 @@ class Widget:
     def hasFocus(self):
         focus = call_instance_function_arg(self.driver, 'hasWidgetFocus', self.name)
         return focus
+
+    def focusTextEdit(self):
+        self.driver.execute_script(
+            f'''
+                instance.focusRichTextWidget('{self.name}');
+            '''
+        )
+
+    def richTextState(self):
+        return call_instance_function_arg(self.driver, 'richTextWidgetState', self.name)
 
     def activate(self):
         self.driver.execute_script(
@@ -1432,6 +1468,22 @@ def call_instance_function_arg(driver, name, arg):
             window.{name}Callback = data => result = data;
             instance.{name}('{arg}');
             return eval(result);''')
+
+# Dispatches a paste like the browser does, composed so that it leaves the screen's
+# shadow root and is retargeted on the way out.
+def paste_html(driver, element, html, text):
+    driver.execute_script(
+        '''
+            const data = new DataTransfer();
+            data.setData('text/html', arguments[1]);
+            data.setData('text/plain', arguments[2]);
+            arguments[0].dispatchEvent(new ClipboardEvent('paste', {
+                clipboardData: data,
+                bubbles: true,
+                composed: true,
+                cancelable: true
+            }));
+        ''', element, html, text)
 
 def wait_for_animation_frame(driver):
     driver.execute_script(
