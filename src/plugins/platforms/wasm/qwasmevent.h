@@ -57,6 +57,8 @@ struct Event
     Event(EventType type, emscripten::val webEvent);
 
     bool isTargetedForElement(emscripten::val element) const;
+    // The element the event originated at, before shadow DOM retargeting.
+    static emscripten::val composedTarget(emscripten::val webEvent);
 
     emscripten::val webEvent;
     EventType type;

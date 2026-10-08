@@ -38,7 +38,6 @@ public:
 
     ProcessKeyboardResult processKeyboard(const KeyEvent &event);
     bool hasClipboardApi();
-    static bool shouldInstallWindowEventHandlers();
     void sendClipboardData(emscripten::val event);
 
     static void cut(emscripten::val event);
@@ -51,9 +50,6 @@ private:
     void writeToClipboard();
 
     bool m_hasClipboardApi = false;
-    QWasmEventHandler m_documentCut;
-    QWasmEventHandler m_documentCopy;
-    QWasmEventHandler m_documentPaste;
 };
 
 QT_END_NAMESPACE

@@ -102,14 +102,18 @@ Event::Event(EventType type, emscripten::val webEvent)
 {
 }
 
+emscripten::val Event::composedTarget(emscripten::val webEvent)
+{
+    return webEvent.call<emscripten::val>("composedPath")[0];
+}
+
 bool Event::isTargetedForElement(emscripten::val element) const
 {
     // Check event target via composedPath, which returns the true path even
     // if the browser retargets the event for Qt's shadow DOM container. This
     // is needed to avoid capturing the pointer in cases where foreign html
     // elements are embedded inside Qt's shadow DOM.
-    emscripten::val topTarget = webEvent.call<emscripten::val>("composedPath")[0];
-    return element == topTarget;
+    return element == composedTarget(webEvent);
 }
 
 KeyEvent::KeyEvent(EventType type, emscripten::val event) : Event(type, event)

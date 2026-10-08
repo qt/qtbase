@@ -26,6 +26,7 @@
 #include <QRadioButton>
 #include <QPushButton>
 #include <QTextEdit>
+#include <QTextCursor>
 #include <QPlainTextEdit>
 #include <QLabel>
 #include <QGroupBox>
@@ -432,6 +433,13 @@ public:
             return it->second;
         return nullptr;
     }
+    QTextEdit *findTextEdit(const std::string &name)
+    {
+        auto it = m_textEdits.find(name);
+        if (it != m_textEdits.end())
+            return it->second;
+        return nullptr;
+    }
     void setComboBox(const std::string &name)
     {
         auto box1 = findComboBox(name + ".1");
@@ -455,6 +463,22 @@ public:
 
         m_widgets[name] = widget;
         m_spinBoxes[name] = spinBox;
+    }
+    void makeRichTextWidget(const std::string &name)
+    {
+        auto widget = std::make_shared<TestWidget>();
+        widget->setWindowTitle("Dialog");
+        widget->setGeometry(0, m_widgetY, 400, 200);
+        m_widgetY += 200;
+
+        auto *textEdit = new QTextEdit(widget.get());
+        textEdit->setAcceptRichText(true);
+
+        auto *layout = new QVBoxLayout(widget.get());
+        layout->addWidget(textEdit);
+
+        m_widgets[name] = widget;
+        m_textEdits[name] = textEdit;
     }
     void showContextMenu(const std::string &name)
     {
@@ -712,6 +736,7 @@ private:
     std::map<std::string, TestWidgetPtr>  m_widgets;
     std::map<std::string, TestSpinBox *>  m_spinBoxes;
     std::map<std::string, QComboBox   *>  m_comboBoxes;
+    std::map<std::string, QTextEdit   *>  m_textEdits;
     int                                   m_widgetY = 0;
 };
 
@@ -805,6 +830,40 @@ void screenInformation()
 void createWidget(const std::string &name)
 {
     WidgetStorage::getInstance()->make(name);
+}
+
+void createRichTextWidget(const std::string &name)
+{
+    WidgetStorage::getInstance()->makeRichTextWidget(name);
+}
+
+void focusRichTextWidget(const std::string &name)
+{
+    if (auto *textEdit = WidgetStorage::getInstance()->findTextEdit(name))
+        textEdit->setFocus();
+}
+
+// Reports the text and whether it is bold, so that a paste can be checked for keeping
+// the rich text formatting.
+void richTextWidgetState(const std::string &name)
+{
+    QString text;
+    bool bold = false;
+    if (auto *textEdit = WidgetStorage::getInstance()->findTextEdit(name)) {
+        text = textEdit->toPlainText();
+        QTextCursor cursor(textEdit->document());
+        cursor.movePosition(QTextCursor::NextCharacter, QTextCursor::KeepAnchor);
+        bold = cursor.charFormat().fontWeight() > QFont::Normal;
+    }
+
+    // Parenthesized, since the test evaluates the result and a bare object literal
+    // parses as a block.
+    std::ostringstream out;
+    out << "({"
+        << "  text: " << toJSString(text) << ","
+        << "  bold: " << (bold ? "true" : "false") << "})";
+    emscripten::val::global("window").call<void>("richTextWidgetStateCallback",
+                                                 emscripten::val(out.str()));
 }
 
 
@@ -1086,6 +1145,9 @@ EMSCRIPTEN_BINDINGS(qwasmwindow)
     EMSC_BIND_FUNC("testContextReuse", &testContextReuse);
 
     EMSC_BIND_FUNC("createWidget", &createWidget);
+    EMSC_BIND_FUNC("createRichTextWidget", &createRichTextWidget);
+    EMSC_BIND_FUNC("focusRichTextWidget", &focusRichTextWidget);
+    EMSC_BIND_FUNC("richTextWidgetState", &richTextWidgetState);
     EMSC_BIND_FUNC("createNativeWidget", &createNativeWidget);
     EMSC_BIND_FUNC("createNativeA11yButtonWidgets", &createNativeA11yButtonWidgets);
     EMSC_BIND_FUNC("createNativeA11yTextWidgets", &createNativeA11yTextWidgets);
