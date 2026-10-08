@@ -569,7 +569,8 @@
 
     QHash<Key, T> is a totally different case. QHash's internal hash
     table grows by powers of two, and each time it grows, the items
-    are relocated in a new bucket, computed as qHash(\e key) %
+    are relocated in a new bucket, computed as
+    \l{The hashing function}{qHash}(\e key) %
     QHash::capacity() (the number of buckets). This remark applies to
     QSet<T> and QCache<Key, T> as well.
 

@@ -1630,7 +1630,6 @@ size_t qHash(long double key, size_t seed) noexcept
     types}. You cannot, for example, store a QWidget as a value;
     instead, store a QWidget *.
 
-    \target qHash
     \section2 The hashing function
 
     A QHash's key type has additional requirements other than being an
@@ -4181,12 +4180,13 @@ size_t qHash(long double key, size_t seed) noexcept
     \relates QHash
     \since 6.11
 
-    Defining this macro disables the support for qHash overloads that only take
-    one argument; in other words, for qHash overloads that do not also accept
-    a seed. Support for the single-argument overloads of qHash is deprecated
-    and will be removed in Qt 7.
+    Defining this macro disables the support for \l{The hashing function}{qHash}
+    overloads that only take one argument; in other words, for
+    \l{The hashing function}{qHash} overloads that do not also accept a seed.
+    Support for the single-argument overloads of \l{The hashing function}{qHash}
+    is deprecated and will be removed in Qt 7.
 
-    \sa qHash
+    \sa {The hashing function}
 */
 
 #ifdef QT_HAS_CONSTEXPR_BITOPS
