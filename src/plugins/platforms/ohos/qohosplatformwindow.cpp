@@ -469,6 +469,12 @@ void QOhosPlatformWindow::setSafeAreaMarginsFromOhos(const QMargins &margins)
 void QOhosPlatformWindow::setExposedFromOhos(bool exposed)
 {
     m_exposed = exposed;
+
+    if (exposed && !m_optLastReportedWindowSize) {
+        m_optLastReportedWindowSize = geometry().size();
+        QWindowSystemInterface::handleGeometryChange(window(), geometry());
+    }
+
     sendExposeUpdate();
 }
 
