@@ -58,6 +58,8 @@ private:
     void handleWindowEvent(QOhosWindowProxy::WindowEvent evt);
     void handleWindowStatusChange(QOhosWindowProxy::WindowStatus evt);
     void handleWindowVisibilityChange(bool visible);
+    void setShownFromOhos(bool shown);
+    void activateIfDeferredUntilExposed();
     void handleAvoidAreaChanged(QOhosWindowProxy::AvoidAreaType avoidAreaType,
                                 const QOhosWindowProxy::AvoidArea &systemAvoidArea);
     void updateSafeAreaMargins();
@@ -67,6 +69,7 @@ private:
 
     std::unique_ptr<QOhosView> m_view;
     std::optional<QOhosWindowProxy::WindowEvent> m_activationEventDeferredUntilWindowUnblocked;
+    std::optional<QOhosWindowProxy::WindowEvent> m_activationEventDeferredUntilExposed;
     std::optional<QOhosWindowProxy::WindowEventType> m_lastWindowEventType;
     std::optional<QOhosWindowProxy::WindowStatusType> m_lastWindowStatusType;
     std::optional<QRegion> m_windowMask;
@@ -74,6 +77,7 @@ private:
     QMap<QOhosWindowProxy::AvoidAreaType, QOhosWindowProxy::AvoidArea> m_avoidAreaCache;
     QBasicTimer m_geometryChangeTimer;
     std::optional<QSize> m_optSizeBeforeResizeRequest;
+    bool m_shownFromOhos = false;
 };
 
 QT_END_NAMESPACE

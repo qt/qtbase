@@ -292,10 +292,19 @@ void QOhosFloatingWindow::handleWindowEvent(QOhosWindowProxy::WindowEvent evt)
 
     if (evt.type != QOhosWindowProxy::WindowEventType::WINDOW_SHOWN)
         m_activationEventDeferredUntilWindowUnblocked.reset();
+    if (evt.type == QOhosWindowProxy::WindowEventType::WINDOW_INACTIVE
+        || evt.type == QOhosWindowProxy::WindowEventType::WINDOW_HIDDEN) {
+        m_activationEventDeferredUntilExposed.reset();
+    }
 
     switch (evt.type) {
     case QOhosWindowProxy::WindowEventType::WINDOW_ACTIVE:
     {
+        if (m_view->viewType() != QOhosView::ViewType::EmbeddedWindow && !isExposed()) {
+            m_activationEventDeferredUntilExposed = evt;
+            return;
+        }
+
         QWindow *modalWindow = nullptr;
         if (QGuiApplicationPrivate::instance()->isWindowBlocked(qWindow, &modalWindow)
             && qWindow != modalWindow) {
@@ -326,7 +335,7 @@ void QOhosFloatingWindow::handleWindowEvent(QOhosWindowProxy::WindowEvent evt)
     case QOhosWindowProxy::WindowEventType::WINDOW_HIDDEN:
         if (!checkWindowAcceptsFocus() && QGuiApplicationPrivate::focus_window == qWindow)
             focusHijackingPopupHidden();
-        setExposedFromOhos(false);
+        setShownFromOhos(false);
         break;
     case QOhosWindowProxy::WindowEventType::WINDOW_SHOWN:
         // HACK
@@ -337,7 +346,7 @@ void QOhosFloatingWindow::handleWindowEvent(QOhosWindowProxy::WindowEvent evt)
         // window state.
         if (previousWindowEventType == QOhosWindowProxy::WindowEventType::WINDOW_HIDDEN && !qWindow->isVisible())
             qWindow->setVisible(true);
-        setExposedFromOhos(true);
+        setShownFromOhos(true);
         startAsyncWaitForNodeResizeIfNeeded();
         break;
     case QOhosWindowProxy::WindowEventType::WINDOW_DESTROYED:
@@ -419,7 +428,23 @@ void QOhosFloatingWindow::handleWindowVisibilityChange(bool visible)
     if (visible && m_windowMask.has_value())
         m_view->setWindowMask(QOhosWindowProxy::WindowMask{m_windowMask.value()});
 
-    setExposedFromOhos(visible);
+    setShownFromOhos(visible);
+}
+
+void QOhosFloatingWindow::setShownFromOhos(bool shown)
+{
+    m_shownFromOhos = shown;
+    setExposedFromOhos(shown && m_view->surfaceOrNull() != nullptr);
+    activateIfDeferredUntilExposed();
+}
+
+void QOhosFloatingWindow::activateIfDeferredUntilExposed()
+{
+    if (!isExposed())
+        return;
+
+    if (auto deferredActivationEvent = std::exchange(m_activationEventDeferredUntilExposed, std::nullopt))
+        handleWindowEvent(*deferredActivationEvent);
 }
 
 void QOhosFloatingWindow::handleAvoidAreaChanged(
@@ -454,6 +479,9 @@ void QOhosFloatingWindow::handleSurfaceStatusChanged(const std::optional<QSize> 
     bool hasSurface = m_view->surfaceOrNull() != nullptr;
     if (m_view->viewType() == QOhosView::ViewType::EmbeddedWindow) {
         setExposedFromOhos(hasSurface);
+    } else if (m_shownFromOhos && hasSurface != isExposed()) {
+        setExposedFromOhos(hasSurface);
+        activateIfDeferredUntilExposed();
     }
 
     if (hasSurface)
