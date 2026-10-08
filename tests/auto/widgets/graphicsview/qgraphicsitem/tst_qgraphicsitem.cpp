@@ -7996,7 +7996,7 @@ void tst_QGraphicsItem::itemUsesExtendedStyleOption()
     //We now test the content of the style option
     MyStyleOptionTester *rect = new MyStyleOptionTester(QRect(0, 0, 100, 100));
     scene.addItem(rect);
-    rect->setPos(200, 200);
+    rect->setPos(150, 150);
     QWidget topLevel;
     topLevel.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     topLevel.resize(200, 200);
