@@ -367,7 +367,9 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
     \row\li 6.12.0 \li Support for const QMetaObject::Connection arguments in
                        \l{QObject::disconnect(QMetaObject::Connection&)}{QObject::disconnect()}
                        (see \l{QT_NO_DISCONNECT_CONST_CONNECTION})
-    \row\li 6.12.0 \li Support for qHash overloads without a seed (see \l{QT_NO_SINGLE_ARGUMENT_QHASH_OVERLOAD}).
+    \row\li 6.12.0 \li Support for \l{The hashing function}{qHash}
+                       overloads without a seed
+                       (see \l{QT_NO_SINGLE_ARGUMENT_QHASH_OVERLOAD}).
     \endtable
 
     Moreover, individual APIs may also get disabled as part of the
