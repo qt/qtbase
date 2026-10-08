@@ -1519,14 +1519,15 @@ bool QKeySequence::isDetached() const
 QString QKeySequence::toString(SequenceFormat format) const
 {
     QString finalString;
+    QLatin1StringView comma;
     // A standard string, with no translation or anything like that. In some ways it will
     // look like our latin case on Windows and X11
     int end = count();
     for (int i = 0; i < end; ++i) {
+        finalString += comma;
         finalString += d->encodeString(QKeyCombination::fromCombined(d->key[i]), format);
-        finalString += ", "_L1;
+        comma = ", "_L1;
     }
-    finalString.truncate(finalString.size() - 2);
     return finalString;
 }
 
