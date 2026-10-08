@@ -4,10 +4,12 @@
 #include "qcore_ohos_p.h"
 #include <QtCore/qmetaobject.h>
 #include <QtCore/private/qohoslogger_p.h>
+#include <charconv>
 #include <deque>
 #include <exception>
 #include <mutex>
 #include <stdexcept>
+#include <system_error>
 #include <napi.h>
 #include <tuple>
 
@@ -305,6 +307,28 @@ void logJsCallbackError(const QOhosCallbackInfo &cbInfo, const char *errorMessag
     qOhosPrintfError("%s", errorStr.c_str());
 }
 
+namespace {
+
+std::optional<std::int64_t> tryMapJsErrorCodeToInt64(QNapi::Value optCodeProp)
+{
+    if (optCodeProp.IsNumber())
+        return QNapi::checkedCast<QNapi::Number>(optCodeProp).Int64Value();
+
+    if (!optCodeProp.IsString())
+        return std::nullopt;
+
+    std::string codeStr = optCodeProp.ToString();
+    const auto *codeStrEnd = codeStr.data() + codeStr.size();
+    std::int64_t code = 0;
+    auto parseResult = std::from_chars(codeStr.data(), codeStrEnd, code);
+
+    return parseResult.ec == std::errc() && parseResult.ptr == codeStrEnd
+        ? std::optional(code)
+        : std::nullopt;
+}
+
+}
+
 QOhosJsErrorInfo tryExtractErrorInfoFromJsError(QNapi::Value jsErrorOrEmpty)
 {
     if (jsErrorOrEmpty.IsEmpty() || !jsErrorOrEmpty.IsObject())
@@ -323,9 +347,7 @@ QOhosJsErrorInfo tryExtractErrorInfoFromJsError(QNapi::Value jsErrorOrEmpty)
         .optMessage = optMessageProp.IsString()
             ? std::optional(optMessageProp.ToString().Utf8Value())
             : std::nullopt,
-        .optCode = optCodeProp.IsNumber()
-            ? std::optional(QNapi::checkedCast<QNapi::Number>(optCodeProp).Int64Value())
-            : std::nullopt,
+        .optCode = tryMapJsErrorCodeToInt64(optCodeProp),
     };
 }
 
