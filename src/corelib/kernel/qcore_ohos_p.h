@@ -318,7 +318,7 @@ Q_CORE_EXPORT QtState &getQtState();
 // JS error object passed as an argument via CallbackInfo
 Q_CORE_EXPORT void logJsCallbackError(const QOhosCallbackInfo &cbInfo, const char *errorMessagePrefix);
 
-// reads the string name and message and the numeric code of a JS error, where present
+// reads the string name and message and the integer code (a number or an integer string) of a JS error, where present
 Q_CORE_EXPORT QOhosJsErrorInfo tryExtractErrorInfoFromJsError(QNapi::Value jsErrorOrEmpty);
 
 // Creates JS callback that expects JS error object as a JS argument
