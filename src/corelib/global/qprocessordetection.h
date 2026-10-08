@@ -334,7 +334,7 @@
 #  if defined(__sparc_v9__) || defined(__sparcv9)
 #    define Q_PROCESSOR_SPARC_V9
 #  endif
-#  if defined(__sparc64__)
+#  if defined(__sparc64__) || defined(__arch64__)
 #    define Q_PROCESSOR_SPARC_64
 #  endif
 #  define Q_BYTE_ORDER Q_BIG_ENDIAN
