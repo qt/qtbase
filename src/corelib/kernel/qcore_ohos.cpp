@@ -276,37 +276,30 @@ void invokeInQtThread(std::function<void()> &&task)
 
 void logJsCallbackError(const QOhosCallbackInfo &cbInfo, const char *errorMessagePrefix)
 {
-    static const std::pair<const char *, bool (QNapi::Value::*)() const> errorPropsDefs[] = {
-        {"name", &QNapi::Value::IsString},
-        {"message", &QNapi::Value::IsString},
-        {"code", &QNapi::Value::IsNumber},
-    };
-
     Napi::HandleScope funcScope(cbInfo.Env());
 
     auto optCbArg = cbInfo.Length() != 0
         ? cbInfo.getFirstArg<QNapi::Value>(Q_FUNC_INFO)
         : cbInfo.Env().Undefined();
-    auto error = optCbArg.IsObject()
-        ? QNapi::checkedCast<QNapi::Object>(optCbArg)
-        : QNapi::Object::New(cbInfo.Env());
+    auto errorInfo = tryExtractErrorInfoFromJsError(optCbArg);
+    auto optCodeStr = errorInfo.optCode
+        ? std::optional(std::to_string(*errorInfo.optCode))
+        : std::nullopt;
 
     std::string errorDetailsStr;
-    for (const auto &propDef : errorPropsDefs) {
-        const auto *propName = propDef.first;
-        const auto &typeCheckMemFun = propDef.second;
-
-        auto optProp = QNapi::getPropOrUndefined(error, propName);
-        if ((optProp.*typeCheckMemFun)()) {
-            std::string propStr = optProp.ToString();
-            if (!errorDetailsStr.empty())
-                errorDetailsStr += ", ";
-            errorDetailsStr += propName;
-            errorDetailsStr += "='";
-            errorDetailsStr += propStr;
-            errorDetailsStr += "'";
-        }
-    }
+    auto appendErrorDetail = [&](const char *propName, const std::optional<std::string> &optPropStr) {
+        if (!optPropStr)
+            return;
+        if (!errorDetailsStr.empty())
+            errorDetailsStr += ", ";
+        errorDetailsStr += propName;
+        errorDetailsStr += "='";
+        errorDetailsStr += *optPropStr;
+        errorDetailsStr += "'";
+    };
+    appendErrorDetail("name", errorInfo.optName);
+    appendErrorDetail("message", errorInfo.optMessage);
+    appendErrorDetail("code", optCodeStr);
 
     std::string errorStr = errorMessagePrefix;
     if (!errorDetailsStr.empty()) {
@@ -315,6 +308,30 @@ void logJsCallbackError(const QOhosCallbackInfo &cbInfo, const char *errorMessag
     }
 
     qOhosPrintfError("%s", errorStr.c_str());
+}
+
+QOhosJsErrorInfo tryExtractErrorInfoFromJsError(QNapi::Value jsErrorOrEmpty)
+{
+    if (jsErrorOrEmpty.IsEmpty() || !jsErrorOrEmpty.IsObject())
+        return {};
+
+    Napi::HandleScope funcScope(jsErrorOrEmpty.Env());
+
+    auto optNameProp = QNapi::getPropOrUndefined(jsErrorOrEmpty, "name");
+    auto optMessageProp = QNapi::getPropOrUndefined(jsErrorOrEmpty, "message");
+    auto optCodeProp = QNapi::getPropOrUndefined(jsErrorOrEmpty, "code");
+
+    return QOhosJsErrorInfo {
+        .optName = optNameProp.IsString()
+            ? std::optional(optNameProp.ToString().Utf8Value())
+            : std::nullopt,
+        .optMessage = optMessageProp.IsString()
+            ? std::optional(optMessageProp.ToString().Utf8Value())
+            : std::nullopt,
+        .optCode = optCodeProp.IsNumber()
+            ? std::optional(QNapi::checkedCast<QNapi::Number>(optCodeProp).Int64Value())
+            : std::nullopt,
+    };
 }
 
 std::function<void(const QOhosCallbackInfo &)> makeErrorLoggingJsCallback(std::string callContext)
