@@ -707,10 +707,13 @@ void drawSpinBoxFrame(
             ? QPen(option.palette.color(QPalette::Active, QPalette::Mid), frameWidth)
             : Qt::NoPen;
 
+    const int strokeInset = frameWidth / 2;
+    const auto strokeRect = adjusted(frameRect, -strokeInset);
+
     paintOnStackTop(painter, [&](auto &p) {
         p.setOpacity(isEnabled ? 1.0 : ohos_id_alpha_disabled);
         drawRoundedRect(
-            p, pen, option.palette.window(), frameRect, spinBoxFrameRadius, spinBoxFrameRadius);
+            p, pen, option.palette.window(), strokeRect, spinBoxFrameRadius, spinBoxFrameRadius);
     });
 }
 
