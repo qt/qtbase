@@ -81,6 +81,10 @@ void QOhosFloatingWindow::setGeometry(const QRect &rect)
 
         if (view->viewType() == QOhosView::ViewType::EmbeddedWindow)
             setWindowGeometryFromOhos(rect);
+        else if (rect.size() != lastReportedWindowSize())
+            m_optSizeBeforeResizeRequest = lastReportedWindowSize();
+        else
+            m_optSizeBeforeResizeRequest.reset();
     }
 }
 
@@ -472,6 +476,9 @@ void QOhosFloatingWindow::handleWindowRectChanged(
         << "rect:" << rectChangeOptions.rect
         << "reason:" << static_cast<int>(rectChangeOptions.reason);
 
+    if (rectChangeOptions.rect.size() != lastRequestedWindowFrameGeometry().size())
+        m_optSizeBeforeResizeRequest.reset();
+
     startAsyncWaitForNodeResizeIfNeeded();
 
     if (isWindowRotatedByTabletScreenRotation(window(), rectChangeOptions))
@@ -523,9 +530,13 @@ void QOhosFloatingWindow::handleNodeResizeEvent(const QArkUi::QQtEmbeddedWindowN
     if (Q_UNLIKELY(!m_view))
         return;
 
-    if (m_view->viewType() != QOhosView::ViewType::EmbeddedWindow)
-        setWindowGeometryFromOhos(
-            QRect(areaChangeEvent.globalRelativeOffsetPixels, areaChangeEvent.screenGeometryPixels.size()));
+    if (m_view->viewType() != QOhosView::ViewType::EmbeddedWindow) {
+        const QSize size = areaChangeEvent.screenGeometryPixels.size();
+        if (size != m_optSizeBeforeResizeRequest) {
+            m_optSizeBeforeResizeRequest.reset();
+            setWindowGeometryFromOhos(QRect(areaChangeEvent.globalRelativeOffsetPixels, size));
+        }
+    }
 
     updateSafeAreaMargins();
 }

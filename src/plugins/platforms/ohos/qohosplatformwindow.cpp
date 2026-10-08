@@ -6,6 +6,7 @@
 #include <QtCore/private/qohoslogger_p.h>
 #include <QtCore/qpointer.h>
 #include <QtGui/private/qguiapplication_p.h>
+#include <QtGui/private/qhighdpiscaling_p.h>
 #include <QtGui/private/qohoswindowhints_p.h>
 #include <QtGui/private/qwindow_p.h>
 #include <algorithm>
@@ -613,10 +614,17 @@ void QOhosPlatformWindow::setDisplayIdFromOhos(std::optional<QOhosDisplayInfo::J
 void QOhosPlatformWindow::setWindowGeometryFromOhos(const QRect &nativeWindowDrawGeometry)
 {
     qCDebug(QtForOhos) << "window:" << window() << "geometry change to:" << nativeWindowDrawGeometry;
+    m_optLastReportedWindowSize = nativeWindowDrawGeometry.size();
     QWindowSystemInterface::handleGeometryChange(window(), nativeWindowDrawGeometry);
 
     if (isExposed() && window()->isVisible())
         sendExposeUpdate();
+}
+
+QSize QOhosPlatformWindow::lastReportedWindowSize() const
+{
+    return m_optLastReportedWindowSize.value_or(
+        QHighDpi::toNativeWindowGeometry(qt_window_private(window())->geometry, window()).size());
 }
 
 void QOhosPlatformWindow::notifyWindowDestroyedFromOhos()

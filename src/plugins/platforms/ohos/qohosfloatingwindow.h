@@ -73,6 +73,7 @@ private:
     std::optional<QSize> m_optLastSurfaceSize;
     QMap<QOhosWindowProxy::AvoidAreaType, QOhosWindowProxy::AvoidArea> m_avoidAreaCache;
     QBasicTimer m_geometryChangeTimer;
+    std::optional<QSize> m_optSizeBeforeResizeRequest;
 };
 
 QT_END_NAMESPACE
