@@ -10,6 +10,7 @@
 #include <qdebug.h>
 #include <qiodevice.h>
 #include <qimage.h>
+#include <qimagereader.h>
 #include <qloggingcategory.h>
 #include <qvariant.h>
 
@@ -85,6 +86,7 @@ public:
     int compression;
     QString description;
     QStringList readTexts;
+    qint64 readTextsByteCount = 0;
     QColorSpace colorSpace;
     ColorSpaceState colorSpaceState;
 
@@ -150,7 +152,7 @@ void iod_read_fn(png_structp png_ptr, png_bytep data, png_size_t length)
     }
 
     while (length) {
-        int nr = in->read((char*)data, length);
+        qint64 nr = in->read((char *)data, length);
         if (nr <= 0) {
             png_error(png_ptr, "Read Error");
             return;
@@ -366,24 +368,34 @@ void QPngHandlerPrivate::readPngTexts(png_info *info)
     png_textp text_ptr;
     int num_text=0;
     png_get_text(png_ptr, info, &text_ptr, &num_text);
+    const qint64 totalByteLimit = qint64(QImageReader::allocationLimit()) * 1024 * 1024;
 
-    while (num_text--) {
+    for (; num_text > 0; --num_text, ++text_ptr) {
         QString key, value;
         key = QString::fromLatin1(text_ptr->key);
 #if defined(PNG_iTXt_SUPPORTED)
         if (text_ptr->itxt_length) {
+            if (text_ptr->itxt_length > size_t(std::numeric_limits<int>::max()))
+                continue;
             value = QString::fromUtf8(text_ptr->text, int(text_ptr->itxt_length));
         } else
 #endif
         {
+            if (text_ptr->text_length > size_t(std::numeric_limits<int>::max()))
+                continue;
             value = QString::fromLatin1(text_ptr->text, int(text_ptr->text_length));
         }
+        const qint64 byteCount = (key.size() + value.size()) * qint64(sizeof(QChar));
+        if (totalByteLimit > 0 && readTextsByteCount + byteCount > totalByteLimit) {
+            qCWarning(lcImageIo, "PNG: Text chunks exceed allocation limit, ignoring the rest");
+            break;
+        }
+        readTextsByteCount += byteCount;
         if (!description.isEmpty())
             description += "\n\n"_L1;
         description += key + ": "_L1 + value.simplified();
         readTexts.append(key);
         readTexts.append(value);
-        text_ptr++;
     }
 #else
     Q_UNUSED(info);
@@ -404,6 +416,16 @@ bool QPngHandlerPrivate::readPngHeader()
     // Trade off a little bit of memory for better compatibility with existing images
     // Ref. "invalid distance too far back" explanation in libpng-manual.txt
     png_set_option(png_ptr, PNG_MAXIMUM_INFLATE_WINDOW, PNG_OPTION_ON);
+#endif
+
+#ifdef PNG_SET_USER_LIMITS_SUPPORTED
+    // Limit the memory libpng may spend on text and other ancillary chunks
+    if (QImageReader::allocationLimit() > 0) {
+        constexpr png_uint_32 maxChunkCache = 100;
+        const png_uint_32 chunkCache = png_get_chunk_cache_max(png_ptr);
+        if (chunkCache == 0 || chunkCache > maxChunkCache) // 0 means unlimited
+            png_set_chunk_cache_max(png_ptr, maxChunkCache);
+    }
 #endif
 
     info_ptr = png_create_info_struct(png_ptr);
