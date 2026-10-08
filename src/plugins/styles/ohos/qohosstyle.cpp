@@ -1772,8 +1772,7 @@ QRect QOhosStyle::subElementRect(SubElement element, const QStyleOption *option,
             widget != nullptr && qobjectIsInstanceOf<QAbstractSpinBox>(widget->parent())
                 ? spinBoxEditHorizontalMargin
                 : lineEditHorizontalMargin;
-        return option->rect.adjusted(
-            horizontalMargin, lineEditVerticalMargin, -horizontalMargin, -lineEditVerticalMargin);
+        return option->rect.adjusted(horizontalMargin, 0, -horizontalMargin, 0);
     }
     case SE_CheckBoxFocusRect:
     case SE_RadioButtonFocusRect:
