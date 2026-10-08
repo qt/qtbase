@@ -122,26 +122,15 @@ public:
 private:
     struct Intersection
     {
+        int y;
         int x;
         int winding;
-
-        int left, right;
     };
 
     inline bool clip(QScFixed &xFP, int &iTop, int &iBottom, QScFixed slopeFP, QScFixed edgeFP, int winding);
-    inline void mergeIntersection(Intersection *head, const Intersection &isect);
-
-    void prepareChunk();
-
-    void emitNode(const Intersection *node);
-    void emitSpans(int chunk);
-
-    inline void allocate(int size);
+    void emitSpans();
 
     QDataBuffer<Line> m_lines;
-
-    int m_alloc;
-    int m_size;
 
     int m_top;
     int m_bottom;
@@ -151,11 +140,7 @@ private:
 
     int m_fillRuleMask;
 
-    int m_x;
-    int m_y;
-    int m_winding;
-
-    Intersection *m_intersections;
+    QDataBuffer<Intersection> m_intersections;
 
     QSpanBuffer *m_spanBuffer;
 
@@ -178,17 +163,13 @@ public:
 
 QScanConverter::QScanConverter()
    : m_lines(0)
-   , m_alloc(0)
-   , m_size(0)
-   , m_intersections(nullptr)
+   , m_intersections(0)
    , m_active(0)
 {
 }
 
 QScanConverter::~QScanConverter()
 {
-    if (m_intersections)
-        free(m_intersections);
 }
 
 void QScanConverter::begin(int top, int bottom, int left, int right,
@@ -206,40 +187,29 @@ void QScanConverter::begin(int top, int bottom, int left, int right,
     m_spanBuffer = spanBuffer;
 }
 
-void QScanConverter::prepareChunk()
+void QScanConverter::emitSpans()
 {
-    m_size = CHUNK_SIZE;
+    constexpr auto order = [](const Intersection &a, const Intersection &b) {
+        return a.y < b.y || (a.y == b.y && a.x < b.x);
+    };
+    std::sort(m_intersections.data(), m_intersections.data() + m_intersections.size(), order);
 
-    allocate(CHUNK_SIZE);
-    memset(m_intersections, 0, CHUNK_SIZE * sizeof(Intersection));
-}
+    int x = 0;
+    int y = 0;
+    int winding = 0;
+    for (int i = 0; i < m_intersections.size(); ++i) {
+        const Intersection &isect = m_intersections.at(i);
+        if (isect.y != y) {
+            x = 0;
+            y = isect.y;
+            winding = 0;
+        }
 
-void QScanConverter::emitNode(const Intersection *node)
-{
-tail_call:
-    if (node->left)
-        emitNode(node + node->left);
+        if ((winding & m_fillRuleMask) && isect.x > x)
+            m_spanBuffer->addSpan(x, isect.x - x, y, 0xff);
 
-    if (m_winding & m_fillRuleMask)
-        m_spanBuffer->addSpan(m_x, node->x - m_x, m_y, 0xff);
-
-    m_x = node->x;
-    m_winding += node->winding;
-
-    if (node->right) {
-        node += node->right;
-        goto tail_call;
-    }
-}
-
-void QScanConverter::emitSpans(int chunk)
-{
-    for (int dy = 0; dy < CHUNK_SIZE; ++dy) {
-        m_x = 0;
-        m_y = chunk + dy;
-        m_winding = 0;
-
-        emitNode(&m_intersections[dy]);
+        x = isect.x;
+        winding += isect.winding;
     }
 }
 
@@ -359,10 +329,11 @@ void QScanConverter::end()
         else
             scanConvert<false>();
     } else {
+        qsizetype maxIntersections = 0;
         for (int chunkTop = m_top; chunkTop <= m_bottom; chunkTop += CHUNK_SIZE) {
-            prepareChunk();
+            m_intersections.reset();
 
-            Intersection isect = { 0, 0, 0, 0 };
+            Intersection isect = { 0, 0, 0 };
 
             const int chunkBottom = chunkTop + CHUNK_SIZE;
             for (int i = 0; i < m_lines.size(); ++i) {
@@ -371,70 +342,36 @@ void QScanConverter::end()
                 if ((line.bottom < chunkTop) || (line.top > chunkBottom))
                     continue;
 
-                const int top = qMax(0, line.top - chunkTop);
-                const int bottom = qMin(CHUNK_SIZE, line.bottom + 1 - chunkTop);
-                allocate(m_size + bottom - top);
+                const int top = qMax(chunkTop, line.top);
+                const int bottom = qMin(chunkBottom, line.bottom + 1);
 
                 isect.winding = line.winding;
 
-                Intersection *it = m_intersections + top;
-                Intersection *end = m_intersections + bottom;
-
                 if (line.delta) {
-                    for (; it != end; ++it) {
+                    for (isect.y = top; isect.y < bottom; ++isect.y) {
                         isect.x = QScFixedToInt(line.x);
                         line.x += line.delta;
-                        mergeIntersection(it, isect);
+                        m_intersections.add(isect);
                     }
                 } else {
                     isect.x = QScFixedToInt(line.x);
-                    for (; it != end; ++it)
-                        mergeIntersection(it, isect);
+                    for (isect.y = top; isect.y < bottom; ++isect.y)
+                        m_intersections.add(isect);
                 }
             }
 
-            emitSpans(chunkTop);
+            maxIntersections = qMax(maxIntersections, m_intersections.size());
+            emitSpans();
         }
-    }
 
-    if (m_alloc > 1024) {
-        free(m_intersections);
-        m_alloc = 0;
-        m_size = 0;
-        m_intersections = nullptr;
+        if (maxIntersections > 1024) {
+            m_intersections.reset();
+            m_intersections.shrink(1024);
+        }
     }
 
     if (m_lines.size() > 1024)
         m_lines.shrink(1024);
-}
-
-inline void QScanConverter::allocate(int size)
-{
-    if (m_alloc < size) {
-        int newAlloc = qMax(size, 2 * m_alloc);
-        m_intersections = q_check_ptr((Intersection *)realloc(m_intersections, newAlloc * sizeof(Intersection)));
-        m_alloc = newAlloc;
-    }
-}
-
-inline void QScanConverter::mergeIntersection(Intersection *it, const Intersection &isect)
-{
-    Intersection *current = it;
-
-    while (isect.x != current->x) {
-        int &next = isect.x < current->x ? current->left : current->right;
-        if (next)
-            current += next;
-        else {
-            Intersection *last = m_intersections + m_size;
-            next = last - current;
-            *last = isect;
-            ++m_size;
-            return;
-        }
-    }
-
-    current->winding += isect.winding;
 }
 
 void QScanConverter::mergeCurve(const QT_FT_Vector &pa, const QT_FT_Vector &pb,
