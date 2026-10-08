@@ -424,7 +424,7 @@ static const quint16 crc_tbl[16] = {
 
 /*!
     \relates QByteArray
-    \since 5.9
+    \since 6.0
 
     Returns the CRC-16 checksum of \a data.
 
@@ -464,6 +464,13 @@ quint16 qChecksum(QByteArrayView data, Qt::ChecksumType standard)
     }
     return crc & 0xffff;
 }
+
+/*!
+    \fn quint16 qChecksum(const char *s, qsizetype len, Qt::ChecksumType standard)
+    \relates QByteArray
+    \since 5.9
+    \deprecated [6.0] Use the QByteArrayView overload instead.
+*/
 
 /*!
     \fn QByteArray qCompress(const QByteArray& data, int compressionLevel)
