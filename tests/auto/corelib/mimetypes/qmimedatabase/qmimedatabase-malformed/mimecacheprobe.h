@@ -13,11 +13,15 @@
 //   name     - mimeTypeForName() plus every QMimeType property that consults a
 //              provider again -> resolveAlias(), addParents(), addAliases(),
 //              icon(), genericIcon()
+//   ancestors - mimeTypeForName() of the type given as argument, plus the
+//              lookups that walk its parent chain -> parents(),
+//              allAncestors(), inherits()
 // Only "content" and "filename" need a file on disk to look at.
 namespace QueryCase {
 static constexpr QLatin1StringView Content("content");
 static constexpr QLatin1StringView FileName("filename");
 static constexpr QLatin1StringView Name("name");
+static constexpr QLatin1StringView Ancestors("ancestors");
 } // namespace QueryCase
 
 // The mimetype the "name" case looks up. Crafted cache entries that need to be
