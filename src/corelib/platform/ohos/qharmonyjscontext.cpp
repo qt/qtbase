@@ -32,6 +32,11 @@ QOhosJsState &jsState()
     All member functions must be called on the JS thread. A \c napi_value
     that they return is valid until the code or callback that obtained it
     returns. It must not be passed to another thread.
+
+    A QHarmonyJsContext reference is valid as long as the \c napi_env of
+    the context, which is until the code or callback that received or
+    obtained it returns. Get the context again in each piece of code or
+    callback.
 */
 
 /*!
@@ -46,7 +51,7 @@ QHarmonyJsContext::~QHarmonyJsContext() = default;
 
 /*!
     Returns the context of \a env. \a env must be the environment of the JS
-    thread.
+    thread. The returned context is valid as long as \a env.
 
     Use this function in a JS callback created with
     \c napi_create_function(), which receives only the \c napi_env.
