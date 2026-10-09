@@ -217,7 +217,9 @@ protected:
     bool event(QEvent *) override;
 
 #  if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+#    if !defined(Q_CC_MSVC_ONLY) || Q_CC_MSVC_ONLY > 1951
     QT_DEPRECATED_VERSION_X_6_10("This feature will be removed in Qt 7")
+#    endif
     virtual bool compressEvent(QEvent *, QObject *receiver, QPostEventList *);
 #  endif
 #endif // QT_NO_QOBJECT
