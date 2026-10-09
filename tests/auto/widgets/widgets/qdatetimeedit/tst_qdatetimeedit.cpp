@@ -2962,6 +2962,8 @@ void tst_QDateTimeEdit::calendarPopup()
         QDateEdit edit;
         QVERIFY(!edit.calendarWidget());
         QCalendarWidget *cw = new QCalendarWidget;
+        QTest::ignoreMessage(QtWarningMsg,
+                             "QDateTimeEdit::setCalendarWidget: calendarPopup is set to false");
         edit.setCalendarWidget(cw);
         QVERIFY(!edit.calendarWidget());
         edit.setCalendarPopup(true);
