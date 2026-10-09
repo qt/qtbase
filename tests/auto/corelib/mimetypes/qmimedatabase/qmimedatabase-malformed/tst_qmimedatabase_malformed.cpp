@@ -93,6 +93,8 @@ private slots:
     void binaryCacheAliasMissingNulTerminator();
     void xmlMagicOffset_data();
     void xmlMagicOffset();
+    void xmlParentCycle_data();
+    void xmlParentCycle();
 
 private:
     struct VictimResult {
@@ -144,7 +146,8 @@ private:
 
     // Spawns the probe helper, pointed at mimeParentDir via XDG_*.
     VictimResult runCase(const QString &caseName, const QString &mimeParentDir,
-                         const QString &dataFile = QString());
+                         const QString &dataFile = QString(),
+                         const QStringList &extraArgs = QStringList());
 
     static QString expectedResult(const QString &queryCase);
     static QString expectedResultLine(const QString &mimeTypeName);
@@ -289,7 +292,7 @@ void tst_QMimeDatabaseMalformed::put32(QByteArray &buf, int offset, quint32 valu
 
 tst_QMimeDatabaseMalformed::VictimResult
 tst_QMimeDatabaseMalformed::runCase(const QString &caseName, const QString &mimeParentDir,
-                                    const QString &dataFile)
+                                    const QString &dataFile, const QStringList &extraArgs)
 {
     VictimResult r;
 
@@ -304,6 +307,7 @@ tst_QMimeDatabaseMalformed::runCase(const QString &caseName, const QString &mime
     QStringList args = { caseName };
     if (!dataFile.isEmpty())
         args << dataFile;
+    args << extraArgs;
 
     QProcess proc;
     proc.setProcessEnvironment(env);
@@ -567,6 +571,79 @@ void tst_QMimeDatabaseMalformed::xmlMagicOffset()
 
     const QString expected = expectedResultLine(expectedMimeType);
     const VictimResult r = runCase(QueryCase::Content, tmp.path(), dataFile);
+    QVERIFY2(r.succeeded(expected), qPrintable(r.diagnostic(expected)));
+}
+
+// Each row queries one type of a database with parent cycles: foo/bar is its own
+// parent, test/one and test/two are each other's parent, and test/child hangs off
+// the cycle. The probe is told which types to ask inherits() about.
+void tst_QMimeDatabaseMalformed::xmlParentCycle_data()
+{
+    QTest::addColumn<QString>("queriedType");
+    QTest::addColumn<QStringList>("inheritsTargets");
+    QTest::addColumn<QString>("expected");
+
+    // The result line is the type's parents, its allAncestors() and one inherits()
+    // answer per target. Every cycle member is listed once.
+    QTest::newRow("self-parent")
+            << "foo/bar" << QStringList{"foo/bar", "text/plain"}
+            << "ok=foo/bar parents=foo/bar ancestors=foo/bar inherits(foo/bar)=1"
+               " inherits(text/plain)=0";
+    QTest::newRow("cycle-member-inherits-itself")
+            << "test/one" << QStringList{"test/one"}
+            << "ok=test/one parents=test/two ancestors=test/two,test/one inherits(test/one)=1";
+    QTest::newRow("cycle-member-inherits-other-member")
+            << "test/one" << QStringList{"test/two"}
+            << "ok=test/one parents=test/two ancestors=test/two,test/one inherits(test/two)=1";
+    QTest::newRow("cycle-member-inherits-outside-type")
+            << "test/one" << QStringList{"text/plain", "image/png"}
+            << "ok=test/one parents=test/two ancestors=test/two,test/one inherits(text/plain)=0"
+               " inherits(image/png)=0";
+    QTest::newRow("child-of-cycle-inherits-cycle-members")
+            << "test/child" << QStringList{"test/one", "test/two"}
+            << "ok=test/child parents=test/one ancestors=test/one,test/two inherits(test/one)=1"
+               " inherits(test/two)=1";
+    QTest::newRow("child-of-cycle-inherits-outside-type")
+            << "test/child" << QStringList{"text/plain", "foo/bar"}
+            << "ok=test/child parents=test/one ancestors=test/one,test/two inherits(text/plain)=0"
+               " inherits(foo/bar)=0";
+}
+
+// A cycle in the sub-class-of links (a type that is its own parent, or two
+// types that are each other's) must not make the parent walk (parents(),
+// allAncestors(), inherits()) loop or recurse forever. The probe has to finish
+// with the exact answer.
+void tst_QMimeDatabaseMalformed::xmlParentCycle()
+{
+    QFETCH(const QString, queriedType);
+    QFETCH(const QStringList, inheritsTargets);
+    QFETCH(const QString, expected);
+
+    QTemporaryDir tmp;
+    QVERIFY2(tmp.isValid(), qPrintable(tmp.errorString()));
+    QString err;
+    QVERIFY2(makeMimeDir(tmp.path(), &err), qPrintable(err));
+    const QString packagesDir = tmp.path() + "/mime/packages"_L1;
+    QVERIFY2(QDir().mkpath(packagesDir), qPrintable("cannot create "_L1 + packagesDir));
+
+    const QByteArray xml =
+            "<mime-info xmlns=\"http://www.freedesktop.org/standards/shared-mime-info\">\n"
+            "  <mime-type type=\"foo/bar\">\n"
+            "    <sub-class-of type=\"foo/bar\"/>\n"
+            "  </mime-type>\n"
+            "  <mime-type type=\"test/one\">\n"
+            "    <sub-class-of type=\"test/two\"/>\n"
+            "  </mime-type>\n"
+            "  <mime-type type=\"test/two\">\n"
+            "    <sub-class-of type=\"test/one\"/>\n"
+            "  </mime-type>\n"
+            "  <mime-type type=\"test/child\">\n"
+            "    <sub-class-of type=\"test/one\"/>\n"
+            "  </mime-type>\n"
+            "</mime-info>\n";
+    QVERIFY2(writeFile(packagesDir + "/cycles.xml"_L1, xml, &err), qPrintable(err));
+
+    const VictimResult r = runCase(QueryCase::Ancestors, tmp.path(), queriedType, inheritsTargets);
     QVERIFY2(r.succeeded(expected), qPrintable(r.diagnostic(expected)));
 }
 

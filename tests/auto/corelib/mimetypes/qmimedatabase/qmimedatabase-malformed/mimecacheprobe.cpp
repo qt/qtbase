@@ -13,6 +13,8 @@
 
 #include <cstdio>
 
+using namespace Qt::StringLiterals;
+
 int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
@@ -47,6 +49,19 @@ int main(int argc, char *argv[])
                qPrintable(t.aliases().join(u',')),
                qPrintable(t.iconName()),
                qPrintable(t.genericIconName()));
+    } else if (caseName == QueryCase::Ancestors) {
+        // Usage: mimecacheprobe ancestors <mimetype> [<inheritsTarget>...]
+        if (dataFile.isEmpty()) {
+            fprintf(stderr, "mimecacheprobe: case 'ancestors' needs a mimetype argument\n");
+            return 2;
+        }
+        const QStringList targets = args.mid(3);
+        const QMimeType t = db.mimeTypeForName(dataFile);
+        QString line = u"%1 parents=%2 ancestors=%3"_s.arg(
+                t.name(), t.parentMimeTypes().join(u','), t.allAncestors().join(u','));
+        for (const QString &target : targets)
+            line += u" inherits(%1)=%2"_s.arg(target).arg(int(t.inherits(target)));
+        printf("ok=%s\n", qPrintable(line));
     } else {
         fprintf(stderr, "mimecacheprobe: unknown case '%s'\n", qPrintable(caseName));
         return 2;
