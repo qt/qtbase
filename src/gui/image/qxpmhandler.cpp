@@ -9,6 +9,7 @@
 #include <qbytearraymatcher.h>
 #include <qdebug.h>
 #include <qimage.h>
+#include <qimagereader.h>
 #include <qloggingcategory.h>
 #include <qmap.h>
 #include <qtextstream.h>
@@ -839,14 +840,19 @@ static bool read_xpm_body(
     if (cpp < 0 || cpp > 15)
         return false;
 
-    // For > 256 colors, we delay creation of the image until
-    // after we have read the color specifications, so that we can
-    // create it in correct format (Format_RGB32 vs Format_ARGB32,
-    // depending on absence or presence of "c none", respectively)
+    // For > 256 colors, the image should be Format_ARGB32 if there is a "c none" color
+    // specification, otherwise Format_RGB32. Allocate as the former, reinterpret later.
+    const QImage::Format format = ncols <= 256 ? QImage::Format_Indexed8 : QImage::Format_ARGB32;
+    if (!QImageIOHandler::allocateImage(QSize(w, h), format, &image))
+        return false;
     if (ncols <= 256) {
-        if (!QImageIOHandler::allocateImage(QSize(w, h), QImage::Format_Indexed8, &image))
-            return false;
         image.setColorCount(ncols);
+    } else if (const int mbLimit = QImageReader::allocationLimit()) {
+        // Bound also the temporary color map which uses ~64 bytes per color
+        if (image.sizeInBytes() + qint64(ncols) * 64 > qint64(mbLimit) * 1024 * 1024) {
+            qCWarning(lcImageIo, "XPM color table exceeds allocation limit");
+            return false;
+        }
     }
 
     QMap<quint64, int> colorMap;
@@ -910,13 +916,8 @@ static bool read_xpm_body(
         }
     }
 
-    if (ncols > 256) {
-        // Now we can create 32-bit image of appropriate format
-        QImage::Format format = hasTransparency ?
-                                QImage::Format_ARGB32 : QImage::Format_RGB32;
-        if (!QImageIOHandler::allocateImage(QSize(w, h), format, &image))
-            return false;
-    }
+    if (ncols > 256 && !hasTransparency)
+        image.reinterpretAsFormat(QImage::Format_RGB32); // free format change from ARGB32
 
     // Read pixels
     for(int y=0; y<h; y++) {
@@ -934,14 +935,14 @@ static bool read_xpm_body(
                 b[1] = '\0';
                 for (x=0; x<w && d<end; x++) {
                     b[0] = *d++;
-                    *p++ = (uchar)colorMap[xpmHash(b)];
+                    *p++ = (uchar)colorMap.value(xpmHash(b));
                 }
             } else {
                 char b[16];
                 b[cpp] = '\0';
                 for (x = 0; x < w && d + cpp <= end; x++) {
                     memcpy(b, (char *)d, cpp);
-                    *p++ = (uchar)colorMap[xpmHash(b)];
+                    *p++ = (uchar)colorMap.value(xpmHash(b));
                     d += cpp;
                 }
             }
@@ -959,7 +960,7 @@ static bool read_xpm_body(
             b[cpp] = '\0';
             for (x = 0; x < w && d + cpp <= end; x++) {
                 memcpy(b, (char *)d, cpp);
-                *p++ = (QRgb)colorMap[xpmHash(b)];
+                *p++ = (QRgb)colorMap.value(xpmHash(b));
                 d += cpp;
             }
             // avoid uninitialized memory for malformed xpms

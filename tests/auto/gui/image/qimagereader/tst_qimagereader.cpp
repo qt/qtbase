@@ -79,6 +79,7 @@ private slots:
     void blackXPM();
     void transparentXPM();
     void multiWordNamedColorXPM();
+    void xpmColorTableAllocationLimit();
 
     void supportedFormats();
     void supportedMimeTypes();
@@ -682,6 +683,25 @@ void tst_QImageReader::multiWordNamedColorXPM()
     QCOMPARE(image.pixel(0, 1), qRgb(250, 250, 210)); // light golden rod yellow
     QCOMPARE(image.pixel(0, 2), qRgb(255, 250, 205)); // lemon chiffon
     QCOMPARE(image.pixel(0, 3), qRgb(  0,   0,   0)); // pale turquoise 5 (invalid color name)
+}
+
+void tst_QImageReader::xpmColorTableAllocationLimit()
+{
+    // 1x1 image with a 20000 entry color table
+    const int ncols = 20000;
+    QByteArray xpm = "/* XPM */\nstatic char *x[]={\n";
+    xpm += "\"1 1 " + QByteArray::number(ncols) + " 4\",\n";
+    for (int i = 0; i < ncols; ++i)
+        xpm += '"' + QByteArray::number(1000 + i) + " c #000000\",\n";
+    xpm += "\"1000\"};\n";
+
+    const int oldLimit = QImageReader::allocationLimit();
+    const auto restoreLimit = qScopeGuard([&] { QImageReader::setAllocationLimit(oldLimit); });
+
+    QImageReader::setAllocationLimit(2);
+    QVERIFY(!QImage::fromData(xpm, "xpm").isNull());
+    QImageReader::setAllocationLimit(1);
+    QVERIFY(QImage::fromData(xpm, "xpm").isNull());
 }
 
 namespace {
