@@ -485,14 +485,39 @@ void tst_QScroller::overshoot_segments()
     sp1.setScrollMetric(QScrollerProperties::OvershootDragResistanceFactor, 0.5);
     sp1.setScrollMetric(QScrollerProperties::OvershootDragDistanceFactor, 0.2);
     sp1.setScrollMetric(QScrollerProperties::OvershootScrollDistanceFactor, 0.2);
+    sp1.setScrollMetric(QScrollerProperties::MinimumVelocity, 0.0);
+    sp1.setScrollMetric(QScrollerProperties::DragStartDistance, 0.0);
 
     sp1.setScrollMetric(QScrollerProperties::HorizontalOvershootPolicy, QVariant::fromValue(QScrollerProperties::OvershootAlwaysOff));
     s1->setScrollerProperties(sp1);
 
-    sw->scrollArea = QRectF(0, 0, 1000, 1000);
-    kineticScrollNoTest(sw.data(), QPointF(500, 500), QPoint(0, 0), QPoint(200, 0), QPoint(250, 0));
+    sw->scrollArea = QRectF(0, 0, QWIDGETSIZE_MAX, 1000);
+    const auto flickFrom = [&](qreal startX) {
+        sw->scrollPosition = QPointF(startX, 500);
+        sw->currentPos = QPointF(startX, 500);
+        QCOMPARE(s1->state(), QScroller::Inactive);
+        constexpr qint64 moveTimestamp = 200;
+        constexpr qint64 releaseTimestamp = moveTimestamp + 32;
+        s1->handleInput(QScroller::InputPress, QPointF(0, 0), 0);
+        s1->handleInput(QScroller::InputMove, QPointF(200, 0), moveTimestamp);
+        QTRY_COMPARE_LT(sw->currentPos.x(), startX);
+        s1->handleInput(QScroller::InputRelease, QPointF(250, 0), releaseTimestamp);
+    };
 
     QScrollerPrivate* priv = s1->d_func();
+    const qreal referenceStartX = sw->scrollArea.center().x();
+    flickFrom(referenceStartX);
+    if (QTest::currentTestFailed())
+        return;
+    QCOMPARE(priv->xSegments.size(), 1);
+    const qreal dragDistance = referenceStartX - priv->xSegments.head().startPos;
+    const qreal flickDistance = -priv->xSegments.head().deltaPos;
+    s1->stop();
+
+    constexpr qreal flickToEdgeRatio = 1.5;
+    flickFrom(dragDistance + flickDistance / flickToEdgeRatio);
+    if (QTest::currentTestFailed())
+        return;
     QVERIFY(priv->xSegments.size() == 1);
     const auto& segment = priv->xSegments.head();
     QCOMPARE_LT(segment.startPos + segment.deltaPos, segment.stopPos);
