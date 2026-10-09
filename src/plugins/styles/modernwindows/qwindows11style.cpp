@@ -1195,9 +1195,6 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
         break;
     case PE_PanelItemViewRow:
         if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(option)) {
-            // this is only called from a QTreeView to paint
-            //  - the tree branch decoration (incl. selected/hovered or not)
-            //  - the (alternate) background of the item in always unselected state
             const QRect &rect = vopt->rect;
             const bool isRtl = option->direction == Qt::RightToLeft;
             if (rect.width() <= 0)
@@ -1215,16 +1212,14 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
 
             if (option->state & State_Selected && !highContrastTheme) {
                 // keep in sync with CE_ItemViewItem QListView indicator painting
-                if (!qobject_cast<const QTableView *>(widget)) {
-                    const auto col = option->palette.accent().color();
-                    painter->setBrush(col);
-                    painter->setPen(col);
-                    const auto xPos = isRtl ? rect.right() - 4.5f : rect.left() + 3.5f;
-                    const auto yOfs = rect.height() / 4.;
-                    QRectF r(QPointF(xPos, rect.y() + yOfs),
-                             QPointF(xPos + 1, rect.y() + rect.height() - yOfs));
-                    painter->drawRoundedRect(r, 1, 1);
-                }
+                const auto col = option->palette.accent().color();
+                painter->setBrush(col);
+                painter->setPen(col);
+                const auto xPos = isRtl ? rect.right() - 4.5f : rect.left() + 3.5f;
+                const auto yOfs = rect.height() / 4.;
+                QRectF r(QPointF(xPos, rect.y() + yOfs),
+                            QPointF(xPos + 1, rect.y() + rect.height() - yOfs));
+                painter->drawRoundedRect(r, 1, 1);
             }
 
             const bool isTreeDecoration = vopt->features.testFlag(
@@ -2097,8 +2092,15 @@ QRect QWindows11Style::subElementRect(QStyle::SubElement element, const QStyleOp
         if (!ret.isValid() || highContrastTheme)
             return ret;
 
-        if (const QListView *lv = qobject_cast<const QListView *>(widget);
-            lv && lv->viewMode() != QListView::IconMode) {
+        const auto needPlaceForSelectionMarker = [](const QWidget *w) {
+            if (qobject_cast<const QTableView *>(w))
+                return true;
+            if (const QListView *lv = qobject_cast<const QListView *>(w);
+                lv && lv->viewMode() != QListView::IconMode)
+                return true;
+            return false;
+        };
+        if (needPlaceForSelectionMarker(widget)) {
             const int xOfs = contentHMargin;
             const bool isRtl = option->direction == Qt::RightToLeft;
             if (isRtl) {
