@@ -50,6 +50,7 @@ QT_WARNING_POP
 
 #include <QtCore/q20memory.h>
 #include <QtCore/qendian.h>
+#include <limits>
 #include <optional>
 #include <utility>
 
@@ -4943,7 +4944,9 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
                 // Multisample swapchains need nothing special since resolving
                 // happens when ending a renderpass.
             }
-            textureFormatInfo(readback.format, readback.rect.size(), nullptr, &readback.byteSize, nullptr);
+            if (!textureFormatInfo(readback.format, readback.rect.size(), nullptr,
+                                   &readback.byteSize, nullptr))
+                continue;
 
             // vkCmdCopyImageToBuffer() only accepts single-aspect regions
             // (unlike barriers), so a combined depth-stencil texture is
@@ -4954,11 +4957,19 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
             // The depth aspect is copied out as VK_FORMAT_X8_D24_UNORM_PACK32
             // (D24S8) or VK_FORMAT_D32_SFLOAT (D32FS8), i.e. 4 bytes per
             // pixel either way, the stencil aspect as VK_FORMAT_S8_UINT.
-            const quint32 pixelCount = quint32(readback.rect.width()) * quint32(readback.rect.height());
-            const quint32 depthPlaneByteSize = pixelCount * 4;
-            const quint32 stagingByteSize = combinedDepthStencil
+            // Compute in 64-bit, as safety for extreme geometry that would not fit.
+            const quint64 pixelCount =
+                    quint64(readback.rect.width()) * quint64(readback.rect.height());
+            const quint64 depthPlaneByteSize = pixelCount * 4;
+            const quint64 stagingByteSize = combinedDepthStencil
                     ? depthPlaneByteSize + pixelCount
                     : readback.byteSize;
+            if (stagingByteSize > std::numeric_limits<quint32>::max()) {
+                qWarning("Readback of texture of size %dx%d would need %llu bytes "
+                         "which is too large to be handled",
+                         readback.rect.width(), readback.rect.height(), stagingByteSize);
+                continue;
+            }
 
             // Create a host visible readback buffer.
             VkBufferCreateInfo bufferInfo = {};
@@ -4975,7 +4986,7 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
                 readback.stagingAlloc = allocation;
                 setAllocationName(allocation, texD ? texD->name() : swapChainD->name());
             } else {
-                qWarning("Failed to create readback buffer of size %u: %d", stagingByteSize, err);
+                qWarning("Failed to create readback buffer of size %llu: %d", stagingByteSize, err);
                 printExtraErrorInfo(err);
                 continue;
             }
@@ -5283,9 +5294,10 @@ void QRhiVulkan::finishActiveReadbacks(bool forced)
                 // GL_UNSIGNED_INT_24_8 (D24S8) and
                 // GL_FLOAT_32_UNSIGNED_INT_24_8_REV (D32FS8) readbacks
                 // produce. The Metal and D3D12 backends do the same.
-                const quint32 pixelCount = quint32(readback.rect.width()) * quint32(readback.rect.height());
+                const quint64 pixelCount =
+                        quint64(readback.rect.width()) * quint64(readback.rect.height());
+                const quint64 depthPlaneByteSize = pixelCount * 4;
                 QByteArray planar;
-                const quint32 depthPlaneByteSize = pixelCount * 4;
                 planar.resizeForOverwrite(qsizetype(depthPlaneByteSize + pixelCount));
                 VkResult err = vmaCopyAllocationToMemory(toVmaAllocator(allocator),
                                                          toVmaAllocation(readback.stagingAlloc),
@@ -5313,7 +5325,8 @@ void QRhiVulkan::finishActiveReadbacks(bool forced)
                         }
                     }
                 } else {
-                    qWarning("Failed to copy texture readback buffer of size %u: %d", quint32(planar.size()), err);
+                    qWarning("Failed to copy texture readback buffer of size %lld: %d",
+                             qint64(planar.size()), err);
                     readback.result->data.clear();
                 }
             } else {
