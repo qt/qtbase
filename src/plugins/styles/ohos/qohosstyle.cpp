@@ -719,6 +719,8 @@ void drawSpinBoxFrame(
 
 void drawSpinBoxButton(QPainter &painter, const QStyleOptionSpinBox &option, int penWidth)
 {
+    const bool isDownButton = option.subControls == QStyle::SC_SpinBoxDown;
+
     auto rect = option.rect;
     auto isEnabled = option.state.testFlag(QStyle::State_Enabled);
     auto isPressed = option.state.testFlag(QStyle::State_Sunken);
@@ -729,31 +731,12 @@ void drawSpinBoxButton(QPainter &painter, const QStyleOptionSpinBox &option, int
     if (isPressed)
         brush = QBrush(option.palette.highlight());
 
-    qreal rectX = rect.x();
-    qreal rectY = rect.y();
-    qreal rectWidth = rect.width();
-    qreal rectHeight = rect.height();
-    qreal cornerRadius = static_cast<qreal>(spinBoxFrameRadius);
-
-    QPainterPath path;
-    path.moveTo(rectX, rectY);
-    path.lineTo(rectX, rectY + rectHeight);
-    if (option.subControls == QStyle::SC_SpinBoxDown) {
-        path.lineTo(rectX + rectWidth - cornerRadius, rectY + rectHeight);
-        path.arcTo(
-            rectX + rectWidth - 2 * cornerRadius, rectY + rectHeight - 2 * cornerRadius,
-            2 * cornerRadius, 2 * cornerRadius, 270, 90);
-        path.lineTo(rectX + rectWidth, rectY);
-    } else {
-        path.lineTo(rectX + rectWidth, rectY + rectHeight);
-        path.lineTo(rectX + rectWidth, rectY + cornerRadius);
-        path.arcTo(rectX + rectWidth - 2 * cornerRadius, rectY, 2 * cornerRadius, 2 * cornerRadius, 0, 90);
-    }
-    path.closeSubpath();
+    const qreal topRightRadius = isDownButton ? 0.0 : spinBoxFrameRadius;
+    const qreal bottomRightRadius = isDownButton ? spinBoxFrameRadius : 0.0;
 
     paintOnStackTop(painter, [&](auto &p) {
         p.setOpacity(isEnabled ? 1.0 : ohos_id_alpha_disabled);
-        drawPath(p, pen, brush, path);
+        drawRoundedRect(p, pen, brush, rect, 0.0, topRightRadius, 0.0, bottomRightRadius);
     });
 }
 
