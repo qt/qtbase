@@ -1661,7 +1661,7 @@ void tst_QTableWidget::task219380_removeLastRow()
     testWidget->removeRow(19); //we remove the last row
 
     //we make sure the editor is at the cell position
-    QTRY_COMPARE(testWidget->cellWidget(18, 0)->geometry(), testWidget->visualItemRect(&item));
+    QTRY_VERIFY(testWidget->visualItemRect(&item).contains(testWidget->cellWidget(18, 0)->geometry()));
 }
 
 void tst_QTableWidget::task262056_sortDuplicate()

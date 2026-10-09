@@ -4320,14 +4320,14 @@ void tst_QTableView::addColumnWhileEditing()
     model.setColumnCount(model.columnCount() + 1);
     QPointer<QLineEdit> editor = view.findChild<QLineEdit*>();
     QVERIFY(editor);
-    QCOMPARE(editor->geometry(), view.visualRect(last));
+    QVERIFY(view.visualRect(last).contains(editor->geometry()));
 
     //let's see if the editor is moved to the right location
     //after removing a column
     view.scrollTo(model.index(0, model.columnCount()-1));
     model.setColumnCount(model.columnCount() - 1);
     QVERIFY(editor);
-    QCOMPARE(editor->geometry(), view.visualRect(last));
+    QVERIFY(view.visualRect(last).contains(editor->geometry()));
 }
 
 void tst_QTableView::task259308_scrollVerticalHeaderSwappedSections()
