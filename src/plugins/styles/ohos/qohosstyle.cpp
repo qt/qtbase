@@ -761,6 +761,7 @@ void drawSpinBoxFrame(
 void drawSpinBoxButton(QPainter &painter, const QStyleOptionSpinBox &option, int penWidth)
 {
     const bool isDownButton = option.subControls == QStyle::SC_SpinBoxDown;
+    const bool mirrored = option.direction == Qt::RightToLeft;
 
     auto rect = option.rect;
     auto isEnabled = option.state.testFlag(QStyle::State_Enabled);
@@ -772,12 +773,15 @@ void drawSpinBoxButton(QPainter &painter, const QStyleOptionSpinBox &option, int
     if (isPressed)
         brush = QBrush(option.palette.highlight());
 
-    const qreal topRightRadius = isDownButton ? 0.0 : spinBoxFrameRadius;
-    const qreal bottomRightRadius = isDownButton ? spinBoxFrameRadius : 0.0;
+    const qreal topLeftRadius = (mirrored && !isDownButton) ? spinBoxFrameRadius : 0.0;
+    const qreal topRightRadius = (!mirrored && !isDownButton) ? spinBoxFrameRadius : 0.0;
+    const qreal bottomLeftRadius = (mirrored && isDownButton) ? spinBoxFrameRadius : 0.0;
+    const qreal bottomRightRadius = (!mirrored && isDownButton) ? spinBoxFrameRadius : 0.0;
 
     paintOnStackTop(painter, [&](auto &p) {
         p.setOpacity(isEnabled ? 1.0 : ohos_id_alpha_disabled);
-        drawRoundedRect(p, pen, brush, rect, 0.0, topRightRadius, 0.0, bottomRightRadius);
+        drawRoundedRect(
+            p, pen, brush, rect, topLeftRadius, topRightRadius, bottomLeftRadius, bottomRightRadius);
     });
 }
 
