@@ -263,7 +263,7 @@ void drawRect(QPainter &painter, const QPen &pen, const QBrush &brush, const QRe
 }
 
 void drawRoundedRect(
-    QPainter &painter, const QPen &pen, const QBrush &brush, const QRect &rect, qreal xRadius, qreal yRadius)
+    QPainter &painter, const QPen &pen, const QBrush &brush, const QRectF &rect, qreal xRadius, qreal yRadius)
 {
     paintOnStackTop(painter, [&](QPainter &painter) {
         painter.setRenderHints(QPainter::Antialiasing);
@@ -274,7 +274,7 @@ void drawRoundedRect(
 }
 
 QPainterPath roundedPathInRect(
-    const QRect &rect, qreal topLeftCornerRadius, qreal topRightCornerRadius, qreal bottomLeftCornerRadius,
+    const QRectF &rect, qreal topLeftCornerRadius, qreal topRightCornerRadius, qreal bottomLeftCornerRadius,
     qreal bottomRightCornerRadius)
 {
     QPainterPath path;
@@ -316,7 +316,7 @@ void drawPath(QPainter &painter, const QPen &pen, const QBrush &brush, const QPa
 }
 
 void drawRoundedRect(
-    QPainter &painter, const QPen &pen, const QBrush brush, const QRect &rect, qreal topLeftCornerRadius,
+    QPainter &painter, const QPen &pen, const QBrush brush, const QRectF &rect, qreal topLeftCornerRadius,
     qreal topRightCornerRadius, qreal bottomLeftCornerRadius, qreal bottomRightCornerRadius)
 {
     drawPath(
@@ -748,8 +748,9 @@ void drawSpinBoxFrame(
             ? QPen(option.palette.color(QPalette::Active, QPalette::Mid), frameWidth)
             : Qt::NoPen;
 
-    const int strokeInset = frameWidth / 2;
-    const auto strokeRect = adjusted(frameRect, -strokeInset);
+    const qreal strokeInset = frameWidth / 2.0;
+    const QRectF strokeRect = QRectF(frameRect)
+        .adjusted(strokeInset, strokeInset, -strokeInset, -strokeInset);
 
     paintOnStackTop(painter, [&](auto &p) {
         p.setOpacity(isEnabled ? 1.0 : ohos_id_alpha_disabled);
@@ -763,7 +764,13 @@ void drawSpinBoxButton(QPainter &painter, const QStyleOptionSpinBox &option, int
     const bool isDownButton = option.subControls == QStyle::SC_SpinBoxDown;
     const bool mirrored = option.direction == Qt::RightToLeft;
 
-    auto rect = option.rect;
+    const qreal strokeInset = penWidth / 2.0;
+    const qreal outerLeftInset = mirrored ? strokeInset : 0.0;
+    const qreal outerRightInset = mirrored ? 0.0 : -strokeInset;
+    const QRectF rect = isDownButton
+        ? QRectF(option.rect).adjusted(outerLeftInset, 0.0, outerRightInset, -strokeInset)
+        : QRectF(option.rect).adjusted(outerLeftInset, strokeInset, outerRightInset, 0.0);
+
     auto isEnabled = option.state.testFlag(QStyle::State_Enabled);
     auto isPressed = option.state.testFlag(QStyle::State_Sunken);
 
