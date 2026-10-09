@@ -1258,16 +1258,22 @@ void QWaylandInputDevice::Keyboard::keyboard_keymap(uint32_t format, int32_t fd,
     if (map_str == MAP_FAILED)
         return;
 
-    mXkbKeymap.reset(xkb_keymap_new_from_string(mParent->mQDisplay->xkbContext(), map_str,
+    // We need to be able to cope with a non 0-terminated map_str, but we also need to make
+    // sure that map_str does not contain any 0-bytes at all, as older libxkbcommon cannot
+    // deal with those and fail (e.g. RHEL 9.6 and Ubuntu 22.04)
+    mXkbKeymap.reset(xkb_keymap_new_from_buffer(mParent->mQDisplay->xkbContext(),
+                                                map_str,
+                                                strnlen(map_str, size),
                                                 XKB_KEYMAP_FORMAT_TEXT_V1,
                                                 XKB_KEYMAP_COMPILE_NO_FLAGS));
 
-    if (mXkbKeymap)
+    if (mXkbKeymap) {
         QXkbCommon::verifyHasLatinLayout(mXkbKeymap.get());
-    else
-      qCWarning(lcQpaWayland) << "failed to compile a keymap, size =" << size
-                              << ", keymap string:\n"
-                              << QByteArrayView(map_str, size);
+    } else {
+        qCDebug(lcQpaWaylandInput) << "failed to compile a keymap, size =" << size
+                                   << ", keymap string:\n"
+                                   << QByteArrayView(map_str, strnlen(map_str, size));
+    }
 
     munmap(map_str, size);
 
