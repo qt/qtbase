@@ -774,6 +774,14 @@ QPalette makeToolTipPalette(const AllPalletesColors &palettesColors)
         });
 }
 
+QFont makeSystemFont()
+{
+    auto font = QGuiApplicationPrivate::platformIntegration()->fontDatabase()->defaultFont();
+    font.setPointSize(16);
+
+    return font;
+}
+
 QFont makeTitleFont()
 {
     auto font = QGuiApplicationPrivate::platformIntegration()->fontDatabase()->defaultFont();
@@ -834,6 +842,7 @@ QHash<QPlatformTheme::Font, QFont> makeFontsMap()
         {QPlatformTheme::MenuFont, makeMenuFont()},
         {QPlatformTheme::MenuItemFont, makeMenuFont()},
         {QPlatformTheme::PushButtonFont, makePushButtonFont()},
+        {QPlatformTheme::SystemFont, makeSystemFont()},
         {QPlatformTheme::TipLabelFont, makeTipLabelFont()},
     };
 }
