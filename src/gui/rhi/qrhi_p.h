@@ -463,6 +463,11 @@ public:
         if (d)
             d->ref += 1;
     }
+    QRhiBufferData(QRhiBufferData &&other) noexcept
+        : d(std::exchange(other.d, nullptr))
+    {
+    }
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QRhiBufferData)
     QRhiBufferData &operator=(const QRhiBufferData &other)
     {
         if (d == other.d)
@@ -473,6 +478,10 @@ public:
             delete d;
         d = other.d;
         return *this;
+    }
+    void swap(QRhiBufferData &other) noexcept
+    {
+        qt_ptr_swap(d, other.d);
     }
     const char *constData() const
     {
