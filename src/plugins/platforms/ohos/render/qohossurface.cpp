@@ -175,15 +175,17 @@ void QOhosSurface::setNativeWindowSurface(
     if (nativeWindow == nullptr)
         qOhosReportFatalErrorAndAbort("NativeWindow cannot be null");
 
+    const bool nativeWindowChanged = nativeWindow != m_nativeWindow;
     m_nativeWindow = nativeWindow;
 
 #if QT_CONFIG(vulkan)
     if (m_vulkanSurface)
         m_vulkanSurface->setNativeWindowSurface(nativeWindow);
 #endif
-    setupNativeWindowBufferUsage(
-        nativeWindow,
-        ::OH_NativeBuffer_Usage::NATIVEBUFFER_USAGE_CPU_READ);
+    if (nativeWindowChanged)
+        setupNativeWindowBufferUsage(
+            nativeWindow,
+            ::OH_NativeBuffer_Usage::NATIVEBUFFER_USAGE_CPU_READ);
 
     if (m_eglSurface) {
         m_eglSurface->setNativeWindowSurface(
