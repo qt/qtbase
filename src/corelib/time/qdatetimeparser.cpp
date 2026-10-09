@@ -1594,6 +1594,15 @@ QDateTimeParser::parse(const QString &input, int position,
                         // amended the text. It may well exist but it'd be
                         // insanely expensive to check.
                         break;
+                    case DayOfWeekSectionShort:
+                    case DayOfWeekSectionLong:
+                        // Non-numeric field, no point trying to fix up by
+                        // adding digits. (Could do something similar to
+                        // MonthSection, for count >= 3, but we've got by
+                        // without it thus far.)
+                        scan.state = Invalid;
+                        done = true;
+                        break;
                     case AmPmSection:
                         switch (findAmPm(t, i)) {
                         case AM:
@@ -1635,6 +1644,8 @@ QDateTimeParser::parse(const QString &input, int position,
                         }
                         Q_FALLTHROUGH();
                     default: {
+                        // Numeric field: could we fix up by inserting zeros
+                        // somewhere in it ? If so, Intermediate, else Invalid.
                         int toMin;
                         int toMax;
 
