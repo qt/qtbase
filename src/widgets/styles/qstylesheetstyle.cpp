@@ -5872,45 +5872,46 @@ QRect QStyleSheetStyle::subControlRect(ComplexControl cc, const QStyleOptionComp
                 switch (sc) {
                 case SC_SpinBoxFrame:
                     return rule.borderRect(opt->rect);
-                case SC_SpinBoxEditField:
-                    {
-                        QRect r = rule.contentsRect(opt->rect);
+                case SC_SpinBoxEditField: {
+                    QRect r = rule.contentsRect(opt->rect);
+                    if (spin->buttonSymbols != QAbstractSpinBox::NoButtons) {
                         // Use the widest button on each side to determine edit field size.
-                        Qt::Alignment upAlign, downAlign;
-
-                        upAlign = upRule.hasPosition() ? upRule.position()->position
-                                : Qt::Alignment(Qt::AlignRight);
+                        Qt::Alignment upAlign =
+                                upRule.hasPosition() ? upRule.position()->position : Qt::AlignRight;
                         upAlign = resolveAlignment(opt->direction, upAlign);
+                        upAlign &= Qt::AlignLeft | Qt::AlignRight;
 
-                        downAlign = downRule.hasPosition() ? downRule.position()->position
-                                : Qt::Alignment(Qt::AlignRight);
+                        Qt::Alignment downAlign = downRule.hasPosition()
+                                ? downRule.position()->position
+                                : Qt::AlignRight;
                         downAlign = resolveAlignment(opt->direction, downAlign);
+                        downAlign &= Qt::AlignLeft | Qt::AlignRight;
 
-                        const bool hasButtons = (spin->buttonSymbols != QAbstractSpinBox::NoButtons);
+                        const QRect upRect = subControlRect(CC_SpinBox, opt, SC_SpinBoxUp, w);
+                        const QRect downRect = subControlRect(CC_SpinBox, opt, SC_SpinBoxDown, w);
 
-                        const QRect upRect = hasButtons
-                                ? subControlRect(CC_SpinBox, opt, SC_SpinBoxUp, w) : QRect(0,0,0,0);
-                        const QRect downRect = hasButtons
-                                ? subControlRect(CC_SpinBox, opt, SC_SpinBoxDown, w) : QRect(0,0,0,0);
-
-                        int cutLeft = 0;
-                        int cutRight = r.right();
-                        if (upAlign & Qt::AlignLeft && downAlign & Qt::AlignLeft) {
-                            cutLeft = qMax(upRect.x() + upRect.width(), downRect.x() + downRect.width());
-                        } else if (upAlign & Qt::AlignRight && downAlign & Qt::AlignRight) {
-                            cutRight = qMin(upRect.x(), downRect.x());
-                        } else if (upAlign & Qt::AlignLeft && downAlign & Qt::AlignRight) {
-                            cutLeft = upRect.x() + upRect.width();
-                            cutRight = downRect.x();
-                        } else if (upAlign & Qt::AlignRight && downAlign & Qt::AlignLeft) {
-                            cutLeft = downRect.x() + downRect.width();
-                            cutRight = upRect.x();
+                        int widestL = 0;
+                        int widestR = 0;
+                        if (upAlign & downAlign) {
+                            // both on same side
+                            int minX = std::min(upRect.left(), downRect.left());
+                            int maxX = std::max(upRect.right(), downRect.right());
+                            if (upAlign & Qt::AlignRight)
+                                r.setRight(minX);
+                            else
+                                r.setLeft(maxX);
+                        } else {
+                            // one on the right, one on the left
+                            widestL = qMax((upAlign & Qt::AlignLeft) ? upRect.width() : 0,
+                                           (downAlign & Qt::AlignLeft) ? downRect.width() : 0);
+                            widestR = qMax((upAlign & Qt::AlignRight) ? upRect.width() : 0,
+                                           (downAlign & Qt::AlignRight) ? downRect.width() : 0);
+                            r.setRight(r.right() - widestR);
+                            r.setLeft(r.left() + widestL);
                         }
-
-                        r.setRight(cutRight);
-                        r.setLeft(cutLeft);
-                        return r;
                     }
+                    return r;
+                }
                 case SC_SpinBoxDown:
                     if (downRuleMatch)
                         return positionRect(w, rule, downRule, PseudoElement_SpinBoxDownButton,
