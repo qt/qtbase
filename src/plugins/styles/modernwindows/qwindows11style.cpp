@@ -2502,12 +2502,13 @@ QSize QWindows11Style::sizeFromContents(ContentsType type, const QStyleOption *o
                 buttonWidth = widget
                         ? widthFromChar(widget->font(), Icon::ChevronUp, m_fontPoint2ChevronUpWidth)
                         : spinbox->fontMetrics.horizontalAdvance(fluentIcon(Icon::ChevronUp));
+                buttonWidth += 3;   // margins, see subControlRect/SC_SpinBoxUp/Down
             }
             const int frameWidth = spinbox->frame
                     ? proxy()->pixelMetric(PM_SpinBoxFrameWidth, option, widget)
                     : 0;
-
-            contentSize += QSize(2 * buttonWidth + 2 * frameWidth + 2 * margins, 2 * frameWidth);
+            // 4 -> SE_LineEditContents removes 4px left and right
+            contentSize += QSize(2 * (buttonWidth + frameWidth + margins + 4), 2 * frameWidth);
         }
         break;
     }
@@ -2529,6 +2530,7 @@ QSize QWindows11Style::sizeFromContents(ContentsType type, const QStyleOption *o
             contentSize = QWindowsStyle::sizeFromContents(type, option, size, widget); // don't rely on QWindowsThemeData
             contentSize += QSize(0, 4); // for the lineedit frame
         }
+        contentSize += QSize(2 * 4, 0); // SE_LineEditContents removes 4px left and right
         break;
     }
     case CT_HeaderSection:
