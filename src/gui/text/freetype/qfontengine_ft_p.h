@@ -170,7 +170,8 @@ private:
     bool supportsHorizontalSubPixelPositions() const override
     {
         return default_hint_style == HintLight ||
-               default_hint_style == HintNone;
+               default_hint_style == HintNone ||
+               verticalHintingOnly;
     }
 
     bool supportsVerticalSubPixelPositions() const override
@@ -290,6 +291,7 @@ private:
 
     void setQtDefaultHintStyle(QFont::HintingPreference hintingPreference);
     void setDefaultHintStyle(HintStyle style) override;
+    bool setVerticalHintingOnly();
 
     QFontEngine *cloneWithSize(qreal pixelSize) const override;
     Qt::HANDLE handle() const override;
@@ -315,6 +317,7 @@ protected:
     bool cacheEnabled;
     bool forceAutoHint;
     bool stemDarkeningDriver;
+    bool verticalHintingOnly;
 
 private:
     friend class QFontEngineFTRawFont;
@@ -323,6 +326,7 @@ private:
     friend class QFontEngineMultiFontConfig;
 
     int loadFlags(QGlyphSet *set, GlyphFormat format, int flags, bool &hsubpixel, int &vfactor) const;
+    void setFaceSize(int xsize, int ysize) const;
     bool shouldUseDesignMetrics(ShaperFlags flags) const;
     QFixed scaledBitmapMetrics(QFixed m) const;
     glyph_metrics_t scaledBitmapMetrics(const glyph_metrics_t &m, const QTransform &matrix) const;

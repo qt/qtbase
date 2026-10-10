@@ -715,9 +715,6 @@ QFontEngine::HintStyle defaultHintStyleFromMatch(QFont::HintingPreference hintin
         break;
     }
 
-    if (isDprScaling())
-        return QFontEngine::HintNone;
-
     void *hintStyleResource =
             QGuiApplication::platformNativeInterface()->nativeResourceForScreen("hintstyle",
                                                                                 QGuiApplication::primaryScreen());
@@ -1193,6 +1190,14 @@ bail:
     engine->antialias = antialias;
     engine->defaultFormat = format;
     engine->glyphFormat = format;
+
+    // The device pixel ratio scales glyphs after the layout, so they can't be fitted horizontally
+    if (isDprScaling() && fontDef.hintingPreference == QFont::PreferDefaultHinting) {
+        static const bool disabled =
+                qEnvironmentVariableIntValue("QT_DISABLE_DPR_FONT_HINTING") > 0;
+        if (disabled || !engine->setVerticalHintingOnly())
+            engine->setDefaultHintStyle(QFontEngine::HintNone);
+    }
 }
 
 bool QFontconfigDatabase::supportsVariableApplicationFonts() const

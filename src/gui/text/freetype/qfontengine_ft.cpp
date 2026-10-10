@@ -943,6 +943,7 @@ QFontEngineFT::QFontEngineFT(const QFontDef &fd)
     m_subPixelPositionCount = 4;
     forceAutoHint = false;
     stemDarkeningDriver = false;
+    verticalHintingOnly = false;
 }
 
 QFontEngineFT::~QFontEngineFT()
@@ -1130,6 +1131,34 @@ void QFontEngineFT::setDefaultHintStyle(HintStyle style)
     default_hint_style = style;
 }
 
+// Since version 40 the TrueType interpreter moves points horizontally only for monochrome glyphs.
+static bool hasTrueTypeInterpreterV40(FT_Library library)
+{
+#if defined(FT_FONT_FORMATS_H)
+    FT_UInt version = 0;
+    if (FT_Property_Get(library, "truetype", "interpreter-version", &version) != FT_Err_Ok)
+        return true; // No TrueType driver, so no interpreter either
+    return version == 40;
+#else
+    Q_UNUSED(library);
+    return false;
+#endif
+}
+
+// Returns false if the hinting may still fit glyphs to the pixel grid horizontally.
+bool QFontEngineFT::setVerticalHintingOnly()
+{
+    // Monochrome glyphs get fitted both ways by any hinter
+    if (!antialias)
+        return false;
+    if ((default_hint_style == HintMedium || default_hint_style == HintFull)
+        && !hasTrueTypeInterpreterV40(qt_getFreetype())) {
+        return false;
+    }
+    verticalHintingOnly = true;
+    return true;
+}
+
 bool QFontEngineFT::expectsGammaCorrectedBlending(QFontEngine::GlyphFormat format) const
 {
     Q_UNUSED(format);
@@ -1142,7 +1171,9 @@ int QFontEngineFT::loadFlags(QGlyphSet *set, GlyphFormat format, int flags,
     int load_flags = FT_LOAD_DEFAULT | default_load_flags;
     int load_target = default_hint_style == HintLight
                       ? FT_LOAD_TARGET_LIGHT
-                      : FT_LOAD_TARGET_NORMAL;
+                      : verticalHintingOnly
+                        ? FT_LOAD_TARGET_LCD // Makes the auto-hinter work vertically only
+                        : FT_LOAD_TARGET_NORMAL;
 
     if (format == Format_Mono) {
         load_target = FT_LOAD_TARGET_MONO;
@@ -1780,6 +1811,9 @@ QFontEngineFT::Glyph *QFontEngineFT::loadColrv1Glyph(QGlyphSet *set,
 }
 #endif // QFONTENGINE_FT_SUPPORT_COLRV1
 
+// The slant of FT_GlyphSlot_Oblique(), this has to be kept in sync with FreeType
+static const FT_Fixed obliqueSlant = 0x0366A;
+
 QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
                                                const QFixedPoint &subPixelPosition,
                                                QColor color,
@@ -1815,7 +1849,7 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
         FT_Matrix slant;
         slant.xx = 0x10000L;
         slant.yx = 0;
-        slant.xy = 0x0366A;
+        slant.xy = obliqueSlant;
         slant.yy = 0x10000L;
 
         FT_Matrix_Multiply(&matrix, &slant);
@@ -2529,7 +2563,7 @@ bool QFontEngineFT::shouldUseDesignMetrics(QFontEngine::ShaperFlags flags) const
     if (!FT_IS_SCALABLE(freetype->face))
         return false;
 
-    return default_hint_style == HintNone || default_hint_style == HintLight || (flags & DesignMetrics);
+    return supportsHorizontalSubPixelPositions() || (flags & DesignMetrics);
 }
 
 QFixed QFontEngineFT::scaledBitmapMetrics(QFixed m) const
@@ -2826,13 +2860,44 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyphFor(glyph_t g,
     Glyph *glyph = glyphSet != nullptr ? glyphSet->getGlyph(g, subPixelPosition) : nullptr;
     if (!glyph || glyph->format != format || (!fetchBoundingBox && !glyph->data)) {
         QScopedValueRollback<HintStyle> saved_default_hint_style(default_hint_style);
-        if (t.type() >= QTransform::TxScale && !is2dRotation(t))
-            default_hint_style = HintNone; // disable hinting if the glyphs are transformed
 
-        lockFace();
+        // A scaled glyph can be hinted at the size it has on the device, if it's a pixel at least
+        const qreal scaleX = qAbs(t.m11());
+        const qreal scaleY = qAbs(t.m22());
+        const bool hintAtDeviceSize = default_hint_style != HintNone
+                && format != Format_ARGB // COLRv1 is drawn at the size of the engine
+                && FT_IS_SCALABLE(freetype->face)
+                && t.type() <= QTransform::TxScale
+                && xsize * scaleX >= 64 && ysize * scaleY >= 64;
+
         FT_Matrix m = this->matrix;
-        FT_Matrix ftMatrix = glyphSet != nullptr ? glyphSet->transformationMatrix : QTransformToFTMatrix(t);
-        FT_Matrix_Multiply(&ftMatrix, &m);
+        if (hintAtDeviceSize) {
+            // The size is scaled instead of the outline, lockFace() sets it back when needed
+            freetype->lock();
+            setFaceSize(qRound(xsize * scaleX), qRound(ysize * scaleY));
+
+            // The synthesized slant is applied to the outline at its new size, so the matrix
+            // has to make up for a scale that is not uniform
+            if (obliquen)
+                m.xy = qRound(obliqueSlant * (scaleX / scaleY - 1));
+
+            // A size can't mirror the outline, that is left to the matrix too
+            if (t.m11() < 0) {
+                m.xx = -m.xx;
+                m.xy = -m.xy;
+            }
+            if (t.m22() < 0) {
+                m.yx = -m.yx;
+                m.yy = -m.yy;
+            }
+        } else {
+            if (t.type() >= QTransform::TxScale && !is2dRotation(t))
+                default_hint_style = HintNone; // disable hinting if the glyphs are transformed
+
+            lockFace();
+            FT_Matrix ftMatrix = glyphSet != nullptr ? glyphSet->transformationMatrix : QTransformToFTMatrix(t);
+            FT_Matrix_Multiply(&ftMatrix, &m);
+        }
         freetype->matrix = m;
         glyph = loadGlyph(glyphSet, g, subPixelPosition, color, format, false, disableOutlineDrawing);
         unlockFace();
@@ -2951,10 +3016,8 @@ FT_Face QFontEngineFT::lockFace(Scaling scale) const
             freetype->xsize = face->units_per_EM << 6;
             freetype->ysize = face->units_per_EM << 6;
         }
-    } else if (freetype->xsize != xsize || freetype->ysize != ysize) {
-        FT_Set_Char_Size(face, xsize, ysize, 0, 0);
-        freetype->xsize = xsize;
-        freetype->ysize = ysize;
+    } else {
+        setFaceSize(xsize, ysize);
     }
     if (freetype->matrix.xx != matrix.xx ||
         freetype->matrix.yy != matrix.yy ||
@@ -2965,6 +3028,15 @@ FT_Face QFontEngineFT::lockFace(Scaling scale) const
     }
 
     return face;
+}
+
+void QFontEngineFT::setFaceSize(int xsize, int ysize) const
+{
+    if (freetype->xsize != xsize || freetype->ysize != ysize) {
+        FT_Set_Char_Size(freetype->face, xsize, ysize, 0, 0);
+        freetype->xsize = xsize;
+        freetype->ysize = ysize;
+    }
 }
 
 void QFontEngineFT::unlockFace() const
@@ -3066,6 +3138,7 @@ bool QFontEngineFT::initFromFontEngine(const QFontEngineFT *fe)
     subpixelType = fe->subpixelType;
     lcdFilterType = fe->lcdFilterType;
     embeddedbitmap = fe->embeddedbitmap;
+    verticalHintingOnly = fe->verticalHintingOnly;
 
     return true;
 }
