@@ -57,7 +57,6 @@ qt_internal_extend_target(QSQLiteDriverPlugin CONDITION NOT QT_FEATURE_system_sq
         SQLITE_ENABLE_JSON1
         SQLITE_ENABLE_MATH_FUNCTIONS
         SQLITE_ENABLE_RTREE
-        SQLITE_OMIT_COMPLETE
     INCLUDE_DIRECTORIES
         ../../../3rdparty/sqlite
     ATTRIBUTION_FILE_DIR_PATHS
