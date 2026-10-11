@@ -292,17 +292,27 @@ static IDXGIOutput *outputForWindow(QWindow *w, IDXGIAdapter *adapter)
     // and
     // https://learn.microsoft.com/en-us/windows/win32/direct3darticles/high-dynamic-range
 
-    QRect wr = w->geometry();
-    wr = QRect(wr.topLeft() * w->devicePixelRatio(), wr.size() * w->devicePixelRatio());
-    const QPoint center = wr.center();
+    HMONITOR monitor = nullptr;
+    QPoint center{};
+    if (w->handle()) {
+        // The returned HMONITOR will never be null unless using MONITOR_DEFAULTTONULL.
+        monitor = MonitorFromWindow(reinterpret_cast<HWND>(w->winId()), MONITOR_DEFAULTTONEAREST);
+    } else {
+        QRect wr = w->geometry();
+        wr = QRect(wr.topLeft() * w->devicePixelRatio(), wr.size() * w->devicePixelRatio());
+        center = wr.center();
+    }
     IDXGIOutput *currentOutput = nullptr;
     IDXGIOutput *output = nullptr;
     for (UINT i = 0; adapter->EnumOutputs(i, &output) != DXGI_ERROR_NOT_FOUND; ++i) {
         DXGI_OUTPUT_DESC desc;
-        output->GetDesc(&desc);
+        if (FAILED(output->GetDesc(&desc))) {
+            output->Release();
+            continue;
+        }
         const RECT r = desc.DesktopCoordinates;
-        const QRect dr(QPoint(r.left, r.top), QPoint(r.right - 1, r.bottom - 1));
-        if (dr.contains(center)) {
+        const QRect dr(QPoint(r.left, r.top), QSize(r.right - r.left, r.bottom - r.top));
+        if ((monitor && desc.Monitor == monitor) || (!monitor && dr.contains(center))) {
             currentOutput = output;
             break;
         } else {
