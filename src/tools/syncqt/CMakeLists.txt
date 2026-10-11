@@ -15,11 +15,9 @@ if(NOT QT_INTERNAL_AVOID_OVERRIDING_SYNCQT_CONFIG)
         qt_internal_add_compiler_flags(LANGUAGES CXX CONFIGS ${configs} FLAGS "-fexceptions")
     endif()
 
-    # Replace all linker flags with those we use in the RelWithDebInfo configuration
-    list(REMOVE_ITEM configs RELWITHDEBINFO)
-    foreach(config IN LISTS configs)
-        set(CMAKE_EXE_LINKER_FLAGS_${config} "${CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO}")
-    endforeach()
+    # Keep the Debug build optimized while retaining its debug information settings.
+    set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO}")
+
     qt_internal_skip_sanitizer()
 endif()
 
