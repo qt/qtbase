@@ -150,18 +150,6 @@ QSize evaluateGeometrySizeBasedOnFrameGeometry(
     };
 }
 
-QSize getQSizeGrownBy(const QSize &size, const QMargins &margins)
-{
-    // HACK
-    // when the minimum window size is set to 0, the system seems to treat it as “not set” and
-    // applies its own default values instead (width: 320vp, height: 72vp).
-    // Therefore, when the intention is to set the minimum size to 0,
-    // we set it to 1 instead to avoid the system default being applied.
-    return {
-        qMax(1, size.width() + margins.left() + margins.right()),
-        qMax(1, size.height() + margins.top() + margins.bottom())};
-}
-
 QWindow *getFirstTopLevelWindowOrNull()
 {
     auto visibleWindows = QWindowProxyRegistry::instance().queryWindowsWithVisibleSystemWindow();
@@ -912,9 +900,11 @@ void QOhosView::updateWindowSizeLimits(const std::pair<QSize, QSize> &sizeLimits
 {
     if (m_ohosWindowProxy != nullptr) {
         auto windowMargins = QOhosPlatformWindow::fromQWindow(m_ownerWindow)->frameMargins();
+        // HACK: the system reads a minimum size of 0 as "not set" and applies
+        // its default (320x72 vp), so send at least 1.
         m_ohosWindowProxy->setWindowLimits(
-            getQSizeGrownBy(sizeLimits.first, windowMargins),
-            getQSizeGrownBy(sizeLimits.second, windowMargins));
+            sizeLimits.first.grownBy(windowMargins).expandedTo(QSize(1, 1)),
+            sizeLimits.second.grownBy(windowMargins).expandedTo(QSize(1, 1)));
     }
 }
 
