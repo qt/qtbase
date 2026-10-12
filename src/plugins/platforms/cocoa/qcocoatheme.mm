@@ -466,6 +466,15 @@ QVariant QCocoaTheme::themeHint(ThemeHint hint) const
         return NSEvent.keyRepeatDelay * 1000;
     case QPlatformTheme::KeyboardAutoRepeatRate:
         return 1.0 / NSEvent.keyRepeatInterval;
+    case QPlatformTheme::MousePressAndHoldInterval: {
+        static const int pressAndHoldInterval = [] {
+            auto *recognizer = [[NSPressGestureRecognizer new] autorelease];
+            recognizer.buttonMask = 0;
+            recognizer.allowedTouchTypes = NSTouchTypeMaskDirect;
+            return qRound(recognizer.minimumPressDuration * 1000);
+        }();
+        return pressAndHoldInterval;
+    }
     case QPlatformTheme::ShowIconsInMenus:
         return QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSTahoe;
     case QPlatformTheme::MenuSelectionWraps:
