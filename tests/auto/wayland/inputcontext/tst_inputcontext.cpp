@@ -109,6 +109,8 @@ void tst_inputcontext::selectingInputContext()
     QFETCH(QByteArray, requestedModule);
     QFETCH(QByteArray, expectedModule);
 
+    qunsetenv("QT_IM_MODULES");
+
     if (requestedModule.isNull())
         qunsetenv("QT_IM_MODULE");
     else
