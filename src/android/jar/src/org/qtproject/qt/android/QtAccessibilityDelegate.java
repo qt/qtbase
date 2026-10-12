@@ -547,9 +547,11 @@ class QtAccessibilityDelegate extends View.AccessibilityDelegate
 
         // set only if valid, otherwise we return a node that is invalid and will crash when accessed
         node.setSource(m_view, virtualViewId);
-        node.setContentDescription(addLocaleSpan(virtualViewId, node.getContentDescription().toString()));
 
-        if (TextUtils.isEmpty(node.getText()) && TextUtils.isEmpty(node.getContentDescription()))
+        CharSequence contentDescription = node.getContentDescription();
+        if (!TextUtils.isEmpty(contentDescription))
+            node.setContentDescription(addLocaleSpan(virtualViewId, contentDescription.toString()));
+        else if (TextUtils.isEmpty(node.getText()))
             Log.w(TAG, "AccessibilityNodeInfo with empty contentDescription: " + virtualViewId);
 
         int parentId = QtNativeAccessibility.parentId(virtualViewId);
