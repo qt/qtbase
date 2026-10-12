@@ -524,10 +524,12 @@ static void qt_palette_from_color(QPalette &pal, const QColor &button)
     \value LinkVisited  A text color used for already visited hyperlinks.
                         By default, the linkvisited color is Qt::magenta.
 
-    Note that we do not use the \c Link and \c LinkVisited roles when
-    rendering rich text in Qt, and that we recommend that you use CSS
-    and the QTextDocument::setDefaultStyleSheet() function to alter
-    the appearance of links. For example:
+    When QTextDocument parses HTML or Markdown, it gives hyperlinks the
+    \c Link color of the application palette at that time. Changing the
+    palette afterwards doesn't change the color of links in documents that
+    have already been parsed. Rich text doesn't use the \c LinkVisited
+    role. To alter the appearance of links, use CSS and the
+    QTextDocument::setDefaultStyleSheet() function. For example:
 
     \snippet textdocument-css/main.cpp 0
 
