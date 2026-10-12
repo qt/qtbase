@@ -98,7 +98,8 @@ using namespace Qt::StringLiterals;
     \value DesktopLocation The user's desktop directory. On systems with no
            concept of a desktop, this is the same as HomeLocation. Generic.
     \value DocumentsLocation Directory containing document files. The
-           returned path is never empty. Generic.
+           returned path is never empty, except on Android 11 and later when
+           shared storage isn't available. Generic.
     \value FontsLocation Directory containing fonts. Note that installing
            fonts may require additional, platform-specific operations.
            Generic.
@@ -135,7 +136,8 @@ using namespace Qt::StringLiterals;
            shared cache. Generic.
     \value GenericDataLocation Directory where persistent data shared
            across applications can be stored. The returned path is never
-           empty. Generic.
+           empty, except on Android 11 and later when shared storage isn't
+           available. Generic.
     \value RuntimeLocation Directory where runtime communication files
            should be written, like Unix local sockets. The returned path
            may be empty on some systems. Generic.
