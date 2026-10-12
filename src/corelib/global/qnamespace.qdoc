@@ -796,14 +796,18 @@
 /*!
     \enum Qt::ToolBarArea
 
-    \value LeftToolBarArea
-    \value RightToolBarArea
-    \value TopToolBarArea
-    \value BottomToolBarArea
-    \value AllToolBarAreas
-    \value NoToolBarArea
+    Represents the areas a QToolBar can be placed in.
+
+    \value LeftToolBarArea The left toolbar area of a QMainWindow.
+    \value RightToolBarArea The right toolbar area of a QMainWindow.
+    \value TopToolBarArea The top toolbar area of a QMainWindow.
+    \value BottomToolBarArea The bottom toolbar area of a QMainWindow.
+    \value AllToolBarAreas All toolbar areas. This is the default value of
+           QToolBar::allowedAreas.
+    \value NoToolBarArea No toolbar area.
 
     \omitvalue ToolBarArea_Mask
+    \sa QToolBar::setAllowedAreas, QToolBar::isAreaAllowed
 */
 
 /*!
