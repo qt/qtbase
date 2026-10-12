@@ -639,8 +639,8 @@ QBindable<bool> QTimer::bindableSingleShot()
     \brief the timeout interval in milliseconds
 
     The default value for this property is 0.  A QTimer with a timeout
-    interval of 0 will time out as soon as all the events in the window
-    system's event queue have been processed.
+    interval of 0 will time out as soon as possible, though the ordering
+    between zero timers and other sources of events is unspecified.
 
     \include qtimer.cpp eventloop-busy
 
