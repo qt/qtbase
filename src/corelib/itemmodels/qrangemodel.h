@@ -54,7 +54,7 @@ public:
         InsertAsSiblings,
         InsertAsChildren,
     };
-    Q_ENUM(DropOperation);
+    Q_ENUM(DropOperation)
 
     template <typename T>
     struct RowOptions {

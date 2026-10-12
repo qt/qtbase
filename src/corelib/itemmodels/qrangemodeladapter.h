@@ -244,13 +244,13 @@ public:
             return lhs.m_index == rhs.m_index
                 || lhs.get() == rhs.get();
         }
-        Q_DECLARE_EQUALITY_COMPARABLE_NON_NOEXCEPT(DataReference);
+        Q_DECLARE_EQUALITY_COMPARABLE_NON_NOEXCEPT(DataReference)
 
         friend inline bool comparesEqual(const DataReference &lhs, const value_type &rhs)
         {
             return lhs.get() == rhs;
         }
-        Q_DECLARE_EQUALITY_COMPARABLE_NON_NOEXCEPT(DataReference, value_type);
+        Q_DECLARE_EQUALITY_COMPARABLE_NON_NOEXCEPT(DataReference, value_type)
 
         friend inline void swap(DataReference lhs, DataReference rhs)
         {

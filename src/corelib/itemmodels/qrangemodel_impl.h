@@ -3651,7 +3651,7 @@ class QGenericTreeItemModelImpl
 public:
     QGenericTreeItemModelImpl(Range &&model, Protocol &&p, QRangeModel *itemModel)
         : Base(std::forward<Range>(model), std::forward<Protocol>(p), itemModel)
-    {};
+    {}
 
     void setParentRow(range_type &children, row_ptr parent)
     {
