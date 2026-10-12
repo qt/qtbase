@@ -21,6 +21,13 @@
     return m_contentLayer;
 }
 
+- (void)setContentsGravity:(CALayerContentsGravity)gravity
+{
+    // Propagate the view's layerContentsPlacement
+    [super setContentsGravity:gravity];
+    m_contentLayer.contentsGravity = gravity;
+}
+
 - (void)layoutSublayers
 {
     // Layout the content layer explicitly, as using a autoresizingMask
