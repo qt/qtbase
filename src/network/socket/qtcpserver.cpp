@@ -564,10 +564,13 @@ QTcpSocket *QTcpServer::nextPendingConnection()
 
     The base implementation creates a QTcpSocket, sets the socket
     descriptor and then stores the QTcpSocket in an internal list of
-    pending connections. Finally newConnection() is emitted.
+    pending connections by calling addPendingConnection(), which emits
+    pendingConnectionAvailable().
 
     Reimplement this function to alter the server's behavior when a
-    connection is available.
+    connection is available. QTcpServer emits newConnection() after this
+    function returns, whether or not it's reimplemented, so don't emit
+    newConnection() from a reimplementation.
 
     If this server is using QNetworkProxy then the \a socketDescriptor
     may not be usable with native socket functions, and should only be
