@@ -3343,8 +3343,13 @@ static QString fromNativeSeparators(const QString &pathName)
 
     This function also accepts paths with a doubled leading slash (or
     backslash) to indicate a remote file, as in
-    "//servername/path/to/file.txt". Note that only certain platforms can
-    actually open this file using QFile::open().
+    "//servername/path/to/file.txt". The resulting URL has \c servername
+    as its host, and toLocalFile() converts it back to the same path.
+    Whether QFile::open() can open that path depends on the operating
+    system. Windows treats it as a UNC path to a file on a network share.
+    Linux and macOS treat the doubled leading slash as a single slash, so
+    QFile::open() looks for \c{/servername/path/to/file.txt} on the local
+    file system instead.
 
     An empty \a localFile leads to an empty URL (since Qt 5.4).
 
