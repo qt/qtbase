@@ -52,7 +52,7 @@ QNetworkReplyFileImpl::QNetworkReplyFileImpl(QNetworkAccessManager *manager, con
     // do not allow UNC paths on Unix
     if (!url.host().isEmpty()) {
         // we handle only local files
-        QString msg = QCoreApplication::translate("QNetworkAccessFileBackend", "Request for opening non-local file %1").arg(url.toString());
+        QString msg = QCoreApplication::translate("QNetworkAccessFileBackend", "Request for opening non-local file %1").arg(url.toDisplayString());
         setError(QNetworkReply::ProtocolInvalidOperationError, msg);
         setFinished(true); // We're finished, will emit finished() after ctor is done.
         QMetaObject::invokeMethod(this, "errorOccurred", Qt::QueuedConnection,
@@ -98,7 +98,7 @@ QNetworkReplyFileImpl::QNetworkReplyFileImpl(QNetworkAccessManager *manager, con
 
         QFileInfo fi(fileName);
         if (fi.isDir()) {
-            QString msg = QCoreApplication::translate("QNetworkAccessFileBackend", "Cannot open %1: Path is a directory").arg(url.toString());
+            QString msg = QCoreApplication::translate("QNetworkAccessFileBackend", "Cannot open %1: Path is a directory").arg(url.toDisplayString());
             setError(QNetworkReply::ContentOperationNotPermittedError, msg);
             QMetaObject::invokeMethod(this, "errorOccurred", Qt::QueuedConnection,
                 Q_ARG(QNetworkReply::NetworkError, QNetworkReply::ContentOperationNotPermittedError));

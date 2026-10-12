@@ -153,7 +153,7 @@ void QNetworkAccessDebugPipeBackend::pushFromUpstreamToSocket()
                 if (haveWritten < 0) {
                     // write error!
                     QString msg = QCoreApplication::translate("QNetworkAccessDebugPipeBackend", "Write error writing to %1: %2")
-                                  .arg(url().toString(), socket.errorString());
+                                  .arg(url().toDisplayString(), socket.errorString());
                     error(QNetworkReply::ProtocolFailure, msg);
                     finished();
                     return;
