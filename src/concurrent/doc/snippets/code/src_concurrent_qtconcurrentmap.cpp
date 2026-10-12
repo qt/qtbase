@@ -138,8 +138,6 @@ struct Scaled
     Scaled(int size)
     : m_size(size) { }
 
-    typedef QImage result_type;
-
     QImage operator()(const QImage &image)
     {
         return image.scaled(m_size, m_size);
