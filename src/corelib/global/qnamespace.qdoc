@@ -816,7 +816,8 @@
     \value RightDockWidgetArea The right dock area of a QMainWindow.
     \value TopDockWidgetArea The top dock area of a QMainWindow.
     \value BottomDockWidgetArea The bottom dock area of a QMainWindow.
-    \value AllDockWidgetAreas All dock widget areas (default).
+    \value AllDockWidgetAreas All dock widget areas. This is the default
+           value of QDockWidget::allowedAreas.
     \value NoDockWidgetArea No dock widget areas.
 
     \omitvalue DockWidgetArea_Mask

@@ -650,6 +650,9 @@ static bool checkToolBarArea(Qt::ToolBarArea area, const char *where)
 /*!
     Adds a toolbar break to the given \a area after all the other
     objects that are present.
+
+    \a area must be a single toolbar area, such as Qt::TopToolBarArea.
+    For other values, this function prints a warning and does nothing.
 */
 void QMainWindow::addToolBarBreak(Qt::ToolBarArea area)
 {
@@ -679,6 +682,12 @@ void QMainWindow::removeToolBarBreak(QToolBar *before)
     window. The \a toolbar is placed at the end of the current tool
     bar block (i.e. line). If the main window already manages \a toolbar
     then it will only move the toolbar to \a area.
+
+    \a area must be a single toolbar area: Qt::LeftToolBarArea,
+    Qt::RightToolBarArea, Qt::TopToolBarArea, or Qt::BottomToolBarArea.
+    For other values, such as Qt::AllToolBarAreas, this function prints a
+    warning and does nothing. To set the areas that the user can move the
+    toolbar to, use QToolBar::setAllowedAreas().
 
     \sa insertToolBar(), addToolBarBreak(), insertToolBarBreak()
 */
@@ -962,6 +971,10 @@ void QMainWindow::setTabShape(QTabWidget::TabShape tabShape)
 
     Returns the tab position for \a area.
 
+    \a area must be a single dock area, such as Qt::LeftDockWidgetArea.
+    For other values, this function prints a warning and returns
+    QTabWidget::South.
+
     \note The \l VerticalTabs dock option overrides the tab positions returned
     by this function.
 
@@ -993,6 +1006,13 @@ void QMainWindow::setTabPosition(Qt::DockWidgetAreas areas, QTabWidget::TabPosit
 
 /*!
     Adds the given \a dockwidget to the specified \a area in the main window.
+
+    \a area must be a single dock area: Qt::LeftDockWidgetArea,
+    Qt::RightDockWidgetArea, Qt::TopDockWidgetArea, or
+    Qt::BottomDockWidgetArea. For other values, such as
+    Qt::AllDockWidgetAreas, this function prints a warning and does nothing.
+    To set the areas that the user can move the dock widget to, use
+    QDockWidget::setAllowedAreas().
 */
 void QMainWindow::addDockWidget(Qt::DockWidgetArea area, QDockWidget *dockwidget)
 {
@@ -1031,6 +1051,10 @@ bool QMainWindow::restoreDockWidget(QDockWidget *dockwidget)
 /*!
     Adds \a dockwidget into the given \a area in the direction
     specified by the \a orientation.
+
+    \a area must be a single dock area, such as Qt::LeftDockWidgetArea.
+    For other values, such as Qt::AllDockWidgetAreas, this function prints
+    a warning and does nothing.
 */
 void QMainWindow::addDockWidget(Qt::DockWidgetArea area, QDockWidget *dockwidget,
                                 Qt::Orientation orientation)
