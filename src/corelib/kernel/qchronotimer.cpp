@@ -273,8 +273,9 @@ QBindable<bool> QChronoTimer::bindableSingleShot()
 
     The default value for this property is \c 0ns.
 
-    A QChronoTimer with a timeout of \c 0ns will time out as soon as all
-    the events in the window system's event queue have been processed.
+    A QChronoTimer with a timeout of \c 0ns will time out as soon as
+    possible, though the ordering between zero timers and other sources of
+    events is unspecified.
 
     Setting the interval of a running timer will change the interval,
     stop() and then start() the timer, and acquire a new id().
