@@ -2687,6 +2687,12 @@ QAbstractItemView::DropIndicatorPosition QAbstractItemView::dropIndicatorPositio
     non-hidden item indexes in the view. The list contains no
     duplicates, and is not sorted.
 
+    The view calls this function to decide which items operations such as
+    drag and drop act on, and view classes reimplement it to leave out
+    indexes they don't display, such as hidden rows and columns. To get the
+    complete selection from outside the view, including hidden items, call
+    QItemSelectionModel::selectedIndexes() on the view's selectionModel().
+
     \sa QItemSelectionModel::selectedIndexes()
 */
 QModelIndexList QAbstractItemView::selectedIndexes() const

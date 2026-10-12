@@ -2375,10 +2375,10 @@ QList<QTableWidgetSelectionRange> QTableWidget::selectedRanges() const
   Returns a list of all selected items.
 
   This function returns a list of pointers to the contents of the
-  selected cells. Use the selectedIndexes() function to retrieve the
-  complete selection \e including empty cells.
+  selected cells. To get the complete selection, including empty cells,
+  call QItemSelectionModel::selectedIndexes() on the selectionModel().
 
-  \sa selectedIndexes()
+  \sa selectionModel()
 */
 
 QList<QTableWidgetItem*> QTableWidget::selectedItems() const
