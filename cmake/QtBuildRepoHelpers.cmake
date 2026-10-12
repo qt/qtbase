@@ -857,10 +857,11 @@ macro(qt_build_tests)
     qt_internal_find_standalone_test_config_file()
 
     if(QT_BUILD_STANDALONE_TESTS)
-        # Set language standards after finding Core, because that's when the relevant
-        # feature variables are available, and the call in QtSetup is too early when building
-        # standalone tests, because Core was not find_package()'d yet.
+        # Set language standards and config postfixes after finding Core, because that's
+        # when the relevant feature variables are available, and the call in QtSetup is
+        # too early when building standalone tests, because Core was not find_package()'d yet.
         qt_set_language_standards()
+        qt_internal_setup_cmake_config_postfix()
 
         # Set up fake standalone parts install prefix, so we don't pollute the Qt install
         # prefix with tests.
