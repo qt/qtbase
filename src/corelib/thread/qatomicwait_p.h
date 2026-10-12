@@ -44,7 +44,13 @@ atomic_wait_explicit(const std::atomic<T> *atomic, T old, std::memory_order mo) 
     Q_ASSERT(mo == std::memory_order_relaxed || mo == std::memory_order_acquire
              || mo == std::memory_order_seq_cst);
     QtPrivate::_q_atomicWait(atomic, &old, sizeof(T));
+    // TSAN does not support atomic_thread_fence and GCC complains (QTBUG-134415)
+QT_WARNING_PUSH
+#if defined(Q_CC_GNU_ONLY) && Q_CC_GNU >= 1100
+QT_WARNING_DISABLE_GCC("-Wtsan")
+#endif
     std::atomic_thread_fence(mo);
+QT_WARNING_POP
 }
 
 template <typename T> std::enable_if_t<std::has_unique_object_representations_v<T>>
