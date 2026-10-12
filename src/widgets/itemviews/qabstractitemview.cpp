@@ -869,6 +869,12 @@ void QAbstractItemView::setSelectionModel(QItemSelectionModel *selectionModel)
 /*!
     Returns the current selection model.
 
+    The view creates its selection model when you call setModel(), so this
+    function returns \nullptr until a model has been set. Each call to
+    setModel() with a different model replaces the selection model with a
+    new one. Connect to the selection model's signals after calling
+    setModel(), and reconnect whenever you set a different model.
+
     \sa setSelectionModel(), selectedIndexes()
 */
 QItemSelectionModel* QAbstractItemView::selectionModel() const
