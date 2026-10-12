@@ -82,7 +82,7 @@ static QNetworkReply::NetworkError statusCodeFromHttp(int httpStatusCode, const 
             code = QNetworkReply::UnknownContentError;
         } else {
             qWarning("QNetworkAccess: got HTTP status code %d which is not expected from url: \"%s\"",
-                     httpStatusCode, qPrintable(url.toString()));
+                     httpStatusCode, qPrintable(url.toDisplayString()));
             code = QNetworkReply::ProtocolFailure;
         }
     }
@@ -507,11 +507,11 @@ static QString makeServerErrorString(int code, const QUrl &url, const QString &r
     if (!reasonPhrase.isEmpty()) {
         msg = QLatin1StringView(QT_TRANSLATE_NOOP("QNetworkReply",
                                                   "Error transferring %1 - server replied: %2"))
-                      .arg(url.toString(), reasonPhrase);
+                      .arg(url.toDisplayString(), reasonPhrase);
     } else {
         msg = QLatin1StringView(QT_TRANSLATE_NOOP("QNetworkReply",
                                                   "Error transferring %1 - server replied with status code %2"))
-                      .arg(url.toString(), QString::number(code));
+                      .arg(url.toDisplayString(), QString::number(code));
     }
     return msg;
 }

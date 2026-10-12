@@ -28,7 +28,7 @@ void QNetworkAccessCacheBackend::open()
 {
     if (operation() != QNetworkAccessManager::GetOperation || !sendCacheContents()) {
         QString msg = QCoreApplication::translate("QNetworkAccessCacheBackend", "Error opening %1")
-                                                .arg(this->url().toString());
+                                                .arg(this->url().toDisplayString());
         error(QNetworkReply::ContentNotFoundError, msg);
     } else {
         setAttribute(QNetworkRequest::SourceIsFromCacheAttribute, true);

@@ -683,7 +683,7 @@ QNetworkReply::NetworkError QNetworkReplyWasmImplPrivate::statusCodeFromHttp(int
             code = QNetworkReply::UnknownContentError;
         } else {
             qWarning("QNetworkAccess: got HTTP status code %d which is not expected from url: \"%s\"",
-                     httpStatusCode, qPrintable(url.toString()));
+                     httpStatusCode, qPrintable(url.toDisplayString()));
             code = QNetworkReply::ProtocolFailure;
         }
     };

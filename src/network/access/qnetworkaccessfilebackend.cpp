@@ -86,7 +86,7 @@ void QNetworkAccessFileBackend::open()
     if (!url.host().isEmpty()) {
         // we handle only local files
         error(QNetworkReply::ProtocolInvalidOperationError,
-              QCoreApplication::translate("QNetworkAccessFileBackend", "Request for opening non-local file %1").arg(url.toString()));
+              QCoreApplication::translate("QNetworkAccessFileBackend", "Request for opening non-local file %1").arg(url.toDisplayString()));
         finished();
         return;
     }
@@ -140,7 +140,7 @@ void QNetworkAccessFileBackend::open()
     // could we open the file?
     if (!opened) {
         QString msg = QCoreApplication::translate("QNetworkAccessFileBackend", "Error opening %1: %2")
-                                                .arg(this->url().toString(), file.errorString());
+                                                .arg(this->url().toDisplayString(), file.errorString());
 
         // why couldn't we open the file?
         // if we're opening for reading, either it doesn't exist, or it's access denied
@@ -179,7 +179,7 @@ void QNetworkAccessFileBackend::uploadReadyReadSlot()
             if (haveWritten < 0) {
                 // write error!
                 QString msg = QCoreApplication::translate("QNetworkAccessFileBackend", "Write error writing to %1: %2")
-                              .arg(url().toString(), file.errorString());
+                              .arg(url().toDisplayString(), file.errorString());
                 error(QNetworkReply::ProtocolFailure, msg);
 
                 finished();
@@ -212,7 +212,7 @@ bool QNetworkAccessFileBackend::loadFileInfo()
 
     if (fi.isDir()) {
         error(QNetworkReply::ContentOperationNotPermittedError,
-              QCoreApplication::translate("QNetworkAccessFileBackend", "Cannot open %1: Path is a directory").arg(url().toString()));
+              QCoreApplication::translate("QNetworkAccessFileBackend", "Cannot open %1: Path is a directory").arg(url().toDisplayString()));
         finished();
         return false;
     }
@@ -236,7 +236,7 @@ qint64 QNetworkAccessFileBackend::read(char *data, qint64 maxlen)
         // EOF or error
         if (file.error() != QFile::NoError) {
             QString msg = QCoreApplication::translate("QNetworkAccessFileBackend", "Read error reading from %1: %2")
-                            .arg(url().toString(), file.errorString());
+                            .arg(url().toDisplayString(), file.errorString());
             error(QNetworkReply::ProtocolFailure, msg);
 
             finished();
