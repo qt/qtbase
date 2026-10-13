@@ -145,6 +145,12 @@ public:
     template<typename Result = Value>
     Q_DECL_DEPRECATED_X("Use eval() with a methodName() or methodName(*) expression instead.")
     Result call(const std::string &methodName, const std::vector<ValueWrapper> &args = {}) const;
+
+    // Returns the string keys selected by keyMode and keyFilter, numeric keys as strings; symbol
+    // keys are skipped. Use it instead of GetPropertyNames() or iterating over the object, as both
+    // rely on napi_get_property_names(), which has been seen to return non-enumerable and symbol
+    // keys as well on HarmonyOS devices.
+    std::vector<std::string> getFilteredStringKeys(napi_key_collection_mode keyMode, napi_key_filter keyFilter) const;
 };
 
 template<typename Context>
@@ -982,6 +988,19 @@ template<typename Result>
 Result Object::call(const std::string &methodName, const std::vector<ValueWrapper> &args) const
 {
     return details_qnapi_p_h::callMethod<Result>(*this, methodName, args);
+}
+
+inline std::vector<std::string> Object::getFilteredStringKeys(
+    napi_key_collection_mode keyMode, napi_key_filter keyFilter) const
+{
+    napi_value keys = nullptr;
+    const napi_status status = napi_get_all_property_names(
+        Env(), *this, keyMode, static_cast<napi_key_filter>(keyFilter | napi_key_skip_symbols),
+        napi_key_numbers_to_strings, &keys);
+    if (status != napi_ok)
+        throw Napi::Error::New(Env());
+
+    return getArrayElements<std::vector<std::string>, String>(Array(Env(), keys));
 }
 
 inline Promise::Promise()
