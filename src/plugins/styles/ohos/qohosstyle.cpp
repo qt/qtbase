@@ -1314,6 +1314,20 @@ void QOhosStyle::drawPrimitive(
         QCommonStyle::drawPrimitive(element, option, painter, widget);
         break;
     }
+    case PE_IndicatorHeaderArrow: {
+        const auto headerOption = qstyleoption_cast<const QStyleOptionHeader *>(option);
+        if (headerOption == nullptr || headerOption->sortIndicator == QStyleOptionHeader::None)
+            break;
+
+        const auto direction = headerOption->sortIndicator == QStyleOptionHeader::SortDown
+            ? ArrowDirection::Up
+            : ArrowDirection::Down;
+
+        drawArrow(
+            *painter, option->rect, option->rect.width(), direction,
+            option->palette.color(QPalette::Active, QPalette::ButtonText));
+        break;
+    }
     case PE_PanelItemViewItem:
         if (qStyleOptionIs<QStyleOptionViewItem>(option)) {
             drawPanelItemViewItem(
