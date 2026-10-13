@@ -335,6 +335,47 @@ void drawPolyline(
     });
 }
 
+enum class ArrowDirection { Up, Down, Left, Right };
+
+void drawArrow(
+    QPainter &painter, const QRectF &boundingRect, qreal arrowSize, ArrowDirection direction,
+    const QColor &color)
+{
+    const auto arrowWidth = 2;
+    const auto arrowCenter = boundingRect.center();
+    auto arrowRect = QRectF(0, 0, arrowSize, arrowSize * 0.5);
+    arrowRect.moveCenter(arrowCenter);
+    arrowRect.adjust(arrowWidth * 0.5, arrowWidth * 0.5, -arrowWidth * 0.5, -arrowWidth * 0.5);
+
+    const std::vector<QPointF> polygonPoints = {
+        QPointF(arrowRect.x(), arrowRect.y()),
+        QPointF(arrowRect.x() + arrowRect.width() * 0.5, arrowRect.y() + arrowRect.height()),
+        QPointF(arrowRect.x() + arrowRect.width(), arrowRect.y())
+    };
+
+    paintOnStackTop(painter, [&](auto &p) {
+        p.translate(arrowCenter);
+        switch (direction) {
+        case ArrowDirection::Down:
+            break;
+        case ArrowDirection::Up:
+            p.rotate(180);
+            break;
+        case ArrowDirection::Left:
+            p.rotate(90);
+            break;
+        case ArrowDirection::Right:
+            p.rotate(-90);
+            break;
+        }
+        p.translate(-arrowCenter);
+
+        drawPolyline(
+            p, QPen(color, arrowWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin), Qt::NoBrush,
+            polygonPoints);
+    });
+}
+
 void drawCheckBoxOrRadioButtonIndicator(QPainter &painter, const QStyleOption &option, bool isCheckBox)
 {
     const auto isEnabled = option.state.testFlag(QStyle::State_Enabled);
@@ -1241,44 +1282,29 @@ void QOhosStyle::drawPrimitive(
             maxArrowSize = std::min(availableRect.width(), availableRect.height());
         }
 
-        const auto arrowWidth = 2;
-        const auto arrowCenter = QRectF(availableRect).center();
-        auto arrowRect = QRectF(0, 0, maxArrowSize, maxArrowSize * 0.5);
-        arrowRect.moveCenter(arrowCenter);
-        arrowRect.adjust(arrowWidth * 0.5, arrowWidth * 0.5, -arrowWidth * 0.5, -arrowWidth * 0.5);
+        auto direction = ArrowDirection::Down;
+        switch (element) {
+        default:
+        case PE_IndicatorArrowDown:
+            break;
+        case PE_IndicatorArrowUp:
+            direction = ArrowDirection::Up;
+            break;
+        case PE_IndicatorArrowLeft:
+            direction = ArrowDirection::Left;
+            break;
+        case PE_IndicatorArrowRight:
+            direction = ArrowDirection::Right;
+            break;
+        }
 
-        const std::vector<QPointF> polygonPoints = {
-            QPointF(arrowRect.x(), arrowRect.y()),
-            QPointF(arrowRect.x() + arrowRect.width() * 0.5, arrowRect.y() + arrowRect.height()),
-            QPointF(arrowRect.x() + arrowRect.width(), arrowRect.y())
-        };
         const auto isEnabled = option->state.testFlag(QStyle::State_Enabled);
 
         paintOnStackTop(*painter, [&](auto &p) {
-            p.translate(arrowCenter);
-            switch (element) {
-            default:
-            case PE_IndicatorArrowDown:
-                break;
-            case PE_IndicatorArrowUp:
-                p.rotate(180);
-                break;
-            case PE_IndicatorArrowLeft:
-                p.rotate(90);
-                break;
-            case PE_IndicatorArrowRight:
-                p.rotate(-90);
-                break;
-            }
-            p.translate(-arrowCenter);
-
             p.setOpacity(isEnabled ? 1.0 : ohos_id_alpha_disabled);
-            drawPolyline(
-                p,
-                QPen(
-                    option->palette.color(QPalette::Active, QPalette::WindowText),
-                    arrowWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin), Qt::NoBrush,
-                polygonPoints);
+            drawArrow(
+                p, availableRect, maxArrowSize, direction,
+                option->palette.color(QPalette::Active, QPalette::WindowText));
         });
         break;
     }
