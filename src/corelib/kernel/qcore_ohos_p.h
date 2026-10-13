@@ -161,7 +161,7 @@ struct QOhosJsErrorInfo
 
 namespace QOhosJsThreadGateway {
 
-Q_CORE_EXPORT void invoke(std::function<void(QOhosJsState &)> task);
+Q_CORE_EXPORT void invoke(std::function<void(QOhosJsState &)> &&task);
 
 Q_CORE_EXPORT void invokeAndWaitForContinue(
     std::function<void(QOhosJsState &, QOhosTaskPromise<>)> &&task,
@@ -194,7 +194,7 @@ public:
 
     virtual QOhosJsState &jsState() = 0;
 
-    virtual void invoke(std::function<void(QOhosJsState &)> task) = 0;
+    virtual void invoke(std::function<void(QOhosJsState &)> &&task) = 0;
     virtual void invokeAndWaitForContinue(
         std::function<void(QOhosJsState &, QOhosTaskPromise<>)> &&task,
         std::string callerContextName) = 0;
@@ -228,7 +228,7 @@ public:
     // it may be called only inside Qt thread that created the reference
     QPointer<QObject> data() const;
 
-    void visitInQtThreadIfAlive(std::function<void(QObject &)> visitFunc) const;
+    void visitInQtThreadIfAlive(std::function<void(QObject &)> &&visitFunc) const;
 
 private:
     struct QObjectRef
@@ -267,7 +267,7 @@ public:
     // it may be called only inside Qt thread that created the reference
     QPointer<T> data() const;
 
-    void visitInQtThreadIfAlive(std::function<void(T &)> visitFunc) const;
+    void visitInQtThreadIfAlive(std::function<void(T &)> &&visitFunc) const;
 
 private:
     QObjectThreadSafeRef m_ref;
@@ -310,7 +310,7 @@ template<typename T>
 std::shared_ptr<T> makeProxyWithAsyncJsThreadDeleter(std::shared_ptr<T> &&baseSharedPtr);
 
 // invokes the task inside the Qt thread, can be called from any thread at any time
-Q_CORE_EXPORT void invokeInQtThread(std::function<void()> task);
+Q_CORE_EXPORT void invokeInQtThread(std::function<void()> &&task);
 
 Q_CORE_EXPORT QtState &getQtState();
 
@@ -368,11 +368,12 @@ QPointer<T> QThreadSafeRef<T>::data() const
 }
 
 template<typename T>
-void QThreadSafeRef<T>::visitInQtThreadIfAlive(std::function<void(T &)> visitFunc) const
+void QThreadSafeRef<T>::visitInQtThreadIfAlive(std::function<void(T &)> &&visitFunc) const
 {
     QObjectThreadSafeRef::visitInQtThreadIfAlive(
-        [visitFunc = std::move(visitFunc)](QObject &obj) {
-            visitFunc(static_cast<T &>(obj));
+        [sharedVisitFunc = takeFunctionToSharedPtr(visitFunc)](QObject &obj) {
+            const auto takenVisitFunc = std::exchange(*sharedVisitFunc, nullptr);
+            takenVisitFunc(static_cast<T &>(obj));
         });
 }
 
