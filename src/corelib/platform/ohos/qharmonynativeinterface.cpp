@@ -75,19 +75,20 @@ QT_DEFINE_NATIVE_INTERFACE(QHarmonyApplication);
 /*!
     Queues \a task for execution on the JS thread and returns immediately.
     You can call this function from any thread. This is the primary way to
-    reach the platform APIs. The task, with everything it captures, is
-    destroyed on the JS thread.
+    reach the platform APIs. \a task is left empty, and the task it held,
+    with everything it captures, is destroyed on the JS thread.
 
     Tasks queued with runOnJsThread() and runOnJsThreadAndWait() run one at a
     time, in the order in which they were queued.
 */
-void QNativeInterface::QHarmonyApplication::runOnJsThread(std::function<void(QHarmonyJsContext &)> task)
+void QNativeInterface::QHarmonyApplication::runOnJsThread(std::function<void(QHarmonyJsContext &)> &&task)
 {
     const char *funcInfo = Q_FUNC_INFO;
 
     QOhosJsThreadGateway::invoke(
-        [task = std::move(task), funcInfo](QOhosJsState &jsState) {
-            runTaskLoggingExceptions(jsState, funcInfo, task);
+        [sharedTask = QtOhos::takeFunctionToSharedPtr(task), funcInfo](QOhosJsState &jsState) {
+            const auto takenTask = std::exchange(*sharedTask, nullptr);
+            runTaskLoggingExceptions(jsState, funcInfo, takenTask);
         });
 }
 
@@ -124,13 +125,13 @@ void QNativeInterface::QHarmonyApplication::runOnJsThreadAndWait(const std::func
 
 /*!
     Queues \a task for execution on the Qt thread, the thread of the
-    QCoreApplication object, and returns immediately. You can call this
-    function from any thread at any time. Use it to bring results back from
-    the JS thread. Tasks queued with runOnQtThread() run one at a time, in
-    the order in which they were queued. A task queued after the Qt event
-    loop has finished for good never runs.
+    QCoreApplication object, and returns immediately. \a task is left empty.
+    You can call this function from any thread at any time. Use it to bring
+    results back from the JS thread. Tasks queued with runOnQtThread() run
+    one at a time, in the order in which they were queued. A task queued
+    after the Qt event loop has finished for good never runs.
 */
-void QNativeInterface::QHarmonyApplication::runOnQtThread(std::function<void()> task)
+void QNativeInterface::QHarmonyApplication::runOnQtThread(std::function<void()> &&task)
 {
     QtOhos::invokeInQtThread(std::move(task));
 }
