@@ -4900,8 +4900,8 @@ QImage Q_TRACE_INSTRUMENT(qtgui) QImage::transformed(const QTransform &matrix, Q
     const int hs = height();
 
     // target image data
-    int wd;
-    int hd;
+    qreal wdf;
+    qreal hdf;
 
     // compute size of target image
     QTransform mat = trueMatrix(matrix, ws, hs);
@@ -4914,16 +4914,9 @@ QImage Q_TRACE_INSTRUMENT(qtgui) QImage::transformed(const QTransform &matrix, Q
         else if (mat.m11() == -1. && mat.m22() == -1.)
             return rotated180(*this);
 
-        hd = qRound(qAbs(mat.m22()) * hs);
-        wd = qRound(qAbs(mat.m11()) * ws);
+        hdf = qAbs(mat.m22()) * hs;
+        wdf = qAbs(mat.m11()) * ws;
         scale_xform = true;
-        // The paint-based scaling is only bilinear, and has problems
-        // with scaling smoothly more than 2x down.
-        if (hd * 2 < hs || wd * 2 < ws)
-            nonpaintable_scale_xform = true;
-        // We cannot paint on a CMYK image, so don't try to do so
-        if (format() == QImage::Format_CMYK8888)
-            nonpaintable_scale_xform = true;
     } else {
         if (mat.type() <= QTransform::TxRotate && mat.m11() == 0 && mat.m22() == 0) {
             if (mat.m12() == 1. && mat.m21() == -1.)
@@ -4934,10 +4927,25 @@ QImage Q_TRACE_INSTRUMENT(qtgui) QImage::transformed(const QTransform &matrix, Q
 
         QPolygonF a(QRectF(0, 0, ws, hs));
         a = mat.map(a);
-        QRect r = a.boundingRect().toAlignedRect();
-        wd = r.width();
-        hd = r.height();
+        const QRectF r = a.boundingRect();
+        wdf = std::ceil(r.right()) - std::floor(r.left());
+        hdf = std::ceil(r.bottom()) - std::floor(r.top());
         complex_xform = true;
+    }
+
+    if (!(wdf < INT_MAX && hdf < INT_MAX)) // also rejects NaN
+        return QImage();
+    const int wd = qRound(wdf);
+    const int hd = qRound(hdf);
+
+    if (scale_xform) {
+        // The paint-based scaling is only bilinear, and has problems
+        // with scaling smoothly more than 2x down.
+        if (qint64(hd) * 2 < hs || qint64(wd) * 2 < ws)
+            nonpaintable_scale_xform = true;
+        // We cannot paint on a CMYK image, so don't try to do so
+        if (format() == QImage::Format_CMYK8888)
+            nonpaintable_scale_xform = true;
     }
 
     if (wd == 0 || hd == 0)
@@ -4966,7 +4974,7 @@ QImage Q_TRACE_INSTRUMENT(qtgui) QImage::transformed(const QTransform &matrix, Q
         // Otherwise only use it when the scaling factor demands it, or the image is large enough to scale multi-threaded
         if (nonpaintable_scale_xform
 #if QT_CONFIG(qtgui_threadpool)
-            || (ws * hs) >= (1<<20)
+            || qint64(ws) * hs >= (1 << 20)
 #endif
             ) {
             QImage scaledImage;
@@ -5086,10 +5094,9 @@ QImage Q_TRACE_INSTRUMENT(qtgui) QImage::transformed(const QTransform &matrix, Q
 
 QTransform QImage::trueMatrix(const QTransform &matrix, int w, int h)
 {
-    const QRectF rect(0, 0, w, h);
-    const QRect mapped = matrix.mapRect(rect).toAlignedRect();
-    const QPoint delta = mapped.topLeft();
-    return matrix * QTransform().translate(-delta.x(), -delta.y());
+    const QRectF mapped = matrix.mapRect(QRectF(0, 0, w, h));
+    // Same as toAlignedRect().topLeft(), but safe from int overflow:
+    return matrix * QTransform().translate(-std::floor(mapped.left()), -std::floor(mapped.top()));
 }
 
 /*!
