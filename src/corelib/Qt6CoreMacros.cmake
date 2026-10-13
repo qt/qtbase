@@ -1244,6 +1244,79 @@ function(qt6_import_plugins target)
     endforeach()
 endfunction()
 
+# Sets out_var to the library file name of a plugin target, without directory and file
+# extension. For example, Qt6::QGifPlugin gives libqgif, from the imported library
+# libqgif.a. Sets it to an empty string if the target has no imported library.
+function(_qt_internal_get_plugin_library_name out_var plugin_target)
+    set(file_name "")
+    foreach(config IN ITEMS "" _RELEASE _DEBUG _RELWITHDEBINFO _MINSIZEREL)
+        get_target_property(location ${plugin_target} IMPORTED_LOCATION${config})
+        if(location)
+            get_filename_component(file_name "${location}" NAME_WE)
+            break()
+        endif()
+    endforeach()
+    set(${out_var} "${file_name}" PARENT_SCOPE)
+endfunction()
+
+# Sets out_var to the Qt plugin target for a plugin name, for example Qt6::QGifPlugin for
+# qgif. Sets it to an empty string if there is no plugin with that name.
+#
+# The target is found by iterating over all plugins and matching the plugin name with
+# the on-disk library file name. The name -> target mappings are cached in order to avoid
+# repeat lookups when deploying several targets. Negative results (not found) are not cached.
+function(_qt_internal_find_plugin_target_by_name out_var plugin_name)
+    set(cache_property _qt_internal_static_plugin_target_${plugin_name})
+    get_property(found_target GLOBAL PROPERTY ${cache_property})
+    if(NOT found_target)
+        foreach(type IN LISTS QT_ALL_PLUGIN_TYPES_FOUND_VIA_FIND_PACKAGE)
+            foreach(plugin_target IN LISTS QT_ALL_PLUGINS_FOUND_BY_FIND_PACKAGE_${type})
+                set(versioned_target "${QT_CMAKE_EXPORT_NAMESPACE}::${plugin_target}")
+                _qt_internal_get_plugin_library_name(library_name ${versioned_target})
+                if(library_name MATCHES "${plugin_name}${QT_LIBINFIX}(_debug)?$")
+                    set(found_target "${versioned_target}")
+                    set_property(GLOBAL PROPERTY ${cache_property} "${found_target}")
+                    break()
+                endif()
+            endforeach()
+            if(found_target)
+                break()
+            endif()
+        endforeach()
+    endif()
+    set(${out_var} "${found_target}" PARENT_SCOPE)
+endfunction()
+
+# Excludes plugins from being linked into the target for static builds.
+#
+# PLUGINS is a list of plugin names, for example qgif. PLUGIN_TYPES is a list of plugin
+# types, for example imageformats.
+function(_qt_internal_exclude_static_plugins target)
+    cmake_parse_arguments(PARSE_ARGV 1 arg "" "" "PLUGINS;PLUGIN_TYPES")
+
+    set(import_args "")
+    if(arg_PLUGIN_TYPES)
+        list(APPEND import_args EXCLUDE_BY_TYPE ${arg_PLUGIN_TYPES})
+    endif()
+
+    set(excluded_targets "")
+    foreach(plugin IN LISTS arg_PLUGINS)
+        _qt_internal_find_plugin_target_by_name(plugin_target ${plugin})
+        if(plugin_target)
+            list(APPEND excluded_targets ${plugin_target})
+        else()
+            message(DEBUG "Plugin '${plugin}' is not one of the static Qt plugins of ${target}.")
+        endif()
+    endforeach()
+    if(excluded_targets)
+        list(APPEND import_args EXCLUDE ${excluded_targets})
+    endif()
+
+    if(import_args)
+        qt6_import_plugins(${target} ${import_args})
+    endif()
+endfunction()
+
 if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
     function(qt_import_plugins)
         if(QT_DEFAULT_MAJOR_VERSION EQUAL 5)
@@ -4283,6 +4356,13 @@ function(qt6_generate_deploy_app_script)
                 list(APPEND common_deploy_args ${var} ${arg_${var}})
             endif()
         endforeach()
+    endif()
+
+    if(NOT QT6_IS_SHARED_LIBS_BUILD)
+        _qt_internal_exclude_static_plugins(${arg_TARGET}
+            PLUGINS ${arg_EXCLUDE_PLUGINS}
+            PLUGIN_TYPES ${arg_EXCLUDE_PLUGIN_TYPES}
+        )
     endif()
 
     _qt_internal_should_skip_deployment_api(skip_deployment skip_reason)
