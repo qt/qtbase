@@ -374,7 +374,12 @@ emscripten::val QWasmAccessibility::createHtmlElement(QAccessibleInterface *ifac
             element = document.call<emscripten::val>("createElement", std::string("input"));
             setAttribute(element, "type", "radio");
             setProperty(element, "checked", iface->state().checked);
-            setProperty(element, "name", "buttonGroup");
+            // Qt makes sibling radio buttons exclusive, so group them by their parent.
+            // A shared name would merge every group in the window into one.
+            if (QAccessibleInterface *parentInterface = iface->parent()) {
+                setProperty(element, "name",
+                            "qt-radio-group-" + std::to_string(QAccessible::uniqueId(parentInterface)));
+            }
             addEventListener(iface, element, "change");
         } break;
 
