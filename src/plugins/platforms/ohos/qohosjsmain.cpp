@@ -1202,7 +1202,7 @@ QNapi::Value handleAbilityStageOnAcceptWant(const CallbackInfo &cbInfo)
 void asyncRunTaskInTemporaryThread(std::function<void()> task, std::function<void(QOhosJsState &)> continueFunc)
 {
     auto taskRunnerThread = std::thread(
-        [task = std::move(task), continueFunc = std::move(continueFunc)]() {
+        [task = std::move(task), continueFunc = std::move(continueFunc)]() mutable {
             task();
             QOhosJsThreadGateway::invoke(std::move(continueFunc));
         });

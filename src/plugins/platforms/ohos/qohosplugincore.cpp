@@ -894,7 +894,7 @@ class JsThreadOpsImpl : public ::QOhosJsThreadOps
 public:
     QOhosJsState &jsState() override;
 
-    void invoke(std::function<void(QOhosJsState &)> task) override;
+    void invoke(std::function<void(QOhosJsState &)> &&task) override;
     void invokeAndWaitForContinue(
         std::function<void(QOhosJsState &, QOhosTaskPromise<>)> &&task,
         std::string callerContextName) override;
@@ -908,9 +908,13 @@ QOhosJsState &JsThreadOpsImpl::jsState()
     return getJsStateImpl();
 }
 
-void JsThreadOpsImpl::invoke(std::function<void(QOhosJsState &)> task)
+void JsThreadOpsImpl::invoke(std::function<void(QOhosJsState &)> &&task)
 {
-    getJsStateImpl().invokeTask(std::move(task));
+    getJsStateImpl().invokeTask(
+        [sharedTask = takeFunctionToSharedPtr(task)](JsState &jsState) {
+            const auto takenTask = std::exchange(*sharedTask, nullptr);
+            takenTask(jsState);
+        });
 }
 
 void JsThreadOpsImpl::invokeAndWaitForContinue(

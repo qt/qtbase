@@ -34,7 +34,7 @@ QOhosJsThreadOps &QOhosJsThreadOps::instance()
     return *qOhosJsThreadOpsInstance;
 }
 
-void QOhosJsThreadGateway::invoke(std::function<void(QOhosJsState &)> task)
+void QOhosJsThreadGateway::invoke(std::function<void(QOhosJsState &)> &&task)
 {
     QOhosJsThreadOps::instance().invoke(std::move(task));
 }
@@ -240,13 +240,14 @@ QPointer<QObject> QObjectThreadSafeRef::data() const
     return objRef ? objRef->obj : nullptr;
 }
 
-void QObjectThreadSafeRef::visitInQtThreadIfAlive(std::function<void(QObject &)> visitFunc) const
+void QObjectThreadSafeRef::visitInQtThreadIfAlive(std::function<void(QObject &)> &&visitFunc) const
 {
     invokeInQtThread(
-        [objRef = *this, visitFunc = std::move(visitFunc)]() {
+        [objRef = *this, sharedVisitFunc = takeFunctionToSharedPtr(visitFunc)]() {
+            const auto takenVisitFunc = std::exchange(*sharedVisitFunc, nullptr);
             QPointer<QObject> obj = objRef.data();
             if (!obj.isNull())
-                visitFunc(*obj);
+                takenVisitFunc(*obj);
         });
 }
 
@@ -264,9 +265,13 @@ QtState &getQtState()
     return getQtStateImpl();
 }
 
-void invokeInQtThread(std::function<void()> task)
+void invokeInQtThread(std::function<void()> &&task)
 {
-    getQtStateImpl().invokeTask(std::move(task));
+    getQtStateImpl().invokeTask(
+        [sharedTask = takeFunctionToSharedPtr(task)]() {
+            const auto takenTask = std::exchange(*sharedTask, nullptr);
+            takenTask();
+        });
 }
 
 void logJsCallbackError(const QOhosCallbackInfo &cbInfo, const char *errorMessagePrefix)

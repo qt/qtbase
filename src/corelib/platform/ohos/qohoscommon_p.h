@@ -215,6 +215,10 @@ namespace QtOhos {
 template<typename T>
 std::shared_ptr<T> moveToSharedPtr(T &&obj);
 
+// leaves func empty, which moving a std::function does not guarantee
+template<typename Signature>
+std::shared_ptr<std::function<Signature>> takeFunctionToSharedPtr(std::function<Signature> &func);
+
 template<typename T>
 std::shared_ptr<T> makeSharedPtrWithAttachedExtraData(
     std::shared_ptr<T> baseSharedPtr, std::shared_ptr<void> extraData);
@@ -310,6 +314,12 @@ template<typename T>
 std::shared_ptr<T> moveToSharedPtr(T &&obj)
 {
     return std::make_shared<T>(std::forward<T>(obj));
+}
+
+template<typename Signature>
+std::shared_ptr<std::function<Signature>> takeFunctionToSharedPtr(std::function<Signature> &func)
+{
+    return std::make_shared<std::function<Signature>>(std::exchange(func, nullptr));
 }
 
 template<typename T>
