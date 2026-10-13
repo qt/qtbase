@@ -396,16 +396,22 @@ emscripten::val QWasmAccessibility::createHtmlElement(QAccessibleInterface *ifac
         } break;
 
         case QAccessible::SpinBox: {
-            element = document.call<emscripten::val>("createElement", std::string("input"));
-            setAttribute(element,"type", "number");
+            // A number input is a text field, and writing its value while it has
+            // the focus is announced as a text edit, not as a new value.
+            element = document.call<emscripten::val>("createElement", std::string("div"));
+            setAttribute(element, "tabindex", "0");
+            setAttribute(element, "role", "spinbutton");
             if (QAccessibleValueInterface *valueInterface = iface->valueInterface()) {
-                setAttribute(element, "min", valueInterface->minimumValue().toString().toStdString());
-                setAttribute(element, "max", valueInterface->maximumValue().toString().toStdString());
-                setAttribute(element, "step",
-                             valueInterface->minimumStepSize().toString().toStdString());
-                setProperty(element, "value", valueInterface->currentValue().toString().toStdString());
+                setAttribute(element, "aria-valuemin",
+                             valueInterface->minimumValue().toString().toStdString());
+                setAttribute(element, "aria-valuemax",
+                             valueInterface->maximumValue().toString().toStdString());
+                setAttribute(element, "aria-valuenow",
+                             valueInterface->currentValue().toString().toStdString());
             }
-            addEventListener(iface, element, "change");
+            // The displayed text carries the prefix and suffix, the bare number does not.
+            setAttribute(element, "aria-valuetext",
+                         iface->text(QAccessible::Value).toStdString());
         } break;
 
         case QAccessible::Slider: {
@@ -1065,9 +1071,10 @@ void QWasmAccessibility::handleSpinBoxUpdate(QAccessibleEvent *event)
     case QAccessible::ValueChanged: {
         QAccessibleInterface *accessible = event->accessibleInterface();
         if (QAccessibleValueInterface *valueInterface = accessible->valueInterface()) {
-            setProperty(getHtmlElement(accessible), "value",
-                        valueInterface->currentValue().toString().toStdString());
+            setAttribute(getHtmlElement(accessible), "aria-valuenow",
+                         valueInterface->currentValue().toString().toStdString());
         }
+        setNamedAttribute(accessible, "aria-valuetext", QAccessible::Value);
     } break;
     default:
         qCDebug(lcQpaAccessibility) << "TODO: implement handleSpinBoxUpdate for event" << event->type();
