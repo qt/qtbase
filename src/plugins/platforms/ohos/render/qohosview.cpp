@@ -1056,8 +1056,10 @@ void QOhosView::setFullScreen()
         return;
     }
 
-    if (!isMaximizeRequestSupportedOrLogWarning())
+    if (!isMaximizeRequestSupportedOrLogWarning()) {
+        QOhosPlatformWindow::fromQWindow(m_ownerWindow)->resetRefusedMaximizeState();
         return;
+    }
 
     windowProxy->maximize(QOhosWindowProxy::MaximizePresentation::ENTER_IMMERSIVE);
 }
@@ -1108,8 +1110,10 @@ void QOhosView::maximize()
     if (windowProxy == nullptr)
         return;
 
-    if (!isMaximizeRequestSupportedOrLogWarning())
+    if (!isMaximizeRequestSupportedOrLogWarning()) {
+        QOhosPlatformWindow::fromQWindow(m_ownerWindow)->resetRefusedMaximizeState();
         return;
+    }
 
     windowProxy->maximize(QOhosWindowProxy::MaximizePresentation::EXIT_IMMERSIVE);
 }
