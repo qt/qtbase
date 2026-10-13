@@ -93,12 +93,10 @@ QJsonObject mapNapiObjectToJsonObjectImpl(const QNapi::Object &napiObject, int r
 {
     checkNapiToJsonMappingRemainingNestingLevels(napiObject.Env(), remainingNestingLevels);
     QJsonObject jsonObject;
-    for (const auto &property : napiObject) {
-        if (!property.first.IsString())
-            continue;
-        auto jsonValue = mapNapiValueToJsonValue(property.second, remainingNestingLevels);
+    for (const auto &propertyName : napiObject.getFilteredStringKeys(napi_key_own_only, napi_key_enumerable)) {
+        auto jsonValue = mapNapiValueToJsonValue(napiObject.Get(propertyName), remainingNestingLevels);
         if (!jsonValue.isUndefined())
-            jsonObject.insert(QString::fromStdString(QNapi::checkedCast<QNapi::String>(property.first)), jsonValue);
+            jsonObject.insert(QString::fromStdString(propertyName), jsonValue);
     }
     return jsonObject;
 }
