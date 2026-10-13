@@ -121,6 +121,7 @@ private slots:
     void transformed_data();
     void transformed();
     void transformed2();
+    void transformedHugeScale();
 
     void scaled();
 
@@ -2324,6 +2325,21 @@ void tst_QImage::transformed2()
         QCOMPARE(actual.convertToFormat(QImage::Format_ARGB32_Premultiplied),
                  expected.convertToFormat(QImage::Format_ARGB32_Premultiplied));
     }
+}
+
+void tst_QImage::transformedHugeScale()
+{
+    // Target size out of int range must not overflow
+    QImage img(10, 10, QImage::Format_ARGB32_Premultiplied);
+    img.fill(Qt::red);
+    for (auto mode : { Qt::FastTransformation, Qt::SmoothTransformation }) {
+        QVERIFY(img.transformed(QTransform::fromScale(1e10, 1), mode).isNull());
+        QVERIFY(img.transformed(QTransform::fromScale(1, -1e10), mode).isNull());
+        QVERIFY(img.transformed(QTransform::fromScale(qInf(), 1), mode).isNull());
+        QVERIFY(img.transformed(QTransform::fromScale(1e10, 1).rotate(30), mode).isNull());
+    }
+    // Target width fits int, but doubling it does not
+    QVERIFY(img.transformed(QTransform::fromScale(2e8, 1)).isNull());
 }
 
 void tst_QImage::scaled()
