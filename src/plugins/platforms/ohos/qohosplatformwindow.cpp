@@ -448,6 +448,13 @@ void QOhosPlatformWindow::requestActivateWindow()
         view->requestActivate();
 }
 
+void QOhosPlatformWindow::resetRefusedMaximizeState()
+{
+    const auto refusedState = m_windowState;
+    m_windowState &= ~(Qt::WindowMaximized | Qt::WindowFullScreen);
+    QWindowSystemInterface::handleWindowStateChanged(window(), m_windowState, refusedState);
+}
+
 void QOhosPlatformWindow::setWindowMarginsFromOhos(const QMargins &margins)
 {
     bool marginsChanged = !m_optFrameMargins || *m_optFrameMargins != margins;

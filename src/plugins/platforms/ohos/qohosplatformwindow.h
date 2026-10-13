@@ -112,6 +112,7 @@ public:
     bool floatWindowTagValueOrFalse() const;
     void initialize() override;
     Qt::WindowStates windowStates() const;
+    void resetRefusedMaximizeState();
     void requestActivateWindow() override;
     void handleDpiChange();
     bool shouldShowWindowWithoutActivating() const;
