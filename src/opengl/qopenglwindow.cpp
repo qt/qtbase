@@ -123,6 +123,10 @@ QT_BEGIN_NAMESPACE
   allows alpha blended content and works even when the glBlitFramebuffer is
   not available. Performance-wise this setting is likely to be somewhat slower
   than PartialUpdateBlit.
+
+  \note PartialUpdateBlit and PartialUpdateBlend require framebuffer object
+  support. When this is not available, for example with an OpenGL 1.1
+  implementation, NoPartialUpdate is used instead.
  */
 
 /*!
@@ -209,6 +213,13 @@ void QOpenGLWindowPrivate::initialize()
     if (!context->makeCurrent(q))
         qWarning("QOpenGLWindow::beginPaint: Failed to make context current");
 
+    if (updateBehavior > QOpenGLWindow::NoPartialUpdate
+        && !context->functions()->hasOpenGLFeature(QOpenGLFunctions::Framebuffers))
+    {
+        qWarning("QOpenGLWindow: Framebuffer objects are not supported, falling back to NoPartialUpdate");
+        updateBehavior = QOpenGLWindow::NoPartialUpdate;
+    }
+
     paintDevice.reset(new QOpenGLWindowPaintDevice(q));
     if (updateBehavior == QOpenGLWindow::PartialUpdateBlit)
         hasFboBlit = QOpenGLFramebufferObject::hasOpenGLFramebufferBlit();
@@ -249,7 +260,8 @@ void QOpenGLWindowPrivate::beginPaint(const QRegion &region)
     paintDevice->setDevicePixelRatio(q->devicePixelRatio());
     context->functions()->glViewport(0, 0, deviceWidth, deviceHeight);
 
-    context->functions()->glBindFramebuffer(GL_FRAMEBUFFER, context->defaultFramebufferObject());
+    if (context->functions()->hasOpenGLFeature(QOpenGLFunctions::Framebuffers))
+        context->functions()->glBindFramebuffer(GL_FRAMEBUFFER, context->defaultFramebufferObject());
 
     q->paintUnderGL();
 
@@ -264,7 +276,8 @@ void QOpenGLWindowPrivate::endPaint()
     if (updateBehavior > QOpenGLWindow::NoPartialUpdate)
         fbo->release();
 
-    context->functions()->glBindFramebuffer(GL_FRAMEBUFFER, context->defaultFramebufferObject());
+    if (context->functions()->hasOpenGLFeature(QOpenGLFunctions::Framebuffers))
+        context->functions()->glBindFramebuffer(GL_FRAMEBUFFER, context->defaultFramebufferObject());
 
     if (updateBehavior == QOpenGLWindow::PartialUpdateBlit && hasFboBlit) {
         const int deviceWidth = q->width() * q->devicePixelRatio();
@@ -300,7 +313,7 @@ void QOpenGLWindowPrivate::bindFBO()
 {
     if (updateBehavior > QOpenGLWindow::NoPartialUpdate)
         fbo->bind();
-    else
+    else if (context->functions()->hasOpenGLFeature(QOpenGLFunctions::Framebuffers))
         QOpenGLFramebufferObject::bindDefault();
 }
 
