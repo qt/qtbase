@@ -76,7 +76,7 @@ struct Q_CORE_EXPORT QHarmonyApplication
 {
     QT_DECLARE_NATIVE_INTERFACE(QHarmonyApplication, 1, QCoreApplication)
 
-    static void runOnJsThread(std::function<void(QHarmonyJsContext &)> task);
+    static void runOnJsThread(std::function<void(QHarmonyJsContext &)> &&task);
     static void runOnJsThreadAndWait(const std::function<void(QHarmonyJsContext &)> &task);
 
 #ifdef Q_QDOC
@@ -104,7 +104,7 @@ struct Q_CORE_EXPORT QHarmonyApplication
     }
 #endif
 
-    static void runOnQtThread(std::function<void()> task);
+    static void runOnQtThread(std::function<void()> &&task);
 };
 #endif
 }
