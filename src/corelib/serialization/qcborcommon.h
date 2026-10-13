@@ -100,6 +100,7 @@ public:
 Q_CORE_EXPORT QDebug operator<<(QDebug, QCborSimpleType st);
 Q_CORE_EXPORT QDebug operator<<(QDebug, QCborKnownTags tg);
 Q_CORE_EXPORT QDebug operator<<(QDebug, QCborTag tg);
+Q_CORE_EXPORT QDebug operator<<(QDebug d, QCborError err);
 #endif
 
 #if !defined(QT_NO_DATASTREAM)

@@ -3518,6 +3518,12 @@ QDebug operator<<(QDebug dbg, QCborKnownTags tag)
 
     return dbg.nospace() << "QCborKnownTags(" << int(tag) << ')';
 }
+
+QDebug operator<<(QDebug d, QCborError err)
+{
+    // Use the Q_GADGET QMetaEnum extraction
+    return d << err.c;
+}
 #endif
 
 #ifndef QT_NO_DATASTREAM
