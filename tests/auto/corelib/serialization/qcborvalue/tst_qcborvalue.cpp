@@ -2756,11 +2756,13 @@ void tst_QCborValue::validation_data()
     char toolong[1 + sizeof(qsizetype)];
     toolong[0] = sizeof(MinInvalid) > 4 ? 0x5b : 0x5a;
     qToBigEndian(MinInvalid - 1, toolong + 1);
-    QTest::addRow("bytearray-2chunked+1-too-big-for-qbytearray-%llx", MinInvalid)
+    QTest::addRow("bytearray-2chunked+1-too-big-for-qbytearray-%tx",
+                  ptrdiff_t(MaxInvalid - MinInvalid))
             << ("\x5f\x41z" + QByteArray(toolong, sizeof(toolong)) + '\xff')
             << 0 << CborErrorUnexpectedEOF;
     toolong[0] |= 0x20;
-    QTest::addRow("string-2chunked+1-too-big-for-qbytearray-%llx", MinInvalid)
+    QTest::addRow("string-2chunked+1-too-big-for-qbytearray-%tx",
+                  ptrdiff_t(MaxInvalid - MinInvalid))
             << ("\x7f\x61z" + QByteArray(toolong, sizeof(toolong)) + '\xff')
             << 0 << CborErrorUnexpectedEOF;
 
