@@ -1287,53 +1287,33 @@ qt_feature("lttng" PRIVATE
     AUTODETECT OFF
     CONDITION LINUX AND LTTNGUST_FOUND
     ENABLE INPUT_trace STREQUAL 'lttng' OR ( INPUT_trace STREQUAL 'yes' AND LINUX )
-    DISABLE INPUT_trace STREQUAL 'etw'
-            OR INPUT_trace STREQUAL 'no'
-            OR INPUT_trace STREQUAL 'hitrace'
-            OR INPUT_trace STREQUAL 'ctf'
-            OR INPUT_trace STREQUAL 'tracecallback'
+    EXCLUSIVE_GROUP tracing
 )
 qt_feature("etw" PRIVATE
     LABEL "ETW"
     AUTODETECT OFF
     CONDITION WIN32
     ENABLE INPUT_trace STREQUAL 'etw' OR ( INPUT_trace STREQUAL 'yes' AND WIN32 )
-    DISABLE INPUT_trace STREQUAL 'lttng'
-            OR INPUT_trace STREQUAL 'no'
-            OR INPUT_trace STREQUAL 'hitrace'
-            OR INPUT_trace STREQUAL 'ctf'
-            OR INPUT_trace STREQUAL 'tracecallback'
+    EXCLUSIVE_GROUP tracing
 )
 qt_feature("hitrace" PRIVATE
     LABEL "HiTrace"
     AUTODETECT OFF
     CONDITION OHOS
     ENABLE INPUT_trace STREQUAL 'hitrace' OR ( INPUT_trace STREQUAL 'yes' AND OHOS )
-    DISABLE INPUT_trace STREQUAL 'etw'
-            OR INPUT_trace STREQUAL 'no'
-            OR INPUT_trace STREQUAL 'lttng'
-            OR INPUT_trace STREQUAL 'ctf'
-            OR INPUT_trace STREQUAL 'tracecallback'
+    EXCLUSIVE_GROUP tracing
 )
 qt_feature("ctf" PRIVATE
     LABEL "CTF"
     AUTODETECT OFF
     ENABLE INPUT_trace STREQUAL 'ctf'
-    DISABLE INPUT_trace STREQUAL 'etw'
-            OR INPUT_trace STREQUAL 'no'
-            OR INPUT_trace STREQUAL 'lttng'
-            OR INPUT_trace STREQUAL 'hitrace'
-            OR INPUT_trace STREQUAL 'tracecallback'
+    EXCLUSIVE_GROUP tracing
 )
 qt_feature("tracecallback" PRIVATE
     LABEL "Trace callback hook"
     AUTODETECT OFF
     ENABLE INPUT_trace STREQUAL 'callback'
-    DISABLE INPUT_trace STREQUAL 'etw'
-            OR INPUT_trace STREQUAL 'no'
-            OR INPUT_trace STREQUAL 'lttng'
-            OR INPUT_trace STREQUAL 'hitrace'
-            OR INPUT_trace STREQUAL 'ctf'
+    EXCLUSIVE_GROUP tracing
 )
 qt_feature("forkfd_pidfd" PRIVATE
     LABEL "CLONE_PIDFD support in forkfd"

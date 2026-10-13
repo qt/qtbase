@@ -63,6 +63,9 @@ endfunction()
 #
 # The vcpkg-related arguments are relevant for configure only and are documented
 # at the top of the qt_feature implementation in QtProcessConfigureArgs.cmake.
+#
+# Features that share an EXCLUSIVE_GROUP name must not be ON at the same time. This is checked in
+# qt_feature_module_end, so a group only covers features defined in the same module.
 function(qt_feature feature)
     set(original_name "${feature}")
     qt_feature_normalize_name("${feature}" feature)
@@ -79,6 +82,7 @@ function(qt_feature feature)
         LABEL
         PURPOSE
         SECTION
+        EXCLUSIVE_GROUP
         VCPKG_DESCRIPTION
     )
     set(multi_value_options
@@ -93,6 +97,14 @@ function(qt_feature feature)
         "${no_value_options}" "${single_value_options}" "${multi_value_options}"
     )
     _qt_internal_validate_all_args_are_parsed(arg)
+
+    if(arg_EXCLUSIVE_GROUP)
+        list(APPEND __QtFeature_exclusive_groups "${arg_EXCLUSIVE_GROUP}")
+        list(APPEND __QtFeature_exclusive_group_${arg_EXCLUSIVE_GROUP} "${feature}")
+        set(__QtFeature_exclusive_groups ${__QtFeature_exclusive_groups} PARENT_SCOPE)
+        set(__QtFeature_exclusive_group_${arg_EXCLUSIVE_GROUP}
+            ${__QtFeature_exclusive_group_${arg_EXCLUSIVE_GROUP}} PARENT_SCOPE)
+    endif()
 
     if(arg_SYSTEM_LIBRARY)
         # Enable SYSTEM_LIBRARY features if the 'force-system-libs' feature is enabled.
@@ -845,7 +857,7 @@ endmacro()
 macro(_qt_internal_parse_feature_definition feature)
     cmake_parse_arguments(arg
         "PRIVATE;PUBLIC;ALIAS_NEGATE;VCPKG_DEFAULT;VCPKG_OPTIONAL"
-        "LABEL;PURPOSE;SECTION;ALIAS_OF_FEATURE;ALIAS_OF_CACHE;VCPKG_DESCRIPTION"
+        "LABEL;PURPOSE;SECTION;EXCLUSIVE_GROUP;ALIAS_OF_FEATURE;ALIAS_OF_CACHE;VCPKG_DESCRIPTION"
         "AUTODETECT;CONDITION;ENABLE;DISABLE;EMIT_IF;VCPKG_DEPENDENT_FEATURES"
         ${_QT_FEATURE_DEFINITION_${feature}})
 endmacro()
@@ -1249,6 +1261,25 @@ function(qt_feature_module_end)
         qt_evaluate_feature(${feature})
     endforeach()
 
+    if(NOT arg_ONLY_EVALUATE_FEATURES)
+        list(REMOVE_DUPLICATES __QtFeature_exclusive_groups)
+        foreach(group ${__QtFeature_exclusive_groups})
+            set(enabled_group_features "")
+            foreach(feature ${__QtFeature_exclusive_group_${group}})
+                if(QT_FEATURE_${feature})
+                    list(APPEND enabled_group_features "${feature}")
+                endif()
+            endforeach()
+            list(LENGTH enabled_group_features enabled_group_count)
+            if(enabled_group_count GREATER 1)
+                list(JOIN enabled_group_features ", " enabled_list)
+                list(JOIN __QtFeature_exclusive_group_${group} ", " group_list)
+                qt_configure_add_report_error("Features ${enabled_list} cannot be enabled \
+together, only one of ${group_list} can be.")
+            endif()
+        endforeach()
+    endif()
+
     # Evaluate custom cache assignments.
     foreach(cache_var_name ${__QtFeature_custom_enabled_cache_variables})
         set(${cache_var_name} ON CACHE BOOL "Force enabled by platform requirements." FORCE)
@@ -1385,6 +1416,10 @@ function(qt_feature_module_end)
 endfunction()
 
 macro(qt_feature_unset_state_vars)
+    foreach(__qt_group ${__QtFeature_exclusive_groups})
+        unset(__QtFeature_exclusive_group_${__qt_group} PARENT_SCOPE)
+    endforeach()
+    unset(__QtFeature_exclusive_groups PARENT_SCOPE)
     unset(__QtFeature_library PARENT_SCOPE)
     unset(__QtFeature_public_features PARENT_SCOPE)
     unset(__QtFeature_private_features PARENT_SCOPE)
