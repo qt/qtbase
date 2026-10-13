@@ -390,7 +390,9 @@ emscripten::val QWasmAccessibility::createHtmlElement(QAccessibleInterface *ifac
             if (iface->role() == QAccessible::CheckBox) {
                 checkbox = document.call<emscripten::val>("createElement", std::string("input"));
                 setAttribute(checkbox, "type", "checkbox");
-                setAttribute(checkbox, "checked", iface->state().checked);
+                // The checked attribute is only the default, the browser stops reading
+                // it once the input is activated, so always write the property.
+                setProperty(checkbox, "checked", iface->state().checked);
                 setProperty(checkbox, "indeterminate", iface->state().checkStateMixed);
                 addEventListener(iface, checkbox, "change");
             }
@@ -430,7 +432,7 @@ emscripten::val QWasmAccessibility::createHtmlElement(QAccessibleInterface *ifac
         case QAccessible::RadioButton: {
             element = document.call<emscripten::val>("createElement", std::string("input"));
             setAttribute(element, "type", "radio");
-            setAttribute(element, "checked", iface->state().checked);
+            setProperty(element, "checked", iface->state().checked);
             setProperty(element, "name", "buttonGroup");
             addEventListener(iface, element, "change");
         } break;
@@ -916,7 +918,7 @@ void QWasmAccessibility::handleCheckBoxUpdate(QAccessibleEvent *event)
     case QAccessible::StateChanged: {
         QAccessibleInterface *accessible = event->accessibleInterface();
         const emscripten::val element = getHtmlElement(accessible);
-        setAttribute(element, "checked", accessible->state().checked);
+        setProperty(element, "checked", accessible->state().checked);
         setProperty(element, "indeterminate", accessible->state().checkStateMixed);
     } break;
     default:
@@ -944,7 +946,7 @@ void QWasmAccessibility::handleGroupBoxUpdate(QAccessibleEvent *event)
     } break;
     case QAccessible::StateChanged: {
         if (!checkbox.isUndefined()) {
-            setAttribute(checkbox, "checked", iface->state().checked);
+            setProperty(checkbox, "checked", iface->state().checked);
             setProperty(checkbox, "indeterminate", iface->state().checkStateMixed);
         }
     } break;
@@ -1071,7 +1073,7 @@ void QWasmAccessibility::handleRadioButtonUpdate(QAccessibleEvent *event)
     case QAccessible::StateChanged: {
         QAccessibleInterface *accessible = event->accessibleInterface();
         const emscripten::val element = getHtmlElement(accessible);
-        setAttribute(element, "checked", accessible->state().checked);
+        setProperty(element, "checked", accessible->state().checked);
     } break;
     default:
         qCDebug(lcQpaAccessibility) << "TODO: implement handleRadioButtonUpdate for event" << event->type();
