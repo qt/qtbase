@@ -172,8 +172,7 @@ qt_feature("use_bfd_linker"
     AUTODETECT false
     CONDITION NOT MSVC AND NOT INTEGRITY AND NOT WASM AND TEST_use_bfd_linker
     ENABLE INPUT_linker STREQUAL 'bfd'
-    DISABLE INPUT_linker STREQUAL 'gold' OR INPUT_linker STREQUAL 'lld'
-            OR INPUT_linker STREQUAL 'mold'
+    EXCLUSIVE_GROUP linker
 )
 qt_feature_config("use_bfd_linker" QMAKE_PRIVATE_CONFIG)
 
@@ -187,8 +186,7 @@ qt_feature("use_gold_linker"
     AUTODETECT false
     CONDITION NOT WIN32 AND NOT INTEGRITY AND NOT WASM AND NOT rtems AND TEST_use_gold_linker
     ENABLE INPUT_linker STREQUAL 'gold' OR QT_FEATURE_use_gold_linker_alias
-    DISABLE INPUT_linker STREQUAL 'bfd' OR INPUT_linker STREQUAL 'lld'
-            OR INPUT_linker STREQUAL 'mold'
+    EXCLUSIVE_GROUP linker
 )
 qt_feature_config("use_gold_linker" QMAKE_PRIVATE_CONFIG)
 
@@ -198,8 +196,7 @@ qt_feature("use_lld_linker"
     AUTODETECT false
     CONDITION NOT MSVC AND NOT INTEGRITY AND NOT WASM AND TEST_use_lld_linker
     ENABLE INPUT_linker STREQUAL 'lld'
-    DISABLE INPUT_linker STREQUAL 'bfd' OR INPUT_linker STREQUAL 'gold'
-            OR INPUT_linker STREQUAL 'mold'
+    EXCLUSIVE_GROUP linker
 )
 qt_feature_config("use_lld_linker" QMAKE_PRIVATE_CONFIG)
 
@@ -209,8 +206,7 @@ qt_feature("use_mold_linker"
     AUTODETECT FALSE
     CONDITION NOT WIN32 AND NOT INTEGRITY AND NOT WASM AND TEST_use_mold_linker
     ENABLE INPUT_linker STREQUAL 'mold'
-    DISABLE INPUT_linker STREQUAL 'bfd' OR INPUT_linker STREQUAL 'gold'
-            OR INPUT_linker STREQUAL 'lld'
+    EXCLUSIVE_GROUP linker
 )
 qt_feature_config("use_mold_linker" QMAKE_PRIVATE_CONFIG)
 
