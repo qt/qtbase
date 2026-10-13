@@ -180,6 +180,7 @@ private slots:
     void resultsAfterFinished();
     void resultsAsList();
     void iterators();
+    void valueInitializedIteratorsCompareEqual();
     void iteratorsThread();
 #if QT_DEPRECATED_SINCE(6, 0)
     void pause();
@@ -215,6 +216,7 @@ private slots:
 #endif
     void takeResult();
     void runAndTake();
+    void takeResultWaitForStartedFinished();
     void resultsReadyAt_data();
     void resultsReadyAt();
     void takeResultWorksForTypesWithoutDefaultCtor();
@@ -1506,6 +1508,19 @@ void tst_QFuture::iterators()
         }
     }
 }
+
+void tst_QFuture::valueInitializedIteratorsCompareEqual()
+{
+    {
+        QFuture<int>::const_iterator it = {}, jt = {};
+        QCOMPARE_EQ(it, jt);
+    }
+    {
+        QFuture<QString>::const_iterator it = {}, jt = {};
+        QCOMPARE_EQ(it, jt);
+    }
+}
+
 void tst_QFuture::iteratorsThread()
 {
     const int expectedResultCount = 10;
@@ -3575,6 +3590,26 @@ void tst_QFuture::runAndTake()
 #if 0
     // TODO: enable when QFuture::takeResults() is enabled
     testTakeResults(gotcha, size_type(1));
+#endif
+}
+
+void tst_QFuture::takeResultWaitForStartedFinished()
+{
+#if !QT_CONFIG(cxx11_future)
+    QSKIP("The test requires feature cxx11_future");
+#else
+    QPromise<int> promise{QFutureInterface<int>{QFutureInterfaceBase::State::Pending}};
+    auto future = promise.future();
+    const std::unique_ptr<QThread> thread(QThread::create(
+        [](QPromise<int> promise) {
+            QThread::msleep(100);
+            promise.start();
+            promise.addResult(11);
+            promise.finish();
+        },
+        std::move(promise)));
+    thread->start();
+    QCOMPARE(future.takeResult(), 11);
 #endif
 }
 

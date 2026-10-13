@@ -51,6 +51,13 @@ Q_NORETURN void qAbort()
 }
 
 /*!
+    \headerfile <QtAssert>
+    \inmodule QtCore
+    \ingroup funclists
+    \brief Macros for condition checks during development and debugging.
+*/
+
+/*!
     \macro void Q_ASSERT(bool test)
     \relates <QtAssert>
 

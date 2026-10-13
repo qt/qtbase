@@ -3,6 +3,9 @@
     "Name": "extra-cmake-modules",
     "QDocModule": "qtcore",
     "QtUsage": "Used as part of the build system.",
+    "QtParts": [
+        "tools"
+    ],
 
     "Description": "Additional CMake modules.",
     "Homepage": "https://api.kde.org/ecm/",

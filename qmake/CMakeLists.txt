@@ -17,7 +17,7 @@ if(QT_WILL_BUILD_TOOLS)
         qmakelibraryinfo.cpp qmakelibraryinfo.h
     )
     qt_internal_add_sbom(QtLibraryInfo
-        TYPE QT_MODULE
+        SBOM_ENTITY_TYPE QT_MODULE
         NO_INSTALL
     )
 
@@ -152,5 +152,5 @@ set_target_properties(${target_name} PROPERTIES
 )
 
 qt_internal_apply_gc_binaries(${target_name} PRIVATE)
-qt_skip_warnings_are_errors(${target_name})
+qt_internal_set_skip_warnings_are_errors(${target_name} TRUE)
 

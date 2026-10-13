@@ -577,6 +577,15 @@ public:
     }
     QString mergePaths(const QString &relativePath) const;
 
+    void clear()
+    {
+        clearError();
+        scheme = userName = password = host = path = query = fragment = QString();
+        port = -1;
+        sectionIsPresent = 0;
+        flags = 0;
+    }
+
     QAtomicInt ref;
     int port;
 
@@ -1402,9 +1411,8 @@ inline void QUrlPrivate::parse(const QString &url, QUrl::ParsingMode parsingMode
     //   relative-part = "//" authority path-abempty
     //                 /  other path types here
 
-    sectionIsPresent = 0;
-    flags = 0;
-    clearError();
+    Q_ASSERT(sectionIsPresent == 0);
+    Q_ASSERT(!error);
 
     // find the important delimiters
     qsizetype colon = -1;
@@ -1460,10 +1468,10 @@ inline void QUrlPrivate::parse(const QString &url, QUrl::ParsingMode parsingMode
         pathStart = authorityEnd;
         setPath(url, pathStart, hierEnd);
     } else {
-        userName.clear();
-        password.clear();
-        host.clear();
-        port = -1;
+        Q_ASSERT(userName.isNull());
+        Q_ASSERT(password.isNull());
+        Q_ASSERT(host.isNull());
+        Q_ASSERT(port == -1);
         pathStart = hierStart;
 
         if (hierStart < hierEnd)
@@ -1472,9 +1480,11 @@ inline void QUrlPrivate::parse(const QString &url, QUrl::ParsingMode parsingMode
             path.clear();
     }
 
+    Q_ASSERT(query.isNull());
     if (size_t(question) < size_t(hash))
         setQuery(url, question + 1, qMin<size_t>(hash, len));
 
+    Q_ASSERT(fragment.isNull());
     if (hash != -1)
         setFragment(url, hash + 1, len);
 
@@ -1899,7 +1909,7 @@ void QUrl::setUrl(const QString &url, ParsingMode parsingMode)
     if (parsingMode == DecodedMode) {
         qWarning("QUrl: QUrl::DecodedMode is not permitted when parsing a full URL");
     } else {
-        detach();
+        detachToClear();
         d->parse(url, parsingMode);
     }
 }
@@ -3236,12 +3246,9 @@ QUrl &QUrl::operator =(const QUrl &url) noexcept
 */
 QUrl &QUrl::operator =(const QString &url)
 {
-    if (url.isEmpty()) {
-        clear();
-    } else {
-        detach();
+    detachToClear();
+    if (!url.isEmpty())
         d->parse(url, TolerantMode);
-    }
     return *this;
 }
 
@@ -3262,6 +3269,22 @@ void QUrl::detach()
         d = new QUrlPrivate;
     else
         qAtomicDetach(d);
+}
+
+/*!
+    \internal
+
+    Forces a detach resulting in a clear state.
+*/
+void QUrl::detachToClear()
+{
+    if (d && (d->ref.loadAcquire() == 1 || !d->ref.deref())) {
+        // we had the only copy
+        d->ref.storeRelaxed(1);
+        d->clear();
+    } else {
+        d = new QUrlPrivate;
+    }
 }
 
 /*!

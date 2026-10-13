@@ -1,5 +1,6 @@
 // Copyright (C) 2022 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+// Qt-Security score:critical reason:data-parser
 
 #include "qlocale_p.h"
 
@@ -14,6 +15,7 @@ QT_BEGIN_NAMESPACE
 using namespace Qt::StringLiterals;
 
 #ifndef QT_NO_SYSTEMLOCALE
+namespace {
 struct QSystemLocaleData
 {
     QSystemLocaleData()
@@ -22,7 +24,7 @@ struct QSystemLocaleData
          ,lc_monetary(QLocale::C)
          ,lc_messages(QLocale::C)
     {
-        readEnvironment();
+        initFromEnvironmentUnprotected();
     }
 
     void readEnvironment();
@@ -37,12 +39,19 @@ struct QSystemLocaleData
     QByteArray lc_measurement_var;
     QByteArray lc_collate_var;
     QStringList uiLanguages;
+
+private:
+    void initFromEnvironmentUnprotected();
 };
 
 void QSystemLocaleData::readEnvironment()
 {
     QWriteLocker locker(&lock);
+    initFromEnvironmentUnprotected();
+}
 
+void QSystemLocaleData::initFromEnvironmentUnprotected()
+{
     // See https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap08.html#tag_08_02
     // for the semantics of each of these:
     QByteArray all = qgetenv("LC_ALL");
@@ -75,9 +84,7 @@ void QSystemLocaleData::readEnvironment()
 
 Q_GLOBAL_STATIC(QSystemLocaleData, qSystemLocaleData)
 
-#endif
-
-#ifndef QT_NO_SYSTEMLOCALE
+} // unnamed namespace
 
 static bool contradicts(QStringView maybe, const QString &known)
 {
@@ -115,10 +122,13 @@ QLocale QSystemLocale::fallbackLocale() const
 
     // ... otherwise, if the first part of LANGUAGE says more than or
     // contradicts what we have, use that:
-    for (const auto &language : qEnvironmentVariable("LANGUAGE").tokenize(u':')) {
+    {
+        QString language = qEnvironmentVariable("LANGUAGE");
+        // We only look at the first entry:
+        if (const auto colon = language.indexOf(u':'); colon >= 0)
+            language.truncate(colon); // unshared QString; this is cheap
         if (contradicts(language, lang))
             return QLocale(language);
-        break; // We only look at the first entry.
     }
 
     return QLocale(lang);
@@ -267,9 +277,13 @@ QVariant QSystemLocale::query(QueryType type, QVariant &&in) const
     case ListToSeparatedString:
         return lc_messages.createSeparatedList(in.toStringList());
     case LocaleChanged:
-        Q_ASSERT(false);
-        [[fallthrough]];
-    default:
+        Q_UNREACHABLE(); // handled before the switch
+    case LanguageId:
+    case TerritoryId:
+    case Weekdays:
+    case ScriptId:
+    case NativeLanguageName:
+    case NativeTerritoryName:
         break;
     }
     return QVariant();

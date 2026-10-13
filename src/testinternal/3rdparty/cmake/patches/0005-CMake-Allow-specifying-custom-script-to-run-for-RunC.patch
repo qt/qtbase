@@ -1,0 +1,38 @@
+From a484b9aad284e6abf1aa8354921339f2b33e26ad Mon Sep 17 00:00:00 2001
+From: Alexandru Croitor <alexandru.croitor@qt.io>
+Date: Mon, 21 Jul 2025 18:20:26 +0200
+Subject: [PATCH] CMake: Allow specifying custom script to run for RunCMake
+ tests
+
+This facilitates running custom logic before running the test.
+
+Change-Id: Ifea9d25b4eb2f5499b93bb0f67d418443261ca4d
+---
+ src/testinternal/3rdparty/cmake/QtRunCMakeTestHelpers.cmake | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/src/testinternal/3rdparty/cmake/QtRunCMakeTestHelpers.cmake b/src/testinternal/3rdparty/cmake/QtRunCMakeTestHelpers.cmake
+index 29f59d1f2be..fb92cdbec37 100644
+--- a/src/testinternal/3rdparty/cmake/QtRunCMakeTestHelpers.cmake
++++ b/src/testinternal/3rdparty/cmake/QtRunCMakeTestHelpers.cmake
+@@ -20,6 +20,9 @@ macro(add_RunCMake_test test)
+   if(CMAKE_C_COMPILER_ID STREQUAL "LCC")
+     list(APPEND TEST_ARGS -DRunCMake_TEST_LCC=1)
+   endif()
++  if(NOT QT_RUN_CMAKE_SCRIPT_PATH)
++    set(QT_RUN_CMAKE_SCRIPT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/${Test_Dir}/RunCMakeTest.cmake")
++  endif()
+   # Qt specific options
+   list(APPEND TEST_ARGS
+     -D_Qt6CTestMacros=${_Qt6CTestMacros}
+@@ -36,6 +39,6 @@ macro(add_RunCMake_test test)
+     -DRunCMake_BINARY_DIR=${CMAKE_CURRENT_BINARY_DIR}/${test}
+     ${${test}_ARGS}
+     ${TEST_ARGS}
+-    -P "${CMAKE_CURRENT_SOURCE_DIR}/${Test_Dir}/RunCMakeTest.cmake"
++    -P "${QT_RUN_CMAKE_SCRIPT_PATH}"
+     )
+ endmacro()
+-- 
+2.47.0
+

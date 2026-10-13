@@ -2,6 +2,13 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
 
 /*!
+    \headerfile <QtClassHelperMacros>
+    \inmodule QtCore
+    \ingroup funclists
+    \brief Class helper macros.
+*/
+
+/*!
     \macro Q_DISABLE_COPY(Class)
     \relates <QtClassHelperMacros>
 

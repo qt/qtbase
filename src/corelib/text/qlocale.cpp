@@ -154,22 +154,25 @@ QLocale::Language QLocalePrivate::codeToLanguage(QStringView code,
     }
 
     if (codeTypes.testFlag(QLocale::LegacyLanguageCode) && uc3 == 0) {
-        // legacy codes
-        if (uc1 == 'n' && uc2 == 'o') // no -> nb
-            return QLocale::NorwegianBokmal;
-        if (uc1 == 't' && uc2 == 'l') // tl -> fil
-            return QLocale::Filipino;
-        if (uc1 == 's' && uc2 == 'h') // sh -> sr[_Latn]
-            return QLocale::Serbian;
-        if (uc1 == 'm' && uc2 == 'o') // mo -> ro
-            return QLocale::Romanian;
-        // Android uses the following deprecated codes
-        if (uc1 == 'i' && uc2 == 'w') // iw -> he
-            return QLocale::Hebrew;
-        if (uc1 == 'i' && uc2 == 'n') // in -> id
-            return QLocale::Indonesian;
-        if (uc1 == 'j' && uc2 == 'i') // ji -> yi
-            return QLocale::Yiddish;
+        constexpr struct LegacyCodes {
+            AlphaCode code;
+            QLocale::Language language;
+        } legacyCodes[] = {
+            { {'n', 'o'}, QLocale::NorwegianBokmal }, // no -> nb
+            { {'t', 'l'}, QLocale::Filipino },        // tl -> fil
+            { {'s', 'h'}, QLocale::Serbian },         // sh -> sr[_Latn]
+            { {'m', 'o'}, QLocale::Romanian },        // mo -> ro
+            // Android uses the following deprecated codes:
+            { {'i', 'w'}, QLocale::Hebrew },          // iw -> he
+            { {'i', 'n'}, QLocale::Indonesian },      // in -> id
+            { {'j', 'i'}, QLocale::Yiddish },         // ji -> yi
+        };
+        // We don't need binary search for seven entries (and they're not
+        // sorted), so search linearly:
+        for (const auto &e : legacyCodes) {
+            if (codeBuf == e.code)
+                return e.language;
+        }
     }
     return QLocale::AnyLanguage;
 }
@@ -186,8 +189,10 @@ QLocale::Script QLocalePrivate::codeToScript(QStringView code) noexcept
     unsigned char c2 = code[2].toLower().toLatin1();
     unsigned char c3 = code[3].toLower().toLatin1();
 
+    constexpr qsizetype NumScripts = QLocale::LastScript + 1;
+    static_assert(sizeof(script_code_list) == 4 * NumScripts + 1); // +1 for an extra NUL
     const unsigned char *c = script_code_list;
-    for (qsizetype i = 0; i < QLocale::LastScript; ++i, c += 4) {
+    for (qsizetype i = 0; i < NumScripts; ++i, c += 4) {
         if (c0 == c[0] && c1 == c[1] && c2 == c[2] && c3 == c[3])
             return QLocale::Script(i);
     }
@@ -2936,14 +2941,17 @@ QLocale QLocale::system()
 */
 QList<QLocale> QLocale::matchingLocales(Language language, Script script, Territory territory)
 {
+    QList<QLocale> result;
+
     const QLocaleId filter { language, script, territory };
     if (!filter.isValid())
-        return QList<QLocale>();
+        return result;
 
-    if (language == C)
-        return QList<QLocale>{QLocale(C)};
+    if (language == C) {
+        result.emplace_back(C);
+        return result;
+    }
 
-    QList<QLocale> result;
     if (filter.matchesAll())
         result.reserve(locale_data_size);
 
@@ -3094,20 +3102,7 @@ static QString rawMonthName(const QCalendarLocale &localeData,
                             const char16_t *monthsData, int month,
                             QLocale::FormatType type)
 {
-    QLocaleData::DataRange range;
-    switch (type) {
-    case QLocale::LongFormat:
-        range = localeData.longMonth();
-        break;
-    case QLocale::ShortFormat:
-        range = localeData.shortMonth();
-        break;
-    case QLocale::NarrowFormat:
-        range = localeData.narrowMonth();
-        break;
-    default:
-        return QString();
-    }
+    const QLocaleData::DataRange range = localeData.monthName(type);
     return range.getListEntry(monthsData, month - 1);
 }
 
@@ -3119,22 +3114,10 @@ static QString rawStandaloneMonthName(const QCalendarLocale &localeData,
                                       const char16_t *monthsData, int month,
                                       QLocale::FormatType type)
 {
-    QLocaleData::DataRange range;
-    switch (type) {
-    case QLocale::LongFormat:
-        range = localeData.longMonthStandalone();
-        break;
-    case QLocale::ShortFormat:
-        range = localeData.shortMonthStandalone();
-        break;
-    case QLocale::NarrowFormat:
-        range = localeData.narrowMonthStandalone();
-        break;
-    default:
-        return QString();
-    }
-    QString name = range.getListEntry(monthsData, month - 1);
-    return name.isEmpty() ? rawMonthName(localeData, monthsData, month, type) : name;
+    const QLocaleData::DataRange range = localeData.standaloneMonthName(type);
+    if (QString name = range.getListEntry(monthsData, month - 1); !name.isEmpty())
+        return name;
+    return rawMonthName(localeData, monthsData, month, type);
 }
 
 /*!
@@ -3454,9 +3437,9 @@ Qt::LayoutDirection QLocale::textDirection() const
 */
 QString QLocale::toUpper(const QString &str) const
 {
-#if QT_CONFIG(icu)
+#if !defined(QT_BOOTSTRAPPED) && QT_CONFIG(icu)
     bool ok = true;
-    QString result = QIcu::toUpper(d->bcp47Name('_'), str, &ok);
+    QString result = d->toUpper(str, &ok);
     if (ok)
         return result;
     // else fall through and use Qt's toUpper
@@ -3478,12 +3461,12 @@ QString QLocale::toUpper(const QString &str) const
 */
 QString QLocale::toLower(const QString &str) const
 {
-#if QT_CONFIG(icu)
+#if !defined(QT_BOOTSTRAPPED) && QT_CONFIG(icu)
     bool ok = true;
-    const QString result = QIcu::toLower(d->bcp47Name('_'), str, &ok);
+    const QString result = d->toLower(str, &ok);
     if (ok)
         return result;
-    // else fall through and use Qt's toUpper
+    // else fall through and use Qt's toLower
 #endif
     return str.toLower();
 }
@@ -3767,7 +3750,9 @@ QString QCalendarBackend::dateTimeToString(QStringView format, const QDateTime &
                         text = when.toOffsetFromUtc(when.offsetFromUtc()).timeZoneAbbreviation();
                     if (text.isEmpty()) // Notably including type != Offset
                         text = when.timeZoneAbbreviation();
-                    return type == Offset ? offsetFromAbbreviation(std::move(text)) : text;
+                    if (type == Offset)
+                        text = offsetFromAbbreviation(std::move(text));
+                    return text;
                 };
 
                 used = true;
@@ -3862,7 +3847,7 @@ QString QLocaleData::doubleToString(double d, int precision, DoubleForm form,
                 converted.append(QChar::highSurrogate(digit));
                 converted.append(QChar::lowSurrogate(digit));
             }
-            digits = converted;
+            digits = std::move(converted);
         } else {
             Q_ASSERT(zero.size() == 1);
             Q_ASSERT(!zero.at(0).isSurrogate());
@@ -4048,7 +4033,7 @@ QString QLocaleData::signPrefix(bool negative, unsigned flags) const
     if (flags & AlwaysShowSign)
         return positiveSign();
     if (flags & BlankBeforePositive)
-        return QStringView(u" ").toString();
+        return u" "_s;
     return {};
 }
 
@@ -4070,9 +4055,7 @@ QString QLocaleData::longLongToString(qlonglong n, int precision,
 QString QLocaleData::unsLongLongToString(qulonglong l, int precision,
                                          int base, int width, unsigned flags) const
 {
-    const QString zero = zeroDigit();
-    QString resultZero = base == 10 ? zero : QStringLiteral("0");
-    return applyIntegerFormatting(l ? qulltoa(l, base, zero) : resultZero,
+    return applyIntegerFormatting(qulltoa(l, base, zeroDigit()),
                                   false, precision, base, width, flags);
 }
 
@@ -4292,8 +4275,8 @@ char NumericTokenizer::nextToken()
     // Must match qlocale_tools.h's unicodeForDigit()
     if (m_guide.zeroLen == 1) {
         if (!ch.isSurrogate()) {
-            const uint gap = asBmpDigit(ch.unicode());
-            if (gap < 10u) {
+            const int gap = asBmpDigit(ch.unicode());
+            if (gap >= 0 && gap < 10) {
                 ++m_index;
                 return '0' + gap;
             }
@@ -4504,7 +4487,7 @@ bool QLocaleData::numberToCLocale(QStringView s, QLocale::NumberOptions number_o
     return true;
 }
 
-ParsingResult
+QLocaleData::ParsingResult
 QLocaleData::validateChars(QStringView str, NumberMode numMode, int decDigits,
                            QLocale::NumberOptions number_options) const
 {
@@ -4917,7 +4900,7 @@ QStringList QLocale::uiLanguages(TagSeparator separator) const
         if (separator != TagSeparator::Dash) {
             // Map from default separator, Dash, used by backends:
             const QChar join = QLatin1Char(sep);
-            uiLanguages = uiLanguages.replaceInStrings(u"-", QStringView(&join, 1));
+            uiLanguages.replaceInStrings(u"-", QStringView(&join, 1));
         }
         // ... but we need to include likely-adjusted forms of each of those, too.
         // For now, collect up locale Ids representing the entries, for later processing:

@@ -1,5 +1,6 @@
 // Copyright (C) 2020 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+// Qt-Security score:significant reason:default
 
 #ifndef QFUTUREINTERFACE_H
 #define QFUTUREINTERFACE_H
@@ -422,12 +423,11 @@ inline QList<T> QFutureInterface<T>::results()
 template<typename T>
 T QFutureInterface<T>::takeResult()
 {
-    Q_ASSERT(isValid());
-
     // Note: we wait for all, this is intentional,
     // not to mess with other unready results.
     waitForResult(-1);
 
+    Q_ASSERT(isValid());
     Q_ASSERT(!hasException());
 
     const QMutexLocker<QMutex> locker{&mutex()};
@@ -443,10 +443,9 @@ T QFutureInterface<T>::takeResult()
 template<typename T>
 std::vector<T> QFutureInterface<T>::takeResults()
 {
-    Q_ASSERT(isValid());
-
     waitForResult(-1);
 
+    Q_ASSERT(isValid());
     Q_ASSERT(!hasException());
 
     std::vector<T> res;

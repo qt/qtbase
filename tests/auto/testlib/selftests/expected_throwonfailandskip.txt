@@ -1,0 +1,18 @@
+********* Start testing of tst_ThrowOnFailAndSkip *********
+Config: Using QtTest library
+PASS   : tst_ThrowOnFailAndSkip::initTestCase()
+FAIL!  : tst_ThrowOnFailAndSkip::throwOnFail() Compared values are not the same
+   Actual   (i) : 17
+   Expected (42): 42
+   Loc: [qtbase-submit/tests/auto/testlib/selftests/throwonfailandskip/tst_throwonfailandskip.cpp(0)]
+SKIP   : tst_ThrowOnFailAndSkip::throwOnSkip() skipped
+   Loc: [qtbase-submit/tests/auto/testlib/selftests/throwonfailandskip/tst_throwonfailandskip.cpp(0)]
+FAIL!  : tst_ThrowOnFailAndSkip::throwOnFailWorksFromConcurrent() The computed value is expected to be different from the baseline, but is not
+   Computed (i) : 42
+   Baseline (42): 42
+   Loc: [qtbase-submit/tests/auto/testlib/selftests/throwonfailandskip/tst_throwonfailandskip.cpp(0)]
+SKIP   : tst_ThrowOnFailAndSkip::throwOnSkipWorksFromConcurrent() skipped from QtConcurrent::run()
+   Loc: [qtbase-submit/tests/auto/testlib/selftests/throwonfailandskip/tst_throwonfailandskip.cpp(0)]
+PASS   : tst_ThrowOnFailAndSkip::cleanupTestCase()
+Totals: 2 passed, 2 failed, 2 skipped, 0 blacklisted, 0ms
+********* Finished testing of tst_ThrowOnFailAndSkip *********

@@ -1,5 +1,6 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+// Qt-Security score:critical reason:data-parser
 
 #include "qglobal.h"
 #include "qdebug.h"
@@ -11,10 +12,15 @@
 
 QT_BEGIN_NAMESPACE
 
-typedef int32_t (*Ptr_u_strToCase)(UChar *dest, int32_t destCapacity, const UChar *src, int32_t srcLength, const char *locale, UErrorCode *pErrorCode);
+static_assert(std::is_same_v<UChar, char16_t>,
+              "Hmm... in C++ mode, ICU's UChar ought to be char16_t");
 
-// caseFunc can either be u_strToUpper or u_strToLower
-static bool qt_u_strToCase(const QString &str, QString *out, const char *localeID, Ptr_u_strToCase caseFunc)
+namespace QtIcuPrivate {
+
+enum class CaseConversion : bool { Upper, Lower };
+
+static bool qt_u_strToCase(const QString &str, QString *out, const char *localeID,
+                           CaseConversion conv)
 {
     Q_ASSERT(out);
 
@@ -24,8 +30,20 @@ static bool qt_u_strToCase(const QString &str, QString *out, const char *localeI
 
     UErrorCode status = U_ZERO_ERROR;
 
-    size = caseFunc(reinterpret_cast<UChar *>(result.data()), result.size(),
-            reinterpret_cast<const UChar *>(str.constData()), str.size(),
+    const auto caseFunc = [conv] (auto&&...args) {
+            // try to be a completely transparent wrapper:
+            using R [[maybe_unused]] = decltype(u_strToUpper(std::forward<decltype(args)>(args)...));
+            switch (conv) {
+            case CaseConversion::Upper:
+                return u_strToUpper(std::forward<decltype(args)>(args)...);
+            case CaseConversion::Lower:
+                return u_strToLower(std::forward<decltype(args)>(args)...);
+            };
+            Q_UNREACHABLE_RETURN(R{0});
+        };
+
+    size = caseFunc(result.data_ptr().data(), result.size(),
+            str.data_ptr().data(), str.size(),
             localeID, &status);
 
     if (U_FAILURE(status) && status != U_BUFFER_OVERFLOW_ERROR)
@@ -38,8 +56,8 @@ static bool qt_u_strToCase(const QString &str, QString *out, const char *localeI
         result.resize(size);
 
         status = U_ZERO_ERROR;
-        size = caseFunc(reinterpret_cast<UChar *>(result.data()), result.size(),
-            reinterpret_cast<const UChar *>(str.constData()), str.size(),
+        size = caseFunc(result.data_ptr().data(), result.size(),
+            str.data_ptr().data(), str.size(),
             localeID, &status);
 
         if (U_FAILURE(status))
@@ -50,25 +68,27 @@ static bool qt_u_strToCase(const QString &str, QString *out, const char *localeI
             return false;
     }
 
-    *out = result;
+    *out = std::move(result);
     return true;
 }
 
-QString QIcu::toUpper(const QByteArray &localeID, const QString &str, bool *ok)
+} // namespace QtIcuPrivate
+
+QString QLocalePrivate::toUpper(const QString &str, bool *ok) const
 {
+    Q_ASSERT(ok);
+    using namespace QtIcuPrivate;
     QString out;
-    bool err = qt_u_strToCase(str, &out, localeID, u_strToUpper);
-    if (ok)
-        *ok = err;
+    *ok = qt_u_strToCase(str, &out, bcp47Name('_'), CaseConversion::Upper);
     return out;
 }
 
-QString QIcu::toLower(const QByteArray &localeID, const QString &str, bool *ok)
+QString QLocalePrivate::toLower(const QString &str, bool *ok) const
 {
+    Q_ASSERT(ok);
+    using namespace QtIcuPrivate;
     QString out;
-    bool err = qt_u_strToCase(str, &out, localeID, u_strToLower);
-    if (ok)
-        *ok = err;
+    *ok = qt_u_strToCase(str, &out, bcp47Name('_'), CaseConversion::Lower);
     return out;
 }
 

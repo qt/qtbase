@@ -136,6 +136,12 @@ public:
         set.clear();
 #endif // __cpp_lib_memory_resource
     }
+
+    using const_iterator = typename Set::const_iterator;
+    const_iterator begin() const { return set.cbegin(); }
+    const_iterator end() const { return set.cend(); }
+    const_iterator cbegin() const { return begin(); }
+    const_iterator cend() const { return end(); }
 };
 
 QT_END_NAMESPACE

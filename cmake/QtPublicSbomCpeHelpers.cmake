@@ -55,8 +55,8 @@ function(_qt_internal_sbom_compute_security_cpe out_cpe)
     set(${out_cpe} "${cpe}" PARENT_SCOPE)
 endfunction()
 
-# Computes the default security CPE for the Qt framework.
-function(_qt_internal_sbom_get_cpe_qt out_var)
+# Computes the default security CPE for a given qt repository.
+function(_qt_internal_sbom_get_cpe_qt_repo out_var)
     _qt_internal_sbom_get_root_project_name_lower_case(repo_project_name_lowercase)
     _qt_internal_sbom_compute_security_cpe(repo_cpe
         VENDOR "qt"
@@ -66,8 +66,8 @@ function(_qt_internal_sbom_get_cpe_qt out_var)
     set(${out_var} "${repo_cpe}" PARENT_SCOPE)
 endfunction()
 
-# Computes the default security CPE for a given qt repository.
-function(_qt_internal_sbom_get_cpe_qt_repo out_var)
+# Computes the default security CPE for the Qt framework.
+function(_qt_internal_sbom_get_cpe_qt out_var)
     _qt_internal_sbom_compute_security_cpe(qt_cpe
         VENDOR "qt"
         PRODUCT "qt"
@@ -80,11 +80,11 @@ endfunction()
 function(_qt_internal_sbom_compute_security_cpe_for_qt out_cpe_list)
     set(cpe_list "")
 
-    _qt_internal_sbom_get_cpe_qt(repo_cpe)
-    list(APPEND cpe_list "${repo_cpe}")
-
-    _qt_internal_sbom_get_cpe_qt_repo(qt_cpe)
+    _qt_internal_sbom_get_cpe_qt(qt_cpe)
     list(APPEND cpe_list "${qt_cpe}")
+
+    _qt_internal_sbom_get_cpe_qt_repo(repo_cpe)
+    list(APPEND cpe_list "${repo_cpe}")
 
     set(${out_cpe_list} "${cpe_list}" PARENT_SCOPE)
 endfunction()

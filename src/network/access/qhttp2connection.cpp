@@ -43,7 +43,7 @@ QHttp2Stream::QHttp2Stream(QHttp2Connection *connection, quint32 streamID) noexc
 
 QHttp2Stream::~QHttp2Stream() noexcept {
     if (auto *connection = getConnection()) {
-        if (m_state == State::Open || m_state == State::HalfClosedRemote) {
+        if (m_state != State::Idle && m_state != State::Closed) {
             qCDebug(qHttp2ConnectionLog, "[%p] stream %u, destroyed while still open", connection,
                     m_streamID);
             // Check if we can still send data, then send RST_STREAM:
@@ -1336,13 +1336,16 @@ void QHttp2Connection::handleDATA()
     if (isInvalidStream(streamID))
         return connectionError(ENHANCE_YOUR_CALM, "DATA on invalid stream");
 
-    // RFC9113, 6.1: If a DATA frame is received whose stream is not in the "open" or
-    // "half-closed (local)" state, the recipient MUST respond with a stream error.
-    auto stream = getStream(streamID);
-    if (stream->state() == QHttp2Stream::State::HalfClosedRemote
-        || stream->state() == QHttp2Stream::State::Closed) {
-        return stream->streamError(Http2Error::STREAM_CLOSED,
-                                   QLatin1String("Data on closed stream"));
+    QHttp2Stream *stream = nullptr;
+    if (!streamWasResetLocally(streamID)) {
+        stream = getStream(streamID);
+        // RFC9113, 6.1: If a DATA frame is received whose stream is not in the "open" or
+        // "half-closed (local)" state, the recipient MUST respond with a stream error.
+        if (stream->state() == QHttp2Stream::State::HalfClosedRemote
+            || stream->state() == QHttp2Stream::State::Closed) {
+            return stream->streamError(Http2Error::STREAM_CLOSED,
+                                       QLatin1String("Data on closed stream"));
+        }
     }
 
     if (qint32(inboundFrame.payloadSize()) > sessionReceiveWindowSize) {
@@ -1355,9 +1358,8 @@ void QHttp2Connection::handleDATA()
 
     sessionReceiveWindowSize -= inboundFrame.payloadSize();
 
-    auto it = m_streams.constFind(streamID);
-    if (it != m_streams.cend() && it.value())
-        it.value()->handleDATA(inboundFrame);
+    if (stream)
+        stream->handleDATA(inboundFrame);
 
     if (inboundFrame.flags().testFlag(FrameFlag::END_STREAM))
         emit receivedEND_STREAM(streamID);
@@ -1393,6 +1395,11 @@ void QHttp2Connection::handleHEADERS()
         m_lastIncomingStreamID = streamID;
         qCDebug(qHttp2ConnectionLog, "[%p] Created new incoming stream %d", this, streamID);
         emit newIncomingStream(newStream);
+    } else if (streamWasResetLocally(streamID)) {
+        qCDebug(qHttp2ConnectionLog,
+                "[%p] Received HEADERS on previously locally reset stream %d (must process but ignore)",
+                this, streamID);
+        // nop
     } else if (auto it = m_streams.constFind(streamID); it == m_streams.cend()) {
         // RFC 9113, 6.2: HEADERS frames MUST be associated with a stream.
         // A connection error is not required but it seems to be the right thing to do.

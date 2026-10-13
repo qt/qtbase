@@ -27,7 +27,8 @@ QAndroidPlatformWindow::QAndroidPlatformWindow(QWindow *window)
       m_surfaceContainerType(SurfaceContainer::TextureView), m_nativeParentQtWindow(nullptr),
       m_androidSurfaceObject(nullptr)
 {
-    // Please add any initialization in the function below
+    if (window->surfaceType() == QSurface::RasterSurface)
+        window->setSurfaceType(QSurface::OpenGLSurface);
 }
 
 void QAndroidPlatformWindow::initialize()
@@ -318,6 +319,8 @@ void QAndroidPlatformWindow::onSurfaceChanged(QtJniTypes::Surface surface)
     } else {
         clearSurface();
     }
+
+    sendExpose();
 
     unlockSurface();
 }

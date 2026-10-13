@@ -34,13 +34,27 @@ class QCalendarRegistry;
 struct QCalendarLocale {
     quint16 m_language_id, m_script_id, m_territory_id;
 
-#define rangeGetter(name) \
-    QLocaleData::DataRange name() const { return { m_ ## name ## _idx, m_ ## name ## _size }; }
-
-    rangeGetter(longMonthStandalone) rangeGetter(longMonth)
-    rangeGetter(shortMonthStandalone) rangeGetter(shortMonth)
-    rangeGetter(narrowMonthStandalone) rangeGetter(narrowMonth)
-#undef rangeGetter
+#define CASE(E, member) case QLocale::FormatType::E: \
+        return { m_ ## member ## _idx, m_ ## member ## _size }
+    QLocaleData::DataRange monthName(QLocale::FormatType type) const
+    {
+        switch (type) {
+        CASE(LongFormat, longMonth);
+        CASE(ShortFormat, shortMonth);
+        CASE(NarrowFormat, narrowMonth);
+        }
+        Q_UNREACHABLE_RETURN({});
+    }
+    QLocaleData::DataRange standaloneMonthName(QLocale::FormatType type) const
+    {
+        switch (type) {
+        CASE(LongFormat, longMonthStandalone);
+        CASE(ShortFormat, shortMonthStandalone);
+        CASE(NarrowFormat, narrowMonthStandalone);
+        }
+        Q_UNREACHABLE_RETURN({});
+    }
+#undef CASE
 
     // Month name indexes:
     quint16 m_longMonthStandalone_idx, m_longMonth_idx;

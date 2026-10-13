@@ -1,6 +1,7 @@
 // Copyright (C) 2019 The Qt Company Ltd.
 // Copyright © 2004-2023 Unicode, Inc.
 // SPDX-License-Identifier: Unicode-3.0
+// Qt-Security score:critical reason:data-parser
 
 #ifndef QLOCALE_DATA_P_H
 #define QLOCALE_DATA_P_H
@@ -45,7 +46,7 @@ static inline constexpr TerritoryLanguage ImperialMeasurementSystems[] = {
 };
 
 /*
-  Storage for alpha codes with length of up to 4 allowing efficient comparison.
+  Storage for alpha codes with length of up to 3 allowing efficient comparison.
 */
 struct AlphaCode {
     constexpr AlphaCode(char c1 = 0, char c2 = 0, char c3 = 0)

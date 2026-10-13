@@ -112,6 +112,13 @@ set(subprograms
     watchdog
 )
 
+if(FEATURE_concurrent AND FEATURE_future)
+    list(APPEND subprograms
+        # This test needs exceptions, QException, and QtConcurrent::run()
+        throwonfailandskip
+    )
+endif()
+
 if(TARGET Qt::Gui)
     list(APPEND subprograms
         keyboard

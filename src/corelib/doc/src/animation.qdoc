@@ -36,7 +36,7 @@
     The following diagram shows the most important classes provided by the
     framework:
 
-    \image animations-architecture.png
+    \image animations-architecture.png "The Animation Framework class hierarchy."
 
     It includes the QAbstractAnimation class, which provides the
     necessary foundation for animations. This class defines the

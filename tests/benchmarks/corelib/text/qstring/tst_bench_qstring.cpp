@@ -158,6 +158,12 @@ void tst_QString::toUpper_data()
     QTest::newRow("300A+150<10428>") << (upperLatin1 + lowerDeseret);
 
     QTest::newRow("600<FB03> (ligature)") << lowerLigature;
+
+    QString fullRange;
+    for (char32_t i = 0; i <= QChar::LastValidCodePoint; ++i)
+        fullRange.append(QChar::fromUcs4(i));
+
+    QTest::newRow("full-range") << fullRange;
 }
 
 void tst_QString::toUpper()

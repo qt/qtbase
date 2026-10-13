@@ -138,6 +138,7 @@ private slots:
 
     void exists_data();
     void exists();
+    void deletedFileLinuxProcExists();
 
     void absolutePath_data();
     void absolutePath();
@@ -207,9 +208,8 @@ private slots:
 
     void isHidden_data();
     void isHidden();
-#if defined(Q_OS_DARWIN)
+    void isHiddenFromFinder_data();
     void isHiddenFromFinder();
-#endif
 
     void isBundle_data();
     void isBundle();
@@ -501,6 +501,34 @@ void tst_QFileInfo::exists()
         QVERIFY2(exists, msgDoesNotExist(path).constData());
     else
         QVERIFY(!exists);
+}
+
+void tst_QFileInfo::deletedFileLinuxProcExists()
+{
+#ifdef Q_OS_LINUX
+    static const char msg[] = "Hello, World\n";
+    QFileInfo fi("/proc/self/fd/");
+    if (!fi.isDir())
+        QSKIP("/proc appears not to be mounted");
+
+    QFile f("removed_file.txt");
+    QVERIFY(f.open(QIODevice::ReadWrite | QIODevice::Unbuffered));
+    f.write(msg, strlen(msg));
+
+    fi.setFile(fi.filePath() + QString::number(f.handle()));
+    QVERIFY(fi.exists());
+    QCOMPARE(fi.size(), strlen(msg));
+
+    QFile::remove("removed_file.txt");
+    fi.refresh();
+    QVERIFY(fi.exists());
+
+    fi.refresh();
+    QCOMPARE(fi.size(), strlen(msg));   // this stats, so may change flags
+    QVERIFY(fi.exists());
+#else
+    QSKIP("Linux-only test");
+#endif
 }
 
 void tst_QFileInfo::absolutePath_data()
@@ -1596,26 +1624,57 @@ void tst_QFileInfo::isHidden()
     QCOMPARE(fi.isHidden(), isHidden);
 }
 
-#if defined(Q_OS_DARWIN)
+void tst_QFileInfo::isHiddenFromFinder_data()
+{
+#ifndef UF_HIDDEN
+    QSKIP("Only supported on OSes with UF_HIDDEN flag");
+#endif
+    QTest::addColumn<bool>("isSymlink");
+    QTest::addColumn<bool>("isHidden");
+    QTest::newRow("regular-visible") << false << false;
+    QTest::newRow("symlink-visible") << true << false;
+    QTest::newRow("regular-hidden") << false << true;
+    QTest::newRow("symlink-hidden") << true << true;
+}
+
 void tst_QFileInfo::isHiddenFromFinder()
 {
+    auto setHiddenFromFinder = [](const char *filename) {
+#ifdef UF_HIDDEN
+        QT_STATBUF buf;
+        QT_STAT(filename, &buf);
+        lchflags(filename, buf.st_flags | UF_HIDDEN);
+#else
+        Q_UNUSED(filename);
+#endif
+    };
+
+    QFETCH(bool, isSymlink);
+    QFETCH(bool, isHidden);
     const char *filename = "test_foobar.txt";
+    const char *symlinkname = "test_foobar.lnk";
 
     QFile testFile(filename);
-    QVERIFY(testFile.open(QIODevice::WriteOnly | QIODevice::Append));
+    QVERIFY(testFile.open(QIODevice::WriteOnly | QIODevice::Truncate));
     testFile.write(QByteArray("world"));
     testFile.close();
 
-    struct stat buf;
-    stat(filename, &buf);
-    chflags(filename, buf.st_flags | UF_HIDDEN);
+    if (isSymlink) {
+        testFile.link(symlinkname);
+        if (!isHidden)
+            setHiddenFromFinder(filename);  // symlink points to hidden file!
+        filename = symlinkname;     // we're checking the symlink
+    }
+
+    if (isHidden)
+        setHiddenFromFinder(filename);
 
     QFileInfo fi(filename);
-    QCOMPARE(fi.isHidden(), true);
+    QCOMPARE(fi.isHidden(), isHidden);
 
     testFile.remove();
+    QFile::remove(symlinkname);
 }
-#endif
 
 void tst_QFileInfo::isBundle_data()
 {

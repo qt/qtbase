@@ -85,5 +85,22 @@ const auto flags = F::FilesOnly | F::Recursive | F::ResolveSymlinks;
 for (const auto &dirEntry : QDirListing(u"/etc"_s, flags)) {
     // ...
 }
+}
 //! [6]
+
+{
+//! [7]
+    using F = QDirListing::IteratorFlag;
+    const auto flags = F::FilesOnly | F::Recursive | F::ResolveSymlinks;
+    for (const auto &dirEntry : QDirListing(u"/usr"_s, flags)) {
+        // Faster than using name filters, filter ".txt" and ".html" files
+        // using QString API
+        const QString fileName = dirEntry.fileName();
+        if (fileName.endsWith(".txt"_L1) || fileName.endsWith(".html"_L1)) {
+            // ...
+        }
+    }
+}
+//! [7]
+
 }

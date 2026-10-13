@@ -2,6 +2,15 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
 
 /*!
+    \headerfile <QtTranslation>
+    \inmodule QtCore
+    \ingroup funclists
+    \brief Marking strings for translation.
+
+    \sa {Writing Source Code for Translation}
+*/
+
+/*!
     \macro QT_TR_NOOP(sourceText)
     \relates <QtTranslation>
 

@@ -68,6 +68,12 @@ namespace QTest
     static int expectFailMode = 0;
 }
 
+/*!
+    \class QTestResult
+    \inmodule QtTest
+    \internal
+*/
+
 void QTestResult::reset()
 {
     QTest::currentTestData = nullptr;

@@ -19,6 +19,13 @@ QT_BEGIN_NAMESPACE
 Q_CONSTINIT static QBasicMutex environmentMutex;
 
 /*!
+    \headerfile <QtEnvironmentVariables>
+    \inmodule QtCore
+    \ingroup funclists
+    \brief Helper functions for working with environment variables.
+*/
+
+/*!
     \relates <QtEnvironmentVariables>
     \threadsafe
 
@@ -409,24 +416,25 @@ bool qLocalTime(time_t utc, struct tm *local)
 */
 QString qTzName(int dstIndex)
 {
+    Q_DECL_UNINITIALIZED
     char name[512];
     bool ok;
+    size_t size = 0;
+    {
+        const auto locker = qt_scoped_lock(environmentMutex);
 #if defined(_UCRT)  // i.e., MSVC and MinGW-UCRT
-    size_t s = 0;
-    {
-        const auto locker = qt_scoped_lock(environmentMutex);
-        ok = _get_tzname(&s, name, 512, dstIndex) != 0;
-    }
+        ok = _get_tzname(&size, name, sizeof(name), dstIndex) == 0;
+        size -= 1; // It includes space for '\0' (or !ok => we're going to ignore it).
+        Q_ASSERT(!ok || size < sizeof(name));
 #else
-    {
-        const auto locker = qt_scoped_lock(environmentMutex);
         const char *const src = tzname[dstIndex];
-        ok = src != nullptr;
+        size = src ? strlen(src) : 0;
+        ok = src != nullptr && size < sizeof(name);
         if (ok)
-            memcpy(name, src, std::min(sizeof(name), strlen(src) + 1));
+            memcpy(name, src, size + 1);
+#endif // _UCRT
     }
-#endif // Q_OS_WIN
-    return ok ? QString::fromLocal8Bit(name) : QString();
+    return ok ? QString::fromLocal8Bit(name, qsizetype(size)) : QString();
 }
 
 QT_END_NAMESPACE

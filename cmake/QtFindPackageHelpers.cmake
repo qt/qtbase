@@ -234,7 +234,7 @@ macro(qt_find_package)
                 if(NOT "${ARGV0}" STREQUAL "Qt6")
                     _qt_internal_sbom_record_system_library_usage(
                         "${qt_find_package_target_name}"
-                        TYPE SYSTEM_LIBRARY
+                        SBOM_ENTITY_TYPE SYSTEM_LIBRARY
                         FRIENDLY_PACKAGE_NAME "${ARGV0}"
                         ${_qt_find_package_sbom_args}
                     )
@@ -466,6 +466,7 @@ function(qt_internal_is_lib_part_of_qt6_package lib out_var)
             OR lib STREQUAL "PlatformPluginInternal"
             OR lib STREQUAL "PlatformToolInternal"
             OR lib STREQUAL "PlatformCommonInternal"
+            OR lib STREQUAL "PlatformExampleInternal"
     )
         set(${out_var} "TRUE" PARENT_SCOPE)
     else()

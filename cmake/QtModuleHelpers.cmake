@@ -310,7 +310,8 @@ function(qt_internal_add_module target)
     endif()
 
     qt_internal_add_target_aliases("${target}")
-    qt_skip_warnings_are_errors_when_repo_unclean("${target}")
+
+    qt_internal_default_warnings_are_errors("${target}")
 
     # No need to compile Q_IMPORT_PLUGIN-containing files for non-executables.
     if(is_static_lib)
@@ -938,9 +939,9 @@ set(QT_ALLOW_MISSING_TOOLS_PACKAGES TRUE)")
 
         # 3rd party header modules should not be treated as Qt modules.
         if(arg_IS_QT_3RD_PARTY_HEADER_MODULE)
-            list(APPEND sbom_args TYPE QT_THIRD_PARTY_MODULE)
+            list(APPEND sbom_args DEFAULT_SBOM_ENTITY_TYPE QT_THIRD_PARTY_MODULE)
         else()
-            list(APPEND sbom_args TYPE QT_MODULE)
+            list(APPEND sbom_args DEFAULT_SBOM_ENTITY_TYPE QT_MODULE)
         endif()
 
         qt_get_cmake_configurations(configs)
@@ -1273,6 +1274,7 @@ function(qt_describe_module target)
         string(APPEND extra_build_information "
         \"android\": {
             \"api_version\": \"${QT_ANDROID_API_VERSION}\",
+            \"android_platform\": \"${ANDROID_PLATFORM}\",
             \"ndk\": {
                 \"version\": \"${ANDROID_NDK_REVISION}\"
             }

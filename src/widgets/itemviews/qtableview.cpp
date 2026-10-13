@@ -1,5 +1,6 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+// Qt-Security score:significant reason:default
 
 #include "qtableview.h"
 
@@ -2836,7 +2837,7 @@ void QTableView::setGridStyle(Qt::PenStyle style)
     necessary at word-breaks; otherwise it is not wrapped at all.
     This property is \c true by default.
 
-    Note that even of wrapping is enabled, the cell will not be
+    Note that even if wrapping is enabled, the cell will not be
     expanded to fit all text. Ellipsis will be inserted according to
     the current \l{QAbstractItemView::}{textElideMode}.
 

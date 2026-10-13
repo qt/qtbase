@@ -991,6 +991,10 @@ void WindowCreationData::initialize(const QWindow *w, HWND hwnd, bool frameChang
 
     const bool isAccelerated = windowIsAccelerated(w);
     const bool hasAlpha = w->format().hasAlpha();
+
+    if (isAccelerated && hasAlpha)
+        applyBlurBehindWindow(hwnd);
+
     setWindowOpacity(hwnd, flags, hasAlpha, isAccelerated, opacityLevel);
 }
 

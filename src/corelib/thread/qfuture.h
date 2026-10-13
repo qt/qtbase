@@ -1,5 +1,6 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+// Qt-Security score:significant reason:default
 
 #ifndef QFUTURE_H
 #define QFUTURE_H
@@ -25,7 +26,7 @@ template <typename T>
 class QFuture
 {
     static_assert (std::is_move_constructible_v<T>
-                   || std::is_same_v<T, void>,
+                   || std::is_void_v<T>,
                    "A move-constructible type or type void is required");
 public:
     QFuture()
@@ -166,7 +167,7 @@ QT_WARNING_POP
     class const_iterator
     {
     public:
-        static_assert(!std::is_same_v<T, void>,
+        static_assert(!std::is_void_v<T>,
                       "It isn't possible to define QFuture<void>::const_iterator");
 
         typedef std::bidirectional_iterator_tag iterator_category;
@@ -175,7 +176,7 @@ QT_WARNING_POP
         typedef const T *pointer;
         typedef const T &reference;
 
-        inline const_iterator() {}
+        const_iterator() = default;
         inline const_iterator(QFuture const * const _future, int _index)
         : future(_future), index(advanceIndex(_index, 0)) { }
         inline const_iterator(const const_iterator &o) : future(o.future), index(o.index)  {}
@@ -296,7 +297,7 @@ private:
     friend struct QtPrivate::UnwrapHandler;
 
     using QFuturePrivate =
-            std::conditional_t<std::is_same_v<T, void>, QFutureInterfaceBase, QFutureInterface<T>>;
+            std::conditional_t<std::is_void_v<T>, QFutureInterfaceBase, QFutureInterface<T>>;
 
 #ifdef QFUTURE_TEST
 public:
@@ -437,7 +438,7 @@ template<typename T>
 struct MetaTypeQFutureHelper<QFuture<T>>
 {
     static bool registerConverter() {
-        if constexpr (std::is_same_v<T, void>) {
+        if constexpr (std::is_void_v<T>) {
             return false;
         } else {
             return QMetaType::registerConverter<QFuture<T>, QFuture<void>>(

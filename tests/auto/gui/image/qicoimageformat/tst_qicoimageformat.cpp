@@ -35,6 +35,8 @@ private slots:
     void write();
     void icoMask_data();
     void icoMask();
+    void origBitDepth_data();
+    void origBitDepth();
 
 private:
     QString m_IconPath;
@@ -352,6 +354,40 @@ void tst_QIcoImageFormat::icoMask()
     outImage = outImage.convertToFormat(inImage.format());
 
     QCOMPARE(inImage, outImage);
+}
+
+void tst_QIcoImageFormat::origBitDepth_data()
+{
+    QTest::addColumn<QString>("file");
+    QTest::addColumn<QList<int>>("origBitDepths");
+
+    QTest::newRow("35FLOPPY") << "35FLOPPY.ICO" << QList<int>{4};
+    QTest::newRow("abcardWindow") << "abcardWindow.ico" << QList<int>{8};
+    QTest::newRow("AddPerf") << "AddPerfMon.ico" << QList<int>{4};
+    QTest::newRow("App") << "App.ico" << QList<int>{4};
+    QTest::newRow("Obj_N2_Internal_Mem") << "Obj_N2_Internal_Mem.ico" << QList<int>{4, 8, 32};
+    QTest::newRow("Qt") << "Qt.ico" << QList<int>{32};
+    QTest::newRow("semitransparent") << "semitransparent.ico" << QList<int>{4};
+    QTest::newRow("Status_Play") << "Status_Play.ico" << QList<int>{4, 8, 32};
+    QTest::newRow("TIMER01") << "TIMER01.ICO" << QList<int>{4};
+    QTest::newRow("trolltechlogo_tiny") << "trolltechlogo_tiny.ico" << QList<int>{8};
+    QTest::newRow("WORLD") << "WORLD.ico" << QList<int>{8, 4, 4};
+    QTest::newRow("yellow") << "yellow.cur" << QList<int>{32};
+}
+
+void tst_QIcoImageFormat::origBitDepth()
+{
+    QFETCH(QString, file);
+    QFETCH(QList<int>, origBitDepths);
+
+    QImage image;
+    QImageReader reader(m_IconPath + QLatin1String("/valid/") + file);
+
+    for (int depth : origBitDepths) {
+        reader.read(&image);
+        QCOMPARE(image.text("_q_icoOrigDepth").toInt(), depth);
+        reader.jumpToNextImage();
+    }
 }
 
 QTEST_MAIN(tst_QIcoImageFormat)

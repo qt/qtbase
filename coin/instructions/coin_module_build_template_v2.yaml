@@ -52,6 +52,9 @@ instructions:
         - condition: runtime
           env_var: TESTED_MODULE_COIN
           not_equals_value: "qtwebengine"
+        - condition: runtime
+          env_var: TESTED_MODULE_COIN
+          not_equals_value: "qtactiveqt"
   - type: Group
     instructions:
       - !include "{{qt/qtbase}}/cmake_cross_compilation_module_build_instructions.yaml"

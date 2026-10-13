@@ -6,6 +6,8 @@
 #include <QtCore/qjnitypes.h>
 #include <QtCore/qjniarray.h>
 
+QT_BEGIN_NAMESPACE
+
 using namespace Qt::StringLiterals;
 
 class tst_QJniArray : public QObject
@@ -414,6 +416,8 @@ void tst_QJniArray::pointerToValue()
     QCOMPARE(it->size(), 3);
     QCOMPARE((++it)->size(), 5);
 }
+
+QT_END_NAMESPACE
 
 QTEST_MAIN(tst_QJniArray)
 

@@ -14,6 +14,11 @@
 
 #ifdef Q_OS_DARWIN
 #  include <private/qcore_mac_p.h>
+
+// Apple's dyld *does* support RTLD_NODELETE and the library remains loaded in
+// memory after the dlclose() call, but their Objective C crashes when running
+// code from unloaded-but-still-loaded plugins.
+#  undef RTLD_NODELETE
 #endif
 
 #ifdef Q_OS_ANDROID

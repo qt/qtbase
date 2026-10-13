@@ -1,5 +1,6 @@
 // Copyright (C) 2020 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Marc Mutz <marc.mutz@kdab.com>
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+// Qt-Security score:sensitive reason:trivial-impl-only
 
 #include "qanystringview.h"
 #include "qdebug.h"
@@ -354,6 +355,10 @@ QT_BEGIN_NAMESPACE
 
     \sa isNull(), isEmpty()
 */
+
+// confirm we don't make an accidental copy constructor:
+static_assert(QtPrivate::IsContainerCompatibleWithQStringView<QAnyStringView>::value == false);
+static_assert(QtPrivate::IsContainerCompatibleWithQUtf8StringView<QAnyStringView>::value == false);
 
 /*!
     \fn template <typename Char, size_t Size> static QAnyStringView fromArray(const Char (&string)[Size]) noexcept

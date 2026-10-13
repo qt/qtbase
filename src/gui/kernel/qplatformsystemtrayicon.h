@@ -7,7 +7,8 @@
 
 #include <QtGui/qtguiglobal.h>
 #include <qpa/qplatformscreen.h>
-#include "QtCore/qobject.h"
+
+#include <QtCore/qobject.h>
 
 #ifndef QT_NO_SYSTEMTRAYICON
 

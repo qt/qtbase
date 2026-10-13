@@ -1,5 +1,6 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+// Qt-Security score:significant reason:default
 
 #include "qlocalsocket.h"
 #include "qlocalsocket_p.h"
@@ -356,8 +357,14 @@ bool QLocalSocket::setSocketDescriptor(qintptr socketDescriptor,
     QIODevice::open(openMode);
     d->state = socketState;
     d->describeSocket(socketDescriptor);
-    return d->unixSocket.setSocketDescriptor(socketDescriptor,
-                                             newSocketState, openMode);
+    const bool result = d->unixSocket.setSocketDescriptor(socketDescriptor,
+                                                          newSocketState, openMode);
+    // Since we directly assigned d->state above, any emission from unixSocket for
+    // state change emission is ignored because the state hasn't changed. So, we
+    // emit it directly here ourselves.
+    if (result)
+        emit stateChanged(d->state);
+    return result;
 }
 
 void QLocalSocketPrivate::describeSocket(qintptr socketDescriptor)

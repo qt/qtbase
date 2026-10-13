@@ -499,7 +499,6 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, QXcbVirtualDesktop *virtualDe
     , m_cursor(std::make_unique<QXcbCursor>(connection, this))
 {
     if (connection->isAtLeastXRandR12()) {
-        xcb_randr_select_input(xcb_connection(), screen()->root, true);
         auto crtc = Q_XCB_REPLY_UNCHECKED(xcb_randr_get_crtc_info, xcb_connection(),
                                           m_crtc, output ? output->timestamp : 0);
         if (crtc) {
@@ -604,8 +603,6 @@ void QXcbScreen::setMonitor(xcb_randr_monitor_info_t *monitorInfo, xcb_timestamp
         // TODO: Send an event to the QScreen instance that the screen changed its name
         return;
     }
-
-    xcb_randr_select_input(xcb_connection(), screen()->root, true);
 
     m_monitor = monitorInfo;
     qCDebug(lcQpaScreen) << "xcb_randr_monitor_info_t: primary=" << m_monitor->primary << ", x=" << m_monitor->x << ", y=" << m_monitor->y

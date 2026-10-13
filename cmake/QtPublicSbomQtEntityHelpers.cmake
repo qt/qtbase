@@ -4,7 +4,7 @@
 # Helper macro to prepare forwarding all set sbom options to some other function.
 # Expects the options names to be set in the parent scope by calling
 # _qt_internal_get_sbom_add_target_options(opt_args single_args multi_args)
-macro(_qt_internal_sbom_forward_sbom_add_target_options args_var_name)
+macro(_qt_internal_sbom_forward_sbom_add_target_options_modified args_var_name)
     if(NOT opt_args)
         message(FATAL_ERROR
             "Expected opt_args to be set by _qt_internal_get_sbom_add_target_options")
@@ -17,16 +17,35 @@ macro(_qt_internal_sbom_forward_sbom_add_target_options args_var_name)
         message(FATAL_ERROR
             "Expected multi_args to be set by _qt_internal_get_sbom_add_target_options")
     endif()
+
+    if(NOT sbom_entity_type)
+        message(FATAL_ERROR
+            "Expected sbom_entity_type to be set by the parent scope")
+    endif()
+
+    set(modified_opt_args ${opt_args})
+    set(modified_single_args ${single_args})
+    set(modified_multi_args ${multi_args})
+
+    # Don't forward the sbom entity type values, as they are handled manually.
+    list(REMOVE_ITEM modified_single_args
+        TYPE
+        SBOM_ENTITY_TYPE
+        DEFAULT_SBOM_ENTITY_TYPE
+    )
+
     _qt_internal_forward_function_args(
         FORWARD_PREFIX arg
         FORWARD_OUT_VAR ${args_var_name}
         FORWARD_OPTIONS
-            ${opt_args}
+            ${modified_opt_args}
         FORWARD_SINGLE
-            ${single_args}
+            ${modified_single_args}
         FORWARD_MULTI
-            ${multi_args}
+            ${modified_multi_args}
     )
+
+    list(APPEND ${args_var_name} SBOM_ENTITY_TYPE "${sbom_entity_type}")
 endmacro()
 
 # Helper function to add a default supplier for a qt entity type.
@@ -36,8 +55,9 @@ function(_qt_internal_sbom_handle_qt_entity_supplier target)
     cmake_parse_arguments(PARSE_ARGV 1 arg "${opt_args}" "${single_args}" "${multi_args}")
     _qt_internal_validate_all_args_are_parsed(arg)
 
-    _qt_internal_sbom_is_qt_entity_type("${arg_TYPE}" is_qt_entity_type)
-    _qt_internal_sbom_is_qt_3rd_party_entity_type("${arg_TYPE}" is_qt_3rd_party_entity_type)
+    _qt_internal_sbom_is_qt_entity_type("${arg_SBOM_ENTITY_TYPE}" is_qt_entity_type)
+    _qt_internal_sbom_is_qt_3rd_party_entity_type("${arg_SBOM_ENTITY_TYPE}"
+        is_qt_3rd_party_entity_type)
 
     set(supplier "")
     if(NOT arg_SUPPLIER
@@ -58,7 +78,7 @@ function(_qt_internal_sbom_handle_qt_entity_package_version target)
     cmake_parse_arguments(PARSE_ARGV 1 arg "${opt_args}" "${single_args}" "${multi_args}")
     _qt_internal_validate_all_args_are_parsed(arg)
 
-    _qt_internal_sbom_is_qt_entity_type("${arg_TYPE}" is_qt_entity_type)
+    _qt_internal_sbom_is_qt_entity_type("${arg_SBOM_ENTITY_TYPE}" is_qt_entity_type)
 
     set(package_version "")
     if(NOT arg_PACKAGE_VERSION
@@ -79,7 +99,7 @@ function(_qt_internal_sbom_handle_qt_entity_download_location target)
     cmake_parse_arguments(PARSE_ARGV 1 arg "${opt_args}" "${single_args}" "${multi_args}")
     _qt_internal_validate_all_args_are_parsed(arg)
 
-    _qt_internal_sbom_is_qt_entity_type("${arg_TYPE}" is_qt_entity_type)
+    _qt_internal_sbom_is_qt_entity_type("${arg_SBOM_ENTITY_TYPE}" is_qt_entity_type)
 
     set(download_location "")
     if(NOT arg_DOWNLOAD_LOCATION AND is_qt_entity_type)
@@ -98,13 +118,13 @@ function(_qt_internal_sbom_handle_qt_entity_license_expression target)
     cmake_parse_arguments(PARSE_ARGV 1 arg "${opt_args}" "${single_args}" "${multi_args}")
     _qt_internal_validate_all_args_are_parsed(arg)
 
-    _qt_internal_sbom_is_qt_entity_type("${arg_TYPE}" is_qt_entity_type)
+    _qt_internal_sbom_is_qt_entity_type("${arg_SBOM_ENTITY_TYPE}" is_qt_entity_type)
 
     set(license_expression "")
 
     # For Qt entities, we have some special handling.
     if(is_qt_entity_type AND NOT arg_NO_DEFAULT_QT_LICENSE AND NOT arg_QT_LICENSE_ID)
-        if(arg_TYPE STREQUAL "QT_TOOL" OR arg_TYPE STREQUAL "QT_APP")
+        if(arg_SBOM_ENTITY_TYPE STREQUAL "QT_TOOL" OR arg_SBOM_ENTITY_TYPE STREQUAL "QT_APP")
             if(QT_SBOM_DEFAULT_QT_LICENSE_ID_EXECUTABLES
                     AND NOT arg_NO_DEFAULT_QT_LICENSE_ID_EXECUTABLES)
                 # A repo might contain only the "gpl3" license variant as the default for all
@@ -161,7 +181,7 @@ function(_qt_internal_sbom_handle_qt_entity_license_declared_expression target)
     cmake_parse_arguments(PARSE_ARGV 1 arg "${opt_args}" "${single_args}" "${multi_args}")
     _qt_internal_validate_all_args_are_parsed(arg)
 
-    _qt_internal_sbom_is_qt_entity_type("${arg_TYPE}" is_qt_entity_type)
+    _qt_internal_sbom_is_qt_entity_type("${arg_SBOM_ENTITY_TYPE}" is_qt_entity_type)
 
     set(license_expression "")
 
@@ -189,7 +209,7 @@ function(_qt_internal_sbom_handle_qt_entity_copyrights target)
     cmake_parse_arguments(PARSE_ARGV 1 arg "${opt_args}" "${single_args}" "${multi_args}")
     _qt_internal_validate_all_args_are_parsed(arg)
 
-    _qt_internal_sbom_is_qt_entity_type("${arg_TYPE}" is_qt_entity_type)
+    _qt_internal_sbom_is_qt_entity_type("${arg_SBOM_ENTITY_TYPE}" is_qt_entity_type)
 
     set(qt_default_copyright "")
     if(is_qt_entity_type AND NOT arg_NO_DEFAULT_QT_COPYRIGHTS)
@@ -208,8 +228,9 @@ function(_qt_internal_sbom_handle_qt_entity_cpe target)
     cmake_parse_arguments(PARSE_ARGV 1 arg "${opt_args}" "${single_args}" "${multi_args}")
     _qt_internal_validate_all_args_are_parsed(arg)
 
-    _qt_internal_sbom_is_qt_entity_type("${arg_TYPE}" is_qt_entity_type)
-    _qt_internal_sbom_is_qt_3rd_party_entity_type("${arg_TYPE}" is_qt_3rd_party_entity_type)
+    _qt_internal_sbom_is_qt_entity_type("${arg_SBOM_ENTITY_TYPE}" is_qt_entity_type)
+    _qt_internal_sbom_is_qt_3rd_party_entity_type("${arg_SBOM_ENTITY_TYPE}"
+        is_qt_3rd_party_entity_type)
 
     set(cpe_list "")
 
@@ -380,8 +401,9 @@ function(_qt_internal_sbom_handle_qt_entity_purl_entries)
 
     set(purl_ids "")
 
-    _qt_internal_sbom_is_qt_entity_type("${arg_TYPE}" is_qt_entity_type)
-    _qt_internal_sbom_is_qt_3rd_party_entity_type("${arg_TYPE}" is_qt_3rd_party_entity_type)
+    _qt_internal_sbom_is_qt_entity_type("${arg_SBOM_ENTITY_TYPE}" is_qt_entity_type)
+    _qt_internal_sbom_is_qt_3rd_party_entity_type("${arg_SBOM_ENTITY_TYPE}"
+        is_qt_3rd_party_entity_type)
 
     if(is_qt_entity_type OR is_qt_3rd_party_entity_type)
         _qt_internal_sbom_get_qt_entity_default_purl_ids(purl_ids)

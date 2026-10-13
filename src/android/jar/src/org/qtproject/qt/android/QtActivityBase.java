@@ -25,6 +25,8 @@ import android.view.View;
 import android.view.Window;
 import java.lang.IllegalArgumentException;
 
+import android.widget.Toast;
+
 public class QtActivityBase extends Activity
 {
     public static final String EXTRA_SOURCE_INFO = "org.qtproject.qt.android.sourceInfo";
@@ -34,6 +36,7 @@ public class QtActivityBase extends Activity
     private boolean m_retainNonConfigurationInstance = false;
     private Configuration m_prevConfig;
     private final QtActivityDelegate m_delegate;
+    private boolean m_onCreateSucceeded = false;
 
     private void addReferrer(Intent intent)
     {
@@ -56,7 +59,8 @@ public class QtActivityBase extends Activity
 
     // Append any parameters to your application.
     // Either a whitespace or a tab is accepted as a separator between parameters.
-    /** @noinspection unused*/
+    /**unused*/
+    @SuppressWarnings("unused")
     public void appendApplicationParameters(String params)
     {
         if (params == null || params.isEmpty())
@@ -112,19 +116,32 @@ public class QtActivityBase extends Activity
             loader.appendApplicationParameters(m_applicationParams);
 
             QtLoader.LoadingResult result = loader.loadQtLibraries();
-
             if (result == QtLoader.LoadingResult.Succeeded) {
                 m_delegate.startNativeApplication(loader.getApplicationParameters(),
                         loader.getMainLibraryPath());
             } else if (result == QtLoader.LoadingResult.Failed) {
-                showErrorDialog();
+                showFatalFinishingToast();
+                return;
             }
         } catch (IllegalArgumentException e) {
             e.printStackTrace();
-            showErrorDialog();
+            showFatalFinishingToast();
+            return;
         }
 
         m_prevConfig = new Configuration(getResources().getConfiguration());
+        m_onCreateSucceeded = true;
+    }
+
+    private void showFatalFinishingToast() {
+        Resources resources = getResources();
+        String packageName = getPackageName();
+        @SuppressLint("DiscouragedApi") int id = resources.getIdentifier(
+                "fatal_error_msg", "string", packageName);
+        String message = resources.getString(id);
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+
+        finish();
     }
 
     @Override
@@ -172,6 +189,10 @@ public class QtActivityBase extends Activity
     protected void onDestroy()
     {
         super.onDestroy();
+
+        if (!m_onCreateSucceeded)
+            System.exit(-1);
+
         if (!m_retainNonConfigurationInstance) {
             QtNative.unregisterAppStateListener(m_delegate);
             QtNative.terminateQt();
@@ -356,17 +377,5 @@ public class QtActivityBase extends Activity
     QtActivityDelegateBase getActivityDelegate()
     {
         return m_delegate;
-    }
-
-    private void showErrorDialog() {
-        Resources resources = getResources();
-        String packageName = getPackageName();
-        AlertDialog errorDialog = new AlertDialog.Builder(this).create();
-        @SuppressLint("DiscouragedApi") int id = resources.getIdentifier(
-                "fatal_error_msg", "string", packageName);
-        errorDialog.setMessage(resources.getString(id));
-        errorDialog.setButton(Dialog.BUTTON_POSITIVE, resources.getString(android.R.string.ok),
-                (dialog, which) -> finish());
-        errorDialog.show();
     }
 }

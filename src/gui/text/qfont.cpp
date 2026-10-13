@@ -82,6 +82,9 @@ bool QFontDef::exactMatch(const QFontDef &other) const
     if (stretch != 0 && other.stretch != 0 && stretch != other.stretch)
         return false;
 
+    if (families.size() != other.families.size())
+        return false;
+
     QString this_family, this_foundry, other_family, other_foundry;
     for (int i = 0; i < families.size(); ++i) {
         QFontDatabasePrivate::parseFontName(families.at(i), this_foundry, this_family);

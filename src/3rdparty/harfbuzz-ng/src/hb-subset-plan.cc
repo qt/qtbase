@@ -248,7 +248,7 @@ _populate_unicodes_to_retain (const hb_set_t *unicodes_in,
     !(plan->flags & HB_SUBSET_FLAGS_NO_BIDI_CLOSURE));
 
   OT::cmap::accelerator_t cmap (plan->source);
-  unsigned size_threshold = plan->source->get_num_glyphs ();  
+  unsigned size_threshold = plan->source->get_num_glyphs ();
 
   if (glyphs->is_empty () && unicodes.get_population () < size_threshold)
   {
@@ -376,7 +376,7 @@ _populate_unicodes_to_retain (const hb_set_t *unicodes_in,
   // so record those first.
   plan->os2_info.min_cmap_codepoint = plan->unicodes.get_min();
   plan->os2_info.max_cmap_codepoint = plan->unicodes.get_max();
-  
+
   hb_set_t variation_selectors_to_retain;
   cmap.collect_variation_selectors(&variation_selectors_to_retain);
   + variation_selectors_to_retain.iter()
@@ -697,6 +697,15 @@ hb_subset_plan_t::hb_subset_plan_t (hb_face_t *face,
     return;
   }
 
+#ifdef HB_EXPERIMENTAL_API  
+  if ((input->flags & HB_SUBSET_FLAGS_RETAIN_GIDS) &&
+      (input->flags & HB_SUBSET_FLAGS_RETAIN_NUM_GLYPHS)) {
+    // We've been requested to maintain the num glyphs count from the
+    // input face.
+    _num_output_glyphs = source->get_num_glyphs ();
+  }
+#endif
+
   _create_glyph_map_gsub (
       &_glyphset_gsub,
       glyph_map,
@@ -710,10 +719,10 @@ hb_subset_plan_t::hb_subset_plan_t (hb_face_t *face,
         glyph_map->get(unicode_to_new_gid_list.arrayZ[i].second);
   }
 
-  bounds_width_vec.resize (_num_output_glyphs, false);
+  bounds_width_vec.resize_dirty  (_num_output_glyphs);
   for (auto &v : bounds_width_vec)
     v = 0xFFFFFFFF;
-  bounds_height_vec.resize (_num_output_glyphs, false);
+  bounds_height_vec.resize_dirty  (_num_output_glyphs);
   for (auto &v : bounds_height_vec)
     v = 0xFFFFFFFF;
 

@@ -14,6 +14,8 @@ endif()
 qt_internal_add_test(tst_qutf8stringview
     SOURCES
         tst_qutf8stringview.cpp
+    LIBRARIES
+        Qt::TestPrivate
 )
 
 ## Scopes:

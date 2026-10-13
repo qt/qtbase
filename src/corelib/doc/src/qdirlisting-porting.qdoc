@@ -1,0 +1,121 @@
+// Copyright (C) 2025 Ahmad Samir <a.samirh78@gmail.com>
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page qdiriterator-to-qdirlisting-porting.html
+    \title Porting QDirIterator to QDirListing
+
+    \ingroup how-to
+
+    In Qt 6.8 QDirListing was added as a more efficient replacement for QDirIterator
+    (the latter is still available for now). This page highlights some points to keep
+    in mind when porting QDirIterator to QDirListing.
+
+    With QDirIterator you can control which entries are listed using flags from
+    two separate enumerators, QDirIterator::IteratorFlags and QDir::Filters, whereas
+    QDirListing has one set of flags to handle this task.
+
+    Porting QDirIterator::IteratorFlags to QDirListing::IteratorFlags is straightforward:
+    \list
+        \li QDirListing::IteratorFlag::Default is equivalent to QDirIterator::NoIteratorFlags
+        \li QDirListing::IteratorFlag::FollowDirSymlinks is equivalent to QDirIterator::FollowSymlinks
+        \li QDirListing::IteratorFlag::Recursive is equivalent to QDirIterator::Subdirectories
+    \endlist
+
+    Porting QDir::Filters to QDirListing::IteratorFlags may be more complex, depending
+    on the bitwise OR-ed combination of QDir::Filters you use.
+
+    \list
+        \li By default, QDirListing lists directories, regular files, symbolic links,
+            and special (\e other) file system entries; you can exclude entries based
+            on their type by using the various QDirListing::IteratorFlag::Exclude* flags.
+        \li QDir's default filter is QDir::AllEntries, which is equivalent to:
+            \code
+            using F = QDirListing::IteratorFlag;
+            QDirListing::IteratorFlags(F::ExcludeOther|F::ResolveSymlinks|F::IncludeDotAndDotDot);
+            \endcode
+        \li By default, QDirListing lists (Windows) drives, hence there is no equivalent
+            for QDir::Drives.
+        \li QDir::Readable, QDir::Writable, QDir::Executable, and QDir::AllDirs:
+            The are no equivalent flags in QDirListing. If you need this functionality,
+            iterate over the entries with a range-for loop and filter as required.
+
+            \code
+            QDirIterator dit(dirPath, QDir::AllEntries | QDir::Readable | QDir::Executable | QDir::NoDotAndDotDot);
+            while (dit.hasNext()) {
+                const QFileInfo fi = dit.nextFileInfo();
+                fileNames.append(fi.fileName());
+                ...
+            }
+
+            using F = QDirListing::IteratorFlags;
+            for (const auto &dirEntry : QDirListing(dirPath, F::Default)) {
+                const QFileInfo fi = dirEntry.fileInfo();
+                // Filter based on readable and executable bits
+                if (fi.isReadable() && fi.isExecutable()) {
+                    fileNames.append(dirEntry.fileName());
+                    ...
+                }
+            }
+            \endcode
+
+            \code
+            // QDir::AllDirs causes dirs to always be listed regardless of `nameFilters`;
+            // for example, to list ".so" files in a file dialog and still list all dirs:
+            QDirIterator dit(dirPath, nameFilters, QDir::AllDirs | QDir::NoDotAndDotDot);
+            while (dit.hasNext()) {
+                const QFileInfo fi = dit.nextFileInfo();
+                ...
+            }
+
+            // Equivalent code using QDirListing:
+            using F = QDirListing::IteratorFlags;
+            for (const auto &dirEntry : QDirListing(dirPath, F::Default)) {
+                const QFileInfo fi = dirEntry.fileInfo();
+                if (fi.isDir() || fi.fileName().endsWith(".so"_L1)) {
+                    ...
+                }
+            }
+            \endcode
+        \li With QDirListing the semantics of QDir::NoDot, QDir::NoDotDot and
+            QDir::NoDotAndDotDot have been combined into one flag. By default,
+            QDirListing doesn't list the special entries \c {.} and \c {..}.
+            Set QDirListing::IteratorFlag::IncludeDotAndDotDot to list them.
+    \endlist
+
+    \section1 Symbolic Links
+        By default, QDirIterator resolves symbolic links unless QDir::NoSymlinks is set,
+        whereas QDirListing doesn't resolve symbolic links unless
+        QDirListing::IteratorFlag::ResolveSymlinks is set, in which case the filtering
+        is done based on the type of the target of the symbolic link, not the symbolic
+        link itself. For example, to list only regular files \e and symbolic links to
+        regular files, you must set QDirListing::IteratorFlag::FilesOnly \e and
+        QDirListing::IteratorFlag::ResolveSymlinks.
+
+        \code
+        // Symbolic links are resolved by default
+        QDirIterator dit(dirPath, QDir::Files | QDir::NoDotAndDotDot);
+        while (dit.hasNext()) {
+            const QFileInfo fi = dit.nextFileInfo();
+            fileNames.append(fi.fileName());
+            ...
+        }
+
+        // To preserve the behavior of the code above, set ResolveSymlinks:
+        using F = QDirListing::IteratorFlags;
+        for (const auto &dirEntry : QDirListing(dirPath, F::FilesOnly | F::ResolveSymlinks)) {
+            fileNames.append(dirEntry.fileName());
+            ...
+        }
+        \endcode
+
+    \section1 QDirListing::DirEntry
+        QDirListing::DirEntry offers a subset of QFileInfo's API (for example, fileName(),
+        filePath(), exists()). The main advantage of DirEntry's API is delaying the (rather
+        expensive) \c stat() or \c lstat() calls if we already got the needed info by some
+        other means. On Linux, for example, internally we use readdir() to iterate over a
+        directory tree, and we get the name and type of the entry as part of the returned
+        info. So if all you want is the file name use, QDirListing::DirEntry::fileName()
+        instead of QDirListing::DirEntry::fileInfo().fileName() (QDirListing will construct
+        a QFileInfo internally and use that transparently when needed).
+*/

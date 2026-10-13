@@ -168,7 +168,7 @@ endif()")
         set(cmake_sysroot_name "$CACHE{CMAKE_OSX_SYSROOT}")
 
         list(LENGTH CMAKE_OSX_ARCHITECTURES _qt_osx_architectures_count)
-        if(cmake_sysroot_name AND NOT _qt_osx_architectures_count GREATER 1 AND UIKIT)
+        if(cmake_sysroot_name AND (MACOS OR (UIKIT AND NOT _qt_osx_architectures_count GREATER 1)))
             list(APPEND init_platform "
 if(NOT DEFINED CMAKE_OSX_SYSROOT)
     set(CMAKE_OSX_SYSROOT \"${cmake_sysroot_name}\" CACHE STRING \"\")

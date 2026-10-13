@@ -1,5 +1,6 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+// Qt-Security score:significant reason:default
 
 #ifndef QNETWORKREPLYHTTPIMPL_P_H
 #define QNETWORKREPLYHTTPIMPL_P_H
@@ -162,6 +163,7 @@ public:
     QString reasonPhrase;
 
     // upload
+    void maybeDropUploadDevice(const QNetworkRequest &newHttpRequest);
     QNonContiguousByteDevice* createUploadByteDevice();
     std::shared_ptr<QNonContiguousByteDevice> uploadByteDevice;
     qint64 uploadByteDevicePosition;

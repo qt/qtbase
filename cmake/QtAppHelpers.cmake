@@ -122,7 +122,7 @@ function(qt_internal_add_app target)
 
     if(QT_GENERATE_SBOM)
         set(sbom_args "")
-        list(APPEND sbom_args TYPE QT_APP)
+        list(APPEND sbom_args DEFAULT_SBOM_ENTITY_TYPE QT_APP)
 
         qt_get_cmake_configurations(cmake_configs)
         foreach(cmake_config IN LISTS cmake_configs)

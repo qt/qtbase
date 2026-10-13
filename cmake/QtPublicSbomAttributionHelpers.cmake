@@ -58,9 +58,11 @@ function(_qt_internal_sbom_handle_qt_attribution_files out_prefix_outer)
     # In which case we don't want to proagate options like CPE to the child attribution targets,
     # because the CPE is meant for the parent target.
     set(propagate_sbom_options_to_new_attribution_targets TRUE)
-    if(arg___QT_INTERNAL_HANDLE_QT_ENTITY_ATTRIBUTION_FILES)
-        _qt_internal_sbom_is_qt_entity_type("${arg_TYPE}" is_qt_entity_type)
-        if(is_qt_entity_type)
+    if(arg___QT_INTERNAL_HANDLE_QT_ENTITY_ATTRIBUTION_FILES
+            AND arg_ATTRIBUTION_PARENT_TARGET_SBOM_ENTITY_TYPE)
+        _qt_internal_sbom_is_qt_entity_type("${arg_ATTRIBUTION_PARENT_TARGET_SBOM_ENTITY_TYPE}"
+            parent_is_qt_entity_type)
+        if(parent_is_qt_entity_type)
             set(arg_CREATE_SBOM_FOR_EACH_ATTRIBUTION TRUE)
         endif()
     endif()
@@ -240,6 +242,12 @@ function(_qt_internal_sbom_handle_qt_attribution_files out_prefix_outer)
                     # file(GENERATE) multiple times with the same file name, but different content.
                     list(REMOVE_ITEM sbom_single_args FRIENDLY_PACKAGE_NAME)
 
+                    # Filter out the sbom entity types, they are specified manually.
+                    list(REMOVE_ITEM sbom_single_args
+                        SBOM_ENTITY_TYPE
+                        DEFAULT_SBOM_ENTITY_TYPE
+                    )
+
                     _qt_internal_forward_function_args(
                         FORWARD_APPEND
                         FORWARD_PREFIX arg
@@ -264,7 +272,7 @@ function(_qt_internal_sbom_handle_qt_attribution_files out_prefix_outer)
 
                 _qt_internal_add_sbom("${attribution_target}"
                     IMMEDIATE_FINALIZATION
-                    TYPE "${attribution_entity_type}"
+                    SBOM_ENTITY_TYPE "${attribution_entity_type}"
                     ATTRIBUTION_FILE_PATHS "${attribution_file_path}"
                     ATTRIBUTION_ENTRY_INDEX "${entry_index}"
                     NO_CURRENT_DIR_ATTRIBUTION

@@ -1,6 +1,7 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // Copyright (C) 2016 Intel Corporation.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+// Qt-Security score:significant reason:default
 
 //#define QNATIVESOCKETENGINE_DEBUG
 
@@ -429,11 +430,14 @@ bool QNativeSocketEngine::initialize(QAbstractSocket::SocketType socketType, QAb
 
     if (socketType == QAbstractSocket::UdpSocket) {
         // Set the broadcasting flag if it's a UDP socket.
-        if (!setOption(BroadcastSocketOption, 1)) {
-            d->setError(QAbstractSocket::UnsupportedSocketOperationError,
-                        QNativeSocketEnginePrivate::BroadcastingInitFailedErrorString);
-            close();
-            return false;
+        // IPv6 does not support broadcast — only set option for IPv4
+        if (protocol != QAbstractSocket::IPv6Protocol) {
+            if (!setOption(BroadcastSocketOption, 1)) {
+                d->setError(QAbstractSocket::UnsupportedSocketOperationError,
+                            QNativeSocketEnginePrivate::BroadcastingInitFailedErrorString);
+                close();
+                return false;
+            }
         }
 
         // Set some extra flags that are interesting to us, but accept failure
@@ -507,6 +511,7 @@ bool QNativeSocketEngine::initialize(qintptr socketDescriptor, QAbstractSocket::
 
         // Set the broadcasting flag if it's a UDP socket.
         if (d->socketType == QAbstractSocket::UdpSocket
+            && d->socketProtocol != QAbstractSocket::IPv6Protocol
             && !setOption(BroadcastSocketOption, 1)) {
             d->setError(QAbstractSocket::UnsupportedSocketOperationError,
                 QNativeSocketEnginePrivate::BroadcastingInitFailedErrorString);

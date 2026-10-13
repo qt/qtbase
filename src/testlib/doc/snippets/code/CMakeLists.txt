@@ -11,18 +11,22 @@ target_link_libraries(testlib_code_snippets PRIVATE
     Qt::Test
 )
 
-qt_internal_extend_target(testlib_code_snippets CONDITION QT_FEATURE_gui AND QT_FEATURE_sql
-    SOURCES
+if(QT_FEATURE_gui AND QT_FEATURE_sql)
+    target_sources(testlib_code_snippets PRIVATE
         doc_src_qtestlib.cpp
-    PUBLIC_LIBRARIES
+    )
+    target_link_libraries(testlib_code_snippets PUBLIC
         Qt::Gui
         Qt::Sql
-)
+    )
+endif()
 
-qt_internal_extend_target(testlib_code_snippets CONDITION QT_FEATURE_widgets
-    SOURCES
+if(QT_FEATURE_widgets)
+    target_sources(testlib_code_snippets PRIVATE
         doc_src_qtestevent.cpp
         doc_src_qtestevent.h
-    PUBLIC_LIBRARIES
+    )
+    target_link_libraries(testlib_code_snippets PUBLIC
         Qt::Widgets
-)
+    )
+endif()

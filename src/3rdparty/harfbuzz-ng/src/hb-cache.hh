@@ -75,6 +75,8 @@ struct hb_cache_t
   static_assert ((key_bits >= cache_bits), "");
   static_assert ((key_bits + value_bits <= cache_bits + 8 * sizeof (item_t)), "");
 
+  static constexpr unsigned MAX_VALUE = (1u << value_bits) - 1;
+
   hb_cache_t () { clear (); }
 
   void clear ()
@@ -83,6 +85,7 @@ struct hb_cache_t
       v = -1;
   }
 
+  HB_HOT
   bool get (unsigned int key, unsigned int *value) const
   {
     unsigned int k = key & ((1u<<cache_bits)-1);
@@ -94,14 +97,20 @@ struct hb_cache_t
     return true;
   }
 
-  bool set (unsigned int key, unsigned int value)
+  HB_HOT
+  void set (unsigned int key, unsigned int value)
   {
     if (unlikely ((key >> key_bits) || (value >> value_bits)))
-      return false; /* Overflows */
+      return; /* Overflows */
+    set_unchecked (key, value);
+  }
+
+  HB_HOT
+  void set_unchecked (unsigned int key, unsigned int value)
+  {
     unsigned int k = key & ((1u<<cache_bits)-1);
     unsigned int v = ((key>>cache_bits)<<value_bits) | value;
     values[k] = v;
-    return true;
   }
 
   private:

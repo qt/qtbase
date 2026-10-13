@@ -1005,7 +1005,7 @@ void tst_QMenuBar::check_menuPosition()
 
     //the menu should be above the menubar item
     {
-        w.move(0,screenRect.bottom() - screenRect.height()/4); //just leave some place for the menubar
+        w.move(availRect.x(), screenRect.bottom() - screenRect.height()/4); //just leave some place for the menubar
         QRect mbItemRect = w.menuBar()->actionGeometry(menu_action);
         mbItemRect.moveTo(w.menuBar()->mapToGlobal(mbItemRect.topLeft()));
         QTest::keyClick(&w, Qt::Key_M, Qt::AltModifier );
@@ -1016,7 +1016,7 @@ void tst_QMenuBar::check_menuPosition()
 
     //the menu should be on the side of the menubar item and should be "stuck" to the bottom of the screen
     {
-        w.move(0,screenRect.y() + screenRect.height()/2); //put it in the middle
+        w.move(availRect.x(), screenRect.y() + screenRect.height()/2); //put it in the middle
         QRect mbItemRect = w.menuBar()->actionGeometry(menu_action);
         mbItemRect.moveTo(w.menuBar()->mapToGlobal(mbItemRect.topLeft()));
         QTest::keyClick(&w, Qt::Key_M, Qt::AltModifier );
@@ -1233,12 +1233,41 @@ void tst_QMenuBar::taskQTBUG4965_escapeEaten()
 }
 #endif
 
+#ifdef Q_OS_LINUX
+class ResizeCounter : public QObject
+{
+public:
+    explicit ResizeCounter(QMenuBar *bar)
+    {
+        Q_ASSERT(bar);
+        bar->installEventFilter(this);
+    }
+
+    int resizeCount() const { return m_resizeCount; }
+
+protected:
+    bool eventFilter(QObject *o, QEvent *event) override
+    {
+        Q_UNUSED(o);
+        if (event->type() == QEvent::Resize)
+            ++m_resizeCount;
+        return false;
+    }
+
+private:
+    int m_resizeCount = 0;
+};
+#endif
+
 void tst_QMenuBar::taskQTBUG11823_crashwithInvisibleActions()
 {
     if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
         QSKIP("Wayland: This fails. Figure out why.");
 
     QMenuBar menubar;
+#ifdef Q_OS_LINUX
+    ResizeCounter counter(&menubar);
+#endif
     menubar.setNativeMenuBar(false); //we can't check the geometry of native menubars
 
     QAction * m = menubar.addAction( "&m" );
@@ -1247,6 +1276,12 @@ void tst_QMenuBar::taskQTBUG11823_crashwithInvisibleActions()
     centerOnScreen(&menubar);
     menubar.show();
     QVERIFY(QTest::qWaitForWindowActive(&menubar));
+
+#ifdef Q_OS_LINUX
+    if (QSysInfo::productType().contains("opensuse"))
+        QVERIFY(QTest::qWaitFor([&]{ return counter.resizeCount() == 2;}));
+#endif
+
     menubar.setActiveAction(m);
     QCOMPARE(menubar.activeAction(), m);
     QTest::keyClick(static_cast<QWidget *>(0), Qt::Key_Right);

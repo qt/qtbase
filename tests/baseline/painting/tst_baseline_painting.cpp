@@ -131,13 +131,11 @@ void tst_Lancelot::initTestCase()
         scriptChecksums.insert(fileName, qChecksum(cont));
     }
 
-    QString underlineTestFont1 = QFINDTESTDATA("fonts/QtUnderlineTest-Regular.ttf");
-    QVERIFY(!underlineTestFont1.isEmpty());
+    QString underlineTestFont1 = QLatin1String(":/fonts/QtUnderlineTest-Regular.ttf");
     int id = QFontDatabase::addApplicationFont(underlineTestFont1);
     QVERIFY(id >= 0);
 
-    QString underlineTestFont2 = QFINDTESTDATA("fonts/QtUnderlineTest2-Regular.ttf");
-    QVERIFY(!underlineTestFont2.isEmpty());
+    QString underlineTestFont2 = QLatin1String(":/fonts/QtUnderlineTest2-Regular.ttf");
     id = QFontDatabase::addApplicationFont(underlineTestFont2);
     QVERIFY(id >= 0);
 

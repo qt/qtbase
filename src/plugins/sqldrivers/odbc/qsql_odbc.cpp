@@ -546,23 +546,21 @@ static QVariant qGetIntData(SQLHANDLE hStmt, int column, bool isSigned = true)
         return uint(intbuf);
 }
 
-static QVariant qGetDoubleData(SQLHANDLE hStmt, int column)
+template <typename T>
+static QVariant qGetFloatingPointData(SQLHANDLE hStmt, int column)
 {
-    SQLDOUBLE dblbuf;
+    constexpr auto tgtType = sizeof(T) == 4 ? SQL_C_FLOAT : SQL_C_DOUBLE;
+    static_assert(std::is_same_v<T, float> || std::is_same_v<T, double>,
+                  "Can only handle float or double");
+    T buffer = 0;
     SQLLEN lengthIndicator = 0;
-    SQLRETURN r = SQLGetData(hStmt,
-                              column+1,
-                              SQL_C_DOUBLE,
-                              (SQLPOINTER) &dblbuf,
-                              0,
-                              &lengthIndicator);
-    if (!SQL_SUCCEEDED(r)) {
+    SQLRETURN r = SQLGetData(hStmt, column + 1, tgtType,
+                             (SQLPOINTER)&buffer, sizeof(buffer), &lengthIndicator);
+    if (!SQL_SUCCEEDED(r))
         return QVariant();
-    }
     if (lengthIndicator == SQL_NULL_DATA)
-        return QVariant(QMetaType::fromType<double>());
-
-    return (double) dblbuf;
+        return QVariant(QMetaType::fromType<T>());
+    return QVariant::fromValue<T>(buffer);
 }
 
 
@@ -1175,7 +1173,8 @@ QVariant QODBCResult::data(int field)
         // some servers do not support fetching column n after we already
         // fetched column n+1, so cache all previous columns here
         const QSqlField info = d->rInf.field(i);
-        switch (info.metaType().id()) {
+        const auto metaTypeId = info.metaType().id();
+        switch (metaTypeId) {
         case QMetaType::LongLong:
             d->fieldCache[i] = qGetBigIntData(d->hStmt, i);
         break;
@@ -1236,8 +1235,9 @@ QVariant QODBCResult::data(int field)
         case QMetaType::QString:
             d->fieldCache[i] = qGetStringData(d->hStmt, i, info.length(), d->unicode);
             break;
+        case QMetaType::Float:
         case QMetaType::Double:
-            switch(numericalPrecisionPolicy()) {
+            switch (numericalPrecisionPolicy()) {
                 case QSql::LowPrecisionInt32:
                     d->fieldCache[i] = qGetIntData(d->hStmt, i);
                     break;
@@ -1245,11 +1245,13 @@ QVariant QODBCResult::data(int field)
                     d->fieldCache[i] = qGetBigIntData(d->hStmt, i);
                     break;
                 case QSql::LowPrecisionDouble:
-                    d->fieldCache[i] = qGetDoubleData(d->hStmt, i);
+                    if (metaTypeId == QMetaType::Float)
+                        d->fieldCache[i] = qGetFloatingPointData<float>(d->hStmt, i);
+                    else
+                        d->fieldCache[i] = qGetFloatingPointData<double>(d->hStmt, i);
                     break;
                 case QSql::HighPrecision:
-                    const int extra = info.precision() > 0 ? 1 : 0;
-                    d->fieldCache[i] = qGetStringData(d->hStmt, i, info.length() + extra, false);
+                    d->fieldCache[i] = qGetStringData(d->hStmt, i, -1, false);
                     break;
             }
             break;

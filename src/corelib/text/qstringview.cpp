@@ -1,5 +1,6 @@
 // Copyright (C) 2017 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Marc Mutz <marc.mutz@kdab.com>
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+// Qt-Security score:sensitive reason:docs-only
 
 #include "qstringview.h"
 
@@ -709,7 +710,7 @@ QT_BEGIN_NAMESPACE
 
     \note The behavior is undefined when \a length < 0 or \a length > size().
 
-    \sa mid(), left(), right(), chop(), truncate(), slice()
+    \sa sliced(), left(), right(), chop(), truncate(), slice()
 */
 
 /*!
@@ -721,7 +722,7 @@ QT_BEGIN_NAMESPACE
 
     \note The behavior is undefined when \a length < 0 or \a length > size().
 
-    \sa mid(), left(), right(), chopped(), chop()
+    \sa sliced(), left(), right(), chopped(), chop()
 */
 
 /*!
@@ -733,7 +734,7 @@ QT_BEGIN_NAMESPACE
 
     \note The behavior is undefined when \a length < 0 or \a length > size().
 
-    \sa mid(), left(), right(), chopped(), truncate(), slice()
+    \sa sliced(), left(), right(), chopped(), truncate(), slice()
 */
 
 /*!
@@ -855,7 +856,7 @@ or the character \a ch
 /*!
     \fn qsizetype QStringView::indexOf(QStringView str, qsizetype from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
     \fn qsizetype QStringView::indexOf(QLatin1StringView l1, qsizetype from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
-    \fn qsizetype QStringView::indexOf(QChar c, qsizetype from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
+    \fn qsizetype QStringView::indexOf(QChar ch, qsizetype from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
     \since 5.14
 
     Returns the index position of the first occurrence of
@@ -873,7 +874,7 @@ or the character \a ch
 /*!
     \fn bool QStringView::contains(QStringView str, Qt::CaseSensitivity cs) const
     \fn bool QStringView::contains(QLatin1StringView l1, Qt::CaseSensitivity cs) const
-    \fn bool QStringView::contains(QChar c, Qt::CaseSensitivity cs) const
+    \fn bool QStringView::contains(QChar ch, Qt::CaseSensitivity cs) const
     \since 5.14
 
     Returns \c true if this string view contains an occurrence of
@@ -888,7 +889,7 @@ or the character \a ch
 /*!
     \fn qsizetype QStringView::lastIndexOf(QStringView str, qsizetype from, Qt::CaseSensitivity cs) const
     \fn qsizetype QStringView::lastIndexOf(QLatin1StringView l1, qsizetype from, Qt::CaseSensitivity cs) const
-    \fn qsizetype QStringView::lastIndexOf(QChar c, qsizetype from, Qt::CaseSensitivity cs) const
+    \fn qsizetype QStringView::lastIndexOf(QChar ch, qsizetype from, Qt::CaseSensitivity cs) const
     \since 5.14
 
     Returns the index position of the last occurrence of
@@ -898,7 +899,7 @@ or the character \a ch
 
     \include qstring.qdocinc negative-index-start-search-from-end
 
-    Returns -1 if \a str, \a l1 or \a c is not found, respectively.
+    Returns -1 if \a str, \a l1 or \a ch is not found, respectively.
 
     \include qstring.qdocinc {search-comparison-case-sensitivity} {search}
 
@@ -930,7 +931,7 @@ or the character \a ch
 */
 
 /*!
-    \fn QStringView::lastIndexOf(QChar c, Qt::CaseSensitivity cs) const
+    \fn QStringView::lastIndexOf(QChar ch, Qt::CaseSensitivity cs) const
     \since 6.3
     \overload lastIndexOf()
 */

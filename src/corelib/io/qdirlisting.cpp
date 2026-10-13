@@ -1,6 +1,7 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // Copyright (C) 2024 Ahmad Samir <a.samirh78@gmail.com>
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+// Qt-Security score:significant reason:default
 
 /*!
     \since 6.8
@@ -62,8 +63,9 @@
     of QDirListing. Values from this enumerator can be bitwise OR'ed together.
 
     \value Default
-        List all files, directories and symbolic links, including broken
-        symlinks (where the target doesn't exist).
+        List all entries, that is, files, directories, symbolic links including broken
+        symbolic links (where the target doesn't exist) and special (\e other) system
+        files, see ExcludeOther for details.
         Hidden files and directories and the special entries \c{.} and \c{..}
         aren't listed by default.
 
@@ -496,28 +498,26 @@ bool QDirListingPrivate::matchesFilters(QDirEntryInfo &entryInfo) const
     if (fileName.isEmpty())
         return false;
 
-    if (isDotOrDotDot(fileName)) // All done, other checks below don't matter in this case
-        return iteratorFlags.testAnyFlags(F::IncludeDotAndDotDot);
-
     // name filter
 #if QT_CONFIG(regularexpression)
     if (!regexMatchesName(fileName))
         return false;
 #endif // QT_CONFIG(regularexpression)
 
+    if (isDotOrDotDot(fileName))
+        return iteratorFlags.testFlags(F::IncludeDotAndDotDot);
+
     if (!iteratorFlags.testAnyFlag(F::IncludeHidden) && entryInfo.isHidden())
         return false;
 
-    if (entryInfo.isSymLink()) {
-        // With ResolveSymlinks, we look at the type of the link's target,
-        // and exclude broken symlinks (where the target doesn't exist).
-        if (iteratorFlags.testAnyFlag(F::ResolveSymlinks)) {
-            if (!entryInfo.exists())
-                return false;
-        } else if (iteratorFlags.testAnyFlags(F::FilesOnly)
-                   || iteratorFlags.testAnyFlags(F::DirsOnly)) {
-            return false; // symlink is not a file or dir
-        }
+    // With ResolveSymlinks, we look at the type of the link's target,
+    // and exclude broken symlinks (where the target doesn't exist).
+    if (iteratorFlags.testAnyFlag(F::ResolveSymlinks)) {
+        if (entryInfo.isSymLink() && !entryInfo.exists())
+            return false;
+    } else if ((iteratorFlags.testAnyFlags(F::FilesOnly)
+               || iteratorFlags.testAnyFlags(F::DirsOnly)) && entryInfo.isSymLink()) {
+        return false; // symlink is not a file or dir
     }
 
     if (iteratorFlags.testAnyFlag(F::ExcludeSpecial)
@@ -571,12 +571,19 @@ QDirListing::QDirListing(const QString &path, IteratorFlags flags)
     be iterated. By default, \a flags is IteratorFlag::Default.
 
     The listed entries will be filtered according to the file glob patterns
-    in \a nameFilters (see QDir::setNameFilters() for more details).
+    in \a nameFilters, which are converted to a regular expression using
+    QRegularExpression::fromWildcard (see QDir::setNameFilters() for more
+    details).
 
     For example, the following iterator could be used to iterate over audio
     files:
 
     \snippet code/src_corelib_io_qdirlisting.cpp 2
+
+    Sometimes you can filter by name more efficiently by iterating over the
+    entries with a range-for loop, using string comparison. For example:
+
+    \snippet code/src_corelib_io_qdirlisting.cpp 7
 
     \sa IteratorFlags, QDir::setNameFilters()
 */

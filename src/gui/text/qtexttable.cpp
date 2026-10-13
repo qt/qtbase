@@ -724,7 +724,7 @@ void QTextTable::insertColumns(int pos, int num)
         if (i == d->nRows - 1 && pos == d->nCols) {
             cell = d->fragment_end;
         } else {
-            int logicalGridIndexBeforePosition = pos > 0
+            int logicalGridIndexBeforePosition = pos > 0 || i > 0
                                                  ? d->findCellIndex(d->grid[i*d->nCols + pos - 1])
                                                  : -1;
 

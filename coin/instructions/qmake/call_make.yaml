@@ -26,7 +26,7 @@ instructions:
           not_contains_value: "Mingw"
   # Call make when host os is not Windows (Linux, macOS)
   - type: ExecuteCommand
-    command: "{{.Env.CALL_MAKE_ENV_PREFIX}} make"
+    command: "{{.Env.CALL_MAKE_ENV_PREFIX}} make -j {{.NumCPU}}"
     executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
     maxTimeInSeconds: 6000
     maxTimeBetweenOutput: 1200
@@ -38,7 +38,7 @@ instructions:
       not_equals_value: Windows
   # Call mingw32-make when host os is Windows + MinGW (this includes building for Android)
   - type: ExecuteCommand
-    command: "{{.Env.CALL_MAKE_ENV_PREFIX}} mingw32-make"
+    command: "{{.Env.CALL_MAKE_ENV_PREFIX}} mingw32-make -j {{.NumCPU}}"
     executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
     maxTimeInSeconds: 6000
     maxTimeBetweenOutput: 1200

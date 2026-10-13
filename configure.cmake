@@ -288,6 +288,25 @@ int main(void)
     CXX_STANDARD 23
 )
 
+qt_config_compile_test(cxx2c
+    LABEL "C++2c support"
+    CODE
+"#if __cplusplus > 202302L
+// Compiler claims to support C++2c, trust it
+#else
+#  error __cplusplus must be > 202302L (the value for C++23)
+#endif
+
+int main(void)
+{
+    /* BEGIN TEST: */
+    /* END TEST: */
+    return 0;
+}
+"
+    CXX_STANDARD 26
+)
+
 # precompile_header
 qt_config_compile_test(precompile_header
     LABEL "precompiled header support"
@@ -754,6 +773,12 @@ qt_feature("c++2b" PUBLIC
     CONDITION QT_FEATURE_cxx20 AND (CMAKE_VERSION VERSION_GREATER_EQUAL "3.20") AND TEST_cxx2b
 )
 qt_feature_config("c++2b" QMAKE_PUBLIC_QT_CONFIG)
+qt_feature("c++2c" PUBLIC
+    LABEL "C++2c"
+    AUTODETECT OFF
+    CONDITION QT_FEATURE_cxx2b AND (CMAKE_VERSION VERSION_GREATER_EQUAL "3.25") AND TEST_cxx2c
+)
+qt_feature_config("c++2c" QMAKE_PUBLIC_QT_CONFIG)
 qt_feature("precompile_header"
     LABEL "Using precompiled headers"
     CONDITION BUILD_WITH_PCH AND TEST_precompile_header
@@ -1261,6 +1286,13 @@ qt_feature("coverage"
     CONDITION QT_FEATURE_coverage_gcov
 )
 
+qt_feature("android_16kb_pages"
+    LABEL "Using 16KB page sizes in Android"
+    CONDITION ANDROID AND (((CMAKE_ANDROID_NDK_VERSION VERSION_GREATER_EQUAL "25.0.0"))
+                          AND ((CMAKE_ANDROID_ARCH_ABI STREQUAL "arm64-v8a") OR
+                              (CMAKE_ANDROID_ARCH_ABI STREQUAL "x86_64")))
+)
+
 qt_configure_add_summary_build_type_and_config()
 qt_configure_add_summary_section(NAME "Build options")
 qt_configure_add_summary_build_mode(Mode)
@@ -1398,6 +1430,8 @@ qt_configure_add_summary_entry(ARGS "opensslv30")
 qt_configure_add_summary_entry(ARGS "system-zlib")
 qt_configure_add_summary_entry(ARGS "zstd")
 qt_configure_add_summary_entry(ARGS "thread")
+qt_configure_add_summary_entry(ARGS "android_16kb_pages")
+
 qt_configure_end_summary_section() # end of "Support enabled for" section
 qt_configure_add_report_entry(
     TYPE NOTE
@@ -1478,6 +1512,11 @@ qt_configure_add_report_entry(
     TYPE ERROR
     MESSAGE "Building Qt with C++20 is not supported with MSVC 2019."
     CONDITION QT_FEATURE_cxx20 AND MSVC AND MSVC_VERSION LESS "1930"
+)
+qt_configure_add_report_entry(
+    TYPE NOTE
+    MESSAGE "Building Qt for Android and user projects with 16KB page sizes."
+    CONDITION QT_FEATURE_android_16kb_pages
 )
 if(WASM)
     qt_extra_definition("QT_EMCC_VERSION" "\"${EMCC_VERSION}\"" PUBLIC)

@@ -518,7 +518,7 @@ QImage ICOReader::iconAt(int index)
                         }
                     }
                 }
-                img.setText(QLatin1String(icoOrigDepthKey), QString::number(iconEntry.wBitCount));
+                img.setText(QLatin1String(icoOrigDepthKey), QString::number(icoAttrib.nbits));
             }
         }
     }

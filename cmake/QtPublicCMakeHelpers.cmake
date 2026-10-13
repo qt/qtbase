@@ -189,6 +189,30 @@ function(_qt_internal_get_check_cxx_source_compiles_out_var out_output_var out_f
     set(${out_func_args} "${extra_func_args}" PARENT_SCOPE)
 endfunction()
 
+# Sets TARGET_SUPPORTS_SHARED_LIBS to TRUE when using Emscripten to build Qt for WebAssembly
+# or user projects.
+# The upstream Emscripten cmake toolchain file sets TARGET_SUPPORTS_SHARED_LIBS to FALSE, claiming
+# true shared library support is not available.
+# See https://github.com/emscripten-core/emscripten/pull/8362#issuecomment-3050586255
+# Upstream CMake 4.2+ will set it to TRUE itself, when not using the Emscripten cmake toolchain
+# file directly.
+function(_qt_internal_handle_target_supports_shared_libs)
+    if(NOT EMSCRIPTEN)
+        return()
+    endif()
+
+    if(QT_NO_ENABLE_TARGET_SUPPORTS_SHARED_LIBS)
+        return()
+    endif()
+
+    get_property(target_supports_shared_libs GLOBAL PROPERTY TARGET_SUPPORTS_SHARED_LIBS)
+    if(target_supports_shared_libs)
+        return()
+    endif()
+
+    set_property(GLOBAL PROPERTY TARGET_SUPPORTS_SHARED_LIBS TRUE)
+endfunction()
+
 # This function gets all targets below this directory
 #
 # Multi-value Arguments:
@@ -880,4 +904,45 @@ function(_qt_internal_get_moc_compiler_flavor_flags out_var)
     endif()
 
     set(${out_var} "${flags}" PARENT_SCOPE)
+endfunction()
+
+# Compatibility of `cmake_path(IS_PREFIX)`
+#
+# NORMALIZE keyword is not supported
+#
+# Synopsis
+#
+#   _qt_internal_path_is_prefix(<path-var> <input> <out-var>)
+#
+# Arguments
+#
+# `path-var`
+#   Equivalent to `cmake_path(IS_PREFIX <path-var>)`.
+#
+# `input`
+#   Equivalent to `cmake_path(IS_PREFIX <input>)`.
+#
+# `out-var`
+#   Equivalent to `cmake_path(IS_PREFIX <out-var>)`.
+function(_qt_internal_path_is_prefix path_var input out_var)
+
+    # Make sure the path ends with `/`
+    if(NOT ${path_var} MATCHES "/$")
+        set(${path_var} "${${path_var}}/")
+    endif()
+    # For the case input == path_var, we need to also include a trailing `/` to match the
+    # previous change. We discard the actual path for input so we can add it unconditionally
+    set(input "${input}/")
+    if(CMAKE_VERSION VERSION_LESS 3.20)
+        string(FIND "${input}" "${${path_var}}" find_pos)
+        if(find_pos EQUAL 0)
+            # input starts_with path_var
+            set(${out_var} ON)
+        else()
+            set(${out_var} OFF)
+        endif()
+    else()
+        cmake_path(IS_PREFIX ${path_var} ${input} ${out_var})
+    endif()
+    set(${out_var} "${${out_var}}" PARENT_SCOPE)
 endfunction()

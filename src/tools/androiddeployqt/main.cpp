@@ -1014,9 +1014,13 @@ bool readInputFile(Options *options)
     }
     dependenciesForDepfile << options->inputFileName;
 
-    QJsonDocument jsonDocument = QJsonDocument::fromJson(file.readAll());
+    QJsonParseError jsonParseError;
+    QJsonDocument jsonDocument = QJsonDocument::fromJson(file.readAll(), &jsonParseError);
     if (jsonDocument.isNull()) {
-        fprintf(stderr, "Invalid json file: %s\n", qPrintable(options->inputFileName));
+        fprintf(stderr, "Invalid json file: %s. Reason: %s at offset %i.\n",
+            qPrintable(options->inputFileName),
+            qPrintable(jsonParseError.errorString()),
+            jsonParseError.offset);
         return false;
     }
 
@@ -3654,7 +3658,7 @@ int generateJavaQmlComponents(const Options &options)
     };
 
     const static QHash<QString, QString> qmlToJavaType = {
-        { "qreal"_L1, "Double"_L1 }, { "double"_L1, "Double"_L1 }, { "int"_L1, "Integer"_L1 },
+        { "real"_L1, "Double"_L1 }, { "double"_L1, "Double"_L1 }, { "int"_L1, "Integer"_L1 },
         { "float"_L1, "Float"_L1 },  { "bool"_L1, "Boolean"_L1 },  { "string"_L1, "String"_L1 },
         { "void"_L1, "Void"_L1 }
     };

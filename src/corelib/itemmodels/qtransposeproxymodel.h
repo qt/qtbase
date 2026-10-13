@@ -1,5 +1,6 @@
 // Copyright (C) 2018 Luca Beldi <v.ronin@yahoo.it>
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+// Qt-Security score:significant reason:default
 
 #ifndef QTRANSPOSEPROXYMODEL_H
 #define QTRANSPOSEPROXYMODEL_H

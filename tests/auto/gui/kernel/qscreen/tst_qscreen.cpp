@@ -315,11 +315,13 @@ void tst_QScreen::grabWindow()
     }
     QCOMPARE(grabbedImage.size(), paintedImage.size());
 
-    // the two images might differ in format, or DPR, so instead of comparing them, sample a few pixels
+    // The two images might differ in format, or DPR, so instead of comparing them,
+    // sample a few pixels, with appropriate distance from the edge so that any
+    // compositor effect will not affect the pixel comparison.
     for (auto point : {
-                       QPoint(0, 0),
+                       QPoint(5, 5),
                        QPoint(5, 15),
-                       QPoint(paintedImage.width() - 1, paintedImage.height() - 1),
+                       QPoint(paintedImage.width() - 5, paintedImage.height() - 5),
                        QPoint(paintedImage.width() - 5, paintedImage.height() - 10)
                       }) {
         QCOMPARE(grabbedImage.pixelColor(point), paintedImage.pixelColor(point));

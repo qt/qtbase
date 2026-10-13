@@ -78,6 +78,8 @@ private slots:
     void longPath();
     void dirorder();
     void relativePaths();
+    void dotNameFilters_data();
+    void dotNameFilters();
 #if defined(Q_OS_WIN)
     void uncPaths_data();
     void uncPaths();
@@ -152,15 +154,11 @@ void tst_QDirIterator::initTestCase()
 #  if defined(Q_OS_WIN)
     // ### Sadly, this is a platform difference right now.
     createLink("entrylist/file", "entrylist/linktofile.lnk");
-#    ifndef Q_NO_SYMLINKS_TO_DIRS
     createLink("entrylist/directory", "entrylist/linktodirectory.lnk");
-#    endif
     createLink("entrylist/nothing", "entrylist/brokenlink.lnk");
 #  else
     createLink("file", "entrylist/linktofile.lnk");
-#    ifndef Q_NO_SYMLINKS_TO_DIRS
     createLink("directory", "entrylist/linktodirectory.lnk");
-#    endif
     createLink("nothing", "entrylist/brokenlink.lnk");
 #  endif
 #endif
@@ -201,7 +199,7 @@ void tst_QDirIterator::iterateRelativeDirectory_data()
                    "entrylist/linktofile.lnk,"
 #endif
                    "entrylist/directory,"
-#if !defined(Q_NO_SYMLINKS) && !defined(Q_NO_SYMLINKS_TO_DIRS)
+#ifndef Q_NO_SYMLINKS
                    "entrylist/linktodirectory.lnk,"
 #endif
                    "entrylist/writable").split(',');
@@ -216,7 +214,7 @@ void tst_QDirIterator::iterateRelativeDirectory_data()
                    "entrylist/linktofile.lnk,"
 #endif
                    "entrylist/directory,"
-#if !defined(Q_NO_SYMLINKS) && !defined(Q_NO_SYMLINKS_TO_DIRS)
+#ifndef Q_NO_SYMLINKS
                    "entrylist/linktodirectory.lnk,"
 #endif
                    "entrylist/writable").split(',');
@@ -231,7 +229,7 @@ void tst_QDirIterator::iterateRelativeDirectory_data()
                    "entrylist/linktofile.lnk,"
 #endif
                    "entrylist/directory,"
-#if !defined(Q_NO_SYMLINKS) && !defined(Q_NO_SYMLINKS_TO_DIRS)
+#ifndef Q_NO_SYMLINKS
                    "entrylist/linktodirectory.lnk,"
 #endif
                    "entrylist/writable").split(',');
@@ -245,7 +243,7 @@ void tst_QDirIterator::iterateRelativeDirectory_data()
                    "entrylist/linktofile.lnk,"
 #endif
                    "entrylist/directory,"
-#if !defined(Q_NO_SYMLINKS) && !defined(Q_NO_SYMLINKS_TO_DIRS)
+#ifndef Q_NO_SYMLINKS
                    "entrylist/linktodirectory.lnk,"
 #endif
                    "entrylist/writable").split(',');
@@ -264,7 +262,7 @@ void tst_QDirIterator::iterateRelativeDirectory_data()
 #endif
                    "entrylist/directory,"
                    "entrylist/directory/dummy,"
-#if !defined(Q_NO_SYMLINKS) && !defined(Q_NO_SYMLINKS_TO_DIRS)
+#ifndef Q_NO_SYMLINKS
                    "entrylist/linktodirectory.lnk,"
 #endif
                    "entrylist/writable").split(',');
@@ -584,6 +582,45 @@ void tst_QDirIterator::relativePaths()
     while(iterator.hasNext()) {
         QCOMPARE(iterator.filePath(), QDir::cleanPath(iterator.filePath()));
     }
+}
+
+void tst_QDirIterator::dotNameFilters_data()
+{
+    QTest::addColumn<QStringList>("nameFilters");
+    QTest::addColumn<QDir::Filters>("dirFilters");
+    QTest::addColumn<QStringList>("expected");
+
+    QTest::newRow("NoDotAndDotDot")
+        << QStringList{u"."_s}
+        << QDir::Filters(QDir::AllEntries | QDir::NoDotAndDotDot)
+        << QStringList{};
+
+    QTest::newRow("default-dirfilters")
+        << QStringList{u"."_s}
+        << QDir::Filters(QDir::AllEntries)
+        << QStringList{u"."_s};
+
+    QTest::newRow("glob-everything")
+        << QStringList{u".*"_s}
+        << QDir::Filters(QDir::AllEntries)
+        << QStringList{u"."_s, u".."_s};
+}
+
+void tst_QDirIterator::dotNameFilters()
+{
+    QFETCH(QStringList, nameFilters);
+    QFETCH(QDir::Filters, dirFilters);
+    QFETCH(QStringList, expected);
+
+    const auto dirPath = u"empty"_s;
+    QVERIFY(QFileInfo(dirPath).isDir());
+
+    QDirIterator dit(dirPath, nameFilters, dirFilters);
+    QStringList entries;
+    while (dit.hasNext())
+        entries.append(dit.nextFileInfo().fileName());
+    entries.sort();
+    QCOMPARE_EQ(entries, expected);
 }
 
 #if defined(Q_OS_WIN)

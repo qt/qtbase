@@ -19,3 +19,15 @@ qt_internal_add_test(tst_qdbusconnection
     TESTDATA
         tst_qdbusconnection.conf
 )
+
+qt_internal_add_executable(qdbusdelayeddeliveryreenablehelper
+    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/"
+    SOURCES
+        qdbusdelayeddeliveryreenablehelper.cpp
+    LIBRARIES
+        Qt::DBus
+)
+
+add_dependencies(tst_qdbusconnection
+    qdbusdelayeddeliveryreenablehelper
+)

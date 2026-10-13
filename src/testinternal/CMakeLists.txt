@@ -26,6 +26,10 @@ qt_internal_add_module(TestInternalsPrivate
     EXTRA_CMAKE_FILES
         3rdparty/cmake/QtRunCMakeTestHelpers.cmake
         3rdparty/cmake/RunCMake.cmake
+        QtRunCMakeTestWrappers.cmake
+        QtRunCMake.cmake
+        # Temporary wrapper until the `include(RunCMake)` are changed to `include(QtRunCmake)`
+        RunCMake.cmake
     EXTRA_CMAKE_INCLUDES
-        3rdparty/cmake/QtRunCMakeTestHelpers.cmake
+        QtRunCMakeTestWrappers.cmake
 )

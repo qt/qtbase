@@ -1050,7 +1050,7 @@ qt_feature("cborstreamwriter" PUBLIC
 )
 qt_feature("poll-exit-on-error" PRIVATE
     LABEL "Poll exit on error"
-    AUTODETECT OFF
+    AUTODETECT VXWORKS
     CONDITION UNIX
     PURPOSE "Exit on error instead of just printing the error code and continue."
 )

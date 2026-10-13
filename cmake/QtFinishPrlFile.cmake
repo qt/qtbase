@@ -78,7 +78,10 @@ foreach(line ${lines})
                 # Not absolute path, most likely a library name or a linker flag.
                 # If linker flag (like -framework, -lfoo, -pthread, keep it as-is).
                 if(NOT lib MATCHES "^-")
-                    string(PREPEND lib "-l")
+                    qt_is_library_file(is_library_file "${lib}")
+                    if(NOT is_library_file)
+                        string(PREPEND lib "-l")
+                    endif()
                 endif()
                 list(APPEND adjusted_libs "${lib}")
             endif()

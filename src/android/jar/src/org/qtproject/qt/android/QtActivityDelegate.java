@@ -278,6 +278,11 @@ class QtActivityDelegate extends QtActivityDelegateBase
         m_accessibilityDelegate.notifyValueChanged(viewId, value);
     }
 
+    @Override public void notifyDescriptionOrNameChanged(int viewId, String value)
+    {
+        m_accessibilityDelegate.notifyDescriptionOrNameChanged(viewId, value);
+    }
+
     @Override
     public void notifyScrolledEvent(int viewId)
     {
@@ -291,6 +296,12 @@ class QtActivityDelegate extends QtActivityDelegateBase
             // FIXME make QtAccessibilityDelegate window based
             m_accessibilityDelegate.initLayoutAccessibility(m_layout);
         });
+    }
+
+    @Override
+    public void notifyAnnouncementEvent(int viewId, String message)
+    {
+        m_accessibilityDelegate.notifyAnnouncementEvent(viewId, message);
     }
 
     // QtMenuInterface implementation begin

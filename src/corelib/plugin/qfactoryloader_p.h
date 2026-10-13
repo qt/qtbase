@@ -22,6 +22,9 @@
 #include "QtCore/private/qplugin_p.h"
 #include "QtCore/qcbormap.h"
 #include "QtCore/qcborvalue.h"
+#if QT_CONFIG(library)
+#  include "QtCore/qlibrary.h"
+#endif
 #include "QtCore/qmap.h"
 #include "QtCore/qobject.h"
 #include "QtCore/qplugin.h"
@@ -71,6 +74,7 @@ public:
 #if QT_CONFIG(library)
     ~QFactoryLoader();
 
+    void setLoadHints(QLibrary::LoadHints hints);
     void update();
     static void refreshAll();
 

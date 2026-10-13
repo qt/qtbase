@@ -132,13 +132,16 @@ void ImageWidget::pinchTriggered(QPinchGesture *gesture)
 void ImageWidget::swipeTriggered(QSwipeGesture *gesture)
 {
     if (gesture->state() == Qt::GestureFinished) {
-        if (gesture->horizontalDirection() == QSwipeGesture::Left
-            || gesture->verticalDirection() == QSwipeGesture::Up) {
-            qCDebug(lcExample) << "swipeTriggered(): swipe to previous";
-            goPrevImage();
-        } else {
-            qCDebug(lcExample) << "swipeTriggered(): swipe to next";
+        if (gesture->swipeAngle() < 45 || gesture->swipeAngle() > 225) {
+            // swipe direction right or down
+            qCDebug(lcExample) << "swipeTriggered(): angle"
+                               << gesture->swipeAngle() << "; swipe to next";
             goNextImage();
+        } else {
+            // swipe direction left or up
+            qCDebug(lcExample) << "swipeTriggered(): angle"
+                               << gesture->swipeAngle() << "; swipe to previous";
+            goPrevImage();
         }
         update();
     }

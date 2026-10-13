@@ -154,11 +154,7 @@
     * to configure or put -DPNG_RISCV_RVV_OPT=2 in CPPFLAGS.
     */
 
-#  if defined(__riscv) && defined(PNG_ALIGNED_MEMORY_SUPPORTED)
-#     define PNG_RISCV_RVV_OPT 1
-#  else
-#     define PNG_RISCV_RVV_OPT 0
-#  endif
+#  define PNG_RISCV_RVV_OPT 0
 #endif
 
 #if PNG_ARM_NEON_OPT > 0

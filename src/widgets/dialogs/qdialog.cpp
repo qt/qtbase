@@ -1,5 +1,6 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+// Qt-Security score:significant reason:default
 
 #include <QtWidgets/qtwidgetsglobal.h>
 #if QT_CONFIG(colordialog)
@@ -749,12 +750,7 @@ void QDialog::closeEvent(QCloseEvent *e)
 
 void QDialog::setVisible(bool visible)
 {
-    Q_D(QDialog);
-
-    if (testAttribute(Qt::WA_WState_ExplicitShowHide) && testAttribute(Qt::WA_WState_Hidden) != visible)
-        return;
-
-    d->setVisible(visible);
+    QWidget::setVisible(visible);
 }
 
 void QDialogPrivate::setVisible(bool visible)

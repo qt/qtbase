@@ -1,6 +1,8 @@
 # From freetype CMakeLists.txt
 
 set(BASE_SRCS
+  src/autofit/afadjust.c
+  src/autofit/afgsub.c
   src/autofit/autofit.c
   src/base/ftbase.c
   src/base/ftbbox.c

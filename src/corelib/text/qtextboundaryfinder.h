@@ -1,5 +1,6 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+// Qt-Security score:sensitive reason:trivial-impl-only
 
 #ifndef QTEXTBOUNDARYFINDER_H
 #define QTEXTBOUNDARYFINDER_H
@@ -64,8 +65,7 @@ private:
     QString s;
     QStringView sv;
     qsizetype pos = 0;
-    uint freeBuffer : 1;
-    uint unused : 31;
+    uint freeBuffer; // this may be used to store another 31 bit of data in the future
     QCharAttributes *attributes = nullptr;
 };
 

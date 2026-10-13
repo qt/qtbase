@@ -259,6 +259,7 @@ public:
     int childCount() const override;
     QRect rect () const override;
     QString text(QAccessible::Text t) const override;
+    QAccessible::Role role() const override;
 
     QDockWidget *dockWidget() const;
 protected:
