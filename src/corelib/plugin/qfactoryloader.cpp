@@ -316,7 +316,10 @@ inline void QFactoryLoader::Private::updateSinglePath(const QString &path)
         if (iid.startsWith(QStringLiteral("org.qt-project.Qt.QPA"))) {
             // QPA plugins must match Qt Major.Minor
             if (thisVersion != QtVersionNoPatch) {
-                qCDebug(lcFactoryLoader) << "Ignoring QPA plugin due to mismatching Qt versions" << QtVersionNoPatch << thisVersion;
+                qCDebug(lcFactoryLoader,
+                        "Ignoring QPA plugin due to mismatching Qt versions (%d.%d; current: %d.%d)",
+                        int(thisVersion) >> 16, int(thisVersion & 0xff00) >> 8,
+                        QT_VERSION_MAJOR, QT_VERSION_MINOR);
                 continue;
             }
         }
