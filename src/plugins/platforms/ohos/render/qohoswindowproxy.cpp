@@ -318,11 +318,11 @@ const QOhosWindowProxy::EventHandlerDescriptor QOhosWindowProxy::eventHandlerDes
 QOhosWindowProxy::QOhosWindowProxy(
     const std::function<void(QtOhos::JsState &, QOhosConsumer<QtOhos::JsState &, QOhosWindowProxyData>)> &makeWindowProxyDataInJsThread)
 {
-    auto jsThreadInitResult = QtOhos::evalInJsThreadWithPromise<JsThreadInitResult>(
-        [&](QtOhos::JsState &jsState, QOhosTaskPromise<JsThreadInitResult> evalPromise) {
+    auto jsThreadInitResult = QOhosJsThreadGateway::evalWithPromise<JsThreadInitResult>(
+        [&](QOhosJsState &jsState, QOhosTaskPromise<JsThreadInitResult> evalPromise) {
             auto sharedEvalPromise = QtOhos::moveToSharedPtr(std::move(evalPromise).makeChained(Q_FUNC_INFO));
             makeWindowProxyDataInJsThread(
-                jsState,
+                QtOhos::JsState::castFrom(jsState),
                 [sharedEvalPromise, this](QtOhos::JsState &jsState, QOhosWindowProxyData windowProxyData) {
                     (*sharedEvalPromise)(initInJsThread(jsState, std::move(windowProxyData)));
                 });
@@ -815,7 +815,7 @@ bool QOhosWindowProxy::tryHideAbility()
 {
     qCDebug(QtForOhos, "%s", Q_FUNC_INFO);
 
-    return QtOhos::evalInJsThreadWithPromise<bool>([&](QtOhos::JsState &, QOhosTaskPromise<bool> evalPromise) {
+    return QOhosJsThreadGateway::evalWithPromise<bool>([&](QOhosJsState &, QOhosTaskPromise<bool> evalPromise) {
         if (m_jsScopeData->isWindowClosing()) {
             evalPromise(false);
             return;
@@ -1192,8 +1192,8 @@ void QOhosWindowProxy::setWindowCornerRadius(double radius)
 
 bool QOhosWindowProxy::isWindowRectAutoSave() const
 {
-    return QtOhos::evalInJsThreadWithPromise<bool>(
-        [&](QtOhos::JsState &, QOhosTaskPromise<bool> evalPromise) {
+    return QOhosJsThreadGateway::evalWithPromise<bool>(
+        [&](QOhosJsState &, QOhosTaskPromise<bool> evalPromise) {
             if (m_jsScopeData->isWindowClosing()) {
                 evalPromise(false);
                 return;
@@ -1726,8 +1726,8 @@ void QOhosWindowProxy::JsScopeData::NonClientAreaEventsDispatcher::onTouchEventF
 
 QPixmap QOhosWindowProxy::snapshot() const
 {
-    return QtOhos::evalInJsThreadWithPromise<QPixmap>(
-        [&](QtOhos::JsState &, QOhosTaskPromise<QPixmap> evalPromise) {
+    return QOhosJsThreadGateway::evalWithPromise<QPixmap>(
+        [&](QOhosJsState &, QOhosTaskPromise<QPixmap> evalPromise) {
             auto thenCatchPromises = std::move(evalPromise).makeThenCatchBranches(Q_FUNC_INFO);
             m_jsScopeData->jsWindowRef->evalToPromiseOrRejectOnThrow("snapshot()")
             .onThen(
@@ -1756,8 +1756,8 @@ QList<QRect> QOhosWindowProxy::getDisplayCutoutRects() const
 {
     // The display cutout (e.g. camera hole) is not in getWindowAvoidArea(); read
     // it from the display. Returns the bounding rects in display coordinates.
-    return QtOhos::evalInJsThreadWithPromise<QList<QRect>>(
-        [&](QtOhos::JsState &jsState, QOhosTaskPromise<QList<QRect>> evalPromise) {
+    return QOhosJsThreadGateway::evalWithPromise<QList<QRect>>(
+        [&](QOhosJsState &jsState, QOhosTaskPromise<QList<QRect>> evalPromise) {
             if (m_jsScopeData->isWindowClosing()) {
                 evalPromise(QList<QRect>());
                 return;
@@ -1852,8 +1852,8 @@ std::optional<bool> QOhosWindowProxy::isFocused() const
 std::vector<QArkUi::JsWindowId> QOhosWindowProxy::queryWindowIdsByCoordinate(
     QOhosDisplayInfo::JsDisplayId displayId, const QPoint &queryLocation, std::uint32_t queryLimit)
 {
-    return QtOhos::evalInJsThreadWithPromise<std::vector<QArkUi::JsWindowId>>(
-        [&](QtOhos::JsState &jsState, auto evalPromise) {
+    return QOhosJsThreadGateway::evalWithPromise<std::vector<QArkUi::JsWindowId>>(
+        [&](QOhosJsState &jsState, auto evalPromise) {
             auto thenCatchPromises = std::move(evalPromise).makeThenCatchBranches(Q_FUNC_INFO);
             jsState.evalToPromiseOrRejectOnThrow("@ohos.window.getWindowsByCoordinate(*)", {
                 displayId.value(),
