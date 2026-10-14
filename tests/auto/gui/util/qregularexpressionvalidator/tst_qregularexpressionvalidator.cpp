@@ -6,6 +6,8 @@
 #include <QTest>
 #include <QSignalSpy>
 
+using namespace Qt::StringLiterals;
+
 class tst_QRegularExpressionValidator : public QObject
 {
     Q_OBJECT
@@ -50,6 +52,13 @@ void tst_QRegularExpressionValidator::validate_data()
 
     QTest::newRow("empty01") << QRegularExpression() << QString() << QValidator::Acceptable;
     QTest::newRow("empty02") << QRegularExpression() << QString("test") << QValidator::Acceptable;
+
+    // Regression tests for QTBUG-49319:
+    QTest::newRow("longRange-accept")
+        << QRegularExpression(u"[A-Za-z,]{1,2500}"_s) << u"Hello,World"_s << QValidator::Acceptable;
+    QTest::newRow("longRange-reject")
+        << QRegularExpression(u"[A-Za-z,]{1,2500}"_s)
+        << u".... . .-.. .-.. ---   .-- --- .-. .-.. -.."_s << QValidator::Invalid;
 }
 
 void tst_QRegularExpressionValidator::validate()
