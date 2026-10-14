@@ -1651,8 +1651,6 @@ void setupQtApplicationImpl(JsState &jsState, QNapi::Object appStartupObj, QtRun
     } env_variables[] = {
         {"QT_QPA_PLATFORM_PLUGIN_PATH", s_appSharedLibsDirPath },
         {"QML2_IMPORT_PATH", appContextDirs.resourceDir + "/qml" },
-        // FIXME: temporary measure for preventing QtQuick2-based apps from crashing
-        {"QV4_FORCE_INTERPRETER", "1"},
         {"QT_PRINTER_MODULE", "ohosprintersupport"},
         {"TMPDIR", QOhosAppContext::getProperty(QOhosAppContext::Type::tempDir).toStdString()},
         {"HOME", QOhosAppContext::getProperty(QOhosAppContext::Type::filesDir).toStdString()},
