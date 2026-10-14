@@ -1,0 +1,8 @@
+version = 1
+
+[[annotations]]
+path = ["libjxl-Rec2100PQ.icc", "libjxl-Rec2100HLG.icc"]
+precedence = "closest"
+comment = "ICC profiles from libjxl 0.11.1, which marks them CC0"
+SPDX-FileCopyrightText = "None"
+SPDX-License-Identifier = "CC0-1.0"

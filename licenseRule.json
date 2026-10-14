@@ -315,6 +315,11 @@
                 "file type": "3rd party",
                 "spdx": ["GPL-3.0-only"]
             },
+            "tests/auto/gui/painting/qcolorspace/resources/(libjxl-Rec2100PQ.icc|libjxl-Rec2100HLG.icc)": {
+                "comment": "Exception",
+                "file type": "tests",
+                "spdx": ["CC0-1.0"]
+            },
             "tests/auto/corelib/serialization/qxmlstream/XML-Test-Suite/xmlconf/(japanese/japanese.xml|sun/sun)": {
                 "comment": "",
                 "file type": "3rd party",
