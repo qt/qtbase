@@ -573,7 +573,7 @@ void tst_Android::testFullScreenDimensions()
             return QSize(bounds.callMethod<int>("width"), bounds.callMethod<int>("height"));
         } else {
             QtJniTypes::Point jappSize{};
-            display.callMethod<void>("getSize", jappSize);
+            display.callMethod<void>("getRealSize", jappSize);
             return QSize(jappSize.getField<jint>("x"), jappSize.getField<jint>("y"));
         }
     };
