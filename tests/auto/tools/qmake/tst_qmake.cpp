@@ -52,6 +52,7 @@ private slots:
     void windowsResources();
 #endif
 #ifdef Q_OS_WIN
+    void shellQuotePlusSign();
     void vcxprojExtraCompilersSharingInput();
     void vcxprojQrcContentFiles();
 #endif
@@ -586,6 +587,19 @@ void tst_qmake::windowsResources()
 #endif // defined(Q_OS_WIN)
 
 #ifdef Q_OS_WIN
+void tst_qmake::shellQuotePlusSign()
+{
+    // The copy command treats a plus sign as a concatenation operator, so arguments with one
+    // must be quoted.
+    QString workDir = base_path + "/testdata/shell_quote_plus";
+    test_compiler.clearCommandOutput();
+    QVERIFY(test_compiler.qmake(workDir, "shell_quote_plus"));
+    const QString output = test_compiler.commandOutput();
+    QVERIFY2(output.contains("QUOTED=\"C:\\C++\\dir\\file.txt\""), qPrintable(output));
+    QVERIFY2(output.contains("PLAIN=C:\\dir\\file.txt"), qPrintable(output));
+    test_compiler.clearCommandOutput();
+}
+
 void tst_qmake::vcxprojExtraCompilersSharingInput()
 {
 #  ifndef Q_CC_MSVC
