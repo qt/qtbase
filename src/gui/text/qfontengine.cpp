@@ -1398,8 +1398,9 @@ int QFontEngine::glyphCount() const
     if (maxpTable.size() < 6)
         return 0;
 
-    const uchar *source = reinterpret_cast<const uchar *>(maxpTable.constData() + 4);
-    const uchar *end = source + maxpTable.size();
+    const uchar *start = reinterpret_cast<const uchar *>(maxpTable.constData());
+    const uchar *end = start + maxpTable.size();
+    const uchar *source = reinterpret_cast<const uchar *>(start + 4);
 
     quint16 count = 0;
     qSafeFromBigEndian(source, end, &count);
