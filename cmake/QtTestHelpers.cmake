@@ -107,7 +107,9 @@ function(qt_internal_add_benchmark target)
         add_dependencies("benchmark" "${target}_benchmark")
     endif()
 
-    qt_internal_add_test_finalizers("${target}")
+    qt_internal_add_test_finalizers("${target}"
+        RESOURCE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/data"
+    )
 endfunction()
 
 function(qt_internal_add_test_dependencies target)
@@ -279,11 +281,12 @@ function(qt_internal_get_test_arg_definitions optional_args single_value_args mu
     )
 endfunction()
 
-function(qt_internal_add_test_to_batch batch_name name)
+function(qt_internal_add_test_to_batch batch_name sources_out name)
     qt_internal_get_test_arg_definitions(optional_args single_value_args multi_value_args)
 
-    cmake_parse_arguments(
-        arg "${optional_args}" "${single_value_args}" "${multi_value_args}" ${ARGN})
+    cmake_parse_arguments(PARSE_ARGV 3 arg
+        "${optional_args}" "${single_value_args}" "${multi_value_args}"
+    )
     qt_internal_prepare_test_target_flags(version_arg exceptions_text gui_text ${ARGN})
 
     _qt_internal_validate_no_unity_build(arg)
@@ -381,6 +384,7 @@ function(qt_internal_add_test_to_batch batch_name name)
         set_property(GLOBAL PROPERTY _qt_batched_test_sources_list_property "")
         set(batched_test_sources_list "")
     endif()
+    set(test_sources "")
     foreach(source ${arg_SOURCES})
         set(source_path ${source})
         if(${source} IN_LIST batched_test_sources_list)
@@ -397,6 +401,8 @@ function(qt_internal_add_test_to_batch batch_name name)
             TARGET_DIRECTORY ${target} PROPERTIES
                 SKIP_AUTOMOC ${skip_automoc}
                 COMPILE_DEFINITIONS "BATCHED_TEST_NAME=\"${name}\";${arg_DEFINES}")
+        get_filename_component(source_path "${source_path}" ABSOLUTE)
+        list(APPEND test_sources "${source_path}")
     endforeach()
     set_property(GLOBAL PROPERTY _qt_batched_test_sources_list_property ${batched_test_sources_list})
 
@@ -416,6 +422,7 @@ function(qt_internal_add_test_to_batch batch_name name)
         )
 
     set(${batch_name} ${target} PARENT_SCOPE)
+    set(${sources_out} "${test_sources}" PARENT_SCOPE)
 
     # Add a dummy target so that new tests don't have problems with a nonexistent
     # target when calling cmake functions.
@@ -483,7 +490,54 @@ function(qt_internal_get_batched_test_arguments out testname)
     set(${out} ${args} PARENT_SCOPE)
 endfunction()
 
+function(_qt_internal_set_test_data_directory)
+    set(options "")
+    set(oneValueArgs
+        TARGET
+        RESOURCE_DIRECTORY
+    )
+    set(multiValueArgs SOURCES)
+    cmake_parse_arguments(PARSE_ARGV 0 arg
+        "${options}" "${oneValueArgs}" "${multiValueArgs}")
+    _qt_internal_validate_all_args_are_parsed(arg)
+
+    if(NOT arg_TARGET OR NOT arg_RESOURCE_DIRECTORY)
+        message(FATAL_ERROR "TARGET and RESOURCE_DIRECTORY must be set.")
+    endif()
+
+    # Also matches definitions wrapped in generator expressions.
+    set(definition_regex "(^|[>:])QT_QMLTEST_DATADIR(=|$)")
+
+    # Explicit definitions on the target or its directory win over the default.
+    get_target_property(definitions "${arg_TARGET}" COMPILE_DEFINITIONS)
+    get_target_property(target_dir "${arg_TARGET}" SOURCE_DIR)
+    get_directory_property(directory_definitions DIRECTORY "${target_dir}"
+        COMPILE_DEFINITIONS)
+    list(APPEND definitions ${directory_definitions})
+    list(FILTER definitions INCLUDE REGEX "${definition_regex}")
+    if(definitions)
+        return()
+    endif()
+
+    set(definitions "QT_QMLTEST_DATADIR=\"${arg_RESOURCE_DIRECTORY}\"")
+    if(arg_SOURCES)
+        foreach(source IN LISTS arg_SOURCES)
+            get_source_file_property(source_definitions "${source}"
+                TARGET_DIRECTORY "${arg_TARGET}" COMPILE_DEFINITIONS)
+            list(FILTER source_definitions INCLUDE REGEX "${definition_regex}")
+            if(NOT source_definitions)
+                set_property(SOURCE "${source}" TARGET_DIRECTORY "${arg_TARGET}"
+                    APPEND PROPERTY COMPILE_DEFINITIONS ${definitions})
+            endif()
+        endforeach()
+    else()
+        target_compile_definitions("${arg_TARGET}" PRIVATE ${definitions})
+    endif()
+endfunction()
+
 # This function creates a CMake test target with the specified name for use with CTest.
+# Test and benchmark targets default QT_QMLTEST_DATADIR to source data/ or :/data.
+# Explicit compile definitions take precedence over this default.
 #
 # All tests are wrapped with cmake script that supports TESTARGS and TESTRUNNER environment
 # variables handling. Endpoint wrapper may be used standalone as cmake script to run tests e.g.:
@@ -558,8 +612,9 @@ function(qt_internal_add_test name)
             "removed in a future Qt version. Use the LIBRARIES option instead.")
     endif()
 
+    set(batch_sources "")
     if(batch_current_test)
-        qt_internal_add_test_to_batch(name ${name} ${ARGN})
+        qt_internal_add_test_to_batch(name batch_sources ${name} ${ARGN})
     elseif(arg_SOURCES)
         if(QT_BUILD_TESTS_BATCHED AND arg_QMLTEST)
             message(WARNING "QML tests won't be batched - unsupported (yet)")
@@ -963,6 +1018,11 @@ function(qt_internal_add_test name)
         set(builtin_testdata TRUE)
     endif()
 
+    set(test_data_directory "${CMAKE_CURRENT_SOURCE_DIR}/data")
+    if(builtin_testdata)
+        set(test_data_directory ":/data")
+    endif()
+
     if(builtin_testdata)
         # Safe guard against qml only tests, no source files == no target
         if (TARGET "${name}")
@@ -1061,7 +1121,14 @@ function(qt_internal_add_test name)
         endif()
     endif()
 
-    qt_internal_add_test_finalizers("${name}")
+    set(source_args "")
+    if(batch_sources)
+        set(source_args SOURCES ${batch_sources})
+    endif()
+    qt_internal_add_test_finalizers("${name}"
+        RESOURCE_DIRECTORY "${test_data_directory}"
+        ${source_args}
+    )
 endfunction()
 
 # Generates a blacklist file for the global batched test target.
@@ -1313,6 +1380,27 @@ function(qt_internal_collect_command_environment out_path out_plugin_path)
 endfunction()
 
 function(qt_internal_add_test_finalizers target)
+    set(options "")
+    set(oneValueArgs
+        RESOURCE_DIRECTORY
+    )
+    set(multiValueArgs SOURCES)
+    cmake_parse_arguments(PARSE_ARGV 1 arg
+        "${options}" "${oneValueArgs}" "${multiValueArgs}")
+    _qt_internal_validate_all_args_are_parsed(arg)
+
+    if(TARGET "${target}" AND arg_RESOURCE_DIRECTORY)
+        set(source_args "")
+        if(arg_SOURCES)
+            set(source_args SOURCES ${arg_SOURCES})
+        endif()
+        qt_add_list_file_finalizer(_qt_internal_set_test_data_directory
+            TARGET "${target}"
+            RESOURCE_DIRECTORY "${arg_RESOURCE_DIRECTORY}"
+            ${source_args}
+        )
+    endif()
+
     # Opt out to skip the new way of running test finalizers, and instead use the old way for
     # specific platforms.
     # TODO: Remove once we confirm that the new way of running test finalizers for all platforms
