@@ -475,8 +475,13 @@ QDesktopUnixServices::QDesktopUnixServices()
     m_portalWatcher = std::make_unique<QDBusServiceWatcher>(
             "org.freedesktop.portal.Desktop"_L1, QDBusConnection::sessionBus(),
             QDBusServiceWatcher::WatchForRegistration);
-    QObject::connect(m_portalWatcher.get(), &QDBusServiceWatcher::serviceRegistered,
-                     m_portalWatcher.get(), &registerWithHostPortal);
+    QObject::connect(m_portalWatcher.get(),
+                     &QDBusServiceWatcher::serviceRegistered,
+                     m_portalWatcher.get(), []() {
+                       if (QGuiApplication::desktopFileName().isEmpty())
+                         return;
+                       registerWithHostPortal();
+                     });
 #endif
 }
 
