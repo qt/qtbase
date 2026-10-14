@@ -32,6 +32,9 @@ endif()
 
 add_subdirectory(plugin1)
 add_subdirectory(plugin2)
+if(QT_FEATURE_library)
+    add_subdirectory(futureplugin)
+endif()
 add_subdirectory(staticplugin)
 
 # we have Q_IMPORT_PLUGIN for these
