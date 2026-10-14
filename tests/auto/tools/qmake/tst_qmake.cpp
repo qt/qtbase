@@ -58,6 +58,7 @@ private slots:
     void vcxprojExtraCompilersSharingInput();
     void vcxprojQrcContentFiles();
     void vcxprojFilterFoldersInShadowBuild();
+    void msvcDiagnosticsWithFullPaths();
 #endif
     void substitutes();
     void project();
@@ -694,6 +695,24 @@ void tst_qmake::vcxprojFilterFoldersInShadowBuild()
     QVERIFY(contents.contains("<Filter Include=\"Source Files\\Filter1\""));
     QVERIFY(contents.contains("<Filter Include=\"Header Files\\Filter1\""));
     QVERIFY2(!contents.contains("Files\\.."), contents.constData());
+}
+
+void tst_qmake::msvcDiagnosticsWithFullPaths()
+{
+#  ifndef Q_CC_MSVC
+    QSKIP("The -FC option is only used with the MSVC spec.");
+#  endif
+    // Without -FC, the compiler prints the file name as qmake passes it, for example
+    // ".\\main.cpp(3)". Then files with the same name in different directories look the same.
+    QString workDir = base_path + "/testdata/msvc_full_paths";
+    QVERIFY(test_compiler.qmake(workDir, "full_paths"));
+    test_compiler.clearCommandOutput();
+    QVERIFY(test_compiler.make(workDir, QString(), true)); // main.cpp does not compile
+    const QString output = test_compiler.commandOutput();
+    const QRegularExpression fullPath(R"([A-Za-z]:\\[^\n]*main\.cpp\(\d+\))");
+    QVERIFY2(fullPath.match(output).hasMatch(), qPrintable(output));
+    test_compiler.clearCommandOutput();
+    QVERIFY(test_compiler.removeMakefile(workDir));
 }
 #endif
 
