@@ -86,6 +86,10 @@ class QtWindowInsetsController
         setTransparentSystemBars(activity, false);
         useCutoutShortEdges(window, false);
 
+        QtRootLayout root = QtRootLayout.findIn(activity);
+        if (root != null)
+            root.setContentInsetEnabled(true);
+
         decor.post(() -> decor.requestApplyInsets());
     }
 
@@ -159,6 +163,10 @@ class QtWindowInsetsController
         setTransparentSystemBars(activity, true);
         useCutoutShortEdges(window, true);
 
+        QtRootLayout root = QtRootLayout.findIn(activity);
+        if (root != null)
+            root.setContentInsetEnabled(false);
+
         decor.post(() -> decor.requestApplyInsets());
     }
 
@@ -191,6 +199,10 @@ class QtWindowInsetsController
 
         useCutoutShortEdges(window, true);
 
+        QtRootLayout root = QtRootLayout.findIn(activity);
+        if (root != null)
+            root.setContentInsetEnabled(false);
+
         decor.post(() -> decor.requestApplyInsets());
     }
 
@@ -198,7 +210,7 @@ class QtWindowInsetsController
     * The system enforces edge-to-edge only for apps targeting Android V (35)
     * or later, regardless of the version the device runs.
     */
-    private static boolean isEdgeToEdgeEnforced(Context context) {
+    static boolean isEdgeToEdgeEnforced(Context context) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.VANILLA_ICE_CREAM)
             return false;
 

@@ -14,17 +14,27 @@ class QtLayout extends ViewGroup {
 
     QtLayout(Context context)
     {
+        this(context, View.generateViewId());
+    }
+
+    QtLayout(Context context, int viewId)
+    {
         super(context);
+        setId(viewId);
     }
 
     QtLayout(Context context, AttributeSet attrs)
     {
         super(context, attrs);
+        if (getId() == View.NO_ID)
+            setId(View.generateViewId());
     }
 
     QtLayout(Context context, AttributeSet attrs, int defStyle)
     {
         super(context, attrs, defStyle);
+        if (getId() == View.NO_ID)
+            setId(View.generateViewId());
     }
 
     @Override

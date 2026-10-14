@@ -18,6 +18,9 @@
 #endif
 #include <QSignalSpy>
 #include <QtCore/private/qexpected_p.h>
+#include <QtCore/qscopeguard.h>
+
+#include <utility>
 
 template <typename T>
 using QJniResult = q23::expected<T, jthrowable>;
@@ -37,6 +40,15 @@ Q_DECLARE_JNI_CLASS(WindowMetrics, "android/view/WindowMetrics")
 Q_DECLARE_JNI_CLASS(ApplicationInfo, "android/content/pm/ApplicationInfo")
 Q_DECLARE_JNI_CLASS(WindowInsetsType, "android/view/WindowInsets$Type")
 Q_DECLARE_JNI_CLASS(QtActivityLoader, "org/qtproject/qt/android/QtActivityLoader")
+Q_DECLARE_JNI_CLASS(ViewParent, "android/view/ViewParent")
+Q_DECLARE_JNI_CLASS(ViewGroup, "android/view/ViewGroup")
+Q_DECLARE_JNI_CLASS(LayoutParams, "android/view/ViewGroup$LayoutParams")
+Q_DECLARE_JNI_CLASS(WindowLayoutParams, "android/view/WindowManager$LayoutParams")
+Q_DECLARE_JNI_CLASS(IBinder, "android/os/IBinder")
+Q_DECLARE_JNI_CLASS(InputMethodManager, "android/view/inputmethod/InputMethodManager")
+Q_DECLARE_JNI_CLASS(TestEditText, "org/qtproject/qt/android/TestEditText")
+Q_DECLARE_JNI_CLASS(QtLayoutParams, "org/qtproject/qt/android/QtLayout$LayoutParams")
+Q_DECLARE_JNI_CLASS(QtWindowInsetsController, "org/qtproject/qt/android/QtWindowInsetsController")
 
 class tst_Android : public QObject
 {
@@ -54,6 +66,8 @@ private slots:
 #if QT_CONFIG(widgets)
     void safeAreaWithWindowFlagsAndStates_data();
     void safeAreaWithWindowFlagsAndStates();
+    void rootMarginsWithKeyboard();
+    void rootMarginsWithoutEnforcement();
     void testFullScreenDimensions();
     void orientationChange();
 #endif
@@ -285,60 +299,70 @@ void tst_Android::testRunOnAndroidMainThread()
 }
 
 #if QT_CONFIG(widgets)
+using WindowModes = QList<std::pair<Qt::WindowStates, Qt::WindowFlags>>;
+
 void tst_Android::safeAreaWithWindowFlagsAndStates_data()
 {
-    QTest::addColumn<Qt::WindowStates>("windowStates");
-    QTest::addColumn<Qt::WindowFlags>("windowFlags");
+    QTest::addColumn<WindowModes>("windowModes");
 
-    QTest::newRow("Normal")
-        << Qt::WindowStates(Qt::WindowNoState)
-        << Qt::WindowFlags();
-
-    QTest::newRow("Expanded Client Area")
-        << Qt::WindowStates(Qt::WindowNoState)
-        << Qt::WindowFlags(Qt::ExpandedClientAreaHint);
-
-    QTest::newRow("Fullscreen")
-        << Qt::WindowStates(Qt::WindowFullScreen)
-        << Qt::WindowFlags();
-
-    QTest::newRow("Fullscreen and Expanded Client Area")
-        << Qt::WindowStates(Qt::WindowFullScreen)
-        << Qt::WindowFlags(Qt::ExpandedClientAreaHint);
+    QTest::newRow("normal")
+        << WindowModes{{Qt::WindowMaximized, Qt::Window}};
+    QTest::newRow("expanded")
+        << WindowModes{{Qt::WindowMaximized, Qt::Window | Qt::ExpandedClientAreaHint}};
+    QTest::newRow("fullscreen")
+        << WindowModes{{Qt::WindowFullScreen, Qt::Window}};
+    QTest::newRow("fullscreen-expanded")
+        << WindowModes{{Qt::WindowFullScreen, Qt::Window | Qt::ExpandedClientAreaHint}};
+    QTest::newRow("normal-expanded-fullscreen-normal")
+        << WindowModes{
+            {Qt::WindowMaximized, Qt::Window},
+            {Qt::WindowMaximized, Qt::Window | Qt::ExpandedClientAreaHint},
+            {Qt::WindowFullScreen, Qt::Window},
+            {Qt::WindowMaximized, Qt::Window}
+        };
+    QTest::newRow("expanded-normal")
+        << WindowModes{
+            {Qt::WindowMaximized, Qt::Window | Qt::ExpandedClientAreaHint},
+            {Qt::WindowMaximized, Qt::Window}
+        };
 }
 
 void tst_Android::safeAreaWithWindowFlagsAndStates()
 {
-    QFETCH(Qt::WindowStates, windowStates);
-    QFETCH(Qt::WindowFlags, windowFlags);
+    QFETCH(WindowModes, windowModes);
+
+    using namespace QtJniTypes;
+    auto *iface = qGuiApp->nativeInterface<QNativeInterface::QAndroidApplication>();
+    QVERIFY(iface);
+    Activity activity = iface->context().object();
+    QVERIFY(activity.isValid());
+    const int sdkVersion = iface->sdkVersion();
+    const bool enforced = QtWindowInsetsController::callStaticMethod<jboolean>(
+            "isEdgeToEdgeEnforced", Context(activity.object()));
 
     QWidget widget;
     QPalette palette = widget.palette();
     palette.setColor(QPalette::Window, Qt::red);
     widget.setAutoFillBackground(true);
     widget.setPalette(palette);
-    widget.setWindowFlags(windowFlags);
 
-    const bool fullscreen = windowStates & Qt::WindowFullScreen;
-    if (fullscreen)
-        widget.showFullScreen();
-    else
-        widget.show();
+    for (const auto &[windowStates, windowFlags] : windowModes) {
+        const bool fullscreen = windowStates & Qt::WindowFullScreen;
+        widget.setWindowFlags(windowFlags);
+        widget.ensurePolished();
+        widget.setWindowState(windowStates);
+        // show() would replace fullscreen with Android's default window state.
+        widget.setVisible(true);
 
-    QVERIFY(QTest::qWaitForWindowExposed(&widget));
+        QVERIFY(QTest::qWaitForWindowExposed(&widget));
 
-    using namespace QtJniTypes;
-    const int sdkVersion = QNativeInterface::QAndroidApplication::sdkVersion();
-    auto activity = QNativeInterface::QAndroidApplication::context();
-    Window window = activity.callMethod<Window>("getWindow");
-    View decorView = window.callMethod<View>("getDecorView");
-    WindowInsets insets = decorView.callMethod<WindowInsets>("getRootWindowInsets");
-    QVERIFY(insets.isValid());
+        Window window = activity.callMethod<Window>("getWindow");
+        View decorView = window.callMethod<View>("getDecorView");
+        WindowInsets insets = decorView.callMethod<WindowInsets>("getRootWindowInsets");
+        QVERIFY(insets.isValid());
 
-    // Detect camera cutout
-    bool cameraCutout = false;
-    if (sdkVersion >= __ANDROID_API_R__) {
-        if (insets.isValid()) {
+        bool cameraCutout = false;
+        if (sdkVersion >= __ANDROID_API_R__) {
             DisplayCutout cutout = insets.callMethod<DisplayCutout>("getDisplayCutout");
             if (cutout.isValid()) {
                 const int top = cutout.callMethod<jint>("getSafeInsetTop");
@@ -347,46 +371,185 @@ void tst_Android::safeAreaWithWindowFlagsAndStates()
                 const int bottom = cutout.callMethod<jint>("getSafeInsetBottom");
                 cameraCutout = (top > 0) || (left > 0) || (right > 0) || (bottom > 0);
             }
+        } else {
+            // Android 9 and 10 cutout API support was buggy
+            cameraCutout = true;
         }
-    } else {
-        // Android 9 and 10 cutout API support was buggy
-        cameraCutout = true;
+
+        int topStableInset = 0;
+        if (sdkVersion >= __ANDROID_API_R__) {
+            jint systemBarsType = WindowInsetsType::callStaticMethod<jint>("systemBars");
+            jint displayCutoutType = WindowInsetsType::callStaticMethod<jint>("displayCutout");
+            jint combinedType = systemBarsType | displayCutoutType;
+
+            GraphicsInsets insetsIgnoreVisibility = insets.callMethod<GraphicsInsets>(
+                "getInsetsIgnoringVisibility", combinedType);
+            QVERIFY(insetsIgnoreVisibility.isValid());
+            topStableInset = insetsIgnoreVisibility.getField<jint>("top");
+        } else {
+            topStableInset = insets.callMethod<jint>("getStableInsetTop");
+        }
+
+        const bool expandedClientArea = windowFlags & Qt::ExpandedClientAreaHint;
+        const bool normalMode = !expandedClientArea && !fullscreen;
+
+        if (normalMode || (fullscreen && !cameraCutout)) {
+            QTRY_COMPARE(widget.windowHandle()->safeAreaMargins(), QMargins());
+        } else {
+            QTRY_COMPARE_NE(widget.windowHandle()->safeAreaMargins(), QMargins());
+
+            // Other margins vary between Android versions, so only check the top.
+            qreal dpr = widget.devicePixelRatio();
+            QCOMPARE_LE(widget.windowHandle()->safeAreaMargins().top(),
+                        qRound(topStableInset / dpr));
+        }
+
+        if (!enforced)
+            continue;
+
+        const QSize decorSize(decorView.callMethod<jint>("getWidth"),
+                              decorView.callMethod<jint>("getHeight"));
+        QSize nativeSize = decorSize;
+        if (normalMode) {
+            const jint types = WindowInsetsType::callStaticMethod<jint>("systemBars")
+                    | WindowInsetsType::callStaticMethod<jint>("displayCutout");
+            GraphicsInsets safe = insets.callMethod<GraphicsInsets>(
+                    "getInsetsIgnoringVisibility", types);
+            QVERIFY(safe.isValid());
+            const QSize insetSize(safe.getField<jint>("left") + safe.getField<jint>("right"),
+                                  safe.getField<jint>("top") + safe.getField<jint>("bottom"));
+            nativeSize -= insetSize;
+        }
+        QTRY_COMPARE(widget.size(), nativeSize / widget.devicePixelRatio());
+
+        if (normalMode) {
+            QWindow child(widget.windowHandle());
+            child.setGeometry(0, -20, 100, 100);
+            child.show();
+            QVERIFY(QTest::qWaitForWindowExposed(&child));
+            QTRY_COMPARE(child.safeAreaMargins(), QMargins());
+        }
     }
+}
 
-    int topStableInset = 0;
-    if (sdkVersion >= __ANDROID_API_R__) {
-        jint systemBarsType = WindowInsetsType::callStaticMethod<jint>("systemBars");
-        jint displayCutoutType = WindowInsetsType::callStaticMethod<jint>("displayCutout");
-        jint combinedType = systemBarsType | displayCutoutType;
+static QMargins rootMargins(const QtJniTypes::ViewGroup &root)
+{
+    const auto params = root.callMethod<QtJniTypes::LayoutParams>("getLayoutParams");
+    return QMargins(params.getField<jint>("leftMargin"), params.getField<jint>("topMargin"),
+                    params.getField<jint>("rightMargin"), params.getField<jint>("bottomMargin"));
+}
 
-        GraphicsInsets insetsIgnoreVisibility = insets.callMethod<GraphicsInsets>(
-            "getInsetsIgnoringVisibility", combinedType);
-        QVERIFY(insetsIgnoreVisibility.isValid());
-        topStableInset = insetsIgnoreVisibility.getField<jint>("top");
-    } else {
-        topStableInset = insets.callMethod<jint>("getStableInsetTop");
-    }
+void tst_Android::rootMarginsWithKeyboard()
+{
+    using namespace QtJniTypes;
+    auto *iface = qGuiApp->nativeInterface<QNativeInterface::QAndroidApplication>();
+    QVERIFY(iface);
+    Activity activity = iface->context().object();
+    QVERIFY(activity.isValid());
+    const bool enforced = QtWindowInsetsController::callStaticMethod<jboolean>(
+            "isEdgeToEdgeEnforced", Context(activity.object()));
+    if (!enforced)
+        QSKIP("Requires enforced edge-to-edge");
 
-    // Android 15 enables edge-to-edge by default, however not on Qt CI, so let's rely on
-    // the reported top stable inset of decor view to judge whether edge-to-edge is enabled.
-    bool edgeToEdge = sdkVersion >= __ANDROID_API_V__ && topStableInset != 0;
+    QWidget widget;
+    widget.showMaximized();
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
+    QTRY_COMPARE(widget.windowHandle()->safeAreaMargins(), QMargins());
 
-    const bool expandedClientArea = windowFlags & Qt::ExpandedClientAreaHint;
-    const bool normalMode = !expandedClientArea && !fullscreen;
+    View view(reinterpret_cast<jobject>(widget.winId()));
+    ViewGroup root(view.callMethod<ViewParent>("getParent").object());
+    QVERIFY(root.isValid());
+    QVERIFY(root.callMethod<LayoutParams>("getLayoutParams").isValid());
+    const QMargins initialMargins = rootMargins(root);
 
-    if ((normalMode && !edgeToEdge) || (fullscreen && !cameraCutout)) {
-        QTRY_COMPARE(widget.windowHandle()->safeAreaMargins(), QMargins());
-    } else {
-        QTRY_COMPARE_NE(widget.windowHandle()->safeAreaMargins(), QMargins());
+    Window window = activity.callMethod<Window>("getWindow");
+    auto attributes = window.callMethod<WindowLayoutParams>("getAttributes");
+    const jint softInputMode = attributes.getField<jint>("softInputMode");
+    InputMethodManager manager(activity.callMethod<jobject>(
+        "getSystemService", u"input_method"_s).object());
+    QVERIFY(manager.isValid());
 
-        // Make sure the margins we get are the same as the system bars sizes,
-        // that way we make sure we don't end up with margins bigger than expected.
-        // So, retrieve the static system bars height.
+    constexpr jint adjustMask = 0xf0;
+    constexpr jint adjustResize = 0x10;
+    auto created = iface->runOnAndroidMainThread(
+        [activity, root, window, softInputMode] {
+            window.callMethod<void>("setSoftInputMode",
+                                     (softInputMode & ~adjustMask) | adjustResize);
+            // Avoid Qt input queries racing later EGL surface creation.
+            auto editor = TestEditText::construct(Context(activity.object()));
+            auto layout = QtLayoutParams::construct(jint(300), jint(100), jint(20), jint(20));
+            root.callMethod<void>("addView", View(editor.object()), LayoutParams(layout.object()));
+            editor.callMethod<jboolean>("requestFocus");
+            return QVariant::fromValue(QJniObject(editor.object()));
+        });
+    QTRY_VERIFY(created.isFinished());
+    const View editor(created.result().value<QJniObject>());
+    QVERIFY(editor.isValid());
 
-        // Other margins can vary between Android versions, so let's only check for top
-        qreal dpr = widget.devicePixelRatio();
-        QCOMPARE_LE(widget.windowHandle()->safeAreaMargins().top(), qRound(topStableInset / dpr));
-    }
+    const auto cleanup = [iface, root, editor, manager, window, softInputMode] {
+        return iface->runOnAndroidMainThread(
+            [root, editor, manager, window, softInputMode] {
+                auto token = editor.callMethod<IBinder>("getWindowToken");
+                manager.callMethod<jboolean>("hideSoftInputFromWindow", token, jint(0));
+                editor.callMethod<void>("clearFocus");
+                root.callMethod<void>("removeView", editor);
+                window.callMethod<void>("setSoftInputMode", softInputMode);
+            });
+    };
+    auto removeEditor = qScopeGuard([cleanup] { cleanup(); });
+
+    QTRY_VERIFY(editor.callMethod<jboolean>("hasFocus"));
+    QTRY_VERIFY(editor.callMethod<jboolean>("hasWindowFocus"));
+    iface->runOnAndroidMainThread([editor, manager] {
+        manager.callMethod<jboolean>("showSoftInput", editor, jint(0));
+    });
+
+    View decor = window.callMethod<View>("getDecorView");
+    const jint ime = WindowInsetsType::callStaticMethod<jint>("ime");
+    const auto keyboardVisible = [decor, ime] {
+        WindowInsets insets = decor.callMethod<WindowInsets>("getRootWindowInsets");
+        return insets.callMethod<jboolean>("isVisible", ime);
+    };
+    QTRY_VERIFY(keyboardVisible());
+    QTRY_VERIFY(editor.getField<jboolean>("m_imeAnimationFinished"));
+    QCOMPARE(rootMargins(root), initialMargins);
+    auto cleaned = cleanup();
+    QTRY_VERIFY(cleaned.isFinished());
+    removeEditor.dismiss();
+    QTRY_VERIFY(!keyboardVisible());
+    QTRY_COMPARE(rootMargins(root), initialMargins);
+}
+
+void tst_Android::rootMarginsWithoutEnforcement()
+{
+    using namespace QtJniTypes;
+    auto *iface = qGuiApp->nativeInterface<QNativeInterface::QAndroidApplication>();
+    QVERIFY(iface);
+    Activity activity = iface->context().object();
+    QVERIFY(activity.isValid());
+    const bool enforced = QtWindowInsetsController::callStaticMethod<jboolean>(
+            "isEdgeToEdgeEnforced", Context(activity.object()));
+    if (enforced)
+        QSKIP("Requires app-managed edge-to-edge");
+
+    auto result = iface->runOnAndroidMainThread([activity] {
+        constexpr jint contentId = 0x01020002; // android.R.id.content
+        ViewGroup content(activity.callMethod<View>("findViewById", contentId).object());
+        ViewGroup root(content.callMethod<View>("getChildAt", jint(0)).object());
+        auto params = root.callMethod<LayoutParams>("getLayoutParams");
+        const QMargins original = rootMargins(root);
+        params.callMethod<void>("setMargins", jint(1), jint(2), jint(3), jint(4));
+        root.callMethod<void>("setLayoutParams", params);
+        QtWindowInsetsController::callStaticMethod<void>("showExpanded", activity);
+        const QMargins observed = rootMargins(root);
+        params.callMethod<void>("setMargins", original.left(), original.top(),
+                                original.right(), original.bottom());
+        root.callMethod<void>("setLayoutParams", params);
+        QtWindowInsetsController::callStaticMethod<void>("showNormal", activity);
+        return QVariant::fromValue(observed);
+    });
+    QTRY_VERIFY(result.isFinished());
+    QCOMPARE(result.result().value<QMargins>(), QMargins(1, 2, 3, 4));
 }
 
 // QTBUG-107604
@@ -421,22 +584,19 @@ void tst_Android::testFullScreenDimensions()
         return QSize(jrealSize.getField<jint>("x"), jrealSize.getField<jint>("y"));
     }();
 
-    auto targetSdkVersion = [=]() {
-        const auto appContext = activity.callMethod<QtJniTypes::Context>("getApplicationContext");
-        const auto appInfo = appContext.callMethod<QtJniTypes::ApplicationInfo>("getApplicationInfo");
-        return appInfo.getField<jint>("targetSdkVersion");
-    }();
-
     auto insetsSize = [=]() {
         auto window = activity.callMethod<QtJniTypes::Window>("getWindow");
         auto decorView = window.callMethod<QtJniTypes::View>("getDecorView");
         auto insets = decorView.callMethod<QtJniTypes::WindowInsets>("getRootWindowInsets");
 
-        if (sdkVersion >= __ANDROID_API_V__  && targetSdkVersion >= __ANDROID_API_V__) {
-            // Android 15 apps take all screen geomtry with edge-to-edge
-            return QSize(0, 0);
+        if (sdkVersion >= __ANDROID_API_R__) {
+            const jint types = QtJniTypes::WindowInsetsType::callStaticMethod<jint>("systemBars")
+                | QtJniTypes::WindowInsetsType::callStaticMethod<jint>("displayCutout");
+            auto safe = insets.callMethod<QtJniTypes::GraphicsInsets>("getInsets", types);
+            return QSize(safe.getField<jint>("left") + safe.getField<jint>("right"),
+                         safe.getField<jint>("top") + safe.getField<jint>("bottom"));
         } else {
-            // pre-Android 15 app size is screen size minus the system bars
+            // Use legacy insets before WindowInsets.Type is available.
             int insetRight = insets.callMethod<jint>("getSystemWindowInsetRight");
             int insetLeft = insets.callMethod<jint>("getSystemWindowInsetLeft");
             int insetTop = insets.callMethod<jint>("getSystemWindowInsetTop");
