@@ -5,6 +5,7 @@
 #include <QtCore/qdir.h>
 #include <QtCore/qfileinfo.h>
 #include <QtCore/qplugin.h>
+#include <QtCore/qscopeguard.h>
 #include <QtCore/qversionnumber.h>
 #include <private/qfactoryloader_p.h>
 #include <private/qlibrary_p.h>
@@ -156,6 +157,10 @@ void tst_QFactoryLoader::multiplePaths()
     || defined(Q_OS_ANDROID) || defined(Q_OS_HARMONY)
     QSKIP("Test not applicable in this configuration.");
 #else
+    auto restoreLibraryPaths = qScopeGuard([&] {
+        QCoreApplication::setLibraryPaths(QStringList());
+    });
+
     QTemporaryDir dir;
     QVERIFY(dir.isValid());
 
