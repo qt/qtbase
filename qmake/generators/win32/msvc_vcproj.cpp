@@ -1539,6 +1539,18 @@ void VcprojGenerator::initExtraCompilerOutputs()
         extraCompile.Filter = "";
         extraCompile.Guid = QString(_GUIDExtraCompilerFiles) + "-" + (*it);
 
+        // VCFilter::addExtraCompiler() merges all extra compilers of an input file into one
+        // custom build step, so each file may be listed only once across the compilers.
+        auto listedByOtherCompiler = [this](const QString &file) {
+            for (const VCFilter &filter : std::as_const(vcProject.ExtraCompilersFiles)) {
+                for (const VCFilterFile &ff : filter.Files) {
+                    if (ff.file == file)
+                        return true;
+                }
+            }
+            return false;
+        };
+
         bool addOnInput = hasBuiltinCompiler(firstExpandedOutputFileName(*it));
         if (!addOnInput) {
             // If the extra compiler has a variable_out set that is already handled
@@ -1560,9 +1572,13 @@ void VcprojGenerator::initExtraCompilerOutputs()
                 const ProStringList &tmp_in = project->values(inputVars.first().toKey());
                 for (int i = 0; i < tmp_in.size(); ++i) {
                     const QString &filename = tmp_in.at(i).toQString();
-                    if (extraCompilerSources.contains(filename) && !otherFiltersContain(filename))
-                        extraCompile.addFile(Option::fixPathToTargetOS(
-                                replaceExtraCompilerVariables(filename, tmp_out, QString(), NoShell), false));
+                    if (!extraCompilerSources.contains(filename) || otherFiltersContain(filename))
+                        continue;
+                    const QString file = Option::fixPathToTargetOS(
+                            replaceExtraCompilerVariables(filename, tmp_out, QString(), NoShell),
+                            false);
+                    if (!listedByOtherCompiler(file))
+                        extraCompile.addFile(file);
                 }
             }
         } else {
@@ -1575,9 +1591,15 @@ void VcprojGenerator::initExtraCompilerOutputs()
                     const ProStringList &tmp_in = project->values(inputVar.toKey());
                     for (int i = 0; i < tmp_in.size(); ++i) {
                         const QString &filename = tmp_in.at(i).toQString();
-                        if (extraCompilerSources.contains(filename) && !otherFiltersContain(filename))
-                            extraCompile.addFile(Option::fixPathToTargetOS(
-                                    replaceExtraCompilerVariables(filename, QString(), QString(), NoShell), false));
+                        if (!extraCompilerSources.contains(filename)
+                            || otherFiltersContain(filename))
+                            continue;
+                        const QString file = Option::fixPathToTargetOS(
+                                replaceExtraCompilerVariables(filename, QString(), QString(),
+                                                              NoShell),
+                                false);
+                        if (!listedByOtherCompiler(file))
+                            extraCompile.addFile(file);
                     }
                 }
             }

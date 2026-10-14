@@ -51,6 +51,9 @@ private slots:
 #elif defined(Q_OS_WIN)
     void windowsResources();
 #endif
+#ifdef Q_OS_WIN
+    void vcxprojExtraCompilersSharingInput();
+#endif
     void substitutes();
     void project();
     void proFileCache();
@@ -580,6 +583,29 @@ void tst_qmake::windowsResources()
 }
 
 #endif // defined(Q_OS_WIN)
+
+#ifdef Q_OS_WIN
+void tst_qmake::vcxprojExtraCompilersSharingInput()
+{
+#  ifndef Q_CC_MSVC
+    QSKIP("The Visual Studio generator is only used with the MSVC spec.");
+#  endif
+    QString workDir = base_path + "/testdata/vcxproj_extra_compilers";
+    QVERIFY(test_compiler.qmake(workDir, { "-tp", "vc", "extra_compilers.pro" }));
+
+    QFile project(workDir + "/extra_compilers.vcxproj");
+    QVERIFY(project.open(QFile::ReadOnly));
+    const QByteArray contents = project.readAll();
+    project.close();
+
+    // All extra compilers of an input are merged into one custom build step. A repeated item
+    // makes MSBuild fail.
+    QCOMPARE(contents.count("<CustomBuild Include=\"gen.in\">"), 1);
+    // The one step must still produce the output of both compilers.
+    QVERIFY(contents.contains("gen_gen.h"));
+    QVERIFY(contents.contains("gen_gen.cpp"));
+}
+#endif
 
 void tst_qmake::substitutes()
 {
