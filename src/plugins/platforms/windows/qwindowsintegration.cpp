@@ -280,6 +280,8 @@ bool QWindowsIntegration::hasCapability(QPlatformIntegration::Capability cap) co
         return true;
     case ForeignWindows:
         return true;
+    case ChildWindows:
+        return true;
     case AllGLFunctionsQueryable:
         return true;
     case SwitchableWidgetComposition:

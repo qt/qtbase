@@ -328,6 +328,7 @@ bool QOhosPlatformIntegration::hasCapability(Capability cap) const
         case WindowManagement:
             return QOhosSettings::instance().isWindowPcModeEnabled();
         case TopStackedNativeChildWindows: return false;
+        case ChildWindows: return true;
         default:
             return QPlatformIntegration::hasCapability(cap);
     }

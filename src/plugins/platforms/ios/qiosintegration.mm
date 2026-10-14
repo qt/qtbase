@@ -163,6 +163,8 @@ bool QIOSIntegration::hasCapability(Capability cap) const
         return true;
     case ForeignWindows:
         return true;
+    case ChildWindows:
+        return true;
     default:
         return QPlatformIntegration::hasCapability(cap);
     }

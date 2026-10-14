@@ -12,7 +12,7 @@
 #include <QtGui/qscreen.h>
 #include <private/qhighdpiscaling_p.h>
 #include <private/qwindow_p.h>
-
+#include <qpa/qplatformintegration.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -285,16 +285,19 @@ WId QPlatformWindow::winId() const
     return WId(1);
 }
 
-//jl: It would be useful to have a property on the platform window which indicated if the sub-class
-// supported the setParent. If not, then geometry would be in screen coordinates.
 /*!
     This function is called to enable native child window in QPA. It is common not to support this
     feature in Window systems, but can be faked. When this function is called all geometry of this
     platform window will be relative to the parent.
+
+    Platforms that override this function should return \c true
+    for QPlatformIntegration::Capability::ChildWindows.
 */
 void QPlatformWindow::setParent(const QPlatformWindow *parent)
 {
     Q_UNUSED(parent);
+    Q_ASSERT(!QGuiApplicationPrivate::platformIntegration()->hasCapability(
+        QPlatformIntegration::Capability::ChildWindows));
     qWarning("This plugin does not support setParent!");
 }
 

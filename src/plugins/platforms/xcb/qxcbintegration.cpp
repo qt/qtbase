@@ -297,6 +297,7 @@ bool QXcbIntegration::hasCapability(QPlatformIntegration::Capability cap) const
     case WindowMasks:
     case MultipleWindows:
     case ForeignWindows:
+    case ChildWindows:
     case SyncState:
     case MouseCursorPositioning:
         return true;

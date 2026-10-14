@@ -244,6 +244,11 @@ QPlatformServices *QPlatformIntegration::services() const
     \value MouseCursorPositioning The platform supports programmatic cursor positioning via
     QCursor::setPos(). Platforms such as Wayland that enforce pointer confinement will
     return \c false. The default implementation returns \c false.
+
+    \value ChildWindows The platform supports child QWindows via QWindow::setParent().
+    Platforms that implement QPlatformWindow::setParent(), either via the native
+    windowing system or by faking it in the QPA plugin, should return \c true.
+    The default implementation returns \c false.
  */
 
 /*!

@@ -129,6 +129,7 @@ bool QWaylandIntegration::hasCapability(QPlatformIntegration::Capability cap) co
         return true;
     case MultipleWindows:
     case NonFullScreenWindows:
+    case ChildWindows:
         return true;
     case WindowActivation:
         return true;

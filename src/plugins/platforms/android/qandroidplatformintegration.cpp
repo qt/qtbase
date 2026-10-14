@@ -345,6 +345,7 @@ bool QAndroidPlatformIntegration::hasCapability(Capability cap) const
         case ThreadedOpenGL:
             return !needsBasicRenderloopWorkaround() && isValidAndroidContextForRendering();
         case TopStackedNativeChildWindows: return false;
+        case ChildWindows: return true;
         case MaximizeUsingFullscreenGeometry: return true;
         // FIXME QTBUG-118849 - we do not implement grabWindow() anymore, calling it will return
         // a null QPixmap also for raster windows - for OpenGL windows this was always true
