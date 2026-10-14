@@ -5,6 +5,9 @@ cmake_minimum_required(VERSION 3.16)
 
 project(test_android_aar)
 
+# AAR generation is only supported by the single-module packaging path.
+set(QT_ANDROID_GRADLE_MULTI_MODULE OFF)
+
 find_package(Qt6 COMPONENTS Core Gui REQUIRED)
 
 qt6_add_executable(test_aar main.cpp)
