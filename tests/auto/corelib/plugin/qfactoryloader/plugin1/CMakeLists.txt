@@ -28,4 +28,6 @@ qt_internal_extend_target(tst_qfactoryloader_plugin1 CONDITION NOT QT_FEATURE_li
         QT_STATICPLUGIN
 )
 
+add_dependencies(tst_qfactoryloader tst_qfactoryloader_plugin1)
+
 qt_autogen_tools_initial_setup(tst_qfactoryloader_plugin1)
