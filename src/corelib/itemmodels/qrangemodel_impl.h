@@ -560,7 +560,8 @@ namespace QRangeModelDetails
         static bool for_element_at(C &&container, std::size_t idx, Fn &&fn)
         {
             if constexpr (is_range)
-                return std::forward<Fn>(fn)(*QRangeModelDetails::pos(std::forward<C>(container), idx));
+                return std::forward<Fn>(fn)(
+                        *QRangeModelDetails::pos(std::forward<C>(container), int(idx)));
             else
                 return std::forward<Fn>(fn)(std::forward<C>(container));
         }
