@@ -1450,7 +1450,7 @@ QRect QTreeViewPrivate::intersectedRect(const QRect rect, const QModelIndex &top
                 if (header->isSectionHidden(col))
                     continue;
                 const QModelIndex idx(model->index(row, col, parentIdx));
-                const QRect idxRect = visualRect(idx, SingleSection);
+                const QRect idxRect = visualRect(idx, AddRowIndicatorToFirstSection);
                 if (idxRect.isNull())
                     continue;
                 // early exit when complete row is out of viewport
