@@ -2165,6 +2165,20 @@
 
     \snippet code/doc_src_qmake-manual.pro 187
 
+    \section1 QMAKE_IGNORE_SH
+
+    On Windows, qmake looks for \c sh.exe in \c PATH. If it finds one, it
+    generates Makefiles with Unix shell commands for all specs that do not
+    use an MSVC or MSBuild generator. This is unwanted if \c sh.exe is only
+    in \c PATH because of another tool, such as Git.
+
+    Setting the \e{environment variable} \c QMAKE_IGNORE_SH to a non-empty
+    value makes qmake skip the search, so that it generates Windows \c cmd
+    commands.
+
+    \note This is an environment variable, not a qmake variable, because
+    it is read before the qmake spec is loaded.
+
     \section1 QMAKE_INCDIR
 
     Specifies the list of system header paths that are appended to \l{INCLUDEPATH}.
