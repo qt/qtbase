@@ -106,6 +106,7 @@ public:
         BackingStoreStaticContents,
         OffscreenSurface,
         MouseCursorPositioning,
+        ChildWindows,
     };
 
     virtual ~QPlatformIntegration() { }

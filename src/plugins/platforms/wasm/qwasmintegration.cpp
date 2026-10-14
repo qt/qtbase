@@ -186,6 +186,7 @@ bool QWasmIntegration::hasCapability(QPlatformIntegration::Capability cap) const
     case MultipleWindows: return true;
     case WindowManagement: return true;
     case ForeignWindows: return true;
+    case ChildWindows: return true;
     case OpenGLOnRasterSurface: return true;
     case OffscreenSurface: return true;
     case ApplicationState: return true;

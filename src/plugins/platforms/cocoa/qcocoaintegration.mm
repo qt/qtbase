@@ -261,6 +261,7 @@ bool QCocoaIntegration::hasCapability(QPlatformIntegration::Capability cap) cons
     case WindowMasks:
     case MultipleWindows:
     case ForeignWindows:
+    case ChildWindows:
     case ApplicationState:
     case ApplicationIcon:
     case BackingStoreStaticContents:

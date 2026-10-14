@@ -292,6 +292,7 @@ bool QQnxIntegration::hasCapability(QPlatformIntegration::Capability cap) const
     switch (cap) {
     case MultipleWindows:
     case ForeignWindows:
+    case ChildWindows:
     case ThreadedPixmaps:
         return true;
 #if !defined(QT_NO_OPENGL)
