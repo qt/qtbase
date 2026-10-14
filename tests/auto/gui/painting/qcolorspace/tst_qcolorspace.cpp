@@ -32,6 +32,7 @@ private slots:
 
     void fromIccProfile_data();
     void fromIccProfile();
+    void cicpWithLabPcs();
 
     void imageConversion_data();
     void imageConversion();
@@ -241,6 +242,17 @@ void tst_QColorSpace::fromIccProfile_data()
                                   << QColorSpace::TransferFunction::St2084
                                   << QColorSpace::TransformModel::ThreeComponentMatrix
                                   << QColorSpace::ColorModel::Rgb << QString("Rec. ITU-R BT.2100 PQ");
+    // libjxl writes HDR profiles with a Lab PCS, n-LUTs and a cicp tag
+    QTest::newRow("BT.2100 PQ, Lab PCS (libjxl)")
+            << prefix + "libjxl-Rec2100PQ.icc" << QColorSpace::Bt2100Pq
+            << QColorSpace::TransferFunction::St2084
+            << QColorSpace::TransformModel::ThreeComponentMatrix
+            << QColorSpace::ColorModel::Rgb << QString("Rec2100PQ");
+    QTest::newRow("BT.2100 HLG, Lab PCS (libjxl)")
+            << prefix + "libjxl-Rec2100HLG.icc" << QColorSpace::Bt2100Hlg
+            << QColorSpace::TransferFunction::Hlg
+            << QColorSpace::TransformModel::ThreeComponentMatrix
+            << QColorSpace::ColorModel::Rgb << QString("Rec2100HLG");
 }
 
 void tst_QColorSpace::fromIccProfile()
@@ -279,6 +291,26 @@ void tst_QColorSpace::fromIccProfile()
     QVERIFY(fileColorSpace2.isValid());
     // Note, we do not currently compare description in color space equality
     QCOMPARE(fileColorSpace2, fileColorSpace);
+}
+
+void tst_QColorSpace::cicpWithLabPcs()
+{
+    // A recognized cicp tag replaces the n-LUTs of a Lab PCS profile, so HDR values are not clamped
+    // to the [0, 1] range of the LUT transform.
+    QFile file(QFINDTESTDATA("resources/libjxl-Rec2100PQ.icc"));
+    QVERIFY(file.open(QIODevice::ReadOnly));
+    const QColorSpace pq = QColorSpace::fromIccProfile(file.readAll());
+    QVERIFY(pq.isValid());
+    QCOMPARE(pq, QColorSpace::Bt2100Pq);
+
+    const QColorTransform toLinear = pq.transformationToColorSpace(QColorSpace::SRgbLinear);
+    const QColorTransform fromNamed =
+            QColorSpace(QColorSpace::Bt2100Pq).transformationToColorSpace(QColorSpace::SRgbLinear);
+    // PQ signal of 1000 cd/m2, gray
+    const QRgbaFloat32 bright{0.7518f, 0.7518f, 0.7518f, 1.0f};
+    const QRgbaFloat32 mapped = toLinear.map(bright);
+    QVERIFY(mapped.green() > 1.0f);
+    QCOMPARE(mapped.green(), fromNamed.map(bright).green());
 }
 
 void tst_QColorSpace::imageConversion_data()
