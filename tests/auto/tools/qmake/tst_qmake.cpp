@@ -65,6 +65,7 @@ private slots:
     void qinstall();
     void hostPathsInQtConf();
     void resources();
+    void duplicateInputs();
     void conflictingTargets();
 
 private:
@@ -859,6 +860,27 @@ void tst_qmake::qinstall()
         QVERIFY(qinstall(src.absolutePath(), dst.absolutePath()));
         QCOMPARE(src.entryList(QDir::Files, QDir::Name), dst.entryList(QDir::Files, QDir::Name));
     }
+}
+
+void tst_qmake::duplicateInputs()
+{
+    QString workDir = base_path + "/testdata/duplicate_inputs";
+    QVERIFY(test_compiler.qmake(workDir, "duplicate_inputs"));
+
+    QFile makefile(workDir + "/Makefile");
+    QVERIFY(makefile.open(QFile::ReadOnly));
+    const QString contents = QString::fromLocal8Bit(makefile.readAll());
+    makefile.close();
+
+    // A source that is listed several times, also with different spellings, gets one rule.
+    const QRegularExpression ruleForHelper("^\\S*helper\\.(o|obj):",
+                                           QRegularExpression::MultilineOption);
+    QCOMPARE(contents.count(ruleForHelper), 1);
+
+    // Other lists keep their duplicates and their order.
+    QVERIFY2(contents.contains("-Iinc1 -Iinc2 -Iinc1"), qPrintable(contents));
+
+    QVERIFY(test_compiler.removeMakefile(workDir));
 }
 
 void tst_qmake::resources()

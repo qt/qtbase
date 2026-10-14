@@ -647,6 +647,7 @@ MakefileGenerator::init()
             if(!paths.contains(compilers.at(x).variable_in))
                 paths << compilers.at(x).variable_in;
         }
+        const ProStringList inputVariables = paths;
         paths << "INCLUDEPATH" << "QMAKE_INTERNAL_INCLUDED_FILES" << "PRECOMPILED_HEADER";
         for(int y = 0; y < paths.size(); y++) {
             ProStringList &l = v[paths[y].toKey()];
@@ -658,6 +659,11 @@ MakefileGenerator::init()
                     (*it) = fileFixify(fn);
             }
         }
+        // Duplicate inputs would generate duplicate rules. Do this after fixifying, so that
+        // different spellings of one file are recognized. Other lists, like INCLUDEPATH,
+        // are left alone, because their order and repetitions can matter.
+        for (const ProString &variable : inputVariables)
+            v[variable.toKey()].removeDuplicates();
     }
 
     if(noIO() || !doDepends() || project->isActiveConfig("GNUmake"))
