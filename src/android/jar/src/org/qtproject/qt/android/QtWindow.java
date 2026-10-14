@@ -55,7 +55,6 @@ class QtWindow extends QtLayout implements QtSurfaceInterface
                     QtInputConnection.QtInputConnectionListener listener)
     {
         super(context);
-        setId(View.generateViewId());
         m_inputConnectionListener = listener;
         setParent(parentWindow);
         setFocusableInTouchMode(true);
