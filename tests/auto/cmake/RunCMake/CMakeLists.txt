@@ -9,6 +9,7 @@ qt_internal_add_RunCMake_test(QtMakeOutputFile)
 
 qt_internal_add_RunCMake_test(find_package)
 
+qt_internal_add_RunCMake_test(QtFeature)
 qt_internal_add_RunCMake_test(QtFeatureExclusiveGroup)
 
 qt_internal_add_RunCMake_test(ConfigVersionOverride)
