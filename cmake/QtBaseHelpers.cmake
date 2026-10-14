@@ -229,9 +229,6 @@ macro(qt_internal_qtbase_build_repo)
         ## QtBase specific configure tests:
         include(QtBaseConfigureTests)
 
-        ## Build System tests:
-        include(QtBaseCMakeTesting)
-
         ## Include CoreMacros() for qt6_generate_meta_types()
         ## Also needed for the QtBaseGlobalTargets creation.
         set(QT_DEFAULT_MAJOR_VERSION 6)
