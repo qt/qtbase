@@ -6,8 +6,14 @@ isEmpty(QMAKE_H_MOD_MOC):QMAKE_H_MOD_MOC = moc_
 isEmpty(QMAKE_EXT_CPP_MOC):QMAKE_EXT_CPP_MOC = .moc
 
 MOC_INCLUDEPATH =
-for (inc, INCLUDEPATH): \
-    MOC_INCLUDEPATH += $$absolute_path($$inc, $$_PRO_FILE_PWD_)
+for (inc, INCLUDEPATH) {
+    # A leading make-time variable reference like $(VAR) has an unknown value,
+    # so it must not be treated as a relative path (QTBUG-48027).
+    contains(inc, "\\$\\(.*"): \
+        MOC_INCLUDEPATH += $$inc
+    else: \
+        MOC_INCLUDEPATH += $$absolute_path($$inc, $$_PRO_FILE_PWD_)
+}
 !no_include_pwd:!isEqual(OUT_PWD, $$_PRO_FILE_PWD_): \
     MOC_INCLUDEPATH += .
 MOC_INCLUDEPATH = $$QMAKESPEC $$_PRO_FILE_PWD_ $$MOC_INCLUDEPATH $$QMAKE_DEFAULT_INCDIRS
