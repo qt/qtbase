@@ -37,11 +37,15 @@ equals(QMAKE_HOST.os, Windows) {
     QMAKE_EXT_OBJ       = .obj
     QMAKE_EXT_RES       = .res
     QMAKE_SH            =
-    ensurePathEnv()
-    for(dir, QMAKE_PATH_ENV) {
-        exists($$dir/sh.exe) {
-            QMAKE_SH = $$dir/sh.exe
-            break()
+    # Lets users keep a stray sh.exe in PATH (e.g. from git) from selecting Unix commands.
+    ignore_sh = $$(QMAKE_IGNORE_SH)
+    isEmpty(ignore_sh) {
+        ensurePathEnv()
+        for(dir, QMAKE_PATH_ENV) {
+            exists($$dir/sh.exe) {
+                QMAKE_SH = $$dir/sh.exe
+                break()
+            }
         }
     }
 } else {
