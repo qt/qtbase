@@ -276,35 +276,25 @@ void tst_QFiledialog::directoryEnteredSignal()
 Q_DECLARE_METATYPE(QFileDialog::FileMode)
 void tst_QFiledialog::filesSelectedSignal_data()
 {
-#if defined(Q_OS_ANDROID) || defined(Q_OS_HARMONY)
-    const auto homePaths = QStandardPaths::standardLocations(QStandardPaths::HomeLocation);
-    QVERIFY(!homePaths.isEmpty());
-    QDir testDir(homePaths.first());
-
-    // Create a dir and a file because Android's home dir is initially empty
-    testDir.mkdir("qtest");
-    QVERIFY(testDir.exists("qtest"));
-
-    QFile file(testDir.filePath("file.txt"));
-    if (file.open(QIODevice::WriteOnly))
-        file.close();
-#else
-    QDir testDir(QT_TESTCASE_SOURCEDIR);
-#endif
-
-    QTest::addColumn<QDir>("testDir");
     QTest::addColumn<QFileDialog::FileMode>("fileMode");
-    QTest::newRow("any") << testDir << QFileDialog::AnyFile;
-    QTest::newRow("existing") << testDir << QFileDialog::ExistingFile;
-    QTest::newRow("directory") << testDir << QFileDialog::Directory;
-    QTest::newRow("existingFiles") << testDir << QFileDialog::ExistingFiles;
+    QTest::newRow("any") << QFileDialog::AnyFile;
+    QTest::newRow("existing") << QFileDialog::ExistingFile;
+    QTest::newRow("directory") << QFileDialog::Directory;
+    QTest::newRow("existingFiles") << QFileDialog::ExistingFiles;
 }
 
 // emitted when the dialog closes with the selected files
 void tst_QFiledialog::filesSelectedSignal()
 {
-    QFETCH(QDir, testDir);
     QFETCH(QFileDialog::FileMode, fileMode);
+
+    QTemporaryDir temporaryDir;
+    QVERIFY2(temporaryDir.isValid(), qPrintable(temporaryDir.errorString()));
+    const QDir testDir(temporaryDir.path());
+    QVERIFY(testDir.mkdir("qtest"));
+    QFile testFile(testDir.filePath("file.txt"));
+    QVERIFY2(testFile.open(QIODevice::WriteOnly), qPrintable(testFile.errorString()));
+    testFile.close();
 
     QFileDialog fd;
     fd.setViewMode(QFileDialog::List);
@@ -317,22 +307,23 @@ void tst_QFiledialog::filesSelectedSignal()
     QListView *listView = fd.findChild<QListView*>("listView");
     QVERIFY(listView);
 
-    QModelIndex root = listView->rootIndex();
-    QTRY_COMPARE(listView->model()->rowCount(root) > 0, true);
     QModelIndex file;
-    for (int i = 0; i < listView->model()->rowCount(root); ++i) {
-        file = listView->model()->index(i, 0, root);
-        if (fileMode == QFileDialog::Directory) {
-            if (listView->model()->hasChildren(file))
-                break;
-        } else {
-            if (!listView->model()->hasChildren(file))
-                break;
+    const auto findEntry = [&] {
+        const QModelIndex root = listView->rootIndex();
+        const auto *model = listView->model();
+        for (int i = 0; i < model->rowCount(root); ++i) {
+            const QModelIndex index = model->index(i, 0, root);
+            if (model->hasChildren(index) == (fileMode == QFileDialog::Directory)) {
+                file = index;
+                return true;
+            }
         }
-        file = QModelIndex();
-    }
+        return false;
+    };
 
-    QVERIFY(file.isValid());
+    QTRY_VERIFY2(findEntry(),
+                 qPrintable("no matching entry, rowCount: "
+                            + QString::number(listView->model()->rowCount(listView->rootIndex()))));
     listView->selectionModel()->select(file, QItemSelectionModel::Select | QItemSelectionModel::Rows);
     listView->setCurrentIndex(file);
 
