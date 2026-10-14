@@ -34,6 +34,7 @@ private slots:
     void simple_dll();
     void subdirs();
     void subdirsDependsOnUnnormalizedFile();
+    void subdirsDependsOrder();
     void subdir_via_pro_file_extra_target();
     void duplicateLibraryEntries();
     void export_across_file_boundaries();
@@ -327,6 +328,31 @@ void tst_qmake::subdirsDependsOnUnnormalizedFile()
     QVERIFY(contents.contains("sub-foo-pro-qmake_all:"));
     QVERIFY(contents.contains("sub-bar-pro-qmake_all: sub-foo-pro-qmake_all"));
     QVERIFY(!contents.contains("sub---foo-pro"));
+    QVERIFY(test_compiler.removeMakefile(workDir));
+}
+
+void tst_qmake::subdirsDependsOrder()
+{
+    QString workDir = base_path + "/testdata/subdirs_depends_order";
+
+    // SUBDIRS lists mainapp before the deplib it depends on. A recursive qmake
+    // must reorder the subdirs by .depends and process deplib first, otherwise
+    // prl creation and consumption happen out of order. QTBUG-45706.
+    test_compiler.clearCommandOutput();
+    QVERIFY(test_compiler.qmake(workDir, "subdirs_depends_order", QString(),
+                                QStringList() << "-r"));
+    const QString output = test_compiler.commandOutput();
+    const int depPos = output.indexOf("deplib.pro");
+    const int appPos = output.indexOf("mainapp.pro");
+    QVERIFY2(depPos != -1 && appPos != -1, qPrintable(output));
+    QVERIFY2(depPos < appPos,
+             qPrintable(QLatin1String("deplib must be processed before mainapp:\n") + output));
+
+    // The reordering must also produce a working build: mainapp links deplib.
+    QVERIFY(test_compiler.make(workDir));
+    QVERIFY(test_compiler.exists(workDir + "/mainapp", "mainapp", Exe));
+
+    QVERIFY(test_compiler.makeDistClean(workDir));
     QVERIFY(test_compiler.removeMakefile(workDir));
 }
 

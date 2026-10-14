@@ -325,7 +325,9 @@ ProStringList VcprojGenerator::collectDependencies(QMakeProject *proj, QHash<QSt
                                                    const ProStringList &allDependencies)
 {
     QList<QPair<QString, ProStringList>> collectedSubdirs;
-    ProStringList tmp_proj_subdirs = proj->values("SUBDIRS");
+    // Resolve project GUIDs in dependency order so that a dependent can refer
+    // to the GUID of a project it .depends on.
+    ProStringList tmp_proj_subdirs = sortSubDirsByDependencies(proj, proj->values("SUBDIRS"));
     ProStringList projectsInProject;
     const int numSubdirs = tmp_proj_subdirs.size();
     collectedSubdirs.reserve(numSubdirs);

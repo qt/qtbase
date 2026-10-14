@@ -27,6 +27,11 @@ QT_BEGIN_NAMESPACE
 
 struct ReplaceExtraCompilerCacheKey;
 
+// Stable topological sort of SUBDIRS so that a subdir always follows the
+// subdirs it .depends on. Returns subdirs unchanged if CONFIG += ordered is
+// set.
+ProStringList sortSubDirsByDependencies(QMakeProject *project, const ProStringList &subdirs);
+
 class MakefileGenerator : protected QMakeSourceFileInfo
 {
     QString spec;

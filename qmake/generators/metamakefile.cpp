@@ -293,6 +293,12 @@ SubdirsMetaMakefileGenerator::init()
     init_flag = true;
     bool hasError = false;
 
+    // qmake -r recurses in SUBDIRS order, and prl files are created and
+    // consumed in that order, so the listing order must respect .depends even
+    // though the generated Makefiles also encode the dependencies.
+    ProStringList &subdirs = project->values("SUBDIRS");
+    subdirs = sortSubDirsByDependencies(project, subdirs);
+
     bool recurse = Option::recursive;
     if (recurse && project->isActiveConfig("dont_recurse"))
         recurse = false;

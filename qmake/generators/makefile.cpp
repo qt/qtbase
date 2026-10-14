@@ -36,6 +36,42 @@ QT_BEGIN_NAMESPACE
 
 using namespace QMakeInternal;
 
+static void sortSubDirVisit(QMakeProject *project, const ProString &item,
+                            const QSet<ProString> &known, ProStringList &sorted,
+                            QSet<ProString> &placed, QSet<ProString> &visiting)
+{
+    if (placed.contains(item))
+        return;
+    if (visiting.contains(item)) {
+        warn_msg(WarnLogic, "Circular SUBDIRS dependency detected involving '%s'.",
+                 item.toLatin1().constData());
+        return;
+    }
+    visiting.insert(item);
+    const ProStringList &depends = project->values(ProKey(item.toQString() + ".depends"));
+    for (const ProString &dep : depends) {
+        if (known.contains(dep))
+            sortSubDirVisit(project, dep, known, sorted, placed, visiting);
+    }
+    visiting.remove(item);
+    placed.insert(item);
+    sorted << item;
+}
+
+ProStringList sortSubDirsByDependencies(QMakeProject *project, const ProStringList &subdirs)
+{
+    if (project->isActiveConfig("ordered"))
+        return subdirs;
+    const QSet<ProString> known(subdirs.cbegin(), subdirs.cend());
+    ProStringList sorted;
+    sorted.reserve(subdirs.size());
+    QSet<ProString> placed;
+    QSet<ProString> visiting;
+    for (const ProString &subdir : subdirs)
+        sortSubDirVisit(project, subdir, known, sorted, placed, visiting);
+    return sorted;
+}
+
 bool MakefileGenerator::canExecute(const QStringList &cmdline, int *a) const
 {
     int argv0 = -1;
