@@ -53,6 +53,7 @@ private slots:
 #endif
 #ifdef Q_OS_WIN
     void vcxprojExtraCompilersSharingInput();
+    void vcxprojQrcContentFiles();
 #endif
     void substitutes();
     void project();
@@ -604,6 +605,32 @@ void tst_qmake::vcxprojExtraCompilersSharingInput()
     // The one step must still produce the output of both compilers.
     QVERIFY(contents.contains("gen_gen.h"));
     QVERIFY(contents.contains("gen_gen.cpp"));
+}
+
+void tst_qmake::vcxprojQrcContentFiles()
+{
+#  ifndef Q_CC_MSVC
+    QSKIP("The Visual Studio generator is only used with the MSVC spec.");
+#  endif
+    QString workDir = base_path + "/testdata/vcxproj_qrc_content";
+    QVERIFY(test_compiler.qmake(workDir, { "-tp", "vc", "qrc_content.pro" }));
+
+    QFile project(workDir + "/qrc_content.vcxproj");
+    QVERIFY(project.open(QFile::ReadOnly));
+    const QByteArray contents = project.readAll();
+    project.close();
+
+    // Files that are also sources or headers must not become a second item of the project.
+    // Visual Studio refuses to load a project that includes a file as ClCompile and as None.
+    QVERIFY(contents.contains("<ClCompile Include=\"helper.cpp\""));
+    QVERIFY(contents.contains("<ClCompile Include=\"sub\\deep.cpp\""));
+    QVERIFY(contents.contains("<ClInclude Include=\"h.h\""));
+    QVERIFY(!contents.contains("<None Include=\"helper.cpp\""));
+    QVERIFY(!contents.contains("<None Include=\"Helper.cpp\"")); // Spelled like in the .qrc file.
+    QVERIFY(!contents.contains("<None Include=\"sub\\deep.cpp\""));
+    QVERIFY(!contents.contains("<None Include=\"h.h\""));
+    // Other files of the resource stay in the project.
+    QVERIFY(contents.contains("<None Include=\"data.txt\""));
 }
 #endif
 

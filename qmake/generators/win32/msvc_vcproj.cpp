@@ -1475,7 +1475,11 @@ void VcprojGenerator::initResourceFiles()
                                            true   // checkCommandavailability
                                           );
         }
-        vcProject.ResourceFiles.addFiles(deps);
+        // A file that is also a source, header etc. would get a second, conflicting project item.
+        for (const QString &dep : std::as_const(deps)) {
+            if (!otherFiltersContain(dep))
+                vcProject.ResourceFiles.addFile(dep);
+        }
     }
     // You may look again --------------------------------------------
 
@@ -1613,9 +1617,9 @@ void VcprojGenerator::initExtraCompilerOutputs()
 
 bool VcprojGenerator::otherFiltersContain(const QString &fileName) const
 {
-    auto filterFileMatches = [&fileName] (const VCFilterFile &ff)
-    {
-        return ff.file == fileName;
+    auto filterFileMatches = [&fileName](const VCFilterFile &ff) {
+        // MSBuild compares item paths case-insensitively.
+        return ff.file.compare(fileName, Qt::CaseInsensitive) == 0;
     };
     for (const VCFilter *filter : { &vcProject.RootFiles,
                                     &vcProject.SourceFiles,
