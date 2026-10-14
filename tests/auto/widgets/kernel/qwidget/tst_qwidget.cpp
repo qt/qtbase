@@ -4723,8 +4723,8 @@ void tst_QWidget::restoreGeometryAfterScreenChange()
     }
 
     // If restored geometry fits into screen and has not been moved,
-    // it is changed only by frame margin plus one pixel at each edge
-    const QRect originalGeometry = restoredGeometry.adjusted(1, frameMargin + 1, 1, frameMargin + 1);
+    // it is changed only by frame margin
+    const QRect originalGeometry = restoredGeometry.adjusted(0, frameMargin, 0, frameMargin);
 
     QWidgetPrivate::checkRestoredGeometry(screenGeometry, &restoredGeometry, frameMargin);
 

@@ -7424,8 +7424,8 @@ QByteArray QWidget::saveGeometry() const
    to be on its top.
 
    If the size of \a restoredGeometry exceeds \a availableGeometry, its height and width
-   will be resized to be two pixels smaller than \a availableGeometry. An exact match would
-   be full screen.
+   will be resized to fit into \a availableGeometry, with the height reduced by
+   \a frameHeight.
 
    If at least one edge of \a restoredGeometry is outside \a availableGeometry,
    \a restoredGeometry will be moved
@@ -7442,12 +7442,11 @@ void QWidgetPrivate::checkRestoredGeometry(const QRect &availableGeometry, QRect
     // compare with restored geometry's height increased by frameHeight
     const int height = restoredGeometry->height() + frameHeight;
 
-    // Step 1: Resize if necessary:
-    // make height / width 2px smaller than screen, because an exact match would be fullscreen
+    // Step 1: Resize if necessary, corrected for frame height
     if (availableGeometry.height() <= height)
-        restoredGeometry->setHeight(availableGeometry.height() - 2 - frameHeight);
+        restoredGeometry->setHeight(availableGeometry.height() - frameHeight);
     if (availableGeometry.width() <= restoredGeometry->width())
-        restoredGeometry->setWidth(availableGeometry.width() - 2);
+        restoredGeometry->setWidth(availableGeometry.width());
 
     // Step 2: Move if necessary:
     // Construct a rectangle from restored Geometry adjusted by frameHeight
@@ -7460,19 +7459,19 @@ void QWidgetPrivate::checkRestoredGeometry(const QRect &availableGeometry, QRect
     // (size is correct, but at least one edge is off screen)
 
     // Top out of bounds => move down
-    if (restored.top() <= availableGeometry.top()) {
-        restoredGeometry->moveTop(availableGeometry.top() + 1 + frameHeight);
-    } else if (restored.bottom() >= availableGeometry.bottom()) {
+    if (restored.top() < availableGeometry.top()) {
+        restoredGeometry->moveTop(availableGeometry.top() + frameHeight);
+    } else if (restored.bottom() > availableGeometry.bottom()) {
         // Bottom out of bounds => move up
-        restoredGeometry->moveBottom(availableGeometry.bottom() - 1);
+        restoredGeometry->moveBottom(availableGeometry.bottom());
     }
 
     // Left edge out of bounds => move right
-    if (restored.left() <= availableGeometry.left()) {
-        restoredGeometry->moveLeft(availableGeometry.left() + 1);
-    } else if (restored.right() >= availableGeometry.right()) {
+    if (restored.left() < availableGeometry.left()) {
+        restoredGeometry->moveLeft(availableGeometry.left());
+    } else if (restored.right() > availableGeometry.right()) {
         // Right edge out of bounds => move left
-        restoredGeometry->moveRight(availableGeometry.right() - 1);
+        restoredGeometry->moveRight(availableGeometry.right());
     }
 }
 
