@@ -295,8 +295,7 @@ inline void QFactoryLoader::Private::updateSinglePath(const QString &path)
         QLibraryPrivate::UniquePtr library;
         library.reset(QLibraryPrivate::findOrCreate(dirEntry.canonicalFilePath()));
         if (!library->isPlugin()) {
-            qCDebug(lcFactoryLoader) << library->errorString << Qt::endl
-                                     << "         not a plugin";
+            qCDebug(lcFactoryLoader) << "Not a valid plugin:" << library->errorString;
             continue;
         }
 
@@ -339,16 +338,13 @@ inline void QFactoryLoader::Private::updateSinglePath(const QString &path)
                 if (configsAreDifferent && thisConfigDoesNotMatchQt)
                     continue; // Existing library matches Qt's build config
 
-                // If the existing library was built with a future Qt version,
-                // whereas the one we're considering has a Qt version that fits
-                // better, we prioritize the better match.
+                // Prioritize the library with the highest version number.
+                // Since QLibraryPrivate::isPlugin() rejects any built with a
+                // future version, the highest possible here is the current
+                // version (the best match).
                 qint64 existingVersion = versionFromLib(existingLibrary);
-                if (existingVersion == QtVersionNoPatch)
-                    continue; // Prefer exact Qt version match
-                if (existingVersion < QtVersionNoPatch && thisVersion > QtVersionNoPatch)
-                    continue; // Better too old than too new
-                if (existingVersion < QtVersionNoPatch && thisVersion < existingVersion)
-                    continue; // Otherwise prefer newest
+                if (thisVersion <= existingVersion)
+                    continue;
             }
 
             keyMapEntry = library.get();

@@ -28,6 +28,7 @@ private slots:
     void usingTwoFactoriesFromSameDir();
     void extraSearchPath();
     void multiplePaths();
+    void ignoresFutureQtVersion();
     void staticPlugin_data();
     void staticPlugin();
 };
@@ -171,6 +172,27 @@ void tst_QFactoryLoader::multiplePaths()
     QLibraryPrivate *library1 = loader1.library("plugin1");
     QVERIFY(library1);
     QCOMPARE(library1->loadHints(), QLibrary::PreventUnloadHint);
+#endif
+}
+
+void tst_QFactoryLoader::ignoresFutureQtVersion()
+{
+#if !QT_CONFIG(library) || defined(Q_OS_ANDROID)
+    QSKIP("Test not applicable in this configuration.");
+#else
+    // a plugin built against a newer Qt than the one running cannot be loaded
+    auto restoreLibraryPaths = qScopeGuard([&] {
+        QCoreApplication::setLibraryPaths(QStringList());
+    });
+
+    const QString goodParent = QFileInfo(binFolder).absolutePath();
+    const QString futureParent = goodParent + QLatin1String("/future");
+    QCoreApplication::setLibraryPaths({ futureParent });
+
+    const QString suffix = QLatin1Char('/') + QLatin1String(binFolderC);
+    QFactoryLoader loader(PluginInterface2_iid, suffix);
+
+    QCOMPARE(loader.metaData().size(), 0);
 #endif
 }
 
