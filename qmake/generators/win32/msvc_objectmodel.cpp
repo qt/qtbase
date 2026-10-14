@@ -8,6 +8,7 @@
 #include <ioutils.h>
 
 #include <qscopedpointer.h>
+#include <qdir.h>
 #include <qfileinfo.h>
 #include <qregularexpression.h>
 
@@ -2316,6 +2317,26 @@ VCFilterFile VCFilter::findFile(const QString &filePath, bool *found) const
     }
     *found = false;
     return VCFilterFile();
+}
+
+// Returns the path that is used to build the folder structure below this filter. File paths are
+// relative to the build directory, which gives meaningless ".." folders for out-of-source builds.
+QString VCFilter::treePath(const QString &file) const
+{
+    const QString path = QDir::fromNativeSeparators(file);
+    if (!path.startsWith(QLatin1String("../")))
+        return file;
+
+    const QString srcDir = QDir::cleanPath(Project->project->first("_PRO_FILE_PWD_").toQString());
+    const QString absPath = QDir::cleanPath(
+            QDir(Project->project->first("OUT_PWD").toQString()).absoluteFilePath(path));
+    if (absPath.startsWith(srcDir + QLatin1Char('/'), Qt::CaseInsensitive))
+        return QDir::toNativeSeparators(absPath.mid(srcDir.size() + 1));
+
+    QString relPath = QDir::cleanPath(path);
+    while (relPath.startsWith(QLatin1String("../")))
+        relPath.remove(0, 3);
+    return QDir::toNativeSeparators(relPath);
 }
 
 bool VCFilter::addExtraCompiler(const VCFilterFile &info)

@@ -55,6 +55,7 @@ private slots:
     void shellQuotePlusSign();
     void vcxprojExtraCompilersSharingInput();
     void vcxprojQrcContentFiles();
+    void vcxprojFilterFoldersInShadowBuild();
 #endif
     void substitutes();
     void project();
@@ -645,6 +646,29 @@ void tst_qmake::vcxprojQrcContentFiles()
     QVERIFY(!contents.contains("<None Include=\"h.h\""));
     // Other files of the resource stay in the project.
     QVERIFY(contents.contains("<None Include=\"data.txt\""));
+}
+
+void tst_qmake::vcxprojFilterFoldersInShadowBuild()
+{
+#  ifndef Q_CC_MSVC
+    QSKIP("The Visual Studio generator is only used with the MSVC spec.");
+#  endif
+    QString workDir = base_path + "/testdata/vcxproj_filter_folders";
+    QTemporaryDir buildDir;
+    QVERIFY(buildDir.isValid());
+    QVERIFY(test_compiler.qmake(buildDir.path(),
+                                { "-tp", "vc", workDir + "/filter_folders.pro", "CONFIG-=flat" }));
+
+    QFile filters(buildDir.path() + "/filter_folders.vcxproj.filters");
+    QVERIFY(filters.open(QFile::ReadOnly));
+    const QByteArray contents = filters.readAll();
+    filters.close();
+
+    // The folders follow the directories of the project, not the path from the build directory
+    // to the sources, which starts with "..".
+    QVERIFY(contents.contains("<Filter Include=\"Source Files\\Filter1\""));
+    QVERIFY(contents.contains("<Filter Include=\"Header Files\\Filter1\""));
+    QVERIFY2(!contents.contains("Files\\.."), contents.constData());
 }
 #endif
 

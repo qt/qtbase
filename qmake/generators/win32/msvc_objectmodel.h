@@ -920,6 +920,7 @@ public:
     void addFiles(const QStringList& fileList);
     void addFiles(const ProStringList& fileList);
     bool addExtraCompiler(const VCFilterFile &info);
+    QString treePath(const QString &file) const;
     void modifyPCHstage(QString str);
     VCFilterFile findFile(const QString &filePath, bool *found) const;
 

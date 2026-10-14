@@ -1768,8 +1768,10 @@ void VCXProjectWriter::outputFilter(VCProject &project, XmlOutput &xml, XmlOutpu
     for (int i = 0; i < project.SingleProjects.size(); ++i) {
         const VCFilter filter = project.SingleProjects.at(i).filterByName(filtername);
         // Merge all files in this filter to root tree
-        for (int x = 0; x < filter.Files.size(); ++x)
-            root->addElement(filter.Files.at(x));
+        for (int x = 0; x < filter.Files.size(); ++x) {
+            const VCFilterFile &file = filter.Files.at(x);
+            root->addElement(filter.treePath(file.file), file);
+        }
     }
 
     if (!root->hasElements())
