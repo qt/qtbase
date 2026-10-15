@@ -1126,14 +1126,14 @@ void tst_QLocaleData::mySystemLocale_data()
     QTest::addRow("pa-Arab-GB")
         << u"pa-Arab-GB"_s << QLocale::Punjabi
         << QStringList{u"pa-Arab-PK"_s, u"pa-PK"_s, u"pa-Arab"_s,
-            u"pa-Arab-GB"_s,
-            u"en-Latn-GB"_s, u"en-GB"_s,
-            // Truncations:
-            u"en-Latn"_s, u"en"_s,
-            // Last because its implied script, Guru, doesn't match the Arab
-            // implied by the entry that it's derived from, pa-PK - in contrast
-            // to en-Latn and en.
-            u"pa"_s};
+                       u"pa-Arab-GB"_s,
+                       u"en-Latn-GB"_s, u"en-GB"_s,
+                       // Truncations:
+                       u"en-Latn"_s, u"en"_s,
+                       // Last because its implied script, Guru, doesn't match
+                       // the Arab implied by the entry that it's derived from,
+                       // pa-PK - in contrast to en-Latn and en.
+                       u"pa"_s};
     QTest::addRow("pa-IN-biliteral")
         << u"pa-IN-educated"_s << QLocale::Punjabi
         << QStringList{u"pa-Guru-IN"_s, u"pa-IN"_s, u"pa-Guru"_s, u"pa"_s,
