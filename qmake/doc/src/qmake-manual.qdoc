@@ -4035,6 +4035,12 @@
 
     \snippet code/doc_src_qmake-manual.pro 66
 
+    If \c filename cannot be read, qmake prints an error message and goes on
+    processing the project. Unless the result of this function is used as a
+    condition, as above, qmake then exits with a non-zero exit code. Passing
+    \c true as the third argument suppresses the error message and the exit
+    code: \c{include(filename, , true)}.
+
     \section2 infile(filename, var, val)
 
     Succeeds if the file \c filename (when parsed by qmake itself) contains the

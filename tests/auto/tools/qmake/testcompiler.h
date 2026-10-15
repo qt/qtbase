@@ -36,7 +36,7 @@ public:
     bool qmake(const QString &workDir, const QString &proName, const QString &buildDir = QString(),
                const QStringList &additionalArguments = QStringList());
     // executes qmake in workDir with the specified arguments
-    bool qmake(const QString &workDir, const QStringList &arguments);
+    bool qmake(const QString &workDir, const QStringList &arguments, bool expectFail = false);
     // executes a make in the specified workPath, with an optional target (eg. install)
     bool make( const QString &workPath, const QString &target = QString(), bool expectFail = false );
     // checks if the executable exists in destDir

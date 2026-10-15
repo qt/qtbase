@@ -649,6 +649,12 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::visitProBlock(
                 } else {
                     traceMsg("evaluating test function %s", dbgStr(curr.at(0)));
                     ret = evaluateConditionalFunction(curr.at(0).toKey(), tokPtr);
+                    if (m_includeFailed) {
+                        m_includeFailed = false;
+                        // The failure is an error, unless the result is used as a condition.
+                        if (*tokPtr != TokBranch && *tokPtr != TokAnd && *tokPtr != TokOr)
+                            m_option->failedInclude = true;
+                    }
                     switch (ret) {
                     case ReturnTrue: okey = true; break;
                     case ReturnFalse: okey = false; break;

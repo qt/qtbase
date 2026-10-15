@@ -7,6 +7,7 @@
 
 #include <QDir>
 #include <QDirIterator>
+#include <QFile>
 #include <QObject>
 #include <QRegularExpression>
 #include <QStandardPaths>
@@ -37,6 +38,7 @@ private slots:
     void export_across_file_boundaries();
     void include_dir();
     void include_pwd();
+    void include_missing();
     void install_files();
     void install_depends();
     void quotedfilenames();
@@ -368,6 +370,28 @@ void tst_qmake::include_pwd()
     QVERIFY( test_compiler.qmake( workDir, "include_pwd" ));
     QVERIFY( test_compiler.make( workDir ));
     QVERIFY( test_compiler.makeDistClean( workDir ));
+}
+
+void tst_qmake::include_missing()
+{
+    const QString workDir = base_path + "/testdata/include_missing";
+
+    // qmake carries on after a missing file, but reports failure in its exit code.
+    for (const char *name : { "missing", "scoped" }) {
+        const QString makefile = QLatin1String("Makefile.") + name;
+        QVERIFY(test_compiler.qmake(workDir, { QLatin1String(name) + ".pro", "-o", makefile },
+                                    true));
+        QVERIFY(QFile::exists(workDir + '/' + makefile));
+        QVERIFY(QFile::remove(workDir + '/' + makefile));
+    }
+
+    // The silent flag of include() suppresses the error, and so does using the result of
+    // include() as a condition.
+    for (const char *name : { "silent", "handled" }) {
+        const QString makefile = QLatin1String("Makefile.") + name;
+        QVERIFY(test_compiler.qmake(workDir, { QLatin1String(name) + ".pro", "-o", makefile }));
+        QVERIFY(QFile::remove(workDir + '/' + makefile));
+    }
 }
 
 void tst_qmake::install_files()

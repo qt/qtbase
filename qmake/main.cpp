@@ -566,6 +566,8 @@ int runQMake(int argc, char **argv)
         mkfile = nullptr;
     }
     qmakeClearCaches();
+    if (exit_val == 0 && globals.failedInclude)
+        exit_val = 3;
     return exit_val;
 }
 

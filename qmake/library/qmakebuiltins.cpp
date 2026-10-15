@@ -1740,6 +1740,8 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinConditional(
                 m_valuemapStack.top() = newMap;
             }
         }
+        if (ok == ReturnFalse && !(flags & LoadSilent) && !fn.isEmpty())
+            m_includeFailed = true;
         if (ok == ReturnFalse && (flags & LoadSilent))
             ok = ReturnTrue;
         return ok;

@@ -91,6 +91,7 @@ public:
     QString qmakespec, xqmakespec;
     QString user_template, user_template_prefix;
     QString extra_cmds[4];
+    bool failedInclude = false; // an include() that is not silent could not read its file
 
 #ifdef PROEVALUATOR_DEBUG
     int debugLevel;

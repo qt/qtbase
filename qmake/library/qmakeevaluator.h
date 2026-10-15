@@ -276,6 +276,7 @@ public:
     int m_listCount;
     int m_toggle;
     bool m_valuemapInited;
+    bool m_includeFailed = false; // the include() just evaluated could not read its file
     bool m_hostBuild;
     QString m_qmakespec;
     QString m_qmakespecName;
