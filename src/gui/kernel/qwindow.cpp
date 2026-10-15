@@ -3315,6 +3315,19 @@ bool QWindowPrivate::applyCursor()
 }
 #endif // QT_NO_CURSOR
 
+/*!
+    \fn template <typename QNativeInterface> QNativeInterface *QWindow::nativeInterface() const
+
+    Returns a native interface of the given type for the window.
+
+    This function provides access to platform specific functionality
+    of QWindow, as defined in the QNativeInterface namespace:
+
+    \annotatedlist native-interfaces-qwindow
+
+    If the requested interface is not available a \nullptr is returned.
+ */
+
 void *QWindow::resolveInterface(const char *name, int revision) const
 {
     using namespace QNativeInterface::Private;
@@ -3342,6 +3355,10 @@ void *QWindow::resolveInterface(const char *name, int revision) const
 
 #if defined(Q_OS_WASM)
     QT_NATIVE_INTERFACE_RETURN_IF(QWasmWindow, platformWindow);
+#endif
+
+#if defined(Q_OS_HARMONY)
+    QT_NATIVE_INTERFACE_RETURN_IF(QNativeInterface::QHarmonyWindow, platformWindow);
 #endif
 
     return nullptr;

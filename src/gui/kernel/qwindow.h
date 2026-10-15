@@ -389,4 +389,6 @@ Q_GUI_EXPORT QDebug operator<<(QDebug, const QWindow *);
 
 QT_END_NAMESPACE
 
+#include <QtGui/qwindow_platform.h>
+
 #endif // QWINDOW_H

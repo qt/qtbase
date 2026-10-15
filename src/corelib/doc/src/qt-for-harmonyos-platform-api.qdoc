@@ -34,6 +34,8 @@
     \li QHarmonyJsObjectRef keeps a JS object alive. You can store, copy,
         and compare the reference on any thread, but you can access the
         object only on the JS thread.
+    \li QNativeInterface::QHarmonyWindow provides the ability that shows a
+        QWindow, and the \c window.Window that the QWindow is shown in.
     \li The QtHarmony namespace contains free functions for code that runs
         on the JS thread, such as conversions between QJsonObject and JS
         objects.
@@ -113,6 +115,19 @@
     QHarmonyJsContext::fromEnv(). These functions run on the JS thread and
     follow the same rules as tasks passed to
     QNativeInterface::QHarmonyApplication::runOnJsThread().
+
+    \section1 Window-Bound Platform APIs
+
+    QHarmonyAppJsContext::defaultAbility() is meant for calls that concern
+    the application as a whole. Some platform APIs are bound to a particular
+    window, for example a picker that opens over the window, or an ability
+    started from it. These APIs need the \c UIAbility instance that shows
+    the window, or the window's \c window.Window.
+
+    To get them, use QNativeInterface::QHarmonyWindow, which is available
+    through \c {QWindow::nativeInterface<QNativeInterface::QHarmonyWindow>()}.
+    It returns both as QHarmonyJsObjectRef handles. You get the handles on
+    the Qt thread and use the objects they refer to on the JS thread.
 
     \section1 JS Modules
 

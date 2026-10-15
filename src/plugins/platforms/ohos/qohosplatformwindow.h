@@ -6,9 +6,11 @@
 
 #include <QtCore/private/qohoscommon_p.h>
 #include <QtCore/qglobal.h>
+#include <QtCore/qharmonyjsobjectref.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qrect.h>
 #include <QtGui/qpa/qplatformwindow_p.h>
+#include <QtGui/qwindow_platform.h>
 #include <functional>
 #include <memory>
 #include <optional>
@@ -24,7 +26,7 @@ class QOhosPlatformScreen;
 class QOhosPlatformBackingStore;
 class QOhosView;
 
-class QOhosPlatformWindow: public QPlatformWindow, public QNativeInterface::Private::QOhosWindow
+class QOhosPlatformWindow: public QPlatformWindow, public QNativeInterface::Private::QOhosWindow, public QNativeInterface::QHarmonyWindow
 {
 public:
     enum class DecorationPreset {
@@ -95,6 +97,8 @@ public:
     bool shouldDisplayAsOhosWindow() const;
     QtOhos::InternalWindowId internalWindowId() const;
     std::optional<double> windowId() const override;
+    QHarmonyJsObjectRef ability() const override;
+    QHarmonyJsObjectRef jsWindow() const override;
 
     virtual QOhosSurface *ownedSurfaceOrNull() const;
     virtual QOhosView *ownedViewOrNull() const;
