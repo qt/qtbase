@@ -443,7 +443,15 @@ static int qt_gl_resolve_extensions()
                                                         && (deviceName->compare("samsung SM-T211"_L1, Qt::CaseInsensitive) == 0
                                                             || deviceName->compare("samsung SM-T210"_L1, Qt::CaseInsensitive) == 0
                                                             || deviceName->compare("samsung SM-T215"_L1, Qt::CaseInsensitive) == 0);
-        if (wrongfullyReportsBgra8888Support)
+        // The emulator translator on a macOS host returns transparent black for
+        // unsized BGRA textures without reporting a GL error.
+        const auto *vendor = reinterpret_cast<const char *>(
+                ctx->functions()->glGetString(GL_VENDOR));
+        const auto *renderer = reinterpret_cast<const char *>(
+                ctx->functions()->glGetString(GL_RENDERER));
+        const bool brokenEmulatorBgra = QByteArrayView(vendor) == "Google (Apple)"
+                && QByteArrayView(renderer).startsWith("Android Emulator OpenGL ES Translator");
+        if (wrongfullyReportsBgra8888Support || brokenEmulatorBgra)
             extensions &= ~QOpenGLExtensions::BGRATextureFormat;
 #endif
 

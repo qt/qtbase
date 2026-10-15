@@ -113,7 +113,11 @@ qsizetype QOpenGLTextureUploader::textureImage(GLenum target, const QImage &imag
             // The GL_EXT_texture_format_BGRA8888 extension requires the internal format to match the external.
             externalFormat = internalFormat = GL_BGRA;
             pixelType = GL_UNSIGNED_BYTE;
-        } else if (context->isOpenGLES() && context->hasExtension(QByteArrayLiteral("GL_APPLE_texture_format_BGRA8888"))) {
+        // ES 3 rejects BGRA data in an RGBA texture unless the driver really
+        // implements the Apple extension, and its core swizzle is safer.
+        } else if (context->isOpenGLES()
+                   && !funcs->hasOpenGLExtension(QOpenGLExtensions::TextureSwizzle)
+                   && context->hasExtension("GL_APPLE_texture_format_BGRA8888")) {
             // Is only allowed as an external format like OpenGL.
             externalFormat = GL_BGRA;
             internalFormat = GL_RGBA;

@@ -50,6 +50,8 @@ class tst_QRhi : public QObject
     Q_OBJECT
 
 private:
+    enum class TextureMode { Linear, SRgb, Bgra };
+
     template<typename T, std::size_t E, typename ParamStringifier>
     void rhiTestDataWithParam(const char *paramName, QSpan<T, E> paramValues, ParamStringifier &&paramStringifier);
 
@@ -3409,9 +3411,11 @@ static const float quadVerticesUvs[] = {
 
 void tst_QRhi::renderToTextureTexturedQuad_data()
 {
-    bool srgbModes[] = { false, true };
-    rhiTestDataWithParam("srgb", QSpan(srgbModes), [](bool srgb) {
-        return srgb ? QStringLiteral("sRGB") : QStringLiteral("linear");
+    TextureMode textureModes[] = { TextureMode::Linear, TextureMode::SRgb, TextureMode::Bgra };
+    rhiTestDataWithParam("textureMode", QSpan(textureModes), [](TextureMode mode) {
+        if (mode == TextureMode::Bgra)
+            return QStringLiteral("BGRA");
+        return mode == TextureMode::SRgb ? QStringLiteral("sRGB") : QStringLiteral("linear");
     });
 }
 
@@ -3419,23 +3423,30 @@ void tst_QRhi::renderToTextureTexturedQuad()
 {
     QFETCH(QRhi::Implementation, impl);
     QFETCH(QRhiInitParams *, initParams);
-    QFETCH(bool, srgb);
+    QFETCH(TextureMode, textureMode);
 
     QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing rendering");
 
+    const bool bgra = textureMode == TextureMode::Bgra;
+    const QRhiTexture::Format inputFormat = bgra ? QRhiTexture::BGRA8 : QRhiTexture::RGBA8;
+    if (bgra && Q_BYTE_ORDER != Q_LITTLE_ENDIAN)
+        QSKIP("ARGB32 data requires little-endian byte order for BGRA uploads");
+
     QImage inputImage;
     inputImage.load(QLatin1String(":/data/qt256.png"));
     QVERIFY(!inputImage.isNull());
-    inputImage = inputImage.convertToFormat(QImage::Format_RGBA8888);
+    inputImage = inputImage.convertToFormat(bgra ? QImage::Format_ARGB32
+                                                 : QImage::Format_RGBA8888);
     const QPoint srgbProbePoint(64, 96);
     inputImage.setPixel(srgbProbePoint, qRgba(225, 225, 225, 255));
 
+    const bool srgb = textureMode == TextureMode::SRgb;
     QRhiTexture::Flags inputTextureFlags;
     if (srgb)
         inputTextureFlags |= QRhiTexture::sRGB;
-    if (!rhi->isTextureFormatSupported(QRhiTexture::RGBA8, inputTextureFlags))
+    if (!rhi->isTextureFormatSupported(inputFormat, inputTextureFlags))
         QSKIP("Texture format not supported on this backend");
 
     QScopedPointer<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGBA8, inputImage.size(), 1,
@@ -3457,7 +3468,7 @@ void tst_QRhi::renderToTextureTexturedQuad()
     QVERIFY(vbuf->create());
     updates->uploadStaticBuffer(vbuf.data(), quadVerticesUvs);
 
-    QScopedPointer<QRhiTexture> inputTexture(rhi->newTexture(QRhiTexture::RGBA8, inputImage.size(), 1,
+    QScopedPointer<QRhiTexture> inputTexture(rhi->newTexture(inputFormat, inputImage.size(), 1,
                                                              inputTextureFlags));
     QVERIFY(inputTexture->create());
     updates->uploadTexture(inputTexture.data(), inputImage);
