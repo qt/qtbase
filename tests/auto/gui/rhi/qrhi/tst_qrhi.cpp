@@ -45,6 +45,8 @@ class tst_QRhi : public QObject
     Q_OBJECT
 
 private:
+    enum class TextureMode { Linear, Bgra };
+
     template<typename T, std::size_t E, typename ParamStringifier>
     void rhiTestDataWithParam(const char *paramName, QSpan<T, E> paramValues, ParamStringifier &&paramStringifier);
 
@@ -2743,21 +2745,35 @@ static const float quadVerticesUvs[] = {
 
 void tst_QRhi::renderToTextureTexturedQuad_data()
 {
-    rhiTestData();
+    TextureMode textureModes[] = { TextureMode::Linear, TextureMode::Bgra };
+    rhiTestDataWithParam("textureMode", QSpan(textureModes), [](TextureMode mode) {
+        return mode == TextureMode::Bgra ? QStringLiteral("BGRA") : QStringLiteral("linear");
+    });
 }
 
 void tst_QRhi::renderToTextureTexturedQuad()
 {
     QFETCH(QRhi::Implementation, impl);
     QFETCH(QRhiInitParams *, initParams);
+    QFETCH(TextureMode, textureMode);
 
     QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
     if (!rhi)
         QSKIP("QRhi could not be created, skipping testing rendering");
 
+    const bool bgra = textureMode == TextureMode::Bgra;
+    const QRhiTexture::Format inputFormat = bgra ? QRhiTexture::BGRA8 : QRhiTexture::RGBA8;
+    if (bgra && Q_BYTE_ORDER != Q_LITTLE_ENDIAN)
+        QSKIP("ARGB32 data requires little-endian byte order for BGRA uploads");
+
     QImage inputImage;
     inputImage.load(QLatin1String(":/data/qt256.png"));
     QVERIFY(!inputImage.isNull());
+    inputImage = inputImage.convertToFormat(bgra ? QImage::Format_ARGB32
+                                                 : QImage::Format_RGBA8888);
+
+    if (!rhi->isTextureFormatSupported(inputFormat))
+        QSKIP("Texture format not supported on this backend");
 
     QScopedPointer<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGBA8, inputImage.size(), 1,
                                                         QRhiTexture::RenderTarget | QRhiTexture::UsedAsTransferSource));
@@ -2778,7 +2794,7 @@ void tst_QRhi::renderToTextureTexturedQuad()
     QVERIFY(vbuf->create());
     updates->uploadStaticBuffer(vbuf.data(), quadVerticesUvs);
 
-    QScopedPointer<QRhiTexture> inputTexture(rhi->newTexture(QRhiTexture::RGBA8, inputImage.size()));
+    QScopedPointer<QRhiTexture> inputTexture(rhi->newTexture(inputFormat, inputImage.size()));
     QVERIFY(inputTexture->create());
     updates->uploadTexture(inputTexture.data(), inputImage);
 
