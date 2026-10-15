@@ -199,6 +199,16 @@ void XdgToplevel::xdg_toplevel_set_min_size(Resource *resource, int32_t width, i
     m_pending.minSize = size;
 }
 
+void XdgToplevel::xdg_toplevel_resize(Resource *resource, ::wl_resource *seat, uint32_t serial,
+                                      uint32_t edges)
+{
+    Q_UNUSED(resource);
+    Q_UNUSED(seat);
+    Q_UNUSED(serial);
+    m_resizeEdges = edges;
+    ++m_resizeRequests;
+}
+
 QPoint XdgPositionerState::unconstrainedPosition() const
 {
     int x = 0;

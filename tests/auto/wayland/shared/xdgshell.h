@@ -169,10 +169,14 @@ public:
         QSize minSize = {0, 0};
         QSize maxSize = {0, 0};
     } m_pending, m_committed;
+    uint m_resizeEdges = resize_edge_none;
+    int m_resizeRequests = 0;
 
 protected:
     void xdg_toplevel_set_max_size(Resource *resource, int32_t width, int32_t height) override;
     void xdg_toplevel_set_min_size(Resource *resource, int32_t width, int32_t height) override;
+    void xdg_toplevel_resize(Resource *resource, ::wl_resource *seat, uint32_t serial,
+                             uint32_t edges) override;
 };
 
 class XdgPopupRole : public SurfaceRole

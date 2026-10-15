@@ -75,6 +75,7 @@ private:
     uint enabled        :1;
 
     void setMouseCursor(MousePosition m);
+    bool startSystemResize();
     bool isResizing() const {
         return active && mode != Center;
     }
