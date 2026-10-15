@@ -15,6 +15,8 @@
 #include "qdebug.h"
 #include "private/qlayoutengine_p.h"
 
+#include <QtGui/qwindow.h>
+
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
@@ -84,6 +86,8 @@ bool QWidgetResizeHandler::eventFilter(QObject *o, QEvent *ee)
             buttonDown = false;
             emit activate();
             mouseMoveEvent(e);
+            if (startSystemResize())
+                return true;
             buttonDown = true;
             moveOffset = widget->mapFromGlobal(e->globalPosition()).toPoint();
             invertedMoveOffset = widget->rect().bottomRight() - moveOffset;
@@ -127,6 +131,50 @@ bool QWidgetResizeHandler::eventFilter(QObject *o, QEvent *ee)
     }
 
     return false;
+}
+
+/*!
+    \internal
+    Delegates the resize to the window system, if possible.
+    This is required on platforms (e.g. Wayland), where a client
+    can't position its own top level windows: Resizing from a top or left
+    edge would otherwise require a move, which the compositor ignores.
+
+    Returns \c true if the window system has taken over the resize.
+*/
+bool QWidgetResizeHandler::startSystemResize()
+{
+    if (!widget->isWindow() || widget->isMinimized()
+        || (widget->windowFlags() & Qt::X11BypassWindowManagerHint)
+        || widget->testAttribute(Qt::WA_DontShowOnScreen)) {
+        return false;
+    }
+
+    // ### FIXME QTBUG-69716: system resize is unreliable on xcb
+    if (QGuiApplication::platformName().contains("xcb"_L1))
+        return false;
+
+    // A top level widget can have a QWindow parent (e.g. a Wayland subsurface).
+    // The window system can't resize it, so keep resizing manually.
+    QWindow *window = widget->windowHandle();
+    if (!window || !window->isTopLevel())
+        return false;
+
+    Qt::Edges edges;
+    switch (mode) {
+    case TopLeft:     edges = Qt::TopEdge | Qt::LeftEdge; break;
+    case TopRight:    edges = Qt::TopEdge | Qt::RightEdge; break;
+    case BottomLeft:  edges = Qt::BottomEdge | Qt::LeftEdge; break;
+    case BottomRight: edges = Qt::BottomEdge | Qt::RightEdge; break;
+    case Top:         edges = Qt::TopEdge; break;
+    case Bottom:      edges = Qt::BottomEdge; break;
+    case Left:        edges = Qt::LeftEdge; break;
+    case Right:       edges = Qt::RightEdge; break;
+    default:
+        return false;
+    }
+
+    return window->startSystemResize(edges);
 }
 
 void QWidgetResizeHandler::mouseMoveEvent(QMouseEvent *e)
