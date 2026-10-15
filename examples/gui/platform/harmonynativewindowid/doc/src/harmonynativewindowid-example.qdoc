@@ -1,0 +1,52 @@
+// Copyright (C) 2026 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \title Qt for HarmonyOS Native Window ID Example
+    \example platform/harmonynativewindowid
+    \examplecategory {Mobile}
+    \meta tag {widgets,harmonyos,window}
+
+    \brief Shows the platform IDs of the windows of a Qt application on
+    HarmonyOS.
+
+    Each window of the example shows the ID of its platform window, the
+    \c window.Window that the window is shown in, and the ID of the display
+    that the platform window is on. Platform APIs and other applications
+    identify windows and displays by these IDs.
+
+    A window gets its \c window.Window from
+    QNativeInterface::QHarmonyWindow on the Qt thread, as a
+    QHarmonyJsObjectRef handle. \c getWindowProperties() returns the IDs
+    synchronously, so the example reads them with
+    QNativeInterface::QHarmonyApplication::runOnJsThreadAndWait(), which
+    returns the result of the task to the Qt thread:
+
+    \snippet platform/harmonynativewindowid/main.cpp 0
+
+    On the JS thread, the task dereferences the handle and reads the IDs
+    from the window properties. The display ID is an optional property. An
+    error that the call throws is returned as text:
+
+    \snippet platform/harmonynativewindowid/main.cpp 1
+
+    The constructor creates the window's QWindow and connects to
+    QWindow::screenChanged(), so the IDs are read again whenever the window
+    moves to another display:
+
+    \snippet platform/harmonynativewindowid/main.cpp 2
+
+    A window reads its IDs right after show() has returned, when its
+    platform window exists:
+
+    \snippet platform/harmonynativewindowid/main.cpp 3
+
+    \section1 Running the Example
+
+    Press \uicontrol {New sub window} and \uicontrol {New top-level window}.
+    Each window shows a window ID of its own. A sub window is shown in a
+    platform window of its own too.
+
+    Move a window to another display. The display ID follows the window,
+    while the window ID stays the same.
+*/

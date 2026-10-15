@@ -149,5 +149,6 @@
     \li \l {Qt for HarmonyOS Restart Application Example}
     \li \l {Qt for HarmonyOS Notification Example}
     \li \l {Qt for HarmonyOS Window Settings Example}
+    \li \l {Qt for HarmonyOS Native Window ID Example}
     \endlist
 */

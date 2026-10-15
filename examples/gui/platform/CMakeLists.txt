@@ -3,4 +3,5 @@
 
 if(OHOS AND QT_FEATURE_widgets)
     qt_internal_add_example(harmonywindowsettings)
+    qt_internal_add_example(harmonynativewindowid)
 endif()
