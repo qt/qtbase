@@ -67,6 +67,7 @@ private slots:
     void hostPathsInQtConf();
     void resources();
     void duplicateInputs();
+    void embedTranslations();
     void conflictingTargets();
 
 private:
@@ -900,6 +901,23 @@ void tst_qmake::duplicateInputs()
     QVERIFY2(contents.contains("-Iinc1 -Iinc2 -Iinc1"), qPrintable(contents));
 
     QVERIFY(test_compiler.removeMakefile(workDir));
+}
+
+void tst_qmake::embedTranslations()
+{
+    // Each binary needs its own resource name. Otherwise the init functions of the embedded
+    // translations clash, and the translations of shared libraries are not registered.
+    QString workDir = base_path + "/testdata/embed_translations";
+    QVERIFY(test_compiler.qmake(workDir, "first"));
+    QVERIFY(test_compiler.qmake(workDir, "second"));
+
+    auto readFile = [&workDir](const QString &fileName) {
+        QFile file(workDir + '/' + fileName);
+        return file.open(QFile::ReadOnly) ? file.readAll() : QByteArray();
+    };
+    QVERIFY(readFile("qmake_qmake_qm_files_first.qrc").contains("first_de.qm"));
+    QVERIFY(readFile("qmake_qmake_qm_files_second_target_x.qrc").contains("second_de.qm"));
+    QVERIFY(!QFile::exists(workDir + "/qmake_qmake_qm_files.qrc"));
 }
 
 void tst_qmake::resources()

@@ -27,10 +27,14 @@ for (translation, all_translations) {
     QM_FILES += $$OUT_PWD/$$LRELEASE_DIR/$$replace(translation, \\.[^.]+$, .qm)
 }
 embed_translations {
-    qmake_qm_files.files = $$QM_FILES
-    qmake_qm_files.base = $$OUT_PWD/$$LRELEASE_DIR
-    qmake_qm_files.prefix = $$QM_FILES_RESOURCE_PREFIX
-    RESOURCES += qmake_qm_files
+    # The name determines the init function of the resource, which must be unique per binary.
+    qm_files_target = $$basename(TARGET)
+    qm_files_target = $$replace(qm_files_target, [^A-Za-z0-9_], _)
+    qm_files_resource = qmake_qm_files_$$qm_files_target
+    $${qm_files_resource}.files = $$QM_FILES
+    $${qm_files_resource}.base = $$OUT_PWD/$$LRELEASE_DIR
+    $${qm_files_resource}.prefix = $$QM_FILES_RESOURCE_PREFIX
+    RESOURCES += $$qm_files_resource
 } else {
     !isEmpty(QM_FILES_INSTALL_PATH) {
         qm_files.files = $$QM_FILES
