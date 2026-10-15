@@ -167,7 +167,7 @@ void tst_uic::populateTestEntries()
         const QString baseName = baselineFile.baseName();
         TestEntry entry;
         // qprintsettingsoutput: variable named 'from' clashes with Python
-        if (baseName == "qprintsettingsoutput"_L1)
+        if (baseName == "qprintsettingsoutput"_L1 || baseName == "templatewidget"_L1)
             entry.flags.setFlag(TestEntry::DontTestPythonCompile);
         else if (baseName  == "qttrid"_L1)
             entry.flags.setFlag(TestEntry::IdBasedTranslation);
@@ -416,7 +416,8 @@ static inline QByteArray msgCompilePythonFailed(const QByteArray &error)
 void tst_uic::invalidFiles_data() const
 {
     QTest::addColumn<QString>("file");
-    for (const auto &f : { "property"_L1, "enum"_L1, "class"_L1, "pixmapfunction"_L1 })
+    for (const auto &f : { "property"_L1, "enum"_L1, "class"_L1, "pixmapfunction"_L1,
+                           "templateclass"_L1 })
         QTest::newRow(f.constData()) << (m_invalid + "/bad_"_L1 + f + ".ui"_L1);
 }
 
