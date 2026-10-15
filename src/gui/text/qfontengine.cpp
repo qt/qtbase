@@ -1693,7 +1693,9 @@ quint32 QFontEngine::getTrueTypeGlyphIndex(const uchar *cmap, int cmapSize, uint
                     if (!qSafeFromBigEndian(cmap + 12 * middle + 8, end, &index))
                         return 0;
 
-                    return index + unicode - startCharCode;
+                    // Sanity check: No truetype glyph index is >= 0xffff currently, so any value
+                    // above this could result in undefined behavior later.
+                    return std::clamp(index + unicode - startCharCode, quint32(0), quint32(0xffff));
                 }
                 left = middle + 1;
             }
