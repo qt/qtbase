@@ -40,6 +40,8 @@ public:
     QDistanceFieldData(const QDistanceFieldData &other);
     ~QDistanceFieldData();
 
+    static bool canAllocateSize(quint64 nbytes);
+
     static QDistanceFieldData *create(const QSize &size);
     static QDistanceFieldData *create(const QPainterPath &path, bool doubleResolution);
     static QDistanceFieldData *create(QSize size, const QPainterPath &path, bool doubleResolution);

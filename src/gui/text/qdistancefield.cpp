@@ -4,6 +4,7 @@
 #include "qdistancefield_p.h"
 #include <qmath.h>
 #include <QtCore/qalloc.h>
+#include <QtGui/qimagereader.h>
 #include <private/qdatabuffer_p.h>
 #include <private/qimage_p.h>
 #include <private/qpathsimplifier_p.h>
@@ -832,6 +833,25 @@ QDistanceFieldData::~QDistanceFieldData()
     QtPrivate::sizedFree(data, nbytes);
 }
 
+bool QDistanceFieldData::canAllocateSize(quint64 nbytes)
+{
+    if (nbytes > INT_MAX) { // int used for bytes internally
+        qCWarning(lcDistanceField, "QDistanceFieldData: Rejecting path as size exceeds the upper "
+                                   "limit of %i bytes", INT_MAX);
+        return false;
+    }
+
+    if (const int mbLimit = QImageReader::allocationLimit()) {
+        if (nbytes > quint64(mbLimit) * 1024 * 1024) {
+            qCWarning(lcDistanceField, "QDistanceFieldData: Rejecting path as size exceeds the "
+                                       "current allocation limit of %i megabytes", mbLimit);
+            return false;
+        }
+    }
+
+    return true;
+}
+
 QDistanceFieldData *QDistanceFieldData::create(const QSize &size)
 {
     QDistanceFieldData *data = new QDistanceFieldData;
@@ -840,8 +860,13 @@ QDistanceFieldData *QDistanceFieldData::create(const QSize &size)
         data->width = size.width();
         data->height = size.height();
         // pixel data stored as a 1-byte alpha value
-        data->nbytes = data->width * data->height; // tightly packed
-        data->data = (uchar *)malloc(data->nbytes);
+        if (canAllocateSize(quint64(data->width) * quint64(data->height))) {
+            data->nbytes = data->width * data->height; // tightly packed
+            data->data = (uchar *)malloc(data->nbytes);
+        } else {
+            data->nbytes = 0;
+            data->data = nullptr;
+        }
     }
 
     return data;
