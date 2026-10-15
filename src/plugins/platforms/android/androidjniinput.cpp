@@ -18,6 +18,7 @@
 #include <QPointer>
 
 #include <QGuiApplication>
+#include <QThread>
 #include <QtMath>
 
 QT_BEGIN_NAMESPACE
@@ -873,6 +874,25 @@ namespace QtAndroidInput
         return unicode ? QString(QChar(unicode)) : QString();
     }
 
+    static bool sendKeyEventSynchronously(QEvent::Type type, int key,
+                                         Qt::KeyboardModifiers modifiers, const QString &text,
+                                         bool autoRepeat)
+    {
+        bool accepted = false;
+        const auto sendEvent = [&] {
+            accepted = QWindowSystemInterface::handleKeyEvent<
+                    QWindowSystemInterface::SynchronousDelivery>(
+                    nullptr, type, key, modifiers, text, autoRepeat);
+        };
+        // A cross-thread QWSI flush can return another queued event's acceptance.
+        if (QThread::isMainThread())
+            sendEvent();
+        else if (!QMetaObject::invokeMethod(qGuiApp, sendEvent, Qt::BlockingQueuedConnection))
+            qWarning("Failed to deliver Android key event on the GUI thread");
+
+        return accepted;
+    }
+
     static void keyDown(JNIEnv */*env*/, jobject /*thiz*/, jint key, jint unicode, jint modifier, jboolean autoRepeat)
     {
         const int qtKeyCombination = mapAndroidKey(key).toCombined();
@@ -883,9 +903,8 @@ namespace QtAndroidInput
 
         bool accepted = false;
         if (isBackKey || isMenuKey) {
-            accepted = QWindowSystemInterface::handleKeyEvent<
-                QWindowSystemInterface::SynchronousDelivery>(
-                nullptr, QEvent::KeyPress, qtKeyCombination, qtModifiers, text, autoRepeat);
+            accepted = sendKeyEventSynchronously(QEvent::KeyPress, qtKeyCombination,
+                                                 qtModifiers, text, autoRepeat);
         } else {
             QWindowSystemInterface::handleKeyEvent(
                 nullptr, QEvent::KeyPress, qtKeyCombination, qtModifiers, text, autoRepeat);
@@ -917,9 +936,8 @@ namespace QtAndroidInput
             return;
         }
 
-        const bool accepted =
-            QWindowSystemInterface::handleKeyEvent<QWindowSystemInterface::SynchronousDelivery>(
-                nullptr, QEvent::KeyRelease, qtKeyCombination, qtModifiers, text, autoRepeat);
+        const bool accepted = sendKeyEventSynchronously(QEvent::KeyRelease, qtKeyCombination,
+                                                        qtModifiers, text, autoRepeat);
 
         if (isBackKey && !m_backKeyPressAccepted && !accepted)
             moveActivityToBackground();
