@@ -2421,11 +2421,13 @@ MakefileGenerator::findSubDirsSubTargets() const
                                 QString d = Option::fixPathToTargetOS(subName);
                                 const ProKey dfkey(fixedSubDep + ".file");
                                 if (!project->isEmpty(dfkey)) {
-                                    d = project->first(dfkey).toQString();
+                                    d = Option::fixPathToTargetOS(
+                                            project->first(dfkey).toQString());
                                 } else {
                                     const ProKey dskey(fixedSubDep + ".subdir");
                                     if (!project->isEmpty(dskey))
-                                        d = project->first(dskey).toQString();
+                                        d = Option::fixPathToTargetOS(
+                                                project->first(dskey).toQString());
                                 }
                                 st->depends += "sub-" + d.replace(QRegularExpression("[^a-zA-Z0-9_]"),"-");
                             }

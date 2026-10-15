@@ -33,6 +33,7 @@ private slots:
     void simple_lib();
     void simple_dll();
     void subdirs();
+    void subdirsDependsOnUnnormalizedFile();
     void subdir_via_pro_file_extra_target();
     void duplicateLibraryEntries();
     void export_across_file_boundaries();
@@ -310,6 +311,22 @@ void tst_qmake::subdirs()
     // properly
     QVERIFY( test_compiler.makeDistClean( workDir ));
     QVERIFY( test_compiler.removeMakefile( workDir ) );
+}
+
+void tst_qmake::subdirsDependsOnUnnormalizedFile()
+{
+    QString workDir = base_path + "/testdata/subdirs_depends";
+    QVERIFY(test_compiler.qmake(workDir, "subdirs_depends"));
+
+    QFile makefile(workDir + "/Makefile");
+    QVERIFY(makefile.open(QFile::ReadOnly));
+    const QByteArray contents = makefile.readAll();
+    makefile.close();
+    // "./foo.pro" must result in the same target name in the rule and in the dependency.
+    QVERIFY(contents.contains("sub-foo-pro-qmake_all:"));
+    QVERIFY(contents.contains("sub-bar-pro-qmake_all: sub-foo-pro-qmake_all"));
+    QVERIFY(!contents.contains("sub---foo-pro"));
+    QVERIFY(test_compiler.removeMakefile(workDir));
 }
 
 void tst_qmake::subdir_via_pro_file_extra_target()
