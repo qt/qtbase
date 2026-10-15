@@ -4,3 +4,7 @@
 if(QT_FEATURE_xcb)
     add_subdirectory(qx11info)
 endif()
+if(OHOS)
+    add_subdirectory(harmonywindow)
+    add_subdirectory(harmonywindow_defaultability)
+endif()
