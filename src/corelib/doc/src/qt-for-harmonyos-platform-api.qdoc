@@ -150,5 +150,6 @@
     \li \l {Qt for HarmonyOS Notification Example}
     \li \l {Qt for HarmonyOS Window Settings Example}
     \li \l {Qt for HarmonyOS Native Window ID Example}
+    \li \l {Qt for HarmonyOS Window Drag Key Frame Example}
     \endlist
 */
