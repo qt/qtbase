@@ -1,0 +1,49 @@
+// Copyright (C) 2026 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \title Qt for HarmonyOS Window Drag Key Frame Example
+    \example platform/harmonywindowdragkeyframe
+    \examplecategory {Mobile}
+    \meta tag {widgets,harmonyos,window}
+
+    \brief Sets the key frame policy for resizing the window of a Qt
+    application on HarmonyOS.
+
+    While the user resizes a window by dragging its edge, the platform can
+    report the new size only at key frames instead of continuously. The key
+    frame policy of the window enables this mode and sets when the key
+    frames come. The example sets the policy with the
+    \c setDragKeyFramePolicy() method of its \c window.Window.
+
+    The policy is collected on the Qt thread as a QJsonObject, with only the
+    parameters that are set. The window gets its \c window.Window from
+    QNativeInterface::QHarmonyWindow on the Qt thread, as a
+    QHarmonyJsObjectRef handle, and hands both to the JS thread:
+
+    \snippet platform/harmonywindowdragkeyframe/main.cpp 0
+
+    On the JS thread, the task maps the policy to a JS object with
+    QtHarmony::mapQJsonObjectToJsObject() and calls
+    \c setDragKeyFramePolicy(). The promise that it returns resolves to the
+    policy that is in effect. The handler maps that policy back with
+    QtHarmony::mapJsObjectToQJsonObject() and posts it to the Qt thread
+    with QNativeInterface::QHarmonyApplication::runOnQtThread(), where the
+    window logs it. A rejection, or an error that the calls throw, is logged
+    in the same way:
+
+    \snippet platform/harmonywindowdragkeyframe/main.cpp 1
+
+    \section1 Running the Example
+
+    Select \uicontrol {Key frame mode enabled} and press
+    \uicontrol Apply. Then resize the window by dragging its edge and
+    compare it with resizing in the default mode. The log shows the policy
+    that is in effect. \uicontrol {Reset to defaults} disables the key frame
+    mode.
+
+    The example needs a device on which the user can resize the window by
+    dragging its edge. On a phone, the main window fills the screen and
+    cannot be resized in this way. On a device that does not support the
+    key frame mode, the call fails and the window logs the error.
+*/
