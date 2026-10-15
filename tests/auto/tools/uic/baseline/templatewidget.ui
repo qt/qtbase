@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>TemplateWidget</class>
+ <widget class="QWidget" name="TemplateWidget">
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="ItemViewSized&lt;QListView&gt;" name="listView"/>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>ItemViewSized&lt;QListView&gt;</class>
+   <extends>QListView</extends>
+   <header>itemviewsized.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

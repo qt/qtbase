@@ -79,10 +79,18 @@ static bool isClassNameContinuation(QChar c)
     return c == u':' || c == u'.' || isIdContinuation(c);
 }
 
-static bool checkClassName(QStringView name)
+// Template arguments of promoted widgets, e.g. "ItemViewSized<QListView>"
+static bool isTemplateClassNameContinuation(QChar c)
 {
+    return c == u'<' || c == u'>' || c == u',' || c == u' ' || isClassNameContinuation(c);
+}
+
+static bool checkClassName(QStringView name, bool allowTemplates = false)
+{
+    const auto isValid = allowTemplates ? isTemplateClassNameContinuation
+                                        : isClassNameContinuation;
     return !name.isEmpty() && isIdStart(name.at(0))
-            && std::all_of(name.cbegin() + 1, name.cend(), isClassNameContinuation);
+            && std::all_of(name.cbegin() + 1, name.cend(), isValid);
 }
 
 // Sanity check: A coarse check for any characters that would allow a code injection (C++/Python)
@@ -189,7 +197,7 @@ void Validator::acceptWidget(DomWidget *node)
 
     checkProperties(node->elementProperty(), &m_errors);
 
-    if (!checkClassName(node->attributeClass()))
+    if (!checkClassName(node->attributeClass(), true))
         m_errors.append(msgInvalidClassName(node->attributeClass()));
 
     TreeWalker::acceptWidget(node);
