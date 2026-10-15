@@ -1017,6 +1017,8 @@ bool
 MakefileGenerator::writeProjectMakefile()
 {
     QTextStream t(&Option::output);
+    if (useSystemEncoding())
+        t.setEncoding(QStringConverter::System);
 
     //header
     writeHeader(t);
@@ -1074,6 +1076,8 @@ MakefileGenerator::write()
     if(Option::qmake_mode == Option::QMAKE_GENERATE_MAKEFILE || //write makefile
        Option::qmake_mode == Option::QMAKE_GENERATE_PROJECT) {
         QTextStream t(&Option::output);
+        if (useSystemEncoding())
+            t.setEncoding(QStringConverter::System);
         if(!writeMakefile(t)) {
 #if 1
             warn_msg(WarnLogic, "Unable to generate output for: %s [TEMPLATE %s]",

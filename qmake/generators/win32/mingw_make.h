@@ -17,6 +17,8 @@ protected:
     bool processPrlFileBase(QString &origFile, QStringView origName,
                             QStringView fixedBase, int slashOff) override;
     bool writeMakefile(QTextStream &) override;
+    // mingw32-make reads the Makefile and calls the file system API in the ANSI code page.
+    bool useSystemEncoding() const override { return true; }
     void init() override;
     QString installRoot() const override;
 private:

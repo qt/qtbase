@@ -272,6 +272,7 @@ public:
     virtual bool supportsMergedBuilds() { return false; }
     virtual bool mergeBuildProject(MakefileGenerator * /*other*/) { return false; }
     virtual bool openOutput(QFile &, const QString &build) const;
+    virtual bool useSystemEncoding() const { return false; }
     bool isWindowsShell() const { return Option::dir_sep == QLatin1String("\\"); }
     QString shellQuote(const QString &str) const;
     virtual ProKey fullTargetVariable() const;
