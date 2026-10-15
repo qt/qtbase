@@ -2936,7 +2936,7 @@ int QFontEngineFT::glyphCount() const
     int count = 0;
     FT_Face face = lockFace();
     if (face) {
-        count = face->num_glyphs;
+        count = int(std::clamp(face->num_glyphs, FT_Long(0), FT_Long(INT_MAX)));
         unlockFace();
     }
     return count;
