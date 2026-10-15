@@ -55,6 +55,7 @@ private slots:
     void project();
     void proFileCache();
     void qinstall();
+    void hostPathsInQtConf();
     void resources();
     void conflictingTargets();
 
@@ -623,6 +624,31 @@ void tst_qmake::proFileCache()
 {
     QString workDir = base_path + "/testdata/pro_file_cache";
     QVERIFY( test_compiler.qmake( workDir, "pro_file_cache" ));
+}
+
+void tst_qmake::hostPathsInQtConf()
+{
+    QTemporaryDir dir;
+    QVERIFY(dir.isValid());
+    const QString prefix = QDir::cleanPath(dir.path());
+
+    // The Host* keys are missing, as in the qt.conf files that package builders write.
+    QFile conf(prefix + "/qt.conf");
+    QVERIFY(conf.open(QIODevice::WriteOnly | QIODevice::Text));
+    const QString text = QStringLiteral("[Paths]\nPrefix = %1\nBinaries = custom/bin\n"
+                                        "LibraryExecutables = custom/libexec\n"
+                                        "Libraries = custom/lib\n")
+                                 .arg(prefix);
+    conf.write(text.toUtf8());
+    conf.close();
+
+    test_compiler.clearCommandOutput();
+    QVERIFY(test_compiler.qmake(prefix, { "-qtconf", conf.fileName(), "-query" }));
+    const QString output = test_compiler.commandOutput();
+    QVERIFY2(output.contains("QT_HOST_BINS:" + prefix + "/custom/bin"), qPrintable(output));
+    QVERIFY2(output.contains("QT_HOST_LIBEXECS:" + prefix + "/custom/libexec"), qPrintable(output));
+    QVERIFY2(output.contains("QT_HOST_LIBS:" + prefix + "/custom/lib"), qPrintable(output));
+    test_compiler.clearCommandOutput();
 }
 
 void tst_qmake::qinstall()

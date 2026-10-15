@@ -202,8 +202,10 @@ QString QMakeLibraryInfo::rawLocation(int loc, QMakeLibraryInfo::PathGroup group
             }
 
             if (ret.isEmpty()) {
+                // Host paths that a qt.conf does not list follow the target paths.
                 if (loc == HostPrefixPath || loc == TargetSpecPath || loc == HostSpecPath
-                           || loc == SysrootifyPrefixPath || loc == QLibraryInfo::PrefixPath) {
+                    || loc == SysrootifyPrefixPath || loc == QLibraryInfo::PrefixPath
+                    || (loc >= FirstHostPath && loc <= LastHostPath)) {
                     fromConf = false;
                 } else {
                     ret = locinfo.defaultValue;
