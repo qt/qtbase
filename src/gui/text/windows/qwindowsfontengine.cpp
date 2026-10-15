@@ -301,9 +301,12 @@ void QWindowsFontEngine::recalcAdvances(QGlyphLayout *glyphs, QFontEngine::Shape
 {
     HGDIOBJ oldFont = 0;
     HDC hdc = m_fontEngineData->hdc;
+    // Sanity check: For TrueType fonts, the glyphs are glyph indexes, which are 16-bit. For other
+    // fonts, they are Unicode code points. Clamp to avoid overflow when growing the caches below.
+    const uint maxGlyph = ttf ? 0xffff : uint(QChar::LastValidCodePoint);
     if (ttf && (flags & DesignMetrics)) {
         for(int i = 0; i < glyphs->numGlyphs; i++) {
-            unsigned int glyph = glyphs->glyphs[i];
+            unsigned int glyph = qMin(glyphs->glyphs[i], maxGlyph);
             if (int(glyph) >= designAdvancesSize) {
                 const int newSize = int(glyph + 256) >> 8 << 8;
                 designAdvances = reinterpret_cast<QFixed *>(realloc(designAdvances, size_t(newSize) * sizeof(QFixed)));
@@ -326,7 +329,7 @@ void QWindowsFontEngine::recalcAdvances(QGlyphLayout *glyphs, QFontEngine::Shape
             DeleteObject(SelectObject(hdc, oldFont));
     } else {
         for(int i = 0; i < glyphs->numGlyphs; i++) {
-            unsigned int glyph = glyphs->glyphs[i];
+            unsigned int glyph = qMin(glyphs->glyphs[i], maxGlyph);
 
             if (glyph >= widthCacheSize) {
                 const uint newSize = (glyph + 256) >> 8 << 8;
