@@ -1733,6 +1733,19 @@
 
     This list is placed before all builtin dependencies.
 
+    \section1 PRECOMPILED_DIR
+
+    Specifies the directory where the precompiled header file and its object
+    file are placed. If this variable is not set, qmake uses the value of
+    \l{OBJECTS_DIR}.
+
+    \note In projects that build both the debug and the release configuration
+    (the default on Windows), the precompiled header goes to the \c debug or
+    \c release directory and \l{OBJECTS_DIR} has no effect on it. Set
+    PRECOMPILED_DIR to place it elsewhere.
+
+    See also \l{PRECOMPILED_HEADER}.
+
     \section1 PRECOMPILED_HEADER
 
     Indicates the header file for creating a precompiled
@@ -1740,6 +1753,8 @@
     Precompiled headers are currently only supported on some platforms
     (Windows - all MSVC project types, Apple - Xcode, Makefile,
     Unix - gcc 3.3 and up).
+
+    See also \l{PRECOMPILED_DIR}.
 
     \section1 PWD
 
