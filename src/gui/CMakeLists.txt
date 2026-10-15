@@ -148,7 +148,7 @@ qt_internal_add_module(Gui
         kernel/qsurfaceformat.cpp kernel/qsurfaceformat.h
         kernel/qtestsupport_gui.cpp kernel/qtestsupport_gui.h
         kernel/qtguiglobal.h kernel/qtguiglobal_p.h
-        kernel/qwindow.cpp kernel/qwindow.h kernel/qwindow_p.h
+        kernel/qwindow.cpp kernel/qwindow.h kernel/qwindow_p.h kernel/qwindow_platform.h
         kernel/qwindowdefs.h
         kernel/qwindowsysteminterface.cpp kernel/qwindowsysteminterface.h kernel/qwindowsysteminterface_p.h
         math3d/qgenericmatrix.cpp math3d/qgenericmatrix.h

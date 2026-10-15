@@ -3,7 +3,10 @@
 
 #include <qohosplatformwindow.h>
 
+#include <QtCore/private/qcore_ohos_p.h>
+#include <QtCore/private/qohosjstools_p.h>
 #include <QtCore/private/qohoslogger_p.h>
+#include <QtCore/qharmonyjscontext.h>
 #include <QtCore/qpointer.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qhighdpiscaling_p.h>
@@ -50,6 +53,25 @@ QOhosView *getWindowsViewOrNull(QWindow *targetWindow)
     }
 
     return view;
+}
+
+QHarmonyJsObjectRef makeJsObjectRefOnJsThread(
+    const std::function<std::optional<QNapi::Object>(QOhosJsState &)> &objectFetcher,
+    const char *callerContextName)
+{
+    return QOhosJsThreadGateway::eval(
+        [&](QOhosJsState &jsState) {
+            QHarmonyJsObjectRef objectRef;
+            runQOhosJsCodeLoggingExceptions(
+                jsState.env(), callerContextName,
+                [&]() {
+                    auto optObject = objectFetcher(jsState);
+                    if (optObject)
+                        objectRef = QHarmonyJsObjectRef::fromValue(QHarmonyJsContext::fromEnv(jsState.env()), optObject.value());
+                });
+            return objectRef;
+        },
+        callerContextName);
 }
 
 }
@@ -251,6 +273,26 @@ std::optional<double> QOhosPlatformWindow::windowId() const
         qPrintable(internalId.toString()), jsWinId.value().value());
 
     return jsWinId.value().value();
+}
+
+QHarmonyJsObjectRef QOhosPlatformWindow::ability() const
+{
+    auto windowRef = QtOhos::QObjectThreadSafeRef(window());
+    return makeJsObjectRefOnJsThread(
+        [&](QOhosJsState &jsState) {
+            return jsState.tryGetQAbilityByQWindow(windowRef);
+        },
+        Q_FUNC_INFO);
+}
+
+QHarmonyJsObjectRef QOhosPlatformWindow::jsWindow() const
+{
+    auto windowRef = QtOhos::QObjectThreadSafeRef(window());
+    return makeJsObjectRefOnJsThread(
+        [&](QOhosJsState &jsState) {
+            return jsState.tryGetJsWindowByQWindow(windowRef);
+        },
+        Q_FUNC_INFO);
 }
 
 bool QOhosPlatformWindow::shouldDisplayAsOhosWindow() const
