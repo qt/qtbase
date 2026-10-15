@@ -1,0 +1,75 @@
+// Copyright (C) 2026 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \title Qt for HarmonyOS Window Settings Example
+    \example platform/harmonywindowsettings
+    \examplecategory {Mobile}
+    \meta tag {widgets,harmonyos,window}
+
+    \brief Changes platform settings of the windows of a Qt application on
+    HarmonyOS.
+
+    Each window of the example changes settings of its own platform window,
+    the \c window.Window that the window is shown in. All windows can keep
+    the screen on and hide their content in screenshots and screen
+    recordings. Sub windows can also have rounded corners and be resized by
+    dragging their edges.
+
+    The settings are changed by methods of \c window.Window:
+    \c setWindowKeepScreenOn(), \c setWindowPrivacyMode(),
+    \c setWindowCornerRadius() and \c enableDrag(). The corner radius is
+    measured in vp. A window gets its \c window.Window from
+    QNativeInterface::QHarmonyWindow on the Qt thread, as a
+    QHarmonyJsObjectRef handle. Each control hands the handle and the new
+    value to the JS thread:
+
+    \snippet platform/harmonywindowsettings/main.cpp 0
+
+    On the JS thread, the task dereferences the handle and calls the method.
+    Each of the methods returns a promise. The handlers attached to the
+    promise log the outcome in the window. They post the text to the Qt
+    thread with QNativeInterface::QHarmonyApplication::runOnQtThread(). An
+    error that the call throws is logged in the same way:
+
+    \snippet platform/harmonywindowsettings/main.cpp 1
+
+    \c setWindowPrivacyMode() requires the
+    \c {ohos.permission.PRIVACY_WINDOW} permission. The example declares it
+    in its \c CMakeLists.txt with \l {qt_add_harmonyos_permission()}:
+
+    \snippet platform/harmonywindowsettings/CMakeLists.txt 0
+
+    The controls show the current settings of the platform window.
+    \c getWindowProperties() and \c getWindowCornerRadius() return them
+    synchronously, so the example reads them with
+    QNativeInterface::QHarmonyApplication::runOnJsThreadAndWait(), which
+    returns the result of the task:
+
+    \snippet platform/harmonywindowsettings/main.cpp 2
+
+    The example reads the settings each time the window is shown, once it
+    is exposed, as the platform window is shown by then. The platform does
+    not report whether a window can be resized by dragging its edges, so
+    the example applies the initial state of that check box instead:
+
+    \snippet platform/harmonywindowsettings/main.cpp 3
+
+    \section1 Running the Example
+
+    Press \uicontrol {New sub window} to open a sub window. Change its
+    corner radius, or clear \uicontrol {Resizable by dragging its edges} and
+    try to resize the sub window by dragging an edge.
+
+    To check \uicontrol {Keep the screen on}, set a short screen timeout in
+    the system settings. While the option is set and the window is shown,
+    the screen stays on.
+
+    To check \uicontrol {Hide the content in screenshots and recordings},
+    set the option and take a screenshot. The content of the window does not
+    appear in it.
+
+    The corner radius and resizing by dragging depend on the device. On a
+    device that does not support them, the calls fail and the window logs
+    the error.
+*/
