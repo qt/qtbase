@@ -69,6 +69,7 @@ private slots:
     void resources();
     void duplicateInputs();
     void embedTranslations();
+    void resourcesSameName();
     void conflictingTargets();
 
 private:
@@ -968,6 +969,21 @@ void tst_qmake::resources()
     }
 
     QVERIFY(test_compiler.make(workDir));
+}
+
+void tst_qmake::resourcesSameName()
+{
+    // The generated files and the init function are named after the .qrc file, so two files
+    // with the same name in one project clash.
+    QString workDir = base_path + "/testdata/resources_same_name";
+    test_compiler.clearCommandOutput();
+    QVERIFY(!test_compiler.qmake(workDir, "clash"));
+    QVERIFY2(test_compiler.commandOutput().contains("have the same name"),
+             qPrintable(test_compiler.commandOutput()));
+    test_compiler.clearCommandOutput();
+
+    // Listing a file more than once is not a clash.
+    QVERIFY(test_compiler.qmake(workDir, "same_file"));
 }
 
 void tst_qmake::conflictingTargets()

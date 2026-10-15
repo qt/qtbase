@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/y">
+        <file>file.txt</file>
+    </qresource>
+</RCC>

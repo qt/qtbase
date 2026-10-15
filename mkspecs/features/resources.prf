@@ -10,6 +10,25 @@ load(resources_functions)
 qtFlattenResources()
 qtEnsurePluginResourcesCpp()
 
+# The generated files and the init function are named after the resource file, so the names
+# must be unique.
+resource_seen =
+for (resource, RESOURCES) {
+    resource_path = $$clean_path($$absolute_path($$resource, $$_PRO_FILE_PWD_))
+    resource_name = $$basename(resource_path)
+    resource_name = $$replace(resource_name, \\.[^.]*$, )
+    for (seen, resource_seen) {
+        equals(resource_name, $$section(seen, "|", 0, 0)): \
+            !equals(resource_path, $$section(seen, "|", 1, -1)): \
+            error("Resource files '$$section(seen, "|", 1, -1)' and '$$resource_path' have the same name.")
+    }
+    resource_seen += $$quote($${resource_name}|$${resource_path})
+}
+unset(resource_seen)
+unset(resource_path)
+unset(resource_name)
+unset(seen)
+
 rcc.input = RESOURCES
 rcc.name = RCC ${QMAKE_FILE_IN}
 rcc.depend_command = $$QMAKE_RCC_DEP -list $$QMAKE_RESOURCE_FLAGS ${QMAKE_FILE_IN}
