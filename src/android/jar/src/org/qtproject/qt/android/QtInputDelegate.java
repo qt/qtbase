@@ -76,6 +76,7 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
     private long m_metaState;
     private int m_lastChar = 0;
     private boolean m_backKeyPressedSent = false;
+    private boolean m_backKeyDown = false;
 
     private final OnBackInvokedCallback m_backInvokeCallback;
 
@@ -522,6 +523,10 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
 
         m_lastChar = lc;
         if (keyCode == KeyEvent.KEYCODE_BACK) {
+            // Physical events can overlap the pair from OnBackInvokedCallback.
+            if (m_backKeyDown && event.getRepeatCount() == 0)
+                return true;
+            m_backKeyDown = true;
             m_backKeyPressedSent = !isKeyboardVisible();
             if (!m_backKeyPressedSent)
                 return true;
@@ -541,10 +546,15 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
             return false;
         }
 
-        if (keyCode == KeyEvent.KEYCODE_BACK && !m_backKeyPressedSent) {
-            hideSoftwareKeyboard();
-            setKeyboardVisibility(false, System.nanoTime());
-            return true;
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            if (!m_backKeyDown)
+                return true;
+            m_backKeyDown = false;
+            if (!m_backKeyPressedSent) {
+                hideSoftwareKeyboard();
+                setKeyboardVisibility(false, System.nanoTime());
+                return true;
+            }
         }
 
         m_metaState = MetaKeyKeyListener.handleKeyUp(m_metaState, keyCode, event);
@@ -589,6 +599,7 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
 
     void unregisterBackGestureCallback(Activity activity)
     {
+        m_backKeyDown = false;
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU)
             return;
         try {
