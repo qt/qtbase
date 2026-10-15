@@ -4,5 +4,6 @@
 if(NOT TARGET Qt6::Gui)
     return()
 endif()
+add_subdirectory(platform)
 qt_internal_add_example(rasterwindow)
 qt_internal_add_example(rhiwindow)
