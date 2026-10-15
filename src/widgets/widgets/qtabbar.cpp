@@ -2440,7 +2440,7 @@ void QTabBar::wheelEvent(QWheelEvent *event)
             int delta = 0;
             if (tabsVertical == wheelVertical)
                 delta = wheelVertical ? event->pixelDelta().y() : event->pixelDelta().x();
-            if (layoutDirection() == Qt::RightToLeft)
+            if (!tabsVertical && layoutDirection() == Qt::RightToLeft)
                 delta = -delta;
             if (delta && d->validIndex(d->lastVisible)) {
                 const int oldScrollOffset = d->scrollOffset;
