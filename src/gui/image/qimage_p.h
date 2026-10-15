@@ -87,6 +87,8 @@ struct Q_GUI_EXPORT QImageData {        // internal image data
         bool isValid() const { return bytesPerLine > 0 && totalSize > 0; }
     };
     static ImageSizeParameters calculateImageParameters(qsizetype width, qsizetype height, qsizetype depth);
+    static bool isWithinIOAllocationLimit(int width, int height, QImage::Format format,
+                                          const char *context = nullptr);
 };
 
 inline QImageData::ImageSizeParameters

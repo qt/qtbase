@@ -539,19 +539,9 @@ bool QImageIOHandler::allocateImage(QSize size, QImage::Format format, QImage *i
     if (image->size() == size && image->format() == format) {
         image->detach();
     } else {
-        if (const int mbLimit = QImageReader::allocationLimit()) {
-            qsizetype depth = qMax(qt_depthForFormat(format), 32); // Effective gui depth = 32
-            QImageData::ImageSizeParameters szp =
-                    QImageData::calculateImageParameters(size.width(), size.height(), depth);
-            if (!szp.isValid())
-                return false;
-            const qsizetype mb = szp.totalSize >> 20;
-            if (mb > mbLimit || (mb == mbLimit && szp.totalSize % (1 << 20))) {
-                qCWarning(lcImageIo, "QImageIOHandler: Rejecting image as it exceeds the current "
-                                     "allocation limit of %i megabytes", mbLimit);
-                return false;
-            }
-        }
+        if (!QImageData::isWithinIOAllocationLimit(size.width(), size.height(), format,
+                                                   "QImageIOHandler"))
+            return false;
         *image = QImage(size, format);
     }
     return !image->isNull();

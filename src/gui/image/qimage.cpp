@@ -4006,6 +4006,27 @@ bool QImageData::doImageIO(const QImage *image, QImageWriter *writer, int qualit
     return result;
 }
 
+bool QImageData::isWithinIOAllocationLimit(int width, int height, QImage::Format format,
+                                           const char *context)
+{
+    if (const int mbLimit = QImageReader::allocationLimit()) {
+        qsizetype depth = qMax(qt_depthForFormat(format), 32); // Effective gui depth = 32
+        QImageData::ImageSizeParameters szp =
+                QImageData::calculateImageParameters(width, height, depth);
+        if (!szp.isValid())
+            return false;
+        const qsizetype mb = szp.totalSize >> 20;
+        if (mb > mbLimit || (mb == mbLimit && szp.totalSize % (1 << 20))) {
+            if (context) {
+                qCWarning(lcImageIo, "%s: Rejecting image as it exceeds the current "
+                                     "allocation limit of %i megabytes", context, mbLimit);
+            }
+            return false;
+        }
+    }
+    return true;
+}
+
 /*****************************************************************************
   QImage stream functions
  *****************************************************************************/
