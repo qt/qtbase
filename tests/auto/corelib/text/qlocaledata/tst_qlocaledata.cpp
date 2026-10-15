@@ -1171,7 +1171,7 @@ void tst_QLocaleData::mySystemLocale_data()
 
 void tst_QLocaleData::mySystemLocale()
 {
-    // Compare uiLanguages(), which tests this for CLDR-derived locales.
+    // Compare tst_QLocale::uiLanguages(), which tests this for CLDR-derived locales.
     QLocale originalLocale;
     QLocale originalSystemLocale = QLocale::system();
 
@@ -1187,9 +1187,8 @@ void tst_QLocaleData::mySystemLocale()
         QCOMPARE(QLocale().language(), language);
         const QLocale sys = QLocale::system();
         QCOMPARE(sys.language(), language);
-        auto reporter = qScopeGuard([]() {
-            qDebug("Actual entries:\n\t%s",
-                   qPrintable(QLocale::system().uiLanguages().join(u"\n\t")));
+        auto reporter = qScopeGuard([sys]() {
+            qDebug("Actual entries:\n\t%s", qPrintable(sys.uiLanguages().join(u"\n\t")));
         });
         QCOMPARE(sys.uiLanguages(), uiLanguages);
         QCOMPARE(sys.uiLanguages(QLocale::TagSeparator::Underscore),
