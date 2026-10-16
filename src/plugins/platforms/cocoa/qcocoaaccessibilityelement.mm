@@ -366,17 +366,11 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
         axid = QAccessible::uniqueId(cell);
         synthesizedRole = nil;
 
+        // If there already is another element for this cell in the cache, then
+        // the cache invalidates and releases it. That element might have been
+        // created for a different position, if rows or columns moved since.
         QAccessibleCache *cache = QAccessibleCache::instance();
-        if (QMacAccessibilityElement *cellElement = cache->elementForId(axid)) {
-            // there already is another, non-placeholder element in the cache
-            Q_ASSERT(cellElement->synthesizedRole == nil);
-            // we have to release it if it's not us
-            if (cellElement != self) {
-                // for the same cell position
-                Q_ASSERT(cellElement->m_rowIndex == m_rowIndex && cellElement->m_columnIndex == m_columnIndex);
-            }
-        }
-
+        Q_ASSERT(!cache->elementForId(axid) || !cache->elementForId(axid)->synthesizedRole);
         cache->insertElement(axid, self);
     }
     return iface;
@@ -611,14 +605,14 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
             QMacAccessibilityElement *tableElement =
                     [QMacAccessibilityElement elementWithInterface:parent];
 
-            // parent of cell should be row
+            // parent of cell should be row; the row index we were created with
+            // is outdated if rows got inserted or removed since.
             int rowIndex = -1;
-            if (m_rowIndex >= 0 && m_columnIndex >= 0)
-                rowIndex = m_rowIndex;
-            else if (QAccessibleTableCellInterface *cell = iface->tableCellInterface())
+            if (QAccessibleTableCellInterface *cell = iface->tableCellInterface())
                 rowIndex = cell->rowIndex();
-            Q_ASSERT(tableElement->rows);
-            if (rowIndex > int([tableElement->rows count]) || rowIndex == -1)
+            else if (m_rowIndex >= 0 && m_columnIndex >= 0)
+                rowIndex = m_rowIndex;
+            if (!tableElement->rows || rowIndex < 0 || rowIndex >= int(tableElement->rows.count))
                 return nil;
             QMacAccessibilityElement *rowElement = tableElement->rows[rowIndex];
             return NSAccessibilityUnignoredAncestor(rowElement);
