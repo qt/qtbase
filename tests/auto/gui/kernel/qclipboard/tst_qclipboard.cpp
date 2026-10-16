@@ -47,6 +47,7 @@ private slots:
     void testSignals();
     void setMimeData();
     void clearBeforeSetText();
+    void clearBeforeSetMimeData();
     void getTextFromHTMLMimeType();
 #  ifdef Q_OS_WIN
     void testWindowsMimeRegisterType();
@@ -459,6 +460,38 @@ void tst_QClipboard::clearBeforeSetText()
     QCOMPARE(QGuiApplication::clipboard()->text(), text);
     QGuiApplication::processEvents();
     QCOMPARE(QGuiApplication::clipboard()->text(), text);
+}
+
+void tst_QClipboard::clearBeforeSetMimeData() // QTBUG-108346
+{
+    QGuiApplication::processEvents();
+
+    if (!PlatformClipboard::isAvailable())
+        QSKIP("Native clipboard not working in this setup");
+    if (QGuiApplication::platformName().startsWith("offscreen"_L1, Qt::CaseInsensitive))
+        QSKIP("Offscreen platform does not support clipboard");
+
+    const QString html = QStringLiteral("<b>Hello <i>world</i></b>");
+    const QString text = QStringLiteral("Hello world");
+
+    // clear() immediately followed by setMimeData() should expose the new data,
+    // with no stale leftover formats from before the clear(). On platforms where
+    // a desktop clipboard manager can race in to claim the selection after clear()
+    // releases it (e.g. to persist the outgoing content via the ICCCM SAVE_TARGETS protocol),
+    // reusing a stale cached ownership timestamp when re-claiming it in setMimeData() would
+    // lose that race, and this would then fail or time out below.
+    QGuiApplication::clipboard()->clear();
+    QVERIFY(QGuiApplication::clipboard()->mimeData()->formats().isEmpty());
+
+    auto *mimeData = new QMimeData;
+    mimeData->setHtml(html);
+    mimeData->setText(text);
+    QGuiApplication::clipboard()->setMimeData(mimeData);
+
+    QTRY_VERIFY(QGuiApplication::clipboard()->mimeData()->hasHtml());
+    QVERIFY(QGuiApplication::clipboard()->mimeData()->hasText());
+    QCOMPARE(QGuiApplication::clipboard()->mimeData()->html(), html);
+    QCOMPARE(QGuiApplication::clipboard()->mimeData()->text(), text);
 }
 
 void tst_QClipboard::getTextFromHTMLMimeType()
