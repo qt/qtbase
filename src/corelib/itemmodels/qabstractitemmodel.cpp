@@ -783,15 +783,16 @@ const QHash<int,QByteArray> &QAbstractItemModelPrivate::defaultRoleNames()
     void Model::sort(int column, Qt::SortOrder sortOrder)
     {
         // Model operates on a QList<QVariant> data
-        std::sort(data.begin(), data.end(), [=](const QVariant &lhs, const Variant &rhs){
+        std::sort(data.begin(), data.end(), [=](const QVariant &lhs, const QVariant &rhs){
             const auto ordering = compareData(lhs, rhs);
-            return sortOrder == Qt::AscendingOrder ? sortOrder < 0 : sortOrder > 0;
+            return sortOrder == Qt::AscendingOrder ? ordering < 0 : ordering > 0;
         });
     }
     \endcode
 
-    If the \a left QVariant holds a string, then the variants are compared
-    \l{QVariant::toString()}{as strings}, using the optional \a collator.
+    If either \a left or \a right holds a string, then the variants are
+    compared \l{QVariant::toString()}{as strings}, using the optional
+    \a collator.
 
     Otherwise, the implementation compares \a left and \a right using
     QVariant::compare(), which can only provide a partial ordering. If the
@@ -821,18 +822,26 @@ Qt::weak_ordering QAbstractItemModel::compareDataImpl(const QVariant &left, cons
     if (!right.isValid())
         return Qt::weak_ordering::less;
 
-    if (left.userType() != QMetaType::QString) {
+    // The strategy must not depend on the order of the arguments, otherwise
+    // compareData(a, b) and compareData(b, a) might both return less.
+    if (left.userType() != QMetaType::QString && right.userType() != QMetaType::QString) {
         QPartialOrdering partialOrder = QVariant::compare(left, right);
         if (partialOrder == Qt::partial_ordering::unordered && right.metaType() != left.metaType()) {
-            if (right.canConvert(left.metaType())) {
-                QVariant rightAsLeft = right;
-                rightAsLeft.convert(left.metaType());
-                partialOrder = QVariant::compare(left, rightAsLeft);
-            } else if (left.canConvert(right.metaType())) {
-                QVariant leftAsRight = left;
-                leftAsRight.convert(right.metaType());
-                partialOrder = QVariant::compare(leftAsRight, right);
-            }
+            // Prefer converting the variant with the higher type ID into the
+            // type of the other.
+            const bool convertRight = left.metaType().id() < right.metaType().id();
+            const QVariant &first = convertRight ? right : left;
+            const QVariant &second = convertRight ? left : right;
+            const auto compareConverted = [&](const QVariant &from, const QVariant &to) {
+                QVariant converted = from;
+                converted.convert(to.metaType());
+                return &from == &left ? QVariant::compare(converted, right)
+                                      : QVariant::compare(left, converted);
+            };
+            if (first.canConvert(second.metaType()))
+                partialOrder = compareConverted(first, second);
+            else if (second.canConvert(first.metaType()))
+                partialOrder = compareConverted(second, first);
         }
         if (partialOrder == Qt::partial_ordering::equivalent)
             return Qt::weak_ordering::equivalent;
@@ -842,7 +851,7 @@ Qt::weak_ordering QAbstractItemModel::compareDataImpl(const QVariant &left, cons
             return Qt::weak_ordering::greater;
     }
 
-    // unordered so far, or QString in the first place - compare as strings
+    // unordered so far, or at least one QString in the first place - compare as strings
     const int res = collator
                   ? collator->compare(left.toString(), right.toString())
                   : left.toString().compare(right.toString());

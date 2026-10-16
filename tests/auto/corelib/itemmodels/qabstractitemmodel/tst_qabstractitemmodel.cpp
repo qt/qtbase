@@ -2739,6 +2739,17 @@ void tst_QAbstractItemModel::compareData_data()
     redIcon.fill(Qt::red);
     addCompareDataRow("green icon", greenIcon, "red icon", redIcon, false);
     addCompareDataRow("red icon", redIcon, "green icon", greenIcon, false);
+
+    // QTBUG-150782: if either side is a string, compare as strings,
+    // independent of the order of the arguments
+    addCompareDataRow(u"40"_s, 5, true);
+    addCompareDataRow(100, u"20"_s, true);
+    addCompareDataRow(u"5"_s, true, true);
+    addCompareDataRow(u"abc"_s, false, true);
+    addCompareDataRow(QByteArray("40"), u"5"_s, true);
+    addCompareDataRow(u"5"_s, QByteArray("zzz"), true);
+    addCompareDataRow(u"40"_s, QChar('7'), true);
+    addCompareDataRow(QDate(2020, 1, 1), 5, true);
 }
 
 void tst_QAbstractItemModel::compareData()
@@ -2753,10 +2764,16 @@ void tst_QAbstractItemModel::compareData()
     QFETCH(bool, expected);
     QFETCH(QCollator, collator);
 
-    bool lessThan = OrderingModel::compareData(lhs, rhs, collator) < 0;
+    const Qt::weak_ordering ordering = OrderingModel::compareData(lhs, rhs, collator);
+    bool lessThan = ordering < 0;
 
     QEXPECT_FAIL("today<now:true", "Comparing QDate with QDateTime compares only QDate", Continue);
     QCOMPARE(lessThan, expected);
+
+    // swapping the arguments must reverse the result (QTBUG-150782)
+    const Qt::weak_ordering reversed = OrderingModel::compareData(rhs, lhs, collator);
+    QCOMPARE(reversed < 0, ordering > 0);
+    QCOMPARE(reversed > 0, ordering < 0);
 }
 
 QTEST_MAIN(tst_QAbstractItemModel)
