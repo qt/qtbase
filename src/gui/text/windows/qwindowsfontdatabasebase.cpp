@@ -180,9 +180,15 @@ void QWindowsFontDatabaseBase::EmbeddedFont::updateFromOS2Table(QFontEngine *fon
 {
     TableDirectory *os2TableEntry = static_cast<TableDirectory *>(tableDirectoryEntry("OS/2"));
     if (os2TableEntry != nullptr) {
+        const quint32 os2TableOffset = qFromBigEndian<quint32>(os2TableEntry->offset);
+        if (Q_UNLIKELY(qsizetype(os2TableOffset) + qsizetype(sizeof(OS2Table)) > m_fontData.size())) {
+            qCWarning(lcQpaFonts) << "QWindowsFontDatabaseBase::EmbeddedFont::updateFromOS2Table: "
+                                  << "Invalid OS/2 table offset:" << os2TableOffset;
+            return;
+        }
+
         const OS2Table *os2Table =
-                reinterpret_cast<const OS2Table *>(m_fontData.constData()
-                                                   + qFromBigEndian<quint32>(os2TableEntry->offset));
+                reinterpret_cast<const OS2Table *>(m_fontData.constData() + os2TableOffset);
 
         bool italic = qFromBigEndian<quint16>(os2Table->selection)  & (1 << 0);
         bool oblique = qFromBigEndian<quint16>(os2Table->selection) & (1 << 9);

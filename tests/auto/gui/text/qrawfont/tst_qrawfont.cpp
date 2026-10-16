@@ -3,6 +3,8 @@
 
 #include <QTest>
 #include <QtGui/QFontDatabase>
+#include <QtCore/QFile>
+#include <QtCore/QtEndian>
 
 #include <qrawfont.h>
 #include <private/qrawfont_p.h>
@@ -63,6 +65,7 @@ private slots:
     void multipleRawFontsFromData();
 
     void rawFontFromInvalidData();
+    void rawFontFromInvalidOs2Table();
 
     void kernedAdvances();
 
@@ -980,6 +983,54 @@ void tst_QRawFont::rawFontFromInvalidData()
     font.loadFromData(invalidData, 10, QFont::PreferDefaultHinting);
 
     QVERIFY(!font.isValid());
+}
+
+void tst_QRawFont::rawFontFromInvalidOs2Table()
+{
+    // Take a valid font and poison the OS/2 entry in the sfnt table directory
+    // with out-of-bounds offsets. On Windows this reaches
+    // QWindowsFontDatabaseBase::EmbeddedFont::updateFromOS2Table(), which
+    // dereferences the table at the given offset. Loading must not crash,
+    // regardless of whether the platform accepts or rejects the font.
+    QFile file(testFontOs2V1);
+    QVERIFY(file.open(QIODevice::ReadOnly));
+    const QByteArray original = file.readAll();
+    file.close();
+    QVERIFY(original.size() > 12);
+
+    // sfnt header: quint32 scalerType, quint16 numTables, ... then numTables
+    // 16-byte directory entries (quint8 tag[4]; quint32 checkSum, offset, length)
+    // starting at byte 12. The offset field is at entry + 8.
+    const auto *base = reinterpret_cast<const uchar *>(original.constData());
+    const quint16 numTables = qFromBigEndian<quint16>(base + 4);
+    int os2OffsetField = -1;
+    for (int i = 0; i < numTables; ++i) {
+        const int entry = 12 + i * 16;
+        if (entry + 16 > original.size())
+            break;
+        if (memcmp(original.constData() + entry, "OS/2", 4) == 0) {
+            os2OffsetField = entry + 8;
+            break;
+        }
+    }
+    QVERIFY2(os2OffsetField >= 0, "test font has no OS/2 table");
+
+    const quint32 badOffsets[] = {
+        quint32(original.size()),         // start exactly at EOF
+        quint32(original.size()) + 100,   // past EOF
+        0x40000000u,                      // wildly out of bounds
+        0xfffffff0u                       // near UINT32_MAX (integer-overflow bait)
+    };
+
+    for (quint32 badOffset : badOffsets) {
+        QByteArray data = original;
+        qToBigEndian<quint32>(badOffset,
+                              reinterpret_cast<uchar *>(data.data()) + os2OffsetField);
+
+        QRawFont font;
+        font.loadFromData(data, 10, QFont::PreferDefaultHinting);
+        // Reaching here without crashing is the actual assertion.
+    }
 }
 
 #define FUZZY_LTEQ(X, Y) (X < Y || qFuzzyCompare(X, Y))
