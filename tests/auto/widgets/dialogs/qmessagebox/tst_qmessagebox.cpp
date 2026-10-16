@@ -17,6 +17,8 @@
 #include <qpa/qplatformtheme.h>
 #include <private/qguiapplication_p.h>
 
+using namespace Qt::StringLiterals;
+
 class tst_QMessageBox : public QObject
 {
     Q_OBJECT
@@ -39,6 +41,7 @@ private slots:
     void button();
     void statics_data();
     void statics();
+    void about_data();
     void about();
     void detailsText();
     void detailsButtonText();
@@ -460,23 +463,46 @@ void tst_QMessageBox::shortcut()
 }
 #endif
 
+enum class About { App, Qt };
+
+void tst_QMessageBox::about_data()
+{
+    QTest::addColumn<About>("what");
+    QTest::addColumn<int>("keyToSend");
+
+    constexpr auto row = [](const char *name, int keyToSend) {
+        for (About what : {About::App, About::Qt}) {
+            QTest::addRow("about%s-%s",
+                          what == About::Qt ? "Qt" : "",
+                          name)
+                << what << keyToSend;
+        }
+    };
+#define ROW(x) row(#x, x);
+    ROW(Qt::Key_Escape);
+    ROW(Qt::Key_Enter);
+    ROW(ExecCloseHelper::CloseWindow);
+#undef ROW
+}
+
 void tst_QMessageBox::about()
 {
-    ExecCloseHelper closeHelper;
-    closeHelper.start(Qt::Key_Escape);
-    QMessageBox::about(nullptr, "Caption", "This is an auto test");
-    // On Mac, about and aboutQt are not modal, so we need to
-    // explicitly run the event loop
-#ifdef Q_OS_MACOS
-    QTRY_VERIFY(closeHelper.done());
-#else
-    QVERIFY(closeHelper.done());
-#endif
+    QFETCH(const About, what);
+    QFETCH(const int, keyToSend);
 
-    const int keyToSend = Qt::Key_Enter;
+    ExecCloseHelper closeHelper;
 
     closeHelper.start(keyToSend);
-    QMessageBox::aboutQt(nullptr, "Caption");
+    switch (what) {
+    case About::App:
+        QMessageBox::about(nullptr, u"Caption"_s, u"This is an auto test"_s);
+        break;
+    case About::Qt:
+        QMessageBox::aboutQt(nullptr, u"Caption"_s);
+        break;
+    }
+    // On Mac, about and aboutQt are not modal, so we need to
+    // explicitly run the event loop
 #ifdef Q_OS_MACOS
     QTRY_VERIFY(closeHelper.done());
 #else
