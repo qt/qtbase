@@ -8146,7 +8146,10 @@ QPainterPath QGraphicsPathItem::path() const
 /*!
     Sets the item's path to be the given \a path.
 
-    \sa path()
+    The path is in item coordinates, so this function doesn't move the
+    item in the scene. Use setPos() to change the item's position.
+
+    \sa path(), setPos()
 */
 void QGraphicsPathItem::setPath(const QPainterPath &path)
 {
@@ -8272,6 +8275,14 @@ QVariant QGraphicsPathItem::extension(const QVariant &variant) const
     constructor, or call the setRect() function. The rect() function
     returns the current rectangle.
 
+    The rectangle is in item coordinates. Changing it changes where the
+    rectangle is drawn relative to the item's origin, but doesn't move
+    the item itself. To place the item in the scene, call setPos(). A
+    common approach is to give the rectangle its top-left corner at
+    (0, 0) and use setPos() for the position:
+
+    \snippet code/src_gui_graphicsview_qgraphicsitem.cpp 20
+
     \image graphicsview-rectitem.png
            {Rectangle drawn near the origin}
 
@@ -8364,7 +8375,10 @@ QRectF QGraphicsRectItem::rect() const
 
     Sets the item's rectangle to be the given \a rectangle.
 
-    \sa rect()
+    The rectangle is in item coordinates, so this function doesn't move
+    the item in the scene. Use setPos() to change the item's position.
+
+    \sa rect(), setPos()
 */
 void QGraphicsRectItem::setRect(const QRectF &rect)
 {
@@ -8604,7 +8618,10 @@ QRectF QGraphicsEllipseItem::rect() const
     describes the top of the ellipse. The height and width of the rectangle
     describe the height and width of the ellipse.
 
-    \sa rect(), QPainter::drawEllipse()
+    The rectangle is in item coordinates, so this function doesn't move
+    the item in the scene. Use setPos() to change the item's position.
+
+    \sa rect(), setPos(), QPainter::drawEllipse()
 */
 void QGraphicsEllipseItem::setRect(const QRectF &rect)
 {
@@ -8878,7 +8895,10 @@ QPolygonF QGraphicsPolygonItem::polygon() const
 /*!
     Sets the item's polygon to be the given \a polygon.
 
-    \sa polygon()
+    The polygon is in item coordinates, so this function doesn't move
+    the item in the scene. Use setPos() to change the item's position.
+
+    \sa polygon(), setPos()
 */
 void QGraphicsPolygonItem::setPolygon(const QPolygonF &polygon)
 {
@@ -9139,7 +9159,10 @@ QLineF QGraphicsLineItem::line() const
 /*!
     Sets the item's line to be the given \a line.
 
-    \sa line()
+    The line is in item coordinates, so this function doesn't move the
+    item in the scene. Use setPos() to change the item's position.
+
+    \sa line(), setPos()
 */
 void QGraphicsLineItem::setLine(const QLineF &line)
 {
