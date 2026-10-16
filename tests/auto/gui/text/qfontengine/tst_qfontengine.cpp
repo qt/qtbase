@@ -76,6 +76,7 @@ private slots:
 
 #if !defined(QFONTENGINE_BENCHMARK)
     void glyphSizeLimit();
+    void colrv1GlyphSizeLimit();
     void zeroLengthTable();
     void truncatedFontCollection();
 #endif
@@ -355,6 +356,71 @@ void tst_QFontEngine::glyphSizeLimit()
     QVERIFY(fontEngine->alphaMapForGlyph(normalGlyph, largeScale).isNull());
     QVERIFY(fontEngine->alphaMapForGlyph(normalGlyph, QFixedPoint(), largeScale).isNull());
     QVERIFY(fontEngine->alphaRGBMapForGlyph(normalGlyph, QFixedPoint(), largeScale).isNull());
+}
+
+void tst_QFontEngine::colrv1GlyphSizeLimit()
+{
+    QFETCH_GLOBAL(const QFontEngine::Type, engineType);
+    if (engineType == QFontEngine::Win)
+        QSKIP("The GDI engine cannot load COLRv1 fonts");
+
+    // testfont_colrv1_glyphsize.ttf has four COLRv1 color glyphs, each filling a box
+    // inside the em square with a solid red paint:
+    //  'A': a normally sized glyph, with a ClipBox matching its outline
+    //  'B': has a ClipBox which spans ~32x the em square
+    //  'C': has no ClipBox, but scales the paint graph by 32x using a PaintTransform
+    //  'D': has no ClipBox, but scales the paint graph horizontally by 3417x using a
+    //       PaintTransform. At 24 px, this makes it ~65600 px wide (more than fits in
+    //       16 bits) and only ~19 px high.
+    const int fontId = QFontDatabase::addApplicationFont(QFINDTESTDATA("testfont_colrv1_glyphsize.ttf"));
+    QVERIFY(fontId >= 0);
+    const auto cleanup = qScopeGuard([&] { QFontDatabase::removeApplicationFont(fontId); });
+    const QStringList families = QFontDatabase::applicationFontFamilies(fontId);
+    QVERIFY(!families.isEmpty());
+
+    QFont font(families.constFirst());
+    font.setStyleStrategy(QFont::NoFontMerging);
+    font.setPixelSize(24); // glyph size limit becomes max(256, 16 * 24) = 384 px per side
+
+    QFontEngine *fontEngine = QFontPrivate::get(font)->engineForScript(QChar::Script_Common);
+    QVERIFY(fontEngine != nullptr);
+    QCOMPARE(fontEngine->type(), engineType);
+
+    const glyph_t normalGlyph = fontEngine->glyphIndex('A');
+    const glyph_t oversizedClipBoxGlyph = fontEngine->glyphIndex('B');
+    const glyph_t oversizedTransformGlyph = fontEngine->glyphIndex('C');
+    const glyph_t oversizedWideGlyph = fontEngine->glyphIndex('D');
+    QVERIFY(normalGlyph != 0);
+    QVERIFY(oversizedClipBoxGlyph != 0);
+    QVERIFY(oversizedTransformGlyph != 0);
+    QVERIFY(oversizedWideGlyph != 0);
+
+    // Make sure the glyph is actually rendered through the COLRv1 paint graph, otherwise the
+    // remainder of the test is meaningless.
+    const QImage normalImage = fontEngine->bitmapForGlyph(normalGlyph, QFixedPoint(),
+                                                          QTransform(), Qt::black);
+    if (normalImage.isNull())
+        QSKIP("This engine does not support COLRv1");
+    QVERIFY(!normalImage.isNull());
+    const QImage normalImageArgb = normalImage.convertToFormat(QImage::Format_ARGB32);
+    bool hasRedPixel = false;
+    for (int y = 0; y < normalImageArgb.height() && !hasRedPixel; ++y) {
+        for (int x = 0; x < normalImageArgb.width() && !hasRedPixel; ++x)
+            hasRedPixel = normalImageArgb.pixel(x, y) == qRgba(255, 0, 0, 255);
+    }
+    if (!hasRedPixel)
+        QSKIP("COLRv1 is not supported by this font engine");
+
+    QVERIFY(fontEngine->bitmapForGlyph(oversizedClipBoxGlyph, QFixedPoint(),
+                                       QTransform(), Qt::black).isNull());
+    QVERIFY(fontEngine->bitmapForGlyph(oversizedTransformGlyph, QFixedPoint(),
+                                       QTransform(), Qt::black).isNull());
+
+    // The width of this glyph wraps around if truncated to 16 bits, so the limit has to be
+    // checked against the untruncated bounds. It is kept short so that the allocation stays
+    // small if it is not refused.
+    QVERIFY(fontEngine->bitmapForGlyph(oversizedWideGlyph, QFixedPoint(),
+                                       QTransform(), Qt::black).isNull());
 }
 
 void tst_QFontEngine::zeroLengthTable()
