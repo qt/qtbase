@@ -323,8 +323,8 @@ void QXcbClipboard::setMimeData(QMimeData *data, QClipboard::Mode mode)
         m_timestamp[mode] = XCB_CURRENT_TIME;
     }
 
-    if (connection()->time() == XCB_CURRENT_TIME)
-        connection()->setTime(connection()->getTimestamp());
+    // fresh timestamp in case a clipboard manager takes over the selection with a newer time
+    connection()->setTime(connection()->getTimestamp());
 
     if (data) {
         newOwner = connection()->qtSelectionOwner();
