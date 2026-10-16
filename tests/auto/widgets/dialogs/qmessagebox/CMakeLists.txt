@@ -18,5 +18,5 @@ qt_internal_add_test(tst_qmessagebox
         Qt::CorePrivate
         Qt::Gui
         Qt::GuiPrivate
-        Qt::Widgets
+        Qt::WidgetsPrivate
 )

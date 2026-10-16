@@ -12,6 +12,8 @@
 #include <QApplication>
 #include <QPushButton>
 #include <QDialogButtonBox>
+#include <QtWidgets/private/qdialog_p.h>
+
 #include <QSignalSpy>
 
 #include <qpa/qplatformtheme.h>
@@ -469,16 +471,18 @@ void tst_QMessageBox::about_data()
 {
     QTest::addColumn<About>("what");
     QTest::addColumn<int>("keyToSend");
+    QTest::addColumn<bool>("withParent");
 
-    constexpr auto row = [](const char *name, int keyToSend) {
+    constexpr auto row = [](const char *name, int keyToSend, bool withParent) {
         for (About what : {About::App, About::Qt}) {
-            QTest::addRow("about%s-%s",
+            QTest::addRow("about%s-parent%s-%s",
                           what == About::Qt ? "Qt" : "",
+                          withParent ? "ed" : "less",
                           name)
-                << what << keyToSend;
+                << what << keyToSend << withParent;
         }
     };
-#define ROW(x) row(#x, x);
+#define ROW(x) row(#x, x, true); row(#x, x, false);
     ROW(Qt::Key_Escape);
     ROW(Qt::Key_Enter);
     ROW(ExecCloseHelper::CloseWindow);
@@ -489,16 +493,19 @@ void tst_QMessageBox::about()
 {
     QFETCH(const About, what);
     QFETCH(const int, keyToSend);
+    QFETCH(const bool, withParent);
 
     ExecCloseHelper closeHelper;
+
+    QAutoPointer parent(withParent ? new QDialog : nullptr);
 
     closeHelper.start(keyToSend);
     switch (what) {
     case About::App:
-        QMessageBox::about(nullptr, u"Caption"_s, u"This is an auto test"_s);
+        QMessageBox::about(parent.get(), u"Caption"_s, u"This is an auto test"_s);
         break;
     case About::Qt:
-        QMessageBox::aboutQt(nullptr, u"Caption"_s);
+        QMessageBox::aboutQt(parent.get(), u"Caption"_s);
         break;
     }
     // On Mac, about and aboutQt are not modal, so we need to
