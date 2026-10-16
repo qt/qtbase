@@ -53,6 +53,7 @@ private slots:
 #ifndef QT_NO_STYLE_FUSION
     void testFusionStyle();
     void testContrastFusionPalette();
+    void fusionDisabledCheckbox();
 #endif
     void testWindowsStyle();
 #if defined(Q_OS_WIN) && !defined(QT_NO_STYLE_WINDOWSVISTA)
@@ -336,6 +337,44 @@ void tst_QStyle::testContrastFusionPalette()
                             .arg(WCAG21EnhancedContrastRatio, 0, 'f', 1)));
     }
 }
+
+void tst_QStyle::fusionDisabledCheckbox()
+{
+    QScopedPointer<QStyle> style(QStyleFactory::create("Fusion"));
+    QVERIFY(!style.isNull());
+
+    QPalette palette;
+    for (QPalette::ColorGroup group : { QPalette::Active, QPalette::Inactive,
+                                        QPalette::Disabled }) {
+        palette.setColor(group, QPalette::Window, QColor(53, 53, 53));
+        palette.setColor(group, QPalette::WindowText, Qt::white);
+        palette.setColor(group, QPalette::Base, QColor(42, 42, 42));
+        palette.setColor(group, QPalette::Text, Qt::white);
+    }
+
+    const auto render = [&](bool enabled, QStyle::State state) {
+        QImage image(20, 20, QImage::Format_ARGB32_Premultiplied);
+        image.fill(palette.window().color());
+
+        QStyleOptionButton option;
+        option.rect = QRect(2, 2, 16, 16);
+        option.palette = palette;
+        option.palette.setCurrentColorGroup(enabled ? QPalette::Active : QPalette::Disabled);
+        option.state = state;
+        if (enabled)
+            option.state |= QStyle::State_Enabled;
+
+        QPainter painter(&image);
+        style->drawPrimitive(QStyle::PE_IndicatorCheckBox, &option, &painter);
+        return image;
+    };
+
+    for (QStyle::State state : { QStyle::State_Off, QStyle::State_On,
+                                 QStyle::State_NoChange }) {
+        QVERIFY(render(true, state) != render(false, state));
+    }
+}
+
 #endif
 
 void tst_QStyle::testWindowsStyle()

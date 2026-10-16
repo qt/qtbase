@@ -570,13 +570,18 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
             painter->translate(0.5, 0.5);
             const QRect rect = option->rect.adjusted(0, 0, -1, -1);
 
+            const bool enabled = option->state & State_Enabled;
+            const QColor windowColor = option->palette.window().color();
+
             if (option->state & State_Sunken) {
                 const QColor pressedColor = mergedColors(option->palette.base().color(),
                                                          option->palette.windowText().color(), 85);
                 painter->setBrush(pressedColor);
             } else {
                 // Gradient fill
-                const QColor baseColor = option->palette.base().color();
+                const QColor baseColor = enabled
+                        ? option->palette.base().color()
+                        : mergedColors(option->palette.base().color(), windowColor, 40);
                 QLinearGradient gradient(rect.topLeft(), rect.bottomLeft());
                 gradient.setColorAt(0, baseColor.darker(115));
                 gradient.setColorAt(0.15, baseColor);
@@ -584,14 +589,18 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
                 painter->setBrush(gradient);
             }
 
+            const QColor borderColor = colorScheme() == Qt::ColorScheme::Dark
+                    ? outline.lighter(240)
+                    : outline.lighter(110);
             if (option->state & State_HasFocus && option->state & State_KeyboardFocusChange)
                 painter->setPen(highlightedOutline);
+            else if (enabled)
+                painter->setPen(borderColor);
             else
-                painter->setPen(colorScheme() == Qt::ColorScheme::Dark ? outline.lighter(240)
-                                                                       : outline.lighter(110));
+                painter->setPen(mergedColors(borderColor, windowColor, 50));
             painter->drawRect(rect);
 
-            QColor checkMarkColor = option->palette.text().color().darker(120);
+            QColor checkMarkColor = option->palette.buttonText().color();
             const qreal checkMarkPadding = 1 + rect.width() * 0.13; // at least one pixel padding
 
             if (checkbox->state & State_NoChange) {
@@ -610,7 +619,7 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
                 qreal penWidth = QStyleHelper::dpiScaled(1.5, dpi);
                 penWidth = qMax<qreal>(penWidth, 0.13 * rect.height());
                 penWidth = qMin<qreal>(penWidth, 0.20 * rect.height());
-                checkMarkColor.setAlpha(210);
+                checkMarkColor.setAlpha(enabled ? 255 : 130);
                 const QPen checkPen = QPen(checkMarkColor, penWidth);
                 painter->translate(dpiScaled(-0.8, dpi), dpiScaled(0.5, dpi));
                 painter->setPen(checkPen);
