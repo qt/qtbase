@@ -1,3 +1,58 @@
+CHANGES BETWEEN 2.14.3 and 2.15.0 (2026-Oct-12)
+
+  I. IMPORTANT CHANGES
+
+  - Support for the ISO Open Font  Format, Edition 5 (released in July
+    2026) has been contributed by  Behdad Esfahbod, using various LLMs
+    for deriving  basic code from HarfBuzz  and other implementations,
+    followed by manual fine-tuning, mainly for greater speed.
+
+    . The  new  'VARC' table  allows  a  file  size reduction  of  CJK
+      Variation fonts by up to 90%.
+
+    . OpenType fonts with  more than 65536 glyphs can  now be handled.
+      The  new tables  related to  this feature  are all  written with
+      uppercase  letters:  'MAXP',  'GLYF',  'LOCA',  'HHEA',  'VHEA',
+      'HMTX', 'VMTX', 'GVAR', 'DMAP'.
+
+    . The new 'GLYF' table also supports outlines with mixed cubic and
+      conic segments.
+
+  - The anti-aliased rasterizer now uses dynamic heap memory for large
+    glyphs,  which  significantly improves  its performance  at  sizes
+    above 40 ppem.
+
+  - An  experimental  HVF  driver   has  been  contributed  by  Apple,
+    currently available on macOS only.
+
+  - The  TrueType   version  40  interpreter  got   several  ClearType
+    rendering  improvements.   It  now   better  honors  'gasp'  table
+    requests  for  symmetric  grid  fitting and  smoothing,  and  more
+    closely  emulates  native   ClearType  horizontal  hinting.   This
+    includes improved handling of rounded point instructions, `ROUND`,
+    CVT cut-in, minimum distance, and composite glyph positioning.
+
+    These changes improve  the rendering of fonts such  as 'Segoe UI',
+    'Calibri', 'Corbel', 'Constantia', 'Malgun Gothic', 'SimSun',  and
+    'Comic Sans MS'.
+
+
+  II. IMPORTANT BUG FIXES
+
+  - Continued efforts to scrutinize FreeType with AI tools resulted in
+    more bugs  being fixed, some with  potential security implications
+    (e.g., CVE-2026-95512).
+
+
+  III. MISCELLANEOUS
+
+  - The PFR driver returned wrong kerning values in some cases.
+
+  - A port to the Plan 9 operating system is now available.
+
+
+======================================================================
+
 CHANGES BETWEEN 2.14.2 and 2.14.3 (2026-Mar-22)
 
   I. IMPORTANT BUG FIXES

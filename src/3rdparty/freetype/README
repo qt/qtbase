@@ -1,4 +1,4 @@
-FreeType 2.14.3
+FreeType 2.15.0
 ===============
 
 Homepage: https://freetype.org
@@ -32,9 +32,9 @@ sites.  Go to
 
 and download one of the following files.
 
-  freetype-doc-2.14.3.tar.xz
-  freetype-doc-2.14.3.tar.gz
-  ftdoc2143.zip
+  freetype-doc-2.15.0.tar.xz
+  freetype-doc-2.15.0.tar.gz
+  ftdoc2150.zip
 
 To view the documentation online, go to
 
