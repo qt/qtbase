@@ -180,27 +180,27 @@ void QAccessibleCache::sendObjectDestroyedEvent(QObject *obj)
 
 void QAccessibleCache::deleteInterface(QAccessible::Id id, QObject *obj)
 {
-    const auto it = idToInterface.find(id);
-    if (it == idToInterface.end()) // the interface may be deleted already
-        return;
-
-    QAccessibleInterface *iface = *it;
-    qCDebug(lcAccessibilityCache) << "delete - id:" << id << " iface:" << iface;
-    if (!iface) {
-        idToInterface.erase(it);
+    QAccessibleInterface *iface = idToInterface.value(id);
+    if (!iface) { // the interface may be deleted already
+        idToInterface.remove(id);
         return;
     }
+    qCDebug(lcAccessibilityCache) << "delete - id:" << id << " iface:" << iface;
 
     // QObjects send this from their destructors, but the interfaces
     // with no associated object call deleteInterface directly.
     if (!inCacheDestructor && !obj && !iface->object()) {
         if (QGuiApplicationPrivate::is_app_running && !QGuiApplicationPrivate::is_app_closing && QAccessible::isActive()) {
             QAccessibleObjectDestroyedEvent event(id);
+            // Event handlers might modify the cache, so don't hold on to
+            // iterators across this call.
             QAccessible::updateAccessibility(&event);
+            if (idToInterface.value(id) != iface) // deleted while handling the event
+                return;
         }
     }
 
-    idToInterface.erase(it);
+    idToInterface.remove(id);
     interfaceToId.take(iface);
     if (!obj)
         obj = iface->object();

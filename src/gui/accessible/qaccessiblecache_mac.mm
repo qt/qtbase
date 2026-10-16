@@ -14,21 +14,19 @@ QT_BEGIN_NAMESPACE
 bool QAccessibleCache::insertElement(QAccessible::Id axid,
                                      QT_MANGLE_NAMESPACE(QMacAccessibilityElement) *element) const
 {
-    if (const auto it = accessibleElements.find(axid); it == accessibleElements.end()) {
-        accessibleElements[axid] = element;
-        [element retain];
-        return true;
-    } else if (it.value() != element) {
-        auto *oldElement = it.value();
-        // this might invalidate the iterator
+    auto *oldElement = accessibleElements.value(axid);
+    if (oldElement == element)
+        return false;
+
+    // Update the map before invalidating and releasing the old element, as
+    // that might re-enter the cache.
+    [element retain];
+    accessibleElements.insert(axid, element);
+    if (oldElement) {
         [oldElement invalidate];
         [oldElement release];
-
-        accessibleElements[axid] = element;
-        [element retain];
-        return true;
     }
-    return false;
+    return true;
 }
 
 void QAccessibleCache::removeAccessibleElement(QAccessible::Id axid)
@@ -36,9 +34,10 @@ void QAccessibleCache::removeAccessibleElement(QAccessible::Id axid)
     // Some QAccessibleInterface instances in the cache didn't get created in
     // response to a query, but when we emit events. So we might get called with
     // and axid for which we don't have any element (yet).
-    if (QT_MANGLE_NAMESPACE(QMacAccessibilityElement) *element = elementForId(axid)) {
+    // Remove the element from the map before invalidating and releasing it,
+    // as that might re-enter the cache.
+    if (QT_MANGLE_NAMESPACE(QMacAccessibilityElement) *element = accessibleElements.take(axid)) {
         [element invalidate];
-        accessibleElements.remove(axid);
         [element release];
     }
 }
