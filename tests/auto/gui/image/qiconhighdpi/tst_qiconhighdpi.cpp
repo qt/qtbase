@@ -1,8 +1,9 @@
 // Copyright (C) 2017 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
+#include <QIcon>
+#include <QTemporaryFile>
 #include <QTest>
-#include <qicon.h>
 
 class tst_QIconHighDpi : public QObject
 {
@@ -18,6 +19,7 @@ private slots:
     void addPixmap();
     void ninePatch();
     void preferUpscale();
+    void dontModifyDprInCacheEntry();
 };
 
 tst_QIconHighDpi::tst_QIconHighDpi()
@@ -221,6 +223,35 @@ void tst_QIconHighDpi::preferUpscale()
     addPixmapWithDpr(":/icons/testtheme/22x22@2/actions/appointment-new.png", 2);
 
     QCOMPARE(icon.pixmap(QSize(22, 22), 1.25f).devicePixelRatio(), 1.25f);
+}
+
+void tst_QIconHighDpi::dontModifyDprInCacheEntry()
+{
+    std::vector<std::unique_ptr<QTemporaryFile>> files;
+    QIcon icon;
+    const auto createImage = [&](int size, QColor col) {
+        QImage img(QSize(size, size), QImage::Format_ARGB32);
+        img.fill(col);
+        files.emplace_back(std::make_unique<QTemporaryFile>());
+        QTemporaryFile *f = files.back().get();
+        if (!f->open() || !img.save(f, "PNG"))
+            return false;
+        icon.addFile(f->fileName());
+        return true;
+    };
+    QVERIFY(createImage(16, Qt::red));
+    QVERIFY(createImage(20, Qt::green));
+    QVERIFY(createImage(32, Qt::blue));
+
+    auto checkPixmap = [&](qreal dpr) {
+        constexpr QSize reqSize(16, 16);
+        const QPixmap pm = icon.pixmap(icon.actualSize(reqSize), dpr);
+        const QRgb c = pm.toImage().pixel(pm.rect().center());
+        return QColor(c);
+    };
+    QCOMPARE(checkPixmap(1.25), Qt::green);
+    QCOMPARE(checkPixmap(2.00), Qt::blue);
+    QCOMPARE(checkPixmap(1.25), Qt::green);
 }
 
 int main(int argc, char *argv[])

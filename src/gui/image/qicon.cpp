@@ -317,11 +317,8 @@ QPixmapIconEngineEntry *QPixmapIconEngine::bestMatch(const QSize &size, qreal sc
             imageReader.read(&image);
         }
         if (!image.isNull()) {
-            pe->pixmap.convertFromImage(image);
-            if (!pe->pixmap.isNull()) {
+            if (pe->pixmap.convertFromImage(image))
                 pe->size = pe->pixmap.size();
-                pe->pixmap.setDevicePixelRatio(scale);
-            }
         }
         if (!pe->size.isValid()) {
             removePixmapEntry(pe);
