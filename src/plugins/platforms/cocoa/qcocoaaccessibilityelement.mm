@@ -245,7 +245,13 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
 - (BOOL)isEqual:(id)object {
     if ([object isKindOfClass:[QMacAccessibilityElement class]]) {
         QMacAccessibilityElement *other = object;
-        return other->axid == axid && other->synthesizedRole == synthesizedRole;
+        // invalidated elements are only equal to themselves
+        if (!axid)
+            return other == self;
+        // synthesized rows, columns, and cells share the table's axid
+        return other->axid == axid && other->synthesizedRole == synthesizedRole
+                && (!synthesizedRole
+                    || (other->m_rowIndex == m_rowIndex && other->m_columnIndex == m_columnIndex));
     } else {
         return NO;
     }
