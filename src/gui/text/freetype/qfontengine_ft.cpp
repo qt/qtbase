@@ -2129,6 +2129,32 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
                 src += slot->bitmap.pitch;
                 dstPixel += info.width;
             }
+        } else if (format == Format_Mono) {
+            // Some fonts have grayscale bitmaps also when we requested mono
+            uchar *src = slot->bitmap.buffer;
+            uchar *dst = glyph_buffer.get();
+            memset(dst, 0, glyph_buffer_size);
+            int h = slot->bitmap.rows;
+            while (h--) {
+                for (int x = 0; x < int{info.width}; ++x) {
+                    if (src[x] >= 0x80)
+                        dst[x >> 3] |= 0x80 >> (x & 7);
+                }
+                dst += pitch;
+                src += slot->bitmap.pitch;
+            }
+        } else if (format == Format_A32) {
+            uchar *src = slot->bitmap.buffer;
+            uint *dstPixel = reinterpret_cast<uint *>(glyph_buffer.get());
+            int h = slot->bitmap.rows;
+            while (h--) {
+                for (int x = 0; x < int{info.width}; ++x) {
+                    const uint alpha = src[x];
+                    dstPixel[x] = (0xFFU << 24) | (alpha << 16) | (alpha << 8) | alpha;
+                }
+                src += slot->bitmap.pitch;
+                dstPixel += info.width;
+            }
         }
     } else if (slot->bitmap.pixel_mode == FT_PIXEL_MODE_LCD) {
         Q_ASSERT(format == Format_A32);

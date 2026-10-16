@@ -30,8 +30,15 @@ set_source_files_properties("../../../shared/resources/testfont_colrv1_glyphsize
 set_source_files_properties("../../../shared/resources/testfont_zerolengthtable.ttf"
     PROPERTIES QT_RESOURCE_ALIAS "testfont_zerolengthtable.ttf"
 )
+
 set_source_files_properties("../../../shared/resources/testfont_colrv1_deep.ttf"
     PROPERTIES QT_RESOURCE_ALIAS "testfont_colrv1_deep.ttf"
+)
+set_source_files_properties("../../../shared/resources/testfont_ebdt8bit.ttf"
+    PROPERTIES QT_RESOURCE_ALIAS "testfont_ebdt8bit.ttf"
+)
+set_source_files_properties("../../../shared/resources/testfont_ebdt8bit_bitmaponly.ttf"
+    PROPERTIES QT_RESOURCE_ALIAS "testfont_ebdt8bit_bitmaponly.ttf"
 )
 set(testfonts_resource_files
     "../../../shared/resources/test.ttf"
@@ -41,6 +48,8 @@ set(testfonts_resource_files
     "../../../shared/resources/testfont_colrv1_glyphsize.ttf"
     "../../../shared/resources/testfont_zerolengthtable.ttf"
     "../../../shared/resources/testfont_colrv1_deep.ttf"
+    "../../../shared/resources/testfont_ebdt8bit.ttf"
+    "../../../shared/resources/testfont_ebdt8bit_bitmaponly.ttf"
 )
 
 qt_internal_add_test(tst_qfontengine
