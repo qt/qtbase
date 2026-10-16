@@ -1716,6 +1716,12 @@ QFontEngineFT::Glyph *QFontEngineFT::loadColrv1Glyph(QGlyphSet *set,
     // If requested, we now render the scene graph into an image using QPainter
     QImage destinationImage;
     if (!fetchMetricsOnly && !bounds.size().isEmpty()) {
+        if (glyphBoundingBoxExceedsLimit(bounds.width(),
+                                         bounds.height(),
+                                         effectivePixelSizeSquared(originalXform))) {
+            return nullptr;
+        }
+
         FT_Palette_Data paletteData;
         if (FT_Palette_Data_Get(face, &paletteData))
             return nullptr;
